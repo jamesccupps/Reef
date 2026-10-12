@@ -12,8 +12,19 @@ to analyze the GUI and everything yourself, keep everything updated in case chat
 still applies: no subagents.
 
 **Plan for this round** (tick items off here as they ship):
-- [ ] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
+- [x] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
       overlays and fullscreen. Fix layout and readability issues.
+      Shipped `caa26ba`:
+      - the legend was covered by the minimap and camera controls;
+      - open on the whole lake;
+      - neon fish and flora at night → dim and desaturate;
+      - magenta sunfish;
+      - near-white plants by day;
+      - plankton "snow" at the overview;
+      - truncated trophic labels;
+      - mesh-gridded field overlays → a smooth heat map.
+
+      Still to check: the mobile layout. Fullscreen can't be triggered without a user gesture.
 - [ ] Colour grade / exposure: judge with screenshots and GPU-readback histograms, now that GL depth is
       right-side up.
 - [ ] Catfish nocturnality (only ~8% in effect).

@@ -193,6 +193,18 @@ body{
   .rail{flex-direction:column}
   #brain{height:230px}
 }
+/* phones: at ~325px the lake was almost entirely covered by the stats box, the minimap and the camera bar. Outside
+   fullscreen, the camera bar moves BELOW the canvas, the minimap hides (pan by dragging), and the stats box compacts
+   (the per-species counts are in the legend just below). Fullscreen keeps its own overlay layout. */
+@media (max-width:560px){
+  .viewport{padding:6px}
+  .viewport:not(:fullscreen) .camctl{position:static; margin-top:6px; justify-content:center; flex-wrap:wrap; background:none; border:0; padding:0}
+  .viewport:not(:fullscreen) .minimap{display:none}
+  .viewport:not(:fullscreen) .ps-species{display:none}
+  .pondstats{top:8px; left:8px; padding:4px 7px; font-size:9.5px; line-height:1.4; max-width:80%}
+  .ps-top b, .ps-top span{font-size:10px}
+  .fsbtn{top:8px; right:8px; width:26px; height:26px; font-size:13px}
+}
 @media (prefers-reduced-motion:reduce){
   .dot{animation:none}
   *{transition:none!important}
