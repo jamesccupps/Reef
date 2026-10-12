@@ -25,6 +25,31 @@ Screensaver plan:
 - [x] Fullscreen polish: the chrome and cursor fade after 3.5 s idle and come back on any input. Also: sediment
       texture on the bed, and dawn warmth fades with view depth (deep close-ups no longer turn muddy brown).
 
+**▶ RESUME HERE (written right before a compaction on 2026-10-12):**
+- **State:** everything is committed and pushed. `audit-fixes` was merged into `main` after this note. The last
+  full strict gate was green at `0cacfcc` (150 steps/s). The fin polish (`88e2218`, sprite-only) passed smoke.
+- **Next, in order:**
+  1. **Tall-screen framing.** camera.js `_clamp`: when the view is taller than the world (`hh*2 >= H`) it centres
+     the lake (cy = H/2), leaving smoky "air" with god-ray streaks above the surface on portrait or 4:3 screens.
+     Anchor the lake near the top instead: margin m = min(0.03·H, (viewH − H)/2), cy = hh − m. Do the same for the
+     tcy/hh and cy/hh2 pairs. Standard 16:9 fit then stays unchanged, because FIT_PAD's margin (17.6) < 0.03·H.
+     Check the headless camera tests around headless.mjs:1300 first.
+  2. Optional fish-art polish (the fins read a bit flat at 30×); plant/bed art.
+  3. Ecology, lower priority now: juvenile cover / nursery reflex for apex recruitment. Judge with a ≥3-seed A/B
+     using `scratchpad/verify/seeds.mjs` (session-local; easy to recreate: per-seed 1-year births vs immigrants,
+     with SP overrides via env).
+  4. Merge `audit-fixes` → `main` again after each verified batch, then take a G-drive backup with `git archive`.
+- **How I verify visuals:**
+  - Built-in browser, preview `reef` (`node serve.mjs`).
+  - Fake fullscreen: set `#viewport` to position:fixed inset:0, and `#tank` to 100vw × 56.25vw.
+  - Pause with `reef.ui.paused = true`; force the time of day with `world.env.t` and `world.env.light`.
+  - Capture with `computer` zoom on region [0,0,754,424].
+  - The pane refuses real fullscreen requests; it scales emulated big viewports, so use the native size.
+- **Lessons this round:**
+  - Run `node --check` after EVERY edit. A duplicate `const P` once broke app startup.
+  - The smoke DOM stub lacks some canvas methods (`clip` was added). Add any new ctx method you use to the stub.
+  - `ImageData` isn't in the stub, so the sprite rasterizer falls back to `fillRect` there.
+
 **Plan for this round** (tick items off here as they ship):
 - [x] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
       overlays and fullscreen. Fix layout and readability issues.
