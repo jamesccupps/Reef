@@ -249,10 +249,12 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   {
     const a = world.agents[1] || world.agents[0];
     camera.setZoomRel(10); camera.zoom = camera.tzoom; camera.cx = camera.tcx = a.x; camera.cy = camera.tcy = a.y; camera._clamp();
-    a._rFrame = -99; a.rHeading = a.heading + 2.5; renderer.draw(20);
-    const snapped = Math.abs(angDiff(a.rHeading, a.heading)) < 1e-9;
-    a.rHeading = a.heading + 2.5; renderer.draw(20.016);
-    const eased = Math.abs(angDiff(a.rHeading, a.heading)) > 0.5;
+    // the drawn heading is the pitch-limited displayHeading of the sim heading (render.js), so compare against that
+    const want = () => RJ.displayHeading(a.heading, a.faceTarget);
+    a._rFrame = -99; a.rHeading = a.heading + 2.5; let w0 = want(); renderer.draw(20);
+    const snapped = Math.abs(angDiff(a.rHeading, w0)) < 1e-9;
+    a.rHeading = a.heading + 2.5; w0 = want(); renderer.draw(20.016);
+    const eased = Math.abs(angDiff(a.rHeading, w0)) > 0.5;
     check('a fish entering view snaps its eased heading; a fish already in view keeps easing', snapped && eased, `snapped ${snapped}, eased ${eased}`);
   }
 
@@ -324,9 +326,16 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
 // ==== GUI review fixes (2026-10-12) ====
 {
   // night look: GL fish dim AND desaturate as the light falls (they glowed neon-magenta against near-black water)
-  const { fishLook } = await import('../src/render.js');
+  const { fishLook, displayHeading } = await import('../src/render.js');
   const day = fishLook(1), night = fishLook(0);
   check('GL fish night look: dimmer and less saturated at night than at noon, both within (0,1]', night.bright < day.bright && night.sat < day.sat && night.bright > 0 && day.bright <= 1 && night.sat > 0 && day.sat <= 1, `bright ${night.bright.toFixed(2)}→${day.bright.toFixed(2)}, sat ${night.sat.toFixed(2)}→${day.sat.toFixed(2)}`);
+  // drawn pitch: never steeper than ~55° (a vertical sprite reads as a falling cut-out), level swimming untouched,
+  // the swim side kept, and near vertical the previous facing holds (no flip-flop)
+  const deg = Math.PI / 180, pitchOf = h => Math.abs(Math.atan2(Math.sin(h), Math.abs(Math.cos(h))));
+  let maxP = 0, sideOK = true;
+  for (let d = -180; d <= 180; d += 3) { const h = d * deg, o = displayHeading(h, 1); maxP = Math.max(maxP, pitchOf(o)); if (Math.abs(Math.cos(h)) > 0.31 && Math.sign(Math.cos(o)) !== Math.sign(Math.cos(h))) sideOK = false; }
+  check('drawn fish pitch is soft-limited (≤55°), level swimming unchanged, the swim side kept', maxP <= 55 * deg && Math.abs(displayHeading(0, 1)) < 1e-9 && Math.abs(displayHeading(Math.PI, -1) - Math.PI) < 1e-9 && sideOK, `max pitch ${(maxP / deg).toFixed(1)}°`);
+  check('  → near vertical the previous facing holds (hysteresis)', Math.cos(displayHeading(95 * deg, 1)) > 0 && Math.cos(displayHeading(95 * deg, -1)) < 0 && Math.cos(displayHeading(85 * deg, -1)) < 0);
   // sunfish colour stays in the natural red-orange → amber band (no magenta wrap-around)
   const { SP: SPS } = await import('../src/species.js');
   let lo = 999, hi = -1; for (let i = 0; i < 400; i++) { const h = SPS.sunfish.randomHue((a, b) => a + Math.random() * (b - a)); lo = Math.min(lo, h); hi = Math.max(hi, h); }

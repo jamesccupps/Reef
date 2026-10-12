@@ -68,6 +68,17 @@ const depthDim = y => 0.34 + 0.66 * Math.exp(-1.9 * clamp(y / H, 0, 1));
 // to the 2D sprite (dim 0.30+0.70·light, sat ×(0.35+0.65·light)), since GL sprites are built once at full light.
 // The 0.12 floor matches the sprite light bucket's minimum. Exported for the smoke test.
 export const fishLook = lit => { const l = 0.12 + 0.88 * clamp(lit, 0, 1); return { bright: 0.30 + 0.70 * l, sat: 0.35 + 0.65 * l }; };
+// Drawn-body PITCH limit (render-only; the sim heading is untouched). Real fish seldom swim more than ~45° nose-up or
+// nose-down, and a sprite pointing straight up or down reads as a falling cut-out. The pitch is soft-compressed (tanh)
+// toward ±PITCH_MAX (~55°): level swimming is barely changed, vertical becomes ~51°. Left/right follows the swim
+// direction with the same wide hysteresis as the sprite mirror (±0.30 cos): near vertical the previous facing
+// (faceHint) holds, so a fish rising or sinking steeply can't flip-flop between the two sides.
+const PITCH_MAX = 0.96;
+export function displayHeading(h, faceHint) {
+  const c = Math.cos(h), right = c > 0.30 || (c >= -0.30 && (faceHint ?? 1) > 0);
+  const pc = PITCH_MAX * Math.tanh(Math.atan2(Math.sin(h), Math.abs(c)) / PITCH_MAX);
+  return right ? pc : Math.PI - pc;
+}
 
 // Largest world-space half-extent any fish sprite can occupy (zoom-independent, since the
 // sprite scales with the same Sworld). Used as the cull margin so a big fish (pike) whose
@@ -861,7 +872,7 @@ export class Renderer {
   _fish(ctx, a, t, env, cam) {
     const rdt = this._rdt, al = this._alpha, z = cam.zoom, ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
     // render pose = lerp(previous, current sim state, alpha) (render-only _px/_py/_ph snapshots taken by main.js)
-    const ax = interpX(a, al), ay = interpY(a, al), ah = interpH(a, al);
+    const ax = interpX(a, al), ay = interpY(a, al), ah = displayHeading(interpH(a, al), a.faceTarget);
     // ease the visual heading so sim snaps (wall redirects) read smoothly — but a fish that was NOT drawn last frame (it
     // just entered view after a pan / tour cut, or is new) SNAPS its heading & facing instead of spinning from a stale
     // value. `_rFrame` is a render-only last-drawn frame stamp (like rHeading/vis — never read by the sim, not saved).
