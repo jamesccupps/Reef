@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<!-- CSP: no inline script/style, scripts only from this origin, fonts only from Google Fonts. Keep in sync with the
+     header sent by serve.mjs / serve.py (a browser enforces both). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Synapse Reef — neural-network ecosystem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,13 +80,13 @@
         <div class="label">Water column <small class="cardsub">column under the camera — pan to compare</small></div>
         <canvas id="depthprofile"></canvas>
         <div class="dplegend">
-          <span style="color:#ff8a5c">temp</span>
-          <span style="color:#5cd8ff">O₂</span>
-          <span style="color:#ffd25c">N</span>
-          <span style="color:#ff6fae">P</span>
-          <span style="color:#6fdc6f">phyto</span>
-          <span style="color:#9bd6c0">cyano</span>
-          <span style="color:#c9a86a">DOM</span>
+          <span class="dp-temp">temp</span>
+          <span class="dp-o2">O₂</span>
+          <span class="dp-n">N</span>
+          <span class="dp-p">P</span>
+          <span class="dp-phyto">phyto</span>
+          <span class="dp-cyano">cyano</span>
+          <span class="dp-dom">DOM</span>
         </div>
       </div>
 
@@ -124,7 +127,7 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row toggles">
           <label class="field"><span>Weather</span>
             <select id="sel-weather">
               <option value="auto">Auto</option>
@@ -162,17 +165,7 @@
 
 <div id="toast" class="toast"></div>
 
+<!-- the species legend is built by ui.js (UI._buildLegend) — no inline script, so the CSP can forbid it -->
 <script type="module" src="./src/main.js"></script>
-<script type="module">
-  // build the species legend from the registry (kept in sync with the sim)
-  import { SP, SPECIES } from './src/species.js';
-  const host = document.getElementById('legend');
-  for (const k of SPECIES) {
-    const sp = SP[k];
-    const li = document.createElement('li');
-    li.innerHTML = `<i style="background:${sp.tag}"></i>${sp.name}`;
-    host.appendChild(li);
-  }
-</script>
 </body>
 </html>

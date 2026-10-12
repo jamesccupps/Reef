@@ -1,13 +1,59 @@
 // ui.js — browser-only. HUD, census, charts, minimap, perf HUD, camera controls,
 // persistence. Drives the loop's speed/pause flags.
+//
+// SAFETY: imported files and localStorage are untrusted. Anything data-derived that reaches innerHTML goes through
+// escapeHTML() or a numeric formatter (fmtNum/fmtInt), and colours are applied through the CSSOM (el.style), never as
+// inline style attributes — the page's Content-Security-Policy blocks those (index.html / serve.py / serve.mjs).
 import { SP, SPECIES } from './species.js';
+import { WORLD, PLANKTON, scaleCount } from './config.js';
 
 const $ = id => document.getElementById(id);
 const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
-const dl = (name, text) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; a.click(); URL.revokeObjectURL(a.href); };
+
+// ---- safe formatting for anything that ends up in innerHTML ----
+const HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+export const escapeHTML = v => String(v).replace(/[&<>"']/g, c => HTML_ESC[c]);
+// numbers from a save file can be strings/objects: coerce, and show '—' for anything non-finite
+export const fmtNum = (v, dp = 0) => { const n = Number(v); return Number.isFinite(n) ? n.toFixed(dp) : '—'; };
+export const fmtInt = v => { const n = Number(v); return Number.isFinite(n) ? String(Math.trunc(n)) : '—'; };
+
+// current device-pixel ratio (re-read every use: it changes when the window moves between monitors or the page zooms)
+const curDPR = () => Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+// size a canvas backing store to its CSS box × dpr (rounded: a fractional dpr must not re-size — and clear — every frame)
+const fitCanvas = (c, w, h, dpr) => { const bw = Math.round(w * dpr), bh = Math.round(h * dpr); if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; } };
+
+export const DL_REVOKE_MS = 60000;               // keep a download's blob URL alive this long (a synchronous revoke can cancel it)
+export const MAX_IMPORT_BYTES = 50 * 1024 * 1024; // refuse bigger "state" files before reading them into memory
+const dl = (name, text) => {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+  const host = document.body || document.documentElement; if (host) host.appendChild(a);
+  a.click(); if (a.remove) a.remove();
+  const t = setTimeout(() => URL.revokeObjectURL(url), DL_REVOKE_MS); if (t && t.unref) t.unref();
+};
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const KEY = 'synapse-reef.champions';
+const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+
+// a colour swatch built through the DOM + CSSOM (no inline style attribute → CSP-clean)
+const swatch = col => { const i = document.createElement('i'); i.style.background = col; return i; };
+const textEl = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; return e; };
+
+// Champion brains come from localStorage or an imported file → keep only known species and plain numbers so nothing
+// script-shaped or non-finite reaches the world (World.seedFromChampions also validates; this is the UI's own guard).
+export function sanitizeChampions(o) {
+  const out = {};
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return out;
+  for (const k of SPECIES) {
+    if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+    const c = o[k]; if (!c || typeof c !== 'object') continue;
+    const gen = Number(c.gen), hue = Number(c.hue);
+    const w = Array.isArray(c.w) ? c.w.slice(0, 1 << 20).map(v => { const n = Number(v); return Number.isFinite(n) ? n : 0; }) : [];
+    out[k] = { gen: Number.isFinite(gen) && gen >= 0 ? Math.floor(gen) : 0, hue: Number.isFinite(hue) ? ((hue % 360) + 360) % 360 : 0, w };
+  }
+  return out;
+}
 
 // fish trophic roles, low→high, for the biomass spectrum (these share comparable summed-body-size units;
 // producers/inverts live in their own count strip since their units aren't commensurable with fish biomass)
@@ -30,26 +76,28 @@ export class UI {
     this.chart = $('charts'); this.cctx = this.chart && this.chart.getContext('2d');
     this.depth = $('depthprofile'); this.dctx = this.depth && this.depth.getContext('2d');
     this.mini = $('minimap'); this.mctx = this.mini && this.mini.getContext('2d');
-    this.dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
     this._buildCensus(); this._buildPondSpecies(); this._buildAddButtons();
-    this._buildPyramid(); this._buildEvo(); this._wire();
+    this._buildPyramid(); this._buildEvo(); this._buildLegend(); this._wire();
+    this.syncWeatherUI(true);
     this._acc = 0;
   }
 
-  togglePause() {
-    this.paused = !this.paused;
+  get dpr() { return curDPR(); }
+
+  _setPaused(p) {
+    this.paused = !!p;
     const b = $('btn-pause'); if (b) b.textContent = this.paused ? '▶ Resume' : '❚❚ Pause';
   }
+  togglePause() { this._setPaused(!this.paused); }
 
   // set the sim-time multiplier and light up the matching speed button (relaxed / 1× / 2× / 4×)
   setSpeedVal(s) {
-    this.speed = s; this.paused = false;
+    this.speed = s; this._setPaused(false);
     document.querySelectorAll('#speed .seg').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.s - s) < 1e-6));
-    const p = $('btn-pause'); if (p) p.textContent = '❚❚ Pause';
   }
 
   // temperature is simulated in °C; convert only here at the UI boundary
-  fmtTemp(c, dp = 1) { return this.tempF ? Math.round(c * 9 / 5 + 32) + '°F' : c.toFixed(dp) + '°C'; }
+  fmtTemp(c, dp = 1) { const n = Number(c); if (!Number.isFinite(n)) return '—'; return this.tempF ? Math.round(n * 9 / 5 + 32) + '°F' : n.toFixed(dp) + '°C'; }
 
   _buildCensus() {
     const host = $('census'); if (!host) return; host.innerHTML = '';
@@ -57,9 +105,11 @@ export class UI {
     for (const k of SPECIES) {
       const sp = SP[k];
       const row = document.createElement('div'); row.className = 'crow';
-      row.innerHTML = `<i style="background:${sp.tag}"></i><span class="cn">${sp.name}</span><small class="cdet" id="cd-${k}"></small><b id="c-${k}">0</b>`;
+      const det = textEl('small', 'cdet', ''); det.id = 'cd-' + k;
+      const cnt = textEl('b', '', '0'); cnt.id = 'c-' + k;
+      row.appendChild(swatch(sp.tag)); row.appendChild(textEl('span', 'cn', sp.name)); row.appendChild(det); row.appendChild(cnt);
       row.title = `${sp.name}: ${sp.trophic} · prefers ${sp.tempOpt}°C`;
-      host.appendChild(row); this.countEls[k] = $('c-' + k); this.detEls[k] = $('cd-' + k);
+      host.appendChild(row); this.countEls[k] = cnt; this.detEls[k] = det;
     }
   }
   _buildPondSpecies() {
@@ -67,8 +117,9 @@ export class UI {
     for (const k of SPECIES) {
       const sp = SP[k];
       const el = document.createElement('span'); el.className = 'pss';
-      el.innerHTML = `<i style="background:${sp.tag}"></i><b id="ps-${k}">0</b>`;
-      host.appendChild(el); this.psEls[k] = $('ps-' + k);
+      const cnt = textEl('b', '', '0'); cnt.id = 'ps-' + k;
+      el.appendChild(swatch(sp.tag)); el.appendChild(cnt);
+      host.appendChild(el); this.psEls[k] = cnt;
     }
   }
   _buildAddButtons() {
@@ -77,8 +128,17 @@ export class UI {
       const sp = SP[k];
       const btn = document.createElement('button'); btn.className = 'chip'; btn.textContent = '+ ' + sp.name;
       btn.style.setProperty('--c', sp.tag);
-      btn.onclick = () => { this.world.addAgent(k, { fromBest: true }); this.toast(`added ${sp.name}`); };
+      btn.onclick = () => this.addSpecies(k);
       host.appendChild(btn);
+    }
+  }
+  // the species legend under the tank (was an inline <script> in index.html; moved here so the CSP can forbid inline script)
+  _buildLegend() {
+    const host = $('legend'); if (!host) return; host.innerHTML = '';
+    for (const k of SPECIES) {
+      const li = document.createElement('li');
+      li.appendChild(swatch(SP[k].tag)); li.appendChild(textEl('span', '', SP[k].name));
+      host.appendChild(li);
     }
   }
   // trophic biomass bars (fish roles) — build the rows once; frame() updates the widths/values
@@ -103,7 +163,7 @@ export class UI {
     for (const k of SPECIES) {
       const sp = SP[k], row = document.createElement('div'); row.className = 'erow';
       const name = document.createElement('span'); name.className = 'en';
-      name.innerHTML = `<i style="background:${sp.tag}"></i>${sp.name.slice(0, 3).toLowerCase()}`;
+      name.appendChild(swatch(sp.tag)); name.appendChild(textEl('span', '', sp.name.slice(0, 3).toLowerCase()));
       row.appendChild(name);
       const cells = {};
       for (const g of EVO_GENES) { const c = document.createElement('span'); c.className = 'ev'; c.textContent = '—'; row.appendChild(c); cells[g] = c; }
@@ -118,18 +178,24 @@ export class UI {
     document.querySelectorAll('#speed .seg').forEach(b => b.onclick = () => this.setSpeedVal(+b.dataset.s));
     on('btn-pause', 'onclick', () => this.togglePause());
 
-    // click the temperature readout to switch between °F and °C
-    for (const id of ['env-temp', 'ps-temp']) { const el = $(id); if (el) { el.style.cursor = 'pointer'; el.title = 'click to switch °F / °C'; el.onclick = () => { this.tempF = !this.tempF; this._acc = 1; }; } }
+    // click (or Enter/Space on) a temperature readout to switch between °F and °C. #ps-temp sits on the water overlay,
+    // whose box is pointer-events:none so drags reach the tank; styles.css re-enables pointer events on this one span.
+    // stopPropagation keeps the click from also reaching the tank/viewport (no fish select/deselect, no pause on Space).
+    const flipUnits = () => { this.tempF = !this.tempF; this._acc = 1; };
+    for (const id of ['env-temp', 'ps-temp']) {
+      const el = $(id); if (!el) continue;
+      el.style.cursor = 'pointer'; el.title = 'click to switch °F / °C';
+      if (el.setAttribute) el.setAttribute('role', 'button');
+      el.tabIndex = 0;
+      el.onpointerdown = e => { if (e && e.stopPropagation) e.stopPropagation(); };
+      el.onpointerup = e => { if (e && e.stopPropagation) e.stopPropagation(); };
+      el.onclick = e => { if (e && e.stopPropagation) e.stopPropagation(); flipUnits(); };
+      el.onkeydown = e => { if (e && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); flipUnits(); } };
+    }
 
     const fs = () => { const el = $('viewport'); if (!el) return; if (!document.fullscreenElement) (el.requestFullscreen || (() => {})).call(el)?.catch?.(() => {}); else document.exitFullscreen?.(); };
     on('btn-full', 'onclick', fs); on('btn-full-mini', 'onclick', fs);
-    document.addEventListener('fullscreenchange', () => {
-      const isOn = !!document.fullscreenElement; document.body.classList.toggle('isfull', isOn);
-      this.renderer.resize();
-      // fullscreen = screensaver mode: ease into a relaxed pace + cinematic tour; restore on exit
-      if (isOn) { this._priorSpeed = this.speed; this.setSpeedVal(this.relaxSpeed); this.camera.startTour(); }
-      else { this.camera.stopTour(); if (this._priorSpeed != null) { this.setSpeedVal(this._priorSpeed); this._priorSpeed = null; } }
-    });
+    document.addEventListener('fullscreenchange', () => this._onFullscreenChange());
 
     // camera controls
     on('btn-overview', 'onclick', () => { this.camera.frameAll(); this.toast('whole lake'); });
@@ -144,7 +210,7 @@ export class UI {
       this.camera.mode = 'free'; this.camera.followId = null; this.camera.tcx = wx; this.camera.tcy = wy; this.camera.setZoomRel(Math.max(6, this.camera.zoomFraction() * 64));
     };
 
-    on('sel-weather', 'onchange', e => { const v = e.target.value, env = this.world.env; if (v === 'auto') env.forced = false; else env.setWeather(+v); });
+    on('sel-weather', 'onchange', e => { const v = e.target.value, env = this.world.env; if (v === 'auto') env.forced = false; else env.setWeather(+v); this.syncWeatherUI(true); });
     const exclusiveMap = pick => { for (const k of ['oxygen', 'temp', 'phyto']) { this.renderer.opts[k] = (k === pick); const el = $('tog-' + k); if (el) el.checked = (k === pick); } };
     on('tog-oxygen', 'onchange', e => e.target.checked ? exclusiveMap('oxygen') : this.renderer.opts.oxygen = false);
     on('tog-temp', 'onchange', e => e.target.checked ? exclusiveMap('temp') : this.renderer.opts.temp = false);
@@ -152,23 +218,134 @@ export class UI {
     on('tog-vision', 'onchange', e => this.renderer.opts.vision = e.target.checked);
     on('tog-perf', 'onchange', e => { this.renderer.opts.perf = e.target.checked; const p = $('perf'); if (p) p.classList.toggle('show', e.target.checked); });
 
-    on('btn-feed', 'onclick', () => { const vr = this.camera.visibleRect(); for (let i = 0; i < 40; i++) { const x = Math.max(6, Math.min(this.world.W - 6, vr.x0 + Math.random() * (vr.x1 - vr.x0))), y = Math.max(20, Math.min(this.world.FLOOR - 10, vr.y0 + Math.random() * (vr.y1 - vr.y0))); this.world.plankton.push(this.world._mkPlankton(x, y)); } this.toast('scattered plankton'); });
-    on('btn-reset', 'onclick', () => { if (confirm('Reset the lake? Living brains will be lost (use Save brains first).')) { this.world.reset(); this.camera.frameAll(); this.toast('lake reset'); } });
+    on('btn-feed', 'onclick', () => this.scatterFood());
+    on('btn-reset', 'onclick', () => { if (confirm('Reset the lake? Living brains will be lost (use Save brains first).')) { this.world.reset(); this._afterWorldReplaced(); this.toast('lake reset'); } });
 
     on('btn-save', 'onclick', () => { const data = JSON.stringify(this.world.champions()); if (lsSet(KEY, data)) this.toast('saved champion brains'); else { dl('synapse-reef-brains.json', data); this.toast('storage blocked here — downloaded brains file'); } });
-    on('btn-load', 'onclick', () => { const data = lsGet(KEY); if (!data) return this.toast('no saved brains found — use Import'); try { this.world.seedFromChampions(JSON.parse(data)); this.toast('seeded saved champions'); } catch { this.toast('could not read saved brains'); } });
+    on('btn-load', 'onclick', () => this.loadSavedBrains());
     on('btn-export', 'onclick', () => { dl('synapse-reef-state.json', JSON.stringify(this.world.toJSON())); this.toast('exported lake state'); });
     on('file-import', 'onchange', e => {
-      const f = e.target.files[0]; if (!f) return;
+      const input = e.target, f = input.files && input.files[0]; input.value = '';
+      if (!f) return;
+      if (!(f.size <= MAX_IMPORT_BYTES)) return this.toast(`${f.name} is too large to import (${(f.size / 1048576).toFixed(0)} MB; the limit is ${MAX_IMPORT_BYTES / 1048576} MB)`);
       const r = new FileReader();
-      r.onload = () => { try { const o = JSON.parse(r.result); if (o.agents) this.world.load(o); else this.world.seedFromChampions(o); this.camera.frameAll(); this.toast('imported ' + f.name); } catch { this.toast('that file could not be read'); } };
-      r.readAsText(f); e.target.value = '';
+      r.onerror = () => this.toast(`${f.name} could not be read`);
+      r.onload = () => this.importText(String(r.result), f.name);
+      r.readAsText(f);
     });
+  }
+
+  // fullscreen = screensaver mode: ease into a relaxed pace + cinematic tour; on exit restore the speed AND the paused
+  // state from before fullscreen (setSpeedVal always unpauses). If the user paused during fullscreen, stay paused.
+  _onFullscreenChange() {
+    const isOn = !!document.fullscreenElement;
+    if (document.body) document.body.classList.toggle('isfull', isOn);
+    this.renderer.resize();
+    if (isOn) {
+      if (this._priorSpeed == null) { this._priorSpeed = this.speed; this._priorPaused = this.paused; }
+      this.setSpeedVal(this.relaxSpeed); this.camera.startTour();
+    } else {
+      this.camera.stopTour();
+      const wasPaused = !!this._priorPaused || this.paused;
+      if (this._priorSpeed != null) this.setSpeedVal(this._priorSpeed);
+      this._setPaused(wasPaused);
+      this._priorSpeed = null; this._priorPaused = null;
+    }
+  }
+
+  // reflect the environment's weather mode in the dropdown: "Auto" unless a weather is forced. Called after reset /
+  // import / a change, and at ~8 Hz from frame(); skipped while the user has the dropdown focused (unless forced).
+  syncWeatherUI(force = false) {
+    const el = $('sel-weather'), env = this.world && this.world.env; if (!el || !env) return;
+    const want = env.forced ? String(env.weather) : 'auto';
+    if (el.value !== want && (force || document.activeElement !== el)) el.value = want;
+  }
+
+  // the world was replaced wholesale (reset / successful import): clear the selection, reframe, re-sync the controls
+  _afterWorldReplaced() {
+    this.world.selectedId = null;
+    this.camera.frameAll();
+    this.syncWeatherUI(true);
+    this._acc = 1;   // refresh the readouts on the next frame
+  }
+
+  // ---- adding life: every path respects the global agent cap / the plankton cap ----
+  addSpecies(k) {
+    const w = this.world, cap = WORLD.GLOBAL_MAX, sp = SP[k];
+    if (w.agents.length >= cap) { this.toast(`the lake is full (${cap} fish) — no room for another ${sp.name}`); return false; }
+    w.addAgent(k, { fromBest: true }); this.toast(`added ${sp.name}`); return true;
+  }
+  scatterFood(n = 40) {
+    const w = this.world, cap = scaleCount(PLANKTON.CAP), room = cap - w.plankton.length;
+    if (room <= 0) { this.toast(`plenty of plankton already (${cap} max)`); return 0; }
+    const k = Math.min(n, room), vr = this.camera.visibleRect();
+    for (let i = 0; i < k; i++) {
+      const x = Math.max(6, Math.min(w.W - 6, vr.x0 + Math.random() * (vr.x1 - vr.x0))), y = Math.max(20, Math.min(w.FLOOR - 10, vr.y0 + Math.random() * (vr.y1 - vr.y0)));
+      w.plankton.push(w._mkPlankton(x, y));
+    }
+    this.toast(k < n ? `scattered ${k} plankton (at the ${cap} cap)` : 'scattered plankton');
+    return k;
+  }
+  // seed champion brains, capped at GLOBAL_MAX. Works with both World.seedFromChampions contracts: the older one returns
+  // nothing and ignores the cap (the overflow — all just-added fish at the array's tail — is dropped here), the hardened
+  // one returns { added, reseeded } and respects the cap itself.
+  _seedChampions(champs) {
+    const w = this.world, cap = WORLD.GLOBAL_MAX, before = w.agents.length;
+    if (before >= cap) return { added: 0, reseeded: 0, full: true, trimmed: 0 };
+    const ret = w.seedFromChampions(champs);
+    let trimmed = 0;
+    if (w.agents.length > cap) { trimmed = w.agents.length - cap; w.agents.length = cap; }
+    const r = ret && typeof ret === 'object' ? Number(ret.reseeded) : NaN;
+    return { added: Math.max(0, w.agents.length - before), reseeded: Number.isFinite(r) ? r : 0, full: false, trimmed };
+  }
+  _championToast(res, what) {
+    if (res.full) return this.toast(`the lake is full (${WORLD.GLOBAL_MAX} fish) — no room to seed ${what}`);
+    let msg = `seeded ${plural(res.added, 'fish', 'fish')} from ${what}`;
+    if (res.reseeded > 0) msg += ` · ${plural(res.reseeded, 'brain')} didn't fit this version and ${res.reseeded === 1 ? 'was' : 'were'} reseeded`;
+    if (res.trimmed > 0 || (res.added > 0 && this.world.agents.length >= WORLD.GLOBAL_MAX)) msg += ` · lake now full (${WORLD.GLOBAL_MAX})`;
+    this.toast(msg);
+  }
+  loadSavedBrains() {
+    const data = lsGet(KEY); if (!data) { this.toast('no saved brains found — use Import'); return null; }
+    let champs;
+    try { champs = sanitizeChampions(JSON.parse(data)); } catch { this.toast('could not read saved brains'); return null; }
+    if (!Object.keys(champs).length) { this.toast('the saved brains are empty or unreadable'); return null; }
+    try { const res = this._seedChampions(champs); this._championToast(res, 'saved champions'); return res; }
+    catch (err) { console.error(err); this.toast('could not seed the saved brains'); return null; }
+  }
+  // Import state: a full lake (has `agents`) or a champions file. UI state (camera, selection, weather control) is only
+  // touched AFTER the world accepted the data, so a failed import leaves the UI as it was.
+  importText(text, name = 'file') {
+    let o;
+    try { o = JSON.parse(text); } catch { this.toast(`${name} isn't a valid JSON file`); return false; }
+    if (!o || typeof o !== 'object' || Array.isArray(o)) { this.toast(`${name} isn't a Synapse Reef lake or brains file`); return false; }
+    try {
+      if (o.agents) {
+        // a count left in the file's stats by an earlier session must not be reported as this load's
+        if (o.stats && typeof o.stats === 'object') delete o.stats.brainsReseeded;
+        this.world.load(o);
+        this._afterWorldReplaced();
+        const re = Number(this.world.stats && this.world.stats.brainsReseeded) || 0;
+        let msg = `imported ${name} — ${plural(this.world.agents.length, 'fish', 'fish')}`;
+        if (re > 0) msg += ` · ${plural(re, 'brain')} didn't fit this version and ${re === 1 ? 'was' : 'were'} reseeded`;
+        this.toast(msg);
+        return true;
+      }
+      const champs = sanitizeChampions(o);
+      if (!Object.keys(champs).length) { this.toast(`${name} has no lake state or champion brains`); return false; }
+      const res = this._seedChampions(champs);
+      this._championToast(res, `${name}'s champions`);
+      return !res.full;
+    } catch (err) {
+      console.error('import failed:', err);
+      this.toast(`${name} could not be loaded` + (err && err.message ? ` — ${String(err.message).slice(0, 90)}` : ''));
+      return false;
+    }
   }
 
   toast(msg) {
     const t = $('toast'); if (!t) return; t.textContent = msg; t.classList.add('show');
-    clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 1700);
+    clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), clamp(String(msg).length * 45, 1700, 6000));
   }
 
   setRate(r) { this.rate = r; }
@@ -186,12 +363,13 @@ export class UI {
     for (const k of SPECIES) {
       if (this.countEls && this.countEls[k]) this.countEls[k].textContent = c[k];
       // per-species genetics: top generation reached · mean body-size gene (watch evolution live)
-      if (this.detEls && this.detEls[k]) this.detEls[k].textContent = c[k] ? `g${sd[k].maxGen} · ${sd[k].gSize.toFixed(2)}×` : '';
+      if (this.detEls && this.detEls[k]) this.detEls[k].textContent = c[k] ? `g${fmtInt(sd[k].maxGen)} · ${fmtNum(sd[k].gSize, 2)}×` : '';
       total += c[k];
     }
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
-    set('stat-gen', w.maxGen); set('stat-pop', total);
+    set('stat-gen', fmtInt(w.maxGen)); set('stat-pop', total);
     set('stat-sps', this.paused ? 'paused' : `${(this.rate / 1000).toFixed(1)}k steps/s`);
+    this.syncWeatherUI();
 
     const mins = Math.floor(env.t * 1440), hh = String((mins / 60 | 0)).padStart(2, '0'), mm = String(mins % 60).padStart(2, '0');
     const phase = env.light > 0.5 ? 'Day' : env.light > 0.08 ? (env.t < 0.5 ? 'Dawn' : 'Dusk') : 'Night';
@@ -212,35 +390,39 @@ export class UI {
     set('env-dom', ed.dom.toFixed(2));
     set('env-secchi', (ed.secchi | 0) + 'px');
 
-    set('ps-gen', 'gen ' + w.maxGen); set('ps-pop', total + ' fish'); set('ps-clock', `${hh}:${mm}`);
+    set('ps-gen', 'gen ' + fmtInt(w.maxGen)); set('ps-pop', total + ' fish'); set('ps-clock', `${hh}:${mm}`);
     set('ps-phase', phase); set('ps-season', `${env.monthName()} · ${env.seasonName()}`); set('ps-weather', env.weatherName()); set('ps-temp', this.fmtTemp(env.tempC, 0)); set('ps-o2', (w.avgO2() * 100 | 0) + '%');
     for (const k of SPECIES) if (this.psEls && this.psEls[k]) this.psEls[k].textContent = c[k];
 
-    const sel = w.selectedId != null ? w.agents.find(a => a.id === w.selectedId) : null;
-    const selEl = $('sel');
-    if (selEl) {
-      if (sel) {
-        const pc = v => Math.round(v * 100), diet = Object.keys(sel.sp.diet).filter(k => sel.sp.diet[k]).join(', ');
-        const stage = sel.grow >= 0.99 ? 'adult' : 'juvenile ' + pc(sel.grow) + '%';
-        const zone = sel.y > w.bedY(sel.x) * 0.7 ? 'profundal/benthic' : (sel.x < w.W * 0.30 || sel.x > w.W * 0.70) ? 'littoral' : 'pelagic';
-        selEl.innerHTML =
-          `<b style="color:${sel.sp.tag}">${sel.sp.name}</b> · gen ${sel.gen} · ${stage} · in the ${zone}<br>` +
-          `<span class="seldim">genes</span> size ${sel.genes[0].toFixed(2)}× · speed ${sel.genes[1].toFixed(2)}× · tolerance ${sel.genes[2].toFixed(2)}×<br>` +
-          `<span class="seldim">body</span> ${sel.size.toFixed(2)} · <span class="seldim">top</span> ${sel.maxSpeed | 0}px/s · <span class="seldim">energy</span> ${sel.energy.toFixed(2)} · <span class="seldim">age</span> ${sel.age | 0}s · <span class="seldim">ate</span> ${sel.eaten}<br>` +
-          `<span class="seldim">niche</span> comfort ${this.fmtTemp(sel.sp.tempOpt - sel.tempTol, 0)}–${this.fmtTemp(sel.sp.tempOpt + sel.tempTol, 0)} · needs O₂≥${pc(sel.o2Crit)}% · <span class="seldim">diet</span> ${diet}<br>` +
-          `<span class="seldim">right here</span> ${this.fmtTemp(w.env.tempAt(sel.x, sel.y), 1)} · O₂ ${pc(w.oxygenAt(sel.x, sel.y))}%`;
-      } else selEl.textContent = 'tap a fish to follow it and read its full detail — genes, niche, diet, condition';
-    }
-
+    this._selection();
     this._foodweb(c); this._evo(c, sd); this._cognition();
     this._charts(); this._minimap(); this._depthProfile();
+  }
+
+  // the click-a-fish readout. Agent fields can come straight from an imported file (gen, eaten, …), so every value is
+  // coerced to a number or HTML-escaped before it reaches innerHTML; the species colour goes through the CSSOM.
+  _selection() {
+    const w = this.world, selEl = $('sel'); if (!selEl) return;
+    const sel = w.selectedId != null ? w.agents.find(a => a.id === w.selectedId) : null;
+    if (!sel) { selEl.textContent = 'tap a fish to follow it and read its full detail — genes, niche, diet, condition'; return; }
+    const esc = escapeHTML, pc = v => fmtInt(Math.round(Number(v) * 100)), sp = sel.sp, gn = sel.genes || [];
+    const diet = Object.keys(sp.diet).filter(k => sp.diet[k]).join(', ');
+    const stage = Number(sel.grow) >= 0.99 ? 'adult' : 'juvenile ' + pc(sel.grow) + '%';
+    const zone = sel.y > w.bedY(sel.x) * 0.7 ? 'profundal/benthic' : (sel.x < w.W * 0.30 || sel.x > w.W * 0.70) ? 'littoral' : 'pelagic';
+    if (selEl.style && selEl.style.setProperty) selEl.style.setProperty('--sp', sp.tag);
+    selEl.innerHTML =
+      `<b class="spname">${esc(sp.name)}</b> · gen ${fmtInt(sel.gen)} · ${esc(stage)} · in the ${esc(zone)}<br>` +
+      `<span class="seldim">genes</span> size ${fmtNum(gn[0], 2)}× · speed ${fmtNum(gn[1], 2)}× · tolerance ${fmtNum(gn[2], 2)}×<br>` +
+      `<span class="seldim">body</span> ${fmtNum(sel.size, 2)} · <span class="seldim">top</span> ${fmtInt(sel.maxSpeed)}px/s · <span class="seldim">energy</span> ${fmtNum(sel.energy, 2)} · <span class="seldim">age</span> ${fmtInt(sel.age)}s · <span class="seldim">ate</span> ${fmtInt(sel.eaten)}<br>` +
+      `<span class="seldim">niche</span> comfort ${esc(this.fmtTemp(sp.tempOpt - sel.tempTol, 0))}–${esc(this.fmtTemp(sp.tempOpt + sel.tempTol, 0))} · needs O₂≥${pc(sel.o2Crit)}% · <span class="seldim">diet</span> ${esc(diet)}<br>` +
+      `<span class="seldim">right here</span> ${esc(this.fmtTemp(w.env.tempAt(sel.x, sel.y), 1))} · O₂ ${pc(w.oxygenAt(sel.x, sel.y))}%`;
   }
 
   // food web: the resource-base count strip + the fish trophic-biomass bars
   _foodweb(c) {
     const w = this.world, rc = w.resourceCounts(), resEl = $('reslist');
     if (resEl) resEl.innerHTML = [['zoo', rc.zooplankton], ['larvae', rc.larvae], ['insects', rc.insects], ['snails', rc.snails], ['crayfish', rc.crayfish], ['mussels', rc.mussels], ['detritus', rc.detritus], ['plants', rc.plants]]
-      .map(([n, v]) => `<span class="res">${n}<b>${v}</b></span>`).join('');
+      .map(([n, v]) => `<span class="res">${n}<b>${fmtInt(v)}</b></span>`).join('');
     if (this.pyrEls) {
       const bm = w.biomassByTrophic(); let maxB = 1e-6;
       for (const t of TROPHIC) maxB = Math.max(maxB, bm[t.key] || 0);
@@ -254,8 +436,8 @@ export class UI {
     for (const k of SPECIES) {
       const e = this.evoEls[k], s = sd[k]; if (!e) continue;
       if (c[k]) {
-        for (const g of EVO_GENES) { const v = s[g], cell = e[g]; cell.textContent = v.toFixed(2); cell.classList.toggle('up', v > 1.04); cell.classList.toggle('dn', v < 0.96); }
-        e.gen.textContent = 'g' + s.maxGen; e.imm.textContent = Math.round(s.immFrac * 100) + '%';
+        for (const g of EVO_GENES) { const v = s[g], cell = e[g]; cell.textContent = fmtNum(v, 2); cell.classList.toggle('up', v > 1.04); cell.classList.toggle('dn', v < 0.96); }
+        e.gen.textContent = 'g' + fmtInt(s.maxGen); e.imm.textContent = fmtInt(Math.round(s.immFrac * 100)) + '%';
       } else { for (const g of EVO_GENES) { e[g].textContent = '—'; e[g].classList.remove('up', 'dn'); } e.gen.textContent = '—'; e.imm.textContent = '—'; }
     }
   }
@@ -265,9 +447,10 @@ export class UI {
     const el = $('cog'); if (!el) return;
     const g = this.world.cognitionDetail();
     const cell = (label, val, cls) => `<div class="cg ${cls || ''}"><label>${label}</label><b>${val}</b></div>`;
-    let html = cell('hunger', g.meanHunger.toFixed(2)) + cell('fear', g.meanFear.toFixed(2)) + cell('memory', g.meanMemory.toFixed(2))
-      + cell('striking', Math.round(g.pStrike * 100) + '%', 'act') + cell('fleeing', Math.round(g.pFlee * 100) + '%', 'act') + cell('hiding', Math.round(g.pHide * 100) + '%', 'act');
-    if (g.meanTox > 0.001) html += cell('contaminant', g.meanTox.toFixed(2));   // only when a pollution scenario is loaded (AMBIENT>0)
+    const pct = v => fmtInt(Math.round(Number(v) * 100)) + '%';
+    let html = cell('hunger', fmtNum(g.meanHunger, 2)) + cell('fear', fmtNum(g.meanFear, 2)) + cell('memory', fmtNum(g.meanMemory, 2))
+      + cell('striking', pct(g.pStrike), 'act') + cell('fleeing', pct(g.pFlee), 'act') + cell('hiding', pct(g.pHide), 'act');
+    if (g.meanTox > 0.001) html += cell('contaminant', fmtNum(g.meanTox, 2));   // only when a pollution scenario is loaded (AMBIENT>0)
     el.innerHTML = html;
   }
 
@@ -281,7 +464,7 @@ export class UI {
     if (!this.mctx) return;
     const host = this.mini, dpr = this.dpr;
     const r = host.getBoundingClientRect(), Wd = Math.max(80, r.width | 0), Hd = Math.max(45, r.height | 0);
-    if (host.width !== Wd * dpr) { host.width = Wd * dpr; host.height = Hd * dpr; }
+    fitCanvas(host, Wd, Hd, dpr);
     this.mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.renderer.drawMinimap(this.mctx, Wd, Hd);
   }
@@ -290,7 +473,7 @@ export class UI {
     const ctx = this.cctx; if (!ctx) return;
     const host = this.chart, dpr = this.dpr;
     const r = host.getBoundingClientRect(), Wd = Math.max(220, r.width | 0), Hd = Math.max(120, r.height | 0);
-    if (host.width !== Wd * dpr) { host.width = Wd * dpr; host.height = Hd * dpr; }
+    fitCanvas(host, Wd, Hd, dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, Wd, Hd);
     const S = this.world.series; if (S.length < 2) return;
 
@@ -322,7 +505,7 @@ export class UI {
     const ctx = this.dctx; if (!ctx) return;
     const host = this.depth, dpr = this.dpr, W = this.world.W;
     const r = host.getBoundingClientRect(), Wd = Math.max(150, r.width | 0), Hd = Math.max(120, r.height | 0);
-    if (host.width !== Wd * dpr) { host.width = Wd * dpr; host.height = Hd * dpr; }
+    fitCanvas(host, Wd, Hd, dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, Wd, Hd);
     const cx = clamp(this.camera ? this.camera.cx : W * 0.5, 8, W - 8);
     const prof = this.world.depthProfile(cx, 28);
