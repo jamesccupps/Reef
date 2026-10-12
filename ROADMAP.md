@@ -941,9 +941,10 @@ This replaces the critic's June build order; everything on that list has shipped
    - a recording WebGL2 mock so `GLPost` actually runs in smoke;
    - possibly `node:test` with parallel files, to cut the ~8-minute gate.
 3. **The graphics realism roadmap** (`docs/GRAPHICS_RESEARCH.md`): AgX tonemap, then the surface heightfield, Beer–Lambert colour, depth/occluder MRT, fish normals, real DOF/AO, and instancing. Re-tune the grade first, because the GL depth terms were upside down until 2026-10-11.
-4. **N-fixation** barely runs at the default inflow N:P. Consider seasonal or episodic P loading so the low-N:P cyanobacteria regime actually occurs.
-5. **Dashboard slice B/C:** selectable charts, a food-web flux diagram, an event log, and CSV export.
-6. **Grow the lake:** amphibians and birds (cross-boundary life), then the scenario/preset engine (the north star).
+4. **Catfish nocturnality is weak in effect.** In the real move step a catfish swims only ~8% faster at night than at noon, although its innate cruise target is ~2.7× higher at night: the brain's own thrust dominates the innate blend. Consider a stronger innate weight for activity rhythms, or a day-rest drive. Measure with the behavioural check in `headless.mjs`.
+5. **N-fixation** barely runs at the default inflow N:P. Consider seasonal or episodic P loading so the low-N:P cyanobacteria regime actually occurs.
+6. **Dashboard slice B/C:** selectable charts, a food-web flux diagram, an event log, and CSV export.
+7. **Grow the lake:** amphibians and birds (cross-boundary life), then the scenario/preset engine (the north star).
 
 **Guards that apply to every change:**
 - **Brain or input layout.** Append a `BRAIN_ERAS` entry (`species.js`) and bump the save version. Never re-order existing inputs.
