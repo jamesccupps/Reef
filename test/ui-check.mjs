@@ -144,7 +144,9 @@ check('sanitizeChampions keeps known species + plain finite numbers only', Objec
   const good = JSON.stringify(fresh.toJSON());
   const a = world.agents[0]; world.selectedId = a.id; camera.follow(a.id); world.env.setWeather(2); ui.syncWeatherUI();
   const cerr = console.error; console.error = () => {};   // the expected failure is logged by importText
-  const ok = ui.importText('{"agents":[{"s":"perch"}]}', 'bad.json'); console.error = cerr;
+  // structurally unusable (agents must be an array) — the validated World.load rejects it outright; an unknown species
+  // alone is no longer a failure (it is skipped and counted), so it can't be used to provoke one
+  const ok = ui.importText('{"agents":{"s":"perch"}}', 'bad.json'); console.error = cerr;
   check('a failed import keeps the camera, the selection and the weather control as they were', !ok && camera.mode === 'follow' && camera.followId === a.id && world.selectedId === a.id && $('sel-weather').value === '2' && /could not be loaded/.test(toast()), toast());
   ui.world = world = new World();   // (the pre-hardening World.load can half-apply before throwing — start clean)
 

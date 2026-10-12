@@ -272,8 +272,10 @@ export class UI {
   // ---- adding life: every path respects the global agent cap / the plankton cap ----
   addSpecies(k) {
     const w = this.world, cap = WORLD.GLOBAL_MAX, sp = SP[k];
-    if (w.agents.length >= cap) { this.toast(`the lake is full (${cap} fish) — no room for another ${sp.name}`); return false; }
-    w.addAgent(k, { fromBest: true }); this.toast(`added ${sp.name}`); return true;
+    const full = () => { this.toast(`the lake is full (${cap} fish) — no room for another ${sp.name}`); return false; };
+    if (w.agents.length >= cap) return full();
+    if (!w.addAgent(k, { fromBest: true })) return full();   // World.addAgent returns null at GLOBAL_MAX
+    this.toast(`added ${sp.name}`); return true;
   }
   scatterFood(n = 40) {
     const w = this.world, cap = scaleCount(PLANKTON.CAP), room = cap - w.plankton.length;
