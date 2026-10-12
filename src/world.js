@@ -263,8 +263,11 @@ export class World {
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, it => !it.dead); }
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
-  qPlant(x, y, r) { // linear (few plants), point-to-stem distance
-    r *= this.env.clarity();
+  // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
+  qPlant(x, y, r) { return this.nearestPlant(x, y, r * this.env.clarity()); }
+  // nearest live plant within r (linear scan — few plants; point-to-stem distance). NOT clarity-scaled: used directly
+  // for non-visual lookups (the seed-parent search), so plant heredity doesn't weaken in murky water.
+  nearestPlant(x, y, r) {
     let best = null, bd = r * r;
     for (const p of this.plants) {
       if (p.dead) continue;
@@ -466,8 +469,8 @@ export class World {
         env.takeNutrient(p.x, p.baseY, NUTRIENT.PLANT_UPTAKE * grow);
       }
       // autumn/winter senescence: die back toward the overwintering rootstock; shed biomass dissolves into the DOM pool
-      // (the realistic fall organic-matter pulse the microbial loop then remineralizes). Floors at WINTER_MIN > MIN_HEIGHT
-      // so the perennial survives winter and regrows in spring — only grazing can uproot it.
+      // (the realistic fall organic-matter pulse the microbial loop then remineralizes). Floors at the WINTER_MIN rootstock
+      // (which grazing can't remove either), so the perennial regrows in spring — only light-starvation kills it.
       if (vigor < 1 && p.height > PLANT.WINTER_MIN) {
         const shed = Math.min(p.height - PLANT.WINTER_MIN, PLANT.SENESCE * (1 - vigor) * p.height * dt);
         p.height -= shed;
@@ -487,7 +490,7 @@ export class World {
       const x = plantX();
       // local seed dispersal: a seedling inherits (mutated) the genes of the nearest established plant; an isolated
       // seed (sparse deep, or cold-start) founds with fresh genes → heredity where beds exist, colonisation elsewhere.
-      const near = this.qPlant(x, bedY(x) - 10, 240);
+      const near = this.nearestPlant(x, bedY(x) - 10, 240);   // unscaled: seed dispersal is not a fish's visual sense
       this.plants.push(newPlant(x, false, near ? near.item : null));
     }
 

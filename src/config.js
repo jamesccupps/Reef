@@ -415,9 +415,7 @@ export const CRAYFISH = {
 export const PLANT = {
   MAX: 120,                // reference-pond cap (auto-scaled by world area)
   SEED_RATE: 3.4,          // new plants /s up to MAX (scaled by area) — gated by seasonal vigor (mostly spring/summer)
-  GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor
-  MAX_HEIGHT: [26, 78],    // random per plant (px)
-  MIN_HEIGHT: 3,           // below this the plant uproots (grazing only; senescence floors at WINTER_MIN)
+  GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor (per-plant max height: MACRO[v].maxH × the maxH gene)
   BIOMASS_PER_PX: 0.018,   // biomass = height * this
   BITE: 5,                 // height removed per herbivore bite
   ENERGY_PER_BITE: 0.20,   // energy a herbivore gains per bite
@@ -430,15 +428,15 @@ export const PLANT = {
   WINTER_MIN: 6,           // px rootstock/rhizome height — senescence AND grazing both floor here (below-sediment, survives
                            //   winter & grazing → the perennial regrows in spring). Plant death is now light-starvation, not grazing.
   SENESCE_TO_DOM: 0.5,     // DOM (nutrient-equiv) released per unit senesced biomass → the microbial loop (the fall pulse)
-  LIGHT_MIN: 0.04,         // default top-of-plant light below which a macrophyte can't sustain itself (per-variety override below)
   SHADE_DEATH: 0.05,       // /s uproot rate when light-starved → deep/turbid beds die back, freeing bed slots for the lit littoral
+                           //   (the light-starvation threshold is per variety: MACRO[v].lightMin × the plant's light/leaf genes)
 };
 
 // MACROPHYTE VARIETIES — the real submerged/floating growth forms. Each dynamic plant (world.plants) is ONE of these,
 // chosen by its rooting depth (`zone` = bed-depth fraction: 0 = the shallow shelf … 1 = the deep basin). They differ in
 // depth zone, size, growth/cover/O₂, palatability (grazing value), shade/turbidity tolerance (`lightMin`, the
 // light-starvation death threshold) and cold tolerance (`tempMin`, the seasonal growth threshold), and how they render
-// (`form` + `hue`). PLANT.* are the shared defaults; a variety overrides what it lists. *(Emergent reeds + the tall
+// (`form` + `hue`). PLANT.* holds the rates shared by every form (growth, senescence, grazing, seeding). *(Emergent reeds + the tall
 // static cover weedbeds remain separate structures; free-floating duckweed — a drifting surface mat — is a follow-up,
 // it needs surface-drift mechanics.)* The per-plant trait EVOLUTION slice mutates these values per individual.
 // `zone` = the rooting bed-depth fraction (bedY/H), which spans ~0.25 (shallow shelf) → ~0.99 (deep basin centre).
