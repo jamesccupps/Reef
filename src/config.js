@@ -55,6 +55,25 @@ export const SPAWN = {
   SHARP: 4,      // how tightly breeding concentrates around the peak (≈⅓-of-a-year spawning season — a recognizable spring/summer boom)
 };
 
+// ---------- feeding handling time (dt-independent intake of discrete food items) ----------
+// A fish used to take ONE item per food type per STEP, so its max intake per second doubled at the browser's 1/60 step
+// vs the headless 1/30. Now it gets one item per food type per HANDLE seconds (a handling time; the fractional remainder
+// carries over), so intake per second is the same at any fixed step. HANDLE = 1/60 reproduces the browser exactly.
+export const FEED = {
+  HANDLE: 1 / 60,   // s per discrete item (zooplankton, insect, larva, detritus, snail, crayfish) per food type
+};
+
+// ---------- brood protection (newborn cannibalism) ----------
+// Newborns used to appear ±6 px from their parents — inside strike reach — and qPrey had no kin filter, so bass/pike
+// ate their own brood within ~2 s for MORE energy than the spawning cost (an energy pump lifetime learning rewarded).
+// A short post-birth GRACE (eggs/larvae hidden in the nest/weeds) makes a conspecific newborn not-prey for its first
+// seconds; the brood is SCATTERED out of immediate strike range; and qThreat is symmetric with qPrey, so after the
+// grace a juvenile senses (and can flee) a cannibal adult of its own kind. Real post-grace cannibalism stays possible.
+export const BROOD = {
+  GRACE: 5,      // s after birth during which a fish is not prey for its OWN species (other species can still eat it)
+  SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
+};
+
 // ---------- lake basin (non-rectangular bed) ----------
 // The lake is a cross-section: flat surface on top. Real lakes are not a smooth U — each shore
 // has a flat shallow **littoral shelf**, then a steeper **drop-off** into a flat-ish deep basin.
@@ -339,7 +358,9 @@ export const PLANKTON = {
   // grazes the phytoplankton field directly at a LOW survival ration — real planktivorous fish are facultative
   // phyto grazers. This cushions the boom-bust crash so the forage base (and the predators above it) don't
   // collapse to the refuge in the troughs → a steadier, more self-sustaining web (less immigration dependence).
-  FALLBACK_GRAZE: 0.022,   // phyto biomass a hungry planktivore clears /step when it finds no zooplankton (kept small to spare the base)
+  FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton (= the old
+                           //   0.022/step at the browser's 1/60 step; per-step made it dt-dependent — half as much headless at 1/30)
+  FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal (= the old 0.003/step at 1/60)
   FALLBACK_VALUE: 4.2,     // energy per unit phyto grazed (efficient → sustenance from little phyto; grazed×value ≈ a modest meal)
 };
 
@@ -415,12 +436,11 @@ export const CRAYFISH = {
 export const PLANT = {
   MAX: 120,                // reference-pond cap (auto-scaled by world area)
   SEED_RATE: 3.4,          // new plants /s up to MAX (scaled by area) — gated by seasonal vigor (mostly spring/summer)
-  GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor
-  MAX_HEIGHT: [26, 78],    // random per plant (px)
-  MIN_HEIGHT: 3,           // below this the plant uproots (grazing only; senescence floors at WINTER_MIN)
+  GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor (per-plant max height: MACRO[v].maxH × the maxH gene)
   BIOMASS_PER_PX: 0.018,   // biomass = height * this
-  BITE: 5,                 // height removed per herbivore bite
-  ENERGY_PER_BITE: 0.20,   // energy a herbivore gains per bite
+  BITE_RATE: 300,          // px of plant height a grazing herbivore removes per SECOND (× dt) — = the old 5 px/step at the
+                           //   browser's 1/60 step (per-step bites made grazing dt-dependent: half the rate headless at 1/30)
+  ENERGY_PER_PX: 0.04,     // energy a herbivore gains per px grazed (× the plant's palatability) — = the old 0.20 per 5-px bite
   // SEASONAL PHENOLOGY: macrophytes grow in the warm season, senesce (die back) in autumn → a fall detritus/DOM pulse,
   // and overwinter as rootstock — driven by the LOCAL water temperature (env.tempAt), so a warmer climate lengthens the
   // growing season (a climate-scenario lever) and the cold/dark deep can't support tall beds (an emergent depth limit).
@@ -430,24 +450,36 @@ export const PLANT = {
   WINTER_MIN: 6,           // px rootstock/rhizome height — senescence AND grazing both floor here (below-sediment, survives
                            //   winter & grazing → the perennial regrows in spring). Plant death is now light-starvation, not grazing.
   SENESCE_TO_DOM: 0.5,     // DOM (nutrient-equiv) released per unit senesced biomass → the microbial loop (the fall pulse)
-  LIGHT_MIN: 0.04,         // default top-of-plant light below which a macrophyte can't sustain itself (per-variety override below)
   SHADE_DEATH: 0.05,       // /s uproot rate when light-starved → deep/turbid beds die back, freeing bed slots for the lit littoral
+                           //   (the light-starvation threshold is per variety: MACRO[v].lightMin × the plant's light/leaf genes)
+  // Starvation is judged on each plant's RUNNING-MEAN light `p.lightAvg` (an EMA of its effective top-of-plant light),
+  // NOT the instantaneous value — otherwise every plant is "starving" all night (light = 0) and beds churn. A seed only
+  // ESTABLISHES where the mean light expected at its top (DAY_MEAN_LIGHT × depth attenuation × canopy shade) meets its
+  // lightMin (seeds under a closed canopy or in the dark deep fail), and its EMA starts at that expectation.
+  LIGHT_TAU_DAYS: 1.5,     // EMA time constant in day/night cycles (→ LIGHT_TAU s) — smooths the diel cycle + passing weather
+  get LIGHT_TAU() { return this.LIGHT_TAU_DAYS * TIME.DAY_LEN; },
+  DAY_MEAN_LIGHT: 0.20,    // long-run mean surface light: the daylight half-sine averages 1/π over a day/night cycle, × ≈0.64
+                           //   mean sky clearness (1 − ENV.CLOUD_COVER weighted by the weather chain's time in each state)
 };
 
 // MACROPHYTE VARIETIES — the real submerged/floating growth forms. Each dynamic plant (world.plants) is ONE of these,
 // chosen by its rooting depth (`zone` = bed-depth fraction: 0 = the shallow shelf … 1 = the deep basin). They differ in
 // depth zone, size, growth/cover/O₂, palatability (grazing value), shade/turbidity tolerance (`lightMin`, the
 // light-starvation death threshold) and cold tolerance (`tempMin`, the seasonal growth threshold), and how they render
-// (`form` + `hue`). PLANT.* are the shared defaults; a variety overrides what it lists. *(Emergent reeds + the tall
+// (`form` + `hue`). PLANT.* holds the rates shared by every form (growth, senescence, grazing, seeding). *(Emergent reeds + the tall
 // static cover weedbeds remain separate structures; free-floating duckweed — a drifting surface mat — is a follow-up,
 // it needs surface-drift mechanics.)* The per-plant trait EVOLUTION slice mutates these values per individual.
 // `zone` = the rooting bed-depth fraction (bedY/H), which spans ~0.25 (shallow shelf) → ~0.99 (deep basin centre).
+// `lightMin` is on the RUNNING-MEAN light scale (p.lightAvg: day+night+weather average of lightAtDepth at the plant top;
+// the surface mean is PLANT.DAY_MEAN_LIGHT ≈ 0.20) — re-calibrated (÷π) from the old instantaneous-noon thresholds, so
+// it is ~4% (milfoil) / 6% (pondweed) / 9% (lily) / 22% (chara) of the surface mean. With summer turbidity (~0.3) that
+// puts the depth limit near bed-depth ~0.6–0.7 for pondweed and ~0.7–0.8 for milfoil (deeper in clear winter water).
 export const MACRO = [
   // key            name            zone(beddepth)   maxH        grow  cover o2    palat lightMin tempMin hue  form
-  { key: 'pondweed', name: 'Pondweed',   zone: [0.24, 0.70], maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.040, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
-  { key: 'milfoil',  name: 'Milfoil',    zone: [0.55, 0.99], maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.025, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
-  { key: 'lily',     name: 'Water lily', zone: [0.24, 0.40], maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.060, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
-  { key: 'chara',    name: 'Muskgrass',  zone: [0.24, 0.44], maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.140, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
+  { key: 'pondweed', name: 'Pondweed',   zone: [0.24, 0.70], maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.013, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
+  { key: 'milfoil',  name: 'Milfoil',    zone: [0.55, 0.99], maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.008, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
+  { key: 'lily',     name: 'Water lily', zone: [0.24, 0.40], maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.019, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
+  { key: 'chara',    name: 'Muskgrass',  zone: [0.24, 0.44], maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.045, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
 ];
 
 // PLANT INTERACTIONS — SHADING COMPETITION between macrophytes. A TALLER plant within RADIUS cuts a shorter

@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN } from './config.js';
+import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -137,7 +137,9 @@ function parseSave(s) {
     const baseY = clamp(num(p.b, bedY(x)), 0, H + 4), height = clamp(num(p.h, PLANT.WINTER_MIN), 0, 1000), maxHeight = clamp(num(p.m, mv.maxH[1]), 0, 1000);
     const g = numArr(p.g, PLANT_GENE_KEYS.length);   // genome-length guard: a pre-genome / mismatched save gets fresh genes
     const gn = g ? Float32Array.from(g, q => clamp(q, GENE_MIN, GENE_MAX)) : randomPlantGenes();
-    const pl = { x, baseY, v, gn, hue: hueOr(p.hu, mv.hue), height, maxHeight, biomass: height * PLANT.BIOMASS_PER_PX, y: baseY - height * 0.5, dead: false };
+    // `la` = the running-mean light the starvation test uses (absent on pre-v24 saves → the step re-initialises it)
+    const lightAvg = isNum(p.la) ? clamp(p.la, 0, 2) : undefined;
+    const pl = { x, baseY, v, gn, hue: hueOr(p.hu, mv.hue), height, maxHeight, biomass: height * PLANT.BIOMASS_PER_PX, y: baseY - height * 0.5, dead: false, lightAvg };
     derivePlant(pl); plants.push(pl);
   }
   // particles (each list capped at its configured cap)
@@ -219,6 +221,13 @@ function pickVariety(bedFrac) {
   for (let i = 0; i < MACRO.length; i++) if (bedFrac >= MACRO[i].zone[0] && bedFrac <= MACRO[i].zone[1]) { if (cands) cands.push(i); else if (c0 < 0) c0 = i; else { cands = [c0, i]; } }
   if (cands) return cands[(rand() * cands.length) | 0];
   return c0 >= 0 ? c0 : 0;   // default to pondweed if nothing matches
+}
+// a newborn's spawn point: scattered in an annulus BROOD.SCATTER around (x, y) — out of the parents' immediate strike
+// reach — and kept inside the water column (above the bed, below the surface). Seeded RNG → deterministic.
+function broodPos(x, y) {
+  const ang = rand(0, Math.PI * 2), r = rand(BROOD.SCATTER[0], BROOD.SCATTER[1]);
+  const bx = clamp(x + Math.cos(ang) * r, 2, W - 2);
+  return { x: bx, y: clamp(y + Math.sin(ang) * r, 2, bedY(bx) - 2) };
 }
 const wrapHue = h => ((h % 360) + 360) % 360;
 // derive a plant's EFFECTIVE per-individual params from its variety (MACRO[v]) × its trait genes (p.gn). Genes are
@@ -392,8 +401,11 @@ export class World {
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, it => !it.dead); }
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
-  qPlant(x, y, r) { // linear (few plants), point-to-stem distance
-    r *= this.env.clarity();
+  // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
+  qPlant(x, y, r) { return this.nearestPlant(x, y, r * this.env.clarity()); }
+  // nearest live plant within r (linear scan — few plants; point-to-stem distance). NOT clarity-scaled: used directly
+  // for non-visual lookups (the seed-parent search), so plant heredity doesn't weaken in murky water.
+  nearestPlant(x, y, r) {
     let best = null, bd = r * r;
     for (const p of this.plants) {
       if (p.dead) continue;
@@ -402,8 +414,15 @@ export class World {
     }
     return best ? { item: best, dist: Math.sqrt(bd) } : null;
   }
-  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => !it.dead && it.species !== a.species && it.sp.diet.fish && canEat(effSize(it), effSize(a) * (a.bodyMul || 1))); }
-  qPrey(a) { const r = a.senseRange * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => !it.dead && it !== a && canEat(effSize(a), effSize(it) * (it.bodyMul || 1))); }
+  // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
+  // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
+  // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
+  canPrey(pred, prey) {
+    return pred !== prey && !pred.dead && !prey.dead && pred.sp.diet.fish && !(pred.species === prey.species && prey.age < BROOD.GRACE) &&
+      canEat(effSize(pred), effSize(prey) * (prey.bodyMul || 1));
+  }
+  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(it, a)); }
+  qPrey(a) { const r = a.senseRange * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(a, it)); }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, it => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
   // partner nearby by condition (energy) + heritable quality (mean trait gene) + foraging success, and pick
@@ -438,7 +457,14 @@ export class World {
   }
 
   // ---------- feeding ----------
-  _takeNearest(grid, x, y, r) { const m = grid.nearest(x, y, r, it => !it.dead); if (m) { m.item.dead = true; return true; } return false; }
+  // take (kill) up to n of the nearest live items within r; returns how many were taken (0 = none → falsy)
+  _takeNearest(grid, x, y, r, n = 1) {
+    let k = 0;
+    for (; k < n; k++) { const m = grid.nearest(x, y, r, it => !it.dead); if (!m) break; m.item.dead = true; }
+    return k;
+  }
+  // credit a fish with k meals of energy E each (capped at its energyCap) + the dietary toxicant per meal
+  _ate(a, k, E) { a.energy = Math.min(a.sp.energyCap, a.energy + k * E); a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
   // test/diagnostic hook: build a plant (optionally inheriting from a parent) WITHOUT inserting it, so heredity &
   // gene→phenotype derivation can be probed headlessly. Same code path the seeding step uses.
   makePlant(x, mature = false, parent = null) { return newPlant(x, mature, parent); }
@@ -451,14 +477,16 @@ export class World {
     _idOwner = this;
     return makeAgent(species, 100, 100, 1, 0, 180, null, age, genes ? Float32Array.from(genes) : null);
   }
-  bitePlant(a) {
+  // graze the nearest plant for one step of length dt: removes up to PLANT.BITE_RATE·dt px (a per-SECOND rate → the same
+  // grazing per second at any fixed step); returns the energy gained. Default dt = one browser step.
+  bitePlant(a, dt = FEED.HANDLE) {
     const m = this.qPlant(a.x, a.y, a.sp.eatRadius + 6);
     if (!m) return 0;
     // graze only the above-rootstock biomass — the below-sediment rhizome (WINTER_MIN) survives grazing (and winter)
-    const p = m.item, bite = Math.min(PLANT.BITE, Math.max(0, p.height - PLANT.WINTER_MIN));
+    const p = m.item, bite = Math.min(PLANT.BITE_RATE * dt, Math.max(0, p.height - PLANT.WINTER_MIN));
     if (bite <= 0) return 0;   // nothing left to graze but the protected rootstock
     p.height -= bite; p.biomass = p.height * PLANT.BIOMASS_PER_PX;
-    return PLANT.ENERGY_PER_BITE * (bite / PLANT.BITE) * p.palat;   // tough/defended forms yield less energy (per-plant gene)
+    return PLANT.ENERGY_PER_PX * bite * p.palat;   // energy ∝ biomass grazed; tough/defended forms yield less (per-plant gene)
   }
   takePrey(a) {
     const m = this.qPrey(a);
@@ -584,6 +612,7 @@ export class World {
     // shading competition: bucket live plants into RADIUS-wide x-columns so each only checks its own ± 1 bucket for
     // taller overhead neighbours (O(n), not O(n²)). Per-plant effective params (p.growMul/tempMin/lightMin) = genes × variety.
     const RAD = COMPETE.RADIUS, nB = Math.ceil(W / RAD) + 1, pcols = Array.from({ length: nB }, () => []);
+    const kLight = 1 - Math.exp(-dt / PLANT.LIGHT_TAU), atten = env.attenuation();   // light-EMA step; attenuation for seedling init
     for (const q of this.plants) if (!q.dead) pcols[clamp((q.x / RAD) | 0, 0, nB - 1)].push(q);
     for (const p of this.plants) {
       if (p.dead) continue; plantCount++;
@@ -591,7 +620,11 @@ export class World {
       // effective light = abiotic light at the plant's top × biotic shading from TALLER neighbours (→ stratified canopy + self-thinning)
       const ci = clamp((p.x / RAD) | 0, 0, nB - 1);
       let oh = 0; for (let b = Math.max(0, ci - 1); b <= Math.min(nB - 1, ci + 1); b++) oh += overheadFrom(p, pcols[b], RAD);
-      const lit = env.lightAtDepth(topY) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
+      const shade = oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1, lit = env.lightAtDepth(topY) * shade;
+      // running-mean light (EMA over ~LIGHT_TAU) — what light-starvation is judged on. A new seedling (or a plant from an
+      // older save lacking it) starts at the long-run mean light expected at its top, so it isn't born "starving" at night.
+      if (p.lightAvg == null) p.lightAvg = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * (topY / H)) * shade;
+      else p.lightAvg += (lit - p.lightAvg) * kLight;
       // seasonal vigor (0..1): a temperature-driven growing-season factor — full when warm, 0 below the variety's
       // cold threshold (autumn/winter or the cold deep). Per-depth temp ⇒ deep/cold beds can't grow tall (a depth limit).
       const vigor = clamp((env.tempAt(p.x, p.baseY) - p.tempMin) / Math.max(3, PLANT.GROW_TEMP_OPT - p.tempMin), 0, 1);  // floor the window so a high cold-tolerance gene can't make vigor a near-step
@@ -601,29 +634,40 @@ export class World {
         env.takeNutrient(p.x, p.baseY, NUTRIENT.PLANT_UPTAKE * grow);
       }
       // autumn/winter senescence: die back toward the overwintering rootstock; shed biomass dissolves into the DOM pool
-      // (the realistic fall organic-matter pulse the microbial loop then remineralizes). Floors at WINTER_MIN > MIN_HEIGHT
-      // so the perennial survives winter and regrows in spring — only grazing can uproot it.
+      // (the realistic fall organic-matter pulse the microbial loop then remineralizes). Floors at the WINTER_MIN rootstock
+      // (which grazing can't remove either), so the perennial regrows in spring — only light-starvation kills it.
       if (vigor < 1 && p.height > PLANT.WINTER_MIN) {
         const shed = Math.min(p.height - PLANT.WINTER_MIN, PLANT.SENESCE * (1 - vigor) * p.height * dt);
         p.height -= shed;
         env.addDOM(p.x, p.baseY, shed * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM);
       }
       p.biomass = p.height * PLANT.BIOMASS_PER_PX; p.y = p.baseY - p.height * 0.5;
-      // death is now LIGHT-starvation, not grazing: a macrophyte below its variety's light tolerance (too deep / too
-      // turbid to photosynthesize) uproots over time → the realistic depth limit + the seed of the clear↔turbid feedback
-      // (and forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists deep). Rootstock
-      // is otherwise grazing- & winter-proof, so established beds persist.
-      if (lit < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.height * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM); }   // a light-starved plant DECOMPOSES → DOM (mass-conserving; was a silent nutrient leak the microbial loop now reclaims)
+      // death is now LIGHT-starvation, not grazing: a macrophyte whose RUNNING-MEAN light is below its light tolerance (too
+      // deep / too turbid / too shaded to photosynthesize) uproots over time → the realistic depth limit + the seed of the
+      // clear↔turbid feedback (forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists
+      // deep). Judged on the daily mean, so night is not starvation; rootstock is grazing- & winter-proof → beds persist.
+      if (p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.height * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM); }   // a light-starved plant DECOMPOSES → DOM (mass-conserving; was a silent nutrient leak the microbial loop now reclaims)
     }
     // recruitment is seasonal too — new plants establish mostly in the warm growing season (vigor off the surface temp)
     const seedVigor = clamp((env.tempC - PLANT.GROW_TEMP_MIN) / tWin, 0, 1);
     const plantCap = scaleCount(PLANT.MAX);
-    if (plantCount < plantCap) for (let n = poissonish(PLANT.SEED_RATE * area * seedVigor * dt); n > 0 && plantCount < plantCap; n--, plantCount++) {
+    if (plantCount < plantCap) for (let n = poissonish(PLANT.SEED_RATE * area * seedVigor * dt); n > 0 && plantCount < plantCap; n--) {
       const x = plantX();
       // local seed dispersal: a seedling inherits (mutated) the genes of the nearest established plant; an isolated
       // seed (sparse deep, or cold-start) founds with fresh genes → heredity where beds exist, colonisation elsewhere.
-      const near = this.qPlant(x, bedY(x) - 10, 240);
-      this.plants.push(newPlant(x, false, near ? near.item : null));
+      const near = this.nearestPlant(x, bedY(x) - 10, 240);   // unscaled: seed dispersal is not a fish's visual sense
+      const sd = newPlant(x, false, near ? near.item : null);
+      // ESTABLISHMENT needs light: a seed only takes root where the daily-mean light expected at its top — after depth
+      // attenuation AND the shade of the existing canopy — meets its own light requirement. Seeds landing under a closed
+      // bed or in the dark deep simply fail (as real macrophyte seedlings do) instead of spawning a doomed seedling that
+      // starves within seconds — which, with the seed rain far exceeding the canopy's room, was most of the bed churn.
+      // Gaps and lit shallows still get colonised. Deterministic (no RNG beyond newPlant's).
+      const ci = clamp((sd.x / RAD) | 0, 0, nB - 1);
+      let oh = 0; for (let b = Math.max(0, ci - 1); b <= Math.min(nB - 1, ci + 1); b++) oh += overheadFrom(sd, pcols[b], RAD);
+      const expLight = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * ((sd.baseY - sd.height) / H)) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
+      if (expLight < sd.lightMin) continue;
+      sd.lightAvg = expLight;
+      this.plants.push(sd); plantCount++;
     }
 
     // rebuild spatial grids
@@ -787,24 +831,32 @@ export class World {
       // feeding by diet
       const cap = sp.energyCap, eaten0 = a.eaten;   // (eaten0: meals before this step → sate the hunger drive after, if the fish fed)
       if (sp.diet.fish) { const prey = this.takePrey(a); if (prey) { a.energy = Math.min(cap, a.energy + sp.foodValueFish * effSize(prey)); a.eaten++; this.stats.fishEaten++; } }   // (takePrey transfers the prey's contaminant burden → biomagnification)
+      // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
+      // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
+      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. The remainder is transient
+      // (always 0 at 1/60 and 1/30 → nothing to persist). Deterministic (no RNG).
+      a.feedAcc = (a.feedAcc || 0) + dt / FEED.HANDLE;
+      const slots = Math.floor(a.feedAcc + 1e-9); a.feedAcc = Math.max(0, a.feedAcc - slots);
+      let k;
       // juvenile piscivores subsist on zooplankton until they can reliably hunt fish (so lineages survive)
-      if (sp.diet.fish && a.grow < 0.55 && this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + PLANKTON.ENERGY * 0.8); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
+      if (sp.diet.fish && a.grow < 0.55 && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, PLANKTON.ENERGY * 0.8);
       let atePlankton = false;
-      if (sp.diet.plankton && this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + PLANKTON.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; atePlankton = true; }
+      if (sp.diet.plankton && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) { this._ate(a, k, PLANKTON.ENERGY); atePlankton = true; }
       // planktivore facultative omnivory: when a hungry planktivore finds no zooplankton it grazes the
       // phytoplankton field directly. This lets minnow/sunfish SELF-SUSTAIN through the boom-bust trough
       // (cushioning the crash + the predators above it → much less immigration dependence). The grazed amount is
       // kept small with an efficient conversion so it feeds the fish without scouring the phyto base into the ground.
+      // A per-SECOND rate × dt (was per step → twice the grazing per second in the browser as headless).
       if (sp.diet.plankton && !atePlankton && a.energy < cap * 0.85) {
-        const g = env.grazePhyto(a.x, a.y, PLANKTON.FALLBACK_GRAZE);
-        if (g > 0.003) { a.energy = Math.min(cap, a.energy + g * PLANKTON.FALLBACK_VALUE); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
+        const g = env.grazePhyto(a.x, a.y, PLANKTON.FALLBACK_GRAZE * dt);
+        if (g > PLANKTON.FALLBACK_MIN * dt) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g * PLANKTON.FALLBACK_VALUE); }
       }
-      if (sp.diet.detritus && this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + DETRITUS.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
-      if (sp.diet.larva && this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + INSECT.LARVA_ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }      // bottom fish graze benthic insect larvae
-      if (sp.diet.insect && this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + INSECT.ADULT_ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }   // surface fish rise to emerged insects
-      if (sp.diet.snail && this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + SNAIL.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }            // molluscivores (sunfish/carp) graze benthic snails
-      if (sp.diet.cray && this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + CRAYFISH.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }              // predators (bass/pike/catfish) eat benthic crayfish
-      if (sp.diet.plants) { const g = this.bitePlant(a); if (g > 0) { a.energy = Math.min(cap, a.energy + g); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; } }
+      if (sp.diet.detritus && (k = this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, DETRITUS.ENERGY);
+      if (sp.diet.larva && (k = this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.LARVA_ENERGY);      // bottom fish graze benthic insect larvae
+      if (sp.diet.insect && (k = this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.ADULT_ENERGY);   // surface fish rise to emerged insects
+      if (sp.diet.snail && (k = this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, SNAIL.ENERGY);            // molluscivores (sunfish/carp) graze benthic snails
+      if (sp.diet.cray && (k = this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, CRAYFISH.ENERGY);           // predators (bass/pike/catfish) eat benthic crayfish
+      if (sp.diet.plants) { const g = this.bitePlant(a, dt); if (g > 0) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g); } }   // per-second grazing (PLANT.BITE_RATE × dt)
       if (a.eaten > eaten0) a.hunger = clamp(a.hunger - DRIVE.SATE * (a.eaten - eaten0), 0, 1);   // a meal sates the hunger drive
       // LIFETIME LEARNING: a reward-modulated Hebbian nudge to the PLASTIC policy (a.lw) — reinforce the action just taken
       // when the fish ATE; a homeostatic decay (runs every step) pulls it back toward the inherited genotype a.g. Baldwinian
@@ -831,8 +883,8 @@ export class World {
           const clutch = Math.max(1, Math.min(sp.clutch, Math.floor(Math.min(a.energy, b.energy) / sp.reproCost), headroom));
           for (let ci = 0; ci < clutch; ci++) {
             a.energy -= sp.reproCost; b.energy -= sp.reproCost;
-            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360;
-            const child = makeAgent(a.species, clamp((a.x + b.x) / 2 + rand(-6, 6), 2, W - 2), clamp((a.y + b.y) / 2 + rand(-6, 6), 2, H - 2),
+            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = broodPos((a.x + b.x) / 2, (a.y + b.y) / 2);
+            const child = makeAgent(a.species, bp.x, bp.y,
               sp.childEnergy, Math.max(a.gen, b.gen) + 1, childHue, mutate(crossover(a.g, b.g)), 0, mutateGenes(crossoverGenes(a.genes, b.genes)));
             counts[a.species]++; newborns.push(child); child.bornSexual = true; this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
           }
@@ -845,12 +897,16 @@ export class World {
           const sparse = counts[a.species] < popMax(sp) * 0.5;
           if (a.energy >= (sparse ? sp.reproEnergy : sp.reproEnergy * 1.25)) {
             a.mateCd = sp.matingCooldown; a._mated = true;
-            const costMul = sparse ? 1.0 : 1.3;
+            // a lone parent pays the WHOLE cost of each young — what the two sexual parents pay together (2·reproCost),
+            // and never less than the energy the child is born with — so budding can't create energy (it used to cost
+            // reproCost×1 for a childEnergy ≈ 2·reproCost child: a free-energy pump).
+            const costMul = sparse ? 1.0 : 1.3, budCost = Math.max(2 * sp.reproCost, sp.childEnergy) * costMul;
             const headroom = WORLD.GLOBAL_MAX - (this.agents.length + newborns.length);
-            const clutch = Math.max(1, Math.min(Math.ceil(sp.clutch / 2), Math.floor(a.energy / (sp.reproCost * costMul)), headroom));
+            const clutch = Math.max(1, Math.min(Math.ceil(sp.clutch / 2), Math.floor(a.energy / budCost), headroom));
             for (let ci = 0; ci < clutch; ci++) {
-              a.energy -= sp.reproCost * costMul;
-              const child = makeAgent(a.species, clamp(a.x + rand(-6, 6), 2, W - 2), clamp(a.y + rand(-6, 6), 2, H - 2),
+              a.energy -= budCost;
+              const bp = broodPos(a.x, a.y);
+              const child = makeAgent(a.species, bp.x, bp.y,
                 sp.childEnergy, a.gen + 1, (a.hue + gauss() * 6 + 360) % 360, mutate(a.g), 0, mutateGenes(a.genes));
               counts[a.species]++; newborns.push(child); this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
             }
@@ -1050,7 +1106,7 @@ export class World {
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined };                           // learned policy: only W2 can differ from `w`
       }),
-      plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue })),
+      plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg })),
       plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx })),
       detritus: this.detritus.map(d => ({ x: d.x, y: d.y, l: d.life })),
       larvae: this.larvae.map(l => ({ x: l.x, y: l.y, d: l.dev })),
