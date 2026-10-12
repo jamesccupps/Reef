@@ -2,7 +2,7 @@
 // PURE & DOM-free: it only does math on numbers (viewport size is passed in as px),
 // so it is unit-tested headlessly alongside the sim. The renderer draws through it.
 import { clamp, lerp, TAU } from './core.js';
-import { CAMERA } from './config.js';
+import { CAMERA, bedY } from './config.js';
 
 // render-time randomness (tour subject picks) must NOT touch the sim's seeded RNG,
 // or it would desync determinism. Use Math.random here, never core.rand.
@@ -95,8 +95,8 @@ export class Camera {
   follow(id) { if (id == null) return; this.mode = 'follow'; this.followId = id; }
   isFollowing(id) { return this.mode === 'follow' && this.followId === id; }
 
-  startTour() { this.mode = 'tour'; this._tourTimer = 0; this._tourId = null; }
-  stopTour() { if (this.mode === 'tour') { this.mode = 'free'; this._tourId = null; } }
+  startTour() { this.mode = 'tour'; this._tourTimer = 0; this._tourId = null; this._shot = null; }
+  stopTour() { if (this.mode === 'tour') { this.mode = 'free'; this._tourId = null; this._shot = null; } }
 
   // ---- per-frame update ----
   // alpha: render-interpolation fraction (main.js passes accumulator/DT) so the follow target tracks the DRAWN fish.
@@ -111,32 +111,63 @@ export class Camera {
       else { this._tourTimer = 0; } // tour subject gone → repick next tick
     }
 
-    const ez = 1 - Math.exp(-dt * this.cfg.ZOOM_LERP);
-    const ec = 1 - Math.exp(-dt * this.cfg.FOLLOW_LERP);
+    const touring = this.mode === 'tour', c = this.cfg;
+    const ez = 1 - Math.exp(-dt * (touring ? (c.TOUR_ZOOM_LERP ?? c.ZOOM_LERP) : c.ZOOM_LERP));
+    const ec = 1 - Math.exp(-dt * (touring ? (c.TOUR_FOLLOW_LERP ?? c.FOLLOW_LERP) : c.FOLLOW_LERP));
     this.zoom = lerp(this.zoom, this.tzoom, ez);
     this.cx = lerp(this.cx, this.tcx, ec);
     this.cy = lerp(this.cy, this.tcy, ec);
     this._clamp();
   }
 
+  // SCREENSAVER TOUR: a varied sequence of shots — WIDE establishing views of the whole lake, HABITAT shots (weed beds,
+  // the shallow shelves, the deep basin) with a slow pan, and close FOLLOWs of a fish (biased to predators). Moving to a
+  // far subject PULLS BACK first, glides, then pushes in (ease-out/ease-in) instead of whip-panning at close zoom.
+  // All picks use Math.random (render-only), never the sim's seeded RNG.
   _tour(dt, world) {
     this._tourTimer -= dt;
-    if (this._tourTimer > 0 && this._tourId != null && this._find(world, this._tourId)) return;
-    // pick a fresh subject — favour bigger/predatory fish for drama, else any agent
-    const ags = world.agents;
-    if (!ags || !ags.length) { this._tourId = null; this.tcx = this.W / 2; this.tcy = this.H / 2; this.setZoomRel(2); this._tourTimer = 4; return; }
-    let pick = null, best = -1;
-    const samples = Math.min(ags.length, 40);
-    for (let i = 0; i < samples; i++) {
-      const a = ags[(Math.random() * ags.length) | 0];
-      const score = a.size * (a.sp && a.sp.diet && a.sp.diet.fish ? 2.4 : 1) * (0.5 + Math.random());
-      if (score > best) { best = score; pick = a; }
+    const shot = this._shot;
+    if (shot) {
+      if (shot.kind === 'follow' && !this._find(world, this._tourId)) this._tourTimer = 0;   // subject gone → next shot
+      if (shot.travel > 0) { shot.travel -= dt; if (shot.travel <= 0) this.setZoomRel(shot.zoom); }
+      if (shot.drift) { this.tcx += shot.drift[0] * dt; this.tcy += shot.drift[1] * dt; }
+      if (this._tourTimer > 0) return;
     }
-    this._tourId = pick ? pick.id : null;
-    const [zlo, zhi] = this.cfg.TOUR_ZOOM_REL;
-    this.setZoomRel(rrand(zlo, zhi));
-    const [dlo, dhi] = this.cfg.TOUR_DWELL;
-    this._tourTimer = rrand(dlo, dhi);
+    this._pickShot(world);
+  }
+  _pickShot(world) {
+    const c = this.cfg, ags = world.agents || [], r = Math.random();
+    const pW = c.TOUR_WIDE ?? 0.16, pH = c.TOUR_HABITAT ?? 0.26;
+    let kind = r < pW ? 'wide' : r < pW + pH ? 'habitat' : 'follow';
+    if (kind === 'follow' && !ags.length) kind = 'wide';
+    const shot = { kind, zoom: 1, travel: 0, drift: null };
+    this._tourId = null;
+    let tx = this.W / 2, ty = this.H / 2;
+    if (kind === 'wide') {
+      shot.zoom = rrand(1.0, 1.35); tx = this.W * rrand(0.44, 0.56); ty = this.H * rrand(0.45, 0.55); shot.drift = [rrand(-14, 14), 0];
+    } else if (kind === 'habitat') {
+      const spots = [];
+      for (const wb of world.weedbeds || []) spots.push([wb.x, (wb.top + wb.bot) / 2]);
+      for (const fx of [0.09, 0.91, 0.5]) { const x = this.W * fx; spots.push([x, bedY(x) * (fx === 0.5 ? 0.82 : 0.7)]); }   // shelves + deep basin
+      const s = spots[(Math.random() * spots.length) | 0]; tx = s[0]; ty = s[1];
+      shot.zoom = rrand(3, 6); shot.drift = [rrand(-20, 20), rrand(-4, 4)];
+    } else {
+      let pick = null, best = -1;
+      for (let i = 0, n = Math.min(ags.length, 40); i < n; i++) {
+        const a = ags[(Math.random() * ags.length) | 0];
+        const score = a.size * (a.sp && a.sp.diet && a.sp.diet.fish ? 2.4 : 1) * (0.5 + Math.random());
+        if (score > best) { best = score; pick = a; }
+      }
+      if (pick) { this._tourId = pick.id; tx = pick.x; ty = pick.y; }
+      const [zlo, zhi] = c.TOUR_ZOOM_REL; shot.zoom = rrand(zlo, zhi);
+    }
+    this.tcx = tx; this.tcy = ty;
+    // far subject at a close zoom → pull back to a medium view while travelling, push in on arrival
+    const viewW = this.vw / Math.max(this.zoom, 1e-6), far = Math.hypot(tx - this.cx, ty - this.cy) > viewW * 0.6;
+    if (far && shot.zoom > 2.5) { shot.travel = c.TOUR_TRAVEL ?? 2.4; this.setZoomRel(Math.min(2.5, this.zoom / this.fitZoom)); }
+    else this.setZoomRel(shot.zoom);
+    const [dlo, dhi] = c.TOUR_DWELL;
+    this._shot = shot; this._tourTimer = rrand(dlo, dhi) * (kind === 'wide' ? 1.2 : 1);
   }
 
   _find(world, id) {

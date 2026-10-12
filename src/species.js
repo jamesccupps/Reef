@@ -76,8 +76,10 @@ const _ONE_MORPH = { fin: 1, eye: 1, body: 1 };   // default when no per-fish mo
 function drawFish(put, P, c, o) {
   const m = o.morph || _ONE_MORPH;                // heritable morphology: fin (caudal/pectoral size) · eye (radius) · body (depth)
   const L = P.L, Hh = P.Hh * m.body, scale = o.scale || 2;
-  const su = Math.max(0.07, Math.min(0.55, 0.8 / scale));   // finer step (was 0.13) → ~2× the internal detail so the
-                                                            // anti-aliased sprite reads smooth, not stippled, even zoomed in
+  // draw step ≈ 1 sprite px at sprite resolutions ≥ 14 px/unit (0.07 at 14, 0.035 at 28, 0.0175 at 56), so the higher-
+  // resolution sprites render.js builds for close-ups carry real extra DETAIL, not just bigger dabs. Identical to the old
+  // step at the base resolution (14) and for small scales.
+  const su = Math.max(Math.min(0.07, 0.98 / scale), Math.min(0.55, 0.8 / scale));
   const drive = o.drive || 0, ph = o.beat;
   const amp = Hh * (0.09 + 0.20 * drive);                   // gentle undulation (grows with effort) — a slow glide, not a buzz
   // a sine wave travelling head -> tail, larger toward the tail

@@ -16,11 +16,14 @@ screen — make sure the visuals are good, high resolution, that even zoomed out
 flows and acts real and that it's polished."
 
 Screensaver plan:
-- [ ] Zoomed-out visibility at 1080p and 4K: fish must read as fish (oriented shapes, not specks); measure the
-      LOD mix at fit zoom.
-- [ ] Resolution: sprite sharpness at tour/close zooms, DPR, bloom at 4K.
-- [ ] Flow: no LOD popping (cross-fade dot↔sprite), smooth tour shots and pacing, no jitter.
-- [ ] Fullscreen polish: auto-hide the cursor and HUD when idle, restore on movement; tidy overlays.
+- [x] Zoomed-out visibility (`8dd6471`): 91% of fish were 2-px dots at the overview. They're now oriented fish glyphs
+      with a screen-scaled minimum length, plus a moonlight floor so nights aren't black.
+- [x] Resolution: sprite tiers 14/28/56 px per unit. A 1080p close-up was a 2.5–7.7× upscale; now it's ≤~2×.
+      ImageData rasterizer: tier builds cost 2.1 / 6.7 ms. GL textures are freed on sprite eviction.
+- [x] Flow: glyph→sprite switch happens at an equal on-screen length (no pop). New tour mixes wide, habitat and
+      follow shots, with slow cinematic easing and pull-back-then-push-in travel.
+- [x] Fullscreen polish: the chrome and cursor fade after 3.5 s idle and come back on any input. Also: sediment
+      texture on the bed, and dawn warmth fades with view depth (deep close-ups no longer turn muddy brown).
 
 **Plan for this round** (tick items off here as they ship):
 - [x] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,

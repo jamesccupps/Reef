@@ -500,6 +500,11 @@ class GLPost {
   }
   // sprite-canvas → GL texture, keyed by the SpriteCache ENTRY OBJECT identity (immutable once built → upload once, LRU-evict).
   // Alpha-bled straight-alpha SRGB8_ALPHA8 + a full mip chain (stops minification shimmer at whole-lake zoom).
+  // the Renderer's SpriteCache evicted this sprite entry → free its texture now (hi-res close-up sprites are large)
+  dropFishTex(entry){
+    const c = this.fishTexCache, gl = this.gl; if (!c || !gl) return;
+    const rec = c.get(entry); if (rec) { gl.deleteTexture(rec.tex); c.delete(entry); }
+  }
   _fishTex(entry){
     const gl = this.gl, cache = this.fishTexCache;
     let rec = cache.get(entry);
