@@ -1,6 +1,6 @@
 // species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
 import { WORLD, ENV, TIME } from './config.js';
-import { hsl, clamp } from './core.js';
+import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
 
@@ -262,7 +262,8 @@ export const SP = {
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
-      tgt(a, w.qThreat(a), a.senseRange, inp, 3);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);   // normalise by qThreat's own search radius (1.1×), as the other species do
+                                                           // (by 1× the outer band read 0 proximity yet still gave a bearing)
       inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
@@ -338,11 +339,11 @@ export const SP = {
 // the actual in-sim values are ×TIME.LIFE_SCALE (e.g. minnow maxAge 150→240 s; carp 1500→2400 s).
 for (const k in SP) { SP[k].matureAge = Math.round(SP[k].matureAge * TIME.LIFE_SCALE); SP[k].maxAge = Math.round(SP[k].maxAge * TIME.LIFE_SCALE); }
 
-// GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1). Order is
-// fixed: SPATIAL block then DRIVE block, written generically by world.js. `SP.baseInputs` records the species-specific
-// count so the move step can address the spatial block at [base, base+1, base+2] while the drives stay at [in-2, in-1];
-// inputLabels stays length-matched to shape.in (headless-asserted). Adding inputs grows genomeLen → old saved brains are
-// INPUT-migrated (preserving weights, the new sensor columns zeroed → load with no effect, then evolve in) by fitGenome.
+// GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1), written
+// generically by world.js (spatial at [base..base+2], perception at [base+3, base+4], drives at [in-2, in-1]).
+// `SP.baseInputs` records the species-specific count; inputLabels stays length-matched to shape.in (headless-asserted).
+// The extras are NOT declared here directly: they are the LAST entry of BRAIN_ERAS (below), the layout history that lets
+// fitGenome migrate an old saved brain BY LABEL (see "Adding a sensor" there).
 //
 // SPATIAL COGNITION (the allocentric "sense of place & direction"): a COMPASS (sin/cos of the fish's absolute heading —
 // an orientation reference the egocentric food/threat bearings can't provide) + a HOME bearing (signed horizontal
@@ -354,7 +355,50 @@ export const SPATIAL_INPUTS = ['compass∠sin', 'compass∠cos', 'home∠x'];
 // of the nearest catchable fish, 0 for non-piscivores → predators can evolve prey-SIZE selectivity, coupling to the gape system).
 export const PERCEPTION_INPUTS = ['flow', 'prey size'];
 export const DRIVE_INPUTS = ['hunger', 'fear'];
-const EXTRA_INPUTS = [...SPATIAL_INPUTS, ...PERCEPTION_INPUTS, ...DRIVE_INPUTS];   // order: [spatial 0..2][perception 3,4][drives in-2,in-1]
+
+// BRAIN LAYOUT HISTORY — one entry per save era, OLDEST → NEWEST; the LAST entry is the CURRENT layout. Each lists the
+// generic `extras` appended after every species' own base inputs (in order), the motor `outs`, and whether the genome
+// carried the recurrent LEAK block. A genome's LENGTH identifies its era (per species; checked collision-free below and
+// headless-asserted), and fitGenome then remaps it BY KEY: base inputs 1:1 by position, extras by label, outputs by label;
+// columns new since that era start at 0. (Positional copying put a v21 brain's hunger/fear weights on flow/prey-size.)
+// Optional `baseAdded: { species: [labels] }` records SPECIES-SPECIFIC inputs appended to that species' base block in
+// that era, so older eras of that species are sized with the smaller base.
+// NOTE minnow/sunfish/bass/pike gained light@depth/temp@depth in save v4; their ≤v3 brains match no era and reseed.
+//
+// ADDING A SENSOR:
+//  • shared (every species): append ONE entry = the previous one with your label inserted where world.js writes it, and
+//    write `act.in[...]` for it in World.step (extras are addressed by position there). Never edit older entries.
+//  • one species: append its label to the END of that species' own inputLabels, bump shape.in, write it in senses(), and
+//    append ONE entry = the previous one plus `baseAdded: { <species>: ['<label>'] }`.
+//  Then bump the save version. Old brains keep every weight; the new column loads as 0.
+export const BRAIN_ERAS = [
+  { saves: 'v4–v14', extras: [], outs: ['turn', 'thrust'], leak: false },        // pre-recurrence, 2 outputs
+  { saves: 'v15–v16', extras: [], outs: ['turn', 'thrust'], leak: true },        // recurrent memory, 2 outputs
+  { saves: 'v17', extras: [], outs: ACT_LABELS, leak: true },                    // + strike/flee/hide action outputs
+  { saves: 'v18–v20', extras: [...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+  { saves: 'v21', extras: [...SPATIAL_INPUTS, ...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+  { saves: 'v22+', extras: [...SPATIAL_INPUTS, ...PERCEPTION_INPUTS, ...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+];
+export const EXTRA_INPUTS = BRAIN_ERAS[BRAIN_ERAS.length - 1].extras;   // order: [spatial 0..2][perception 3,4][drives in-2,in-1]
 for (const k in SP) { SP[k].baseInputs = SP[k].shape.in; SP[k].shape.in += EXTRA_INPUTS.length; SP[k].inputLabels.push(...EXTRA_INPUTS); }
+
+// Per-species era table: each era's input KEYS (base by position `b:i`, extras by label `x:label`) and genome length.
+// `brainEraOf(sp, len)` returns the unique era of that length, or null (unknown OR ambiguous → the caller reseeds).
+export function buildBrainEras(key, base, hid, eras = BRAIN_ERAS) {
+  const out = [];
+  for (let e = 0; e < eras.length; e++) {
+    let b = base;
+    for (let f = e + 1; f < eras.length; f++) b -= ((eras[f].baseAdded || {})[key] || []).length;   // base before later adds
+    const inKeys = [];
+    for (let i = 0; i < b; i++) inKeys.push('b:' + i);
+    for (const x of eras[e].extras) inKeys.push('x:' + x);
+    out.push({ saves: eras[e].saves, inKeys, outs: eras[e].outs, leak: eras[e].leak, len: layoutLen(inKeys.length, hid, eras[e].outs.length, eras[e].leak), current: e === eras.length - 1 });
+  }
+  const byLen = new Map();
+  for (const er of out) byLen.set(er.len, byLen.has(er.len) ? null : er);   // a length shared by two eras is AMBIGUOUS → null
+  return { eras: out, byLen, collisions: out.length - [...byLen.values()].filter(Boolean).length };
+}
+for (const k in SP) SP[k].brainEras = buildBrainEras(k, SP[k].baseInputs, SP[k].shape.hid);
+export function brainEraOf(sp, len) { return sp.brainEras.byLen.get(len) || null; }
 
 export const SPECIES = Object.keys(SP);

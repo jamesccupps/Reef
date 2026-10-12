@@ -11,6 +11,13 @@ export function rand(a = 1, b) {
   const u = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   return b === undefined ? u * a : a + u * (b - a);
 }
+// RNG stream position — a save records it and a load restores it, so a resumed lake draws EXACTLY the random numbers the
+// uninterrupted run would have (a faithful resume). The state is a uint32; rand() reinterprets it as int32 internally.
+export function getRandState() { return _state >>> 0; }
+export function setRandState(s) {
+  if (typeof s !== 'number' || !Number.isFinite(s)) throw new Error('setRandState: the RNG state must be a finite number');
+  _state = s >>> 0;
+}
 export function gauss() {
   let u = 0, v = 0;
   while (!u) u = rand();
@@ -128,11 +135,40 @@ export function migrateGenome(w, shape, oldOut, hadLeak) {
 // input columns — so the added sensors start with NO effect (a fresh-input lake behaves exactly as before) and evolution
 // wires them in. W1 is row-major [HID × IN]: copy each hidden unit's old row, leave its extra input weights at 0; B1/W2/
 // B2/LEAK copy verbatim (their sizes are input-independent), shifted by the W1 size difference.
+// POSITIONAL — only correct when every new input was APPENDED after all the old ones. Loading uses the label-keyed
+// remapGenome (below) driven by the species.js BRAIN_ERAS history instead, because shared inputs have been INSERTED
+// before the drives (spatial in v21, perception in v22); this helper is kept for the synthetic-shape probes.
 export function migrateGenomeInputs(w, shape, oldIn) {
   const IN = shape.in, HID = shape.hid, n = genomeLen(shape), g = new Float32Array(n);
   for (let j = 0; j < HID; j++) for (let i = 0; i < oldIn; i++) g[j * IN + i] = w[j * oldIn + i];   // W1 rows (new input cols stay 0)
   const oTail = HID * oldIn, nTail = HID * IN, len = HID + OUT * HID + OUT + HID;   // B1 + W2 + B2 + LEAK (input-independent)
   for (let k = 0; k < len; k++) g[nTail + k] = w[oTail + k];
+  return g;
+}
+// genome length of an arbitrary (possibly historical) layout: W1 [hid×nIn] + B1 [hid] + W2 [nOut×hid] + B2 [nOut]
+// (+ LEAK [hid] when recurrent). genomeLen(shape) === layoutLen(shape.in, shape.hid, OUT, true).
+export function layoutLen(nIn, hid, nOut, leak) { return hid * nIn + hid + nOut * hid + nOut + (leak ? hid : 0); }
+// Remap a genome between two LABELLED layouts with the same hidden size. Every input column and output row is carried
+// over BY KEY, not by position: an old column lands on the new column with the same key, so an input INSERTED mid-vector
+// can't shift its neighbours' weights onto the wrong sensor. New input columns start at 0 (no effect until evolution
+// wires them in); new output rows start small with a negative bias (actions ~off); a missing LEAK block becomes
+// memoryless (−4). Old keys with no counterpart are dropped. B1 is copied verbatim. Keys are opaque strings (the caller
+// keys base inputs by position and generic extras by label — see species.js BRAIN_ERAS). Consumes rand() only for new
+// output rows (the same draws migrateGenome makes), so it stays deterministic under the seeded stream.
+export function remapGenome(w, hid, oldIns, oldOuts, oldLeak, newIns, newOuts = ACT_LABELS) {
+  if (newOuts.length !== OUT) throw new Error(`remapGenome: the target layout must have ${OUT} outputs`);
+  const oIN = oldIns.length, oOUT = oldOuts.length, nIN = newIns.length;
+  if (w.length !== layoutLen(oIN, hid, oOUT, oldLeak)) throw new Error('remapGenome: genome length does not match the old layout');
+  const g = new Float32Array(layoutLen(nIN, hid, OUT, true));
+  const col = newIns.map(k => oldIns.indexOf(k)), row = newOuts.map(k => oldOuts.indexOf(k));
+  for (let j = 0; j < hid; j++) for (let i = 0; i < nIN; i++) g[j * nIN + i] = col[i] >= 0 ? w[j * oIN + col[i]] : 0;   // W1 by key
+  const oB1 = hid * oIN, nB1 = hid * nIN;
+  for (let j = 0; j < hid; j++) g[nB1 + j] = w[oB1 + j];                                                          // B1 verbatim
+  const oW2 = oB1 + hid, nW2 = nB1 + hid, oB2 = oW2 + oOUT * hid, nB2 = nW2 + OUT * hid, oLK = oB2 + oOUT, nLK = nB2 + OUT;
+  for (let k = 0; k < OUT; k++) for (let j = 0; j < hid; j++)                                                     // W2 by key, new rows small
+    g[nW2 + k * hid + j] = row[k] >= 0 ? w[oW2 + row[k] * hid + j] : rand(-0.3, 0.3);
+  for (let k = 0; k < OUT; k++) g[nB2 + k] = row[k] >= 0 ? w[oB2 + row[k]] : rand(-2.6, -0.9);                     // B2: new action biases ~off
+  for (let j = 0; j < hid; j++) g[nLK + j] = oldLeak ? w[oLK + j] : -4;                                           // LEAK: keep, or memoryless
   return g;
 }
 export function mutate(src, rate = 0.10, std = 0.35, reset = 0.015, clampW = 4) {
