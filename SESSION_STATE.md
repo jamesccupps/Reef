@@ -5,6 +5,66 @@ dated entry, and leave the sim runnable with the headless test green.
 
 ---
 
+## ▶ NOW — Audit-fix overnight run (started 2026-10-11) — READ THIS FIRST after a compaction
+**Mandate (human, 2026-10-11, before bed):** post to GitHub and fix everything in `AUDIT.md`. Then
+keep going autonomously: test, push, re-audit, improve ("as good as it can be"). Keep this block
+current so a compaction loses nothing.
+
+**Repo:**
+- Remote: `origin` = https://github.com/jamesccupps/Reef (public).
+- `main` = the untouched baseline (`d21ce5c`).
+- All work happens on branch **`audit-fixes`** and is pushed as it's verified.
+- Commit identity is repo-local `148652101+jamesccupps@users.noreply.github.com`. GitHub rejects
+  pushes that expose the private Gmail (GH007).
+- There's no `gh` CLI. PR link:
+  https://github.com/jamesccupps/Reef/compare/main...audit-fixes?expand=1
+
+**Done:**
+- Audit (6 lenses), recorded in `AUDIT.md`.
+- Baseline commit `d21ce5c`.
+- Gate fixes `25b678e`:
+  - the LEAK-offset memory check could never fail;
+  - the eye probe now uses 7-gene arrays;
+  - `REEF_PERF_MIN` env var relaxes the speed budget when the CPU is shared;
+  - stray files removed.
+- Gate green at `25b678e`: headless ALL PASS, smoke OK, 126 steps/s; ~8 min alone.
+
+**In flight — wave 1.** Five worktree agents branched from `25b678e`; each commits on its own
+branch and I merge into `audit-fixes`.
+
+| Agent | Owns | Fixes |
+|---|---|---|
+| render | `render.js`, `glpost.js`, `camera.js`, `main.js` | GL orientation, GL-failure fallback, grain/OETF, fish fringe + mips, double dimming, hue bucket, bed edge gap, interpolation, frame guard, input |
+| ui | `ui.js`, `inspector.js`, `index.html`, `styles.css`, `serve.py`, new `serve.mjs`, `.claude/launch.json` | XSS escape, CSP, °F toggle, inspector, layout, caps, server bind |
+| integrity | `core.js`, `species.js`, world.js persistence/identity + death line, env toJSON/load | era-based brain migration, exact resume + RNG state (v24), atomic validated load, per-world ids |
+| bio-ecology | world.js plants/reproduction/feeding/qPrey/qThreat, config PLANT/MACRO/COMPETE/SPAWN/FALLBACK | newborn cannibalism grace, plant light EMA, asexual energy, per-second rates |
+| chemistry | `environment.js` (except toJSON/load), world.js plankton/detritus/mussel/corpse-P, config chem blocks | wet/dry mask, flux diffusion, P/N budgets, deep temp, O₂ clamp, storm, scum, outflow |
+
+All agents append new tests at the END of test files under `// ==== audit-fixes: <area> ====`.
+
+**Next:**
+1. Merge each branch into `audit-fixes`. Expect conflicts where several agents appended to the end of
+   the test files: keep all blocks.
+2. Serialize any new per-entity state the ecology agents added (e.g. a plant light-EMA field). The
+   integrity agent's strict resume test will flag anything missed.
+3. Run the STRICT gate on its own: no browser preview, no other agents.
+4. Run a joint `npm run balance 3`.
+5. Re-verify GL orientation on the GPU (A/B readPixels diff per band: the caustics must change the
+   TOP bands).
+6. Push.
+7. Wave 2: a test-hardening agent (behavioural tests in place of formula copies, broader
+   determinism, a WebGL2 mock in smoke) plus a docs agent (slim CLAUDE.md, archive SESSION_STATE,
+   README rewrite, LICENSE, `package.json` `serve` → `node serve.mjs`, `engines`, `private`).
+8. Wave 3: a fresh audit of the merged result. Fix, repeat until dry, then merge `audit-fixes` → `main`.
+
+**Gotchas:**
+- `renderer.draw(t)` needs `t`.
+- In FRAG_COMP, `uv.y=0` is the screen BOTTOM.
+- Run the gate with `REEF_PERF_MIN=0` while other agents run.
+- G-drive zips: use `git archive` (the working tree now has `.git` and worktrees).
+
+---
+
 ## ✅ GRAPHICS REALISM — Slice 1: LINEAR-HDR PIPELINE (2026-06-18, post-compaction resume)
 **State: gate GREEN, sim runnable, save `version: 23` (render-layer only — NO sim/save change).** First slice of the
 post-compaction photoreal roadmap (`GRAPHICS_RESEARCH.md`). Fixes **GAP 1**, the #1 "video-gamey" bug: the GL post path
