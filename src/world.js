@@ -185,7 +185,7 @@ export class World {
     for (let i = 0, n = scaleCount(SNAIL.SEED); i < n; i++) this.snails.push(this._mkSnail());
     for (let i = 0, n = scaleCount(CRAYFISH.SEED); i < n; i++) this.cray.push(this._mkCray());
     for (let i = 0, n = scaleCount(SEED_COUNTS.plants); i < n; i++) this.plants.push(newPlant(plantX(), true));
-    for (let i = 0, n = scaleCount(SEED_COUNTS.detritus); i < n; i++) { const x = rand(20, W - 20); this.spawnDetritus(x, bedY(x) - rand(0, 50)); }
+    for (let i = 0, n = scaleCount(SEED_COUNTS.detritus); i < n; i++) { const x = rand(20, W - 20); this.spawnDetritus(x, bedY(x) - rand(0, 50), NUTRIENT.FROM_DETRITUS); }   // seeded detritus carries organic N+P
     this._genStructures();
   }
 
@@ -243,10 +243,12 @@ export class World {
     const py = y ?? clamp(rand(16, bedY(px) - 12), 12, bedY(px) - 8);   // stay within the water column
     return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), dead: false };
   }
-  spawnDetritus(x, y) {
-    if (this.detritus.length >= scaleCount(DETRITUS.CAP)) return;
+  // `n` = organic N+P (DOM units) the particle carries. Default 0: fish-death detritus is nutrient-NEUTRAL (fish hold no
+  // N/P in this model — their remains are food/energy, not a nutrient source). Only seeded detritus carries nutrient.
+  spawnDetritus(x, y, n = 0) {
+    if (this.detritus.length >= scaleCount(DETRITUS.CAP)) { if (n > 0) this.env.addDOM(x, y, n); return; }   // at cap: dissolve now (never destroy N/P)
     const cx = clamp(x, 2, W - 2);
-    this.detritus.push({ x: cx, y: clamp(y, 2, bedY(cx)), life: DETRITUS.LIFE * (0.6 + rand() * 0.8), dead: false });
+    this.detritus.push({ x: cx, y: clamp(y, 2, bedY(cx)), life: DETRITUS.LIFE * (0.6 + rand() * 0.8), n, dead: false });
   }
   // a benthic insect larva on the lake bed (detritivore; develops with warmth, then emerges). `dev` 0..1 maturity.
   _mkLarva(x, dev) { const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev: dev ?? rand(0, 0.25), dead: false }; }
@@ -389,7 +391,7 @@ export class World {
     for (const d of this.detritus) {
       if (d.dead) continue;
       d.y = Math.min(bedY(d.x), d.y + DETRITUS.SINK * dt); d.life -= dt;
-      if (d.life <= 0) { d.dead = true; env.addDOM(d.x, d.y, NUTRIENT.FROM_DETRITUS); }
+      if (d.life <= 0) { d.dead = true; if (d.n > 0) { env.addDOM(d.x, d.y, d.n); d.n = 0; } }   // dissolve its N+P (if any) into DOM
     }
 
     // aquatic insects — a CROSS-BOUNDARY life cycle. Benthic LARVAE recruit from the detritus pool (detritivores),
@@ -771,6 +773,9 @@ export class World {
       if (deficit > 0 && liveTotal < WORLD.GLOBAL_MAX && rand() < IMMIGRATION.RATE * deficit * dt) immigrate();
     }
 
+    // eaten detritus: its organic N+P is not destroyed — the consumer excretes it (ammonium + phosphate) where it fed
+    for (const d of this.detritus) if (d.dead && d.n > 0) { env.addNutrient(d.x, d.y, d.n); d.n = 0; }
+
     // compact arrays
     this.agents = this.agents.filter(a => !a.dead).concat(newborns);
     this.plankton = this.plankton.filter(p => !p.dead);
@@ -795,7 +800,7 @@ export class World {
   _bestOf(key) { let best = null, bv = -1; for (const a of this.agents) { if (a.dead || a.species !== key) continue; const v = a.eaten / Math.max(a.age, 1); if (v > bv) { bv = v; best = a; } } return best; }
   topPerformer() { let best = null, bv = -1; for (const a of this.agents) { const v = a.eaten / Math.max(a.age, 1); if (v > bv) { bv = v; best = a; } } return best; }
   census() { const c = {}; for (const k of SPECIES) c[k] = 0; for (const a of this.agents) c[a.species]++; return c; }
-  avgO2() { const f = this.env.o2; let s = 0; for (let i = 0; i < f.length; i++) s += f[i]; return s / f.length; }
+  avgO2() { return this.env.meanO2(); }   // mean over WET cells only (below-bed rock cells excluded)
   avgNutrient() { return this.env.meanDin() + this.env.meanPhos(); }   // total dissolved nutrient (N + P)
 
   // ---- detailed statistics (pure; consumed by the UI dashboards, headless-testable) ----
