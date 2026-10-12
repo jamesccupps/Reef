@@ -42,6 +42,15 @@ branch and I merge into `audit-fixes`.
 
 All agents append new tests at the END of test files under `// ==== audit-fixes: <area> ====`.
 
+**Progress:**
+- ✅ **ui merged** (`20740a1`).
+  - New gate files: `test/ui-check.mjs` and `test/serve-check.mjs`.
+  - `npm run serve` now runs `node serve.mjs`.
+
+**Watch out:**
+- **Worktrees are based on `d21ce5c`, not `25b678e`.**
+- **Both test files END with `process.exit()`.** A block appended after it never runs. I told the agents to insert before the summary line; check this on every merge.
+
 **Next:**
 1. Merge each branch into `audit-fixes`. Expect conflicts where several agents appended to the end of
    the test files: keep all blocks.
