@@ -53,6 +53,11 @@ export const TIME = {
 export const SPAWN = {
   FLOOR: 0.12,   // off-season breeding chance as a fraction of the peak (low → most recruitment is in-season; >0 so it's soft, never a hard stop)
   SHARP: 4,      // how tightly breeding concentrates around the peak (≈⅓-of-a-year spawning season — a recognizable spring/summer boom)
+  // spawning AGGREGATION (species with innate.spawnGround): in season, breeding-ready adults migrate to the littoral
+  // spawning ground on their side of the lake so a sparse population can find mates (world.js innate block)
+  AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
+  AGG_READY: 0.8,    // and the fish must hold ≥ this fraction of its reproEnergy (in breeding condition)
+  GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
 };
 
 // ---------- feeding handling time (dt-independent intake of discrete food items) ----------

@@ -790,6 +790,15 @@ export class World {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);   // prey bearing relative to the body heading
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.pursuit * a.act.in[2] * dt;
         }
+        // SPAWNING AGGREGATION: in its spawning season a breeding-ready adult migrates to the littoral spawning ground on
+        // its side of the lake (bass nest in the shallows, pike/carp spawn in flooded weed margins, catfish nest in shallow
+        // cavities) — so a SPARSE population concentrates where mates can find each other. Innate + deterministic; the
+        // brain modulates it like the other reflexes, and it switches off out of season or once the fish is spent.
+        if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy * SPAWN.AGG_READY) {
+          const gx = a.x < W * 0.5 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
+          const gy = clamp(gb * 0.6, 8, gb - 8), d = Math.hypot(gx - a.x, gy - a.y);
+          if (d > 30) a.heading += angDiff(Math.atan2(gy - a.y, gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(d / 300, 0.2, 1) * dt;
+        }
         // cover-seeking: littoral/ambush fish migrate to the nearest cover (weed bed / reed / log) and hold
         // there — a pike lurks at a weed-bed edge, a sunfish hovers in the weeds. A gentle long-range
         // attractor that eases off once at cover; the NN can override to chase or roam.

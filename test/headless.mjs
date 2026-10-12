@@ -1703,7 +1703,7 @@ console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
   // A bass facing straight down with a minnow 60 px to its right: with the pursuit reflex it ends up pointing closer to
   // the prey than the SAME world (same seed, same brain) with pursuit switched off.
   const pursuitRun = (p) => {
-    const keep = SP.bass.innate.pursuit; SP.bass.innate.pursuit = p;
+    const keep = SP.bass.innate.pursuit, keepG = SP.bass.innate.spawnGround; SP.bass.innate.pursuit = p; SP.bass.innate.spawnGround = 0;   // isolate the reflex under test
     try {
       seed(777); const tw = new World(); tw.agents = [];
       const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2), m = tw.makeFish('minnow', null, SP.minnow.matureAge * 1.2);   // adults (makeFish's default age 9999 is past maxAge → instant old-age death)
@@ -1711,21 +1711,21 @@ console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
       tw.agents.push(b, m);
       for (let i = 0; i < 12; i++) tw.step(1 / 30);
       return Math.abs(angDiff(Math.atan2(m.y - b.y, m.x - b.x), b.heading));
-    } finally { SP.bass.innate.pursuit = keep; }
+    } finally { SP.bass.innate.pursuit = keep; SP.bass.innate.spawnGround = keepG; }
   };
   const offA = pursuitRun(0), onA = pursuitRun(SP.bass.innate.pursuit);
   check('innate PURSUIT turns a bass toward prey it senses (vs the identical world with pursuit off)', onA < offA - 0.05, `angle to prey ${onA.toFixed(2)} rad with pursuit vs ${offA.toFixed(2)} without`);
   // A bass at its home depth in O₂-starved water: hypoxia avoidance turns it UPWARD (heading's vertical component goes
   // negative = toward the surface), unlike the identical world with the reflex disabled (margin 0 ⇒ never triggers).
   const hypoRun = (margin) => {
-    const keep = ENVC.HYPOXIA_AVOID; ENVC.HYPOXIA_AVOID = margin;
+    const keep = ENVC.HYPOXIA_AVOID, keepG = SP.bass.innate.spawnGround; ENVC.HYPOXIA_AVOID = margin; SP.bass.innate.spawnGround = 0;   // isolate (in-season aggregation would also steer it)
     try {
       seed(778); const tw = new World(); tw.agents = [];
       const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2); b.x = 1000; b.y = SP.bass.innate.homeDepth * tw.bedY(1000); b.heading = b.velHeading = 0;
       tw.agents.push(b);
       for (let i = 0; i < 12; i++) { tw.env.o2.fill(0.03); tw.step(1 / 30); }
       return Math.sin(b.heading);
-    } finally { ENVC.HYPOXIA_AVOID = keep; }
+    } finally { ENVC.HYPOXIA_AVOID = keep; SP.bass.innate.spawnGround = keepG; }
   };
   const offH = hypoRun(0), onH = hypoRun(ENVC.HYPOXIA_AVOID);
   check('innate HYPOXIA AVOIDANCE steers a fish upward out of O₂-starved water (vs the reflex disabled)', onH < offH - 0.05, `sin(heading) ${onH.toFixed(2)} with avoidance vs ${offH.toFixed(2)} without (negative = upward)`);
@@ -1818,6 +1818,25 @@ console.log('\n— determinism (stress scenario), body-depth defence, Baldwinian
   const sameAsG = arr => arr && arr.length === f.g.length && Array.from(arr).every((v, i) => Math.abs(v - f.g[i]) < 1e-6);
   check('BALDWINIAN persistence: the saved genome is the inherited a.g, never the learned a.lw', sameAsG(saved && saved.w), saved ? `saved w[0..2] ${Array.from(saved.w).slice(0, 3).map(v => v.toFixed(2)).join(',')}` : 'no saved agent');
   check('BALDWINIAN champions: champion brains are genotypes (no learned 3.9 weights leak in)', !!champ && !Array.from(champ.w || champ.g || []).some(v => v === 3.9 || Math.abs(v - 3.9) < 1e-6), champ ? 'genotype only' : 'no champion');
+}
+
+// ==== spawning aggregation (2026-10-12) — behavioural A/B ====
+console.log('\n— spawning aggregation —');
+{
+  // in its spawning season a breeding-ready pike in mid-lake (left half, facing AWAY from shore) heads for the littoral
+  // spawning ground; the identical world with the reflex off does not → it ends up closer to the ground
+  const aggRun = (g) => {
+    const keep = SP.pike.innate.spawnGround; SP.pike.innate.spawnGround = g;
+    try {
+      seed(907); const tw = new World(); tw.time = SP.pike.spawnPeak * SEASON.YEAR_LEN; tw.agents = [];
+      const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pk.x = 0.4 * WORLD.W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0; pk.energy = pk.sp.reproEnergy;
+      tw.agents.push(pk);
+      for (let i = 0; i < 120; i++) { pk.energy = Math.max(pk.energy, pk.sp.reproEnergy); tw.step(1 / 30); }   // keep it in breeding condition
+      return Math.abs(pk.x - 0.09 * WORLD.W);
+    } finally { SP.pike.innate.spawnGround = keep; }
+  };
+  const off = aggRun(0), on = aggRun(SP.pike.innate.spawnGround);
+  check('SPAWNING AGGREGATION: an in-season, breeding-ready pike heads for the littoral spawning ground (vs the reflex off)', on < off - 15, `distance to ground after 4 s: ${on.toFixed(0)} px with vs ${off.toFixed(0)} px without`);
 }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);

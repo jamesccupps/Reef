@@ -55,7 +55,13 @@ All of it is on `main` via the `audit-fixes` branch.
   - innate **hypoxia avoidance** for all species;
   - predator metabolism put on the size trend (bass 0.046→0.030, pike 0.056→0.036);
   - fish meals worth more (0.60/0.65 → 0.80/0.85).
-- Result: bass immigrant share 91% → 80%, pike 76% → 61%, with prey steady. Better, but **still open**.
+- Result: bass immigrant share 91% → 80%, pike 76% → 61%, with prey steady.
+- Then the remaining bottleneck turned out to be mate-finding. A lower breeding threshold was tested and
+  rejected: births didn't rise. **Spawning aggregation** (`innate.spawnGround`) shipped instead.
+- 1-year immigrant share now: bass 70%, pike 54%, catfish 29%, carp 39%, sunfish 16%. Total immigration
+  is down 44%, and minnows hold steady (CV 0.04).
+- Better, but bass and pike are **still not fully self-sustaining**. Next levers: juvenile survival and
+  brood protection.
 
 **Open / next (ranked in `ROADMAP.md` → "Build order & guards"):**
 1. Apex self-sustainment: juvenile survival (pike eat many bass), the reproduction threshold, damping
