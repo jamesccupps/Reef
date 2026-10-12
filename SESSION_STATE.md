@@ -25,9 +25,27 @@ Screensaver plan:
 - [x] Fullscreen polish: the chrome and cursor fade after 3.5 s idle and come back on any input. Also: sediment
       texture on the bed, and dawn warmth fades with view depth (deep close-ups no longer turn muddy brown).
 
-**▶ RESUME HERE (written right before a compaction on 2026-10-12):**
-- **State:** everything is committed and pushed. `audit-fixes` was merged into `main` after this note. The last
-  full strict gate was green at `0cacfcc` (150 steps/s). The fin polish (`88e2218`, sprite-only) passed smoke.
+**▶ RESUME HERE (updated 2026-10-12, after the launcher + smoothness round):**
+- **Human feedback this round:** "doesn't seem very smooth or high fps", "looks blurry when fully zoomed out",
+  "add a batch file to easily launch this". All three were measured in REAL Chrome at 1920×1080 (RTX 3060, 144 Hz) and
+  fixed:
+  - `3cf2eb7` launchers (`Synapse Reef.bat`, `Synapse Reef - Screensaver.bat`) + `#screensaver` window mode; the GL
+    scene upload went into an SRGB8 texture = Chrome CPU-readback slow path (19 → 70 fps with RGBA8 + shader decode);
+    frame pacing (every k-th refresh on high-Hz displays); UI panel refresh staggered across frames.
+  - `01e4329` crisp overview: warp / chromatic aberration / fake DOF now scale WITH zoom (were strongest zoomed out).
+  - `26b8de6` sim step 7.1 → 4.5 ms, byte-identical (fingerprint hash unchanged; gate 154 → 256 steps/s).
+  - `1d229a1` drawn fish pitch soft-limited to ±55° (no more vertical "falling cut-out" fish).
+  - (pending commit) GL fish swim in FRAG_FISH from one straight-pose sprite per fish: the hi-res tiers needed 30
+    sprites per fish (10 frames × 3 efforts) vs caps 160/48 → close shots rebuilt sprites every frame (20 fps, 230 ms
+    stalls). Now 65 fps, 100% frames on target at 16× on the densest cluster.
+- **How I measure in real Chrome (session-local scripts in the scratchpad; recreate if lost):** launch
+  `chrome --app=http://localhost:8000/#screensaver --user-data-dir=%LOCALAPPDATA%\SynapseReef\bench
+  --remote-debugging-port=9334 --window-size=640,400 --disable-backgrounding-occluded-windows
+  --disable-renderer-backgrounding`, then a tiny Node CDP client (Node 24 has global WebSocket) that sends
+  `Emulation.setDeviceMetricsOverride` 1920×1080 + `Runtime.evaluate` (frame-interval/pacing, wrapped draw/step
+  timings), `Profiler.start/stop`, `Page.captureScreenshot`. The override drops when the session detaches, so do the
+  setup and the captures in ONE session. Sim speed-ups: `simhash.mjs` = sha256 of `toJSON()` after 4000 steps with
+  `seed(12345)`; it must not change.
 - **Next, in order:**
   1. **Tall-screen framing.** camera.js `_clamp`: when the view is taller than the world (`hh*2 >= H`) it centres
      the lake (cy = H/2), leaving smoky "air" with god-ray streaks above the surface on portrait or 4:3 screens.
@@ -46,6 +64,10 @@ Screensaver plan:
   - Capture with `computer` zoom on region [0,0,754,424].
   - The pane refuses real fullscreen requests; it scales emulated big viewports, so use the native size.
 - **Lessons this round:**
+  - Measure perf in real Chrome at the user's resolution, not in the preview pane: the pane hid a 4× GPU-process
+    bottleneck. Chrome only GPU-copies a canvas into non-sRGB textures; never upload a canvas into SRGB8_ALPHA8.
+  - Screen-space lens effects must scale with magnification, never 1/zoom.
+  - Any per-fish sprite variant multiplies the cache working set; animate in the shader instead.
   - Run `node --check` after EVERY edit. A duplicate `const P` once broke app startup.
   - The smoke DOM stub lacks some canvas methods (`clip` was added). Add any new ctx method you use to the stub.
   - `ImageData` isn't in the stub, so the sprite rasterizer falls back to `fillRect` there.
