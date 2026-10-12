@@ -35,6 +35,7 @@ body{
 
 /* ---------- stage ---------- */
 .stage{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start}
+.lakecol{min-width:0}   /* the lake frame + its legend share the first grid column */
 
 .viewport{
   position:relative; background:#000; border-radius:12px; padding:10px;
@@ -92,7 +93,7 @@ body{
 .reslist .res{white-space:nowrap}
 .reslist .res b{color:var(--ink); font-size:11px; margin-left:3px}
 .pyramid{display:flex; flex-direction:column; gap:3px; margin-top:10px}
-.pbar{display:grid; grid-template-columns:62px 1fr 34px; align-items:center; gap:6px; font-size:9px}
+.pbar{display:grid; grid-template-columns:80px 1fr 34px;   /* 80px: fits "PLANKTIVORE" (62px truncated it) */ align-items:center; gap:6px; font-size:9px}
 .pbar .pl{color:var(--dim); text-transform:uppercase; letter-spacing:.04em; text-align:right; overflow:hidden; text-overflow:ellipsis}
 .pbar .pt{height:8px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden}
 .pbar .pt i{display:block; height:100%; border-radius:3px; transition:width .25s}

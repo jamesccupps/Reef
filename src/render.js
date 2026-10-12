@@ -56,6 +56,10 @@ const DOT_PX = 1.5;     // below this a fish is a single tinted dot
 // (Day/night is handled separately via env.light; this is the *depth* component, so a deep fish
 // reads as deeper, not just nighttime-dark.) 1.0 at the surface → ~0.34 at the bed.
 const depthDim = y => 0.34 + 0.66 * Math.exp(-1.9 * clamp(y / H, 0, 1));
+// GL fish look for a light×depth `lit`: the sRGB brightness multiplier and saturation that species.js fishColors applies
+// to the 2D sprite (dim 0.30+0.70·light, sat ×(0.35+0.65·light)), since GL sprites are built once at full light.
+// The 0.12 floor matches the sprite light bucket's minimum. Exported for the smoke test.
+export const fishLook = lit => { const l = 0.12 + 0.88 * clamp(lit, 0, 1); return { bright: 0.30 + 0.70 * l, sat: 0.35 + 0.65 * l }; };
 
 // Largest world-space half-extent any fish sprite can occupy (zoom-independent, since the
 // sprite scales with the same Sworld). Used as the cull margin so a big fish (pike) whose
@@ -300,6 +304,9 @@ export class Renderer {
     const ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
     const X = wx => wx * z + ox, Y = wy => wy * z + oy;
     const amb = 0.25 + 0.75 * env.light;
+    // night vision for FLORA (as for fish): lightness and saturation drain with the light, so weed beds read as dim
+    // silhouettes at night instead of glowing lime against near-black water
+    const floraL = 0.40 + 0.60 * env.light, floraS = 0.35 + 0.65 * env.light;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
     const summer = Math.sin((env.year || 0) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);
@@ -411,15 +418,27 @@ export class Renderer {
 
     // oxygen / temperature / phytoplankton field overlays (visible cells only)
     if (this.opts.oxygen || this.opts.temp || this.opts.phyto) {
-      const cx0 = clamp((vr.x0 / CW) | 0, 0, FCOLS - 1), cx1 = clamp((vr.x1 / CW) | 0, 0, FCOLS - 1);
-      const cy0 = clamp((vr.y0 / CH) | 0, 0, FROWS - 1), cy1 = clamp((vr.y1 / CH) | 0, 0, FROWS - 1);
-      ctx.globalAlpha = 0.30;
-      for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
-        const i = cy * FCOLS + cx, wx = (cx + 0.5) * CW, wy = (cy + 0.5) * CH, p = w2s(cx * CW, cy * CH);
-        const col = this.opts.temp ? tempColor(env.tempAt(wx, wy)) : this.opts.phyto ? phytoColor(env.phyto[i]) : o2color(env.o2[i]);
-        ctx.fillStyle = rgb(col); ctx.fillRect(p.x, p.y, CW * z + 1, CH * z + 1);
+      const cellCol = (cx, cy) => { const i = cy * FCOLS + cx; return this.opts.temp ? tempColor(env.tempAt((cx + 0.5) * CW, (cy + 0.5) * CH)) : this.opts.phyto ? phytoColor(env.phyto[i]) : o2color(env.o2[i]); };
+      // a smooth heat map: one pixel per field cell in a tiny offscreen image, drawn scaled with bilinear smoothing over
+      // the world rect. (Per-cell translucent squares overlapped by a pixel and drew a visible MESH of grid lines.)
+      if (!this._fieldC) { this._fieldC = this.mkCanvas(FCOLS, FROWS); this._fieldX = this._fieldC.getContext('2d'); }
+      const fx = this._fieldX;
+      if (fx && typeof fx.createImageData === 'function') {
+        if (!this._fieldImg) this._fieldImg = fx.createImageData(FCOLS, FROWS);
+        const d = this._fieldImg.data;
+        for (let cy = 0; cy < FROWS; cy++) for (let cx = 0; cx < FCOLS; cx++) { const c = cellCol(cx, cy), o = (cy * FCOLS + cx) * 4; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+        fx.putImageData(this._fieldImg, 0, 0);
+        const p0 = w2s(0, 0), p1 = w2s(W, H);
+        ctx.save(); ctx.globalAlpha = 0.32; ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(this._fieldC, p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
+        ctx.restore();
+      } else {   // no ImageData (e.g. a minimal canvas stub): per-cell squares over the visible cells
+        const cx0 = clamp((vr.x0 / CW) | 0, 0, FCOLS - 1), cx1 = clamp((vr.x1 / CW) | 0, 0, FCOLS - 1);
+        const cy0 = clamp((vr.y0 / CH) | 0, 0, FROWS - 1), cy1 = clamp((vr.y1 / CH) | 0, 0, FROWS - 1);
+        ctx.globalAlpha = 0.30;
+        for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) { const p = w2s(cx * CW, cy * CH); ctx.fillStyle = rgb(cellCol(cx, cy)); ctx.fillRect(p.x, p.y, CW * z, CH * z); }
+        ctx.globalAlpha = 1;
       }
-      ctx.globalAlpha = 1;
     }
 
     // the lake bed — a curved basin; earth fills below bedY(x)
@@ -473,8 +492,8 @@ export class Renderer {
     if (world.reeds) {
       for (const r of world.reeds) {
         if (r.x < vr.x0 - 40 || r.x > vr.x1 + 40) continue;
-        const light = clamp(0.28 + 0.5 * amb, 0, 0.85);
-        ctx.strokeStyle = `hsl(95 38% ${light * 100}%)`; ctx.lineWidth = Math.max(1, 1.4 * z);
+        const light = clamp((0.20 + 0.28 * amb) * floraL, 0, 0.6);   // ~48% L at noon: a living reed green (it peaked near-white before)
+        ctx.strokeStyle = `hsl(95 ${38 * floraS}% ${light * 100}%)`; ctx.lineWidth = Math.max(1, 1.4 * z);
         for (let b = 0; b < r.n; b++) {
           const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5);
           const sway = Math.sin(t * 1.1 + r.x * 0.05 + b) * 4;
@@ -487,13 +506,13 @@ export class Renderer {
       ctx.globalAlpha = 0.82;                                  // soft translucent layering → a frond clump, not a wall of bars
       for (const wb of world.weedbeds) {
         if (wb.x < vr.x0 - wb.w - 20 || wb.x > vr.x1 + wb.w + 20) continue;
-        const dim = depthDim((wb.top + wb.bot) * 0.5), light = clamp((0.26 + 0.42 * amb) * (0.55 + 0.45 * dim), 0, 0.72);
+        const dim = depthDim((wb.top + wb.bot) * 0.5), light = clamp((0.18 + 0.30 * amb) * (0.55 + 0.45 * dim) * floraL, 0, 0.55);   // mid-green at noon
         // many thin blades instead of a few fat strokes; width capped low so a zoomed-in bed reads as grass, not slabs
         const strands = clamp((wb.w / 5) | 0, 9, 20);
         ctx.lineWidth = clamp(0.85 * z, 1, 3.2);
         for (let s = 0; s < strands; s++) {
           const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = 6;
-          ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} 44% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
+          ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} ${44 * floraS}% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
           ctx.beginPath(); ctx.moveTo(X(sx), Y(wb.bot));
           for (let k = 1; k <= segs; k++) {
             const f = k / segs, ny = wb.bot - (wb.bot - wb.top) * f, nx = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
@@ -513,8 +532,9 @@ export class Renderer {
       const mv = MACRO[p.v] || MACRO[0], hgtF = p.height / p.maxHeight;
       const hue = p.hue != null ? p.hue : mv.hue, form = p.form || mv.form, leafF = p.leaf || 1;   // per-plant evolved colour / form / leaf-area
       const pdim = 0.55 + 0.45 * depthDim(p.baseY - p.height * 0.5);   // deep weeds are darker
-      const llight = clamp((0.30 + 0.55 * amb + 0.1 * hgtF) * pdim, 0, 0.9);
-      ctx.strokeStyle = `hsl(${hue} ${form === 'mat' ? 30 : 45}% ${llight * 100}%)`;
+      // ~44% L at noon (was up to the 0.9 cap → near-WHITE stalks and pads, bleached-coral look), dim at night
+      const llight = clamp((0.20 + 0.26 * amb + 0.06 * hgtF) * pdim * floraL, 0, 0.62);
+      ctx.strokeStyle = `hsl(${hue} ${(form === 'mat' ? 30 : 45) * floraS}% ${llight * 100}%)`;
       ctx.lineWidth = clamp((p.height / 26) * z, 0.6, 6);
       if (form === 'mat') {
         // low benthic mat (chara): a few short tufts hugging the bed
@@ -536,7 +556,7 @@ export class Renderer {
       if (form === 'pad') {
         // floating-leaved lily: a broad leaf pad at the top of the stalk (pad size scales with the evolved leaf gene)
         const tx = p.x + Math.sin(t * 1.3 + p.x * 0.1 + 2) * 6, topW = w2s(tx, p.baseY - p.height), r = clamp(p.height * 0.24 * leafF * z, 1.5, 13);
-        ctx.fillStyle = `hsl(${hue} 50% ${llight * 100}%)`; ctx.beginPath(); ctx.ellipse(topW.x, topW.y, r, r * 0.42, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = `hsl(${hue} ${50 * floraS}% ${llight * 100}%)`; ctx.beginPath(); ctx.ellipse(topW.x, topW.y, r, r * 0.42, 0, 0, TAU); ctx.fill();
       }
     }
 
@@ -573,7 +593,10 @@ export class Renderer {
 
     // plankton & detritus (culled)
     const pPx = clamp(z, 1, 3);
-    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = 0.25 + 0.55 * env.light;
+    // zooplankton are invisible at lake scale: at the whole-lake view ~2000 full-opacity 1-px specks read as snow/static
+    // and drown out the fish, so fade them with zoom (faint overview → full as you close in, where they read as drift)
+    const pFade = clamp((cam.zoom / cam.fitZoom - 1) / 4, 0.22, 1);
+    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = (0.22 + 0.48 * env.light) * pFade;
     for (const p of world.plankton) {
       if (p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
       ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, pPx, pPx);
@@ -606,7 +629,7 @@ export class Renderer {
       for (const sn of world.snails) {
         if (sn.x < vr.x0 - 6 || sn.x > vr.x1 + 6 || sn.y < vr.y0 - 6 || sn.y > vr.y1 + 6) continue;
         const p = pt(sn.x, sn.y), dim = 0.5 + 0.5 * depthDim(sn.y), r = clamp(1.7 * z, 1, 5);
-        ctx.fillStyle = `hsl(50 32% ${Math.round(lerp(26, 48, amb) * dim)}%)`;
+        ctx.fillStyle = `hsl(50 ${Math.round(32 * floraS)}% ${Math.round(lerp(26, 48, amb) * dim * floraL)}%)`;
         ctx.beginPath(); ctx.ellipse(p.x, p.y - r * 0.5, r, r * 0.85, 0, 0, TAU); ctx.fill();
       }
     }
@@ -614,7 +637,7 @@ export class Renderer {
     if (world.cray) {
       for (const cf of world.cray) {
         if (cf.x < vr.x0 - 16 || cf.x > vr.x1 + 16 || cf.y < vr.y0 - 16 || cf.y > vr.y1 + 16) continue;
-        const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 52% ${Math.round(lerp(30, 50, amb) * dim)}%)`;
+        const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 ${Math.round(52 * floraS)}% ${Math.round(lerp(30, 50, amb) * dim * floraL)}%)`;
         ctx.globalAlpha = 0.95; ctx.fillStyle = col; ctx.strokeStyle = col;
         if (z < 1.4) { const L = clamp(z, 0.8, 4); ctx.fillRect(p.x - L, p.y - L * 1.3, L * 2, L * 1.3); continue; }   // far: a small rust blob
         const dir = cf.vx >= 0 ? 1 : -1, by = p.y - 1.6 * z, wig = Math.sin(t * 5 + cf.ph) * 0.9 * z;
@@ -844,7 +867,7 @@ export class Renderer {
       // collect a GL quad instead of the 2D blit; GLPost draws it as a lit textured quad (uses the SAME p2/heading/sPx/vf).
       // bright = the sprite's HSL light dim for this fish's light×depth, relative to the full-light sprite (=1).
       this._glLiving.push({ sprite, sx: p2x, sy: p2y, rot: a.rHeading, sPx, facing: vf, vis: a.vis, kind: 0,
-        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
+        ...fishLook(lit) });
     } else {
       ctx.save();
       ctx.globalAlpha = a.vis;
@@ -903,7 +926,7 @@ export class Renderer {
     if (this.glFish) {
       // GL quad (drawn UNDER the living fish — corpses are collected first). facing carries the belly-roll y-sign.
       this._glCorpse.push({ sprite, sx: p2.x, sy: p2.y, rot: c.rHeading, sPx, facing: ys, vis: alpha * 0.92, kind: 1,
-        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
+        ...fishLook(lit) });
     } else {
       ctx.save();
       ctx.globalAlpha = alpha * 0.92;

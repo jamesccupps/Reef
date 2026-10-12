@@ -321,5 +321,22 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   }
 }
 
+// ==== GUI review fixes (2026-10-12) ====
+{
+  // night look: GL fish dim AND desaturate as the light falls (they glowed neon-magenta against near-black water)
+  const { fishLook } = await import('../src/render.js');
+  const day = fishLook(1), night = fishLook(0);
+  check('GL fish night look: dimmer and less saturated at night than at noon, both within (0,1]', night.bright < day.bright && night.sat < day.sat && night.bright > 0 && day.bright <= 1 && night.sat > 0 && day.sat <= 1, `bright ${night.bright.toFixed(2)}→${day.bright.toFixed(2)}, sat ${night.sat.toFixed(2)}→${day.sat.toFixed(2)}`);
+  // sunfish colour stays in the natural red-orange → amber band (no magenta wrap-around)
+  const { SP: SPS } = await import('../src/species.js');
+  let lo = 999, hi = -1; for (let i = 0; i < 400; i++) { const h = SPS.sunfish.randomHue((a, b) => a + Math.random() * (b - a)); lo = Math.min(lo, h); hi = Math.max(hi, h); }
+  check('sunfish hues stay red-orange → amber (no magenta)', lo >= 0 && hi <= 60, `${lo.toFixed(0)}–${hi.toFixed(0)}°`);
+  // the legend lives OUTSIDE the viewport frame (inside it, the bottom-anchored minimap + camera controls covered it)
+  const { URL: NodeURL } = await import('node:url');   // (the DOM stub replaces the global URL with a blob-URL stub)
+  const html = (await import('node:fs')).readFileSync(new NodeURL('../index.html', import.meta.url), 'utf8');
+  const vpEnd = html.indexOf('</section>'), lg = html.indexOf('id="legend"');
+  check('species legend sits outside the lake viewport (not under the minimap / camera controls)', vpEnd > 0 && lg > vpEnd);
+}
+
 console.log(`\n${fail === 0 ? 'SMOKE OK — browser layer constructs & draws without throwing' : fail + ' SMOKE CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

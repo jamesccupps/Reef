@@ -341,6 +341,7 @@ uniform vec2  uRes;         // scene-FBO size in px
 uniform vec3  uHazeTint;    // water haze colour (sRGB 0..1)
 uniform float uHazeMax;     // 2D haze alpha at the bed (already includes the ambient factor)
 uniform float uBright;      // light×depth brightness factor (sRGB-space multiplier, 1 = sprite as built)
+uniform float uSat;         // light×depth saturation factor (1 = as built; low at night → a greyish silhouette)
 uniform float uLight;       // env.light 0..1 (rim/spec strength only)
 uniform float uVis;         // fade-in / corpse fade
 uniform vec3  uTint;        // optional tint (default 1,1,1)
@@ -361,7 +362,9 @@ void main(){
   lambert = mix(uAmbient, 1.0, lambert);
   float fres = pow(1.0 - clamp(N.z, 0.0, 1.0), 3.0);
   float rim  = fres * uRim * (0.4 + 0.6*uLight) * (1.0 - 0.7*uKind);
-  vec3 base = srgbDecode(srgbEncode(texel.rgb) * uBright);   // light×depth dim, applied like the 2D sprite's HSL dim
+  vec3 sb = srgbEncode(texel.rgb) * uBright;                 // light×depth dim, applied like the 2D sprite's HSL dim
+  sb = mix(vec3(dot(sb, vec3(0.299, 0.587, 0.114))), sb, uSat);   // …and its desaturation (colour drains at night)
+  vec3 base = srgbDecode(sb);
   vec3 lit = base * lambert * uTint;
   lit += base * rim;
   vec3 Hh = normalize(L + vec3(0.0, 0.0, 1.0));
@@ -471,7 +474,7 @@ class GLPost {
       this.pBlit = this._link(FRAG_BLIT); this.uBlit = this._locs(this.pBlit, ['uTex']);
       this.pFish = this._linkPair(VERT_FISH, FRAG_FISH);
       this.uFish = this._locs(this.pFish, ['uCenter','uHalf','uRot','uFlip','uRes','uVis','uHazeBox','uHazeTint','uHazeMax',
-        'uBright','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex']);
+        'uBright','uSat','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex']);
       this.pOver = this._linkPair(VERT_FISH, FRAG_OVER);
       this.uOver = this._locs(this.pOver, ['uCenter','uHalf','uRot','uFlip','uRes','uTex']);
       const Q = new Float32Array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1]);
@@ -546,7 +549,7 @@ class GLPost {
       gl.uniform1f(this.uFish.uFlip, sFy < 0 ? -1 : 1);
       gl.uniform1f(this.uFish.uRot, f.rot || 0);
       gl.uniform1f(this.uFish.uVis, f.vis != null ? f.vis : 1);
-      gl.uniform1f(this.uFish.uBright, f.bright != null ? f.bright : 1);
+      gl.uniform1f(this.uFish.uBright, f.bright != null ? f.bright : 1); gl.uniform1f(this.uFish.uSat, f.sat != null ? f.sat : 1);
       gl.uniform1f(this.uFish.uKind, f.kind || 0);
       const t = f.tint; gl.uniform3f(this.uFish.uTint, t ? t[0] : 1, t ? t[1] : 1, t ? t[2] : 1);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

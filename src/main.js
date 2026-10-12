@@ -17,8 +17,9 @@ tank = renderer.canvas;                          // (already swapped if WebGL di
 const inspector = new Inspector(document.getElementById('brain'));
 const ui = new UI(world, renderer, inspector, camera);
 
-// start framed a little way in, gently zoomed for a nice first impression
-camera.setZoomRel(2.4); camera.tcx = WORLD.W * 0.5; camera.tcy = WORLD.H * 0.5;
+// open on the WHOLE LAKE (shores, weed beds, the deep basin, every fish) — the "big picture first, then zoom to one
+// fish" the project is about. (It used to open 2.4× in on the lake centre: open pelagic water, the emptiest view.)
+camera.setZoomRel(1); camera.tcx = WORLD.W * 0.5; camera.tcy = WORLD.H * 0.5;
 
 // ---- camera input: drag-pan (primary pointer), two-finger pinch-zoom, wheel-zoom, click-select ----
 // Each pointer is tracked by id, so a second finger never makes the camera jump: one pointer pans, two pinch

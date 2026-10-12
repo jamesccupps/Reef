@@ -30,6 +30,7 @@
   <p class="thesis">A whole lake, many times the size of the screen — and every fish thinks with its own tiny neural network. They evolve to forage, school, hunt, and breed under shifting light, weather, and dissolved&nbsp;oxygen. <b>Drag</b> to pan, <b>scroll</b> to zoom from the whole lake down to a single fish, <b>click</b> a fish to follow it and watch its brain fire.</p>
 
   <main class="stage">
+    <div class="lakecol">
     <section class="viewport" id="viewport">
       <canvas id="tank"></canvas>
       <div class="pondstats" id="pondstats">
@@ -47,8 +48,10 @@
       </div>
       <canvas class="minimap" id="minimap" title="Click to jump"></canvas>
       <button class="fsbtn" id="btn-full-mini" title="Fullscreen — Esc to exit">⤢</button>
-      <ul class="legend" id="legend"></ul>
     </section>
+    <!-- outside the viewport frame: inside it, the bottom-anchored minimap + camera controls covered the legend -->
+    <ul class="legend" id="legend"></ul>
+    </div>
 
     <aside class="rail">
       <div class="card env">

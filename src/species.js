@@ -29,8 +29,11 @@ function wallProx(a) {
 // ---------- generic scalable fish sprite ----------
 function fishColors(agent, sp, light) {
   const eF = clamp(agent.energy / sp.reproEnergy, 0.12, 1);
-  const dim = 0.45 + 0.55 * light;                 // dark at night, bright at noon
-  const L = (sp.lbase + eF * sp.lrange) * dim, h = agent.hue, s = sp.sat;
+  // dark at night, bright at noon — and colour drains with the light (scotopic vision: at night a fish reads as a dim,
+  // greyish silhouette, not a glowing saturated sprite against near-black water). Mirrored by render.js fishLook() for
+  // the GL path, whose sprites are built at full light.
+  const dim = 0.30 + 0.70 * light;
+  const L = (sp.lbase + eF * sp.lrange) * dim, h = agent.hue, s = sp.sat * (0.35 + 0.65 * light);
   return {
     body: hsl(h, s, L),
     belly: hsl(h, Math.max(8, s - 14), Math.min(90, L + 17)),
@@ -199,7 +202,7 @@ export const SP = {
     tempOpt: 25, tempTol: 9, o2Crit: 0.26,        // warmwater littoral centrarchid
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
-    randomHue: (R) => (R(-28, 52) + 360) % 360,
+    randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
     spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 50) }),   // sunfish favour the weedy shelf
     senses(a, w) {
       const inp = a.act.in, pk = w.qSurfaceFood(a), pl = w.qPlant(a.x, a.y, a.senseRange);   // pk = nearest zooplankton OR emerged insect
