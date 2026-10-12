@@ -207,6 +207,10 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   r2.draw(10.5); const P2 = stubGL.last;
   check('  → GL fish carry a light×depth `bright` factor in (0,1] (sprite built once at full light)', P2.fish && P2.fish.length > 0 && P2.fish.every(f => f.bright > 0 && f.bright <= 1), `${P2.fish && P2.fish.length} quads`);
   check('  → overlays (selection ring, surface line, ripples) go to an overlay canvas drawn OVER the GL fish', !!(P2.overlay && P2.overlay.canvas && P2.overlay.x >= 0 && P2.overlay.y >= 0), P2.overlay ? `at ${P2.overlay.x},${P2.overlay.y}` : 'none');
+  // the GL fish swim in FRAG_FISH: ONE straight-pose sprite per fish whatever the beat phase (a sprite per frame × effort
+  // thrashed the close-up caches), with the continuous wave (amp, phase, tip, L) + sprite extent passed per quad
+  const f2 = P2.fish.find(f => f.kind === 0); r2.draw(10.83); const P3 = stubGL.last, f3 = f2 && P3.fish.find(f => f.sprite === f2.sprite);
+  check('  → GL fish: same sprite across beat phases, continuous wave params per quad', !!f3 && Array.isArray(f2.wave) && Array.isArray(f3.wave) && f2.wave.length === 4 && f2.waveG && f2.waveG[1] > 0 && f2.waveG[2] > 0 && f3.wave[1] !== f2.wave[1], f3 ? `phase ${f2.wave[1].toFixed(2)} → ${f3.wave[1].toFixed(2)}` : 'sprite changed with the phase');
   // (2) presenter failure → swap #tank for a FRESH canvas with a Canvas2D presenter, re-wire hook fires, 2D post resumes
   let rewired = null; r2.onCanvasReplaced = c => { rewired = c; };
   stubGL.failed = true; stubGL.fatal = 'test';

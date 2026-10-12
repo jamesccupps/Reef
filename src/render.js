@@ -130,24 +130,27 @@ class SpriteCache {
   // undulation effort bucketed to 3 levels → glide (barely undulates) / cruise / sprint (thrashes). The continuous
   // `drive` is computed per-fish in _fish() from its real speed + thrust + action state; here it picks the sprite.
   _driveVal(dB) { return [0.12, 0.5, 0.9][dB]; }
-  get(a, frameVal, light, drive, tier = 0) {
+  // still = the GL path's single straight-pose sprite per fish (FRAG_FISH animates the swim): frame and effort drop out of
+  // the key. Per beat frame × effort (10 × 3) the close-up tiers needed 30 sprites PER FISH against caps of 160/48, so a
+  // close shot rebuilt (rasterize + alpha-bleed + upload) sprites every frame: 20 fps with 100–230 ms stalls at 1080p.
+  get(a, frameVal, light, drive, tier = 0, still = false) {
     const sp = a.sp;
     tier = clamp(tier | 0, 0, this.TIERS.length - 1);
     const gB = clamp(Math.round((((a.grow ?? 1) - 0.35) / 0.65) * (this.GROWS - 1)), 0, this.GROWS - 1);
     const hB = hueBucket(a.hue, this.HUES);
     const lB = clamp(Math.round(light * (this.LIGHTS - 1)), 0, this.LIGHTS - 1);
-    const fr = ((frameVal % this.FRAMES) + this.FRAMES) % this.FRAMES;
+    const fr = still ? 's' : ((frameVal % this.FRAMES) + this.FRAMES) % this.FRAMES;
     const mB = this._morphBucket(a);
-    const dB = clamp(Math.round((drive ?? 0.45) * (this.DRIVES - 1)), 0, this.DRIVES - 1);
+    const dB = still ? 0 : clamp(Math.round((drive ?? 0.45) * (this.DRIVES - 1)), 0, this.DRIVES - 1);
     const k = this._key(sp.key, gB, hB, lB, fr, mB, dB), map = this.maps[tier], cap = tier ? this.tierMax[tier] : this.max;
     let s = map.get(k);
     if (s) { map.delete(k); map.set(k, s); return s; }   // LRU touch
-    s = this._build(sp, gB, hB, lB, fr, mB, dB, tier ? this.TIERS[tier] : this.BASE);
+    s = this._build(sp, gB, hB, lB, still ? 0 : fr, mB, dB, tier ? this.TIERS[tier] : this.BASE, still);
     map.set(k, s);
     if (map.size > cap) { const first = map.keys().next().value, ev = map.get(first); map.delete(first); if (this.onEvict) this.onEvict(ev); }
     return s;
   }
-  _build(sp, gB, hB, lB, fr, mB, dB, BASE = this.BASE) {
+  _build(sp, gB, hB, lB, fr, mB, dB, BASE = this.BASE, still = false) {
     const grow = 0.35 + 0.65 * (gB / (this.GROWS - 1));
     const hue = bucketHue(hB, this.HUES);   // the bucket CENTRE the key rounded to (no half-bucket bias)
     const light = 0.12 + 0.88 * (lB / (this.LIGHTS - 1));
@@ -186,7 +189,7 @@ class SpriteCache {
       };
     } else put = (u, v, col, al) => { g.globalAlpha = al; g.fillStyle = rgb(col); g.fillRect(Math.round(cx + u * BASE), Math.round(cy + v * BASE), DAB, DAB); };
     const fake = { hue, energy: sp.reproEnergy * 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };
-    const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph };   // undulation amplitude scales with effort
+    const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph, still };   // undulation amplitude scales with effort
     sp.draw(fake, put, 0, { light }, o);
     if (img) g.putImageData(img, 0, 0);
     // VOLUMETRIC SHEEN — a top-lit dorsal highlight fading to a ventral shade, applied ONLY over the drawn body
@@ -920,7 +923,7 @@ export class Renderer {
     // depth-shaded + effort-coupled sprite. GL path: one FULL-LIGHT sprite per bucket (the light×depth dim is applied in
     // the shader via `bright`, continuous) → the light bucket drops out of the GL working set (no ~10×/day rebuild churn).
     const lit = (this._vL ?? env.light) * depthDim(ay);
-    const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive, resTier(sPx));
+    const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive, resTier(sPx), this.glFish);
     // Keep the whole sprite inside the water body (the sim clamps the CENTRE to the bed/surface): inset the DRAW position
     // by the rotated body half-extent. Render-only: sim positions / determinism are untouched.
     const ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);   // (P = a.sp.P, declared above for the LOD switch)
@@ -950,7 +953,12 @@ export class Renderer {
     if (this.glFish) {
       // collect a GL quad instead of the 2D blit; GLPost draws it as a lit textured quad (uses the SAME p2/heading/sPx/vf).
       // bright = the sprite's HSL light dim for this fish's light×depth, relative to the full-light sprite (=1).
-      this._glLiving.push({ sprite, sx: p2x, sy: p2y, rot: a.rHeading, sPx, facing: vf, vis: a.vis, kind: 0,
+      // the swim, continuous (no 10-frame quantization): drawFish's travelling wave + tail swing for this phase & effort,
+      // in fish units, plus the sprite's extent in fish units so FRAG_FISH can map texels to body positions
+      const m = this.sprites._morphVal(this.sprites._morphBucket(a)), Hb = P.Hh * m.body;
+      const wave = [Hb * (0.09 + 0.20 * drive), cphase, Math.sin(cphase) * Hb * (0.35 + 0.5 * drive), P.L];
+      const waveG = [(P.tail ? P.tail.len : 1.2) * m.fin, sprite.canvas.width / sprite.base, sprite.canvas.height / sprite.base];
+      this._glLiving.push({ sprite, sx: p2x, sy: p2y, rot: a.rHeading, sPx, facing: vf, vis: a.vis, kind: 0, wave, waveG,
         ...fishLook(lit) });
     } else {
       ctx.save();

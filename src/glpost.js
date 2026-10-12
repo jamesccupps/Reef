@@ -358,11 +358,24 @@ uniform float uVis;         // fade-in / corpse fade
 uniform vec3  uTint;        // optional tint (default 1,1,1)
 uniform float uKind;        // 0 living, 1 corpse
 uniform float uBodyCurve, uRim, uAmbient, uSpec;
+// SWIMMING (living fish): the sprite is the straight pose and the body is bent HERE, per pixel, by species.js drawFish's
+// own travelling wave (keep in step): w(x) = sin(1.5·x/L − ph)·amp·(x<0 ? 1 + 0.9·(−x/L) : 0.4) along the body, and behind
+// the tail root (x < −L) the caudal fin swings rigidly from w(−L) to w(−L) + tip at its trailing edge. A column shift is
+// exactly invertible, so each fragment reads the texel the bend moved onto it. uWave = (amp, ph, tip, L); uWaveG = (tail
+// length, sprite width, sprite height), all in fish units; uWaveG.y = 0 → no bend (corpses).
+uniform vec4 uWave; uniform vec3 uWaveG;
 ${GLSL_SRGB}
 void main(){
-  vec4 texel = texture(uTex, vUv, -0.5);    // rgb hardware-decoded to LINEAR, alpha STRAIGHT. −0.5 mip bias: small fish stay crisp (trilinear minification read soft)
+  vec2 uv = vUv;
+  if (uWaveG.y > 0.0){
+    float fx = (vUv.x - 0.5) * uWaveG.y, Lb = max(uWave.w, 1e-3);   // fish units along the body, + = head
+    float w = sin(1.5 * fx / Lb - uWave.y) * uWave.x * (fx < 0.0 ? 1.0 - 0.9 * fx / Lb : 0.4);
+    if (fx < -Lb) w = sin(-1.5 - uWave.y) * uWave.x * 1.9 + uWave.z * clamp((-Lb - fx) / max(uWaveG.x, 1e-3), 0.0, 1.0);
+    uv.y -= w / uWaveG.z;
+  }
+  vec4 texel = texture(uTex, uv, -0.5);     // rgb hardware-decoded to LINEAR, alpha STRAIGHT. −0.5 mip bias: small fish stay crisp (trilinear minification read soft)
   if (texel.a < 0.012) discard;
-  float v = vUv.y*2.0 - 1.0;                 // -1 back/top .. +1 belly/bottom
+  float v = uv.y*2.0 - 1.0;                  // -1 back/top .. +1 belly/bottom (follows the bent body)
   float u = vUv.x*2.0 - 1.0;                 // -1 nose .. +1 tail
   float ny = -v;
   float nx = u * uBodyCurve;
@@ -486,7 +499,7 @@ class GLPost {
       this.pBlit = this._link(FRAG_BLIT); this.uBlit = this._locs(this.pBlit, ['uTex']);
       this.pFish = this._linkPair(VERT_FISH, FRAG_FISH);
       this.uFish = this._locs(this.pFish, ['uCenter','uHalf','uRot','uFlip','uRes','uVis','uHazeBox','uHazeTint','uHazeMax',
-        'uBright','uSat','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex']);
+        'uBright','uSat','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex','uWave','uWaveG']);
       this.pOver = this._linkPair(VERT_FISH, FRAG_OVER);
       this.uOver = this._locs(this.pOver, ['uCenter','uHalf','uRot','uFlip','uRes','uTex']);
       const Q = new Float32Array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1]);
@@ -569,6 +582,9 @@ class GLPost {
       gl.uniform1f(this.uFish.uBright, f.bright != null ? f.bright : 1); gl.uniform1f(this.uFish.uSat, f.sat != null ? f.sat : 1);
       gl.uniform1f(this.uFish.uKind, f.kind || 0);
       const t = f.tint; gl.uniform3f(this.uFish.uTint, t ? t[0] : 1, t ? t[1] : 1, t ? t[2] : 1);
+      const wv = f.wave, wg = f.waveG;   // swim bend (living fish); none → uWaveG.y = 0 (corpses)
+      gl.uniform4f(this.uFish.uWave, wv ? wv[0] : 0, wv ? wv[1] : 0, wv ? wv[2] : 0, wv ? wv[3] : 1);
+      gl.uniform3f(this.uFish.uWaveG, wg ? wg[0] : 1, wg ? wg[1] : 0, wg ? wg[2] : 1);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
     gl.bindVertexArray(null);
