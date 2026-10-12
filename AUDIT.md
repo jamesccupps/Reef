@@ -1,5 +1,31 @@
 # Synapse Reef — Project Audit (2026-10-11)
 
+## Status of the fixes (updated during the 2026-10-11 overnight run, branch `audit-fixes`)
+
+**Fixed and covered by gate tests:**
+
+| Tier | Items |
+|---|---|
+| Tier 1 | #1 GL orientation (re-verified with a GPU readback: caustics now change the top bands); #2 newborn cannibalism; #3 plant starvation churn; #4 brain migration by save era; #5 LEAK check, eye probe, resume test |
+| Tier 2 | #6 exact resume; #7 script injection, NaN poisoning, half-load; #8 frame-loop guard; #9 GL failure fallback; #10 dev server; #11 wet/dry mask, conservative diffusion, closed P/N budgets (plants included), Redfield N; #12 per-second rates |
+| Tier 3 | Budding energy, `fitGenes` padding, seed-parent search, storms, scum calibration, every rendering item, and every UI item |
+| Tier 4 | Git and GitHub, slim CLAUDE.md, SESSION_STATE archive, README rewrite, LICENSE, `package.json`, stray files, dead config |
+
+**Still open (tracked in `ROADMAP.md` → "Build order & guards"):**
+- **Apex-predator recruitment.** Bass and pike remain mostly immigrants. This was always true; it is now measured honestly, because the energy pumps are closed.
+- **Some Tier 1 #5 test-hardening items:**
+  - behavioural replacements for the formula-copy checks;
+  - broader determinism scenarios;
+  - a WebGL2 mock for smoke tests;
+  - checks that can't fail.
+- **N-fixation is rare** at the default inflow N:P.
+- **Needs human eyes:**
+  - the colour grade (the GL depth terms were upside down until this fix);
+  - interpolated motion smoothness;
+  - HUD values, since the means are now wet-only.
+
+---
+
 ## Scope and method
 
 Six independent auditors each read their whole area:
