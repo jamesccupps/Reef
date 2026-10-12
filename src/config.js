@@ -452,6 +452,14 @@ export const PLANT = {
   SENESCE_TO_DOM: 0.5,     // DOM (nutrient-equiv) released per unit senesced biomass → the microbial loop (the fall pulse)
   SHADE_DEATH: 0.05,       // /s uproot rate when light-starved → deep/turbid beds die back, freeing bed slots for the lit littoral
                            //   (the light-starvation threshold is per variety: MACRO[v].lightMin × the plant's light/leaf genes)
+  // Starvation is judged on each plant's RUNNING-MEAN light `p.lightAvg` (an EMA of its effective top-of-plant light),
+  // NOT the instantaneous value — otherwise every plant is "starving" all night (light = 0) and beds churn. A seed only
+  // ESTABLISHES where the mean light expected at its top (DAY_MEAN_LIGHT × depth attenuation × canopy shade) meets its
+  // lightMin (seeds under a closed canopy or in the dark deep fail), and its EMA starts at that expectation.
+  LIGHT_TAU_DAYS: 1.5,     // EMA time constant in day/night cycles (→ LIGHT_TAU s) — smooths the diel cycle + passing weather
+  get LIGHT_TAU() { return this.LIGHT_TAU_DAYS * TIME.DAY_LEN; },
+  DAY_MEAN_LIGHT: 0.20,    // long-run mean surface light: the daylight half-sine averages 1/π over a day/night cycle, × ≈0.64
+                           //   mean sky clearness (1 − ENV.CLOUD_COVER weighted by the weather chain's time in each state)
 };
 
 // MACROPHYTE VARIETIES — the real submerged/floating growth forms. Each dynamic plant (world.plants) is ONE of these,
@@ -462,12 +470,16 @@ export const PLANT = {
 // static cover weedbeds remain separate structures; free-floating duckweed — a drifting surface mat — is a follow-up,
 // it needs surface-drift mechanics.)* The per-plant trait EVOLUTION slice mutates these values per individual.
 // `zone` = the rooting bed-depth fraction (bedY/H), which spans ~0.25 (shallow shelf) → ~0.99 (deep basin centre).
+// `lightMin` is on the RUNNING-MEAN light scale (p.lightAvg: day+night+weather average of lightAtDepth at the plant top;
+// the surface mean is PLANT.DAY_MEAN_LIGHT ≈ 0.20) — re-calibrated (÷π) from the old instantaneous-noon thresholds, so
+// it is ~4% (milfoil) / 6% (pondweed) / 9% (lily) / 22% (chara) of the surface mean. With summer turbidity (~0.3) that
+// puts the depth limit near bed-depth ~0.6–0.7 for pondweed and ~0.7–0.8 for milfoil (deeper in clear winter water).
 export const MACRO = [
   // key            name            zone(beddepth)   maxH        grow  cover o2    palat lightMin tempMin hue  form
-  { key: 'pondweed', name: 'Pondweed',   zone: [0.24, 0.70], maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.040, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
-  { key: 'milfoil',  name: 'Milfoil',    zone: [0.55, 0.99], maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.025, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
-  { key: 'lily',     name: 'Water lily', zone: [0.24, 0.40], maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.060, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
-  { key: 'chara',    name: 'Muskgrass',  zone: [0.24, 0.44], maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.140, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
+  { key: 'pondweed', name: 'Pondweed',   zone: [0.24, 0.70], maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.013, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
+  { key: 'milfoil',  name: 'Milfoil',    zone: [0.55, 0.99], maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.008, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
+  { key: 'lily',     name: 'Water lily', zone: [0.24, 0.40], maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.019, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
+  { key: 'chara',    name: 'Muskgrass',  zone: [0.24, 0.44], maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.045, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
 ];
 
 // PLANT INTERACTIONS — SHADING COMPETITION between macrophytes. A TALLER plant within RADIUS cuts a shorter

@@ -475,6 +475,7 @@ export class World {
     // shading competition: bucket live plants into RADIUS-wide x-columns so each only checks its own ± 1 bucket for
     // taller overhead neighbours (O(n), not O(n²)). Per-plant effective params (p.growMul/tempMin/lightMin) = genes × variety.
     const RAD = COMPETE.RADIUS, nB = Math.ceil(W / RAD) + 1, pcols = Array.from({ length: nB }, () => []);
+    const kLight = 1 - Math.exp(-dt / PLANT.LIGHT_TAU), atten = env.attenuation();   // light-EMA step; attenuation for seedling init
     for (const q of this.plants) if (!q.dead) pcols[clamp((q.x / RAD) | 0, 0, nB - 1)].push(q);
     for (const p of this.plants) {
       if (p.dead) continue; plantCount++;
@@ -482,7 +483,11 @@ export class World {
       // effective light = abiotic light at the plant's top × biotic shading from TALLER neighbours (→ stratified canopy + self-thinning)
       const ci = clamp((p.x / RAD) | 0, 0, nB - 1);
       let oh = 0; for (let b = Math.max(0, ci - 1); b <= Math.min(nB - 1, ci + 1); b++) oh += overheadFrom(p, pcols[b], RAD);
-      const lit = env.lightAtDepth(topY) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
+      const shade = oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1, lit = env.lightAtDepth(topY) * shade;
+      // running-mean light (EMA over ~LIGHT_TAU) — what light-starvation is judged on. A new seedling (or a plant from an
+      // older save lacking it) starts at the long-run mean light expected at its top, so it isn't born "starving" at night.
+      if (p.lightAvg == null) p.lightAvg = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * (topY / H)) * shade;
+      else p.lightAvg += (lit - p.lightAvg) * kLight;
       // seasonal vigor (0..1): a temperature-driven growing-season factor — full when warm, 0 below the variety's
       // cold threshold (autumn/winter or the cold deep). Per-depth temp ⇒ deep/cold beds can't grow tall (a depth limit).
       const vigor = clamp((env.tempAt(p.x, p.baseY) - p.tempMin) / Math.max(3, PLANT.GROW_TEMP_OPT - p.tempMin), 0, 1);  // floor the window so a high cold-tolerance gene can't make vigor a near-step
@@ -500,21 +505,32 @@ export class World {
         env.addDOM(p.x, p.baseY, shed * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM);
       }
       p.biomass = p.height * PLANT.BIOMASS_PER_PX; p.y = p.baseY - p.height * 0.5;
-      // death is now LIGHT-starvation, not grazing: a macrophyte below its variety's light tolerance (too deep / too
-      // turbid to photosynthesize) uproots over time → the realistic depth limit + the seed of the clear↔turbid feedback
-      // (and forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists deep). Rootstock
-      // is otherwise grazing- & winter-proof, so established beds persist.
-      if (lit < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.height * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM); }   // a light-starved plant DECOMPOSES → DOM (mass-conserving; was a silent nutrient leak the microbial loop now reclaims)
+      // death is now LIGHT-starvation, not grazing: a macrophyte whose RUNNING-MEAN light is below its light tolerance (too
+      // deep / too turbid / too shaded to photosynthesize) uproots over time → the realistic depth limit + the seed of the
+      // clear↔turbid feedback (forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists
+      // deep). Judged on the daily mean, so night is not starvation; rootstock is grazing- & winter-proof → beds persist.
+      if (p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.height * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM); }   // a light-starved plant DECOMPOSES → DOM (mass-conserving; was a silent nutrient leak the microbial loop now reclaims)
     }
     // recruitment is seasonal too — new plants establish mostly in the warm growing season (vigor off the surface temp)
     const seedVigor = clamp((env.tempC - PLANT.GROW_TEMP_MIN) / tWin, 0, 1);
     const plantCap = scaleCount(PLANT.MAX);
-    if (plantCount < plantCap) for (let n = poissonish(PLANT.SEED_RATE * area * seedVigor * dt); n > 0 && plantCount < plantCap; n--, plantCount++) {
+    if (plantCount < plantCap) for (let n = poissonish(PLANT.SEED_RATE * area * seedVigor * dt); n > 0 && plantCount < plantCap; n--) {
       const x = plantX();
       // local seed dispersal: a seedling inherits (mutated) the genes of the nearest established plant; an isolated
       // seed (sparse deep, or cold-start) founds with fresh genes → heredity where beds exist, colonisation elsewhere.
       const near = this.nearestPlant(x, bedY(x) - 10, 240);   // unscaled: seed dispersal is not a fish's visual sense
-      this.plants.push(newPlant(x, false, near ? near.item : null));
+      const sd = newPlant(x, false, near ? near.item : null);
+      // ESTABLISHMENT needs light: a seed only takes root where the daily-mean light expected at its top — after depth
+      // attenuation AND the shade of the existing canopy — meets its own light requirement. Seeds landing under a closed
+      // bed or in the dark deep simply fail (as real macrophyte seedlings do) instead of spawning a doomed seedling that
+      // starves within seconds — which, with the seed rain far exceeding the canopy's room, was most of the bed churn.
+      // Gaps and lit shallows still get colonised. Deterministic (no RNG beyond newPlant's).
+      const ci = clamp((sd.x / RAD) | 0, 0, nB - 1);
+      let oh = 0; for (let b = Math.max(0, ci - 1); b <= Math.min(nB - 1, ci + 1); b++) oh += overheadFrom(sd, pcols[b], RAD);
+      const expLight = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * ((sd.baseY - sd.height) / H)) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
+      if (expLight < sd.lightMin) continue;
+      sd.lightAvg = expLight;
+      this.plants.push(sd); plantCount++;
     }
 
     // rebuild spatial grids
