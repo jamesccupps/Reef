@@ -4,7 +4,41 @@
 import { WORLD, GRID, THERMAL, MACRO, bedY } from './config.js';
 import { SP } from './species.js';
 import { clamp, lerp, hsl, angDiff, TAU } from './core.js';
-import { makePresenter } from './glpost.js';
+import { makePresenter, Canvas2DPresenter } from './glpost.js';
+import { interpX, interpY, interpH } from './camera.js';
+
+// ---- small pure helpers (exported for test/smoke.mjs) ----
+// sprite hue bucket ↔ the hue it is PAINTED at: the key rounds to the NEAREST bucket centre, so the paint hue must be that
+// centre (hB·360/HUES) — not centre + half a bucket (the old +11.25° bias that made colours pop at the dot↔sprite switch).
+export const hueBucket = (hue, HUES) => (((Math.round(hue / (360 / HUES))) % HUES) + HUES) % HUES;
+export const bucketHue = (hB, HUES) => hB * (360 / HUES);
+// World-ALIGNED sample xs covering [x0,x1] (clamped to [lo,hi]): starts at floor(x0/s)·s, ends at ceil(x1/s)·s, ALWAYS
+// includes the end — so a polyline (lake bed, surface ripple) reaches the screen edge (the old loop from x0 by `step`
+// stopped up to one step short → a 44 px mean / 127 px worst unfilled strip at tour zooms) and its vertices are fixed in
+// the world, so they don't wobble while panning. Reuses `out`.
+export function alignedSamples(x0, x1, s, lo, hi, out = []) {
+  out.length = 0;
+  if (!(s > 0) || !(x1 >= x0)) return out;
+  const a = Math.max(lo, Math.floor(x0 / s) * s), b = Math.min(hi, Math.ceil(x1 / s) * s);
+  for (let x = a; x < b - 1e-9; x += s) out.push(x);
+  out.push(b);
+  return out;
+}
+// a power-of-two multiple of `base` ≥ `min` — quantized so the world-aligned grid only changes at discrete zoom thresholds
+export const quantStep = (min, base) => { let s = base; while (s < min) s *= 2; return s; };
+// Frame-loop guard (audit Tier 2 #8): re-arm the NEXT frame first, then run the body inside try/catch, so a single throw
+// can never stop the loop. Used by main.js; exported here (render.js is importable by the smoke test, main.js is not).
+export function makeGuardedLoop(raf, body, onError) {
+  const loop = now => {
+    raf(loop);
+    try { body(now); }
+    catch (e) { try { onError(e); } catch (e2) { if (typeof console !== 'undefined') console.error('frame-error handler failed', e2, e); } }
+  };
+  return loop;
+}
+const readDpr = () => Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+const GL_LOSS_TIMEOUT_MS = 3000;   // a WebGL context loss not restored within this long → swap #tank to Canvas2D
+const nowMs = () => (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 
 const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR;
 const FCOLS = GRID.FIELD_COLS, FROWS = GRID.FIELD_ROWS, CW = W / FCOLS, CH = H / FROWS;
@@ -53,8 +87,9 @@ class SpriteCache {
     // FRAMES: finer animation cycle (smoother, slower-looking tail beat). LIGHTS: more brightness
     // buckets so the day/night × depth shading reads as a smooth gradient, not banding.
     this.FRAMES = 10; this.HUES = 16; this.GROWS = 3; this.LIGHTS = 6; this.DRIVES = 3;   // DRIVES: undulation-effort buckets (glide/cruise/sprint)
-    this.max = 1200;      // LRU cap — at BASE 14 each cached sprite is several× the pixels of the old BASE-6 one
-                          // (~80-210KB), so the cap is trimmed to keep resident memory ~bounded (≲200MB worst case).
+    this.max = 1024;      // LRU cap — at BASE 14 a cached sprite averages ~120KB (≲160KB). The GL fish-texture cache is
+                          // tied to this SAME cap (Renderer sets present.fishTexMax = max) so it can't thrash below it;
+                          // on the GL path the light bucket is not part of the working set (dimming is in the shader).
                           // The population clusters under selection, so few buckets (species×grow×hue×light×frame×morph×drive) are live at once.
     this.built = 0;
   }
@@ -70,7 +105,7 @@ class SpriteCache {
   get(a, frameVal, light, drive) {
     const sp = a.sp;
     const gB = clamp(Math.round((((a.grow ?? 1) - 0.35) / 0.65) * (this.GROWS - 1)), 0, this.GROWS - 1);
-    const hB = (((Math.round(a.hue / (360 / this.HUES))) % this.HUES) + this.HUES) % this.HUES;
+    const hB = hueBucket(a.hue, this.HUES);
     const lB = clamp(Math.round(light * (this.LIGHTS - 1)), 0, this.LIGHTS - 1);
     const fr = ((frameVal % this.FRAMES) + this.FRAMES) % this.FRAMES;
     const mB = this._morphBucket(a);
@@ -86,14 +121,16 @@ class SpriteCache {
   _build(sp, gB, hB, lB, fr, mB, dB) {
     const BASE = this.BASE;
     const grow = 0.35 + 0.65 * (gB / (this.GROWS - 1));
-    const hue = hB * (360 / this.HUES) + (360 / this.HUES) / 2;
+    const hue = bucketHue(hB, this.HUES);   // the bucket CENTRE the key rounded to (no half-bucket bias)
     const light = 0.12 + 0.88 * (lB / (this.LIGHTS - 1));
     const morph = this._morphVal(mB);
     const P = sp.P, L = P.L, Hh = P.Hh * morph.body, tlen = (P.tail ? P.tail.len : 1.2) * morph.fin;   // size the canvas for the evolved depth & fins
     // generous bounds so wave/dorsal/tail never clip
     const extX = (L + tlen + 2) * BASE + 6, extY = (Hh * 2.8 + 2) * BASE + 8;
     const w = Math.max(2, Math.ceil(extX * 2)), h = Math.max(2, Math.ceil(extY * 2));
-    const cnv = this.mk(w, h), g = cnv.getContext('2d');
+    // GL-fish path: GLPost reads each sprite back once (alpha-bleed before upload) — a CPU-backed canvas makes that a memcpy
+    // instead of a ~40 ms GPU readback; the 2D path keeps the default (accelerated) canvas for its per-frame blits.
+    const cnv = this.mk(w, h), g = this.readback ? cnv.getContext('2d', { willReadFrequently: true }) : cnv.getContext('2d');
     if (g.imageSmoothingEnabled !== undefined) g.imageSmoothingEnabled = true;
     const cx = w / 2, cy = h / 2;
     // soft texel "dab": the draw step (su≈0.07 fish-units) lands texels ~1 sprite-px apart, so a 1px dab could
@@ -135,12 +172,16 @@ export class Renderer {
     // instead of nearest-neighbour upscaling them into blocks. Only affects drawImage (fish/corpses); fillRect
     // dots, field overlays and the minimap are unaffected.
     this.ctx.imageSmoothingEnabled = true; this.ctx.imageSmoothingQuality = 'high';
-    this.present = makePresenter(canvas, this.mkCanvas);
+    this.sprites = new SpriteCache(this.mkCanvas);
+    this.onCanvasReplaced = null;   // main.js hook: re-wire input listeners when #tank is swapped for a fresh canvas
+    this._frameNo = 0; this._alpha = 1; this._ovCmds = []; this._xs = [];
+    this.present = makePresenter(canvas, this.mkCanvas, { texMax: this.sprites.max });   // GL texture cap ≥ sprite cap
+    if (this.present && this.present.needsCanvas) this._fallbackTo2D('WebGL2 init failed after claiming the canvas');
     this.postInGL = !!(this.present && this.present.gl);   // GL applies bloom/grade/vignette → the 2D path skips them (no double-post)
     this.glFish = !!(this.present && this.present.gl && this.present.fishReady);   // Pass 3/slice 3: fish drawn as lit GL quads (else 2D)
-    this.sprites = new SpriteCache(this.mkCanvas);
-    this.opts = { oxygen: false, temp: false, phyto: false, vision: true, perf: false };
-    this.dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+    this.sprites.readback = this.glFish;   // GL path reads sprites back for the alpha-bleed upload → CPU-backed sprite canvases
+    this.opts ={ oxygen: false, temp: false, phyto: false, vision: true, perf: false };
+    this.dpr = readDpr();
     this.stars = Array.from({ length: Math.round(W * 0.05) }, () => ({ x: Math.random() * W, y: Math.random() * (FLOOR * 0.6), s: Math.random() }));
     // suspended particulates ("marine snow") — drifting motes that give the water body depth & life. World-anchored,
     // animated purely from the render clock (NEVER core.rand → no sim desync). Position is a stateless function of t
@@ -165,8 +206,39 @@ export class Renderer {
     this.resize();
   }
 
+  // GL can't present any more (init failure after claiming #tank, a fatal runtime error, or a context loss that was not
+  // restored in time) → replace #tank with a FRESH canvas (same id/classes/attributes; a canvas that ever had a WebGL
+  // context can never get a 2D one) bound to a Canvas2D presenter, and let main.js re-attach its input listeners.
+  _fallbackTo2D(reason) {
+    const old = this.canvas;
+    if (typeof console !== 'undefined') console.warn('Renderer: ' + reason + ' → swapping #tank to a Canvas2D presenter');
+    try { if (this.present && this.present.dispose) this.present.dispose(); } catch (e) { if (typeof console !== 'undefined') console.warn('Renderer: presenter dispose failed', e); }
+    let fresh = null;
+    try { fresh = old.cloneNode ? old.cloneNode(false) : null; } catch (e) { fresh = null; }
+    if (fresh) {
+      try { if (old.parentNode) old.parentNode.replaceChild(fresh, old); }
+      catch (e) { if (typeof console !== 'undefined') console.error('Renderer: could not replace #tank', e); }
+      this.canvas = fresh;
+    }
+    this.present = new Canvas2DPresenter(this.canvas);
+    this.postInGL = false; this.glFish = false;
+    if (this.sprites && this.sprites.readback) { this.sprites.readback = false; this.sprites.clear(); }   // rebuild as accelerated 2D-blit sprites
+    this._glFallback = reason;
+    this.resize();
+    if (fresh && typeof this.onCanvasReplaced === 'function') {
+      try { this.onCanvasReplaced(fresh, old); } catch (e) { if (typeof console !== 'undefined') console.error('Renderer: onCanvasReplaced failed', e); }
+    }
+  }
+  // poll the presenter's health once per frame (cheap)
+  _checkPresenter() {
+    const pr = this.present; if (!pr || !pr.gl) return;
+    if (pr.failed) this._fallbackTo2D('WebGL presenter failed (' + (pr.fatal || 'unknown') + ')');
+    else if (pr.lost && nowMs() - (pr.lostAt || 0) > GL_LOSS_TIMEOUT_MS) this._fallbackTo2D('WebGL context lost and not restored within ' + GL_LOSS_TIMEOUT_MS + ' ms');
+  }
+
   resize() {
     const c = this.canvas;
+    this.dpr = readDpr();   // re-read every call (main.js calls resize() each frame) → a DPR change (zoom / monitor move) is picked up
     const cw = c.clientWidth || c.width || 1280, ch = c.clientHeight || c.height || 720;
     const bw = Math.max(1, Math.round(cw * this.dpr)), bh = Math.max(1, Math.round(ch * this.dpr));
     if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
@@ -186,7 +258,7 @@ export class Renderer {
     let best = null, bd = pickR * pickR;
     for (const a of this.world.agents) {
       const rad = (4 + a.size * 3 * (0.6 + 0.4 * (a.grow ?? 1)));
-      const dx = a.x - wpt.x, dy = a.y - wpt.y, d = dx * dx + dy * dy;
+      const dx = interpX(a, this._alpha) - wpt.x, dy = interpY(a, this._alpha) - wpt.y, d = dx * dx + dy * dy;   // the DRAWN (interpolated) pose
       const tol = Math.max(bd, rad * rad);
       if (d < tol && d < bd) { bd = d; best = a; }
     }
@@ -195,7 +267,7 @@ export class Renderer {
       let bb = Infinity;
       for (const a of this.world.agents) {
         const rad = (5 + a.size * 3 * (0.6 + 0.4 * (a.grow ?? 1)));
-        const dx = a.x - wpt.x, dy = a.y - wpt.y, d = dx * dx + dy * dy;
+        const dx = interpX(a, this._alpha) - wpt.x, dy = interpY(a, this._alpha) - wpt.y, d = dx * dx + dy * dy;   // the DRAWN (interpolated) pose
         if (d < rad * rad && d < bb) { bb = d; best = a; }
       }
     }
@@ -209,15 +281,24 @@ export class Renderer {
     return [lerp(c[0], SKY_DUSK[0], warm), lerp(c[1], SKY_DUSK[1], warm), lerp(c[2], SKY_DUSK[2], warm)];
   }
 
-  draw(t) {
+  // t: render clock (s). alpha: render-interpolation fraction between the previous and current sim state (main.js
+  // passes accumulator/DT; agents are drawn at lerp(prev, cur, alpha) — default 1 = the current state).
+  draw(t, alpha = 1) {
+    this._checkPresenter();   // GL dead / lost too long → swap to a Canvas2D presenter on a fresh #tank
     const ctx = this.ctx, world = this.world, env = world.env, cam = this.camera;
     this._rdt = this._lastT === undefined ? 1 / 60 : clamp(t - this._lastT, 0, 0.1); this._lastT = t;
-    // GL applies bloom/grade/vignette? Re-read each frame so a mid-run WebGL context loss re-enables the 2D post.
-    this.postInGL = !!(this.present && this.present.gl && !this.present.failed);
+    this._alpha = clamp(+alpha || 0, 0, 1); this._frameNo++;
+    // GL applies bloom/grade/vignette? Only while GL can actually present (not failed, not context-lost).
+    const glOK = !!(this.present && this.present.gl && !this.present.failed && !this.present.lost);
+    this.postInGL = glOK;
     // GL draws fish as lit quads? Re-read each frame so a context loss / fish-path failure reverts to the 2D fish.
-    this.glFish = !!(this.present && this.present.gl && !this.present.failed && !this.present.lost && this.present.fishReady && !this.present.fishFailed);
+    this.glFish = glOK && !!this.present.fishReady && !this.present.fishFailed;
     this._glLiving = this.glFish ? [] : null; this._glCorpse = this.glFish ? [] : null;   // per-frame GL fish/corpse quad collectors
+    this._ovCmds.length = 0;   // GL-fish mode: overlay draw commands composited OVER the GL fish (ripple rings, …)
     const vw = this.scene.width, vh = this.scene.height, z = cam.zoom;
+    // non-allocating world→screen for the hot loops (w2s allocates an object per call)
+    const ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
+    const X = wx => wx * z + ox, Y = wy => wy * z + oy;
     const amb = 0.25 + 0.75 * env.light;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
@@ -227,7 +308,9 @@ export class Renderer {
     const murk = (env.turbidity || 0) * 0.6;
     top[0] = lerp(top[0], 64, murk); top[1] = lerp(top[1], 86, murk); top[2] = lerp(top[2], 52, murk);
     const vr = cam.visibleRect();
-    const w2s = (x, y) => cam.worldToScreen(x, y);
+    const w2s = (x, y) => cam.worldToScreen(x, y);   // allocating; fine off the hot paths (X/Y above are the hot-path form)
+    const _pt = this._pt || (this._pt = { x: 0, y: 0 });
+    const pt = (x, y) => { _pt.x = X(x); _pt.y = Y(y); return _pt; };   // ONE reused point — never hold two at once
 
     // letterbox / out-of-world
     ctx.globalAlpha = 1; ctx.fillStyle = rgb(LETTERBOX); ctx.fillRect(0, 0, vw, vh);
@@ -253,9 +336,8 @@ export class Renderer {
       ctx.fillStyle = '#cfe0ff';
       for (const s of this.stars) {
         if (s.x < vr.x0 || s.x > vr.x1 || s.y < vr.y0 || s.y > vr.y1) continue;
-        const p = w2s(s.x, s.y);
         ctx.globalAlpha = a * (0.3 + s.s * 0.7) * (0.6 + 0.4 * Math.sin(t * 2 + s.x));
-        ctx.fillRect(p.x | 0, p.y | 0, Math.max(1, z * 0.5) | 0 || 1, Math.max(1, z * 0.5) | 0 || 1);
+        ctx.fillRect(X(s.x) | 0, Y(s.y) | 0, Math.max(1, z * 0.5) | 0 || 1, Math.max(1, z * 0.5) | 0 || 1);
       }
       ctx.globalAlpha = 1;
     }
@@ -344,9 +426,11 @@ export class Renderer {
     {
       const x0 = Math.max(0, vr.x0), x1 = Math.min(W, vr.x1);
       if (x1 > x0) {
-        const stepW = Math.max(5, (x1 - x0) / 150), pts = [];
+        // world-ALIGNED, power-of-two-quantized grid that always includes the right end (no unfilled strip at the screen
+        // edge, no vertex wobble while panning)
+        const xs = alignedSamples(x0, x1, quantStep((x1 - x0) / 150, 5), 0, W, this._xs), pts = [];
         let topBedY = Infinity;
-        for (let wx = x0; wx <= x1 + 1e-3; wx += stepW) { const p = w2s(wx, bedY(wx)); pts.push(p); if (p.y < topBedY) topBedY = p.y; }
+        for (const wx of xs) { const p = w2s(wx, bedY(wx)); pts.push(p); if (p.y < topBedY) topBedY = p.y; }
         const sg = ctx.createLinearGradient(0, topBedY, 0, br.y);
         sg.addColorStop(0, rgb([lerp(20, 46, amb), lerp(16, 34, amb), lerp(12, 22, amb)]));
         sg.addColorStop(1, rgb([8, 6, 5]));
@@ -357,7 +441,7 @@ export class Renderer {
         ctx.strokeStyle = `rgba(120,96,64,${0.5 * amb})`; ctx.lineWidth = Math.max(1, z * 1.1);
         ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
         ctx.globalAlpha = 0.5 * amb; ctx.fillStyle = '#3a2c1e';
-        for (let i = 0; i < 160; i++) { const wx = (i * 131) % W; if (wx < x0 || wx > x1) continue; const p = w2s(wx, bedY(wx) + 2 + (i % 4)); ctx.fillRect(p.x, p.y, Math.max(1, 2 * z), Math.max(1, z)); }
+        for (let i = 0; i < 160; i++) { const wx = (i * 131) % W; if (wx < x0 || wx > x1) continue; ctx.fillRect(X(wx), Y(bedY(wx) + 2 + (i % 4)), Math.max(1, 2 * z), Math.max(1, z)); }
         ctx.globalAlpha = 1;
       }
     }
@@ -378,13 +462,11 @@ export class Renderer {
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     // mussel beds on the bed (filter feeders)
     if (world.mussels) {
+      ctx.fillStyle = `rgba(${lerp(30, 60, amb) | 0},${lerp(34, 58, amb) | 0},${lerp(40, 64, amb) | 0},1)`;   // constant per frame (hoisted)
+      const mw = Math.max(1, 2.2 * z), mh = Math.max(1, 1.6 * z);
       for (const m of world.mussels) {
         if (m.x < vr.x0 - 30 || m.x > vr.x1 + 30) continue;
-        for (let k = 0; k < m.n; k++) {
-          const p = w2s(m.x + (k - m.n / 2) * 2.4, m.y - (k % 2));
-          ctx.fillStyle = `rgba(${lerp(30, 60, amb) | 0},${lerp(34, 58, amb) | 0},${lerp(40, 64, amb) | 0},1)`;
-          ctx.fillRect(p.x, p.y, Math.max(1, 2.2 * z), Math.max(1, 1.6 * z));
-        }
+        for (let k = 0; k < m.n; k++) ctx.fillRect(X(m.x + (k - m.n / 2) * 2.4), Y(m.y - (k % 2)), mw, mh);
       }
     }
     // reed clumps on the shallow shores (cover)
@@ -396,8 +478,7 @@ export class Renderer {
         for (let b = 0; b < r.n; b++) {
           const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5);
           const sway = Math.sin(t * 1.1 + r.x * 0.05 + b) * 4;
-          const base = w2s(bx, r.baseY), tip = w2s(bx + sway, r.baseY - h);
-          ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(X(bx), Y(r.baseY)); ctx.lineTo(X(bx + sway), Y(r.baseY - h)); ctx.stroke();
         }
       }
     }
@@ -413,10 +494,10 @@ export class Renderer {
         for (let s = 0; s < strands; s++) {
           const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = 6;
           ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} 44% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
-          let prev = w2s(sx, wb.bot); ctx.beginPath(); ctx.moveTo(prev.x, prev.y);
+          ctx.beginPath(); ctx.moveTo(X(sx), Y(wb.bot));
           for (let k = 1; k <= segs; k++) {
             const f = k / segs, ny = wb.bot - (wb.bot - wb.top) * f, nx = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
-            const cur = w2s(nx, ny); ctx.lineTo(cur.x, cur.y);
+            ctx.lineTo(X(nx), Y(ny));
           }
           ctx.stroke();
         }
@@ -445,11 +526,11 @@ export class Renderer {
         continue;
       }
       const segs = Math.max(2, (p.height / 6) | 0);
-      let prev = w2s(p.x, p.baseY); ctx.beginPath(); ctx.moveTo(prev.x, prev.y);
+      ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.baseY));
       for (let s = 1; s <= segs; s++) {
         const f = s / segs, ny = p.baseY - p.height * f, nx = p.x + Math.sin(t * 1.3 + p.x * 0.1 + f * 2) * f * f * 6;
-        const cur = w2s(nx, ny); ctx.lineTo(cur.x, cur.y);
-        if (form === 'stalk' && s % 2 === 0) { const leaf = w2s(nx + (s % 4 ? 4 : -4) * leafF, ny + 2); ctx.lineTo(leaf.x, leaf.y); ctx.moveTo(cur.x, cur.y); }
+        const cx2 = X(nx), cy2 = Y(ny); ctx.lineTo(cx2, cy2);
+        if (form === 'stalk' && s % 2 === 0) { ctx.lineTo(X(nx + (s % 4 ? 4 : -4) * leafF), Y(ny + 2)); ctx.moveTo(cx2, cy2); }
       }
       ctx.stroke();
       if (form === 'pad') {
@@ -469,9 +550,9 @@ export class Renderer {
         if (m.r * z * 0.5 < 0.4) continue;        // sub-pixel at this zoom → skip (invisible; saves arcs at whole-lake)
         const y = (m.y0 + t * m.spd) % H, x = m.x + Math.sin(t * m.swayF + m.ph) * m.swayA;
         if (x < vr.x0 || x > vr.x1 || y < vr.y0 || y > vr.y1 || y > bedY(x)) continue;
-        const p = w2s(x, y), rr = Math.max(0.6, m.r * z * 0.5);
+        const rr = Math.max(0.6, m.r * z * 0.5);
         ctx.globalAlpha = clamp(m.br * 0.5 * amb2 * clar * depthDim(y), 0, 0.7);
-        ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.arc(X(x), Y(y), rr, 0, TAU); ctx.fill();
       }
       ctx.globalAlpha = 1;
     }
@@ -483,30 +564,30 @@ export class Renderer {
         if (b.r * z * 0.5 < 0.5) continue;        // sub-pixel at this zoom → skip
         const y = ((b.y0 - t * b.spd) % H + H) % H, x = b.x + Math.sin(t * b.swayF + b.ph) * b.swayA;
         if (x < vr.x0 || x > vr.x1 || y < vr.y0 || y > vr.y1 || y > bedY(x)) continue;
-        const p = w2s(x, y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * env.light), 0, 0.7);
-        ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, TAU); ctx.stroke();
-        ctx.globalAlpha = a * 0.85; ctx.beginPath(); ctx.arc(p.x - rr * 0.32, p.y - rr * 0.32, Math.max(0.5, rr * 0.3), 0, TAU); ctx.fill();
+        const px = X(x), py = Y(y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * env.light), 0, 0.7);
+        ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.stroke();
+        ctx.globalAlpha = a * 0.85; ctx.beginPath(); ctx.arc(px - rr * 0.32, py - rr * 0.32, Math.max(0.5, rr * 0.3), 0, TAU); ctx.fill();
       }
       ctx.globalAlpha = 1;
     }
 
     // plankton & detritus (culled)
     const pPx = clamp(z, 1, 3);
-    ctx.fillStyle = '#bff0d8';
+    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = 0.25 + 0.55 * env.light;
     for (const p of world.plankton) {
       if (p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
-      const s = w2s(p.x, p.y); ctx.globalAlpha = 0.25 + 0.55 * env.light; ctx.fillRect(s.x | 0, s.y | 0, pPx, pPx);
+      ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, pPx, pPx);
     }
     ctx.globalAlpha = 0.6; ctx.fillStyle = '#6b4a2a';
     for (const d of world.detritus) {
       if (d.x < vr.x0 || d.x > vr.x1 || d.y < vr.y0 || d.y > vr.y1) continue;
-      const s = w2s(d.x, d.y); ctx.fillRect(s.x | 0, s.y | 0, pPx, pPx);
+      ctx.fillRect(X(d.x) | 0, Y(d.y) | 0, pPx, pPx);
     }
     // benthic insect larvae — small specks on the bed, a touch brighter/greener as they near emergence
     if (world.larvae) { ctx.globalAlpha = 0.7;
       for (const L of world.larvae) {
         if (L.x < vr.x0 || L.x > vr.x1 || L.y < vr.y0 || L.y > vr.y1) continue;
-        const s = w2s(L.x, L.y); ctx.fillStyle = L.dev > 0.7 ? '#a89a44' : '#6f7a3c'; ctx.fillRect(s.x | 0, s.y | 0, pPx, pPx);
+        ctx.fillStyle = L.dev > 0.7 ? '#a89a44' : '#6f7a3c'; ctx.fillRect(X(L.x) | 0, Y(L.y) | 0, pPx, pPx);
       }
     }
     // emerged surface insects — pale drifting specks at the waterline that flutter (a visible hatch); fade as they age
@@ -515,8 +596,8 @@ export class Renderer {
         if (I.x < vr.x0 || I.x > vr.x1) continue;
         const fy = I.y + Math.sin(t * 9 + I.wob) * 1.3;
         if (fy < vr.y0 || fy > vr.y1) continue;
-        const s = w2s(I.x, fy); ctx.globalAlpha = (0.45 + 0.5 * env.light) * clamp(I.life / 2, 0.3, 1);
-        ctx.fillRect(s.x | 0, s.y | 0, Math.max(1, pPx), Math.max(1, pPx));
+        ctx.globalAlpha = (0.45 + 0.5 * env.light) * clamp(I.life / 2, 0.3, 1);
+        ctx.fillRect(X(I.x) | 0, Y(fy) | 0, Math.max(1, pPx), Math.max(1, pPx));
       }
     }
     // benthic snails — tiny shells crawling the lit bed (olive-tan domes; dim with depth)
@@ -524,7 +605,7 @@ export class Renderer {
       ctx.globalAlpha = 0.85;
       for (const sn of world.snails) {
         if (sn.x < vr.x0 - 6 || sn.x > vr.x1 + 6 || sn.y < vr.y0 - 6 || sn.y > vr.y1 + 6) continue;
-        const p = w2s(sn.x, sn.y), dim = 0.5 + 0.5 * depthDim(sn.y), r = clamp(1.7 * z, 1, 5);
+        const p = pt(sn.x, sn.y), dim = 0.5 + 0.5 * depthDim(sn.y), r = clamp(1.7 * z, 1, 5);
         ctx.fillStyle = `hsl(50 32% ${Math.round(lerp(26, 48, amb) * dim)}%)`;
         ctx.beginPath(); ctx.ellipse(p.x, p.y - r * 0.5, r, r * 0.85, 0, 0, TAU); ctx.fill();
       }
@@ -533,7 +614,7 @@ export class Renderer {
     if (world.cray) {
       for (const cf of world.cray) {
         if (cf.x < vr.x0 - 16 || cf.x > vr.x1 + 16 || cf.y < vr.y0 - 16 || cf.y > vr.y1 + 16) continue;
-        const p = w2s(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 52% ${Math.round(lerp(30, 50, amb) * dim)}%)`;
+        const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 52% ${Math.round(lerp(30, 50, amb) * dim)}%)`;
         ctx.globalAlpha = 0.95; ctx.fillStyle = col; ctx.strokeStyle = col;
         if (z < 1.4) { const L = clamp(z, 0.8, 4); ctx.fillRect(p.x - L, p.y - L * 1.3, L * 2, L * 1.3); continue; }   // far: a small rust blob
         const dir = cf.vx >= 0 ? 1 : -1, by = p.y - 1.6 * z, wig = Math.sin(t * 5 + cf.ph) * 0.9 * z;
@@ -577,29 +658,61 @@ export class Renderer {
       ctx.fillStyle = fg; ctx.fillRect(bx, by, bw, bh);
     }
 
-    // selection ring
-    if (sel) {
-      const p = w2s(sel.x, sel.y); ctx.globalAlpha = 0.9; ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 1.4;
-      ring(ctx, p.x, p.y, (sel.sp.ringR * (0.5 + 0.5 * (sel.grow ?? 1)) + 2 + Math.sin(t * 5) * 0.6) * z); ctx.globalAlpha = 1;
-    }
-
-    // surface ripple + rain (surface band, world y≈1)
+    // OVERLAYS — burst ripple rings, selection ring, surface ripple line, rain, lightning. They must sit OVER the fish. On
+    // the 2D fish path they draw straight into the scene (the fish are already in it). On the GL-fish path the fish are
+    // composited later on the GPU, so the overlays draw into a small bbox-sized overlay canvas that GLPost blends over
+    // the GL fish (then bloom/grade apply to everything together).
     const rainI = [0, 0, 0.6, 1][env.weather];
-    if (env.light >= 0 && by < vh && by + bh > 0) {
-      ctx.strokeStyle = `rgba(${top[0] | 0},${top[1] | 0},${top[2] | 0},0.8)`; ctx.lineWidth = 1; ctx.beginPath();
-      let first = true;
-      for (let x = Math.max(0, vr.x0); x <= Math.min(W, vr.x1); x += 6) {
-        const p = w2s(x, 1 + Math.sin(x * 0.15 + t * 2) * 1.2 * (1 + rainI)); if (first) { ctx.moveTo(p.x, p.y); first = false; } else ctx.lineTo(p.x, p.y);
+    const surfVis = by < vh && by + bh > 0;
+    const al = this._alpha, selX = sel ? X(interpX(sel, al)) : 0, selY = sel ? Y(interpY(sel, al)) : 0;
+    const selR = sel ? (sel.sp.ringR * (0.5 + 0.5 * (sel.grow ?? 1)) + 2 + Math.sin(t * 5) * 0.6) * z : 0;
+    const drawOverlays = g => {
+      for (const r of this._ovCmds) {   // GL mode only (2D mode draws these inline in _fish)
+        g.globalAlpha = r.a; g.strokeStyle = 'rgba(214,238,255,1)'; g.lineWidth = r.lw;
+        g.beginPath(); g.arc(r.x, r.y, r.r, 0, TAU); g.stroke();
       }
-      ctx.stroke();
-      if (rainI > 0) {
-        ctx.strokeStyle = `rgba(195,220,240,${0.5 * rainI})`; ctx.beginPath();
-        const drops = Math.min(160, (vr.x1 - vr.x0) * 0.03 * rainI) | 0;
-        for (let i = 0; i < drops; i++) { const wx = lerp(Math.max(0, vr.x0), Math.min(W, vr.x1), Math.random()); const p = w2s(wx, 1 + Math.sin(wx * 0.15 + t * 2) * 1.2); ctx.moveTo(p.x, p.y - 2 * z); ctx.lineTo(p.x, p.y + 3 * z); }
-        ctx.stroke();
+      g.globalAlpha = 1;
+      if (sel) { g.globalAlpha = 0.9; g.strokeStyle = '#ffd27a'; g.lineWidth = 1.4; ring(g, selX, selY, selR); g.globalAlpha = 1; }
+      // surface ripple + rain (surface band, world y≈1) — world-aligned samples that always reach the right edge
+      if (surfVis) {
+        g.strokeStyle = `rgba(${top[0] | 0},${top[1] | 0},${top[2] | 0},0.8)`; g.lineWidth = 1; g.beginPath();
+        let s = 6; while (s * z > 10 && s > 0.375) s /= 2;   // ≤ ~10 px per segment; power-of-two → stable grid
+        const xs = alignedSamples(Math.max(0, vr.x0), Math.min(W, vr.x1), s, 0, W, this._xs);
+        for (let i = 0; i < xs.length; i++) {
+          const x = xs[i], sx = X(x), sy = Y(1 + Math.sin(x * 0.15 + t * 2) * 1.2 * (1 + rainI));
+          if (i === 0) g.moveTo(sx, sy); else g.lineTo(sx, sy);
+        }
+        g.stroke();
+        if (rainI > 0) {
+          g.strokeStyle = `rgba(195,220,240,${0.5 * rainI})`; g.beginPath();
+          const drops = Math.min(160, (vr.x1 - vr.x0) * 0.03 * rainI) | 0;
+          for (let i = 0; i < drops; i++) { const wx = lerp(Math.max(0, vr.x0), Math.min(W, vr.x1), Math.random()); const sx = X(wx), sy = Y(1 + Math.sin(wx * 0.15 + t * 2) * 1.2); g.moveTo(sx, sy - 2 * z); g.lineTo(sx, sy + 3 * z); }
+          g.stroke();
+        }
       }
-    }
-    if (env.flash > 0) { ctx.globalAlpha = 1; const a = env.flash, lg = ctx.createLinearGradient(0, by, 0, by + bh * 0.72); lg.addColorStop(0, `rgba(228,236,255,${0.42 * a})`); lg.addColorStop(1, 'rgba(228,236,255,0)'); ctx.fillStyle = lg; ctx.fillRect(bx, by, bw, bh * 0.72); }
+      if (env.flash > 0) { g.globalAlpha = 1; const a = env.flash, lg = g.createLinearGradient(0, by, 0, by + bh * 0.72); lg.addColorStop(0, `rgba(228,236,255,${0.42 * a})`); lg.addColorStop(1, 'rgba(228,236,255,0)'); g.fillStyle = lg; g.fillRect(bx, by, bw, bh * 0.72); }
+    };
+    let overlay = null;
+    if (this.glFish) {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      const add = (ax0, ay0, ax1, ay1) => { if (ax0 < x0) x0 = ax0; if (ay0 < y0) y0 = ay0; if (ax1 > x1) x1 = ax1; if (ay1 > y1) y1 = ay1; };
+      for (const r of this._ovCmds) add(r.x - r.r - 3, r.y - r.r - 3, r.x + r.r + 3, r.y + r.r + 3);
+      if (sel && selX + selR > 0 && selX - selR < vw && selY + selR > 0 && selY - selR < vh) add(selX - selR - 3, selY - selR - 3, selX + selR + 3, selY + selR + 3);
+      if (surfVis) add(bx, by - 3.4 * z - 4, bx + bw, by + 6.4 * z + 4);   // line ±2.4 units around y=1, rain −2z..+3z
+      if (env.flash > 0) add(bx, by, bx + bw, by + bh * 0.72);
+      x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(vw, Math.ceil(x1)); y1 = Math.min(vh, Math.ceil(y1));
+      if (x1 > x0 && y1 > y0) {
+        const ow = Math.min(vw, Math.ceil((x1 - x0) / 64) * 64), oh = Math.min(vh, Math.ceil((y1 - y0) / 64) * 64);   // rounded → few reallocs
+        if (!this._ovC) { this._ovC = this.mkCanvas(ow, oh); this._ovG = this._ovC.getContext('2d'); }
+        else if (this._ovC.width !== ow || this._ovC.height !== oh) { this._ovC.width = ow; this._ovC.height = oh; }
+        const og = this._ovG;
+        og.setTransform(1, 0, 0, 1, 0, 0); og.globalAlpha = 1; og.clearRect(0, 0, ow, oh);
+        og.setTransform(1, 0, 0, 1, -x0, -y0); og.lineCap = 'round';
+        drawOverlays(og);
+        og.setTransform(1, 0, 0, 1, 0, 0);
+        overlay = { canvas: this._ovC, x: x0, y: y0 };
+      }
+    } else drawOverlays(ctx);
 
     // dawn/dusk warmth + night factors — computed unconditionally (both the 2D grade below AND the GL composite use them).
     const dawn = Math.max(0, 1 - Math.abs(env.t - 0.25) / 0.08), dusk = Math.max(0, 1 - Math.abs(env.t - 0.75) / 0.08);
@@ -637,82 +750,90 @@ export class Renderer {
     // present the finished scene → #tank: through the WebGL2 post pipeline (GPU bloom/tonemap/refraction/grade/…), or
     // a 1:1 blit in fallback. `flash: 0` because the 2D lightning flash is already baked into the scene above.
     if (this.present && this.present.present) {
-      // Sun screen-UV for the GL god-rays. uv.y=0 is the TOP/surface in FRAG_COMP (matches surf/dofDeep/flash), so DO NOT
-      // invert: v = sp.y/height (sp = the sun's screen point from the sun/moon block above). sunInt ramps in as the disc
-      // climbs into frame & tracks day/night; sunUp gates the caustics/sheen to "sun above water". (`sp`/`sunY` in scope.)
-      const su = sp.x / this.scene.width, sv = sp.y / this.scene.height;
-      const sunInt = clamp(env.light * 1.15, 0, 1) * clamp(sp.y / (this.scene.height * 0.18), 0, 1);
+      // Sun UV for the GL god-rays, in FRAG_COMP's uv space: the fullscreen pass has uv.y = 0 at the screen BOTTOM (vUv = p,
+      // gl_Position = p*2-1, scene uploaded with UNPACK_FLIP_Y), so the screen-top-origin sun y MUST be inverted:
+      // v = 1 - sp.y/height. sunInt ramps in as the disc climbs into frame & tracks day/night; sunUp gates the
+      // caustics/sheen to "sun above water". (`sp`/`sunY` in scope.)
+      const su = sp.x / this.scene.width, sv = 1 - sp.y / this.scene.height;
+      let sunInt = clamp(env.light * 1.15, 0, 1) * clamp(sp.y / (this.scene.height * 0.18), 0, 1);
+      // the shader's frame-fade zeroes the rays once the sun is ≥0.6 UV outside the frame → skip the 24-tap march entirely
+      if (Math.max(-su, su - 1, -sv, sv - 1) >= 0.6) sunInt = 0;
       const sunUp = clamp(env.light, 0, 1) * clamp((26 - sunY) / 26 + 0.4, 0, 1);
       // GL-lit fish (Pass 3/slice 3): corpses first so they draw UNDER the living, matching the 2D order. The haze
-      // params mirror the 2D depth-haze (hz/maxA) so a deep GL fish recedes into the same murk as the background.
+      // params are the 2D depth-haze gradient's (hz/maxA over the world box by..by+bh) so a GL fish is hazed per pixel
+      // exactly like a 2D fish under that gradient.
       const fishParams = this.glFish ? this._glCorpse.concat(this._glLiving) : null;
       this.present.present(this.scene, {
-        time: t, light: env.light, turbidity: env.turbidity || 0, night, warm: warmth, zoom: cam.zoom, flash: 0,
+        time: t, light: env.light, turbidity: env.turbidity || 0, night, warm: warmth, flash: 0,
+        zoom: cam.zoom / (cam.fitZoom || cam.zoom || 1),   // DPR- & size-independent zoom (1 = whole lake)
+        dpr: this.dpr,
         secchiFrac: clamp((env.secchiDepth ? env.secchiDepth() : H) / H, 0, 1), clarity: env.clarity ? env.clarity() : 1,
         sunUV: [su, sv], sunInt, sunUp,
-        fish: fishParams,
+        fish: fishParams, overlay,
         hazeTint: [lerp(16, 30, murk), lerp(40, 54, murk), lerp(66, 40, murk)],
         hazeMax: clamp(0.14 + 0.5 * murk, 0.14, 0.5) * (0.35 + 0.65 * amb),
+        hazeBox: [by, bh],
       });
     }
   }
 
   // returns 1 for sprite tier, 0 for dot tier
   _fish(ctx, a, t, env, cam) {
-    // ease the visual heading & a fade-in so sim snaps (wall redirects, spawns) read smoothly
-    const rdt = this._rdt;
-    if (a.rHeading === undefined) a.rHeading = a.heading;
-    a.rHeading += angDiff(a.heading, a.rHeading) * (1 - Math.exp(-rdt * 10));
+    const rdt = this._rdt, al = this._alpha, z = cam.zoom, ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
+    // render pose = lerp(previous, current sim state, alpha) (render-only _px/_py/_ph snapshots taken by main.js)
+    const ax = interpX(a, al), ay = interpY(a, al), ah = interpH(a, al);
+    // ease the visual heading so sim snaps (wall redirects) read smoothly — but a fish that was NOT drawn last frame (it
+    // just entered view after a pan / tour cut, or is new) SNAPS its heading & facing instead of spinning from a stale
+    // value. `_rFrame` is a render-only last-drawn frame stamp (like rHeading/vis — never read by the sim, not saved).
+    const fresh = a._rFrame !== this._frameNo - 1; a._rFrame = this._frameNo;
+    if (fresh || a.rHeading === undefined) { a.rHeading = ah; a.faceTarget = a.facing = Math.cos(ah) < 0 ? -1 : 1; }
+    else a.rHeading += angDiff(ah, a.rHeading) * (1 - Math.exp(-rdt * 10));
     if (a.vis === undefined) a.vis = 1;
     a.vis += (1 - a.vis) * (1 - Math.exp(-rdt * 2.5));
 
     const grow = a.grow ?? 1;
     const Sworld = a.size * FISH_SCALE * (0.42 + 0.58 * grow);
-    const sPx = Sworld * cam.zoom;
-    const p = cam.worldToScreen(a.x, a.y);
+    const sPx = Sworld * z;
+    const px = ax * z + ox, py = ay * z + oy;
     if (sPx < DOT_PX) {
       // keep far-zoom fish legible: a min 2px dot with a touch more contrast (so a whole-lake view still reads as populated)
       ctx.globalAlpha = clamp(0.55 + sPx, 0.5, 1) * a.vis;
-      ctx.fillStyle = rgb(hsl(a.hue, a.sp.sat, (a.sp.lbase + 0.5 * a.sp.lrange) * (0.45 + 0.55 * env.light) * depthDim(a.y)));
-      const d = Math.max(2, Math.round(sPx * 1.6)); ctx.fillRect((p.x - d / 2) | 0, (p.y - d / 2) | 0, d, d);
+      ctx.fillStyle = rgb(hsl(a.hue, a.sp.sat, (a.sp.lbase + 0.5 * a.sp.lrange) * (0.45 + 0.55 * env.light) * depthDim(ay)));
+      const d = Math.max(2, Math.round(sPx * 1.6)); ctx.fillRect((px - d / 2) | 0, (py - d / 2) | 0, d, d);
       ctx.globalAlpha = 1; return 0;
     }
     // swimming EFFORT (gait): how hard the fish is actually working = thrust + speed, boosted by an active
     // flee/strike burst and suppressed by a HIDE freeze. Drives both the tail-beat FREQUENCY (here) and the body
-    // undulation AMPLITUDE (the sprite, via the drive bucket) — so a gliding/hiding fish is near-still while a
-    // fleeing sprinter thrashes hard & fast, instead of every fish wiggling identically. Pure render (sim-state read).
+    // undulation AMPLITUDE (the sprite, via the drive bucket). Pure render (sim-state read).
     const act = a.act, flee = act ? act.flee : 0, strike = act ? act.strike : 0, hide = act ? act.hide : 0;
     const spdN = clamp(a.spd / (a.maxSpeed || 30), 0, 1);
     const drive = clamp(0.45 * (a.thrustSmooth ?? 0.4) + 0.55 * spdN + 0.45 * flee + 0.3 * strike - 0.85 * hide, 0.05, 1);
     const cphase = t * (0.8 + 2.6 * drive) + a.id * 1.7;   // beat rate rises with effort (glide ≈ slow, sprint ≈ fast)
     const frame = Math.floor((((cphase % TAU) + TAU) % TAU) / TAU * this.sprites.FRAMES);
-    const sprite = this.sprites.get(a, frame, env.light * depthDim(a.y), drive);   // depth-shaded + effort-coupled sprite
-    // Keep the whole sprite inside the water body. The sim clamps a fish's CENTRE to the bed/surface
-    // (world.js), so a bottom-hugging or drop-off-wall-pressed fish would otherwise draw its lower half
-    // into the brown bank — reads as "swimming out of the lake". Inset the DRAW position by the rotated
-    // body half-extent. Render-only: sim positions / determinism are untouched.
+    // depth-shaded + effort-coupled sprite. GL path: one FULL-LIGHT sprite per bucket (the light×depth dim is applied in
+    // the shader via `bright`, continuous) → the light bucket drops out of the GL working set (no ~10×/day rebuild churn).
+    const lit = env.light * depthDim(ay);
+    const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive);
+    // Keep the whole sprite inside the water body (the sim clamps the CENTRE to the bed/surface): inset the DRAW position
+    // by the rotated body half-extent. Render-only: sim positions / determinism are untouched.
     const P = a.sp.P, ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);
     const halfLen = (P.L + (P.tail ? P.tail.len : 1.2)) * Sworld;   // nose↔tail reach (world px)
     const halfHt = P.Hh * Sworld * 1.25;                           // body depth + headroom for body-gene & body wave
     const half = Math.abs(ish) * halfLen + Math.abs(ich) * halfHt; // vertical reach of the rotated body
-    const ibed = bedY(a.x), ilo = Math.min(half, ibed * 0.45), ihi = Math.max(ilo, ibed - half);
-    const p2 = cam.worldToScreen(a.x, clamp(a.y, ilo, ihi));
-    // soft CONTACT SHADOW on the bed for a fish hovering near it — grounds bottom-dwellers (catfish/carp) instead of
-    // leaving them floating. A soft elliptical radial-gradient blob beneath the fish, fading with the gap to the bed.
-    const gapBed = ibed - a.y;
-    if (gapBed > -3 && gapBed < halfHt * 5 && sPx > DOT_PX) {
+    const ibed = bedY(ax), ilo = Math.min(half, ibed * 0.45), ihi = Math.max(ilo, ibed - half);
+    const p2x = px, p2y = clamp(ay, ilo, ihi) * z + oy;
+    // soft CONTACT SHADOW on the bed for a fish hovering near it — one cached soft-blob sprite stretched to the ellipse
+    // (was a per-fish radial gradient + save/restore).
+    const gapBed = ibed - ay;
+    if (gapBed > -3 && gapBed < halfHt * 5) {
       const sh = clamp(1 - gapBed / (halfHt * 5), 0, 1) * a.vis;
-      const sc = cam.worldToScreen(a.x, ibed - 1), rx = Math.max(2, halfLen * 0.85 * cam.zoom), ry = Math.max(1.2, halfHt * 0.5 * cam.zoom);
-      ctx.save(); ctx.translate(sc.x, sc.y); ctx.scale(1, ry / rx);
-      const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-      rg.addColorStop(0, `rgba(0,0,0,${(0.3 * sh).toFixed(3)})`); rg.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, rx, 0, TAU); ctx.fill(); ctx.restore();
-      ctx.globalAlpha = 1;
+      if (sh > 0.004) {
+        const scx = px, scy = (ibed - 1) * z + oy, rx = Math.max(2, halfLen * 0.85 * z), ry = Math.max(1.2, halfHt * 0.5 * z);
+        ctx.globalAlpha = 0.3 * sh; ctx.drawImage(this._shadowSprite(), scx - rx, scy - ry, rx * 2, ry * 2); ctx.globalAlpha = 1;
+      }
     }
-    // facing (left/right sprite mirror): EASE it through a quick belly-roll instead of an instant mirror snap.
-    // An instantaneous flip is a literal one-frame "twitch"; easing it over ~0.15s reads as a natural banking
-    // turn. The TARGET uses wide hysteresis (±0.30 cos) so a fish hovering near-vertical never flip-flops; the
-    // eased `a.facing` smooths the actual transition. A small floor keeps the roll from a zero-height sliver.
+    // facing (left/right sprite mirror): EASE it through a quick belly-roll instead of an instant mirror snap. The TARGET
+    // uses wide hysteresis (±0.30 cos) so a fish hovering near-vertical never flip-flops.
     const c = Math.cos(a.rHeading);
     let ft = a.faceTarget ?? 1; if (c < -0.30) ft = -1; else if (c > 0.30) ft = 1; a.faceTarget = ft;
     if (a.facing === undefined) a.facing = ft;
@@ -721,29 +842,43 @@ export class Renderer {
     const s = sPx / sprite.base;
     if (this.glFish) {
       // collect a GL quad instead of the 2D blit; GLPost draws it as a lit textured quad (uses the SAME p2/heading/sPx/vf).
-      this._glLiving.push({ sprite, sx: p2.x, sy: p2.y, rot: a.rHeading, sPx, facing: vf, vis: a.vis,
-        worldYN: clamp(a.y / H, 0, 1), depthDim: depthDim(a.y), kind: 0 });
+      // bright = the sprite's HSL light dim for this fish's light×depth, relative to the full-light sprite (=1).
+      this._glLiving.push({ sprite, sx: p2x, sy: p2y, rot: a.rHeading, sPx, facing: vf, vis: a.vis, kind: 0,
+        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
     } else {
       ctx.save();
       ctx.globalAlpha = a.vis;
-      ctx.translate(p2.x, p2.y); ctx.rotate(a.rHeading); ctx.scale(s, vf * s);
+      ctx.translate(p2x, p2y); ctx.rotate(a.rHeading); ctx.scale(s, vf * s);
       ctx.drawImage(sprite.canvas, -sprite.cx, -sprite.cy);
       ctx.restore();
       ctx.globalAlpha = 1;
     }
-    // strike / flee BURST → a quick expanding ripple ring, EDGE-triggered (fires once per lunge, not every frame it
-    // holds the action). `a._burst`/`a._fxAt` are transient render fields (like `a.vis`); `t` is the monotonic render clock.
+    // strike / flee BURST → a quick expanding ripple ring, EDGE-triggered (fires once per lunge). `a._burst`/`a._fxAt` are
+    // transient render fields (like `a.vis`). GL path: queued to the overlay so the ring sits OVER the GL fish.
     const burst = Math.max(strike, flee * 0.85);
     if (burst > 0.62 && !a._burst) { a._burst = 1; a._fxAt = t; } else if (burst < 0.4) a._burst = 0;
     if (a._fxAt !== undefined) {
       const age = t - a._fxAt;
       if (age >= 0 && age < 0.4) {
-        const f = age / 0.4, rr = (halfLen * 0.7 + f * halfLen * 2.4) * cam.zoom;
-        ctx.globalAlpha = (1 - f) * 0.42 * a.vis; ctx.strokeStyle = 'rgba(214,238,255,1)'; ctx.lineWidth = Math.max(1, 2.2 * (1 - f));
-        ctx.beginPath(); ctx.arc(p2.x, p2.y, rr, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+        const f = age / 0.4, rr = (halfLen * 0.7 + f * halfLen * 2.4) * z, ra = (1 - f) * 0.42 * a.vis, lw = Math.max(1, 2.2 * (1 - f));
+        if (this.glFish) this._ovCmds.push({ x: p2x, y: p2y, r: rr, a: ra, lw });
+        else {
+          ctx.globalAlpha = ra; ctx.strokeStyle = 'rgba(214,238,255,1)'; ctx.lineWidth = lw;
+          ctx.beginPath(); ctx.arc(p2x, p2y, rr, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+        }
       }
     }
     return 1;
+  }
+  // a soft black elliptical blob (alpha 1 → 0 radially), built once; stretched per fish for the contact shadow
+  _shadowSprite() {
+    if (!this._shC) {
+      const S = 64, c = this.mkCanvas(S, S), g = c.getContext('2d');
+      const rg = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+      rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = rg; g.fillRect(0, 0, S, S); this._shC = c;
+    }
+    return this._shC;
   }
 
   // a recently-dead body: static sprite, sinking, rolling belly-up, fading out
@@ -756,7 +891,8 @@ export class Renderer {
       const d = Math.max(2, Math.round(sPx * 1.5)); ctx.fillRect((p.x - d / 2) | 0, (p.y - d / 2) | 0, d, d);
       ctx.globalAlpha = 1; return;
     }
-    const sprite = this.sprites.get(c, 0, env.light * 0.85 * depthDim(c.y), 0.1);   // a dead fish barely undulates
+    const lit = env.light * 0.85 * depthDim(c.y);
+    const sprite = this.sprites.get(c, 0, this.glFish ? 1 : lit, 0.1);   // a dead fish barely undulates
     // same boundary inset as live fish, so a belly-up corpse resting on the bed doesn't sink into the bank
     const P = c.sp.P, ich = Math.cos(c.rHeading), ish = Math.sin(c.rHeading);
     const half = Math.abs(ish) * (P.L + (P.tail ? P.tail.len : 1.2)) * Sworld + Math.abs(ich) * P.Hh * Sworld * 1.25;
@@ -766,8 +902,8 @@ export class Renderer {
     let ys = vf * (1 - 2 * clamp(c.roll, 0, 1)); if (Math.abs(ys) < 0.06) ys = 0.06 * (ys < 0 ? -1 : 1); // belly-up roll, never a 0-scale
     if (this.glFish) {
       // GL quad (drawn UNDER the living fish — corpses are collected first). facing carries the belly-roll y-sign.
-      this._glCorpse.push({ sprite, sx: p2.x, sy: p2.y, rot: c.rHeading, sPx, facing: ys, vis: alpha * 0.92,
-        worldYN: clamp(c.y / H, 0, 1), depthDim: depthDim(c.y), kind: 1 });
+      this._glCorpse.push({ sprite, sx: p2.x, sy: p2.y, rot: c.rHeading, sPx, facing: ys, vis: alpha * 0.92, kind: 1,
+        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
     } else {
       ctx.save();
       ctx.globalAlpha = alpha * 0.92;
