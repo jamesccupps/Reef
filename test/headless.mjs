@@ -1628,7 +1628,7 @@ console.log('\n— audit fixes: bio-ecology —');
     const e = bw.env, invP = () => e.inventoryP() + detNut(bw) * NUTRIENT.ORGANIC_P, invN = () => e.inventoryN() + detNut(bw) * (1 - NUTRIENT.ORGANIC_P);
     const P0 = invP(), N0 = invN(), L0 = { ...e.ledger };
     let neg = 0;
-    for (let s = 0; s < 1800; s++) { bw.step(1 / 30); if (s % 60 === 0) for (const f of [e.phos, e.nh4, e.no3, e.dom, e.phyto, e.cyano, e.o2]) for (let i = 0; i < f.length; i++) if (f[i] < -1e-6 || !Number.isFinite(f[i])) neg++; }
+    for (let s = 0; s < 1800; s++) { bw.step(1 / 30); if (s % 60 === 0) for (const f of [e.phos, e.nh4, e.no3, e.dom, e.phyto, e.cyano, e.o2]) for (let i = 0; i < f.length; i++) if (f[i] < 0 || !Number.isFinite(f[i])) neg++;   /* strictly ≥ 0: even a −1e-22 rounding residue breaks the load round-trip */ }
     CC.PLANT.SEED_RATE = keep;
     const L = e.ledger, inP = L.inP - L0.inP, outP = L.outP - L0.outP, buryP = L.buryP - L0.buryP;
     const resP = (invP() - P0) - (inP - outP - buryP);
@@ -1694,6 +1694,41 @@ console.log('\n— audit fixes: bio-ecology —');
   const live = SEASON.YEAR_LEN === 1234 && CC.ENV.DAY_LEN === 77; TIME.YEAR_LEN = yl; TIME.DAY_LEN = dl;
   check('SEASON.YEAR_LEN and ENV.DAY_LEN are LIVE aliases of TIME (not load-time copies)', live && SEASON.YEAR_LEN === yl);
   check('dead knobs BASIN.SEDIMENT and NUTRIENT.N_START are removed', !('SEDIMENT' in BASIN) && !('N_START' in NUTRIENT));
+}
+
+// ==== apex energetics (2026-10-12): innate pursuit + hypoxia avoidance — BEHAVIOURAL (A/B against an identical world) ====
+console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
+{
+  const { ENV: ENVC } = await import('../src/config.js');
+  // A bass facing straight down with a minnow 60 px to its right: with the pursuit reflex it ends up pointing closer to
+  // the prey than the SAME world (same seed, same brain) with pursuit switched off.
+  const pursuitRun = (p) => {
+    const keep = SP.bass.innate.pursuit; SP.bass.innate.pursuit = p;
+    try {
+      seed(777); const tw = new World(); tw.agents = [];
+      const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2), m = tw.makeFish('minnow', null, SP.minnow.matureAge * 1.2);   // adults (makeFish's default age 9999 is past maxAge → instant old-age death)
+      b.x = 1000; b.y = 420; b.heading = b.velHeading = Math.PI / 2; m.x = 1060; m.y = 420;
+      tw.agents.push(b, m);
+      for (let i = 0; i < 12; i++) tw.step(1 / 30);
+      return Math.abs(angDiff(Math.atan2(m.y - b.y, m.x - b.x), b.heading));
+    } finally { SP.bass.innate.pursuit = keep; }
+  };
+  const offA = pursuitRun(0), onA = pursuitRun(SP.bass.innate.pursuit);
+  check('innate PURSUIT turns a bass toward prey it senses (vs the identical world with pursuit off)', onA < offA - 0.05, `angle to prey ${onA.toFixed(2)} rad with pursuit vs ${offA.toFixed(2)} without`);
+  // A bass at its home depth in O₂-starved water: hypoxia avoidance turns it UPWARD (heading's vertical component goes
+  // negative = toward the surface), unlike the identical world with the reflex disabled (margin 0 ⇒ never triggers).
+  const hypoRun = (margin) => {
+    const keep = ENVC.HYPOXIA_AVOID; ENVC.HYPOXIA_AVOID = margin;
+    try {
+      seed(778); const tw = new World(); tw.agents = [];
+      const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2); b.x = 1000; b.y = SP.bass.innate.homeDepth * tw.bedY(1000); b.heading = b.velHeading = 0;
+      tw.agents.push(b);
+      for (let i = 0; i < 12; i++) { tw.env.o2.fill(0.03); tw.step(1 / 30); }
+      return Math.sin(b.heading);
+    } finally { ENVC.HYPOXIA_AVOID = keep; }
+  };
+  const offH = hypoRun(0), onH = hypoRun(ENVC.HYPOXIA_AVOID);
+  check('innate HYPOXIA AVOIDANCE steers a fish upward out of O₂-starved water (vs the reflex disabled)', onH < offH - 0.05, `sin(heading) ${onH.toFixed(2)} with avoidance vs ${offH.toFixed(2)} without (negative = upward)`);
 }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);

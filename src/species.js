@@ -277,13 +277,16 @@ export const SP = {
     key: 'bass', name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
     shape: { in: 10, hid: 9 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.60,
+    // apex energetics (2026-10-12): metabolism was 0.046 (1.4× the size trend of the other species) and fish meals 0.60 —
+    // bass starved (intake ~0.05/s vs drain ~0.09/s) and the species ran ~90% on immigrants. Now on the size trend
+    // (catfish 0.030 @1.5 → carp 0.034 @2.2) and fish flesh worth more than grazing (energy-dense prey).
+    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.80,
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    metabolism: 0.046, moveCost: 0.038, respiration: 1.2,
+    metabolism: 0.030, moveCost: 0.038, respiration: 1.2,
     startEnergy: [0.70, 0.95], matureAge: 165, reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
     matingCooldown: 14, maxAge: 650, pop: { start: 4, min: 2, max: 13 },   // ~0.36 yr life, matures ~¼ in
     tempOpt: 24, tempTol: 8, o2Crit: 0.34, clutch: 4,   // warm-temperate pursuit predator, O₂-demanding; nest-guarder, moderate brood
-    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40 },  // patrols weed beds along the drop-off
+    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
@@ -306,13 +309,14 @@ export const SP = {
     key: 'pike', name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
     shape: { in: 9, hid: 8 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, cray: true }, foodValueFish: 0.65,
+    // apex energetics (2026-10-12): metabolism was 0.056 (1.6× the size trend) — see bass; now on the trend for size 2.7
+    diet: { fish: true, cray: true }, foodValueFish: 0.85,
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    metabolism: 0.056, moveCost: 0.042, respiration: 1.4,
+    metabolism: 0.036, moveCost: 0.042, respiration: 1.4,
     startEnergy: [0.80, 1.05], matureAge: 155, reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
     matingCooldown: 16, maxAge: 800, pop: { start: 2, min: 1, max: 6 },   // long-lived apex (~0.44 yr life, matures ~19% in)
     tempOpt: 19, tempTol: 9, o2Crit: 0.40, spawnPeak: 0.90, clutch: 4,   // coolwater apex (summer-squeezed); spawns earliest, cool early spring; fecund
-    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55 },  // weed-edge ambush lurker — holds in cover, then bursts
+    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(80, WORLD.FLOOR - 30) }),

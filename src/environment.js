@@ -296,7 +296,7 @@ export class Environment {
     const i = this.cellOf(x, y), fp = NUTRIENT.ORGANIC_P;
     const take = Math.max(0, Math.min(amt, this.phos[i] / fp, (this.nh4[i] + this.no3[i]) / (1 - fp)));
     if (!(take > 0)) return 0;
-    this.phos[i] -= take * fp;
+    this.phos[i] = Math.max(0, this.phos[i] - take * fp);   // P-limited: phos − (phos/fp)·fp can round to −1e-22
     let nNeed = take * (1 - fp);
     const aT = Math.min(this.nh4[i], nNeed); this.nh4[i] -= aT; nNeed -= aT;
     this.no3[i] = Math.max(0, this.no3[i] - nNeed);

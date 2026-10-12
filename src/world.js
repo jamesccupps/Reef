@@ -479,11 +479,13 @@ export class World {
   // test/diagnostic hook: build a fish with specific trait genes (adult by default) WITHOUT inserting it, so the
   // gene → effective-stat derivation (size/speed/tol + fin/eye/body morphology) and the fitGenes guard can be probed.
   // Respects WORLD.GLOBAL_MAX like every other creation path: returns null when the lake is already at the cap.
-  makeFish(species, genes = null, age = 9999) {
+  // Default age = a living adult (1.5 × matureAge: fully grown, well under maxAge). The old default (9999) was past every
+  // maxAge, so a makeFish fish that was STEPPED died of old age at once.
+  makeFish(species, genes = null, age = null) {
     if (!Object.hasOwn(SP, species)) throw new Error(`makeFish: unknown species "${species}"`);
     if (this.agents.length >= WORLD.GLOBAL_MAX) return null;
     _idOwner = this;
-    return makeAgent(species, 100, 100, 1, 0, 180, null, age, genes ? Float32Array.from(genes) : null);
+    return makeAgent(species, 100, 100, 1, 0, 180, null, age ?? SP[species].matureAge * 1.5, genes ? Float32Array.from(genes) : null);
   }
   // graze the nearest plant for one step of length dt: removes up to PLANT.BITE_RATE·dt px (a per-SECOND rate → the same
   // grazing per second at any fixed step); returns the energy gained. Default dt = one browser step.
@@ -754,7 +756,15 @@ export class World {
       // the bottom, a minnow rides shallow, a pike lurks — as a baseline the brain refines.
       const IN = sp.innate;
       if (IN) {
-        const bedX = bedY(a.x), prefY = clamp(IN.homeDepth * bedX, 8, bedX - 8), vBias = clamp((prefY - a.y) / 120, -1, 1);
+        const bedX = bedY(a.x);
+        let prefY = clamp(IN.homeDepth * bedX, 8, bedX - 8);
+        // HYPOXIA AVOIDANCE (behavioural oxyregulation): real fish leave water below their critical O₂ rather than sit in
+        // it. When the local O₂ is under the fish's own o2Crit × ENV.HYPOXIA_AVOID margin, the depth reflex retargets
+        // UPWARD (in a stratified lake O₂ rises toward the surface), harder the worse the deficit. Innate + deterministic;
+        // the brain still modulates it, like the depth-home pull it adjusts.
+        const o2Want = a.o2Crit * ENV.HYPOXIA_AVOID, o2Here = env.oxygenAt(a.x, a.y);
+        if (o2Here < o2Want) prefY = Math.min(prefY, a.y - 20 - 60 * clamp((o2Want - o2Here) / o2Want, 0, 1));
+        const vBias = clamp((prefY - a.y) / 120, -1, 1);
         if (Math.abs(vBias) > 0.05) {
           const desired = Math.atan2(vBias, Math.cos(a.heading) >= 0 ? 0.7 : -0.7);   // keep heading-ish, bias toward home depth
           a.heading += angDiff(desired, a.heading) * a.maxTurn * IN.depthPull * Math.abs(vBias) * dt;
@@ -772,6 +782,14 @@ export class World {
         // then bursts. A weighted BLEND (not a hard clamp) so a strongly-committed evolved brain can still
         // override the lurk reflex — i.e. the NN modulates this like every other innate term.
         if (IN.ambush && (a.act.in[2] || 0) < 0.45) thrust += (IN.cruise * 0.45 - thrust) * (IN.ambushW || 0.6);
+        // pursuit: a piscivore turns toward prey it senses — the prey-orienting reflex real predators are born with —
+        // harder the closer it is. A weighted nudge the brain can override or build on; it bootstraps hunting so predator
+        // lineages don't starve before selection can refine it. Uses the species' prey sensors (inputs 0..2 = prey ∠sin,
+        // ∠cos, near; set `pursuit` only on species whose senses() put them there).
+        if (IN.pursuit && (a.act.in[2] || 0) > 0) {
+          const rel = Math.atan2(a.act.in[0], a.act.in[1]);   // prey bearing relative to the body heading
+          a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.pursuit * a.act.in[2] * dt;
+        }
         // cover-seeking: littoral/ambush fish migrate to the nearest cover (weed bed / reed / log) and hold
         // there — a pike lurks at a weed-bed edge, a sunfish hovers in the weeds. A gentle long-range
         // attractor that eases off once at cover; the NN can override to chase or roam.

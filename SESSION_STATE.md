@@ -39,12 +39,18 @@ into `audit-fixes` (last merge `4b646c0`).
   - GRAPHICS_RESEARCH moved to `docs/`.
 
 **Known open items (measured, honest):**
-- **Apex predators depend on immigration:** bass ~86–96% immigrants, pike ~63–84%. Closing the
-  cannibalism/budding energy pumps removed inflated home-bred counts, so this is the real number. It's
-  a pre-existing open problem and the next ecology investigation.
-- **The plant P term is not conserved.** Uptake is `NUTRIENT.PLANT_UPTAKE` 0.05/px of growth, but
-  senescence/death returns ~0.009/px via DOM, and the initial mature plants' P was never paid for.
-  It's the bio region of world.js. Next fix: return at the uptake stoichiometry.
+- **Apex predators: improved, still open.**
+  - Diagnosis (`scratchpad/verify/apex.mjs`, `budget.mjs`): they STARVED rather than failing to breed.
+    A bass burned ~0.09/s against an intake of ~0.05/s.
+  - Fixed 2026-10-12:
+    - innate pursuit for bass/pike;
+    - hypoxia avoidance for all species;
+    - predator metabolism put on the size trend, and richer fish meals.
+  - Result (1-year balance): bass immigrant share 91% → 80%, pike 76% → 61%, with prey steady.
+  - Still not fully self-sustaining. Next levers: juvenile survival (pike eat many bass), the
+    reproduction threshold, and immigration damping.
+- ✅ **Plant P term closed** (`5b05004`): plants bank the N+P they absorb (`p.nut`, saved as `nu`), and
+  the gate checks the budget with plants ON.
 - **N-fixation barely runs at the default inflow load.** N limitation is real but seasonal.
 - **Needs human eyes:**
   - the colour grade, now that the GL orientation is fixed;

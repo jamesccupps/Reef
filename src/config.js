@@ -294,6 +294,7 @@ export const ENV = {
   HYPOXIA: 0.35,           // default critical O2 (species override via sp.o2Crit); below it, fish take stress
   HYPOXIA_SEVERE: 0.15,    // below this the hypoxia drain is 2.5× (lethal water)
   HYPOXIA_PENALTY: 0.10,   // energy/s at zero O2 (scaled by deficit)
+  HYPOXIA_AVOID: 1.2,      // innate oxyregulation: a fish whose local O₂ < its o2Crit × this steers upward out of it (world.js)
 
   // metabolism scales with temperature
   METAB_TEMP_K: 0.030,
