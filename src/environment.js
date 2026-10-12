@@ -290,13 +290,17 @@ export class Environment {
   addNutrient(x, y, amt, pFrac = NUTRIENT.ORGANIC_P) { const i = this.cellOf(x, y); this.phos[i] += amt * pFrac; this.nh4[i] += amt * (1 - pFrac); }
   // draw nutrient for plant uptake (split organic across both pools; N drawn ammonium-first then nitrate);
   // returns what was actually taken
+  // Uptake is STOICHIOMETRIC (organic matter has a fixed N:P): the take is limited by whichever element is scarcer, so
+  // the returned amount is balanced organic units that later remineralize (via DOM) to exactly the N and P drawn.
   takeNutrient(x, y, amt) {
-    const i = this.cellOf(x, y);
-    const pT = Math.min(this.phos[i], amt * NUTRIENT.ORGANIC_P); this.phos[i] -= pT;
-    let nNeed = amt * (1 - NUTRIENT.ORGANIC_P);
+    const i = this.cellOf(x, y), fp = NUTRIENT.ORGANIC_P;
+    const take = Math.max(0, Math.min(amt, this.phos[i] / fp, (this.nh4[i] + this.no3[i]) / (1 - fp)));
+    if (!(take > 0)) return 0;
+    this.phos[i] -= take * fp;
+    let nNeed = take * (1 - fp);
     const aT = Math.min(this.nh4[i], nNeed); this.nh4[i] -= aT; nNeed -= aT;
-    const oT = Math.min(this.no3[i], nNeed); this.no3[i] -= oT;
-    return pT + aT + oT;
+    this.no3[i] = Math.max(0, this.no3[i] - nNeed);
+    return take;
   }
   saturation() { return clamp(1.0 - (this.tempC - 18) * ENV.SAT_TEMP_K, 0.5, 1.05); }
   metabolismFactor() { return 1 + (this.tempC - 18) * ENV.METAB_TEMP_K; }

@@ -139,7 +139,9 @@ function parseSave(s) {
     const gn = g ? Float32Array.from(g, q => clamp(q, GENE_MIN, GENE_MAX)) : randomPlantGenes();
     // `la` = the running-mean light the starvation test uses (absent on pre-v24 saves → the step re-initialises it)
     const lightAvg = isNum(p.la) ? clamp(p.la, 0, 2) : undefined;
-    const pl = { x, baseY, v, gn, hue: hueOr(p.hu, mv.hue), height, maxHeight, biomass: height * PLANT.BIOMASS_PER_PX, y: baseY - height * 0.5, dead: false, lightAvg };
+    // `nu` = the plant's absorbed N+P pool (pre-v24 saves → 0: nothing returned that wasn't taken)
+    const nut = clamp(num(p.nu, 0), 0, 1e4);
+    const pl = { x, baseY, v, gn, hue: hueOr(p.hu, mv.hue), height, maxHeight, biomass: height * PLANT.BIOMASS_PER_PX, y: baseY - height * 0.5, dead: false, lightAvg, nut };
     derivePlant(pl); plants.push(pl);
   }
   // particles (each list capped at its configured cap)
@@ -258,7 +260,10 @@ function newPlant(x, mature, parent = null) {
   const hue = parent ? wrapHue(parent.hue + gauss() * 7) : wrapHue(mv.hue + rand(-6, 6));
   const maxH = clamp(rand(mv.maxH[0], mv.maxH[1]) * gn[0], 6, 140);
   const height = mature ? rand(PLANT.WINTER_MIN, maxH) : PLANT.WINTER_MIN;
-  const p = { x, baseY: base, v, gn, hue, maxHeight: maxH, height, biomass: height * PLANT.BIOMASS_PER_PX, y: base - height * 0.5, dead: false };
+  // `nut` = the N+P (balanced organic units) this plant has actually absorbed. It starts EMPTY — a seedling's or founder's
+  // starting biomass carries none, so nothing is ever returned that wasn't taken — and every loss (shed, grazed, death)
+  // returns its proportional share. That makes the plant pool mass-conserving.
+  const p = { x, baseY: base, v, gn, hue, maxHeight: maxH, height, biomass: height * PLANT.BIOMASS_PER_PX, y: base - height * 0.5, dead: false, nut: 0 };
   derivePlant(p);
   return p;
 }
@@ -488,6 +493,10 @@ export class World {
     // graze only the above-rootstock biomass — the below-sediment rhizome (WINTER_MIN) survives grazing (and winter)
     const p = m.item, bite = Math.min(PLANT.BITE_RATE * dt, Math.max(0, p.height - PLANT.WINTER_MIN));
     if (bite <= 0) return 0;   // nothing left to graze but the protected rootstock
+    // the grazed tissue's N+P isn't destroyed: the grazer excretes GRAZE_EXCRETE of it as ammonium+phosphate and egests
+    // the rest as DOM where it fed (fish hold no nutrient pool) — the same routing as algal grazing
+    const ret = (p.nut || 0) * bite / Math.max(p.height, 1e-6);
+    if (ret > 0) { p.nut -= ret; this.env.addNutrient(a.x, a.y, ret * NUTRIENT.GRAZE_EXCRETE); this.env.addDOM(a.x, a.y, ret * (1 - NUTRIENT.GRAZE_EXCRETE)); }
     p.height -= bite; p.biomass = p.height * PLANT.BIOMASS_PER_PX;
     return PLANT.ENERGY_PER_PX * bite * p.palat;   // energy ∝ biomass grazed; tough/defended forms yield less (per-plant gene)
   }
@@ -634,22 +643,23 @@ export class World {
       if (vigor > 0 && p.height < p.maxHeight) {
         const grow = PLANT.GROWTH * p.growMul * vigor * lit * (0.35 + 0.65 * clamp(nutr, 0, 1)) * dt;
         p.height = Math.min(p.maxHeight, p.height + grow);
-        env.takeNutrient(p.x, p.baseY, NUTRIENT.PLANT_UPTAKE * grow);
+        p.nut = (p.nut || 0) + env.takeNutrient(p.x, p.baseY, NUTRIENT.PLANT_UPTAKE * grow);   // bank what was actually absorbed
       }
       // autumn/winter senescence: die back toward the overwintering rootstock; shed biomass dissolves into the DOM pool
       // (the realistic fall organic-matter pulse the microbial loop then remineralizes). Floors at the WINTER_MIN rootstock
       // (which grazing can't remove either), so the perennial regrows in spring — only light-starvation kills it.
       if (vigor < 1 && p.height > PLANT.WINTER_MIN) {
         const shed = Math.min(p.height - PLANT.WINTER_MIN, PLANT.SENESCE * (1 - vigor) * p.height * dt);
-        p.height -= shed;
-        env.addDOM(p.x, p.baseY, shed * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM);
+        const ret = (p.nut || 0) * shed / Math.max(p.height, 1e-6);   // the shed tissue's share of the plant's N+P
+        p.height -= shed; p.nut -= ret;
+        env.addDOM(p.x, p.baseY, ret);
       }
       p.biomass = p.height * PLANT.BIOMASS_PER_PX; p.y = p.baseY - p.height * 0.5;
       // death is now LIGHT-starvation, not grazing: a macrophyte whose RUNNING-MEAN light is below its light tolerance (too
       // deep / too turbid / too shaded to photosynthesize) uproots over time → the realistic depth limit + the seed of the
       // clear↔turbid feedback (forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists
       // deep). Judged on the daily mean, so night is not starvation; rootstock is grazing- & winter-proof → beds persist.
-      if (p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.height * PLANT.BIOMASS_PER_PX * PLANT.SENESCE_TO_DOM); }   // a light-starved plant DECOMPOSES → DOM (mass-conserving; was a silent nutrient leak the microbial loop now reclaims)
+      if (p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.nut || 0); p.nut = 0; }   // a light-starved plant DECOMPOSES → all its N+P to DOM
     }
     // recruitment is seasonal too — new plants establish mostly in the warm growing season (vigor off the surface temp)
     const seedVigor = clamp((env.tempC - PLANT.GROW_TEMP_MIN) / tWin, 0, 1);
@@ -1112,7 +1122,7 @@ export class World {
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined };                           // learned policy: only W2 can differ from `w`
       }),
-      plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg })),
+      plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),
       plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx })),
       detritus: this.detritus.map(d => ({ x: d.x, y: d.y, l: d.life, n: d.n })),
       larvae: this.larvae.map(l => ({ x: l.x, y: l.y, d: l.dev })),

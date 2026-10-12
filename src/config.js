@@ -490,7 +490,6 @@ export const PLANT = {
   SENESCE: 0.05,           // /s die-back rate, scaled by how far below the growth window (autumn/winter shedding)
   WINTER_MIN: 6,           // px rootstock/rhizome height — senescence AND grazing both floor here (below-sediment, survives
                            //   winter & grazing → the perennial regrows in spring). Plant death is now light-starvation, not grazing.
-  SENESCE_TO_DOM: 0.5,     // DOM (nutrient-equiv) released per unit senesced biomass → the microbial loop (the fall pulse)
   SHADE_DEATH: 0.05,       // /s uproot rate when light-starved → deep/turbid beds die back, freeing bed slots for the lit littoral
                            //   (the light-starvation threshold is per variety: MACRO[v].lightMin × the plant's light/leaf genes)
   // Starvation is judged on each plant's RUNNING-MEAN light `p.lightAvg` (an EMA of its effective top-of-plant light),

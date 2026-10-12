@@ -1620,7 +1620,8 @@ console.log('\n— audit fixes: bio-ecology —');
   // 3/4 — CLOSED P & N BUDGETS in the running lake (fish on; plants off — the plant uptake/return is the bio slice's and is
   // measured separately below). Inventory = water + sediment + algae + cyano + DOM + detritus N/P; it may change only by
   // inflow − outflow − burial (P) and inflow + N-fixation − outflow − denitrification (N).
-  const detNut = ww => ww.detritus.reduce((s, d) => s + (d.dead ? 0 : (d.n || 0)), 0);
+  // organic N+P held by detritus particles AND by living plants (each plant banks what it absorbs — world.js `p.nut`)
+  const detNut = ww => ww.detritus.reduce((s, d) => s + (d.dead ? 0 : (d.n || 0)), 0) + ww.plants.reduce((s, p) => s + (p.dead ? 0 : (p.nut || 0)), 0);
   const runBudget = (plants) => {
     seed(4242); const bw = new World(); bw.time = 0.18 * SEASON.YEAR_LEN;
     const keep = CC.PLANT.SEED_RATE; if (!plants) { bw.plants = []; CC.PLANT.SEED_RATE = 0; }
@@ -1642,7 +1643,8 @@ console.log('\n— audit fixes: bio-ecology —');
   check('the through-flow outlet and sediment burial are both real P sinks (the outflow now has a chemical effect)', B.outP > 0.5 && B.buryP > 0.5, `out ${B.outP.toFixed(2)}, buried ${B.buryP.toFixed(2)}`);
   check('no field goes negative or non-finite in the running lake (no pool is overdrawn)', B.neg === 0, `${B.neg} bad samples`);
   const BP = runBudget(true);
-  console.log(`  (info) with plants: unexplained P ${BP.resP.toFixed(3)} / 60 s — the macrophyte uptake ↔ senescence/death return mismatch (plants block, measured separately)`);
+  // plants ON: each plant banks the N+P it absorbs (stoichiometric uptake) and returns its share on shed/graze/death
+  check('P and N stay CLOSED with plants growing, being grazed, shedding and dying (the plant pool is mass-conserving)', Math.abs(BP.resP) < 0.05 && Math.abs(BP.resN) < 0.2 && BP.neg === 0, `P residual ${BP.resP.toFixed(4)}, N residual ${BP.resN.toFixed(4)} (was −0.3…+1.6 P per 60 s)`);
 
   // 4 — N stoichiometry is Redfield-consistent (no N created on recycling) and cyano fixes N only for the deficit
   check('algae take up N at the same Redfield ratio they recycle it (N_USE = P_USE·(1−ORGANIC_P)/ORGANIC_P)', approx(PHYTO.N_USE, PHYTO.P_USE * (1 - NUTRIENT.ORGANIC_P) / NUTRIENT.ORGANIC_P, 1e-3) && approx(CYANO.N_USE, PHYTO.N_USE, 1e-9));
