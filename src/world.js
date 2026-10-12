@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN } from './config.js';
+import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -90,6 +90,13 @@ function pickVariety(bedFrac) {
   for (let i = 0; i < MACRO.length; i++) if (bedFrac >= MACRO[i].zone[0] && bedFrac <= MACRO[i].zone[1]) { if (cands) cands.push(i); else if (c0 < 0) c0 = i; else { cands = [c0, i]; } }
   if (cands) return cands[(rand() * cands.length) | 0];
   return c0 >= 0 ? c0 : 0;   // default to pondweed if nothing matches
+}
+// a newborn's spawn point: scattered in an annulus BROOD.SCATTER around (x, y) — out of the parents' immediate strike
+// reach — and kept inside the water column (above the bed, below the surface). Seeded RNG → deterministic.
+function broodPos(x, y) {
+  const ang = rand(0, Math.PI * 2), r = rand(BROOD.SCATTER[0], BROOD.SCATTER[1]);
+  const bx = clamp(x + Math.cos(ang) * r, 2, W - 2);
+  return { x: bx, y: clamp(y + Math.sin(ang) * r, 2, bedY(bx) - 2) };
 }
 const wrapHue = h => ((h % 360) + 360) % 360;
 // derive a plant's EFFECTIVE per-individual params from its variety (MACRO[v]) × its trait genes (p.gn). Genes are
@@ -276,8 +283,15 @@ export class World {
     }
     return best ? { item: best, dist: Math.sqrt(bd) } : null;
   }
-  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => !it.dead && it.species !== a.species && it.sp.diet.fish && canEat(effSize(it), effSize(a) * (a.bodyMul || 1))); }
-  qPrey(a) { const r = a.senseRange * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => !it.dead && it !== a && canEat(effSize(a), effSize(it) * (it.bodyMul || 1))); }
+  // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
+  // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
+  // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
+  canPrey(pred, prey) {
+    return pred !== prey && !pred.dead && !prey.dead && pred.sp.diet.fish && !(pred.species === prey.species && prey.age < BROOD.GRACE) &&
+      canEat(effSize(pred), effSize(prey) * (prey.bodyMul || 1));
+  }
+  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(it, a)); }
+  qPrey(a) { const r = a.senseRange * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(a, it)); }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, it => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
   // partner nearby by condition (energy) + heritable quality (mean trait gene) + foraging success, and pick
@@ -699,8 +713,8 @@ export class World {
           const clutch = Math.max(1, Math.min(sp.clutch, Math.floor(Math.min(a.energy, b.energy) / sp.reproCost), headroom));
           for (let ci = 0; ci < clutch; ci++) {
             a.energy -= sp.reproCost; b.energy -= sp.reproCost;
-            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360;
-            const child = makeAgent(a.species, clamp((a.x + b.x) / 2 + rand(-6, 6), 2, W - 2), clamp((a.y + b.y) / 2 + rand(-6, 6), 2, H - 2),
+            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = broodPos((a.x + b.x) / 2, (a.y + b.y) / 2);
+            const child = makeAgent(a.species, bp.x, bp.y,
               sp.childEnergy, Math.max(a.gen, b.gen) + 1, childHue, mutate(crossover(a.g, b.g)), 0, mutateGenes(crossoverGenes(a.genes, b.genes)));
             counts[a.species]++; newborns.push(child); child.bornSexual = true; this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
           }
@@ -713,12 +727,16 @@ export class World {
           const sparse = counts[a.species] < popMax(sp) * 0.5;
           if (a.energy >= (sparse ? sp.reproEnergy : sp.reproEnergy * 1.25)) {
             a.mateCd = sp.matingCooldown; a._mated = true;
-            const costMul = sparse ? 1.0 : 1.3;
+            // a lone parent pays the WHOLE cost of each young — what the two sexual parents pay together (2·reproCost),
+            // and never less than the energy the child is born with — so budding can't create energy (it used to cost
+            // reproCost×1 for a childEnergy ≈ 2·reproCost child: a free-energy pump).
+            const costMul = sparse ? 1.0 : 1.3, budCost = Math.max(2 * sp.reproCost, sp.childEnergy) * costMul;
             const headroom = WORLD.GLOBAL_MAX - (this.agents.length + newborns.length);
-            const clutch = Math.max(1, Math.min(Math.ceil(sp.clutch / 2), Math.floor(a.energy / (sp.reproCost * costMul)), headroom));
+            const clutch = Math.max(1, Math.min(Math.ceil(sp.clutch / 2), Math.floor(a.energy / budCost), headroom));
             for (let ci = 0; ci < clutch; ci++) {
-              a.energy -= sp.reproCost * costMul;
-              const child = makeAgent(a.species, clamp(a.x + rand(-6, 6), 2, W - 2), clamp(a.y + rand(-6, 6), 2, H - 2),
+              a.energy -= budCost;
+              const bp = broodPos(a.x, a.y);
+              const child = makeAgent(a.species, bp.x, bp.y,
                 sp.childEnergy, a.gen + 1, (a.hue + gauss() * 6 + 360) % 360, mutate(a.g), 0, mutateGenes(a.genes));
               counts[a.species]++; newborns.push(child); this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
             }

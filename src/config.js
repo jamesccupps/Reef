@@ -55,6 +55,17 @@ export const SPAWN = {
   SHARP: 4,      // how tightly breeding concentrates around the peak (≈⅓-of-a-year spawning season — a recognizable spring/summer boom)
 };
 
+// ---------- brood protection (newborn cannibalism) ----------
+// Newborns used to appear ±6 px from their parents — inside strike reach — and qPrey had no kin filter, so bass/pike
+// ate their own brood within ~2 s for MORE energy than the spawning cost (an energy pump lifetime learning rewarded).
+// A short post-birth GRACE (eggs/larvae hidden in the nest/weeds) makes a conspecific newborn not-prey for its first
+// seconds; the brood is SCATTERED out of immediate strike range; and qThreat is symmetric with qPrey, so after the
+// grace a juvenile senses (and can flee) a cannibal adult of its own kind. Real post-grace cannibalism stays possible.
+export const BROOD = {
+  GRACE: 5,      // s after birth during which a fish is not prey for its OWN species (other species can still eat it)
+  SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
+};
+
 // ---------- lake basin (non-rectangular bed) ----------
 // The lake is a cross-section: flat surface on top. Real lakes are not a smooth U — each shore
 // has a flat shallow **littoral shelf**, then a steeper **drop-off** into a flat-ish deep basin.
