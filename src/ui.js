@@ -240,12 +240,25 @@ export class UI {
     });
   }
 
+  // WINDOW SCREENSAVER (#screensaver in the URL, set by "Synapse Reef - Screensaver.bat"): the lake fills the browser
+  // window (body.ss; the browser itself is full screen) and behaves exactly like element fullscreen — relaxed pace,
+  // tour, idle chrome fade. Element fullscreen needs a user gesture, so a launcher can't request it; this needs none.
+  setWindowScreensaver(on) {
+    this._ss = !!on;
+    if (document.body) document.body.classList.toggle('ss', this._ss);
+    this._onFullscreenChange();
+  }
+  screensaverOn() { return !!document.fullscreenElement || !!this._ss; }
+
   // fullscreen = screensaver mode: ease into a relaxed pace + cinematic tour; on exit restore the speed AND the paused
   // state from before fullscreen (setSpeedVal always unpauses). If the user paused during fullscreen, stay paused.
+  // Element fullscreen and the window screensaver can overlap; only the overall on/off edge changes pace and tour.
   _onFullscreenChange() {
-    const isOn = !!document.fullscreenElement;
+    const isOn = this.screensaverOn();
     if (document.body) document.body.classList.toggle('isfull', isOn);
     this.renderer.resize();
+    if (isOn === !!this._ssActive) return;
+    this._ssActive = isOn;
     if (isOn) {
       if (this._priorSpeed == null) { this._priorSpeed = this.speed; this._priorPaused = this.paused; }
       this.setSpeedVal(this.relaxSpeed); this.camera.startTour();
@@ -358,33 +371,54 @@ export class UI {
   setRate(r) { this.rate = r; }
 
   frame(dt) {
-    const w = this.world, env = w.env;
-    if (this.inspector) this.inspector.draw(w.inspectAgent());
+    const w = this.world, full = this.screensaverOn();
+    // fullscreen / the window screensaver hide the side panels: skip the brain view and the panel refresh there
+    if (this.inspector && !full) this.inspector.draw(w.inspectAgent());
     this._perf();
-    // screensaver idle state (fullscreen only): 3.5 s without input → fade the chrome + hide the cursor
+    // screensaver idle state (fullscreen or the window screensaver only): 3.5 s without input → fade the chrome + hide the cursor
     const now = typeof performance !== 'undefined' ? performance.now() : 0;
-    const idle = typeof document !== 'undefined' && !!document.fullscreenElement && now - this._lastActive > 3500;
+    const idle = typeof document !== 'undefined' && full && now - this._lastActive > 3500;
     if (idle !== this._idle) { this._idle = idle; const vp = $('viewport'); if (vp && vp.classList) vp.classList.toggle('idle', idle); }
 
+    // ~8 Hz refresh of the text, charts and minimap, SPREAD over consecutive frames (one slice per frame): run as one
+    // block it was a 3–6 ms burst eight times a second, a visible periodic hitch at 1080p. Slices that read layout
+    // (the canvases' getBoundingClientRect) run in later frames than the text writes, so they never force a layout.
     this._acc += dt;
-    if (this._acc < 0.12) return;       // ~8 Hz for text/charts/minimap
-    this._acc = 0;
-    const c = w.census(), sd = w.speciesDetail();
+    if (this._acc >= 0.12) { this._acc = 0; this._uiSlot = 0; }
+    if (this._uiSlot == null) return;
+    const slot = this._uiSlot++;
+    if (slot === 0) { this._c = w.census(); this._sd = w.speciesDetail(); this._readouts(this._c, this._sd, full); }
+    else if (slot === 1) this._minimap();
+    else if (full) this._uiSlot = null;   // hidden panels: done
+    else if (slot === 2) this._selection();
+    else if (slot === 3) { this._foodweb(this._c); this._evo(this._c, this._sd); this._cognition(); }
+    else if (slot === 4) this._charts();
+    else if (slot === 5) this._depthProfile();
+    else this._uiSlot = null;
+  }
+
+  // the text readouts: the side panels (skipped while they're hidden in fullscreen) and the lake overlay's stats box
+  _readouts(c, sd, full) {
+    const w = this.world, env = w.env;
     let total = 0;
+    for (const k of SPECIES) total += c[k];
+    const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+    const mins = Math.floor(env.t * 1440), hh = String((mins / 60 | 0)).padStart(2, '0'), mm = String(mins % 60).padStart(2, '0');
+    const phase = env.light > 0.5 ? 'Day' : env.light > 0.08 ? (env.t < 0.5 ? 'Dawn' : 'Dusk') : 'Night';
+    set('ps-gen', 'gen ' + fmtInt(w.maxGen)); set('ps-pop', total + ' fish'); set('ps-clock', `${hh}:${mm}`);
+    set('ps-phase', phase); set('ps-season', `${env.monthName()} · ${env.seasonName()}`); set('ps-weather', env.weatherName()); set('ps-temp', this.fmtTemp(env.tempC, 0)); set('ps-o2', (w.avgO2() * 100 | 0) + '%');
+    for (const k of SPECIES) if (this.psEls && this.psEls[k]) this.psEls[k].textContent = c[k];
+    if (full) return;
     for (const k of SPECIES) {
       if (this.countEls && this.countEls[k]) this.countEls[k].textContent = c[k];
       // per-species genetics: top generation reached · mean body-size gene (watch evolution live)
       if (this.detEls && this.detEls[k]) this.detEls[k].textContent = c[k] ? `g${fmtInt(sd[k].maxGen)} · ${fmtNum(sd[k].gSize, 2)}×` : '';
-      total += c[k];
     }
-    const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
     set('stat-gen', fmtInt(w.maxGen)); set('stat-pop', total);
     // the live rate is ~30–240 steps/s (60 at 1×), so show the integer; "k" only if a fast machine ever runs that far ahead
     set('stat-sps', this.paused ? 'paused' : this.rate >= 1000 ? `${(this.rate / 1000).toFixed(1)}k steps/s` : `${Math.round(this.rate)} steps/s`);
     this.syncWeatherUI();
 
-    const mins = Math.floor(env.t * 1440), hh = String((mins / 60 | 0)).padStart(2, '0'), mm = String(mins % 60).padStart(2, '0');
-    const phase = env.light > 0.5 ? 'Day' : env.light > 0.08 ? (env.t < 0.5 ? 'Dawn' : 'Dusk') : 'Night';
     set('env-clock', `${hh}:${mm}`); set('env-phase', phase); set('env-weather', env.weatherName());
     set('env-month', env.monthName()); set('env-season', env.seasonName()); set('env-year', 'Year ' + (Math.floor(env.year) + 1));
     set('env-temp', this.fmtTemp(env.tempC, 1)); set('env-o2', (w.avgO2() * 100 | 0) + '%');
@@ -401,14 +435,6 @@ export class UI {
     set('env-cyano', (ed.cyano * 100 | 0) + '%' + (ed.cyano > 0.4 ? ' scum' : ''));
     set('env-dom', ed.dom.toFixed(2));
     set('env-secchi', (ed.secchi | 0) + 'px');
-
-    set('ps-gen', 'gen ' + fmtInt(w.maxGen)); set('ps-pop', total + ' fish'); set('ps-clock', `${hh}:${mm}`);
-    set('ps-phase', phase); set('ps-season', `${env.monthName()} · ${env.seasonName()}`); set('ps-weather', env.weatherName()); set('ps-temp', this.fmtTemp(env.tempC, 0)); set('ps-o2', (w.avgO2() * 100 | 0) + '%');
-    for (const k of SPECIES) if (this.psEls && this.psEls[k]) this.psEls[k].textContent = c[k];
-
-    this._selection();
-    this._foodweb(c); this._evo(c, sd); this._cognition();
-    this._charts(); this._minimap(); this._depthProfile();
   }
 
   // the click-a-fish readout. Agent fields can come straight from an imported file (gen, eaten, …), so every value is

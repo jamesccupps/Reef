@@ -2,3 +2,6 @@
 *.png binary
 *.jpg binary
 *.zip binary
+# cmd.exe misparses labels/blocks in LF-only batch files
+*.bat text eol=crlf
+*.cmd text eol=crlf

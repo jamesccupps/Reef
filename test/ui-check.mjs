@@ -69,7 +69,8 @@ const camera = new Camera(WORLD.W, WORLD.H, CAMERA); camera.setViewport(1280, 72
 const renderer = { opts: {}, stats: { fps: 60, drawn: 0, total: 0, sprites: 0, dots: 0, simMs: 0 }, sprites: { map: new Map() }, canvas: { width: 1280, height: 720 }, resize() {}, drawMinimap() {} };
 const inspector = new Inspector($('brain'));
 const ui = new UI(world, renderer, inspector, camera);
-const tick = () => { ui._acc = 1; ui.frame(1 / 30); };
+// one full ~8 Hz refresh: it's spread over consecutive frames (one slice each), so run frames until the cycle ends
+const tick = () => { ui._acc = 1; ui.frame(1 / 30); for (let i = 0; i < 20 && ui._uiSlot != null; i++) ui.frame(0); };
 
 // 1. XSS: escaping + the selection readout built from a malicious, file-derived gen/eaten
 const evil = '<img src=x onerror=alert(1)>';
@@ -173,6 +174,20 @@ check('sanitizeChampions keeps known species + plain finite numbers only', Objec
   const inFs = !ui.paused && ui.speed === ui.relaxSpeed;
   doc.fullscreenElement = null; ui._onFullscreenChange();
   check('fullscreen runs the relaxed screensaver, and leaving it restores pause + speed', inFs && ui.paused && ui.speed === 2, `paused ${ui.paused}, speed ${ui.speed}`);
+  ui.setSpeedVal(1);
+}
+
+// 6b. the window screensaver (#screensaver, from the launcher) behaves like fullscreen, and overlapping it with element
+// fullscreen doesn't double-enter (which would record the relaxed pace as the "prior" speed) or exit early
+{
+  ui.setSpeedVal(2);
+  ui.setWindowScreensaver(true);
+  const on1 = ui.screensaverOn() && ui.speed === ui.relaxSpeed && ui.camera.mode === 'tour';
+  doc.fullscreenElement = $('viewport'); ui._onFullscreenChange();
+  doc.fullscreenElement = null; ui._onFullscreenChange();
+  const still = ui.screensaverOn() && ui.speed === ui.relaxSpeed && ui.camera.mode === 'tour';
+  ui.setWindowScreensaver(false);
+  check('the window screensaver relaxes + tours, survives an element-fullscreen round trip, and restores the speed', on1 && still && !ui.screensaverOn() && ui.speed === 2 && ui.camera.mode !== 'tour', `on ${on1} still ${still} speed ${ui.speed} mode ${ui.camera.mode}`);
   ui.setSpeedVal(1);
 }
 

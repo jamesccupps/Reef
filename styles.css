@@ -179,13 +179,16 @@ body{
   font-family:var(--mono); font-size:10.5px; color:var(--phosphor); letter-spacing:.02em; line-height:1.4}
 .perf.show{display:block}
 
-.viewport:fullscreen{display:block; padding:0; border:0; border-radius:0; background:#01040a}
-.viewport:fullscreen::before{display:none}
-.viewport:fullscreen #tank{width:100vw; height:100vh; border-radius:0; cursor:default}
+/* element fullscreen, and the window screensaver (body.ss, from #screensaver: the lake fills a full-screen browser window) */
+.viewport:fullscreen, body.ss .viewport{display:block; padding:0; border:0; border-radius:0; background:#01040a}
+body.ss{overflow:hidden}
+body.ss .viewport{position:fixed; inset:0; z-index:100; margin:0}
+.viewport:fullscreen::before, body.ss .viewport::before{display:none}
+.viewport:fullscreen #tank, body.ss #tank{width:100vw; height:100vh; border-radius:0; cursor:default}
 .viewport:fullscreen .legend{display:none}
-.viewport:fullscreen .pondstats{top:22px; left:22px; font-size:13px}
-.viewport:fullscreen .pondstats .ps-top b{font-size:13px}
-.viewport:fullscreen .minimap{width:clamp(200px,18vw,340px)}
+.viewport:fullscreen .pondstats, body.ss .pondstats{top:22px; left:22px; font-size:13px}
+.viewport:fullscreen .pondstats .ps-top b, body.ss .pondstats .ps-top b{font-size:13px}
+.viewport:fullscreen .minimap, body.ss .minimap{width:clamp(200px,18vw,340px)}
 /* screensaver: in fullscreen the chrome fades out after a few idle seconds (ui.js toggles .idle) and returns on any input */
 .viewport .pondstats, .viewport .camctl, .viewport .minimap, .viewport .fsbtn{transition:opacity .9s ease}
 .viewport.idle .pondstats, .viewport.idle .camctl, .viewport.idle .minimap, .viewport.idle .fsbtn{opacity:0; pointer-events:none}
@@ -202,9 +205,9 @@ body{
    (the per-species counts are in the legend just below). Fullscreen keeps its own overlay layout. */
 @media (max-width:560px){
   .viewport{padding:6px}
-  .viewport:not(:fullscreen) .camctl{position:static; margin-top:6px; justify-content:center; flex-wrap:wrap; background:none; border:0; padding:0}
-  .viewport:not(:fullscreen) .minimap{display:none}
-  .viewport:not(:fullscreen) .ps-species{display:none}
+  body:not(.ss) .viewport:not(:fullscreen) .camctl{position:static; margin-top:6px; justify-content:center; flex-wrap:wrap; background:none; border:0; padding:0}
+  body:not(.ss) .viewport:not(:fullscreen) .minimap{display:none}
+  body:not(.ss) .viewport:not(:fullscreen) .ps-species{display:none}
   .pondstats{top:8px; left:8px; padding:4px 7px; font-size:9.5px; line-height:1.4; max-width:80%}
   .ps-top b, .ps-top span{font-size:10px}
   .fsbtn{top:8px; right:8px; width:26px; height:26px; font-size:13px}
