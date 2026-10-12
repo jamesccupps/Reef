@@ -402,34 +402,94 @@ export class Environment {
   }
 
   // ---- serialization (for save/load) ----
+  // Everything that shapes the future is saved — incl. the cached means (turbidity reads them BEFORE the next step
+  // recomputes them) and the grid dimensions (so a different-sized grid is RESAMPLED, not row-sheared, on load).
   toJSON() {
     return {
       t: this.t, weather: this.weather, tempC: this.tempC, turbidity: this.turbidity,
-      strat: this.strat, windT: this._windT, weatherTimer: this.weatherTimer, forced: this.forced,
+      strat: this.strat, windT: this._windT, weatherTimer: this.weatherTimer, forced: !!this.forced,
+      light: this.light, tempNorm: this.tempNorm, year: this.year, wind: this.wind, flash: this.flash,
+      meanPhyto: this._meanPhyto, meanCyano: this._meanCyano, meanDOM: this._meanDOM,
+      W, H, cols: COLS, rows: ROWS,
       o2: Array.from(this.o2), nh4: Array.from(this.nh4), no3: Array.from(this.no3), phos: Array.from(this.phos),
       phyto: Array.from(this.phyto), cyano: Array.from(this.cyano), sedP: Array.from(this.sedP),
       dom: Array.from(this.dom),
     };
   }
-  load(s) {
-    this.t = s.t; this.weather = s.weather; this.tempC = s.tempC;
-    if (s.turbidity != null) this.turbidity = s.turbidity;
-    // restore the slow integrator/timer state so a stratified summer reloads as one (not fully mixed)
-    if (s.strat != null) this.strat = s.strat;
-    if (s.windT != null) this._windT = s.windT;
-    if (s.weatherTimer != null) this.weatherTimer = s.weatherTimer;
-    if (s.forced != null) this.forced = s.forced;
-    // tolerate field-grid size changes (e.g. a save from a differently-sized world):
-    // copy what overlaps, leave the rest at its constructed default.
-    const copy = (dst, src) => { if (!src) return; const n = Math.min(dst.length, src.length); for (let i = 0; i < n; i++) dst[i] = src[i]; };
-    copy(this.o2, s.o2); copy(this.phyto, s.phyto); copy(this.cyano, s.cyano); copy(this.sedP, s.sedP); copy(this.phos, s.phos);
-    copy(this.dom, s.dom);   // dissolved organic matter (microbial loop); older saves lack it → stays at the seed (0)
+  // Two-phase, validated load: everything is parsed into locals first and a descriptive Error is thrown BEFORE any field
+  // changes if the input is unusable; then it commits. Every scalar is checked (finite, in range, defaulted when missing);
+  // every field cell must be a finite number (else it keeps the fresh default) and is clamped to [0, FIELD_MAX] so an
+  // absurd value can't overflow into NaN. `hint` = { W, H, time } from the world save (older env saves lack dims/year).
+  load(s, hint = {}) {
+    if (s == null || typeof s !== 'object' || Array.isArray(s)) throw new Error('environment: expected a saved environment object');
+    const num = (v, d) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+    let t = num(s.t, 0.30); if (!(t >= 0 && t < 1)) t = ((t % 1) + 1) % 1;              // time of day wrapped into [0,1)
+    const weather = Number.isInteger(s.weather) && s.weather >= 0 && s.weather <= 3 ? s.weather : 0;
+    const tempC = clamp(num(s.tempC, ENV.TEMP_BASE), -20, 60);
+    const strat = clamp(num(s.strat, 0), 0, 1), turbidity = clamp(num(s.turbidity, TURBIDITY.BASE), 0, 1);
+    const windT = num(s.windT, 0), weatherTimer = num(s.weatherTimer, ENV.WEATHER_DWELL[weather]), forced = s.forced === true;
+    const light = clamp(num(s.light, daylight(t) * (1 - ENV.CLOUD_COVER[weather])), 0, 1);
+    const tempNorm = clamp(num(s.tempNorm, (tempC - (ENV.TEMP_BASE - 12)) / 22), 0, 1);
+    const year = Math.max(0, num(s.year, num(hint.time, 0) / SEASON.YEAR_LEN));
+    const wind = num(s.wind, WIND.BASE * Math.sin(windT * 0.045) * WIND.WEATHER[weather]), flash = clamp(num(s.flash, 0), 0, 1);
+    // grid dims of the save: explicit (v24+), else inferred from the saved world size, else assumed current
+    let sc = s.cols, sr = s.rows;
+    if (!(Number.isInteger(sc) && Number.isInteger(sr) && sc > 0 && sr > 0)) {
+      const hw = num(hint.W, 0), hh = num(hint.H, 0);
+      if (hw > 0 && hh > 0) { sc = Math.max(1, Math.round(hw * COLS / W)); sr = Math.max(1, Math.round(hh * ROWS / H)); } else { sc = COLS; sr = ROWS; }
+    }
+    const FIELD_MAX = 1e6;
+    const cell = (v, d) => (typeof v === 'number' && Number.isFinite(v) ? clamp(v, 0, FIELD_MAX) : d);
+    // read a 2-D field into a fresh copy of `def` — direct when the grid matches, nearest-cell RESAMPLE by (cx,cy) when
+    // the saved grid differs; an unreadable shape keeps the default. `xf` transforms each value (legacy pool splits).
+    const field2 = (src, def, xf = v => v) => {
+      const out = Float32Array.from(def);
+      if (!Array.isArray(src)) return out;
+      let c = sc, r = sr;
+      if (src.length !== c * r) { if (src.length === COLS * ROWS) { c = COLS; r = ROWS; } else return out; }
+      for (let cy = 0; cy < ROWS; cy++) {
+        const oy = r === ROWS ? cy : Math.min(r - 1, Math.floor((cy + 0.5) * r / ROWS));
+        for (let cx = 0; cx < COLS; cx++) {
+          const ox = c === COLS ? cx : Math.min(c - 1, Math.floor((cx + 0.5) * c / COLS)), i = cy * COLS + cx;
+          out[i] = cell(xf(src[oy * c + ox]), out[i]);
+        }
+      }
+      return out;
+    };
+    const field1 = (src, def) => {   // per-column (sedP)
+      const out = Float32Array.from(def);
+      if (!Array.isArray(src)) return out;
+      const c = src.length === sc ? sc : src.length === COLS ? COLS : 0; if (!c) return out;
+      for (let cx = 0; cx < COLS; cx++) out[cx] = cell(src[c === COLS ? cx : Math.min(c - 1, Math.floor((cx + 0.5) * c / COLS))], out[cx]);
+      return out;
+    };
+    const o2 = field2(s.o2, new Float32Array(COLS * ROWS).fill(ENV.O2_START));
+    const phyto = field2(s.phyto, new Float32Array(COLS * ROWS).fill(PHYTO.START));
+    const cyano = field2(s.cyano, new Float32Array(COLS * ROWS).fill(CYANO.START));
+    const dom = field2(s.dom, new Float32Array(COLS * ROWS).fill(MICROBE.START));   // older saves lack it → the seed
+    const sedP = field1(s.sedP, new Float32Array(COLS).fill(SED_P.START));
+    let phos = field2(s.phos, new Float32Array(COLS * ROWS).fill(NUTRIENT.P_START));
+    let nh4 = new Float32Array(COLS * ROWS).fill(NCYCLE.NH4_START), no3 = new Float32Array(COLS * ROWS).fill(NCYCLE.NO3_START);
     // Nitrogen pools. v9+ saves the nh4/no3 split directly; tolerate older saves:
     //   v7/v8 had a single `din` pool → split it half ammonium / half nitrate;
     //   legacy (≤v6) `nut` was a single combined N+P pool → split off the N share, then halve it across nh4/no3.
-    if (s.nh4 || s.no3) { copy(this.nh4, s.nh4); copy(this.no3, s.no3); }
-    else if (s.din) { const n = Math.min(this.nh4.length, s.din.length); for (let i = 0; i < n; i++) { this.nh4[i] = s.din[i] * 0.5; this.no3[i] = s.din[i] * 0.5; } }
-    else if (s.nut) { const n = Math.min(this.nh4.length, s.nut.length); for (let i = 0; i < n; i++) { const din = s.nut[i] * (1 - NUTRIENT.ORGANIC_P); this.nh4[i] = din * 0.5; this.no3[i] = din * 0.5; this.phos[i] = s.nut[i] * NUTRIENT.ORGANIC_P; } }
+    const fin = v => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
+    if (s.nh4 || s.no3) { nh4 = field2(s.nh4, nh4); no3 = field2(s.no3, no3); }
+    else if (s.din) { nh4 = field2(s.din, nh4, v => fin(v) * 0.5); no3 = field2(s.din, no3, v => fin(v) * 0.5); }
+    else if (s.nut) {
+      nh4 = field2(s.nut, nh4, v => fin(v) * (1 - NUTRIENT.ORGANIC_P) * 0.5); no3 = field2(s.nut, no3, v => fin(v) * (1 - NUTRIENT.ORGANIC_P) * 0.5);
+      phos = field2(s.nut, phos, v => fin(v) * NUTRIENT.ORGANIC_P);
+    }
+    // cached means: saved (v24+) or recomputed from the loaded fields with the step's definitions (photic rows < 0.45 for
+    // green phyto, surface rows < 0.12 for the cyano scum, every cell for DOM)
+    const bandMean = (f, maxFrac) => { let sm = 0, n = 0; for (let cy = 0; cy < ROWS; cy++) { if (maxFrac < 1 && (cy + 0.5) / ROWS >= maxFrac) continue; for (let cx = 0; cx < COLS; cx++) { sm += f[cy * COLS + cx]; n++; } } return n ? sm / n : 0; };
+    const meanPhyto = Math.max(0, num(s.meanPhyto, bandMean(phyto, 0.45)));
+    const meanCyano = Math.max(0, num(s.meanCyano, bandMean(cyano, 0.12)));
+    const meanDOM = Math.max(0, num(s.meanDOM, bandMean(dom, 1)));
+    // ---- commit (nothing above touched `this`) ----
+    Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash });
+    this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM;
+    this.o2.set(o2); this.phyto.set(phyto); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
   }
 }
 
