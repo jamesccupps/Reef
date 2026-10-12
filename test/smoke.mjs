@@ -178,5 +178,148 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   check('  → a sprite builds at every effort bucket (valid canvas, no crash)', glide.canvas.width > 0 && sprint.canvas.width > 0, `${glide.canvas.width}x${glide.canvas.height}`);
 });
 
+// ==== audit-fixes: render ====
+{
+  const RJ = await import('../src/render.js');
+  const GP = await import('../src/glpost.js');
+  const CJ = await import('../src/camera.js');
+  const { angDiff } = await import('../src/core.js');
+
+  // (1) GL orientation: FRAG_COMP measures depth ONLY through dpt = 1 - uv.y (uv.y = 0 is the screen BOTTOM), and the
+  // renderer sends the sun in that same uv space — the sun sits at the surface (screen top) → sunUV.y must be near 1.
+  const uvY = (GP.FRAG_COMP.match(/uv\.y/g) || []).length;
+  check('FRAG_COMP: depth comes only from dpt = 1.0 - uv.y (no raw uv.y depth terms left)', /float dpt\s*=\s*1\.0\s*-\s*uv\.y/.test(GP.FRAG_COMP) && uvY === 1, `uv.y occurrences ${uvY}`);
+  const stubGL = { gl: {}, fishReady: true, failed: false, lost: false, fishFailed: false, last: null,
+    resize() {}, present(scene, p) { this.last = p; return true; }, dispose() {} };
+  const t2 = doc.createElement('canvas'), parent = { child: null, replaceChild(n) { this.child = n; } };
+  t2.id = 'tank'; t2.parentNode = parent; t2.cloneNode = () => { const c = doc.createElement('canvas'); c.id = t2.id; return c; };
+  const cam2 = new Camera(WORLD.W, WORLD.H, CAMERA);
+  const r2 = new Renderer(t2, world, cam2);
+  r2.present = stubGL;
+  cam2.frameAll(); cam2.zoom = cam2.tzoom; cam2.cx = cam2.tcx; cam2.cy = cam2.tcy;
+  world.env.light = 0.9; world.env.t = 0.5;
+  world.selectedId = world.agents[0].id;
+  tryStep('GL-path draw against a stub GL presenter (fish quads + overlay collected)', () => r2.draw(10));
+  const P1 = stubGL.last;
+  check('  → sun UV is in the shader\'s bottom-origin uv space (surface sun → v near 1)', P1 && P1.sunUV[1] > 0.8 && P1.sunUV[1] <= 1.2, `sunUV ${P1 && P1.sunUV.map(v => v.toFixed(3))}`);
+  check('  → zoom param is DPR/size-independent (zoom/fitZoom ≈ 1 at whole-lake) and dpr is passed', P1 && Math.abs(P1.zoom - 1) < 0.02 && P1.dpr === r2.dpr, `zoom ${P1 && P1.zoom}, dpr ${P1 && P1.dpr}`);
+  cam2.setZoomRel(8); cam2.zoom = cam2.tzoom; const a0 = world.agents[0]; cam2.cx = cam2.tcx = a0.x; cam2.cy = cam2.tcy = a0.y; cam2._clamp();
+  r2.draw(10.5); const P2 = stubGL.last;
+  check('  → GL fish carry a light×depth `bright` factor in (0,1] (sprite built once at full light)', P2.fish && P2.fish.length > 0 && P2.fish.every(f => f.bright > 0 && f.bright <= 1), `${P2.fish && P2.fish.length} quads`);
+  check('  → overlays (selection ring, surface line, ripples) go to an overlay canvas drawn OVER the GL fish', !!(P2.overlay && P2.overlay.canvas && P2.overlay.x >= 0 && P2.overlay.y >= 0), P2.overlay ? `at ${P2.overlay.x},${P2.overlay.y}` : 'none');
+  // (2) presenter failure → swap #tank for a FRESH canvas with a Canvas2D presenter, re-wire hook fires, 2D post resumes
+  let rewired = null; r2.onCanvasReplaced = c => { rewired = c; };
+  stubGL.failed = true; stubGL.fatal = 'test';
+  tryStep('draw after a fatal GL failure', () => r2.draw(11));
+  check('  → swapped to a fresh canvas + Canvas2D presenter, input re-wire hook called, postInGL false',
+    r2.canvas !== t2 && parent.child === r2.canvas && rewired === r2.canvas && r2.present instanceof GP.Canvas2DPresenter && r2.postInGL === false && r2.glFish === false,
+    `pres ${r2.present.constructor.name}, postInGL ${r2.postInGL}`);
+  // a lost-and-not-restored context also falls back (after the timeout); a lost one inside the window keeps GL but no GL post
+  const r3 = new Renderer(doc.createElement('canvas'), world, new Camera(WORLD.W, WORLD.H, CAMERA));
+  const stub3 = { ...stubGL, failed: false, lost: true, lostAt: performance.now() }; r3.present = stub3; r3.draw(1);
+  check('  → during a context loss postInGL/glFish are false (2D post runs) but GL is kept while restore may come', r3.postInGL === false && r3.glFish === false && r3.present === stub3);
+  stub3.lostAt = performance.now() - 10000; r3.draw(2);
+  check('  → a loss not restored within the timeout falls back to Canvas2D', r3.present instanceof GP.Canvas2DPresenter);
+  world.selectedId = null;
+
+  // (6) sprite hue: the paint hue is the bucket CENTRE the key rounded to — error ≤ half a bucket, unbiased
+  let maxE = 0, sumE = 0, nE = 0;
+  for (let h = 0; h < 360; h += 0.37) { const e = angDiff(RJ.bucketHue(RJ.hueBucket(h, 16), 16) * Math.PI / 180, h * Math.PI / 180) * 180 / Math.PI; maxE = Math.max(maxE, Math.abs(e)); sumE += e; nE++; }
+  check('sprite hue bucket → paint hue: |error| ≤ 11.25° and mean error ≈ 0 (was +11.25° biased)', maxE <= 11.25 + 1e-6 && Math.abs(sumE / nE) < 0.3, `max ${maxE.toFixed(2)}°, mean ${(sumE / nE).toFixed(3)}°`);
+
+  // (7) world-aligned bed/surface sampling covers [x0,x1] at every tour zoom and its interior vertices are pan-stable
+  {
+    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1920, 1080);
+    let worstGap = 0, badAlign = 0, badStep = 0;
+    for (let rel = 1; rel <= 30; rel += 0.37) {
+      cam.tzoom = cam.zoom = cam.fitZoom * rel;
+      for (let cx = 50; cx < WORLD.W - 50; cx += 97) {
+        cam.cx = cam.tcx = cx; cam.cy = cam.tcy = WORLD.H * 0.8; cam._clamp();
+        const vr = cam.visibleRect(), x0 = Math.max(0, vr.x0), x1 = Math.min(WORLD.W, vr.x1);
+        const s = RJ.quantStep((x1 - x0) / 150, 5), xs = RJ.alignedSamples(x0, x1, s, 0, WORLD.W);
+        worstGap = Math.max(worstGap, (xs[0] - x0) * cam.zoom, (x1 - xs[xs.length - 1]) * cam.zoom);
+        for (let i = 1; i < xs.length; i++) if (xs[i] - xs[i - 1] > s + 1e-9) badStep++;
+        for (let i = 0; i < xs.length - 1; i++) if (xs[i] !== 0 && Math.abs(xs[i] / s - Math.round(xs[i] / s)) > 1e-9) badAlign++;
+      }
+    }
+    check('bed/surface samples reach both screen edges (no unfilled strip), step ≤ s, world-aligned vertices', worstGap <= 0 && badStep === 0 && badAlign === 0, `worst edge gap ${worstGap.toFixed(2)}px, badStep ${badStep}, badAlign ${badAlign}`);
+  }
+
+  // (8) heading snap on entering view: a fish NOT drawn last frame snaps rHeading; one drawn last frame eases
+  {
+    const a = world.agents[1] || world.agents[0];
+    camera.setZoomRel(10); camera.zoom = camera.tzoom; camera.cx = camera.tcx = a.x; camera.cy = camera.tcy = a.y; camera._clamp();
+    a._rFrame = -99; a.rHeading = a.heading + 2.5; renderer.draw(20);
+    const snapped = Math.abs(angDiff(a.rHeading, a.heading)) < 1e-9;
+    a.rHeading = a.heading + 2.5; renderer.draw(20.016);
+    const eased = Math.abs(angDiff(a.rHeading, a.heading)) > 0.5;
+    check('a fish entering view snaps its eased heading; a fish already in view keeps easing', snapped && eased, `snapped ${snapped}, eased ${eased}`);
+  }
+
+  // (17) render interpolation helpers (render-only _px/_py/_ph; the sim never reads them)
+  {
+    const L = CJ.lerpAngle(3.0, -3.0, 0.5);
+    const a = { x: 10, y: 20, heading: 0.5, _px: 6, _py: 24, _ph: 0.1 };
+    const far = { x: 500, y: 20, heading: 1, _px: 10, _py: 20, _ph: 0 };
+    check('lerpAngle takes the short way across ±π', Math.abs(Math.abs(L) - Math.PI) < 1e-9, `lerpAngle(3,-3,.5) = ${L.toFixed(4)}`);
+    check('interpX/Y/H: alpha 0 → previous, 1 → current, 0.5 → midpoint; no prev / teleport → current',
+      CJ.interpX(a, 0) === 6 && CJ.interpY(a, 1) === 20 && Math.abs(CJ.interpX(a, 0.5) - 8) < 1e-12 && Math.abs(CJ.interpH(a, 0.5) - 0.3) < 1e-12 &&
+      CJ.interpX({ x: 3, y: 4, heading: 0 }, 0) === 3 && CJ.interpX(far, 0) === 500);
+    const ag = [{ x: 1, y: 2, heading: 3 }]; CJ.snapshotPrev(ag);
+    check('snapshotPrev records the pre-step pose', ag[0]._px === 1 && ag[0]._py === 2 && ag[0]._ph === 3);
+    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(8); cam.zoom = cam.tzoom;
+    const fish = { id: 777, x: 900, y: 500, heading: 0, _px: 860, _py: 460, _ph: 0 };
+    cam.follow(777); cam.update(1e3, { agents: [fish] }, 0.25);
+    check('camera follow targets the INTERPOLATED (drawn) position', Math.abs(cam.tcx - 870) < 1e-9 && Math.abs(cam.tcy - 470) < 1e-9, `tcx ${cam.tcx}, tcy ${cam.tcy}`);
+  }
+
+  // (15) frame-loop guard: re-arms BEFORE the body, so a throwing frame never stops the loop
+  {
+    const q = []; let errs = 0, ran = 0;
+    const loop = RJ.makeGuardedLoop(cb => q.push(cb), () => { ran++; if (ran === 1) throw new Error('boom'); }, () => { errs++; });
+    loop(0);
+    const armedAfterThrow = q.length === 1; if (q.length) q.shift()(16);
+    check('guarded frame loop re-arms after a throw and keeps running', armedAfterThrow && errs === 1 && ran === 2 && q.length === 1, `armed ${armedAfterThrow}, errs ${errs}, ran ${ran}`);
+  }
+
+  // (4) alpha-bleed: transparent texels take the nearest opaque colour (far ones the mean); alpha never changes
+  {
+    const w = 24, h = 9, d = new Uint8ClampedArray(w * h * 4);
+    const put = (x, y, r, g, b) => { const i = (y * w + x) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255; };
+    put(2, 4, 200, 40, 10); put(21, 4, 10, 40, 200);
+    const alphaBefore = Array.from({ length: w * h }, (_, i) => d[i * 4 + 3]);
+    GP.bleedAlpha(d, w, h, 8, 8);
+    const at = (x, y) => [d[(y * w + x) * 4], d[(y * w + x) * 4 + 1], d[(y * w + x) * 4 + 2]];
+    const nearL = at(3, 5), nearR = at(20, 3), mid = at(12, 0);
+    check('bleedAlpha floods edge colour into transparent texels, alpha untouched',
+      nearL[0] === 200 && nearL[2] === 10 && nearR[2] === 200 && Math.abs(mid[0] - 105) <= 1 && alphaBefore.every((a, i) => d[i * 4 + 3] === a),
+      `nearL ${nearL}, nearR ${nearR}, mid ${mid}`);
+  }
+
+  // (9) shader clock wrap keeps every periodic FRAG_COMP sin(k·t) term continuous, and stays bounded
+  {
+    const t = 98765.4321, tw = GP.wrapShaderTime(t);
+    const ks = [0.5, 0.6, 0.7, 0.9, 1.05, 1.1, 1.6, 1.7, 2.0];
+    const worst = Math.max(...ks.map(k => Math.abs(Math.sin(k * tw) - Math.sin(k * t))));
+    check('wrapShaderTime: bounded and continuous for every periodic shader term', tw >= 0 && tw < GP.SHADER_TIME_PERIOD && worst < 1e-6, `t→${tw.toFixed(3)}, worst Δsin ${worst.toExponential(1)}`);
+  }
+
+  // (16) two-finger pinch keeps the world point under the fingers and zooms by the spread ratio
+  {
+    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(4); cam.zoom = cam.tzoom; cam.cx = cam.tcx = 1000; cam.cy = cam.tcy = 600; cam._clamp();
+    const before = cam.screenToWorld(600, 300), z0 = cam.zoom;
+    cam.pinch(600, 300, 640, 320, 1.5);
+    const after = cam.screenToWorld(640, 320);
+    check('Camera.pinch: world point stays under the moving midpoint, zoom × factor', Math.abs(after.x - before.x) < 1e-6 && Math.abs(after.y - before.y) < 1e-6 && Math.abs(cam.zoom / z0 - 1.5) < 1e-9, `Δ ${(after.x - before.x).toExponential(1)}, zoom×${(cam.zoom / z0).toFixed(3)}`);
+  }
+
+  // (10) DPR is re-read on resize (a DPR change — browser zoom / monitor move — re-sizes the backing store)
+  {
+    const saved = window.devicePixelRatio; window.devicePixelRatio = 1; renderer.resize();
+    const w1 = renderer.canvas.width; window.devicePixelRatio = saved; renderer.resize();
+    check('Renderer.resize re-reads devicePixelRatio', w1 === Math.round(renderer.canvas.clientWidth) && renderer.canvas.width === Math.round(renderer.canvas.clientWidth * 2), `dpr1 ${w1}, dpr2 ${renderer.canvas.width}`);
+  }
+}
+
 console.log(`\n${fail === 0 ? 'SMOKE OK — browser layer constructs & draws without throwing' : fail + ' SMOKE CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

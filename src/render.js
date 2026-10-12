@@ -697,7 +697,7 @@ export class Renderer {
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       const add = (ax0, ay0, ax1, ay1) => { if (ax0 < x0) x0 = ax0; if (ay0 < y0) y0 = ay0; if (ax1 > x1) x1 = ax1; if (ay1 > y1) y1 = ay1; };
       for (const r of this._ovCmds) add(r.x - r.r - 3, r.y - r.r - 3, r.x + r.r + 3, r.y + r.r + 3);
-      if (sel) add(selX - selR - 3, selY - selR - 3, selX + selR + 3, selY + selR + 3);
+      if (sel && selX + selR > 0 && selX - selR < vw && selY + selR > 0 && selY - selR < vh) add(selX - selR - 3, selY - selR - 3, selX + selR + 3, selY + selR + 3);
       if (surfVis) add(bx, by - 3.4 * z - 4, bx + bw, by + 6.4 * z + 4);   // line ±2.4 units around y=1, rain −2z..+3z
       if (env.flash > 0) add(bx, by, bx + bw, by + bh * 0.72);
       x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(vw, Math.ceil(x1)); y1 = Math.min(vh, Math.ceil(y1));
