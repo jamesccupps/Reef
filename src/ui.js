@@ -370,7 +370,8 @@ export class UI {
     }
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
     set('stat-gen', fmtInt(w.maxGen)); set('stat-pop', total);
-    set('stat-sps', this.paused ? 'paused' : `${(this.rate / 1000).toFixed(1)}k steps/s`);
+    // the live rate is ~30–240 steps/s (60 at 1×), so show the integer; "k" only if a fast machine ever runs that far ahead
+    set('stat-sps', this.paused ? 'paused' : this.rate >= 1000 ? `${(this.rate / 1000).toFixed(1)}k steps/s` : `${Math.round(this.rate)} steps/s`);
     this.syncWeatherUI();
 
     const mins = Math.floor(env.t * 1440), hh = String((mins / 60 | 0)).padStart(2, '0'), mm = String(mins % 60).padStart(2, '0');
