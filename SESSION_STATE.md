@@ -7,6 +7,20 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ## ▶ NOW — after the 2026-10-11/12 overnight audit-fix run
 
+**New mandate (human, 2026-10-12 morning):** "fix everything, do what you think would be good, take screenshots
+to analyze the GUI and everything yourself, keep everything updated in case chat compacts." The budget rule
+still applies: no subagents.
+
+**Plan for this round** (tick items off here as they ship):
+- [ ] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
+      overlays and fullscreen. Fix layout and readability issues.
+- [ ] Colour grade / exposure: judge with screenshots and GPU-readback histograms, now that GL depth is
+      right-side up.
+- [ ] Catfish nocturnality (only ~8% in effect).
+- [ ] Apex juvenile survival / brood protection.
+- [ ] Tests: relabel the can't-fail checks; a WebGL2 mock in smoke if it's cheap.
+- [ ] HUD O₂ readout semantics (it reads 100–116%).
+
 **What happened.** On 2026-10-11 the human asked to "post it to GitHub and fix everything" in `AUDIT.md`.
 They then asked for testing, pushing, re-auditing and improving to continue overnight, *without burning usage
 on subagents*. Five worktree agents did the first wave of fixes. Everything after that was done solo.
