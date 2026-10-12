@@ -46,6 +46,17 @@ All agents append new tests at the END of test files under `// ==== audit-fixes:
 - ✅ **ui merged** (`20740a1`).
   - New gate files: `test/ui-check.mjs` and `test/serve-check.mjs`.
   - `npm run serve` now runs `node serve.mjs`.
+- ✅ **integrity merged** (`5d2aeb9`), plus a UI reconcile (`45de520`).
+  - Save format is now **v24**.
+  - `parseSave` validates everything into locals, then commits atomically.
+  - The brain layout history lives in `BRAIN_ERAS` (`species.js`).
+  - **Merge rule for the ecology/chemistry branches:** any new per-entity state they add must go into
+    `toJSON` AND the `parseSave` builders (world.js, plant builder ~:150). Env state goes into
+    `Environment.toJSON`/`load`. The strict resume test (load → 600 steps byte-identical) fails until
+    that's done.
+  - `addAgent`/`makeFish` now return `null` at `GLOBAL_MAX`.
+- Commit messages: use `git commit -F <file>`. PowerShell 5.1 mangles quotes inside here-strings
+  passed to git.
 
 **Watch out:**
 - **Worktrees are based on `d21ce5c`, not `25b678e`.**
