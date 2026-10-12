@@ -196,6 +196,11 @@ export class UI {
     const fs = () => { const el = $('viewport'); if (!el) return; if (!document.fullscreenElement) (el.requestFullscreen || (() => {})).call(el)?.catch?.(() => {}); else document.exitFullscreen?.(); };
     on('btn-full', 'onclick', fs); on('btn-full-mini', 'onclick', fs);
     document.addEventListener('fullscreenchange', () => this._onFullscreenChange());
+    // SCREENSAVER: in fullscreen the chrome (stats, minimap, camera bar, buttons) and the cursor fade away after a few idle
+    // seconds and come back on any input (frame() toggles .idle on the viewport; the fade itself is CSS)
+    this._lastActive = typeof performance !== 'undefined' ? performance.now() : 0; this._idle = false;
+    const poke = () => { this._lastActive = typeof performance !== 'undefined' ? performance.now() : 0; };
+    for (const ev of ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart']) document.addEventListener(ev, poke, { passive: true });
 
     // camera controls
     on('btn-overview', 'onclick', () => { this.camera.frameAll(); this.toast('whole lake'); });
@@ -356,6 +361,10 @@ export class UI {
     const w = this.world, env = w.env;
     if (this.inspector) this.inspector.draw(w.inspectAgent());
     this._perf();
+    // screensaver idle state (fullscreen only): 3.5 s without input → fade the chrome + hide the cursor
+    const now = typeof performance !== 'undefined' ? performance.now() : 0;
+    const idle = typeof document !== 'undefined' && !!document.fullscreenElement && now - this._lastActive > 3500;
+    if (idle !== this._idle) { this._idle = idle; const vp = $('viewport'); if (vp && vp.classList) vp.classList.toggle('idle', idle); }
 
     this._acc += dt;
     if (this._acc < 0.12) return;       // ~8 Hz for text/charts/minimap

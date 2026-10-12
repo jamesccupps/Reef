@@ -186,6 +186,10 @@ body{
 .viewport:fullscreen .pondstats{top:22px; left:22px; font-size:13px}
 .viewport:fullscreen .pondstats .ps-top b{font-size:13px}
 .viewport:fullscreen .minimap{width:clamp(200px,18vw,340px)}
+/* screensaver: in fullscreen the chrome fades out after a few idle seconds (ui.js toggles .idle) and returns on any input */
+.viewport .pondstats, .viewport .camctl, .viewport .minimap, .viewport .fsbtn{transition:opacity .9s ease}
+.viewport.idle .pondstats, .viewport.idle .camctl, .viewport.idle .minimap, .viewport.idle .fsbtn{opacity:0; pointer-events:none}
+.viewport.idle, .viewport.idle #tank{cursor:none}
 
 /* ---------- responsive ---------- */
 @media (max-width:900px){

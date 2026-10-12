@@ -50,7 +50,12 @@ const ABYSS = [2, 7, 13];
 const LETTERBOX = [3, 6, 11];
 
 // LOD thresholds, in on-screen fish-scale px
-const DOT_PX = 1.5;     // below this a fish is a single tinted dot
+const DOT_PX = 1.5;
+// MOONLIGHT FLOOR (render-only): the sim's light is physically 0 at night, which turned the screen black for half of every
+// day. Picture brightness uses visLight() instead — never darker than a moonlit lake — while the sim, the sun-dependent
+// effects (sun disc, god-rays, caustics, dawn/dusk warmth) and the cool night grade still follow the real env.light.
+const MOON = 0.24;
+const visLight = l => MOON + (1 - MOON) * clamp(l, 0, 1);     // below this a fish is a single tinted dot
 
 // relative brightness by depth — bright near the sunlit surface, dimmer toward the dark deep.
 // (Day/night is handled separately via env.light; this is the *depth* component, so a deep fish
@@ -279,7 +284,8 @@ export class Renderer {
   }
 
   skyTop(env) {
-    const c = [lerp(SKY_NIGHT[0], SKY_DAY[0], env.light), lerp(SKY_NIGHT[1], SKY_DAY[1], env.light), lerp(SKY_NIGHT[2], SKY_DAY[2], env.light)];
+    const vl = visLight(env.light);
+    const c = [lerp(SKY_NIGHT[0], SKY_DAY[0], vl), lerp(SKY_NIGHT[1], SKY_DAY[1], vl), lerp(SKY_NIGHT[2], SKY_DAY[2], vl)];
     const dawn = Math.max(0, 1 - Math.abs(env.t - 0.25) / 0.07), dusk = Math.max(0, 1 - Math.abs(env.t - 0.75) / 0.07);
     const warm = Math.max(dawn, dusk) * (1 - env.light * 0.5);
     return [lerp(c[0], SKY_DUSK[0], warm), lerp(c[1], SKY_DUSK[1], warm), lerp(c[2], SKY_DUSK[2], warm)];
@@ -290,6 +296,7 @@ export class Renderer {
   draw(t, alpha = 1) {
     this._checkPresenter();   // GL dead / lost too long → swap to a Canvas2D presenter on a fresh #tank
     const ctx = this.ctx, world = this.world, env = world.env, cam = this.camera;
+    const vL = visLight(env.light); this._vL = vL;   // moonlit picture brightness (see MOON)
     this._rdt = this._lastT === undefined ? 1 / 60 : clamp(t - this._lastT, 0, 0.1); this._lastT = t;
     this._alpha = clamp(+alpha || 0, 0, 1); this._frameNo++;
     // GL applies bloom/grade/vignette? Only while GL can actually present (not failed, not context-lost).
@@ -303,10 +310,10 @@ export class Renderer {
     // non-allocating world→screen for the hot loops (w2s allocates an object per call)
     const ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
     const X = wx => wx * z + ox, Y = wy => wy * z + oy;
-    const amb = 0.25 + 0.75 * env.light;
+    const amb = 0.25 + 0.75 * vL;
     // night vision for FLORA (as for fish): lightness and saturation drain with the light, so weed beds read as dim
     // silhouettes at night instead of glowing lime against near-black water
-    const floraL = 0.40 + 0.60 * env.light, floraS = 0.35 + 0.65 * env.light;
+    const floraL = 0.40 + 0.60 * vL, floraS = 0.35 + 0.65 * vL;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
     const summer = Math.sin((env.year || 0) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);
@@ -328,7 +335,7 @@ export class Renderer {
 
     // water column gradient (sunlit surface → surface → mid → abyss), clipped to the world box.
     // A bright sunlit band up top and a steeper ramp into the dark deep give a strong sense of depth.
-    const surf = [lerp(top[0], 255, 0.10 * env.light), lerp(top[1], 255, 0.12 * env.light), lerp(top[2], 255, 0.10 * env.light)];
+    const surf = [lerp(top[0], 255, 0.10 * vL), lerp(top[1], 255, 0.12 * vL), lerp(top[2], 255, 0.10 * vL)];
     const mid = [lerp(ABYSS[0], top[0], amb * 0.32), lerp(ABYSS[1], top[1], amb * 0.36), lerp(ABYSS[2], top[2], amb * 0.42)];
     const g = ctx.createLinearGradient(0, by, 0, br.y);
     g.addColorStop(0, rgb(surf));
@@ -564,7 +571,7 @@ export class Renderer {
     // depth. Position is a stateless function of the render clock (slow sink + sway), wrapped vertically; culled to
     // the visible rect and never drawn through the bed. Dimmer in the deep / murk. Cosmetic; never the seeded sim RNG.
     {
-      const clar = env.clarity ? env.clarity() : 1, amb2 = 0.3 + 0.7 * env.light;
+      const clar = env.clarity ? env.clarity() : 1, amb2 = 0.3 + 0.7 * vL;
       ctx.fillStyle = '#d2e8f0';
       for (const m of this.motes) {
         if (m.r * z * 0.5 < 0.4) continue;        // sub-pixel at this zoom → skip (invisible; saves arcs at whole-lake)
@@ -584,7 +591,7 @@ export class Renderer {
         if (b.r * z * 0.5 < 0.5) continue;        // sub-pixel at this zoom → skip
         const y = ((b.y0 - t * b.spd) % H + H) % H, x = b.x + Math.sin(t * b.swayF + b.ph) * b.swayA;
         if (x < vr.x0 || x > vr.x1 || y < vr.y0 || y > vr.y1 || y > bedY(x)) continue;
-        const px = X(x), py = Y(y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * env.light), 0, 0.7);
+        const px = X(x), py = Y(y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * vL), 0, 0.7);
         ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.stroke();
         ctx.globalAlpha = a * 0.85; ctx.beginPath(); ctx.arc(px - rr * 0.32, py - rr * 0.32, Math.max(0.5, rr * 0.3), 0, TAU); ctx.fill();
       }
@@ -596,7 +603,7 @@ export class Renderer {
     // zooplankton are invisible at lake scale: at the whole-lake view ~2000 full-opacity 1-px specks read as snow/static
     // and drown out the fish, so fade them with zoom (faint overview → full as you close in, where they read as drift)
     const pFade = clamp((cam.zoom / cam.fitZoom - 1) / 4, 0.22, 1);
-    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = (0.22 + 0.48 * env.light) * pFade;
+    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
     for (const p of world.plankton) {
       if (p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
       ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, pPx, pPx);
@@ -619,7 +626,7 @@ export class Renderer {
         if (I.x < vr.x0 || I.x > vr.x1) continue;
         const fy = I.y + Math.sin(t * 9 + I.wob) * 1.3;
         if (fy < vr.y0 || fy > vr.y1) continue;
-        ctx.globalAlpha = (0.45 + 0.5 * env.light) * clamp(I.life / 2, 0.3, 1);
+        ctx.globalAlpha = (0.45 + 0.5 * vL) * clamp(I.life / 2, 0.3, 1);
         ctx.fillRect(X(I.x) | 0, Y(fy) | 0, Math.max(1, pPx), Math.max(1, pPx));
       }
     }
@@ -787,7 +794,7 @@ export class Renderer {
       // exactly like a 2D fish under that gradient.
       const fishParams = this.glFish ? this._glCorpse.concat(this._glLiving) : null;
       this.present.present(this.scene, {
-        time: t, light: env.light, turbidity: env.turbidity || 0, night, warm: warmth, flash: 0,
+        time: t, light: vL, turbidity: env.turbidity || 0, night, warm: warmth, flash: 0,
         zoom: cam.zoom / (cam.fitZoom || cam.zoom || 1),   // DPR- & size-independent zoom (1 = whole lake)
         dpr: this.dpr,
         secchiFrac: clamp((env.secchiDepth ? env.secchiDepth() : H) / H, 0, 1), clarity: env.clarity ? env.clarity() : 1,
@@ -818,11 +825,27 @@ export class Renderer {
     const Sworld = a.size * FISH_SCALE * (0.42 + 0.58 * grow);
     const sPx = Sworld * z;
     const px = ax * z + ox, py = ay * z + oy;
-    if (sPx < DOT_PX) {
-      // keep far-zoom fish legible: a min 2px dot with a touch more contrast (so a whole-lake view still reads as populated)
-      ctx.globalAlpha = clamp(0.55 + sPx, 0.5, 1) * a.vis;
-      ctx.fillStyle = rgb(hsl(a.hue, a.sp.sat, (a.sp.lbase + 0.5 * a.sp.lrange) * (0.45 + 0.55 * env.light) * depthDim(ay)));
-      const d = Math.max(2, Math.round(sPx * 1.6)); ctx.fillRect((px - d / 2) | 0, (py - d / 2) | 0, d, d);
+    // FAR TIER: a tiny ORIENTED FISH GLYPH (body ellipse along the heading + a tail fin, in the species' own proportions)
+    // instead of a square dot — so a zoomed-out lake reads as fish swimming somewhere, not specks. A minimum length that
+    // scales with the screen (~4.5px small → ~8px at 1080p → 14px at 4K) keeps the overview legible on a big display.
+    // The glyph→sprite switch happens exactly where the sprite's natural length reaches that minimum, so zooming in
+    // doesn't make fish visibly SHRINK at the LOD boundary (no pop). Same night look as the sprites, dimmed with depth.
+    // sprite geometry (species.js drawFish): body −L..+L (2L fish-units, half-height Hh) + a tail of tail.len behind; on
+    // screen 1 fish-unit = sPx px, so the sprite's true length is sPx·(2L + tail) — the glyph uses the same proportions
+    const P = a.sp.P || { L: 3, Hh: 1.2 }, tl0 = (P.tail && P.tail.len) || 1.5, tot = 2 * P.L + tl0;
+    const minLen = clamp(cam.vw / 240, 4.5, 14), natLen = sPx * tot;
+    if (sPx < DOT_PX || natLen < minLen) {
+      const ang = a.rHeading, ca = Math.cos(ang), sa = Math.sin(ang);
+      const len = Math.max(minLen, natLen), bodyL = len * (2 * P.L / tot), tailL = len * (tl0 / tot);
+      const wid = Math.max(1.6, len * (2 * P.Hh / tot));
+      const lgt = this._vL ?? env.light, Lb = (a.sp.lbase + 0.5 * a.sp.lrange) * (0.30 + 0.70 * lgt) * (0.55 + 0.45 * depthDim(ay));
+      ctx.globalAlpha = clamp(0.72 + 0.2 * sPx, 0.72, 1) * a.vis;
+      ctx.fillStyle = rgb(hsl(a.hue, 0.75 * a.sp.sat * (0.35 + 0.65 * lgt), Math.min(78, Lb + 8)));   // muted: distant fish, not confetti
+      ctx.beginPath(); ctx.ellipse(px, py, bodyL * 0.5, wid * 0.5, ang, 0, TAU); ctx.fill();          // body centred on the fish, like the sprite
+      const tx = px - ca * bodyL * 0.46, ty = py - sa * bodyL * 0.46, tl = tailL, tw = wid * 0.55;    // forked tail behind the body
+      ctx.beginPath(); ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ca * tl - sa * tw, ty - sa * tl + ca * tw); ctx.lineTo(tx - ca * tl + sa * tw, ty - sa * tl - ca * tw);
+      ctx.closePath(); ctx.fill();
       ctx.globalAlpha = 1; return 0;
     }
     // swimming EFFORT (gait): how hard the fish is actually working = thrust + speed, boosted by an active
@@ -835,11 +858,11 @@ export class Renderer {
     const frame = Math.floor((((cphase % TAU) + TAU) % TAU) / TAU * this.sprites.FRAMES);
     // depth-shaded + effort-coupled sprite. GL path: one FULL-LIGHT sprite per bucket (the light×depth dim is applied in
     // the shader via `bright`, continuous) → the light bucket drops out of the GL working set (no ~10×/day rebuild churn).
-    const lit = env.light * depthDim(ay);
+    const lit = (this._vL ?? env.light) * depthDim(ay);
     const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive);
     // Keep the whole sprite inside the water body (the sim clamps the CENTRE to the bed/surface): inset the DRAW position
     // by the rotated body half-extent. Render-only: sim positions / determinism are untouched.
-    const P = a.sp.P, ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);
+    const ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);   // (P = a.sp.P, declared above for the LOD switch)
     const halfLen = (P.L + (P.tail ? P.tail.len : 1.2)) * Sworld;   // nose↔tail reach (world px)
     const halfHt = P.Hh * Sworld * 1.25;                           // body depth + headroom for body-gene & body wave
     const half = Math.abs(ish) * halfLen + Math.abs(ich) * halfHt; // vertical reach of the rotated body
@@ -910,11 +933,11 @@ export class Renderer {
     const p = cam.worldToScreen(c.x, c.y), alpha = clamp(c.t / (c.t0 || 1.4), 0, 1);
     if (sPx < DOT_PX) {
       ctx.globalAlpha = alpha * 0.6;
-      ctx.fillStyle = rgb(hsl(c.hue, Math.max(6, c.sp.sat - 18), (c.sp.lbase + 0.3 * c.sp.lrange) * (0.4 + 0.5 * env.light) * depthDim(c.y)));
+      ctx.fillStyle = rgb(hsl(c.hue, Math.max(6, c.sp.sat - 18), (c.sp.lbase + 0.3 * c.sp.lrange) * (0.4 + 0.5 * (this._vL ?? env.light)) * depthDim(c.y)));
       const d = Math.max(2, Math.round(sPx * 1.5)); ctx.fillRect((p.x - d / 2) | 0, (p.y - d / 2) | 0, d, d);
       ctx.globalAlpha = 1; return;
     }
-    const lit = env.light * 0.85 * depthDim(c.y);
+    const lit = (this._vL ?? env.light) * 0.85 * depthDim(c.y);
     const sprite = this.sprites.get(c, 0, this.glFish ? 1 : lit, 0.1);   // a dead fish barely undulates
     // same boundary inset as live fish, so a belly-up corpse resting on the bed doesn't sink into the bank
     const P = c.sp.P, ich = Math.cos(c.rHeading), ish = Math.sin(c.rHeading);
@@ -956,7 +979,7 @@ export class Renderer {
     const sx = mw / W, sy = mh / H;
     mctx.clearRect(0, 0, mw, mh);
     // water + curved basin bed
-    mctx.fillStyle = rgb([lerp(8, 30, env.light), lerp(16, 60, env.light), lerp(30, 78, env.light)]); mctx.fillRect(0, 0, mw, mh);
+    { const ml = visLight(env.light); mctx.fillStyle = rgb([lerp(8, 30, ml), lerp(16, 60, ml), lerp(30, 78, ml)]); } mctx.fillRect(0, 0, mw, mh);
     mctx.fillStyle = '#241a12'; mctx.beginPath(); mctx.moveTo(0, mh);
     for (let i = 0; i <= 48; i++) { const wx = i / 48 * W; mctx.lineTo(wx * sx, bedY(wx) * sy); }
     mctx.lineTo(mw, mh); mctx.closePath(); mctx.fill();
