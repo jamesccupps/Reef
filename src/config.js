@@ -55,6 +55,14 @@ export const SPAWN = {
   SHARP: 4,      // how tightly breeding concentrates around the peak (≈⅓-of-a-year spawning season — a recognizable spring/summer boom)
 };
 
+// ---------- feeding handling time (dt-independent intake of discrete food items) ----------
+// A fish used to take ONE item per food type per STEP, so its max intake per second doubled at the browser's 1/60 step
+// vs the headless 1/30. Now it gets one item per food type per HANDLE seconds (a handling time; the fractional remainder
+// carries over), so intake per second is the same at any fixed step. HANDLE = 1/60 reproduces the browser exactly.
+export const FEED = {
+  HANDLE: 1 / 60,   // s per discrete item (zooplankton, insect, larva, detritus, snail, crayfish) per food type
+};
+
 // ---------- brood protection (newborn cannibalism) ----------
 // Newborns used to appear ±6 px from their parents — inside strike reach — and qPrey had no kin filter, so bass/pike
 // ate their own brood within ~2 s for MORE energy than the spawning cost (an energy pump lifetime learning rewarded).
@@ -350,7 +358,9 @@ export const PLANKTON = {
   // grazes the phytoplankton field directly at a LOW survival ration — real planktivorous fish are facultative
   // phyto grazers. This cushions the boom-bust crash so the forage base (and the predators above it) don't
   // collapse to the refuge in the troughs → a steadier, more self-sustaining web (less immigration dependence).
-  FALLBACK_GRAZE: 0.022,   // phyto biomass a hungry planktivore clears /step when it finds no zooplankton (kept small to spare the base)
+  FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton (= the old
+                           //   0.022/step at the browser's 1/60 step; per-step made it dt-dependent — half as much headless at 1/30)
+  FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal (= the old 0.003/step at 1/60)
   FALLBACK_VALUE: 4.2,     // energy per unit phyto grazed (efficient → sustenance from little phyto; grazed×value ≈ a modest meal)
 };
 
@@ -428,8 +438,9 @@ export const PLANT = {
   SEED_RATE: 3.4,          // new plants /s up to MAX (scaled by area) — gated by seasonal vigor (mostly spring/summer)
   GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor (per-plant max height: MACRO[v].maxH × the maxH gene)
   BIOMASS_PER_PX: 0.018,   // biomass = height * this
-  BITE: 5,                 // height removed per herbivore bite
-  ENERGY_PER_BITE: 0.20,   // energy a herbivore gains per bite
+  BITE_RATE: 300,          // px of plant height a grazing herbivore removes per SECOND (× dt) — = the old 5 px/step at the
+                           //   browser's 1/60 step (per-step bites made grazing dt-dependent: half the rate headless at 1/30)
+  ENERGY_PER_PX: 0.04,     // energy a herbivore gains per px grazed (× the plant's palatability) — = the old 0.20 per 5-px bite
   // SEASONAL PHENOLOGY: macrophytes grow in the warm season, senesce (die back) in autumn → a fall detritus/DOM pulse,
   // and overwinter as rootstock — driven by the LOCAL water temperature (env.tempAt), so a warmer climate lengthens the
   // growing season (a climate-scenario lever) and the cold/dark deep can't support tall beds (an emergent depth limit).

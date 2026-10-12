@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD } from './config.js';
+import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -326,21 +326,30 @@ export class World {
   }
 
   // ---------- feeding ----------
-  _takeNearest(grid, x, y, r) { const m = grid.nearest(x, y, r, it => !it.dead); if (m) { m.item.dead = true; return true; } return false; }
+  // take (kill) up to n of the nearest live items within r; returns how many were taken (0 = none → falsy)
+  _takeNearest(grid, x, y, r, n = 1) {
+    let k = 0;
+    for (; k < n; k++) { const m = grid.nearest(x, y, r, it => !it.dead); if (!m) break; m.item.dead = true; }
+    return k;
+  }
+  // credit a fish with k meals of energy E each (capped at its energyCap) + the dietary toxicant per meal
+  _ate(a, k, E) { a.energy = Math.min(a.sp.energyCap, a.energy + k * E); a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
   // test/diagnostic hook: build a plant (optionally inheriting from a parent) WITHOUT inserting it, so heredity &
   // gene→phenotype derivation can be probed headlessly. Same code path the seeding step uses.
   makePlant(x, mature = false, parent = null) { return newPlant(x, mature, parent); }
   // test/diagnostic hook: build a fish with specific trait genes (adult by default) WITHOUT inserting it, so the
   // gene → effective-stat derivation (size/speed/tol + fin/eye/body morphology) and the fitGenes guard can be probed.
   makeFish(species, genes = null, age = 9999) { return makeAgent(species, 100, 100, 1, 0, 180, null, age, genes ? Float32Array.from(genes) : null); }
-  bitePlant(a) {
+  // graze the nearest plant for one step of length dt: removes up to PLANT.BITE_RATE·dt px (a per-SECOND rate → the same
+  // grazing per second at any fixed step); returns the energy gained. Default dt = one browser step.
+  bitePlant(a, dt = FEED.HANDLE) {
     const m = this.qPlant(a.x, a.y, a.sp.eatRadius + 6);
     if (!m) return 0;
     // graze only the above-rootstock biomass — the below-sediment rhizome (WINTER_MIN) survives grazing (and winter)
-    const p = m.item, bite = Math.min(PLANT.BITE, Math.max(0, p.height - PLANT.WINTER_MIN));
+    const p = m.item, bite = Math.min(PLANT.BITE_RATE * dt, Math.max(0, p.height - PLANT.WINTER_MIN));
     if (bite <= 0) return 0;   // nothing left to graze but the protected rootstock
     p.height -= bite; p.biomass = p.height * PLANT.BIOMASS_PER_PX;
-    return PLANT.ENERGY_PER_BITE * (bite / PLANT.BITE) * p.palat;   // tough/defended forms yield less energy (per-plant gene)
+    return PLANT.ENERGY_PER_PX * bite * p.palat;   // energy ∝ biomass grazed; tough/defended forms yield less (per-plant gene)
   }
   takePrey(a) {
     const m = this.qPrey(a);
@@ -669,24 +678,32 @@ export class World {
       // feeding by diet
       const cap = sp.energyCap, eaten0 = a.eaten;   // (eaten0: meals before this step → sate the hunger drive after, if the fish fed)
       if (sp.diet.fish) { const prey = this.takePrey(a); if (prey) { a.energy = Math.min(cap, a.energy + sp.foodValueFish * effSize(prey)); a.eaten++; this.stats.fishEaten++; } }   // (takePrey transfers the prey's contaminant burden → biomagnification)
+      // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
+      // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
+      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. The remainder is transient
+      // (always 0 at 1/60 and 1/30 → nothing to persist). Deterministic (no RNG).
+      a.feedAcc = (a.feedAcc || 0) + dt / FEED.HANDLE;
+      const slots = Math.floor(a.feedAcc + 1e-9); a.feedAcc = Math.max(0, a.feedAcc - slots);
+      let k;
       // juvenile piscivores subsist on zooplankton until they can reliably hunt fish (so lineages survive)
-      if (sp.diet.fish && a.grow < 0.55 && this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + PLANKTON.ENERGY * 0.8); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
+      if (sp.diet.fish && a.grow < 0.55 && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, PLANKTON.ENERGY * 0.8);
       let atePlankton = false;
-      if (sp.diet.plankton && this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + PLANKTON.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; atePlankton = true; }
+      if (sp.diet.plankton && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) { this._ate(a, k, PLANKTON.ENERGY); atePlankton = true; }
       // planktivore facultative omnivory: when a hungry planktivore finds no zooplankton it grazes the
       // phytoplankton field directly. This lets minnow/sunfish SELF-SUSTAIN through the boom-bust trough
       // (cushioning the crash + the predators above it → much less immigration dependence). The grazed amount is
       // kept small with an efficient conversion so it feeds the fish without scouring the phyto base into the ground.
+      // A per-SECOND rate × dt (was per step → twice the grazing per second in the browser as headless).
       if (sp.diet.plankton && !atePlankton && a.energy < cap * 0.85) {
-        const g = env.grazePhyto(a.x, a.y, PLANKTON.FALLBACK_GRAZE);
-        if (g > 0.003) { a.energy = Math.min(cap, a.energy + g * PLANKTON.FALLBACK_VALUE); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
+        const g = env.grazePhyto(a.x, a.y, PLANKTON.FALLBACK_GRAZE * dt);
+        if (g > PLANKTON.FALLBACK_MIN * dt) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g * PLANKTON.FALLBACK_VALUE); }
       }
-      if (sp.diet.detritus && this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + DETRITUS.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }
-      if (sp.diet.larva && this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + INSECT.LARVA_ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }      // bottom fish graze benthic insect larvae
-      if (sp.diet.insect && this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + INSECT.ADULT_ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }   // surface fish rise to emerged insects
-      if (sp.diet.snail && this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + SNAIL.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }            // molluscivores (sunfish/carp) graze benthic snails
-      if (sp.diet.cray && this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius)) { a.energy = Math.min(cap, a.energy + CRAYFISH.ENERGY); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; }              // predators (bass/pike/catfish) eat benthic crayfish
-      if (sp.diet.plants) { const g = this.bitePlant(a); if (g > 0) { a.energy = Math.min(cap, a.energy + g); a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT; } }
+      if (sp.diet.detritus && (k = this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, DETRITUS.ENERGY);
+      if (sp.diet.larva && (k = this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.LARVA_ENERGY);      // bottom fish graze benthic insect larvae
+      if (sp.diet.insect && (k = this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.ADULT_ENERGY);   // surface fish rise to emerged insects
+      if (sp.diet.snail && (k = this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, SNAIL.ENERGY);            // molluscivores (sunfish/carp) graze benthic snails
+      if (sp.diet.cray && (k = this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, CRAYFISH.ENERGY);           // predators (bass/pike/catfish) eat benthic crayfish
+      if (sp.diet.plants) { const g = this.bitePlant(a, dt); if (g > 0) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g); } }   // per-second grazing (PLANT.BITE_RATE × dt)
       if (a.eaten > eaten0) a.hunger = clamp(a.hunger - DRIVE.SATE * (a.eaten - eaten0), 0, 1);   // a meal sates the hunger drive
       // LIFETIME LEARNING: a reward-modulated Hebbian nudge to the PLASTIC policy (a.lw) — reinforce the action just taken
       // when the fish ATE; a homeostatic decay (runs every step) pulls it back toward the inherited genotype a.g. Baldwinian
