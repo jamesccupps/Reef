@@ -47,6 +47,8 @@ function fishColors(agent, sp, light) {
 // (p<1 = fuller/rounder, p>1 = slimmer/pointier). Per-species `profile(tn)` returns [topMul, bellyMul] of Hh so a
 // body can be asymmetric (deep-bellied carp, big-headed catfish) and shaped (slender pike spindle, round sunfish disc).
 const ell = (tn, p) => Math.pow(Math.max(0, 1 - tn * tn), p);
+const TAU = Math.PI * 2;
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };   // smoothstep
 function fillBody(put, L, Hh, su, colFn, wave, prof) {
   for (let u = -L; u <= L + 1e-6; u += su) {
     const tn = u / L, e = Math.sqrt(Math.max(0, 1 - tn * tn)), ws = wave(u);
@@ -76,6 +78,9 @@ function fillTri(put, ax, ay, bx, by, cx, cy, su, col, al = 1, fade = 0, k = 0.5
 function fillDisc(put, cx, cy, r, su, col) {
   for (let x = -r; x <= r; x += su) for (let y = -r; y <= r; y += su) if (x * x + y * y <= r * r) put(cx + x, cy + y, col, 1);
 }
+function fillEllipse(put, cx, cy, rx, ry, su, col) {
+  for (let x = -rx; x <= rx; x += su) for (let y = -ry; y <= ry; y += su) if ((x / rx) ** 2 + (y / ry) ** 2 <= 1) put(cx + x, cy + y, col, 1);
+}
 
 // ---------- generic solid fish with traveling-wave swimming ----------
 const _ONE_MORPH = { fin: 1, eye: 1, body: 1 };   // default when no per-fish morphology is supplied
@@ -94,12 +99,16 @@ function drawFish(put, P, c, o) {
   const wave = u => Math.sin((u / L) * 1.5 - ph) * amp * (u < 0 ? 1 + (-u / L) * 0.9 : 0.4);
 
   const T = P.tail, tl = T.len * m.fin, tsp = T.spread * m.fin, x0 = -L, tb = wave(x0), tip = tb + (still ? 0 : Math.sin(ph) * Hh * (0.35 + 0.5 * drive));
-  // caudal fin (tail) — forked TRANSLUCENT membrane (al<1 → water shows through) + brighter fin RAYS along the edges
-  fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, x0 - tl, tip - tsp * 1.4, su, c.back, 0.72, 2, 0.6);   // membrane thins toward the trailing edge
+  // caudal fin (tail) — forked TRANSLUCENT membrane (al<1 → water shows through) + brighter fin RAYS along the edges. Two
+  // lobes meeting in a notch (P.tail.fork = notch depth as a fraction of the fin length: deep on minnows, shallow on the
+  // round-tailed sunfish/catfish); it was one flat triangle, which read as a paper flag at close range.
+  const fork = T.fork != null ? T.fork : 0.3, nx = x0 - tl * (1 - fork);
+  fillTri(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 1.4, nx, tip, su, c.back, 0.72, 2, 0.6);   // upper lobe, thins toward its edge
+  fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, nx, tip, su, c.back, 0.72, 2, 0.6);   // lower lobe
   putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, su, c.back, 0.85);
   putLine(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 1.4, su, c.back, 0.85);
-  putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 0.2, su, c.back, 0.45);
-  putLine(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 0.2, su, c.back, 0.45);
+  putLine(put, x0 + 0.2, tb, x0 - tl * (1 - fork * 0.4), tip + tsp * 0.75, su, c.back, 0.45);   // mid-lobe rays (clear of the notch)
+  putLine(put, x0 + 0.2, tb, x0 - tl * (1 - fork * 0.4), tip - tsp * 0.75, su, c.back, 0.45);
   // dorsal fin — translucent, with a ray to the peak. Position/width/height per species (P.dorsalX/W/H): pike's sits
   // FAR BACK near the tail; sunfish/carp carry a long-based sail; bass/minnow a mid single fin.
   if (P.dorsal) {
@@ -118,30 +127,59 @@ function drawFish(put, P, c, o) {
   // light-belly (the old hard 3-band split read as blocky pixel art), times a faint diagonal SCALE texture so the
   // flank has a subtle iridescent grain rather than a flat fill. Colours are numeric [r,g,b], so we lerp/scale them.
   const mix = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f, p[2] + (q[2] - p[2]) * f];
+  // SPECIES MARKINGS + SCALES. Markings (P.pattern) are coarse and drawn at every resolution, so species read apart at mid
+  // zoom; the scale lattice (P.scales: period p, depth k, in fish units) only on the close-up tiers (≥ ~26 px/unit), where a
+  // scale spans ≥ 5 px — at the base tier it would alias into moiré. Smooth functions of (u, v) only: no randomness.
+  const pat = P.pattern, sc = scale >= 26 ? P.scales : null;
+  const blot = (x, y) => Math.sin(x * 1.7 + Math.sin(y * 2.3)) * Math.sin(y * 1.9 + Math.sin(x * 1.3));   // smooth pseudo-noise, ~[-1,1]
+  const along = (u0, u1, u) => sstep(u0 - 0.25, u0 + 0.25, u) * (1 - sstep(u1 - 0.25, u1 + 0.25, u));   // fades a marking in/out along the body
   fillBody(put, L, Hh, su, (v, vm, u) => {
     const n = vm > 0 ? v / vm : 0;                          // -1 (top/back) .. +1 (bottom/belly)
-    const base = n <= 0 ? mix(c.back, c.body, clamp(n + 1, 0, 1))  // back → body over the upper half
-                        : mix(c.body, c.belly, clamp(n, 0, 1));    // body → belly over the lower half
-    const tex = 1 + (P.scaleTex || 0.05) * Math.sin(u * 2.6 - v * 1.7) * Math.cos(v * 2.4);   // scale grain (coarser on carp)
-    return [base[0] * tex, base[1] * tex, base[2] * tex];
+    let base = n <= 0 ? mix(c.back, c.body, clamp(n + 1, 0, 1))  // back → body over the upper half
+                      : mix(c.body, c.belly, clamp(n, 0, 1));    // body → belly over the lower half
+    let k = 1 + (P.scaleTex || 0.05) * Math.sin(u * 2.6 - v * 1.7) * Math.cos(v * 2.4);   // broad scale grain (coarser on carp)
+    if (pat === 'band') {          // bass: a dark, ragged lateral band of blotches from gill to tail
+      const c0 = -0.08 + 0.07 * Math.sin(u * 1.3), hw = 0.17 + 0.07 * blot(u * 1.6, 3.1), d = Math.abs(n - c0);
+      k *= 1 - 0.34 * (1 - sstep(hw * 0.6, hw, d)) * (0.75 + 0.25 * Math.sin(u * 3.3)) * along(-L * 0.95, L * 0.5, u);
+    } else if (pat === 'stripe') { // minnow: a thin dark midline stripe on a silvery flank
+      k *= 1 - 0.28 * (1 - sstep(0.05, 0.11, Math.abs(n + 0.06))) * along(-L * 0.9, L * 0.65, u);
+    } else if (pat === 'bars') {   // sunfish: faint vertical bars over the back + an orange breast
+      const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.34));
+      k *= 1 - 0.2 * sstep(0.55, 0.95, s) * (1 - sstep(-0.1, 0.55, n)) * along(-L * 0.85, L * 0.45, u);
+      base = mix(base, [236, 138, 52], 0.42 * sstep(0.1, 0.8, n) * sstep(-0.5, 0.4, u / L));
+    } else if (pat === 'spots') {  // pike: rows of pale bean-shaped spots on a dark flank
+      const gu = u / 0.5, row = Math.floor(v / 0.34), gv = v / 0.34 - row, ou = gu + (row & 1) * 0.5, fu = ou - Math.floor(ou);
+      const r = Math.hypot((fu - 0.5) * 0.6, gv - 0.5);
+      base = mix(base, c.belly, 0.5 * (1 - sstep(0.18, 0.26, r)) * (1 - sstep(0.55, 0.8, Math.abs(n))) * along(-L * 0.95, L * 0.55, u));
+    } else if (pat === 'mottle') { // catfish: dark blotches over the back and flanks, smooth skin
+      k *= 1 - 0.24 * sstep(0.25, 0.6, blot(u * 2.1, v * 2.9)) * (1 - sstep(0.1, 0.6, n));
+    }
+    if (sc) {                      // overlapping scales: staggered rows of round scales, each with a darker rim on its rear (tail) side
+      const rh = sc.p * 0.8, row = Math.floor(v / rh), cu = u / sc.p + (row & 1) * 0.5;
+      const fu = cu - Math.floor(cu) - 0.5, fv = (v / rh - row - 0.5) * 0.8, d = Math.hypot(fu, fv);
+      k *= 1 - sc.k * sstep(0.3, 0.5, d) * (fu < 0 ? 1 : 0.35) * (1 - 0.6 * Math.abs(n)) * along(-L * 0.98, L * 0.62, u);
+    }
+    return [base[0] * k, base[1] * k, base[2] * k];
   }, wave, P.profile);
   // gill cover (operculum) — a faint curved seam behind the head that flares subtly with the beat (breathing)
   { const gx = L * 0.30, gf = 0.5 + 0.5 * Math.sin(ph * 1.4); putLine(put, gx, -Hh * 0.52 + wave(gx), gx - 0.18, Hh * 0.56 + wave(gx), su, c.back, 0.3 + 0.12 * gf); }
   // opercular "ear" spot — the dark flap mark behind the gill cover (sunfish/centrarchid signature)
   if (P.earSpot) fillDisc(put, L * 0.32, -Hh * 0.16 + wave(L * 0.32), Hh * 0.2, su, c.back);
-  // snout
-  for (let s = 1; s <= (P.snout || 0); s++) put(L + s * 0.5, wave(L) * 0.8, c.head, Math.max(0.4, 0.95 - s * 0.1));
-  // mouth line — a short dark seam at the tip of the snout
-  putLine(put, L * 0.95, Hh * 0.1 + wave(L * 0.95), L + (P.snout || 0) * 0.4, wave(L) * 0.84, su, c.back, 0.5);
-  // lateral stripe
-  if (P.stripes) for (let u = -L * 0.6; u <= L * 0.6; u += su) put(u, wave(u), c.back, 0.5);
-  // barbels (catfish)
-  if (P.barbels) for (let s = 0; s < 4; s++) { put(L + 0.4 + s * 0.45, Hh * 0.45 + wave(L) + s * 0.18, c.belly, 0.65); put(L + 0.4 + s * 0.45, -Hh * 0.25 + wave(L) - s * 0.12, c.belly, 0.5); }
-  // eye — radius PROPORTIONAL to body depth (the old flat 0.7-unit floor made a slim fish's eye absurdly large;
-  // it was only masked by the old pixelation). A small catch-light glint gives it a live, rounded look.
+  // snout — a solid ROUNDED nose that blunts the body's pointed tip (the old separate dabs read as a dotted needle at
+  // close-up resolutions; a triangle read as a bird's beak); longer, flatter "duckbill" on the pike
+  const sn = (P.snout || 0) * 0.42, wL = wave(L);
+  if (sn > 0) fillEllipse(put, L - 0.1, wL * 0.92, 0.14 + sn * 0.28, Hh * 0.19, su, c.body);   // mostly inside the head: it only blunts the tip
+  // mouth line — a short dark seam ending inside the nose tip
+  putLine(put, L * 0.92, Hh * 0.08 + wave(L * 0.92), L + sn * 0.25, wL * 0.9 + Hh * 0.02, su, c.back, 0.5);
+  // barbels (catfish) — whiskers as continuous lines (they were rows of separate dots)
+  if (P.barbels) for (const [y0, y1, al] of [[Hh * 0.3, Hh * 1.0, 0.6], [Hh * 0.18, Hh * 0.55, 0.5], [-Hh * 0.1, -Hh * 0.55, 0.45]])
+    putLine(put, L + sn * 0.5, y0 + wL, L + sn * 0.5 + 1.5, y1 + wL, su, c.belly, al);
+  // eye — radius PROPORTIONAL to body depth (the old flat 0.7-unit floor made a slim fish's eye absurdly large). Where it
+  // spans enough sprite px (close-up tiers) it gets a gold-tinted iris ring around the pupil; a catch-light glint on top.
   const er = Math.max(0.16, Hh * 0.22 * m.eye), ex = L * 0.58, ey = -Hh * 0.32 + wave(ex);
-  fillDisc(put, ex, ey, er, su, c.eye);
-  fillDisc(put, ex + er * 0.34, ey - er * 0.34, Math.max(0.08, er * 0.34), su, [222, 230, 236]);   // catch-light
+  if (er * scale >= 6) { fillDisc(put, ex, ey, er, su, mix(c.back, [196, 158, 70], 0.55)); fillDisc(put, ex, ey, er * 0.64, su, c.eye); }
+  else fillDisc(put, ex, ey, er, su, c.eye);
+  fillDisc(put, ex + er * 0.3, ey - er * 0.3, Math.max(0.08, er * 0.28), su, [222, 230, 236]);   // catch-light
 }
 
 // ---------- species factory: derives radii from size, fills defaults ----------
@@ -200,7 +238,7 @@ export const SP = {
       inp[13] = wallProx(a);
       inp[14] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[15] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.4, Hh: 0.95, snout: 1, tail: { len: 1.4, spread: 0.8, sweep: 1.0 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
+    P: { L: 2.4, Hh: 0.95, snout: 1, pattern: 'stripe', scales: { p: 0.2, k: 0.10 }, tail: { len: 1.4, spread: 0.8, sweep: 1.0, fork: 0.42 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
@@ -229,8 +267,8 @@ export const SP = {
       inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
       inp[11] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[12] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.2, Hh: 1.55, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true,
-      tail: { len: 1.2, spread: 0.95, sweep: 0.85 }, profile: t => { const e = ell(t, 0.46); return [e, e * 1.06]; } },   // round deep disc
+    P: { L: 2.2, Hh: 1.55, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true, pattern: 'bars', scales: { p: 0.24, k: 0.12 },
+      tail: { len: 1.2, spread: 0.95, sweep: 0.85, fork: 0.14 }, profile: t => { const e = ell(t, 0.46); return [e, e * 1.06]; } },   // round deep disc
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
@@ -257,7 +295,7 @@ export const SP = {
       inp[7] = clamp(1 - (w.bedY(a.x) - a.y) / 30, 0, 1);
       inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1); inp[9] = wallProx(a);
     },
-    P: { L: 3.2, Hh: 1.0, snout: 1, barbels: true, tail: { len: 1.4, spread: 0.7, sweep: 0.6 },
+    P: { L: 3.2, Hh: 1.0, snout: 1, barbels: true, pattern: 'mottle', tail: { len: 1.4, spread: 0.7, sweep: 0.6, fork: 0.12 },
       profile: t => { const f = (t + 1) * 0.5, e = Math.sqrt(Math.max(0, 1 - t * t)); return [e * (0.5 + 0.5 * f), e * (0.58 + 0.7 * f)]; } },   // broad head → thin tail
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -285,8 +323,8 @@ export const SP = {
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
     },
-    P: { L: 3.0, Hh: 1.7, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1,
-      tail: { len: 1.5, spread: 1.0, sweep: 0.7 }, profile: t => { const e = ell(t, 0.55); return [e * 0.96, e * 1.12]; } },   // deep robust, round belly
+    P: { L: 3.0, Hh: 1.7, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1, scales: { p: 0.42, k: 0.22 },
+      tail: { len: 1.5, spread: 1.0, sweep: 0.7, fork: 0.32 }, profile: t => { const e = ell(t, 0.55); return [e * 0.96, e * 1.12]; } },   // deep robust, round belly
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
@@ -317,8 +355,8 @@ export const SP = {
       inp[7] = w.allyStats(a, 64).density;
       inp[8] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[9] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 3.0, Hh: 1.3, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, stripes: true,
-      tail: { len: 1.6, spread: 1.0, sweep: 0.9 }, profile: t => { const e = ell(t, 0.72), sh = 1 + 0.1 * t; return [e * sh * 0.96, e * sh * 0.98]; } },   // streamlined, fuller forward
+    P: { L: 3.0, Hh: 1.3, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, pattern: 'band', scales: { p: 0.24, k: 0.10 },
+      tail: { len: 1.6, spread: 1.0, sweep: 0.9, fork: 0.2 }, profile: t => { const e = ell(t, 0.72), sh = 1 + 0.1 * t; return [e * sh * 0.96, e * sh * 0.98]; } },   // streamlined, fuller forward
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
@@ -346,8 +384,8 @@ export const SP = {
       inp[6] = wallProx(a);
       inp[7] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[8] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 4.2, Hh: 1.1, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5,
-      tail: { len: 1.8, spread: 1.2, sweep: 1.0 }, profile: t => { const e = ell(t, 0.62); return [e * 0.82, e * 0.86]; } },   // long slender spindle, rear dorsal
+    P: { L: 4.2, Hh: 1.1, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5, pattern: 'spots', scales: { p: 0.16, k: 0.07 },
+      tail: { len: 1.8, spread: 1.2, sweep: 1.0, fork: 0.28 }, profile: t => { const e = ell(t, 0.62); return [e * 0.82, e * 0.86]; } },   // long slender spindle, rear dorsal
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 };

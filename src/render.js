@@ -93,6 +93,19 @@ const MAX_FISH_EXTENT = (() => {
   }
   return Math.ceil(m) + 2;
 })();
+// Close-up sprites: the 2-px dab rasterizer leaves stair-stepped silhouettes that the ≤2× upscale shows as jaggies. Pull
+// each edge texel's alpha down toward its 3×3 mean (never up, so the silhouette doesn't grow and no unbled colour leaks
+// out): a ~1 px anti-aliased rim. Interior texels (every neighbour as opaque) are untouched.
+function softenEdges(d, w, h) {
+  const A = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) A[i] = d[i * 4 + 3];
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const i = y * w + x, a = A[i]; if (a === 0) continue;
+    const m = (A[i - w - 1] + A[i - w] + A[i - w + 1] + A[i - 1] + a + A[i + 1] + A[i + w - 1] + A[i + w] + A[i + w + 1]) / 9;
+    if (m < a) d[i * 4 + 3] = m;
+  }
+}
+
 // ---------------------------------------------------------------------------
 //  sprite cache — render each organism once into an offscreen bitmap, keyed by
 //  (species, growth bucket, hue bucket, light bucket, animation frame); blit it
@@ -191,6 +204,7 @@ class SpriteCache {
     const fake = { hue, energy: sp.reproEnergy * 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };
     const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph, still };   // undulation amplitude scales with effort
     sp.draw(fake, put, 0, { light }, o);
+    if (img && BASE > this.BASE) softenEdges(img.data, w, h);   // close-up tiers: anti-alias the dab-stepped silhouette
     if (img) g.putImageData(img, 0, 0);
     // VOLUMETRIC SHEEN — a top-lit dorsal highlight fading to a ventral shade, applied ONLY over the drawn body
     // ('source-atop' composites just where the sprite is already opaque). Turns the flat texel fill into a lit,
