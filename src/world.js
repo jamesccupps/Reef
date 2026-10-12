@@ -3,6 +3,9 @@ import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SP
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
+// save/load integrity (era-aware brain migration, exact resume, validated atomic load)
+import { getRandState, setRandState, remapGenome, ACT_LABELS, GENE_MIN, GENE_MAX } from './core.js';
+import { brainEraOf } from './species.js';
 
 const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR;
 const DEATH_FADE = 1.4;   // seconds a natural-death body lingers & fades before becoming detritus
@@ -20,38 +23,164 @@ function zoneY(sp, x) {
   return clamp(bed * rand(z[0], z[1]), 6, bed - 3);
 }
 
-let _id = 1;
+// PER-WORLD agent ids: each World owns its counter (`world._nextId`, serialized). makeAgent is a module function called
+// from many World methods, so it draws from the ACTIVE world's counter; every World entry point that creates agents
+// activates its world first (reset/load/addAgent/makeFish/seedFromChampions, and step() via the wrapper at the end of
+// this file, so the step body is untouched). A second World can no longer reset or share the first one's ids.
+let _idOwner = null;
+const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
 const effSize = a => a.size * (0.6 + 0.4 * (a.grow ?? 1)); // juveniles are smaller -> more vulnerable
 // sub-lethal reproductive impairment from the contaminant body burden: 1 below TOX.REPRO_HARM, falling to 0 as the
 // burden rises (PCB/endocrine-style fecundity loss that bites before lethality). Inert when a.tox = 0 (a clean lake).
 export function toxFecundity(tox) { return tox > TOX.REPRO_HARM ? Math.max(0, 1 - TOX.REPRO_CUT * (tox - TOX.REPRO_HARM)) : 1; }
-// guard a loaded/champion brain against the species' CURRENT network shape: a genome saved before a
-// sensor was added/removed has the wrong length, and forward() would index past its end → silent NaN.
-// Reuse a matching genome; otherwise reseed a fresh random brain. Returns {g, reseeded}.
+// guard a loaded/champion brain against the species' CURRENT network shape. The genome LENGTH identifies the save era
+// it came from (species.js BRAIN_ERAS, collision-free per species); an older era is MIGRATED by remapping every input
+// column / output row BY KEY (base inputs by position, generic extras + outputs by label) — so weights stay on the sensor
+// they were learned for even though shared inputs were inserted before the drives, and 2-output brains gain the action
+// outputs (~off) and, if pre-recurrence, a memoryless LEAK. Anything unrecognised, ambiguous, or holding a non-numeric /
+// non-finite / absurd weight is reseeded (forward() would otherwise index past the end or spread NaN).
+// Returns { g, reseeded, migrated }.
+const MAX_ABS_WEIGHT = 1e6;   // far beyond any evolved weight (mutate clamps to ±4) — rejects values that overflow Float32
+const finiteWeights = w => { for (let i = 0; i < w.length; i++) { const v = w[i]; if (typeof v !== 'number' || !(Math.abs(v) <= MAX_ABS_WEIGHT)) return false; } return true; };
 function fitGenome(sp, w) {
-  const need = genomeLen(sp.shape), HID = sp.shape.hid, IN = sp.shape.in;
-  if (w && w.length === need) return { g: Float32Array.from(w), reseeded: false };
-  // Earlier brains carried only 2 outputs (turn/thrust); the action space added 3 more. MIGRATE such a save instead of
-  // wiping it — preserve the learned input→hidden + turn/thrust weights (+ memory if present) and seed strike/flee/hide
-  // ~off (migrateGenome). Two earlier shapes: 2-out recurrent (had LEAK) and 2-out pre-recurrence (no LEAK).
-  const len2rec = HID * IN + HID + 2 * HID + 2 + HID;   // 2 outputs, recurrent (the previous `need`)
-  const len2pre = HID * IN + HID + 2 * HID + 2;         // 2 outputs, pre-recurrence (no LEAK block)
-  if (w && w.length === len2rec) return { g: migrateGenome(w, sp.shape, 2, true), reseeded: false };
-  if (w && w.length === len2pre) return { g: migrateGenome(w, sp.shape, 2, false), reseeded: false };
-  // a save from before some sensors were added has FEWER inputs at the current OUT → INPUT-migrate: preserve all weights,
-  // zero the new sensor columns (migrateGenomeInputs) so the added sensors load with no effect and then evolve in. The
-  // bound spans the cumulative sensor adds (drives +2, spatial cognition +3, …) so even a pre-drives brain still migrates.
-  for (let din = 1; din <= 8; din++) { const lenPrior = HID * (IN - din) + HID + OUT * HID + OUT + HID; if (w && IN - din > 0 && w.length === lenPrior) return { g: migrateGenomeInputs(w, sp.shape, IN - din), reseeded: false }; }
-  return { g: randomGenome(sp.shape), reseeded: true };
+  const ok = w != null && (Array.isArray(w) || ArrayBuffer.isView(w)) && finiteWeights(w);
+  if (ok && w.length === genomeLen(sp.shape)) return { g: Float32Array.from(w), reseeded: false, migrated: false };
+  const era = ok ? brainEraOf(sp, w.length) : null;
+  if (era && !era.current) {
+    const cur = sp.brainEras.eras[sp.brainEras.eras.length - 1];
+    return { g: remapGenome(w, sp.shape.hid, era.inKeys, era.outs, era.leak, cur.inKeys, ACT_LABELS), reseeded: false, migrated: true, era: era.saves };
+  }
+  return { g: randomGenome(sp.shape), reseeded: true, migrated: false };
 }
-// guard a trait genome against the CURRENT gene count: an older save with fewer genes (e.g. before the morphology
-// genes) would read past its end → NaN. Preserve the evolved older genes, default any new ones to ~1.0 (baseline).
+// guard a trait genome against the CURRENT gene count: an older save with fewer genes (e.g. before the morphology or
+// brain-size genes) would read past its end → NaN. Keep the evolved genes, pad any newer gene with EXACTLY 1.0 (the
+// species baseline the older fish actually had — a random pad would e.g. shrink ~19% of brains and consume RNG), and
+// clamp every gene into [GENE_MIN, GENE_MAX] (a non-numeric/non-finite gene → 1.0; a speed gene of 0 can't NaN the lake).
 function fitGenes(gn) {
-  if (!gn) return randomGenes();
-  if (gn.length === GENE_KEYS.length) return Float32Array.from(gn);
-  const g = randomGenes();
-  for (let i = 0; i < Math.min(gn.length, g.length); i++) g[i] = gn[i];
+  const g = new Float32Array(GENE_KEYS.length).fill(1);
+  if (gn) for (let i = 0; i < Math.min(gn.length, g.length); i++) { const v = gn[i]; if (typeof v === 'number' && Number.isFinite(v)) g[i] = clamp(v, GENE_MIN, GENE_MAX); }
   return g;
+}
+// ---- save-file validation helpers (pure). A save is UNTRUSTED input: every value is type-checked, ranged & defaulted. ----
+const isObj = v => v != null && typeof v === 'object' && !Array.isArray(v);
+const isNum = v => typeof v === 'number' && Number.isFinite(v);
+const num = (v, d) => (isNum(v) ? v : d);
+const nonNegInt = (v, d = 0) => (isNum(v) && v >= 0 ? Math.min(Math.floor(v), Number.MAX_SAFE_INTEGER) : d);   // gen/eaten: never a string (XSS) or NaN
+const hueOr = (v, d) => (isNum(v) ? (v >= 0 && v < 360 ? v : ((v % 360) + 360) % 360) : d);   // wrap only when out of range (identity otherwise)
+const numArr = (v, len) => { if (!Array.isArray(v) || v.length !== len) return null; for (let i = 0; i < len; i++) if (!(typeof v[i] === 'number' && Math.abs(v[i]) <= MAX_ABS_WEIGHT)) return null; return v; };
+const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const SAVE_ARRAYS = ['agents', 'plants', 'plankton', 'detritus', 'larvae', 'insects', 'snails', 'cray', 'corpses'];
+const STRUCT_CAP = 4096;   // per structure list (generated lakes hold tens)
+const STRUCT_FIELDS = {    // static habitat structure: each element rebuilt from its known numeric fields only
+  reeds: q => (isNum(q.x) && isNum(q.baseY) && isNum(q.height) ? { x: q.x, baseY: q.baseY, height: q.height, n: clamp(nonNegInt(q.n, 3), 1, 24) } : null),
+  logs: q => (isNum(q.x) && isNum(q.y) && isNum(q.len) && isNum(q.ang) ? { x: q.x, y: q.y, len: q.len, ang: q.ang } : null),
+  mussels: q => (isNum(q.x) && isNum(q.y) ? { x: q.x, y: q.y, n: clamp(nonNegInt(q.n, 4), 1, 64) } : null),
+  weedbeds: q => (isNum(q.x) && isNum(q.top) && isNum(q.bot) && isNum(q.w) ? { x: q.x, top: q.top, bot: q.bot, w: q.w } : null),
+};
+// PHASE 1 of World.load: validate a parsed save and build EVERY part of the new world into locals. Throws a descriptive
+// Error for a structurally unusable file; per-item problems are repaired or skipped and counted in `rep`. Touches no World.
+function parseSave(s) {
+  if (!isObj(s)) throw new Error('load: not a Synapse Reef save (expected a JSON object)');
+  for (const k of SAVE_ARRAYS) if (s[k] != null && !Array.isArray(s[k])) throw new Error(`load: "${k}" must be an array (got ${typeof s[k]})`);
+  if (s.env != null && !isObj(s.env)) throw new Error('load: "env" must be an object');
+  const rep = { version: num(s.version, 0), agents: 0, skippedSpecies: 0, skippedInvalid: 0, truncated: 0, reseeded: 0, migrated: 0, regenerated: [] };
+  const time = Math.max(0, num(s.time, 0)), maxGen = nonNegInt(s.maxGen);
+  const env = new Environment(); env.load(s.env || {}, { W: s.W, H: s.H, time });
+  // stats: known counters + any other finite-number counters (or {key: number} maps), never prototype keys
+  const stats = { foodEaten: 0, fishEaten: 0, births: {}, immigrants: {} };
+  if (isObj(s.stats)) for (const k of Object.keys(s.stats)) {
+    const v = s.stats[k]; if (BAD_KEYS.has(k)) continue;
+    if (isNum(v)) stats[k] = Math.max(0, v);
+    else if (isObj(v)) { const o = {}; for (const kk of Object.keys(v)) if (!BAD_KEYS.has(kk) && isNum(v[kk])) o[kk] = Math.max(0, v[kk]); stats[k] = o; }
+  }
+  if (!isObj(stats.births)) stats.births = {}; if (!isObj(stats.immigrants)) stats.immigrants = {};
+  for (const k of SPECIES) { if (!isNum(stats.births[k])) stats.births[k] = 0; if (!isNum(stats.immigrants[k])) stats.immigrants[k] = 0; }
+  // agents (ids drawn from a scratch counter so no World's counter moves during parsing)
+  _idOwner = { _nextId: 1 };
+  const agents = [], needId = [], usedIds = new Set(); let maxId = 0;
+  for (const a of s.agents || []) {
+    if (agents.length >= WORLD.GLOBAL_MAX) { rep.truncated++; continue; }
+    if (!isObj(a)) { rep.skippedInvalid++; continue; }
+    if (typeof a.s !== 'string' || !Object.hasOwn(SP, a.s)) { rep.skippedSpecies++; continue; }
+    const sp = SP[a.s], HID = sp.shape.hid, W2 = sp.shape.in * HID + HID;
+    const x = clamp(num(a.x, sp.spawnPos(rand).x), 0, W), y = isNum(a.y) ? clamp(a.y, 0, H) : zoneY(sp, x);
+    const fit = fitGenome(sp, a.w); if (fit.reseeded) rep.reseeded++; else if (fit.migrated) rep.migrated++;
+    // pass age so makeAgent derives the correct growth (adults reload as adults); missing genes pad to the 1.0 baseline
+    const ag = makeAgent(a.s, x, y, clamp(num(a.e, (sp.startEnergy[0] + sp.startEnergy[1]) / 2), -1e3, 1e3), nonNegInt(a.g),
+      hueOr(a.hu, null) ?? sp.randomHue(rand), fit.g, clamp(num(a.ag, sp.matureAge), 0, 1e9), Array.isArray(a.gn) ? a.gn : []);
+    ag.heading = num(a.h, ag.heading); ag.spd = clamp(num(a.sp, 0), 0, 1e4); ag.eaten = nonNegInt(a.ea); ag.vis = 1;
+    const m = numArr(a.m, HID); if (m) for (let j = 0; j < HID; j++) ag.act.h[j] = clamp(m[j], -1, 1);   // recurrent working memory
+    ag.tox = clamp(num(a.tx, 0), 0, 1e6);                                       // contaminant body burden
+    ag.hunger = clamp(num(a.hg, 0), 0, 1); ag.fear = clamp(num(a.fe, 0), 0, 1);  // internal drives
+    ag.homeX = clamp(num(a.hx, x), 0, W);                                       // natal-home anchor (older saves: home = here)
+    // v24 resume state (older saves: makeAgent's fresh values / lazy step init, as before)
+    ag.mateCd = num(a.mc, ag.mateCd);
+    ag.turnSmooth = clamp(num(a.ts, 0), -1, 1); ag.thrustSmooth = clamp(num(a.th, 0), 0, 1);
+    if (isNum(a.vh)) ag.velHeading = a.vh;
+    if (isNum(a.st) && a.st >= 0 && a.st < 1) ag.stroke = a.st;
+    const ac = numArr(a.ac, 5);   // last action intents — a prey's `hide` is read by predators BEFORE its own next forward()
+    if (ac) { ag.act.turn = clamp(ac[0], -1, 1); ag.act.thrust = clamp(ac[1], 0, 1); ag.act.strike = clamp(ac[2], 0, 1); ag.act.flee = clamp(ac[3], 0, 1); ag.act.hide = clamp(ac[4], 0, 1); }
+    const lw = !fit.reseeded && !fit.migrated ? numArr(a.lw, OUT * HID) : null;   // learned (plastic) W2 block — only for the brain it belongs to
+    if (lw) ag.lw.set(lw, W2);
+    if (Number.isSafeInteger(a.id) && a.id > 0 && !usedIds.has(a.id)) { ag.id = a.id; usedIds.add(a.id); if (a.id > maxId) maxId = a.id; } else needId.push(ag);
+    agents.push(ag);
+  }
+  let nextId = Math.max(nonNegInt(s.nid, 1), maxId + 1, 1);
+  for (const ag of needId) ag.id = nextId++;   // older saves (no ids) number 1..n in order, exactly as before
+  rep.agents = agents.length;
+  // plants
+  const plants = [], plantCap = scaleCount(PLANT.MAX);
+  for (const p of s.plants || []) {
+    if (plants.length >= plantCap) { rep.truncated++; continue; }
+    if (!isObj(p) || !isNum(p.x)) { rep.skippedInvalid++; continue; }
+    const x = clamp(p.x, 0, W), v = Number.isInteger(p.v) && p.v >= 0 && p.v < MACRO.length ? p.v : 0, mv = MACRO[v];
+    const baseY = clamp(num(p.b, bedY(x)), 0, H + 4), height = clamp(num(p.h, PLANT.WINTER_MIN), 0, 1000), maxHeight = clamp(num(p.m, mv.maxH[1]), 0, 1000);
+    const g = numArr(p.g, PLANT_GENE_KEYS.length);   // genome-length guard: a pre-genome / mismatched save gets fresh genes
+    const gn = g ? Float32Array.from(g, q => clamp(q, GENE_MIN, GENE_MAX)) : randomPlantGenes();
+    const pl = { x, baseY, v, gn, hue: hueOr(p.hu, mv.hue), height, maxHeight, biomass: height * PLANT.BIOMASS_PER_PX, y: baseY - height * 0.5, dead: false };
+    derivePlant(pl); plants.push(pl);
+  }
+  // particles (each list capped at its configured cap)
+  const parts = (arr, cap, mk) => {
+    const out = [];
+    for (const q of arr || []) {
+      if (out.length >= cap) { rep.truncated++; continue; }
+      if (!isObj(q) || !isNum(q.x)) { rep.skippedInvalid++; continue; }
+      out.push(mk(q, clamp(q.x, 0, W)));
+    }
+    return out;
+  };
+  const yIn = (v, d) => clamp(num(v, d), 0, H);
+  const plankton = parts(s.plankton, scaleCount(PLANKTON.CAP), (q, x) => ({ x, baseY: yIn(q.y, bedY(x) * 0.5), y: 0, phase: num(q.ph, 0), vx: num(q.vx, 0), dead: false }));
+  const detritus = parts(s.detritus, scaleCount(DETRITUS.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x)), life: num(q.l, DETRITUS.LIFE), dead: false }));
+  const larvae = parts(s.larvae, scaleCount(INSECT.LARVA_CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), dev: num(q.d, 0), dead: false }));
+  const insects = parts(s.insects, scaleCount(INSECT.ADULT_CAP), (q, x) => ({ x, y: yIn(q.y, 8), life: num(q.l, INSECT.ADULT_LIFE), vx: num(q.vx, 0), wob: num(q.wb, 0), dead: false }));
+  const snails = parts(s.snails, scaleCount(SNAIL.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: num(q.vx, 0), ph: num(q.ph, 0), dead: false }));
+  const cray = parts(s.cray, scaleCount(CRAYFISH.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: num(q.vx, 0), ph: num(q.ph, 0), dead: false }));
+  // natural-death bodies still sinking/fading (they turn into detritus when they expire)
+  const corpses = [];
+  for (const c of s.corpses || []) {
+    if (corpses.length >= WORLD.GLOBAL_MAX) { rep.truncated++; continue; }
+    if (!isObj(c) || typeof c.s !== 'string' || !Object.hasOwn(SP, c.s) || !isNum(c.x) || !isNum(c.y)) { rep.skippedInvalid++; continue; }
+    const sp = SP[c.s], size = clamp(num(c.sz, sp.size), 0.05, 20), h = num(c.h, 0);
+    corpses.push({ sp, species: c.s, x: clamp(c.x, 0, W), y: clamp(c.y, 0, H), heading: h, rHeading: num(c.rh, h), size, grow: clamp(num(c.gr, 1), 0.35, 1),
+      hue: hueOr(c.hu, 0), genes: fitGenes(Array.isArray(c.gn) ? c.gn : []), facing: clamp(num(c.fc, 1), -1, 1), spd: clamp(num(c.sp, 0), 0, 1e4),
+      t: num(c.t, 0), t0: Math.max(1e-3, num(c.t0, DEATH_FADE)), roll: clamp(num(c.r, 0), 0, 1), sink: num(c.sk, 5 + size * 2), dead: false });
+  }
+  // static structure: validated element-by-element; a missing or non-array list is REGENERATED (old saves, `reeds: {}`)
+  const structs = {}; let fresh = null;
+  for (const k in STRUCT_FIELDS) {
+    if (Array.isArray(s[k])) {
+      const out = [];
+      for (const q of s[k]) { if (out.length >= STRUCT_CAP) { rep.truncated++; continue; } const v = isObj(q) ? STRUCT_FIELDS[k](q) : null; if (v) out.push(v); else rep.skippedInvalid++; }
+      structs[k] = out;
+    } else {
+      if (!fresh) { fresh = {}; World.prototype._genStructures.call(fresh); }
+      structs[k] = fresh[k]; rep.regenerated.push(k);
+    }
+  }
+  const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
+  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep };
 }
 function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = null) {
   const sp = SP[species], shape = sp.shape;
@@ -59,7 +188,7 @@ function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = nul
   // multi-gene genome: size/speed/tol physiology + fin/eye/body MORPHOLOGY → effective per-individual stats.
   // Genes are multipliers ~1.0, so gene≈1 reproduces the species baseline. Every benefit has a cost folded into
   // metabMul (and body/fin add drag), so traits trade off and selection has something to push on.
-  const gn = fitGenes(genes);
+  const gn = genes ? fitGenes(genes) : randomGenes();   // a brand-new fish gets fresh near-1.0 variation
   const gSize = gn[0], gSpeed = gn[1], gTol = gn[2], gFin = gn[3], gEye = gn[4], gBody = gn[5], gBrain = gn[6];
   // EVOLVABLE BRAIN SIZE: how many hidden units are active (the rest masked in forward). gBrain≈1 → full layer (baseline).
   const activeHid = clamp(Math.round(shape.hid * gBrain), Math.min(BRAIN.HID_MIN, shape.hid), shape.hid);
@@ -76,7 +205,7 @@ function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = nul
     * (1 - BRAIN.COST * (shape.hid - activeHid) / shape.hid);                // … and a SMALLER brain is metabolically cheaper (per-neuron saving; ×1 at the full-brain baseline)
   const brain = genome || randomGenome(shape);   // the inherited genotype; the plastic policy `lw` starts as a copy of it
   return {
-    id: _id++, species, sp, size, grow, genes: gn, maxSpeed, maxTurn, accel, senseRange, bodyMul, tempTol, o2Crit, metabMul, activeHid,
+    id: nextAgentId(), species, sp, size, grow, genes: gn, maxSpeed, maxTurn, accel, senseRange, bodyMul, tempTol, o2Crit, metabMul, activeHid,
     x, y, homeX: x, heading: rand(0, Math.PI * 2), spd: rand(1, 6), vis: 0,   // homeX = natal site (the spatial-cognition homing anchor)
     energy, gen, hue, age, eaten: 0, tox: 0, hunger: 0, fear: 0, mateCd: rand(0, sp.matingCooldown), dead: false, _mated: false, turnSmooth: 0, thrustSmooth: 0,
     g: brain, lw: Float32Array.from(brain),   // g = inherited GENOTYPE (fixed, used for breeding/saving); lw = the PLASTIC policy `forward` runs (lifetime learning nudges it; Baldwinian)
@@ -165,7 +294,7 @@ export class World {
   }
 
   reset() {
-    _id = 1;
+    this._nextId = 1; _idOwner = this;   // per-world id counter (see nextAgentId)
     this.agents = []; this.plankton = []; this.detritus = []; this.plants = []; this.corpses = [];
     this.larvae = []; this.insects = [];   // aquatic-insect life cycle: benthic larvae ↔ emerged surface adults
     this.snails = []; this.cray = [];      // benthic invertebrates: grazing snails + omnivorous crayfish
@@ -315,7 +444,13 @@ export class World {
   makePlant(x, mature = false, parent = null) { return newPlant(x, mature, parent); }
   // test/diagnostic hook: build a fish with specific trait genes (adult by default) WITHOUT inserting it, so the
   // gene → effective-stat derivation (size/speed/tol + fin/eye/body morphology) and the fitGenes guard can be probed.
-  makeFish(species, genes = null, age = 9999) { return makeAgent(species, 100, 100, 1, 0, 180, null, age, genes ? Float32Array.from(genes) : null); }
+  // Respects WORLD.GLOBAL_MAX like every other creation path: returns null when the lake is already at the cap.
+  makeFish(species, genes = null, age = 9999) {
+    if (!Object.hasOwn(SP, species)) throw new Error(`makeFish: unknown species "${species}"`);
+    if (this.agents.length >= WORLD.GLOBAL_MAX) return null;
+    _idOwner = this;
+    return makeAgent(species, 100, 100, 1, 0, 180, null, age, genes ? Float32Array.from(genes) : null);
+  }
   bitePlant(a) {
     const m = this.qPlant(a.x, a.y, a.sp.eatRadius + 6);
     if (!m) return 0;
@@ -725,7 +860,7 @@ export class World {
 
       // death -> linger as a fading, sinking body (then recycle as detritus). Eaten fish are
       // removed by takePrey() instead, so this is natural death (starvation / old age) only.
-      if (a.energy <= 0 || a.age > sp.maxAge || (a.tox > TOX.HARM && rand() < TOX.MORT * (a.tox - TOX.HARM) * dt)) {   // contaminant mortality above the harm threshold (apex predators, which biomagnify, are hit hardest)
+      if (!(a.energy > 0) || a.age > sp.maxAge || (a.tox > TOX.HARM && rand() < TOX.MORT * (a.tox - TOX.HARM) * dt)) {   // contaminant mortality above the harm threshold (apex predators, which biomagnify, are hit hardest)
         a.dead = true; counts[a.species]--;
         if (a.id === this.selectedId) this.selectedId = null;
         this.corpses.push({ sp, species: a.species, x: a.x, y: a.y, heading: a.heading, rHeading: a.rHeading ?? a.heading,
@@ -886,71 +1021,65 @@ export class World {
   }
   inspectAgent() { if (this.selectedId != null) { const f = this.agents.find(a => a.id === this.selectedId); if (f) return f; } return this.topPerformer(); }
 
+  // returns the new fish, or null when the lake is at WORLD.GLOBAL_MAX (the UI should say "lake full")
   addAgent(key, opts = {}) {
+    if (!Object.hasOwn(SP, key)) throw new Error(`addAgent: unknown species "${key}"`);
+    if (this.agents.length >= WORLD.GLOBAL_MAX) return null;
+    _idOwner = this;
     const sp = SP[key], p = sp.spawnPos(rand), src = opts.fromBest ? this._bestOf(key) : null;
     const x = opts.x ?? p.x;
     const a = makeAgent(key, x, opts.y ?? zoneY(sp, x), rand(sp.startEnergy[0], sp.startEnergy[1]),
       src ? src.gen : 0, src ? (src.hue + gauss() * 6 + 360) % 360 : sp.randomHue(rand),
-      opts.genome || (src ? mutate(src.g) : randomGenome(sp.shape)), rand(sp.matureAge, sp.matureAge * 1.8));
+      opts.genome ? fitGenome(sp, opts.genome).g : (src ? mutate(src.g) : randomGenome(sp.shape)), rand(sp.matureAge, sp.matureAge * 1.8));
     this.agents.push(a); return a;
   }
 
   // ---------- save / load ----------
+  // v24: a FAITHFUL RESUME — everything that shapes the future is saved, so load → step reproduces the uninterrupted run
+  // byte-for-byte: the RNG stream position (`rng`), the per-world id counter (`nid`), each fish's id / mating cooldown /
+  // smoothed controls / travel heading / stroke phase / last action intents / learned W2 block, the sinking corpses, the
+  // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 23, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats,
+      version: 24, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       env: this.env.toJSON(),
-      agents: this.agents.map(a => ({ s: a.species, x: a.x, y: a.y, h: a.heading, sp: a.spd, e: a.energy, g: a.gen, hu: a.hue, ag: a.age, ea: a.eaten, w: Array.from(a.g), gn: Array.from(a.genes), m: Array.from(a.act.h), tx: a.tox, hg: a.hunger, fe: a.fear, hx: a.homeX })),   // `m` recurrent memory; `tx` contaminant burden; `hg`/`fe` internal drives; `hx` natal-home anchor (spatial cognition) — persist across save/load
+      agents: this.agents.map(a => {
+        const HID = a.sp.shape.hid, W2 = a.sp.shape.in * HID + HID, act = a.act;
+        return { s: a.species, x: a.x, y: a.y, h: a.heading, sp: a.spd, e: a.energy, g: a.gen, hu: a.hue, ag: a.age, ea: a.eaten, w: Array.from(a.g), gn: Array.from(a.genes), m: Array.from(act.h), tx: a.tox, hg: a.hunger, fe: a.fear, hx: a.homeX,   // `m` recurrent memory; `tx` contaminant burden; `hg`/`fe` drives; `hx` natal home
+          id: a.id, mc: a.mateCd, ts: a.turnSmooth, th: a.thrustSmooth, vh: a.velHeading, st: a.stroke,   // resume state (vh/st absent until first stepped)
+          ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
+          lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined };                           // learned policy: only W2 can differ from `w`
+      }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue })),
       plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx })),
       detritus: this.detritus.map(d => ({ x: d.x, y: d.y, l: d.life })),
-      larvae: this.larvae.map(l => ({ x: l.x, d: l.dev })),
-      insects: this.insects.map(i => ({ x: i.x, y: i.y, l: i.life, vx: i.vx })),
-      snails: this.snails.map(s => ({ x: s.x, vx: s.vx })),
-      cray: this.cray.map(c => ({ x: c.x, vx: c.vx })),
+      larvae: this.larvae.map(l => ({ x: l.x, y: l.y, d: l.dev })),
+      insects: this.insects.map(i => ({ x: i.x, y: i.y, l: i.life, vx: i.vx, wb: i.wob })),
+      snails: this.snails.map(s => ({ x: s.x, y: s.y, vx: s.vx, ph: s.ph })),
+      cray: this.cray.map(c => ({ x: c.x, y: c.y, vx: c.vx, ph: c.ph })),
+      corpses: this.corpses.map(c => ({ s: c.species, x: c.x, y: c.y, h: c.heading, rh: c.rHeading, sz: c.size, gr: c.grow, hu: c.hue, gn: Array.from(c.genes),
+        fc: c.facing, sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
       reeds: this.reeds, logs: this.logs, mussels: this.mussels, weedbeds: this.weedbeds,
     };
   }
+  // ATOMIC, VALIDATED load. Phase 1 (parseSave) validates the file and builds the whole new world into locals — a
+  // structurally unusable file throws a descriptive Error and leaves this world (and the RNG stream) exactly as it was;
+  // bad items are repaired or skipped and counted. Phase 2 commits everything at once. The RNG is restored LAST to the
+  // saved stream position (older saves: to where it was before the load), so draws made while parsing don't matter.
+  // Returns the load report (also kept as `this.lastLoad`, not serialized).
   load(s) {
-    _id = 1;
-    this.time = s.time || 0; this.maxGen = s.maxGen || 0;
-    // backfill stats so the per-species births/immigrants counters always exist (older saves lack them → the
-    // reproduction & immigration steps index stats.births[k] / stats.immigrants[k] and would otherwise throw).
-    this.stats = s.stats || {};
-    if (this.stats.foodEaten == null) this.stats.foodEaten = 0; if (this.stats.fishEaten == null) this.stats.fishEaten = 0;
-    if (!this.stats.births) this.stats.births = {}; if (!this.stats.immigrants) this.stats.immigrants = {};
-    for (const k of SPECIES) { if (this.stats.births[k] == null) this.stats.births[k] = 0; if (this.stats.immigrants[k] == null) this.stats.immigrants[k] = 0; }
-    this.env.load(s.env);
-    let reseeded = 0;
-    this.agents = (s.agents || []).map(a => {
-      // pass age so makeAgent derives the correct growth (adults reload as adults, not juveniles);
-      // guard the genome against the current shape (a save from before a sensor change reseeds, not NaNs)
-      const fit = fitGenome(SP[a.s], a.w); if (fit.reseeded) reseeded++;
-      const ag = makeAgent(a.s, a.x, a.y, a.e, a.g, a.hu, fit.g, a.ag, a.gn ? Float32Array.from(a.gn) : null);
-      ag.heading = a.h; ag.spd = a.sp; ag.eaten = a.ea; ag.vis = 1;
-      if (a.m && a.m.length === ag.act.h.length) ag.act.h.set(a.m);   // restore recurrent working memory (older saves lack `m` → starts blank)
-      ag.tox = a.tx || 0;                                              // restore contaminant body burden (older saves lack `tx` → clean)
-      ag.hunger = a.hg || 0; ag.fear = a.fe || 0;                      // restore internal drives (older saves lack them → 0)
-      ag.homeX = a.hx != null ? a.hx : a.x;                            // restore the natal-home anchor (older saves lack `hx` → home to the current spot)
-      return ag;
-    });
-    if (reseeded) this.stats.brainsReseeded = reseeded;
-    this.corpses = [];
-    this.plants = (s.plants || []).map(p => {
-      const v = (p.v != null && p.v < MACRO.length) ? p.v : 0;
-      // genome-length guard: a save from before the plant genome (or a different gene count) reseeds cleanly
-      const gn = (p.g && p.g.length === PLANT_GENE_KEYS.length) ? Float32Array.from(p.g) : randomPlantGenes();
-      const pl = { x: p.x, baseY: p.b, v, gn, hue: p.hu != null ? p.hu : MACRO[v].hue, height: p.h, maxHeight: p.m, biomass: p.h * PLANT.BIOMASS_PER_PX, y: p.b - p.h * 0.5, dead: false };
-      derivePlant(pl); return pl;
-    });
-    this.plankton = (s.plankton || []).map(p => ({ x: p.x, baseY: p.y, y: 0, phase: p.ph, vx: p.vx, dead: false }));
-    this.detritus = (s.detritus || []).map(d => ({ x: d.x, y: d.y, life: d.l, dead: false }));
-    this.larvae = (s.larvae || []).map(l => ({ x: l.x, y: bedY(l.x) - 2, dev: l.d, dead: false }));
-    this.insects = (s.insects || []).map(i => ({ x: i.x, y: i.y, life: i.l, vx: i.vx, wob: 0, dead: false }));
-    this.snails = (s.snails || []).map(s2 => ({ x: s2.x, y: bedY(s2.x) - 2, vx: s2.vx, ph: 0, dead: false }));
-    this.cray = (s.cray || []).map(c => ({ x: c.x, y: bedY(c.x) - 2, vx: c.vx, ph: 0, dead: false }));
-    if (s.reeds && s.logs) { this.reeds = s.reeds; this.logs = s.logs; this.mussels = s.mussels || []; this.weedbeds = s.weedbeds || []; } else this._genStructures();
-    this.series = []; this._seriesAcc = 0; this.selectedId = null;
+    const rng0 = getRandState(), owner0 = _idOwner;
+    let P;
+    try { P = parseSave(s); } catch (e) { setRandState(rng0); _idOwner = owner0; throw e; }
+    this.time = P.time; this.maxGen = P.maxGen; this.stats = P.stats; this.env = P.env;
+    this.agents = P.agents; this.plants = P.plants; this.plankton = P.plankton; this.detritus = P.detritus;
+    this.larvae = P.larvae; this.insects = P.insects; this.snails = P.snails; this.cray = P.cray; this.corpses = P.corpses;
+    this.reeds = P.structs.reeds; this.logs = P.structs.logs; this.mussels = P.structs.mussels; this.weedbeds = P.structs.weedbeds;
+    if (P.rep.reseeded) this.stats.brainsReseeded = P.rep.reseeded;
+    this._nextId = P.nextId; _idOwner = this;
+    this.series = []; this._seriesAcc = 0; this.selectedId = null; this.lastLoad = P.rep;
+    setRandState(P.rng != null ? P.rng : rng0);
+    return P.rep;
   }
 
   // champion brains per species (best genome), for export/seeding
@@ -959,15 +1088,28 @@ export class World {
     for (const k of SPECIES) { const b = this._bestOf(k); if (b) out[k] = { gen: b.gen, hue: b.hue, w: Array.from(b.g) }; }
     return out;
   }
+  // Seed a few fish per species from saved champion brains. The input is untrusted (localStorage / an imported file):
+  // only known species, gen coerced to a non-negative integer, hue to a number, an older-era brain migrated and an
+  // unusable one reseeded, and never past WORLD.GLOBAL_MAX. Returns { added, reseeded } (fish added, and how many of them
+  // got a fresh random brain because their champion's brain was unusable).
   seedFromChampions(champs) {
+    if (!isObj(champs)) throw new Error('seedFromChampions: expected { species: { gen, hue, w } }');
+    _idOwner = this;
+    let added = 0, reseeded = 0;
     for (const k of SPECIES) {
-      const c = champs[k]; if (!c) continue; const sp = SP[k];
-      for (let i = 0; i < Math.max(2, Math.floor(popStart(sp) / 2)); i++) {
+      if (!Object.hasOwn(champs, k) || !isObj(champs[k])) continue;
+      const c = champs[k], sp = SP[k], gen = nonNegInt(c.gen), hue = hueOr(c.hue, null) ?? sp.randomHue(rand);
+      const fit = fitGenome(sp, c.w);   // guard the champion genome against the current shape before mutating
+      for (let i = 0; i < Math.max(2, Math.floor(popStart(sp) / 2)) && this.agents.length < WORLD.GLOBAL_MAX; i++) {
         const p = sp.spawnPos(rand);
-        // guard the champion genome against the current shape before mutating (stale champions reseed)
-        this.agents.push(makeAgent(k, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), c.gen,
-          (c.hue + gauss() * 8 + 360) % 360, mutate(fitGenome(sp, c.w).g)));
+        this.agents.push(makeAgent(k, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), gen,
+          (hue + gauss() * 8 + 360) % 360, fit.reseeded ? randomGenome(sp.shape) : mutate(fit.g)));
+        added++; if (fit.reseeded) reseeded++; if (gen > this.maxGen) this.maxGen = gen;
       }
     }
+    return { added, reseeded };
   }
 }
+
+// Activate the stepping world's id counter (see nextAgentId) — a wrapper so the step() body itself stays untouched.
+{ const rawStep = World.prototype.step; World.prototype.step = function (...args) { _idOwner = this; return rawStep.apply(this, args); }; }

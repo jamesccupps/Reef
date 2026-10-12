@@ -136,7 +136,7 @@ check('the memory trace persists after the stimulus stops, then DECAYS toward th
 // brains survive BOTH upgrades (recurrence + action space) and grow memory/actions on top.
 const padSnap = JSON.parse(snap);
 const pv = padSnap.agents.find(a => a.s === 'sunfish') || padSnap.agents[1];
-const psh = SP[pv.s].shape, len2pre = psh.hid * psh.in + psh.hid + 2 * psh.hid + 2;   // 2-output, pre-recurrence genome
+const psh = SP[pv.s].shape, len2pre = psh.hid * SP[pv.s].baseInputs + psh.hid + 2 * psh.hid + 2;   // a real v4–v14 genome: 2-output, pre-recurrence, base inputs only
 pv.w = pv.w.slice(0, len2pre);
 const w4 = new World(); w4.load(padSnap);
 const anyMemoryless = w4.agents.some(a => Math.abs(a.g[genomeLen(a.sp.shape) - 1] + 4) < 1e-6);   // a leak param appended as -4
@@ -265,10 +265,10 @@ check('every species gains the 3 spatial inputs (compass∠sin/cos + home∠x) b
   let kept = mg.length === genomeLen(sh), zeroed = true;
   for (let j = 0; j < sh.hid; j++) { for (let i = 0; i < oldIn; i++) if (Math.abs(mg[j * sh.in + i] - old[j * oldIn + i]) > 1e-9) kept = false; if (mg[j * sh.in + oldIn] !== 0 || mg[j * sh.in + oldIn + 1] !== 0 || mg[j * sh.in + oldIn + 2] !== 0) zeroed = false; }
   check('migrateGenomeInputs lifts a pre-spatial brain (+3 inputs): input→hidden weights kept, the 3 new sensor columns zeroed', kept && zeroed, `len ${mg.length}/${genomeLen(sh)}, kept ${kept}, zeroed ${zeroed}`); }
-// the natal-home anchor round-trips through save/load (v23)
+// the natal-home anchor round-trips through save/load (v24)
 { seed(62); const sw = new World(); for (let i = 0; i < 40; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
   const ok = lw.agents.length === sw.agents.length && lw.agents.every((a, i) => Math.abs(a.homeX - sw.agents[i].homeX) < 1e-6);
-  check('the natal-home anchor (homeX) round-trips through save/load (v23)', save.version === 23 && ok, `${lw.agents.length} agents`); }
+  check('the natal-home anchor (homeX) round-trips through save/load (v24)', save.version === 24 && ok, `${lw.agents.length} agents`); }
 
 // ============================================================
 //  RICHER PERCEPTION — a lateral-line/rheotaxis flow sense (turbidity-proof) + prey-size selectivity
@@ -359,10 +359,10 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   const m = qw.makeFish('minnow', null, SP.minnow.matureAge + 20); m.x = 1000; m.y = 6;
   const food = qw.qSurfaceFood(m);
   check('qSurfaceFood routes an emerged insect into the planktivore food sense (rise-to-hatch)', !!food && food.item === ins, `found ${!!food}`); }
-// the insect populations round-trip through save/load (v23)
+// the insect populations round-trip through save/load (v24)
 { seed(23); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON()));
   const lw = new World(); lw.load(save);
-  check('aquatic insects round-trip through save/load (v23)', save.version === 23 && lw.larvae.length === sw.larvae.length && lw.insects.length === sw.insects.length, `v${save.version}, larvae ${lw.larvae.length}, insects ${lw.insects.length}`); }
+  check('aquatic insects round-trip through save/load (v24)', save.version === 24 && lw.larvae.length === sw.larvae.length && lw.insects.length === sw.insects.length, `v${save.version}, larvae ${lw.larvae.length}, insects ${lw.insects.length}`); }
 
 // ============================================================
 //  BENTHIC INVERTEBRATES — grazing snails + omnivorous crayfish (two new benthic web links)
@@ -401,11 +401,11 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
   const snOk = pw.snails.length > 0 && pw.snails.length < sc * 0.5;   // realized ≈169 vs cap 1620 → must stay well under half the cap
   const cfOk = pw.cray.length > 0 && pw.cray.length < cc * 0.5;       // realized ≈42 vs cap 540
   check('snail & crayfish populations persist and self-limit FAR below their caps (not just ≤cap)', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
-// snails + crayfish round-trip through save/load (v23)
+// snails + crayfish round-trip through save/load (v24)
 { seed(54); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
-  const ok = save.version === 23 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
+  const ok = save.version === 24 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
     && lw.snails.every((s, i) => Math.abs(s.x - sw.snails[i].x) < 1e-6) && lw.cray.every((c, i) => Math.abs(c.x - sw.cray[i].x) < 1e-6);
-  check('snails + crayfish round-trip through save/load (v23)', ok, `snails ${lw.snails.length}/${sw.snails.length}, cray ${lw.cray.length}/${sw.cray.length}`); }
+  check('snails + crayfish round-trip through save/load (v24)', ok, `snails ${lw.snails.length}/${sw.snails.length}, cray ${lw.cray.length}/${sw.cray.length}`); }
 
 // ============================================================
 //  LOCOMOTION MOMENTUM — fish carve/drift through turns (travel dir lags body heading) + a hard turn scrubs speed
@@ -553,7 +553,7 @@ TOX.AMBIENT = 0.3; seed(123); const txPol = new World();
 for (let i = 0; i < 1200; i++) txPol.step(1 / 30);
 TOX.AMBIENT = savedAmb;
 const txSave = new World(); txSave.load(JSON.parse(JSON.stringify(txPol.toJSON())));
-check('contaminant body burden (tx) round-trips through save/load (v23)', txSave.agents.length === txPol.agents.length && txSave.agents.some(a => a.tox > 0) && txSave.agents.every((a, i) => Math.abs(a.tox - txPol.agents[i].tox) < 1e-6), `${txSave.agents.length} agents`);
+check('contaminant body burden (tx) round-trips through save/load (v24)', txSave.agents.length === txPol.agents.length && txSave.agents.some(a => a.tox > 0) && txSave.agents.every((a, i) => Math.abs(a.tox - txPol.agents[i].tox) < 1e-6), `${txSave.agents.length} agents`);
 // HARM-mortality: a fish whose burden is ≫ TOX.HARM dies from the toxicant (the lethal end); a clean one survives.
 function survivesTox(toxLevel) {
   seed(55); const hw = new World();
@@ -1212,7 +1212,7 @@ check('differential survival: at a dim light only the shade-INtolerant genotype 
 // SAVE v13: the plant genome + colour round-trip
 const psave = JSON.parse(JSON.stringify(pw2.toJSON()));
 seed(1); const pw3 = new World(); pw3.load(psave);
-check('plant genome + colour survive save/load (v23)', psave.version === 23 && pw3.plants.length === pw2.plants.length && pw3.plants.every((p, i) => p.gn.length === PLANT_GENE_KEYS.length && Array.from(p.gn).every((g, j) => Math.abs(g - pw2.plants[i].gn[j]) < 1e-6) && Math.abs(p.hue - pw2.plants[i].hue) < 1e-6), `v${psave.version}, ${pw3.plants.length} plants`);
+check('plant genome + colour survive save/load (v24)', psave.version === 24 && pw3.plants.length === pw2.plants.length && pw3.plants.every((p, i) => p.gn.length === PLANT_GENE_KEYS.length && Array.from(p.gn).every((g, j) => Math.abs(g - pw2.plants[i].gn[j]) < 1e-6) && Math.abs(p.hue - pw2.plants[i].hue) < 1e-6), `v${psave.version}, ${pw3.plants.length} plants`);
 
 // ============================================================
 //  PLANT INTERACTIONS — shading competition + the clear↔turbid feedback
@@ -1311,6 +1311,163 @@ const tgt = w.agents.find(a => a.x > 200 && a.x < WORLD.W - 200 && a.y > 200 && 
 cam.fitNow(); cam.setZoomRel(10); cam.zoom = cam.tzoom; cam.follow(tgt.id);
 for (let i = 0; i < 300; i++) cam.update(1 / 60, w);
 check('follow converges on the followed agent', approx(cam.cx, tgt.x, 6) && approx(cam.cy, tgt.y, 6), `cam ${cam.cx.toFixed(0)},${cam.cy.toFixed(0)} vs ${tgt.x.toFixed(0)},${tgt.y.toFixed(0)}`);
+
+
+// ==== audit-fixes: integrity ====
+// Save/load integrity: era-aware brain migration (by label), a FAITHFUL resume (load → step ≡ the uninterrupted run),
+// per-world ids, validated atomic loads, and the GLOBAL_MAX / champion guards. These run the REAL load/step paths.
+console.log('\n— save/load integrity (audit-fixes) —');
+{
+  const { getRandState, setRandState, rand, layoutLen } = await import('../src/core.js');
+  const { BRAIN_ERAS } = await import('../src/species.js');
+  const DTI = 1 / 30;
+  const finiteWorld = W => W.agents.every(a => [a.x, a.y, a.energy, a.heading, a.spd, a.maxSpeed].every(Number.isFinite) && [...a.act.h].every(Number.isFinite))
+    && ['o2', 'phyto', 'cyano', 'nh4', 'no3', 'phos', 'dom', 'sedP'].every(f => W.env[f].every(Number.isFinite))
+    && [W.env.t, W.env.light, W.env.tempC, W.env.turbidity, W.env.strat].every(Number.isFinite);
+
+  // (1) every species' era lengths are distinct → the genome length identifies the save era unambiguously
+  check('brain eras: every species has collision-free genome lengths across ALL save eras (incl. the 2-output eras)',
+    SPECIES.every(k => SP[k].brainEras.collisions === 0 && new Set(SP[k].brainEras.eras.map(e => e.len)).size === BRAIN_ERAS.length),
+    SPECIES.map(k => `${k} ${SP[k].brainEras.eras.map(e => e.len).join('/')}`).join(' · '));
+  check('brain eras: the current era IS the current genome layout (labels + length)',
+    SPECIES.every(k => { const e = SP[k].brainEras.eras.at(-1); return e.len === genomeLen(SP[k].shape) && e.inKeys.length === SP[k].shape.in; }));
+
+  // (2) migrate a MARKED genome from every older era, for every species, through the real load path: each new input
+  // column must hold the marker of the old column with the same label (base 1:1), new columns 0, outputs by label.
+  let eraOk = true, eraDetail = '';
+  for (const k of SPECIES) {
+    const sp = SP[k], hid = sp.shape.hid, IN = sp.shape.in, base = sp.baseInputs, labels = sp.inputLabels;
+    for (const era of sp.brainEras.eras.slice(0, -1)) {
+      const oIN = era.inKeys.length, oOUT = era.outs.length, len = layoutLen(oIN, hid, oOUT, era.leak);
+      const w = new Array(len).fill(0);
+      const mk = (i, j) => 1 + i + j / 64;                                                   // W1 marker: old column i, unit j (exact in f32)
+      for (let j = 0; j < hid; j++) for (let i = 0; i < oIN; i++) w[j * oIN + i] = mk(i, j);
+      const oB1 = hid * oIN, oW2 = oB1 + hid, oB2 = oW2 + oOUT * hid, oLK = oB2 + oOUT;
+      for (let j = 0; j < hid; j++) { w[oB1 + j] = -1 - j / 64; if (era.leak) w[oLK + j] = -2 - j / 64; }
+      for (let r = 0; r < oOUT; r++) { w[oB2 + r] = 3 + r; for (let j = 0; j < hid; j++) w[oW2 + r * hid + j] = 2 + r + j / 64; }
+      const lw = new World(); lw.load({ version: 17, agents: [{ s: k, x: 900, y: 300, e: 0.6, w }] });
+      const g = lw.agents[0].g, rep = lw.lastLoad;
+      let ok = rep.reseeded === 0 && rep.migrated === 1 && g.length === genomeLen(sp.shape);
+      for (let j = 0; j < hid && ok; j++) for (let i = 0; i < IN; i++) {
+        const old = i < base ? i : era.inKeys.indexOf('x:' + labels[i]);
+        if (g[j * IN + i] !== (old >= 0 ? mk(old, j) : 0)) { ok = false; eraDetail = `${k} ${era.saves} col ${labels[i]}`; break; }
+      }
+      const nB1 = hid * IN, nW2 = nB1 + hid, nB2 = nW2 + OUT * hid, nLK = nB2 + OUT;
+      for (let j = 0; j < hid && ok; j++) ok = g[nB1 + j] === Math.fround(-1 - j / 64) && g[nLK + j] === (era.leak ? Math.fround(-2 - j / 64) : -4);
+      for (let r = 0; r < OUT && ok; r++) {
+        if (r < oOUT) ok = g[nB2 + r] === 3 + r && g[nW2 + r * hid] === 2 + r;
+        else ok = g[nB2 + r] < -0.8 && Math.abs(g[nW2 + r * hid]) <= 0.3;                   // new action rows seeded ~off
+      }
+      // the explicit audit symptom: the old hunger/fear weights must sit on the CURRENT hunger/fear columns
+      const hIdx = era.inKeys.indexOf('x:hunger');
+      if (ok && hIdx >= 0) ok = g[IN - 2] === mk(hIdx, 0) && g[IN - 1] === mk(hIdx + 1, 0);
+      if (!ok) { eraOk = false; if (!eraDetail) eraDetail = `${k} ${era.saves}`; }
+    }
+  }
+  check('era migration (every species × every older era, through load): base 1:1, spatial/perception/drives land on their OWN columns, new columns 0, 2-output eras MIGRATE (actions ~off, memoryless LEAK when pre-recurrence)', eraOk, eraDetail || `${SPECIES.length}×${BRAIN_ERAS.length - 1} migrations`);
+  { // a v21 minnow brain specifically (the audit repro): hunger/fear must NOT land on flow / prey size
+    const sp = SP.minnow, hid = sp.shape.hid, era = sp.brainEras.eras.find(e => e.saves === 'v21'), oIN = era.inKeys.length;
+    const w = new Array(era.len).fill(0); w[oIN - 2] = 7; w[oIN - 1] = 9;                  // unit 0: hunger = 7, fear = 9
+    const lw = new World(); lw.load({ agents: [{ s: 'minnow', x: 500, y: 200, e: 0.6, w }] });
+    const g = lw.agents[0].g, L = sp.inputLabels;
+    check('a v21 minnow brain keeps hunger/fear on the hunger/fear inputs (flow / prey size load as 0)', g[L.indexOf('hunger')] === 7 && g[L.indexOf('fear')] === 9 && g[L.indexOf('flow')] === 0 && g[L.indexOf('prey size')] === 0,
+      `hunger ${g[L.indexOf('hunger')]} fear ${g[L.indexOf('fear')]} flow ${g[L.indexOf('flow')]} prey ${g[L.indexOf('prey size')]}`);
+  }
+
+  // (3) FAITHFUL RESUME: warm up, snapshot, then step the original AND a freshly loaded copy 600 steps → byte-identical
+  seed(4242); const ra = new World(); for (let i = 0; i < 600; i++) ra.step(DTI);
+  const rsnap = JSON.stringify(ra.toJSON());
+  for (let i = 0; i < 600; i++) ra.step(DTI);
+  const rA = JSON.stringify(ra.toJSON());
+  const rb = new World(); rb.load(JSON.parse(rsnap));
+  const rbRound = JSON.stringify(rb.toJSON()) === rsnap;
+  for (let i = 0; i < 600; i++) rb.step(DTI);
+  check('save v24 → load → step 600 is BYTE-IDENTICAL to the uninterrupted run (faithful resume: RNG, ids, cooldowns, smoothing, momentum, stroke, learned W2, corpses, env means …)', rbRound && rA === JSON.stringify(rb.toJSON()), `${ra.agents.length} agents, ${JSON.parse(rsnap).corpses.length} corpses in the snapshot, round-trip ${rbRound}`);
+
+  // (4) constructing (and stepping) an unrelated World mid-run does not perturb an existing one (per-world ids). The
+  // seeded RNG is one shared stream, so the probe preserves it around the intruder — what's tested is world isolation.
+  const runIso = intrude => {
+    seed(77); const A = new World(); for (let i = 0; i < 300; i++) A.step(DTI);
+    if (intrude) { const r = getRandState(); const B = new World(); for (let i = 0; i < 20; i++) B.step(DTI); B.addAgent('pike'); setRandState(r); }
+    for (let i = 0; i < 300; i++) A.step(DTI);
+    const ids = A.agents.map(a => a.id);
+    return { json: JSON.stringify(A.toJSON()), dup: ids.length - new Set(ids).size };
+  };
+  const iso0 = runIso(false), iso1 = runIso(true);
+  check('a second World constructed + stepped mid-run does not perturb the first (per-world id counter; no duplicate ids)', iso0.json === iso1.json && iso1.dup === 0, `dup ids ${iso1.dup}, identical ${iso0.json === iso1.json}`);
+
+  // (5) RNG state round-trips
+  { seed(5); rand(); const st = getRandState(); const a = [rand(), rand(), rand()]; setRandState(st); const b = [rand(), rand(), rand()];
+    seed(6); const w = new World(); const sv = w.toJSON();
+    check('RNG state round-trips (getRandState/setRandState) and is saved in toJSON', a.every((v, i) => v === b[i]) && sv.rng === getRandState(), `rng ${sv.rng}`); }
+
+  // (6) corrupted saves: atomic, validated
+  seed(8); const cw = new World(); for (let i = 0; i < 60; i++) cw.step(DTI);
+  const base = cw.toJSON(), clone = () => JSON.parse(JSON.stringify(base));
+  { const tw = new World(); for (let i = 0; i < 30; i++) tw.step(DTI);
+    const before = JSON.stringify(tw.toJSON()), rngB = getRandState();
+    for (const bad of [null, 5, [], { agents: {} }, { env: 3, agents: [] }, { reeds: [], plants: 'x' }]) {
+      let threw = false; try { tw.load(bad); } catch (e) { threw = e instanceof Error && e.message.length > 10; }
+      if (!threw) { check('a structurally unusable save throws a descriptive Error', false, JSON.stringify(bad)); break; }
+    }
+    check('a structurally unusable save throws BEFORE mutating anything (world + RNG unchanged)', JSON.stringify(tw.toJSON()) === before && getRandState() === rngB); }
+  { const f = clone(); f.agents[3].s = 'trout'; f.agents[4].s = '__proto__'; f.agents[5].s = 'constructor';
+    const lw = new World(); const rep = lw.load(f); const ids = lw.agents.map(a => a.id);
+    check('unknown species (incl. "__proto__") are SKIPPED and counted — the rest of the lake loads, ids stay unique', rep.skippedSpecies === 3 && lw.agents.length === base.agents.length - 3 && new Set(ids).size === ids.length && Object.getPrototypeOf(lw.stats) === Object.prototype, `skipped ${rep.skippedSpecies}, agents ${lw.agents.length}/${base.agents.length}`); }
+  { const f = clone();
+    delete f.agents[0].y; delete f.agents[1].e; f.agents[2].gn[1] = 0; f.agents[3].h = 'north'; f.agents[4].x = null; f.agents[5].ag = -50;
+    f.agents[6].g = '<img src=x onerror=alert(1)>'; f.agents[6].ea = '<b>'; f.agents[7].w = f.agents[7].w.map((v, i) => i === 3 ? 1e309 : v);
+    f.agents[8].m = ['a']; f.agents[9].lw = [NaN]; f.agents[10].gn = [1e9, -1e9, 'x'];
+    delete f.env.t; f.env.weather = 7; f.env.tempC = 'hot'; f.env.o2[5] = null; f.env.phyto[9] = 1e308; f.env.strat = NaN; f.env.cols = 3;
+    f.reeds = {}; f.logs = 'nope'; f.plants[0].h = undefined; f.plants[1].v = -2; f.plants[2].g = [1, 2];
+    f.plankton[0].y = 'deep'; f.detritus[0] = 7; f.larvae[0].d = null; f.stats = JSON.parse('{"births":"x","__proto__":{"polluted":1}}');
+    const lw = new World(); const rep = lw.load(f);
+    for (let i = 0; i < 120; i++) lw.step(DTI);
+    check('missing / non-numeric / out-of-range fields load on sane defaults → NO NaN anywhere after 120 steps', finiteWorld(lw) && lw.agents.every(a => Number.isInteger(a.gen) && Number.isInteger(a.eaten)),
+      `agents ${lw.agents.length}, reseeded ${rep.reseeded}, regenerated ${rep.regenerated.join(',')}`);
+    check('…and `reeds: {}` is regenerated (no per-step throw), gen/eaten coerced to integers', Array.isArray(lw.reeds) && lw.reeds.length > 0 && rep.regenerated.includes('reeds')); }
+  { const f = clone(); f.env.cols = 40; f.env.rows = 24; f.env.o2 = new Array(40 * 24).fill(0).map((_, i) => (i % 40) < 20 ? 0.2 : 0.9);
+    const ew = new World(); ew.load(f); const C = GRID.FIELD_COLS, R = GRID.FIELD_ROWS;
+    check('a different-sized env grid is RESAMPLED by (cx,cy), not row-sheared', ew.env.o2[0] === Math.fround(0.2) && ew.env.o2[C - 1] === Math.fround(0.9) && ew.env.o2[(R - 1) * C] === Math.fround(0.2) && ew.env.o2[R * C - 1] === Math.fround(0.9)); }
+  { const f = clone(); const tmpl = f.agents[0]; f.agents = Array.from({ length: WORLD.GLOBAL_MAX + 400 }, () => ({ ...tmpl }));
+    const lw = new World(); const rep = lw.load(f);
+    check('an oversized save is capped at WORLD.GLOBAL_MAX agents', lw.agents.length === WORLD.GLOBAL_MAX && rep.truncated === 400, `${lw.agents.length}`); }
+
+  // (7) fitGenes pads a missing gene with EXACTLY 1.0 (a v22 save had no brain gene → full brain, no RNG draw)
+  { const f = clone(); for (const a of f.agents) a.gn = a.gn.slice(0, 6);
+    const lw = new World(); lw.load(f);
+    check('an older 6-gene save pads the brain gene with EXACTLY 1.0 (no brain shrinks)', lw.agents.every(a => a.genes[6] === 1 && a.activeHid === a.sp.shape.hid)); }
+
+  // (8) version 24; an OLDER (v23-shaped) save still loads and runs
+  { const f = clone(); f.version = 23;
+    delete f.rng; delete f.nid; delete f.corpses;
+    for (const a of f.agents) for (const k of ['id', 'mc', 'ts', 'th', 'vh', 'st', 'ac', 'lw']) delete a[k];
+    for (const l of f.larvae) delete l.y; for (const s of f.snails) { delete s.y; delete s.ph; }
+    for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
+    const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
+    const ids = lw.agents.map(a => a.id);
+    check('saves are version 24, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 24 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+
+  // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
+  { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
+    const r = hw.seedFromChampions(champs); const mins = hw.agents.slice(-r.added).filter(a => a.species === 'minnow');
+    let guard = 0; while (hw.agents.length < WORLD.GLOBAL_MAX && guard++ < 50) hw.seedFromChampions(champs);
+    const full = hw.seedFromChampions(champs);
+    check('seedFromChampions returns {added, reseeded}, coerces gen, counts reseeded brains, and never exceeds GLOBAL_MAX',
+      r.added > 0 && r.reseeded > 0 && mins.every(a => a.gen === 0) && full.added === 0 && hw.agents.length <= WORLD.GLOBAL_MAX && hw.addAgent('bass') === null && hw.makeFish('bass') === null,
+      `added ${r.added}, reseeded ${r.reseeded}, agents ${hw.agents.length}/${WORLD.GLOBAL_MAX}`); }
+
+  // (10) the death test kills a NaN fish (a NaN can't make a fish immortal)
+  { seed(9); const nw = new World(); const f = nw.agents[0]; f.energy = NaN; nw.step(DTI);
+    check('a fish with NaN energy dies (death test is !(energy > 0))', !nw.agents.includes(f)); }
+
+  // (11) carp normalise threat proximity by qThreat's own 1.1× search radius (the outer band no longer reads 0)
+  { seed(10); const tw = new World(); tw.env.turbidity = 0;
+    const carp = tw.makeFish('carp', [1, 1, 1, 1, 1, 1, 1]); carp.x = 1000; carp.y = 400; carp.heading = 0;
+    const pike = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pike.x = 1000 + carp.senseRange * 1.05; pike.y = 400;
+    tw.agents = [carp, pike]; tw.agentGrid.rebuild(tw.agents); SP.carp.senses(carp, tw);
+    check('carp threat proximity is normalised by the 1.1× threat-search radius (a threat at 1.05× range reads > 0)', carp.act.in[5] > 0 && carp.act.in[4] > 0.99, `prox ${carp.act.in[5].toFixed(3)}`); }
+}
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);
