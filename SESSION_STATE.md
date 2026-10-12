@@ -35,9 +35,16 @@ Screensaver plan:
   - `01e4329` crisp overview: warp / chromatic aberration / fake DOF now scale WITH zoom (were strongest zoomed out).
   - `26b8de6` sim step 7.1 → 4.5 ms, byte-identical (fingerprint hash unchanged; gate 154 → 256 steps/s).
   - `1d229a1` drawn fish pitch soft-limited to ±55° (no more vertical "falling cut-out" fish).
-  - (pending commit) GL fish swim in FRAG_FISH from one straight-pose sprite per fish: the hi-res tiers needed 30
-    sprites per fish (10 frames × 3 efforts) vs caps 160/48 → close shots rebuilt sprites every frame (20 fps, 230 ms
+  - `8a9e78f` GL fish swim in FRAG_FISH from one straight-pose sprite per fish: the hi-res tiers needed
+    30 sprites per fish (10 frames × 3 efforts) vs caps 160/48 → close shots rebuilt sprites every frame (20 fps, 230 ms
     stalls). Now 65 fps, 100% frames on target at 16× on the densest cluster.
+  - `5e555d6` tall screens (16:10, 4:3, portrait) frame the surface at the top; earth fills the spare height.
+  - `f6732e3` fish art for close-ups: species markings (bass band, minnow stripe, sunfish bars + orange breast, pike
+    spots, catfish mottle), overlapping scales on the close-up tiers, forked tails, rounded snout, iris, soft edges;
+    tour follow zoom 6–16×.
+  - `beb24e9` plants up close: eelgrass weed-bed blades as tapered ribbons with a midrib, lance leaves on stalks,
+    tapered reeds (all only at z ≥ 2.4); fish no longer fade in as see-through "ghosts" on every tour cut (only newborns
+    fade).
 - **How I measure in real Chrome (session-local scripts in the scratchpad; recreate if lost):** launch
   `chrome --app=http://localhost:8000/#screensaver --user-data-dir=%LOCALAPPDATA%\SynapseReef\bench
   --remote-debugging-port=9334 --window-size=640,400 --disable-backgrounding-occluded-windows
