@@ -59,12 +59,18 @@ function putLine(put, x0, y0, x1, y1, su, col, al = 1) {
   const dx = x1 - x0, dy = y1 - y0, n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / su));
   for (let i = 0; i <= n; i++) { const f = i / n; put(x0 + dx * f, y0 + dy * f, col, al); }
 }
-function fillTri(put, ax, ay, bx, by, cx, cy, su, col, al = 1) {
+// fade (optional): fins are membranes that THIN toward their margin — mode 1 fades toward vertex C (a fin whose base is
+// the edge AB and whose tip is C: dorsal, pectoral), mode 2 fades away from vertex A (a fin attached at A: the tail).
+// k = how much of the alpha is lost at the margin. Mode 0 = the old flat fill.
+function fillTri(put, ax, ay, bx, by, cx, cy, su, col, al = 1, fade = 0, k = 0.55) {
   const minx = Math.min(ax, bx, cx), maxx = Math.max(ax, bx, cx), miny = Math.min(ay, by, cy), maxy = Math.max(ay, by, cy);
   const d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy); if (Math.abs(d) < 1e-6) return;
   for (let x = minx; x <= maxx; x += su) for (let y = miny; y <= maxy; y += su) {
     const a = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / d, b = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / d;
-    if (a >= -0.03 && b >= -0.03 && a + b <= 1.03) put(x, y, col, al);
+    if (a >= -0.03 && b >= -0.03 && a + b <= 1.03) {
+      const m = fade === 1 ? Math.min(1, Math.max(0, 1 - a - b)) : fade === 2 ? Math.min(1, Math.max(0, 1 - a)) : 0;
+      put(x, y, col, al * (1 - k * m));
+    }
   }
 }
 function fillDisc(put, cx, cy, r, su, col) {
@@ -87,7 +93,7 @@ function drawFish(put, P, c, o) {
 
   const T = P.tail, tl = T.len * m.fin, tsp = T.spread * m.fin, x0 = -L, tb = wave(x0), tip = tb + Math.sin(ph) * Hh * (0.35 + 0.5 * drive);
   // caudal fin (tail) — forked TRANSLUCENT membrane (al<1 → water shows through) + brighter fin RAYS along the edges
-  fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, x0 - tl, tip - tsp * 1.4, su, c.back, 0.62);
+  fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, x0 - tl, tip - tsp * 1.4, su, c.back, 0.72, 2, 0.6);   // membrane thins toward the trailing edge
   putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, su, c.back, 0.85);
   putLine(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 1.4, su, c.back, 0.85);
   putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 0.2, su, c.back, 0.45);
@@ -96,12 +102,16 @@ function drawFish(put, P, c, o) {
   // FAR BACK near the tail; sunfish/carp carry a long-based sail; bass/minnow a mid single fin.
   if (P.dorsal) {
     const dx = (P.dorsalX != null ? P.dorsalX : 0.04) * L, dw = (P.dorsalW != null ? P.dorsalW : 0.24) * L, dh = P.dorsalH != null ? P.dorsalH : 1.7;
-    fillTri(put, dx - dw, -Hh * 0.75 + wave(dx - dw), dx + dw * 1.15, -Hh * 0.7 + wave(dx + dw * 1.15), dx, -Hh * dh + wave(dx), su, c.back, 0.66);
-    putLine(put, dx, -Hh * dh + wave(dx), dx - dw * 0.45, -Hh * 0.78 + wave(dx - dw * 0.45), su, c.back, 0.6);
+    fillTri(put, dx - dw, -Hh * 0.75 + wave(dx - dw), dx + dw * 1.15, -Hh * 0.7 + wave(dx + dw * 1.15), dx, -Hh * dh + wave(dx), su, c.back, 0.74, 1, 0.55);   // thins toward the tip
+    // spines/rays fanning from the base to the fin edge (the membrane between them reads as a real fin, not a flat flag)
+    for (const f of [-0.75, -0.25, 0.3, 0.85]) {
+      const bx = dx + f * dw, tx = dx + (f - 0.35) * dw * 0.55, ty = -Hh * (dh - 0.12 * Math.abs(f));
+      putLine(put, bx, -Hh * 0.74 + wave(bx), tx, ty + wave(tx), su, c.back, 0.5);
+    }
   }
   // pectoral fin (beats with effort) — translucent
   const fin = Math.sin(ph * 1.2) * Hh * (0.22 + 0.4 * drive) * m.fin;
-  fillTri(put, L * 0.32, Hh * 0.35 + wave(L * 0.32), L * 0.04, Hh * 0.35 + wave(L * 0.04), L * 0.2, Hh * 1.05 + fin + wave(L * 0.2), su, c.body, 0.58);
+  fillTri(put, L * 0.32, Hh * 0.35 + wave(L * 0.32), L * 0.04, Hh * 0.35 + wave(L * 0.04), L * 0.2, Hh * 1.05 + fin + wave(L * 0.2), su, c.body, 0.66, 1, 0.6);   // thins toward its tip
   // body (drawn over fin roots) — SMOOTH counter-shading: a continuous vertical gradient dark-back → mid-body →
   // light-belly (the old hard 3-band split read as blocky pixel art), times a faint diagonal SCALE texture so the
   // flank has a subtle iridescent grain rather than a flat fill. Colours are numeric [r,g,b], so we lerp/scale them.
