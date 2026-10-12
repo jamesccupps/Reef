@@ -1,0 +1,9 @@
+node_modules/
+*.zip
+*.log
+__pycache__/
+*.pyc
+.claude/settings.local.json
+.claude/worktrees/
+.DS_Store
+Thumbs.db

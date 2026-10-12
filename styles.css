@@ -1,0 +1,188 @@
+:root{
+  --abyss:#03070d; --deep:#06101a; --panel:#0a1a25; --panel2:#0c2230;
+  --line:rgba(125,255,178,.16); --line2:rgba(125,255,178,.30);
+  --phosphor:#7dffb2; --cyan:#5fd0ff; --amber:#ffae5a; --rose:#ff6e96;
+  --ink:#d6ecdd; --dim:#6f9aa3; --faint:#3f5b63;
+  --mono:"Space Mono",ui-monospace,monospace; --pixel:"Press Start 2P",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(1200px 600px at 70% -10%, #0a2030 0%, transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, #07161f 0%, transparent 55%),
+    var(--abyss);
+  color:var(--ink); font-family:var(--mono); line-height:1.5;
+  -webkit-font-smoothing:antialiased; min-height:100vh;
+}
+.shell{max-width:1240px; margin:0 auto; padding:22px clamp(14px,3vw,30px) 40px}
+
+/* ---------- top bar ---------- */
+.bar{display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap}
+.eyebrow{font-size:10px; letter-spacing:.42em; color:var(--dim); text-transform:uppercase; margin-bottom:10px}
+.brand{font-family:var(--pixel); font-size:clamp(18px,3vw,30px); margin:0; color:var(--ink); line-height:1; text-shadow:0 2px 0 #000}
+.brand span{color:var(--phosphor)}
+.readout{display:flex; gap:10px; align-items:stretch}
+.rcell{background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:7px 12px; min-width:74px; display:flex; flex-direction:column; gap:2px}
+.rcell label{font-size:8px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim)}
+.rcell b{font-size:15px; color:var(--ink)}
+.rcell.live{flex-direction:row; align-items:center; gap:8px}
+.rcell.live b{font-size:11px; color:var(--phosphor)}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--phosphor); box-shadow:0 0 8px var(--phosphor); animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.thesis{max-width:62ch; color:#a7c4cb; font-size:13px; margin:16px 0 18px; border-left:2px solid var(--line2); padding-left:14px}
+
+/* ---------- stage ---------- */
+.stage{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start}
+
+.viewport{
+  position:relative; background:#000; border-radius:12px; padding:10px;
+  border:1px solid var(--line2);
+  box-shadow:0 0 0 1px #000 inset, 0 18px 50px rgba(0,0,0,.55), 0 0 40px rgba(95,208,255,.05);
+}
+.viewport::before{ /* corner ticks */
+  content:""; position:absolute; inset:4px; border-radius:9px; pointer-events:none;
+  background:
+    linear-gradient(var(--line2),var(--line2)) left 0 top 0/14px 1px no-repeat,
+    linear-gradient(var(--line2),var(--line2)) left 0 top 0/1px 14px no-repeat,
+    linear-gradient(var(--line2),var(--line2)) right 0 bottom 0/14px 1px no-repeat,
+    linear-gradient(var(--line2),var(--line2)) right 0 bottom 0/1px 14px no-repeat;
+}
+#tank{display:block; width:100%; height:auto; aspect-ratio:16/9; image-rendering:auto; border-radius:7px; cursor:grab; touch-action:none}
+#tank:active{cursor:grabbing}
+.legend{list-style:none; display:flex; flex-wrap:wrap; gap:6px 16px; margin:10px 2px 2px; padding:0}
+.legend li{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--dim)}
+.legend i{width:9px; height:9px; border-radius:2px; display:inline-block}
+
+/* ---------- rail ---------- */
+.rail{display:flex; flex-direction:column; gap:14px}
+.card{background:linear-gradient(180deg,var(--panel),var(--deep)); border:1px solid var(--line); border-radius:11px; padding:13px 14px}
+.label{font-family:var(--pixel); font-size:9px; letter-spacing:.06em; color:var(--phosphor); text-transform:uppercase; margin-bottom:11px; opacity:.92}
+
+.envgrid{display:grid; grid-template-columns:1fr 1fr; gap:9px 12px}
+.envgrid>div{display:flex; flex-direction:column}
+.envgrid label{font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim)}
+.envgrid b{font-size:14px; color:var(--ink)}
+
+.crow{display:flex; align-items:center; gap:9px; padding:4px 0; border-bottom:1px dashed rgba(125,255,178,.08)}
+.crow:last-child{border-bottom:0}
+.crow i{width:9px; height:9px; border-radius:2px}
+.crow .cn{flex:1; font-size:12px; color:#b9d4da}
+.crow b{font-size:13px; color:var(--ink); min-width:26px; text-align:right}
+
+#brain{display:block; width:100%; height:260px}
+#charts{display:block; width:100%; height:128px}
+#depthprofile{display:block; width:100%; height:150px}
+.dplegend{display:flex; flex-wrap:wrap; gap:9px; margin-top:6px; font-family:var(--mono,monospace); font-size:10px; opacity:.9}
+.dplegend span::before{content:"—"; margin-right:3px}
+.cardsub{font-family:var(--mono,monospace); font-size:9px; text-transform:none; letter-spacing:0; opacity:.5; margin-left:6px}
+.sel{margin-top:10px; font-size:11px; color:var(--dim); border-top:1px solid var(--line); padding-top:9px; min-height:32px; line-height:1.55}
+.sel b{color:var(--ink)}
+.seldim{color:#5b7d86; text-transform:uppercase; font-size:9px; letter-spacing:.04em}
+.crow .cdet{font-size:9px; color:#5b7d86; font-family:"Space Mono",monospace; margin-right:7px; white-space:nowrap}
+
+/* ---------- food web: resource strip + trophic biomass bars ---------- */
+.reslist{display:flex; flex-wrap:wrap; gap:3px 10px; margin-top:10px; padding-top:9px; border-top:1px dashed rgba(125,255,178,.10); font-size:10px; color:var(--dim)}
+.reslist .res{white-space:nowrap}
+.reslist .res b{color:var(--ink); font-size:11px; margin-left:3px}
+.pyramid{display:flex; flex-direction:column; gap:3px; margin-top:10px}
+.pbar{display:grid; grid-template-columns:62px 1fr 34px; align-items:center; gap:6px; font-size:9px}
+.pbar .pl{color:var(--dim); text-transform:uppercase; letter-spacing:.04em; text-align:right; overflow:hidden; text-overflow:ellipsis}
+.pbar .pt{height:8px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden}
+.pbar .pt i{display:block; height:100%; border-radius:3px; transition:width .25s}
+.pbar .pv{color:var(--ink); font-family:"Space Mono",monospace; font-size:9px; text-align:right}
+
+/* ---------- evolution gene table ---------- */
+.evo{font-family:"Space Mono",monospace; font-size:9.5px}
+.evo .erow{display:grid; grid-template-columns:44px repeat(7,1fr) 28px 28px; gap:2px; align-items:center; padding:2px 0}
+.evo .ehead{color:var(--dim); border-bottom:1px solid var(--line); padding-bottom:3px; margin-bottom:2px; letter-spacing:.02em}
+.evo .ehead span{text-align:right}
+.evo .en{display:flex; align-items:center; gap:4px; color:#b9d4da; font-size:10px; overflow:hidden}
+.evo .en i{width:7px; height:7px; border-radius:2px; flex:0 0 auto}
+.evo .ev{text-align:right; color:var(--ink)}
+.evo .ev.up{color:var(--phosphor)} .evo .ev.dn{color:var(--rose)}
+.evo .eg{text-align:right; color:#8fb6bf}
+.evo .ei{text-align:right; color:#5b7d86}
+
+/* ---------- cognition aggregates ---------- */
+.cog{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px 10px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line)}
+.cog .cg{display:flex; flex-direction:column; gap:1px}
+.cog .cg label{font-size:8px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim)}
+.cog .cg b{font-size:13px; color:var(--ink)}
+.cog .cg.act b{color:var(--amber)}
+
+/* ---------- controls ---------- */
+.controls .row{display:flex; gap:8px; align-items:center; margin-bottom:10px}
+.controls .row.wrap{flex-wrap:wrap}
+.sub{font-size:10px; color:var(--dim); margin:4px 0 8px; letter-spacing:.02em}
+.btn{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:8px 11px; cursor:pointer; transition:.14s}
+.btn:hover{border-color:var(--phosphor); color:#fff; background:#10303f}
+.btn.wide{flex:1}
+.btn.danger{border-color:rgba(255,110,150,.4); color:#ffb3c6}
+.btn.danger:hover{border-color:var(--rose); background:#2a0e16; color:#fff}
+.btn.file{display:inline-flex; align-items:center}
+.seggroup{display:flex; border:1px solid var(--line2); border-radius:8px; overflow:hidden}
+.seg{font-family:var(--mono); font-size:11px; background:transparent; color:var(--dim); border:0; padding:8px 11px; cursor:pointer}
+.seg+.seg{border-left:1px solid var(--line)}
+.seg.on{background:var(--phosphor); color:#04130b; font-weight:700}
+.field{display:flex; flex-direction:column; gap:4px; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim)}
+.field select{font-family:var(--mono); font-size:12px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:6px 8px}
+.check{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#b9d4da; cursor:pointer}
+.check input{accent-color:var(--phosphor)}
+.chips{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px}
+.chip{--c:var(--phosphor); font-family:var(--mono); font-size:11px; color:#cfe8d8; background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--c); border-radius:7px; padding:6px 9px; cursor:pointer; transition:.14s}
+.chip:hover{background:#10303f; color:#fff}
+
+.foot{margin-top:22px; font-size:11px; color:var(--faint); text-align:center}
+.foot b{color:var(--dim); font-weight:400}
+
+/* ---------- toast ---------- */
+.toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(16px); background:var(--panel2); border:1px solid var(--line2); color:var(--ink); font-size:12px; padding:9px 16px; border-radius:9px; opacity:0; pointer-events:none; transition:.22s; box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* ---------- pond stats overlay + fullscreen ---------- */
+.pondstats{
+  position:absolute; top:14px; left:14px; z-index:3; pointer-events:none;
+  background:rgba(4,12,18,.62); border:1px solid var(--line); border-radius:9px; padding:8px 11px;
+  font-family:var(--mono); font-size:11px; color:#a7c4cb; line-height:1.5; max-width:64%;
+}
+.ps-top{display:flex; gap:10px; align-items:baseline; margin-bottom:2px}
+.ps-top b{font-family:var(--pixel); font-size:11px; color:var(--phosphor)}
+.ps-top span{color:var(--ink); font-size:12px}
+.ps-env em{font-style:normal; color:var(--cyan)}
+.ps-species{display:flex; flex-wrap:wrap; gap:4px 11px; margin-top:5px}
+.pss{display:inline-flex; align-items:center; gap:4px; color:#9fbac1}
+.pss i{width:8px; height:8px; border-radius:2px; display:inline-block}
+.pss b{color:var(--ink)}
+.fsbtn{position:absolute; top:14px; right:14px; z-index:3; width:30px; height:30px; border-radius:8px; cursor:pointer; background:rgba(4,12,18,.6); color:var(--ink); border:1px solid var(--line2); font-size:15px; line-height:1; transition:.14s}
+.fsbtn:hover{border-color:var(--phosphor); color:#fff}
+
+/* ---------- camera controls, minimap & perf HUD (viewport overlays) ---------- */
+.camctl{position:absolute; right:14px; bottom:14px; z-index:4; display:flex; gap:6px; background:rgba(4,12,18,.6); border:1px solid var(--line); border-radius:9px; padding:5px}
+.camctl button{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:5px 9px; cursor:pointer; transition:.14s; line-height:1}
+.camctl button:hover{border-color:var(--phosphor); color:#fff; background:#10303f}
+.minimap{position:absolute; left:14px; bottom:14px; z-index:3; width:clamp(150px,22%,260px); aspect-ratio:16/9; border:1px solid var(--line2); border-radius:7px; background:rgba(2,8,14,.7); cursor:pointer; image-rendering:pixelated; box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.perf{position:absolute; top:14px; right:54px; z-index:4; display:none; max-width:60%; pointer-events:none;
+  background:rgba(2,8,14,.72); border:1px solid var(--line); border-radius:8px; padding:5px 9px;
+  font-family:var(--mono); font-size:10.5px; color:var(--phosphor); letter-spacing:.02em; line-height:1.4}
+.perf.show{display:block}
+
+.viewport:fullscreen{display:block; padding:0; border:0; border-radius:0; background:#01040a}
+.viewport:fullscreen::before{display:none}
+.viewport:fullscreen #tank{width:100vw; height:100vh; border-radius:0; cursor:default}
+.viewport:fullscreen .legend{display:none}
+.viewport:fullscreen .pondstats{top:22px; left:22px; font-size:13px}
+.viewport:fullscreen .pondstats .ps-top b{font-size:13px}
+.viewport:fullscreen .minimap{width:clamp(200px,18vw,340px)}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .stage{grid-template-columns:1fr}
+  .rail{flex-direction:column}
+  #brain{height:230px}
+}
+@media (prefers-reduced-motion:reduce){
+  .dot{animation:none}
+  *{transition:none!important}
+}

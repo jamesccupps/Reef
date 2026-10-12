@@ -1,0 +1,276 @@
+
+> synapse-reef@2.0.0 test
+> node test/headless.mjs && node test/smoke.mjs
+
+initial census: {"minnow":135,"sunfish":61,"catfish":40,"carp":27,"bass":27,"pike":13}
+agents: 303 | plants: 621 | plankton: 1417 | detritus: 189
+world: 2048x1152 | AREA_SCALE: 6.75 | GLOBAL_MAX: 1012 | field: 85x48
+ PASS  minnow: input labels match shape.in  — 16 vs 16
+ PASS  sunfish: input labels match shape.in  — 13 vs 13
+ PASS  catfish: input labels match shape.in  — 10 vs 10
+ PASS  carp: input labels match shape.in  — 10 vs 10
+ PASS  bass: input labels match shape.in  — 10 vs 10
+ PASS  pike: input labels match shape.in  — 9 vs 9
+ PASS  world is much larger than the reference pond  — 6.75× area
+ PASS  field grid scaled to keep cells ~constant  — 85x48
+ PASS  oxygen field sized to grid  — 4080
+ PASS  initial populations scaled with area  — 303 agents
+ PASS  minnow start scaled  — 135 vs ~135
+
+final census: {"minnow":202,"sunfish":69,"catfish":12,"carp":9,"bass":6,"pike":5}
+agents now: 303 | plants: 434 | plankton: 496 | detritus: 185
+maxGen: 3 | foodEaten: 98972 | fishEaten: 507
+avg O2: 0.677 | temp: 25.8C | weather: Rain | light: 0.01
+perf: 4400 steps in 48168ms = 91 steps/s (real-time needs 30) | peak 485 agents
+ PASS  no NaN / out-of-range integrity hits  — 0 hits
+ PASS  all six species still present (logistic repro + immigration rescue keep them present)
+ PASS  generations advanced (reproduction happening)  — gen 3
+ PASS  every species actually reproduces home-bred (not only rescued by immigration)  — minnow 323 sunfish 319 catfish 132 carp 66 bass 50 pike 46
+ PASS  total agents stayed under global cap  — peak 485 / cap 1012
+ PASS  population is dynamic (changed from start)
+ PASS  plants persisted (growth vs grazing balance)  — 434 plants
+ PASS  some feeding occurred  — 98972 food events
+ PASS  oxygen field in valid range
+ PASS  fast enough for real-time render at scale  — 91 steps/s
+ PASS  natural deaths leave a lingering body (no instant vanish)  — peak 20 corpses
+ PASS  corpses stay bounded (they decay into detritus)  — peak 20 < 485
+ PASS  save/load round-trip restores the full serialized state (content, not just count)  — lengths 2203154 vs 2203154
+ PASS  loaded agents keep their growth (adults reload as adults, not juveniles)  — e.g. 1.00 vs 1.00
+ PASS  loaded environment keeps its stratification & temperature profile  — strat 0.380 vs 0.380
+ PASS  loaded world steps without error
+ PASS  a stale/mismatched saved brain is reseeded to the right size (no NaN corruption)  — reseeded 1
+ PASS  the guard only reseeds the mismatched brain, not the whole population  — reseeded 1/303
+
+— cognition (recurrent memory) —
+ PASS  genomeLen now includes the per-unit recurrence (LEAK) params  — len 30
+ PASS  a MEMORYLESS net (leak≈0) is history-INDEPENDENT: same input ⇒ same output (the pre-recurrence behaviour)  — Δturn 0.0e+0
+ PASS  a RECURRENT net (high leak) is history-DEPENDENT: identical current input → different output after a different past = MEMORY  — Δturn 0.082, Δthrust 0.004
+ PASS  the memory trace persists after the stimulus stops, then DECAYS toward the baseline (bounded, no runaway)  — dev 0.299 → 0.101
+ PASS  a pre-recurrence brain is PRESERVED on load (weights kept + memoryless leak appended), not reseeded  — reseeded 0, padded true
+ PASS  the recurrent working memory (act.h) round-trips through save/load (serialized, not reset to zero)  — 303 agents
+ PASS  recurrence is ACTIVE (non-trivial mean memory) and EVOLVABLE (varies across the population) in the live sim  — mean leak 0.179, spread 0.168
+
+— school dilution (predator-confusion) —
+ PASS  a LONE prey just within strike range IS eaten  — lone
+ PASS  the SAME prey tucked in a dense shoal is NOT eaten — predator-confusion/dilution makes schooling cohesion ADAPTIVE  — shoaled (safe)
+ PASS  predator-confusion is DENSITY-graded (a predator's reach falls monotonically as the cluster grows) — a group-size property, not species-gated  — reach×: 1.00 > 0.75 > 0.50
+
+— cyanotoxins (HAB toxicity) —
+ PASS  cyanotoxin: a fish in a DENSE surface scum loses more energy than in clean water (HAB poisoning)  — scum 0.6896 < clean 0.6916
+ PASS  cyanotoxin is INERT below the threshold (sub-threshold cyano drains the same as clean water → a fresh/clear lake is unchanged)  — below 0.69159 ≈ clean 0.69159
+ PASS  cyanotoxin kills zooplankton by POISON, not just competition (phyto kept abundant → only the toxin can kill; toxin-on ≪ toxin-off control)  — toxin-on 1146 ≪ toxin-off 2022
+ PASS  the cyanotoxin zooplankton death is DETERMINISTIC (seeded RNG → same seed ⇒ identical survivor count)  — repeat 1146 === 1146
+
+— contaminant bioaccumulation / biomagnification —
+ PASS  a CLEAN lake (TOX.AMBIENT=0) is inert: no fish carries any contaminant burden  — max tox 0.000
+ PASS  biomagnification STEP: a predator assimilates its prey's contaminant burden when it eats it (× TOX.ASSIM)  — predator tox 1.600 = 0.8×2.0
+ PASS  contaminant BIOMAGNIFIES up the food chain: piscivores carry a higher mean body burden than planktivores  — piscivore 0.88 > planktivore 0.38
+ PASS  contaminant body burden (tx) round-trips through save/load (v16)  — 337 agents
+
+— habitat / thermal —
+ PASS  lake bed is a basin (deep centre, shallow shores)  — centre 1134 vs shores 289/290
+ PASS  shore has a broad, flat, shallow littoral shelf (not a smooth U)  — shelf 293→310 (Δ17)
+ PASS  a steep drop-off falls from the shelf into the deep basin  — drop 310→992 (Δ682)
+summer: strat 0.99 ΔT 9.9 O₂ surf 0.50 deep 0.00
+turnover: strat 0.00 ΔT 0.0 O₂ surf 0.56 deep 0.40
+ PASS  summer: deep water is colder than the surface (stratified)  — Δ 9.9°C
+ PASS  summer: the hypolimnion is more hypoxic than the surface  — deep 0.00 < surf 0.50
+ PASS  turnover collapses the thermal gradient (mixing)  — turn Δ 0.0 vs summer Δ 9.9
+ PASS  turnover re-oxygenates the hypolimnion vs stratified summer  — 0.40 > 0.00
+storm-mix: strat calm 0.96 storm 0.80 | deep O₂ calm 0.00 storm 0.22
+ PASS  a summer storm erodes stratification (breaks the thermocline)  — storm strat 0.80 < calm 0.96
+ PASS  storm mixing re-oxygenates the hypoxic summer deep vs a calm control  — storm deep 0.22 > calm 0.00
+
+— thermal / O₂ niches —
+ PASS  every species has a sane thermal/O₂ niche (tempOpt/tempTol/o2Crit)
+ PASS  a warm/cool guild gradient exists (pike cool & O₂-demanding; catfish/carp warm & hypoxia-tolerant)  — pike opt 19/o2 0.4 vs catfish 26/0.16
+ PASS  warm summer surface thermally stresses cool pike but not warm catfish  — peak surf 34.9°C → pike +6.9 / catfish +0.0
+ PASS  the anoxic summer deep punishes O₂-demanding pike more than hypoxia-tolerant carp  — deep O₂ 0.00 → pike 1.00 > carp 1.00
+ PASS  all six species survive a simulated season under the new thermal/O₂ pressure  — minnow 205 sunfish 108 catfish 12 carp 8 bass 7 pike 11
+ PASS  drifting zooplankton stay above the bed (no green dots sunk into the slopes)  — 0 embedded of 510
+
+— multi-gene genome —
+ PASS  randomGenes makes an in-range trait vector near 1.0  — [1.01,0.99,1.06,1.07,1.02,1.00]
+ PASS  crossoverGenes blends (averages) parent traits  — [1.10,1.00,0.90]
+ PASS  mutateGenes stays within the gene bounds
+ PASS  every agent carries the full trait genome + gene-derived effective stats (size/speed/tol + fin/eye/body)
+ PASS  the metabolic cost rises with EVERY trait gene (so the morphology traits trade off — nothing is free)
+ PASS  fin gene → sharper turns (higher maxTurn) but more drag (lower top speed)  — maxTurn 2.51>2.20, speed 55.0<56.0
+ PASS  eye gene → longer sense range (and a metabolic cost)  — sense 168>147
+ PASS  body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)  — accel 68, bodyMul 1.07, speed 52.5
+ PASS  body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat  — 4 eaten, 4.6 (deep-bodied) not
+ PASS  genome-length guard: an older 3-gene save pads to the full genome, preserving the evolved genes  — len 6
+ PASS  genes≡1.0 ⇒ derived stats are EXACTLY the species baseline (no balance shift introduced by the morphology slice)  — maxTurn 2.000/2, maxSpeed 64.000/64, bodyMul 1.000
+ PASS  genes round-trip through save/load
+ PASS  a heritable trait varies across the evolved population (selection has something to act on)  — size-gene spread 0.31 over 329 fish
+ PASS  all gene values stay bounded after a long run (no runaway/NaN)
+
+— stats accessors —
+ PASS  envDetail reports a depth-resolved, finite water-chemistry column  — surf 1.20/deep 1.07 O₂, secchi 493
+ PASS  speciesDetail rolls up count/gen/genes/zonation per species, consistent with census
+ PASS  biomassByTrophic returns a finite, non-negative trophic spectrum  — phytoplankton 0.3 cyanobacteria 0.4 macrophyte 56.7 zooplankton 31.8 planktivore 130.0 omnivore 83.7 predator 12.5 apex 18.9 benthivore 7.2 herbivore 13.5
+ PASS  depthProfile returns a finite surface→bed column of the right length
+ PASS  depthProfile is ordered surface→bed within the basin
+ PASS  depthProfile reflects stratification & light attenuation (deep is colder & dimmer)  — temp 28.0→18.0, light 0.30→0.01
+ PASS  depthProfile samples the right column (deep-basin bed deeper than the littoral shelf)
+
+— carrying capacity / immigration rescue (Phase 5) —
+ PASS  after a wipe: REFUGE backstop present but NOT hard-refilled — a trickle (≤ REFUGE+1, not the old ~47 floor)  — minnow 2 (REFUGE 2; old hard floor was ~47)
+ PASS  the rescue + breeding recover a crashed species GRADUALLY (immigrants accrue while rare; no permanent extinction)  — minnow 2→67, +5 immigrants
+ PASS  the REFUGE backstop guarantees no literal extinction — every wiped species is ≥ REFUGE after one step  — minnow 2 sunfish 2 catfish 65 carp 37 bass 2 pike 3
+ PASS  a self-sustaining species (catfish) is mostly HOME-BRED, not immigration-propped (rescue tapers off when abundant)  — catfish immigrant share 2% (home-bred 147 / immigrants 4)
+ PASS  food-web rebalance: the planktivore (minnow) now self-sustains, home-bred ≫ immigrants (the facultative-omnivory fallback)  — minnow home-bred 261 ≫ immigrants 0
+ PASS  the immigration stat is tracked separately from home-bred births
+ PASS  loading an older save without the births/immigrants stats backfills them (no crash on repro/immigration)
+
+— behavioral baselines —
+ PASS  every species has a sane innate ethogram (homeDepth/depthPull/cruise/weight)
+ PASS  the ethogram encodes real zonation (catfish bottom > minnow shallow) & activity (pike lurks < minnow)  — catfish home 0.92 vs minnow 0.22; pike cruise 0.16 vs minnow 0.55
+ PASS  innate depth-home produces real zonation (catfish ride deep, minnows ride shallow)  — catfish 1.00 vs minnow 0.31 (Δ0.69)
+ PASS  v2 ethogram configured (minnow schools, pike ambushes)
+ PASS  schooling minnows cluster into loose shoals (a typical minnow has several near neighbours)  — mean 8.9 neighbours within 70px
+ PASS  ambush pike lurks (stays slow) when no prey is near  — speed-use 0.27 with no prey in range
+ PASS  weed beds generated in the lit littoral, reaching up into oxygenated mid-water (not the deep centre)  — 24 weed beds
+ PASS  cover-seeking configured (sunfish/bass/pike seek structure)
+ PASS  cover-seeking fish hold in cover (weed beds) more than non-seeking pelagic minnows  — seekers 0.16 > minnow 0.06
+ PASS  catfish are nocturnal — the innate cruise target is much higher at night than midday  — night-target 0.45 ≫ day-target 0.18
+
+— mate choice —
+ PASS  mate choice picks the higher-quality candidate (condition + good genes), not just the nearest  — chose the high-quality mate
+ PASS  mate choice still finds a mate when only one eligible exists (reproduction not blocked)
+
+— depth senses (DVM) —
+ PASS  depth-local light sense is brighter near the surface than the deep  — surf 0.94 > deep 0.03
+ PASS  the four water-column species carry the light@depth + temp@depth senses (for DVM to evolve)
+ PASS  depth-local senses are written, in range, and read bright at a sunlit surface  — light 0.93 temp 0.48
+ PASS  clarity stays in a sane range  — base 0.96 murk 0.64
+ PASS  murky water shortens visual range  — 0.64 < 0.96
+ PASS  Secchi depth is sane and shrinks with turbidity  — 339 < 714px
+ PASS  turbidity dims the deeper water  — 0.044 < 0.227
+ PASS  turbidity responds to algae/weather in a live run  — 0.59 > base 0.1
+
+— structure / cover / flow —
+ PASS  reeds & logs are generated  — 43 reeds, 16 logs
+ PASS  reeds sit on the shallow shores, rooted on the bed
+ PASS  logs lie on the bed, within the world
+ PASS  weed beds concentrate on the littoral shelf, not the deep middle  — 572/621 on the shelf
+ PASS  cover is high in structure, low in open water  — near 1.00 vs open 0.00
+ PASS  cover stays in [0,1]
+ PASS  inflow→outflow current is rightward & weaker with depth  — surf 3.13 > deep 1.67
+ PASS  the P-enriched inflow stream raises the littoral phosphate (vs the far shore)  — inflow P 6.18 > far 0.04
+ PASS  mussel filter-feeder beds are generated  — 59 beds
+
+— trophic web / eutrophication / N·P —
+ PASS  phytoplankton field is alive (the base of the web)  — mean 0.088
+ PASS  nutrients are split into N (nh4+no3) + P (phos) pools
+ PASS  growth is Liebig co-limited [0,1] = min(N-Monod, P-Monod)
+ PASS  phosphate is the limiting nutrient in a fresh lake (P scarcer than N for growth)  — P-lim 0.47 < N-lim 0.75
+eutrophication: control peak phyto 0.50 vs P-spiked 0.67; spiked P 0.67 → 0.63
+ PASS  a PHOSPHATE spike drives a bigger bloom than the unspiked control  — spiked 0.67 > control 0.50
+ PASS  the bloom draws the phosphate pool down (closing the loop)  — 0.63 < 0.67
+
+— sediment-P (internal loading) —
+ PASS  a per-column sediment-P store exists
+ PASS  OXIC sediment binds dissolved P (store rises, water P falls)  — sedP 0.50→0.53, P 0.60→0.58
+ PASS  ANOXIC sediment RELEASES bound P into the water (internal loading)  — sedP 1.20→0.86, P 0.05→0.39
+ PASS  the sediment-P store stays bounded & finite
+
+— nitrogen cycle (nitrification / denitrification) —
+ PASS  inorganic N is split into ammonium (nh4) + nitrate (no3) pools
+ PASS  meanDin() reports the total inorganic N (nh4 + no3)  — din 0.600 = nh4 0.300 + no3 0.300
+ PASS  NITRIFICATION oxidizes ammonium to nitrate (nh4↓, no3↑)  — nh4 0.400→0.380, no3 0.100→0.120
+ PASS  nitrification CONSERVES total inorganic N (it only changes the form, no loss)  — ΣN 0.500000→0.500000
+ PASS  nitrification CONSUMES O₂ (aerobic — an extra O₂ demand in productive water)  — O₂ 1.000→0.984
+ PASS  DENITRIFICATION removes nitrate in anoxic water (no3↓)  — no3 0.400→0.359
+ PASS  denitrification PERMANENTLY removes N from the lake (ΣN falls — the irreversible N sink)  — ΣN 0.500→0.459
+ PASS  the redox gate HALTS nitrification below the anoxic threshold (ammonium untouched at sub-threshold O₂)  — nh4 0.3000→0.3000 at O₂ 0.2
+ PASS  denitrification still runs at sub-threshold O₂ (nitrate falls)  — no3 0.3000→0.2937 at O₂ 0.2
+ PASS  nitrification halts in fully-anoxic water (ammonium not oxidized)  — anoxic nh4 stayed 0.1000
+N-cycle run: nitrate frac 0.50→0.70; meanDin 0.805 (nh4 0.238 / no3 0.567)
+ PASS  the oxic lake stays P-limited (denitrification did not flip it N-limited)  — P-lim 0.44 < N-lim 0.73
+ PASS  over a run, nitrification builds the nitrate pool (NO₃ fraction of inorganic N rises)  — NO₃ frac 0.50→0.70
+ PASS  N pools stay non-negative & finite after a run
+
+— cyanobacteria (N-fixing strain) —
+ PASS  a cyanobacteria biomass field exists (2nd producer)
+ PASS  cyanobacteria FIX their own N — they grow with ZERO inorganic N (where green phyto cannot)  — surface cyano 0.050→0.153 at N=0
+ PASS  cyanobacteria draw down the shared phosphate pool (competition with green phyto)  — P 0.500→0.497
+ PASS  cyanobacteria LEAK fixed N to ammonium — a net N source (the enrichment feedback vs denitrification)  — nh4 0.0000→0.0015 (was 0)
+ PASS  buoyancy CONCENTRATES cyano at the surface — calm water builds a higher surface FRACTION than a storm (growth identical, only the rise differs)  — surf-fraction calm 0.598 > storm 0.577
+ PASS  a storm mixes the surface scum down (less absolute surface cyano than in calm water)  — storm surf 0.292 < calm surf 0.313
+ PASS  cyanobacteria are a WARM-water bloomer (grow near TEMP_OPT, stall when cold)  — warm 0.199 > cold 0.102
+cyano competition: N-rich cyano 0.297/phyto 0.068 vs N-poor cyano 0.438/phyto 0.001
+ PASS  cyanobacteria WIN at low N:P — N-poor cyano biomass stays HIGH and ≥ the N-rich lake (a broken N-fixer would collapse here)  — cyano N-poor 0.438 (>0.3, ≥ N-rich 0.297)
+ PASS  green phyto (N-limited) collapses in the N-poor lake while cyano (N-fixing) holds — the asymmetry IS the niche  — phyto 0.068→0.001, cyano 0.438 ≫ phyto
+ PASS  the cyanobacteria field stays non-negative, bounded & finite
+
+— microbial loop (bacterial decomposition) —
+ PASS  decomposition is TEMPERATURE-DEPENDENT (Q10): warm water decomposes DOM faster than cold  — warm DOM 0.360 < cold 0.392
+ PASS  decomposition is O₂-LIMITED (Monod): oxic decomposes faster than anoxic ⇒ DOM lingers in the hypoxic deep  — oxic DOM 0.382 < anoxic 0.397
+ PASS  decomposition CONSUMES O₂ (the microbial O₂ demand) and RELEASES ammonium + phosphate  — O₂ 1.00→0.99, nh4 0.010, P 0.002, DOM 0.388
+ PASS  microbial loop CONSERVES mass: DOM decomposed = N+P remineralized (no nutrient created or lost)  — dom+nh4+phos 0.300000 (was 0.300), DOM 0.2867
+ PASS  detritus dissolves into a standing DOM pool in the running lake (the microbial substrate exists)  — meanDOM 0.0375
+ PASS  EMERGENT: DOM accumulates more in the cold/hypoxic deep than the warm oxic surface (slow deep decomposition)  — deep DOM 0.2396 > surface 0.0000
+ PASS  the DOM field stays non-negative & finite after a run
+
+— temporal realism (calendar / lifespans / seasonal spawning) —
+ PASS  a year is exactly 12 months and 4 seasons (calendar ratios)  — year 1800, month 150, season 450
+ PASS  time units are correctly ordered: day < month < season < year  — 60 < 150 < 450 < 1800
+ PASS  SEASON.YEAR_LEN / ENV-DAY derive from the single TIME master scale
+ PASS  the calendar cycles through all 12 months over a year (each named)  — 12 distinct months
+ PASS  yearFrac() is the fractional progress through the current year [0,1)  — frac 0.250, month 3
+ PASS  fish lifespans span a realistic ~10× range (long-lived carp ≫ short-lived minnow)  — carp 1500 / minnow 150 = 10.0×
+ PASS  every species matures at a realistic fraction of its lifespan (8–40%, well before death)  — minnow 33% sunfish 25% catfish 18% carp 13% bass 25% pike 19%
+ PASS  lifespan ordering is ecological (minnow shortest-lived, carp longest)  — minnow 150 (min), carp 1500 (max)
+ PASS  every species has a seasonal spawn peak and breeding floors above zero (soft seasonality)  — floor 0.12, peaks 0.05/0.1/0.18/0.18/0.1/0.9
+ PASS  the spawn multiplier peaks in-season (≈1) and tapers to the floor a half-year off  — peak 1.00 → off 0.12
+ PASS  seasonal spawning is WIRED: minnows breed far more in their spring peak season than off-season  — peak-season 18 vs off-season 6 births (first 20 steps)
+
+— fecundity / clutch —
+ PASS  a spawning yields a CLUTCH of several young (fecundity), not a single offspring  — 4 young from one well-fed spawning
+ PASS  clutch size is CONDITION-DEPENDENT (a well-fed pair broods more than a lean pair)  — well-fed 4 vs lean 3
+ PASS  the clutch never exceeds the species max  — 4 ≤ 4
+
+— seasonal macrophytes —
+ PASS  macrophytes are SEASONAL: summer biomass far exceeds winter (warm-season growth → cold-season die-back)  — summer 61.5 (h7) vs winter 9.0 (h6)
+ PASS  macrophytes OVERWINTER as rootstock — senescence floors above the uproot height, so beds are not extirpated  — 82 plants overwinter at mean height 6.1 (< summer 6.8)
+ PASS  macrophytes come in multiple varieties (a typed registry, not one generic plant)  — 4 of 4 forms present: lily,pondweed,milfoil,chara
+ PASS  each macrophyte roots within its variety depth zone (depth zonation)  — 362 plants checked
+ PASS  the deep basin is colonised only by the deep/shade-tolerant form (milfoil), not shallow forms  — 117 deep plants
+
+— plant evolution —
+ PASS  every macrophyte carries a trait genome (right length) + a heritable colour  — 6 genes: maxH/grow/light/warmth/palat/leaf
+ PASS  fresh founder genes start near 1.0 (a new lake behaves like the pre-evolution baseline)  — mean maxH gene 0.999
+ PASS  shade-tolerance gene LOWERS the light-starvation threshold (survives darker/turbid water)…  — lightMin 0.0280 < 0.0400
+ PASS  …but trades off growth (shade-tolerant macrophytes grow slower — divergent selection by depth)  — growMul 0.880 < 1.000
+ PASS  grazing-defence gene LOWERS palatability (tougher) and costs growth (defence ↔ growth trade-off)  — palat 0.700, growMul 0.880
+ PASS  leaf-area gene raises cover & O₂ but also the light requirement (big leaves can't live as deep)  — cover 1.30, o2 1.30, lightMin 0.0418
+ PASS  warmth-requirement gene raises tempMin (higher → needs warmer water; cold tolerance is its inverse, no inverted naming)  — tempMin 18.20 > 14.00
+ PASS  seedlings INHERIT a nearby parent's genes (mutated, close) ≪ a random founder — heredity  — child→parent dist: inherited 0.014 ≪ founder 0.296
+ PASS  colour is heritable too (offspring hue tracks the parent, with slow drift)  — Δhue 0.3°
+ PASS  differential survival: at a dim light only the shade-INtolerant genotype is light-starved (the selection filter)  — tolerant 0.0240 ≤ 0.0380 < intolerant 0.0520
+ PASS  plant genome + colour survive save/load (v16)  — v16, 621 plants
+
+— plant interactions (shading competition) —
+ PASS  shading competition: a TALL neighbour cuts a short plant's effective light (→ stratified canopy / self-thin)  — alone 1.00 → shaded 0.87
+ PASS  shading is one-directional — the short plant does NOT shade the taller one  — tall stays 1.00
+ PASS  a plant far beyond COMPETE.RADIUS casts no shade (local competition only)  — radius 22px
+ PASS  shading OUTCOME: a plant under a dense tall canopy cannot grow (light choked → stays low / dies = self-thinning)  — under dead (start 12, canopy 80)
+ PASS  zooplankton track the phytoplankton field (starved phyto ⇒ far fewer zoo)  — starved 107 vs healthy 2024
+
+— determinism —
+ PASS  same seed ⇒ byte-identical run (reproducible)  — 2817732 chars
+ PASS  camera + cinematic tour do not perturb the seeded sim  — identical
+
+— camera —
+ PASS  camera centres the view on its centre  — 960,540
+ PASS  worldToScreen/screenToWorld are inverses
+ PASS  transform round-trips an arbitrary point
+ PASS  whole-lake fit covers the world  — x[-32,2080]
+ PASS  fit zoom equals camera fitZoom
+ PASS  zoom-in is clamped to maxZoom  — 58.200 <= 58.200
+ PASS  zoom-out is clamped to minZoom  — 0.728 >= 0.728
+ PASS  pan is clamped within world bounds  — c 1916,1078
+ PASS  follow converges on the followed agent  — cam 1569,298 vs 1569,298
+
+ALL CHECKS PASSED

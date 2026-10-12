@@ -1,0 +1,360 @@
+// species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
+import { WORLD, ENV, TIME } from './config.js';
+import { hsl, clamp } from './core.js';
+
+const W = WORLD.W, H = WORLD.H;
+
+// x biased toward the shallow littoral shelves near each shore — where shelf-dwelling
+// fish (minnows, sunfish) naturally congregate. ~62% land on a shelf, the rest spread out.
+const SHELF = 0.18;   // width fraction of each shore that counts as the littoral shelf
+function littoralX(R) {
+  if (R() < 0.62) return R() < 0.5 ? R(8, W * SHELF) : R(W * (1 - SHELF), W - 8);
+  return R(10, W - 10);
+}
+
+// ---------- sensory helpers ----------
+function tgt(agent, t, range, inp, i) {
+  if (t) {
+    const ang = Math.atan2(t.item.y - agent.y, t.item.x - agent.x) - agent.heading;
+    inp[i] = Math.sin(ang); inp[i + 1] = Math.cos(ang); inp[i + 2] = clamp(1 - t.dist / range, 0, 1);
+  } else { inp[i] = 0; inp[i + 1] = 0; inp[i + 2] = 0; }
+}
+function wallProx(a) {
+  const dx = Math.cos(a.heading), dy = Math.sin(a.heading); let t = Infinity;
+  if (dx > 1e-6) t = Math.min(t, (W - a.x) / dx); else if (dx < -1e-6) t = Math.min(t, (0 - a.x) / dx);
+  if (dy > 1e-6) t = Math.min(t, (H - a.y) / dy); else if (dy < -1e-6) t = Math.min(t, (0 - a.y) / dy);
+  return clamp(1 - t / 70, 0, 1);
+}
+
+// ---------- generic scalable fish sprite ----------
+function fishColors(agent, sp, light) {
+  const eF = clamp(agent.energy / sp.reproEnergy, 0.12, 1);
+  const dim = 0.45 + 0.55 * light;                 // dark at night, bright at noon
+  const L = (sp.lbase + eF * sp.lrange) * dim, h = agent.hue, s = sp.sat;
+  return {
+    body: hsl(h, s, L),
+    belly: hsl(h, Math.max(8, s - 14), Math.min(90, L + 17)),
+    back: hsl(h, Math.min(100, s + 8), Math.max(4, L - 11)),
+    head: hsl(h, s, Math.min(84, L + 8)),
+    eye: [12, 16, 20],
+  };
+}
+// ---------- pixel-fill helpers (stay solid at any scale) ----------
+// ell(tn, p): the ellipse half-height at along-body position tn∈[-1(tail)..+1(snout)], raised to power p
+// (p<1 = fuller/rounder, p>1 = slimmer/pointier). Per-species `profile(tn)` returns [topMul, bellyMul] of Hh so a
+// body can be asymmetric (deep-bellied carp, big-headed catfish) and shaped (slender pike spindle, round sunfish disc).
+const ell = (tn, p) => Math.pow(Math.max(0, 1 - tn * tn), p);
+function fillBody(put, L, Hh, su, colFn, wave, prof) {
+  for (let u = -L; u <= L + 1e-6; u += su) {
+    const tn = u / L, e = Math.sqrt(Math.max(0, 1 - tn * tn)), ws = wave(u);
+    const p = prof ? prof(tn) : null, vmT = Hh * (p ? p[0] : e), vmB = Hh * (p ? p[1] : e);   // back (top) vs belly (bottom)
+    for (let v = -vmT; v <= vmB + 1e-6; v += su) { const vm = v < 0 ? vmT : vmB; put(u, v + ws, colFn(v, vm, u), 1); }
+  }
+}
+// a 1-D line of texels (fin rays, gill cover, mouth) — steps along the segment at the fill resolution
+function putLine(put, x0, y0, x1, y1, su, col, al = 1) {
+  const dx = x1 - x0, dy = y1 - y0, n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / su));
+  for (let i = 0; i <= n; i++) { const f = i / n; put(x0 + dx * f, y0 + dy * f, col, al); }
+}
+function fillTri(put, ax, ay, bx, by, cx, cy, su, col, al = 1) {
+  const minx = Math.min(ax, bx, cx), maxx = Math.max(ax, bx, cx), miny = Math.min(ay, by, cy), maxy = Math.max(ay, by, cy);
+  const d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy); if (Math.abs(d) < 1e-6) return;
+  for (let x = minx; x <= maxx; x += su) for (let y = miny; y <= maxy; y += su) {
+    const a = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / d, b = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / d;
+    if (a >= -0.03 && b >= -0.03 && a + b <= 1.03) put(x, y, col, al);
+  }
+}
+function fillDisc(put, cx, cy, r, su, col) {
+  for (let x = -r; x <= r; x += su) for (let y = -r; y <= r; y += su) if (x * x + y * y <= r * r) put(cx + x, cy + y, col, 1);
+}
+
+// ---------- generic solid fish with traveling-wave swimming ----------
+const _ONE_MORPH = { fin: 1, eye: 1, body: 1 };   // default when no per-fish morphology is supplied
+function drawFish(put, P, c, o) {
+  const m = o.morph || _ONE_MORPH;                // heritable morphology: fin (caudal/pectoral size) · eye (radius) · body (depth)
+  const L = P.L, Hh = P.Hh * m.body, scale = o.scale || 2;
+  const su = Math.max(0.07, Math.min(0.55, 0.8 / scale));   // finer step (was 0.13) → ~2× the internal detail so the
+                                                            // anti-aliased sprite reads smooth, not stippled, even zoomed in
+  const drive = o.drive || 0, ph = o.beat;
+  const amp = Hh * (0.09 + 0.20 * drive);                   // gentle undulation (grows with effort) — a slow glide, not a buzz
+  // a sine wave travelling head -> tail, larger toward the tail
+  const wave = u => Math.sin((u / L) * 1.5 - ph) * amp * (u < 0 ? 1 + (-u / L) * 0.9 : 0.4);
+
+  const T = P.tail, tl = T.len * m.fin, tsp = T.spread * m.fin, x0 = -L, tb = wave(x0), tip = tb + Math.sin(ph) * Hh * (0.35 + 0.5 * drive);
+  // caudal fin (tail) — forked TRANSLUCENT membrane (al<1 → water shows through) + brighter fin RAYS along the edges
+  fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, x0 - tl, tip - tsp * 1.4, su, c.back, 0.62);
+  putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, su, c.back, 0.85);
+  putLine(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 1.4, su, c.back, 0.85);
+  putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 0.2, su, c.back, 0.45);
+  putLine(put, x0 + 0.2, tb, x0 - tl, tip - tsp * 0.2, su, c.back, 0.45);
+  // dorsal fin — translucent, with a ray to the peak. Position/width/height per species (P.dorsalX/W/H): pike's sits
+  // FAR BACK near the tail; sunfish/carp carry a long-based sail; bass/minnow a mid single fin.
+  if (P.dorsal) {
+    const dx = (P.dorsalX != null ? P.dorsalX : 0.04) * L, dw = (P.dorsalW != null ? P.dorsalW : 0.24) * L, dh = P.dorsalH != null ? P.dorsalH : 1.7;
+    fillTri(put, dx - dw, -Hh * 0.75 + wave(dx - dw), dx + dw * 1.15, -Hh * 0.7 + wave(dx + dw * 1.15), dx, -Hh * dh + wave(dx), su, c.back, 0.66);
+    putLine(put, dx, -Hh * dh + wave(dx), dx - dw * 0.45, -Hh * 0.78 + wave(dx - dw * 0.45), su, c.back, 0.6);
+  }
+  // pectoral fin (beats with effort) — translucent
+  const fin = Math.sin(ph * 1.2) * Hh * (0.22 + 0.4 * drive) * m.fin;
+  fillTri(put, L * 0.32, Hh * 0.35 + wave(L * 0.32), L * 0.04, Hh * 0.35 + wave(L * 0.04), L * 0.2, Hh * 1.05 + fin + wave(L * 0.2), su, c.body, 0.58);
+  // body (drawn over fin roots) — SMOOTH counter-shading: a continuous vertical gradient dark-back → mid-body →
+  // light-belly (the old hard 3-band split read as blocky pixel art), times a faint diagonal SCALE texture so the
+  // flank has a subtle iridescent grain rather than a flat fill. Colours are numeric [r,g,b], so we lerp/scale them.
+  const mix = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f, p[2] + (q[2] - p[2]) * f];
+  fillBody(put, L, Hh, su, (v, vm, u) => {
+    const n = vm > 0 ? v / vm : 0;                          // -1 (top/back) .. +1 (bottom/belly)
+    const base = n <= 0 ? mix(c.back, c.body, clamp(n + 1, 0, 1))  // back → body over the upper half
+                        : mix(c.body, c.belly, clamp(n, 0, 1));    // body → belly over the lower half
+    const tex = 1 + (P.scaleTex || 0.05) * Math.sin(u * 2.6 - v * 1.7) * Math.cos(v * 2.4);   // scale grain (coarser on carp)
+    return [base[0] * tex, base[1] * tex, base[2] * tex];
+  }, wave, P.profile);
+  // gill cover (operculum) — a faint curved seam behind the head that flares subtly with the beat (breathing)
+  { const gx = L * 0.30, gf = 0.5 + 0.5 * Math.sin(ph * 1.4); putLine(put, gx, -Hh * 0.52 + wave(gx), gx - 0.18, Hh * 0.56 + wave(gx), su, c.back, 0.3 + 0.12 * gf); }
+  // opercular "ear" spot — the dark flap mark behind the gill cover (sunfish/centrarchid signature)
+  if (P.earSpot) fillDisc(put, L * 0.32, -Hh * 0.16 + wave(L * 0.32), Hh * 0.2, su, c.back);
+  // snout
+  for (let s = 1; s <= (P.snout || 0); s++) put(L + s * 0.5, wave(L) * 0.8, c.head, Math.max(0.4, 0.95 - s * 0.1));
+  // mouth line — a short dark seam at the tip of the snout
+  putLine(put, L * 0.95, Hh * 0.1 + wave(L * 0.95), L + (P.snout || 0) * 0.4, wave(L) * 0.84, su, c.back, 0.5);
+  // lateral stripe
+  if (P.stripes) for (let u = -L * 0.6; u <= L * 0.6; u += su) put(u, wave(u), c.back, 0.5);
+  // barbels (catfish)
+  if (P.barbels) for (let s = 0; s < 4; s++) { put(L + 0.4 + s * 0.45, Hh * 0.45 + wave(L) + s * 0.18, c.belly, 0.65); put(L + 0.4 + s * 0.45, -Hh * 0.25 + wave(L) - s * 0.12, c.belly, 0.5); }
+  // eye — radius PROPORTIONAL to body depth (the old flat 0.7-unit floor made a slim fish's eye absurdly large;
+  // it was only masked by the old pixelation). A small catch-light glint gives it a live, rounded look.
+  const er = Math.max(0.16, Hh * 0.22 * m.eye), ex = L * 0.58, ey = -Hh * 0.32 + wave(ex);
+  fillDisc(put, ex, ey, er, su, c.eye);
+  fillDisc(put, ex + er * 0.34, ey - er * 0.34, Math.max(0.08, er * 0.34), su, [222, 230, 236]);   // catch-light
+}
+
+// ---------- species factory: derives radii from size, fills defaults ----------
+function makeSpecies(cfg) {
+  const size = cfg.size;
+  return Object.assign({
+    eatRadius: 3 + size * 2.2,
+    // mate-encounter radius scales with the lake so sparse species can still pair up in a big world
+    mateRadius: (10 + size * 5.5) * Math.sqrt(WORLD.AREA_SCALE),
+    senseRange: 96 + size * 30,
+    energyCap: cfg.reproEnergy + 0.4,
+    drag: 1.4, moveCost: 0.035, turnCost: 0.009, respiration: 1.0,
+    sink: 0, buoyNight: 0, matingCooldown: 6,
+    lbase: 30, lrange: 22, sat: 60,
+    ringR: 4 + size * 2.4,
+    drift: clamp(0.7 - 0.22 * size, 0.06, 0.6),  // how much the surface current pushes it (weak swimmers more)
+    zone: [0.1, 0.9],                            // preferred depth band (fraction of the local water column)
+    // thermal/oxygen physiological niche (warm- vs cool-water guilds). Outside [tempOpt±tempTol]
+    // energy drains (ENV.THERMAL_STRESS/°C); below o2Crit the hypoxia drain bites. Overridden per species.
+    tempOpt: 23, tempTol: 10, o2Crit: ENV.HYPOXIA,
+    spawnPeak: 0.10,   // year-fraction of peak spawning (default = spring/early summer); pike override earlier (cool spring)
+    clutch: 3,         // max offspring per successful spawning (real fish are fecund); condition- & cap-bounded in world.js
+  }, cfg);
+}
+
+// ============================================================
+//  THE SIX SPECIES
+// ============================================================
+export const SP = {
+
+  minnow: makeSpecies({
+    key: 'minnow', name: 'Minnow', tag: '#9fc7e8', size: 0.7, trophic: 'planktivore', schooling: true, zone: [0.05, 0.5],
+    shape: { in: 16, hid: 12 },
+    inputLabels: ['plankton \u2220sin', 'plankton \u2220cos', 'plankton near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
+      'school density', 'school \u2220sin', 'school \u2220cos', 'school align', 'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'light@depth', 'temp@depth'],
+    diet: { plankton: true, insect: true },
+    maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
+    metabolism: 0.020, moveCost: 0.018, respiration: 0.7,
+    startEnergy: [0.45, 0.65], matureAge: 50, reproEnergy: 0.66, reproCost: 0.20, childEnergy: 0.40,
+    matingCooldown: 10, maxAge: 150, pop: { start: 20, min: 7, max: 30 },  // short-lived forage fish (~0.08 yr life, matures ~⅓ in); K=pop.max×AREA_SCALE
+    tempOpt: 22, tempTol: 9, o2Crit: 0.30, spawnPeak: 0.05, clutch: 4,   // coolwater-ish; spawns early spring; very fecund forage fish
+    innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30 },   // shallow open water, active schooler
+
+    sat: 20, lbase: 46, lrange: 16,
+    randomHue: (R) => 198 + R(-12, 16),
+    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 60) }),  // minnows haunt the shallows
+    senses(a, w) {
+      const inp = a.act.in;
+      tgt(a, w.qSurfaceFood(a), a.senseRange, inp, 0);   // nearest zooplankton OR emerged insect → minnow rises to a hatch
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
+      const al = w.allyStats(a, 52);
+      inp[6] = al.density; inp[7] = al.cohSin; inp[8] = al.cohCos; inp[9] = al.alignCos;
+      inp[10] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[11] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[12] = clamp(w.oxygenGrad(a.x, a.y) * 4, -1, 1);
+      inp[13] = wallProx(a);
+      inp[14] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[15] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
+    },
+    P: { L: 2.4, Hh: 0.95, snout: 1, tail: { len: 1.4, spread: 0.8, sweep: 1.0 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
+  sunfish: makeSpecies({
+    key: 'sunfish', name: 'Sunfish', tag: '#ff9d4d', size: 1.0, trophic: 'omnivore', schooling: false, zone: [0.15, 0.72],
+    shape: { in: 13, hid: 10 },
+    inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
+      'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
+    diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
+    maxSpeed: 42, accel: 50, maxTurn: 2.3,
+    metabolism: 0.028, startEnergy: [0.45, 0.65], matureAge: 100, reproEnergy: 0.72, reproCost: 0.24, childEnergy: 0.44,
+    matingCooldown: 12, maxAge: 400, pop: { start: 9, min: 4, max: 18 },   // ~0.22 yr life, matures ~¼ in; K=pop.max×AREA_SCALE (Phase 5)
+    tempOpt: 25, tempTol: 9, o2Crit: 0.26,        // warmwater littoral centrarchid
+    innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40 },   // mid littoral, hovers in weed beds
+    sat: 82, lbase: 40, lrange: 22,
+    randomHue: (R) => (R(-28, 52) + 360) % 360,
+    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 50) }),   // sunfish favour the weedy shelf
+    senses(a, w) {
+      const inp = a.act.in, pk = w.qSurfaceFood(a), pl = w.qPlant(a.x, a.y, a.senseRange);   // pk = nearest zooplankton OR emerged insect
+      const food = !pk ? pl : !pl ? pk : (pk.dist < pl.dist ? pk : pl);
+      tgt(a, food, a.senseRange, inp, 0);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
+      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[8] = clamp(w.oxygenGrad(a.x, a.y) * 4, -1, 1);
+      inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
+      inp[11] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[12] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
+    },
+    P: { L: 2.2, Hh: 1.55, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true,
+      tail: { len: 1.2, spread: 0.95, sweep: 0.85 }, profile: t => { const e = ell(t, 0.46); return [e, e * 1.06]; } },   // round deep disc
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
+  catfish: makeSpecies({
+    key: 'catfish', name: 'Catfish', tag: '#b07b3f', size: 1.5, trophic: 'benthivore', schooling: false, zone: [0.78, 1.0],
+    shape: { in: 10, hid: 10 },
+    inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
+      'energy', 'on floor', 'oxygen', 'wall'],
+    diet: { detritus: true, plants: true, larva: true, cray: true },
+    maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
+    metabolism: 0.030, startEnergy: [0.50, 0.70], matureAge: 180, reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
+    matingCooldown: 12, maxAge: 1000, pop: { start: 6, min: 3, max: 18 },   // long-lived benthic (~0.56 yr life, matures early ~18% in like real catfish)
+    tempOpt: 26, tempTol: 10, o2Crit: 0.16, spawnPeak: 0.18, clutch: 5,   // warmwater bottom-dweller; spawns in warm early summer; fecund
+    innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true },   // hugs the bottom; forages more at night
+    sat: 30, lbase: 30, lrange: 18,
+    randomHue: (R) => R(33, 50),
+    spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 30, WORLD.FLOOR - 2) }),
+    senses(a, w) {
+      const inp = a.act.in, dt = w.qDetritus(a.x, a.y, a.senseRange), pl = w.qPlant(a.x, a.y, a.senseRange);
+      const food = !dt ? pl : !pl ? dt : (dt.dist < pl.dist ? dt : pl);
+      tgt(a, food, a.senseRange, inp, 0);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
+      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[7] = clamp(1 - (w.bedY(a.x) - a.y) / 30, 0, 1);
+      inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1); inp[9] = wallProx(a);
+    },
+    P: { L: 3.2, Hh: 1.0, snout: 1, barbels: true, tail: { len: 1.4, spread: 0.7, sweep: 0.6 },
+      profile: t => { const f = (t + 1) * 0.5, e = Math.sqrt(Math.max(0, 1 - t * t)); return [e * (0.5 + 0.5 * f), e * (0.58 + 0.7 * f)]; } },   // broad head → thin tail
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
+  carp: makeSpecies({
+    key: 'carp', name: 'Carp', tag: '#c9a23f', size: 2.2, trophic: 'herbivore', schooling: false, zone: [0.55, 0.98],
+    shape: { in: 10, hid: 9 },
+    inputLabels: ['plant \u2220sin', 'plant \u2220cos', 'plant near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
+      'energy', 'oxygen', 'wall', 'depth'],
+    diet: { plants: true, detritus: true, larva: true, snail: true },
+    maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8,
+    metabolism: 0.034, startEnergy: [0.55, 0.80], matureAge: 200, reproEnergy: 0.95, reproCost: 0.30, childEnergy: 0.55,
+    matingCooldown: 12, maxAge: 1500, pop: { start: 4, min: 2, max: 12 },   // the longest-lived (~0.83 yr life — persists across seasons; ~10× a minnow); matures early ~13% in like real carp
+    tempOpt: 27, tempTol: 11, o2Crit: 0.14, spawnPeak: 0.18, clutch: 5,   // warmwater; spawns in warm early summer; very fecund (real carp lay 100k+ eggs)
+    innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40 },   // deep bottom rooter
+    sat: 46, lbase: 34, lrange: 18,
+    randomHue: (R) => R(32, 46),
+    spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 90, WORLD.FLOOR - 10) }),
+    senses(a, w) {
+      const inp = a.act.in;
+      tgt(a, w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
+      tgt(a, w.qThreat(a), a.senseRange, inp, 3);
+      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
+    },
+    P: { L: 3.0, Hh: 1.7, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1,
+      tail: { len: 1.5, spread: 1.0, sweep: 0.7 }, profile: t => { const e = ell(t, 0.55); return [e * 0.96, e * 1.12]; } },   // deep robust, round belly
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
+  bass: makeSpecies({
+    key: 'bass', name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
+    shape: { in: 10, hid: 9 },
+    inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
+    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.60,
+    maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
+    metabolism: 0.046, moveCost: 0.038, respiration: 1.2,
+    startEnergy: [0.70, 0.95], matureAge: 165, reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
+    matingCooldown: 14, maxAge: 650, pop: { start: 4, min: 2, max: 13 },   // ~0.36 yr life, matures ~¼ in
+    tempOpt: 24, tempTol: 8, o2Crit: 0.34, clutch: 4,   // warm-temperate pursuit predator, O₂-demanding; nest-guarder, moderate brood
+    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40 },  // patrols weed beds along the drop-off
+    sat: 42, lbase: 32, lrange: 18,
+    randomHue: (R) => R(100, 130),
+    spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
+    senses(a, w) {
+      const inp = a.act.in;
+      tgt(a, w.qPrey(a), a.senseRange, inp, 0);
+      inp[3] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[4] = a.spd / this.maxSpeed;
+      inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[6] = wallProx(a);
+      inp[7] = w.allyStats(a, 64).density;
+      inp[8] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[9] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
+    },
+    P: { L: 3.0, Hh: 1.3, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, stripes: true,
+      tail: { len: 1.6, spread: 1.0, sweep: 0.9 }, profile: t => { const e = ell(t, 0.72), sh = 1 + 0.1 * t; return [e * sh * 0.96, e * sh * 0.98]; } },   // streamlined, fuller forward
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
+  pike: makeSpecies({
+    key: 'pike', name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
+    shape: { in: 9, hid: 8 },
+    inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
+    diet: { fish: true, cray: true }, foodValueFish: 0.65,
+    maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
+    metabolism: 0.056, moveCost: 0.042, respiration: 1.4,
+    startEnergy: [0.80, 1.05], matureAge: 155, reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
+    matingCooldown: 16, maxAge: 800, pop: { start: 2, min: 1, max: 6 },   // long-lived apex (~0.44 yr life, matures ~19% in)
+    tempOpt: 19, tempTol: 9, o2Crit: 0.40, spawnPeak: 0.90, clutch: 4,   // coolwater apex (summer-squeezed); spawns earliest, cool early spring; fecund
+    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55 },  // weed-edge ambush lurker — holds in cover, then bursts
+    sat: 35, lbase: 30, lrange: 18,
+    randomHue: (R) => R(88, 104),
+    spawnPos: (R) => ({ x: R(10, W - 10), y: R(80, WORLD.FLOOR - 30) }),
+    senses(a, w) {
+      const inp = a.act.in;
+      tgt(a, w.qPrey(a), a.senseRange, inp, 0);
+      inp[3] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[4] = a.spd / this.maxSpeed;
+      inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[6] = wallProx(a);
+      inp[7] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[8] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
+    },
+    P: { L: 4.2, Hh: 1.1, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5,
+      tail: { len: 1.8, spread: 1.2, sweep: 1.0 }, profile: t => { const e = ell(t, 0.62); return [e * 0.82, e * 0.86]; } },   // long slender spindle, rear dorsal
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+};
+
+// Lengthen lifespans uniformly (TIME.LIFE_SCALE): every species lives AND matures proportionally longer in sim-seconds,
+// so the lake reads calmer (less constant turnover) and individuals persist across more seasons — while the realistic
+// RELATIVE life-history ratios (minnow ≪ carp; mature at ~⅓ … ~13% of life) are preserved. Applied once here so the
+// single source feeds every consumer (growth curve, breeding-eligibility, old-age death, immigrant spawn age).
+// NOTE: the per-species "~X yr life" comments ABOVE describe the PRE-scale baseline (matureAge/maxAge as written);
+// the actual in-sim values are ×TIME.LIFE_SCALE (e.g. minnow maxAge 150→240 s; carp 1500→2400 s).
+for (const k in SP) { SP[k].matureAge = Math.round(SP[k].matureAge * TIME.LIFE_SCALE); SP[k].maxAge = Math.round(SP[k].maxAge * TIME.LIFE_SCALE); }
+
+// GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1). Order is
+// fixed: SPATIAL block then DRIVE block, written generically by world.js. `SP.baseInputs` records the species-specific
+// count so the move step can address the spatial block at [base, base+1, base+2] while the drives stay at [in-2, in-1];
+// inputLabels stays length-matched to shape.in (headless-asserted). Adding inputs grows genomeLen → old saved brains are
+// INPUT-migrated (preserving weights, the new sensor columns zeroed → load with no effect, then evolve in) by fitGenome.
+//
+// SPATIAL COGNITION (the allocentric "sense of place & direction"): a COMPASS (sin/cos of the fish's absolute heading —
+// an orientation reference the egocentric food/threat bearings can't provide) + a HOME bearing (signed horizontal
+// displacement to the fish's NATAL site `homeX`, normalised by lake width). Layered on the recurrent brain, these are the
+// substrate for EVOLVED navigation: refuge homing, home-range/site fidelity, and spawning migration — emergent, not scripted.
+export const SPATIAL_INPUTS = ['compass∠sin', 'compass∠cos', 'home∠x'];
+// RICHER PERCEPTION: a LATERAL-LINE / rheotaxis flow sense (the signed local current — a MECHANOSENSORY cue, so unlike the
+// vision-based senses it is NOT cut by turbidity → the murky-water sensory fallback) + a PREY-SIZE sense (the relative size
+// of the nearest catchable fish, 0 for non-piscivores → predators can evolve prey-SIZE selectivity, coupling to the gape system).
+export const PERCEPTION_INPUTS = ['flow', 'prey size'];
+export const DRIVE_INPUTS = ['hunger', 'fear'];
+const EXTRA_INPUTS = [...SPATIAL_INPUTS, ...PERCEPTION_INPUTS, ...DRIVE_INPUTS];   // order: [spatial 0..2][perception 3,4][drives in-2,in-1]
+for (const k in SP) { SP[k].baseInputs = SP[k].shape.in; SP[k].shape.in += EXTRA_INPUTS.length; SP[k].inputLabels.push(...EXTRA_INPUTS); }
+
+export const SPECIES = Object.keys(SP);
