@@ -1731,5 +1731,94 @@ console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
   check('innate HYPOXIA AVOIDANCE steers a fish upward out of O₂-starved water (vs the reflex disabled)', onH < offH - 0.05, `sin(heading) ${onH.toFixed(2)} with avoidance vs ${offH.toFixed(2)} without (negative = upward)`);
 }
 
+// ==== behavioural replacements for formula-copy checks (2026-10-12; AUDIT Tier 1 #5) ====
+// The older thermal/hypoxia/nocturnal/mate-choice checks re-derived the code's formula in the test (deleting the sim
+// line still passed). These run the REAL step / chooseMate and compare against an identical world with one term off.
+console.log('\n— behavioural checks (real sim paths, A/B) —');
+{
+  const { ENV: ENVB } = await import('../src/config.js');
+  // a lone carp (no fish/plankton diet) in a world with its food cleared, so energy changes only by the drain terms
+  const loneCarp = (seedN, prep) => {
+    seed(seedN); const tw = new World(); tw.agents = []; tw.plants = []; tw.detritus = []; tw.larvae = []; tw.snails = []; tw.cray = []; tw.plankton = []; tw.insects = [];
+    const c = tw.makeFish('carp'); c.x = 1000; c.y = 0.6 * tw.bedY(1000); c.energy = 1.0; tw.agents.push(c); prep && prep(tw, c); return { tw, c };
+  };
+  const drain = (knob, val, setup, steps = 30) => {
+    const keep = ENVB[knob]; ENVB[knob] = val;
+    try { const { tw, c } = loneCarp(901, setup); for (let i = 0; i < steps; i++) { setup && setup(tw, c); tw.step(1 / 30); } return 1.0 - c.energy; }
+    finally { ENVB[knob] = keep; }
+  };
+  // thermal stress: hold the water 15 °C above the carp's band → the THERMAL_STRESS term must cost real energy
+  const hot = (tw, c) => { tw.env.tempAt = () => c.sp.tempOpt + c.tempTol + 15; };
+  const thOn = drain('THERMAL_STRESS', ENVB.THERMAL_STRESS, hot), thOff = drain('THERMAL_STRESS', 0, hot);
+  check('THERMAL STRESS really drains energy in the step (vs the identical world with the term zeroed)', thOn > thOff + 0.01, `drain ${thOn.toFixed(3)} with vs ${thOff.toFixed(3)} without (1 s, 15 °C over the band)`);
+  // hypoxia: O₂-starved water → the HYPOXIA_PENALTY term must cost real energy
+  const anoxic = tw => tw.env.o2.fill(0.02);
+  const hyOn = drain('HYPOXIA_PENALTY', ENVB.HYPOXIA_PENALTY, anoxic), hyOff = drain('HYPOXIA_PENALTY', 0, anoxic);
+  check('HYPOXIA really drains energy in the step (vs the identical world with the penalty zeroed)', hyOn > hyOff + 0.02, `drain ${hyOn.toFixed(3)} with vs ${hyOff.toFixed(3)} without (1 s at O₂ 0.02)`);
+  // nocturnal catfish: the same fish in the same world swims harder at night than at midday (the real move step)
+  // (env.step recomputes light from the clock each step, so set the time of day: t=0 midnight, t≈0.45 near noon)
+  const catSpeed = t0 => {   // averaged over 3 seeds (brains differ) so the comparison isn't hostage to one brain
+    let sp = 0;
+    for (const sd of [902, 903, 904]) {
+      seed(sd); const tw = new World(); tw.agents = []; tw.env.setWeather(0); tw.env.t = t0;
+      const f = tw.makeFish('catfish'); f.x = 1000; f.y = 0.9 * tw.bedY(1000); tw.agents.push(f);
+      for (let i = 0; i < 30; i++) tw.step(1 / 30);                      // warm-up: get off the zero-speed start
+      for (let i = 0; i < 90; i++) { tw.step(1 / 30); sp += f.spd; }
+    }
+    return sp / 270;
+  };
+  const night = catSpeed(0.0), day = catSpeed(0.45);
+  // NOTE (2026-10-12): the realised effect is WEAK (~8% faster at night) although the innate cruise TARGET is ~2.7× higher
+  // at night — the brain's own thrust dominates. Tracked in ROADMAP as a tuning item; this check guards the direction.
+  check('catfish are NOCTURNAL in the real move step — the same fish swims faster at night than at midday (3-seed mean)', night > day * 1.03, `mean speed night ${night.toFixed(1)} vs day ${day.toFixed(1)} (${((night / day - 1) * 100).toFixed(0)}% faster)`);
+  // mate choice on GENES alone: two candidates identical except their trait genes; swapping the genes swaps the choice
+  const pick = (gGood, gPoor) => {
+    const mw = new World(); mw.agents = [];
+    const ch = mw.addAgent('minnow', { x: 500, y: 200 }), A = mw.addAgent('minnow', { x: 510, y: 205 }), B = mw.addAgent('minnow', { x: 490, y: 195 });
+    for (const f of [ch, A, B]) { f.age = f.sp.matureAge + 5; f.mateCd = 0; f._mated = false; f.dead = false; f.energy = f.sp.reproEnergy + 0.1; f.eaten = 10; }
+    A.genes = Float32Array.from(gGood); B.genes = Float32Array.from(gPoor);
+    mw.agentGrid.rebuild(mw.agents); const c = mw.chooseMate(ch); return c && c.item === A ? 'A' : c && c.item === B ? 'B' : 'none';
+  };
+  const hi = [1.2, 1.2, 1.2, 1, 1, 1, 1], lo = [0.85, 0.85, 0.85, 1, 1, 1, 1];
+  const p1 = pick(hi, lo), p2 = pick(lo, hi);
+  check('mate choice selects on GENES alone (equal condition & foraging): swapping the genes swaps the chosen mate', p1 === 'A' && p2 === 'B', `good genes on A → chose ${p1}; on B → chose ${p2}`);
+}
+
+// ==== more behavioural coverage (2026-10-12; AUDIT Tier 1 #5 gaps) ====
+console.log('\n— determinism (stress scenario), body-depth defence, Baldwinian persistence —');
+{
+  // DETERMINISM beyond the default window: a MIDSUMMER start under a forced STORM in a CONTAMINATED lake (toxicant on),
+  // 1500 steps, the full state hashed every 100 steps — same seed ⇒ identical hash sequence, and a divergence is localised.
+  const fnv = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const detRun = () => {
+    const keep = TOX.AMBIENT; TOX.AMBIENT = 0.3;
+    try {
+      seed(4321); const dw = new World(); dw.time = 0.45 * SEASON.YEAR_LEN; dw.env.setWeather(3);
+      const hs = []; for (let i = 0; i < 1500; i++) { dw.step(1 / 30); if (i % 100 === 99) hs.push(fnv(JSON.stringify(dw.toJSON()))); }
+      return hs;
+    } finally { TOX.AMBIENT = keep; }
+  };
+  const h1 = detRun(), h2 = detRun(), firstDiff = h1.findIndex((h, i) => h !== h2[i]);
+  check('DETERMINISM holds in a midsummer storm with the toxicant on (state hash every 100 steps, 1500 steps)', firstDiff === -1, firstDiff === -1 ? `${h1.length} hashes identical` : `diverged by step ${(firstDiff + 1) * 100}`);
+  // BODY-DEPTH DEFENCE through the real prey query: a pike can take a normal carp at the gape margin but not the same carp
+  // with a deep body (body gene ↑ → bodyMul ↑ → effective size above the pike's gape)
+  const preyFor = bodyGene => {
+    seed(905); const tw = new World(); tw.agents = [];
+    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('carp', [1, 1, 1, 1, 1, bodyGene, 1]);   // fixed genes: a random pike size gene would move the gape margin
+    pk.x = 1000; pk.y = 500; cp.x = 1020; cp.y = 500; tw.agents.push(pk, cp); tw.agentGrid.rebuild(tw.agents);
+    const m = tw.qPrey(pk); return { found: !!(m && m.item === cp), bodyMul: cp.bodyMul };
+  };
+  const slim = preyFor(1.0), deep = preyFor(1.35);
+  check('BODY DEPTH is a real predation defence in qPrey: a pike targets the normal carp but not the deep-bodied one', slim.found && !deep.found, `normal (bodyMul ${slim.bodyMul.toFixed(2)}) targeted: ${slim.found}; deep (bodyMul ${deep.bodyMul.toFixed(2)}) targeted: ${deep.found}`);
+  // BALDWINIAN at the persistence boundary: a fish's LEARNED weights (a.lw) never reach a save or a champion — only the
+  // inherited genotype (a.g) does
+  seed(906); const bw = new World(); const f = bw.agents.find(a => a.species === 'minnow');
+  for (const a of bw.agents) if (a.species === 'minnow') a.lw = new Float32Array(a.g.length).fill(3.9);   // EVERY minnow (so whichever is champion) has a wildly different learned policy
+  const saved = bw.toJSON().agents.find(s => s.id === f.id), champ = bw.champions().minnow;
+  const sameAsG = arr => arr && arr.length === f.g.length && Array.from(arr).every((v, i) => Math.abs(v - f.g[i]) < 1e-6);
+  check('BALDWINIAN persistence: the saved genome is the inherited a.g, never the learned a.lw', sameAsG(saved && saved.w), saved ? `saved w[0..2] ${Array.from(saved.w).slice(0, 3).map(v => v.toFixed(2)).join(',')}` : 'no saved agent');
+  check('BALDWINIAN champions: champion brains are genotypes (no learned 3.9 weights leak in)', !!champ && !Array.from(champ.w || champ.g || []).some(v => v === 3.9 || Math.abs(v - 3.9) < 1e-6), champ ? 'genotype only' : 'no champion');
+}
+
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);
