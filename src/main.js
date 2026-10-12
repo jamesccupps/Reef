@@ -97,7 +97,14 @@ addEventListener('keydown', e => {
   const tg = e.target;
   if (tg && (FORM_TAGS.has(tg.tagName) || tg.isContentEditable)) return;
   if (e.key === ' ') { ui.togglePause(); e.preventDefault(); }
-  else if (e.key === 'Escape') { world.selectedId = null; camera.stopTour(); if (camera.mode === 'follow') camera.frameAll(); }
+  else if (e.key === 'Escape') {
+    if (ui.screensaverOn() && !document.fullscreenElement) {   // leave the window screensaver for the full page
+      ui.setWindowScreensaver(false);
+      if (wantScreensaver()) history.replaceState(null, '', location.pathname + location.search);   // so a reload stays out
+      return;
+    }
+    world.selectedId = null; camera.stopTour(); if (camera.mode === 'follow') camera.frameAll();
+  }
   else if (e.key === 'f' || e.key === 'F') { if (world.selectedId != null) camera.follow(world.selectedId); }
   else if (e.key === 'o' || e.key === 'O') { camera.frameAll(); }
   else if (e.key === 't' || e.key === 'T') { camera.mode === 'tour' ? camera.stopTour() : camera.startTour(); }
@@ -106,6 +113,12 @@ addEventListener('keydown', e => {
 });
 
 addEventListener('resize', () => renderer.resize());
+
+// "#screensaver" in the URL (the screensaver launcher opens it in a full-screen browser window): the lake fills the
+// window and runs the relaxed tour with the chrome fading when idle. Esc returns to the full page.
+function wantScreensaver() { return /(^#|&)screensaver(&|$)/i.test(location.hash); }
+if (wantScreensaver()) ui.setWindowScreensaver(true);
+addEventListener('hashchange', () => ui.setWindowScreensaver(wantScreensaver()));
 
 const DT = 1 / 60;
 let acc = 0, last = performance.now(), stepCount = 0, rateAcc = 0, fpsAcc = 0, frames = 0;
@@ -145,6 +158,20 @@ function onFrameError(e) {
     try { if (typeof ui.toast === 'function') ui.toast('Something went wrong — simulation paused (details in the console)'); } catch (_) { /* no toast */ }
   }
 }
-requestAnimationFrame(makeGuardedLoop(cb => requestAnimationFrame(cb), frame, onFrameError));
+// FRAME PACING. On a high-refresh display (120/144/165/240 Hz) a frame that also runs a sim step (~7–12 ms) can't fit in
+// one refresh, so the picture alternated between 1- and 2-refresh frames: visible judder even at a high average fps.
+// Render on every k-th refresh instead, k = round(16.7 ms / refresh), for a STEADY ~60–72 fps. On a 60 Hz display k = 1
+// (every refresh). The refresh interval is the shortest rAF gap seen over the last ~120 callbacks (gaps are whole
+// refreshes, so the minimum is one refresh), re-measured continually so moving the window to another monitor adapts.
+let vsync = 1000 / 60, vsMin = Infinity, vsN = 0, lastTick = 0, lastDraw = -Infinity;
+function paced(now) {
+  const d = now - lastTick; lastTick = now;
+  if (d > 2 && d < 50) { if (d < vsMin) vsMin = d; if (++vsN >= 120) { vsync = vsMin; vsMin = Infinity; vsN = 0; } }
+  const k = Math.max(1, Math.round(16.7 / vsync));
+  if (k > 1 && now - lastDraw < (k - 0.5) * vsync) return;   // not this refresh
+  lastDraw = now;
+  frame(now);
+}
+requestAnimationFrame(makeGuardedLoop(cb => requestAnimationFrame(cb), paced, onFrameError));
 
 window.reef = { world, renderer, inspector, ui, camera };

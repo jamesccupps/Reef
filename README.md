@@ -10,6 +10,8 @@ Six species of fish each think with their own small **recurrent neural network**
 
 ## Run it
 
+**Windows, one click:** double-click **`Synapse Reef.bat`** (opens the lake in your default browser) or **`Synapse Reef - Screensaver.bat`** (the lake alone, full screen, on the relaxed cinematic tour; Esc for the full page, F11 or Alt+F4 to leave). They start the local server in a minimised "Synapse Reef server" window (close it to stop), reuse one that is already running, and need Node.js 18+ or Python 3. The screensaver opens Chrome or Edge as a full-screen app window on its own small profile (`%LocalAppData%\SynapseReef\browser`). Any page can enter the same mode with `#screensaver` on the URL.
+
 Everything runs client-side as plain ES modules. Browsers won't load modules from a `file://` page, so serve the folder over HTTP:
 
 ```bash

@@ -49,22 +49,31 @@ export function canEat(predSize, preySize) { return preySize <= predSize * 0.85;
 
 // ---------- uniform spatial grid for O(local) neighbour queries ----------
 export class SpatialGrid {
-  constructor(w, h, cell) {
+  // subFilter (optional): also keep `this.sub`, a grid of just the items passing it, filled in the SAME rebuild pass, so its
+  // bucket placement and in-bucket order always match this grid's (a query over the subset returns exactly what the full
+  // grid would for a predicate that only the subset can pass, and it can never be stale)
+  constructor(w, h, cell, subFilter = null) {
     this.w = w; this.h = h; this.cell = cell;
     this.cols = Math.ceil(w / cell);
     this.rows = Math.ceil(h / cell);
     this.buckets = new Array(this.cols * this.rows);
     for (let i = 0; i < this.buckets.length; i++) this.buckets[i] = [];
+    this.used = [];   // indices of the buckets filled since the last clear (clearing all ~4000 per grid × 7 grids every step was ~9% of a step)
+    this.subFilter = subFilter; this.sub = subFilter ? new SpatialGrid(w, h, cell) : null;
   }
   _idx(cx, cy) { return cy * this.cols + cx; }
-  clear() { for (const b of this.buckets) b.length = 0; }
+  clear() { const B = this.buckets, u = this.used; for (let i = 0; i < u.length; i++) B[u[i]].length = 0; u.length = 0; if (this.sub) this.sub.clear(); }
   rebuild(items) {
     this.clear();
-    for (const it of items) {
+    const B = this.buckets, u = this.used, c = this.cell, cols = this.cols, cm = cols - 1, rm = this.rows - 1;
+    const sub = this.sub, sf = this.subFilter, SB = sub && sub.buckets, su = sub && sub.used;
+    for (let k = 0; k < items.length; k++) {
+      const it = items[k];
       if (it.dead) continue;
-      const cx = clamp((it.x / this.cell) | 0, 0, this.cols - 1);
-      const cy = clamp((it.y / this.cell) | 0, 0, this.rows - 1);
-      this.buckets[this._idx(cx, cy)].push(it);
+      const i = clamp((it.y / c) | 0, 0, rm) * cols + clamp((it.x / c) | 0, 0, cm), b = B[i];
+      if (b.length === 0) u.push(i);
+      b.push(it);
+      if (sub && sf(it)) { const sb = SB[i]; if (sb.length === 0) su.push(i); sb.push(it); }
     }
   }
   // call fn(item) for every item within `r` of (x,y)
@@ -80,14 +89,22 @@ export class SpatialGrid {
         for (let i = 0; i < b.length; i++) fn(b[i]);
       }
   }
-  // nearest item passing `ok(item)` within radius r; returns {item,dist} or null
-  nearest(x, y, r, ok) {
+  // nearest item passing `ok(item, ctx)` within radius r; returns {item,dist} or null. The distance test runs FIRST, so the
+  // (often costly) predicate only sees items that would beat the current best — same result as filtering first, since
+  // an item is taken only if it passes both. Visit order and the strict `<` are unchanged (ties keep the first visited).
+  nearest(x, y, r, ok, ctx) {
+    const c = this.cell, cols = this.cols, B = this.buckets;
+    const minx = clamp(((x - r) / c) | 0, 0, cols - 1), maxx = clamp(((x + r) / c) | 0, 0, cols - 1);
+    const miny = clamp(((y - r) / c) | 0, 0, this.rows - 1), maxy = clamp(((y + r) / c) | 0, 0, this.rows - 1);
     let best = null, bd = r * r;
-    this.forNear(x, y, r, it => {
-      if (ok && !ok(it)) return;
-      const dx = it.x - x, dy = it.y - y, d = dx * dx + dy * dy;
-      if (d < bd) { bd = d; best = it; }
-    });
+    for (let cy = miny; cy <= maxy; cy++)
+      for (let cx = minx; cx <= maxx; cx++) {
+        const b = B[cy * cols + cx];
+        for (let i = 0; i < b.length; i++) {
+          const it = b[i], dx = it.x - x, dy = it.y - y, d = dx * dx + dy * dy;
+          if (d < bd && (!ok || ok(it, ctx))) { bd = d; best = it; }
+        }
+      }
     return best ? { item: best, dist: Math.sqrt(bd) } : null;
   }
 }

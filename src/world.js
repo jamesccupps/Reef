@@ -30,6 +30,21 @@ function zoneY(sp, x) {
 let _idOwner = null;
 const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
 const effSize = a => a.size * (0.6 + 0.4 * (a.grow ?? 1)); // juveniles are smaller -> more vulnerable
+// spatial-query predicates as plain functions (SpatialGrid.nearest passes the querying fish as ctx), so the hot queries
+// allocate no closure per call
+const notDead = it => !it.dead;
+// predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
+// the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
+// So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
+function canPreyFn(pred, prey) {
+  return pred !== prey && !pred.dead && !prey.dead && pred.sp.diet.fish && !(pred.species === prey.species && prey.age < BROOD.GRACE) &&
+    canEat(effSize(pred), effSize(prey) * (prey.bodyMul || 1));
+}
+const isThreatTo = (it, a) => canPreyFn(it, a);
+const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
+const isPreyOf = (it, a) => canPreyFn(a, it);
+const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated;
+const PLANT_COL = 32;   // x-column width of the nearestPlant index (world px)
 // sub-lethal reproductive impairment from the contaminant body burden: 1 below TOX.REPRO_HARM, falling to 0 as the
 // burden rises (PCB/endocrine-style fecundity loss that bites before lethality). Inert when a.tox = 0 (a clean lake).
 export function toxFecundity(tox) { return tox > TOX.REPRO_HARM ? Math.max(0, 1 - TOX.REPRO_CUT * (tox - TOX.REPRO_HARM)) : 1; }
@@ -292,7 +307,9 @@ export class World {
   constructor(opts = {}) {
     this.W = W; this.H = H; this.FLOOR = FLOOR;
     this.env = new Environment();
-    this.agentGrid = new SpatialGrid(W, H, GRID.AGENT_CELL);
+    // agentGrid.sub = the piscivores alone (only a fish-eater can pass canPreyFn as the predator), so qThreat scans those
+    // instead of every fish in sight; filled in the same rebuild pass → identical bucket placement and order
+    this.agentGrid = new SpatialGrid(W, H, GRID.AGENT_CELL, isPiscivore);
     this.planktonGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);
     this.detritusGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);
     this.larvaeGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);   // benthic insect larvae (bottom-fish food)
@@ -404,34 +421,48 @@ export class World {
   _mkCray(x) { const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 4), vx: rand(-CRAYFISH.CRAWL, CRAYFISH.CRAWL), ph: rand(0, 6.28), dead: false }; }
 
   // ---------- spatial queries used by senses (visual range shortened by water turbidity) ----------
-  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, it => !it.dead); }
-  qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, it => !it.dead); }
-  qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, it => !it.dead); }
+  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, notDead); }
+  qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
+  qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
   // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
   qPlant(x, y, r) { return this.nearestPlant(x, y, r * this.env.clarity()); }
   // nearest live plant within r (linear scan — few plants; point-to-stem distance). NOT clarity-scaled: used directly
   // for non-visual lookups (the seed-parent search), so plant heredity doesn't weaken in murky water.
+  // Plants are bucketed by x (they never move), so only the columns within r are scanned instead of every plant for
+  // every fish (~7% of a step). Ties keep the LOWEST array index, exactly what the old first-wins linear scan returned.
   nearestPlant(x, y, r) {
-    let best = null, bd = r * r;
-    for (const p of this.plants) {
-      if (p.dead) continue;
-      const dx = x - p.x, top = p.baseY - p.height, yc = clamp(y, top, p.baseY), dy = y - yc, d = dx * dx + dy * dy;
-      if (d < bd) { bd = d; best = p; }
+    const P = this.plants, idx = this._plantCols(), C = PLANT_COL, last = idx.length - 1;
+    const c0 = clamp(Math.floor((x - r) / C), 0, last), c1 = clamp(Math.floor((x + r) / C), 0, last);
+    let best = null, bi = -1, bd = r * r;
+    for (let c = c0; c <= c1; c++) {
+      const col = idx[c];
+      for (let k = 0; k < col.length; k++) {
+        const i = col[k], p = P[i];
+        if (p.dead) continue;
+        const dx = x - p.x, top = p.baseY - p.height, yc = clamp(y, top, p.baseY), dy = y - yc, d = dx * dx + dy * dy;
+        if (d < bd || (d === bd && best !== null && i < bi)) { bd = d; best = p; bi = i; }
+      }
     }
     return best ? { item: best, dist: Math.sqrt(bd) } : null;
   }
-  // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
-  // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
-  // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
-  canPrey(pred, prey) {
-    return pred !== prey && !pred.dead && !prey.dead && pred.sp.diet.fish && !(pred.species === prey.species && prey.age < BROOD.GRACE) &&
-      canEat(effSize(pred), effSize(prey) * (prey.bodyMul || 1));
+  // x-column index of this.plants (array indices, ascending). Plants only change by push (length) or filter/load (new
+  // array), so (array, length) identifies a still-valid index; a stale one is rebuilt on the next query.
+  _plantCols() {
+    const P = this.plants;
+    if (this._pcArr === P && this._pcLen === P.length) return this._pc;
+    const n = Math.ceil(W / PLANT_COL) + 1, idx = this._pc && this._pc.length === n ? this._pc : Array.from({ length: n }, () => []);
+    for (const col of idx) col.length = 0;
+    for (let i = 0; i < P.length; i++) idx[clamp(Math.floor(P[i].x / PLANT_COL), 0, n - 1)].push(i);
+    this._pc = idx; this._pcArr = P; this._pcLen = P.length;
+    return idx;
   }
-  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(it, a)); }
-  qPrey(a) { const r = a.senseRange * this.env.clarity(); return this.agentGrid.nearest(a.x, a.y, r, it => this.canPrey(a, it)); }
-  qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, it => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated); }
+  canPrey(pred, prey) { return canPreyFn(pred, prey); }   // see canPreyFn (module scope)
+  // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish
+  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); this._qtA = a; return (this._qtR = this.agentGrid.sub.nearest(a.x, a.y, r, isThreatTo, a)); }
+  qPrey(a) { const r = a.senseRange * this.env.clarity(); this._qpA = a; return (this._qpR = this.agentGrid.nearest(a.x, a.y, r, isPreyOf, a)); }
+  qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, isMateFor, a); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
   // partner nearby by condition (energy) + heritable quality (mean trait gene) + foraging success, and pick
   // the best. So evolution acts on the genome (vigorous, well-fed, good-genes mates are preferred). No RNG.
@@ -453,12 +484,21 @@ export class World {
   lightAt(x, y) { return this.env.lightAtDepth(y); }
   tempAt(x, y) { return this.env.tempAt(x, y); }
   allyStats(a, r) {
-    let n = 0, sx = 0, sy = 0, vc = 0, vs = 0, r2 = r * r;
-    this.agentGrid.forNear(a.x, a.y, r, it => {
-      if (it.dead || it === a || it.species !== a.species) return;
-      const dx = it.x - a.x, dy = it.y - a.y; if (dx * dx + dy * dy > r2) return;
-      n++; sx += it.x; sy += it.y; vc += Math.cos(it.heading); vs += Math.sin(it.heading);
-    });
+    let n = 0, sx = 0, sy = 0, vc = 0, vs = 0;
+    const r2 = r * r, G = this.agentGrid, c = G.cell, cols = G.cols, B = G.buckets, ax = a.x, ay = a.y, spc = a.species;
+    // forNear's exact bucket walk, inlined (no per-item closure call); same visit order → same float sums
+    const minx = clamp(((ax - r) / c) | 0, 0, cols - 1), maxx = clamp(((ax + r) / c) | 0, 0, cols - 1);
+    const miny = clamp(((ay - r) / c) | 0, 0, G.rows - 1), maxy = clamp(((ay + r) / c) | 0, 0, G.rows - 1);
+    for (let cy = miny; cy <= maxy; cy++)
+      for (let cx = minx; cx <= maxx; cx++) {
+        const b = B[cy * cols + cx];
+        for (let i = 0; i < b.length; i++) {
+          const it = b[i];
+          if (it.dead || it === a || it.species !== spc) continue;
+          const dx = it.x - ax, dy = it.y - ay; if (dx * dx + dy * dy > r2) continue;
+          n++; sx += it.x; sy += it.y; vc += Math.cos(it.heading); vs += Math.sin(it.heading);
+        }
+      }
     if (!n) return { density: 0, cohSin: 0, cohCos: 0, alignCos: 0 };
     const ca = Math.atan2(sy / n - a.y, sx / n - a.x) - a.heading, avgH = Math.atan2(vs, vc);
     return { density: clamp(n / 8, 0, 1), cohSin: Math.sin(ca), cohCos: Math.cos(ca), alignCos: Math.cos(avgH - a.heading) };
@@ -468,7 +508,7 @@ export class World {
   // take (kill) up to n of the nearest live items within r; returns how many were taken (0 = none → falsy)
   _takeNearest(grid, x, y, r, n = 1) {
     let k = 0;
-    for (; k < n; k++) { const m = grid.nearest(x, y, r, it => !it.dead); if (!m) break; m.item.dead = true; }
+    for (; k < n; k++) { const m = grid.nearest(x, y, r, notDead); if (!m) break; m.item.dead = true; }
     return k;
   }
   // credit a fish with k meals of energy E each (capped at its energyCap) + the dietary toxicant per meal
@@ -710,12 +750,15 @@ export class World {
       const sp = a.sp;
       a.age += dt; a.mateCd -= dt; a.grow = clamp(0.35 + 0.65 * (a.age / sp.matureAge), 0.35, 1);
 
+      // senses() is read-only, so a threat/prey query it made for THIS fish is still exact for the drive + perception reads
+      // below (each was otherwise computed twice per fish per step). The caches are cleared before senses and after use.
+      this._qtA = this._qpA = null;
       sp.senses(a, this);
       // INTERNAL DRIVES (motivation): persistent per-fish state fed back as the last two brain inputs, so behaviour is
       // state-dependent (the NN learns to use them — emergent). HUNGER accrues with time since a meal (sated in the feed
       // step below); FEAR jumps to the nearest-threat proximity and decays after it leaves (lingering caution). The brain
       // wires these to its gated actions (a starving fish gambles on a strike; a scared one hides/flees).
-      const drv = this.qThreat(a), threatNear = drv ? clamp(1 - drv.dist / (a.senseRange * 1.1), 0, 1) : 0;
+      const drv = this._qtA === a ? this._qtR : this.qThreat(a), threatNear = drv ? clamp(1 - drv.dist / (a.senseRange * 1.1), 0, 1) : 0;
       a.fear = Math.max(threatNear, a.fear * Math.exp(-DRIVE.FEAR_DECAY * dt));
       a.hunger = clamp(a.hunger + DRIVE.HUNGER_GAIN * dt, 0, 1);
       // SPATIAL COGNITION (allocentric sense of place & direction): a COMPASS (sin/cos of the absolute body heading) +
@@ -726,7 +769,8 @@ export class World {
       a.act.in[sb + 2] = clamp((a.homeX - a.x) / W, -1, 1);   // >0 ⇒ home is to the right; the substrate for evolved homing/site-fidelity/migration
       // RICHER PERCEPTION: lateral-line flow (mechanosensory → NOT clarity-scaled, works when vision fails) + prey-size selectivity (piscivores)
       a.act.in[sb + 3] = clamp(env.currentAt(a.x, a.y) / 12, -1, 1);   // signed local current (rheotaxis); the turbidity-proof sense
-      let preySz = 0; if (sp.diet.fish) { const pr = this.qPrey(a); if (pr) preySz = clamp(effSize(pr.item) / Math.max(effSize(a), 1e-3), 0, 1); }
+      let preySz = 0; if (sp.diet.fish) { const pr = this._qpA === a ? this._qpR : this.qPrey(a); if (pr) preySz = clamp(effSize(pr.item) / Math.max(effSize(a), 1e-3), 0, 1); }
+      this._qtA = this._qpA = null;
       a.act.in[sb + 4] = preySz;   // relative size of the nearest CATCHABLE prey (0 = none / not a piscivore) → evolved prey-size selectivity
       a.act.in[sp.shape.in - 2] = a.hunger; a.act.in[sp.shape.in - 1] = a.fear;
       if (!a.lw) a.lw = Float32Array.from(a.g);   // older saves lack the plastic copy → derive it from the genotype

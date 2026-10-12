@@ -86,12 +86,14 @@ function drawFish(put, P, c, o) {
   // resolution sprites render.js builds for close-ups carry real extra DETAIL, not just bigger dabs. Identical to the old
   // step at the base resolution (14) and for small scales.
   const su = Math.max(Math.min(0.07, 0.98 / scale), Math.min(0.55, 0.8 / scale));
-  const drive = o.drive || 0, ph = o.beat;
-  const amp = Hh * (0.09 + 0.20 * drive);                   // gentle undulation (grows with effort) — a slow glide, not a buzz
+  // o.still: the straight, fins-at-rest pose. The GL path builds ONE such sprite per fish and swims it in FRAG_FISH, which
+  // applies exactly this wave + tail swing per pixel (keep the two in step), instead of a sprite per beat frame × effort.
+  const still = !!o.still, drive = still ? 0 : (o.drive || 0), ph = still ? 0 : o.beat;
+  const amp = still ? 0 : Hh * (0.09 + 0.20 * drive);       // gentle undulation (grows with effort) — a slow glide, not a buzz
   // a sine wave travelling head -> tail, larger toward the tail
   const wave = u => Math.sin((u / L) * 1.5 - ph) * amp * (u < 0 ? 1 + (-u / L) * 0.9 : 0.4);
 
-  const T = P.tail, tl = T.len * m.fin, tsp = T.spread * m.fin, x0 = -L, tb = wave(x0), tip = tb + Math.sin(ph) * Hh * (0.35 + 0.5 * drive);
+  const T = P.tail, tl = T.len * m.fin, tsp = T.spread * m.fin, x0 = -L, tb = wave(x0), tip = tb + (still ? 0 : Math.sin(ph) * Hh * (0.35 + 0.5 * drive));
   // caudal fin (tail) — forked TRANSLUCENT membrane (al<1 → water shows through) + brighter fin RAYS along the edges
   fillTri(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, x0 - tl, tip - tsp * 1.4, su, c.back, 0.72, 2, 0.6);   // membrane thins toward the trailing edge
   putLine(put, x0 + 0.2, tb, x0 - tl, tip + tsp * 1.4, su, c.back, 0.85);
@@ -110,7 +112,7 @@ function drawFish(put, P, c, o) {
     }
   }
   // pectoral fin (beats with effort) — translucent
-  const fin = Math.sin(ph * 1.2) * Hh * (0.22 + 0.4 * drive) * m.fin;
+  const fin = still ? 0 : Math.sin(ph * 1.2) * Hh * (0.22 + 0.4 * drive) * m.fin;
   fillTri(put, L * 0.32, Hh * 0.35 + wave(L * 0.32), L * 0.04, Hh * 0.35 + wave(L * 0.04), L * 0.2, Hh * 1.05 + fin + wave(L * 0.2), su, c.body, 0.66, 1, 0.6);   // thins toward its tip
   // body (drawn over fin roots) — SMOOTH counter-shading: a continuous vertical gradient dark-back → mid-body →
   // light-belly (the old hard 3-band split read as blocky pixel art), times a faint diagonal SCALE texture so the

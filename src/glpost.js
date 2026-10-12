@@ -234,9 +234,14 @@ void main(){
   warp.y = cos(uv.x*18.0+tt*0.7)*0.0010 + sin(uv.x*33.0+tt*0.9)*0.0006;
   float caustic=(0.5+0.5*sin(uv.x*90.0+tt*2.0))*(0.5+0.5*sin(dpt*70.0-tt*1.7));
   warp += vec2(caustic-0.5)*0.0006;
-  warp *= (0.4+0.6*surf)*(0.6+0.7*uLight)*(1.0+1.6*uTurb)/max(uZoom,0.6);   // uZoom = zoom/fitZoom (DPR- & size-independent)
+  // LENS CHARACTER grows WITH magnification (uZoom = zoom/fitZoom, DPR- & size-independent): 0 at the whole-lake view, 1
+  // from ~5× in. The shimmer, colour fringing and fake DOF used to scale with 1/zoom, i.e. they were STRONGEST at the
+  // overview, where ~5 px of warp and 2–5 px of R/B fringing smeared fish that are only ~8 px long (blurry when zoomed out).
+  // A wide shot is crisp with deep focus; the close-up keeps its underwater-camera character.
+  float lens=clamp((uZoom-1.0)/4.0,0.0,1.0);
+  warp *= (0.4+0.6*surf)*(0.6+0.7*uLight)*(1.0+1.6*uTurb)*mix(0.12,0.6,lens);
   vec2 wuv = clamp(uv+warp,0.0,1.0);
-  float ca=(0.0010+0.0030*r2)/max(uZoom,0.6);
+  float ca=(0.0002+0.0014*r2)*mix(0.5,1.0,lens);
   vec2 dir=(r2>1e-6)?normalize(ctr):vec2(0.0);
   vec3 col;
   col.r=texture(uScene,clamp(wuv+dir*ca,0.0,1.0)).r;
@@ -244,7 +249,7 @@ void main(){
   col.b=texture(uScene,clamp(wuv-dir*ca,0.0,1.0)).b;
   float dofEdge=smoothstep(0.10,0.42,r2);
   float dofDeep=smoothstep(0.5,1.0,dpt)*(0.4+0.6*(1.0-uSecchi));
-  float dof=clamp(0.6*dofEdge+0.4*dofDeep,0.0,0.7);
+  float dof=clamp(0.6*dofEdge+0.4*dofDeep,0.0,0.7)*lens;   // no fake depth-of-field on the wide view
   if(dof>0.001){
     vec2 px=1.5*uDpr/uRes;                // tap offset in CSS px (scaled by DPR) so the blur radius is DPR-independent
     vec3 b=texture(uScene,clamp(wuv+vec2(px.x,px.y),0.0,1.0)).rgb
@@ -304,11 +309,17 @@ void main(){
   frag = vec4(clamp(col,0.0,1.0),1.0);
 }`;
 
-// opaque copy of the background scene texture into the scene FBO (reuses the attrib-less VERT)
+// exact sRGB → linear (the EOTF the SRGB8_ALPHA8 sampler applies in hardware)
+const SRGB_TO_LIN = `vec3 srgbToLin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }`;
+// opaque copy of the background scene into the (linear) scene FBO, decoding sRGB on the way (reuses the attrib-less VERT).
+// The canvas is uploaded to a plain RGBA8 texture because Chrome can only GPU-copy a canvas into non-sRGB formats: an
+// SRGB8_ALPHA8 target forced a CPU readback of every 1080p frame (≈24 fps → ≈130 fps on an RTX 3060). The blit is 1:1
+// (texel centres), so decoding after the fetch is exact.
 const FRAG_BLIT = `#version 300 es
 precision highp float;
 in vec2 vUv; out vec4 frag; uniform sampler2D uTex;
-void main(){ frag = vec4(texture(uTex,vUv).rgb, 1.0); }`;
+${SRGB_TO_LIN}
+void main(){ frag = vec4(srgbToLin(texture(uTex,vUv).rgb), 1.0); }`;
 // per-quad affine: reproduce render.js's 2D affine (device-px center + half-extent + rotation + facing flip). Canvas top
 // (device y=0) maps to clip +1, i.e. the top of the scene FBO, matching the flipped scene upload. Also used for overlays.
 const VERT_FISH = `#version 300 es
@@ -347,11 +358,24 @@ uniform float uVis;         // fade-in / corpse fade
 uniform vec3  uTint;        // optional tint (default 1,1,1)
 uniform float uKind;        // 0 living, 1 corpse
 uniform float uBodyCurve, uRim, uAmbient, uSpec;
+// SWIMMING (living fish): the sprite is the straight pose and the body is bent HERE, per pixel, by species.js drawFish's
+// own travelling wave (keep in step): w(x) = sin(1.5·x/L − ph)·amp·(x<0 ? 1 + 0.9·(−x/L) : 0.4) along the body, and behind
+// the tail root (x < −L) the caudal fin swings rigidly from w(−L) to w(−L) + tip at its trailing edge. A column shift is
+// exactly invertible, so each fragment reads the texel the bend moved onto it. uWave = (amp, ph, tip, L); uWaveG = (tail
+// length, sprite width, sprite height), all in fish units; uWaveG.y = 0 → no bend (corpses).
+uniform vec4 uWave; uniform vec3 uWaveG;
 ${GLSL_SRGB}
 void main(){
-  vec4 texel = texture(uTex, vUv);          // rgb hardware-decoded to LINEAR, alpha STRAIGHT
+  vec2 uv = vUv;
+  if (uWaveG.y > 0.0){
+    float fx = (vUv.x - 0.5) * uWaveG.y, Lb = max(uWave.w, 1e-3);   // fish units along the body, + = head
+    float w = sin(1.5 * fx / Lb - uWave.y) * uWave.x * (fx < 0.0 ? 1.0 - 0.9 * fx / Lb : 0.4);
+    if (fx < -Lb) w = sin(-1.5 - uWave.y) * uWave.x * 1.9 + uWave.z * clamp((-Lb - fx) / max(uWaveG.x, 1e-3), 0.0, 1.0);
+    uv.y -= w / uWaveG.z;
+  }
+  vec4 texel = texture(uTex, uv, -0.5);     // rgb hardware-decoded to LINEAR, alpha STRAIGHT. −0.5 mip bias: small fish stay crisp (trilinear minification read soft)
   if (texel.a < 0.012) discard;
-  float v = vUv.y*2.0 - 1.0;                 // -1 back/top .. +1 belly/bottom
+  float v = uv.y*2.0 - 1.0;                  // -1 back/top .. +1 belly/bottom (follows the bent body)
   float u = vUv.x*2.0 - 1.0;                 // -1 nose .. +1 tail
   float ny = -v;
   float nx = u * uBodyCurve;
@@ -381,7 +405,8 @@ void main(){
 const FRAG_OVER = `#version 300 es
 precision highp float;
 in vec2 vUv; out vec4 frag; uniform sampler2D uTex;
-void main(){ vec4 t = texture(uTex, vUv); frag = vec4(t.rgb * t.a, t.a); }`;
+${SRGB_TO_LIN}
+void main(){ vec4 t = texture(uTex, vUv); frag = vec4(srgbToLin(t.rgb) * t.a, t.a); }`;   // RGBA8 upload (fast GPU copy), NEAREST 1:1 → exact decode
 
 class GLPost {
   constructor(canvas, gl, opts = {}){
@@ -474,7 +499,7 @@ class GLPost {
       this.pBlit = this._link(FRAG_BLIT); this.uBlit = this._locs(this.pBlit, ['uTex']);
       this.pFish = this._linkPair(VERT_FISH, FRAG_FISH);
       this.uFish = this._locs(this.pFish, ['uCenter','uHalf','uRot','uFlip','uRes','uVis','uHazeBox','uHazeTint','uHazeMax',
-        'uBright','uSat','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex']);
+        'uBright','uSat','uLight','uTint','uKind','uLightDir','uBodyCurve','uRim','uAmbient','uSpec','uTex','uWave','uWaveG']);
       this.pOver = this._linkPair(VERT_FISH, FRAG_OVER);
       this.uOver = this._locs(this.pOver, ['uCenter','uHalf','uRot','uFlip','uRes','uTex']);
       const Q = new Float32Array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1]);
@@ -557,6 +582,9 @@ class GLPost {
       gl.uniform1f(this.uFish.uBright, f.bright != null ? f.bright : 1); gl.uniform1f(this.uFish.uSat, f.sat != null ? f.sat : 1);
       gl.uniform1f(this.uFish.uKind, f.kind || 0);
       const t = f.tint; gl.uniform3f(this.uFish.uTint, t ? t[0] : 1, t ? t[1] : 1, t ? t[2] : 1);
+      const wv = f.wave, wg = f.waveG;   // swim bend (living fish); none → uWaveG.y = 0 (corpses)
+      gl.uniform4f(this.uFish.uWave, wv ? wv[0] : 0, wv ? wv[1] : 0, wv ? wv[2] : 0, wv ? wv[3] : 1);
+      gl.uniform3f(this.uFish.uWaveG, wg ? wg[0] : 1, wg ? wg[1] : 0, wg ? wg[2] : 1);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
     gl.bindVertexArray(null);
@@ -568,7 +596,7 @@ class GLPost {
       for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v); }
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.ovTex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    if (w !== this.ovW || h !== this.ovH){ gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, c); this.ovW = w; this.ovH = h; }
+    if (w !== this.ovW || h !== this.ovH){ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, c); this.ovW = w; this.ovH = h; }
     else gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, c);
     gl.useProgram(this.pOver); gl.bindVertexArray(this.fishVAO);
     gl.uniform2f(this.uOver.uRes, this.w, this.h);
@@ -586,7 +614,8 @@ class GLPost {
     this.uComp = this._locs(this.pComp, ['uScene','uBloom','uRes','uTime','uLight','uTurb','uNight','uWarm','uZoom','uFlash','uSecchi','uClarity','uBloomAmt','uDpr','uSunUV','uSunInt','uRayExp','uSunUp','uCausAmt','uExposure']);
     this.vao = gl.createVertexArray();
     this.rt = this._rtChain(); this.bloomFmtIdx = 0;
-    this.sceneTex = this._tex(1,1, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE);   // sRGB internalformat → sampler hardware-decodes to LINEAR
+    this.sceneTex = this._tex(1,1, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE);   // sRGB internalformat → sampler hardware-decodes to LINEAR (fallback path only: slow canvas upload)
+    this.sceneRaw = this._tex(1,1, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE);          // fast path: raw sRGB bytes, decoded by FRAG_BLIT into the scene FBO
     this.texA = this._tex(1,1, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE);
     this.texB = this._tex(1,1, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE);
     this.fboA = this._fbo(this.texA); this.fboB = this._fbo(this.texB);
@@ -601,6 +630,8 @@ class GLPost {
     this.w = w; this.h = h; this.bw = Math.max(1, w >> 1); this.bh = Math.max(1, h >> 1);
     gl.bindTexture(gl.TEXTURE_2D, this.sceneTex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(gl.TEXTURE_2D, this.sceneRaw);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     const i = this._allocRT([this.texA, this.texB], this.fboA, this.bw, this.bh, this.rt, this.bloomFmtIdx);
     if (i < 0){ this._fail('no complete bloom render-target format'); gl.bindFramebuffer(gl.FRAMEBUFFER, null); return; }
     this.bloomFmtIdx = i;
@@ -617,29 +648,34 @@ class GLPost {
       const w = scene.width, h = scene.height; const realloc = (w !== this.w || h !== this.h);
       this.resize(w, h); if (this.failed) return false;
       gl.bindVertexArray(this.vao); gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
-      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.sceneTex);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-      if (realloc) gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, scene);
-      else gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, scene);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      // optional GL-lit fish + overlay: assemble (background + lit fish quads + overlay) into a scene FBO, then run the
-      // bright→blur→composite on THAT. Nothing to add ⇒ sourceTex = sceneTex. A per-frame failure sets fishFailed →
-      // render.js reverts to 2D fish (and draws its overlays into the scene) next frame.
+      // Upload the 2D scene. FAST PATH (scene FBO available): the canvas goes into the RGBA8 sceneRaw (a GPU-side copy)
+      // and FRAG_BLIT decodes it into the linear scene FBO, which then takes the lit fish quads and the overlay on top.
+      // FALLBACK (no scene FBO, or the fish path failed): the old SRGB8_ALPHA8 sceneTex upload, which Chrome does
+      // through a CPU readback (slow at 1080p, but correct). A per-frame failure sets fishFailed → render.js reverts to
+      // 2D fish (and draws its overlays into the scene) next frame.
+      const upload = (tex, internal, re) => {
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        if (re) gl.texImage2D(gl.TEXTURE_2D, 0, internal, gl.RGBA, gl.UNSIGNED_BYTE, scene);
+        else gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, scene);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      };
       const fishList = p.fish, ov = p.overlay && p.overlay.canvas ? p.overlay : null;
-      const useFishFBO = !!((fishList && fishList.length) || ov) && this.fishReady && !this.fishFailed && !!this.sceneFBOTex;
-      let sourceTex = this.sceneTex;
-      if (useFishFBO){ try {
+      let sourceTex = null;
+      if (this.fishReady && !this.fishFailed && this.sceneFBOTex){ try {
+        upload(this.sceneRaw, gl.RGBA8, realloc);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.sceneFBO); gl.viewport(0, 0, this.w, this.h);
         gl.disable(gl.BLEND); gl.useProgram(this.pBlit); gl.bindVertexArray(this.vao);
-        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.sceneTex); gl.uniform1i(this.uBlit.uTex, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);                                   // background → scene FBO
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.sceneRaw); gl.uniform1i(this.uBlit.uTex, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);                                   // background (sRGB-decoded) → scene FBO
         gl.enable(gl.BLEND); gl.blendEquation(gl.FUNC_ADD);
         gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // premultiplied over
         if (fishList && fishList.length) this._drawFishQuads(fishList, p);  // lit fish quads on top
         if (ov) this._drawOverlay(ov);                                      // overlays OVER the fish
         gl.disable(gl.BLEND);
         sourceTex = this.sceneFBOTex;
-      } catch(eF){ this.fishFailed = true; sourceTex = this.sceneTex; gl.disable(gl.BLEND); warn('GLPost: fish draw failed → 2D fish', eF); } }
+      } catch(eF){ this.fishFailed = true; gl.disable(gl.BLEND); warn('GLPost: fish draw failed → 2D fish', eF); } }
+      if (!sourceTex){ upload(this.sceneTex, gl.SRGB8_ALPHA8, realloc); sourceTex = this.sceneTex; }
       const bw = this.bw, bh = this.bh;
       gl.bindVertexArray(this.vao);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboA); gl.viewport(0,0,bw,bh); gl.useProgram(this.pBright);
@@ -687,7 +723,7 @@ class GLPost {
     }
     try {
       for (const pr of [this.pBright, this.pBlur, this.pComp, this.pBlit, this.pFish, this.pOver]) if (pr) gl.deleteProgram(pr);
-      for (const t of [this.sceneTex, this.texA, this.texB, this.sceneFBOTex, this.ovTex]) if (t) gl.deleteTexture(t);
+      for (const t of [this.sceneTex, this.sceneRaw, this.texA, this.texB, this.sceneFBOTex, this.ovTex]) if (t) gl.deleteTexture(t);
       for (const f of [this.fboA, this.fboB, this.sceneFBO]) if (f) gl.deleteFramebuffer(f);
       if (this.vao) gl.deleteVertexArray(this.vao);
       if (this.fishVAO) gl.deleteVertexArray(this.fishVAO);
