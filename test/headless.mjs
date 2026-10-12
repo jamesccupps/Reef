@@ -69,7 +69,9 @@ check('population is dynamic (changed from start)', JSON.stringify(start) !== JS
 check('plants persisted (growth vs grazing balance)', w.plants.length > 0, `${w.plants.length} plants`);
 check('some feeding occurred', w.stats.foodEaten > 0, `${w.stats.foodEaten} food events`);
 check('oxygen field in valid range', (() => { const o = w.avgO2(); return o >= 0 && o <= 1.25; })());
-check('fast enough for real-time render at scale', STEPS / (ms / 1000) > 60, `${(STEPS / (ms / 1000)).toFixed(0)} steps/s`);
+// REEF_PERF_MIN overrides the budget (e.g. 0 while other CPU-heavy work shares the machine); the default gate stays strict.
+const PERF_MIN = process.env.REEF_PERF_MIN != null ? +process.env.REEF_PERF_MIN : 60;
+check('fast enough for real-time render at scale', STEPS / (ms / 1000) > PERF_MIN, `${(STEPS / (ms / 1000)).toFixed(0)} steps/s (budget ${PERF_MIN})`);
 check('natural deaths leave a lingering body (no instant vanish)', anyCorpse, `peak ${peakCorpses} corpses`);
 check('corpses stay bounded (they decay into detritus)', peakCorpses < peakAgents, `peak ${peakCorpses} < ${peakAgents}`);
 
@@ -146,7 +148,8 @@ check('the recurrent working memory (act.h) round-trips through save/load (seria
 // recurrence is ACTIVE in the live sim (not an inert feature) and EVOLVABLE: the per-unit leak params give non-trivial
 // mean memory across the population AND they vary, so selection has variation to act on. (We do NOT assert memory
 // "improves fitness" — that's a genuine empirical question; memory is made available & selectable, not imposed.)
-const leakOf = a => { const sh = a.sp.shape, lk = sh.hid * sh.in + sh.hid + 2 * sh.hid + 2; let s = 0; for (let j = 0; j < sh.hid; j++) s += 1 / (1 + Math.exp(-a.g[lk + j])); return s / sh.hid; };
+// LEAK = the genome's last `hid` params (layout W1|B1|W2|B2|LEAK) — offset taken from the end so it can't go stale when OUT changes
+const leakOf = a => { const sh = a.sp.shape, lk = a.g.length - sh.hid; let s = 0; for (let j = 0; j < sh.hid; j++) s += 1 / (1 + Math.exp(-a.g[lk + j])); return s / sh.hid; };
 const leaks = w.agents.map(leakOf), meanLeak = leaks.reduce((s, v) => s + v, 0) / leaks.length, leakSpread = Math.max(...leaks) - Math.min(...leaks);
 check('recurrence is ACTIVE (non-trivial mean memory) and EVOLVABLE (varies across the population) in the live sim', meanLeak > 0.03 && leakSpread > 0.02 && w.agents.some(a => [...a.act.h].some(v => Math.abs(v) > 1e-3)), `mean leak ${meanLeak.toFixed(3)}, spread ${leakSpread.toFixed(3)}`);
 
@@ -666,12 +669,13 @@ check('metabMul EXACTLY matches the gene→cost formula (size/speed/tol + fin/ey
   return Math.abs(a.metabMul - want) < 1e-4;
 }));
 // MORPHOLOGY genes (fin/eye/body) → effective stats, each in the right direction WITH its trade-off
-const baseF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1]);
-const finF = gw.makeFish('bass', [1, 1, 1, 1.35, 1, 1]);
+// full 7-gene arrays (incl. the brain gene = 1) — a 6-gene array would pad the brain gene RANDOMLY, making these RNG-fragile
+const baseF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1, 1]);
+const finF = gw.makeFish('bass', [1, 1, 1, 1.35, 1, 1, 1]);
 check('fin gene → sharper turns (higher maxTurn) but more drag (lower top speed)', finF.maxTurn > baseF.maxTurn && finF.maxSpeed < baseF.maxSpeed, `maxTurn ${finF.maxTurn.toFixed(2)}>${baseF.maxTurn.toFixed(2)}, speed ${finF.maxSpeed.toFixed(1)}<${baseF.maxSpeed.toFixed(1)}`);
-const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1]);
+const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1, 1]);
 check('eye gene → longer sense range (and a metabolic cost)', eyeF.senseRange > baseF.senseRange && eyeF.metabMul > baseF.metabMul, `sense ${eyeF.senseRange.toFixed(0)}>${baseF.senseRange.toFixed(0)}`);
-const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35]);
+const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35, 1]);
 check('body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)', bodyF.accel > baseF.accel && bodyF.bodyMul > baseF.bodyMul && bodyF.maxSpeed < baseF.maxSpeed, `accel ${bodyF.accel.toFixed(0)}, bodyMul ${bodyF.bodyMul.toFixed(2)}, speed ${bodyF.maxSpeed.toFixed(1)}`);
 check('body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat', canEat(5, 4) && !canEat(5, 4 * 1.15), `4 eaten, 4.6 (deep-bodied) not`);
 const oldGn = gw.makeFish('bass', Float32Array.from([1.3, 0.8, 1.2]));   // a pre-morphology 3-gene save
