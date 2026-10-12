@@ -1312,5 +1312,89 @@ cam.fitNow(); cam.setZoomRel(10); cam.zoom = cam.tzoom; cam.follow(tgt.id);
 for (let i = 0; i < 300; i++) cam.update(1 / 60, w);
 check('follow converges on the followed agent', approx(cam.cx, tgt.x, 6) && approx(cam.cy, tgt.y, 6), `cam ${cam.cx.toFixed(0)},${cam.cy.toFixed(0)} vs ${tgt.x.toFixed(0)},${tgt.y.toFixed(0)}`);
 
+// ==== audit-fixes: bio-ecology ====
+// newborn cannibalism (AUDIT T1#2), plant light-starvation churn (T1#3), budding energy (T3), per-step feeding (T2#12),
+// the clarity-scaled plant seed-parent search (T3). Config is imported dynamically so the shared import line is untouched.
+console.log('\n— audit fixes: bio-ecology —');
+{
+  const { BROOD, FEED, PLANT: PLANTC } = await import('../src/config.js');
+  const ONES = [1, 1, 1, 1, 1, 1, 1];
+
+  // (1) NEWBORN CANNIBALISM — a conspecific newborn inside BROOD.GRACE is neither prey nor threatened; after it, both apply
+  { seed(41); const cw = new World();
+    const adult = cw.makeFish('pike', ONES), baby = cw.makeFish('pike', ONES, 0);
+    adult.x = 900; adult.y = 300; baby.x = 902; baby.y = 300;
+    cw.agents = [adult, baby]; cw.agentGrid.rebuild(cw.agents);
+    const graceSafe = !cw.qPrey(adult) && !cw.qThreat(baby) && cw.takePrey(adult) === null && !baby.dead;
+    baby.age = BROOD.GRACE + 0.5;   // past the grace, still a small juvenile (grow 0.35)
+    const pr = cw.qPrey(adult), th = cw.qThreat(baby);
+    const postGrace = !!pr && pr.item === baby && !!th && th.item === adult && cw.takePrey(adult) === baby;
+    check('brood grace: a conspecific newborn is not prey (nor its parent its threat) for BROOD.GRACE s; afterwards real cannibalism is possible and the juvenile SENSES the cannibal (symmetric qThreat)', graceSafe && postGrace, `grace ${BROOD.GRACE}s: safe ${graceSafe}, post-grace eaten+sensed ${postGrace}`);
+    const minnow = cw.makeFish('minnow', ONES, 0); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
+    check('the grace is kin-only: another species\' newborn is still prey', !!cw.qPrey(adult) && cw.qPrey(adult).item === minnow); }
+  // in a running lake: no conspecific is eaten inside its grace (before the fix bass/pike ate ~half their brood within 2 s)
+  { seed(99); const rw = new World(); const kills = { young: 0, any: 0 }, orig = rw.takePrey.bind(rw);
+    rw.takePrey = a => { const p = orig(a); if (p && p.species === a.species) { kills.any++; if (p.age < BROOD.GRACE) kills.young++; } return p; };
+    const b0 = rw.stats.births.bass + rw.stats.births.pike;
+    for (let i = 0; i < 600; i++) rw.step(1 / 30);
+    const bred = rw.stats.births.bass + rw.stats.births.pike - b0;
+    check('running lake: zero conspecific kills of fish younger than BROOD.GRACE (bass/pike do breed in the window)', kills.young === 0 && bred > 0, `young conspecific kills ${kills.young} (all conspecific ${kills.any}), bass+pike births ${bred}`); }
+  // brood SCATTER: young are placed BROOD.SCATTER px from the parents, out of immediate strike reach (not ±6 px on top of them)
+  { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2);
+    const [p, q] = fw.agents; p.age = q.age = SP.minnow.matureAge + 5; p.energy = q.energy = 1.0; p.mateCd = q.mateCd = 0;
+    p.x = 1000; p.y = 300; q.x = 1008; q.y = 300; fw.time = SP.minnow.spawnPeak * SEASON.YEAR_LEN; fw.agentGrid.rebuild(fw.agents);
+    const b0 = fw.stats.births.minnow; for (let i = 0; i < 120 && fw.stats.births.minnow === b0; i++) fw.step(1 / 30);
+    const kids = fw.agents.filter(a => a.species === 'minnow' && a.age < 0.05 && a.bornSexual);
+    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, ds = kids.map(k => Math.hypot(k.x - mx, k.y - my));
+    check('brood scatter: newborns are placed within the BROOD.SCATTER annulus around the parents', kids.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 3 && d <= BROOD.SCATTER[1] + 3), `${kids.length} young at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
+
+  // (2) ASEXUAL BUDDING conserves energy — the lone parent loses at least the energy its buds are born with
+  { seed(8); const bw = new World(); const par = bw.agents.find(a => a.species === 'minnow'); bw.agents = [par];
+    bw.plankton = []; bw.insects = []; par.age = SP.minnow.matureAge + 5; par.energy = 1.0; par.mateCd = 0; par.x = 1000; par.y = 300;
+    bw.time = SP.minnow.spawnPeak * SEASON.YEAR_LEN; bw.agentGrid.rebuild(bw.agents);
+    let drop = 0, k = 0;
+    for (let i = 0; i < 200 && k === 0; i++) { const e0 = par.energy, b0 = bw.stats.births.minnow; bw.step(1 / 30); k = bw.stats.births.minnow - b0; drop = e0 - par.energy; }
+    check('asexual budding pays for its young: parent energy drop ≥ Σ childEnergy (no free energy)', k > 0 && drop >= k * SP.minnow.childEnergy - 1e-9, `${k} buds: parent −${drop.toFixed(3)} vs children +${(k * SP.minnow.childEnergy).toFixed(3)}`); }
+
+  // (3) dt-INDEPENDENT FEEDING — grazing is a per-second rate and discrete items obey a handling time (FEED.HANDLE)
+  { seed(72); const gw = new World(); const carp = gw.makeFish('carp', ONES); carp.x = 400; carp.y = bedY(400) - 20;
+    const pl = gw.makePlant(400, true); pl.height = pl.maxHeight = 130; gw.plants = [pl];
+    const h0 = pl.height, e60 = gw.bitePlant(carp, 1 / 60), d60 = h0 - pl.height, h1 = pl.height, e30 = gw.bitePlant(carp, 1 / 30), d30 = h1 - pl.height;
+    check('plant grazing is per SECOND: a 1/30 s bite removes 2× a 1/60 s bite (energy ∝ biomass grazed)', Math.abs(d30 - 2 * d60) < 1e-9 && Math.abs(e30 - 2 * e60) < 1e-9 && Math.abs(d60 - PLANTC.BITE_RATE / 60) < 1e-9, `1/60: −${d60.toFixed(2)}px +${e60.toFixed(3)}  1/30: −${d30.toFixed(2)}px +${e30.toFixed(3)}`); }
+  { const eaten = (dt, steps) => { seed(71); const fw = new World(); fw.plankton = []; fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
+      const cat = fw.makeFish('catfish', ONES, SP.catfish.matureAge + 10); cat.x = 1000; cat.y = bedY(1000) - 3; cat.energy = 0.3; fw.agents = [cat];
+      const pile = []; for (let i = 0; i < 40; i++) { const L = fw._mkLarva(1000, 0); L.y = cat.y; pile.push(L); } fw.larvae = pile.slice();
+      for (let i = 0; i < steps; i++) fw.step(dt);
+      return pile.filter(L => L.dead).length; };
+    const n30 = eaten(1 / 30, 1), n60 = eaten(1 / 60, 2);
+    check('discrete-item intake per second is dt-independent (handling time): one 1/30 step eats as many larvae as two 1/60 steps', n30 === n60 && n60 === Math.round((2 / 60) / FEED.HANDLE), `1/30×1: ${n30}, 1/60×2: ${n60}`); }
+
+  // (4) PLANT LIGHT-STARVATION is judged on the running-mean light p.lightAvg, so beds survive the night & the winter …
+  // seeding is switched off in these probes so they isolate the starvation rule from canopy competition by new seedlings
+  const shelfPlants = (pw, xs) => xs.map(x => { const p = pw.makePlant(x, true); p.v = 0; p.gn = Float32Array.from([1, 1, 1, 1, 1, 1]); derivePlant(p); p.height = Math.min(30, p.maxHeight); return p; });
+  const savedSeed = PLANTC.SEED_RATE; PLANTC.SEED_RATE = 0;
+  const runNoFish = (pw, steps) => { for (let i = 0; i < steps; i++) { pw.agents = []; pw.step(1 / 30); } };
+  { seed(61); const pw = new World(); pw.agents = []; pw.time = 0.22 * SEASON.YEAR_LEN;
+    const beds = shelfPlants(pw, [80, 150, 220, 290, 360, 430]);
+    const deep = shelfPlants(pw, [1060, 1110, 1160, 1210]);   // pondweed forced into the dark deep basin (bed ≈ 0.98 H)
+    pw.plants = [...beds, ...deep];
+    let nightSeen = false, avgAtNight = Infinity;
+    for (let i = 0; i < 1800; i++) { pw.agents = []; pw.step(1 / 30); if (pw.env.light === 0) { nightSeen = true; avgAtNight = Math.min(avgAtNight, ...beds.filter(p => !p.dead).map(p => p.lightAvg / p.lightMin)); } }
+    check('established shelf beds survive a full day/night cycle (starvation judged on the running-mean light, not instantaneous)', nightSeen && beds.every(p => !p.dead) && avgAtNight >= 1, `${beds.filter(p => !p.dead).length}/${beds.length} alive; min lightAvg/lightMin at night ${avgAtNight.toFixed(2)}`);
+    check('…while plants that are too DEEP still light-starve (the depth limit holds)', deep.every(p => p.dead || p.lightAvg < p.lightMin) && deep.filter(p => p.dead).length >= deep.length / 2, `${deep.filter(p => p.dead).length}/${deep.length} deep plants dead`);
+    check('every live plant carries a finite running-mean light (p.lightAvg — persistent per-plant state)', pw.plants.every(p => Number.isFinite(p.lightAvg)), `${pw.plants.length} plants`); }
+  { seed(62); const ww = new World(); ww.agents = []; ww.time = 0.66 * SEASON.YEAR_LEN;   // late autumn → mid-winter
+    const beds = shelfPlants(ww, [90, 170, 250, 330, 1700, 1780, 1860, 1940]); ww.plants = beds.slice();
+    runNoFish(ww, 3600);   // 120 s ≈ 2 day/night cycles into winter
+    check('macrophytes OVERWINTER: shelf rootstock survives winter nights (dormancy ≠ death)', beds.every(p => !p.dead), `${beds.filter(p => !p.dead).length}/${beds.length} alive at yearFrac ${ww.env.yearFrac().toFixed(2)}, mean h ${(beds.reduce((s, p) => s + p.height, 0) / beds.length).toFixed(1)}`); }
+  PLANTC.SEED_RATE = savedSeed;
+
+  // (5) the seed-parent search is NOT shrunk by water turbidity (dispersal isn't vision); the fish plant SENSE still is
+  { seed(63); const sw = new World(); const pl = sw.makePlant(700, true); sw.plants = [pl]; sw.env.turbidity = 1;
+    const qy = pl.baseY - 1, far = 200;   // inside the stem's vertical span → point-to-stem distance = the 200 px horizontal gap
+    const q = sw.qPlant(900, qy, 240), n = sw.nearestPlant(900, qy, 240);
+    check('seed-parent search is unscaled by turbidity (nearestPlant finds a parent qPlant\'s murky-water sense misses)', !q && !!n && n.item === pl, `clarity ${sw.env.clarity().toFixed(2)}, parent at ~${far.toFixed(0)}px: sense ${!!q}, seeding ${!!n}`); }
+}
+
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);
