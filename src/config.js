@@ -26,7 +26,7 @@ export const scaleCount = n => Math.max(1, Math.round(n * WORLD.AREA_SCALE));
 // ---------- time: one master calendar (the single source of truth for all timescales) ----------
 // REALISTIC RATIOS, WATCHABLE SCALE (the chosen design). The day:season:year and maturity:lifespan ratios
 // are realistic; the absolute scale is compressed so a year is watchable AND the neuroevolution still turns over.
-//   • A YEAR = 12 MONTHS = 4 SEASONS (the calendar ratios are exact — see Environment.monthOfYear/seasonName).
+//   • A YEAR = 12 MONTHS = 4 SEASONS (the calendar ratios are exact — see Environment.monthIndex/seasonName).
 //   • The day/night cycle is a DECOUPLED cosmetic/diel clock (ambiance + diel behaviour); it is NOT counted as a
 //     calendar "day" (a true 1:365 day:year would force either a strobing day or a multi-hour year). At these
 //     numbers the sun cycles several times per displayed month — read it as a sped-up lake, not a literal day count.
@@ -86,7 +86,6 @@ export const BASIN = {
   SHELF_T: 0.34,     // the flat shelf spans this fraction of the shore→centre distance (a broad littoral zone)
   DROP_T: 0.18,      // the drop-off slope spans the next fraction of that distance
   SHELF_FRAC: 0.30,  // ≈ width fraction from each shore that stays littoral (shelf + upper slope; for seeding)
-  SEDIMENT: 14,      // px of sediment band drawn below the bed
 };
 export function bedY(x) {
   const H = WORLD.H, c = BASIN.CENTER, u = clamp(x / WORLD.W, 0, 1);
@@ -106,16 +105,25 @@ export function bedY(x) {
 
 // ---------- seasons & thermal structure ----------
 export const SEASON = {
-  YEAR_LEN: TIME.YEAR_LEN,   // sim-seconds per year (master value lives in TIME); a year every ~30 min
+  get YEAR_LEN() { return TIME.YEAR_LEN; },   // live alias of the master TIME.YEAR_LEN (not a load-time copy)
   TEMP_AMP: 9,               // seasonal swing (±°C) of the surface/epilimnion base temperature
 };
 export const THERMAL = {
   EPI_FRAC: 0.28,      // top fraction of the column = epilimnion (warm, well-mixed)
   HYPO_FRAC: 0.60,     // below this fraction = hypolimnion (cold)
-  DROP: 10,            // °C drop across the thermocline at full summer stratification
   STRAT_O2_MIX: 0.16,  // vertical O₂ mixing across/below the thermocline when stratified (low)
   TURNOVER_MIX: 3.2,   // vigorous vertical mixing when stratification collapses (wind-driven overturn)
-  WIND_EROSION: 0.06,  // /s per unit weather-wind that storms erode stratification (a storm can break the thermocline)
+  STRAT_RELAX: 0.5,    // /s rate stratification eases toward its seasonal target (re-stratification after mixing)
+  WIND_EROSION: 0.04,  // /s per unit weather-wind above calm that strong wind erodes stratification (rain ≈0.024/s, storm ≈0.056/s)
+  RESTRAT_MAX_WIND: 2.0, // re-stratification HALTS while the weather-wind multiplier is ≥ this (storms) → a sustained storm
+                       //   genuinely breaks the thermocline (~18 s to full mix) instead of settling at target − erosion/relax
+  OVERTURN: 0.25,      // /s rate the sub-epilimnion O₂ relaxes toward the surface O₂, × (1 − strat) (turnover overturn)
+  // HYPOLIMNION TEMPERATURE — the deep water has its own slow state (env.tempHypo), not the surface minus a fixed drop:
+  // it follows the diurnal-free surface temperature quickly while the lake is mixed and only very slowly once stratified,
+  // so it is "set" by the late-winter/spring mixed column and stays cool & steady all summer (no diurnal swing).
+  HYPO_TAU_MIX: 150,   // s: deep-water temperature lag behind the surface when fully mixed (column heat capacity)
+  HYPO_TAU_STRAT: 3000,// s: slow summer warming of the stratified hypolimnion (heat leaking through the thermocline)
+  DIEL_DEPTH: 0.06,    // depth fraction (of H) e-folding scale of the surface diurnal temperature swing (shallow skin)
 };
 export const WIND = {
   BASE: 5,             // baseline surface drift speed (px/s), direction flips slowly
@@ -137,14 +145,23 @@ export const COVER = {
 // ---------- inflow / outflow through-current ----------
 export const FLOW = {
   SPEED: 3.2,           // gentle rightward through-current (px/s, inflow left → outflow right), weaker deep
-  NUTRIENT: 1.7,        // nutrient/s the inflow loads into the left littoral (sets the lake's trophic state /
-                        // baseline productivity — higher = more mesotrophic, lower = oligotrophic). Raised 1.3→1.7
-                        // to thicken the phytoplankton base (it had thinned under cyano P-competition + Phase-5 grazing).
+  NUTRIENT: 3.3,        // nutrient (N+P)/s the inflow loads into the left littoral (sets the lake's trophic state /
+                        // baseline productivity — higher = more mesotrophic, lower = oligotrophic). × INFLOW_P 0.12 ⇒ ≈0.40
+                        // P/s (was 1.7 × 0.60 ≈ 1.02 P/s while grazing, fish detritus and the all-cells decay leaked ~2.6 P/s;
+                        // with the budget closed the lake RETAINS its P — sinks are only the outflow + sediment burial).
 };
 
 // ---------- turbidity & water clarity ----------
 // Murk rises with suspended algae (plankton density) and storm-stirred sediment; it dims the
 // deeper water (more light attenuation → shallower photic zone) and shortens visual range.
+// OUTFLOW — the through-flow. The inflow→outflow current advects every dissolved/suspended field (phosphate, ammonium,
+// nitrate, phyto, cyano, DOM) rightward through the surface layer and out of the outlet at the right shore. With burial
+// confined to the sediment, this makes inflow → lake → outflow a real through-flow (a nutrient sink). Tallied in env.ledger.
+export const OUTFLOW = {
+  ADVECT: 1.0,          // field advection speed as a multiple of FLOW.SPEED's depth profile (1 → ~1-year water residence)
+  DEPTH: 0.25,          // the advected outflow layer spans the top DEPTH fraction of the column (a surface outlet)
+};
+
 export const TURBIDITY = {
   BASE: 0.10,                       // baseline murk of clear-ish water (0 clear … 1 pea soup)
   FROM_ALGAE: 0.65,                 // murk added at full phytoplankton density
@@ -161,13 +178,15 @@ export const TURBIDITY = {
 export const PHYTO = {
   GROW: 0.95,            // max growth /s at full light × Liebig-limited nutrient (raised 0.85→0.95: faster recovery from the night/graze lows so the base reads non-zero more of the time)
   CAP: 1.0,              // max biomass per cell
-  P_USE: 0.09,           // phosphate drawn per growth ≈ its recycle (RECYCLE·ORGANIC_P) so P is conserved
-                         // internally; the EQUILIBRIUM P level (inflow vs slow decay) stays low → P-limited
-  N_USE: 0.08,           // nitrogen drawn per growth — far less than its recycle, so N stays abundant (never limits)
+  P_USE: 0.09,           // P content of one unit of algal biomass (drawn on growth, returned in full on decay/grazing)
+  N_USE: 0.6023,         // N content per unit biomass = P_USE·(1−ORGANIC_P)/ORGANIC_P (Redfield-consistent with P and with
+                         // DOM). Was 0.08 while decay returned 0.609 → N was created ~7.6× faster than used and never limited.
   O2_PHOTO: 0.85,        // O₂ produced per (biomass × light)
   O2_RESP: 0.05,         // O₂ consumed per biomass, always (respiration + decomposition)
-  DECAY: 0.06,           // /s natural die-off (returns nutrient)
-  RECYCLE: 0.7,          // fraction of decayed biomass returned as nutrient (efficient cycling → web sustains)
+  DECAY: 0.06,           // /s natural die-off (returns ALL its N+P)
+  RECYCLE: 0.7,          // fraction of decayed biomass whose N+P returns directly as ammonium+phosphate; the rest
+                         // (1−RECYCLE) dissolves into DOM for the microbial loop (was silently destroyed)
+  BAND: 0.45,            // depth fraction of the photic band meanPhyto() averages over (where algae live)
   DIFFUSE: 0.06,         // spreads between cells
   START: 0.12,
 };
@@ -182,25 +201,35 @@ export const PHYTO = {
 // and LEAKS fixed N back into the lake (`FIX_N`) → a net N source that counteracts denitrification (the
 // self-regulating end of the N cycle). Late-summer surface blooms emerge; autumn turnover/cooling end them.
 export const CYANO = {
-  GROW: 0.55,            // max growth /s at full light × P × warmth (slower than PHYTO.GROW 0.85 — edge is N-fixation)
+  GROW: 1.6,             // max PER-CAPITA growth /s at full light × P × warmth (logistic; was a zero-order 0.55 vs
+                         // PHYTO.GROW 0.95) — a bloom must build from the standing stock, so it needs a sustained warm,
+                         // bright, P-rich spell (net growth ≈ 0 at the baseline summer surface: GROW·L·P·warmth ≈ DECAY)
+  INOC: 0.002,           // inoculum floor added to the standing biomass in the growth term (resting cells/akinetes →
+                         // cyano can always re-establish, but only slowly from nothing)
   CAP: 1.0,              // max biomass per cell
-  P_USE: 0.09,           // phosphate drawn per growth — competes with green phyto for the SAME P pool
+  P_USE: 0.09,           // P content per unit biomass — drawn from the SAME phosphate pool green phyto uses (competition)
+  N_USE: 0.6023,         // N content per unit biomass (Redfield, = PHYTO.N_USE) — FIXED from N₂ on growth, so it is a net
+                         // N SOURCE to the lake once the biomass decays (tallied in env.ledger.fixN)
   TEMP_OPT: 28,          // °C — a warm-water bloomer (late summer); growth falls off away from this
   TEMP_TOL: 9,           // °C half-width of the thermal growth window (0 growth beyond ±TEMP_TOL)
   O2_PHOTO: 0.85,        // O₂ produced per (biomass × light) by day
   O2_RESP: 0.06,         // O₂ consumed per biomass always (a thick scum → night/decay O₂ crash)
-  DECAY: 0.05,           // /s die-off (recycles its P; releases its fixed N)
-  RECYCLE: 0.7,          // fraction of decayed biomass whose P returns to the water
+  DECAY: 0.06,           // /s die-off (returns ALL its P and fixed N). Was 0.05: with grazing-immune buoyant growth the
+                         // surface scum saturated whenever it was warm; a bloom now needs warmth AND above-baseline P
+  RECYCLE: 0.7,          // fraction of decayed N+P returned directly as phosphate+ammonium; the rest dissolves into DOM
   FIX_N: 0.045,          // fixed N leaked to ammonium per unit growth — the net-new-N enrichment feedback
   BUOY: 0.6,             // /s upward float in CALM water (forms the surface scum); storms (turbulence) suppress it
   DIFFUSE: 0.05,         // spreads between cells
   TURB: 0.6,             // surface-scum turbidity contribution at full surface density
-  START: 0.02,           // small ever-present seed strain (so it's ready to bloom when conditions favour it)
+  SCUM_BAND: 0.12,       // depth fraction of the surface band meanCyano() averages over (the scum layer)
+  START: 0.005,          // small ever-present seed strain (so it's ready to bloom when conditions favour it). Was 0.02:
+                         // buoyancy alone floated a deep column's seed (0.02 × 48 rows ≈ 1) into a TOXIC scum with no growth
   // CYANOTOXINS (harmful-algal-bloom toxicity, e.g. microcystin): a DENSE surface scum (local cyano > TOX_THRESH·CAP)
   // releases a toxin that harms FISH (extra energy drain) and ZOOPLANKTON (extra death) — so a bloom can kill by
   // POISON, not only via the night/decay O₂ crash. Exposure is naturally surface-concentrated (the scum is buoyant),
   // so it mainly hits surface fish (minnows). A topical pollution/climate-scenario amplifier.
-  TOX_THRESH: 0.4,       // local cyano (fraction of CAP) above which the scum turns toxic
+  TOX_THRESH: 0.6,       // local cyano (fraction of CAP) above which the scum turns toxic — a DENSE scum (was 0.4: 81 of 85
+                         // surface cells exceeded it every early summer, so the toxin was simply "on" all summer)
   TOXIN: 0.10,           // fish energy drained /s per unit cyano above the threshold
   TOX_ZOO: 0.4,          // /s extra zooplankton death rate inside a toxic scum
 };
@@ -233,7 +262,7 @@ export const CAMERA = {
 };
 
 export const ENV = {
-  DAY_LEN: TIME.DAY_LEN,   // sim-seconds per full day/night cycle (master value lives in TIME)
+  get DAY_LEN() { return TIME.DAY_LEN; },   // live alias of the master TIME.DAY_LEN (not a load-time copy)
   LIGHT_ATTEN: 3.2,        // how fast light dims with depth — a shallow photic zone, dark deep water
 
   // weather: 0 clear, 1 cloudy, 2 rain, 3 storm
@@ -244,16 +273,22 @@ export const ENV = {
 
   // temperature (deg C, normalised internally)
   TEMP_BASE: 22,
-  TEMP_DIURNAL: 4,         // +/- swing over the day
+  TEMP_DIURNAL: 4,         // +/- swing over the day (surface; damped with depth — THERMAL.DIEL_DEPTH)
+  TEMP_RELAX: 0.4,         // /s rate the surface temperature eases toward its seasonal+diurnal+weather target
   TEMP_WEATHER: [0, -1, -2.5, -3], // cooling per weather state
 
   // oxygen field dynamics (values are normalised 0..~1.2, 1 = reference saturation)
   O2_DIFFUSE: 0.25,        // diffusion rate /step-ish
   O2_AERATE: 0.30,         // surface re-aeration toward saturation
+  AERATE_CALM: 0.4,        // aeration = O2_AERATE·(AERATE_CALM + turbulence) + rain·AERATE_RAIN …
+  AERATE_RAIN: 0.12,
+  AERATE_ROW1: 0.4,        // … and the row just below the surface aerates at this fraction of the surface rate
   O2_PHOTO: 1.7,           // O2 produced per (biomass*light) unit
   O2_RESP_FISH: 0.012,     // O2 consumed per (respiration*size*metabolism)
   O2_PLANT_NIGHT: 0.006,   // plant respiration at night
-  O2_SED: 0.018,           // benthic/decomposition oxygen demand (deep cells; drives hypolimnetic hypoxia)
+  O2_SED: 0.15,            // SEDIMENT O₂ demand /s at each column's bed cell (×depth ramp below the epilimnion)
+  O2_PELAGIC: 0.009,       // water-column O₂ demand /s below the epilimnion (decomposition of sinking particulate organic
+                           // matter, ×depth ramp). Together with O2_SED ≈ the old all-cells 0.018 ramp for a deep column.
   O2_START: 0.85,
   SAT_TEMP_K: 0.020,       // saturation drop per deg above 18C
   HYPOXIA: 0.35,           // default critical O2 (species override via sp.o2Crit); below it, fish take stress
@@ -275,17 +310,20 @@ export const ENV = {
 // usual limiting nutrient (scarce, low half-saturation), so P loading drives blooms.
 export const NUTRIENT = {
   DIFFUSE: 0.12,
-  DECAY: 0.002,            // /s very slow loss to permanent burial — lakes conserve nutrients (long residence
-                           // time), so the stock sustains the web; the inflow sets the trophic state. (Active
-                           // N removal is now the explicit denitrification flux in NCYCLE, not this generic sink.)
-  FROM_DETRITUS: 0.5,      // total nutrient released when a detritus particle decays (split N+P, organic ratio)
+  // (the old all-cells DECAY "burial" is gone: P is now buried only from the sediment store (SED_P.BURY), N leaves by
+  //  denitrification, and both leave through the OUTFLOW — so every sink is explicit and tallied in env.ledger)
+  FROM_DETRITUS: 0.5,      // N+P (DOM units) carried by each SEEDED detritus particle. Fish-death detritus carries 0 —
+                           // fish hold no N/P in this model, so their remains are food (energy) but nutrient-neutral.
+  GRAZE_EXCRETE: 0.6,      // fraction of grazed algal N+P excreted straight back as ammonium+phosphate; the rest is
+                           // egested as DOM (zooplankton/mussels/snails/fish don't store nutrient — nothing is destroyed)
   PLANT_UPTAKE: 0.05,      // total nutrient a growing plant draws (split N+P)
-  N_START: 0.60,           // total dissolved inorganic N at start (split into nh4+no3 by NCYCLE.NH4/NO3_START)
   P_START: 0.10,           // phosphate — scarce; the usual limiting nutrient
   KN: 0.30,                // half-saturation for N-limited growth (Monod)
   KP: 0.10,                // half-saturation for P-limited growth (P limits across the working range)
-  ORGANIC_P: 0.13,         // P fraction of organic matter (Redfield-ish N:P ≈ 7:1 → P ≈ ⅛ of N+P)
-  INFLOW_P: 0.60,          // P fraction of the inflow load (runoff is P-enriched → the eutrophication driver)
+  ORGANIC_P: 0.13,         // P fraction of organic matter (Redfield-ish N:P ≈ 7:1 → P ≈ ⅛ of N+P); DOM and algae share it
+  INFLOW_P: 0.12,          // P fraction of the inflow load: runoff N:P ≈ 7.3 (just above Redfield 6.7). Was 0.60 (N:P 0.67),
+                           // harmless while N was created on recycling; with N conserved it starved the whole lake of N all
+                           // year (≈80% of cells N-limited even in winter) and handed it to the N-fixers.
 };
 
 // SEDIMENT PHOSPHORUS — the Mortimer redox switch / internal loading. A benthic P store per column binds
@@ -294,11 +332,14 @@ export const NUTRIENT = {
 // feedback (anoxia frees legacy P → fuels blooms → more organic settling → more sediment P → worse anoxia).
 export const SED_P = {
   START: 0.6,              // initial bound-P per benthic column
-  SETTLE: 0.02,            // P/s settling onto the sediment (∝ local phyto + a baseline detrital rain)
+  SETTLE: 0.02,            // P/s settling onto the sediment ∝ (bed-cell phyto + RAIN_BASE) — DRAWN from the bed cell's
+                           // algae (their N is ammonified back to the water) and, for the baseline, its phosphate
+  RAIN_BASE: 0.05,         // baseline settling (P scavenged from the bed-cell water even without algae)
+  BURY: 0.01,              // /s permanent burial of the bound store (deep sediment) — the lake's P sink besides the outflow
   O2_THRESH: 0.25,         // benthic O₂ below which iron-bound P is released (the redox switch)
   RELEASE: 0.5,            // /s release rate of bound P when anoxic (scaled by how far below threshold)
   BIND: 0.06,              // /s rate at which oxic sediment binds dissolved P back out of the water
-  MAX: 4.0,                // cap on the bound-P store (prevents unbounded accumulation)
+  MAX: 4.0,                // cap on the bound-P store: settling/binding stop at it (headroom-limited — no P destroyed)
 };
 
 // ---------- nitrogen cycle (nitrification ⇌ denitrification) ----------
@@ -315,7 +356,7 @@ export const SED_P = {
 //     lake, and it sets up N-fixing cyanobacteria winning at low N:P (a later slice).
 // Total available N for growth = nh4 + no3 (Liebig N-Monod over the sum). Pure / deterministic (no RNG).
 export const NCYCLE = {
-  NH4_START: 0.30,         // initial ammonium (reduced N) — sums with NO3_START to the old N_START (0.60)
+  NH4_START: 0.30,         // initial ammonium (reduced N) — with NO3_START, 0.60 total inorganic N at start
   NO3_START: 0.30,         // initial nitrate (oxidized N)
   NITRIF: 0.05,            // /s nitrification rate (NH₄→NO₃) at full O₂ (supply-limited at steady state)
   NITRIF_O2_HALF: 0.30,    // O₂ half-saturation (Monod) for nitrification — nitrifiers need oxygen

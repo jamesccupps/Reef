@@ -923,18 +923,22 @@ check('phosphate is the limiting nutrient in a fresh lake (P scarcer than N for 
   w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP) < w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN), `P-lim ${(w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP)).toFixed(2)} < N-lim ${(w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN)).toFixed(2)}`);
 
 // EUTROPHICATION (control-subtracted so the diurnal phyto swing cancels): two identical worlds,
-// PHOSPHATE-spike only one (P is the limiter), and require its bloom to exceed the unspiked control's
-// — and to draw the phosphate pool down (closing the loop).
+// PHOSPHATE-spike only one (P is the limiter), and require its PRODUCER bloom (green phyto + N-fixing cyano) to exceed
+// the unspiked control's — and the spiked P to be drawn into algal biomass. (audit-fixes/chemistry: with N now
+// conserved at Redfield, a P-only spike flips the lake N-limited, so the bloom is carried by the N-fixers, not green
+// phyto alone; and with the P budget closed the spike can't simply vanish — the old "mean P falls" passed via the
+// grazing leak that destroyed P — so the loop-closing test is now "the bloom takes the P up into biomass".)
 seed(31415); const ctrl = new World();
 seed(31415); const eut = new World();
 for (let i = 0; i < 300; i++) { ctrl.step(1 / 30); eut.step(1 / 30); }
 for (let i = 0; i < eut.env.phos.length; i++) eut.env.phos[i] += 0.6;
 const pAtSpike = meanP(eut);
+const algalP = e => (e.wetSum(e.phyto) * PHYTO.P_USE + e.wetSum(e.cyano) * CYANO.P_USE);
 let ctrlPeak = 0, eutPeak = 0;
-for (let i = 0; i < 1200; i++) { ctrl.step(1 / 30); eut.step(1 / 30); ctrlPeak = Math.max(ctrlPeak, ctrl.env.meanPhyto()); eutPeak = Math.max(eutPeak, eut.env.meanPhyto()); }
-console.log(`eutrophication: control peak phyto ${ctrlPeak.toFixed(2)} vs P-spiked ${eutPeak.toFixed(2)}; spiked P ${pAtSpike.toFixed(2)} → ${meanP(eut).toFixed(2)}`);
-check('a PHOSPHATE spike drives a bigger bloom than the unspiked control', eutPeak > ctrlPeak * 1.15, `spiked ${eutPeak.toFixed(2)} > control ${ctrlPeak.toFixed(2)}`);
-check('the bloom draws the phosphate pool down (closing the loop)', meanP(eut) < pAtSpike, `${meanP(eut).toFixed(2)} < ${pAtSpike.toFixed(2)}`);
+for (let i = 0; i < 1200; i++) { ctrl.step(1 / 30); eut.step(1 / 30); ctrlPeak = Math.max(ctrlPeak, ctrl.env.meanPhyto() + ctrl.env.meanCyano()); eutPeak = Math.max(eutPeak, eut.env.meanPhyto() + eut.env.meanCyano()); }
+console.log(`eutrophication: control peak producers ${ctrlPeak.toFixed(2)} vs P-spiked ${eutPeak.toFixed(2)}; spiked P ${pAtSpike.toFixed(2)} → ${meanP(eut).toFixed(2)}; algal P ${algalP(ctrl.env).toFixed(1)} vs ${algalP(eut.env).toFixed(1)}`);
+check('a PHOSPHATE spike drives a bigger producer bloom (phyto + N-fixing cyano) than the unspiked control', eutPeak > ctrlPeak * 1.15, `spiked ${eutPeak.toFixed(2)} > control ${ctrlPeak.toFixed(2)}`);
+check('the bloom draws the spiked phosphate into algal biomass (closing the loop)', algalP(eut.env) > algalP(ctrl.env) * 1.15, `algal P ${algalP(eut.env).toFixed(1)} > control ${algalP(ctrl.env).toFixed(1)}`);
 
 // SEDIMENT-P internal loading (Mortimer redox switch): oxic sediment binds P, anoxic sediment releases it
 console.log('\n— sediment-P (internal loading) —');
@@ -1036,13 +1040,17 @@ check('cyanobacteria are a WARM-water bloomer (grow near TEMP_OPT, stall when co
 // EMERGENT COMPETITION (whole-sim): in a low-N lake, cyano takes a LARGER share of the producers than in an
 // N-rich lake — "cyano wins at low N:P". Same seed; the low-N world has its inorganic N zeroed each step.
 seed(55); const hiN = new World(); seed(55); const loN = new World();
+hiN.time = loN.time = 0.22 * SEASON.YEAR_LEN;   // audit-fixes/chemistry: summer — per-capita cyano only builds a population when warm
 for (let i = 0; i < 1400; i++) { hiN.step(1 / 30); for (let j = 0; j < loN.env.nh4.length; j++) { loN.env.nh4[j] = 0; loN.env.no3[j] = 0; } loN.step(1 / 30); }
 console.log(`cyano competition: N-rich cyano ${hiN.env.meanCyano().toFixed(3)}/phyto ${hiN.env.meanPhyto().toFixed(3)} vs N-poor cyano ${loN.env.meanCyano().toFixed(3)}/phyto ${loN.env.meanPhyto().toFixed(3)}`);
 // "cyano wins at low N:P" — guarded by ABSOLUTE cyano biomass, NOT a cyano/phyto ratio. A ratio passes for the
 // wrong reason: green phyto collapses to ~0 in the N-poor lake regardless of cyano, so the ratio explodes even
 // if cyano were dead. If cyano's defining N-fixing trait were broken (made N-limited), its biomass would COLLAPSE
 // in the N-poor lake; instead it stays HIGH and ≥ the N-rich lake — that absolute floor is what genuinely guards it.
-check('cyanobacteria WIN at low N:P — N-poor cyano biomass stays HIGH and ≥ the N-rich lake (a broken N-fixer would collapse here)', loN.env.meanCyano() > 0.3 && loN.env.meanCyano() >= hiN.env.meanCyano(), `cyano N-poor ${loN.env.meanCyano().toFixed(3)} (>0.3, ≥ N-rich ${hiN.env.meanCyano().toFixed(3)})`);
+// (audit-fixes/chemistry: the old 0.3 floor was reachable only through ZERO-ORDER growth — every lit cell made cyano
+// from nothing and buoyancy stacked it at the surface. Growth is now per-capita, so in 47 s the N-poor bloom builds to
+// ~0.1: the floor is now 10× the seed strain (a broken N-fixer decays BELOW the seed) and it must beat the N-rich lake 2×.)
+check('cyanobacteria WIN at low N:P — N-poor cyano grows ≥10× its seed and ≥2× the N-rich lake (a broken N-fixer would collapse here)', loN.env.meanCyano() > 10 * CYANO.START && loN.env.meanCyano() >= 2 * hiN.env.meanCyano(), `cyano N-poor ${loN.env.meanCyano().toFixed(3)} (>${(10 * CYANO.START).toFixed(2)}, ≥ 2× N-rich ${hiN.env.meanCyano().toFixed(3)})`);
 check('green phyto (N-limited) collapses in the N-poor lake while cyano (N-fixing) holds — the asymmetry IS the niche', loN.env.meanPhyto() < hiN.env.meanPhyto() * 0.5 && loN.env.meanCyano() > 10 * loN.env.meanPhyto(), `phyto ${hiN.env.meanPhyto().toFixed(3)}→${loN.env.meanPhyto().toFixed(3)}, cyano ${loN.env.meanCyano().toFixed(3)} ≫ phyto`);
 check('the cyanobacteria field stays non-negative, bounded & finite', [...loN.env.cyano].every(v => v >= 0 && v <= CYANO.CAP + 1e-3 && Number.isFinite(v)));
 
@@ -1066,14 +1074,14 @@ check('decomposition is O₂-LIMITED (Monod): oxic decomposes faster than anoxic
 // MECHANISM 3 — consumes O₂ and remineralizes ammonium + phosphate (the bacterial respiration + nutrient release).
 const mD = new World().env; mD.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mD.dom.length; i++) { mD.dom[i] = 0.4; mD.nh4[i] = 0; mD.phos[i] = 0; mD.o2[i] = 1.0; }
-const mci = (mD.dom.length / 2) | 0, mO20 = mD.o2[mci];
+const mci = mD.cellOf(WORLD.W * 0.5, WORLD.H * 0.3), mO20 = mD.o2[mci];   // a WET cell (index length/2 is below the bed → inert since the wet/dry mask)
 for (let k = 0; k < 20; k++) mD.microbialLoop(1 / 30);
 check('decomposition CONSUMES O₂ (the microbial O₂ demand) and RELEASES ammonium + phosphate', mD.o2[mci] < mO20 && mD.nh4[mci] > 0 && mD.phos[mci] > 0 && mD.dom[mci] < 0.4, `O₂ ${mO20.toFixed(2)}→${mD.o2[mci].toFixed(2)}, nh4 ${mD.nh4[mci].toFixed(3)}, P ${mD.phos[mci].toFixed(3)}, DOM ${mD.dom[mci].toFixed(3)}`);
 // MECHANISM 4 — MASS CONSERVATION: DOM decomposed exactly equals N(→ammonium)+P(→phosphate) released (no N/P
 // created or destroyed). Uniform field ⇒ diffuse() is a no-op, so a single representative cell tests it exactly.
 const mC = new World().env; mC.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mC.dom.length; i++) { mC.dom[i] = 0.3; mC.nh4[i] = 0; mC.no3[i] = 0; mC.phos[i] = 0; mC.o2[i] = 1.0; }
-const cci = (mC.dom.length / 2) | 0;
+const cci = mC.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);   // a WET cell (length/2 is a dry below-bed cell since the wet/dry mask)
 for (let k = 0; k < 30; k++) mC.microbialLoop(1 / 30);
 const conserved = mC.dom[cci] + mC.nh4[cci] + mC.phos[cci];
 check('microbial loop CONSERVES mass: DOM decomposed = N+P remineralized (no nutrient created or lost)', approx(conserved, 0.3, 1e-5) && mC.dom[cci] < 0.3, `dom+nh4+phos ${conserved.toFixed(6)} (was 0.300), DOM ${mC.dom[cci].toFixed(4)}`);
@@ -1557,6 +1565,133 @@ console.log('\n— audit fixes: bio-ecology —');
     const qy = pl.baseY - 1, far = 200;   // inside the stem's vertical span → point-to-stem distance = the 200 px horizontal gap
     const q = sw.qPlant(900, qy, 240), n = sw.nearestPlant(900, qy, 240);
     check('seed-parent search is unscaled by turbidity (nearestPlant finds a parent qPlant\'s murky-water sense misses)', !q && !!n && n.item === pl, `clarity ${sw.env.clarity().toFixed(2)}, parent at ~${far.toFixed(0)}px: sense ${!!q}, seeding ${!!n}`); }
+}
+
+// ==== audit-fixes: chemistry ====
+// Water-chemistry rework (AUDIT Tier 2 #11 + Tier 3 storm/scum): wet/dry mask, conservative no-flux diffusion, closed
+// P/N budgets (every transfer debits its source; boundary fluxes tallied in env.ledger), depth-damped diurnal temperature
+// + a slow hypolimnion, O₂ clamped before rate terms, storms that genuinely mix, a through-flow outlet, config hygiene.
+{
+  console.log('\n— audit-fixes: chemistry —');
+  const { Environment, buildWetMask, diffuse: cDiffuse, diffuseO2: cDiffuseO2 } = await import('../src/environment.js');
+  const CC = await import('../src/config.js');
+  const COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS, CW = WORLD.W / COLS, CH = WORLD.H / ROWS;
+  const sum64 = (f, M) => { let s = 0; for (let i = 0; i < f.length; i++) if (!M || M.wet[i]) s += f[i]; return s; };
+
+  // 1 — WET/DRY MASK
+  const M = buildWetMask();
+  let dry = 0, contiguous = true, bedOk = true;
+  for (let i = 0; i < COLS * ROWS; i++) if (!M.wet[i]) dry++;
+  for (let cy = 0; cy < ROWS; cy++) for (let cx = 0; cx < COLS; cx++) if (!!M.wet[cy * COLS + cx] !== (cx >= M.lo[cy] && cx <= M.hi[cy])) contiguous = false;
+  for (let cx = 0; cx < COLS; cx++) {
+    const br = M.bedRow[cx];
+    let maxBed = 0; for (let k = 0; k <= 16; k++) maxBed = Math.max(maxBed, bedY(Math.min(WORLD.W, (cx + k / 16) * CW)));
+    if (!M.wet[br * COLS + cx] || (br + 1 < ROWS && M.wet[(br + 1) * COLS + cx]) || br * CH > maxBed || (br + 1) * CH <= maxBed - 1e-6) bedOk = false;
+  }
+  check('wet mask: ~35% of field cells lie below the bed and are DRY', dry > 0.25 * COLS * ROWS && dry < 0.45 * COLS * ROWS, `${dry}/${COLS * ROWS} dry`);
+  check('wet mask: each row\'s wet cells are one contiguous run and each column\'s bedRow is its deepest wet cell (top above the bed)', contiguous && bedOk);
+  const em = new Environment();
+  let inRock = 0; for (let x = 1; x < WORLD.W; x += 7) for (const y of [bedY(x) - 1, bedY(x), bedY(x) + 3, WORLD.H]) if (!em.mask.wet[em.cellOf(x, y)]) inRock++;
+  check('cellOf() clamps every lake point (even on/below the bed) to a WET cell — nothing reads/writes rock', inRock === 0, `${inRock} rock hits`);
+  // means are over wet cells only: poisoning every dry cell must not move them
+  const mBefore = [em.meanPhos(), em.meanDin(), em.meanO2(), em.wetMean(em.phyto)];
+  for (let i = 0; i < em.phos.length; i++) if (!em.mask.wet[i]) { em.phos[i] = 99; em.nh4[i] = 99; em.no3[i] = 99; em.o2[i] = 99; em.phyto[i] = 99; }
+  check('field means (P, DIN, O₂, phyto) exclude the dry below-bed cells', [em.meanPhos(), em.meanDin(), em.meanO2(), em.wetMean(em.phyto)].every((v, k) => approx(v, mBefore[k], 1e-9)));
+  // dry cells are inert: a full env step (no world) leaves their (poisoned) values untouched
+  em.step(1 / 30);
+  let dryMoved = 0; for (let i = 0; i < em.phos.length; i++) if (!em.mask.wet[i] && (em.phos[i] !== 99 || em.o2[i] !== 99 || em.phyto[i] !== 99)) dryMoved++;
+  check('dry cells stay inert through a full env step (no process or flux touches rock); env.step works without a world', dryMoved === 0 && Number.isFinite(em.meanO2()), `${dryMoved} dry cells changed`);
+
+  // 2 — CONSERVATIVE DIFFUSION (flux form, no-flux at edges & bed)
+  const fd = new Float32Array(COLS * ROWS), td = new Float32Array(COLS * ROWS);
+  for (let i = 0; i < fd.length; i++) fd[i] = M.wet[i] ? ((i * 2654435761) % 1000) / 1000 : 7;   // deterministic rough field
+  fd[10 * COLS] += 100;            // a slug at the inflow edge cell (col 0)
+  fd[COLS - 1] += 50;              // and in the surface corner (scum row 0, right edge)
+  const d0 = sum64(fd, M);
+  for (let s = 0; s < 1800; s++) cDiffuse(fd, td, NUTRIENT.DIFFUSE / 30, M);   // 60 sim-seconds
+  const d1 = sum64(fd, M);
+  let dryTouched = 0; for (let i = 0; i < fd.length; i++) if (!M.wet[i] && fd[i] !== 7) dryTouched++;
+  check('diffuse() CONSERVES mass to float precision (edge slugs included; was −17% in 60 s at an edge)', Math.abs(d1 - d0) / d0 < 1e-5 && dryTouched === 0, `${d0.toFixed(4)} → ${d1.toFixed(4)} (rel ${((d1 - d0) / d0).toExponential(1)})`);
+  const fo = new Float32Array(COLS * ROWS); for (let i = 0; i < fo.length; i++) fo[i] = M.wet[i] ? ((i * 40503) % 997) / 997 : 0;
+  const o0 = sum64(fo, M);
+  for (let s = 0; s < 1800; s++) cDiffuseO2(fo, td, CC.ENV.O2_DIFFUSE / 30, s < 900 ? 0.9 : 0.1, M);
+  check('diffuseO2() (stratification-gated vertical mixing) is conservative too — symmetric per-interface mixing', Math.abs(sum64(fo, M) - o0) / o0 < 1e-5, `rel ${((sum64(fo, M) - o0) / o0).toExponential(1)}`);
+
+  // 3/4 — CLOSED P & N BUDGETS in the running lake (fish on; plants off — the plant uptake/return is the bio slice's and is
+  // measured separately below). Inventory = water + sediment + algae + cyano + DOM + detritus N/P; it may change only by
+  // inflow − outflow − burial (P) and inflow + N-fixation − outflow − denitrification (N).
+  const detNut = ww => ww.detritus.reduce((s, d) => s + (d.dead ? 0 : (d.n || 0)), 0);
+  const runBudget = (plants) => {
+    seed(4242); const bw = new World(); bw.time = 0.18 * SEASON.YEAR_LEN;
+    const keep = CC.PLANT.SEED_RATE; if (!plants) { bw.plants = []; CC.PLANT.SEED_RATE = 0; }
+    const e = bw.env, invP = () => e.inventoryP() + detNut(bw) * NUTRIENT.ORGANIC_P, invN = () => e.inventoryN() + detNut(bw) * (1 - NUTRIENT.ORGANIC_P);
+    const P0 = invP(), N0 = invN(), L0 = { ...e.ledger };
+    let neg = 0;
+    for (let s = 0; s < 1800; s++) { bw.step(1 / 30); if (s % 60 === 0) for (const f of [e.phos, e.nh4, e.no3, e.dom, e.phyto, e.cyano, e.o2]) for (let i = 0; i < f.length; i++) if (f[i] < -1e-6 || !Number.isFinite(f[i])) neg++; }
+    CC.PLANT.SEED_RATE = keep;
+    const L = e.ledger, inP = L.inP - L0.inP, outP = L.outP - L0.outP, buryP = L.buryP - L0.buryP;
+    const resP = (invP() - P0) - (inP - outP - buryP);
+    const resN = (invN() - N0) - ((L.inN - L0.inN) + (L.fixN - L0.fixN) - (L.outN - L0.outN) - (L.denitN - L0.denitN));
+    return { P0, resP, resN, inP, outP, buryP, neg, N0 };
+  };
+  const B = runBudget(false);
+  console.log(`P budget 60 s: inv ${B.P0.toFixed(1)}, in ${B.inP.toFixed(2)} out ${B.outP.toFixed(2)} buried ${B.buryP.toFixed(2)} → residual ${B.resP.toExponential(2)} P; N residual ${B.resN.toExponential(2)}`);
+  // tolerance: 0.05 P ≈ 0.01% of the ~370 P inventory and ~0.2% of the 60-s inflow — Float32 field rounding is ~1e-3..1e-2
+  check('P INVENTORY is CLOSED: Δ(total P) = inflow − outflow − burial within 0.05 P over 60 s (fish on, plants off)', Math.abs(B.resP) < 0.05, `residual ${B.resP.toFixed(4)} P (was −114 P unexplained per 60 s)`);
+  check('N INVENTORY is CLOSED: Δ(total N) = inflow + N-fixation − outflow − denitrification within 0.2 N over 60 s', Math.abs(B.resN) < 0.2, `residual ${B.resN.toFixed(4)} N of ${B.N0.toFixed(0)}`);
+  check('the through-flow outlet and sediment burial are both real P sinks (the outflow now has a chemical effect)', B.outP > 0.5 && B.buryP > 0.5, `out ${B.outP.toFixed(2)}, buried ${B.buryP.toFixed(2)}`);
+  check('no field goes negative or non-finite in the running lake (no pool is overdrawn)', B.neg === 0, `${B.neg} bad samples`);
+  const BP = runBudget(true);
+  console.log(`  (info) with plants: unexplained P ${BP.resP.toFixed(3)} / 60 s — the macrophyte uptake ↔ senescence/death return mismatch (plants block, measured separately)`);
+
+  // 4 — N stoichiometry is Redfield-consistent (no N created on recycling) and cyano fixes N only for the deficit
+  check('algae take up N at the same Redfield ratio they recycle it (N_USE = P_USE·(1−ORGANIC_P)/ORGANIC_P)', approx(PHYTO.N_USE, PHYTO.P_USE * (1 - NUTRIENT.ORGANIC_P) / NUTRIENT.ORGANIC_P, 1e-3) && approx(CYANO.N_USE, PHYTO.N_USE, 1e-9));
+  const fx = new Environment(), fz = new Environment();
+  for (const [e, n] of [[fx, 0.5], [fz, 0]]) { e.tempC = CYANO.TEMP_OPT; for (let i = 0; i < e.cyano.length; i++) { e.cyano[i] = 0.1; e.phos[i] = 0.5; e.nh4[i] = n; e.no3[i] = 0; } }
+  for (let k = 0; k < 30; k++) { fx.cyanobacteria(1 / 30); fz.cyanobacteria(1 / 30); }
+  check('cyanobacteria fix N₂ only for their deficit — N-replete water → ~no fixation, N-free water → fixation', fx.ledger.fixN < 0.05 * fz.ledger.fixN && fz.ledger.fixN > 0, `fixN replete ${fx.ledger.fixN.toFixed(3)} vs N-free ${fz.ledger.fixN.toFixed(3)}`);
+
+  // 5 — DEEP TEMPERATURE: the diurnal swing is a surface skin; the hypolimnion has its own slow, steady temperature
+  seed(77); const tw2 = new World(); tw2.time = 0.22 * SEASON.YEAR_LEN; tw2.env.setWeather(0);   // calm: a storm would (correctly) mix the deep
+  const tcx = WORLD.W * BASIN.CENTER, tdy = bedY(tcx) - 12;
+  let sMin = 99, sMax = -99, dMin = 99, dMax = -99;
+  for (let s = 0; s < 2400; s++) { tw2.step(1 / 30); if (s > 600) { const ts = tw2.env.tempAt(tcx, 8), td2 = tw2.env.tempAt(tcx, tdy); sMin = Math.min(sMin, ts); sMax = Math.max(sMax, ts); dMin = Math.min(dMin, td2); dMax = Math.max(dMax, td2); } }
+  check('the surface keeps its diurnal swing but the summer hypolimnion does not (deep range < 1 °C; was ±4 °C)', sMax - sMin > 3 && dMax - dMin < 1 && dMax < sMin, `surface ${sMin.toFixed(1)}..${sMax.toFixed(1)}, deep ${dMin.toFixed(1)}..${dMax.toFixed(1)} °C`);
+
+  // 6 — NEGATIVE O₂ never reaches a rate term (the microbial Monod pole at −O2_HALF)
+  let monodOk = true;
+  for (const o of [-0.05, -0.099, -0.1, -0.5]) {
+    const e = new Environment(), i = e.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);
+    e.o2[i] = o; e.dom[i] = 1; e.phos[i] = 0.001; e.nh4[i] = 0.001;
+    e.microbialLoop(1 / 30); e.nitrogenCycle(1 / 30); e.sedimentP(1 / 30);
+    if (!(e.dom[i] <= 1) || e.phos[i] < 0 || e.nh4[i] < 0 || ![...e.dom, ...e.o2, ...e.phos].every(Number.isFinite)) monodOk = false;
+  }
+  check('negative O₂ is clamped before the Monod/redox rate terms (decomposition never runs backwards, no NaN)', monodOk);
+
+  // 7 — STORMS GENUINELY MIX: a sustained summer storm breaks the thermocline (was stuck at strat ≈ 0.83)
+  const se2 = new Environment(); se2.year = 0.25; se2.strat = 1; se2.setWeather(3);
+  for (let s = 0; s < 30 * 120; s++) { se2.year = 0.25; se2.step(1 / 30); se2.year = 0.25; }
+  const sc2 = new Environment(); sc2.strat = 1; sc2.setWeather(2);
+  for (let s = 0; s < 30 * 120; s++) { sc2.year = 0.25; sc2.step(1 / 30); }
+  check('a sustained (120 s) summer storm fully breaks stratification, while rain only nibbles at it', se2.strat < 0.05 && sc2.strat > 0.9, `storm strat ${se2.strat.toFixed(2)}, rain strat ${sc2.strat.toFixed(2)}`);
+
+  // 8 — TOXIC SCUM IS AN EVENT, not an artefact: buoyancy alone (cold → no growth, calm) can't float the seed strain
+  // into a toxic layer; a warm, calm, P-loaded bloom can.
+  const bz = new Environment(); bz.setWeather(0);
+  for (let s = 0; s < 30 * 60; s++) { bz.tempC = 8; bz.step(1 / 30); }
+  let toxSeed = 0; for (let cx = 0; cx < COLS; cx++) if (bz.cyano[cx] > CYANO.TOX_THRESH * CYANO.CAP) toxSeed++;
+  const bl = new Environment(); bl.setWeather(0); bl.year = 0.25;
+  for (let i = 0; i < bl.phos.length; i++) bl.phos[i] = 0.6;
+  for (let s = 0; s < 30 * 90; s++) bl.step(1 / 30);
+  let toxBloom = 0; for (let cx = 0; cx < COLS; cx++) if (bl.cyano[cx] > CYANO.TOX_THRESH * CYANO.CAP) toxBloom++;
+  check('buoyancy alone cannot make the seed strain toxic (cold, calm: 0 toxic surface cells)', toxSeed === 0, `${toxSeed} toxic`);
+  check('a warm, calm, P-loaded lake CAN grow a toxic surface scum (the event still exists)', toxBloom > 0, `${toxBloom}/${COLS} toxic surface cells`);
+
+  // 10 — CONFIG HYGIENE: live TIME aliases; dead knobs gone
+  const yl = TIME.YEAR_LEN, dl = TIME.DAY_LEN; TIME.YEAR_LEN = 1234; TIME.DAY_LEN = 77;
+  const live = SEASON.YEAR_LEN === 1234 && CC.ENV.DAY_LEN === 77; TIME.YEAR_LEN = yl; TIME.DAY_LEN = dl;
+  check('SEASON.YEAR_LEN and ENV.DAY_LEN are LIVE aliases of TIME (not load-time copies)', live && SEASON.YEAR_LEN === yl);
+  check('dead knobs BASIN.SEDIMENT and NUTRIENT.N_START are removed', !('SEDIMENT' in BASIN) && !('N_START' in NUTRIENT));
 }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
