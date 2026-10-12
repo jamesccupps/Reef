@@ -508,6 +508,9 @@ export class Renderer {
         ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.lineTo(pts[pts.length - 1].x, br.y + 2); ctx.lineTo(pts[0].x, br.y + 2); ctx.closePath(); ctx.fill();
+        // tall screens frame the lake at the top (camera._clamp) and leave spare height under the world box: continue the
+        // deepest earth colour down to the screen bottom so it reads as more ground, not a navy letterbox band with a seam
+        if (br.y < vh) { ctx.fillStyle = rgb([8, 6, 5]); ctx.fillRect(pts[0].x, br.y + 1, pts[pts.length - 1].x - pts[0].x, vh - br.y); }
         // SEDIMENT texture (clipped to the earth, so nothing spills into the water): a lighter silty band just under the
         // bed surface fading into the dark earth, plus faint strata that follow the bed contour — the bed was one flat
         // dark slab that filled a third of many views.
