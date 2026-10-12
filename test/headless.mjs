@@ -61,14 +61,15 @@ console.log(`avg O2: ${w.avgO2().toFixed(3)} | temp: ${w.env.tempC.toFixed(1)}C 
 console.log(`perf: ${STEPS} steps in ${ms}ms = ${(STEPS / (ms / 1000)).toFixed(0)} steps/s (real-time needs 30) | peak ${peakAgents} agents`);
 
 check('no NaN / out-of-range integrity hits', nanHits === 0, `${nanHits} hits`);
-check('all six species still present (logistic repro + immigration rescue keep them present)', SPECIES.every(k => end[k] > 0));
+// (an INVARIANT, not a test of ecology: the REFUGE backstop keeps ≥2 of every species — home-bred breeding is checked next)
+check('REFUGE invariant: all six species still present', SPECIES.every(k => end[k] > 0));
 check('generations advanced (reproduction happening)', w.maxGen > prevGen, `gen ${w.maxGen}`);
 check('every species actually reproduces home-bred (not only rescued by immigration)', SPECIES.every(k => w.stats.births[k] > 0), SPECIES.map(k => `${k} ${w.stats.births[k]}`).join(' '));
 check('total agents stayed under global cap', peakAgents <= WORLD.GLOBAL_MAX + 60, `peak ${peakAgents} / cap ${WORLD.GLOBAL_MAX}`);
 check('population is dynamic (changed from start)', JSON.stringify(start) !== JSON.stringify(end));
 check('plants persisted (growth vs grazing balance)', w.plants.length > 0, `${w.plants.length} plants`);
 check('some feeding occurred', w.stats.foodEaten > 0, `${w.stats.foodEaten} food events`);
-check('oxygen field in valid range', (() => { const o = w.avgO2(); return o >= 0 && o <= 1.25; })());
+check('integrity: mean O₂ is finite and within the field clamp [0, 1.2]', (() => { const o = w.avgO2(); return Number.isFinite(o) && o >= 0 && o <= 1.2; })());
 // REEF_PERF_MIN overrides the budget (e.g. 0 while other CPU-heavy work shares the machine); the default gate stays strict.
 const PERF_MIN = process.env.REEF_PERF_MIN != null ? +process.env.REEF_PERF_MIN : 60;
 check('fast enough for real-time render at scale', STEPS / (ms / 1000) > PERF_MIN, `${(STEPS / (ms / 1000)).toFixed(0)} steps/s (budget ${PERF_MIN})`);
@@ -640,7 +641,7 @@ check('the anoxic summer deep punishes O₂-demanding pike more than hypoxia-tol
 // no species is driven extinct by the new pressure within a season (the re-seed floors backstop)
 const nicheW = new World(); for (let i = 0; i < 1800; i++) nicheW.step(1 / 30);
 const nicheCensus = nicheW.census();
-check('all six species survive a simulated season under the new thermal/O₂ pressure', SPECIES.every(k => nicheCensus[k] > 0),
+check('REFUGE invariant: all six species present after a simulated season under thermal/O₂ pressure', SPECIES.every(k => nicheCensus[k] > 0),
   SPECIES.map(k => `${k} ${nicheCensus[k]}`).join(' '));
 // zooplankton drift with the current but must stay in the water column — never embed in the sloped bed
 const embedded = nicheW.plankton.filter(p => !p.dead && p.baseY > nicheW.bedY(p.x) + 1).length;
@@ -918,7 +919,16 @@ const meanP = wd => wd.env.meanPhos();
 check('phytoplankton field is alive (the base of the web)', w.env.meanPhyto() > 0.01, `mean ${w.env.meanPhyto().toFixed(3)}`);
 // N/P split: phosphate + inorganic N (itself split nh4/no3 by the N cycle), Liebig co-limited; P is the limiter
 check('nutrients are split into N (nh4+no3) + P (phos) pools', w.env.nh4.length === w.env.phos.length && w.env.no3.length === w.env.phos.length && w.env.nh4.length > 0);
-check('growth is Liebig co-limited [0,1] = min(N-Monod, P-Monod)', (() => { const lim = w.env.nutrientAt(WORLD.W * 0.5, WORLD.H * 0.3); return lim >= 0 && lim <= 1; })());
+// Liebig: the limitation is the MINIMUM of the N- and P-Monod terms — set one cell N-rich/P-poor and another the reverse,
+// and the scarcer element must set the value (the old check only asserted the range, which can't fail)
+check('growth is Liebig co-limited = min(N-Monod, P-Monod): the SCARCER element sets it', (() => {
+  const e = w.env, x = WORLD.W * 0.5, y = WORLD.H * 0.3, i = e.cellOf(x, y), keep = [e.nh4[i], e.no3[i], e.phos[i]];
+  const mon = (v, k) => v / (v + k);
+  e.nh4[i] = 5; e.no3[i] = 0; e.phos[i] = 0.01; const pLim = e.nutrientAt(x, y);
+  e.nh4[i] = 0.01; e.no3[i] = 0; e.phos[i] = 5; const nLim = e.nutrientAt(x, y);
+  e.nh4[i] = keep[0]; e.no3[i] = keep[1]; e.phos[i] = keep[2];
+  return approx(pLim, mon(0.01, NUTRIENT.KP), 1e-6) && approx(nLim, mon(0.01, NUTRIENT.KN), 1e-6);
+})());
 check('phosphate is the limiting nutrient in a fresh lake (P scarcer than N for growth)',
   w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP) < w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN), `P-lim ${(w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP)).toFixed(2)} < N-lim ${(w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN)).toFixed(2)}`);
 
@@ -1768,9 +1778,9 @@ console.log('\n— behavioural checks (real sim paths, A/B) —');
     return sp / 270;
   };
   const night = catSpeed(0.0), day = catSpeed(0.45);
-  // NOTE (2026-10-12): the realised effect is WEAK (~8% faster at night) although the innate cruise TARGET is ~2.7× higher
-  // at night — the brain's own thrust dominates. Tracked in ROADMAP as a tuning item; this check guards the direction.
-  check('catfish are NOCTURNAL in the real move step — the same fish swims faster at night than at midday (3-seed mean)', night > day * 1.03, `mean speed night ${night.toFixed(1)} vs day ${day.toFixed(1)} (${((night / day - 1) * 100).toFixed(0)}% faster)`);
+  // The cruise blend alone gave only ~8% (the brain's thrust dominates a weak pull); innate.dayRest (catfish 0.5) damps the
+  // delivered thrust in daylight, so the rhythm is real (~60% faster at night) while the brain still drives within it.
+  check('catfish are NOCTURNAL in the real move step — the same fish swims faster at night than at midday (3-seed mean)', night > day * 1.3, `mean speed night ${night.toFixed(1)} vs day ${day.toFixed(1)} (${((night / day - 1) * 100).toFixed(0)}% faster)`);
   // mate choice on GENES alone: two candidates identical except their trait genes; swapping the genes swaps the choice
   const pick = (gGood, gPoor) => {
     const mw = new World(); mw.agents = [];

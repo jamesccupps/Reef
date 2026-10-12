@@ -7,6 +7,70 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ## ▶ NOW — after the 2026-10-11/12 overnight audit-fix run
 
+**New mandate (human, 2026-10-12 morning):** "fix everything, do what you think would be good, take screenshots
+to analyze the GUI and everything yourself, keep everything updated in case chat compacts." The budget rule
+still applies: no subagents.
+
+**TOP PRIORITY (human, 2026-10-12):** "it's supposed to be a good visual like a screensaver, especially full
+screen — make sure the visuals are good, high resolution, that even zoomed out you can see things, that it all
+flows and acts real and that it's polished."
+
+Screensaver plan:
+- [x] Zoomed-out visibility (`8dd6471`): 91% of fish were 2-px dots at the overview. They're now oriented fish glyphs
+      with a screen-scaled minimum length, plus a moonlight floor so nights aren't black.
+- [x] Resolution: sprite tiers 14/28/56 px per unit. A 1080p close-up was a 2.5–7.7× upscale; now it's ≤~2×.
+      ImageData rasterizer: tier builds cost 2.1 / 6.7 ms. GL textures are freed on sprite eviction.
+- [x] Flow: glyph→sprite switch happens at an equal on-screen length (no pop). New tour mixes wide, habitat and
+      follow shots, with slow cinematic easing and pull-back-then-push-in travel.
+- [x] Fullscreen polish: the chrome and cursor fade after 3.5 s idle and come back on any input. Also: sediment
+      texture on the bed, and dawn warmth fades with view depth (deep close-ups no longer turn muddy brown).
+
+**▶ RESUME HERE (written right before a compaction on 2026-10-12):**
+- **State:** everything is committed and pushed. `audit-fixes` was merged into `main` after this note. The last
+  full strict gate was green at `0cacfcc` (150 steps/s). The fin polish (`88e2218`, sprite-only) passed smoke.
+- **Next, in order:**
+  1. **Tall-screen framing.** camera.js `_clamp`: when the view is taller than the world (`hh*2 >= H`) it centres
+     the lake (cy = H/2), leaving smoky "air" with god-ray streaks above the surface on portrait or 4:3 screens.
+     Anchor the lake near the top instead: margin m = min(0.03·H, (viewH − H)/2), cy = hh − m. Do the same for the
+     tcy/hh and cy/hh2 pairs. Standard 16:9 fit then stays unchanged, because FIT_PAD's margin (17.6) < 0.03·H.
+     Check the headless camera tests around headless.mjs:1300 first.
+  2. Optional fish-art polish (the fins read a bit flat at 30×); plant/bed art.
+  3. Ecology, lower priority now: juvenile cover / nursery reflex for apex recruitment. Judge with a ≥3-seed A/B
+     using `scratchpad/verify/seeds.mjs` (session-local; easy to recreate: per-seed 1-year births vs immigrants,
+     with SP overrides via env).
+  4. Merge `audit-fixes` → `main` again after each verified batch, then take a G-drive backup with `git archive`.
+- **How I verify visuals:**
+  - Built-in browser, preview `reef` (`node serve.mjs`).
+  - Fake fullscreen: set `#viewport` to position:fixed inset:0, and `#tank` to 100vw × 56.25vw.
+  - Pause with `reef.ui.paused = true`; force the time of day with `world.env.t` and `world.env.light`.
+  - Capture with `computer` zoom on region [0,0,754,424].
+  - The pane refuses real fullscreen requests; it scales emulated big viewports, so use the native size.
+- **Lessons this round:**
+  - Run `node --check` after EVERY edit. A duplicate `const P` once broke app startup.
+  - The smoke DOM stub lacks some canvas methods (`clip` was added). Add any new ctx method you use to the stub.
+  - `ImageData` isn't in the stub, so the sprite rasterizer falls back to `fillRect` there.
+
+**Plan for this round** (tick items off here as they ship):
+- [x] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
+      overlays and fullscreen. Fix layout and readability issues.
+      Shipped `caa26ba`:
+      - the legend was covered by the minimap and camera controls;
+      - open on the whole lake;
+      - neon fish and flora at night → dim and desaturate;
+      - magenta sunfish;
+      - near-white plants by day;
+      - plankton "snow" at the overview;
+      - truncated trophic labels;
+      - mesh-gridded field overlays → a smooth heat map.
+
+      Still to check: the mobile layout. Fullscreen can't be triggered without a user gesture.
+- [ ] Colour grade / exposure: judge with screenshots and GPU-readback histograms, now that GL depth is
+      right-side up.
+- [x] Catfish nocturnality: `innate.dayRest` (catfish 0.5) damps daylight thrust, giving ~60% faster at night (was ~8%). A 3-seed A/B shows a cost within noise.
+- [ ] Apex juvenile survival / brood protection.
+- [x] Tests: the can't-fail checks are relabelled (REFUGE / clamp invariants). The Liebig check now asserts that the scarcer element sets the limit. A WebGL2 mock is still open.
+- [ ] HUD O₂ readout semantics (it reads 100–116%).
+
 **What happened.** On 2026-10-11 the human asked to "post it to GitHub and fix everything" in `AUDIT.md`.
 They then asked for testing, pushing, re-auditing and improving to continue overnight, *without burning usage
 on subagents*. Five worktree agents did the first wave of fixes. Everything after that was done solo.
@@ -58,7 +122,7 @@ All of it is on `main` via the `audit-fixes` branch.
 - Result: bass immigrant share 91% → 80%, pike 76% → 61%, with prey steady.
 - Then the remaining bottleneck turned out to be mate-finding. A lower breeding threshold was tested and
   rejected: births didn't rise. **Spawning aggregation** (`innate.spawnGround`) shipped instead.
-- 1-year immigrant share now: bass 70%, pike 54%, catfish 29%, carp 39%, sunfish 16%. Total immigration
+- 1-year immigrant share now: bass 70%, pike 54%, catfish 29%, carp 39%, sunfish 16%. Total immigration **Caveat (2026-10-12):** those are single-seed (2024) figures. A 3-seed, 1-year A/B gives honest means of bass ~78%, pike ~59-66%, catfish ~47-49%, carp ~44-46% and sunfish ~22-24% immigrants. That is still better than the 91%/76% start, but less than seed 2024 suggested.
   is down 44%, and minnows hold steady (CV 0.04).
 - Better, but bass and pike are **still not fully self-sustaining**. Next levers: juvenile survival and
   brood protection.

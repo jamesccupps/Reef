@@ -50,12 +50,24 @@ const ABYSS = [2, 7, 13];
 const LETTERBOX = [3, 6, 11];
 
 // LOD thresholds, in on-screen fish-scale px
-const DOT_PX = 1.5;     // below this a fish is a single tinted dot
+const DOT_PX = 1.5;
+// MOONLIGHT FLOOR (render-only): the sim's light is physically 0 at night, which turned the screen black for half of every
+// day. Picture brightness uses visLight() instead — never darker than a moonlit lake — while the sim, the sun-dependent
+// effects (sun disc, god-rays, caustics, dawn/dusk warmth) and the cool night grade still follow the real env.light.
+const MOON = 0.24;
+const visLight = l => MOON + (1 - MOON) * clamp(l, 0, 1);
+// sprite RESOLUTION tier for a fish drawn at sPx screen px per fish-unit: 14 px/unit up to ~17, 28 up to ~34, then 56
+// (≤ ~2× upscale at 1080p tour zooms instead of up to 7.7×). Blit size is unchanged — it divides by sprite.base.
+const resTier = sPx => sPx > 34 ? 2 : sPx > 17 ? 1 : 0;     // below this a fish is a single tinted dot
 
 // relative brightness by depth — bright near the sunlit surface, dimmer toward the dark deep.
 // (Day/night is handled separately via env.light; this is the *depth* component, so a deep fish
 // reads as deeper, not just nighttime-dark.) 1.0 at the surface → ~0.34 at the bed.
 const depthDim = y => 0.34 + 0.66 * Math.exp(-1.9 * clamp(y / H, 0, 1));
+// GL fish look for a light×depth `lit`: the sRGB brightness multiplier and saturation that species.js fishColors applies
+// to the 2D sprite (dim 0.30+0.70·light, sat ×(0.35+0.65·light)), since GL sprites are built once at full light.
+// The 0.12 floor matches the sprite light bucket's minimum. Exported for the smoke test.
+export const fishLook = lit => { const l = 0.12 + 0.88 * clamp(lit, 0, 1); return { bright: 0.30 + 0.70 * l, sat: 0.35 + 0.65 * l }; };
 
 // Largest world-space half-extent any fish sprite can occupy (zoom-independent, since the
 // sprite scales with the same Sworld). Used as the cull margin so a big fish (pike) whose
@@ -92,6 +104,11 @@ class SpriteCache {
                           // on the GL path the light bucket is not part of the working set (dimming is in the shader).
                           // The population clusters under selection, so few buckets (species×grow×hue×light×frame×morph×drive) are live at once.
     this.built = 0;
+    // RESOLUTION TIERS for close-ups (high-res screens): a fish drawn far larger than BASE px per fish-unit was a 2.5–7.7×
+    // upscale at 1080p tour zooms (blurry). get(..., tier) picks a sprite built at TIERS[tier] px/unit; the big tiers have
+    // their own small LRU caps (they're large and only the few closest fish use them). this.map / this.max stay tier 0.
+    this.TIERS = [14, 28, 56]; this.maps = [this.map, new Map(), new Map()]; this.tierMax = [null, 160, 48];
+    this.onEvict = null;   // Renderer hooks this to free the matching GL texture (bounded GPU memory)
   }
   _key(spKey, gB, hB, lB, fr, mB, dB) { return spKey + gB + ':' + hB + ':' + lB + ':' + fr + ':' + mB + ':' + dB; }
   // heritable MORPHOLOGY bucketed coarsely (3 levels/gene → ≤27 combos; the population clusters under selection so
@@ -102,24 +119,24 @@ class SpriteCache {
   // undulation effort bucketed to 3 levels → glide (barely undulates) / cruise / sprint (thrashes). The continuous
   // `drive` is computed per-fish in _fish() from its real speed + thrust + action state; here it picks the sprite.
   _driveVal(dB) { return [0.12, 0.5, 0.9][dB]; }
-  get(a, frameVal, light, drive) {
+  get(a, frameVal, light, drive, tier = 0) {
     const sp = a.sp;
+    tier = clamp(tier | 0, 0, this.TIERS.length - 1);
     const gB = clamp(Math.round((((a.grow ?? 1) - 0.35) / 0.65) * (this.GROWS - 1)), 0, this.GROWS - 1);
     const hB = hueBucket(a.hue, this.HUES);
     const lB = clamp(Math.round(light * (this.LIGHTS - 1)), 0, this.LIGHTS - 1);
     const fr = ((frameVal % this.FRAMES) + this.FRAMES) % this.FRAMES;
     const mB = this._morphBucket(a);
     const dB = clamp(Math.round((drive ?? 0.45) * (this.DRIVES - 1)), 0, this.DRIVES - 1);
-    const k = this._key(sp.key, gB, hB, lB, fr, mB, dB);
-    let s = this.map.get(k);
-    if (s) { this.map.delete(k); this.map.set(k, s); return s; }   // LRU touch
-    s = this._build(sp, gB, hB, lB, fr, mB, dB);
-    this.map.set(k, s);
-    if (this.map.size > this.max) { const first = this.map.keys().next().value; this.map.delete(first); }
+    const k = this._key(sp.key, gB, hB, lB, fr, mB, dB), map = this.maps[tier], cap = tier ? this.tierMax[tier] : this.max;
+    let s = map.get(k);
+    if (s) { map.delete(k); map.set(k, s); return s; }   // LRU touch
+    s = this._build(sp, gB, hB, lB, fr, mB, dB, tier ? this.TIERS[tier] : this.BASE);
+    map.set(k, s);
+    if (map.size > cap) { const first = map.keys().next().value, ev = map.get(first); map.delete(first); if (this.onEvict) this.onEvict(ev); }
     return s;
   }
-  _build(sp, gB, hB, lB, fr, mB, dB) {
-    const BASE = this.BASE;
+  _build(sp, gB, hB, lB, fr, mB, dB, BASE = this.BASE) {
     const grow = 0.35 + 0.65 * (gB / (this.GROWS - 1));
     const hue = bucketHue(hB, this.HUES);   // the bucket CENTRE the key rounded to (no half-bucket bias)
     const light = 0.12 + 0.88 * (lB / (this.LIGHTS - 1));
@@ -136,11 +153,31 @@ class SpriteCache {
     // soft texel "dab": the draw step (su≈0.07 fish-units) lands texels ~1 sprite-px apart, so a 1px dab could
     // leave a faint stippled grid. A ≥2px dab makes neighbouring texels overlap into solid, smoothly-shaded
     // coverage; combined with the anti-aliased blit the body has no hard pixel edges.
-    const DAB = Math.max(2, Math.round(0.1 * BASE));
-    const put = (u, v, col, al) => { g.globalAlpha = al; g.fillStyle = rgb(col); g.fillRect(Math.round(cx + u * BASE), Math.round(cy + v * BASE), DAB, DAB); };
+    // The draw step is ~1 sprite px at every resolution (species.js), so a 2px dab always overlaps into solid coverage.
+    const DAB = 2;
+    // Rasterize straight into an ImageData buffer (straight-alpha source-over per dab) — ~an order of magnitude cheaper
+    // than thousands of fillRect calls with per-dab colour strings, which is what makes the high-res close-up tiers
+    // affordable. Falls back to fillRect where ImageData isn't available (minimal canvas stubs).
+    const img = typeof g.createImageData === 'function' ? g.createImageData(w, h) : null;
+    let put;
+    if (img) {
+      const d = img.data;
+      put = (u, v, col, al) => {
+        const x0 = Math.round(cx + u * BASE), y0 = Math.round(cy + v * BASE), a = al === undefined ? 1 : clamp(al, 0, 1);
+        if (a <= 0) return;
+        const r = col[0], gc = col[1], b = col[2];
+        for (let yy = Math.max(0, y0), y1 = Math.min(h, y0 + DAB); yy < y1; yy++) {
+          for (let xx = Math.max(0, x0), x1 = Math.min(w, x0 + DAB); xx < x1; xx++) {
+            const o = (yy * w + xx) * 4, da = d[o + 3] / 255, oa = a + da * (1 - a), k1 = a / oa, k2 = da * (1 - a) / oa;
+            d[o] = r * k1 + d[o] * k2; d[o + 1] = gc * k1 + d[o + 1] * k2; d[o + 2] = b * k1 + d[o + 2] * k2; d[o + 3] = oa * 255;
+          }
+        }
+      };
+    } else put = (u, v, col, al) => { g.globalAlpha = al; g.fillStyle = rgb(col); g.fillRect(Math.round(cx + u * BASE), Math.round(cy + v * BASE), DAB, DAB); };
     const fake = { hue, energy: sp.reproEnergy * 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };
     const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph };   // undulation amplitude scales with effort
     sp.draw(fake, put, 0, { light }, o);
+    if (img) g.putImageData(img, 0, 0);
     // VOLUMETRIC SHEEN — a top-lit dorsal highlight fading to a ventral shade, applied ONLY over the drawn body
     // ('source-atop' composites just where the sprite is already opaque). Turns the flat texel fill into a lit,
     // rounded 3-D body for the cost of one gradient rect per cached sprite. Top of the canvas = the fish's back.
@@ -175,7 +212,9 @@ export class Renderer {
     this.sprites = new SpriteCache(this.mkCanvas);
     this.onCanvasReplaced = null;   // main.js hook: re-wire input listeners when #tank is swapped for a fresh canvas
     this._frameNo = 0; this._alpha = 1; this._ovCmds = []; this._xs = [];
-    this.present = makePresenter(canvas, this.mkCanvas, { texMax: this.sprites.max });   // GL texture cap ≥ sprite cap
+    this.present = makePresenter(canvas, this.mkCanvas, { texMax: this.sprites.max + this.sprites.tierMax[1] + this.sprites.tierMax[2] });
+    // when the sprite cache evicts an entry, free its GL texture too (the hi-res tiers are big — keep GPU memory bounded)
+    this.sprites.onEvict = e => { const pr = this.present; if (pr && typeof pr.dropFishTex === 'function') pr.dropFishTex(e); };   // GL texture cap ≥ sprite cap
     if (this.present && this.present.needsCanvas) this._fallbackTo2D('WebGL2 init failed after claiming the canvas');
     this.postInGL = !!(this.present && this.present.gl);   // GL applies bloom/grade/vignette → the 2D path skips them (no double-post)
     this.glFish = !!(this.present && this.present.gl && this.present.fishReady);   // Pass 3/slice 3: fish drawn as lit GL quads (else 2D)
@@ -275,7 +314,8 @@ export class Renderer {
   }
 
   skyTop(env) {
-    const c = [lerp(SKY_NIGHT[0], SKY_DAY[0], env.light), lerp(SKY_NIGHT[1], SKY_DAY[1], env.light), lerp(SKY_NIGHT[2], SKY_DAY[2], env.light)];
+    const vl = visLight(env.light);
+    const c = [lerp(SKY_NIGHT[0], SKY_DAY[0], vl), lerp(SKY_NIGHT[1], SKY_DAY[1], vl), lerp(SKY_NIGHT[2], SKY_DAY[2], vl)];
     const dawn = Math.max(0, 1 - Math.abs(env.t - 0.25) / 0.07), dusk = Math.max(0, 1 - Math.abs(env.t - 0.75) / 0.07);
     const warm = Math.max(dawn, dusk) * (1 - env.light * 0.5);
     return [lerp(c[0], SKY_DUSK[0], warm), lerp(c[1], SKY_DUSK[1], warm), lerp(c[2], SKY_DUSK[2], warm)];
@@ -286,6 +326,7 @@ export class Renderer {
   draw(t, alpha = 1) {
     this._checkPresenter();   // GL dead / lost too long → swap to a Canvas2D presenter on a fresh #tank
     const ctx = this.ctx, world = this.world, env = world.env, cam = this.camera;
+    const vL = visLight(env.light); this._vL = vL;   // moonlit picture brightness (see MOON)
     this._rdt = this._lastT === undefined ? 1 / 60 : clamp(t - this._lastT, 0, 0.1); this._lastT = t;
     this._alpha = clamp(+alpha || 0, 0, 1); this._frameNo++;
     // GL applies bloom/grade/vignette? Only while GL can actually present (not failed, not context-lost).
@@ -299,7 +340,10 @@ export class Renderer {
     // non-allocating world→screen for the hot loops (w2s allocates an object per call)
     const ox = cam.vw / 2 - cam.cx * z, oy = cam.vh / 2 - cam.cy * z;
     const X = wx => wx * z + ox, Y = wy => wy * z + oy;
-    const amb = 0.25 + 0.75 * env.light;
+    const amb = 0.25 + 0.75 * vL;
+    // night vision for FLORA (as for fish): lightness and saturation drain with the light, so weed beds read as dim
+    // silhouettes at night instead of glowing lime against near-black water
+    const floraL = 0.40 + 0.60 * vL, floraS = 0.35 + 0.65 * vL;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
     const summer = Math.sin((env.year || 0) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);
@@ -321,7 +365,7 @@ export class Renderer {
 
     // water column gradient (sunlit surface → surface → mid → abyss), clipped to the world box.
     // A bright sunlit band up top and a steeper ramp into the dark deep give a strong sense of depth.
-    const surf = [lerp(top[0], 255, 0.10 * env.light), lerp(top[1], 255, 0.12 * env.light), lerp(top[2], 255, 0.10 * env.light)];
+    const surf = [lerp(top[0], 255, 0.10 * vL), lerp(top[1], 255, 0.12 * vL), lerp(top[2], 255, 0.10 * vL)];
     const mid = [lerp(ABYSS[0], top[0], amb * 0.32), lerp(ABYSS[1], top[1], amb * 0.36), lerp(ABYSS[2], top[2], amb * 0.42)];
     const g = ctx.createLinearGradient(0, by, 0, br.y);
     g.addColorStop(0, rgb(surf));
@@ -411,15 +455,27 @@ export class Renderer {
 
     // oxygen / temperature / phytoplankton field overlays (visible cells only)
     if (this.opts.oxygen || this.opts.temp || this.opts.phyto) {
-      const cx0 = clamp((vr.x0 / CW) | 0, 0, FCOLS - 1), cx1 = clamp((vr.x1 / CW) | 0, 0, FCOLS - 1);
-      const cy0 = clamp((vr.y0 / CH) | 0, 0, FROWS - 1), cy1 = clamp((vr.y1 / CH) | 0, 0, FROWS - 1);
-      ctx.globalAlpha = 0.30;
-      for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
-        const i = cy * FCOLS + cx, wx = (cx + 0.5) * CW, wy = (cy + 0.5) * CH, p = w2s(cx * CW, cy * CH);
-        const col = this.opts.temp ? tempColor(env.tempAt(wx, wy)) : this.opts.phyto ? phytoColor(env.phyto[i]) : o2color(env.o2[i]);
-        ctx.fillStyle = rgb(col); ctx.fillRect(p.x, p.y, CW * z + 1, CH * z + 1);
+      const cellCol = (cx, cy) => { const i = cy * FCOLS + cx; return this.opts.temp ? tempColor(env.tempAt((cx + 0.5) * CW, (cy + 0.5) * CH)) : this.opts.phyto ? phytoColor(env.phyto[i]) : o2color(env.o2[i]); };
+      // a smooth heat map: one pixel per field cell in a tiny offscreen image, drawn scaled with bilinear smoothing over
+      // the world rect. (Per-cell translucent squares overlapped by a pixel and drew a visible MESH of grid lines.)
+      if (!this._fieldC) { this._fieldC = this.mkCanvas(FCOLS, FROWS); this._fieldX = this._fieldC.getContext('2d'); }
+      const fx = this._fieldX;
+      if (fx && typeof fx.createImageData === 'function') {
+        if (!this._fieldImg) this._fieldImg = fx.createImageData(FCOLS, FROWS);
+        const d = this._fieldImg.data;
+        for (let cy = 0; cy < FROWS; cy++) for (let cx = 0; cx < FCOLS; cx++) { const c = cellCol(cx, cy), o = (cy * FCOLS + cx) * 4; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+        fx.putImageData(this._fieldImg, 0, 0);
+        const p0 = w2s(0, 0), p1 = w2s(W, H);
+        ctx.save(); ctx.globalAlpha = 0.32; ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(this._fieldC, p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
+        ctx.restore();
+      } else {   // no ImageData (e.g. a minimal canvas stub): per-cell squares over the visible cells
+        const cx0 = clamp((vr.x0 / CW) | 0, 0, FCOLS - 1), cx1 = clamp((vr.x1 / CW) | 0, 0, FCOLS - 1);
+        const cy0 = clamp((vr.y0 / CH) | 0, 0, FROWS - 1), cy1 = clamp((vr.y1 / CH) | 0, 0, FROWS - 1);
+        ctx.globalAlpha = 0.30;
+        for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) { const p = w2s(cx * CW, cy * CH); ctx.fillStyle = rgb(cellCol(cx, cy)); ctx.fillRect(p.x, p.y, CW * z, CH * z); }
+        ctx.globalAlpha = 1;
       }
-      ctx.globalAlpha = 1;
     }
 
     // the lake bed — a curved basin; earth fills below bedY(x)
@@ -438,6 +494,24 @@ export class Renderer {
         ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.lineTo(pts[pts.length - 1].x, br.y + 2); ctx.lineTo(pts[0].x, br.y + 2); ctx.closePath(); ctx.fill();
+        // SEDIMENT texture (clipped to the earth, so nothing spills into the water): a lighter silty band just under the
+        // bed surface fading into the dark earth, plus faint strata that follow the bed contour — the bed was one flat
+        // dark slab that filled a third of many views.
+        {
+          const sed = [lerp(50, 112, amb) | 0, lerp(40, 88, amb) | 0, lerp(26, 58, amb) | 0];
+          const trace = dy => { ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y + dy); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y + dy); };
+          ctx.save(); ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[pts.length - 1].x, br.y + 2); ctx.lineTo(pts[0].x, br.y + 2); ctx.closePath(); ctx.clip();
+          ctx.lineJoin = 'round';
+          for (const [wu, a] of [[30, 0.10], [16, 0.14], [7, 0.20]]) {   // wide → narrow: a soft falloff below the surface
+            ctx.strokeStyle = `rgba(${sed[0]},${sed[1]},${sed[2]},${a})`; ctx.lineWidth = Math.max(2, wu * z * 2); trace(0); ctx.stroke();
+          }
+          ctx.lineWidth = Math.max(1, 1.3 * z);
+          for (const [off, a] of [[40, 0.09], [92, 0.07], [160, 0.05]]) {   // strata: faint lines parallel to the bed
+            ctx.strokeStyle = `rgba(${sed[0]},${sed[1]},${sed[2]},${a})`; trace(off * z); ctx.stroke();
+          }
+          ctx.restore();
+        }
         ctx.strokeStyle = `rgba(120,96,64,${0.5 * amb})`; ctx.lineWidth = Math.max(1, z * 1.1);
         ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
         ctx.globalAlpha = 0.5 * amb; ctx.fillStyle = '#3a2c1e';
@@ -473,8 +547,8 @@ export class Renderer {
     if (world.reeds) {
       for (const r of world.reeds) {
         if (r.x < vr.x0 - 40 || r.x > vr.x1 + 40) continue;
-        const light = clamp(0.28 + 0.5 * amb, 0, 0.85);
-        ctx.strokeStyle = `hsl(95 38% ${light * 100}%)`; ctx.lineWidth = Math.max(1, 1.4 * z);
+        const light = clamp((0.20 + 0.28 * amb) * floraL, 0, 0.6);   // ~48% L at noon: a living reed green (it peaked near-white before)
+        ctx.strokeStyle = `hsl(95 ${38 * floraS}% ${light * 100}%)`; ctx.lineWidth = Math.max(1, 1.4 * z);
         for (let b = 0; b < r.n; b++) {
           const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5);
           const sway = Math.sin(t * 1.1 + r.x * 0.05 + b) * 4;
@@ -487,13 +561,13 @@ export class Renderer {
       ctx.globalAlpha = 0.82;                                  // soft translucent layering → a frond clump, not a wall of bars
       for (const wb of world.weedbeds) {
         if (wb.x < vr.x0 - wb.w - 20 || wb.x > vr.x1 + wb.w + 20) continue;
-        const dim = depthDim((wb.top + wb.bot) * 0.5), light = clamp((0.26 + 0.42 * amb) * (0.55 + 0.45 * dim), 0, 0.72);
+        const dim = depthDim((wb.top + wb.bot) * 0.5), light = clamp((0.18 + 0.30 * amb) * (0.55 + 0.45 * dim) * floraL, 0, 0.55);   // mid-green at noon
         // many thin blades instead of a few fat strokes; width capped low so a zoomed-in bed reads as grass, not slabs
         const strands = clamp((wb.w / 5) | 0, 9, 20);
         ctx.lineWidth = clamp(0.85 * z, 1, 3.2);
         for (let s = 0; s < strands; s++) {
           const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = 6;
-          ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} 44% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
+          ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} ${44 * floraS}% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
           ctx.beginPath(); ctx.moveTo(X(sx), Y(wb.bot));
           for (let k = 1; k <= segs; k++) {
             const f = k / segs, ny = wb.bot - (wb.bot - wb.top) * f, nx = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
@@ -513,8 +587,9 @@ export class Renderer {
       const mv = MACRO[p.v] || MACRO[0], hgtF = p.height / p.maxHeight;
       const hue = p.hue != null ? p.hue : mv.hue, form = p.form || mv.form, leafF = p.leaf || 1;   // per-plant evolved colour / form / leaf-area
       const pdim = 0.55 + 0.45 * depthDim(p.baseY - p.height * 0.5);   // deep weeds are darker
-      const llight = clamp((0.30 + 0.55 * amb + 0.1 * hgtF) * pdim, 0, 0.9);
-      ctx.strokeStyle = `hsl(${hue} ${form === 'mat' ? 30 : 45}% ${llight * 100}%)`;
+      // ~44% L at noon (was up to the 0.9 cap → near-WHITE stalks and pads, bleached-coral look), dim at night
+      const llight = clamp((0.20 + 0.26 * amb + 0.06 * hgtF) * pdim * floraL, 0, 0.62);
+      ctx.strokeStyle = `hsl(${hue} ${(form === 'mat' ? 30 : 45) * floraS}% ${llight * 100}%)`;
       ctx.lineWidth = clamp((p.height / 26) * z, 0.6, 6);
       if (form === 'mat') {
         // low benthic mat (chara): a few short tufts hugging the bed
@@ -536,7 +611,7 @@ export class Renderer {
       if (form === 'pad') {
         // floating-leaved lily: a broad leaf pad at the top of the stalk (pad size scales with the evolved leaf gene)
         const tx = p.x + Math.sin(t * 1.3 + p.x * 0.1 + 2) * 6, topW = w2s(tx, p.baseY - p.height), r = clamp(p.height * 0.24 * leafF * z, 1.5, 13);
-        ctx.fillStyle = `hsl(${hue} 50% ${llight * 100}%)`; ctx.beginPath(); ctx.ellipse(topW.x, topW.y, r, r * 0.42, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = `hsl(${hue} ${50 * floraS}% ${llight * 100}%)`; ctx.beginPath(); ctx.ellipse(topW.x, topW.y, r, r * 0.42, 0, 0, TAU); ctx.fill();
       }
     }
 
@@ -544,7 +619,7 @@ export class Renderer {
     // depth. Position is a stateless function of the render clock (slow sink + sway), wrapped vertically; culled to
     // the visible rect and never drawn through the bed. Dimmer in the deep / murk. Cosmetic; never the seeded sim RNG.
     {
-      const clar = env.clarity ? env.clarity() : 1, amb2 = 0.3 + 0.7 * env.light;
+      const clar = env.clarity ? env.clarity() : 1, amb2 = 0.3 + 0.7 * vL;
       ctx.fillStyle = '#d2e8f0';
       for (const m of this.motes) {
         if (m.r * z * 0.5 < 0.4) continue;        // sub-pixel at this zoom → skip (invisible; saves arcs at whole-lake)
@@ -564,7 +639,7 @@ export class Renderer {
         if (b.r * z * 0.5 < 0.5) continue;        // sub-pixel at this zoom → skip
         const y = ((b.y0 - t * b.spd) % H + H) % H, x = b.x + Math.sin(t * b.swayF + b.ph) * b.swayA;
         if (x < vr.x0 || x > vr.x1 || y < vr.y0 || y > vr.y1 || y > bedY(x)) continue;
-        const px = X(x), py = Y(y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * env.light), 0, 0.7);
+        const px = X(x), py = Y(y), rr = Math.max(0.8, b.r * z * 0.5), a = clamp((0.18 + 0.5 * (1 - y / H)) * (0.4 + 0.6 * vL), 0, 0.7);
         ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.stroke();
         ctx.globalAlpha = a * 0.85; ctx.beginPath(); ctx.arc(px - rr * 0.32, py - rr * 0.32, Math.max(0.5, rr * 0.3), 0, TAU); ctx.fill();
       }
@@ -573,7 +648,10 @@ export class Renderer {
 
     // plankton & detritus (culled)
     const pPx = clamp(z, 1, 3);
-    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = 0.25 + 0.55 * env.light;
+    // zooplankton are invisible at lake scale: at the whole-lake view ~2000 full-opacity 1-px specks read as snow/static
+    // and drown out the fish, so fade them with zoom (faint overview → full as you close in, where they read as drift)
+    const pFade = clamp((cam.zoom / cam.fitZoom - 1) / 4, 0.22, 1);
+    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
     for (const p of world.plankton) {
       if (p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
       ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, pPx, pPx);
@@ -596,7 +674,7 @@ export class Renderer {
         if (I.x < vr.x0 || I.x > vr.x1) continue;
         const fy = I.y + Math.sin(t * 9 + I.wob) * 1.3;
         if (fy < vr.y0 || fy > vr.y1) continue;
-        ctx.globalAlpha = (0.45 + 0.5 * env.light) * clamp(I.life / 2, 0.3, 1);
+        ctx.globalAlpha = (0.45 + 0.5 * vL) * clamp(I.life / 2, 0.3, 1);
         ctx.fillRect(X(I.x) | 0, Y(fy) | 0, Math.max(1, pPx), Math.max(1, pPx));
       }
     }
@@ -606,7 +684,7 @@ export class Renderer {
       for (const sn of world.snails) {
         if (sn.x < vr.x0 - 6 || sn.x > vr.x1 + 6 || sn.y < vr.y0 - 6 || sn.y > vr.y1 + 6) continue;
         const p = pt(sn.x, sn.y), dim = 0.5 + 0.5 * depthDim(sn.y), r = clamp(1.7 * z, 1, 5);
-        ctx.fillStyle = `hsl(50 32% ${Math.round(lerp(26, 48, amb) * dim)}%)`;
+        ctx.fillStyle = `hsl(50 ${Math.round(32 * floraS)}% ${Math.round(lerp(26, 48, amb) * dim * floraL)}%)`;
         ctx.beginPath(); ctx.ellipse(p.x, p.y - r * 0.5, r, r * 0.85, 0, 0, TAU); ctx.fill();
       }
     }
@@ -614,7 +692,7 @@ export class Renderer {
     if (world.cray) {
       for (const cf of world.cray) {
         if (cf.x < vr.x0 - 16 || cf.x > vr.x1 + 16 || cf.y < vr.y0 - 16 || cf.y > vr.y1 + 16) continue;
-        const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 52% ${Math.round(lerp(30, 50, amb) * dim)}%)`;
+        const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 ${Math.round(52 * floraS)}% ${Math.round(lerp(30, 50, amb) * dim * floraL)}%)`;
         ctx.globalAlpha = 0.95; ctx.fillStyle = col; ctx.strokeStyle = col;
         if (z < 1.4) { const L = clamp(z, 0.8, 4); ctx.fillRect(p.x - L, p.y - L * 1.3, L * 2, L * 1.3); continue; }   // far: a small rust blob
         const dir = cf.vx >= 0 ? 1 : -1, by = p.y - 1.6 * z, wig = Math.sin(t * 5 + cf.ph) * 0.9 * z;
@@ -764,7 +842,9 @@ export class Renderer {
       // exactly like a 2D fish under that gradient.
       const fishParams = this.glFish ? this._glCorpse.concat(this._glLiving) : null;
       this.present.present(this.scene, {
-        time: t, light: env.light, turbidity: env.turbidity || 0, night, warm: warmth, flash: 0,
+        // dawn/dusk warmth belongs near the surface: the GL grade warms the whole frame, which turned DEEP close-ups a
+        // muddy brown at sunrise — scale it down as the top of the view sinks below the surface (full when it's in frame)
+        time: t, light: vL, turbidity: env.turbidity || 0, night, warm: warmth * (1 - 0.85 * clamp((vr.y0 / H - 0.05) / 0.45, 0, 1)), flash: 0,
         zoom: cam.zoom / (cam.fitZoom || cam.zoom || 1),   // DPR- & size-independent zoom (1 = whole lake)
         dpr: this.dpr,
         secchiFrac: clamp((env.secchiDepth ? env.secchiDepth() : H) / H, 0, 1), clarity: env.clarity ? env.clarity() : 1,
@@ -795,11 +875,27 @@ export class Renderer {
     const Sworld = a.size * FISH_SCALE * (0.42 + 0.58 * grow);
     const sPx = Sworld * z;
     const px = ax * z + ox, py = ay * z + oy;
-    if (sPx < DOT_PX) {
-      // keep far-zoom fish legible: a min 2px dot with a touch more contrast (so a whole-lake view still reads as populated)
-      ctx.globalAlpha = clamp(0.55 + sPx, 0.5, 1) * a.vis;
-      ctx.fillStyle = rgb(hsl(a.hue, a.sp.sat, (a.sp.lbase + 0.5 * a.sp.lrange) * (0.45 + 0.55 * env.light) * depthDim(ay)));
-      const d = Math.max(2, Math.round(sPx * 1.6)); ctx.fillRect((px - d / 2) | 0, (py - d / 2) | 0, d, d);
+    // FAR TIER: a tiny ORIENTED FISH GLYPH (body ellipse along the heading + a tail fin, in the species' own proportions)
+    // instead of a square dot — so a zoomed-out lake reads as fish swimming somewhere, not specks. A minimum length that
+    // scales with the screen (~4.5px small → ~8px at 1080p → 14px at 4K) keeps the overview legible on a big display.
+    // The glyph→sprite switch happens exactly where the sprite's natural length reaches that minimum, so zooming in
+    // doesn't make fish visibly SHRINK at the LOD boundary (no pop). Same night look as the sprites, dimmed with depth.
+    // sprite geometry (species.js drawFish): body −L..+L (2L fish-units, half-height Hh) + a tail of tail.len behind; on
+    // screen 1 fish-unit = sPx px, so the sprite's true length is sPx·(2L + tail) — the glyph uses the same proportions
+    const P = a.sp.P || { L: 3, Hh: 1.2 }, tl0 = (P.tail && P.tail.len) || 1.5, tot = 2 * P.L + tl0;
+    const minLen = clamp(cam.vw / 240, 4.5, 14), natLen = sPx * tot;
+    if (sPx < DOT_PX || natLen < minLen) {
+      const ang = a.rHeading, ca = Math.cos(ang), sa = Math.sin(ang);
+      const len = Math.max(minLen, natLen), bodyL = len * (2 * P.L / tot), tailL = len * (tl0 / tot);
+      const wid = Math.max(1.6, len * (2 * P.Hh / tot));
+      const lgt = this._vL ?? env.light, Lb = (a.sp.lbase + 0.5 * a.sp.lrange) * (0.30 + 0.70 * lgt) * (0.55 + 0.45 * depthDim(ay));
+      ctx.globalAlpha = clamp(0.72 + 0.2 * sPx, 0.72, 1) * a.vis;
+      ctx.fillStyle = rgb(hsl(a.hue, 0.75 * a.sp.sat * (0.35 + 0.65 * lgt), Math.min(78, Lb + 8)));   // muted: distant fish, not confetti
+      ctx.beginPath(); ctx.ellipse(px, py, bodyL * 0.5, wid * 0.5, ang, 0, TAU); ctx.fill();          // body centred on the fish, like the sprite
+      const tx = px - ca * bodyL * 0.46, ty = py - sa * bodyL * 0.46, tl = tailL, tw = wid * 0.55;    // forked tail behind the body
+      ctx.beginPath(); ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ca * tl - sa * tw, ty - sa * tl + ca * tw); ctx.lineTo(tx - ca * tl + sa * tw, ty - sa * tl - ca * tw);
+      ctx.closePath(); ctx.fill();
       ctx.globalAlpha = 1; return 0;
     }
     // swimming EFFORT (gait): how hard the fish is actually working = thrust + speed, boosted by an active
@@ -812,11 +908,11 @@ export class Renderer {
     const frame = Math.floor((((cphase % TAU) + TAU) % TAU) / TAU * this.sprites.FRAMES);
     // depth-shaded + effort-coupled sprite. GL path: one FULL-LIGHT sprite per bucket (the light×depth dim is applied in
     // the shader via `bright`, continuous) → the light bucket drops out of the GL working set (no ~10×/day rebuild churn).
-    const lit = env.light * depthDim(ay);
-    const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive);
+    const lit = (this._vL ?? env.light) * depthDim(ay);
+    const sprite = this.sprites.get(a, frame, this.glFish ? 1 : lit, drive, resTier(sPx));
     // Keep the whole sprite inside the water body (the sim clamps the CENTRE to the bed/surface): inset the DRAW position
     // by the rotated body half-extent. Render-only: sim positions / determinism are untouched.
-    const P = a.sp.P, ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);
+    const ich = Math.cos(a.rHeading), ish = Math.sin(a.rHeading);   // (P = a.sp.P, declared above for the LOD switch)
     const halfLen = (P.L + (P.tail ? P.tail.len : 1.2)) * Sworld;   // nose↔tail reach (world px)
     const halfHt = P.Hh * Sworld * 1.25;                           // body depth + headroom for body-gene & body wave
     const half = Math.abs(ish) * halfLen + Math.abs(ich) * halfHt; // vertical reach of the rotated body
@@ -844,7 +940,7 @@ export class Renderer {
       // collect a GL quad instead of the 2D blit; GLPost draws it as a lit textured quad (uses the SAME p2/heading/sPx/vf).
       // bright = the sprite's HSL light dim for this fish's light×depth, relative to the full-light sprite (=1).
       this._glLiving.push({ sprite, sx: p2x, sy: p2y, rot: a.rHeading, sPx, facing: vf, vis: a.vis, kind: 0,
-        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
+        ...fishLook(lit) });
     } else {
       ctx.save();
       ctx.globalAlpha = a.vis;
@@ -887,12 +983,12 @@ export class Renderer {
     const p = cam.worldToScreen(c.x, c.y), alpha = clamp(c.t / (c.t0 || 1.4), 0, 1);
     if (sPx < DOT_PX) {
       ctx.globalAlpha = alpha * 0.6;
-      ctx.fillStyle = rgb(hsl(c.hue, Math.max(6, c.sp.sat - 18), (c.sp.lbase + 0.3 * c.sp.lrange) * (0.4 + 0.5 * env.light) * depthDim(c.y)));
+      ctx.fillStyle = rgb(hsl(c.hue, Math.max(6, c.sp.sat - 18), (c.sp.lbase + 0.3 * c.sp.lrange) * (0.4 + 0.5 * (this._vL ?? env.light)) * depthDim(c.y)));
       const d = Math.max(2, Math.round(sPx * 1.5)); ctx.fillRect((p.x - d / 2) | 0, (p.y - d / 2) | 0, d, d);
       ctx.globalAlpha = 1; return;
     }
-    const lit = env.light * 0.85 * depthDim(c.y);
-    const sprite = this.sprites.get(c, 0, this.glFish ? 1 : lit, 0.1);   // a dead fish barely undulates
+    const lit = (this._vL ?? env.light) * 0.85 * depthDim(c.y);
+    const sprite = this.sprites.get(c, 0, this.glFish ? 1 : lit, 0.1, resTier(sPx));   // a dead fish barely undulates
     // same boundary inset as live fish, so a belly-up corpse resting on the bed doesn't sink into the bank
     const P = c.sp.P, ich = Math.cos(c.rHeading), ish = Math.sin(c.rHeading);
     const half = Math.abs(ish) * (P.L + (P.tail ? P.tail.len : 1.2)) * Sworld + Math.abs(ich) * P.Hh * Sworld * 1.25;
@@ -903,7 +999,7 @@ export class Renderer {
     if (this.glFish) {
       // GL quad (drawn UNDER the living fish — corpses are collected first). facing carries the belly-roll y-sign.
       this._glCorpse.push({ sprite, sx: p2.x, sy: p2.y, rot: c.rHeading, sPx, facing: ys, vis: alpha * 0.92, kind: 1,
-        bright: 0.45 + 0.55 * (0.12 + 0.88 * clamp(lit, 0, 1)) });
+        ...fishLook(lit) });
     } else {
       ctx.save();
       ctx.globalAlpha = alpha * 0.92;
@@ -933,7 +1029,7 @@ export class Renderer {
     const sx = mw / W, sy = mh / H;
     mctx.clearRect(0, 0, mw, mh);
     // water + curved basin bed
-    mctx.fillStyle = rgb([lerp(8, 30, env.light), lerp(16, 60, env.light), lerp(30, 78, env.light)]); mctx.fillRect(0, 0, mw, mh);
+    { const ml = visLight(env.light); mctx.fillStyle = rgb([lerp(8, 30, ml), lerp(16, 60, ml), lerp(30, 78, ml)]); } mctx.fillRect(0, 0, mw, mh);
     mctx.fillStyle = '#241a12'; mctx.beginPath(); mctx.moveTo(0, mh);
     for (let i = 0; i <= 48; i++) { const wx = i / 48 * W; mctx.lineTo(wx * sx, bedY(wx) * sy); }
     mctx.lineTo(mw, mh); mctx.closePath(); mctx.fill();

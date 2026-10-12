@@ -45,7 +45,7 @@ Every finding is listed in `AUDIT.md` with its status. Save format is now **v24*
   - **Hypoxia avoidance** (all species, `ENV.HYPOXIA_AVOID`): water below `o2Crit` × the margin retargets the depth reflex upward.
   - **Spawning aggregation** (`innate.spawnGround`, bass, pike, carp and catfish; `SPAWN.AGG_*`, `GROUND_X`): in season, breeding-ready adults migrate to the littoral spawning ground on their side of the lake.
 - **Apex energetics.** Bass and pike were starving. Their maintenance metabolism now sits on the size trend (0.030 and 0.036), and fish meals are richer (`foodValueFish` 0.80 and 0.85).
-- **Result** (1-year balance): immigrant share fell for bass 91→70%, pike 76→54%, catfish 48→29% and carp 52→39%.
+- **Result** (1-year balance): immigrant share fell for bass 91→70%, pike 76→54%, catfish 48→29% and carp 52→39%. **Caveat (2026-10-12):** those are single-seed (2024) figures. A 3-seed, 1-year A/B gives honest means of bass ~78%, pike ~59-66%, catfish ~47-49%, carp ~44-46% and sunfish ~22-24% immigrants. That is still better than the 91%/76% start, but less than seed 2024 suggested.
 
 ### Water chemistry
 - **Wet/dry mask** (`env.mask`). Below-bed cells are inert. Every process, diffusion step and mean runs over wet cells. Sediment O₂ demand and Mortimer P act on each column's bed cell.

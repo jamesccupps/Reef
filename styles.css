@@ -35,6 +35,7 @@ body{
 
 /* ---------- stage ---------- */
 .stage{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start}
+.lakecol{min-width:0}   /* the lake frame + its legend share the first grid column */
 
 .viewport{
   position:relative; background:#000; border-radius:12px; padding:10px;
@@ -92,7 +93,7 @@ body{
 .reslist .res{white-space:nowrap}
 .reslist .res b{color:var(--ink); font-size:11px; margin-left:3px}
 .pyramid{display:flex; flex-direction:column; gap:3px; margin-top:10px}
-.pbar{display:grid; grid-template-columns:62px 1fr 34px; align-items:center; gap:6px; font-size:9px}
+.pbar{display:grid; grid-template-columns:80px 1fr 34px;   /* 80px: fits "PLANKTIVORE" (62px truncated it) */ align-items:center; gap:6px; font-size:9px}
 .pbar .pl{color:var(--dim); text-transform:uppercase; letter-spacing:.04em; text-align:right; overflow:hidden; text-overflow:ellipsis}
 .pbar .pt{height:8px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden}
 .pbar .pt i{display:block; height:100%; border-radius:3px; transition:width .25s}
@@ -185,12 +186,28 @@ body{
 .viewport:fullscreen .pondstats{top:22px; left:22px; font-size:13px}
 .viewport:fullscreen .pondstats .ps-top b{font-size:13px}
 .viewport:fullscreen .minimap{width:clamp(200px,18vw,340px)}
+/* screensaver: in fullscreen the chrome fades out after a few idle seconds (ui.js toggles .idle) and returns on any input */
+.viewport .pondstats, .viewport .camctl, .viewport .minimap, .viewport .fsbtn{transition:opacity .9s ease}
+.viewport.idle .pondstats, .viewport.idle .camctl, .viewport.idle .minimap, .viewport.idle .fsbtn{opacity:0; pointer-events:none}
+.viewport.idle, .viewport.idle #tank{cursor:none}
 
 /* ---------- responsive ---------- */
 @media (max-width:900px){
   .stage{grid-template-columns:1fr}
   .rail{flex-direction:column}
   #brain{height:230px}
+}
+/* phones: at ~325px the lake was almost entirely covered by the stats box, the minimap and the camera bar. Outside
+   fullscreen, the camera bar moves BELOW the canvas, the minimap hides (pan by dragging), and the stats box compacts
+   (the per-species counts are in the legend just below). Fullscreen keeps its own overlay layout. */
+@media (max-width:560px){
+  .viewport{padding:6px}
+  .viewport:not(:fullscreen) .camctl{position:static; margin-top:6px; justify-content:center; flex-wrap:wrap; background:none; border:0; padding:0}
+  .viewport:not(:fullscreen) .minimap{display:none}
+  .viewport:not(:fullscreen) .ps-species{display:none}
+  .pondstats{top:8px; left:8px; padding:4px 7px; font-size:9.5px; line-height:1.4; max-width:80%}
+  .ps-top b, .ps-top span{font-size:10px}
+  .fsbtn{top:8px; right:8px; width:26px; height:26px; font-size:13px}
 }
 @media (prefers-reduced-motion:reduce){
   .dot{animation:none}
