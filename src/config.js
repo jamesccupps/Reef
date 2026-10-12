@@ -263,7 +263,7 @@ export const CAMERA = {
   FOLLOW_LERP: 4.0,    // follow/recenter smoothing (1/s)
   ZOOM_LERP: 9.0,      // zoom easing (1/s)
   TOUR_DWELL: [8, 14],     // seconds spent on each cinematic shot
-  TOUR_ZOOM_REL: [7, 22],  // zoom range (× fit) for close FOLLOW shots (was 9–30: tight enough to lose all context)
+  TOUR_ZOOM_REL: [6, 16],  // zoom range (× fit) for close FOLLOW shots (was 9–30, then 7–22: one fish filling the screen loses the scene around it)
   // screensaver tour (camera.js): a mix of shot types instead of nothing but close follows, with soft cinematic easing
   TOUR_WIDE: 0.16,         // share of WIDE establishing shots (whole lake, slow drift)
   TOUR_HABITAT: 0.26,      // share of HABITAT shots (weed beds, the shelves, the deep basin — medium zoom, slow pan)

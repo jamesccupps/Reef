@@ -93,6 +93,19 @@ const MAX_FISH_EXTENT = (() => {
   }
   return Math.ceil(m) + 2;
 })();
+// Close-up sprites: the 2-px dab rasterizer leaves stair-stepped silhouettes that the ≤2× upscale shows as jaggies. Pull
+// each edge texel's alpha down toward its 3×3 mean (never up, so the silhouette doesn't grow and no unbled colour leaks
+// out): a ~1 px anti-aliased rim. Interior texels (every neighbour as opaque) are untouched.
+function softenEdges(d, w, h) {
+  const A = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) A[i] = d[i * 4 + 3];
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const i = y * w + x, a = A[i]; if (a === 0) continue;
+    const m = (A[i - w - 1] + A[i - w] + A[i - w + 1] + A[i - 1] + a + A[i + 1] + A[i + w - 1] + A[i + w] + A[i + w + 1]) / 9;
+    if (m < a) d[i * 4 + 3] = m;
+  }
+}
+
 // ---------------------------------------------------------------------------
 //  sprite cache — render each organism once into an offscreen bitmap, keyed by
 //  (species, growth bucket, hue bucket, light bucket, animation frame); blit it
@@ -191,6 +204,7 @@ class SpriteCache {
     const fake = { hue, energy: sp.reproEnergy * 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };
     const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph, still };   // undulation amplitude scales with effort
     sp.draw(fake, put, 0, { light }, o);
+    if (img && BASE > this.BASE) softenEdges(img.data, w, h);   // close-up tiers: anti-alias the dab-stepped silhouette
     if (img) g.putImageData(img, 0, 0);
     // VOLUMETRIC SHEEN — a top-lit dorsal highlight fading to a ventral shade, applied ONLY over the drawn body
     // ('source-atop' composites just where the sprite is already opaque). Turns the flat texel fill into a lit,
@@ -508,6 +522,9 @@ export class Renderer {
         ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.lineTo(pts[pts.length - 1].x, br.y + 2); ctx.lineTo(pts[0].x, br.y + 2); ctx.closePath(); ctx.fill();
+        // tall screens frame the lake at the top (camera._clamp) and leave spare height under the world box: continue the
+        // deepest earth colour down to the screen bottom so it reads as more ground, not a navy letterbox band with a seam
+        if (br.y < vh) { ctx.fillStyle = rgb([8, 6, 5]); ctx.fillRect(pts[0].x, br.y + 1, pts[pts.length - 1].x - pts[0].x, vh - br.y); }
         // SEDIMENT texture (clipped to the earth, so nothing spills into the water): a lighter silty band just under the
         // bed surface fading into the dark earth, plus faint strata that follow the bed contour — the bed was one flat
         // dark slab that filled a third of many views.
@@ -562,12 +579,18 @@ export class Renderer {
       for (const r of world.reeds) {
         if (r.x < vr.x0 - 40 || r.x > vr.x1 + 40) continue;
         const light = clamp((0.20 + 0.28 * amb) * floraL, 0, 0.6);   // ~48% L at noon: a living reed green (it peaked near-white before)
-        ctx.strokeStyle = `hsl(95 ${38 * floraS}% ${light * 100}%)`; ctx.lineWidth = Math.max(1, 1.4 * z);
+        const col = `hsl(95 ${38 * floraS}% ${light * 100}%)`, taper = z >= 2.4;   // close up: tapered stems, not flat-topped bars
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = Math.max(1, 1.4 * z);
+        if (taper) ctx.beginPath();
         for (let b = 0; b < r.n; b++) {
           const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5);
           const sway = Math.sin(t * 1.1 + r.x * 0.05 + b) * 4;
-          ctx.beginPath(); ctx.moveTo(X(bx), Y(r.baseY)); ctx.lineTo(X(bx + sway), Y(r.baseY - h)); ctx.stroke();
+          if (!taper) { ctx.beginPath(); ctx.moveTo(X(bx), Y(r.baseY)); ctx.lineTo(X(bx + sway), Y(r.baseY - h)); ctx.stroke(); continue; }
+          const ln = Math.hypot(sway, h) || 1, nx = h / ln, ny = sway / ln, wb = 0.8, wt = 0.1;   // unit normal to the stem
+          ctx.moveTo(X(bx - nx * wb), Y(r.baseY - ny * wb)); ctx.lineTo(X(bx + sway - nx * wt), Y(r.baseY - h - ny * wt));
+          ctx.lineTo(X(bx + sway + nx * wt), Y(r.baseY - h + ny * wt)); ctx.lineTo(X(bx + nx * wb), Y(r.baseY + ny * wb)); ctx.closePath();
         }
+        if (taper) ctx.fill();
       }
     }
     // submerged weed beds — tall macrophyte cover bands reaching up into mid-water (pike/sunfish habitat)
@@ -578,15 +601,37 @@ export class Renderer {
         const dim = depthDim((wb.top + wb.bot) * 0.5), light = clamp((0.18 + 0.30 * amb) * (0.55 + 0.45 * dim) * floraL, 0, 0.55);   // mid-green at noon
         // many thin blades instead of a few fat strokes; width capped low so a zoomed-in bed reads as grass, not slabs
         const strands = clamp((wb.w / 5) | 0, 9, 20);
+        // close up (a blade ≥ ~4 px wide) each blade is a TAPERED RIBBON with a lighter midrib, like eelgrass/Vallisneria;
+        // further out a plain stroke (same centreline), which is all a few pixels can show
+        const ribbon = z >= 2.4, bw = 1.7;   // blade half-width at the base (world px)
         ctx.lineWidth = clamp(0.85 * z, 1, 3.2);
         for (let s = 0; s < strands; s++) {
-          const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = 6;
-          ctx.strokeStyle = `hsl(${128 + (s % 5) * 3} ${44 * floraS}% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
-          ctx.beginPath(); ctx.moveTo(X(sx), Y(wb.bot));
-          for (let k = 1; k <= segs; k++) {
-            const f = k / segs, ny = wb.bot - (wb.bot - wb.top) * f, nx = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
-            ctx.lineTo(X(nx), Y(ny));
+          const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = ribbon ? 10 : 6;
+          const col = `hsl(${128 + (s % 5) * 3} ${44 * floraS}% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
+          const cx = this._bladeX || (this._bladeX = new Float64Array(16)), cy = this._bladeY || (this._bladeY = new Float64Array(16));
+          for (let k = 0; k <= segs; k++) {
+            const f = k / segs; cy[k] = wb.bot - (wb.bot - wb.top) * f; cx[k] = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
           }
+          if (!ribbon) {
+            ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(X(cx[0]), Y(cy[0]));
+            for (let k = 1; k <= segs; k++) ctx.lineTo(X(cx[k]), Y(cy[k]));
+            ctx.stroke(); continue;
+          }
+          // ribbon outline: offset the centreline along its normal by a half-width tapering to a point at the tip
+          ctx.fillStyle = col; ctx.beginPath();
+          for (let side = -1; side <= 1; side += 2) {
+            for (let j = 0; j <= segs; j++) {
+              const k = side < 0 ? j : segs - j, k0 = Math.max(0, k - 1), k1 = Math.min(segs, k + 1);
+              const tx = cx[k1] - cx[k0], ty = cy[k1] - cy[k0], tl = Math.hypot(tx, ty) || 1, f = k / segs;
+              const hw = bw * (1 - f) * (0.75 + 0.25 * Math.sin(Math.PI * Math.min(1, f * 1.6))) * side;
+              const px = X(cx[k] - ty / tl * hw), py = Y(cy[k] + tx / tl * hw);
+              if (j === 0 && side < 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+          }
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = `hsla(${118 + (s % 5) * 3} ${36 * floraS}% ${Math.min(80, light * 135) | 0}% / 0.45)`;   // pale midrib
+          ctx.lineWidth = Math.max(1, 0.18 * z); ctx.beginPath(); ctx.moveTo(X(cx[0]), Y(cy[0]));
+          for (let k = 1; k < segs; k++) ctx.lineTo(X(cx[k]), Y(cy[k]));
           ctx.stroke();
         }
       }
@@ -615,13 +660,29 @@ export class Renderer {
         continue;
       }
       const segs = Math.max(2, (p.height / 6) | 0);
+      // close up, a stalk's leaves are filled lance-shaped blades angled up from the stem; further out a short tick each
+      const leafy = form === 'stalk' && z >= 2.4, leaves = leafy ? (this._leaves || (this._leaves = [])) : null;
+      if (leaves) leaves.length = 0;
       ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.baseY));
       for (let s = 1; s <= segs; s++) {
         const f = s / segs, ny = p.baseY - p.height * f, nx = p.x + Math.sin(t * 1.3 + p.x * 0.1 + f * 2) * f * f * 6;
         const cx2 = X(nx), cy2 = Y(ny); ctx.lineTo(cx2, cy2);
-        if (form === 'stalk' && s % 2 === 0) { ctx.lineTo(X(nx + (s % 4 ? 4 : -4) * leafF), Y(ny + 2)); ctx.moveTo(cx2, cy2); }
+        if (form === 'stalk' && s % 2 === 0) {
+          if (leafy) leaves.push(nx, ny, s % 4 ? 1 : -1);
+          else { ctx.lineTo(X(nx + (s % 4 ? 4 : -4) * leafF), Y(ny + 2)); ctx.moveTo(cx2, cy2); }
+        }
       }
       ctx.stroke();
+      if (leafy && leaves.length) {
+        const Lr = 2.4 * leafF;
+        ctx.fillStyle = `hsl(${hue} ${45 * floraS}% ${Math.min(70, llight * 112) | 0}%)`; ctx.beginPath();
+        for (let i = 0; i < leaves.length; i += 3) {
+          const sd = leaves[i + 2], lx = leaves[i] + sd * 0.9 * Lr, ly = leaves[i + 1] - 0.43 * Lr;   // base at the stem, tip up and out
+          const rot = -0.45 * sd, rx = Lr * z;   // start each sub-path exactly where its rotated ellipse begins (no joining sliver)
+          ctx.moveTo(X(lx) + Math.cos(rot) * rx, Y(ly) + Math.sin(rot) * rx); ctx.ellipse(X(lx), Y(ly), rx, 0.7 * leafF * z, rot, 0, TAU);
+        }
+        ctx.fill();
+      }
       if (form === 'pad') {
         // floating-leaved lily: a broad leaf pad at the top of the stalk (pad size scales with the evolved leaf gene)
         const tx = p.x + Math.sin(t * 1.3 + p.x * 0.1 + 2) * 6, topW = w2s(tx, p.baseY - p.height), r = clamp(p.height * 0.24 * leafF * z, 1.5, 13);
@@ -882,7 +943,9 @@ export class Renderer {
     const fresh = a._rFrame !== this._frameNo - 1; a._rFrame = this._frameNo;
     if (fresh || a.rHeading === undefined) { a.rHeading = ah; a.faceTarget = a.facing = Math.cos(ah) < 0 ? -1 : 1; }
     else a.rHeading += angDiff(ah, a.rHeading) * (1 - Math.exp(-rdt * 10));
-    if (a.vis === undefined) a.vis = 1;
+    // only a NEWBORN fades in. vis starts at 0 when a fish is created and used to ease up only once it was first DRAWN, so on
+    // every tour cut / pan the fish born out of view since appeared as see-through ghosts materialising.
+    if (a.vis === undefined || (fresh && (a.age ?? 99) > 2)) a.vis = 1;
     a.vis += (1 - a.vis) * (1 - Math.exp(-rdt * 2.5));
 
     const grow = a.grow ?? 1;

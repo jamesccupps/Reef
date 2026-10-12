@@ -176,14 +176,18 @@ export class Camera {
     return null;
   }
 
-  // clamp the *target* centre so the view stays over the world (centre if the world is smaller than the view)
+  // clamp the *target* centre so the view stays over the world. Wider than the world → centre horizontally. TALLER than
+  // the world (16:10, 4:3, portrait) → keep the water surface near the top (a margin of at most 3% of the lake height)
+  // and let the spare height fall below the bed, where it reads as more sediment; centring left a band of empty
+  // letterbox "sky" with god-ray streaks above the water. At 16:9 the FIT_PAD margin is under 3% → still centred.
   _clamp() {
+    const yFit = hh => hh - Math.min(0.03 * this.H, hh - this.H / 2);   // world top sits min(3% H, spare/2) below the screen top
     const hw = this.vw / (2 * this.tzoom), hh = this.vh / (2 * this.tzoom);
     this.tcx = hw * 2 >= this.W ? this.W / 2 : clamp(this.tcx, hw, this.W - hw);
-    this.tcy = hh * 2 >= this.H ? this.H / 2 : clamp(this.tcy, hh, this.H - hh);
+    this.tcy = hh * 2 >= this.H ? yFit(hh) : clamp(this.tcy, hh, this.H - hh);
     const hw2 = this.vw / (2 * this.zoom), hh2 = this.vh / (2 * this.zoom);
     this.cx = hw2 * 2 >= this.W ? this.W / 2 : clamp(this.cx, hw2, this.W - hw2);
-    this.cy = hh2 * 2 >= this.H ? this.H / 2 : clamp(this.cy, hh2, this.H - hh2);
+    this.cy = hh2 * 2 >= this.H ? yFit(hh2) : clamp(this.cy, hh2, this.H - hh2);
   }
   _clampNow() { this._clamp(); }
 

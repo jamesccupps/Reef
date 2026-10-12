@@ -1335,6 +1335,19 @@ const tgt = w.agents.find(a => a.x > 200 && a.x < WORLD.W - 200 && a.y > 200 && 
 cam.fitNow(); cam.setZoomRel(10); cam.zoom = cam.tzoom; cam.follow(tgt.id);
 for (let i = 0; i < 300; i++) cam.update(1 / 60, w);
 check('follow converges on the followed agent', approx(cam.cx, tgt.x, 6) && approx(cam.cy, tgt.y, 6), `cam ${cam.cx.toFixed(0)},${cam.cy.toFixed(0)} vs ${tgt.x.toFixed(0)},${tgt.y.toFixed(0)}`);
+// tall views (16:10, 4:3, portrait) keep the water surface near the top and put the spare height below the bed (it used
+// to centre the lake under a band of empty letterbox "sky"); 16:9 stays centred
+{
+  const tall = new Camera(WORLD.W, WORLD.H); tall.setViewport(1080, 1920); tall.fitNow();
+  const top = tall.worldToScreen(0, 0).y, bot = tall.worldToScreen(0, WORLD.H).y;
+  const wide = new Camera(WORLD.W, WORLD.H); wide.setViewport(1920, 1080); wide.fitNow();
+  const wc = wide.worldToScreen(WORLD.W / 2, WORLD.H / 2);
+  const q = new Camera(WORLD.W, WORLD.H); q.setViewport(1600, 1200); q.fitNow();
+  const qTop = q.worldToScreen(0, 0).y, qBot = 1200 - q.worldToScreen(0, WORLD.H).y;
+  check('tall views: the surface sits near the top (≤3% of the lake), the spare height goes below the bed; 16:9 stays centred',
+    top >= 0 && top <= 0.031 * WORLD.H * tall.zoom && 1920 - bot > top * 5 && qTop <= qBot && Math.abs(wc.x - 960) < 0.5 && Math.abs(wc.y - 540) < 0.5,
+    `portrait top ${top.toFixed(0)}px / bottom gap ${(1920 - bot).toFixed(0)}px; 4:3 top ${qTop.toFixed(0)} vs bottom ${qBot.toFixed(0)}; 16:9 centre ${wc.x.toFixed(1)},${wc.y.toFixed(1)}`);
+}
 
 
 // ==== audit-fixes: integrity ====

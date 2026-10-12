@@ -76,7 +76,21 @@ Every finding is listed in `AUDIT.md` with its status. Save format is now **v24*
   - DPR-correct effects.
   - A render-target fallback chain (RGBA16F → SRGB8_ALPHA8 → RGBA8).
 - **Caches and overlays.** The sprite and GL-texture caches share one cap (1024). Overlays are composited above GL fish.
+- **Screensaver look and frame rate (2026-10-12, measured in real Chrome at 1920×1080).**
+  - The 2D scene is uploaded into an RGBA8 texture and `FRAG_BLIT` decodes sRGB into the linear scene FBO (the overlay
+    likewise in `FRAG_OVER`). Chrome can only GPU-copy a canvas into non-sRGB formats; the old SRGB8_ALPHA8 upload went
+    through a CPU readback every frame (~20 fps). The SRGB8 `sceneTex` path remains only as the no-FBO fallback.
+  - Lens character (warp, chromatic aberration, fake DOF) scales WITH zoom (`lens` 0 at the whole-lake view → 1 from
+    ~5×), so the overview is crisp. `FRAG_FISH` samples with a −0.5 mip bias.
+  - GL fish swim in `FRAG_FISH`: one straight-pose sprite per fish (`drawFish` `o.still`), bent per pixel by
+    `drawFish`'s own travelling wave + caudal swing (`uWave`, `uWaveG`). Keep the two formulas in step. The 2D fallback
+    still uses the 10-frame × 3-effort sprites.
+  - The drawn pitch is soft-limited to ±55° (`displayHeading`, render-only, with ±0.30 cos side hysteresis).
+  - Tall views (16:10, 4:3, portrait) frame the surface near the top (`Camera._clamp`); the earth continues to the
+    screen bottom.
 - **Main loop.**
+  - Frame pacing: on high-refresh displays render every k-th refresh, k = round(16.7 ms / refresh) (`main.js` `paced`).
+  - The UI's ~8 Hz panel refresh runs one slice per frame; fullscreen / `#screensaver` skip the hidden panels.
   - The guarded frame loop (`makeGuardedLoop`) re-arms before running the frame.
   - Render interpolation between fixed steps uses render-only `a._px/_py/_ph` and `alpha`; the sim never reads them.
   - Shortcuts ignore modifier keys.
@@ -93,6 +107,13 @@ Every finding is listed in `AUDIT.md` with its status. Save format is now **v24*
   - Fullscreen restores the pause state.
   - Delayed blob revoke.
 - **Servers.** `serve.mjs` (Node) and `serve.py` are localhost-only, with no directory listings and no dotfiles.
+- **Launchers (Windows).** `Synapse Reef.bat` reuses a running reef server or starts one (Node, else Python 3) in a
+  minimised window, skipping ports 8000–8009 held by other apps, then opens the browser. `Synapse Reef - Screensaver.bat`
+  opens Chrome/Edge as a full-screen app window on its own profile at `#screensaver` (`UI.setWindowScreensaver`: the
+  lake fills the window, relaxed tour, idle chrome fade; Esc returns to the page). Batch files are CRLF (`.gitattributes`).
+- **Sim speed (byte-identical).** `SpatialGrid` clears only used buckets, checks distance before the predicate, and
+  keeps `agentGrid.sub` (piscivores, filled in the same pass) for `qThreat`; `nearestPlant` uses an x-column index;
+  `senses()`' threat/prey queries are reused by `step()`. 7.1 → 4.5 ms per step.
 
 ### Tests
 - New gate files: `test/ui-check.mjs` and `test/serve-check.mjs`.
