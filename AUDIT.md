@@ -11,13 +11,22 @@
 | Tier 3 | Budding energy, `fitGenes` padding, seed-parent search, storms, scum calibration, every rendering item, and every UI item |
 | Tier 4 | Git and GitHub, slim CLAUDE.md, SESSION_STATE archive, README rewrite, LICENSE, `package.json`, stray files, dead config |
 
+**Fixed after wave 1 (2026-10-12, solo):**
+- **The plant N+P term.** Plants now bank what they absorb, and the budget closes with plants on.
+- **Behavioural replacements for the formula-copy checks:** thermal and hypoxia drains, catfish nocturnality, mate choice on genes alone, and the body-depth defence via `qPrey`.
+- **A stress-scenario determinism check:** a midsummer storm with the toxicant on, state hashed every 100 steps.
+- **Baldwinian persistence checks.**
+- **A save round-trip bug:** a −4e-22 phosphate residue. The no-negatives check is now strict.
+- **`makeFish`'s age default:** stepped test fish no longer die of old age.
+- **Apex starvation diagnosed and improved:** innate pursuit, hypoxia avoidance, predator energetics.
+
 **Still open (tracked in `ROADMAP.md` → "Build order & guards"):**
-- **Apex-predator recruitment.** Bass and pike remain mostly immigrants. This was always true; it is now measured honestly, because the energy pumps are closed.
-- **Some Tier 1 #5 test-hardening items:**
-  - behavioural replacements for the formula-copy checks;
-  - broader determinism scenarios;
-  - a WebGL2 mock for smoke tests;
-  - checks that can't fail.
+- **Apex-predator recruitment.** It's improved: bass immigrant share 91% → 80%, pike 76% → 61%. But bass and pike still depend on immigration.
+- **Remaining Tier 1 #5 items:**
+  - a WebGL2 mock for smoke tests (`GLPost` never runs under the stub);
+  - relabelling the checks that can't fail;
+  - a faster gate (~9 min serial).
+- **Catfish nocturnality is weak in effect** (~8% faster at night).
 - **N-fixation is rare** at the default inflow N:P.
 - **Needs human eyes:**
   - the colour grade (the GL depth terms were upside down until this fix);
