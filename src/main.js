@@ -2,42 +2,63 @@
 import { seed } from './core.js';
 import { WORLD, CAMERA } from './config.js';
 import { World } from './world.js';
-import { Camera } from './camera.js';
-import { Renderer } from './render.js';
+import { Camera, snapshotPrev } from './camera.js';
+import { Renderer, makeGuardedLoop } from './render.js';
 import { Inspector } from './inspector.js';
 import { UI } from './ui.js';
 
 seed((Date.now() ^ (Math.random() * 1e9)) >>> 0);
 
 const world = new World();
-const tank = document.getElementById('tank');
+let tank = document.getElementById('tank');   // `let`: the Renderer may swap in a fresh #tank (WebGL failure → Canvas2D)
 const camera = new Camera(WORLD.W, WORLD.H, CAMERA);
 const renderer = new Renderer(tank, world, camera);
+tank = renderer.canvas;                          // (already swapped if WebGL died during construction)
 const inspector = new Inspector(document.getElementById('brain'));
 const ui = new UI(world, renderer, inspector, camera);
 
 // start framed a little way in, gently zoomed for a nice first impression
 camera.setZoomRel(2.4); camera.tcx = WORLD.W * 0.5; camera.tcy = WORLD.H * 0.5;
 
-// ---- camera input: drag-pan, wheel-zoom, click-select ----
-let down = false, dragged = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
+// ---- camera input: drag-pan (primary pointer), two-finger pinch-zoom, wheel-zoom, click-select ----
+// Each pointer is tracked by id, so a second finger never makes the camera jump: one pointer pans, two pinch
+// (Camera.pinch: exact pan+zoom about the finger midpoint), and lifting one finger re-bases on the remaining one.
+const pointers = new Map();   // pointerId → { x, y } (client px)
+let dragged = false, multi = false, lastX = 0, lastY = 0, downX = 0, downY = 0, pinchD = 0;
 const screenScale = () => { const r = tank.getBoundingClientRect(); return { sx: tank.width / Math.max(1, r.width), sy: tank.height / Math.max(1, r.height), r }; };
+const midpoint = () => { let x = 0, y = 0; for (const p of pointers.values()) { x += p.x; y += p.y; } return { x: x / pointers.size, y: y / pointers.size }; };
+const spread = () => { const it = pointers.values(), a = it.next().value, b = it.next().value; return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0; };
 
-tank.addEventListener('pointerdown', e => {
-  down = true; dragged = false; lastX = e.clientX; lastY = e.clientY; downX = e.clientX; downY = e.clientY;
-  tank.setPointerCapture?.(e.pointerId);
-});
-tank.addEventListener('pointermove', e => {
-  if (!down) return;
-  const { sx, sy } = screenScale();
-  const dx = (e.clientX - lastX), dy = (e.clientY - lastY);
+function onPointerDown(e) {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { tank.setPointerCapture?.(e.pointerId); } catch (_) { /* pointer already gone */ }
+  if (pointers.size === 1) { dragged = false; multi = false; lastX = downX = e.clientX; lastY = downY = e.clientY; }
+  else { multi = true; dragged = true; pinchD = spread(); const m = midpoint(); lastX = m.x; lastY = m.y; }
+}
+function onPointerMove(e) {
+  const p = pointers.get(e.pointerId); if (!p) return;
+  p.x = e.clientX; p.y = e.clientY;
+  const { sx, sy, r } = screenScale();
+  if (pointers.size >= 2) {
+    const m = midpoint(), d = spread();
+    const factor = pinchD > 0 && d > 0 ? d / pinchD : 1;
+    camera.pinch((lastX - r.left) * sx, (lastY - r.top) * sy, (m.x - r.left) * sx, (m.y - r.top) * sy, factor);
+    pinchD = d; lastX = m.x; lastY = m.y;
+    return;
+  }
   if (Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY) > 4) dragged = true;
-  if (dragged) { camera.panByScreen(dx * sx, dy * sy); }
+  if (dragged) camera.panByScreen((e.clientX - lastX) * sx, (e.clientY - lastY) * sy);
   lastX = e.clientX; lastY = e.clientY;
-});
-tank.addEventListener('pointerup', e => {
-  down = false;
-  if (!dragged) {
+}
+function onPointerUp(e) {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if (pointers.size > 0) {   // a finger lifted mid-gesture: re-base on what's left (no jump)
+    if (pointers.size === 1) pinchD = 0; else pinchD = spread();
+    const m = midpoint(); lastX = m.x; lastY = m.y;
+    return;
+  }
+  if (e.type === 'pointerup' && !dragged && !multi) {
     const id = renderer.pickAt(e);
     world.selectedId = id;
     if (id != null) {
@@ -45,18 +66,35 @@ tank.addEventListener('pointerup', e => {
       if (camera.zoomFraction() < 0.12) camera.setZoomRel(7); // zoomed way out → close in a bit
     }
   }
-});
-tank.addEventListener('pointercancel', () => { down = false; });
-
-tank.addEventListener('wheel', e => {
+}
+function onWheel(e) {
   e.preventDefault();
   const { sx, sy, r } = screenScale();
   const px = (e.clientX - r.left) * sx, py = (e.clientY - r.top) * sy;
-  const factor = Math.exp(-e.deltaY * 0.0016);
-  camera.zoomAtScreen(px, py, factor);
-}, { passive: false });
+  camera.zoomAtScreen(px, py, Math.exp(-e.deltaY * 0.0016));
+}
+// (re-)attach the canvas listeners — re-run when the Renderer swaps #tank for a fresh canvas
+let inputAbort = null;
+function wireCanvas(c) {
+  if (inputAbort) inputAbort.abort();
+  inputAbort = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const sig = inputAbort ? { signal: inputAbort.signal } : {};
+  c.addEventListener('pointerdown', onPointerDown, sig);
+  c.addEventListener('pointermove', onPointerMove, sig);
+  c.addEventListener('pointerup', onPointerUp, sig);
+  c.addEventListener('pointercancel', onPointerUp, sig);
+  c.addEventListener('wheel', onWheel, { passive: false, ...sig });
+}
+wireCanvas(tank);
+renderer.onCanvasReplaced = c => { tank = c; pointers.clear(); wireCanvas(c); };
 
+// keyboard shortcuts — never with Ctrl/Meta/Alt held (Ctrl+F / Ctrl+± / Ctrl+O are the browser's), and never while
+// focus is in a form control (typing / Space on a focused button must not also drive the camera).
+const FORM_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON']);
 addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tg = e.target;
+  if (tg && (FORM_TAGS.has(tg.tagName) || tg.isContentEditable)) return;
   if (e.key === ' ') { ui.togglePause(); e.preventDefault(); }
   else if (e.key === 'Escape') { world.selectedId = null; camera.stopTour(); if (camera.mode === 'follow') camera.frameAll(); }
   else if (e.key === 'f' || e.key === 'F') { if (world.selectedId != null) camera.follow(world.selectedId); }
@@ -71,26 +109,41 @@ addEventListener('resize', () => renderer.resize());
 const DT = 1 / 60;
 let acc = 0, last = performance.now(), stepCount = 0, rateAcc = 0, fpsAcc = 0, frames = 0;
 
-function loop(now) {
-  renderer.resize();   // cheap: only re-sizes the backing store when the canvas box changed
+function frame(now) {
+  renderer.resize();   // cheap: re-reads devicePixelRatio; only re-sizes the backing store when the box/DPR changed
   let real = (now - last) / 1000; last = now; if (real > 0.1) real = 0.1;
   let simMs = 0;
   if (!ui.paused) {
     acc += real * ui.speed;
     let steps = 0; const t0 = performance.now();
-    while (acc >= DT && steps < 300) { world.step(DT); acc -= DT; steps++; stepCount++; }
+    // snapshot the pre-step pose (render-only _px/_py/_ph) so the renderer can interpolate between the last two states
+    while (acc >= DT && steps < 300) { snapshotPrev(world.agents); world.step(DT); acc -= DT; steps++; stepCount++; }
     simMs = performance.now() - t0;
   }
-  camera.update(real, world);
-  renderer.draw(now / 1000);
+  const alpha = Math.min(1, Math.max(0, acc / DT));   // render-interpolation fraction between the last two sim states
+  camera.update(real, world, alpha);
+  renderer.draw(now / 1000, alpha);
   renderer.stats.simMs = simMs;
   ui.frame(real);
 
   rateAcc += real; fpsAcc += real; frames++;
   if (fpsAcc >= 0.5) { renderer.stats.fps = frames / fpsAcc; frames = 0; fpsAcc = 0; }
   if (rateAcc >= 0.5) { ui.setRate(stepCount / rateAcc); stepCount = 0; rateAcc = 0; }
-  requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
+
+// Frame-loop guard (audit Tier 2 #8): the next frame is re-armed BEFORE the body runs, so one exception can never
+// freeze the app. On a throw: log (throttled), pause the sim, and tell the user once via the UI toast.
+let errCount = 0, lastErrLog = -Infinity;
+function onFrameError(e) {
+  errCount++;
+  const t = performance.now();
+  if (errCount === 1 || t - lastErrLog > 5000) { console.error(`Synapse Reef: frame error #${errCount} — simulation paused`, e); lastErrLog = t; }
+  if (!ui.paused) {
+    try { ui.togglePause(); } catch (_) { /* UI itself broken */ }
+    ui.paused = true;
+    try { if (typeof ui.toast === 'function') ui.toast('Something went wrong — simulation paused (details in the console)'); } catch (_) { /* no toast */ }
+  }
+}
+requestAnimationFrame(makeGuardedLoop(cb => requestAnimationFrame(cb), frame, onFrameError));
 
 window.reef = { world, renderer, inspector, ui, camera };

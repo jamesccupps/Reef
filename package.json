@@ -1,14 +1,19 @@
 {
   "name": "synapse-reef",
-  "version": "2.0.0",
-  "description": "A browser-based neuroevolution pond: fish with tiny neural-net brains evolve to forage, school, hunt, breed, and survive a living environment of light, weather, oxygen, and plants.",
+  "version": "3.0.0",
+  "private": true,
+  "description": "A browser-based neuroevolution lake ecosystem: fish with recurrent neural-net brains evolve to forage, school, hunt, breed and survive a living lake of light, seasons, weather, oxygen, nutrients, plankton, plants and invertebrates.",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "node test/headless.mjs && node test/smoke.mjs",
+    "test": "node test/headless.mjs && node test/smoke.mjs && node test/ui-check.mjs && node test/serve-check.mjs",
     "test:headless": "node test/headless.mjs",
     "test:smoke": "node test/smoke.mjs",
+    "test:ui": "node test/ui-check.mjs && node test/serve-check.mjs",
     "balance": "node test/balance.mjs",
-    "serve": "python3 serve.py"
+    "serve": "node serve.mjs"
   },
   "license": "MIT"
 }

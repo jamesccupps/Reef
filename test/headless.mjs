@@ -69,7 +69,9 @@ check('population is dynamic (changed from start)', JSON.stringify(start) !== JS
 check('plants persisted (growth vs grazing balance)', w.plants.length > 0, `${w.plants.length} plants`);
 check('some feeding occurred', w.stats.foodEaten > 0, `${w.stats.foodEaten} food events`);
 check('oxygen field in valid range', (() => { const o = w.avgO2(); return o >= 0 && o <= 1.25; })());
-check('fast enough for real-time render at scale', STEPS / (ms / 1000) > 60, `${(STEPS / (ms / 1000)).toFixed(0)} steps/s`);
+// REEF_PERF_MIN overrides the budget (e.g. 0 while other CPU-heavy work shares the machine); the default gate stays strict.
+const PERF_MIN = process.env.REEF_PERF_MIN != null ? +process.env.REEF_PERF_MIN : 60;
+check('fast enough for real-time render at scale', STEPS / (ms / 1000) > PERF_MIN, `${(STEPS / (ms / 1000)).toFixed(0)} steps/s (budget ${PERF_MIN})`);
 check('natural deaths leave a lingering body (no instant vanish)', anyCorpse, `peak ${peakCorpses} corpses`);
 check('corpses stay bounded (they decay into detritus)', peakCorpses < peakAgents, `peak ${peakCorpses} < ${peakAgents}`);
 
@@ -134,7 +136,7 @@ check('the memory trace persists after the stimulus stops, then DECAYS toward th
 // brains survive BOTH upgrades (recurrence + action space) and grow memory/actions on top.
 const padSnap = JSON.parse(snap);
 const pv = padSnap.agents.find(a => a.s === 'sunfish') || padSnap.agents[1];
-const psh = SP[pv.s].shape, len2pre = psh.hid * psh.in + psh.hid + 2 * psh.hid + 2;   // 2-output, pre-recurrence genome
+const psh = SP[pv.s].shape, len2pre = psh.hid * SP[pv.s].baseInputs + psh.hid + 2 * psh.hid + 2;   // a real v4–v14 genome: 2-output, pre-recurrence, base inputs only
 pv.w = pv.w.slice(0, len2pre);
 const w4 = new World(); w4.load(padSnap);
 const anyMemoryless = w4.agents.some(a => Math.abs(a.g[genomeLen(a.sp.shape) - 1] + 4) < 1e-6);   // a leak param appended as -4
@@ -146,7 +148,8 @@ check('the recurrent working memory (act.h) round-trips through save/load (seria
 // recurrence is ACTIVE in the live sim (not an inert feature) and EVOLVABLE: the per-unit leak params give non-trivial
 // mean memory across the population AND they vary, so selection has variation to act on. (We do NOT assert memory
 // "improves fitness" — that's a genuine empirical question; memory is made available & selectable, not imposed.)
-const leakOf = a => { const sh = a.sp.shape, lk = sh.hid * sh.in + sh.hid + 2 * sh.hid + 2; let s = 0; for (let j = 0; j < sh.hid; j++) s += 1 / (1 + Math.exp(-a.g[lk + j])); return s / sh.hid; };
+// LEAK = the genome's last `hid` params (layout W1|B1|W2|B2|LEAK) — offset taken from the end so it can't go stale when OUT changes
+const leakOf = a => { const sh = a.sp.shape, lk = a.g.length - sh.hid; let s = 0; for (let j = 0; j < sh.hid; j++) s += 1 / (1 + Math.exp(-a.g[lk + j])); return s / sh.hid; };
 const leaks = w.agents.map(leakOf), meanLeak = leaks.reduce((s, v) => s + v, 0) / leaks.length, leakSpread = Math.max(...leaks) - Math.min(...leaks);
 check('recurrence is ACTIVE (non-trivial mean memory) and EVOLVABLE (varies across the population) in the live sim', meanLeak > 0.03 && leakSpread > 0.02 && w.agents.some(a => [...a.act.h].some(v => Math.abs(v) > 1e-3)), `mean leak ${meanLeak.toFixed(3)}, spread ${leakSpread.toFixed(3)}`);
 
@@ -262,10 +265,10 @@ check('every species gains the 3 spatial inputs (compass∠sin/cos + home∠x) b
   let kept = mg.length === genomeLen(sh), zeroed = true;
   for (let j = 0; j < sh.hid; j++) { for (let i = 0; i < oldIn; i++) if (Math.abs(mg[j * sh.in + i] - old[j * oldIn + i]) > 1e-9) kept = false; if (mg[j * sh.in + oldIn] !== 0 || mg[j * sh.in + oldIn + 1] !== 0 || mg[j * sh.in + oldIn + 2] !== 0) zeroed = false; }
   check('migrateGenomeInputs lifts a pre-spatial brain (+3 inputs): input→hidden weights kept, the 3 new sensor columns zeroed', kept && zeroed, `len ${mg.length}/${genomeLen(sh)}, kept ${kept}, zeroed ${zeroed}`); }
-// the natal-home anchor round-trips through save/load (v23)
+// the natal-home anchor round-trips through save/load (v24)
 { seed(62); const sw = new World(); for (let i = 0; i < 40; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
   const ok = lw.agents.length === sw.agents.length && lw.agents.every((a, i) => Math.abs(a.homeX - sw.agents[i].homeX) < 1e-6);
-  check('the natal-home anchor (homeX) round-trips through save/load (v23)', save.version === 23 && ok, `${lw.agents.length} agents`); }
+  check('the natal-home anchor (homeX) round-trips through save/load (v24)', save.version === 24 && ok, `${lw.agents.length} agents`); }
 
 // ============================================================
 //  RICHER PERCEPTION — a lateral-line/rheotaxis flow sense (turbidity-proof) + prey-size selectivity
@@ -356,10 +359,10 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   const m = qw.makeFish('minnow', null, SP.minnow.matureAge + 20); m.x = 1000; m.y = 6;
   const food = qw.qSurfaceFood(m);
   check('qSurfaceFood routes an emerged insect into the planktivore food sense (rise-to-hatch)', !!food && food.item === ins, `found ${!!food}`); }
-// the insect populations round-trip through save/load (v23)
+// the insect populations round-trip through save/load (v24)
 { seed(23); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON()));
   const lw = new World(); lw.load(save);
-  check('aquatic insects round-trip through save/load (v23)', save.version === 23 && lw.larvae.length === sw.larvae.length && lw.insects.length === sw.insects.length, `v${save.version}, larvae ${lw.larvae.length}, insects ${lw.insects.length}`); }
+  check('aquatic insects round-trip through save/load (v24)', save.version === 24 && lw.larvae.length === sw.larvae.length && lw.insects.length === sw.insects.length, `v${save.version}, larvae ${lw.larvae.length}, insects ${lw.insects.length}`); }
 
 // ============================================================
 //  BENTHIC INVERTEBRATES — grazing snails + omnivorous crayfish (two new benthic web links)
@@ -398,11 +401,11 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
   const snOk = pw.snails.length > 0 && pw.snails.length < sc * 0.5;   // realized ≈169 vs cap 1620 → must stay well under half the cap
   const cfOk = pw.cray.length > 0 && pw.cray.length < cc * 0.5;       // realized ≈42 vs cap 540
   check('snail & crayfish populations persist and self-limit FAR below their caps (not just ≤cap)', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
-// snails + crayfish round-trip through save/load (v23)
+// snails + crayfish round-trip through save/load (v24)
 { seed(54); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
-  const ok = save.version === 23 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
+  const ok = save.version === 24 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
     && lw.snails.every((s, i) => Math.abs(s.x - sw.snails[i].x) < 1e-6) && lw.cray.every((c, i) => Math.abs(c.x - sw.cray[i].x) < 1e-6);
-  check('snails + crayfish round-trip through save/load (v23)', ok, `snails ${lw.snails.length}/${sw.snails.length}, cray ${lw.cray.length}/${sw.cray.length}`); }
+  check('snails + crayfish round-trip through save/load (v24)', ok, `snails ${lw.snails.length}/${sw.snails.length}, cray ${lw.cray.length}/${sw.cray.length}`); }
 
 // ============================================================
 //  LOCOMOTION MOMENTUM — fish carve/drift through turns (travel dir lags body heading) + a hard turn scrubs speed
@@ -550,7 +553,7 @@ TOX.AMBIENT = 0.3; seed(123); const txPol = new World();
 for (let i = 0; i < 1200; i++) txPol.step(1 / 30);
 TOX.AMBIENT = savedAmb;
 const txSave = new World(); txSave.load(JSON.parse(JSON.stringify(txPol.toJSON())));
-check('contaminant body burden (tx) round-trips through save/load (v23)', txSave.agents.length === txPol.agents.length && txSave.agents.some(a => a.tox > 0) && txSave.agents.every((a, i) => Math.abs(a.tox - txPol.agents[i].tox) < 1e-6), `${txSave.agents.length} agents`);
+check('contaminant body burden (tx) round-trips through save/load (v24)', txSave.agents.length === txPol.agents.length && txSave.agents.some(a => a.tox > 0) && txSave.agents.every((a, i) => Math.abs(a.tox - txPol.agents[i].tox) < 1e-6), `${txSave.agents.length} agents`);
 // HARM-mortality: a fish whose burden is ≫ TOX.HARM dies from the toxicant (the lethal end); a clean one survives.
 function survivesTox(toxLevel) {
   seed(55); const hw = new World();
@@ -666,12 +669,13 @@ check('metabMul EXACTLY matches the gene→cost formula (size/speed/tol + fin/ey
   return Math.abs(a.metabMul - want) < 1e-4;
 }));
 // MORPHOLOGY genes (fin/eye/body) → effective stats, each in the right direction WITH its trade-off
-const baseF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1]);
-const finF = gw.makeFish('bass', [1, 1, 1, 1.35, 1, 1]);
+// full 7-gene arrays (incl. the brain gene = 1) — a 6-gene array would pad the brain gene RANDOMLY, making these RNG-fragile
+const baseF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1, 1]);
+const finF = gw.makeFish('bass', [1, 1, 1, 1.35, 1, 1, 1]);
 check('fin gene → sharper turns (higher maxTurn) but more drag (lower top speed)', finF.maxTurn > baseF.maxTurn && finF.maxSpeed < baseF.maxSpeed, `maxTurn ${finF.maxTurn.toFixed(2)}>${baseF.maxTurn.toFixed(2)}, speed ${finF.maxSpeed.toFixed(1)}<${baseF.maxSpeed.toFixed(1)}`);
-const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1]);
+const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1, 1]);
 check('eye gene → longer sense range (and a metabolic cost)', eyeF.senseRange > baseF.senseRange && eyeF.metabMul > baseF.metabMul, `sense ${eyeF.senseRange.toFixed(0)}>${baseF.senseRange.toFixed(0)}`);
-const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35]);
+const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35, 1]);
 check('body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)', bodyF.accel > baseF.accel && bodyF.bodyMul > baseF.bodyMul && bodyF.maxSpeed < baseF.maxSpeed, `accel ${bodyF.accel.toFixed(0)}, bodyMul ${bodyF.bodyMul.toFixed(2)}, speed ${bodyF.maxSpeed.toFixed(1)}`);
 check('body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat', canEat(5, 4) && !canEat(5, 4 * 1.15), `4 eaten, 4.6 (deep-bodied) not`);
 const oldGn = gw.makeFish('bass', Float32Array.from([1.3, 0.8, 1.2]));   // a pre-morphology 3-gene save
@@ -919,18 +923,22 @@ check('phosphate is the limiting nutrient in a fresh lake (P scarcer than N for 
   w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP) < w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN), `P-lim ${(w.env.meanPhos() / (w.env.meanPhos() + NUTRIENT.KP)).toFixed(2)} < N-lim ${(w.env.meanDin() / (w.env.meanDin() + NUTRIENT.KN)).toFixed(2)}`);
 
 // EUTROPHICATION (control-subtracted so the diurnal phyto swing cancels): two identical worlds,
-// PHOSPHATE-spike only one (P is the limiter), and require its bloom to exceed the unspiked control's
-// — and to draw the phosphate pool down (closing the loop).
+// PHOSPHATE-spike only one (P is the limiter), and require its PRODUCER bloom (green phyto + N-fixing cyano) to exceed
+// the unspiked control's — and the spiked P to be drawn into algal biomass. (audit-fixes/chemistry: with N now
+// conserved at Redfield, a P-only spike flips the lake N-limited, so the bloom is carried by the N-fixers, not green
+// phyto alone; and with the P budget closed the spike can't simply vanish — the old "mean P falls" passed via the
+// grazing leak that destroyed P — so the loop-closing test is now "the bloom takes the P up into biomass".)
 seed(31415); const ctrl = new World();
 seed(31415); const eut = new World();
 for (let i = 0; i < 300; i++) { ctrl.step(1 / 30); eut.step(1 / 30); }
 for (let i = 0; i < eut.env.phos.length; i++) eut.env.phos[i] += 0.6;
 const pAtSpike = meanP(eut);
+const algalP = e => (e.wetSum(e.phyto) * PHYTO.P_USE + e.wetSum(e.cyano) * CYANO.P_USE);
 let ctrlPeak = 0, eutPeak = 0;
-for (let i = 0; i < 1200; i++) { ctrl.step(1 / 30); eut.step(1 / 30); ctrlPeak = Math.max(ctrlPeak, ctrl.env.meanPhyto()); eutPeak = Math.max(eutPeak, eut.env.meanPhyto()); }
-console.log(`eutrophication: control peak phyto ${ctrlPeak.toFixed(2)} vs P-spiked ${eutPeak.toFixed(2)}; spiked P ${pAtSpike.toFixed(2)} → ${meanP(eut).toFixed(2)}`);
-check('a PHOSPHATE spike drives a bigger bloom than the unspiked control', eutPeak > ctrlPeak * 1.15, `spiked ${eutPeak.toFixed(2)} > control ${ctrlPeak.toFixed(2)}`);
-check('the bloom draws the phosphate pool down (closing the loop)', meanP(eut) < pAtSpike, `${meanP(eut).toFixed(2)} < ${pAtSpike.toFixed(2)}`);
+for (let i = 0; i < 1200; i++) { ctrl.step(1 / 30); eut.step(1 / 30); ctrlPeak = Math.max(ctrlPeak, ctrl.env.meanPhyto() + ctrl.env.meanCyano()); eutPeak = Math.max(eutPeak, eut.env.meanPhyto() + eut.env.meanCyano()); }
+console.log(`eutrophication: control peak producers ${ctrlPeak.toFixed(2)} vs P-spiked ${eutPeak.toFixed(2)}; spiked P ${pAtSpike.toFixed(2)} → ${meanP(eut).toFixed(2)}; algal P ${algalP(ctrl.env).toFixed(1)} vs ${algalP(eut.env).toFixed(1)}`);
+check('a PHOSPHATE spike drives a bigger producer bloom (phyto + N-fixing cyano) than the unspiked control', eutPeak > ctrlPeak * 1.15, `spiked ${eutPeak.toFixed(2)} > control ${ctrlPeak.toFixed(2)}`);
+check('the bloom draws the spiked phosphate into algal biomass (closing the loop)', algalP(eut.env) > algalP(ctrl.env) * 1.15, `algal P ${algalP(eut.env).toFixed(1)} > control ${algalP(ctrl.env).toFixed(1)}`);
 
 // SEDIMENT-P internal loading (Mortimer redox switch): oxic sediment binds P, anoxic sediment releases it
 console.log('\n— sediment-P (internal loading) —');
@@ -1032,13 +1040,17 @@ check('cyanobacteria are a WARM-water bloomer (grow near TEMP_OPT, stall when co
 // EMERGENT COMPETITION (whole-sim): in a low-N lake, cyano takes a LARGER share of the producers than in an
 // N-rich lake — "cyano wins at low N:P". Same seed; the low-N world has its inorganic N zeroed each step.
 seed(55); const hiN = new World(); seed(55); const loN = new World();
+hiN.time = loN.time = 0.22 * SEASON.YEAR_LEN;   // audit-fixes/chemistry: summer — per-capita cyano only builds a population when warm
 for (let i = 0; i < 1400; i++) { hiN.step(1 / 30); for (let j = 0; j < loN.env.nh4.length; j++) { loN.env.nh4[j] = 0; loN.env.no3[j] = 0; } loN.step(1 / 30); }
 console.log(`cyano competition: N-rich cyano ${hiN.env.meanCyano().toFixed(3)}/phyto ${hiN.env.meanPhyto().toFixed(3)} vs N-poor cyano ${loN.env.meanCyano().toFixed(3)}/phyto ${loN.env.meanPhyto().toFixed(3)}`);
 // "cyano wins at low N:P" — guarded by ABSOLUTE cyano biomass, NOT a cyano/phyto ratio. A ratio passes for the
 // wrong reason: green phyto collapses to ~0 in the N-poor lake regardless of cyano, so the ratio explodes even
 // if cyano were dead. If cyano's defining N-fixing trait were broken (made N-limited), its biomass would COLLAPSE
 // in the N-poor lake; instead it stays HIGH and ≥ the N-rich lake — that absolute floor is what genuinely guards it.
-check('cyanobacteria WIN at low N:P — N-poor cyano biomass stays HIGH and ≥ the N-rich lake (a broken N-fixer would collapse here)', loN.env.meanCyano() > 0.3 && loN.env.meanCyano() >= hiN.env.meanCyano(), `cyano N-poor ${loN.env.meanCyano().toFixed(3)} (>0.3, ≥ N-rich ${hiN.env.meanCyano().toFixed(3)})`);
+// (audit-fixes/chemistry: the old 0.3 floor was reachable only through ZERO-ORDER growth — every lit cell made cyano
+// from nothing and buoyancy stacked it at the surface. Growth is now per-capita, so in 47 s the N-poor bloom builds to
+// ~0.1: the floor is now 10× the seed strain (a broken N-fixer decays BELOW the seed) and it must beat the N-rich lake 2×.)
+check('cyanobacteria WIN at low N:P — N-poor cyano grows ≥10× its seed and ≥2× the N-rich lake (a broken N-fixer would collapse here)', loN.env.meanCyano() > 10 * CYANO.START && loN.env.meanCyano() >= 2 * hiN.env.meanCyano(), `cyano N-poor ${loN.env.meanCyano().toFixed(3)} (>${(10 * CYANO.START).toFixed(2)}, ≥ 2× N-rich ${hiN.env.meanCyano().toFixed(3)})`);
 check('green phyto (N-limited) collapses in the N-poor lake while cyano (N-fixing) holds — the asymmetry IS the niche', loN.env.meanPhyto() < hiN.env.meanPhyto() * 0.5 && loN.env.meanCyano() > 10 * loN.env.meanPhyto(), `phyto ${hiN.env.meanPhyto().toFixed(3)}→${loN.env.meanPhyto().toFixed(3)}, cyano ${loN.env.meanCyano().toFixed(3)} ≫ phyto`);
 check('the cyanobacteria field stays non-negative, bounded & finite', [...loN.env.cyano].every(v => v >= 0 && v <= CYANO.CAP + 1e-3 && Number.isFinite(v)));
 
@@ -1062,14 +1074,14 @@ check('decomposition is O₂-LIMITED (Monod): oxic decomposes faster than anoxic
 // MECHANISM 3 — consumes O₂ and remineralizes ammonium + phosphate (the bacterial respiration + nutrient release).
 const mD = new World().env; mD.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mD.dom.length; i++) { mD.dom[i] = 0.4; mD.nh4[i] = 0; mD.phos[i] = 0; mD.o2[i] = 1.0; }
-const mci = (mD.dom.length / 2) | 0, mO20 = mD.o2[mci];
+const mci = mD.cellOf(WORLD.W * 0.5, WORLD.H * 0.3), mO20 = mD.o2[mci];   // a WET cell (index length/2 is below the bed → inert since the wet/dry mask)
 for (let k = 0; k < 20; k++) mD.microbialLoop(1 / 30);
 check('decomposition CONSUMES O₂ (the microbial O₂ demand) and RELEASES ammonium + phosphate', mD.o2[mci] < mO20 && mD.nh4[mci] > 0 && mD.phos[mci] > 0 && mD.dom[mci] < 0.4, `O₂ ${mO20.toFixed(2)}→${mD.o2[mci].toFixed(2)}, nh4 ${mD.nh4[mci].toFixed(3)}, P ${mD.phos[mci].toFixed(3)}, DOM ${mD.dom[mci].toFixed(3)}`);
 // MECHANISM 4 — MASS CONSERVATION: DOM decomposed exactly equals N(→ammonium)+P(→phosphate) released (no N/P
 // created or destroyed). Uniform field ⇒ diffuse() is a no-op, so a single representative cell tests it exactly.
 const mC = new World().env; mC.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mC.dom.length; i++) { mC.dom[i] = 0.3; mC.nh4[i] = 0; mC.no3[i] = 0; mC.phos[i] = 0; mC.o2[i] = 1.0; }
-const cci = (mC.dom.length / 2) | 0;
+const cci = mC.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);   // a WET cell (length/2 is a dry below-bed cell since the wet/dry mask)
 for (let k = 0; k < 30; k++) mC.microbialLoop(1 / 30);
 const conserved = mC.dom[cci] + mC.nh4[cci] + mC.phos[cci];
 check('microbial loop CONSERVES mass: DOM decomposed = N+P remineralized (no nutrient created or lost)', approx(conserved, 0.3, 1e-5) && mC.dom[cci] < 0.3, `dom+nh4+phos ${conserved.toFixed(6)} (was 0.300), DOM ${mC.dom[cci].toFixed(4)}`);
@@ -1110,9 +1122,15 @@ check('the spawn multiplier peaks in-season (≈1) and tapers to the floor a hal
 // WIRING (end-to-end): minnows actually breed MUCH more at their spring peak than off-season. Same seed + minnows-only
 // so the only difference is the calendar. A SHORT window (before mating cooldowns let everyone re-breed and saturate
 // the count) exposes the spawn multiplier's effect on the breeding RATE — the seasonal boom, not a saturated total.
+// Summed over 4 seeds: a 20-step window holds only a couple of spawnings (each a clutch), so one seed's count is
+// RNG-stream noise (e.g. 5 vs 5 at seed 1234 once budding stopped creating energy and broods got smaller).
 function minnowBirths(yearFrac) {
-  seed(1234); const tw = new World(); tw.agents = tw.agents.filter(a => a.species === 'minnow'); tw.time = yearFrac * SEASON.YEAR_LEN;
-  const b0 = tw.stats.births.minnow; for (let i = 0; i < 20; i++) tw.step(1 / 30); return tw.stats.births.minnow - b0;
+  let n = 0;
+  for (const s of [1234, 1, 2, 3]) {
+    seed(s); const tw = new World(); tw.agents = tw.agents.filter(a => a.species === 'minnow'); tw.time = yearFrac * SEASON.YEAR_LEN;
+    const b0 = tw.stats.births.minnow; for (let i = 0; i < 20; i++) tw.step(1 / 30); n += tw.stats.births.minnow - b0;
+  }
+  return n;
 }
 const peakBirths = minnowBirths(SP.minnow.spawnPeak), offBirths = minnowBirths(SP.minnow.spawnPeak + 0.5);
 check('seasonal spawning is WIRED: minnows breed far more in their spring peak season than off-season', peakBirths > offBirths * 1.5, `peak-season ${peakBirths} vs off-season ${offBirths} births (first 20 steps)`);
@@ -1208,7 +1226,7 @@ check('differential survival: at a dim light only the shade-INtolerant genotype 
 // SAVE v13: the plant genome + colour round-trip
 const psave = JSON.parse(JSON.stringify(pw2.toJSON()));
 seed(1); const pw3 = new World(); pw3.load(psave);
-check('plant genome + colour survive save/load (v23)', psave.version === 23 && pw3.plants.length === pw2.plants.length && pw3.plants.every((p, i) => p.gn.length === PLANT_GENE_KEYS.length && Array.from(p.gn).every((g, j) => Math.abs(g - pw2.plants[i].gn[j]) < 1e-6) && Math.abs(p.hue - pw2.plants[i].hue) < 1e-6), `v${psave.version}, ${pw3.plants.length} plants`);
+check('plant genome + colour survive save/load (v24)', psave.version === 24 && pw3.plants.length === pw2.plants.length && pw3.plants.every((p, i) => p.gn.length === PLANT_GENE_KEYS.length && Array.from(p.gn).every((g, j) => Math.abs(g - pw2.plants[i].gn[j]) < 1e-6) && Math.abs(p.hue - pw2.plants[i].hue) < 1e-6), `v${psave.version}, ${pw3.plants.length} plants`);
 
 // ============================================================
 //  PLANT INTERACTIONS — shading competition + the clear↔turbid feedback
@@ -1307,6 +1325,500 @@ const tgt = w.agents.find(a => a.x > 200 && a.x < WORLD.W - 200 && a.y > 200 && 
 cam.fitNow(); cam.setZoomRel(10); cam.zoom = cam.tzoom; cam.follow(tgt.id);
 for (let i = 0; i < 300; i++) cam.update(1 / 60, w);
 check('follow converges on the followed agent', approx(cam.cx, tgt.x, 6) && approx(cam.cy, tgt.y, 6), `cam ${cam.cx.toFixed(0)},${cam.cy.toFixed(0)} vs ${tgt.x.toFixed(0)},${tgt.y.toFixed(0)}`);
+
+
+// ==== audit-fixes: integrity ====
+// Save/load integrity: era-aware brain migration (by label), a FAITHFUL resume (load → step ≡ the uninterrupted run),
+// per-world ids, validated atomic loads, and the GLOBAL_MAX / champion guards. These run the REAL load/step paths.
+console.log('\n— save/load integrity (audit-fixes) —');
+{
+  const { getRandState, setRandState, rand, layoutLen } = await import('../src/core.js');
+  const { BRAIN_ERAS } = await import('../src/species.js');
+  const DTI = 1 / 30;
+  const finiteWorld = W => W.agents.every(a => [a.x, a.y, a.energy, a.heading, a.spd, a.maxSpeed].every(Number.isFinite) && [...a.act.h].every(Number.isFinite))
+    && ['o2', 'phyto', 'cyano', 'nh4', 'no3', 'phos', 'dom', 'sedP'].every(f => W.env[f].every(Number.isFinite))
+    && [W.env.t, W.env.light, W.env.tempC, W.env.turbidity, W.env.strat].every(Number.isFinite);
+
+  // (1) every species' era lengths are distinct → the genome length identifies the save era unambiguously
+  check('brain eras: every species has collision-free genome lengths across ALL save eras (incl. the 2-output eras)',
+    SPECIES.every(k => SP[k].brainEras.collisions === 0 && new Set(SP[k].brainEras.eras.map(e => e.len)).size === BRAIN_ERAS.length),
+    SPECIES.map(k => `${k} ${SP[k].brainEras.eras.map(e => e.len).join('/')}`).join(' · '));
+  check('brain eras: the current era IS the current genome layout (labels + length)',
+    SPECIES.every(k => { const e = SP[k].brainEras.eras.at(-1); return e.len === genomeLen(SP[k].shape) && e.inKeys.length === SP[k].shape.in; }));
+
+  // (2) migrate a MARKED genome from every older era, for every species, through the real load path: each new input
+  // column must hold the marker of the old column with the same label (base 1:1), new columns 0, outputs by label.
+  let eraOk = true, eraDetail = '';
+  for (const k of SPECIES) {
+    const sp = SP[k], hid = sp.shape.hid, IN = sp.shape.in, base = sp.baseInputs, labels = sp.inputLabels;
+    for (const era of sp.brainEras.eras.slice(0, -1)) {
+      const oIN = era.inKeys.length, oOUT = era.outs.length, len = layoutLen(oIN, hid, oOUT, era.leak);
+      const w = new Array(len).fill(0);
+      const mk = (i, j) => 1 + i + j / 64;                                                   // W1 marker: old column i, unit j (exact in f32)
+      for (let j = 0; j < hid; j++) for (let i = 0; i < oIN; i++) w[j * oIN + i] = mk(i, j);
+      const oB1 = hid * oIN, oW2 = oB1 + hid, oB2 = oW2 + oOUT * hid, oLK = oB2 + oOUT;
+      for (let j = 0; j < hid; j++) { w[oB1 + j] = -1 - j / 64; if (era.leak) w[oLK + j] = -2 - j / 64; }
+      for (let r = 0; r < oOUT; r++) { w[oB2 + r] = 3 + r; for (let j = 0; j < hid; j++) w[oW2 + r * hid + j] = 2 + r + j / 64; }
+      const lw = new World(); lw.load({ version: 17, agents: [{ s: k, x: 900, y: 300, e: 0.6, w }] });
+      const g = lw.agents[0].g, rep = lw.lastLoad;
+      let ok = rep.reseeded === 0 && rep.migrated === 1 && g.length === genomeLen(sp.shape);
+      for (let j = 0; j < hid && ok; j++) for (let i = 0; i < IN; i++) {
+        const old = i < base ? i : era.inKeys.indexOf('x:' + labels[i]);
+        if (g[j * IN + i] !== (old >= 0 ? mk(old, j) : 0)) { ok = false; eraDetail = `${k} ${era.saves} col ${labels[i]}`; break; }
+      }
+      const nB1 = hid * IN, nW2 = nB1 + hid, nB2 = nW2 + OUT * hid, nLK = nB2 + OUT;
+      for (let j = 0; j < hid && ok; j++) ok = g[nB1 + j] === Math.fround(-1 - j / 64) && g[nLK + j] === (era.leak ? Math.fround(-2 - j / 64) : -4);
+      for (let r = 0; r < OUT && ok; r++) {
+        if (r < oOUT) ok = g[nB2 + r] === 3 + r && g[nW2 + r * hid] === 2 + r;
+        else ok = g[nB2 + r] < -0.8 && Math.abs(g[nW2 + r * hid]) <= 0.3;                   // new action rows seeded ~off
+      }
+      // the explicit audit symptom: the old hunger/fear weights must sit on the CURRENT hunger/fear columns
+      const hIdx = era.inKeys.indexOf('x:hunger');
+      if (ok && hIdx >= 0) ok = g[IN - 2] === mk(hIdx, 0) && g[IN - 1] === mk(hIdx + 1, 0);
+      if (!ok) { eraOk = false; if (!eraDetail) eraDetail = `${k} ${era.saves}`; }
+    }
+  }
+  check('era migration (every species × every older era, through load): base 1:1, spatial/perception/drives land on their OWN columns, new columns 0, 2-output eras MIGRATE (actions ~off, memoryless LEAK when pre-recurrence)', eraOk, eraDetail || `${SPECIES.length}×${BRAIN_ERAS.length - 1} migrations`);
+  { // a v21 minnow brain specifically (the audit repro): hunger/fear must NOT land on flow / prey size
+    const sp = SP.minnow, hid = sp.shape.hid, era = sp.brainEras.eras.find(e => e.saves === 'v21'), oIN = era.inKeys.length;
+    const w = new Array(era.len).fill(0); w[oIN - 2] = 7; w[oIN - 1] = 9;                  // unit 0: hunger = 7, fear = 9
+    const lw = new World(); lw.load({ agents: [{ s: 'minnow', x: 500, y: 200, e: 0.6, w }] });
+    const g = lw.agents[0].g, L = sp.inputLabels;
+    check('a v21 minnow brain keeps hunger/fear on the hunger/fear inputs (flow / prey size load as 0)', g[L.indexOf('hunger')] === 7 && g[L.indexOf('fear')] === 9 && g[L.indexOf('flow')] === 0 && g[L.indexOf('prey size')] === 0,
+      `hunger ${g[L.indexOf('hunger')]} fear ${g[L.indexOf('fear')]} flow ${g[L.indexOf('flow')]} prey ${g[L.indexOf('prey size')]}`);
+  }
+
+  // (3) FAITHFUL RESUME: warm up, snapshot, then step the original AND a freshly loaded copy 600 steps → byte-identical
+  seed(4242); const ra = new World(); for (let i = 0; i < 600; i++) ra.step(DTI);
+  const rsnap = JSON.stringify(ra.toJSON());
+  for (let i = 0; i < 600; i++) ra.step(DTI);
+  const rA = JSON.stringify(ra.toJSON());
+  const rb = new World(); rb.load(JSON.parse(rsnap));
+  const rbRound = JSON.stringify(rb.toJSON()) === rsnap;
+  for (let i = 0; i < 600; i++) rb.step(DTI);
+  check('save v24 → load → step 600 is BYTE-IDENTICAL to the uninterrupted run (faithful resume: RNG, ids, cooldowns, smoothing, momentum, stroke, learned W2, corpses, env means …)', rbRound && rA === JSON.stringify(rb.toJSON()), `${ra.agents.length} agents, ${JSON.parse(rsnap).corpses.length} corpses in the snapshot, round-trip ${rbRound}`);
+
+  // (4) constructing (and stepping) an unrelated World mid-run does not perturb an existing one (per-world ids). The
+  // seeded RNG is one shared stream, so the probe preserves it around the intruder — what's tested is world isolation.
+  const runIso = intrude => {
+    seed(77); const A = new World(); for (let i = 0; i < 300; i++) A.step(DTI);
+    if (intrude) { const r = getRandState(); const B = new World(); for (let i = 0; i < 20; i++) B.step(DTI); B.addAgent('pike'); setRandState(r); }
+    for (let i = 0; i < 300; i++) A.step(DTI);
+    const ids = A.agents.map(a => a.id);
+    return { json: JSON.stringify(A.toJSON()), dup: ids.length - new Set(ids).size };
+  };
+  const iso0 = runIso(false), iso1 = runIso(true);
+  check('a second World constructed + stepped mid-run does not perturb the first (per-world id counter; no duplicate ids)', iso0.json === iso1.json && iso1.dup === 0, `dup ids ${iso1.dup}, identical ${iso0.json === iso1.json}`);
+
+  // (5) RNG state round-trips
+  { seed(5); rand(); const st = getRandState(); const a = [rand(), rand(), rand()]; setRandState(st); const b = [rand(), rand(), rand()];
+    seed(6); const w = new World(); const sv = w.toJSON();
+    check('RNG state round-trips (getRandState/setRandState) and is saved in toJSON', a.every((v, i) => v === b[i]) && sv.rng === getRandState(), `rng ${sv.rng}`); }
+
+  // (6) corrupted saves: atomic, validated
+  seed(8); const cw = new World(); for (let i = 0; i < 60; i++) cw.step(DTI);
+  const base = cw.toJSON(), clone = () => JSON.parse(JSON.stringify(base));
+  { const tw = new World(); for (let i = 0; i < 30; i++) tw.step(DTI);
+    const before = JSON.stringify(tw.toJSON()), rngB = getRandState();
+    for (const bad of [null, 5, [], { agents: {} }, { env: 3, agents: [] }, { reeds: [], plants: 'x' }]) {
+      let threw = false; try { tw.load(bad); } catch (e) { threw = e instanceof Error && e.message.length > 10; }
+      if (!threw) { check('a structurally unusable save throws a descriptive Error', false, JSON.stringify(bad)); break; }
+    }
+    check('a structurally unusable save throws BEFORE mutating anything (world + RNG unchanged)', JSON.stringify(tw.toJSON()) === before && getRandState() === rngB); }
+  { const f = clone(); f.agents[3].s = 'trout'; f.agents[4].s = '__proto__'; f.agents[5].s = 'constructor';
+    const lw = new World(); const rep = lw.load(f); const ids = lw.agents.map(a => a.id);
+    check('unknown species (incl. "__proto__") are SKIPPED and counted — the rest of the lake loads, ids stay unique', rep.skippedSpecies === 3 && lw.agents.length === base.agents.length - 3 && new Set(ids).size === ids.length && Object.getPrototypeOf(lw.stats) === Object.prototype, `skipped ${rep.skippedSpecies}, agents ${lw.agents.length}/${base.agents.length}`); }
+  { const f = clone();
+    delete f.agents[0].y; delete f.agents[1].e; f.agents[2].gn[1] = 0; f.agents[3].h = 'north'; f.agents[4].x = null; f.agents[5].ag = -50;
+    f.agents[6].g = '<img src=x onerror=alert(1)>'; f.agents[6].ea = '<b>'; f.agents[7].w = f.agents[7].w.map((v, i) => i === 3 ? 1e309 : v);
+    f.agents[8].m = ['a']; f.agents[9].lw = [NaN]; f.agents[10].gn = [1e9, -1e9, 'x'];
+    delete f.env.t; f.env.weather = 7; f.env.tempC = 'hot'; f.env.o2[5] = null; f.env.phyto[9] = 1e308; f.env.strat = NaN; f.env.cols = 3;
+    f.reeds = {}; f.logs = 'nope'; f.plants[0].h = undefined; f.plants[1].v = -2; f.plants[2].g = [1, 2];
+    f.plankton[0].y = 'deep'; f.detritus[0] = 7; f.larvae[0].d = null; f.stats = JSON.parse('{"births":"x","__proto__":{"polluted":1}}');
+    const lw = new World(); const rep = lw.load(f);
+    for (let i = 0; i < 120; i++) lw.step(DTI);
+    check('missing / non-numeric / out-of-range fields load on sane defaults → NO NaN anywhere after 120 steps', finiteWorld(lw) && lw.agents.every(a => Number.isInteger(a.gen) && Number.isInteger(a.eaten)),
+      `agents ${lw.agents.length}, reseeded ${rep.reseeded}, regenerated ${rep.regenerated.join(',')}`);
+    check('…and `reeds: {}` is regenerated (no per-step throw), gen/eaten coerced to integers', Array.isArray(lw.reeds) && lw.reeds.length > 0 && rep.regenerated.includes('reeds')); }
+  { const f = clone(); f.env.cols = 40; f.env.rows = 24; f.env.o2 = new Array(40 * 24).fill(0).map((_, i) => (i % 40) < 20 ? 0.2 : 0.9);
+    const ew = new World(); ew.load(f); const C = GRID.FIELD_COLS, R = GRID.FIELD_ROWS;
+    check('a different-sized env grid is RESAMPLED by (cx,cy), not row-sheared', ew.env.o2[0] === Math.fround(0.2) && ew.env.o2[C - 1] === Math.fround(0.9) && ew.env.o2[(R - 1) * C] === Math.fround(0.2) && ew.env.o2[R * C - 1] === Math.fround(0.9)); }
+  { const f = clone(); const tmpl = f.agents[0]; f.agents = Array.from({ length: WORLD.GLOBAL_MAX + 400 }, () => ({ ...tmpl }));
+    const lw = new World(); const rep = lw.load(f);
+    check('an oversized save is capped at WORLD.GLOBAL_MAX agents', lw.agents.length === WORLD.GLOBAL_MAX && rep.truncated === 400, `${lw.agents.length}`); }
+
+  // (7) fitGenes pads a missing gene with EXACTLY 1.0 (a v22 save had no brain gene → full brain, no RNG draw)
+  { const f = clone(); for (const a of f.agents) a.gn = a.gn.slice(0, 6);
+    const lw = new World(); lw.load(f);
+    check('an older 6-gene save pads the brain gene with EXACTLY 1.0 (no brain shrinks)', lw.agents.every(a => a.genes[6] === 1 && a.activeHid === a.sp.shape.hid)); }
+
+  // (8) version 24; an OLDER (v23-shaped) save still loads and runs
+  { const f = clone(); f.version = 23;
+    delete f.rng; delete f.nid; delete f.corpses;
+    for (const a of f.agents) for (const k of ['id', 'mc', 'ts', 'th', 'vh', 'st', 'ac', 'lw']) delete a[k];
+    for (const l of f.larvae) delete l.y; for (const s of f.snails) { delete s.y; delete s.ph; }
+    for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
+    const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
+    const ids = lw.agents.map(a => a.id);
+    check('saves are version 24, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 24 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+
+  // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
+  { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
+    const r = hw.seedFromChampions(champs); const mins = hw.agents.slice(-r.added).filter(a => a.species === 'minnow');
+    let guard = 0; while (hw.agents.length < WORLD.GLOBAL_MAX && guard++ < 50) hw.seedFromChampions(champs);
+    const full = hw.seedFromChampions(champs);
+    check('seedFromChampions returns {added, reseeded}, coerces gen, counts reseeded brains, and never exceeds GLOBAL_MAX',
+      r.added > 0 && r.reseeded > 0 && mins.every(a => a.gen === 0) && full.added === 0 && hw.agents.length <= WORLD.GLOBAL_MAX && hw.addAgent('bass') === null && hw.makeFish('bass') === null,
+      `added ${r.added}, reseeded ${r.reseeded}, agents ${hw.agents.length}/${WORLD.GLOBAL_MAX}`); }
+
+  // (10) the death test kills a NaN fish (a NaN can't make a fish immortal)
+  { seed(9); const nw = new World(); const f = nw.agents[0]; f.energy = NaN; nw.step(DTI);
+    check('a fish with NaN energy dies (death test is !(energy > 0))', !nw.agents.includes(f)); }
+
+  // (11) carp normalise threat proximity by qThreat's own 1.1× search radius (the outer band no longer reads 0)
+  { seed(10); const tw = new World(); tw.env.turbidity = 0;
+    const carp = tw.makeFish('carp', [1, 1, 1, 1, 1, 1, 1]); carp.x = 1000; carp.y = 400; carp.heading = 0;
+    const pike = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pike.x = 1000 + carp.senseRange * 1.05; pike.y = 400;
+    tw.agents = [carp, pike]; tw.agentGrid.rebuild(tw.agents); SP.carp.senses(carp, tw);
+    check('carp threat proximity is normalised by the 1.1× threat-search radius (a threat at 1.05× range reads > 0)', carp.act.in[5] > 0 && carp.act.in[4] > 0.99, `prox ${carp.act.in[5].toFixed(3)}`); }
+}
+
+// ==== audit-fixes: bio-ecology ====
+// newborn cannibalism (AUDIT T1#2), plant light-starvation churn (T1#3), budding energy (T3), per-step feeding (T2#12),
+// the clarity-scaled plant seed-parent search (T3). Config is imported dynamically so the shared import line is untouched.
+console.log('\n— audit fixes: bio-ecology —');
+{
+  const { BROOD, FEED, PLANT: PLANTC } = await import('../src/config.js');
+  const ONES = [1, 1, 1, 1, 1, 1, 1];
+
+  // (1) NEWBORN CANNIBALISM — a conspecific newborn inside BROOD.GRACE is neither prey nor threatened; after it, both apply
+  { seed(41); const cw = new World();
+    const adult = cw.makeFish('pike', ONES), baby = cw.makeFish('pike', ONES, 0);
+    adult.x = 900; adult.y = 300; baby.x = 902; baby.y = 300;
+    cw.agents = [adult, baby]; cw.agentGrid.rebuild(cw.agents);
+    const graceSafe = !cw.qPrey(adult) && !cw.qThreat(baby) && cw.takePrey(adult) === null && !baby.dead;
+    baby.age = BROOD.GRACE + 0.5;   // past the grace, still a small juvenile (grow 0.35)
+    const pr = cw.qPrey(adult), th = cw.qThreat(baby);
+    const postGrace = !!pr && pr.item === baby && !!th && th.item === adult && cw.takePrey(adult) === baby;
+    check('brood grace: a conspecific newborn is not prey (nor its parent its threat) for BROOD.GRACE s; afterwards real cannibalism is possible and the juvenile SENSES the cannibal (symmetric qThreat)', graceSafe && postGrace, `grace ${BROOD.GRACE}s: safe ${graceSafe}, post-grace eaten+sensed ${postGrace}`);
+    const minnow = cw.makeFish('minnow', ONES, 0); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
+    check('the grace is kin-only: another species\' newborn is still prey', !!cw.qPrey(adult) && cw.qPrey(adult).item === minnow); }
+  // in a running lake: no conspecific is eaten inside its grace (before the fix bass/pike ate ~half their brood within 2 s)
+  { seed(99); const rw = new World(); const kills = { young: 0, any: 0 }, orig = rw.takePrey.bind(rw);
+    rw.takePrey = a => { const p = orig(a); if (p && p.species === a.species) { kills.any++; if (p.age < BROOD.GRACE) kills.young++; } return p; };
+    const b0 = rw.stats.births.bass + rw.stats.births.pike;
+    for (let i = 0; i < 600; i++) rw.step(1 / 30);
+    const bred = rw.stats.births.bass + rw.stats.births.pike - b0;
+    check('running lake: zero conspecific kills of fish younger than BROOD.GRACE (bass/pike do breed in the window)', kills.young === 0 && bred > 0, `young conspecific kills ${kills.young} (all conspecific ${kills.any}), bass+pike births ${bred}`); }
+  // brood SCATTER: young are placed BROOD.SCATTER px from the parents, out of immediate strike reach (not ±6 px on top of them)
+  { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2);
+    const [p, q] = fw.agents; p.age = q.age = SP.minnow.matureAge + 5; p.energy = q.energy = 1.0; p.mateCd = q.mateCd = 0;
+    p.x = 1000; p.y = 300; q.x = 1008; q.y = 300; fw.time = SP.minnow.spawnPeak * SEASON.YEAR_LEN; fw.agentGrid.rebuild(fw.agents);
+    const b0 = fw.stats.births.minnow; for (let i = 0; i < 120 && fw.stats.births.minnow === b0; i++) fw.step(1 / 30);
+    const kids = fw.agents.filter(a => a.species === 'minnow' && a.age < 0.05 && a.bornSexual);
+    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, ds = kids.map(k => Math.hypot(k.x - mx, k.y - my));
+    check('brood scatter: newborns are placed within the BROOD.SCATTER annulus around the parents', kids.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 3 && d <= BROOD.SCATTER[1] + 3), `${kids.length} young at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
+
+  // (2) ASEXUAL BUDDING conserves energy — the lone parent loses at least the energy its buds are born with
+  { seed(8); const bw = new World(); const par = bw.agents.find(a => a.species === 'minnow'); bw.agents = [par];
+    bw.plankton = []; bw.insects = []; par.age = SP.minnow.matureAge + 5; par.energy = 1.0; par.mateCd = 0; par.x = 1000; par.y = 300;
+    bw.time = SP.minnow.spawnPeak * SEASON.YEAR_LEN; bw.agentGrid.rebuild(bw.agents);
+    let drop = 0, k = 0;
+    for (let i = 0; i < 200 && k === 0; i++) { const e0 = par.energy, b0 = bw.stats.births.minnow; bw.step(1 / 30); k = bw.stats.births.minnow - b0; drop = e0 - par.energy; }
+    check('asexual budding pays for its young: parent energy drop ≥ Σ childEnergy (no free energy)', k > 0 && drop >= k * SP.minnow.childEnergy - 1e-9, `${k} buds: parent −${drop.toFixed(3)} vs children +${(k * SP.minnow.childEnergy).toFixed(3)}`); }
+
+  // (3) dt-INDEPENDENT FEEDING — grazing is a per-second rate and discrete items obey a handling time (FEED.HANDLE)
+  { seed(72); const gw = new World(); const carp = gw.makeFish('carp', ONES); carp.x = 400; carp.y = bedY(400) - 20;
+    const pl = gw.makePlant(400, true); pl.height = pl.maxHeight = 130; gw.plants = [pl];
+    const h0 = pl.height, e60 = gw.bitePlant(carp, 1 / 60), d60 = h0 - pl.height, h1 = pl.height, e30 = gw.bitePlant(carp, 1 / 30), d30 = h1 - pl.height;
+    check('plant grazing is per SECOND: a 1/30 s bite removes 2× a 1/60 s bite (energy ∝ biomass grazed)', Math.abs(d30 - 2 * d60) < 1e-9 && Math.abs(e30 - 2 * e60) < 1e-9 && Math.abs(d60 - PLANTC.BITE_RATE / 60) < 1e-9, `1/60: −${d60.toFixed(2)}px +${e60.toFixed(3)}  1/30: −${d30.toFixed(2)}px +${e30.toFixed(3)}`); }
+  { const eaten = (dt, steps) => { seed(71); const fw = new World(); fw.plankton = []; fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
+      const cat = fw.makeFish('catfish', ONES, SP.catfish.matureAge + 10); cat.x = 1000; cat.y = bedY(1000) - 3; cat.energy = 0.3; fw.agents = [cat];
+      const pile = []; for (let i = 0; i < 40; i++) { const L = fw._mkLarva(1000, 0); L.y = cat.y; pile.push(L); } fw.larvae = pile.slice();
+      for (let i = 0; i < steps; i++) fw.step(dt);
+      return pile.filter(L => L.dead).length; };
+    const n30 = eaten(1 / 30, 1), n60 = eaten(1 / 60, 2);
+    check('discrete-item intake per second is dt-independent (handling time): one 1/30 step eats as many larvae as two 1/60 steps', n30 === n60 && n60 === Math.round((2 / 60) / FEED.HANDLE), `1/30×1: ${n30}, 1/60×2: ${n60}`); }
+
+  // (4) PLANT LIGHT-STARVATION is judged on the running-mean light p.lightAvg, so beds survive the night & the winter …
+  // seeding is switched off in these probes so they isolate the starvation rule from canopy competition by new seedlings
+  const shelfPlants = (pw, xs) => xs.map(x => { const p = pw.makePlant(x, true); p.v = 0; p.gn = Float32Array.from([1, 1, 1, 1, 1, 1]); derivePlant(p); p.height = Math.min(30, p.maxHeight); return p; });
+  const savedSeed = PLANTC.SEED_RATE; PLANTC.SEED_RATE = 0;
+  const runNoFish = (pw, steps) => { for (let i = 0; i < steps; i++) { pw.agents = []; pw.step(1 / 30); } };
+  { seed(61); const pw = new World(); pw.agents = []; pw.time = 0.22 * SEASON.YEAR_LEN;
+    const beds = shelfPlants(pw, [80, 150, 220, 290, 360, 430]);
+    const deep = shelfPlants(pw, [1060, 1110, 1160, 1210]);   // pondweed forced into the dark deep basin (bed ≈ 0.98 H)
+    pw.plants = [...beds, ...deep];
+    let nightSeen = false, avgAtNight = Infinity;
+    for (let i = 0; i < 1800; i++) { pw.agents = []; pw.step(1 / 30); if (pw.env.light === 0) { nightSeen = true; avgAtNight = Math.min(avgAtNight, ...beds.filter(p => !p.dead).map(p => p.lightAvg / p.lightMin)); } }
+    check('established shelf beds survive a full day/night cycle (starvation judged on the running-mean light, not instantaneous)', nightSeen && beds.every(p => !p.dead) && avgAtNight >= 1, `${beds.filter(p => !p.dead).length}/${beds.length} alive; min lightAvg/lightMin at night ${avgAtNight.toFixed(2)}`);
+    check('…while plants that are too DEEP still light-starve (the depth limit holds)', deep.every(p => p.dead || p.lightAvg < p.lightMin) && deep.filter(p => p.dead).length >= deep.length / 2, `${deep.filter(p => p.dead).length}/${deep.length} deep plants dead`);
+    check('every live plant carries a finite running-mean light (p.lightAvg — persistent per-plant state)', pw.plants.every(p => Number.isFinite(p.lightAvg)), `${pw.plants.length} plants`); }
+  { seed(62); const ww = new World(); ww.agents = []; ww.time = 0.66 * SEASON.YEAR_LEN;   // late autumn → mid-winter
+    const beds = shelfPlants(ww, [90, 170, 250, 330, 1700, 1780, 1860, 1940]); ww.plants = beds.slice();
+    runNoFish(ww, 3600);   // 120 s ≈ 2 day/night cycles into winter
+    check('macrophytes OVERWINTER: shelf rootstock survives winter nights (dormancy ≠ death)', beds.every(p => !p.dead), `${beds.filter(p => !p.dead).length}/${beds.length} alive at yearFrac ${ww.env.yearFrac().toFixed(2)}, mean h ${(beds.reduce((s, p) => s + p.height, 0) / beds.length).toFixed(1)}`); }
+  PLANTC.SEED_RATE = savedSeed;
+
+  // (5) the seed-parent search is NOT shrunk by water turbidity (dispersal isn't vision); the fish plant SENSE still is
+  { seed(63); const sw = new World(); const pl = sw.makePlant(700, true); sw.plants = [pl]; sw.env.turbidity = 1;
+    const qy = pl.baseY - 1, far = 200;   // inside the stem's vertical span → point-to-stem distance = the 200 px horizontal gap
+    const q = sw.qPlant(900, qy, 240), n = sw.nearestPlant(900, qy, 240);
+    check('seed-parent search is unscaled by turbidity (nearestPlant finds a parent qPlant\'s murky-water sense misses)', !q && !!n && n.item === pl, `clarity ${sw.env.clarity().toFixed(2)}, parent at ~${far.toFixed(0)}px: sense ${!!q}, seeding ${!!n}`); }
+}
+
+// ==== audit-fixes: chemistry ====
+// Water-chemistry rework (AUDIT Tier 2 #11 + Tier 3 storm/scum): wet/dry mask, conservative no-flux diffusion, closed
+// P/N budgets (every transfer debits its source; boundary fluxes tallied in env.ledger), depth-damped diurnal temperature
+// + a slow hypolimnion, O₂ clamped before rate terms, storms that genuinely mix, a through-flow outlet, config hygiene.
+{
+  console.log('\n— audit-fixes: chemistry —');
+  const { Environment, buildWetMask, diffuse: cDiffuse, diffuseO2: cDiffuseO2 } = await import('../src/environment.js');
+  const CC = await import('../src/config.js');
+  const COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS, CW = WORLD.W / COLS, CH = WORLD.H / ROWS;
+  const sum64 = (f, M) => { let s = 0; for (let i = 0; i < f.length; i++) if (!M || M.wet[i]) s += f[i]; return s; };
+
+  // 1 — WET/DRY MASK
+  const M = buildWetMask();
+  let dry = 0, contiguous = true, bedOk = true;
+  for (let i = 0; i < COLS * ROWS; i++) if (!M.wet[i]) dry++;
+  for (let cy = 0; cy < ROWS; cy++) for (let cx = 0; cx < COLS; cx++) if (!!M.wet[cy * COLS + cx] !== (cx >= M.lo[cy] && cx <= M.hi[cy])) contiguous = false;
+  for (let cx = 0; cx < COLS; cx++) {
+    const br = M.bedRow[cx];
+    let maxBed = 0; for (let k = 0; k <= 16; k++) maxBed = Math.max(maxBed, bedY(Math.min(WORLD.W, (cx + k / 16) * CW)));
+    if (!M.wet[br * COLS + cx] || (br + 1 < ROWS && M.wet[(br + 1) * COLS + cx]) || br * CH > maxBed || (br + 1) * CH <= maxBed - 1e-6) bedOk = false;
+  }
+  check('wet mask: ~35% of field cells lie below the bed and are DRY', dry > 0.25 * COLS * ROWS && dry < 0.45 * COLS * ROWS, `${dry}/${COLS * ROWS} dry`);
+  check('wet mask: each row\'s wet cells are one contiguous run and each column\'s bedRow is its deepest wet cell (top above the bed)', contiguous && bedOk);
+  const em = new Environment();
+  let inRock = 0; for (let x = 1; x < WORLD.W; x += 7) for (const y of [bedY(x) - 1, bedY(x), bedY(x) + 3, WORLD.H]) if (!em.mask.wet[em.cellOf(x, y)]) inRock++;
+  check('cellOf() clamps every lake point (even on/below the bed) to a WET cell — nothing reads/writes rock', inRock === 0, `${inRock} rock hits`);
+  // means are over wet cells only: poisoning every dry cell must not move them
+  const mBefore = [em.meanPhos(), em.meanDin(), em.meanO2(), em.wetMean(em.phyto)];
+  for (let i = 0; i < em.phos.length; i++) if (!em.mask.wet[i]) { em.phos[i] = 99; em.nh4[i] = 99; em.no3[i] = 99; em.o2[i] = 99; em.phyto[i] = 99; }
+  check('field means (P, DIN, O₂, phyto) exclude the dry below-bed cells', [em.meanPhos(), em.meanDin(), em.meanO2(), em.wetMean(em.phyto)].every((v, k) => approx(v, mBefore[k], 1e-9)));
+  // dry cells are inert: a full env step (no world) leaves their (poisoned) values untouched
+  em.step(1 / 30);
+  let dryMoved = 0; for (let i = 0; i < em.phos.length; i++) if (!em.mask.wet[i] && (em.phos[i] !== 99 || em.o2[i] !== 99 || em.phyto[i] !== 99)) dryMoved++;
+  check('dry cells stay inert through a full env step (no process or flux touches rock); env.step works without a world', dryMoved === 0 && Number.isFinite(em.meanO2()), `${dryMoved} dry cells changed`);
+
+  // 2 — CONSERVATIVE DIFFUSION (flux form, no-flux at edges & bed)
+  const fd = new Float32Array(COLS * ROWS), td = new Float32Array(COLS * ROWS);
+  for (let i = 0; i < fd.length; i++) fd[i] = M.wet[i] ? ((i * 2654435761) % 1000) / 1000 : 7;   // deterministic rough field
+  fd[10 * COLS] += 100;            // a slug at the inflow edge cell (col 0)
+  fd[COLS - 1] += 50;              // and in the surface corner (scum row 0, right edge)
+  const d0 = sum64(fd, M);
+  for (let s = 0; s < 1800; s++) cDiffuse(fd, td, NUTRIENT.DIFFUSE / 30, M);   // 60 sim-seconds
+  const d1 = sum64(fd, M);
+  let dryTouched = 0; for (let i = 0; i < fd.length; i++) if (!M.wet[i] && fd[i] !== 7) dryTouched++;
+  check('diffuse() CONSERVES mass to float precision (edge slugs included; was −17% in 60 s at an edge)', Math.abs(d1 - d0) / d0 < 1e-5 && dryTouched === 0, `${d0.toFixed(4)} → ${d1.toFixed(4)} (rel ${((d1 - d0) / d0).toExponential(1)})`);
+  const fo = new Float32Array(COLS * ROWS); for (let i = 0; i < fo.length; i++) fo[i] = M.wet[i] ? ((i * 40503) % 997) / 997 : 0;
+  const o0 = sum64(fo, M);
+  for (let s = 0; s < 1800; s++) cDiffuseO2(fo, td, CC.ENV.O2_DIFFUSE / 30, s < 900 ? 0.9 : 0.1, M);
+  check('diffuseO2() (stratification-gated vertical mixing) is conservative too — symmetric per-interface mixing', Math.abs(sum64(fo, M) - o0) / o0 < 1e-5, `rel ${((sum64(fo, M) - o0) / o0).toExponential(1)}`);
+
+  // 3/4 — CLOSED P & N BUDGETS in the running lake (fish on; plants off — the plant uptake/return is the bio slice's and is
+  // measured separately below). Inventory = water + sediment + algae + cyano + DOM + detritus N/P; it may change only by
+  // inflow − outflow − burial (P) and inflow + N-fixation − outflow − denitrification (N).
+  // organic N+P held by detritus particles AND by living plants (each plant banks what it absorbs — world.js `p.nut`)
+  const detNut = ww => ww.detritus.reduce((s, d) => s + (d.dead ? 0 : (d.n || 0)), 0) + ww.plants.reduce((s, p) => s + (p.dead ? 0 : (p.nut || 0)), 0);
+  const runBudget = (plants) => {
+    seed(4242); const bw = new World(); bw.time = 0.18 * SEASON.YEAR_LEN;
+    const keep = CC.PLANT.SEED_RATE; if (!plants) { bw.plants = []; CC.PLANT.SEED_RATE = 0; }
+    const e = bw.env, invP = () => e.inventoryP() + detNut(bw) * NUTRIENT.ORGANIC_P, invN = () => e.inventoryN() + detNut(bw) * (1 - NUTRIENT.ORGANIC_P);
+    const P0 = invP(), N0 = invN(), L0 = { ...e.ledger };
+    let neg = 0;
+    for (let s = 0; s < 1800; s++) { bw.step(1 / 30); if (s % 60 === 0) for (const f of [e.phos, e.nh4, e.no3, e.dom, e.phyto, e.cyano, e.o2]) for (let i = 0; i < f.length; i++) if (f[i] < 0 || !Number.isFinite(f[i])) neg++;   /* strictly ≥ 0: even a −1e-22 rounding residue breaks the load round-trip */ }
+    CC.PLANT.SEED_RATE = keep;
+    const L = e.ledger, inP = L.inP - L0.inP, outP = L.outP - L0.outP, buryP = L.buryP - L0.buryP;
+    const resP = (invP() - P0) - (inP - outP - buryP);
+    const resN = (invN() - N0) - ((L.inN - L0.inN) + (L.fixN - L0.fixN) - (L.outN - L0.outN) - (L.denitN - L0.denitN));
+    return { P0, resP, resN, inP, outP, buryP, neg, N0 };
+  };
+  const B = runBudget(false);
+  console.log(`P budget 60 s: inv ${B.P0.toFixed(1)}, in ${B.inP.toFixed(2)} out ${B.outP.toFixed(2)} buried ${B.buryP.toFixed(2)} → residual ${B.resP.toExponential(2)} P; N residual ${B.resN.toExponential(2)}`);
+  // tolerance: 0.05 P ≈ 0.01% of the ~370 P inventory and ~0.2% of the 60-s inflow — Float32 field rounding is ~1e-3..1e-2
+  check('P INVENTORY is CLOSED: Δ(total P) = inflow − outflow − burial within 0.05 P over 60 s (fish on, plants off)', Math.abs(B.resP) < 0.05, `residual ${B.resP.toFixed(4)} P (was −114 P unexplained per 60 s)`);
+  check('N INVENTORY is CLOSED: Δ(total N) = inflow + N-fixation − outflow − denitrification within 0.2 N over 60 s', Math.abs(B.resN) < 0.2, `residual ${B.resN.toFixed(4)} N of ${B.N0.toFixed(0)}`);
+  check('the through-flow outlet and sediment burial are both real P sinks (the outflow now has a chemical effect)', B.outP > 0.5 && B.buryP > 0.5, `out ${B.outP.toFixed(2)}, buried ${B.buryP.toFixed(2)}`);
+  check('no field goes negative or non-finite in the running lake (no pool is overdrawn)', B.neg === 0, `${B.neg} bad samples`);
+  const BP = runBudget(true);
+  // plants ON: each plant banks the N+P it absorbs (stoichiometric uptake) and returns its share on shed/graze/death
+  check('P and N stay CLOSED with plants growing, being grazed, shedding and dying (the plant pool is mass-conserving)', Math.abs(BP.resP) < 0.05 && Math.abs(BP.resN) < 0.2 && BP.neg === 0, `P residual ${BP.resP.toFixed(4)}, N residual ${BP.resN.toFixed(4)} (was −0.3…+1.6 P per 60 s)`);
+
+  // 4 — N stoichiometry is Redfield-consistent (no N created on recycling) and cyano fixes N only for the deficit
+  check('algae take up N at the same Redfield ratio they recycle it (N_USE = P_USE·(1−ORGANIC_P)/ORGANIC_P)', approx(PHYTO.N_USE, PHYTO.P_USE * (1 - NUTRIENT.ORGANIC_P) / NUTRIENT.ORGANIC_P, 1e-3) && approx(CYANO.N_USE, PHYTO.N_USE, 1e-9));
+  const fx = new Environment(), fz = new Environment();
+  for (const [e, n] of [[fx, 0.5], [fz, 0]]) { e.tempC = CYANO.TEMP_OPT; for (let i = 0; i < e.cyano.length; i++) { e.cyano[i] = 0.1; e.phos[i] = 0.5; e.nh4[i] = n; e.no3[i] = 0; } }
+  for (let k = 0; k < 30; k++) { fx.cyanobacteria(1 / 30); fz.cyanobacteria(1 / 30); }
+  check('cyanobacteria fix N₂ only for their deficit — N-replete water → ~no fixation, N-free water → fixation', fx.ledger.fixN < 0.05 * fz.ledger.fixN && fz.ledger.fixN > 0, `fixN replete ${fx.ledger.fixN.toFixed(3)} vs N-free ${fz.ledger.fixN.toFixed(3)}`);
+
+  // 5 — DEEP TEMPERATURE: the diurnal swing is a surface skin; the hypolimnion has its own slow, steady temperature
+  seed(77); const tw2 = new World(); tw2.time = 0.22 * SEASON.YEAR_LEN; tw2.env.setWeather(0);   // calm: a storm would (correctly) mix the deep
+  const tcx = WORLD.W * BASIN.CENTER, tdy = bedY(tcx) - 12;
+  let sMin = 99, sMax = -99, dMin = 99, dMax = -99;
+  for (let s = 0; s < 2400; s++) { tw2.step(1 / 30); if (s > 600) { const ts = tw2.env.tempAt(tcx, 8), td2 = tw2.env.tempAt(tcx, tdy); sMin = Math.min(sMin, ts); sMax = Math.max(sMax, ts); dMin = Math.min(dMin, td2); dMax = Math.max(dMax, td2); } }
+  check('the surface keeps its diurnal swing but the summer hypolimnion does not (deep range < 1 °C; was ±4 °C)', sMax - sMin > 3 && dMax - dMin < 1 && dMax < sMin, `surface ${sMin.toFixed(1)}..${sMax.toFixed(1)}, deep ${dMin.toFixed(1)}..${dMax.toFixed(1)} °C`);
+
+  // 6 — NEGATIVE O₂ never reaches a rate term (the microbial Monod pole at −O2_HALF)
+  let monodOk = true;
+  for (const o of [-0.05, -0.099, -0.1, -0.5]) {
+    const e = new Environment(), i = e.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);
+    e.o2[i] = o; e.dom[i] = 1; e.phos[i] = 0.001; e.nh4[i] = 0.001;
+    e.microbialLoop(1 / 30); e.nitrogenCycle(1 / 30); e.sedimentP(1 / 30);
+    if (!(e.dom[i] <= 1) || e.phos[i] < 0 || e.nh4[i] < 0 || ![...e.dom, ...e.o2, ...e.phos].every(Number.isFinite)) monodOk = false;
+  }
+  check('negative O₂ is clamped before the Monod/redox rate terms (decomposition never runs backwards, no NaN)', monodOk);
+
+  // 7 — STORMS GENUINELY MIX: a sustained summer storm breaks the thermocline (was stuck at strat ≈ 0.83)
+  const se2 = new Environment(); se2.year = 0.25; se2.strat = 1; se2.setWeather(3);
+  for (let s = 0; s < 30 * 120; s++) { se2.year = 0.25; se2.step(1 / 30); se2.year = 0.25; }
+  const sc2 = new Environment(); sc2.strat = 1; sc2.setWeather(2);
+  for (let s = 0; s < 30 * 120; s++) { sc2.year = 0.25; sc2.step(1 / 30); }
+  check('a sustained (120 s) summer storm fully breaks stratification, while rain only nibbles at it', se2.strat < 0.05 && sc2.strat > 0.9, `storm strat ${se2.strat.toFixed(2)}, rain strat ${sc2.strat.toFixed(2)}`);
+
+  // 8 — TOXIC SCUM IS AN EVENT, not an artefact: buoyancy alone (cold → no growth, calm) can't float the seed strain
+  // into a toxic layer; a warm, calm, P-loaded bloom can.
+  const bz = new Environment(); bz.setWeather(0);
+  for (let s = 0; s < 30 * 60; s++) { bz.tempC = 8; bz.step(1 / 30); }
+  let toxSeed = 0; for (let cx = 0; cx < COLS; cx++) if (bz.cyano[cx] > CYANO.TOX_THRESH * CYANO.CAP) toxSeed++;
+  const bl = new Environment(); bl.setWeather(0); bl.year = 0.25;
+  for (let i = 0; i < bl.phos.length; i++) bl.phos[i] = 0.6;
+  for (let s = 0; s < 30 * 90; s++) bl.step(1 / 30);
+  let toxBloom = 0; for (let cx = 0; cx < COLS; cx++) if (bl.cyano[cx] > CYANO.TOX_THRESH * CYANO.CAP) toxBloom++;
+  check('buoyancy alone cannot make the seed strain toxic (cold, calm: 0 toxic surface cells)', toxSeed === 0, `${toxSeed} toxic`);
+  check('a warm, calm, P-loaded lake CAN grow a toxic surface scum (the event still exists)', toxBloom > 0, `${toxBloom}/${COLS} toxic surface cells`);
+
+  // 10 — CONFIG HYGIENE: live TIME aliases; dead knobs gone
+  const yl = TIME.YEAR_LEN, dl = TIME.DAY_LEN; TIME.YEAR_LEN = 1234; TIME.DAY_LEN = 77;
+  const live = SEASON.YEAR_LEN === 1234 && CC.ENV.DAY_LEN === 77; TIME.YEAR_LEN = yl; TIME.DAY_LEN = dl;
+  check('SEASON.YEAR_LEN and ENV.DAY_LEN are LIVE aliases of TIME (not load-time copies)', live && SEASON.YEAR_LEN === yl);
+  check('dead knobs BASIN.SEDIMENT and NUTRIENT.N_START are removed', !('SEDIMENT' in BASIN) && !('N_START' in NUTRIENT));
+}
+
+// ==== apex energetics (2026-10-12): innate pursuit + hypoxia avoidance — BEHAVIOURAL (A/B against an identical world) ====
+console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
+{
+  const { ENV: ENVC } = await import('../src/config.js');
+  // A bass facing straight down with a minnow 60 px to its right: with the pursuit reflex it ends up pointing closer to
+  // the prey than the SAME world (same seed, same brain) with pursuit switched off.
+  const pursuitRun = (p) => {
+    const keep = SP.bass.innate.pursuit; SP.bass.innate.pursuit = p;
+    try {
+      seed(777); const tw = new World(); tw.agents = [];
+      const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2), m = tw.makeFish('minnow', null, SP.minnow.matureAge * 1.2);   // adults (makeFish's default age 9999 is past maxAge → instant old-age death)
+      b.x = 1000; b.y = 420; b.heading = b.velHeading = Math.PI / 2; m.x = 1060; m.y = 420;
+      tw.agents.push(b, m);
+      for (let i = 0; i < 12; i++) tw.step(1 / 30);
+      return Math.abs(angDiff(Math.atan2(m.y - b.y, m.x - b.x), b.heading));
+    } finally { SP.bass.innate.pursuit = keep; }
+  };
+  const offA = pursuitRun(0), onA = pursuitRun(SP.bass.innate.pursuit);
+  check('innate PURSUIT turns a bass toward prey it senses (vs the identical world with pursuit off)', onA < offA - 0.05, `angle to prey ${onA.toFixed(2)} rad with pursuit vs ${offA.toFixed(2)} without`);
+  // A bass at its home depth in O₂-starved water: hypoxia avoidance turns it UPWARD (heading's vertical component goes
+  // negative = toward the surface), unlike the identical world with the reflex disabled (margin 0 ⇒ never triggers).
+  const hypoRun = (margin) => {
+    const keep = ENVC.HYPOXIA_AVOID; ENVC.HYPOXIA_AVOID = margin;
+    try {
+      seed(778); const tw = new World(); tw.agents = [];
+      const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2); b.x = 1000; b.y = SP.bass.innate.homeDepth * tw.bedY(1000); b.heading = b.velHeading = 0;
+      tw.agents.push(b);
+      for (let i = 0; i < 12; i++) { tw.env.o2.fill(0.03); tw.step(1 / 30); }
+      return Math.sin(b.heading);
+    } finally { ENVC.HYPOXIA_AVOID = keep; }
+  };
+  const offH = hypoRun(0), onH = hypoRun(ENVC.HYPOXIA_AVOID);
+  check('innate HYPOXIA AVOIDANCE steers a fish upward out of O₂-starved water (vs the reflex disabled)', onH < offH - 0.05, `sin(heading) ${onH.toFixed(2)} with avoidance vs ${offH.toFixed(2)} without (negative = upward)`);
+}
+
+// ==== behavioural replacements for formula-copy checks (2026-10-12; AUDIT Tier 1 #5) ====
+// The older thermal/hypoxia/nocturnal/mate-choice checks re-derived the code's formula in the test (deleting the sim
+// line still passed). These run the REAL step / chooseMate and compare against an identical world with one term off.
+console.log('\n— behavioural checks (real sim paths, A/B) —');
+{
+  const { ENV: ENVB } = await import('../src/config.js');
+  // a lone carp (no fish/plankton diet) in a world with its food cleared, so energy changes only by the drain terms
+  const loneCarp = (seedN, prep) => {
+    seed(seedN); const tw = new World(); tw.agents = []; tw.plants = []; tw.detritus = []; tw.larvae = []; tw.snails = []; tw.cray = []; tw.plankton = []; tw.insects = [];
+    const c = tw.makeFish('carp'); c.x = 1000; c.y = 0.6 * tw.bedY(1000); c.energy = 1.0; tw.agents.push(c); prep && prep(tw, c); return { tw, c };
+  };
+  const drain = (knob, val, setup, steps = 30) => {
+    const keep = ENVB[knob]; ENVB[knob] = val;
+    try { const { tw, c } = loneCarp(901, setup); for (let i = 0; i < steps; i++) { setup && setup(tw, c); tw.step(1 / 30); } return 1.0 - c.energy; }
+    finally { ENVB[knob] = keep; }
+  };
+  // thermal stress: hold the water 15 °C above the carp's band → the THERMAL_STRESS term must cost real energy
+  const hot = (tw, c) => { tw.env.tempAt = () => c.sp.tempOpt + c.tempTol + 15; };
+  const thOn = drain('THERMAL_STRESS', ENVB.THERMAL_STRESS, hot), thOff = drain('THERMAL_STRESS', 0, hot);
+  check('THERMAL STRESS really drains energy in the step (vs the identical world with the term zeroed)', thOn > thOff + 0.01, `drain ${thOn.toFixed(3)} with vs ${thOff.toFixed(3)} without (1 s, 15 °C over the band)`);
+  // hypoxia: O₂-starved water → the HYPOXIA_PENALTY term must cost real energy
+  const anoxic = tw => tw.env.o2.fill(0.02);
+  const hyOn = drain('HYPOXIA_PENALTY', ENVB.HYPOXIA_PENALTY, anoxic), hyOff = drain('HYPOXIA_PENALTY', 0, anoxic);
+  check('HYPOXIA really drains energy in the step (vs the identical world with the penalty zeroed)', hyOn > hyOff + 0.02, `drain ${hyOn.toFixed(3)} with vs ${hyOff.toFixed(3)} without (1 s at O₂ 0.02)`);
+  // nocturnal catfish: the same fish in the same world swims harder at night than at midday (the real move step)
+  // (env.step recomputes light from the clock each step, so set the time of day: t=0 midnight, t≈0.45 near noon)
+  const catSpeed = t0 => {   // averaged over 3 seeds (brains differ) so the comparison isn't hostage to one brain
+    let sp = 0;
+    for (const sd of [902, 903, 904]) {
+      seed(sd); const tw = new World(); tw.agents = []; tw.env.setWeather(0); tw.env.t = t0;
+      const f = tw.makeFish('catfish'); f.x = 1000; f.y = 0.9 * tw.bedY(1000); tw.agents.push(f);
+      for (let i = 0; i < 30; i++) tw.step(1 / 30);                      // warm-up: get off the zero-speed start
+      for (let i = 0; i < 90; i++) { tw.step(1 / 30); sp += f.spd; }
+    }
+    return sp / 270;
+  };
+  const night = catSpeed(0.0), day = catSpeed(0.45);
+  // NOTE (2026-10-12): the realised effect is WEAK (~8% faster at night) although the innate cruise TARGET is ~2.7× higher
+  // at night — the brain's own thrust dominates. Tracked in ROADMAP as a tuning item; this check guards the direction.
+  check('catfish are NOCTURNAL in the real move step — the same fish swims faster at night than at midday (3-seed mean)', night > day * 1.03, `mean speed night ${night.toFixed(1)} vs day ${day.toFixed(1)} (${((night / day - 1) * 100).toFixed(0)}% faster)`);
+  // mate choice on GENES alone: two candidates identical except their trait genes; swapping the genes swaps the choice
+  const pick = (gGood, gPoor) => {
+    const mw = new World(); mw.agents = [];
+    const ch = mw.addAgent('minnow', { x: 500, y: 200 }), A = mw.addAgent('minnow', { x: 510, y: 205 }), B = mw.addAgent('minnow', { x: 490, y: 195 });
+    for (const f of [ch, A, B]) { f.age = f.sp.matureAge + 5; f.mateCd = 0; f._mated = false; f.dead = false; f.energy = f.sp.reproEnergy + 0.1; f.eaten = 10; }
+    A.genes = Float32Array.from(gGood); B.genes = Float32Array.from(gPoor);
+    mw.agentGrid.rebuild(mw.agents); const c = mw.chooseMate(ch); return c && c.item === A ? 'A' : c && c.item === B ? 'B' : 'none';
+  };
+  const hi = [1.2, 1.2, 1.2, 1, 1, 1, 1], lo = [0.85, 0.85, 0.85, 1, 1, 1, 1];
+  const p1 = pick(hi, lo), p2 = pick(lo, hi);
+  check('mate choice selects on GENES alone (equal condition & foraging): swapping the genes swaps the chosen mate', p1 === 'A' && p2 === 'B', `good genes on A → chose ${p1}; on B → chose ${p2}`);
+}
+
+// ==== more behavioural coverage (2026-10-12; AUDIT Tier 1 #5 gaps) ====
+console.log('\n— determinism (stress scenario), body-depth defence, Baldwinian persistence —');
+{
+  // DETERMINISM beyond the default window: a MIDSUMMER start under a forced STORM in a CONTAMINATED lake (toxicant on),
+  // 1500 steps, the full state hashed every 100 steps — same seed ⇒ identical hash sequence, and a divergence is localised.
+  const fnv = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const detRun = () => {
+    const keep = TOX.AMBIENT; TOX.AMBIENT = 0.3;
+    try {
+      seed(4321); const dw = new World(); dw.time = 0.45 * SEASON.YEAR_LEN; dw.env.setWeather(3);
+      const hs = []; for (let i = 0; i < 1500; i++) { dw.step(1 / 30); if (i % 100 === 99) hs.push(fnv(JSON.stringify(dw.toJSON()))); }
+      return hs;
+    } finally { TOX.AMBIENT = keep; }
+  };
+  const h1 = detRun(), h2 = detRun(), firstDiff = h1.findIndex((h, i) => h !== h2[i]);
+  check('DETERMINISM holds in a midsummer storm with the toxicant on (state hash every 100 steps, 1500 steps)', firstDiff === -1, firstDiff === -1 ? `${h1.length} hashes identical` : `diverged by step ${(firstDiff + 1) * 100}`);
+  // BODY-DEPTH DEFENCE through the real prey query: a pike can take a normal carp at the gape margin but not the same carp
+  // with a deep body (body gene ↑ → bodyMul ↑ → effective size above the pike's gape)
+  const preyFor = bodyGene => {
+    seed(905); const tw = new World(); tw.agents = [];
+    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('carp', [1, 1, 1, 1, 1, bodyGene, 1]);   // fixed genes: a random pike size gene would move the gape margin
+    pk.x = 1000; pk.y = 500; cp.x = 1020; cp.y = 500; tw.agents.push(pk, cp); tw.agentGrid.rebuild(tw.agents);
+    const m = tw.qPrey(pk); return { found: !!(m && m.item === cp), bodyMul: cp.bodyMul };
+  };
+  const slim = preyFor(1.0), deep = preyFor(1.35);
+  check('BODY DEPTH is a real predation defence in qPrey: a pike targets the normal carp but not the deep-bodied one', slim.found && !deep.found, `normal (bodyMul ${slim.bodyMul.toFixed(2)}) targeted: ${slim.found}; deep (bodyMul ${deep.bodyMul.toFixed(2)}) targeted: ${deep.found}`);
+  // BALDWINIAN at the persistence boundary: a fish's LEARNED weights (a.lw) never reach a save or a champion — only the
+  // inherited genotype (a.g) does
+  seed(906); const bw = new World(); const f = bw.agents.find(a => a.species === 'minnow');
+  for (const a of bw.agents) if (a.species === 'minnow') a.lw = new Float32Array(a.g.length).fill(3.9);   // EVERY minnow (so whichever is champion) has a wildly different learned policy
+  const saved = bw.toJSON().agents.find(s => s.id === f.id), champ = bw.champions().minnow;
+  const sameAsG = arr => arr && arr.length === f.g.length && Array.from(arr).every((v, i) => Math.abs(v - f.g[i]) < 1e-6);
+  check('BALDWINIAN persistence: the saved genome is the inherited a.g, never the learned a.lw', sameAsG(saved && saved.w), saved ? `saved w[0..2] ${Array.from(saved.w).slice(0, 3).map(v => v.toFixed(2)).join(',')}` : 'no saved agent');
+  check('BALDWINIAN champions: champion brains are genotypes (no learned 3.9 weights leak in)', !!champ && !Array.from(champ.w || champ.g || []).some(v => v === 3.9 || Math.abs(v - 3.9) < 1e-6), champ ? 'genotype only' : 'no champion');
+}
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

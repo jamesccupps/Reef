@@ -1,161 +1,128 @@
 # Synapse Reef
 
-A browser-based neuroevolution **lake** — many times the size of the screen, explored
-through a camera that zooms smoothly from the whole lake in one view down to a single
-fish. Six species each think with their own tiny neural network and evolve — across
-generations — to forage, school, hunt, and breed in a living environment of day/night
-light, weather, dissolved oxygen, and growing plants. Nothing is scripted: behavior
-emerges from selection.
+A browser-based **neuroevolution lake**. The lake is many times the size of the screen, and a camera zooms smoothly from the whole basin down to a single fish.
 
-**Drag** to pan, **scroll** to zoom, **click** any fish to follow it and watch its actual
-brain fire in real time — or hit **T** for a hands-off cinematic tour.
+Six species of fish each think with their own small **recurrent neural network**. They evolve over generations, and also learn within each lifetime, to forage, school, hunt, flee, hide and breed. Their world has seasons, weather, dissolved oxygen, a nitrogen and phosphorus cycle, plankton, evolving water plants, insects, snails and crayfish. Nothing is scripted: behaviour emerges from selection.
+
+**Drag** to pan, **scroll** (or pinch) to zoom, and **click** any fish to follow it and watch its brain fire live. Press **T** for a hands-off cinematic tour.
 
 ---
 
 ## Run it
 
-The simulation is plain client-side JavaScript (ES modules) drawn on a `<canvas>`.
-ES modules can't load from a `file://` page, so it needs to be served over HTTP.
-Pick either option, then open the URL in a desktop browser:
+Everything runs client-side as plain ES modules. Browsers won't load modules from a `file://` page, so serve the folder over HTTP:
 
 ```bash
-# option A — the bundled server (sets MIME types + disables caching)
-python3 serve.py
-#   ->  http://localhost:8000
-
-# option B — Python's built-in server
-python3 -m http.server 8000
-#   ->  http://localhost:8000
+npm run serve        # = node serve.mjs  ->  http://localhost:8000   (Node 18+)
 ```
 
-> A desktop browser is required (Chrome, Firefox, Safari, Edge). The multi-file
-> project will not render inside a phone's chat-app preview.
+To use a different port, run `node serve.mjs 8080`. There's also a Python twin: `python serve.py` (or `py serve.py` on Windows).
 
-No build step, no dependencies, no backend. The neural nets are small enough that
-everything runs in real time on the main thread.
+Both servers listen on **localhost only**, refuse directory listings and dotfiles, and send a strict Content-Security-Policy.
+
+There is no build step and no runtime dependencies. Open the URL in a desktop browser (Chrome, Edge, Firefox or Safari). With WebGL2 you get the full GPU look (HDR bloom, volumetric light, lit fish). Without it the app falls back to plain Canvas2D, and it also switches to Canvas2D on its own if the GPU context is lost.
 
 ---
 
 ## Controls
 
 **Camera**
-
-- **Drag** to pan, **scroll** to zoom (from the whole lake down to one fish).
-- **Click a fish** — follow it; its stats and live brain appear in the right rail.
-- **O** frame the whole lake · **F** follow the selected fish · **T** toggle the cinematic
-  auto-tour · **+ / −** zoom. **Esc** deselects (and returns to the whole-lake view).
-- **Minimap** (bottom-left) shows the whole lake, agent density, and the camera's current
-  view rectangle — click it to jump there. The camera control bar is bottom-right.
+- **Drag** to pan; **scroll** or **pinch** to zoom, from the whole lake down to one fish.
+- **Click a fish** to follow it. Its stats, genes, niche and live brain appear in the right-hand panel.
+- **O** frames the whole lake. **F** follows the selected fish. **T** toggles the cinematic tour. **+ / −** zoom. **Esc** deselects.
+- The **minimap** (bottom-left) shows the whole lake, agent density and your view rectangle; click it to jump there.
 
 **Simulation**
-
-- **Space** pauses. **Pause / 1× / 2× / 4×** — speed (fixed timestep, so speeding up runs
-  more steps per frame rather than skipping physics).
-- **Perf HUD** (checkbox) — fps, agents drawn vs. total, sprite/dot counts, sim ms, steps/s,
-  zoom, and sprite-cache size.
-- **⤢ Fullscreen** — expand the lake to the whole screen with a glanceable stats overlay
-  (gen, population, time, weather, oxygen, per-species counts). Esc exits. The cinematic
-  auto-tour starts automatically — a true ambient screensaver.
-- **Weather** — leave on *Auto* for the natural cycle, or force Clear/Cloudy/Rain/Storm.
-- **Oxygen map** — overlays the dissolved-oxygen field (red = low/dead zone, teal = high).
-- **Temp map** — overlays the temperature field (blue = cold deep water, amber = warm surface);
-  in summer you can see the lake **stratify** into a warm surface layer over a cold deep one.
-- **Algae map** — overlays the phytoplankton field (green = dense algae); it bands in the sunlit
-  upper water and blooms when nutrients are high.
-- **Vision** — draws what the followed fish currently senses (food, threats, prey, and
-  its oxygen-gradient cue).
-- **Scatter food** — drop a burst of plankton.
-- **+ Species** — introduce a fish, seeded from the current best brain of its kind.
-- **Save brains / Load brains** — store the best genome per species in this browser
-  and re-seed from them later.
-- **Export state / Import state** — write or read the *entire* pond (every fish, its
-  genome, the plants, and the environment) as a portable `.json` file.
-- **Reset** — start a fresh random pond. Save brains first if you want to keep them.
+- **Space** pauses.
+- Speeds are **½× / 1× / 2× / 4×**. The timestep is fixed, so faster speeds run more steps per frame instead of skipping physics. Drawing is interpolated between steps, so motion stays smooth at any speed or refresh rate.
+- **⤢ Fullscreen** turns the app into an ambient screensaver: relaxed ½× pace, auto-tour and a glanceable stats overlay. Leaving fullscreen restores your previous speed and pause state.
+- **Weather**: *Auto* follows the natural cycle, or force Clear, Cloudy, Rain or Storm.
+- **Overlays**:
+  - **Oxygen map**: low-oxygen dead zones;
+  - **Temp map**: summer stratification;
+  - **Algae map**: phytoplankton blooms;
+  - **Vision**: what the followed fish senses.
+- **Temperature units**: click any temperature readout to switch between °F and °C.
+- **Scatter food**, **+ Species** (adds a fish seeded from the current best brain of that species) and **Save / Load brains** all respect the lake's population caps. Save / Load brains stores the champion genome of each species in this browser.
+- **Export / Import state** saves the *entire* lake as a `.json` file: every fish, genome and learned weight, the plants, particles, water chemistry and the random-number state. Importing resumes **exactly**, and a reloaded lake continues step-for-step like the original. Imports are validated: a damaged or hostile file is rejected without touching the running lake. Saves from older versions migrate, and evolved brains keep their weights.
+- **Reset** starts a fresh random lake. Save brains first if you want to keep them.
 
 ---
 
 ## What you're watching
 
-**The fish.** Six species across a size gradient, each with a different brain shape,
-diet, and set of senses:
+**The fish.** Six species across a size gradient, each with its own body shape, brain size, senses and diet:
 
-| species | size | role | eats |
+| Species | Role | Eats | Brain (inputs → hidden → outputs) |
 |---|---|---|---|
-| Minnow  | small  | schooling planktivore | plankton |
-| Sunfish | small  | omnivore | plankton + plants |
-| Catfish | medium | bottom feeder | detritus + plants |
-| Carp    | large  | grazer | plants + detritus |
-| Bass    | medium | predator | smaller fish |
-| Pike    | large  | apex predator | anything smaller |
+| Minnow  | schooling planktivore | zooplankton, insects | 23 → 12 → 5 |
+| Sunfish | littoral omnivore | zooplankton, plants, larvae, insects, snails | 20 → 10 → 5 |
+| Catfish | nocturnal bottom feeder | detritus, plants, larvae, crayfish | 17 → 10 → 5 |
+| Carp    | benthic grazer | plants, detritus, larvae, snails | 17 → 9 → 5 |
+| Bass    | mid-water predator | smaller fish, insects, crayfish | 17 → 9 → 5 |
+| Pike    | ambush apex predator | smaller fish, crayfish | 16 → 8 → 5 |
 
-Predation is by **size ratio** — a fish can eat prey up to ~85% of its own size — so
-the food web is a gradient, not a fixed list. Fish are **born as juveniles and grow**
-to full size with age, and smaller juveniles are easier prey.
+Predation works by **effective size**: a fish can eat prey up to ~85% of its own size, and juveniles and slim-bodied fish are easier to catch. Newborns get a short grace period before their own species can eat them. After that, bass and pike are cannibals, like the real ones.
 
-**The brain.** Each fish runs a small feed-forward network (e.g. `14 → 12 → 2`) every
-tick. Inputs are its senses (direction/closeness of nearest food, threats, prey, school
-cohesion, local oxygen, energy, walls, depth); outputs are **turn** and **thrust**.
-The genome is the flattened weights and biases.
+**The brain.**
+- Each fish runs a recurrent network every tick. Every hidden unit has a leaky memory.
+- Inputs are its senses:
+  - food, threats, prey, the school, oxygen, light and temperature at its depth;
+  - a compass and a bearing back to where it was born;
+  - a lateral-line *flow* sense that still works in murky water;
+  - the size of the nearest prey;
+  - its own *hunger* and *fear*.
+- It has five outputs: **turn**, **thrust**, and three gated actions: **strike**, **flee** and **hide**.
 
-**Evolution.** When two well-fed adults of the same species meet, they breed: the child's
-genome is a **uniform crossover** of both parents plus mutation. A well-fed fish that
-can't find a mate buds **asexually** as a fallback, so sparse species (and the initial
-random population) still evolve. To keep every species on screen, populations are held
-above a small floor by re-seeding — mostly mutated copies of that species' current best,
-so learned behavior is preserved.
+**Evolution and learning.**
+- Each fish inherits its brain plus seven **trait genes**: size, speed, temperature tolerance, fin, eye, body depth and **brain size**. Every gene has a cost, so fins, eyes and neurons all trade off against metabolism.
+- Mates are chosen on condition and genes. Breeding is **seasonal**, with clutch sizes that depend on condition, and is held in check by a logistic carrying capacity.
+- A trickle of immigrants rescues species that become locally rare.
+- During its life a fish also **learns**: a reward-modulated Hebbian rule strengthens the actions that fed it. This learning is *Baldwinian*: offspring inherit the evolved brain, never the learned weights.
 
-**The environment.** The lake is a real **basin** — shallow weedy shores, a deep cold middle —
-and organisms live at preferred depths (minnows up top, catfish on the bottom, pike hunting the
-mid-water). A day/night cycle drives light (which drives plankton blooms and plant photosynthesis);
-light fades fast with depth, so the deep is dark. A slow **seasonal** cycle warms and cools the
-lake: in **summer** it **stratifies** into a warm surface layer over a cold deep one, the deep
-**hypolimnion** loses its oxygen (sediment demand + a thermocline that blocks mixing) and becomes
-a seasonal dead zone; at spring/autumn **turnover** the layers mix and the deep re-oxygenates.
-Weather shifts light, surface mixing, rain, and **wind**; together with a gentle **inflow→outflow
-current** it drifts plankton and weak swimmers (the inflow also feeds nutrients into the shallows).
-The shallow shores grow **reed beds, weeds, and submerged logs** — **cover** that hides prey from
-predators, so the littoral is a refuge. The base of the food web is a **phytoplankton** field —
-free-floating algae that grows on light and nutrients, makes oxygen, and clouds the water.
-**Zooplankton** graze the algae and are eaten by the small planktivores, so a **phytoplankton →
-zooplankton → fish** chain rises and falls; **mussels** on the bed filter algae and clear the water.
-Dissolved oxygen is a real 2-D field — plants and algae produce it (more by day), fish and
-decomposition consume it (more in warm water), the surface re-aerates — that fish must learn to read.
-Let nutrients build up and you get **eutrophication**: an algal bloom that clouds the water and then
-crashes the oxygen. Dead fish sink, decay into nutrients, and feed the algae and plants — a closed loop.
+**The lake.**
+- **Basin and seasons.** The lake is a real basin: a shallow weedy shelf, a steep drop-off and a deep cold basin. Day and night drive light, which fades fast with depth and with turbidity. Seasons stratify the lake in summer, so the deep hypolimnion runs out of oxygen, and it overturns in spring and autumn. Wind, storms and an inflow→outflow current move water and weak swimmers.
+- **Chemistry.** Phosphorus and nitrogen cycle through the water:
+  - nitrification and denitrification;
+  - a sediment that binds phosphorus and releases it when anoxic;
+  - a microbial loop that decomposes dissolved organic matter.
+- **Food web.**
+  - Phytoplankton and nitrogen-fixing **cyanobacteria** compete at the base. A dense surface scum can be toxic.
+  - Zooplankton graze the algae and feed the planktivores.
+  - Mussels filter the water; snails scrape algae; crayfish scavenge the bed.
+  - Insect larvae develop on the bottom and hatch at the surface.
+- **Plants.** Water plants are four varieties (pondweed, milfoil, lilies, chara). Each plant carries its own evolving trait genes. They grow, shade one another, die back in autumn and regrow from rootstock in spring. They also provide cover where prey hide from predators.
 
-Expect the population to **dip during the first minute** (starting brains are random) and
-then climb as foraging evolves. Generations keep advancing as long as the sim runs.
+Expect the population to dip in the first minute, because the starting brains are random, and then recover as foraging evolves.
+
+**Graphics.** The scene is drawn in Canvas2D through the camera, with culling, level of detail and a sprite cache. A WebGL2 stage then adds:
+- linear-HDR bloom and an ACES tonemap;
+- god-rays, caustics and in-scattered light near the surface;
+- refraction, depth of field and a filmic grade;
+- directionally lit, mipmapped fish.
 
 ---
 
 ## Tuning
 
-Every balance knob lives in [`src/config.js`](src/config.js) (world size, day length,
-weather, oxygen budget, plankton/plant/detritus rates) and per-species values in
-[`src/species.js`](src/species.js) (sizes, brain shapes, metabolism, breeding thresholds,
-diets, speeds). Change a number, reload, watch the ecosystem respond.
+Balance values live in [`src/config.js`](src/config.js): world size, the calendar, chemistry, plankton, plants, fish behaviour, reproduction and the camera. Per-species values live in [`src/species.js`](src/species.js). Change a number, reload, and watch the ecosystem respond.
+
+`npm run balance [years]` prints a long-run report of the trophic web, oxygen, nutrients and seasons. It is for tuning, not a pass/fail test.
 
 ---
 
 ## Tests
 
-The simulation core (and the camera) are pure (no DOM), so they run and are tested in Node:
+The simulation core and the camera are pure modules with no DOM, so they run headless in Node:
 
 ```bash
-npm test          # runs both suites below
-npm run test:headless   # pure sim + camera math
-npm run test:smoke      # browser layer against a DOM stub
+npm test                # everything below (the gate)
+npm run test:headless   # pure sim + camera: invariants, migrations, exact resume, determinism, perf budget
+npm run test:smoke      # browser layer against a DOM stub (renderer, presenter fallback, inspector, UI)
+npm run test:ui         # UI escaping/caps/state + the localhost-only server
 ```
 
-- **`test/headless.mjs`** runs a full day/night cycle and asserts there are no NaNs, all
-  species persist, generations advance, oxygen stays in range, plants survive grazing,
-  save/load round-trips, the world is genuinely larger with area-scaled densities, the sim
-  meets its performance budget at scale, and the camera transforms / clamping / follow are
-  correct.
-- **`test/smoke.mjs`** fakes `document`/`canvas`/`window` and constructs the real
-  `Renderer`/`UI`/`Inspector`/`Camera`, drawing at whole-lake, mid, and close-up zoom to
-  confirm the browser layer (culling, LOD, sprite cache, minimap, tour, picking) builds and
-  draws without throwing. *Visual correctness still needs a human in a real browser.*
+On a busy machine the 60 steps/s performance budget can fail just from CPU contention. `REEF_PERF_MIN=0 npm test` relaxes it; the default stays strict.
 
 ---
 
@@ -163,25 +130,24 @@ npm run test:smoke      # browser layer against a DOM stub
 
 ```
 synapse-reef/
-├── index.html          page structure
-├── styles.css          dive-console visual design
-├── serve.py            one-command static server
-├── package.json        marks the project as ESM; npm test
-├── CLAUDE.md           architecture notes for future work
+├── index.html, styles.css    page + dive-console design (strict CSP, no inline script/style)
+├── serve.mjs / serve.py      localhost-only static servers (Node / Python)
 ├── src/
-│   ├── core.js         RNG, math, spatial grid, neural net + crossover/mutation  (pure)
-│   ├── config.js       tunable constants; world size + area-scaling + camera cfg  (pure)
-│   ├── species.js      the six species: data + senses + pixel sprites             (pure)
-│   ├── environment.js  day/night, weather, temperature, oxygen + nutrient fields  (pure)
-│   ├── world.js        the simulation: entities + step() + save/load              (pure)
-│   ├── camera.js       world-space camera: pan/zoom/follow/cinematic tour         (pure)
-│   ├── render.js       camera-space renderer: culling, LOD, sprite cache, minimap (browser)
-│   ├── inspector.js    live neural-net visualizer                                 (browser)
-│   ├── ui.js           HUD, census, charts, minimap, perf HUD, controls           (browser)
-│   └── main.js         boot + fixed-timestep loop + camera input                  (browser)
-└── test/
-    ├── headless.mjs    Node test of the pure sim + camera
-    └── smoke.mjs       DOM-stub smoke test of the browser/render layer
+│   ├── core.js         seeded RNG (+ state save/restore), math, spatial grid, recurrent net, genomes     (pure)
+│   ├── config.js       every tunable constant; world size + area scaling                               (pure)
+│   ├── species.js      the six species: senses, brains, life history, art; brain layout history       (pure)
+│   ├── environment.js  light, seasons, weather, temperature, O₂ / N / P / phyto / cyano / DOM fields  (pure)
+│   ├── world.js        the simulation: organisms, step(), validated save/load                           (pure)
+│   ├── camera.js       pan / zoom / pinch / follow / cinematic tour / interpolation helpers            (pure)
+│   ├── render.js       camera-space Canvas2D renderer: culling, LOD, sprite cache, overlays, minimap (browser)
+│   ├── glpost.js       WebGL2 linear-HDR presenter + GL-lit fish, with a Canvas2D fallback          (browser)
+│   ├── inspector.js    live neural-net visualizer                                                   (browser)
+│   ├── ui.js           HUD, panels, charts, controls                                                (browser)
+│   └── main.js         boot, guarded fixed-timestep loop, input                                     (browser)
+├── test/               headless.mjs · smoke.mjs · ui-check.mjs · serve-check.mjs · balance.mjs
+└── docs/               GRAPHICS_RESEARCH.md (render roadmap) · archive/ (session history)
 ```
 
-MIT licensed.
+Working notes for contributors (and AI assistants) are in [`CLAUDE.md`](CLAUDE.md), [`SESSION_STATE.md`](SESSION_STATE.md), [`ROADMAP.md`](ROADMAP.md) and the [`AUDIT.md`](AUDIT.md) findings list.
+
+MIT licensed. See [`LICENSE`](LICENSE).

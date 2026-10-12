@@ -1,6 +1,6 @@
 // species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
 import { WORLD, ENV, TIME } from './config.js';
-import { hsl, clamp } from './core.js';
+import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
 
@@ -262,7 +262,8 @@ export const SP = {
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
-      tgt(a, w.qThreat(a), a.senseRange, inp, 3);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);   // normalise by qThreat's own search radius (1.1×), as the other species do
+                                                           // (by 1× the outer band read 0 proximity yet still gave a bearing)
       inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
@@ -276,13 +277,16 @@ export const SP = {
     key: 'bass', name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
     shape: { in: 10, hid: 9 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.60,
+    // apex energetics (2026-10-12): metabolism was 0.046 (1.4× the size trend of the other species) and fish meals 0.60 —
+    // bass starved (intake ~0.05/s vs drain ~0.09/s) and the species ran ~90% on immigrants. Now on the size trend
+    // (catfish 0.030 @1.5 → carp 0.034 @2.2) and fish flesh worth more than grazing (energy-dense prey).
+    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.80,
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    metabolism: 0.046, moveCost: 0.038, respiration: 1.2,
+    metabolism: 0.030, moveCost: 0.038, respiration: 1.2,
     startEnergy: [0.70, 0.95], matureAge: 165, reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
     matingCooldown: 14, maxAge: 650, pop: { start: 4, min: 2, max: 13 },   // ~0.36 yr life, matures ~¼ in
     tempOpt: 24, tempTol: 8, o2Crit: 0.34, clutch: 4,   // warm-temperate pursuit predator, O₂-demanding; nest-guarder, moderate brood
-    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40 },  // patrols weed beds along the drop-off
+    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
@@ -305,13 +309,14 @@ export const SP = {
     key: 'pike', name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
     shape: { in: 9, hid: 8 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, cray: true }, foodValueFish: 0.65,
+    // apex energetics (2026-10-12): metabolism was 0.056 (1.6× the size trend) — see bass; now on the trend for size 2.7
+    diet: { fish: true, cray: true }, foodValueFish: 0.85,
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    metabolism: 0.056, moveCost: 0.042, respiration: 1.4,
+    metabolism: 0.036, moveCost: 0.042, respiration: 1.4,
     startEnergy: [0.80, 1.05], matureAge: 155, reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
     matingCooldown: 16, maxAge: 800, pop: { start: 2, min: 1, max: 6 },   // long-lived apex (~0.44 yr life, matures ~19% in)
     tempOpt: 19, tempTol: 9, o2Crit: 0.40, spawnPeak: 0.90, clutch: 4,   // coolwater apex (summer-squeezed); spawns earliest, cool early spring; fecund
-    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55 },  // weed-edge ambush lurker — holds in cover, then bursts
+    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(80, WORLD.FLOOR - 30) }),
@@ -338,11 +343,11 @@ export const SP = {
 // the actual in-sim values are ×TIME.LIFE_SCALE (e.g. minnow maxAge 150→240 s; carp 1500→2400 s).
 for (const k in SP) { SP[k].matureAge = Math.round(SP[k].matureAge * TIME.LIFE_SCALE); SP[k].maxAge = Math.round(SP[k].maxAge * TIME.LIFE_SCALE); }
 
-// GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1). Order is
-// fixed: SPATIAL block then DRIVE block, written generically by world.js. `SP.baseInputs` records the species-specific
-// count so the move step can address the spatial block at [base, base+1, base+2] while the drives stay at [in-2, in-1];
-// inputLabels stays length-matched to shape.in (headless-asserted). Adding inputs grows genomeLen → old saved brains are
-// INPUT-migrated (preserving weights, the new sensor columns zeroed → load with no effect, then evolve in) by fitGenome.
+// GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1), written
+// generically by world.js (spatial at [base..base+2], perception at [base+3, base+4], drives at [in-2, in-1]).
+// `SP.baseInputs` records the species-specific count; inputLabels stays length-matched to shape.in (headless-asserted).
+// The extras are NOT declared here directly: they are the LAST entry of BRAIN_ERAS (below), the layout history that lets
+// fitGenome migrate an old saved brain BY LABEL (see "Adding a sensor" there).
 //
 // SPATIAL COGNITION (the allocentric "sense of place & direction"): a COMPASS (sin/cos of the fish's absolute heading —
 // an orientation reference the egocentric food/threat bearings can't provide) + a HOME bearing (signed horizontal
@@ -354,7 +359,50 @@ export const SPATIAL_INPUTS = ['compass∠sin', 'compass∠cos', 'home∠x'];
 // of the nearest catchable fish, 0 for non-piscivores → predators can evolve prey-SIZE selectivity, coupling to the gape system).
 export const PERCEPTION_INPUTS = ['flow', 'prey size'];
 export const DRIVE_INPUTS = ['hunger', 'fear'];
-const EXTRA_INPUTS = [...SPATIAL_INPUTS, ...PERCEPTION_INPUTS, ...DRIVE_INPUTS];   // order: [spatial 0..2][perception 3,4][drives in-2,in-1]
+
+// BRAIN LAYOUT HISTORY — one entry per save era, OLDEST → NEWEST; the LAST entry is the CURRENT layout. Each lists the
+// generic `extras` appended after every species' own base inputs (in order), the motor `outs`, and whether the genome
+// carried the recurrent LEAK block. A genome's LENGTH identifies its era (per species; checked collision-free below and
+// headless-asserted), and fitGenome then remaps it BY KEY: base inputs 1:1 by position, extras by label, outputs by label;
+// columns new since that era start at 0. (Positional copying put a v21 brain's hunger/fear weights on flow/prey-size.)
+// Optional `baseAdded: { species: [labels] }` records SPECIES-SPECIFIC inputs appended to that species' base block in
+// that era, so older eras of that species are sized with the smaller base.
+// NOTE minnow/sunfish/bass/pike gained light@depth/temp@depth in save v4; their ≤v3 brains match no era and reseed.
+//
+// ADDING A SENSOR:
+//  • shared (every species): append ONE entry = the previous one with your label inserted where world.js writes it, and
+//    write `act.in[...]` for it in World.step (extras are addressed by position there). Never edit older entries.
+//  • one species: append its label to the END of that species' own inputLabels, bump shape.in, write it in senses(), and
+//    append ONE entry = the previous one plus `baseAdded: { <species>: ['<label>'] }`.
+//  Then bump the save version. Old brains keep every weight; the new column loads as 0.
+export const BRAIN_ERAS = [
+  { saves: 'v4–v14', extras: [], outs: ['turn', 'thrust'], leak: false },        // pre-recurrence, 2 outputs
+  { saves: 'v15–v16', extras: [], outs: ['turn', 'thrust'], leak: true },        // recurrent memory, 2 outputs
+  { saves: 'v17', extras: [], outs: ACT_LABELS, leak: true },                    // + strike/flee/hide action outputs
+  { saves: 'v18–v20', extras: [...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+  { saves: 'v21', extras: [...SPATIAL_INPUTS, ...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+  { saves: 'v22+', extras: [...SPATIAL_INPUTS, ...PERCEPTION_INPUTS, ...DRIVE_INPUTS], outs: ACT_LABELS, leak: true },
+];
+export const EXTRA_INPUTS = BRAIN_ERAS[BRAIN_ERAS.length - 1].extras;   // order: [spatial 0..2][perception 3,4][drives in-2,in-1]
 for (const k in SP) { SP[k].baseInputs = SP[k].shape.in; SP[k].shape.in += EXTRA_INPUTS.length; SP[k].inputLabels.push(...EXTRA_INPUTS); }
+
+// Per-species era table: each era's input KEYS (base by position `b:i`, extras by label `x:label`) and genome length.
+// `brainEraOf(sp, len)` returns the unique era of that length, or null (unknown OR ambiguous → the caller reseeds).
+export function buildBrainEras(key, base, hid, eras = BRAIN_ERAS) {
+  const out = [];
+  for (let e = 0; e < eras.length; e++) {
+    let b = base;
+    for (let f = e + 1; f < eras.length; f++) b -= ((eras[f].baseAdded || {})[key] || []).length;   // base before later adds
+    const inKeys = [];
+    for (let i = 0; i < b; i++) inKeys.push('b:' + i);
+    for (const x of eras[e].extras) inKeys.push('x:' + x);
+    out.push({ saves: eras[e].saves, inKeys, outs: eras[e].outs, leak: eras[e].leak, len: layoutLen(inKeys.length, hid, eras[e].outs.length, eras[e].leak), current: e === eras.length - 1 });
+  }
+  const byLen = new Map();
+  for (const er of out) byLen.set(er.len, byLen.has(er.len) ? null : er);   // a length shared by two eras is AMBIGUOUS → null
+  return { eras: out, byLen, collisions: out.length - [...byLen.values()].filter(Boolean).length };
+}
+for (const k in SP) SP[k].brainEras = buildBrainEras(k, SP[k].baseInputs, SP[k].shape.hid);
+export function brainEraOf(sp, len) { return sp.brainEras.byLen.get(len) || null; }
 
 export const SPECIES = Object.keys(SP);

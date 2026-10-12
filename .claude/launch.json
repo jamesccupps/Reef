@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "reef",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["serve.py", "8000"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["serve.mjs", "8000"],
       "port": 8000
     }
   ]

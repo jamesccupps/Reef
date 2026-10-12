@@ -8,6 +8,21 @@ import { CAMERA } from './config.js';
 // or it would desync determinism. Use Math.random here, never core.rand.
 const rrand = (a, b) => a + Math.random() * (b - a);
 
+// ---- render interpolation (audit: fixed 1/60 s step + no interpolation → ~30 Hz fish at ½× or on 120/144 Hz screens) ----
+// main.js snapshots each agent's pre-step pose into RENDER-ONLY transient fields (_px/_py/_ph) right before every
+// world.step; the renderer and the camera then draw at lerp(prev, cur, alpha) with alpha = accumulator/DT. The sim never
+// reads these fields and they are not serialized (World.toJSON lists its fields explicitly), so determinism is untouched.
+const TELEPORT2 = 80 * 80;   // a jump this large in one step is a respawn/relocation → don't smear it across frames
+export function lerpAngle(a, b, t) {
+  let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; else if (d < -Math.PI) d += TAU;
+  return a + d * t;
+}
+export function snapshotPrev(agents) { for (let i = 0; i < agents.length; i++) { const a = agents[i]; a._px = a.x; a._py = a.y; a._ph = a.heading; } }
+const _hasPrev = a => a._px !== undefined && (a.x - a._px) * (a.x - a._px) + (a.y - a._py) * (a.y - a._py) < TELEPORT2;
+export function interpX(a, alpha) { return _hasPrev(a) ? a._px + (a.x - a._px) * alpha : a.x; }
+export function interpY(a, alpha) { return _hasPrev(a) ? a._py + (a.y - a._py) * alpha : a.y; }
+export function interpH(a, alpha) { return _hasPrev(a) && a._ph !== undefined ? lerpAngle(a._ph, a.heading, alpha) : a.heading; }
+
 export class Camera {
   constructor(worldW, worldH, cfg = CAMERA) {
     this.W = worldW; this.H = worldH; this.cfg = cfg;
@@ -68,6 +83,14 @@ export class Camera {
     this._clamp();
   }
   setZoomRel(rel) { this.tzoom = clamp(this.fitZoom * rel, this.minZoom, this.maxZoom); }
+  // two-finger pinch (immediate, no easing): zoom by `factor` and keep the world point that was under the previous
+  // finger midpoint (psx,psy) under the new midpoint (sx,sy) — pan + zoom in one exact step. Leaves follow/tour mode.
+  pinch(psx, psy, sx, sy, factor) {
+    const before = this.screenToWorld(psx, psy);
+    this.zoom = this.tzoom = clamp(this.zoom * factor, this.minZoom, this.maxZoom);
+    this.cx = before.x - (sx - this.vw / 2) / this.zoom; this.cy = before.y - (sy - this.vh / 2) / this.zoom;
+    this.tcx = this.cx; this.tcy = this.cy; this.mode = 'free'; this.followId = null; this._clampNow();
+  }
 
   follow(id) { if (id == null) return; this.mode = 'follow'; this.followId = id; }
   isFollowing(id) { return this.mode === 'follow' && this.followId === id; }
@@ -76,13 +99,14 @@ export class Camera {
   stopTour() { if (this.mode === 'tour') { this.mode = 'free'; this._tourId = null; } }
 
   // ---- per-frame update ----
-  update(dt, world) {
+  // alpha: render-interpolation fraction (main.js passes accumulator/DT) so the follow target tracks the DRAWN fish.
+  update(dt, world, alpha = 1) {
     if (this.mode === 'tour') this._tour(dt, world);
 
     if (this.mode === 'follow' || (this.mode === 'tour' && this._tourId != null)) {
       const id = this.mode === 'follow' ? this.followId : this._tourId;
       const a = this._find(world, id);
-      if (a) { this.tcx = a.x; this.tcy = a.y; }
+      if (a) { this.tcx = interpX(a, alpha); this.tcy = interpY(a, alpha); }
       else if (this.mode === 'follow') { this.mode = 'free'; this.followId = null; }
       else { this._tourTimer = 0; } // tour subject gone → repick next tick
     }

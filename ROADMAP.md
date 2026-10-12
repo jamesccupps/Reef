@@ -6,6 +6,12 @@ backlog. Work **top-down**: Phase 0 unlocks everything else, so do it first. Eac
 lists what to build, a *definition of done*, and how to verify. Keep the pure/browser
 split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each session.
 
+> **Status (2026-10-11): read this first.**
+> - **Done and shipped:** Phases 0–1; Phase 2's biogeochemistry and benthic web; most of Phase 4 (multi-gene genome, mate choice, seasonal spawning and clutches, lifetime learning, evolvable brain size); Phase 5's carrying capacity and immigration; and the graphics passes 1–3.
+> - **The audit fixes are done too** (see `AUDIT.md`): closed P/N budgets, a wet/dry mask, exact save/resume, a newborn grace period, plant overwintering, and the GL orientation fix.
+> - **Older text below may still say TODO for things that are done.** `docs/FEATURES.md` is the authoritative description of what exists.
+> - **Open, in priority order:** see "Build order & guards" at the bottom of this file.
+>
 > **Phases 0, 1, Phase 2 core, the "lake realism" slice, and per-species thermal/O₂ niches are DONE
 > (2026-06-14).** A full 8-domain realism research pass (synthesized + adversarially verified against
 > the code) produced a large prioritized backlog of additional limnological/ecological systems — see
@@ -585,7 +591,7 @@ end. Tags: **impact** (realism payoff) / **cost**. Build top-down within a phase
   composited to `#tank` by a feature-detected WebGL2 presenter (HDR float bloom, ACES tonemap, underwater refraction, chromatic
   aberration, fake DOF, grain, day/night grade, vignette), Canvas2D fallback keeps the gate green. **Recovered perf** (1080p
   whole-lake ~56→~139 fps) + raised fidelity. See SESSION_STATE "Pass 3 / slice 1". Designed via a de-risking workflow + reviewed.
-  **▶▶ FOR THE NEXT GRAPHICS WORK, READ `GRAPHICS_RESEARCH.md`** — a synthesized, cited, codebase-mapped REALISM roadmap (5-lens
+  **▶▶ FOR THE NEXT GRAPHICS WORK, READ `docs/GRAPHICS_RESEARCH.md`** — a synthesized, cited, codebase-mapped REALISM roadmap (5-lens
   web research, 2026-06-17). It supersedes the loose "remaining" bullets below with a prioritized, gate-safe slice order. Headline:
   two foundational gaps — **(1) no linear-HDR/sRGB pipeline** (#1 bug → milky bloom/crushed darks) and **(2) no depth/occluder
   buffer** — fix in that order (linear-HDR float pipeline first, then a depth MRT keystone), then Beer-Lambert depth colour,
@@ -921,21 +927,28 @@ per-plant phenotype that drifts and is selected.
 - **Verify evolution actually acts:** for each gene, a headless probe that a named pressure shifts its mean
   (e.g. turbid water → smaller mean eye gene; heavy grazing → tougher mean plant) + `npm run balance` no-extinction.
 
-### Recommended build order & cross-cutting guards (from the critic)
-1. **Next up:** thermal envelopes, DVM senses, genome-length guard, storm-driven mixing, AND the
-   multi-gene genome are DONE. Remaining order: **trait-based mate choice** (cheap Phase-4 win that selects
-   *on* the new genes → nuptial coloration), then the biogeochemistry cluster **starting with the N/P
-   nutrient split**, then more genes (acuity/fecundity/pattern) + senescence + egg→larva stages.
-2. **Genome-length guard (REQUIRED before any `shape.in` change):** `core.forward()` and
-   `world.load()/seedFromChampions()` index the genome by the *current* shape with **no length check** — a
-   stale save/champion with the old (shorter) genome reads past the array → **NaN corruption (not a clean
-   throw)**. Add an explicit `genomeLen(sp.shape) === w.length` guard (drop/reseed mismatches) + a
-   `World.version` bump for the DVM, odor, and multi-gene slices.
-3. **Determinism:** sim-affecting stochasticity (events, storms, floods, ice, seiche) uses **core.rand**;
-   render/camera/director randomness uses the **non-seeded JS PRNG**. Never cross the streams.
-4. **Sequencing:** N/P split → sediment-P → N-cycle → **cyanobacteria** are all ✅ DONE (the biogeochem cluster
-   is deep). Next biogeochem: the **microbial loop** / **pH-CO₂**; or pivot to a **depth water-chemistry view**
-   (Phase 6) to visualize it all. Retire/soften the re-seed floors before egg→larva stages. Do DVM on fish
-   before promoting zooplankton to agents (perf).
-5. **Balance after every ecological slice:** `npm run balance` + keep the re-seed floors as the safety net;
-   read reproduction from `world.stats.births`, not the noisy end-of-run "standing maxGen" snapshot.
+### Build order & guards (rewritten 2026-10-11, after the audit fixes)
+
+This replaces the critic's June build order; everything on that list has shipped.
+
+**Open work, highest priority first:**
+1. **Apex-predator recruitment.**
+   - Bass and pike are still mostly immigrants: about 85–95% of bass and 60–85% of pike in multi-year balance runs. Earlier home-bred numbers were inflated by energy pumps (newborn cannibalism, free budding energy), and those are now closed.
+   - Investigate why the apex can't self-sustain: prey availability, reproduction thresholds, clutch size, and juvenile survival.
+2. **Test hardening.** The remaining gaps are listed in `AUDIT.md`:
+   - behavioural tests in place of the formula-copy checks (thermal/hypoxia drain, nocturnality, body-depth defence, mate-choice genes);
+   - broader determinism scenarios;
+   - a recording WebGL2 mock so `GLPost` actually runs in smoke;
+   - possibly `node:test` with parallel files, to cut the ~8-minute gate.
+3. **The graphics realism roadmap** (`docs/GRAPHICS_RESEARCH.md`): AgX tonemap, then the surface heightfield, Beer–Lambert colour, depth/occluder MRT, fish normals, real DOF/AO, and instancing. Re-tune the grade first, because the GL depth terms were upside down until 2026-10-11.
+4. **Catfish nocturnality is weak in effect.** In the real move step a catfish swims only ~8% faster at night than at noon, although its innate cruise target is ~2.7× higher at night: the brain's own thrust dominates the innate blend. Consider a stronger innate weight for activity rhythms, or a day-rest drive. Measure with the behavioural check in `headless.mjs`.
+5. **N-fixation** barely runs at the default inflow N:P. Consider seasonal or episodic P loading so the low-N:P cyanobacteria regime actually occurs.
+6. **Dashboard slice B/C:** selectable charts, a food-web flux diagram, an event log, and CSV export.
+7. **Grow the lake:** amphibians and birds (cross-boundary life), then the scenario/preset engine (the north star).
+
+**Guards that apply to every change:**
+- **Brain or input layout.** Append a `BRAIN_ERAS` entry (`species.js`) and bump the save version. Never re-order existing inputs.
+- **New state that affects the future.** Add it to `toJSON` and `parseSave` (or `Environment.toJSON`/`load`). The gate's exact-resume test catches anything missed.
+- **Chemistry.** Every transfer must debit its source. The gate's P/N inventory test, with plants on, catches leaks.
+- **Determinism.** Sim randomness uses `core.rand`; render, camera and director randomness uses `Math.random`. Never mix the two.
+- **Balance after every ecological slice.** Run `npm run balance` and judge by home-bred vs immigrant births per species. REFUGE keeps everyone "present", so presence proves nothing.
