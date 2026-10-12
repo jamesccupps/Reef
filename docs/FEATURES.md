@@ -40,6 +40,12 @@ Every finding is listed in `AUDIT.md` with its status. Save format is now **v24*
 - **Plant starvation** is judged on a per-plant running mean of light (`p.lightAvg`, τ = `PLANT.LIGHT_TAU_DAYS`), against a re-calibrated `MACRO.lightMin`. Seeding is light-gated, so beds survive night and winter.
 - **Seed-parent search ignores turbidity** (`nearestPlant`).
 - **Plants carry an N+P pool** (`p.nut`). Uptake is stoichiometric, and shedding, grazing and death return the plant's proportional share.
+- **New innate reflexes (2026-10-12).** Each is a weighted nudge the brain can override, and each is tested A/B against an identical world in `headless.mjs`.
+  - **Pursuit** (`innate.pursuit`, bass and pike): turn toward sensed prey.
+  - **Hypoxia avoidance** (all species, `ENV.HYPOXIA_AVOID`): water below `o2Crit` × the margin retargets the depth reflex upward.
+  - **Spawning aggregation** (`innate.spawnGround`, bass, pike, carp and catfish; `SPAWN.AGG_*`, `GROUND_X`): in season, breeding-ready adults migrate to the littoral spawning ground on their side of the lake.
+- **Apex energetics.** Bass and pike were starving. Their maintenance metabolism now sits on the size trend (0.030 and 0.036), and fish meals are richer (`foodValueFish` 0.80 and 0.85).
+- **Result** (1-year balance): immigrant share fell for bass 91→70%, pike 76→54%, catfish 48→29% and carp 52→39%.
 
 ### Water chemistry
 - **Wet/dry mask** (`env.mask`). Below-bed cells are inert. Every process, diffusion step and mean runs over wet cells. Sediment O₂ demand and Mortimer P act on each column's bed cell.

@@ -227,7 +227,7 @@ export const SP = {
     metabolism: 0.030, startEnergy: [0.50, 0.70], matureAge: 180, reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
     matingCooldown: 12, maxAge: 1000, pop: { start: 6, min: 3, max: 18 },   // long-lived benthic (~0.56 yr life, matures early ~18% in like real catfish)
     tempOpt: 26, tempTol: 10, o2Crit: 0.16, spawnPeak: 0.18, clutch: 5,   // warmwater bottom-dweller; spawns in warm early summer; fecund
-    innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true },   // hugs the bottom; forages more at night
+    innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, spawnGround: 0.4 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 30, WORLD.FLOOR - 2) }),
@@ -255,7 +255,7 @@ export const SP = {
     metabolism: 0.034, startEnergy: [0.55, 0.80], matureAge: 200, reproEnergy: 0.95, reproCost: 0.30, childEnergy: 0.55,
     matingCooldown: 12, maxAge: 1500, pop: { start: 4, min: 2, max: 12 },   // the longest-lived (~0.83 yr life — persists across seasons; ~10× a minnow); matures early ~13% in like real carp
     tempOpt: 27, tempTol: 11, o2Crit: 0.14, spawnPeak: 0.18, clutch: 5,   // warmwater; spawns in warm early summer; very fecund (real carp lay 100k+ eggs)
-    innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40 },   // deep bottom rooter
+    innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4 },   // deep bottom rooter
     sat: 46, lbase: 34, lrange: 18,
     randomHue: (R) => R(32, 46),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 90, WORLD.FLOOR - 10) }),
@@ -286,7 +286,7 @@ export const SP = {
     startEnergy: [0.70, 0.95], matureAge: 165, reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
     matingCooldown: 14, maxAge: 650, pop: { start: 4, min: 2, max: 13 },   // ~0.36 yr life, matures ~¼ in
     tempOpt: 24, tempTol: 8, o2Crit: 0.34, clutch: 4,   // warm-temperate pursuit predator, O₂-demanding; nest-guarder, moderate brood
-    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
+    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
@@ -316,7 +316,7 @@ export const SP = {
     startEnergy: [0.80, 1.05], matureAge: 155, reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
     matingCooldown: 16, maxAge: 800, pop: { start: 2, min: 1, max: 6 },   // long-lived apex (~0.44 yr life, matures ~19% in)
     tempOpt: 19, tempTol: 9, o2Crit: 0.40, spawnPeak: 0.90, clutch: 4,   // coolwater apex (summer-squeezed); spawns earliest, cool early spring; fecund
-    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
+    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(80, WORLD.FLOOR - 30) }),

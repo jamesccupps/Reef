@@ -21,7 +21,7 @@
 - **Apex starvation diagnosed and improved:** innate pursuit, hypoxia avoidance, predator energetics.
 
 **Still open (tracked in `ROADMAP.md` → "Build order & guards"):**
-- **Apex-predator recruitment.** It's improved: bass immigrant share 91% → 80%, pike 76% → 61%. But bass and pike still depend on immigration.
+- **Apex-predator recruitment.** Much improved by pursuit, hypoxia avoidance, predator energetics and spawning aggregation. Bass immigrant share went 91% → 70% and pike 76% → 54%, and catfish and carp improved too. But bass and pike still partly depend on immigration.
 - **Remaining Tier 1 #5 items:**
   - a WebGL2 mock for smoke tests (`GLPost` never runs under the stub);
   - relabelling the checks that can't fail;
