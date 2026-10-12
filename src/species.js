@@ -182,6 +182,14 @@ function drawFish(put, P, c, o) {
   fillDisc(put, ex + er * 0.3, ey - er * 0.3, Math.max(0.08, er * 0.28), su, [222, 230, 236]);   // catch-light
 }
 
+// LIFE HISTORY IN YEARS. A sim year is TIME.YEAR_LEN s; ages and spawning cooldowns are written as yr(n). Real lives are
+// compressed ~2× (e.g. pike mature at 1.5 instead of ~2–3 yr and live 9 instead of ~10–15), so several generations pass
+// in a long viewing session while every fish still lives through winters and annual spawning seasons, as real ones do.
+// ENERGETICS (2026-10-12): a full reserve lasts ~150 s (minnow) … ~400 s (pike) at 18 °C — ∝ size^0.75, as starvation
+// time scales with body mass^0.25 — instead of ~25 s, which made any lean spell fatal. Metabolism follows the Q10 with
+// the local water temperature, so winter fish idle on their reserves and summer is costly.
+const yr = n => n * TIME.YEAR_LEN;
+
 // ---------- species factory: derives radii from size, fills defaults ----------
 function makeSpecies(cfg) {
   const size = cfg.size;
@@ -191,8 +199,8 @@ function makeSpecies(cfg) {
     mateRadius: (10 + size * 5.5) * Math.sqrt(WORLD.AREA_SCALE),
     senseRange: 96 + size * 30,
     energyCap: cfg.reproEnergy + 0.4,
-    drag: 1.4, moveCost: 0.035, turnCost: 0.009, respiration: 1.0,
-    sink: 0, buoyNight: 0, matingCooldown: 6,
+    drag: 1.4, moveCost: 0.004, turnCost: 0.0012, respiration: 1.0,
+    sink: 0, buoyNight: 0, matingCooldown: TIME.YEAR_LEN * 0.5,
     lbase: 30, lrange: 22, sat: 60,
     ringR: 4 + size * 2.4,
     drift: clamp(0.7 - 0.22 * size, 0.06, 0.6),  // how much the surface current pushes it (weak swimmers more)
@@ -200,7 +208,7 @@ function makeSpecies(cfg) {
     // thermal/oxygen physiological niche (warm- vs cool-water guilds). Outside [tempOpt±tempTol]
     // energy drains (ENV.THERMAL_STRESS/°C); below o2Crit the hypoxia drain bites. Overridden per species.
     tempOpt: 23, tempTol: 10, o2Crit: ENV.HYPOXIA,
-    spawnPeak: 0.10,   // year-fraction of peak spawning (default = spring/early summer); pike override earlier (cool spring)
+    spawnT: [16, 24],  // °C window of the (spring/summer) water temperature in which the species spawns (world.js)
     clutch: 3,         // max offspring per successful spawning (real fish are fecund); condition- & cap-bounded in world.js
   }, cfg);
 }
@@ -217,10 +225,10 @@ export const SP = {
       'school density', 'school \u2220sin', 'school \u2220cos', 'school align', 'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'light@depth', 'temp@depth'],
     diet: { plankton: true, insect: true },
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
-    metabolism: 0.020, moveCost: 0.018, respiration: 0.7,
-    startEnergy: [0.45, 0.65], matureAge: 50, reproEnergy: 0.66, reproCost: 0.20, childEnergy: 0.40,
-    matingCooldown: 10, maxAge: 150, pop: { start: 20, min: 7, max: 30 },  // short-lived forage fish (~0.08 yr life, matures ~⅓ in); K=pop.max×AREA_SCALE
-    tempOpt: 22, tempTol: 9, o2Crit: 0.30, spawnPeak: 0.05, clutch: 4,   // coolwater-ish; spawns early spring; very fecund forage fish
+    metabolism: 0.0046, moveCost: 0.0045, turnCost: 0.0012, respiration: 0.7,   // reserves last ~150 s at 18 °C (see ENERGETICS)
+    startEnergy: [0.45, 0.65], matureAge: yr(0.5), reproEnergy: 0.66, reproCost: 0.20, childEnergy: 0.40,
+    matingCooldown: yr(0.05), maxAge: yr(2.5), pop: { start: 34, min: 7, max: 49 },  // fathead-like: matures its first summer, lives ~2–3 yr; K ≈ 330
+    tempOpt: 23, tempTol: 9, o2Crit: 0.18, spawnT: [16, 26], clutch: 4,   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
     innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30 },   // shallow open water, active schooler
 
     sat: 20, lbase: 46, lrange: 16,
@@ -249,9 +257,9 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    metabolism: 0.028, startEnergy: [0.45, 0.65], matureAge: 100, reproEnergy: 0.72, reproCost: 0.24, childEnergy: 0.44,
-    matingCooldown: 12, maxAge: 400, pop: { start: 9, min: 4, max: 18 },   // ~0.22 yr life, matures ~¼ in; K=pop.max×AREA_SCALE (Phase 5)
-    tempOpt: 25, tempTol: 9, o2Crit: 0.26,        // warmwater littoral centrarchid
+    metabolism: 0.0036, moveCost: 0.0052, turnCost: 0.0012, startEnergy: [0.45, 0.65], matureAge: yr(1), reproEnergy: 0.72, reproCost: 0.24, childEnergy: 0.44,
+    matingCooldown: yr(0.06), maxAge: yr(6), pop: { start: 12, min: 4, max: 18 },   // pumpkinseed-like: matures at ~1 yr, lives ~6; K ≈ 120
+    tempOpt: 26, tempTol: 8, o2Crit: 0.22, spawnT: [20, 28], clutch: 5, nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
     randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
@@ -279,9 +287,9 @@ export const SP = {
       'energy', 'on floor', 'oxygen', 'wall'],
     diet: { detritus: true, plants: true, larva: true, cray: true },
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
-    metabolism: 0.030, startEnergy: [0.50, 0.70], matureAge: 180, reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
-    matingCooldown: 12, maxAge: 1000, pop: { start: 6, min: 3, max: 18 },   // long-lived benthic (~0.56 yr life, matures early ~18% in like real catfish)
-    tempOpt: 26, tempTol: 10, o2Crit: 0.16, spawnPeak: 0.18, clutch: 5,   // warmwater bottom-dweller; spawns in warm early summer; fecund
+    metabolism: 0.0028, moveCost: 0.0050, turnCost: 0.0012, startEnergy: [0.50, 0.70], matureAge: yr(2), reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
+    matingCooldown: yr(0.5), maxAge: yr(10), pop: { start: 4, min: 3, max: 6 },   // bullhead/channel-cat-like: matures ~2–3 yr, long-lived; K ≈ 40
+    tempOpt: 27, tempTol: 9, o2Crit: 0.14, spawnT: [21, 28], clutch: 6, nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
@@ -307,9 +315,9 @@ export const SP = {
       'energy', 'oxygen', 'wall', 'depth'],
     diet: { plants: true, detritus: true, larva: true, snail: true },
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8,
-    metabolism: 0.034, startEnergy: [0.55, 0.80], matureAge: 200, reproEnergy: 0.95, reproCost: 0.30, childEnergy: 0.55,
-    matingCooldown: 12, maxAge: 1500, pop: { start: 4, min: 2, max: 12 },   // the longest-lived (~0.83 yr life — persists across seasons; ~10× a minnow); matures early ~13% in like real carp
-    tempOpt: 27, tempTol: 11, o2Crit: 0.14, spawnPeak: 0.18, clutch: 5,   // warmwater; spawns in warm early summer; very fecund (real carp lay 100k+ eggs)
+    metabolism: 0.0025, moveCost: 0.0042, turnCost: 0.0012, startEnergy: [0.55, 0.80], matureAge: yr(2), reproEnergy: 0.95, reproCost: 0.30, childEnergy: 0.55,
+    matingCooldown: yr(0.4), maxAge: yr(12), pop: { start: 3, min: 2, max: 4.5 },   // the longest-lived: matures ~2–4 yr, lives 12+; K ≈ 30
+    tempOpt: 27, tempTol: 10, o2Crit: 0.12, spawnT: [17, 24], clutch: 8, spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
     innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4 },   // deep bottom rooter
     sat: 46, lbase: 34, lrange: 18,
     randomHue: (R) => R(32, 46),
@@ -337,10 +345,10 @@ export const SP = {
     // (catfish 0.030 @1.5 → carp 0.034 @2.2) and fish flesh worth more than grazing (energy-dense prey).
     diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.80,
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    metabolism: 0.030, moveCost: 0.038, respiration: 1.2,
-    startEnergy: [0.70, 0.95], matureAge: 165, reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
-    matingCooldown: 14, maxAge: 650, pop: { start: 4, min: 2, max: 13 },   // ~0.36 yr life, matures ~¼ in
-    tempOpt: 24, tempTol: 8, o2Crit: 0.34, clutch: 4,   // warm-temperate pursuit predator, O₂-demanding; nest-guarder, moderate brood
+    metabolism: 0.0029, moveCost: 0.0038, turnCost: 0.0012, respiration: 1.2,
+    startEnergy: [0.70, 0.95], matureAge: yr(1.5), reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
+    matingCooldown: yr(0.5), maxAge: yr(8), pop: { start: 2.5, min: 2, max: 3.8 },   // largemouth-like: matures ~2–3 yr, lives ~10; K ≈ 26
+    tempOpt: 26, tempTol: 7, o2Crit: 0.28, spawnT: [15, 21], clutch: 6, nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
     innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
@@ -367,10 +375,10 @@ export const SP = {
     // apex energetics (2026-10-12): metabolism was 0.056 (1.6× the size trend) — see bass; now on the trend for size 2.7
     diet: { fish: true, cray: true }, foodValueFish: 0.85,
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    metabolism: 0.036, moveCost: 0.042, respiration: 1.4,
-    startEnergy: [0.80, 1.05], matureAge: 155, reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
-    matingCooldown: 16, maxAge: 800, pop: { start: 2, min: 1, max: 6 },   // long-lived apex (~0.44 yr life, matures ~19% in)
-    tempOpt: 19, tempTol: 9, o2Crit: 0.40, spawnPeak: 0.90, clutch: 4,   // coolwater apex (summer-squeezed); spawns earliest, cool early spring; fecund
+    metabolism: 0.0024, moveCost: 0.0079, turnCost: 0.0012, respiration: 1.4,   // a sit-and-wait hunter: cheap to idle, costly to burst
+    startEnergy: [0.80, 1.05], matureAge: yr(1.5), reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
+    matingCooldown: yr(0.5), maxAge: yr(9), pop: { start: 1.2, min: 1, max: 1.8 },   // northern-pike-like: matures ~2–3 yr, lives 10–15; the rarest fish, K ≈ 12
+    tempOpt: 19, tempTol: 8, o2Crit: 0.26, spawnT: [4, 11], clutch: 8, spawnSide: -1,   // coolwater apex (summer-squeezed); spawns right after ice-out in flooded margins
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),
@@ -390,13 +398,8 @@ export const SP = {
   }),
 };
 
-// Lengthen lifespans uniformly (TIME.LIFE_SCALE): every species lives AND matures proportionally longer in sim-seconds,
-// so the lake reads calmer (less constant turnover) and individuals persist across more seasons — while the realistic
-// RELATIVE life-history ratios (minnow ≪ carp; mature at ~⅓ … ~13% of life) are preserved. Applied once here so the
-// single source feeds every consumer (growth curve, breeding-eligibility, old-age death, immigrant spawn age).
-// NOTE: the per-species "~X yr life" comments ABOVE describe the PRE-scale baseline (matureAge/maxAge as written);
-// the actual in-sim values are ×TIME.LIFE_SCALE (e.g. minnow maxAge 150→240 s; carp 1500→2400 s).
-for (const k in SP) { SP[k].matureAge = Math.round(SP[k].matureAge * TIME.LIFE_SCALE); SP[k].maxAge = Math.round(SP[k].maxAge * TIME.LIFE_SCALE); }
+// (Life histories are now written in YEARS via yr(): multi-year lives, maturity after ≥ 1 winter for most species, about
+// half the real ages — the time compression that lets evolution show — instead of the old seconds × TIME.LIFE_SCALE.)
 
 // GENERIC EXTRA inputs appended to EVERY species after its own senses() (which fill indices 0..baseInputs-1), written
 // generically by world.js (spatial at [base..base+2], perception at [base+3, base+4], drives at [in-2, in-1]).

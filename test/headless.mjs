@@ -678,7 +678,7 @@ const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1, 1]);
 check('eye gene → longer sense range (and a metabolic cost)', eyeF.senseRange > baseF.senseRange && eyeF.metabMul > baseF.metabMul, `sense ${eyeF.senseRange.toFixed(0)}>${baseF.senseRange.toFixed(0)}`);
 const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35, 1]);
 check('body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)', bodyF.accel > baseF.accel && bodyF.bodyMul > baseF.bodyMul && bodyF.maxSpeed < baseF.maxSpeed, `accel ${bodyF.accel.toFixed(0)}, bodyMul ${bodyF.bodyMul.toFixed(2)}, speed ${bodyF.maxSpeed.toFixed(1)}`);
-check('body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat', canEat(5, 4) && !canEat(5, 4 * 1.15), `4 eaten, 4.6 (deep-bodied) not`);
+check('body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat', canEat(5, 3) && !canEat(5, 3 * 1.15), `3 eaten, 3.45 (deep-bodied) not`);
 const oldGn = gw.makeFish('bass', Float32Array.from([1.3, 0.8, 1.2]));   // a pre-morphology 3-gene save
 check('genome-length guard: an older 3-gene save pads to the full genome, preserving the evolved genes', oldGn.genes.length === GENE_KEYS.length && Math.abs(oldGn.genes[0] - 1.3) < 1e-6 && Math.abs(oldGn.genes[1] - 0.8) < 1e-6 && [...oldGn.genes.slice(3)].every(inBounds), `len ${oldGn.genes.length}`);
 // INVARIANT: at genes≡1.0 EVERY derived stat is exactly the species baseline → a fresh lake = the pre-morphology sim

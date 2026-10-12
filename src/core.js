@@ -44,8 +44,9 @@ export function angDiff(a, b) {
   return d;
 }
 
-// predator of `predSize` can eat prey of `preySize`
-export function canEat(predSize, preySize) { return preySize <= predSize * 0.85; }
+// predator of `predSize` can eat prey of `preySize`: gape-limited to ~62% of its own (sim) size — so a pike takes
+// minnows, sunfish, small catfish and bass, but not an adult carp (it used to be 85%: pike ate adult carp and catfish)
+export function canEat(predSize, preySize) { return preySize <= predSize * 0.62; }
 
 // ---------- uniform spatial grid for O(local) neighbour queries ----------
 export class SpatialGrid {

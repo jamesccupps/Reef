@@ -37,22 +37,20 @@ export const scaleCount = n => Math.max(1, Math.round(n * WORLD.AREA_SCALE));
 export const TIME = {
   DAY_LEN: 60,     // sim-seconds per cosmetic day/night cycle (diel light + behaviour; decoupled from the calendar)
   YEAR_LEN: 1800,  // sim-seconds per year (= 30 min) → MONTH 150 s, SEASON 450 s (7.5 min); ~30 day/nights per year
-  LIFE_SCALE: 1.6, // global multiplier on every species' matureAge & maxAge (species.js) → fish live & mature
-                   // proportionally longer in sim-seconds (calmer turnover, more seasons per life), keeping ratios
+  // (species life histories are written in years — species.js yr(); the old LIFE_SCALE seconds multiplier is retired)
   // derived (for reference; computed live from the two knobs above):
   get MONTH_LEN() { return this.YEAR_LEN / 12; },
   get SEASON_LEN() { return this.YEAR_LEN / 4; },
 };
 
-// ---------- seasonal spawning (fish breed on a seasonal calendar, not year-round) ----------
-// Real temperate fish spawn in a season — most in spring / early summer as the water warms; pike spawn earliest
-// (cool early spring). Breeding probability PEAKS at each species' `SP.spawnPeak` (a year-fraction) and tapers to
-// FLOOR off-season → a visible spring/early-summer BABY BOOM. It is SOFT (never zero) so recruitment stays seasonal
-// & realistic without starving the population in the off-season (which, with the realistic slow life histories,
-// would over-collapse the larger species). Keyed off the continuous year-fraction (Environment.yearFrac).
+// ---------- seasonal spawning (temperature-triggered, spring/summer only) ----------
+// Real temperate fish spawn when the shallows warm into their species' window (SP.spawnT, °C) — pike just after
+// ice-out, perch/bass/carp in spring, sunfish and minnows repeatedly through summer — and not at all outside it (no
+// off-season breeding, no breeding on the autumn cooling path, none under ice). world.js computes the factor per step.
 export const SPAWN = {
-  FLOOR: 0.12,   // off-season breeding chance as a fraction of the peak (low → most recruitment is in-season; >0 so it's soft, never a hard stop)
-  SHARP: 4,      // how tightly breeding concentrates around the peak (≈⅓-of-a-year spawning season — a recognizable spring/summer boom)
+  EDGE: 1.5,        // °C soft edge on each side of a species' spawning window
+  SEASON_END: 0.5,  // year-fraction (Sept 1) after which nothing spawns (the autumn cooling path)
+  MATE_REACH: 2.5,  // in season the mate-search radius grows to ×(1 + this): spawners aggregate and court over a wider area
   // spawning AGGREGATION (species with innate.spawnGround): in season, breeding-ready adults migrate to the littoral
   // spawning ground on their side of the lake so a sparse population can find mates (world.js innate block)
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
@@ -66,6 +64,11 @@ export const SPAWN = {
 // carries over), so intake per second is the same at any fixed step. HANDLE = 1/60 reproduces the browser exactly.
 export const FEED = {
   HANDLE: 1 / 60,   // s per discrete item (zooplankton, insect, larva, detritus, snail, crayfish) per food type
+  SATIATE: 0.95,    // a fish stops feeding above this fraction of its energy capacity (satiation)
+  HUNT_BELOW: 0.8,  // a piscivore only attacks fish below this fraction (room for a whole meal) — no overkill when full
+  FRY_GROW: 0.6,    // below this growth fraction every fish eats zooplankton (fry diet), whatever its adult diet
+  PREY_MIN: 0.15,   // a piscivore ignores fish smaller than this fraction of its own size (not worth the chase — real
+                    //   pike/bass take prey ~10–50% of their length; tiny fry are eaten by small predators, not big ones)
 };
 
 // ---------- brood protection (newborn cannibalism) ----------
@@ -76,6 +79,15 @@ export const FEED = {
 // grace a juvenile senses (and can flee) a cannibal adult of its own kind. Real post-grace cannibalism stays possible.
 export const BROOD = {
   GRACE: 5,      // s after birth during which a fish is not prey for its OWN species (other species can still eat it)
+  // NEST GUARDING (species with sp.nestGuard s): the spawning parent stays on the nest and drives predators off while its
+  // fry stay close — largemouth bass and sunfish males do this for 1–4 weeks, catfish too. Fry near a guarded nest are
+  // much harder to catch (PROTECT shrinks a predator's strike reach there).
+  GUARD_R: 60,          // px: the guarded zone around the nest
+  PROTECT: 0.8,         // strike-reach cut on a guarded fry inside the zone while its guardian is there
+  GUARD_TETHER: 1.4,    // steer weight pulling a guardian back to its nest
+  FRY_TETHER: 0.9,      // steer weight keeping guarded fry near the nest
+  // NURSERY: young fish shelter in vegetation and structure (the littoral nursery habitat), more so when frightened
+  NURSERY: 0.45,        // cover-seeking steer weight for juveniles (age < half their maturity), × (1 + fear)
   SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
 };
 
@@ -109,9 +121,30 @@ export function bedY(x) {
 }
 
 // ---------- seasons & thermal structure ----------
+// A temperate (dimictic) lake, year-fraction 0 = March 1. Surface water: ~0–1 °C under winter ice (Jan–Feb), ~4 °C at
+// ice-out (~April), ~20 °C in June, peaking ~24–25 °C around Aug 1, back to ~4 °C by late November. (It used to run
+// 22 °C on Mar 1 → 31 °C on Jun 1 → never below 13 °C: no winter, no ice, a June heat peak.)
 export const SEASON = {
   get YEAR_LEN() { return TIME.YEAR_LEN; },   // live alias of the master TIME.YEAR_LEN (not a load-time copy)
-  TEMP_AMP: 9,               // seasonal swing (±°C) of the surface/epilimnion base temperature
+  TEMP_AMP: 13,              // seasonal swing (±°C) of the surface/epilimnion base temperature about ENV.TEMP_BASE
+  TEMP_PHASE: 0.17,          // year-fraction of the spring zero crossing → peak at +0.25 (≈ Aug 1), minimum ≈ Jan 21
+  START_YF: 0.22,            // a fresh lake opens in mid/late May (ice gone, plants and fish active)
+  // daylight: day length and noon sun height follow the solstice (Jun 21 = yf 0.307) — ~9 h days in winter, ~15 h in
+  // summer, and a winter noon sun about half as strong
+  SOLSTICE: 0.307,
+  DAY_FRAC: [0.38, 0.62],    // fraction of the 24 h cycle that is daylight, [winter solstice, summer solstice]
+  NOON: [0.5, 1.0],          // noon irradiance factor, [winter, summer]
+};
+// lake ICE: forms when the surface water nears freezing, melts in spring. Under ice (+ snow) little light gets in, the
+// wind can't mix or aerate the water, and the column is calm and weakly inverse-stratified (~0 °C under the ice, 4 °C
+// at the bottom) — so dissolved O₂ slowly falls all winter (the classic winterkill risk in productive lakes).
+export const ICE = {
+  FORM_T: 1.2,     // °C: surface (diel-free) temperature below which ice grows
+  MELT_T: 3.5,     // °C: above which it melts (hysteresis → it doesn't flicker on mild winter days)
+  GROW: 0.03,      // /s cover growth toward full while cold
+  MELT: 0.05,      // /s melt rate while warm
+  LIGHT_CUT: 0.8,  // fraction of daylight blocked by ice + snow at full cover
+  STRAT: 0.55,     // stratification strength under full ice (calm, inverse) — damps vertical mixing
 };
 export const THERMAL = {
   EPI_FRAC: 0.28,      // top fraction of the column = epilimnion (warm, well-mixed)
@@ -150,6 +183,9 @@ export const COVER = {
 // ---------- inflow / outflow through-current ----------
 export const FLOW = {
   SPEED: 3.2,           // gentle rightward through-current (px/s, inflow left → outflow right), weaker deep
+  PLUME_COLS: 6,        // the inflow plume: this many field columns from the left shore …
+  PLUME_ROWS: 4,        // … × this many surface rows (the stream spreads over the near-shore surface water)
+  O2_MIX: 0.25,         // /s the plume's O₂ relaxes toward saturation (aerated stream water — also under ice)
   NUTRIENT: 3.3,        // nutrient (N+P)/s the inflow loads into the left littoral (sets the lake's trophic state /
                         // baseline productivity — higher = more mesotrophic, lower = oligotrophic). × INFLOW_P 0.12 ⇒ ≈0.40
                         // P/s (was 1.7 × 0.60 ≈ 1.02 P/s while grazing, fish detritus and the all-cells decay leaked ~2.6 P/s;
@@ -181,6 +217,7 @@ export const TURBIDITY = {
 // respires/decomposes (an O₂ sink) always, shades the water (turbidity), and is grazed by
 // zooplankton (the drifting particles). Nutrient spikes → blooms → night/decay O₂ crashes.
 export const PHYTO = {
+  Q10: 1.9,              // temperature dependence of algal growth, respiration and decay (Eppley ≈ 1.88), ×1 at 20 °C
   GROW: 0.95,            // max growth /s at full light × Liebig-limited nutrient (raised 0.85→0.95: faster recovery from the night/graze lows so the base reads non-zero more of the time)
   CAP: 1.0,              // max biomass per cell
   P_USE: 0.09,           // P content of one unit of algal biomass (drawn on growth, returned in full on decay/grazing)
@@ -215,8 +252,8 @@ export const CYANO = {
   P_USE: 0.09,           // P content per unit biomass — drawn from the SAME phosphate pool green phyto uses (competition)
   N_USE: 0.6023,         // N content per unit biomass (Redfield, = PHYTO.N_USE) — FIXED from N₂ on growth, so it is a net
                          // N SOURCE to the lake once the biomass decays (tallied in env.ledger.fixN)
-  TEMP_OPT: 28,          // °C — a warm-water bloomer (late summer); growth falls off away from this
-  TEMP_TOL: 9,           // °C half-width of the thermal growth window (0 growth beyond ±TEMP_TOL)
+  TEMP_OPT: 25,          // °C — a warm-water bloomer (late summer); growth falls off away from this (real cyanobacteria peak ~25–30 °C)
+  TEMP_TOL: 11,          // °C half-width of the thermal growth window (0 growth beyond ±TEMP_TOL): ~none below ~14 °C
   O2_PHOTO: 0.85,        // O₂ produced per (biomass × light) by day
   O2_RESP: 0.06,         // O₂ consumed per biomass always (a thick scum → night/decay O₂ crash)
   DECAY: 0.06,           // /s die-off (returns ALL its P and fixed N). Was 0.05: with grazing-immune buoyant growth the
@@ -235,7 +272,7 @@ export const CYANO = {
   // so it mainly hits surface fish (minnows). A topical pollution/climate-scenario amplifier.
   TOX_THRESH: 0.6,       // local cyano (fraction of CAP) above which the scum turns toxic — a DENSE scum (was 0.4: 81 of 85
                          // surface cells exceeded it every early summer, so the toxin was simply "on" all summer)
-  TOXIN: 0.10,           // fish energy drained /s per unit cyano above the threshold
+  TOXIN: 0.015,          // fish energy drained /s per unit cyano above the threshold (scaled to the realistic metabolism)
   TOX_ZOO: 0.4,          // /s extra zooplankton death rate inside a toxic scum
 };
 
@@ -283,7 +320,7 @@ export const ENV = {
   RAIN: [0, 0, 0.6, 1.0],              // rain intensity per state
 
   // temperature (deg C, normalised internally)
-  TEMP_BASE: 22,
+  TEMP_BASE: 12.5,         // annual-mean surface temperature (the seasonal swing is SEASON.TEMP_AMP about it)
   TEMP_DIURNAL: 4,         // +/- swing over the day (surface; damped with depth — THERMAL.DIEL_DEPTH)
   TEMP_RELAX: 0.4,         // /s rate the surface temperature eases toward its seasonal+diurnal+weather target
   TEMP_WEATHER: [0, -1, -2.5, -3], // cooling per weather state
@@ -295,7 +332,8 @@ export const ENV = {
   AERATE_RAIN: 0.12,
   AERATE_ROW1: 0.4,        // … and the row just below the surface aerates at this fraction of the surface rate
   O2_PHOTO: 1.7,           // O2 produced per (biomass*light) unit
-  O2_RESP_FISH: 0.012,     // O2 consumed per (respiration*size*metabolism)
+  O2_RESP_FISH: 0.0015,    // O2 consumed per (respiration*size*metabolism) — scaled with the realistic fish metabolism (was 0.012,
+                           //   tuned to the old ~8× metabolism: a dense school stripped its cell anoxic in seconds)
   O2_PLANT_NIGHT: 0.006,   // plant respiration at night
   O2_SED: 0.15,            // SEDIMENT O₂ demand /s at each column's bed cell (×depth ramp below the epilimnion)
   O2_PELAGIC: 0.009,       // water-column O₂ demand /s below the epilimnion (decomposition of sinking particulate organic
@@ -304,16 +342,19 @@ export const ENV = {
   SAT_TEMP_K: 0.020,       // saturation drop per deg above 18C
   HYPOXIA: 0.35,           // default critical O2 (species override via sp.o2Crit); below it, fish take stress
   HYPOXIA_SEVERE: 0.15,    // below this the hypoxia drain is 2.5× (lethal water)
-  HYPOXIA_PENALTY: 0.10,   // energy/s at zero O2 (scaled by deficit)
+  HYPOXIA_PENALTY: 0.015,  // energy/s at zero O2 (scaled by deficit; ×2.5 when severe) — ~3–6× routine metabolism: escape-or-die, not instant
   HYPOXIA_AVOID: 1.2,      // innate oxyregulation: a fish whose local O₂ < its o2Crit × this steers upward out of it (world.js)
 
-  // metabolism scales with temperature
-  METAB_TEMP_K: 0.030,
+  // metabolism scales with temperature exponentially (fish Q10 ≈ 2–2.5): ×1 at 18 °C, ~×0.3 at 3 °C, ~×1.7 at 25 °C — so
+  // winter fish idle on their reserves and a hot summer is costly
+  METAB_Q10: 2.2,
 
-  // thermal niche: each species has a preferred temperature band (sp.tempOpt ± sp.tempTol);
-  // outside it, energy drains at THERMAL_STRESS per °C of exceedance — warm- vs cool-water guilds,
-  // and the classic summer "temperature–oxygen squeeze" (warm surface + hypoxic deep), emerge.
-  THERMAL_STRESS: 0.0035,  // energy/s per °C beyond a species' tolerance band
+  // thermal niche: each species has a preferred temperature (sp.tempOpt) and an UPPER tolerance (sp.tempOpt + tempTol):
+  // above it, energy drains at THERMAL_STRESS per °C (heat stress is what kills fish). Cold is NOT stressful for these
+  // temperate natives (all overwinter under ice): below tempOpt they just slow down — swimming and feeding fall with a
+  // thermal performance curve (COLD_PERF) and metabolism falls with the Q10. → warm/cool guilds + the summer squeeze.
+  THERMAL_STRESS: 0.0006,  // energy/s per °C above a species' upper tolerance (~15% of routine metabolism per °C)
+  COLD_PERF_MIN: 0.2,      // activity/feeding factor at ≤ 2 °C (rises linearly to 1 at the species' tempOpt)
 };
 
 // Nutrients are split into PHOSPHATE (`phos`) and dissolved inorganic NITROGEN — the latter itself split into
@@ -368,6 +409,7 @@ export const SED_P = {
 //     lake, and it sets up N-fixing cyanobacteria winning at low N:P (a later slice).
 // Total available N for growth = nh4 + no3 (Liebig N-Monod over the sum). Pure / deterministic (no RNG).
 export const NCYCLE = {
+  Q10: 2.0,                // nitrification/denitrification temperature dependence (bacterial; ×1 at 20 °C, ~×0.3 near 3 °C)
   NH4_START: 0.30,         // initial ammonium (reduced N) — with NO3_START, 0.60 total inorganic N at start
   NO3_START: 0.30,         // initial nitrate (oxidized N)
   NITRIF: 0.05,            // /s nitrification rate (NH₄→NO₃) at full O₂ (supply-limited at steady state)
@@ -487,6 +529,10 @@ export const CRAYFISH = {
 };
 
 export const PLANT = {
+  CLONAL: 0.75,            // share of new shoots that are RUNNERS from an established plant (the rest are seeds)
+  RUNNER: [6, 26],         // px: how far a runner roots from its parent (beds expand as patches)
+  DORMANT_T: 6,            // °C: colder than this at its base, a macrophyte is DORMANT (rootstock/turions) — it can't starve of light
+  RESP_Q10: 2.0,           // night-respiration temperature dependence (×1 at 20 °C) — dormant winter plants barely respire
   MAX: 120,                // reference-pond cap (auto-scaled by world area)
   SEED_RATE: 3.4,          // new plants /s up to MAX (scaled by area) — gated by seasonal vigor (mostly spring/summer)
   GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor (per-plant max height: MACRO[v].maxH × the maxH gene)
@@ -566,13 +612,14 @@ export const SCHOOL = {
 export const ACTION = {
   STRIKE_BURST: 0.7,   // a full strike drives thrust toward 1 (a committed lunge)
   STRIKE_REACH: 0.6,   // …and EXTENDS the predator's eat reach by up to +60% (takePrey) — the snatch at the end of a lunge
-  STRIKE_COST: 0.05,   // /s energy cost at full strike (lunging is expensive → only worth it when prey is catchable)
+  STRIKE_COST: 0.025,  // /s energy cost at full strike (~5–10× routine metabolism: lunging is expensive → only worth it when prey is catchable)
   FLEE_BURST: 0.9,     // a full flee drives thrust toward 1 (a panic sprint)
   BURST_SPEED: 0.35,   // strike/flee also lift the speed cap by up to +35% → a sprint briefly exceeds cruise speed
-  FLEE_COST: 0.06,     // /s energy cost at full flee (a sprint is the most expensive act)
+  FLEE_COST: 0.03,     // /s energy cost at full flee (a sprint is the most expensive act)
   HIDE_STILL: 0.85,    // a full hide suppresses thrust by this much (freeze — hold position)
   HIDE_COVER: 0.6,     // …and steers toward the nearest cover (reed/log/weed bed) to hold in it
   HIDE_CONCEAL: 0.5,   // a freezing/hiding prey shrinks a predator's strike reach by up to this (harder to detect/catch)
+  ENGAGE: 0.35,        // an intent below this has NO effect or cost; above it the action ramps in (world.js engaged())
   GATE: 0.5,           // an intent above this "fires" (used for the hide cover-steer trigger & the inspector's dominant-act readout)
 };
 
@@ -657,7 +704,7 @@ export const TOX = {
 
 // reference-pond starting counts for the three resource fields (auto-scaled by area)
 export const SEED_COUNTS = { plankton: 210, plants: 92, detritus: 28 };
-// (the old SEED_FROM_BEST_CHANCE is retired — immigration's IMMIGRATION.FROM_BEST is now the single source of truth)
+// (the old SEED_FROM_BEST_CHANCE and IMMIGRATION.FROM_BEST are retired — immigrants come from the regional gene pool)
 
 // ---------- carrying capacity & metapopulation rescue (Phase 5 — replaces the hard pop floor & cap) ----------
 // Populations are now LOGISTIC + rescued, not hard-clamped:
@@ -677,8 +724,9 @@ export const SEED_COUNTS = { plankton: 210, plants: 92, detritus: 28 };
 // boom-bust troughs + struggling apex predators are rescued. A minimal REFUGE guarantees no literal extinction
 // (a tiny last-resort refuge population — far below the old hard floor), without pinning the population at a target.
 export const IMMIGRATION = {
-  RESCUE_N: 8,         // immigration engages below this many individuals (a rarity threshold, not a pop target)
+  RESCUE_N: 3,         // immigration engages below this many individuals (a rarity threshold, not a pop target)
   REFUGE: 2,           // absolute quasi-extinction backstop: never let a species literally vanish (≪ the old floor)
-  RATE: 2.0,           // immigrants/s per species at zero population (Poisson trickle; → 0 at RESCUE_N)
-  FROM_BEST: 0.6,      // fraction seeded as a mutated copy of the species' current best (preserves learned behavior)
+  RATE: 0.05,          // immigrants/s per species at zero population (a rare trickle from connected waters; → 0 at RESCUE_N)
+  POOL_N: 12,          // genomes per species in the REGIONAL gene pool immigrants are drawn from (connected waters)
+  EMIGRATE: 0.02,      // /s per species: chance a random lake adult's genes join the regional pool (gene flow out)
 };
