@@ -26,7 +26,8 @@
   - a WebGL2 mock for smoke tests (`GLPost` never runs under the stub);
   - relabelling the checks that can't fail;
   - a faster gate (~9 min serial).
-- **Catfish nocturnality is weak in effect** (~8% faster at night).
+- ~~Catfish nocturnality is weak in effect (~8% faster at night).~~ Fixed by the innate `dayRest`: the gate's 3-seed
+  check measures catfish swimming ~59% faster at night than at midday.
 - **N-fixation is rare** at the default inflow N:P.
 - **Needs human eyes:**
   - the colour grade (the GL depth terms were upside down until this fix);
