@@ -55,6 +55,13 @@ All agents append new tests at the END of test files under `// ==== audit-fixes:
     `Environment.toJSON`/`load`. The strict resume test (load → 600 steps byte-identical) fails until
     that's done.
   - `addAgent`/`makeFish` now return `null` at `GLOBAL_MAX`.
+- ✅ **render merged** (`e31c687`).
+  - GL orientation fixed. GPU readback: caustics now change the TOP bands
+    `[0,0,0,0,2.4,26.6,38.2,38.0,34.8,19.3]` (bottom→top).
+  - Canvas-swap fallback, interpolation, pinch zoom.
+  - **Still to verify in a FOREGROUND browser tab:** that interpolated motion looks smooth. The agent's
+    tab was in the background, so its frame loop never ran.
+  - The human should eyeball the grade now that the orientation is fixed.
 - Commit messages: use `git commit -F <file>`. PowerShell 5.1 mangles quotes inside here-strings
   passed to git.
 
