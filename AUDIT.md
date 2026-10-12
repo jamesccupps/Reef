@@ -21,7 +21,7 @@
 - **Apex starvation diagnosed and improved:** innate pursuit, hypoxia avoidance, predator energetics.
 
 **Still open (tracked in `ROADMAP.md` → "Build order & guards"):**
-- **Apex-predator recruitment.** Much improved by pursuit, hypoxia avoidance, predator energetics and spawning aggregation. Bass immigrant share went 91% → 70% and pike 76% → 54%, and catfish and carp improved too. But bass and pike still partly depend on immigration.
+- **Apex-predator recruitment.** Much improved by pursuit, hypoxia avoidance, predator energetics and spawning aggregation. Bass immigrant share went 91% → 70% and pike 76% → 54%, and catfish and carp improved too. But bass and pike still partly depend on immigration. **Caveat (2026-10-12):** those are single-seed (2024) figures. A 3-seed, 1-year A/B gives honest means of bass ~78%, pike ~59-66%, catfish ~47-49%, carp ~44-46% and sunfish ~22-24% immigrants. That is still better than the 91%/76% start, but less than seed 2024 suggested.
 - **Remaining Tier 1 #5 items:**
   - a WebGL2 mock for smoke tests (`GLPost` never runs under the stub);
   - relabelling the checks that can't fail;

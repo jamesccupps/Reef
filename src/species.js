@@ -230,7 +230,7 @@ export const SP = {
     metabolism: 0.030, startEnergy: [0.50, 0.70], matureAge: 180, reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
     matingCooldown: 12, maxAge: 1000, pop: { start: 6, min: 3, max: 18 },   // long-lived benthic (~0.56 yr life, matures early ~18% in like real catfish)
     tempOpt: 26, tempTol: 10, o2Crit: 0.16, spawnPeak: 0.18, clutch: 5,   // warmwater bottom-dweller; spawns in warm early summer; fecund
-    innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, spawnGround: 0.4 },   // hugs the bottom; forages more at night
+    innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 30, WORLD.FLOOR - 2) }),

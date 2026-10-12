@@ -11,6 +11,17 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 to analyze the GUI and everything yourself, keep everything updated in case chat compacts." The budget rule
 still applies: no subagents.
 
+**TOP PRIORITY (human, 2026-10-12):** "it's supposed to be a good visual like a screensaver, especially full
+screen — make sure the visuals are good, high resolution, that even zoomed out you can see things, that it all
+flows and acts real and that it's polished."
+
+Screensaver plan:
+- [ ] Zoomed-out visibility at 1080p and 4K: fish must read as fish (oriented shapes, not specks); measure the
+      LOD mix at fit zoom.
+- [ ] Resolution: sprite sharpness at tour/close zooms, DPR, bloom at 4K.
+- [ ] Flow: no LOD popping (cross-fade dot↔sprite), smooth tour shots and pacing, no jitter.
+- [ ] Fullscreen polish: auto-hide the cursor and HUD when idle, restore on movement; tidy overlays.
+
 **Plan for this round** (tick items off here as they ship):
 - [x] GUI review in the built-in browser: screenshots at desktop, mobile, whole-lake, close-up, night,
       overlays and fullscreen. Fix layout and readability issues.
@@ -27,9 +38,9 @@ still applies: no subagents.
       Still to check: the mobile layout. Fullscreen can't be triggered without a user gesture.
 - [ ] Colour grade / exposure: judge with screenshots and GPU-readback histograms, now that GL depth is
       right-side up.
-- [ ] Catfish nocturnality (only ~8% in effect).
+- [x] Catfish nocturnality: `innate.dayRest` (catfish 0.5) damps daylight thrust, giving ~60% faster at night (was ~8%). A 3-seed A/B shows a cost within noise.
 - [ ] Apex juvenile survival / brood protection.
-- [ ] Tests: relabel the can't-fail checks; a WebGL2 mock in smoke if it's cheap.
+- [x] Tests: the can't-fail checks are relabelled (REFUGE / clamp invariants). The Liebig check now asserts that the scarcer element sets the limit. A WebGL2 mock is still open.
 - [ ] HUD O₂ readout semantics (it reads 100–116%).
 
 **What happened.** On 2026-10-11 the human asked to "post it to GitHub and fix everything" in `AUDIT.md`.
@@ -83,7 +94,7 @@ All of it is on `main` via the `audit-fixes` branch.
 - Result: bass immigrant share 91% → 80%, pike 76% → 61%, with prey steady.
 - Then the remaining bottleneck turned out to be mate-finding. A lower breeding threshold was tested and
   rejected: births didn't rise. **Spawning aggregation** (`innate.spawnGround`) shipped instead.
-- 1-year immigrant share now: bass 70%, pike 54%, catfish 29%, carp 39%, sunfish 16%. Total immigration
+- 1-year immigrant share now: bass 70%, pike 54%, catfish 29%, carp 39%, sunfish 16%. Total immigration **Caveat (2026-10-12):** those are single-seed (2024) figures. A 3-seed, 1-year A/B gives honest means of bass ~78%, pike ~59-66%, catfish ~47-49%, carp ~44-46% and sunfish ~22-24% immigrants. That is still better than the 91%/76% start, but less than seed 2024 suggested.
   is down 44%, and minnows hold steady (CV 0.04).
 - Better, but bass and pike are **still not fully self-sustaining**. Next levers: juvenile survival and
   brood protection.

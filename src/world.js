@@ -773,6 +773,10 @@ export class World {
         // and rest by day (surface time-of-day drives diel activity, not the fish's local depth light)
         const cruiseT = IN.nocturnal ? IN.cruise * (1.5 - env.light) : IN.cruise;
         thrust += (cruiseT - thrust) * IN.weight * 0.5;
+        // DIEL REST: the cruise blend above is a weak (~22%) pull, so on its own a nocturnal fish was only ~8% busier at
+        // night. Real catfish rest by day and forage at night — scale the DELIVERED thrust down in daylight (a
+        // multiplicative rhythm the brain still drives within; it doesn't override what the brain wants, just damps it).
+        if (IN.dayRest) thrust *= 1 - IN.dayRest * env.light;
         // schooling: gently steer toward the local shoal's centroid (cohesion) → loose, realistic schools
         if (IN.school) {
           const al = this.allyStats(a, 56);

@@ -44,6 +44,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - Add a check block for every new subsystem or fix **before the final summary line**. Both `headless.mjs` and `smoke.mjs` end with `process.exit`, so anything appended after it never runs.
   - Set `REEF_PERF_MIN=0` only while the CPU is shared. Otherwise the budget is strictly ≥60 steps/s; recent runs show about 120–135.
 - **Balance:** `npm run balance [years]` is a long-run analyzer, not part of the gate. REFUGE keeps every species "present", so judge balance by home-bred vs immigrant births per species, seasonal O₂ and phyto, and plants standing.
+  - `balance.mjs` runs a single seed (2024). Single seeds swing by 10–20 points of immigrant share, so judge a balance change on a **≥3-seed A/B** (same seeds, change on/off) before claiming it.
 - **Browser checks:** you *can* verify in the built-in browser.
   - `window.reef` exposes `{world, renderer, inspector, ui, camera}`.
   - `renderer.draw(t[, alpha])` requires `t`.
