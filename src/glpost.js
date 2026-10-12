@@ -234,9 +234,14 @@ void main(){
   warp.y = cos(uv.x*18.0+tt*0.7)*0.0010 + sin(uv.x*33.0+tt*0.9)*0.0006;
   float caustic=(0.5+0.5*sin(uv.x*90.0+tt*2.0))*(0.5+0.5*sin(dpt*70.0-tt*1.7));
   warp += vec2(caustic-0.5)*0.0006;
-  warp *= (0.4+0.6*surf)*(0.6+0.7*uLight)*(1.0+1.6*uTurb)/max(uZoom,0.6);   // uZoom = zoom/fitZoom (DPR- & size-independent)
+  // LENS CHARACTER grows WITH magnification (uZoom = zoom/fitZoom, DPR- & size-independent): 0 at the whole-lake view, 1
+  // from ~5× in. The shimmer, colour fringing and fake DOF used to scale with 1/zoom, i.e. they were STRONGEST at the
+  // overview, where ~5 px of warp and 2–5 px of R/B fringing smeared fish that are only ~8 px long (blurry when zoomed out).
+  // A wide shot is crisp with deep focus; the close-up keeps its underwater-camera character.
+  float lens=clamp((uZoom-1.0)/4.0,0.0,1.0);
+  warp *= (0.4+0.6*surf)*(0.6+0.7*uLight)*(1.0+1.6*uTurb)*mix(0.12,0.6,lens);
   vec2 wuv = clamp(uv+warp,0.0,1.0);
-  float ca=(0.0010+0.0030*r2)/max(uZoom,0.6);
+  float ca=(0.0002+0.0014*r2)*mix(0.5,1.0,lens);
   vec2 dir=(r2>1e-6)?normalize(ctr):vec2(0.0);
   vec3 col;
   col.r=texture(uScene,clamp(wuv+dir*ca,0.0,1.0)).r;
@@ -244,7 +249,7 @@ void main(){
   col.b=texture(uScene,clamp(wuv-dir*ca,0.0,1.0)).b;
   float dofEdge=smoothstep(0.10,0.42,r2);
   float dofDeep=smoothstep(0.5,1.0,dpt)*(0.4+0.6*(1.0-uSecchi));
-  float dof=clamp(0.6*dofEdge+0.4*dofDeep,0.0,0.7);
+  float dof=clamp(0.6*dofEdge+0.4*dofDeep,0.0,0.7)*lens;   // no fake depth-of-field on the wide view
   if(dof>0.001){
     vec2 px=1.5*uDpr/uRes;                // tap offset in CSS px (scaled by DPR) so the blur radius is DPR-independent
     vec3 b=texture(uScene,clamp(wuv+vec2(px.x,px.y),0.0,1.0)).rgb
@@ -355,7 +360,7 @@ uniform float uKind;        // 0 living, 1 corpse
 uniform float uBodyCurve, uRim, uAmbient, uSpec;
 ${GLSL_SRGB}
 void main(){
-  vec4 texel = texture(uTex, vUv);          // rgb hardware-decoded to LINEAR, alpha STRAIGHT
+  vec4 texel = texture(uTex, vUv, -0.5);    // rgb hardware-decoded to LINEAR, alpha STRAIGHT. −0.5 mip bias: small fish stay crisp (trilinear minification read soft)
   if (texel.a < 0.012) discard;
   float v = vUv.y*2.0 - 1.0;                 // -1 back/top .. +1 belly/bottom
   float u = vUv.x*2.0 - 1.0;                 // -1 nose .. +1 tail
