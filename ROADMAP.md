@@ -933,6 +933,10 @@ This replaces the critic's June build order; everything on that list has shipped
 
 **Open work, highest priority first:**
 1. **Apex-predator recruitment.**
+   - **Update 2026-10-12:**
+     - Diagnosed as starvation, then improved with innate pursuit, hypoxia avoidance and predator energetics on the size trend. Bass immigrant share went 91% → 80%, pike 76% → 61%.
+     - **Lowering the breeding threshold does NOT help.** With bass at 0.80 and pike at 0.90, 2.6× more bass were "ready", but births only went 151 → 160, immigrants rose and starvation rose.
+     - The binding constraint is now **mate-finding in a sparse population** (~8 bass across the lake). The likely real fix is **spawning aggregation / migration** (Phase 4): breeding adults gather on littoral spawning grounds in season.
    - Bass and pike are still mostly immigrants: about 85–95% of bass and 60–85% of pike in multi-year balance runs. Earlier home-bred numbers were inflated by energy pumps (newborn cannibalism, free budding energy), and those are now closed.
    - Investigate why the apex can't self-sustain: prey availability, reproduction thresholds, clutch size, and juvenile survival.
 2. **Test hardening.** The remaining gaps are listed in `AUDIT.md`:
