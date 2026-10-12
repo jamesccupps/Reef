@@ -52,10 +52,18 @@ All agents append new tests at the END of test files under `// ==== audit-fixes:
 5. Re-verify GL orientation on the GPU (A/B readPixels diff per band: the caustics must change the
    TOP bands).
 6. Push.
-7. Wave 2: a test-hardening agent (behavioural tests in place of formula copies, broader
-   determinism, a WebGL2 mock in smoke) plus a docs agent (slim CLAUDE.md, archive SESSION_STATE,
-   README rewrite, LICENSE, `package.json` `serve` → `node serve.mjs`, `engines`, `private`).
-8. Wave 3: a fresh audit of the merged result. Fix, repeat until dry, then merge `audit-fixes` → `main`.
+7. **Human, 2026-10-11: "don't use up all my usage by doing sub agents."** NO new subagents
+   after wave 1. I do waves 2–3 myself, lean: read line ranges, not whole files.
+8. Wave 2 (me):
+   - test hardening: behavioural tests in place of formula copies, broader determinism, a WebGL2
+     mock in smoke if it's cheap;
+   - docs: slim CLAUDE.md, archive SESSION_STATE, rewrite README, LICENSE, `package.json` `serve`
+     → `node serve.mjs` plus `engines` and `private`.
+9. Wave 3 (me): a targeted self-audit of the merged diff. Fix what it finds, then merge
+   `audit-fixes` → `main`.
+
+**Wave-2 detail notes** (what `AUDIT.md` only summarizes: specific test gaps and the docs-restructure plan)
+are in this session's scratchpad: `…\3fbb8b1d-0819-461b-9dac-5da076bd3f7a\scratchpad\wave2-notes.md`.
 
 **Gotchas:**
 - `renderer.draw(t)` needs `t`.
