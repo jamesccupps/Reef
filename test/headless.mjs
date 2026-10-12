@@ -1114,9 +1114,15 @@ check('the spawn multiplier peaks in-season (≈1) and tapers to the floor a hal
 // WIRING (end-to-end): minnows actually breed MUCH more at their spring peak than off-season. Same seed + minnows-only
 // so the only difference is the calendar. A SHORT window (before mating cooldowns let everyone re-breed and saturate
 // the count) exposes the spawn multiplier's effect on the breeding RATE — the seasonal boom, not a saturated total.
+// Summed over 4 seeds: a 20-step window holds only a couple of spawnings (each a clutch), so one seed's count is
+// RNG-stream noise (e.g. 5 vs 5 at seed 1234 once budding stopped creating energy and broods got smaller).
 function minnowBirths(yearFrac) {
-  seed(1234); const tw = new World(); tw.agents = tw.agents.filter(a => a.species === 'minnow'); tw.time = yearFrac * SEASON.YEAR_LEN;
-  const b0 = tw.stats.births.minnow; for (let i = 0; i < 20; i++) tw.step(1 / 30); return tw.stats.births.minnow - b0;
+  let n = 0;
+  for (const s of [1234, 1, 2, 3]) {
+    seed(s); const tw = new World(); tw.agents = tw.agents.filter(a => a.species === 'minnow'); tw.time = yearFrac * SEASON.YEAR_LEN;
+    const b0 = tw.stats.births.minnow; for (let i = 0; i < 20; i++) tw.step(1 / 30); n += tw.stats.births.minnow - b0;
+  }
+  return n;
 }
 const peakBirths = minnowBirths(SP.minnow.spawnPeak), offBirths = minnowBirths(SP.minnow.spawnPeak + 0.5);
 check('seasonal spawning is WIRED: minnows breed far more in their spring peak season than off-season', peakBirths > offBirths * 1.5, `peak-season ${peakBirths} vs off-season ${offBirths} births (first 20 steps)`);
