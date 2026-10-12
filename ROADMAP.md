@@ -585,7 +585,7 @@ end. Tags: **impact** (realism payoff) / **cost**. Build top-down within a phase
   composited to `#tank` by a feature-detected WebGL2 presenter (HDR float bloom, ACES tonemap, underwater refraction, chromatic
   aberration, fake DOF, grain, day/night grade, vignette), Canvas2D fallback keeps the gate green. **Recovered perf** (1080p
   whole-lake ~56→~139 fps) + raised fidelity. See SESSION_STATE "Pass 3 / slice 1". Designed via a de-risking workflow + reviewed.
-  **▶▶ FOR THE NEXT GRAPHICS WORK, READ `GRAPHICS_RESEARCH.md`** — a synthesized, cited, codebase-mapped REALISM roadmap (5-lens
+  **▶▶ FOR THE NEXT GRAPHICS WORK, READ `docs/GRAPHICS_RESEARCH.md`** — a synthesized, cited, codebase-mapped REALISM roadmap (5-lens
   web research, 2026-06-17). It supersedes the loose "remaining" bullets below with a prioritized, gate-safe slice order. Headline:
   two foundational gaps — **(1) no linear-HDR/sRGB pipeline** (#1 bug → milky bloom/crushed darks) and **(2) no depth/occluder
   buffer** — fix in that order (linear-HDR float pipeline first, then a depth MRT keystone), then Beer-Lambert depth colour,

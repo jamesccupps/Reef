@@ -15,7 +15,7 @@ detail or performance.
 ## Architecture — current design, open to revision
 These are the invariants of the **current** implementation and the reasons behind them. You
 are free to propose and adopt a different architecture, tech stack, or runtime if you judge
-it better for the vision (see `HANDOFF_PROMPT.md`). If you do, carry the *principles* — a
+it better for the vision (see `docs/archive/HANDOFF_PROMPT.md`). If you do, carry the *principles* — a
 testable simulation core, determinism, separation of simulation from rendering, and
 verification before claiming — into the new design.
 
