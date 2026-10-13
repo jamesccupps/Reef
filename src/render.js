@@ -1,7 +1,7 @@
 // render.js — browser-only canvas renderer. Draws the world through a Camera with
 // culling, level-of-detail, and a lazily-built sprite cache. Not imported by the
 // headless sim test (a separate DOM-stub smoke test exercises it).
-import { WORLD, GRID, THERMAL, MACRO, bedY } from './config.js';
+import { WORLD, GRID, THERMAL, MACRO, BIRD, bedY } from './config.js';
 import { SP } from './species.js';
 import { clamp, lerp, hsl, angDiff, TAU } from './core.js';
 import { makePresenter, Canvas2DPresenter } from './glpost.js';
@@ -506,6 +506,22 @@ export class Renderer {
       }
     }
 
+    // WINTER ICE (env.ice): a pale translucent sheet at the surface — thicker and whiter as it grows (snow on top reads as a
+    // bright underside), with faint world-anchored cracks; the light under it is already cut by the environment
+    if (env.ice > 0.02) {
+      const thick = 3 + 9 * env.ice, y0 = Y(0), y1 = Y(thick);
+      const ig = ctx.createLinearGradient(0, y0, 0, y1 + 2);
+      ig.addColorStop(0, `rgba(${(200 + 30 * vL) | 0},${(222 + 20 * vL) | 0},${(236 + 14 * vL) | 0},${0.55 + 0.35 * env.ice})`);
+      ig.addColorStop(1, `rgba(170,200,222,${0.25 * env.ice})`);
+      ctx.fillStyle = ig; ctx.fillRect(bx, y0, bw, y1 - y0 + 2);
+      ctx.strokeStyle = `rgba(120,150,175,${0.35 * env.ice})`; ctx.lineWidth = Math.max(1, 0.6 * z); ctx.beginPath();
+      for (let cxw = Math.floor(vr.x0 / 70) * 70; cxw < vr.x1 + 70; cxw += 70) {
+        const j = Math.sin(cxw * 12.9898) * 43758.5453, f = j - Math.floor(j);   // stable per-crack pseudo-random
+        ctx.moveTo(X(cxw + f * 40), y0); ctx.lineTo(X(cxw + f * 40 + (f - 0.5) * 30), Y(thick * (0.6 + 0.4 * f)));
+      }
+      ctx.stroke();
+    }
+
     // the lake bed — a curved basin; earth fills below bedY(x)
     {
       const x0 = Math.max(0, vr.x0), x1 = Math.min(W, vr.x1);
@@ -784,6 +800,8 @@ export class Renderer {
     const sel = world.selectedId != null ? world.agents.find(a => a.id === world.selectedId) : null;
     if (sel && this.opts.vision) this._vision(ctx, sel, world, w2s);
 
+    if (world.birds && world.birds.length) this._drawBirds(ctx, world, t, z, X, Y, vr);
+
     // fish — culled + LOD (pad by the largest possible sprite extent so big fish don't pop at edges)
     const padW = MAX_FISH_EXTENT;
     // fading, sinking bodies of the recently-dead (drawn under the living)
@@ -929,6 +947,52 @@ export class Renderer {
         hazeMax: clamp(0.14 + 0.5 * murk, 0.14, 0.5) * (0.35 + 0.65 * amb),
         hazeBox: [by, bh],
       });
+    }
+  }
+
+  // a visiting LOON (world.birds): underwater it's seen whole — black head with a dagger bill and red eye, a checkered back,
+  // white belly, the feet set far back kicking as it swims, a thin bubble trail; resting on the surface only its belly and
+  // paddling feet show below the waterline (an underwater view of a floating bird). Render-only animation (Math.random).
+  _drawBirds(ctx, world, t, z, X, Y, vr) {
+    const L = BIRD.LEN, lit = 0.35 + 0.65 * (this._vL ?? 1);
+    const shade = (r, g, b) => `rgb(${(r * lit) | 0},${(g * lit) | 0},${(b * lit) | 0})`;
+    for (const b of world.birds) {
+      if (b.x < vr.x0 - L || b.x > vr.x1 + L || b.y > vr.y1 + L) continue;
+      const surf = b.st === 0, cx = X(b.x), cy = surf ? Y(-L * 0.07) : Y(b.y), ang = surf ? 0 : b.h;
+      const flip = Math.cos(ang) < 0 ? -1 : 1, s = z;
+      ctx.save();
+      if (surf) { ctx.beginPath(); ctx.rect(cx - L * s, Y(0), L * 2 * s, L * s); ctx.clip(); }   // only what's below the waterline
+      ctx.translate(cx, cy); ctx.rotate(ang); ctx.scale(s, s * flip);
+      const kick = Math.sin(t * (surf ? 5 : 9) + b.x * 0.1);
+      // feet: set far back, trailing and kicking (webbed lobes)
+      ctx.strokeStyle = shade(40, 44, 48); ctx.lineWidth = L * 0.022;
+      for (const side of [-1, 1]) {
+        const fx = -L * 0.5 - L * 0.12, fy = L * 0.06 + side * kick * L * 0.07;
+        ctx.beginPath(); ctx.moveTo(-L * 0.42, L * 0.06); ctx.lineTo(fx, fy); ctx.stroke();
+        ctx.fillStyle = shade(36, 40, 44); ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx - L * 0.1, fy - L * 0.04); ctx.lineTo(fx - L * 0.1, fy + L * 0.05); ctx.closePath(); ctx.fill();
+      }
+      // body: dark back, white belly
+      ctx.fillStyle = shade(24, 29, 34); ctx.beginPath(); ctx.ellipse(0, 0, L * 0.46, L * 0.15, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = shade(214, 220, 224); ctx.beginPath(); ctx.ellipse(L * 0.02, L * 0.07, L * 0.38, L * 0.075, 0, 0, TAU); ctx.fill();
+      // checkered back: rows of small white spots
+      ctx.fillStyle = shade(196, 204, 210);
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 2; j++) { const px = -L * 0.3 + i * L * 0.08 + j * L * 0.04, py = -L * 0.09 + j * L * 0.04; ctx.fillRect(px, py, L * 0.025, L * 0.02); }
+      // neck + head, dagger bill, red eye, white necklace
+      ctx.fillStyle = shade(18, 22, 26); ctx.beginPath(); ctx.ellipse(L * 0.4, -L * 0.08, L * 0.13, L * 0.085, -0.35, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(L * 0.52, -L * 0.13, L * 0.09, L * 0.07, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = shade(70, 76, 82); ctx.beginPath(); ctx.moveTo(L * 0.58, -L * 0.15); ctx.lineTo(L * 0.8, -L * 0.115); ctx.lineTo(L * 0.58, -L * 0.095); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = `rgb(${(170 * lit + 30) | 0},30,24)`; ctx.beginPath(); ctx.arc(L * 0.55, -L * 0.145, L * 0.018, 0, TAU); ctx.fill();
+      ctx.strokeStyle = shade(190, 198, 204); ctx.lineWidth = L * 0.012; ctx.beginPath(); ctx.moveTo(L * 0.36, -L * 0.15); ctx.lineTo(L * 0.42, -L * 0.03); ctx.stroke();
+      ctx.restore();
+      // bubble trail while diving
+      if (!surf) {
+        ctx.fillStyle = `rgba(210,232,244,${0.35 * lit})`;
+        for (let k = 1; k <= 5; k++) {
+          const back = k * L * 0.18, wob = Math.sin(t * 3 + k * 1.7) * L * 0.05;
+          const bx = b.x - Math.cos(b.h) * back + wob, by = b.y - Math.sin(b.h) * back - k * 1.5;
+          ctx.beginPath(); ctx.arc(X(bx), Y(by), Math.max(0.7, (1.4 - k * 0.15) * z * 0.6), 0, TAU); ctx.fill();
+        }
+      }
     }
   }
 

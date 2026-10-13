@@ -147,6 +147,9 @@ function drawFish(put, P, c, o) {
       const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.34));
       k *= 1 - 0.2 * sstep(0.55, 0.95, s) * (1 - sstep(-0.1, 0.55, n)) * along(-L * 0.85, L * 0.45, u);
       base = mix(base, [236, 138, 52], 0.42 * sstep(0.1, 0.8, n) * sstep(-0.5, 0.4, u / L));
+    } else if (pat === 'vbars') {  // perch: 6–8 bold dark saddle bars over a yellow flank, fading toward the pale belly
+      const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.28) + 0.6);
+      k *= 1 - 0.34 * sstep(0.5, 0.92, s) * (1 - sstep(0.0, 0.7, n)) * along(-L * 0.9, L * 0.5, u);
     } else if (pat === 'spots') {  // pike: rows of pale bean-shaped spots on a dark flank
       const gu = u / 0.5, row = Math.floor(v / 0.34), gv = v / 0.34 - row, ou = gu + (row & 1) * 0.5, fu = ou - Math.floor(ou);
       const r = Math.hypot((fu - 0.5) * 0.6, gv - 0.5);
@@ -226,9 +229,9 @@ export const SP = {
     diet: { plankton: true, insect: true },
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
     metabolism: 0.0046, moveCost: 0.0045, turnCost: 0.0012, respiration: 0.7,   // reserves last ~150 s at 18 °C (see ENERGETICS)
-    startEnergy: [0.45, 0.65], matureAge: yr(0.5), reproEnergy: 0.66, reproCost: 0.20, childEnergy: 0.40,
+    startEnergy: [0.45, 0.65], matureAge: yr(0.5), reproEnergy: 0.66, reproCost: 0.10, childEnergy: 0.20,
     matingCooldown: yr(0.05), maxAge: yr(2.5), pop: { start: 34, min: 7, max: 49 },  // fathead-like: matures its first summer, lives ~2–3 yr; K ≈ 330
-    tempOpt: 23, tempTol: 9, o2Crit: 0.18, spawnT: [16, 26], clutch: 4,   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
+    tempOpt: 23, tempTol: 9, o2Crit: 0.18, spawnT: [16, 26], clutch: 6,   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
     innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30 },   // shallow open water, active schooler
 
     sat: 20, lbase: 46, lrange: 16,
@@ -257,9 +260,9 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    metabolism: 0.0036, moveCost: 0.0052, turnCost: 0.0012, startEnergy: [0.45, 0.65], matureAge: yr(1), reproEnergy: 0.72, reproCost: 0.24, childEnergy: 0.44,
+    metabolism: 0.0036, moveCost: 0.0052, turnCost: 0.0012, startEnergy: [0.45, 0.65], matureAge: yr(1), reproEnergy: 0.72, reproCost: 0.12, childEnergy: 0.24,
     matingCooldown: yr(0.06), maxAge: yr(6), pop: { start: 12, min: 4, max: 18 },   // pumpkinseed-like: matures at ~1 yr, lives ~6; K ≈ 120
-    tempOpt: 26, tempTol: 8, o2Crit: 0.22, spawnT: [20, 28], clutch: 5, nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests
+    tempOpt: 26, tempTol: 8, o2Crit: 0.22, spawnT: [20, 28], clutch: 8, nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
     randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
@@ -280,6 +283,41 @@ export const SP = {
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
+  // YELLOW PERCH — the classic middle link of a temperate lake: young perch school and eat zooplankton, adults eat benthic
+  // insect larvae, crayfish and small fish (minnows, fry), and perch of every size are the main prey of pike and bass.
+  // Spawns in early spring just after the pike (7–12 °C), draping ribbons of eggs over weeds — no nest, no guarding.
+  perch: makeSpecies({
+    key: 'perch', name: 'Perch', tag: '#d6c04a', size: 1.2, trophic: 'mesopredator', schooling: true, zone: [0.3, 0.9],
+    shape: { in: 12, hid: 9 },
+    inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
+      'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
+    diet: { fish: true, insect: true, larva: true, cray: true }, foodValueFish: 0.8,
+    maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
+    metabolism: 0.0035, moveCost: 0.0041, turnCost: 0.0012, respiration: 1.0,   // reserves ~225 s at 18 °C
+    startEnergy: [0.5, 0.7], matureAge: yr(1), reproEnergy: 0.80, reproCost: 0.12, childEnergy: 0.24,
+    matingCooldown: yr(0.5), maxAge: yr(6), pop: { start: 11, min: 3, max: 16 },   // matures at 1–2 yr, lives ~6–10; K ≈ 108
+    tempOpt: 23, tempTol: 7, o2Crit: 0.20, spawnT: [7, 12], clutch: 8, spawnSide: -1,   // cool–warm guild; one early-spring spawn
+    innate: { homeDepth: 0.55, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },
+    sat: 70, lbase: 40, lrange: 20,
+    randomHue: (R) => R(46, 64),   // yellow-green with dark bars
+    spawnPos: (R) => ({ x: littoralX(R), y: R(60, WORLD.FLOOR - 60) }),
+    senses(a, w) {
+      // the nearest food it can take: a catchable fish OR a benthic larva (adults forage both)
+      const inp = a.act.in, pf = w.qPrey(a), lv = w.qLarva(a.x, a.y, a.senseRange);
+      const food = !pf ? lv : !lv ? pf : (pf.dist < lv.dist ? pf : lv);
+      tgt(a, food, a.senseRange, inp, 0);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
+      inp[6] = w.allyStats(a, 56).density;
+      inp[7] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
+      inp[9] = wallProx(a);
+      inp[10] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[11] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
+    },
+    P: { L: 2.6, Hh: 1.05, snout: 1.1, dorsal: true, dorsalX: -0.05, dorsalW: 0.38, dorsalH: 1.6, pattern: 'vbars', scales: { p: 0.2, k: 0.10 },
+      tail: { len: 1.3, spread: 0.9, sweep: 0.9, fork: 0.3 }, profile: t => { const e = ell(t, 0.7), sh = 1 + 0.12 * t; return [e * sh * 0.98, e * sh * 0.92]; } },   // humped back
+    draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
+  }),
+
   catfish: makeSpecies({
     key: 'catfish', name: 'Catfish', tag: '#b07b3f', size: 1.5, trophic: 'benthivore', schooling: false, zone: [0.78, 1.0],
     shape: { in: 10, hid: 10 },
@@ -287,9 +325,9 @@ export const SP = {
       'energy', 'on floor', 'oxygen', 'wall'],
     diet: { detritus: true, plants: true, larva: true, cray: true },
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
-    metabolism: 0.0028, moveCost: 0.0050, turnCost: 0.0012, startEnergy: [0.50, 0.70], matureAge: yr(2), reproEnergy: 0.80, reproCost: 0.26, childEnergy: 0.48,
+    metabolism: 0.0028, moveCost: 0.0050, turnCost: 0.0012, startEnergy: [0.50, 0.70], matureAge: yr(2), reproEnergy: 0.80, reproCost: 0.16, childEnergy: 0.32,
     matingCooldown: yr(0.5), maxAge: yr(10), pop: { start: 4, min: 3, max: 6 },   // bullhead/channel-cat-like: matures ~2–3 yr, long-lived; K ≈ 40
-    tempOpt: 27, tempTol: 9, o2Crit: 0.14, spawnT: [21, 28], clutch: 6, nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
+    tempOpt: 27, tempTol: 9, o2Crit: 0.14, spawnT: [21, 28], clutch: 8, nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
@@ -315,9 +353,9 @@ export const SP = {
       'energy', 'oxygen', 'wall', 'depth'],
     diet: { plants: true, detritus: true, larva: true, snail: true },
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8,
-    metabolism: 0.0025, moveCost: 0.0042, turnCost: 0.0012, startEnergy: [0.55, 0.80], matureAge: yr(2), reproEnergy: 0.95, reproCost: 0.30, childEnergy: 0.55,
+    metabolism: 0.0025, moveCost: 0.0042, turnCost: 0.0012, startEnergy: [0.55, 0.80], matureAge: yr(2), reproEnergy: 0.95, reproCost: 0.12, childEnergy: 0.24,
     matingCooldown: yr(0.4), maxAge: yr(12), pop: { start: 3, min: 2, max: 4.5 },   // the longest-lived: matures ~2–4 yr, lives 12+; K ≈ 30
-    tempOpt: 27, tempTol: 10, o2Crit: 0.12, spawnT: [17, 24], clutch: 8, spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
+    tempOpt: 27, tempTol: 10, o2Crit: 0.12, spawnT: [17, 24], clutch: 12, spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
     innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4 },   // deep bottom rooter
     sat: 46, lbase: 34, lrange: 18,
     randomHue: (R) => R(32, 46),
@@ -346,9 +384,9 @@ export const SP = {
     diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.80,
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
     metabolism: 0.0029, moveCost: 0.0038, turnCost: 0.0012, respiration: 1.2,
-    startEnergy: [0.70, 0.95], matureAge: yr(1.5), reproEnergy: 0.95, reproCost: 0.32, childEnergy: 0.58,
+    startEnergy: [0.70, 0.95], matureAge: yr(1.5), reproEnergy: 0.95, reproCost: 0.18, childEnergy: 0.36,
     matingCooldown: yr(0.5), maxAge: yr(8), pop: { start: 2.5, min: 2, max: 3.8 },   // largemouth-like: matures ~2–3 yr, lives ~10; K ≈ 26
-    tempOpt: 26, tempTol: 7, o2Crit: 0.28, spawnT: [15, 21], clutch: 6, nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
+    tempOpt: 26, tempTol: 7, o2Crit: 0.28, spawnT: [15, 21], clutch: 8, nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
     innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
@@ -376,9 +414,9 @@ export const SP = {
     diet: { fish: true, cray: true }, foodValueFish: 0.85,
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
     metabolism: 0.0024, moveCost: 0.0079, turnCost: 0.0012, respiration: 1.4,   // a sit-and-wait hunter: cheap to idle, costly to burst
-    startEnergy: [0.80, 1.05], matureAge: yr(1.5), reproEnergy: 1.05, reproCost: 0.38, childEnergy: 0.66,
+    startEnergy: [0.80, 1.05], matureAge: yr(1.5), reproEnergy: 1.05, reproCost: 0.16, childEnergy: 0.32,
     matingCooldown: yr(0.5), maxAge: yr(9), pop: { start: 1.2, min: 1, max: 1.8 },   // northern-pike-like: matures ~2–3 yr, lives 10–15; the rarest fish, K ≈ 12
-    tempOpt: 19, tempTol: 8, o2Crit: 0.26, spawnT: [4, 11], clutch: 8, spawnSide: -1,   // coolwater apex (summer-squeezed); spawns right after ice-out in flooded margins
+    tempOpt: 19, tempTol: 8, o2Crit: 0.26, spawnT: [4, 11], clutch: 12, spawnSide: -1,   // coolwater apex (summer-squeezed); spawns right after ice-out in flooded margins
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),

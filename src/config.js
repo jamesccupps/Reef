@@ -67,6 +67,10 @@ export const FEED = {
   SATIATE: 0.95,    // a fish stops feeding above this fraction of its energy capacity (satiation)
   HUNT_BELOW: 0.8,  // a piscivore only attacks fish below this fraction (room for a whole meal) — no overkill when full
   FRY_GROW: 0.6,    // below this growth fraction every fish eats zooplankton (fry diet), whatever its adult diet
+  MEAL_K: 10,       // a fish meal's energy = foodValueFish × MEAL_K × (prey mass / predator mass) × capacity: prey of 10% of
+                    //   the predator's mass ≈ a full reserve (a big meal; a small fry is a snack)
+  DIGEST: 1200,     // s of digestion per unit prey-mass fraction at 18 °C (÷ the Q10 when warmer): 10% prey ≈ 120 s ≈ 2 days;
+                    //   max intake ≈ 2× maintenance when prey is plentiful (real piscivores: ~2–3×)
   PREY_MIN: 0.15,   // a piscivore ignores fish smaller than this fraction of its own size (not worth the chase — real
                     //   pike/bass take prey ~10–50% of their length; tiny fry are eaten by small predators, not big ones)
 };
@@ -135,6 +139,26 @@ export const SEASON = {
   DAY_FRAC: [0.38, 0.62],    // fraction of the 24 h cycle that is daylight, [winter solstice, summer solstice]
   NOON: [0.5, 1.0],          // noon irradiance factor, [winter, summer]
 };
+// A fish-eating diving BIRD (a common loon): visits the open lake from ice-out to late autumn, rests on the surface and
+// dives in daylight to chase fish underwater (loons pursue prey by sight, propelled by their feet), surfacing for air
+// between dives, and flies off once sated. Fish sense a diving loon as a threat (World.qThreat). Times are sim seconds.
+export const BIRD = {
+  MAX: 1,              // loons hunting at once (one territorial bird/pair on a lake this size)
+  ARRIVE: 0.004,       // /s chance one arrives when none is present (in season, open water)
+  SEASON: [0.08, 0.72],// year-fraction window it can be on the lake (≈ ice-out → mid-November)
+  STAY: [500, 1100],   // s a visit lasts at most before it flies off
+  SPEED: 62,           // px/s swimming underwater (between perch cruising and a pike's burst)
+  TURN: 3.2,           // rad/s underwater turn rate
+  SURFACE: [5, 14],    // s resting at the surface between dives
+  DIVE: [9, 18],       // s of breath per dive
+  SIGHT: 230,          // px it spots prey underwater (× water clarity: a visual hunter)
+  PREY_MAX: 1.3,       // largest prey (effective size) it can swallow: minnows, perch, sunfish, young bass/pike/catfish
+  REACH: 9,            // px catch reach
+  LIGHT_MIN: 0.15,     // it only dives in daylight
+  MEALS: 5,            // fish per visit before it's sated and leaves
+  LEN: 50,             // world px body length (≈ an adult pike: a loon is ~80 cm long)
+};
+
 // lake ICE: forms when the surface water nears freezing, melts in spring. Under ice (+ snow) little light gets in, the
 // wind can't mix or aerate the water, and the column is calm and weakly inverse-stratified (~0 °C under the ice, 4 °C
 // at the bottom) — so dissolved O₂ slowly falls all winter (the classic winterkill risk in productive lakes).
@@ -143,7 +167,8 @@ export const ICE = {
   MELT_T: 3.5,     // °C: above which it melts (hysteresis → it doesn't flicker on mild winter days)
   GROW: 0.03,      // /s cover growth toward full while cold
   MELT: 0.05,      // /s melt rate while warm
-  LIGHT_CUT: 0.8,  // fraction of daylight blocked by ice + snow at full cover
+  LIGHT_CUT: 0.6,  // fraction of daylight blocked at full cover (clear ice with patchy snow: enough light gets through
+                   //   for cold-adapted diatoms to photosynthesize — a real under-ice O₂ source)
   STRAT: 0.55,     // stratification strength under full ice (calm, inverse) — damps vertical mixing
 };
 export const THERMAL = {
@@ -216,6 +241,20 @@ export const TURBIDITY = {
 // A biomass field per O₂/nutrient cell: grows with light × nutrient, produces O₂ by day and
 // respires/decomposes (an O₂ sink) always, shades the water (turbidity), and is grazed by
 // zooplankton (the drifting particles). Nutrient spikes → blooms → night/decay O₂ crashes.
+// DIATOMS — the cold-water algae of the spring bloom (and the under-ice bloom in clear ice): they grow best in cold,
+// mixed, bright water and SINK out once the lake stratifies (heavy silica shells), so a temperate lake's algae succeed
+// diatoms (spring) → green algae (early summer) → cyanobacteria (late summer). Same Redfield stoichiometry as PHYTO
+// (they draw on the same N and P pools, so the budgets stay closed); zooplankton graze them like green algae.
+export const DIATOM = {
+  GROW: 0.7,        // max growth /s at full light × nutrient × the cold-water temperature window
+  TEMP_OPT: 7,      // °C of fastest growth (cold-adapted)
+  TEMP_TOL: 10,     // °C half-width: little growth above ~17 °C
+  DECAY: 0.035,     // /s mortality (× the Q10 like the other algae)
+  SINK: 0.5,        // /s fraction a cell's diatoms sink one row, × stratification (calm, warm water can't keep them up)
+  START: 0.06,
+  BAND: 0.30,       // the upper-column band their lake mean is taken over (HUD, turbidity)
+};
+
 export const PHYTO = {
   Q10: 1.9,              // temperature dependence of algal growth, respiration and decay (Eppley ≈ 1.88), ×1 at 20 °C
   GROW: 0.95,            // max growth /s at full light × Liebig-limited nutrient (raised 0.85→0.95: faster recovery from the night/graze lows so the base reads non-zero more of the time)

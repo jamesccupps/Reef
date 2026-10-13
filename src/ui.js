@@ -60,6 +60,7 @@ export function sanitizeChampions(o) {
 const TROPHIC = [
   { key: 'planktivore', label: 'planktivore', col: '#9fc7e8' },
   { key: 'omnivore', label: 'omnivore', col: '#ff9d4d' },
+  { key: 'mesopredator', label: 'mesopredator', col: '#d6c04a' },
   { key: 'herbivore', label: 'herbivore', col: '#c9a23f' },
   { key: 'benthivore', label: 'benthivore', col: '#b07b3f' },
   { key: 'predator', label: 'predator', col: '#6fae5a' },

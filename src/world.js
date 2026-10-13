@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -48,6 +48,7 @@ function canPreyFn(pred, prey) {
 const isThreatTo = (it, a) => canPreyFn(it, a);
 const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
 const notSelf = (it, a) => it !== a && !it.dead;
+const isLoonPrey = it => !it.dead && effSize(it) * (it.bodyMul || 1) <= BIRD.PREY_MAX;   // what a loon can swallow
 const isPreyOf = (it, a) => canPreyFn(a, it);
 const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated;
 const PLANT_COL = 32;   // x-column width of the nearestPlant index (world px)
@@ -143,6 +144,7 @@ function parseSave(s) {
     if (ac) { ag.act.turn = clamp(ac[0], -1, 1); ag.act.thrust = clamp(ac[1], 0, 1); ag.act.strike = clamp(ac[2], 0, 1); ag.act.flee = clamp(ac[3], 0, 1); ag.act.hide = clamp(ac[4], 0, 1); }
     const lw = !fit.reseeded && !fit.migrated ? numArr(a.lw, OUT * HID) : null;   // learned (plastic) W2 block — only for the brain it belongs to
     if (lw) ag.lw.set(lw, W2);
+    if (isNum(a.dg) && a.dg > 0) ag.dg = clamp(a.dg, 0, 1e5);   // v25 digestion
     // v25 nest state (a fry whose guardian id isn't found simply goes off-duty at its next step)
     if (isNum(a.nt) && a.nt > 0 && isNum(a.nx) && isNum(a.ny)) { ag.nt = clamp(a.nt, 0, 1e5); ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
     if (Number.isSafeInteger(a.ni) && a.ni > 0 && isNum(a.nx) && isNum(a.ny)) { ag.ni = a.ni; ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
@@ -217,8 +219,15 @@ function parseSave(s) {
     while (out.length < IMMIGRATION.POOL_N) out.push(poolFounder(k));
     genePool[k] = out;
   }
+  // v25 visiting loons (older saves: none)
+  const birds = [];
+  for (const b of Array.isArray(s.birds) ? s.birds : []) {
+    if (birds.length >= BIRD.MAX || !isObj(b) || !isNum(b.x) || !isNum(b.y)) continue;
+    const st = b.st === 1 || b.st === 2 ? b.st : 0;
+    birds.push({ x: clamp(b.x, 0, W), y: clamp(b.y, 0, H), h: num(b.h, Math.PI / 2), st, t: num(b.t, 5), stay: num(b.stay, BIRD.STAY[0]), m: nonNegInt(b.m), vx: clamp(num(b.vx, 0), -20, 20), gone: false });
+  }
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
-  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool };
+  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds };
 }
 function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = null) {
   const sp = SP[species], shape = sp.shape;
@@ -353,6 +362,7 @@ export class World {
     this.agents = []; this.plankton = []; this.detritus = []; this.plants = []; this.corpses = [];
     this.larvae = []; this.insects = [];   // aquatic-insect life cycle: benthic larvae ↔ emerged surface adults
     this.snails = []; this.cray = [];      // benthic invertebrates: grazing snails + omnivorous crayfish
+    this.birds = [];                       // visiting fish-eating diving birds (loons) — BIRD
     this.env = new Environment();
     // a fresh lake opens in late spring (SEASON.START_YF) with that season's thermal state, not an ice-bound March 1
     this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
@@ -452,6 +462,7 @@ export class World {
   qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, notDead); }
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
+  qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, notDead); }   // benthic insect larvae (perch, bottom feeders)
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
   // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
@@ -487,8 +498,18 @@ export class World {
     return idx;
   }
   canPrey(pred, prey) { return canPreyFn(pred, prey); }   // see canPreyFn (module scope)
-  // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish
-  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); this._qtA = a; return (this._qtR = this.agentGrid.sub.nearest(a.x, a.y, r, isThreatTo, a)); }
+  // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish.
+  // A DIVING loon close by that could swallow this fish is a threat too (whichever is nearer).
+  qThreat(a) {
+    const r = a.senseRange * 1.1 * this.env.clarity(); this._qtA = a;
+    let res = this.agentGrid.sub.nearest(a.x, a.y, r, isThreatTo, a);
+    if (this.birds.length && effSize(a) * (a.bodyMul || 1) <= BIRD.PREY_MAX) for (const b of this.birds) {
+      if (b.st !== 1) continue;   // only underwater
+      const d = Math.hypot(b.x - a.x, b.y - a.y);
+      if (d < r && (!res || d < res.dist)) res = { item: b, dist: d };
+    }
+    return (this._qtR = res);
+  }
   qPrey(a) { const r = a.senseRange * this.env.clarity(); this._qpA = a; return (this._qpR = this.agentGrid.nearest(a.x, a.y, r, isPreyOf, a)); }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, isMateFor, a); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
@@ -569,6 +590,48 @@ export class World {
     if (ret > 0) { p.nut -= ret; this.env.addNutrient(a.x, a.y, ret * NUTRIENT.GRAZE_EXCRETE); this.env.addDOM(a.x, a.y, ret * (1 - NUTRIENT.GRAZE_EXCRETE)); }
     p.height -= bite; p.biomass = p.height * PLANT.BIOMASS_PER_PX;
     return PLANT.ENERGY_PER_PX * bite * p.palat;   // energy ∝ biomass grazed; tough/defended forms yield less (per-plant gene)
+  }
+  // VISITING LOON (BIRD): arrives in the open-water season; st 0 = resting on the surface, 1 = diving/pursuing, 2 =
+  // ascending for air. It chases the nearest fish it can swallow that it can see, catches within reach, surfaces after
+  // every catch (to swallow) or when out of breath, and leaves once sated or its visit is over. Seeded RNG → deterministic.
+  _stepBirds(dt, counts) {
+    const env = this.env, yf = env.yearFrac();
+    const inSeason = yf >= BIRD.SEASON[0] && yf <= BIRD.SEASON[1] && env.ice < 0.1;
+    if (inSeason && this.birds.length < BIRD.MAX && rand() < BIRD.ARRIVE * dt) {
+      this.birds.push({ x: rand(W * 0.2, W * 0.8), y: 0, h: Math.PI / 2, st: 0, t: rand(BIRD.SURFACE[0], BIRD.SURFACE[1]), stay: rand(BIRD.STAY[0], BIRD.STAY[1]), m: 0, vx: rand(-6, 6), gone: false });
+    }
+    for (const b of this.birds) {
+      b.t -= dt; b.stay -= dt;
+      if (b.st === 0) {                                   // resting/paddling on the surface
+        b.x = clamp(b.x + b.vx * dt, 30, W - 30); b.y = 0;
+        if (b.x <= 30 || b.x >= W - 30) b.vx = -b.vx;
+        if (b.stay <= 0 || b.m >= BIRD.MEALS || !inSeason) b.gone = true;   // flies off
+        else if (b.t <= 0 && env.light > BIRD.LIGHT_MIN) { b.st = 1; b.t = rand(BIRD.DIVE[0], BIRD.DIVE[1]); b.h = Math.PI / 2 + rand(-0.7, 0.7); }
+        continue;
+      }
+      if (b.st === 1) {                                   // underwater: pursue the nearest catchable fish in sight
+        if (b.t <= 0) { b.st = 2; continue; }
+        const m = this.agentGrid.nearest(b.x, b.y, BIRD.SIGHT * env.clarity(), isLoonPrey, null);
+        let want = b.h;
+        if (m) {
+          want = Math.atan2(m.item.y - b.y, m.item.x - b.x);
+          if (m.dist < BIRD.REACH) {                      // caught: swallowed whole, then up for air
+            const f = m.item; f.dead = true; f.eatenBy = 'loon'; counts[f.species]--; this._counts[f.species] = counts[f.species];
+            if (f.id === this.selectedId) this.selectedId = null;
+            b.m++; this.stats.birdEaten = (this.stats.birdEaten || 0) + 1; b.st = 2; continue;
+          }
+        }
+        b.h += clamp(angDiff(want, b.h), -BIRD.TURN * dt, BIRD.TURN * dt);
+        b.x = clamp(b.x + Math.cos(b.h) * BIRD.SPEED * dt, 4, W - 4);
+        b.y = clamp(b.y + Math.sin(b.h) * BIRD.SPEED * dt, 1, bedY(b.x) - 4);
+        continue;
+      }
+      // st 2: back up to the surface for air
+      b.h += clamp(angDiff(-Math.PI / 2, b.h), -BIRD.TURN * dt, BIRD.TURN * dt);
+      b.y -= BIRD.SPEED * 0.8 * dt; b.x = clamp(b.x + Math.cos(b.h) * BIRD.SPEED * 0.3 * dt, 4, W - 4);
+      if (b.y <= 1) { b.y = 0; b.st = 0; b.h = Math.PI / 2; b.t = rand(BIRD.SURFACE[0], BIRD.SURFACE[1]); }
+    }
+    if (this.birds.some(b => b.gone)) this.birds = this.birds.filter(b => !b.gone);
   }
   // a fry inside its guarded nest zone, with its guardian on duty and on station, is hard to take (BROOD.PROTECT)
   _guardCut(prey) {
@@ -990,7 +1053,9 @@ export class World {
       else if (a.y > bed) { a.y = bed; if (Math.sin(a.heading) > 0) { a.heading += angDiff(horiz, a.heading) * glide; a.spd *= 0.985; } }
 
       // metabolism (temperature at this fish's depth × its gene-derived metabolic cost) + thermal stress + hypoxia
-      a.energy -= (sp.metabolism * a.metabMul * env.metabAt(a.x, a.y) + sp.moveCost * thrust + sp.turnCost * Math.abs(turn)) * dt;
+      // routine costs scale with body MASS^0.75 (mass ∝ length³): a fry is ~half the adult's routine cost, not all of it
+      const massF = Math.pow(0.6 + 0.4 * a.grow, 2.25);
+      a.energy -= (sp.metabolism * a.metabMul * env.metabAt(a.x, a.y) + sp.moveCost * thrust + sp.turnCost * Math.abs(turn)) * massF * dt;
       // cyanotoxin (HAB): a DENSE cyanobacteria surface scum poisons fish — extra energy drain where the local cyano is
       // above the toxic threshold (the scum is buoyant, so this mainly hits surface fish). A bloom can kill by poison.
       const cyTox = env.cyanoAt(a.x, a.y) - CYANO.TOX_THRESH * CYANO.CAP;
@@ -1013,7 +1078,23 @@ export class World {
       // attacks fish when it could use a whole meal (below FEED.HUNT_BELOW) — real predators stop hunting when full. It
       // used to kill and eat on every chance even at full reserves, an "overkill" that no real lake shows.
       const hungry = a.energy < cap * FEED.SATIATE;
-      if (sp.diet.fish && a.energy < cap * FEED.HUNT_BELOW) { const prey = this.takePrey(a); if (prey) { a.energy = Math.min(cap, a.energy + sp.foodValueFish * effSize(prey)); a.eaten++; this.stats.fishEaten++; } }   // (takePrey transfers the prey's contaminant burden → biomagnification)
+      // DIGESTION: a fish meal's energy AND the time to digest it both scale with the prey's MASS relative to the
+      // predator's (∝ size³): a pike that swallows a perch is out of action for a while, a bass that snaps up a fry is
+      // ready again sooner but gained little. Digestion runs faster in warm water (the Q10). While digesting (a.dg > 0) it
+      // can't take another fish — real piscivores eat ~3% of their mass a day, one prey every few days, not on every
+      // chance; without this limit predators were killing a fish every ~30 s and wiping out the forage fish.
+      if (a.dg > 0) a.dg = Math.max(0, a.dg - dt * env.metabAt(a.x, a.y));
+      if (sp.diet.fish && a.energy < cap * FEED.HUNT_BELOW && !(a.dg > 0)) {
+        const prey = this.takePrey(a);   // (transfers the prey's contaminant burden → biomagnification)
+        if (prey) {
+          // the digestion time follows what was actually TAKEN IN: a meal bigger than the room left (energy capped at the
+          // capacity) only fills the gut, so it's digested in proportion to the absorbed share, not the whole prey
+          const massFrac = Math.pow(effSize(prey) * (prey.bodyMul || 1) / Math.max(effSize(a), 1e-3), 3);
+          const meal = sp.foodValueFish * FEED.MEAL_K * massFrac * cap, got = Math.min(meal, cap - a.energy);
+          a.energy += Math.max(0, got);
+          a.dg = FEED.DIGEST * massFrac * (meal > 0 ? Math.max(0, got) / meal : 0); a.eaten++; this.stats.fishEaten++;
+        }
+      }
       // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
       // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
       // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. The remainder is transient
@@ -1091,6 +1172,8 @@ export class World {
           size: a.size, grow: a.grow, hue: a.hue, genes: a.genes, facing: a.facing ?? 1, spd: a.spd, t: DEATH_FADE, t0: DEATH_FADE, roll: 0, sink: 5 + a.size * 2, dead: false });
       }
     }
+
+    this._stepBirds(dt, counts);
 
     // bodies sink, roll belly-up, fade — then drop their detritus and vanish
     for (const c of this.corpses) {
@@ -1285,6 +1368,7 @@ export class World {
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`
           // v25 nest state: a guardian's remaining duty `nt` + nest; a fry's guardian id `ni` + nest (absent = none)
+          dg: a.dg > 0 ? a.dg : undefined,   // v25 digestion time left after a fish meal
           nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),
@@ -1297,6 +1381,7 @@ export class World {
       corpses: this.corpses.map(c => ({ s: c.species, x: c.x, y: c.y, h: c.heading, rh: c.rHeading, sz: c.size, gr: c.grow, hu: c.hue, gn: Array.from(c.genes),
         fc: c.facing, sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
       reeds: this.reeds, logs: this.logs, mussels: this.mussels, weedbeds: this.weedbeds,
+      birds: this.birds.map(b => ({ x: b.x, y: b.y, h: b.h, st: b.st, t: b.t, stay: b.stay, m: b.m, vx: b.vx })),   // v25 visiting loon(s)
       genePool: Object.fromEntries(SPECIES.map(k => [k, (this.genePool[k] || []).map(e => ({ w: Array.from(e.w), gn: Array.from(e.gn), hu: e.hue, g: e.gen }))])),
     };
   }
@@ -1313,7 +1398,7 @@ export class World {
     this.agents = P.agents; this.plants = P.plants; this.plankton = P.plankton; this.detritus = P.detritus;
     this.larvae = P.larvae; this.insects = P.insects; this.snails = P.snails; this.cray = P.cray; this.corpses = P.corpses;
     this.reeds = P.structs.reeds; this.logs = P.structs.logs; this.mussels = P.structs.mussels; this.weedbeds = P.structs.weedbeds;
-    this.genePool = P.genePool;
+    this.genePool = P.genePool; this.birds = P.birds;
     if (P.rep.reseeded) this.stats.brainsReseeded = P.rep.reseeded;
     this._nextId = P.nextId; _idOwner = this;
     this.series = []; this._seriesAcc = 0; this.selectedId = null; this.lastLoad = P.rep;

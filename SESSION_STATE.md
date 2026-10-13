@@ -25,6 +25,54 @@ Screensaver plan:
 - [x] Fullscreen polish: the chrome and cursor fade after 3.5 s idle and come back on any input. Also: sediment
       texture on the bed, and dawn warmth fades with view depth (deep close-ups no longer turn muddy brown).
 
+**▶ REALISM OVERHAUL IN PROGRESS (human, 2026-10-12: "do it all" → "make everything realistic, like you said earlier
+what wasn't").** Baseline diagnostic (scratchpad `verify/recruit.mjs`, 3 seeds × 1 yr, pre-overhaul): sexual births
+≈ 0 for every species but minnow (bass 0/228, pike 0/164 — all "home-bred" young were ASEXUAL BUDS of immigrant
+adults); no juvenile bass/pike reached maturity; most large-fish adults STARVE (reserve lasts ~25 s: drain 0.045/s vs
+cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88 / pike 40 vs minnow 202); climate wrong
+(surface 22 °C on Mar 1, 31 °C peak Jun 1, never below 13 °C, no ice; strat = sin(year)). Phases, commit each green:
+- R1 climate: T = 12.5 + 13·sin(2π(yf − 0.17)) (peak ~Aug 1, ~0–1 °C Jan), winter ICE (light ↓, no reaeration, no wind
+  mixing → winter O₂ sag), hypolimnion floor 4 °C, stratification from the surface–deep temperature difference, seasonal
+  day length/irradiance, asymmetric fish thermal stress (heat lethal; cold slows, Q10 metabolism).
+- R2 energetics + life history: starvation times ~150 s (minnow) … ~400 s (pike) ∝ size^0.75; eat only when hungry;
+  multi-year lives (minnow mature 0.5 yr / max 2.5 yr … carp 2 / 12 yr); temperature-triggered spawning windows (pike
+  ~ice-out, perch spring, bass/carp late spring, sunfish/minnow repeat spawners in summer, catfish early summer); NO
+  budding; K pyramid (minnow ≫ sunfish/perch ≫ catfish/carp/bass ≫ pike); initial multi-age population.
+- R3 young fish: nest guarding (bass, sunfish, catfish), nursery cover, all fry eat zooplankton first.
+- R4 immigrants from a regional gene pool (gene flow), not mutated copies of the lake's best (IMMIGRATION.FROM_BEST).
+- R5 plants spread by rhizome runners (+ seeds), diatom spring bloom group, N-fixation by cyanobacteria.
+- R6 new life: yellow perch, a fish-eating diving bird (loon: hunts underwater, fits the side view), then more.
+- R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
+  by cause juvenile/adult) over ≥3 seeds and ≥2 years.
+
+**▶ REALISM STATUS (2026-10-12, before a context reset) — branch `realism` (WIP, gate NOT green; main/audit-fixes untouched):**
+- DONE in code: R1 climate (temp cycle, ice, seasonal sun, Q10 metabolism, temp-driven strat, hypo ≥ 4 °C, start date
+  SEASON.START_YF 0.22, primeSeason); Q10 on phyto/cyano/diatom/nitrif/sediment+pelagic O₂/plant night resp; plant
+  dormancy (PLANT.DORMANT_T); inflow plume + aerated inflow (FLOW.PLUME_*, O2_MIX); plant O₂ spread along the stem;
+  O2_RESP_FISH scaled 0.012→0.0015; R2 energetics (per-species metabolism/moveCost ~8–10× lower; all stress drains
+  rescaled; actions ENGAGE-gated), satiation (FEED.SATIATE/HUNT_BELOW), fry eat zooplankton (FRY_GROW), juvenile
+  massF^0.75 metabolism, life history in years (species.js yr()), temperature-triggered spawning (SP.spawnT,
+  SPAWN.EDGE/SEASON_END/MATE_REACH, spawnSide grounds), NO budding, K pyramid, mixed initial ages, cheaper young + bigger
+  clutches; R3 nest guarding (sp.nestGuard, BROOD.GUARD_*/PROTECT, a.nt/nx/ny/ni), nursery cover, PREY_MIN, gape 0.62,
+  O₂-limited habitat choice (benthic → shelf); DIGESTION (FEED.MEAL_K 10, DIGEST 1200, a.dg by absorbed energy);
+  R4 regional gene pool (world.genePool, poolFounder, IMMIGRATION.POOL_N/EMIGRATE; FROM_BEST retired; RESCUE_N 3,
+  RATE 0.05); R5 clonal plant runners (PLANT.CLONAL/RUNNER), DIATOM group (env.diatom, diatoms(), sinks when stratified),
+  CYANO TEMP_OPT 25/TOL 11; R6 PERCH species (SP.perch, 'vbars' art, qLarva, TROPHIC 'mesopredator'), LOON (BIRD config,
+  world.birds, _stepBirds, qThreat includes diving loon, render _drawBirds), ice rendering. Save v25 (ice, diatom, nest,
+  dg, birds, genePool). smoke passes.
+- OPEN #1 — late-winter O₂ crash under ice (avg ~0.1 by March → bass/pike/minnow winterkill). Latest sink test (Jan
+  snapshot, 300 s): baseline 0.68→0.10; no phyto resp → 0.46 (BIGGEST), no microbes → 0.31, sediment/pelagic ~0.18,
+  nitrif/diatom small. Next: check PHYTO.O2_RESP vs where green phyto sits under ice (deep cells?) — real algae respire
+  ~10% of max photosynthesis; consider lowering O2_RESP or tying it to light-limited growth; then microbes.
+- OPEN #2 — balance (3 seeds × 2 yr via scratchpad verify/deaths.mjs): prey now OK (minnow ~330, sunfish ~100, catfish
+  ~30); predators thin (perch, bass ~2–3, pike 3–8) partly from the winter crash. Re-judge after #1.
+- THEN: fix headless tests to the new climate/model (turnover/storm/phyto/cyano-N:P/macrophyte-seasonal/resume/handling
+  checks failed on R1; expect more), add tests for ice, diatoms, nest guarding, digestion, gene pool, loon, perch; UI
+  (loon/ice/perch legend), docs (FEATURES, README, CLAUDE.md key facts), browser visual check, merge, G-drive backup.
+- Scratchpad verify scripts (session-local; recreate if lost): recruit.mjs, deaths.mjs (deaths by cause×season incl.
+  loon), energy.mjs (per-species energy budget), climate.mjs (monthly lake table), o2sinks2.mjs (winter O₂ sinks),
+  hypwhere.mjs, shelfo2.mjs, profile.mjs.
+
 **▶ RESUME HERE (updated 2026-10-12, after the launcher + smoothness round):**
 - **Human feedback this round:** "doesn't seem very smooth or high fps", "looks blurry when fully zoomed out",
   "add a batch file to easily launch this". All three were measured in REAL Chrome at 1920×1080 (RTX 3060, 144 Hz) and

@@ -10,7 +10,7 @@
 //
 // MASS BUDGET: every N/P transfer debits its source. Sources/sinks that cross the lake boundary are tallied in
 // `this.ledger` (inflow, outflow, sediment burial, denitrification, N-fixation) so the inventory can be audited.
-import { WORLD, GRID, ENV, NUTRIENT, SED_P, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, BASIN, ICE, PLANT, bedY } from './config.js';
+import { WORLD, GRID, ENV, NUTRIENT, SED_P, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, ICE, PLANT, bedY } from './config.js';
 import { rand, clamp, TAU } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
@@ -75,6 +75,8 @@ export class Environment {
     this.sedP = new Float32Array(COLS).fill(SED_P.START);             // benthic bound-P store per column (Mortimer redox)
     this.phyto = new Float32Array(COLS * ROWS).fill(PHYTO.START); // phytoplankton biomass field
     this._meanPhyto = PHYTO.START;
+    this.diatom = new Float32Array(COLS * ROWS).fill(DIATOM.START);   // cold-water diatoms (the spring bloom)
+    this._meanDiatom = DIATOM.START;
     this.cyano = new Float32Array(COLS * ROWS).fill(CYANO.START); // cyanobacteria (N-fixing strain) biomass field
     this._meanCyano = CYANO.START;     // surface-band (scum) density
     this.dom = new Float32Array(COLS * ROWS).fill(MICROBE.START); // dissolved organic matter — the bacterial substrate (microbial loop)
@@ -128,8 +130,8 @@ export class Environment {
   meanSedP() { let s = 0; for (let i = 0; i < this.sedP.length; i++) s += this.sedP[i]; return s / this.sedP.length; }
   // total P / N held in the water + sediment + algae + DOM (wet cells; excludes detritus particles & plants, which
   // the World owns) — the inventory the mass-budget audit tracks
-  inventoryP() { return this.wetSum(this.phos) + this.wetSum(this.phyto) * PHYTO.P_USE + this.wetSum(this.cyano) * CYANO.P_USE + this.wetSum(this.dom) * NUTRIENT.ORGANIC_P + this.meanSedP() * COLS; }
-  inventoryN() { return this.wetSum(this.nh4) + this.wetSum(this.no3) + this.wetSum(this.phyto) * PHYTO.N_USE + this.wetSum(this.cyano) * CYANO.N_USE + this.wetSum(this.dom) * (1 - NUTRIENT.ORGANIC_P); }
+  inventoryP() { return this.wetSum(this.phos) + (this.wetSum(this.phyto) + this.wetSum(this.diatom)) * PHYTO.P_USE + this.wetSum(this.cyano) * CYANO.P_USE + this.wetSum(this.dom) * NUTRIENT.ORGANIC_P + this.meanSedP() * COLS; }
+  inventoryN() { return this.wetSum(this.nh4) + this.wetSum(this.no3) + (this.wetSum(this.phyto) + this.wetSum(this.diatom)) * PHYTO.N_USE + this.wetSum(this.cyano) * CYANO.N_USE + this.wetSum(this.dom) * (1 - NUTRIENT.ORGANIC_P); }
   // sediment phosphorus — the Mortimer redox switch / internal loading. Per column, at its BED-ADJACENT WET cell, the
   // bound-P store takes in settling algae (debited: their P is bound, their N ammonified back to the water) + a baseline
   // P rain scavenged from the water, BINDS dissolved P while the bottom is oxic, and RELEASES legacy P when it goes anoxic
@@ -225,6 +227,46 @@ export class Environment {
   // SAME phosphate as green phyto (the competition), is BUOYANT (floats to a surface scum in calm water; storms
   // mix it down), produces/consumes O₂, shades the water, and is a net N SOURCE: its biomass N is fixed from N₂ and
   // returned on decay, plus a leak of fixed N to ammonium on growth (both tallied as ledger.fixN). Runs AFTER the
+  // DIATOMS (DIATOM): cold-water algae. Growth = GROW × light × Liebig nutrient × a cold-centred temperature window
+  // (best ~7 °C) — so they bloom in the bright, cold, freshly-mixed spring lake (and slowly under clear ice) — with
+  // Redfield uptake like green algae; respiration and decay follow the Q10; decayed biomass recycles exactly as PHYTO's.
+  // Once the lake STRATIFIES they sink (one row per step, × strat; mass-conserving, held at the bottom wet row where they
+  // then decay) — the end of the spring bloom. Runs after cyano, before the means.
+  diatoms(dt) {
+    const dia = this.diatom, phos = this.phos, nh4 = this.nh4, no3 = this.no3, dom = this.dom, o2 = this.o2, { lo, hi, bedRow } = this.mask;
+    const pU = PHYTO.P_USE, nU = PHYTO.N_USE, R = PHYTO.RECYCLE, toDom = (1 - R) * (pU + nU);
+    let sum = 0, cnt = 0;
+    for (let cy = 0; cy < ROWS; cy++) {
+      const y = (cy + 0.5) * CH, lit = this.lightAtDepth(y), T = this.tempAt(0, y);
+      const tf = clamp(1 - Math.abs(T - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), qP = Math.pow(PHYTO.Q10, (T - 20) / 10);
+      for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        const b = dia[i], p = phos[i], a = nh4[i], nTot = a + no3[i];
+        const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
+        let growth = DIATOM.GROW * lit * nLim * tf * (1 - b / PHYTO.CAP) * dt;
+        if (growth * pU > p) growth = p / pU;
+        if (growth * nU > nTot) growth = nTot / nU;
+        if (growth < 0) growth = 0;
+        const decay = DIATOM.DECAY * qP * b * dt;
+        dia[i] = b + growth - decay;
+        phos[i] = p - growth * pU + decay * R * pU;
+        const nNeed = growth * nU, upA = nNeed < a ? nNeed : a;
+        nh4[i] = a - upA + decay * R * nU;
+        if (nNeed > upA) no3[i] -= nNeed - upA;
+        dom[i] += decay * toDom;
+        o2[i] += (PHYTO.O2_PHOTO * b * lit - PHYTO.O2_RESP * b) * qP * dt;
+        if ((cy + 0.5) / ROWS < DIATOM.BAND) { sum += dia[i]; cnt++; }
+      }
+    }
+    this._meanDiatom = cnt ? sum / cnt : 0;
+    // sinking in a stratified (calm) lake: bottom-up so a cell's load moves one row per step at most
+    const k = clamp(DIATOM.SINK * this.strat * dt, 0, 0.5);
+    if (k > 1e-5) for (let cy = ROWS - 2; cy >= 0; cy--) {
+      for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
+        if (cy >= bedRow[cx]) continue;   // the bottom wet cell of this column holds them
+        const i = cy * COLS + cx, m = dia[i] * k; dia[i] -= m; dia[i + COLS] += m;
+      }
+    }
+  }
   // green-phyto loop so green phyto (faster) gets first call on the shared P.
   cyanobacteria(dt) {
     const cyn = this.cyano, phos = this.phos, nh4 = this.nh4, no3 = this.no3, dom = this.dom, o2 = this.o2, tmp = this._tmp, { lo, hi } = this.mask;
@@ -274,6 +316,8 @@ export class Environment {
   }
   phytoAt(x, y) { return this.phyto[this.cellOf(x, y)]; }
   meanPhyto() { return this._meanPhyto; }
+  meanDiatom() { return this._meanDiatom; }   // upper-column diatom density (the spring bloom)
+  diatomAt(x, y) { return this.diatom[this.cellOf(x, y)]; }
   cyanoAt(x, y) { return this.cyano[this.cellOf(x, y)]; }
   meanCyano() { return this._meanCyano; }   // surface-band cyanobacteria (scum) density
   domAt(x, y) { return this.dom[this.cellOf(x, y)]; }
@@ -284,10 +328,10 @@ export class Environment {
   // biomass's N+P is returned at the graze site — GRAZE_EXCRETE of it excreted as ammonium+phosphate, the rest egested
   // as DOM (the consumers hold no nutrient pool). Returns the biomass eaten (the grazer's food).
   grazePhyto(x, y, amt) {
-    const i = this.cellOf(x, y); const g = Math.min(this.phyto[i], amt);
+    const i = this.cellOf(x, y), gp = Math.min(this.phyto[i], amt), gd = Math.min(this.diatom[i], amt - gp), g = gp + gd;   // green algae, then diatoms
     if (g > 0) {
       const ex = NUTRIENT.GRAZE_EXCRETE;
-      this.phyto[i] -= g;
+      this.phyto[i] -= gp; this.diatom[i] -= gd;
       this.phos[i] += g * ex * PHYTO.P_USE; this.nh4[i] += g * ex * PHYTO.N_USE;
       this.dom[i] += g * (1 - ex) * (PHYTO.P_USE + PHYTO.N_USE);
     }
@@ -422,7 +466,7 @@ export class Environment {
     this.wind = WIND.BASE * Math.sin(this._windT * 0.045) * WIND.WEATHER[this.weather] * iceOpen;
 
     // --- turbidity: murk from suspended algae (green phyto + a heavily-shading cyanobacteria surface scum) + storm sediment ---
-    const algae = clamp(this._meanPhyto / PHYTO.CAP + CYANO.TURB * (this._meanCyano / CYANO.CAP), 0, 1);
+    const algae = clamp((this._meanPhyto + this._meanDiatom) / PHYTO.CAP + CYANO.TURB * (this._meanCyano / CYANO.CAP), 0, 1);
     const turbTarget = clamp(TURBIDITY.BASE + TURBIDITY.FROM_ALGAE * algae + TURBIDITY.FROM_STORM[this.weather] * (1 - this.ice), 0, 1);   // no storm-stirred sediment under ice
     this.turbidity += (turbTarget - this.turbidity) * clamp(dt * TURBIDITY.RELAX, 0, 1);
 
@@ -483,6 +527,7 @@ export class Environment {
 
     // cyanobacteria: the N-fixing strain competes for the (now-reduced) P, floats to a surface scum, leaks fixed N
     this.cyanobacteria(dt);
+    this.diatoms(dt);
 
     if (world) {
       // photosynthesis (rooted plants add O2 by day) / plant respiration (night)
@@ -576,13 +621,13 @@ export class Environment {
   // outflow path is a real through-flow (≈ OUTFLOW.ADVECT × FLOW.SPEED; ~1-year water residence at the defaults).
   _throughFlow(dt) {
     const rows = Math.min(Math.max(1, Math.round(OUTFLOW.DEPTH * ROWS)), this.mask.bedRow.reduce((m, r) => Math.min(m, r + 1), ROWS));
-    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom];
-    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P];
+    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom, this.diatom];
+    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P, PHYTO.P_USE], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P, PHYTO.N_USE];
     let outP = 0, outN = 0;
     for (let cy = 0; cy < rows; cy++) {
       const a = clamp(OUTFLOW.ADVECT * this.flowAt((cy + 0.5) * CH) * dt / CW, 0, 0.5), base = cy * COLS;
       if (a <= 0) continue;
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < fields.length; k++) {
         const f = fields[k];
         const gone = f[base + COLS - 1] * a; f[base + COLS - 1] -= gone; outP += gone * pW[k]; outN += gone * nW[k];   // out of the outlet
         for (let cx = COLS - 2; cx >= 0; cx--) { const i = base + cx, m = f[i] * a; f[i] -= m; f[i + 1] += m; }
@@ -599,7 +644,7 @@ export class Environment {
       t: this.t, weather: this.weather, tempC: this.tempC, turbidity: this.turbidity,
       strat: this.strat, windT: this._windT, weatherTimer: this.weatherTimer, forced: !!this.forced,
       light: this.light, tempNorm: this.tempNorm, year: this.year, wind: this.wind, flash: this.flash, ice: this.ice,
-      meanPhyto: this._meanPhyto, meanCyano: this._meanCyano, meanDOM: this._meanDOM,
+      meanPhyto: this._meanPhyto, meanCyano: this._meanCyano, meanDOM: this._meanDOM, meanDiatom: this._meanDiatom, diatom: Array.from(this.diatom),
       tempHypo: this.tempHypo, tempDiel: this.tempDiel,   // the slow hypolimnion temperature + the diurnal part of tempC
       W, H, cols: COLS, rows: ROWS,
       o2: Array.from(this.o2), nh4: Array.from(this.nh4), no3: Array.from(this.no3), phos: Array.from(this.phos),
@@ -661,6 +706,7 @@ export class Environment {
     };
     const o2 = field2(s.o2, new Float32Array(COLS * ROWS).fill(ENV.O2_START));
     const phyto = field2(s.phyto, new Float32Array(COLS * ROWS).fill(PHYTO.START));
+    const diatom = field2(s.diatom, new Float32Array(COLS * ROWS).fill(DIATOM.START));   // v25+ (older saves: the seed)
     const cyano = field2(s.cyano, new Float32Array(COLS * ROWS).fill(CYANO.START));
     const dom = field2(s.dom, new Float32Array(COLS * ROWS).fill(MICROBE.START));   // older saves lack it → the seed
     const sedP = field1(s.sedP, new Float32Array(COLS).fill(SED_P.START));
@@ -682,12 +728,13 @@ export class Environment {
     const { lo, hi } = this.mask;
     const bandMean = (f, maxFrac) => { let sm = 0, n = 0; for (let cy = 0; cy < ROWS; cy++) { if (maxFrac < 1 && (cy + 0.5) / ROWS >= maxFrac) continue; for (let cx = lo[cy]; cx <= hi[cy]; cx++) { sm += f[cy * COLS + cx]; n++; } } return n ? sm / n : 0; };
     const meanPhyto = Math.max(0, num(s.meanPhyto, bandMean(phyto, PHYTO.BAND)));
+    const meanDiatom = Math.max(0, num(s.meanDiatom, bandMean(diatom, DIATOM.BAND)));
     const meanCyano = Math.max(0, num(s.meanCyano, bandMean(cyano, CYANO.SCUM_BAND)));
     const meanDOM = Math.max(0, num(s.meanDOM, bandMean(dom, 1)));
     // ---- commit (nothing above touched `this`) ----
     Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash, tempDiel, tempHypo, ice });
-    this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM;
-    this.o2.set(o2); this.phyto.set(phyto); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
+    this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM; this._meanDiatom = meanDiatom;
+    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
   }
 }
 
