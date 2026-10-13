@@ -167,7 +167,8 @@ function parseSave(s) {
     const lw = !fit.reseeded && !fit.migrated ? numArr(a.lw, OUT * HID) : null;   // learned (plastic) W2 block — only for the brain it belongs to
     if (lw) ag.lw.set(lw, W2);
     if (isNum(a.dg) && a.dg > 0) ag.dg = clamp(a.dg, 0, 1e5);   // v25 digestion
-    if (isNum(a.fa) && a.fa > 0) ag.feedAcc = clamp(a.fa, 0, 1);   // v25 handling-time remainder (fractional in cold water)
+    if (isNum(a.fa) && a.fa > 0) ag.feedAcc = clamp(a.fa, 0, 1);
+    if (isNum(a.da)) ag.dAcc = clamp(a.da, 0, 1);   // v26 time since the last brain decision   // v25 handling-time remainder (fractional in cold water)
     // v25 nest state (a fry whose guardian id isn't found simply goes off-duty at its next step)
     if (isNum(a.nt) && a.nt > 0 && isNum(a.nx) && isNum(a.ny)) { ag.nt = clamp(a.nt, 0, 1e5); ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
     if (Number.isSafeInteger(a.ni) && a.ni > 0 && isNum(a.nx) && isNum(a.ny)) { ag.ni = a.ni; ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
@@ -507,8 +508,8 @@ export class World {
   // a benthic crayfish walking the bed (drifts toward cover; crepuscular). `ph` = render leg-wiggle phase.
   _mkCray(x) { const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 4), vx: rand(-CRAYFISH.CRAWL, CRAYFISH.CRAWL), ph: rand(0, 6.28), dead: false }; }
 
-  // a dragonfly nymph in the weedy shallows: `h` = how high it clings above the bed, `dev` 0..1 maturity
-  _mkNymph(x, dev) { const px = x ?? plantX(); return { x: px, h: rand(2, 24), y: bedY(px) - 10, dev: dev ?? rand(0, 0.9), vx: rand(-ODONATA.CRAWL, ODONATA.CRAWL), dead: false }; }
+  // a dragonfly nymph sprawled on the bed of the weedy shallows: `h` = how high it sits above the bed, `dev` 0..1 maturity
+  _mkNymph(x, dev) { const px = x ?? plantX(); return { x: px, h: rand(1, 4), y: bedY(px) - 2, dev: dev ?? rand(0, 0.9), vx: rand(-ODONATA.CRAWL, ODONATA.CRAWL), dead: false }; }
   // an adult dragonfly on the wing, low over the water (negative y = above the surface)
   _mkDragonfly(x) { return { x: clamp(x, 10, W - 10), y: -12, vx: (rand() < 0.5 ? -1 : 1) * ODONATA.FLY * (0.5 + rand() * 0.5), life: ODONATA.ADULT_LIFE * (0.7 + rand() * 0.6), ph: rand(0, 6.28), dead: false }; }
   // a herp: k 0 tadpole, 1 frog, 2 turtle; e = energy 0..1, st = state (frog 0 surface / 1 diving / 2 hibernating; turtle
@@ -519,7 +520,7 @@ export class World {
   }
 
   // ---------- spatial queries used by senses (visual range shortened by water turbidity) ----------
-  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, notDead); }
+  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, Math.min(r, PLANKTON.SIGHT) * c, notDead); }   // tiny prey: seen only a few body lengths off
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
   qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, notDead); }   // benthic insect larvae (perch, bottom feeders)
@@ -593,6 +594,8 @@ export class World {
   lightAt(x, y) { return this.env.lightAtDepth(y); }
   tempAt(x, y) { return this.env.tempAt(x, y); }
   allyStats(a, r) {
+    // computed once per fish per step and radius: its senses and its schooling reflex both ask (no other fish moves between)
+    if (a._alS === this._stepNo && a._alR === r) return a._al;
     let n = 0, sx = 0, sy = 0, vc = 0, vs = 0;
     const r2 = r * r, G = this.agentGrid, c = G.cell, cols = G.cols, B = G.buckets, ax = a.x, ay = a.y, spc = a.species;
     // forNear's exact bucket walk, inlined (no per-item closure call); same visit order → same float sums
@@ -608,9 +611,10 @@ export class World {
           n++; sx += it.x; sy += it.y; vc += Math.cos(it.heading); vs += Math.sin(it.heading);
         }
       }
-    if (!n) return { density: 0, cohSin: 0, cohCos: 0, alignCos: 0 };
+    a._alS = this._stepNo; a._alR = r;
+    if (!n) return (a._al = { density: 0, cohSin: 0, cohCos: 0, alignCos: 0 });
     const ca = Math.atan2(sy / n - a.y, sx / n - a.x) - a.heading, avgH = Math.atan2(vs, vc);
-    return { density: clamp(n / 8, 0, 1), cohSin: Math.sin(ca), cohCos: Math.cos(ca), alignCos: Math.cos(avgH - a.heading) };
+    return (a._al = { density: clamp(n / 8, 0, 1), cohSin: Math.sin(ca), cohCos: Math.cos(ca), alignCos: Math.cos(avgH - a.heading) });
   }
 
   // ---------- feeding ----------
@@ -869,7 +873,7 @@ export class World {
   // the step loop uses a bucketed version (same overheadFrom formula) for speed.
   plantShadeFactor(p) { return Math.exp(-COMPETE.SHADE * overheadFrom(p, this.plants, COMPETE.RADIUS)); }
   step(dt) {
-    this.time += dt;
+    this.time += dt; this._stepNo = (this._stepNo || 0) + 1;
     const env = this.env;
     const smoothK = 1 - Math.exp(-dt / 0.65); // ease steering over ~0.5s -> smooth, fish-like motion
 
@@ -1063,29 +1067,36 @@ export class World {
 
       // senses() is read-only, so a threat/prey query it made for THIS fish is still exact for the drive + perception reads
       // below (each was otherwise computed twice per fish per step). The caches are cleared before senses and after use.
-      this._qtA = this._qpA = null;
-      sp.senses(a, this);
-      // INTERNAL DRIVES (motivation): persistent per-fish state fed back as the last two brain inputs, so behaviour is
-      // state-dependent (the NN learns to use them — emergent). HUNGER accrues with time since a meal (sated in the feed
-      // step below); FEAR jumps to the nearest-threat proximity and decays after it leaves (lingering caution). The brain
-      // wires these to its gated actions (a starving fish gambles on a strike; a scared one hides/flees).
-      const drv = this._qtA === a ? this._qtR : this.qThreat(a), threatNear = drv ? clamp(1 - drv.dist / (a.senseRange * 1.1), 0, 1) : 0;
-      a.fear = Math.max(threatNear, a.fear * Math.exp(-DRIVE.FEAR_DECAY * dt));
-      a.hunger = clamp(a.hunger + DRIVE.HUNGER_GAIN * dt, 0, 1);
-      // SPATIAL COGNITION (allocentric sense of place & direction): a COMPASS (sin/cos of the absolute body heading) +
-      // a HOME bearing (signed horizontal displacement to the natal site, normalised by lake width). Written into the
-      // spatial block [base, base+1, base+2] (drives stay in the last two slots). Pure functions of sim state → deterministic.
-      const sb = sp.baseInputs; if (a.homeX === undefined) a.homeX = a.x;   // older saves lacking homeX home to their current spot
-      a.act.in[sb] = Math.sin(a.heading); a.act.in[sb + 1] = Math.cos(a.heading);
-      a.act.in[sb + 2] = clamp((a.homeX - a.x) / W, -1, 1);   // >0 ⇒ home is to the right; the substrate for evolved homing/site-fidelity/migration
-      // RICHER PERCEPTION: lateral-line flow (mechanosensory → NOT clarity-scaled, works when vision fails) + prey-size selectivity (piscivores)
-      a.act.in[sb + 3] = clamp(env.currentAt(a.x, a.y) / 12, -1, 1);   // signed local current (rheotaxis); the turbidity-proof sense
-      let preySz = 0; if (sp.diet.fish) { const pr = this._qpA === a ? this._qpR : this.qPrey(a); if (pr) preySz = clamp(effSize(pr.item) / Math.max(effSize(a), 1e-3), 0, 1); }
-      this._qtA = this._qpA = null;
-      a.act.in[sb + 4] = preySz;   // relative size of the nearest CATCHABLE prey (0 = none / not a piscivore) → evolved prey-size selectivity
-      a.act.in[sp.shape.in - 2] = a.hunger; a.act.in[sp.shape.in - 1] = a.fear;
-      if (!a.lw) a.lw = Float32Array.from(a.g);   // older saves lack the plastic copy → derive it from the genotype
-      forward(a.lw, a.act.in, a.act, sp.shape, a.activeHid);   // run the PLASTIC policy (lifetime learning), with only `activeHid` hidden units active (evolvable brain size)
+      // DECISION RATE: a fish re-senses and re-thinks at BRAIN.DECIDE_HZ (real fish react in ~30–100 ms), acting on its last
+      // (smoothed) intent in between; movement still integrates every step. dt-agnostic: the headless 1/30 step decides every
+      // step, the browser's 1/60 every other (staggered by id), so both run the brain at the same rate. `dAcc` is saved.
+      if (a.dAcc === undefined) a.dAcc = (a.id & 1) * 0.5 / BRAIN.DECIDE_HZ;
+      a.dAcc += dt; a.hunger = clamp(a.hunger + DRIVE.HUNGER_GAIN * dt, 0, 1); a.fear *= Math.exp(-DRIVE.FEAR_DECAY * dt);
+      if (a.dAcc >= 1 / BRAIN.DECIDE_HZ - 1e-9) {
+        a.dAcc -= 1 / BRAIN.DECIDE_HZ;
+        this._qtA = this._qpA = null;
+        sp.senses(a, this);
+        // INTERNAL DRIVES (motivation): persistent per-fish state fed back as the last two brain inputs, so behaviour is
+        // state-dependent (the NN learns to use them — emergent). HUNGER accrues with time since a meal (sated in the feed
+        // step below); FEAR jumps to the nearest-threat proximity and decays after it leaves (lingering caution). The brain
+        // wires these to its gated actions (a starving fish gambles on a strike; a scared one hides/flees).
+        const drv = this._qtA === a ? this._qtR : this.qThreat(a), threatNear = drv ? clamp(1 - drv.dist / (a.senseRange * 1.1), 0, 1) : 0;
+        a.fear = Math.max(threatNear, a.fear);
+        // SPATIAL COGNITION (allocentric sense of place & direction): a COMPASS (sin/cos of the absolute body heading) +
+        // a HOME bearing (signed horizontal displacement to the natal site, normalised by lake width). Written into the
+        // spatial block [base, base+1, base+2] (drives stay in the last two slots). Pure functions of sim state → deterministic.
+        const sb = sp.baseInputs; if (a.homeX === undefined) a.homeX = a.x;   // older saves lacking homeX home to their current spot
+        a.act.in[sb] = Math.sin(a.heading); a.act.in[sb + 1] = Math.cos(a.heading);
+        a.act.in[sb + 2] = clamp((a.homeX - a.x) / W, -1, 1);   // >0 ⇒ home is to the right; the substrate for evolved homing/site-fidelity/migration
+        // RICHER PERCEPTION: lateral-line flow (mechanosensory → NOT clarity-scaled, works when vision fails) + prey-size selectivity (piscivores)
+        a.act.in[sb + 3] = clamp(env.currentAt(a.x, a.y) / 12, -1, 1);   // signed local current (rheotaxis); the turbidity-proof sense
+        let preySz = 0; if (sp.diet.fish) { const pr = this._qpA === a ? this._qpR : this.qPrey(a); if (pr) preySz = clamp(effSize(pr.item) / Math.max(effSize(a), 1e-3), 0, 1); }
+        this._qtA = this._qpA = null;
+        a.act.in[sb + 4] = preySz;   // relative size of the nearest CATCHABLE prey (0 = none / not a piscivore) → evolved prey-size selectivity
+        a.act.in[sp.shape.in - 2] = a.hunger; a.act.in[sp.shape.in - 1] = a.fear;
+        if (!a.lw) a.lw = Float32Array.from(a.g);   // older saves lack the plastic copy → derive it from the genotype
+        forward(a.lw, a.act.in, a.act, sp.shape, a.activeHid);   // run the PLASTIC policy (lifetime learning), with only `activeHid` hidden units active (evolvable brain size)
+      }
       a.turnSmooth += (a.act.turn - a.turnSmooth) * smoothK;
       a.thrustSmooth += (a.act.thrust - a.thrustSmooth) * smoothK;
       const turn = a.turnSmooth; let thrust = a.thrustSmooth;
@@ -1614,7 +1625,7 @@ export class World {
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`
           // v25 nest state: a guardian's remaining duty `nt` + nest; a fry's guardian id `ni` + nest (absent = none)
           dg: a.dg > 0 ? a.dg : undefined,   // v25 digestion time left after a fish meal
-          fa: a.feedAcc > 0 ? a.feedAcc : undefined,   // v25 handling-time remainder (a cold fish forages slower → fractional)
+          fa: a.feedAcc > 0 ? a.feedAcc : undefined, da: a.dAcc,   // v25 handling-time remainder (a cold fish forages slower → fractional)
           nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),

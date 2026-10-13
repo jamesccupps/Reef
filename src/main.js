@@ -120,7 +120,9 @@ function wantScreensaver() { return /(^#|&)screensaver(&|$)/i.test(location.hash
 if (wantScreensaver()) ui.setWindowScreensaver(true);
 addEventListener('hashchange', () => ui.setWindowScreensaver(wantScreensaver()));
 
-const DT = 1 / 60;
+// The sim steps at 30 Hz — the same step the headless tests run, so the browser lake behaves exactly like the tested one —
+// and the renderer interpolates every frame between the last two states (alpha), so motion stays smooth at 60–144 fps.
+const DT = 1 / 30, MAX_STEPS = 2;
 let acc = 0, last = performance.now(), stepCount = 0, rateAcc = 0, fpsAcc = 0, frames = 0;
 
 function frame(now) {
@@ -128,7 +130,9 @@ function frame(now) {
   let real = (now - last) / 1000; last = now; if (real > 0.1) real = 0.1;
   let simMs = 0;
   if (!ui.paused) {
-    acc += real * ui.speed;
+    // never catch up in a burst: after a slow frame (a GC pause, a busy tab) the lake slows for a moment instead of every fish
+    // jumping forward together; at a higher sim speed (ui.speed) more steps per frame are allowed
+    acc = Math.min(acc + real * ui.speed, DT * MAX_STEPS * Math.max(1, ui.speed));
     let steps = 0; const t0 = performance.now();
     // snapshot the pre-step pose (render-only _px/_py/_ph) so the renderer can interpolate between the last two states
     while (acc >= DT && steps < 300) { snapshotPrev(world.agents); world.step(DT); acc -= DT; steps++; stepCount++; }
