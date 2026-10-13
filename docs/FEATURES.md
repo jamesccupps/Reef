@@ -31,8 +31,12 @@ Save format **v27**. Every number below is from a published source (cited inline
   Wuycheck 1971, the Hermann et al. 2025 database, Nelson & Kruuk 1997 …) and digestibility (snail shells, crayfish
   exoskeleton, plants and detritus are poor food). The stomach empties exponentially at the measured gastric-evacuation
   rate (He & Wurtsbaugh 1993, × the species' own speed: pike ~2 days a meal, sunfish ~1) but never faster than FB4's Cmax —
-  so a fish can't exceed its published maximum ration, and its achieved fraction `p` (a diagnostic `pAvg`) is set by the
-  food it finds. Hunger is the gut's emptiness. Small invertebrates are PATCHES (a zooplankton swarm, a patch of midge
+  and never slower than a FULL stomach must empty to pass Cmax (Cmax is measured ad libitum, stomach and all; small fish on
+  small prey turn their stomachs over faster than the adult-meal rates) — so a fish can't exceed its published maximum
+  ration, and its achieved fraction `p` (a diagnostic `pAvg`) is set by the food it finds. Hunger is the gut's emptiness.
+  A forager that has just fed in a patch STAYS in it (patch residence, `FEED.RESIDE`: the marginal-value rule) and keeps
+  picking as its stomach empties — one behavioural second is ~5 h, so a fish that cruised off after every mouthful would
+  starve in a lake full of food. Small invertebrates are PATCHES (a zooplankton swarm, a patch of midge
   larvae: `PREY.*_G` grams, reached within `PREY.PATCH_R`) that a small fish crops and a big one clears — the one
   calibrated quantity (it stands in for the slice of lake the 2-D world represents). Half the new insect-larva patches live
   up the macrophyte stems (`INSECT.EPIPHYTE` — the plant-dwelling invertebrates that feed bluegill and young perch).

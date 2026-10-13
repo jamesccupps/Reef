@@ -66,14 +66,22 @@ Session-4 changes (all in FEATURES "2026-10-13 bioenergetics", rewritten):
 - Founders: stable age structure (e^−M·age), first two of each species a ripe adult F+M pair; immigrants ripe. Pike
   refuge/rescue 1 (a ~0.07-ha slice holds ~1 pike at real densities), trout 1/2. Spawning migration is purposeful.
 - Fathead batch spawning every ~4 d, reproAlloc 0.8. Juvenile FB4 sets only in the first year. UI shows meals again.
+- Then (same session): PATCH RESIDENCE (FEED.RESIDE/RESIDE_T, saved `ft`) — a forager stays in the patch it's feeding in;
+  gut EVACUATION never slower than a full stomach needs to pass Cmax (small fish on small prey); schools forage no better
+  than single fish (FRY.EAT_R 40→24); young pike/bass eat insect larvae until 3× Lpisc; METABOLIC DEPRESSION under food
+  deprivation (BIOE.K_DEPRESS 0.9, STARVE_DEPRESS 0.3 — Méndez & Wieser 1993) so lean summers stunt instead of starving.
 Validation (scratchpad verify/: bioe_run2.mjs <seed> <yrs> — census, biomass, p, K, diet by source, deaths juvenile|
 adult, YOY schools, mid-August length-at-age; webdiag.mjs — predation matrix; supply2.mjs — zooplankton made/eaten/died;
-alone.mjs, yoygrow.mjs, bassyoy*.mjs, pdist.mjs). Before VULN (y8, 3 seeds × 3 yr): minnow-dominated, sunfish collapsed to
-the refuge in 2/3 seeds. With VULN (y9, running): sunfish 160–260 by spring of year 2 (recruits 170–260), minnows 145–225.
-Still open: bass/pike/trout/catfish/carp mostly immigrant-sustained (bass nests: larvae starve at swim-up near the nest,
-then perch/bass eat the rest); adult fatheads and perch grow faster than Michigan means (low density); total fish ~14–24 kg.
-NEXT: read y9 (3 yr), then predator recruitment (bass nest larvae), multi-seed balance, browser visual check (YOY clouds as
-little fish), commit/merge, phase 2.
+alone.mjs, yoygrow.mjs, bassyoy*.mjs, pdist.mjs, yearling*.mjs). Latest (y13, 3 seeds × 3 yr): every year sunfish recruit
+~120–280 yearlings in spring that thin to ~30–40 by winter (now mostly predation + other, little starvation), 10–28 adults;
+minnows 70–390 (most numerous, ~0.5–0.9 kg); perch 11–51 with home-bred recruits most years (~5–9 kg — the biggest
+biomass, adults 25–30 cm, faster than Michigan means at these low densities); pike 1, bass 2–3, trout 2, carp 3,
+catfish 2–9 mostly immigrant-held (carp/catfish recruit a few); total fish 13–23 kg + YOY. Gate green; perf 80–84 st/s
+standalone (YOY schools cost ~30 %).
+Still open: bass/catfish nests rarely produce recruits (larvae starve at swim-up near the nest, then perch eat the rest);
+sunfish adults dwindle slowly (yearling mortality ~80 %/yr); minnow numbers high; browser visual check of YOY rendering
+at full size; perf headroom.
+NEXT: predator recruitment (bass nest larvae: food at swim-up), 5-yr multi-seed run, browser check, merge to main, phase 2.
 
 **▶▶ RESUME HERE (2026-10-13, after compaction) — the human wants ALL THREE, in order, then what-if tooling:**
 Goal (human): "a complete, realistic simulation, that looks good too and is polished … eventually good enough that you could

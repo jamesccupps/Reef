@@ -87,6 +87,9 @@ const canEatFry = (f, a) => {
   if (schoolPrey(f, a)) return true;
   return f.L <= FRY.LARVA_L && f.L <= a.L / 3 && !!(a.sp.diet.plankton || a.sp.diet.larva || a.sp.diet.insect || a.L < a.sp.Lzoo);
 };
+// young fish that eat insect larvae: their species does — or a young piscivore not yet big enough to live on fish alone
+// (YOY pike and bass eat aquatic insects alongside fish until ~3× their piscivory length: Frost 1954, Keast 1985)
+const insectEater = (sp, L) => sp.diet.larva || sp.diet.insect || (sp.diet.fish && L < 3 * sp.Lpisc);
 // a school the fish of school `f` (young piscivores: pike, bass) could eat — any other school (their own kind's included:
 // young pike are notorious cannibals) whose fish fit their gape and are worth the chase
 const canSchoolEat = (q, f) => q !== f && !q.dead && q.L * SP[q.k].depthR <= f.L * SP[f.k].gapeR && q.L >= FEED.PREY_MIN * f.L;
@@ -187,6 +190,7 @@ function parseSave(s) {
     if (isNum(a.mi) && a.mi > 0) ag.missCd = clamp(a.mi, 0, 60);
     if (isNum(a.xo) && isNum(a.xt)) { ag.xo = clamp(a.xo, 0, 5); ag.xt = clamp(a.xt, -5, 60); }
     if (isNum(a.ua)) ag.uAvg = clamp(a.ua, 0, 3);
+    if (isNum(a.ft)) ag.foodT = clamp(a.ft, 0, 1e6);
     settleBody(ag);
     ag.heading = num(a.h, ag.heading); ag.spd = clamp(num(a.sp, 0), 0, 1e4); ag.eaten = nonNegInt(a.ea); ag.vis = 1;
     const m = numArr(a.m, HID); if (m) for (let j = 0; j < HID; j++) ag.act.h[j] = clamp(m[j], -1, 1);   // recurrent working memory
@@ -1031,7 +1035,7 @@ export class World {
       else {
         const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= FRY.BENTH_L;
         let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
-        if (benth && (d.larva || d.insect) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
+        if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
         // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
@@ -1077,7 +1081,7 @@ export class World {
       z.m -= take; if (z.m <= 1e-9) z.dead = true;
       got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
     }
-    if (f.L >= FRY.BENTH_L && (d.larva || d.insect)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+    if (f.L >= FRY.BENTH_L && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
       const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
       const it = m.item, take = Math.min(it.m, want - got);
       it.m -= take; if (it.m <= 1e-9) it.dead = true;
@@ -1518,6 +1522,11 @@ export class World {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.forage * a.act.in[2] * a.hunger * dt;
         }
+        // PATCH RESIDENCE (the marginal-value rule): a forager that has just been feeding in a food patch stays in it —
+        // slowing to a hover and picking at it as its stomach empties — rather than cruising off after each bite. A small
+        // fish's stomach holds a few hours' ration and one behavioural second is ~5 h, so a fish that left after every
+        // mouthful would starve in a lake full of food. It moves on once the patch is gone (its food sense points further).
+        if (IN.forage && (a.foodT ?? 9) < FEED.RESIDE_T && (a.act.in[2] || 0) > 1 - PREY.PATCH_R / a.senseRange) thrust *= FEED.RESIDE;
         // SPAWNING AGGREGATION (target `mig` above): bass nest in the shallows, pike/carp spawn in flooded weed margins,
         // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
         // switches off out of season or once the fish is spent.
@@ -1636,7 +1645,9 @@ export class World {
       let C = 0, pNow = 0;
       const cm = cmax(bp, Wg, tHere);
       if (a.gut > 0) {
-        const ev = Math.min(a.gut, Math.min(BIOE.GER * Math.exp(BIOE.GER_T * tHere) * sp.gerMul * a.gut, cm * Wg) * dd);
+        // (never slower than a FULL stomach must empty to pass Cmax — Cmax is measured ad libitum, gut and all; a small
+        // fish on small prey turns its stomach over faster than the adult-meal rates behind gerMul)
+        const ev = Math.min(a.gut, Math.min(Math.max(BIOE.GER * Math.exp(BIOE.GER_T * tHere) * sp.gerMul, cm / sp.gut) * a.gut, cm * Wg) * dd);
         C = a.gutE * ev / a.gut; a.gut -= ev; a.gutE -= C; pNow = cm > 0 ? ev / (cm * Wg * dd) : 0;
         if (a.gut < 1e-9) { a.gut = 0; a.gutE = 0; }
       }
@@ -1657,7 +1668,10 @@ export class World {
       // on screen is resting between bouts, not metabolising below routine)
       const act = routineActivity(bp, Wg, tHere) * Math.exp(BIOE.SWIM * Math.max(0, a.uAvg - sp.uRoutine));
       const guard = a.nt > 0 ? BROOD.GUARD_METAB : 1;   // a nest-guarding male fans and patrols: metabolism up (BROOD.GUARD_METAB)
-      const rO2 = respStd(bp, Wg, tHere) * a.metabMul * act * stress * guard * Wg;   // g O₂ / day
+      // a fish losing condition turns its metabolism down (food-deprived fish cut their standard metabolic rate 10–40 %:
+      // Méndez & Wieser 1993, Mehner & Wieser 1994) — so a lean summer stunts a crowded population rather than starving it
+      const depress = 1 - BIOE.STARVE_DEPRESS * clamp((BIOE.K_DEPRESS - a.K) / (BIOE.K_DEPRESS - BIOE.K_S50), 0, 1);
+      const rO2 = respStd(bp, Wg, tHere) * a.metabMul * act * stress * guard * depress * Wg;   // g O₂ / day
       a.rO2 = rO2 / BIOE.DAY;                                                 // g O₂ / sim-s (the lake's O₂ demand, env)
       // GROWTH: the net energy changes the fish's mass (J ÷ its energy density). A fish in better than standard condition
       // puts the surplus into LENGTH — the structural size never shrinks, a starving fish just gets thinner (as inSTREAM)
@@ -1752,6 +1766,7 @@ export class World {
       let nS;
       if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
+      a.foodT = a.eaten > eaten0 ? 0 : (a.foodT ?? 9) + dt;   // time since its last GOOD meal (patch residence, below; saved `ft`)
       if (a.eaten === eaten0 && a.gut < pRoom && sp.diet.detritus) this._graze(a, this.detritusGrid, slots, pRoom - a.gut, PREY.DETRITUS_ED, PREY.DETRITUS_DIG);   // bottom feeders sift detritus
       // planktivore facultative omnivory: a hungry planktivore that found NOTHING else this step grazes the phytoplankton
       // field directly (fathead minnows and sunfish do eat algae and detritus) — algae are a poor, part-indigestible food
@@ -2052,6 +2067,7 @@ export class World {
           mi: a.missCd > 0 ? a.missCd : undefined,   // v27 recovery time left after a missed strike
           xo: a.xo, xt: a.xt,                         // v27 the O₂ / temperature it has experienced (hours-scale exposure)
           ua: a.uAvg,                                 // v27 its ~1-day mean swimming effort (the activity cost)
+          ft: a.foodT,                                // v27 time since its last good meal (patch residence)
           id: a.id, mc: a.mateCd, ts: a.turnSmooth, th: a.thrustSmooth, vh: a.velHeading, st: a.stroke,   // resume state (vh/st absent until first stepped)
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`

@@ -77,6 +77,8 @@ export const FEED = {
   PREY_MIN: 0.07,   // a piscivore ignores fish shorter than this fraction of its own length (not worth the chase). Real
                     //   piscivores mostly eat prey well below their gape: a 65-cm pike's MEDIAN prey is ~7 cm (Gaeta et al.
                     //   2018: 5.05·TL^0.413 mm), so big pike do eat minnow-sized fish; larvae are left to the small fish
+  RESIDE: 0.3,      // a forager feeding in a patch slows to this × its thrust (stays and picks — patch residence) …
+  RESIDE_T: 1.0,    // … while its last good meal was under this many s ago and the food it senses is within PREY.PATCH_R
   POOR_GUT: 0.15,   // poor food (detritus, algae, plants) only tops a hungry fish's gut up to this share of its capacity
   SCHOOL_MIN: 0.035, // … but a dense school of young fish is worth fish half that size (a feeding bout takes many: bass
                     //   20–35 cm feed heavily on 2–4-cm young-of-year sunfish and perch)
@@ -94,6 +96,9 @@ export const BIOE = {
   // & Post 1990). K is W / the standard weight (the 75th-percentile weight-at-length, so populations average ~0.85–1.0
   // and a lean fish at 0.8 is thin, not dying). Not computed above K_HAZARD (negligible there).
   K_S50: 0.55, K_S99: 0.68, K_HAZARD: 0.78,
+  // METABOLIC DEPRESSION under food deprivation: below condition K_DEPRESS respiration falls, linearly to STARVE_DEPRESS
+  // less at K_S50 (food-deprived fish lower their standard metabolism 10–40 %: Méndez & Wieser 1993; Mehner & Wieser 1994)
+  K_DEPRESS: 0.9, STARVE_DEPRESS: 0.3,
   get STARVE_B() { return Math.log(99) / (this.K_S99 - this.K_S50); },
   get STARVE_A() { return -this.STARVE_B * this.K_S50; },
   // SWIMMING COST: respiration × e^(SWIM·(u − u_routine)), u = the ~1-day mean speed / top cruising speed (never below
@@ -149,7 +154,8 @@ export const FRY = {
   MAX_RECRUITS: 12,    // recruits one school yields at most
   TICK: 0.2,           // s between a school's feeding / physiology / mortality updates (staggered across schools; each
                        //   integrates the time elapsed — the schools' cost is a fraction of a step)
-  EAT_R: 40,           // px a school forages over
+  EAT_R: 24,           // px a school forages over (a fish's patch reach, PREY.PATCH_R, + the school's own spread — no
+                       //   better than the same fish foraging alone, or the young would out-compete everything else)
   SEEK_R: 160,         // px: a school moves toward the nearest food it eats within this
   FEEDS: 6,            // food patches a school crops per update at most
   R_WMIN: 0.1,         // g: below this a larva's mass-specific respiration is held at this mass's (larval metabolism scales

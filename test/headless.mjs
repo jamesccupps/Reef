@@ -574,9 +574,11 @@ TOX.AMBIENT = savedAmb;
 const txSave = new World(); txSave.load(JSON.parse(JSON.stringify(txPol.toJSON())));
 check('contaminant body burden (tx) round-trips through save/load (v26)', txSave.agents.length === txPol.agents.length && txSave.agents.some(a => a.tox > 0) && txSave.agents.every((a, i) => Math.abs(a.tox - txPol.agents[i].tox) < 1e-6), `${txSave.agents.length} agents`);
 // HARM-mortality: a fish whose burden is ≫ TOX.HARM dies from the toxicant (the lethal end); a clean one survives.
+const { BIRD: BIRD_T } = await import('../src/config.js');
 function survivesTox(toxLevel) {
-  seed(55); const hw = new World();
-  const f = hw.makeFish('pike', null, 200); f.x = 1024; f.y = 300; f.energy = 1.5; f.tox = toxLevel;   // age 200 ≪ pike maxAge (so old age can't confound)
+  seed(55); const hw = new World(); hw.birds = [];
+  const keepArrive = BIRD_T.ARRIVE; BIRD_T.ARRIVE = 0;   // (no loon wandering in to take the test fish)
+  const f = hw.makeFish('pike', null, SP.pike.matureAge * 1.2); f.x = 1024; f.y = 300; f.energy = 1.5; f.tox = toxLevel;   // an adult well under pike maxAge (so old age can't confound)
   // neutralize the brain-gated ACTIONS (strike/flee/hide) for this isolation — their energy cost is verified in the
   // action-space section; here we want ONLY the toxicant's mortality hazard, so a random brain's bursts can't confound.
   const sh = f.sp.shape, B2 = sh.hid * sh.in + sh.hid + OUT * sh.hid;
@@ -584,6 +586,7 @@ function survivesTox(toxLevel) {
   f.lw = Float32Array.from(f.g);                     // forward() runs the plastic policy → sync so actions are really off (isolated pike never eats → no learning drift)
   hw.agents = [f]; hw.plankton = []; hw.agentGrid.rebuild(hw.agents);
   for (let i = 0; i < 400 && !f.dead; i++) hw.step(1 / 30);
+  BIRD_T.ARRIVE = keepArrive;
   return !f.dead;
 }
 check('contaminant HARM-mortality: a burden ≫ TOX.HARM kills the fish (a clean fish at the same energy/age survives)', survivesTox(0) && !survivesTox(TOX.HARM * 4), 'clean survives, high-burden dies');
@@ -2188,7 +2191,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     const g0 = Float32Array.from(yw.makeFish('minnow').g), f = yw._mkFry('minnow', 600, 200, 600, 1, 200, g0, new Float32Array(GENE_KEYS.length).fill(1)); yw.fry.push(f);
     const L0 = f.L, n0 = f.n; let maxL = 0, recruited = false;
     const b0 = yw.stats.births.minnow;
-    for (let i = 0; i < 30 * 400 && !recruited; i++) { yw.step(1 / 30); if (!f.dead) maxL = Math.max(maxL, f.L); if (yw.stats.births.minnow > b0) recruited = true; }
+    for (let i = 0; i < 30 * 650 && !recruited; i++) { yw.step(1 / 30); if (!f.dead) maxL = Math.max(maxL, f.L); if (yw.stats.births.minnow > b0) recruited = true; }   // (≤ ~4 months: fatheads reach 4 cm by late summer)
     check('FRY: a school of larvae grows on zooplankton and thins out', maxL > L0 * 1.5, `${L0.toFixed(2)} → ${maxL.toFixed(2)} cm from ${n0} larvae`);
     check('…and its survivors recruit as followed individuals (at the species\' recruit length)', recruited); }
   // HEAT and HYPOXIA kill by species tolerance: held at 28 °C a trout dies, a carp doesn't; in 0.5 mg/L water a trout dies, a bullhead lives
