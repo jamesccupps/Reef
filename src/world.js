@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -36,7 +36,9 @@ const effSize = a => a.size * (0.3 + 0.7 * (a.grow ?? 1));
 // thermal performance curve: 1 at/above the species' optimum, falling linearly to ENV.COLD_PERF_MIN at 2 °C
 // an action intent's ENGAGED intensity: 0 below ACTION.ENGAGE, rising linearly to 1 at full intent
 export const engaged = x => x > ACTION.ENGAGE ? (x - ACTION.ENGAGE) / (1 - ACTION.ENGAGE) : 0;
-export const coldPerf = (tC, tOpt) => tC >= tOpt ? 1 : clamp(ENV.COLD_PERF_MIN + (1 - ENV.COLD_PERF_MIN) * (tC - 2) / Math.max(1, tOpt - 2), ENV.COLD_PERF_MIN, 1);
+// `floor`: the species' cold-water performance floor — cold- and cool-water fish (trout, pike, perch: SP.coldPerf) stay far more
+// active near 0 °C than warm-water centrarchids, carp and catfish (ENV.COLD_PERF_MIN), as real perch and pike feed under the ice
+export const coldPerf = (tC, tOpt, floor = ENV.COLD_PERF_MIN) => { const f = Math.max(floor, ENV.COLD_PERF_MIN); return tC >= tOpt ? 1 : clamp(f + (1 - f) * (tC - 2) / Math.max(1, tOpt - 2), f, 1); };
 // spatial-query predicates as plain functions (SpatialGrid.nearest passes the querying fish as ctx), so the hot queries
 // allocate no closure per call
 const notDead = it => !it.dead;
@@ -51,6 +53,16 @@ function canPreyFn(pred, prey) {
 const isThreatTo = (it, a) => canPreyFn(it, a);
 const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
 const notOwnBrood = (it, a) => it !== a && !it.dead && it.ni !== a.id;   // a nest guardian's intruder: any piscivore but its own fry
+// WILDLIFE (dragonflies, frogs, turtles) — herps: k 0 tadpole, 1 frog, 2 turtle. Effective size in fish units (gape checks).
+const herpSize = h => h.k === 0 ? FROG.SIZE_TAD : h.k === 1 ? FROG.SIZE_FROG * (0.5 + 0.5 * clamp(h.age / (FROG.MATURE * TIME.YEAR_LEN), 0, 1))
+  : TURTLE.SIZE_HATCH + (TURTLE.SIZE_ADULT - TURTLE.SIZE_HATCH) * clamp(h.age / (TURTLE.MATURE * TIME.YEAR_LEN), 0, 1);
+const isTadpole = h => !h.dead && h.k === 0;
+const isNymphPrey = f => !f.dead && effSize(f) * (f.bodyMul || 1) <= ODONATA.FRY_MAX;   // a fish fry small enough for a nymph
+// a frog/tadpole/turtle a fish could take: awake (not buried in the winter mud), fits its gape, worth the chase; a fish
+// predator takes any of them, a larva-eater only tadpoles
+const canEatHerp = (h, a) => !h.dead && h.st !== 2 && (a.sp.diet.fish || h.k === 0) && canEat(effSize(a), herpSize(h)) && herpSize(h) >= FEED.PREY_MIN * effSize(a);
+const isShallow = x => bedY(x) < H * 0.35;                     // over the littoral shelf (frogs, tadpoles, nymphs, basking)
+const toShore = x => (x < W * BASIN.CENTER ? -1 : 1);          // horizontal direction to the nearer (shallow) shore
 const isLoonPrey = it => !it.dead && effSize(it) * (it.bodyMul || 1) <= BIRD.PREY_MAX;   // what a loon can swallow
 const isPreyOf = (it, a) => canPreyFn(a, it);
 const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated;
@@ -101,7 +113,7 @@ const nonNegInt = (v, d = 0) => (isNum(v) && v >= 0 ? Math.min(Math.floor(v), Nu
 const hueOr = (v, d) => (isNum(v) ? (v >= 0 && v < 360 ? v : ((v % 360) + 360) % 360) : d);   // wrap only when out of range (identity otherwise)
 const numArr = (v, len) => { if (!Array.isArray(v) || v.length !== len) return null; for (let i = 0; i < len; i++) if (!(typeof v[i] === 'number' && Math.abs(v[i]) <= MAX_ABS_WEIGHT)) return null; return v; };
 const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-const SAVE_ARRAYS = ['agents', 'plants', 'plankton', 'detritus', 'larvae', 'insects', 'snails', 'cray', 'corpses'];
+const SAVE_ARRAYS = ['agents', 'plants', 'plankton', 'detritus', 'larvae', 'insects', 'snails', 'cray', 'corpses', 'nymphs', 'dflies', 'herps'];
 const STRUCT_CAP = 4096;   // per structure list (generated lakes hold tens)
 const STRUCT_FIELDS = {    // static habitat structure: each element rebuilt from its known numeric fields only
   reeds: q => (isNum(q.x) && isNum(q.baseY) && isNum(q.height) ? { x: q.x, baseY: q.baseY, height: q.height, n: clamp(nonNegInt(q.n, 3), 1, 24) } : null),
@@ -192,7 +204,7 @@ function parseSave(s) {
     return out;
   };
   const yIn = (v, d) => clamp(num(v, d), 0, H);
-  const plankton = parts(s.plankton, scaleCount(PLANKTON.CAP), (q, x) => ({ x, baseY: yIn(q.y, bedY(x) * 0.5), y: 0, phase: num(q.ph, 0), vx: num(q.vx, 0), dead: false }));
+  const plankton = parts(s.plankton, scaleCount(PLANKTON.CAP), (q, x) => ({ x, baseY: yIn(q.y, bedY(x) * 0.5), y: 0, phase: num(q.ph, 0), vx: num(q.vx, 0), k: q.k === 0 ? 0 : 1, dead: false }));   // v26 kind (older: copepods)
   // `n` = organic N+P (DOM units) the particle carries — 0 for fish-derived detritus; absent on pre-v24 saves → 0
   const detritus = parts(s.detritus, scaleCount(DETRITUS.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x)), life: num(q.l, DETRITUS.LIFE), n: clamp(num(q.n, 0), 0, 1e3), dead: false }));
   const larvae = parts(s.larvae, scaleCount(INSECT.LARVA_CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), dev: num(q.d, 0), dead: false }));
@@ -237,8 +249,15 @@ function parseSave(s) {
     const st = b.st === 1 || b.st === 2 ? b.st : 0;
     birds.push({ x: clamp(b.x, 0, W), y: clamp(b.y, 0, H), h: num(b.h, Math.PI / 2), st, t: num(b.t, 5), stay: num(b.stay, BIRD.STAY[0]), m: nonNegInt(b.m), vx: clamp(num(b.vx, 0), -20, 20), gone: false });
   }
+  // v26 wildlife (older saves: none — a lake loaded from an older save simply has no frogs/turtles/dragonflies yet)
+  const nymphs = parts(s.nymphs, scaleCount(ODONATA.CAP), (q, x) => { const h = clamp(num(q.h, 8), 0, 60); return { x, h, y: bedY(x) - h, dev: Math.max(0, num(q.d, 0)), vx: clamp(num(q.vx, 0), -20, 20), dead: false }; });
+  const dflies = parts(s.dflies, scaleCount(ODONATA.ADULT_CAP), (q, x) => ({ x, y: -12, vx: clamp(num(q.vx, 0), -200, 200), life: num(q.l, 0), ph: num(q.ph, 0), dead: false }));
+  const herps = parts(s.herps, scaleCount(FROG.CAP + FROG.TAD_CAP + TURTLE.CAP), (q, x) => {
+    const k = q.k === 0 || q.k === 2 ? q.k : 1, st = q.s === 1 || q.s === 2 ? q.s : 0;
+    return { k, x, y: clamp(num(q.y, 2), 0, bedY(x)), vx: clamp(num(q.vx, 0), -50, 50), age: Math.max(0, num(q.a, 0)), e: clamp(num(q.e, 0.5), 0, 1), st, t: num(q.t, 5), cd: num(q.c, 0), dev: Math.max(0, num(q.d, 0)), dead: false };
+  });
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
-  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds };
+  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps };
 }
 function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = null) {
   const sp = SP[species], shape = sp.shape;
@@ -359,6 +378,8 @@ export class World {
     this.insectGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);   // emerged surface insects (surface-fish food)
     this.snailGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);    // benthic grazing snails (sunfish/carp/crayfish food)
     this.crayGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);     // benthic crayfish (bass/pike/catfish food)
+    this.nymphGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);    // dragonfly nymphs (fish food)
+    this.herpGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);     // tadpoles, frogs, turtles (fish food when they fit)
     this.time = 0; this.maxGen = 0;
     this.stats = { foodEaten: 0, fishEaten: 0, births: {}, immigrants: {} };  // births = home-bred (sexual+asexual); immigrants = rescue arrivals — per species
     this.series = [];           // {g,c,b...} census + env over time
@@ -376,7 +397,7 @@ export class World {
     this.birds = [];                       // visiting fish-eating diving birds (loons) — BIRD
     this.env = new Environment();
     // a fresh lake opens in late spring (SEASON.START_YF) with that season's thermal state, not an ice-bound March 1
-    this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
+    this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this._daphShare = this.daphShare(); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
     this.stats.births = {}; this.stats.immigrants = {}; for (const k of SPECIES) { this.stats.births[k] = 0; this.stats.immigrants[k] = 0; }
     this.series = []; this._seriesAcc = 0; this.selectedId = null;
     for (const key of SPECIES) {
@@ -396,6 +417,11 @@ export class World {
     for (let i = 0, n = scaleCount(INSECT.LARVA_SEED); i < n; i++) this.larvae.push(this._mkLarva());
     for (let i = 0, n = scaleCount(SNAIL.SEED); i < n; i++) this.snails.push(this._mkSnail());
     for (let i = 0, n = scaleCount(CRAYFISH.SEED); i < n; i++) this.cray.push(this._mkCray());
+    // wildlife: dragonfly nymphs of mixed ages, adult frogs and painted turtles (no adults on the wing / tadpoles in May yet)
+    this.nymphs = []; this.dflies = []; this.herps = [];
+    for (let i = 0, n = scaleCount(ODONATA.SEED); i < n; i++) this.nymphs.push(this._mkNymph());
+    for (let i = 0, n = scaleCount(FROG.SEED); i < n; i++) this.herps.push(this._mkHerp(1, plantX(), 2, rand(FROG.MATURE, FROG.LIFE * 0.6) * TIME.YEAR_LEN));
+    for (let i = 0, n = scaleCount(TURTLE.SEED); i < n; i++) this.herps.push(this._mkHerp(2, plantX(), 2, rand(TURTLE.MATURE, TURTLE.LIFE * 0.6) * TIME.YEAR_LEN));
     for (let i = 0, n = scaleCount(SEED_COUNTS.plants); i < n; i++) this.plants.push(newPlant(plantX(), true));
     for (let i = 0, n = scaleCount(SEED_COUNTS.detritus); i < n; i++) { const x = rand(20, W - 20); this.spawnDetritus(x, bedY(x) - rand(0, 50), NUTRIENT.FROM_DETRITUS); }   // seeded detritus carries organic N+P
     this._genStructures();
@@ -453,10 +479,17 @@ export class World {
     return best;
   }
 
-  _mkPlankton(x, y) {
+  // a zooplankter of kind `k` (0 Daphnia, 1 copepod — PLANKTON.DAPH_*); by default drawn from the current Daphnia share
+  _mkPlankton(x, y, k) {
     const px = x ?? rand(6, W - 6);
     const py = y ?? clamp(rand(16, bedY(px) - 12), 12, bedY(px) - 8);   // stay within the water column
-    return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), dead: false };
+    const kind = k ?? (rand() < this._daphShare ? 0 : 1);
+    return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), k: kind, dead: false };
+  }
+  // Daphnia's share of new zooplankton: they breed fast only in warm water and can't cope with a cyanobacterial bloom
+  daphShare() {
+    const env = this.env, [t0, t1] = PLANKTON.DAPH_T;
+    return PLANKTON.DAPH_MAX * clamp((env.tempC - t0) / (t1 - t0), 0, 1) * clamp(1 - PLANKTON.DAPH_CYANO * env.meanCyano() / CYANO.CAP, 0, 1);
   }
   // `n` = organic N+P (DOM units) the particle carries. Default 0: fish-death detritus is nutrient-NEUTRAL (fish hold no
   // N/P in this model — their remains are food/energy, not a nutrient source). Only seeded detritus carries nutrient.
@@ -473,6 +506,17 @@ export class World {
   _mkSnail(x) { const px = x ?? plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
   // a benthic crayfish walking the bed (drifts toward cover; crepuscular). `ph` = render leg-wiggle phase.
   _mkCray(x) { const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 4), vx: rand(-CRAYFISH.CRAWL, CRAYFISH.CRAWL), ph: rand(0, 6.28), dead: false }; }
+
+  // a dragonfly nymph in the weedy shallows: `h` = how high it clings above the bed, `dev` 0..1 maturity
+  _mkNymph(x, dev) { const px = x ?? plantX(); return { x: px, h: rand(2, 24), y: bedY(px) - 10, dev: dev ?? rand(0, 0.9), vx: rand(-ODONATA.CRAWL, ODONATA.CRAWL), dead: false }; }
+  // an adult dragonfly on the wing, low over the water (negative y = above the surface)
+  _mkDragonfly(x) { return { x: clamp(x, 10, W - 10), y: -12, vx: (rand() < 0.5 ? -1 : 1) * ODONATA.FLY * (0.5 + rand() * 0.5), life: ODONATA.ADULT_LIFE * (0.7 + rand() * 0.6), ph: rand(0, 6.28), dead: false }; }
+  // a herp: k 0 tadpole, 1 frog, 2 turtle; e = energy 0..1, st = state (frog 0 surface / 1 diving / 2 hibernating; turtle
+  // 0 foraging below / 1 up for air / 2 hibernating), t = state timer, cd = breeding cooldown, dev = tadpole development
+  _mkHerp(k, x, y, age = 0) {
+    const px = clamp(x, 6, W - 6);
+    return { k, x: px, y: clamp(y, 1, bedY(px) - 2), vx: rand(-4, 4), age, e: k === 0 ? 0.5 : 0.8, st: 0, t: rand(5, 30), cd: 0, dev: 0, dead: false };
+  }
 
   // ---------- spatial queries used by senses (visual range shortened by water turbidity) ----------
   qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, notDead); }
@@ -576,6 +620,19 @@ export class World {
     for (; k < n; k++) { const m = grid.nearest(x, y, r, notDead); if (!m) break; m.item.dead = true; }
     return k;
   }
+  // zooplankton meals: up to n strikes at the nearest zooplankters in reach; a copepod's escape jump can beat a strike
+  // (PLANKTON.COPE_ESCAPE — it is then left alone), a Daphnia never escapes. Energy by kind × mul. Returns items eaten.
+  _eatZoo(a, n, mul) {
+    let k = 0, E = 0;
+    for (let i = 0; i < n; i++) {
+      const m = this.planktonGrid.nearest(a.x, a.y, a.sp.eatRadius, notDead); if (!m) break;
+      const z = m.item;
+      if (z.k === 1 && rand() < PLANKTON.COPE_ESCAPE) continue;
+      z.dead = true; k++; E += z.k === 0 ? PLANKTON.DAPH_ENERGY : PLANKTON.COPE_ENERGY;
+    }
+    if (k) { a.energy = Math.min(a.sp.energyCap, a.energy + E * mul); a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
+    return k;
+  }
   // credit a fish with k meals of energy E each (capped at its energyCap) + the dietary toxicant per meal
   _ate(a, k, E) { a.energy = Math.min(a.sp.energyCap, a.energy + k * E); a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
   // test/diagnostic hook: build a plant (optionally inheriting from a parent) WITHOUT inserting it, so heredity &
@@ -649,6 +706,131 @@ export class World {
     }
     if (this.birds.some(b => b.gone)) this.birds = this.birds.filter(b => !b.gone);
   }
+  // WILDLIFE (ODONATA, FROG, TURTLE): dragonfly nymphs ambush small prey and emerge as adults that hawk insects over the
+  // water and lay eggs; tadpoles graze algae and metamorphose; frogs float at the surface over the shallows, dive from
+  // predators, breed in spring and hibernate on the bottom; painted turtles forage below, surface to breathe/bask and
+  // hibernate in the mud. Runs after the fish (fry a nymph takes are removed like the loon's catch). Seeded RNG.
+  _stepWildlife(dt, counts) {
+    const env = this.env, yf = env.yearFrac(), Y = TIME.YEAR_LEN, q = T => Math.pow(2.2, (T - 20) / 10);
+    const nCap = scaleCount(ODONATA.CAP), sun = env.sun || 0;
+    // --- dragonfly nymphs ---
+    for (const n of this.nymphs) {
+      if (n.dead) continue;
+      if (rand() < ODONATA.SENESCE * dt) { n.dead = true; continue; }
+      const T = env.tempAt(n.x, n.y), wf = clamp((T - ODONATA.DEV_T) / (25 - ODONATA.DEV_T), 0, 1);
+      n.dev += wf * dt / (ODONATA.DEV_FULL * Y);
+      n.x += n.vx * wf * dt; if (n.x < 4 || n.x > W - 4) { n.vx = -n.vx; n.x = clamp(n.x, 4, W - 4); }
+      if (!isShallow(n.x)) n.vx = toShore(n.x) * Math.abs(n.vx);
+      n.y = bedY(n.x) - n.h;
+      // emergence: a mature nymph climbs out on a warm, sunny day and becomes an adult dragonfly
+      if (n.dev >= 1 && T > ODONATA.EMERGE_T && sun > 0.5) { n.dead = true; if (this.dflies.length < scaleCount(ODONATA.ADULT_CAP)) this.dflies.push(this._mkDragonfly(n.x)); continue; }
+      // ambush (x warmth): an insect larva, a tadpole, a fish fry, or a zooplankter within the labium's reach
+      if (rand() < ODONATA.HUNT * wf * dt) {
+        const R = ODONATA.EAT_R;
+        if (this._takeNearest(this.larvaeGrid, n.x, n.y, R)) continue;
+        const td = this.herpGrid.nearest(n.x, n.y, R, isTadpole); if (td) { td.item.dead = true; td.item.eatenBy = 'nymph'; continue; }
+        const fr = this.agentGrid.nearest(n.x, n.y, R, isNymphPrey);
+        if (fr) { const f = fr.item; f.dead = true; f.eatenBy = 'nymph'; counts[f.species]--; this._counts[f.species] = counts[f.species]; if (f.id === this.selectedId) this.selectedId = null; this.stats.nymphEaten = (this.stats.nymphEaten || 0) + 1; continue; }
+        this._takeNearest(this.planktonGrid, n.x, n.y, R);
+      }
+    }
+    // --- adult dragonflies: dart low over the water, snatch emerged insects, dip to lay eggs over the shallows; in the
+    //     flight season more fly in from other waters (dragonflies disperse strongly and colonize ponds and lakes) ---
+    if (yf >= ODONATA.VISIT_YF[0] && yf <= ODONATA.VISIT_YF[1] && env.ice === 0 && this.dflies.length < scaleCount(ODONATA.ADULT_CAP) && rand() < ODONATA.VISIT * dt) this.dflies.push(this._mkDragonfly(rand(30, W - 30)));
+    for (const d of this.dflies) {
+      if (d.dead) continue;
+      d.life -= dt; if (d.life <= 0 || env.tempC < 12 || env.ice > 0) { d.dead = true; continue; }
+      if (rand() < 0.6 * dt) d.vx = (rand() < 0.5 ? -1 : 1) * ODONATA.FLY * (0.5 + rand() * 0.5);   // patrol turns
+      d.x += d.vx * dt; if (d.x < 10 || d.x > W - 10) { d.vx = -d.vx; d.x = clamp(d.x, 10, W - 10); }
+      d.ph += dt; d.y = -12 - 8 * Math.sin(d.ph * 0.9);
+      const m = this.insectGrid.nearest(d.x, 4, ODONATA.HAWK_R, notDead); if (m) m.item.dead = true;
+      if (isShallow(d.x) && this.nymphs.length < nCap && rand() < ODONATA.EGG_RATE * dt) this.nymphs.push(this._mkNymph(d.x, 0));
+    }
+    // --- frogs, tadpoles, turtles ---
+    let tads = 0, turtles = 0, frogs = 0;
+    for (const h of this.herps) if (!h.dead) { if (h.k === 0) tads++; else if (h.k === 1) frogs++; else turtles++; }
+    const tadCap = scaleCount(FROG.TAD_CAP), turtleCap = scaleCount(TURTLE.CAP), frogCap = scaleCount(FROG.CAP);
+    const winter = env.ice > 0.3 || env.tempC < 6, sT = env.tempC - env.tempDiel;
+    for (let i = 0, nH = this.herps.length; i < nH; i++) {
+      const h = this.herps[i];
+      if (h.dead) continue;
+      const T = env.tempAt(h.x, Math.max(2, h.y)), qf = q(T);
+      if (h.k === 0) {                                    // TADPOLE: graze the shallows, grow, metamorphose
+        h.age += dt; h.e -= FROG.METAB * 0.6 * qf * dt;
+        h.e = Math.min(1, h.e + env.grazePhyto(h.x, h.y, FROG.TAD_GRAZE * qf * dt) * FROG.TAD_VALUE);
+        if (h.e <= 0) { h.dead = true; continue; }
+        h.dev += clamp((T - FROG.TAD_DEV_T) / (25 - FROG.TAD_DEV_T), 0, 1) * dt / (FROG.TAD_DEV_FULL * Y);
+        if (rand() < 0.5 * dt) h.vx = rand(-8, 8);
+        if (!isShallow(h.x)) h.vx = toShore(h.x) * 8;
+        h.x = clamp(h.x + h.vx * (winter ? 0.1 : 1) * dt, 4, W - 4);
+        h.y = Math.min(h.y + (bedY(h.x) - 8 - h.y) * Math.min(1, 0.5 * dt), bedY(h.x) - 2);   // never below the (sloping) bed
+        if (h.dev >= 1 && !winter && frogs < frogCap) { h.k = 1; h.age = 0; h.e = Math.max(h.e, 0.6); h.st = 0; h.cd = 0.5 * Y; frogs++; tads--; }   // metamorphosis
+        continue;
+      }
+      h.age += dt; h.cd -= dt;
+      if (h.k === 1) {                                    // FROG
+        h.e -= FROG.METAB * qf * dt;
+        if (h.e <= 0 || h.age > FROG.LIFE * Y) { h.dead = true; continue; }
+        if (winter) {                                     // hibernate on the bottom of the shallows
+          if (!isShallow(h.x)) h.x += toShore(h.x) * FROG.SWIM * dt;
+          h.y = Math.min(h.y + (bedY(h.x) - 3 - h.y) * Math.min(1, 1.5 * dt), bedY(h.x) - 2); h.st = 2; continue;
+        }
+        if (h.st === 2) h.st = 0;                          // spring: awake
+        if (h.st === 0) {                                  // a predator that could swallow it close by -> dive to the bottom
+          const sz = herpSize(h), thr = this.agentGrid.sub.nearest(h.x, h.y, FROG.DIVE_R, it => !it.dead && canEat(effSize(it), sz));
+          if (thr) { h.st = 1; h.t = 4 + rand() * 4; }
+        }
+        if (h.st === 1) { h.t -= dt; h.y += (bedY(h.x) - 4 - h.y) * Math.min(1, 2 * dt); if (h.t <= 0) h.st = 0; }
+        else {
+          h.y += (2 - h.y) * Math.min(1, 1.5 * dt);          // float at the surface
+          h.e = Math.min(1, h.e + FROG.SHORE_FOOD * qf * dt);   // foraging along the shore (mostly terrestrial insects)
+          if (h.y < 8) { const m = this.insectGrid.nearest(h.x, 4, FROG.EAT_R, notDead); if (m) { m.item.dead = true; h.e = Math.min(1, h.e + FROG.INSECT_E); } }
+          if (rand() < 0.3 * dt) h.vx = rand(-FROG.SWIM, FROG.SWIM);
+        }
+        if (!isShallow(h.x)) h.vx = toShore(h.x) * FROG.SWIM;
+        h.x = clamp(h.x + h.vx * 0.5 * dt, 4, W - 4); h.y = Math.min(h.y, bedY(h.x) - 2);
+        // spring spawning in the warm shallows: an egg mass -> tadpoles
+        if (h.age >= FROG.MATURE * Y && h.cd <= 0 && sT >= FROG.BREED_T[0] && sT <= FROG.BREED_T[1] && yf < 0.4 && h.e > 0.5 && rand() < FROG.BREED_RATE * dt) {
+          h.cd = 0.8 * Y; h.e -= 0.2;
+          for (let c = 0; c < FROG.CLUTCH && tads < tadCap; c++, tads++) this.herps.push(this._mkHerp(0, h.x + rand(-20, 20), bedY(h.x) - rand(4, 14)));
+        }
+        continue;
+      }
+      // TURTLE
+      h.e -= TURTLE.METAB * qf * dt;
+      if (h.e <= 0 || h.age > TURTLE.LIFE * Y) { h.dead = true; continue; }
+      if (winter || env.tempC < TURTLE.ACTIVE_T) {       // torpid; buried in the mud of the shallows over winter
+        if (!isShallow(h.x)) h.x += toShore(h.x) * TURTLE.SWIM * 0.3 * dt;
+        h.y = Math.min(h.y + (bedY(h.x) - 4 - h.y) * Math.min(1, dt), bedY(h.x) - 2); h.st = 2; continue;
+      }
+      if (h.st === 2) { h.st = 1; h.t = 6; }              // spring: up for air
+      h.t -= dt;
+      if (h.st === 0) {                                   // foraging along the bottom
+        const ty = bedY(h.x) - 6; h.y += clamp(ty - h.y, -TURTLE.SWIM * dt, TURTLE.SWIM * dt);
+        if (rand() < 0.4 * dt) h.vx = rand(-TURTLE.SWIM, TURTLE.SWIM);
+        if (!isShallow(h.x) && rand() < 0.5 * dt) h.vx = toShore(h.x) * TURTLE.SWIM;
+        if (h.y > ty - 8 && h.e < 0.95 && rand() < dt) {
+          if (this._takeNearest(this.snailGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.SNAIL_E;
+          else if (this._takeNearest(this.larvaeGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.LARVA_E;
+          else if (this._takeNearest(this.detritusGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.DETRITUS_E;   // carrion and plant debris
+          h.e = Math.min(1, h.e);
+        }
+        if (h.t <= 0) { h.st = 1; h.t = rand(TURTLE.BASK[0], TURTLE.BASK[1]) * (1 + sun); }
+      } else {                                            // up to breathe, then bask at the surface (longer in sunshine)
+        h.y += clamp(1 - h.y, -TURTLE.SWIM * dt, TURTLE.SWIM * dt);
+        if (h.t <= 0) { h.st = 0; h.t = rand(TURTLE.DIVE[0], TURTLE.DIVE[1]); }
+      }
+      h.x += h.vx * dt; if (h.x < 6 || h.x > W - 6) { h.vx = -h.vx; h.x = clamp(h.x, 6, W - 6); }
+      h.y = Math.min(h.y, bedY(h.x) - 2);
+      // late summer: hatchlings from the shore nests reach the water
+      if (h.age >= TURTLE.MATURE * Y && h.cd <= 0 && yf >= TURTLE.HATCH[0] && yf <= TURTLE.HATCH[1] && rand() < TURTLE.HATCH_RATE * dt) {
+        h.cd = 0.8 * Y;
+        for (let c = 0; c < TURTLE.CLUTCH && turtles < turtleCap; c++, turtles++) {
+          const hx = toShore(h.x) < 0 ? rand(8, 110) : rand(W - 110, W - 8), t2 = this._mkHerp(2, hx, 2, 0); t2.e = 0.6; this.herps.push(t2);
+        }
+      }
+    }
+  }
   // a fry inside its guarded nest zone, with its guardian on duty and on station, is hard to take (BROOD.PROTECT)
   _guardCut(prey) {
     if (!prey.ni || !this._guards) return 1;
@@ -700,14 +882,16 @@ export class World {
     const planktonCap = scaleCount(PLANKTON.CAP);
     const algae = clamp(env.meanPhyto() / PHYTO.CAP, 0, 1);
     const bloom = PLANKTON.RATE_BASE * area * algae;
+    this._daphShare = this.daphShare();
     for (let n = poissonish(bloom * dt); n > 0 && this.plankton.length < planktonCap; n--) this.plankton.push(this._mkPlankton());
     const planktonFloor = scaleCount(18);
     if (this.plankton.length < planktonFloor && algae > 0.03) for (let n = poissonish(12 * area * dt); n > 0 && this.plankton.length < planktonFloor; n--) this.plankton.push(this._mkPlankton());
     for (const p of this.plankton) {
       if (p.dead) continue;
-      env.grazePhyto(p.x, p.baseY, PLANKTON.GRAZE * dt);                  // eat algae
+      const daph = p.k === 0;
+      env.grazePhyto(p.x, p.baseY, PLANKTON.GRAZE * (daph ? PLANKTON.DAPH_GRAZE : PLANKTON.COPE_GRAZE) * dt);   // eat algae (Daphnia hardest)
       if (env.phytoAt(p.x, p.baseY) < PLANKTON.STARVE_AT && rand() < PLANKTON.STARVE * dt) { p.dead = true; continue; }  // starve
-      if (env.cyanoAt(p.x, p.baseY) > CYANO.TOX_THRESH * CYANO.CAP && rand() < CYANO.TOX_ZOO * dt) { p.dead = true; continue; }  // cyanotoxin kills zooplankton in a dense scum (HAB)
+      if (env.cyanoAt(p.x, p.baseY) > CYANO.TOX_THRESH * CYANO.CAP && rand() < CYANO.TOX_ZOO * (daph ? PLANKTON.DAPH_TOX : 1) * dt) { p.dead = true; continue; }  // cyanotoxin kills zooplankton in a dense scum (HAB)
       p.x += (p.vx + env.currentAt(p.x, p.baseY)) * dt;                   // own drift + wind & inflow→outflow current
       if (p.x < 4) { p.x = 4; p.vx = Math.abs(p.vx); } else if (p.x > W - 4) { p.x = W - 4; p.vx = -Math.abs(p.vx); }
       p.baseY = clamp(p.baseY, 10, bedY(p.x) - 6);                        // ride up the sloping bed; don't drift into the sediment
@@ -854,6 +1038,8 @@ export class World {
     this.detritusGrid.rebuild(this.detritus);
     this.larvaeGrid.rebuild(this.larvae);
     this.insectGrid.rebuild(this.insects);
+    this.nymphGrid.rebuild(this.nymphs);
+    this.herpGrid.rebuild(this.herps);
 
     // counts + clear mating flags
     const counts = this._counts = {}; for (const k of SPECIES) counts[k] = 0;
@@ -932,6 +1118,15 @@ export class World {
         // UPWARD (in a stratified lake O₂ rises toward the surface), harder the worse the deficit. Innate + deterministic;
         // the brain still modulates it, like the depth-home pull it adjusts.
         const o2Want = a.o2Crit * ENV.HYPOXIA_AVOID, o2Here = env.oxygenAt(a.x, a.y);
+        // BEHAVIOURAL THERMOREGULATION: a fish too warm at its home depth (above its optimum + half its tolerance) seeks the
+        // shallowest cooler water below — trout and pike drop to the thermocline in summer. The O₂ check that follows lifts
+        // it back out of anoxic water, so a cold-water fish ends up squeezed between warm and oxygen-starved water.
+        const tooWarm = sp.tempOpt + a.tempTol * 0.5, hot = env.tempAt(a.x, a.y) > tooWarm;
+        if (env.tempAt(a.x, prefY) > tooWarm) {
+          let y = prefY; while (y < bedX - 12 && env.tempAt(a.x, y) > tooWarm) y += 24; prefY = Math.min(y, bedX - 8);
+          // no cool water under it (the warm shallow shelf): head offshore, over the deep basin
+          if (env.tempAt(a.x, prefY) > tooWarm) { const off = a.x < W * BASIN.CENTER ? 0 : Math.PI; a.heading += angDiff(off, a.heading) * a.maxTurn * 0.8 * dt; }
+        }
         // OXYGEN-LIMITED HABITAT: a fish doesn't settle where the water can't support it. If its preferred depth lies in
         // water below its O₂ limit (the summer anoxic hypolimnion, the late-winter deep), the target rises to the deepest
         // water above that still holds enough O₂ — and a bottom-dweller whose local bed is anoxic heads for the shallower
@@ -961,7 +1156,7 @@ export class World {
           // back through the vertical), biased toward the home depth
           const hx = mig && mig.d > 30 ? (mig.gx < a.x ? -0.7 : 0.7) : Math.cos(a.heading) >= 0 ? 0.7 : -0.7;
           const desired = Math.atan2(vBias, hx);
-          a.heading += angDiff(desired, a.heading) * a.maxTurn * IN.depthPull * Math.abs(vBias) * dt;
+          a.heading += angDiff(desired, a.heading) * a.maxTurn * IN.depthPull * Math.abs(vBias) * (hot ? 2.5 : 1) * dt;   // heat stress: a strong pull
         }
         // ease activity toward the species' cruise norm — nocturnal species (catfish) crank it up at night
         // and rest by day (surface time-of-day drives diel activity, not the fish's local depth light)
@@ -1043,7 +1238,7 @@ export class World {
       if (a.stroke === undefined) a.stroke = (a.id * 0.1366) % 1;
       // THERMAL PERFORMANCE: a cold fish is sluggish — below its optimum, swimming effort (and feeding, below) falls
       // linearly toward ENV.COLD_PERF_MIN at ~2 °C. Cold slows ectotherms; it doesn't stress these temperate natives.
-      const tHere = env.tempAt(a.x, a.y), perf = coldPerf(tHere, sp.tempOpt);
+      const tHere = env.tempAt(a.x, a.y), perf = coldPerf(tHere, sp.tempOpt, sp.coldPerf);
       thrust *= perf;
       a.stroke = (a.stroke + MOTION.COAST_RATE * (0.6 + 0.6 * clamp(a.spd / a.maxSpeed, 0, 1)) * dt) % 1;
       const coastAmp = MOTION.COAST_DEPTH * clamp(1 - Math.max(aFlee, aStrike), 0, 1) * clamp(thrust * 3, 0, 1);
@@ -1059,7 +1254,8 @@ export class World {
       const realign = clamp(1 - Math.exp(-MOTION.TURN_RESPONSE * (1 - MOTION.SPEED_LAG * clamp(a.spd / a.maxSpeed, 0, 1)) * dt), 0, 1);
       a.velHeading += angDiff(a.heading, a.velHeading) * realign;                 // travel direction eases toward the body heading (lags when fast)
       a.x += Math.cos(a.velHeading) * a.spd * dt + env.currentAt(a.x, a.y) * sp.drift * dt;  // move along the (lagging) travel direction; + current
-      a.y += Math.sin(a.velHeading) * a.spd * dt + sp.sink * dt;
+      // a bottom-hugger's negative buoyancy (sp.sink) settles it toward the bed — but not down into water too low in O₂ for it
+      a.y += Math.sin(a.velHeading) * a.spd * dt + (sp.sink && env.oxygenAt(a.x, a.y + 12) >= a.o2Crit * ENV.HYPOXIA_AVOID ? sp.sink * dt : 0);
 
       // side walls turn the fish around; the surface & curved bed make it GLIDE along the
       // boundary (heading eased toward horizontal) instead of bouncing — so bottom-dwellers
@@ -1114,6 +1310,17 @@ export class World {
           a.dg = FEED.DIGEST * massFrac * (meal > 0 ? Math.max(0, got) / meal : 0); a.eaten++; this.stats.fishEaten++;
         }
       }
+      // amphibian / reptile prey: a hungry fish predator takes a frog, tadpole or turtle hatchling that fits its gape (larva-
+      // eaters take small tadpoles) — same mass-scaled meal and digestion as a fish meal
+      if ((sp.diet.fish || sp.diet.larva) && a.energy < cap * FEED.HUNT_BELOW && !(a.dg > 0)) {
+        const hm = this.herpGrid.nearest(a.x, a.y, sp.eatRadius, canEatHerp, a);
+        if (hm) {
+          const h = hm.item, massFrac = Math.pow(herpSize(h) / Math.max(effSize(a), 1e-3), 3);
+          const meal = (h.k === 0 ? FROG.MEAL_TAD : h.k === 1 ? FROG.MEAL_FROG : TURTLE.MEAL_HATCH) * FEED.MEAL_K * massFrac * cap, got = Math.min(meal, cap - a.energy);
+          h.dead = true; h.eatenBy = a.species; a.energy += Math.max(0, got);
+          a.dg = FEED.DIGEST * massFrac * (meal > 0 ? Math.max(0, got) / meal : 0); a.eaten++; this.stats.herpEaten = (this.stats.herpEaten || 0) + 1;
+        }
+      }
       // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
       // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
       // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. A cold fish forages more slowly
@@ -1123,9 +1330,9 @@ export class World {
       let k;
       // FRY EAT ZOOPLANKTON: nearly every fish starts life as a zooplankton eater, whatever it eats as an adult (pike and
       // bass fry, carp and catfish fry alike), shifting to the adult diet as it grows (FEED.FRY_GROW of adult size)
-      if (hungry && !sp.diet.plankton && a.grow < FEED.FRY_GROW && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, PLANKTON.ENERGY * 0.8);
+      if (hungry && !sp.diet.plankton && a.grow < FEED.FRY_GROW) this._eatZoo(a, slots, 0.8);
       let atePlankton = false;
-      if (hungry && sp.diet.plankton && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) { this._ate(a, k, PLANKTON.ENERGY); atePlankton = true; }
+      if (hungry && sp.diet.plankton) atePlankton = this._eatZoo(a, slots, 1) > 0;
       // planktivore facultative omnivory: when a hungry planktivore finds no zooplankton it grazes the
       // phytoplankton field directly. This lets minnow/sunfish SELF-SUSTAIN through the boom-bust trough
       // (cushioning the crash + the predators above it → much less immigration dependence). The grazed amount is
@@ -1138,6 +1345,7 @@ export class World {
       if (hungry && sp.diet.detritus && (k = this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, DETRITUS.ENERGY);
       if (hungry && sp.diet.larva && (k = this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.LARVA_ENERGY);      // bottom fish graze benthic insect larvae
       if (hungry && sp.diet.insect && (k = this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.ADULT_ENERGY);   // surface fish rise to emerged insects
+      if (hungry && (sp.diet.larva || sp.diet.insect) && this.nymphs.length && rand() < ODONATA.CRYPTIC && (k = this._takeNearest(this.nymphGrid, a.x, a.y, sp.eatRadius, 1))) this._ate(a, k, ODONATA.ENERGY);   // dragonfly nymphs (cryptic): a big insect meal
       if (hungry && sp.diet.snail && (k = this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, SNAIL.ENERGY);            // molluscivores (sunfish/carp) graze benthic snails
       if (hungry && sp.diet.cray && (k = this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, CRAYFISH.ENERGY);           // predators (bass/pike/catfish) eat benthic crayfish
       if (hungry && sp.diet.plants) { const g = this.bitePlant(a, dt); if (g > 0) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g); } }   // per-second grazing (PLANT.BITE_RATE × dt)
@@ -1193,6 +1401,7 @@ export class World {
     }
 
     this._stepBirds(dt, counts);
+    this._stepWildlife(dt, counts);
 
     // bodies sink, roll belly-up, fade — then drop their detritus and vanish
     for (const c of this.corpses) {
@@ -1253,6 +1462,9 @@ export class World {
     this.cray = this.cray.filter(c => !c.dead);
     this.plants = this.plants.filter(p => !p.dead);
     this.corpses = this.corpses.filter(c => !c.dead);
+    if (this.nymphs.some(n => n.dead)) this.nymphs = this.nymphs.filter(n => !n.dead);
+    if (this.dflies.some(d => d.dead)) this.dflies = this.dflies.filter(d => !d.dead);
+    if (this.herps.some(h => h.dead)) this.herps = this.herps.filter(h => !h.dead);
 
     // time-series sample
     this._seriesAcc += dt;
@@ -1285,6 +1497,11 @@ export class World {
       limiting: e.meanDin() / (e.meanDin() + NUTRIENT.KN) < e.meanPhos() / (e.meanPhos() + NUTRIENT.KP) ? 'N' : 'P',
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),
       diatom: e.meanDiatom(), ice: e.ice, birds: this.birds.length,   // cold-water algae, lake ice cover, loons on the lake
+      // zooplankton by kind; dragonflies (nymphs / adults on the wing); frogs + tadpoles; turtles
+      daphnia: this.plankton.reduce((c, p) => c + (p.k === 0 ? 1 : 0), 0), copepods: this.plankton.reduce((c, p) => c + (p.k === 1 ? 1 : 0), 0),
+      nymphs: this.nymphs.length, dragonflies: this.dflies.length,
+      frogs: this.herps.reduce((c, h) => c + (h.k === 1 ? 1 : 0), 0), tadpoles: this.herps.reduce((c, h) => c + (h.k === 0 ? 1 : 0), 0),
+      turtles: this.herps.reduce((c, h) => c + (h.k === 2 ? 1 : 0), 0),
     };
   }
   // depth-resolved water-column profile down the column at x (pure; consumed by the UI "Water column" view).
@@ -1379,7 +1596,7 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 25, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 26, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       env: this.env.toJSON(),
       agents: this.agents.map(a => {
         const HID = a.sp.shape.hid, W2 = a.sp.shape.in * HID + HID, act = a.act;
@@ -1393,7 +1610,7 @@ export class World {
           nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),
-      plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx })),
+      plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx, k: p.k })),
       detritus: this.detritus.map(d => ({ x: d.x, y: d.y, l: d.life, n: d.n })),
       larvae: this.larvae.map(l => ({ x: l.x, y: l.y, d: l.dev })),
       insects: this.insects.map(i => ({ x: i.x, y: i.y, l: i.life, vx: i.vx, wb: i.wob })),
@@ -1403,6 +1620,10 @@ export class World {
         fc: c.facing, sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
       reeds: this.reeds, logs: this.logs, mussels: this.mussels, weedbeds: this.weedbeds,
       birds: this.birds.map(b => ({ x: b.x, y: b.y, h: b.h, st: b.st, t: b.t, stay: b.stay, m: b.m, vx: b.vx })),   // v25 visiting loon(s)
+      // v26 wildlife: dragonfly nymphs + adults, frogs / tadpoles / turtles
+      nymphs: this.nymphs.map(n => ({ x: n.x, h: n.h, d: n.dev, vx: n.vx })),
+      dflies: this.dflies.map(d => ({ x: d.x, vx: d.vx, l: d.life, ph: d.ph })),
+      herps: this.herps.map(h => ({ k: h.k, x: h.x, y: h.y, vx: h.vx, a: h.age, e: h.e, s: h.st, t: h.t, c: h.cd, d: h.dev })),
       genePool: Object.fromEntries(SPECIES.map(k => [k, (this.genePool[k] || []).map(e => ({ w: Array.from(e.w), gn: Array.from(e.gn), hu: e.hue, g: e.gen }))])),
     };
   }
@@ -1419,7 +1640,7 @@ export class World {
     this.agents = P.agents; this.plants = P.plants; this.plankton = P.plankton; this.detritus = P.detritus;
     this.larvae = P.larvae; this.insects = P.insects; this.snails = P.snails; this.cray = P.cray; this.corpses = P.corpses;
     this.reeds = P.structs.reeds; this.logs = P.structs.logs; this.mussels = P.structs.mussels; this.weedbeds = P.structs.weedbeds;
-    this.genePool = P.genePool; this.birds = P.birds;
+    this.genePool = P.genePool; this.birds = P.birds; this.nymphs = P.nymphs; this.dflies = P.dflies; this.herps = P.herps;
     if (P.rep.reseeded) this.stats.brainsReseeded = P.rep.reseeded;
     this._nextId = P.nextId; _idOwner = this;
     this.series = []; this._seriesAcc = 0; this.selectedId = null; this.lastLoad = P.rep;

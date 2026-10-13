@@ -1,7 +1,7 @@
 // render.js — browser-only canvas renderer. Draws the world through a Camera with
 // culling, level-of-detail, and a lazily-built sprite cache. Not imported by the
 // headless sim test (a separate DOM-stub smoke test exercises it).
-import { WORLD, GRID, THERMAL, MACRO, BIRD, bedY } from './config.js';
+import { WORLD, GRID, THERMAL, MACRO, BIRD, FROG, TURTLE, TIME, SEASON, bedY } from './config.js';
 import { SP } from './species.js';
 import { clamp, lerp, hsl, angDiff, TAU } from './core.js';
 import { makePresenter, Canvas2DPresenter } from './glpost.js';
@@ -374,7 +374,7 @@ export class Renderer {
     const floraL = 0.40 + 0.60 * vL, floraS = 0.35 + 0.65 * vL;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
-    const summer = Math.sin((env.year || 0) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);
+    const summer = Math.sin(((env.year || 0) - SEASON.TEMP_PHASE) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);   // follows the water temperature
     top[0] = clamp(top[0] + 12 * warm - 6 * cold, 0, 255); top[1] = clamp(top[1] + 9 * warm + 2 * cold, 0, 255); top[2] = clamp(top[2] - 9 * warm + 13 * cold, 0, 255);
     // turbidity murk: blend the water toward a green-brown soup as it clouds up
     const murk = (env.turbidity || 0) * 0.6;
@@ -742,10 +742,16 @@ export class Renderer {
     // zooplankton are invisible at lake scale: at the whole-lake view ~2000 full-opacity 1-px specks read as snow/static
     // and drown out the fish, so fade them with zoom (faint overview → full as you close in, where they read as drift)
     const pFade = clamp((cam.zoom / cam.fitZoom - 1) / 4, 0.22, 1);
-    ctx.fillStyle = '#bff0d8'; ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
-    for (const p of world.plankton) {
-      if (p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
-      ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, pPx, pPx);
+    // two kinds: Daphnia (k 0) - bigger, paler, roundish water fleas; copepods (k 1) - small darker specks
+    ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
+    for (let kind = 0; kind < 2; kind++) {
+      const daph = kind === 0, sz = daph ? Math.max(1, pPx * 1.4) : pPx, round = daph && z >= 3;
+      ctx.fillStyle = daph ? '#d6f6e4' : '#9ed4bc';
+      for (const p of world.plankton) {
+        if ((p.k === 0) !== daph || p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
+        if (round) { ctx.beginPath(); ctx.ellipse(X(p.x), Y(p.y), 0.9 * z, 0.7 * z, 0.4, 0, TAU); ctx.fill(); }
+        else ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, sz, sz);
+      }
     }
     ctx.globalAlpha = 0.6; ctx.fillStyle = '#6b4a2a';
     for (const d of world.detritus) {
@@ -795,6 +801,7 @@ export class Renderer {
       }
     }
     ctx.globalAlpha = 1;
+    this._drawWildlife(ctx, world, t, z, X, Y, vr, vL);
 
     // vision overlay for the inspected fish
     const sel = world.selectedId != null ? world.agents.find(a => a.id === world.selectedId) : null;
@@ -953,6 +960,74 @@ export class Renderer {
   // a visiting LOON (world.birds): underwater it's seen whole — black head with a dagger bill and red eye, a checkered back,
   // white belly, the feet set far back kicking as it swims, a thin bubble trail; resting on the surface only its belly and
   // paddling feet show below the waterline (an underwater view of a floating bird). Render-only animation (Math.random).
+  // dragonfly nymphs + adults, tadpoles, frogs, painted turtles. Far: small blobs; near: simple drawn bodies. Render-only
+  // wiggle/flap phases come from the render clock (never the sim RNG).
+  _drawWildlife(ctx, world, t, z, X, Y, vr, vL) {
+    const lit = 0.35 + 0.65 * vL, YL = TIME.YEAR_LEN;
+    const rgb = (r, g, b, a = 1) => 'rgba(' + ((r * lit) | 0) + ',' + ((g * lit) | 0) + ',' + ((b * lit) | 0) + ',' + a + ')';
+    const near = z >= 1.6, s = Math.max(0.7, z);
+    const off = (o, pad) => o.x < vr.x0 - pad || o.x > vr.x1 + pad || o.y < vr.y0 - pad || o.y > vr.y1 + pad;
+    // dragonfly NYMPHS: squat olive-brown bodies with a big head and splayed legs, clinging low in the weeds
+    for (const n of world.nymphs || []) {
+      if (off(n, 10)) continue;
+      const px = X(n.x), py = Y(n.y), dir = n.vx >= 0 ? 1 : -1;
+      ctx.fillStyle = rgb(96, 88, 54);
+      if (!near) { ctx.fillRect(px - s, py - s * 0.6, s * 2.2, s * 1.2); continue; }
+      ctx.beginPath(); ctx.ellipse(px - dir * 0.6 * s, py, 3.2 * s, 1.2 * s, 0, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(px + dir * 2.9 * s, py - 0.1 * s, 1.2 * s, 1.0 * s, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = rgb(74, 68, 42); ctx.lineWidth = Math.max(0.6, 0.35 * s);
+      for (const lx of [-0.4, 0.7, 1.7]) { ctx.beginPath(); ctx.moveTo(px + dir * lx * s, py + 0.6 * s); ctx.lineTo(px + dir * (lx - 1.1) * s, py + 2.1 * s); ctx.stroke(); }
+    }
+    // adult DRAGONFLIES darting low over the water: a slim blue abdomen and two pairs of glassy, blurred wings
+    for (const d of world.dflies || []) {
+      if (off(d, 24)) continue;
+      const px = X(d.x), py = Y(d.y), dir = d.vx >= 0 ? 1 : -1, fl = 0.55 + 0.45 * Math.sin(t * 70 + d.ph * 13);
+      ctx.strokeStyle = 'rgba(' + ((60 * lit + 30) | 0) + ',' + ((150 * lit + 20) | 0) + ',' + ((205 * lit + 20) | 0) + ',0.95)'; ctx.lineWidth = Math.max(1, 0.8 * s);
+      ctx.beginPath(); ctx.moveTo(px - dir * 6 * s, py); ctx.lineTo(px + dir * 2.6 * s, py); ctx.stroke();
+      ctx.fillStyle = 'rgba(230,240,248,' + (0.22 + 0.2 * lit) + ')';
+      for (const o of [0.4, 1.7]) for (const sg of [-1, 1]) { ctx.beginPath(); ctx.ellipse(px + dir * o * s, py + sg * 2.0 * s * fl, 3 * s, 0.85 * s, sg * 0.3 * dir, 0, TAU); ctx.fill(); }
+    }
+    for (const h of world.herps || []) {
+      if (off(h, 16)) continue;
+      const px = X(h.x), py = Y(h.y), dir = h.vx >= 0 ? 1 : -1, sleep = h.st === 2 ? 0.6 : 1;
+      if (h.k === 0) {            // TADPOLE: a dark round head and a wriggling tail
+        ctx.fillStyle = rgb(58 * sleep, 54 * sleep, 40 * sleep);
+        if (!near) { ctx.fillRect(px - s * 0.8, py - s * 0.6, s * 1.8, s * 1.2); continue; }
+        const wig = Math.sin(t * 13 + h.x) * 1.1 * s;
+        ctx.beginPath(); ctx.ellipse(px, py, 1.9 * s, 1.5 * s, 0, 0, TAU); ctx.fill();
+        ctx.strokeStyle = rgb(72, 68, 52, 0.75); ctx.lineWidth = Math.max(0.6, 0.7 * s);
+        ctx.beginPath(); ctx.moveTo(px - dir * 1.6 * s, py); ctx.quadraticCurveTo(px - dir * 3.6 * s, py + wig, px - dir * 5.6 * s, py - wig * 0.5); ctx.stroke();
+      } else if (h.k === 1) {     // FROG: green, darker-spotted back, pale belly, eyes on top, long hind legs trailing
+        const g = 0.6 + 0.4 * clamp(h.age / (FROG.MATURE * YL), 0, 1), fs = s * g;
+        ctx.fillStyle = rgb(92 * sleep, 136 * sleep, 62 * sleep);
+        if (!near) { ctx.fillRect(px - fs * 1.6, py - fs, fs * 3.2, fs * 1.8); continue; }
+        const kick = h.st === 1 ? Math.sin(t * 9 + h.x) : 0.3;
+        ctx.strokeStyle = rgb(80 * sleep, 120 * sleep, 54 * sleep); ctx.lineWidth = Math.max(0.8, 1.0 * fs);
+        for (const sg of [-1, 1]) { ctx.beginPath(); ctx.moveTo(px - dir * 2.5 * fs, py + 0.6 * fs); ctx.lineTo(px - dir * 4.6 * fs, py + (1.4 + sg * 0.6 * kick) * fs); ctx.lineTo(px - dir * 7 * fs, py + (0.9 + sg * 1.3 * kick) * fs); ctx.stroke(); }
+        ctx.beginPath(); ctx.ellipse(px, py, 3.6 * fs, 1.9 * fs, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = rgb(196, 204, 150, 0.9); ctx.beginPath(); ctx.ellipse(px + dir * 0.3 * fs, py + 0.9 * fs, 2.6 * fs, 0.8 * fs, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = rgb(48, 74, 36, 0.8);
+        for (const o of [-1.6, -0.2, 1.0]) { ctx.beginPath(); ctx.arc(px + dir * o * fs, py - 0.7 * fs, 0.45 * fs, 0, TAU); ctx.fill(); }
+        ctx.fillStyle = rgb(92 * sleep, 136 * sleep, 62 * sleep); ctx.beginPath(); ctx.arc(px + dir * 2.4 * fs, py - 1.6 * fs, 0.8 * fs, 0, TAU); ctx.fill();
+        ctx.fillStyle = 'rgba(20,20,14,0.9)'; ctx.beginPath(); ctx.arc(px + dir * 2.6 * fs, py - 1.7 * fs, 0.35 * fs, 0, TAU); ctx.fill();
+      } else {                    // PAINTED TURTLE: dark olive shell with a red-marked rim, striped head and paddling limbs
+        const g = 0.3 + 0.7 * clamp(h.age / (TURTLE.MATURE * YL), 0, 1), ts = s * g, pad = Math.sin(t * 4 + h.x * 0.1) * (h.st === 2 ? 0 : 1);
+        ctx.fillStyle = rgb(44 * sleep, 52 * sleep, 36 * sleep);
+        if (!near) { ctx.fillRect(px - ts * 3, py - ts * 1.4, ts * 6, ts * 2.2); continue; }
+        ctx.strokeStyle = rgb(70, 80, 52); ctx.lineWidth = Math.max(1, 1.1 * ts);
+        for (const [fx, sg] of [[1.9, 1], [-2.1, -1]]) { ctx.beginPath(); ctx.moveTo(px + dir * fx * ts, py + 0.6 * ts); ctx.lineTo(px + dir * (fx + sg * 1.2 + pad * 0.6) * ts, py + 2.1 * ts); ctx.stroke(); }
+        ctx.beginPath(); ctx.moveTo(px + dir * 3.2 * ts, py - 0.2 * ts); ctx.lineTo(px + dir * 5.2 * ts, py - 0.7 * ts); ctx.stroke();   // neck
+        ctx.fillStyle = rgb(70, 80, 52); ctx.beginPath(); ctx.ellipse(px + dir * 5.6 * ts, py - 0.8 * ts, 1.2 * ts, 0.8 * ts, 0, 0, TAU); ctx.fill();   // head
+        ctx.strokeStyle = rgb(214, 196, 80, 0.8); ctx.lineWidth = Math.max(0.5, 0.3 * ts);
+        ctx.beginPath(); ctx.moveTo(px + dir * 3.6 * ts, py - 0.3 * ts); ctx.lineTo(px + dir * 6.2 * ts, py - 0.9 * ts); ctx.stroke();   // yellow head stripe
+        ctx.fillStyle = rgb(44 * sleep, 52 * sleep, 36 * sleep); ctx.beginPath(); ctx.ellipse(px, py - 0.3 * ts, 3.6 * ts, 1.8 * ts, 0, Math.PI, TAU); ctx.fill();   // carapace dome
+        ctx.fillRect(px - 3.6 * ts, py - 0.35 * ts, 7.2 * ts, 0.8 * ts);
+        ctx.fillStyle = rgb(176, 64, 44, 0.85);
+        for (let i = -3; i <= 3; i++) ctx.fillRect(px + i * ts - 0.3 * ts, py + 0.1 * ts, 0.6 * ts, 0.35 * ts);   // red marginal marks
+      }
+    }
+  }
+
   _drawBirds(ctx, world, t, z, X, Y, vr) {
     const L = BIRD.LEN, lit = 0.35 + 0.65 * (this._vL ?? 1);
     const shade = (r, g, b) => `rgb(${(r * lit) | 0},${(g * lit) | 0},${(b * lit) | 0})`;

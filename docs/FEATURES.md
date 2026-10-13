@@ -5,11 +5,44 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-12 realism overhaul** section comes first, then the **2026-10-11 audit-fix changes**. Where either disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-13 more life** section comes first, then the **2026-10-12 realism overhaul**, then the **2026-10-11 audit-fix changes**. Where either disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
 
 ---
 
-## 2026-10-12 realism overhaul (supersedes everything below)
+## 2026-10-13 more life (supersedes everything below)
+
+Save format **v26**.
+- **Two kinds of zooplankton** (`plankton[].k`, `PLANKTON.DAPH_*`, `COPE_*`): Daphnia (big filter-feeders: graze hard → the
+  late-spring clear-water phase; the richest prey; can't tolerate cyanobacteria; barely breed in cold water) and copepods
+  (small, evasive — `COPE_ESCAPE` of strikes miss — cold-tolerant, they carry the zooplankton through winter). Daphnia's share
+  of births (`world.daphShare`) follows temperature and collapses in a cyanobacterial bloom. Fish eat them via `_eatZoo`.
+- **Dragonflies** (`world.nymphs`, `world.dflies`, `ODONATA`): predatory nymphs in the weedy shallows ambush insect larvae,
+  tadpoles, fish fry (≤ `FRY_MAX`) and zooplankton; they take 1–2 years to mature and emerge on warm, sunny summer days as
+  adults that dart low over the water, snatch emerged insects and lay eggs over the shallows. Fish find the cryptic nymphs
+  only now and then (`CRYPTIC`).
+- **Frogs** (`world.herps` k 0 tadpole / 1 frog, `FROG`): tadpoles graze algae in the shallows and metamorphose over the
+  summer (late ones overwinter); frogs float at the surface over the shallows, take emerged insects (plus shore foraging),
+  dive from a predator that could swallow them, spawn in spring at 10–20 °C, and hibernate on the bottom under the ice.
+- **Painted turtles** (`world.herps` k 2, `TURTLE`): forage on the bottom (snails, larvae, carrion/plant debris), surface to
+  breathe and bask (longer in sun), hibernate in the mud, live ~30 years; hatchlings reach the lake in late summer.
+- **Fish eat them** when they fit the gape (`canEatHerp`, mass-scaled meal + digestion); larva-eaters take small tadpoles.
+- **Rainbow trout** (`SP.trout`): cold-water (optimum 14 °C, stressed above ~20), O₂-hungry; spring stream spawner.
+- **Behavioural thermoregulation** (world.js innate block): a fish too warm at its home depth seeks the shallowest cooler
+  water below — trout and pike drop to the thermocline in summer — and the O₂ check then lifts it out of anoxic water: the
+  summer temperature–oxygen squeeze. A heat-stressed fish pulls harder toward the cool depth, and one over the warm shallow
+  shelf (no cool water beneath it) heads offshore. A/B in a well-oxygenated summer lake: trout live ~2 °C cooler than the same
+  trout indifferent to heat.
+- **Fecundity**: the very fecund sunfish, perch, catfish and carp spawn bigger clutches of cheaper young (lower `reproCost` /
+  `childEnergy`; clutch max 12 / 14 / 12 / 16) — real fry are tiny, and recruitment rests on numbers.
+- **Dragonflies fly in** from other waters in the flight season (`ODONATA.VISIT`), so a local crash isn't permanent.
+- **Cold-water activity** (`SP.coldPerf`): trout, pike and perch keep more of their activity near 0 °C than warm-water fish.
+- **Bottom-huggers** no longer sink into water too low in O₂ for them (catfish lost most of their energy to hypoxia).
+- UI: environment rows for zooplankton, dragonflies, frogs, turtles; legend entries for frog, turtle, dragonfly.
+- Tests: headless "more life" block (zooplankton kinds and escape, nymph predation/emergence/eggs, tadpole metamorphosis,
+  frog hibernation/spawning/diving, turtle hibernation and breathing, fish eating tadpoles, trout thermoregulation, v26
+  round-trip).
+
+## 2026-10-12 realism overhaul
 
 Goal (human): behave as much like a real temperate lake as possible, with evolution shown a bit faster than in nature. Save format is now **v25**.
 

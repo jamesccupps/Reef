@@ -142,9 +142,12 @@ export class UI {
       host.appendChild(li);
     }
     // the visiting loon (a diving fish-eater, not a brain-driven fish — it has no chip or census row)
-    const li = document.createElement('li');
-    li.appendChild(swatch('#5d6b70')); li.appendChild(textEl('span', '', 'Loon (visitor)'));
-    host.appendChild(li);
+    // the scripted wildlife (no brains: they live by simple rules) — loon, frogs, turtles, dragonflies
+    for (const [col, name] of [['#5d6b70', 'Loon (visitor)'], ['#5c8a3e', 'Frog'], ['#3a4630', 'Turtle'], ['#4a9ec8', 'Dragonfly']]) {
+      const li = document.createElement('li');
+      li.appendChild(swatch(col)); li.appendChild(textEl('span', '', name));
+      host.appendChild(li);
+    }
   }
   // trophic biomass bars (fish roles) — build the rows once; frame() updates the widths/values
   _buildPyramid() {
@@ -436,6 +439,10 @@ export class UI {
     set('env-ice', ed.ice > 0.01 ? (ed.ice * 100 | 0) + '%' : 'open');
     set('env-diatom', (ed.diatom * 100 | 0) + '%');
     set('env-birds', String(ed.birds));
+    set('env-zoo', `${ed.daphnia} Daphnia · ${ed.copepods} copepods`);
+    set('env-odo', `${ed.nymphs} nymphs · ${ed.dragonflies} flying`);
+    set('env-frogs', `${ed.frogs} · ${ed.tadpoles} tadpoles`);
+    set('env-turtles', String(ed.turtles));
     set('env-tempdeep', this.fmtTemp(ed.tempDeep, 1));
     set('env-nutrient', `N ${ed.nitrogen.toFixed(2)} · P ${ed.phosphate.toFixed(2)} (${ed.limiting}-lim)`);
     set('env-nitrate', (ed.nitrateFrac * 100 | 0) + '% NO₃');
