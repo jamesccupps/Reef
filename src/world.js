@@ -1187,6 +1187,12 @@ export class World {
         // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
         // switches off out of season or once the fish is spent.
         if (mig && mig.d > 30) a.heading += angDiff(Math.atan2(mig.gy - a.y, mig.gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(mig.d / 300, 0.2, 1) * dt;
+        // SPARSE SPAWNERS find each other: in a rare species an in-season, breeding-ready adult homes in on the nearest ready
+        // mate over a long range (SPAWN.CUE_R — chemical/sound cues), so a thin population still pairs up
+        else if (counts[a.species] < SPAWN.RARE && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy && a.mateCd <= 0) {
+          const mt = this.agentGrid.nearest(a.x, a.y, SPAWN.CUE_R, isMateFor, a);
+          if (mt && mt.dist > 20) a.heading += angDiff(Math.atan2(mt.item.y - a.y, mt.item.x - a.x), a.heading) * a.maxTurn * 0.8 * dt;
+        }
         // NEST GUARDING: a guarding parent holds station over its nest and drives off any piscivore that comes into the
         // guarded zone (it turns on the intruder); its fry stay close while it's on duty. Off duty (time up, or the
         // guardian is gone) the fry disperse on their own.
@@ -1425,7 +1431,9 @@ export class World {
         // an immigrant from connected waters carries a genome from the REGIONAL pool (gene flow), NOT a mutated copy of the
         // lake's current best fish — which made immigration a form of artificial elite breeding (FROM_BEST is retired)
         const pool = this.genePool[key], src = pool[(rand() * pool.length) | 0];
-        const fromLeft = rand() < 0.5, ex = fromLeft ? rand(2, 28) : rand(W - 28, W - 2);
+        // colonists come through the connected waters — mostly up the INFLOW stream (left shore), some via the outlet — so
+        // successive arrivals of a rare species tend to meet near the inflow and can breed
+        const fromLeft = rand() < 0.8, ex = fromLeft ? rand(2, 28) : rand(W - 28, W - 2);
         const f = makeAgent(key, ex, zoneY(sp, ex), rand(sp.startEnergy[0], sp.startEnergy[1]),
           src.gen, (src.hue + gauss() * 8 + 360) % 360, mutate(src.w), rand(sp.matureAge, sp.matureAge * 1.8), mutateGenes(src.gn));
         f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6); f.mateCd = 0;   // arrives ready to spawn in season

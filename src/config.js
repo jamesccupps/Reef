@@ -59,6 +59,10 @@ export const SPAWN = {
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
   AGG_READY: 0.8,    // and the fish must hold ≥ this fraction of its reproEnergy (in breeding condition)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
+  // SPARSE SPAWNERS: when a species is this rare in the lake, a ready spawner homes in on the nearest ready mate within CUE_R
+  // (chemical / sound cues — how a thin population still finds mates); a common one just meets mates nearby
+  RARE: 12,
+  CUE_R: 700,        // px
 };
 
 // ---------- feeding handling time (dt-independent intake of discrete food items) ----------
@@ -565,13 +569,13 @@ export const ODONATA = {
   CRAWL: 2,                // px/s
   ENERGY: 0.3,             // energy a fish gains per nymph eaten (a big insect)
   CRYPTIC: 0.02,          // per-step chance a fish foraging over a nymph actually finds it (they hide among weeds and in the silt)
-  SENESCE: 0.0008,         // /s background nymph mortality
+  SENESCE: 0.0003,         // /s background nymph mortality (≈ 60 % survive a year: they live 1–2 years as nymphs)
   ADULT_LIFE: 70,          // s an adult dragonfly lives (≈ a few weeks)
   FLY: 70,                 // px/s patrol speed low over the water
   HAWK_R: 14,              // px: it snatches emerged insects within this of its flight path
-  EGG_RATE: 0.06,          // /s egg-laying dips (each a new nymph, while under CAP)
+  EGG_RATE: 0.3,           // /s egg-laying dips (each a surviving nymph's worth of eggs, while under CAP)
   ADULT_CAP: 12,           // max adults on the wing (× area)
-  VISIT: 0.01,             // /s chance an adult flies in from other waters in the warm season (strong fliers that colonize ponds)
+  VISIT: 0.02,             // /s chance an adult flies in from other waters in the warm season (strong fliers that colonize ponds)
   VISIT_YF: [0.28, 0.5],   // year-fraction window of the flight season (June → August)
 };
 

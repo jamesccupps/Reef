@@ -35,6 +35,9 @@ Save format **v26**.
 - **Fecundity**: the very fecund sunfish, perch, catfish and carp spawn bigger clutches of cheaper young (lower `reproCost` /
   `childEnergy`; clutch max 12 / 14 / 12 / 16) — real fry are tiny, and recruitment rests on numbers.
 - **Dragonflies fly in** from other waters in the flight season (`ODONATA.VISIT`), so a local crash isn't permanent.
+- **Sparse spawners find each other** (`SPAWN.RARE`, `CUE_R`): in a rare species an in-season, breeding-ready adult homes in
+  on the nearest ready mate over a long range (chemical/sound cues), and immigrants arrive mostly up the inflow stream, so a
+  crashed population can pair up and recover instead of idling at the immigration floor.
 - **Cold-water activity** (`SP.coldPerf`): trout, pike and perch keep more of their activity near 0 °C than warm-water fish.
 - **Bottom-huggers** no longer sink into water too low in O₂ for them (catfish lost most of their energy to hypoxia).
 - UI: environment rows for zooplankton, dragonflies, frogs, turtles; legend entries for frog, turtle, dragonfly.
