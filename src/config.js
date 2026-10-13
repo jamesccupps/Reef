@@ -59,6 +59,10 @@ export const SPAWN = {
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
   AGG_READY: 0.8,    // and the fish must hold ≥ this fraction of its reproEnergy (in breeding condition)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
+  // SPARSE SPAWNERS: when a species is this rare in the lake, a ready spawner homes in on the nearest ready mate within CUE_R
+  // (chemical / sound cues — how a thin population still finds mates); a common one just meets mates nearby
+  RARE: 12,
+  CUE_R: 700,        // px
 };
 
 // ---------- feeding handling time (dt-independent intake of discrete food items) ----------
@@ -504,6 +508,20 @@ export const PLANKTON = {
                            //   0.022/step at the browser's 1/60 step; per-step made it dt-dependent — half as much headless at 1/30)
   FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal (= the old 0.003/step at 1/60)
   FALLBACK_VALUE: 4.2,     // energy per unit phyto grazed (efficient → sustenance from little phyto; grazed×value ≈ a modest meal)
+  // TWO KINDS of zooplankter (p.k): 0 = DAPHNIA — big cladoceran filter-feeders: they graze hard (their late-spring boom
+  // clears the water — the clear-water phase), are the fishes' favourite, richest prey, can't eat or tolerate
+  // cyanobacteria and barely breed in cold water; 1 = COPEPODS — small, quick and evasive, cold-tolerant (they carry the
+  // zooplankton through winter), a leaner meal. Daphnia's share of new zooplankton follows temperature and collapses in
+  // a cyanobacterial bloom; size-selective fish predation (copepods escape more) does the rest.
+  DAPH_T: [9, 15],         // °C over which Daphnia's share of births ramps from 0 to DAPH_MAX
+  DAPH_MAX: 0.7,           // Daphnia's max share of new zooplankton
+  DAPH_CYANO: 2.5,         // × the cyanobacteria fraction cut from Daphnia's share
+  DAPH_GRAZE: 2.4,         // Daphnia graze × GRAZE; copepods × COPE_GRAZE
+  COPE_GRAZE: 0.6,
+  DAPH_ENERGY: 0.26,       // energy per Daphnia eaten (big, lipid-rich)
+  COPE_ENERGY: 0.14,       // energy per copepod (small)
+  COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike
+  DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate (cladocerans are the most sensitive)
 };
 
 export const DETRITUS = {
@@ -533,6 +551,85 @@ export const INSECT = {
   ADULT_DRIFT: 9,          // px/s surface drift scale
   ADULT_ENERGY: 0.20,      // energy a surface fish gains per adult insect eaten
   EGG: 0.6,                // fraction of expired (uneaten) adults that lay an egg → a new larva (closes the cycle)
+};
+
+// DRAGONFLIES (ODONATA) — predatory benthic NYMPHS live a year or two in the weedy shallows, ambushing insect larvae,
+// zooplankton, tadpoles and fish fry with their hinged, extendable jaw; perch, sunfish, bass, catfish and the other
+// larva-eaters eat them. A mature nymph climbs out on a warm early-summer day and emerges as an adult dragonfly that
+// patrols low over the water hawking emerged insects and dips to lay eggs (→ new nymphs) before it dies. Deterministic.
+export const ODONATA = {
+  SEED: 10,                // initial nymphs (× world area), mixed ages
+  CAP: 50,                 // max nymphs (× area)
+  DEV_FULL: 0.4,           // years to mature if the water were 25 °C all year (in a real season ≈ 1–2 years)
+  DEV_T: 8,                // °C below which nymphs barely develop
+  EMERGE_T: 18,            // °C: a mature nymph emerges only in water warmer than this, by day (early summer)
+  EAT_R: 8,                // px: strike reach of the extendable labium
+  HUNT: 0.6,               // /s strike attempts (ambush; × warmth)
+  FRY_MAX: 0.42,           // largest fish (effective size) a nymph can take: small fry only
+  CRAWL: 2,                // px/s
+  ENERGY: 0.3,             // energy a fish gains per nymph eaten (a big insect)
+  CRYPTIC: 0.02,          // per-step chance a fish foraging over a nymph actually finds it (they hide among weeds and in the silt)
+  SENESCE: 0.0003,         // /s background nymph mortality (≈ 60 % survive a year: they live 1–2 years as nymphs)
+  ADULT_LIFE: 70,          // s an adult dragonfly lives (≈ a few weeks)
+  FLY: 70,                 // px/s patrol speed low over the water
+  HAWK_R: 14,              // px: it snatches emerged insects within this of its flight path
+  EGG_RATE: 0.3,           // /s egg-laying dips (each a surviving nymph's worth of eggs, while under CAP)
+  ADULT_CAP: 12,           // max adults on the wing (× area)
+  VISIT: 0.02,             // /s chance an adult flies in from other waters in the warm season (strong fliers that colonize ponds)
+  VISIT_YF: [0.28, 0.5],   // year-fraction window of the flight season (June → August)
+};
+
+// FROGS (green/leopard frogs) — AMPHIBIANS with two lives: TADPOLES graze algae in the warm shallows and grow through the
+// summer (late ones overwinter as tadpoles, as green-frog tadpoles do); they metamorphose into FROGS that float at the
+// surface over the shallows snapping up emerged insects, dive to the bottom when a predator comes near, breed in spring
+// when the shallows warm to ~10–20 °C, and hibernate on the bottom of the shallows under the ice. Bass, pike and perch eat
+// tadpoles and frogs that fit their gape; sunfish and minnow-sized fish take small tadpoles; dragonfly nymphs take tadpoles.
+export const FROG = {
+  SEED: 6,                 // initial adult frogs (× area)
+  CAP: 12,                 // max adult frogs (× area)
+  TAD_CAP: 140,            // max tadpoles (× area)
+  BREED_T: [10, 20],       // °C window of the shallows in which frogs spawn (spring)
+  CLUTCH: 10,              // tadpoles per spawning (an egg mass of thousands, most of which die as eggs)
+  BREED_RATE: 0.03,        // /s chance a ready adult spawns while in the window (then waits for next spring)
+  MATURE: 1,               // years to maturity (as a frog)
+  LIFE: 5,                 // years: maximum life
+  TAD_DEV_FULL: 0.12,      // years to metamorphose if the water were 25 °C (in a real summer ≈ 2–3 months)
+  TAD_DEV_T: 10,           // °C below which tadpoles barely develop
+  TAD_GRAZE: 0.003,        // phyto a tadpole grazes /s
+  TAD_VALUE: 6,            // energy per unit phyto grazed
+  METAB: 0.0016,           // energy /s at 20 °C (Q10 2.2 — near zero in winter)
+  EAT_R: 12,               // px: a frog's tongue reach for an emerged insect
+  INSECT_E: 0.12,          // energy per insect
+  SHORE_FOOD: 0.0018,      // energy /s at 20 °C from foraging along the shore while at the surface (mostly land insects)
+  SIZE_TAD: 0.35,          // effective size (fish-size units) — what fits a fish's gape
+  SIZE_FROG: 0.9,
+  MEAL_TAD: 0.25,          // energy a fish gains from a tadpole (× its digestion like a fish meal)
+  MEAL_FROG: 0.6,
+  DIVE_R: 70,              // px: a frog dives when a piscivore it could fit is this close
+  SWIM: 18,                // px/s
+};
+
+// TURTLES (painted turtle) — a long-lived OMNIVOROUS reptile: it paddles slowly between the bottom and the surface (it must
+// breathe), basks at the surface on sunny days, grazes water plants and eats snails, insect larvae and carrion, and spends
+// the winter buried in the mud of the shallows, cold and still, breathing through its skin. Eggs are laid on land, so
+// hatchlings enter the lake in late summer; a pike or bass can take a hatchling, nothing in the lake takes an adult.
+export const TURTLE = {
+  SEED: 2,                 // initial adults (× area)
+  CAP: 7,                  // max turtles (× area)
+  MATURE: 6,               // years
+  LIFE: 30,                // years
+  HATCH: [0.42, 0.5],      // year-fraction window hatchlings enter the lake (late summer)
+  HATCH_RATE: 0.005,       // /s per mature turtle in the window (once a year)
+  CLUTCH: 3,               // hatchlings that reach the water
+  ACTIVE_T: 10,            // °C: below this it's torpid; in winter it hibernates on the bottom of the shallows
+  SWIM: 14,                // px/s
+  DIVE: [25, 60],          // s foraging below between breaths
+  BASK: [8, 20],           // s at the surface (longer in sunshine)
+  EAT_R: 12,
+  METAB: 0.0008,           // energy /s at 20 °C (Q10 2.2); reptiles are thrifty
+  SNAIL_E: 0.12, LARVA_E: 0.08, DETRITUS_E: 0.06,   // energy per snail / insect larva / bit of carrion or plant debris
+  SIZE_HATCH: 0.35, SIZE_ADULT: 1.6,   // effective sizes for a fish's gape (a hatchling fits a pike or bass)
+  MEAL_HATCH: 0.3,
 };
 
 // SNAIL — benthic gastropod GRAZERS. A snail crawls slowly over the lit bed scraping attached algae (periphyton;

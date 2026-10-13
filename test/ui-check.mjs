@@ -85,8 +85,8 @@ check('escapeHTML neutralises markup and quotes', escapeHTML(evil) === '&lt;img 
   check('selection readout: numeric gen/eaten still render', $('sel').innerHTML.includes('gen 7') && $('sel').innerHTML.includes('ate</span> 3'));
 }
 check('no data-derived innerHTML uses inline style attributes (census/legend/evo built via DOM)', !/style=/.test($('census').innerHTML + $('evo').innerHTML + $('legend').innerHTML + $('ps-species').innerHTML));
-check('the species legend is built by ui.js (moved out of the inline script): every species + the visiting loon', $('legend').children.length === SPECIES.length + 1, `${$('legend').children.length} items`);
-const champsClean = sanitizeChampions({ minnow: { gen: evil, hue: 'x', w: ['1', 'bad', 2] }, trout: { gen: 1 }, __proto__: { pike: 1 } });   // trout: not a species here
+check('the species legend is built by ui.js (moved out of the inline script): every species + the scripted wildlife (loon, frog, turtle, dragonfly)', $('legend').children.length === SPECIES.length + 4, `${$('legend').children.length} items`);
+const champsClean = sanitizeChampions({ minnow: { gen: evil, hue: 'x', w: ['1', 'bad', 2] }, walleye: { gen: 1 }, __proto__: { pike: 1 } });   // walleye: not a species here
 check('sanitizeChampions keeps known species + plain finite numbers only', Object.keys(champsClean).join() === 'minnow' && champsClean.minnow.gen === 0 && champsClean.minnow.hue === 0 && champsClean.minnow.w.join() === '1,0,2');
 
 // 2. inspector: footer shows the 5 outputs and the active/total hidden units; masked units draw dimmed

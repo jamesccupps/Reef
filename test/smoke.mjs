@@ -13,7 +13,7 @@ function makeCtx() {
     globalAlpha: 1, fillStyle: '#000', strokeStyle: '#000', lineWidth: 1,
     font: '', textAlign: '', textBaseline: '',
     fillRect() {}, clearRect() {}, strokeRect() {},
-    beginPath() {}, moveTo() {}, lineTo() {}, closePath() {}, stroke() {}, fill() {}, arc() {}, ellipse() {}, setLineDash() {}, clip() {}, rect() {},
+    beginPath() {}, moveTo() {}, lineTo() {}, quadraticCurveTo() {}, closePath() {}, stroke() {}, fill() {}, arc() {}, ellipse() {}, setLineDash() {}, clip() {}, rect() {},
     save() {}, restore() {}, translate() {}, rotate() {}, scale() {}, setTransform() {},
     drawImage() {}, fillText() {}, measureText() { return { width: 10 }; },
     createLinearGradient() { return grad; }, createRadialGradient() { return grad; },

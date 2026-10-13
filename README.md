@@ -137,7 +137,7 @@ synapse-reef/
 ├── src/
 │   ├── core.js         seeded RNG (+ state save/restore), math, spatial grid, recurrent net, genomes     (pure)
 │   ├── config.js       every tunable constant; world size + area scaling                               (pure)
-│   ├── species.js      the seven species: senses, brains, life history, art; brain layout history     (pure)
+│   ├── species.js      the eight species: senses, brains, life history, art; brain layout history     (pure)
 │   ├── environment.js  light, seasons, weather, temperature, O₂ / N / P / phyto / cyano / DOM fields  (pure)
 │   ├── world.js        the simulation: organisms, step(), validated save/load                           (pure)
 │   ├── camera.js       pan / zoom / pinch / follow / cinematic tour / interpolation helpers            (pure)
