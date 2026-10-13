@@ -1,5 +1,6 @@
 // species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
 import { WORLD, ENV, TIME } from './config.js';
+import { prepBio } from './bioenergetics.js';
 import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
@@ -28,7 +29,7 @@ function wallProx(a) {
 
 // ---------- generic scalable fish sprite ----------
 function fishColors(agent, sp, light) {
-  const eF = clamp(agent.energy / sp.reproEnergy, 0.12, 1);
+  const eF = clamp(agent.energy, 0.12, 1);   // the reserve 0..1 (condition): a starving fish fades
   // dark at night, bright at noon — and colour drains with the light (scotopic vision: at night a fish reads as a dim,
   // greyish silhouette, not a glowing saturated sprite against near-black water). Mirrored by render.js fishLook() for
   // the GL path, whose sprites are built at full light.
@@ -189,35 +190,148 @@ function drawFish(put, P, c, o) {
   fillDisc(put, ex + er * 0.3, ey - er * 0.3, Math.max(0.08, er * 0.28), su, [222, 230, 236]);   // catch-light
 }
 
-// LIFE HISTORY IN YEARS. A sim year is TIME.YEAR_LEN s; ages and spawning cooldowns are written as yr(n). Real lives are
-// compressed ~2× (e.g. pike mature at 1.5 instead of ~2–3 yr and live 9 instead of ~10–15), so several generations pass
-// in a long viewing session while every fish still lives through winters and annual spawning seasons, as real ones do.
-// ENERGETICS (2026-10-12): a full reserve lasts ~150 s (minnow) … ~400 s (pike) at 18 °C — ∝ size^0.75, as starvation
-// time scales with body mass^0.25 — instead of ~25 s, which made any lean spell fatal. Metabolism follows the Q10 with
-// the local water temperature, so winter fish idle on their reserves and summer is costly.
+// LIFE HISTORY IN YEARS. A sim year is TIME.YEAR_LEN s; spawning cooldowns are written as yr(n). Since the bioenergetics
+// (2026-10-13) the physiology runs on the real calendar — one sim year is a real year of growth — so lifespans, ages at
+// maturity and growth are the real ones (BIO above): fish grow and mature at the pace their food and temperature allow.
 const yr = n => n * TIME.YEAR_LEN;
+
+
+// ============================================================
+//  PHYSIOLOGY + LIFE HISTORY — published data (bioenergetics 2026-10-13)
+// ============================================================
+// `bio`: the Wisconsin bioenergetics parameter set, copied byte-exact from Fish Bioenergetics 4.0's Parameters_official.csv
+// (github.com/jim-breck/FB4; Deslauriers et al. 2017); field names are FB4's. `bioJuv`: FB4's juvenile set where one exists
+// (used until the fish matures). `lw`: W(g) = a·L(cm)^b — the published standard-weight (Ws) equations (or a state-average
+// regression where no Ws exists), converted from mm. `vb`: a von Bertalanffy curve through Michigan state-average length-at-
+// age (Schneider, Laarman & Gowing 2000, Table 9.1) — only to give a fish of a known age a plausible starting length.
+// Lengths are TOTAL LENGTH in cm.
+//   Lhatch  length of a larva at swim-up (the fry school's starting size); sHatch egg → swim-up survival
+//   L0      the length at which a fry school's survivors RECRUIT as followed individuals (agents) — see FRY in config
+//   Lref    a typical adult length (sprite scale; size-scaled behaviour is relative to it)
+//   Lmat    length at maturity, females (LmatM males: Ontario Freshwater Fishes Life History Database; perch: all females
+//           mature by 160 mm, Schneider 1984); matMinAge the earliest age (s); maxAge (s) the longest life
+//   M       adult natural mortality (yr⁻¹) from the published longevity estimator M = 5.4/tmax (Hamel & Cope 2022) or
+//           field studies (bass: Beamesderfer & North 1995; pike: Pierce et al. 1995) — BIOE.M_OTHER of it is applied as the
+//           hazard from causes the lake doesn't simulate (disease, parasites, herons/ospreys/otters, angling)
+//   gut     largest meal, fraction of body mass (pike take prey of 15–25 %; others 3–10 %; carp/minnows are stomachless)
+//   gerMul  the species' gastric-evacuation speed relative to the 22-species mean (BIOE.GER)
+//   gsiF/M  ripe gonads, fraction of body mass (females / males) — built from food before spawning, shed at spawning
+//   fec     eggs per spawning female = a·L(cm)^b — the published length–fecundity regressions, converted from mm
+//   Lzoo    below this length a fish eats zooplankton whatever its adult diet; Lpisc the length piscivory begins
+//   gapeR   mouth gape / total length; depthR body depth / total length (gape limitation: prey depth ≤ gape)
+//   uilt    upper incipient lethal temperature (°C); o2Lethal acute lethal dissolved O₂ (mg/L at 25 °C; ×e^0.055/°C — Moss &
+//           Scott 1961, Downing & Merkens 1957 — so far less under ice)
+// (prior) marks a literature value not yet checked against a primary source.
+const yrs = n => n * TIME.YEAR_LEN;
+export const BIO = {
+  minnow: {   // FATHEAD MINNOW — FB4 "Fathead minnow" (Duffy 1998)
+    bio: { CEQ: 2, CA: 0.149, CB: -0.242, CQ: 2.4, CTO: 24, CTM: 30, REQ: 2, RA: 0.0096, RB: -0.041, RQ: 2.6, RTO: 28, RTM: 33, ACT: 1,
+      SDA: 0.172, EGEQ: 1, FA: 0.1, EXEQ: 1, UA: 0.1, PREDEDEQ: 1, ED: 4100, src: 'Duffy 1998 (FB4)' },
+    lw: { a: 0.011040, b: 3.0765 }, vb: { Linf: 7.8, k: 1.0, t0: -0.2 },   // Michigan W–L (no Ws exists); ~5.5 cm at 1, 7 at 2
+    Lhatch: 0.6, sHatch: 0.6, L0: 2, Lref: 6, Lmat: 4.5, matMinAge: yrs(0.8), maxAge: yrs(4), matureAge: yrs(1), M: 1.35,
+    gut: 0.05, gerMul: 1.0, gsiF: 0.10, gsiM: 0.015,   // per batch
+    fec: { a: 35.6, b: 1.70 },   // per BATCH: mature eggs = −451 + 20·TL(mm) (Gale & Buynak 1982) ≈ 549 at 5 cm, 749 at 6; 16–26 batches a summer
+    Lzoo: 0, Lpisc: Infinity, gapeR: 0.06, depthR: 0.18, uilt: 33, o2Lethal: 0.7,
+  },
+  sunfish: {  // BLUEGILL / PUMPKINSEED — FB4 "Bluegill sunfish" adult + juvenile (Kitchell et al. 1974); no pumpkinseed model exists
+    bio: { CEQ: 2, CA: 0.182, CB: -0.274, CQ: 2.3, CTO: 27, CTM: 36, REQ: 2, RA: 0.0154, RB: -0.2, RQ: 2.1, RTO: 36, RTM: 40, ACT: 1,
+      SDA: 0.172, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0253, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1974 (FB4 adult)' },
+    bioJuv: { CTO: 31, CTM: 37, RTO: 37, RTM: 41, src: 'Kitchell et al. 1974 (FB4 juvenile)' },
+    lw: { a: 0.008750, b: 3.316 }, vb: { Linf: 23, k: 0.3, t0: 0.3 },        // Ws Hillman 1982; Michigan 4.6, 9.7, 12.7, 15.0, 17.0 cm
+    Lhatch: 0.5, sHatch: 0.5, L0: 2, Lref: 15, Lmat: 11, LmatM: 9, matMinAge: yrs(1.5), maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
+    gut: 0.05, gerMul: 0.5, gsiF: 0.06, gsiM: 0.01,   // per batch (income spawner);   // panfish: 50 % of a meal in 5 h, all in ~21 h (Seaburg & Moyle 1964)
+    fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982, N Wisconsin): 15 cm → ~11,100 eggs
+    Lzoo: 4, Lpisc: Infinity, gapeR: 0.07, depthR: 0.38, uilt: 34, o2Lethal: 0.75,   // lethal DO: Moss & Scott 1961; depth 0.34–0.42 (Lawrence 1958; Hill et al. 2004)
+  },
+  perch: {    // YELLOW PERCH — FB4 "Yellow perch" adult + juvenile (Kitchell et al. 1977)
+    bio: { CEQ: 2, CA: 0.25, CB: -0.27, CQ: 2.3, CTO: 23, CTM: 28, REQ: 2, RA: 0.0108, RB: -0.2, RQ: 2.1, RTO: 28, RTM: 33, ACT: 1,
+      SDA: 0.15, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0292, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1977 (FB4 adult)' },
+    bioJuv: { CTO: 29, CTM: 32, RTO: 32, RTM: 35, src: 'Kitchell et al. 1977 (FB4 juvenile)' },
+    lw: { a: 0.006982, b: 3.23 }, vb: { Linf: 35, k: 0.2, t0: -0.3 },        // Ws Willis et al. 1991; Michigan 8.4, 13.2, 16.5, 19.1, 21.6 cm
+    Lhatch: 0.6, sHatch: 0.08, L0: 3, Lref: 20, Lmat: 16, LmatM: 12, matMinAge: yrs(1.5), maxAge: yrs(11), matureAge: yrs(3), M: 0.50,
+    gut: 0.06, gerMul: 1.0, gsiF: 0.20, gsiM: 0.07,   // ♀ GSI 16–26 % (S. Lake Michigan);   // young perch: a Daphnia meal in 6–12 h (Noble 1973) ≈ the general rate
+    fec: { a: 0.3487, b: 3.4556 },   // log10 F = −3.9131 + 3.4556·log10 TL(mm), inland Michigan lakes (Schneider 1984): 25 cm → 23,600
+    Lzoo: 40, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL
+  },
+  trout: {    // RAINBOW TROUT — FB4 "Rainbow Trout (adult)" (Railsback & Rose 1999)
+    bio: { CEQ: 3, CA: 0.628, CB: -0.3, CQ: 3.5, CTO: 25, CTM: 22.5, CTL: 24.3, CK1: 0.2, CK4: 0.2, REQ: 2, RA: 0.013, RB: -0.217, RQ: 2.2, RTO: 22, RTM: 26, ACT: 1.3,
+      SDA: 0.172, EGEQ: 3, FA: 0.212, FB: -0.222, FG: 0.631, EXEQ: 3, UA: 0.0314, UB: 0.58, UG: -0.299,
+      PREDEDEQ: 2, Alpha1: 5763, Beta1: 0.986, Cutoff: 4000, Alpha2: 7602, Beta2: 0.5266, src: 'Railsback & Rose 1999 (FB4)' },
+    lw: { a: 0.01236, b: 2.990 }, vb: { Linf: 90, k: 0.12, t0: -1.2 },       // Ws lentic (Simpkins & Hubert 1996); Michigan lakes 20.8, 28.4, 36.3, 43.9 cm
+    Lhatch: 2.0, sHatch: 0.3, L0: 4, Lref: 35, Lmat: 35, LmatM: 30, matMinAge: yrs(2), maxAge: yrs(8), matureAge: yrs(3), M: 0.65,
+    gut: 0.05, gerMul: 1.0, gsiF: 0.20, gsiM: 0.05,   // ♀ GSI 20 % before ovulation (Tyler et al. 1990);   // 100 % emptied in 16.4 h at 20 °C (Windell et al. 1976)
+    fec: { a: 2.455, b: 1.85 },   // log10 F = −1.46 + 1.85·log10 TL(mm) (DuBois et al. 1989, Lake Superior tributaries): 50 cm → 3,410
+    Lzoo: 60, Lpisc: 25, gapeR: 0.09, depthR: 0.22, uilt: 25, o2Lethal: 2.5,   // UILT 24.3–26 (Bear et al. 2007; Bidgood & Berst 1969); DO: Downing & Merkens 1957
+  },
+  catfish: {  // BROWN BULLHEAD — FB4 "Brown Bullhead" (Hartman et al. 2017)
+    bio: { CEQ: 3, CA: 0.12, CB: -0.225, CQ: 15, CTO: 24, CTM: 26, CTL: 30, CK1: 0.473, CK4: 0.55, REQ: 1, RA: 0.0007, RB: -0.271, RQ: 0.0915, RTO: 0.4055, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
+      SDA: 0.172, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.07, PREDEDEQ: 1, ED: 6700, src: 'Hartman et al. 2017 (FB4)' },
+    lw: { a: 0.01069, b: 3.105 }, vb: { Linf: 38, k: 0.25, t0: 0 },          // Ws Bister et al. 2000; ~8.5, 15, 20, 24, 27 cm (prior)
+    Lhatch: 1.0, sHatch: 0.6, L0: 3, Lref: 27, Lmat: 19, matMinAge: yrs(2), maxAge: yrs(10), matureAge: yrs(2.5), M: 0.54,
+    gut: 0.06, gerMul: 0.5, gsiF: 0.12, gsiM: 0.015,
+    fec: { a: 0.274, b: 2.9 },   // no published equation: 1,050–13,800 eggs (Ontario database) ≈ 13 per g → ~3,900 at 27 cm (prior)
+    Lzoo: 5, Lpisc: Infinity, gapeR: 0.12, depthR: 0.20, uilt: 36, o2Lethal: 0.3,   // bullheads survive 0.2–0.3 ppm under ice (Cooper & Washburn 1946)
+  },
+  carp: {     // COMMON CARP — there is NO published Wisconsin model for common carp (none in FB4). A COMPOSITE from carp data:
+              // consumption curve of FB4's bighead carp (Cooke & Hill 2010; same family, warm-water: best growth 23–30 °C), CA
+              // calibrated to carp rations (Chakraborty 1992: ~3 %/d at 65 g, 28 °C; field 4.1 %/d in August, Garcia & Adelman
+              // 1985); respiration fitted to carp standard metabolism (Beamish 1964: RB −0.219, RQ 0.083 ≈ Q10 2.3) × routine
+              // ACT 1.45 (Chakraborty 1992, as ln1.45 = RTO with VEL 1); F 0.2, U 0.07 of C (Chakraborty 1992) → 0.0875 of C−F
+              // (FB4's convention); ED 4.3–5.4 kJ/g wet
+    bio: { CEQ: 2, CA: 0.5, CB: -0.287, CQ: 2.5, CTO: 28, CTM: 37, REQ: 1, RA: 0.00068, RB: -0.219, RQ: 0.0832, RTO: 0.3716, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
+      SDA: 0.172, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 4800, src: 'composite: Beamish 1964, Chakraborty 1992, FB4 bighead-carp curve' },
+    lw: { a: 0.01910, b: 2.920 }, vb: { Linf: 70, k: 0.2, t0: -0.2 },        // Ws Bister et al. 2000; ~15, 25, 33, 40, 45 cm (prior)
+    Lhatch: 0.6, sHatch: 0.03, L0: 3, Lref: 50, Lmat: 38, LmatM: 32, matMinAge: yrs(2), maxAge: yrs(25), matureAge: yrs(3.5), M: 0.15,
+    gut: 0.04, gerMul: 1.0, gsiF: 0.15, gsiM: 0.07,   // stomachless: gut passage, fast in warm water (Hofer et al. 1982)
+    fec: { a: 5.13e-5, b: 5.325 },   // log10 F = −9.615 + 5.325·log10 TL(mm) (Weber & Brown 2012; ~100–200k eggs/kg): 60 cm → ~150k
+    Lzoo: 4, Lpisc: Infinity, gapeR: 0.05, depthR: 0.31, uilt: 36, o2Lethal: 0.5,   // UILT 35.7 °C at 26 °C acclimation (Wismer & Christie 1987)
+  },
+  bass: {     // LARGEMOUTH BASS — FB4 "Largemouth bass (adult)" (Rice et al. 1983)
+    bio: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
+      SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, src: 'Rice et al. 1983 (FB4)' },
+    lw: { a: 0.005559, b: 3.273 }, vb: { Linf: 60, k: 0.15, t0: -0.3 },      // Ws Henson 1991; Michigan 10.7, 18.0, 23.9, 29.5, 33.5, 37.3 cm
+    Lhatch: 0.6, sHatch: 0.4, L0: 4, Lref: 38, Lmat: 28, LmatM: 25, matMinAge: yrs(2), maxAge: yrs(16), matureAge: yrs(4), M: 0.40,
+    gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
+    fec: { a: 0.3755, b: 3.2857 },   // log10 F = −0.4254 + 3.2857·log10 TL(cm) (Laarman & Schneider 1985, Michigan): 38 cm → 58,700
+    Lzoo: 4, Lpisc: 5, gapeR: 0.12, depthR: 0.24, uilt: 35.5, o2Lethal: 1.1,   // CTmax 37.3–38.5 (Fields et al. 1987; Currie et al. 1998); mouth width 0.10–0.15 TL (Lawrence 1958; Hill: 0.14·TL − 5.6 mm); piscivory 5–10 cm
+  },
+  pike: {     // NORTHERN PIKE — FB4 "Northern pike (adult)" (Bevelhimer et al. 1985)
+    bio: { CEQ: 4, CA: 0.0244, CB: -0.18, CQ: -0.024, CK1: 0.0125, CK4: -0.000326, REQ: 1, RA: 0.0026445, RB: -0.18, RQ: 0.055, RTO: 0.1222, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
+      SDA: 0.175, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 3598, src: 'Bevelhimer et al. 1985 (FB4)' },
+    lw: { a: 0.00456, b: 3.096 }, vb: { Linf: 85, k: 0.28, t0: -0.5 },       // Ws Willis 1989; Michigan 29.7, 45.0, 52.8, 59.4, 64.8 cm
+    Lhatch: 0.9, sHatch: 0.05, L0: 6, Lref: 65, Lmat: 45, LmatM: 35, matMinAge: yrs(1.5), maxAge: yrs(18), matureAge: yrs(3), M: 0.30,
+    gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // ♂ GSI 2.5 % (Medford & Mackay 1978);   // 50 % in ~20 h, all in ~48–50 h in summer, 12 days in winter (Diana 1979)
+    fec: { a: 0.0859, b: 3.161 },   // log10 F = −4.227 + 3.161·log10 TL(mm) (Priegel & Krohn 1975, corrected): 61 cm → 37,200
+    Lzoo: 3, Lpisc: 4, gapeR: 0.14, depthR: 0.14, uilt: 29.5, o2Lethal: 0.5,   // gape ≈ its own body depth (Esox: Lawrence; Nilsson & Brönmark 2000)
+  },
+};
+for (const k in BIO) { const d = BIO[k]; prepBio(d.bio); if (d.bioJuv) d.bioJuv = prepBio({ ...d.bio, ...d.bioJuv }); }
 
 // ---------- species factory: derives radii from size, fills defaults ----------
 function makeSpecies(cfg) {
   const size = cfg.size;
-  return Object.assign({
+  const sp = Object.assign({
     eatRadius: 3 + size * 2.2,
     // mate-encounter radius scales with the lake so sparse species can still pair up in a big world
     mateRadius: (10 + size * 5.5) * Math.sqrt(WORLD.AREA_SCALE),
     senseRange: 96 + size * 30,
-    energyCap: cfg.reproEnergy + 0.4,
-    drag: 1.4, moveCost: 0.004, turnCost: 0.0012, respiration: 1.0,
-    sink: 0, buoyNight: 0, matingCooldown: TIME.YEAR_LEN * 0.5,
+    drag: 1.4,
+    sink: 0, buoyNight: 0, matingCooldown: TIME.YEAR_LEN * 0.5, capture: 0.3,   // capture: a piscivore strike's success
     lbase: 30, lrange: 22, sat: 60,
     ringR: 4 + size * 2.4,
     drift: clamp(0.7 - 0.22 * size, 0.06, 0.6),  // how much the surface current pushes it (weak swimmers more)
     zone: [0.1, 0.9],                            // preferred depth band (fraction of the local water column)
-    // thermal/oxygen physiological niche (warm- vs cool-water guilds). Outside [tempOpt±tempTol]
-    // energy drains (ENV.THERMAL_STRESS/°C); below o2Crit the hypoxia drain bites. Overridden per species.
+    // thermal/oxygen niche (warm- vs cool-water guilds): tempOpt = the final temperature preferendum (behavioural
+    // thermoregulation seeks it; swimming slows below it); o2Crit = the dissolved O₂ (normalised, 1 ≈ 9.5 mg/L) below
+    // which feeding and growth are impaired and fish avoid the water (EPA 1986 effect levels; Stewart et al. 1967; Headrick
+    // & Carline 1993) — appetite falls to 0 at the lethal level (BIO o2Lethal). Lethality itself is BIO uilt / o2Lethal.
     tempOpt: 23, tempTol: 10, o2Crit: ENV.HYPOXIA,
     spawnT: [16, 24],  // °C window of the (spring/summer) water temperature in which the species spawns (world.js)
-    clutch: 3,         // max offspring per successful spawning (real fish are fecund); condition- & cap-bounded in world.js
-  }, cfg);
+  }, cfg, BIO[cfg.key]);
+  // the ROUTINE swimming pace (fraction of top cruising speed) the published activity multiplier assumes: the terminal
+  // speed of the species' innate cruise thrust (spd' = thrust·accel − drag·spd) — swimming harder costs more (BIOE.SWIM)
+  sp.uRoutine = clamp((sp.innate ? sp.innate.cruise : 0.4) * sp.accel / sp.drag / sp.maxSpeed, 0.05, 1);
+  return sp;
 }
 
 // ============================================================
@@ -232,10 +346,8 @@ export const SP = {
       'school density', 'school \u2220sin', 'school \u2220cos', 'school align', 'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'light@depth', 'temp@depth'],
     diet: { plankton: true, insect: true },
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
-    metabolism: 0.0046, moveCost: 0.0045, turnCost: 0.0012, respiration: 0.7,   // reserves last ~150 s at 18 °C (see ENERGETICS)
-    startEnergy: [0.45, 0.65], matureAge: yr(0.5), reproEnergy: 0.66, reproCost: 0.10, childEnergy: 0.20,
-    matingCooldown: yr(0.05), maxAge: yr(2.5), pop: { start: 34, min: 7, max: 49 },  // fathead-like: matures its first summer, lives ~2–3 yr; K ≈ 330
-    tempOpt: 23, tempTol: 9, o2Crit: 0.18, spawnT: [16, 26], clutch: 6,   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
+    matingCooldown: yr(0.05), pop: { start: 45, min: 7, max: 60 },   // K ≈ 400
+    tempOpt: 27, tempTol: 9, o2Crit: 0.26, spawnT: [16, 26],   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
     innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30 },   // shallow open water, active schooler
 
     sat: 20, lbase: 46, lrange: 16,
@@ -247,7 +359,7 @@ export const SP = {
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       const al = w.allyStats(a, 56);   // (the same radius as the schooling reflex → one query per step)
       inp[6] = al.density; inp[7] = al.cohSin; inp[8] = al.cohCos; inp[9] = al.alignCos;
-      inp[10] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[10] = clamp(a.energy, 0, 1);
       inp[11] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[12] = clamp(w.oxygenGrad(a.x, a.y) * 4, -1, 1);
       inp[13] = wallProx(a);
@@ -264,9 +376,8 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    metabolism: 0.0036, moveCost: 0.0052, turnCost: 0.0012, startEnergy: [0.45, 0.65], matureAge: yr(1), reproEnergy: 0.72, reproCost: 0.08, childEnergy: 0.16,
-    matingCooldown: yr(0.06), maxAge: yr(6), pop: { start: 12, min: 4, max: 18 },   // pumpkinseed-like: matures at ~1 yr, lives ~6; K ≈ 120
-    tempOpt: 26, tempTol: 8, o2Crit: 0.22, spawnT: [20, 28], clutch: 12, nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund
+    matingCooldown: yr(0.06), pop: { start: 30, min: 4, max: 45 },   // K ≈ 300
+    tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
     randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
@@ -276,7 +387,7 @@ export const SP = {
       const food = !pk ? pl : !pl ? pk : (pk.dist < pl.dist ? pk : pl);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
-      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = clamp(w.oxygenGrad(a.x, a.y) * 4, -1, 1);
       inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
@@ -291,17 +402,15 @@ export const SP = {
   // insect larvae, crayfish and small fish (minnows, fry), and perch of every size are the main prey of pike and bass.
   // Spawns in early spring just after the pike (7–12 °C), draping ribbons of eggs over weeds — no nest, no guarding.
   perch: makeSpecies({
-    key: 'perch', name: 'Perch', tag: '#d6c04a', size: 1.2, trophic: 'mesopredator', schooling: true, zone: [0.3, 0.9],
+    key: 'perch', capture: 0.15, name: 'Perch', tag: '#d6c04a', size: 1.2, trophic: 'mesopredator', schooling: true, zone: [0.3, 0.9],
     shape: { in: 12, hid: 9 },
     inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true, cray: true }, foodValueFish: 0.8,
+    diet: { fish: true, insect: true, larva: true, cray: true },
     maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
-    metabolism: 0.0035, moveCost: 0.0041, turnCost: 0.0012, respiration: 1.0,   // reserves ~225 s at 18 °C
-    startEnergy: [0.5, 0.7], matureAge: yr(1), reproEnergy: 0.80, reproCost: 0.07, childEnergy: 0.14,
-    matingCooldown: yr(0.5), maxAge: yr(6), pop: { start: 11, min: 3, max: 16 },   // matures at 1–2 yr, lives ~6–10; K ≈ 108
-    tempOpt: 23, tempTol: 7, o2Crit: 0.20, spawnT: [7, 12], clutch: 14, spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
-    innate: { homeDepth: 0.55, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },
+    matingCooldown: yr(0.5), pop: { start: 18, min: 3, max: 28 },   // K ≈ 190
+    tempOpt: 23, tempTol: 7, o2Crit: 0.26, spawnT: [7, 12], spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
+    innate: { homeDepth: 0.86, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },   // a near-bottom forager (adult yellow perch feed mostly on benthos)
     sat: 70, lbase: 40, lrange: 20,
     randomHue: (R) => R(46, 64),   // yellow-green with dark bars
     spawnPos: (R) => ({ x: littoralX(R), y: R(60, WORLD.FLOOR - 60) }),
@@ -312,7 +421,7 @@ export const SP = {
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = w.allyStats(a, 56).density;
-      inp[7] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[7] = clamp(a.energy, 0, 1);
       inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[9] = wallProx(a);
       inp[10] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[11] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
@@ -327,16 +436,14 @@ export const SP = {
   // the narrow cool band at the thermocline. It cruises the open water taking emerged insects, larvae and, when large,
   // small fish; it spawns in spring in the gravel of the inflow stream (spawnSide −1, 6–11 °C).
   trout: makeSpecies({
-    key: 'trout', name: 'Trout', tag: '#c48aa0', size: 1.5, trophic: 'mesopredator', schooling: false, zone: [0.35, 0.8],
+    key: 'trout', capture: 0.3, name: 'Trout', tag: '#c48aa0', size: 1.5, trophic: 'mesopredator', schooling: false, zone: [0.35, 0.8],
     shape: { in: 11, hid: 9 },
     inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
       'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true }, foodValueFish: 0.8,
+    diet: { fish: true, insect: true, larva: true },
     maxSpeed: 62, accel: 72, drag: 1.2, maxTurn: 2.3,
-    metabolism: 0.0031, moveCost: 0.0040, turnCost: 0.0012, respiration: 1.5,   // an active, O₂-hungry cruiser
-    startEnergy: [0.6, 0.85], matureAge: yr(1.5), reproEnergy: 0.90, reproCost: 0.15, childEnergy: 0.30,
-    matingCooldown: yr(0.5), maxAge: yr(6), pop: { start: 1.4, min: 1, max: 2.4 },   // matures at 2–3 yr, lives ~6–8; K ≈ 16
-    tempOpt: 14, tempTol: 6, o2Crit: 0.40, spawnT: [6, 11], clutch: 10, spawnSide: -1, coldPerf: 0.6,   // cold-water guild (stressed above ~20 °C); spring stream spawner
+    matingCooldown: yr(0.5), pop: { start: 0.6, min: 1, max: 1.0 },   // K ≈ 7
+    tempOpt: 15, tempTol: 6, o2Crit: 0.58, spawnT: [6, 11], spawnSide: -1, coldPerf: 0.6,   // cold-water guild (stressed above ~20 °C); spring stream spawner
     innate: { homeDepth: 0.45, depthPull: 0.45, cruise: 0.5, weight: 0.35, pursuit: 0.45, spawnGround: 0.5 },
     sat: 38, lbase: 46, lrange: 16,
     randomHue: (R) => R(336, 352),   // the rosy lateral band
@@ -347,7 +454,7 @@ export const SP = {
       const food = !pf ? ins : !ins ? pf : (pf.dist < ins.dist ? pf : ins);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
-      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a);
       inp[9] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[10] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
@@ -364,9 +471,8 @@ export const SP = {
       'energy', 'on floor', 'oxygen', 'wall'],
     diet: { detritus: true, plants: true, larva: true, cray: true },
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
-    metabolism: 0.0028, moveCost: 0.0050, turnCost: 0.0012, startEnergy: [0.50, 0.70], matureAge: yr(2), reproEnergy: 0.80, reproCost: 0.09, childEnergy: 0.18,
-    matingCooldown: yr(0.5), maxAge: yr(10), pop: { start: 4, min: 3, max: 6 },   // bullhead/channel-cat-like: matures ~2–3 yr, long-lived; K ≈ 40
-    tempOpt: 27, tempTol: 9, o2Crit: 0.14, spawnT: [21, 28], clutch: 12, nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
+    matingCooldown: yr(0.5), pop: { start: 4, min: 3, max: 6 },   // K ≈ 40
+    tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
@@ -376,7 +482,7 @@ export const SP = {
       const food = !dt ? pl : !pl ? dt : (dt.dist < pl.dist ? dt : pl);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
-      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(1 - (w.bedY(a.x) - a.y) / 30, 0, 1);
       inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1); inp[9] = wallProx(a);
     },
@@ -391,11 +497,10 @@ export const SP = {
     inputLabels: ['plant \u2220sin', 'plant \u2220cos', 'plant near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'oxygen', 'wall', 'depth'],
     diet: { plants: true, detritus: true, larva: true, snail: true },
-    maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8,
-    metabolism: 0.0025, moveCost: 0.0042, turnCost: 0.0012, startEnergy: [0.55, 0.80], matureAge: yr(2), reproEnergy: 0.95, reproCost: 0.08, childEnergy: 0.16,
-    matingCooldown: yr(0.4), maxAge: yr(12), pop: { start: 3, min: 2, max: 4.5 },   // the longest-lived: matures ~2–4 yr, lives 12+; K ≈ 30
-    tempOpt: 27, tempTol: 10, o2Crit: 0.12, spawnT: [17, 24], clutch: 16, spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
-    innate: { homeDepth: 0.80, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4 },   // deep bottom rooter
+    maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
+    matingCooldown: yr(0.4), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each)
+    tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
+    innate: { homeDepth: 0.95, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4 },   // a bottom rooter (sifts the sediment)
     sat: 46, lbase: 34, lrange: 18,
     randomHue: (R) => R(32, 46),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 90, WORLD.FLOOR - 10) }),
@@ -404,7 +509,7 @@ export const SP = {
       tgt(a, w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);   // normalise by qThreat's own search radius (1.1×), as the other species do
                                                            // (by 1× the outer band read 0 proximity yet still gave a bearing)
-      inp[6] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
     },
@@ -414,18 +519,13 @@ export const SP = {
   }),
 
   bass: makeSpecies({
-    key: 'bass', name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
+    key: 'bass', capture: 0.4, name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
     shape: { in: 10, hid: 9 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
-    // apex energetics (2026-10-12): metabolism was 0.046 (1.4× the size trend of the other species) and fish meals 0.60 —
-    // bass starved (intake ~0.05/s vs drain ~0.09/s) and the species ran ~90% on immigrants. Now on the size trend
-    // (catfish 0.030 @1.5 → carp 0.034 @2.2) and fish flesh worth more than grazing (energy-dense prey).
-    diet: { fish: true, insect: true, cray: true }, foodValueFish: 0.80,
+    diet: { fish: true, insect: true, cray: true },
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    metabolism: 0.0029, moveCost: 0.0038, turnCost: 0.0012, respiration: 1.2,
-    startEnergy: [0.70, 0.95], matureAge: yr(1.5), reproEnergy: 0.95, reproCost: 0.18, childEnergy: 0.36,
-    matingCooldown: yr(0.5), maxAge: yr(8), pop: { start: 2.5, min: 2, max: 3.8 },   // largemouth-like: matures ~2–3 yr, lives ~10; K ≈ 26
-    tempOpt: 26, tempTol: 7, o2Crit: 0.28, spawnT: [15, 21], clutch: 8, nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
+    matingCooldown: yr(0.5), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 — real lakes hold ~20–50 adult bass/ha against thousands of sunfish
+    tempOpt: 29, tempTol: 7, o2Crit: 0.47, spawnT: [15, 21], nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
     innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
@@ -433,7 +533,7 @@ export const SP = {
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qPrey(a), a.senseRange, inp, 0);
-      inp[3] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[3] = clamp(a.energy, 0, 1);
       inp[4] = a.spd / this.maxSpeed;
       inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[6] = wallProx(a);
@@ -446,16 +546,13 @@ export const SP = {
   }),
 
   pike: makeSpecies({
-    key: 'pike', name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
+    key: 'pike', capture: 0.6, name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
     shape: { in: 9, hid: 8 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    // apex energetics (2026-10-12): metabolism was 0.056 (1.6× the size trend) — see bass; now on the trend for size 2.7
-    diet: { fish: true, cray: true }, foodValueFish: 0.85,
+    diet: { fish: true, cray: true },
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    metabolism: 0.0024, moveCost: 0.0079, turnCost: 0.0012, respiration: 1.4,   // a sit-and-wait hunter: cheap to idle, costly to burst
-    startEnergy: [0.80, 1.05], matureAge: yr(1.5), reproEnergy: 1.05, reproCost: 0.16, childEnergy: 0.32,
-    matingCooldown: yr(0.5), maxAge: yr(9), pop: { start: 1.2, min: 1, max: 1.8 },   // northern-pike-like: matures ~2–3 yr, lives 10–15; the rarest fish, K ≈ 12
-    tempOpt: 19, tempTol: 8, o2Crit: 0.26, spawnT: [4, 11], clutch: 12, spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice
+    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6 },   // K ≈ 4 — the rarest fish (a pike eats ~3–5× its own mass in fish a year)
+    tempOpt: 21, tempTol: 8, o2Crit: 0.32, spawnT: [4, 11], spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
     randomHue: (R) => R(88, 104),
@@ -463,7 +560,7 @@ export const SP = {
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qPrey(a), a.senseRange, inp, 0);
-      inp[3] = clamp(a.energy / this.reproEnergy, 0, 1);
+      inp[3] = clamp(a.energy, 0, 1);
       inp[4] = a.spd / this.maxSpeed;
       inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[6] = wallProx(a);

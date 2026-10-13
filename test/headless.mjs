@@ -3,13 +3,16 @@ import { seed, getRandState, setRandState, genomeLen, randomGenome, migrateGenom
 import { World, derivePlant, toxFecundity, spawnFactor } from '../src/world.js';
 import { Camera } from '../src/camera.js';
 import { SPECIES, SP } from '../src/species.js';
-import { WORLD, GRID, scaleCount, TIME, SEASON, SPAWN, BASIN, TURBIDITY, STRUCTURE, COVER, FLOW, NUTRIENT, SED_P, NCYCLE, CYANO, PHYTO, MICROBE, MACRO, COMPETE, SCHOOL, TOX, ACTION, MOTION, IMMIGRATION, SNAIL, CRAYFISH, LEARN, BRAIN, bedY } from '../src/config.js';
+import { WORLD, GRID, scaleCount, TIME, SEASON, SPAWN, BASIN, TURBIDITY, STRUCTURE, COVER, FLOW, NUTRIENT, SED_P, NCYCLE, CYANO, PHYTO, MICROBE, MACRO, COMPETE, SCHOOL, TOX, ACTION, MOTION, IMMIGRATION, SNAIL, CRAYFISH, LEARN, BRAIN, BIOE, bedY } from '../src/config.js';
 
 seed(12345); // deterministic
 const w = new World();
 const dt = 1 / 30;
 
 let fail = 0;
+import { stdWeight } from '../src/bioenergetics.js';
+// a fish in breeding condition (bioenergetics): mature, of the given sex, condition K, gonads ripe, ready to spawn
+const ripe = (f, sex, K = 1) => { f.sex = sex; f.mature = true; f.W = K * stdWeight(f.sp.lw, f.L); f.K = K; f.gon = (sex === 0 ? f.sp.gsiF : f.sp.gsiM) * f.W; f.mateCd = 0; f._mated = false; f.dead = false; return f; };
 const check = (name, ok, extra = '') => { console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${extra ? '  — ' + extra : ''}`); if (!ok) fail++; };
 const approx = (a, b, tol) => Math.abs(a - b) <= tol;
 
@@ -193,7 +196,7 @@ function eatenAt(dist, strike, hide) {
 const baseR = (() => { seed(31); const ew = new World(); const prey = ew.makeFish('minnow'); prey.x = 700; prey.y = 300; const bass = ew.makeFish('bass'); ew.agents = [bass, prey]; ew.agentGrid.rebuild(ew.agents); return bass.sp.eatRadius * (1 - ew.coverAt(prey.x, prey.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * ew.allyStats(prey, SCHOOL.DILUTE_R).density); })();
 check('a STRIKE lunge EXTENDS reach: prey just beyond base reach is caught only WITH a committed strike', !eatenAt(baseR * 1.25, 0, 0) && eatenAt(baseR * 1.25, 1, 0), `dist ${(baseR * 1.25).toFixed(0)}, baseR ${baseR.toFixed(0)}`);
 check('a freezing prey (HIDE) is CONCEALED: caught when not hiding, NOT caught fully hidden at the same range', eatenAt(baseR * 0.9, 0, 0) && !eatenAt(baseR * 0.9, 0, 1), `dist ${(baseR * 0.9).toFixed(0)}`);
-check('the action knobs are sane (bursts & costs positive, conceal/reach in range)', ACTION.STRIKE_REACH > 0 && ACTION.BURST_SPEED > 0 && ACTION.STRIKE_COST > 0 && ACTION.FLEE_COST > 0 && ACTION.HIDE_CONCEAL > 0 && ACTION.HIDE_CONCEAL < 1);
+check('the action knobs are sane (bursts positive, conceal/reach in range; their cost is the swimming term of respiration)', ACTION.STRIKE_REACH > 0 && ACTION.BURST_SPEED > 0 && ACTION.HIDE_CONCEAL > 0 && ACTION.HIDE_CONCEAL < 1);
 
 // ============================================================
 //  INTERNAL DRIVES — hunger / fear fed back as brain inputs → state-dependent (motivated) behaviour
@@ -207,16 +210,17 @@ console.log('\n— internal drives (motivation) —');
   // fear is only written in the sense phase → it equals the input exactly; hunger may be SATED in the feed step AFTER
   // the input was written, so the input holds finite in-range hunger but need not equal the post-step value.
   check('after a step, the drive inputs carry finite hunger/fear in [0,1] (fear matches the written input)', sf && Number.isFinite(sf.act.in[hi]) && sf.act.in[hi] >= 0 && sf.act.in[hi] <= 1 && Math.abs(sf.act.in[fi] - sf.fear) < 1e-6 && sf.fear >= 0 && sf.fear <= 1, `in[hunger] ${sf.act.in[hi].toFixed(3)}, fear ${sf.fear.toFixed(2)}`); }
-// HUNGER rises with time since a meal, and a meal SATES it
+// HUNGER (the gut's emptiness) rises as a meal is digested, and a meal SATES it
 seed(5); const dwA = new World(); dwA.agents = []; dwA.plankton = [];
-const pkA = dwA.addAgent('pike', { x: 1000, y: 500 }); pkA.energy = 50; pkA.age = SP.pike.matureAge + 50;
+const pkA = dwA.addAgent('pike', { x: 1000, y: 500 }); pkA.age = SP.pike.matureAge + 50;
+pkA.gut = pkA.sp.gut * pkA.W; pkA.gutE = pkA.gut * 4000; pkA.hunger = 0;   // just fed: a full gut
 const savedDiet = pkA.sp.diet; pkA.sp.diet = {};   // disable ALL feeding (else the lone pike can graze a respawned bed crayfish, which sates & masks the accrual) → isolate the hunger RISE
 const hStart = pkA.hunger;
 for (let t = 0; t < 150 && !pkA.dead; t++) dwA.step(1 / 30);
 pkA.sp.diet = savedDiet;   // restore the shared species diet before the SATE half (pkB) below
 const hungerRose = pkA.hunger > hStart + 0.05;
 seed(6); const dwB = new World(); dwB.agents = []; dwB.plankton = [];
-const pkB = dwB.addAgent('pike', { x: 1000, y: 500 }); pkB.energy = SP.pike.energyCap * 0.4; pkB.age = SP.pike.matureAge + 50; pkB.hunger = 0.9;
+const pkB = dwB.addAgent('pike', { x: 1000, y: 500 }); pkB.age = SP.pike.matureAge + 50; pkB.hunger = 0.9;
 for (let i = 0; i < 8; i++) { const mn = dwB.makeFish('minnow', null, SP.minnow.matureAge + 20); mn.x = 1000 + (i % 4) * 4; mn.y = 500 + (i < 4 ? -3 : 3); dwB.agents.push(mn); }
 dwB.agentGrid.rebuild(dwB.agents);
 for (let t = 0; t < 40 && pkB.eaten === 0; t++) dwB.step(1 / 30);
@@ -500,18 +504,18 @@ check('predator-confusion is DENSITY-graded (a predator\'s reach falls monotonic
 //  CYANOTOXINS — a dense cyanobacteria surface scum poisons fish + zooplankton (HAB toxicity)
 // ============================================================
 console.log('\n— cyanotoxins (HAB toxicity) —');
-// FISH: same seed + single surface fish + no food, so energy change over one step is metabolism (identical) + toxin.
-function fishEnergyAfter(cyanoLevel) {
+// FISH: same seed + single surface fish + no food, so its respiration over one step is metabolism (identical) × toxic stress.
+function fishRespAfter(cyanoLevel) {
   seed(77); const cw = new World();
-  const f = cw.makeFish('minnow'); f.x = 1024; f.y = 48; f.energy = 0.6;
-  cw.agents = [f]; cw.plankton = []; cw.agentGrid.rebuild(cw.agents);   // no food → energy only falls (metabolism + toxin)
+  const f = cw.makeFish('minnow'); f.x = 1024; f.y = 48;
+  cw.agents = [f]; cw.plankton = []; cw.agentGrid.rebuild(cw.agents);   // no food → mass only falls (respiration)
   cw.env.cyano.fill(cyanoLevel);
   cw.step(1 / 30);
-  return f.energy;
+  return f.rO2;
 }
-const eToxic = fishEnergyAfter(CYANO.CAP), eClean = fishEnergyAfter(0), eBelow = fishEnergyAfter(0.9 * CYANO.TOX_THRESH * CYANO.CAP);
-check('cyanotoxin: a fish in a DENSE surface scum loses more energy than in clean water (HAB poisoning)', eToxic < eClean - 1e-4, `scum ${eToxic.toFixed(4)} < clean ${eClean.toFixed(4)}`);
-check('cyanotoxin is INERT below the threshold (sub-threshold cyano drains the same as clean water → a fresh/clear lake is unchanged)', Math.abs(eBelow - eClean) < 1e-4, `below ${eBelow.toFixed(5)} ≈ clean ${eClean.toFixed(5)}`);
+const eToxic = fishRespAfter(CYANO.CAP), eClean = fishRespAfter(0), eBelow = fishRespAfter(0.9 * CYANO.TOX_THRESH * CYANO.CAP);
+check('cyanotoxin: a fish in a DENSE surface scum burns more (detoxification, gill/liver damage) than in clean water (HAB poisoning)', eToxic > eClean * 1.2, `respiration scum ${eToxic.toExponential(3)} vs clean ${eClean.toExponential(3)} g O₂/s`);
+check('cyanotoxin is INERT below the threshold (sub-threshold cyano costs the same as clean water → a fresh/clear lake is unchanged)', Math.abs(eBelow - eClean) < 1e-12, `below ${eBelow.toExponential(5)} ≈ clean ${eClean.toExponential(5)}`);
 // ZOOPLANKTON: ISOLATE the toxin from the cyano↔phyto competition by KEEPING phyto at CAP during the forced scum, so
 // the zoo can't STARVE — only the TOXIN can kill them. Toxin-on must collapse them far below the toxin-off control.
 function zooScum(toxOff) {
@@ -551,7 +555,7 @@ const savedAmb = TOX.AMBIENT; TOX.AMBIENT = 0;
 seed(77); const bmw2 = new World(); bmw2.agents = []; bmw2.plankton = [];
 const PREY_TOX = 2.0, preds = [];
 for (let i = 0; i < 36; i++) { const mn = bmw2.makeFish('minnow', null, SP.minnow.matureAge + 40); mn.x = 860 + (i % 6) * 24; mn.y = 336 + ((i / 6) | 0) * 14; mn.tox = PREY_TOX; mn.energy = 30; bmw2.agents.push(mn); }
-for (let i = 0; i < 6; i++) { const bs = bmw2.makeFish('bass', null, SP.bass.matureAge + 80); bs.x = 860 + i * 24; bs.y = 336 + (i % 3) * 14; bs.tox = 0; bs.energy = SP.bass.energyCap * 0.4; preds.push(bs); bmw2.agents.push(bs); }   // predators ON the prey patch → guaranteed encounters
+for (let i = 0; i < 6; i++) { const bs = bmw2.makeFish('bass', null, SP.bass.matureAge + 80); bs.x = 860 + i * 24; bs.y = 336 + (i % 3) * 14; bs.tox = 0; preds.push(bs); bmw2.agents.push(bs); }   // predators ON the prey patch → guaranteed encounters
 bmw2.agentGrid.rebuild(bmw2.agents);
 for (let i = 0; i < 2500; i++) bmw2.step(1 / 30);
 const maxPredTox = Math.max(0, ...preds.map(p => p.tox)), nAte = preds.filter(p => p.eaten > 0).length;
@@ -666,14 +670,14 @@ const cg = crossoverGenes(pa, pb);
 check('crossoverGenes blends (averages) parent traits', Math.abs(cg[0] - 1.10) < 1e-6 && Math.abs(cg[1] - 1.00) < 1e-6 && Math.abs(cg[2] - 0.90) < 1e-6, `[${[...cg].map(v => v.toFixed(2))}]`);
 check('mutateGenes stays within the gene bounds', [...mutateGenes(Float32Array.from([GENE_MAX, GENE_MIN, 1]))].every(inBounds));
 const gw = new World();
-check('every agent carries the full trait genome + gene-derived effective stats (size/speed/tol + fin/eye/body)', gw.agents.every(a =>
+check('every agent carries the full trait genome + gene-derived effective stats (maturation size/speed/tol + fin/eye/body)', gw.agents.every(a =>
   a.genes && a.genes.length === GENE_KEYS.length && a.maxSpeed > 0 && a.metabMul > 0 && a.maxTurn > 0 && a.senseRange > 0 && a.accel > 0 && a.bodyMul > 0 &&
-  Math.abs(a.size - a.sp.size * a.genes[0]) < 1e-4 &&
-  Math.abs(a.maxSpeed - a.sp.maxSpeed * a.genes[1] * (1.18 - 0.18 * a.genes[5]) * (1.05 - 0.05 * a.genes[3])) < 1e-3 &&
+  Math.abs(a.Lmat - a.sp.Lmat * Math.pow(a.genes[0], BIOE.LMAT_GENE) * (a.sex === 1 && a.sp.LmatM ? a.sp.LmatM / a.sp.Lmat : 1)) < 1e-4 &&   // the size gene = maturation length
+  Math.abs(a.maxSpeed0 - a.sp.maxSpeed * a.genes[1] * (1.18 - 0.18 * a.genes[5]) * (1.05 - 0.05 * a.genes[3])) < 1e-3 &&
   Math.abs(a.tempTol - a.sp.tempTol * a.genes[2]) < 1e-4));
-check('metabMul EXACTLY matches the gene→cost formula (size/speed/tol + fin/eye/body costs × the brain-size saving) — nothing free', gw.agents.every(a => {
+check('metabMul EXACTLY matches the gene→cost formula (speed/tol + fin/eye/body costs × the brain-size saving) — nothing free', gw.agents.every(a => {
   const g = a.genes, hid = a.sp.shape.hid;
-  const want = g[0] * (0.85 + 0.15 * g[1]) * (0.9 + 0.1 * g[2]) * (0.95 + 0.05 * g[3]) * (0.93 + 0.07 * g[4]) * (0.92 + 0.08 * g[5])
+  const want = (0.85 + 0.15 * g[1]) * (0.9 + 0.1 * g[2]) * (0.95 + 0.05 * g[3]) * (0.93 + 0.07 * g[4]) * (0.92 + 0.08 * g[5])
     * (1 - BRAIN.COST * (hid - a.activeHid) / hid);   // a smaller brain is cheaper (per-neuron saving)
   return Math.abs(a.metabMul - want) < 1e-4;
 }));
@@ -681,11 +685,11 @@ check('metabMul EXACTLY matches the gene→cost formula (size/speed/tol + fin/ey
 // full 7-gene arrays (incl. the brain gene = 1) — a 6-gene array would pad the brain gene RANDOMLY, making these RNG-fragile
 const baseF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1, 1]);
 const finF = gw.makeFish('bass', [1, 1, 1, 1.35, 1, 1, 1]);
-check('fin gene → sharper turns (higher maxTurn) but more drag (lower top speed)', finF.maxTurn > baseF.maxTurn && finF.maxSpeed < baseF.maxSpeed, `maxTurn ${finF.maxTurn.toFixed(2)}>${baseF.maxTurn.toFixed(2)}, speed ${finF.maxSpeed.toFixed(1)}<${baseF.maxSpeed.toFixed(1)}`);
+check('fin gene → sharper turns (higher maxTurn) but more drag (lower top speed)', finF.maxTurn0 > baseF.maxTurn0 && finF.maxSpeed0 < baseF.maxSpeed0, `maxTurn ${finF.maxTurn.toFixed(2)}>${baseF.maxTurn.toFixed(2)}, speed ${finF.maxSpeed.toFixed(1)}<${baseF.maxSpeed.toFixed(1)}`);
 const eyeF = gw.makeFish('bass', [1, 1, 1, 1, 1.35, 1, 1]);
-check('eye gene → longer sense range (and a metabolic cost)', eyeF.senseRange > baseF.senseRange && eyeF.metabMul > baseF.metabMul, `sense ${eyeF.senseRange.toFixed(0)}>${baseF.senseRange.toFixed(0)}`);
+check('eye gene → longer sense range (and a metabolic cost)', eyeF.senseRange0 > baseF.senseRange0 && eyeF.metabMul > baseF.metabMul, `sense ${eyeF.senseRange.toFixed(0)}>${baseF.senseRange.toFixed(0)}`);
 const bodyF = gw.makeFish('bass', [1, 1, 1, 1, 1, 1.35, 1]);
-check('body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)', bodyF.accel > baseF.accel && bodyF.bodyMul > baseF.bodyMul && bodyF.maxSpeed < baseF.maxSpeed, `accel ${bodyF.accel.toFixed(0)}, bodyMul ${bodyF.bodyMul.toFixed(2)}, speed ${bodyF.maxSpeed.toFixed(1)}`);
+check('body-depth gene → better accel + harder to eat (bodyMul↑) but slower top speed (drag)', bodyF.accel0 > baseF.accel0 && bodyF.bodyMul > baseF.bodyMul && bodyF.maxSpeed0 < baseF.maxSpeed0, `accel ${bodyF.accel.toFixed(0)}, bodyMul ${bodyF.bodyMul.toFixed(2)}, speed ${bodyF.maxSpeed.toFixed(1)}`);
 check('body depth is a real predation defence: a higher bodyMul raises the effective prey size canEat sees → flips a marginal predator to NOT eat', canEat(5, 3) && !canEat(5, 3 * 1.15), `3 eaten, 3.45 (deep-bodied) not`);
 const oldGn = gw.makeFish('bass', Float32Array.from([1.3, 0.8, 1.2]));   // a pre-morphology 3-gene save
 check('genome-length guard: an older 3-gene save pads to the full genome, preserving the evolved genes', oldGn.genes.length === GENE_KEYS.length && Math.abs(oldGn.genes[0] - 1.3) < 1e-6 && Math.abs(oldGn.genes[1] - 0.8) < 1e-6 && [...oldGn.genes.slice(3)].every(inBounds), `len ${oldGn.genes.length}`);
@@ -693,10 +697,10 @@ check('genome-length guard: an older 3-gene save pads to the full genome, preser
 // (no silent balance shift; this guards the whole gene→phenotype formula against a typo that would only bite off-baseline).
 const oneF = gw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]);   // all 7 genes ≡ 1.0 (incl. the brain-size gene)
 check('genes≡1.0 ⇒ derived stats are EXACTLY the species baseline (incl. full active brain & metabMul=1 → no balance shift)',
-  Math.abs(oneF.maxTurn - oneF.sp.maxTurn) < 1e-6 && Math.abs(oneF.accel - oneF.sp.accel) < 1e-6 && Math.abs(oneF.senseRange - oneF.sp.senseRange) < 1e-6 &&
-  Math.abs(oneF.maxSpeed - oneF.sp.maxSpeed) < 1e-6 && Math.abs(oneF.bodyMul - 1) < 1e-6 && Math.abs(oneF.size - oneF.sp.size) < 1e-6 &&
+  Math.abs(oneF.maxTurn0 - oneF.sp.maxTurn) < 1e-6 && Math.abs(oneF.accel0 - oneF.sp.accel) < 1e-6 && Math.abs(oneF.senseRange0 - oneF.sp.senseRange) < 1e-6 &&
+  Math.abs(oneF.maxSpeed0 - oneF.sp.maxSpeed) < 1e-6 && Math.abs(oneF.bodyMul - 1) < 1e-6 && Math.abs(oneF.Lmat - (oneF.sex === 1 && oneF.sp.LmatM ? oneF.sp.LmatM : oneF.sp.Lmat)) < 1e-6 &&
   oneF.activeHid === oneF.sp.shape.hid && Math.abs(oneF.metabMul - 1) < 1e-6,
-  `maxTurn ${oneF.maxTurn.toFixed(3)}/${oneF.sp.maxTurn}, activeHid ${oneF.activeHid}/${oneF.sp.shape.hid}, metabMul ${oneF.metabMul.toFixed(4)}`);
+  `maxTurn ${oneF.maxTurn0.toFixed(3)}/${oneF.sp.maxTurn}, activeHid ${oneF.activeHid}/${oneF.sp.shape.hid}, metabMul ${oneF.metabMul.toFixed(4)}`);
 // genes survive save/load and stay heritable & varied after a run of evolution
 const gw2 = new World(); gw2.load(JSON.parse(JSON.stringify(gw.toJSON())));
 check('genes round-trip through save/load', gw2.agents.length === gw.agents.length && gw2.agents.every((a, i) => [...a.genes].every((v, j) => Math.abs(v - gw.agents[i].genes[j]) < 1e-4)));
@@ -867,14 +871,15 @@ check('catfish are nocturnal — the innate cruise target is much higher at nigh
 console.log('\n— mate choice —');
 const mw = new World(); mw.agents = [];
 const chooser = mw.addAgent('minnow', { x: 500, y: 200 }), good = mw.addAgent('minnow', { x: 510, y: 205 }), poor = mw.addAgent('minnow', { x: 508, y: 198 });
-for (const f of [chooser, good, poor]) { f.age = f.sp.matureAge + 5; f.mateCd = 0; f._mated = false; f.dead = false; f.energy = f.sp.reproEnergy + 0.1; }
-good.energy = good.sp.reproEnergy + 0.35; good.genes = Float32Array.from([1.30, 1.25, 1.20]); good.eaten = 30;
-poor.energy = poor.sp.reproEnergy + 0.00; poor.genes = Float32Array.from([0.80, 0.80, 0.85]); poor.eaten = 2;
+ripe(chooser, 0); ripe(good, 1, 1.0); ripe(poor, 1, 0.85);   // the chooser (female) picks between two ripe males
+good.genes = Float32Array.from([1.30, 1.25, 1.20]); good.eaten = 30;
+poor.genes = Float32Array.from([0.80, 0.80, 0.85]); poor.eaten = 2;
 mw.agentGrid.rebuild(mw.agents);
 const chosen = mw.chooseMate(chooser);
 check('mate choice picks the higher-quality candidate (condition + good genes), not just the nearest', chosen && chosen.item === good,
   chosen ? `chose the ${chosen.item === good ? 'high-quality' : 'low-quality'} mate` : 'chose none');
-check('mate choice still finds a mate when only one eligible exists (reproduction not blocked)', (() => { const mw2 = new World(); mw2.agents = []; const a = mw2.addAgent('minnow', { x: 300, y: 200 }), b = mw2.addAgent('minnow', { x: 305, y: 202 }); for (const f of [a, b]) { f.age = f.sp.matureAge + 5; f.mateCd = 0; f._mated = false; f.dead = false; f.energy = f.sp.reproEnergy + 0.1; } mw2.agentGrid.rebuild(mw2.agents); return mw2.chooseMate(a) !== null; })());
+check('mate choice still finds a mate when only one eligible exists (reproduction not blocked)', (() => { const mw2 = new World(); mw2.agents = []; const a = mw2.addAgent('minnow', { x: 300, y: 200 }), b = mw2.addAgent('minnow', { x: 305, y: 202 }); ripe(a, 0); ripe(b, 1); mw2.agentGrid.rebuild(mw2.agents); return mw2.chooseMate(a) !== null; })());
+check('…but only of the opposite sex (two females never pair)', (() => { const mw3 = new World(); mw3.agents = []; const a = mw3.addAgent('minnow', { x: 300, y: 200 }), b = mw3.addAgent('minnow', { x: 305, y: 202 }); ripe(a, 0); ripe(b, 0); mw3.agentGrid.rebuild(mw3.agents); return mw3.chooseMate(a) === null; })());
 
 // depth-local light + temperature senses → the substrate for emergent diel vertical migration
 console.log('\n— depth senses (DVM) —');
@@ -1134,14 +1139,13 @@ const cale = new World().env; const seenMonths = new Set(); let allNamed = true;
 for (let i = 0; i < 48; i++) { cale.year = i / 48; seenMonths.add(cale.monthIndex()); if (typeof cale.monthName() !== 'string' || !cale.monthName()) allNamed = false; }
 check('the calendar cycles through all 12 months over a year (each named)', seenMonths.size === 12 && allNamed, `${seenMonths.size} distinct months`);
 cale.year = 3.25; check('yearFrac() is the fractional progress through the current year [0,1)', approx(cale.yearFrac(), 0.25, 1e-9) && cale.monthIndex() === 3, `frac ${cale.yearFrac().toFixed(3)}, month ${cale.monthIndex()}`);
-// REALISTIC LIFESPAN RATIOS — ~10× spread (carp ≫ minnow), each matures at a realistic FRACTION of its life,
-// ecological ordering (the small forage fish is shortest-lived, the big carp longest). Absolute scale is compressed
-// (evolution must still turn over) so these are RELATIVE-realistic, not literal decades — see config TIME.
+// REAL LIFESPANS (bioenergetics, 2026-10-13): the published maximum ages and ages at maturity (FishBase, Ontario Freshwater
+// Fishes database) — carp live ~6× a fathead minnow; every species matures at a realistic fraction of its life
 const maxAges = SPECIES.map(k => SP[k].maxAge);
-check('fish lifespans span a realistic range (wild carp ~12 yr ≫ minnows ~2–3 yr)', SP.carp.maxAge / SP.minnow.maxAge >= 4, `carp ${SP.carp.maxAge} / minnow ${SP.minnow.maxAge} = ${(SP.carp.maxAge / SP.minnow.maxAge).toFixed(1)}×`);
+check('fish lifespans span the real range (carp ~25 yr ≫ fathead minnows ~4 yr)', SP.carp.maxAge / SP.minnow.maxAge >= 4, `carp ${(SP.carp.maxAge / TIME.YEAR_LEN).toFixed(0)} / minnow ${(SP.minnow.maxAge / TIME.YEAR_LEN).toFixed(0)} yr`);
 check('every species matures at a realistic fraction of its lifespan (8–40%, well before death)', SPECIES.every(k => { const f = SP[k].matureAge / SP[k].maxAge; return f >= 0.08 && f <= 0.40; }), SPECIES.map(k => `${k} ${(100 * SP[k].matureAge / SP[k].maxAge | 0)}%`).join(' '));
-check('lifespan ordering is ecological (minnow shortest-lived, carp longest)', SP.minnow.maxAge === Math.min(...maxAges) && SP.carp.maxAge === Math.max(...maxAges), `minnow ${SP.minnow.maxAge} (min), carp ${SP.carp.maxAge} (max)`);
-check('life history runs in YEARS: minnows mature their first summer, pike and carp only after 1.5+ years', SP.minnow.matureAge <= 0.6 * TIME.YEAR_LEN && SP.pike.matureAge >= 1.4 * TIME.YEAR_LEN && SP.carp.matureAge >= 1.4 * TIME.YEAR_LEN && SPECIES.every(k => SP[k].maxAge >= 2 * TIME.YEAR_LEN), SPECIES.map(k => `${k} ${(SP[k].matureAge / TIME.YEAR_LEN).toFixed(1)}/${(SP[k].maxAge / TIME.YEAR_LEN).toFixed(1)} yr`).join(' '));
+check('lifespan ordering is ecological (minnow shortest-lived, carp longest)', SP.minnow.maxAge === Math.min(...maxAges) && SP.carp.maxAge === Math.max(...maxAges), `minnow (min), carp (max)`);
+check('life history runs in real YEARS: minnows mature at about a year, bass, pike and carp only after 2+ years', SP.minnow.matureAge <= 1.2 * TIME.YEAR_LEN && SP.pike.matureAge >= 2 * TIME.YEAR_LEN && SP.carp.matureAge >= 2 * TIME.YEAR_LEN && SP.bass.matureAge >= 2 * TIME.YEAR_LEN && SPECIES.every(k => SP[k].maxAge >= 3 * TIME.YEAR_LEN), SPECIES.map(k => `${k} ${(SP[k].matureAge / TIME.YEAR_LEN).toFixed(1)}/${(SP[k].maxAge / TIME.YEAR_LEN).toFixed(0)} yr`).join(' '));
 // TEMPERATURE-TRIGGERED SPAWNING — a species spawns only while the shore water is inside its window (SP.spawnT, °C),
 // in spring/summer; never on the autumn cooling path or under ice (world.js spawnFactor)
 check('every species has a realistic spawning-temperature window (°C, 2–30, at least 4 °C wide)', SPECIES.every(k => { const [lo, hi] = SP[k].spawnT; return lo >= 2 && hi <= 30 && hi - lo >= 4; }), SPECIES.map(k => `${k} ${SP[k].spawnT.join('–')}`).join(' '));
@@ -1170,21 +1174,19 @@ console.log('\n— fecundity / clutch —');
 // set up a single well-defined mature pair (clear the rest) in their spawning season, step until the FIRST spawning,
 // and measure the brood size. The first stats.births jump = that spawning's clutch (immigrants change stats.immigrants,
 // not stats.births, so they don't confound the count).
-function firstClutch(energy) {
-  seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2);
+function firstClutch(ripeness) {   // larvae from one spawning of a pair whose female carries `ripeness` × her ripe gonads
+  seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2); fw.fry = [];
   if (fw.agents.length < 2) return 0;
   const [p, q] = fw.agents;
-  p.age = q.age = SP.minnow.matureAge + 5; p.energy = q.energy = energy; p.mateCd = q.mateCd = 0;
+  ripe(p, 0); ripe(q, 1); p.gon = SP.minnow.gsiF * p.W * ripeness;
   p.x = 1000; p.y = 200; q.x = 1008; q.y = 200; fw.setDate(0.27);  // adjacent, in-season
   fw.agentGrid.rebuild(fw.agents);
-  const b0 = fw.stats.births.minnow;
-  for (let i = 0; i < 120 && fw.stats.births.minnow === b0; i++) fw.step(1 / 30);
-  return fw.stats.births.minnow - b0;
+  for (let i = 0; i < 120 && !fw.fry.length; i++) fw.step(1 / 30);
+  return fw.fry.reduce((s, f) => s + f.n, 0);
 }
-const richClutch = firstClutch(1.0), leanClutch = firstClutch(SP.minnow.reproEnergy + 0.02);
-check('a spawning yields a CLUTCH of several young (fecundity), not a single offspring', richClutch > 1, `${richClutch} young from one well-fed spawning`);
-check('clutch size is CONDITION-DEPENDENT (a well-fed pair broods more than a lean pair)', richClutch > leanClutch, `well-fed ${richClutch} vs lean ${leanClutch}`);
-check('the clutch never exceeds the species max', richClutch <= SP.minnow.clutch, `${richClutch} ≤ ${SP.minnow.clutch}`);
+const richClutch = firstClutch(1.0), leanClutch = firstClutch(SPAWN.GON_READY + 0.02);
+check('a spawning yields a SCHOOL of many larvae (fecundity), not a single offspring', richClutch > 50, `${richClutch.toFixed(0)} larvae from one spawning`);
+check('the eggs scale with how ripe the female is (gonads built from food: a well-fed female spawns more)', richClutch > leanClutch * 1.15, `ripe ${richClutch.toFixed(0)} vs barely-ripe ${leanClutch.toFixed(0)}`);
 
 // ============================================================
 //  SEASONAL MACROPHYTES — warm-season growth, cold-season senescence (→ DOM), overwinter as rootstock
@@ -1515,8 +1517,8 @@ console.log('\n— save/load integrity (audit-fixes) —');
       `added ${r.added}, reseeded ${r.reseeded}, agents ${hw.agents.length}/${WORLD.GLOBAL_MAX}`); }
 
   // (10) the death test kills a NaN fish (a NaN can't make a fish immortal)
-  { seed(9); const nw = new World(); const f = nw.agents[0]; f.energy = NaN; nw.step(DTI);
-    check('a fish with NaN energy dies (death test is !(energy > 0))', !nw.agents.includes(f)); }
+  { seed(9); const nw = new World(); const f = nw.agents[0]; f.W = NaN; nw.step(DTI);
+    check('a fish with a NaN mass dies (death test is !(W > 0))', !nw.agents.includes(f)); }
 
   // (11) carp normalise threat proximity by qThreat's own 1.1× search radius (the outer band no longer reads 0)
   { seed(10); const tw = new World(); tw.env.turbidity = 0;
@@ -1544,33 +1546,30 @@ console.log('\n— audit fixes: bio-ecology —');
     const pr = cw.qPrey(adult), th = cw.qThreat(baby);
     const postGrace = !!pr && pr.item === baby && !!th && th.item === adult && cw.takePrey(adult) === baby;
     check('brood grace: a conspecific newborn is not prey (nor its parent its threat) for BROOD.GRACE s; afterwards real cannibalism is possible and the juvenile SENSES the cannibal (symmetric qThreat)', graceSafe && postGrace, `grace ${BROOD.GRACE}s: safe ${graceSafe}, post-grace eaten+sensed ${postGrace}`);
-    // (a perch newborn: a minnow fry is below the size a pike bothers with — FEED.PREY_MIN)
-    const minnow = cw.makeFish('perch', ONES, 0); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
+    // (a young perch big enough for the pike to bother with — FEED.PREY_MIN)
+    const minnow = cw.makeFish('perch', ONES, 0); minnow.L = 7; minnow.W = stdWeight(SP.perch.lw, 7); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
     check('the grace is kin-only: another species\' newborn is still prey', !!cw.qPrey(adult) && cw.qPrey(adult).item === minnow); }
   // in a running lake: no conspecific is eaten inside its grace (before the fix bass/pike ate ~half their brood within 2 s)
   { seed(99); const rw = new World(); const kills = { young: 0, any: 0 }, orig = rw.takePrey.bind(rw);
     rw.takePrey = a => { const p = orig(a); if (p && p.species === a.species) { kills.any++; if (p.age < BROOD.GRACE) kills.young++; } return p; };
-    const b0 = rw.stats.births.bass + rw.stats.births.pike;
     for (let i = 0; i < 1800; i++) rw.step(1 / 30);   // a minute of late May: the bass spawning season
-    const bred = rw.stats.births.bass + rw.stats.births.pike - b0;
-    check('running lake: zero conspecific kills of fish younger than BROOD.GRACE (bass/pike do breed in the window)', kills.young === 0 && bred > 0, `young conspecific kills ${kills.young} (all conspecific ${kills.any}), bass+pike births ${bred}`); }
-  // brood SCATTER: young are placed BROOD.SCATTER px from the parents, out of immediate strike reach (not ±6 px on top of them)
-  { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2);
-    const [p, q] = fw.agents; p.age = q.age = SP.minnow.matureAge + 5; p.energy = q.energy = 1.0; p.mateCd = q.mateCd = 0;
+    check('running lake: zero conspecific kills of fish younger than BROOD.GRACE', kills.young === 0, `young conspecific kills ${kills.young} (all conspecific ${kills.any})`); }
+  // brood SCATTER: the larvae schools start BROOD.SCATTER px from the parents, out of immediate strike reach
+  { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2); fw.fry = [];
+    const [p, q] = fw.agents; ripe(p, 0); ripe(q, 1);
     p.x = 1000; p.y = 300; q.x = 1008; q.y = 300; fw.setDate(0.27); fw.agentGrid.rebuild(fw.agents);
-    const b0 = fw.stats.births.minnow; for (let i = 0; i < 120 && fw.stats.births.minnow === b0; i++) fw.step(1 / 30);
-    const kids = fw.agents.filter(a => a.species === 'minnow' && a.age < 0.05 && a.bornSexual);
-    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, ds = kids.map(k => Math.hypot(k.x - mx, k.y - my));
-    check('brood scatter: newborns are placed within the BROOD.SCATTER annulus around the parents', kids.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 3 && d <= BROOD.SCATTER[1] + 3), `${kids.length} young at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
+    let mx = 0, my = 0; for (let i = 0; i < 120 && !fw.fry.length; i++) { mx = (p.x + q.x) / 2; my = (p.y + q.y) / 2; fw.step(1 / 30); }
+    const ds = fw.fry.map(k => Math.hypot(k.x - mx, k.y - my));
+    check('brood scatter: the larvae schools are placed within the BROOD.SCATTER annulus around the parents', fw.fry.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 12 && d <= BROOD.SCATTER[1] + 12), `${fw.fry.length} schools at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
 
   // (2) NO ASEXUAL BUDDING — fish reproduce sexually only: a lone, mature, well-fed fish in its spawning season has no young
   { seed(8); const bw = new World().setDate(0.27); const par = bw.agents.find(a => a.species === 'minnow'); bw.agents = [par];
-    bw.plankton = []; bw.insects = []; par.age = SP.minnow.matureAge + 5; par.energy = 1.0; par.mateCd = 0; par.x = 1000; par.y = 300;
+    bw.plankton = []; bw.insects = []; bw.fry = []; ripe(par, 0); par.x = 1000; par.y = 300;
     bw.agentGrid.rebuild(bw.agents);
     const keepImm = { ...IMMIGRATION }; IMMIGRATION.RATE = 0; IMMIGRATION.REFUGE = 0;   // no immigrant mate can arrive
     const b0 = bw.stats.births.minnow; for (let i = 0; i < 200; i++) bw.step(1 / 30);
     Object.assign(IMMIGRATION, keepImm);
-    check('no asexual budding: a lone mature minnow in season produces no young (reproduction is sexual only)', bw.stats.births.minnow === b0, `${bw.stats.births.minnow - b0} young`); }
+    check('no asexual budding: a lone ripe minnow in season produces no young (reproduction is sexual only)', bw.stats.births.minnow === b0 && bw.fry.length === 0, `${bw.stats.births.minnow - b0} young, ${bw.fry.length} schools`); }
 
   // (3) dt-INDEPENDENT FEEDING — grazing is a per-second rate and discrete items obey a handling time (FEED.HANDLE)
   { seed(72); const gw = new World(); const carp = gw.makeFish('carp', ONES); carp.x = 400; carp.y = bedY(400) - 20;
@@ -1787,24 +1786,13 @@ console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
 console.log('\n— behavioural checks (real sim paths, A/B) —');
 {
   const { ENV: ENVB } = await import('../src/config.js');
-  // a lone carp (no fish/plankton diet) in a world with its food cleared, so energy changes only by the drain terms
-  const loneCarp = (seedN, prep) => {
-    seed(seedN); const tw = new World(); tw.agents = []; tw.plants = []; tw.detritus = []; tw.larvae = []; tw.snails = []; tw.cray = []; tw.plankton = []; tw.insects = [];
-    const c = tw.makeFish('carp'); c.x = 1000; c.y = 0.6 * tw.bedY(1000); c.energy = 1.0; tw.agents.push(c); prep && prep(tw, c); return { tw, c };
-  };
-  const drain = (knob, val, setup, steps = 30) => {
-    const keep = ENVB[knob]; ENVB[knob] = val;
-    try { const { tw, c } = loneCarp(901, setup); for (let i = 0; i < steps; i++) { setup && setup(tw, c); tw.step(1 / 30); } return 1.0 - c.energy; }
-    finally { ENVB[knob] = keep; }
-  };
-  // thermal stress: hold the water 15 °C above the carp's band → the THERMAL_STRESS term must cost real energy
-  const hot = (tw, c) => { tw.env.tempAt = () => c.sp.tempOpt + c.tempTol + 15; };
-  const thOn = drain('THERMAL_STRESS', ENVB.THERMAL_STRESS, hot), thOff = drain('THERMAL_STRESS', 0, hot);
-  check('THERMAL STRESS really drains energy in the step (vs the identical world with the term zeroed)', thOn - thOff > 0.8 * ENVB.THERMAL_STRESS * 15, `drain ${thOn.toFixed(3)} with vs ${thOff.toFixed(3)} without (1 s, 15 °C over the band)`);
-  // hypoxia: O₂-starved water → the HYPOXIA_PENALTY term must cost real energy
-  const anoxic = tw => tw.env.o2.fill(0.02);
-  const hyOn = drain('HYPOXIA_PENALTY', ENVB.HYPOXIA_PENALTY, anoxic), hyOff = drain('HYPOXIA_PENALTY', 0, anoxic);
-  check('HYPOXIA really drains energy in the step (vs the identical world with the penalty zeroed)', hyOn > hyOff + 0.02, `drain ${hyOn.toFixed(3)} with vs ${hyOff.toFixed(3)} without (1 s at O₂ 0.02)`);
+  // HYPOXIA SUPPRESSES APPETITE (EPA 1986: growth falls 20–65 % at 2–5 mg/L): the same hungry minnow among zooplankton
+  // eats in well-oxygenated water but not in water just above its lethal level
+  const ateIn = o2 => { seed(901); const tw = new World(); tw.agents = []; tw.birds = []; tw.fry = []; const m = tw.makeFish('minnow', [1, 1, 1, 1, 1, 1, 1]); m.x = 1000; m.y = 200; tw.agents.push(m);
+    for (let i = 0; i < 20; i++) tw.plankton.push(tw._mkPlankton(1000 + (i % 5) * 3, 200 + (i / 5 | 0) * 3, 0));
+    let g = 0; for (let i = 0; i < 30; i++) { tw.env.o2.fill(o2); const g0 = m.gut; tw.step(1 / 30); g += Math.max(0, m.gut - g0); } return g; };
+  const eatOk = ateIn(1.0), eatLow = ateIn(SP.minnow.o2Lethal / ENVB.O2_MGL * 1.2);
+  check('HYPOXIA kills the appetite: a minnow among zooplankton feeds in oxygenated water but hardly at all near its lethal O₂', eatOk > 0 && eatLow < eatOk * 0.25, `${eatOk.toFixed(3)} g vs ${eatLow.toFixed(3)} g`);
   // nocturnal catfish: the same fish in the same world swims harder at night than at midday (the real move step)
   // (env.step recomputes light from the clock each step, so set the time of day: t=0 midnight, t≈0.45 near noon)
   const catSpeed = t0 => {   // averaged over 3 seeds (brains differ) so the comparison isn't hostage to one brain
@@ -1825,7 +1813,7 @@ console.log('\n— behavioural checks (real sim paths, A/B) —');
   const pick = (gGood, gPoor) => {
     const mw = new World(); mw.agents = [];
     const ch = mw.addAgent('minnow', { x: 500, y: 200 }), A = mw.addAgent('minnow', { x: 510, y: 205 }), B = mw.addAgent('minnow', { x: 490, y: 195 });
-    for (const f of [ch, A, B]) { f.age = f.sp.matureAge + 5; f.mateCd = 0; f._mated = false; f.dead = false; f.energy = f.sp.reproEnergy + 0.1; f.eaten = 10; }
+    ripe(ch, 0); ripe(A, 1); ripe(B, 1); for (const f of [ch, A, B]) f.eaten = 10;
     A.genes = Float32Array.from(gGood); B.genes = Float32Array.from(gPoor);
     mw.agentGrid.rebuild(mw.agents); const c = mw.chooseMate(ch); return c && c.item === A ? 'A' : c && c.item === B ? 'B' : 'none';
   };
@@ -1854,7 +1842,8 @@ console.log('\n— determinism (stress scenario), body-depth defence, Baldwinian
   // with a deep body (body gene ↑ → bodyMul ↑ → effective size above the pike's gape)
   const preyFor = bodyGene => {
     seed(905); const tw = new World(); tw.agents = [];
-    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('carp', [1, 1, 1, 1, 1, bodyGene, 1], SP.carp.matureAge * 0.42);   // a young carp right at the pike's gape margin   // fixed genes: a random pike size gene would move the gape margin
+    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('carp', [1, 1, 1, 1, 1, bodyGene, 1]);
+    cp.L = pk.L * SP.pike.gapeR / (SP.carp.depthR * 1.035); cp.W = stdWeight(SP.carp.lw, cp.L);   // a young carp right at the pike's gape margin
     pk.x = 1000; pk.y = 500; cp.x = 1020; cp.y = 500; tw.agents.push(pk, cp); tw.agentGrid.rebuild(tw.agents);
     const m = tw.qPrey(pk); return { found: !!(m && m.item === cp), bodyMul: cp.bodyMul };
   };
@@ -1879,10 +1868,10 @@ console.log('\n— spawning aggregation —');
     const keep = SP.pike.innate.spawnGround; SP.pike.innate.spawnGround = g;
     try {
       seed(907); const tw = new World().setDate(0.10); tw.agents = [];
-      const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pk.x = 0.4 * WORLD.W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0; pk.energy = pk.sp.reproEnergy;
+      const pk = ripe(tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), 0); pk.x = 0.4 * WORLD.W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0;
       pk.g.fill(0); pk.lw.fill(0);   // a neutral brain: a random one's turning bias can cancel the reflex in a 4-s probe
       tw.agents.push(pk);
-      for (let i = 0; i < 120; i++) { pk.energy = Math.max(pk.energy, pk.sp.reproEnergy); tw.step(1 / 30); }   // keep it in breeding condition
+      for (let i = 0; i < 120; i++) tw.step(1 / 30);   // (ripe: mature, gonads full, in good condition)
       return Math.abs(pk.x - 0.09 * WORLD.W);
     } finally { SP.pike.innate.spawnGround = keep; }
   };
@@ -1946,27 +1935,32 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
   noImmigrants(() => {
     seed(5153); const nw = new World().setDate(0.25); nw.agents = [];
     const p = nw.makeFish('bass', ONES7, SP.bass.matureAge + 10), q = nw.makeFish('bass', ONES7, SP.bass.matureAge + 10);
-    p.x = 1700; q.x = 1706; p.y = q.y = bedY(1700) - 12; p.energy = q.energy = SP.bass.energyCap; p.mateCd = q.mateCd = 0;   // nest-guarders spawn on the bottom, over the nest
+    p.x = 1700; q.x = 1706; p.y = q.y = bedY(1700) - 12; ripe(p, 1); ripe(q, 0);   // nest-guarders spawn on the bottom, over the nest
     nw.agents.push(p, q); nw.agentGrid.rebuild(nw.agents);
     for (let i = 0; i < 300 && !(p.nt > 0 || q.nt > 0); i++) nw.step(1 / 30);
-    const guard = p.nt > 0 ? p : q.nt > 0 ? q : null, fry = guard ? nw.agents.filter(a => a.ni === guard.id) : [];
+    const guard = p.nt > 0 ? p : q.nt > 0 ? q : null, fry = guard ? nw.fry.filter(f => f.ni === guard.id) : [];
     let held = !!guard;
     if (guard) for (let i = 0; i < 300; i++) { nw.step(1 / 30); if (Math.hypot(guard.x - guard.nx, guard.y - guard.ny) > BR.GUARD_R * 1.5) held = false; }
-    const f = fry.find(a => !a.dead); let onDuty = 1, away = 1;
-    if (f && guard) { f.x = f.nx; f.y = f.ny; onDuty = nw._guardCut(f); const gx = guard.x; guard.x = gx + 600; away = nw._guardCut(f); guard.x = gx; }
-    check('NEST GUARDING: a spawning bass pair leaves a guardian that holds station over the nest for 10 s', !!guard && fry.length > 0 && held, guard ? `${fry.length} fry, guardian on duty ${guard.nt.toFixed(0)} s more` : 'no nest');
-    check('…and its fry are hard to take inside the guarded nest (BROOD.PROTECT), but not once the guardian has left', approx(onDuty, 1 - BR.PROTECT, 1e-9) && away === 1, `predation factor on duty ${onDuty.toFixed(2)}, guardian away ${away}`);
+    check('NEST GUARDING: a spawning bass pair leaves the MALE guarding his fry school, holding station over the nest for 10 s', !!guard && guard.sex === 1 && fry.length > 0 && held, guard ? `${fry.length} fry schools, guardian on duty ${guard.nt.toFixed(0)} s more` : 'no nest');
+    // protection: a hungry sunfish cropping the guarded school takes far fewer larvae while the guardian is on station
+    const sch = fry.find(f => !f.dead);
+    const takeFrom = onStation => { if (!sch || !guard) return 0; nw._guards.set(guard.id, guard); const gx = guard.x, gy = guard.y; if (!onStation) { guard.x = gx + 600; } else { guard.x = sch.nx; guard.y = sch.ny; }
+      const n0 = sch.n; sch.n = 1e5; const sf = nw.makeFish('sunfish', ONES7); sf.x = sch.x; sf.y = sch.y; let k = 0;
+      for (let i = 0; i < 400; i++) { sf.gut = 0; const before = sch.n; nw._eatFry(sf, SP.sunfish.gut * sf.W, 20); k += before - sch.n; }
+      sch.n = n0; guard.x = gx; guard.y = gy; return k; };
+    const onDuty = takeFrom(true), away = takeFrom(false);
+    check('…and its fry are hard to take while he is on station (BROOD.PROTECT), but not once he has left', sch && away > 0 && onDuty < away * (1 - BR.PROTECT) * 1.6, `larvae taken: guarded ${onDuty} vs unguarded ${away}`);
   });
 
-  // DIGESTION: a predator that has just eaten is out of action until it has digested the meal
-  const digest = dg => noImmigrants(() => {
-    seed(5154); const dw = new World().setDate(0.30); dw.agents = [];
-    const pk = dw.makeFish('pike', ONES7, SP.pike.matureAge + 10); pk.x = 1000; pk.y = 500; pk.energy = SP.pike.energyCap * 0.4; pk.dg = dg; dw.agents.push(pk);
+  // DIGESTION: a predator with a full stomach takes no fish until it has digested room; an empty one feeds (and its gut fills)
+  const digest = full => noImmigrants(() => {
+    seed(5154); const dw = new World().setDate(0.30); dw.agents = []; dw.fry = [];
+    const pk = dw.makeFish('pike', ONES7, SP.pike.matureAge + 10); pk.x = 1000; pk.y = 500; if (full) { pk.gut = pk.sp.gut * pk.W; pk.gutE = pk.gut * 4000; } dw.agents.push(pk);
     for (let i = 0; i < 8; i++) { const m = dw.makeFish('minnow', null, SP.minnow.matureAge + 5); m.x = 1000 + (i % 4) * 4; m.y = 500 + (i < 4 ? -3 : 3); dw.agents.push(m); }
-    dw.agentGrid.rebuild(dw.agents); for (let i = 0; i < 60; i++) dw.step(1 / 30);
-    return { eaten: pk.eaten, dg: pk.dg }; });
-  const busy = digest(1e4), free = digest(0);
-  check('DIGESTION: a pike still digesting takes no new fish; an empty one feeds and then starts digesting', busy.eaten === 0 && free.eaten > 0 && free.dg > 0, `digesting: ate ${busy.eaten}; empty: ate ${free.eaten}, now digesting ${free.dg.toFixed(1)} s`);
+    dw.agentGrid.rebuild(dw.agents); const e0 = pk.eaten; for (let i = 0; i < 60; i++) dw.step(1 / 30);
+    return { eaten: pk.eaten - e0, gut: pk.gut }; });
+  const busy = digest(true), free = digest(false);
+  check('DIGESTION: a pike with a full stomach takes no new fish; an empty one feeds and its stomach fills', busy.eaten === 0 && free.eaten > 0 && free.gut > 0, `full: ate ${busy.eaten}; empty: ate ${free.eaten}, gut now ${free.gut.toFixed(1)} g`);
 
   // GENE FLOW: immigrants come from a regional gene pool (not copies of the lake's best), and emigrants feed it
   { seed(5155); const gw = new World();
@@ -1977,7 +1971,7 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
     const joined = gw.genePool.minnow.some(g => !before.includes(g.w) && gw.agents.some(a => a.species === 'minnow' && a.g.length === g.w.length && a.g.every((v, i) => v === g.w[i])));
     check('…and emigrating lake adults carry their genomes into that pool (two-way gene flow)', joined);
     const rt = new World(); rt.load(JSON.parse(JSON.stringify(gw.toJSON())));
-    check('the regional gene pool round-trips through save/load (v26)', SPECIES.every(k => rt.genePool[k].length === gw.genePool[k].length && rt.genePool[k].every((g, i) => g.w.length === gw.genePool[k][i].w.length && Array.from(g.w).every((v, j) => Math.abs(v - gw.genePool[k][i].w[j]) < 1e-6)))); }
+    check('the regional gene pool round-trips through save/load', SPECIES.every(k => rt.genePool[k].length === gw.genePool[k].length && rt.genePool[k].every((g, i) => g.w.length === gw.genePool[k][i].w.length && Array.from(g.w).every((v, j) => Math.abs(v - gw.genePool[k][i].w[j]) < 1e-6)))); }
 
   // LOON: a visiting diving bird — in the open-water season only; it catches small fish it reaches, never a big one
   { const keepA = BIRD.ARRIVE; BIRD.ARRIVE = 1e4;
@@ -2016,9 +2010,9 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   // …and a copepod's escape jump beats some strikes, a Daphnia never escapes (and is the richer meal)
   { const trial = kind => { let got = 0, E = 0;
       for (let i = 0; i < 200; i++) {
-        seed(6200 + i); const tw = new World(); tw.agents = []; const f = tw.makeFish('minnow', ONES7); f.x = 1000; f.y = 300; f.energy = 0.3;
+        seed(6200 + i); const tw = new World(); tw.agents = []; const f = tw.makeFish('minnow', ONES7); f.x = 1000; f.y = 300; f.gut = 0; f.gutE = 0;
         const z = tw._mkPlankton(1001, 300, kind); z.y = z.baseY; tw.plankton = [z]; tw.planktonGrid.rebuild(tw.plankton);
-        const e0 = f.energy; got += tw._eatZoo(f, 1, 1); E += f.energy - e0;
+        got += tw._eatZoo(f, 1, 1e9); E += f.gutE;   // J swallowed (a whole patch: room unlimited)
       }
       return { got, E }; };
     const dap = trial(0), cop = trial(1);
@@ -2074,10 +2068,10 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   // FISH EAT THEM: a hungry bass takes a tadpole or a young frog that fits its gape (and then digests it)
   quiet(() => {
     seed(6601); const ew = new World().setDate(0.40); ew.agents = []; ew.herps = [];
-    const bs = ew.makeFish('bass', ONES7); bs.x = 300; bs.y = 100; bs.energy = SP.bass.energyCap * 0.4; ew.agents.push(bs);
+    const bs = ew.makeFish('bass', ONES7); bs.x = 300; bs.y = 100; ew.agents.push(bs);
     const td = ew._mkHerp(0, 302, 100); td.y = 100; ew.herps.push(td); ew.agentGrid.rebuild(ew.agents); ew.herpGrid.rebuild(ew.herps);
     ew.step(1 / 30);
-    check('a hungry bass eats a tadpole that fits its gape, then digests it', td.dead && td.eatenBy === 'bass' && bs.dg > 0);
+    check('a hungry bass eats a tadpole that fits its gape (into its stomach)', td.dead && td.eatenBy === 'bass' && bs.gut > 0);
   });
 
   // TROUT: behavioural thermoregulation — in the warm summer lake a trout keeps deeper (cooler) than the same trout would
@@ -2096,6 +2090,104 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       lw.plankton.every((p, i) => p.k === sw.plankton[i].k) && lw.nymphs.length === sw.nymphs.length && lw.dflies.length === sw.dflies.length && lw.herps.length === sw.herps.length && lw.herps.every((h, i) => h.k === sw.herps[i].k && Math.abs(h.age - sw.herps[i].age) < 1e-9),
       `${lw.nymphs.length} nymphs, ${lw.herps.length} herps`); }
   setRandState(rs);
+}
+
+// ================= BIOENERGETICS (Fish Bioenergetics 4.0) — 2026-10-13 =================
+{
+  console.log('\n--- bioenergetics (FB4 equations, published parameters, food-dependent growth) ---');
+  const B = await import('../src/bioenergetics.js');
+  const ONES7 = [1, 1, 1, 1, 1, 1, 1];
+  const rel = (a, b) => Math.abs(a - b) <= Math.max(1e-7, 2e-3 * Math.abs(b));   // FB4 test vectors are given to 3–4 significant figures
+  const TT = [4, 12, 20, 24, 28];
+  // reference values computed with a line-by-line JS port of FB4's own R source (R/bioenergetics/*.R)
+  const VEC = {
+    minnow: { W: 2, f: [0.1901, 0.4486, 0.8706, 1.000, 0.6810], c: [0.02395, 0.05652, 0.1097, 0.1260, 0.0858], r: [0.000933, 0.002453, 0.005729, 0.007946, 0.009331] },
+    sunfish: { W: 100, f: [0.1369, 0.3466, 0.7314, 0.9319, 0.9897], c: [0.007054, 0.01786, 0.03769, 0.04802, 0.05100], r: [0.000672, 0.001308, 0.002466, 0.003315, 0.004349] },
+    perch: { W: 100, f: [0.2467, 0.5218, 0.9217, 0.9856, 0], c: [0.01778, 0.03762, 0.06645, 0.07106, 0], r: [0.00084, 0.001667, 0.003042, 0.003837, 0.0043] },
+    trout: { W: 500, f: [0.2204, 0.6683, 0.9349, 0.3664, 4.8e-6], c: [0.02145, 0.06505, 0.09100, 0.03567, null], r: [0.001383, 0.002621, 0.004219, 0.004051, null] },
+    catfish: { W: 300, f: [0.006713, 0.1913, 0.8922, 0.9769, 0.8825], c: [0.000223, 0.006362, 0.02967, 0.03248, 0.02935], r: [0.000323, 0.000671, 0.001395, 0.002012, 0.002901] },
+    bass: { W: 500, f: [0.07491, 0.2464, 0.6454, 0.8909, 0.9970], c: [0.003280, 0.01079, 0.02826, 0.03901, 0.04365], r: [0.001063, 0.001365, 0.001754, 0.001988, 0.002253] },
+    pike: { W: 1000, f: [1.087, 2.582, 6.767, 8.309, 7.183], c: [0.007647, 0.01817, 0.04762, 0.05847, 0.05054], r: [0.001074, 0.001667, 0.002589, 0.003226, 0.00402] },
+  };
+  let badF = [], badC = [], badR = [];
+  for (const k in VEC) {
+    const v = VEC[k], b = SP[k].bio;
+    TT.forEach((T, i) => {
+      const f = B.consumptionT(b, T); if (!(v.f[i] < 1e-4 ? Math.abs(f - v.f[i]) < 1e-5 : rel(f, v.f[i]))) badF.push(`${k}@${T}: ${f.toPrecision(4)} vs ${v.f[i]}`);
+      if (v.c[i] != null) { const c = B.cmax(b, v.W, T); if (!(v.c[i] === 0 ? c === 0 : rel(c, v.c[i]))) badC.push(`${k}@${T}: ${c.toPrecision(4)} vs ${v.c[i]}`); }
+      if (v.r[i] != null) { const r = B.respiration(b, v.W, T); if (!rel(r, v.r[i])) badR.push(`${k}@${T}: ${r.toPrecision(4)} vs ${v.r[i]}`); }
+    });
+  }
+  check('FB4 consumption temperature curves (CEQ 2 Kitchell, 3 Thornton–Lessem, 4 Bevelhimer) match the reference port for 7 species', badF.length === 0, badF.slice(0, 3).join('; '));
+  check('…and Cmax(W, T) = CA·W^CB·f(T) at reference weights', badC.length === 0, badC.slice(0, 3).join('; '));
+  check('…and respiration (REQ 1 with its activity term, REQ 2) incl. routine activity', badR.length === 0, badR.slice(0, 3).join('; '));
+  // a full daily budget (C, F, U, SDA, R → G in J/g/d) at 20 °C and p = 0.5, as the reference port computes it
+  const budget = (k, W, ed) => { const b = SP[k].bio, WF = [0, 0], C = B.cmax(b, W, 20) * 0.5 * ed; B.wasteFractions(b, 20, 0.5, WF);
+    const F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F); return C - F - U - S - B.respiration(b, W, 20) * B.OXYCAL; };
+  const gP = budget('perch', 100, 3000), gB = budget('bass', 500, 4000), gK = budget('pike', 1000, 4000);
+  check('a full FB4 daily energy budget matches the reference (perch 21.4, bass 14.4, pike 21.1 J/g/d at 20 °C, p 0.5)',
+    Math.abs(gP - 21.4) < 0.15 && Math.abs(gB - 14.4) < 0.15 && Math.abs(gK - 21.1) < 0.15, `${gP.toFixed(2)}, ${gB.toFixed(2)}, ${gK.toFixed(2)}`);
+  check('trout energy density is FB4\'s weight-dependent PREDEDEQ 2 (6,256 J/g at 500 g)', Math.abs(B.energyDensity(SP.trout.bio, 500) - 6256) < 1);
+  // standard weight: 15-cm bluegill ~70 g, 38-cm bass ~0.9 kg, 65-cm pike ~1.9 kg (the published Ws equations)
+  check('length–weight follows the published standard-weight equations (bluegill 15 cm ≈ 70 g, bass 38 cm ≈ 820 g, pike 65 cm ≈ 1.9 kg)',
+    Math.abs(B.stdWeight(SP.sunfish.lw, 15) - 70) < 3 && Math.abs(B.stdWeight(SP.bass.lw, 38) - 823) < 20 && Math.abs(B.stdWeight(SP.pike.lw, 65) - 1870) < 50);
+
+  const rsB = getRandState(), immB = { ...IMMIGRATION }, { BIRD: BIRDB } = await import('../src/config.js'), arriveB = BIRDB.ARRIVE;
+  IMMIGRATION.REFUGE = 0; IMMIGRATION.RATE = 0; BIRDB.ARRIVE = 0;   // single-fish experiments: no rescue immigrants or loons wandering in
+  // CONSUMPTION NEVER EXCEEDS Cmax: a bass force-fed to a full gut every step for 5 days at 24 °C digests (consumes) ≤ Cmax
+  { seed(7001); const bw = new World(); bw.agents = []; bw.fry = []; bw.birds = []; bw.env.tempAt = () => 24;
+    const bs = bw.makeFish('bass', ONES7); bs.x = 1000; bs.y = 80; bw.agents.push(bs);
+    const W0 = bs.W; let ate = 0;
+    for (let i = 0; i < Math.round(5 * BIOE.DAY * 30); i++) { const room = SP.bass.gut * bs.W - bs.gut; if (room > 0) { bs.gut += room; bs.gutE += room * 4000; ate += room; } bw.step(1 / 30); }
+    const cm = B.cmax(SP.bass.bio, (W0 + bs.W) / 2, 24) * (W0 + bs.W) / 2 * 5;
+    check('CONSUMPTION is capped at the published Cmax: a bass kept stuffed for 5 days digests no more than Cmax allows', ate - SP.bass.gut * bs.W <= cm * 1.15, `${(ate - SP.bass.gut * bs.W).toFixed(1)} g digested vs Cmax ${cm.toFixed(1)} g`);
+    check('…and a well-fed fish GROWS — in mass and in length', bs.W > W0 * 1.01 && bs.L > bw.makeFish('bass', ONES7).L - 1e-9); }
+  // STARVATION: a fish with no food loses mass (not length), its condition falls, and it eventually dies of starvation
+  { seed(7002); const sw = new World(); sw.agents = []; sw.fry = []; sw.plankton = []; sw.larvae = []; sw.insects = []; sw.snails = []; sw.cray = []; sw.detritus = []; sw.plants = []; sw.birds = []; sw.herps = []; sw.nymphs = [];
+    sw.env.tempAt = () => 22;   // a uniformly 22 °C lake (the test isolates starvation)
+    const dietP = SP.perch.diet, lzP = SP.perch.Lzoo; SP.perch.diet = {}; SP.perch.Lzoo = 0;   // nothing it can eat (food regrows)
+    const f = sw.makeFish('perch', ONES7); f.x = 1000; f.y = 100; sw.agents.push(f);
+    const L0 = f.L, W0 = f.W; let t = 0;
+    while (!f.dead && t < 200 * BIOE.DAY) { sw.step(1 / 30); t += 1 / 30; if (Math.abs(t - 20 * BIOE.DAY) < 1 / 60) check('STARVING: an unfed perch loses mass but never length (it gets thinner)', f.W < W0 * 0.95 && f.L === L0, `W ${W0.toFixed(1)} → ${f.W.toFixed(1)} g, L ${f.L.toFixed(1)} cm`); }
+    SP.perch.diet = dietP; SP.perch.Lzoo = lzP;
+    check('…and dies of starvation once its condition falls far enough', f.dead && f.cause === 'starve', `${(t / BIOE.DAY).toFixed(0)} days, cause ${f.cause}, K ${f.K.toFixed(2)}`); }
+  // GAPE LIMITATION by body depth: a 35-cm bass can swallow a 12-cm minnow-shaped fish but not a 16-cm deep-bodied sunfish
+  { seed(7003); const gw = new World(); gw.agents = [];
+    const bs = gw.makeFish('bass', ONES7), mn = gw.makeFish('minnow', ONES7), sf = gw.makeFish('sunfish', ONES7);
+    const setL = (a, L) => { a.L = L; a.W = B.stdWeight(a.sp.lw, L); a.K = 1; };
+    setL(bs, 35); setL(mn, 7); setL(sf, 16); bs.x = mn.x = sf.x = 500; bs.y = mn.y = sf.y = 300;
+    check('GAPE: a bass swallows a slim fish but a deep-bodied sunfish past its gape is safe (prey depth ≤ mouth)', gw.canPrey(bs, mn) && !gw.canPrey(bs, sf), `gape ${(35 * SP.bass.gapeR).toFixed(1)} cm, sunfish depth ${(16 * SP.sunfish.depthR).toFixed(1)} cm`);
+    setL(sf, 9); check('…until the sunfish is small enough', gw.canPrey(bs, sf)); }
+  // FECUNDITY scales with the female: a bigger female's spawning makes more larvae (schools × fish)
+  { const larvaeFrom = L => { seed(7004); const fw = new World().setDate(0.30); fw.agents = []; fw.fry = [];
+      const fm = fw.makeFish('sunfish', ONES7), ml = fw.makeFish('sunfish', ONES7);
+      fm.sex = 0; ml.sex = 1; fm.L = L; fm.W = B.stdWeight(fm.sp.lw, L); ml.W = B.stdWeight(ml.sp.lw, ml.L);
+      for (const q of [fm, ml]) { q.mature = true; q.K = 1; q.gon = (q.sex === 0 ? q.sp.gsiF : q.sp.gsiM) * q.W; q.mateCd = 0; q.x = 300; q.y = bedY(300) - 10; fw.agents.push(q); }
+      fw.agentGrid.rebuild(fw.agents); fw.env.tempC = 24;
+      for (let i = 0; i < 300 && !fw.fry.length; i++) fw.step(1 / 30);
+      return fw.fry.reduce((s, f) => s + f.n, 0); };
+    const small = larvaeFrom(11), big = larvaeFrom(20);
+    check('FECUNDITY scales with female length (a 20-cm sunfish spawns several times the larvae of an 11-cm one)', small > 0 && big > 2.5 * small, `${small.toFixed(0)} vs ${big.toFixed(0)} larvae`); }
+  // FRY SCHOOLS: a school grows on zooplankton, thins, and its survivors recruit as individuals
+  { seed(7005); const yw = new World().setDate(0.32); yw.agents = yw.agents.filter(a => !a.sp.diet.fish && a.species !== 'sunfish' && a.species !== 'minnow'); yw.fry = [];
+    const g0 = Float32Array.from(yw.makeFish('minnow').g), f = yw._mkFry('minnow', 600, 200, 600, 1, 200, g0, new Float32Array(GENE_KEYS.length).fill(1)); yw.fry.push(f);
+    const L0 = f.L, n0 = f.n; let maxL = 0, recruited = false;
+    const b0 = yw.stats.births.minnow;
+    for (let i = 0; i < 30 * 400 && !recruited; i++) { yw.step(1 / 30); if (!f.dead) maxL = Math.max(maxL, f.L); if (yw.stats.births.minnow > b0) recruited = true; }
+    check('FRY: a school of larvae grows on zooplankton and thins out', maxL > L0 * 1.5, `${L0.toFixed(2)} → ${maxL.toFixed(2)} cm from ${n0} larvae`);
+    check('…and its survivors recruit as followed individuals (at the species\' recruit length)', recruited); }
+  // HEAT and HYPOXIA kill by species tolerance: held at 28 °C a trout dies, a carp doesn't; in 0.5 mg/L water a trout dies, a bullhead lives
+  { const survive = (k, T, o2) => { seed(7006); const hw = new World(); hw.agents = []; hw.fry = []; hw.birds = []; hw.env.tempAt = () => T; const f = hw.makeFish(k, ONES7); f.x = 1000; f.y = 200; hw.agents.push(f);
+      for (let i = 0; i < Math.round(3 * BIOE.DAY * 30) && !f.dead; i++) { if (o2 != null) hw.env.o2.fill(o2); hw.step(1 / 30); } return !f.dead; };
+    check('HEAT: 3 days at 29 °C kill a trout (UILT ~25 °C) but not a carp (~36 °C)', !survive('trout', 29) && survive('carp', 29));
+    check('HYPOXIA: water at ~0.5 mg/L O₂ kills a trout (lethal ~2.5 mg/L) but not a bullhead (~0.3 mg/L)', !survive('trout', 18, 0.5 / 9.5) && survive('catfish', 18, 0.5 / 9.5)); }
+  // the bioenergetic state round-trips through save/load (v27): length, mass, sex, maturity, gonads, gut, fry schools
+  { seed(7007); const sw = new World().setDate(0.35); for (let i = 0; i < 300; i++) sw.step(1 / 30);
+    const lw = new World(); lw.load(JSON.parse(JSON.stringify(sw.toJSON())));
+    const same = lw.agents.every((a, i) => { const b = sw.agents[i]; return a.L === b.L && a.W === b.W && a.sex === b.sex && a.mature === b.mature && a.gon === b.gon && a.gut === b.gut && a.K === b.K; });
+    check('save v27: every fish\'s length, mass, sex, maturity, gonads and gut round-trip exactly', same && sw.toJSON().version === 27);
+    check('…and the fry schools too', lw.fry.length === sw.fry.length && lw.fry.every((f, i) => f.n === sw.fry[i].n && f.L === sw.fry[i].L && f.k === sw.fry[i].k), `${sw.fry.length} schools`); }
+  Object.assign(IMMIGRATION, immB); BIRDB.ARRIVE = arriveB; setRandState(rsB);
 }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);

@@ -556,10 +556,11 @@ export class Environment {
         const flux = lit > 0.02 ? ENV.O2_PHOTO * lit : -ENV.O2_PLANT_NIGHT * Math.pow(PLANT.RESP_Q10, (this.tempAt(p.x, topY) - 20) / 10);   // dormant cold plants barely respire
         for (let k = 0; k < n; k++) this.addO2(p.x, topY + (k + 0.5) * p.height / n, flux * share);
       }
-      // fish respiration (consume O2) — scaled by the temperature at the fish's depth
+      // fish respiration (consume O₂): each fish's actual respiration from its bioenergetics (world.js `rO2`, g O₂ per
+      // sim-second — mass, temperature and swimming effort), converted to the normalised O₂ field by ENV.O2_PER_GO2
       for (const a of world.agents) {
         if (a.dead) continue;
-        this.addO2(a.x, a.y, -ENV.O2_RESP_FISH * (a.sp ? a.sp.respiration : 1) * a.size * this.metabAt(a.x, a.y) * dt);
+        this.addO2(a.x, a.y, -ENV.O2_PER_GO2 * (a.rO2 || 0) * dt);
       }
     }
 

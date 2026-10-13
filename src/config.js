@@ -51,13 +51,14 @@ export const SPAWN = {
   EDGE: 1.5,        // °C soft edge on each side of a species' spawning window
   SEASON_END: 0.5,  // year-fraction (Sept 1) after which nothing spawns (the autumn cooling path)
   MATE_REACH: 2.5,  // in season the mate-search radius grows to ×(1 + this): spawners aggregate and court over a wider area
-  KEEP: 0.25,       // a spawner keeps this fraction of its reproEnergy in reserve: the clutch is paid from the SURPLUS above it,
-                    //   so a well-fed pair spawns a bigger clutch than a lean one and neither spawns itself to starvation (0.5
-                    //   halved recruitment: catfish/carp/pike fell to 2–9 by year 3 over 3 seeds — too costly for the slow breeders)
+  // READINESS (world.js breedReady): mature, gonads ripe and in fair condition. A spawning's eggs (species fec × her
+  // ovaries' ripeness) × egg survival to swim-up (sHatch) become fry schools (FRY)
+  GON_READY: 0.8,   // gonads at ≥ this share of the species' ripe GSI
+  K_READY: 0.8,     // condition K at least this (a fish that has lost > ~20 % of its mass skips spawning)
   // spawning AGGREGATION (species with innate.spawnGround): in season, breeding-ready adults migrate to the littoral
   // spawning ground on their side of the lake so a sparse population can find mates (world.js innate block)
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
-  AGG_READY: 0.8,    // and the fish must hold ≥ this fraction of its reproEnergy (in breeding condition)
+  // (and the fish must be breedReady)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
   // SPARSE SPAWNERS: when a species is this rare in the lake, a ready spawner homes in on the nearest ready mate within CUE_R
   // (chemical / sound cues — how a thin population still finds mates); a common one just meets mates nearby
@@ -71,15 +72,102 @@ export const SPAWN = {
 // carries over), so intake per second is the same at any fixed step. HANDLE = 1/60 reproduces the browser exactly.
 export const FEED = {
   HANDLE: 1 / 60,   // s per discrete item (zooplankton, insect, larva, detritus, snail, crayfish) per food type
-  SATIATE: 0.95,    // a fish stops feeding above this fraction of its energy capacity (satiation)
-  HUNT_BELOW: 0.8,  // a piscivore only attacks fish below this fraction (room for a whole meal) — no overkill when full
-  FRY_GROW: 0.6,    // below this growth fraction every fish eats zooplankton (fry diet), whatever its adult diet
-  MEAL_K: 10,       // a fish meal's energy = foodValueFish × MEAL_K × (prey mass / predator mass) × capacity: prey of 10% of
-                    //   the predator's mass ≈ a full reserve (a big meal; a small fry is a snack)
-  DIGEST: 1200,     // s of digestion per unit prey-mass fraction at 18 °C (÷ the Q10 when warmer): 10% prey ≈ 120 s ≈ 2 days;
-                    //   max intake ≈ 2× maintenance when prey is plentiful (real piscivores: ~2–3×)
-  PREY_MIN: 0.15,   // a piscivore ignores fish smaller than this fraction of its own size (not worth the chase — real
-                    //   pike/bass take prey ~10–50% of their length; tiny fry are eaten by small predators, not big ones)
+  // (satiation is the gut — see BIOE — and a piscivore attacks only a fish that fits the room left in it)
+  MISS_CD: 0.5,     // s a piscivore recovers after a missed strike before it can strike again (species.js `capture` = success)
+  PREY_MIN: 0.07,   // a piscivore ignores fish shorter than this fraction of its own length (not worth the chase). Real
+                    //   piscivores mostly eat prey well below their gape: a 65-cm pike's MEDIAN prey is ~7 cm (Gaeta et al.
+                    //   2018: 5.05·TL^0.413 mm), so big pike do eat minnow-sized fish; larvae are left to the small fish
+};
+
+// ---------- BIOENERGETICS (world.js step; equations in bioenergetics.js, per-species parameters in species.js) ----------
+// Every fish runs the Wisconsin bioenergetics model ("Fish Bioenergetics 4.0", Deslauriers et al. 2017) on its real mass:
+// consumption up to the published Cmax(W, T), respiration, SDA, egestion and excretion in joules, growth in grams.
+export const BIOE = {
+  get DAY() { return TIME.YEAR_LEN / 365; },   // sim-seconds per real day: the seasonal calendar runs a real year per YEAR_LEN
+  K_STARVE: 0.6,    // condition K at which the reserve (the brain's "energy" sense, the UI bar) reads 0; it reads 1 at K = 1
+  K_START: [0.92, 1.0],   // condition range of founders and immigrants
+  // STARVATION: daily survival is logistic in condition K — 50 % per day at K_S50, 99 % at K_S99. Fish die after losing
+  // roughly 35–45 % of their mass (starvation-endurance studies; the basis of size-selective overwinter mortality, Shuter
+  // & Post 1990), so a fish keeps feeding to stay above ~0.8. Not computed above K_HAZARD (negligible there).
+  K_S50: 0.55, K_S99: 0.75, K_HAZARD: 0.85,
+  get STARVE_B() { return Math.log(99) / (this.K_S99 - this.K_S50); },
+  get STARVE_A() { return -this.STARVE_B * this.K_S50; },
+  // SWIMMING COST: respiration × e^(SWIM·(u − u_routine)), u = speed / top cruising speed. At the critical swimming speed
+  // active metabolism is ~5–10× standard (Brett 1964), i.e. several times the routine the published ACT already assumes
+  SWIM: 3.0,
+  // HEAT: at its upper incipient lethal temperature (UILT — the temperature half of a population survives ~10,000 min,
+  // Fry 1947) half die within UILT_DAYS, ×e faster per HEAT_STEEP °C hotter (resistance time falls log-linearly with T)
+  UILT_DAYS: 7, HEAT_STEEP: 0.7,
+  UILT_GENE: 6,     // °C shift of the UILT per unit of the tolerance gene above 1 (±~2 °C across the gene's range)
+  // HYPOXIA: below its acute lethal DO (species.js BIO o2Lethal, at 25 °C) half die within HYPOXIA_DAYS (published lethal levels
+  // are the lowest DO survived in 1–4-day tests), ×e faster per 1/HYPOXIA_STEEP of the way to anoxia
+  HYPOXIA_DAYS: 2, HYPOXIA_STEEP: 1.5,
+  O2_LETHAL_T: 0.055,
+  EXPOSE_TAU: 0.5,      // s (~2.4 h of physiology): the time constant of the O₂/temperature exposure that heat and hypoxia act on   // the lethal DO rises ~5.5 % per °C (bluegill 0.75→1.23 mg/L 25→35 °C; trout 1.3→2.4 mg/L 10→20 °C)
+  // GASTRIC EVACUATION per day (He & Wurtsbaugh 1993, 121 rates / 22 species: 0.049·e^(0.072·T) per hour → ×24), × each
+  // species' gerMul (pike ~0.25, bass ~0.4, sunfish ~0.5 of the general rate — big meals of big prey digest slowly); capped
+  // by Cmax (world.js)
+  GER: 1.176, GER_T: 0.072,
+  // the SIZE gene sets the maturation length: Lmat × gene^LMAT_GENE
+  LMAT_GENE: 1.0,
+  // the share of each species' published natural mortality M (species.js BIO) charged as the hazard of causes the lake
+  // doesn't simulate — disease, parasites, birds and mammals besides the loon, angling. The rest of M is the lake's own
+  // predation and starvation, which emerge.
+  M_OTHER: 0.5,
+  // GONADS: a mature fish puts this share of its surplus into its gonads until they reach the ripe GSI; below K_RESORB a
+  // starving fish resorbs them (atresia) before burning its body
+  REPRO_ALLOC: 0.5, K_RESORB: 0.75,
+};
+
+// ---------- YOUNG-OF-YEAR: fry schools (world.js _stepFry) ----------
+// A spawning's eggs that survive to swim-up (species.js sHatch) become SCHOOLS of larvae — real fish, simulated as schools
+// so a lake's huge annual crop of young fish costs no agents. Each school's fish run the same bioenergetics (FB4, the
+// juvenile set) on the zooplankton they find, die naturally at a size-dependent rate, and are FOOD for everything whose
+// mouth they fit: larval fish for planktivores and invertivores, fingerlings for the piscivores (and dragonfly nymphs) —
+// in real lakes young-of-year fish are the main food of pike, bass and perch in summer. When a school's fish reach the
+// species' recruit length (L0) — or in the next spring — its survivors RECRUIT: one followed individual (agent) per
+// N_PER_AGENT survivors (the agent budget can't hold every survivor; the rest are not carried on). So recruitment emerges
+// from egg production × food for the larvae × predation on them — the classic determinants of year-class strength.
+export const FRY = {
+  PATCH_N: 1500,       // larvae per school at swim-up (a spawning's larvae split into schools of about this many)
+  MAX_PER_SPAWN: 4,    // schools one spawning makes at most (more larvae → bigger schools)
+  CAP: 80,             // schools in the lake at most (× area)
+  N_PER_AGENT: 15,     // survivors per recruited individual
+  MAX_RECRUITS: 2,     // recruits one school can yield
+  EAT_R: 40,           // px a school forages over for zooplankton
+  SEEK_R: 120,         // px: a school drifts toward the nearest zooplankton within this (larvae gather where food is)
+  FEEDS: 3,            // zooplankton patches a school crops per step at most
+  M_LARVA: 0.05,       // /day natural (non-predation) mortality at 1 cm — ∝ 1/length (Lorenzen 1996 size scaling): ~10 %/day
+                       //   for 5-mm larvae, ~2 %/day at 3 cm (larval fish lose 5–30 %/day in the field, much of it to predators)
+  SWIM: 8,             // px/s school drift
+  CATCH: 0.03,         // young fish a predator catches from a school per handling slot, at a full school's density (n =
+                       //   PATCH_N; sparser schools yield fewer) — larvae are dispersed and hard to find among the zooplankton
+  LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)
+  SPRING_YF: 0.08,     // year-fraction (late March) after which an overwintered school recruits whatever it has become
+};
+
+// ---------- PREY as food (world.js feeding): wet mass per item (g), energy density (J/g wet), digestible share ----------
+// Energy densities are measured values (Cummins & Wuycheck 1971; the prey energy-density database of Hermann et al. 2025,
+// Ecology 106:e70154 — Kelso 1973, Ciancio et al. 2007/2013; Anderson et al. 2016 for detritus). Small invertebrates are drawn as
+// single particles but each particle is a PATCH of many animals (a zooplankton swarm, a patch of midge larvae); its mass
+// is the one calibrated quantity (it stands in for the slice of lake the 2-D world represents). Crayfish, snails, nymphs,
+// tadpoles, frogs and turtle hatchlings are single animals at their real masses. Digestibility < 1 is the indigestible
+// part beyond the species' own egestion (shells, exoskeleton, plant fibre, refractory detritus).
+export const PREY = {
+  PATCH_R: 14,                    // px: a patch (swarm) of small prey spans ~15–20 cm — a fish anywhere within it can feed
+  DAPH_G: 2.0, DAPH_ED: 2400,     // a Daphnia swarm patch; Daphnia ~2,400 J/g wet (D. pulicaria 2,214–2,612: Snow 1972)
+  COPE_G: 1.2, COPE_ED: 2700,     // a copepod patch (smaller per patch; copepods ~2,700 J/g)
+  LARVA_G: 3.0, LARVA_ED: 2700,   // a patch of chironomid / mayfly larvae (chironomids 2,300–2,750; mayflies 2,700–6,900 J/g)
+  INSECT_G: 1.5, INSECT_ED: 4000, // emerged adult aquatic insects at the surface (mayflies ~3,300–4,400 J/g)
+  NYMPH_G: 0.5, NYMPH_ED: 4000,    // one late-instar dragonfly nymph (~0.2–1 g; Odonata 1,330–5,410, typically ~4,000 J/g)
+  SNAIL_G: 0.4, SNAIL_ED: 1660, SNAIL_DIG: 0.6,   // one pond snail WITH its shell: 1,660 J/g whole (Ciancio et al. 2007); fish
+                                                   //   assimilate ~27–65 % of a snail's energy (Vinson & Baker 2008)
+  CRAY_G: 12, CRAY_ED: 3500, CRAY_DIG: 0.85,      // one adult crayfish (~10–25 g; exoskeleton partly indigestible)
+  DETRITUS_G: 1.0, DETRITUS_ED: 979, DETRITUS_DIG: 0.35,    // organic detritus 979 J/g wet (Anderson et al. 2016) — poor food
+  ALGAE_G: 2.0, ALGAE_ED: 1630, ALGAE_DIG: 0.45,  // g wet algae per unit of phytoplankton grazed; ~1,630 J/g (≈ detritus/0.6,
+                                                   //   Anderson et al. 2016); fish digest algae poorly
+  PLANT_ED: 1340, PLANT_DIG: 0.4,  // macrophyte tissue ~1,340 J/g wet (Boyd 1968/70; 700–2,550) — g per px is PLANT.GRAMS_PER_PX
+  TAD_ED: 2100, FROG_ED: 4000, TURTLE_ED: 3000,   // whole tadpoles (~7–12 % dry matter), frogs (~20 %), turtle hatchlings (prior)
 };
 
 // ---------- brood protection (newborn cannibalism) ----------
@@ -98,6 +186,9 @@ export const BROOD = {
   GUARD_TETHER: 2.5,    // steer weight pulling a guardian back to its nest (outweighs a brain's full turn once ~half-way out)
   HOVER: 0.3,           // a guardian on station with no intruder slows to this × its cruise (hovering/fanning over the nest)
   FRY_TETHER: 0.9,      // steer weight keeping guarded fry near the nest
+  // the cost of guarding: nesting male bass are ~2× as active day and night (Cooke et al. 2002) with metabolic rate up to
+  // +60 % (smallmouth: Hinch & Collins 1991) while their feeding is cut 70–100 % — they lose condition over the nest
+  GUARD_METAB: 1.6, GUARD_FEED: 0.2,
   // NURSERY: young fish shelter in vegetation and structure (the littoral nursery habitat), more so when frightened
   NURSERY: 0.45,        // cover-seeking steer weight for juveniles (age < half their maturity), × (1 + fear)
   SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
@@ -160,7 +251,8 @@ export const BIRD = {
   SURFACE: [5, 14],    // s resting at the surface between dives
   DIVE: [9, 18],       // s of breath per dive
   SIGHT: 230,          // px it spots prey underwater (× water clarity: a visual hunter)
-  PREY_MAX: 1.3,       // largest prey (effective size) it can swallow: minnows, perch, sunfish, young bass/pike/catfish
+  PREY_MAX: 25,        // cm: the longest fish it swallows (common loons take fish ~10–20 cm, rarely ~25): minnows, perch,
+                       //   sunfish, young bass/pike/catfish/trout
   REACH: 9,            // px catch reach
   LIGHT_MIN: 0.15,     // it only dives in daylight
   MEALS: 5,            // fish per visit before it's sated and leaves
@@ -323,7 +415,8 @@ export const CYANO = {
   // so it mainly hits surface fish (minnows). A topical pollution/climate-scenario amplifier.
   TOX_THRESH: 0.6,       // local cyano (fraction of CAP) above which the scum turns toxic — a DENSE scum (was 0.4: 81 of 85
                          // surface cells exceeded it every early summer, so the toxin was simply "on" all summer)
-  TOXIN: 0.015,          // fish energy drained /s per unit cyano above the threshold (scaled to the realistic metabolism)
+  RESP_STRESS: 1.5,      // × respiration added per unit (fraction of CAP) of cyano above the threshold (detoxification, gill
+                         //   and liver damage) — a fish in the densest scum burns ~1.6× its normal metabolism
   TOX_ZOO: 0.4,          // /s extra zooplankton death rate inside a toxic scum
 };
 
@@ -383,8 +476,9 @@ export const ENV = {
   AERATE_RAIN: 0.12,
   AERATE_ROW1: 0.4,        // … and the row just below the surface aerates at this fraction of the surface rate
   O2_PHOTO: 1.7,           // O2 produced per (biomass*light) unit
-  O2_RESP_FISH: 0.0015,    // O2 consumed per (respiration*size*metabolism) — scaled with the realistic fish metabolism (was 0.012,
-                           //   tuned to the old ~8× metabolism: a dense school stripped its cell anoxic in seconds)
+  O2_PER_GO2: 0.044,       // normalised O₂ removed from a fish's cell per g O₂ it respires (its bioenergetic respiration, world.js
+                           //   rO2) — the one constant tying real grams to the 2-D field; set so the community's total draw equals
+                           //   the earlier calibration of the lake's O₂ budget (fish ≈ 15–40 % of the sediment demand, as in real lakes)
   O2_PLANT_NIGHT: 0.006,   // plant respiration at night
   O2_SED: 0.15,            // SEDIMENT O₂ demand /s at each column's bed cell (×depth ramp below the epilimnion)
   O2_PELAGIC: 0.009,       // water-column O₂ demand /s below the epilimnion (decomposition of sinking particulate organic
@@ -392,19 +486,17 @@ export const ENV = {
   O2_START: 0.85,
   SAT_TEMP_K: 0.020,       // saturation drop per deg above 18C
   HYPOXIA: 0.35,           // default critical O2 (species override via sp.o2Crit); below it, fish take stress
-  HYPOXIA_SEVERE: 0.15,    // below this the hypoxia drain is 2.5× (lethal water)
-  HYPOXIA_PENALTY: 0.015,  // energy/s at zero O2 (scaled by deficit; ×2.5 when severe) — ~3–6× routine metabolism: escape-or-die, not instant
-  HYPOXIA_AVOID: 1.2,      // innate oxyregulation: a fish whose local O₂ < its o2Crit × this steers upward out of it (world.js)
+  HYPOXIA_AVOID: 1.0,      // innate oxyregulation: a fish whose local O₂ < its o2Crit × this steers upward out of it (world.js)
+  O2_MGL: 9.5,             // mg/L of dissolved O₂ at normalised 1.0 (saturation at ~18 °C) — converts published DO limits
 
   // metabolism scales with temperature exponentially (fish Q10 ≈ 2–2.5): ×1 at 18 °C, ~×0.3 at 3 °C, ~×1.7 at 25 °C — so
   // winter fish idle on their reserves and a hot summer is costly
   METAB_Q10: 2.2,
 
-  // thermal niche: each species has a preferred temperature (sp.tempOpt) and an UPPER tolerance (sp.tempOpt + tempTol):
-  // above it, energy drains at THERMAL_STRESS per °C (heat stress is what kills fish). Cold is NOT stressful for these
-  // temperate natives (all overwinter under ice): below tempOpt they just slow down — swimming and feeding fall with a
-  // thermal performance curve (COLD_PERF) and metabolism falls with the Q10. → warm/cool guilds + the summer squeeze.
-  THERMAL_STRESS: 0.0006,  // energy/s per °C above a species' upper tolerance (~15% of routine metabolism per °C)
+  // thermal niche: each species has a preferred temperature (sp.tempOpt, behavioural) and an upper tolerance; heat stress
+  // itself is in the bioenergetics (appetite collapses toward CTM, respiration climbs) and lethality in BIOE (UILT). Cold
+  // is NOT stressful for these temperate natives (all overwinter under ice): below tempOpt they just slow down — swimming
+  // and foraging fall with a thermal performance curve (COLD_PERF).
   COLD_PERF_MIN: 0.2,      // activity/feeding factor at ≤ 2 °C (rises linearly to 1 at the species' tempOpt)
 };
 
@@ -495,7 +587,6 @@ export const MICROBE = {
 export const PLANKTON = {
   CAP: 300,                // reference-pond cap (auto-scaled by world area)
   RATE_BASE: 60,           // /s max spawn at full phytoplankton density (scaled by area)
-  ENERGY: 0.20,            // energy a planktivore gains per zooplankter eaten
   DRIFT: 6,                // horizontal drift speed
   GRAZE: 0.004,            // phytoplankton biomass each zooplankter clears /s (gentle → stable cycle)
   STARVE: 0.08,            // death rate /s where phytoplankton is depleted (soft starvation)
@@ -507,7 +598,6 @@ export const PLANKTON = {
   FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton (= the old
                            //   0.022/step at the browser's 1/60 step; per-step made it dt-dependent — half as much headless at 1/30)
   FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal (= the old 0.003/step at 1/60)
-  FALLBACK_VALUE: 4.2,     // energy per unit phyto grazed (efficient → sustenance from little phyto; grazed×value ≈ a modest meal)
   // TWO KINDS of zooplankter (p.k): 0 = DAPHNIA — big cladoceran filter-feeders: they graze hard (their late-spring boom
   // clears the water — the clear-water phase), are the fishes' favourite, richest prey, can't eat or tolerate
   // cyanobacteria and barely breed in cold water; 1 = COPEPODS — small, quick and evasive, cold-tolerant (they carry the
@@ -518,8 +608,6 @@ export const PLANKTON = {
   DAPH_CYANO: 2.5,         // × the cyanobacteria fraction cut from Daphnia's share
   DAPH_GRAZE: 2.4,         // Daphnia graze × GRAZE; copepods × COPE_GRAZE
   COPE_GRAZE: 0.6,
-  DAPH_ENERGY: 0.26,       // energy per Daphnia eaten (big, lipid-rich)
-  COPE_ENERGY: 0.14,       // energy per copepod (small)
   COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike
   DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate (cladocerans are the most sensitive)
   SIGHT: 48,               // px: how far a fish can see a millimetre-sized zooplankter (a few body lengths), whatever its vision range
@@ -529,7 +617,6 @@ export const DETRITUS = {
   CAP: 220,                // reference-pond cap (auto-scaled by world area)
   SINK: 5,                 // px/s downward
   LIFE: 26,                // seconds before it decays into nutrient
-  ENERGY: 0.22,            // energy per detritus eaten (bottom feeders)
   FROM_DEATH: 0.6,         // fraction of a dead fish's "mass" returned as detritus
 };
 
@@ -542,7 +629,6 @@ export const INSECT = {
   LARVA_SEED: 50,          // initial benthic larvae (× world area)
   LARVA_CAP: 240,          // max benthic larvae (× area)
   LARVA_RATE: 22,          // /s larval recruitment at full detritus availability (× area), capped — detritus → insects
-  LARVA_ENERGY: 0.18,      // energy a bottom fish gains per larva eaten
   DEV_RATE: 0.05,          // /s development at the optimum temperature (→ ~20 s to mature when warm; ~0 when cold → overwinter)
   DEV_TEMP_MIN: 10,        // °C below which larvae barely develop
   DEV_TEMP_OPT: 25,        // °C of fastest development
@@ -550,7 +636,6 @@ export const INSECT = {
   ADULT_CAP: 220,          // max surface adults (× area)
   ADULT_LIFE: 7,           // s adult surface lifespan
   ADULT_DRIFT: 9,          // px/s surface drift scale
-  ADULT_ENERGY: 0.20,      // energy a surface fish gains per adult insect eaten
   EGG: 0.6,                // fraction of expired (uneaten) adults that lay an egg → a new larva (closes the cycle)
 };
 
@@ -566,9 +651,8 @@ export const ODONATA = {
   EMERGE_T: 18,            // °C: a mature nymph emerges only in water warmer than this, by day (early summer)
   EAT_R: 8,                // px: strike reach of the extendable labium
   HUNT: 0.6,               // /s strike attempts (ambush; × warmth)
-  FRY_MAX: 0.42,           // largest fish (effective size) a nymph can take: small fry only
+  FRY_MAX: 2.5,            // cm: the largest fish larva a nymph's labium can take (larvae and early fry only)
   CRAWL: 2,                // px/s
-  ENERGY: 0.3,             // energy a fish gains per nymph eaten (a big insect)
   CRYPTIC: 0.02,          // per-step chance a fish foraging over a nymph actually finds it (they hide among weeds and in the silt)
   SENESCE: 0.0003,         // /s background nymph mortality (≈ 60 % survive a year: they live 1–2 years as nymphs)
   ADULT_LIFE: 70,          // s an adult dragonfly lives (≈ a few weeks)
@@ -602,10 +686,10 @@ export const FROG = {
   EAT_R: 12,               // px: a frog's tongue reach for an emerged insect
   INSECT_E: 0.12,          // energy per insect
   SHORE_FOOD: 0.0018,      // energy /s at 20 °C from foraging along the shore while at the surface (mostly land insects)
-  SIZE_TAD: 0.35,          // effective size (fish-size units) — what fits a fish's gape
-  SIZE_FROG: 0.9,
-  MEAL_TAD: 0.25,          // energy a fish gains from a tadpole (× its digestion like a fish meal)
-  MEAL_FROG: 0.6,
+  DEPTH_TAD: 1.6,          // cm body depth of a ranid tadpole — what must fit a fish's gape
+  DEPTH_FROG: 3.5,         // cm (an adult green/leopard frog's body; half that just after metamorphosis)
+  MASS_TAD: 4,             // g wet: a tadpole near metamorphosis (~3–8 g)
+  MASS_FROG: 40,           // g wet: an adult frog (green ~30–80 g, leopard ~20–60 g); a quarter of that as a new froglet
   DIVE_R: 70,              // px: a frog dives when a piscivore it could fit is this close
   SWIM: 18,                // px/s
 };
@@ -629,8 +713,8 @@ export const TURTLE = {
   EAT_R: 12,
   METAB: 0.0008,           // energy /s at 20 °C (Q10 2.2); reptiles are thrifty
   SNAIL_E: 0.12, LARVA_E: 0.08, DETRITUS_E: 0.06,   // energy per snail / insect larva / bit of carrion or plant debris
-  SIZE_HATCH: 0.35, SIZE_ADULT: 1.6,   // effective sizes for a fish's gape (a hatchling fits a pike or bass)
-  MEAL_HATCH: 0.3,
+  DEPTH_HATCH: 2.6, DEPTH_ADULT: 13,   // cm shell width: a hatchling fits a big pike's or bass's gape, an adult nothing's
+  MASS_HATCH: 4.5,         // g wet: a painted-turtle hatchling (~3.5–5 g)
 };
 
 // SNAIL — benthic gastropod GRAZERS. A snail crawls slowly over the lit bed scraping attached algae (periphyton;
@@ -648,7 +732,6 @@ export const SNAIL = {
   FOOD_AT: 0.05,           // local phyto below which a snail starves (and recruitment slows)
   STARVE: 0.03,            // /s death rate where food is depleted
   CRAWL: 1.4,              // px/s crawl speed along the bed
-  ENERGY: 0.16,            // energy a molluscivore (sunfish/carp) gains per snail eaten
   SENESCE: 0.006,          // /s background death (turnover)
 };
 
@@ -667,7 +750,6 @@ export const CRAYFISH = {
   COVER_PULL: 0.5,         // how strongly a crayfish steers its crawl toward the nearest cover (refuge-seeking)
   EAT_R: 15,               // px reach to catch a snail
   SNAIL_HUNT: 2.0,         // /s rate a crayfish attempts to take a nearby snail
-  ENERGY: 0.32,            // energy a predator fish (bass/pike/catfish) gains per crayfish eaten — a substantial meal
   SENESCE: 0.004,          // /s background death (turnover). NB: crayfish have no explicit STARVATION path (unlike snails) —
                            // deaths = this senescence + predation; population is held in check by the detritus-gated +
                            // logistic recruitment above (the sole density regulator), which is sufficient & self-limiting.
@@ -684,7 +766,8 @@ export const PLANT = {
   BIOMASS_PER_PX: 0.018,   // biomass = height * this
   BITE_RATE: 300,          // px of plant height a grazing herbivore removes per SECOND (× dt) — = the old 5 px/step at the
                            //   browser's 1/60 step (per-step bites made grazing dt-dependent: half the rate headless at 1/30)
-  ENERGY_PER_PX: 0.04,     // energy a herbivore gains per px grazed (× the plant's palatability) — = the old 0.20 per 5-px bite
+  GRAMS_PER_PX: 0.02,      // g wet plant tissue a herbivore swallows per px of height grazed (× the plant's palatability:
+                           //   tough, defended forms yield less)
   // SEASONAL PHENOLOGY: macrophytes grow in the warm season, senesce (die back) in autumn → a fall detritus/DOM pulse,
   // and overwinter as rootstock — driven by the LOCAL water temperature (env.tempAt), so a warmer climate lengthens the
   // growing season (a climate-scenario lever) and the cold/dark deep can't support tall beds (an emergent depth limit).
@@ -757,10 +840,8 @@ export const SCHOOL = {
 export const ACTION = {
   STRIKE_BURST: 0.7,   // a full strike drives thrust toward 1 (a committed lunge)
   STRIKE_REACH: 0.6,   // …and EXTENDS the predator's eat reach by up to +60% (takePrey) — the snatch at the end of a lunge
-  STRIKE_COST: 0.025,  // /s energy cost at full strike (~5–10× routine metabolism: lunging is expensive → only worth it when prey is catchable)
   FLEE_BURST: 0.9,     // a full flee drives thrust toward 1 (a panic sprint)
   BURST_SPEED: 0.35,   // strike/flee also lift the speed cap by up to +35% → a sprint briefly exceeds cruise speed
-  FLEE_COST: 0.03,     // /s energy cost at full flee (a sprint is the most expensive act)
   HIDE_STILL: 0.85,    // a full hide suppresses thrust by this much (freeze — hold position)
   HIDE_COVER: 0.6,     // …and steers toward the nearest cover (reed/log/weed bed) to hold in it
   HIDE_CONCEAL: 0.5,   // a freezing/hiding prey shrinks a predator's strike reach by up to this (harder to detect/catch)
@@ -793,8 +874,6 @@ export const MOTION = {
 // meal, sated by eating — distinct from the instantaneous energy LEVEL the brain already senses). FEAR jumps to the
 // nearest-threat proximity and decays after the threat leaves (lingering caution). Deterministic; see world.js move step.
 export const DRIVE = {
-  HUNGER_GAIN: 0.03,   // /s hunger accrues with time since a meal
-  SATE: 0.4,           // hunger removed per meal eaten (eating sates the appetite)
   FEAR_DECAY: 0.5,     // /s exponential decay of fear once no threat is near (recently-scared fish stay cautious a while)
 };
 

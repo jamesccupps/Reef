@@ -5,7 +5,63 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-13 more life** section comes first, then the **2026-10-12 realism overhaul**, then the **2026-10-11 audit-fix changes**. Where either disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-13 bioenergetics** section comes first, then **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-13 bioenergetics: real bodies, published physiology, young-of-year (supersedes everything below)
+
+Save format **v27**. Every number below is from a published source (cited inline in `species.js` `BIO` and `config.js`
+`BIOE`/`PREY`/`FRY`); values not yet checked against a primary source are marked "(prior)" in the code.
+
+- **The Wisconsin model** (`src/bioenergetics.js`, pure): Fish Bioenergetics 4.0 (Deslauriers et al. 2017) ported line by
+  line from its R source — consumption CEQ 1–4 (Kitchell, Thornton–Lessem, Bevelhimer), respiration REQ 1/2 with the
+  activity term, egestion/excretion EGEQ/EXEQ 1–4, SDA on (C − F), predator energy density PREDEDEQ 1–3, OXYCAL 13,560
+  J/g O₂. The gate checks it against reference values from FB4's own code for 7 species (`f(T)`, `Cmax`, `R`, a full budget).
+- **Parameters** (`species.js` `BIO`): FB4's official sets — fathead minnow (Duffy 1998), bluegill adult + juvenile
+  (Kitchell et al. 1974; no pumpkinseed model exists), yellow perch adult + juvenile (Kitchell et al. 1977), rainbow trout
+  (Railsback & Rose 1999), brown bullhead (Hartman et al. 2017; there is no channel-catfish set in FB4), largemouth bass (Rice
+  et al. 1983), northern pike (Bevelhimer et al. 1985). **Common carp has no published Wisconsin model**: a composite from
+  carp lab data (Beamish 1964 standard metabolism; Chakraborty 1992 energy budget) on FB4's bighead-carp temperature curve.
+- **The fish's body** (`world.js` makeAgent/step): total length `L` (cm, never shrinks), wet mass `W` (g), condition
+  `K = W / Ws(L)` (the published standard-weight equations), sex, maturity, gonads `gon` (g), gut contents `gut`/`gutE`.
+  `energy` is now a derived reserve (K 0.6 → 0, K 1 → 1) for the brain and UI. Behaviour scales with length: speed ∝ L^0.6
+  (Cano-Barbacil et al. 2020 Ucrit), reach ∝ L^0.7, vision ∝ L^0.3.
+- **Eating and digesting**: every food item is real grams of prey with its measured energy density (J/g wet: Cummins &
+  Wuycheck 1971, the Hermann et al. 2025 database, Nelson & Kruuk 1997 …) and digestibility (snail shells, crayfish
+  exoskeleton, plants and detritus are poor food). The stomach empties exponentially at the measured gastric-evacuation
+  rate (He & Wurtsbaugh 1993, × the species' own speed: pike ~2 days a meal, sunfish ~1) but never faster than FB4's Cmax —
+  so a fish can't exceed its published maximum ration, and its achieved fraction `p` (a diagnostic `pAvg`) is set by the
+  food it finds. Hunger is the gut's emptiness. Small invertebrates are PATCHES (a zooplankton swarm, a patch of midge
+  larvae: `PREY.*_G` grams, reached within `PREY.PATCH_R`) that a small fish crops and a big one clears — the one
+  calibrated quantity (it stands in for the slice of lake the 2-D world represents).
+- **Growth**: the FB4 balance each step; a fish heavier than standard puts the surplus into length (inSTREAM's rule), so a
+  starving fish thins but never shrinks. A mature fish routes half its surplus into gonads until ripe (GSI: perch ♀ 20 %,
+  trout ♀ 20 %, pike ♂ 2.5 % …), carried over winter, so pike and perch spawn on gonads built the autumn before.
+- **Death** (hazards, cause tallied in `stats.died`): starvation (logistic in K), heat above the species' UILT and
+  hypoxia below its acute lethal O₂ (EPA 1986; Moss & Scott 1961 …, rising 5.5 %/°C) — both judged on the O₂ and temperature
+  EXPERIENCED over ~2 h (`BIOE.EXPOSE_TAU`, because one behavioural second is ~5 h of physiology), the share `BIOE.M_OTHER`
+  of each species' published natural mortality that the lake doesn't simulate (disease, birds, angling: M = 5.4/tmax,
+  Hamel & Cope 2022; bass and pike from field studies), old age (real lifespans).
+- **Gape**: prey body depth (length × the species' depth ratio × the body gene) must fit the predator's mouth (length ×
+  gape ratio: bass 0.12, pike ≈ its own depth — Lawrence 1958, Hill et al. 2004, Nilsson & Brönmark 2000); prey under 7 % of
+  the predator's length is ignored (a 65-cm pike's median prey is ~7 cm: Gaeta et al. 2018). Strikes can miss
+  (`capture`: pike 0.6 … perch 0.15), leaving the predator a moment to recover. Piscivory starts at a species length
+  (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats zooplankton below `Lzoo`.
+- **Reproduction**: sexes (opposite-sex pairs only; the male guards the nest, at a metabolic and feeding cost —
+  `BROOD.GUARD_*`); eggs from the published length–fecundity regressions (perch: Schneider 1984; bass: Laarman & Schneider
+  1985; pike: Priegel & Krohn 1975 …) × the female's ripeness; maturity by length AND age (the SIZE gene is now the
+  maturation length — a heritable life-history trait).
+- **Young-of-year** (`world.fry`, `FRY`): a spawning's eggs that survive to swim-up (`sHatch`, published egg survival) become
+  schools of larvae — real fish run on the same FB4 equations, eating zooplankton patches, following the zooplankton,
+  thinned by size-dependent natural mortality and starvation, and eaten by everything whose mouth they fit (planktivores
+  take larvae, piscivores fingerlings, dragonfly nymphs a few). At the species' recruit length `L0` (or the next spring)
+  one followed individual recruits per `FRY.N_PER_AGENT` survivors, carrying the school's genome. Recruitment is therefore
+  emergent: eggs × food for the larvae × predation on them.
+- **Community**: founder numbers follow real biomass ratios — real lakes hold hundreds of forage fish per adult bass
+  (bluegill 5,000–20,000/ha vs 20–50 adult bass/ha), so the lake starts with ~5 adult bass, ~2 pike, ~5 carp among ~700 fish.
+- **Render/UI**: fish are drawn at their true length (0.79 px/cm, a gentle floor under 10 cm); fry schools are shimmering
+  clouds of tiny dashes; the fish panel shows length, mass, condition, sex, maturity and how well it is feeding.
 
 ---
 

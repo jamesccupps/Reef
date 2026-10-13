@@ -43,7 +43,16 @@ const nowMs = () => (typeof performance !== 'undefined' && performance.now) ? pe
 const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR;
 const FCOLS = GRID.FIELD_COLS, FROWS = GRID.FIELD_ROWS, CW = W / FCOLS, CH = H / FROWS;
 const rgb = c => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
-const FISH_SCALE = 2.0; // world px per fish-unit, times species size
+// TRUE SCALE (bioenergetics 2026-10-13): a fish is drawn at its real total length L — PX_PER_CM world px per cm (a 65-cm
+// pike ≈ 51 px, a 15-cm sunfish ≈ 12 px) — with a gentle floor below 10 cm (×(L/10)^0.6) so minnows and young fish stay
+// legible: a 6-cm minnow draws as 7.4 cm, a 2-cm fry as 3.8 cm. `fishScale` = world px per sprite unit (sprite length is
+// 2·P.L + tail.len units, species.js drawFish).
+const PX_PER_CM = 0.79;
+const drawLenCm = L => (L >= 10 ? L : 10 * Math.pow(Math.max(L, 0.05) / 10, 0.6));
+const spriteUnits = P => 2 * P.L + ((P.tail && P.tail.len) || 1.5);
+const fishScale = (sp, L) => PX_PER_CM * drawLenCm(L ?? sp.Lref) / spriteUnits(sp.P);
+const _hexCache = new Map();
+const hexRgb = h => { let v = _hexCache.get(h); if (!v) { const n = parseInt(h.slice(1), 16); v = [(n >> 16) & 255, (n >> 8) & 255, n & 255]; _hexCache.set(h, v); } return v; };
 
 const SKY_NIGHT = [10, 18, 42], SKY_DAY = [38, 120, 138], SKY_DUSK = [150, 78, 52];
 const ABYSS = [2, 7, 13];
@@ -87,7 +96,7 @@ export function displayHeading(h, faceHint) {
 const MAX_FISH_EXTENT = (() => {
   let m = 0;
   for (const k in SP) {
-    const sp = SP[k], P = sp.P, Sworld = sp.size * FISH_SCALE;       // grow=1 (adult) is the worst case
+    const sp = SP[k], P = sp.P, Sworld = fishScale(sp, sp.vb.Linf * 1.3);   // the largest a fish of this species could grow
     const ex = (P.L + (P.tail ? P.tail.len : 1.2) + 3) * Sworld, ey = (P.Hh * 2.8 + 3.34) * Sworld;
     m = Math.max(m, ex, ey);
   }
@@ -201,7 +210,7 @@ class SpriteCache {
         }
       };
     } else put = (u, v, col, al) => { g.globalAlpha = al; g.fillStyle = rgb(col); g.fillRect(Math.round(cx + u * BASE), Math.round(cy + v * BASE), DAB, DAB); };
-    const fake = { hue, energy: sp.reproEnergy * 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };
+    const fake = { hue, energy: 0.82, grow, spd: 0, id: 0, thrustSmooth: 0.45 };   // energy = the reserve 0..1 (a fish in good condition)
     const o = { scale: BASE, beat: (fr / this.FRAMES) * TAU, drive: this._driveVal(dB), morph, still };   // undulation amplitude scales with effort
     sp.draw(fake, put, 0, { light }, o);
     if (img && BASE > this.BASE) softenEdges(img.data, w, h);   // close-up tiers: anti-alias the dab-stepped silhouette
@@ -976,6 +985,23 @@ export class Renderer {
     const near = z >= 1.6, s = Math.max(0.7, z);
     const slope = x => Math.atan2(bedY(x + 3) - bedY(x - 3), 6);   // the bed's local tilt
     const off = (o, pad) => o.x < vr.x0 - pad || o.x > vr.x1 + pad || o.y < vr.y0 - pad || o.y > vr.y1 + pad;
+    // YOUNG-OF-YEAR fry schools (world.fry): a loose shimmering cloud of tiny fish — more of them the bigger the school —
+    // each a short translucent dash at the fish's real (floored) length, all heading the school's way. Positions are a
+    // deterministic function of the school's index and time (render-only).
+    for (let i = 0; i < (world.fry || []).length; i++) {
+      const f = world.fry[i]; if (f.dead || off(f, 40)) continue;
+      const sp = SP[f.k], cnt = Math.min(16, 3 + Math.ceil(Math.sqrt(f.n) / 2)), spread = (6 + Math.sqrt(f.n) * 0.35) * z;
+      const len = Math.max(1.2, PX_PER_CM * drawLenCm(f.L) * z), dir = f.vx >= 0 ? 1 : -1, cx = X(f.x), cy = Y(f.y);
+      const rgbT = hexRgb(sp.tag);
+      ctx.strokeStyle = 'rgba(' + ((rgbT[0] * 0.55 + 90) * lit | 0) + ',' + ((rgbT[1] * 0.55 + 100) * lit | 0) + ',' + ((rgbT[2] * 0.55 + 110) * lit | 0) + ',0.7)';
+      ctx.lineWidth = Math.max(0.6, len * 0.28); ctx.beginPath();
+      for (let j = 0; j < cnt; j++) {
+        const a1 = j * 2.399 + i * 0.77, r = spread * Math.sqrt((j + 0.5) / cnt);
+        const px = cx + Math.cos(a1 + t * 0.35) * r + Math.sin(t * 2.1 + j) * 1.2 * z, py = cy + Math.sin(a1 + t * 0.35) * r * 0.6 + Math.cos(t * 1.7 + j * 1.3) * z;
+        ctx.moveTo(px - dir * len * 0.5, py); ctx.lineTo(px + dir * len * 0.5, py);
+      }
+      ctx.stroke();
+    }
     // dragonfly NYMPHS: squat olive-brown bodies with a big head and splayed legs, clinging low in the weeds
     for (const n of world.nymphs || []) {        // ~3.5 cm: a few px long
       if (off(n, 10)) continue;
@@ -1099,8 +1125,7 @@ export class Renderer {
     if (a.vis === undefined || (fresh && (a.age ?? 99) > 2)) a.vis = 1;
     a.vis += (1 - a.vis) * (1 - Math.exp(-rdt * 2.5));
 
-    const grow = a.grow ?? 1;
-    const Sworld = a.size * FISH_SCALE * (0.42 + 0.58 * grow);
+    const Sworld = fishScale(a.sp, a.L);
     const sPx = Sworld * z;
     const px = ax * z + ox, py = ay * z + oy;
     // FAR TIER: a tiny ORIENTED FISH GLYPH (body ellipse along the heading + a tail fin, in the species' own proportions)
@@ -1212,7 +1237,7 @@ export class Renderer {
 
   // a recently-dead body: static sprite, sinking, rolling belly-up, fading out
   _corpse(ctx, c, env, cam) {
-    const grow = c.grow ?? 1, Sworld = c.size * FISH_SCALE * (0.42 + 0.58 * grow), sPx = Sworld * cam.zoom;
+    const Sworld = fishScale(c.sp, c.L), sPx = Sworld * cam.zoom;
     const p = cam.worldToScreen(c.x, c.y), alpha = clamp(c.t / (c.t0 || 1.4), 0, 1);
     if (sPx < DOT_PX) {
       ctx.globalAlpha = alpha * 0.6;

@@ -45,6 +45,35 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
   by cause juvenile/adult) over ≥3 seeds and ≥2 years.
 
+**▶▶▶ PHASE 1 IN PROGRESS (2026-10-13 ~10:30) — bioenergetics built, CALIBRATING. Branch `science` (WIP commit, NOT merged;
+full gate NOT yet run — main stays at 1a3c416, green).** What exists (all in the working tree / WIP commit):
+- `src/bioenergetics.js` — FB4 equations ported from the official R source (CEQ 1–4, REQ 1/2, EGEQ/EXEQ 1–4, PREDEDEQ 1–3).
+- `species.js` `BIO` — official FB4 params (fathead Duffy 1998, bluegill+juv, perch+juv, rainbow R&R 1999, brown bullhead
+  Hartman 2017, LMB Rice 1983, pike Bevelhimer 1985; CARP = composite: Beamish 1964 resp + Chakraborty 1992 + bighead curve),
+  Ws length–weight, Michigan length-at-age vb, maturity (♀/♂), GSI, fecundity regressions, gape/depth, UILT, lethal DO,
+  M (5.4/tmax), gut capacity + gastric-evac multiplier, sHatch, Lhatch, L0 (recruit length), Lzoo, Lpisc, capture.
+- `world.js`: fish have L, W, K, sex, mature, gon, gut/gutE, rO2, xo/xt (exposure), missCd, pAvg (diag). Gut model (GER
+  He & Wurtsbaugh capped by Cmax), FB4 growth, length-from-surplus, gonads, hazards (starve/heat/hypoxia/other, cause →
+  stats.died), gape by depth, capture success + MISS_CD, sexes, fecundity → FRY SCHOOLS (`world.fry`, `_stepFry`, `_eatFry`,
+  recruitment 1 agent / FRY.N_PER_AGENT survivors), food PATCHES with mass `m` (partial cropping, `_graze`, PREY.PATCH_R),
+  lethal-water wall + O₂ escape reflex, nest-guard cost, env O₂ demand from rO2 (ENV.O2_PER_GO2). Save **v27**.
+- config: `BIOE`, `PREY`, `FRY`, SPAWN.GON_READY/K_READY, FEED.MISS_CD/PREY_MIN 0.07, BROOD.GUARD_*, obsolete energy knobs removed.
+- render: true-scale fish (`fishScale`, 0.79 px/cm, floor <10 cm), fry-school clouds; UI fish panel shows L/W/K/sex/p.
+- tests: headless.mjs new BIOENERGETICS block (19 checks, ALL PASS standalone: `python scratchpad/mk_bioe_only.py`
+  then `node test/_bioe_only.mjs`); many older checks rewritten for the new model (hunger=gut, ripe() helper, clutch→larvae,
+  lifespans real, digestion=gut, cyanotoxin=resp). **Full `npm test` not yet run** — expect a few more stale checks.
+- docs: FEATURES.md new top section; CLAUDE.md updated (v27, module map).
+**Calibration status** (scratchpad `verify/bioe_run.mjs <seed> <years>`, `whoeats.mjs`, `bassdiag.mjs`, `carp2.mjs`, `fry1.mjs`):
+minnows & sunfish now SELF-SUSTAIN on home-bred recruits (fry schools work; minnow age-1 5.4 cm vs Michigan 5.5); p:
+sunfish ~0.65, minnow ~0.73, perch ~0.49, catfish ~0.75, pike ~0.65, carp ~0.23 (low), bass 0.06–0.22 (LOW — bassdiag:
+small bass p≈0, big bass ok; they sense prey 92 % of the time but kill rarely; big founders eat), trout ~0.15–0.2 (summer
+squeeze, plausible). Still open: bass feeding, perch/predator/carp/catfish RECRUITMENT in year 2 (run r8 seeds 1–2 to 1.6 yr
+were in progress), catfish early-summer hypoxia deaths, sunfish growth below Michigan (FB4 bluegill bias — Bajer et al. 2004).
+Research reports (in this session's transcript): FB4 params + Michigan data; gape (Lawrence, Hill, Gaeta); thermal/DO (EPA
+1986, Moss & Scott); mortality (Then 2015, Hamel & Cope 2022); GSI; evacuation (He & Wurtsbaugh); field rations/p.
+NEXT: finish calibration (≥3 seeds × ≥2 yr, home-bred recruitment for every species, p 0.4–0.9, length-at-age), run full
+gate & fix, perf check (~65–120 st/s seen), browser visual check, commit/merge, then phase 2 (visible evolution).
+
 **▶▶ RESUME HERE (2026-10-13, after compaction) — the human wants ALL THREE, in order, then what-if tooling:**
 Goal (human): "a complete, realistic simulation, that looks good too and is polished … eventually good enough that you could
 manually add in other variables to see how it would affect the ecosystem, but we have to get it accurate before that."
