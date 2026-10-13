@@ -45,7 +45,7 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
   by cause juvenile/adult) over ≥3 seeds and ≥2 years.
 
-**▶ REALISM STATUS (2026-10-12, session 2) — branch `realism` (WIP, gate NOT yet green; main/audit-fixes untouched):**
+**▶ REALISM STATUS (2026-10-12, session 2) — gate GREEN; `realism` fast-forwarded into `audit-fixes` and merged to `main`:**
 - DONE in code: R1 climate (temp cycle, ice, seasonal sun, Q10 metabolism, temp-driven strat, hypo ≥ 4 °C, start date
   SEASON.START_YF 0.22, primeSeason); Q10 on phyto/cyano/diatom/nitrif/sediment+pelagic O₂/plant night resp; plant
   dormancy (PLANT.DORMANT_T); inflow plume + aerated inflow (FLOW.PLUME_*, O2_MIX); plant O₂ spread along the stem;
@@ -83,9 +83,18 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - Balance, 3 seeds × 2 yr (verify/deaths.mjs; census at mid-May yr 3 = the pre-spawn low): every species persists and
   breeds in its own season; predation is the main death cause of small fish. Baseline (old effSize, no KEEP): minnow
   254–332, sunfish 43–60, perch 2–13, catfish 9–17, carp 15–23, bass 6–15, pike 7–16. KEEP 0.25 + small juveniles:
-  sunfish 8–56, perch 2–10, catfish 4–7, carp 4–13, bass 12–19, pike 3–12. Weak spots: PERCH decline in every run
-  (74 → 2–13; spring starvation + heavy predation on young), sunfish/catfish/carp low in some seeds. A final run with the
-  nest-guard fixes is verify/deaths_fin_s*.txt.
+  sunfish 8–56, perch 2–10, catfish 4–7, carp 4–13, bass 12–19, pike 3–12. FINAL code (+ nest-guard fixes):
+  minnow 328–336, sunfish 6–36, perch 5–13, catfish 6–12, carp 5–13, bass 3–23, pike 8–12.
+- NEXT (balance follow-ups, judge each on a ≥3-seed A/B, ideally 3 yr so early spawners get 2 springs):
+  1. PERCH decline in every run (74 → 5–13): spring starvation (energy.mjs: 78 % hungry) + heavy predation on young.
+     Real perch feed actively under ice — coldPerf (COLD_PERF_MIN 0.2) may be too harsh for cold-tolerant perch/pike
+     (a per-species cold tolerance would be realistic).
+  2. CATFISH hypoxia drain is their biggest cost (energy.mjs 10.95/1000/s): they sit in anoxic bottom water; the
+     O₂-limited habitat steer should keep benthic fish out of water below o2Crit more firmly.
+  3. SUNFISH vary by seed (6–56): young are heavily eaten since juveniles became realistically small; bluegill are
+     hugely fecund nest-guarders (try SP.sunfish.clutch ↑).
+  4. CARP summer starvation (s12–14/season).
+  Optional realism adds still open: trout, dragonfly larvae, zooplankton types, frogs/turtles.
 - Scratchpad verify scripts (session-local; recreate if lost): recruit.mjs, deaths.mjs (deaths by cause×season incl.
   loon), energy.mjs (per-species energy budget), climate.mjs (monthly lake table), o2sinks2.mjs (winter O₂ sinks),
   hypwhere.mjs, shelfo2.mjs, profile.mjs, o2budget.mjs (O₂ budget by process from a snapshot), iceprof.mjs (per-row
