@@ -60,6 +60,7 @@ export function sanitizeChampions(o) {
 const TROPHIC = [
   { key: 'planktivore', label: 'planktivore', col: '#9fc7e8' },
   { key: 'omnivore', label: 'omnivore', col: '#ff9d4d' },
+  { key: 'mesopredator', label: 'mesopredator', col: '#d6c04a' },
   { key: 'herbivore', label: 'herbivore', col: '#c9a23f' },
   { key: 'benthivore', label: 'benthivore', col: '#b07b3f' },
   { key: 'predator', label: 'predator', col: '#6fae5a' },
@@ -140,6 +141,10 @@ export class UI {
       li.appendChild(swatch(SP[k].tag)); li.appendChild(textEl('span', '', SP[k].name));
       host.appendChild(li);
     }
+    // the visiting loon (a diving fish-eater, not a brain-driven fish — it has no chip or census row)
+    const li = document.createElement('li');
+    li.appendChild(swatch('#5d6b70')); li.appendChild(textEl('span', '', 'Loon (visitor)'));
+    host.appendChild(li);
   }
   // trophic biomass bars (fish roles) — build the rows once; frame() updates the widths/values
   _buildPyramid() {
@@ -404,7 +409,8 @@ export class UI {
     for (const k of SPECIES) total += c[k];
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
     const mins = Math.floor(env.t * 1440), hh = String((mins / 60 | 0)).padStart(2, '0'), mm = String(mins % 60).padStart(2, '0');
-    const phase = env.light > 0.5 ? 'Day' : env.light > 0.08 ? (env.t < 0.5 ? 'Dawn' : 'Dusk') : 'Night';
+    const sunH = env.sun ?? env.light;   // the sun's height, not the light reaching the water (cloud and ice dim that)
+    const phase = sunH > 0.35 ? 'Day' : sunH > 0.04 ? (env.t < 0.5 ? 'Dawn' : 'Dusk') : 'Night';
     set('ps-gen', 'gen ' + fmtInt(w.maxGen)); set('ps-pop', total + ' fish'); set('ps-clock', `${hh}:${mm}`);
     set('ps-phase', phase); set('ps-season', `${env.monthName()} · ${env.seasonName()}`); set('ps-weather', env.weatherName()); set('ps-temp', this.fmtTemp(env.tempC, 0)); set('ps-o2', (w.avgO2() * 100 | 0) + '%');
     for (const k of SPECIES) if (this.psEls && this.psEls[k]) this.psEls[k].textContent = c[k];
@@ -427,6 +433,9 @@ export class UI {
     const ed = w.envDetail();
     set('env-o2deep', (ed.o2Deep * 100 | 0) + '%');
     set('env-strat', (ed.strat * 100 | 0) + '%' + (ed.strat > 0.5 ? ' ⬍' : ''));
+    set('env-ice', ed.ice > 0.01 ? (ed.ice * 100 | 0) + '%' : 'open');
+    set('env-diatom', (ed.diatom * 100 | 0) + '%');
+    set('env-birds', String(ed.birds));
     set('env-tempdeep', this.fmtTemp(ed.tempDeep, 1));
     set('env-nutrient', `N ${ed.nitrogen.toFixed(2)} · P ${ed.phosphate.toFixed(2)} (${ed.limiting}-lim)`);
     set('env-nitrate', (ed.nitrateFrac * 100 | 0) + '% NO₃');

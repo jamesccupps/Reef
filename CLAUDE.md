@@ -34,7 +34,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - `World.toJSON` + the `parseSave` builders in `world.js`;
   - `Environment.toJSON` / `load`.
 
-  The gate's resume test (load → 600 steps must be byte-identical) catches anything missed. Bump the save version when the shape changes. It is **v24** now.
+  The gate's resume test (load → 600 steps must be byte-identical) catches anything missed. Bump the save version when the shape changes. It is **v25** now.
 - **Mass conservation.** Every chemistry transfer debits its source. The gate checks closed P and N budgets, plants included.
 - **Content-Security-Policy.** No inline `<script>` and no `style=` attributes. A new external origin must be added in all three places: `index.html` (meta), `serve.mjs` and `serve.py`. `test/ui-check.mjs` checks they match.
 
@@ -51,33 +51,34 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - For any claim about where a GL shader effect appears on screen (surface, deep, sun), use an A/B `gl.readPixels` diff per horizontal band rather than eyeballing. Row 0 is the screen BOTTOM.
   - Ask the human only about taste and motion feel.
 
-## Key facts (verified 2026-10-11)
+## Key facts (verified 2026-10-12)
 | What | Value |
 |---|---|
 | World | `WORLD.W×H` = 2048×1152. Densities scale by `WORLD.AREA_SCALE`. `GLOBAL_MAX` ≈ 1012 agents |
 | Field grid | `GRID.FIELD_COLS×ROWS`. About 1400 cells lie below the bed and are inert (`env.mask`) |
-| Time | `TIME.DAY_LEN` 60 s, `YEAR_LEN` 1800 s (30 min; 12 months, 4 seasons), `LIFE_SCALE` 1.6. `SEASON.YEAR_LEN` and `ENV.DAY_LEN` are live aliases |
-| Brain | Recurrent MLP. Inputs = species base + 7 shared extras: compass sin/cos, home bearing, flow, prey size, hunger, fear. Totals 23/20/17/17/17/16 (minnow → pike). `OUT` = 5: turn, thrust, strike, flee, hide. Per-unit LEAK memory. `activeHid` set by the brain gene |
+| Time | `TIME.DAY_LEN` 60 s, `YEAR_LEN` 1800 s (30 min; 12 months, 4 seasons). Year-fraction 0 = March 1; a new lake opens mid-May (`SEASON.START_YF`); `world.setDate(yf)` jumps to a date with its thermal state. Life histories are in YEARS (`species.js` `yr()`; minnow matures in its first summer, pike/carp after ~1.5–2 yr). `SEASON.YEAR_LEN` and `ENV.DAY_LEN` are live aliases |
+| Brain | Recurrent MLP. Inputs = species base + 7 shared extras: compass sin/cos, home bearing, flow, prey size, hunger, fear. Totals 23/20/19/17/17/17/16 (minnow, sunfish, perch, catfish, carp, bass, pike). `OUT` = 5: turn, thrust, strike, flee, hide. Per-unit LEAK memory. `activeHid` set by the brain gene |
 | Genomes | Fish `GENE_KEYS` (7): size, speed, tol, fin, eye, body, brain. Plant `PLANT_GENE_KEYS` (6): maxH, grow, light, warmth, palat, leaf |
 | Learning | Baldwinian: the plastic `a.lw` (only its W2 block changes) is never inherited, and every breeding path uses `a.g` |
-| Save | v24. `BRAIN_ERAS` (`species.js`) holds the layout history used to migrate brains |
+| Save | v25 (adds ice, diatoms, nests, digestion, feeding remainder, loon, regional gene pool). `BRAIN_ERAS` (`species.js`) holds the layout history used to migrate brains |
 | Render | Sprite `BASE` 14 (close-up tiers 28/56). SpriteCache and GL fish-texture caches are both 1024. WebGL2 linear-HDR presenter with a Canvas2D fallback; FRAG_COMP depth is `dpt = 1 − uv.y`. GL fish swim in FRAG_FISH from one straight sprite per fish: keep its wave in step with `drawFish`. Never upload a canvas into an SRGB8 texture (Chrome CPU-readback path); scene/overlay go in RGBA8 and are decoded in the shader |
 | Perf | Judge in real Chrome at the user's resolution (CDP, see SESSION_STATE), not the preview pane. 1080p screensaver: ~65–72 fps paced, sim ~4.5 ms/step |
 
 ## Module map
 - **`core.js`:** seeded RNG with state get/set, math, `SpatialGrid`, the recurrent net (`forward`, `reinforce`), genome create/mutate/crossover/remap, trait genes.
 - **`config.js`:** every tunable value. Blocks:
-  - **world and time:** `WORLD`, `TIME`, `SEASON`, `GRID`, `BASIN`, `CAMERA`;
+  - **world and time:** `WORLD`, `TIME`, `SEASON`, `ICE`, `GRID`, `BASIN`, `CAMERA`;
   - **physics:** `THERMAL`, `ENV` (light, O₂, weather), `WIND`, `FLOW`, `OUTFLOW`, `TURBIDITY`;
   - **chemistry:** `NUTRIENT`, `SED_P`, `NCYCLE`, `MICROBE`;
-  - **producers and invertebrates:** `PHYTO`, `CYANO`, `PLANKTON`, `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`;
+  - **producers and invertebrates:** `PHYTO`, `DIATOM`, `CYANO`, `PLANKTON`, `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`;
   - **plants:** `PLANT`, `MACRO`, `COMPETE`;
   - **habitat:** `STRUCTURE`, `COVER`;
   - **fish behaviour:** `SCHOOL`, `ACTION`, `MOTION`, `DRIVE`, `LEARN`, `BRAIN`, `FEED`;
   - **population:** `SPAWN`, `BROOD`, `IMMIGRATION`;
+  - **visitors:** `BIRD` (the diving loon);
   - **toxicant:** `TOX`.
-- **`species.js`:** the six fish (`SP`): senses, brain shape, diet, life history, art. Also `BRAIN_ERAS`.
-- **`environment.js`:** light, seasons and weather, temperature (`tempAt`, `tempHypo`), current, and the O₂/N/P/phyto/cyano/DOM fields with closed budgets (`ledger`); validated `load`.
+- **`species.js`:** the seven fish (`SP`): senses, brain shape, diet, life history (years, temperature spawning windows `spawnT`, nest guarding), art. Also `BRAIN_ERAS`.
+- **`environment.js`:** light, seasons and weather, ice, temperature (`tempAt`, `tempHypo`), current, and the O₂/N/P/phyto/diatom/cyano/DOM fields with closed budgets (`ledger`); Q10 biology, Blackman photosynthesis (`photoRate`), algal dark survival (`algaeRespAt`); validated `load`.
 - **`world.js`:** organisms and `step()`, query helpers (`qPrey`, `qThreat`, …), the pure stats accessors, and `toJSON` / `parseSave` / `load`.
 - **`camera.js`:** pan, zoom, pinch, follow, tour, interpolation helpers.
 - **`render.js`:** camera-space Canvas2D scene with culling, LOD, `SpriteCache`, overlays, minimap, GL-fish quad collection, 2D fallback swap.

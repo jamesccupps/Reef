@@ -10,7 +10,7 @@
 //
 // MASS BUDGET: every N/P transfer debits its source. Sources/sinks that cross the lake boundary are tallied in
 // `this.ledger` (inflow, outflow, sediment burial, denitrification, N-fixation) so the inventory can be audited.
-import { WORLD, GRID, ENV, NUTRIENT, SED_P, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, BASIN, bedY } from './config.js';
+import { WORLD, GRID, ENV, NUTRIENT, SED_P, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, ICE, PLANT, bedY } from './config.js';
 import { rand, clamp, TAU } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
@@ -19,10 +19,16 @@ const CW = W / COLS, CH = H / ROWS;
 // calendar month names — index 0 = March (year-fraction 0 = mid-spring), running through the year
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 
-// ambient surface light from time-of-day (0..1, sunrise .25 / noon .5 / sunset .75)
-function daylight(t) {
-  const x = (t - 0.25) / 0.5;
+// ambient surface light from time-of-day (0..1): a sine arch from sunrise to sunset centred on noon (t = .5). dayFrac =
+// the fraction of the cycle that is daylight (0.5 → sunrise .25 / sunset .75; longer in summer, shorter in winter).
+function daylight(t, dayFrac = 0.5) {
+  const x = (t - (0.5 - dayFrac / 2)) / dayFrac;
   return x <= 0 || x >= 1 ? 0 : Math.sin(Math.PI * x);
+}
+// the season's day length and noon sun strength (SEASON.DAY_FRAC / NOON), peaking at the summer solstice
+export function seasonalSun(yearFrac) {
+  const s = 0.5 + 0.5 * Math.cos(TAU * (yearFrac - SEASON.SOLSTICE));   // 1 at the summer solstice, 0 at the winter one
+  return { dayFrac: SEASON.DAY_FRAC[0] + (SEASON.DAY_FRAC[1] - SEASON.DAY_FRAC[0]) * s, noon: SEASON.NOON[0] + (SEASON.NOON[1] - SEASON.NOON[0]) * s };
 }
 
 // wet/dry mask from the basin profile (pure function of config): per column the deepest wet row, per row the wet run.
@@ -56,7 +62,10 @@ export class Environment {
     this.tempHypo = ENV.TEMP_BASE; // hypolimnion temperature: its own slow seasonal state (THERMAL.HYPO_TAU_*)
     this.tempNorm = 0.5;
     this.year = 0;                 // years elapsed (fractional)
-    this.strat = 0;                // thermal stratification strength 0..1 (1 = strong summer)
+    this.ice = 0;                  // lake ice cover 0..1 (ICE): forms near 0 °C, blocks light, wind and re-aeration
+    this.lightDay = 1;             // today's clear-sky noon light under the ice (derived each step: the algae's light climate)
+    this.sun = 0;                  // clear-sky sun height 0..1 (derived each step; display only)
+    this.strat = 0;               // thermal stratification strength 0..1 (1 = strong summer)
     this.wind = 0; this._windT = 0;// signed surface current (px/s)
     this.turbidity = TURBIDITY.BASE; // water murk 0..1 (algae + sediment)
     this.mask = buildWetMask();    // wet/dry cells (static: depends only on the basin config)
@@ -68,6 +77,8 @@ export class Environment {
     this.sedP = new Float32Array(COLS).fill(SED_P.START);             // benthic bound-P store per column (Mortimer redox)
     this.phyto = new Float32Array(COLS * ROWS).fill(PHYTO.START); // phytoplankton biomass field
     this._meanPhyto = PHYTO.START;
+    this.diatom = new Float32Array(COLS * ROWS).fill(DIATOM.START);   // cold-water diatoms (the spring bloom)
+    this._meanDiatom = DIATOM.START;
     this.cyano = new Float32Array(COLS * ROWS).fill(CYANO.START); // cyanobacteria (N-fixing strain) biomass field
     this._meanCyano = CYANO.START;     // surface-band (scum) density
     this.dom = new Float32Array(COLS * ROWS).fill(MICROBE.START); // dissolved organic matter — the bacterial substrate (microbial loop)
@@ -93,6 +104,9 @@ export class Environment {
   attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity); }
   // light reaching depth y (surface + turbidity attenuation)
   lightAtDepth(y) { return this.light * Math.exp(-this.attenuation() * (y / H)); }
+  // algal respiration activity at depth y: full where the day's peak light reaches PHYTO.RESP_IK (so night in the photic
+  // zone still respires fully), falling to PHYTO.DARK_RESP in a dark light climate (deep water, snowy ice) — dark survival
+  algaeRespAt(y) { return PHYTO.DARK_RESP + (1 - PHYTO.DARK_RESP) * Math.min(1, this.lightDay * Math.exp(-this.attenuation() * (y / H)) / PHYTO.RESP_IK); }
   // visual-range multiplier (turbid water shortens how far fish can see)
   clarity() { return clamp(1 - this.turbidity * TURBIDITY.SENSE, 0.35, 1); }
   // Secchi depth: depth (world px) at which light falls to ~10% of the surface
@@ -121,8 +135,8 @@ export class Environment {
   meanSedP() { let s = 0; for (let i = 0; i < this.sedP.length; i++) s += this.sedP[i]; return s / this.sedP.length; }
   // total P / N held in the water + sediment + algae + DOM (wet cells; excludes detritus particles & plants, which
   // the World owns) — the inventory the mass-budget audit tracks
-  inventoryP() { return this.wetSum(this.phos) + this.wetSum(this.phyto) * PHYTO.P_USE + this.wetSum(this.cyano) * CYANO.P_USE + this.wetSum(this.dom) * NUTRIENT.ORGANIC_P + this.meanSedP() * COLS; }
-  inventoryN() { return this.wetSum(this.nh4) + this.wetSum(this.no3) + this.wetSum(this.phyto) * PHYTO.N_USE + this.wetSum(this.cyano) * CYANO.N_USE + this.wetSum(this.dom) * (1 - NUTRIENT.ORGANIC_P); }
+  inventoryP() { return this.wetSum(this.phos) + (this.wetSum(this.phyto) + this.wetSum(this.diatom)) * PHYTO.P_USE + this.wetSum(this.cyano) * CYANO.P_USE + this.wetSum(this.dom) * NUTRIENT.ORGANIC_P + this.meanSedP() * COLS; }
+  inventoryN() { return this.wetSum(this.nh4) + this.wetSum(this.no3) + (this.wetSum(this.phyto) + this.wetSum(this.diatom)) * PHYTO.N_USE + this.wetSum(this.cyano) * CYANO.N_USE + this.wetSum(this.dom) * (1 - NUTRIENT.ORGANIC_P); }
   // sediment phosphorus — the Mortimer redox switch / internal loading. Per column, at its BED-ADJACENT WET cell, the
   // bound-P store takes in settling algae (debited: their P is bound, their N ammonified back to the water) + a baseline
   // P rain scavenged from the water, BINDS dissolved P while the bottom is oxic, and RELEASES legacy P when it goes anoxic
@@ -164,15 +178,17 @@ export class Environment {
     const nh4 = this.nh4, no3 = this.no3, o2 = this.o2, { lo, hi } = this.mask;
     let lost = 0;
     for (let cy = 0; cy < ROWS; cy++) {
+      // both are bacterial processes: strongly temperature-dependent (Q10 ≈ 2; nitrification nearly stalls in ice-cold water)
+      const q = Math.pow(NCYCLE.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
         const oxy = o2[i] > 0 ? o2[i] : 0;   // a transiently negative O₂ must never drive a rate
         if (oxy >= NCYCLE.DENITRIF_O2) {
           // OXIC: nitrification (ammonium → nitrate), rate ∝ ammonium × O₂ availability (Monod); it consumes O₂.
-          const nitr = NCYCLE.NITRIF * nh4[i] * (oxy / (oxy + NCYCLE.NITRIF_O2_HALF)) * dt;
+          const nitr = NCYCLE.NITRIF * q * nh4[i] * (oxy / (oxy + NCYCLE.NITRIF_O2_HALF)) * dt;
           nh4[i] -= nitr; no3[i] += nitr; o2[i] = Math.max(0, oxy - nitr * NCYCLE.NITRIF_O2_COST);
         } else {
           // ANOXIC: nitrifiers halt (obligate aerobes); denitrification reduces nitrate to N₂ gas — lost for good.
-          const dn = NCYCLE.DENITRIF * no3[i] * (1 - oxy / NCYCLE.DENITRIF_O2) * dt;
+          const dn = NCYCLE.DENITRIF * q * no3[i] * (1 - oxy / NCYCLE.DENITRIF_O2) * dt;
           no3[i] -= dn; lost += dn;
         }
       }
@@ -216,6 +232,47 @@ export class Environment {
   // SAME phosphate as green phyto (the competition), is BUOYANT (floats to a surface scum in calm water; storms
   // mix it down), produces/consumes O₂, shades the water, and is a net N SOURCE: its biomass N is fixed from N₂ and
   // returned on decay, plus a leak of fixed N to ammonium on growth (both tallied as ledger.fixN). Runs AFTER the
+  // DIATOMS (DIATOM): cold-water algae. Growth = GROW × min(light, a cold-centred temperature window (best ~7 °C)) ×
+  // Liebig nutrient — so they bloom in the bright, cold, freshly-mixed spring lake (and slowly under clear ice) — with
+  // Redfield uptake like green algae; respiration and decay follow the Q10; decayed biomass recycles exactly as PHYTO's.
+  // Once the lake STRATIFIES they sink (one row per step, × strat; mass-conserving, held at the bottom wet row where they
+  // then decay) — the end of the spring bloom. Runs after cyano, before the means.
+  diatoms(dt) {
+    const dia = this.diatom, phos = this.phos, nh4 = this.nh4, no3 = this.no3, dom = this.dom, o2 = this.o2, { lo, hi, bedRow } = this.mask;
+    const pU = PHYTO.P_USE, nU = PHYTO.N_USE, R = PHYTO.RECYCLE, toDom = (1 - R) * (pU + nU);
+    let sum = 0, cnt = 0;
+    for (let cy = 0; cy < ROWS; cy++) {
+      const y = (cy + 0.5) * CH, lit = this.lightAtDepth(y), T = this.tempAt(0, y);
+      const tf = clamp(1 - Math.abs(T - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), qP = Math.pow(PHYTO.Q10, (T - 20) / 10), rA = this.algaeRespAt(y);
+      const pl = Math.min(lit, tf);   // Blackman: the temperature window caps the light-saturated rate; dim light is T-independent
+      for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        const b = dia[i], p = phos[i], a = nh4[i], nTot = a + no3[i];
+        const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
+        let growth = DIATOM.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
+        if (growth * pU > p) growth = p / pU;
+        if (growth * nU > nTot) growth = nTot / nU;
+        if (growth < 0) growth = 0;
+        const decay = DIATOM.DECAY * qP * b * dt;
+        dia[i] = b + growth - decay;
+        phos[i] = p - growth * pU + decay * R * pU;
+        const nNeed = growth * nU, upA = nNeed < a ? nNeed : a;
+        nh4[i] = a - upA + decay * R * nU;
+        if (nNeed > upA) no3[i] -= nNeed - upA;
+        dom[i] += decay * toDom;
+        o2[i] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * dt;
+        if ((cy + 0.5) / ROWS < DIATOM.BAND) { sum += dia[i]; cnt++; }
+      }
+    }
+    this._meanDiatom = cnt ? sum / cnt : 0;
+    // sinking in a stratified (calm) lake: bottom-up so a cell's load moves one row per step at most
+    const k = clamp(DIATOM.SINK * this.strat * dt, 0, 0.5);
+    if (k > 1e-5) for (let cy = ROWS - 2; cy >= 0; cy--) {
+      for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
+        if (cy >= bedRow[cx]) continue;   // the bottom wet cell of this column holds them
+        const i = cy * COLS + cx, m = dia[i] * k; dia[i] -= m; dia[i + COLS] += m;
+      }
+    }
+  }
   // green-phyto loop so green phyto (faster) gets first call on the shared P.
   cyanobacteria(dt) {
     const cyn = this.cyano, phos = this.phos, nh4 = this.nh4, no3 = this.no3, dom = this.dom, o2 = this.o2, tmp = this._tmp, { lo, hi } = this.mask;
@@ -224,6 +281,7 @@ export class Environment {
     for (let cy = 0; cy < ROWS; cy++) {
       const y = (cy + 0.5) * CH, lit = this.lightAtDepth(y), frac = (cy + 0.5) / ROWS;
       const tempFac = clamp(1 - Math.abs(this.tempAt(0, y) - CYANO.TEMP_OPT) / CYANO.TEMP_TOL, 0, 1);   // warm-water bloomer
+      const qC = Math.pow(PHYTO.Q10, (this.tempAt(0, y) - 20) / 10);   // respiration + decay slow in the cold (as green algae)
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
         const cb = cyn[i], p = phos[i];
         const pMon = p / (p + NUTRIENT.KP);                                                             // P-limited only (N-fixing)
@@ -233,7 +291,7 @@ export class Environment {
         let cgrow = CYANO.GROW * lit * pMon * tempFac * (cb + CYANO.INOC) * (1 - cb / CYANO.CAP) * dt;
         if (cgrow * pU > p) cgrow = p / pU;                                                              // never take P the cell lacks
         if (cgrow < 0) cgrow = 0;
-        const cdecay = CYANO.DECAY * cb * dt;
+        const cdecay = CYANO.DECAY * qC * cb * dt;
         cyn[i] = cb + cgrow - cdecay;
         phos[i] = p - cgrow * pU + cdecay * R * pU;                                                      // draw P; decay returns it
         // N: take dissolved N first (ammonium, then nitrate) and FIX N₂ only for the deficit — fixation is costly, so
@@ -245,7 +303,7 @@ export class Environment {
         no3[i] = o - takeO;
         dom[i] += cdecay * toDom;                                                                        // the rest → DOM
         fixed += fix + leak;
-        o2[i] += (CYANO.O2_PHOTO * cb * lit - CYANO.O2_RESP * cb) * dt;
+        o2[i] += (CYANO.O2_PHOTO * cb * lit - CYANO.O2_RESP * qC * cb) * dt;
         if (frac < CYANO.SCUM_BAND) { surfSum += cyn[i]; surfCount++; }   // surface-scum density (the band it floats into)
       }
     }
@@ -264,6 +322,8 @@ export class Environment {
   }
   phytoAt(x, y) { return this.phyto[this.cellOf(x, y)]; }
   meanPhyto() { return this._meanPhyto; }
+  meanDiatom() { return this._meanDiatom; }   // upper-column diatom density (the spring bloom)
+  diatomAt(x, y) { return this.diatom[this.cellOf(x, y)]; }
   cyanoAt(x, y) { return this.cyano[this.cellOf(x, y)]; }
   meanCyano() { return this._meanCyano; }   // surface-band cyanobacteria (scum) density
   domAt(x, y) { return this.dom[this.cellOf(x, y)]; }
@@ -274,10 +334,10 @@ export class Environment {
   // biomass's N+P is returned at the graze site — GRAZE_EXCRETE of it excreted as ammonium+phosphate, the rest egested
   // as DOM (the consumers hold no nutrient pool). Returns the biomass eaten (the grazer's food).
   grazePhyto(x, y, amt) {
-    const i = this.cellOf(x, y); const g = Math.min(this.phyto[i], amt);
+    const i = this.cellOf(x, y), gp = Math.min(this.phyto[i], amt), gd = Math.min(this.diatom[i], amt - gp), g = gp + gd;   // green algae, then diatoms
     if (g > 0) {
       const ex = NUTRIENT.GRAZE_EXCRETE;
-      this.phyto[i] -= g;
+      this.phyto[i] -= gp; this.diatom[i] -= gd;
       this.phos[i] += g * ex * PHYTO.P_USE; this.nh4[i] += g * ex * PHYTO.N_USE;
       this.dom[i] += g * (1 - ex) * (PHYTO.P_USE + PHYTO.N_USE);
     }
@@ -302,8 +362,9 @@ export class Environment {
     this.no3[i] = Math.max(0, this.no3[i] - nNeed);
     return take;
   }
-  saturation() { return clamp(1.0 - (this.tempC - 18) * ENV.SAT_TEMP_K, 0.5, 1.05); }
-  metabolismFactor() { return 1 + (this.tempC - 18) * ENV.METAB_TEMP_K; }
+  // O₂ solubility: cold water holds more (~1.35× the 18 °C reference near 0 °C, as real 14.6 vs ~9.5 mg/L)
+  saturation() { return clamp(1.0 - (this.tempC - 18) * ENV.SAT_TEMP_K, 0.5, 1.4); }
+  metabolismFactor() { return Math.pow(ENV.METAB_Q10, (this.tempC - 18) / 10); }
   weatherName() { return ['Clear', 'Cloudy', 'Rain', 'Storm'][this.weather]; }
 
   // ---- depth-stratified temperature (warm epilimnion → thermocline → cold hypolimnion) ----
@@ -319,33 +380,52 @@ export class Environment {
     const upper = this.tempC - this.tempDiel * (1 - Math.exp(-clamp(y / H, 0, 1) / THERMAL.DIEL_DEPTH));
     return upper + (this.tempHypo - upper) * this.strat * this._stratFrac(y);
   }
-  metabAt(x, y) { return 1 + (this.tempAt(x, y) - 18) * ENV.METAB_TEMP_K; }
+  metabAt(x, y) { return Math.pow(ENV.METAB_Q10, (this.tempAt(x, y) - 18) / 10); }   // Q10 metabolism (×1 at 18 °C)
   // wind-driven surface current: strongest at the surface, fades to 0 below SURFACE_FRAC of depth
   windAt(y) { return this.wind * clamp(1 - clamp(y / H, 0, 1) / WIND.SURFACE_FRAC, 0, 1); }
   // gentle inflow→outflow through-current (rightward, weaker with depth)
   flowAt(y) { return FLOW.SPEED * (1 - 0.5 * clamp(y / H, 0, 1)); }
   // total horizontal current a drifter feels = wind (surface) + through-flow
   currentAt(x, y) { return this.windAt(y) + this.flowAt(y); }
+  // meteorological seasons on the calendar (year-fraction 0 = March 1): spring Mar–May, summer Jun–Aug, autumn Sep–Nov,
+  // winter Dec–Feb (the climate's ~0 °C January and ~25 °C late July sit in the middle of winter and summer)
   seasonName() {
     const p = ((this.year % 1) + 1) % 1;
-    return p < 0.125 || p >= 0.875 ? 'Spring' : p < 0.375 ? 'Summer' : p < 0.625 ? 'Autumn' : 'Winter';
+    return p < 0.25 ? 'Spring' : p < 0.5 ? 'Summer' : p < 0.75 ? 'Autumn' : 'Winter';
   }
-  // calendar month (a year = 12 months). Display-only; aligned so month 0 = March (mid-spring, frac 0), summer
-  // around the thermal peak. Functional seasonal timing (spawning) keys off the continuous year-fraction, not this.
+  // calendar month (a year = 12 months), month 0 = March. Display-only: seasonal timing in the sim (spawning, ice,
+  // temperature) keys off the continuous year-fraction and the water temperature, not this.
   monthIndex() { return Math.floor((((this.year % 1) + 1) % 1) * 12) % 12; }   // 0..11
   monthName() { return MONTHS[this.monthIndex()]; }
   // continuous fraction through the current year [0,1) — the precise clock seasonal behaviour keys off
   yearFrac() { return (((this.year % 1) + 1) % 1); }
 
+  // start a fresh lake at `time` with the season's thermal state already in place (no warm-up transient): the surface at
+  // its seasonal temperature, the deep at a plausible lagged value, stratification and ice to match
+  primeSeason(time) {
+    this.year = time / SEASON.YEAR_LEN;
+    const surf = Math.max(0.3, ENV.TEMP_BASE + SEASON.TEMP_AMP * Math.sin((this.year - SEASON.TEMP_PHASE) * TAU));
+    this.tempC = surf; this.tempDiel = 0; this.tempNorm = clamp(surf / 26, 0, 1);
+    // the hypolimnion keeps roughly its spring-turnover temperature and warms slowly through the stratified season (~6 →
+    // ~15 °C by September, as the full model runs), is mixed with the surface through autumn, and sits ~5 °C under ice
+    const yfp = ((this.year % 1) + 1) % 1;
+    this.tempHypo = surf <= 4 ? 5 : yfp < 0.6 ? Math.min(surf, 6 + 9 * clamp((yfp - 0.1) / 0.45, 0, 1)) : Math.max(4, Math.min(surf, 15));
+    this.ice = surf < ICE.FORM_T ? 1 : 0;
+    this.strat = Math.max(clamp((surf - this.tempHypo - 1) / 6, 0, 1) * (1 - this.ice), ICE.STRAT * this.ice);
+  }
   setWeather(w) { this.weather = w; this.weatherTimer = ENV.WEATHER_DWELL[w] * (0.6 + rand() * 0.8); this.forced = true; }
 
   // `world` is optional: without one (env-only tests) the calendar advances on its own clock and the plant/fish
   // O₂ terms are skipped.
   step(dt, world) {
-    // --- time of day ---
+    // --- time of day + season (day length and noon sun follow the solstice; ice + snow block most of the light) ---
     this.t = (this.t + dt / ENV.DAY_LEN) % 1;
+    this.year = world ? world.time / SEASON.YEAR_LEN : this.year + dt / SEASON.YEAR_LEN;
+    const yf = this.yearFrac(), sun = seasonalSun(yf);
     const cover = ENV.CLOUD_COVER[this.weather];
-    this.light = daylight(this.t) * (1 - cover);
+    this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover) * (1 - ICE.LIGHT_CUT * this.ice);
+    this.lightDay = sun.noon * (1 - ICE.LIGHT_CUT * this.ice);
+    this.sun = daylight(this.t, sun.dayFrac);   // clear-sky sun height 0..1 (display: day/dawn/night whatever the cloud or ice)
 
     // --- weather state machine ---
     if (!this.forced) {
@@ -363,40 +443,57 @@ export class Environment {
     if (this.weather === 3 && rand() < dt * 0.28) this.flash = 0.8 + rand() * 0.2; // occasional lightning
     this.flash = Math.max(0, this.flash - dt * 3.5);
 
-    // --- season: a slow yearly cycle that warms/cools the lake and drives stratification ---
-    this.year = world ? world.time / SEASON.YEAR_LEN : this.year + dt / SEASON.YEAR_LEN;
-    const seasonal = SEASON.TEMP_AMP * Math.sin(this.year * TAU);   // +amp summer, −amp winter
-    // strong stratification in summer; collapses to 0 in spring & autumn (turnover) and winter (mixed). Strong wind
-    // (rain/storm, above the calm baseline) ERODES it; while it is storming (wind ≥ RESTRAT_MAX_WIND) the lake can't
-    // re-stratify at all, so a sustained storm genuinely breaks the thermocline (the old relax-vs-erosion balance
-    // left a 120 s summer storm at strat ≈ 0.83). Normal breezes and rain only nibble at it.
-    const windMul = WIND.WEATHER[this.weather];
-    if (windMul < THERMAL.RESTRAT_MAX_WIND) this.strat += (Math.max(0, Math.sin(this.year * TAU)) - this.strat) * clamp(dt * THERMAL.STRAT_RELAX, 0, 1);
-    this.strat = Math.max(0, this.strat - THERMAL.WIND_EROSION * Math.max(0, windMul - 1.0) * dt);
+    // --- season: a slow yearly cycle (SEASON.TEMP_PHASE: ~Aug 1 peak, ~Jan 21 low) that warms/cools the lake ---
+    const seasonal = SEASON.TEMP_AMP * Math.sin((this.year - SEASON.TEMP_PHASE) * TAU);
+    const iceOpen = 1 - this.ice;                       // the open-water fraction: wind and weather act only there
 
-    // --- surface (epilimnion) temperature: seasonal + diurnal + weather, lags slightly ---
-    const diurnal = Math.sin((this.t - 0.30) * Math.PI * 2);
+    // --- surface (epilimnion) temperature: seasonal + diurnal + weather, lags slightly; liquid water can't go much below
+    // freezing (ice forms instead), and the diurnal skin swing vanishes under ice ---
+    const diurnal = Math.sin((this.t - 0.30) * Math.PI * 2) * iceOpen;
     const relax = clamp(dt * ENV.TEMP_RELAX, 0, 1);
-    const target = ENV.TEMP_BASE + seasonal + ENV.TEMP_DIURNAL * diurnal + ENV.TEMP_WEATHER[this.weather];
+    const target = Math.max(0.3, ENV.TEMP_BASE + seasonal + ENV.TEMP_DIURNAL * diurnal + ENV.TEMP_WEATHER[this.weather] * iceOpen);
     this.tempC += (target - this.tempC) * relax;
     this.tempDiel += (ENV.TEMP_DIURNAL * diurnal - this.tempDiel) * relax;   // the diurnal component (same lag)
-    this.tempNorm = clamp((this.tempC - (ENV.TEMP_BASE - 12)) / 22, 0, 1);
-    // hypolimnion: follows the diurnal-free surface temperature fast while mixed, barely at all once stratified
-    const hk = (1 - this.strat) * (1 - this.strat) / THERMAL.HYPO_TAU_MIX + 1 / THERMAL.HYPO_TAU_STRAT;
-    this.tempHypo += (this.tempC - this.tempDiel - this.tempHypo) * clamp(hk * dt, 0, 1);
+    this.tempNorm = clamp(this.tempC / 26, 0, 1);
+    const surfT = this.tempC - this.tempDiel;           // diel-free surface temperature
 
-    // --- wind: a slowly reversing surface current, stronger in foul weather ---
+    // --- ice: grows while the surface sits near freezing, melts once it warms (hysteresis) ---
+    if (surfT < ICE.FORM_T) this.ice = Math.min(1, this.ice + ICE.GROW * dt);
+    else if (surfT > ICE.MELT_T) this.ice = Math.max(0, this.ice - ICE.MELT * dt);
+
+    // --- stratification, driven by the surface–deep temperature contrast: summer warming outpaces mixing → a thermocline;
+    // it collapses when the surface cools back to the deep water in autumn (turnover) and is absent at ice-out (spring
+    // turnover). Under ice the calm, inversely stratified column mixes weakly (ICE.STRAT). Strong wind (rain/storm)
+    // ERODES it, and while it is storming (wind ≥ RESTRAT_MAX_WIND) the lake can't re-stratify at all.
+    const windMul = WIND.WEATHER[this.weather] * iceOpen;
+    const stratT = Math.max(clamp((surfT - this.tempHypo - 1) / 6, 0, 1) * iceOpen, ICE.STRAT * this.ice);
+    if (windMul < THERMAL.RESTRAT_MAX_WIND) this.strat += (stratT - this.strat) * clamp(dt * THERMAL.STRAT_RELAX, 0, 1);
+    this.strat = Math.max(0, this.strat - THERMAL.WIND_EROSION * Math.max(0, windMul - 1.0) * dt);
+    // hypolimnion: follows the surface fast while mixed, barely at all once stratified — and never below 4 °C, the
+    // temperature of densest water that settles to the bottom (so the deep stays ~4 °C under winter ice)
+    const hk = (1 - this.strat) * (1 - this.strat) / THERMAL.HYPO_TAU_MIX + 1 / THERMAL.HYPO_TAU_STRAT;
+    this.tempHypo += (Math.max(4, surfT) - this.tempHypo) * clamp(hk * dt, 0, 1);
+
+    // --- wind: a slowly reversing surface current, stronger in foul weather — none under ice ---
     this._windT += dt;
-    this.wind = WIND.BASE * Math.sin(this._windT * 0.045) * WIND.WEATHER[this.weather];
+    this.wind = WIND.BASE * Math.sin(this._windT * 0.045) * WIND.WEATHER[this.weather] * iceOpen;
 
     // --- turbidity: murk from suspended algae (green phyto + a heavily-shading cyanobacteria surface scum) + storm sediment ---
-    const algae = clamp(this._meanPhyto / PHYTO.CAP + CYANO.TURB * (this._meanCyano / CYANO.CAP), 0, 1);
-    const turbTarget = clamp(TURBIDITY.BASE + TURBIDITY.FROM_ALGAE * algae + TURBIDITY.FROM_STORM[this.weather], 0, 1);
+    const algae = clamp((this._meanPhyto + this._meanDiatom) / PHYTO.CAP + CYANO.TURB * (this._meanCyano / CYANO.CAP), 0, 1);
+    const turbTarget = clamp(TURBIDITY.BASE + TURBIDITY.FROM_ALGAE * algae + TURBIDITY.FROM_STORM[this.weather] * (1 - this.ice), 0, 1);   // no storm-stirred sediment under ice
     this.turbidity += (turbTarget - this.turbidity) * clamp(dt * TURBIDITY.RELAX, 0, 1);
 
     // the inflow stream loads P-enriched nutrient into the left littoral (runoff → the eutrophication driver)
-    const load = FLOW.NUTRIENT * dt;
-    this.addNutrient(12, H * 0.22, load, NUTRIENT.INFLOW_P);
+    // The stream enters as a PLUME over the near-shore surface water (FLOW.PLUME_COLS × PLUME_ROWS cells), not into one
+    // cell — a single-cell point source made an artificial nitrifying dead zone at the inflow. And stream water is
+    // well-aerated: the plume relaxes toward O₂ saturation (FLOW.O2_MIX) — all year, so under ice the inflow is one of the
+    // few O₂ sources of the sealed lake, as in real winters.
+    const load = FLOW.NUTRIENT * dt, pc = FLOW.PLUME_COLS, pr = FLOW.PLUME_ROWS, per = load / (pc * pr), sat = this.saturation();
+    for (let cy = 0; cy < pr; cy++) for (let cx = 0; cx < pc; cx++) {
+      const x = (cx + 0.5) * CW, y = (cy + 0.5) * CH;
+      this.addNutrient(x, y, per, NUTRIENT.INFLOW_P);
+      const i = this.cellOf(x, y); this.o2[i] += (sat - this.o2[i]) * clamp(FLOW.O2_MIX * dt, 0, 1);
+    }
     this.ledger.inP += load * NUTRIENT.INFLOW_P; this.ledger.inN += load * (1 - NUTRIENT.INFLOW_P);
 
     this._updateFields(dt, world);
@@ -417,14 +514,19 @@ export class Environment {
     let litSum = 0, litCount = 0;
     for (let cy = 0; cy < ROWS; cy++) {
       const frac = (cy + 0.5) / ROWS, lit = this.lightAtDepth((cy + 0.5) * CH), band = frac < PHYTO.BAND;
+      // algal metabolism follows temperature (Eppley-type Q10 ≈ 1.9 about 20 °C): respiration, decay and the light-SATURATED
+      // photosynthesis (Pmax) slow in cold water, but LIGHT-LIMITED photosynthesis is photochemistry and barely depends on
+      // temperature (Blackman) — so under clear ice the dim-light algae still make O₂ while their respiration idles
+      const qP = Math.pow(PHYTO.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10), rA = this.algaeRespAt((cy + 0.5) * CH);
+      const pl = photoRate(lit, qP);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
         const b = ph[i], p = phos[i], a = nh4[i], nTot = a + no3[i];                                // available inorganic N
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));                  // Liebig minimum
-        let growth = PHYTO.GROW * lit * nLim * (1 - b / PHYTO.CAP) * dt;
+        let growth = PHYTO.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
         if (growth * pU > p) growth = p / pU;                                                      // stoichiometric ceiling
         if (growth * nU > nTot) growth = nTot / nU;
         if (growth < 0) growth = 0;
-        const decay = PHYTO.DECAY * b * dt;
+        const decay = PHYTO.DECAY * qP * b * dt;
         ph[i] = b + growth - decay;
         phos[i] = p - growth * pU + decay * R * pU;
         // N uptake: draw ammonium first (energetically preferred), then nitrate. Decomposed biomass recycles as ammonium.
@@ -432,7 +534,7 @@ export class Environment {
         nh4[i] = a - upA + decay * R * nU;
         if (nNeed > upA) no3[i] -= nNeed - upA;
         dom[i] += decay * toDom;
-        o2[i] += (PHYTO.O2_PHOTO * b * lit - PHYTO.O2_RESP * b) * dt;
+        o2[i] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * dt;
         if (band) { litSum += ph[i]; litCount++; }   // algae density where it lives (the photic zone)
       }
     }
@@ -440,15 +542,19 @@ export class Environment {
 
     // cyanobacteria: the N-fixing strain competes for the (now-reduced) P, floats to a surface scum, leaks fixed N
     this.cyanobacteria(dt);
+    this.diatoms(dt);
 
     if (world) {
       // photosynthesis (rooted plants add O2 by day) / plant respiration (night)
+      // spread over the cells the plant occupies (base → top): the leaves photosynthesize and respire along the whole
+      // stem — charging the whole plant to its tip cell drove single cells anoxic every night (real dense beds sag, but
+      // over the bed's volume)
       for (const p of world.plants) {
         if (p.dead) continue;
         const topY = p.baseY - p.height, om = p.o2 != null ? p.o2 : MACRO[p.v].o2;   // per-plant photosynthetic capacity (genes × variety)
-        const lit = this.lightAtDepth(topY);
-        if (lit > 0.02) this.addO2(p.x, topY, ENV.O2_PHOTO * p.biomass * lit * om * dt);
-        else this.addO2(p.x, topY, -ENV.O2_PLANT_NIGHT * p.biomass * om * dt);
+        const lit = this.lightAtDepth(topY), n = Math.max(1, Math.ceil(p.height / CH)), share = p.biomass * om * dt / n;
+        const flux = lit > 0.02 ? ENV.O2_PHOTO * lit : -ENV.O2_PLANT_NIGHT * Math.pow(PLANT.RESP_Q10, (this.tempAt(p.x, topY) - 20) / 10);   // dormant cold plants barely respire
+        for (let k = 0; k < n; k++) this.addO2(p.x, topY + (k + 0.5) * p.height / n, flux * share);
       }
       // fish respiration (consume O2) — scaled by the temperature at the fish's depth
       for (const a of world.agents) {
@@ -460,16 +566,21 @@ export class Environment {
     // oxygen demand below the epilimnion (drives hypolimnetic hypoxia): a SEDIMENT demand at each column's bed cell
     // (the benthic sediment respiration) + a weaker water-column demand (sinking particulate organic matter), both
     // ramping with depth. With weak vertical mixing when stratified, this drives the summer hypolimnion hypoxic.
+    // Both are bacterial respiration, so they follow the local water temperature (Q10, calibrated at the ~12 °C summer
+    // hypolimnion): about half the summer rate in the ~4 °C water under winter ice — without it the sealed winter lake went
+    // anoxic top to bottom by March, where real lakes lose O₂ slowly and only the deep water runs out late in winter.
     const ramp = f => (f <= THERMAL.EPI_FRAC ? 0 : (f - THERMAL.EPI_FRAC) / (1 - THERMAL.EPI_FRAC));
+    const qT = y => Math.pow(MICROBE.Q10, (this.tempAt(0, y) - 12) / 10);
     const pel = ENV.O2_PELAGIC * dt;
     for (let cy = 0; cy < ROWS; cy++) {
-      const d = pel * ramp((cy + 0.5) / ROWS);
-      if (d <= 0) continue;
+      const r = ramp((cy + 0.5) / ROWS);
+      if (r <= 0) continue;
+      const d = pel * r * qT((cy + 0.5) * CH);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) o2[i] = Math.max(0, o2[i] - d);
     }
     for (let cx = 0; cx < COLS; cx++) {
-      const by = bedRow[cx], i = by * COLS + cx, d = ENV.O2_SED * dt * ramp((by + 0.5) / ROWS);
-      if (d > 0) o2[i] = Math.max(0, o2[i] - d);
+      const by = bedRow[cx], i = by * COLS + cx, r = ramp((by + 0.5) / ROWS);
+      if (r > 0) o2[i] = Math.max(0, o2[i] - ENV.O2_SED * dt * r * qT((by + 0.5) * CH));
     }
 
     // microbial loop: bacteria decompose DOM at a Q10 temperature- & O₂-limited rate, consuming O₂ and
@@ -485,7 +596,7 @@ export class Environment {
     this.nitrogenCycle(dt);
 
     // surface re-aeration (top rows toward saturation, faster with turbulence + rain)
-    const aer = ENV.O2_AERATE * (ENV.AERATE_CALM + turb) + rainBoost * ENV.AERATE_RAIN;
+    const aer = (ENV.O2_AERATE * (ENV.AERATE_CALM + turb) + rainBoost * ENV.AERATE_RAIN) * (1 - this.ice);   // sealed under ice
     for (let cx = 0; cx < COLS; cx++) {
       o2[cx] += (sat - o2[cx]) * clamp(aer * dt, 0, 1);                                    // row 0 (surface)
       o2[COLS + cx] += (sat - o2[COLS + cx]) * clamp(aer * ENV.AERATE_ROW1 * dt, 0, 1);   // row 1 (just below)
@@ -501,8 +612,9 @@ export class Environment {
     diffuse(this.phyto, tmp, PHYTO.DIFFUSE * dt, M);
 
     // turnover: when stratification has collapsed, vertical overturn brings oxygen-rich surface
-    // water down — relax the hypolimnion toward the epilimnion O₂ at a rate set by (1 − strat).
-    const overturn = clamp((1 - this.strat) * THERMAL.OVERTURN * dt, 0, 0.5);
+    // water down — relax the hypolimnion toward the epilimnion O₂ at a rate set by (1 − strat). It is WIND-driven, so
+    // the ice lid stops it (under ice the sealed column only diffuses: the deep water depletes, the top keeps its O₂).
+    const overturn = clamp((1 - this.strat) * (1 - this.ice) * THERMAL.OVERTURN * dt, 0, 0.5);
     if (overturn > 1e-4) {
       for (let cx = 0; cx < COLS; cx++) {
         const ref = (o2[cx] + o2[COLS + cx]) * 0.5;     // epilimnion reference
@@ -515,7 +627,7 @@ export class Environment {
 
     this._throughFlow(dt);
 
-    for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) o2[i] = clamp(o2[i], 0, 1.2);
+    for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) o2[i] = clamp(o2[i], 0, 1.5);
   }
 
   // THROUGH-FLOW: the inflow→outflow current carries every dissolved/suspended field (phosphate, ammonium, nitrate,
@@ -525,13 +637,13 @@ export class Environment {
   // outflow path is a real through-flow (≈ OUTFLOW.ADVECT × FLOW.SPEED; ~1-year water residence at the defaults).
   _throughFlow(dt) {
     const rows = Math.min(Math.max(1, Math.round(OUTFLOW.DEPTH * ROWS)), this.mask.bedRow.reduce((m, r) => Math.min(m, r + 1), ROWS));
-    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom];
-    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P];
+    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom, this.diatom];
+    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P, PHYTO.P_USE], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P, PHYTO.N_USE];
     let outP = 0, outN = 0;
     for (let cy = 0; cy < rows; cy++) {
       const a = clamp(OUTFLOW.ADVECT * this.flowAt((cy + 0.5) * CH) * dt / CW, 0, 0.5), base = cy * COLS;
       if (a <= 0) continue;
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < fields.length; k++) {
         const f = fields[k];
         const gone = f[base + COLS - 1] * a; f[base + COLS - 1] -= gone; outP += gone * pW[k]; outN += gone * nW[k];   // out of the outlet
         for (let cx = COLS - 2; cx >= 0; cx--) { const i = base + cx, m = f[i] * a; f[i] -= m; f[i + 1] += m; }
@@ -547,8 +659,8 @@ export class Environment {
     return {
       t: this.t, weather: this.weather, tempC: this.tempC, turbidity: this.turbidity,
       strat: this.strat, windT: this._windT, weatherTimer: this.weatherTimer, forced: !!this.forced,
-      light: this.light, tempNorm: this.tempNorm, year: this.year, wind: this.wind, flash: this.flash,
-      meanPhyto: this._meanPhyto, meanCyano: this._meanCyano, meanDOM: this._meanDOM,
+      light: this.light, tempNorm: this.tempNorm, year: this.year, wind: this.wind, flash: this.flash, ice: this.ice,
+      meanPhyto: this._meanPhyto, meanCyano: this._meanCyano, meanDOM: this._meanDOM, meanDiatom: this._meanDiatom, diatom: Array.from(this.diatom),
       tempHypo: this.tempHypo, tempDiel: this.tempDiel,   // the slow hypolimnion temperature + the diurnal part of tempC
       W, H, cols: COLS, rows: ROWS,
       o2: Array.from(this.o2), nh4: Array.from(this.nh4), no3: Array.from(this.no3), phos: Array.from(this.phos),
@@ -568,8 +680,9 @@ export class Environment {
     const tempC = clamp(num(s.tempC, ENV.TEMP_BASE), -20, 60);
     const strat = clamp(num(s.strat, 0), 0, 1), turbidity = clamp(num(s.turbidity, TURBIDITY.BASE), 0, 1);
     const windT = num(s.windT, 0), weatherTimer = num(s.weatherTimer, ENV.WEATHER_DWELL[weather]), forced = s.forced === true;
-    const light = clamp(num(s.light, daylight(t) * (1 - ENV.CLOUD_COVER[weather])), 0, 1);
-    const tempNorm = clamp(num(s.tempNorm, (tempC - (ENV.TEMP_BASE - 12)) / 22), 0, 1);
+    const light = clamp(num(s.light, daylight(t) * (1 - ENV.CLOUD_COVER[weather])), 0, 1);   // (only a fallback: the next step recomputes it)
+    const tempNorm = clamp(num(s.tempNorm, tempC / 26), 0, 1);
+    const ice = clamp(num(s.ice, 0), 0, 1);   // v25+; older saves had no ice (their climate never froze)
     const year = Math.max(0, num(s.year, num(hint.time, 0) / SEASON.YEAR_LEN));
     const wind = num(s.wind, WIND.BASE * Math.sin(windT * 0.045) * WIND.WEATHER[weather]), flash = clamp(num(s.flash, 0), 0, 1);
     // thermal states (v24+); older saves: the diurnal part from the clock, the deep as the surface minus the old fixed
@@ -609,6 +722,7 @@ export class Environment {
     };
     const o2 = field2(s.o2, new Float32Array(COLS * ROWS).fill(ENV.O2_START));
     const phyto = field2(s.phyto, new Float32Array(COLS * ROWS).fill(PHYTO.START));
+    const diatom = field2(s.diatom, new Float32Array(COLS * ROWS).fill(DIATOM.START));   // v25+ (older saves: the seed)
     const cyano = field2(s.cyano, new Float32Array(COLS * ROWS).fill(CYANO.START));
     const dom = field2(s.dom, new Float32Array(COLS * ROWS).fill(MICROBE.START));   // older saves lack it → the seed
     const sedP = field1(s.sedP, new Float32Array(COLS).fill(SED_P.START));
@@ -630,12 +744,13 @@ export class Environment {
     const { lo, hi } = this.mask;
     const bandMean = (f, maxFrac) => { let sm = 0, n = 0; for (let cy = 0; cy < ROWS; cy++) { if (maxFrac < 1 && (cy + 0.5) / ROWS >= maxFrac) continue; for (let cx = lo[cy]; cx <= hi[cy]; cx++) { sm += f[cy * COLS + cx]; n++; } } return n ? sm / n : 0; };
     const meanPhyto = Math.max(0, num(s.meanPhyto, bandMean(phyto, PHYTO.BAND)));
+    const meanDiatom = Math.max(0, num(s.meanDiatom, bandMean(diatom, DIATOM.BAND)));
     const meanCyano = Math.max(0, num(s.meanCyano, bandMean(cyano, CYANO.SCUM_BAND)));
     const meanDOM = Math.max(0, num(s.meanDOM, bandMean(dom, 1)));
     // ---- commit (nothing above touched `this`) ----
-    Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash, tempDiel, tempHypo });
-    this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM;
-    this.o2.set(o2); this.phyto.set(phyto); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
+    Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash, tempDiel, tempHypo, ice });
+    this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM; this._meanDiatom = meanDiatom;
+    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
   }
 }
 
@@ -643,6 +758,11 @@ export class Environment {
 // which enters the two cells with opposite signs → the field total is conserved exactly (to float rounding). No flux
 // crosses the lake edges or the bed (no-flux boundaries; the old mean-of-neighbours stencil destroyed mass at edges).
 // Interior cells behave exactly as before. Dry cells are copied through untouched.
+// algal photosynthesis rate (relative) at light `lit` and temperature factor qP (Q10, 1 at 20 °C): Blackman-type —
+// LIGHT-LIMITED photosynthesis is photochemistry and nearly temperature-independent, only the light-SATURATED maximum
+// follows the Q10; above 20 °C the warm boost applies to the whole curve (the pre-existing summer calibration)
+export function photoRate(lit, qP) { return qP >= 1 ? lit * qP : Math.min(lit, qP); }
+
 function diffuse(field, tmp, k, M) {
   if (k <= 0) return;
   const c = Math.min(k, 0.5) * 0.25, { lo, hi, wet } = M;

@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED } from './config.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
 import { SP, SPECIES } from './species.js';
@@ -29,7 +29,14 @@ function zoneY(sp, x) {
 // this file, so the step body is untouched). A second World can no longer reset or share the first one's ids.
 let _idOwner = null;
 const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
-const effSize = a => a.size * (0.6 + 0.4 * (a.grow ?? 1)); // juveniles are smaller -> more vulnerable
+// a fish's effective (length) size: young fish are much smaller than adults, so a first-year fish fits the gape of its own
+// species' adults (real pike, perch and bass cannibalise their young-of-year); was 0.6 + 0.4·grow (a newborn at 74 % of adult
+// length could never be swallowed by its own kind)
+const effSize = a => a.size * (0.3 + 0.7 * (a.grow ?? 1));
+// thermal performance curve: 1 at/above the species' optimum, falling linearly to ENV.COLD_PERF_MIN at 2 °C
+// an action intent's ENGAGED intensity: 0 below ACTION.ENGAGE, rising linearly to 1 at full intent
+export const engaged = x => x > ACTION.ENGAGE ? (x - ACTION.ENGAGE) / (1 - ACTION.ENGAGE) : 0;
+export const coldPerf = (tC, tOpt) => tC >= tOpt ? 1 : clamp(ENV.COLD_PERF_MIN + (1 - ENV.COLD_PERF_MIN) * (tC - 2) / Math.max(1, tOpt - 2), ENV.COLD_PERF_MIN, 1);
 // spatial-query predicates as plain functions (SpatialGrid.nearest passes the querying fish as ctx), so the hot queries
 // allocate no closure per call
 const notDead = it => !it.dead;
@@ -37,17 +44,27 @@ const notDead = it => !it.dead;
 // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
 // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
 function canPreyFn(pred, prey) {
-  return pred !== prey && !pred.dead && !prey.dead && pred.sp.diet.fish && !(pred.species === prey.species && prey.age < BROOD.GRACE) &&
-    canEat(effSize(pred), effSize(prey) * (prey.bodyMul || 1));
+  if (pred === prey || pred.dead || prey.dead || !pred.sp.diet.fish || (pred.species === prey.species && prey.age < BROOD.GRACE)) return false;
+  const ps = effSize(pred), qs = effSize(prey) * (prey.bodyMul || 1);
+  return canEat(ps, qs) && qs >= FEED.PREY_MIN * ps;   // fits the gape, and big enough to be worth the chase
 }
 const isThreatTo = (it, a) => canPreyFn(it, a);
 const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
+const notOwnBrood = (it, a) => it !== a && !it.dead && it.ni !== a.id;   // a nest guardian's intruder: any piscivore but its own fry
+const isLoonPrey = it => !it.dead && effSize(it) * (it.bodyMul || 1) <= BIRD.PREY_MAX;   // what a loon can swallow
 const isPreyOf = (it, a) => canPreyFn(a, it);
 const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated;
 const PLANT_COL = 32;   // x-column width of the nearestPlant index (world px)
 // sub-lethal reproductive impairment from the contaminant body burden: 1 below TOX.REPRO_HARM, falling to 0 as the
 // burden rises (PCB/endocrine-style fecundity loss that bites before lethality). Inert when a.tox = 0 (a clean lake).
 export function toxFecundity(tox) { return tox > TOX.REPRO_HARM ? Math.max(0, 1 - TOX.REPRO_CUT * (tox - TOX.REPRO_HARM)) : 1; }
+// the spawning drive 0..1 of species `sp` at shore water temperature shoreT (°C) on year-fraction yf with ice cover `ice`:
+// 1 inside its window SP.spawnT, soft SPAWN.EDGE ramps either side; 0 on the autumn cooling path (yf ≥ SEASON_END) or under ice
+export function spawnFactor(sp, shoreT, yf, ice) {
+  if (yf >= SPAWN.SEASON_END || ice >= 0.5) return 0;
+  const [lo, hi] = sp.spawnT, e = SPAWN.EDGE;
+  return clamp((shoreT - lo + e) / e, 0, 1) * clamp((hi + e - shoreT) / e, 0, 1);
+}
 // guard a loaded/champion brain against the species' CURRENT network shape. The genome LENGTH identifies the save era
 // it came from (species.js BRAIN_ERAS, collision-free per species); an older era is MIGRATED by remapping every input
 // column / output row BY KEY (base inputs by position, generic extras + outputs by label) — so weights stay on the sensor
@@ -137,6 +154,11 @@ function parseSave(s) {
     if (ac) { ag.act.turn = clamp(ac[0], -1, 1); ag.act.thrust = clamp(ac[1], 0, 1); ag.act.strike = clamp(ac[2], 0, 1); ag.act.flee = clamp(ac[3], 0, 1); ag.act.hide = clamp(ac[4], 0, 1); }
     const lw = !fit.reseeded && !fit.migrated ? numArr(a.lw, OUT * HID) : null;   // learned (plastic) W2 block — only for the brain it belongs to
     if (lw) ag.lw.set(lw, W2);
+    if (isNum(a.dg) && a.dg > 0) ag.dg = clamp(a.dg, 0, 1e5);   // v25 digestion
+    if (isNum(a.fa) && a.fa > 0) ag.feedAcc = clamp(a.fa, 0, 1);   // v25 handling-time remainder (fractional in cold water)
+    // v25 nest state (a fry whose guardian id isn't found simply goes off-duty at its next step)
+    if (isNum(a.nt) && a.nt > 0 && isNum(a.nx) && isNum(a.ny)) { ag.nt = clamp(a.nt, 0, 1e5); ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
+    if (Number.isSafeInteger(a.ni) && a.ni > 0 && isNum(a.nx) && isNum(a.ny)) { ag.ni = a.ni; ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
     if (Number.isSafeInteger(a.id) && a.id > 0 && !usedIds.has(a.id)) { ag.id = a.id; usedIds.add(a.id); if (a.id > maxId) maxId = a.id; } else needId.push(ag);
     agents.push(ag);
   }
@@ -199,8 +221,24 @@ function parseSave(s) {
       structs[k] = fresh[k]; rep.regenerated.push(k);
     }
   }
+  // v25 regional gene pool: every entry's genome guarded against its species' current shape (era migration as for agents);
+  // a missing / short pool is topped up with fresh founders (older saves predate it)
+  const genePool = {};
+  for (const k of SPECIES) {
+    const src = isObj(s.genePool) && Array.isArray(s.genePool[k]) ? s.genePool[k] : [], out = [];
+    for (const e of src) { if (out.length >= IMMIGRATION.POOL_N) break; if (!isObj(e)) continue; const fit = fitGenome(SP[k], e.w); out.push({ w: fit.g, gn: fitGenes(Array.isArray(e.gn) ? e.gn : []), hue: hueOr(e.hu, null) ?? SP[k].randomHue(rand), gen: nonNegInt(e.g) }); }
+    while (out.length < IMMIGRATION.POOL_N) out.push(poolFounder(k));
+    genePool[k] = out;
+  }
+  // v25 visiting loons (older saves: none)
+  const birds = [];
+  for (const b of Array.isArray(s.birds) ? s.birds : []) {
+    if (birds.length >= BIRD.MAX || !isObj(b) || !isNum(b.x) || !isNum(b.y)) continue;
+    const st = b.st === 1 || b.st === 2 ? b.st : 0;
+    birds.push({ x: clamp(b.x, 0, W), y: clamp(b.y, 0, H), h: num(b.h, Math.PI / 2), st, t: num(b.t, 5), stay: num(b.stay, BIRD.STAY[0]), m: nonNegInt(b.m), vx: clamp(num(b.vx, 0), -20, 20), gone: false });
+  }
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
-  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep };
+  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds };
 }
 function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = null) {
   const sp = SP[species], shape = sp.shape;
@@ -232,6 +270,10 @@ function makeAgent(species, x, y, energy, gen, hue, genome, age = 0, genes = nul
     act: { h: new Float32Array(shape.hid), o: new Float32Array(OUT), turn: 0, thrust: 0, strike: 0, flee: 0, hide: 0, in: new Float32Array(shape.in) },
   };
 }
+// a founder of the REGIONAL population a species' immigrants come from: a naive genome + fresh trait genes (a new lake's
+// regional pool starts at the same evolutionary point as its own founders, then exchanges genes with the lake)
+function poolFounder(k) { const sp = SP[k]; return { w: randomGenome(sp.shape), gn: randomGenes(), hue: sp.randomHue(rand), gen: 0 }; }
+
 // pick a macrophyte variety appropriate to the rooting bed-depth fraction (so forms zonate by depth: shallow
 // shelf → lily/chara/pondweed, drop-off → pondweed/milfoil, deep → milfoil). Random among the depth-matching forms.
 function pickVariety(bedFrac) {
@@ -268,10 +310,11 @@ export function derivePlant(p) {
 // selection accumulates; without one it gets fresh near-1.0 genes (colonisation / cold-start founders). The VARIETY is
 // always re-chosen by rooting depth (depth-zonation is an ecological constraint, not heritable here) — genes drift
 // WITHIN each form. Macrophytes are predominantly clonal, so single-parent inheritance is the realistic default.
-function newPlant(x, mature, parent = null) {
+function newPlant(x, mature, parent = null, clone = false) {
   const base = bedY(x) + rand(-1, 2);                    // rooted on the (curved) lake bed
-  const v = pickVariety(clamp(base / WORLD.H, 0, 1)), mv = MACRO[v];
-  const gn = parent ? mutateGenes(parent.gn, 0.5, 0.045) : randomPlantGenes();   // slow drift; core.rand → deterministic
+  // a RUNNER (clone) is the parent's own species wherever it roots; a seedling's form is set by its rooting depth
+  const v = clone && parent ? parent.v : pickVariety(clamp(base / WORLD.H, 0, 1)), mv = MACRO[v];
+  const gn = parent ? mutateGenes(parent.gn, clone ? 0.25 : 0.5, 0.045) : randomPlantGenes();   // slow drift (clones barely); core.rand → deterministic
   const hue = parent ? wrapHue(parent.hue + gauss() * 7) : wrapHue(mv.hue + rand(-6, 6));
   const maxH = clamp(rand(mv.maxH[0], mv.maxH[1]) * gn[0], 6, 140);
   const height = mature ? rand(PLANT.WINTER_MIN, maxH) : PLANT.WINTER_MIN;
@@ -330,17 +373,25 @@ export class World {
     this.agents = []; this.plankton = []; this.detritus = []; this.plants = []; this.corpses = [];
     this.larvae = []; this.insects = [];   // aquatic-insect life cycle: benthic larvae ↔ emerged surface adults
     this.snails = []; this.cray = [];      // benthic invertebrates: grazing snails + omnivorous crayfish
+    this.birds = [];                       // visiting fish-eating diving birds (loons) — BIRD
     this.env = new Environment();
-    this.time = 0; this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
+    // a fresh lake opens in late spring (SEASON.START_YF) with that season's thermal state, not an ice-bound March 1
+    this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
     this.stats.births = {}; this.stats.immigrants = {}; for (const k of SPECIES) { this.stats.births[k] = 0; this.stats.immigrants[k] = 0; }
     this.series = []; this._seriesAcc = 0; this.selectedId = null;
     for (const key of SPECIES) {
       const sp = SP[key];
       for (let i = 0; i < popStart(sp); i++) {
         const p = sp.spawnPos(rand);
-        this.agents.push(makeAgent(key, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), 0, sp.randomHue(rand), null, rand(sp.matureAge, sp.matureAge * 1.8)));
+        // a MIXED age structure, as a real lake has: ~60% adults of several year-classes, ~40% older juveniles
+        const age = rand() < 0.6 ? rand(sp.matureAge, Math.max(sp.matureAge * 1.2, Math.min(sp.maxAge * 0.7, sp.matureAge * 3))) : rand(sp.matureAge * 0.3, sp.matureAge);
+        const f = makeAgent(key, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), 0, sp.randomHue(rand), null, age);
+        f.mateCd = 0;   // founders haven't spawned yet this year (the water-temperature window alone decides when they can)
+        this.agents.push(f);
       }
     }
+    // the REGIONAL gene pool immigrants come from (connected waters' populations), per species — see the step's gene flow
+    this.genePool = {}; for (const k of SPECIES) { this.genePool[k] = []; for (let i = 0; i < IMMIGRATION.POOL_N; i++) this.genePool[k].push(poolFounder(k)); }
     for (let i = 0, n = scaleCount(SEED_COUNTS.plankton); i < n; i++) this.plankton.push(this._mkPlankton());
     for (let i = 0, n = scaleCount(INSECT.LARVA_SEED); i < n; i++) this.larvae.push(this._mkLarva());
     for (let i = 0, n = scaleCount(SNAIL.SEED); i < n; i++) this.snails.push(this._mkSnail());
@@ -351,6 +402,9 @@ export class World {
   }
 
   bedY(x) { return bedY(x); }   // world-y of the lake bed at x (for senses & rendering)
+  // jump a lake to a calendar date (year-fraction, 0 = March 1) with that season's thermal state, ice and stratification
+  // (tests and scenarios; setting `time` alone leaves the opening May water in place until it slowly relaxes)
+  setDate(yf) { this.time = yf * SEASON.YEAR_LEN; this.env.primeSeason(this.time); return this; }
 
   // static habitat structure: reed clumps on the shallow shores, submerged logs on the bed,
   // and mussel beds (benthic filter feeders) on the lit bed
@@ -424,6 +478,7 @@ export class World {
   qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, r * c, notDead); }
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
+  qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, notDead); }   // benthic insect larvae (perch, bottom feeders)
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
   // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
@@ -459,15 +514,25 @@ export class World {
     return idx;
   }
   canPrey(pred, prey) { return canPreyFn(pred, prey); }   // see canPreyFn (module scope)
-  // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish
-  qThreat(a) { const r = a.senseRange * 1.1 * this.env.clarity(); this._qtA = a; return (this._qtR = this.agentGrid.sub.nearest(a.x, a.y, r, isThreatTo, a)); }
+  // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish.
+  // A DIVING loon close by that could swallow this fish is a threat too (whichever is nearer).
+  qThreat(a) {
+    const r = a.senseRange * 1.1 * this.env.clarity(); this._qtA = a;
+    let res = this.agentGrid.sub.nearest(a.x, a.y, r, isThreatTo, a);
+    if (this.birds.length && effSize(a) * (a.bodyMul || 1) <= BIRD.PREY_MAX) for (const b of this.birds) {
+      if (b.st !== 1) continue;   // only underwater
+      const d = Math.hypot(b.x - a.x, b.y - a.y);
+      if (d < r && (!res || d < res.dist)) res = { item: b, dist: d };
+    }
+    return (this._qtR = res);
+  }
   qPrey(a) { const r = a.senseRange * this.env.clarity(); this._qpA = a; return (this._qpR = this.agentGrid.nearest(a.x, a.y, r, isPreyOf, a)); }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, isMateFor, a); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
   // partner nearby by condition (energy) + heritable quality (mean trait gene) + foraging success, and pick
   // the best. So evolution acts on the genome (vigorous, well-fed, good-genes mates are preferred). No RNG.
-  chooseMate(a) {
-    const r = a.sp.mateRadius, r2 = r * r; let best = null, bestScore = -Infinity;
+  chooseMate(a, reach = 1) {
+    const r = a.sp.mateRadius * reach, r2 = r * r; let best = null, bestScore = -Infinity;
     this.agentGrid.forNear(a.x, a.y, r, it => {
       if (it.dead || it === a || it.species !== a.species || it.age < it.sp.matureAge || it.energy < it.sp.reproEnergy || it.mateCd > 0 || it._mated) return;
       const dx = it.x - a.x, dy = it.y - a.y; if (dx * dx + dy * dy > r2) return;
@@ -542,6 +607,56 @@ export class World {
     p.height -= bite; p.biomass = p.height * PLANT.BIOMASS_PER_PX;
     return PLANT.ENERGY_PER_PX * bite * p.palat;   // energy ∝ biomass grazed; tough/defended forms yield less (per-plant gene)
   }
+  // VISITING LOON (BIRD): arrives in the open-water season; st 0 = resting on the surface, 1 = diving/pursuing, 2 =
+  // ascending for air. It chases the nearest fish it can swallow that it can see, catches within reach, surfaces after
+  // every catch (to swallow) or when out of breath, and leaves once sated or its visit is over. Seeded RNG → deterministic.
+  _stepBirds(dt, counts) {
+    const env = this.env, yf = env.yearFrac();
+    const inSeason = yf >= BIRD.SEASON[0] && yf <= BIRD.SEASON[1] && env.ice < 0.1;
+    if (inSeason && this.birds.length < BIRD.MAX && rand() < BIRD.ARRIVE * dt) {
+      this.birds.push({ x: rand(W * 0.2, W * 0.8), y: 0, h: Math.PI / 2, st: 0, t: rand(BIRD.SURFACE[0], BIRD.SURFACE[1]), stay: rand(BIRD.STAY[0], BIRD.STAY[1]), m: 0, vx: rand(-6, 6), gone: false });
+    }
+    for (const b of this.birds) {
+      b.t -= dt; b.stay -= dt;
+      if (b.st === 0) {                                   // resting/paddling on the surface
+        b.x = clamp(b.x + b.vx * dt, 30, W - 30); b.y = 0;
+        if (b.x <= 30 || b.x >= W - 30) b.vx = -b.vx;
+        if (b.stay <= 0 || b.m >= BIRD.MEALS || !inSeason) b.gone = true;   // flies off
+        else if (b.t <= 0 && env.light > BIRD.LIGHT_MIN) { b.st = 1; b.t = rand(BIRD.DIVE[0], BIRD.DIVE[1]); b.h = Math.PI / 2 + rand(-0.7, 0.7); }
+        continue;
+      }
+      if (b.st === 1) {                                   // underwater: pursue the nearest catchable fish in sight
+        if (b.t <= 0) { b.st = 2; continue; }
+        const m = this.agentGrid.nearest(b.x, b.y, BIRD.SIGHT * env.clarity(), isLoonPrey, null);
+        let want = b.h;
+        if (m) {
+          want = Math.atan2(m.item.y - b.y, m.item.x - b.x);
+          if (m.dist < BIRD.REACH) {                      // caught: swallowed whole, then up for air
+            const f = m.item; f.dead = true; f.eatenBy = 'loon'; counts[f.species]--; this._counts[f.species] = counts[f.species];
+            if (f.id === this.selectedId) this.selectedId = null;
+            b.m++; this.stats.birdEaten = (this.stats.birdEaten || 0) + 1; b.st = 2; continue;
+          }
+        }
+        b.h += clamp(angDiff(want, b.h), -BIRD.TURN * dt, BIRD.TURN * dt);
+        b.x = clamp(b.x + Math.cos(b.h) * BIRD.SPEED * dt, 4, W - 4);
+        b.y = clamp(b.y + Math.sin(b.h) * BIRD.SPEED * dt, 1, bedY(b.x) - 4);
+        continue;
+      }
+      // st 2: back up to the surface for air
+      b.h += clamp(angDiff(-Math.PI / 2, b.h), -BIRD.TURN * dt, BIRD.TURN * dt);
+      b.y -= BIRD.SPEED * 0.8 * dt; b.x = clamp(b.x + Math.cos(b.h) * BIRD.SPEED * 0.3 * dt, 4, W - 4);
+      if (b.y <= 1) { b.y = 0; b.st = 0; b.h = Math.PI / 2; b.t = rand(BIRD.SURFACE[0], BIRD.SURFACE[1]); }
+    }
+    if (this.birds.some(b => b.gone)) this.birds = this.birds.filter(b => !b.gone);
+  }
+  // a fry inside its guarded nest zone, with its guardian on duty and on station, is hard to take (BROOD.PROTECT)
+  _guardCut(prey) {
+    if (!prey.ni || !this._guards) return 1;
+    const g = this._guards.get(prey.ni), R = BROOD.GUARD_R;
+    if (!g || !(g.nt > 0) || g.dead) return 1;
+    const dn = Math.hypot(prey.x - prey.nx, prey.y - prey.ny), dg = Math.hypot(g.x - prey.nx, g.y - prey.ny);
+    return dn < R && dg < R * 1.5 ? 1 - BROOD.PROTECT : 1;
+  }
   takePrey(a) {
     const m = this.qPrey(a);
     if (!m) return null;
@@ -555,7 +670,7 @@ export class World {
     // …and is EXTENDED by the predator committing a brain-gated STRIKE lunge, and SHRUNK by the prey freezing (HIDE
     // concealment) — so the predator's strike decision and the prey's hide decision both bite here (emergent arms race).
     const reach = a.sp.eatRadius * (1 - this.coverAt(prey.x, prey.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * shoal)
-      * (1 + ACTION.STRIKE_REACH * a.act.strike) * (1 - ACTION.HIDE_CONCEAL * prey.act.hide);
+      * (1 + ACTION.STRIKE_REACH * engaged(a.act.strike)) * (1 - ACTION.HIDE_CONCEAL * engaged(prey.act.hide)) * this._guardCut(prey);
     if (m.dist < reach) {
       prey.dead = true; this._counts[prey.species]--;
       if (prey.id === this.selectedId) this.selectedId = null;
@@ -701,17 +816,25 @@ export class World {
       // deep / too turbid / too shaded to photosynthesize) uproots over time → the realistic depth limit + the seed of the
       // clear↔turbid feedback (forms differ: turbidity-sensitive chara needs clear water, shade-tolerant milfoil persists
       // deep). Judged on the daily mean, so night is not starvation; rootstock is grazing- & winter-proof → beds persist.
-      if (p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.nut || 0); p.nut = 0; }   // a light-starved plant DECOMPOSES → all its N+P to DOM
+      // A DORMANT plant (cold water at its base — winter, often under ice and snow) has shut down to its rootstock / winter
+      // buds and can't starve: real pondweeds and milfoils overwinter this way instead of dying (and rotting) under the ice.
+      const dormant = env.tempAt(p.x, p.baseY) < PLANT.DORMANT_T;
+      if (!dormant && p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.nut || 0); p.nut = 0; }   // a light-starved plant DECOMPOSES → all its N+P to DOM
     }
     // recruitment is seasonal too — new plants establish mostly in the warm growing season (vigor off the surface temp)
     const seedVigor = clamp((env.tempC - PLANT.GROW_TEMP_MIN) / tWin, 0, 1);
     const plantCap = scaleCount(PLANT.MAX);
     if (plantCount < plantCap) for (let n = poissonish(PLANT.SEED_RATE * area * seedVigor * dt); n > 0 && plantCount < plantCap; n--) {
-      const x = plantX();
-      // local seed dispersal: a seedling inherits (mutated) the genes of the nearest established plant; an isolated
-      // seed (sparse deep, or cold-start) founds with fresh genes → heredity where beds exist, colonisation elsewhere.
-      const near = this.nearestPlant(x, bedY(x) - 10, 240);   // unscaled: seed dispersal is not a fish's visual sense
-      const sd = newPlant(x, false, near ? near.item : null);
+      // CLONAL SPREAD: most new shoots are RUNNERS (rhizome/stolon ramets) a short way from an established plant, of its own
+      // species — real pondweeds, milfoil and muskgrass spread mainly this way, so beds grow outward as patches. The rest
+      // are SEEDS landing anywhere: a seedling inherits (mutated) the nearest plant's genes, an isolated one founds fresh.
+      let x, parent = null, clone = false;
+      if (this.plants.length && rand() < PLANT.CLONAL) {
+        const q = this.plants[(rand() * this.plants.length) | 0];
+        if (!q.dead && q.height >= PLANT.WINTER_MIN * 1.5) { parent = q; clone = true; x = clamp(q.x + (rand() < 0.5 ? -1 : 1) * rand(PLANT.RUNNER[0], PLANT.RUNNER[1]), 4, W - 4); }
+      }
+      if (!clone) { x = plantX(); const near = this.nearestPlant(x, bedY(x) - 10, 240); parent = near ? near.item : null; }   // unscaled: dispersal is not a fish's visual sense
+      const sd = newPlant(x, false, parent, clone);
       // ESTABLISHMENT needs light: a seed only takes root where the daily-mean light expected at its top — after depth
       // attenuation AND the shade of the existing canopy — meets its own light requirement. Seeds landing under a closed
       // bed or in the dark deep simply fail (as real macrophyte seedlings do) instead of spawning a doomed seedling that
@@ -735,14 +858,16 @@ export class World {
     // counts + clear mating flags
     const counts = this._counts = {}; for (const k of SPECIES) counts[k] = 0;
     for (const a of this.agents) { if (!a.dead) counts[a.species]++; a._mated = false; }
+    // parents currently guarding a nest (by id) — their fry look them up; takePrey checks the guarded zone
+    const guards = this._guards || (this._guards = new Map()); guards.clear();
+    for (const a of this.agents) if (!a.dead && a.nt > 0) guards.set(a.id, a);
 
-    // seasonal spawning: per-species breeding multiplier, peaking at SP.spawnPeak (a year-fraction) and tapering to
-    // SPAWN.FLOOR off-season → a spring/early-summer baby boom (pike earliest). Computed once per step (same for all).
-    const yf = env.yearFrac(), spawnF = {};
-    for (const k of SPECIES) {
-      const d = Math.abs(((yf - SP[k].spawnPeak + 1.5) % 1) - 0.5);          // angular distance to the peak, [0,0.5]
-      spawnF[k] = SPAWN.FLOOR + (1 - SPAWN.FLOOR) * Math.pow(Math.cos(d * Math.PI), SPAWN.SHARP);  // 1 at peak → FLOOR a half-year off
-    }
+    // TEMPERATURE-TRIGGERED SPAWNING: real fish spawn when the shallows warm into their species' window (SP.spawnT, °C)
+    // in spring/summer — pike just after ice-out (4–11 °C), bass in late spring (15–21), sunfish/minnows repeatedly
+    // through summer — not on fixed calendar dates, and never on the autumn cooling path or under ice. Soft edges (SPAWN.
+    // EDGE °C); 0 outside the season. A warm spring brings spawning forward, as in real lakes. Once per step for all.
+    const yf = env.yearFrac(), spawnF = {}, shoreT = env.tempC - env.tempDiel;
+    for (const k of SPECIES) spawnF[k] = spawnFactor(SP[k], shoreT, yf, env.ice);
 
     const newborns = [];
     for (const a of this.agents) {
@@ -807,10 +932,35 @@ export class World {
         // UPWARD (in a stratified lake O₂ rises toward the surface), harder the worse the deficit. Innate + deterministic;
         // the brain still modulates it, like the depth-home pull it adjusts.
         const o2Want = a.o2Crit * ENV.HYPOXIA_AVOID, o2Here = env.oxygenAt(a.x, a.y);
+        // OXYGEN-LIMITED HABITAT: a fish doesn't settle where the water can't support it. If its preferred depth lies in
+        // water below its O₂ limit (the summer anoxic hypolimnion, the late-winter deep), the target rises to the deepest
+        // water above that still holds enough O₂ — and a bottom-dweller whose local bed is anoxic heads for the shallower
+        // shelf, where the bottom lies in oxygenated water (the summer "habitat squeeze" of real stratified lakes).
+        if (env.oxygenAt(a.x, prefY) < o2Want) {
+          let y = prefY; while (y > 12 && env.oxygenAt(a.x, y) < o2Want) y -= 24;
+          prefY = Math.max(8, y);
+          if (IN.homeDepth >= 0.75) {
+            const toShore = a.x < W * BASIN.CENTER ? Math.PI : 0;   // the nearer shore = shallower bed
+            a.heading += angDiff(toShore + (Math.cos(toShore) > 0 ? 0.25 : -0.25), a.heading) * a.maxTurn * 1.0 * dt;
+          }
+        }
         if (o2Here < o2Want) prefY = Math.min(prefY, a.y - 20 - 60 * clamp((o2Want - o2Here) / o2Want, 0, 1));
+        // SPAWNING AGGREGATION target (applied below): in its spawning season a breeding-ready adult migrates to the
+        // littoral spawning ground — ONE per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf), so a sparse
+        // population converges where mates can find each other, as real pike do on a traditional spawning marsh
+        let mig = null;
+        if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy * SPAWN.AGG_READY) {
+          const side = sp.spawnSide || (a.x < W * 0.5 ? -1 : 1);
+          const gx = side < 0 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
+          const gy = clamp(gb * 0.6, 8, gb - 8);
+          mig = { gx, gy, d: Math.hypot(gx - a.x, gy - a.y) };
+        }
         const vBias = clamp((prefY - a.y) / 120, -1, 1);
         if (Math.abs(vBias) > 0.05) {
-          const desired = Math.atan2(vBias, Math.cos(a.heading) >= 0 ? 0.7 : -0.7);   // keep heading-ish, bias toward home depth
+          // keep heading-ish (or, migrating, toward the spawning ground — else depth-keeping pins a fish that must turn
+          // back through the vertical), biased toward the home depth
+          const hx = mig && mig.d > 30 ? (mig.gx < a.x ? -0.7 : 0.7) : Math.cos(a.heading) >= 0 ? 0.7 : -0.7;
+          const desired = Math.atan2(vBias, hx);
           a.heading += angDiff(desired, a.heading) * a.maxTurn * IN.depthPull * Math.abs(vBias) * dt;
         }
         // ease activity toward the species' cruise norm — nocturnal species (catfish) crank it up at night
@@ -838,14 +988,29 @@ export class World {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);   // prey bearing relative to the body heading
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.pursuit * a.act.in[2] * dt;
         }
-        // SPAWNING AGGREGATION: in its spawning season a breeding-ready adult migrates to the littoral spawning ground on
-        // its side of the lake (bass nest in the shallows, pike/carp spawn in flooded weed margins, catfish nest in shallow
-        // cavities) — so a SPARSE population concentrates where mates can find each other. Innate + deterministic; the
-        // brain modulates it like the other reflexes, and it switches off out of season or once the fish is spent.
-        if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy * SPAWN.AGG_READY) {
-          const gx = a.x < W * 0.5 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
-          const gy = clamp(gb * 0.6, 8, gb - 8), d = Math.hypot(gx - a.x, gy - a.y);
-          if (d > 30) a.heading += angDiff(Math.atan2(gy - a.y, gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(d / 300, 0.2, 1) * dt;
+        // SPAWNING AGGREGATION (target `mig` above): bass nest in the shallows, pike/carp spawn in flooded weed margins,
+        // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
+        // switches off out of season or once the fish is spent.
+        if (mig && mig.d > 30) a.heading += angDiff(Math.atan2(mig.gy - a.y, mig.gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(mig.d / 300, 0.2, 1) * dt;
+        // NEST GUARDING: a guarding parent holds station over its nest and drives off any piscivore that comes into the
+        // guarded zone (it turns on the intruder); its fry stay close while it's on duty. Off duty (time up, or the
+        // guardian is gone) the fry disperse on their own.
+        if (a.nt > 0) {
+          a.nt = Math.max(0, a.nt - dt);
+          const intr = this.agentGrid.sub.nearest(a.nx, a.ny, BROOD.GUARD_R, notOwnBrood, a);
+          const tx = intr ? intr.item.x : a.nx, ty = intr ? intr.item.y : a.ny, dd = Math.hypot(tx - a.x, ty - a.y);
+          if (dd > (intr ? 4 : BROOD.GUARD_R * 0.35)) a.heading += angDiff(Math.atan2(ty - a.y, tx - a.x), a.heading) * a.maxTurn * BROOD.GUARD_TETHER * clamp(dd / 60, 0.3, 1) * dt;
+          // on station with no intruder it HOVERS over the nest (fanning the eggs, as guarding males do), not cruising off
+          if (!intr && dd < BROOD.GUARD_R) thrust += (IN.cruise * BROOD.HOVER - thrust) * 0.7;
+        }
+        if (a.ni) {
+          const g = guards.get(a.ni);
+          if (!g || !(g.nt > 0)) a.ni = 0;
+          else { const d = Math.hypot(a.nx - a.x, a.ny - a.y); if (d > BROOD.GUARD_R * 0.6) a.heading += angDiff(Math.atan2(a.ny - a.y, a.nx - a.x), a.heading) * a.maxTurn * BROOD.FRY_TETHER * dt; }
+        } else if (a.age < sp.matureAge * 0.5) {
+          // NURSERY: unguarded young shelter in vegetation/structure (the littoral nursery), harder when frightened
+          const cv = this.nearestCover(a.x, a.y, 220);
+          if (cv) { const d = Math.hypot(cv.x - a.x, cv.y - a.y); if (d > 12) a.heading += angDiff(Math.atan2(cv.y - a.y, cv.x - a.x), a.heading) * a.maxTurn * BROOD.NURSERY * (1 + a.fear) * clamp(d / 150, 0.2, 1) * dt; }
         }
         // cover-seeking: littoral/ambush fish migrate to the nearest cover (weed bed / reed / log) and hold
         // there — a pike lurks at a weed-bed edge, a sunfish hovers in the weeds. A gentle long-range
@@ -861,7 +1026,10 @@ export class World {
       // trade off through their EFFECTS — hide suppresses the very thrust strike/flee demand, and strike/flee cost energy
       // — so a brain can't usefully raise all three. The NN learns WHEN to fire each from its prey/threat/energy senses;
       // strike's reach + hide's concealment live in takePrey(). Deterministic (no RNG). Inert at the OFF baseline.
-      const aStrike = a.act.strike, aFlee = a.act.flee, aHide = a.act.hide;
+      // ENGAGED intensity: an action only takes effect (and costs energy) once the brain's intent passes ACTION.ENGAGE —
+      // a weak background urge no longer means a permanent half-sprint, whose cost (charged continuously) was the
+      // biggest single energy drain once metabolism was made realistic
+      const aStrike = engaged(a.act.strike), aFlee = engaged(a.act.flee), aHide = engaged(a.act.hide);
       const burst = Math.max(ACTION.STRIKE_BURST * aStrike, ACTION.FLEE_BURST * aFlee);
       thrust = (thrust + (1 - thrust) * burst) * (1 - ACTION.HIDE_STILL * aHide);   // lunge/sprint drive thrust up; a freeze holds still
       const capMul = 1 + ACTION.BURST_SPEED * Math.max(aStrike, aFlee);             // a sprint briefly exceeds cruise speed
@@ -873,6 +1041,10 @@ export class World {
       // momentum model carries it through each glide. Gated to cruising — suppressed during a flee/strike sprint (flat-out)
       // and when barely swimming. Deterministic (stroke advanced by dt; per-fish phase offset, no RNG).
       if (a.stroke === undefined) a.stroke = (a.id * 0.1366) % 1;
+      // THERMAL PERFORMANCE: a cold fish is sluggish — below its optimum, swimming effort (and feeding, below) falls
+      // linearly toward ENV.COLD_PERF_MIN at ~2 °C. Cold slows ectotherms; it doesn't stress these temperate natives.
+      const tHere = env.tempAt(a.x, a.y), perf = coldPerf(tHere, sp.tempOpt);
+      thrust *= perf;
       a.stroke = (a.stroke + MOTION.COAST_RATE * (0.6 + 0.6 * clamp(a.spd / a.maxSpeed, 0, 1)) * dt) % 1;
       const coastAmp = MOTION.COAST_DEPTH * clamp(1 - Math.max(aFlee, aStrike), 0, 1) * clamp(thrust * 3, 0, 1);
       thrust = clamp(thrust * (1 + coastAmp * Math.cos(a.stroke * 2 * Math.PI)), 0, 1);
@@ -893,14 +1065,16 @@ export class World {
       // boundary (heading eased toward horizontal) instead of bouncing — so bottom-dwellers
       // foraging on the bed swim smoothly along it rather than flip-flopping their heading.
       const bed = bedY(a.x), mvx = Math.cos(a.velHeading) * a.spd, INTO = 1.5, glide = Math.min(1, 9 * dt);
-      if (a.x < 1) { a.x = 1; if (mvx < -INTO) { a.heading = Math.PI - a.heading; a.velHeading = Math.PI - a.velHeading; a.spd *= 0.86; a.energy -= 0.006; } }
-      else if (a.x > W - 1) { a.x = W - 1; if (mvx > INTO) { a.heading = Math.PI - a.heading; a.velHeading = Math.PI - a.velHeading; a.spd *= 0.86; a.energy -= 0.006; } }
+      if (a.x < 1) { a.x = 1; if (mvx < -INTO) { a.heading = Math.PI - a.heading; a.velHeading = Math.PI - a.velHeading; a.spd *= 0.86; a.energy -= 0.002; } }
+      else if (a.x > W - 1) { a.x = W - 1; if (mvx > INTO) { a.heading = Math.PI - a.heading; a.velHeading = Math.PI - a.velHeading; a.spd *= 0.86; a.energy -= 0.002; } }
       const horiz = Math.cos(a.heading) >= 0 ? 0 : Math.PI;
       if (a.y < 1) { a.y = 1; if (Math.sin(a.heading) < 0) { a.heading += angDiff(horiz, a.heading) * glide; a.spd *= 0.985; } }
       else if (a.y > bed) { a.y = bed; if (Math.sin(a.heading) > 0) { a.heading += angDiff(horiz, a.heading) * glide; a.spd *= 0.985; } }
 
       // metabolism (temperature at this fish's depth × its gene-derived metabolic cost) + thermal stress + hypoxia
-      a.energy -= (sp.metabolism * a.metabMul * env.metabAt(a.x, a.y) + sp.moveCost * thrust + sp.turnCost * Math.abs(turn)) * dt;
+      // routine costs scale with body MASS^0.75 (mass ∝ length³): a fry is ~half the adult's routine cost, not all of it
+      const massF = Math.pow(0.6 + 0.4 * a.grow, 2.25);
+      a.energy -= (sp.metabolism * a.metabMul * env.metabAt(a.x, a.y) + sp.moveCost * thrust + sp.turnCost * Math.abs(turn)) * massF * dt;
       // cyanotoxin (HAB): a DENSE cyanobacteria surface scum poisons fish — extra energy drain where the local cyano is
       // above the toxic threshold (the scum is buoyant, so this mainly hits surface fish). A bloom can kill by poison.
       const cyTox = env.cyanoAt(a.x, a.y) - CYANO.TOX_THRESH * CYANO.CAP;
@@ -908,9 +1082,10 @@ export class World {
       // contaminant body burden: gill uptake of the dissolved toxicant − SLOW first-order excretion (dietary intake &
       // prey-burden assimilation are added in the feed step below). TOX.AMBIENT = 0 (a clean lake) ⇒ this is 0 → inert.
       a.tox += (TOX.GILL * TOX.AMBIENT - TOX.EXCRETE * a.tox) * dt;
-      // thermal stress: drain rises outside the fish's tolerance band (sp.tempOpt ± its a.tempTol gene) →
-      // warm/cool guilds + the summer temperature–O₂ squeeze (cool fish can't use the warm surface NOR the hypoxic deep)
-      const tStress = Math.max(0, Math.abs(env.tempAt(a.x, a.y) - sp.tempOpt) - a.tempTol);
+      // HEAT stress: drain rises above the fish's upper tolerance (sp.tempOpt + its a.tempTol gene) → warm/cool guilds +
+      // the summer temperature–O₂ squeeze (cool fish can't use the warm surface NOR the hypoxic deep). Cold isn't a
+      // stress (see coldPerf): these fish all overwinter under ice, idling on their reserves at a low Q10 metabolism.
+      const tStress = Math.max(0, env.tempAt(a.x, a.y) - (sp.tempOpt + a.tempTol));
       if (tStress > 0) a.energy -= ENV.THERMAL_STRESS * tStress * dt;
       // hypoxia: each fish has its own critical O₂ (a.o2Crit gene-modified); below it energy drains, worse when severe
       const o2 = this.oxygenAt(a.x, a.y);
@@ -918,18 +1093,39 @@ export class World {
 
       // feeding by diet
       const cap = sp.energyCap, eaten0 = a.eaten;   // (eaten0: meals before this step → sate the hunger drive after, if the fish fed)
-      if (sp.diet.fish) { const prey = this.takePrey(a); if (prey) { a.energy = Math.min(cap, a.energy + sp.foodValueFish * effSize(prey)); a.eaten++; this.stats.fishEaten++; } }   // (takePrey transfers the prey's contaminant burden → biomagnification)
+      // SATIATION: a fish only feeds while it has room (energy below FEED.SATIATE of capacity), and a piscivore only
+      // attacks fish when it could use a whole meal (below FEED.HUNT_BELOW) — real predators stop hunting when full. It
+      // used to kill and eat on every chance even at full reserves, an "overkill" that no real lake shows.
+      const hungry = a.energy < cap * FEED.SATIATE;
+      // DIGESTION: a fish meal's energy AND the time to digest it both scale with the prey's MASS relative to the
+      // predator's (∝ size³): a pike that swallows a perch is out of action for a while, a bass that snaps up a fry is
+      // ready again sooner but gained little. Digestion runs faster in warm water (the Q10). While digesting (a.dg > 0) it
+      // can't take another fish — real piscivores eat ~3% of their mass a day, one prey every few days, not on every
+      // chance; without this limit predators were killing a fish every ~30 s and wiping out the forage fish.
+      if (a.dg > 0) a.dg = Math.max(0, a.dg - dt * env.metabAt(a.x, a.y));
+      if (sp.diet.fish && a.energy < cap * FEED.HUNT_BELOW && !(a.dg > 0)) {
+        const prey = this.takePrey(a);   // (transfers the prey's contaminant burden → biomagnification)
+        if (prey) {
+          // the digestion time follows what was actually TAKEN IN: a meal bigger than the room left (energy capped at the
+          // capacity) only fills the gut, so it's digested in proportion to the absorbed share, not the whole prey
+          const massFrac = Math.pow(effSize(prey) * (prey.bodyMul || 1) / Math.max(effSize(a), 1e-3), 3);
+          const meal = sp.foodValueFish * FEED.MEAL_K * massFrac * cap, got = Math.min(meal, cap - a.energy);
+          a.energy += Math.max(0, got);
+          a.dg = FEED.DIGEST * massFrac * (meal > 0 ? Math.max(0, got) / meal : 0); a.eaten++; this.stats.fishEaten++;
+        }
+      }
       // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
       // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
-      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. The remainder is transient
-      // (always 0 at 1/60 and 1/30 → nothing to persist). Deterministic (no RNG).
-      a.feedAcc = (a.feedAcc || 0) + dt / FEED.HANDLE;
+      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. A cold fish forages more slowly
+      // (coldPerf), so the remainder can be fractional — it is saved (`fa`). Deterministic (no RNG).
+      a.feedAcc = (a.feedAcc || 0) + dt / FEED.HANDLE * perf;   // a cold fish forages more slowly
       const slots = Math.floor(a.feedAcc + 1e-9); a.feedAcc = Math.max(0, a.feedAcc - slots);
       let k;
-      // juvenile piscivores subsist on zooplankton until they can reliably hunt fish (so lineages survive)
-      if (sp.diet.fish && a.grow < 0.55 && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, PLANKTON.ENERGY * 0.8);
+      // FRY EAT ZOOPLANKTON: nearly every fish starts life as a zooplankton eater, whatever it eats as an adult (pike and
+      // bass fry, carp and catfish fry alike), shifting to the adult diet as it grows (FEED.FRY_GROW of adult size)
+      if (hungry && !sp.diet.plankton && a.grow < FEED.FRY_GROW && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, PLANKTON.ENERGY * 0.8);
       let atePlankton = false;
-      if (sp.diet.plankton && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) { this._ate(a, k, PLANKTON.ENERGY); atePlankton = true; }
+      if (hungry && sp.diet.plankton && (k = this._takeNearest(this.planktonGrid, a.x, a.y, sp.eatRadius, slots))) { this._ate(a, k, PLANKTON.ENERGY); atePlankton = true; }
       // planktivore facultative omnivory: when a hungry planktivore finds no zooplankton it grazes the
       // phytoplankton field directly. This lets minnow/sunfish SELF-SUSTAIN through the boom-bust trough
       // (cushioning the crash + the predators above it → much less immigration dependence). The grazed amount is
@@ -939,12 +1135,12 @@ export class World {
         const g = env.grazePhyto(a.x, a.y, PLANKTON.FALLBACK_GRAZE * dt);
         if (g > PLANKTON.FALLBACK_MIN * dt) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g * PLANKTON.FALLBACK_VALUE); }
       }
-      if (sp.diet.detritus && (k = this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, DETRITUS.ENERGY);
-      if (sp.diet.larva && (k = this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.LARVA_ENERGY);      // bottom fish graze benthic insect larvae
-      if (sp.diet.insect && (k = this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.ADULT_ENERGY);   // surface fish rise to emerged insects
-      if (sp.diet.snail && (k = this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, SNAIL.ENERGY);            // molluscivores (sunfish/carp) graze benthic snails
-      if (sp.diet.cray && (k = this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, CRAYFISH.ENERGY);           // predators (bass/pike/catfish) eat benthic crayfish
-      if (sp.diet.plants) { const g = this.bitePlant(a, dt); if (g > 0) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g); } }   // per-second grazing (PLANT.BITE_RATE × dt)
+      if (hungry && sp.diet.detritus && (k = this._takeNearest(this.detritusGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, DETRITUS.ENERGY);
+      if (hungry && sp.diet.larva && (k = this._takeNearest(this.larvaeGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.LARVA_ENERGY);      // bottom fish graze benthic insect larvae
+      if (hungry && sp.diet.insect && (k = this._takeNearest(this.insectGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, INSECT.ADULT_ENERGY);   // surface fish rise to emerged insects
+      if (hungry && sp.diet.snail && (k = this._takeNearest(this.snailGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, SNAIL.ENERGY);            // molluscivores (sunfish/carp) graze benthic snails
+      if (hungry && sp.diet.cray && (k = this._takeNearest(this.crayGrid, a.x, a.y, sp.eatRadius, slots))) this._ate(a, k, CRAYFISH.ENERGY);           // predators (bass/pike/catfish) eat benthic crayfish
+      if (hungry && sp.diet.plants) { const g = this.bitePlant(a, dt); if (g > 0) { this._ate(a, slots, 0); a.energy = Math.min(cap, a.energy + g); } }   // per-second grazing (PLANT.BITE_RATE × dt)
       if (a.eaten > eaten0) a.hunger = clamp(a.hunger - DRIVE.SATE * (a.eaten - eaten0), 0, 1);   // a meal sates the hunger drive
       // LIFETIME LEARNING: a reward-modulated Hebbian nudge to the PLASTIC policy (a.lw) — reinforce the action just taken
       // when the fish ATE; a homeostatic decay (runs every step) pulls it back toward the inherited genotype a.g. Baldwinian
@@ -956,50 +1152,34 @@ export class World {
       // rand() < (1 − N/K) — so the population self-limits at K instead of hitting a hard cap (and the boom is damped).
       if (a.age >= sp.matureAge && a.energy >= sp.reproEnergy && a.mateCd <= 0 && !a._mated &&
           (this.agents.length + newborns.length) < WORLD.GLOBAL_MAX && rand() < clamp(1 - counts[a.species] / popMax(sp), 0, 1) * spawnF[a.species] * toxFecundity(a.tox)) {   // contaminated fish breed less (sub-lethal); inert at tox=0
-        const m = this.chooseMate(a);
+        const m = this.chooseMate(a, 1 + SPAWN.MATE_REACH * spawnF[a.species]);   // in season, spawners gather → mates are found further off
         if (m) {
           // sexual: crossover of both parents' genomes + mutation (partner chosen by trait/condition).
           // CLUTCH (condition-dependent fecundity): a well-fed pair produces SEVERAL young — real fish are highly
           // fecund, which is what lets the slow-maturing larger species self-sustain. Each young costs BOTH parents
-          // reproCost, so the brood is bounded by the leaner parent's energy (only well-fed fish afford a big clutch),
+          // reproCost, paid from the leaner parent's surplus above a reserve (SPAWN.KEEP) — only well-fed fish afford a big clutch —
           // by the species' `clutch` max, and by the global headroom (never overshoots the cap). The logistic gate
           // above already throttles breeding near K, so clutches mostly accelerate sparse-population recovery.
           const b = m.item;
           a.mateCd = sp.matingCooldown; b.mateCd = sp.matingCooldown; a._mated = true; b._mated = true;
           const dh = ((b.hue - a.hue + 540) % 360) - 180;
           const headroom = WORLD.GLOBAL_MAX - (this.agents.length + newborns.length);
-          const clutch = Math.max(1, Math.min(sp.clutch, Math.floor(Math.min(a.energy, b.energy) / sp.reproCost), headroom));
+          const clutch = Math.max(1, Math.min(sp.clutch, Math.floor((Math.min(a.energy, b.energy) - SPAWN.KEEP * sp.reproEnergy) / sp.reproCost), headroom));
+          // a nest-guarding species spawns ON THE BOTTOM where the pair meets (a fanned-out nest), and parent `a` guards it
+          const mx = (a.x + b.x) / 2, nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
           for (let ci = 0; ci < clutch; ci++) {
             a.energy -= sp.reproCost; b.energy -= sp.reproCost;
-            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = broodPos((a.x + b.x) / 2, (a.y + b.y) / 2);
+            const childHue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = nest ? broodPos(nest.x, nest.y) : broodPos(mx, (a.y + b.y) / 2);
             const child = makeAgent(a.species, bp.x, bp.y,
               sp.childEnergy, Math.max(a.gen, b.gen) + 1, childHue, mutate(crossover(a.g, b.g)), 0, mutateGenes(crossoverGenes(a.genes, b.genes)));
+            if (nest) { child.ni = a.id; child.nx = nest.x; child.ny = nest.y; }
             counts[a.species]++; newborns.push(child); child.bornSexual = true; this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
           }
-        } else {
-          // asexual budding fallback (no mate found): keeps sparse populations EVOLVING. The gate
-          // is density-aware — a sparse species (e.g. apex predators near their floor) buds at the
-          // normal reproEnergy so its learned brain actually reproduces instead of being frozen and
-          // replaced by re-seeds; a dense species needs the old higher surplus. It buds a SMALLER clutch
-          // (single parent) so a mate-less apex still gets a recruitment boost, not just one bud.
-          const sparse = counts[a.species] < popMax(sp) * 0.5;
-          if (a.energy >= (sparse ? sp.reproEnergy : sp.reproEnergy * 1.25)) {
-            a.mateCd = sp.matingCooldown; a._mated = true;
-            // a lone parent pays the WHOLE cost of each young — what the two sexual parents pay together (2·reproCost),
-            // and never less than the energy the child is born with — so budding can't create energy (it used to cost
-            // reproCost×1 for a childEnergy ≈ 2·reproCost child: a free-energy pump).
-            const costMul = sparse ? 1.0 : 1.3, budCost = Math.max(2 * sp.reproCost, sp.childEnergy) * costMul;
-            const headroom = WORLD.GLOBAL_MAX - (this.agents.length + newborns.length);
-            const clutch = Math.max(1, Math.min(Math.ceil(sp.clutch / 2), Math.floor(a.energy / budCost), headroom));
-            for (let ci = 0; ci < clutch; ci++) {
-              a.energy -= budCost;
-              const bp = broodPos(a.x, a.y);
-              const child = makeAgent(a.species, bp.x, bp.y,
-                sp.childEnergy, a.gen + 1, (a.hue + gauss() * 6 + 360) % 360, mutate(a.g), 0, mutateGenes(a.genes));
-              counts[a.species]++; newborns.push(child); this.stats.births[a.species]++; if (child.gen > this.maxGen) this.maxGen = child.gen;
-            }
-          }
+          if (nest) { a.nt = sp.nestGuard; a.nx = nest.x; a.ny = nest.y; }
         }
+        // (no mate in reach → no spawning. Fish reproduce only sexually; the old asexual "budding" fallback — which made
+        // nearly every young bass, pike, carp, catfish and sunfish a clone-bud of an immigrant adult — is gone. Sparse
+        // populations find mates the way real ones do: by gathering on spawning grounds in season — see chooseMate.)
       }
 
       // death -> linger as a fading, sinking body (then recycle as detritus). Eaten fish are
@@ -1011,6 +1191,8 @@ export class World {
           size: a.size, grow: a.grow, hue: a.hue, genes: a.genes, facing: a.facing ?? 1, spd: a.spd, t: DEATH_FADE, t0: DEATH_FADE, roll: 0, sink: 5 + a.size * 2, dead: false });
       }
     }
+
+    this._stepBirds(dt, counts);
 
     // bodies sink, roll belly-up, fade — then drop their detritus and vanish
     for (const c of this.corpses) {
@@ -1031,18 +1213,26 @@ export class World {
     for (const key of SPECIES) {
       const sp = SP[key];
       const immigrate = () => {
-        const src = this._bestOf(key), use = src && rand() < IMMIGRATION.FROM_BEST;
+        // an immigrant from connected waters carries a genome from the REGIONAL pool (gene flow), NOT a mutated copy of the
+        // lake's current best fish — which made immigration a form of artificial elite breeding (FROM_BEST is retired)
+        const pool = this.genePool[key], src = pool[(rand() * pool.length) | 0];
         const fromLeft = rand() < 0.5, ex = fromLeft ? rand(2, 28) : rand(W - 28, W - 2);
-        // immigrants from connected waters arrive as grown adults carrying the source's learned brain AND its evolved
-        // trait genes (consistent with the home-bred paths); a fresh random newcomer when the species is locally extinct.
         const f = makeAgent(key, ex, zoneY(sp, ex), rand(sp.startEnergy[0], sp.startEnergy[1]),
-          use ? src.gen : 0, use ? (src.hue + gauss() * 8 + 360) % 360 : sp.randomHue(rand),
-          use ? mutate(src.g) : randomGenome(sp.shape), rand(sp.matureAge, sp.matureAge * 1.8),
-          use ? mutateGenes(src.genes) : null);
-        f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6);
+          src.gen, (src.hue + gauss() * 8 + 360) % 360, mutate(src.w), rand(sp.matureAge, sp.matureAge * 1.8), mutateGenes(src.gn));
+        f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6); f.mateCd = 0;   // arrives ready to spawn in season
         f.immigrant = true; counts[key]++; liveTotal++; newborns.push(f); this.stats.immigrants[key]++;
         if (f.gen > this.maxGen) this.maxGen = f.gen;
       };
+      // GENE FLOW OUT: now and then a lake adult leaves (down the outflow, or the lake is one of several connected
+      // waters) and its genes join the regional population — so the pool slowly tracks the lake, with a lag, unselected
+      if (counts[key] > 0 && rand() < IMMIGRATION.EMIGRATE * dt) {
+        let n = 0; for (const q of this.agents) if (!q.dead && q.species === key && q.age >= sp.matureAge) n++;
+        if (n > 0) {
+          let k = (rand() * n) | 0, pick = null;
+          for (const q of this.agents) if (!q.dead && q.species === key && q.age >= sp.matureAge && k-- === 0) { pick = q; break; }
+          this.genePool[key][(rand() * this.genePool[key].length) | 0] = { w: Float32Array.from(pick.g), gn: Float32Array.from(pick.genes), hue: pick.hue, gen: pick.gen };
+        }
+      }
       // quasi-extinction refuge: a tiny last-resort backstop so a species never literally vanishes (≪ the old floor)
       while (counts[key] < IMMIGRATION.REFUGE && liveTotal < WORLD.GLOBAL_MAX) immigrate();
       // rarity rescue: a stochastic trickle, engaging only when genuinely rare, tapering to 0 at RESCUE_N
@@ -1094,6 +1284,7 @@ export class World {
       // which nutrient is limiting growth in the lit littoral (the bloom controller)?
       limiting: e.meanDin() / (e.meanDin() + NUTRIENT.KN) < e.meanPhos() / (e.meanPhos() + NUTRIENT.KP) ? 'N' : 'P',
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),
+      diatom: e.meanDiatom(), ice: e.ice, birds: this.birds.length,   // cold-water algae, lake ice cover, loons on the lake
     };
   }
   // depth-resolved water-column profile down the column at x (pure; consumed by the UI "Water column" view).
@@ -1134,7 +1325,7 @@ export class World {
   biomassByTrophic() {
     const out = { phytoplankton: this.env.meanPhyto(), cyanobacteria: this.env.meanCyano(), macrophyte: this.plants.reduce((s, p) => s + (p.dead ? 0 : p.biomass), 0), zooplankton: this.plankton.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.02,
       snail: this.snails.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.05, crayfish: this.cray.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.4 };   // benthic invertebrates (count × a nominal mass)
-    for (const a of this.agents) { const m = a.size * (0.6 + 0.4 * (a.grow ?? 1)); out[a.sp.trophic] = (out[a.sp.trophic] || 0) + m; }
+    for (const a of this.agents) { const m = effSize(a); out[a.sp.trophic] = (out[a.sp.trophic] || 0) + m; }
     return out;
   }
   // live counts of the non-fish biota (the resource base + benthic inverts) — for the food-web dashboard
@@ -1188,14 +1379,18 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 24, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 25, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       env: this.env.toJSON(),
       agents: this.agents.map(a => {
         const HID = a.sp.shape.hid, W2 = a.sp.shape.in * HID + HID, act = a.act;
         return { s: a.species, x: a.x, y: a.y, h: a.heading, sp: a.spd, e: a.energy, g: a.gen, hu: a.hue, ag: a.age, ea: a.eaten, w: Array.from(a.g), gn: Array.from(a.genes), m: Array.from(act.h), tx: a.tox, hg: a.hunger, fe: a.fear, hx: a.homeX,   // `m` recurrent memory; `tx` contaminant burden; `hg`/`fe` drives; `hx` natal home
           id: a.id, mc: a.mateCd, ts: a.turnSmooth, th: a.thrustSmooth, vh: a.velHeading, st: a.stroke,   // resume state (vh/st absent until first stepped)
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
-          lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined };                           // learned policy: only W2 can differ from `w`
+          lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`
+          // v25 nest state: a guardian's remaining duty `nt` + nest; a fry's guardian id `ni` + nest (absent = none)
+          dg: a.dg > 0 ? a.dg : undefined,   // v25 digestion time left after a fish meal
+          fa: a.feedAcc > 0 ? a.feedAcc : undefined,   // v25 handling-time remainder (a cold fish forages slower → fractional)
+          nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),
       plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx })),
@@ -1207,6 +1402,8 @@ export class World {
       corpses: this.corpses.map(c => ({ s: c.species, x: c.x, y: c.y, h: c.heading, rh: c.rHeading, sz: c.size, gr: c.grow, hu: c.hue, gn: Array.from(c.genes),
         fc: c.facing, sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
       reeds: this.reeds, logs: this.logs, mussels: this.mussels, weedbeds: this.weedbeds,
+      birds: this.birds.map(b => ({ x: b.x, y: b.y, h: b.h, st: b.st, t: b.t, stay: b.stay, m: b.m, vx: b.vx })),   // v25 visiting loon(s)
+      genePool: Object.fromEntries(SPECIES.map(k => [k, (this.genePool[k] || []).map(e => ({ w: Array.from(e.w), gn: Array.from(e.gn), hu: e.hue, g: e.gen }))])),
     };
   }
   // ATOMIC, VALIDATED load. Phase 1 (parseSave) validates the file and builds the whole new world into locals — a
@@ -1222,6 +1419,7 @@ export class World {
     this.agents = P.agents; this.plants = P.plants; this.plankton = P.plankton; this.detritus = P.detritus;
     this.larvae = P.larvae; this.insects = P.insects; this.snails = P.snails; this.cray = P.cray; this.corpses = P.corpses;
     this.reeds = P.structs.reeds; this.logs = P.structs.logs; this.mussels = P.structs.mussels; this.weedbeds = P.structs.weedbeds;
+    this.genePool = P.genePool; this.birds = P.birds;
     if (P.rep.reseeded) this.stats.brainsReseeded = P.rep.reseeded;
     this._nextId = P.nextId; _idOwner = this;
     this.series = []; this._seriesAcc = 0; this.selectedId = null; this.lastLoad = P.rep;
