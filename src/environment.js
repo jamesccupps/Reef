@@ -562,6 +562,7 @@ export class Environment {
         if (a.dead) continue;
         this.addO2(a.x, a.y, -ENV.O2_PER_GO2 * (a.rO2 || 0) * dt);
       }
+      for (const f of world.fry || []) if (!f.dead && f.rO2) this.addO2(f.x, f.y, -ENV.O2_PER_GO2 * f.rO2 * dt);   // + the young-of-year schools
     }
 
     // oxygen demand below the epilimnion (drives hypolimnetic hypoxia): a SEDIMENT demand at each column's bed cell

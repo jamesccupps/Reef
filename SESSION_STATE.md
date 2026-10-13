@@ -45,34 +45,35 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
   by cause juvenile/adult) over ≥3 seeds and ≥2 years.
 
-**▶▶▶ PHASE 1 IN PROGRESS (2026-10-13 ~10:30) — bioenergetics built, CALIBRATING. Branch `science` (WIP commit, NOT merged;
-full gate NOT yet run — main stays at 1a3c416, green).** What exists (all in the working tree / WIP commit):
-- `src/bioenergetics.js` — FB4 equations ported from the official R source (CEQ 1–4, REQ 1/2, EGEQ/EXEQ 1–4, PREDEDEQ 1–3).
-- `species.js` `BIO` — official FB4 params (fathead Duffy 1998, bluegill+juv, perch+juv, rainbow R&R 1999, brown bullhead
-  Hartman 2017, LMB Rice 1983, pike Bevelhimer 1985; CARP = composite: Beamish 1964 resp + Chakraborty 1992 + bighead curve),
-  Ws length–weight, Michigan length-at-age vb, maturity (♀/♂), GSI, fecundity regressions, gape/depth, UILT, lethal DO,
-  M (5.4/tmax), gut capacity + gastric-evac multiplier, sHatch, Lhatch, L0 (recruit length), Lzoo, Lpisc, capture.
-- `world.js`: fish have L, W, K, sex, mature, gon, gut/gutE, rO2, xo/xt (exposure), missCd, pAvg (diag). Gut model (GER
-  He & Wurtsbaugh capped by Cmax), FB4 growth, length-from-surplus, gonads, hazards (starve/heat/hypoxia/other, cause →
-  stats.died), gape by depth, capture success + MISS_CD, sexes, fecundity → FRY SCHOOLS (`world.fry`, `_stepFry`, `_eatFry`,
-  recruitment 1 agent / FRY.N_PER_AGENT survivors), food PATCHES with mass `m` (partial cropping, `_graze`, PREY.PATCH_R),
-  lethal-water wall + O₂ escape reflex, nest-guard cost, env O₂ demand from rO2 (ENV.O2_PER_GO2). Save **v27**.
-- config: `BIOE`, `PREY`, `FRY`, SPAWN.GON_READY/K_READY, FEED.MISS_CD/PREY_MIN 0.07, BROOD.GUARD_*, obsolete energy knobs removed.
-- render: true-scale fish (`fishScale`, 0.79 px/cm, floor <10 cm), fry-school clouds; UI fish panel shows L/W/K/sex/p.
-- tests: headless.mjs new BIOENERGETICS block (19 checks, ALL PASS standalone: `python scratchpad/mk_bioe_only.py`
-  then `node test/_bioe_only.mjs`); many older checks rewritten for the new model (hunger=gut, ripe() helper, clutch→larvae,
-  lifespans real, digestion=gut, cyanotoxin=resp). **Full `npm test` not yet run** — expect a few more stale checks.
-- docs: FEATURES.md new top section; CLAUDE.md updated (v27, module map).
-**Calibration status** (scratchpad `verify/bioe_run.mjs <seed> <years>`, `whoeats.mjs`, `bassdiag.mjs`, `carp2.mjs`, `fry1.mjs`):
-minnows & sunfish now SELF-SUSTAIN on home-bred recruits (fry schools work; minnow age-1 5.4 cm vs Michigan 5.5); p:
-sunfish ~0.65, minnow ~0.73, perch ~0.49, catfish ~0.75, pike ~0.65, carp ~0.23 (low), bass 0.06–0.22 (LOW — bassdiag:
-small bass p≈0, big bass ok; they sense prey 92 % of the time but kill rarely; big founders eat), trout ~0.15–0.2 (summer
-squeeze, plausible). Still open: bass feeding, perch/predator/carp/catfish RECRUITMENT in year 2 (run r8 seeds 1–2 to 1.6 yr
-were in progress), catfish early-summer hypoxia deaths, sunfish growth below Michigan (FB4 bluegill bias — Bajer et al. 2004).
-Research reports (in this session's transcript): FB4 params + Michigan data; gape (Lawrence, Hill, Gaeta); thermal/DO (EPA
-1986, Moss & Scott); mortality (Then 2015, Hamel & Cope 2022); GSI; evacuation (He & Wurtsbaugh); field rations/p.
-NEXT: finish calibration (≥3 seeds × ≥2 yr, home-bred recruitment for every species, p 0.4–0.9, length-at-age), run full
-gate & fix, perf check (~65–120 st/s seen), browser visual check, commit/merge, then phase 2 (visible evolution).
+**▶▶▶ PHASE 1 — session 4 (2026-10-13 afternoon): the food web around the bioenergetics. Branch `science`; main still
+1a3c416 (green). Full gate GREEN on `science` (headless ALL PASS, perf ~80–100 st/s under load; smoke/ui/serve OK).**
+Session-4 changes (all in FEATURES "2026-10-13 bioenergetics", rewritten):
+- YOUNG-OF-YEAR = SUPER-INDIVIDUAL schools (Scheffer 1995) through their first year (not recruited at 2–4 cm as before —
+  that threw away ~93 % of the young-of-year biomass predators should eat): feed zoo → benthos/detritus (FRY.BENTH_L) →
+  other schools (young pike/bass), seek food, avoid hypoxia/heat, breathe O₂ (env), staggered FRY.TICK updates; SCRAMBLE
+  competition (unfed share starves over its reserve time — physiological); larval respiration floor FRY.R_WMIN (FB4 W^RB
+  overstates larval metabolism ~4×); recruit at L0 (now late-YOY lengths) or as yearlings in spring, within pop.max;
+  slots CAP/SP_SHARE + MERGE_DAYS merging; piscivores eat schools in BOUTS (FRY.ATTACK 100 × capture × vuln, type-II in
+  school size FRY.N_HALF; FEED.SCHOOL_MIN). Spawning no longer logistic-gated (density acts on the young); stats.spawns.
+- Optimal-foraging diet order; POOR food (detritus/algae/plants) only as filler (FEED.POOR_GUT 0.15) — sunfish were
+  starving at full ration on a gut of weed. Innate FORAGE reflex + animal-first food senses (carp/catfish/sunfish).
+  Epiphytic larvae on macrophytes (INSECT.EPIPHYTE). Bass eat larvae; pike Lzoo 5; YOY bullheads borrow FB4 bass set.
+- Activity cost on the ~1-day mean speed (`ua`), never below FB4 routine, SWIM 3→2 (Brett: ~4× routine at Ucrit).
+- Hypoxia: graded CLIMB out of sub-critical water + escape burst that overrides diel rest/cold (catfish were dying on
+  the anoxic bed cell). Starvation hazard K99 0.75→0.68, K_HAZARD 0.78 (K is W/Ws75; 0.8 is lean, not dying).
+- PREY VULNERABILITY (BIO vuln: fathead 1, bluegill 0.35, bullhead 0.4, perch/bass 0.6 … Wahl & Stein 1988) — the single
+  biggest community fix: pike were eating ~5 kg/yr of adult bluegill; now soft-rayed prey take the pressure.
+- Founders: stable age structure (e^−M·age), first two of each species a ripe adult F+M pair; immigrants ripe. Pike
+  refuge/rescue 1 (a ~0.07-ha slice holds ~1 pike at real densities), trout 1/2. Spawning migration is purposeful.
+- Fathead batch spawning every ~4 d, reproAlloc 0.8. Juvenile FB4 sets only in the first year. UI shows meals again.
+Validation (scratchpad verify/: bioe_run2.mjs <seed> <yrs> — census, biomass, p, K, diet by source, deaths juvenile|
+adult, YOY schools, mid-August length-at-age; webdiag.mjs — predation matrix; supply2.mjs — zooplankton made/eaten/died;
+alone.mjs, yoygrow.mjs, bassyoy*.mjs, pdist.mjs). Before VULN (y8, 3 seeds × 3 yr): minnow-dominated, sunfish collapsed to
+the refuge in 2/3 seeds. With VULN (y9, running): sunfish 160–260 by spring of year 2 (recruits 170–260), minnows 145–225.
+Still open: bass/pike/trout/catfish/carp mostly immigrant-sustained (bass nests: larvae starve at swim-up near the nest,
+then perch/bass eat the rest); adult fatheads and perch grow faster than Michigan means (low density); total fish ~14–24 kg.
+NEXT: read y9 (3 yr), then predator recruitment (bass nest larvae), multi-seed balance, browser visual check (YOY clouds as
+little fish), commit/merge, phase 2.
 
 **▶▶ RESUME HERE (2026-10-13, after compaction) — the human wants ALL THREE, in order, then what-if tooling:**
 Goal (human): "a complete, realistic simulation, that looks good too and is polished … eventually good enough that you could

@@ -467,7 +467,7 @@ export class UI {
     selEl.innerHTML =
       `<b class="spname">${esc(sp.name)}</b> · gen ${fmtInt(sel.gen)} · ${esc(stage)} · in the ${esc(zone)}<br>` +
       `<span class="seldim">genes</span> maturation size ${fmtNum(gn[0], 2)}× · speed ${fmtNum(gn[1], 2)}× · tolerance ${fmtNum(gn[2], 2)}×<br>` +
-      `<span class="seldim">body</span> ${fmtNum(sel.L, 1)} cm · ${Number(sel.W) >= 100 ? fmtInt(sel.W) : fmtNum(sel.W, 1)} g · condition ${fmtNum(sel.K, 2)} · <span class="seldim">age</span> ${fmtNum(Number(sel.age) / TIME.YEAR_LEN, 1)} yr · <span class="seldim">feeding</span> ${pc(sel.pAvg || 0)}% of max<br>` +
+      `<span class="seldim">body</span> ${fmtNum(sel.L, 1)} cm · ${Number(sel.W) >= 100 ? fmtInt(sel.W) : fmtNum(sel.W, 1)} g · condition ${fmtNum(sel.K, 2)} · <span class="seldim">age</span> ${fmtNum(Number(sel.age) / TIME.YEAR_LEN, 1)} yr · <span class="seldim">feeding</span> ${pc(sel.pAvg || 0)}% of max · <span class="seldim">ate</span> ${fmtInt(sel.eaten)}<br>` +
       `<span class="seldim">niche</span> comfort ${esc(this.fmtTemp(sp.tempOpt - sel.tempTol, 0))}–${esc(this.fmtTemp(sp.tempOpt + sel.tempTol, 0))} · needs O₂≥${pc(sel.o2Crit)}% · <span class="seldim">diet</span> ${esc(diet)}<br>` +
       `<span class="seldim">right here</span> ${esc(this.fmtTemp(w.env.tempAt(sel.x, sel.y), 1))} · O₂ ${pc(w.oxygenAt(sel.x, sel.y))}%`;
   }

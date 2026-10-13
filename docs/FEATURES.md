@@ -34,34 +34,64 @@ Save format **v27**. Every number below is from a published source (cited inline
   so a fish can't exceed its published maximum ration, and its achieved fraction `p` (a diagnostic `pAvg`) is set by the
   food it finds. Hunger is the gut's emptiness. Small invertebrates are PATCHES (a zooplankton swarm, a patch of midge
   larvae: `PREY.*_G` grams, reached within `PREY.PATCH_R`) that a small fish crops and a big one clears — the one
-  calibrated quantity (it stands in for the slice of lake the 2-D world represents).
+  calibrated quantity (it stands in for the slice of lake the 2-D world represents). Half the new insect-larva patches live
+  up the macrophyte stems (`INSECT.EPIPHYTE` — the plant-dwelling invertebrates that feed bluegill and young perch).
+- **Diet choice** (optimal foraging): a fish takes the most profitable food in reach first — fish, young-of-year,
+  zooplankton, insects, nymphs, crayfish, larvae, snails — and the POOR foods (detritus ~340 J/g digestible, algae ~730,
+  plants ~540) only as a hungry fish's filler when it found nothing better that step, and only up to `FEED.POOR_GUT` of its
+  gut (a gut kept full of weed would starve it at full ration). Every forager has an innate orienting reflex toward the food
+  it senses (`innate.forage`, scaled by hunger; the piscivores' `pursuit`), and the senses point at animal food first —
+  real fish are born knowing how to feed, and with real life histories a lineage can't wait generations for its brains to
+  discover it.
 - **Growth**: the FB4 balance each step; a fish heavier than standard puts the surplus into length (inSTREAM's rule), so a
   starving fish thins but never shrinks. A mature fish routes half its surplus into gonads until ripe (GSI: perch ♀ 20 %,
-  trout ♀ 20 %, pike ♂ 2.5 % …), carried over winter, so pike and perch spawn on gonads built the autumn before.
-- **Death** (hazards, cause tallied in `stats.died`): starvation (logistic in K), heat above the species' UILT and
+  trout ♀ 20 %, pike ♂ 2.5 % …; fathead minnows `reproAlloc` 0.8 — a batch every ~4 days), carried over winter, so pike and
+  perch spawn on gonads built the autumn before. FB4's juvenile sets (bluegill, perch — fit to age-0 fish) apply in the
+  first year; yearlings use the adult set. YOY bullheads borrow FB4's largemouth-bass set (FB4's brown bullhead, fit to
+  juveniles and adults, predicts < 2 %/day for a 1–4-cm fish where real ones grow ~5 %/day — a stated assumption).
+- **Activity cost**: respiration × e^(`BIOE.SWIM`·(u − u_routine)) on the fish's ~1-day mean speed u (saved `ua`), never
+  below FB4's routine rate (`SWIM` 2.0: ~4× routine at the critical speed, Brett 1964). One behavioural second is ~5 h of
+  physiology, so the day's mean — not a momentary dash — is what metabolism sees.
+- **Death** (hazards, cause tallied in `stats.died`): starvation (logistic in K: 50 %/day at K 0.55, 99 % at 0.68 — K is
+  W / the 75th-percentile standard weight, so a lean fish at 0.8 is thin, not dying), heat above the species' UILT and
   hypoxia below its acute lethal O₂ (EPA 1986; Moss & Scott 1961 …, rising 5.5 %/°C) — both judged on the O₂ and temperature
-  EXPERIENCED over ~2 h (`BIOE.EXPOSE_TAU`, because one behavioural second is ~5 h of physiology), the share `BIOE.M_OTHER`
-  of each species' published natural mortality that the lake doesn't simulate (disease, birds, angling: M = 5.4/tmax,
-  Hamel & Cope 2022; bass and pike from field studies), old age (real lifespans).
+  EXPERIENCED over ~2 h (`BIOE.EXPOSE_TAU`), the share `BIOE.M_OTHER` of each species' published natural mortality that the
+  lake doesn't simulate (disease, birds, angling: M = 5.4/tmax, Hamel & Cope 2022; bass and pike from field studies), old
+  age (real lifespans). A fish in water below its critical O₂ CLIMBS out of it (slowly when barely hypoxic, at a burst from
+  near-lethal water — the escape overrides the cruise norm, diel rest and the cold), and it never swims down into lethal
+  water.
 - **Gape**: prey body depth (length × the species' depth ratio × the body gene) must fit the predator's mouth (length ×
-  gape ratio: bass 0.12, pike ≈ its own depth — Lawrence 1958, Hill et al. 2004, Nilsson & Brönmark 2000); prey under 7 % of
-  the predator's length is ignored (a 65-cm pike's median prey is ~7 cm: Gaeta et al. 2018). Strikes can miss
-  (`capture`: pike 0.6 … perch 0.15), leaving the predator a moment to recover. Piscivory starts at a species length
-  (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats zooplankton below `Lzoo`.
+  gape ratio: bass 0.12, pike ≈ its own depth — Lawrence 1958, Hill et al. 2004, Nilsson & Brönmark 2000); a lone prey under
+  7 % of the predator's length is ignored (a 65-cm pike's median prey is ~7 cm: Gaeta et al. 2018), a dense school of young
+  fish down to half that (`FEED.SCHOOL_MIN`). Strikes can miss (`capture`: pike 0.6 … perch 0.15), leaving the predator a
+  moment to recover. Piscivory starts at a species length (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats
+  zooplankton below `Lzoo` (pike until 5 cm).
 - **Reproduction**: sexes (opposite-sex pairs only; the male guards the nest, at a metabolic and feeding cost —
   `BROOD.GUARD_*`); eggs from the published length–fecundity regressions (perch: Schneider 1984; bass: Laarman & Schneider
   1985; pike: Priegel & Krohn 1975 …) × the female's ripeness; maturity by length AND age (the SIZE gene is now the
-  maturation length — a heritable life-history trait).
-- **Young-of-year** (`world.fry`, `FRY`): a spawning's eggs that survive to swim-up (`sHatch`, published egg survival) become
-  schools of larvae — real fish run on the same FB4 equations, eating zooplankton patches, following the zooplankton,
-  thinned by size-dependent natural mortality and starvation, and eaten by everything whose mouth they fit (planktivores
-  take larvae, piscivores fingerlings, dragonfly nymphs a few). At the species' recruit length `L0` (or the next spring)
-  one followed individual recruits per `FRY.N_PER_AGENT` survivors, carrying the school's genome. Recruitment is therefore
-  emergent: eggs × food for the larvae × predation on them.
-- **Community**: founder numbers follow real biomass ratios — real lakes hold hundreds of forage fish per adult bass
-  (bluegill 5,000–20,000/ha vs 20–50 adult bass/ha), so the lake starts with ~5 adult bass, ~2 pike, ~5 carp among ~700 fish.
-- **Render/UI**: fish are drawn at their true length (0.79 px/cm, a gentle floor under 10 cm); fry schools are shimmering
-  clouds of tiny dashes; the fish panel shows length, mass, condition, sex, maturity and how well it is feeding.
+  maturation length — a heritable life-history trait). A ripe fish in season spawns whatever the crowd — density acts on the
+  YOUNG (food, predation, cannibalism, then the agent budget at recruitment), not on the adults' readiness. Spawnings are
+  counted per species (`stats.spawns`); a new generation exists from hatching (`maxGen`).
+- **Young-of-year** (`world.fry`, `FRY`) — SUPER-INDIVIDUALS (Scheffer et al. 1995): a spawning's eggs that survive to
+  swim-up (`sHatch`) become schools, each one record of `n` identical fish run on the same FB4 equations (updated every
+  `FRY.TICK` s, staggered). They eat zooplankton first, then (from `FRY.BENTH_L`) the bed's and weeds' insect larvae and
+  detritus as their species does, the young piscivores (pike, bass) other schools — cannibalism included; they head for the
+  food they find, climb out of hypoxic water, drop out of near-lethal heat; they die at the larval critical-period rate
+  (`FRY.M_LARVA`, fading by ~3 cm), the agents' size-scaled share of M, starvation, heat and hypoxia; they breathe the
+  lake's O₂. They are FOOD for everything whose mouth they fit: planktivores pick off larvae (`FRY.CATCH`), a piscivore
+  works a school in feeding bouts (`FRY.ATTACK` × capture, a type-II response in the school's size `FRY.N_HALF`), weeds
+  shelter them, a guarded nest protects them. Through summer, autumn and winter they are the lake's main forage — as
+  young-of-year are in real lakes. Survivors RECRUIT as followed individuals on reaching the species' recruit length `L0`
+  (fast growers: fatheads, young bass and pike) or as yearlings the next spring: one agent per `FRY.N_PER_AGENT`, within the
+  species' agent budget (pop.max). When the lake's or a species' school slots are full (`CAP`, `SP_SHARE`) a new spawning
+  joins its species' youngest school (`MERGE_DAYS`; the genome kept or replaced in proportion to the fish each brings).
+- **Community**: founders follow a STABLE AGE STRUCTURE (ages ≥ 1 yr from e^(−M·age), so mostly young fish), the first two
+  of each species an adult female + male; adults start ripe (the lake opens in late spring). Founder numbers follow real
+  ratios — hundreds of forage fish per adult bass. A slice of lake this size (~0.07 ha) holds about one pike at real
+  densities, so pike (and trout) have a lower refuge/rescue (`pop.refuge`, `pop.rescue`): one in view, more only home-bred.
+- **Render/UI**: fish are drawn at their true length (0.79 px/cm, a gentle floor under 10 cm); young-of-year schools are
+  shimmering clouds — dashes for larvae, little fish once they're a few px long; the fish panel shows length, mass,
+  condition, sex, maturity and how well it is feeding.
 
 ---
 

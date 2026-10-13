@@ -77,6 +77,9 @@ export const FEED = {
   PREY_MIN: 0.07,   // a piscivore ignores fish shorter than this fraction of its own length (not worth the chase). Real
                     //   piscivores mostly eat prey well below their gape: a 65-cm pike's MEDIAN prey is ~7 cm (Gaeta et al.
                     //   2018: 5.05·TL^0.413 mm), so big pike do eat minnow-sized fish; larvae are left to the small fish
+  POOR_GUT: 0.15,   // poor food (detritus, algae, plants) only tops a hungry fish's gut up to this share of its capacity
+  SCHOOL_MIN: 0.035, // … but a dense school of young fish is worth fish half that size (a feeding bout takes many: bass
+                    //   20–35 cm feed heavily on 2–4-cm young-of-year sunfish and perch)
 };
 
 // ---------- BIOENERGETICS (world.js step; equations in bioenergetics.js, per-species parameters in species.js) ----------
@@ -88,13 +91,15 @@ export const BIOE = {
   K_START: [0.92, 1.0],   // condition range of founders and immigrants
   // STARVATION: daily survival is logistic in condition K — 50 % per day at K_S50, 99 % at K_S99. Fish die after losing
   // roughly 35–45 % of their mass (starvation-endurance studies; the basis of size-selective overwinter mortality, Shuter
-  // & Post 1990), so a fish keeps feeding to stay above ~0.8. Not computed above K_HAZARD (negligible there).
-  K_S50: 0.55, K_S99: 0.75, K_HAZARD: 0.85,
+  // & Post 1990). K is W / the standard weight (the 75th-percentile weight-at-length, so populations average ~0.85–1.0
+  // and a lean fish at 0.8 is thin, not dying). Not computed above K_HAZARD (negligible there).
+  K_S50: 0.55, K_S99: 0.68, K_HAZARD: 0.78,
   get STARVE_B() { return Math.log(99) / (this.K_S99 - this.K_S50); },
   get STARVE_A() { return -this.STARVE_B * this.K_S50; },
-  // SWIMMING COST: respiration × e^(SWIM·(u − u_routine)), u = speed / top cruising speed. At the critical swimming speed
-  // active metabolism is ~5–10× standard (Brett 1964), i.e. several times the routine the published ACT already assumes
-  SWIM: 3.0,
+  // SWIMMING COST: respiration × e^(SWIM·(u − u_routine)), u = the ~1-day mean speed / top cruising speed (never below
+  // routine). At the critical swimming speed active metabolism is ~5–10× STANDARD (Brett 1964) — ~3–5× the routine rate
+  // FB4's respiration already describes — so from a routine pace of u ≈ 0.3 to u = 1: e^(2.0·0.7) ≈ 4×
+  SWIM: 2.0,
   // HEAT: at its upper incipient lethal temperature (UILT — the temperature half of a population survives ~10,000 min,
   // Fry 1947) half die within UILT_DAYS, ×e faster per HEAT_STEEP °C hotter (resistance time falls log-linearly with T)
   UILT_DAYS: 7, HEAT_STEEP: 0.7,
@@ -119,31 +124,52 @@ export const BIOE = {
   REPRO_ALLOC: 0.5, K_RESORB: 0.75,
 };
 
-// ---------- YOUNG-OF-YEAR: fry schools (world.js _stepFry) ----------
-// A spawning's eggs that survive to swim-up (species.js sHatch) become SCHOOLS of larvae — real fish, simulated as schools
-// so a lake's huge annual crop of young fish costs no agents. Each school's fish run the same bioenergetics (FB4, the
-// juvenile set) on the zooplankton they find, die naturally at a size-dependent rate, and are FOOD for everything whose
-// mouth they fit: larval fish for planktivores and invertivores, fingerlings for the piscivores (and dragonfly nymphs) —
-// in real lakes young-of-year fish are the main food of pike, bass and perch in summer. When a school's fish reach the
-// species' recruit length (L0) — or in the next spring — its survivors RECRUIT: one followed individual (agent) per
-// N_PER_AGENT survivors (the agent budget can't hold every survivor; the rest are not carried on). So recruitment emerges
-// from egg production × food for the larvae × predation on them — the classic determinants of year-class strength.
+// ---------- YOUNG-OF-YEAR: schools of young fish (world.js _stepFry) ----------
+// A spawning's eggs that survive to swim-up (species.js sHatch) become SCHOOLS of young fish — real fish, simulated as
+// SUPER-INDIVIDUALS (Scheffer et al. 1995: one record carries n identical fish) so a lake's huge annual crop of young costs
+// no agents. Each school's fish run the same bioenergetics (FB4; the juvenile set where one exists) on what they find —
+// zooplankton first, then (bigger) the bottom's insect larvae and detritus as their species does, other young fish for the
+// young piscivores — die naturally at a size-dependent rate, starve, cook or suffocate like the agents, and are FOOD for
+// everything whose mouth they fit. Through their first summer, autumn and winter they are the lake's main forage: in real
+// lakes young-of-year fish are most of what bass, pike and perch eat. Survivors RECRUIT as followed individuals (agents)
+// when they reach their species' recruit length (L0 — fast growers in their first summer) or in the spring after their
+// first winter, as yearlings: one agent per N_PER_AGENT survivors, at most the species' room under its agent budget
+// (species pop.max — the followed fish a lake this size holds; the rest of the year-class isn't carried on). So
+// year-class strength emerges from egg production × food for the young × predation on them — the classic determinants.
 export const FRY = {
   PATCH_N: 1500,       // larvae per school at swim-up (a spawning's larvae split into schools of about this many)
+  N_HALF: 30,          // a school thinned to this many fish yields predators half its full catch rate (n / (n + N_HALF))
   MAX_PER_SPAWN: 4,    // schools one spawning makes at most (more larvae → bigger schools)
   CAP: 80,             // schools in the lake at most (× area)
-  N_PER_AGENT: 15,     // survivors per recruited individual
-  MAX_RECRUITS: 2,     // recruits one school can yield
-  EAT_R: 40,           // px a school forages over for zooplankton
-  SEEK_R: 120,         // px: a school drifts toward the nearest zooplankton within this (larvae gather where food is)
-  FEEDS: 3,            // zooplankton patches a school crops per step at most
-  M_LARVA: 0.05,       // /day natural (non-predation) mortality at 1 cm — ∝ 1/length (Lorenzen 1996 size scaling): ~10 %/day
-                       //   for 5-mm larvae, ~2 %/day at 3 cm (larval fish lose 5–30 %/day in the field, much of it to predators)
-  SWIM: 8,             // px/s school drift
-  CATCH: 0.03,         // young fish a predator catches from a school per handling slot, at a full school's density (n =
-                       //   PATCH_N; sparser schools yield fewer) — larvae are dispersed and hard to find among the zooplankton
+  SP_SHARE: 0.3,       // … of which one species holds at most this share (so an early, prolific spawner can't take every slot)
+  MERGE_DAYS: 14,      // a spawning finding no free slot joins its species' youngest school if that is younger than this
+                       //   (days; the school's genome is kept or replaced in proportion to the fish each side brings);
+                       //   otherwise its larvae are lost
+  N_PER_AGENT: 3,      // survivors per recruited individual
+  MAX_RECRUITS: 12,    // recruits one school yields at most
+  TICK: 0.2,           // s between a school's feeding / physiology / mortality updates (staggered across schools; each
+                       //   integrates the time elapsed — the schools' cost is a fraction of a step)
+  EAT_R: 40,           // px a school forages over
+  SEEK_R: 160,         // px: a school moves toward the nearest food it eats within this
+  FEEDS: 6,            // food patches a school crops per update at most
+  R_WMIN: 0.1,         // g: below this a larva's mass-specific respiration is held at this mass's (larval metabolism scales
+                       //   ~isometrically — Oikawa et al. 1991, Post & Lee 1996 — where FB4's W^RB, fit to bigger fish, would
+                       //   give a 1-mg bass larva ~2,300 J/g/day, several times the measured larval rates)
+  BENTH_L: 2.5,        // cm: young fish this long also forage the bottom (insect larvae; detritus for the bottom feeders)
+  M_LARVA: 0.02,       // /day extra natural mortality of the youngest larvae at 1 cm (∝ 1/length, fading out by ~3 cm:
+                       //   the "critical period" — first-feeding larvae lose 5–30 %/day in the field, most of it to the
+                       //   predators and starvation the lake simulates; this is the unsimulated rest: disease, deformity,
+                       //   failed first feeding). Past it the schools die at the agents' size-scaled share of the species'
+                       //   M (BIOE.M_OTHER; Lorenzen 1996)
+  SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
+  CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
+                       //   are dispersed and hard to find among the zooplankton
+  ATTACK: 100,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
+                       //   second is ~5 h of the fish's day, and a bass or perch working a school of young-of-year takes
+                       //   dozens an hour; its gut and Cmax cap the meal. Weed cover shelters them (COVER.REFUGE)
   LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)
-  SPRING_YF: 0.08,     // year-fraction (late March) after which an overwintered school recruits whatever it has become
+  SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …
+  OVERWINTER: 0.4,     // … if it is at least this old (yr)
 };
 
 // ---------- PREY as food (world.js feeding): wet mass per item (g), energy density (J/g wet), digestible share ----------
@@ -628,6 +654,7 @@ export const DETRITUS = {
 export const INSECT = {
   LARVA_SEED: 50,          // initial benthic larvae (× world area)
   LARVA_CAP: 240,          // max benthic larvae (× area)
+  EPIPHYTE: 0.5,           // share of new larval patches that live on the macrophytes (the rest on the bed)
   LARVA_RATE: 22,          // /s larval recruitment at full detritus availability (× area), capped — detritus → insects
   DEV_RATE: 0.05,          // /s development at the optimum temperature (→ ~20 s to mature when warm; ~0 when cold → overwinter)
   DEV_TEMP_MIN: 10,        // °C below which larvae barely develop

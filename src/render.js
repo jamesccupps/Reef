@@ -985,22 +985,28 @@ export class Renderer {
     const near = z >= 1.6, s = Math.max(0.7, z);
     const slope = x => Math.atan2(bedY(x + 3) - bedY(x - 3), 6);   // the bed's local tilt
     const off = (o, pad) => o.x < vr.x0 - pad || o.x > vr.x1 + pad || o.y < vr.y0 - pad || o.y > vr.y1 + pad;
-    // YOUNG-OF-YEAR fry schools (world.fry): a loose shimmering cloud of tiny fish — more of them the bigger the school —
-    // each a short translucent dash at the fish's real (floored) length, all heading the school's way. Positions are a
-    // deterministic function of the school's index and time (render-only).
+    // YOUNG-OF-YEAR schools (world.fry): a loose shimmering cloud of small fish — more of them the bigger the school, spread
+    // wider the bigger they are — each at the fish's real (floored) length, all heading the school's way: translucent dashes
+    // for larvae and at a distance; up close, once they're a few px long, little fish (a body and a tail) in their species'
+    // tint. Positions are a deterministic function of the school's index and time (render-only).
     for (let i = 0; i < (world.fry || []).length; i++) {
-      const f = world.fry[i]; if (f.dead || off(f, 40)) continue;
-      const sp = SP[f.k], cnt = Math.min(16, 3 + Math.ceil(Math.sqrt(f.n) / 2)), spread = (6 + Math.sqrt(f.n) * 0.35) * z;
-      const len = Math.max(1.2, PX_PER_CM * drawLenCm(f.L) * z), dir = f.vx >= 0 ? 1 : -1, cx = X(f.x), cy = Y(f.y);
-      const rgbT = hexRgb(sp.tag);
-      ctx.strokeStyle = 'rgba(' + ((rgbT[0] * 0.55 + 90) * lit | 0) + ',' + ((rgbT[1] * 0.55 + 100) * lit | 0) + ',' + ((rgbT[2] * 0.55 + 110) * lit | 0) + ',0.7)';
-      ctx.lineWidth = Math.max(0.6, len * 0.28); ctx.beginPath();
+      const f = world.fry[i]; if (f.dead || off(f, 60)) continue;
+      const sp = SP[f.k], lenW = PX_PER_CM * drawLenCm(f.L), cnt = Math.min(16, 3 + Math.ceil(Math.sqrt(f.n) / 2));
+      const spread = (6 + Math.sqrt(Math.min(f.n, 4000)) * 0.35 + lenW * 1.6) * z;
+      const len = Math.max(1.2, lenW * z), dir = f.vx >= 0 ? 1 : -1, cx = X(f.x), cy = Y(f.y);
+      const rgbT = hexRgb(sp.tag), body = len >= 3.5;
+      const col = 'rgba(' + ((rgbT[0] * 0.55 + 90) * lit | 0) + ',' + ((rgbT[1] * 0.55 + 100) * lit | 0) + ',' + ((rgbT[2] * 0.55 + 110) * lit | 0) + ',' + (body ? 0.85 : 0.7) + ')';
+      ctx.beginPath();
       for (let j = 0; j < cnt; j++) {
         const a1 = j * 2.399 + i * 0.77, r = spread * Math.sqrt((j + 0.5) / cnt);
         const px = cx + Math.cos(a1 + t * 0.35) * r + Math.sin(t * 2.1 + j) * 1.2 * z, py = cy + Math.sin(a1 + t * 0.35) * r * 0.6 + Math.cos(t * 1.7 + j * 1.3) * z;
-        ctx.moveTo(px - dir * len * 0.5, py); ctx.lineTo(px + dir * len * 0.5, py);
+        if (!body) { ctx.moveTo(px - dir * len * 0.5, py); ctx.lineTo(px + dir * len * 0.5, py); continue; }
+        const bx = px + dir * len * 0.12, wag = Math.sin(t * 9 + j * 1.7) * len * 0.08;
+        ctx.moveTo(bx + dir * len * 0.38, py); ctx.ellipse(bx, py, len * 0.38, len * 0.13, 0, 0, TAU);
+        ctx.moveTo(bx - dir * len * 0.3, py); ctx.lineTo(bx - dir * len * 0.62, py - len * 0.14 + wag); ctx.lineTo(bx - dir * len * 0.62, py + len * 0.14 + wag); ctx.closePath();
       }
-      ctx.stroke();
+      if (body) { ctx.fillStyle = col; ctx.fill(); }
+      else { ctx.strokeStyle = col; ctx.lineWidth = Math.max(0.6, len * 0.28); ctx.stroke(); }
     }
     // dragonfly NYMPHS: squat olive-brown bodies with a big head and splayed legs, clinging low in the weeds
     for (const n of world.nymphs || []) {        // ~3.5 cm: a few px long

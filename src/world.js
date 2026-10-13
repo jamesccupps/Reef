@@ -78,13 +78,18 @@ const isShallow = x => bedY(x) < H * 0.35;                     // over the litto
 const toShore = x => (x < W * BASIN.CENTER ? -1 : 1);          // horizontal direction to the nearer (shallow) shore
 const isLoonPrey = it => !it.dead && it.L <= BIRD.PREY_MAX;   // what a loon can swallow (cm)
 const isPreyOf = (it, a) => canPreyFn(a, it);
-// a FRY SCHOOL's fish a fish could eat: fingerlings that fit a piscivore's gape and are worth its chase, or larvae small
-// enough for any plankton/insect eater (≤ ⅓ of its length) — never its own guarded brood
+// a FRY SCHOOL's fish a fish could eat: young fish that fit a piscivore's gape and are worth its chase — a dense school is
+// worth smaller fish than a lone one (FEED.SCHOOL_MIN: a bout takes many) — or larvae small enough for any plankton/insect
+// eater (≤ ⅓ of its length); never its own guarded brood
+const schoolPrey = (f, a) => a.sp.diet.fish && a.L >= a.sp.Lpisc && f.L * SP[f.k].depthR <= gapeOf(a) && f.L >= FEED.SCHOOL_MIN * a.L;
 const canEatFry = (f, a) => {
   if (f.dead || f.ni === a.id) return false;
-  if (a.sp.diet.fish && a.L >= a.sp.Lpisc && f.L * SP[f.k].depthR <= gapeOf(a) && f.L >= FEED.PREY_MIN * a.L) return true;
+  if (schoolPrey(f, a)) return true;
   return f.L <= FRY.LARVA_L && f.L <= a.L / 3 && !!(a.sp.diet.plankton || a.sp.diet.larva || a.sp.diet.insect || a.L < a.sp.Lzoo);
 };
+// a school the fish of school `f` (young piscivores: pike, bass) could eat — any other school (their own kind's included:
+// young pike are notorious cannibals) whose fish fit their gape and are worth the chase
+const canSchoolEat = (q, f) => q !== f && !q.dead && q.L * SP[q.k].depthR <= f.L * SP[f.k].gapeR && q.L >= FEED.PREY_MIN * f.L;
 const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.sex !== a.sex && breedReady(it) && it.mateCd <= 0 && !it._mated;
 const PLANT_COL = 32;   // x-column width of the nearestPlant index (world px)
 // sub-lethal reproductive impairment from the contaminant body burden: 1 below TOX.REPRO_HARM, falling to 0 as the
@@ -181,6 +186,7 @@ function parseSave(s) {
     if (isNum(a.ro) && a.ro > 0) ag.rO2 = clamp(a.ro, 0, 1e6);
     if (isNum(a.mi) && a.mi > 0) ag.missCd = clamp(a.mi, 0, 60);
     if (isNum(a.xo) && isNum(a.xt)) { ag.xo = clamp(a.xo, 0, 5); ag.xt = clamp(a.xt, -5, 60); }
+    if (isNum(a.ua)) ag.uAvg = clamp(a.ua, 0, 3);
     settleBody(ag);
     ag.heading = num(a.h, ag.heading); ag.spd = clamp(num(a.sp, 0), 0, 1e4); ag.eaten = nonNegInt(a.ea); ag.vis = 1;
     const m = numArr(a.m, HID); if (m) for (let j = 0; j < HID; j++) ag.act.h[j] = clamp(m[j], -1, 1);   // recurrent working memory
@@ -295,7 +301,8 @@ function parseSave(s) {
     const sp = SP[q.k], x = clamp(q.x, 0, W), L = clamp(num(q.L, sp.Lhatch), 0.1, 100), fit = fitGenome(sp, q.w);
     fry.push({ k: q.k, x, y: clamp(num(q.y, bedY(x) * 0.5), 0, H), n: clamp(q.n, 1, 1e7), L, W: clamp(num(q.W, stdWeight(sp.lw, L)), 1e-7, 1e4), age: Math.max(0, num(q.a, 0)),
       gen: nonNegInt(q.g), hue: hueOr(q.hu, null) ?? sp.randomHue(rand), w: fit.g, gn: fitGenes(Array.isArray(q.gn) ? q.gn : []), vx: clamp(num(q.vx, 0), -50, 50),
-      ni: Number.isSafeInteger(q.ni) && q.ni > 0 ? q.ni : 0, nx: clamp(num(q.nx, x), 0, W), ny: clamp(num(q.ny, 0), 0, H), dead: false });
+      ni: Number.isSafeInteger(q.ni) && q.ni > 0 ? q.ni : 0, nx: clamp(num(q.nx, x), 0, W), ny: clamp(num(q.ny, 0), 0, H),
+      tk: clamp(num(q.tk, 0), 0, FRY.TICK), tx: clamp(num(q.tx, x), 0, W), ty: clamp(num(q.ty, 0), 0, H), rO2: clamp(num(q.ro, 0), 0, 1e6), p: clamp(num(q.p, 1), 0, 1), dead: false });
   }
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
   return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps, fry };
@@ -305,7 +312,7 @@ function parseSave(s) {
 // pre-v27 saves) — after that its length is whatever its own energy budget grows (the step's bioenergetics).
 export function lengthAtAge(sp, age) {
   const t = age / TIME.YEAR_LEN;
-  return clamp(sp.vb.Linf * (1 - Math.exp(-sp.vb.k * (t - sp.vb.t0))), sp.L0, sp.vb.Linf);
+  return clamp(sp.vb.Linf * (1 - Math.exp(-sp.vb.k * (t - sp.vb.t0))), sp.Lhatch, sp.vb.Linf);
 }
 // RESERVE (0..1) from condition K: 0 at the starvation margin BIOE.K_STARVE, 1 at a normal, well-fed K = 1 — the
 // brain's "energy" sense and the UI's condition bar
@@ -372,6 +379,12 @@ function makeAgent(species, x, y, cond, gen, hue, genome, age = 0, genes = null)
   };
   settleBody(a);
   return a;
+}
+// a founder's age (s): 1 yr + an exponential with the species' M (the stable age distribution), within 90 % of maxAge
+function foundingAge(sp) {
+  const Y = TIME.YEAR_LEN, amax = 0.9 * sp.maxAge / Y;
+  for (let i = 0; i < 16; i++) { const a = 1 - Math.log(1 - rand()) / sp.M; if (a < amax) return a * Y; }
+  return Y;
 }
 // a founder of the REGIONAL population a species' immigrants come from: a naive genome + fresh trait genes (a new lake's
 // regional pool starts at the same evolutionary point as its own founders, then exchanges genes with the lake)
@@ -489,10 +502,20 @@ export class World {
       const sp = SP[key];
       for (let i = 0; i < popStart(sp); i++) {
         const p = sp.spawnPos(rand);
-        // a MIXED age structure, as a real lake has: ~60% adults of several year-classes, ~40% older juveniles
-        const age = rand() < 0.6 ? rand(sp.matureAge, Math.max(sp.matureAge * 1.2, Math.min(sp.maxAge * 0.7, sp.matureAge * 3))) : rand(sp.matureAge * 0.3, sp.matureAge);
+        // a STABLE AGE STRUCTURE — what the species' natural mortality M leaves: yearlings and older, ages drawn from
+        // e^(−M·(age − 1 yr)) well inside its lifespan. So a lake opens with many small young fish and few big old ones, as a
+        // real one does (a pike population is mostly 1–4-year-olds; most bluegills are under 15 cm). The first two of each
+        // species are a breeding pair (adults, female and male): even the rarest species' few founders include its adults
+        let age = foundingAge(sp);
+        for (let t = 0; i < 2 && t < 50 && age < sp.matureAge; t++) age = foundingAge(sp);
         const f = makeAgent(key, p.x, zoneY(sp, p.x), rand(BIOE.K_START[0], BIOE.K_START[1]), 0, sp.randomHue(rand), null, age);
+        if (i < 2) {   // (grown past its own genetic maturation length if the age draw left it short)
+          f.sex = i; f.Lmat = lmatOf(sp, f.genes[0], f.sex);
+          if (f.L < f.Lmat * 1.05) { f.L = f.Lmat * 1.05; f.W = f.K * stdWeight(sp.lw, f.L); settleBody(f); }
+          f.mature = f.age >= sp.matMinAge;
+        }
         f.mateCd = 0;   // founders haven't spawned yet this year (the water-temperature window alone decides when they can)
+        if (f.mature) f.gon = (f.sex === 0 ? sp.gsiF : sp.gsiM) * f.W;   // …and carry the ripe gonads they built over the winter
         this.agents.push(f);
       }
     }
@@ -584,7 +607,17 @@ export class World {
     this.detritus.push({ x: cx, y: clamp(y, 2, bedY(cx)), life: DETRITUS.LIFE * (0.6 + rand() * 0.8), n, m: PREY.DETRITUS_G, dead: false });
   }
   // a benthic insect larva on the lake bed (detritivore; develops with warmth, then emerges). `dev` 0..1 maturity.
-  _mkLarva(x, dev) { const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev: dev ?? rand(0, 0.25), m: PREY.LARVA_G, dead: false }; }
+  // a patch of insect larvae: on the bed (at x, if given) — or, for a share INSECT.EPIPHYTE of new patches, up the stem of a
+  // macrophyte (the plant-dwelling midges, mayflies and caddis that are most of a bluegill's and young perch's food in
+  // the weeds; invertebrates are densest on plants, Diehl 1992 / Cyr & Downing 1988)
+  _mkLarva(x, dev) {
+    dev = dev ?? rand(0, 0.25);
+    if (x === undefined && this.plants.length && rand() < INSECT.EPIPHYTE) {
+      const p = this.plants[(rand() * this.plants.length) | 0];
+      if (!p.dead && p.height > 6) return { x: clamp(p.x + rand(-3, 3), 4, W - 4), y: p.baseY - p.height * rand(0.15, 0.9), dev, m: PREY.LARVA_G, dead: false };
+    }
+    const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev, m: PREY.LARVA_G, dead: false };
+  }
   // an emerged adult insect at the surface (drifts, short-lived, surface-fish food). `wob` = render flutter phase.
   _mkInsect(x) { const px = clamp(x ?? rand(8, W - 8), 4, W - 4); return { x: px, y: rand(2, 14), life: INSECT.ADULT_LIFE * (0.7 + rand() * 0.6), vx: rand(-INSECT.ADULT_DRIFT, INSECT.ADULT_DRIFT), wob: rand(0, 6.28), m: PREY.INSECT_G, dead: false }; }
   // a benthic snail crawling the lit bed (biased to the littoral shelf where algae/plants concentrate). `ph` = render phase.
@@ -954,59 +987,61 @@ export class World {
   // both parents at spawning), and (nest guarders) the guardian's id and the nest
   _mkFry(k, x, y, n, gen, hue, w, gn) {
     const sp = SP[k], L = sp.Lhatch;
-    return { k, x, y, n, L, W: stdWeight(sp.lw, L), age: 0, gen, hue, w, gn, vx: rand(-1, 1) * FRY.SWIM, ni: 0, nx: x, ny: y, dead: false };
+    return { k, x, y, n, L, W: stdWeight(sp.lw, L), age: 0, gen, hue, w, gn, vx: rand(-1, 1) * FRY.SWIM, ni: 0, nx: x, ny: y,
+      tk: rand() * FRY.TICK, tx: x, ty: y, rO2: 0, p: 1, dead: false };
   }
-  // every school per step: its fish crop the zooplankton around it and run the bioenergetics (FB4 juvenile set) on what
-  // they got; natural mortality (proportional to 1/length), starvation, heat and hypoxia thin it (deterministically — n is
-  // an expected count); it follows the zooplankton (or stays over its nest while the guardian is on duty); and when its fish
-  // reach the recruit length L0 — or in spring after a winter as a school — the survivors recruit as individuals
+  // every school, every step: its fish move — over the nest while its guardian is on duty, else toward the food they found
+  // at the last update. Every FRY.TICK s (staggered) they feed (_feedFry), and die at the natural, starvation, heat and
+  // hypoxia rates over the time elapsed (deterministic: n is an expected count); they pick their next food target; and the
+  // survivors RECRUIT as individuals on reaching the recruit length L0, or as yearlings in the spring after their first
+  // winter: one agent per FRY.N_PER_AGENT, within the species' agent budget (pop.max) — see FRY in config
   _stepFry(dt, counts, newborns) {
     if (!this.fry.length) return;
-    const env = this.env, yf = env.yearFrac(), dd = dt / BIOE.DAY, guards = this._guards;
+    const env = this.env, yf = env.yearFrac(), guards = this._guards, Y = TIME.YEAR_LEN;
     for (const f of this.fry) {
       if (f.dead) continue;
-      const sp = SP[f.k], b = sp.bioJuv || sp.bio, T = env.tempAt(f.x, f.y);
-      f.age += dt;
-      // feeding: zooplankton patches within reach, up to the school's appetite (n x Cmax(W, T))
-      const want = f.n * cmax(b, f.W, T) * f.W * dd; let got = 0, J = 0;
-      for (let i = 0; i < FRY.FEEDS && want - got > 1e-12; i++) {
-        const m = this.planktonGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
-        const z = m.item, take = Math.min(z.m, want - got);
-        z.m -= take; if (z.m <= 1e-9) z.dead = true;
-        got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED);
-      }
-      // one fish's energy budget (J), as the agents' (routine activity: young fish are always on the move)
-      const C = J / f.n, p = want > 0 ? got / want : 0;
-      wasteFractions(b, T, p, WF);
-      const F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F);
-      const Rj = respStd(b, f.W, T) * routineActivity(b, f.W, T) * f.W * OXYCAL * dd;
-      f.W = Math.max(1e-7, f.W + (C - F - U - S - Rj) / energyDensity(b, f.W));
-      if (f.W > stdWeight(sp.lw, f.L)) f.L = lengthFor(sp.lw, f.W);
-      const K = f.W / stdWeight(sp.lw, f.L), o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
-      let h = FRY.M_LARVA / Math.max(0.3, f.L) / BIOE.DAY;                                                   // natural, size-dependent
-      if (K < BIOE.K_HAZARD) h += -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * K))))) / BIOE.DAY;   // starvation
+      const sp = SP[f.k], d = sp.diet;
+      f.age += dt; f.tk += dt;
+      // (a guarded school forages in a cloud around its nest — within BROOD.GUARD_R of it — as bass and sunfish fry do)
+      const g = f.ni && guards ? guards.get(f.ni) : null, sw = FRY.SWIM * clamp(f.L / 2, 0.5, 4), held = g && g.nt > 0 && !g.dead;
+      if (!held) f.ni = 0;
+      const R = BROOD.GUARD_R, tx = held ? clamp(f.tx, f.nx - R, f.nx + R) : f.tx, ty = held ? clamp(f.ty, f.ny - R, f.ny + R) : f.ty;
+      const dx = tx - f.x;
+      if (Math.abs(dx) > 4) f.vx += Math.sign(dx) * sw * 2 * dt; else f.vx *= 1 - Math.min(1, dt);
+      f.y += clamp(ty - f.y, -sw * 0.6 * dt, sw * 0.6 * dt);
+      f.vx = clamp(f.vx, -sw * 2, sw * 2);
+      f.x = clamp(f.x + f.vx * dt, 4, W - 4); f.y = clamp(f.y, 3, bedY(f.x) - 3);
+      if (f.tk < FRY.TICK) continue;
+      const st = f.tk; f.tk = 0;
+      const T = env.tempAt(f.x, f.y);
+      const hS = this._feedFry(f, sp, st, T);   // (its starvation hazard, /s)
+      // MORTALITY over st: natural — the larval "critical period" (FRY.M_LARVA ∝ 1/length, fading out by ~3 cm) + the
+      // agents' size-scaled share of the species' M (Lorenzen) — then starvation (_feedFry), heat and hypoxia as for the agents
+      const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
+      let h = FRY.M_LARVA / Math.max(0.3, f.L) * Math.exp(-((f.L / FRY.LARVA_L) ** 2)) / BIOE.DAY
+        + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y + hS;
       if (T > sp.uilt - 2) h += Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP);
       if (o2 < o2L) h += Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L);
-      f.n *= Math.exp(-h * dt);
+      f.n *= Math.exp(-h * st);
       if (f.n < 1) { f.dead = true; continue; }
-      // movement: over the nest while its guardian is on duty, else wandering the littoral (cover-seeking young fish)
-      const g = f.ni && guards ? guards.get(f.ni) : null;
-      if (g && g.nt > 0 && !g.dead) { f.vx += clamp(f.nx - f.x, -1, 1) * FRY.SWIM * 2 * dt; f.y += (f.ny - f.y) * Math.min(1, dt); }
+      // NEXT TARGET: the nearest food these fish eat within SEEK_R; in water below their critical O₂ they head up, and
+      // near their lethal temperature down (the young fish's own habitat choice)
+      if (o2 < sp.o2Crit) { f.tx = f.x; f.ty = Math.max(4, f.y - 60); }
+      else if (T > sp.uilt - 3) { f.tx = f.x; f.ty = f.y + 60; }
       else {
-        // free-swimming larvae follow the zooplankton (bluegill and perch larvae move out into open water to feed, then
-        // return to the weedy shallows as juveniles); otherwise a gentle wander
-        f.ni = 0;
-        const zf = this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead);
-        if (zf && zf.dist > FRY.EAT_R * 0.5) { f.vx += clamp(zf.item.x - f.x, -1, 1) * FRY.SWIM * 2 * dt; f.y += clamp(zf.item.y - f.y, -1, 1) * FRY.SWIM * 0.5 * dt; }
-        else if (rand() < 0.4 * dt) f.vx = rand(-1, 1) * FRY.SWIM;
+        const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= FRY.BENTH_L;
+        let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
+        if (benth && (d.larva || d.insect) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
+        if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
+        if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
+        // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
+        if (best) { f.tx = best.item.x; f.ty = best.item.y; } else { f.tx = clamp(f.x + rand(-80, 80), 4, W - 4); f.ty = benth && (d.larva || d.detritus) ? bedY(f.x) - 8 : f.y; }
       }
-      f.vx = clamp(f.vx, -FRY.SWIM * 2, FRY.SWIM * 2);
-      f.x = clamp(f.x + f.vx * dt, 4, W - 4); f.y = clamp(f.y, 3, bedY(f.x) - 3);
-      // RECRUITMENT: one individual per N_PER_AGENT survivors (stochastic rounding; seeded RNG) carries the school's genome
-      // (its siblings a fresh mutation of it) at the school's size and condition
-      if (f.L >= sp.L0 || (yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END && f.age > 0.3 * TIME.YEAR_LEN)) {
+      // RECRUITMENT: one individual per N_PER_AGENT survivors (stochastic rounding; seeded RNG), as many as the species'
+      // agent budget has room for, carrying the school's genome (its siblings a fresh mutation of it) at the school's size
+      if (f.L >= sp.L0 || (f.age > FRY.OVERWINTER * Y && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) {
         f.dead = true;
-        const nRec = Math.min(FRY.MAX_RECRUITS, Math.floor(f.n / FRY.N_PER_AGENT + rand()));
+        const nRec = Math.min(FRY.MAX_RECRUITS, Math.max(0, popMax(sp) - counts[f.k]), Math.floor(f.n / FRY.N_PER_AGENT + rand()));
         for (let i = 0; i < nRec && this.agents.length + newborns.length < WORLD.GLOBAL_MAX; i++) {
           const c = makeAgent(f.k, f.x, f.y, 1, f.gen, (f.hue + (i ? gauss() * 5 : 0) + 360) % 360, i ? mutate(f.w) : f.w, 0, i ? mutateGenes(f.gn) : f.gn);
           c.L = f.L; c.W = f.W; c.age = f.age; c.mature = false; c.gon = 0; settleBody(c);
@@ -1015,18 +1050,84 @@ export class World {
       }
     }
   }
-  // a fish crops the nearest school of young fish it can eat: FRY.CATCH × the school's density per handling slot (a Poisson
-  // draw — larvae are dispersed, not a ball), as many as fit its gut; a school in its guarded
-  // nest zone (guardian on duty, on station) is mostly protected (BROOD.PROTECT)
-  _eatFry(a, gEff, slots) {
+  // one school's update of length st (s) at temperature T: its fish crop up to FRY.FEEDS food patches within EAT_R — other
+  // young fish first (young piscivores), then zooplankton (every young fish below its species' Lzoo, and the planktivores),
+  // the bottom's insect larvae and detritus (once BENTH_L long, as its species eats them), algae as the planktivores' last
+  // resort — up to the school's appetite (n × Cmax); then one fish's energy budget (FB4: the juvenile set where one
+  // exists) runs on its share, as the agents' does (routine activity: young fish are always on the move).
+  // SCRAMBLE COMPETITION: a school's fish don't share a shortfall equally — some find food, some don't. When what the school
+  // found can't keep every fish at maintenance, it keeps as many as it can (their mass holds) and the rest STARVE over the
+  // time their reserves last (losing ~40 % of their energy: a day or two for a first-feeding larva in summer, months for a
+  // fingerling under the ice — the physiology of size-selective overwinter starvation). So a school shrinks to what its
+  // food supports, rather than every fish starving at once (a super-individual has no spread of its own).
+  // Returns the starvation hazard (/s).
+  _feedFry(f, sp, st, T) {
+    const env = this.env, b = sp.bioJuv || sp.bio, dd = st / BIOE.DAY, d = sp.diet;   // (young-of-year: FB4's juvenile set where one exists)
+    const want = f.n * cmax(b, f.W, T) * f.W * dd; let got = 0, J = 0, feeds = FRY.FEEDS, foundZoo = false;
+    if (d.fish && f.L >= sp.Lpisc) {
+      const m = this.fryGrid.nearest(f.x, f.y, FRY.EAT_R, canSchoolEat, f);
+      if (m) {
+        const q = m.item, k = Math.min(q.n, (want - got) / q.W, f.n * FRY.ATTACK * sp.capture * SP[q.k].vuln * q.n / (q.n + FRY.N_HALF) * (1 - this.coverAt(q.x, q.y) * COVER.REFUGE) * st);
+        if (k > 0) { q.n -= k; if (q.n < 1) q.dead = true; got += k * q.W; J += k * q.W * energyDensity(SP[q.k].bio, q.W); this.stats.fryEaten = (this.stats.fryEaten || 0) + k; }
+      }
+    }
+    if (d.plankton || f.L < sp.Lzoo) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+      const m = this.planktonGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
+      const z = m.item, take = Math.min(z.m, want - got);
+      z.m -= take; if (z.m <= 1e-9) z.dead = true;
+      got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
+    }
+    if (f.L >= FRY.BENTH_L && (d.larva || d.insect)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+      const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
+      const it = m.item, take = Math.min(it.m, want - got);
+      it.m -= take; if (it.m <= 1e-9) it.dead = true;
+      got += take; J += take * PREY.LARVA_ED;
+    }
+    if (f.L >= FRY.BENTH_L && d.detritus) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+      const m = this.detritusGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
+      const it = m.item, take = Math.min(it.m, want - got);
+      if (it.n > 0) { const nu = it.n * take / it.m; it.n -= nu; env.addNutrient(it.x, it.y, nu); }   // its organic N+P is excreted
+      it.m -= take; if (it.m <= 1e-9) it.dead = true;
+      got += take; J += take * PREY.DETRITUS_ED * PREY.DETRITUS_DIG;
+    }
+    if (d.plankton && !foundZoo && want - got > 1e-12) {
+      const gz = env.grazePhyto(f.x, f.y, (want - got) / PREY.ALGAE_G);
+      if (gz > 0) { got += gz * PREY.ALGAE_G; J += gz * PREY.ALGAE_G * PREY.ALGAE_ED * PREY.ALGAE_DIG; }
+    }
+    const p = want > 0 ? Math.min(1, got / want) : 0;
+    wasteFractions(b, T, p, WF);
+    // (below FRY.R_WMIN the mass-specific respiration stops rising: the published allometries were fit to juveniles and
+    // adults, and larval metabolism scales nearly isometrically — extrapolating W^RB to a 1-mg larva overstates it ~4×)
+    const Wr = Math.max(f.W, FRY.R_WMIN), r = respStd(b, Wr, T) * routineActivity(b, Wr, T) * f.W, Rj = r * OXYCAL * dd;   // g O₂/day per fish; J this update
+    const eff = (1 - WF[0]) * (1 - WF[1] - b.SDA), edF = got > 0 ? J / got : PREY.DAPH_ED;     // net share of what's eaten; J/g of it
+    const need = Rj / Math.max(1e-9, eff * edF), ed = energyDensity(b, f.W);                    // g per fish to break even
+    let hS = 0;
+    f.rO2 = f.n * r / BIOE.DAY;                       // the school's O₂ draw (g O₂ / sim-s — the env charges it)
+    f.p += (p - f.p) * Math.min(1, st / BIOE.DAY);   // realised p, ~1-day mean (diagnostic)
+    if (got >= f.n * need) {   // every fish at least at maintenance: they share the surplus and grow
+      const C = J / f.n, F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F);
+      f.W = Math.max(1e-7, f.W + (C - F - U - S - Rj) / ed);
+      if (f.W > stdWeight(sp.lw, f.L)) f.L = lengthFor(sp.lw, f.W);
+    } else {                   // only got/need of them are fed: the rest starve as their reserves run out
+      const tStarve = 0.4 * ed / Math.max(1e-9, r * OXYCAL / f.W);   // days a fish lasts on ~40 % of its energy
+      hS = (1 - got / Math.max(1e-12, f.n * need)) / (tStarve * BIOE.DAY);
+    }
+    return hS;
+  }
+  // a fish crops the nearest school of young fish it can eat (a Poisson draw, as many as fit its gut). A PISCIVORE takes a
+  // feeding bout: FRY.ATTACK × its capture success fish per second (fewer from a school thinned to a few fish — a type-II
+  // response in the school's size, FRY.N_HALF); a plankton/insect eater picks off larvae at FRY.CATCH per handling slot. Weed cover shelters the young (COVER.
+  // REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is mostly protected (BROOD.PROTECT)
+  _eatFry(a, gEff, slots, dt) {
     const m = this.fryGrid.nearest(a.x, a.y, a.eatRadius + 6, canEatFry, a);
     if (!m) return;
-    const f = m.item, k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(FRY.CATCH * slots * Math.min(1, f.n / FRY.PATCH_N)));
+    const f = m.item, pisc = schoolPrey(f, a);
+    const dens = f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
+    const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * dens * dt : FRY.CATCH * slots * dens));
     if (k < 1) return;
     if (f.ni && this._guards) { const g = this._guards.get(f.ni); if (g && g.nt > 0 && !g.dead && Math.hypot(g.x - f.nx, g.y - f.ny) < BROOD.GUARD_R * 1.5 && rand() < BROOD.PROTECT) return; }
     f.n -= k; if (f.n < 1) f.dead = true;
-    const sb = SP[f.k].bioJuv || SP[f.k].bio;
-    this._meal(a, k * f.W, energyDensity(sb, f.W), 1);
+    this._meal(a, k * f.W, energyDensity(SP[f.k].bio, f.W), 1);
     this.stats.fryEaten = (this.stats.fryEaten || 0) + k;
   }
   // a fry inside its guarded nest zone, with its guardian on duty and on station, is hard to take (BROOD.PROTECT)
@@ -1056,7 +1157,8 @@ export class World {
     if (m.dist < reach) {
       // CAPTURE SUCCESS: not every strike connects (sp.capture: pike ~0.6 … perch ~0.15 — perch are clumsy piscivores).
       // A miss leaves the predator recovering for FEED.MISS_CD s and the prey alarmed (it flees on its fear drive)
-      if (rand() >= a.sp.capture * (1 + ACTION.STRIKE_REACH * engaged(a.act.strike)) * (1 - ACTION.HIDE_CONCEAL * engaged(prey.act.hide))) {
+      // (× the prey species' vulnerability — a bluegill or bullhead is missed far more often than a fathead: BIO vuln)
+      if (rand() >= a.sp.capture * prey.sp.vuln * (1 + ACTION.STRIKE_REACH * engaged(a.act.strike)) * (1 - ACTION.HIDE_CONCEAL * engaged(prey.act.hide))) {
         a.missCd = FEED.MISS_CD; prey.fear = 1; return null;
       }
       prey.dead = true; this._counts[prey.species]--;
@@ -1250,6 +1352,8 @@ export class World {
     // counts + clear mating flags
     const counts = this._counts = {}; for (const k of SPECIES) counts[k] = 0;
     for (const a of this.agents) { if (!a.dead) counts[a.species]++; a._mated = false; }
+    const fryN = {}; for (const k of SPECIES) fryN[k] = 0;   // live young-of-year schools per species (spawning slots)
+    for (const f of this.fry) if (!f.dead) fryN[f.k]++;
     // parents currently guarding a nest (by id) — their fry look them up; takePrey checks the guarded zone
     const guards = this._guards || (this._guards = new Map()); guards.clear();
     for (const a of this.agents) if (!a.dead && a.nt > 0) guards.set(a.id, a);
@@ -1326,6 +1430,7 @@ export class World {
       // so the brain stays the primary driver in its home zone. No RNG → deterministic. So a catfish hugs
       // the bottom, a minnow rides shallow, a pike lurks — as a baseline the brain refines.
       const IN = sp.innate;
+      let escUp = null, o2Climb = 0;   // the O₂ ESCAPE heading (near-lethal water) and the hypoxia climb rate (× maxSpeed), below
       if (IN) {
         const bedX = bedY(a.x);
         let prefY = clamp(IN.homeDepth * bedX, 8, bedX - 8);
@@ -1339,9 +1444,11 @@ export class World {
         // it back out of anoxic water, so a cold-water fish ends up squeezed between warm and oxygen-starved water.
         const tooWarm = sp.tempOpt + a.tempTol * 0.5, hot = env.tempAt(a.x, a.y) > tooWarm;
         if (env.tempAt(a.x, prefY) > tooWarm) {
-          let y = prefY; while (y < bedX - 12 && env.tempAt(a.x, y) > tooWarm) y += 24; prefY = Math.min(y, bedX - 8);
-          // no cool water under it (the warm shallow shelf): head offshore, over the deep basin
-          if (env.tempAt(a.x, prefY) > tooWarm) { const off = a.x < W * BASIN.CENTER ? 0 : Math.PI; a.heading += angDiff(off, a.heading) * a.maxTurn * 0.8 * dt; }
+          let y = prefY; while (y < bedX - 12 && env.tempAt(a.x, y) > tooWarm) y += 24;
+          // no cool water under it (the warm shallow shelf): don't settle on the warm bottom — head offshore, over the deep
+          // basin, where the cool water is
+          if (env.tempAt(a.x, Math.min(y, bedX - 8)) > tooWarm) { const off = a.x < W * BASIN.CENTER ? 0 : Math.PI; a.heading += angDiff(off, a.heading) * a.maxTurn * 1.5 * dt; }
+          else prefY = Math.min(y, bedX - 8);
         }
         // OXYGEN-LIMITED HABITAT: a fish doesn't settle where the water can't support it. If its preferred depth lies in
         // water below its O₂ limit (the summer anoxic hypolimnion, the late-winter deep), the target rises to the deepest
@@ -1355,11 +1462,11 @@ export class World {
             a.heading += angDiff(toShore + (Math.cos(toShore) > 0 ? 0.25 : -0.25), a.heading) * a.maxTurn * 1.0 * dt;
           }
         }
-        if (o2Here < o2Want) prefY = Math.min(prefY, a.y - 20 - 60 * clamp((o2Want - o2Here) / o2Want, 0, 1));
+        if (o2Here < o2Want) { const def = clamp((o2Want - o2Here) / o2Want, 0, 1); prefY = Math.min(prefY, a.y - 20 - 60 * def); o2Climb = 0.5 * def; }
         // ESCAPE: in water near its LETHAL O₂ a fish bolts straight up and toward the shore (one behavioural second here is
         // hours of exposure for its physiology, so it can't afford to linger)
-        const o2Esc = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3;
-        if (o2Here < o2Esc) { const up = -Math.PI / 2 + (a.x < W * BASIN.CENTER ? -0.5 : 0.5); a.heading += angDiff(up, a.heading) * Math.min(1, 6 * dt); thrust = Math.max(thrust, 0.8); }
+        // (applied after every other modulation — a resting, cold or day-resting fish still bolts: see below)
+        if (o2Here < a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3) { escUp = -Math.PI / 2 + (a.x < W * BASIN.CENTER ? -0.25 : 0.25); o2Climb = 1.5; }
         // SPAWNING AGGREGATION target (applied below): in its spawning season a breeding-ready adult migrates to the
         // littoral spawning ground — ONE per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf), so a sparse
         // population converges where mates can find each other, as real pike do on a traditional spawning marsh
@@ -1403,10 +1510,20 @@ export class World {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);   // prey bearing relative to the body heading
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.pursuit * a.act.in[2] * dt;
         }
+        // FORAGING: a hungry forager turns toward the food it senses (every species' first sensor is its food), harder the
+        // hungrier and the closer — the innate orienting response to food that real fish are born with. With real life
+        // histories a generation takes years, so a lineage can't wait for its brains to evolve the basics before it starves;
+        // the brain refines it like the other reflexes
+        if (IN.forage && (a.act.in[2] || 0) > 0) {
+          const rel = Math.atan2(a.act.in[0], a.act.in[1]);
+          a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.forage * a.act.in[2] * a.hunger * dt;
+        }
         // SPAWNING AGGREGATION (target `mig` above): bass nest in the shallows, pike/carp spawn in flooded weed margins,
         // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
         // switches off out of season or once the fish is spent.
-        if (mig && mig.d > 30) a.heading += angDiff(Math.atan2(mig.gy - a.y, mig.gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(mig.d / 300, 0.2, 1) * dt;
+        // A migrating spawner TRAVELS: it holds a purposeful pace (real fish reach their spawning grounds in a day or two —
+        // the whole slice is a few dozen metres) and doesn't stop to hold in cover on the way
+        if (mig && mig.d > 30) { a.heading += angDiff(Math.atan2(mig.gy - a.y, mig.gx - a.x), a.heading) * a.maxTurn * (IN.spawnGround + 0.6) * clamp(mig.d / 300, 0.2, 1) * dt; if (mig.d > 120) thrust = Math.max(thrust, 0.75); }
         // SPARSE SPAWNERS find each other: in a rare species an in-season, breeding-ready adult homes in on the nearest ready
         // mate over a long range (SPAWN.CUE_R — chemical/sound cues), so a thin population still pairs up
         else if (counts[a.species] < SPAWN.RARE && spawnF[a.species] > SPAWN.AGG_SEASON && breedReady(a) && a.mateCd <= 0) {
@@ -1436,7 +1553,7 @@ export class World {
         // cover-seeking: littoral/ambush fish migrate to the nearest cover (weed bed / reed / log) and hold
         // there — a pike lurks at a weed-bed edge, a sunfish hovers in the weeds. A gentle long-range
         // attractor that eases off once at cover; the NN can override to chase or roam.
-        if (IN.cover) {
+        if (IN.cover && !(mig && mig.d > 120)) {
           const cv = this.nearestCover(a.x, a.y, 280);
           if (cv) { const d = Math.hypot(cv.x - a.x, cv.y - a.y); if (d > 14) a.heading += angDiff(Math.atan2(cv.y - a.y, cv.x - a.x), a.heading) * a.maxTurn * IN.cover * clamp(d / 200, 0.2, 1) * dt; }
         }
@@ -1466,6 +1583,8 @@ export class World {
       // linearly toward ENV.COLD_PERF_MIN at ~2 °C. Cold slows ectotherms; it doesn't stress these temperate natives.
       const tHere = env.tempAt(a.x, a.y), perf = coldPerf(tHere, sp.tempOpt, sp.coldPerf);
       thrust *= perf;
+      // the O₂ ESCAPE overrides the cruise norm, the diel rest and the cold: an anaerobic burst up and out of lethal water
+      if (escUp !== null) { a.heading += angDiff(escUp, a.heading) * Math.min(1, 6 * dt); thrust = Math.max(thrust, 0.8); }
       a.stroke = (a.stroke + MOTION.COAST_RATE * (0.6 + 0.6 * clamp(a.spd / a.maxSpeed, 0, 1)) * dt) % 1;
       const coastAmp = MOTION.COAST_DEPTH * clamp(1 - Math.max(aFlee, aStrike), 0, 1) * clamp(thrust * 3, 0, 1);
       thrust = clamp(thrust * (1 + coastAmp * Math.cos(a.stroke * 2 * Math.PI)), 0, 1);
@@ -1486,6 +1605,11 @@ export class World {
       // lethal water is a wall: a fish doesn't swim DOWN into water whose O₂ is below twice its lethal level (it senses it
       // and turns back — real fish avoid anoxic water sharply); it can always rise out of it
       if (a.y > y0) { const o2L0 = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (tHere - 25)) * 2; if (env.oxygenAt(a.x, a.y) < o2L0 && env.oxygenAt(a.x, y0) > env.oxygenAt(a.x, a.y)) a.y = y0; }
+      // …and a fish in water below its critical O₂ CLIMBS out of it — slowly when barely hypoxic, at a burst (an anaerobic
+      // sprint) from near-lethal water — whatever its momentum, the bed slope, its diel rest or a brain still steering it
+      // along the bottom. In a stratified lake O₂ rises toward the surface. (One behavioural second is ~5 h of exposure for
+      // the physiology, so a fish crawling out of a thickening anoxic layer at cruising speed would never make it.)
+      if (o2Climb > 0) a.y -= a.maxSpeed * o2Climb * dt;
 
       // side walls turn the fish around; the surface & curved bed make it GLIDE along the
       // boundary (heading eased toward horizontal) instead of bouncing — so bottom-dwellers
@@ -1502,7 +1626,7 @@ export class World {
       // of TIME.YEAR_LEN), so the per-day rates become per-step amounts with dt/DAY. Everything is grams and joules.
       // the lethal O₂ rises ~5.5 %/°C (Moss & Scott 1961; Downing & Merkens 1957) — cold fish survive far lower O₂ under ice
       const o2L = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (tHere - 25));
-      const Wg = a.W, dd = dt / BIOE.DAY, gmax = sp.gut * Wg, bp = a.mature || !sp.bioJuv ? sp.bio : sp.bioJuv;   // juveniles: FB4's juvenile set where one exists
+      const Wg = a.W, dd = dt / BIOE.DAY, gmax = sp.gut * Wg, bp = sp.bioJuv && a.age < TIME.YEAR_LEN ? sp.bioJuv : sp.bio;   // young-of-year: FB4's juvenile set where one exists (bluegill, perch — fit to age-0 fish, with their warmer optimum); yearlings on the adult set
       const o2 = this.oxygenAt(a.x, a.y);
       // DIGESTION: the stomach empties exponentially at the measured gastric-evacuation rate (He & Wurtsbaugh 1993: 22
       // species, R = 0.049·e^(0.072·T) per hour, × the species' own speed — pike digest a fish meal in ~2 days, sunfish an
@@ -1518,15 +1642,20 @@ export class World {
       }
       a.pAvg = (a.pAvg || 0) + (pNow - (a.pAvg || 0)) * Math.min(1, dd);   // DIAGNOSTIC only (never read by the sim): ~1-day mean p
       // WASTE + COSTS (J): egestion and excretion (FB4 EGEQ/EXEQ at this step's p), specific dynamic action, and
-      // respiration = standard × the published routine activity × this fish's actual swimming effort against its
-      // species' routine pace (a sprint costs several times cruising, BIOE.SWIM) × any toxic stress
+      // respiration = standard × the published routine activity × this fish's swimming effort over the last ~day against
+      // its species' routine pace (BIOE.SWIM: a fish that keeps sprinting pays several times cruising; a brief dash is a
+      // few minutes of a day — the behavioural second is ~5 h of physiology, so the mean, not the instant, is what the
+      // day's metabolism sees; saved `ua`) × any toxic stress
       wasteFractions(bp, tHere, clamp(pNow, 0, 1), WF);
       const F = WF[0] * C, U = WF[1] * (C - F), S = bp.SDA * (C - F);
       // cyanotoxin (HAB): a DENSE cyanobacteria surface scum poisons fish (microcystin) — detoxification and gill/liver
       // damage raise its metabolic costs where the local cyano is above the toxic threshold (mostly surface fish)
       const cyTox = env.cyanoAt(a.x, a.y) - CYANO.TOX_THRESH * CYANO.CAP;
       const stress = cyTox > 0 ? 1 + CYANO.RESP_STRESS * cyTox / CYANO.CAP : 1;
-      const act = routineActivity(bp, Wg, tHere) * Math.exp(BIOE.SWIM * (a.spd / a.maxSpeed - sp.uRoutine));
+      a.uAvg = a.uAvg === undefined ? sp.uRoutine : a.uAvg + (a.spd / a.maxSpeed - a.uAvg) * Math.min(1, dd);
+      // (never below the published routine: FB4's respiration is for a routinely active fish — one hovering in the weeds
+      // on screen is resting between bouts, not metabolising below routine)
+      const act = routineActivity(bp, Wg, tHere) * Math.exp(BIOE.SWIM * Math.max(0, a.uAvg - sp.uRoutine));
       const guard = a.nt > 0 ? BROOD.GUARD_METAB : 1;   // a nest-guarding male fans and patrols: metabolism up (BROOD.GUARD_METAB)
       const rO2 = respStd(bp, Wg, tHere) * a.metabMul * act * stress * guard * Wg;   // g O₂ / day
       a.rO2 = rO2 / BIOE.DAY;                                                 // g O₂ / sim-s (the lake's O₂ demand, env)
@@ -1538,7 +1667,7 @@ export class World {
       // them (atresia) before it burns its body
       let net = C - F - U - S - rO2 * OXYCAL * dd;
       const ed = energyDensity(bp, Wg), gsi = a.sex === 0 ? sp.gsiF : sp.gsiM;
-      if (net > 0) { if (a.mature && a.gon < gsi * Wg) { const toG = Math.min(net * BIOE.REPRO_ALLOC, (gsi * Wg - a.gon) * ed); a.gon += toG / ed; net -= toG; } }
+      if (net > 0) { if (a.mature && a.gon < gsi * Wg) { const toG = Math.min(net * (sp.reproAlloc ?? BIOE.REPRO_ALLOC), (gsi * Wg - a.gon) * ed); a.gon += toG / ed; net -= toG; } }
       else if (a.gon > 0 && a.K < BIOE.K_RESORB) { const fromG = Math.min(a.gon * ed, -net); a.gon -= fromG / ed; net += fromG; }
       a.W = Math.max(1e-6, Wg + net / ed);
       if (a.W > stdWeight(sp.lw, a.L)) { a.L = lengthFor(sp.lw, a.W); sizeScale(a); }
@@ -1607,38 +1736,42 @@ export class World {
       const R = a.eatRadius;
       // YOUNG-OF-YEAR: fry schools (FRY) are food for anything whose mouth they fit — larval fish for the planktivores and
       // invertivores, fingerlings for the piscivores (see _eatFry)
-      if (this.fry.length && a.gut < gEff && slots > 0) this._eatFry(a, gEff, slots);
+      if (this.fry.length && a.gut < gEff) this._eatFry(a, gEff, slots, dt);
+      // The rest in order of PROFITABILITY (digestible J per g — optimal foraging: a fish takes the best food in reach
+      // first): zooplankton and the benthic/surface invertebrates; the POOR foods — detritus (~340 J/g digestible),
+      // algae (~730), plants (~540) — only as a hungry fish's filler: when it found nothing better this step, and only up
+      // to FEED.POOR_GUT of its gut (a gut kept full of weed between the good meals would starve it at full ration).
       // FRY EAT ZOOPLANKTON: nearly every fish starts life as a zooplankton eater, whatever it eats as an adult (pike and
       // bass fry, carp and catfish fry alike), shifting to its adult diet past a species-specific length (sp.Lzoo)
       if (a.gut < gEff && !sp.diet.plankton && a.L < sp.Lzoo) this._eatZoo(a, slots, gEff - a.gut);
-      let atePlankton = false;
-      if (a.gut < gEff && sp.diet.plankton) atePlankton = this._eatZoo(a, slots, gEff - a.gut) > 0;
-      // planktivore facultative omnivory: when a hungry planktivore finds no zooplankton it grazes the phytoplankton
-      // field directly (fathead minnows and sunfish do eat algae and detritus) — algae are a poor, part-indigestible food
-      // (PREY.ALGAE_*), but they carry the forage fish through the zooplankton troughs. A per-SECOND rate × dt.
-      if (sp.diet.plankton && !atePlankton && a.gut < gEff) {
-        const g = env.grazePhyto(a.x, a.y, Math.min(PLANKTON.FALLBACK_GRAZE * dt, (gEff - a.gut) / PREY.ALGAE_G));
-        if (g > PLANKTON.FALLBACK_MIN * dt) this._meal(a, g * PREY.ALGAE_G, PREY.ALGAE_ED, PREY.ALGAE_DIG, slots);
-      }
-      if (a.gut < gEff && sp.diet.detritus) this._graze(a, this.detritusGrid, slots, gEff - a.gut, PREY.DETRITUS_ED, PREY.DETRITUS_DIG);   // bottom feeders sift detritus
-      if (a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1);   // benthic insect larvae
+      if (a.gut < gEff && sp.diet.plankton) this._eatZoo(a, slots, gEff - a.gut);
       if (a.gut < gEff && sp.diet.insect) this._graze(a, this.insectGrid, slots, gEff - a.gut, PREY.INSECT_ED, 1);   // surface fish rise to emerged insects
       if (gEff - a.gut >= PREY.NYMPH_G && (sp.diet.larva || sp.diet.insect) && this.nymphs.length && rand() < ODONATA.CRYPTIC && (k = this._takeNearest(this.nymphGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.NYMPH_G, PREY.NYMPH_ED, 1);   // dragonfly nymphs (cryptic): a big insect meal
+      if (sp.diet.cray && gEff - a.gut >= PREY.CRAY_G && (k = this._takeNearest(this.crayGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.CRAY_G, PREY.CRAY_ED, PREY.CRAY_DIG);   // a crayfish is a big meal (bass, pike, catfish)
+      if (a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1);   // benthic insect larvae
       let nS;
       if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
-      if (sp.diet.cray && gEff - a.gut >= PREY.CRAY_G && (k = this._takeNearest(this.crayGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.CRAY_G, PREY.CRAY_ED, PREY.CRAY_DIG);   // a crayfish is a big meal (bass, pike, catfish)
-      if (a.gut < gEff && sp.diet.plants) { const g = this.bitePlant(a, dt, gEff - a.gut); if (g > 0) this._meal(a, g, PREY.PLANT_ED, PREY.PLANT_DIG, slots); }   // per-second grazing (PLANT.BITE_RATE × dt), g wet plant
+      const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
+      if (a.eaten === eaten0 && a.gut < pRoom && sp.diet.detritus) this._graze(a, this.detritusGrid, slots, pRoom - a.gut, PREY.DETRITUS_ED, PREY.DETRITUS_DIG);   // bottom feeders sift detritus
+      // planktivore facultative omnivory: a hungry planktivore that found NOTHING else this step grazes the phytoplankton
+      // field directly (fathead minnows and sunfish do eat algae and detritus) — algae are a poor, part-indigestible food
+      // (PREY.ALGAE_*), a last resort that carries the forage fish through the zooplankton troughs. A per-SECOND rate × dt.
+      if (sp.diet.plankton && a.eaten === eaten0 && a.gut < pRoom) {
+        const g = env.grazePhyto(a.x, a.y, Math.min(PLANKTON.FALLBACK_GRAZE * dt, (pRoom - a.gut) / PREY.ALGAE_G));
+        if (g > PLANKTON.FALLBACK_MIN * dt) this._meal(a, g * PREY.ALGAE_G, PREY.ALGAE_ED, PREY.ALGAE_DIG, slots);
+      }
+      if (a.eaten === eaten0 && a.gut < pRoom && sp.diet.plants) { const g = this.bitePlant(a, dt, pRoom - a.gut); if (g > 0) this._meal(a, g, PREY.PLANT_ED, PREY.PLANT_DIG, slots); }   // per-second grazing (PLANT.BITE_RATE × dt), g wet plant
       a.hunger = 1 - clamp(a.gut / gmax, 0, 1);   // HUNGER = the gut's emptiness (the brain's drive input)
       // LIFETIME LEARNING: a reward-modulated Hebbian nudge to the PLASTIC policy (a.lw) — reinforce the action just taken
       // when the fish ATE; a homeostatic decay (runs every step) pulls it back toward the inherited genotype a.g. Baldwinian
       // (a.g untouched → offspring inherit the evolved brain, not the learned weights). Deterministic (no RNG).
       reinforce(a.lw, a.g, sp.shape, a.act, a.eaten > eaten0 ? 1 : 0, dt, LEARN.RATE, LEARN.DECAY, LEARN.CLAMP);
 
-      // sexual reproduction (crossover + mutation). Density-dependence is now LOGISTIC: the chance of breeding
-      // when eligible tapers smoothly to 0 as the species approaches its carrying capacity K (= popMax) —
-      // rand() < (1 − N/K) — so the population self-limits at K instead of hitting a hard cap (and the boom is damped).
+      // sexual reproduction (crossover + mutation). A ripe fish in its spawning season spawns whatever the crowd: density
+      // acts on the YOUNG (food for the larvae, predation on them, starvation, cannibalism — then the species' agent budget
+      // at recruitment, _stepFry), as it does in real lakes, not on the adults' readiness to spawn.
       if (breedReady(a) && a.mateCd <= 0 && !a._mated &&
-          (this.agents.length + newborns.length) < WORLD.GLOBAL_MAX && rand() < clamp(1 - counts[a.species] / popMax(sp), 0, 1) * spawnF[a.species] * toxFecundity(a.tox)) {   // contaminated fish breed less (sub-lethal); inert at tox=0
+          rand() < spawnF[a.species] * toxFecundity(a.tox)) {   // contaminated fish breed less (sub-lethal); inert at tox=0
         const m = this.chooseMate(a, 1 + SPAWN.MATE_REACH * spawnF[a.species]);   // in season, spawners gather → mates are found further off
         if (m) {
           // sexual: a FEMALE and a MALE (partner chosen by condition/traits); crossover of both genomes + mutation.
@@ -1660,14 +1793,29 @@ export class World {
           // a nest-guarding species spawns ON THE BOTTOM where the pair meets (a fanned-out nest); the MALE guards it (as
           // male bass, sunfish, bullheads and fathead minnows do)
           const mx = (a.x + b.x) / 2, nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
-          const nSch = larvae >= 1 ? Math.min(FRY.MAX_PER_SPAWN, Math.ceil(larvae / FRY.PATCH_N), Math.max(0, scaleCount(FRY.CAP) - this.fry.length)) : 0;
+          // schools: up to MAX_PER_SPAWN, while the lake (CAP) and the species (SP_SHARE of it) have free slots — else the
+          // larvae join the species' youngest school if it is under MERGE_DAYS old (its genome kept or replaced in
+          // proportion to the fish each side brings: one seeded draw), or are lost
+          const cap = scaleCount(FRY.CAP);
+          const nSch = larvae >= 1 ? Math.min(FRY.MAX_PER_SPAWN, Math.ceil(larvae / FRY.PATCH_N), Math.max(0, cap - this.fry.length), Math.max(0, Math.ceil(cap * FRY.SP_SHARE) - fryN[a.species])) : 0;
+          if (larvae >= 1 && nSch === 0) {
+            let yg = null; for (const q of this.fry) if (!q.dead && q.k === a.species && q.age < FRY.MERGE_DAYS * BIOE.DAY && (!yg || q.age < yg.age)) yg = q;
+            if (yg) {
+              const tot = yg.n + larvae;
+              yg.W = (yg.n * yg.W + larvae * stdWeight(sp.lw, sp.Lhatch)) / tot; yg.L = Math.min(yg.L, lengthFor(sp.lw, yg.W));
+              if (rand() < larvae / tot) { yg.w = mutate(crossover(a.g, b.g)); yg.gn = mutateGenes(crossoverGenes(a.genes, b.genes)); yg.gen = Math.max(a.gen, b.gen) + 1; }
+              yg.n = tot; this.stats.spawned = (this.stats.spawned || 0) + 1;
+            }
+          }
           for (let ci = 0; ci < nSch; ci++) {
             const hue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = nest ? broodPos(nest.x, nest.y) : broodPos(mx, (a.y + b.y) / 2);
             const f = this._mkFry(a.species, bp.x, bp.y, larvae / nSch, Math.max(a.gen, b.gen) + 1, hue, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)));
             if (nest) { f.ni = mal.id; f.nx = nest.x; f.ny = nest.y; }
-            this.fry.push(f); this.stats.spawned = (this.stats.spawned || 0) + 1;
+            this.fry.push(f); fryN[a.species]++; this.stats.spawned = (this.stats.spawned || 0) + 1;
+            if (f.gen > this.maxGen) this.maxGen = f.gen;   // a new generation exists from the moment it hatches
           }
-          if (nest && nSch > 0) { mal.nt = sp.nestGuard; mal.nx = nest.x; mal.ny = nest.y; }
+          if (nest && nSch > 0) { mal.nt = sp.nestGuard; mal.nx = nest.x; mal.ny = nest.y; guards.set(mal.id, mal); }   // (on duty from now: its fry look it up this step)
+          if (larvae >= 1) { const sb = this.stats.spawns || (this.stats.spawns = {}); sb[a.species] = (sb[a.species] || 0) + 1; }   // spawnings per species
         }
         // (no mate in reach → no spawning. Fish reproduce only sexually; the old asexual "budding" fallback — which made
         // nearly every young bass, pike, carp, catfish and sunfish a clone-bud of an immigrant adult — is gone. Sparse
@@ -1720,6 +1868,7 @@ export class World {
         const f = makeAgent(key, ex, zoneY(sp, ex), rand(BIOE.K_START[0], BIOE.K_START[1]),
           src.gen, (src.hue + gauss() * 8 + 360) % 360, mutate(src.w), rand(sp.matureAge, sp.matureAge * 1.8), mutateGenes(src.gn));
         f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6); f.mateCd = 0;   // arrives ready to spawn in season
+        if (f.mature) f.gon = (f.sex === 0 ? sp.gsiF : sp.gsiM) * f.W;
         f.immigrant = true; counts[key]++; liveTotal++; newborns.push(f); this.stats.immigrants[key]++;
         if (f.gen > this.maxGen) this.maxGen = f.gen;
       };
@@ -1734,9 +1883,12 @@ export class World {
         }
       }
       // quasi-extinction refuge: a tiny last-resort backstop so a species never literally vanishes (≪ the old floor)
-      while (counts[key] < IMMIGRATION.REFUGE && liveTotal < WORLD.GLOBAL_MAX) immigrate();
+      // (per species: an apex predator's refuge and rescue threshold are lower — a slice of lake this size feeds one or two
+      // pike, and a backstop of more would eat out the forage base — species.js pop.refuge / pop.rescue)
+      const refuge = Math.min(IMMIGRATION.REFUGE, sp.pop.refuge ?? Infinity), rescueN = Math.min(IMMIGRATION.RESCUE_N, sp.pop.rescue ?? Infinity);
+      while (counts[key] < refuge && liveTotal < WORLD.GLOBAL_MAX) immigrate();
       // rarity rescue: a stochastic trickle, engaging only when genuinely rare, tapering to 0 at RESCUE_N
-      const deficit = 1 - counts[key] / IMMIGRATION.RESCUE_N;
+      const deficit = 1 - counts[key] / rescueN;
       if (deficit > 0 && liveTotal < WORLD.GLOBAL_MAX && rand() < IMMIGRATION.RATE * deficit * dt) immigrate();
     }
 
@@ -1899,6 +2051,7 @@ export class World {
           ro: a.rO2 || undefined,   // v27 last respiration (g O₂/s) — the env charges it at the start of the next step
           mi: a.missCd > 0 ? a.missCd : undefined,   // v27 recovery time left after a missed strike
           xo: a.xo, xt: a.xt,                         // v27 the O₂ / temperature it has experienced (hours-scale exposure)
+          ua: a.uAvg,                                 // v27 its ~1-day mean swimming effort (the activity cost)
           id: a.id, mc: a.mateCd, ts: a.turnSmooth, th: a.thrustSmooth, vh: a.velHeading, st: a.stroke,   // resume state (vh/st absent until first stepped)
           ac: [act.turn, act.thrust, act.strike, act.flee, act.hide],                                        // last action intents
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`
@@ -1922,7 +2075,7 @@ export class World {
       dflies: this.dflies.map(d => ({ x: d.x, vx: d.vx, l: d.life, ph: d.ph })),
       herps: this.herps.map(h => ({ k: h.k, x: h.x, y: h.y, vx: h.vx, a: h.age, e: h.e, s: h.st, t: h.t, c: h.cd, d: h.dev })),
       // v27 young-of-year fry schools
-      fry: this.fry.map(f => ({ k: f.k, x: f.x, y: f.y, n: f.n, L: f.L, W: f.W, a: f.age, g: f.gen, hu: f.hue, w: Array.from(f.w), gn: Array.from(f.gn), vx: f.vx, ni: f.ni || undefined, nx: f.nx, ny: f.ny })),
+      fry: this.fry.map(f => ({ k: f.k, x: f.x, y: f.y, n: f.n, L: f.L, W: f.W, a: f.age, g: f.gen, hu: f.hue, w: Array.from(f.w), gn: Array.from(f.gn), vx: f.vx, ni: f.ni || undefined, nx: f.nx, ny: f.ny, tk: f.tk, tx: f.tx, ty: f.ty, ro: f.rO2, p: f.p })),
       genePool: Object.fromEntries(SPECIES.map(k => [k, (this.genePool[k] || []).map(e => ({ w: Array.from(e.w), gn: Array.from(e.gn), hu: e.hue, g: e.gen }))])),
     };
   }
