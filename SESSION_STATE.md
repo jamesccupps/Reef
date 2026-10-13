@@ -74,8 +74,18 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - Tests: many headless checks rewritten to the new calendar/model (setDate dates, temperature spawning, no budding,
   total-P inflow A/B, thermal-stress scaling); NEW realism block (climate, ice form/melt/seal, under-ice O₂ profile,
   Blackman, dark survival, diatoms, nest guarding, digestion, gene flow, loon, perch, founders).
-- OPEN — balance A/B for the effSize change (3 seeds × 2 yr verify/deaths.mjs; baseline runs predate it); judge winter
-  mortality of sunfish/perch/catfish (sunfish 124 → 17–34 by May). Then gate green, browser visual check, merge, backup.
+- Session-2 behaviour fixes: SPAWN.KEEP 0.25 (clutch paid from the surplus above a reserve → condition-dependent; 0.5
+  halved recruitment of slow breeders); immigrants arrive with mateCd 0; nest guardians ignore their own fry as
+  "intruders" (notOwnBrood), hover over the nest (BROOD.HOVER) and tether harder (GUARD_TETHER 2.5); a migrating
+  spawner's depth-keeping keeps its migration direction (`mig`); season names are meteorological (Dec–Feb winter);
+  UI day/dawn/night from the sun's height (env.sun), not the light under cloud/ice; primeSeason hypolimnion follows the
+  seasonal phase (~6 → 15 °C through summer, ~5 under ice).
+- Balance, 3 seeds × 2 yr (verify/deaths.mjs; census at mid-May yr 3 = the pre-spawn low): every species persists and
+  breeds in its own season; predation is the main death cause of small fish. Baseline (old effSize, no KEEP): minnow
+  254–332, sunfish 43–60, perch 2–13, catfish 9–17, carp 15–23, bass 6–15, pike 7–16. KEEP 0.25 + small juveniles:
+  sunfish 8–56, perch 2–10, catfish 4–7, carp 4–13, bass 12–19, pike 3–12. Weak spots: PERCH decline in every run
+  (74 → 2–13; spring starvation + heavy predation on young), sunfish/catfish/carp low in some seeds. A final run with the
+  nest-guard fixes is verify/deaths_fin_s*.txt.
 - Scratchpad verify scripts (session-local; recreate if lost): recruit.mjs, deaths.mjs (deaths by cause×season incl.
   loon), energy.mjs (per-species energy budget), climate.mjs (monthly lake table), o2sinks2.mjs (winter O₂ sinks),
   hypwhere.mjs, shelfo2.mjs, profile.mjs, o2budget.mjs (O₂ budget by process from a snapshot), iceprof.mjs (per-row

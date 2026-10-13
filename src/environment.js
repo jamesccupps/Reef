@@ -64,6 +64,7 @@ export class Environment {
     this.year = 0;                 // years elapsed (fractional)
     this.ice = 0;                  // lake ice cover 0..1 (ICE): forms near 0 °C, blocks light, wind and re-aeration
     this.lightDay = 1;             // today's clear-sky noon light under the ice (derived each step: the algae's light climate)
+    this.sun = 0;                  // clear-sky sun height 0..1 (derived each step; display only)
     this.strat = 0;               // thermal stratification strength 0..1 (1 = strong summer)
     this.wind = 0; this._windT = 0;// signed surface current (px/s)
     this.turbidity = TURBIDITY.BASE; // water murk 0..1 (algae + sediment)
@@ -386,12 +387,14 @@ export class Environment {
   flowAt(y) { return FLOW.SPEED * (1 - 0.5 * clamp(y / H, 0, 1)); }
   // total horizontal current a drifter feels = wind (surface) + through-flow
   currentAt(x, y) { return this.windAt(y) + this.flowAt(y); }
+  // meteorological seasons on the calendar (year-fraction 0 = March 1): spring Mar–May, summer Jun–Aug, autumn Sep–Nov,
+  // winter Dec–Feb (the climate's ~0 °C January and ~25 °C late July sit in the middle of winter and summer)
   seasonName() {
     const p = ((this.year % 1) + 1) % 1;
-    return p < 0.125 || p >= 0.875 ? 'Spring' : p < 0.375 ? 'Summer' : p < 0.625 ? 'Autumn' : 'Winter';
+    return p < 0.25 ? 'Spring' : p < 0.5 ? 'Summer' : p < 0.75 ? 'Autumn' : 'Winter';
   }
-  // calendar month (a year = 12 months). Display-only; aligned so month 0 = March (mid-spring, frac 0), summer
-  // around the thermal peak. Functional seasonal timing (spawning) keys off the continuous year-fraction, not this.
+  // calendar month (a year = 12 months), month 0 = March. Display-only: seasonal timing in the sim (spawning, ice,
+  // temperature) keys off the continuous year-fraction and the water temperature, not this.
   monthIndex() { return Math.floor((((this.year % 1) + 1) % 1) * 12) % 12; }   // 0..11
   monthName() { return MONTHS[this.monthIndex()]; }
   // continuous fraction through the current year [0,1) — the precise clock seasonal behaviour keys off
@@ -403,7 +406,10 @@ export class Environment {
     this.year = time / SEASON.YEAR_LEN;
     const surf = Math.max(0.3, ENV.TEMP_BASE + SEASON.TEMP_AMP * Math.sin((this.year - SEASON.TEMP_PHASE) * TAU));
     this.tempC = surf; this.tempDiel = 0; this.tempNorm = clamp(surf / 26, 0, 1);
-    this.tempHypo = Math.max(4, surf > 10 ? surf - 7 : surf);
+    // the hypolimnion keeps roughly its spring-turnover temperature and warms slowly through the stratified season (~6 →
+    // ~15 °C by September, as the full model runs), is mixed with the surface through autumn, and sits ~5 °C under ice
+    const yfp = ((this.year % 1) + 1) % 1;
+    this.tempHypo = surf <= 4 ? 5 : yfp < 0.6 ? Math.min(surf, 6 + 9 * clamp((yfp - 0.1) / 0.45, 0, 1)) : Math.max(4, Math.min(surf, 15));
     this.ice = surf < ICE.FORM_T ? 1 : 0;
     this.strat = Math.max(clamp((surf - this.tempHypo - 1) / 6, 0, 1) * (1 - this.ice), ICE.STRAT * this.ice);
   }
@@ -419,6 +425,7 @@ export class Environment {
     const cover = ENV.CLOUD_COVER[this.weather];
     this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover) * (1 - ICE.LIGHT_CUT * this.ice);
     this.lightDay = sun.noon * (1 - ICE.LIGHT_CUT * this.ice);
+    this.sun = daylight(this.t, sun.dayFrac);   // clear-sky sun height 0..1 (display: day/dawn/night whatever the cloud or ice)
 
     // --- weather state machine ---
     if (!this.forced) {

@@ -51,6 +51,9 @@ export const SPAWN = {
   EDGE: 1.5,        // °C soft edge on each side of a species' spawning window
   SEASON_END: 0.5,  // year-fraction (Sept 1) after which nothing spawns (the autumn cooling path)
   MATE_REACH: 2.5,  // in season the mate-search radius grows to ×(1 + this): spawners aggregate and court over a wider area
+  KEEP: 0.25,       // a spawner keeps this fraction of its reproEnergy in reserve: the clutch is paid from the SURPLUS above it,
+                    //   so a well-fed pair spawns a bigger clutch than a lean one and neither spawns itself to starvation (0.5
+                    //   halved recruitment: catfish/carp/pike fell to 2–9 by year 3 over 3 seeds — too costly for the slow breeders)
   // spawning AGGREGATION (species with innate.spawnGround): in season, breeding-ready adults migrate to the littoral
   // spawning ground on their side of the lake so a sparse population can find mates (world.js innate block)
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
@@ -88,7 +91,8 @@ export const BROOD = {
   // much harder to catch (PROTECT shrinks a predator's strike reach there).
   GUARD_R: 60,          // px: the guarded zone around the nest
   PROTECT: 0.8,         // strike-reach cut on a guarded fry inside the zone while its guardian is there
-  GUARD_TETHER: 1.4,    // steer weight pulling a guardian back to its nest
+  GUARD_TETHER: 2.5,    // steer weight pulling a guardian back to its nest (outweighs a brain's full turn once ~half-way out)
+  HOVER: 0.3,           // a guardian on station with no intruder slows to this × its cruise (hovering/fanning over the nest)
   FRY_TETHER: 0.9,      // steer weight keeping guarded fry near the nest
   // NURSERY: young fish shelter in vegetation and structure (the littoral nursery habitat), more so when frightened
   NURSERY: 0.45,        // cover-seeking steer weight for juveniles (age < half their maturity), × (1 + fear)

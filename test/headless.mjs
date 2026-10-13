@@ -1194,7 +1194,9 @@ function plantsAtSeason(yearFrac) {
   return { biomass: live.reduce((s, p) => s + p.biomass, 0), count: live.length, meanH: live.length ? live.reduce((s, p) => s + p.height, 0) / live.length : 0 };
 }
 const summerPl = plantsAtSeason(0.40), winterPl = plantsAtSeason(0.88);
-check('macrophytes are SEASONAL: summer biomass far exceeds winter (warm-season growth → cold-season die-back)', summerPl.biomass > winterPl.biomass * 1.5, `summer ${summerPl.biomass.toFixed(1)} (h${summerPl.meanH.toFixed(0)}) vs winter ${winterPl.biomass.toFixed(1)} (h${winterPl.meanH.toFixed(0)})`);
+// per-plant standing crop (mean height): the bed COUNT differs for another reason — light-starvation thins a turbid summer
+// bed while dormant winter rootstock can't starve — so compare how tall the plants stand, not how many there are
+check('macrophytes are SEASONAL: summer plants stand far taller than the winter rootstock (warm-season growth → cold-season die-back)', summerPl.meanH > winterPl.meanH * 1.5, `summer ${summerPl.biomass.toFixed(1)} (h${summerPl.meanH.toFixed(0)}) vs winter ${winterPl.biomass.toFixed(1)} (h${winterPl.meanH.toFixed(0)})`);
 check('macrophytes OVERWINTER as rootstock — senescence floors above the uproot height, so beds are not extirpated', winterPl.count > 0 && winterPl.meanH < summerPl.meanH, `${winterPl.count} plants overwinter at mean height ${winterPl.meanH.toFixed(1)} (< summer ${summerPl.meanH.toFixed(1)})`);
 // MACROPHYTE VARIETIES — multiple real growth forms, zonated by rooting depth
 seed(444); const vw = new World();
@@ -1434,7 +1436,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
   const rb = new World(); rb.load(JSON.parse(rsnap));
   const rbRound = JSON.stringify(rb.toJSON()) === rsnap;
   for (let i = 0; i < 600; i++) rb.step(DTI);
-  check('save v24 → load → step 600 is BYTE-IDENTICAL to the uninterrupted run (faithful resume: RNG, ids, cooldowns, smoothing, momentum, stroke, learned W2, corpses, env means …)', rbRound && rA === JSON.stringify(rb.toJSON()), `${ra.agents.length} agents, ${JSON.parse(rsnap).corpses.length} corpses in the snapshot, round-trip ${rbRound}`);
+  check('save v25 → load → step 600 is BYTE-IDENTICAL to the uninterrupted run (faithful resume: RNG, ids, cooldowns, smoothing, momentum, stroke, learned W2, corpses, env means …)', rbRound && rA === JSON.stringify(rb.toJSON()), `${ra.agents.length} agents, ${JSON.parse(rsnap).corpses.length} corpses in the snapshot, round-trip ${rbRound}`);
 
   // (4) constructing (and stepping) an unrelated World mid-run does not perturb an existing one (per-world ids). The
   // seeded RNG is one shared stream, so the probe preserves it around the intruder — what's tested is world isolation.
@@ -1539,7 +1541,8 @@ console.log('\n— audit fixes: bio-ecology —');
     const pr = cw.qPrey(adult), th = cw.qThreat(baby);
     const postGrace = !!pr && pr.item === baby && !!th && th.item === adult && cw.takePrey(adult) === baby;
     check('brood grace: a conspecific newborn is not prey (nor its parent its threat) for BROOD.GRACE s; afterwards real cannibalism is possible and the juvenile SENSES the cannibal (symmetric qThreat)', graceSafe && postGrace, `grace ${BROOD.GRACE}s: safe ${graceSafe}, post-grace eaten+sensed ${postGrace}`);
-    const minnow = cw.makeFish('minnow', ONES, 0); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
+    // (a perch newborn: a minnow fry is below the size a pike bothers with — FEED.PREY_MIN)
+    const minnow = cw.makeFish('perch', ONES, 0); minnow.x = 900; minnow.y = 310; cw.agents = [adult, minnow]; cw.agentGrid.rebuild(cw.agents);
     check('the grace is kin-only: another species\' newborn is still prey', !!cw.qPrey(adult) && cw.qPrey(adult).item === minnow); }
   // in a running lake: no conspecific is eaten inside its grace (before the fix bass/pike ate ~half their brood within 2 s)
   { seed(99); const rw = new World(); const kills = { young: 0, any: 0 }, orig = rw.takePrey.bind(rw);
@@ -1874,6 +1877,7 @@ console.log('\n— spawning aggregation —');
     try {
       seed(907); const tw = new World().setDate(0.10); tw.agents = [];
       const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pk.x = 0.4 * WORLD.W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0; pk.energy = pk.sp.reproEnergy;
+      pk.g.fill(0); pk.lw.fill(0);   // a neutral brain: a random one's turning bias can cancel the reflex in a 4-s probe
       tw.agents.push(pk);
       for (let i = 0; i < 120; i++) { pk.energy = Math.max(pk.energy, pk.sp.reproEnergy); tw.step(1 / 30); }   // keep it in breeding condition
       return Math.abs(pk.x - 0.09 * WORLD.W);
@@ -1939,7 +1943,7 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
   noImmigrants(() => {
     seed(5153); const nw = new World().setDate(0.25); nw.agents = [];
     const p = nw.makeFish('bass', ONES7, SP.bass.matureAge + 10), q = nw.makeFish('bass', ONES7, SP.bass.matureAge + 10);
-    p.x = 1700; q.x = 1706; p.y = q.y = 0.5 * bedY(1700); p.energy = q.energy = SP.bass.energyCap; p.mateCd = q.mateCd = 0;
+    p.x = 1700; q.x = 1706; p.y = q.y = bedY(1700) - 12; p.energy = q.energy = SP.bass.energyCap; p.mateCd = q.mateCd = 0;   // nest-guarders spawn on the bottom, over the nest
     nw.agents.push(p, q); nw.agentGrid.rebuild(nw.agents);
     for (let i = 0; i < 300 && !(p.nt > 0 || q.nt > 0); i++) nw.step(1 / 30);
     const guard = p.nt > 0 ? p : q.nt > 0 ? q : null, fry = guard ? nw.agents.filter(a => a.ni === guard.id) : [];

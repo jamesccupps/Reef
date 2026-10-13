@@ -50,7 +50,7 @@ function canPreyFn(pred, prey) {
 }
 const isThreatTo = (it, a) => canPreyFn(it, a);
 const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
-const notSelf = (it, a) => it !== a && !it.dead;
+const notOwnBrood = (it, a) => it !== a && !it.dead && it.ni !== a.id;   // a nest guardian's intruder: any piscivore but its own fry
 const isLoonPrey = it => !it.dead && effSize(it) * (it.bodyMul || 1) <= BIRD.PREY_MAX;   // what a loon can swallow
 const isPreyOf = (it, a) => canPreyFn(a, it);
 const isMateFor = (it, a) => !it.dead && it !== a && it.species === a.species && it.age >= it.sp.matureAge && it.energy >= it.sp.reproEnergy && it.mateCd <= 0 && !it._mated;
@@ -945,9 +945,22 @@ export class World {
           }
         }
         if (o2Here < o2Want) prefY = Math.min(prefY, a.y - 20 - 60 * clamp((o2Want - o2Here) / o2Want, 0, 1));
+        // SPAWNING AGGREGATION target (applied below): in its spawning season a breeding-ready adult migrates to the
+        // littoral spawning ground — ONE per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf), so a sparse
+        // population converges where mates can find each other, as real pike do on a traditional spawning marsh
+        let mig = null;
+        if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy * SPAWN.AGG_READY) {
+          const side = sp.spawnSide || (a.x < W * 0.5 ? -1 : 1);
+          const gx = side < 0 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
+          const gy = clamp(gb * 0.6, 8, gb - 8);
+          mig = { gx, gy, d: Math.hypot(gx - a.x, gy - a.y) };
+        }
         const vBias = clamp((prefY - a.y) / 120, -1, 1);
         if (Math.abs(vBias) > 0.05) {
-          const desired = Math.atan2(vBias, Math.cos(a.heading) >= 0 ? 0.7 : -0.7);   // keep heading-ish, bias toward home depth
+          // keep heading-ish (or, migrating, toward the spawning ground — else depth-keeping pins a fish that must turn
+          // back through the vertical), biased toward the home depth
+          const hx = mig && mig.d > 30 ? (mig.gx < a.x ? -0.7 : 0.7) : Math.cos(a.heading) >= 0 ? 0.7 : -0.7;
+          const desired = Math.atan2(vBias, hx);
           a.heading += angDiff(desired, a.heading) * a.maxTurn * IN.depthPull * Math.abs(vBias) * dt;
         }
         // ease activity toward the species' cruise norm — nocturnal species (catfish) crank it up at night
@@ -975,26 +988,20 @@ export class World {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);   // prey bearing relative to the body heading
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.pursuit * a.act.in[2] * dt;
         }
-        // SPAWNING AGGREGATION: in its spawning season a breeding-ready adult migrates to the littoral spawning ground on
-        // its side of the lake (bass nest in the shallows, pike/carp spawn in flooded weed margins, catfish nest in shallow
-        // cavities) — so a SPARSE population concentrates where mates can find each other. Innate + deterministic; the
-        // brain modulates it like the other reflexes, and it switches off out of season or once the fish is spent.
-        if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && a.age >= sp.matureAge && a.energy >= sp.reproEnergy * SPAWN.AGG_READY) {
-          // ONE spawning ground per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf) — a sparse population
-          // has to converge on the same place to find mates, as real pike do on a traditional spawning marsh
-          const side = sp.spawnSide || (a.x < W * 0.5 ? -1 : 1);
-          const gx = side < 0 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
-          const gy = clamp(gb * 0.6, 8, gb - 8), d = Math.hypot(gx - a.x, gy - a.y);
-          if (d > 30) a.heading += angDiff(Math.atan2(gy - a.y, gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(d / 300, 0.2, 1) * dt;
-        }
+        // SPAWNING AGGREGATION (target `mig` above): bass nest in the shallows, pike/carp spawn in flooded weed margins,
+        // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
+        // switches off out of season or once the fish is spent.
+        if (mig && mig.d > 30) a.heading += angDiff(Math.atan2(mig.gy - a.y, mig.gx - a.x), a.heading) * a.maxTurn * IN.spawnGround * clamp(mig.d / 300, 0.2, 1) * dt;
         // NEST GUARDING: a guarding parent holds station over its nest and drives off any piscivore that comes into the
         // guarded zone (it turns on the intruder); its fry stay close while it's on duty. Off duty (time up, or the
         // guardian is gone) the fry disperse on their own.
         if (a.nt > 0) {
           a.nt = Math.max(0, a.nt - dt);
-          const intr = this.agentGrid.sub.nearest(a.nx, a.ny, BROOD.GUARD_R, notSelf, a);
+          const intr = this.agentGrid.sub.nearest(a.nx, a.ny, BROOD.GUARD_R, notOwnBrood, a);
           const tx = intr ? intr.item.x : a.nx, ty = intr ? intr.item.y : a.ny, dd = Math.hypot(tx - a.x, ty - a.y);
           if (dd > (intr ? 4 : BROOD.GUARD_R * 0.35)) a.heading += angDiff(Math.atan2(ty - a.y, tx - a.x), a.heading) * a.maxTurn * BROOD.GUARD_TETHER * clamp(dd / 60, 0.3, 1) * dt;
+          // on station with no intruder it HOVERS over the nest (fanning the eggs, as guarding males do), not cruising off
+          if (!intr && dd < BROOD.GUARD_R) thrust += (IN.cruise * BROOD.HOVER - thrust) * 0.7;
         }
         if (a.ni) {
           const g = guards.get(a.ni);
@@ -1150,14 +1157,14 @@ export class World {
           // sexual: crossover of both parents' genomes + mutation (partner chosen by trait/condition).
           // CLUTCH (condition-dependent fecundity): a well-fed pair produces SEVERAL young — real fish are highly
           // fecund, which is what lets the slow-maturing larger species self-sustain. Each young costs BOTH parents
-          // reproCost, so the brood is bounded by the leaner parent's energy (only well-fed fish afford a big clutch),
+          // reproCost, paid from the leaner parent's surplus above a reserve (SPAWN.KEEP) — only well-fed fish afford a big clutch —
           // by the species' `clutch` max, and by the global headroom (never overshoots the cap). The logistic gate
           // above already throttles breeding near K, so clutches mostly accelerate sparse-population recovery.
           const b = m.item;
           a.mateCd = sp.matingCooldown; b.mateCd = sp.matingCooldown; a._mated = true; b._mated = true;
           const dh = ((b.hue - a.hue + 540) % 360) - 180;
           const headroom = WORLD.GLOBAL_MAX - (this.agents.length + newborns.length);
-          const clutch = Math.max(1, Math.min(sp.clutch, Math.floor(Math.min(a.energy, b.energy) / sp.reproCost), headroom));
+          const clutch = Math.max(1, Math.min(sp.clutch, Math.floor((Math.min(a.energy, b.energy) - SPAWN.KEEP * sp.reproEnergy) / sp.reproCost), headroom));
           // a nest-guarding species spawns ON THE BOTTOM where the pair meets (a fanned-out nest), and parent `a` guards it
           const mx = (a.x + b.x) / 2, nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
           for (let ci = 0; ci < clutch; ci++) {
@@ -1212,7 +1219,7 @@ export class World {
         const fromLeft = rand() < 0.5, ex = fromLeft ? rand(2, 28) : rand(W - 28, W - 2);
         const f = makeAgent(key, ex, zoneY(sp, ex), rand(sp.startEnergy[0], sp.startEnergy[1]),
           src.gen, (src.hue + gauss() * 8 + 360) % 360, mutate(src.w), rand(sp.matureAge, sp.matureAge * 1.8), mutateGenes(src.gn));
-        f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6);
+        f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6); f.mateCd = 0;   // arrives ready to spawn in season
         f.immigrant = true; counts[key]++; liveTotal++; newborns.push(f); this.stats.immigrants[key]++;
         if (f.gen > this.maxGen) this.maxGen = f.gen;
       };
