@@ -169,7 +169,8 @@ export const ICE = {
   MELT: 0.05,      // /s melt rate while warm
   LIGHT_CUT: 0.6,  // fraction of daylight blocked at full cover (clear ice with patchy snow: enough light gets through
                    //   for cold-adapted diatoms to photosynthesize — a real under-ice O₂ source)
-  STRAT: 0.55,     // stratification strength under full ice (calm, inverse) — damps vertical mixing
+  STRAT: 0.85,     // stratification strength under full ice (calm, inversely stratified, no wind) — vertical mixing is weak,
+                   //   so the deep water runs down on its own while the upper water keeps the under-ice photosynthesis
 };
 export const THERMAL = {
   EPI_FRAC: 0.28,      // top fraction of the column = epilimnion (warm, well-mixed)
@@ -264,7 +265,10 @@ export const PHYTO = {
                          // DOM). Was 0.08 while decay returned 0.609 → N was created ~7.6× faster than used and never limited.
   O2_PHOTO: 0.85,        // O₂ produced per (biomass × light)
   O2_RESP: 0.05,         // O₂ consumed per biomass, always (respiration + decomposition)
-  DECAY: 0.06,           // /s natural die-off (returns ALL its N+P)
+  DARK_RESP: 0.15,       // respiration fraction kept by algae in a dark light climate (below the photic zone / under snowy ice):
+                         //   starved cells cut their metabolism to ~10–20 % (dark survival) instead of respiring at full rate
+  RESP_IK: 0.1,          // day-peak light at which respiration is fully active (night in the photic zone still respires fully)
+  DECAY: 0.06,          // /s natural die-off (returns ALL its N+P)
   RECYCLE: 0.7,          // fraction of decayed biomass whose N+P returns directly as ammonium+phosphate; the rest
                          // (1−RECYCLE) dissolves into DOM for the microbial loop (was silently destroyed)
   BAND: 0.45,            // depth fraction of the photic band meanPhyto() averages over (where algae live)

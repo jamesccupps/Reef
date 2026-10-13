@@ -63,7 +63,8 @@ export class Environment {
     this.tempNorm = 0.5;
     this.year = 0;                 // years elapsed (fractional)
     this.ice = 0;                  // lake ice cover 0..1 (ICE): forms near 0 °C, blocks light, wind and re-aeration
-    this.strat = 0;                // thermal stratification strength 0..1 (1 = strong summer)
+    this.lightDay = 1;             // today's clear-sky noon light under the ice (derived each step: the algae's light climate)
+    this.strat = 0;               // thermal stratification strength 0..1 (1 = strong summer)
     this.wind = 0; this._windT = 0;// signed surface current (px/s)
     this.turbidity = TURBIDITY.BASE; // water murk 0..1 (algae + sediment)
     this.mask = buildWetMask();    // wet/dry cells (static: depends only on the basin config)
@@ -102,6 +103,9 @@ export class Environment {
   attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity); }
   // light reaching depth y (surface + turbidity attenuation)
   lightAtDepth(y) { return this.light * Math.exp(-this.attenuation() * (y / H)); }
+  // algal respiration activity at depth y: full where the day's peak light reaches PHYTO.RESP_IK (so night in the photic
+  // zone still respires fully), falling to PHYTO.DARK_RESP in a dark light climate (deep water, snowy ice) — dark survival
+  algaeRespAt(y) { return PHYTO.DARK_RESP + (1 - PHYTO.DARK_RESP) * Math.min(1, this.lightDay * Math.exp(-this.attenuation() * (y / H)) / PHYTO.RESP_IK); }
   // visual-range multiplier (turbid water shortens how far fish can see)
   clarity() { return clamp(1 - this.turbidity * TURBIDITY.SENSE, 0.35, 1); }
   // Secchi depth: depth (world px) at which light falls to ~10% of the surface
@@ -227,8 +231,8 @@ export class Environment {
   // SAME phosphate as green phyto (the competition), is BUOYANT (floats to a surface scum in calm water; storms
   // mix it down), produces/consumes O₂, shades the water, and is a net N SOURCE: its biomass N is fixed from N₂ and
   // returned on decay, plus a leak of fixed N to ammonium on growth (both tallied as ledger.fixN). Runs AFTER the
-  // DIATOMS (DIATOM): cold-water algae. Growth = GROW × light × Liebig nutrient × a cold-centred temperature window
-  // (best ~7 °C) — so they bloom in the bright, cold, freshly-mixed spring lake (and slowly under clear ice) — with
+  // DIATOMS (DIATOM): cold-water algae. Growth = GROW × min(light, a cold-centred temperature window (best ~7 °C)) ×
+  // Liebig nutrient — so they bloom in the bright, cold, freshly-mixed spring lake (and slowly under clear ice) — with
   // Redfield uptake like green algae; respiration and decay follow the Q10; decayed biomass recycles exactly as PHYTO's.
   // Once the lake STRATIFIES they sink (one row per step, × strat; mass-conserving, held at the bottom wet row where they
   // then decay) — the end of the spring bloom. Runs after cyano, before the means.
@@ -238,11 +242,12 @@ export class Environment {
     let sum = 0, cnt = 0;
     for (let cy = 0; cy < ROWS; cy++) {
       const y = (cy + 0.5) * CH, lit = this.lightAtDepth(y), T = this.tempAt(0, y);
-      const tf = clamp(1 - Math.abs(T - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), qP = Math.pow(PHYTO.Q10, (T - 20) / 10);
+      const tf = clamp(1 - Math.abs(T - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), qP = Math.pow(PHYTO.Q10, (T - 20) / 10), rA = this.algaeRespAt(y);
+      const pl = Math.min(lit, tf);   // Blackman: the temperature window caps the light-saturated rate; dim light is T-independent
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
         const b = dia[i], p = phos[i], a = nh4[i], nTot = a + no3[i];
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
-        let growth = DIATOM.GROW * lit * nLim * tf * (1 - b / PHYTO.CAP) * dt;
+        let growth = DIATOM.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
         if (growth * pU > p) growth = p / pU;
         if (growth * nU > nTot) growth = nTot / nU;
         if (growth < 0) growth = 0;
@@ -253,7 +258,7 @@ export class Environment {
         nh4[i] = a - upA + decay * R * nU;
         if (nNeed > upA) no3[i] -= nNeed - upA;
         dom[i] += decay * toDom;
-        o2[i] += (PHYTO.O2_PHOTO * b * lit - PHYTO.O2_RESP * b) * qP * dt;
+        o2[i] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * dt;
         if ((cy + 0.5) / ROWS < DIATOM.BAND) { sum += dia[i]; cnt++; }
       }
     }
@@ -413,6 +418,7 @@ export class Environment {
     const yf = this.yearFrac(), sun = seasonalSun(yf);
     const cover = ENV.CLOUD_COVER[this.weather];
     this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover) * (1 - ICE.LIGHT_CUT * this.ice);
+    this.lightDay = sun.noon * (1 - ICE.LIGHT_CUT * this.ice);
 
     // --- weather state machine ---
     if (!this.forced) {
@@ -501,13 +507,15 @@ export class Environment {
     let litSum = 0, litCount = 0;
     for (let cy = 0; cy < ROWS; cy++) {
       const frac = (cy + 0.5) / ROWS, lit = this.lightAtDepth((cy + 0.5) * CH), band = frac < PHYTO.BAND;
-      // algal metabolism follows temperature (Eppley-type Q10 ≈ 1.9 about 20 °C): growth, respiration and decay all slow
-      // in cold water — under winter ice the algae idle instead of respiring the sealed lake's O₂ away
-      const qP = Math.pow(PHYTO.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10);
+      // algal metabolism follows temperature (Eppley-type Q10 ≈ 1.9 about 20 °C): respiration, decay and the light-SATURATED
+      // photosynthesis (Pmax) slow in cold water, but LIGHT-LIMITED photosynthesis is photochemistry and barely depends on
+      // temperature (Blackman) — so under clear ice the dim-light algae still make O₂ while their respiration idles
+      const qP = Math.pow(PHYTO.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10), rA = this.algaeRespAt((cy + 0.5) * CH);
+      const pl = photoRate(lit, qP);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
         const b = ph[i], p = phos[i], a = nh4[i], nTot = a + no3[i];                                // available inorganic N
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));                  // Liebig minimum
-        let growth = PHYTO.GROW * qP * lit * nLim * (1 - b / PHYTO.CAP) * dt;
+        let growth = PHYTO.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
         if (growth * pU > p) growth = p / pU;                                                      // stoichiometric ceiling
         if (growth * nU > nTot) growth = nTot / nU;
         if (growth < 0) growth = 0;
@@ -519,7 +527,7 @@ export class Environment {
         nh4[i] = a - upA + decay * R * nU;
         if (nNeed > upA) no3[i] -= nNeed - upA;
         dom[i] += decay * toDom;
-        o2[i] += (PHYTO.O2_PHOTO * b * lit - PHYTO.O2_RESP * b) * qP * dt;
+        o2[i] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * dt;
         if (band) { litSum += ph[i]; litCount++; }   // algae density where it lives (the photic zone)
       }
     }
@@ -597,8 +605,9 @@ export class Environment {
     diffuse(this.phyto, tmp, PHYTO.DIFFUSE * dt, M);
 
     // turnover: when stratification has collapsed, vertical overturn brings oxygen-rich surface
-    // water down — relax the hypolimnion toward the epilimnion O₂ at a rate set by (1 − strat).
-    const overturn = clamp((1 - this.strat) * THERMAL.OVERTURN * dt, 0, 0.5);
+    // water down — relax the hypolimnion toward the epilimnion O₂ at a rate set by (1 − strat). It is WIND-driven, so
+    // the ice lid stops it (under ice the sealed column only diffuses: the deep water depletes, the top keeps its O₂).
+    const overturn = clamp((1 - this.strat) * (1 - this.ice) * THERMAL.OVERTURN * dt, 0, 0.5);
     if (overturn > 1e-4) {
       for (let cx = 0; cx < COLS; cx++) {
         const ref = (o2[cx] + o2[COLS + cx]) * 0.5;     // epilimnion reference
@@ -742,6 +751,11 @@ export class Environment {
 // which enters the two cells with opposite signs → the field total is conserved exactly (to float rounding). No flux
 // crosses the lake edges or the bed (no-flux boundaries; the old mean-of-neighbours stencil destroyed mass at edges).
 // Interior cells behave exactly as before. Dry cells are copied through untouched.
+// algal photosynthesis rate (relative) at light `lit` and temperature factor qP (Q10, 1 at 20 °C): Blackman-type —
+// LIGHT-LIMITED photosynthesis is photochemistry and nearly temperature-independent, only the light-SATURATED maximum
+// follows the Q10; above 20 °C the warm boost applies to the whole curve (the pre-existing summer calibration)
+export function photoRate(lit, qP) { return qP >= 1 ? lit * qP : Math.min(lit, qP); }
+
 function diffuse(field, tmp, k, M) {
   if (k <= 0) return;
   const c = Math.min(k, 0.5) * 0.25, { lo, hi, wet } = M;

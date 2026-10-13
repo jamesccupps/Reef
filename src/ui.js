@@ -141,6 +141,10 @@ export class UI {
       li.appendChild(swatch(SP[k].tag)); li.appendChild(textEl('span', '', SP[k].name));
       host.appendChild(li);
     }
+    // the visiting loon (a diving fish-eater, not a brain-driven fish — it has no chip or census row)
+    const li = document.createElement('li');
+    li.appendChild(swatch('#5d6b70')); li.appendChild(textEl('span', '', 'Loon (visitor)'));
+    host.appendChild(li);
   }
   // trophic biomass bars (fish roles) — build the rows once; frame() updates the widths/values
   _buildPyramid() {
@@ -428,6 +432,9 @@ export class UI {
     const ed = w.envDetail();
     set('env-o2deep', (ed.o2Deep * 100 | 0) + '%');
     set('env-strat', (ed.strat * 100 | 0) + '%' + (ed.strat > 0.5 ? ' ⬍' : ''));
+    set('env-ice', ed.ice > 0.01 ? (ed.ice * 100 | 0) + '%' : 'open');
+    set('env-diatom', (ed.diatom * 100 | 0) + '%');
+    set('env-birds', String(ed.birds));
     set('env-tempdeep', this.fmtTemp(ed.tempDeep, 1));
     set('env-nutrient', `N ${ed.nitrogen.toFixed(2)} · P ${ed.phosphate.toFixed(2)} (${ed.limiting}-lim)`);
     set('env-nitrate', (ed.nitrateFrac * 100 | 0) + '% NO₃');

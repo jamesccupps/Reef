@@ -45,7 +45,7 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
   by cause juvenile/adult) over ≥3 seeds and ≥2 years.
 
-**▶ REALISM STATUS (2026-10-12, before a context reset) — branch `realism` (WIP, gate NOT green; main/audit-fixes untouched):**
+**▶ REALISM STATUS (2026-10-12, session 2) — branch `realism` (WIP, gate NOT yet green; main/audit-fixes untouched):**
 - DONE in code: R1 climate (temp cycle, ice, seasonal sun, Q10 metabolism, temp-driven strat, hypo ≥ 4 °C, start date
   SEASON.START_YF 0.22, primeSeason); Q10 on phyto/cyano/diatom/nitrif/sediment+pelagic O₂/plant night resp; plant
   dormancy (PLANT.DORMANT_T); inflow plume + aerated inflow (FLOW.PLUME_*, O2_MIX); plant O₂ spread along the stem;
@@ -60,18 +60,27 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
   CYANO TEMP_OPT 25/TOL 11; R6 PERCH species (SP.perch, 'vbars' art, qLarva, TROPHIC 'mesopredator'), LOON (BIRD config,
   world.birds, _stepBirds, qThreat includes diving loon, render _drawBirds), ice rendering. Save v25 (ice, diatom, nest,
   dg, birds, genePool). smoke passes.
-- OPEN #1 — late-winter O₂ crash under ice (avg ~0.1 by March → bass/pike/minnow winterkill). Latest sink test (Jan
-  snapshot, 300 s): baseline 0.68→0.10; no phyto resp → 0.46 (BIGGEST), no microbes → 0.31, sediment/pelagic ~0.18,
-  nitrif/diatom small. Next: check PHYTO.O2_RESP vs where green phyto sits under ice (deep cells?) — real algae respire
-  ~10% of max photosynthesis; consider lowering O2_RESP or tying it to light-limited growth; then microbes.
-- OPEN #2 — balance (3 seeds × 2 yr via scratchpad verify/deaths.mjs): prey now OK (minnow ~330, sunfish ~100, catfish
-  ~30); predators thin (perch, bass ~2–3, pike 3–8) partly from the winter crash. Re-judge after #1.
-- THEN: fix headless tests to the new climate/model (turnover/storm/phyto/cyano-N:P/macrophyte-seasonal/resume/handling
-  checks failed on R1; expect more), add tests for ice, diatoms, nest guarding, digestion, gene pool, loon, perch; UI
-  (loon/ice/perch legend), docs (FEATURES, README, CLAUDE.md key facts), browser visual check, merge, G-drive backup.
+- FIXED #1 (2026-10-12, session 2) — under-ice O₂. Budget (verify/o2budget.mjs) showed the drains were (a) the wind-driven
+  overturn still running under ice (non-conservative relaxation toward the depleted surface) → × (1 − ice); (b) weak
+  under-ice mixing (ICE.STRAT 0.55 → 0.85, calm inverse stratification); (c) diatoms sinking into the dark deep and
+  respiring at full rate → dark survival (PHYTO.DARK_RESP 0.15, RESP_IK; env.algaeRespAt); (d) cold-suppressed
+  photosynthesis in dim light → Blackman photoRate (light-limited rate T-independent; Pmax ∝ Q10). Result (2 seeds × 2 yr):
+  avg O₂ Jan 0.8–1.2, Mar 0.4–0.7, deep anoxic under ice, upper water oxygenated; spring diatom bloom → May clear-water
+  phase → summer green → Aug cyano → autumn diatoms. All 7 species persist with seasonal cycles.
+- FIXED in session 2: founders started with rand(0, matingCooldown) → once-a-year spawners skipped the opening season
+  (now mateCd 0); a.feedAcc (cold foraging makes it fractional) was not saved → resume diverged (now `fa`, v25);
+  effSize 0.6+0.4·grow made newborns 74 % of adult length → never cannibalised (now 0.3+0.7·grow); spawnFactor exported
+  (pure); world.setDate(yf); UI ice/diatom/loon readouts + loon legend; CLAUDE.md/README/FEATURES updated.
+- Tests: many headless checks rewritten to the new calendar/model (setDate dates, temperature spawning, no budding,
+  total-P inflow A/B, thermal-stress scaling); NEW realism block (climate, ice form/melt/seal, under-ice O₂ profile,
+  Blackman, dark survival, diatoms, nest guarding, digestion, gene flow, loon, perch, founders).
+- OPEN — balance A/B for the effSize change (3 seeds × 2 yr verify/deaths.mjs; baseline runs predate it); judge winter
+  mortality of sunfish/perch/catfish (sunfish 124 → 17–34 by May). Then gate green, browser visual check, merge, backup.
 - Scratchpad verify scripts (session-local; recreate if lost): recruit.mjs, deaths.mjs (deaths by cause×season incl.
   loon), energy.mjs (per-species energy budget), climate.mjs (monthly lake table), o2sinks2.mjs (winter O₂ sinks),
-  hypwhere.mjs, shelfo2.mjs, profile.mjs.
+  hypwhere.mjs, shelfo2.mjs, profile.mjs, o2budget.mjs (O₂ budget by process from a snapshot), iceprof.mjs (per-row
+  under-ice profile), breedgate.mjs (why a species is not breeding), resume2.mjs (resume check — RNG is global: run the
+  original path FIRST, then load and replay).
 
 **▶ RESUME HERE (updated 2026-10-12, after the launcher + smoothness round):**
 - **Human feedback this round:** "doesn't seem very smooth or high fps", "looks blurry when fully zoomed out",

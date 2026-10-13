@@ -29,7 +29,10 @@ function zoneY(sp, x) {
 // this file, so the step body is untouched). A second World can no longer reset or share the first one's ids.
 let _idOwner = null;
 const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
-const effSize = a => a.size * (0.6 + 0.4 * (a.grow ?? 1)); // juveniles are smaller -> more vulnerable
+// a fish's effective (length) size: young fish are much smaller than adults, so a first-year fish fits the gape of its own
+// species' adults (real pike, perch and bass cannibalise their young-of-year); was 0.6 + 0.4·grow (a newborn at 74 % of adult
+// length could never be swallowed by its own kind)
+const effSize = a => a.size * (0.3 + 0.7 * (a.grow ?? 1));
 // thermal performance curve: 1 at/above the species' optimum, falling linearly to ENV.COLD_PERF_MIN at 2 °C
 // an action intent's ENGAGED intensity: 0 below ACTION.ENGAGE, rising linearly to 1 at full intent
 export const engaged = x => x > ACTION.ENGAGE ? (x - ACTION.ENGAGE) / (1 - ACTION.ENGAGE) : 0;
@@ -55,6 +58,13 @@ const PLANT_COL = 32;   // x-column width of the nearestPlant index (world px)
 // sub-lethal reproductive impairment from the contaminant body burden: 1 below TOX.REPRO_HARM, falling to 0 as the
 // burden rises (PCB/endocrine-style fecundity loss that bites before lethality). Inert when a.tox = 0 (a clean lake).
 export function toxFecundity(tox) { return tox > TOX.REPRO_HARM ? Math.max(0, 1 - TOX.REPRO_CUT * (tox - TOX.REPRO_HARM)) : 1; }
+// the spawning drive 0..1 of species `sp` at shore water temperature shoreT (°C) on year-fraction yf with ice cover `ice`:
+// 1 inside its window SP.spawnT, soft SPAWN.EDGE ramps either side; 0 on the autumn cooling path (yf ≥ SEASON_END) or under ice
+export function spawnFactor(sp, shoreT, yf, ice) {
+  if (yf >= SPAWN.SEASON_END || ice >= 0.5) return 0;
+  const [lo, hi] = sp.spawnT, e = SPAWN.EDGE;
+  return clamp((shoreT - lo + e) / e, 0, 1) * clamp((hi + e - shoreT) / e, 0, 1);
+}
 // guard a loaded/champion brain against the species' CURRENT network shape. The genome LENGTH identifies the save era
 // it came from (species.js BRAIN_ERAS, collision-free per species); an older era is MIGRATED by remapping every input
 // column / output row BY KEY (base inputs by position, generic extras + outputs by label) — so weights stay on the sensor
@@ -145,6 +155,7 @@ function parseSave(s) {
     const lw = !fit.reseeded && !fit.migrated ? numArr(a.lw, OUT * HID) : null;   // learned (plastic) W2 block — only for the brain it belongs to
     if (lw) ag.lw.set(lw, W2);
     if (isNum(a.dg) && a.dg > 0) ag.dg = clamp(a.dg, 0, 1e5);   // v25 digestion
+    if (isNum(a.fa) && a.fa > 0) ag.feedAcc = clamp(a.fa, 0, 1);   // v25 handling-time remainder (fractional in cold water)
     // v25 nest state (a fry whose guardian id isn't found simply goes off-duty at its next step)
     if (isNum(a.nt) && a.nt > 0 && isNum(a.nx) && isNum(a.ny)) { ag.nt = clamp(a.nt, 0, 1e5); ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
     if (Number.isSafeInteger(a.ni) && a.ni > 0 && isNum(a.nx) && isNum(a.ny)) { ag.ni = a.ni; ag.nx = clamp(a.nx, 0, W); ag.ny = clamp(a.ny, 0, H); }
@@ -374,7 +385,9 @@ export class World {
         const p = sp.spawnPos(rand);
         // a MIXED age structure, as a real lake has: ~60% adults of several year-classes, ~40% older juveniles
         const age = rand() < 0.6 ? rand(sp.matureAge, Math.max(sp.matureAge * 1.2, Math.min(sp.maxAge * 0.7, sp.matureAge * 3))) : rand(sp.matureAge * 0.3, sp.matureAge);
-        this.agents.push(makeAgent(key, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), 0, sp.randomHue(rand), null, age));
+        const f = makeAgent(key, p.x, zoneY(sp, p.x), rand(sp.startEnergy[0], sp.startEnergy[1]), 0, sp.randomHue(rand), null, age);
+        f.mateCd = 0;   // founders haven't spawned yet this year (the water-temperature window alone decides when they can)
+        this.agents.push(f);
       }
     }
     // the REGIONAL gene pool immigrants come from (connected waters' populations), per species — see the step's gene flow
@@ -389,6 +402,9 @@ export class World {
   }
 
   bedY(x) { return bedY(x); }   // world-y of the lake bed at x (for senses & rendering)
+  // jump a lake to a calendar date (year-fraction, 0 = March 1) with that season's thermal state, ice and stratification
+  // (tests and scenarios; setting `time` alone leaves the opening May water in place until it slowly relaxes)
+  setDate(yf) { this.time = yf * SEASON.YEAR_LEN; this.env.primeSeason(this.time); return this; }
 
   // static habitat structure: reed clumps on the shallow shores, submerged logs on the bed,
   // and mussel beds (benthic filter feeders) on the lit bed
@@ -851,11 +867,7 @@ export class World {
     // through summer — not on fixed calendar dates, and never on the autumn cooling path or under ice. Soft edges (SPAWN.
     // EDGE °C); 0 outside the season. A warm spring brings spawning forward, as in real lakes. Once per step for all.
     const yf = env.yearFrac(), spawnF = {}, shoreT = env.tempC - env.tempDiel;
-    const season = yf < SPAWN.SEASON_END && env.ice < 0.5 ? 1 : 0;
-    for (const k of SPECIES) {
-      const [lo, hi] = SP[k].spawnT, e = SPAWN.EDGE;
-      spawnF[k] = season * clamp((shoreT - lo + e) / e, 0, 1) * clamp((hi + e - shoreT) / e, 0, 1);
-    }
+    for (const k of SPECIES) spawnF[k] = spawnFactor(SP[k], shoreT, yf, env.ice);
 
     const newborns = [];
     for (const a of this.agents) {
@@ -1097,8 +1109,8 @@ export class World {
       }
       // HANDLING TIME (FEED.HANDLE): one discrete item per food type per HANDLE s — `slots` items this step (1 at the
       // browser's 1/60 step, 2 at the headless 1/30), so intake per SECOND doesn't depend on dt. Continuous grazing (the
-      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. The remainder is transient
-      // (always 0 at 1/60 and 1/30 → nothing to persist). Deterministic (no RNG).
+      // phyto fallback, plant bites) is a per-second rate × dt and counts `slots` meals. A cold fish forages more slowly
+      // (coldPerf), so the remainder can be fractional — it is saved (`fa`). Deterministic (no RNG).
       a.feedAcc = (a.feedAcc || 0) + dt / FEED.HANDLE * perf;   // a cold fish forages more slowly
       const slots = Math.floor(a.feedAcc + 1e-9); a.feedAcc = Math.max(0, a.feedAcc - slots);
       let k;
@@ -1265,6 +1277,7 @@ export class World {
       // which nutrient is limiting growth in the lit littoral (the bloom controller)?
       limiting: e.meanDin() / (e.meanDin() + NUTRIENT.KN) < e.meanPhos() / (e.meanPhos() + NUTRIENT.KP) ? 'N' : 'P',
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),
+      diatom: e.meanDiatom(), ice: e.ice, birds: this.birds.length,   // cold-water algae, lake ice cover, loons on the lake
     };
   }
   // depth-resolved water-column profile down the column at x (pure; consumed by the UI "Water column" view).
@@ -1305,7 +1318,7 @@ export class World {
   biomassByTrophic() {
     const out = { phytoplankton: this.env.meanPhyto(), cyanobacteria: this.env.meanCyano(), macrophyte: this.plants.reduce((s, p) => s + (p.dead ? 0 : p.biomass), 0), zooplankton: this.plankton.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.02,
       snail: this.snails.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.05, crayfish: this.cray.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.4 };   // benthic invertebrates (count × a nominal mass)
-    for (const a of this.agents) { const m = a.size * (0.6 + 0.4 * (a.grow ?? 1)); out[a.sp.trophic] = (out[a.sp.trophic] || 0) + m; }
+    for (const a of this.agents) { const m = effSize(a); out[a.sp.trophic] = (out[a.sp.trophic] || 0) + m; }
     return out;
   }
   // live counts of the non-fish biota (the resource base + benthic inverts) — for the food-web dashboard
@@ -1369,6 +1382,7 @@ export class World {
           lw: a.lw ? Array.from(a.lw.subarray(W2, W2 + OUT * HID)) : undefined,                           // learned policy: only W2 can differ from `w`
           // v25 nest state: a guardian's remaining duty `nt` + nest; a fry's guardian id `ni` + nest (absent = none)
           dg: a.dg > 0 ? a.dg : undefined,   // v25 digestion time left after a fish meal
+          fa: a.feedAcc > 0 ? a.feedAcc : undefined,   // v25 handling-time remainder (a cold fish forages slower → fractional)
           nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),

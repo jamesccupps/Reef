@@ -5,7 +5,49 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-11 audit-fix changes** section comes first. Where it disagrees with the older narrative after it, it wins. The narrative itself is kept as it was.
+The **2026-10-12 realism overhaul** section comes first, then the **2026-10-11 audit-fix changes**. Where either disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-12 realism overhaul (supersedes everything below)
+
+Goal (human): behave as much like a real temperate lake as possible, with evolution shown a bit faster than in nature. Save format is now **v25**.
+
+### Climate, ice and the water column (`environment.js`, config `SEASON`, `ICE`, `THERMAL`, `ENV`)
+- **Calendar.** Year-fraction 0 = March 1. Surface temperature T = `TEMP_BASE` 12.5 + `TEMP_AMP` 13 · sin(2π(yf − 0.17)): ~0 °C in January, ~25 °C around Aug 1. Day length and noon sun follow the solstice (`seasonalSun`). A new lake opens mid-May (`SEASON.START_YF`) with that season's thermal state (`env.primeSeason`); `world.setDate(yf)` jumps a lake to any date.
+- **Stratification** comes from the surface-to-hypolimnion temperature difference (hypolimnion never below 4 °C), so the lake stratifies in summer and turns over in spring and autumn (a dimictic lake).
+- **Ice** (`env.ice`) forms when the surface nears 0 °C and melts above `ICE.MELT_T`. It cuts `ICE.LIGHT_CUT` of the light, stops surface re-aeration, wind, storm-stirred sediment and the wind-driven overturn, and holds the column calm (`ICE.STRAT`).
+- **Biology follows temperature (Q10)**: fish metabolism (`ENV.METAB_Q10`), algae (`PHYTO.Q10`), nitrification and denitrification (`NCYCLE.Q10`), bacteria and sediment/water-column O₂ demand (`MICROBE.Q10`), plant respiration (`PLANT.RESP_Q10`). Plants go dormant below `PLANT.DORMANT_T` instead of starving.
+- **Under-ice oxygen** behaves like a real lake: the deep water runs out late in winter (sediment demand) while the upper water keeps its O₂ from the inflow and under-ice photosynthesis. The two algal-physiology rules that make this work:
+  - **Blackman photosynthesis** (`photoRate`): light-limited photosynthesis barely depends on temperature; only the light-saturated maximum follows the Q10. Dim under-ice light still makes O₂.
+  - **Dark survival** (`algaeRespAt`, `PHYTO.DARK_RESP`, `RESP_IK`): algae in a dark light climate (deep water, snowy ice) cut respiration to ~15 %. Night inside the photic zone still respires fully.
+- **Inflow** enters as a plume (`FLOW.PLUME_*`) of well-aerated water (`FLOW.O2_MIX`).
+
+### Producers (`environment.js`, config `DIATOM`, `PHYTO`, `CYANO`)
+- **Diatoms** (`env.diatom`, `diatoms()`): cold-water algae (best ~7 °C) that bloom in the bright, freshly mixed spring and autumn water and sink out once the lake stratifies. Same Redfield N/P bookkeeping as the green algae, included in the P/N inventories.
+- **Seasonal succession** that emerges: spring diatom bloom → May clear-water phase → summer green algae → late-summer cyanobacteria (warm, `CYANO.TEMP_OPT` 25, N-fixing) → autumn diatoms.
+- **Plants** spread mostly by runners (`PLANT.CLONAL`, `RUNNER`): clonal ramets near an established plant of the same form; the rest are seeds.
+
+### Fish life (`world.js`, `species.js`, config `FEED`, `SPAWN`, `BROOD`, `IMMIGRATION`)
+- **Life history in years** (`species.js` `yr()`, mature / max): minnow 0.5 / 2.5 yr, sunfish and perch 1 / 6, bass 1.5 / 8, pike 1.5 / 9, catfish 2 / 10, carp 2 / 12. A new lake starts with a mixed age structure. `TIME.LIFE_SCALE` is retired.
+- **Energetics.** Starvation time scales with size^0.75; juvenile metabolism ∝ mass^0.75. Fish only feed while they have room (`FEED.SATIATE`), and piscivores only hunt below `FEED.HUNT_BELOW`.
+- **Digestion** (`a.dg`, `FEED.MEAL_K`, `DIGEST`): a fish meal's energy and its digestion time both scale with the prey's mass relative to the predator's, faster in warm water. A digesting predator takes no new fish.
+- **Gape and juvenile size.** A predator can swallow prey up to 62 % of its length (`core.canEat`); young fish are much smaller than adults (`effSize` = size · (0.3 + 0.7·grow)), so adults can cannibalise young-of-year after the brief `BROOD.GRACE`.
+- **Spawning is set off by water temperature** (`SP.spawnT` window, `world.js spawnFactor`): pike just after ice-out (4–11 °C), perch (7–12), bass (15–21), minnow (16–26) and carp (17–24), sunfish (20–28) and catfish (21–28); minnows and sunfish spawn repeatedly through summer. There's no spawning on the autumn cooling path (`SPAWN.SEASON_END`) or under ice. Reproduction is sexual only (budding removed). Founders start with no mating cooldown.
+- **Nest guarding** (`sp.nestGuard`, `a.nt/nx/ny`, fry `a.ni`): a bass, sunfish or catfish guardian holds station over the nest and turns on intruders; fry inside the zone are hard to take (`BROOD.PROTECT`, `_guardCut`). Unguarded young shelter in cover (the nursery reflex), and all fry eat zooplankton first (`FEED.FRY_GROW`).
+- **Oxygen-limited habitat:** fish move up or toward the shelf when their water runs low on O₂.
+- **Gene flow** (`world.genePool`, `IMMIGRATION.POOL_N`, `EMIGRATE`): immigrants carry genomes from a regional pool of connected waters, not copies of the lake's best fish; emigrating adults slowly feed the pool. Immigration still only rescues rare species (`RESCUE_N`, `REFUGE`).
+- **Cold foraging.** A cold fish handles food more slowly (`coldPerf`). The fractional handling remainder is saved (`fa`).
+
+### New life
+- **Yellow perch** (`SP.perch`, trophic `mesopredator`): a schooling mid-level predator of the open water and weed edge; eats small fish, insects and larvae; spawns in early spring; vertical-bar art.
+- **Loon** (`world.birds`, `BIRD`, `_stepBirds`, render `_drawBirds`): a visiting diving bird in the open-water season. It rests on the surface, dives in daylight, chases and catches fish up to `BIRD.PREY_MAX`, surfaces to swallow, and leaves when sated. Fish sense a diving loon as a threat.
+
+### UI
+- Environment panel: ice cover, diatoms, loons. Legend: the loon visitor.
+
+### Tests
+- `test/headless.mjs` "realism" block: climate, ice formation, melt and sealing, under-ice O₂ profile, Blackman photosynthesis, dark survival, diatom bloom and sinking, nest guarding, digestion, gene flow, the loon, perch, founders. Seasonal spawning checks use temperature windows.
 
 ---
 
