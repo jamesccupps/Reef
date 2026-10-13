@@ -62,7 +62,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
 | Learning | Baldwinian: the plastic `a.lw` (only its W2 block changes) is never inherited, and every breeding path uses `a.g` |
 | Save | v26 (v25: ice, diatoms, nests, digestion, feeding remainder, loon, regional gene pool; v26: zooplankton kind, dragonflies, frogs/tadpoles/turtles). `BRAIN_ERAS` (`species.js`) holds the layout history used to migrate brains |
 | Render | Sprite `BASE` 14 (close-up tiers 28/56). SpriteCache and GL fish-texture caches are both 1024. WebGL2 linear-HDR presenter with a Canvas2D fallback; FRAG_COMP depth is `dpt = 1 − uv.y`. GL fish swim in FRAG_FISH from one straight sprite per fish: keep its wave in step with `drawFish`. Never upload a canvas into an SRGB8 texture (Chrome CPU-readback path); scene/overlay go in RGBA8 and are decoded in the shader |
-| Perf | Judge in real Chrome at the user's resolution (CDP, see SESSION_STATE), not the preview pane. 1080p screensaver: ~65–72 fps paced, sim ~4.5 ms/step |
+| Perf | Judge in real Chrome at the user's resolution (CDP, see SESSION_STATE), not the preview pane. The browser steps the sim at **30 Hz** (main.js `DT`, the same step as the headless gate; ≤ 2 steps a frame — no catch-up bursts) and interpolates every frame; fish brains decide at `BRAIN.DECIDE_HZ` 30. Sim ≈ 9 ms/step with ~600 fish + wildlife |
 
 ## Module map
 - **`core.js`:** seeded RNG with state get/set, math, `SpatialGrid`, the recurrent net (`forward`, `reinforce`), genome create/mutate/crossover/remap, trait genes.

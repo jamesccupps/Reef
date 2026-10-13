@@ -522,6 +522,7 @@ export const PLANKTON = {
   COPE_ENERGY: 0.14,       // energy per copepod (small)
   COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike
   DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate (cladocerans are the most sensitive)
+  SIGHT: 48,               // px: how far a fish can see a millimetre-sized zooplankter (a few body lengths), whatever its vision range
 };
 
 export const DETRITUS = {
@@ -780,7 +781,8 @@ export const MOTION = {
   // modulated by a per-fish stroke oscillation that is ZERO-MEAN (a cosine) → the cycle-average ≈ the brain's intent,
   // so it's ~balance-neutral; the momentum model carries the fish through each glide. Suppressed during a flee/strike
   // sprint (those swim flat-out) and when barely swimming. Deterministic (stroke advanced by dt, per-fish phase offset).
-  COAST_DEPTH: 0.65,   // depth of the thrust pulse around the intent (0 = steady thrust; 0.65 → swings ~±65% over a stroke)
+  COAST_DEPTH: 0.35,   // depth of the thrust pulse around the intent (0 = steady thrust; 0.35 → swings ~±35% over a stroke — a
+                       //   gentle surge-and-glide; ±65 % read as twitchy jerks)
   COAST_RATE: 1.1,     // stroke cycles per second while cruising (scaled up a little with speed)
 };
 
@@ -820,6 +822,7 @@ export const LEARN = {
 // *(This is the SHRINK direction of NEAT — masking within the fixed per-species max. Growing the layer BEYOND the species
 // max — true variable-topology NEAT with structural mutation — needs variable-length genomes and is deferred.)*
 export const BRAIN = {
+  DECIDE_HZ: 30,          // decisions (sense + think) per second — a fish's reaction time ≈ 33 ms; movement still integrates every step
   HID_MIN: 4,          // floor on active hidden units (a brain can shrink, but keeps a minimum of compute)
   COST: 0.22,          // max metabolic SAVING (fraction of metabMul) for a fully-masked brain vs the full-brain baseline
 };

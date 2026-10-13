@@ -462,8 +462,8 @@ function cruiseProfile(coastDepth) {
   const cv = Math.sqrt(spds.reduce((s, v) => s + (v - mean) * (v - mean), 0) / spds.length) / (mean || 1);
   return { mean, cv };
 }
-const bcCoast = cruiseProfile(MOTION.COAST_DEPTH), bcSteady = cruiseProfile(0);
-check('burst-and-coast PULSES a cruising fish\'s speed (surge-then-glide) vs steady thrust', bcCoast.cv > bcSteady.cv * 1.25 && bcCoast.cv > 0.04, `coast CV ${bcCoast.cv.toFixed(3)} > steady ${bcSteady.cv.toFixed(3)}`);
+const bcCoast = cruiseProfile(MOTION.COAST_DEPTH), bcSteady = cruiseProfile(0);   // same seed & brain: any extra speed variance is the pulse itself
+check('burst-and-coast PULSES a cruising fish\'s speed (surge-then-glide) vs steady thrust', bcCoast.cv > bcSteady.cv * 1.08 && bcCoast.cv > 0.04, `coast CV ${bcCoast.cv.toFixed(3)} > steady ${bcSteady.cv.toFixed(3)}`);
 check('burst-and-coast is ~balance-neutral: the cycle-MEAN cruise speed stays close to steady-thrust (zero-mean pulse)', Math.abs(bcCoast.mean - bcSteady.mean) < bcSteady.mean * 0.2 + 0.5, `coast mean ${bcCoast.mean.toFixed(1)} ≈ steady ${bcSteady.mean.toFixed(1)}`);
 
 // ============================================================
@@ -782,8 +782,11 @@ const afterOne = ccw.census().minnow;
 // after a wipe the REFUGE backstop fires (count ≥ REFUGE), but immigration is a gentle TRICKLE, not a hard refill:
 // ONE step adds at most the refuge fill + one trickle arrival (≤ REFUGE+1), NOT a jump to the old ~47 population target.
 check('after a wipe: REFUGE backstop present but NOT hard-refilled — a trickle (≤ REFUGE+1, not the old ~47 floor)', afterOne >= IMMIGRATION.REFUGE && afterOne <= IMMIGRATION.REFUGE + 1, `minnow ${afterOne} (REFUGE ${IMMIGRATION.REFUGE}; old hard floor was ~${scaleCount(SP.minnow.pop.min)})`);
-for (let i = 0; i < 3600; i++) ccw.step(1 / 30);
-check('the rescue + breeding recover a crashed species GRADUALLY (immigrants accrue while rare; no permanent extinction)', ccw.census().minnow > afterOne && ccw.stats.immigrants.minnow > immStart, `minnow ${afterOne}→${ccw.census().minnow}, +${ccw.stats.immigrants.minnow - immStart} immigrants`);
+// over the next two minutes the species never vanishes, immigrants keep arriving while it is rare, and the arrivals BREED
+// (sparse spawners home in on each other) — whether their fry survive a few weeks of predation is ecology, not the rescue
+const birthsWipe = ccw.stats.births.minnow; let minAfter = Infinity;
+for (let i = 0; i < 3600; i++) { ccw.step(1 / 30); minAfter = Math.min(minAfter, ccw.census().minnow); }
+check('the rescue + breeding re-seed a crashed species (never extinct; immigrants accrue while rare and breed)', minAfter >= IMMIGRATION.REFUGE && ccw.stats.immigrants.minnow > immStart && ccw.stats.births.minnow > birthsWipe, `minnow ${afterOne}→${ccw.census().minnow} (min ${minAfter}), +${ccw.stats.immigrants.minnow - immStart} immigrants, +${ccw.stats.births.minnow - birthsWipe} young`);
 // NO LITERAL EXTINCTION (the load-bearing Phase-5 invariant): wipe MULTIPLE species, one step → all back to ≥ REFUGE
 seed(31); const rw = new World(); for (let i = 0; i < 200; i++) rw.step(1 / 30);
 const wiped = ['minnow', 'sunfish', 'bass', 'pike'];

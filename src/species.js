@@ -245,7 +245,7 @@ export const SP = {
       const inp = a.act.in;
       tgt(a, w.qSurfaceFood(a), a.senseRange, inp, 0);   // nearest zooplankton OR emerged insect → minnow rises to a hatch
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
-      const al = w.allyStats(a, 52);
+      const al = w.allyStats(a, 56);   // (the same radius as the schooling reflex → one query per step)
       inp[6] = al.density; inp[7] = al.cohSin; inp[8] = al.cohCos; inp[9] = al.alignCos;
       inp[10] = clamp(a.energy / this.reproEnergy, 0, 1);
       inp[11] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
@@ -253,7 +253,7 @@ export const SP = {
       inp[13] = wallProx(a);
       inp[14] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[15] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.4, Hh: 0.95, snout: 1, pattern: 'stripe', scales: { p: 0.2, k: 0.10 }, tail: { len: 1.4, spread: 0.8, sweep: 1.0, fork: 0.42 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
+    P: { L: 2.4, Hh: 0.69, snout: 1, pattern: 'stripe', scales: { p: 0.2, k: 0.10 }, tail: { len: 1.4, spread: 0.8, sweep: 1.0, fork: 0.42 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
@@ -282,7 +282,7 @@ export const SP = {
       inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
       inp[11] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[12] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.2, Hh: 1.55, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true, pattern: 'bars', scales: { p: 0.24, k: 0.12 },
+    P: { L: 2.2, Hh: 1.06, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true, pattern: 'bars', scales: { p: 0.24, k: 0.12 },
       tail: { len: 1.2, spread: 0.95, sweep: 0.85, fork: 0.14 }, profile: t => { const e = ell(t, 0.46); return [e, e * 1.06]; } },   // round deep disc
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -317,7 +317,7 @@ export const SP = {
       inp[9] = wallProx(a);
       inp[10] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[11] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.6, Hh: 1.05, snout: 1.1, dorsal: true, dorsalX: -0.05, dorsalW: 0.38, dorsalH: 1.6, pattern: 'vbars', scales: { p: 0.2, k: 0.10 },
+    P: { L: 2.6, Hh: 0.78, snout: 1.1, dorsal: true, dorsalX: -0.05, dorsalW: 0.38, dorsalH: 1.6, pattern: 'vbars', scales: { p: 0.2, k: 0.10 },
       tail: { len: 1.3, spread: 0.9, sweep: 0.9, fork: 0.3 }, profile: t => { const e = ell(t, 0.7), sh = 1 + 0.12 * t; return [e * sh * 0.98, e * sh * 0.92]; } },   // humped back
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -352,7 +352,7 @@ export const SP = {
       inp[8] = wallProx(a);
       inp[9] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[10] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 3.0, Hh: 1.0, snout: 1.2, dorsal: true, dorsalX: 0.0, dorsalW: 0.26, dorsalH: 1.35, pattern: 'troutspots', scales: { p: 0.14, k: 0.06 },
+    P: { L: 3.0, Hh: 0.87, snout: 1.2, dorsal: true, dorsalX: 0.0, dorsalW: 0.26, dorsalH: 1.35, pattern: 'troutspots', scales: { p: 0.14, k: 0.06 },
       tail: { len: 1.5, spread: 1.05, sweep: 0.9, fork: 0.12 }, profile: t => { const e = ell(t, 0.66); return [e * 0.9, e * 0.92]; } },   // torpedo salmonid, square-ish tail
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -380,7 +380,7 @@ export const SP = {
       inp[7] = clamp(1 - (w.bedY(a.x) - a.y) / 30, 0, 1);
       inp[8] = clamp(w.oxygenAt(a.x, a.y), 0, 1); inp[9] = wallProx(a);
     },
-    P: { L: 3.2, Hh: 1.0, snout: 1, barbels: true, pattern: 'mottle', tail: { len: 1.4, spread: 0.7, sweep: 0.6, fork: 0.12 },
+    P: { L: 3.2, Hh: 0.93, snout: 1, barbels: true, pattern: 'mottle', tail: { len: 1.4, spread: 0.7, sweep: 0.6, fork: 0.12 },
       profile: t => { const f = (t + 1) * 0.5, e = Math.sqrt(Math.max(0, 1 - t * t)); return [e * (0.5 + 0.5 * f), e * (0.58 + 0.7 * f)]; } },   // broad head → thin tail
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -408,7 +408,7 @@ export const SP = {
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
     },
-    P: { L: 3.0, Hh: 1.7, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1, scales: { p: 0.42, k: 0.22 },
+    P: { L: 3.0, Hh: 0.98, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1, scales: { p: 0.42, k: 0.22 },
       tail: { len: 1.5, spread: 1.0, sweep: 0.7, fork: 0.32 }, profile: t => { const e = ell(t, 0.55); return [e * 0.96, e * 1.12]; } },   // deep robust, round belly
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -440,7 +440,7 @@ export const SP = {
       inp[7] = w.allyStats(a, 64).density;
       inp[8] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[9] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 3.0, Hh: 1.3, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, pattern: 'band', scales: { p: 0.24, k: 0.10 },
+    P: { L: 3.0, Hh: 0.96, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, pattern: 'band', scales: { p: 0.24, k: 0.10 },
       tail: { len: 1.6, spread: 1.0, sweep: 0.9, fork: 0.2 }, profile: t => { const e = ell(t, 0.72), sh = 1 + 0.1 * t; return [e * sh * 0.96, e * sh * 0.98]; } },   // streamlined, fuller forward
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -469,7 +469,7 @@ export const SP = {
       inp[6] = wallProx(a);
       inp[7] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[8] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 4.2, Hh: 1.1, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5, pattern: 'spots', scales: { p: 0.16, k: 0.07 },
+    P: { L: 4.2, Hh: 0.85, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5, pattern: 'spots', scales: { p: 0.16, k: 0.07 },
       tail: { len: 1.8, spread: 1.2, sweep: 1.0, fork: 0.28 }, profile: t => { const e = ell(t, 0.62); return [e * 0.82, e * 0.86]; } },   // long slender spindle, rear dorsal
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),

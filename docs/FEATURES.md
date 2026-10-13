@@ -9,6 +9,21 @@ The **2026-10-13 more life** section comes first, then the **2026-10-12 realism 
 
 ---
 
+## 2026-10-13 polish: smooth motion, true proportions, plants on the bed
+
+- **Smooth motion.** The realism work made a step ~2× slower (~9 ms at ~600 fish + wildlife); at the browser's old 60 Hz
+  step that overran frames and the loop caught up in bursts of steps — every fish jumped together. Now the browser steps
+  at 30 Hz like the headless gate (interpolated every frame), never more than 2 steps a frame (a slow frame slows the lake
+  for a moment instead), fish brains decide at 30 Hz (`BRAIN.DECIDE_HZ`, real reaction ≈ 33 ms; `a.dAcc` saved), fish see
+  zooplankton only a few body lengths off (`PLANKTON.SIGHT`), the shoal query runs once per fish per step, and
+  burst-and-coast is gentler (`MOTION.COAST_DEPTH` 0.35).
+- **True proportions.** Body depth ÷ length now matches each real species (minnow .27, sunfish .50, perch .29, trout .26,
+  catfish .26, carp .34, bass .31, pike .17 — they were 30–50 % too deep: puffer-looking sunfish and carp). Wildlife is drawn
+  at the lake's scale (~0.8 px/cm: a 70 cm pike ≈ 55 px): nymphs and tadpoles shrank, turtles doubled.
+- **Plants and bottom life follow the bed.** Weed-bed blades, reed stems and chara tufts each root on the bed under their
+  own x (blades rooted at the clump centre's depth stood inside the bank on the drop-off); logs rest on the bed along its
+  slope; crayfish and nymphs lie along it; nymphs sit on the bottom.
+
 ## 2026-10-13 more life (supersedes everything below)
 
 Save format **v26**.

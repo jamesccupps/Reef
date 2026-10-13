@@ -573,9 +573,11 @@ export class Renderer {
       ctx.lineCap = 'round';
       for (const lg of world.logs) {
         if (lg.x < vr.x0 - 60 || lg.x > vr.x1 + 60) continue;
-        const a0 = w2s(lg.x - Math.cos(lg.ang) * lg.len / 2, lg.y - Math.sin(lg.ang) * lg.len / 2);
-        const b0 = w2s(lg.x + Math.cos(lg.ang) * lg.len / 2, lg.y + Math.sin(lg.ang) * lg.len / 2);
-        ctx.lineWidth = Math.max(1.5, 5 * z); ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(b0.x, b0.y); ctx.stroke();
+        // resting ON the bed: a chord between two bed points along the slope, lifted by the log's radius (a fixed random
+        // tilt left logs poking into a steep drop-off or hanging off it)
+        const hx = lg.len / 2 * Math.cos(lg.ang * 0.3), r = 2.5, xa = lg.x - hx, xb = lg.x + hx;
+        const a0 = w2s(xa, bedY(xa) - r), b0 = w2s(xb, bedY(xb) - r);
+        ctx.lineWidth = Math.max(1.5, 2 * r * z); ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(b0.x, b0.y); ctx.stroke();
       }
     }
     // round, smooth strokes for all the flora below (reeds / weed beds / macrophytes) — no hard mitred corners or
@@ -599,12 +601,12 @@ export class Renderer {
         ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = Math.max(1, 1.4 * z);
         if (taper) ctx.beginPath();
         for (let b = 0; b < r.n; b++) {
-          const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5);
+          const bx = r.x + (b - r.n / 2) * 2.2, h = r.height * (0.7 + 0.3 * ((b * 7) % 5) / 5), rb = bedY(bx);   // rooted under its own x
           const sway = Math.sin(t * 1.1 + r.x * 0.05 + b) * 4;
-          if (!taper) { ctx.beginPath(); ctx.moveTo(X(bx), Y(r.baseY)); ctx.lineTo(X(bx + sway), Y(r.baseY - h)); ctx.stroke(); continue; }
+          if (!taper) { ctx.beginPath(); ctx.moveTo(X(bx), Y(rb)); ctx.lineTo(X(bx + sway), Y(rb - h)); ctx.stroke(); continue; }
           const ln = Math.hypot(sway, h) || 1, nx = h / ln, ny = sway / ln, wb = 0.8, wt = 0.1;   // unit normal to the stem
-          ctx.moveTo(X(bx - nx * wb), Y(r.baseY - ny * wb)); ctx.lineTo(X(bx + sway - nx * wt), Y(r.baseY - h - ny * wt));
-          ctx.lineTo(X(bx + sway + nx * wt), Y(r.baseY - h + ny * wt)); ctx.lineTo(X(bx + nx * wb), Y(r.baseY + ny * wb)); ctx.closePath();
+          ctx.moveTo(X(bx - nx * wb), Y(rb - ny * wb)); ctx.lineTo(X(bx + sway - nx * wt), Y(rb - h - ny * wt));
+          ctx.lineTo(X(bx + sway + nx * wt), Y(rb - h + ny * wt)); ctx.lineTo(X(bx + nx * wb), Y(rb + ny * wb)); ctx.closePath();
         }
         if (taper) ctx.fill();
       }
@@ -622,11 +624,14 @@ export class Renderer {
         const ribbon = z >= 2.4, bw = 1.7;   // blade half-width at the base (world px)
         ctx.lineWidth = clamp(0.85 * z, 1, 3.2);
         for (let s = 0; s < strands; s++) {
+          // each blade roots on the bed UNDER ITS OWN x (on the steep drop-off the bed falls away across the clump: rooting all
+          // blades at the clump centre's depth drew the shallow-side ones out of the bank), and grows the clump's height ±15 %
           const sx = wb.x + (s - strands / 2) * (wb.w * 2 / strands), segs = ribbon ? 10 : 6;
+          const root = bedY(sx), bladeH = (wb.bot - wb.top) * (0.85 + 0.15 * (((s * 7) % 5) / 4)), tipY = Math.max(4, root - bladeH);
           const col = `hsl(${128 + (s % 5) * 3} ${44 * floraS}% ${(light * (0.86 + 0.14 * ((s * 7) % 5) / 5)) * 100}%)`;   // faint blade-to-blade hue/shade variation
           const cx = this._bladeX || (this._bladeX = new Float64Array(16)), cy = this._bladeY || (this._bladeY = new Float64Array(16));
           for (let k = 0; k <= segs; k++) {
-            const f = k / segs; cy[k] = wb.bot - (wb.bot - wb.top) * f; cx[k] = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
+            const f = k / segs; cy[k] = root - (root - tipY) * f; cx[k] = sx + Math.sin(t * 0.9 + wb.x * 0.04 + s + f * 2) * f * (7 + (s % 3) * 2);
           }
           if (!ribbon) {
             ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(X(cx[0]), Y(cy[0]));
@@ -669,8 +674,8 @@ export class Renderer {
       if (form === 'mat') {
         // low benthic mat (chara): a few short tufts hugging the bed
         for (let s = 0; s < 4; s++) {
-          const bx = p.x + (s - 1.5) * 3, base = w2s(bx, p.baseY);
-          const tip = w2s(bx + Math.sin(t + p.x * 0.1 + s) * 2, p.baseY - p.height * (0.55 + 0.45 * ((s * 3) % 4) / 4));
+          const bx = p.x + (s - 1.5) * 3, rb = bedY(bx), base = w2s(bx, rb);
+          const tip = w2s(bx + Math.sin(t + p.x * 0.1 + s) * 2, rb - p.height * (0.55 + 0.45 * ((s * 3) % 4) / 4));
           ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
         }
         continue;
@@ -792,12 +797,15 @@ export class Renderer {
         const p = pt(cf.x, cf.y), dim = 0.55 + 0.45 * depthDim(cf.y), col = `hsl(14 ${Math.round(52 * floraS)}% ${Math.round(lerp(30, 50, amb) * dim * floraL)}%)`;
         ctx.globalAlpha = 0.95; ctx.fillStyle = col; ctx.strokeStyle = col;
         if (z < 1.4) { const L = clamp(z, 0.8, 4); ctx.fillRect(p.x - L, p.y - L * 1.3, L * 2, L * 1.3); continue; }   // far: a small rust blob
-        const dir = cf.vx >= 0 ? 1 : -1, by = p.y - 1.6 * z, wig = Math.sin(t * 5 + cf.ph) * 0.9 * z;
+        const dir = cf.vx >= 0 ? 1 : -1, wig = Math.sin(t * 5 + cf.ph) * 0.9 * z;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(bedY(cf.x + 3) - bedY(cf.x - 3), 6)); ctx.translate(-p.x, -p.y);   // along the slope
+        const by = p.y - 1.6 * z;
         ctx.lineWidth = Math.max(1, 1.1 * z);
         ctx.beginPath(); ctx.moveTo(p.x - dir * 3 * z, by); ctx.lineTo(p.x - dir * 5.6 * z, by + wig * 0.4); ctx.stroke();   // tail
         for (let lg = -1; lg <= 1; lg++) { const lx = p.x + lg * 1.7 * z; ctx.beginPath(); ctx.moveTo(lx, by + 0.4 * z); ctx.lineTo(lx + wig * 0.5, by + 2 * z); ctx.stroke(); }   // legs
         for (const sgn of [-1, 1]) { ctx.beginPath(); ctx.moveTo(p.x + dir * 3 * z, by); ctx.lineTo(p.x + dir * 5.2 * z, by + sgn * 1.7 * z + wig * 0.3); ctx.stroke(); }   // claws
         ctx.beginPath(); ctx.ellipse(p.x, by, 3.2 * z, 1.7 * z, 0, 0, TAU); ctx.fill();   // body
+        ctx.restore();
       }
     }
     ctx.globalAlpha = 1;
@@ -966,17 +974,20 @@ export class Renderer {
     const lit = 0.35 + 0.65 * vL, YL = TIME.YEAR_LEN;
     const rgb = (r, g, b, a = 1) => 'rgba(' + ((r * lit) | 0) + ',' + ((g * lit) | 0) + ',' + ((b * lit) | 0) + ',' + a + ')';
     const near = z >= 1.6, s = Math.max(0.7, z);
+    const slope = x => Math.atan2(bedY(x + 3) - bedY(x - 3), 6);   // the bed's local tilt
     const off = (o, pad) => o.x < vr.x0 - pad || o.x > vr.x1 + pad || o.y < vr.y0 - pad || o.y > vr.y1 + pad;
     // dragonfly NYMPHS: squat olive-brown bodies with a big head and splayed legs, clinging low in the weeds
-    for (const n of world.nymphs || []) {
+    for (const n of world.nymphs || []) {        // ~3.5 cm: a few px long
       if (off(n, 10)) continue;
-      const px = X(n.x), py = Y(n.y), dir = n.vx >= 0 ? 1 : -1;
+      const px = X(n.x), py = Y(n.y), dir = n.vx >= 0 ? 1 : -1, ns = s * 0.42;
       ctx.fillStyle = rgb(96, 88, 54);
-      if (!near) { ctx.fillRect(px - s, py - s * 0.6, s * 2.2, s * 1.2); continue; }
-      ctx.beginPath(); ctx.ellipse(px - dir * 0.6 * s, py, 3.2 * s, 1.2 * s, 0, 0, TAU); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(px + dir * 2.9 * s, py - 0.1 * s, 1.2 * s, 1.0 * s, 0, 0, TAU); ctx.fill();
-      ctx.strokeStyle = rgb(74, 68, 42); ctx.lineWidth = Math.max(0.6, 0.35 * s);
-      for (const lx of [-0.4, 0.7, 1.7]) { ctx.beginPath(); ctx.moveTo(px + dir * lx * s, py + 0.6 * s); ctx.lineTo(px + dir * (lx - 1.1) * s, py + 2.1 * s); ctx.stroke(); }
+      if (!near) { ctx.fillRect(px - ns, py - ns * 0.6, ns * 2.2, ns * 1.2); continue; }
+      ctx.save(); ctx.translate(px, py); ctx.rotate(slope(n.x));   // sprawled along the bed
+      ctx.beginPath(); ctx.ellipse(-dir * 0.6 * ns, -1.2 * ns, 3.2 * ns, 1.2 * ns, 0, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(dir * 2.9 * ns, -1.3 * ns, 1.2 * ns, 1.0 * ns, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = rgb(74, 68, 42); ctx.lineWidth = Math.max(0.5, 0.35 * ns);
+      for (const lx of [-0.4, 0.7, 1.7]) { ctx.beginPath(); ctx.moveTo(dir * lx * ns, -0.6 * ns); ctx.lineTo(dir * (lx - 1.1) * ns, 0.4 * ns); ctx.stroke(); }
+      ctx.restore();
     }
     // adult DRAGONFLIES darting low over the water: a slim blue abdomen and two pairs of glassy, blurred wings
     for (const d of world.dflies || []) {
@@ -990,15 +1001,16 @@ export class Renderer {
     for (const h of world.herps || []) {
       if (off(h, 16)) continue;
       const px = X(h.x), py = Y(h.y), dir = h.vx >= 0 ? 1 : -1, sleep = h.st === 2 ? 0.6 : 1;
-      if (h.k === 0) {            // TADPOLE: a dark round head and a wriggling tail
+      if (h.k === 0) {            // TADPOLE (~4 cm): a dark round body and a wriggling tail
+        const ts = s * 0.5;
         ctx.fillStyle = rgb(58 * sleep, 54 * sleep, 40 * sleep);
-        if (!near) { ctx.fillRect(px - s * 0.8, py - s * 0.6, s * 1.8, s * 1.2); continue; }
-        const wig = Math.sin(t * 13 + h.x) * 1.1 * s;
-        ctx.beginPath(); ctx.ellipse(px, py, 1.9 * s, 1.5 * s, 0, 0, TAU); ctx.fill();
-        ctx.strokeStyle = rgb(72, 68, 52, 0.75); ctx.lineWidth = Math.max(0.6, 0.7 * s);
-        ctx.beginPath(); ctx.moveTo(px - dir * 1.6 * s, py); ctx.quadraticCurveTo(px - dir * 3.6 * s, py + wig, px - dir * 5.6 * s, py - wig * 0.5); ctx.stroke();
+        if (!near) { ctx.fillRect(px - ts * 0.8, py - ts * 0.6, ts * 1.8, ts * 1.2); continue; }
+        const wig = Math.sin(t * 13 + h.x) * 1.1 * ts;
+        ctx.beginPath(); ctx.ellipse(px, py, 1.9 * ts, 1.5 * ts, 0, 0, TAU); ctx.fill();
+        ctx.strokeStyle = rgb(72, 68, 52, 0.75); ctx.lineWidth = Math.max(0.5, 0.7 * ts);
+        ctx.beginPath(); ctx.moveTo(px - dir * 1.6 * ts, py); ctx.quadraticCurveTo(px - dir * 3.6 * ts, py + wig, px - dir * 5.6 * ts, py - wig * 0.5); ctx.stroke();
       } else if (h.k === 1) {     // FROG: green, darker-spotted back, pale belly, eyes on top, long hind legs trailing
-        const g = 0.6 + 0.4 * clamp(h.age / (FROG.MATURE * YL), 0, 1), fs = s * g;
+        const g = 0.6 + 0.4 * clamp(h.age / (FROG.MATURE * YL), 0, 1), fs = s * g * 0.85;   // an ~8 cm frog
         ctx.fillStyle = rgb(92 * sleep, 136 * sleep, 62 * sleep);
         if (!near) { ctx.fillRect(px - fs * 1.6, py - fs, fs * 3.2, fs * 1.8); continue; }
         const kick = h.st === 1 ? Math.sin(t * 9 + h.x) : 0.3;
@@ -1011,7 +1023,7 @@ export class Renderer {
         ctx.fillStyle = rgb(92 * sleep, 136 * sleep, 62 * sleep); ctx.beginPath(); ctx.arc(px + dir * 2.4 * fs, py - 1.6 * fs, 0.8 * fs, 0, TAU); ctx.fill();
         ctx.fillStyle = 'rgba(20,20,14,0.9)'; ctx.beginPath(); ctx.arc(px + dir * 2.6 * fs, py - 1.7 * fs, 0.35 * fs, 0, TAU); ctx.fill();
       } else {                    // PAINTED TURTLE: dark olive shell with a red-marked rim, striped head and paddling limbs
-        const g = 0.3 + 0.7 * clamp(h.age / (TURTLE.MATURE * YL), 0, 1), ts = s * g, pad = Math.sin(t * 4 + h.x * 0.1) * (h.st === 2 ? 0 : 1);
+        const g = 0.3 + 0.7 * clamp(h.age / (TURTLE.MATURE * YL), 0, 1), ts = s * g * 2, pad = Math.sin(t * 4 + h.x * 0.1) * (h.st === 2 ? 0 : 1);   // a ~18 cm shell
         ctx.fillStyle = rgb(44 * sleep, 52 * sleep, 36 * sleep);
         if (!near) { ctx.fillRect(px - ts * 3, py - ts * 1.4, ts * 6, ts * 2.2); continue; }
         ctx.strokeStyle = rgb(70, 80, 52); ctx.lineWidth = Math.max(1, 1.1 * ts);
