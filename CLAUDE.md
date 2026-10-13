@@ -105,5 +105,5 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - commits use the repo-local noreply email, because GitHub rejects the private address;
   - on Windows PowerShell use `git commit -F <file>`.
 - Update `SESSION_STATE.md`'s NOW block at the end of a session (done, next, decisions, known issues). After a major slice, also run `git archive --format=zip -o G:\synapse-reef-backups\synapse-reef_<stamp>_<slice>.zip HEAD`.
-- Usage is limited: don't fan out subagents or workflows unless the human asks.
+- Usage limit lifted (2026-10-13): thoroughness over economy — multi-seed validation, research, parallel agents where they genuinely help.
 - Prefer complete, drop-in changes. State tradeoffs honestly.

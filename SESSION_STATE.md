@@ -45,6 +45,28 @@ cap ~1.35); no satiation (predators kill when full); K pyramid inverted (bass 88
 - R7 multi-seed balance, docs, visuals. Judge with `verify/recruit.mjs` (births sexual vs budded, immigrants, deaths
   by cause juvenile/adult) over ≥3 seeds and ≥2 years.
 
+**▶▶ RESUME HERE (2026-10-13, after compaction) — the human wants ALL THREE, in order, then what-if tooling:**
+Goal (human): "a complete, realistic simulation, that looks good too and is polished … eventually good enough that you could
+manually add in other variables to see how it would affect the ecosystem, but we have to get it accurate before that."
+Usage limit lifted: be thorough (multi-seed, ≥3-yr validation, research published parameters; parallel agents OK).
+State: main = 1a3c416 (gate green, save v26); working branch `science` (from main). Backups on G:.
+1. BIOENERGETICS + FOOD-DEPENDENT GROWTH (first). Replace hand-set metabolism/moveCost/energy caps with the Wisconsin /
+   "Fish Bioenergetics 4.0" (Deslauriers et al. 2017) equations and published per-species parameters (consumption CA/CB/CQ/
+   CTO/CTM/CTL/CK1…, respiration RA/RB/RQ/RTO/RTM/ACT…, egestion/excretion FA/UA, SDA, energy density) for fathead minnow,
+   bluegill/pumpkinseed, yellow perch, rainbow trout, (brown) bullhead or channel catfish, common carp, largemouth bass,
+   northern pike. Fish carry MASS (g) and grow by consumption − respiration − waste; length from length–weight; size →
+   gape, speed, fecundity (∝ mass), predation risk; condition factor; starvation when reserves deplete. Map sim time to real
+   days via the 30-min year (1 sim-s ≈ 4.87 real hours) consistently. Then re-derive prey energy densities (J/g) for
+   zooplankton, insects, fish. Validate: growth curves (length-at-age) vs published, consumption ≈ % body mass/day.
+   Expect most tuning to disappear; calibrate remaining against field patterns (pattern-oriented modelling).
+2. VISIBLE EVOLUTION: trait-trend charts per species (gene means/variance vs time & generation), selection-differential
+   readouts, a fast-forward "evolve N years" mode (headless in a Worker), heritable traits that show in the art.
+3. LANDSCAPE: several lakes (deep oligotrophic trout lake / current productive lake / shallow weedy pond) + a stream with
+   riffles/pools (flowing-water physics; stream spawning for trout), real dispersal between them (replaces the abstract
+   regional gene pool), per-lake views + a map; background lakes step at reduced cost.
+4. THEN what-if controls (nutrient loading, warming, stocking, pollution, fishing, invasive species).
+Known weak spots to revisit inside 1: perch/catfish/trout numbers; adult dragonflies only visible in the air strip.
+
 **▶ POLISH (2026-10-13, session 3b — human: twitchy "resetting" swimming, plants through the bank, inaccurate looks):**
 fixed as in FEATURES "2026-10-13 polish" (30 Hz browser step + no catch-up bursts, 30 Hz decisions, true body proportions,
 real-scale wildlife, plants/logs/crayfish/nymphs follow the bed). Evolution evidence (verify/evo.mjs, seed 1): after 2.5 yr
