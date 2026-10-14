@@ -258,7 +258,7 @@ export const BIO = {
     Lhatch: 0.6, sHatch: 0.08, L0: 8, Lref: 20, Lmat: 16, LmatM: 12, matMinAge: yrs(1.5), maxAge: yrs(11), matureAge: yrs(3), M: 0.50,
     gut: 0.06, gerMul: 1.0, gsiF: 0.20, gsiM: 0.07,   // ♀ GSI 16–26 % (S. Lake Michigan);   // young perch: a Daphnia meal in 6–12 h (Noble 1973) ≈ the general rate
     fec: { a: 0.3487, b: 3.4556 },   // log10 F = −3.9131 + 3.4556·log10 TL(mm), inland Michigan lakes (Schneider 1984): 25 cm → 23,600
-    Lzoo: 40, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, vuln: 0.6,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL
+    Lzoo: 25, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, vuln: 0.6,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL; zooplankton → benthos → fish: big perch leave the zooplankton (Persson 1986; Hjelm et al. 2000) — most lake perch (< 25 cm) still take it
   },
   trout: {    // RAINBOW TROUT — FB4 "Rainbow Trout (adult)" (Railsback & Rose 1999)
     bio: { CEQ: 3, CA: 0.628, CB: -0.3, CQ: 3.5, CTO: 25, CTM: 22.5, CTL: 24.3, CK1: 0.2, CK4: 0.2, REQ: 2, RA: 0.013, RB: -0.217, RQ: 2.2, RTO: 22, RTM: 26, ACT: 1.3,

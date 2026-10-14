@@ -230,7 +230,7 @@ seed(6); const dwB = new World(); dwB.agents = []; dwB.plankton = [];
 const pkB = dwB.addAgent('pike', { x: 1000, y: 500 }); pkB.age = SP.pike.matureAge + 50; pkB.hunger = 0.9;
 for (let i = 0; i < 8; i++) { const mn = dwB.makeFish('minnow', null, SP.minnow.matureAge + 20); mn.x = 1000 + (i % 4) * 4; mn.y = 500 + (i < 4 ? -3 : 3); dwB.agents.push(mn); }
 dwB.agentGrid.rebuild(dwB.agents);
-for (let t = 0; t < 40 && pkB.eaten === 0; t++) dwB.step(1 / 30);
+sureStrike(() => { for (let t = 0; t < 40 && pkB.eaten === 0; t++) dwB.step(1 / 30); });   // (a sure strike: the drive is what's tested)
 const sated = pkB.eaten > 0 && pkB.gut > 0 && pkB.hunger < 1;   // (hunger = the gut's emptiness: a minnow fills a pike's a little)
 check('internal HUNGER drive rises with time since a meal, and a meal SATES it', hungerRose && sated, `rose ${hStart.toFixed(2)}→${pkA.hunger.toFixed(2)}; ate ${pkB.eaten}, hunger →${pkB.hunger.toFixed(2)}`);
 // FEAR jumps when a predator is near and DECAYS after it leaves (lingering caution)
@@ -585,7 +585,7 @@ function survivesTox(toxLevel) {
   for (let k = 2; k < OUT; k++) f.g[B2 + k] = -20;   // sigmoid(-20) ≈ 0 → actions off → no action energy cost
   f.lw = Float32Array.from(f.g);                     // forward() runs the plastic policy → sync so actions are really off (isolated pike never eats → no learning drift)
   hw.agents = [f]; hw.plankton = []; hw.agentGrid.rebuild(hw.agents);
-  for (let i = 0; i < 400 && !f.dead; i++) hw.step(1 / 30);
+  for (let i = 0; i < 1200 && !f.dead; i++) hw.step(1 / 30);   // (40 s: a hazard of ~0.3/s can't be dodged by luck)
   BIRD_T.ARRIVE = keepArrive;
   return !f.dead;
 }
@@ -1571,7 +1571,7 @@ console.log('\n— audit fixes: bio-ecology —');
   // brood SCATTER: the larvae schools start BROOD.SCATTER px from the parents, out of immediate strike reach
   { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2); fw.fry = [];
     const [p, q] = fw.agents; ripe(p, 0); ripe(q, 1);
-    p.x = 1000; p.y = 300; q.x = 1008; q.y = 300; fw.setDate(0.27); fw.agentGrid.rebuild(fw.agents);
+    p.x = 200; q.x = 208; p.y = q.y = fw.bedY(204) * 0.5; fw.setDate(0.27); fw.agentGrid.rebuild(fw.agents);   // (spawning in the shallows, where eggs go — SPAWN.SHALLOWS)
     let mx = 0, my = 0; for (let i = 0; i < 120 && !fw.fry.length; i++) { mx = (p.x + q.x) / 2; my = (p.y + q.y) / 2; fw.step(1 / 30); }
     const ds = fw.fry.map(k => Math.hypot(k.x - mx, k.y - my));
     check('brood scatter: the larvae schools are placed within the BROOD.SCATTER annulus around the parents', fw.fry.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 12 && d <= BROOD.SCATTER[1] + 12), `${fw.fry.length} schools at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
@@ -2095,8 +2095,9 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   // TROUT: behavioural thermoregulation — in the warm summer lake a trout keeps deeper (cooler) than the same trout would
   // if it didn't mind the heat (A/B: its optimum raised out of the way)
   { const felt = hot => { const keep = SP.trout.tempTol; if (hot) SP.trout.tempTol = 30;   // tolerance raised: the heat no longer bothers it
-      try { seed(6701); const tw = new World().setDate(0.42); let s = 0, n = 0;   // a well-oxygenated (oligotrophic) lake: no O₂ squeeze
-        for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'trout') { s += tw.env.tempAt(a.x, a.y); n++; } }
+      try { let s = 0, n = 0;
+        for (const sd of [6701, 6702]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated (oligotrophic) lake: no O₂ squeeze
+          for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'trout') { s += tw.env.tempAt(a.x, a.y); n++; } } }
         return n ? s / n : 0; } finally { SP.trout.tempTol = keep; } };
     const cool = felt(false), warm = felt(true);
     check('TROUT seek cool water: in midsummer they live in cooler water than the same trout indifferent to heat (thermoregulation)', cool < warm - 0.5, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }

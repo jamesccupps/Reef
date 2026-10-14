@@ -81,7 +81,22 @@ standalone (YOY schools cost ~30 %).
 Still open: bass/catfish nests rarely produce recruits (larvae starve at swim-up near the nest, then perch eat the rest);
 sunfish adults dwindle slowly (yearling mortality ~80 %/yr); minnow numbers high; browser visual check of YOY rendering
 at full size; perf headroom.
-NEXT: predator recruitment (bass nest larvae: food at swim-up), 5-yr multi-seed run, browser check, merge to main, phase 2.
+- Then (session 4, later): eggs/nests in the LITTORAL (SPAWN.SHALLOWS — nests had landed on the anoxic deep bed);
+  guarded broods forage within BROOD.GUARD_R of the nest; LITTORAL zooplankton among the weeds (PLANKTON.LITTORAL_RATE 15,
+  fed by periphyton — survives the clear-water crash); big piscivores (> 3× Lpisc) skip insects/larvae (`bugs`); young
+  pike/bass eat larvae (insectEater); perch Lzoo 25; HEAT ESCAPE reflex (within 3 °C of UILT: down if cooler, else
+  offshore — trout were parking on the warm shelf); `fryDiag` (diagnostic, unsaved) splits YOY deaths by cause.
+  TRIED + REVERTED: attack dash/turn + MISS_CD 0.1 (predators held by the rescue ate the forage out; y16 crashed to ~20
+  agents); perch Lzoo 15 (perch starved). Lesson: predator efficiency vs the always-present rescued predators is THE
+  sensitive balance — a future fix is to scale predator rescue/refuge by prey availability (numerical response).
+  y18 (this config minus heat escape, 3 seeds × 3 yr): STABLE in all seeds — minnow 138–363, sunfish 37–259 (yearly
+  pulses), perch 10–63 (recruit 77–202), catfish 3–12 (recruit 3–21), carp 3–7 (0–7), bass 2–3 (0–7), pike 1 (0–3);
+  biomass 15–21 kg. Remaining: bass/pike underfed (agent prey capture rate ≪ physiological demand at compressed time),
+  adult sunfish few (yearling mortality high), perch adults faster-growing than Michigan means.
+STATE AT CONTEXT LIMIT (2026-10-13 evening): working tree has the heat escape + test robustness fixes (toxin 1200 steps,
+hunger sureStrike, trout 2-seed probe, brood-scatter shallows) — gate19 + smoke3 were RUNNING (scratchpad verify/
+gate19.txt, smoke3.txt) and y19 (4 yr, 3 seeds) running; committed as WIP below. NEXT: confirm gate19 green (fix any
+flake), read y19, commit, merge science→main when green, backup to G:, then phase 2 (visible evolution).
 
 **▶▶ RESUME HERE (2026-10-13, after compaction) — the human wants ALL THREE, in order, then what-if tooling:**
 Goal (human): "a complete, realistic simulation, that looks good too and is polished … eventually good enough that you could

@@ -60,6 +60,7 @@ export const SPAWN = {
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
   // (and the fish must be breedReady)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
+  SHALLOWS: 0.15,    // eggs and nests go within this fraction of lake width from the nearer shore (the littoral shelf)
   // SPARSE SPAWNERS: when a species is this rare in the lake, a ready spawner homes in on the nearest ready mate within CUE_R
   // (chemical / sound cues — how a thin population still finds mates); a common one just meets mates nearby
   RARE: 12,
@@ -619,6 +620,8 @@ export const MICROBE = {
 export const PLANKTON = {
   CAP: 300,                // reference-pond cap (auto-scaled by world area)
   RATE_BASE: 60,           // /s max spawn at full phytoplankton density (scaled by area)
+  LITTORAL_RATE: 15,       // /s spawn among the macrophytes at full plant cover (scaled by area) — the weed-bed zooplankton (often denser than the open water's),
+                           //   fed by periphyton and detritus rather than the open-water algae (world.js)
   DRIFT: 6,                // horizontal drift speed
   GRAZE: 0.004,            // phytoplankton biomass each zooplankter clears /s (gentle → stable cycle)
   STARVE: 0.08,            // death rate /s where phytoplankton is depleted (soft starvation)

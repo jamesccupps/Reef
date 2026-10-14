@@ -1022,11 +1022,13 @@ export class World {
       // MORTALITY over st: natural — the larval "critical period" (FRY.M_LARVA ∝ 1/length, fading out by ~3 cm) + the
       // agents' size-scaled share of the species' M (Lorenzen) — then starvation (_feedFry), heat and hypoxia as for the agents
       const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
-      let h = FRY.M_LARVA / Math.max(0.3, f.L) * Math.exp(-((f.L / FRY.LARVA_L) ** 2)) / BIOE.DAY
-        + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y + hS;
-      if (T > sp.uilt - 2) h += Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP);
-      if (o2 < o2L) h += Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L);
-      f.n *= Math.exp(-h * st);
+      const hN = FRY.M_LARVA / Math.max(0.3, f.L) * Math.exp(-((f.L / FRY.LARVA_L) ** 2)) / BIOE.DAY
+        + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y;
+      const hH = T > sp.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
+      const hO = o2 < o2L ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
+      const h = hN + hS + hH + hO, lost = f.n * (1 - Math.exp(-h * st));
+      if (this.fryDiag && h > 0) { const q = this.fryDiag[f.k] ??= { natural: 0, starve: 0, heat: 0, hypoxia: 0 }; q.natural += lost * hN / h; q.starve += lost * hS / h; q.heat += lost * hH / h; q.hypoxia += lost * hO / h; }   // (diagnostic only)
+      f.n -= lost;
       if (f.n < 1) { f.dead = true; continue; }
       // NEXT TARGET: the nearest food these fish eat within SEEK_R; in water below their critical O₂ they head up, and
       // near their lethal temperature down (the young fish's own habitat choice)
@@ -1195,6 +1197,15 @@ export class World {
     const bloom = PLANKTON.RATE_BASE * area * algae;
     this._daphShare = this.daphShare();
     for (let n = poissonish(bloom * dt); n > 0 && this.plankton.length < planktonCap; n--) this.plankton.push(this._mkPlankton());
+    // LITTORAL zooplankton (chydorid and sidid cladocerans, cyclopoid copepods living among the weeds): they graze the
+    // periphyton and detritus on the plants, not the open-water phytoplankton, so they keep breeding through the open
+    // water's clear-water crash — the food young fish in the weed beds actually live on. Recruited among the macrophytes,
+    // in proportion to how much of the lake's plant cover is standing
+    const plantF = clamp(this.plants.length / scaleCount(PLANT.MAX), 0, 1);
+    if (this.plants.length) for (let n = poissonish(PLANKTON.LITTORAL_RATE * area * plantF * dt); n > 0 && this.plankton.length < planktonCap; n--) {
+      const p = this.plants[(rand() * this.plants.length) | 0];
+      if (!p.dead && p.height > 4) this.plankton.push(this._mkPlankton(clamp(p.x + rand(-12, 12), 6, W - 6), clamp(p.baseY - p.height * rand(0, 1), 12, bedY(p.x) - 6), 1));
+    }
     const planktonFloor = scaleCount(18);
     if (this.plankton.length < planktonFloor && algae > 0.03) for (let n = poissonish(12 * area * dt); n > 0 && this.plankton.length < planktonFloor; n--) this.plankton.push(this._mkPlankton());
     for (const p of this.plankton) {
@@ -1471,6 +1482,13 @@ export class World {
         // hours of exposure for its physiology, so it can't afford to linger)
         // (applied after every other modulation — a resting, cold or day-resting fish still bolts: see below)
         if (o2Here < a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3) { escUp = -Math.PI / 2 + (a.x < W * BASIN.CENTER ? -0.25 : 0.25); o2Climb = 1.5; }
+        // HEAT ESCAPE, the same way: in water within 3 °C of its lethal temperature a fish leaves at once — down if the
+        // water below is cooler and breathable, else offshore over the deep basin — whatever it was chasing or eating
+        // (a trout makes brief raids into the warm shallows; a behavioural second there is ~5 h of heat)
+        else if (env.tempAt(a.x, a.y) > a.uilt - 3) {
+          const below = Math.min(a.y + 60, bedY(a.x) - 6), cooler = env.tempAt(a.x, below) < env.tempAt(a.x, a.y) - 1 && env.oxygenAt(a.x, below) > a.o2Crit;
+          escUp = cooler ? Math.PI / 2 : (a.x < W * BASIN.CENTER ? 0.15 : Math.PI - 0.15);
+        }
         // SPAWNING AGGREGATION target (applied below): in its spawning season a breeding-ready adult migrates to the
         // littoral spawning ground — ONE per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf), so a sparse
         // population converges where mates can find each other, as real pike do on a traditional spawning marsh
@@ -1759,10 +1777,13 @@ export class World {
       // bass fry, carp and catfish fry alike), shifting to its adult diet past a species-specific length (sp.Lzoo)
       if (a.gut < gEff && !sp.diet.plankton && a.L < sp.Lzoo) this._eatZoo(a, slots, gEff - a.gut);
       if (a.gut < gEff && sp.diet.plankton) this._eatZoo(a, slots, gEff - a.gut);
-      if (a.gut < gEff && sp.diet.insect) this._graze(a, this.insectGrid, slots, gEff - a.gut, PREY.INSECT_ED, 1);   // surface fish rise to emerged insects
-      if (gEff - a.gut >= PREY.NYMPH_G && (sp.diet.larva || sp.diet.insect) && this.nymphs.length && rand() < ODONATA.CRYPTIC && (k = this._takeNearest(this.nymphGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.NYMPH_G, PREY.NYMPH_ED, 1);   // dragonfly nymphs (cryptic): a big insect meal
+      // (a piscivore past ~3× its piscivory length no longer bothers with insects — a 35-cm bass or a pike lives on fish and
+      // crayfish; perch and trout, whose piscivory starts late, keep eating them — `bugs`)
+      const bugs = !sp.diet.fish || a.L < 3 * sp.Lpisc;
+      if (bugs && a.gut < gEff && sp.diet.insect) this._graze(a, this.insectGrid, slots, gEff - a.gut, PREY.INSECT_ED, 1);   // surface fish rise to emerged insects
+      if (bugs && gEff - a.gut >= PREY.NYMPH_G && (sp.diet.larva || sp.diet.insect) && this.nymphs.length && rand() < ODONATA.CRYPTIC && (k = this._takeNearest(this.nymphGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.NYMPH_G, PREY.NYMPH_ED, 1);   // dragonfly nymphs (cryptic): a big insect meal
       if (sp.diet.cray && gEff - a.gut >= PREY.CRAY_G && (k = this._takeNearest(this.crayGrid, a.x, a.y, R, 1))) this._ate(a, k, PREY.CRAY_G, PREY.CRAY_ED, PREY.CRAY_DIG);   // a crayfish is a big meal (bass, pike, catfish)
-      if (a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1);   // benthic insect larvae
+      if (bugs && a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1);   // benthic insect larvae
       let nS;
       if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
@@ -1807,7 +1828,11 @@ export class World {
           fem.gon = 0; mal.gon = 0;
           // a nest-guarding species spawns ON THE BOTTOM where the pair meets (a fanned-out nest); the MALE guards it (as
           // male bass, sunfish, bullheads and fathead minnows do)
-          const mx = (a.x + b.x) / 2, nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
+          // the eggs go in the LITTORAL, wherever the pair met: nests on the shallow shelf's bed (bass, sunfish and bullheads
+          // fan nests in 0.3–2 m of water), egg strands and scattered eggs over the shallows (perch, pike, carp, fatheads) —
+          // never on the deep, oxygen-poor bed
+          const px = (a.x + b.x) / 2, mx = px < W * BASIN.CENTER ? Math.min(px, W * SPAWN.SHALLOWS) : Math.max(px, W * (1 - SPAWN.SHALLOWS));
+          const nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
           // schools: up to MAX_PER_SPAWN, while the lake (CAP) and the species (SP_SHARE of it) have free slots — else the
           // larvae join the species' youngest school if it is under MERGE_DAYS old (its genome kept or replaced in
           // proportion to the fish each side brings: one seeded draw), or are lost
@@ -1823,7 +1848,7 @@ export class World {
             }
           }
           for (let ci = 0; ci < nSch; ci++) {
-            const hue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = nest ? broodPos(nest.x, nest.y) : broodPos(mx, (a.y + b.y) / 2);
+            const hue = (a.hue + dh * 0.5 + gauss() * 5 + 360) % 360, bp = nest ? broodPos(nest.x, nest.y) : broodPos(mx, Math.min((a.y + b.y) / 2, bedY(mx) * 0.7));
             const f = this._mkFry(a.species, bp.x, bp.y, larvae / nSch, Math.max(a.gen, b.gen) + 1, hue, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)));
             if (nest) { f.ni = mal.id; f.nx = nest.x; f.ny = nest.y; }
             this.fry.push(f); fryN[a.species]++; this.stats.spawned = (this.stats.spawned || 0) + 1;

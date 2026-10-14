@@ -39,7 +39,9 @@ Save format **v27**. Every number below is from a published source (cited inline
   starve in a lake full of food. Small invertebrates are PATCHES (a zooplankton swarm, a patch of midge
   larvae: `PREY.*_G` grams, reached within `PREY.PATCH_R`) that a small fish crops and a big one clears — the one
   calibrated quantity (it stands in for the slice of lake the 2-D world represents). Half the new insect-larva patches live
-  up the macrophyte stems (`INSECT.EPIPHYTE` — the plant-dwelling invertebrates that feed bluegill and young perch).
+  up the macrophyte stems (`INSECT.EPIPHYTE` — the plant-dwelling invertebrates that feed bluegill and young perch), and a
+  LITTORAL zooplankton (chydorids, cyclopoids among the weeds, fed by periphyton — `PLANKTON.LITTORAL_RATE` × plant cover)
+  keeps breeding through the open water's clear-water crash: the food young fish in the weed beds live on.
 - **Diet choice** (optimal foraging): a fish takes the most profitable food in reach first — fish, young-of-year,
   zooplankton, insects, nymphs, crayfish, larvae, snails — and the POOR foods (detritus ~340 J/g digestible, algae ~730,
   plants ~540) only as a hungry fish's filler when it found nothing better that step, and only up to `FEED.POOR_GUT` of its
@@ -57,7 +59,9 @@ Save format **v27**. Every number below is from a published source (cited inline
   below FB4's routine rate (`SWIM` 2.0: ~4× routine at the critical speed, Brett 1964). One behavioural second is ~5 h of
   physiology, so the day's mean — not a momentary dash — is what metabolism sees.
 - **Death** (hazards, cause tallied in `stats.died`): starvation (logistic in K: 50 %/day at K 0.55, 99 % at 0.68 — K is
-  W / the 75th-percentile standard weight, so a lean fish at 0.8 is thin, not dying), heat above the species' UILT and
+  W / the 75th-percentile standard weight, so a lean fish at 0.8 is thin, not dying; below K 0.9 a fish turns its metabolism
+  down — up to 30 % at K 0.55, as food-deprived fish do, Méndez & Wieser 1993 — so a lean summer stunts a crowded
+  population rather than starving it), heat above the species' UILT and
   hypoxia below its acute lethal O₂ (EPA 1986; Moss & Scott 1961 …, rising 5.5 %/°C) — both judged on the O₂ and temperature
   EXPERIENCED over ~2 h (`BIOE.EXPOSE_TAU`), the share `BIOE.M_OTHER` of each species' published natural mortality that the
   lake doesn't simulate (disease, birds, angling: M = 5.4/tmax, Hamel & Cope 2022; bass and pike from field studies), old
@@ -67,18 +71,22 @@ Save format **v27**. Every number below is from a published source (cited inline
 - **Gape**: prey body depth (length × the species' depth ratio × the body gene) must fit the predator's mouth (length ×
   gape ratio: bass 0.12, pike ≈ its own depth — Lawrence 1958, Hill et al. 2004, Nilsson & Brönmark 2000); a lone prey under
   7 % of the predator's length is ignored (a 65-cm pike's median prey is ~7 cm: Gaeta et al. 2018), a dense school of young
-  fish down to half that (`FEED.SCHOOL_MIN`). Strikes can miss (`capture`: pike 0.6 … perch 0.15), leaving the predator a
-  moment to recover. Piscivory starts at a species length (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats
+  fish down to half that (`FEED.SCHOOL_MIN`). Strikes can miss (`capture`: pike 0.6 … perch 0.15, × the prey species'
+  `vuln`), leaving the predator a moment to recover (`FEED.MISS_CD`). Big piscivores (past ~3× their piscivory length:
+  adult bass, pike) no longer graze insects and larvae — they live on fish and crayfish. (Tried and reverted: a stronger
+  attack reflex + 0.1-s miss recovery — it let the predators, held in view by the rescue, eat the forage fish out.) Piscivory starts at a species length (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats
   zooplankton below `Lzoo` (pike until 5 cm).
 - **Reproduction**: sexes (opposite-sex pairs only; the male guards the nest, at a metabolic and feeding cost —
   `BROOD.GUARD_*`); eggs from the published length–fecundity regressions (perch: Schneider 1984; bass: Laarman & Schneider
   1985; pike: Priegel & Krohn 1975 …) × the female's ripeness; maturity by length AND age (the SIZE gene is now the
-  maturation length — a heritable life-history trait). A ripe fish in season spawns whatever the crowd — density acts on the
+  maturation length — a heritable life-history trait). Eggs go in the LITTORAL wherever the pair met (`SPAWN.SHALLOWS`:
+  nests on the shallow shelf's bed, scattered eggs over the shallows — never the deep, oxygen-poor bed); a guarded brood
+  forages in a cloud within the guard radius of its nest. A ripe fish in season spawns whatever the crowd — density acts on the
   YOUNG (food, predation, cannibalism, then the agent budget at recruitment), not on the adults' readiness. Spawnings are
   counted per species (`stats.spawns`); a new generation exists from hatching (`maxGen`).
 - **Young-of-year** (`world.fry`, `FRY`) — SUPER-INDIVIDUALS (Scheffer et al. 1995): a spawning's eggs that survive to
   swim-up (`sHatch`) become schools, each one record of `n` identical fish run on the same FB4 equations (updated every
-  `FRY.TICK` s, staggered). They eat zooplankton first, then (from `FRY.BENTH_L`) the bed's and weeds' insect larvae and
+  `FRY.TICK` s, staggered) and foraging no better than the same fish alone (`FRY.EAT_R`). They eat zooplankton first, then (from `FRY.BENTH_L`) the bed's and weeds' insect larvae and
   detritus as their species does, the young piscivores (pike, bass) other schools — cannibalism included; they head for the
   food they find, climb out of hypoxic water, drop out of near-lethal heat; they die at the larval critical-period rate
   (`FRY.M_LARVA`, fading by ~3 cm), the agents' size-scaled share of M, starvation, heat and hypoxia; they breathe the
