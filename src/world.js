@@ -55,6 +55,11 @@ const notDead = it => !it.dead;
 const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
 // …but young-of-year pick the small early instars off the mud surface: for fry only INSECT.REFUGE_FRY of a patch is out of reach
 const larvaFreeFry = it => !it.dead && it.m > INSECT.REFUGE_FRY + 1e-3;
+// a zooplankton swarm with animals outside its refuge: PLANKTON.REFUGE_G grams of every swarm are out of a fish's reach (the
+// deep, dark water by day — Daphnia's diel vertical migration — and the thinned-out swarm a forager gives up on); fry pick
+// off single animals and take a swarm down to PLANKTON.REFUGE_FRY
+const zooFree = it => !it.dead && it.m > PLANKTON.REFUGE_G + 1e-3;
+const zooFreeFry = it => !it.dead && it.m > PLANKTON.REFUGE_FRY + 1e-3;
 // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
 // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
 // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
@@ -618,11 +623,11 @@ export class World {
   }
 
   // a zooplankter of kind `k` (0 Daphnia, 1 copepod — PLANKTON.DAPH_*); by default drawn from the current Daphnia share
-  _mkPlankton(x, y, k) {
+  _mkPlankton(x, y, k, mass) {
     const px = x ?? rand(6, W - 6);
     const py = y ?? clamp(rand(16, bedY(px) - 12), 12, bedY(px) - 8);   // stay within the water column
     const kind = k ?? (rand() < this._daphShare ? 0 : 1);
-    return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), k: kind, m: kind === 0 ? PREY.DAPH_G : PREY.COPE_G, dead: false };   // m: the patch's grams of zooplankton
+    return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), k: kind, m: mass ?? (kind === 0 ? PREY.DAPH_G : PREY.COPE_G), dead: false };   // m: the swarm's grams of zooplankton
   }
   // Daphnia's share of new zooplankton: they breed fast only in warm water and can't cope with a cyanobacterial bloom
   daphShare() {
@@ -674,7 +679,7 @@ export class World {
   }
 
   // ---------- spatial queries used by senses (visual range shortened by water turbidity) ----------
-  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, Math.min(r, PLANKTON.SIGHT) * c, notDead); }   // tiny prey: seen only a few body lengths off
+  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, Math.min(r, PLANKTON.SIGHT) * c, zooFree); }   // tiny prey: seen only a few body lengths off
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
   qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, larvaFree); }   // benthic insect larvae (perch, bottom feeders)
@@ -796,10 +801,10 @@ export class World {
   _eatZoo(a, n, room) {
     let k = 0, g = 0, J = 0;
     for (let i = 0; i < n && room - g > 1e-9; i++) {
-      const m = this.planktonGrid.nearest(a.x, a.y, Math.max(a.eatRadius, PREY.PATCH_R), notDead); if (!m) break;
+      const m = this.planktonGrid.nearest(a.x, a.y, Math.max(a.eatRadius, PREY.PATCH_R), zooFree); if (!m) break;
       const z = m.item;
       if (z.k === 1 && rand() < PLANKTON.COPE_ESCAPE) continue;
-      const take = Math.min(z.m, room - g); z.m -= take; if (z.m <= 1e-9) z.dead = true;   // a small fish crops part of a patch
+      const take = Math.min(z.m - PLANKTON.REFUGE_G, room - g); z.m -= take;   // a small fish crops part of a swarm (never its refuge)
       k++; g += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED);
     }
     if (k) { a.gut += g; a.gutE += J; a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
@@ -925,7 +930,7 @@ export class World {
         if (fr) { const f = fr.item; f.dead = true; f.eatenBy = 'nymph'; counts[f.species]--; this._counts[f.species] = counts[f.species]; if (f.id === this.selectedId) this.selectedId = null; this.stats.nymphEaten = (this.stats.nymphEaten || 0) + 1; continue; }
         const sc = this.fry.length ? this.fryGrid.nearest(n.x, n.y, R, isNymphFry) : null;   // or a few larvae from a school
         if (sc) { const f = sc.item; f.n -= Math.min(f.n, 3); if (f.n < 1) f.dead = true; continue; }
-        this._takeNearest(this.planktonGrid, n.x, n.y, R);
+        { const z = this.planktonGrid.nearest(n.x, n.y, R, zooFreeFry); if (z) z.item.m -= Math.min(ODONATA.BITE, z.item.m - PLANKTON.REFUGE_FRY); }   // a bite of the swarm
       }
     }
     // --- adult dragonflies: dart low over the water, snatch emerged insects, dip to lay eggs over the shallows; in the
@@ -1075,7 +1080,7 @@ export class World {
       else if (T > sp.uilt - 3) { f.tx = f.x; f.ty = f.y + 60; }
       else {
         const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= (sp.benthL ?? FRY.BENTH_L);
-        let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
+        let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, zooFreeFry) : null, m;
         if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFreeFry))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
@@ -1121,9 +1126,9 @@ export class World {
       }
     }
     if (d.plankton || f.L < sp.Lzoo) for (; feeds > 0 && want - got > 1e-12; feeds--) {
-      const m = this.planktonGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
-      const z = m.item, take = Math.min(z.m, want - got);
-      z.m -= take; if (z.m <= 1e-9) z.dead = true;
+      const m = this.planktonGrid.nearest(f.x, f.y, FRY.EAT_R, zooFreeFry); if (!m) break;
+      const z = m.item, take = Math.min(z.m - PLANKTON.REFUGE_FRY, want - got);
+      z.m -= take;
       got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
     }
     if (f.L >= (sp.benthL ?? FRY.BENTH_L) && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
@@ -1266,31 +1271,42 @@ export class World {
     // environment fields (uses current plants & agents)
     env.step(dt, this);
 
-    // zooplankton track the phytoplankton field: they multiply where algae is abundant, graze it
-    // down, and starve where it's depleted (rate & cap scale with world area)
+    // ZOOPLANKTON (PLANKTON): each swarm's grams GROW with warmth and the algae around it (Daphnia PLANKTON.GROW_D, copepods
+    // GROW_C a day at 20 °C on ample food, × Q10, × a Holling food response) less a background loss to invertebrate predators,
+    // shrink when the algae run short, and a well-fed swarm SPLITS in two (reproduction + dispersal) — so the zooplankton's
+    // production follows its biomass, temperature and food, as a lake's does (Daphnia populations grow ~0.1–0.4/day at 20 °C,
+    // copepods turn over 3–10 %/day), instead of swarms appearing at full size up to a cap (PLANKTON.CAP is now only a computing
+    // bound). Daphnia breed only in warm water (DAPH_T) and not amid a cyanobacterial bloom; in spring they hatch from resting
+    // eggs (HATCH). Each swarm grazes the algae in proportion to its grams.
     const area = WORLD.AREA_SCALE;
     const planktonCap = scaleCount(PLANKTON.CAP);
-    const algae = clamp(env.meanPhyto() / PHYTO.CAP, 0, 1);
-    const bloom = PLANKTON.RATE_BASE * area * algae;
     this._daphShare = this.daphShare();
-    for (let n = poissonish(bloom * dt); n > 0 && this.plankton.length < planktonCap; n--) this.plankton.push(this._mkPlankton());
-    // LITTORAL zooplankton (chydorid and sidid cladocerans, cyclopoid copepods living among the weeds): they graze the
-    // periphyton and detritus on the plants, not the open-water phytoplankton, so they keep breeding through the open
-    // water's clear-water crash — the food young fish in the weed beds actually live on. Recruited among the macrophytes,
-    // in proportion to how much of the lake's plant cover is standing
+    const dW = (T) => clamp((T - PLANKTON.DAPH_T[0]) / (PLANKTON.DAPH_T[1] - PLANKTON.DAPH_T[0]), 0, 1);
+    for (let n = poissonish(PLANKTON.HATCH * area * dW(env.tempC) * dt); n > 0 && this.plankton.length < planktonCap; n--) this.plankton.push(this._mkPlankton(undefined, undefined, 0, PLANKTON.M0));   // Daphnia from resting eggs
+    // LITTORAL zooplankton (chydorid and sidid cladocerans, cyclopoid copepods living among the weeds): recruited among the
+    // macrophytes, in proportion to how much of the lake's plant cover is standing — the food young fish in the weed beds live on
     const plantF = clamp(this.plants.length / scaleCount(PLANT.MAX), 0, 1);
     if (this.plants.length) for (let n = poissonish(PLANKTON.LITTORAL_RATE * area * plantF * dt); n > 0 && this.plankton.length < planktonCap; n--) {
       const p = this.plants[(rand() * this.plants.length) | 0];
-      if (!p.dead && p.height > 4) this.plankton.push(this._mkPlankton(clamp(p.x + rand(-12, 12), 6, W - 6), clamp(p.baseY - p.height * rand(0, 1), 12, bedY(p.x) - 6), 1));
+      if (!p.dead && p.height > 4) this.plankton.push(this._mkPlankton(clamp(p.x + rand(-12, 12), 6, W - 6), clamp(p.baseY - p.height * rand(0, 1), 12, bedY(p.x) - 6), 1, PLANKTON.M0));
     }
-    const planktonFloor = scaleCount(18);
-    if (this.plankton.length < planktonFloor && algae > 0.03) for (let n = poissonish(12 * area * dt); n > 0 && this.plankton.length < planktonFloor; n--) this.plankton.push(this._mkPlankton());
-    for (const p of this.plankton) {
+    const planktonFloor = scaleCount(18);   // resting stages: the zooplankton never quite vanish
+    if (this.plankton.length < planktonFloor) for (let n = poissonish(12 * area * dt); n > 0 && this.plankton.length < planktonFloor; n--) this.plankton.push(this._mkPlankton(undefined, undefined, undefined, PLANKTON.M0));
+    const DAY = BIOE.DAY;
+    for (let i = 0; i < this.plankton.length; i++) {
+      const p = this.plankton[i];
       if (p.dead) continue;
-      const daph = p.k === 0;
-      env.grazePhyto(p.x, p.baseY, PLANKTON.GRAZE * (daph ? PLANKTON.DAPH_GRAZE : PLANKTON.COPE_GRAZE) * dt);   // eat algae (Daphnia hardest)
-      if (env.phytoAt(p.x, p.baseY) < PLANKTON.STARVE_AT && rand() < PLANKTON.STARVE * dt) { p.dead = true; continue; }  // starve
+      const daph = p.k === 0, T = env.tempAt(p.x, p.baseY), q = Math.pow(PLANKTON.Q10, (T - 20) / 10);
+      const food = env.edibleAlgaeAt(p.x, p.baseY), F = food / (food + PLANKTON.K_FOOD);
+      const gMax = daph ? PLANKTON.GROW_D * dW(T) * clamp(1 - PLANKTON.DAPH_CYANO * env.cyanoAt(p.x, p.baseY) / CYANO.CAP, 0, 1) : PLANKTON.GROW_C;
+      const mMax = daph ? PLANKTON.MMAX_D : PLANKTON.MMAX_C;
+      p.m += p.m * (gMax * F * Math.max(0, 1 - p.m / mMax) - (PLANKTON.MORT + PLANKTON.STARVE_LOSS * (1 - F))) * q / DAY * dt;
+      env.grazePhyto(p.x, p.baseY, (daph ? PLANKTON.GRAZE_D : PLANKTON.GRAZE_C) * p.m * q * dt);   // eat algae (Daphnia hardest)
+      if (p.m < PLANKTON.M_MIN) { p.dead = true; continue; }
       if (env.cyanoAt(p.x, p.baseY) > CYANO.TOX_THRESH * CYANO.CAP && rand() < CYANO.TOX_ZOO * (daph ? PLANKTON.DAPH_TOX : 1) * dt) { p.dead = true; continue; }  // cyanotoxin kills zooplankton in a dense scum (HAB)
+      if (p.m > PLANKTON.SPLIT * mMax && this.plankton.length < planktonCap) {   // a well-fed swarm splits: half drifts off as a new one
+        p.m *= 0.5; this.plankton.push(this._mkPlankton(clamp(p.x + rand(-14, 14), 6, W - 6), clamp(p.baseY + rand(-10, 10), 12, bedY(p.x) - 6), p.k, p.m));
+      }
       p.x += (p.vx + env.currentAt(p.x, p.baseY)) * dt;                   // own drift + wind & inflow→outflow current
       if (p.x < 4) { p.x = 4; p.vx = Math.abs(p.vx); } else if (p.x > W - 4) { p.x = W - 4; p.vx = -Math.abs(p.vx); }
       p.baseY = clamp(p.baseY, 10, bedY(p.x) - 6);                        // ride up the sloping bed; don't drift into the sediment

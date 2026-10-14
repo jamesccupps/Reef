@@ -650,14 +650,28 @@ export const SEDOM = {
 // "plankton" particles are ZOOPLANKTON: they graze the phytoplankton field, drift, and are
 // eaten by planktivores. Their numbers track the algae (phyto→zoo→planktivore chain).
 export const PLANKTON = {
-  CAP: 300,                // reference-pond cap (auto-scaled by world area)
-  RATE_BASE: 60,           // /s max spawn at full phytoplankton density (scaled by area)
-  LITTORAL_RATE: 15,       // /s spawn among the macrophytes at full plant cover (scaled by area) — the weed-bed zooplankton (often denser than the open water's),
-                           //   fed by periphyton and detritus rather than the open-water algae (world.js)
+  CAP: 300,                // swarms in the reference pond (× area) — a computing bound: food, temperature and fish set the stock
+  // GROWING SWARMS: a swarm's grams grow at GROW × Q10 × the algae around it (Holling, K_FOOD) less MORT (invertebrate
+  // predators) and STARVE_LOSS × (1 − food); past SPLIT × its max it splits in two. Rates per DAY at 20 °C.
+  GROW_D: 0.4,             // /day Daphnia on ample food (D. pulex populations grow ~0.12/day on natural food at 20 °C, ~0.3–0.4 saturated)
+  GROW_C: 0.15,            // /day copepods (P/B 0.03–0.1/day measured, ~0.15 at the most)
+  MORT: 0.05,              // /day background loss to invertebrate predators (Chaoborus, Leptodora, cyclopoids)
+  STARVE_LOSS: 0.1,        // /day shrinkage of a swarm with no algae around it
+  Q10: 2.5,                // growth and losses ×Q10 per +10 °C
+  K_FOOD: 0.08,            // edible algae (green + diatoms, field units) at which growth runs at half speed
+  MMAX_D: 6, MMAX_C: 4,    // g: a swarm's growth slows toward this (logistic within the swarm)
+  SPLIT: 0.7,              // … and past SPLIT × it the swarm splits in two (half drifts off as a new swarm)
+  M0: 0.5,                 // g: a new swarm (hatched from resting eggs, recruited among the weeds, or the never-vanish floor)
+  M_MIN: 0.05,             // g: a swarm shrunk below this is gone
+  REFUGE_G: 0.6,           // g of every swarm out of a fish's reach — Daphnia spend the day in the deep, dark water (diel vertical
+                           //   migration) and a forager leaves a thinned-out swarm: fish crop zooplankton, they don't clear it …
+  REFUGE_FRY: 0.1,         // … but fry pick off single animals and take a swarm down to this
+  HATCH: 2,                // /s new Daphnia swarms from resting eggs in warm water (× area, × the Daphnia warmth window)
+  GRAZE_D: 0.0048,         // algae (field units) a gram of Daphnia clears /s at 20 °C (× Q10) — Daphnia graze hardest …
+  GRAZE_C: 0.002,          // … copepods less (per gram, the old per-swarm rates 0.004 × 2.4 / 2 g and × 0.6 / 1.2 g)
+  LITTORAL_RATE: 15,       // /s new swarms among the macrophytes at full plant cover (× area) — the weed-bed zooplankton (often denser than the
+                           //   open water's), the food young fish in the weed beds live on
   DRIFT: 6,                // horizontal drift speed
-  GRAZE: 0.004,            // phytoplankton biomass each zooplankter clears /s (gentle → stable cycle)
-  STARVE: 0.08,            // death rate /s where phytoplankton is depleted (soft starvation)
-  STARVE_AT: 0.025,        // phytoplankton level below which zooplankton starve
   // planktivore facultative omnivory (food-web rebalance): when zooplankton is scarce, a hungry planktivore
   // grazes the phytoplankton field directly at a LOW survival ration — real planktivorous fish are facultative
   // phyto grazers. This cushions the boom-bust crash so the forage base (and the predators above it) don't
@@ -670,11 +684,9 @@ export const PLANKTON = {
   // cyanobacteria and barely breed in cold water; 1 = COPEPODS — small, quick and evasive, cold-tolerant (they carry the
   // zooplankton through winter), a leaner meal. Daphnia's share of new zooplankton follows temperature and collapses in
   // a cyanobacterial bloom; size-selective fish predation (copepods escape more) does the rest.
-  DAPH_T: [9, 15],         // °C over which Daphnia's share of births ramps from 0 to DAPH_MAX
-  DAPH_MAX: 0.7,           // Daphnia's max share of new zooplankton
-  DAPH_CYANO: 2.5,         // × the cyanobacteria fraction cut from Daphnia's share
-  DAPH_GRAZE: 2.4,         // Daphnia graze × GRAZE; copepods × COPE_GRAZE
-  COPE_GRAZE: 0.6,
+  DAPH_T: [9, 15],         // °C over which Daphnia's growth (and share of floor recruits) ramps from 0 to full
+  DAPH_MAX: 0.7,           // Daphnia's max share of floor recruits
+  DAPH_CYANO: 2.5,         // × the cyanobacteria fraction cut from Daphnia's growth
   COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike
   DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate (cladocerans are the most sensitive)
   SIGHT: 48,               // px: how far a fish can see a millimetre-sized zooplankter (a few body lengths), whatever its vision range

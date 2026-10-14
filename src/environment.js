@@ -346,6 +346,7 @@ export class Environment {
     diffuse(cyn, tmp, CYANO.DIFFUSE * dt, this.mask);
   }
   phytoAt(x, y) { return this.phyto[this.cellOf(x, y)]; }
+  edibleAlgaeAt(x, y) { const i = this.cellOf(x, y); return this.phyto[i] + this.diatom[i]; }   // green algae + diatoms: what zooplankton graze
   meanPhyto() { return this._meanPhyto; }
   meanDiatom() { return this._meanDiatom; }   // upper-column diatom density (the spring bloom)
   diatomAt(x, y) { return this.diatom[this.cellOf(x, y)]; }

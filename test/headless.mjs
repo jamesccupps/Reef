@@ -2225,11 +2225,11 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     // SCRAMBLE COMPETITION: a school with almost no food shrinks to what it can feed — its survivors hold their mass — over
     // the days its reserves last, rather than every fish starving at once
     { seed(7101); const sw = new World().setDate(0.32); sw.agents = []; sw.fry = []; sw.plankton = []; sw.larvae = []; sw.nymphs = [];
-      const keepRate = PLANKTON.RATE_BASE; PLANKTON.RATE_BASE = 0;
+      const keepRate = PLANKTON.HATCH; PLANKTON.HATCH = 0;
       const f = mkSchool(sw, 'perch', 900, 300, 1000), W0 = f.W, n0 = f.n; let nDay = null;   // (perch larvae: no algae to fall back on)
       for (let i = 0; i < Math.round(1 * BIOE.DAY * 30); i++) { sw.step(1 / 30); sw.plankton = []; }
       nDay = f.n; for (let i = 0; i < Math.round(6 * BIOE.DAY * 30) && !f.dead; i++) { sw.step(1 / 30); sw.plankton = []; }
-      PLANKTON.RATE_BASE = keepRate;
+      PLANKTON.HATCH = keepRate;
       check('SCRAMBLE: an unfed school of larvae thins over days (not all at once) and its survivors keep their mass', nDay < n0 * 0.97 && nDay > n0 * 0.5 && (f.dead || f.n < nDay * 0.7) && Math.abs(f.W - W0) < W0 * 0.05, `${n0} → ${nDay.toFixed(0)} after a day → ${f.dead ? 'gone' : f.n.toFixed(0)} after a week; W ${W0.toExponential(2)} → ${f.W.toExponential(2)} g`); }
     // a PISCIVORE works a school in feeding BOUTS: a bass beside a school of 3-cm fry takes many fish in a second
     { seed(7102); const bw = new World().setDate(0.40); bw.fry = []; bw.cray = [];
