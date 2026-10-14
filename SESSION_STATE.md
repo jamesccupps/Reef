@@ -142,6 +142,11 @@ fatheads scarce (3–21 adults — realistic in bass lakes), sunfish dominant. G
 NEXT: phase-1 leftovers — a slow sediment organic pool (insect larvae recruitment still gated on fresh detritus particles;
 det 0–30 on the bed), pike underfed in year 2 (p 0.03–0.5), perch adults fast-growing; then PHASE 2 (visible evolution —
 Explore survey done 2026-10-13: Evolution card + world.series exist; missing trait history/variance/saved history/fast-forward).
+▶▶▶ USER PLAN (2026-10-14, before compaction — supersedes the older phase order): (1) finish IMPLEMENTING everything and make
+it ACCURATE (phase-1 leftovers above, then visible evolution: trait history + fast-forward); (2) a full review pass on the
+GUI, the graphics, the webpage information text, and the graphs/charts; (3) on the roadmap: MULTI-LAKE landscape with
+STREAMS, RIVERS and PONDS; (4) what-if controls. STATE: main = science = a7cdc1c, tree clean, gate green, backup
+G:\synapse-reef-backups\synapse-reef_20261014_0204_crayfish-littoral-bass.zip. Resume at (1): the sediment organic pool.
 Tried, no clear gain (reverted): HUNT_R 8/12 (pike gorge, bass unchanged), a worth-the-chase prey filter (CHASE_MIN).
 ROOT of bass starvation: in June–July YOY are 1–2-cm larvae (~0.04 g), fathead adults thin out, crayfish few — crayfish
 model predates bioenergetics and recruits from a near-EMPTY detritus pool (DETRITUS particles live 26 s ≈ 5 d → 0–30 on
