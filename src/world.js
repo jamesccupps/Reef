@@ -1133,22 +1133,19 @@ export class World {
   }
   // a fish crops the nearest school of young fish it can eat (a Poisson draw, as many as fit its gut). A PISCIVORE takes a
   // feeding bout: FRY.ATTACK × its capture success fish per second (fewer from a school thinned to a few fish — a type-II
-  // response in the school's size, FRY.N_HALF) — from a school anywhere in its hunting arena (FEED.HUNT_R × its reach, as
-  // takePrey: one behavioural second is ~5 h of hunting), at the full rate within the school and falling off toward the
-  // arena's edge; a plankton/insect eater picks off larvae at FRY.CATCH per handling slot from a school it is in. Weed cover
-  // shelters the young (COVER.REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is mostly
-  // protected (BROOD.PROTECT)
+  // response in the school's size, FRY.N_HALF); a plankton/insect eater picks off larvae at FRY.CATCH per handling slot.
+  // Weed cover shelters the young (COVER.REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is
+  // mostly protected (BROOD.PROTECT). (Tried: bouts across the whole hunting arena at 4× the rate — perch and the other
+  // piscivores ate ~5× more young-of-year, recruitment failed and the lake thinned year on year; the bass gained nothing.)
   _eatFry(a, gEff, slots, dt) {
-    const R0 = a.eatRadius + 6, pisc0 = a.sp.diet.fish && a.L >= a.sp.Lpisc, Rh = pisc0 ? Math.max(R0, a.eatRadius * FEED.HUNT_R) : R0;
-    // a piscivore works the nearest school of young FISH in its arena (tiny larvae nearer by don't hide it); failing that,
-    // a fish that eats larvae picks at a school of them it is in
-    let m = pisc0 ? this.fryGrid.nearest(a.x, a.y, Rh, piscSchool, a) : null;
-    if (!m && (!pisc0 || a.L < 3 * a.sp.Lpisc || !a.sp.diet.fish)) m = this.fryGrid.nearest(a.x, a.y, R0, canEatFry, a);
+    const R0 = a.eatRadius + 6, pisc0 = a.sp.diet.fish && a.L >= a.sp.Lpisc;
+    // a piscivore works the nearest school of young FISH it is in (tiny larvae nearer by don't hide it); failing that, a
+    // fish that eats larvae (a big piscivore no longer does) picks at a school of them
+    let m = pisc0 ? this.fryGrid.nearest(a.x, a.y, R0, piscSchool, a) : null;
+    if (!m && (!pisc0 || a.L < 3 * a.sp.Lpisc)) m = this.fryGrid.nearest(a.x, a.y, R0, canEatFry, a);
     if (!m) return;
     const f = m.item, pisc = schoolPrey(f, a);
-    if (!pisc && m.dist > R0) return;
-    const near = m.dist <= R0 ? 1 : 1 - (m.dist - R0) / (Rh - R0);   // in the school, or how close to it in the arena
-    const dens = near * f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
+    const dens = f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
     const sz = pisc ? Math.pow(Math.max(0, 1 - f.L * SP[f.k].depthR / gapeOf(a)), FEED.SIZE_SEL) : 1;   // (the size refuge, as sizeSel)
     const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * sz * dens * dt : FRY.CATCH * slots * dens));
     if (k < 1) return;
@@ -1956,6 +1953,14 @@ export class World {
         const f = makeAgent(key, ex, zoneY(sp, ex), rand(BIOE.K_START[0], BIOE.K_START[1]),
           src.gen, (src.hue + gauss() * 8 + 360) % 360, mutate(src.w), rand(sp.matureAge, sp.matureAge * 1.8), mutateGenes(src.gn));
         f.heading = fromLeft ? rand(-0.6, 0.6) : Math.PI + rand(-0.6, 0.6); f.mateCd = 0;   // arrives ready to spawn in season
+        // the colonists of a RARE species pair up: an arrival is of the sex its kind's few adults here lack (a refuge of
+        // one sex could never breed — the recolonists that count are the ones that find a mate)
+        if (counts[key] < rescueN) {
+          let nF = 0, nM = 0;
+          for (const q of this.agents) if (!q.dead && q.species === key && q.mature) { if (q.sex === 0) nF++; else nM++; }
+          for (const q of newborns) if (q.species === key && q.mature) { if (q.sex === 0) nF++; else nM++; }
+          if (nF !== nM) { f.sex = nF < nM ? 0 : 1; f.Lmat = lmatOf(sp, f.genes[0], f.sex); f.mature = f.L >= f.Lmat && f.age >= sp.matMinAge; }
+        }
         if (f.mature) f.gon = (f.sex === 0 ? sp.gsiF : sp.gsiM) * f.W;
         f.immigrant = true; counts[key]++; liveTotal++; newborns.push(f); this.stats.immigrants[key]++;
         if (f.gen > this.maxGen) this.maxGen = f.gen;

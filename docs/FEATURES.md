@@ -85,9 +85,11 @@ Save format **v27**. Every number below is from a published source (cited inline
   by cover, by its own species' shoal (predator confusion), by freezing (HIDE) and by a guardian on station, and extended
   by a committed STRIKE lunge; a miss alarms the prey and costs the predator `FEED.MISS_CD`. Kills and misses are thinned
   Poisson draws on the seeded RNG; behaviour (search, pursuit, flight, shoaling, cover) decides whether there is prey in
-  the arena at all. A school of young fish is worked the same way — anywhere in the arena, at the full bout rate inside
-  it — and a big piscivore hunts the schools of young FISH (`FEED.SCHOOL_MIN` up), not the larvae nearer by (those are
-  for the planktivores and for young piscivores under 3× their piscivory length). Without the size refuge the rate-based
+  the arena at all. A big piscivore feeding at schools of young fish works the school of young FISH it is in
+  (`FEED.SCHOOL_MIN` up), not larvae nearer by (those are for the planktivores and for young piscivores under 3× their
+  piscivory length). (Tried and reverted: school bouts across the whole hunting arena at 4× the rate — the perch and other
+  piscivores ate ~5× more young-of-year, recruitment failed and the lake thinned year on year, and the bass gained
+  nothing.) Without the size refuge the rate-based
   hunting let the lake's pike eat 10–16 kg of adult perch and bluegill in half a year and the community collapsed; with
   it the adults mostly outgrow the risk and the predators live on the small fish and the young-of-year, as real ones do.
   Still short: adult BASS in early summer (≈5–15 % of Cmax — the young-of-year are still 1–2-cm larvae, minnow adults
@@ -109,7 +111,7 @@ Save format **v27**. Every number below is from a published source (cited inline
   (`FRY.M_LARVA`, fading by ~3 cm), the agents' size-scaled share of M, starvation, heat and hypoxia; they breathe the
   lake's O₂. They are FOOD for everything whose mouth they fit: planktivores pick off larvae (`FRY.CATCH`), a piscivore
   works a school in feeding bouts (`FRY.ATTACK` × capture × vuln × the size refuge, a type-II response in the school's
-  size `FRY.N_HALF`; at compressed time a bout at a school fills the stomach — the gut and Cmax cap it), weeds
+  size `FRY.N_HALF`), weeds
   shelter them, a guarded nest protects them. Through summer, autumn and winter they are the lake's main forage — as
   young-of-year are in real lakes. Survivors RECRUIT as followed individuals on reaching the species' recruit length `L0`
   (fast growers: fatheads, young bass and pike) or as yearlings the next spring: one agent per `FRY.N_PER_AGENT`, within the

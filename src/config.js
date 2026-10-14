@@ -174,7 +174,7 @@ export const FRY = {
   SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
   CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
                        //   are dispersed and hard to find among the zooplankton
-  ATTACK: 400,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
+  ATTACK: 100,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
                        //   second is ~5 h of the fish's day, and a bass or perch working a school of young-of-year takes
                        //   dozens an hour; its gut and Cmax cap the meal. Weed cover shelters them (COVER.REFUGE)
   LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)

@@ -2095,14 +2095,16 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   });
 
   // TROUT: behavioural thermoregulation — in the warm summer lake a trout keeps deeper (cooler) than the same trout would
-  // if it didn't mind the heat (A/B: its optimum raised out of the way)
-  { const felt = hot => { const keep = SP.trout.tempTol; if (hot) SP.trout.tempTol = 30;   // tolerance raised: the heat no longer bothers it
+  // if it didn't mind the heat (A/B: its optimum AND its lethal limit raised out of the way — the heat escape keys on the
+  // UILT). Four trout per lake (the rescue alone keeps only one or two, too few for a stable mean)
+  { const felt = hot => { const keep = SP.trout.tempTol, keepU = SP.trout.uilt; if (hot) { SP.trout.tempTol = 30; SP.trout.uilt = 40; }   // the heat no longer bothers it
       try { let s = 0, n = 0;
         for (const sd of [6701, 6702]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated (oligotrophic) lake: no O₂ squeeze
+          for (let k = 0; k < 4; k++) { const t = tw.makeFish('trout', ONES7, SP.trout.matureAge + 50); t.x = 300 + k * 450; t.y = 150; tw.agents.push(t); }
           for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'trout') { s += tw.env.tempAt(a.x, a.y); n++; } } }
-        return n ? s / n : 0; } finally { SP.trout.tempTol = keep; } };
+        return n ? s / n : 0; } finally { SP.trout.tempTol = keep; SP.trout.uilt = keepU; } };
     const cool = felt(false), warm = felt(true);
-    check('TROUT seek cool water: in midsummer they live in cooler water than the same trout indifferent to heat (thermoregulation)', cool < warm - 0.5, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }
+    check('TROUT seek cool water: in midsummer they live in cooler water than the same trout indifferent to heat (thermoregulation)', cool < warm - 1.5, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }
 
   // the new life round-trips through save/load (v26)
   { seed(6801); const sw = new World().setDate(0.40); for (let i = 0; i < 60; i++) sw.step(1 / 30);
@@ -2273,6 +2275,13 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
         const pr = pw.makeFish('perch', ONES7); pr.L = L; pr.W = stdWeight(SP.perch.lw, L); pr.x = 1003; pr.y = 400; pw.agents = [pk, pr]; pw.agentGrid.rebuild(pw.agents); if (pw.takePrey(pk) === pr) n++; } return n; };
       const small = hit(8), big = hit(28);
       check('SIZE REFUGE: a pike catches a small perch far more often than one whose depth nears its gape (Gaeta et al. 2018: median prey 10–20 % of predator length)', small > big * 3 && big >= 0, `8-cm perch ${small}/300 vs 28-cm ${big}/300`); }
+    // a RARE species' colonists pair up: after a wipe the refuge backstop brings a female AND a male (a one-sex refuge could
+    // never breed)
+    { const keepI = { ...IMMIGRATION }; Object.assign(IMMIGRATION, immB);   // (this section runs with immigration off)
+      let ok = 0; for (const sd of [7501, 7502, 7503]) { seed(sd); const pw = new World(); pw.step(1 / 30); for (const a of pw.agents) if (a.species === 'minnow') a.dead = true; pw.agents = pw.agents.filter(a => !a.dead); pw.step(1 / 30);
+        const m = pw.agents.filter(a => !a.dead && a.species === 'minnow' && a.mature); if (m.some(a => a.sex === 0) && m.some(a => a.sex === 1)) ok++; }
+      Object.assign(IMMIGRATION, keepI);
+      check('a rare species’ immigrants pair up: the refuge after a wipe holds a female and a male', ok === 3, `${ok}/3 seeds`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);
     check('school and food-web knobs are sane', FRYC.ATTACK > 0 && FRYC.N_HALF > 0 && FRYC.R_WMIN > 0 && FEEDC.POOR_GUT > 0 && FEEDC.POOR_GUT < 1 && FEEDC.SCHOOL_MIN < FEEDC.PREY_MIN);
   }
