@@ -94,13 +94,55 @@ export class UI {
     this.paused = !!p;
     const b = $('btn-pause'); if (b) b.textContent = this.paused ? '▶ Resume' : '❚❚ Pause';
   }
-  togglePause() { this._setPaused(!this.paused); }
+  togglePause() { if (this._ff) return this.toast('skipping ahead — stop it first'); this._setPaused(!this.paused); }
 
   // set the sim-time multiplier and light up the matching speed button (relaxed / 1× / 2× / 4×)
   setSpeedVal(s) {
+    if (this._ff) return this.toast('skipping ahead — stop it first');
     this.speed = s; this._setPaused(false);
     document.querySelectorAll('#speed .seg').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.s - s) < 1e-6));
   }
+
+  // FAST-FORWARD: run the lake flat out in a module Worker (src/ffworker.js — no drawing, off the main thread) for `years`,
+  // then jump to the result. The main loop is paused meanwhile; "stop here" jumps to wherever it got. Saves are exact, so
+  // the result is the very lake the main thread would have reached. The evolution chart picks up the new history.
+  fastForward(years) {
+    if (this._ff || !(years > 0)) return;
+    let wk;
+    try { wk = new Worker(new URL('./ffworker.js', import.meta.url), { type: 'module' }); }
+    catch (err) { console.error(err); this.toast('this browser can’t run the fast-forward worker'); return; }
+    const bar = $('ffbar'), fill = $('ffbar-fill'), text = $('ffbar-text');
+    this._ff = { wk, wasPaused: this.paused };
+    this.paused = true; const pb = $('btn-pause'); if (pb) pb.textContent = '⏩ Skipping…';
+    document.querySelectorAll('#ff .seg, #speed .seg').forEach(b => { b.disabled = true; });
+    if (bar) bar.classList.remove('hidden'); if (fill) fill.style.width = '0%'; if (text) text.textContent = 'starting…';
+    const finish = () => {
+      const st = this._ff; this._ff = null; try { wk.terminate(); } catch { /* gone */ }
+      if (bar) bar.classList.add('hidden');
+      document.querySelectorAll('#ff .seg, #speed .seg').forEach(b => { b.disabled = false; });
+      this._setPaused(st ? st.wasPaused : false);
+    };
+    wk.onmessage = e => {
+      const m = e.data || {};
+      if (m.type === 'progress' || m.type === 'done') {
+        const f = m.total ? m.steps / m.total : 0, eta = m.rate > 0 ? (m.total - m.steps) / m.rate : 0;
+        if (fill) fill.style.width = (100 * f).toFixed(1) + '%';
+        if (text) text.textContent = `${m.label} · ${Math.round(100 * f)}% · ${fmtInt(m.rate)} steps/s` + (m.type === 'progress' && eta > 1 ? ` · ~${eta > 90 ? Math.round(eta / 60) + ' min' : Math.round(eta) + ' s'} left` : '');
+      }
+      if (m.type === 'done') {
+        try {
+          this.world.load(m.save);
+          if (this.world.selectedId != null && !this.world.agents.some(a => a.id === this.world.selectedId)) this.world.selectedId = null;
+          this.syncWeatherUI(true); this._acc = 1; this._evoKey = null;
+          this.toast(`skipped ahead to ${m.label} — ${plural(m.fish, 'fish', 'fish')}`);
+        } catch (err) { console.error(err); this.toast('could not jump to the fast-forwarded lake'); }
+        finish();
+      } else if (m.type === 'error') { console.error('fast-forward:', m.message); this.toast('fast-forward failed — ' + String(m.message).slice(0, 80)); finish(); }
+    };
+    wk.onerror = err => { console.error(err); this.toast('fast-forward failed'); finish(); };
+    wk.postMessage({ type: 'run', save: this.world.toJSON(), seconds: years * TIME.YEAR_LEN });
+  }
+  stopFastForward() { if (this._ff) this._ff.wk.postMessage({ type: 'stop' }); }
 
   // temperature is simulated in °C; convert only here at the UI boundary
   fmtTemp(c, dp = 1) { const n = Number(c); if (!Number.isFinite(n)) return '—'; return this.tempF ? Math.round(n * 9 / 5 + 32) + '°F' : n.toFixed(dp) + '°C'; }
@@ -199,6 +241,8 @@ export class UI {
   _wire() {
     const on = (id, ev, fn) => { const el = $(id); if (el) el[ev] = fn; };
     document.querySelectorAll('#speed .seg').forEach(b => b.onclick = () => this.setSpeedVal(+b.dataset.s));
+    document.querySelectorAll('#ff .seg').forEach(b => b.onclick = () => this.fastForward(+b.dataset.ff));
+    on('ffbar-stop', 'onclick', () => this.stopFastForward());
     on('btn-pause', 'onclick', () => this.togglePause());
 
     // click (or Enter/Space on) a temperature readout to switch between °F and °C. #ps-temp sits on the water overlay,

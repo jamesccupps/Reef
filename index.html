@@ -140,6 +140,21 @@
           </div>
         </div>
 
+        <div class="row ffrow">
+          <span class="fflabel" title="Run the lake flat out in the background (no drawing), then jump to it — the same lake, step for step">Skip ahead</span>
+          <div id="ff" class="seggroup">
+            <button class="seg" data-ff="0.0833">1 month</button>
+            <button class="seg" data-ff="0.25">season</button>
+            <button class="seg" data-ff="1">1 year</button>
+            <button class="seg" data-ff="5">5 years</button>
+          </div>
+        </div>
+        <div class="ffbar hidden" id="ffbar">
+          <div class="fftrack"><div class="fffill" id="ffbar-fill"></div></div>
+          <span class="fftext" id="ffbar-text"></span>
+          <button class="btn" id="ffbar-stop" title="Stop and jump to how far it got">stop here</button>
+        </div>
+
         <div class="row toggles">
           <label class="field"><span>Weather</span>
             <select id="sel-weather">

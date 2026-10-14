@@ -25,7 +25,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - Files: `core.js`, `config.js`, `bioenergetics.js`, `species.js`, `environment.js`, `world.js`, `camera.js`.
   - Never use `document`, `window`, `canvas` or `localStorage` there.
   - `species.js` `draw()` only calls a passed-in `put()`.
-- **Browser layer:** `render.js`, `glpost.js`, `inspector.js`, `ui.js`, `main.js`.
+- **Browser layer:** `render.js`, `glpost.js`, `inspector.js`, `ui.js`, `main.js`, `ffworker.js` (the fast-forward module Worker: imports only the pure modules).
 - **Determinism.**
   - Use the seeded `core.rand` and a fixed timestep.
   - Render and cosmetic randomness must use `Math.random`, never `core.rand`.
