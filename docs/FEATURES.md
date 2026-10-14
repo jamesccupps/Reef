@@ -5,7 +5,44 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-13 bioenergetics** section comes first, then **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-14 bed's organic layer** section comes first, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-14 the bed's organic layer: benthic production that follows the lake's productivity
+
+Save format **v28** (`env.sedOM`).
+
+- **Sediment organic matter** (`env.sedOM`, config `SEDOM`, `environment.js` `sedimentOM`): grams of labile organic
+  detritus on the bed of each field column. In: a share `SEDOM.SINK` (0.25) of the algae (green, diatoms, cyano) that die
+  in the column above settles onto its bed (`SEDOM.PP_G` g per unit of the algal fields — calibrated so the default lake
+  lays down ~750 g wet/m²/yr, a quarter of a mesotrophic lake's production); BENTHIC ALGAE (periphyton, epipelon) growing on
+  a lit bed (`SEDOM.PERI_G` × the light reaching it × Q10 — ~600 g wet/m²/yr on the default lake's shallows, ~nothing on
+  the dark deep floor, and less as the water turns murky: the clarity → littoral-production link); plant litter (`PLANT.LITTER_G` g per px of
+  height a plant sheds in senescence or loses dying); expired detritus particles; larval patches killed by anoxia. Out:
+  first-order bacterial decomposition (plankton detritus 0.144/day at 20 °C, Q10 1.94; × `SEDOM.ANOX` on an anoxic bed),
+  the larvae, and sifting bottom feeders. It is carbon/energy only: the N and P of the dying algae go where they always
+  went (water, DOM, the sediment-P store), so the closed N/P budgets are untouched; the O₂ cost of decomposition stays in
+  the microbial loop (DOM) and the fixed sediment demand `ENV.O2_SED`. Like real lakes, the deep basin gathers the most (it
+  receives a whole water column's algae and decomposes slowly when anoxic) while the weedy shallows live on plant litter.
+- **Larvae grow on it** (`INSECT`, `world.js` larvae step): a patch's grams grow at `INSECT.GROW` (0.2/day at the 25 °C
+  optimum) × warmth × Monod in its column's layer (`K_SOM`) × (1 − m/`PREY.LARVA_G`), debiting the layer at 1/`YIELD`
+  (0.15 g of larvae per g of detritus, wet), and shrink by respiration (`RESP`) when food is short; they die off on an anoxic
+  bottom (`O2_MIN`, `ANOX_DEATH` × Q10 2 — they outlast weeks of cold anoxia). Development follows real chironomid timing (26 days to emerge at 20 °C, ~40 at 15 °C;
+  *Chironomus decorus*) in the water each patch lives in (so the profundal larvae of the cold summer hypolimnion develop
+  slowly), and an emerging patch's adults keep `EMERGE_M` of its mass. New patches start small
+  (`LARVA_M0`) — from the eggs of uneaten adults and a warm-season background that settles where the bed has food and
+  O₂. `LARVA_CAP` (400 × area) is only a computing bound: at 240 the patch count sat on it all summer; now food sets
+  the count (it falls to ~1,400–1,700 patches in a lean July). Before: patches were refilled at full size at ~9,600 a month, gated on the count of fresh detritus particles (which
+  the bottom feeders kept near zero) — benthic food was effectively unlimited and blind to the lake's productivity.
+- **A refuge** (`INSECT.REFUGE_M`): the first gram of every patch is burrowed or cased, out of reach of fish, fry,
+  dragonfly nymphs and turtles (`larvaFree`, `_biteLarva`; nymphs and turtles now take a bite, not a whole patch). Fish
+  can cut a patch by ~2/3 at most; the burrowed stock regrows it. Without it the fish kept every patch on its floor.
+- **Bottom feeders sift it** (`diet.detritus`: carp, bullhead): with no particle in reach, a fish at the bed takes up
+  to `SEDOM.SIFT` × its gut capacity a second from the layer — a poor food (979 J/g, 35 % digestible).
+- Gate: decomposition (rate, warm/cold, anoxic), settling, benthic algae (lit shallows vs dark deep, clear vs murky),
+  larval growth on it and starvation without it, sifting, and the save round-trip; larval development follows the
+  water's warmth; the dt-independence check now grazes patches down to their refuge.
 
 ---
 

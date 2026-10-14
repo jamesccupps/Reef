@@ -363,9 +363,10 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   seed(20); const iwC = new World(); const Lc = iwC._mkLarva(1000, 1.0); iwC.larvae = [Lc]; iwC.insects = []; iwC.env.tempC = 7; iwC.step(1 / 30);
   check('insect EMERGENCE is warm-gated: a mature larva hatches when warm, holds when cold', Lw.dead && iwW.insects.length >= 1 && !Lc.dead && iwC.insects.length === 0, `warm emerged ${Lw.dead}/${iwW.insects.length}; cold held ${!Lc.dead}`); }
 // larvae DEVELOP with warmth (dev rises when warm, ~halts when cold)
-{ function dev(temp) { seed(21); const dw = new World(); dw.agents = []; const L = dw._mkLarva(1000, 0.2); dw.larvae = [L]; for (let i = 0; i < 60; i++) { dw.env.tempC = temp; dw.step(1 / 30); } return L.dev - 0.2; }   // no fish → isolate DEVELOPMENT from predation (else a bottom fish can eat the test larva & freeze its dev, making the probe RNG-stream-fragile)
+{ function dev(temp) { seed(21); const dw = new World(); dw.agents = []; const L = dw._mkLarva(300, 0.2); dw.larvae = [L]; dw.env.tempAt = () => temp;   // (on the oxic shallow bed: the deep one can be anoxic, where larvae die)
+    for (let i = 0; i < 600; i++) { dw.env.tempC = temp; dw.step(1 / 30); dw.agents = []; } return L.dev - 0.2; }   // no fish → isolate DEVELOPMENT from predation (else a bottom fish can eat the test larva & freeze its dev, making the probe RNG-stream-fragile); the water it lives in at `temp`
   const warm = dev(25), cold = dev(6);
-  check('insect larvae DEVELOP with warmth (dev rises warm ≫ cold)', warm > cold + 0.04 && cold < 0.02, `warm Δdev ${warm.toFixed(3)} ≫ cold ${cold.toFixed(3)}`); }
+  check('insect larvae DEVELOP with the warmth of their water (dev rises warm ≫ cold; ~26 days to emerge at 20 °C)', warm > cold + 0.15 && cold < 0.02, `warm Δdev ${warm.toFixed(3)} ≫ cold ${cold.toFixed(3)} in 20 s (~4 days)`); }
 // bottom fish eat benthic larvae; surface fish eat emerged insects (grids + _takeNearest + diet)
 { seed(22); const fw = new World(); fw.agents = []; fw.plankton = [];
   const cat = fw.makeFish('catfish', null, SP.catfish.matureAge + 50); cat.x = 1000; cat.y = bedY(1000) - 3;
@@ -1522,7 +1523,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
     for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
     const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
     const ids = lw.agents.map(a => a.id);
-    check('saves are version 27, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 27 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+    check('saves are version 28, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 28 && finiteWorld(lw) && new Set(ids).size === ids.length); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
@@ -1593,13 +1594,14 @@ console.log('\n— audit fixes: bio-ecology —');
     const pl = gw.makePlant(400, true); pl.height = pl.maxHeight = 130; gw.plants = [pl];
     const h0 = pl.height, e60 = gw.bitePlant(carp, 1 / 60), d60 = h0 - pl.height, h1 = pl.height, e30 = gw.bitePlant(carp, 1 / 30), d30 = h1 - pl.height;
     check('plant grazing is per SECOND: a 1/30 s bite removes 2× a 1/60 s bite (energy ∝ biomass grazed)', Math.abs(d30 - 2 * d60) < 1e-9 && Math.abs(e30 - 2 * e60) < 1e-9 && Math.abs(d60 - PLANTC.BITE_RATE / 60) < 1e-9, `1/60: −${d60.toFixed(2)}px +${e60.toFixed(3)}  1/30: −${d30.toFixed(2)}px +${e30.toFixed(3)}`); }
-  { const eaten = (dt, steps) => { seed(71); const fw = new World(); fw.plankton = []; fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
+  { const { ENV: ENVC, INSECT: INSECTC } = await import('../src/config.js');
+    const eaten = (dt, steps) => { seed(71); const fw = new World(); fw.plankton = []; fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
       const cat = fw.makeFish('catfish', ONES, SP.catfish.matureAge + 10); cat.x = 1000; cat.y = bedY(1000) - 3; cat.energy = 0.3; fw.agents = [cat];
-      const pile = []; for (let i = 0; i < 40; i++) { const L = fw._mkLarva(1000, 0); L.y = cat.y; L.m = 0.3; pile.push(L); } fw.larvae = pile.slice();   // small patches: two fit its gut
+      const pile = []; for (let i = 0; i < 40; i++) { const L = fw._mkLarva(1000, 0); L.y = cat.y; L.m = INSECTC.REFUGE_M + 0.3; pile.push(L); } fw.larvae = pile.slice();   // small patches (0.3 g outside the refuge): two fit its gut
       for (let i = 0; i < steps; i++) fw.step(dt);
-      return pile.filter(L => L.dead).length; };
+      return pile.filter(L => L.m < INSECTC.REFUGE_M + 0.01).length; };   // grazed down to the refuge
     // (warm-water foraging: a cold fish handles items more slowly — coldPerf — so fix the performance at 1 for this probe)
-    const { ENV: ENVC } = await import('../src/config.js'), keepPerf = ENVC.COLD_PERF_MIN; ENVC.COLD_PERF_MIN = 1;
+    const keepPerf = ENVC.COLD_PERF_MIN; ENVC.COLD_PERF_MIN = 1;
     const n30 = eaten(1 / 30, 1), n60 = eaten(1 / 60, 2);
     ENVC.COLD_PERF_MIN = keepPerf;
     check('discrete-item intake per second is dt-independent (handling time): one 1/30 step eats as many larvae as two 1/60 steps', n30 === n60 && n60 === Math.round((2 / 60) / FEED.HANDLE), `1/30×1: ${n30}, 1/60×2: ${n60}`); }
@@ -2209,7 +2211,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   { seed(7007); const sw = new World().setDate(0.35); for (let i = 0; i < 300; i++) sw.step(1 / 30);
     const lw = new World(); lw.load(JSON.parse(JSON.stringify(sw.toJSON())));
     const same = lw.agents.every((a, i) => { const b = sw.agents[i]; return a.L === b.L && a.W === b.W && a.sex === b.sex && a.mature === b.mature && a.gon === b.gon && a.gut === b.gut && a.K === b.K; });
-    check('save v27: every fish\'s length, mass, sex, maturity, gonads and gut round-trip exactly', same && sw.toJSON().version === 27);
+    check('save v27: every fish\'s length, mass, sex, maturity, gonads and gut round-trip exactly', same && sw.toJSON().version >= 27);
     check('…and the fry schools too', lw.fry.length === sw.fry.length && lw.fry.every((f, i) => f.n === sw.fry[i].n && f.L === sw.fry[i].L && f.k === sw.fry[i].k), `${sw.fry.length} schools`); }
   // ---- YOUNG-OF-YEAR as super-individuals, the food web around them, founders (2026-10-13 session 4) ----
   { const { FRY: FRYC, FEED: FEEDC, PLANKTON, PREY } = await import('../src/config.js');
@@ -2317,6 +2319,41 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     { seed(7801); const lw = new World().setDate(0.50); lw.fry = []; const bs = lw.makeFish('bass', ONES7); bs.x = WORLD.W * 0.45; bs.y = 300; bs.heading = 0; bs.gon = 0; lw.agents = [bs];
       const x0 = bs.x; for (let i = 0; i < 30 * 15; i++) lw.step(1 / 30);
       check('a bass out over the open basin heads back to the littoral (innate littoral habitat)', bs.x < x0 - 60 || lw.bedY(bs.x) < SP.bass.innate.littoral * WORLD.H, `x ${x0.toFixed(0)} → ${bs.x.toFixed(0)}, bed ${lw.bedY(bs.x).toFixed(0)}`); }
+    // the BED'S ORGANIC LAYER (SEDOM): the dying algae of a column settle into it; bacteria decompose it first-order, faster
+    // warm than cold and slower on an anoxic bed; larvae GROW on it (debiting it at 1/YIELD) and lose weight without it;
+    // a bottom feeder at the bed sifts it; it is saved
+    { const { SEDOM: SO, INSECT: IN } = await import('../src/config.js');
+      seed(7901); const ew = new World().setDate(0.45), env = ew.env, c = 40, bi = env.mask.bedRow[c] * GRID.FIELD_COLS + c;
+      const keepP = SO.PERI_G; SO.PERI_G = 0;   // (no benthic algae for the decay probe)
+      const decay = (T, o2) => { env.sedOM.fill(0); env.sedOM[c] = 1000; env._colDecay.fill(0); env.tempAt = () => T; env.o2[bi] = o2; env.sedimentOM(1); delete env.tempAt; return 1000 - env.sedOM[c]; };
+      const warm = decay(20, 1), cold = decay(4, 1), anox = decay(20, 0); SO.PERI_G = keepP;
+      // BENTHIC ALGAE grow into the layer on a lit bed, not on the dark deep floor, and less in murky water
+      const shC = env.colOf(160), peri = turb => { env.turbidity = turb; env.light = 1; env.sedOM.fill(0); env._colDecay.fill(0); env.sedimentOM(1); return [env.sedOM[shC], env.sedOM[c]]; };
+      const [pShClear, pDeep] = peri(0), [pShMurky] = peri(1);
+      check('benthic algae grow into the bed’s layer on the lit shallows — not on the dark deep floor, and less in murky water', pShClear > 5 * Math.max(pDeep, 1e-6) && pShMurky < pShClear * 0.8, `1 s at noon: shallows ${pShClear.toFixed(1)} g clear / ${pShMurky.toFixed(1)} g murky, deep floor ${pDeep.toFixed(2)} g`);
+      const expect = 1000 * SO.K20 * (SO.ANOX + (1 - SO.ANOX) / (1 + SO.O2_HALF));
+      env.sedOM.fill(0); env._colDecay.fill(0); env._colDecay[c] = 1; env.sedimentOM(1e-9); const settled = env.sedOM[c];
+      check('the bed’s organic layer: the dying algae settle into it, and it decomposes first-order — faster warm than cold, slower without O₂', Math.abs(warm - expect) < expect * 0.02 && cold < warm * 0.45 && anox < warm * 0.5 && Math.abs(settled - SO.SINK * SO.PP_G) < 1e-3,
+        `1 s at 20 °C ${warm.toFixed(1)} g (expect ${expect.toFixed(1)}), 4 °C ${cold.toFixed(1)}, anoxic ${anox.toFixed(1)}; settled ${settled.toFixed(1)} g per unit of dying algae`);
+      // larvae on it: no input, no decomposition (only the larvae touch the layer), no fish, no new patches
+      seed(7902); const lw = new World().setDate(0.45); lw.agents = []; lw.fry = []; lw.plants = []; lw.detritus = []; lw.insects = []; lw.nymphs = []; lw.herps = [];
+      lw.env.sedimentOM = function () { this._colDecay.fill(0); };
+      const keepR = IN.LARVA_RATE; IN.LARVA_RATE = 0;
+      const xa = 250, xb = 350, ca = lw.env.colOf(xa), cb = lw.env.colOf(xb);
+      const A = lw._mkLarva(xa, 0, 1), B = lw._mkLarva(xb, 0, 1); A.x = xa; A.y = lw.bedY(xa) - 2; B.x = xb; B.y = lw.bedY(xb) - 2; lw.larvae = [A, B];
+      lw.env.sedOM.fill(0); lw.env.sedOM[ca] = 2000; const n5 = Math.round(5 * BIOE.DAY * 30);
+      for (let i = 0; i < n5; i++) { lw.step(1 / 30); lw.agents = []; lw.fry = []; lw.herps = []; lw.nymphs = []; }   // (nothing eats them)
+      IN.LARVA_RATE = keepR; const used = 2000 - lw.env.sedOM[ca], grown = A.m - 1;
+      check('larvae GROW on the bed’s detritus (debiting it at 1/YIELD) and lose weight where there is none', !A.dead && grown > 0.25 && used >= grown / IN.YIELD && used < (grown / IN.YIELD) * 1.6 && !B.dead && B.m < 1,
+        `in 5 days: fed patch 1 → ${A.m.toFixed(2)} g using ${used.toFixed(1)} g of detritus; unfed patch 1 → ${B.m.toFixed(3)} g`);
+      // a bottom feeder at the bed sifts the layer (no particles, larvae, snails, plankton or weed to eat)
+      seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; bw.plankton = []; bw.insects = []; bw.cray = [];
+      const cp = bw.makeFish('carp', ONES7); bw.agents = [cp]; const cc = bw.env.colOf(300);
+      let took = 0; for (let i = 0; i < 60; i++) { cp.x = 300; cp.y = bw.bedY(300) - 3; bw.env.sedOM[cc] = 1000; const g0 = cp.gut; bw.step(1 / 30); took += Math.max(0, cp.gut - g0); }
+      const ed = cp.gut > 0 ? cp.gutE / cp.gut : 0;
+      check('a bottom feeder at the bed sifts its organic layer (a poor food: detritus energy × digestibility)', took > 0 && Math.abs(ed - PREY.DETRITUS_ED * PREY.DETRITUS_DIG) < 1, `carp took ${took.toFixed(2)} g in 2 s at ${ed.toFixed(0)} J/g`);
+      const sv = new World(); sv.env.sedOM[12] = 1234.5; const back = new World(); back.load(JSON.parse(JSON.stringify(sv.toJSON())));
+      check('the bed’s organic layer round-trips through save/load (v28)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version === 28, `${back.env.sedOM[12]}`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);
     check('school and food-web knobs are sane', FRYC.ATTACK > 0 && FRYC.N_HALF > 0 && FRYC.R_WMIN > 0 && FEEDC.POOR_GUT > 0 && FEEDC.POOR_GUT < 1 && FEEDC.SCHOOL_MIN < FEEDC.PREY_MIN);
   }

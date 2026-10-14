@@ -618,6 +618,32 @@ export const MICROBE = {
   DIFFUSE: 0.10,           // DOM blurs/spreads like the other dissolved fields
 };
 
+// ---------- sediment organic matter (the bed's detritus layer) ----------
+// Dead algae, plant litter and the remains of animals settle onto the bed as a layer of organic detritus: the food of the
+// deposit-feeding insect larvae (chironomids, mayfly nymphs) and of the bottom-sifting fish, decomposed by bacteria. Kept
+// per field column (`env.sedOM`, grams wet). In: a share SINK of the algae dying in the column above (PP_G g per unit of
+// the algal fields), plant litter (PLANT.LITTER_G) and expired detritus particles. Out: first-order decomposition (Q10,
+// slower without O₂), the larvae (INSECT.GROW / YIELD) and sifting fish (SIFT). Carbon/energy only: the N and P of the
+// dying algae go where they always went (back to the water, DOM and the sediment-P store), so the N/P budgets are closed
+// as before. This replaces larval recruitment gated on the count of fresh detritus PARTICLES (kept near zero by the bottom
+// feeders), which made benthic production independent of the lake's productivity.
+export const SEDOM = {
+  START: 600,              // g per column at the start (≈ the lake-wide summer mean: the deep basin holds more, the shallows less)
+  PP_G: 60,                // g wet algae per unit of algal biomass dying in the fields: sets the default lake's labile
+                           //   sedimentation to ~750 g wet/m²/yr (≈ 37 g C/m²/yr — 25 % of a mesotrophic lake's ~150 g C/m²/yr
+                           //   primary production; 20–50 % of production reaches the bed in shallow lakes)
+  SINK: 0.25,              // share of the dying algae that reaches the bed as labile detritus (the rest is respired on the way down)
+  PERI_G: 110,             // g wet /s per column of BENTHIC ALGAE (periphyton, epipelon) at full light on its bed at 20 °C — the
+                           //   littoral's own production (10–100 g C/m²/yr in lakes; up to most of a clear lake's primary production,
+                           //   Vadeboncoeur et al. 2003), lost as the water turns murky. Calibrated to ~600 g wet/m²/yr on the lit
+                           //   shallows of the default lake
+  get K20() { return 0.144 / BIOE.DAY; },   // /s decomposition at 20 °C: plankton detritus 0.144/day (0.078–0.20) with Q10 1.94
+  Q10: 1.94,               //   (Otsuki & Hanya-type incubations; periphyton and plant detritus 0.08–0.2/day at 20 °C)
+  ANOX: 0.3,               // decomposition on an anoxic bed runs at this × the oxic rate (anaerobic pathways are slower)
+  O2_HALF: 0.1,            // bottom-water O₂ (normalised) at which aerobic decomposition runs at half its rate
+  SIFT: 0.5,               // a bottom-sifting fish (diet.detritus: carp, bullhead) takes up to this × its gut capacity a second
+};
+
 // "plankton" particles are ZOOPLANKTON: they graze the phytoplankton field, drift, and are
 // eaten by planktivores. Their numbers track the algae (phyto→zoo→planktivore chain).
 export const PLANKTON = {
@@ -663,13 +689,35 @@ export const DETRITUS = {
 // bottom fish. When mature AND warm they EMERGE — rise to the surface as adult insects (a seasonal, pulsed HATCH) that
 // surface fish rise to feed on; uneaten adults lay eggs (→ new larvae) before they expire, closing the loop. The hatch
 // is the benthic→surface flux that's been missing. All deterministic (seeded RNG); particle systems like plankton/detritus.
+// LARVAE GROW ON THE BED'S DETRITUS (SEDOM): a patch's grams grow by eating the organic layer of its column (Monod in it),
+// with warmth, and shrink by respiration when there is too little — so benthic production follows the lake's productivity
+// (real littoral benthos produce ~10–100 g wet/m²/yr; the turnover P/B 2–3 a year in the littoral, Lake Sevan). New
+// patches start small (eggs from the emerging adults + a warm-season background).
 export const INSECT = {
-  LARVA_SEED: 50,          // initial benthic larvae (× world area)
-  LARVA_CAP: 240,          // max benthic larvae (× area)
+  LARVA_SEED: 160,         // initial benthic larval patches (× world area), full-grown (≈ 4.5 g wet/m² of benthos in May)
+  LARVA_CAP: 400,          // max benthic larval patches (× area) — a computing bound, kept above what the food supports (at 240 it was
+                           //   the limit itself: the patch count sat on it all summer)
   EPIPHYTE: 0.5,           // share of new larval patches that live on the macrophytes (the rest on the bed)
-  LARVA_RATE: 22,          // /s larval recruitment at full detritus availability (× area), capped — detritus → insects
-  DEV_RATE: 0.05,          // /s development at the optimum temperature (→ ~20 s to mature when warm; ~0 when cold → overwinter)
-  DEV_TEMP_MIN: 10,        // °C below which larvae barely develop
+  LARVA_RATE: 6,           // /s new larval patches in the warm season (× area), where the bed has detritus to eat, capped
+  LARVA_M0: 0.3,           // g: a new patch (young instars); it grows toward PREY.LARVA_G
+  REFUGE_M: 1.0,           // g of every patch out of predators' reach — larvae burrowed in the mud, in tubes or cases (fish take the
+                           //   exposed and the emerging; the burrowed stock regrows a grazed-down patch). A third of a full patch:
+                           //   fish cut a patch's biomass by up to ~2/3 — fish-exclusion studies find 20–60 % less benthos with fish
+                           //   (at 0.3 g the fish held every patch on its floor and benthic production fell to ~15 g/m²/yr)
+  get GROW() { return 0.3 / BIOE.DAY; },    // /s a patch's biomass growth at DEV_TEMP_OPT on ample food (0.3/day; chironomid larvae
+                                            //   grow ~0.2–0.4/day at 20 °C; at 0.2 a patch only tripled before emerging and fish
+                                            //   got next to none of it above the refuge)
+  get RESP() { return 0.03 / BIOE.DAY; },   // /s weight loss of a starving patch at DEV_TEMP_OPT (respiration ~0.02–0.05/day)
+  YIELD: 0.15,             // g of larvae per g of detritus eaten, wet (deposit feeders on fresh algal detritus: assimilation 30–50 % ×
+                           //   net growth 30–60 % ≈ 0.1–0.3 by dry mass; ~2/3 of that wet, the larvae holding more dry matter)
+  K_SOM: 150,              // g of detritus per column at which a patch grows at half its rate
+  get DEV_RATE() { return 1 / (19 * BIOE.DAY); },   // /s development at DEV_TEMP_OPT: 26 days to emerge at 20 °C and ~40 at 15 °C
+                           //   (Chironomus decorus reared from hatch: 50 % emerged at 26 days at 20 °C, 37 at 15 °C)
+  O2_MIN: 0.05,            // bottom O₂ (normalised) below which larvae die off (chironomids tolerate hypoxia, not lasting anoxia)
+  get ANOX_DEATH() { return 0.05 / BIOE.DAY; },   // /s death of a patch in that anoxia at 20 °C (0.05/day), × Q10 2 — Chironomus outlast
+                                                 //   weeks of anoxia by anaerobic metabolism, longest in cold water (a winter under ice)
+  EMERGE_M: 0.6,           // an emerging patch's adults keep this share of its mass (the shed larval/pupal skins)
+  DEV_TEMP_MIN: 6,         // °C below which larvae don't develop or grow
   DEV_TEMP_OPT: 25,        // °C of fastest development
   HATCH_TEMP: 17,          // °C: a mature larva EMERGES only above this → warm-season pulsed hatches
   ADULT_CAP: 220,          // max surface adults (× area)
@@ -690,6 +738,7 @@ export const ODONATA = {
   EMERGE_T: 18,            // °C: a mature nymph emerges only in water warmer than this, by day (early summer)
   EAT_R: 8,                // px: strike reach of the extendable labium
   HUNT: 0.6,               // /s strike attempts (ambush; × warmth)
+  BITE: 0.05,              // g of insect larvae a strike takes from a patch (a late-instar nymph eats ~0.1–0.25 g a day)
   FRY_MAX: 2.5,            // cm: the largest fish larva a nymph's labium can take (larvae and early fry only)
   CRAWL: 2,                // px/s
   CRYPTIC: 0.02,          // per-step chance a fish foraging over a nymph actually finds it (they hide among weeds and in the silt)
@@ -819,7 +868,10 @@ export const PLANT = {
   SEED_RATE: 3.4,          // new plants /s up to MAX (scaled by area) — gated by seasonal vigor (mostly spring/summer)
   GROWTH: 20,              // height units /s at full light, nutrient & seasonal vigor (per-plant max height: MACRO[v].maxH × the maxH gene)
   BIOMASS_PER_PX: 0.018,   // biomass = height * this
-  BITE_RATE: 300,          // px of plant height a grazing herbivore removes per SECOND (× dt) — = the old 5 px/step at the
+  LITTER_G: 6,             // g of labile litter a drawn plant (a clump of shoots) drops on the bed per px of height it sheds or
+                           //   loses dying (macrophyte litter is a large share of a weedy littoral's sediment food; SEDOM): ~30 % of the
+                           //   default lake's labile input (its plants shed ~40,000 px a year)
+  BITE_RATE: 300,         // px of plant height a grazing herbivore removes per SECOND (× dt) — = the old 5 px/step at the
                            //   browser's 1/60 step (per-step bites made grazing dt-dependent: half the rate headless at 1/30)
   GRAMS_PER_PX: 0.02,      // g wet plant tissue a herbivore swallows per px of height grazed (× the plant's palatability:
                            //   tough, defended forms yield less)

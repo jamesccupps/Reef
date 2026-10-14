@@ -18,6 +18,30 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
 > **"Realism research backlog" at the bottom of this file**. That backlog is the menu for the next
 > sessions; items are tagged by phase, impact, and cost, with a recommended build order.
 
+## ▶ Agreed plan (human, 2026-10-14) — supersedes older phase orders
+1. **Finish implementing and make it accurate.** The bioenergetics/food-web leftovers (the bed's organic layer feeding
+   the benthos, pike in year 2, perch growth), then **visible evolution** (trait history and variance over time, saved
+   history, fast-forward).
+2. **Full review of the presentation:** the GUI, the graphics, the webpage's information text, and the graphs/charts.
+   Known items: far-zoom wildlife silhouettes (turtles were rectangles — fixed 2026-10-14; re-check the rest).
+3. **Landscape: several lakes, ponds, streams and rivers**, connected. Water itself becomes a dynamic quantity here
+   (human notes 2026-10-14):
+   - **A water budget and a moving water level:** rain, snowmelt and stream inflow in; evaporation, outflow and seepage
+     out; ice as stored water. The level rises and falls with weather and season (today `bedY`, `H` and the wet mask
+     are fixed everywhere — the biggest structural change of this stage).
+   - **Rain and inflow as distinct water:** rain leaves a fresh, dilute, slightly different-temperature layer on top
+     that mixes in over hours to days; a stream's water enters at its own temperature and chemistry — cold inflow sinks
+     under the lake (underflow), warm inflow spreads over the surface — carrying its own O₂, nutrients and sediment.
+   - **Sediment that moves:** erosion of banks and catchment with rain (more in storms and floods), suspended sediment
+     carried by flow (turbidity as real material, not a weather number), settling where the water slows (deltas at
+     stream mouths, the deep basin slowly filling — the shallows creeping out over years), resuspension by wind and
+     bottom-feeding fish.
+   - **Things that drift:** plant fragments, leaf litter and wood carried by the current and deposited downstream;
+     organisms (fry, invertebrates, plankton) drifting between connected waters.
+   - The organic bed layer built in step 1 (`SEDOM`) is the hook for the sediment part: erosion and deposition move
+     both mineral sediment and that organic matter.
+4. **What-if controls:** change a variable (warming, nutrient loading, stocking, pollution, rain) and see the response.
+
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*
   behavior over hard-coded behavior or hard caps. Replace the current re-seed floors and

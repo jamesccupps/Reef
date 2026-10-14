@@ -5,7 +5,50 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW — after the 2026-10-11/12 overnight audit-fix run
+## ▶ NOW (2026-10-14, session 6) — Phase-1 leftover: THE BED'S ORGANIC LAYER (uncommitted on `science` until noted)
+Plan order (human, 2026-10-14; also in ROADMAP "Agreed plan"): (1) implement + accurate (this; then pike yr-2, perch
+growth; then VISIBLE EVOLUTION), (2) GUI/graphics/info/graphs review, (3) multi-lake + streams/rivers/ponds WITH a water
+budget/level, rain lenses, inflow plunging, sediment erosion/transport/deposition, drift (human notes 2026-10-14), (4) what-if.
+Done this session:
+- Far-zoom wildlife silhouettes (render.js `_drawWildlife`): turtles were rectangles at lake view (human report) → domed
+  shell + head; frogs/tadpoles/nymphs ellipses. Verified by drawing them large into a debug canvas.
+- SEDOM (save v28): `env.sedOM` g/column; in = SINK 0.25 × algal decay (all three algae, per column `_colDecay`) × PP_G 60
+  + benthic algae PERI_G 110 × bed light × Q10 + plant litter (PLANT.LITTER_G 6 g/px shed) + expired particles; out =
+  decomposition (0.144/d @20 °C, Q10 1.94, ×0.3 anoxic), larvae, sifting fish (SEDOM.SIFT). Carbon only (N/P untouched).
+  Calibration (verify/somflux.mjs, somflux2.mjs, peri.mjs): baseline larvae were refilled at ~9,600 full patches/month and
+  fish ate ~9.5 kg/month of them (~150 g/m²/yr — top of the real range, and blind to productivity); algae dying ≈ 24k
+  field units/yr; plants shed ~40k px/yr (spring-heavy churn); shallow columns' bed light×Q10 ≈ 45 s-equivalents/yr.
+- Larvae: grow on the column's layer (GROW, K_SOM 150, YIELD 0.15, RESP), real development (26 d @20 °C, local water
+  temperature), anoxic die-off, new patches small (LARVA_M0 0.3), emerging adults keep 0.6 of the mass; REFUGE_M 1.0 g per
+  patch out of reach of fish/fry/nymphs/turtles (`larvaFree`, `_biteLarva`; nymphs/turtles now bite, not kill a patch).
+  Tuning trail: refuge 0.3 → fish held every patch on its floor (production ~15 g/m²/yr); no benthic algae → the shallows'
+  layer was eaten out by July; GROW 0.2 → patches only tripled before emerging, fish got 0.1–0.3 kg/month above the refuge.
+- Env panel: "bed detritus" (kg). Gate: 6 new checks (decay/settling, benthic algae, larval growth/starvation, sifting,
+  save v28) + the dev-with-warmth and dt-independence checks updated.
+VALIDATION round 4 (GROW 0.3; verify/sf4_s*, so4_s*): benthos steady (larvae ~3 kg/month produced in summer, fish
+1–2.3 kg/month direct + the hatch) BUT by 2.2 yr fish biomass 12–13 kg (baseline c5 15–23), perch 6–12 fish (14–46),
+bullhead and carp at the immigrant floor (b 0–1): bullheads slowly STARVED on the bed's poor detritus (23 → 3; K 0.73–0.83).
+Their sim diets were narrower than real (Scott & Crossman 1973: bullheads — larvae, molluscs, crustaceans incl.
+cladocerans, crayfish, fish, weed; carp — larvae, molluscs, zooplankton, weed). → ROUND 5: catfish diet + snail +
+plankton, carp + plankton; also ANOX_DEATH 0.05/day @20 °C × Q10 2 (cold anoxia slow): carp home-bred again, perch
+5–9 (adult starvation 16–26 vs baseline 6–10). ROUND 6 (YIELD 0.2): no clear gain → kept 0.15. ROUND 7 (FINAL): larvae
+settle only on an oxic bed + LARVA_CAP 240 → 400 (the count had sat ON the cap all summer): at 2.2 yr fish 12–17 kg,
+perch 10–25 (b 19–48), carp 3–6 home-bred, sunfish 169–260, minnows 75–300, bullheads 3–4 (b 0–1), bass/pike immigrant.
+Gate GREEN standalone (gate27: all checks, smoke, UI, serve; perf 87 st/s) after moving the dev-with-warmth test larva to an
+oxic shallow bed (on the deep bed it could die in anoxia — RNG-fragile).
+OPEN (next accuracy items): bullhead recruitment (0–1 home-bred in 2 yr), pike summer feeding (pikediag: ~2 takeable
+fish in its arena but kills drop 80 → 17 per 45 days Jun → Sep at 23–26 °C > pike's 21 °C optimum — partly real),
+perch age-2/3 growth still above Michigan means (founders), snails' 34-day life (real ~1 yr) and they could graze the
+bed's benthic algae (SEDOM) instead of the phyto field.
+Pike (round 4): 4–7 immigrant pike STARVED per run, year-2 p mostly 0.1–0.3 despite 180–270 small sunfish + ~100 minnows
+(FEED.PREY_MIN 0.07: a 65-cm pike ignores fish < 4.6 cm; sunfish mean 5–7 cm) — NEXT diagnostic (verify/hunt.mjs-style).
+VISIBLE EVOLUTION — on branch `evo-history` (worktree scratchpad/evo-wt, commits 92a0b4d, 96243fc, 6ab3e4d, not merged):
+world.evo trait history (EVO, sampled on the clock grid, thinned past MAX, saved) + Evolution-over-time chart (gene selector,
+species pick, note) + fast-forward "Skip ahead" in a module Worker (src/ffworker.js; byte-identical to main-thread steps,
+checked in Chrome; smoke runs the real worker behind a stub). Gate checks added there. Merge after the SEDOM commit
+(save version → 29; conflicts expected in world.js toJSON line, FEATURES intro).
+
+## ▶ (older) NOW — after the 2026-10-11/12 overnight audit-fix run
 
 **New mandate (human, 2026-10-12 morning):** "fix everything, do what you think would be good, take screenshots
 to analyze the GUI and everything yourself, keep everything updated in case chat compacts." The budget rule

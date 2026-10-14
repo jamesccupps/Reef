@@ -450,6 +450,7 @@ export class UI {
     set('env-phyto', (ed.phyto * 100 | 0) + '%');
     set('env-cyano', (ed.cyano * 100 | 0) + '%' + (ed.cyano > 0.4 ? ' scum' : ''));
     set('env-dom', ed.dom.toFixed(2));
+    set('env-bedom', ed.bedOM.toFixed(1) + ' kg');
     set('env-secchi', (ed.secchi | 0) + 'px');
   }
 

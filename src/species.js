@@ -486,7 +486,9 @@ export const SP = {
     shape: { in: 10, hid: 10 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'on floor', 'oxygen', 'wall'],
-    diet: { detritus: true, plants: true, larva: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
+    // brown bullheads are bottom omnivores: insect larvae, molluscs, crustaceans (cladocerans to crayfish), some fish, weed and
+    // detritus (Scott & Crossman 1973) — on a lean bed they turn to snails and zooplankton
+    diet: { detritus: true, plants: true, larva: true, snail: true, plankton: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
     matingCooldown: yr(0.5), pop: { start: 4, min: 3, max: 6 },   // K ≈ 40
     tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
@@ -513,7 +515,8 @@ export const SP = {
     shape: { in: 10, hid: 9 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'oxygen', 'wall', 'depth'],
-    diet: { plants: true, detritus: true, larva: true, snail: true },
+    diet: { plants: true, detritus: true, larva: true, snail: true, plankton: true },   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
+                                                                                     //   weed and detritus (Scott & Crossman 1973)
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
     matingCooldown: yr(0.4), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each)
     tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund

@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM } from './config.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from './bioenergetics.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
@@ -50,6 +50,9 @@ export const coldPerf = (tC, tOpt, floor = ENV.COLD_PERF_MIN) => { const f = Mat
 // spatial-query predicates as plain functions (SpatialGrid.nearest passes the querying fish as ctx), so the hot queries
 // allocate no closure per call
 const notDead = it => !it.dead;
+// a larval patch with larvae outside the refuge: INSECT.REFUGE_M grams of every patch are burrowed in the mud or cased,
+// out of a predator's reach — the stock that rebuilds a grazed-down patch
+const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
 // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
 // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
 // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
@@ -538,7 +541,7 @@ export class World {
     // the REGIONAL gene pool immigrants come from (connected waters' populations), per species — see the step's gene flow
     this.genePool = {}; for (const k of SPECIES) { this.genePool[k] = []; for (let i = 0; i < IMMIGRATION.POOL_N; i++) this.genePool[k].push(poolFounder(k)); }
     for (let i = 0, n = scaleCount(SEED_COUNTS.plankton); i < n; i++) this.plankton.push(this._mkPlankton());
-    for (let i = 0, n = scaleCount(INSECT.LARVA_SEED); i < n; i++) this.larvae.push(this._mkLarva());
+    for (let i = 0, n = scaleCount(INSECT.LARVA_SEED); i < n; i++) this.larvae.push(this._mkLarva(undefined, rand(0, 0.9), PREY.LARVA_G));   // the overwintered, full-grown cohort
     for (let i = 0, n = scaleCount(SNAIL.SEED); i < n; i++) this.snails.push(this._mkSnail());
     for (let i = 0, n = scaleCount(CRAYFISH.SEED); i < n; i++) this.cray.push(this._mkCray());
     // wildlife: dragonfly nymphs of mixed ages, adult frogs and painted turtles (no adults on the wing / tadpoles in May yet)
@@ -626,16 +629,17 @@ export class World {
   // a patch of insect larvae: on the bed (at x, if given) — or, for a share INSECT.EPIPHYTE of new patches, up the stem of a
   // macrophyte (the plant-dwelling midges, mayflies and caddis that are most of a bluegill's and young perch's food in
   // the weeds; invertebrates are densest on plants, Diehl 1992 / Cyr & Downing 1988)
-  _mkLarva(x, dev) {
+  // `m` = its grams (a new patch of young instars starts at INSECT.LARVA_M0 and grows on the bed's detritus)
+  _mkLarva(x, dev, m = INSECT.LARVA_M0) {
     dev = dev ?? rand(0, 0.25);
     if (x === undefined && this.plants.length && rand() < INSECT.EPIPHYTE) {
       const p = this.plants[(rand() * this.plants.length) | 0];
-      if (!p.dead && p.height > 6) return { x: clamp(p.x + rand(-3, 3), 4, W - 4), y: p.baseY - p.height * rand(0.15, 0.9), dev, m: PREY.LARVA_G, dead: false };
+      if (!p.dead && p.height > 6) return { x: clamp(p.x + rand(-3, 3), 4, W - 4), y: p.baseY - p.height * rand(0.15, 0.9), dev, m, dead: false };
     }
-    const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev, m: PREY.LARVA_G, dead: false };
+    const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev, m, dead: false };
   }
   // an emerged adult insect at the surface (drifts, short-lived, surface-fish food). `wob` = render flutter phase.
-  _mkInsect(x) { const px = clamp(x ?? rand(8, W - 8), 4, W - 4); return { x: px, y: rand(2, 14), life: INSECT.ADULT_LIFE * (0.7 + rand() * 0.6), vx: rand(-INSECT.ADULT_DRIFT, INSECT.ADULT_DRIFT), wob: rand(0, 6.28), m: PREY.INSECT_G, dead: false }; }
+  _mkInsect(x, m = PREY.INSECT_G) { const px = clamp(x ?? rand(8, W - 8), 4, W - 4); return { x: px, y: rand(2, 14), life: INSECT.ADULT_LIFE * (0.7 + rand() * 0.6), vx: rand(-INSECT.ADULT_DRIFT, INSECT.ADULT_DRIFT), wob: rand(0, 6.28), m, dead: false }; }
   // a benthic snail crawling the lit bed (biased to the littoral shelf where algae/plants concentrate). `ph` = render phase.
   _mkSnail(x) { const px = x ?? plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
   // a benthic crayfish walking the bed (drifts toward cover; crepuscular). `ph` = render leg-wiggle phase.
@@ -661,7 +665,7 @@ export class World {
   qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, Math.min(r, PLANKTON.SIGHT) * c, notDead); }   // tiny prey: seen only a few body lengths off
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
-  qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, notDead); }   // benthic insect larvae (perch, bottom feeders)
+  qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, larvaFree); }   // benthic insect larvae (perch, bottom feeders)
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
   // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
@@ -769,6 +773,11 @@ export class World {
     for (; k < n; k++) { const m = grid.nearest(x, y, r, notDead); if (!m) break; m.item.dead = true; }
     return k;
   }
+  // a bite of up to g grams from the nearest larval patch within r that has larvae outside its refuge; returns the grams
+  _biteLarva(x, y, r, g) {
+    const m = this.larvaeGrid.nearest(x, y, r, larvaFree); if (!m) return 0;
+    const take = Math.min(g, m.item.m - INSECT.REFUGE_M); m.item.m -= take; return take;
+  }
   // zooplankton meals: up to n strikes at the nearest zooplankters in reach; a copepod's escape jump can beat a strike
   // (PLANKTON.COPE_ESCAPE — it is then left alone), a Daphnia never escapes. Each zooplankter particle is a swarm patch
   // (PREY.DAPH_G / COPE_G grams; Daphnia are the bigger, richer prey). Into the gut; returns items eaten.
@@ -786,12 +795,13 @@ export class World {
   }
   // GRAZE PATCHES (larvae, insects, detritus): up to n handling slots, take from the nearest live patch in reach as much
   // as the gut has room for — a small fish crops part of a patch, a big one clears it (then it's gone). A detritus patch's
-  // organic N+P goes with the eaten share (excreted back as nutrients, as before). Returns the bites taken.
-  _graze(a, grid, n, room, ed, dig) {
+  // organic N+P goes with the eaten share (excreted back as nutrients, as before). Returns the bites taken. `keep` grams
+  // of each patch are out of reach (the larvae's refuge: `pred` then skips patches grazed down to it).
+  _graze(a, grid, n, room, ed, dig, keep = 0, pred = notDead) {
     let k = 0, g = 0;
     for (let i = 0; i < n && room - g > 1e-9; i++) {
-      const mm = grid.nearest(a.x, a.y, Math.max(a.eatRadius, PREY.PATCH_R), notDead); if (!mm) break;
-      const it = mm.item, take = Math.min(it.m, room - g);
+      const mm = grid.nearest(a.x, a.y, Math.max(a.eatRadius, PREY.PATCH_R), pred); if (!mm) break;
+      const it = mm.item, take = Math.min(it.m - keep, room - g);
       if (it.n > 0) { const nu = it.n * take / it.m; it.n -= nu; this.env.addNutrient(it.x, it.y, nu); }
       it.m -= take; if (it.m <= 1e-9) it.dead = true;
       k++; g += take;
@@ -897,7 +907,7 @@ export class World {
       // ambush (x warmth): an insect larva, a tadpole, a fish fry, or a zooplankter within the labium's reach
       if (rand() < ODONATA.HUNT * wf * dt) {
         const R = ODONATA.EAT_R;
-        if (this._takeNearest(this.larvaeGrid, n.x, n.y, R)) continue;
+        if (this._biteLarva(n.x, n.y, R, ODONATA.BITE)) continue;   // a few larvae from a patch, not the whole patch
         const td = this.herpGrid.nearest(n.x, n.y, R, isTadpole); if (td) { td.item.dead = true; td.item.eatenBy = 'nymph'; continue; }
         const fr = this.agentGrid.nearest(n.x, n.y, R, isNymphPrey);
         if (fr) { const f = fr.item; f.dead = true; f.eatenBy = 'nymph'; counts[f.species]--; this._counts[f.species] = counts[f.species]; if (f.id === this.selectedId) this.selectedId = null; this.stats.nymphEaten = (this.stats.nymphEaten || 0) + 1; continue; }
@@ -983,7 +993,7 @@ export class World {
         if (!isShallow(h.x) && rand() < 0.5 * dt) h.vx = toShore(h.x) * TURTLE.SWIM;
         if (h.y > ty - 8 && h.e < 0.95 && rand() < dt) {
           if (this._takeNearest(this.snailGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.SNAIL_E;
-          else if (this._takeNearest(this.larvaeGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.LARVA_E;
+          else if (this._biteLarva(h.x, h.y, TURTLE.EAT_R, PREY.LARVA_G)) h.e += TURTLE.LARVA_E;
           else if (this._takeNearest(this.detritusGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.DETRITUS_E;   // carrion and plant debris
           h.e = Math.min(1, h.e);
         }
@@ -1054,7 +1064,7 @@ export class World {
       else {
         const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= FRY.BENTH_L;
         let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
-        if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
+        if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFree))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
         // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
@@ -1101,9 +1111,9 @@ export class World {
       got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
     }
     if (f.L >= FRY.BENTH_L && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
-      const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
-      const it = m.item, take = Math.min(it.m, want - got);
-      it.m -= take; if (it.m <= 1e-9) it.dead = true;
+      const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, larvaFree); if (!m) break;
+      const it = m.item, take = Math.min(it.m - INSECT.REFUGE_M, want - got);
+      it.m -= take;
       got += take; J += take * PREY.LARVA_ED;
     }
     if (f.L >= FRY.BENTH_L && d.detritus) for (; feeds > 0 && want - got > 1e-12; feeds--) {
@@ -1278,28 +1288,39 @@ export class World {
     for (const d of this.detritus) {
       if (d.dead) continue;
       d.y = Math.min(bedY(d.x), d.y + DETRITUS.SINK * dt); d.life -= dt;
-      if (d.life <= 0) { d.dead = true; if (d.n > 0) { env.addDOM(d.x, d.y, d.n); d.n = 0; } }   // dissolve its N+P (if any) into DOM
+      if (d.life <= 0) { d.dead = true; env.addSedOM(d.x, d.m); if (d.n > 0) { env.addDOM(d.x, d.y, d.n); d.n = 0; } }   // its matter joins the bed's organic layer; its N+P (if any) dissolves into DOM
     }
 
-    // aquatic insects — a CROSS-BOUNDARY life cycle. Benthic LARVAE recruit from the detritus pool (detritivores),
-    // develop with WARMTH, are eaten by bottom fish, and when mature + warm EMERGE as surface adults (a pulsed, seasonal
-    // hatch); surface adults drift, are eaten by surface fish, and an uneaten one lays an egg (→ a larva) before it expires.
-    const larvaCap = scaleCount(INSECT.LARVA_CAP);
-    const detAvail = clamp(this.detritus.length / (scaleCount(DETRITUS.CAP) * 0.6), 0, 1);   // detritus availability → larval recruitment
-    for (let n = poissonish(INSECT.LARVA_RATE * area * (0.3 + 0.7 * detAvail) * dt); n > 0 && this.larvae.length < larvaCap; n--) this.larvae.push(this._mkLarva());
-    const devF = clamp((env.tempC - INSECT.DEV_TEMP_MIN) / (INSECT.DEV_TEMP_OPT - INSECT.DEV_TEMP_MIN), 0, 1);   // warmth drives development
+    // aquatic insects — a CROSS-BOUNDARY life cycle. Benthic LARVAE are deposit feeders: a patch GROWS on the organic
+    // detritus of the bed under it (SEDOM — Monod in the column's layer, with warmth) and loses weight when there is too
+    // little; it develops with WARMTH, is eaten by bottom fish, dies off in an anoxic bottom, and when mature + warm
+    // EMERGES as surface adults (a pulsed, seasonal hatch); surface adults drift, are eaten by surface fish, and an uneaten
+    // one lays an egg (→ a new patch) before it expires. New patches also settle in the warm season where there is food.
+    const larvaCap = scaleCount(INSECT.LARVA_CAP), lTw = INSECT.DEV_TEMP_OPT - INSECT.DEV_TEMP_MIN;
+    const devF = clamp((env.tempC - INSECT.DEV_TEMP_MIN) / lTw, 0, 1);   // warmth drives development (surface temperature)
+    for (let n = poissonish(INSECT.LARVA_RATE * area * devF * dt); n > 0 && this.larvae.length < larvaCap; n--) {
+      const L = this._mkLarva(), s = env.sedOMAt(L.x);
+      if (env.oxygenAt(L.x, L.y) >= INSECT.O2_MIN && rand() < s / (s + INSECT.K_SOM)) this.larvae.push(L);   // the young settle where the bed has food and O₂
+    }
     const canHatch = env.tempC > INSECT.HATCH_TEMP, insectCap = scaleCount(INSECT.ADULT_CAP);
     for (const L of this.larvae) {
       if (L.dead) continue;
-      L.dev += INSECT.DEV_RATE * devF * dt;
-      if (L.dev >= 1 && canHatch) { L.dead = true; if (this.insects.length < insectCap) this.insects.push(this._mkInsect(L.x)); }   // EMERGE: larva → surface adult
+      const th = clamp((env.tempAt(L.x, L.y) - INSECT.DEV_TEMP_MIN) / lTw, 0, 1);   // the warmth of the water it lives in
+      L.dev += INSECT.DEV_RATE * th * dt;   // (in the cold summer hypolimnion the profundal larvae develop slowly — a 1–2-year life)
+      if (L.dev >= 1 && canHatch) { L.dead = true; if (this.insects.length < insectCap) this.insects.push(this._mkInsect(L.x, L.m * INSECT.EMERGE_M)); continue; }   // EMERGE: larva → surface adult
+      if (th > 0) {   // grow on the column's detritus (debited at 1/YIELD), or lose weight when it runs short
+        const s = env.sedOMAt(L.x), want = INSECT.GROW * th * s / (s + INSECT.K_SOM) * L.m * Math.max(0, 1 - L.m / PREY.LARVA_G) * dt;
+        L.m += env.takeSedOM(L.x, want / INSECT.YIELD) * INSECT.YIELD - INSECT.RESP * th * L.m * dt;
+        if (L.m < 0.02) { L.dead = true; continue; }
+      }
+      if (env.oxygenAt(L.x, L.y) < INSECT.O2_MIN && rand() < INSECT.ANOX_DEATH * Math.pow(2, (env.tempAt(L.x, L.y) - 20) / 10) * dt) { L.dead = true; env.addSedOM(L.x, L.m); }   // anoxic bottom: the patch dies (and rots) — slowly in cold water
     }
     for (const I of this.insects) {
       if (I.dead) continue;
       I.life -= dt;
       I.x += (I.vx + env.currentAt(I.x, I.y)) * dt;                       // drift on its own motion + the surface current
       if (I.x < 4) { I.x = 4; I.vx = Math.abs(I.vx); } else if (I.x > W - 4) { I.x = W - 4; I.vx = -Math.abs(I.vx); }
-      if (I.life <= 0) { I.dead = true; if (rand() < INSECT.EGG && this.larvae.length < larvaCap) this.larvae.push(this._mkLarva(I.x, 0)); }   // an uneaten adult lays an egg → a larva
+      if (I.life <= 0) { I.dead = true; if (rand() < INSECT.EGG && this.larvae.length < larvaCap) this.larvae.push(this._mkLarva(I.x, 0)); }   // an uneaten adult lays its eggs → a new patch of young larvae
     }
 
     // benthic INVERTEBRATES — grazing SNAILS + omnivorous CRAYFISH, particle populations on the bed. Snail recruitment
@@ -1376,7 +1397,7 @@ export class World {
         const shed = Math.min(p.height - PLANT.WINTER_MIN, PLANT.SENESCE * (1 - vigor) * p.height * dt);
         const ret = (p.nut || 0) * shed / Math.max(p.height, 1e-6);   // the shed tissue's share of the plant's N+P
         p.height -= shed; p.nut -= ret;
-        env.addDOM(p.x, p.baseY, ret);
+        env.addDOM(p.x, p.baseY, ret); env.addSedOM(p.x, shed * PLANT.LITTER_G);   // its N+P dissolves; the litter joins the bed's organic layer
       }
       p.biomass = p.height * PLANT.BIOMASS_PER_PX; p.y = p.baseY - p.height * 0.5;
       // death is now LIGHT-starvation, not grazing: a macrophyte whose RUNNING-MEAN light is below its light tolerance (too
@@ -1386,7 +1407,7 @@ export class World {
       // A DORMANT plant (cold water at its base — winter, often under ice and snow) has shut down to its rootstock / winter
       // buds and can't starve: real pondweeds and milfoils overwinter this way instead of dying (and rotting) under the ice.
       const dormant = env.tempAt(p.x, p.baseY) < PLANT.DORMANT_T;
-      if (!dormant && p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.nut || 0); p.nut = 0; }   // a light-starved plant DECOMPOSES → all its N+P to DOM
+      if (!dormant && p.lightAvg < p.lightMin && rand() < PLANT.SHADE_DEATH * dt) { p.dead = true; env.addDOM(p.x, p.baseY, p.nut || 0); p.nut = 0; env.addSedOM(p.x, p.height * PLANT.LITTER_G); }   // a light-starved plant DECOMPOSES → all its N+P to DOM, its tissue to the bed's litter
     }
     // recruitment is seasonal too — new plants establish mostly in the warm growing season (vigor off the surface temp)
     const seedVigor = clamp((env.tempC - PLANT.GROW_TEMP_MIN) / tWin, 0, 1);
@@ -1860,12 +1881,17 @@ export class World {
         if (crAct > 0 && (k = this.crayGrid.nearest(a.x, a.y, Rc, exposedCray)) && rand() < 1 - Math.pow(1 - sp.diet.cray * crAct * (1 - k.dist / Rc)
           * (1 - this.coverAt(k.item.x, k.item.y) * COVER.REFUGE) * (1 - CRAYFISH.SHELTER_DAY * env.light), Math.max(1, slots))) { k.item.dead = true; this._ate(a, 1, PREY.CRAY_G, PREY.CRAY_ED, PREY.CRAY_DIG); }
       }
-      if (bugs && a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1);   // benthic insect larvae
+      if (bugs && a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1, INSECT.REFUGE_M, larvaFree);   // benthic insect larvae (those outside their refuge)
       let nS;
       if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
       a.foodT = a.eaten > eaten0 ? 0 : (a.foodT ?? 9) + dt;   // time since its last GOOD meal (patch residence, below; saved `ft`)
-      if (a.eaten === eaten0 && a.gut < pRoom && sp.diet.detritus) this._graze(a, this.detritusGrid, slots, pRoom - a.gut, PREY.DETRITUS_ED, PREY.DETRITUS_DIG);   // bottom feeders sift detritus
+      // bottom feeders take the detritus particles in reach, else, at the bed, sift its organic layer (SEDOM — a poor food:
+      // ~340 digestible J/g; at most SEDOM.SIFT × the gut's capacity a second)
+      if (a.eaten === eaten0 && a.gut < pRoom && sp.diet.detritus && !this._graze(a, this.detritusGrid, slots, pRoom - a.gut, PREY.DETRITUS_ED, PREY.DETRITUS_DIG) && a.y > bedY(a.x) - R - 4) {
+        const g = env.takeSedOM(a.x, Math.min(pRoom - a.gut, SEDOM.SIFT * gmax * dt));
+        if (g > 0) this._meal(a, g, PREY.DETRITUS_ED, PREY.DETRITUS_DIG, slots);
+      }
       // planktivore facultative omnivory: a hungry planktivore that found NOTHING else this step grazes the phytoplankton
       // field directly (fathead minnows and sunfish do eat algae and detritus) — algae are a poor, part-indigestible food
       // (PREY.ALGAE_*), a last resort that carries the forage fish through the zooplankton troughs. A per-SECOND rate × dt.
@@ -2062,6 +2088,7 @@ export class World {
       ammonium: e.meanNh4(), nitrate: e.meanNo3(), nitrateFrac: e.nitrateFrac(),   // N-cycle split (nitrification product)
       cyano: e.meanCyano(),   // cyanobacteria surface-scum density (the N-fixing strain)
       dom: e.meanDOM(),       // dissolved organic matter awaiting bacterial decomposition (the microbial loop)
+      bedOM: e.totalSedOM() / 1000,   // kg of organic detritus on the bed (SEDOM: the larvae's and bottom feeders' food)
       // which nutrient is limiting growth in the lit littoral (the bloom controller)?
       limiting: e.meanDin() / (e.meanDin() + NUTRIENT.KN) < e.meanPhos() / (e.meanPhos() + NUTRIENT.KP) ? 'N' : 'P',
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),
@@ -2167,7 +2194,7 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 27, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 28, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       env: this.env.toJSON(),
       agents: this.agents.map(a => {
         const HID = a.sp.shape.hid, W2 = a.sp.shape.in * HID + HID, act = a.act;

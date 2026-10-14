@@ -1013,7 +1013,7 @@ export class Renderer {
       if (off(n, 10)) continue;
       const px = X(n.x), py = Y(n.y), dir = n.vx >= 0 ? 1 : -1, ns = s * 0.42;
       ctx.fillStyle = rgb(96, 88, 54);
-      if (!near) { ctx.fillRect(px - ns, py - ns * 0.6, ns * 2.2, ns * 1.2); continue; }
+      if (!near) { ctx.beginPath(); ctx.ellipse(px, py - 0.6 * ns, 1.6 * ns, 0.7 * ns, 0, 0, TAU); ctx.fill(); continue; }
       ctx.save(); ctx.translate(px, py); ctx.rotate(slope(n.x));   // sprawled along the bed
       ctx.beginPath(); ctx.ellipse(-dir * 0.6 * ns, -1.2 * ns, 3.2 * ns, 1.2 * ns, 0, 0, TAU); ctx.fill();
       ctx.beginPath(); ctx.ellipse(dir * 2.9 * ns, -1.3 * ns, 1.2 * ns, 1.0 * ns, 0, 0, TAU); ctx.fill();
@@ -1036,7 +1036,7 @@ export class Renderer {
       if (h.k === 0) {            // TADPOLE (~4 cm): a dark round body and a wriggling tail
         const ts = s * 0.5;
         ctx.fillStyle = rgb(58 * sleep, 54 * sleep, 40 * sleep);
-        if (!near) { ctx.fillRect(px - ts * 0.8, py - ts * 0.6, ts * 1.8, ts * 1.2); continue; }
+        if (!near) { ctx.beginPath(); ctx.ellipse(px, py, 1.9 * ts, 1.5 * ts, 0, 0, TAU); ctx.moveTo(px - dir * 3 * ts + 1.6 * ts, py); ctx.ellipse(px - dir * 3 * ts, py, 1.6 * ts, 0.45 * ts, 0, 0, TAU); ctx.fill(); continue; }   // far: round body + tail
         const wig = Math.sin(t * 13 + h.x) * 1.1 * ts;
         ctx.beginPath(); ctx.ellipse(px, py, 1.9 * ts, 1.5 * ts, 0, 0, TAU); ctx.fill();
         ctx.strokeStyle = rgb(72, 68, 52, 0.75); ctx.lineWidth = Math.max(0.5, 0.7 * ts);
@@ -1044,7 +1044,7 @@ export class Renderer {
       } else if (h.k === 1) {     // FROG: green, darker-spotted back, pale belly, eyes on top, long hind legs trailing
         const g = 0.6 + 0.4 * clamp(h.age / (FROG.MATURE * YL), 0, 1), fs = s * g * 0.85;   // an ~8 cm frog
         ctx.fillStyle = rgb(92 * sleep, 136 * sleep, 62 * sleep);
-        if (!near) { ctx.fillRect(px - fs * 1.6, py - fs, fs * 3.2, fs * 1.8); continue; }
+        if (!near) { ctx.beginPath(); ctx.ellipse(px, py, 3.2 * fs, 1.7 * fs, 0, 0, TAU); ctx.moveTo(px + dir * 2.4 * fs + 0.8 * fs, py - 1.3 * fs); ctx.arc(px + dir * 2.4 * fs, py - 1.3 * fs, 0.8 * fs, 0, TAU); ctx.fill(); continue; }   // far: body + head bump
         const kick = h.st === 1 ? Math.sin(t * 9 + h.x) : 0.3;
         ctx.strokeStyle = rgb(80 * sleep, 120 * sleep, 54 * sleep); ctx.lineWidth = Math.max(0.8, 1.0 * fs);
         for (const sg of [-1, 1]) { ctx.beginPath(); ctx.moveTo(px - dir * 2.5 * fs, py + 0.6 * fs); ctx.lineTo(px - dir * 4.6 * fs, py + (1.4 + sg * 0.6 * kick) * fs); ctx.lineTo(px - dir * 7 * fs, py + (0.9 + sg * 1.3 * kick) * fs); ctx.stroke(); }
@@ -1057,7 +1057,12 @@ export class Renderer {
       } else {                    // PAINTED TURTLE: dark olive shell with a red-marked rim, striped head and paddling limbs
         const g = 0.3 + 0.7 * clamp(h.age / (TURTLE.MATURE * YL), 0, 1), ts = s * g * 2, pad = Math.sin(t * 4 + h.x * 0.1) * (h.st === 2 ? 0 : 1);   // a ~18 cm shell
         ctx.fillStyle = rgb(44 * sleep, 52 * sleep, 36 * sleep);
-        if (!near) { ctx.fillRect(px - ts * 3, py - ts * 1.4, ts * 6, ts * 2.2); continue; }
+        if (!near) {              // far: the silhouette — domed shell on a flat rim, head out front
+          ctx.beginPath(); ctx.ellipse(px, py - 0.3 * ts, 3.6 * ts, 1.8 * ts, 0, Math.PI, TAU); ctx.fill();
+          ctx.fillRect(px - 3.6 * ts, py - 0.35 * ts, 7.2 * ts, 0.7 * ts);
+          ctx.fillStyle = rgb(70, 80, 52); ctx.beginPath(); ctx.ellipse(px + dir * 4.5 * ts, py - 0.5 * ts, 1.1 * ts, 0.7 * ts, 0, 0, TAU); ctx.fill();
+          continue;
+        }
         ctx.strokeStyle = rgb(70, 80, 52); ctx.lineWidth = Math.max(1, 1.1 * ts);
         for (const [fx, sg] of [[1.9, 1], [-2.1, -1]]) { ctx.beginPath(); ctx.moveTo(px + dir * fx * ts, py + 0.6 * ts); ctx.lineTo(px + dir * (fx + sg * 1.2 + pad * 0.6) * ts, py + 2.1 * ts); ctx.stroke(); }
         ctx.beginPath(); ctx.moveTo(px + dir * 3.2 * ts, py - 0.2 * ts); ctx.lineTo(px + dir * 5.2 * ts, py - 0.7 * ts); ctx.stroke();   // neck
