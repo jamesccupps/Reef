@@ -2347,11 +2347,26 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('larvae GROW on the bed’s detritus (debiting it at 1/YIELD) and lose weight where there is none', !A.dead && grown > 0.25 && used >= grown / IN.YIELD && used < (grown / IN.YIELD) * 1.6 && !B.dead && B.m < 1,
         `in 5 days: fed patch 1 → ${A.m.toFixed(2)} g using ${used.toFixed(1)} g of detritus; unfed patch 1 → ${B.m.toFixed(3)} g`);
       // a bottom feeder at the bed sifts the layer (no particles, larvae, snails, plankton or weed to eat)
-      seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; bw.plankton = []; bw.insects = []; bw.cray = [];
+      seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; bw.plankton = []; bw.insects = []; bw.cray = []; bw.nymphs = []; bw.herps = [];
       const cp = bw.makeFish('carp', ONES7); bw.agents = [cp]; const cc = bw.env.colOf(300);
-      let took = 0; for (let i = 0; i < 60; i++) { cp.x = 300; cp.y = bw.bedY(300) - 3; bw.env.sedOM[cc] = 1000; const g0 = cp.gut; bw.step(1 / 30); took += Math.max(0, cp.gut - g0); }
-      const ed = cp.gut > 0 ? cp.gutE / cp.gut : 0;
-      check('a bottom feeder at the bed sifts its organic layer (a poor food: detritus energy × digestibility)', took > 0 && Math.abs(ed - PREY.DETRITUS_ED * PREY.DETRITUS_DIG) < 1, `carp took ${took.toFixed(2)} g in 2 s at ${ed.toFixed(0)} J/g`);
+      // count what the carp takes FROM THE LAYER (its sifting meals) and what the layer gives up in its column
+      let sifted = 0, sJ = 0, fromLayer = 0; const meal0 = bw._meal.bind(bw), take0 = bw.env.takeSedOM.bind(bw.env);
+      bw._meal = function (a, g, ed, dig, n) { if (a === cp && ed === PREY.DETRITUS_ED) { sifted += g; sJ += g * ed * dig; } return meal0(a, g, ed, dig, n); };
+      bw.env.takeSedOM = function (x, g) { const t = take0(x, g); if (this.colOf(x) === cc) fromLayer += t; return t; };
+      for (let i = 0; i < 60; i++) { cp.x = 300; cp.y = bw.bedY(300) - 3; bw.env.sedOM[cc] = 1000; bw.larvae = []; bw.step(1 / 30); }
+      check('a bottom feeder at the bed sifts its organic layer (a poor food: detritus energy × digestibility)', sifted > 0 && fromLayer >= sifted - 1e-9 && Math.abs(sJ / sifted - PREY.DETRITUS_ED * PREY.DETRITUS_DIG) < 1e-6,
+        `carp sifted ${sifted.toFixed(2)} g in 2 s (the layer gave ${fromLayer.toFixed(2)} g) at ${(sJ / Math.max(sifted, 1e-9)).toFixed(0)} J/g`);
+      // BOTTOM-FEEDING FRY: young bullheads feed on the bottom from swim-up (benthL 1.2 cm) and pick small larvae a fish's
+      // refuge would hide (INSECT.REFUGE_FRY) — a 1.5-cm bullhead school eats from a patch, a 1.5-cm bluegill school doesn't
+      const { FRY: FRYB } = await import('../src/config.js');
+      const fryAte = k => { seed(7951); const fw = new World().setDate(0.40); fw.plankton = []; fw.detritus = [];
+        const x = 300, y = fw.bedY(300) - 4, f = fw._mkFry(k, x, y, 200, 1, 200, Float32Array.from(fw.makeFish(k).g), new Float32Array(GENE_KEYS.length).fill(1));
+        f.L = 1.5; f.W = stdWeight(SP[k].lw, 1.5); fw.fry = [f];
+        const L = fw._mkLarva(x, 0, 0.8); L.x = x; L.y = y; fw.larvae = [L]; fw.larvaeGrid.rebuild(fw.larvae); fw.planktonGrid.rebuild([]); fw.detritusGrid.rebuild([]);
+        fw._feedFry(f, SP[k], FRYB.TICK, 22); return 0.8 - L.m; };
+      const fCat = fryAte('catfish'), fSun = fryAte('sunfish');
+      check('bullhead fry feed on the bottom from swim-up (benthL), below the fish refuge: a 1.5-cm school eats from a 0.8-g patch, a bluegill school that size doesn’t', fCat > 0 && fSun === 0 && SP.catfish.benthL < FRYB.BENTH_L && IN.REFUGE_FRY < IN.REFUGE_M,
+        `larvae eaten: bullhead ${fCat.toFixed(3)} g, bluegill ${fSun.toFixed(3)} g`);
       const sv = new World(); sv.env.sedOM[12] = 1234.5; const back = new World(); back.load(JSON.parse(JSON.stringify(sv.toJSON())));
       check('the bed’s organic layer round-trips through save/load (v28+)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version >= 28, `${back.env.sedOM[12]}`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);

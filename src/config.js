@@ -165,7 +165,8 @@ export const FRY = {
   R_WMIN: 0.1,         // g: below this a larva's mass-specific respiration is held at this mass's (larval metabolism scales
                        //   ~isometrically — Oikawa et al. 1991, Post & Lee 1996 — where FB4's W^RB, fit to bigger fish, would
                        //   give a 1-mg bass larva ~2,300 J/g/day, several times the measured larval rates)
-  BENTH_L: 2.5,        // cm: young fish this long also forage the bottom (insect larvae; detritus for the bottom feeders)
+  BENTH_L: 2.5,        // cm: young fish this long also forage the bottom (insect larvae; detritus for the bottom feeders) — a
+                       //   species may set its own `benthL` (bullheads feed on the bottom from swim-up)
   M_LARVA: 0.02,       // /day extra natural mortality of the youngest larvae at 1 cm (∝ 1/length, fading out by ~3 cm:
                        //   the "critical period" — first-feeding larvae lose 5–30 %/day in the field, most of it to the
                        //   predators and starvation the lake simulates; this is the unsimulated rest: disease, deformity,
@@ -704,6 +705,8 @@ export const INSECT = {
                            //   exposed and the emerging; the burrowed stock regrows a grazed-down patch). A third of a full patch:
                            //   fish cut a patch's biomass by up to ~2/3 — fish-exclusion studies find 20–60 % less benthos with fish
                            //   (at 0.3 g the fish held every patch on its floor and benthic production fell to ~15 g/m²/yr)
+  REFUGE_FRY: 0.05,        // g of a patch out of reach of YOUNG-OF-YEAR fish: fry pick the small early instars off the mud surface
+                           //   (a 1-g refuge for fry starved the bullhead fry — 80–90 % of them died of hunger by July)
   get GROW() { return 0.3 / BIOE.DAY; },    // /s a patch's biomass growth at DEV_TEMP_OPT on ample food (0.3/day; chironomid larvae
                                             //   grow ~0.2–0.4/day at 20 °C; at 0.2 a patch only tripled before emerging and fish
                                             //   got next to none of it above the refuge)

@@ -59,6 +59,12 @@ Save format **v28** (`env.sedOM`); v29 adds the evolution history.
 - **A refuge** (`INSECT.REFUGE_M`): the first gram of every patch is burrowed or cased, out of reach of fish, fry,
   dragonfly nymphs and turtles (`larvaFree`, `_biteLarva`; nymphs and turtles now take a bite, not a whole patch). Fish
   can cut a patch by ~2/3 at most; the burrowed stock regrows it. Without it the fish kept every patch on its floor.
+  Young-of-year are the exception: they pick the small early instars off the mud surface (`INSECT.REFUGE_FRY` 0.05 g,
+  `larvaFreeFry`).
+- **Bottom-feeding fry** (`sp.benthL`, default `FRY.BENTH_L` 2.5 cm): young bullheads, guarded in a ball over the bottom,
+  feed there from swim-up (`benthL` 1.2 cm). Diagnosed with `verify/fryfate.mjs` (hatched vs alive vs losses by cause):
+  at the generic 2.5 cm ~85 % of the bullhead fry starved by July (feeding p 0.2–0.3) and 0–1 recruited in two years —
+  in the old code too; with it they feed at p ~0.4, ~140 of a clutch reach July and ~10 recruit a year.
 - **Bottom feeders sift it** (`diet.detritus`: carp, bullhead): with no particle in reach, a fish at the bed takes up
   to `SEDOM.SIFT` × its gut capacity a second from the layer — a poor food (979 J/g, 35 % digestible). On a lean bed they
   turn to snails and zooplankton too (bullhead + carp diets widened to their real omnivory, Scott & Crossman 1973 — on

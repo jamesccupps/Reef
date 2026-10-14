@@ -36,7 +36,10 @@ settle only on an oxic bed + LARVA_CAP 240 → 400 (the count had sat ON the cap
 perch 10–25 (b 19–48), carp 3–6 home-bred, sunfish 169–260, minnows 75–300, bullheads 3–4 (b 0–1), bass/pike immigrant.
 Gate GREEN standalone (gate27: all checks, smoke, UI, serve; perf 87 st/s) after moving the dev-with-warmth test larva to an
 oxic shallow bed (on the deep bed it could die in anoxia — RNG-fragile).
-OPEN (next accuracy items): bullhead recruitment (0–1 home-bred in 2 yr), pike summer feeding (pikediag: ~2 takeable
+OPEN (next accuracy items): bullhead recruitment (0–1 home-bred in 2 yr: a clutch is right — ~2,500–3,900 eggs × sHatch
+0.6 — but ~90 % of the fry are gone by early July (yf 0.34: 9–12 schools × 14–18, p 0.5–0.7) and ~all by mid-August; real
+bullheads guard their fry balls for weeks — look at fry feeding (zoo, larvae above the refuge, detritus particles) and
+guarding/predation; baseline c5 had 3–5 recruits), pike summer feeding (pikediag: ~2 takeable
 fish in its arena but kills drop 80 → 17 per 45 days Jun → Sep at 23–26 °C > pike's 21 °C optimum — partly real),
 perch age-2/3 growth still above Michigan means (founders), snails' 34-day life (real ~1 yr) and they could graze the
 bed's benthic algae (SEDOM) instead of the phyto field.
@@ -46,6 +49,15 @@ VISIBLE EVOLUTION — built on branch `evo-history` (92a0b4d, 96243fc, 6ab3e4d),
 world.evo trait history (EVO, sampled on the clock grid, thinned past MAX, saved) + Evolution-over-time chart (gene selector,
 species pick, note) + fast-forward "Skip ahead" in a module Worker (src/ffworker.js; byte-identical to main-thread steps,
 checked in Chrome; smoke runs the real worker behind a stub). Gate checks: sampling grid/values, thinning + round trip, FF smoke.
+AFTER THE MERGE (committed): BULLHEAD RECRUITMENT FIX — verify/fryfate.mjs showed ~85 % of bullhead
+fry STARVE by July at 1.0–1.6 cm (p 0.2–0.3), in the OLD code too (not the diet change: fryfate_nozoo / fryfate_base) —
+no young fish could take bottom food before FRY.BENTH_L 2.5 cm. → species `benthL` (bullhead 1.2 cm: guarded fry balls
+feed on the bottom from swim-up) + INSECT.REFUGE_FRY 0.05 g (fry pick small instars; the 1-g fish refuge hid them):
+fry p ~0.4, ~140/clutch reach July, 10–12 recruits/yr/seed (was 0–1). Gate check added; the sifting check now clears
+nymphs/plants (a nymph eaten by RNG luck had broken it). Evolution chart: scale from species with ≥ 5 fish, few-fish
+lines dashed + clipped (real 2-yr history: trout/pike/bass means jump with each immigrant). FF worker yields via
+MessageChannel (e1138bc). Embedded preview pane steps ~48 st/s (main thread too) — judge FF speed in real Chrome.
+Round 8 (3 × 2.2 yr): bullheads 12–15 home-bred, 0 immigrants; carp home-bred; perch 5–20 (next). Gate GREEN (gate30, 92 st/s).
 NEXT: (a) look at the merged UI in the browser (bed detritus row, Evolution chart with a REAL multi-year history — run
 Skip ahead 1–5 years), (b) the OPEN accuracy items above (bullhead recruitment, pike summer feeding, perch growth, snails),
 then (2) the GUI/graphics/info/graphs review.

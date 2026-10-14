@@ -68,6 +68,7 @@ const TROPHIC = [
 ];
 const EVO_GENES = ['gSize', 'gSpeed', 'gTol', 'gFin', 'gEye', 'gBody', 'gBrain'];
 // the evolution chart's gene selector: short label and what the gene sets (tooltip)
+const EVO_FEW = 5;   // fewer fish than this: a species' gene mean is mostly noise (drawn dashed, left out of the chart's scale)
 const EVO_LABELS = [['size', 'maturation size (the length a fish matures at: bigger fish, later)'], ['speed', 'swimming speed (and its energy cost)'],
   ['tolerance', 'tolerance of heat and low oxygen'], ['fins', 'fin size: turning and sprinting vs drag'], ['eyes', 'eye size: vision range vs cost'],
   ['body', 'body depth: a deep body defends against gape-limited predators, a slim one swims cheaper'], ['brain', 'brain size: active hidden units (more capacity, more upkeep)']];
@@ -574,9 +575,10 @@ export class UI {
     }
     const YL = TIME.YEAR_LEN, t0 = E[0].t, t1 = E[E.length - 1].t, padL = 30, padR = 6, padT = 6, padB = 13, pw = Wd - padL - padR, ph = Hd - padT - padB;
     const row = (e, k) => { const q = e.s[k]; return q && q[0] >= 1 ? q : null; };
+    // the scale follows the populations of at least EVO_FEW fish (a lone trout or pike swings with every immigrant) — unless picked
     let lo = 1, hi = 1;
     for (const e of E) for (const k of SPECIES) {
-      if (sel && k !== sel) continue; const q = row(e, k); if (!q) continue;
+      if (sel && k !== sel) continue; const q = row(e, k); if (!q || (!sel && q[0] < EVO_FEW)) continue;
       lo = Math.min(lo, q[2 + g] - q[2 + nG + g]); hi = Math.max(hi, q[2 + g] + q[2 + nG + g]);
     }
     const span = Math.max(0.04, hi - lo); lo -= span * 0.08; hi += span * 0.08;
@@ -584,6 +586,7 @@ export class UI {
     ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.fillRect(padL, padT, pw, ph);
     ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(padL + pw, Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.save(); ctx.beginPath(); ctx.rect(padL, padT, pw, ph); ctx.clip();   // (a few-fish line may leave the scale)
     for (const k of SPECIES) {
       const on = sel === k, dim = sel && !on;
       // the ±1 SD band, over each unbroken run of samples where the species was present
@@ -600,11 +603,13 @@ export class UI {
           ctx.closePath(); ctx.fill();
         }
       }
-      ctx.strokeStyle = SP[k].tag; ctx.globalAlpha = dim ? 0.22 : 0.95; ctx.lineWidth = on ? 2 : 1.2; ctx.beginPath();
+      const few = !on && E[E.length - 1].s[k] && E[E.length - 1].s[k][0] < EVO_FEW;   // a handful of fish: drawn dashed and faint
+      ctx.strokeStyle = SP[k].tag; ctx.globalAlpha = dim ? 0.22 : few ? 0.45 : 0.95; ctx.lineWidth = on ? 2 : 1.2; ctx.setLineDash(few ? [3, 3] : []); ctx.beginPath();
       let pen = false;
       for (const e of E) { const q = row(e, k); if (!q) { pen = false; continue; } const x = X(e.t), y = Y(q[2 + g]); if (pen) ctx.lineTo(x, y); else ctx.moveTo(x, y); pen = true; }
-      ctx.stroke();
+      ctx.stroke(); ctx.setLineDash([]);
     }
+    ctx.restore();
     ctx.globalAlpha = 1; ctx.fillStyle = '#5b7d86'; ctx.textAlign = 'right';
     ctx.fillText(hi.toFixed(2), padL - 3, padT + 7); ctx.fillText(lo.toFixed(2), padL - 3, padT + ph); ctx.fillText('1.00', padL - 3, Y(1) + 3);
     ctx.textAlign = 'left'; ctx.fillText('year ' + (t0 / YL).toFixed(1), padL, Hd - 2);

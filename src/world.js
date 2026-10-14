@@ -53,6 +53,8 @@ const notDead = it => !it.dead;
 // a larval patch with larvae outside the refuge: INSECT.REFUGE_M grams of every patch are burrowed in the mud or cased,
 // out of a predator's reach — the stock that rebuilds a grazed-down patch
 const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
+// …but young-of-year pick the small early instars off the mud surface: for fry only INSECT.REFUGE_FRY of a patch is out of reach
+const larvaFreeFry = it => !it.dead && it.m > INSECT.REFUGE_FRY + 1e-3;
 // predator/prey relation (shared so qThreat and qPrey stay SYMMETRIC): `pred` could eat `prey` if it's a piscivore,
 // the prey fits its gape, and the prey isn't a conspecific still inside its post-birth grace (BROOD.GRACE).
 // So a juvenile fears a cannibal adult of its own kind exactly when that adult could actually eat it.
@@ -1070,9 +1072,9 @@ export class World {
       if (o2 < sp.o2Crit) { f.tx = f.x; f.ty = Math.max(4, f.y - 60); }
       else if (T > sp.uilt - 3) { f.tx = f.x; f.ty = f.y + 60; }
       else {
-        const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= FRY.BENTH_L;
+        const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= (sp.benthL ?? FRY.BENTH_L);
         let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
-        if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFree))) best = m;
+        if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFreeFry))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
         // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
@@ -1118,13 +1120,13 @@ export class World {
       z.m -= take; if (z.m <= 1e-9) z.dead = true;
       got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
     }
-    if (f.L >= FRY.BENTH_L && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
-      const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, larvaFree); if (!m) break;
-      const it = m.item, take = Math.min(it.m - INSECT.REFUGE_M, want - got);
+    if (f.L >= (sp.benthL ?? FRY.BENTH_L) && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+      const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, larvaFreeFry); if (!m) break;
+      const it = m.item, take = Math.min(it.m - INSECT.REFUGE_FRY, want - got);
       it.m -= take;
       got += take; J += take * PREY.LARVA_ED;
     }
-    if (f.L >= FRY.BENTH_L && d.detritus) for (; feeds > 0 && want - got > 1e-12; feeds--) {
+    if (f.L >= (sp.benthL ?? FRY.BENTH_L) && d.detritus) for (; feeds > 0 && want - got > 1e-12; feeds--) {
       const m = this.detritusGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
       const it = m.item, take = Math.min(it.m, want - got);
       if (it.n > 0) { const nu = it.n * take / it.m; it.n -= nu; env.addNutrient(it.x, it.y, nu); }   // its organic N+P is excreted

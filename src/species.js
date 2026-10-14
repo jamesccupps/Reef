@@ -284,6 +284,8 @@ export const BIO = {
     gut: 0.06, gerMul: 0.5, gsiF: 0.12, gsiM: 0.015,
     fec: { a: 0.274, b: 2.9 },   // no published equation: 1,050–13,800 eggs (Ontario database) ≈ 13 per g → ~3,900 at 27 cm (prior)
     Lzoo: 5, Lpisc: Infinity, gapeR: 0.12, depthR: 0.20, uilt: 36, o2Lethal: 0.3, vuln: 0.4,   // bullheads survive 0.2–0.3 ppm under ice (Cooper & Washburn 1946)
+    benthL: 1.2,   // cm: young bullheads, guarded in a ball over the bottom, feed there from swim-up — midge larvae and small
+                   //   crustaceans (Scott & Crossman 1973); at the generic FRY.BENTH_L (2.5 cm) ~85 % of the fry starved first
   },
   carp: {     // COMMON CARP — there is NO published Wisconsin model for common carp (none in FB4). A COMPOSITE from carp data:
               // consumption curve of FB4's bighead carp (Cooke & Hill 2010; same family, warm-water: best growth 23–30 °C), CA
