@@ -71,11 +71,28 @@ Save format **v27**. Every number below is from a published source (cited inline
 - **Gape**: prey body depth (length × the species' depth ratio × the body gene) must fit the predator's mouth (length ×
   gape ratio: bass 0.12, pike ≈ its own depth — Lawrence 1958, Hill et al. 2004, Nilsson & Brönmark 2000); a lone prey under
   7 % of the predator's length is ignored (a 65-cm pike's median prey is ~7 cm: Gaeta et al. 2018), a dense school of young
-  fish down to half that (`FEED.SCHOOL_MIN`). Strikes can miss (`capture`: pike 0.6 … perch 0.15, × the prey species'
-  `vuln`), leaving the predator a moment to recover (`FEED.MISS_CD`). Big piscivores (past ~3× their piscivory length:
-  adult bass, pike) no longer graze insects and larvae — they live on fish and crayfish. (Tried and reverted: a stronger
-  attack reflex + 0.1-s miss recovery — it let the predators, held in view by the rescue, eat the forage fish out.) Piscivory starts at a species length (`Lpisc`: pike 4 cm, bass 5, perch 14, trout 25); every fish eats
-  zooplankton below `Lzoo` (pike until 5 cm).
+  fish down to half that (`FEED.SCHOOL_MIN`). Big piscivores (past ~3× their piscivory length: adult bass, pike) no longer
+  graze insects and larvae — they live on fish and crayfish. Piscivory starts at a species length (`Lpisc`: pike 4 cm,
+  bass 5, perch 14, trout 25); every fish eats zooplankton below `Lzoo` (pike until 5 cm).
+- **Hunting at compressed time** (`takePrey`): one behavioural second is ~5 h of a predator's day, in which a real bass or
+  pike makes many approaches — one lunge per encounter fed bass and pike a twentieth of their ration in a lake full of
+  prey. So a piscivore with catchable fish in its hunting arena (`FEED.HUNT_R` × its strike reach, ~ a body length)
+  strikes at a RATE (`FEED.ATTACK` per s × water clarity), spread over those fish by closeness; each strike connects with
+  its `capture` (pike 0.6 … perch 0.15) × the prey species' `vuln` (fathead 1, bluegill 0.35 — Wahl & Stein 1988) × the
+  SIZE REFUGE (1 − prey depth / gape)^`FEED.SIZE_SEL`: capture and handling fail more and more as the prey nears the gape
+  (Miller et al. 1988 review; pike take the smaller fish of each species, Nilsson & Brönmark 2000; perch prey far below
+  their gape, Paszkowski & Tonn 1994; median prey 10–20 % of predator length, Gaeta et al. 2018). Each prey's reach is cut
+  by cover, by its own species' shoal (predator confusion), by freezing (HIDE) and by a guardian on station, and extended
+  by a committed STRIKE lunge; a miss alarms the prey and costs the predator `FEED.MISS_CD`. Kills and misses are thinned
+  Poisson draws on the seeded RNG; behaviour (search, pursuit, flight, shoaling, cover) decides whether there is prey in
+  the arena at all. A school of young fish is worked the same way — anywhere in the arena, at the full bout rate inside
+  it — and a big piscivore hunts the schools of young FISH (`FEED.SCHOOL_MIN` up), not the larvae nearer by (those are
+  for the planktivores and for young piscivores under 3× their piscivory length). Without the size refuge the rate-based
+  hunting let the lake's pike eat 10–16 kg of adult perch and bluegill in half a year and the community collapsed; with
+  it the adults mostly outgrow the risk and the predators live on the small fish and the young-of-year, as real ones do.
+  Still short: adult BASS in early summer (≈5–15 % of Cmax — the young-of-year are still 1–2-cm larvae, minnow adults
+  thin out, crayfish are few — the crayfish model predates the bioenergetics and its recruitment is held down by a
+  near-empty detritus pool).
 - **Reproduction**: sexes (opposite-sex pairs only; the male guards the nest, at a metabolic and feeding cost —
   `BROOD.GUARD_*`); eggs from the published length–fecundity regressions (perch: Schneider 1984; bass: Laarman & Schneider
   1985; pike: Priegel & Krohn 1975 …) × the female's ripeness; maturity by length AND age (the SIZE gene is now the
@@ -91,7 +108,8 @@ Save format **v27**. Every number below is from a published source (cited inline
   food they find, climb out of hypoxic water, drop out of near-lethal heat; they die at the larval critical-period rate
   (`FRY.M_LARVA`, fading by ~3 cm), the agents' size-scaled share of M, starvation, heat and hypoxia; they breathe the
   lake's O₂. They are FOOD for everything whose mouth they fit: planktivores pick off larvae (`FRY.CATCH`), a piscivore
-  works a school in feeding bouts (`FRY.ATTACK` × capture, a type-II response in the school's size `FRY.N_HALF`), weeds
+  works a school in feeding bouts (`FRY.ATTACK` × capture × vuln × the size refuge, a type-II response in the school's
+  size `FRY.N_HALF`; at compressed time a bout at a school fills the stomach — the gut and Cmax cap it), weeds
   shelter them, a guarded nest protects them. Through summer, autumn and winter they are the lake's main forage — as
   young-of-year are in real lakes. Survivors RECRUIT as followed individuals on reaching the species' recruit length `L0`
   (fast growers: fatheads, young bass and pike) or as yearlings the next spring: one agent per `FRY.N_PER_AGENT`, within the

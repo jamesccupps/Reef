@@ -191,7 +191,9 @@ check('every brain emits 5 motor outputs: turn, thrust + the 3 gated actions', O
   const leakKept = (() => { const oLK = len2rec - sh.hid, nLK = genomeLen(sh) - sh.hid; for (let j = 0; j < sh.hid; j++) if (Math.abs(mg[nLK + j] - old[oLK + j]) > 1e-9) return false; return true; })();
   check('migrateGenome preserves a pre-action (2-out) brain: input→hidden + turn/thrust + LEAK kept, length grows to current', kept && leakKept, `len ${mg.length}/${genomeLen(sh)}, weights+leak kept ${kept && leakKept}`); }
 // STRIKE extends the predator's reach; HIDE conceals the prey — both bite in takePrey() (deterministic, no forward())
-// (capture success is set to 1 — not every real strike connects, but the REACH is what these probe)
+// (capture success is set to 1 — not every real strike connects, but the REACH is what these probe; the reach is the
+// predator's hunting arena, FEED.HUNT_R × its eat radius)
+const { FEED: FEED_H } = await import('../src/config.js');
 const sureStrike = fn => { const c = {}; for (const k of SPECIES) { c[k] = SP[k].capture; SP[k].capture = 1e9; } try { return fn(); } finally { for (const k of SPECIES) SP[k].capture = c[k]; } };
 function eatenAt(dist, strike, hide) {
   seed(31); const ew = new World();
@@ -200,7 +202,7 @@ function eatenAt(dist, strike, hide) {
   ew.agents = [bass, prey]; ew.agentGrid.rebuild(ew.agents);
   return sureStrike(() => ew.takePrey(bass) === prey);
 }
-const baseR = (() => { seed(31); const ew = new World(); const prey = ew.makeFish('minnow'); prey.x = 700; prey.y = 300; const bass = ew.makeFish('bass'); ew.agents = [bass, prey]; ew.agentGrid.rebuild(ew.agents); return bass.eatRadius * (1 - ew.coverAt(prey.x, prey.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * ew.allyStats(prey, SCHOOL.DILUTE_R).density); })();
+const baseR = (() => { seed(31); const ew = new World(); const prey = ew.makeFish('minnow'); prey.x = 700; prey.y = 300; const bass = ew.makeFish('bass'); ew.agents = [bass, prey]; ew.agentGrid.rebuild(ew.agents); return bass.eatRadius * FEED_H.HUNT_R * (1 - ew.coverAt(prey.x, prey.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * ew.allyStats(prey, SCHOOL.DILUTE_R).density); })();
 check('a STRIKE lunge EXTENDS reach: prey just beyond base reach is caught only WITH a committed strike', !eatenAt(baseR * 1.25, 0, 0) && eatenAt(baseR * 1.25, 1, 0), `dist ${(baseR * 1.25).toFixed(0)}, baseR ${baseR.toFixed(0)}`);
 check('a freezing prey (HIDE) is CONCEALED: caught when not hiding, NOT caught fully hidden at the same range', eatenAt(baseR * 0.9, 0, 0) && !eatenAt(baseR * 0.9, 0, 1), `dist ${(baseR * 0.9).toFixed(0)}`);
 check('the action knobs are sane (bursts positive, conceal/reach in range; their cost is the swimming term of respiration)', ACTION.STRIKE_REACH > 0 && ACTION.BURST_SPEED > 0 && ACTION.HIDE_CONCEAL > 0 && ACTION.HIDE_CONCEAL < 1);
@@ -486,7 +488,7 @@ function shoaledEaten(withShoal) {
   seed(31); const sw = new World();
   const prey = sw.makeFish('minnow'); prey.x = 700; prey.y = 300;
   const bass = sw.makeFish('bass');
-  const er = bass.eatRadius, cov = sw.coverAt(prey.x, prey.y);
+  const er = bass.eatRadius * FEED_H.HUNT_R, cov = sw.coverAt(prey.x, prey.y);
   const D = 0.72 * er * (1 - cov * COVER.REFUGE);   // within the lone reach, but beyond the shoaled reach (× (1−DILUTE))
   bass.x = prey.x - D; bass.y = 300;
   const agents = [bass, prey];
@@ -549,7 +551,7 @@ check('a CLEAN lake (TOX.AMBIENT=0) is inert: no fish carries any contaminant bu
 seed(31); const bmw = new World();
 const bprey = bmw.makeFish('minnow'); bprey.x = 700; bprey.y = 300; bprey.tox = 2.0;   // a contaminated prey
 const bpred = bmw.makeFish('bass'); bpred.tox = 0;
-bpred.x = bprey.x - 0.5 * bpred.eatRadius * (1 - bmw.coverAt(bprey.x, bprey.y) * COVER.REFUGE); bpred.y = 300;
+bpred.x = bprey.x - 0.5 * bpred.eatRadius * FEED_H.HUNT_R * (1 - bmw.coverAt(bprey.x, bprey.y) * COVER.REFUGE); bpred.y = 300;
 bmw.agents = [bpred, bprey]; bmw.agentGrid.rebuild(bmw.agents);
 const bAte = sureStrike(() => bmw.takePrey(bpred) === bprey);
 check('biomagnification STEP: a predator assimilates its prey\'s contaminant burden when it eats it (× TOX.ASSIM)', bAte && Math.abs(bpred.tox - TOX.ASSIM * 2.0) < 1e-6, `predator tox ${bpred.tox.toFixed(3)} = ${TOX.ASSIM}×2.0`);
@@ -1565,7 +1567,7 @@ console.log('\n— audit fixes: bio-ecology —');
     check('the grace is kin-only: another species\' newborn is still prey', !!cw.qPrey(adult) && cw.qPrey(adult).item === minnow); }
   // in a running lake: no conspecific is eaten inside its grace (before the fix bass/pike ate ~half their brood within 2 s)
   { seed(99); const rw = new World(); const kills = { young: 0, any: 0 }, orig = rw.takePrey.bind(rw);
-    rw.takePrey = a => { const p = orig(a); if (p && p.species === a.species) { kills.any++; if (p.age < BROOD.GRACE) kills.young++; } return p; };
+    rw.takePrey = (a, m, d) => { const p = orig(a, m, d); if (p && p.species === a.species) { kills.any++; if (p.age < BROOD.GRACE) kills.young++; } return p; };
     for (let i = 0; i < 1800; i++) rw.step(1 / 30);   // a minute of late May: the bass spawning season
     check('running lake: zero conspecific kills of fish younger than BROOD.GRACE', kills.young === 0, `young conspecific kills ${kills.young} (all conspecific ${kills.any})`); }
   // brood SCATTER: the larvae schools start BROOD.SCATTER px from the parents, out of immediate strike reach
@@ -2246,6 +2248,32 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       const f = mkSchool(rw, 'sunfish', 500, 300, 60); f.L = 3; f.W = stdWeight(SP.sunfish.lw, 3); f.age = 0.7 * TIME.YEAR_LEN;
       const b0 = rw.stats.births.sunfish; let t = 0; while (!f.dead && t < 0.1 * TIME.YEAR_LEN) { rw.step(1 / 30); t += 1 / 30; }
       check('an overwintered school recruits its survivors as yearlings in spring (one agent per FRY.N_PER_AGENT)', f.dead && rw.stats.births.sunfish > b0 && rw.env.yearFrac() >= FRYC.SPRING_YF - 0.01, `${rw.stats.births.sunfish - b0} yearlings at yf ${rw.env.yearFrac().toFixed(2)}`); }
+    // HUNTING AT COMPRESSED TIME: beside a fathead a bass strikes at a RATE (FEED.ATTACK × closeness × capture × vuln per s
+    // — one behavioural second is ~5 h of hunting), and finds less in murky water (× clarity)
+    { seed(7301); const hw = new World().setDate(0.40); hw.fry = []; hw.cray = [];
+      const bass = hw.makeFish('bass', ONES7); bass.x = 1000; bass.y = 300; bass.act.strike = 0;
+      const prey = hw.makeFish('minnow', ONES7); prey.L = 5; prey.W = stdWeight(SP.minnow.lw, 5); prey.act.hide = 0; hw.agents = [bass, prey];
+      const n0 = hw._counts.minnow, d = bass.eatRadius;
+      const run = turb => { hw.env.turbidity = turb; let k = 0; for (let t = 0; t < 3000; t++) { prey.dead = false; bass.missCd = 0; prey.x = 1000 + d; prey.y = 300; hw.agentGrid.rebuild(hw.agents); if (hw.takePrey(bass, Infinity, 1 / 30)) k++; } hw._counts.minnow = n0; return k; };
+      const reach = d * FEEDC.HUNT_R * (1 - hw.coverAt(1000 + d, 300) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * hw.allyStats(prey, SCHOOL.DILUTE_R).density);
+      const clear = run(0), murky = run(1), cl1 = (() => { hw.env.turbidity = 0; return hw.env.clarity(); })();
+      const sz = Math.pow(1 - prey.L * SP.minnow.depthR * (prey.bodyMul || 1) / (bass.L * SP.bass.gapeR), FEEDC.SIZE_SEL);
+      const expect = 3000 * (1 - Math.exp(-FEEDC.ATTACK * cl1 * (1 - d / reach) * SP.bass.capture * SP.minnow.vuln * sz / 30));
+      check('HUNTING at compressed time: a bass beside a fathead kills at the rate FEED.ATTACK × closeness × capture × vuln — and less in murky water', Math.abs(clear - expect) < expect * 0.3 + 3 && murky < clear * 0.7, `clear ${clear} (expect ${expect.toFixed(0)}) vs murky ${murky} of 3000 steps`); }
+    // …and it takes the fish that FITS its gut: a perch too heavy for the room left is passed over for a fathead further off
+    { seed(7302); const gw = new World().setDate(0.40); gw.fry = []; gw.cray = [];
+      const pk = gw.makeFish('pike', ONES7, SP.pike.matureAge + 10); pk.x = 1000; pk.y = 500;
+      const big = gw.makeFish('perch', null, SP.perch.matureAge + 5); big.x = 1003; big.y = 500;
+      const sm = gw.makeFish('minnow', ONES7); sm.L = 6; sm.W = stdWeight(SP.minnow.lw, 6); sm.x = 1000; sm.y = 500 + pk.eatRadius;
+      gw.agents = [pk, big, sm]; gw.agentGrid.rebuild(gw.agents);
+      const got = sureStrike(() => gw.takePrey(pk, sm.W + sm.gon + 1, 1 / 30));
+      check('a piscivore passes over a fish too heavy for the room in its gut and takes one that fits', got === sm && !big.dead, `took ${got ? got.species : 'nothing'} (room ${(sm.W + 1).toFixed(1)} g; perch ${big.W.toFixed(0)} g)`); }
+    // the SIZE REFUGE: a pike's strikes connect far more often on a fish small for its gape than on one near the limit
+    { const hit = L => { let n = 0; for (let t = 0; t < 300; t++) { seed(7400 + t); const pw = new World(); const pk = pw.makeFish('pike', ONES7); pk.L = 60; pk.x = 1000; pk.y = 400;
+        const pr = pw.makeFish('perch', ONES7); pr.L = L; pr.W = stdWeight(SP.perch.lw, L); pr.x = 1003; pr.y = 400; pw.agents = [pk, pr]; pw.agentGrid.rebuild(pw.agents); if (pw.takePrey(pk) === pr) n++; } return n; };
+      const small = hit(8), big = hit(28);
+      check('SIZE REFUGE: a pike catches a small perch far more often than one whose depth nears its gape (Gaeta et al. 2018: median prey 10–20 % of predator length)', small > big * 3 && big >= 0, `8-cm perch ${small}/300 vs 28-cm ${big}/300`); }
+    check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);
     check('school and food-web knobs are sane', FRYC.ATTACK > 0 && FRYC.N_HALF > 0 && FRYC.R_WMIN > 0 && FEEDC.POOR_GUT > 0 && FEEDC.POOR_GUT < 1 && FEEDC.SCHOOL_MIN < FEEDC.PREY_MIN);
   }
   Object.assign(IMMIGRATION, immB); BIRDB.ARRIVE = arriveB; setRandState(rsB);

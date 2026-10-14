@@ -59,6 +59,13 @@ function canPreyFn(pred, prey) {
   return depthOf(prey) <= gapeOf(pred) && prey.L >= FEED.PREY_MIN * pred.L;
 }
 const isThreatTo = (it, a) => canPreyFn(it, a);
+// the SIZE REFUGE: the chance a piscivore's strike ends in a swallowed meal — capture and handling — falls as the prey's
+// body depth nears its gape, (1 − depth/gape)^FEED.SIZE_SEL. Capture success is high on prey small for the mouth and drops
+// steeply toward the gape limit (Miller et al. 1988 review); pike take the smaller fish of each prey species (Nilsson &
+// Brönmark 2000), perch prey far smaller than their gape allows (Paszkowski & Tonn 1994), and across bass, pike and five
+// other piscivores the median prey is 10–20 % and the largest 32–46 % of the predator's length (Gaeta et al. 2018) — so
+// adult bluegill and perch mostly outgrow the risk, and the predators live on the small fish and the young-of-year
+const sizeSel = (prey, pred) => Math.pow(Math.max(0, 1 - depthOf(prey) / gapeOf(pred)), FEED.SIZE_SEL);
 const isPiscivore = a => !!(a.sp && a.sp.diet.fish);
 const notOwnBrood = (it, a) => it !== a && !it.dead && it.ni !== a.id;   // a nest guardian's intruder: any piscivore but its own fry
 // WILDLIFE (dragonflies, frogs, turtles) — herps: k 0 tadpole, 1 frog, 2 turtle. Body depth (cm, the gape check) and wet
@@ -87,6 +94,10 @@ const canEatFry = (f, a) => {
   if (schoolPrey(f, a)) return true;
   return f.L <= FRY.LARVA_L && f.L <= a.L / 3 && !!(a.sp.diet.plankton || a.sp.diet.larva || a.sp.diet.insect || a.L < a.sp.Lzoo);
 };
+// … a school worth a PISCIVORE's bout (young fish, not larvae it would only pick at): what a big bass or pike hunts —
+// larvae are left to the planktivores and to young piscivores still eating insects (below 3× their piscivory length)
+const piscSchool = (f, a) => !f.dead && f.ni !== a.id && schoolPrey(f, a);
+const fryPreyOf = (a) => a.L < 3 * a.sp.Lpisc ? canEatFry : piscSchool;
 // young fish that eat insect larvae: their species does — or a young piscivore not yet big enough to live on fish alone
 // (YOY pike and bass eat aquatic insects alongside fish until ~3× their piscivory length: Frost 1954, Keast 1985)
 const insectEater = (sp, L) => sp.diet.larva || sp.diet.insect || (sp.diet.fish && L < 3 * sp.Lpisc);
@@ -697,7 +708,7 @@ export class World {
   qPrey(a) {
     const r = a.senseRange * this.env.clarity(); this._qpA = a;
     let m = this.agentGrid.nearest(a.x, a.y, r, isPreyOf, a);
-    if (this.fry.length && a.sp.diet.fish && a.L >= a.sp.Lpisc) { const f = this.fryGrid.nearest(a.x, a.y, m ? m.dist : r, canEatFry, a); if (f && (!m || f.dist < m.dist)) m = f; }
+    if (this.fry.length && a.sp.diet.fish && a.L >= a.sp.Lpisc) { const f = this.fryGrid.nearest(a.x, a.y, m ? m.dist : r, fryPreyOf(a), a); if (f && (!m || f.dist < m.dist)) m = f; }
     return (this._qpR = m);
   }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, isMateFor, a); }
@@ -1122,14 +1133,24 @@ export class World {
   }
   // a fish crops the nearest school of young fish it can eat (a Poisson draw, as many as fit its gut). A PISCIVORE takes a
   // feeding bout: FRY.ATTACK × its capture success fish per second (fewer from a school thinned to a few fish — a type-II
-  // response in the school's size, FRY.N_HALF); a plankton/insect eater picks off larvae at FRY.CATCH per handling slot. Weed cover shelters the young (COVER.
-  // REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is mostly protected (BROOD.PROTECT)
+  // response in the school's size, FRY.N_HALF) — from a school anywhere in its hunting arena (FEED.HUNT_R × its reach, as
+  // takePrey: one behavioural second is ~5 h of hunting), at the full rate within the school and falling off toward the
+  // arena's edge; a plankton/insect eater picks off larvae at FRY.CATCH per handling slot from a school it is in. Weed cover
+  // shelters the young (COVER.REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is mostly
+  // protected (BROOD.PROTECT)
   _eatFry(a, gEff, slots, dt) {
-    const m = this.fryGrid.nearest(a.x, a.y, a.eatRadius + 6, canEatFry, a);
+    const R0 = a.eatRadius + 6, pisc0 = a.sp.diet.fish && a.L >= a.sp.Lpisc, Rh = pisc0 ? Math.max(R0, a.eatRadius * FEED.HUNT_R) : R0;
+    // a piscivore works the nearest school of young FISH in its arena (tiny larvae nearer by don't hide it); failing that,
+    // a fish that eats larvae picks at a school of them it is in
+    let m = pisc0 ? this.fryGrid.nearest(a.x, a.y, Rh, piscSchool, a) : null;
+    if (!m && (!pisc0 || a.L < 3 * a.sp.Lpisc || !a.sp.diet.fish)) m = this.fryGrid.nearest(a.x, a.y, R0, canEatFry, a);
     if (!m) return;
     const f = m.item, pisc = schoolPrey(f, a);
-    const dens = f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
-    const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * dens * dt : FRY.CATCH * slots * dens));
+    if (!pisc && m.dist > R0) return;
+    const near = m.dist <= R0 ? 1 : 1 - (m.dist - R0) / (Rh - R0);   // in the school, or how close to it in the arena
+    const dens = near * f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
+    const sz = pisc ? Math.pow(Math.max(0, 1 - f.L * SP[f.k].depthR / gapeOf(a)), FEED.SIZE_SEL) : 1;   // (the size refuge, as sizeSel)
+    const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * sz * dens * dt : FRY.CATCH * slots * dens));
     if (k < 1) return;
     if (f.ni && this._guards) { const g = this._guards.get(f.ni); if (g && g.nt > 0 && !g.dead && Math.hypot(g.x - f.nx, g.y - f.ny) < BROOD.GUARD_R * 1.5 && rand() < BROOD.PROTECT) return; }
     f.n -= k; if (f.n < 1) f.dead = true;
@@ -1144,37 +1165,64 @@ export class World {
     const dn = Math.hypot(prey.x - prey.nx, prey.y - prey.ny), dg = Math.hypot(g.x - prey.nx, g.y - prey.ny);
     return dn < R && dg < R * 1.5 ? 1 - BROOD.PROTECT : 1;
   }
-  // `maxW`: the most the predator can swallow now (the room in its gut, g) — a prey too heavy for it isn't attacked
-  takePrey(a, maxW = Infinity) {
+  // PREDATION ON FISH, AT COMPRESSED TIME. One behavioural second is ~5 h of a predator's day (BIOE.DAY), in which a real
+  // bass or pike makes many approaches and strikes — one lunge per encounter would feed it a twentieth of its ration in a
+  // lake full of prey. So a piscivore with catchable fish in its HUNTING ARENA (FEED.HUNT_R × its strike reach) strikes at
+  // a RATE (FEED.ATTACK per s, × water clarity: a visual hunter finds less in murky water), spread over those fish by how
+  // close each is (1 − d/reach), and each strike connects with its capture success × the prey's vulnerability
+  // (sp.capture × BIO vuln: pike ~0.6, perch ~0.15; a fathead 1, a spiny bluegill 0.35) × the SIZE refuge (sizeSel: big prey,
+  // whose depth nears the gape, are seldom caught and swallowed). Kills and misses are thinned
+  // Poisson draws on the seeded RNG. Behaviour decides whether there is prey in the arena at all — search, pursuit, flight,
+  // shoaling, cover — and each prey's REACH is cut by the weed/reeds/logs it hides in (COVER.REFUGE), by being tucked in a
+  // dense cluster of its own species (predator confusion/dilution — a GROUP-SIZE property, so cohesion is adaptive), by
+  // freezing (HIDE concealment) and by its guardian on station, and extended by the predator committing a brain-gated
+  // STRIKE lunge — so the strike and hide decisions both bite here (an arms race). A miss leaves the predator recovering
+  // FEED.MISS_CD s and the prey alarmed (it flees on its fear drive). `maxW`: the most the predator can swallow now (the
+  // room in its gut, g) — heavier fish aren't attacked. `dt` omitted: ONE strike at the best-placed prey (the tests' probe).
+  takePrey(a, maxW = Infinity, dt = Infinity) {
     if (a.missCd > 0) return null;   // still recovering from a missed strike
-    const m = this.qPrey(a);
-    if (!m || m.item.n !== undefined || m.item.W + m.item.gon > maxW) return null;   // (a fry school: see _eatFry)
-    const prey = m.item;
-    // a predator's effective strike reach is shrunk by (1) prey hiding in reeds/logs/weeds (cover refuge) AND (2) the
-    // prey being tucked in a dense cluster of its OWN species — predator-confusion/dilution. This is a GROUP-SIZE
-    // property: any conspecific aggregation dilutes predation (as a real baitball does), so it is NOT gated to
-    // "schooling species" — schooling is simply the behaviour that reliably FORMS such a cluster, so it's the trait
-    // selection rewards (it makes the innate cohesion ADAPTIVE). Deterministic (allyStats grid query, no RNG).
-    const shoal = this.allyStats(prey, SCHOOL.DILUTE_R).density;
-    // …and is EXTENDED by the predator committing a brain-gated STRIKE lunge, and SHRUNK by the prey freezing (HIDE
-    // concealment) — so the predator's strike decision and the prey's hide decision both bite here (emergent arms race).
-    const reach = a.eatRadius * (1 - this.coverAt(prey.x, prey.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * shoal)
-      * (1 + ACTION.STRIKE_REACH * engaged(a.act.strike)) * (1 - ACTION.HIDE_CONCEAL * engaged(prey.act.hide)) * this._guardCut(prey);
-    if (m.dist < reach) {
-      // CAPTURE SUCCESS: not every strike connects (sp.capture: pike ~0.6 … perch ~0.15 — perch are clumsy piscivores).
-      // A miss leaves the predator recovering for FEED.MISS_CD s and the prey alarmed (it flees on its fear drive)
-      // (× the prey species' vulnerability — a bluegill or bullhead is missed far more often than a fathead: BIO vuln)
-      if (rand() >= a.sp.capture * prey.sp.vuln * (1 + ACTION.STRIKE_REACH * engaged(a.act.strike)) * (1 - ACTION.HIDE_CONCEAL * engaged(prey.act.hide))) {
-        a.missCd = FEED.MISS_CD; prey.fear = 1; return null;
+    const lunge = 1 + ACTION.STRIKE_REACH * engaged(a.act.strike), R = a.eatRadius * FEED.HUNT_R * lunge;
+    const C = this._huntC || (this._huntC = []); C.length = 0;
+    let sK = 0, sM = 0, best = null, bestW = 0, bestS = 0;
+    this.agentGrid.forNear(a.x, a.y, R, it => {
+      if (!isPreyOf(it, a) || it.W + it.gon > maxW) return;
+      const hide = 1 - ACTION.HIDE_CONCEAL * engaged(it.act.hide);
+      const reach = R * (1 - this.coverAt(it.x, it.y) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * this._shoalOf(it)) * hide * this._guardCut(it);
+      const d = Math.hypot(it.x - a.x, it.y - a.y); if (d >= reach) return;
+      const w = 1 - d / reach, s = a.sp.capture * it.sp.vuln * sizeSel(it, a) * lunge * hide;   // how well placed it is; a strike's success
+      C.push(it, w, s); sK += w * s; sM += w * Math.max(0, 1 - s);
+      if (w > bestW) { best = it; bestW = w; bestS = s; }
+    });
+    if (!best) return null;
+    let prey = null;
+    if (dt === Infinity) {   // one strike at the best-placed fish
+      if (rand() >= bestS) { a.missCd = FEED.MISS_CD; best.fear = 1; return null; }
+      prey = best;
+    } else {
+      const rate = FEED.ATTACK * this.env.clarity() * dt;
+      if (rand() < 1 - Math.exp(-rate * sK)) {   // a kill: which fish ∝ closeness × success
+        let u = rand() * sK; for (let i = 0; i < C.length; i += 3) { prey = C[i]; u -= C[i + 1] * C[i + 2]; if (u <= 0) break; }
+      } else {
+        if (sM > 0 && rand() < 1 - Math.exp(-rate * sM)) {   // a miss: the fish it lunged at bolts
+          let u = rand() * sM, m = null; for (let i = 0; i < C.length; i += 3) { m = C[i]; u -= C[i + 1] * Math.max(0, 1 - C[i + 2]); if (u <= 0) break; }
+          a.missCd = FEED.MISS_CD; m.fear = 1;
+        }
+        return null;
       }
-      prey.dead = true; this._counts[prey.species]--;
-      if (prey.id === this.selectedId) this.selectedId = null;
-      const n = 1 + (prey.size * DETRITUS.FROM_DEATH * 2 | 0);   // scraps, scales and slime (a messier kill for a bigger prey)
-      for (let k = 0; k < n; k++) this.spawnDetritus(prey.x + rand(-3, 3), prey.y + rand(-3, 3));
-      a.tox += prey.tox * TOX.ASSIM;   // the predator assimilates its prey's whole accumulated burden → BIOMAGNIFICATION up the chain
-      return prey;
     }
-    return null;
+    prey.dead = true; this._counts[prey.species]--;
+    if (prey.id === this.selectedId) this.selectedId = null;
+    const n = 1 + (prey.size * DETRITUS.FROM_DEATH * 2 | 0);   // scraps, scales and slime (a messier kill for a bigger prey)
+    for (let k = 0; k < n; k++) this.spawnDetritus(prey.x + rand(-3, 3), prey.y + rand(-3, 3));
+    a.tox += prey.tox * TOX.ASSIM;   // the predator assimilates its prey's whole accumulated burden → BIOMAGNIFICATION up the chain
+    return prey;
+  }
+  // a prey fish's shoal density for predator confusion/dilution (allyStats over SCHOOL.DILUTE_R), once per fish per step —
+  // every predator hunting near it asks
+  _shoalOf(p) {
+    const s = this._stepNo || 0;
+    if (p._dlS !== s || p._dl === undefined) { p._dlS = s; p._dl = this.allyStats(p, SCHOOL.DILUTE_R).density; }
+    return p._dl;
   }
 
   // ---------- main step ----------
@@ -1744,7 +1792,7 @@ export class World {
       // gut — after a big meal it is out of action until it has digested room (a pike eats a fish every few days), and a
       // bass that snaps up a fry is ready again soon but gained little. The prey's energy is its own species' ED.
       if (sp.diet.fish && a.L >= sp.Lpisc && a.gut < gEff) {
-        const prey = this.takePrey(a, gEff - a.gut);   // (transfers the prey's contaminant burden → biomagnification)
+        const prey = this.takePrey(a, gEff - a.gut, dt);   // (transfers the prey's contaminant burden → biomagnification)
         if (prey) { this._meal(a, prey.W + prey.gon, energyDensity(prey.sp.bio, prey.W), 1); this.stats.fishEaten++; }
       }
       // amphibian / reptile prey: a hungry fish predator takes a frog, tadpole or turtle hatchling that fits its gape and

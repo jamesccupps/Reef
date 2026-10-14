@@ -74,7 +74,10 @@ export const SPAWN = {
 export const FEED = {
   HANDLE: 1 / 60,   // s per discrete item (zooplankton, insect, larva, detritus, snail, crayfish) per food type
   // (satiation is the gut — see BIOE — and a piscivore attacks only a fish that fits the room left in it)
-  MISS_CD: 0.5,     // s a piscivore recovers after a missed strike before it can strike again (species.js `capture` = success)
+  MISS_CD: 0.1,     // s a piscivore recovers after a missed strike before it can strike again (species.js `capture` = success)
+  HUNT_R: 4,        // a piscivore's hunting arena: this × its strike reach (eatRadius) — ~ one body length (takePrey)
+  ATTACK: 6,        // strikes per s at a fish in the arena (× closeness): a behavioural second is ~5 h of hunting (takePrey)
+  SIZE_SEL: 2,      // the size refuge: a strike's success × (1 − prey depth / gape)^SIZE_SEL (big prey are seldom caught)
   PREY_MIN: 0.07,   // a piscivore ignores fish shorter than this fraction of its own length (not worth the chase). Real
                     //   piscivores mostly eat prey well below their gape: a 65-cm pike's MEDIAN prey is ~7 cm (Gaeta et al.
                     //   2018: 5.05·TL^0.413 mm), so big pike do eat minnow-sized fish; larvae are left to the small fish
@@ -171,7 +174,7 @@ export const FRY = {
   SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
   CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
                        //   are dispersed and hard to find among the zooplankton
-  ATTACK: 100,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
+  ATTACK: 400,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
                        //   second is ~5 h of the fish's day, and a bass or perch working a school of young-of-year takes
                        //   dozens an hour; its gut and Cmax cap the meal. Weed cover shelters them (COVER.REFUGE)
   LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)
