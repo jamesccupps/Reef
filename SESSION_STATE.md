@@ -5,6 +5,17 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
+▶▶▶ HUMAN (2026-10-14 evening, before compaction): "we need compact first and maybe you should do some more research on how the
+ecosystem and bass and zooplankton and everything work in a real environment, after we compact though". → RESUME HERE: a
+thorough RESEARCH pass (literature, real numbers) BEFORE more code: zooplankton dynamics (standing stock mg/L, P/B by
+temperature, Daphnia vs copepods, diel vertical migration and other refuges, the clear-water phase, fish predation's real
+share of production), fish–zooplankton coupling (planktivore consumption rates and field p values, larval/YOY fish food
+needs and survival, critical period, density dependence), largemouth bass life history (spawning timing/temperature and
+condition, nest guarding, fry balls, YOY diet shifts zoo → insects → fish, first-summer growth and survival, adult diet and
+consumption in bluegill lakes), and whole-lake energy flow (fish biomass kg/ha, production, trophic transfer). Write the
+findings up (a research doc, e.g. docs/ECOLOGY_RESEARCH.md) with sources, compare to the sim's numbers, THEN plan the
+zooplankton/apex slice. (Parallel research agents are fine — usage limit lifted.)
+
 ## ▶ NOW (2026-10-14 evening) — state: main = science = 13be2b9 (+ this note); gate green; backup G:synapse-reef-backupssynapse-reef_20261014_1626_snails-limnetic.zip
 Phase 1 is done as far as it goes without the ZOOPLANKTON slice (below). Next per the human's plan: (2) the GUI / graphics /
 webpage information / graphs review — unless the human prefers to do the zooplankton slice first.
