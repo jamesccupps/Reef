@@ -5,7 +5,11 @@
 import { World } from './world.js';
 
 const DT = 1 / 30;   // the step the browser and the headless gate run
-let stop = false;
+let stop = false, next = null;
+// yield between chunks through a MessageChannel, not setTimeout: a hidden or background tab clamps timers (to ~1 s), which
+// cut the worker to ~40 % of its speed while the user looked elsewhere; channel messages aren't throttled
+const tick = new MessageChannel();
+tick.port1.onmessage = () => { const f = next; next = null; if (f) f(); };
 
 self.onmessage = e => {
   const m = e.data || {};
@@ -27,7 +31,7 @@ self.onmessage = e => {
       while (n < total && !stop && performance.now() < until) { w.step(DT); n++; }
       const done = stop || n >= total;
       report(done);
-      if (!done) setTimeout(chunk, 0);
+      if (!done) { next = chunk; tick.port2.postMessage(0); }
     } catch (err) { self.postMessage({ type: 'error', message: String(err && err.message || err) }); }
   };
   chunk();
