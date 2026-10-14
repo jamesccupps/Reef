@@ -5,7 +5,28 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-13 bioenergetics** section comes first, then **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-14 visible evolution** section comes first, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-14 visible evolution: the trait history and fast-forward
+
+- **The record** (`world.evo`, config `EVO`, `world.js` `_evoRecord`): every `EVO.SAMPLE` s (twice a month) one sample per
+  species — n, mean generation, and the mean and SD of each of the 7 trait genes over the recruited fish (young-of-year
+  schools show up once they recruit). Samples sit on the absolute clock grid (`floor(time / SAMPLE)`), so a resumed run
+  samples exactly where the uninterrupted one does; past `EVO.MAX` (960) the older half is thinned to every other sample,
+  so the record always spans the whole run at decreasing resolution for the distant past. Saved (`evo`) and validated on
+  load (time-ordered, finite rows of the right length, known species); it never shapes the future.
+- **The chart** (Evolution card, `ui.js` `_evoChart`): a gene selector (size, speed, tolerance, fins, eyes, body, brain —
+  tooltips say what each gene sets), each species' mean ±1 SD over the years against the 1.0 founder baseline; click a
+  species row to pick it out (bold line and band, the rest dimmed) and read now vs the first sample in the note.
+  Redrawn only when a sample lands, the selection changes or the box resizes.
+- **Fast-forward** (Controls → Skip ahead: 1 month / season / 1 year / 5 years; `src/ffworker.js`, `ui.fastForward`): a
+  module Worker loads the main thread's save and steps it flat out with no rendering, posting progress (date, %, steps/s,
+  time left) about four times a second; "stop here" jumps to wherever it got. The main loop is paused and pause/speed are
+  locked meanwhile. Exact by construction: the worker's result is byte-identical to the same steps on the main thread
+  (checked in Chrome on 8.1 MB of state; smoke runs the real worker module behind a stub). Speed is the sim's own
+  (~100–130 steps/s on a free core ≈ 4× real time; a year ≈ 7–9 min) — evolution over decades is a leave-it-running job.
 
 ---
 
