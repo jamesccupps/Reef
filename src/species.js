@@ -248,6 +248,7 @@ export const BIO = {
     Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 15, Lmat: 11, LmatM: 9, matMinAge: yrs(1.5), maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
     gut: 0.05, gerMul: 0.5, gsiF: 0.06, gsiM: 0.01,   // per batch (income spawner);   // panfish: 50 % of a meal in 5 h, all in ~21 h (Seaburg & Moyle 1964)
     fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982, N Wisconsin): 15 cm → ~11,100 eggs
+    pelagicFry: 2.5,   // cm: the limnetic phase — bluegill fry feed in the open water until ~2–2.5 cm, then return to the weeds (Werner 1967, 1969)
     Lzoo: 4, Lpisc: Infinity, gapeR: 0.07, depthR: 0.38, uilt: 34, o2Lethal: 0.75, vuln: 0.35,   // lethal DO: Moss & Scott 1961; depth 0.34–0.42 (Lawrence 1958; Hill et al. 2004)
   },
   perch: {    // YELLOW PERCH — FB4 "Yellow perch" adult + juvenile (Kitchell et al. 1977)

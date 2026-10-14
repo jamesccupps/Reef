@@ -395,11 +395,17 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
   const onBed = bw.snails.length > 0 && bw.cray.length > 0 && bw.snails.every(s => Math.abs(s.y - bw.bedY(s.x)) < 8) && bw.cray.every(c => Math.abs(c.y - bw.bedY(c.x)) < 8);
   const diet = SP.sunfish.diet.snail && SP.carp.diet.snail && SP.bass.diet.cray && SP.pike.diet.cray && SP.catfish.diet.cray;
   check('snails & crayfish are seeded on the lake bed; the benthic diet flags are wired', onBed && diet, `${bw.snails.length} snails, ${bw.cray.length} crayfish`); }
-// snails GRAZE the phytoplankton field — a dense snail cluster draws local algae below a snail-free control (same seed, one step)
-{ const tx = 900, ty = bedY(900) - 4;
-  seed(51); const aw = new World(); aw.agents = []; aw.snails = []; aw.cray = []; for (let i = 0; i < 60; i++) aw.snails.push(aw._mkSnail(tx)); aw.step(1 / 30); const aAfter = aw.env.phytoAt(tx, ty);
-  seed(51); const bw = new World(); bw.agents = []; bw.snails = []; bw.cray = []; bw.step(1 / 30); const bAfter = bw.env.phytoAt(tx, ty);
-  check('snails graze the phytoplankton field (a dense snail cluster draws local algae down vs a snail-free control)', aAfter < bAfter, `cluster ${aAfter.toFixed(3)} < control ${bAfter.toFixed(3)}`); }
+// snails GRAZE the bed's algae-and-detritus layer (SEDOM): 60 snails on one column draw its layer down by about their ration
+// (no other input, decay or grazer there); and they live on the lit littoral bed
+{ const { SNAIL: SN } = await import('../src/config.js'), tx = 300;
+  seed(51); const aw = new World().setDate(0.45); aw.agents = []; aw.cray = []; aw.larvae = []; aw.herps = []; aw.fry = []; aw.plants = []; aw.detritus = [];   // (no litter or particles either)
+  aw.env.sedimentOM = function () { this._colDecay.fill(0); }; const c = aw.env.colOf(tx); aw.env.sedOM[c] = 1000;
+  aw.snails = []; for (let i = 0; i < 60; i++) { const s = aw._mkSnail(tx); s.vx = 0; aw.snails.push(s); }
+  for (let i = 0; i < 30; i++) { aw.larvae = []; aw.agents = []; aw.step(1 / 30); }
+  const ate = 1000 - aw.env.sedOM[c], ration = 60 * SN.GRAZE * Math.pow(2, (aw.env.tempAt(tx, aw.bedY(tx)) - 20) / 10);
+  seed(54); const lw = new World(); const deepest = Math.max(...lw.snails.map(s => lw.bedY(s.x)));
+  check('snails graze the bed’s organic layer (60 on a column eat about their ration of it) and live on the lit littoral bed', ate > ration * 0.7 && ate < ration * 1.5 && deepest <= SN.MAX_DEPTH * WORLD.H + 1,
+    `ate ${ate.toFixed(3)} g in 1 s (ration ${ration.toFixed(3)}); deepest snail bed ${(deepest / WORLD.H).toFixed(2)} H`); }
 // crayfish PREY on snails (the signature crayfish→snail link + snail population control)
 { seed(52); const cw = new World(); cw.agents = []; cw.cray = []; const x = 1000, y = bedY(1000) - 2;
   const sn = cw._mkSnail(x); sn.y = y; cw.snails = [sn]; cw.snailGrid.rebuild(cw.snails);
@@ -420,10 +426,10 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
 // balloon toward cap (e.g. a broken logistic/starvation term) would be caught — a bare ≤cap check passes that trivially.
 { seed(55); const pw = new World(); for (let i = 0; i < 400; i++) pw.step(1 / 30);
   const sc = scaleCount(SNAIL.CAP), cc = scaleCount(CRAYFISH.CAP);
-  const snOk = pw.snails.length > 0 && pw.snails.length < sc * 0.5;   // realized ≈169 vs cap 1620 → must stay well under half the cap
+  const snOk = pw.snails.length > scaleCount(SNAIL.SEED) * 0.5 && pw.snails.length <= sc;   // a real stock (an annual life: no crash in 13 s), within its capacity
   // crayfish: a real stock near its shelter-limited capacity (≈ 9 g/m² at the cap; Michigan lakes 4.6–21 g/m²), not ballooning
   const cfOk = pw.cray.length > cc * 0.3 && pw.cray.length < cc;
-  check('snails self-limit far below their cap; crayfish hold a real stock near (not over) their carrying capacity', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
+  check('snails hold a real stock within their capacity; crayfish hold a real stock near (not over) their carrying capacity', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
 // snails + crayfish round-trip through save/load (v26)
 { seed(54); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
   const ok = save.version >= 26 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
@@ -2336,13 +2342,13 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('the bed’s organic layer: the dying algae settle into it, and it decomposes first-order — faster warm than cold, slower without O₂', Math.abs(warm - expect) < expect * 0.02 && cold < warm * 0.45 && anox < warm * 0.5 && Math.abs(settled - SO.SINK * SO.PP_G) < 1e-3,
         `1 s at 20 °C ${warm.toFixed(1)} g (expect ${expect.toFixed(1)}), 4 °C ${cold.toFixed(1)}, anoxic ${anox.toFixed(1)}; settled ${settled.toFixed(1)} g per unit of dying algae`);
       // larvae on it: no input, no decomposition (only the larvae touch the layer), no fish, no new patches
-      seed(7902); const lw = new World().setDate(0.45); lw.agents = []; lw.fry = []; lw.plants = []; lw.detritus = []; lw.insects = []; lw.nymphs = []; lw.herps = [];
+      seed(7902); const lw = new World().setDate(0.45); lw.agents = []; lw.fry = []; lw.plants = []; lw.detritus = []; lw.insects = []; lw.nymphs = []; lw.herps = []; lw.snails = [];   // (snails graze the layer too)
       lw.env.sedimentOM = function () { this._colDecay.fill(0); };
       const keepR = IN.LARVA_RATE; IN.LARVA_RATE = 0;
       const xa = 250, xb = 350, ca = lw.env.colOf(xa), cb = lw.env.colOf(xb);
       const A = lw._mkLarva(xa, 0, 1), B = lw._mkLarva(xb, 0, 1); A.x = xa; A.y = lw.bedY(xa) - 2; B.x = xb; B.y = lw.bedY(xb) - 2; lw.larvae = [A, B];
       lw.env.sedOM.fill(0); lw.env.sedOM[ca] = 2000; const n5 = Math.round(5 * BIOE.DAY * 30);
-      for (let i = 0; i < n5; i++) { lw.step(1 / 30); lw.agents = []; lw.fry = []; lw.herps = []; lw.nymphs = []; }   // (nothing eats them)
+      for (let i = 0; i < n5; i++) { lw.step(1 / 30); lw.agents = []; lw.fry = []; lw.herps = []; lw.nymphs = []; lw.snails = []; }   // (nothing eats them)
       IN.LARVA_RATE = keepR; const used = 2000 - lw.env.sedOM[ca], grown = A.m - 1;
       check('larvae GROW on the bed’s detritus (debiting it at 1/YIELD) and lose weight where there is none', !A.dead && grown > 0.25 && used >= grown / IN.YIELD && used < (grown / IN.YIELD) * 1.6 && !B.dead && B.m < 1,
         `in 5 days: fed patch 1 → ${A.m.toFixed(2)} g using ${used.toFixed(1)} g of detritus; unfed patch 1 → ${B.m.toFixed(3)} g`);
@@ -2367,6 +2373,14 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       const fCat = fryAte('catfish'), fSun = fryAte('sunfish');
       check('bullhead fry feed on the bottom from swim-up (benthL), below the fish refuge: a 1.5-cm school eats from a 0.8-g patch, a bluegill school that size doesn’t', fCat > 0 && fSun === 0 && SP.catfish.benthL < FRYB.BENTH_L && IN.REFUGE_FRY < IN.REFUGE_M,
         `larvae eaten: bullhead ${fCat.toFixed(3)} g, bluegill ${fSun.toFixed(3)} g`);
+      // the LIMNETIC PHASE: an unguarded school of 1-cm bluegill fry heads for the open water (FRY.PELAGIC_X/D); a bullhead
+      // school of the same size stays where its food is
+      const lim = k => { seed(7961); const pw = new World().setDate(0.40); pw.agents = [];
+        const x = 150, y = pw.bedY(150) - 6, f = pw._mkFry(k, x, y, 500, 1, 200, Float32Array.from(pw.makeFish(k).g), new Float32Array(GENE_KEYS.length).fill(1));
+        f.L = 1.0; f.W = stdWeight(SP[k].lw, 1.0); f.ni = 0; pw.fry = [f]; for (let i = 0; i < 90; i++) pw.step(1 / 30); return f; };
+      const sfy = lim('sunfish'), cfy = lim('catfish');
+      check('bluegill fry have a limnetic phase (head for the open water), bullhead fry don’t', sfy.tx >= WORLD.W * FRYB.PELAGIC_X[0] && sfy.tx <= WORLD.W * FRYB.PELAGIC_X[1] && sfy.ty <= WORLD.H * FRYB.PELAGIC_D && !(cfy.tx >= WORLD.W * FRYB.PELAGIC_X[0] && cfy.ty <= WORLD.H * FRYB.PELAGIC_D),
+        `bluegill target (${(sfy.tx / WORLD.W).toFixed(2)} W, ${(sfy.ty / WORLD.H).toFixed(2)} H); bullhead (${(cfy.tx / WORLD.W).toFixed(2)} W, ${(cfy.ty / WORLD.H).toFixed(2)} H)`);
       const sv = new World(); sv.env.sedOM[12] = 1234.5; const back = new World(); back.load(JSON.parse(JSON.stringify(sv.toJSON())));
       check('the bed’s organic layer round-trips through save/load (v28+)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version >= 28, `${back.env.sedOM[12]}`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);

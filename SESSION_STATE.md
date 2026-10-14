@@ -65,7 +65,30 @@ with real benthic production feeds; perch biomass relaxes to 0.4–2.8 kg at 2.2
 4.2–5.2 / 9.3–10.9 / 12.3–13.3 / 14.6–15.3 / 16.5–17.1 (vb 4.4 9.2 12.8 15.4 17.4 — excellent); perch age 4–5 20.4–25.6 (vb
 20.2/22.9), age 2–3 17–23 (vb 12.9/16.9; those are founders seeded at their age's vb length, then a fast first summer);
 bass 29–35 at 4–5 (vb 28.5/32.9); bullhead ~10 % under. The old 'perch grow too fast' item is mostly resolved.
-REMAINING Phase-1 items: pike summer feeding (pikediag), founder seeding of age-1/2 perch, snails' 34-day life.
+SESSION 7 (2026-10-14 afternoon, "keep going"): SNAILS reworked (uncommitted until round 9 + gate): annual life (M 1.2/yr),
+warm-season per-capita breeding (R 6/yr, R_T 12–20 °C, young settle where the bed layer feeds them), graze the bed's SEDOM
+layer (~1 mg AFDW/day each × Q10 2) instead of the phyto field, CAP 900×area (~3 g/m²), lit littoral bed only (MAX_DEPTH
+0.5 H), a WEED REFUGE (0.12 × CAP out of reach — without it 324 crayfish + ~200 sunfish ate 2,025 seeded snails down to 521
+in 13 s; pumpkinseed/crayfish do strip snails in real lakes, the weeds keep a stock). Gate snail checks rewritten.
+APEX CHAIN — the main open accuracy item (diagnosed, NOT fixed): (1) adult bass are underfed (summer p 0.17–0.4) → spring
+condition K 0.70–0.80 < SPAWN.K_READY 0.8 → they skip spawning most years (year 2 of round 8: 1 of 3 seeds spawned; same in
+the old code); (2) when they do spawn, ~all bass fry STARVE at 1.1–1.5 cm (verify/fryfate.mjs: 8.6–9.6k of 11.6k by July, in
+old and new code) — they compete for zooplankton with ~260k sunfish fry; NOT fixed by letting guarded fry roam
+(fryfate_roam: 52 vs 6 alive in July) nor by a 60-px school reach (fryfate_eatr: no change). Real bass get a head start
+(spawn at 15–18 °C, sunfish at 20+) — in year 1 the lake opens mid-May at ~17 °C so both spawn together (confounds year-1
+tests; judge in year 2+). Next: bass/pike adult feeding (the p ~0.2–0.4 gap), then zooplankton production vs fry demand
+(a zooplankton P/B model by temperature + littoral production), then re-test bass recruitment.
+  FURTHER (same session): bass/pike diag (verify/preddiag.mjs <seed> <yrs> <species>): bass sit 90–100 % littoral, guts 6–19 %
+  full; ~1–1.6 takeable fish in the arena (1.6–2.6 adult bluegill too deep for the gape — real), fish a small share of their
+  food (crayfish + frogs/tadpoles dominate), young-of-year ~nothing — because YOY sunfish stay 0.6–1.4 cm all summer (starving).
+  Fry maintenance vs Cmax (23 °C): bass (FB4 LMB, also the bullhead YOY stand-in) 0.32 g/g/day = 26–45 % of Cmax at 1.2–2 cm;
+  bluegill/perch 0.10 (11–26 %). June zooplankton ~600/2025 swarms: fish + ~300k fry eat ~1.3 kg/day ≈ all the field makes
+  (real ~2–7 kg/day) → THE NEXT ACCURACY SLICE: zooplankton production (biomass growth, P/B by temperature/food, littoral
+  production, the cap a computing bound — as done for the larvae). ADDED: bluegill LIMNETIC PHASE (sp.pelagicFry 2.5 cm,
+  Werner 1967/69): YOY sunfish 1.7–2.3 cm by Oct (was 1.2–1.8); bass fry unchanged. Round 9 (snails): fish 11.5–16 kg, perch
+  12–31 (b 48–61), bullhead/carp home-bred, snails ~730 summer / ~400 late winter. Round 10 (+limnetic): so10_s*.txt. Pike: summer kills drop with
+heat (23–26 °C > 21 °C opt — partly real); founders' perch growth is a transient.
+(older list) REMAINING Phase-1 items: pike summer feeding (pikediag), founder seeding of age-1/2 perch, snails' 34-day life (now done).
 NEXT: (a) look at the merged UI in the browser (bed detritus row, Evolution chart with a REAL multi-year history — run
 Skip ahead 1–5 years), (b) the OPEN accuracy items above (bullhead recruitment, pike summer feeding, perch growth, snails),
 then (2) the GUI/graphics/info/graphs review.

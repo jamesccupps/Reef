@@ -178,6 +178,8 @@ export const FRY = {
   ATTACK: 100,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural
                        //   second is ~5 h of the fish's day, and a bass or perch working a school of young-of-year takes
                        //   dozens an hour; its gut and Cmax cap the meal. Weed cover shelters them (COVER.REFUGE)
+  PELAGIC_X: [0.3, 0.7], // the open-water band (× W) a limnetic-phase school (sp.pelagicFry) keeps to …
+  PELAGIC_D: 0.3,      // … above this × the lake's depth (the lit, zooplankton-rich epilimnion)
   LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …
   OVERWINTER: 0.4,     // … if it is at least this old (yr)
@@ -814,16 +816,26 @@ export const TURTLE = {
 // thin out in lean/cold water. They are an abundant forage item: molluscivorous SUNFISH & CARP eat them, and
 // CRAYFISH prey on them heavily → phyto → snail → {sunfish, carp, crayfish}. Particle system like the insects
 // (one snail = one particle); all deterministic (seeded RNG). Eaten opportunistically (no dedicated brain sense).
+// SNAILS — pulmonate pond snails (Physa, Lymnaea, Helisoma): they scrape the algae-and-detritus film of the lit bed (the
+// SEDOM layer), live about a year and breed through the warm months — food for sunfish (pumpkinseed are snail specialists),
+// carp, bullheads, crayfish and turtles. One particle = one ~0.4-g snail (PREY.SNAIL_G). (Before: a 34-day life on the phyto
+// field near the bed, ~0.1 g/m² — a tenth to a hundredth of a weedy shallows' snail stock.)
 export const SNAIL = {
-  SEED: 38,                // initial snails (× world area)
-  CAP: 240,                // max snails (× area)
-  RATE: 12,                // /s recruitment at full algae availability (× area), logistic toward CAP
-  FLOOR: 6,                // tiny refuge floor (× area): top up below this if any algae present (never quite vanish)
-  GRAZE: 0.0012,           // phytoplankton biomass each snail clears /s near the bed (periphyton proxy; gentle so the base holds)
-  FOOD_AT: 0.05,           // local phyto below which a snail starves (and recruitment slows)
-  STARVE: 0.03,            // /s death rate where food is depleted
+  SEED: 120,               // initial snails (× area: ~800 ≈ 0.3 kg in May)
+  CAP: 900,                // capacity (× area: ~6,000 ≈ 2.4 kg ≈ 3 g/m² lake-wide, ~10 g/m² on the shallows; littoral snail stocks run
+                           //   ~1–30 g/m², and a lymnaeid population produced 137 g/m²/yr at P/B ~16 — Radix, Lake Dianchi)
+  R: 6,                    // per-capita recruitment /yr in warm water × the food where the young settle (logistic toward CAP)
+  R_T: [12, 20],           // °C: breeding ramps up from 12 to 20 °C (egg masses through late spring and summer)
+  M: 1.2,                  // natural mortality /yr — about a year's life (Physa gyrina lives 12–13 months in the field)
+  K_SOM: 150,              // g of the bed layer per column at which a young snail settles with even odds
+  get GRAZE() { return 0.01 / BIOE.DAY; },   // g wet of the bed layer a snail scrapes a second at 20 °C (× Q10 2): ~1 mg ash-free dry
+                           //   mass a day — snails remove 0.1–2.2 mg AFDW a day each, by size, temperature and food
+  get STARVE() { return 0.05 / BIOE.DAY; },  // /s death of a snail the layer can't feed (they last weeks unfed)
+  MAX_DEPTH: 0.5,          // they keep to the lit littoral bed (× the lake's depth); deeper ones crawl back up
+  REFUGE: 0.12,            // share of CAP that shelters among the weeds and stems, out of reach of fish, crayfish and turtles (pumpkinseed
+                           //   and crayfish can strip a bed of snails — Brönmark et al. 1992, Lodge et al. 1994 — but the weeds keep a stock)
+  FLOOR: 6,                // tiny refuge floor (× area): top up below this (never quite vanish)
   CRAWL: 1.4,              // px/s crawl speed along the bed
-  SENESCE: 0.006,          // /s background death (turnover)
 };
 
 // CRAYFISH — large benthic OMNIVORE / scavenger and a keystone forage item. A crayfish walks the bed (drifting toward

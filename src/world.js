@@ -81,6 +81,7 @@ const herpDepth = h => h.k === 0 ? FROG.DEPTH_TAD : h.k === 1 ? FROG.DEPTH_FROG 
 const herpMass = h => h.k === 0 ? FROG.MASS_TAD : h.k === 1 ? FROG.MASS_FROG * (0.25 + 0.75 * herpGrowth(h)) : TURTLE.MASS_HATCH;
 const isTadpole = h => !h.dead && h.k === 0;
 const exposedCray = c => !c.dead && !c.sh;   // a crayfish out of a shelter (fish can take it)
+const exposedSnail = s => !s.dead && !s.sh;   // a snail out in the open (not tucked into the weeds — SNAIL.REFUGE)
 const isNymphPrey = f => !f.dead && f.L <= ODONATA.FRY_MAX;   // a fish larva small enough for a nymph's labium (cm)
 const isNymphFry = f => !f.dead && f.L <= ODONATA.FRY_MAX;     // … in a fry school
 // a frog/tadpole/turtle a fish could take: awake (not buried in the winter mud), fits its gape, worth the chase; a fish
@@ -650,8 +651,9 @@ export class World {
   }
   // an emerged adult insect at the surface (drifts, short-lived, surface-fish food). `wob` = render flutter phase.
   _mkInsect(x, m = PREY.INSECT_G) { const px = clamp(x ?? rand(8, W - 8), 4, W - 4); return { x: px, y: rand(2, 14), life: INSECT.ADULT_LIFE * (0.7 + rand() * 0.6), vx: rand(-INSECT.ADULT_DRIFT, INSECT.ADULT_DRIFT), wob: rand(0, 6.28), m, dead: false }; }
-  // a benthic snail crawling the lit bed (biased to the littoral shelf where algae/plants concentrate). `ph` = render phase.
-  _mkSnail(x) { const px = x ?? plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
+  // a benthic snail crawling the lit bed (biased to the littoral shelf where algae/plants concentrate; shallower than
+  // SNAIL.MAX_DEPTH). `ph` = render phase.
+  _mkSnail(x) { let px = x ?? plantX(); for (let t = 0; x === undefined && t < 20 && bedY(px) > SNAIL.MAX_DEPTH * H; t++) px = plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
   // a benthic crayfish walking the bed (drifts toward cover; crepuscular). `ph` = render leg-wiggle phase.
   // (on the littoral/sublittoral bed: shallower than CRAYFISH.MAX_DEPTH × H)
   _mkCray(x) {
@@ -778,9 +780,9 @@ export class World {
 
   // ---------- feeding ----------
   // take (kill) up to n of the nearest live items within r; returns how many were taken (0 = none → falsy)
-  _takeNearest(grid, x, y, r, n = 1) {
+  _takeNearest(grid, x, y, r, n = 1, pred = notDead) {
     let k = 0;
-    for (; k < n; k++) { const m = grid.nearest(x, y, r, notDead); if (!m) break; m.item.dead = true; }
+    for (; k < n; k++) { const m = grid.nearest(x, y, r, pred); if (!m) break; m.item.dead = true; }
     return k;
   }
   // a bite of up to g grams from the nearest larval patch within r that has larvae outside its refuge; returns the grams
@@ -1002,7 +1004,7 @@ export class World {
         if (rand() < 0.4 * dt) h.vx = rand(-TURTLE.SWIM, TURTLE.SWIM);
         if (!isShallow(h.x) && rand() < 0.5 * dt) h.vx = toShore(h.x) * TURTLE.SWIM;
         if (h.y > ty - 8 && h.e < 0.95 && rand() < dt) {
-          if (this._takeNearest(this.snailGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.SNAIL_E;
+          if (this._takeNearest(this.snailGrid, h.x, h.y, TURTLE.EAT_R, 1, exposedSnail)) h.e += TURTLE.SNAIL_E;
           else if (this._biteLarva(h.x, h.y, TURTLE.EAT_R, PREY.LARVA_G)) h.e += TURTLE.LARVA_E;
           else if (this._takeNearest(this.detritusGrid, h.x, h.y, TURTLE.EAT_R)) h.e += TURTLE.DETRITUS_E;   // carrion and plant debris
           h.e = Math.min(1, h.e);
@@ -1080,6 +1082,10 @@ export class World {
         // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
         if (best) { f.tx = best.item.x; f.ty = best.item.y; } else { f.tx = clamp(f.x + rand(-80, 80), 4, W - 4); f.ty = benth && (d.larva || d.detritus) ? bedY(f.x) - 8 : f.y; }
       }
+      // a LIMNETIC PHASE (sp.pelagicFry cm): bluegill fry leave the nest for the open water and feed on its zooplankton for
+      // weeks, coming back to the weeds at ~2–2.5 cm (Werner 1967, 1969) — so the lake's young sunfish spread over its whole
+      // open-water zooplankton instead of crowding the shallows (and the young bass there) — once no guardian holds them
+      if (sp.pelagicFry && f.L < sp.pelagicFry && !held) { f.tx = clamp(f.tx, W * FRY.PELAGIC_X[0], W * FRY.PELAGIC_X[1]); f.ty = clamp(f.ty, 8, H * FRY.PELAGIC_D); }
       // RECRUITMENT: one individual per N_PER_AGENT survivors (stochastic rounding; seeded RNG), as many as the species'
       // agent budget has room for, carrying the school's genome (its siblings a fresh mutation of it) at the school's size
       if (f.L >= sp.L0 || (f.age > FRY.OVERWINTER * Y && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) {
@@ -1333,23 +1339,35 @@ export class World {
       if (I.life <= 0) { I.dead = true; if (rand() < INSECT.EGG && this.larvae.length < larvaCap) this.larvae.push(this._mkLarva(I.x, 0)); }   // an uneaten adult lays its eggs → a new patch of young larvae
     }
 
-    // benthic INVERTEBRATES — grazing SNAILS + omnivorous CRAYFISH, particle populations on the bed. Snail recruitment
-    // tracks the algae base (logistic toward a cap); crayfish follow a SEASONAL LOGISTIC toward a shelter-limited carrying
+    // benthic INVERTEBRATES — grazing SNAILS + omnivorous CRAYFISH, particle populations on the bed. Snails graze the bed's
+    // algae-and-detritus layer (below); crayfish follow a SEASONAL LOGISTIC toward a shelter-limited carrying
     // capacity (CRAYFISH: per-capita CRAYFISH.R a year in warm water, natural mortality CRAYFISH.M — production ~1–1.5× the
     // stock a year, as measured) and are eaten by fish. They crawl the bed, are eaten by fish opportunistically (no
-    // dedicated brain sense), and close two benthic web links: phyto→snail→{sunfish,carp,crayfish} and crayfish→{bass,pike,
+    // dedicated brain sense), and close two benthic web links: bed algae→snail→{sunfish,carp,bullhead,crayfish} and crayfish→{bass,pike,
     // catfish,perch}.
-    const snailCap = scaleCount(SNAIL.CAP), snailFloor = scaleCount(SNAIL.FLOOR);
-    for (let n = poissonish(SNAIL.RATE * area * algae * clamp(1 - this.snails.length / snailCap, 0, 1) * dt); n > 0 && this.snails.length < snailCap; n--) this.snails.push(this._mkSnail());
-    if (this.snails.length < snailFloor && algae > 0.03) for (let n = poissonish(6 * area * dt); n > 0 && this.snails.length < snailFloor; n--) this.snails.push(this._mkSnail());
+    // SNAILS: a seasonal per-capita logistic (SNAIL.R a year in warm water) toward SNAIL.CAP, the young settling where the
+    // bed's layer can feed them; each scrapes the layer under it (SNAIL.GRAZE × Q10 2), dies of age (SNAIL.M, about a year's
+    // life) or of hunger where the layer runs out, and keeps to the lit littoral bed
+    const snailCap = scaleCount(SNAIL.CAP), snailFloor = scaleCount(SNAIL.FLOOR), nSn = Math.max(this.snails.length, 3);
+    const snT = clamp((env.tempC - SNAIL.R_T[0]) / (SNAIL.R_T[1] - SNAIL.R_T[0]), 0, 1);
+    for (let n = poissonish(SNAIL.R / TIME.YEAR_LEN * snT * nSn * clamp(1 - this.snails.length / snailCap, 0, 1) * dt); n > 0 && this.snails.length < snailCap; n--) {
+      const s = this._mkSnail(), f = env.sedOMAt(s.x);
+      if (rand() < f / (f + SNAIL.K_SOM)) this.snails.push(s);
+    }
+    if (this.snails.length < snailFloor) for (let n = poissonish(6 * area * dt); n > 0 && this.snails.length < snailFloor; n--) this.snails.push(this._mkSnail());
+    const snLim = SNAIL.MAX_DEPTH * H;
     for (const s of this.snails) {
       if (s.dead) continue;
-      env.grazePhyto(s.x, s.y - 4, SNAIL.GRAZE * dt);                                          // scrape periphyton (≈ the phyto field just above the bed)
-      if (env.phytoAt(s.x, s.y - 4) < SNAIL.FOOD_AT && rand() < SNAIL.STARVE * dt) { s.dead = true; continue; }   // starve where the algae is depleted (overgrazing self-limits)
-      if (rand() < SNAIL.SENESCE * dt) { s.dead = true; continue; }                            // background turnover
+      if (rand() < SNAIL.M / TIME.YEAR_LEN * dt) { s.dead = true; continue; }                  // old age (an annual life)
+      const want = SNAIL.GRAZE * Math.pow(2, (env.tempAt(s.x, s.y) - 20) / 10) * dt;
+      if (env.takeSedOM(s.x, want) < 0.5 * want && rand() < SNAIL.STARVE * dt) { s.dead = true; continue; }   // the layer can't feed it
+      if (bedY(s.x) > snLim) s.vx = (s.x < W * BASIN.CENTER ? -1 : 1) * SNAIL.CRAWL;           // below the lit bed: crawl back up
       s.x += s.vx * dt; if (s.x < 4) { s.x = 4; s.vx = Math.abs(s.vx); } else if (s.x > W - 4) { s.x = W - 4; s.vx = -Math.abs(s.vx); }
       s.y = bedY(s.x) - 2;                                                                      // ride the sloping bed
     }
+    // REFUGE: the first SNAIL.REFUGE × CAP snails (array order) are tucked into the weeds and stems, out of reach of fish,
+    // crayfish and turtles — the stock that rebuilds a grazed-down population (snails persist among molluscivores this way)
+    { const nR = Math.round(SNAIL.REFUGE * snailCap); let i = 0; for (const s of this.snails) if (!s.dead) s.sh = i++ < nR; }
     this.snailGrid.rebuild(this.snails);   // built here (snails don't move again this step) so crayfish + fish can query it
     const crayCap = scaleCount(CRAYFISH.CAP), nightF = 1 + (CRAYFISH.NIGHT - 1) * (1 - env.light);  // crepuscular: more active at night
     const crT = clamp((env.tempC - CRAYFISH.R_T[0]) / (CRAYFISH.R_T[1] - CRAYFISH.R_T[0]), 0, 1), nCr = Math.max(this.cray.length, 3);
@@ -1367,7 +1385,7 @@ export class World {
       cf.x += cf.vx * nightF * dt; if (cf.x < 4) { cf.x = 4; cf.vx = Math.abs(cf.vx); } else if (cf.x > W - 4) { cf.x = W - 4; cf.vx = -Math.abs(cf.vx); }
       if (bedY(cf.x) > crLim && bedY(cf.x) > bedY(x0)) { cf.x = x0; cf.vx = -cf.vx; }
       cf.y = bedY(cf.x) - 2;
-      if (rand() < CRAYFISH.SNAIL_HUNT * nightF * dt) this._takeNearest(this.snailGrid, cf.x, cf.y, CRAYFISH.EAT_R);   // prey on a nearby snail (snail population control)
+      if (rand() < CRAYFISH.SNAIL_HUNT * nightF * dt) this._takeNearest(this.snailGrid, cf.x, cf.y, CRAYFISH.EAT_R, 1, exposedSnail);   // prey on a nearby snail (snail population control)
     }
     // shelter holders: the oldest CRAYFISH.SHELTER × K crayfish (the array is in order of birth) sit in burrows, out of reach
     { const nSh = Math.round(CRAYFISH.SHELTER * crayCap); let i = 0; for (const cf of this.cray) if (!cf.dead) cf.sh = i++ < nSh; }
@@ -1893,7 +1911,7 @@ export class World {
       }
       if (bugs && a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1, INSECT.REFUGE_M, larvaFree);   // benthic insect larvae (those outside their refuge)
       let nS;
-      if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
+      if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS, exposedSnail))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
       a.foodT = a.eaten > eaten0 ? 0 : (a.foodT ?? 9) + dt;   // time since its last GOOD meal (patch residence, below; saved `ft`)
       // bottom feeders take the detritus particles in reach, else, at the bed, sift its organic layer (SEDOM — a poor food:

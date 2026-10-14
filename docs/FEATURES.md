@@ -65,6 +65,22 @@ Save format **v28** (`env.sedOM`); v29 adds the evolution history.
   feed there from swim-up (`benthL` 1.2 cm). Diagnosed with `verify/fryfate.mjs` (hatched vs alive vs losses by cause):
   at the generic 2.5 cm ~85 % of the bullhead fry starved by July (feeding p 0.2–0.3) and 0–1 recruited in two years —
   in the old code too; with it they feed at p ~0.4, ~140 of a clutch reach July and ~10 recruit a year.
+- **The bluegills' limnetic phase** (`sp.pelagicFry` 2.5 cm, `FRY.PELAGIC_X`/`PELAGIC_D`): once no guardian holds them,
+  bluegill fry keep to the open-water epilimnion until ~2.5 cm, then return to the weeds (Werner 1967, 1969) — the
+  lake's ~250k young sunfish spread over its open-water zooplankton instead of crowding the shallows (young sunfish reach
+  ~1.7–2.3 cm by October with it, ~1.2–1.8 without; Michigan age-0 bluegill ~2.5–4).
+- **Known gap — the young-of-year food bottleneck** (diagnosed 2026-10-14, `verify/fryfate.mjs`, `preddiag.mjs`): in June
+  the zooplankton is grazed to ~600 of its ~2,000 swarms; fish + ~300k fry eat ~1.3 kg/day, about all the field produces
+  (real lakes this size ~2–7 kg/day). Bass fry (FB4 LMB maintenance ~0.32 g/g/day, a third of their Cmax at 1–2 cm) starve
+  to ~0 every year in old and new code alike; letting guarded schools roam or widening a school's reach didn't help. Fix
+  = a zooplankton production model (biomass growth by temperature and food, the cap a computing bound) — next slice.
+- **Snails graze it** (`SNAIL`, `world.js` snail block): pond snails scrape the bed's algae-and-detritus film
+  (`SNAIL.GRAZE` ≈ 1 mg AFDW a day each × Q10 2) instead of the phyto field, live about a year (`SNAIL.M` 1.2/yr;
+  *Physa gyrina* 12–13 months in the field) and breed in warm water (per-capita `SNAIL.R` 6/yr ramped over `R_T`
+  12–20 °C, the young settling where the layer can feed them, logistic toward `CAP` 900 × area ≈ 3 g/m²). A weed REFUGE
+  (`SNAIL.REFUGE` 0.12 × CAP, the first in array order — `exposedSnail`) keeps a stock out of reach of fish, crayfish and
+  turtles, which otherwise strip the bed (as pumpkinseed and crayfish do in real lakes). They keep to the lit littoral
+  bed (`MAX_DEPTH` 0.5 H). Before: a 34-day life on the phyto field near the bed at ~0.1 g/m².
 - **Bottom feeders sift it** (`diet.detritus`: carp, bullhead): with no particle in reach, a fish at the bed takes up
   to `SEDOM.SIFT` × its gut capacity a second from the layer — a poor food (979 J/g, 35 % digestible). On a lean bed they
   turn to snails and zooplankton too (bullhead + carp diets widened to their real omnivory, Scott & Crossman 1973 — on
