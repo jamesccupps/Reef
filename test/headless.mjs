@@ -420,8 +420,9 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
 { seed(55); const pw = new World(); for (let i = 0; i < 400; i++) pw.step(1 / 30);
   const sc = scaleCount(SNAIL.CAP), cc = scaleCount(CRAYFISH.CAP);
   const snOk = pw.snails.length > 0 && pw.snails.length < sc * 0.5;   // realized ≈169 vs cap 1620 → must stay well under half the cap
-  const cfOk = pw.cray.length > 0 && pw.cray.length < cc * 0.5;       // realized ≈42 vs cap 540
-  check('snail & crayfish populations persist and self-limit FAR below their caps (not just ≤cap)', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
+  // crayfish: a real stock near its shelter-limited capacity (≈ 9 g/m² at the cap; Michigan lakes 4.6–21 g/m²), not ballooning
+  const cfOk = pw.cray.length > cc * 0.3 && pw.cray.length < cc;
+  check('snails self-limit far below their cap; crayfish hold a real stock near (not over) their carrying capacity', snOk && cfOk, `snails ${pw.snails.length}/${sc}, cray ${pw.cray.length}/${cc}`); }
 // snails + crayfish round-trip through save/load (v26)
 { seed(54); const sw = new World(); for (let i = 0; i < 80; i++) sw.step(1 / 30); const save = JSON.parse(JSON.stringify(sw.toJSON())); const lw = new World(); lw.load(save);
   const ok = save.version >= 26 && lw.snails.length === sw.snails.length && lw.cray.length === sw.cray.length
@@ -2282,6 +2283,40 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
         const m = pw.agents.filter(a => !a.dead && a.species === 'minnow' && a.mature); if (m.some(a => a.sex === 0) && m.some(a => a.sex === 1)) ok++; }
       Object.assign(IMMIGRATION, keepI);
       check('a rare species’ immigrants pair up: the refuge after a wipe holds a female and a male', ok === 3, `${ok}/3 seeds`); }
+    // CRAYFISH at a real stock: on the littoral/sublittoral bed (never the deep profundal), growing in warm water toward a
+    // shelter-limited capacity and not at all in cold water, and a defended prey — not every strike lands
+    { const { CRAYFISH: CR } = await import('../src/config.js');
+      seed(7601); const cw = new World(); const lim = CR.MAX_DEPTH * WORLD.H;
+      const shallow = cw.cray.every(c => cw.bedY(c.x) <= lim + 1);
+      const deep = cw._mkCray(1024); cw.cray = [deep]; for (let i = 0; i < 90; i++) cw.step(1 / 30);   // an old save's crayfish on the deep floor
+      const crawled = Math.abs(deep.x - 1024) > 5 && (deep.x < 1024) === (1024 < WORLD.W * BASIN.CENTER);
+      check('crayfish live on the littoral/sublittoral bed (CRAYFISH.MAX_DEPTH), and one on the deep floor walks back up', shallow && crawled, `all shallow ${shallow}; deep one moved ${(deep.x - 1024).toFixed(0)} px`);
+      const grow = yf => { seed(7602); const gw = new World().setDate(yf); gw.agents = []; gw.fry = []; gw.cray = gw.cray.slice(0, 100);
+        const n0 = gw.cray.length; for (let i = 0; i < 30 * 120; i++) gw.step(1 / 30); return { d: gw.cray.length - n0, T: gw.env.tempC }; };
+      const keepI = { ...IMMIGRATION }; IMMIGRATION.REFUGE = 0; IMMIGRATION.RATE = 0;   // (no fish at all: the stock's own dynamics)
+      const warm = grow(0.45), cold = grow(0.85); Object.assign(IMMIGRATION, keepI);
+      check('a thinned crayfish stock regrows in warm water (seasonal logistic) and not in cold water', warm.d > 6 && cold.d <= 0, `+${warm.d} at ${warm.T.toFixed(0)} °C vs ${cold.d} at ${cold.T.toFixed(0)} °C in two minutes`);
+      // (shelter off for these: a lone crayfish would be the oldest, in its burrow — the shelter is tested below)
+      const keepSh = CR.SHELTER; CR.SHELTER = 0;
+      seed(7700); const hw = new World().setDate(0.40); hw.fry = []; hw.plankton = []; hw.larvae = []; hw.snails = [];
+      const bs = hw.makeFish('bass', ONES7); hw.agents = [bs]; let hits = 0;
+      for (let t = 0; t < 400; t++) { bs.x = 300; bs.y = hw.bedY(300) - 4; bs.gut = 0; bs.dead = false;
+        const cf = hw._mkCray(300); cf.x = 300 + bs.eatRadius * 0.2; cf.y = hw.bedY(cf.x) - 2; hw.cray = [cf]; hw.crayGrid.rebuild(hw.cray);
+        hw.step(1 / 30); if (cf.dead) hits++; }
+      check('a crayfish is a DEFENDED prey: a bass on top of one doesn’t always take it (its diet.cray skill, less in cover and by day)', hits > 8 && hits < 390, `${hits}/400 steps`);
+      // …too wide for a small perch's mouth (CRAYFISH.WIDTH), and dormant in its burrow in cold water
+      const tries = (k, L, cold) => { seed(7710); const tw = new World().setDate(0.40); tw.fry = []; tw.plankton = []; tw.larvae = []; tw.snails = [];
+        const f = tw.makeFish(k, ONES7); f.L = L; f.W = stdWeight(SP[k].lw, L); tw.agents = [f]; if (cold) tw.env.tempAt = () => 3; let n = 0;
+        for (let t = 0; t < 300; t++) { f.x = 300; f.y = tw.bedY(300) - 4; f.gut = 0; f.dead = false; const cf = tw._mkCray(300); cf.x = 300 + 1; cf.y = tw.bedY(cf.x) - 2; tw.cray = [cf]; tw.crayGrid.rebuild(tw.cray); tw.step(1 / 30); if (cf.dead) n++; }
+        return n; };
+      const smallPerch = tries('perch', 18, false), bigPerch = tries('perch', 30, false), coldBass = tries('bass', 36, true);
+      const exposed = tries('bass', 36, false); CR.SHELTER = keepSh; const housed = tries('bass', 36, false);
+      check('crayfish are gape-limited prey (a small perch can’t take one, a big one can) and safe in their burrows in cold water', smallPerch === 0 && bigPerch > 0 && coldBass === 0, `perch 18 cm ${smallPerch}, 30 cm ${bigPerch}; bass at 3 °C ${coldBass} of 300`);
+      check('SHELTER-limited crayfish: a stock within its shelter capacity is out of reach (the oldest hold the burrows)', exposed > 0 && housed === 0, `a lone crayfish taken ${exposed}/300 without shelter, ${housed}/300 in its burrow`); }
+    // LITTORAL bass: out over the deep basin (not migrating) a bass turns back toward the shore
+    { seed(7801); const lw = new World().setDate(0.50); lw.fry = []; const bs = lw.makeFish('bass', ONES7); bs.x = WORLD.W * 0.45; bs.y = 300; bs.heading = 0; bs.gon = 0; lw.agents = [bs];
+      const x0 = bs.x; for (let i = 0; i < 30 * 15; i++) lw.step(1 / 30);
+      check('a bass out over the open basin heads back to the littoral (innate littoral habitat)', bs.x < x0 - 60 || lw.bedY(bs.x) < SP.bass.innate.littoral * WORLD.H, `x ${x0.toFixed(0)} → ${bs.x.toFixed(0)}, bed ${lw.bedY(bs.x).toFixed(0)}`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);
     check('school and food-web knobs are sane', FRYC.ATTACK > 0 && FRYC.N_HALF > 0 && FRYC.R_WMIN > 0 && FEEDC.POOR_GUT > 0 && FEEDC.POOR_GUT < 1 && FEEDC.SCHOOL_MIN < FEEDC.PREY_MIN);
   }

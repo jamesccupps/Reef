@@ -423,7 +423,7 @@ export const SP = {
     shape: { in: 12, hid: 9 },
     inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true, cray: true },
+    diet: { fish: true, insect: true, larva: true, cray: 0.08 },   // cray: the share of its strikes at a crayfish that land (perch take the small ones)
     maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
     matingCooldown: yr(0.5), pop: { start: 18, min: 3, max: 28 },   // K ≈ 190
     tempOpt: 23, tempTol: 7, o2Crit: 0.26, spawnT: [7, 12], spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
@@ -486,7 +486,7 @@ export const SP = {
     shape: { in: 10, hid: 10 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'on floor', 'oxygen', 'wall'],
-    diet: { detritus: true, plants: true, larva: true, cray: true },
+    diet: { detritus: true, plants: true, larva: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
     matingCooldown: yr(0.5), pop: { start: 4, min: 3, max: 6 },   // K ≈ 40
     tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
@@ -540,11 +540,11 @@ export const SP = {
     key: 'bass', capture: 0.4, name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
     shape: { in: 10, hid: 9 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true, cray: true },   // young bass live on aquatic insects (Keast 1985; Olson 1996)
+    diet: { fish: true, insect: true, larva: true, cray: 0.25 },   // young bass live on aquatic insects (Keast 1985; Olson 1996); crayfish are the adult bass's staple
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
     matingCooldown: yr(0.5), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 — real lakes hold ~20–50 adult bass/ha against thousands of sunfish
     tempOpt: 29, tempTol: 7, o2Crit: 0.47, spawnT: [15, 21], nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
-    innate: { homeDepth: 0.55, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off; pursues prey it sees
+    innate: { homeDepth: 0.8, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, littoral: 0.5, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off, low in the water near the bottom (summer bass hold near the bed and the weeds in the littoral); pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
     randomHue: (R) => R(100, 130),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
@@ -567,7 +567,7 @@ export const SP = {
     key: 'pike', capture: 0.6, name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
     shape: { in: 9, hid: 8 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, cray: true },
+    diet: { fish: true, cray: 0.05 },   // a fish specialist: crayfish are an occasional item
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
     matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 1, rescue: 1 },   // K ≈ 4 — the rarest fish (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
     tempOpt: 21, tempTol: 8, o2Crit: 0.32, spawnT: [4, 11], spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice

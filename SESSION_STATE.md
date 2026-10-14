@@ -114,7 +114,34 @@ Summer bass diagnosis (verify/schoolhunt.mjs, fryblock.mjs): Cmax 3–6 g/s vs i
 in qPrey (fryPreyOf). Committed ec6fd2d with (b) bouts across the hunting arena + FRY.ATTACK 400 — but v1 validation
 (3 seeds × 2.2 yr) showed the lake THINNING year on year (448 → 110–157 agents; YOY eaten ~5× more, minnows 6–23, bass
 still p 0.06–0.2; v2 = HUNT_R 6 collapsed to 46–69) → (b) REVERTED (bouts in-school, FRY.ATTACK 100; larvae fix kept);
-v3 validation running.
+v3 validation (3 × 2.2 yr): stable (no trend). Then rare colonists PAIR UP (immigrant sex = the one the species' few
+adults lack; a one-sex refuge never bred — gate rescue check had failed on seed 73) + trout A/B hardened (4 trout,
+UILT-raised control: 18.9 vs 23.9 °C). v4 (with pairing, 3 × 2.2 yr): stable, agents 351–425 at 2.22 (sunfish 240–254,
+minnow 83–125, perch 12–33, catfish 4–9, bass 3 b 0–8 im 13–15, pike 1). Gate GREEN, perf 100 st/s standalone.
+MERGED: main = science = df28f1b (2026-10-14 00:36); backup G:\synapse-reef-backups\synapse-reef_20261014_0036_predation-size-refuge.zip.
+NEXT SLICE — CRAYFISH at real biomass (the bass's missing staple): Momot & Gowing 1977 (3 Michigan lakes, O. virilis):
+46–213 kg/ha standing, production 60–142 kg/ha/yr, P/B 0.94–1.53 → this slice ≈ 3–15 kg (sim: 0.1–0.9 kg, 11–74 × 12 g).
+Bass diets: crayfish 54.6 % by weight Apr–Oct (Murphy Flowage WI), 80 % of prey in June / 40 % July (WI lake). Crayfish
+recruitment is gated by detAvail = fresh detritus particles / (0.6·CAP) ≈ 0.01–0.03 → ~2 % of max. Plan: temperature-
+driven logistic toward a habitat K (biomass 5–20 g/m²), not the particle count; predation via rate capture (+vuln),
+not certain nearest-take; check perf with several hundred crayfish. Later: a slow sediment organic pool for larvae.
+SLICE IN PROGRESS (uncommitted, 2026-10-14 ~01:30): CRAYFISH + LITTORAL BASS. Done: seasonal logistic (CRAYFISH.R 8/yr in
+warm water R_T 10–20 °C, M 0.8/yr; SEED 48 ≈ 0.6 K; K = CAP 80×area = 540 × 12 g ≈ 9 g/m²); crayfish on the littoral/
+sublittoral bed only (MAX_DEPTH 0.55 H; deep ones walk back up); fish hunt crayfish across the arena (HUNT_R × reach) with
+a per-species skill diet.cray (bass 0.25, bullhead 0.15, perch 0.08, pike 0.05) × closeness × cover × day shelter
+(SHELTER_DAY 0.7); SNAIL_HUNT 2→0.3. BASS: homeDepth 0.55→0.8 + innate.littoral 0.5 (turn back to shore over beds deeper
+than 0.5 H, off during spawning migration) — they had spent 57–78 % of summer over the open basin, ~never within reach of
+the bed (verify/basswhere.mjs, bedtime.mjs; NB June windows are bass spawning-migration time — measure in late July).
+Diagnosis trail (verify/craydeath.mjs): with shared capture × 0.5 the 2 pike ate 124–140 crayfish in 0.13 yr and the stock
+crashed to 5–9; with per-species skill + shelter + R 8 → stock 194 at 0.35 yr, bass the main crayfish eater (114/222).
+New gate checks (session-5 block): crayfish depth + walk-back, warm/cold regrowth (immigration off), defended prey, littoral
+bass. c3 (no gape/dormancy/shelter): stock eroded to 1–25 in 2 yr → added CRAYFISH.WIDTH 2.2 cm (gape), ACT_T 4–12 °C
+(cold dormancy), SHELTER 0.4 K held by the OLDEST (array order = age; transient cf.sh each step, no save change) — c4 still
+eroded (37/9/7), c5 with shelter: STABLE 150–240, bass summer p 0.2–0.6 (crayfish 54–90 % of diet), biomass 14–23 kg,
+fatheads scarce (3–21 adults — realistic in bass lakes), sunfish dominant. Gate GREEN (101 st/s). COMMITTED + MERGED (see git log).
+NEXT: phase-1 leftovers — a slow sediment organic pool (insect larvae recruitment still gated on fresh detritus particles;
+det 0–30 on the bed), pike underfed in year 2 (p 0.03–0.5), perch adults fast-growing; then PHASE 2 (visible evolution —
+Explore survey done 2026-10-13: Evolution card + world.series exist; missing trait history/variance/saved history/fast-forward).
 Tried, no clear gain (reverted): HUNT_R 8/12 (pike gorge, bass unchanged), a worth-the-chase prey filter (CHASE_MIN).
 ROOT of bass starvation: in June–July YOY are 1–2-cm larvae (~0.04 g), fathead adults thin out, crayfish few — crayfish
 model predates bioenergetics and recruits from a near-EMPTY detritus pool (DETRITUS particles live 26 s ≈ 5 d → 0–30 on

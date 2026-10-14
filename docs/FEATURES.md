@@ -92,9 +92,9 @@ Save format **v27**. Every number below is from a published source (cited inline
   nothing.) Without the size refuge the rate-based
   hunting let the lake's pike eat 10–16 kg of adult perch and bluegill in half a year and the community collapsed; with
   it the adults mostly outgrow the risk and the predators live on the small fish and the young-of-year, as real ones do.
-  Still short: adult BASS in early summer (≈5–15 % of Cmax — the young-of-year are still 1–2-cm larvae, minnow adults
-  thin out, crayfish are few — the crayfish model predates the bioenergetics and its recruitment is held down by a
-  near-empty detritus pool).
+  Adult BASS were short of food in early summer (≈5–15 % of Cmax: the young-of-year are still 1–2-cm larvae and fathead
+  adults thin out) until the crayfish stock and the bass's littoral habitat were made real (below): now summer p ≈ 0.2–0.6
+  with crayfish 55–90 % of the diet, as in Wisconsin bass studies.
 - **Reproduction**: sexes (opposite-sex pairs only; the male guards the nest, at a metabolic and feeding cost —
   `BROOD.GUARD_*`); eggs from the published length–fecundity regressions (perch: Schneider 1984; bass: Laarman & Schneider
   1985; pike: Priegel & Krohn 1975 …) × the female's ripeness; maturity by length AND age (the SIZE gene is now the
@@ -121,6 +121,27 @@ Save format **v27**. Every number below is from a published source (cited inline
   of each species an adult female + male; adults start ripe (the lake opens in late spring). Founder numbers follow real
   ratios — hundreds of forage fish per adult bass. A slice of lake this size (~0.07 ha) holds about one pike at real
   densities, so pike (and trout) have a lower refuge/rescue (`pop.refuge`, `pop.rescue`): one in view, more only home-bred.
+- **Crayfish** (`CRAYFISH`): the lake's big benthic omnivores and the largemouth bass's staple (55 % by weight of a
+  Wisconsin flowage's bass diet April–October; 80 % of bass prey in June in another lake). Each is one ~12-g animal; the
+  stock follows a seasonal logistic (`CRAYFISH.R` per capita a year, recruitment ramping in with warm water `R_T`, natural
+  mortality `M` ~0.8/yr) toward a shelter-limited capacity of ~9 g/m² — Michigan lakes stood at 4.6–21 g/m² and produced
+  ~1–1.5× that a year (Momot & Gowing 1977). They live on the littoral and sublittoral bed (`CRAYFISH.MAX_DEPTH`, ~8 m —
+  not the summer-hypoxic profundal), shelter by day (`SHELTER_DAY`: they forage at night and hide from fish), lie dormant
+  in their burrows in cold water (`ACT_T`), are too wide (`WIDTH` 2.2 cm) for a small perch's mouth, are SHELTER-LIMITED
+  (`SHELTER`: burrows and stones for 40 % of the capacity, held by the oldest — bigger crayfish win shelter contests, and
+  the unsheltered, mostly the young, take the predation; so the stock can't be eaten below its shelter, as real ones
+  persist under heavy fish predation — Stein & Magnuson 1976, Hill & Lodge 1994; without it the stock eroded to a handful in
+  two years), and are hunted
+  across a fish's hunting arena; a strike lands with the species' own skill (`diet.cray`: bass 0.25, bullheads 0.15, perch
+  0.08, pike 0.05 — bass are the crayfish specialists, pike fish specialists; priors ranked by the diet studies), less in
+  cover. (Before: recruitment was gated on the count of fresh detritus particles, which the bottom feeders keep near zero,
+  a 0.004/s turnover gave crayfish a ~25-day life, and they lived across the deep floor — the stock sat at 1–10 % of a real
+  one, out of the bass's reach. A first cut with the shared capture × 0.5 let the two pike eat ~130 crayfish in a few
+  weeks.) Crayfish take ~one snail a day.
+- **Largemouth bass are littoral fish** (`innate.littoral`, `homeDepth` 0.8): low in the water over the shelf and the
+  drop-off, among the weeds and near the bottom, turning back when they find themselves out over the open basin (outside
+  the spawning migration). Before, they cruised mid-water over the deep basin 57–78 % of the time and almost never came
+  within reach of the bed — or of the crayfish that make up half of a real bass's diet.
 - **Render/UI**: fish are drawn at their true length (0.79 px/cm, a gentle floor under 10 cm); young-of-year schools are
   shimmering clouds — dashes for larvae, little fish once they're a few px long; the fish panel shows length, mass,
   condition, sex, maturity and how well it is feeding.

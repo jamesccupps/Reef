@@ -780,18 +780,34 @@ export const SNAIL = {
 // population control). It is in turn a prime forage for predatory fish: BASS, PIKE & CATFISH eat crayfish →
 // detritus + snail → crayfish → {bass, pike, catfish}, giving the chronically-rare piscivores a benthic prey base.
 // Particle system (one crayfish = one particle); deterministic (seeded RNG); eaten opportunistically on the bed.
+// Crayfish are a lake's big benthic omnivores and the largemouth bass's staple: in three Michigan lakes O. virilis stood at
+// 46–213 kg/ha and produced 60–142 kg/ha a year (P/B 0.94–1.53, Momot & Gowing 1977); crayfish were 55 % by weight of all
+// a Wisconsin flowage's bass ate April–October, and 80 % of bass prey in June in another Wisconsin lake. Each crayfish here
+// is one ~12-g animal (PREY.CRAY_G); their numbers follow a seasonal logistic toward a shelter-limited carrying capacity.
 export const CRAYFISH = {
-  SEED: 14,                // initial crayfish (× world area)
-  CAP: 80,                 // max crayfish (× area) — fewer, larger benthic omnivores than snails
-  RATE: 3.2,               // /s recruitment at full detritus availability (× area), logistic toward CAP
+  SEED: 48,                // initial crayfish (× world area) — ~0.6 of the carrying capacity: a lake's crayfish stand near equilibrium
+  CAP: 80,                 // carrying capacity (× area → 540 × 12 g ≈ 6.5 kg ≈ 9 g/m² over the ~700-m² slice; 4.6–21 g/m² measured)
+  R: 8,                    // per-capita recruitment /yr at low density in the warm season (logistic): recruitment runs ~40 % of the
+                           //   year, so production near the usual stock is ~1–1.5× it a year, as measured
+  R_T: [10, 20],           // °C: recruitment (young released, juveniles growing) ramps from 0 at 10 °C to full at 20 °C
+  M: 0.8,                  // natural (non-fish) mortality /yr — a 2–4-year life (replaces the old 0.004/s ≈ a 25-day life)
+  WIDTH: 2.2,              // cm: a ~12-g crayfish's body width — it fits only a gape at least this wide (a big bass, pike, bullhead
+                           //   or perch; small perch take only the small juveniles, which these adults stand for less)
+  ACT_T: [4, 12],          // °C: crayfish are dormant in their burrows in cold water — exposure to fish ramps in from 4 to 12 °C
+  SHELTER: 0.4,            // SHELTER-LIMITED: burrows and stones for this share of the carrying capacity; the oldest crayfish hold
+                           //   them (bigger crayfish win shelter contests, Capelli & Munjal 1982) and are out of fish reach, the rest
+                           //   — mostly the young — are exposed (unsheltered crayfish suffer far higher predation: Stein & Magnuson
+                           //   1976, Hill & Lodge 1994). The stock can't be eaten below the shelter it holds
+  SHELTER_DAY: 0.7,        // share of the crayfish sheltered in burrows and under stones by day (they forage at night — and hide
+                           //   more when fish are about, Stein & Magnuson 1976); a fish's strike success is the species' diet.cray
+  MAX_DEPTH: 0.55,         // crayfish live on the littoral and sublittoral bed down to this × the lake's depth (~8 m; trapped out
+                           //   to ~9 m in Michigan lakes, Momot & Gowing 1977) — not on the deep, summer-hypoxic profundal floor
   CRAWL: 4,                // px/s base crawl speed along the bed
   NIGHT: 1.7,              // crepuscular: crawl/forage activity multiplier at night vs day
   COVER_PULL: 0.5,         // how strongly a crayfish steers its crawl toward the nearest cover (refuge-seeking)
   EAT_R: 15,               // px reach to catch a snail
-  SNAIL_HUNT: 2.0,         // /s rate a crayfish attempts to take a nearby snail
-  SENESCE: 0.004,          // /s background death (turnover). NB: crayfish have no explicit STARVATION path (unlike snails) —
-                           // deaths = this senescence + predation; population is held in check by the detritus-gated +
-                           // logistic recruitment above (the sole density regulator), which is sufficient & self-limiting.
+  SNAIL_HUNT: 0.3,         // /s a crayfish tries for a nearby snail (× night activity) — ~one a day: crayfish eat ~1–3 % of their
+                           //   mass a day, and snails are a part of a broad omnivore's diet (they do strongly cut snail stocks)
 };
 
 export const PLANT = {
