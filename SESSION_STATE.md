@@ -5,6 +5,19 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
+## ▶ NOW (2026-10-14 evening) — state: main = science = 13be2b9 (+ this note); gate green; backup G:synapse-reef-backupssynapse-reef_20261014_1626_snails-limnetic.zip
+Phase 1 is done as far as it goes without the ZOOPLANKTON slice (below). Next per the human's plan: (2) the GUI / graphics /
+webpage information / graphs review — unless the human prefers to do the zooplankton slice first.
+ZOOPLANKTON (parked on branch `zoo-growth-wip`, pushed, NOT merged): the current model refills swarms at full size up to the
+cap at a rate ∝ algae (production ~10–17 kg/month in summer; fish eat 10–13, fry 2–5 — verify/zooflux.mjs, zf_base_s*.txt),
+i.e. production does not follow zooplankton biomass. A growth model (swarms grow 0.4/day Daphnia, 0.15 copepods at 20 °C ×
+Q10 2.5 × Holling on edible algae, invertebrate loss, starvation, splitting, resting-egg hatch, grazing per gram) collapsed
+the standing stock to ~0.5–1.2 kg and production to 1–5 kg/month (fish lose ~2/3 of their zooplankton); swarm refuges (fish
+0.6 g, fry 0.1 g) made it worse (fry keep every swarm tiny, fish get ~nothing). Real lakes hold 1.5–3 mg/L (~5–15 kg here)
+with P/B 0.1–0.4/day. A proper slice needs: a higher standing stock (more grams per swarm / a 2-D density field), a refuge
+that works for fish AND fry (DVM by depth/light, not per-swarm grams), and re-calibrating the planktivores (sunfish p 0.6–0.9
+now vs field 0.3–0.5). It is the root of bass recruitment failure (fry starve) — see the APEX CHAIN note below.
+
 ## ▶ NOW (2026-10-14, session 6) — THE BED'S ORGANIC LAYER (216237a, merged) + VISIBLE EVOLUTION (merged, save v29)
 Plan order (human, 2026-10-14; also in ROADMAP "Agreed plan"): (1) implement + accurate (this; then pike yr-2, perch
 growth; then VISIBLE EVOLUTION), (2) GUI/graphics/info/graphs review, (3) multi-lake + streams/rivers/ponds WITH a water
