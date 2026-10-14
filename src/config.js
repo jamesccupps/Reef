@@ -1063,3 +1063,13 @@ export const IMMIGRATION = {
   POOL_N: 12,          // genomes per species in the REGIONAL gene pool immigrants are drawn from (connected waters)
   EMIGRATE: 0.02,      // /s per species: chance a random lake adult's genes join the regional pool (gene flow out)
 };
+
+// ---------- evolution history (the visible record of natural selection) ----------
+// A long, low-rate record of every species' heritable traits (`world.evo`): every EVO.SAMPLE s, per species, the number
+// of fish, their mean generation, and the mean and standard deviation of each of the 7 trait genes (GENE_KEYS) — so the
+// UI can draw how the lake's fish evolve over years and decades (and the spread selection works on). Thinned (every other
+// sample of the older half dropped) when it reaches EVO.MAX, so it always spans the whole run. Read-only for the sim.
+export const EVO = {
+  get SAMPLE() { return TIME.YEAR_LEN / 24; },   // s between samples (twice a month)
+  MAX: 960,                // samples kept (40 years at full resolution; older ones thinned beyond that)
+};

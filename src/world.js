@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM, EVO } from './config.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from './bioenergetics.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
@@ -323,8 +323,15 @@ function parseSave(s) {
       ni: Number.isSafeInteger(q.ni) && q.ni > 0 ? q.ni : 0, nx: clamp(num(q.nx, x), 0, W), ny: clamp(num(q.ny, 0), 0, H),
       tk: clamp(num(q.tk, 0), 0, FRY.TICK), tx: clamp(num(q.tx, x), 0, W), ty: clamp(num(q.ty, 0), 0, H), rO2: clamp(num(q.ro, 0), 0, 1e6), p: clamp(num(q.p, 1), 0, 1), dead: false });
   }
+  // the evolution history (older saves: none): time-ordered samples of finite rows of the right length, known species only
+  const evo = [], rowLen = 2 + 2 * GENE_KEYS.length;
+  for (const e of Array.isArray(s.evo) ? s.evo : []) {
+    if (evo.length >= EVO.MAX || !isObj(e) || !isNum(e.t) || !isObj(e.s) || (evo.length && e.t < evo[evo.length - 1].t)) continue;
+    const so = {}; for (const k of SPECIES) { const r = e.s[k]; if (Array.isArray(r) && r.length === rowLen && r.every(isNum)) so[k] = r.slice(); }
+    evo.push({ t: e.t, s: so });
+  }
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
-  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps, fry };
+  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps, fry, evo };
 }
 // a fish's typical length (cm) at a given age (s): the species' von Bertalanffy curve fitted to north-temperate length-at-
 // age data (species.js `vb`). Used ONLY to give a fish of a known age a plausible starting length (founders, immigrants,
@@ -501,6 +508,7 @@ export class World {
     this.stats = { foodEaten: 0, fishEaten: 0, births: {}, immigrants: {} };  // births = home-bred (sexual+asexual); immigrants = rescue arrivals — per species
     this.series = [];           // {g,c,b...} census + env over time
     this._seriesAcc = 0;
+    this.evo = []; this._evoSlot = -1;   // the evolution history (EVO): trait means/SDs per species over the whole run
     this.selectedId = null;
     this._counts = {};
     this.reset();
@@ -516,7 +524,7 @@ export class World {
     // a fresh lake opens in late spring (SEASON.START_YF) with that season's thermal state, not an ice-bound March 1
     this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this._daphShare = this.daphShare(); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
     this.stats.births = {}; this.stats.immigrants = {}; for (const k of SPECIES) { this.stats.births[k] = 0; this.stats.immigrants[k] = 0; }
-    this.series = []; this._seriesAcc = 0; this.selectedId = null;
+    this.series = []; this._seriesAcc = 0; this.selectedId = null; this.evo = []; this._evoSlot = -1;
     for (const key of SPECIES) {
       const sp = SP[key];
       for (let i = 0; i < popStart(sp); i++) {
@@ -2069,6 +2077,26 @@ export class World {
       this.series.push({ ...c, o2: this.avgO2(), temp: env.tempNorm, light: env.light, phyto: env.meanPhyto(), cyano: env.meanCyano(), dom: env.meanDOM(), zoo: this.plankton.length });
       if (this.series.length > 200) this.series.shift();
     }
+    // evolution history: a sample each time the clock enters a new EVO.SAMPLE slot (absolute time, so a resumed run
+    // samples exactly where the uninterrupted one does)
+    const es = Math.floor(this.time / EVO.SAMPLE);
+    if (es !== this._evoSlot) { this._evoSlot = es; this._evoRecord(); }
+  }
+
+  // one EVOLUTION-HISTORY sample (EVO): per species [n, mean generation, the 7 trait genes' means, their SDs] over the
+  // recruited fish (young-of-year schools are next year's sample); thinned to keep the whole run within EVO.MAX
+  _evoRecord() {
+    const nG = GENE_KEYS.length, s = {}, r4 = v => Math.round(v * 1e4) / 1e4;
+    for (const k of SPECIES) {
+      let n = 0, gen = 0; const m = new Float64Array(nG), q = new Float64Array(nG);
+      for (const a of this.agents) { if (a.dead || a.species !== k) continue; n++; gen += a.gen; for (let i = 0; i < nG; i++) { const g = a.genes[i]; m[i] += g; q[i] += g * g; } }
+      const row = [n, n ? gen / n : 0];
+      for (let i = 0; i < nG; i++) row.push(n ? m[i] / n : 0);
+      for (let i = 0; i < nG; i++) row.push(n > 1 ? Math.sqrt(Math.max(0, q[i] / n - (m[i] / n) ** 2)) : 0);
+      s[k] = row.map(r4);
+    }
+    this.evo.push({ t: Math.round(this.time * 10) / 10, s });
+    if (this.evo.length > EVO.MAX) { const half = this.evo.length >> 1; this.evo = this.evo.filter((e, i) => i >= half || i % 2 === 0); }
   }
 
   _bestOf(key) { let best = null, bv = -1; for (const a of this.agents) { if (a.dead || a.species !== key) continue; const v = a.eaten / Math.max(a.age, 1); if (v > bv) { bv = v; best = a; } } return best; }
@@ -2194,7 +2222,8 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 28, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 29, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      evo: this.evo,   // the evolution history (EVO) — a record only: it never shapes the future
       env: this.env.toJSON(),
       agents: this.agents.map(a => {
         const HID = a.sp.shape.hid, W2 = a.sp.shape.in * HID + HID, act = a.act;
@@ -2249,6 +2278,7 @@ export class World {
     if (P.rep.reseeded) this.stats.brainsReseeded = P.rep.reseeded;
     this._nextId = P.nextId; _idOwner = this;
     this.series = []; this._seriesAcc = 0; this.selectedId = null; this.lastLoad = P.rep;
+    this.evo = P.evo; this._evoSlot = this.evo.length ? Math.floor(this.time / EVO.SAMPLE) : -1;   // (continue sampling where the saved run would)
     setRandState(P.rng != null ? P.rng : rng0);
     return P.rep;
   }

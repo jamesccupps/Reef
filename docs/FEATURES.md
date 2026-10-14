@@ -5,13 +5,34 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-14 bed's organic layer** section comes first, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections come first, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-14 visible evolution: the trait history and fast-forward
+
+- **The record** (`world.evo`, config `EVO`, `world.js` `_evoRecord`): every `EVO.SAMPLE` s (twice a month) one sample per
+  species — n, mean generation, and the mean and SD of each of the 7 trait genes over the recruited fish (young-of-year
+  schools show up once they recruit). Samples sit on the absolute clock grid (`floor(time / SAMPLE)`), so a resumed run
+  samples exactly where the uninterrupted one does; past `EVO.MAX` (960) the older half is thinned to every other sample,
+  so the record always spans the whole run at decreasing resolution for the distant past. Saved (`evo`) and validated on
+  load (time-ordered, finite rows of the right length, known species); it never shapes the future.
+- **The chart** (Evolution card, `ui.js` `_evoChart`): a gene selector (size, speed, tolerance, fins, eyes, body, brain —
+  tooltips say what each gene sets), each species' mean ±1 SD over the years against the 1.0 founder baseline; click a
+  species row to pick it out (bold line and band, the rest dimmed) and read now vs the first sample in the note.
+  Redrawn only when a sample lands, the selection changes or the box resizes.
+- **Fast-forward** (Controls → Skip ahead: 1 month / season / 1 year / 5 years; `src/ffworker.js`, `ui.fastForward`): a
+  module Worker loads the main thread's save and steps it flat out with no rendering, posting progress (date, %, steps/s,
+  time left) about four times a second; "stop here" jumps to wherever it got. The main loop is paused and pause/speed are
+  locked meanwhile. Exact by construction: the worker's result is byte-identical to the same steps on the main thread
+  (checked in Chrome on 8.1 MB of state; smoke runs the real worker module behind a stub). Speed is the sim's own
+  (~100–130 steps/s on a free core ≈ 4× real time; a year ≈ 7–9 min) — evolution over decades is a leave-it-running job.
 
 ---
 
 ## 2026-10-14 the bed's organic layer: benthic production that follows the lake's productivity
 
-Save format **v28** (`env.sedOM`).
+Save format **v28** (`env.sedOM`); v29 adds the evolution history.
 
 - **Sediment organic matter** (`env.sedOM`, config `SEDOM`, `environment.js` `sedimentOM`): grams of labile organic
   detritus on the bed of each field column. In: a share `SEDOM.SINK` (0.25) of the algae (green, diatoms, cyano) that die
@@ -25,7 +46,7 @@ Save format **v28** (`env.sedOM`).
   went (water, DOM, the sediment-P store), so the closed N/P budgets are untouched; the O₂ cost of decomposition stays in
   the microbial loop (DOM) and the fixed sediment demand `ENV.O2_SED`. Like real lakes, the deep basin gathers the most (it
   receives a whole water column's algae and decomposes slowly when anoxic) while the weedy shallows live on plant litter.
-- **Larvae grow on it** (`INSECT`, `world.js` larvae step): a patch's grams grow at `INSECT.GROW` (0.2/day at the 25 °C
+- **Larvae grow on it** (`INSECT`, `world.js` larvae step): a patch's grams grow at `INSECT.GROW` (0.3/day at the 25 °C
   optimum) × warmth × Monod in its column's layer (`K_SOM`) × (1 − m/`PREY.LARVA_G`), debiting the layer at 1/`YIELD`
   (0.15 g of larvae per g of detritus, wet), and shrink by respiration (`RESP`) when food is short; they die off on an anoxic
   bottom (`O2_MIN`, `ANOX_DEATH` × Q10 2 — they outlast weeks of cold anoxia). Development follows real chironomid timing (26 days to emerge at 20 °C, ~40 at 15 °C;
@@ -39,7 +60,9 @@ Save format **v28** (`env.sedOM`).
   dragonfly nymphs and turtles (`larvaFree`, `_biteLarva`; nymphs and turtles now take a bite, not a whole patch). Fish
   can cut a patch by ~2/3 at most; the burrowed stock regrows it. Without it the fish kept every patch on its floor.
 - **Bottom feeders sift it** (`diet.detritus`: carp, bullhead): with no particle in reach, a fish at the bed takes up
-  to `SEDOM.SIFT` × its gut capacity a second from the layer — a poor food (979 J/g, 35 % digestible).
+  to `SEDOM.SIFT` × its gut capacity a second from the layer — a poor food (979 J/g, 35 % digestible). On a lean bed they
+  turn to snails and zooplankton too (bullhead + carp diets widened to their real omnivory, Scott & Crossman 1973 — on
+  detritus alone the bullheads slowly starved).
 - Gate: decomposition (rate, warm/cold, anoxic), settling, benthic algae (lit shallows vs dark deep, clear vs murky),
   larval growth on it and starvation without it, sifting, and the save round-trip; larval development follows the
   water's warmth; the dt-independence check now grazes patches down to their refuge.

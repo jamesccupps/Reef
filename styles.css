@@ -110,6 +110,11 @@ body{
 .evo .ev.up{color:var(--phosphor)} .evo .ev.dn{color:var(--rose)}
 .evo .eg{text-align:right; color:#8fb6bf}
 .evo .ei{text-align:right; color:#5b7d86}
+.evo .erow.pick{cursor:pointer} .evo .erow.pick:hover{background:rgba(255,255,255,0.03)} .evo .erow.sel .en{color:var(--ink); font-weight:700}
+.evogenes{display:flex; flex-wrap:wrap; gap:0; margin:8px 0 4px; border:1px solid var(--line); border-radius:3px; overflow:hidden; width:max-content; max-width:100%}
+.evogenes .seg{padding:4px 7px; font-size:9.5px}
+#evo-chart{display:block; width:100%; height:120px}
+.evonote{font-family:"Space Mono",monospace; font-size:9px; color:var(--dim); margin-top:3px; min-height:11px}
 
 /* ---------- cognition aggregates ---------- */
 .cog{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px 10px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line)}
@@ -130,6 +135,13 @@ body{
 .btn.danger:hover{border-color:var(--rose); background:#2a0e16; color:#fff}
 .btn.file{display:inline-flex; align-items:center}
 .seggroup{display:flex; border:1px solid var(--line2); border-radius:8px; overflow:hidden}
+.ffrow .fflabel{font-family:var(--mono); font-size:11px; color:var(--dim)}
+.ffbar{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:-2px 0 10px}
+.ffbar.hidden{display:none}
+.fftrack{flex:1 1 100%; height:6px; border-radius:3px; background:rgba(255,255,255,0.07); overflow:hidden; min-width:60px}
+.fffill{height:100%; width:0; background:var(--phosphor)}
+.fftext{flex:1 1 auto; font-family:var(--mono); font-size:10px; color:var(--ink)}
+#ff .seg[disabled], #speed .seg[disabled]{opacity:0.4; cursor:default}
 .seg{font-family:var(--mono); font-size:11px; background:transparent; color:var(--dim); border:0; padding:8px 11px; cursor:pointer}
 .seg+.seg{border-left:1px solid var(--line)}
 .seg.on{background:var(--phosphor); color:#04130b; font-weight:700}

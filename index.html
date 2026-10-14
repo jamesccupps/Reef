@@ -111,6 +111,9 @@
       <div class="card">
         <div class="label">Evolution <small class="cardsub">mean trait genes (×baseline) · gen · immigrant %</small></div>
         <div class="evo" id="evo"></div>
+        <div class="evogenes" id="evo-genes"></div>
+        <canvas id="evo-chart"></canvas>
+        <div class="evonote" id="evo-note"></div>
       </div>
 
       <div class="card">
@@ -136,6 +139,21 @@
             <button class="seg" data-s="2">2×</button>
             <button class="seg" data-s="4">4×</button>
           </div>
+        </div>
+
+        <div class="row ffrow">
+          <span class="fflabel" title="Run the lake flat out in the background (no drawing), then jump to it — the same lake, step for step">Skip ahead</span>
+          <div id="ff" class="seggroup">
+            <button class="seg" data-ff="0.0833">1 month</button>
+            <button class="seg" data-ff="0.25">season</button>
+            <button class="seg" data-ff="1">1 year</button>
+            <button class="seg" data-ff="5">5 years</button>
+          </div>
+        </div>
+        <div class="ffbar hidden" id="ffbar">
+          <div class="fftrack"><div class="fffill" id="ffbar-fill"></div></div>
+          <span class="fftext" id="ffbar-text"></span>
+          <button class="btn" id="ffbar-stop" title="Stop and jump to how far it got">stop here</button>
         </div>
 
         <div class="row toggles">

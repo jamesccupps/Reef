@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-14, session 6) — Phase-1 leftover: THE BED'S ORGANIC LAYER (uncommitted on `science` until noted)
+## ▶ NOW (2026-10-14, session 6) — THE BED'S ORGANIC LAYER (216237a, merged) + VISIBLE EVOLUTION (merged, save v29)
 Plan order (human, 2026-10-14; also in ROADMAP "Agreed plan"): (1) implement + accurate (this; then pike yr-2, perch
 growth; then VISIBLE EVOLUTION), (2) GUI/graphics/info/graphs review, (3) multi-lake + streams/rivers/ponds WITH a water
 budget/level, rain lenses, inflow plunging, sediment erosion/transport/deposition, drift (human notes 2026-10-14), (4) what-if.
@@ -42,11 +42,13 @@ perch age-2/3 growth still above Michigan means (founders), snails' 34-day life 
 bed's benthic algae (SEDOM) instead of the phyto field.
 Pike (round 4): 4–7 immigrant pike STARVED per run, year-2 p mostly 0.1–0.3 despite 180–270 small sunfish + ~100 minnows
 (FEED.PREY_MIN 0.07: a 65-cm pike ignores fish < 4.6 cm; sunfish mean 5–7 cm) — NEXT diagnostic (verify/hunt.mjs-style).
-VISIBLE EVOLUTION — on branch `evo-history` (worktree scratchpad/evo-wt, commits 92a0b4d, 96243fc, 6ab3e4d, not merged):
+VISIBLE EVOLUTION — built on branch `evo-history` (92a0b4d, 96243fc, 6ab3e4d), MERGED into science after 216237a (save v29):
 world.evo trait history (EVO, sampled on the clock grid, thinned past MAX, saved) + Evolution-over-time chart (gene selector,
 species pick, note) + fast-forward "Skip ahead" in a module Worker (src/ffworker.js; byte-identical to main-thread steps,
-checked in Chrome; smoke runs the real worker behind a stub). Gate checks added there. Merge after the SEDOM commit
-(save version → 29; conflicts expected in world.js toJSON line, FEATURES intro).
+checked in Chrome; smoke runs the real worker behind a stub). Gate checks: sampling grid/values, thinning + round trip, FF smoke.
+NEXT: (a) look at the merged UI in the browser (bed detritus row, Evolution chart with a REAL multi-year history — run
+Skip ahead 1–5 years), (b) the OPEN accuracy items above (bullhead recruitment, pike summer feeding, perch growth, snails),
+then (2) the GUI/graphics/info/graphs review.
 
 ## ▶ (older) NOW — after the 2026-10-11/12 overnight audit-fix run
 

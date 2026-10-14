@@ -1523,7 +1523,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
     for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
     const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
     const ids = lw.agents.map(a => a.id);
-    check('saves are version 28, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 28 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+    check('saves are version 29, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 29 && finiteWorld(lw) && new Set(ids).size === ids.length); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
@@ -2353,12 +2353,36 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       const ed = cp.gut > 0 ? cp.gutE / cp.gut : 0;
       check('a bottom feeder at the bed sifts its organic layer (a poor food: detritus energy × digestibility)', took > 0 && Math.abs(ed - PREY.DETRITUS_ED * PREY.DETRITUS_DIG) < 1, `carp took ${took.toFixed(2)} g in 2 s at ${ed.toFixed(0)} J/g`);
       const sv = new World(); sv.env.sedOM[12] = 1234.5; const back = new World(); back.load(JSON.parse(JSON.stringify(sv.toJSON())));
-      check('the bed’s organic layer round-trips through save/load (v28)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version === 28, `${back.env.sedOM[12]}`); }
+      check('the bed’s organic layer round-trips through save/load (v28+)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version >= 28, `${back.env.sedOM[12]}`); }
     check('hunting knobs are sane', FEEDC.HUNT_R >= 1 && FEEDC.ATTACK > 0 && FEEDC.MISS_CD >= 0 && FEEDC.SIZE_SEL >= 0);
     check('school and food-web knobs are sane', FRYC.ATTACK > 0 && FRYC.N_HALF > 0 && FRYC.R_WMIN > 0 && FEEDC.POOR_GUT > 0 && FEEDC.POOR_GUT < 1 && FEEDC.SCHOOL_MIN < FEEDC.PREY_MIN);
   }
   Object.assign(IMMIGRATION, immB); BIRDB.ARRIVE = arriveB; setRandState(rsB);
 }
+
+// ---------------------------------------------------------------------------
+//  EVOLUTION HISTORY (EVO): a twice-monthly record of every species' trait means and SDs over the whole run
+// ---------------------------------------------------------------------------
+console.log('\n— evolution history —');
+{ const { EVO } = await import('../src/config.js');
+  const rsE = getRandState(), maxE = EVO.MAX, smpD = Object.getOwnPropertyDescriptor(EVO, 'SAMPLE');
+  // samples land on the EVO.SAMPLE grid with each species' n, mean generation, 7 gene means and 7 SDs that match the fish
+  Object.defineProperty(EVO, 'SAMPLE', { get: () => 2, configurable: true });   // (a short grid for the probe)
+  seed(8101); const ew = new World(); for (let i = 0; i < Math.round(2 * 2.5 * 30); i++) ew.step(1 / 30);
+  const last = ew.evo[ew.evo.length - 1], sun = ew.agents.filter(a => !a.dead && a.species === 'sunfish'), row = last.s.sunfish;
+  const m0 = sun.reduce((s, a) => s + a.genes[0], 0) / sun.length;
+  const onGrid = ew.evo.slice(1).every(e => Math.abs(e.t / 2 - Math.round(e.t / 2)) < 0.02); Object.defineProperty(EVO, 'SAMPLE', smpD);
+  check('the evolution history samples every species on the EVO.SAMPLE grid: n, mean generation, gene means and SDs',
+    ew.evo.length === 3 && onGrid && row.length === 2 + 2 * GENE_KEYS.length && row[0] > 0 && Math.abs(row[2] - m0) < 0.05 && row[2 + GENE_KEYS.length] > 0,
+    `${ew.evo.length} samples at t ${ew.evo.map(e => e.t.toFixed(0)).join('/')}; sunfish n ${row[0]}, size gene ${row[2]} (now ${m0.toFixed(4)}) ± ${row[2 + GENE_KEYS.length]}`);
+  // it always spans the whole run: past EVO.MAX the older half is thinned, the first sample is kept; and it is saved
+  Object.defineProperty(EVO, 'SAMPLE', { get: () => 0.5, configurable: true }); EVO.MAX = 10;
+  seed(8102); const tw = new World(); for (let i = 0; i < 30 * 12; i++) tw.step(1 / 30);
+  const t0 = tw.evo[0].t, nT = tw.evo.length, back = new World(); back.load(JSON.parse(JSON.stringify(tw.toJSON())));
+  Object.defineProperty(EVO, 'SAMPLE', smpD); EVO.MAX = maxE;
+  check('…and keeps the whole run within EVO.MAX (thinning the older half) and round-trips through save/load', nT <= 10 && nT >= 5 && Math.abs(t0 - tw.evo[0].t) < 1e-9 && tw.time - t0 > 11 && JSON.stringify(back.evo) === JSON.stringify(tw.evo),
+    `${nT} samples spanning ${(tw.evo[nT - 1].t - t0).toFixed(1)} s; reloaded ${back.evo.length}`);
+  setRandState(rsE); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

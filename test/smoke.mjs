@@ -351,5 +351,25 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   check('species legend sits outside the lake viewport (not under the minimap / camera controls)', vpEnd > 0 && lg > vpEnd);
 }
 
+// ==== FAST-FORWARD (ui.fastForward → src/ffworker.js) ====
+// The real worker module runs in-process: a stub Worker hands it the UI's message and delivers its replies back
+// asynchronously, as a browser would. The UI must pause and lock the speed controls while it runs, then jump to the
+// worker's lake and restore the pause state; the jump lands exactly the requested number of steps ahead.
+{
+  const { URL: NodeURL } = await import('node:url'); const urlStub = globalThis.URL; globalThis.URL = NodeURL;
+  const { TIME } = await import('../src/config.js');
+  globalThis.self = { postMessage() {} };
+  await import('../src/ffworker.js');
+  const workerOnMessage = globalThis.self.onmessage;
+  globalThis.Worker = class { constructor() { this.onmessage = null; } postMessage(m) { globalThis.self.postMessage = r => setTimeout(() => this.onmessage && this.onmessage({ data: r }), 0); workerOnMessage({ data: m }); } terminate() {} };
+  ui._setPaused(false); const t0 = world.time;
+  ui.fastForward(15 / 30 / TIME.YEAR_LEN);   // 15 steps
+  const during = { ff: !!ui._ff, paused: ui.paused };
+  for (let i = 0; i < 20 && ui._ff; i++) await new Promise(r => setTimeout(r, 10));
+  globalThis.URL = urlStub; delete globalThis.Worker;
+  check('fast-forward: the UI pauses while the worker runs, then jumps to its lake (exactly the requested steps) and resumes',
+    during.ff && during.paused && !ui._ff && ui.paused === false && Math.abs(world.time - t0 - 15 / 30) < 1e-6, `Δt ${(world.time - t0).toFixed(4)} s (expect ${(15 / 30).toFixed(4)})`);
+}
+
 console.log(`\n${fail === 0 ? 'SMOKE OK — browser layer constructs & draws without throwing' : fail + ' SMOKE CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);
