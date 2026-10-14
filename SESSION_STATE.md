@@ -58,6 +58,14 @@ nymphs/plants (a nymph eaten by RNG luck had broken it). Evolution chart: scale 
 lines dashed + clipped (real 2-yr history: trout/pike/bass means jump with each immigrant). FF worker yields via
 MessageChannel (e1138bc). Embedded preview pane steps ~48 st/s (main thread too) — judge FF speed in real Chrome.
 Round 8 (3 × 2.2 yr): bullheads 12–15 home-bred, 0 immigrants; carp home-bred; perch 5–20 (next). Gate GREEN (gate30, 92 st/s).
+PERCH (diagnosed, verify/fryfate.mjs on new vs old code, 1.6 yr): egg-to-recruit survival is UNCHANGED (old 0.35 %, new
+0.17–0.44 %); the old lake simply had more spawners (20.8k hatched vs 7–14k). The 100 founders (~7 kg) exceed what a lake
+with real benthic production feeds; perch biomass relaxes to 0.4–2.8 kg at 2.2 yr ≈ 6–40 kg/ha (real yellow perch
+10–50 kg/ha) — realistic, not a defect. LENGTH-AT-AGE now (round 7/8, mid-Aug yr 1.45) vs Michigan means: sunfish
+4.2–5.2 / 9.3–10.9 / 12.3–13.3 / 14.6–15.3 / 16.5–17.1 (vb 4.4 9.2 12.8 15.4 17.4 — excellent); perch age 4–5 20.4–25.6 (vb
+20.2/22.9), age 2–3 17–23 (vb 12.9/16.9; those are founders seeded at their age's vb length, then a fast first summer);
+bass 29–35 at 4–5 (vb 28.5/32.9); bullhead ~10 % under. The old 'perch grow too fast' item is mostly resolved.
+REMAINING Phase-1 items: pike summer feeding (pikediag), founder seeding of age-1/2 perch, snails' 34-day life.
 NEXT: (a) look at the merged UI in the browser (bed detritus row, Evolution chart with a REAL multi-year history — run
 Skip ahead 1–5 years), (b) the OPEN accuracy items above (bullhead recruitment, pike summer feeding, perch growth, snails),
 then (2) the GUI/graphics/info/graphs review.
