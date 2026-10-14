@@ -67,6 +67,10 @@ const TROPHIC = [
   { key: 'apex', label: 'apex', col: '#4c7a48' },
 ];
 const EVO_GENES = ['gSize', 'gSpeed', 'gTol', 'gFin', 'gEye', 'gBody', 'gBrain'];
+// the evolution chart's gene selector: short label and what the gene sets (tooltip)
+const EVO_LABELS = [['size', 'maturation size (the length a fish matures at: bigger fish, later)'], ['speed', 'swimming speed (and its energy cost)'],
+  ['tolerance', 'tolerance of heat and low oxygen'], ['fins', 'fin size: turning and sprinting vs drag'], ['eyes', 'eye size: vision range vs cost'],
+  ['body', 'body depth: a deep body defends against gape-limited predators, a slim one swims cheaper'], ['brain', 'brain size: active hidden units (more capacity, more upkeep)']];
 
 export class UI {
   constructor(world, renderer, inspector, camera) {
@@ -77,6 +81,7 @@ export class UI {
     this.chart = $('charts'); this.cctx = this.chart && this.chart.getContext('2d');
     this.depth = $('depthprofile'); this.dctx = this.depth && this.depth.getContext('2d');
     this.mini = $('minimap'); this.mctx = this.mini && this.mini.getContext('2d');
+    this.evoChart = $('evo-chart'); this.ectx = this.evoChart && this.evoChart.getContext('2d'); this.evoGene = 0; this.evoSp = null;
     this._buildCensus(); this._buildPondSpecies(); this._buildAddButtons();
     this._buildPyramid(); this._buildEvo(); this._buildLegend(); this._wire();
     this.syncWeatherUI(true);
@@ -169,7 +174,8 @@ export class UI {
     head.innerHTML = '<span></span><span>siz</span><span>spd</span><span>tol</span><span>fin</span><span>eye</span><span>bod</span><span>brn</span><span>gen</span><span>imm</span>';
     host.appendChild(head);
     for (const k of SPECIES) {
-      const sp = SP[k], row = document.createElement('div'); row.className = 'erow';
+      const sp = SP[k], row = document.createElement('div'); row.className = 'erow pick'; row.title = `show ${sp.name} on the chart (click again for all)`;
+      row.onclick = () => { this.evoSp = this.evoSp === k ? null : k; for (const kk of SPECIES) this.evoEls[kk].row.classList.toggle('sel', this.evoSp === kk); this._evoChart(); };
       const name = document.createElement('span'); name.className = 'en';
       name.appendChild(swatch(sp.tag)); name.appendChild(textEl('span', '', sp.name.slice(0, 3).toLowerCase()));
       row.appendChild(name);
@@ -177,7 +183,16 @@ export class UI {
       for (const g of EVO_GENES) { const c = document.createElement('span'); c.className = 'ev'; c.textContent = '—'; row.appendChild(c); cells[g] = c; }
       const gen = document.createElement('span'); gen.className = 'eg'; gen.textContent = '—'; row.appendChild(gen); cells.gen = gen;
       const imm = document.createElement('span'); imm.className = 'ei'; imm.textContent = '—'; row.appendChild(imm); cells.imm = imm;
-      host.appendChild(row); this.evoEls[k] = cells;
+      cells.row = row; host.appendChild(row); this.evoEls[k] = cells;
+    }
+    const gh = $('evo-genes');
+    if (gh) {
+      gh.innerHTML = '';
+      EVO_LABELS.forEach(([lab, tip], i) => {
+        const b = document.createElement('button'); b.className = 'seg' + (i === this.evoGene ? ' on' : ''); b.textContent = lab; b.title = tip;
+        b.onclick = () => { this.evoGene = i; gh.querySelectorAll('.seg').forEach((x, j) => x.classList.toggle('on', j === i)); this._evoChart(); };
+        gh.appendChild(b);
+      });
     }
   }
 
@@ -399,7 +414,7 @@ export class UI {
     else if (slot === 1) this._minimap();
     else if (full) this._uiSlot = null;   // hidden panels: done
     else if (slot === 2) this._selection();
-    else if (slot === 3) { this._foodweb(this._c); this._evo(this._c, this._sd); this._cognition(); }
+    else if (slot === 3) { this._foodweb(this._c); this._evo(this._c, this._sd); this._cognition(); this._evoChart(); }
     else if (slot === 4) this._charts();
     else if (slot === 5) this._depthProfile();
     else this._uiSlot = null;
@@ -493,6 +508,71 @@ export class UI {
         for (const g of EVO_GENES) { const v = s[g], cell = e[g]; cell.textContent = fmtNum(v, 2); cell.classList.toggle('up', v > 1.04); cell.classList.toggle('dn', v < 0.96); }
         e.gen.textContent = 'g' + fmtInt(s.maxGen); e.imm.textContent = fmtInt(Math.round(s.immFrac * 100)) + '%';
       } else { for (const g of EVO_GENES) { e[g].textContent = '—'; e[g].classList.remove('up', 'dn'); } e.gen.textContent = '—'; e.imm.textContent = '—'; }
+    }
+  }
+
+  // EVOLUTION OVER TIME (world.evo, EVO): one trait gene's mean per species across the whole run, with the ±1 SD spread
+  // selection acts on (all species faint, or the picked species bold) and the 1.0 founder baseline. Redrawn only when a
+  // new sample lands, the selection changes or the box resizes.
+  _evoChart() {
+    const ctx = this.ectx; if (!ctx) return;
+    const host = this.evoChart, dpr = this.dpr, E = this.world.evo || [], g = this.evoGene, nG = EVO_GENES.length, sel = this.evoSp;
+    const r = host.getBoundingClientRect(), Wd = Math.max(200, r.width | 0), Hd = Math.max(90, r.height | 0);
+    const key = E.length + ':' + (E.length ? E[E.length - 1].t : 0) + ':' + g + ':' + sel + ':' + Wd + 'x' + Hd + ':' + dpr;
+    if (key === this._evoKey) return; this._evoKey = key;
+    fitCanvas(host, Wd, Hd, dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, Wd, Hd);
+    ctx.font = '8px "Space Mono", monospace'; ctx.textBaseline = 'alphabetic';
+    const note = $('evo-note');
+    if (E.length < 2) {
+      ctx.fillStyle = '#5b7d86'; ctx.textAlign = 'left'; ctx.fillText('the record builds as the lake runs (a sample twice a month)', 4, Hd / 2);
+      if (note) note.textContent = ''; return;
+    }
+    const YL = TIME.YEAR_LEN, t0 = E[0].t, t1 = E[E.length - 1].t, padL = 30, padR = 6, padT = 6, padB = 13, pw = Wd - padL - padR, ph = Hd - padT - padB;
+    const row = (e, k) => { const q = e.s[k]; return q && q[0] >= 1 ? q : null; };
+    let lo = 1, hi = 1;
+    for (const e of E) for (const k of SPECIES) {
+      if (sel && k !== sel) continue; const q = row(e, k); if (!q) continue;
+      lo = Math.min(lo, q[2 + g] - q[2 + nG + g]); hi = Math.max(hi, q[2 + g] + q[2 + nG + g]);
+    }
+    const span = Math.max(0.04, hi - lo); lo -= span * 0.08; hi += span * 0.08;
+    const X = t => padL + (t - t0) / Math.max(1e-9, t1 - t0) * pw, Y = v => padT + (1 - (v - lo) / (hi - lo)) * ph;
+    ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.fillRect(padL, padT, pw, ph);
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(padL + pw, Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    for (const k of SPECIES) {
+      const on = sel === k, dim = sel && !on;
+      // the ±1 SD band, over each unbroken run of samples where the species was present
+      if (!dim) {
+        ctx.fillStyle = SP[k].tag; ctx.globalAlpha = on ? 0.22 : 0.06;
+        let i = 0;
+        while (i < E.length) {
+          while (i < E.length && !row(E[i], k)) i++;
+          const a = i; while (i < E.length && row(E[i], k)) i++;
+          if (i - a < 2) continue;
+          ctx.beginPath();
+          for (let j = a; j < i; j++) { const q = E[j].s[k]; ctx.lineTo(X(E[j].t), Y(q[2 + g] + q[2 + nG + g])); }
+          for (let j = i - 1; j >= a; j--) { const q = E[j].s[k]; ctx.lineTo(X(E[j].t), Y(q[2 + g] - q[2 + nG + g])); }
+          ctx.closePath(); ctx.fill();
+        }
+      }
+      ctx.strokeStyle = SP[k].tag; ctx.globalAlpha = dim ? 0.22 : 0.95; ctx.lineWidth = on ? 2 : 1.2; ctx.beginPath();
+      let pen = false;
+      for (const e of E) { const q = row(e, k); if (!q) { pen = false; continue; } const x = X(e.t), y = Y(q[2 + g]); if (pen) ctx.lineTo(x, y); else ctx.moveTo(x, y); pen = true; }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1; ctx.fillStyle = '#5b7d86'; ctx.textAlign = 'right';
+    ctx.fillText(hi.toFixed(2), padL - 3, padT + 7); ctx.fillText(lo.toFixed(2), padL - 3, padT + ph); ctx.fillText('1.00', padL - 3, Y(1) + 3);
+    ctx.textAlign = 'left'; ctx.fillText('year ' + (t0 / YL).toFixed(1), padL, Hd - 2);
+    ctx.textAlign = 'right'; ctx.fillText('year ' + (t1 / YL).toFixed(1), padL + pw, Hd - 2);
+    if (note) {
+      const lab = EVO_LABELS[g][0];
+      if (sel) {
+        let first = null; for (const e of E) { const q = row(e, sel); if (q) { first = q; break; } }
+        const last = row(E[E.length - 1], sel);
+        note.textContent = last && first
+          ? `${SP[sel].name}: ${lab} gene ${fmtNum(last[2 + g], 3)} ± ${fmtNum(last[2 + nG + g], 3)} (first sample ${fmtNum(first[2 + g], 3)} ± ${fmtNum(first[2 + nG + g], 3)}) · mean generation ${fmtNum(last[1], 1)} · ${fmtInt(last[0])} fish`
+          : `${SP[sel].name}: none in the lake now`;
+      } else note.textContent = `${lab} gene: each species' mean ±1 SD over ${((t1 - t0) / YL).toFixed(1)} years · click a species row to pick it out`;
     }
   }
 
