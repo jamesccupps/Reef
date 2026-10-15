@@ -19,8 +19,10 @@ spawning migrations override foraging (44dab54; 3 seeds × 3.2 yr: recruitment e
 collapse). Step 2 — THE LANDSCAPE: lake (sloping 0–3 m littoral + 14.4 m hole) + stream + pond (FEATURES "Maine re-base,
 part 1"); multi-basin wet mask; basin-aware placement; macrophyte zones in metres; save v31; camera/minimap/UI; fixes
 (larvae above the surface broke exact resume; the anoxic-bed shoreward reflex tilted down).
-NEXT (in order): validate the landscape (3 seeds × 3 yr: zooflux2 + fryfate + deaths — expect differences: shallower lake,
-more littoral, the pond); step 3 — the MAINE SPECIES SET (minnow→golden shiner, sunfish→pumpkinseed, trout→white sucker,
+Full gate re-confirmed green on 5c4e300 (189 steps/s). RUNNING at the end of the session: landscape validation —
+`node test/diag/zooflux2.mjs <1|2|3> 3` and `fryfate.mjs 1 1.1` → session scratchpad verify/zf2_land_s*.txt, ff_land_s1.txt
+(if lost, rerun them: ~40 min with 4 in parallel).
+NEXT (in order): read/redo that landscape validation (expect differences: shallower lake, more littoral, the pond); step 3 — the MAINE SPECIES SET (minnow→golden shiner, sunfish→pumpkinseed, trout→white sucker,
 carp→white perch, bass→smallmouth, pike→chain pickerel; keep yellow perch, bullhead — report table "Five of the eight
 recommended species have no bioenergetics model of their own" and the ranked list; keys renamed with a save migration);
 step 4 — Maine calendar (ice-out ~Apr 24, fast spring), coloured mesotrophic water, under-ice lethal O₂ (Cooper &
