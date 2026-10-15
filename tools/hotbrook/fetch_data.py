@@ -43,9 +43,9 @@ get('https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/rest/services/Wet
 get('https://www.mrlc.gov/geoserver/mrlc_display/NLCD_2021_Land_Cover_L48/wms', os.path.join(D, 'nlcd.png'),
     {'service': 'WMS', 'version': '1.1.1', 'request': 'GetMap', 'layers': 'NLCD_2021_Land_Cover_L48', 'styles': '', 'srs': 'EPSG:4326',
      'bbox': f'{W},{S},{E},{N}', 'width': 600, 'height': 1300, 'format': 'image/png'})
-# an aerial photo (USDA NAIP via the USGS National Map, public domain) for the model's photo layer, ~3.3 m/px (the service caps exports at 4000 px)
+# an aerial photo (USDA NAIP via the USGS National Map, public domain) for the model's photo layer, 1792 x 2748 so the pixel grid matches the box in degrees — otherwise the service widens the extent to keep square pixels and the photo lands out of register (it did: 45.551–45.714 instead of 45.575–45.690); ≤ 4000 px per side
 get('https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage', os.path.join(D, 'naip.jpg'),
-    {'bbox': f'{W},{S},{E},{N}', 'bboxSR': 4326, 'imageSR': 4326, 'size': '1792,3906', 'format': 'jpg', 'compressionQuality': 82, 'f': 'image'})
+    {'bbox': f'{W},{S},{E},{N}', 'bboxSR': 4326, 'imageSR': 4326, 'size': '1792,2748', 'format': 'jpg', 'compressionQuality': 82, 'f': 'image'})
 
 # the MDIFW lake-survey maps (1949, revised 1965/2004): page 2 of each PDF is the map with the depth soundings — the
 # scans are plain JPEG image streams, extracted without a PDF library
