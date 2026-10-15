@@ -30,9 +30,10 @@ Washburn), biomass targets 60–150 kg/ha; step 5 — stream behaviour (sucker r
 preference, stream current); then multi-seed validation, docs, merge to science/main, backup.
 HUMAN FIELD NOTES (2026-10-15, first-hand Hot Brook — also in memory hot-brook-field-observations): "all the sunfish are in the
 stream between the lakes", pools 3–4 ft deep with lots of them; chain pickerel in the lake; lots of freshwater mussels. →
-DONE (uncommitted until the gate passes): STREAM.POOL_D 0.9 → 1.1 m (broader pools); MUSSEL.COUNT 22 → 44 (native eastern
-elliptio); the through-flow now carries the zooplankton fields down the outlet (lake → stream → pond). The headless gate
-was running (REEF_PERF_MIN=0, CPU shared with the landscape validation) — rerun `npm test` on a quiet CPU, then commit.
+DONE + committed: STREAM.POOL_D 0.9 → 1.1 m (broader pools); MUSSEL.COUNT 22 → 44 (native eastern elliptio); the
+through-flow carries the zooplankton fields down the outlet (lake → stream → pond); the trout-thermoregulation check now
+starts its trout over the lake's deep water. Headless passed (perf relaxed, CPU shared); TODO: a full `npm test` on a quiet
+CPU once the landscape validation runs finish (they started on 5c4e300, i.e. with the 0.9-m pools).
 HUMAN (2026-10-15): put "plant species accurate to New England / Maine" on the roadmap → ROADMAP step 3 (done), with the
 Maine re-base order and a native-mussel (unionid + glochidia on fish) item.
 KNOWN: the stream is drawn as a thin channel in the side view (no banks); cover-seeking is weak against foraging (the

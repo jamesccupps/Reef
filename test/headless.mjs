@@ -628,7 +628,7 @@ check('the shore SLOPES down through the littoral (no flat 3.6-m shelf): deeper 
   bedY(LANDSCAPE.LAKE_W * 0.03) < bedY(LANDSCAPE.LAKE_W * 0.12) && bedY(LANDSCAPE.LAKE_W * 0.12) < bedY(LANDSCAPE.LAKE_W * 0.22) && bedY(LANDSCAPE.LAKE_W * 0.22) <= 3.3 * P_M && bedY(LANDSCAPE.LAKE_W * 0.42) - bedY(LANDSCAPE.LAKE_W * 0.22) > 4 * P_M,
   `${[0.03, 0.12, 0.22, 0.42].map(f => (bedY(LANDSCAPE.LAKE_W * f) / P_M).toFixed(1)).join(' → ')} m`);
 check('the stream is a shallow riffle-and-pool channel and the pond a Hot Brook-like saucer (mean ≈ 2.7 m, max 4 m, ~40–60 % ≤ 3 m)',
-  strS.max < 1.0 && strS.mean > 0.3 && pondS.max <= 4.05 && pondS.max > 3.5 && pondS.mean > 2.3 && pondS.mean < 3.1 && pondS.lit > 0.4 && pondS.lit < 0.6,
+  strS.max < 1.3 && strS.max > 0.85 && strS.mean > 0.3 && pondS.max <= 4.05 && pondS.max > 3.5 && pondS.mean > 2.3 && pondS.mean < 3.1 && pondS.lit > 0.4 && pondS.lit < 0.6,
   `stream ${strS.mean.toFixed(2)}–${strS.max.toFixed(2)} m; pond mean ${pondS.mean.toFixed(2)}, max ${pondS.max.toFixed(2)} m, ≤ 3 m ${(pondS.lit * 100).toFixed(0)} %`);
 
 function runSeason(yearFrac) {
@@ -2152,7 +2152,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   { const felt = hot => { const keep = SP.trout.tempTol, keepU = SP.trout.uilt; if (hot) { SP.trout.tempTol = 30; SP.trout.uilt = 40; }   // the heat no longer bothers it
       try { let s = 0, n = 0;
         for (const sd of [6701, 6702]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated (oligotrophic) lake: no O₂ squeeze
-          for (let k = 0; k < 4; k++) { const t = tw.makeFish('trout', ONES7, SP.trout.matureAge + 50); t.x = 300 + k * 450; t.y = 150; tw.agents.push(t); }
+          for (let k = 0; k < 4; k++) { const t = tw.makeFish('trout', ONES7, SP.trout.matureAge + 50); t.x = LAKE_C - 300 + k * 200; t.y = 150; tw.agents.push(t); }   // (over the lake's deep water, where cool water exists)
           for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'trout') { s += tw.env.tempAt(a.x, a.y); n++; } } }
         return n ? s / n : 0; } finally { SP.trout.tempTol = keep; SP.trout.uilt = keepU; } };
     const cool = felt(false), warm = felt(true);

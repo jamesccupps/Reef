@@ -306,7 +306,7 @@ export const BASIN = {   // the main lake (x 0 … LAKE_W)
 };
 export const STREAM = {
   DEPTH: 0.35,       // m over the riffles (the stream's bed between pools; also where it meets lake and pond)
-  POOL_D: 0.9,       // m in the pools
+  POOL_D: 1.1,       // m in the pools — the human's first-hand Hot Brook: "3 or 4 feet deep pools" (0.9–1.2 m), full of sunfish
   POOLS: 2,          // pools along the stream
 };
 export const POND = {
@@ -333,7 +333,7 @@ export function bedY(x) {
       : lerp(BASIN.DROP_D, BASIN.DEEP_D, smoothstep((t - BASIN.LIT_T - BASIN.DROP_T) / (1 - BASIN.LIT_T - BASIN.DROP_T)));
   } else if (x < Sx1) {   // the stream: riffles with POOLS deeper stretches
     const sv = (x - Lw) / L.STREAM_W;
-    d = STREAM.DEPTH + (STREAM.POOL_D - STREAM.DEPTH) * Math.pow(Math.sin(Math.PI * STREAM.POOLS * sv), 4);
+    d = STREAM.DEPTH + (STREAM.POOL_D - STREAM.DEPTH) * Math.pow(Math.sin(Math.PI * STREAM.POOLS * sv), 2);   // (broad pools)
   } else {   // the pond: its left shore is the stream's mouth, its right one the world's edge (its outlet)
     const u = clamp((x - Sx1) / L.POND_W, 0, 1), t = tOf(u, POND.CENTER), d0 = u < POND.CENTER ? STREAM.DEPTH : L.SHORE_D;
     d = t <= POND.LIT_T ? lerp(d0, POND.FLOOR_D, t / POND.LIT_T)
@@ -558,7 +558,8 @@ export const CYANO = {
 
 // ---------- mussels (benthic filter feeders that clear the water) ----------
 export const MUSSEL = {
-  COUNT: 22,             // beds (reference; scales with width), on the shallow/mid bed
+  COUNT: 44,             // beds (reference; scales with width), on the shallow/mid bed — native unionids (eastern elliptio,
+                         //   Elliptio complanata, Maine's common lake mussel); "lots of freshwater mussels" at Hot Brook (the human)
   FILTER: 0.10,          // phytoplankton biomass cleared /s per bed from the water above it
 };
 

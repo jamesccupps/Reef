@@ -917,8 +917,10 @@ export class Environment {
   // outflow path is a real through-flow (≈ OUTFLOW.ADVECT × FLOW.SPEED; ~1-year water residence at the defaults).
   _throughFlow(dt) {
     const rows = Math.min(Math.max(1, Math.round(OUTFLOW.DEPTH * ROWS)), this.mask.bedRow.reduce((m, r) => Math.min(m, r + 1), ROWS));
-    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom, this.diatom];
-    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P, PHYTO.P_USE], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P, PHYTO.N_USE];
+    // (+ the zooplankton: a lake's outflow carries its plankton down the outlet stream — one reason fish crowd lake outlets;
+    // zooplankton hold no N/P in the budget, so their export needs no ledger entry)
+    const fields = [this.phos, this.nh4, this.no3, this.phyto, this.cyano, this.dom, this.diatom, this.zooD, this.zooC, this.zooR];
+    const pW = [1, 0, 0, PHYTO.P_USE, CYANO.P_USE, NUTRIENT.ORGANIC_P, PHYTO.P_USE, 0, 0, 0], nW = [0, 1, 1, PHYTO.N_USE, CYANO.N_USE, 1 - NUTRIENT.ORGANIC_P, PHYTO.N_USE, 0, 0, 0];
     let outP = 0, outN = 0;
     for (let cy = 0; cy < rows; cy++) {
       const a = clamp(OUTFLOW.ADVECT * this.flowAt((cy + 0.5) * CH) * dt / CW, 0, 0.5), base = cy * COLS;
