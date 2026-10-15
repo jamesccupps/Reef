@@ -188,11 +188,15 @@ export const FRY = {
   M_JUV: 0.035,        // /day at 20 °C: JUVENILES (taking over from M_LARVA as it fades, ~3 cm on) keep dying to predators the lake
   M_JUV_Q10: 3,        //   doesn't simulate — Oneida age-0 perch from 18 mm to autumn: Z ≈ 0.035/day, ~1.3 % surviving (Irwin et al.
                        //   2009) — slower in cold water (× Q10: ~0.005/day under the ice, so ~40–50 % die over a first winter as
-                       //   with predators present, Neuswanger et al. 2015). The Q10 scales M_LARVA too (2026-10-15: larval
-                       //   mortality rises with temperature — Pepin 1991; without it a 2–2.6-cm fingerling still small in November
-                       //   died under the ice at the summer larval rate, ~4 %/day, and no young-of-year ever reached spring). (2026-10-15: without it a strong cohort of 2–4-cm
+                       //   with predators present, Neuswanger et al. 2015). The Q10 scales M_LARVA too, below 20 °C only
+                       //   (2026-10-15: larval mortality falls in cold water — Pepin 1991; without it a 2–2.6-cm fingerling still
+                       //   small in November died under the ice at the summer larval rate, ~4 %/day, and no young-of-year ever
+                       //   reached spring; capped at the summer field rates — a Q10 about 20 °C ran August at ~1.7× them and
+                       //   killed ~85 % of the fingerlings a month). (2026-10-15: without it a strong cohort of 2–4-cm
                        //   fry stripped the zooplankton every late July and the adults starved through the autumn)
   SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
+  ESCAPE: 60,          // px/s a school swims up out of water below its critical O₂ (or down from near-lethal heat) — the
+                       //   drift pace is ~3 cm per physiological 5 h; a larva leaves an anoxic layer within the hour
   CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
                        //   are dispersed and hard to find among the zooplankton
   ATTACK: 100,         // young fish/s a PISCIVORE at a school catches × its capture success — a feeding BOUT: one behavioural

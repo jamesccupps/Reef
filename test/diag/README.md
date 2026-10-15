@@ -13,6 +13,8 @@ prints a table to stdout; a sim year takes ~8–10 min on a free core (several i
 | `dietsp.mjs <seed> <months>` | per-species diet (kg by food type, % body weight a day) |
 | `autumn.mjs <seed>` | bed food by depth band (worms & scuds, organic layer, bottom O₂, larvae) vs where sunfish and perch are, through a year |
 | `sunbed.mjs <seed> <yf> [days]` | why a species does or doesn't feed on the bed: time within reach, reachable density, gut fill, allowed vs taken |
+| `roster.mjs <seed> <years> [species] [days]` | a species' fish at a date (length, sex, maturity, ripeness, condition) and its spawns over the next days |
+| `yearling.mjs <seed> [species] [L] [yf] [days] [n]` | plant small fish and follow their growth, p, swimming cost and diet by food type |
 | `zooonly.mjs <years> [PA] [PY]` | the zooplankton alone (no fish model) under prescribed predation — a year in about a minute |
 
 Overrides (`ovr.mjs`): `SET=BENTHOS.K_FISH=0.5,BENTHOS.G=0.16/d,SP.carp.pop.start=0 node test/diag/zooflux2.mjs 1 2` — config

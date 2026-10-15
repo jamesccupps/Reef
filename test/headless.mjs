@@ -2563,6 +2563,16 @@ console.log('\n— the bed\'s worms and scuds —');
   const kNear = eatAt(R0 * 0.5), kMid = eatAt((R0 + Ra) / 2), kFar = eatAt(Ra * 1.2);
   check('SCHOOLS IN THE ARENA: a piscivore works a school of young fish across its hunting arena (FEED.HUNT_R) — fewer with distance, none beyond',
     kNear > kMid && kMid > 0 && kFar === 0, `${kNear} fry in 2 s at its reach, ${kMid} mid-arena, ${kFar} beyond`);
+  // ESCAPE: a school of perch larvae that finds itself in an anoxic layer over the bed swims up out of it within the hour
+  // (FRY.ESCAPE), instead of drifting up at its feeding pace for days and dying there
+  seed(9404); const aw = new World().setDate(0.25); aw.agents = []; aw.birds = [];
+  const ab = aw.env.mask.bedRow, cA = 20, xA = (cA + 0.5) * CW, yA = (ab[cA] + 0.5) * CH;
+  const ls = aw._mkFry('perch', xA, yA - 2, 300, 1, 60, Float32Array.from(aw.makeFish('perch').g), new Float32Array(GENE_KEYS.length).fill(1));
+  ls.L = 1; ls.W = stdWeight(SP.perch.lw, 1); aw.fry = [ls];
+  const anox = () => { aw.env.o2.fill(1); for (let r = ab[cA] - 1; r <= ab[cA]; r++) for (let c = cA - 2; c <= cA + 2; c++) aw.env.o2[r * COLS + c] = 0; };
+  for (let i = 0; i < 60; i++) { anox(); aw.step(1 / 30); }
+  check('ESCAPE: perch larvae caught in an anoxic layer over the bed swim up out of it at once (FRY.ESCAPE), and most live',
+    !ls.dead && ls.y < (ab[cA] - 1) * CH && ls.n > 300 * 0.9, `y ${ls.y.toFixed(0)} (anoxic below ${((ab[cA] - 1) * CH).toFixed(0)}), ${ls.n.toFixed(0)} of 300 alive`);
   setRandState(rsS); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);

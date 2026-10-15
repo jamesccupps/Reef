@@ -5,35 +5,37 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, late) — ZOOPLANKTON FIELDS + FOOD-WEB RECALIBRATION, branch `zoo-field` (gate green; save v30)
+## ▶ NOW (2026-10-15, end of session) — ZOOPLANKTON FIELDS + FOOD-WEB RECALIBRATION, branch `zoo-field` (gate green; save v30)
 
-State: `zoo-field` = the whole slice (zooplankton fields, egg bank, rotifers, worms & scuds, visitors, bed foraging, young-of-year
-fixes) — committed and pushed; NOT yet merged to science/main (main = bc2ddc8: the research doc + the OLD particle model).
-Gate: `npm test` green (headless ALL PASS, 217 steps/s; smoke, UI, serve OK); browser: loads clean, no console errors.
-HUMAN DIRECTION: "just make it how it actually is in the real environment, at least in New England, the ponds and lakes seem to
-be sustaining". What the slice does: FEATURES.md "2026-10-15 zooplankton fields and a food web recalibrated to real lakes".
-Diagnostics now live in `test/diag/` (README there): zooflux2, energy, fryfate, deaths, dietsp, autumn, sunbed, zooonly; `SET=`
-overrides incl. `SP.*` and per-day `/d` rates (ovr.mjs), `SRC=` for A/B against a source snapshot.
-THE LAST ROUNDS (27–30) — what finally moved the lake: (1) BED FORAGING: `env.benthBest`/`world.qBed` (sunfish, perch,
-bullhead, carp food target; young bottom foragers past benthL live on the bed and leave it for open-water zooplankton only
-when the bed in reach has none); (2) BENTHOS.G 0.08 → 0.16/day (zoobenthos ~78 → toward Quinte's ~125 g/m²/yr) and K_FISH
-2 → 0.5 g/m² (handling-limited); (3) piscivores work fry schools across their hunting arena; all strikes slow in cold water
-(coldPerf); (4) THE KEY ONE, found with the fate audit (test/diag/fryfate.mjs): of ~160k sunfish hatched, starvation took ~600
-and predators ~1,000 — the rest died of the FIXED larval mortality, which had no temperature dependence, so 2–2.6-cm fingerlings
-died ~4 %/day under the ice and NO young-of-year ever reached spring (adults then just aged out). FRY.M_JUV_Q10 now scales
-M_LARVA too (Pepin 1991), and a school thinned below one fish keeps it with probability n. Result r30 (3 seeds): YOY 126 (Nov)
-→ 28 (Mar) → spring recruits +5/+12/+5 in yr 2, +0/+31/+16 in yr 3; sunfish 50 → 20–40 by yr 2 and recovering in 2 seeds
-(seed 1 weak: ~9–13); perch 22 → 7–12 (no yr-1 spawn: the lake opens after their season) then breeding; minnows cycle 13–65;
-starvation now rare, deaths = predation + background (~40 %/yr adults, as real bluegill). A 4-year 3-seed run + balance
-(seed 2024, 3 yr) were running at the end of the session (scratchpad verify/zf2_final_s*.txt, balance_final.txt).
-KNOWN LIMITS / HUMAN'S CALLS: (a) the basin has NO 0–3 m zone (BASIN.SHELF_Y 0.25 → flat 3.6-m shelf), where real New England
-ponds grow most littoral food and nest their sunfish — a bathymetry change is the biggest remaining realism lever (touches
-plants, light, heat; its own slice); (b) no weed-dwelling invertebrates as such; (c) species set: carp (~95 kg/ha here) are not
-typical of New England ponds, pike vs chain pickerel, golden shiner/white sucker absent; (d) settled densities are lower than
-real (sunfish ~15–30 kg/ha vs 50–150) — follows from (a)/(b); (e) perch YOY hypoxia deaths in spring (844 of 3,551 hatched,
-r30 s1) — check under-ice/ice-out O₂ at the weed beds.
-NEXT: read the 4-yr runs; if the community holds (no seed collapsing), merge zoo-field → science → main, push, backup zip;
-then the apex slice (bass spawn order, late-summer YOY binge) or the littoral bathymetry (ask the human which).
+State: `zoo-field` pushed (00a3550 + the commit after it); NOT merged to science/main (main = bc2ddc8: the research doc + the
+OLD particle model, whose lake "sustained" on an unlimited zooplankton subsidy). Gate `npm test` green (218 steps/s); browser
+loads clean. What the slice does: FEATURES.md "2026-10-15 zooplankton fields and a food web recalibrated to real lakes".
+Diagnostics in `test/diag/` (README): zooflux2, energy, fryfate, deaths, dietsp, autumn, sunbed, roster, yearling, zooonly.
+HUMAN DIRECTION: "just make it how it actually is in the real environment, at least in New England, the ponds and lakes seem
+to be sustaining".
+WHAT MOVED THE LAKE (rounds 27–31): bed foraging (env.benthBest/qBed; young bottom foragers live on the bed); BENTHOS.G 0.16,
+K_FISH 0.5; fry schools hunted across the arena; strikes slow in cold water; FRY.M_JUV_Q10 now also scales M_LARVA, below 20 °C
+only (field rates in summer — the uncapped Q10 ran August at 1.7× and killed ~85 %/month); stochastic rounding of thinned
+schools; FRY.ESCAPE (larvae leave anoxic water; 844/3,551 perch larvae had died in a thin anoxic layer); biomassByTrophic
+always lists every level. Starvation is now rare; young-of-year reach spring (sunfish: ~120–140k hatched → ~300 in October →
+~30 in March → ~10 recruits, plus 13–37 in good years; field: egg→Oct 1–9 %, overwinter loss 10–90 %).
+RESULT — NOT YET SELF-SUSTAINING over 3–4 years: r30/r31 (3 seeds × 3–4 yr, verify/zf2_final_s*, zf2_r31_s*): sunfish 50 →
+20–40 by yr 2, then recruit pulses (+5…+37 a spring) that die back over summer; 2 of 3 seeds reach the refuge floor (3) by
+yr 3–4; perch 22 → 4–11 (breeding from yr 2); minnows 2–200 (boom/bust); bass 3, carp 3–4, bullheads 3 hold. WHY (roster.mjs
+seed 2, June yr 3: ONE old male + 21 immature yearlings — no spawning that year): yearlings grow ~1 %/day on the FB4 bluegill
+sets (checked identical to the official FB4 table), 3–5 cm → 3–6 cm over a summer, so a cohort needs 2–3 summers to reach
+Lmat 11 cm while ~50 %/yr of all sunfish die (background M_OTHER + bass/loon/pike/perch), and recruitment (~10–30/yr) doesn't
+compensate when adults are few — the YOY mortality is density-independent (no stock–recruitment compensation).
+DECISIONS FOR THE HUMAN (ask before the next slice): (1) BATHYMETRY: add the 0–3 m littoral zone real New England ponds have
+(BASIN.SHELF_Y 0.25 → a sloping shore) — most littoral food, the nests, the weed refuge for small sunfish; touches plants,
+light, heat; its own slice. (2) OPEN OR CLOSED SLICE: is the 0.07-ha world a whole small pond (closed) or a transect of a
+bigger lake (fish move in/out with the rest of the lake — pike/trout already do as visitors)? (3) COMPENSATION: add the
+standard stock–recruitment mechanism (YOY mortality rising with YOY density — Beverton–Holt; predators switching off scarce
+young) — widely supported, though the one Oneida study found larval mortality density-independent. (4) Species set for New
+England (carp ~95 kg/ha here are atypical; chain pickerel vs pike; golden shiner, white sucker absent). (5) Lmat 11 cm for
+bluegill is the high end (populations mature at ~7.5–12 cm).
+NEXT: get the human's calls on (1)–(3); then either merge zoo-field as is (more realistic food web, weaker persistence than
+main's old subsidised model) or finish persistence first. Backup zip after the merge.
 
 ▶▶▶ (history) ZOOPLANKTON FIELDS → WHOLE FOOD-WEB RECALIBRATION, branch `zoo-field` (not merged; science = main
 = bc2ddc8 has docs/ECOLOGY_RESEARCH.md + docs/research_notes/). HUMAN DIRECTION (mid-slice): "just make it how it actually is in

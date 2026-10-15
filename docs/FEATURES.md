@@ -52,9 +52,10 @@ death ledger, per-species diet, bed food vs where the fish are).
   from their limnetic phase, perch moving inshore, bullheads) live on the bed — larvae, worms and scuds, detritus — and go
   out after open-water zooplankton only when the bed in reach has none (Werner & Hall 1988).
 - **Young fish** (`FRY`): larval mortality (`M_LARVA` ∝ 1/length, mostly predators the lake doesn't simulate) then juvenile
-  mortality (`M_JUV` 0.035/day, Irwin et al. 2009), BOTH × Q10 3 about 20 °C (larval mortality rises with temperature,
-  Pepin 1991: late-summer broods die fast, a small fingerling isn't culled at the summer rate under the ice); a school
-  thinned below one fish keeps its last fish with probability n (no truncation losses). Bluegill fry leave the nest at
+  mortality (`M_JUV` 0.035/day, Irwin et al. 2009), BOTH slowed below 20 °C by Q10 3 and never above those summer field
+  rates (larval mortality falls in cold water, Pepin 1991: a small fingerling isn't culled at the summer rate under the
+  ice); a school thinned below one fish keeps its last fish with probability n (no truncation losses); in water below its
+  critical O₂ (or near its lethal heat) a school swims out at `FRY.ESCAPE` instead of its feeding drift. Bluegill fry leave the nest at
   swim-up (Beard 1982); bass egg → swim-up set to Carbine's ~5,650 fry per nest; carp recruitment held down by sunfish
   eating carp eggs and larvae (Silbernagel & Sorensen 2013). Piscivores work a school across their HUNTING ARENA
   (`FEED.HUNT_R` × reach, full rate within reach, less with distance), and every predator strike — at schools and at
@@ -69,6 +70,10 @@ death ledger, per-species diet, bed food vs where the fish are).
 - **Gate**: the zooplankton-field block (type-II fry response, DVM, vision, grazing with closed budgets, anoxia, a realistic
   stock after a season), the worms-and-scuds block, visitors, and bed foraging (the sense picks the richest breathable bed;
   a sunfish steers for it; young sunfish settle on it; schools in the hunting arena); particle-era tests rewritten (`noZoo`).
+- **Checked against FB4**: the species' bioenergetics parameter sets match the official FB4 table (`Parameters_official.csv`,
+  github.com/jim-breck/FB4) — bluegill adult and juvenile (Kitchell et al. 1974), yellow perch, etc. Yearling sunfish on
+  them grow ~1 %/day at p ≈ 0.9 (4 → ~6.5 cm over a summer; Michigan 4.6 → 9.7 cm — FB4 bluegill under-predicts young
+  growth, Breck 1997), so a cohort takes 2–3 summers to reach Lmat 11 cm.
 - **Known limits**: the lake has no 0–3 m zone (`BASIN.SHELF_Y` 0.25 → a flat 3.6-m shelf), where real New England ponds
   grow most of their littoral food and nest their sunfish; no weed-dwelling invertebrates as such; carp are not typical of
   New England ponds. See SESSION_STATE for the multi-seed results.

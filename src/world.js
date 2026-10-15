@@ -1044,7 +1044,10 @@ export class World {
       const R = BROOD.GUARD_R, tx = held ? clamp(f.tx, f.nx - R, f.nx + R) : f.tx, ty = held ? clamp(f.ty, f.ny - R, f.ny + R) : f.ty;
       const dx = tx - f.x;
       if (Math.abs(dx) > 4) f.vx += Math.sign(dx) * sw * 2 * dt; else f.vx *= 1 - Math.min(1, dt);
-      f.y += clamp(ty - f.y, -sw * 0.6 * dt, sw * 0.6 * dt);
+      // (in water it can't breathe, or near its lethal heat, a school swims out at its ESCAPE speed: one behavioural second
+      // is ~5 h of a larva's life, in which it can swim far — at the drift pace it sat for days in a thin anoxic layer)
+      const vy = env.oxygenAt(f.x, f.y) < sp.o2Crit || env.tempAt(f.x, f.y) > sp.uilt - 3 ? FRY.ESCAPE : sw * 0.6;
+      f.y += clamp(ty - f.y, -vy * dt, vy * dt);
       f.vx = clamp(f.vx, -sw * 2, sw * 2);
       f.x = clamp(f.x + f.vx * dt, 4, W - 4); f.y = clamp(f.y, 3, bedY(f.x) - 3);
       if (f.tk < FRY.TICK) continue;
@@ -1056,9 +1059,10 @@ export class World {
       // then starvation (_feedFry), heat and hypoxia as for the agents
       const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
       const lf = Math.exp(-((f.L / FRY.LARVA_L) ** 2));   // the larval term's weight (fades by ~3 cm) — the juvenile term takes over
-      // (both slow in cold water, × M_JUV_Q10: their predators eat little there — larval mortality rises with temperature,
-      // Pepin 1991 — so a late-summer brood dies fast and a small fingerling isn't culled at the summer rate under the ice)
-      const hN = (FRY.M_LARVA / Math.max(0.3, f.L) * lf + FRY.M_JUV * (1 - lf)) * Math.pow(FRY.M_JUV_Q10, (T - 20) / 10) / BIOE.DAY
+      // (both slow in cold water, × M_JUV_Q10 below 20 °C: their predators eat little there — larval mortality falls with
+      // temperature, Pepin 1991 — so a small fingerling isn't culled at the summer rate under the ice; never above the
+      // summer field rates they were measured at)
+      const hN = (FRY.M_LARVA / Math.max(0.3, f.L) * lf + FRY.M_JUV * (1 - lf)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / BIOE.DAY
         + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y;
       const hH = T > sp.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
       const hO = o2 < o2L ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
@@ -2190,7 +2194,8 @@ export class World {
   biomassByTrophic() {
     const out = { phytoplankton: this.env.meanPhyto(), cyanobacteria: this.env.meanCyano(), macrophyte: this.plants.reduce((s, p) => s + (p.dead ? 0 : p.biomass), 0), zooplankton: (this.env.zooTotal(0) + this.env.zooTotal(1)) / 1000,
       snail: this.snails.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.05, crayfish: this.cray.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.4 };   // benthic invertebrates (count × a nominal mass)
-    for (const a of this.agents) out[a.sp.trophic] = (out[a.sp.trophic] || 0) + a.W / 1000;   // fish: real wet biomass, kg
+    for (const k of SPECIES) out[SP[k].trophic] ??= 0;   // every fish level, even one absent now (a visiting pike away)
+    for (const a of this.agents) out[a.sp.trophic] += a.W / 1000;   // fish: real wet biomass, kg
     return out;
   }
   // live counts of the non-fish biota (the resource base + benthic inverts) — for the food-web dashboard
