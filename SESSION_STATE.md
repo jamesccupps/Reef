@@ -28,6 +28,13 @@ recommended species have no bioenergetics model of their own" and the ranked lis
 step 4 — Maine calendar (ice-out ~Apr 24, fast spring), coloured mesotrophic water, under-ice lethal O₂ (Cooper &
 Washburn), biomass targets 60–150 kg/ha; step 5 — stream behaviour (sucker runs, warm-pool use emerging from thermal
 preference, stream current); then multi-seed validation, docs, merge to science/main, backup.
+HUMAN FIELD NOTES (2026-10-15, first-hand Hot Brook — also in memory hot-brook-field-observations): "all the sunfish are in the
+stream between the lakes", pools 3–4 ft deep with lots of them; chain pickerel in the lake; lots of freshwater mussels. →
+DONE (uncommitted until the gate passes): STREAM.POOL_D 0.9 → 1.1 m (broader pools); MUSSEL.COUNT 22 → 44 (native eastern
+elliptio); the through-flow now carries the zooplankton fields down the outlet (lake → stream → pond). The headless gate
+was running (REEF_PERF_MIN=0, CPU shared with the landscape validation) — rerun `npm test` on a quiet CPU, then commit.
+HUMAN (2026-10-15): put "plant species accurate to New England / Maine" on the roadmap → ROADMAP step 3 (done), with the
+Maine re-base order and a native-mussel (unionid + glochidia on fish) item.
 KNOWN: the stream is drawn as a thin channel in the side view (no banks); cover-seeking is weak against foraging (the
 gate's cover check now isolates it); the shared default spawning ground (inflow side) may crowd nests.
 

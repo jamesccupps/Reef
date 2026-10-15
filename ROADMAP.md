@@ -45,6 +45,27 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      streams): summer use of warm stream pools, backwaters and inlets by pumpkinseed / redbreast sunfish and other lake
      fish; movement between connected lakes (seasonal, spawning, thermal); how warm those pools run and how long fish
      stay; what draws them (warmth for growth, food, cover, spawning). Real streams are also nursery and thermal refuges.
+     → STARTED 2026-10-15 (the Maine re-base): the world is a lake + stream + pond after the Hot Brook lakes (docs/reports/
+     Maine lakes ponds and streams.md). The human's first-hand Hot Brook (2026-10-15): "all the sunfish are in the stream
+     between the lakes", in pools 3–4 ft deep with lots of fish; chain pickerel in the lake; lots of freshwater mussels.
+     Make the pools sunfish habitat by mechanism: warm sunlit pools (shallow-water heating), lake-outlet food (the outflow
+     carries the lake's plankton — done — plus drift and the outlet's dense filter-feeding invertebrates), cover, current.
+   - **The Maine re-base, in order** (2026-10-15, human-approved): ✅ juvenile compensation + plastic maturity; ✅ the
+     landscape; the MAINE FISH (golden shiner, pumpkinseed, white sucker, white perch, smallmouth, chain pickerel; keep
+     yellow perch and bullhead); the Maine calendar, coloured mesotrophic water and under-ice O₂; stream behaviour; then
+     multi-seed validation and merge.
+   - **Plants accurate to New England / Maine** (human, 2026-10-15): today's four macrophyte forms are generic
+     (`config.js` `MACRO`: pondweed, milfoil, water lily, muskgrass). Re-base them on Maine's flora — RESEARCH FIRST (Maine
+     DEP / Maine Natural Areas Program / Lake Stewards of Maine plant surveys): which emergent, floating-leaved and submerged
+     species dominate Maine lakes, ponds and stream margins (e.g. pickerelweed, bulrush and bur-reed at the edge; yellow and
+     white water lilies and watershield floating; native pondweeds, waterweed, tape grass, bladderwort, pipewort, native
+     milfoils and muskgrass submerged), their depth zones, light/colour limits, seasonal timing, palatability and cover;
+     which are invasive here (variable-leaf milfoil, Eurasian milfoil, hydrilla, curly-leaf pondweed) for what-if scenarios;
+     and the emergent reeds/structure and streamside plants. Then each `MACRO` form becomes a real Maine species (or guild)
+     with its own parameters.
+   - **Mussels:** freshwater mussels are abundant at Hot Brook (human). Today they're filtering beds (`MUSSEL`). A native
+     unionid model (eastern elliptio and kin): a population with growth and mortality, filtering, biodeposits feeding the
+     bed, and larvae (glochidia) that ride on host fish gills (yellow perch, others) — a fish–mussel link.
 4. **What-if controls:** change a variable (warming, nutrient loading, stocking, pollution, rain) and see the response.
 
 Guiding principles:
