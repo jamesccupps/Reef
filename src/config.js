@@ -63,6 +63,7 @@ export const SPAWN = {
   K_READY: 0.8,     // condition K at least this (a fish that has lost > ~20 % of its mass skips spawning)
   // spawning AGGREGATION (species with innate.spawnGround): in season, breeding-ready adults migrate to the littoral
   // spawning ground on their side of the lake so a sparse population can find mates (world.js innate block)
+  MIG_FORAGE_D: 60,  // px: a ripe in-season fish farther than this from its spawning ground migrates instead of foraging
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
   // (and the fish must be breedReady)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
@@ -130,6 +131,11 @@ export const BIOE = {
   GER: 1.176, GER_T: 0.072,
   // the SIZE gene sets the maturation length: Lmat × gene^LMAT_GENE
   LMAT_GENE: 1.0,
+  // MATURATION REACTION NORM (2026-10-15): the length a fish matures at falls with its age past sp.matMinAge — PMRN_SLOPE of
+  // Lmat a year, to at most PMRN_FLOOR × Lmat — so a slow-growing (stunted, crowded) fish matures older AND smaller, a fast
+  // grower younger and larger: pumpkinseed in winterkill ponds mature 1–2 years earlier and >20 mm smaller (Fox & Keast
+  // 1991); stunted Nova Scotia perch at age 2 near 9.5 cm; faster-growing perch stocks younger but larger (Feiner et al. 2017)
+  PMRN_SLOPE: 0.12, PMRN_FLOOR: 0.7,
   // the share of each species' published natural mortality M (species.js BIO) charged as the hazard of causes the lake
   // doesn't simulate — disease, parasites, birds and mammals besides the loon, angling. The rest of M is the lake's own
   // predation and starvation, which emerge.
@@ -186,6 +192,13 @@ export const FRY = {
                        //   stripped the lake by August). Past it the schools die at the agents' size-scaled share of the
                        //   species' M (BIOE.M_OTHER; Lorenzen 1996)
   M_JUV: 0.035,        // /day at 20 °C: JUVENILES (taking over from M_LARVA as it fades, ~3 cm on) keep dying to predators the lake
+  // JUVENILE COMPENSATION (2026-10-15): the juvenile rate M_JUV holds at JUV_DREF fish/m² of that species' juveniles and
+  // scales with their density as (D + JUV_D50)/(JUV_DREF + JUV_D50) — a crowded cohort grows slower, draws predators and
+  // cannibals, and dies faster; a sparse one survives several times better. Real lakes: survival 18 mm → age 2 doubles each
+  // time density halves, so recruits stay within ~8 % across a fourfold range (Oneida perch: 0.41, 0.85, 1.56 %, Rose et al.
+  // 2001); bluegill nest poisoning didn't cut autumn young (Beyerle & Williams 1967). Larval mortality stays density-
+  // independent (Irwin et al. 2009). M = M0·(1 + N/N50) is the Beverton–Holt form
+  JUV_DREF: 3, JUV_D50: 0.5,
   M_JUV_Q10: 3,        //   doesn't simulate — Oneida age-0 perch from 18 mm to autumn: Z ≈ 0.035/day, ~1.3 % surviving (Irwin et al.
                        //   2009) — slower in cold water (× Q10: ~0.005/day under the ice, so ~40–50 % die over a first winter as
                        //   with predators present, Neuswanger et al. 2015). The Q10 scales M_LARVA too, below 20 °C only

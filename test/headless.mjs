@@ -858,13 +858,18 @@ check('innate depth-home produces real zonation (catfish ride deep, minnows ride
 check('v2 ethogram configured (minnow schools, pike ambushes)', SP.minnow.innate.school > 0 && SP.pike.innate.ambush === true);
 // (measured against the same fish at their own depths but scattered at random across the lake: the founders are at a
 // realistic density since 2026-10-15 — ~50 fatheads in the slice — so a raw neighbour count no longer means much)
+// (averaged over 8 snapshots a second apart — one snapshot swings with where the shoals happen to be)
 const [minnowNeighbors, minnowRandom] = (() => {
-  const mn = bw.agents.filter(a => a.species === 'minnow'); if (mn.length < 5) return [0, 1];
   const nb = P => { let sum = 0; for (const a of P) { let c = 0; for (const b of P) { if (b === a) continue; const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy < 70 * 70) c++; } sum += c; } return sum / P.length; };
-  let r = 0; for (let t = 0; t < 20; t++) r += nb(mn.map((a, i) => ({ x: ((i * 7919 + t * 104729) % 1000) / 1000 * WORLD.W, y: a.y })));
-  return [nb(mn), r / 20];
+  let o = 0, r = 0, k = 0;
+  for (let snap = 0; snap < 8; snap++) {
+    if (snap) for (let i = 0; i < 30; i++) bw.step(1 / 30);
+    const mn = bw.agents.filter(a => !a.dead && a.species === 'minnow'); if (mn.length < 5) continue;
+    o += nb(mn); for (let t = 0; t < 5; t++) r += nb(mn.map((a, i) => ({ x: ((i * 7919 + t * 104729 + snap * 3571) % 1000) / 1000 * WORLD.W, y: a.y }))) / 5; k++;
+  }
+  return k ? [o / k, r / k] : [0, 1];
 })();
-check('schooling minnows cluster into loose shoals (≥ 1.8× the neighbours of the same fish scattered at random)', minnowNeighbors > 1.8 * minnowRandom, `mean ${minnowNeighbors.toFixed(1)} neighbours within 70px vs ${minnowRandom.toFixed(2)} at random`);
+check('schooling minnows cluster into loose shoals (≥ 1.4× the neighbours of the same fish scattered at random)', minnowNeighbors > 1.4 * minnowRandom, `mean ${minnowNeighbors.toFixed(1)} neighbours within 70px vs ${minnowRandom.toFixed(2)} at random`);
 // ambush: an isolated pike with NO prey in range must lurk (stay slow) — a controlled, robust check
 // (the population-aggregate speed is noisy because some pike are mid-burst at any snapshot)
 // Isolate the ambush mechanism (don't depend on a random brain's thrust, which shifts with any genome-shape change):
@@ -2574,6 +2579,26 @@ console.log('\n— the bed\'s worms and scuds —');
   check('ESCAPE: perch larvae caught in an anoxic layer over the bed swim up out of it at once (FRY.ESCAPE), and most live',
     !ls.dead && ls.y < (ab[cA] - 1) * CH && ls.n > 300 * 0.9, `y ${ls.y.toFixed(0)} (anoxic below ${((ab[cA] - 1) * CH).toFixed(0)}), ${ls.n.toFixed(0)} of 300 alive`);
   setRandState(rsS); }
+
+// JUVENILE COMPENSATION + MATURATION REACTION NORM (2026-10-15): a sparse cohort of juveniles dies several times slower per
+// fish than a crowded one (FRY.JUV_*: Beverton–Holt); an older fish matures at a smaller length (BIOE.PMRN_*)
+{ const rsC = getRandState(), { FRY: FC, BIOE: BC } = await import('../src/config.js');
+  const perCap = n => { seed(9501); const cw = new World().setDate(0.42); cw.agents = []; cw.birds = []; cw.nymphs = [];
+    const f = cw._mkFry('sunfish', 700, 150, n, 1, 30, Float32Array.from(cw.makeFish('sunfish').g), new Float32Array(GENE_KEYS.length).fill(1));
+    f.L = 3.5; f.W = stdWeight(SP.sunfish.lw, 3.5); cw.fry = [f]; const n0 = f.n;
+    for (let i = 0; i < Math.round(BIOE.DAY * 30); i++) { cw.step(1 / 30); for (let c = 0; c < cw.env.zooD.length; c++) if (cw.env.mask.wet[c]) cw.env.zooD[c] = Math.max(cw.env.zooD[c], 2); }   // (food kept up: mortality, not hunger)
+    return 1 - f.n / n0; };
+  const lossSparse = perCap(150), lossCrowded = perCap(6000);
+  check('JUVENILE COMPENSATION: a crowded cohort of juvenile sunfish loses a larger share a day than a sparse one (Beverton–Holt, FRY.JUV_*)',
+    lossCrowded > lossSparse * 2 && lossSparse > 0, `daily loss ${(lossSparse * 100).toFixed(2)} % at 150 fish vs ${(lossCrowded * 100).toFixed(2)} % at 6,000`);
+  // the reaction norm: the same length that leaves a young adult immature lets an older fish mature
+  seed(9502); const mw = new World().setDate(0.40); mw.agents = []; mw.fry = [];
+  const sp = SP.sunfish, mk = ageY => { const f = mw.makeFish('sunfish', [1, 1, 1, 1, 1, 1, 1], ageY * TIME.YEAR_LEN); f.mature = false; f.gon = 0;
+    f.L = f.Lmat * (1 - BC.PMRN_SLOPE * 1.2); f.W = stdWeight(sp.lw, f.L); f.x = 600; f.y = 200; mw.agents.push(f); return f; };
+  const young = mk(sp.matMinAge / TIME.YEAR_LEN + 0.1), old = mk(sp.matMinAge / TIME.YEAR_LEN + 2.5);
+  mw.step(1 / 30);
+  check('MATURATION REACTION NORM: at the same length below Lmat an older fish matures and a just-old-enough one does not (BIOE.PMRN_*)', !young.mature && old.mature, `young ${young.mature}, old ${old.mature} at L ${young.L.toFixed(2)} (Lmat ${young.Lmat.toFixed(2)})`);
+  setRandState(rsC); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

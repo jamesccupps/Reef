@@ -204,7 +204,7 @@ function parseSave(s) {
     // v27 body: length, mass, sex, maturity, gut contents (older saves keep makeAgent's age-typical length at K 0.95)
     if (a.sx === 0 || a.sx === 1) { ag.sex = a.sx; ag.Lmat = lmatOf(sp, ag.genes[0], ag.sex); }
     if (isNum(a.L) && a.L > 0 && isNum(a.wm) && a.wm > 0) { ag.L = clamp(a.L, 0.2, 400); ag.W = clamp(a.wm, 1e-5, 1e7); }
-    ag.mature = typeof a.mt === 'boolean' ? a.mt : ag.L >= ag.Lmat && ag.age >= sp.matMinAge;
+    ag.mature = typeof a.mt === 'boolean' ? a.mt : matureAt(sp, ag.L, ag.Lmat, ag.age);
     ag.gon = isNum(a.go) ? clamp(a.go, 0, ag.W) : ag.mature ? (ag.sex === 0 ? sp.gsiF : sp.gsiM) * ag.W * 0.5 : 0;
     if (isNum(a.gu) && a.gu > 0) { ag.gut = clamp(a.gu, 0, ag.W); ag.gutE = clamp(num(a.ge, 0), 0, 1e9); }
     if (isNum(a.ro) && a.ro > 0) ag.rO2 = clamp(a.ro, 0, 1e6);
@@ -364,6 +364,10 @@ function sizeScale(a) {
 }
 // maturation length (cm): the species' length at 50 % maturity × the size gene (see makeAgent); males of some species mature
 // smaller (perch: sp.LmatM)
+// the MATURATION REACTION NORM: a fish past its species' matMinAge matures at a length that falls with age (BIOE.PMRN_SLOPE a
+// year, to BIOE.PMRN_FLOOR × its Lmat) — slow growers mature older and smaller, fast growers younger and larger
+const lmatAt = (sp, age) => Math.max(BIOE.PMRN_FLOOR, 1 - BIOE.PMRN_SLOPE * Math.max(0, (age - sp.matMinAge) / TIME.YEAR_LEN));
+const matureAt = (sp, L, Lmat, age) => age >= sp.matMinAge && L >= Lmat * lmatAt(sp, age);
 const lmatOf = (sp, gSize, sex) => sp.Lmat * Math.pow(gSize, BIOE.LMAT_GENE) * (sex === 1 && sp.LmatM ? sp.LmatM / sp.Lmat : 1);
 // re-derive everything that follows from the body: condition K, the reserve, gut-fullness hunger, size-scaled behaviour
 function settleBody(a) {
@@ -404,8 +408,8 @@ function makeAgent(species, x, y, cond, gen, hue, genome, age = 0, genes = null)
     id: nextAgentId(), species, sp, genes: gn, maxSpeed0, maxTurn0, accel0, senseRange0, bodyMul, tempTol, o2Crit, o2Lethal, uilt, metabMul, activeHid,
     x, y, homeX: x, heading: rand(0, Math.PI * 2), spd: rand(1, 6), vis: 0,   // homeX = natal site (the spatial-cognition homing anchor)
     // body: length (cm), wet mass (g), condition, sex, maturation length; the gut (g of food, J it holds)
-    L, W, K, sex, Lmat, mature: L >= Lmat && age >= sp.matMinAge, gut: 0, gutE: 0, energy: reserveOf(K), rO2: 0,
-    gon: L >= Lmat && age >= sp.matMinAge ? (sex === 0 ? sp.gsiF : sp.gsiM) * W * 0.5 : 0,   // gonad mass (g): an adult starts half-ripe
+    L, W, K, sex, Lmat, mature: matureAt(sp, L, Lmat, age), gut: 0, gutE: 0, energy: reserveOf(K), rO2: 0,
+    gon: matureAt(sp, L, Lmat, age) ? (sex === 0 ? sp.gsiF : sp.gsiM) * W * 0.5 : 0,   // gonad mass (g): an adult starts half-ripe
     gen, hue, age, eaten: 0, tox: 0, hunger: 1, fear: 0, mateCd: rand(0, sp.matingCooldown), dead: false, _mated: false, turnSmooth: 0, thrustSmooth: 0,
     g: brain, lw: Float32Array.from(brain),   // g = inherited GENOTYPE (fixed, used for breeding/saving); lw = the PLASTIC policy `forward` runs (lifetime learning nudges it; Baldwinian)
     act: { h: new Float32Array(shape.hid), o: new Float32Array(OUT), turn: 0, thrust: 0, strike: 0, flee: 0, hide: 0, in: new Float32Array(shape.in) },
@@ -1034,6 +1038,9 @@ export class World {
   _stepFry(dt, counts, newborns) {
     if (!this.fry.length) return;
     const env = this.env, yf = env.yearFrac(), guards = this._guards, Y = TIME.YEAR_LEN;
+    // each species' JUVENILE density (fish/m² past the larval stage — weighted by 1 − lf): JUVENILE COMPENSATION (FRY.JUV_*)
+    const juvD = this._juvD || (this._juvD = {}); for (const k of SPECIES) juvD[k] = 0;
+    for (const f of this.fry) if (!f.dead) juvD[f.k] += f.n * (1 - Math.exp(-((f.L / FRY.LARVA_L) ** 2))) / WORLD.SLICE_M2;
     for (const f of this.fry) {
       if (f.dead) continue;
       const sp = SP[f.k], d = sp.diet;
@@ -1062,7 +1069,7 @@ export class World {
       // (both slow in cold water, × M_JUV_Q10 below 20 °C: their predators eat little there — larval mortality falls with
       // temperature, Pepin 1991 — so a small fingerling isn't culled at the summer rate under the ice; never above the
       // summer field rates they were measured at)
-      const hN = (FRY.M_LARVA / Math.max(0.3, f.L) * lf + FRY.M_JUV * (1 - lf)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / BIOE.DAY
+      const hN = (FRY.M_LARVA / Math.max(0.3, f.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[f.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / BIOE.DAY
         + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y;
       const hH = T > sp.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
       const hO = o2 < o2L ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
@@ -1485,7 +1492,7 @@ export class World {
       a.age += dt; a.mateCd -= dt; if (a.missCd > 0) a.missCd -= dt;
       // MATURATION by size AND age (a maturation reaction norm): a fish matures once it reaches its maturation length —
       // the size gene's target — and is old enough; a well-fed lineage therefore matures younger than a stunted one
-      if (!a.mature && a.L >= a.Lmat && a.age >= sp.matMinAge) a.mature = true;
+      if (!a.mature && matureAt(sp, a.L, a.Lmat, a.age)) a.mature = true;   // (the reaction norm: lmatAt)
 
       // senses() is read-only, so a threat/prey query it made for THIS fish is still exact for the drive + perception reads
       // below (each was otherwise computed twice per fish per step). The caches are cleared before senses and after use.
@@ -1634,7 +1641,10 @@ export class World {
         // hungrier and the closer — the innate orienting response to food that real fish are born with. With real life
         // histories a generation takes years, so a lineage can't wait for its brains to evolve the basics before it starves;
         // the brain refines it like the other reflexes
-        if (IN.forage && (a.act.in[2] || 0) > 0) {
+        // (a ripe fish on its spawning migration — `mig`, more than SPAWN.MIG_FORAGE_D px from its ground — travels rather
+        // than forages: spawners cut feeding and move; the food pull and patch residence would hold it in the first rich patch)
+        const migrating = mig && mig.d > SPAWN.MIG_FORAGE_D;
+        if (IN.forage && !migrating && (a.act.in[2] || 0) > 0) {
           const rel = Math.atan2(a.act.in[0], a.act.in[1]);
           a.heading += clamp(rel, -1, 1) * a.maxTurn * IN.forage * a.act.in[2] * a.hunger * dt;
         }
@@ -1642,7 +1652,7 @@ export class World {
         // slowing to a hover and picking at it as its stomach empties — rather than cruising off after each bite. A small
         // fish's stomach holds a few hours' ration and one behavioural second is ~5 h, so a fish that left after every
         // mouthful would starve in a lake full of food. It moves on once the patch is gone (its food sense points further).
-        if (IN.forage && (a.foodT ?? 9) < FEED.RESIDE_T && (a.act.in[2] || 0) > 1 - PREY.PATCH_R / a.senseRange) thrust *= FEED.RESIDE;
+        if (IN.forage && !migrating && (a.foodT ?? 9) < FEED.RESIDE_T && (a.act.in[2] || 0) > 1 - PREY.PATCH_R / a.senseRange) thrust *= FEED.RESIDE;
         // SPAWNING AGGREGATION (target `mig` above): bass nest in the shallows, pike/carp spawn in flooded weed margins,
         // catfish nest in shallow cavities. Innate + deterministic; the brain modulates it like the other reflexes, and it
         // switches off out of season or once the fish is spent.
@@ -2039,7 +2049,7 @@ export class World {
           let nF = 0, nM = 0;
           for (const q of this.agents) if (!q.dead && q.species === key && q.mature) { if (q.sex === 0) nF++; else nM++; }
           for (const q of newborns) if (q.species === key && q.mature) { if (q.sex === 0) nF++; else nM++; }
-          if (nF !== nM) { f.sex = nF < nM ? 0 : 1; f.Lmat = lmatOf(sp, f.genes[0], f.sex); f.mature = f.L >= f.Lmat && f.age >= sp.matMinAge; }
+          if (nF !== nM) { f.sex = nF < nM ? 0 : 1; f.Lmat = lmatOf(sp, f.genes[0], f.sex); f.mature = matureAt(sp, f.L, f.Lmat, f.age); }
         }
         if (f.mature) f.gon = (f.sex === 0 ? sp.gsiF : sp.gsiM) * f.W;
         f.immigrant = true; counts[key]++; liveTotal++; newborns.push(f); this.stats.immigrants[key]++;

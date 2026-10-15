@@ -247,7 +247,8 @@ export const BIO = {
       SDA: 0.172, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0253, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1974 (FB4 adult)' },
     bioJuv: { CTO: 31, CTM: 37, RTO: 37, RTM: 41, src: 'Kitchell et al. 1974 (FB4 juvenile)' },
     lw: { a: 0.008750, b: 3.316 }, vb: { Linf: 23, k: 0.3, t0: 0.3 },        // Ws Hillman 1982; Michigan 4.6, 9.7, 12.7, 15.0, 17.0 cm
-    Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 15, Lmat: 11, LmatM: 9, matMinAge: yrs(1.5), maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
+    Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 15, Lmat: 7.5, LmatM: 6.5, matMinAge: yrs(1.5),   // (2026-10-15: Lmat 11/9 → 7.5/6.5 cm TL — northern pumpkinseed mature at age 2–3 at ~6–8 cm, Copp et al. 2004; Fox & Keast 1991)
+    maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
     gut: 0.05, gerMul: 0.5, gsiF: 0.06, gsiM: 0.01,   // per batch (income spawner);   // panfish: 50 % of a meal in 5 h, all in ~21 h (Seaburg & Moyle 1964)
     fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982, N Wisconsin): 15 cm → ~11,100 eggs
     pelagicFry: 1.8, benthL: 1.8,   // cm: the limnetic phase — bluegill fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm
@@ -259,7 +260,8 @@ export const BIO = {
       SDA: 0.15, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0292, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1977 (FB4 adult)' },
     bioJuv: { CTO: 29, CTM: 32, RTO: 32, RTM: 35, src: 'Kitchell et al. 1977 (FB4 juvenile)' },
     lw: { a: 0.006982, b: 3.23 }, vb: { Linf: 35, k: 0.2, t0: -0.3 },        // Ws Willis et al. 1991; Michigan 8.4, 13.2, 16.5, 19.1, 21.6 cm
-    Lhatch: 0.6, sHatch: 0.08, L0: 8, Lref: 20, Lmat: 16, LmatM: 12, matMinAge: yrs(1.5), maxAge: yrs(11), matureAge: yrs(3), M: 0.50,
+    Lhatch: 0.6, sHatch: 0.08, L0: 8, Lref: 20, Lmat: 14, LmatM: 10, matMinAge: yrs(1.5),   // (2026-10-15: 16/12 → 14/10 — females 11–18 cm, males 8–13, Feiner et al. 2017; stunted at age 2 near 9.5 cm)
+    maxAge: yrs(11), matureAge: yrs(3), M: 0.50,
     gut: 0.06, gerMul: 1.0, gsiF: 0.20, gsiM: 0.07,   // ♀ GSI 16–26 % (S. Lake Michigan);   // young perch: a Daphnia meal in 6–12 h (Noble 1973) ≈ the general rate
     fec: { a: 0.3487, b: 3.4556 },   // log10 F = −3.9131 + 3.4556·log10 TL(mm), inland Michigan lakes (Schneider 1984): 25 cm → 23,600
     Lzoo: 25, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, vuln: 0.6,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL; zooplankton → benthos → fish: big perch leave the zooplankton (Persson 1986; Hjelm et al. 2000) — most lake perch (< 25 cm) still take it
