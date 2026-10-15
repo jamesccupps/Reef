@@ -731,7 +731,7 @@ export class Renderer {
         const y = (m.y0 + t * m.spd) % H, x = m.x + Math.sin(t * m.swayF + m.ph) * m.swayA;
         if (x < vr.x0 || x > vr.x1 || y < vr.y0 || y > vr.y1 || y > bedY(x)) continue;
         const rr = Math.max(0.6, m.r * z * 0.5);
-        ctx.globalAlpha = clamp(m.br * 0.5 * amb2 * clar * depthDim(y), 0, 0.7);
+        ctx.globalAlpha = clamp(m.br * 0.25 * amb2 * clar * depthDim(y), 0, 0.3);   // faint (they hid the fish at 0.5/0.7)
         ctx.beginPath(); ctx.arc(X(x), Y(y), rr, 0, TAU); ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -754,22 +754,23 @@ export class Renderer {
     // plankton & detritus (culled)
     const pPx = clamp(z, 1, 3);
     // ZOOPLANKTON (the env.zooD / zooC fields, g wet per cell): specks in proportion to each cell's grams — Daphnia (pale,
-    // roundish water fleas), copepods (small darker specks). At the whole-lake view thousands of 1-px specks read as snow and
-    // drown out the fish, so they fade (and thin) with zoom, filling in as you close in. Each speck's place in its cell is a
-    // fixed hash of (cell, speck) drifting on the render clock — cosmetic only, never the sim RNG.
+    // roundish water fleas), copepods (small darker specks). Real zooplankton (0.5–2 mm) are barely visible in open water, and
+    // a field of bright specks hid the fish and animals (2026-10-15, the human: "all the white dots everywhere make it hard
+    // to see the fish"), so they are faint and sparse, absent at the whole-lake and medium views, and fill in only in close-up.
+    // Each speck's place in its cell is a fixed hash of (cell, speck) drifting on the render clock — cosmetic only, never the sim RNG.
     {
       const env = world.env, COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS, cw = W / COLS, ch = H / ROWS, zr = cam.zoom / cam.fitZoom;
-      const pFade = clamp((zr - 1) / 4, 0.22, 1), perG = 0.5 * clamp(zr, 1, 8);   // specks per gram (≈ 2,000 lake-wide at the whole-lake view)
+      const pFade = clamp((zr - 3) / 12, 0, 1), perG = 0.15 * clamp(zr, 1, 8);   // none below 3× the landscape fit; full at 15×
       const c0 = Math.max(0, Math.floor(vr.x0 / cw)), c1 = Math.min(COLS - 1, Math.floor(vr.x1 / cw));
       const r0 = Math.max(0, Math.floor(vr.y0 / ch)), r1 = Math.min(ROWS - 1, Math.floor(vr.y1 / ch));
       const hsh = n => { const v = Math.sin(n) * 43758.5453; return v - Math.floor(v); };
-      ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
-      for (let kind = 0; kind < 2; kind++) {
+      ctx.globalAlpha = (0.10 + 0.22 * vL) * pFade;
+      for (let kind = 0; kind < 2 && pFade > 0; kind++) {
         const daph = kind === 0, f = daph ? env.zooD : env.zooC, sz = daph ? Math.max(1, pPx * 1.4) : pPx, round = daph && z >= 3;
-        ctx.fillStyle = daph ? '#d6f6e4' : '#9ed4bc';
+        ctx.fillStyle = daph ? '#b9d6c8' : '#8fb2a2';
         for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
           const i = r * COLS + c, g = f[i]; if (!(g > 0)) continue;
-          const want = g * perG, n = Math.min(30, Math.floor(want + hsh(i * 3.7 + kind)));   // the fractional speck shows by a fixed hash
+          const want = g * perG, n = Math.min(8, Math.floor(want + hsh(i * 3.7 + kind)));   // the fractional speck shows by a fixed hash
           for (let j = 0; j < n; j++) {
             const s1 = i * 12.9898 + j * 78.233 + kind * 37.719;
             const x = (c + hsh(s1)) * cw + Math.sin(t * 0.31 + j * 1.3 + i) * 2.5, y = (r + hsh(s1 + 17.17)) * ch + Math.cos(t * 0.27 + j * 0.7) * 2;
