@@ -52,7 +52,7 @@ export const coldPerf = (tC, tOpt, floor = ENV.COLD_PERF_MIN) => { const f = Mat
 const notDead = it => !it.dead;
 // scratch for the zooplankton field queries (env.zooBest's patch → the brain's plankton sense; env.zooFeed's grams by kind) —
 // read at once by the caller, never kept
-const ZB = { item: { x: 0, y: 0 }, dist: 0 }, ZF = new Float64Array(2);
+const ZB = { item: { x: 0, y: 0 }, dist: 0 }, ZF = new Float64Array(3);
 // a larval patch with larvae outside the refuge: INSECT.REFUGE_M grams of every patch are burrowed in the mud or cased,
 // out of a predator's reach — the stock that rebuilds a grazed-down patch
 const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
@@ -1048,10 +1048,13 @@ export class World {
       const st = f.tk; f.tk = 0;
       const T = env.tempAt(f.x, f.y);
       const hS = this._feedFry(f, sp, st, T);   // (its starvation hazard, /s)
-      // MORTALITY over st: natural — the larval "critical period" (FRY.M_LARVA ∝ 1/length, fading out by ~3 cm) + the
-      // agents' size-scaled share of the species' M (Lorenzen) — then starvation (_feedFry), heat and hypoxia as for the agents
+      // MORTALITY over st: natural — the larval "critical period" (FRY.M_LARVA ∝ 1/length, fading out by ~3 cm), then the
+      // juveniles' predation (FRY.M_JUV, slower in cold water) + the agents' size-scaled share of the species' M (Lorenzen) —
+      // then starvation (_feedFry), heat and hypoxia as for the agents
       const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
-      const hN = FRY.M_LARVA / Math.max(0.3, f.L) * Math.exp(-((f.L / FRY.LARVA_L) ** 2)) / BIOE.DAY
+      const lf = Math.exp(-((f.L / FRY.LARVA_L) ** 2));   // the larval term's weight (fades by ~3 cm) — the juvenile term takes over
+      const hN = FRY.M_LARVA / Math.max(0.3, f.L) * lf / BIOE.DAY
+        + FRY.M_JUV * (1 - lf) * Math.pow(FRY.M_JUV_Q10, (T - 20) / 10) / BIOE.DAY
         + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y;
       const hH = T > sp.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
       const hO = o2 < o2L ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
@@ -1113,8 +1116,9 @@ export class World {
     }
     if ((d.plankton || f.L < sp.Lzoo) && want - got > 1e-12) {   // zooplankton: type II in the density of prey they can take (K_FRY)
       const PL = PLANKTON, gD = PL.FRY_DAPH_MIN + (1 - PL.FRY_DAPH_MIN) * clamp((f.L - PL.FRY_DAPH_L[0]) / (PL.FRY_DAPH_L[1] - PL.FRY_DAPH_L[0]), 0, 1);
-      const t = env.zooFeed(f.x, f.y, gD, PL.FRY_COPE, want - got, PL.K_FRY, ZF), g = t[0] + t[1];
-      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED; foundZoo = true; feeds--; }
+      const cR = PL.FRY_ROT_MIN + (1 - PL.FRY_ROT_MIN) * clamp((PL.FRY_ROT_L[1] - f.L) / (PL.FRY_ROT_L[1] - PL.FRY_ROT_L[0]), 0, 1);   // rotifers & nauplii
+      const t = env.zooFeed(f.x, f.y, gD, PL.FRY_COPE, want - got, PL.K_FRY, ZF, false, false, cR), g = t[0] + t[1] + t[2];   // (the small prey larvae take don't migrate)
+      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; foundZoo = true; feeds--; }
     }
     if (f.L >= (sp.benthL ?? FRY.BENTH_L) && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
       const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, larvaFreeFry); if (!m) break;
@@ -2115,6 +2119,7 @@ export class World {
       // zooplankton by kind; dragonflies (nymphs / adults on the wing); frogs + tadpoles; turtles
       daphnia: e.zooTotal(0) / 1000, copepods: e.zooTotal(1) / 1000, zooUgl: e.meanZooUgl(),   // kg wet of each kind; the lake mean, µg dry/L
       zooEggs: (e.zooEggTotal(0) + e.zooEggTotal(1)) / 1000,   // kg in the sediment's resting-egg bank
+      rotifers: e.zooTotal(2) / 1000,                           // kg of rotifers and nauplii
       nymphs: this.nymphs.length, dragonflies: this.dflies.length,
       frogs: this.herps.reduce((c, h) => c + (h.k === 1 ? 1 : 0), 0), tadpoles: this.herps.reduce((c, h) => c + (h.k === 0 ? 1 : 0), 0),
       turtles: this.herps.reduce((c, h) => c + (h.k === 2 ? 1 : 0), 0),

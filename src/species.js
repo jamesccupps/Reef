@@ -248,7 +248,8 @@ export const BIO = {
     Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 15, Lmat: 11, LmatM: 9, matMinAge: yrs(1.5), maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
     gut: 0.05, gerMul: 0.5, gsiF: 0.06, gsiM: 0.01,   // per batch (income spawner);   // panfish: 50 % of a meal in 5 h, all in ~21 h (Seaburg & Moyle 1964)
     fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982, N Wisconsin): 15 cm → ~11,100 eggs
-    pelagicFry: 2.5,   // cm: the limnetic phase — bluegill fry feed in the open water until ~2–2.5 cm, then return to the weeds (Werner 1967, 1969)
+    pelagicFry: 1.8, benthL: 1.8,   // cm: the limnetic phase — bluegill fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm
+                                    //   (12.5 mm SL), where they eat the littoral's invertebrates (Werner 1967, 1969; Werner & Hall 1988; Beard 1982)
     Lzoo: 4, Lpisc: Infinity, gapeR: 0.07, depthR: 0.38, uilt: 34, o2Lethal: 0.75, vuln: 0.35,   // lethal DO: Moss & Scott 1961; depth 0.34–0.42 (Lawrence 1958; Hill et al. 2004)
   },
   perch: {    // YELLOW PERCH — FB4 "Yellow perch" adult + juvenile (Kitchell et al. 1977)
@@ -394,8 +395,8 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    matingCooldown: yr(0.06), pop: { start: 12, min: 4, max: 45 },   // K ≈ 300; ~80 founders ≈ 45 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
-    tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund
+    matingCooldown: yr(0.06), pop: { start: 8, min: 4, max: 45 },   // K ≈ 300; ~54 founders ≈ 40 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
+    tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.005),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund. The male guards the eggs and yolk-sac larvae; the fry leave the nest at swim-up (~5 mm, 4–10 days after hatching — Beard 1982) for the open water — the sim's schools start at swim-up, so ~2 days (was 11: held in the zooplankton-poor shallows, 84 % of them died there)
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40, forage: 0.5 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
     randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
@@ -428,7 +429,7 @@ export const SP = {
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true, cray: 0.08 },   // cray: the share of its strikes at a crayfish that land (perch take the small ones)
     maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 5, min: 3, max: 28 },   // K ≈ 190; ~34 founders ≈ 30 kg/ha (yellow perch 27–52 kg/ha — docs/ECOLOGY_RESEARCH.md)
+    matingCooldown: yr(0.5), pop: { start: 3.5, min: 3, max: 28 },   // K ≈ 190; ~24 founders ≈ 25 kg/ha (yellow perch 27–52 kg/ha — docs/ECOLOGY_RESEARCH.md)
     tempOpt: 23, tempTol: 7, o2Crit: 0.26, spawnT: [7, 12], spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
     innate: { homeDepth: 0.86, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },   // a near-bottom forager (adult yellow perch feed mostly on benthos)
     sat: 70, lbase: 40, lrange: 20,
@@ -493,7 +494,7 @@ export const SP = {
     // detritus (Scott & Crossman 1973) — on a lean bed they turn to snails and zooplankton
     diet: { detritus: true, plants: true, larva: true, snail: true, plankton: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
-    matingCooldown: yr(0.5), pop: { start: 2.5, min: 3, max: 6 },   // K ≈ 40; ~17 founders ≈ 30 kg/ha
+    matingCooldown: yr(0.5), pop: { start: 1.5, min: 3, max: 6 },   // K ≈ 40; ~10 founders ≈ 20 kg/ha
     tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4, forage: 0.5 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,

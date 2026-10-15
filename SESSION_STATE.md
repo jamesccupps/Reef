@@ -32,7 +32,19 @@ with prescribed predation, a year a minute — gives a realistic year: summer 50
 12–17 µg/L of copepods, Daphnia ~0); FRY_COPE 0.3; APEX DENSITY (research priority 5): pike 1 founder (K≈2), bass 3 (K≈4), carp 2,
 trout 2 (the founders test now accepts one ripe female for a single-founder visitor). Per-species audit (dietsp.mjs) showed
 sunfish eat 2–3.6 %bw/day (≈ break-even), but 2 pike + 5 bass ate ~0.5 kg of small fish a month, and 2.6 kg of trout ate 3 kg
-of June zooplankton. Round 14 running. Still open: copepods eaten out in summer; bass condition/spawning (next slice).
+of June zooplankton. Rounds 14–20: death ledger (verify/deaths.mjs) — adult sunfish die of STARVATION Aug–Oct after the July
+zooplankton crash; minnows eaten Jun–Jul then starve; then NO RECRUITMENT (year-1 YOY all dead by October; year-2 adults spawn
+late/little). Fixes in order: zoo upkeep R_D 0.08 / R_C 0.05 (the algae-unit → mg C mapping is uncertain ~2×); Daphnia SHORE
+AVOIDANCE (PLANKTON.SHORE: pelagic Daphnia lean to deep columns, Siebeck 1980 — the deep refuge no longer leaks into the fish-
+crowded shallows); founders sunfish 8, perch 3.5, catfish 1.5 (260 kg/ha), BENTHOS.REFUGE 3 g/m² (exclusion studies);
+FRY.M_JUV 0.035/day × Q10 3 (juvenile predation, Irwin et al. 2009); sunfish pelagicFry/benthL 1.8 cm; sunfish nestGuard
+yr(0.03) → yr(0.005) (bluegill fry leave the nest at swim-up — Beard 1982; held at the nest 84 % died); larval-fish prey
+exempt from DVM (zooFeed dvm=false for fry: DVM is size-dependent); ROTIFERS & NAUPLII field env.zooR (G_R 1.0, M2_R 0.3
+density-dependent invertebrate predation, Daphnia interference; fry-only food, FRY_ROT_L) — save v30 fields D/C/R + eggs +
+benth. Harness (zooonly.mjs, prescribed predation) now gives summer 120–235, winter 26–45 µg/L, rotifers 0–34. NOTE the zoo
+diagnostics' 'algae' column was an instantaneous snapshot at a drifting time of day (the "July algae trough" was night
+readings) — zooflux2 now averages it. Round 20 running (3 seeds × 2 yr + ff_r20 fryfate). Tunables to revisit: K_ADULT,
+FRY.CMAX_LARVA, M_LARVA, founders; species set (Midwest vs New England natives) and slice scale for big fish = human's call.
 LESSONS: memory research-to-design;
 diagnostic wrappers must forward ALL arguments (a dropped arg silently disabled type III in one round).
 

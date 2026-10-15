@@ -498,7 +498,7 @@ export class UI {
     set('env-ice', ed.ice > 0.01 ? (ed.ice * 100 | 0) + '%' : 'open');
     set('env-diatom', (ed.diatom * 100 | 0) + '%');
     set('env-birds', String(ed.birds));
-    set('env-zoo', `${fmtNum(ed.zooUgl, 0)} µg/L · ${fmtNum(ed.daphnia, 1)} kg Daphnia · ${fmtNum(ed.copepods, 1)} kg copepods · ${fmtNum(ed.zooEggs, 1)} kg resting eggs`);
+    set('env-zoo', `${fmtNum(ed.zooUgl, 0)} µg/L · ${fmtNum(ed.daphnia, 1)} kg Daphnia · ${fmtNum(ed.copepods, 1)} kg copepods · ${fmtNum(ed.rotifers, 1)} kg rotifers · ${fmtNum(ed.zooEggs, 1)} kg resting eggs`);
     set('env-odo', `${ed.nymphs} nymphs · ${ed.dragonflies} flying`);
     set('env-frogs', `${ed.frogs} · ${ed.tadpoles} tadpoles`);
     set('env-turtles', String(ed.turtles));

@@ -15,7 +15,7 @@ import { stdWeight } from '../src/bioenergetics.js';
 const ripe = (f, sex, K = 1) => { f.sex = sex; f.mature = true; f.W = K * stdWeight(f.sp.lw, f.L); f.K = K; f.gon = (sex === 0 ? f.sp.gsiF : f.sp.gsiM) * f.W; f.mateCd = 0; f._mated = false; f.dead = false; return f; };
 const check = (name, ok, extra = '') => { console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${extra ? '  — ' + extra : ''}`); if (!ok) fail++; };
 const approx = (a, b, tol) => Math.abs(a - b) <= tol;
-const noZoo = w => { w.env.zooD.fill(0); w.env.zooC.fill(0); };   // empty the zooplankton fields (a food-free test lake)
+const noZoo = w => { w.env.zooD.fill(0); w.env.zooC.fill(0); w.env.zooR.fill(0); };   // empty the zooplankton fields (a food-free test lake)
 
 const start = w.census();
 console.log('initial census:', JSON.stringify(start));

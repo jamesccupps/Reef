@@ -90,6 +90,7 @@ export class Environment {
     // ZOOPLANKTON (PLANKTON): Daphnia and copepods, g wet per cell (wet cells only); the weed map and the columns' DVM refuge
     this.zooD = this._zooFill(PLANKTON.START_D);
     this.zooC = this._zooFill(PLANKTON.START_C);
+    this.zooR = this._zooFill(PLANKTON.START_R);   // rotifers and nauplii (the larvae's first food)
     this.zooEgg = this._eggFill();                    // the sediment's resting-egg bank, g per column: [col × 2] Daphnia, [col × 2 + 1] copepods
     this._plantMap = new Float32Array(COLS * ROWS);   // weed stems per cell (rebuilt every step from the plants; not saved)
     this._refAv = new Float32Array(COLS);             // 0..1: how well each column's depth lets migrants hide (static geometry)
@@ -97,7 +98,7 @@ export class Environment {
     this.fishKgHa = 0;                 // the lake's fish biomass, kg/ha (set by the world each step: the kairomone level for DVM)
     this._migD = 0; this._migC = 0;    // DVM migrant shares (derived each step from fishKgHa)
     this.zooProd = 0;                  // DIAGNOSTIC: cumulative zooplankton production, g (growth before losses; not saved, never read by the sim)
-    this._zI = new Int32Array(9); this._zD = new Float64Array(9); this._zC = new Float64Array(9);   // zooFeed scratch
+    this._zI = new Int32Array(9); this._zD = new Float64Array(9); this._zC = new Float64Array(9); this._zR = new Float64Array(9);   // zooFeed scratch
     this._zW = new Float64Array(ROWS);   // the daily-round weights down a column (scratch)
     this._tmp = new Float32Array(COLS * ROWS);
     // cumulative boundary fluxes (diagnostic, not saved): P/N in by the inflow, out by the outlet, P buried in the deep
@@ -155,7 +156,7 @@ export class Environment {
   _zooFill(g) { const f = new Float32Array(COLS * ROWS); for (let i = 0; i < f.length; i++) if (this.mask.wet[i]) f[i] = g; return f; }
   _eggFill() { const f = new Float32Array(COLS * 2); for (let c = 0; c < COLS; c++) { f[c * 2] = PLANKTON.EGG_START_D; f[c * 2 + 1] = PLANKTON.EGG_START_C; } return f; }
   zooEggTotal(k) { let s = 0; for (let c = 0; c < COLS; c++) s += this.zooEgg[c * 2 + k]; return s; }   // g wet in the egg bank
-  zooTotal(k) { const f = k ? this.zooC : this.zooD; let s = 0; for (let i = 0; i < f.length; i++) s += f[i]; return s; }   // g wet, lake-wide
+  zooTotal(k) { const f = k === 2 ? this.zooR : k ? this.zooC : this.zooD; let s = 0; for (let i = 0; i < f.length; i++) s += f[i]; return s; }   // g wet, lake-wide
   meanZooUgl() { return (this.zooTotal(0) + this.zooTotal(1)) / this.mask.n * PLANKTON.UGL; }   // whole-lake mean, µg dry/L
   // the DVM migrant shares at the lake's fish biomass (kg/ha, the kairomone level): f = DVM_MAX × B/(B + DVM_B50)
   _zooMig() { const b = Math.max(0, this.fishKgHa || 0), s = b / (b + PLANKTON.DVM_B50); this._migD = PLANKTON.DVM_MAX_D * s; this._migC = PLANKTON.DVM_MAX_C * s; }
@@ -167,9 +168,11 @@ export class Environment {
     return Math.min(1, Math.log(I / P.VIS_I0) / Math.log(P.VIS_I1 / P.VIS_I0)) * this.clarity();
   }
   // the share of a cell's zooplankton a visual fish can get: migrants (DVM, where the column is deep enough to hide in) meet
-  // fish only at twilight, and dense weeds hide some — for Daphnia (k 0) or copepods (k 1)
-  zooExposed(i, k) {
-    const P = PLANKTON, ra = this._refAv[i % COLS], m = k ? this._migC : this._migD;
+  // fish only at twilight, and dense weeds hide some — for Daphnia (k 0) or copepods (k 1). DVM is a refuge from the VISUAL
+  // ADULT planktivores and grows with prey size (Lampert): the small prey larval fish take — nauplii, small cladocerans — stay
+  // up in the lit water (dvm = false for the fry)
+  zooExposed(i, k, dvm = true) {
+    const P = PLANKTON, ra = this._refAv[i % COLS], m = dvm ? (k ? this._migC : this._migD) : 0;
     return (1 - m * ra * (1 - P.TWILIGHT)) * (1 - P.WEED_REF * Math.min(1, this._plantMap[i]));
   }
   // A FISH OR A SCHOOL FEEDS on the zooplankton around (x, y) — the 3×3 cells about it: each kind's grams × what the eater
@@ -177,33 +180,35 @@ export class Environment {
   // intake = want × E/(E + K) — type II in the exposed density E (µg dry/L; `sig`: type III, E²/(E² + K²) — a fish with other
   // food switches away from scarce zooplankton) — and at most CROP of what is exposed. Taken
   // from the cells in proportion to what each exposes; the grams of Daphnia → out[0], copepods → out[1].
-  zooFeed(x, y, cD, cC, want, K, out, sig = false) {
-    out[0] = 0; out[1] = 0;
+  zooFeed(x, y, cD, cC, want, K, out, sig = false, dvm = true, cR = 0) {
+    out[0] = 0; out[1] = 0; out[2] = 0;
     if (!(want > 0)) return out;
     const vis = this.zooVis(y);
     if (vis <= 0) return out;
     const P = PLANKTON, c0 = clamp((x / CW) | 0, 0, COLS - 1), r0 = clamp((y / CH) | 0, 0, ROWS - 1), wet = this.mask.wet;
-    const ZI = this._zI, ED = this._zD, EC = this._zC;
-    let n = 0, sD = 0, sC = 0;
+    const ZI = this._zI, ED = this._zD, EC = this._zC, ER = this._zR;
+    let n = 0, sD = 0, sC = 0, sR = 0;
     for (let r = r0 - 1; r <= r0 + 1; r++) {
       if (r < 0 || r >= ROWS) continue;
       for (let c = c0 - 1; c <= c0 + 1; c++) {
         if (c < 0 || c >= COLS) continue;
         const i = r * COLS + c; if (!wet[i]) continue;
-        const eD = this.zooD[i] * cD * this.zooExposed(i, 0), eC = this.zooC[i] * cC * this.zooExposed(i, 1);
-        ZI[n] = i; ED[n] = eD; EC[n] = eC; n++; sD += eD; sC += eC;
+        const eD = this.zooD[i] * cD * this.zooExposed(i, 0, dvm), eC = this.zooC[i] * cC * this.zooExposed(i, 1, dvm);
+        const eR = cR > 0 ? this.zooR[i] * cR * (1 - P.WEED_REF * Math.min(1, this._plantMap[i])) : 0;   // (rotifers: no DVM)
+        ZI[n] = i; ED[n] = eD; EC[n] = eC; ER[n] = eR; n++; sD += eD; sC += eC; sR += eR;
       }
     }
-    const S = (sD + sC) * vis;
+    const S = (sD + sC + sR) * vis;
     if (!(S > 1e-12)) return out;
     const E = S / n * P.UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);   // type III (sig: prey switching) or II
-    const tD = take * sD / (sD + sC), tC = take - tD;
+    const tot = sD + sC + sR, tD = take * sD / tot, tC = take * sC / tot, tR = take - tD - tC;
     for (let k = 0; k < n; k++) {
       const i = ZI[k];
       if (sD > 0) this.zooD[i] = Math.max(0, this.zooD[i] - tD * ED[k] / sD);
       if (sC > 0) this.zooC[i] = Math.max(0, this.zooC[i] - tC * EC[k] / sC);
+      if (sR > 0) this.zooR[i] = Math.max(0, this.zooR[i] - tR * ER[k] / sR);
     }
-    out[0] = tD; out[1] = tC;
+    out[0] = tD; out[1] = tC; out[2] = tR;
     return out;
   }
   // the richest zooplankton within r of (x, y) as an adult fish would rate it (exposed, seen) — a patch it notices only at
@@ -232,7 +237,7 @@ export class Environment {
   // scum (Daphnia DAPH_TOX × faster; Daphnia also can't grow amid cyanobacteria); swims up out of anoxic water; is kept at a
   // tiny FLOOR in oxic water (overwintering animals, resting eggs); mixes. Rates per real day (÷ BIOE.DAY).
   zooplankton(dt) {
-    const P = PLANKTON, D = this.zooD, Cz = this.zooC, ph = this.phyto, di = this.diatom, cyf = this.cyano, o2 = this.o2;
+    const P = PLANKTON, D = this.zooD, Cz = this.zooC, Rz = this.zooR, ph = this.phyto, di = this.diatom, cyf = this.cyano, o2 = this.o2;
     const pm = this._plantMap, ra = this._refAv, phos = this.phos, nh4 = this.nh4, dom = this.dom;
     const ex = NUTRIENT.GRAZE_EXCRETE, pU = PHYTO.P_USE, nU = PHYTO.N_USE, { lo, hi } = this.mask, dd = dt / BIOE.DAY;
     this._zooMig();
@@ -246,6 +251,7 @@ export class Environment {
     for (let cy = 0; cy < ROWS; cy++) {
       const T = this.tempAt(0, (cy + 0.5) * CH), qD = Math.pow(P.Q10_D, (T - 20) / 10), qC = Math.pow(P.Q10_C, (T - 20) / 10), qL = Math.pow(P.Q10_L, (T - 20) / 10);
       const wD = clamp((T - P.DAPH_T[0]) / (P.DAPH_T[1] - P.DAPH_T[0]), 0, 1) * clamp((P.DAPH_HOT[1] - T) / (P.DAPH_HOT[1] - P.DAPH_HOT[0]), 0, 1);
+      const qR = Math.pow(P.Q10_R, (T - 20) / 10), grR = P.GR_R * qR * dt, gR0 = P.G_R * dd, lR0 = (P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd, m2R = P.M2_R * dd;
       const grD = P.GR_D * qD * dt, grC = P.GR_C * qC * dt, base = cy * COLS, cold = dorm && T < P.DORM_T;
       for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
         const i = base + cx, A = ph[i] + di[i], zd = D[i], zc = Cz[i], rf = ra[cx], lit = P.LIT_FOOD * Math.min(1, pm[i]);
@@ -254,8 +260,9 @@ export class Environment {
         this.zooProd += pd + pc;   // (diagnostic: the step's production, g — never read by the sim)
         let nd = zd + pd - zd * lD0 * qL;
         let nc = zc + pc - zc * lC0 * qL;
+        const zr = Rz[i]; let nr = zr + zr * (gR0 * A / (A + P.K_R) * qR - (lR0 + iR * zd + m2R * zr) * qL);   // rotifers (Daphnia interfere; invertebrate predators ∝ density)
         if (cold) { const ed = zd * dmD, ec = zc * dmC; nd -= ed; nc -= ec; eg[cx * 2] += ed * P.EGG_EFF; eg[cx * 2 + 1] += ec * P.EGG_EFF; }   // → the egg bank
-        let g = zd * grD * A / (A + P.K_D) + zc * grC * A / (A + P.K_C);
+        let g = zd * grD * A / (A + P.K_D) + zc * grC * A / (A + P.K_C) + zr * grR * A / (A + P.K_R);
         if (g > 0) {
           if (g > A) g = A;
           const gp = Math.min(ph[i], g), gd = g - gp;
@@ -263,10 +270,10 @@ export class Environment {
           phos[i] += g * ex * pU; nh4[i] += g * ex * nU; dom[i] += g * (1 - ex) * (pU + nU);
         }
         const ox = o2[i] >= P.O2_MIN;
-        if (!ox) { nd -= zd * anox; nc -= zc * anox; }
-        if (cyf[i] > toxAt) { nd *= kD; nc *= kC; }
-        if (ox) { if (nd < P.FLOOR) nd += (P.FLOOR - nd) * flr; if (nc < P.FLOOR) nc += (P.FLOOR - nc) * flr; }
-        D[i] = nd > 0 ? nd : 0; Cz[i] = nc > 0 ? nc : 0;
+        if (!ox) { nd -= zd * anox; nc -= zc * anox; nr -= zr * anox; }
+        if (cyf[i] > toxAt) { nd *= kD; nc *= kC; nr *= kC; }
+        if (ox) { if (nd < P.FLOOR) nd += (P.FLOOR - nd) * flr; if (nc < P.FLOOR) nc += (P.FLOOR - nc) * flr; if (nr < P.FLOOR) nr += (P.FLOOR - nr) * flr; }
+        D[i] = nd > 0 ? nd : 0; Cz[i] = nc > 0 ? nc : 0; Rz[i] = nr > 0 ? nr : 0;
       }
     }
     // the EGG BANK: on lengthening days part of it hatches into the oxic bottom water once the bed is warm enough; eggs are
@@ -289,10 +296,10 @@ export class Environment {
     for (let cx = 0; cx < COLS; cx++) {
       let r1 = -1; for (let cy = 0, br = bedRow[cx]; cy <= br && o2[cy * COLS + cx] >= P.O2_MIN; cy++) r1 = cy;
       if (r1 < 1) continue;
-      let sd = 0, sc = 0, sw = 0;
-      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; sd += D[i]; sc += Cz[i]; const v = ph[i] + di[i] + P.FOOD0; wq[cy] = v; sw += v; }
-      const fd = sd / sw, fc = sc / sw;
-      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; D[i] += (fd * wq[cy] - D[i]) * mx; Cz[i] += (fc * wq[cy] - Cz[i]) * mx; }
+      let sd = 0, sc = 0, sr = 0, sw = 0;
+      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; sd += D[i]; sc += Cz[i]; sr += Rz[i]; const v = ph[i] + di[i] + P.FOOD0; wq[cy] = v; sw += v; }
+      const fd = sd / sw, fc = sc / sw, fr = sr / sw;
+      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; D[i] += (fd * wq[cy] - D[i]) * mx; Cz[i] += (fc * wq[cy] - Cz[i]) * mx; Rz[i] += (fr * wq[cy] - Rz[i]) * mx; }
     }
     // out of anoxic water: a share swims up a cell each step (the cell above a wet cell is always wet)
     const av = Math.min(1, P.AVOID * dt);
@@ -300,22 +307,25 @@ export class Environment {
       const base = cy * COLS;
       for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
         const i = base + cx; if (o2[i] >= P.O2_MIN) continue;
-        const j = i - COLS, md = D[i] * av, mc = Cz[i] * av;
-        D[i] -= md; D[j] += md; Cz[i] -= mc; Cz[j] += mc;
+        const j = i - COLS, md = D[i] * av, mc = Cz[i] * av, mr = Rz[i] * av;
+        D[i] -= md; D[j] += md; Cz[i] -= mc; Cz[j] += mc; Rz[i] -= mr; Rz[j] += mr;
       }
     }
     // HORIZONTAL MIXING: wind-driven currents (cm/s) carry the plankton across a small lake many times a day — each depth layer
     // relaxes toward its lake-wide mean at HMIX /s (≈ once a day), so a patch cropped by fish refills from the open water
     // (conservative per row); plus small-scale diffusion
+    // (SHORE AVOIDANCE: open-water Daphnia swim away from the shore — Siebeck 1980 — so their share leans to the deep columns:
+    // each column weighted SHORE + (1 − SHORE) × its DVM refuge depth; copepods and the littoral's own crustaceans spread evenly)
     const hm = Math.min(1, P.HMIX * dt);
     for (let cy = 0; cy < ROWS; cy++) {
       const base = cy * COLS, a = lo[cy], b = hi[cy], n = b - a + 1; if (n < 2) continue;
-      let sd = 0, sc = 0; for (let i = base + a; i <= base + b; i++) { sd += D[i]; sc += Cz[i]; }
-      const md = sd / n, mc = sc / n;
-      for (let i = base + a; i <= base + b; i++) { D[i] += (md - D[i]) * hm; Cz[i] += (mc - Cz[i]) * hm; }
+      let sd = 0, sc = 0, sr = 0, sw = 0; for (let cx = a; cx <= b; cx++) { const i = base + cx; sd += D[i]; sc += Cz[i]; sr += Rz[i]; sw += P.SHORE + (1 - P.SHORE) * ra[cx]; }
+      const fd = sd / sw, mc = sc / n, mr = sr / n;
+      for (let cx = a; cx <= b; cx++) { const i = base + cx; D[i] += (fd * (P.SHORE + (1 - P.SHORE) * ra[cx]) - D[i]) * hm; Cz[i] += (mc - Cz[i]) * hm; Rz[i] += (mr - Rz[i]) * hm; }
     }
     diffuse(D, this._tmp, P.DIFFUSE * dt, this.mask);
     diffuse(Cz, this._tmp, P.DIFFUSE * dt, this.mask);
+    diffuse(Rz, this._tmp, P.DIFFUSE * dt, this.mask);
   }
   colOf(x) { return clamp((x / CW) | 0, 0, COLS - 1); }
   sedOMAt(x) { return this.sedOM[this.colOf(x)]; }
@@ -900,7 +910,7 @@ export class Environment {
       phyto: Array.from(this.phyto), cyano: Array.from(this.cyano), sedP: Array.from(this.sedP),
       dom: Array.from(this.dom), sedOM: Array.from(this.sedOM),   // v28 the bed's organic layer (_colDecay is filled and emptied within a step)
       benth: Array.from(this.benth),   // v30 the bed's worms and scuds
-      zooD: Array.from(this.zooD), zooC: Array.from(this.zooC), zooEgg: Array.from(this.zooEgg),   // v30 the zooplankton fields + egg bank (the weed map and DVM shares are rebuilt each step)
+      zooD: Array.from(this.zooD), zooC: Array.from(this.zooC), zooR: Array.from(this.zooR), zooEgg: Array.from(this.zooEgg),   // v30 the zooplankton fields + egg bank (the weed map and DVM shares are rebuilt each step)
     };
   }
   // Two-phase, validated load: everything is parsed into locals first and a descriptive Error is thrown BEFORE any field
@@ -963,6 +973,7 @@ export class Environment {
     const sedP = field1(s.sedP, new Float32Array(COLS).fill(SED_P.START));
     const sedOM = field1(s.sedOM, new Float32Array(COLS).fill(SEDOM.START));   // v28 (older saves: the start layer)
     const zooD = field2(s.zooD, this._zooFill(PLANKTON.START_D)), zooC = field2(s.zooC, this._zooFill(PLANKTON.START_C));   // v30 (older: the start)
+    const zooR = field2(s.zooR, this._zooFill(PLANKTON.START_R));
     const benth = field1(s.benth, new Float32Array(COLS).fill(BENTHOS.START * COL_M2));   // v30 (older: the start stock)
     const zooEgg = this._eggFill();   // v30 egg bank: [col × 2 + kind] for the current grid (another grid size → the start bank)
     if (Array.isArray(s.zooEgg) && s.zooEgg.length === COLS * 2) for (let k = 0; k < COLS * 2; k++) zooEgg[k] = cell(s.zooEgg[k], zooEgg[k]);
@@ -990,7 +1001,7 @@ export class Environment {
     // ---- commit (nothing above touched `this`) ----
     Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash, tempDiel, tempHypo, ice });
     this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM; this._meanDiatom = meanDiatom;
-    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.sedOM.set(sedOM); this._colDecay.fill(0); this.zooD.set(zooD); this.zooC.set(zooC); this.zooEgg.set(zooEgg); this.benth.set(benth); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
+    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.sedOM.set(sedOM); this._colDecay.fill(0); this.zooD.set(zooD); this.zooC.set(zooC); this.zooR.set(zooR); this.zooEgg.set(zooEgg); this.benth.set(benth); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
   }
 }
 

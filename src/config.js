@@ -185,6 +185,11 @@ export const FRY = {
                        //   surviving swarms of fry ate 8–10 kg of zooplankton a month, 2–4× a strong real year class, and
                        //   stripped the lake by August). Past it the schools die at the agents' size-scaled share of the
                        //   species' M (BIOE.M_OTHER; Lorenzen 1996)
+  M_JUV: 0.035,        // /day at 20 °C: JUVENILES (taking over from M_LARVA as it fades, ~3 cm on) keep dying to predators the lake
+  M_JUV_Q10: 3,        //   doesn't simulate — Oneida age-0 perch from 18 mm to autumn: Z ≈ 0.035/day, ~1.3 % surviving (Irwin et al.
+                       //   2009) — slower in cold water (× Q10: ~0.005/day under the ice, so ~40–50 % die over a first winter as
+                       //   with predators present, Neuswanger et al. 2015). (2026-10-15: without it a strong cohort of 2–4-cm
+                       //   fry stripped the zooplankton every late July and the adults starved through the autumn)
   SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
   CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
                        //   are dispersed and hard to find among the zooplankton
@@ -209,6 +214,7 @@ export const PREY = {
   PATCH_R: 14,                    // px: a patch (swarm) of small prey spans ~15–20 cm — a fish anywhere within it can feed
   DAPH_G: 2.0, DAPH_ED: 2400,     // a Daphnia swarm patch; Daphnia ~2,400 J/g wet (D. pulicaria 2,214–2,612: Snow 1972)
   COPE_G: 1.2, COPE_ED: 2700,     // a copepod patch (smaller per patch; copepods ~2,700 J/g)
+  ROT_ED: 2300,                   // rotifers and nauplii, J/g wet
   BENTH_ED: 3300,                 // the bed's worms and scuds (amphipods ~3,500, oligochaetes ~3,200 J/g wet — Cummins & Wuycheck 1971)
   LARVA_G: 3.0, LARVA_ED: 2700,   // a patch of chironomid / mayfly larvae (chironomids 2,300–2,750; mayflies 2,700–6,900 J/g)
   INSECT_G: 1.5, INSECT_ED: 4000, // emerged adult aquatic insects at the surface (mayflies ~3,300–4,400 J/g)
@@ -681,7 +687,7 @@ export const BENTHOS = {
   YIELD: 0.25,             // g of invertebrate per g of organic matter eaten (as INSECT.YIELD)
   O2_MIN: 0.05,            // bottom O₂ (normalised) below which they die off at …
   get ANOX_M() { return 0.02 / BIOE.DAY; },   // … this /s at 20 °C (oligochaetes tolerate weeks of anoxia; amphipods leave or die)
-  REFUGE: 1.5,             // g/m² of every column out of fish reach
+  REFUGE: 3,               // g/m² of every column out of fish reach (fish-exclusion studies: fish cut benthos only 20–60 %)
   K_FISH: 2,               // g/m² of reachable invertebrates at which a bottom-foraging fish gets half its ration from them (type II)
   REACH: 120,              // px (~1.5 m) above the bed within which a bottom forager feeds on them (the mud and the weed band)
 };
@@ -707,9 +713,9 @@ export const PLANKTON = {
   // ~0.04 below for herbivorous cladocerans, ~0.10 for cyclopoids and ~0.04 for calanoids at 20 °C (Stockwell & Johannsson
   // 1997; Johannsson et al. 2000; Shuter & Ing 1997: log P/B rises 0.043/°C, Q10 ≈ 2.7)
   G_D: 0.6, G_C: 0.3,      // (set so the REALISED production — after the migrants' cold dark hours and the DVM cost — matches the field P/B)
-  R_D: 0.12, R_C: 0.06,    // /day maintenance at 20 °C: below food ≈ (R + M)/G of saturation a population shrinks — set so Daphnia stop
-                           //   growing at ~0.05 algae units ≈ 0.07 mg C/L (0.06–0.10 mg C/L of good food — Boersma & Kreutzer 2002; one algae
-                           //   unit ≈ 1.5 mg C/L) and copepods a little above (at 0.05/0.03 the zooplankton lived on next to no algae)
+  R_D: 0.08, R_C: 0.05,    // /day maintenance at 20 °C: below food ≈ (R + M)/G of saturation a population shrinks — set so Daphnia stop
+                           //   growing at ~0.035 algae units ≈ 0.05–0.1 mg C/L (0.06–0.10 mg C/L of good food — Boersma & Kreutzer 2002; one algae
+                           //   unit ≈ 1.5–3 mg C/L — the mapping is uncertain ~2×) and copepods a little above (at 0.05/0.03 the zooplankton lived on next to no algae)
   M_D: 0.03, M_C: 0.02,    // /day background mortality at 20 °C (invertebrate predators — Chaoborus, Leptodora, cyclopoids — and senescence)
   Q10_D: 3.0, Q10_C: 2.7,  // growth: Daphnia are warm-water breeders (eggs develop in 20 d at 4 °C, 7.6 at 10, 2.7 at 20 — Bottrell et al.
                            //   1976); copepods' field P/B rises 0.043 log units/°C (Q10 2.7 — Shuter & Ing 1997), but they keep growing in
@@ -730,6 +736,7 @@ export const PLANKTON = {
   GR_D: 0.0048, GR_C: 0.002,
   DIFFUSE: 0.15,           // small-scale mixing between cells (swimming and turbulence)
   HMIX: 0.2,               // /s: each depth layer relaxes toward its lake-wide mean (wind currents cross a small lake many times a day; ≈ daily here)
+  SHORE: 0.25,             // … but open-water Daphnia avoid the shore (Siebeck 1980): a shallow column holds this share of a deep one's
   MIX: 1.0,                // /s: over a day the animals spread through their column's oxic water (wind mixing + the migrants' daily
                            //   round trip), spending their time where the food is — the field is their daily-mean place …
   FOOD0: 0.03,             // … each oxic cell weighted by its algae + this (non-migrants keep to the food; migrants spend only the
@@ -778,6 +785,20 @@ export const PLANKTON = {
   FRY_DAPH_L: [0.6, 1.0],  // cm: fry take the cladoceran field fully from 1.0 cm, from first feeding only its small animals (FRY_DAPH_MIN:
   FRY_DAPH_MIN: 0.3,       //   Bosmina, Ceriodaphnia, newborn Daphnia) — first-feeding larvae of 4.5–6 mm eat nauplii, rotifers and small
                            //   cyclopoids, cladocerans from ~8–10 mm (Keast 1980; Siefert 1972) …
+  // ROTIFERS AND NAUPLII (env.zooR): the microzooplankton — tiny, fast-breeding (r 0.3–1.4/day), the first food of every fish
+  // larva (nauplii, rotifers and small cyclopoids of 0.1–0.3 mm at 4.5–6 mm — Keast 1980; Siefert 1972), too small for adult
+  // fish, and not migrating. They carry the larvae through a Daphnia crash (2026-10-15: without them every young sunfish under
+  // ~1.5 cm died when the year's cohort stripped the crustaceans in late July). Daphnia out-compete them (a lower food threshold)
+  // and kill them by mechanical interference (Gilbert 1988).
+  START_R: 0.3,            // g wet per cell (≈ 12 µg dry/L — rotifers are typically a tenth to a third of the crustaceans' biomass)
+  G_R: 1.0, R_R: 0.2, M_R: 0.05, Q10_R: 2.5, K_R: 0.15,   // /day at 20 °C; zero growth at ~0.05 algae units (above Daphnia's)
+  DAPH_INTERF: 0.05,       // /day extra rotifer mortality per g/cell of Daphnia (interference)
+  M2_R: 0.3,               // /day per g/cell: density-dependent loss to their invertebrate predators (cyclopoid copepods, Chaoborus, Asplanchna) —
+                           //   keeps them near ~50 µg/L in summer and a few in winter (rotifers seldom exceed ~100–300 µg/L; without it they
+                           //   reached ~1,000 µg/L under the ice and out-competed the crustaceans)
+  GR_R: 0.006,             // algae a gram of rotifers clears per sim-second at 20 °C on rich food (type II, K_R)
+  FRY_ROT_L: [0.7, 2.0],   // cm: fry take them fully up to 0.7 cm, down to FRY_ROT_MIN of them by 2 cm (bigger fry pass up tiny prey)
+  FRY_ROT_MIN: 0.2,
   FRY_COPE: 0.3,           // … and catch the copepod field's animals at this rate (nauplii easily, copepodites and adults seldom; an adult
                            //   fish: 1 − COPE_ESCAPE)
   BITE_MIN: 0.002,         // a zooplankton intake ≥ this × the gut's capacity in a step counts as a meal (learning, foraging)
