@@ -5,7 +5,7 @@
 // escapeHTML() or a numeric formatter (fmtNum/fmtInt), and colours are applied through the CSSOM (el.style), never as
 // inline style attributes — the page's Content-Security-Policy blocks those (index.html / serve.py / serve.mjs).
 import { SP, SPECIES } from './species.js';
-import { WORLD, PLANKTON, TIME, scaleCount } from './config.js';
+import { WORLD, TIME } from './config.js';
 
 const $ = id => document.getElementById(id);
 const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
@@ -363,16 +363,15 @@ export class UI {
     if (!w.addAgent(k, { fromBest: true })) return full();   // World.addAgent returns null at GLOBAL_MAX
     this.toast(`added ${sp.name}`); return true;
   }
+  // scatter zooplankton into the water in view: n mouthfuls of 1.5 g (≈ 60 µg/L in a cell), mostly Daphnia
   scatterFood(n = 40) {
-    const w = this.world, cap = scaleCount(PLANKTON.CAP), room = cap - w.plankton.length;
-    if (room <= 0) { this.toast(`plenty of plankton already (${cap} max)`); return 0; }
-    const k = Math.min(n, room), vr = this.camera.visibleRect();
-    for (let i = 0; i < k; i++) {
+    const w = this.world, vr = this.camera.visibleRect();
+    for (let i = 0; i < n; i++) {
       const x = Math.max(6, Math.min(w.W - 6, vr.x0 + Math.random() * (vr.x1 - vr.x0))), y = Math.max(20, Math.min(w.FLOOR - 10, vr.y0 + Math.random() * (vr.y1 - vr.y0)));
-      w.plankton.push(w._mkPlankton(x, y));
+      w.addZoo(x, y, 1.5, Math.random() < 0.6 ? 0 : 1);
     }
-    this.toast(k < n ? `scattered ${k} plankton (at the ${cap} cap)` : 'scattered plankton');
-    return k;
+    this.toast('scattered zooplankton');
+    return n;
   }
   // seed champion brains, capped at GLOBAL_MAX. Works with both World.seedFromChampions contracts: the older one returns
   // nothing and ignores the cap (the overflow — all just-added fish at the array's tail — is dropped here), the hardened
@@ -499,7 +498,7 @@ export class UI {
     set('env-ice', ed.ice > 0.01 ? (ed.ice * 100 | 0) + '%' : 'open');
     set('env-diatom', (ed.diatom * 100 | 0) + '%');
     set('env-birds', String(ed.birds));
-    set('env-zoo', `${ed.daphnia} Daphnia · ${ed.copepods} copepods`);
+    set('env-zoo', `${fmtNum(ed.zooUgl, 0)} µg/L · ${fmtNum(ed.daphnia, 1)} kg Daphnia · ${fmtNum(ed.copepods, 1)} kg copepods · ${fmtNum(ed.zooEggs, 1)} kg resting eggs`);
     set('env-odo', `${ed.nymphs} nymphs · ${ed.dragonflies} flying`);
     set('env-frogs', `${ed.frogs} · ${ed.tadpoles} tadpoles`);
     set('env-turtles', String(ed.turtles));
@@ -536,7 +535,7 @@ export class UI {
   // food web: the resource-base count strip + the fish trophic-biomass bars
   _foodweb(c) {
     const w = this.world, rc = w.resourceCounts(), resEl = $('reslist');
-    if (resEl) resEl.innerHTML = [['zoo', rc.zooplankton], ['larvae', rc.larvae], ['insects', rc.insects], ['snails', rc.snails], ['crayfish', rc.crayfish], ['mussels', rc.mussels], ['detritus', rc.detritus], ['plants', rc.plants]]
+    if (resEl) resEl.innerHTML = [['zoo µg/L', rc.zooplankton], ['larvae', rc.larvae], ['insects', rc.insects], ['snails', rc.snails], ['crayfish', rc.crayfish], ['mussels', rc.mussels], ['detritus', rc.detritus], ['plants', rc.plants]]
       .map(([n, v]) => `<span class="res">${n}<b>${fmtInt(v)}</b></span>`).join('');
     if (this.pyrEls) {
       const bm = w.biomassByTrophic(); let maxB = 1e-6;

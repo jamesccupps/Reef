@@ -18,6 +18,12 @@ export const WORLD = {
   get FLOOR() { return BASIN.DEEP_Y * this.H; },  // deepest point of the lake bed
   get AREA_SCALE() { return (this.W * this.H) / (REF_W * REF_H); },
   get GLOBAL_MAX() { return Math.round(150 * this.AREA_SCALE); }, // hard cap on total agents
+  // REAL SCALE: the 2-D world is a vertical slice of a lake drawn at true size (render.js PX_PER_CM 0.79 → 79 px per metre:
+  // 26 m wide, 14.6 m deep) standing for SLICE_M2 of lake surface (~0.07 ha) — the third dimension is SLICE_M2 / width
+  // (~27 m). A field cell is then a ~0.3 × 0.3 × 27 m box of CELL_L litres (densities in µg/L, fish in kg/ha)
+  PX_PER_M: 79,
+  SLICE_M2: 700,
+  get CELL_L() { return (this.W / GRID.FIELD_COLS / this.PX_PER_M) * (this.H / GRID.FIELD_ROWS / this.PX_PER_M) * this.SLICE_M2 / (this.W / this.PX_PER_M) * 1000; },
 };
 
 // scale a reference-pond count to the current world area (never below 1)
@@ -154,6 +160,10 @@ export const FRY = {
   MERGE_DAYS: 14,      // a spawning finding no free slot joins its species' youngest school if that is younger than this
                        //   (days; the school's genome is kept or replaced in proportion to the fish each side brings);
                        //   otherwise its larvae are lost
+  // LARVAL APPETITE: FB4 consumption, fitted to juveniles and adults, understates larvae — Michigan pond bluegill fry grew as
+  // observed only with the Cmax intercept raised 50 % (Breck 1997), and limnetic larvae growing 0.4 mm/day eat above FB4 Cmax
+  // (docs/ECOLOGY_RESEARCH.md): a school's Cmax × CMAX_LARVA up to LARVA_CM[0] cm, easing to × 1 by LARVA_CM[1]
+  CMAX_LARVA: 1.5, LARVA_CM: [2, 4],
   N_PER_AGENT: 3,      // survivors per recruited individual
   MAX_RECRUITS: 12,    // recruits one school yields at most
   TICK: 0.2,           // s between a school's feeding / physiology / mortality updates (staggered across schools; each
@@ -647,37 +657,100 @@ export const SEDOM = {
   SIFT: 0.5,               // a bottom-sifting fish (diet.detritus: carp, bullhead) takes up to this × its gut capacity a second
 };
 
-// "plankton" particles are ZOOPLANKTON: they graze the phytoplankton field, drift, and are
-// eaten by planktivores. Their numbers track the algae (phyto→zoo→planktivore chain).
+// ZOOPLANKTON as two biomass FIELDS on the environment grid (env.zooD — Daphnia and the other cladocerans; env.zooC — copepods
+// with their nauplii and copepodites), in g WET per field cell (2026-10-15, docs/ECOLOGY_RESEARCH.md). They used to be ~2,000
+// swarm particles refilled at full size in proportion to the algae — production about right, but the standing stock 3–6×
+// too low (16 µg dry/L in June) and fish ate ~all of each month's production. Now each kind GROWS on the algae in its own
+// cell (a Holling food response) at a temperature-set rate (Q10), less maintenance and background mortality; GRAZES that
+// cell's algae (type II, returning the N+P as before); dies in anoxic water and in a toxic cyanobacterial scum; mixes; and
+// escapes visual fish by DIEL VERTICAL MIGRATION (a daily-mean refuge: the share of migrants grows with the lake's fish
+// biomass — the kairomone response — wherever the column is deep enough to hide in, and costs them growth in the cold dark
+// water). Fish and fry feed on the cells around them at a rate set by the local exposed density (type II, µg dry/L), so
+// young fish starve where the water holds too few prey per litre and planktivores turn to the bed when the zooplankton thins.
+// Rates are per REAL day (÷ BIOE.DAY) like the fish's own physiology; the diel light cycle is cosmetic (one sim night lasts
+// several physiological days), so DVM and visual feeding are daily means, not tied to it.
 export const PLANKTON = {
-  CAP: 300,                // reference-pond cap (auto-scaled by world area)
-  RATE_BASE: 60,           // /s max spawn at full phytoplankton density (scaled by area)
-  LITTORAL_RATE: 15,       // /s spawn among the macrophytes at full plant cover (scaled by area) — the weed-bed zooplankton (often denser than the open water's),
-                           //   fed by periphyton and detritus rather than the open-water algae (world.js)
-  DRIFT: 6,                // horizontal drift speed
-  GRAZE: 0.004,            // phytoplankton biomass each zooplankter clears /s (gentle → stable cycle)
-  STARVE: 0.08,            // death rate /s where phytoplankton is depleted (soft starvation)
-  STARVE_AT: 0.025,        // phytoplankton level below which zooplankton starve
-  // planktivore facultative omnivory (food-web rebalance): when zooplankton is scarce, a hungry planktivore
-  // grazes the phytoplankton field directly at a LOW survival ration — real planktivorous fish are facultative
-  // phyto grazers. This cushions the boom-bust crash so the forage base (and the predators above it) don't
-  // collapse to the refuge in the troughs → a steadier, more self-sustaining web (less immigration dependence).
-  FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton (= the old
-                           //   0.022/step at the browser's 1/60 step; per-step made it dt-dependent — half as much headless at 1/30)
-  FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal (= the old 0.003/step at 1/60)
-  // TWO KINDS of zooplankter (p.k): 0 = DAPHNIA — big cladoceran filter-feeders: they graze hard (their late-spring boom
-  // clears the water — the clear-water phase), are the fishes' favourite, richest prey, can't eat or tolerate
-  // cyanobacteria and barely breed in cold water; 1 = COPEPODS — small, quick and evasive, cold-tolerant (they carry the
-  // zooplankton through winter), a leaner meal. Daphnia's share of new zooplankton follows temperature and collapses in
-  // a cyanobacterial bloom; size-selective fish predation (copepods escape more) does the rest.
-  DAPH_T: [9, 15],         // °C over which Daphnia's share of births ramps from 0 to DAPH_MAX
-  DAPH_MAX: 0.7,           // Daphnia's max share of new zooplankton
-  DAPH_CYANO: 2.5,         // × the cyanobacteria fraction cut from Daphnia's share
-  DAPH_GRAZE: 2.4,         // Daphnia graze × GRAZE; copepods × COPE_GRAZE
-  COPE_GRAZE: 0.6,
-  COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike
-  DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate (cladocerans are the most sensitive)
+  DRY: 0.1,                // dry : wet mass of crustacean zooplankton (Johannsson et al. 2000); carbon is ~48 % of dry (Andersen & Hessen 1991)
+  START_D: 1.0,            // g wet per cell at the lake's opening — Daphnia (1.0 g/cell ≈ 40 µg dry/L) …
+  START_C: 0.6,            // … and copepods (≈ 24 µg dry/L; summer crustacean zooplankton 45–100 µg/L in mesotrophic lakes, Gyllström 2005)
+  // GROWTH /day at 20 °C on saturating food (× Q10 with the cell's temperature × the food response): Daphnia populations
+  // grow 0.3–0.5/day on ample food; the field P/B — growth on natural, limiting food — is ~0.13–0.16/day above 10 °C and
+  // ~0.04 below for herbivorous cladocerans, ~0.10 for cyclopoids and ~0.04 for calanoids at 20 °C (Stockwell & Johannsson
+  // 1997; Johannsson et al. 2000; Shuter & Ing 1997: log P/B rises 0.043/°C, Q10 ≈ 2.7)
+  G_D: 0.45, G_C: 0.18,
+  R_D: 0.05, R_C: 0.03,    // /day maintenance at 20 °C: below food ≈ (R + M)/G of saturation a population shrinks (Daphnia stop growing
+                           //   at ~0.06–0.10 mg C/L of good food — Boersma & Kreutzer 2002)
+  M_D: 0.03, M_C: 0.02,    // /day background mortality at 20 °C (invertebrate predators — Chaoborus, Leptodora, cyclopoids — and senescence)
+  Q10_D: 3.0, Q10_C: 2.7,  // growth: Daphnia are warm-water breeders (eggs develop in 20 d at 4 °C, 7.6 at 10, 2.7 at 20 — Bottrell et al.
+                           //   1976); copepods' field P/B rises 0.043 log units/°C (Q10 2.7 — Shuter & Ing 1997), but they keep growing in
+                           //   cold water and carry the zooplankton through winter
+  Q10_L: 2.0,              // maintenance and mortality — less temperature-sensitive than growth (so cold water favours losses)
+  DAPH_T: [4, 10],         // °C: Daphnia barely reproduce in ice-cold water — their growth ramps in from 4 °C to full at 10 …
+  DAPH_HOT: [25, 30],      // … and falls off above 25 °C (heat stress; the temperate Daphnia's upper limit is ~30 °C)
+  K_D: 0.15, K_C: 0.08,    // edible algae (green + diatoms, field units) at which growth runs at half its maximum (copepods feed well
+                           //   on thinner food)
+  LIT_FOOD: 0.1,           // algae-equivalent food the weed beds add for the littoral copepods and chydorids (periphyton and detritus on
+                           //   the plants — plant-associated taxa are about half the zooplankton of shallow lakes, Gyllström 2005)
+  DAPH_CYANO: 2.5,         // × the local cyanobacteria fraction cut from Daphnia's growth (they can't eat or tolerate them)
+  DAPH_TOX: 2.0,           // Daphnia × the cyanotoxin kill rate in a toxic scum (cladocerans are the most sensitive)
+  // GRAZING (type II): a gram of each kind clears up to this much algae (field units) a sim-second at 20 °C on rich food
+  // (× Q10, × A/(A + K)); the grazed algae's N+P is returned at once (excreted or egested), as before. A spring Daphnia peak
+  // can clear the water (the clear-water phase: 14–170 % of the lake filtered a day — Lampert et al. 1986; Luecke et al. 1990)
+  GR_D: 0.0048, GR_C: 0.002,
+  DIFFUSE: 0.15,           // mixing between cells (swimming and turbulence; faster than the algae's)
+  SEEK: 0.3,               // /s: vertical drift toward richer algae (the field is the animals' daily-mean feeding place)
+  O2_MIN: 0.12,            // normalised O₂ below which zooplankton die (ANOX_M /day at any temperature) and swim up out of it (AVOID /s)
+  ANOX_M: 1.0, AVOID: 0.5,
+  FLOOR: 0.002,            // g/cell: new arrivals — resting eggs blown in on dust, carried on birds' feet and in inflowing water — keep a
+  FLOOR_RATE: 0.05,        //   trace of zooplankton in all oxic water ("everything is everywhere"); /s toward it
+  // RESTING EGGS (env.zooEgg, g per column of bed): as the days shorten in autumn and the water cools, Daphnia switch to sexual
+  // reproduction and lay ephippia, and many copepods enter diapause — the active plankton dwindles into an EGG BANK in the
+  // sediment (thousands to millions per m², viable for decades); warming water and lengthening days hatch part of it in
+  // spring. Overwintering adults (Daphnia at 0–2.5/L, copepods more) carry the rest (Cáceres 1998; Hampton et al. 2017:
+  // under ice ~25 % of the summer stock)
+  DORM_DAY: 0.5,           // day-length fraction below which, on shortening days, …
+  DORM_T: 12,              // … in water colder than this (°C), the active zooplankton turn to resting stages at …
+  DORM_D: 0.04, DORM_C: 0.015,   // … this share a day (Daphnia, copepods)
+  EGG_EFF: 0.3,            // share of that mass that becomes viable resting eggs in the bank
+  HATCH_T_D: 8, HATCH_T_C: 5,    // °C at the bed above which, on lengthening days, …
+  HATCH: 0.005,            // … this share of the bank hatches a day (part of the bank each spring)
+  EGG_LOSS: 0.2,           // /yr: eggs buried out of reach or dead
+  EGG_START_D: 20, EGG_START_C: 10,   // g wet per column of bed at the lake's opening (≈ 2.4 and 1.2 g/m²)
+  // DIEL VERTICAL MIGRATION — a daily-mean refuge from visual fish. A share f = DVM_MAX × B/(B + DVM_B50) of each kind migrates
+  // (B = the lake's fish biomass, kg/ha: fish kairomones induce DVM and its amplitude grows with fish density — Hahn et al.
+  // 2019) where the column is deep enough to hide in (REF_DEPTH … + REF_RAMP of the lake's depth: little protection with less
+  // than ~6 m to migrate). Migrants meet fish only at twilight (TWILIGHT of a resident's exposure) and grow DVM_COST slower in
+  // the cold dark water (Stich & Lampert 1981)
+  DVM_MAX_D: 0.85, DVM_MAX_C: 0.4,
+  DVM_B50: 50,
+  REF_DEPTH: 0.3, REF_RAMP: 0.2,
+  TWILIGHT: 0.15,
+  DVM_COST: 0.3,
+  // VISUAL FEEDING: fish see millimetre prey well in daylight, poorly in dim deep water and under snow-covered ice — the noon
+  // light at the fish's depth, from VIS_I0 (blind) to VIS_I1 (full sight) on a log scale
+  VIS_I0: 0.002, VIS_I1: 0.1,
+  WEED_REF: 0.5,           // dense weeds hide this share of their zooplankton from fish (a structural refuge)
+  // FEEDING — type II in the exposed density over the 3×3 cells around the fish (µg dry/L): adult planktivores reach half
+  // their zooplankton intake at K_ADULT; larvae and young fish need far denser prey (K_FRY: their growth falls below ~20–50
+  // crustaceans/L — Breck 1997; Hoxmeier et al. 2004 — about 30–75 µg/L of the small prey they take)
+  K_ADULT: 25,
+  K_FRY: 30,
+  Q: 2,                    // at saturating density a fish refills its gut at up to Q × its Cmax rate
+  CROP: 0.3,               // a fish or school takes at most this share of the zooplankton within reach in one step
+  FRY_DAPH_L: [0.6, 1.0],  // cm: fry take the cladoceran field fully from 1.0 cm, from first feeding only its small animals (FRY_DAPH_MIN:
+  FRY_DAPH_MIN: 0.3,       //   Bosmina, Ceriodaphnia, newborn Daphnia) — first-feeding larvae of 4.5–6 mm eat nauplii, rotifers and small
+                           //   cyclopoids, cladocerans from ~8–10 mm (Keast 1980; Siefert 1972) …
+  FRY_COPE: 0.8,           // … and catch the copepod field's nauplii and copepodites at this rate (an adult fish: 1 − COPE_ESCAPE)
+  BITE_MIN: 0.002,         // a zooplankton intake ≥ this × the gut's capacity in a step counts as a meal (learning, foraging)
+  SENSE_MIN: 0.3,          // a fish notices a zooplankton patch at ≥ this × K_ADULT of exposed density
+  COPE_ESCAPE: 0.4,        // chance a copepod's escape jump beats a fish's strike (lake herring take 49 % of copepods, 87 % of cladocerans
+                           //   per attack — Link 1996)
   SIGHT: 48,               // px: how far a fish can see a millimetre-sized zooplankter (a few body lengths), whatever its vision range
+  // planktivore facultative omnivory: when it finds no zooplankton, a hungry planktivore grazes the phytoplankton field at a
+  // low survival ration (real planktivorous fish are facultative algae and detritus eaters)
+  FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton
+  FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal
+  get UGL() { return this.DRY * 1e6 / WORLD.CELL_L; },   // µg DRY per litre for 1 g WET per field cell
 };
 
 export const DETRITUS = {

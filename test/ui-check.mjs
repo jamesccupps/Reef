@@ -115,7 +115,7 @@ check('sanitizeChampions keeps known species + plain finite numbers only', Objec
   world.env.forced = false; tick();
 }
 
-// 4. caps: +species / Load brains / Scatter food respect GLOBAL_MAX and the plankton cap
+// 4. caps: +species / Load brains respect GLOBAL_MAX; Scatter food adds zooplankton
 {
   const cap = WORLD.GLOBAL_MAX;
   localStorage.setItem('synapse-reef.champions', JSON.stringify(world.champions()));
@@ -128,10 +128,9 @@ check('sanitizeChampions keeps known species + plain finite numbers only', Objec
   $('btn-load').onclick();
   check('Load brains is refused at GLOBAL_MAX with a toast', world.agents.length === n0 && /full/.test(toast()), toast());
   world.agents.length = Math.floor(cap / 2);
-  const pcap = scaleCount(PLANKTON.CAP);
-  while (world.plankton.length < pcap - 5) world.plankton.push(world._mkPlankton());
-  const k1 = ui.scatterFood(); const k2 = ui.scatterFood();
-  check('Scatter food tops up to the plankton cap, then refuses', k1 === 5 && k2 === 0 && world.plankton.length === pcap && /plenty/.test(toast()), `${k1}, ${k2}, ${world.plankton.length}/${pcap}`);
+  const z0 = world.env.zooTotal(0) + world.env.zooTotal(1);
+  const k1 = ui.scatterFood(), z1 = world.env.zooTotal(0) + world.env.zooTotal(1);
+  check('Scatter food adds zooplankton to the water in view (the fields)', k1 === 40 && z1 > z0 + 20 && /zooplankton/.test(toast()), `${k1}: ${z0.toFixed(0)} → ${z1.toFixed(0)} g`);
 }
 
 // 5. import: size limit, atomic UI update on failure, brain-reseed reporting

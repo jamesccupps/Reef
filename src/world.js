@@ -50,6 +50,9 @@ export const coldPerf = (tC, tOpt, floor = ENV.COLD_PERF_MIN) => { const f = Mat
 // spatial-query predicates as plain functions (SpatialGrid.nearest passes the querying fish as ctx), so the hot queries
 // allocate no closure per call
 const notDead = it => !it.dead;
+// scratch for the zooplankton field queries (env.zooBest's patch → the brain's plankton sense; env.zooFeed's grams by kind) —
+// read at once by the caller, never kept
+const ZB = { item: { x: 0, y: 0 }, dist: 0 }, ZF = new Float64Array(2);
 // a larval patch with larvae outside the refuge: INSECT.REFUGE_M grams of every patch are burrowed in the mud or cased,
 // out of a predator's reach — the stock that rebuilds a grazed-down patch
 const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
@@ -159,7 +162,7 @@ const nonNegInt = (v, d = 0) => (isNum(v) && v >= 0 ? Math.min(Math.floor(v), Nu
 const hueOr = (v, d) => (isNum(v) ? (v >= 0 && v < 360 ? v : ((v % 360) + 360) % 360) : d);   // wrap only when out of range (identity otherwise)
 const numArr = (v, len) => { if (!Array.isArray(v) || v.length !== len) return null; for (let i = 0; i < len; i++) if (!(typeof v[i] === 'number' && Math.abs(v[i]) <= MAX_ABS_WEIGHT)) return null; return v; };
 const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-const SAVE_ARRAYS = ['agents', 'plants', 'plankton', 'detritus', 'larvae', 'insects', 'snails', 'cray', 'corpses', 'nymphs', 'dflies', 'herps', 'fry'];
+const SAVE_ARRAYS = ['agents', 'plants', 'detritus', 'larvae', 'insects', 'snails', 'cray', 'corpses', 'nymphs', 'dflies', 'herps', 'fry'];
 const STRUCT_CAP = 4096;   // per structure list (generated lakes hold tens)
 const STRUCT_FIELDS = {    // static habitat structure: each element rebuilt from its known numeric fields only
   reeds: q => (isNum(q.x) && isNum(q.baseY) && isNum(q.height) ? { x: q.x, baseY: q.baseY, height: q.height, n: clamp(nonNegInt(q.n, 3), 1, 24) } : null),
@@ -264,7 +267,8 @@ function parseSave(s) {
   };
   const yIn = (v, d) => clamp(num(v, d), 0, H);
   const pm = (q, d) => clamp(num(q.m, d), 0, 1e4);   // v27 patch mass (older saves: a fresh patch)
-  const plankton = parts(s.plankton, scaleCount(PLANKTON.CAP), (q, x) => { const k = q.k === 0 ? 0 : 1; return { x, baseY: yIn(q.y, bedY(x) * 0.5), y: 0, phase: num(q.ph, 0), vx: num(q.vx, 0), k, m: pm(q, k === 0 ? PREY.DAPH_G : PREY.COPE_G), dead: false }; });   // v26 kind (older: copepods)
+  // (zooplankton: since v30 two biomass fields in the environment save — an older save's swarm particles are dropped and its
+  // lake reopens with the starting zooplankton fields)
   // `n` = organic N+P (DOM units) the particle carries — 0 for fish-derived detritus; absent on pre-v24 saves → 0
   const detritus = parts(s.detritus, scaleCount(DETRITUS.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x)), life: num(q.l, DETRITUS.LIFE), n: clamp(num(q.n, 0), 0, 1e3), m: pm(q, PREY.DETRITUS_G), dead: false }));
   const larvae = parts(s.larvae, scaleCount(INSECT.LARVA_CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), dev: num(q.d, 0), m: pm(q, PREY.LARVA_G), dead: false }));
@@ -334,7 +338,7 @@ function parseSave(s) {
     evo.push({ t: e.t, s: so });
   }
   const rng = Number.isInteger(s.rng) && s.rng >= 0 && s.rng <= 0xFFFFFFFF ? s.rng : null;
-  return { time, maxGen, stats, env, agents, plants, plankton, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps, fry, evo };
+  return { time, maxGen, stats, env, agents, plants, detritus, larvae, insects, snails, cray, corpses, structs, nextId, rng, rep, genePool, birds, nymphs, dflies, herps, fry, evo };
 }
 // a fish's typical length (cm) at a given age (s): the species' von Bertalanffy curve fitted to north-temperate length-at-
 // age data (species.js `vb`). Used ONLY to give a fish of a known age a plausible starting length (founders, immigrants,
@@ -498,7 +502,6 @@ export class World {
     // agentGrid.sub = the piscivores alone (only a fish-eater can pass canPreyFn as the predator), so qThreat scans those
     // instead of every fish in sight; filled in the same rebuild pass → identical bucket placement and order
     this.agentGrid = new SpatialGrid(W, H, GRID.AGENT_CELL, isPiscivore);
-    this.planktonGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);
     this.detritusGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);
     this.larvaeGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);   // benthic insect larvae (bottom-fish food)
     this.insectGrid = new SpatialGrid(W, H, GRID.FOOD_CELL);   // emerged surface insects (surface-fish food)
@@ -519,13 +522,13 @@ export class World {
 
   reset() {
     this._nextId = 1; _idOwner = this;   // per-world id counter (see nextAgentId)
-    this.agents = []; this.plankton = []; this.detritus = []; this.plants = []; this.corpses = [];
+    this.agents = []; this.detritus = []; this.plants = []; this.corpses = [];
     this.larvae = []; this.insects = [];   // aquatic-insect life cycle: benthic larvae ↔ emerged surface adults
     this.snails = []; this.cray = [];      // benthic invertebrates: grazing snails + omnivorous crayfish
     this.birds = [];                       // visiting fish-eating diving birds (loons) — BIRD
     this.env = new Environment();
     // a fresh lake opens in late spring (SEASON.START_YF) with that season's thermal state, not an ice-bound March 1
-    this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this._daphShare = this.daphShare(); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
+    this.time = SEASON.START_YF * SEASON.YEAR_LEN; this.env.primeSeason(this.time); this.maxGen = 0; this.stats.foodEaten = 0; this.stats.fishEaten = 0;
     this.stats.births = {}; this.stats.immigrants = {}; for (const k of SPECIES) { this.stats.births[k] = 0; this.stats.immigrants[k] = 0; }
     this.series = []; this._seriesAcc = 0; this.selectedId = null; this.evo = []; this._evoSlot = -1;
     for (const key of SPECIES) {
@@ -551,7 +554,6 @@ export class World {
     }
     // the REGIONAL gene pool immigrants come from (connected waters' populations), per species — see the step's gene flow
     this.genePool = {}; for (const k of SPECIES) { this.genePool[k] = []; for (let i = 0; i < IMMIGRATION.POOL_N; i++) this.genePool[k].push(poolFounder(k)); }
-    for (let i = 0, n = scaleCount(SEED_COUNTS.plankton); i < n; i++) this.plankton.push(this._mkPlankton());
     for (let i = 0, n = scaleCount(INSECT.LARVA_SEED); i < n; i++) this.larvae.push(this._mkLarva(undefined, rand(0, 0.9), PREY.LARVA_G));   // the overwintered, full-grown cohort
     for (let i = 0, n = scaleCount(SNAIL.SEED); i < n; i++) this.snails.push(this._mkSnail());
     for (let i = 0, n = scaleCount(CRAYFISH.SEED); i < n; i++) this.cray.push(this._mkCray());
@@ -617,18 +619,8 @@ export class World {
     return best;
   }
 
-  // a zooplankter of kind `k` (0 Daphnia, 1 copepod — PLANKTON.DAPH_*); by default drawn from the current Daphnia share
-  _mkPlankton(x, y, k) {
-    const px = x ?? rand(6, W - 6);
-    const py = y ?? clamp(rand(16, bedY(px) - 12), 12, bedY(px) - 8);   // stay within the water column
-    const kind = k ?? (rand() < this._daphShare ? 0 : 1);
-    return { x: px, baseY: py, y: 0, phase: rand(0, 6.28), vx: rand(-PLANKTON.DRIFT, PLANKTON.DRIFT), k: kind, m: kind === 0 ? PREY.DAPH_G : PREY.COPE_G, dead: false };   // m: the patch's grams of zooplankton
-  }
-  // Daphnia's share of new zooplankton: they breed fast only in warm water and can't cope with a cyanobacterial bloom
-  daphShare() {
-    const env = this.env, [t0, t1] = PLANKTON.DAPH_T;
-    return PLANKTON.DAPH_MAX * clamp((env.tempC - t0) / (t1 - t0), 0, 1) * clamp(1 - PLANKTON.DAPH_CYANO * env.meanCyano() / CYANO.CAP, 0, 1);
-  }
+  // add g grams of zooplankton (k 0 Daphnia, 1 copepods) to the field cell at (x, y) — the UI's "scatter plankton" and tests
+  addZoo(x, y, g, k = 0) { const e = this.env, i = e.cellOf(x, y); if (e.isWet(i) && g > 0) (k ? e.zooC : e.zooD)[i] += g; }
   // `n` = organic N+P (DOM units) the particle carries. Default 0: fish-death detritus is nutrient-NEUTRAL (fish hold no
   // N/P in this model — their remains are food/energy, not a nutrient source). Only seeded detritus carries nutrient.
   spawnDetritus(x, y, n = 0) {
@@ -674,7 +666,7 @@ export class World {
   }
 
   // ---------- spatial queries used by senses (visual range shortened by water turbidity) ----------
-  qPlankton(x, y, r) { const c = this.env.clarity(); return this.planktonGrid.nearest(x, y, Math.min(r, PLANKTON.SIGHT) * c, notDead); }   // tiny prey: seen only a few body lengths off
+  qPlankton(x, y, r) { return this.env.zooBest(x, y, Math.min(r, PLANKTON.SIGHT) * this.env.clarity(), ZB); }   // tiny prey: the richest zooplankton within a few body lengths
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
   qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, larvaFree); }   // benthic insect larvae (perch, bottom feeders)
@@ -790,20 +782,17 @@ export class World {
     const m = this.larvaeGrid.nearest(x, y, r, larvaFree); if (!m) return 0;
     const take = Math.min(g, m.item.m - INSECT.REFUGE_M); m.item.m -= take; return take;
   }
-  // zooplankton meals: up to n strikes at the nearest zooplankters in reach; a copepod's escape jump can beat a strike
-  // (PLANKTON.COPE_ESCAPE — it is then left alone), a Daphnia never escapes. Each zooplankter particle is a swarm patch
-  // (PREY.DAPH_G / COPE_G grams; Daphnia are the bigger, richer prey). Into the gut; returns items eaten.
-  _eatZoo(a, n, room) {
-    let k = 0, g = 0, J = 0;
-    for (let i = 0; i < n && room - g > 1e-9; i++) {
-      const m = this.planktonGrid.nearest(a.x, a.y, Math.max(a.eatRadius, PREY.PATCH_R), notDead); if (!m) break;
-      const z = m.item;
-      if (z.k === 1 && rand() < PLANKTON.COPE_ESCAPE) continue;
-      const take = Math.min(z.m, room - g); z.m -= take; if (z.m <= 1e-9) z.dead = true;   // a small fish crops part of a patch
-      k++; g += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED);
-    }
-    if (k) { a.gut += g; a.gutE += J; a.eaten += k; this.stats.foodEaten += k; a.tox += k * TOX.FOOD * TOX.AMBIENT; }
-    return k;
+  // ZOOPLANKTON MEALS from the fields around the fish (env.zooFeed): it refills its gut at up to PLANKTON.Q × its Cmax rate
+  // (cm g/g/day) × the type-II response to the exposed density (K_ADULT) — a copepod's escape jump beats COPE_ESCAPE of
+  // strikes, a Daphnia never escapes (and is the richer meal), and migrants and weed-hidden animals are mostly out of
+  // reach. Into the gut; counts a meal when the step's intake is worth it. Returns the meals (0/1).
+  _eatZoo(a, room, cm, dt) {
+    const t = this.env.zooFeed(a.x, a.y, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, PLANKTON.Q * cm * a.W * dt / BIOE.DAY), PLANKTON.K_ADULT, ZF);
+    const g = t[0] + t[1]; if (!(g > 0)) return 0;
+    a.gut += g; a.gutE += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED;
+    if (g < PLANKTON.BITE_MIN * a.sp.gut * a.W) return 0;
+    a.eaten++; this.stats.foodEaten++; a.tox += TOX.FOOD * TOX.AMBIENT;
+    return 1;
   }
   // GRAZE PATCHES (larvae, insects, detritus): up to n handling slots, take from the nearest live patch in reach as much
   // as the gut has room for — a small fish crops part of a patch, a big one clears it (then it's gone). A detritus patch's
@@ -925,7 +914,7 @@ export class World {
         if (fr) { const f = fr.item; f.dead = true; f.eatenBy = 'nymph'; counts[f.species]--; this._counts[f.species] = counts[f.species]; if (f.id === this.selectedId) this.selectedId = null; this.stats.nymphEaten = (this.stats.nymphEaten || 0) + 1; continue; }
         const sc = this.fry.length ? this.fryGrid.nearest(n.x, n.y, R, isNymphFry) : null;   // or a few larvae from a school
         if (sc) { const f = sc.item; f.n -= Math.min(f.n, 3); if (f.n < 1) f.dead = true; continue; }
-        this._takeNearest(this.planktonGrid, n.x, n.y, R);
+        this.env.zooFeed(n.x, n.y, 1, 1, ODONATA.BITE * dt, PLANKTON.K_ADULT, ZF);   // or zooplankton (an ambusher's few mouthfuls)
       }
     }
     // --- adult dragonflies: dart low over the water, snatch emerged insects, dip to lay eggs over the shallows; in the
@@ -1075,7 +1064,7 @@ export class World {
       else if (T > sp.uilt - 3) { f.tx = f.x; f.ty = f.y + 60; }
       else {
         const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= (sp.benthL ?? FRY.BENTH_L);
-        let best = zoo ? this.planktonGrid.nearest(f.x, f.y, FRY.SEEK_R, notDead) : null, m;
+        let best = zoo ? this.env.zooBest(f.x, f.y, FRY.SEEK_R, ZB) : null, m;
         if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFreeFry))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
@@ -1112,7 +1101,8 @@ export class World {
   // Returns the starvation hazard (/s).
   _feedFry(f, sp, st, T) {
     const env = this.env, b = sp.bioJuv || sp.bio, dd = st / BIOE.DAY, d = sp.diet;   // (young-of-year: FB4's juvenile set where one exists)
-    const want = f.n * cmax(b, f.W, T) * f.W * dd; let got = 0, J = 0, feeds = FRY.FEEDS, foundZoo = false;
+    const want = f.n * cmax(b, f.W, T) * f.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - f.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));   // (larval appetite, FRY.CMAX_LARVA)
+    let got = 0, J = 0, feeds = FRY.FEEDS, foundZoo = false;
     if (d.fish && f.L >= sp.Lpisc) {
       const m = this.fryGrid.nearest(f.x, f.y, FRY.EAT_R, canSchoolEat, f);
       if (m) {
@@ -1120,11 +1110,10 @@ export class World {
         if (k > 0) { q.n -= k; if (q.n < 1) q.dead = true; got += k * q.W; J += k * q.W * energyDensity(SP[q.k].bio, q.W); this.stats.fryEaten = (this.stats.fryEaten || 0) + k; }
       }
     }
-    if (d.plankton || f.L < sp.Lzoo) for (; feeds > 0 && want - got > 1e-12; feeds--) {
-      const m = this.planktonGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
-      const z = m.item, take = Math.min(z.m, want - got);
-      z.m -= take; if (z.m <= 1e-9) z.dead = true;
-      got += take; J += take * (z.k === 0 ? PREY.DAPH_ED : PREY.COPE_ED); foundZoo = true;
+    if ((d.plankton || f.L < sp.Lzoo) && want - got > 1e-12) {   // zooplankton: type II in the density of prey they can take (K_FRY)
+      const PL = PLANKTON, gD = PL.FRY_DAPH_MIN + (1 - PL.FRY_DAPH_MIN) * clamp((f.L - PL.FRY_DAPH_L[0]) / (PL.FRY_DAPH_L[1] - PL.FRY_DAPH_L[0]), 0, 1);
+      const t = env.zooFeed(f.x, f.y, gD, PL.FRY_COPE, want - got, PL.K_FRY, ZF), g = t[0] + t[1];
+      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED; foundZoo = true; feeds--; }
     }
     if (f.L >= (sp.benthL ?? FRY.BENTH_L) && insectEater(sp, f.L)) for (; feeds > 0 && want - got > 1e-12; feeds--) {
       const m = this.larvaeGrid.nearest(f.x, f.y, FRY.EAT_R, larvaFreeFry); if (!m) break;
@@ -1263,39 +1252,12 @@ export class World {
     const env = this.env;
     const smoothK = 1 - Math.exp(-dt / 0.65); // ease steering over ~0.5s -> smooth, fish-like motion
 
-    // environment fields (uses current plants & agents)
+    // the lake's fish biomass (kg/ha — the kairomone level that sets the zooplankton's vertical migration, PLANKTON.DVM_*)
+    { let g = 0; for (const a of this.agents) if (!a.dead) g += a.W; for (const f of this.fry) if (!f.dead) g += f.n * f.W; env.fishKgHa = g / 1000 / (WORLD.SLICE_M2 / 1e4); }
+    // environment fields (uses current plants & agents; the zooplankton fields grow and graze inside it)
     env.step(dt, this);
 
-    // zooplankton track the phytoplankton field: they multiply where algae is abundant, graze it
-    // down, and starve where it's depleted (rate & cap scale with world area)
-    const area = WORLD.AREA_SCALE;
-    const planktonCap = scaleCount(PLANKTON.CAP);
-    const algae = clamp(env.meanPhyto() / PHYTO.CAP, 0, 1);
-    const bloom = PLANKTON.RATE_BASE * area * algae;
-    this._daphShare = this.daphShare();
-    for (let n = poissonish(bloom * dt); n > 0 && this.plankton.length < planktonCap; n--) this.plankton.push(this._mkPlankton());
-    // LITTORAL zooplankton (chydorid and sidid cladocerans, cyclopoid copepods living among the weeds): they graze the
-    // periphyton and detritus on the plants, not the open-water phytoplankton, so they keep breeding through the open
-    // water's clear-water crash — the food young fish in the weed beds actually live on. Recruited among the macrophytes,
-    // in proportion to how much of the lake's plant cover is standing
-    const plantF = clamp(this.plants.length / scaleCount(PLANT.MAX), 0, 1);
-    if (this.plants.length) for (let n = poissonish(PLANKTON.LITTORAL_RATE * area * plantF * dt); n > 0 && this.plankton.length < planktonCap; n--) {
-      const p = this.plants[(rand() * this.plants.length) | 0];
-      if (!p.dead && p.height > 4) this.plankton.push(this._mkPlankton(clamp(p.x + rand(-12, 12), 6, W - 6), clamp(p.baseY - p.height * rand(0, 1), 12, bedY(p.x) - 6), 1));
-    }
-    const planktonFloor = scaleCount(18);
-    if (this.plankton.length < planktonFloor && algae > 0.03) for (let n = poissonish(12 * area * dt); n > 0 && this.plankton.length < planktonFloor; n--) this.plankton.push(this._mkPlankton());
-    for (const p of this.plankton) {
-      if (p.dead) continue;
-      const daph = p.k === 0;
-      env.grazePhyto(p.x, p.baseY, PLANKTON.GRAZE * (daph ? PLANKTON.DAPH_GRAZE : PLANKTON.COPE_GRAZE) * dt);   // eat algae (Daphnia hardest)
-      if (env.phytoAt(p.x, p.baseY) < PLANKTON.STARVE_AT && rand() < PLANKTON.STARVE * dt) { p.dead = true; continue; }  // starve
-      if (env.cyanoAt(p.x, p.baseY) > CYANO.TOX_THRESH * CYANO.CAP && rand() < CYANO.TOX_ZOO * (daph ? PLANKTON.DAPH_TOX : 1) * dt) { p.dead = true; continue; }  // cyanotoxin kills zooplankton in a dense scum (HAB)
-      p.x += (p.vx + env.currentAt(p.x, p.baseY)) * dt;                   // own drift + wind & inflow→outflow current
-      if (p.x < 4) { p.x = 4; p.vx = Math.abs(p.vx); } else if (p.x > W - 4) { p.x = W - 4; p.vx = -Math.abs(p.vx); }
-      p.baseY = clamp(p.baseY, 10, bedY(p.x) - 6);                        // ride up the sloping bed; don't drift into the sediment
-      p.y = p.baseY + Math.sin(env.t * 6.28 + p.phase) * 3.2;
-    }
+    const area = WORLD.AREA_SCALE;   // (densities below are per reference pond, × the world's area)
     // mussels filter phytoplankton from the water just above the bed → clearer water
     for (const m of this.mussels) env.grazePhyto(m.x, m.y - 12, MUSSEL.FILTER * m.n * 0.25 * dt);
 
@@ -1466,7 +1428,6 @@ export class World {
 
     // rebuild spatial grids
     this.agentGrid.rebuild(this.agents);
-    this.planktonGrid.rebuild(this.plankton);
     this.detritusGrid.rebuild(this.detritus);
     this.larvaeGrid.rebuild(this.larvae);
     this.insectGrid.rebuild(this.insects);
@@ -1892,8 +1853,7 @@ export class World {
       // to FEED.POOR_GUT of its gut (a gut kept full of weed between the good meals would starve it at full ration).
       // FRY EAT ZOOPLANKTON: nearly every fish starts life as a zooplankton eater, whatever it eats as an adult (pike and
       // bass fry, carp and catfish fry alike), shifting to its adult diet past a species-specific length (sp.Lzoo)
-      if (a.gut < gEff && !sp.diet.plankton && a.L < sp.Lzoo) this._eatZoo(a, slots, gEff - a.gut);
-      if (a.gut < gEff && sp.diet.plankton) this._eatZoo(a, slots, gEff - a.gut);
+      if (a.gut < gEff && (sp.diet.plankton || a.L < sp.Lzoo)) this._eatZoo(a, gEff - a.gut, cm, dt);
       // (a piscivore past ~3× its piscivory length no longer bothers with insects — a 35-cm bass or a pike lives on fish and
       // crayfish; perch and trout, whose piscivory starts late, keep eating them — `bugs`)
       const bugs = !sp.diet.fish || a.L < 3 * sp.Lpisc;
@@ -2077,7 +2037,6 @@ export class World {
     // compact arrays
     this.agents = this.agents.filter(a => !a.dead).concat(newborns);
     if (this.fry.some(f => f.dead)) this.fry = this.fry.filter(f => !f.dead);
-    this.plankton = this.plankton.filter(p => !p.dead);
     this.detritus = this.detritus.filter(d => !d.dead);
     this.larvae = this.larvae.filter(l => !l.dead);
     this.insects = this.insects.filter(i => !i.dead);
@@ -2094,7 +2053,7 @@ export class World {
     if (this._seriesAcc >= 1) {
       this._seriesAcc -= 1;
       const c = this.census();
-      this.series.push({ ...c, o2: this.avgO2(), temp: env.tempNorm, light: env.light, phyto: env.meanPhyto(), cyano: env.meanCyano(), dom: env.meanDOM(), zoo: this.plankton.length });
+      this.series.push({ ...c, o2: this.avgO2(), temp: env.tempNorm, light: env.light, phyto: env.meanPhyto(), cyano: env.meanCyano(), dom: env.meanDOM(), zoo: env.meanZooUgl() });
       if (this.series.length > 200) this.series.shift();
     }
     // evolution history: a sample each time the clock enters a new EVO.SAMPLE slot (absolute time, so a resumed run
@@ -2142,7 +2101,8 @@ export class World {
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),
       diatom: e.meanDiatom(), ice: e.ice, birds: this.birds.length,   // cold-water algae, lake ice cover, loons on the lake
       // zooplankton by kind; dragonflies (nymphs / adults on the wing); frogs + tadpoles; turtles
-      daphnia: this.plankton.reduce((c, p) => c + (p.k === 0 ? 1 : 0), 0), copepods: this.plankton.reduce((c, p) => c + (p.k === 1 ? 1 : 0), 0),
+      daphnia: e.zooTotal(0) / 1000, copepods: e.zooTotal(1) / 1000, zooUgl: e.meanZooUgl(),   // kg wet of each kind; the lake mean, µg dry/L
+      zooEggs: (e.zooEggTotal(0) + e.zooEggTotal(1)) / 1000,   // kg in the sediment's resting-egg bank
       nymphs: this.nymphs.length, dragonflies: this.dflies.length,
       frogs: this.herps.reduce((c, h) => c + (h.k === 1 ? 1 : 0), 0), tadpoles: this.herps.reduce((c, h) => c + (h.k === 0 ? 1 : 0), 0),
       turtles: this.herps.reduce((c, h) => c + (h.k === 2 ? 1 : 0), 0),
@@ -2186,7 +2146,7 @@ export class World {
   }
   // standing biomass (~ summed effective size) grouped by trophic role, plus the producer/zoo base
   biomassByTrophic() {
-    const out = { phytoplankton: this.env.meanPhyto(), cyanobacteria: this.env.meanCyano(), macrophyte: this.plants.reduce((s, p) => s + (p.dead ? 0 : p.biomass), 0), zooplankton: this.plankton.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.02,
+    const out = { phytoplankton: this.env.meanPhyto(), cyanobacteria: this.env.meanCyano(), macrophyte: this.plants.reduce((s, p) => s + (p.dead ? 0 : p.biomass), 0), zooplankton: (this.env.zooTotal(0) + this.env.zooTotal(1)) / 1000,
       snail: this.snails.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.05, crayfish: this.cray.reduce((s, p) => s + (p.dead ? 0 : 1), 0) * 0.4 };   // benthic invertebrates (count × a nominal mass)
     for (const a of this.agents) out[a.sp.trophic] = (out[a.sp.trophic] || 0) + a.W / 1000;   // fish: real wet biomass, kg
     return out;
@@ -2195,7 +2155,7 @@ export class World {
   resourceCounts() {
     const live = arr => arr.reduce((s, x) => s + (x.dead ? 0 : 1), 0);
     return {
-      zooplankton: live(this.plankton), larvae: live(this.larvae), insects: live(this.insects),
+      zooplankton: Math.round(this.env.meanZooUgl()), larvae: live(this.larvae), insects: live(this.insects),
       snails: live(this.snails), crayfish: live(this.cray), detritus: live(this.detritus),
       plants: live(this.plants), mussels: this.mussels.length,
     };
@@ -2242,7 +2202,7 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 29, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 30, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       evo: this.evo,   // the evolution history (EVO) — a record only: it never shapes the future
       env: this.env.toJSON(),
       agents: this.agents.map(a => {
@@ -2262,7 +2222,6 @@ export class World {
           nt: a.nt > 0 ? a.nt : undefined, ni: a.ni || undefined, nx: (a.nt > 0 || a.ni) ? a.nx : undefined, ny: (a.nt > 0 || a.ni) ? a.ny : undefined };
       }),
       plants: this.plants.map(p => ({ x: p.x, b: p.baseY, h: p.height, m: p.maxHeight, v: p.v, g: Array.from(p.gn), hu: p.hue, la: p.lightAvg, nu: p.nut })),
-      plankton: this.plankton.map(p => ({ x: p.x, y: p.baseY, ph: p.phase, vx: p.vx, k: p.k, m: p.m })),   // v27 `m`: the patch's grams left
       detritus: this.detritus.map(d => ({ x: d.x, y: d.y, l: d.life, n: d.n, m: d.m })),
       larvae: this.larvae.map(l => ({ x: l.x, y: l.y, d: l.dev, m: l.m })),
       insects: this.insects.map(i => ({ x: i.x, y: i.y, l: i.life, vx: i.vx, wb: i.wob, m: i.m })),
@@ -2291,7 +2250,7 @@ export class World {
     let P;
     try { P = parseSave(s); } catch (e) { setRandState(rng0); _idOwner = owner0; throw e; }
     this.time = P.time; this.maxGen = P.maxGen; this.stats = P.stats; this.env = P.env;
-    this.agents = P.agents; this.plants = P.plants; this.plankton = P.plankton; this.detritus = P.detritus;
+    this.agents = P.agents; this.plants = P.plants; this.detritus = P.detritus;
     this.larvae = P.larvae; this.insects = P.insects; this.snails = P.snails; this.cray = P.cray; this.corpses = P.corpses;
     this.reeds = P.structs.reeds; this.logs = P.structs.logs; this.mussels = P.structs.mussels; this.weedbeds = P.structs.weedbeds;
     this.genePool = P.genePool; this.birds = P.birds; this.nymphs = P.nymphs; this.dflies = P.dflies; this.herps = P.herps; this.fry = P.fry;

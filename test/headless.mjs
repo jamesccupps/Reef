@@ -15,10 +15,11 @@ import { stdWeight } from '../src/bioenergetics.js';
 const ripe = (f, sex, K = 1) => { f.sex = sex; f.mature = true; f.W = K * stdWeight(f.sp.lw, f.L); f.K = K; f.gon = (sex === 0 ? f.sp.gsiF : f.sp.gsiM) * f.W; f.mateCd = 0; f._mated = false; f.dead = false; return f; };
 const check = (name, ok, extra = '') => { console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${extra ? '  — ' + extra : ''}`); if (!ok) fail++; };
 const approx = (a, b, tol) => Math.abs(a - b) <= tol;
+const noZoo = w => { w.env.zooD.fill(0); w.env.zooC.fill(0); };   // empty the zooplankton fields (a food-free test lake)
 
 const start = w.census();
 console.log('initial census:', JSON.stringify(start));
-console.log('agents:', w.agents.length, '| plants:', w.plants.length, '| plankton:', w.plankton.length, '| detritus:', w.detritus.length);
+console.log('agents:', w.agents.length, '| plants:', w.plants.length, '| zooplankton µg/L:', w.env.meanZooUgl().toFixed(0), '| detritus:', w.detritus.length);
 console.log(`world: ${WORLD.W}x${WORLD.H} | AREA_SCALE: ${WORLD.AREA_SCALE.toFixed(2)} | GLOBAL_MAX: ${WORLD.GLOBAL_MAX} | field: ${GRID.FIELD_COLS}x${GRID.FIELD_ROWS}`);
 
 // genome shapes match labels (catches sensor/shape mismatches)
@@ -60,7 +61,7 @@ const ms = Date.now() - t0;
 
 const end = w.census();
 console.log('\nfinal census:', JSON.stringify(end));
-console.log(`agents now: ${w.agents.length} | plants: ${w.plants.length} | plankton: ${w.plankton.length} | detritus: ${w.detritus.length}`);
+console.log(`agents now: ${w.agents.length} | plants: ${w.plants.length} | zooplankton: ${w.env.meanZooUgl().toFixed(0)} µg/L | detritus: ${w.detritus.length}`);
 console.log(`maxGen: ${w.maxGen} | foodEaten: ${w.stats.foodEaten} | fishEaten: ${w.stats.fishEaten}`);
 console.log(`avg O2: ${w.avgO2().toFixed(3)} | temp: ${w.env.tempC.toFixed(1)}C | weather: ${w.env.weatherName()} | light: ${w.env.light.toFixed(2)}`);
 console.log(`perf: ${STEPS} steps in ${ms}ms = ${(STEPS / (ms / 1000)).toFixed(0)} steps/s (real-time needs 30) | peak ${peakAgents} agents`);
@@ -220,7 +221,7 @@ console.log('\n— internal drives (motivation) —');
   // the input was written, so the input holds finite in-range hunger but need not equal the post-step value.
   check('after a step, the drive inputs carry finite hunger/fear in [0,1] (fear matches the written input)', sf && Number.isFinite(sf.act.in[hi]) && sf.act.in[hi] >= 0 && sf.act.in[hi] <= 1 && Math.abs(sf.act.in[fi] - sf.fear) < 1e-6 && sf.fear >= 0 && sf.fear <= 1, `in[hunger] ${sf.act.in[hi].toFixed(3)}, fear ${sf.fear.toFixed(2)}`); }
 // HUNGER (the gut's emptiness) rises as a meal is digested, and a meal SATES it
-seed(5); const dwA = new World(); dwA.agents = []; dwA.plankton = [];
+seed(5); const dwA = new World(); dwA.agents = []; noZoo(dwA);
 const pkA = dwA.addAgent('pike', { x: 1000, y: 500 }); pkA.age = SP.pike.matureAge + 50;
 pkA.gut = pkA.sp.gut * pkA.W; pkA.gutE = pkA.gut * 4000; pkA.hunger = 0;   // just fed: a full gut
 const savedDiet = pkA.sp.diet; pkA.sp.diet = {};   // disable ALL feeding (else the lone pike can graze a respawned bed crayfish, which sates & masks the accrual) → isolate the hunger RISE
@@ -228,7 +229,7 @@ const hStart = pkA.hunger;
 for (let t = 0; t < 150 && !pkA.dead; t++) dwA.step(1 / 30);
 pkA.sp.diet = savedDiet;   // restore the shared species diet before the SATE half (pkB) below
 const hungerRose = pkA.hunger > hStart + 0.05;
-seed(6); const dwB = new World(); dwB.agents = []; dwB.plankton = [];
+seed(6); const dwB = new World(); dwB.agents = []; noZoo(dwB);
 const pkB = dwB.addAgent('pike', { x: 1000, y: 500 }); pkB.age = SP.pike.matureAge + 50; pkB.hunger = 0.9;
 for (let i = 0; i < 8; i++) { const mn = dwB.makeFish('minnow', null, SP.minnow.matureAge + 20); mn.x = 1000 + (i % 4) * 4; mn.y = 500 + (i < 4 ? -3 : 3); dwB.agents.push(mn); }
 dwB.agentGrid.rebuild(dwB.agents);
@@ -236,7 +237,7 @@ sureStrike(() => { for (let t = 0; t < 40 && pkB.eaten === 0; t++) dwB.step(1 / 
 const sated = pkB.eaten > 0 && pkB.gut > 0 && pkB.hunger < 1;   // (hunger = the gut's emptiness: a minnow fills a pike's a little)
 check('internal HUNGER drive rises with time since a meal, and a meal SATES it', hungerRose && sated, `rose ${hStart.toFixed(2)}→${pkA.hunger.toFixed(2)}; ate ${pkB.eaten}, hunger →${pkB.hunger.toFixed(2)}`);
 // FEAR jumps when a predator is near and DECAYS after it leaves (lingering caution)
-seed(7); const fw = new World(); fw.agents = []; fw.plankton = [];
+seed(7); const fw = new World(); fw.agents = []; noZoo(fw);
 const fprey = fw.addAgent('minnow', { x: 1000, y: 300 }); fprey.energy = 60; fprey.age = SP.minnow.matureAge + 30;
 const fpred = fw.addAgent('pike', { x: 1040, y: 300 }); fpred.energy = 50; fpred.age = SP.pike.matureAge + 50;   // within the minnow's sense, beyond its own eat reach
 fw.agentGrid.rebuild(fw.agents);
@@ -368,7 +369,7 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   const warm = dev(25), cold = dev(6);
   check('insect larvae DEVELOP with the warmth of their water (dev rises warm ≫ cold; ~26 days to emerge at 20 °C)', warm > cold + 0.15 && cold < 0.02, `warm Δdev ${warm.toFixed(3)} ≫ cold ${cold.toFixed(3)} in 20 s (~4 days)`); }
 // bottom fish eat benthic larvae; surface fish eat emerged insects (grids + _takeNearest + diet)
-{ seed(22); const fw = new World(); fw.agents = []; fw.plankton = [];
+{ seed(22); const fw = new World(); fw.agents = []; noZoo(fw);
   const cat = fw.makeFish('catfish', null, SP.catfish.matureAge + 50); cat.x = 1000; cat.y = bedY(1000) - 3;
   const lv = fw._mkLarva(1000); lv.y = cat.y; fw.larvae = [lv]; fw.larvaeGrid.rebuild(fw.larvae);
   const ateLarva = fw._takeNearest(fw.larvaeGrid, cat.x, cat.y, cat.sp.eatRadius);
@@ -377,7 +378,7 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   const ateInsect = fw._takeNearest(fw.insectGrid, mn.x, mn.y, mn.sp.eatRadius);
   check('bottom fish eat benthic larvae & surface fish eat emerged insects', ateLarva && ateInsect, `larva ${ateLarva}, insect ${ateInsect}`); }
 // qSurfaceFood routes emerged insects into the planktivore food sense (so it rises to a hatch)
-{ seed(24); const qw = new World(); qw.plankton = []; const ins = qw._mkInsect(1000); ins.y = 6; qw.insects = [ins]; qw.insectGrid.rebuild(qw.insects); qw.planktonGrid.rebuild(qw.plankton);
+{ seed(24); const qw = new World(); noZoo(qw); const ins = qw._mkInsect(1000); ins.y = 6; qw.insects = [ins]; qw.insectGrid.rebuild(qw.insects);
   const m = qw.makeFish('minnow', null, SP.minnow.matureAge + 20); m.x = 1000; m.y = 6;
   const food = qw.qSurfaceFood(m);
   check('qSurfaceFood routes an emerged insect into the planktivore food sense (rise-to-hatch)', !!food && food.item === ins, `found ${!!food}`); }
@@ -525,7 +526,7 @@ console.log('\n— cyanotoxins (HAB toxicity) —');
 function fishRespAfter(cyanoLevel) {
   seed(77); const cw = new World();
   const f = cw.makeFish('minnow'); f.x = 1024; f.y = 48;
-  cw.agents = [f]; cw.plankton = []; cw.agentGrid.rebuild(cw.agents);   // no food → mass only falls (respiration)
+  cw.agents = [f]; noZoo(cw); cw.agentGrid.rebuild(cw.agents);   // no food → mass only falls (respiration)
   cw.env.cyano.fill(cyanoLevel);
   cw.step(1 / 30);
   return f.rO2;
@@ -541,11 +542,11 @@ function zooScum(toxOff) {
   for (let i = 0; i < 250; i++) zw.step(1 / 30);                                                          // build a zoo population
   for (let i = 0; i < 150; i++) { zw.env.cyano.fill(CYANO.CAP); zw.env.phyto.fill(PHYTO.CAP); zw.step(1 / 30); }   // dense scum BUT food kept abundant
   CYANO.TOX_ZOO = savedZ;
-  return zw.plankton.filter(p => !p.dead).length;
+  return zw.env.zooTotal(0) + zw.env.zooTotal(1);   // g of zooplankton left
 }
 const zTox = zooScum(false), zNoTox = zooScum(true);
-check('cyanotoxin kills zooplankton by POISON, not just competition (phyto kept abundant → only the toxin can kill; toxin-on ≪ toxin-off control)', zNoTox > 0 && zTox < zNoTox * 0.6, `toxin-on ${zTox} ≪ toxin-off ${zNoTox}`);
-check('the cyanotoxin zooplankton death is DETERMINISTIC (seeded RNG → same seed ⇒ identical survivor count)', zooScum(false) === zTox, `repeat ${zooScum(false)} === ${zTox}`);
+check('cyanotoxin kills zooplankton by POISON, not just competition (phyto kept abundant → only the toxin can kill; toxin-on ≪ toxin-off control)', zNoTox > 0 && zTox < zNoTox * 0.6, `toxin-on ${zTox.toFixed(0)} g ≪ toxin-off ${zNoTox.toFixed(0)} g`);
+check('the cyanotoxin zooplankton death is DETERMINISTIC (seeded RNG → same seed ⇒ identical zooplankton left)', zooScum(false) === zTox, `repeat ${zooScum(false)} === ${zTox}`);
 
 // ============================================================
 //  CONTAMINANT BIOACCUMULATION — a toxicant BIOMAGNIFIES up the food chain (apex predators carry the most)
@@ -569,7 +570,7 @@ check('biomagnification STEP: a predator assimilates its prey\'s contaminant bur
 // predation-driven biomagnification signal: the predators' burden climbs from 0 purely by eating up the chain. (Emergent
 // whole-lake biomag — apex carry the most — is confirmed separately by the long balance run, where predators hunt & breed.)
 const savedAmb = TOX.AMBIENT; TOX.AMBIENT = 0;
-seed(77); const bmw2 = new World(); bmw2.agents = []; bmw2.plankton = [];
+seed(77); const bmw2 = new World(); bmw2.agents = []; noZoo(bmw2);
 const PREY_TOX = 2.0, preds = [];
 for (let i = 0; i < 36; i++) { const mn = bmw2.makeFish('minnow', null, SP.minnow.matureAge + 40); mn.x = 860 + (i % 6) * 24; mn.y = 336 + ((i / 6) | 0) * 14; mn.tox = PREY_TOX; mn.energy = 30; bmw2.agents.push(mn); }
 for (let i = 0; i < 6; i++) { const bs = bmw2.makeFish('bass', null, SP.bass.matureAge + 80); bs.x = 860 + i * 24; bs.y = 336 + (i % 3) * 14; bs.tox = 0; preds.push(bs); bmw2.agents.push(bs); }   // predators ON the prey patch → guaranteed encounters
@@ -594,7 +595,7 @@ function survivesTox(toxLevel) {
   const sh = f.sp.shape, B2 = sh.hid * sh.in + sh.hid + OUT * sh.hid;
   for (let k = 2; k < OUT; k++) f.g[B2 + k] = -20;   // sigmoid(-20) ≈ 0 → actions off → no action energy cost
   f.lw = Float32Array.from(f.g);                     // forward() runs the plastic policy → sync so actions are really off (isolated pike never eats → no learning drift)
-  hw.agents = [f]; hw.plankton = []; hw.agentGrid.rebuild(hw.agents);
+  hw.agents = [f]; noZoo(hw); hw.agentGrid.rebuild(hw.agents);
   for (let i = 0; i < 1200 && !f.dead; i++) hw.step(1 / 30);   // (40 s: a hazard of ~0.3/s can't be dodged by luck)
   BIRD_T.ARRIVE = keepArrive;
   return !f.dead;
@@ -676,9 +677,9 @@ const nicheW = new World(); for (let i = 0; i < 1800; i++) nicheW.step(1 / 30);
 const nicheCensus = nicheW.census();
 check('REFUGE invariant: all six species present after a simulated season under thermal/O₂ pressure', SPECIES.every(k => nicheCensus[k] > 0),
   SPECIES.map(k => `${k} ${nicheCensus[k]}`).join(' '));
-// zooplankton drift with the current but must stay in the water column — never embed in the sloped bed
-const embedded = nicheW.plankton.filter(p => !p.dead && p.baseY > nicheW.bedY(p.x) + 1).length;
-check('drifting zooplankton stay above the bed (no green dots sunk into the slopes)', embedded === 0, `${embedded} embedded of ${nicheW.plankton.length}`);
+// the zooplankton fields live in the water column only — never in the cells below the sloped bed
+{ const e = nicheW.env; let dry = 0; for (let i = 0; i < e.zooD.length; i++) if (!e.mask.wet[i] && (e.zooD[i] > 0 || e.zooC[i] > 0)) dry++;
+  check('zooplankton stay in the water (no zooplankton in the cells below the bed)', dry === 0 && e.meanZooUgl() > 0, `${dry} dry cells hold zooplankton; lake mean ${e.meanZooUgl().toFixed(0)} µg/L`); }
 
 // multi-gene genome — heritable traits beyond the brain (size / speed / tolerance)
 console.log('\n— multi-gene genome —');
@@ -1313,12 +1314,13 @@ for (let i = 0; i < 900; i++) shadew.step(1 / 30);
 // past its start (12) — it stays low or dies. (No dependence on a separate "open" plant growing in the noisy world.)
 check('shading OUTCOME: a plant under a dense tall canopy cannot grow (light choked → stays low / dies = self-thinning)', underP.dead || underP.height < 16, `under ${underP.dead ? 'dead' : 'h' + underP.height.toFixed(0)} (start 12, canopy 80)`);
 
-// ZOOPLANKTON TRACK PHYTOPLANKTON: a phyto-starved world holds far fewer zooplankton than a
-// healthy one (this guards the spawn-∝-algae + graze + starve coupling that plankton.length>0 can't).
+// ZOOPLANKTON LIVE ON THE ALGAE: a lake stripped of its algae (green + diatoms) holds far fewer zooplankton than a
+// healthy one (this guards the growth-on-food + maintenance coupling of the zooplankton fields)
 seed(777); const zHi = new World();
 seed(777); const zLo = new World();
-for (let i = 0; i < 700; i++) { zHi.step(1 / 30); for (let j = 0; j < zLo.env.phyto.length; j++) zLo.env.phyto[j] = 0; zLo.step(1 / 30); }
-check('zooplankton track the phytoplankton field (starved phyto ⇒ far fewer zoo)', zLo.plankton.length < zHi.plankton.length * 0.5, `starved ${zLo.plankton.length} vs healthy ${zHi.plankton.length}`);
+for (let i = 0; i < 1500; i++) { zHi.step(1 / 30); zLo.env.phyto.fill(0); zLo.env.diatom.fill(0); zLo.step(1 / 30); }
+{ const zh = zHi.env.zooTotal(0) + zHi.env.zooTotal(1), zl = zLo.env.zooTotal(0) + zLo.env.zooTotal(1);
+  check('zooplankton live on the algae (a lake stripped of its algae ⇒ far fewer zooplankton)', zl < zh * 0.5, `starved ${(zl / 1000).toFixed(2)} kg vs healthy ${(zh / 1000).toFixed(2)} kg`); }
 
 // ============================================================
 //  DETERMINISM — same seed ⇒ identical run, and camera/tour
@@ -1503,7 +1505,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
     f.agents[8].m = ['a']; f.agents[9].lw = [NaN]; f.agents[10].gn = [1e9, -1e9, 'x'];
     delete f.env.t; f.env.weather = 7; f.env.tempC = 'hot'; f.env.o2[5] = null; f.env.phyto[9] = 1e308; f.env.strat = NaN; f.env.cols = 3;
     f.reeds = {}; f.logs = 'nope'; f.plants[0].h = undefined; f.plants[1].v = -2; f.plants[2].g = [1, 2];
-    f.plankton[0].y = 'deep'; f.detritus[0] = 7; f.larvae[0].d = null; f.stats = JSON.parse('{"births":"x","__proto__":{"polluted":1}}');
+    f.env.zooD[3] = 'lots'; f.env.zooC[7] = -5; f.env.zooD[11] = 1e308; f.detritus[0] = 7; f.larvae[0].d = null; f.stats = JSON.parse('{"births":"x","__proto__":{"polluted":1}}');
     const lw = new World(); const rep = lw.load(f);
     for (let i = 0; i < 120; i++) lw.step(DTI);
     check('missing / non-numeric / out-of-range fields load on sane defaults → NO NaN anywhere after 120 steps', finiteWorld(lw) && lw.agents.every(a => Number.isInteger(a.gen) && Number.isInteger(a.eaten)),
@@ -1529,7 +1531,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
     for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
     const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
     const ids = lw.agents.map(a => a.id);
-    check('saves are version 29, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 29 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+    check('saves are version 30, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 30 && finiteWorld(lw) && new Set(ids).size === ids.length); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
@@ -1588,7 +1590,7 @@ console.log('\n— audit fixes: bio-ecology —');
 
   // (2) NO ASEXUAL BUDDING — fish reproduce sexually only: a lone, mature, well-fed fish in its spawning season has no young
   { seed(8); const bw = new World().setDate(0.27); const par = bw.agents.find(a => a.species === 'minnow'); bw.agents = [par];
-    bw.plankton = []; bw.insects = []; bw.fry = []; ripe(par, 0); par.x = 1000; par.y = 300;
+    noZoo(bw); bw.insects = []; bw.fry = []; ripe(par, 0); par.x = 1000; par.y = 300;
     bw.agentGrid.rebuild(bw.agents);
     const keepImm = { ...IMMIGRATION }; IMMIGRATION.RATE = 0; IMMIGRATION.REFUGE = 0;   // no immigrant mate can arrive
     const b0 = bw.stats.births.minnow; for (let i = 0; i < 200; i++) bw.step(1 / 30);
@@ -1601,7 +1603,7 @@ console.log('\n— audit fixes: bio-ecology —');
     const h0 = pl.height, e60 = gw.bitePlant(carp, 1 / 60), d60 = h0 - pl.height, h1 = pl.height, e30 = gw.bitePlant(carp, 1 / 30), d30 = h1 - pl.height;
     check('plant grazing is per SECOND: a 1/30 s bite removes 2× a 1/60 s bite (energy ∝ biomass grazed)', Math.abs(d30 - 2 * d60) < 1e-9 && Math.abs(e30 - 2 * e60) < 1e-9 && Math.abs(d60 - PLANTC.BITE_RATE / 60) < 1e-9, `1/60: −${d60.toFixed(2)}px +${e60.toFixed(3)}  1/30: −${d30.toFixed(2)}px +${e30.toFixed(3)}`); }
   { const { ENV: ENVC, INSECT: INSECTC } = await import('../src/config.js');
-    const eaten = (dt, steps) => { seed(71); const fw = new World(); fw.plankton = []; fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
+    const eaten = (dt, steps) => { seed(71); const fw = new World(); noZoo(fw); fw.snails = []; fw.cray = []; fw.detritus = []; fw.plants = [];
       const cat = fw.makeFish('catfish', ONES, SP.catfish.matureAge + 10); cat.x = 1000; cat.y = bedY(1000) - 3; cat.energy = 0.3; fw.agents = [cat];
       const pile = []; for (let i = 0; i < 40; i++) { const L = fw._mkLarva(1000, 0); L.y = cat.y; L.m = INSECTC.REFUGE_M + 0.3; pile.push(L); } fw.larvae = pile.slice();   // small patches (0.3 g outside the refuge): two fit its gut
       for (let i = 0; i < steps; i++) fw.step(dt);
@@ -1816,7 +1818,7 @@ console.log('\n— behavioural checks (real sim paths, A/B) —');
   // eats in well-oxygenated water but not in water just above its lethal level
   // (held at 25 °C, where the published lethal level applies — the lethal O₂ falls ~5.5 %/°C in colder water)
   const ateIn = o2 => { seed(901); const tw = new World(); tw.agents = []; tw.birds = []; tw.fry = []; tw.env.tempAt = () => 25; const m = tw.makeFish('minnow', [1, 1, 1, 1, 1, 1, 1]); m.x = 1000; m.y = 200; tw.agents.push(m);
-    for (let i = 0; i < 20; i++) tw.plankton.push(tw._mkPlankton(1000 + (i % 5) * 3, 200 + (i / 5 | 0) * 3, 0));
+    noZoo(tw); for (let dx = -3; dx <= 3; dx++) for (let dy = -3; dy <= 3; dy++) tw.addZoo(1000 + dx * 24, 200 + dy * 24, 3, 0);   // Daphnia all around
     let g = 0; for (let i = 0; i < 30; i++) { tw.env.o2.fill(o2); const g0 = m.gut; tw.step(1 / 30); g += Math.max(0, m.gut - g0); } return g; };
   const eatOk = ateIn(1.0), eatLow = ateIn(SP.minnow.o2Lethal / ENVB.O2_MGL * 1.2);
   check('HYPOXIA kills the appetite: a minnow among zooplankton feeds in oxygenated water but hardly at all near its lethal O₂', eatOk > 0 && eatLow < eatOk * 0.25, `${eatOk.toFixed(3)} g vs ${eatLow.toFixed(3)} g`);
@@ -2031,25 +2033,26 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   const YL = SEASON.YEAR_LEN, rs = getRandState(), ONES7 = [1, 1, 1, 1, 1, 1, 1];
   const quiet = fn => { const keep = { ...IMMIGRATION }; IMMIGRATION.RATE = 0; IMMIGRATION.REFUGE = 0; try { return fn(); } finally { Object.assign(IMMIGRATION, keep); } };
 
-  // ZOOPLANKTON KINDS: Daphnia breed in warm water and vanish from the births in the cold and in a cyanobacterial bloom
-  { seed(6101); const zs = new World().setDate(0.33), zw = new World().setDate(0.88);
-    const warm = zs.daphShare(), cold = zw.daphShare();
-    zs.env.cyano.fill(CYANO.CAP * 0.6); zs.env._meanCyano = CYANO.CAP * 0.6; const bloom = zs.daphShare();
-    check('ZOOPLANKTON: Daphnia make up most new zooplankton in warm water, none in the ice-cold lake, few in a cyanobacteria bloom', warm > 0.5 && cold === 0 && bloom < warm * 0.3, `share: July ${warm.toFixed(2)}, January ${cold.toFixed(2)}, bloom ${bloom.toFixed(2)}`); }
-  // …and a copepod's escape jump beats some strikes, a Daphnia never escapes (and is the richer meal)
-  { const trial = kind => { let got = 0, E = 0;
-      for (let i = 0; i < 200; i++) {
-        seed(6200 + i); const tw = new World(); tw.agents = []; const f = tw.makeFish('minnow', ONES7); f.x = 1000; f.y = 300; f.gut = 0; f.gutE = 0;
-        const z = tw._mkPlankton(1001, 300, kind); z.y = z.baseY; tw.plankton = [z]; tw.planktonGrid.rebuild(tw.plankton);
-        got += tw._eatZoo(f, 1, 1e9); E += f.gutE;   // J swallowed (a whole patch: room unlimited)
-      }
-      return { got, E }; };
-    const dap = trial(0), cop = trial(1);
-    check('…a copepod\'s escape jump beats ~COPE_ESCAPE of strikes, a Daphnia never escapes and is the bigger meal', dap.got === 200 && Math.abs(cop.got / 200 - (1 - PK.COPE_ESCAPE)) < 0.1 && dap.E / dap.got > cop.E / Math.max(1, cop.got), `caught Daphnia ${dap.got}/200, copepods ${cop.got}/200`); }
+  // ZOOPLANKTON GROWTH (the fields): on the same food, Daphnia multiply fast in summer water, barely in the ice-cold lake, and
+  // not at all amid a cyanobacterial bloom; their daily growth on rich food stays within the field range (P/B ≲ 0.4/day)
+  { const rate = (yf, cy) => { seed(6101); const zw = new World().setDate(yf); zw.agents = []; zw.fry = []; zw.nymphs = []; zw.herps = [];
+      const e = zw.env, A = 0.3, z0 = e.zooTotal(0), n = 150;   // 150 steps = 5 s ≈ one day
+      for (let i = 0; i < n; i++) { e.phyto.fill(A); e.diatom.fill(0); e.cyano.fill(cy); e.o2.fill(1); zw.step(1 / 30); }
+      return Math.log(e.zooTotal(0) / z0) / (n / 30 / BIOE.DAY); };   // per day
+    const warm = rate(0.40, 0), cold = rate(0.88, 0), bloom = rate(0.40, CYANO.CAP * 0.6);
+    check('ZOOPLANKTON: Daphnia grow fast in summer water (≤ 0.4/day), barely in the ice-cold lake, and shrink amid a cyanobacteria bloom', warm > 0.08 && warm < 0.4 && cold < warm * 0.3 && bloom < 0,
+      `/day: summer ${warm.toFixed(3)}, January ${cold.toFixed(3)}, bloom ${bloom.toFixed(3)}`); }
+  // …and a copepod's escape jump beats some strikes: from the same grams a fish takes ~(1 − COPE_ESCAPE) as many copepods
+  // as Daphnia (thin prey: the linear part of the type-II response)
+  { const take = kind => { seed(6200); const tw = new World().setDate(0.40); tw.agents = []; const f = tw.makeFish('minnow', ONES7); f.x = 1000; f.y = 120; f.gut = 0; f.gutE = 0;
+      noZoo(tw); for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) tw.addZoo(f.x + dx * 24, f.y + dy * 24, 0.05, kind);
+      tw.env._zooMig(); tw._eatZoo(f, 1e9, 0.1, 1 / 30); return f.gut; };
+    const dap = take(0), cop = take(1);
+    check('…a copepod\'s escape jump beats ~COPE_ESCAPE of strikes (a fish takes ~(1 − COPE_ESCAPE) as much from copepods as from Daphnia)', dap > 0 && Math.abs(cop / dap - (1 - PK.COPE_ESCAPE)) < 0.08, `Daphnia ${dap.toExponential(2)} g, copepods ${cop.toExponential(2)} g (ratio ${(cop / dap).toFixed(2)})`); }
 
   // DRAGONFLIES: a nymph ambushes a fry within reach; a mature nymph emerges on a warm sunny day; adults lay eggs → nymphs
   quiet(() => {
-    seed(6301); const dw = new World().setDate(0.40); dw.agents = []; dw.nymphs = []; dw.dflies = []; dw.herps = []; dw.larvae = []; dw.plankton = [];
+    seed(6301); const dw = new World().setDate(0.40); dw.agents = []; dw.nymphs = []; dw.dflies = []; dw.herps = []; dw.larvae = []; noZoo(dw);
     const keepH = ODONATA.HUNT; ODONATA.HUNT = 1e4;
     const x = 200, n = dw._mkNymph(x, 0.1); dw.nymphs.push(n); n.y = bedY(x) - n.h;
     const fry = dw.makeFish('minnow', null, 0); fry.L = 1.5; fry.W = stdWeight(fry.sp.lw, 1.5); fry.x = x + 3; fry.y = n.y; dw.agents.push(fry); dw.agentGrid.rebuild(dw.agents);   // a 1.5-cm fry
@@ -2119,7 +2122,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   { seed(6801); const sw = new World().setDate(0.40); for (let i = 0; i < 60; i++) sw.step(1 / 30);
     const lw = new World(); lw.load(JSON.parse(JSON.stringify(sw.toJSON())));
     check('Daphnia/copepods, nymphs, dragonflies, frogs, tadpoles and turtles round-trip through save/load (v26)',
-      lw.plankton.every((p, i) => p.k === sw.plankton[i].k) && lw.nymphs.length === sw.nymphs.length && lw.dflies.length === sw.dflies.length && lw.herps.length === sw.herps.length && lw.herps.every((h, i) => h.k === sw.herps[i].k && Math.abs(h.age - sw.herps[i].age) < 1e-9),
+      lw.env.zooD.every((v, i) => v === sw.env.zooD[i]) && lw.env.zooC.every((v, i) => v === sw.env.zooC[i]) && lw.nymphs.length === sw.nymphs.length && lw.dflies.length === sw.dflies.length && lw.herps.length === sw.herps.length && lw.herps.every((h, i) => h.k === sw.herps[i].k && Math.abs(h.age - sw.herps[i].age) < 1e-9),
       `${lw.nymphs.length} nymphs, ${lw.herps.length} herps`); }
   setRandState(rs);
 }
@@ -2175,7 +2178,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     check('CONSUMPTION is capped at the published Cmax: a bass kept stuffed for 5 days digests no more than Cmax allows', ate - SP.bass.gut * bs.W <= cm * 1.15, `${(ate - SP.bass.gut * bs.W).toFixed(1)} g digested vs Cmax ${cm.toFixed(1)} g`);
     check('…and a well-fed fish GROWS — in mass and in length', bs.W > W0 * 1.01 && bs.L > bw.makeFish('bass', ONES7).L - 1e-9); }
   // STARVATION: a fish with no food loses mass (not length), its condition falls, and it eventually dies of starvation
-  { seed(7002); const sw = new World(); sw.agents = []; sw.fry = []; sw.plankton = []; sw.larvae = []; sw.insects = []; sw.snails = []; sw.cray = []; sw.detritus = []; sw.plants = []; sw.birds = []; sw.herps = []; sw.nymphs = [];
+  { seed(7002); const sw = new World(); sw.agents = []; sw.fry = []; noZoo(sw); sw.larvae = []; sw.insects = []; sw.snails = []; sw.cray = []; sw.detritus = []; sw.plants = []; sw.birds = []; sw.herps = []; sw.nymphs = [];
     sw.env.tempAt = () => 22;   // a uniformly 22 °C lake (the test isolates starvation)
     const dietP = SP.perch.diet, lzP = SP.perch.Lzoo; SP.perch.diet = {}; SP.perch.Lzoo = 0;   // nothing it can eat (food regrows)
     const f = sw.makeFish('perch', ONES7); f.x = 1000; f.y = 100; sw.agents.push(f);
@@ -2224,11 +2227,11 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     const mkSchool = (w, k, x, y, n) => { const f = w._mkFry(k, x, y, n, 1, 200, Float32Array.from(w.makeFish(k).g), new Float32Array(GENE_KEYS.length).fill(1)); w.fry.push(f); return f; };
     // SCRAMBLE COMPETITION: a school with almost no food shrinks to what it can feed — its survivors hold their mass — over
     // the days its reserves last, rather than every fish starving at once
-    { seed(7101); const sw = new World().setDate(0.32); sw.agents = []; sw.fry = []; sw.plankton = []; sw.larvae = []; sw.nymphs = [];
+    { seed(7101); const sw = new World().setDate(0.32); sw.agents = []; sw.fry = []; noZoo(sw); sw.larvae = []; sw.nymphs = [];
       const keepRate = PLANKTON.RATE_BASE; PLANKTON.RATE_BASE = 0;
       const f = mkSchool(sw, 'perch', 900, 300, 1000), W0 = f.W, n0 = f.n; let nDay = null;   // (perch larvae: no algae to fall back on)
-      for (let i = 0; i < Math.round(1 * BIOE.DAY * 30); i++) { sw.step(1 / 30); sw.plankton = []; }
-      nDay = f.n; for (let i = 0; i < Math.round(6 * BIOE.DAY * 30) && !f.dead; i++) { sw.step(1 / 30); sw.plankton = []; }
+      for (let i = 0; i < Math.round(1 * BIOE.DAY * 30); i++) { sw.step(1 / 30); noZoo(sw); }
+      nDay = f.n; for (let i = 0; i < Math.round(6 * BIOE.DAY * 30) && !f.dead; i++) { sw.step(1 / 30); noZoo(sw); }
       PLANKTON.RATE_BASE = keepRate;
       check('SCRAMBLE: an unfed school of larvae thins over days (not all at once) and its survivors keep their mass', nDay < n0 * 0.97 && nDay > n0 * 0.5 && (f.dead || f.n < nDay * 0.7) && Math.abs(f.W - W0) < W0 * 0.05, `${n0} → ${nDay.toFixed(0)} after a day → ${f.dead ? 'gone' : f.n.toFixed(0)} after a week; W ${W0.toExponential(2)} → ${f.W.toExponential(2)} g`); }
     // a PISCIVORE works a school in feeding BOUTS: a bass beside a school of 3-cm fry takes many fish in a second
@@ -2246,7 +2249,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     { seed(7103); const gw = new World().setDate(0.40); gw.agents = []; gw.fry = []; gw.larvae = []; gw.insects = [];
       const sf = gw.makeFish('sunfish', ONES7); sf.x = 400; sf.y = gw.bedY(400) - 30; gw.agents.push(sf);
       const pl = gw.makePlant(400, true); pl.height = pl.maxHeight = 80; gw.plants = [pl];
-      gw.plankton = []; for (let i = 0; i < 30; i++) gw.plankton.push(gw._mkPlankton(400 + (i % 6) * 4 - 10, sf.y + ((i / 6) | 0) * 4 - 8, 0));
+      noZoo(gw); for (let dx = -3; dx <= 3; dx++) for (let dy = -3; dy <= 3; dy++) gw.addZoo(400 + dx * 24, sf.y + dy * 24, 3, 0);   // Daphnia all around
       for (let i = 0; i < 20; i++) gw.step(1 / 30);
       const ed = sf.gut > 0 ? sf.gutE / sf.gut : 0;
       check('optimal foraging: a hungry sunfish among zooplankton and weed fills its gut with the zooplankton (poor food is a filler)', ed > 0.9 * PREY.DAPH_ED, `gut ${sf.gut.toFixed(2)} g at ${ed.toFixed(0)} J/g (Daphnia ${PREY.DAPH_ED}, weed ${(PREY.PLANT_ED * PREY.PLANT_DIG).toFixed(0)})`); }
@@ -2306,14 +2309,14 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('a thinned crayfish stock regrows in warm water (seasonal logistic) and not in cold water', warm.d > 6 && cold.d <= 0, `+${warm.d} at ${warm.T.toFixed(0)} °C vs ${cold.d} at ${cold.T.toFixed(0)} °C in two minutes`);
       // (shelter off for these: a lone crayfish would be the oldest, in its burrow — the shelter is tested below)
       const keepSh = CR.SHELTER; CR.SHELTER = 0;
-      seed(7700); const hw = new World().setDate(0.40); hw.fry = []; hw.plankton = []; hw.larvae = []; hw.snails = [];
+      seed(7700); const hw = new World().setDate(0.40); hw.fry = []; noZoo(hw); hw.larvae = []; hw.snails = [];
       const bs = hw.makeFish('bass', ONES7); hw.agents = [bs]; let hits = 0;
       for (let t = 0; t < 400; t++) { bs.x = 300; bs.y = hw.bedY(300) - 4; bs.gut = 0; bs.dead = false;
         const cf = hw._mkCray(300); cf.x = 300 + bs.eatRadius * 0.2; cf.y = hw.bedY(cf.x) - 2; hw.cray = [cf]; hw.crayGrid.rebuild(hw.cray);
         hw.step(1 / 30); if (cf.dead) hits++; }
       check('a crayfish is a DEFENDED prey: a bass on top of one doesn’t always take it (its diet.cray skill, less in cover and by day)', hits > 8 && hits < 390, `${hits}/400 steps`);
       // …too wide for a small perch's mouth (CRAYFISH.WIDTH), and dormant in its burrow in cold water
-      const tries = (k, L, cold) => { seed(7710); const tw = new World().setDate(0.40); tw.fry = []; tw.plankton = []; tw.larvae = []; tw.snails = [];
+      const tries = (k, L, cold) => { seed(7710); const tw = new World().setDate(0.40); tw.fry = []; noZoo(tw); tw.larvae = []; tw.snails = [];
         const f = tw.makeFish(k, ONES7); f.L = L; f.W = stdWeight(SP[k].lw, L); tw.agents = [f]; if (cold) tw.env.tempAt = () => 3; let n = 0;
         for (let t = 0; t < 300; t++) { f.x = 300; f.y = tw.bedY(300) - 4; f.gut = 0; f.dead = false; const cf = tw._mkCray(300); cf.x = 300 + 1; cf.y = tw.bedY(cf.x) - 2; tw.cray = [cf]; tw.crayGrid.rebuild(tw.cray); tw.step(1 / 30); if (cf.dead) n++; }
         return n; };
@@ -2353,7 +2356,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('larvae GROW on the bed’s detritus (debiting it at 1/YIELD) and lose weight where there is none', !A.dead && grown > 0.25 && used >= grown / IN.YIELD && used < (grown / IN.YIELD) * 1.6 && !B.dead && B.m < 1,
         `in 5 days: fed patch 1 → ${A.m.toFixed(2)} g using ${used.toFixed(1)} g of detritus; unfed patch 1 → ${B.m.toFixed(3)} g`);
       // a bottom feeder at the bed sifts the layer (no particles, larvae, snails, plankton or weed to eat)
-      seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; bw.plankton = []; bw.insects = []; bw.cray = []; bw.nymphs = []; bw.herps = [];
+      seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; noZoo(bw); bw.insects = []; bw.cray = []; bw.nymphs = []; bw.herps = [];
       const cp = bw.makeFish('carp', ONES7); bw.agents = [cp]; const cc = bw.env.colOf(300);
       // count what the carp takes FROM THE LAYER (its sifting meals) and what the layer gives up in its column
       let sifted = 0, sJ = 0, fromLayer = 0; const meal0 = bw._meal.bind(bw), take0 = bw.env.takeSedOM.bind(bw.env);
@@ -2365,10 +2368,10 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       // BOTTOM-FEEDING FRY: young bullheads feed on the bottom from swim-up (benthL 1.2 cm) and pick small larvae a fish's
       // refuge would hide (INSECT.REFUGE_FRY) — a 1.5-cm bullhead school eats from a patch, a 1.5-cm bluegill school doesn't
       const { FRY: FRYB } = await import('../src/config.js');
-      const fryAte = k => { seed(7951); const fw = new World().setDate(0.40); fw.plankton = []; fw.detritus = [];
+      const fryAte = k => { seed(7951); const fw = new World().setDate(0.40); noZoo(fw); fw.detritus = [];
         const x = 300, y = fw.bedY(300) - 4, f = fw._mkFry(k, x, y, 200, 1, 200, Float32Array.from(fw.makeFish(k).g), new Float32Array(GENE_KEYS.length).fill(1));
         f.L = 1.5; f.W = stdWeight(SP[k].lw, 1.5); fw.fry = [f];
-        const L = fw._mkLarva(x, 0, 0.8); L.x = x; L.y = y; fw.larvae = [L]; fw.larvaeGrid.rebuild(fw.larvae); fw.planktonGrid.rebuild([]); fw.detritusGrid.rebuild([]);
+        const L = fw._mkLarva(x, 0, 0.8); L.x = x; L.y = y; fw.larvae = [L]; fw.larvaeGrid.rebuild(fw.larvae); noZoo(fw); fw.detritusGrid.rebuild([]);
         fw._feedFry(f, SP[k], FRYB.TICK, 22); return 0.8 - L.m; };
       const fCat = fryAte('catfish'), fSun = fryAte('sunfish');
       check('bullhead fry feed on the bottom from swim-up (benthL), below the fish refuge: a 1.5-cm school eats from a 0.8-g patch, a bluegill school that size doesn’t', fCat > 0 && fSun === 0 && SP.catfish.benthL < FRYB.BENTH_L && IN.REFUGE_FRY < IN.REFUGE_M,
@@ -2412,6 +2415,48 @@ console.log('\n— evolution history —');
   check('…and keeps the whole run within EVO.MAX (thinning the older half) and round-trips through save/load', nT <= 10 && nT >= 5 && Math.abs(t0 - tw.evo[0].t) < 1e-9 && tw.time - t0 > 11 && JSON.stringify(back.evo) === JSON.stringify(tw.evo),
     `${nT} samples spanning ${(tw.evo[nT - 1].t - t0).toFixed(1)} s; reloaded ${back.evo.length}`);
   setRandState(rsE); }
+
+// ============================================================
+//  ZOOPLANKTON FIELDS (PLANKTON, 2026-10-15): growth on algae, type-II feeding by fish and fry, the DVM and visual refuges,
+//  grazing with closed nutrient budgets, anoxia
+// ============================================================
+console.log('\n— zooplankton fields —');
+{ const { PLANKTON: PK } = await import('../src/config.js');
+  const rsZ = getRandState();
+  seed(9101); const zw = new World().setDate(0.40); zw.agents = []; zw.fry = []; zw.plants = []; zw.step(1 / 30);
+  const e = zw.env, COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS;
+  e.fishKgHa = 0; e._zooMig(); e._plantMap.fill(0);
+  // a shallow column (no DVM refuge) and a deep one
+  let cS = -1, cD = -1; for (let c = 0; c < COLS; c++) { if (cS < 0 && e._refAv[c] === 0 && e.mask.bedRow[c] > 6) cS = c; if (e._refAv[c] === 1) cD = c; }
+  const x = (cS + 0.5) * (WORLD.W / COLS), y = 2.5 * (WORLD.H / ROWS), vis = e.zooVis(y);
+  // TYPE II: young fish take want × E/(E + K_FRY) — half their ration where the prey they can take stand at K_FRY µg/L
+  const frac = mult => { noZoo(zw); const g = mult * PK.K_FRY / (PK.UGL * PK.FRY_COPE * vis);
+    for (let r = 1; r <= 4; r++) for (let c = cS - 2; c <= cS + 2; c++) e.zooC[r * COLS + c] = g;
+    const want = 1e-3; return e.zooFeed(x, y, 0, PK.FRY_COPE, want, PK.K_FRY, new Float64Array(2))[1] / want; };
+  const f1 = frac(1), f4 = frac(4), fq = frac(0.25);
+  check('ZOO: fry feed on a type-II response to prey density (half their ration at K_FRY, 0.8 at 4×, 0.2 at ¼×)', Math.abs(f1 - 0.5) < 0.02 && Math.abs(f4 - 0.8) < 0.02 && Math.abs(fq - 0.2) < 0.02, `${fq.toFixed(3)} / ${f1.toFixed(3)} / ${f4.toFixed(3)}`);
+  // DVM: with many fish, most Daphnia in a deep column are out of reach (fewer copepods migrate); none can hide in the shallows
+  const iS = 3 * COLS + cS, iD = 3 * COLS + cD;
+  e.fishKgHa = 0; e._zooMig(); const none = e.zooExposed(iD, 0);
+  e.fishKgHa = 300; e._zooMig(); const dD = e.zooExposed(iD, 0), dC = e.zooExposed(iD, 1), sh = e.zooExposed(iS, 0);
+  check('ZOO: diel vertical migration — with many fish most Daphnia of a deep column are out of reach (copepods less so), none in the shallows or a fishless lake', none === 1 && dD < 0.4 && dC > dD && sh === 1, `deep Daphnia ${dD.toFixed(2)}, copepods ${dC.toFixed(2)}, shallows ${sh}, no fish ${none}`);
+  e.fishKgHa = 0; e._zooMig();
+  // VISION: fish see zooplankton well near the surface in daylight, poorly in the dim deep water and under snowy ice
+  const vTop = e.zooVis(10), vDeep = e.zooVis(WORLD.H * 0.95), ld = e.lightDay; e.lightDay = 0.01; const vIce = e.zooVis(10); e.lightDay = ld;
+  check('ZOO: visual feeding — fish see zooplankton better near the lit surface than in the deep or under snowy ice', vTop > vDeep && vTop > vIce && vTop > 0.5, `surface ${vTop.toFixed(2)}, deep ${vDeep.toFixed(2)}, under ice ${vIce.toFixed(2)}`);
+  // GRAZING: Daphnia graze their cell's algae down, and the grazed N + P stays in the lake
+  { noZoo(zw); const i = 2 * COLS + cS; e.phyto[i] = 0.3; e.diatom[i] = 0; e.zooD[i] = 5;
+    const P0 = e.inventoryP(), N0 = e.inventoryN(); e.zooplankton(1 / 30); const after = e.phyto[i], P1 = e.inventoryP(), N1 = e.inventoryN();
+    e.phyto[i] = 0.3; e.zooD[i] = 0; e.zooplankton(1 / 30); const ctrl = e.phyto[i];
+    check('ZOO: zooplankton graze their cell\'s algae, the grazed N and P returned (closed budgets)', after < ctrl - 1e-4 && Math.abs(P1 - P0) < 1e-6 * P0 && Math.abs(N1 - N0) < 1e-6 * N0, `algae ${after.toFixed(4)} vs ${ctrl.toFixed(4)} ungrazed; ΔP ${(P1 - P0).toExponential(1)}`); }
+  // ANOXIA: zooplankton die in anoxic water and swim up out of it
+  { noZoo(zw); const i = (e.mask.bedRow[cD] - 1) * COLS + cD; e.zooD[i] = 2;
+    for (let k = 0; k < 30; k++) { e.o2.fill(1); e.o2[i] = 0; e.zooplankton(1 / 30); }
+    check('ZOO: zooplankton leave and die in anoxic water (they swim up a cell)', e.zooD[i] < 1 && e.zooD[i - COLS] > 0.2, `anoxic cell ${e.zooD[i].toFixed(2)} g, above ${e.zooD[i - COLS].toFixed(2)} g`); }
+  setRandState(rsZ); }
+// a season on: the lake's zooplankton within the range real mesotrophic lakes hold (crustacean zooplankton ~45–100 µg dry/L in
+// summer; a broad band here — the calibration runs check the seasons, verify/zooflux2.mjs)
+check('ZOO: after a simulated season the lake holds a realistic zooplankton stock (15–300 µg dry/L)', nicheW.env.meanZooUgl() > 15 && nicheW.env.meanZooUgl() < 300, `${nicheW.env.meanZooUgl().toFixed(0)} µg/L`);
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

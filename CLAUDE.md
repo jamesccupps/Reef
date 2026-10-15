@@ -35,7 +35,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - `World.toJSON` + the `parseSave` builders in `world.js`;
   - `Environment.toJSON` / `load`.
 
-  The gate's resume test (load → 600 steps must be byte-identical) catches anything missed. Bump the save version when the shape changes. It is **v29** now.
+  The gate's resume test (load → 600 steps must be byte-identical) catches anything missed. Bump the save version when the shape changes. It is **v30** now.
 - **Mass conservation.** Every chemistry transfer debits its source. The gate checks closed P and N budgets, plants included.
 - **Content-Security-Policy.** No inline `<script>` and no `style=` attributes. A new external origin must be added in all three places: `index.html` (meta), `serve.mjs` and `serve.py`. `test/ui-check.mjs` checks they match.
 
@@ -61,7 +61,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
 | Brain | Recurrent MLP. Inputs = species base + 7 shared extras: compass sin/cos, home bearing, flow, prey size, hunger, fear. Totals 23/20/19/18/17/17/17/16 (minnow, sunfish, perch, trout, catfish, carp, bass, pike). `OUT` = 5: turn, thrust, strike, flee, hide. Per-unit LEAK memory. `activeHid` set by the brain gene |
 | Genomes | Fish `GENE_KEYS` (7): size (= maturation length), speed, tol, fin, eye, body, brain. Plant `PLANT_GENE_KEYS` (6): maxH, grow, light, warmth, palat, leaf |
 | Learning | Baldwinian: the plastic `a.lw` (only its W2 block changes) is never inherited, and every breeding path uses `a.g` |
-| Save | v29 (v26: zooplankton kind, dragonflies, frogs/tadpoles/turtles; v27: bioenergetics — fish length/mass/sex/maturity/gonads/gut/respiration/exposure/activity, food-patch masses, young-of-year schools; v28: the bed's organic layer `env.sedOM`; v29: the evolution history `evo`). `BRAIN_ERAS` (`species.js`) holds the layout history used to migrate brains |
+| Save | v30 (v26: zooplankton kind, dragonflies, frogs/tadpoles/turtles; v27: bioenergetics — fish length/mass/sex/maturity/gonads/gut/respiration/exposure/activity, food-patch masses, young-of-year schools; v28: the bed's organic layer `env.sedOM`; v29: the evolution history `evo`). `BRAIN_ERAS` (`species.js`; v30: zooplankton as two biomass fields `env.zooD/zooC` — the swarm particles are gone) holds the layout history used to migrate brains |
 | Young fish | A spawning makes SCHOOLS (`world.fry`): super-individuals — one record of `n` identical fish on the same FB4 equations — that feed, grow, starve (scramble competition), are eaten and breathe O₂ through their first year, then RECRUIT as followed agents at the species' `L0` or the next spring (1 per `FRY.N_PER_AGENT`, within pop.max). Reproduction checks count `stats.spawns`, not `births` (births = recruits, months later) |
 | Render | Sprite `BASE` 14 (close-up tiers 28/56). SpriteCache and GL fish-texture caches are both 1024. WebGL2 linear-HDR presenter with a Canvas2D fallback; FRAG_COMP depth is `dpt = 1 − uv.y`. GL fish swim in FRAG_FISH from one straight sprite per fish: keep its wave in step with `drawFish`. Never upload a canvas into an SRGB8 texture (Chrome CPU-readback path); scene/overlay go in RGBA8 and are decoded in the shader |
 | Perf | Judge in real Chrome at the user's resolution (CDP, see SESSION_STATE), not the preview pane. The browser steps the sim at **30 Hz** (main.js `DT`, the same step as the headless gate; ≤ 2 steps a frame — no catch-up bursts) and interpolates every frame; fish brains decide at `BRAIN.DECIDE_HZ` 30. Sim ≈ 9 ms/step with ~600 fish + wildlife |
@@ -72,7 +72,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - **world and time:** `WORLD`, `TIME`, `SEASON`, `ICE`, `GRID`, `BASIN`, `CAMERA`;
   - **physics:** `THERMAL`, `ENV` (light, O₂, weather), `WIND`, `FLOW`, `OUTFLOW`, `TURBIDITY`;
   - **chemistry:** `NUTRIENT`, `SED_P`, `NCYCLE`, `MICROBE`;
-  - **producers and invertebrates:** `PHYTO`, `DIATOM`, `CYANO`, `PLANKTON`, `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`, `SEDOM` (the bed's organic layer);
+  - **producers and invertebrates:** `PHYTO`, `DIATOM`, `CYANO`, `PLANKTON` (the zooplankton fields), `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`, `SEDOM` (the bed's organic layer);
   - **plants:** `PLANT`, `MACRO`, `COMPETE`;
   - **habitat:** `STRUCTURE`, `COVER`;
   - **fish behaviour:** `SCHOOL`, `ACTION`, `MOTION`, `DRIVE`, `LEARN`, `BRAIN`, `FEED`;

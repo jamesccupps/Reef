@@ -43,7 +43,7 @@ for (let i = 0; i <= totalSteps; i++) {
     const deaths = w.stats.fishEaten;
     console.log(
       `${w.env.year.toFixed(2).padStart(4)} ${w.env.seasonName().padEnd(7)} | ` +
-      `${meanPhyto().toFixed(3)} ${meanCyano().toFixed(3)} ${meanDOM().toFixed(3)} ${String(w.plankton.length).padStart(4)} ${meanNut().toFixed(2)} ${meanN().toFixed(2)} ${String((w.env.nitrateFrac() * 100) | 0).padStart(3)}% ${w.avgO2().toFixed(2)}  ${minO2().toFixed(2)}  | ` +
+      `${meanPhyto().toFixed(3)} ${meanCyano().toFixed(3)} ${meanDOM().toFixed(3)} ${w.env.meanZooUgl().toFixed(0).padStart(4)} ${meanNut().toFixed(2)} ${meanN().toFixed(2)} ${String((w.env.nitrateFrac() * 100) | 0).padStart(3)}% ${w.avgO2().toFixed(2)}  ${minO2().toFixed(2)}  | ` +
       `${row}  ${String(tot2).padStart(3)} | ${String(w.plants.length).padStart(4)} ${String(w.detritus.length).padStart(4)} ${deaths - deaths0}`
     );
     deaths0 = deaths;

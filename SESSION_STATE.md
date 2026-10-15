@@ -5,6 +5,26 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
+▶▶▶ IN PROGRESS (2026-10-15): ZOOPLANKTON FIELDS on branch `zoo-field` (not merged; science = main = bc2ddc8 has the research
+doc docs/ECOLOGY_RESEARCH.md + docs/research_notes/). The research pass is DONE (6 parallel notes + report; headline: sim zoo
+production right, standing stock 3–6× low, fish eat ~100 % of production; bass fry starvation at 11–15 mm unrealistic; bass
+spring Wr 70–80 vs real 87–108; apex caps 6–35× real densities; pike FB4 curve is a small-pike one). Slice design (built):
+zooplankton = two biomass fields env.zooD (Daphnia/cladocerans) / env.zooC (copepods incl. nauplii), g wet per cell (1 g/cell
+≈ 40 µg dry/L; WORLD.PX_PER_M 79, SLICE_M2 700, CELL_L ~2,500 L): growth on cell algae (Holling) × Q10 (D 3.0, C 2.7), losses
+× Q10_L 2.0, Daphnia warmth ramp DAPH_T [4,10] + heat fall-off DAPH_HOT [25,30]; type-II grazing returning N+P; anoxia
+death/avoid; food-seeking vertical drift (SEEK); DVM as a DAILY-MEAN refuge (the diel clock is cosmetic — one sim night is
+~6 physiological days, so nothing physiological may follow it): migrant share = DVM_MAX × fishKgHa/(fishKgHa + 50) in deep
+columns (_refAv), exposure × TWILIGHT, growth cost; visual feeding by noon light at depth (zooVis); weed refuge (_plantMap);
+RESTING-EGG BANK env.zooEgg per column (autumn: shortening days + T < 12 °C → DORM_D/C; spring: lengthening days + warm bed →
+HATCH) — the human pointed this out mid-slice (winter = eggs); fish/fry feed via env.zooFeed (type II: K_ADULT 25, K_FRY 30
+µg/L; fry Daphnia access FRY_DAPH_MIN 0.3 → 1 by 1 cm); larval Cmax × FRY.CMAX_LARVA 1.5 (Breck 1997); qPlankton = env.zooBest
+(the brain sense); render draws specks from the fields; UI rows µg/L + kg + eggs; save v30 (fields + egg bank; old swarms
+dropped). Gate: tests rewritten (noZoo helper) + a "zooplankton fields" block. Calibration: verify/zooflux2.mjs <seed> <yrs>
+(half-monthly stock, P/B, eaten by fish/fry, fish %prod, p's, fry). Rounds 1–2 (1 yr): summer 60–120 µg/L ✓, adult sunfish
+p 0.4–0.5 ✓, BUT Daphnia exploded under ice (to ~1,000 µg/L: the sim's winter algae stay rich) → round 3 adds the egg bank,
+temperature asymmetry; fry p 0.1–0.3 (starving) → larval Cmax; fish took ~70–240 % of production (year-1 fish 400–550 kg/ha:
+founders too heavy — judge in year 2). LESSON (memory research-to-design): walk designs through all four seasons first.
+
 ▶▶▶ HUMAN (2026-10-14 evening, before compaction): "we need compact first and maybe you should do some more research on how the
 ecosystem and bass and zooplankton and everything work in a real environment, after we compact though". → RESUME HERE: a
 thorough RESEARCH pass (literature, real numbers) BEFORE more code: zooplankton dynamics (standing stock mg/L, P/B by

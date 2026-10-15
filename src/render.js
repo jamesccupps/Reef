@@ -753,18 +753,31 @@ export class Renderer {
 
     // plankton & detritus (culled)
     const pPx = clamp(z, 1, 3);
-    // zooplankton are invisible at lake scale: at the whole-lake view ~2000 full-opacity 1-px specks read as snow/static
-    // and drown out the fish, so fade them with zoom (faint overview → full as you close in, where they read as drift)
-    const pFade = clamp((cam.zoom / cam.fitZoom - 1) / 4, 0.22, 1);
-    // two kinds: Daphnia (k 0) - bigger, paler, roundish water fleas; copepods (k 1) - small darker specks
-    ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
-    for (let kind = 0; kind < 2; kind++) {
-      const daph = kind === 0, sz = daph ? Math.max(1, pPx * 1.4) : pPx, round = daph && z >= 3;
-      ctx.fillStyle = daph ? '#d6f6e4' : '#9ed4bc';
-      for (const p of world.plankton) {
-        if ((p.k === 0) !== daph || p.x < vr.x0 || p.x > vr.x1 || p.y < vr.y0 || p.y > vr.y1) continue;
-        if (round) { ctx.beginPath(); ctx.ellipse(X(p.x), Y(p.y), 0.9 * z, 0.7 * z, 0.4, 0, TAU); ctx.fill(); }
-        else ctx.fillRect(X(p.x) | 0, Y(p.y) | 0, sz, sz);
+    // ZOOPLANKTON (the env.zooD / zooC fields, g wet per cell): specks in proportion to each cell's grams — Daphnia (pale,
+    // roundish water fleas), copepods (small darker specks). At the whole-lake view thousands of 1-px specks read as snow and
+    // drown out the fish, so they fade (and thin) with zoom, filling in as you close in. Each speck's place in its cell is a
+    // fixed hash of (cell, speck) drifting on the render clock — cosmetic only, never the sim RNG.
+    {
+      const env = world.env, COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS, cw = W / COLS, ch = H / ROWS, zr = cam.zoom / cam.fitZoom;
+      const pFade = clamp((zr - 1) / 4, 0.22, 1), perG = 0.5 * clamp(zr, 1, 8);   // specks per gram (≈ 2,000 lake-wide at the whole-lake view)
+      const c0 = Math.max(0, Math.floor(vr.x0 / cw)), c1 = Math.min(COLS - 1, Math.floor(vr.x1 / cw));
+      const r0 = Math.max(0, Math.floor(vr.y0 / ch)), r1 = Math.min(ROWS - 1, Math.floor(vr.y1 / ch));
+      const hsh = n => { const v = Math.sin(n) * 43758.5453; return v - Math.floor(v); };
+      ctx.globalAlpha = (0.22 + 0.48 * vL) * pFade;
+      for (let kind = 0; kind < 2; kind++) {
+        const daph = kind === 0, f = daph ? env.zooD : env.zooC, sz = daph ? Math.max(1, pPx * 1.4) : pPx, round = daph && z >= 3;
+        ctx.fillStyle = daph ? '#d6f6e4' : '#9ed4bc';
+        for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+          const i = r * COLS + c, g = f[i]; if (!(g > 0)) continue;
+          const want = g * perG, n = Math.min(30, Math.floor(want + hsh(i * 3.7 + kind)));   // the fractional speck shows by a fixed hash
+          for (let j = 0; j < n; j++) {
+            const s1 = i * 12.9898 + j * 78.233 + kind * 37.719;
+            const x = (c + hsh(s1)) * cw + Math.sin(t * 0.31 + j * 1.3 + i) * 2.5, y = (r + hsh(s1 + 17.17)) * ch + Math.cos(t * 0.27 + j * 0.7) * 2;
+            if (y > bedY(x) - 2) continue;
+            if (round) { ctx.beginPath(); ctx.ellipse(X(x), Y(y), 0.9 * z, 0.7 * z, 0.4, 0, TAU); ctx.fill(); }
+            else ctx.fillRect(X(x) | 0, Y(y) | 0, sz, sz);
+          }
+        }
       }
     }
     ctx.globalAlpha = 0.6; ctx.fillStyle = '#6b4a2a';
