@@ -37,6 +37,10 @@ const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
 // GAPE (its length × its gape ratio) — so deep-bodied sunfish outgrow a bass's mouth while slim minnows never do, and a
 // first-year fish fits its own species' adults (pike, perch and bass cannibalise their young-of-year).
 const gapeOf = a => a.L * a.sp.gapeR;                                   // cm
+// the fish's bioenergetics parameter set: FB4's juvenile set where one exists — for a young-of-year (fit to age-0 fish:
+// bluegill, perch), or below a body mass where the species says so (sp.juvW: smallmouth bass, whose adult set starves a
+// fish under ~30 g) — else the adult set
+const bioOf = a => { const sp = a.sp; return sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < TIME.YEAR_LEN) ? sp.bioJuv : sp.bio; };
 const depthOf = a => a.L * a.sp.depthR * (a.bodyMul || 1);              // cm
 // is the fish ready to spawn: mature (by length AND age), its gonads ripe (≥ SPAWN.GON_READY of the species' ripe GSI), and
 // in fair condition (SPAWN.K_READY) — a spent or starving fish skips spawning, as real ones do
@@ -93,8 +97,9 @@ const isNymphFry = f => !f.dead && f.L <= ODONATA.FRY_MAX;     // … in a fry s
 const canEatHerp = (h, a) => !h.dead && h.st !== 2 && (a.sp.diet.fish || h.k === 0) && herpDepth(h) <= gapeOf(a) && herpMass(h) >= FEED.PREY_MIN ** 3 * a.W;
 const isShallow = x => bedY(x) < H * 0.35;                     // over the littoral shelf (frogs, tadpoles, nymphs, basking)
 const toShore = x => shoreDir(x);          // horizontal direction to the nearer (shallow) shore (the landscape's own slope)
-// a nest site from a spawning pair at x: shoreward until the bed is no deeper than SPAWN.NEST_D
-const nestX = x => { for (let k = 0; k < 120 && bedY(x) > SPAWN.NEST_D * WORLD.PX_PER_M; k++) x = clamp(x + shoreDir(x) * 12, 4, W - 4); return x; };
+// a nest site from a spawning pair at x: shoreward until the bed is no deeper than the species' nest depth (sp.nestD —
+// pumpkinseed nest in water under ~1 m — else SPAWN.NEST_D)
+const nestX = (x, sp) => { const d = (sp.nestD ?? SPAWN.NEST_D) * WORLD.PX_PER_M; for (let k = 0; k < 120 && bedY(x) > d; k++) x = clamp(x + shoreDir(x) * 12, 4, W - 4); return x; };
 const isLoonPrey = it => !it.dead && it.L <= BIRD.PREY_MAX;   // what a loon can swallow (cm)
 const isPreyOf = (it, a) => canPreyFn(a, it);
 // a FRY SCHOOL's fish a fish could eat: young fish that fit a piscivore's gape and are worth its chase — a dense school is
@@ -717,6 +722,7 @@ export class World {
     return idx;
   }
   canPrey(pred, prey) { return canPreyFn(pred, prey); }   // see canPreyFn (module scope)
+  bioOf(a) { return bioOf(a); }   // the fish's FB4 parameter set (see bioOf, module scope)
   // the last result is remembered (_qtA/_qtR, _qpA/_qpR) so step() can reuse what senses() just computed for the same fish.
   // A DIVING loon close by that could swallow this fish is a threat too (whichever is nearer).
   qThreat(a) {
@@ -736,6 +742,12 @@ export class World {
     let m = this.agentGrid.nearest(a.x, a.y, r, isPreyOf, a);
     if (this.fry.length && a.sp.diet.fish && a.L >= a.sp.Lpisc) { const f = this.fryGrid.nearest(a.x, a.y, m ? m.dist : r, fryPreyOf(a), a); if (f && (!m || f.dist < m.dist)) m = f; }
     return (this._qpR = m);
+  }
+  // an exposed crayfish in sight that this fish could take (a crayfish eater whose gape fits one — CRAYFISH.WIDTH): the bass's
+  // and pickerel's prey sense sees crayfish as well as fish (crayfish are 60–90 % of an adult smallmouth's diet)
+  qCray(a) {
+    if (!a.sp.diet.cray || gapeOf(a) < CRAYFISH.WIDTH || !this.cray.length) return null;
+    return this.crayGrid.nearest(a.x, a.y, a.senseRange * this.env.clarity(), exposedCray);
   }
   qMate(a) { return this.agentGrid.nearest(a.x, a.y, a.sp.mateRadius, isMateFor, a); }
   // trait-based MATE CHOICE (sexual selection): instead of the nearest eligible mate, score every eligible
@@ -1749,7 +1761,9 @@ export class World {
       a.spd *= Math.max(0.55, 1 - MOTION.TURN_DRAG * Math.abs(dH));               // turn-induced speed loss
       const realign = clamp(1 - Math.exp(-MOTION.TURN_RESPONSE * (1 - MOTION.SPEED_LAG * clamp(a.spd / a.maxSpeed, 0, 1)) * dt), 0, 1);
       a.velHeading += angDiff(a.heading, a.velHeading) * realign;                 // travel direction eases toward the body heading (lags when fast)
-      a.x += Math.cos(a.velHeading) * a.spd * dt + env.currentAt(a.x, a.y) * sp.drift * dt;  // move along the (lagging) travel direction; + current
+      // + the current, less what the fish holds against it (MOTION.RHEO: positive rheotaxis)
+      const cur = env.currentAt(a.x, a.y) * sp.drift, hold = MOTION.RHEO * a.maxSpeed * perf;
+      a.x += Math.cos(a.velHeading) * a.spd * dt + Math.sign(cur) * Math.max(0, Math.abs(cur) - hold) * dt;  // move along the (lagging) travel direction
       // a bottom-hugger's negative buoyancy (sp.sink) settles it toward the bed — but not down into water too low in O₂ for it
       const y0 = a.y;
       a.y += Math.sin(a.velHeading) * a.spd * dt + (sp.sink && env.oxygenAt(a.x, a.y + 12) >= a.o2Crit * ENV.HYPOXIA_AVOID ? sp.sink * dt : 0);
@@ -1777,7 +1791,7 @@ export class World {
       // of TIME.YEAR_LEN), so the per-day rates become per-step amounts with dt/DAY. Everything is grams and joules.
       // the lethal O₂ rises ~5.5 %/°C (Moss & Scott 1961; Downing & Merkens 1957) — cold fish survive far lower O₂ under ice
       const o2L = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (tHere - 25));
-      const Wg = a.W, dd = dt / BIOE.DAY, gmax = sp.gut * Wg, bp = sp.bioJuv && a.age < TIME.YEAR_LEN ? sp.bioJuv : sp.bio;   // young-of-year: FB4's juvenile set where one exists (bluegill, perch — fit to age-0 fish, with their warmer optimum); yearlings on the adult set
+      const Wg = a.W, dd = dt / BIOE.DAY, gmax = sp.gut * Wg, bp = bioOf(a);   // young-of-year: FB4's juvenile set where one exists (bluegill, perch — fit to age-0 fish, with their warmer optimum); yearlings on the adult set
       const o2 = this.oxygenAt(a.x, a.y);
       // DIGESTION: the stomach empties exponentially at the measured gastric-evacuation rate (He & Wurtsbaugh 1993: 22
       // species, R = 0.049·e^(0.072·T) per hour, × the species' own speed — pike digest a fish meal in ~2 days, sunfish an
@@ -1924,7 +1938,7 @@ export class World {
         if (g > 0) { a.gut += g; a.gutE += g * PREY.BENTH_ED; if (g >= PLANKTON.BITE_MIN * gmax) { a.eaten++; this.stats.foodEaten++; } }
       }
       let nS;
-      if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS, exposedSnail))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
+      if (sp.diet.snail && a.L >= (sp.Lsnail || 0) && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS, exposedSnail))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
       a.foodT = a.eaten > eaten0 ? 0 : (a.foodT ?? 9) + dt;   // time since its last GOOD meal (patch residence, below; saved `ft`)
       // bottom feeders take the detritus particles in reach, else, at the bed, sift its organic layer (SEDOM — a poor food:
@@ -1975,7 +1989,7 @@ export class World {
           // the eggs go in the LITTORAL, wherever the pair met: nests on the shallow shelf's bed (bass, sunfish and bullheads
           // fan nests in 0.3–2 m of water), egg strands and scattered eggs over the shallows (perch, pike, carp, fatheads) —
           // never on the deep, oxygen-poor bed
-          const px = (a.x + b.x) / 2, mx = nestX(px);   // (the nest: shoreward from the pair to water no deeper than SPAWN.NEST_D)
+          const px = (a.x + b.x) / 2, mx = nestX(px, sp);   // (the nest: shoreward from the pair to water no deeper than its nest depth)
           const nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
           // schools: up to MAX_PER_SPAWN, while the lake (CAP) and the species (SP_SHARE of it) have free slots — else the
           // larvae join the species' youngest school if it is under MERGE_DAYS old (its genome kept or replaced in
@@ -2266,9 +2280,11 @@ export class World {
   // byte-for-byte: the RNG stream position (`rng`), the per-world id counter (`nid`), each fish's id / mating cooldown /
   // smoothed controls / travel heading / stroke phase / last action intents / learned W2 block, the sinking corpses, the
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
+  // v32 (2026-10-15): the Maine species set — an older save's carp and trout (species no longer in the lake) are skipped
+  // on load (rep.skippedSpecies) and the white perch and white sucker arrive by the refuge; the other six keep their fish.
   toJSON() {
     return {
-      version: 31, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 32, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       evo: this.evo,   // the evolution history (EVO) — a record only: it never shapes the future
       env: this.env.toJSON(),
       agents: this.agents.map(a => {

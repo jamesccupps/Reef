@@ -70,7 +70,7 @@ console.log(`perf: ${STEPS} steps in ${ms}ms = ${(STEPS / (ms / 1000)).toFixed(0
 
 check('no NaN / out-of-range integrity hits', nanHits === 0, `${nanHits} hits`);
 // (an INVARIANT, not a test of ecology: the REFUGE backstop keeps ≥2 of every species — home-bred breeding is checked next)
-// (visitors — pike, trout: sp.pop.visit — come and go; the resident species must all be here)
+// (visitors — sp.pop.visit, wide-ranging fish that come and go; none in the Maine set — every resident species must be here)
 check('REFUGE invariant: every resident species still present', SPECIES.every(k => SP[k].pop.visit || end[k] > 0));
 check('generations advanced (reproduction happening)', w.maxGen > prevGen, `gen ${w.maxGen}`);
 // spawning is seasonal (water-temperature windows): the lake opens in mid-May, so the early-spring spawners (pike, perch)
@@ -305,9 +305,10 @@ check('every species gains the 2 perception inputs (flow, prey size) between spa
   return sp.shape.in === L.length && L[b + 3] === 'flow' && L[b + 4] === 'prey size' && L[sp.shape.in - 2] === 'hunger';   // label-positioned, robust to later input adds
 }), `minnow in ${SP.minnow.shape.in} (base ${SP.minnow.baseInputs})`);
 // the LATERAL-LINE flow sense reads the local current and is MECHANOSENSORY — turbidity does NOT cut it (unlike the visual senses)
-{ seed(63); const fw = new World(); fw.agents = []; const f = fw.addAgent('minnow', { x: 1000, y: 40 }); fw.env.wind = 9; fw.env.turbidity = 0.95; fw.step(1 / 30);
+{ const stB = BASINS.find(b => b.kind === 'stream'), sxB = (stB.x0 + stB.x1) / 2;   // (in the stream, where the through-current runs — FLOW.LAKE_FRAC)
+  seed(63); const fw = new World(); fw.agents = []; const f = fw.addAgent('minnow', { x: sxB, y: 8 }); fw.env.wind = 9; fw.env.turbidity = 0.95; fw.step(1 / 30);
   const fb = SP.minnow.baseInputs + 3, clear = f.act.in[fb];
-  seed(63); const fw2 = new World(); fw2.agents = []; const f2 = fw2.addAgent('minnow', { x: 1000, y: 40 }); fw2.env.wind = 9; fw2.env.turbidity = 0.05; fw2.step(1 / 30);
+  seed(63); const fw2 = new World(); fw2.agents = []; const f2 = fw2.addAgent('minnow', { x: sxB, y: 8 }); fw2.env.wind = 9; fw2.env.turbidity = 0.05; fw2.step(1 / 30);
   check('the lateral-line FLOW sense is non-zero in a current AND turbidity-proof (mechanosensory, not vision)', Math.abs(clear) > 0.05 && Math.abs(clear - f2.act.in[fb]) < 1e-6, `flow ${clear.toFixed(2)} (murky) === ${f2.act.in[fb].toFixed(2)} (clear)`); }
 // the PREY-SIZE sense reads the relative size of the nearest catchable prey for a piscivore; 0 for a non-piscivore / no prey
 { seed(64); const pw = new World(); pw.agents = [];
@@ -361,10 +362,10 @@ console.log('\n— aquatic insects (larvae → hatch) —');
 // larvae are seeded on the bed (benthic); diet flags wired
 { seed(40); const iw = new World();
   const benthic = iw.larvae.length > 0 && iw.larvae.every(l => Math.abs(l.y - (iw.bedY(l.x))) < 12);
-  check('benthic insect larvae are seeded on the lake bed; diet flags wired (bottom→larva, surface→insect)', benthic && SP.catfish.diet.larva && SP.carp.diet.larva && SP.minnow.diet.insect && SP.bass.diet.insect && SP.sunfish.diet.larva && SP.sunfish.diet.insect, `${iw.larvae.length} larvae`); }
+  check('benthic insect larvae are seeded on the lake bed; diet flags wired (bottom→larva, surface→insect)', benthic && SP.catfish.diet.larva && SP.sucker.diet.larva && SP.minnow.diet.insect && SP.bass.diet.insect && SP.sunfish.diet.larva && SP.sunfish.diet.insect, `${iw.larvae.length} larvae`); }
 // EMERGENCE is warm-gated: a mature larva hatches to the surface when warm, holds when cold (tempC eases slowly → a 1-step inject holds)
-{ seed(20); const iwW = new World(); const Lw = iwW._mkLarva(300, 1.0); iwW.larvae = [Lw]; iwW.insects = []; iwW.env.tempC = 26; iwW.step(1 / 30);
-  seed(20); const iwC = new World(); const Lc = iwC._mkLarva(300, 1.0); iwC.larvae = [Lc]; iwC.insects = []; iwC.env.tempC = 7; iwC.step(1 / 30);
+{ seed(20); const iwW = new World(); iwW.agents = []; iwW.fry = []; const Lw = iwW._mkLarva(300, 1.0); iwW.larvae = [Lw]; iwW.insects = []; iwW.env.tempC = 26; iwW.step(1 / 30);   // (no fish: none may eat the larva or the fly)
+  seed(20); const iwC = new World(); iwC.agents = []; iwC.fry = []; const Lc = iwC._mkLarva(300, 1.0); iwC.larvae = [Lc]; iwC.insects = []; iwC.env.tempC = 7; iwC.step(1 / 30);
   check('insect EMERGENCE is warm-gated: a mature larva hatches when warm, holds when cold', Lw.dead && iwW.insects.length >= 1 && !Lc.dead && iwC.insects.length === 0, `warm emerged ${Lw.dead}/${iwW.insects.length}; cold held ${!Lc.dead}`); }
 // larvae DEVELOP with warmth (dev rises when warm, ~halts when cold)
 { function dev(temp) { seed(21); const dw = new World(); dw.agents = []; const L = dw._mkLarva(300, 0.2); dw.larvae = [L]; dw.env.tempAt = () => temp;   // (on the oxic shallow bed: the deep one can be anoxic, where larvae die)
@@ -394,10 +395,10 @@ console.log('\n— aquatic insects (larvae → hatch) —');
 //  BENTHIC INVERTEBRATES — grazing snails + omnivorous crayfish (two new benthic web links)
 // ============================================================
 console.log('\n— benthic invertebrates (snails + crayfish) —');
-// seeded on the bed; the new diet flags are wired (phyto→snail→{sunfish,carp,cray}; detritus→cray→{bass,pike,catfish})
+// seeded on the bed; the new diet flags are wired (phyto→snail→{sunfish,sucker,cray}; detritus→cray→{bass,pike,catfish})
 { seed(50); const bw = new World();
   const onBed = bw.snails.length > 0 && bw.cray.length > 0 && bw.snails.every(s => Math.abs(s.y - bw.bedY(s.x)) < 8) && bw.cray.every(c => Math.abs(c.y - bw.bedY(c.x)) < 8);
-  const diet = SP.sunfish.diet.snail && SP.carp.diet.snail && SP.bass.diet.cray && SP.pike.diet.cray && SP.catfish.diet.cray;
+  const diet = SP.sunfish.diet.snail && SP.sucker.diet.snail && SP.bass.diet.cray && SP.pike.diet.cray && SP.catfish.diet.cray;
   check('snails & crayfish are seeded on the lake bed; the benthic diet flags are wired', onBed && diet, `${bw.snails.length} snails, ${bw.cray.length} crayfish`); }
 // snails GRAZE the bed's algae-and-detritus layer (SEDOM): 60 snails on one column draw its layer down by about their ration
 // (no other input, decay or grazer there); and they live on the lit littoral bed
@@ -445,9 +446,9 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
 // ============================================================
 console.log('\n— locomotion momentum (carving turns) —');
 function swimTest(turnBias) {
-  seed(9); const lw = new World(); lw.agents = [];
+  seed(9); const lw = new World(); lw.agents = []; lw.env.tempAt = () => 20;   // (one water temperature everywhere: the turner circles at another depth than the straight swimmer, and a warmer fish is livelier)
   const f = lw.addAgent('bass', { x: 1000, y: 540 }); f.energy = 60;
-  f.maxSpeed = 56; f.accel = 64; f.maxTurn = 2.2;        // pin locomotion stats to the bass baseline → the turn-scrub ratio is independent of where the RNG stream sits (new subsystems shift the genome otherwise)
+  f.L = f.sp.Lref; f.W = stdWeight(f.sp.lw, f.L); f.maxSpeed0 = f.maxSpeed = 56; f.accel0 = f.accel = 64; f.maxTurn0 = f.maxTurn = 2.2;   // pin locomotion stats (and their gene-derived bases, at the reference length, so the body-size rescaling on growth keeps them) → the turn-scrub ratio is independent of where the RNG stream sits
   const savedInnate = f.sp.innate; f.sp.innate = null;   // isolate the brain's forced turn/thrust from the innate ethogram (ambush thrust-suppression / cruise blend); restored below
   const sh = f.sp.shape, W2 = sh.hid * sh.in + sh.hid, B2 = W2 + OUT * sh.hid;
   for (let j = 0; j < sh.hid; j++) { f.g[W2 + j] = 0; f.g[W2 + sh.hid + j] = 0; }   // zero turn & thrust output rows → clean outputs from the biases (RNG-independent)
@@ -472,7 +473,7 @@ check('MOTION knobs are sane (positive response/drag, speed-lag in [0,1))', MOTI
 function cruiseProfile(coastDepth) {
   const saved = MOTION.COAST_DEPTH; MOTION.COAST_DEPTH = coastDepth;
   seed(17); const cw = new World().setDate(0.42); cw.agents = [];   // summer: warm enough that the cruise isn't cold-slowed
-  const f = cw.addAgent('carp', { x: 1000, y: 760 }); f.energy = 90;
+  const f = cw.addAgent('sucker', { x: 1000, y: 760 }); f.energy = 90;
   const sh = f.sp.shape, W2 = sh.hid * sh.in + sh.hid, B2 = W2 + OUT * sh.hid;
   for (let j = 0; j < sh.hid; j++) { f.g[W2 + j] = 0; f.g[W2 + sh.hid + j] = 0; }   // zero turn & thrust output rows → clean steady intent
   f.g[B2 + 0] = 0; f.g[B2 + 1] = 0;                                                  // straight; thrust intent ≈ 0.5 (sigmoid 0)
@@ -667,9 +668,10 @@ console.log('\n— thermal / O₂ niches —');
 check('every species has a sane thermal/O₂ niche (tempOpt/tempTol/o2Crit)', SPECIES.every(k => {
   const s = SP[k]; return s.tempOpt >= 10 && s.tempOpt <= 32 && s.tempTol >= 3 && s.tempTol <= 15 && s.o2Crit >= 0.05 && s.o2Crit <= 0.6;
 }));
-check('a warm/cool guild gradient exists (pike cool & O₂-demanding; catfish/carp warm & hypoxia-tolerant)',
-  SP.pike.tempOpt < SP.catfish.tempOpt && SP.pike.tempOpt < SP.carp.tempOpt && SP.pike.o2Crit > SP.catfish.o2Crit && SP.pike.o2Crit > SP.carp.o2Crit,
-  `pike opt ${SP.pike.tempOpt}/o2 ${SP.pike.o2Crit} vs catfish ${SP.catfish.tempOpt}/${SP.catfish.o2Crit}`);
+check('a warm/cool guild gradient exists (sucker, perch and pickerel cool; bullhead and pumpkinseed warm; white perch and smallmouth O₂-demanding, bullhead and shiner hypoxia-tolerant)',
+  Math.max(SP.sucker.tempOpt, SP.perch.tempOpt, SP.pike.tempOpt) < Math.min(SP.catfish.tempOpt, SP.sunfish.tempOpt)
+    && Math.min(SP.whiteperch.o2Crit, SP.bass.o2Crit) > Math.max(SP.catfish.o2Crit, SP.minnow.o2Crit),
+  `opt sucker ${SP.sucker.tempOpt}, perch ${SP.perch.tempOpt}, pickerel ${SP.pike.tempOpt} vs bullhead ${SP.catfish.tempOpt}, pumpkinseed ${SP.sunfish.tempOpt}; O₂ white perch ${SP.whiteperch.o2Crit}, bass ${SP.bass.o2Crit} vs bullhead ${SP.catfish.o2Crit}`);
 // thermal stress in the real summer surface field: the coolwater apex is stressed where the warmwater benthivore is not —
 // the surface peak lies inside pike's heat-hazard band (its UILT − 2 °C, where the bioenergetic heat mortality begins)
 // but far below the bullhead's
@@ -678,8 +680,8 @@ check('warm summer surface thermally stresses cool pike but not warm catfish',
   `peak surf ${summer.tSurfMax.toFixed(1)}°C vs heat-hazard onset pike ${SP.pike.uilt - 2} / catfish ${SP.catfish.uilt - 2} °C`);
 // hypoxia penalty fraction in the real summer hypoxic deep: the O₂-demanding species suffers more than the tolerant one
 const hypFrac = sp => summer.o2Deep < sp.o2Crit ? (sp.o2Crit - summer.o2Deep) / sp.o2Crit : 0;
-check('the anoxic summer deep punishes O₂-demanding pike more than hypoxia-tolerant carp',
-  hypFrac(SP.pike) > hypFrac(SP.carp), `deep O₂ ${summer.o2Deep.toFixed(2)} → pike ${hypFrac(SP.pike).toFixed(2)} > carp ${hypFrac(SP.carp).toFixed(2)}`);
+check('the anoxic summer deep punishes O₂-demanding white perch more than hypoxia-tolerant bullheads',
+  hypFrac(SP.whiteperch) > hypFrac(SP.catfish), `deep O₂ ${summer.o2Deep.toFixed(2)} → white perch ${hypFrac(SP.whiteperch).toFixed(2)} > bullhead ${hypFrac(SP.catfish).toFixed(2)}`);
 // no species is driven extinct by the new pressure within a season (the re-seed floors backstop)
 const nicheW = new World(); for (let i = 0; i < 1800; i++) nicheW.step(1 / 30);
 const nicheCensus = nicheW.census();
@@ -806,7 +808,7 @@ check('depthProfile samples the right column (deep-basin bed deeper than the lit
 //  PHASE 5 — carrying capacity: logistic reproduction + metapopulation immigration (rescue), NOT hard floors
 // ============================================================
 console.log('\n— carrying capacity / immigration rescue (Phase 5) —');
-seed(73); const ccw = new World();
+seed(73); const ccw = new World().setDate(0.33);   // (early July: inside the golden shiner's 20–27 °C spawning window, so the arrivals can breed)
 for (let i = 0; i < 200; i++) ccw.step(1 / 30);                 // settle
 for (const a of ccw.agents) if (a.species === 'minnow') a.dead = true;   // force a local crash to zero
 ccw.agents = ccw.agents.filter(a => !a.dead);
@@ -829,7 +831,7 @@ for (const a of rw.agents) if (wiped.includes(a.species)) a.dead = true;
 rw.agents = rw.agents.filter(a => !a.dead); rw.step(1 / 30);
 // (each species' refuge: IMMIGRATION.REFUGE, lower for an apex predator a lake slice this size feeds only one of — pop.refuge)
 const refugeOf = k => Math.min(IMMIGRATION.REFUGE, SP[k].pop.refuge ?? Infinity);
-// (visitors — pike, trout: sp.pop.visit — come and go by design; every resident species must be back)
+// (visitors — sp.pop.visit — come and go by design; every resident species must be back)
 check('the REFUGE backstop guarantees no literal extinction — every wiped resident species is ≥ its refuge after one step', SPECIES.every(k => SP[k].pop.visit || (rw.census()[k] >= refugeOf(k) && refugeOf(k) >= 1)), SPECIES.map(k => `${k} ${rw.census()[k]}`).join(' '));
 // self-sustaining species float FREE of the rescue: catfish should be mostly home-bred, not immigration-propped
 seed(99); const ssw = new World();
@@ -1195,12 +1197,12 @@ for (let i = 0; i < 48; i++) { cale.year = i / 48; seenMonths.add(cale.monthInde
 check('the calendar cycles through all 12 months over a year (each named)', seenMonths.size === 12 && allNamed, `${seenMonths.size} distinct months`);
 cale.year = 3.25; check('yearFrac() is the fractional progress through the current year [0,1)', approx(cale.yearFrac(), 0.25, 1e-9) && cale.monthIndex() === 3, `frac ${cale.yearFrac().toFixed(3)}, month ${cale.monthIndex()}`);
 // REAL LIFESPANS (bioenergetics, 2026-10-13): the published maximum ages and ages at maturity (FishBase, Ontario Freshwater
-// Fishes database) — carp live ~6× a fathead minnow; every species matures at a realistic fraction of its life
+// Fishes database) — white suckers live ~2.5× a golden shiner; every species matures at a realistic fraction of its life
 const maxAges = SPECIES.map(k => SP[k].maxAge);
-check('fish lifespans span the real range (carp ~25 yr ≫ fathead minnows ~4 yr)', SP.carp.maxAge / SP.minnow.maxAge >= 4, `carp ${(SP.carp.maxAge / TIME.YEAR_LEN).toFixed(0)} / minnow ${(SP.minnow.maxAge / TIME.YEAR_LEN).toFixed(0)} yr`);
+check('fish lifespans span the real range (white sucker ~17 yr ≫ golden shiner ~7 yr)', SP.sucker.maxAge / SP.minnow.maxAge >= 2, `sucker ${(SP.sucker.maxAge / TIME.YEAR_LEN).toFixed(0)} / shiner ${(SP.minnow.maxAge / TIME.YEAR_LEN).toFixed(0)} yr`);
 check('every species matures at a realistic fraction of its lifespan (8–40%, well before death)', SPECIES.every(k => { const f = SP[k].matureAge / SP[k].maxAge; return f >= 0.08 && f <= 0.40; }), SPECIES.map(k => `${k} ${(100 * SP[k].matureAge / SP[k].maxAge | 0)}%`).join(' '));
-check('lifespan ordering is ecological (minnow shortest-lived, carp longest)', SP.minnow.maxAge === Math.min(...maxAges) && SP.carp.maxAge === Math.max(...maxAges), `minnow (min), carp (max)`);
-check('life history runs in real YEARS: minnows mature at about a year, bass, pike and carp only after 2+ years', SP.minnow.matureAge <= 1.2 * TIME.YEAR_LEN && SP.pike.matureAge >= 2 * TIME.YEAR_LEN && SP.carp.matureAge >= 2 * TIME.YEAR_LEN && SP.bass.matureAge >= 2 * TIME.YEAR_LEN && SPECIES.every(k => SP[k].maxAge >= 3 * TIME.YEAR_LEN), SPECIES.map(k => `${k} ${(SP[k].matureAge / TIME.YEAR_LEN).toFixed(1)}/${(SP[k].maxAge / TIME.YEAR_LEN).toFixed(0)} yr`).join(' '));
+check('lifespan ordering is ecological (golden shiner shortest-lived, white sucker longest)', SP.minnow.maxAge === Math.min(...maxAges) && SP.sucker.maxAge === Math.max(...maxAges), `shiner (min), sucker (max)`);
+check('life history runs in real YEARS: shiners mature in their second year, bass, pickerel and suckers only after 2+ years', SP.minnow.matureAge <= 2 * TIME.YEAR_LEN && SP.pike.matureAge >= 2 * TIME.YEAR_LEN && SP.sucker.matureAge >= 2 * TIME.YEAR_LEN && SP.bass.matureAge >= 2 * TIME.YEAR_LEN && SPECIES.every(k => SP[k].maxAge >= 3 * TIME.YEAR_LEN), SPECIES.map(k => `${k} ${(SP[k].matureAge / TIME.YEAR_LEN).toFixed(1)}/${(SP[k].maxAge / TIME.YEAR_LEN).toFixed(0)} yr`).join(' '));
 // TEMPERATURE-TRIGGERED SPAWNING — a species spawns only while the shore water is inside its window (SP.spawnT, °C),
 // in spring/summer; never on the autumn cooling path or under ice (world.js spawnFactor)
 check('every species has a realistic spawning-temperature window (°C, 2–30, at least 4 °C wide)', SPECIES.every(k => { const [lo, hi] = SP[k].spawnT; return lo >= 2 && hi <= 30 && hi - lo >= 4; }), SPECIES.map(k => `${k} ${SP[k].spawnT.join('–')}`).join(' '));
@@ -1562,7 +1564,15 @@ console.log('\n— save/load integrity (audit-fixes) —');
     for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
     const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
     const ids = lw.agents.map(a => a.id);
-    check('saves are version 31, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 31 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+    check('saves are version 32, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 32 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+  // (8b) a v31 save from before the Maine species set: its carp and trout are skipped, the other species load, and the
+  // refuge brings white perch and white suckers in within a few steps
+  { const f = clone(); f.version = 31; const a0 = f.agents.find(a => a.s === 'minnow');
+    f.agents.push({ ...a0, s: 'carp', id: 999991 }, { ...a0, s: 'trout', id: 999992 });
+    for (const a of f.agents) if (a.s === 'whiteperch' || a.s === 'sucker') a.s = 'carp';
+    const lw = new World(), rep = lw.load(f); for (let i = 0; i < 30; i++) lw.step(DTI); const c = lw.census();
+    check('a pre-Maine (v31) save loads without its carp and trout; white perch and suckers arrive by the refuge', rep.skippedSpecies >= 2 && lw.agents.every(a => SP[a.species]) && c.whiteperch > 0 && c.sucker > 0 && finiteWorld(lw),
+      `skipped ${rep.skippedSpecies}; white perch ${c.whiteperch}, suckers ${c.sucker}`); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
@@ -1577,12 +1587,12 @@ console.log('\n— save/load integrity (audit-fixes) —');
   { seed(9); const nw = new World(); const f = nw.agents[0]; f.W = NaN; nw.step(DTI);
     check('a fish with a NaN mass dies (death test is !(W > 0))', !nw.agents.includes(f)); }
 
-  // (11) carp normalise threat proximity by qThreat's own 1.1× search radius (the outer band no longer reads 0)
+  // (11) white perch normalise threat proximity by qThreat's own 1.1× search radius (the outer band no longer reads 0)
   { seed(10); const tw = new World(); tw.env.turbidity = 0;
-    const carp = tw.makeFish('carp', [1, 1, 1, 1, 1, 1, 1], SP.carp.matureAge * 0.2); carp.x = 1000; carp.y = 400; carp.heading = 0;   // a young carp (an adult is past a pike's gape)
+    const carp = tw.makeFish('whiteperch', [1, 1, 1, 1, 1, 1, 1], SP.whiteperch.matureAge * 0.2); carp.x = 1000; carp.y = 400; carp.heading = 0;   // a young white perch (within a pickerel's gape)
     const pike = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]); pike.x = 1000 + carp.senseRange * 1.05; pike.y = 400;
-    tw.agents = [carp, pike]; tw.agentGrid.rebuild(tw.agents); SP.carp.senses(carp, tw);
-    check('carp threat proximity is normalised by the 1.1× threat-search radius (a threat at 1.05× range reads > 0)', carp.act.in[5] > 0 && carp.act.in[4] > 0.99, `prox ${carp.act.in[5].toFixed(3)}`); }
+    tw.agents = [carp, pike]; tw.agentGrid.rebuild(tw.agents); SP.whiteperch.senses(carp, tw);
+    check('white perch threat proximity is normalised by the 1.1× threat-search radius (a threat at 1.05× range reads > 0)', carp.act.in[5] > 0 && carp.act.in[4] > 0.99, `prox ${carp.act.in[5].toFixed(3)}`); }
 }
 
 // ==== audit-fixes: bio-ecology ====
@@ -1629,7 +1639,7 @@ console.log('\n— audit fixes: bio-ecology —');
     check('no asexual budding: a lone ripe minnow in season produces no young (reproduction is sexual only)', bw.stats.births.minnow === b0 && bw.fry.length === 0, `${bw.stats.births.minnow - b0} young, ${bw.fry.length} schools`); }
 
   // (3) dt-INDEPENDENT FEEDING — grazing is a per-second rate and discrete items obey a handling time (FEED.HANDLE)
-  { seed(72); const gw = new World(); const carp = gw.makeFish('carp', ONES); carp.x = 400; carp.y = bedY(400) - 20;
+  { seed(72); const gw = new World(); const carp = gw.makeFish('catfish', ONES); carp.x = 400; carp.y = bedY(400) - 20;   // (a bullhead: weed is part of its diet)
     const pl = gw.makePlant(400, true); pl.height = pl.maxHeight = 130; gw.plants = [pl];
     const h0 = pl.height, e60 = gw.bitePlant(carp, 1 / 60), d60 = h0 - pl.height, h1 = pl.height, e30 = gw.bitePlant(carp, 1 / 30), d30 = h1 - pl.height;
     check('plant grazing is per SECOND: a 1/30 s bite removes 2× a 1/60 s bite (energy ∝ biomass grazed)', Math.abs(d30 - 2 * d60) < 1e-9 && Math.abs(e30 - 2 * e60) < 1e-9 && Math.abs(d60 - PLANTC.BITE_RATE / 60) < 1e-9, `1/60: −${d60.toFixed(2)}px +${e60.toFixed(3)}  1/30: −${d30.toFixed(2)}px +${e30.toFixed(3)}`); }
@@ -1907,17 +1917,17 @@ console.log('\n— determinism (stress scenario), body-depth defence, Baldwinian
   };
   const h1 = detRun(), h2 = detRun(), firstDiff = h1.findIndex((h, i) => h !== h2[i]);
   check('DETERMINISM holds in a midsummer storm with the toxicant on (state hash every 100 steps, 1500 steps)', firstDiff === -1, firstDiff === -1 ? `${h1.length} hashes identical` : `diverged by step ${(firstDiff + 1) * 100}`);
-  // BODY-DEPTH DEFENCE through the real prey query: a pike can take a normal carp at the gape margin but not the same carp
+  // BODY-DEPTH DEFENCE through the real prey query: a pickerel can take a normal white perch at the gape margin but not the same fish
   // with a deep body (body gene ↑ → bodyMul ↑ → effective size above the pike's gape)
   const preyFor = bodyGene => {
     seed(905); const tw = new World(); tw.agents = [];
-    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('carp', [1, 1, 1, 1, 1, bodyGene, 1]);
-    cp.L = pk.L * SP.pike.gapeR / (SP.carp.depthR * 1.035); cp.W = stdWeight(SP.carp.lw, cp.L);   // a young carp right at the pike's gape margin
+    const pk = tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), cp = tw.makeFish('whiteperch', [1, 1, 1, 1, 1, bodyGene, 1]);
+    cp.L = pk.L * SP.pike.gapeR / (SP.whiteperch.depthR * 1.035); cp.W = stdWeight(SP.whiteperch.lw, cp.L);   // a white perch right at the pickerel's gape margin
     pk.x = 1000; pk.y = 500; cp.x = 1020; cp.y = 500; tw.agents.push(pk, cp); tw.agentGrid.rebuild(tw.agents);
     const m = tw.qPrey(pk); return { found: !!(m && m.item === cp), bodyMul: cp.bodyMul };
   };
   const slim = preyFor(1.0), deep = preyFor(1.35);
-  check('BODY DEPTH is a real predation defence in qPrey: a pike targets the normal carp but not the deep-bodied one', slim.found && !deep.found, `normal (bodyMul ${slim.bodyMul.toFixed(2)}) targeted: ${slim.found}; deep (bodyMul ${deep.bodyMul.toFixed(2)}) targeted: ${deep.found}`);
+  check('BODY DEPTH is a real predation defence in qPrey: a pickerel targets the normal white perch but not the deep-bodied one', slim.found && !deep.found, `normal (bodyMul ${slim.bodyMul.toFixed(2)}) targeted: ${slim.found}; deep (bodyMul ${deep.bodyMul.toFixed(2)}) targeted: ${deep.found}`);
   // BALDWINIAN at the persistence boundary: a fish's LEARNED weights (a.lw) never reach a save or a champion — only the
   // inherited genotype (a.g) does
   seed(906); const bw = new World(); const f = bw.agents.find(a => a.species === 'minnow');
@@ -2021,17 +2031,17 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
     check('…and its fry are hard to take while he is on station (BROOD.PROTECT), but not once he has left', sch && away > 0 && onDuty < away * (1 - BR.PROTECT) * 1.6, `larvae taken: guarded ${onDuty} vs unguarded ${away}`);
   });
 
-  // DIGESTION: a predator strikes only at a fish that fits the room left in its stomach — a full pike passes up a ~60-g perch
+  // DIGESTION: a predator strikes only at a fish that fits the room left in its stomach — a full pickerel passes up a ~60-g perch
   // within reach, an empty one takes it and its stomach fills (a sure strike: the gut is what's tested)
   const digest = full => noImmigrants(() => sureStrike(() => {
     seed(5154); const dw = new World().setDate(0.30); dw.fry = []; dw.cray = [];
-    const pk = dw.makeFish('pike', ONES7, SP.pike.matureAge + 10); pk.x = 1000; pk.y = 500; if (full) { pk.gut = pk.sp.gut * pk.W; pk.gutE = pk.gut * 4000; }
+    const pk = dw.makeFish('pike', ONES7, SP.pike.matureAge + 2 * TIME.YEAR_LEN); pk.x = 1000; pk.y = 500; if (full) { pk.gut = pk.sp.gut * pk.W; pk.gutE = pk.gut * 4000; }   // (a ~43-cm, ~0.5-kg pickerel: room for a ~60-g perch)
     const m = dw.makeFish('perch', null, SP.perch.matureAge + 5); m.x = 1003; m.y = 500;
     dw.agents = [pk, m]; dw.agentGrid.rebuild(dw.agents); const g0 = pk.gut;
     dw.step(1 / 30);
     return { eaten: m.dead && !dw.agents.includes(m) ? 1 : 0, gutGain: pk.gut - g0 * 0.99 }; }));
   const busy = digest(true), free = digest(false);
-  check('DIGESTION: a pike with a full stomach passes up a perch in reach; an empty one takes it and its stomach fills', busy.eaten === 0 && free.eaten === 1 && free.gutGain > 30, `full: ate ${busy.eaten}; empty: ate ${free.eaten}, gut +${free.gutGain.toFixed(1)} g`);
+  check('DIGESTION: a pickerel with a full stomach passes up a perch in reach; an empty one takes it and its stomach fills', busy.eaten === 0 && free.eaten === 1 && free.gutGain > 30, `full: ate ${busy.eaten}; empty: ate ${free.eaten}, gut +${free.gutGain.toFixed(1)} g`);
 
   // GENE FLOW: immigrants come from a regional gene pool (not copies of the lake's best), and emigrants feed it
   { seed(5155); const gw = new World();
@@ -2065,8 +2075,8 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
   setRandState(rs);
 }
 
-// ==== more life (2026-10-13): zooplankton kinds, dragonflies, frogs, turtles, trout ====
-console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, trout —');
+// ==== more life (2026-10-13): zooplankton kinds, dragonflies, frogs, turtles; thermoregulation ====
+console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, thermoregulation —');
 {
   const CR = await import('../src/config.js');
   const { PLANKTON: PK, ODONATA, FROG, TURTLE } = CR;
@@ -2146,17 +2156,17 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     check('a hungry bass eats a tadpole that fits its gape (into its stomach)', td.dead && td.eatenBy === 'bass' && bs.gut > 0);
   });
 
-  // TROUT: behavioural thermoregulation — in the warm summer lake a trout keeps deeper (cooler) than the same trout would
-  // if it didn't mind the heat (A/B: its optimum AND its lethal limit raised out of the way — the heat escape keys on the
-  // UILT). Four trout per lake (the rescue alone keeps only one or two, too few for a stable mean)
-  { const felt = hot => { const keep = SP.trout.tempTol, keepU = SP.trout.uilt; if (hot) { SP.trout.tempTol = 30; SP.trout.uilt = 40; }   // the heat no longer bothers it
+  // THERMOREGULATION: in the warm summer lake a white sucker (preferring 17–24 °C) keeps deeper, in cooler water, than the
+  // same sucker would if it didn't mind the heat (A/B: its tolerance AND its lethal limit raised out of the way — the heat
+  // escape keys on the UILT). Four suckers per lake, three lakes
+  { const felt = hot => { const keep = SP.sucker.tempTol, keepU = SP.sucker.uilt; if (hot) { SP.sucker.tempTol = 30; SP.sucker.uilt = 40; }   // the heat no longer bothers it
       try { let s = 0, n = 0;
-        for (const sd of [6701, 6702]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated (oligotrophic) lake: no O₂ squeeze
-          for (let k = 0; k < 4; k++) { const t = tw.makeFish('trout', ONES7, SP.trout.matureAge + 50); t.x = LAKE_C - 300 + k * 200; t.y = 150; tw.agents.push(t); }   // (over the lake's deep water, where cool water exists)
-          for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'trout') { s += tw.env.tempAt(a.x, a.y); n++; } } }
-        return n ? s / n : 0; } finally { SP.trout.tempTol = keep; SP.trout.uilt = keepU; } };
+        for (const sd of [6701, 6702, 6703]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated lake: no O₂ squeeze
+          for (let k = 0; k < 4; k++) { const t = tw.makeFish('sucker', ONES7, SP.sucker.matureAge + 50); t.x = LAKE_C - 300 + k * 200; t.y = 150; tw.agents.push(t); }   // (over the lake's deep water, where cool water exists)
+          for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'sucker') { s += tw.env.tempAt(a.x, a.y); n++; } } }
+        return n ? s / n : 0; } finally { SP.sucker.tempTol = keep; SP.sucker.uilt = keepU; } };
     const cool = felt(false), warm = felt(true);
-    check('TROUT seek cool water: in midsummer they live in cooler water than the same trout indifferent to heat (thermoregulation)', cool < warm - 1.5, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }
+    check('THERMOREGULATION: in midsummer white suckers live in cooler water than the same suckers indifferent to heat', cool < warm - 1.0, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }
 
   // the new life round-trips through save/load (v26)
   { seed(6801); const sw = new World().setDate(0.40); for (let i = 0; i < 60; i++) sw.step(1 / 30);
@@ -2174,6 +2184,17 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   const ONES7 = [1, 1, 1, 1, 1, 1, 1];
   const rel = (a, b) => Math.abs(a - b) <= Math.max(1e-7, 2e-3 * Math.abs(b));   // FB4 test vectors are given to 3–4 significant figures
   const TT = [4, 12, 20, 24, 28];
+  // the PUBLISHED FB4 rows the reference vectors were computed for (the implementation check): fathead minnow (Duffy 1998),
+  // bluegill, yellow perch, rainbow trout (Railsback & Rose 1999), brown bullhead, largemouth bass (Rice et al. 1983) and
+  // northern pike (Bevelhimer et al. 1985) — several no longer a sim species's own set since the Maine re-base (2026-10-15)
+  const FIX = {
+    minnow: B.prepBio({ CEQ: 2, CA: 0.149, CB: -0.242, CQ: 2.4, CTO: 24, CTM: 30, REQ: 2, RA: 0.0096, RB: -0.041, RQ: 2.6, RTO: 28, RTM: 33, ACT: 1, SDA: 0.172, EGEQ: 1, FA: 0.1, EXEQ: 1, UA: 0.1, PREDEDEQ: 1, ED: 4100 }),
+    sunfish: SP.sunfish.bio, perch: SP.perch.bio, catfish: SP.catfish.bio,
+    trout: B.prepBio({ CEQ: 3, CA: 0.628, CB: -0.3, CQ: 3.5, CTO: 25, CTM: 22.5, CTL: 24.3, CK1: 0.2, CK4: 0.2, REQ: 2, RA: 0.013, RB: -0.217, RQ: 2.2, RTO: 22, RTM: 26, ACT: 1.3,
+      SDA: 0.172, EGEQ: 3, FA: 0.212, FB: -0.222, FG: 0.631, EXEQ: 3, UA: 0.0314, UB: 0.58, UG: -0.299, PREDEDEQ: 2, Alpha1: 5763, Beta1: 0.986, Cutoff: 4000, Alpha2: 7602, Beta2: 0.5266 }),
+    bass: SP.bass.bioJuv,
+    pike: B.prepBio({ ...SP.pike.bio, CA: 0.0244, _hot: undefined }),
+  };
   // reference values computed with a line-by-line JS port of FB4's own R source (R/bioenergetics/*.R)
   const VEC = {
     minnow: { W: 2, f: [0.1901, 0.4486, 0.8706, 1.000, 0.6810], c: [0.02395, 0.05652, 0.1097, 0.1260, 0.0858], r: [0.000933, 0.002453, 0.005729, 0.007946, 0.009331] },
@@ -2186,7 +2207,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   };
   let badF = [], badC = [], badR = [];
   for (const k in VEC) {
-    const v = VEC[k], b = SP[k].bio;
+    const v = VEC[k], b = FIX[k];
     TT.forEach((T, i) => {
       const f = B.consumptionT(b, T); if (!(v.f[i] < 1e-4 ? Math.abs(f - v.f[i]) < 1e-5 : rel(f, v.f[i]))) badF.push(`${k}@${T}: ${f.toPrecision(4)} vs ${v.f[i]}`);
       if (v.c[i] != null) { const c = B.cmax(b, v.W, T); if (!(v.c[i] === 0 ? c === 0 : rel(c, v.c[i]))) badC.push(`${k}@${T}: ${c.toPrecision(4)} vs ${v.c[i]}`); }
@@ -2197,15 +2218,43 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
   check('…and Cmax(W, T) = CA·W^CB·f(T) at reference weights', badC.length === 0, badC.slice(0, 3).join('; '));
   check('…and respiration (REQ 1 with its activity term, REQ 2) incl. routine activity', badR.length === 0, badR.slice(0, 3).join('; '));
   // a full daily budget (C, F, U, SDA, R → G in J/g/d) at 20 °C and p = 0.5, as the reference port computes it
-  const budget = (k, W, ed) => { const b = SP[k].bio, WF = [0, 0], C = B.cmax(b, W, 20) * 0.5 * ed; B.wasteFractions(b, 20, 0.5, WF);
+  const budget = (k, W, ed) => { const b = FIX[k], WF = [0, 0], C = B.cmax(b, W, 20) * 0.5 * ed; B.wasteFractions(b, 20, 0.5, WF);
     const F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F); return C - F - U - S - B.respiration(b, W, 20) * B.OXYCAL; };
   const gP = budget('perch', 100, 3000), gB = budget('bass', 500, 4000), gK = budget('pike', 1000, 4000);
   check('a full FB4 daily energy budget matches the reference (perch 21.4, bass 14.4, pike 21.1 J/g/d at 20 °C, p 0.5)',
     Math.abs(gP - 21.4) < 0.15 && Math.abs(gB - 14.4) < 0.15 && Math.abs(gK - 21.1) < 0.15, `${gP.toFixed(2)}, ${gB.toFixed(2)}, ${gK.toFixed(2)}`);
-  check('trout energy density is FB4\'s weight-dependent PREDEDEQ 2 (6,256 J/g at 500 g)', Math.abs(B.energyDensity(SP.trout.bio, 500) - 6256) < 1);
-  // standard weight: 15-cm bluegill ~70 g, 38-cm bass ~0.9 kg, 65-cm pike ~1.9 kg (the published Ws equations)
-  check('length–weight follows the published standard-weight equations (bluegill 15 cm ≈ 70 g, bass 38 cm ≈ 820 g, pike 65 cm ≈ 1.9 kg)',
-    Math.abs(B.stdWeight(SP.sunfish.lw, 15) - 70) < 3 && Math.abs(B.stdWeight(SP.bass.lw, 38) - 823) < 20 && Math.abs(B.stdWeight(SP.pike.lw, 65) - 1870) < 50);
+  check('rainbow trout energy density is FB4\'s weight-dependent PREDEDEQ 2 (6,256 J/g at 500 g)', Math.abs(B.energyDensity(FIX.trout, 500) - 6256) < 1);
+  // THE MAINE STAND-INS are published rows: golden shiner = FB4's dace; chain pickerel = northern pike as published; white
+  // perch = yellow perch (the striped bass rows starved it under the ice — species.js); smallmouth = Whitledge et al. 2003 with
+  // its warm (> 26 °C) row and the largemouth set below 30 g; white sucker = yellow perch's curve with a sucker's energy density
+  const whHot = B.prepBio({ ...SP.bass.bio, CQ: 1.95, hot: undefined, _hot: undefined });
+  check('Maine stand-ins: shiner = FB4 dace, pickerel = FB4 pike, white perch and sucker = FB4 yellow perch (sucker with its own energy density)',
+    SP.minnow.bio.CA === 0.36 && SP.minnow.bio.CTO === 26 && SP.minnow.bio.CTM === 29 && SP.minnow.bio.ED === 5522
+      && B.cmax(SP.pike.bio, 500, 20) === B.cmax(FIX.pike, 500, 20)
+      && [4, 12, 20, 26].every(T => B.cmax(SP.whiteperch.bio, 60, T) === B.cmax(SP.perch.bio, 60, T) && B.cmax(SP.whiteperch.bioJuv, 2, T) === B.cmax(SP.perch.bioJuv, 2, T))
+      && B.consumptionT(SP.sucker.bio, 20) === B.consumptionT(SP.perch.bio, 20) && SP.sucker.bio.ED > SP.perch.bio.ED);
+  // …and every resident species can at least hold its weight at full ration under the ice (1–4 °C) except the warm-water
+  // centrarchids, bullhead and smallmouth, which really do lose condition over winter (Block et al., Lake Champlain; MDIFW:
+  // Maine smallmouth stop feeding below 10 °C) — the white perch's striped-bass surrogate failed exactly this
+  { const W8 = [0, 0], netFull = (b, W, T) => { const C = B.cmax(b, W, T) * 3000; B.wasteFractions(b, T, 1, W8); const F = W8[0] * C, U = W8[1] * (C - F); return C - F - U - b.SDA * (C - F) - B.respiration(b, W, T) * B.OXYCAL; };
+    const cool = ['minnow', 'perch', 'sucker', 'whiteperch', 'pike'], ok = cool.every(k => [1, 4].every(T => netFull(SP[k].bio, stdWeight(SP[k].lw, SP[k].Lref * 0.7), T) > -2));
+    check('UNDER THE ICE the shiner, both perches, the sucker and the pickerel break even or better at full ration (1–4 °C)', ok,
+      cool.map(k => `${k} ${netFull(SP[k].bio, stdWeight(SP[k].lw, SP[k].Lref * 0.7), 1).toFixed(0)}`).join(', ') + ' J/g/d at 1 °C'); }
+  let maxStep = 0; for (let T = 24; T <= 28; T += 0.01) maxStep = Math.max(maxStep, Math.abs(B.consumptionT(SP.bass.bio, T + 0.01) - B.consumptionT(SP.bass.bio, T)));
+  check('smallmouth: Whitledge\'s warm row (CQ 1.95) above 26 °C, its cool row (CQ 4.2) below, blended without a step',
+    B.consumptionT(SP.bass.bio, 28) === B.consumptionT(whHot, 28) && Math.abs(B.consumptionT(SP.bass.bio, 22) - 1) < 1e-9 && maxStep < 0.003,
+    `f(25) ${B.consumptionT(SP.bass.bio, 25).toFixed(3)}, f(27) ${B.consumptionT(SP.bass.bio, 27).toFixed(3)}, largest 0.01-°C step ${maxStep.toFixed(4)}`);
+  { const bw0 = new World(), small = bw0.makeFish('bass', ONES7), big = bw0.makeFish('bass', ONES7), ysun = bw0.makeFish('sunfish', ONES7, 10), osun = bw0.makeFish('sunfish', ONES7, 2 * TIME.YEAR_LEN);
+    small.W = 5; big.W = 200;
+    const net = W => { const b = W < SP.bass.juvW ? SP.bass.bioJuv : SP.bass.bio; return B.cmax(b, W, 20) * 4184 * (1 - 0.104) * (1 - b.SDA - b.UA) - B.respiration(b, W, 20) * B.OXYCAL; };
+    const netWh = W => B.cmax(SP.bass.bio, W, 20) * 4184 * (1 - 0.104) * (1 - SP.bass.bio.SDA - SP.bass.bio.UA) - B.respiration(SP.bass.bio, W, 20) * B.OXYCAL;
+    check('a smallmouth under 30 g runs on the largemouth set (Whitledge\'s would starve it at full ration), a bigger one on Whitledge; Lepomis switch by age',
+      bw0.bioOf(small) === SP.bass.bioJuv && bw0.bioOf(big) === SP.bass.bio && net(5) > 0 && netWh(5) < 0 && bw0.bioOf(ysun) === SP.sunfish.bioJuv && bw0.bioOf(osun) === SP.sunfish.bio,
+      `5 g at 20 °C, full ration: ${net(5).toFixed(0)} J/g/d on the largemouth set vs ${netWh(5).toFixed(0)} on Whitledge's`); }
+  // standard weight: 15-cm pumpkinseed ~73 g, 38-cm smallmouth ~0.84 kg, 65-cm pickerel ~2 kg (the published Ws equations)
+  check('length–weight follows the published standard-weight equations (pumpkinseed 15 cm ≈ 73 g, smallmouth 38 cm ≈ 840 g, pickerel 65 cm ≈ 2.0 kg)',
+    Math.abs(B.stdWeight(SP.sunfish.lw, 15) - 73) < 3 && Math.abs(B.stdWeight(SP.bass.lw, 38) - 843) < 20 && Math.abs(B.stdWeight(SP.pike.lw, 65) - 1990) < 60,
+    `${B.stdWeight(SP.sunfish.lw, 15).toFixed(0)} g, ${B.stdWeight(SP.bass.lw, 38).toFixed(0)} g, ${B.stdWeight(SP.pike.lw, 65).toFixed(0)} g`);
 
   const rsB = getRandState(), immB = { ...IMMIGRATION }, { BIRD: BIRDB } = await import('../src/config.js'), arriveB = BIRDB.ARRIVE;
   IMMIGRATION.REFUGE = 0; IMMIGRATION.RATE = 0; BIRDB.ARRIVE = 0;   // single-fish experiments: no rescue immigrants or loons wandering in
@@ -2251,11 +2300,11 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     for (let i = 0; i < 30 * 650 && !recruited; i++) { yw.step(1 / 30); if (!f.dead) maxL = Math.max(maxL, f.L); if (yw.stats.births.minnow > b0) recruited = true; }   // (≤ ~4 months: fatheads reach 4 cm by late summer)
     check('FRY: a school of larvae grows on zooplankton and thins out', maxL > L0 * 1.5, `${L0.toFixed(2)} → ${maxL.toFixed(2)} cm from ${n0} larvae`);
     check('…and its survivors recruit as followed individuals (at the species\' recruit length)', recruited); }
-  // HEAT and HYPOXIA kill by species tolerance: held at 28 °C a trout dies, a carp doesn't; in 0.5 mg/L water a trout dies, a bullhead lives
+  // HEAT and HYPOXIA kill by species tolerance: held at 32 °C a white sucker dies, a bullhead doesn't; in 0.5 mg/L water a white perch dies, a bullhead lives
   { const survive = (k, T, o2) => { seed(7006); const hw = new World(); hw.agents = []; hw.fry = []; hw.birds = []; hw.env.tempAt = () => T; const f = hw.makeFish(k, ONES7); f.x = 1000; f.y = 200; hw.agents.push(f);
       for (let i = 0; i < Math.round(3 * BIOE.DAY * 30) && !f.dead; i++) { if (o2 != null) hw.env.o2.fill(o2); hw.step(1 / 30); } return !f.dead; };
-    check('HEAT: 3 days at 29 °C kill a trout (UILT ~25 °C) but not a carp (~36 °C)', !survive('trout', 29) && survive('carp', 29));
-    check('HYPOXIA: water at ~0.5 mg/L O₂ kills a trout (lethal ~2.5 mg/L) but not a bullhead (~0.3 mg/L)', !survive('trout', 18, 0.5 / 9.5) && survive('catfish', 18, 0.5 / 9.5)); }
+    check('HEAT: 3 days at 32 °C kill a white sucker (UILT ~30 °C) but not a bullhead (~36 °C)', !survive('sucker', 32) && survive('catfish', 32));
+    check('HYPOXIA: water at ~0.5 mg/L O₂ kills a white perch (lethal ~0.8 mg/L at 18 °C) but not a bullhead (~0.2)', !survive('whiteperch', 18, 0.5 / 9.5) && survive('catfish', 18, 0.5 / 9.5)); }
   // the bioenergetic state round-trips through save/load (v27): length, mass, sex, maturity, gonads, gut, fry schools
   { seed(7007); const sw = new World().setDate(0.35); for (let i = 0; i < 300; i++) sw.step(1 / 30);
     const lw = new World(); lw.load(JSON.parse(JSON.stringify(sw.toJSON())));
@@ -2360,9 +2409,10 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('a crayfish is a DEFENDED prey: a bass on top of one doesn’t always take it (its diet.cray skill, less in cover and by day)', hits > 8 && hits < 390, `${hits}/400 steps`);
       // …too wide for a small perch's mouth (CRAYFISH.WIDTH), and dormant in its burrow in cold water
       const tries = (k, L, cold) => { seed(7710); const tw = new World().setDate(0.40); tw.fry = []; noZoo(tw); tw.larvae = []; tw.snails = [];
-        const f = tw.makeFish(k, ONES7); f.L = L; f.W = stdWeight(SP[k].lw, L); tw.agents = [f]; if (cold) tw.env.tempAt = () => 3; let n = 0;
+        const f = tw.makeFish(k, ONES7); f.L = L; f.W = stdWeight(SP[k].lw, L); tw.agents = [f]; if (cold) tw.env.tempAt = () => 3; let n = 0, ate = 0;
+        const ate0 = tw._ate.bind(tw); tw._ate = function (a, kk, g, ...r) { if (a === f && g === PREY.CRAY_G) ate++; return ate0(a, kk, g, ...r); };   // (count the crayfish EATEN — not a rare natural death)
         for (let t = 0; t < 300; t++) { f.x = 300; f.y = tw.bedY(300) - 4; f.gut = 0; f.dead = false; const cf = tw._mkCray(300); cf.x = 300 + 1; cf.y = tw.bedY(cf.x) - 2; tw.cray = [cf]; tw.crayGrid.rebuild(tw.cray); tw.step(1 / 30); if (cf.dead) n++; }
-        return n; };
+        return ate; };
       const smallPerch = tries('perch', 18, false), bigPerch = tries('perch', 30, false), coldBass = tries('bass', 36, true);
       const exposed = tries('bass', 36, false); CR.SHELTER = keepSh; const housed = tries('bass', 36, false);
       check('crayfish are gape-limited prey (a small perch can’t take one, a big one can) and safe in their burrows in cold water', smallPerch === 0 && bigPerch > 0 && coldBass === 0, `perch 18 cm ${smallPerch}, 30 cm ${bigPerch}; bass at 3 °C ${coldBass} of 300`);
@@ -2400,14 +2450,14 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
         `in 5 days: fed patch 1 → ${A.m.toFixed(2)} g using ${used.toFixed(1)} g of detritus; unfed patch 1 → ${B.m.toFixed(3)} g`);
       // a bottom feeder at the bed sifts the layer (no particles, larvae, snails, plankton or weed to eat)
       seed(7903); const bw = new World().setDate(0.45); bw.fry = []; bw.plants = []; bw.detritus = []; bw.larvae = []; bw.snails = []; noZoo(bw); bw.insects = []; bw.cray = []; bw.nymphs = []; bw.herps = [];
-      const cp = bw.makeFish('carp', ONES7); bw.agents = [cp]; const cc = bw.env.colOf(300);
-      // count what the carp takes FROM THE LAYER (its sifting meals) and what the layer gives up in its column
+      const cp = bw.makeFish('sucker', ONES7); bw.agents = [cp]; const cc = bw.env.colOf(300); bw.env.benth.fill(0);   // (no worms and scuds either: a sucker takes those first)
+      // count what the sucker takes FROM THE LAYER (its sifting meals) and what the layer gives up in its column
       let sifted = 0, sJ = 0, fromLayer = 0; const meal0 = bw._meal.bind(bw), take0 = bw.env.takeSedOM.bind(bw.env);
       bw._meal = function (a, g, ed, dig, n) { if (a === cp && ed === PREY.DETRITUS_ED) { sifted += g; sJ += g * ed * dig; } return meal0(a, g, ed, dig, n); };
       bw.env.takeSedOM = function (x, g) { const t = take0(x, g); if (this.colOf(x) === cc) fromLayer += t; return t; };
       for (let i = 0; i < 60; i++) { cp.x = 300; cp.y = bw.bedY(300) - 3; bw.env.sedOM[cc] = 1000; bw.larvae = []; bw.step(1 / 30); }
       check('a bottom feeder at the bed sifts its organic layer (a poor food: detritus energy × digestibility)', sifted > 0 && fromLayer >= sifted - 1e-9 && Math.abs(sJ / sifted - PREY.DETRITUS_ED * PREY.DETRITUS_DIG) < 1e-6,
-        `carp sifted ${sifted.toFixed(2)} g in 2 s (the layer gave ${fromLayer.toFixed(2)} g) at ${(sJ / Math.max(sifted, 1e-9)).toFixed(0)} J/g`);
+        `sucker sifted ${sifted.toFixed(2)} g in 2 s (the layer gave ${fromLayer.toFixed(2)} g) at ${(sJ / Math.max(sifted, 1e-9)).toFixed(0)} J/g`);
       // BOTTOM-FEEDING FRY: young bullheads feed on the bottom from swim-up (benthL 1.2 cm) and pick small larvae a fish's
       // refuge would hide (INSECT.REFUGE_FRY) — a 1.5-cm bullhead school eats from a patch, a 1.5-cm bluegill school doesn't
       const { FRY: FRYB } = await import('../src/config.js');
@@ -2532,8 +2582,10 @@ console.log('\n— the bed\'s worms and scuds —');
   check('BENTHOS: the worms-and-scuds pool round-trips through save/load (v30)', Math.abs(back.env.benth[5] - 123.25) < 1e-3 && bw.toJSON().version >= 30, `${back.env.benth[5]}`);
   setRandState(rsB); }
 
-// VISITORS (sp.pop.visit, 2026-10-15): wide-ranging pike and trout pass through the slice — they leave after a stay and
-// another arrives after a gap, so the slice holds them a realistic share of the time (not as permanent residents)
+// VISITORS (sp.pop.visit, 2026-10-15): wide-ranging fish pass through the slice — they leave after a stay and another
+// arrives after a gap, so the slice holds them a realistic share of the time (not as permanent residents). No species of the
+// Maine set is a visitor (the chain pickerel is a resident); the mechanism stays (a stocked trout, a pike from a bigger
+// lake), tested here on the pickerel made a visitor for the probe
 { const rsV = getRandState(), keep = SP.pike.pop.visit;
   SP.pike.pop.visit = { stay: 1, gap: 1 };   // (short stays and gaps: the probe sees many comings and goings)
   seed(9301); const vw = new World().setDate(0.40); let here = 0, n = 0, left = 0;
@@ -2546,11 +2598,11 @@ console.log('\n— the bed\'s worms and scuds —');
   }
   SP.pike.pop.visit = keep; setRandState(rsV);
   const frac = here / n, arrived = vw.stats.immigrants.pike - i0;
-  check('VISITORS: pike pass through the slice — they leave after a stay and another arrives after a gap (present part of the time)', left >= 3 && arrived >= 3 && frac > 0.2 && frac < 0.8,
+  check('VISITORS: a visiting predator passes through the slice — they leave after a stay and another arrives after a gap (present part of the time)', left >= 3 && arrived >= 3 && frac > 0.2 && frac < 0.8,
     `${left} left, ${arrived} arrived; present ${(frac * 100).toFixed(0)} % of the time (stay = gap = 1 day)`); }
 
 // BED FORAGING (2026-10-15): a bottom forager senses the richest stretch of bed in reach that holds worms and scuds above their
-// refuge under breathable water (env.benthBest → world.qBed, the `food` target of sunfish, perch, bullheads and carp), so a fish
+// refuge under breathable water (env.benthBest → world.qBed, the `food` target of sunfish, perch, bullheads and suckers), so a fish
 // whose patch is grazed bare moves on; young sunfish past their limnetic phase settle on such a bed; and a piscivore works a
 // school of young fish across its hunting arena, not only when it swims into the school
 { const rsS = getRandState(), { BENTHOS: BN } = await import('../src/config.js'), ONES7 = [1, 1, 1, 1, 1, 1, 1];
@@ -2625,6 +2677,60 @@ console.log('\n— the bed\'s worms and scuds —');
   mw.step(1 / 30);
   check('MATURATION REACTION NORM: at the same length below Lmat an older fish matures and a just-old-enough one does not (BIOE.PMRN_*)', !young.mature && old.mature, `young ${young.mature}, old ${old.mature} at L ${young.L.toFixed(2)} (Lmat ${young.Lmat.toFixed(2)})`);
   setRandState(rsC); }
+
+// THE MAINE FISH (2026-10-15): species mechanisms the re-base added — the pumpkinseed cracks snails only once its
+// pharyngeal teeth have hardened (BIO Lsnail), the smallmouth's and pickerel's prey sense sees crayfish (qCray), and a
+// pumpkinseed nests in water under ~1 m (sp.nestD)
+console.log('\n— the Maine fish —');
+{ const rsM = getRandState(), ONES7 = [1, 1, 1, 1, 1, 1, 1], { PREY: PR } = await import('../src/config.js');
+  // snails: a 6-cm and a 10-cm pumpkinseed, each alone on the bed among snails with nothing else to eat
+  const snailsEaten = L => {
+    seed(9601); const sw = new World().setDate(0.40); noZoo(sw); sw.larvae = []; sw.insects = []; sw.detritus = []; sw.plants = []; sw.cray = []; sw.fry = []; sw.nymphs = []; sw.herps = []; sw.birds = []; sw.env.benth.fill(0);
+    const x = 300, f = sw.makeFish('sunfish', ONES7, 3 * TIME.YEAR_LEN); f.L = L; f.W = stdWeight(SP.sunfish.lw, L); f.x = x; f.y = bedY(x) - 3; sw.agents = [f];
+    const nShel = Math.round(SNAIL.REFUGE * scaleCount(SNAIL.CAP)) + 5;   // (the first SNAIL.REFUGE × cap snails in the list hide in the weeds: fill those places far off)
+    sw.snails = []; for (let i = 0; i < nShel; i++) sw.snails.push(sw._mkSnail(LANDSCAPE.LAKE_W - 300));
+    for (let i = 0; i < 40; i++) { const sn = sw._mkSnail(x + (i % 8) - 4); sn.sh = false; sw.snails.push(sn); }
+    let n = 0; const ate0 = sw._ate.bind(sw); sw._ate = function (a, k, g, ...r) { if (a === f && g === PR.SNAIL_G) n++; return ate0(a, k, g, ...r); };
+    for (let i = 0; i < 90; i++) { f.x = x; f.y = bedY(x) - 3; f.gut = 0; sw.step(1 / 30); }
+    return n; };
+  const nSmall = snailsEaten(6), nBig = snailsEaten(10);
+  check('PUMPKINSEED crack snails only past BIO Lsnail (8 cm): a 6-cm fish among snails takes none, a 10-cm fish does', nSmall === 0 && nBig > 0, `6 cm: ${nSmall}, 10 cm: ${nBig} snails in 3 s`);
+  // crayfish in the prey sense: a smallmouth alone with one exposed crayfish ahead of it senses it as prey; a pumpkinseed's
+  // crayfish sense is empty (crayfish aren't in its diet)
+  seed(9602); const cw = new World().setDate(0.40); cw.fry = [];
+  const b = cw.makeFish('bass', ONES7, SP.bass.matureAge + 10), sf = cw.makeFish('sunfish', ONES7);
+  b.x = 600; b.y = bedY(600) - 10; b.heading = 0; sf.x = 900; sf.y = bedY(900) - 10; cw.agents = [b, sf]; cw.agentGrid.rebuild(cw.agents);
+  const cr = cw._mkCray(640); cr.y = b.y; cr.sh = false; cw.cray = [cr]; cw.crayGrid.rebuild(cw.cray);
+  SP.bass.senses(b, cw);
+  check('SMALLMOUTH see crayfish as prey: with no fish in sight, a bass\'s prey sense points at an exposed crayfish ahead (and a pumpkinseed has no crayfish sense)',
+    b.act.in[2] > 0 && b.act.in[1] > 0.9 && cw.qCray(sf) === null, `prey near ${b.act.in[2].toFixed(2)}, bearing cos ${b.act.in[1].toFixed(2)}`);
+  // nests: a pumpkinseed pair ripe over 2.2 m of water nests shoreward, in water under 1 m (a smallmouth pair's nest would
+  // stay at their 2.2 m — SPAWN.NEST_D 2.5)
+  { const IMM = { ...IMMIGRATION }; IMMIGRATION.RATE = 0; IMMIGRATION.REFUGE = 0;
+    try {
+      let x = 40; while (bedY(x) / WORLD.PX_PER_M < 2.2 && x < LANDSCAPE.LAKE_W / 2) x += 4;
+      seed(9603); const nw = new World().setDate(0.33); nw.agents = []; nw.fry = [];
+      const pa = nw.makeFish('sunfish', ONES7, SP.sunfish.matureAge + 10), pb = nw.makeFish('sunfish', ONES7, SP.sunfish.matureAge + 10);
+      pa.x = x; pb.x = x + 4; pa.y = pb.y = bedY(x) - 6; ripe(pa, 1); ripe(pb, 0); nw.agents.push(pa, pb); nw.agentGrid.rebuild(nw.agents);
+      let sch = null; for (let i = 0; i < 600 && !sch; i++) { nw.step(1 / 30); sch = nw.fry.find(f => f.k === 'sunfish') || null; }
+      const d = sch ? bedY(sch.nx) / WORLD.PX_PER_M : NaN;
+      check('PUMPKINSEED nest in water under ~1 m (sp.nestD): a pair spawning over 2.2 m nests shoreward in the shallows', !!sch && d <= SP.sunfish.nestD + 1e-9, sch ? `pair over ${(bedY(x) / WORLD.PX_PER_M).toFixed(1)} m → nest at ${d.toFixed(2)} m` : 'no spawning');
+    } finally { Object.assign(IMMIGRATION, IMM); } }
+  // the THROUGH-CURRENT runs in the stream — out on the lake and the pond a fish feels only a trace of it (FLOW.LAKE_FRAC;
+  // at full strength everywhere it carried the lake's shiners into the pond's far end, where they starved) — and a fish
+  // holds its station against a weak current (MOTION.RHEO), but a spate carries it downstream
+  { const { FLOW: FL } = await import('../src/config.js');
+    const ew = new World(); ew.env.wind = 0; const st = BASINS.find(b => b.kind === 'stream'), sx = (st.x0 + st.x1) / 2;
+    const cLake = ew.env.currentAt(LAKE_C, 10), cStream = ew.env.currentAt(sx, 10);
+    check('the through-current runs in the STREAM; out on the lake a fish feels only a trace of it', cStream > 2 && Math.abs(cLake) < 0.05 * cStream, `stream ${cStream.toFixed(2)} vs lake ${cLake.toFixed(3)} px/s at the surface`);
+    const drift = mul => { const keep = FL.SPEED; FL.SPEED = keep * mul;
+      try { seed(9604); const dw = new World().setDate(0.40); dw.agents = []; dw.fry = []; let sum = 0; const fs = [];
+        for (let k = 0; k < 8; k++) { const f = dw.makeFish('minnow', ONES7, SP.minnow.matureAge + 10); f.x = sx - 60 + k * 15; f.y = 8; fs.push(f); dw.agents.push(f); }
+        const x0 = fs.map(f => f.x); for (let i = 0; i < 300; i++) { dw.env.wind = 0; dw.step(1 / 30); }
+        fs.forEach((f, k) => { if (!f.dead) sum += f.x - x0[k]; }); return sum / 8; } finally { FL.SPEED = keep; } };
+    const calm = drift(1), spate = drift(15);
+    check('RHEOTAXIS: shiners hold station in the stream\'s normal current but a spate (15×) carries them downstream', spate > calm + 40, `mean downstream shift in 10 s: ${calm.toFixed(0)} px at the normal current vs ${spate.toFixed(0)} px in spate`); }
+  setRandState(rsM); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

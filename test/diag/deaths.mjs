@@ -1,12 +1,12 @@
 // DEATH LEDGER: per month, per species — deaths by cause (starve/old/heat/hypoxia/other, eaten by <predator>), recruits (births),
-// immigrants, and the count. node deaths.mjs <seed> <months> [SET=...]
+// immigrants, and the count. node deaths.mjs <seed> <months> [species,...] [SET=...]
 const R = process.env.SRC || new URL('../../src/', import.meta.url).href;
 const { seed } = await import(R + 'core.js'); const { World } = await import(R + 'world.js'); const CFG = await import(R + 'config.js');
 await (await import('./ovr.mjs')).applySet(R);
 seed(+(process.argv[2] || 1)); const w = new World(); const e = w.env;
 const months = +(process.argv[3] || 8), rep = Math.round(CFG.TIME.YEAR_LEN / 12 * 30);
 const tp = w.takePrey.bind(w); w.takePrey = function (a, ...r) { const p = tp(a, ...r); if (p) p._by = a.species; return p; };
-const want = ['sunfish', 'perch', 'minnow', 'bass'];
+const want = process.argv[4] ? process.argv[4].split(',') : (await import(R + 'species.js')).SPECIES;   // (every species, or a list)
 const L = {}; const add = (sp, k) => { const o = L[sp] ??= {}; o[k] = (o[k] || 0) + 1; };
 let b0 = { ...w.stats.births }, i0 = { ...w.stats.immigrants };
 for (let m = 1; m <= months; m++) {

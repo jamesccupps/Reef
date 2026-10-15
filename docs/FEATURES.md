@@ -5,9 +5,50 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-15 Maine re-base, part 1** and **2026-10-15 zooplankton fields and food web** sections come first, then the **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-15 Maine re-base, parts 2 and 1** and **2026-10-15 zooplankton fields and food web** sections come first, then the **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
 
 ---
+
+## 2026-10-15 the Maine re-base, part 2: the Maine fish (save v32)
+
+The eight species are now the fish of an eastern Maine warm-water lake like Hot Brook (report table "Only yellow perch and
+bullheads make the move to Maine"). Keys stayed where the old name still fits; two changed:
+
+| key | species | FB4 set (`species.js` `BIO`) | notes |
+|---|---|---|---|
+| `minnow` | golden shiner | dace (He 1986; Trudel & Boisclair 1994) — stand-in | dace respiration ~2× a measured shiner rate (flagged); repeat spawner 20–27 °C every ~2 weeks; an OMNIVORE (zooplankton, emerged insects, aquatic larvae and the bed's worms and scuds, plant material — TPWD: plants ~half the diet; FishBase: plankton, insects, molluscs): on zooplankton alone the shiners starved every late summer once the white perch and young-of-year had grazed it down (feeding level 0.93 in June → 0.29 by late September) |
+| `sunfish` | pumpkinseed | bluegill (Kitchell 1974) — stand-in | Ws pumpkinseed; snails only past `Lsnail` 8 cm TL; nests under `nestD` 1 m; gape 0.083 |
+| `perch` | yellow perch | yellow perch (Kitchell 1977) | unchanged but for the name |
+| `sucker` (was `trout`) | white sucker | yellow perch's curve, ED 5,300 — uncalibrated stand-in | bottom feeder (larvae, worms and scuds, detritus, snails past 12 cm); spawns 10–15 °C at the inflow side (the stream run is step 5); lives 17 yr |
+| `catfish` | brown bullhead | brown bullhead (Hartman 2017) | unchanged but for the name |
+| `whiteperch` (was `carp`) | white perch | yellow perch adult + juvenile (Kitchell 1977) — stand-in | the report's striped bass rows were tried and dropped: their curve all but stops eating below ~6 °C, so white perch starved under every winter's ice (Maine's are ice-fished); schooling planktivore → generalist, piscivorous (incl. cannibalism) past 15 cm; W–L refit to Maine weights; spawns ~15 °C; growth food-limited so stunting can emerge |
+| `bass` | smallmouth bass (refuge 1, rescue 2: the default floor of 2–3 held ~22 bass/ha, which ate the shiners out) | Whitledge et al. 2003 (two rows: CQ 4.2 ≤ 26 °C, 1.95 above — `bio.hot`, blended over ±0.5 °C) above `juvW` 30 g; largemouth (Rice 1983) below | crayfish `diet.cray` 0.4 and a crayfish SENSE (`world.qCray` in its prey input); nest guard 25–35 days |
+| `pike` | chain pickerel | northern pike (Bevelhimer 1985) as published | (the report's Cmax × 0.7 left pickerel losing mass under the ice at full ration — dropped); a RESIDENT now (refuge 1, rescue 2), K ≈ 3; preferendum 24.5 °C; insects while small; senses crayfish too |
+
+- **Mechanisms added:** `bio.hot` (a set published as two temperature rows; `bioenergetics.js` `consumptionT`); `sp.juvW`
+  (the juvenile set by body mass — `world.js` `bioOf`); `sp.Lsnail` (snail crushing from a length); `sp.nestD` (a species'
+  own nest depth, else `SPAWN.NEST_D`); `world.qCray(a)` (an exposed crayfish in sight, for crayfish eaters whose gape fits
+  one). New markings in `drawFish`: `pumpkin` (orange breast and speckles, blue-green cheek lines, a black ear flap with a red
+  tip), `shiner` (brassy, the down-curved lateral line, `upMouth`), `sucker` (+ `suckerMouth`: pale lips under the snout),
+  `silver` (white perch), `smbars` (broken bronze bars, bars radiating from a red eye — `eyeCol`), `chain` (a reticulated net
+  of dark links, `eyeBar` under the eye).
+- **Populations:** founders sized to ~90 kg/ha in total (the report's 60–150), white perch the biggest share; golden shiner
+  founders at the report's 3–8 % share (~71).
+- **The through-current and rheotaxis (a landscape fix):** the field-advection profile (`FLOW.SPEED`) was also the current
+  every fish drifted on — across the lakes too — so the surface current carried the lake's golden shiners (and before them
+  the fatheads) down the stream into the pond's far end, where they crowded, ate it bare and starved every August–September
+  (death ledger: 24 starved in one September). Now `env.currentAt` gives a fish or surface insect the full through-current
+  only in the stream and `FLOW.LAKE_FRAC` (3 %) of it on the lake and the pond (a 300-ha lake's through-flow moves at
+  ~mm/s), and a fish holds its station against a current up to `MOTION.RHEO` × its top cruising speed (× cold performance)
+  — only the excess carries it (a spate does). The fields still advect on the full profile (~1-yr residence).
+- **Save v32:** an older save's carp and trout are skipped on load (`rep.skippedSpecies`); the refuge brings white perch and
+  suckers in. The gate's FB4 implementation checks now run on the published rows as fixtures (fathead, rainbow trout,
+  largemouth, unscaled pike), since several are no longer a species' own set.
+- **Gate:** guild gradients, lifespans, lethal heat/O₂ by species, thermoregulation (now the white sucker), body-depth defence
+  (white perch at a pickerel's gape), the Maine stand-ins, the cool-water fish breaking even under the ice at full ration, the smallmouth's two rows and juvenile switch, snails by length,
+  crayfish in the bass's prey sense, pumpkinseed nests under 1 m, and the v31 → v32 save.
+- **Diagnostic:** `test/diag/census.mjs <seed> <years>` — every species' fish, biomass and young each half-month; spawnings,
+  recruits and immigrants each year.
 
 ## 2026-10-15 the Maine re-base, part 1: recruitment compensation and the landscape (save v31)
 

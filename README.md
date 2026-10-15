@@ -53,18 +53,20 @@ There is no build step and no runtime dependencies. Open the URL in a desktop br
 
 ## What you're watching
 
-**The fish.** Six species across a size gradient, each with its own body shape, brain size, senses and diet:
+**The fish.** The eight fish of an eastern Maine warm-water lake (modelled on the Hot Brook lakes), each with its own body shape, brain size, senses, diet and published physiology:
 
 | Species | Role | Eats | Brain (inputs → hidden → outputs) |
 |---|---|---|---|
-| Minnow  | schooling planktivore | zooplankton, insects | 23 → 12 → 5 |
-| Sunfish | littoral omnivore | zooplankton, plants, larvae, insects, snails | 20 → 10 → 5 |
-| Catfish | nocturnal bottom feeder | detritus, plants, larvae, crayfish | 17 → 10 → 5 |
-| Carp    | benthic grazer | plants, detritus, larvae, snails | 17 → 9 → 5 |
-| Bass    | mid-water predator | smaller fish, insects, crayfish | 17 → 9 → 5 |
-| Pike    | ambush apex predator | smaller fish, crayfish | 16 → 8 → 5 |
+| Golden shiner   | schooling forage minnow of the weedy shallows | zooplankton, insects, algae | 23 → 12 → 5 |
+| Pumpkinseed     | littoral sunfish; nests in colonies under 1 m | larvae, insects, zooplankton, snails (once big enough to crack them) | 20 → 10 → 5 |
+| Yellow perch    | schooling middle link | larvae, worms and scuds, small fish, small crayfish | 19 → 9 → 5 |
+| White sucker    | big, long-lived bottom feeder; spring stream runs | larvae, worms and scuds, detritus, snails | 18 → 9 → 5 |
+| Brown bullhead  | nocturnal bottom feeder | larvae, worms, snails, crayfish, detritus, weed | 17 → 10 → 5 |
+| White perch     | schooling planktivore turned generalist; prone to stunting | zooplankton, larvae, insects, small fish | 17 → 9 → 5 |
+| Smallmouth bass | rocky-shore predator | crayfish above all, small fish, insects | 17 → 9 → 5 |
+| Chain pickerel  | weed-bed ambush predator | fish, crayfish, insects when small | 16 → 8 → 5 |
 
-Predation works by **effective size**: a fish can eat prey up to ~85% of its own size, and juveniles and slim-bodied fish are easier to catch. Newborns get a short grace period before their own species can eat them. After that, bass and pike are cannibals, like the real ones.
+Predation works by **effective size**: a fish can eat prey up to ~85% of its own size, and juveniles and slim-bodied fish are easier to catch. Newborns get a short grace period before their own species can eat them. After that, bass, pickerel and white perch are cannibals, like the real ones.
 
 **The brain.**
 - Each fish runs a recurrent network every tick. Every hidden unit has a leaky memory.

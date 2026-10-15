@@ -1,4 +1,4 @@
-// species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
+// species.js — the eight fish of a Maine lake: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
 import { WORLD, ENV, TIME, littoralX } from './config.js';
 import { prepBio } from './bioenergetics.js';
 import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
@@ -138,28 +138,36 @@ function drawFish(put, P, c, o) {
     let base = n <= 0 ? mix(c.back, c.body, clamp(n + 1, 0, 1))  // back → body over the upper half
                       : mix(c.body, c.belly, clamp(n, 0, 1));    // body → belly over the lower half
     let k = 1 + (P.scaleTex || 0.05) * Math.sin(u * 2.6 - v * 1.7) * Math.cos(v * 2.4);   // broad scale grain (coarser on carp)
-    if (pat === 'band') {          // bass: a dark, ragged lateral band of blotches from gill to tail
-      const c0 = -0.08 + 0.07 * Math.sin(u * 1.3), hw = 0.17 + 0.07 * blot(u * 1.6, 3.1), d = Math.abs(n - c0);
-      k *= 1 - 0.34 * (1 - sstep(hw * 0.6, hw, d)) * (0.75 + 0.25 * Math.sin(u * 3.3)) * along(-L * 0.95, L * 0.5, u);
-    } else if (pat === 'stripe') { // minnow: a thin dark midline stripe on a silvery flank
-      k *= 1 - 0.28 * (1 - sstep(0.05, 0.11, Math.abs(n + 0.06))) * along(-L * 0.9, L * 0.65, u);
-    } else if (pat === 'bars') {   // sunfish: faint vertical bars over the back + an orange breast
-      const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.34));
-      k *= 1 - 0.2 * sstep(0.55, 0.95, s) * (1 - sstep(-0.1, 0.55, n)) * along(-L * 0.85, L * 0.45, u);
-      base = mix(base, [236, 138, 52], 0.42 * sstep(0.1, 0.8, n) * sstep(-0.5, 0.4, u / L));
-    } else if (pat === 'vbars') {  // perch: 6–8 bold dark saddle bars over a yellow flank, fading toward the pale belly
+    if (pat === 'vbars') {  // perch: 6–8 bold dark saddle bars over a yellow flank, fading toward the pale belly
       const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.28) + 0.6);
       k *= 1 - 0.34 * sstep(0.5, 0.92, s) * (1 - sstep(0.0, 0.7, n)) * along(-L * 0.9, L * 0.5, u);
-    } else if (pat === 'spots') {  // pike: rows of pale bean-shaped spots on a dark flank
-      const gu = u / 0.5, row = Math.floor(v / 0.34), gv = v / 0.34 - row, ou = gu + (row & 1) * 0.5, fu = ou - Math.floor(ou);
-      const r = Math.hypot((fu - 0.5) * 0.6, gv - 0.5);
-      base = mix(base, c.belly, 0.5 * (1 - sstep(0.18, 0.26, r)) * (1 - sstep(0.55, 0.8, Math.abs(n))) * along(-L * 0.95, L * 0.55, u));
     } else if (pat === 'mottle') { // catfish: dark blotches over the back and flanks, smooth skin
       k *= 1 - 0.24 * sstep(0.25, 0.6, blot(u * 2.1, v * 2.9)) * (1 - sstep(0.1, 0.6, n));
-    } else if (pat === 'troutspots') {   // rainbow trout: a rosy lateral band on a silvery flank, fine black spots over the back
-      base = mix(base, [214, 112, 132], 0.5 * (1 - sstep(0.1, 0.24, Math.abs(n + 0.02))) * along(-L * 0.9, L * 0.75, u));
-      const gu = u / 0.32, row = Math.floor(v / 0.26), gv = v / 0.26 - row, ou = gu + (row & 1) * 0.5, fu = ou - Math.floor(ou);
-      k *= 1 - 0.55 * (1 - sstep(0.1, 0.16, Math.hypot(fu - 0.5, gv - 0.5))) * (1 - sstep(-0.2, 0.25, n)) * (0.5 + 0.5 * blot(u * 3.1, v * 2.3) > 0.35 ? 1 : 0);
+    } else if (pat === 'pumpkin') {   // pumpkinseed: faint bars, an orange breast, orange speckles over an olive-gold flank and
+                                      // wavy blue-green lines across the cheek
+      const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.34));
+      k *= 1 - 0.16 * sstep(0.55, 0.95, s) * (1 - sstep(-0.1, 0.55, n)) * along(-L * 0.85, L * 0.3, u);
+      base = mix(base, [238, 136, 44], 0.48 * sstep(0.1, 0.8, n) * sstep(-0.5, 0.4, u / L));
+      base = mix(base, [226, 128, 48], 0.5 * sstep(0.55, 0.8, blot(u * 3.7, v * 4.1)) * (1 - sstep(0.4, 0.8, Math.abs(n))) * along(-L * 0.85, L * 0.3, u));
+      const ch = along(L * 0.36, L * 0.86, u), w1 = Math.abs(n - (-0.12 + 0.07 * Math.sin(u * 9))), w2 = Math.abs(n - (0.2 + 0.07 * Math.sin(u * 9 + 1.5)));
+      base = mix(base, [70, 160, 168], 0.6 * ch * (1 - sstep(0.03, 0.07, Math.min(w1, w2))));
+    } else if (pat === 'shiner') {    // golden shiner: a brassy sheen and the strongly DOWN-CURVED lateral line that dips toward the belly
+      base = mix(base, [228, 190, 96], 0.28 * (1 - Math.abs(n)));
+      const t = u / L, nl = 0.34 - 0.4 * ((t + 0.1) / 0.75) ** 2;
+      k *= 1 - 0.2 * (1 - sstep(0.025, 0.06, Math.abs(n - nl))) * along(-L * 0.9, L * 0.62, u);
+    } else if (pat === 'sucker') {    // white sucker: plain olive-brown over a cream belly, faint dusky smudges along the flank
+      k *= 1 - 0.12 * sstep(0.35, 0.8, blot(u * 1.1, v * 0.7)) * (1 - sstep(0.15, 0.7, n)) * along(-L * 0.9, L * 0.5, u);
+    } else if (pat === 'silver') {    // white perch: an unmarked silvery flank under an olive-grey back
+      base = mix(base, [206, 214, 210], 0.32 * (1 - Math.abs(n)) * sstep(-0.7, 0.1, n));
+    } else if (pat === 'smbars') {    // smallmouth bass: 9–15 faint, narrow vertical bars on a bronze flank
+      const s = 0.5 + 0.5 * Math.cos(u * TAU / (L * 0.2) + 0.4);
+      k *= 1 - 0.18 * sstep(0.6, 0.95, s) * (0.6 + 0.4 * blot(u * 2.3, v * 3.7)) * (1 - sstep(0.15, 0.85, n)) * along(-L * 0.9, L * 0.32, u);
+    } else if (pat === 'chain') {     // chain pickerel: a net of dark chain-links over a green-gold flank
+      base = mix(base, [190, 178, 92], 0.22 * (1 - Math.abs(n)));
+      const gv0 = v / 0.27 + 0.3 * Math.sin(u * 3.1 + v * 1.7), row = Math.floor(gv0), fv = gv0 - row;
+      const ou = u / 0.55 + 0.28 * Math.sin(v * 5.3 + u * 2.2) + (row & 1) * 0.5, fu = ou - Math.floor(ou);
+      const edge = Math.min(Math.min(fu, 1 - fu) * 0.5, Math.min(fv, 1 - fv));   // distance to the link's outline (links ~2× long as tall)
+      k *= 1 - 0.5 * (1 - sstep(0.035, 0.08, edge)) * (1 - sstep(0.55, 0.85, Math.abs(n))) * along(-L * 0.95, L * 0.5, u);
     }
     if (sc) {                      // overlapping scales: staggered rows of round scales, each with a darker rim on its rear (tail) side
       const rh = sc.p * 0.8, row = Math.floor(v / rh), cu = u / sc.p + (row & 1) * 0.5;
@@ -171,21 +179,30 @@ function drawFish(put, P, c, o) {
   // gill cover (operculum) — a faint curved seam behind the head that flares subtly with the beat (breathing)
   { const gx = L * 0.30, gf = 0.5 + 0.5 * Math.sin(ph * 1.4); putLine(put, gx, -Hh * 0.52 + wave(gx), gx - 0.18, Hh * 0.56 + wave(gx), su, c.back, 0.3 + 0.12 * gf); }
   // opercular "ear" spot — the dark flap mark behind the gill cover (sunfish/centrarchid signature)
-  if (P.earSpot) fillDisc(put, L * 0.32, -Hh * 0.16 + wave(L * 0.32), Hh * 0.2, su, c.back);
+  if (P.earSpot) {
+    fillDisc(put, L * 0.32, -Hh * 0.16 + wave(L * 0.32), Hh * 0.2, su, mix(c.back, [16, 20, 24], 0.65));
+    if (Array.isArray(P.earSpot)) fillDisc(put, L * 0.32 - Hh * 0.13, -Hh * 0.16 + wave(L * 0.32 - Hh * 0.13), Hh * 0.08, su, mix(c.back, P.earSpot, 0.8));   // its bright rear tip
+  }
   // snout — a solid ROUNDED nose that blunts the body's pointed tip (the old separate dabs read as a dotted needle at
   // close-up resolutions; a triangle read as a bird's beak); longer, flatter "duckbill" on the pike
   const sn = (P.snout || 0) * 0.42, wL = wave(L);
   if (sn > 0) fillEllipse(put, L - 0.1, wL * 0.92, 0.14 + sn * 0.28, Hh * 0.19, su, c.body);   // mostly inside the head: it only blunts the tip
-  // mouth line — a short dark seam ending inside the nose tip
-  putLine(put, L * 0.92, Hh * 0.08 + wave(L * 0.92), L + sn * 0.25, wL * 0.9 + Hh * 0.02, su, c.back, 0.5);
+  // mouth line — a short dark seam ending inside the nose tip (an upturned one on the shiner; the white sucker's mouth is
+  // UNDER its snout: fleshy, pale sucking lips)
+  if (P.upMouth) putLine(put, L * 0.9, -Hh * 0.02 + wave(L * 0.9), L + sn * 0.25, wL * 0.9 - Hh * 0.16, su, c.back, 0.5);
+  else putLine(put, L * 0.92, Hh * 0.08 + wave(L * 0.92), L + sn * 0.25, wL * 0.9 + Hh * 0.02, su, c.back, 0.5);
+  if (P.suckerMouth) fillEllipse(put, L * 0.9, Hh * 0.5 + wave(L * 0.9), 0.2, Hh * 0.13, su, mix(c.belly, [214, 160, 150], 0.45));
   // barbels (catfish) — whiskers as continuous lines (they were rows of separate dots)
   if (P.barbels) for (const [y0, y1, al] of [[Hh * 0.3, Hh * 1.0, 0.6], [Hh * 0.18, Hh * 0.55, 0.5], [-Hh * 0.1, -Hh * 0.55, 0.45]])
     putLine(put, L + sn * 0.5, y0 + wL, L + sn * 0.5 + 1.5, y1 + wL, su, c.belly, al);
   // eye — radius PROPORTIONAL to body depth (the old flat 0.7-unit floor made a slim fish's eye absurdly large). Where it
   // spans enough sprite px (close-up tiers) it gets a gold-tinted iris ring around the pupil; a catch-light glint on top.
   const er = Math.max(0.16, Hh * 0.22 * m.eye), ex = L * 0.58, ey = -Hh * 0.32 + wave(ex);
-  if (er * scale >= 6) { fillDisc(put, ex, ey, er, su, mix(c.back, [196, 158, 70], 0.55)); fillDisc(put, ex, ey, er * 0.64, su, c.eye); }
-  else fillDisc(put, ex, ey, er, su, c.eye);
+  // (P.eyeBar: the pickerel's dark "teardrop" bar down from the eye; smallmouth: dark bars radiating back from the eye)
+  if (P.eyeBar) for (const d of [-0.06, 0, 0.06]) putLine(put, ex + d, ey + er, ex - 0.1 + d, Hh * 0.62 + wave(ex), su, c.back, 0.75);
+  if (P.pattern === 'smbars') for (const dy of [-0.1, 0.18, 0.42]) putLine(put, ex - er, ey + Hh * dy * 0.3, L * 0.33, ey + Hh * dy, su, c.back, 0.42);
+  if (er * scale >= 6) { fillDisc(put, ex, ey, er, su, P.eyeCol ? mix(c.back, P.eyeCol, 0.75) : mix(c.back, [196, 158, 70], 0.55)); fillDisc(put, ex, ey, er * 0.64, su, c.eye); }
+  else fillDisc(put, ex, ey, er, su, P.eyeCol ? mix(c.eye, P.eyeCol, 0.35) : c.eye);
   fillDisc(put, ex + er * 0.3, ey - er * 0.3, Math.max(0.08, er * 0.28), su, [222, 230, 236]);   // catch-light
 }
 
@@ -230,27 +247,38 @@ const yr = n => n * TIME.YEAR_LEN;
 // (prior) marks a literature value not yet checked against a primary source.
 const yrs = n => n * TIME.YEAR_LEN;
 export const BIO = {
-  minnow: {   // FATHEAD MINNOW — FB4 "Fathead minnow" (Duffy 1998)
-    bio: { CEQ: 2, CA: 0.149, CB: -0.242, CQ: 2.4, CTO: 24, CTM: 30, REQ: 2, RA: 0.0096, RB: -0.041, RQ: 2.6, RTO: 28, RTM: 33, ACT: 1,
-      SDA: 0.172, EGEQ: 1, FA: 0.1, EXEQ: 1, UA: 0.1, PREDEDEQ: 1, ED: 4100, src: 'Duffy 1998 (FB4)' },
-    lw: { a: 0.011040, b: 3.0765 }, vb: { Linf: 7.8, k: 1.0, t0: -0.2 },   // Michigan W–L (no Ws exists); ~5.5 cm at 1, 7 at 2
-    Lhatch: 0.6, sHatch: 0.6, L0: 4, Lref: 6, Lmat: 4.5, matMinAge: yrs(0.8), maxAge: yrs(4), matureAge: yrs(1), M: 1.35,
-    gut: 0.05, gerMul: 1.0, gsiF: 0.10, gsiM: 0.015,   // per batch
-    fec: { a: 35.6, b: 1.70 },   // per BATCH: mature eggs = −451 + 20·TL(mm) (Gale & Buynak 1982) ≈ 549 at 5 cm, 749 at 6; 16–26 batches a summer
-    Lzoo: 0, Lpisc: Infinity, gapeR: 0.06, depthR: 0.18, uilt: 33, o2Lethal: 0.7, vuln: 1.0,
+  // THE MAINE SET (2026-10-15; docs/reports/Maine lakes ponds and streams.md): the fish of an eastern Maine warm-water
+  // lake like Hot Brook — golden shiner, pumpkinseed, yellow perch, white sucker, brown bullhead, white perch, smallmouth
+  // bass and chain pickerel. Five of them have no bioenergetics model of their own; each borrows the nearest published set
+  // (stated per species), and each surrogate's known bias is noted where it has one.
+  minnow: {   // GOLDEN SHINER (Notemigonus crysoleucas) — FB4 "Dace" (He 1986; Trudel & Boisclair 1994): no golden shiner model
+              // exists. The dace set's respiration is ~2× a measured standard rate for 5.3-g shiners (131 mg O₂/kg/h, temperature
+              // unstated — Beecham et al. 2009): flagged, not corrected
+    bio: { CEQ: 2, CA: 0.36, CB: -0.31, CQ: 2.3, CTO: 26, CTM: 29, REQ: 2, RA: 0.0148, RB: -0.2, RQ: 2.1, RTO: 29, RTM: 32, ACT: 1,
+      SDA: 0.15, EGEQ: 1, FA: 0.4, EXEQ: 1, UA: 0.1, PREDEDEQ: 1, ED: 5522, src: 'He 1986; Trudel & Boisclair 1994 (FB4 dace) — golden shiner stand-in' },
+    lw: { a: 0.01023, b: 3.07 }, vb: { Linf: 20, k: 0.25, t0: -0.1 },   // FishBase Bayesian W–L; growth (prior — no northern VB found): ~4.8, 8.2, 10.8, 12.8 cm at 1–4 (common length 14.4)
+    Lhatch: 0.5, sHatch: 0.3, L0: 5, Lref: 11, Lmat: 6.5, LmatM: 6, matMinAge: yrs(1), maxAge: yrs(7), matureAge: yrs(1.5), M: 0.8,   // matures at 5–7 cm, most in the second year (Jones et al. 1978); 5 yr max (MDIFW) – 9 (FishBase) → M = 5.4/7
+    gut: 0.05, gerMul: 1.0, gsiF: 0.08, gsiM: 0.02,   // stomachless cyprinid; per batch
+    fec: { a: 1.13, b: 3.07 },   // per BATCH ≈ 110 eggs per g of female (no fitted equation exists): a 10-cm, 12-g shiner ~1,300 a batch, ~4,000 over a
+                                 //   season of several bouts — California 2,700–4,700 a season (CalFish); big pond fish 10,000–20,000 (culture profile)
+    Lzoo: 0, Lpisc: Infinity, gapeR: 0.07, depthR: 0.25, uilt: 35, o2Lethal: 0.7, vuln: 1.0,   // deep, compressed body; small upturned mouth; tolerates 35 °C; "primary forage for bass, pickerel" (MDIFW)
   },
-  sunfish: {  // BLUEGILL / PUMPKINSEED — FB4 "Bluegill sunfish" adult + juvenile (Kitchell et al. 1974); no pumpkinseed model exists
+  sunfish: {  // PUMPKINSEED (Lepomis gibbosus) — FB4 "Bluegill sunfish" adult + juvenile (Kitchell et al. 1974): no pumpkinseed model
+              // exists. Bluegill respiration runs 1.2–1.7× the routine O₂ uptake measured on 30-g pumpkinseed (Roberts 1964) —
+              // a pumpkinseed on this set pays extra maintenance (flagged; one study is too thin to correct on)
     bio: { CEQ: 2, CA: 0.182, CB: -0.274, CQ: 2.3, CTO: 27, CTM: 36, REQ: 2, RA: 0.0154, RB: -0.2, RQ: 2.1, RTO: 36, RTM: 40, ACT: 1,
-      SDA: 0.172, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0253, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1974 (FB4 adult)' },
-    bioJuv: { CTO: 31, CTM: 37, RTO: 37, RTM: 41, src: 'Kitchell et al. 1974 (FB4 juvenile)' },
-    lw: { a: 0.008750, b: 3.316 }, vb: { Linf: 23, k: 0.3, t0: 0.3 },        // Ws Hillman 1982; Michigan 4.6, 9.7, 12.7, 15.0, 17.0 cm
-    Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 15, Lmat: 7.5, LmatM: 6.5, matMinAge: yrs(1.5),   // (2026-10-15: Lmat 11/9 → 7.5/6.5 cm TL — northern pumpkinseed mature at age 2–3 at ~6–8 cm, Copp et al. 2004; Fox & Keast 1991)
-    maxAge: yrs(10), matureAge: yrs(3), M: 0.54,
+      SDA: 0.172, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0253, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1974 (FB4 bluegill adult) — pumpkinseed stand-in' },
+    bioJuv: { CTO: 31, CTM: 37, RTO: 37, RTM: 41, src: 'Kitchell et al. 1974 (FB4 bluegill juvenile)' },
+    lw: { a: 0.011429, b: 3.237 }, vb: { Linf: 22, k: 0.2, t0: -0.1 },       // Ws pumpkinseed (FSA WSlit); Ontario 3.3–5.2, 5.8–7.5, 7.6–11.7 cm TL at 1–3 (Copp et al. 2004, SL → TL by Fernando et al. 2018)
+    Lhatch: 0.5, sHatch: 0.5, L0: 5, Lref: 13, Lmat: 7.5, LmatM: 6.5, matMinAge: yrs(1.5),   // northern pumpkinseed mature at age 2–3 at ~6–8 cm TL (Copp et al. 2004); 1–2 years earlier and > 20 mm smaller in winterkill ponds (Fox & Keast 1991)
+    maxAge: yrs(10), matureAge: yrs(2.5), M: 0.54,
     gut: 0.05, gerMul: 0.5, gsiF: 0.06, gsiM: 0.01,   // per batch (income spawner);   // panfish: 50 % of a meal in 5 h, all in ~21 h (Seaburg & Moyle 1964)
-    fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982, N Wisconsin): 15 cm → ~11,100 eggs
-    pelagicFry: 1.8, benthL: 1.8,   // cm: the limnetic phase — bluegill fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm
+    fec: { a: 35.7, b: 2.12 },   // F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982): 10 cm → ~4,700, 13 cm → ~8,300 — inside Ontario pumpkinseed's 2,451–10,633
+    pelagicFry: 1.8, benthL: 1.8,   // cm: the limnetic phase — Lepomis fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm
                                     //   (12.5 mm SL), where they eat the littoral's invertebrates (Werner 1967, 1969; Werner & Hall 1988; Beard 1982)
-    Lzoo: 4, Lpisc: Infinity, gapeR: 0.07, depthR: 0.38, uilt: 34, o2Lethal: 0.75, vuln: 0.35,   // lethal DO: Moss & Scott 1961; depth 0.34–0.42 (Lawrence 1958; Hill et al. 2004)
+    Lsnail: 8,   // cm TL: the snail crusher — pumpkinseed grow molariform pharyngeal teeth and switch to snails at 59–80 mm SL (74–99 mm TL;
+                 //   Mittelbach et al. 1999); below that their pharyngeal jaws can't crack a shell
+    Lzoo: 4, Lpisc: Infinity, gapeR: 0.083, depthR: 0.38, uilt: 31.7, o2Lethal: 0.75, vuln: 0.35,   // gape 0.083·TL (Fernando et al. 2018); UILT 31.7 °C (ORNL); depth 0.34–0.42
   },
   perch: {    // YELLOW PERCH — FB4 "Yellow perch" adult + juvenile (Kitchell et al. 1977)
     bio: { CEQ: 2, CA: 0.25, CB: -0.27, CQ: 2.3, CTO: 23, CTM: 28, REQ: 2, RA: 0.0108, RB: -0.2, RQ: 2.1, RTO: 28, RTM: 33, ACT: 1,
@@ -263,15 +291,19 @@ export const BIO = {
     fec: { a: 0.3487, b: 3.4556 },   // log10 F = −3.9131 + 3.4556·log10 TL(mm), inland Michigan lakes (Schneider 1984): 25 cm → 23,600
     Lzoo: 25, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, vuln: 0.6,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL; zooplankton → benthos → fish: big perch leave the zooplankton (Persson 1986; Hjelm et al. 2000) — most lake perch (< 25 cm) still take it
   },
-  trout: {    // RAINBOW TROUT — FB4 "Rainbow Trout (adult)" (Railsback & Rose 1999)
-    bio: { CEQ: 3, CA: 0.628, CB: -0.3, CQ: 3.5, CTO: 25, CTM: 22.5, CTL: 24.3, CK1: 0.2, CK4: 0.2, REQ: 2, RA: 0.013, RB: -0.217, RQ: 2.2, RTO: 22, RTM: 26, ACT: 1.3,
-      SDA: 0.172, EGEQ: 3, FA: 0.212, FB: -0.222, FG: 0.631, EXEQ: 3, UA: 0.0314, UB: 0.58, UG: -0.299,
-      PREDEDEQ: 2, Alpha1: 5763, Beta1: 0.986, Cutoff: 4000, Alpha2: 7602, Beta2: 0.5266, src: 'Railsback & Rose 1999 (FB4)' },
-    lw: { a: 0.01236, b: 2.990 }, vb: { Linf: 90, k: 0.12, t0: -1.2 },       // Ws lentic (Simpkins & Hubert 1996); Michigan lakes 20.8, 28.4, 36.3, 43.9 cm
-    Lhatch: 2.0, sHatch: 0.3, L0: 10, Lref: 35, Lmat: 35, LmatM: 30, matMinAge: yrs(2), maxAge: yrs(8), matureAge: yrs(3), M: 0.65,
-    gut: 0.05, gerMul: 1.0, gsiF: 0.20, gsiM: 0.05,   // ♀ GSI 20 % before ovulation (Tyler et al. 1990);   // 100 % emptied in 16.4 h at 20 °C (Windell et al. 1976)
-    fec: { a: 2.455, b: 1.85 },   // log10 F = −1.46 + 1.85·log10 TL(mm) (DuBois et al. 1989, Lake Superior tributaries): 50 cm → 3,410
-    Lzoo: 60, Lpisc: 25, gapeR: 0.09, depthR: 0.22, uilt: 25, o2Lethal: 2.5, vuln: 0.9,   // UILT 24.3–26 (Bear et al. 2007; Bidgood & Berst 1969); DO: Downing & Merkens 1957
+  sucker: {   // WHITE SUCKER (Catostomus commersonii) — NO published bioenergetics model exists (none in FB4). Stand-in: FB4's yellow
+              // perch set (Kitchell et al. 1977), whose 23 °C optimum and 28 °C cutoff match the sucker's 17–24 °C preferred range
+              // (Ontario Freshwater Fishes), with a sucker's energy density (~5,000–5,600 J/g; 5,585 measured in Colorado).
+              // UNCALIBRATED: a stated assumption
+    bio: { CEQ: 2, CA: 0.25, CB: -0.27, CQ: 2.3, CTO: 23, CTM: 28, REQ: 2, RA: 0.0108, RB: -0.2, RQ: 2.1, RTO: 28, RTM: 33, ACT: 1,
+      SDA: 0.15, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0292, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 5300, src: 'Kitchell et al. 1977 (FB4 yellow perch) — white sucker stand-in, uncalibrated' },
+    bioJuv: { CTO: 29, CTM: 32, RTO: 32, RTM: 35, src: 'Kitchell et al. 1977 (FB4 yellow perch juvenile) — young sucker stand-in' },
+    lw: { a: 0.006378, b: 3.136 }, vb: { Linf: 52, k: 0.2, t0: -0.3 },       // Ontario log10 W = −5.3314 + 3.1361·log10 TL(mm); growth (prior — no northern VB found): ~12, 19, 25, 30, 34 cm at 1–5 (Ontario adults 25–51 cm, 0.2–1.4 kg)
+    Lhatch: 1.2, sHatch: 0.1, L0: 10, Lref: 40, Lmat: 30, LmatM: 26, matMinAge: yrs(2), maxAge: yrs(17), matureAge: yrs(4), M: 0.32,   // matures at 2–3 (♂) and 3–4 yr (♀) in Ontario, 5–8 in Maine (MDIFW); lives 15–25 yr → M = 5.4/17; eggs scattered over stream gravel, no care (sHatch: prior)
+    gut: 0.05, gerMul: 1.0, gsiF: 0.12, gsiM: 0.05,   // (prior)
+    fec: { a: 0.383, b: 3.136 },   // ≈ 60 eggs per g of female (no fitted equation exists): 30 cm → ~16,000, 40 → ~40,000, 50 → ~81,000 — inside 12,500–140,000 (Ontario LHD; DFO 20,000–50,000)
+    Lsnail: 12,   // a sucker's sucking lips and pharyngeal teeth take small snails and clams once it is a few years old (prior)
+    Lzoo: 5, Lpisc: Infinity, gapeR: 0.06, depthR: 0.18, uilt: 30, o2Lethal: 1.0, vuln: 0.8,   // larvae eat plankton, then benthos and detritus; a small suctorial mouth; UILT (prior); soft-rayed
   },
   catfish: {  // BROWN BULLHEAD — FB4 "Brown Bullhead" (Hartman et al. 2017)
     bio: { CEQ: 3, CA: 0.12, CB: -0.225, CQ: 15, CTO: 24, CTM: 26, CTL: 30, CK1: 0.473, CK4: 0.55, REQ: 1, RA: 0.0007, RB: -0.271, RQ: 0.0915, RTO: 0.4055, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
@@ -290,37 +322,52 @@ export const BIO = {
     benthL: 1.2,   // cm: young bullheads, guarded in a ball over the bottom, feed there from swim-up — midge larvae and small
                    //   crustaceans (Scott & Crossman 1973); at the generic FRY.BENTH_L (2.5 cm) ~85 % of the fry starved first
   },
-  carp: {     // COMMON CARP — there is NO published Wisconsin model for common carp (none in FB4). A COMPOSITE from carp data:
-              // consumption curve of FB4's bighead carp (Cooke & Hill 2010; same family, warm-water: best growth 23–30 °C), CA
-              // calibrated to carp rations (Chakraborty 1992: ~3 %/d at 65 g, 28 °C; field 4.1 %/d in August, Garcia & Adelman
-              // 1985); respiration fitted to carp standard metabolism (Beamish 1964: RB −0.219, RQ 0.083 ≈ Q10 2.3) × routine
-              // ACT 1.45 (Chakraborty 1992, as ln1.45 = RTO with VEL 1); F 0.2, U 0.07 of C (Chakraborty 1992) → 0.0875 of C−F
-              // (FB4's convention); ED 4.3–5.4 kJ/g wet
-    bio: { CEQ: 2, CA: 0.5, CB: -0.287, CQ: 2.5, CTO: 28, CTM: 37, REQ: 1, RA: 0.00068, RB: -0.219, RQ: 0.0832, RTO: 0.3716, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
-      SDA: 0.172, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 4800, src: 'composite: Beamish 1964, Chakraborty 1992, FB4 bighead-carp curve' },
-    lw: { a: 0.01910, b: 2.920 }, vb: { Linf: 70, k: 0.2, t0: -0.2 },        // Ws Bister et al. 2000; ~15, 25, 33, 40, 45 cm (prior)
-    Lhatch: 0.6, sHatch: 0.005, L0: 10, Lref: 50, Lmat: 38, LmatM: 32, matMinAge: yrs(2), maxAge: yrs(25), matureAge: yrs(3.5), M: 0.15,   // (sHatch 0.005: in lakes with sunfish, bluegill eat carp eggs and larvae and hold carp recruitment down — Silbernagel & Sorensen 2013, Trans. Am. Fish. Soc. 142:1134; carp recruit mainly where winterkill removes those predators — Bajer & Sorensen 2010; at 0.03 carp fry were ~0.85 kg of the July young-of-year)
-    gut: 0.04, gerMul: 1.0, gsiF: 0.15, gsiM: 0.07,   // stomachless: gut passage, fast in warm water (Hofer et al. 1982)
-    fec: { a: 5.13e-5, b: 5.325 },   // log10 F = −9.615 + 5.325·log10 TL(mm) (Weber & Brown 2012; ~100–200k eggs/kg): 60 cm → ~150k
-    Lzoo: 4, Lpisc: Infinity, gapeR: 0.05, depthR: 0.31, uilt: 36, o2Lethal: 0.5, vuln: 0.7,   // UILT 35.7 °C at 26 °C acclimation (Wismer & Christie 1987)
+  whiteperch: {   // WHITE PERCH (Morone americana) — NO white perch model exists. FB4's yellow perch sets (Kitchell et al. 1977),
+                  // adult + juvenile, stand in. (The congener's striped bass rows, Hartman & Brandt 1995, were tried first: their
+                  // Thornton–Lessem curve all but stops consumption below ~6 °C — a striper winters in estuaries at 4–6 °C — so a
+                  // white perch under the ice lost 0.2–0.4 %/day even at full ration, ~25 % of its mass in 70 days, and the lake's
+                  // white perch died out every winter; Maine's are ice-fished and persist in 4–6 m lakes like Hot Brook.) The perch
+                  // set's Cmax for a 100-g fish at 18.5 °C (0.061 g/g/d) is near the 0.04 measured for adult white perch (Behr 1993;
+                  // the striper set: 0.093). Not represented: white perch's higher routine metabolism, which costs them more over
+                  // winter than yellow perch (Johnson & Evans 1991), and their warmer preferendum (29–31 °C) against the perch
+                  // set's 28 °C consumption ceiling — flagged
+    bio: { CEQ: 2, CA: 0.25, CB: -0.27, CQ: 2.3, CTO: 23, CTM: 28, REQ: 2, RA: 0.0108, RB: -0.2, RQ: 2.1, RTO: 28, RTM: 33, ACT: 1,
+      SDA: 0.15, EGEQ: 2, FA: 0.158, FB: -0.222, FG: 0.631, EXEQ: 2, UA: 0.0292, UB: 0.58, UG: -0.299, PREDEDEQ: 1, ED: 4186, src: 'Kitchell et al. 1977 (FB4 yellow perch adult) — white perch stand-in' },
+    bioJuv: { CTO: 29, CTM: 32, RTO: 32, RTM: 35, src: 'Kitchell et al. 1977 (FB4 yellow perch juvenile) — young white perch stand-in' },
+    lw: { a: 0.012, b: 3.13 }, vb: { Linf: 30, k: 0.3, t0: -0.5 },   // W–L refit so an average 8–10-in Maine fish weighs ~204 g (MDIFW; FishBase's a 0.00447 is 2–4× too light); growth (prior): ~11, 15, 19, 22 cm at 1–4 — food-limited stunting is left to emerge ("a 6-year-old perch may be only 4 inches", MDIFW)
+    Lhatch: 0.4, sHatch: 0.05, L0: 8, Lref: 18, Lmat: 9.5, LmatM: 7.6, matMinAge: yrs(1.5), maxAge: yrs(12), matureAge: yrs(3), M: 0.45,   // ♂ 72–80 mm, ♀ 90–98 mm at 2–4 yr (ADW); "even small, slow-growing perch can mature and spawn" (MDIFW); typically 5–7 yr, 17 max in Maine; eggs broadcast over any bottom, no care (sHatch: prior)
+    gut: 0.06, gerMul: 1.0, gsiF: 0.15, gsiM: 0.05,   // (prior)
+    fec: { a: 10.6, b: 2.82 },   // through MDIFW's ~22,000 eggs at 152 mm and ~150,000 at 30 cm (no fitted equation exists): 10 cm → ~7,000, 20 → ~50,000 (range 20,000–300,000)
+    Lzoo: 40, Lpisc: 15, gapeR: 0.10, depthR: 0.30, uilt: 33, o2Lethal: 1.2, vuln: 0.55,   // a planktivore turning generalist, large fish eat small fish including their own young (Couture & Watzin 2008); deep, spiny; hypoxia-sensitive (Hanks & Secor 2011) — UILT and lethal DO not found (prior)
   },
-  bass: {     // LARGEMOUTH BASS — FB4 "Largemouth bass (adult)" (Rice et al. 1983)
-    bio: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
-      SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, src: 'Rice et al. 1983 (FB4)' },
-    lw: { a: 0.005559, b: 3.273 }, vb: { Linf: 60, k: 0.15, t0: -0.3 },      // Ws Henson 1991; Michigan 10.7, 18.0, 23.9, 29.5, 33.5, 37.3 cm
-    Lhatch: 0.6, sHatch: 0.1, L0: 6, Lref: 38, Lmat: 28, LmatM: 25, matMinAge: yrs(2), maxAge: yrs(16), matureAge: yrs(4), M: 0.40,   // (sHatch 0.1: the ovary count below (Michigan ~66,000 eggs/kg) is far above what a nest yields — Carbine 1948: ~5,650 swim-up fry per nest, 22,000–53,000 bass fry/ha; at 0.4 one pair made ~36,000 fry in this 0.07-ha slice, ~10× too many)
+  bass: {     // SMALLMOUTH BASS (Micropterus dolomieu) — FB4 "Smallmouth Bass" (Whitledge et al. 2003), with its published
+              // rows for water ≤ 26 °C and > 26 °C (`hot`). Whitledge's respiration (RB −0.756) gives a fish under ~10–25 g a
+              // negative energy balance even at full ration — the set belongs above ~30 g (13 cm) — so a smaller bass runs on
+              // FB4's largemouth set (Rice et al. 1983; `bioJuv` below `juvW`). (FB4's Shuter & Post row is negative at full
+              // ration at every size and temperature tested and is not used.)
+    bio: { CEQ: 2, CA: 0.339, CB: -0.31, CQ: 4.2, CTO: 22, CTM: 37, REQ: 2, RA: 0.244, RB: -0.756, RQ: 1.8, RTO: 30, RTM: 37, ACT: 1,
+      SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.0882, PREDEDEQ: 1, ED: 4184, hot: { T: 26, CQ: 1.95 }, src: 'Whitledge et al. 2003 (FB4)' },
+    bioJuv: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
+      SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, hot: undefined, src: 'Rice et al. 1983 (FB4 largemouth bass) — small smallmouth stand-in' },
+    juvW: 30,   // g: below this a smallmouth runs on bioJuv
+    lw: { a: 0.00743, b: 3.20 }, vb: { Linf: 56.4, k: 0.14, t0: -0.5 },      // Ws Kolander et al. 1993; Maine L∞ 56.4, k 0.14 (FishBase); t0 through 56–76-mm young by autumn (Dudley & Trial 2014): ~11, 17, 22, 26, 30 cm at 1–5
+    Lhatch: 0.9, sHatch: 0.1, L0: 6, Lref: 33, Lmat: 27, LmatM: 23, matMinAge: yrs(2.5), maxAge: yrs(15), matureAge: yrs(4.5), M: 0.36,   // ♂ 3–4 yr, ♀ 4–5 yr at 20–30 cm (MDIFW); swim-up at 9.1 mm (Shuter et al. 1980); M = 5.4/15. (sHatch 0.1: a female deposits only ~⅓ of her ovary — effective 2,000–3,000 eggs/lb against 7,000–8,000 — and ~40 % of nests fail, MDIFW)
     gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
-    fec: { a: 0.3755, b: 3.2857 },   // log10 F = −0.4254 + 3.2857·log10 TL(cm) (Laarman & Schneider 1985, Michigan): 38 cm → 58,700
-    Lzoo: 4, Lpisc: 5, gapeR: 0.12, depthR: 0.24, uilt: 35.5, o2Lethal: 1.1, vuln: 0.6,   // CTmax 37.3–38.5 (Fields et al. 1987; Currie et al. 1998); mouth width 0.10–0.15 TL (Lawrence 1958; Hill: 0.14·TL − 5.6 mm); piscivory 5–10 cm
+    fec: { a: 0.1226, b: 3.20 },   // the ovary's 7,000–8,000 eggs per lb (~16,500/kg, MDIFW) × Ws: 30 cm → ~6,500, 40 cm → ~16,400
+    Lzoo: 2, Lpisc: 5, gapeR: 0.115, depthR: 0.24, uilt: 36, o2Lethal: 1.1, vuln: 0.6,   // insects by 20 mm, fish and crayfish by 50 mm; gape 0.120·TL − 1.8 mm (Fernando et al. 2018); UILT 36.0 °C
   },
-  pike: {     // NORTHERN PIKE — FB4 "Northern pike (adult)" (Bevelhimer et al. 1985)
+  pike: {     // CHAIN PICKEREL (Esox niger; Mainers call them pike) — FB4 "Northern pike (adult)" (Bevelhimer et al. 1985) as published.
+              // Its curve peaks at 24.6 °C because it was fit to small pike — exactly a pickerel's size and its 24–25.5 °C preferendum.
+              // (The report's Cmax × 0.65–0.75 — the pike model overestimates juvenile esocids' consumption by 39–52 %, TAFS 137(6),
+              // 2008 — was tried and dropped: cutting consumption without the costs left a pickerel losing mass under the ice even
+              // at full ration, where Maine pickerel feed through the winter — anglers catch 1.18 a day on the ice vs 0.49 in summer)
     bio: { CEQ: 4, CA: 0.0244, CB: -0.18, CQ: -0.024, CK1: 0.0125, CK4: -0.000326, REQ: 1, RA: 0.0026445, RB: -0.18, RQ: 0.055, RTO: 0.1222, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
-      SDA: 0.175, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 3598, src: 'Bevelhimer et al. 1985 (FB4)' },
-    lw: { a: 0.00456, b: 3.096 }, vb: { Linf: 85, k: 0.28, t0: -0.5 },       // Ws Willis 1989; Michigan 29.7, 45.0, 52.8, 59.4, 64.8 cm
-    Lhatch: 0.9, sHatch: 0.05, L0: 8, Lref: 65, Lmat: 45, LmatM: 35, matMinAge: yrs(1.5), maxAge: yrs(18), matureAge: yrs(3), M: 0.30,
-    gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // ♂ GSI 2.5 % (Medford & Mackay 1978);   // 50 % in ~20 h, all in ~48–50 h in summer, 12 days in winter (Diana 1979)
-    fec: { a: 0.0859, b: 3.161 },   // log10 F = −4.227 + 3.161·log10 TL(mm) (Priegel & Krohn 1975, corrected): 61 cm → 37,200
-    Lzoo: 5, Lpisc: 4, gapeR: 0.14, depthR: 0.14, uilt: 29.5, o2Lethal: 0.5, vuln: 0.8,   // gape ≈ its own body depth (Esox: Lawrence; Nilsson & Brönmark 2000)
+      SDA: 0.175, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 3598, src: 'Bevelhimer et al. 1985 (FB4 northern pike) — chain pickerel stand-in' },
+    lw: { a: 0.002624, b: 3.243 }, vb: { Linf: 65, k: 0.2, t0: -0.47 },     // Ws chain pickerel (FSA WSlit); 10–13 cm after the first season, then 6.4–8.9 cm a year, 36–48 cm at 3–5 (MDIFW): ~17, 25, 32, 38, 43 cm at 1–5
+    Lhatch: 0.9, sHatch: 0.05, L0: 8, Lref: 43, Lmat: 37, LmatM: 33, matMinAge: yrs(2), maxAge: yrs(9), matureAge: yrs(3.5), M: 0.62,   // mature at age 3–4 at 33–41 cm; Maine ice anglers' fish average 43 cm (MDIFW); M = 5.4/9 – Then et al. 0.66
+    gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // (pike: ♂ GSI 2.5 %, Medford & Mackay 1978; 50 % of a meal in ~20 h, all in ~48–50 h in summer, Diana 1979)
+    fec: { a: 0.0630, b: 3.243 },   // 10,000–12,000 eggs per lb (~24,000/kg, MDIFW) × Ws: 43 cm → ~12,500
+    Lzoo: 4, Lpisc: 8, gapeR: 0.13, depthR: 0.14, uilt: 30, o2Lethal: 0.5, vuln: 0.8,   // insects first, "strongly piscivorous" after 18–23 cm (MDIFW); Massachusetts fish ≤ 30 cm ate 40–65 % crayfish; UILT: one 28.4 °C value at 17.7 °C acclimation (ORNL) — prior
   },
 };
 for (const k in BIO) { const d = BIO[k]; prepBio(d.bio); if (d.bioJuv) d.bioJuv = prepBio({ ...d.bio, ...d.bioJuv }); }
@@ -353,26 +400,32 @@ function makeSpecies(cfg) {
 }
 
 // ============================================================
-//  THE SIX SPECIES
+//  THE EIGHT SPECIES (the Maine set)
 // ============================================================
 export const SP = {
 
+  // GOLDEN SHINER — the commonest forage minnow of Maine lakes (851 lakes; in 71 % of northeastern lakes): a deep, golden,
+  // schooling cyprinid of the weedy shallows that eats Daphnia and other cladocerans, emerging insects and algae, and
+  // scatters sticky eggs over plants and filamentous algae in several bouts through the warm summer (20–27 °C).
   minnow: makeSpecies({
-    key: 'minnow', name: 'Minnow', tag: '#9fc7e8', size: 0.7, trophic: 'planktivore', schooling: true, zone: [0.05, 0.5],
+    key: 'minnow', name: 'Golden shiner', tag: '#e2c25a', size: 0.85, trophic: 'planktivore', schooling: true, zone: [0.05, 0.55],
     shape: { in: 16, hid: 12 },
     inputLabels: ['plankton \u2220sin', 'plankton \u2220cos', 'plankton near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'school density', 'school \u2220sin', 'school \u2220cos', 'school align', 'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'light@depth', 'temp@depth'],
-    diet: { plankton: true, insect: true },
+    // an omnivore: zooplankton and microcrustaceans, insects (emerging and aquatic larvae), algae and plant material — about
+    // half its diet in some waters (TPWD; FishBase: "principally plankton, insects and mollusks") — not a pure planktivore:
+    // on zooplankton alone the lake's shiners starved every late summer, when the white perch and young-of-year had grazed it down
+    diet: { plankton: true, insect: true, larva: true, plants: true },
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
-    // a fathead female spawns a batch every ~4 days through the summer (16–26 batches; Gale & Buynak 1982), putting most of
-    // her surplus into eggs — which is why fatheads stay small and most die after their first spawning summer
-    matingCooldown: yr(0.012), reproAlloc: 0.8, pop: { start: 8, min: 7, max: 60 },   // K ≈ 400; ~54 founders (~770/ha: fatheads are vulnerable and sparse in a lake with bass, pike and perch — fishless prairie wetlands hold 5,400–19,700/ha by late summer; at ~1,900/ha their fry were the biggest July zooplankton eaters)
-    tempOpt: 27, tempTol: 9, o2Crit: 0.26, spawnT: [16, 26],   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
-    innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30, forage: 0.5 },   // shallow open water, active schooler
+    // a prolonged season with several spawning peaks (4–5 in southern culture ponds; the northern count is unknown) — a bout
+    // every ~2 weeks while the water is warm enough
+    matingCooldown: yr(0.04), pop: { start: 12, min: 5, max: 60 },   // K ≈ 355; ~71 founders — golden shiner 3–8 % of a Maine lake's 60–150 kg/ha of fish (report table): ~400–1,500 shiners of ~8 g a hectare, ~50–200 in this slice (at 36 founders, ~2 % of the biomass, predators ate them out every year)
+    tempOpt: 25, tempTol: 9, o2Crit: 0.26, spawnT: [20, 27],   // warm-water; hypoxia-tolerant (survives < 0.3 mg/L under ice); repeat spawner in summer
+    innate: { homeDepth: 0.3, depthPull: 0.5, cruise: 0.5, weight: 0.40, school: 0.30, cover: 0.3, forage: 0.5 },   // schools hold in the weedy, mud-bottomed shallows by day (docs/research_notes/Seasonal fish habitat use/)
 
-    sat: 20, lbase: 46, lrange: 16,
-    randomHue: (R) => 198 + R(-12, 16),
-    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 60) }),  // minnows haunt the shallows
+    sat: 58, lbase: 46, lrange: 16,
+    randomHue: (R) => R(42, 54),   // brassy gold
+    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 60) }),  // shiners haunt the weedy shallows
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qSurfaceFood(a), a.senseRange, inp, 0);   // nearest zooplankton OR emerged insect → minnow rises to a hatch
@@ -385,22 +438,26 @@ export const SP = {
       inp[13] = wallProx(a);
       inp[14] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[15] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.4, Hh: 0.69, snout: 1, pattern: 'stripe', scales: { p: 0.2, k: 0.10 }, tail: { len: 1.4, spread: 0.8, sweep: 1.0, fork: 0.42 }, profile: t => { const e = ell(t, 0.85); return [e * 0.9, e * 0.95]; } },   // slender little body
+    P: { L: 2.5, Hh: 0.84, snout: 0.8, upMouth: true, dorsal: true, dorsalX: -0.08, dorsalW: 0.18, dorsalH: 1.45, pattern: 'shiner', scales: { p: 0.22, k: 0.14 },
+      tail: { len: 1.45, spread: 0.85, sweep: 1.0, fork: 0.5 }, profile: t => { const e = ell(t, 0.62); return [e * 0.86, e * (0.96 + 0.16 * (1 - t * t))]; } },   // deep, compressed, a keeled belly; deeply forked tail
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
+  // PUMPKINSEED — Maine's own sunfish (one of its two native centrarchids; in 74 % of northeastern lakes): a deep, round
+  // littoral fish that eats insect larvae and, once its pharyngeal teeth harden (BIO Lsnail), snails. Males fan nests in
+  // colonies in water under ~1 m (nestD) from 17 to 26 °C and guard the eggs and fry; it spawns more than once a summer.
   sunfish: makeSpecies({
-    key: 'sunfish', name: 'Sunfish', tag: '#ff9d4d', size: 1.0, trophic: 'omnivore', schooling: false, zone: [0.15, 0.72],
+    key: 'sunfish', name: 'Pumpkinseed', tag: '#f2a03c', size: 0.95, trophic: 'omnivore', schooling: false, zone: [0.15, 0.72],
     shape: { in: 13, hid: 10 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    matingCooldown: yr(0.06), pop: { start: 8, min: 4, max: 45 },   // K ≈ 300; ~54 founders ≈ 40 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
-    tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.005),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund. The male guards the eggs and yolk-sac larvae; the fry leave the nest at swim-up (~5 mm, 4–10 days after hatching — Beard 1982) for the open water — the sim's schools start at swim-up, so ~2 days (was 11: held in the zooplankton-poor shallows, 84 % of them died there)
+    matingCooldown: yr(0.06), pop: { start: 8, min: 4, max: 45 },   // K ≈ 270; ~47 founders
+    tempOpt: 28, tempTol: 8, o2Crit: 0.32, spawnT: [17, 26], nestGuard: yr(0.005), nestD: 1.0,   // warm-water littoral centrarchid; preferendum 27.7 °C; nests under 1 m (DFO; Ontario LHD); repeat spawner in summer. The male guards the eggs and yolk-sac larvae; the fry leave the nest at swim-up (~5 mm) — the sim's schools start at swim-up, so ~2 days (was 11: held in the zooplankton-poor shallows, 84 % of them died there)
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40, forage: 0.5 },   // mid littoral, hovers in weed beds
-    sat: 82, lbase: 40, lrange: 22,
-    randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
+    sat: 50, lbase: 38, lrange: 20,
+    randomHue: (R) => R(50, 68),   // olive-gold back and flanks; the orange breast and speckles are the 'pumpkin' markings
     spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 50) }),   // sunfish favour the weedy shelf
     senses(a, w) {
       // the nearest ANIMAL food — zooplankton, an emerged insect, insect larvae on the weeds or the bed, a stretch of bed rich
@@ -414,7 +471,7 @@ export const SP = {
       inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
       inp[11] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[12] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 2.2, Hh: 1.06, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: true, pattern: 'bars', scales: { p: 0.24, k: 0.12 },
+    P: { L: 2.2, Hh: 1.06, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: [214, 48, 36], pattern: 'pumpkin', scales: { p: 0.24, k: 0.12 },
       tail: { len: 1.2, spread: 0.95, sweep: 0.85, fork: 0.14 }, profile: t => { const e = ell(t, 0.46); return [e, e * 1.06]; } },   // round deep disc
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
@@ -423,7 +480,7 @@ export const SP = {
   // insect larvae, crayfish and small fish (minnows, fry), and perch of every size are the main prey of pike and bass.
   // Spawns in early spring just after the pike (7–12 °C), draping ribbons of eggs over weeds — no nest, no guarding.
   perch: makeSpecies({
-    key: 'perch', capture: 0.15, name: 'Perch', tag: '#d6c04a', size: 1.2, trophic: 'mesopredator', schooling: true, zone: [0.3, 0.9],
+    key: 'perch', capture: 0.15, name: 'Yellow perch', tag: '#d6c04a', size: 1.2, trophic: 'mesopredator', schooling: true, zone: [0.3, 0.9],
     shape: { in: 12, hid: 9 },
     inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
@@ -452,27 +509,26 @@ export const SP = {
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
-  // RAINBOW TROUT — a cold-water salmonid: it needs cool (best ~14 °C), well-oxygenated water, so in a productive lake it is
-  // squeezed in summer between the warm surface and the oxygen-starved deep (the "temperature–oxygen squeeze") and holds in
-  // the narrow cool band at the thermocline. It cruises the open water taking emerged insects, larvae and, when large,
-  // small fish; it spawns in spring in the gravel of the inflow stream (spawnSide −1, 6–11 °C).
-  trout: makeSpecies({
-    key: 'trout', capture: 0.3, name: 'Trout', tag: '#c48aa0', size: 1.5, trophic: 'mesopredator', schooling: false, zone: [0.35, 0.8],
+  // WHITE SUCKER — the most widespread fish in Maine's lakes (1,206 of them): a big, long-lived bottom feeder that vacuums
+  // insect larvae, worms, scuds, small snails and detritus off the bed with its fleshy, downturned lips. In spring, as the
+  // water passes ~10 °C, adults run up inlet and outlet streams at night to scatter eggs over gravel riffles (spawnSide −1:
+  // the inflow side). Young suckers are prey for pickerel and bass; adults are too big for anything in the lake but eagles.
+  sucker: makeSpecies({
+    key: 'sucker', capture: 0.1, name: 'White sucker', tag: '#a8906c', size: 1.9, trophic: 'benthivore', schooling: false, zone: [0.75, 1.0],
     shape: { in: 11, hid: 9 },
     inputLabels: ['food ∠sin', 'food ∠cos', 'food near', 'threat ∠sin', 'threat ∠cos', 'threat near',
       'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true },
-    maxSpeed: 62, accel: 72, drag: 1.2, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 0, rescue: 0, visit: { stay: 30, gap: 60 } },   // a VISITOR (2026-10-15): trout roam the lake and pass through this slice — see world.js visitors;   // K ≈ 4 (2 founders); stocked/visiting — the rescue keeps one or two in view
-    tempOpt: 15, tempTol: 6, o2Crit: 0.58, spawnT: [6, 11], spawnSide: -1, coldPerf: 0.6,   // cold-water guild (stressed above ~20 °C); spring stream spawner
-    innate: { homeDepth: 0.45, depthPull: 0.45, cruise: 0.5, weight: 0.35, pursuit: 0.45, spawnGround: 0.5 },
-    sat: 38, lbase: 46, lrange: 16,
-    randomHue: (R) => R(336, 352),   // the rosy lateral band
-    spawnPos: (R) => ({ x: R(40, W - 40), y: R(120, WORLD.FLOOR - 200) }),
+    diet: { detritus: true, larva: true, snail: true },   // benthos and detritus (zooplankton as larvae — below Lzoo); snails past BIO Lsnail
+    maxSpeed: 44, accel: 52, drag: 1.3, maxTurn: 2.0, sink: 6,
+    matingCooldown: yr(0.5), pop: { start: 0.6, min: 1, max: 1.6 },   // K ≈ 9; ~4 founders (white sucker 12–20 % of a Maine lake's fish biomass: ~1.6–2.7 kg in this slice at 100 kg/ha)
+    tempOpt: 21, tempTol: 7, o2Crit: 0.3, spawnT: [10, 15], spawnSide: -1, coldPerf: 0.4,   // prefers 17–24 °C (Ontario); spawning runs from ~10 °C, peaking at 11–15 °C
+    innate: { homeDepth: 0.95, depthPull: 0.6, cruise: 0.32, weight: 0.40, spawnGround: 0.5, forage: 0.5 },   // hugs the bed, grazing as it goes
+    sat: 30, lbase: 34, lrange: 18,
+    randomHue: (R) => R(28, 42),   // olive-brown back, cream belly
+    spawnPos: (R) => ({ x: R(40, W - 40), y: R(120, WORLD.FLOOR - 20) }),
     senses(a, w) {
-      // the nearest food it can take: a catchable fish or an emerged insect (trout rise to a hatch)
-      const inp = a.act.in, pf = w.qPrey(a), ins = w.qInsect(a.x, a.y, a.senseRange);
-      const food = !pf ? ins : !ins ? pf : (pf.dist < ins.dist ? pf : ins);
+      // the nearest bottom food: insect larvae and the bed's worms and scuds, then detritus
+      const inp = a.act.in, food = nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qDetritus(a.x, a.y, a.senseRange);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = clamp(a.energy, 0, 1);
@@ -480,13 +536,13 @@ export const SP = {
       inp[8] = wallProx(a);
       inp[9] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[10] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 3.0, Hh: 0.87, snout: 1.2, dorsal: true, dorsalX: 0.0, dorsalW: 0.26, dorsalH: 1.35, pattern: 'troutspots', scales: { p: 0.14, k: 0.06 },
-      tail: { len: 1.5, spread: 1.05, sweep: 0.9, fork: 0.12 }, profile: t => { const e = ell(t, 0.66); return [e * 0.9, e * 0.92]; } },   // torpedo salmonid, square-ish tail
+    P: { L: 3.4, Hh: 0.64, snout: 1.1, suckerMouth: true, dorsal: true, dorsalX: 0.06, dorsalW: 0.24, dorsalH: 1.35, pattern: 'sucker', scales: { p: 0.16, k: 0.10 },
+      tail: { len: 1.4, spread: 0.9, sweep: 0.8, fork: 0.36 }, profile: t => { const e = ell(t, 0.58); return [e * 0.92, e * 0.84]; } },   // long, round-bodied, flat-bellied
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
   catfish: makeSpecies({
-    key: 'catfish', name: 'Catfish', tag: '#b07b3f', size: 1.5, trophic: 'benthivore', schooling: false, zone: [0.78, 1.0],
+    key: 'catfish', name: 'Brown bullhead', tag: '#b07b3f', size: 1.5, trophic: 'benthivore', schooling: false, zone: [0.78, 1.0],
     shape: { in: 10, hid: 10 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'on floor', 'oxygen', 'wall'],
@@ -515,50 +571,57 @@ export const SP = {
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
-  carp: makeSpecies({
-    key: 'carp', name: 'Carp', tag: '#c9a23f', size: 2.2, trophic: 'herbivore', schooling: false, zone: [0.55, 0.98],
+  // WHITE PERCH — a schooling planktivore-turned-generalist (514 Maine lakes, a principal fishery at Hot Brook): it eats
+  // Daphnia and other zooplankton, then insect larvae and, as a big fish, small fish including its own young. It spawns at
+  // ~15 °C over any bottom in the shallows, with no care, and is famous in Maine for crowding into dense, stunted populations
+  // — growth is left food-limited, so stunting can emerge.
+  whiteperch: makeSpecies({
+    key: 'whiteperch', capture: 0.12, name: 'White perch', tag: '#b9c6c4', size: 1.15, trophic: 'planktivore', schooling: true, zone: [0.3, 0.9],
     shape: { in: 10, hid: 9 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'oxygen', 'wall', 'depth'],
-    diet: { plants: true, detritus: true, larva: true, snail: true },   // (2026-10-15: zooplankton only below Lzoo — adult carp root in the bottom)   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
-                                                                                     //   weed and detritus (Scott & Crossman 1973)
-    maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
-    matingCooldown: yr(0.4), pop: { start: 0.45, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 3 founders (a single pair rarely found each other in a season)
-    tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
-    innate: { homeDepth: 0.95, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4, forage: 0.5 },   // a bottom rooter (sifts the sediment)
-    sat: 46, lbase: 34, lrange: 18,
-    randomHue: (R) => R(32, 46),
-    spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 90, WORLD.FLOOR - 10) }),
+    diet: { plankton: true, insect: true, larva: true, fish: true },   // fish only past BIO Lpisc
+    maxSpeed: 48, accel: 56, drag: 1.4, maxTurn: 2.3,
+    matingCooldown: yr(0.5), pop: { start: 4, min: 3, max: 30 },   // K ≈ 180; ~24 founders (white perch 20–30 % of a Maine lake's fish biomass — they "form very large populations that occasionally dominate", MDIFW)
+    tempOpt: 27, tempTol: 8, o2Crit: 0.45, spawnT: [14, 20],   // warm-water (does best where summers reach ≥ 24 °C; prior preferendum); hypoxia-sensitive; spawns at ~15 °C (MDIFW), 15–20 °C in reservoirs
+    innate: { homeDepth: 0.6, depthPull: 0.4, cruise: 0.45, weight: 0.40, school: 0.30, pursuit: 0.3, spawnGround: 0.4, forage: 0.5 },   // open-water schools, down to the bed to feed
+    sat: 9, lbase: 50, lrange: 16,
+    randomHue: (R) => R(60, 85),   // olive-grey back, silvery flanks
+    spawnPos: (R) => ({ x: R(40, W - 40), y: R(60, WORLD.FLOOR - 40) }),
     senses(a, w) {
       const inp = a.act.in;
-      // carp root the sediment for midge larvae and other bottom invertebrates (most of their diet), weed when there are none
-      tgt(a, nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
-      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);   // normalise by qThreat's own search radius (1.1×), as the other species do
-                                                           // (by 1× the outer band read 0 proximity yet still gave a bearing)
+      // the nearest food it can take: zooplankton or an emerged insect, an insect larva or a stretch of rich bed, and — a big
+      // white perch — a small fish
+      tgt(a, nearer(nearer(w.qSurfaceFood(a), w.qLarva(a.x, a.y, a.senseRange)), nearer(w.qBed(a), w.qPrey(a))), a.senseRange, inp, 0);
+      tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
     },
-    P: { L: 3.0, Hh: 0.98, snout: 1, dorsal: true, dorsalX: -0.06, dorsalW: 0.4, dorsalH: 1.45, scaleTex: 0.1, scales: { p: 0.42, k: 0.22 },
-      tail: { len: 1.5, spread: 1.0, sweep: 0.7, fork: 0.32 }, profile: t => { const e = ell(t, 0.55); return [e * 0.96, e * 1.12]; } },   // deep robust, round belly
+    P: { L: 2.6, Hh: 0.94, snout: 1.1, dorsal: true, dorsalX: -0.04, dorsalW: 0.44, dorsalH: 1.6, pattern: 'silver', scales: { p: 0.2, k: 0.12 },
+      tail: { len: 1.35, spread: 0.95, sweep: 0.9, fork: 0.34 }, profile: t => { const e = ell(t, 0.6), sh = 1 + 0.16 * t; return [e * sh * 1.0, e * sh * 0.9]; } },   // deep, compressed, a humped back
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
+  // SMALLMOUTH BASS — introduced to Maine in 1868–1881 and now a principal fishery at Hot Brook: a bronze, vertically barred
+  // bass of rocky and gravelly shores that lives mostly on CRAYFISH (60–90 % of an adult's diet) and small fish. Males fan
+  // nests on gravel at 1–3 m once the water passes ~15 °C and guard eggs and fry for 25–35 days; below ~10 °C it stops
+  // feeding (MDIFW) — Maine's long winter is its northern limit.
   bass: makeSpecies({
-    key: 'bass', capture: 0.4, name: 'Bass', tag: '#6fae5a', size: 1.7, trophic: 'predator', schooling: false, zone: [0.3, 0.85],
+    key: 'bass', capture: 0.4, name: 'Smallmouth bass', tag: '#b48a4a', size: 1.6, trophic: 'predator', schooling: false, zone: [0.3, 0.9],
     shape: { in: 10, hid: 9 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
-    diet: { fish: true, insect: true, larva: true, cray: 0.25 },   // young bass live on aquatic insects (Keast 1985; Olson 1996); crayfish are the adult bass's staple
+    diet: { fish: true, insect: true, larva: true, cray: 0.4 },   // insects as a young bass (by 20 mm), fish and crayfish from 50 mm; crayfish the adult's staple (Scott & Crossman; MDIFW) — the share of its strikes at an exposed crayfish that land
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    matingCooldown: yr(0.5), pop: { start: 0.45, min: 1, max: 0.6 },   // K ≈ 4 — northern lakes hold 5–25 adult bass/ha (0.35–1.75 in this ~0.07-ha slice; Wagner 1988, Goudy 1981) against thousands of sunfish: 3 founders, 2 of them adults
-    tempOpt: 29, tempTol: 7, o2Crit: 0.47, spawnT: [15, 21], nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
-    innate: { homeDepth: 0.8, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, littoral: 0.5, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off, low in the water near the bottom (summer bass hold near the bed and the weeds in the littoral); pursues prey it sees
-    sat: 42, lbase: 32, lrange: 18,
-    randomHue: (R) => R(100, 130),
+    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.8, refuge: 1, rescue: 2 },   // K ≈ 5 — northern lakes hold 5–20 adult smallmouth/ha (Wisconsin: Mildred 20, Clear 8–9.5, Cosgrove 1.3) — about 0.7–2.7 in this ~0.13-ha slice: 2 founders, and the refuge and rescue hold ONE (the default 2–3 kept ~22 bass/ha, which ate the shiners out)
+    tempOpt: 27, tempTol: 7, o2Crit: 0.47, spawnT: [15, 21], nestGuard: yr(0.08), spawnSide: 1,   // preferendum ~27 °C (prior); nests above ~15 °C (eggs at 15.6–18.9); the male guards 25–35 days
+    innate: { homeDepth: 0.85, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.30, littoral: 0.5, pursuit: 0.5, spawnGround: 0.5 },  // works the bed and the shore's rocks, logs and weed edges; pursues prey it sees
+    sat: 46, lbase: 32, lrange: 18,
+    randomHue: (R) => R(26, 40),   // bronze-brown
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
     senses(a, w) {
       const inp = a.act.in;
-      tgt(a, w.qPrey(a), a.senseRange, inp, 0);
+      tgt(a, nearer(w.qPrey(a), w.qCray(a)), a.senseRange, inp, 0);   // a catchable fish or an exposed crayfish
       inp[3] = clamp(a.energy, 0, 1);
       inp[4] = a.spd / this.maxSpeed;
       inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
@@ -566,33 +629,37 @@ export const SP = {
       inp[7] = w.allyStats(a, 64).density;
       inp[8] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[9] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 3.0, Hh: 0.96, snout: 1.4, dorsal: true, dorsalX: 0.02, dorsalW: 0.3, dorsalH: 1.5, pattern: 'band', scales: { p: 0.24, k: 0.10 },
+    P: { L: 3.0, Hh: 0.92, snout: 1.3, eyeCol: [168, 40, 30], dorsal: true, dorsalX: 0.02, dorsalW: 0.34, dorsalH: 1.5, pattern: 'smbars', scales: { p: 0.24, k: 0.10 },
       tail: { len: 1.6, spread: 1.0, sweep: 0.9, fork: 0.2 }, profile: t => { const e = ell(t, 0.72), sh = 1 + 0.1 * t; return [e * sh * 0.96, e * sh * 0.98]; } },   // streamlined, fuller forward
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),
 
+  // CHAIN PICKEREL — the lake's ambush predator (Mainers call them pike): a slim, green-gold esocid with a dark chain-link
+  // net on its flanks and a black bar under the eye, lying still in the weeds and lunging at passing fish. It eats insects
+  // as a small fish and is "strongly piscivorous" after 18–23 cm, with plenty of crayfish; spawns right after ice-out in
+  // flooded vegetation with no care; and keeps feeding under the ice (Maine anglers catch more in winter than in summer).
   pike: makeSpecies({
-    key: 'pike', capture: 0.6, name: 'Pike', tag: '#4c7a48', size: 2.7, trophic: 'apex', schooling: false, zone: [0.35, 0.95],
+    key: 'pike', capture: 0.6, name: 'Chain pickerel', tag: '#7c9c4a', size: 2.0, trophic: 'apex', schooling: false, zone: [0.3, 0.95],
     shape: { in: 9, hid: 8 },
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
-    diet: { fish: true, cray: 0.05 },   // a fish specialist: crayfish are an occasional item
-    maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    matingCooldown: yr(0.5), pop: { start: 0.15, min: 1, max: 0.3, refuge: 0, rescue: 0, visit: { stay: 20, gap: 60 } },   // a VISITOR (2026-10-15): a pike ranges over 1–10 ha and spends a few weeks at a time in this ~0.07-ha slice — present ~¼ of the time (as a resident one 3-kg pike ate ~25 of the slice's sunfish and perch a year: ~110 kg/ha of piscivores vs 6–30 real);   // K ≈ 2; ONE founder — the rarest fish (Minnesota lakes: 1.6 pike > 60 cm per ha, ~0.1 in this slice — a resident pike here is a visitor from a bigger lake; 2026-10-15: two 2-kg pike ate ~10 small fish a month between them) (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
-    tempOpt: 21, tempTol: 8, o2Crit: 0.32, spawnT: [4, 11], spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice
-    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
-    sat: 35, lbase: 30, lrange: 18,
-    randomHue: (R) => R(88, 104),
-    spawnPos: (R) => ({ x: R(10, W - 10), y: R(80, WORLD.FLOOR - 30) }),
+    diet: { fish: true, insect: true, larva: true, cray: 0.15 },   // insects while small (below 3 × BIO Lpisc); Massachusetts pickerel ≤ 30 cm ate 40–65 % crayfish
+    maxSpeed: 62, accel: 76, drag: 1.2, maxTurn: 2.1,
+    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.5, refuge: 1, rescue: 2 },   // a RESIDENT (pickerel keep "moderate to high density populations wherever [they occur]" in weedy water, MDIFW): K ≈ 3, 2 founders — 4–8 % of the fish biomass, ~0.5–1 kg in this slice
+    tempOpt: 24.5, tempTol: 8, o2Crit: 0.32, spawnT: [6, 11], spawnSide: -1, coldPerf: 0.55,   // final preferendum 24–25.5 °C (ORNL); spawns at 8–11 °C right after ice-out; feeds under ice
+    innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.6, pursuit: 0.4, spawnGround: 0.5 },  // weed-bed ambush lurker — holds in cover, then turns on and bursts at prey
+    sat: 42, lbase: 34, lrange: 18,
+    randomHue: (R) => R(62, 82),   // green-gold
+    spawnPos: (R) => ({ x: littoralX(R), y: R(80, WORLD.FLOOR - 30) }),
     senses(a, w) {
       const inp = a.act.in;
-      tgt(a, w.qPrey(a), a.senseRange, inp, 0);
+      tgt(a, nearer(w.qPrey(a), w.qCray(a)), a.senseRange, inp, 0);   // a catchable fish or an exposed crayfish
       inp[3] = clamp(a.energy, 0, 1);
       inp[4] = a.spd / this.maxSpeed;
       inp[5] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[6] = wallProx(a);
       inp[7] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[8] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
-    P: { L: 4.2, Hh: 0.85, snout: 2.0, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5, pattern: 'spots', scales: { p: 0.16, k: 0.07 },
+    P: { L: 4.2, Hh: 0.78, snout: 2.0, eyeBar: true, dorsal: true, dorsalX: -0.55, dorsalW: 0.22, dorsalH: 1.5, pattern: 'chain', scales: { p: 0.16, k: 0.07 },
       tail: { len: 1.8, spread: 1.2, sweep: 1.0, fork: 0.28 }, profile: t => { const e = ell(t, 0.62); return [e * 0.82, e * 0.86]; } },   // long slender spindle, rear dorsal
     draw(a, put, t, env, o) { drawFish(put, this.P, fishColors(a, this, env.light), o); },
   }),

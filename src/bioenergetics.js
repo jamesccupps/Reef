@@ -20,7 +20,11 @@ export const OXYCAL = 13560;   // J per g O₂ respired (oxycalorific coefficien
 // CEQ 1: exponential (Stewart et al. 1983).  CEQ 2: Kitchell et al. (1977) — warm-water, peaks at CTO, 0 at/above CTM.
 // CEQ 3: Thornton & Lessem (1978) — cool/cold-water, the product of a rising and a falling logistic.
 // CEQ 4: Bevelhimer et al. (1985) — a cubic polynomial in the exponent (northern pike), no hard upper cutoff.
+// `hot: { T, ...overrides }`: a set published as two rows by temperature (FB4's smallmouth bass, Whitledge et al. 2003: CQ
+// 4.2 at ≤ 26 °C, 1.95 above) — the warm row's curve above T, blended over T ± 0.5 °C so consumption has no step.
 function prepC(b) {
+  b._hot = b.hot ? { ...b, ...b.hot, hot: undefined, _hot: undefined } : undefined;   // (a set derived by spreading another — a juvenile row — must not inherit its warm row)
+  if (b._hot) prepC(b._hot);
   if (b.CEQ === 2) {
     const Z = Math.log(b.CQ) * (b.CTM - b.CTO), Y = Math.log(b.CQ) * (b.CTM - b.CTO + 2);
     b._cX = (Z * Z * Math.pow(1 + Math.sqrt(1 + 40 / Y), 2)) / 400;
@@ -30,6 +34,13 @@ function prepC(b) {
   }
 }
 export function consumptionT(b, T) {
+  if (b._hot && T > b.hot.T - 0.5) {
+    const w = Math.min(1, (T - b.hot.T + 0.5)), cold = w < 1 ? consumptionT1(b, T) : 0;
+    return cold * (1 - w) + consumptionT1(b._hot, T) * w;
+  }
+  return consumptionT1(b, T);
+}
+function consumptionT1(b, T) {
   if (b.CEQ === 1) return Math.exp(b.CQ * T);
   if (b.CEQ === 2) {
     if (T >= b.CTM) return 0;

@@ -655,10 +655,11 @@ export class Environment {
   metabAt(x, y) { return Math.pow(ENV.METAB_Q10, (this.tempAt(x, y) - 18) / 10); }   // Q10 metabolism (×1 at 18 °C)
   // wind-driven surface current: strongest at the surface, fades to 0 below SURFACE_FRAC of depth
   windAt(y) { return this.wind * clamp(1 - clamp(y / H, 0, 1) / WIND.SURFACE_FRAC, 0, 1); }
-  // gentle inflow→outflow through-current (rightward, weaker with depth)
+  // gentle inflow→outflow through-current (rightward, weaker with depth) — the advection profile of the fields
   flowAt(y) { return FLOW.SPEED * (1 - 0.5 * clamp(y / H, 0, 1)); }
-  // total horizontal current a drifter feels = wind (surface) + through-flow
-  currentAt(x, y) { return this.windAt(y) + this.flowAt(y); }
+  // total horizontal current a drifter (fish, surface insect) feels = wind (surface) + the through-flow — all of it in the
+  // stream, a trace of it out on the lake and the pond (FLOW.LAKE_FRAC)
+  currentAt(x, y) { return this.windAt(y) + this.flowAt(y) * (basinAt(x).kind === 'stream' ? 1 : FLOW.LAKE_FRAC); }
   // meteorological seasons on the calendar (year-fraction 0 = March 1): spring Mar–May, summer Jun–Aug, autumn Sep–Nov,
   // winter Dec–Feb (the climate's ~0 °C January and ~25 °C late July sit in the middle of winter and summer)
   seasonName() {

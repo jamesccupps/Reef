@@ -340,10 +340,10 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   for (let d = -180; d <= 180; d += 3) { const h = d * deg, o = displayHeading(h, 1); maxP = Math.max(maxP, pitchOf(o)); if (Math.abs(Math.cos(h)) > 0.31 && Math.sign(Math.cos(o)) !== Math.sign(Math.cos(h))) sideOK = false; }
   check('drawn fish pitch is soft-limited (≤55°), level swimming unchanged, the swim side kept', maxP <= 55 * deg && Math.abs(displayHeading(0, 1)) < 1e-9 && Math.abs(displayHeading(Math.PI, -1) - Math.PI) < 1e-9 && sideOK, `max pitch ${(maxP / deg).toFixed(1)}°`);
   check('  → near vertical the previous facing holds (hysteresis)', Math.cos(displayHeading(95 * deg, 1)) > 0 && Math.cos(displayHeading(95 * deg, -1)) < 0 && Math.cos(displayHeading(85 * deg, -1)) < 0);
-  // sunfish colour stays in the natural red-orange → amber band (no magenta wrap-around)
+  // pumpkinseed body colour stays in the natural olive-gold band (its orange breast and speckles are markings) — no magenta wrap-around
   const { SP: SPS } = await import('../src/species.js');
   let lo = 999, hi = -1; for (let i = 0; i < 400; i++) { const h = SPS.sunfish.randomHue((a, b) => a + Math.random() * (b - a)); lo = Math.min(lo, h); hi = Math.max(hi, h); }
-  check('sunfish hues stay red-orange → amber (no magenta)', lo >= 0 && hi <= 60, `${lo.toFixed(0)}–${hi.toFixed(0)}°`);
+  check('pumpkinseed hues stay olive-gold (no magenta)', lo >= 30 && hi <= 75, `${lo.toFixed(0)}–${hi.toFixed(0)}°`);
   // the legend lives OUTSIDE the viewport frame (inside it, the bottom-anchored minimap + camera controls covered it)
   const { URL: NodeURL } = await import('node:url');   // (the DOM stub replaces the global URL with a blob-URL stub)
   const html = (await import('node:fs')).readFileSync(new NodeURL('../index.html', import.meta.url), 'utf8');

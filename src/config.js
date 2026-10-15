@@ -444,7 +444,12 @@ export const COVER = {
 };
 // ---------- inflow / outflow through-current ----------
 export const FLOW = {
-  SPEED: 3.2,           // gentle rightward through-current (px/s, inflow left → outflow right), weaker deep
+  SPEED: 3.2,           // gentle rightward through-current (px/s, inflow left → outflow right), weaker deep — the profile
+                        //   the dissolved and suspended FIELDS are advected with (OUTFLOW: ~1-year water residence)
+  LAKE_FRAC: 0.03,      // the share of that current a FISH or surface insect feels out on the lake or the pond: a 300-ha lake's
+                        //   through-flow moves at ~mm/s — the stream (a few metres wide) carries it all (2026-10-15: at the full
+                        //   3.2 px/s everywhere, the surface current carried the lake's golden shiners down the stream into the
+                        //   pond's far end, where they crowded, ate it bare and starved every August–September)
   PLUME_COLS: 6,        // the inflow plume: this many field columns from the left shore …
   PLUME_ROWS: 4,        // … × this many surface rows (the stream spreads over the near-shore surface water)
   O2_MIX: 0.25,         // /s the plume's O₂ relaxes toward saturation (aerated stream water — also under ice)
@@ -1209,6 +1214,10 @@ export const MOTION = {
   COAST_DEPTH: 0.35,   // depth of the thrust pulse around the intent (0 = steady thrust; 0.35 → swings ~±35% over a stroke — a
                        //   gentle surge-and-glide; ±65 % read as twitchy jerks)
   COAST_RATE: 1.1,     // stroke cycles per second while cruising (scaled up a little with speed)
+  // RHEOTAXIS — a fish turns into a current and holds its station against it (positive rheotaxis, the lateral line): a
+  // current carries it only by what exceeds RHEO × its top cruising speed (× its cold performance) — a shiner holds against
+  // a lake's wind drift, an April stream in spate carries small fish down. Fry schools drift on their own (FRY).
+  RHEO: 0.15,
 };
 
 // DRIVE — INTERNAL STATE / motivation. Persistent per-fish drive scalars (0..1) fed back as the last brain INPUTS, so a

@@ -51,9 +51,19 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      Make the pools sunfish habitat by mechanism: warm sunlit pools (shallow-water heating), lake-outlet food (the outflow
      carries the lake's plankton — done — plus drift and the outlet's dense filter-feeding invertebrates), cover, current.
    - **The Maine re-base, in order** (2026-10-15, human-approved): ✅ juvenile compensation + plastic maturity; ✅ the
-     landscape; the MAINE FISH (golden shiner, pumpkinseed, white sucker, white perch, smallmouth, chain pickerel; keep
-     yellow perch and bullhead); the Maine calendar, coloured mesotrophic water and under-ice O₂; stream behaviour; then
-     multi-seed validation and merge.
+     landscape; ✅ the MAINE FISH (golden shiner, pumpkinseed, white sucker, white perch, smallmouth, chain pickerel; keep
+     yellow perch and bullhead — FEATURES "Maine re-base, part 2"); the Maine calendar (a curve with a steep spring: ice-out
+     ~Apr 23, 208 days < 10 °C, a 24 °C peak — prototyped), coloured mesotrophic water and under-ice O₂; stream behaviour;
+     then multi-seed validation and merge.
+   - **Fish where anglers find them** (human, 2026-10-15: "perch holes and where to find bass… fishing and ice fishing"): a
+     season-by-season, day-and-night audit of every species' habitat against field and angler knowledge (research notes in
+     docs/research_notes/Seasonal fish habitat use/; probe `test/diag/habitat.mjs`) — perch schooling in the deep holes under
+     the ice, smallmouth on rocky drop-offs in summer and deep and torpid in winter, pickerel in the shallow weeds all year,
+     pumpkinseed in the warm shallows, white perch roaming schools, bullheads on the bottom at night — reached through
+     mechanisms (temperature, O₂, food, cover, light, predation, innate drives), not scripted positions.
+   - **Crayfish:** Maine's crayfish are the native virile crayfish (94 % of those caught at 1,061 Maine stream sites, Marquis
+     et al. 2009); a bass the human caught in another Maine lake had one in its stomach. Smallmouth now sense crayfish as
+     prey. Later: virile crayfish life history (size classes, moulting, burrows), and the rusty crayfish as an invasive what-if.
    - **Plants accurate to New England / Maine** (human, 2026-10-15): today's four macrophyte forms are generic
      (`config.js` `MACRO`: pondweed, milfoil, water lily, muskgrass). Re-base them on Maine's flora — RESEARCH FIRST (Maine
      DEP / Maine Natural Areas Program / Lake Stewards of Maine plant surveys): which emergent, floating-leaved and submerged

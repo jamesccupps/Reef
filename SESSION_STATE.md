@@ -5,7 +5,37 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, later) — THE MAINE RE-BASE, branch `zoo-field` (gate green; save v31)
+## ▶ NOW (2026-10-15, evening) — THE MAINE FISH (re-base step 3) DONE, branch `zoo-field` (save v32)
+
+DONE: the landscape validation (3 seeds × 3 yr on 5c4e300: sunfish/perch hold; minnows collapsed — see the current fix
+below); gate green on 730e9cb. STEP 3, THE MAINE FISH (FEATURES "Maine re-base, part 2"; commit "The Maine fish…"): golden
+shiner (dace FB4; an OMNIVORE — on zooplankton alone it starved each late summer), pumpkinseed (bluegill FB4; snails past
+Lsnail 8 cm; nests < 1 m — sp.nestD), yellow perch, WHITE SUCKER (key `sucker`, was trout), brown bullhead, WHITE PERCH
+(key `whiteperch`, was carp; FB4 yellow perch — the striped bass rows starved it under the ice), SMALLMOUTH (Whitledge rows
+via `bio.hot`, largemouth below `juvW` 30 g; crayfish 0.4 + `qCray`; refuge 1/rescue 2 — the default floor kept ~22 bass/ha),
+CHAIN PICKEREL (FB4 pike as published — the × 0.7 starved it in winter; a resident). Art per species (checked in the browser).
+LANDSCAPE FIX: fish drifted on the fields' through-flow across the whole lake → shiners (and fatheads before) were carried into
+the pond's far end and starved; now the full current only in the stream (FLOW.LAKE_FRAC 3 %) + rheotaxis (MOTION.RHEO).
+Save v32 (old carp/trout skipped). Diagnostics: census.mjs, habitat.mjs; deaths.mjs all species.
+VALIDATION (census.mjs 1–3 × 3 yr, final settings → verify/census_maine5_s*): every species persists; ~85 → 110–170 kg/ha
+(ABOVE the 60–150 target at times), WHITE PERCH the largest share (27–54 fish, 5–12 kg), pumpkinseed 46–85 (strong yearly
+recruits), shiners recruit 110–230 young in year 0 and overwinter but dwindle to 3–7 by year 3 (immigrants top them up),
+YELLOW PERCH 21 → 3–9 (a concern), suckers 3–8 (recruited in yr 1–2), bullheads 3–4, bass 2, pickerel 2 (immigrant-held).
+KNOWN: total biomass and white perch dominance high, yellow perch and shiners declining — expected to move with step 4's cooler,
+less productive Maine lake and with habitat partitioning (white perch offshore by day; shiners/perch in the shallows and on
+the bed) — re-judge there. Big fish (bass, pickerel) can't form breeding pairs in a slice that holds 1–2: immigrants carry them.
+NEXT: STEP 4 — the Maine calendar (patch ready: session scratchpad step4_calendar.py; prototype maineT.mjs — 208 days < 10 °C,
+ice-out ~Apr 23, ice-on ~Dec 1, peak 24 °C Jul 30; it also moves BIRD.SEASON), then coloured mesotrophic water (Secchi 2.5–4 m,
+TP 10–20 µg/L, colour-dominated light) and under-ice lethal O₂ per species (Cooper & Washburn: a winter floor), biomass
+60–150 kg/ha; validate 3 seeds. Then the ANGLER-REALISM habitat audit (human: "perch holes… where to find bass… fishing and
+ice fishing"; research done — docs/research_notes/Seasonal fish habitat use/: e.g. perch school by day over open bottom and
+rest inshore at night, deep basin under ice; smallmouth motionless on traditional deep points in winter; pickerel within
+~2 m of the surface all year; white perch 4–9 m by day, inshore at night; bullheads bury in winter; the sim's `zone` is a
+FRACTION of the local column — real fish choose absolute depth and bottom type). Then step 5 (stream behaviour).
+HUMAN NOTES (2026-10-15): a bass from another Maine lake had a crayfish in its stomach (→ smallmouth crayfish diet; Maine's
+crayfish = native virile crayfish, 94 % of 1,061 stream sites — Marquis et al. 2009; ROADMAP).
+
+## (previous) NOW (2026-10-15, later) — THE MAINE RE-BASE, branch `zoo-field` (gate green; save v31)
 
 HUMAN (after the food-web slice): "yes it should all be tailored to new england and maine, add a shallow zone, maybe add a
 pond next to it too, this can be the start and testing of the multi zones, with a stream or something between them. then
