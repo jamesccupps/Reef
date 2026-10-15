@@ -209,6 +209,7 @@ export const PREY = {
   PATCH_R: 14,                    // px: a patch (swarm) of small prey spans ~15–20 cm — a fish anywhere within it can feed
   DAPH_G: 2.0, DAPH_ED: 2400,     // a Daphnia swarm patch; Daphnia ~2,400 J/g wet (D. pulicaria 2,214–2,612: Snow 1972)
   COPE_G: 1.2, COPE_ED: 2700,     // a copepod patch (smaller per patch; copepods ~2,700 J/g)
+  BENTH_ED: 3300,                 // the bed's worms and scuds (amphipods ~3,500, oligochaetes ~3,200 J/g wet — Cummins & Wuycheck 1971)
   LARVA_G: 3.0, LARVA_ED: 2700,   // a patch of chironomid / mayfly larvae (chironomids 2,300–2,750; mayflies 2,700–6,900 J/g)
   INSECT_G: 1.5, INSECT_ED: 4000, // emerged adult aquatic insects at the surface (mayflies ~3,300–4,400 J/g)
   NYMPH_G: 0.5, NYMPH_ED: 4000,    // one late-instar dragonfly nymph (~0.2–1 g; Odonata 1,330–5,410, typically ~4,000 J/g)
@@ -649,15 +650,40 @@ export const SEDOM = {
                            //   sedimentation to ~750 g wet/m²/yr (≈ 37 g C/m²/yr — 25 % of a mesotrophic lake's ~150 g C/m²/yr
                            //   primary production; 20–50 % of production reaches the bed in shallow lakes)
   SINK: 0.25,              // share of the dying algae that reaches the bed as labile detritus (the rest is respired on the way down)
-  PERI_G: 110,             // g wet /s per column of BENTHIC ALGAE (periphyton, epipelon) at full light on its bed at 20 °C — the
+  PERI_G: 180,             // g wet /s per column of BENTHIC ALGAE (periphyton, epipelon) at full light on its bed at 20 °C — the
                            //   littoral's own production (10–100 g C/m²/yr in lakes; up to most of a clear lake's primary production,
-                           //   Vadeboncoeur et al. 2003), lost as the water turns murky. Calibrated to ~600 g wet/m²/yr on the lit
-                           //   shallows of the default lake
+                           //   Vadeboncoeur et al. 2003), lost as the water turns murky. ~1,000 g wet (~50 g C)/m²/yr on the lit
+                           //   shallows of the default lake (2026-10-15: was 110 → ~600; with realistic zooplankton the fish need the
+                           //   bed's ~50–65 % share of their food — Vander Zanden & Vadeboncoeur 2002 — and zoobenthos producing
+                           //   ~100–125 g/m²/yr, Bay of Quinte)
   get K20() { return 0.144 / BIOE.DAY; },   // /s decomposition at 20 °C: plankton detritus 0.144/day (0.078–0.20) with Q10 1.94
   Q10: 1.94,               //   (Otsuki & Hanya-type incubations; periphyton and plant detritus 0.08–0.2/day at 20 °C)
   ANOX: 0.3,               // decomposition on an anoxic bed runs at this × the oxic rate (anaerobic pathways are slower)
   O2_HALF: 0.1,            // bottom-water O₂ (normalised) at which aerobic decomposition runs at half its rate
   SIFT: 0.5,               // a bottom-sifting fish (diet.detritus: carp, bullhead) takes up to this × its gut capacity a second
+};
+
+// BENTHOS — the bed's NON-INSECT invertebrates (oligochaete worms, amphipods/scuds, isopods, small clams), a pool of g wet per
+// column of bed (env.benth) on the organic layer (SEDOM) they eat (2026-10-15). In real lakes they are about half the zoobenthos
+// — Bay of Quinte: chironomids 4.9 g/m² (P/B 14), oligochaetes 2.7 (P/B 10), amphipods 1.9 (P/B 4.4) — and unlike the insect
+// larvae (INSECT) none of their production leaves the lake as emerging adults: it is all fish food. Fish get ~50–65 % of their
+// food from the bottom (Vander Zanden & Vadeboncoeur 2002); with the zooplankton no longer an unlimited supply this pool closes
+// the sim's benthic gap (larvae alone ~35 g/m²/yr vs ~125 for all zoobenthos). Grows (logistic toward CAP, Monod in the
+// column's layer, Q10), dies slowly (worms outlast anoxia, scuds don't), and a REFUGE of every column (burrowed in the mud, deep
+// in the weeds) is out of fish reach. Rates per real day (÷ BIOE.DAY).
+export const BENTHOS = {
+  START: 4,                // g wet/m² at the lake's opening (Quinte oligochaetes + amphipods ≈ 4.6 g/m²)
+  CAP: 15,                 // g/m² the bed can hold (logistic; littoral zoobenthos 5–20 g/m²)
+  get G() { return 0.08 / BIOE.DAY; },     // /s growth at 20 °C on ample organic matter (P/B ~4–10/yr ⇒ ~0.02–0.05/day realised)
+  get M() { return 0.01 / BIOE.DAY; },     // /s natural mortality at 20 °C (back to the organic layer)
+  Q10: 2.0,
+  K_SOM: 150,              // g of organic layer per column at which they grow at half speed (as the insect larvae)
+  YIELD: 0.25,             // g of invertebrate per g of organic matter eaten (as INSECT.YIELD)
+  O2_MIN: 0.05,            // bottom O₂ (normalised) below which they die off at …
+  get ANOX_M() { return 0.02 / BIOE.DAY; },   // … this /s at 20 °C (oligochaetes tolerate weeks of anoxia; amphipods leave or die)
+  REFUGE: 1.5,             // g/m² of every column out of fish reach
+  K_FISH: 2,               // g/m² of reachable invertebrates at which a bottom-foraging fish gets half its ration from them (type II)
+  REACH: 120,              // px (~1.5 m) above the bed within which a bottom forager feeds on them (the mud and the weed band)
 };
 
 // ZOOPLANKTON as two biomass FIELDS on the environment grid (env.zooD — Daphnia and the other cladocerans; env.zooC — copepods
@@ -681,8 +707,9 @@ export const PLANKTON = {
   // ~0.04 below for herbivorous cladocerans, ~0.10 for cyclopoids and ~0.04 for calanoids at 20 °C (Stockwell & Johannsson
   // 1997; Johannsson et al. 2000; Shuter & Ing 1997: log P/B rises 0.043/°C, Q10 ≈ 2.7)
   G_D: 0.6, G_C: 0.3,      // (set so the REALISED production — after the migrants' cold dark hours and the DVM cost — matches the field P/B)
-  R_D: 0.05, R_C: 0.03,    // /day maintenance at 20 °C: below food ≈ (R + M)/G of saturation a population shrinks (Daphnia stop growing
-                           //   at ~0.06–0.10 mg C/L of good food — Boersma & Kreutzer 2002)
+  R_D: 0.12, R_C: 0.06,    // /day maintenance at 20 °C: below food ≈ (R + M)/G of saturation a population shrinks — set so Daphnia stop
+                           //   growing at ~0.05 algae units ≈ 0.07 mg C/L (0.06–0.10 mg C/L of good food — Boersma & Kreutzer 2002; one algae
+                           //   unit ≈ 1.5 mg C/L) and copepods a little above (at 0.05/0.03 the zooplankton lived on next to no algae)
   M_D: 0.03, M_C: 0.02,    // /day background mortality at 20 °C (invertebrate predators — Chaoborus, Leptodora, cyclopoids — and senescence)
   Q10_D: 3.0, Q10_C: 2.7,  // growth: Daphnia are warm-water breeders (eggs develop in 20 d at 4 °C, 7.6 at 10, 2.7 at 20 — Bottrell et al.
                            //   1976); copepods' field P/B rises 0.043 log units/°C (Q10 2.7 — Shuter & Ing 1997), but they keep growing in
@@ -744,14 +771,14 @@ export const PLANKTON = {
   // Zanden & Vadeboncoeur 2002): K_ADULT is calibrated to that budget (verify/zooflux2.mjs). Larvae and young fish: type II,
   // needing far denser prey (K_FRY: their growth falls below ~20–50 crustaceans/L — Breck 1997; Hoxmeier et al. 2004 — about
   // 30–75 µg/L of the small prey they take)
-  K_ADULT: 60,
+  K_ADULT: 25,             // (≈ 5 Daphnia/L; at 60 adults barely touched a typical 20–40 µg/L summer stock and starved)
   K_FRY: 30,
   Q: 2,                    // at saturating density a fish refills its gut at up to Q × its Cmax rate
   CROP: 0.3,               // a fish or school takes at most this share of the zooplankton within reach in one step
   FRY_DAPH_L: [0.6, 1.0],  // cm: fry take the cladoceran field fully from 1.0 cm, from first feeding only its small animals (FRY_DAPH_MIN:
   FRY_DAPH_MIN: 0.3,       //   Bosmina, Ceriodaphnia, newborn Daphnia) — first-feeding larvae of 4.5–6 mm eat nauplii, rotifers and small
                            //   cyclopoids, cladocerans from ~8–10 mm (Keast 1980; Siefert 1972) …
-  FRY_COPE: 0.5,           // … and catch the copepod field's animals at this rate (nauplii easily, copepodites and adults seldom; an adult
+  FRY_COPE: 0.3,           // … and catch the copepod field's animals at this rate (nauplii easily, copepodites and adults seldom; an adult
                            //   fish: 1 − COPE_ESCAPE)
   BITE_MIN: 0.002,         // a zooplankton intake ≥ this × the gut's capacity in a step counts as a meal (learning, foraging)
   SENSE_MIN: 0.3,          // a fish notices a zooplankton patch at ≥ this × K_ADULT of exposed density
@@ -798,7 +825,7 @@ export const INSECT = {
                                             //   grow ~0.2–0.4/day at 20 °C; at 0.2 a patch only tripled before emerging and fish
                                             //   got next to none of it above the refuge)
   get RESP() { return 0.03 / BIOE.DAY; },   // /s weight loss of a starving patch at DEV_TEMP_OPT (respiration ~0.02–0.05/day)
-  YIELD: 0.15,             // g of larvae per g of detritus eaten, wet (deposit feeders on fresh algal detritus: assimilation 30–50 % ×
+  YIELD: 0.25,             // g of larvae per g of detritus eaten, wet (2026-10-15: 0.15 → 0.25, mid-range) (deposit feeders on fresh algal detritus: assimilation 30–50 % ×
                            //   net growth 30–60 % ≈ 0.1–0.3 by dry mass; ~2/3 of that wet, the larvae holding more dry matter)
   K_SOM: 150,              // g of detritus per column at which a patch grows at half its rate
   get DEV_RATE() { return 1 / (19 * BIOE.DAY); },   // /s development at DEV_TEMP_OPT: 26 days to emerge at 20 °C and ~40 at 15 °C

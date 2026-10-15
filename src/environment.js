@@ -10,12 +10,13 @@
 //
 // MASS BUDGET: every N/P transfer debits its source. Sources/sinks that cross the lake boundary are tallied in
 // `this.ledger` (inflow, outflow, sediment burial, denitrification, N-fixation) so the inventory can be audited.
-import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, ICE, PLANT, PLANKTON, BIOE, bedY } from './config.js';
+import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, ICE, PLANT, PLANKTON, BENTHOS, BIOE, bedY } from './config.js';
 import { rand, clamp, TAU } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
 const COLS = GRID.FIELD_COLS, ROWS = GRID.FIELD_ROWS;
 const CW = W / COLS, CH = H / ROWS;
+const COL_M2 = WORLD.SLICE_M2 / COLS;   // m² of lake bed per field column (the slice's area shared by its columns)
 // calendar month names — index 0 = March (year-fraction 0 = mid-spring), running through the year
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 
@@ -77,6 +78,7 @@ export class Environment {
     this.sedP = new Float32Array(COLS).fill(SED_P.START);             // benthic bound-P store per column (Mortimer redox)
     this.sedOM = new Float32Array(COLS).fill(SEDOM.START);            // the bed's organic detritus layer, g wet per column (SEDOM)
     this._colDecay = new Float32Array(COLS);                          // algae that died in each column this step (→ the bed)
+    this.benth = new Float32Array(COLS).fill(BENTHOS.START * COL_M2);   // the bed's worms and scuds, g wet per column (BENTHOS)
     this.phyto = new Float32Array(COLS * ROWS).fill(PHYTO.START); // phytoplankton biomass field
     this._meanPhyto = PHYTO.START;
     this.diatom = new Float32Array(COLS * ROWS).fill(DIATOM.START);   // cold-water diatoms (the spring bloom)
@@ -317,6 +319,27 @@ export class Environment {
   }
   colOf(x) { return clamp((x / CW) | 0, 0, COLS - 1); }
   sedOMAt(x) { return this.sedOM[this.colOf(x)]; }
+  totalBenth() { let s = 0; for (let i = 0; i < COLS; i++) s += this.benth[i]; return s; }   // g wet of the bed's worms and scuds
+  // a bottom-foraging fish (or school) at x takes from the column's worms and scuds: want × E/(E + K_FISH), E the reachable
+  // density above the REFUGE (g/m²), at most CROP of what is reachable; returns the grams taken
+  takeBenth(x, want) {
+    if (!(want > 0)) return 0;
+    const c = this.colOf(x), reach = this.benth[c] - BENTHOS.REFUGE * COL_M2; if (!(reach > 0)) return 0;
+    const E = reach / COL_M2, g = Math.min(want * E / (E + BENTHOS.K_FISH), PLANKTON.CROP * reach);
+    this.benth[c] -= g; return g;
+  }
+  // the update: growth on the column's organic layer (Monod, logistic toward CAP, Q10; takes the layer at 1/YIELD), natural
+  // mortality and an anoxic die-off returned to the layer
+  benthos(dt) {
+    const B = BENTHOS, br = this.mask.bedRow, som = this.sedOM, o2 = this.o2, cap = B.CAP * COL_M2;
+    for (let cx = 0; cx < COLS; cx++) {
+      const by = br[cx], b = this.benth[cx], T = this.tempAt(cx * CW, (by + 0.5) * CH), q = Math.pow(B.Q10, (T - 20) / 10);
+      const s = som[cx], want = B.G * q * s / (s + B.K_SOM) * b * Math.max(0, 1 - b / cap) * dt;
+      const ate = Math.min(s, want / B.YIELD); som[cx] = s - ate;
+      const die = b * (B.M + (o2[by * COLS + cx] < B.O2_MIN ? B.ANOX_M : 0)) * q * dt;
+      som[cx] += die; this.benth[cx] = b + ate * B.YIELD - die;
+    }
+  }
   totalSedOM() { let s = 0; for (let i = 0; i < COLS; i++) s += this.sedOM[i]; return s; }
   addSedOM(x, g) { if (g > 0) this.sedOM[this.colOf(x)] += g; }
   takeSedOM(x, g) { const c = this.colOf(x), t = Math.min(this.sedOM[c], Math.max(0, g)); this.sedOM[c] -= t; return t; }
@@ -799,6 +822,7 @@ export class Environment {
     // sediment-P internal loading (Mortimer redox): the anoxic summer deep RELEASES iron-bound P → blooms
     this.sedimentP(dt);
     this.sedimentOM(dt);   // the bed's organic detritus layer: the dying algae settle into it, bacteria decompose it
+    this.benthos(dt);   // the bed's worms and scuds grow on that layer (BENTHOS)
 
     // nitrogen cycle: nitrification (NH₄→NO₃, draws O₂ here) + denitrification (NO₃→N₂, permanent N loss in
     // the anoxic deep). Runs before surface re-aeration so aeration can offset the surface nitrification O₂ draw.
@@ -875,6 +899,7 @@ export class Environment {
       o2: Array.from(this.o2), nh4: Array.from(this.nh4), no3: Array.from(this.no3), phos: Array.from(this.phos),
       phyto: Array.from(this.phyto), cyano: Array.from(this.cyano), sedP: Array.from(this.sedP),
       dom: Array.from(this.dom), sedOM: Array.from(this.sedOM),   // v28 the bed's organic layer (_colDecay is filled and emptied within a step)
+      benth: Array.from(this.benth),   // v30 the bed's worms and scuds
       zooD: Array.from(this.zooD), zooC: Array.from(this.zooC), zooEgg: Array.from(this.zooEgg),   // v30 the zooplankton fields + egg bank (the weed map and DVM shares are rebuilt each step)
     };
   }
@@ -938,6 +963,7 @@ export class Environment {
     const sedP = field1(s.sedP, new Float32Array(COLS).fill(SED_P.START));
     const sedOM = field1(s.sedOM, new Float32Array(COLS).fill(SEDOM.START));   // v28 (older saves: the start layer)
     const zooD = field2(s.zooD, this._zooFill(PLANKTON.START_D)), zooC = field2(s.zooC, this._zooFill(PLANKTON.START_C));   // v30 (older: the start)
+    const benth = field1(s.benth, new Float32Array(COLS).fill(BENTHOS.START * COL_M2));   // v30 (older: the start stock)
     const zooEgg = this._eggFill();   // v30 egg bank: [col × 2 + kind] for the current grid (another grid size → the start bank)
     if (Array.isArray(s.zooEgg) && s.zooEgg.length === COLS * 2) for (let k = 0; k < COLS * 2; k++) zooEgg[k] = cell(s.zooEgg[k], zooEgg[k]);
     let phos = field2(s.phos, new Float32Array(COLS * ROWS).fill(NUTRIENT.P_START));
@@ -964,7 +990,7 @@ export class Environment {
     // ---- commit (nothing above touched `this`) ----
     Object.assign(this, { t, weather, tempC, strat, turbidity, weatherTimer, forced, light, tempNorm, year, wind, flash, tempDiel, tempHypo, ice });
     this._windT = windT; this._meanPhyto = meanPhyto; this._meanCyano = meanCyano; this._meanDOM = meanDOM; this._meanDiatom = meanDiatom;
-    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.sedOM.set(sedOM); this._colDecay.fill(0); this.zooD.set(zooD); this.zooC.set(zooC); this.zooEgg.set(zooEgg); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
+    this.o2.set(o2); this.phyto.set(phyto); this.diatom.set(diatom); this.cyano.set(cyano); this.dom.set(dom); this.sedP.set(sedP); this.sedOM.set(sedOM); this._colDecay.fill(0); this.zooD.set(zooD); this.zooC.set(zooC); this.zooEgg.set(zooEgg); this.benth.set(benth); this.phos.set(phos); this.nh4.set(nh4); this.no3.set(no3);
   }
 }
 

@@ -24,10 +24,16 @@ FINDINGS: the OLD model fed the fish ~10–13 kg/month of zooplankton in summer 
 an unlimited subsidy that hid a BENTHOS DEFICIT (larvae production ~35 g/m²/yr vs Quinte zoobenthos ~125; sim lacks
 oligochaetes/amphipods; deep bed anoxic all summer, no profundal chironomids). New model, year 1: zoo production 96–127
 g/m²/yr ✓, adults' diet ~50 % benthic ✓, but fry (2–4× too many, ~1 % eaten — real larvae die mostly to predators) ate 8–10
-kg/month Jun–Jul, stripped the zooplankton by August → adults starved over winter (sunfish 100 → 3). Round 9 (running) tests
-M_LARVA 0.08. NEXT if needed: sunfish per-bout fecundity (Beard's count may be per season, Deep Lake 1.0–1.8 M fry/ha vs sim
-3.6), benthic production toward ~100 g/m²/yr (YIELD, profundal larvae surviving hypoxia), then year-2+ multi-seed validation,
-gate (one known check to revisit: hypoxia appetite ratio, relaxed to 0.35), docs, merge. LESSONS: memory research-to-design;
+kg/month Jun–Jul, stripped the zooplankton by August → adults starved over winter (sunfish 100 → 3). Rounds 9–14 (verify/zf2_r*, en_r*, dietsp_r*): M_LARVA 0.08; benthic production up (SEDOM.PERI_G 110 → 180, INSECT.YIELD
+0.15 → 0.25); minnow founders 45 → 20; NEW BENTHOS pool (the bed's worms and scuds, env.benth per column, Quinte oligochaetes +
+amphipods; fish feed within BENTHOS.REACH of the bed; save v30; 4 gate checks); K_ADULT back to 25 (type III); founders sunfish
+12, perch 5; zoo upkeep R_D 0.12 / R_C 0.06 (food thresholds ≈ Boersma & Kreutzer; verify/zooonly.mjs — a zooplankton-only harness
+with prescribed predation, a year a minute — gives a realistic year: summer 50–170 µg/L, July clear water, Nov pulse, winter
+12–17 µg/L of copepods, Daphnia ~0); FRY_COPE 0.3; APEX DENSITY (research priority 5): pike 1 founder (K≈2), bass 3 (K≈4), carp 2,
+trout 2 (the founders test now accepts one ripe female for a single-founder visitor). Per-species audit (dietsp.mjs) showed
+sunfish eat 2–3.6 %bw/day (≈ break-even), but 2 pike + 5 bass ate ~0.5 kg of small fish a month, and 2.6 kg of trout ate 3 kg
+of June zooplankton. Round 14 running. Still open: copepods eaten out in summer; bass condition/spawning (next slice).
+LESSONS: memory research-to-design;
 diagnostic wrappers must forward ALL arguments (a dropped arg silently disabled type III in one round).
 
 ▶▶▶ HUMAN (2026-10-14 evening, before compaction): "we need compact first and maybe you should do some more research on how the

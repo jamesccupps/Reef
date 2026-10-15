@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, BIRD, ENV, PLANKTON, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM, EVO } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, BENTHOS, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM, EVO } from './config.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from './bioenergetics.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
@@ -1122,6 +1122,9 @@ export class World {
       it.m -= take;
       got += take; J += take * PREY.LARVA_ED;
     }
+    if (f.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus) && want - got > 1e-12 && f.y > bedY(f.x) - BENTHOS.REACH) {   // the bed's worms and scuds
+      const g = env.takeBenth(f.x, want - got); if (g > 0) { got += g; J += g * PREY.BENTH_ED; }
+    }
     if (f.L >= (sp.benthL ?? FRY.BENTH_L) && d.detritus) for (; feeds > 0 && want - got > 1e-12; feeds--) {
       const m = this.detritusGrid.nearest(f.x, f.y, FRY.EAT_R, notDead); if (!m) break;
       const it = m.item, take = Math.min(it.m, want - got);
@@ -1872,6 +1875,12 @@ export class World {
           * (1 - this.coverAt(k.item.x, k.item.y) * COVER.REFUGE) * (1 - CRAYFISH.SHELTER_DAY * env.light), Math.max(1, slots))) { k.item.dead = true; this._ate(a, 1, PREY.CRAY_G, PREY.CRAY_ED, PREY.CRAY_DIG); }
       }
       if (bugs && a.gut < gEff && sp.diet.larva) this._graze(a, this.larvaeGrid, slots, gEff - a.gut, PREY.LARVA_ED, 1, INSECT.REFUGE_M, larvaFree);   // benthic insect larvae (those outside their refuge)
+      // the bed's worms and scuds (BENTHOS): a bottom forager in the weedy water near the bed (BENTHOS.REACH — scuds live on the
+      // weeds as much as in the mud) takes them at a rate set by their reachable density
+      if (bugs && a.gut < gEff && (sp.diet.larva || sp.diet.snail || sp.diet.detritus) && a.y > bedY(a.x) - BENTHOS.REACH) {
+        const g = env.takeBenth(a.x, Math.min(gEff - a.gut, PLANKTON.Q * cm * a.W * dt / BIOE.DAY));
+        if (g > 0) { a.gut += g; a.gutE += g * PREY.BENTH_ED; if (g >= PLANKTON.BITE_MIN * gmax) { a.eaten++; this.stats.foodEaten++; } }
+      }
       let nS;
       if (sp.diet.snail && (nS = Math.min(slots, Math.floor((gEff - a.gut) / PREY.SNAIL_G))) > 0 && (k = this._takeNearest(this.snailGrid, a.x, a.y, R, nS, exposedSnail))) this._ate(a, k, PREY.SNAIL_G, PREY.SNAIL_ED, PREY.SNAIL_DIG);   // molluscivores (sunfish/carp) crush snails, shell and all
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax);   // the gut level poor food fills up to
@@ -2098,6 +2107,7 @@ export class World {
       cyano: e.meanCyano(),   // cyanobacteria surface-scum density (the N-fixing strain)
       dom: e.meanDOM(),       // dissolved organic matter awaiting bacterial decomposition (the microbial loop)
       bedOM: e.totalSedOM() / 1000,   // kg of organic detritus on the bed (SEDOM: the larvae's and bottom feeders' food)
+      benth: e.totalBenth() / 1000,   // kg of the bed's worms and scuds (BENTHOS)
       // which nutrient is limiting growth in the lit littoral (the bloom controller)?
       limiting: e.meanDin() / (e.meanDin() + NUTRIENT.KN) < e.meanPhos() / (e.meanPhos() + NUTRIENT.KP) ? 'N' : 'P',
       phyto: e.meanPhyto(), secchi: e.secchiDepth(), clarity: e.clarity(), turbidity: e.turbidity, avgO2: this.avgO2(),

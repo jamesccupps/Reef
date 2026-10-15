@@ -2257,8 +2257,9 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       check('optimal foraging: a hungry sunfish among zooplankton and weed fills its gut with the zooplankton (poor food is a filler)', ed > 0.9 * PREY.DAPH_ED, `gut ${sf.gut.toFixed(2)} g at ${ed.toFixed(0)} J/g (Daphnia ${PREY.DAPH_ED}, weed ${(PREY.PLANT_ED * PREY.PLANT_DIG).toFixed(0)})`); }
     // FOUNDERS: a stable age structure (young fish outnumber adults) and a breeding pair of every species
     { seed(7104); const fw = new World(), sun = fw.agents.filter(a => a.species === 'sunfish'), juv = sun.filter(a => !a.mature).length;
-      const pairs = SPECIES.every(k => { const f = fw.agents.filter(a => a.species === k).slice(0, 2); return f.length === 2 && f[0].mature && f[1].mature && f[0].sex === 0 && f[1].sex === 1 && f[0].gon > 0; });
-      check('founders: a stable age structure (many young, immature bluegills) and a ripe adult pair of every species', juv > sun.length * 0.35 && pairs, `${juv}/${sun.length} sunfish immature; pairs ${pairs}`); }
+      // (a species with a single founder — the pike, a visitor at this slice's size — opens with one ripe adult female)
+      const pairs = SPECIES.every(k => { const f = fw.agents.filter(a => a.species === k).slice(0, 2); return f.length === 1 ? f[0].mature && f[0].sex === 0 && f[0].gon > 0 : f.length === 2 && f[0].mature && f[1].mature && f[0].sex === 0 && f[1].sex === 1 && f[0].gon > 0; });
+      check('founders: a stable age structure (many young, immature bluegills) and a ripe adult pair of every species (one ripe female of a single-founder visitor)', juv > sun.length * 0.35 && pairs, `${juv}/${sun.length} sunfish immature; pairs ${pairs}`); }
     // the YOY recruit as yearlings in spring: an overwintered school (age > OVERWINTER) recruits once spring comes
     { seed(7105); const rw = new World().setDate(0.05); rw.fry = [];
       const f = mkSchool(rw, 'sunfish', 500, 300, 60); f.L = 3; f.W = stdWeight(SP.sunfish.lw, 3); f.age = 0.7 * TIME.YEAR_LEN;
@@ -2459,6 +2460,36 @@ console.log('\n— zooplankton fields —');
 // a season on: the lake's zooplankton within the range real mesotrophic lakes hold (crustacean zooplankton ~45–100 µg dry/L in
 // summer; a broad band here — the calibration runs check the seasons, verify/zooflux2.mjs)
 check('ZOO: after a simulated season the lake holds a realistic zooplankton stock (15–300 µg dry/L)', nicheW.env.meanZooUgl() > 15 && nicheW.env.meanZooUgl() < 300, `${nicheW.env.meanZooUgl().toFixed(0)} µg/L`);
+
+// ============================================================
+//  BENTHOS (2026-10-15): the bed's worms and scuds — grow on the organic layer, fed on by bottom foragers above a refuge
+// ============================================================
+console.log('\n— the bed\'s worms and scuds —');
+{ const { BENTHOS: BN, PLANKTON: PK } = await import('../src/config.js');
+  const rsB = getRandState();
+  seed(9201); const bw = new World().setDate(0.40); bw.agents = []; bw.fry = []; bw.step(1 / 30);
+  const e = bw.env, COLS = GRID.FIELD_COLS, cm2 = WORLD.SLICE_M2 / COLS;
+  // GROWTH on the organic layer: a column with a rich layer grows its worms and scuds, a bare one can't (both oxic, same warmth)
+  let cR = -1; for (let c = 0; c < COLS; c++) if (e.mask.bedRow[c] > 6 && e.mask.bedRow[c] < 16) { cR = c; break; }
+  const cB = cR + 1, start = 3 * cm2;
+  e.benth[cR] = start; e.benth[cB] = start; e.sedOM[cR] = 2000; e.sedOM[cB] = 0;
+  for (let k = 0; k < 150; k++) { e.o2.fill(1); e.sedOM[cB] = 0; e.benthos(1 / 30); }   // ~1 day
+  check('BENTHOS: the bed\'s worms and scuds grow on its organic layer (rich column grows, a bare one shrinks)', e.benth[cR] > start * 1.02 && e.benth[cB] < start,
+    `rich ${(e.benth[cR] / cm2).toFixed(3)} g/m², bare ${(e.benth[cB] / cm2).toFixed(3)} g/m² (from ${3})`);
+  // FISH take them above the refuge only, at a type-II rate in their reachable density
+  e.benth[cR] = (BN.REFUGE + BN.K_FISH) * cm2;   // reachable density = K_FISH → half the ration
+  const x = (cR + 0.5) * (WORLD.W / COLS), want = 0.01, got = e.takeBenth(x, want);
+  e.benth[cR] = BN.REFUGE * cm2; const none = e.takeBenth(x, 1);
+  check('BENTHOS: a bottom forager takes them at a type-II rate above the refuge (half its want at K_FISH; nothing from the refuge)', Math.abs(got / want - 0.5) < 0.01 && none < 1e-6, `got ${(got / want).toFixed(3)} of want; from the refuge ${none}`);
+  // ANOXIA: a column under anoxic water loses them faster than an oxic one
+  e.benth[cR] = start; e.benth[cB] = start; e.sedOM[cR] = 0; e.sedOM[cB] = 0;
+  const bi = e.mask.bedRow[cB] * COLS + cB;
+  for (let k = 0; k < 300; k++) { e.o2.fill(1); e.o2[bi] = 0; e.sedOM[cR] = 0; e.sedOM[cB] = 0; e.benthos(1 / 30); }
+  check('BENTHOS: an anoxic bed kills them off faster than an oxic one (both unfed)', e.benth[cB] < e.benth[cR] * 0.995, `anoxic ${(e.benth[cB] / cm2).toFixed(3)} vs oxic ${(e.benth[cR] / cm2).toFixed(3)} g/m²`);
+  // SAVE: the pool round-trips (v30)
+  e.benth[5] = 123.25; const back = new World(); back.load(JSON.parse(JSON.stringify(bw.toJSON())));
+  check('BENTHOS: the worms-and-scuds pool round-trips through save/load (v30)', Math.abs(back.env.benth[5] - 123.25) < 1e-3 && bw.toJSON().version >= 30, `${back.env.benth[5]}`);
+  setRandState(rsB); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

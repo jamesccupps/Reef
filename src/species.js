@@ -364,7 +364,7 @@ export const SP = {
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
     // a fathead female spawns a batch every ~4 days through the summer (16–26 batches; Gale & Buynak 1982), putting most of
     // her surplus into eggs — which is why fatheads stay small and most die after their first spawning summer
-    matingCooldown: yr(0.012), reproAlloc: 0.8, pop: { start: 45, min: 7, max: 60 },   // K ≈ 400
+    matingCooldown: yr(0.012), reproAlloc: 0.8, pop: { start: 20, min: 7, max: 60 },   // K ≈ 400; ~135 founders (~1,900/ha: fatheads are vulnerable in a lake with bass, pike and perch; fishless prairie wetlands hold 5,400–19,700/ha by late summer)
     tempOpt: 27, tempTol: 9, o2Crit: 0.26, spawnT: [16, 26],   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
     innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30, forage: 0.5 },   // shallow open water, active schooler
 
@@ -394,7 +394,7 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    matingCooldown: yr(0.06), pop: { start: 16, min: 4, max: 45 },   // K ≈ 300; ~110 founders ≈ 60 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
+    matingCooldown: yr(0.06), pop: { start: 12, min: 4, max: 45 },   // K ≈ 300; ~80 founders ≈ 45 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
     tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40, forage: 0.5 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
@@ -428,7 +428,7 @@ export const SP = {
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true, cray: 0.08 },   // cray: the share of its strikes at a crayfish that land (perch take the small ones)
     maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 7, min: 3, max: 28 },   // K ≈ 190; ~47 founders ≈ 40 kg/ha (yellow perch 27–52 kg/ha — docs/ECOLOGY_RESEARCH.md)
+    matingCooldown: yr(0.5), pop: { start: 5, min: 3, max: 28 },   // K ≈ 190; ~34 founders ≈ 30 kg/ha (yellow perch 27–52 kg/ha — docs/ECOLOGY_RESEARCH.md)
     tempOpt: 23, tempTol: 7, o2Crit: 0.26, spawnT: [7, 12], spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
     innate: { homeDepth: 0.86, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },   // a near-bottom forager (adult yellow perch feed mostly on benthos)
     sat: 70, lbase: 40, lrange: 20,
@@ -462,7 +462,7 @@ export const SP = {
       'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true },
     maxSpeed: 62, accel: 72, drag: 1.2, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 0.6, min: 1, max: 1.0, refuge: 1, rescue: 2 },   // K ≈ 7; stocked/visiting — the rescue keeps one or two in view
+    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 1, rescue: 2 },   // K ≈ 4 (2 founders); stocked/visiting — the rescue keeps one or two in view
     tempOpt: 15, tempTol: 6, o2Crit: 0.58, spawnT: [6, 11], spawnSide: -1, coldPerf: 0.6,   // cold-water guild (stressed above ~20 °C); spring stream spawner
     innate: { homeDepth: 0.45, depthPull: 0.45, cruise: 0.5, weight: 0.35, pursuit: 0.45, spawnGround: 0.5 },
     sat: 38, lbase: 46, lrange: 16,
@@ -521,7 +521,7 @@ export const SP = {
     diet: { plants: true, detritus: true, larva: true, snail: true, plankton: true },   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
                                                                                      //   weed and detritus (Scott & Crossman 1973)
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
-    matingCooldown: yr(0.4), pop: { start: 0.45, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 3 founders ≈ 70 kg/ha (damage threshold ~100 kg/ha)
+    matingCooldown: yr(0.4), pop: { start: 0.3, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 2 founders ≈ 45 kg/ha (damage threshold ~100 kg/ha)
     tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
     innate: { homeDepth: 0.95, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4, forage: 0.5 },   // a bottom rooter (sifts the sediment)
     sat: 46, lbase: 34, lrange: 18,
@@ -548,7 +548,7 @@ export const SP = {
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'rival density', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true, cray: 0.25 },   // young bass live on aquatic insects (Keast 1985; Olson 1996); crayfish are the adult bass's staple
     maxSpeed: 56, accel: 64, drag: 1.3, maxTurn: 2.2,
-    matingCooldown: yr(0.5), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 — real lakes hold ~20–50 adult bass/ha against thousands of sunfish
+    matingCooldown: yr(0.5), pop: { start: 0.45, min: 1, max: 0.6 },   // K ≈ 4 — northern lakes hold 5–25 adult bass/ha (0.35–1.75 in this ~0.07-ha slice; Wagner 1988, Goudy 1981) against thousands of sunfish: 3 founders, 2 of them adults
     tempOpt: 29, tempTol: 7, o2Crit: 0.47, spawnT: [15, 21], nestGuard: yr(0.06), spawnSide: 1,   // warm-temperate pursuit predator; spawns once in late spring; the male guards nest + fry
     innate: { homeDepth: 0.8, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.40, littoral: 0.5, pursuit: 0.5, spawnGround: 0.5 },  // patrols weed beds along the drop-off, low in the water near the bottom (summer bass hold near the bed and the weeds in the littoral); pursues prey it sees
     sat: 42, lbase: 32, lrange: 18,
@@ -575,7 +575,7 @@ export const SP = {
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, cray: 0.05 },   // a fish specialist: crayfish are an occasional item
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 1, rescue: 1 },   // K ≈ 4 — the rarest fish (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
+    matingCooldown: yr(0.5), pop: { start: 0.15, min: 1, max: 0.3, refuge: 1, rescue: 1 },   // K ≈ 2; ONE founder — the rarest fish (Minnesota lakes: 1.6 pike > 60 cm per ha, ~0.1 in this slice — a resident pike here is a visitor from a bigger lake; 2026-10-15: two 2-kg pike ate ~10 small fish a month between them) (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
     tempOpt: 21, tempTol: 8, o2Crit: 0.32, spawnT: [4, 11], spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,
