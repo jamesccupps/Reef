@@ -7,7 +7,7 @@
    USGS-style map lettering (blue italic for water, upright for land) floating over the terrain. One deliberate dark look. */
 :root {
   --bg: #0d1315; --panel: rgba(14, 21, 23, 0.88); --ink: #e7ece6; --muted: #9db0a7; --line: rgba(231, 236, 230, 0.16);
-  --water: #7cc0dc; --accent: #e0a94e; --soil: #8a6b4a; --land: #b9c79a;
+  --water: #7cc0dc; --accent: #e0a94e; --soil: #8a6b4a; --land: #b9c79a; --note: #f2c46b; --chart-ink: #123a52;
   --f-ui: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
   --f-water: "Spectral", Georgia, "Times New Roman", serif;
   color-scheme: dark;
@@ -23,19 +23,26 @@ body { background: var(--bg); color: var(--ink); font: 15px/1.4 var(--f-ui); ove
 .lbl.water b { font: italic 500 17px/1.15 var(--f-water); color: var(--water); }
 .lbl.water.minor b { font-size: 14px; }
 .lbl.land b { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--land); }
+.lbl.note { transform: translate(-50%, -100%); text-align: left; }
+.lbl.note b { font-size: 13px; color: var(--note); }
+.lbl.note b::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; background: var(--note); transform: rotate(45deg); vertical-align: 1px; }
+.lbl.note small { max-width: 260px; white-space: normal; }
+.lbl.snd { transform: translate(-50%, -50%); text-shadow: none; font: italic 500 12px/1 var(--f-water); color: var(--chart-ink); font-variant-numeric: tabular-nums; }
 .card { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; backdrop-filter: blur(6px); }
-#ctl { top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; width: min(330px, calc(100vw - 24px)); max-height: calc(100% - 210px); overflow: auto; padding: 14px 16px; display: grid; gap: 12px; }
+#ctl { top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; width: min(340px, calc(100vw - 24px)); max-height: calc(100% - 210px); overflow: auto; padding: 14px 16px; display: grid; gap: 12px; }
 #ctl h1 { margin: 0; font: 600 21px/1.1 var(--f-ui); letter-spacing: .01em; text-wrap: balance; }
 #ctl .sub { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .grp { display: grid; gap: 6px; }
 .grp > span { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
 .row { display: flex; flex-wrap: wrap; gap: 6px; }
-button, .chip { font: 500 14px var(--f-ui); color: var(--ink); background: rgba(231,236,230,.06); border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+.hint { font-size: 13px; color: var(--muted); }
+button { font: 500 14px var(--f-ui); color: var(--ink); background: rgba(231,236,230,.06); border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
 button:hover { background: rgba(231,236,230,.13); }
 button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 label.tog { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
 input[type=range] { width: 100%; accent-color: var(--accent); }
+input[type=range]:disabled { opacity: .4; }
 .ex { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; font-size: 13px; }
 .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.35); }
@@ -48,11 +55,12 @@ details ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 3px; }
 #profc { width: 100%; height: 100%; display: block; min-height: 0; }
 #north { position: fixed; right: 16px; top: calc(14px + env(safe-area-inset-top, 0px)); width: 46px; height: 46px; border-radius: 50%; background: var(--panel); border: 1px solid var(--line); display: grid; place-items: center; }
 #north svg { width: 30px; height: 30px; }
+#uw { position: fixed; right: 72px; top: calc(20px + env(safe-area-inset-top, 0px)); padding: 6px 10px; font-size: 13px; }
 #busy { position: fixed; inset: 0; display: grid; place-items: center; font-size: 15px; color: var(--muted); }
 @media (max-width: 640px) {
   #ctl { max-height: 46%; }
   #prof { height: 150px; }
-  .lbl.land, .lbl.water.minor { display: none; }
+  .lbl.land, .lbl.water.minor, .lbl.note small { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
 </style>
@@ -73,7 +81,16 @@ details ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 3px; }
       <button id="v-brook">The brook</button>
       <button id="v-lower">Lower lake</button>
       <button id="v-slice">Along the slice</button>
+      <button id="v-dive">Dive in</button>
     </div>
+  </div>
+  <div class="grp"><span>Surface</span>
+    <div class="row" id="looks">
+      <button id="l-map" aria-pressed="true">Map colours</button>
+      <button id="l-photo">Aerial photo</button>
+      <button id="l-chart">Depth chart</button>
+    </div>
+    <div class="hint" id="lookhint"></div>
   </div>
   <div class="grp"><span>Season</span>
     <div class="row" id="seasons">
@@ -83,9 +100,14 @@ details ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 3px; }
       <button id="s-winter">February</button>
     </div>
   </div>
+  <div class="grp"><span>Cut-away</span>
+    <label class="tog"><input id="t-cut" type="checkbox"> Cut the landscape open and look at the section</label>
+    <input id="cutpos" type="range" min="0" max="1000" step="1" value="400" aria-label="Where to cut, south to north" disabled>
+    <div class="ex"><span>south</span><span id="cutv">—</span><span>north</span></div>
+  </div>
   <div class="grp"><span>Vertical exaggeration</span>
-    <input id="exag" type="range" min="1" max="10" step="0.5" value="4" aria-label="Vertical exaggeration">
-    <div class="ex"><span>true scale</span><span id="exv">×4</span><span>×10</span></div>
+    <input id="exag" type="range" min="1" max="12" step="0.5" value="4" aria-label="Vertical exaggeration">
+    <div class="ex"><span>true scale</span><span id="exv">×4</span><span>×12</span></div>
   </div>
   <div class="grp"><span>Show</span>
     <div class="row">
@@ -93,21 +115,24 @@ details ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 3px; }
       <label class="tog"><input id="t-trees" type="checkbox" checked> Trees</label>
       <label class="tog"><input id="t-slice" type="checkbox" checked> Sim slice</label>
       <label class="tog"><input id="t-labels" type="checkbox" checked> Labels</label>
+      <label class="tog"><input id="t-notes" type="checkbox" checked> Field notes</label>
     </div>
   </div>
-  <div class="grp"><span>Ground cover</span><div class="legend" id="legend"></div></div>
+  <div class="grp"><span id="legtitle">Ground cover</span><div class="legend" id="legend"></div></div>
   <details>
     <summary>Sources and what is approximate</summary>
     <ul id="sources"></ul>
     <ul>
-      <li>Lake beds are estimated from each lake's published area, mean and maximum depth (depth grows with distance from shore). They are not surveyed contours.</li>
+      <li>Lake beds: interpolated from the 1949 MDIFW soundings (146 spot depths), with the scanned survey maps fitted onto today's shoreline (median misfit 18 m). The beds may have filled a little with sediment since 1949.</li>
       <li>Trees are placed by land-cover class at an illustrative density, not counted.</li>
-      <li>Land cover is mapped at 30 m, so narrow shore bands (beach, alder fringe) are wider or missing here.</li>
+      <li>Land cover is mapped at 30 m, so narrow shore bands (beach, alder fringe) are wider or missing here. The aerial photo is a summer image.</li>
+      <li>Field notes are first-hand observations from an angler who fishes these lakes.</li>
     </ul>
   </details>
 </section>
 
 <div id="north" title="North"><svg viewBox="-15 -15 30 30" aria-hidden="true"><g id="needle"><path d="M0 -12 L5 4 L0 1 L-5 4 Z" fill="#e7ece6"/><text x="0" y="13" text-anchor="middle" font-size="8" fill="#9db0a7" font-family="Barlow Semi Condensed, sans-serif">N</text></g></svg></div>
+<div id="uw" class="card" hidden>Underwater · drag to look around, scroll to move · pick a view to surface</div>
 
 <section id="prof" class="card" aria-label="Cross-section along the sim's slice">
   <header><strong>The sim's slice, in the real place</strong><span id="profnote"></span></header>
@@ -121,15 +146,15 @@ details ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 3px; }
 const $ = id => document.getElementById(id);
 const M = await (await fetch('hotbrook_model.json')).json();
 const meta = M.meta, NX = meta.nx, NY = meta.ny, CELL = meta.cell, W = meta.w, H = meta.h, e0 = meta.e0;
-const surfU = meta.surf.upper, surfL = meta.surf.lower, REF = surfU;
+const surfU = meta.surf.upper, surfL = meta.surf.lower, REF = surfU, FT = 0.3048;
 const dec = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
 const elev = dec(M.elev_dm, Uint16Array), depth = dec(M.depth_cm, Uint16Array), cover = dec(M.cover, Uint8Array), lake = dec(M.lake, Uint8Array);
 const C = Object.fromEntries(M.classes.map((c, k) => [c, k]));
 let rs = 12345; const rnd = () => ((rs = (rs * 16807) % 2147483647) / 2147483647);
 
 // ---------- true heights (m, relative to Upper's surface) ----------
-const N = NX * NY, hgt = new Float32Array(N);
-for (let k = 0; k < N; k++) hgt[k] = lake[k] ? (lake[k] === 1 ? surfU : surfL) - depth[k] / 100 - REF : elev[k] / 10 + e0 - REF;
+const N = NX * NY, hgt = new Float32Array(N), surfOf = k => lake[k] === 1 ? 0 : lake[k] === 2 ? surfL - REF : null;
+for (let k = 0; k < N; k++) hgt[k] = lake[k] ? surfOf(k) - depth[k] / 100 : elev[k] / 10 + e0 - REF;
 const cx = i => (i + 0.5) * CELL - W / 2, cz = j => (j + 0.5) * CELL - H / 2;   // three.js: x east, z south
 const cellAt = (x, z) => { const i = Math.min(NX - 1, Math.max(0, Math.floor((x + W / 2) / CELL))), j = Math.min(NY - 1, Math.max(0, Math.floor((z + H / 2) / CELL))); return j * NX + i; };
 // distance (m) from water (lakes, ponds, brooks) — for tree density near shores
@@ -143,33 +168,39 @@ for (let pass = 0; pass < 2; pass++) for (let jj = 0; jj < NY; jj++) { const j =
 
 // ---------- renderer, scene ----------
 const canvas = $('view'), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(38, 1, 5, 80000);
-scene.fog = new THREE.Fog(0xc8d4d4, 9000, 30000);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.localClippingEnabled = true;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(38, 1, 2, 80000);
+const airFog = new THREE.Fog(0xc8d4d4, 9000, 30000), waterFog = new THREE.Fog(0x24443b, 4, 75);   // tea-coloured Maine water: ~3 m Secchi
+scene.fog = airFog;
 scene.add(new THREE.HemisphereLight(0xe4eef4, 0x4b4a3c, 0.78));
 const sun = new THREE.DirectionalLight(0xfff1da, 0.85); sun.position.set(-4000, 6000, 3000); scene.add(sun);
 const controls = new THREE.OrbitControls(camera, canvas);
-controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 60; controls.maxDistance = 26000;
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 8; controls.maxDistance = 26000;
+const cut = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0); let cutOn = false;   // keeps z ≤ cut position (removes the near, south side)
+const clipMats = [];
+const clip = m => { clipMats.push(m); return m; };
 
 // ---------- terrain (land + lake beds) ----------
-const tg = new THREE.BufferGeometry(), tpos = new Float32Array(N * 3), tcol = new Float32Array(N * 3);
-for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const k = j * NX + i; tpos[k * 3] = cx(i); tpos[k * 3 + 2] = cz(j); }
+const tg = new THREE.BufferGeometry(), tpos = new Float32Array(N * 3), tcol = new Float32Array(N * 3), tuv = new Float32Array(N * 2);
+for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const k = j * NX + i; tpos[k * 3] = cx(i); tpos[k * 3 + 2] = cz(j); tuv[k * 2] = (i + 0.5) / NX; tuv[k * 2 + 1] = 1 - (j + 0.5) / NY; }
 const idx = new Uint32Array((NX - 1) * (NY - 1) * 6); let q = 0;
 for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) { const a = j * NX + i, b = a + 1, c = a + NX, d = c + 1; idx[q++] = a; idx[q++] = c; idx[q++] = b; idx[q++] = b; idx[q++] = c; idx[q++] = d; }
-tg.setAttribute('position', new THREE.BufferAttribute(tpos, 3)); tg.setAttribute('color', new THREE.BufferAttribute(tcol, 3)); tg.setIndex(new THREE.BufferAttribute(idx, 1));
-const terrain = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true })); scene.add(terrain);
+tg.setAttribute('position', new THREE.BufferAttribute(tpos, 3)); tg.setAttribute('color', new THREE.BufferAttribute(tcol, 3)); tg.setAttribute('uv', new THREE.BufferAttribute(tuv, 2)); tg.setIndex(new THREE.BufferAttribute(idx, 1));
+const terrainMat = clip(new THREE.MeshLambertMaterial({ vertexColors: true }));
+const terrain = new THREE.Mesh(tg, terrainMat); scene.add(terrain);
+let photo = null;   // the aerial photo, loaded on first use
+const loadPhoto = () => photo || (photo = new Promise(res => new THREE.TextureLoader().load('naip.jpg', t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); res(t); }, undefined, () => res(null))));
 
 // ---------- water: one plane per lake, clipped to its outline by an alpha map ----------
 function lakeAlpha(id) { const a = new Uint8Array(N * 4); for (let k = 0; k < N; k++) { const v = lake[k] === id ? 255 : 0; a[k * 4] = a[k * 4 + 1] = a[k * 4 + 2] = v; a[k * 4 + 3] = 255; }
   const t = new THREE.DataTexture(a, NX, NY, THREE.RGBAFormat); t.magFilter = t.minFilter = THREE.LinearFilter; t.flipY = false; t.needsUpdate = true; return t; }
-const waterMat = id => new THREE.MeshPhongMaterial({ color: 0x3f7f9c, specular: 0xbfdfee, shininess: 70, transparent: true, opacity: 0.62, alphaMap: lakeAlpha(id), alphaTest: 0.35, depthWrite: false });
+const waterMat = id => clip(new THREE.MeshPhongMaterial({ color: 0x3f7f9c, specular: 0xbfdfee, shininess: 70, transparent: true, opacity: 0.62, alphaMap: lakeAlpha(id), alphaTest: 0.35, depthWrite: false, side: THREE.DoubleSide }));
 const lakes = [1, 2].map(id => { const g = new THREE.PlaneGeometry(W, H); g.rotateX(-Math.PI / 2);
-  // PlaneGeometry UVs run v=0 at the SOUTH after rotation; the alpha map's row 0 is the NORTH edge → flip v
-  const uv = g.attributes.uv; for (let k = 0; k < uv.count; k++) uv.setY(k, 1 - uv.getY(k));
-  const m = new THREE.Mesh(g, waterMat(id)); m.userData.surf = (id === 1 ? surfU : surfL) - REF; m.renderOrder = 2; scene.add(m); return m; });
+  const uv = g.attributes.uv; for (let k = 0; k < uv.count; k++) uv.setY(k, 1 - uv.getY(k));   // alpha-map row 0 is the NORTH edge
+  const m = new THREE.Mesh(g, waterMat(id)); m.userData.surf = id === 1 ? 0 : surfL - REF; m.renderOrder = 2; scene.add(m); return m; });
 
 // ---------- brooks: ribbons draped on the ground ----------
-const brookMat = new THREE.MeshPhongMaterial({ color: 0x4f8aa6, specular: 0x9fc6d8, shininess: 50, side: THREE.DoubleSide });
+const brookMat = clip(new THREE.MeshPhongMaterial({ color: 0x4f8aa6, specular: 0x9fc6d8, shininess: 50, side: THREE.DoubleSide }));
 const brooks = M.streams.map(s => { const pts = s.pts.map(([x, y]) => [x, -y]), wdt = s.name.includes('connecting') ? 7 : 6;
   const g = new THREE.BufferGeometry(), P = new Float32Array(pts.length * 6), I = [];
   for (let k = 0; k < pts.length - 1; k++) { const a = 2 * k; I.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
@@ -193,8 +224,7 @@ for (let k = 0; k < N; k++) { const f = FOREST[cover[k]]; if (!f || lake[k]) con
     (rnd() < f[0] ? conifers : broad).push(rec); } }
 const coneG = new THREE.ConeGeometry(0.22, 1, 6, 1, true); coneG.translate(0, 0.5, 0);
 const crownG = new THREE.IcosahedronGeometry(0.3, 0); crownG.scale(1, 1.15, 1); crownG.translate(0, 0.62, 0);
-const treeMat = new THREE.MeshLambertMaterial({ vertexColors: false });
-const coneM = new THREE.InstancedMesh(coneG, treeMat, conifers.length), crownM = new THREE.InstancedMesh(crownG, treeMat.clone(), broad.length);
+const coneM = new THREE.InstancedMesh(coneG, clip(new THREE.MeshLambertMaterial()), conifers.length), crownM = new THREE.InstancedMesh(crownG, clip(new THREE.MeshLambertMaterial()), broad.length);
 scene.add(coneM, crownM);
 const dummy = new THREE.Object3D();
 function placeTrees(ex, season) { const ts = Math.min(1.6, 0.6 + ex * 0.2);   // trees grow a little with the exaggeration so they still read
@@ -203,7 +233,7 @@ function placeTrees(ex, season) { const ts = Math.min(1.6, 0.6 + ex * 0.2);   //
       const s = t.h * ts * (bare ? 0.85 : 1); dummy.scale.set(s, s, s); dummy.rotation.y = t.r * 6.28; dummy.updateMatrix(); mesh.setMatrixAt(n, dummy.matrix); });
     mesh.instanceMatrix.needsUpdate = true; } }
 
-// ---------- colours by season ----------
+// ---------- colours: seasons, the aerial photo, the depth chart ----------
 const hex = h => new THREE.Color(h);
 const PAL = {
   summer: { evergreen: '#2c4a33', mixed: '#42603a', deciduous: '#577f3a', woody_wet: '#4a5a37', shrub_wet: '#6f7a40', emergent_wet: '#8f9a55', shrub: '#6d7a45', grass: '#9aa766', pasture: '#a9b062', crops: '#b39d5c',
@@ -215,15 +245,20 @@ const PAL = {
 };
 const FALL_LEAF = ['#c2402a', '#d9892c', '#e0b23a', '#a8342a', '#cf6a2c'].map(hex);
 // the bed: cobble and boulder in the shallows (MDIFW: mostly rocky shores), muck in the basins
-const bedColour = (d, c) => { const sh = hex('#857d68'), mid = hex('#6a5d45'), deep = hex('#45392b'), t = Math.min(1, d / 5.5);
+const bedColour = d => { const sh = hex('#857d68'), mid = hex('#6a5d45'), deep = hex('#45392b'), t = Math.min(1, d / 5.5);
   return t < 0.35 ? sh.clone().lerp(mid, t / 0.35) : mid.clone().lerp(deep, (t - 0.35) / 0.65); };
-let season = 'summer';
+// a fishing-chart depth ramp in 3-ft bands
+const BANDS = [[3, '#d9eef4'], [6, '#b6dbe9'], [9, '#8ec4dc'], [12, '#62a6c9'], [15, '#3d84ae'], [99, '#24608c']];
+const bandColour = ft => hex(BANDS.find(b => ft < b[0])[1]);
+let season = 'summer', look = 'map';
 function colour() {
   const pal = { ...PAL.summer, ...(PAL[season] || {}) }, cc = {}; for (const k of M.classes) cc[C[k]] = hex(pal[k] || '#888');
-  const tmp = new THREE.Color(); let r2 = 777; const r = () => ((r2 = (r2 * 16807) % 2147483647) / 2147483647);
+  const tmp = new THREE.Color(), white = hex('#ffffff'); let r2 = 777; const r = () => ((r2 = (r2 * 16807) % 2147483647) / 2147483647);
   for (let k = 0; k < N; k++) {
-    if (lake[k]) tmp.copy(bedColour(depth[k] / 100));
+    if (look === 'photo') tmp.copy(white);
+    else if (lake[k]) tmp.copy(look === 'chart' ? bandColour(depth[k] / 100 / FT) : bedColour(depth[k] / 100));
     else { tmp.copy(cc[cover[k]]); if (season === 'fall' && ((cover[k] === C.deciduous && r() < 0.8) || (cover[k] === C.mixed && r() < 0.35))) tmp.lerp(FALL_LEAF[(r() * 5) | 0], 0.45);
+      if (look === 'chart') tmp.lerp(hex('#d7d4c6'), 0.55);   // the land goes quiet on the chart
       const sl = (hgt[Math.min(N - 1, k + 1)] - hgt[Math.max(0, k - 1)]) * 0.02; tmp.offsetHSL(0, 0, Math.max(-0.06, Math.min(0.06, sl))); }
     tcol[k * 3] = tmp.r; tcol[k * 3 + 1] = tmp.g; tcol[k * 3 + 2] = tmp.b; }
   tg.attributes.color.needsUpdate = true;
@@ -232,30 +267,86 @@ function colour() {
   broad.forEach((t, n) => { let c = season === 'winter' ? hex('#7d7570') : season === 'fall' ? FALL_LEAF[(t.r * 5) | 0].clone() : season === 'spring' ? hex('#7fa648') : hex('#4e7a34');
     if (season === 'fall' && t.r > 0.8) c = hex('#5a7a34'); crownM.setColorAt(n, c.offsetHSL(0, 0, (t.r - 0.5) * 0.06)); });
   coneM.instanceColor.needsUpdate = true; crownM.instanceColor.needsUpdate = true;
-  for (const m of lakes) { const mt = m.material; if (season === 'winter') { mt.color.set(0xdfe8ee); mt.opacity = 0.96; mt.shininess = 15; } else { mt.color.set(0x3f7f9c); mt.opacity = 0.62; mt.shininess = 70; } mt.needsUpdate = true; }
+  const iced = season === 'winter' && look !== 'chart';
+  for (const m of lakes) { const mt = m.material; if (iced) { mt.color.set(0xdfe8ee); mt.opacity = 0.96; mt.shininess = 15; } else { mt.color.set(0x3a6670); mt.opacity = 0.62; mt.shininess = 70; } mt.needsUpdate = true; }
   brookMat.color.set(season === 'winter' ? 0xcfdbe2 : 0x4f8aa6);
-  scene.fog.color.set(season === 'winter' ? 0xdfe5e8 : season === 'fall' ? 0xd5d2c4 : 0xc8d4d4);
+  airFog.color.set(season === 'winter' ? 0xdfe5e8 : season === 'fall' ? 0xd5d2c4 : 0xc8d4d4);
+  for (const m of lakes) m.visible = $('t-water').checked && look !== 'chart';
+  contours.visible = look === 'chart';
+  legend();
 }
 
-// ---------- the sim's slice: a vertical curtain along the path (water above the bed, soil below) ----------
+// ---------- depth contours every 2 ft (marching squares over each lake's bed) ----------
+const segs = [];   // [x1, z1, h1, x2, z2, h2, major]
+{ const dft = k => lake[k] ? depth[k] / 100 / FT : 0;
+  for (let lev = 2; lev <= 18; lev += 2) for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) {
+    const k0 = j * NX + i, ks = [k0, k0 + 1, k0 + NX + 1, k0 + NX]; if (!ks.some(k => lake[k])) continue;
+    const v = ks.map(dft), P = [[cx(i), cz(j)], [cx(i + 1), cz(j)], [cx(i + 1), cz(j + 1)], [cx(i), cz(j + 1)]], pts = [];
+    for (let e = 0; e < 4; e++) { const a = e, b = (e + 1) % 4; if ((v[a] >= lev) !== (v[b] >= lev)) { const t = (lev - v[a]) / (v[b] - v[a]);
+      const x = P[a][0] + (P[b][0] - P[a][0]) * t, z = P[a][1] + (P[b][1] - P[a][1]) * t; pts.push([x, z]); } }
+    const sv = ks.find(k => lake[k]), s = surfOf(sv);
+    for (let p = 0; p + 1 < pts.length; p += 2) segs.push([pts[p][0], pts[p][1], s - lev * FT, pts[p + 1][0], pts[p + 1][1], s - lev * FT, lev % 6 === 0]); } }
+const cpos = new Float32Array(segs.length * 6), ccol = new Float32Array(segs.length * 6);
+const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.BufferAttribute(cpos, 3)); cg.setAttribute('color', new THREE.BufferAttribute(ccol, 3));
+segs.forEach((s, n) => { const c = s[6] ? hex('#0d2f45') : hex('#2d607e'); ccol.set([c.r, c.g, c.b, c.r, c.g, c.b], n * 6); });
+const contours = new THREE.LineSegments(cg, clip(new THREE.LineBasicMaterial({ vertexColors: true }))); contours.visible = false; scene.add(contours);
+function placeContours(ex) { segs.forEach((s, n) => cpos.set([s[0], s[2] * ex + 0.15, s[1], s[3], s[5] * ex + 0.15, s[4]], n * 6)); cg.attributes.position.needsUpdate = true; }
+
+// ---------- the sim's slice: a dashed survey line lying on the water and the ground ----------
 const path = M.path.map(([x, y]) => [x, -y]), slicePts = [];
 for (let k = 0; k < path.length - 1; k++) { const [ax, az] = path[k], [bx, bz] = path[k + 1], L = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(L / 20));
   for (let t = 0; t < n; t++) slicePts.push([ax + (bx - ax) * t / n, az + (bz - az) * t / n]); }
 slicePts.push(path[path.length - 1]);
-// drawn as a dashed survey line lying on the water and the ground (a 2-D sim of this line is what the strip below compares)
 const sliceG = new THREE.BufferGeometry(), SP = new Float32Array(slicePts.length * 2 * 3), SC = new Float32Array(slicePts.length * 2 * 3), SI = [];
 for (let k = 0; k < slicePts.length - 1; k++) { const a = 2 * k; SI.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
 sliceG.setIndex(SI); sliceG.setAttribute('position', new THREE.BufferAttribute(SP, 3)); sliceG.setAttribute('color', new THREE.BufferAttribute(SC, 3));
-const slice = new THREE.Mesh(sliceG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthWrite: false }));
+const slice = new THREE.Mesh(sliceG, clip(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthWrite: false })));
 slice.renderOrder = 3; scene.add(slice);
-const sliceLine = slice;   // (one object for the toggle)
 function placeSlice(ex) { const a1 = hex('#e0a94e'), a2 = hex('#f6e2b8'), hw = 9;
-  slicePts.forEach(([x, z], k) => { const c = cellAt(x, z), lk = lake[c], y = (lk ? (lk === 1 ? 0 : surfL - REF) : hgt[c]) * ex + 1.5;
+  slicePts.forEach(([x, z], k) => { const c = cellAt(x, z), y = (lake[c] ? surfOf(c) : hgt[c]) * ex + 1.5;
     const [x2, z2] = slicePts[Math.min(k + 1, slicePts.length - 1)], [x0, z0] = slicePts[Math.max(k - 1, 0)];
     let dx = x2 - x0, dz = z2 - z0; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
     SP.set([x - dz * hw, y, z + dx * hw, x + dz * hw, y, z - dx * hw], k * 6);
     const col = ((k / 5) | 0) % 2 ? a1 : a2; SC.set([col.r, col.g, col.b, col.r, col.g, col.b], k * 6); });   // 100-m dashes
   sliceG.attributes.position.needsUpdate = true; sliceG.attributes.color.needsUpdate = true; }
+
+// ---------- the cut-away: everything south of the cut is removed; the section face shows soil and water ----------
+const soilG = new THREE.BufferGeometry(), watG = new THREE.BufferGeometry();
+const soilFace = new THREE.Mesh(soilG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+const waterFace = new THREE.Mesh(watG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.82, depthWrite: false }));
+waterFace.renderOrder = 4; soilFace.visible = waterFace.visible = false; scene.add(soilFace, waterFace);
+let cutJ = 0;
+function buildCut(ex) {
+  const j = cutJ, z = cz(j) - 0.05, row = []; let lo = Infinity;
+  for (let i = 0; i < NX; i++) { const k = j * NX + i; row.push(k); lo = Math.min(lo, hgt[k]); }
+  const base = (lo - 14) * ex, sp = [], sc = [], wp = [], wc = [];
+  const organic = hex('#3c2e22'), till = hex('#7b6c5a'), muck = hex('#2f2a22'), wTop = hex('#4f8fa8'), wBot = hex('#1e4652');
+  const quad = (P, Cc, x0, y0a, y0b, x1, y1a, y1b, ca, cb) => {   // a vertical quad between two columns: top y·a, bottom y·b
+    P.push(x0, y0a, z, x0, y0b, z, x1, y1a, z, x1, y1a, z, x0, y0b, z, x1, y1b, z);
+    for (const c of [ca, cb, ca, ca, cb, cb]) Cc.push(c.r, c.g, c.b); };
+  for (let n = 0; n < NX - 1; n++) {
+    const k0 = row[n], k1 = row[n + 1], x0 = cx(n), x1 = cx(n + 1), t0 = hgt[k0] * ex, t1 = hgt[k1] * ex;
+    const topC = lake[k0] ? muck : organic;
+    const s0 = Math.min(t0, base + (t0 - base) * 0.92), s1 = Math.min(t1, base + (t1 - base) * 0.92);   // a dark topsoil / lake-muck band
+    quad(sp, sc, x0, t0, s0, x1, t1, s1, topC, topC);
+    quad(sp, sc, x0, s0, base, x1, s1, base, till, till.clone().multiplyScalar(0.7));
+    if (lake[k0] && lake[k1]) { const w0 = surfOf(k0) * ex, w1 = surfOf(k1) * ex; quad(wp, wc, x0, w0, t0, x1, w1, t1, wTop, wBot); }
+  }
+  soilG.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); soilG.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
+  watG.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3)); watG.setAttribute('color', new THREE.Float32BufferAttribute(wc, 3));
+  soilG.computeBoundingSphere(); watG.computeBoundingSphere();
+  // which water the cut crosses, and how deep it is there
+  let lk = 0, dmax = 0; for (const k of row) if (lake[k]) { lk = lake[k]; dmax = Math.max(dmax, depth[k] / 100); }
+  const fromSouth = (H / 2 - cz(j)) / 1000;
+  $('cutv').textContent = lk ? `${lk === 1 ? 'Upper' : 'Lower'} lake · deepest ${(dmax / FT).toFixed(0)} ft (${dmax.toFixed(1)} m) here` : `${fromSouth.toFixed(1)} km from the south edge`;
+}
+function setCut(on) {
+  cutOn = on; const s = +$('cutpos').value / 1000; cutJ = Math.min(NY - 1, Math.max(0, Math.round((1 - s) * (NY - 1))));
+  cut.constant = cz(cutJ);
+  for (const m of clipMats) { m.clippingPlanes = on ? [cut] : null; m.needsUpdate = true; }
+  soilFace.visible = waterFace.visible = on; $('cutpos').disabled = !on;
+  if (on) buildCut(ex); else $('cutv').textContent = '—';
+}
 
 // ---------- apply the vertical exaggeration ----------
 let ex = 4;
@@ -263,26 +354,33 @@ function applyEx() {
   for (let k = 0; k < N; k++) tpos[k * 3 + 1] = hgt[k] * ex;
   tg.attributes.position.needsUpdate = true; tg.computeVertexNormals();
   for (const m of lakes) m.position.y = m.userData.surf * ex + 0.05;
-  placeBrooks(ex); placeTrees(ex, season); placeSlice(ex); $('exv').textContent = '×' + ex;
+  placeBrooks(ex); placeTrees(ex, season); placeSlice(ex); placeContours(ex); if (cutOn) buildCut(ex); $('exv').textContent = '×' + ex;
 }
 
-// ---------- labels (USGS convention: water names blue italic, land upright) ----------
+// ---------- labels (USGS convention: water names blue italic, land upright), field notes, 1949 soundings ----------
 const labelsEl = $('labels'), labels = [];
-function addLabel(t, s, x, y, z, cls) { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = '<b></b>' + (s ? '<small></small>' : '');
-  el.querySelector('b').textContent = t; if (s) el.querySelector('small').textContent = s; labelsEl.appendChild(el); labels.push({ el, x, y, z, minor: /minor/.test(cls) }); }
+function addLabel(t, s, x, y, z, cls, kind = 'name') { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = '<b></b>' + (s ? '<small></small>' : '');
+  el.querySelector('b').textContent = t; if (s) el.querySelector('small').textContent = s; labelsEl.appendChild(el); labels.push({ el, x, y, z, kind, minor: /minor/.test(cls) }); }
 for (const l of M.labels) { const minor = /deepest|beach|inflow|outlet/.test(l.t), land = /beach/.test(l.t);
   addLabel(l.t, l.s, l.xy[0], l.z - REF, -l.xy[1], (land ? 'land' : 'water') + (minor ? ' minor' : '')); }
 addLabel('Hot Brook', 'flows north · Upper → Lower', path[0][0], 2, path[0][1], 'water minor');
+for (const n of M.notes || []) addLabel(n.t, n.s, n.xy[0], Math.max(0, n.z - REF) + 1, -n.xy[1], 'note', 'note');
+for (const [name, list] of Object.entries(M.soundings || {})) for (const [x, y, d] of list) {
+  const k = cellAt(x, -y); addLabel(String(Math.round(d / FT)), '', x, (lake[k] ? surfOf(k) : 0) - d, -y, 'snd', 'snd'); }
 const v3 = new THREE.Vector3();
-function placeLabels() { const w = canvas.clientWidth, h = canvas.clientHeight, show = $('t-labels').checked;
-  const far = camera.position.distanceTo(controls.target) > 7000;   // the overview keeps only the lake names
-  for (const L of labels) { v3.set(L.x, L.y * ex + 25, L.z).project(camera);
-    const vis = show && !(far && L.minor) && v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
+function placeLabels(under) { const w = canvas.clientWidth, h = canvas.clientHeight, show = $('t-labels').checked, notes = $('t-notes').checked;
+  const dist = camera.position.distanceTo(controls.target), far = dist > 7000, chart = look === 'chart';
+  for (const L of labels) {
+    let vis = L.kind === 'name' ? show && !(far && L.minor) : L.kind === 'note' ? notes && dist < 9000 : chart && dist < 4500;
+    if (under) vis = L.kind === 'note' && notes && Math.hypot(L.x - camera.position.x, L.z - camera.position.z) < 300;   // underwater: only what's near
+    if (cutOn && L.z > cut.constant + 1) vis = false;
+    if (vis) { v3.set(L.x, L.y * ex + (L.kind === 'snd' ? 0.3 : 25), L.z).project(camera); vis = v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05; }
     L.el.hidden = !vis; if (vis) { L.el.style.left = ((v3.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v3.y) / 2 * h) + 'px'; } } }
 
 // ---------- views ----------
 const centre = id => { let sx = 0, sz = 0, n = 0; for (let k = 0; k < N; k += 7) if (lake[k] === id) { sx += cx(k % NX); sz += cz((k / NX) | 0); n++; } return [sx / n, sz / n]; };
 const cU = centre(1), cL = centre(2), conn = M.streams.find(s => s.name.includes('connecting')), cb = conn.pts[(conn.pts.length / 2) | 0];
+const cove = (M.notes || []).find(n => /cove/.test(n.t)), dv = cove ? [cove.xy[0], -cove.xy[1]] : cU;
 const VIEWS = {
   all: { t: [0, 0, -300], p: [7600, 7200, 9800] },
   upper: { t: [cU[0], 0, cU[1]], p: [cU[0] + 2600, 2300, cU[1] + 3000] },
@@ -290,10 +388,18 @@ const VIEWS = {
   lower: { t: [cL[0], 0, cL[1]], p: [cL[0] - 2700, 2200, cL[1] - 2600] },
   slice: { t: [path[(path.length * 0.45) | 0][0], 0, path[(path.length * 0.45) | 0][1]], p: [path[0][0] + 1500, 900, path[0][1] + 2600] },
 };
-let fly = null;
-function go(name) { const v = VIEWS[name]; fly = { t0: performance.now(), dur: matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 1400,
+let fly = null, diving = false;
+function go(name, v = VIEWS[name]) { diving = name === 'dive'; controls.maxPolarAngle = diving ? Math.PI * 0.98 : Math.PI * 0.49;
+  fly = { t0: performance.now(), dur: matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 1400,
   fp: camera.position.clone(), ft: controls.target.clone(), tp: new THREE.Vector3(...v.p), tt: new THREE.Vector3(...v.t) };
   for (const b of document.querySelectorAll('#views button')) b.setAttribute('aria-pressed', b.id === 'v-' + name ? 'true' : 'false'); }
+function dive() {   // into Upper, in the cove the angler named, at mid-depth, looking along the bed
+  const k = cellAt(dv[0], dv[1]), d = Math.max(1.2, depth[k] / 100), y = (-d * 0.55) * ex;
+  go('dive', { t: [dv[0], (-d * 0.8) * ex, dv[1] - 30], p: [dv[0], y, dv[1] + 12] });
+}
+function cutView() { const z = cut.constant, xs = []; for (let i = 0; i < NX; i++) if (lake[cutJ * NX + i]) xs.push(cx(i));
+  const x = xs.length ? (xs[0] + xs[xs.length - 1]) / 2 : 0, span = xs.length ? xs[xs.length - 1] - xs[0] + 800 : 3000;
+  go('cut', { t: [x, -3 * ex, z], p: [x + span * 0.08, span * 0.18 + 60, z + span * 0.95] }); }
 camera.position.set(...VIEWS.all.p); controls.target.set(...VIEWS.all.t);
 
 // ---------- cross-section strip: the real slice (6.5 km) over the sim's (49 m), same depth scale ----------
@@ -306,7 +412,6 @@ function drawProfile() {
   g.font = '11px ' + css.getPropertyValue('--f-ui'); g.textBaseline = 'middle';
   for (let r = 0; r < 2; r++) { g.strokeStyle = 'rgba(231,236,230,0.10)'; g.fillStyle = muted;
     for (const m of [0, -5, -10, -15]) { g.beginPath(); g.moveTo(left, Y(r, m)); g.lineTo(right, Y(r, m)); g.stroke(); g.fillText((m === 0 ? '0' : m) + ' m', 6, Y(r, m)); } }
-  // real
   const P = M.profile, L = P[P.length - 1][0], X = d => left + d / L * (right - left);
   g.beginPath(); g.moveTo(X(0), Y(0, -dn)); for (const [d, dep, gr] of P) g.lineTo(X(d), Y(0, dep > 0 ? -dep : Math.max(-dn, Math.min(up, gr)))); g.lineTo(X(L), Y(0, -dn)); g.closePath(); g.fillStyle = soil; g.fill();
   g.fillStyle = water; g.beginPath();   // each lake as one filled shape (no seams between samples)
@@ -316,16 +421,15 @@ function drawProfile() {
     if (dep > 0 && !(k + 1 < P.length && P[k + 1][1] > 0)) { g.lineTo(X(d), Y(0, 0)); g.closePath(); } }
   g.fill();
   g.fillStyle = ink; g.font = '600 12px ' + css.getPropertyValue('--f-ui');
-  g.fillText('Real: Upper → Hot Brook → Lower, 6.5 km', left + 6, top[0] + 10);
+  g.fillText('Real: Upper → Hot Brook → Lower, 6.5 km (1949 soundings)', left + 6, top[0] + 10);
   g.font = 'italic 12px ' + css.getPropertyValue('--f-water'); g.fillStyle = water;
   const mid = (a, b) => (a + b) / 2, upEnd = P.findIndex(p => p[1] <= 0 && p[0] > 300), loStart = P.findIndex((p, k) => k > upEnd && p[1] > 0);
-  if (upEnd > 0) g.fillText('Upper Hot Brook Lake · 5.5 m', X(mid(0, P[upEnd][0])) - 70, Y(0, -7.5));
-  if (loStart > 0) g.fillText('Lower Hot Brook Lake · 4.0 m', X(mid(P[loStart][0], L)) - 70, Y(0, -7.5));
-  // sim
+  if (upEnd > 0) g.fillText('Upper Hot Brook Lake · 18 ft', X(mid(0, P[upEnd][0])) - 70, Y(0, -8));
+  if (loStart > 0) g.fillText('Lower Hot Brook Lake · 13 ft', X(mid(P[loStart][0], L)) - 70, Y(0, -8));
   const S = M.sim.profile, SL = M.sim.widthM, XS = d => left + d / SL * (right - left);
   g.beginPath(); g.moveTo(XS(0), Y(1, -dn)); for (const [d, dep] of S) g.lineTo(XS(d), Y(1, -dep)); g.lineTo(XS(SL), Y(1, -dn)); g.closePath(); g.fillStyle = soil; g.fill();
   g.beginPath(); g.moveTo(XS(0), Y(1, 0)); for (const [d, dep] of S) g.lineTo(XS(d), Y(1, -dep)); g.lineTo(XS(SL), Y(1, 0)); g.closePath(); g.fillStyle = water; g.globalAlpha = 0.85; g.fill(); g.globalAlpha = 1;
-  g.fillStyle = ink; g.font = '600 12px ' + css.getPropertyValue('--f-ui'); g.fillText('Sim now: lake → stream → pond, ' + SL.toFixed(0) + ' m wide', left + 6, top[1] + 10);
+  g.fillStyle = ink; g.font = '600 12px ' + css.getPropertyValue('--f-ui'); g.fillText('Sim today (to be replaced): lake → stream → pond, ' + SL.toFixed(0) + ' m wide', left + 6, top[1] + 10);
   g.font = 'italic 12px ' + css.getPropertyValue('--f-water'); g.fillStyle = '#0d1315';
   g.fillText('lake · 14.4 m', XS(M.sim.lakeW * 0.42), Y(1, -6)); g.fillStyle = accent;
   g.fillText('pond · 4.0 m', XS(M.sim.lakeW + M.sim.streamW + M.sim.pondW * 0.4), Y(1, -6.6));
@@ -334,17 +438,30 @@ function drawProfile() {
 
 // ---------- legend, sources ----------
 const LEG = [['Spruce–fir', 'evergreen'], ['Mixed forest', 'mixed'], ['Hardwoods', 'deciduous'], ['Wooded swamp', 'woody_wet'], ['Shrub swamp', 'shrub_wet'], ['Marsh / sedge', 'emergent_wet'], ['Field / pasture', 'pasture'], ['Camps / roads', 'dev_open'], ['Rocky shore', 'rock_shore'], ['Sand beach', 'beach']];
-$('legend').innerHTML = LEG.map(([t, k]) => `<span><i data-k="${k}"></i>${t}</span>`).join('');
-function legendColours() { const pal = { ...PAL.summer, ...(PAL[season] || {}) }; for (const i of document.querySelectorAll('#legend i')) i.style.background = pal[i.dataset.k]; }
+function legend() {
+  const el = $('legend');
+  if (look === 'chart') { $('legtitle').textContent = 'Water depth (feet) · contours every 2 ft';
+    let lo = 0; el.innerHTML = BANDS.map(([hi, c]) => { const t = hi > 50 ? `${lo}+ ft` : `${lo}–${hi} ft`; lo = hi; return `<span><i style="background:${c}"></i>${t}</span>`; }).join(''); }
+  else if (look === 'photo') { $('legtitle').textContent = 'Aerial photo'; el.innerHTML = '<span>USDA NAIP, summer, about 3 m per pixel</span>'; }
+  else { $('legtitle').textContent = 'Ground cover'; const pal = { ...PAL.summer, ...(PAL[season] || {}) };
+    el.innerHTML = LEG.map(([t, k]) => `<span><i style="background:${pal[k]}"></i>${t}</span>`).join(''); }
+  $('lookhint').textContent = look === 'chart' ? 'Numbers are the 1949 soundings in feet (zoom in to see them).' : look === 'photo' ? 'The photo is a summer image; the season buttons change the water and ice only.' : '';
+}
 $('sources').innerHTML = meta.sources.map(s => `<li>${s.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</li>`).join('');
 
 // ---------- UI ----------
-for (const b of document.querySelectorAll('#views button')) b.onclick = () => go(b.id.slice(2));
-for (const b of document.querySelectorAll('#seasons button')) b.onclick = () => { season = b.id.slice(2); for (const o of document.querySelectorAll('#seasons button')) o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); colour(); placeTrees(ex, season); legendColours(); };
+for (const b of document.querySelectorAll('#views button')) b.onclick = () => b.id === 'v-dive' ? dive() : go(b.id.slice(2));
+for (const b of document.querySelectorAll('#seasons button')) b.onclick = () => { season = b.id.slice(2); for (const o of document.querySelectorAll('#seasons button')) o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); colour(); placeTrees(ex, season); };
+for (const b of document.querySelectorAll('#looks button')) b.onclick = async () => { look = b.id.slice(2); for (const o of document.querySelectorAll('#looks button')) o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+  if (look === 'photo') { const t = await loadPhoto(); if (look === 'photo') { terrainMat.map = t; terrainMat.needsUpdate = true; } } else if (terrainMat.map) { terrainMat.map = null; terrainMat.needsUpdate = true; }
+  colour(); };
 let exT = 0; $('exag').oninput = e => { ex = +e.target.value; $('exv').textContent = '×' + ex; clearTimeout(exT); exT = setTimeout(applyEx, 60); };
-$('t-water').onchange = e => { for (const m of lakes) m.visible = e.target.checked; };
+$('t-water').onchange = () => colour();
 $('t-trees').onchange = e => { coneM.visible = crownM.visible = e.target.checked; };
-$('t-slice').onchange = e => { slice.visible = sliceLine.visible = e.target.checked; };
+$('t-slice').onchange = e => { slice.visible = e.target.checked; };
+$('t-cut').onchange = e => { setCut(e.target.checked); if (e.target.checked) { if (ex < 8) { ex = 8; $('exag').value = 8; applyEx(); } cutView(); } };
+let cutT = 0; $('cutpos').oninput = () => { clearTimeout(cutT); cutT = setTimeout(() => setCut(true), 30); };
+{ const s = 1 - (cU[1] + H / 2) / H; $('cutpos').value = Math.round(s * 1000); }   // start the cut across Upper's middle
 
 function resize() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); drawProfile(); }
 addEventListener('resize', resize);
@@ -352,10 +469,14 @@ const needle = $('needle'), sph = new THREE.Spherical();
 function frame(now) {
   if (fly) { const t = Math.min(1, (now - fly.t0) / fly.dur), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     camera.position.lerpVectors(fly.fp, fly.tp, e); controls.target.lerpVectors(fly.ft, fly.tt, e); if (t >= 1) fly = null; }
-  controls.update(); renderer.render(scene, camera); placeLabels();
+  controls.update();
+  // under the water? murky tea-coloured fog and a dark ceiling of surface instead of sky
+  const k = cellAt(camera.position.x, camera.position.z), under = !!lake[k] && camera.position.y < surfOf(k) * ex;
+  scene.fog = under ? waterFog : airFog; renderer.setClearColor(under ? 0x24443b : 0x000000, under ? 1 : 0); $('uw').hidden = !under;
+  renderer.render(scene, camera); placeLabels(under);
   sph.setFromVector3(v3.copy(camera.position).sub(controls.target)); needle.setAttribute('transform', `rotate(${(sph.theta * 180 / Math.PI).toFixed(1)})`);
   requestAnimationFrame(frame);
 }
-colour(); applyEx(); legendColours(); resize(); $('busy').hidden = true; requestAnimationFrame(frame);
+colour(); applyEx(); resize(); $('busy').hidden = true; requestAnimationFrame(frame);
 })().catch(err => { const b = document.getElementById('busy'); b.hidden = false; b.textContent = 'The model could not load: ' + err.message; });
 </script>

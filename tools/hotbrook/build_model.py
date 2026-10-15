@@ -115,6 +115,32 @@ def bathy(mask, dmax, dmean):
     return z, dd
 print('Upper:'); zu, du = bathy(upper, 5.5, 3.35)
 print('Lower:'); zl, dl = bathy(lower, 4.0, 2.74)
+# MEASURED lake beds where the 1949 MDIFW soundings are available (soundings.py → soundings.json). Depth = a shore taper
+# f(d) = 1 − e^(−d/λ) of the distance d from today's shoreline (so the bed meets the water's edge at 0) × a basin depth g
+# spread between the soundings by inverse-distance weighting, g = sounding / f(d at the sounding). Exact at every sounding;
+# the taper keeps the shallows. (A harmonic/Laplace fill was tried first: point soundings barely pull against a 0 shore in
+# 2-D, so it sagged to a 1.9 m mean against the published 3.35 m.)
+LAM_SHORE = 50.0   # m: the shore taper (soundings 30–60 m off the beach are already 2–3 m: a fairly steep first slope)
+def from_soundings(mask, dshore, pts):
+    P = np.array([p for p in pts if 0 <= int((p[0] + W_M / 2) / CELL) < NX and 0 <= int((H_M / 2 - p[1]) / CELL) < NY])
+    pi_ = ((P[:, 0] + W_M / 2) / CELL).astype(int); pj = ((H_M / 2 - P[:, 1]) / CELL).astype(int)
+    f = lambda d: 1 - np.exp(-np.maximum(d, 0) / LAM_SHORE)
+    ds = np.maximum(dshore[pj, pi_], 25.0)                     # (a sounding the map fit put on land or the beach: ≥ 25 m out)
+    g = P[:, 2] / f(ds)
+    jj_, ii_ = np.nonzero(mask); X = (ii_ + 0.5) * CELL - W_M / 2; Y = H_M / 2 - (jj_ + 0.5) * CELL
+    D2 = (X[:, None] - P[None, :, 0]) ** 2 + (Y[:, None] - P[None, :, 1]) ** 2
+    w = 1 / (D2 + 15.0 ** 2); k = np.argsort(D2, 1)[:, 10:]; np.put_along_axis(w, k, 0, 1)   # IDW, power 2, 10 nearest
+    gz = (w * g[None, :]).sum(1) / w.sum(1)
+    z = np.zeros(mask.shape); z[jj_, ii_] = f(dshore[jj_, ii_]) * gz
+    print(f'  measured bed: {len(P)} soundings, mean {z[mask].mean():.2f} m, max {z[mask].max():.2f} m, '
+          f'area ≤ 1 m {100 * (z[mask] <= 1).mean():.0f} %, ≤ 3 m {100 * (z[mask] <= 3).mean():.0f} %')
+    return z
+bathy_src = 'approximated (distance from shore, fitted to the published mean and max)'
+if os.path.exists('soundings.json'):
+    snd = json.load(open('soundings.json'))
+    print('Upper (soundings):'); zu = from_soundings(upper, du, snd['upper']['soundings'])
+    print('Lower (soundings):'); zl = from_soundings(lower, dl, snd['lower']['soundings'])
+    bathy_src = 'measured: interpolated from the 1949 MDIFW soundings (83 Upper, 63 Lower), today\'s shoreline at 0'
 depth = zu + zl
 # lake surface elevations from the DEM (flat water) — the median over cells well inside each lake
 surf_u = float(np.median(elev[upper & (du > 60)])); surf_l = float(np.median(elev[lower & (dl > 60)]))
@@ -187,15 +213,38 @@ for s_ in streams:
     p = s_['pts'][len(s_['pts']) // 2]; labels.append({'t': s_['name'], 's': f"{s_['len']} m", 'xy': p, 'z': sample(ground, *p)})
 if len(bi): labels.append({'t': 'sandy beach', 's': '', 'xy': cxy(int(bj[keep].mean()), int(bi[keep].mean())), 'z': surf_u})
 
+# ---------- field notes (the human's first-hand observations), placed by landmark ----------
+def field_notes():
+    f = os.path.join(HERE, 'field_notes.json')
+    if not os.path.exists(f): return []
+    snd = json.load(open('soundings.json')) if os.path.exists('soundings.json') else {}
+    out = []
+    for n in json.load(open(f, encoding='utf-8')):
+        at = n['at']; xy = None
+        if 'stream' in at:
+            s_ = next((s for s in streams if at['stream'] in s['name']), None)
+            if s_:
+                pts = s_['pts']; seg = [math.dist(pts[k], pts[k + 1]) for k in range(len(pts) - 1)]; L = sum(seg); goal = L * at['f']; acc = 0
+                for k, d in enumerate(seg):
+                    if acc + d >= goal: t_ = (goal - acc) / (d or 1); xy = (pts[k][0] + (pts[k + 1][0] - pts[k][0]) * t_, pts[k][1] + (pts[k + 1][1] - pts[k][1]) * t_); break
+                    acc += d
+        elif 'map' in at and at['map'] in snd and 'affine' in snd[at['map']]:
+            M = np.array(snd[at['map']]['affine']); q = np.array([at['px'][0], -at['px'][1], 1.0]) @ M; xy = (float(q[0]), float(q[1]))
+        if xy: out.append({'t': n['t'], 's': n['s'], 'xy': [round(xy[0], 1), round(xy[1], 1)], 'z': round(sample(ground, *xy), 2)})
+    print('field notes placed', len(out))
+    return out
+
 # ---------- write ----------
 def b64(a): return base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 e0 = float(ground.min())
 model = {
     'meta': {'name': 'Hot Brook lakes, T8 R4 NBPP / Danforth, Maine', 'cell': CELL, 'nx': NX, 'ny': NY, 'w': W_M, 'h': H_M, 'lat0': LAT0, 'lon0': LON0,
-             'bbox': [Wl, S, E, N], 'surf': {'upper': surf_u, 'lower': surf_l}, 'e0': e0,
+             'bbox': [Wl, S, E, N], 'surf': {'upper': surf_u, 'lower': surf_l}, 'e0': e0, 'bathy': bathy_src,
              'sources': ['Lake outlines, brooks: © OpenStreetMap contributors (ODbL)', 'Elevation: USGS 3DEP via AWS Terrain Tiles (z14)',
                          'Wetlands: USFWS National Wetlands Inventory', 'Land cover: NLCD 2021 (MRLC)', 'Lake areas and depths: MDIFW lake surveys; Lakes of Maine (MIDAS 1076, 1072)',
-                         'Shore: MDIFW survey notes (mostly rocky; a large sandy beach on Upper\'s NE shore)']},
+                         'Shore: MDIFW survey notes (mostly rocky; a large sandy beach on Upper\'s NE shore)',
+                         'Lake beds: the 1949 MDIFW lake-survey soundings (revised 1965, 2004), digitised and fitted to today\'s shoreline',
+                         'Aerial photo: USDA NAIP via the USGS National Map (public domain)']},
     'classes': CLASSES,
     'elev_dm': b64(np.round((ground - e0) * 10).astype(np.uint16)),     # ground/water-surface elevation above e0, decimetres
     'depth_cm': b64(np.round(depth * 100).astype(np.uint16)),           # lake depth below the surface, cm (approximated bathymetry)
@@ -203,6 +252,8 @@ model = {
     'lake': b64((upper * 1 + lower * 2).astype(np.uint8)),
     'streams': [{'name': s_['name'], 'len': s_['len'], 'pts': [[round(x, 1), round(y, 1)] for x, y in s_['pts']]} for s_ in streams],
     'path': [[round(x, 1), round(y, 1)] for x, y in path], 'profile': prof, 'labels': [{**l, 'xy': [round(l['xy'][0], 1), round(l['xy'][1], 1)]} for l in labels],
+    'soundings': {k: v['soundings'] for k, v in (json.load(open('soundings.json')).items() if os.path.exists('soundings.json') else [])},
+    'notes': field_notes(),
 }
 json.dump(model, open('hotbrook_model.json', 'w'), separators=(',', ':'))
 print('wrote hotbrook_model.json', round(os.path.getsize('hotbrook_model.json') / 1e6, 2), 'MB')

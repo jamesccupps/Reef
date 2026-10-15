@@ -43,4 +43,20 @@ get('https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/rest/services/Wet
 get('https://www.mrlc.gov/geoserver/mrlc_display/NLCD_2021_Land_Cover_L48/wms', os.path.join(D, 'nlcd.png'),
     {'service': 'WMS', 'version': '1.1.1', 'request': 'GetMap', 'layers': 'NLCD_2021_Land_Cover_L48', 'styles': '', 'srs': 'EPSG:4326',
      'bbox': f'{W},{S},{E},{N}', 'width': 600, 'height': 1300, 'format': 'image/png'})
+# an aerial photo (USDA NAIP via the USGS National Map, public domain) for the model's photo layer, ~3.3 m/px (the service caps exports at 4000 px)
+get('https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage', os.path.join(D, 'naip.jpg'),
+    {'bbox': f'{W},{S},{E},{N}', 'bboxSR': 4326, 'imageSR': 4326, 'size': '1792,3906', 'format': 'jpg', 'compressionQuality': 82, 'f': 'image'})
+
+# the MDIFW lake-survey maps (1949, revised 1965/2004): page 2 of each PDF is the map with the depth soundings — the
+# scans are plain JPEG image streams, extracted without a PDF library
+import io, re
+from PIL import Image
+os.makedirs(os.path.join(D, 'ifw'), exist_ok=True)
+for name in ['upper', 'lower']:
+    pdf = os.path.join(D, 'ifw', f'hot_brook_lake_{name}.pdf')
+    get(f'https://www.maine.gov/ifw/docs/lake-survey-maps/washington/hot_brook_lake_{name}.pdf', pdf)
+    data = open(pdf, 'rb').read()
+    for n, m in enumerate(re.finditer(rb'<<([^<>]*?/Subtype/Image[^<>]*?)>>\s*stream\r?\n', data, re.S)):
+        L = int(re.search(rb'/Length (\d+)', m.group(1)).group(1))
+        Image.open(io.BytesIO(data[m.end(): m.end() + L])).save(os.path.join(D, 'ifw', f'{name}_p{n}.png'))
 print('fetched into', D)
