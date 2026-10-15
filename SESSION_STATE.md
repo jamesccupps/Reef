@@ -19,6 +19,18 @@ one fish's fate a coin toss).
 VALIDATION (census.mjs 1–3 × 3 yr → verify/census_4a_s*): every species persists; fish 84–156 kg/ha (inside Maine's 60–150 but
 one peak); white perch 21–55, pumpkinseed 21–160 (yearly recruit pulses), suckers spawn and recruit; SHINERS and YELLOW PERCH
 end at 3–6 on every seed (immigrants hold them) — the open problem.
+AUDIT (after 67640d8, seed 1; session scratchpad verify/deaths_4a_s1, ff_4a_s1, roster_perch_4a, roster_shiner_4a):
+ - YELLOW PERCH adults are fine: 11 mature ripe fish of both sexes in late April spawn 5× after ice-out. The YOUNG fail: year 1
+   hatched 11,196 → 12 alive by August, 0 recruits — ~9,400 'natural' (larval/juvenile M, worst while larvae stay small),
+   830 starved, ~960 eaten (white perch 455, perch 313); larval feeding p only 0.17–0.27 in May–June (cold-water match–mismatch).
+ - GOLDEN SHINERS: year 0 fine (~140 recruits); then eaten through autumn–winter mostly by WHITE PERCH (46 in 5 months) and perch,
+   + winter starvation → 10 left by June, mostly immature at 10–11 cm age 1. Year 1 larvae (~40,000 hatched) STARVE at 0.5 cm,
+   p 0.01–0.04 — they never find food (where are they spawned? the littoral? small-zooplankton/rotifer supply?).
+ - Adults grow too big for Maine: perch 35 cm at age 6.5 (Maine adults ~20 cm), white perch avg ~240–400 g (Maine stunts) →
+   many piscivorous white perch (Lpisc 15) — consistent with the sim's water still being eutrophic.
+NEXT (agreed order): (a) larval food — what a newly hatched shiner/perch school can eat where it is spawned (fry feeding in
+_stepFry/_feedFry; zooR = rotifers?; the littoral vs pelagic zooplankton; pumpkinseed fry succeed via their limnetic phase,
+pelagicFry); (b) step 4b mesotrophic coloured water (slows adult growth → stunted white perch, fewer piscivores).
 NEXT: (1) WHY SHINERS AND YELLOW PERCH DON'T REPLACE THEMSELVES — death audit by month and life stage (shiners fade steadily
 from Dec through spring: 54 → 13 by May; perch 21 → 3–6 over 3 yr), deaths.mjs/fryfate.mjs/roster.mjs; suspects: winter
 starvation/predation of small fish, white perch competition, perch spawning success (strands at 1–3.7 m; Maine perch spawn
