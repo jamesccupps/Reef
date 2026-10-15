@@ -55,6 +55,15 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      yellow perch and bullhead — FEATURES "Maine re-base, part 2"); the Maine calendar (a curve with a steep spring: ice-out
      ~Apr 23, 208 days < 10 °C, a 24 °C peak — prototyped), coloured mesotrophic water and under-ice O₂; stream behaviour;
      then multi-seed validation and merge.
+   - **The land, the shore and the air** (human, 2026-10-15: "how everything interacts in and out of the lake needs to be
+     taken into account, plants and animals and weather and everything"; "model the actual environment… first"): the world
+     gains real banks above the water, the air (sky, weather, the loon flying in, frogs on the bank, turtles hauling out, fish
+     rising to insects) and the catchment, as SIMULATED mechanisms, shown in a 2.5-D cut-away view. Done first: the real
+     environment as a 3-D model (`tools/hotbrook/`, artifact https://claude.ai/artifact/7e75Q4UqJJw4jEfx5gF7ye) and the research
+     (docs/reports/Maine lake shores and catchment.md — ranked mechanisms: catchment water and loads on a hydrograph, colour,
+     snow on the ice, shore predators as a depth × size × light risk, shore wood, insects across the waterline, leaves, shade,
+     wind, turtles, frogs…). OPEN (human to decide): the sim's lake as the real, shallow Upper Hot Brook (5.5 m max, never
+     stratifies) or a deep generic Maine lake. Then: design (four-season walk-through) → build in stages.
    - **Fish where anglers find them** (human, 2026-10-15: "perch holes and where to find bass… fishing and ice fishing"): a
      season-by-season, day-and-night audit of every species' habitat against field and angler knowledge (research notes in
      docs/research_notes/Seasonal fish habitat use/; probe `test/diag/habitat.mjs`) — perch schooling in the deep holes under

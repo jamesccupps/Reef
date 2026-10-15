@@ -5,7 +5,33 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, night) — MAINE CALENDAR + WINTER O₂ (re-base step 4a) DONE, branch `zoo-field` (save v32)
+## ▶ NOW (2026-10-15, late night) — THE REAL ENVIRONMENT FIRST (display → land/shore/air), branch `zoo-field` (save v32)
+
+The human, looking at the full-screen display: most of the screen is soil (the 3.4:1 landscape at true depths is ~19 % water
+on their ~21:9 ultrawide, 14 % at 16:9), there is nothing above the water, "maybe 3d or isometric". Mockups shown (scratchpad
+layout_*.jpg, diorama_mock_*.jpg): split-screen lake/stream/pond panels (~56 % water), a 2.5-D cut-away diorama (the live
+slice as the front face; a dock-level framing is mostly water). They REJECTED a painted backdrop: the shore, banks, land,
+air and weather must be real and interact with the lake (memory land-water-realism). Then: "model the actual environment
+to show me first… we need the simulation to work in it, but we need to know what the environment is first".
+DONE: (1) research — 5 notes in docs/research_notes/Maine lake shores and catchment/ + the report docs/reports/Maine lake
+shores and catchment.md (ranked mechanisms with parameters; sim settings that are off: turtle density 90–310/ha vs 2.6–16,
+hatchlings emerge in spring, FROG.BREED_T/TAD_DEV_FULL fit peepers not green frogs/bullfrogs, ICE.LIGHT_CUT 0.6 vs 1–12 %
+light under snowy ice, logs belong near shore in < 2 m; per-metre-of-shore fluxes need ÷10–14 for the slice's excess shore).
+(2) THE HOT BROOK MODEL — tools/hotbrook/ (fetch_data.py, build_model.py, viewer.html; data git-ignored), published as
+https://claude.ai/artifact/7e75Q4UqJJw4jEfx5gF7ye: OSM outlines, USGS 3DEP elevation, NWI wetlands, NLCD forest types,
+approximated lake beds (mean/max fitted), seasons, the sim's slice line and a real-vs-sim cross-section strip. Real numbers:
+Upper 360 ha, mean 3.35 m, max 5.5 m (18 ft); Lower 277 ha, mean 2.74, max 4.0; connecting brook 154 m, 0.6 m drop; inflow
+from the south, outlet north to Baskahegan Stream; mixed/hardwood forest, big wooded swamps, camps on Upper's S shore.
+(3) Display: zooplankton specks faint and sparse (none below 3× fit) — 48630ba ("all the white dots… hard to see the fish").
+OPEN QUESTION (asked, awaiting the human): the sim's lake = the real shallow Upper Hot Brook (no stratification; perch
+holes = its 15–18 ft spots) or keep a deep generic lake (14.4 m, stratifies) with Lower Hot Brook as the pond.
+NEXT: their answer → design the land/shore/air in the slice (banks at both ends, the 2.5-D view, catchment hydrograph, snow
+on ice, shore predators, wood, insects…) with a four-season walk-through, shown before coding. PARKED (still valid): larval
+food for shiner/perch; step 4b coloured water (now also mechanism #2 of the shore report); angler-realism audit; stream step 5.
+LOCAL SERVER: the human opens http://localhost:8000 in Chrome — it is down whenever the session's preview server is stopped;
+"Synapse Reef.bat" starts their own (serve.mjs is localhost-only by design; their LAN IP won't work).
+
+## (previous) NOW (2026-10-15, night) — MAINE CALENDAR + WINTER O₂ (re-base step 4a) DONE, branch `zoo-field` (save v32)
 
 DONE: step 3 committed (70a3fbd, the Maine fish; backup synapse-reef_20261015_1447_maine-fish.zip). STEP 4a (FEATURES "Maine
 re-base, part 3"): the MAINE CALENDAR — SEASON.TEMP_KNOTS → config `seasonalTemp(yf)` (monotone cubic, replaces the sine;
