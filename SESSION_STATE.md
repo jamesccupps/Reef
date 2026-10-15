@@ -23,9 +23,17 @@ approximated lake beds (mean/max fitted), seasons, the sim's slice line and a re
 Upper 360 ha, mean 3.35 m, max 5.5 m (18 ft); Lower 277 ha, mean 2.74, max 4.0; connecting brook 154 m, 0.6 m drop; inflow
 from the south, outlet north to Baskahegan Stream; mixed/hardwood forest, big wooded swamps, camps on Upper's S shore.
 (3) Display: zooplankton specks faint and sparse (none below 3× fit) — 48630ba ("all the white dots… hard to see the fish").
-OPEN QUESTION (asked, awaiting the human): the sim's lake = the real shallow Upper Hot Brook (no stratification; perch
-holes = its 15–18 ft spots) or keep a deep generic lake (14.4 m, stratifies) with Lower Hot Brook as the pond.
-NEXT: their answer → design the land/shore/air in the slice (banks at both ends, the 2.5-D view, catchment hydrograph, snow
+DECIDED (human): "lets just model the real upper and lower hotbrook lake" — the sim's lake becomes Upper Hot Brook
+(18 ft max, unstratified), the pond Lower Hot Brook (13 ft), the stream the 154 m connecting brook. The model now has
+MEASURED beds (tools/hotbrook/soundings.py: the 1949 MDIFW soundings, 83 + 63, scans fitted to today's shore, median
+misfit 18 m; means 3.05 / 2.67 m vs published 3.35 / 2.74), a depth chart, a cut-away, a dive and an aerial photo
+(artifact v2; 0703fbb). Field notes (human): pumpkinseed AND REDBREAST sunfish at the brook's upper-mouth pool, a
+shallow brook stretch and the cove between Upper's west points. MDIFW 1949 fish list adds fallfish, blacknose dace,
+banded killifish (and no pumpkinseed — the human's catches win). The human offered photos (shores, brook, weed beds,
+ice-fishing spots, fishing-app depth screenshots) — welcome when they come. The human asked if it stays the same
+realistic evolving sim "at a larger scale": yes — same engine in the real geometry; 637 ha can't hold a brain per fish,
+so the sim runs a section at real densities inside the full landscape (weather, inflow, ice, the brook can be whole).
+NEXT: design the land/shore/air in the slice (banks at both ends, the 2.5-D view, catchment hydrograph, snow
 on ice, shore predators, wood, insects…) with a four-season walk-through, shown before coding. PARKED (still valid): larval
 food for shiner/perch; step 4b coloured water (now also mechanism #2 of the shore report); angler-realism audit; stream step 5.
 LOCAL SERVER: the human opens http://localhost:8000 in Chrome — it is down whenever the session's preview server is stopped;
