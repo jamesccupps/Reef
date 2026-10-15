@@ -394,7 +394,7 @@ export const SP = {
       'energy', 'oxygen', 'O\u2082 gradient', 'wall', 'depth', 'light@depth', 'temp@depth'],
     diet: { plankton: true, plants: true, larva: true, insect: true, snail: true },
     maxSpeed: 42, accel: 50, maxTurn: 2.3,
-    matingCooldown: yr(0.06), pop: { start: 30, min: 4, max: 45 },   // K ≈ 300
+    matingCooldown: yr(0.06), pop: { start: 16, min: 4, max: 45 },   // K ≈ 300; ~110 founders ≈ 60 kg/ha (sunfish 50–150 kg/ha in Midwestern and New England lakes)
     tempOpt: 30, tempTol: 8, o2Crit: 0.32, spawnT: [20, 28], nestGuard: yr(0.03),   // warmwater littoral centrarchid; repeat spawner in summer, males guard nests; very fecund
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40, forage: 0.5 },   // mid littoral, hovers in weed beds
     sat: 82, lbase: 40, lrange: 22,
@@ -428,7 +428,7 @@ export const SP = {
       'school density', 'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true, cray: 0.08 },   // cray: the share of its strikes at a crayfish that land (perch take the small ones)
     maxSpeed: 46, accel: 54, drag: 1.4, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 18, min: 3, max: 28 },   // K ≈ 190
+    matingCooldown: yr(0.5), pop: { start: 7, min: 3, max: 28 },   // K ≈ 190; ~47 founders ≈ 40 kg/ha (yellow perch 27–52 kg/ha — docs/ECOLOGY_RESEARCH.md)
     tempOpt: 23, tempTol: 7, o2Crit: 0.26, spawnT: [7, 12], spawnSide: -1, coldPerf: 0.45,   // cool–warm guild; one early-spring spawn; active under ice
     innate: { homeDepth: 0.86, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },   // a near-bottom forager (adult yellow perch feed mostly on benthos)
     sat: 70, lbase: 40, lrange: 20,
@@ -493,7 +493,7 @@ export const SP = {
     // detritus (Scott & Crossman 1973) — on a lean bed they turn to snails and zooplankton
     diet: { detritus: true, plants: true, larva: true, snail: true, plankton: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
-    matingCooldown: yr(0.5), pop: { start: 4, min: 3, max: 6 },   // K ≈ 40
+    matingCooldown: yr(0.5), pop: { start: 2.5, min: 3, max: 6 },   // K ≈ 40; ~17 founders ≈ 30 kg/ha
     tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4, forage: 0.5 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
@@ -521,7 +521,7 @@ export const SP = {
     diet: { plants: true, detritus: true, larva: true, snail: true, plankton: true },   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
                                                                                      //   weed and detritus (Scott & Crossman 1973)
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
-    matingCooldown: yr(0.4), pop: { start: 0.8, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each)
+    matingCooldown: yr(0.4), pop: { start: 0.45, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 3 founders ≈ 70 kg/ha (damage threshold ~100 kg/ha)
     tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
     innate: { homeDepth: 0.95, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4, forage: 0.5 },   // a bottom rooter (sifts the sediment)
     sat: 46, lbase: 34, lrange: 18,

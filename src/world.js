@@ -783,11 +783,12 @@ export class World {
     const take = Math.min(g, m.item.m - INSECT.REFUGE_M); m.item.m -= take; return take;
   }
   // ZOOPLANKTON MEALS from the fields around the fish (env.zooFeed): it refills its gut at up to PLANKTON.Q × its Cmax rate
-  // (cm g/g/day) × the type-II response to the exposed density (K_ADULT) — a copepod's escape jump beats COPE_ESCAPE of
+  // (cm g/g/day) × a TYPE-III (sigmoid) response to the exposed density (K_ADULT): a fish with other food turns to it when the
+  // zooplankton thins (prey switching — Murdoch 1969), so it doesn't hunt the last of them out — a copepod's escape jump beats COPE_ESCAPE of
   // strikes, a Daphnia never escapes (and is the richer meal), and migrants and weed-hidden animals are mostly out of
   // reach. Into the gut; counts a meal when the step's intake is worth it. Returns the meals (0/1).
   _eatZoo(a, room, cm, dt) {
-    const t = this.env.zooFeed(a.x, a.y, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, PLANKTON.Q * cm * a.W * dt / BIOE.DAY), PLANKTON.K_ADULT, ZF);
+    const t = this.env.zooFeed(a.x, a.y, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, PLANKTON.Q * cm * a.W * dt / BIOE.DAY), PLANKTON.K_ADULT, ZF, true);
     const g = t[0] + t[1]; if (!(g > 0)) return 0;
     a.gut += g; a.gutE += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED;
     if (g < PLANKTON.BITE_MIN * a.sp.gut * a.W) return 0;
@@ -1288,7 +1289,8 @@ export class World {
       if (L.dev >= 1 && canHatch) { L.dead = true; if (this.insects.length < insectCap) this.insects.push(this._mkInsect(L.x, L.m * INSECT.EMERGE_M)); continue; }   // EMERGE: larva → surface adult
       if (th > 0) {   // grow on the column's detritus (debited at 1/YIELD), or lose weight when it runs short
         const s = env.sedOMAt(L.x), want = INSECT.GROW * th * s / (s + INSECT.K_SOM) * L.m * Math.max(0, 1 - L.m / PREY.LARVA_G) * dt;
-        L.m += env.takeSedOM(L.x, want / INSECT.YIELD) * INSECT.YIELD - INSECT.RESP * th * L.m * dt;
+        const lg = env.takeSedOM(L.x, want / INSECT.YIELD) * INSECT.YIELD; this._larvaProd = (this._larvaProd || 0) + lg;   // (diagnostic production tally, never read by the sim)
+        L.m += lg - INSECT.RESP * th * L.m * dt;
         if (L.m < 0.02) { L.dead = true; continue; }
       }
       if (env.oxygenAt(L.x, L.y) < INSECT.O2_MIN && rand() < INSECT.ANOX_DEATH * Math.pow(2, (env.tempAt(L.x, L.y) - 20) / 10) * dt) { L.dead = true; env.addSedOM(L.x, L.m); }   // anoxic bottom: the patch dies (and rots) — slowly in cold water

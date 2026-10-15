@@ -1821,7 +1821,9 @@ console.log('\n— behavioural checks (real sim paths, A/B) —');
     noZoo(tw); for (let dx = -3; dx <= 3; dx++) for (let dy = -3; dy <= 3; dy++) tw.addZoo(1000 + dx * 24, 200 + dy * 24, 3, 0);   // Daphnia all around
     let g = 0; for (let i = 0; i < 30; i++) { tw.env.o2.fill(o2); const g0 = m.gut; tw.step(1 / 30); g += Math.max(0, m.gut - g0); } return g; };
   const eatOk = ateIn(1.0), eatLow = ateIn(SP.minnow.o2Lethal / ENVB.O2_MGL * 1.2);
-  check('HYPOXIA kills the appetite: a minnow among zooplankton feeds in oxygenated water but hardly at all near its lethal O₂', eatOk > 0 && eatLow < eatOk * 0.25, `${eatOk.toFixed(3)} g vs ${eatLow.toFixed(3)} g`);
+  // (since v30 a fish's zooplankton intake is rate-limited — PLANKTON.Q × Cmax, type II — so the oxygenated fish no longer fills
+  // its gut at once; the hypoxic one is held to its shrunken appetite)
+  check('HYPOXIA kills the appetite: a minnow among zooplankton feeds in oxygenated water but hardly at all near its lethal O₂', eatOk > 0 && eatLow < eatOk * 0.35, `${eatOk.toFixed(3)} g vs ${eatLow.toFixed(3)} g`);
   // nocturnal catfish: the same fish in the same world swims harder at night than at midday (the real move step)
   // (env.step recomputes light from the clock each step, so set the time of day: t=0 midnight, t≈0.45 near noon)
   const catSpeed = t0 => {   // averaged over 3 seeds (brains differ) so the comparison isn't hostage to one brain

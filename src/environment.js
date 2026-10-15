@@ -94,7 +94,9 @@ export class Environment {
     for (let cx = 0; cx < COLS; cx++) this._refAv[cx] = clamp(((this.mask.bedRow[cx] + 1) / ROWS - PLANKTON.REF_DEPTH) / PLANKTON.REF_RAMP, 0, 1);
     this.fishKgHa = 0;                 // the lake's fish biomass, kg/ha (set by the world each step: the kairomone level for DVM)
     this._migD = 0; this._migC = 0;    // DVM migrant shares (derived each step from fishKgHa)
+    this.zooProd = 0;                  // DIAGNOSTIC: cumulative zooplankton production, g (growth before losses; not saved, never read by the sim)
     this._zI = new Int32Array(9); this._zD = new Float64Array(9); this._zC = new Float64Array(9);   // zooFeed scratch
+    this._zW = new Float64Array(ROWS);   // the daily-round weights down a column (scratch)
     this._tmp = new Float32Array(COLS * ROWS);
     // cumulative boundary fluxes (diagnostic, not saved): P/N in by the inflow, out by the outlet, P buried in the deep
     // sediment, N lost to denitrification (N₂) and gained by cyanobacterial N-fixation. Inventory change = in − out.
@@ -170,9 +172,10 @@ export class Environment {
   }
   // A FISH OR A SCHOOL FEEDS on the zooplankton around (x, y) — the 3×3 cells about it: each kind's grams × what the eater
   // can catch (cD Daphnia, cC copepods) × the share exposed (zooExposed) × sight at that depth (zooVis) = the exposed prey;
-  // intake = want × E/(E + K) — type II in the exposed density E (µg dry/L) — and at most CROP of what is exposed. Taken
+  // intake = want × E/(E + K) — type II in the exposed density E (µg dry/L; `sig`: type III, E²/(E² + K²) — a fish with other
+  // food switches away from scarce zooplankton) — and at most CROP of what is exposed. Taken
   // from the cells in proportion to what each exposes; the grams of Daphnia → out[0], copepods → out[1].
-  zooFeed(x, y, cD, cC, want, K, out) {
+  zooFeed(x, y, cD, cC, want, K, out, sig = false) {
     out[0] = 0; out[1] = 0;
     if (!(want > 0)) return out;
     const vis = this.zooVis(y);
@@ -191,7 +194,7 @@ export class Environment {
     }
     const S = (sD + sC) * vis;
     if (!(S > 1e-12)) return out;
-    const E = S / n * P.UGL, take = Math.min(want * E / (E + K), P.CROP * S);
+    const E = S / n * P.UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);   // type III (sig: prey switching) or II
     const tD = take * sD / (sD + sC), tC = take - tD;
     for (let k = 0; k < n; k++) {
       const i = ZI[k];
@@ -245,8 +248,10 @@ export class Environment {
       for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
         const i = base + cx, A = ph[i] + di[i], zd = D[i], zc = Cz[i], rf = ra[cx], lit = P.LIT_FOOD * Math.min(1, pm[i]);
         const cyn = Math.max(0, 1 - P.DAPH_CYANO * cyf[i] / CYANO.CAP);
-        let nd = zd + zd * (gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD - lD0 * qL);
-        let nc = zc + zc * (gC0 * (A + lit) / (A + lit + P.K_C) * (1 - costC * rf) * qC - lC0 * qL);
+        const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + P.K_C) * (1 - costC * rf) * qC;
+        this.zooProd += pd + pc;   // (diagnostic: the step's production, g — never read by the sim)
+        let nd = zd + pd - zd * lD0 * qL;
+        let nc = zc + pc - zc * lC0 * qL;
         if (cold) { const ed = zd * dmD, ec = zc * dmC; nd -= ed; nc -= ec; eg[cx * 2] += ed * P.EGG_EFF; eg[cx * 2 + 1] += ec * P.EGG_EFF; }   // → the egg bank
         let g = zd * grD * A / (A + P.K_D) + zc * grC * A / (A + P.K_C);
         if (g > 0) {
@@ -273,17 +278,19 @@ export class Environment {
       if (T >= P.HATCH_T_D) { const h = eg[cx * 2] * hz; eg[cx * 2] -= h; D[i] += h; }
       if (T >= P.HATCH_T_C) { const h = eg[cx * 2 + 1] * hz; eg[cx * 2 + 1] -= h; Cz[i] += h; }
     }
-    // FOOD-SEEKING: the field is where the animals FEED (their daily mean — migrants come up to the algae at night), so each
-    // kind drifts toward the richer algae of the cell above or below (rate SEEK × the relative difference); the deep, dark
-    // water holds few except the DVM refuge, which acts through zooExposed
-    const sk = Math.min(0.25, P.SEEK * dt);
-    for (let cy = 1; cy < ROWS; cy++) {
-      const base = cy * COLS;
-      for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
-        const i = base + cx, j = i - COLS, Ai = ph[i] + di[i], Aj = ph[j] + di[j], d = (Aj - Ai) / (Aj + Ai + 0.05);
-        if (d > 0) { const md = D[i] * sk * d, mc = Cz[i] * sk * d; D[i] -= md; D[j] += md; Cz[i] -= mc; Cz[j] += mc; }
-        else if (d < 0 && o2[i] >= P.O2_MIN) { const md = D[j] * sk * -d, mc = Cz[j] * sk * -d; D[j] -= md; D[i] += md; Cz[j] -= mc; Cz[i] += mc; }
-      }
+    // THE DAILY ROUND: the field is the animals' daily-mean place. Over a day they spread through their column's OXIC water —
+    // wind mixes the epilimnion, migrants swim down by day and back up to the algae at night — and they spend their time
+    // where the food is: each column's oxic cells relax at MIX /s toward the column's total shared in proportion to the
+    // cell's algae + FOOD0 (conservative). So time spent in the cold, dark deep water is real but brief (the DVM refuge from
+    // fish itself is zooExposed's daily mean); anoxic water below is left (they avoid it — below)
+    const mx = Math.min(1, P.MIX * dt), wq = this._zW;
+    for (let cx = 0; cx < COLS; cx++) {
+      let r1 = -1; for (let cy = 0, br = bedRow[cx]; cy <= br && o2[cy * COLS + cx] >= P.O2_MIN; cy++) r1 = cy;
+      if (r1 < 1) continue;
+      let sd = 0, sc = 0, sw = 0;
+      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; sd += D[i]; sc += Cz[i]; const v = ph[i] + di[i] + P.FOOD0; wq[cy] = v; sw += v; }
+      const fd = sd / sw, fc = sc / sw;
+      for (let cy = 0; cy <= r1; cy++) { const i = cy * COLS + cx; D[i] += (fd * wq[cy] - D[i]) * mx; Cz[i] += (fc * wq[cy] - Cz[i]) * mx; }
     }
     // out of anoxic water: a share swims up a cell each step (the cell above a wet cell is always wet)
     const av = Math.min(1, P.AVOID * dt);
@@ -294,6 +301,16 @@ export class Environment {
         const j = i - COLS, md = D[i] * av, mc = Cz[i] * av;
         D[i] -= md; D[j] += md; Cz[i] -= mc; Cz[j] += mc;
       }
+    }
+    // HORIZONTAL MIXING: wind-driven currents (cm/s) carry the plankton across a small lake many times a day — each depth layer
+    // relaxes toward its lake-wide mean at HMIX /s (≈ once a day), so a patch cropped by fish refills from the open water
+    // (conservative per row); plus small-scale diffusion
+    const hm = Math.min(1, P.HMIX * dt);
+    for (let cy = 0; cy < ROWS; cy++) {
+      const base = cy * COLS, a = lo[cy], b = hi[cy], n = b - a + 1; if (n < 2) continue;
+      let sd = 0, sc = 0; for (let i = base + a; i <= base + b; i++) { sd += D[i]; sc += Cz[i]; }
+      const md = sd / n, mc = sc / n;
+      for (let i = base + a; i <= base + b; i++) { D[i] += (md - D[i]) * hm; Cz[i] += (mc - Cz[i]) * hm; }
     }
     diffuse(D, this._tmp, P.DIFFUSE * dt, this.mask);
     diffuse(Cz, this._tmp, P.DIFFUSE * dt, this.mask);

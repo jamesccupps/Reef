@@ -40,6 +40,11 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      organisms (fry, invertebrates, plankton) drifting between connected waters.
    - The organic bed layer built in step 1 (`SEDOM`) is the hook for the sediment part: erosion and deposition move
      both mineral sediment and that organic matter.
+   - **Fish moving through the connecting streams** (human, 2026-10-15, from experience at Upper and Lower Hot Brook Lake,
+     Maine): sunfish gather in warm pools of the stream between the lakes in summer. RESEARCH FIRST (before designing the
+     streams): summer use of warm stream pools, backwaters and inlets by pumpkinseed / redbreast sunfish and other lake
+     fish; movement between connected lakes (seasonal, spawning, thermal); how warm those pools run and how long fish
+     stay; what draws them (warmth for growth, food, cover, spawning). Real streams are also nursery and thermal refuges.
 4. **What-if controls:** change a variable (warming, nutrient loading, stocking, pollution, rain) and see the response.
 
 Guiding principles:
