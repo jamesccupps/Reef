@@ -37,6 +37,9 @@ const nextAgentId = () => (_idOwner ? _idOwner._nextId++ : 0);
 // GAPE (its length × its gape ratio) — so deep-bodied sunfish outgrow a bass's mouth while slim minnows never do, and a
 // first-year fish fits its own species' adults (pike, perch and bass cannibalise their young-of-year).
 const gapeOf = a => a.L * a.sp.gapeR;                                   // cm
+// the lethal dissolved O₂ (normalised) at T °C: the 25 °C value × e^(O2_LETHAL_T·(T − 25)) (lethal O₂ rises ~5.5 %/°C), but
+// never below the species' under-ice floor — the levels that killed fish in natural winterkills (Cooper & Washburn 1946)
+const lethalO2 = (l25, floor, T) => Math.max(l25 * Math.exp(BIOE.O2_LETHAL_T * (T - 25)), floor || 0);
 // the fish's bioenergetics parameter set: FB4's juvenile set where one exists — for a young-of-year (fit to age-0 fish:
 // bluegill, perch), or below a body mass where the species says so (sp.juvW: smallmouth bass, whose adult set starves a
 // fish under ~30 g) — else the adult set
@@ -399,6 +402,7 @@ function makeAgent(species, x, y, cond, gen, hue, genome, age = 0, genes = null)
   const tempTol = sp.tempTol * gTol;
   const o2Crit = clamp(sp.o2Crit * (2 - gTol), 0.05, 0.9);              // hardier → lower critical O₂ …
   const o2Lethal = clamp(sp.o2Lethal / ENV.O2_MGL * (2 - gTol), 0.005, 0.5);   // … and lethal O₂ (normalised, at 25 °C)
+  const o2Ice = clamp((sp.o2Ice ?? 0) / ENV.O2_MGL * (2 - gTol), 0, 0.5);       // … and its under-ice floor (Cooper & Washburn)
   const uilt = sp.uilt + BIOE.UILT_GENE * (gTol - 1);                    // …and a higher upper lethal temperature
   // the SIZE gene is the MATURATION SIZE (a life-history trait): mature smaller and earlier, or bigger and later with more
   // eggs — the classic trade-off selection acts on (predation on large fish and fishing favour early maturation)
@@ -412,7 +416,7 @@ function makeAgent(species, x, y, cond, gen, hue, genome, age = 0, genes = null)
   const L = age > 0 ? lengthAtAge(sp, age) : sp.L0, K = clamp(cond, 0.5, 1.2), W = K * stdWeight(sp.lw, L);
   const Lmat = lmatOf(sp, gSize, sex);
   const a = {
-    id: nextAgentId(), species, sp, genes: gn, maxSpeed0, maxTurn0, accel0, senseRange0, bodyMul, tempTol, o2Crit, o2Lethal, uilt, metabMul, activeHid,
+    id: nextAgentId(), species, sp, genes: gn, maxSpeed0, maxTurn0, accel0, senseRange0, bodyMul, tempTol, o2Crit, o2Lethal, o2Ice, uilt, metabMul, activeHid,
     x, y, homeX: x, heading: rand(0, Math.PI * 2), spd: rand(1, 6), vis: 0,   // homeX = natal site (the spatial-cognition homing anchor)
     // body: length (cm), wet mass (g), condition, sex, maturation length; the gut (g of food, J it holds)
     L, W, K, sex, Lmat, mature: matureAt(sp, L, Lmat, age), gut: 0, gutE: 0, energy: reserveOf(K), rO2: 0,
@@ -1081,7 +1085,7 @@ export class World {
       // MORTALITY over st: natural — the larval "critical period" (FRY.M_LARVA ∝ 1/length, fading out by ~3 cm), then the
       // juveniles' predation (FRY.M_JUV, slower in cold water) + the agents' size-scaled share of the species' M (Lorenzen) —
       // then starvation (_feedFry), heat and hypoxia as for the agents
-      const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
+      const o2 = env.oxygenAt(f.x, f.y), o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T);
       const lf = Math.exp(-((f.L / FRY.LARVA_L) ** 2));   // the larval term's weight (fades by ~3 cm) — the juvenile term takes over
       // (both slow in cold water, × M_JUV_Q10 below 20 °C: their predators eat little there — larval mortality falls with
       // temperature, Pepin 1991 — so a small fingerling isn't culled at the summer rate under the ice; never above the
@@ -1603,7 +1607,7 @@ export class World {
         // ESCAPE: in water near its LETHAL O₂ a fish bolts straight up and toward the shore (one behavioural second here is
         // hours of exposure for its physiology, so it can't afford to linger)
         // (applied after every other modulation — a resting, cold or day-resting fish still bolts: see below)
-        if (o2Here < a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3) { escUp = -Math.PI / 2 + (shoreDir(a.x) < 0 ? -0.25 : 0.25); o2Climb = 1.5; }
+        if (o2Here < lethalO2(a.o2Lethal, a.o2Ice, env.tempAt(a.x, a.y)) * 3) { escUp = -Math.PI / 2 + (shoreDir(a.x) < 0 ? -0.25 : 0.25); o2Climb = 1.5; }
         // HEAT ESCAPE, the same way: in water within 3 °C of its lethal temperature a fish leaves at once — down if the
         // water below is cooler and breathable, else offshore over the deep basin — whatever it was chasing or eating
         // (a trout makes brief raids into the warm shallows; a behavioural second there is ~5 h of heat)
@@ -1769,7 +1773,7 @@ export class World {
       a.y += Math.sin(a.velHeading) * a.spd * dt + (sp.sink && env.oxygenAt(a.x, a.y + 12) >= a.o2Crit * ENV.HYPOXIA_AVOID ? sp.sink * dt : 0);
       // lethal water is a wall: a fish doesn't swim DOWN into water whose O₂ is below twice its lethal level (it senses it
       // and turns back — real fish avoid anoxic water sharply); it can always rise out of it
-      if (a.y > y0) { const o2L0 = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (tHere - 25)) * 2; if (env.oxygenAt(a.x, a.y) < o2L0 && env.oxygenAt(a.x, y0) > env.oxygenAt(a.x, a.y)) a.y = y0; }
+      if (a.y > y0) { const o2L0 = lethalO2(a.o2Lethal, a.o2Ice, tHere) * 2; if (env.oxygenAt(a.x, a.y) < o2L0 && env.oxygenAt(a.x, y0) > env.oxygenAt(a.x, a.y)) a.y = y0; }
       // …and a fish in water below its critical O₂ CLIMBS out of it — slowly when barely hypoxic, at a burst (an anaerobic
       // sprint) from near-lethal water — whatever its momentum, the bed slope, its diel rest or a brain still steering it
       // along the bottom. In a stratified lake O₂ rises toward the surface. (One behavioural second is ~5 h of exposure for
@@ -1789,8 +1793,9 @@ export class World {
       // ===== BIOENERGETICS — the Wisconsin model (bioenergetics.js) with each species' published parameters (species.js
       // `bio`). A fish's physiological day runs on the seasonal calendar: one real day = BIOE.DAY sim-seconds (a year
       // of TIME.YEAR_LEN), so the per-day rates become per-step amounts with dt/DAY. Everything is grams and joules.
-      // the lethal O₂ rises ~5.5 %/°C (Moss & Scott 1961; Downing & Merkens 1957) — cold fish survive far lower O₂ under ice
-      const o2L = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (tHere - 25));
+      // the lethal O₂ rises ~5.5 %/°C (Moss & Scott 1961; Downing & Merkens 1957) — cold fish survive far lower O₂ under ice,
+      // down to their species' under-ice floor (lethalO2)
+      const o2L = lethalO2(a.o2Lethal, a.o2Ice, tHere);
       const Wg = a.W, dd = dt / BIOE.DAY, gmax = sp.gut * Wg, bp = bioOf(a);   // young-of-year: FB4's juvenile set where one exists (bluegill, perch — fit to age-0 fish, with their warmer optimum); yearlings on the adult set
       const o2 = this.oxygenAt(a.x, a.y);
       // DIGESTION: the stomach empties exponentially at the measured gastric-evacuation rate (He & Wurtsbaugh 1993: 22
@@ -1863,7 +1868,7 @@ export class World {
       const kx = Math.min(1, dt / BIOE.EXPOSE_TAU);
       if (a.xo === undefined) { a.xo = o2; a.xt = tHere; }
       a.xo += (o2 - a.xo) * kx; a.xt += (tHere - a.xt) * kx;
-      const o2Lx = a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (a.xt - 25));
+      const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);
       const hH = a.xt > a.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((a.xt - a.uilt) / BIOE.HEAT_STEEP) : 0;
       const hO = a.xo < o2Lx ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2Lx - a.xo) / o2Lx) : 0;
       const hX = a.tox > TOX.HARM ? TOX.MORT * (a.tox - TOX.HARM) : 0;

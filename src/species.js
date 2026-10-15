@@ -243,7 +243,9 @@ const yr = n => n * TIME.YEAR_LEN;
 //           preferred fathead minnows over bluegill (Wahl & Stein 1988), bullheads' locking pectoral spines deter
 //           predators, spiny-rayed perch and bass are handled with more misses than soft-rayed prey (prior where unmeasured)
 //   uilt    upper incipient lethal temperature (°C); o2Lethal acute lethal dissolved O₂ (mg/L at 25 °C; ×e^0.055/°C — Moss &
-//           Scott 1961, Downing & Merkens 1957 — so far less under ice)
+//           Scott 1961, Downing & Merkens 1957 — so far less under ice), but never below o2Ice: the lethal O₂ found in
+//           NATURAL winterkills under the ice (Cooper & Washburn 1946, accepted by Doudoroff & Shumway 1970 over caged-fish
+//           values) — the cold-water extrapolation alone made centrarchids and esocids ~2× too tolerant (Maine report)
 // (prior) marks a literature value not yet checked against a primary source.
 const yrs = n => n * TIME.YEAR_LEN;
 export const BIO = {
@@ -261,7 +263,7 @@ export const BIO = {
     gut: 0.05, gerMul: 1.0, gsiF: 0.08, gsiM: 0.02,   // stomachless cyprinid; per batch
     fec: { a: 1.13, b: 3.07 },   // per BATCH ≈ 110 eggs per g of female (no fitted equation exists): a 10-cm, 12-g shiner ~1,300 a batch, ~4,000 over a
                                  //   season of several bouts — California 2,700–4,700 a season (CalFish); big pond fish 10,000–20,000 (culture profile)
-    Lzoo: 0, Lpisc: Infinity, gapeR: 0.07, depthR: 0.25, uilt: 35, o2Lethal: 0.7, vuln: 1.0,   // deep, compressed body; small upturned mouth; tolerates 35 °C; "primary forage for bass, pickerel" (MDIFW)
+    Lzoo: 0, Lpisc: Infinity, gapeR: 0.07, depthR: 0.25, uilt: 35, o2Lethal: 0.7, o2Ice: 0.2, vuln: 1.0,   // deep, compressed body; small upturned mouth; tolerates 35 °C; "primary forage for bass, pickerel" (MDIFW); survives 0.2–0.3 mg/L under ice — with bullheads the best survivors of Michigan winterkills (Cooper & Washburn 1946)
   },
   sunfish: {  // PUMPKINSEED (Lepomis gibbosus) — FB4 "Bluegill sunfish" adult + juvenile (Kitchell et al. 1974): no pumpkinseed model
               // exists. Bluegill respiration runs 1.2–1.7× the routine O₂ uptake measured on 30-g pumpkinseed (Roberts 1964) —
@@ -278,7 +280,7 @@ export const BIO = {
                                     //   (12.5 mm SL), where they eat the littoral's invertebrates (Werner 1967, 1969; Werner & Hall 1988; Beard 1982)
     Lsnail: 8,   // cm TL: the snail crusher — pumpkinseed grow molariform pharyngeal teeth and switch to snails at 59–80 mm SL (74–99 mm TL;
                  //   Mittelbach et al. 1999); below that their pharyngeal jaws can't crack a shell
-    Lzoo: 4, Lpisc: Infinity, gapeR: 0.083, depthR: 0.38, uilt: 31.7, o2Lethal: 0.75, vuln: 0.35,   // gape 0.083·TL (Fernando et al. 2018); UILT 31.7 °C (ORNL); depth 0.34–0.42
+    Lzoo: 4, Lpisc: Infinity, gapeR: 0.083, depthR: 0.38, uilt: 31.7, o2Lethal: 0.75, o2Ice: 0.35, vuln: 0.35,   // gape 0.083·TL (Fernando et al. 2018); UILT 31.7 °C (ORNL); depth 0.34–0.42; under-ice lethal 0.3–0.4 mg/L (Cooper & Washburn 1946)
   },
   perch: {    // YELLOW PERCH — FB4 "Yellow perch" adult + juvenile (Kitchell et al. 1977)
     bio: { CEQ: 2, CA: 0.25, CB: -0.27, CQ: 2.3, CTO: 23, CTM: 28, REQ: 2, RA: 0.0108, RB: -0.2, RQ: 2.1, RTO: 28, RTM: 33, ACT: 1,
@@ -289,7 +291,7 @@ export const BIO = {
     maxAge: yrs(11), matureAge: yrs(3), M: 0.50,
     gut: 0.06, gerMul: 1.0, gsiF: 0.20, gsiM: 0.07,   // ♀ GSI 16–26 % (S. Lake Michigan);   // young perch: a Daphnia meal in 6–12 h (Noble 1973) ≈ the general rate
     fec: { a: 0.3487, b: 3.4556 },   // log10 F = −3.9131 + 3.4556·log10 TL(mm), inland Michigan lakes (Schneider 1984): 25 cm → 23,600
-    Lzoo: 25, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, vuln: 0.6,   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL; zooplankton → benthos → fish: big perch leave the zooplankton (Persson 1986; Hjelm et al. 2000) — most lake perch (< 25 cm) still take it
+    Lzoo: 25, Lpisc: 14, gapeR: 0.09, depthR: 0.234, uilt: 30, o2Lethal: 1.0, o2Ice: 0.35, vuln: 0.6,   // (under-ice lethal 0.3–0.4 mg/L — Cooper & Washburn 1946)   // piscivory from ~15 cm (Paszkowski & Tonn 1994); tank perch 15–19 cm took fatheads ≤ 0.53 TL; zooplankton → benthos → fish: big perch leave the zooplankton (Persson 1986; Hjelm et al. 2000) — most lake perch (< 25 cm) still take it
   },
   sucker: {   // WHITE SUCKER (Catostomus commersonii) — NO published bioenergetics model exists (none in FB4). Stand-in: FB4's yellow
               // perch set (Kitchell et al. 1977), whose 23 °C optimum and 28 °C cutoff match the sucker's 17–24 °C preferred range
@@ -303,7 +305,7 @@ export const BIO = {
     gut: 0.05, gerMul: 1.0, gsiF: 0.12, gsiM: 0.05,   // (prior)
     fec: { a: 0.383, b: 3.136 },   // ≈ 60 eggs per g of female (no fitted equation exists): 30 cm → ~16,000, 40 → ~40,000, 50 → ~81,000 — inside 12,500–140,000 (Ontario LHD; DFO 20,000–50,000)
     Lsnail: 12,   // a sucker's sucking lips and pharyngeal teeth take small snails and clams once it is a few years old (prior)
-    Lzoo: 5, Lpisc: Infinity, gapeR: 0.06, depthR: 0.18, uilt: 30, o2Lethal: 1.0, vuln: 0.8,   // larvae eat plankton, then benthos and detritus; a small suctorial mouth; UILT (prior); soft-rayed
+    Lzoo: 5, Lpisc: Infinity, gapeR: 0.06, depthR: 0.18, uilt: 30, o2Lethal: 1.0, o2Ice: 0.8, vuln: 0.8,   // (under ice: hypoxia-sensitive — a Minnesota pond held < 1 mg/L for 12 days killed them; prior)   // larvae eat plankton, then benthos and detritus; a small suctorial mouth; UILT (prior); soft-rayed
   },
   catfish: {  // BROWN BULLHEAD — FB4 "Brown Bullhead" (Hartman et al. 2017)
     bio: { CEQ: 3, CA: 0.12, CB: -0.225, CQ: 15, CTO: 24, CTM: 26, CTL: 30, CK1: 0.473, CK4: 0.55, REQ: 1, RA: 0.0007, RB: -0.271, RQ: 0.0915, RTO: 0.4055, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
@@ -318,7 +320,7 @@ export const BIO = {
     Lhatch: 1.0, sHatch: 0.6, L0: 6, Lref: 27, Lmat: 19, matMinAge: yrs(2), maxAge: yrs(10), matureAge: yrs(2.5), M: 0.54,
     gut: 0.06, gerMul: 0.5, gsiF: 0.12, gsiM: 0.015,
     fec: { a: 0.274, b: 2.9 },   // no published equation: 1,050–13,800 eggs (Ontario database) ≈ 13 per g → ~3,900 at 27 cm (prior)
-    Lzoo: 5, Lpisc: Infinity, gapeR: 0.12, depthR: 0.20, uilt: 36, o2Lethal: 0.3, vuln: 0.4,   // bullheads survive 0.2–0.3 ppm under ice (Cooper & Washburn 1946)
+    Lzoo: 5, Lpisc: Infinity, gapeR: 0.12, depthR: 0.20, uilt: 36, o2Lethal: 0.3, o2Ice: 0.2, vuln: 0.4,   // bullheads survive 0.2–0.3 ppm under ice (Cooper & Washburn 1946)
     benthL: 1.2,   // cm: young bullheads, guarded in a ball over the bottom, feed there from swim-up — midge larvae and small
                    //   crustaceans (Scott & Crossman 1973); at the generic FRY.BENTH_L (2.5 cm) ~85 % of the fry starved first
   },
@@ -338,7 +340,7 @@ export const BIO = {
     Lhatch: 0.4, sHatch: 0.05, L0: 8, Lref: 18, Lmat: 9.5, LmatM: 7.6, matMinAge: yrs(1.5), maxAge: yrs(12), matureAge: yrs(3), M: 0.45,   // ♂ 72–80 mm, ♀ 90–98 mm at 2–4 yr (ADW); "even small, slow-growing perch can mature and spawn" (MDIFW); typically 5–7 yr, 17 max in Maine; eggs broadcast over any bottom, no care (sHatch: prior)
     gut: 0.06, gerMul: 1.0, gsiF: 0.15, gsiM: 0.05,   // (prior)
     fec: { a: 10.6, b: 2.82 },   // through MDIFW's ~22,000 eggs at 152 mm and ~150,000 at 30 cm (no fitted equation exists): 10 cm → ~7,000, 20 → ~50,000 (range 20,000–300,000)
-    Lzoo: 40, Lpisc: 15, gapeR: 0.10, depthR: 0.30, uilt: 33, o2Lethal: 1.2, vuln: 0.55,   // a planktivore turning generalist, large fish eat small fish including their own young (Couture & Watzin 2008); deep, spiny; hypoxia-sensitive (Hanks & Secor 2011) — UILT and lethal DO not found (prior)
+    Lzoo: 40, Lpisc: 15, gapeR: 0.10, depthR: 0.30, uilt: 33, o2Lethal: 1.2, o2Ice: 0.5, vuln: 0.55,   // (under ice: between perch and sucker in the winterkill tolerance ranking — prior)   // a planktivore turning generalist, large fish eat small fish including their own young (Couture & Watzin 2008); deep, spiny; hypoxia-sensitive (Hanks & Secor 2011) — UILT and lethal DO not found (prior)
   },
   bass: {     // SMALLMOUTH BASS (Micropterus dolomieu) — FB4 "Smallmouth Bass" (Whitledge et al. 2003), with its published
               // rows for water ≤ 26 °C and > 26 °C (`hot`). Whitledge's respiration (RB −0.756) gives a fish under ~10–25 g a
@@ -354,7 +356,7 @@ export const BIO = {
     Lhatch: 0.9, sHatch: 0.1, L0: 6, Lref: 33, Lmat: 27, LmatM: 23, matMinAge: yrs(2.5), maxAge: yrs(15), matureAge: yrs(4.5), M: 0.36,   // ♂ 3–4 yr, ♀ 4–5 yr at 20–30 cm (MDIFW); swim-up at 9.1 mm (Shuter et al. 1980); M = 5.4/15. (sHatch 0.1: a female deposits only ~⅓ of her ovary — effective 2,000–3,000 eggs/lb against 7,000–8,000 — and ~40 % of nests fail, MDIFW)
     gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
     fec: { a: 0.1226, b: 3.20 },   // the ovary's 7,000–8,000 eggs per lb (~16,500/kg, MDIFW) × Ws: 30 cm → ~6,500, 40 cm → ~16,400
-    Lzoo: 2, Lpisc: 5, gapeR: 0.115, depthR: 0.24, uilt: 36, o2Lethal: 1.1, vuln: 0.6,   // insects by 20 mm, fish and crayfish by 50 mm; gape 0.120·TL − 1.8 mm (Fernando et al. 2018); UILT 36.0 °C
+    Lzoo: 2, Lpisc: 5, gapeR: 0.115, depthR: 0.24, uilt: 36, o2Lethal: 1.1, o2Ice: 0.8, vuln: 0.6,   // (under ice ~0.6–1.0 mg/L, inferred — no bass among the 15,000 fish that crowded an oxygenated inlet in a Michigan winterkill)   // insects by 20 mm, fish and crayfish by 50 mm; gape 0.120·TL − 1.8 mm (Fernando et al. 2018); UILT 36.0 °C
   },
   pike: {     // CHAIN PICKEREL (Esox niger; Mainers call them pike) — FB4 "Northern pike (adult)" (Bevelhimer et al. 1985) as published.
               // Its curve peaks at 24.6 °C because it was fit to small pike — exactly a pickerel's size and its 24–25.5 °C preferendum.
@@ -367,7 +369,7 @@ export const BIO = {
     Lhatch: 0.9, sHatch: 0.05, L0: 8, Lref: 43, Lmat: 37, LmatM: 33, matMinAge: yrs(2), maxAge: yrs(9), matureAge: yrs(3.5), M: 0.62,   // mature at age 3–4 at 33–41 cm; Maine ice anglers' fish average 43 cm (MDIFW); M = 5.4/9 – Then et al. 0.66
     gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // (pike: ♂ GSI 2.5 %, Medford & Mackay 1978; 50 % of a meal in ~20 h, all in ~48–50 h in summer, Diana 1979)
     fec: { a: 0.0630, b: 3.243 },   // 10,000–12,000 eggs per lb (~24,000/kg, MDIFW) × Ws: 43 cm → ~12,500
-    Lzoo: 4, Lpisc: 8, gapeR: 0.13, depthR: 0.14, uilt: 30, o2Lethal: 0.5, vuln: 0.8,   // insects first, "strongly piscivorous" after 18–23 cm (MDIFW); Massachusetts fish ≤ 30 cm ate 40–65 % crayfish; UILT: one 28.4 °C value at 17.7 °C acclimation (ORNL) — prior
+    Lzoo: 4, Lpisc: 8, gapeR: 0.13, depthR: 0.14, uilt: 30, o2Lethal: 0.5, o2Ice: 0.35, vuln: 0.8,   // (under ice ~0.3–0.4 mg/L — the mud pickerel's, Cooper & Washburn 1946)   // insects first, "strongly piscivorous" after 18–23 cm (MDIFW); Massachusetts fish ≤ 30 cm ate 40–65 % crayfish; UILT: one 28.4 °C value at 17.7 °C acclimation (ORNL) — prior
   },
 };
 for (const k in BIO) { const d = BIO[k]; prepBio(d.bio); if (d.bioJuv) d.bioJuv = prepBio({ ...d.bio, ...d.bioJuv }); }

@@ -13,7 +13,7 @@
 //
 // MASS BUDGET: every N/P transfer debits its source. Sources/sinks that cross the lake boundary are tallied in
 // `this.ledger` (inflow, outflow, sediment burial, denitrification, N-fixation) so the inventory can be audited.
-import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, BASINS, basinAt, basinCenterX, ICE, PLANT, PLANKTON, BENTHOS, BIOE, bedY } from './config.js';
+import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, BASINS, basinAt, basinCenterX, ICE, PLANT, PLANKTON, BENTHOS, BIOE, bedY, seasonalTemp} from './config.js';
 import { rand, clamp, TAU } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
@@ -677,7 +677,7 @@ export class Environment {
   // its seasonal temperature, the deep at a plausible lagged value, stratification and ice to match
   primeSeason(time) {
     this.year = time / SEASON.YEAR_LEN;
-    const surf = Math.max(0.3, ENV.TEMP_BASE + SEASON.TEMP_AMP * Math.sin((this.year - SEASON.TEMP_PHASE) * TAU));
+    const surf = Math.max(0.3, seasonalTemp(this.year));
     this.tempC = surf; this.tempDiel = 0; this.tempNorm = clamp(surf / 26, 0, 1);
     // the hypolimnion keeps roughly its spring-turnover temperature and warms slowly through the stratified season (~6 →
     // ~15 °C by September, as the full model runs), is mixed with the surface through autumn, and sits ~5 °C under ice
@@ -716,15 +716,16 @@ export class Environment {
     if (this.weather === 3 && rand() < dt * 0.28) this.flash = 0.8 + rand() * 0.2; // occasional lightning
     this.flash = Math.max(0, this.flash - dt * 3.5);
 
-    // --- season: a slow yearly cycle (SEASON.TEMP_PHASE: ~Aug 1 peak, ~Jan 21 low) that warms/cools the lake ---
-    const seasonal = SEASON.TEMP_AMP * Math.sin((this.year - SEASON.TEMP_PHASE) * TAU);
+    // --- season: the Maine calendar (SEASON.TEMP_KNOTS — ice-out in late April, a fast spring, a ~24 °C peak at the end
+    // of July, 208 days below 10 °C) that warms/cools the lake ---
+    const seasonal = seasonalTemp(this.year);
     const iceOpen = 1 - this.ice;                       // the open-water fraction: wind and weather act only there
 
     // --- surface (epilimnion) temperature: seasonal + diurnal + weather, lags slightly; liquid water can't go much below
     // freezing (ice forms instead), and the diurnal skin swing vanishes under ice ---
     const diurnal = Math.sin((this.t - 0.30) * Math.PI * 2) * iceOpen;
     const relax = clamp(dt * ENV.TEMP_RELAX, 0, 1);
-    const target = Math.max(0.3, ENV.TEMP_BASE + seasonal + ENV.TEMP_DIURNAL * diurnal + ENV.TEMP_WEATHER[this.weather] * iceOpen);
+    const target = Math.max(0.3, seasonal + ENV.TEMP_DIURNAL * diurnal + ENV.TEMP_WEATHER[this.weather] * iceOpen);
     this.tempC += (target - this.tempC) * relax;
     this.tempDiel += (ENV.TEMP_DIURNAL * diurnal - this.tempDiel) * relax;   // the diurnal component (same lag)
     this.tempNorm = clamp(this.tempC / 26, 0, 1);

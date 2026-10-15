@@ -9,6 +9,22 @@ The **2026-10-15 Maine re-base, parts 2 and 1** and **2026-10-15 zooplankton fie
 
 ---
 
+## 2026-10-15 the Maine re-base, part 3: the Maine calendar and winter oxygen
+
+- **The calendar** (`config.js` `SEASON.TEMP_KNOTS`, `seasonalTemp(yf)`; used by `environment.js` `primeSeason`/`step`
+  and the render's seasonal tint): the surface base temperature is a periodic monotone cubic through Maine anchors instead
+  of a sine (a sine fitted to an end-of-April ice-out reaches 15 °C only in mid-June; Maine lakes warm fast after the ice
+  goes). Curve: ice-out ~Apr 23, 15 °C ~May 25, peak 24 °C ~Jul 30, 10 °C ~Oct 15, ice-on ~Dec 1, 208 days < 10 °C
+  (Spednic 208 ± 4). Simulated (weather + day): ice-out Apr 25–28, ice-on Nov 26–Dec 9, 212–221 days < 10 °C (the weather
+  only ever cools). The loon's season follows (`BIRD.SEASON` [0.14, 0.76]).
+- **Winter oxygen** (`species.js` BIO `o2Ice`; `world.js` `lethalO2`): the lethal O₂ falls ~5.5 %/°C below 25 °C but never
+  below the species' under-ice floor from natural winterkills (Cooper & Washburn 1946, endorsed by Doudoroff & Shumway
+  1970): bullhead and golden shiner 0.2 mg/L, pumpkinseed, perch and pickerel 0.35, white perch 0.5 (prior), sucker and
+  smallmouth 0.8 (inferred). Before, the extrapolation alone made pumpkinseed, pickerel and bass 2–5× too tolerant. Gate:
+  six days sealed under ice at 0.25 mg/L kill pumpkinseed, perch and bass but no bullheads or shiners.
+- **Not yet (part 4):** coloured, mesotrophic water (Secchi 2.5–4 m, colour-dominated light attenuation, TP 10–20 µg/L) —
+  its own slice: it moves light, plants, algae and the whole food web, and the nutrient units need a calibrated mapping.
+
 ## 2026-10-15 the Maine re-base, part 2: the Maine fish (save v32)
 
 The eight species are now the fish of an eastern Maine warm-water lake like Hot Brook (report table "Only yellow perch and

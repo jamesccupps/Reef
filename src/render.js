@@ -1,7 +1,7 @@
 // render.js — browser-only canvas renderer. Draws the world through a Camera with
 // culling, level-of-detail, and a lazily-built sprite cache. Not imported by the
 // headless sim test (a separate DOM-stub smoke test exercises it).
-import { WORLD, GRID, THERMAL, MACRO, BIRD, FROG, TURTLE, TIME, SEASON, bedY } from './config.js';
+import { WORLD, GRID, THERMAL, MACRO, BIRD, FROG, TURTLE, TIME, SEASON, bedY, seasonalTemp} from './config.js';
 import { SP } from './species.js';
 import { clamp, lerp, hsl, angDiff, TAU } from './core.js';
 import { makePresenter, Canvas2DPresenter } from './glpost.js';
@@ -383,7 +383,7 @@ export class Renderer {
     const floraL = 0.40 + 0.60 * vL, floraS = 0.35 + 0.65 * vL;
     const top = this.skyTop(env);
     // seasonal tint: greener/warmer in summer, cooler/bluer in winter
-    const summer = Math.sin(((env.year || 0) - SEASON.TEMP_PHASE) * TAU), warm = Math.max(0, summer), cold = Math.max(0, -summer);   // follows the water temperature
+    const summer = clamp((seasonalTemp(env.year || 0) - 12) / 12, -1, 1), warm = Math.max(0, summer), cold = Math.max(0, -summer);   // follows the water temperature (the Maine calendar)
     top[0] = clamp(top[0] + 12 * warm - 6 * cold, 0, 255); top[1] = clamp(top[1] + 9 * warm + 2 * cold, 0, 255); top[2] = clamp(top[2] - 9 * warm + 13 * cold, 0, 255);
     // turbidity murk: blend the water toward a green-brown soup as it clouds up
     const murk = (env.turbidity || 0) * 0.6;

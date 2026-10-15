@@ -78,12 +78,12 @@ check('generations advanced (reproduction happening)', w.maxGen > prevGen, `gen 
 // (reproduction = SPAWNING: the young live as schools of young-of-year fish and recruit as individuals months later)
 const spawns = k => (w.stats.spawns || {})[k] || 0;
 check('every species in its spawning season spawns home-bred young (not only rescued by immigration)', inSeason.size >= 3 && [...inSeason].every(k => spawns(k) > 0), SPECIES.map(k => `${k} ${spawns(k)}${inSeason.has(k) ? '' : ' (out of season)'}`).join(' '));
-{ const rs0 = getRandState(); seed(2468); const sw0 = new World().setDate(0.08);   // ~April 1, just after ice-out
+{ const rs0 = getRandState(); seed(2468); const sw0 = new World().setDate(0.15);   // ~April 25, just after a Maine ice-out
   // (a ripe pair of each on its spawning ground: with real age structures a lake's one or two pike needn't include a pair)
   for (const k of ['pike', 'perch']) for (const sx of [0, 1]) { const f = sw0.makeFish(k); ripe(f, sx); f.x = 160 + sx * 20; f.y = sw0.bedY(f.x) * 0.6; sw0.agents.push(f); }
   for (let i = 0; i < 3600; i++) sw0.step(dt);
   const sp0 = sw0.stats.spawns || {};
-  check('the early-spring spawners breed after ice-out: pike (4–11 °C) and perch (7–12 °C)', sp0.pike > 0 && sp0.perch > 0, `pike ${sp0.pike || 0}, perch ${sp0.perch || 0} spawnings; ${sw0.env.monthName()} ${sw0.env.tempC.toFixed(1)} °C`); setRandState(rs0); }
+  check('the early-spring spawners breed after ice-out: pickerel (6–11 °C) and perch (7–12 °C)', sp0.pike > 0 && sp0.perch > 0, `pike ${sp0.pike || 0}, perch ${sp0.perch || 0} spawnings; ${sw0.env.monthName()} ${sw0.env.tempC.toFixed(1)} °C`); setRandState(rs0); }
 check('total agents stayed under global cap', peakAgents <= WORLD.GLOBAL_MAX + 60, `peak ${peakAgents} / cap ${WORLD.GLOBAL_MAX}`);
 check('population is dynamic (changed from start)', JSON.stringify(start) !== JSON.stringify(end));
 check('plants persisted (growth vs grazing balance)', w.plants.length > 0, `${w.plants.length} plants`);
@@ -672,12 +672,13 @@ check('a warm/cool guild gradient exists (sucker, perch and pickerel cool; bullh
   Math.max(SP.sucker.tempOpt, SP.perch.tempOpt, SP.pike.tempOpt) < Math.min(SP.catfish.tempOpt, SP.sunfish.tempOpt)
     && Math.min(SP.whiteperch.o2Crit, SP.bass.o2Crit) > Math.max(SP.catfish.o2Crit, SP.minnow.o2Crit),
   `opt sucker ${SP.sucker.tempOpt}, perch ${SP.perch.tempOpt}, pickerel ${SP.pike.tempOpt} vs bullhead ${SP.catfish.tempOpt}, pumpkinseed ${SP.sunfish.tempOpt}; O₂ white perch ${SP.whiteperch.o2Crit}, bass ${SP.bass.o2Crit} vs bullhead ${SP.catfish.o2Crit}`);
-// thermal stress in the real summer surface field: the coolwater apex is stressed where the warmwater benthivore is not —
-// the surface peak lies inside pike's heat-hazard band (its UILT − 2 °C, where the bioenergetic heat mortality begins)
-// but far below the bullhead's
-check('warm summer surface thermally stresses cool pike but not warm catfish',
-  summer.tSurfMax > SP.pike.uilt - 2 && summer.tSurfMax < SP.catfish.uilt - 2,
-  `peak surf ${summer.tSurfMax.toFixed(1)}°C vs heat-hazard onset pike ${SP.pike.uilt - 2} / catfish ${SP.catfish.uilt - 2} °C`);
+// thermal stress in the real summer surface field: a MAINE summer (a ~24 °C peak, + the afternoon skin) stays below every
+// resident species' heat-hazard band (its UILT − 2 °C, where the bioenergetic heat mortality begins) — Maine's warm-water
+// fish meet lethal heat only in heat waves (28–30 °C surfaces; the HEAT checks below kill a white sucker at 32 °C)
+{ const onset = Math.min(...SPECIES.map(k => SP[k].uilt - 2));
+  check('a Maine summer surface stays below every resident species’ heat-hazard onset (heat kills only in heat waves)',
+    summer.tSurfMax > 22 && summer.tSurfMax < onset,
+    `peak surf ${summer.tSurfMax.toFixed(1)}°C vs the lowest heat-hazard onset ${onset} °C (${SPECIES.filter(k => SP[k].uilt - 2 === onset).join(', ')})`); }
 // hypoxia penalty fraction in the real summer hypoxic deep: the O₂-demanding species suffers more than the tolerant one
 const hypFrac = sp => summer.o2Deep < sp.o2Crit ? (sp.o2Crit - summer.o2Deep) / sp.o2Crit : 0;
 check('the anoxic summer deep punishes O₂-demanding white perch more than hypoxia-tolerant bullheads',
@@ -1017,8 +1018,8 @@ check('phosphate is the limiting nutrient in a fresh lake (P scarcer than N for 
 // conserved at Redfield, a P-only spike flips the lake N-limited, so the bloom is carried by the N-fixers, not green
 // phyto alone; and with the P budget closed the spike can't simply vanish — the old "mean P falls" passed via the
 // grazing leak that destroyed P — so the loop-closing test is now "the bloom takes the P up into biomass".)
-seed(31415); const ctrl = new World();
-seed(31415); const eut = new World();
+seed(31415); const ctrl = new World().setDate(0.38);   // (mid-July: the warm lake an algal bloom needs — a Maine mid-May is ~13 °C)
+seed(31415); const eut = new World().setDate(0.38);
 for (let i = 0; i < 300; i++) { ctrl.step(1 / 30); eut.step(1 / 30); }
 for (let i = 0; i < eut.env.phos.length; i++) eut.env.phos[i] += 0.6;
 const pAtSpike = meanP(eut);
@@ -1128,8 +1129,8 @@ for (let k = 0; k < 30; k++) { warm.cyanobacteria(1 / 30); cold.cyanobacteria(1 
 check('cyanobacteria are a WARM-water bloomer (grow near TEMP_OPT, stall when cold)', cmeanArr(warm.cyano, 0, 0.12) > cmeanArr(cold.cyano, 0, 0.12), `warm ${cmeanArr(warm.cyano, 0, 0.12).toFixed(3)} > cold ${cmeanArr(cold.cyano, 0, 0.12).toFixed(3)}`);
 // EMERGENT COMPETITION (whole-sim): in a low-N lake, cyano takes a LARGER share of the producers than in an
 // N-rich lake — "cyano wins at low N:P". Same seed; the low-N world has its inorganic N zeroed each step.
-seed(55); const hiN = new World(); seed(55); const loN = new World();
-hiN.time = loN.time = 0.22 * SEASON.YEAR_LEN;   // audit-fixes/chemistry: summer — per-capita cyano only builds a population when warm
+seed(55); const hiN = new World().setDate(0.38); seed(55); const loN = new World().setDate(0.38);   // (mid-July: cyanobacteria are warm-water bloomers — a Maine mid-May is ~13 °C)
+hiN.time = loN.time = 0.38 * SEASON.YEAR_LEN;   // audit-fixes/chemistry: summer (mid-July in the Maine calendar) — per-capita cyano only builds a population when warm
 for (let i = 0; i < 1400; i++) { hiN.step(1 / 30); for (let j = 0; j < loN.env.nh4.length; j++) { loN.env.nh4[j] = 0; loN.env.no3[j] = 0; } loN.step(1 / 30); }
 console.log(`cyano competition: N-rich cyano ${hiN.env.meanCyano().toFixed(3)}/phyto ${hiN.env.meanPhyto().toFixed(3)} vs N-poor cyano ${loN.env.meanCyano().toFixed(3)}/phyto ${loN.env.meanPhyto().toFixed(3)}`);
 // "cyano wins at low N:P" — guarded by ABSOLUTE cyano biomass, NOT a cyano/phyto ratio. A ratio passes for the
@@ -1221,8 +1222,8 @@ function minnowBirths(yearFrac) {
   }
   return n;
 }
-const peakBirths = minnowBirths(0.27), offBirths = minnowBirths(0.88);
-check('seasonal spawning is WIRED: minnows breed in the warm June shallows, not in the ice-covered January lake', peakBirths > 0 && offBirths === 0, `June ${peakBirths} vs January ${offBirths} spawnings (first 20 steps)`);
+const peakBirths = minnowBirths(0.36), offBirths = minnowBirths(0.88);   // (early July: a Maine June is at the shiner's 20 °C threshold)
+check('seasonal spawning is WIRED: shiners breed in the warm July shallows, not in the ice-covered January lake', peakBirths > 0 && offBirths === 0, `July ${peakBirths} vs January ${offBirths} spawnings (first 20 steps)`);
 
 // ============================================================
 //  FECUNDITY / CLUTCH — a spawning yields several condition-dependent young (restores larger-fish self-sustenance)
@@ -1236,7 +1237,7 @@ function firstClutch(ripeness) {   // larvae from one spawning of a pair whose f
   if (fw.agents.length < 2) return 0;
   const [p, q] = fw.agents;
   ripe(p, 0); ripe(q, 1); p.gon = SP.minnow.gsiF * p.W * ripeness;
-  p.x = 1000; p.y = 200; q.x = 1008; q.y = 200; fw.setDate(0.27);  // adjacent, in-season
+  p.x = 1000; p.y = 200; q.x = 1008; q.y = 200; fw.setDate(0.36);  // adjacent, in-season (early July)
   fw.agentGrid.rebuild(fw.agents);
   for (let i = 0; i < 120 && !fw.fry.length; i++) fw.step(1 / 30);
   return fw.fry.reduce((s, f) => s + f.n, 0);
@@ -1624,7 +1625,7 @@ console.log('\n— audit fixes: bio-ecology —');
   // brood SCATTER: the larvae schools start BROOD.SCATTER px from the parents, out of immediate strike reach
   { seed(7); const fw = new World(); fw.agents = fw.agents.filter(a => a.species === 'minnow').slice(0, 2); fw.fry = [];
     const [p, q] = fw.agents; ripe(p, 0); ripe(q, 1);
-    p.x = 200; q.x = 208; p.y = q.y = fw.bedY(204) * 0.5; fw.setDate(0.27); fw.agentGrid.rebuild(fw.agents);   // (spawning in the shallows, where eggs go — SPAWN.SHALLOWS)
+    p.x = 200; q.x = 208; p.y = q.y = fw.bedY(204) * 0.5; fw.setDate(0.36); fw.agentGrid.rebuild(fw.agents);   // (spawning in the shallows, where eggs go — early July: inside the shiner's 20–27 °C window)
     let mx = 0, my = 0; for (let i = 0; i < 120 && !fw.fry.length; i++) { mx = (p.x + q.x) / 2; my = (p.y + q.y) / 2; fw.step(1 / 30); }
     const ds = fw.fry.map(k => Math.hypot(k.x - mx, k.y - my));
     check('brood scatter: the larvae schools are placed within the BROOD.SCATTER annulus around the parents', fw.fry.length > 0 && ds.every(d => d >= BROOD.SCATTER[0] - 12 && d <= BROOD.SCATTER[1] + 12), `${fw.fry.length} schools at ${ds.map(d => d.toFixed(0)).join('/')} px (annulus ${BROOD.SCATTER.join('–')})`); }
@@ -1946,16 +1947,16 @@ console.log('\n— spawning aggregation —');
   const aggRun = (g) => {
     const keep = SP.pike.innate.spawnGround; SP.pike.innate.spawnGround = g;
     try {
-      seed(907); const tw = new World().setDate(0.10); tw.agents = [];
-      const pk = ripe(tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), 0); pk.x = 0.4 * WORLD.W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0;
+      seed(907); const tw = new World().setDate(0.17); tw.agents = [];   // (early May, just after a Maine ice-out: inside the pickerel's 6–11 °C window)
+      const pk = ripe(tw.makeFish('pike', [1, 1, 1, 1, 1, 1, 1]), 0); pk.x = 0.4 * LANDSCAPE.LAKE_W; pk.y = 0.55 * tw.bedY(pk.x); pk.heading = pk.velHeading = 0;
       pk.g.fill(0); pk.lw.fill(0);   // a neutral brain: a random one's turning bias can cancel the reflex in a 4-s probe
       tw.agents.push(pk);
       for (let i = 0; i < 120; i++) tw.step(1 / 30);   // (ripe: mature, gonads full, in good condition)
-      return Math.abs(pk.x - 0.09 * WORLD.W);
+      return Math.abs(pk.x - SPAWN.GROUND_X * LANDSCAPE.LAKE_W);   // (its ground: the lake's inflow side)
     } finally { SP.pike.innate.spawnGround = keep; }
   };
   const off = aggRun(0), on = aggRun(SP.pike.innate.spawnGround);
-  check('SPAWNING AGGREGATION: an in-season, breeding-ready pike heads for the littoral spawning ground (vs the reflex off)', on < off - 15, `distance to ground after 4 s: ${on.toFixed(0)} px with vs ${off.toFixed(0)} px without`);
+  check('SPAWNING AGGREGATION: an in-season, breeding-ready pickerel heads for the littoral spawning ground (vs the reflex off)', on < off - 15, `distance to ground after 4 s: ${on.toFixed(0)} px with vs ${off.toFixed(0)} px without`);
 }
 
 // ==== realism overhaul (2026-10-12): climate, ice, algae physiology, diatoms, nests, digestion, gene flow, loon, perch ====
@@ -1974,7 +1975,7 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
     `Jan ${ewin.tempC.toFixed(1)} °C ice ${ewin.ice}; Aug ${esum.tempC.toFixed(1)} °C strat ${esum.strat.toFixed(2)}`);
   // ICE forms as the surface nears freezing and melts in spring (env-only: its own calendar advances)
   const eFreeze = new EnvR(); eFreeze.primeSeason(0.80 * YL); for (let i = 0; i < 30 * 120; i++) eFreeze.step(1 / 30);
-  const eMelt = new EnvR(); eMelt.primeSeason(0.02 * YL); eMelt.ice = 1; for (let i = 0; i < 30 * 150; i++) eMelt.step(1 / 30);
+  const eMelt = new EnvR(); eMelt.primeSeason(0.10 * YL); eMelt.ice = 1; for (let i = 0; i < 30 * 150; i++) eMelt.step(1 / 30);   // (early April → early May: a Maine lake's ice goes out in the last week of April)
   check('ICE forms in early winter and melts in spring', eFreeze.ice > 0.5 && eMelt.ice === 0, `${eFreeze.monthName()} ice ${eFreeze.ice.toFixed(2)}; ${eMelt.monthName()} ice ${eMelt.ice.toFixed(2)}`);
   // ICE seals the lake: no surface re-aeration and most of the light cut (A/B: the same January lake held ice-free)
   const iceAB = iceOn => { seed(5150); const iw = new World().setDate(0.88), e = iw.env;
@@ -2126,7 +2127,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, the
     seed(6402); const ww = new World().setDate(0.88); ww.herps = []; const fz = ww._mkHerp(1, 150, 2, 2 * YL); ww.herps.push(fz);
     for (let i = 0; i < 150; i++) ww.step(1 / 30);
     check('…frogs hibernate on the bottom of the shallows under the winter ice', fz.st === 2 && fz.y > bedY(fz.x) - 10 && !fz.dead, `state ${fz.st}, ${(bedY(fz.x) - fz.y).toFixed(1)} px above the bed`);
-    seed(6403); const sw = new World().setDate(0.12); sw.herps = []; const fb = sw._mkHerp(1, 150, 2, 2 * YL); fb.e = 0.9; sw.herps.push(fb);
+    seed(6403); const sw = new World().setDate(0.18); sw.herps = []; const fb = sw._mkHerp(1, 150, 2, 2 * YL); fb.e = 0.9; sw.herps.push(fb);   // (early May: open water after a Maine ice-out)
     const keepB = FROG.BREED_RATE; FROG.BREED_RATE = 1e3; sw.env.tempC = 14; sw.env.tempDiel = 0;
     sw.step(1 / 30); FROG.BREED_RATE = keepB;
     check('…frogs spawn in the spring shallows (10–20 °C): an egg mass → tadpoles', sw.herps.filter(h => h.k === 0).length >= FROG.CLUTCH * 0.5, `${sw.herps.filter(h => h.k === 0).length} tadpoles`);
@@ -2156,17 +2157,17 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, the
     check('a hungry bass eats a tadpole that fits its gape (into its stomach)', td.dead && td.eatenBy === 'bass' && bs.gut > 0);
   });
 
-  // THERMOREGULATION: in the warm summer lake a white sucker (preferring 17–24 °C) keeps deeper, in cooler water, than the
-  // same sucker would if it didn't mind the heat (A/B: its tolerance AND its lethal limit raised out of the way — the heat
-  // escape keys on the UILT). Four suckers per lake, three lakes
-  { const felt = hot => { const keep = SP.sucker.tempTol, keepU = SP.sucker.uilt; if (hot) { SP.sucker.tempTol = 30; SP.sucker.uilt = 40; }   // the heat no longer bothers it
+  // THERMOREGULATION: fish follow their thermal preference down the summer water column — suckers given a cold-water
+  // preference (a 12 °C optimum, narrow tolerance) live in clearly cooler water than ordinary suckers (21 °C, which a ~24 °C
+  // Maine summer barely bothers) in the same lakes. Four suckers per lake, three lakes
+  { const felt = cold => { const keep = SP.sucker.tempOpt, keepT = SP.sucker.tempTol; if (cold) { SP.sucker.tempOpt = 12; SP.sucker.tempTol = 3; }
       try { let s = 0, n = 0;
         for (const sd of [6701, 6702, 6703]) { seed(sd); const tw = new World().setDate(0.42);   // a well-oxygenated lake: no O₂ squeeze
           for (let k = 0; k < 4; k++) { const t = tw.makeFish('sucker', ONES7, SP.sucker.matureAge + 50); t.x = LAKE_C - 300 + k * 200; t.y = 150; tw.agents.push(t); }   // (over the lake's deep water, where cool water exists)
           for (let i = 0; i < 30 * 40; i++) { tw.env.o2.fill(1.1); tw.step(1 / 30); if (i > 600) for (const a of tw.agents) if (a.species === 'sucker') { s += tw.env.tempAt(a.x, a.y); n++; } } }
-        return n ? s / n : 0; } finally { SP.sucker.tempTol = keep; SP.sucker.uilt = keepU; } };
-    const cool = felt(false), warm = felt(true);
-    check('THERMOREGULATION: in midsummer white suckers live in cooler water than the same suckers indifferent to heat', cool < warm - 1.0, `mean water temperature ${cool.toFixed(1)} vs ${warm.toFixed(1)} °C`); }
+        return n ? s / n : 0; } finally { SP.sucker.tempOpt = keep; SP.sucker.tempTol = keepT; } };
+    const cool = felt(true), normal = felt(false);
+    check('THERMOREGULATION: suckers with a cold-water preference live in cooler summer water than ordinary suckers', cool < normal - 1.0, `mean water temperature ${cool.toFixed(1)} vs ${normal.toFixed(1)} °C`); }
 
   // the new life round-trips through save/load (v26)
   { seed(6801); const sw = new World().setDate(0.40); for (let i = 0; i < 60; i++) sw.step(1 / 30);
@@ -2304,7 +2305,12 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, the
   { const survive = (k, T, o2) => { seed(7006); const hw = new World(); hw.agents = []; hw.fry = []; hw.birds = []; hw.env.tempAt = () => T; const f = hw.makeFish(k, ONES7); f.x = 1000; f.y = 200; hw.agents.push(f);
       for (let i = 0; i < Math.round(3 * BIOE.DAY * 30) && !f.dead; i++) { if (o2 != null) hw.env.o2.fill(o2); hw.step(1 / 30); } return !f.dead; };
     check('HEAT: 3 days at 32 °C kill a white sucker (UILT ~30 °C) but not a bullhead (~36 °C)', !survive('sucker', 32) && survive('catfish', 32));
-    check('HYPOXIA: water at ~0.5 mg/L O₂ kills a white perch (lethal ~0.8 mg/L at 18 °C) but not a bullhead (~0.2)', !survive('whiteperch', 18, 0.5 / 9.5) && survive('catfish', 18, 0.5 / 9.5)); }
+    // (five of each: a fish gasping at the re-aerated surface lifts its O₂ a little, so one fish's fate is a coin toss)
+    const survivors = (k, T, o2, n) => { seed(7007); const hw = new World(); hw.agents = []; hw.fry = []; hw.birds = []; hw.env.tempAt = () => T; const fs = [];
+      for (let j = 0; j < n; j++) { const f = hw.makeFish(k, ONES7); f.x = 600 + j * 80; f.y = 200; fs.push(f); hw.agents.push(f); }
+      for (let i = 0; i < Math.round(3 * BIOE.DAY * 30); i++) { hw.env.o2.fill(o2); hw.step(1 / 30); } return fs.filter(f => !f.dead).length; };
+    const wpS = survivors('whiteperch', 18, 0.35 / 9.5, 5), bhS = survivors('catfish', 18, 0.35 / 9.5, 5);
+    check('HYPOXIA: water at ~0.35 mg/L O₂ kills most white perch (lethal ~0.8 mg/L at 18 °C) and no bullheads (~0.2)', wpS <= 2 && bhS === 5, `white perch ${wpS}/5, bullheads ${bhS}/5 alive after 3 days`); }
   // the bioenergetic state round-trips through save/load (v27): length, mass, sex, maturity, gonads, gut, fry schools
   { seed(7007); const sw = new World().setDate(0.35); for (let i = 0; i < 300; i++) sw.step(1 / 30);
     const lw = new World(); lw.load(JSON.parse(JSON.stringify(sw.toJSON())));
@@ -2730,6 +2736,28 @@ console.log('\n— the Maine fish —');
         fs.forEach((f, k) => { if (!f.dead) sum += f.x - x0[k]; }); return sum / 8; } finally { FL.SPEED = keep; } };
     const calm = drift(1), spate = drift(15);
     check('RHEOTAXIS: shiners hold station in the stream\'s normal current but a spate (15×) carries them downstream', spate > calm + 40, `mean downstream shift in 10 s: ${calm.toFixed(0)} px at the normal current vs ${spate.toFixed(0)} px in spate`); }
+  // WINTERKILL by species (the under-ice lethal O₂ floor, Cooper & Washburn 1946): six days under ice at 2 °C in water of
+  // 0.25 mg/L kill pumpkinseed, perch and smallmouth but not bullheads or golden shiners — the survivors of Michigan's
+  // natural winterkills (the cold-water extrapolation of the 25 °C lethal values alone had all of them surviving)
+  { const { ENV: ENVW } = await import('../src/config.js');
+    const iceSurvivors = (k, n, mg) => { seed(7008); const hw = new World().setDate(0.85); hw.agents = []; hw.fry = []; hw.birds = []; hw.env.tempAt = () => 2;
+      const fs = []; for (let j = 0; j < n; j++) { const f = hw.makeFish(k, ONES7); f.x = 600 + j * 60; f.y = 200; fs.push(f); hw.agents.push(f); }
+      for (let i = 0; i < Math.round(6 * BIOE.DAY * 30); i++) { hw.env.ice = 1; hw.env.o2.fill(mg / ENVW.O2_MGL); hw.step(1 / 30); }   // (sealed under the ice: no surface to gasp at)
+      return fs.filter(f => !f.dead).length; };
+    const sv = {}; for (const k of ['sunfish', 'perch', 'bass', 'catfish', 'minnow']) sv[k] = iceSurvivors(k, 5, 0.25);
+    check('WINTERKILL by species: 6 days under ice at 0.25 mg/L kill pumpkinseed, perch and smallmouth, not bullheads or golden shiners', sv.sunfish <= 1 && sv.perch <= 1 && sv.bass <= 1 && sv.catfish === 5 && sv.minnow === 5,
+      Object.entries(sv).map(([k, v]) => `${k} ${v}/5`).join(', ')); }
+  // THE MAINE CALENDAR (SEASON.TEMP_KNOTS): ~208 days below 10 °C (Spednic 208 ± 4), ice-out (the curve past ICE.MELT_T)
+  // in the last week of April, 15 °C by late May, a ~24 °C peak at the end of July, ice-on (below ICE.FORM_T) around
+  // December 1 — and a lake set to late March is still frozen, one set to mid-May open
+  { const { seasonalTemp, ICE: ICEC } = await import('../src/config.js');
+    let b10 = 0, out = null, on = null, t15 = null, pk = -1, pkAt = 0;
+    for (let d = 0; d < 365; d++) { const T = seasonalTemp(d / 365), Tn = seasonalTemp((d + 1) / 365); if (T < 10) b10++; if (T > pk) { pk = T; pkAt = d; }
+      if (out === null && T < ICEC.MELT_T && Tn >= ICEC.MELT_T) out = d; if (T >= ICEC.FORM_T && Tn < ICEC.FORM_T) on = d; if (t15 === null && Tn >= 15) t15 = d; }
+    const mar = new World().setDate(0.07), may = new World().setDate(0.22);
+    check('MAINE CALENDAR: ~208 days below 10 °C, ice-out in late April, 15 °C by late May, a ~24 °C peak at the end of July, ice-on ~Dec 1',
+      b10 >= 200 && b10 <= 216 && out >= 47 && out <= 60 && t15 >= 80 && t15 <= 95 && pk >= 23 && pk <= 25.5 && pkAt >= 140 && pkAt <= 160 && on >= 265 && on <= 290 && mar.env.ice > 0.5 && may.env.ice < 0.5,
+      `${b10} days < 10 °C; ice-out day ${out} (Mar 1 = 0; Apr 24 = 54), 15 °C day ${t15}, peak ${pk.toFixed(1)} °C day ${pkAt}, ice-on day ${on}; late March ice ${mar.env.ice}, mid-May ice ${may.env.ice}`); }
   setRandState(rsM); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);

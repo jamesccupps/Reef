@@ -5,7 +5,28 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, evening) — THE MAINE FISH (re-base step 3) DONE, branch `zoo-field` (save v32)
+## ▶ NOW (2026-10-15, night) — MAINE CALENDAR + WINTER O₂ (re-base step 4a) DONE, branch `zoo-field` (save v32)
+
+DONE: step 3 committed (70a3fbd, the Maine fish; backup synapse-reef_20261015_1447_maine-fish.zip). STEP 4a (FEATURES "Maine
+re-base, part 3"): the MAINE CALENDAR — SEASON.TEMP_KNOTS → config `seasonalTemp(yf)` (monotone cubic, replaces the sine;
+ice-out ~Apr 23, 15 °C ~May 25, 24 °C peak ~Jul 30, ice-on ~Dec 1, 208 days < 10 °C; simulated with weather: ice-out Apr
+25–28, ice-on Nov 26–Dec 9); BIRD.SEASON [0.14, 0.76]; render tint follows it. WINTER O₂ — species `o2Ice` (Cooper &
+Washburn 1946 natural winterkills) via world `lethalO2`: bullhead/shiner 0.2, pumpkinseed/perch/pickerel 0.35, white perch 0.5
+(prior), sucker/smallmouth 0.8. Gate: calendar anchors; winterkill by species (sealed under ice at 0.25 mg/L: pumpkinseed,
+perch, bass die; bullheads, shiners live); 13 checks that assumed the old warm calendar moved to Maine dates (June → July
+spawning, April → May ice-out/frogs, etc.); the hypoxia check now uses 5 fish (a fish gasping at the re-aerated surface made
+one fish's fate a coin toss).
+VALIDATION (census.mjs 1–3 × 3 yr → verify/census_4a_s*): every species persists; fish 84–156 kg/ha (inside Maine's 60–150 but
+one peak); white perch 21–55, pumpkinseed 21–160 (yearly recruit pulses), suckers spawn and recruit; SHINERS and YELLOW PERCH
+end at 3–6 on every seed (immigrants hold them) — the open problem.
+NEXT: (1) WHY SHINERS AND YELLOW PERCH DON'T REPLACE THEMSELVES — death audit by month and life stage (shiners fade steadily
+from Dec through spring: 54 → 13 by May; perch 21 → 3–6 over 3 yr), deaths.mjs/fryfate.mjs/roster.mjs; suspects: winter
+starvation/predation of small fish, white perch competition, perch spawning success (strands at 1–3.7 m; Maine perch spawn
+7–12 °C right after ice-out), maturity. (2) Step 4b: coloured mesotrophic water (Secchi 2.5–4 m, colour-dominated light,
+TP 10–20 µg/L) — its own slice (needs a calibrated nutrient mapping). (3) The ANGLER-REALISM habitat audit (research done:
+docs/research_notes/Seasonal fish habitat use/). (4) Step 5 stream behaviour.
+
+## (previous) NOW (2026-10-15, evening) — THE MAINE FISH (re-base step 3) DONE, branch `zoo-field` (save v32)
 
 DONE: the landscape validation (3 seeds × 3 yr on 5c4e300: sunfish/perch hold; minnows collapsed — see the current fix
 below); gate green on 730e9cb. STEP 3, THE MAINE FISH (FEATURES "Maine re-base, part 2"; commit "The Maine fish…"): golden

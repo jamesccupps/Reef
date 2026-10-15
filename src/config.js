@@ -363,8 +363,15 @@ export const homeBasinAt = x => { const b = basinAt(x); if (b.kind !== 'stream')
 // 22 °C on Mar 1 → 31 °C on Jun 1 → never below 13 °C: no winter, no ice, a June heat peak.)
 export const SEASON = {
   get YEAR_LEN() { return TIME.YEAR_LEN; },   // live alias of the master TIME.YEAR_LEN (not a load-time copy)
-  TEMP_AMP: 13,              // seasonal swing (±°C) of the surface/epilimnion base temperature about ENV.TEMP_BASE
-  TEMP_PHASE: 0.17,          // year-fraction of the spring zero crossing → peak at +0.25 (≈ Aug 1), minimum ≈ Jan 21
+  // THE MAINE CALENDAR (2026-10-15): the surface/epilimnion base temperature through the year — a periodic monotone
+  // cubic through these [year-fraction, °C] knots (yf 0 = March 1), not a sine: a sine fitted to an end-of-April ice-out
+  // reaches 15 °C only in mid-June, where Maine lakes warm FAST once the ice goes and cool slowly in autumn. Anchors (docs/
+  // reports/Maine lakes ponds and streams.md): ice-out ~Apr 23 (West Grand Lake 1979–2008 mean Apr 24, USGS OFR 2010-1214);
+  // 15 °C by ~May 25 (Spednic's modelled median start of smallmouth spawning May 28, Dudley & Trial 2014); a ~24 °C peak at
+  // the end of July (August surveys 21–26 °C; Hot Brook 23.3 °C in August 1949); 10 °C by mid-October → 208 days below
+  // 10 °C (Spednic 208 ± 4); ice-on ~Dec 1 (Nov–Dec, weakly sourced). Weather (ENV.TEMP_WEATHER) and the day add to it.
+  TEMP_KNOTS: [[0, 0.3], [0.115, 0.5], [0.150, 4.0], [0.197, 10.0], [0.235, 15.0], [0.300, 20.5], [0.415, 24.0],
+               [0.510, 21.0], [0.570, 16.0], [0.627, 10.0], [0.695, 5.0], [0.760, 1.0], [0.800, 0.3]],
   START_YF: 0.22,            // a fresh lake opens in mid/late May (ice gone, plants and fish active)
   // daylight: day length and noon sun height follow the solstice (Jun 21 = yf 0.307) — ~9 h days in winter, ~15 h in
   // summer, and a winter noon sun about half as strong
@@ -372,13 +379,27 @@ export const SEASON = {
   DAY_FRAC: [0.38, 0.62],    // fraction of the 24 h cycle that is daylight, [winter solstice, summer solstice]
   NOON: [0.5, 1.0],          // noon irradiance factor, [winter, summer]
 };
+// the seasonal base surface temperature (°C) at year-fraction yf — SEASON.TEMP_KNOTS through a periodic monotone cubic
+// (Fritsch–Carlson tangents: no overshoot between knots, so winter stays at its floor and the peak is the peak knot)
+const _tk = (() => {
+  const K = SEASON.TEMP_KNOTS, n = K.length, X = [...K.map(k => k[0]), 1], Y = [...K.map(k => k[1]), K[0][1]], d = [], m = [];
+  for (let i = 0; i < n; i++) d.push((Y[i + 1] - Y[i]) / (X[i + 1] - X[i]));
+  for (let i = 0; i <= n; i++) { const dl = d[(i - 1 + n) % n], dr = d[i % n]; m.push(dl * dr <= 0 ? 0 : 2 / (1 / dl + 1 / dr)); }
+  return { n, X, Y, m };
+})();
+export function seasonalTemp(yf) {
+  const { n, X, Y, m } = _tk; yf = ((yf % 1) + 1) % 1;
+  let i = 0; while (i < n - 1 && yf >= X[i + 1]) i++;
+  const h = X[i + 1] - X[i], t = (yf - X[i]) / h, t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * Y[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * Y[i + 1] + (t3 - t2) * h * m[i + 1];
+}
 // A fish-eating diving BIRD (a common loon): visits the open lake from ice-out to late autumn, rests on the surface and
 // dives in daylight to chase fish underwater (loons pursue prey by sight, propelled by their feet), surfacing for air
 // between dives, and flies off once sated. Fish sense a diving loon as a threat (World.qThreat). Times are sim seconds.
 export const BIRD = {
   MAX: 1,              // loons hunting at once (one territorial bird/pair on a lake this size)
   ARRIVE: 0.004,       // /s chance one arrives when none is present (in season, open water)
-  SEASON: [0.08, 0.72],// year-fraction window it can be on the lake (≈ ice-out → mid-November)
+  SEASON: [0.14, 0.76],// year-fraction window it can be on the lake (≈ Maine ice-out → late November; open water only)
   STAY: [500, 1100],   // s a visit lasts at most before it flies off
   SPEED: 62,           // px/s swimming underwater (between perch cruising and a pike's burst)
   TURN: 3.2,           // rad/s underwater turn rate
@@ -606,7 +627,7 @@ export const ENV = {
   RAIN: [0, 0, 0.6, 1.0],              // rain intensity per state
 
   // temperature (deg C, normalised internally)
-  TEMP_BASE: 12.5,         // annual-mean surface temperature (the seasonal swing is SEASON.TEMP_AMP about it)
+  TEMP_BASE: 12.5,         // a starting surface temperature before the calendar sets it (the curve is SEASON.TEMP_KNOTS)
   TEMP_DIURNAL: 4,         // +/- swing over the day (surface; damped with depth — THERMAL.DIEL_DEPTH)
   TEMP_RELAX: 0.4,         // /s rate the surface temperature eases toward its seasonal+diurnal+weather target
   TEMP_WEATHER: [0, -1, -2.5, -3], // cooling per weather state
