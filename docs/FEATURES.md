@@ -5,7 +5,48 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-15 zooplankton fields and food web** section comes first, then the **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-15 Maine re-base, part 1** and **2026-10-15 zooplankton fields and food web** sections come first, then the **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-15 the Maine re-base, part 1: recruitment compensation and the landscape (save v31)
+
+Built on `docs/reports/Maine lakes ponds and streams.md` (notes in `docs/research_notes/Maine lakes ponds and streams/`).
+
+- **Juvenile compensation** (`FRY.JUV_DREF` 3, `JUV_D50` 0.5 fish/m², `world.js` `_stepFry` `juvD`): the juvenile natural
+  mortality `M_JUV` scales with that species' juvenile density (fish past the larval stage per m² of the slice) as
+  (D + D50)/(DREF + D50) — the Beverton–Holt form M = M0·(1 + N/N50). A crowded cohort dies several times faster per fish
+  than a sparse one, so recruitment plateaus (Oneida perch: survival 18 mm → age 2 doubles each time density halves, Rose et
+  al. 2001; bluegill nest poisoning didn't cut autumn young, Beyerle & Williams 1967). The larval term stays density-
+  independent (Irwin et al. 2009). Effect: young-of-year recruit every spring, even 50+ from 4 adults.
+- **Maturation reaction norm** (`BIOE.PMRN_SLOPE` 0.12/yr, `PMRN_FLOOR` 0.7; `world.js` `lmatAt` / `matureAt`): past its
+  species' `matMinAge` a fish's maturation length falls with age, so stunted fish mature older and smaller, fast growers
+  younger and larger (Fox & Keast 1991; Feiner et al. 2017). Northern maturity: sunfish 7.5/6.5 cm, perch 14/10 cm.
+- **Spawning migrations**: a ripe in-season fish farther than `SPAWN.MIG_FORAGE_D` from its ground travels instead of
+  foraging (the bed-food pull had stalled spawners in the deep). A species without its own `spawnSide` gathers at its water
+  body's INFLOW side (one shared ground per water body, so a sparse species' spawners meet); nests go shoreward from the
+  pair to water no deeper than `SPAWN.NEST_D` 2.5 m.
+- **The landscape** (`config.js` `LANDSCAPE`, `BASIN`, `STREAM`, `POND`, `BASINS`, `bedY`): the world is now a LAKE (x 0–2048:
+  a 0.25-m shoreline sloping to 3.2 m over the outer 45 % of each side, a drop-off and a hole to 14.4 m — mean 6.1 m, 42 % of
+  the bed ≤ 3 m, a typical stratifying Maine lake), a STREAM (448 px of riffles at 0.35 m and two pools to 0.9 m — Hot
+  Brook between the Hot Brook lakes) and a POND (1408 px: a saucer with a sloping littoral and a flat floor to 4.0 m — mean
+  2.7 m, 45 % ≤ 3 m, as Lower Hot Brook; shallow enough to stay mixed: its whole depth lies in the epilimnion of the
+  depth-based thermal profile). The lake's inflow enters at the left edge; the through-flow runs lake → stream → pond → out
+  the pond's outlet at the right edge. Helpers: `basinAt`, `homeBasinAt` (a stream fish counts with the nearer basin),
+  `basinCenterX`, `isLittoralX` (bed ≤ 3.5 m), `littoralX(R)`, `shoreDir` (toward shallower water), `wetArea`.
+  `WORLD.W` 3904; `AREA_SCALE` ∝ the water cross-section; `SLICE_M2` ∝ W (the third dimension stays ~27 m).
+- **Multi-basin fields** (`environment.js` `buildWetMask`): a cell is wet iff it lies above its column's bed; rows below the
+  stream's depth hold two runs (lake, pond) with dry ground between, so every loop over a row's span checks `mask.wet`,
+  diffusion is no-flux across dry cells, and zooplankton horizontal mixing (`HMIX`) runs per water body (`mask.bruns`).
+- **Placement by the landscape, not by width fractions**: plants seed on the littoral of any basin; reeds stand in water ≤
+  `STRUCTURE.REED_D` 0.9 m, weed beds root at 0.8–5 m (`WEED_D`, canopy 15–85 % of the column), mussels on the lit bed;
+  macrophyte zones are in METRES of bed (lily 0.4–2.5, pondweed 0.4–4.5, muskgrass 0.3–4, milfoil 1.5–6; a deeper bed takes
+  the nearest form) and no plant grows taller than the water; spawning grounds, limnetic fry bands and shore-seeking
+  reflexes use the fish's own water body. Camera opens on the lake; tours visit all three; the minimap shows the landscape.
+- **Save v31**: an older save's fields map by ABSOLUTE x into the lake (its lake lies where the new lake is); the stream and
+  pond start at their defaults.
+- **Fixes found on the way**: an insect-larva patch on a shallow-water stem sat above the surface (save/load clamped it —
+  exact resume broke); the shoreward reflex of a bottom fish on an anoxic bed tilted DOWN on both sides of the lake.
 
 ---
 

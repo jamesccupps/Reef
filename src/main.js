@@ -1,6 +1,6 @@
 // main.js — boot + fixed-timestep loop + camera input. Browser-only.
 import { seed } from './core.js';
-import { WORLD, CAMERA } from './config.js';
+import { WORLD, CAMERA, LANDSCAPE } from './config.js';
 import { World } from './world.js';
 import { Camera, snapshotPrev } from './camera.js';
 import { Renderer, makeGuardedLoop } from './render.js';
@@ -18,8 +18,8 @@ const inspector = new Inspector(document.getElementById('brain'));
 const ui = new UI(world, renderer, inspector, camera);
 
 // open on the WHOLE LAKE (shores, weed beds, the deep basin, every fish) — the "big picture first, then zoom to one
-// fish" the project is about. (It used to open 2.4× in on the lake centre: open pelagic water, the emptiest view.)
-camera.setZoomRel(1); camera.tcx = WORLD.W * 0.5; camera.tcy = WORLD.H * 0.5;
+// fish" the project is about; the stream and the pond lie to its right (pan or zoom out for the whole landscape)
+camera.setZoomRel(WORLD.W / LANDSCAPE.LAKE_W); camera.tcx = LANDSCAPE.LAKE_W * 0.5; camera.tcy = WORLD.H * 0.5;
 
 // ---- camera input: drag-pan (primary pointer), two-finger pinch-zoom, wheel-zoom, click-select ----
 // Each pointer is tracked by id, so a second finger never makes the camera jump: one pointer pans, two pinch

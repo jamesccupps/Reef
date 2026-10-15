@@ -2,7 +2,7 @@
 // PURE & DOM-free: it only does math on numbers (viewport size is passed in as px),
 // so it is unit-tested headlessly alongside the sim. The renderer draws through it.
 import { clamp, lerp, TAU } from './core.js';
-import { CAMERA, bedY } from './config.js';
+import { CAMERA, bedY, BASINS, basinCenterX } from './config.js';
 
 // render-time randomness (tour subject picks) must NOT touch the sim's seeded RNG,
 // or it would desync determinism. Use Math.random here, never core.rand.
@@ -144,13 +144,15 @@ export class Camera {
     this._tourId = null;
     let tx = this.W / 2, ty = this.H / 2;
     if (kind === 'wide') {
-      shot.zoom = rrand(1.0, 1.35); tx = this.W * rrand(0.44, 0.56); ty = this.H * rrand(0.45, 0.55); shot.drift = [rrand(-14, 14), 0];
+      // a wide shot of one water body (the lake, the stream or the pond), framed to its width
+      const b = BASINS[(Math.random() * BASINS.length) | 0], bw = b.x1 - b.x0;
+      shot.zoom = rrand(1.0, 1.35) * Math.max(1, this.W / Math.max(bw, this.W * 0.3)); tx = b.x0 + bw * rrand(0.4, 0.6); ty = this.H * (b.kind === 'lake' ? rrand(0.45, 0.55) : rrand(0.12, 0.2)); shot.drift = [rrand(-14, 14), 0];
     } else if (kind === 'habitat') {
       const spots = [];
       for (const wb of world.weedbeds || []) spots.push([wb.x, (wb.top + wb.bot) / 2]);
-      for (const fx of [0.09, 0.91, 0.5]) { const x = this.W * fx; spots.push([x, bedY(x) * (fx === 0.5 ? 0.82 : 0.7)]); }   // shelves + deep basin
+      for (const b of BASINS) { const c = basinCenterX(b), bw = b.x1 - b.x0; for (const x of [b.x0 + bw * 0.12, c, b.x1 - bw * 0.12]) spots.push([x, bedY(x) * 0.7]); }   // each water body's shores + middle
       const s = spots[(Math.random() * spots.length) | 0]; tx = s[0]; ty = s[1];
-      shot.zoom = rrand(3, 6); shot.drift = [rrand(-20, 20), rrand(-4, 4)];
+      shot.zoom = rrand(5.5, 11); shot.drift = [rrand(-20, 20), rrand(-4, 4)];
     } else {
       let pick = null, best = -1;
       for (let i = 0, n = Math.min(ags.length, 40); i < n; i++) {

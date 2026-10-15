@@ -1,5 +1,5 @@
 // world.js — the simulation. Pure (no DOM). Headless-testable in Node.
-import { WORLD, SEASON, BIRD, ENV, PLANKTON, BENTHOS, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM, EVO } from './config.js';
+import { WORLD, SEASON, BIRD, ENV, PLANKTON, BENTHOS, DETRITUS, PLANT, MACRO, NUTRIENT, IMMIGRATION, SPAWN, SEED_COUNTS, scaleCount, GRID, bedY, BASIN, STRUCTURE, COVER, PHYTO, CYANO, MUSSEL, COMPETE, SCHOOL, TOX, ACTION, MOTION, DRIVE, INSECT, SNAIL, CRAYFISH, LEARN, BRAIN, BROOD, FEED, ODONATA, FROG, TURTLE, TIME, BIOE, PREY, FRY, SEDOM, EVO, littoralX, isLittoralX, shoreDir, homeBasinAt, basinAt, basinCenterX, BASINS, LANDSCAPE} from './config.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from './bioenergetics.js';
 import { rand, gauss, clamp, canEat, angDiff, SpatialGrid, randomGenome, migrateGenome, migrateGenomeInputs, mutate, crossover, forward, reinforce, genomeLen, OUT, randomGenes, crossoverGenes, mutateGenes, GENE_KEYS, randomPlantGenes, PLANT_GENE_KEYS } from './core.js';
 import { Environment } from './environment.js';
@@ -92,7 +92,9 @@ const isNymphFry = f => !f.dead && f.L <= ODONATA.FRY_MAX;     // … in a fry s
 // (worth the chase: at least the mass of a fish PREY_MIN of its own length — mass ∝ length³)
 const canEatHerp = (h, a) => !h.dead && h.st !== 2 && (a.sp.diet.fish || h.k === 0) && herpDepth(h) <= gapeOf(a) && herpMass(h) >= FEED.PREY_MIN ** 3 * a.W;
 const isShallow = x => bedY(x) < H * 0.35;                     // over the littoral shelf (frogs, tadpoles, nymphs, basking)
-const toShore = x => (x < W * BASIN.CENTER ? -1 : 1);          // horizontal direction to the nearer (shallow) shore
+const toShore = x => shoreDir(x);          // horizontal direction to the nearer (shallow) shore (the landscape's own slope)
+// a nest site from a spawning pair at x: shoreward until the bed is no deeper than SPAWN.NEST_D
+const nestX = x => { for (let k = 0; k < 120 && bedY(x) > SPAWN.NEST_D * WORLD.PX_PER_M; k++) x = clamp(x + shoreDir(x) * 12, 4, W - 4); return x; };
 const isLoonPrey = it => !it.dead && it.L <= BIRD.PREY_MAX;   // what a loon can swallow (cm)
 const isPreyOf = (it, a) => canPreyFn(a, it);
 // a FRY SCHOOL's fish a fish could eat: young fish that fit a piscivore's gape and are worth its chase — a dense school is
@@ -429,11 +431,15 @@ function poolFounder(k) { const sp = SP[k]; return { w: randomGenome(sp.shape), 
 
 // pick a macrophyte variety appropriate to the rooting bed-depth fraction (so forms zonate by depth: shallow
 // shelf → lily/chara/pondweed, drop-off → pondweed/milfoil, deep → milfoil). Random among the depth-matching forms.
-function pickVariety(bedFrac) {
+function pickVariety(bedM) {
   let cands = null, c0 = -1;
-  for (let i = 0; i < MACRO.length; i++) if (bedFrac >= MACRO[i].zone[0] && bedFrac <= MACRO[i].zone[1]) { if (cands) cands.push(i); else if (c0 < 0) c0 = i; else { cands = [c0, i]; } }
+  for (let i = 0; i < MACRO.length; i++) if (bedM >= MACRO[i].zone[0] && bedM <= MACRO[i].zone[1]) { if (cands) cands.push(i); else if (c0 < 0) c0 = i; else { cands = [c0, i]; } }
   if (cands) return cands[(rand() * cands.length) | 0];
-  return c0 >= 0 ? c0 : 0;   // default to pondweed if nothing matches
+  if (c0 >= 0) return c0;
+  // no zone fits (shallower or deeper than every form): the form whose zone is nearest — deep beds get the deep, shade-
+  // tolerant milfoil (which then starves of light below its limit, as real plants do)
+  let best = 0, bd = Infinity; for (let i = 0; i < MACRO.length; i++) { const z = MACRO[i].zone, d = bedM < z[0] ? z[0] - bedM : bedM - z[1]; if (d < bd) { bd = d; best = i; } }
+  return best;
 }
 // a newborn's spawn point: scattered in an annulus BROOD.SCATTER around (x, y) — out of the parents' immediate strike
 // reach — and kept inside the water column (above the bed, below the surface). Seeded RNG → deterministic.
@@ -466,10 +472,10 @@ export function derivePlant(p) {
 function newPlant(x, mature, parent = null, clone = false) {
   const base = bedY(x) + rand(-1, 2);                    // rooted on the (curved) lake bed
   // a RUNNER (clone) is the parent's own species wherever it roots; a seedling's form is set by its rooting depth
-  const v = clone && parent ? parent.v : pickVariety(clamp(base / WORLD.H, 0, 1)), mv = MACRO[v];
+  const v = clone && parent ? parent.v : pickVariety(base / WORLD.PX_PER_M), mv = MACRO[v];   // (zones in metres of bed depth)
   const gn = parent ? mutateGenes(parent.gn, clone ? 0.25 : 0.5, 0.045) : randomPlantGenes();   // slow drift (clones barely); core.rand → deterministic
   const hue = parent ? wrapHue(parent.hue + gauss() * 7) : wrapHue(mv.hue + rand(-6, 6));
-  const maxH = clamp(rand(mv.maxH[0], mv.maxH[1]) * gn[0], 6, 140);
+  const maxH = clamp(rand(mv.maxH[0], mv.maxH[1]) * gn[0], 6, Math.max(6, Math.min(140, base - 2)));   // (no taller than the water)
   const height = mature ? rand(PLANT.WINTER_MIN, maxH) : PLANT.WINTER_MIN;
   // `nut` = the N+P (balanced organic units) this plant has actually absorbed. It starts EMPTY — a seedling's or founder's
   // starting biomass carries none, so nothing is ever returned that wasn't taken — and every loss (shed, grazed, death)
@@ -482,7 +488,7 @@ function newPlant(x, mature, parent = null, clone = false) {
 // in the dark deep middle. Bias seeding x toward the shelves (the rest still spreads, but those
 // deep seedlings are light-limited and tend to uproot — the beds self-concentrate on the shelf).
 function plantX() {
-  if (rand() < 0.75) return rand() < 0.5 ? rand(8, W * BASIN.SHELF_FRAC) : rand(W * (1 - BASIN.SHELF_FRAC), W - 8);
+  if (rand() < 0.75) return littoralX(rand);   // most seeds land on the littoral (any water body)
   return rand(6, W - 6);
 }
 // shading competition: sum the overhead leaf-cover that TALLER plants in `neighbours` cast on plant `p` (within
@@ -580,26 +586,25 @@ export class World {
   // and mussel beds (benthic filter feeders) on the lit bed
   _genStructures() {
     this.reeds = []; this.logs = []; this.mussels = []; this.weedbeds = [];
-    const lin = WORLD.W / WORLD.REF_W, band = STRUCTURE.SHORE_FRAC * W;   // shore/bed features scale with width
+    const lin = WORLD.W / WORLD.REF_W, P = WORLD.PX_PER_M;   // shore/bed features scale with width
+    // an x whose bed depth (m) lies in [d0, d1] — rejection sampling with the sim RNG (the landscape's own littoral)
+    const xAt = (d0, d1) => { let x = 0; for (let k = 0; k < 80; k++) { x = rand(6, W - 6); const d = bedY(x) / P; if (d >= d0 && d <= d1) return x; } return x; };
     for (let i = 0, n = Math.max(1, Math.round(STRUCTURE.REEDS * lin)); i < n; i++) {
-      const x = rand() < 0.5 ? rand(6, band) : rand(W - band, W - 6);
+      const x = xAt(0, STRUCTURE.REED_D);   // emergent reeds at the water's edge
       this.reeds.push({ x, baseY: bedY(x), height: rand(20, 52), n: 3 + (rand() * 4 | 0) });
     }
     for (let i = 0, n = Math.max(1, Math.round(STRUCTURE.LOGS * lin)); i < n; i++) {
       const x = rand(50, W - 50);
       this.logs.push({ x, y: bedY(x) - rand(0, 6), len: rand(22, 52), ang: rand(-0.35, 0.35) });
     }
-    // submerged macrophyte beds on the littoral / drop-off: tall weed bands rooted on the bed that reach
-    // UP into the oxygenated mid-water column — the cover where pike ambush & sunfish hold (avoid the deep
-    // hypoxic centre so cover-seekers don't get pulled into water they can't breathe).
+    // submerged macrophyte beds on the littoral and the upper slope: weed bands rooted on the bed reaching up through 15–85 %
+    // of the water column — the cover where pickerel ambush and sunfish hold (not the deep, hypoxic centre)
     for (let i = 0, n = Math.max(1, Math.round(STRUCTURE.WEEDBEDS * lin)); i < n; i++) {
-      const x = rand() < 0.5 ? rand(W * 0.08, W * 0.34) : rand(W * 0.66, W * 0.92);
-      const bed = bedY(x), top = clamp(bed - rand(170, 360), H * 0.14, bed - 40);  // reaches up into mid-water
-      this.weedbeds.push({ x, top, bot: bed, w: rand(16, 30) });
+      const x = xAt(STRUCTURE.WEED_D[0], STRUCTURE.WEED_D[1]), bed = bedY(x);
+      this.weedbeds.push({ x, top: Math.max(6, bed * rand(0.15, 0.6)), bot: bed, w: rand(16, 30) });
     }
     for (let i = 0, n = Math.max(1, Math.round(MUSSEL.COUNT * lin)); i < n; i++) {
-      // bias to the lit bed (shelves & slopes) where phytoplankton is available to filter
-      const x = rand() < 0.5 ? rand(20, W * 0.34) : rand(W * 0.66, W - 20);
+      const x = xAt(0.3, STRUCTURE.MUSSEL_D);   // the lit bed where phytoplankton is there to filter
       this.mussels.push({ x, y: bedY(x), n: 4 + (rand() * 5 | 0) });
     }
   }
@@ -641,7 +646,7 @@ export class World {
     dev = dev ?? rand(0, 0.25);
     if (x === undefined && this.plants.length && rand() < INSECT.EPIPHYTE) {
       const p = this.plants[(rand() * this.plants.length) | 0];
-      if (!p.dead && p.height > 6) return { x: clamp(p.x + rand(-3, 3), 4, W - 4), y: p.baseY - p.height * rand(0.15, 0.9), dev, m, dead: false };
+      if (!p.dead && p.height > 6) return { x: clamp(p.x + rand(-3, 3), 4, W - 4), y: Math.max(2, p.baseY - p.height * rand(0.15, 0.9)), dev, m, dead: false };   // (in the water, below the surface)
     }
     const px = x ?? rand(8, W - 8); return { x: px, y: bedY(px) - rand(1, 5), dev, m, dead: false };
   }
@@ -1101,7 +1106,7 @@ export class World {
       // a LIMNETIC PHASE (sp.pelagicFry cm): bluegill fry leave the nest for the open water and feed on its zooplankton for
       // weeks, coming back to the weeds at ~2–2.5 cm (Werner 1967, 1969) — so the lake's young sunfish spread over its whole
       // open-water zooplankton instead of crowding the shallows (and the young bass there) — once no guardian holds them
-      if (sp.pelagicFry && f.L < sp.pelagicFry && !held) { f.tx = clamp(f.tx, W * FRY.PELAGIC_X[0], W * FRY.PELAGIC_X[1]); f.ty = clamp(f.ty, 8, H * FRY.PELAGIC_D); }
+      if (sp.pelagicFry && f.L < sp.pelagicFry && !held) { const pb = homeBasinAt(f.x), pw = pb.x1 - pb.x0; f.tx = clamp(f.tx, pb.x0 + pw * FRY.PELAGIC_X[0], pb.x0 + pw * FRY.PELAGIC_X[1]); f.ty = clamp(f.ty, 8, H * FRY.PELAGIC_D); }
       // RECRUITMENT: one individual per N_PER_AGENT survivors (stochastic rounding; seeded RNG), as many as the species'
       // agent budget has room for, carrying the school's genome (its siblings a fresh mutation of it) at the school's size
       if (f.L >= sp.L0 || (f.age > FRY.OVERWINTER * Y && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) {
@@ -1357,7 +1362,7 @@ export class World {
       if (rand() < SNAIL.M / TIME.YEAR_LEN * dt) { s.dead = true; continue; }                  // old age (an annual life)
       const want = SNAIL.GRAZE * Math.pow(2, (env.tempAt(s.x, s.y) - 20) / 10) * dt;
       if (env.takeSedOM(s.x, want) < 0.5 * want && rand() < SNAIL.STARVE * dt) { s.dead = true; continue; }   // the layer can't feed it
-      if (bedY(s.x) > snLim) s.vx = (s.x < W * BASIN.CENTER ? -1 : 1) * SNAIL.CRAWL;           // below the lit bed: crawl back up
+      if (bedY(s.x) > snLim) s.vx = shoreDir(s.x) * SNAIL.CRAWL;           // below the lit bed: crawl back up
       s.x += s.vx * dt; if (s.x < 4) { s.x = 4; s.vx = Math.abs(s.vx); } else if (s.x > W - 4) { s.x = W - 4; s.vx = -Math.abs(s.vx); }
       s.y = bedY(s.x) - 2;                                                                      // ride the sloping bed
     }
@@ -1377,7 +1382,7 @@ export class World {
       // a crayfish stays on the littoral/sublittoral bed: one below CRAYFISH.MAX_DEPTH (an old save) walks back up toward
       // the nearer shore, and one about to crawl deeper turns back
       const crLim = CRAYFISH.MAX_DEPTH * H, x0 = cf.x;
-      if (bedY(cf.x) > crLim) cf.vx = (cf.x < W * BASIN.CENTER ? -1 : 1) * CRAYFISH.CRAWL;
+      if (bedY(cf.x) > crLim) cf.vx = shoreDir(cf.x) * CRAYFISH.CRAWL;
       cf.x += cf.vx * nightF * dt; if (cf.x < 4) { cf.x = 4; cf.vx = Math.abs(cf.vx); } else if (cf.x > W - 4) { cf.x = W - 4; cf.vx = -Math.abs(cf.vx); }
       if (bedY(cf.x) > crLim && bedY(cf.x) > bedY(x0)) { cf.x = x0; cf.vx = -cf.vx; }
       cf.y = bedY(cf.x) - 2;
@@ -1411,7 +1416,7 @@ export class World {
       const vigor = clamp((env.tempAt(p.x, p.baseY) - p.tempMin) / Math.max(3, PLANT.GROW_TEMP_OPT - p.tempMin), 0, 1);  // floor the window so a high cold-tolerance gene can't make vigor a near-step
       if (vigor > 0 && p.height < p.maxHeight) {
         const grow = PLANT.GROWTH * p.growMul * vigor * lit * (0.35 + 0.65 * clamp(nutr, 0, 1)) * dt;
-        p.height = Math.min(p.maxHeight, p.height + grow);
+        p.height = Math.min(p.maxHeight, p.baseY - 2, p.height + grow);   // (no taller than the water: in the shallows a plant tops out at the surface)
         p.nut = (p.nut || 0) + env.takeNutrient(p.x, p.baseY, NUTRIENT.PLANT_UPTAKE * grow);   // bank what was actually absorbed
       }
       // autumn/winter senescence: die back toward the overwintering rootstock; shed biomass dissolves into the DOM pool
@@ -1567,7 +1572,7 @@ export class World {
           let y = prefY; while (y < bedX - 12 && env.tempAt(a.x, y) > tooWarm) y += 24;
           // no cool water under it (the warm shallow shelf): don't settle on the warm bottom — head offshore, over the deep
           // basin, where the cool water is
-          if (env.tempAt(a.x, Math.min(y, bedX - 8)) > tooWarm) { const off = a.x < W * BASIN.CENTER ? 0 : Math.PI; a.heading += angDiff(off, a.heading) * a.maxTurn * 1.5 * dt; }
+          if (env.tempAt(a.x, Math.min(y, bedX - 8)) > tooWarm) { const off = shoreDir(a.x) < 0 ? 0 : Math.PI; a.heading += angDiff(off, a.heading) * a.maxTurn * 1.5 * dt; }
           else prefY = Math.min(y, bedX - 8);
         }
         // OXYGEN-LIMITED HABITAT: a fish doesn't settle where the water can't support it. If its preferred depth lies in
@@ -1578,29 +1583,33 @@ export class World {
           let y = prefY; while (y > 12 && env.oxygenAt(a.x, y) < o2Want) y -= 24;
           prefY = Math.max(8, y);
           if (IN.homeDepth >= 0.75) {
-            const toShore = a.x < W * BASIN.CENTER ? Math.PI : 0;   // the nearer shore = shallower bed
-            a.heading += angDiff(toShore + (Math.cos(toShore) > 0 ? 0.25 : -0.25), a.heading) * a.maxTurn * 1.0 * dt;
+            const toShore = shoreDir(a.x) < 0 ? Math.PI : 0;   // the nearer shore = shallower bed
+            a.heading += angDiff(toShore + (Math.cos(toShore) > 0 ? -0.25 : 0.25), a.heading) * a.maxTurn * 1.0 * dt;   // (toward the shore and a little UP)
           }
         }
         if (o2Here < o2Want) { const def = clamp((o2Want - o2Here) / o2Want, 0, 1); prefY = Math.min(prefY, a.y - 20 - 60 * def); o2Climb = 0.5 * def; }
         // ESCAPE: in water near its LETHAL O₂ a fish bolts straight up and toward the shore (one behavioural second here is
         // hours of exposure for its physiology, so it can't afford to linger)
         // (applied after every other modulation — a resting, cold or day-resting fish still bolts: see below)
-        if (o2Here < a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3) { escUp = -Math.PI / 2 + (a.x < W * BASIN.CENTER ? -0.25 : 0.25); o2Climb = 1.5; }
+        if (o2Here < a.o2Lethal * Math.exp(BIOE.O2_LETHAL_T * (env.tempAt(a.x, a.y) - 25)) * 3) { escUp = -Math.PI / 2 + (shoreDir(a.x) < 0 ? -0.25 : 0.25); o2Climb = 1.5; }
         // HEAT ESCAPE, the same way: in water within 3 °C of its lethal temperature a fish leaves at once — down if the
         // water below is cooler and breathable, else offshore over the deep basin — whatever it was chasing or eating
         // (a trout makes brief raids into the warm shallows; a behavioural second there is ~5 h of heat)
         else if (env.tempAt(a.x, a.y) > a.uilt - 3) {
           const below = Math.min(a.y + 60, bedY(a.x) - 6), cooler = env.tempAt(a.x, below) < env.tempAt(a.x, a.y) - 1 && env.oxygenAt(a.x, below) > a.o2Crit;
-          escUp = cooler ? Math.PI / 2 : (a.x < W * BASIN.CENTER ? 0.15 : Math.PI - 0.15);
+          escUp = cooler ? Math.PI / 2 : (shoreDir(a.x) < 0 ? 0.15 : Math.PI - 0.15);
         }
         // SPAWNING AGGREGATION target (applied below): in its spawning season a breeding-ready adult migrates to the
         // littoral spawning ground — ONE per species (sp.spawnSide −1 left = the inflow marsh, +1 right shelf), so a sparse
         // population converges where mates can find each other, as real pike do on a traditional spawning marsh
         let mig = null;
         if (IN.spawnGround && spawnF[a.species] > SPAWN.AGG_SEASON && breedReady(a)) {
-          const side = sp.spawnSide || (a.x < W * 0.5 ? -1 : 1);
-          const gx = side < 0 ? W * SPAWN.GROUND_X : W * (1 - SPAWN.GROUND_X), gb = bedY(gx);
+          // (in the fish's own water body — the lake or the pond; a fish in the stream counts with the nearer one: its inflow
+          // side −1, its far side +1)
+          // (a species without its own side gathers at its water body's INFLOW side — the lake's inlet marsh, the pond's stream
+          // mouth: one shared ground per water body, so a sparse species' spawners meet instead of splitting between shores)
+          const hb = homeBasinAt(a.x), hw = hb.x1 - hb.x0, side = sp.spawnSide || -1;
+          const gx = side < 0 ? hb.x0 + hw * SPAWN.GROUND_X : hb.x1 - hw * SPAWN.GROUND_X, gb = bedY(gx);
           const gy = clamp(gb * 0.6, 8, gb - 8);
           mig = { gx, gy, d: Math.hypot(gx - a.x, gy - a.y) };
         }
@@ -1697,7 +1706,7 @@ export class World {
         // is. Real summer bass are fish of the littoral weed beds and the drop-off, seldom out over the open basin.
         if (IN.littoral && !(mig && mig.d > 120)) {
           const over = (bedY(a.x) - IN.littoral * H) / (0.25 * H);
-          if (over > 0) a.heading += angDiff(a.x < W * BASIN.CENTER ? Math.PI : 0, a.heading) * a.maxTurn * (0.3 + clamp(over, 0, 1)) * dt;
+          if (over > 0) a.heading += angDiff(shoreDir(a.x) < 0 ? Math.PI : 0, a.heading) * a.maxTurn * (0.3 + clamp(over, 0, 1)) * dt;
         }
       }
 
@@ -1966,7 +1975,7 @@ export class World {
           // the eggs go in the LITTORAL, wherever the pair met: nests on the shallow shelf's bed (bass, sunfish and bullheads
           // fan nests in 0.3–2 m of water), egg strands and scattered eggs over the shallows (perch, pike, carp, fatheads) —
           // never on the deep, oxygen-poor bed
-          const px = (a.x + b.x) / 2, mx = px < W * BASIN.CENTER ? Math.min(px, W * SPAWN.SHALLOWS) : Math.max(px, W * (1 - SPAWN.SHALLOWS));
+          const px = (a.x + b.x) / 2, mx = nestX(px);   // (the nest: shoreward from the pair to water no deeper than SPAWN.NEST_D)
           const nest = sp.nestGuard ? { x: mx, y: Math.max(8, bedY(mx) - 8) } : null;
           // schools: up to MAX_PER_SPAWN, while the lake (CAP) and the species (SP_SHARE of it) have free slots — else the
           // larvae join the species' youngest school if it is under MERGE_DAYS old (its genome kept or replaced in
@@ -2194,7 +2203,7 @@ export class World {
         // metapopulation dependence: fraction of all recruits since reset that arrived as rescue immigrants (vs home-bred)
         immFrac: (b + im) > 0 ? im / (b + im) : 0,
         // zonation: littoral (near a shore) vs profundal (deep middle) vs pelagic (open mid-water)
-        littoral: ag.filter(a => a.x < W * BASIN.SHELF_FRAC || a.x > W * (1 - BASIN.SHELF_FRAC)).length,
+        littoral: ag.filter(a => isLittoralX(a.x)).length,
         deep: ag.filter(a => a.y > bedY(a.x) * 0.7).length,
       };
     }
@@ -2259,7 +2268,7 @@ export class World {
   // benthic particles' y, and the env's cached means (see Environment.toJSON). Older saves still load on defaults.
   toJSON() {
     return {
-      version: 30, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 31, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       evo: this.evo,   // the evolution history (EVO) — a record only: it never shapes the future
       env: this.env.toJSON(),
       agents: this.agents.map(a => {

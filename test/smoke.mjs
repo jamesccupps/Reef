@@ -54,7 +54,7 @@ if (!globalThis.performance) globalThis.performance = { now: () => Date.now() };
 
 // ------------------------------- the test -------------------------------
 const { seed } = await import('../src/core.js');
-const { WORLD, CAMERA } = await import('../src/config.js');
+const { WORLD, CAMERA, LANDSCAPE } = await import('../src/config.js');
 const { World } = await import('../src/world.js');
 const { Camera } = await import('../src/camera.js');
 const { Renderer } = await import('../src/render.js');
@@ -101,11 +101,11 @@ check('Renderer wires the presenter: offscreen scene sized to backing + 2D post 
 check('glFish stays off under the stub (no real WebGL2) → 2D fish fallback', renderer.glFish === false, `glFish=${renderer.glFish}`);
 
 // draw at three zoom levels: whole lake → mid → extreme close-up
-tryStep('draw @ whole-lake zoom (dots/LOD)', () => { camera.frameAll(); camera.zoom = camera.tzoom; renderer.draw(1.0); });
+tryStep('draw @ whole-lake zoom (dots/LOD)', () => { camera.frameAll(); camera.zoom = camera.tzoom; camera.cx = camera.tcx; camera.cy = camera.tcy; camera._clampNow(); renderer.draw(1.0); });   // (clamped as the app's update does: a landscape wider than 16:9 is top-anchored)
 const lakeStats = { ...renderer.stats };
 check('whole-lake view culls almost nothing & uses dot LOD', lakeStats.drawn > 50 && lakeStats.dots > 0, `drawn ${lakeStats.drawn}, dots ${lakeStats.dots}`);
 
-tryStep('draw @ mid zoom (sprite cache)', () => { camera.setZoomRel(8); camera.zoom = camera.tzoom; camera.cx = camera.tcx = WORLD.W / 2; camera.cy = camera.tcy = WORLD.H / 2; renderer.draw(2.0); });
+tryStep('draw @ mid zoom (sprite cache)', () => { camera.setZoomRel(8); camera.zoom = camera.tzoom; camera.cx = camera.tcx = LANDSCAPE.LAKE_W / 2; camera.cy = camera.tcy = WORLD.H * 0.3; camera._clampNow(); renderer.draw(2.0); });   // (over the lake)
 check('mid zoom builds & uses cached sprites', renderer.sprites.map.size > 0 && renderer.stats.sprites > 0, `cache ${renderer.sprites.map.size}, sprites ${renderer.stats.sprites}`);
 
 tryStep('draw @ extreme close-up (single organism)', () => { const a = world.agents[0]; camera.setZoomRel(40); camera.zoom = camera.tzoom; camera.cx = camera.tcx = a.x; camera.cy = camera.tcy = a.y; renderer.draw(3.0); });
@@ -196,7 +196,7 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
   const cam2 = new Camera(WORLD.W, WORLD.H, CAMERA);
   const r2 = new Renderer(t2, world, cam2);
   r2.present = stubGL;
-  cam2.frameAll(); cam2.zoom = cam2.tzoom; cam2.cx = cam2.tcx; cam2.cy = cam2.tcy;
+  cam2.frameAll(); cam2.zoom = cam2.tzoom; cam2.cx = cam2.tcx; cam2.cy = cam2.tcy; cam2._clampNow();   // (as the app's update clamps it)
   world.env.light = 0.9; world.env.t = 0.5;
   world.selectedId = world.agents[0].id;
   tryStep('GL-path draw against a stub GL presenter (fish quads + overlay collected)', () => r2.draw(10));

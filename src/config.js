@@ -12,17 +12,22 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const smoothstep = s => { s = clamp(s, 0, 1); return s * s * (3 - 2 * s); };
 
 export const WORLD = {
-  W: 2048,           // internal sim width  (≈16:9 lake; ~6.7× the reference area)
-  H: 1152,           // internal sim height
+  // a LANDSCAPE (2026-10-15): the main LAKE (x 0 … LAKE_W), a STREAM (riffles and pools) and a POND to its right — see
+  // LANDSCAPE / BASINS / bedY below. W is their sum; H the deepest water drawn (the lake's hole)
+  get W() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W + LANDSCAPE.POND_W; },
+  H: 1152,           // internal sim height (14.6 m at PX_PER_M)
   REF_W, REF_H,
-  get FLOOR() { return BASIN.DEEP_Y * this.H; },  // deepest point of the lake bed
-  get AREA_SCALE() { return (this.W * this.H) / (REF_W * REF_H); },
+  get FLOOR() { return BASIN.DEEP_D * this.PX_PER_M; },  // deepest point of the lake bed
+  // habitat size: the WATER cross-section (∫ bed depth dx) relative to the single deep lake all densities were tuned on
+  // (1,499,639 px² at AREA_SCALE 6.7486 — 2048×1152 against the 760×460 reference pond) — a shallower or wider landscape
+  // carries proportionally more or fewer organisms
+  get AREA_SCALE() { return 6.7486 * wetArea() / 1499639; },
   get GLOBAL_MAX() { return Math.round(150 * this.AREA_SCALE); }, // hard cap on total agents
-  // REAL SCALE: the 2-D world is a vertical slice of a lake drawn at true size (render.js PX_PER_CM 0.79 → 79 px per metre:
-  // 26 m wide, 14.6 m deep) standing for SLICE_M2 of lake surface (~0.07 ha) — the third dimension is SLICE_M2 / width
-  // (~27 m). A field cell is then a ~0.3 × 0.3 × 27 m box of CELL_L litres (densities in µg/L, fish in kg/ha)
+  // REAL SCALE: the 2-D world is a vertical slice drawn at true size (79 px per metre: the lake 26 m wide and 14.6 m deep)
+  // standing for SLICE_M2 of water surface — the third dimension is SLICE_M2 / width (~27 m, the same for every column:
+  // 700 m² per 2048 px). A field cell is then a ~0.3 × 0.3 × 27 m box of CELL_L litres (densities in µg/L, fish in kg/ha)
   PX_PER_M: 79,
-  SLICE_M2: 700,
+  get SLICE_M2() { return 700 * this.W / 2048; },
   get CELL_L() { return (this.W / GRID.FIELD_COLS / this.PX_PER_M) * (this.H / GRID.FIELD_ROWS / this.PX_PER_M) * this.SLICE_M2 / (this.W / this.PX_PER_M) * 1000; },
 };
 
@@ -67,7 +72,8 @@ export const SPAWN = {
   AGG_SEASON: 0.5,   // the species' seasonal factor must exceed this (≈ the central part of its spawning season)
   // (and the fish must be breedReady)
   GROUND_X: 0.09,    // spawning-ground centre as a fraction of lake width from each shore (mid-littoral shelf)
-  SHALLOWS: 0.15,    // eggs and nests go within this fraction of lake width from the nearer shore (the littoral shelf)
+  NEST_D: 2.5,       // m: a nest (or egg mass) goes no deeper than this — moved shoreward from the pair to water this shallow
+                     //   (smallmouth nest at 1.2–3 m, pumpkinseed under 1 m, perch strands at 1.0–3.7 m — Maine report)
   // SPARSE SPAWNERS: when a species is this rare in the lake, a ready spawner homes in on the nearest ready mate within CUE_R
   // (chemical / sound cues — how a thin population still finds mates); a common one just meets mates nearby
   RARE: 12,
@@ -272,34 +278,84 @@ export const BROOD = {
   SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
 };
 
-// ---------- lake basin (non-rectangular bed) ----------
-// The lake is a cross-section: flat surface on top. Real lakes are not a smooth U — each shore
-// has a flat shallow **littoral shelf**, then a steeper **drop-off** into a flat-ish deep basin.
-// bedY(x) is the world-y of the bed at a given x (larger y = deeper).
-export const BASIN = {
-  SHELF_Y: 0.25,     // depth fraction (of H) of the flat shallow shelf hugging each shore (littoral)
-  DROP_Y: 0.86,      // depth fraction at the foot of the drop-off (top of the deep basin)
-  DEEP_Y: 0.985,     // depth fraction at the deepest point (basin centre)
-  CENTER: 0.54,      // where the deepest point sits across the width (slightly off-centre)
-  SHELF_T: 0.34,     // the flat shelf spans this fraction of the shore→centre distance (a broad littoral zone)
-  DROP_T: 0.18,      // the drop-off slope spans the next fraction of that distance
-  SHELF_FRAC: 0.30,  // ≈ width fraction from each shore that stays littoral (shelf + upper slope; for seeding)
+// ---------- the landscape: a lake, a stream and a pond (2026-10-15, the Maine re-base) ----------
+// docs/reports/Maine lakes ponds and streams.md. A cross-section with a flat water surface on top (y = 0) and the bed below
+// (bedY: larger y = deeper). Left to right:
+//   • the LAKE — a typical Maine lake: a sloping LITTORAL from a ~0.25-m shoreline down to ~3 m over the outer ~45 % of each
+//     side (the 0–3 m band where Maine's fish nest and most littoral food grows), a drop-off, and a hole to 14.4 m that
+//     stratifies (Maine lakes deeper than ~9 m do; median Maine lake 18 m max, 6.7 m mean — USGS WRI 80-69): mean ≈ 6.2 m
+//   • the STREAM — a short rocky outlet (Hot Brook between the Hot Brook lakes: ~200 m, wadeable) of riffles at STREAM.DEPTH
+//     and POOLS to STREAM.POOL_D, carrying the lake's outflow to the pond
+//   • the POND — a Hot Brook-style saucer: a sloping littoral, then a flat muddy floor to 4.0 m (Lower Hot Brook: 4.0 m max,
+//     2.7 m mean, 59 % of soundings ≤ 3 m), shallow enough never to stratify; its outlet is the world's right edge
+// The drawn widths are stylised (the real stream is ~200 m, the lakes hundreds of hectares); depths are true.
+export const LANDSCAPE = {
+  LAKE_W: 2048,      // px of the main lake
+  STREAM_W: 448,     // px of the connecting stream
+  POND_W: 1408,      // px of the pond
+  SHORE_D: 0.25,     // m of water at a natural shoreline (the world's two edges)
+  LITTORAL_D: 3.5,   // m: water this shallow (or less) counts as LITTORAL (spawning grounds, plant seeding, structure)
 };
+export const BASIN = {   // the main lake (x 0 … LAKE_W)
+  CENTER: 0.54,      // where the deepest point sits across the lake (slightly off-centre)
+  LIT_T: 0.45,       // the littoral slope spans this fraction of each shore→centre distance …
+  LIT_D: 3.2,        // … down to this depth (m)
+  DROP_T: 0.2,       // then the drop-off spans the next fraction …
+  DROP_D: 9.0,       // … down to this depth (m) at the top of the hole
+  DEEP_D: 14.4,      // m at the deepest point
+};
+export const STREAM = {
+  DEPTH: 0.35,       // m over the riffles (the stream's bed between pools; also where it meets lake and pond)
+  POOL_D: 0.9,       // m in the pools
+  POOLS: 2,          // pools along the stream
+};
+export const POND = {
+  CENTER: 0.5, LIT_T: 0.5, FLOOR_D: 3.3, MAX_D: 4.0,   // a saucer: littoral slope over half of each side, then a flat floor
+};
+// the three water bodies, left to right: [x0, x1) in world px
+export const BASINS = [
+  { id: 0, kind: 'lake', get x0() { return 0; }, get x1() { return LANDSCAPE.LAKE_W; } },
+  { id: 1, kind: 'stream', get x0() { return LANDSCAPE.LAKE_W; }, get x1() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W; } },
+  { id: 2, kind: 'pond', get x0() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W; }, get x1() { return WORLD.W; } },
+];
+export const basinAt = x => x < LANDSCAPE.LAKE_W ? BASINS[0] : x < LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W ? BASINS[1] : BASINS[2];
+// a basin's deep centre (world px) — the lake's hole, the pond's middle, the stream's midpoint
+export const basinCenterX = b => b.kind === 'lake' ? LANDSCAPE.LAKE_W * BASIN.CENTER : b.kind === 'pond' ? b.x0 + (b.x1 - b.x0) * POND.CENTER : (b.x0 + b.x1) / 2;
+// a shore→centre-normalised position: 0 at either end of a basin, 1 at its centre c (a fraction of its width)
+const tOf = (u, c) => u < c ? u / c : (1 - u) / (1 - c);
 export function bedY(x) {
-  const H = WORLD.H, c = BASIN.CENTER, u = clamp(x / WORLD.W, 0, 1);
-  const t = u < c ? u / c : (1 - u) / (1 - c);          // 0 at the shore → 1 at the deep centre
-  const { SHELF_Y, DROP_Y, DEEP_Y, SHELF_T, DROP_T } = BASIN;
-  const shelfFoot = SHELF_Y + (DROP_Y - SHELF_Y) * 0.05; // shelf deepens a hair toward its outer edge
-  let frac;
-  if (t <= SHELF_T) {
-    frac = SHELF_Y + (shelfFoot - SHELF_Y) * (t / SHELF_T);                 // flat shallow shelf
-  } else if (t <= SHELF_T + DROP_T) {
-    frac = lerp(shelfFoot, DROP_Y, smoothstep((t - SHELF_T) / DROP_T));     // steep drop-off
-  } else {
-    frac = lerp(DROP_Y, DEEP_Y, smoothstep((t - SHELF_T - DROP_T) / (1 - SHELF_T - DROP_T))); // deep basin
+  const P = WORLD.PX_PER_M, L = LANDSCAPE, Lw = L.LAKE_W, Sx1 = Lw + L.STREAM_W;
+  let d;
+  if (x < Lw) {   // the lake: its left shore is the world's edge, its right one the stream's mouth
+    const u = clamp(x / Lw, 0, 1), t = tOf(u, BASIN.CENTER), d0 = u < BASIN.CENTER ? L.SHORE_D : STREAM.DEPTH;
+    d = t <= BASIN.LIT_T ? lerp(d0, BASIN.LIT_D, t / BASIN.LIT_T)
+      : t <= BASIN.LIT_T + BASIN.DROP_T ? lerp(BASIN.LIT_D, BASIN.DROP_D, smoothstep((t - BASIN.LIT_T) / BASIN.DROP_T))
+      : lerp(BASIN.DROP_D, BASIN.DEEP_D, smoothstep((t - BASIN.LIT_T - BASIN.DROP_T) / (1 - BASIN.LIT_T - BASIN.DROP_T)));
+  } else if (x < Sx1) {   // the stream: riffles with POOLS deeper stretches
+    const sv = (x - Lw) / L.STREAM_W;
+    d = STREAM.DEPTH + (STREAM.POOL_D - STREAM.DEPTH) * Math.pow(Math.sin(Math.PI * STREAM.POOLS * sv), 4);
+  } else {   // the pond: its left shore is the stream's mouth, its right one the world's edge (its outlet)
+    const u = clamp((x - Sx1) / L.POND_W, 0, 1), t = tOf(u, POND.CENTER), d0 = u < POND.CENTER ? STREAM.DEPTH : L.SHORE_D;
+    d = t <= POND.LIT_T ? lerp(d0, POND.FLOOR_D, t / POND.LIT_T)
+      : lerp(POND.FLOOR_D, POND.MAX_D, smoothstep((t - POND.LIT_T) / (1 - POND.LIT_T)));
   }
-  return frac * H;
+  return d * P;
 }
+// the water cross-section (px²) — memoised (the geometry is fixed for the run)
+let _wetArea = 0;
+export function wetArea() { if (!_wetArea) { for (let x = 0; x < WORLD.W; x += 2) _wetArea += bedY(x + 1) * 2; } return _wetArea; }
+// is the bed at x littoral (≤ LANDSCAPE.LITTORAL_D)?
+export const isLittoralX = x => bedY(x) <= LANDSCAPE.LITTORAL_D * WORLD.PX_PER_M;
+// a random littoral x (any basin), drawn with the caller's RNG R(lo, hi) — rejection sampling, deterministic for a seeded R
+export function littoralX(R) {
+  let x = 0;
+  for (let k = 0; k < 64; k++) { x = R(6, WORLD.W - 6); if (isLittoralX(x)) return x; }
+  return x;
+}
+// which way is the nearer shore (shallower water) from x: −1 left, +1 right
+export const shoreDir = x => bedY(Math.max(0, x - 48)) <= bedY(Math.min(WORLD.W, x + 48)) ? -1 : 1;
+// the basin a fish at x belongs to for spawning and open water (a fish in the stream counts with the nearer basin)
+export const homeBasinAt = x => { const b = basinAt(x); if (b.kind !== 'stream') return b; return x - b.x0 < b.x1 - x ? BASINS[0] : BASINS[2]; };
 
 // ---------- seasons & thermal structure ----------
 // A temperate (dimictic) lake, year-fraction 0 = March 1. Surface water: ~0–1 °C under winter ice (Jan–Feb), ~4 °C at
@@ -378,7 +434,9 @@ export const STRUCTURE = {
   REEDS: 16,            // reed clumps along the shallow shores (reference; scales with width, not area)
   LOGS: 6,              // submerged logs scattered on the bed (scales with width)
   WEEDBEDS: 9,          // submerged macrophyte beds on the littoral/drop-off — tall cover bands reaching up
-  SHORE_FRAC: 0.11,     // reeds live within this fraction of width from each shore (the littoral shelf)
+  REED_D: 0.9,          // m: emergent reeds (bulrush, pickerelweed) stand in water this shallow or less
+  WEED_D: [0.8, 5.0],   // m: submerged weed beds root between these depths (plants to ~4–5.5 m in a Secchi 2–3 m lake)
+  MUSSEL_D: 6.0,        // m: mussel beds on the lit bed shallower than this
 };
 export const COVER = {
   RADIUS: 30,           // how close a fish must be to structure/weeds to gain cover
@@ -518,11 +576,11 @@ export const GRID = {
 export const CAMERA = {
   FIT_PAD: 0.97,       // framing the whole lake leaves a hair of margin
   MIN_ZOOM_REL: 0.80,  // allow zooming a little past whole-lake fit
-  MAX_ZOOM_REL: 64,    // closest zoom-in: ~64× the whole-lake fit → one organism fills the view
+  MAX_ZOOM_REL: 120,   // closest zoom-in: ~120× the whole-landscape fit (~64× the lake's) → one organism fills the view
   FOLLOW_LERP: 4.0,    // follow/recenter smoothing (1/s)
   ZOOM_LERP: 9.0,      // zoom easing (1/s)
   TOUR_DWELL: [8, 14],     // seconds spent on each cinematic shot
-  TOUR_ZOOM_REL: [6, 16],  // zoom range (× fit) for close FOLLOW shots (was 9–30, then 7–22: one fish filling the screen loses the scene around it)
+  TOUR_ZOOM_REL: [11, 30], // zoom range (× the whole-landscape fit; ×1.9 the lake's) for close FOLLOW shots (was 9–30, then 7–22: one fish filling the screen loses the scene around it)
   // screensaver tour (camera.js): a mix of shot types instead of nothing but close follows, with soft cinematic easing
   TOUR_WIDE: 0.16,         // share of WIDE establishing shots (whole lake, slow drift)
   TOUR_HABITAT: 0.26,      // share of HABITAT shots (weed beds, the shelves, the deep basin — medium zoom, slow pan)
@@ -1086,11 +1144,11 @@ export const PLANT = {
 // it is ~4% (milfoil) / 6% (pondweed) / 9% (lily) / 22% (chara) of the surface mean. With summer turbidity (~0.3) that
 // puts the depth limit near bed-depth ~0.6–0.7 for pondweed and ~0.7–0.8 for milfoil (deeper in clear winter water).
 export const MACRO = [
-  // key            name            zone(beddepth)   maxH        grow  cover o2    palat lightMin tempMin hue  form
-  { key: 'pondweed', name: 'Pondweed',   zone: [0.24, 0.70], maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.013, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
-  { key: 'milfoil',  name: 'Milfoil',    zone: [0.55, 0.99], maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.008, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
-  { key: 'lily',     name: 'Water lily', zone: [0.24, 0.40], maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.019, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
-  { key: 'chara',    name: 'Muskgrass',  zone: [0.24, 0.44], maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.045, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
+  // key            name            zone (bed depth, m — 2026-10-15: Maine zonation; was fractions of the old lake's H)   maxH (px)   grow  cover o2    palat lightMin tempMin hue  form
+  { key: 'pondweed', name: 'Pondweed',   zone: [0.4, 4.5],  maxH: [34, 70], grow: 1.0, cover: 1.0, o2: 1.0, palat: 1.0, lightMin: 0.013, tempMin: 14, hue: 128, form: 'stalk' }, // common submerged, shelf→drop-off
+  { key: 'milfoil',  name: 'Milfoil',    zone: [1.5, 6.0],  maxH: [46, 82], grow: 0.9, cover: 1.3, o2: 1.1, palat: 0.5, lightMin: 0.008, tempMin: 13, hue: 146, form: 'stalk' }, // dense, deep, shade-tolerant, tough (low palat)
+  { key: 'lily',     name: 'Water lily', zone: [0.4, 2.5],  maxH: [24, 46], grow: 1.0, cover: 1.2, o2: 1.2, palat: 0.8, lightMin: 0.019, tempMin: 17, hue: 108, form: 'pad' },   // floating-leaved, shallow, warm, broad leaves
+  { key: 'chara',    name: 'Muskgrass',  zone: [0.3, 4.0],  maxH: [8,  22], grow: 0.7, cover: 0.6, o2: 0.9, palat: 0.9, lightMin: 0.045, tempMin: 12, hue: 80,  form: 'mat' },   // low benthic mat, needs CLEAR water (turbidity-sensitive), cool-tolerant
 ];
 
 // PLANT INTERACTIONS — SHADING COMPETITION between macrophytes. A TALLER plant within RADIUS cuts a shorter

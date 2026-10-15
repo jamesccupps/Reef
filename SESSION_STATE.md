@@ -5,7 +5,31 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, end of session) — ZOOPLANKTON FIELDS + FOOD-WEB RECALIBRATION, branch `zoo-field` (gate green; save v30)
+## ▶ NOW (2026-10-15, later) — THE MAINE RE-BASE, branch `zoo-field` (gate green; save v31)
+
+HUMAN (after the food-web slice): "yes it should all be tailored to new england and maine, add a shallow zone, maybe add a
+pond next to it too, this can be the start and testing of the multi zones, with a stream or something between them. then
+do the rest of the suggestions you gave me too, 3 4 and 5" (3 = recruitment compensation, 4 = New England species set,
+5 = northern maturity). RESEARCH: docs/reports/Maine lakes ponds and streams.md (+ notes) — Hot Brook lakes are 5.5/4.0 m
+mixed saucers (MDIFW); their fish: smallmouth, white perch, chain pickerel, yellow perch, bullhead, white sucker, fallfish,
+dace, killifish (no sunfish listed — the human has seen sunfish in the stream's warm pools: unconfirmed, not refuted);
+Maine fish 60–150 kg/ha; ice-out ~Apr 24, 208 days < 10 °C; compensation lives in the juvenile year.
+DONE (committed): step 1 — juvenile compensation (FRY.JUV_*), maturation reaction norm (BIOE.PMRN_*), northern Lmat,
+spawning migrations override foraging (44dab54; 3 seeds × 3.2 yr: recruitment every spring, sunfish cycle ~6–140, no
+collapse). Step 2 — THE LANDSCAPE: lake (sloping 0–3 m littoral + 14.4 m hole) + stream + pond (FEATURES "Maine re-base,
+part 1"); multi-basin wet mask; basin-aware placement; macrophyte zones in metres; save v31; camera/minimap/UI; fixes
+(larvae above the surface broke exact resume; the anoxic-bed shoreward reflex tilted down).
+NEXT (in order): validate the landscape (3 seeds × 3 yr: zooflux2 + fryfate + deaths — expect differences: shallower lake,
+more littoral, the pond); step 3 — the MAINE SPECIES SET (minnow→golden shiner, sunfish→pumpkinseed, trout→white sucker,
+carp→white perch, bass→smallmouth, pike→chain pickerel; keep yellow perch, bullhead — report table "Five of the eight
+recommended species have no bioenergetics model of their own" and the ranked list; keys renamed with a save migration);
+step 4 — Maine calendar (ice-out ~Apr 24, fast spring), coloured mesotrophic water, under-ice lethal O₂ (Cooper &
+Washburn), biomass targets 60–150 kg/ha; step 5 — stream behaviour (sucker runs, warm-pool use emerging from thermal
+preference, stream current); then multi-seed validation, docs, merge to science/main, backup.
+KNOWN: the stream is drawn as a thin channel in the side view (no banks); cover-seeking is weak against foraging (the
+gate's cover check now isolates it); the shared default spawning ground (inflow side) may crowd nests.
+
+## (previous) NOW (2026-10-15, end of the food-web session) — ZOOPLANKTON FIELDS + FOOD-WEB RECALIBRATION, branch `zoo-field` (gate green; save v30)
 
 State: `zoo-field` pushed (00a3550 + the commit after it); NOT merged to science/main (main = bc2ddc8: the research doc + the
 OLD particle model, whose lake "sustained" on an unlimited zooplankton subsidy). Gate `npm test` green (218 steps/s); browser

@@ -3,13 +3,14 @@ import { seed, getRandState, setRandState, genomeLen, randomGenome, migrateGenom
 import { World, derivePlant, toxFecundity, spawnFactor } from '../src/world.js';
 import { Camera } from '../src/camera.js';
 import { SPECIES, SP } from '../src/species.js';
-import { WORLD, GRID, scaleCount, TIME, SEASON, SPAWN, BASIN, TURBIDITY, STRUCTURE, COVER, FLOW, NUTRIENT, SED_P, NCYCLE, CYANO, PHYTO, MICROBE, MACRO, COMPETE, SCHOOL, TOX, ACTION, MOTION, IMMIGRATION, SNAIL, CRAYFISH, LEARN, BRAIN, BIOE, bedY } from '../src/config.js';
+import { WORLD, GRID, scaleCount, TIME, SEASON, SPAWN, BASIN, TURBIDITY, STRUCTURE, COVER, FLOW, NUTRIENT, SED_P, NCYCLE, CYANO, PHYTO, MICROBE, MACRO, COMPETE, SCHOOL, TOX, ACTION, MOTION, IMMIGRATION, SNAIL, CRAYFISH, LEARN, BRAIN, BIOE, bedY, LANDSCAPE, isLittoralX, basinAt, BASINS} from '../src/config.js';
 
 seed(12345); // deterministic
 const w = new World();
 const dt = 1 / 30;
 
 let fail = 0;
+const LAKE_C = LANDSCAPE.LAKE_W * BASIN.CENTER;   // the main lake's deepest column (the landscape: lake, stream, pond)
 import { stdWeight } from '../src/bioenergetics.js';
 // a fish in breeding condition (bioenergetics): mature, of the given sex, condition K, gonads ripe, ready to spawn
 const ripe = (f, sex, K = 1) => { f.sex = sex; f.mature = true; f.W = K * stdWeight(f.sp.lw, f.L); f.K = K; f.gon = (sex === 0 ? f.sp.gsiF : f.sp.gsiM) * f.W; f.mateCd = 0; f._mated = false; f.dead = false; return f; };
@@ -39,7 +40,7 @@ check('minnow start scaled', approx(start.minnow, scaleCount(SP.minnow.pop.start
 const t0 = Date.now();
 const STEPS = 4400;
 let nanHits = 0, peakAgents = 0, minAgents = Infinity, peakCorpses = 0, anyCorpse = false;
-const inSeason = new Set();   // species whose spawning-temperature window the opening late-spring month reached
+const inSeason = new Set(), seasonN = {};   // species whose spawning-temperature window the opening late-spring month reached
 const prevGen = w.maxGen;
 
 for (let i = 0; i < STEPS; i++) {
@@ -51,7 +52,7 @@ for (let i = 0; i < STEPS; i++) {
     for (const c of w.corpses) if (!Number.isFinite(c.x) || !Number.isFinite(c.y) || !Number.isFinite(c.t)) nanHits++;
     const o2 = w.avgO2();
     if (!Number.isFinite(o2) || o2 < 0 || o2 > 1.5) nanHits++;   // the per-cell field clamp (cold spring water holds ~1.3)
-    for (const k of SPECIES) if (spawnFactor(SP[k], w.env.tempC - w.env.tempDiel, w.env.yearFrac(), w.env.ice) > 0.5) inSeason.add(k);
+    for (const k of SPECIES) if (spawnFactor(SP[k], w.env.tempC - w.env.tempDiel, w.env.yearFrac(), w.env.ice) > 0.5) { seasonN[k] = (seasonN[k] || 0) + 1; if (seasonN[k] >= 10) inSeason.add(k); }   // (in season for ≥ 10 of the 22 samples — two weeks or more: a sparse species needs days to gather after the season opens)
   }
   peakAgents = Math.max(peakAgents, w.agents.length);
   minAgents = Math.min(minAgents, w.agents.length);
@@ -362,8 +363,8 @@ console.log('\n— aquatic insects (larvae → hatch) —');
   const benthic = iw.larvae.length > 0 && iw.larvae.every(l => Math.abs(l.y - (iw.bedY(l.x))) < 12);
   check('benthic insect larvae are seeded on the lake bed; diet flags wired (bottom→larva, surface→insect)', benthic && SP.catfish.diet.larva && SP.carp.diet.larva && SP.minnow.diet.insect && SP.bass.diet.insect && SP.sunfish.diet.larva && SP.sunfish.diet.insect, `${iw.larvae.length} larvae`); }
 // EMERGENCE is warm-gated: a mature larva hatches to the surface when warm, holds when cold (tempC eases slowly → a 1-step inject holds)
-{ seed(20); const iwW = new World(); const Lw = iwW._mkLarva(1000, 1.0); iwW.larvae = [Lw]; iwW.insects = []; iwW.env.tempC = 26; iwW.step(1 / 30);
-  seed(20); const iwC = new World(); const Lc = iwC._mkLarva(1000, 1.0); iwC.larvae = [Lc]; iwC.insects = []; iwC.env.tempC = 7; iwC.step(1 / 30);
+{ seed(20); const iwW = new World(); const Lw = iwW._mkLarva(300, 1.0); iwW.larvae = [Lw]; iwW.insects = []; iwW.env.tempC = 26; iwW.step(1 / 30);
+  seed(20); const iwC = new World(); const Lc = iwC._mkLarva(300, 1.0); iwC.larvae = [Lc]; iwC.insects = []; iwC.env.tempC = 7; iwC.step(1 / 30);
   check('insect EMERGENCE is warm-gated: a mature larva hatches when warm, holds when cold', Lw.dead && iwW.insects.length >= 1 && !Lc.dead && iwC.insects.length === 0, `warm emerged ${Lw.dead}/${iwW.insects.length}; cold held ${!Lc.dead}`); }
 // larvae DEVELOP with warmth (dev rises when warm, ~halts when cold)
 { function dev(temp) { seed(21); const dw = new World(); dw.agents = []; const L = dw._mkLarva(300, 0.2); dw.larvae = [L]; dw.env.tempAt = () => temp;   // (on the oxic shallow bed: the deep one can be anoxic, where larvae die)
@@ -615,16 +616,20 @@ check('contaminant SUB-LETHAL fecundity: breeding chance is full when clean, fal
 //  PHASE 1 — basin shape + thermal depth structure + seasons
 // ============================================================
 console.log('\n— habitat / thermal —');
-const cx = WORLD.W * BASIN.CENTER;
-check('lake bed is a basin (deep centre, shallow shores)', bedY(cx) > bedY(20) + 200 && bedY(cx) > bedY(WORLD.W - 20) + 200,
-  `centre ${bedY(cx) | 0} vs shores ${bedY(20) | 0}/${bedY(WORLD.W - 20) | 0}`);
-// littoral morphometry: a broad flat shallow shelf near each shore, then a steep drop-off into the basin
-const bShelfIn = bedY(WORLD.W * 0.03), bShelfOut = bedY(WORLD.W * 0.12), bDrop = bedY(WORLD.W * 0.30);
-check('shore has a broad, flat, shallow littoral shelf (not a smooth U)',
-  bShelfIn < WORLD.H * 0.32 && bShelfOut < WORLD.H * 0.34 && Math.abs(bShelfOut - bShelfIn) < WORLD.H * 0.10,
-  `shelf ${bShelfIn | 0}→${bShelfOut | 0} (Δ${Math.abs(bShelfOut - bShelfIn) | 0})`);
-check('a steep drop-off falls from the shelf into the deep basin',
-  bDrop - bShelfOut > WORLD.H * 0.25, `drop ${bShelfOut | 0}→${bDrop | 0} (Δ${(bDrop - bShelfOut) | 0})`);
+const cx = LAKE_C;
+// THE LANDSCAPE (2026-10-15): a lake with a sloping 0–3 m littoral and a hole that stratifies, a shallow stream, and a pond
+// that is a Hot Brook-like saucer (docs/reports/Maine lakes ponds and streams.md)
+const P_M = WORLD.PX_PER_M, depthStats = (a, b) => { let s = 0, n = 0, l = 0, mx = 0; for (let x = a; x < b; x++) { const d = bedY(x) / P_M; s += d; n++; if (d <= 3) l++; if (d > mx) mx = d; } return { mean: s / n, lit: l / n, max: mx }; };
+const lakeS = depthStats(0, LANDSCAPE.LAKE_W), pondS = depthStats(BASINS[2].x0, BASINS[2].x1), strS = depthStats(BASINS[1].x0, BASINS[1].x1);
+check('the lake is a basin (deep centre, shallow shores) with a Maine shape: sloping littoral ≤ 3 m over ~35–50 % of it, mean ≈ 0.35–0.55 × max',
+  bedY(cx) > bedY(20) + 600 && bedY(20) < 0.5 * P_M && lakeS.lit > 0.35 && lakeS.lit < 0.5 && lakeS.mean / lakeS.max > 0.35 && lakeS.mean / lakeS.max < 0.55,
+  `centre ${(bedY(cx) / P_M).toFixed(1)} m, shore ${(bedY(20) / P_M).toFixed(2)} m; ≤ 3 m ${(lakeS.lit * 100).toFixed(0)} %, mean ${lakeS.mean.toFixed(1)} / max ${lakeS.max.toFixed(1)} m`);
+check('the shore SLOPES down through the littoral (no flat 3.6-m shelf): deeper step by step out to ~3 m, then a drop-off into the hole',
+  bedY(LANDSCAPE.LAKE_W * 0.03) < bedY(LANDSCAPE.LAKE_W * 0.12) && bedY(LANDSCAPE.LAKE_W * 0.12) < bedY(LANDSCAPE.LAKE_W * 0.22) && bedY(LANDSCAPE.LAKE_W * 0.22) <= 3.3 * P_M && bedY(LANDSCAPE.LAKE_W * 0.42) - bedY(LANDSCAPE.LAKE_W * 0.22) > 4 * P_M,
+  `${[0.03, 0.12, 0.22, 0.42].map(f => (bedY(LANDSCAPE.LAKE_W * f) / P_M).toFixed(1)).join(' → ')} m`);
+check('the stream is a shallow riffle-and-pool channel and the pond a Hot Brook-like saucer (mean ≈ 2.7 m, max 4 m, ~40–60 % ≤ 3 m)',
+  strS.max < 1.0 && strS.mean > 0.3 && pondS.max <= 4.05 && pondS.max > 3.5 && pondS.mean > 2.3 && pondS.mean < 3.1 && pondS.lit > 0.4 && pondS.lit < 0.6,
+  `stream ${strS.mean.toFixed(2)}–${strS.max.toFixed(2)} m; pond mean ${pondS.mean.toFixed(2)}, max ${pondS.max.toFixed(2)} m, ≤ 3 m ${(pondS.lit * 100).toFixed(0)} %`);
 
 function runSeason(yearFrac) {
   seed(424242); const tw = new World().setDate(yearFrac);
@@ -790,12 +795,12 @@ check('cognitionDetail reports zero mean contaminant burden in a clean lake', co
 
 // depthProfile — the data layer behind the "Water column" view (depth-resolved temp/O₂/N/P/phyto/cyano)
 const dpw = new World(); dpw.env.strat = 1; dpw.env.tempC = 28;   // a stratified summer temp profile
-const prof = dpw.depthProfile(WORLD.W * 0.54, 28);
+const prof = dpw.depthProfile(LAKE_C, 28);
 check('depthProfile returns a finite surface→bed column of the right length', prof.samples.length === 28 && prof.samples.every(s => [s.tempC, s.o2, s.din, s.phos, s.phyto, s.cyano, s.light].every(Number.isFinite)));
 check('depthProfile is ordered surface→bed within the basin', prof.samples[0].y >= 0 && prof.samples[0].y < prof.samples[27].y && prof.samples[27].y <= prof.bed + 1);
 check('depthProfile reflects stratification & light attenuation (deep is colder & dimmer)', prof.samples[27].tempC < prof.samples[0].tempC && prof.samples[27].light < prof.samples[0].light,
   `temp ${prof.samples[0].tempC.toFixed(1)}→${prof.samples[27].tempC.toFixed(1)}, light ${prof.samples[0].light.toFixed(2)}→${prof.samples[27].light.toFixed(2)}`);
-check('depthProfile samples the right column (deep-basin bed deeper than the littoral shelf)', dpw.depthProfile(WORLD.W * 0.54).bed > dpw.depthProfile(WORLD.W * 0.05).bed);
+check('depthProfile samples the right column (deep-basin bed deeper than the littoral shelf)', dpw.depthProfile(LAKE_C).bed > dpw.depthProfile(WORLD.W * 0.05).bed);
 
 // ============================================================
 //  PHASE 5 — carrying capacity: logistic reproduction + metapopulation immigration (rescue), NOT hard floors
@@ -892,12 +897,25 @@ check('schooling minnows cluster into loose shoals (≥ 1.4× the neighbours of 
   check('ambush pike LURKS — the ambush innate suppresses a no-prey pike\'s speed (vs ambush off, same high-thrust brain)', lurk < active * 0.8, `lurk ${lurk.toFixed(2)} < active ${active.toFixed(2)}`); })();
 // submerged weed beds (mid-water cover) + cover-seeking
 check('weed beds generated in the lit littoral, reaching up into oxygenated mid-water (not the deep centre)',
-  bw.weedbeds.length > 0 && bw.weedbeds.every(wb => wb.top < wb.bot && wb.top > WORLD.H * 0.1 && (wb.x < WORLD.W * 0.4 || wb.x > WORLD.W * 0.6)),
+  bw.weedbeds.length > 0 && bw.weedbeds.every(wb => wb.top < wb.bot && wb.top >= 0 && bedY(wb.x) / WORLD.PX_PER_M >= STRUCTURE.WEED_D[0] - 0.01 && bedY(wb.x) / WORLD.PX_PER_M <= STRUCTURE.WEED_D[1] + 0.01),
   `${bw.weedbeds.length} weed beds`);
 check('cover-seeking configured (sunfish/bass/pike seek structure)', SP.sunfish.innate.cover > 0 && SP.bass.innate.cover > 0 && SP.pike.innate.cover > 0);
-const meanCover = ks => { const ag = bw.agents.filter(a => ks.includes(a.species)); return ag.length ? ag.reduce((s, a) => s + bw.coverAt(a.x, a.y), 0) / ag.length : 0; };
-check('cover-seeking fish hold in cover (weed beds) more than non-seeking pelagic minnows', meanCover(['sunfish', 'bass', 'pike']) > meanCover(['minnow']),
-  `seekers ${meanCover(['sunfish', 'bass', 'pike']).toFixed(2)} > minnow ${meanCover(['minnow']).toFixed(2)}`);
+// (controlled: one sunfish 150 px from the only weed bed, nothing to eat, the same brain — with its cover innate vs without;
+// in a full lake the shallows are weedy everywhere and the food pull dominates, so a whole-lake snapshot can't separate them)
+const { BENTHOS: { REFUGE: BENTH_R } } = await import('../src/config.js');
+const coverAB = on => { const keep = SP.sunfish.innate.cover; SP.sunfish.innate.cover = on ? keep : 0;
+  try { seed(4711); const cw = new World().setDate(0.40); cw.plants = []; cw.reeds = []; cw.logs = []; cw.larvae = []; cw.insects = []; cw.birds = []; noZoo(cw);
+    const bx = 600, wb = { x: bx, top: bedY(bx) * 0.3, bot: bedY(bx), w: 24 }; cw.weedbeds = [wb];
+    const f = cw.makeFish('sunfish', [1, 1, 1, 1, 1, 1, 1]); f.gon = 0; f.x = bx + 150; f.y = (wb.top + wb.bot) / 2; f.heading = 0; cw.agents = [f];   // (unripe: a ripe fish in season migrates to its spawning ground instead)
+    { const sh = f.sp.shape, W2 = sh.hid * sh.in + sh.hid, B2 = W2 + OUT * sh.hid;   // a brain that swims straight at a steady pace: only the innate steers
+      for (let j = 0; j < sh.hid; j++) { f.g[W2 + j] = 0; f.g[W2 + sh.hid + j] = 0; }
+      f.g[B2 + 0] = 0; f.g[B2 + 1] = 1.5; for (let k = 2; k < OUT; k++) f.g[B2 + k] = -20; f.lw = Float32Array.from(f.g); }
+    const bare = () => { noZoo(cw); cw.larvae = []; cw.env.benth.fill(BENTH_R * WORLD.SLICE_M2 / GRID.FIELD_COLS); };   // (and no worms or scuds above their refuge)
+    bare(); let s = 0; for (let i = 0; i < 150; i++) { cw.step(1 / 30); bare(); s += Math.hypot(f.x - wb.x, f.y - (wb.top + wb.bot) / 2); }
+    return s / 150; } finally { SP.sunfish.innate.cover = keep; } };
+const covOn = coverAB(true), covOff = coverAB(false);
+check('cover-seeking: a sunfish with its cover innate heads into a weed bed (closer than the same fish without it)', covOn < covOff * 0.85,
+  `mean distance ${covOn.toFixed(0)} px seeking vs ${covOff.toFixed(0)} px not`);
 // catfish are nocturnal — the innate cruise target rises under low light, so they forage faster at night and
 // rest by day. Tested at the MECHANISM level (deterministic): the emergent mean population speed is a noisy
 // aggregate sensitive to the whole sim trajectory (it shifted under the Phase-5 carrying-capacity change),
@@ -949,11 +967,10 @@ check('turbidity responds to algae/weather in a live run', w.env.turbidity > TUR
 console.log('\n— structure / cover / flow —');
 const sw = new World();
 check('reeds & logs are generated', sw.reeds.length > 0 && sw.logs.length > 0, `${sw.reeds.length} reeds, ${sw.logs.length} logs`);
-check('reeds sit on the shallow shores, rooted on the bed', sw.reeds.every(r => (r.x < WORLD.W * 0.15 || r.x > WORLD.W * 0.85) && Math.abs(r.baseY - bedY(r.x)) < 3));
+check('reeds sit on the shallow shores, rooted on the bed', sw.reeds.every(r => bedY(r.x) / WORLD.PX_PER_M <= STRUCTURE.REED_D + 0.01 && Math.abs(r.baseY - bedY(r.x)) < 3));
 check('logs lie on the bed, within the world', sw.logs.every(l => l.x >= 0 && l.x <= WORLD.W && l.y <= bedY(l.x) + 1));
 // macrophytes form dense beds on the lit littoral shelf, sparse in the dark deep middle
-const litFrac = WORLD.W * (BASIN.SHELF_FRAC + 0.02);
-const shelfPlants = sw.plants.filter(p => p.x < litFrac || p.x > WORLD.W - litFrac).length;
+const shelfPlants = sw.plants.filter(p => isLittoralX(p.x)).length;   // (the landscape's ≤ 3.5-m water in any basin)
 check('weed beds concentrate on the littoral shelf, not the deep middle',
   shelfPlants / Math.max(1, sw.plants.length) > 0.5, `${shelfPlants}/${sw.plants.length} on the shelf`);
 const reed = sw.reeds[0];
@@ -982,7 +999,7 @@ check('nutrients are split into N (nh4+no3) + P (phos) pools', w.env.nh4.length 
 // Liebig: the limitation is the MINIMUM of the N- and P-Monod terms — set one cell N-rich/P-poor and another the reverse,
 // and the scarcer element must set the value (the old check only asserted the range, which can't fail)
 check('growth is Liebig co-limited = min(N-Monod, P-Monod): the SCARCER element sets it', (() => {
-  const e = w.env, x = WORLD.W * 0.5, y = WORLD.H * 0.3, i = e.cellOf(x, y), keep = [e.nh4[i], e.no3[i], e.phos[i]];
+  const e = w.env, x = LAKE_C, y = WORLD.H * 0.3, i = e.cellOf(x, y), keep = [e.nh4[i], e.no3[i], e.phos[i]];
   const mon = (v, k) => v / (v + k);
   e.nh4[i] = 5; e.no3[i] = 0; e.phos[i] = 0.01; const pLim = e.nutrientAt(x, y);
   e.nh4[i] = 0.01; e.no3[i] = 0; e.phos[i] = 5; const nLim = e.nutrientAt(x, y);
@@ -1015,7 +1032,7 @@ console.log('\n— sediment-P (internal loading) —');
 const se = new World().env;
 check('a per-column sediment-P store exists', se.sedP.length > 0);
 const SC = GRID.FIELD_COLS, SR = GRID.FIELD_ROWS, SCW = WORLD.W / SC, SCH = WORLD.H / SR;
-const sCol = Math.round(SC * 0.5), sbx = (sCol + 0.5) * SCW, sBedRow = Math.min(SR - 1, Math.max(0, (bedY(sbx) / SCH) | 0)), sbi = sBedRow * SC + sCol;
+const sCol = Math.floor(LAKE_C / SCW), sBedRow = se.mask.bedRow[sCol], sbi = sBedRow * SC + sCol;   // (the lake's deep column and its own bed cell)
 // OXIC: the sediment binds dissolved P out of the water (sedP↑, water P↓)
 se.o2[sbi] = 1.0; se.phos[sbi] = 0.6; se.sedP[sCol] = 0.5;
 const sedOx0 = se.sedP[sCol], phosOx0 = se.phos[sbi];
@@ -1144,14 +1161,14 @@ check('decomposition is O₂-LIMITED (Monod): oxic decomposes faster than anoxic
 // MECHANISM 3 — consumes O₂ and remineralizes ammonium + phosphate (the bacterial respiration + nutrient release).
 const mD = new World().env; mD.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mD.dom.length; i++) { mD.dom[i] = 0.4; mD.nh4[i] = 0; mD.phos[i] = 0; mD.o2[i] = 1.0; }
-const mci = mD.cellOf(WORLD.W * 0.5, WORLD.H * 0.3), mO20 = mD.o2[mci];   // a WET cell (index length/2 is below the bed → inert since the wet/dry mask)
+const mci = mD.cellOf(LAKE_C, WORLD.H * 0.3), mO20 = mD.o2[mci];   // a WET cell (index length/2 is below the bed → inert since the wet/dry mask)
 for (let k = 0; k < 20; k++) mD.microbialLoop(1 / 30);
 check('decomposition CONSUMES O₂ (the microbial O₂ demand) and RELEASES ammonium + phosphate', mD.o2[mci] < mO20 && mD.nh4[mci] > 0 && mD.phos[mci] > 0 && mD.dom[mci] < 0.4, `O₂ ${mO20.toFixed(2)}→${mD.o2[mci].toFixed(2)}, nh4 ${mD.nh4[mci].toFixed(3)}, P ${mD.phos[mci].toFixed(3)}, DOM ${mD.dom[mci].toFixed(3)}`);
 // MECHANISM 4 — MASS CONSERVATION: DOM decomposed exactly equals N(→ammonium)+P(→phosphate) released (no N/P
 // created or destroyed). Uniform field ⇒ diffuse() is a no-op, so a single representative cell tests it exactly.
 const mC = new World().env; mC.tempC = MICROBE.REF_TEMP;
 for (let i = 0; i < mC.dom.length; i++) { mC.dom[i] = 0.3; mC.nh4[i] = 0; mC.no3[i] = 0; mC.phos[i] = 0; mC.o2[i] = 1.0; }
-const cci = mC.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);   // a WET cell (length/2 is a dry below-bed cell since the wet/dry mask)
+const cci = mC.cellOf(LAKE_C, WORLD.H * 0.3);   // a WET cell (length/2 is a dry below-bed cell since the wet/dry mask)
 for (let k = 0; k < 30; k++) mC.microbialLoop(1 / 30);
 const conserved = mC.dom[cci] + mC.nh4[cci] + mC.phos[cci];
 check('microbial loop CONSERVES mass: DOM decomposed = N+P remineralized (no nutrient created or lost)', approx(conserved, 0.3, 1e-5) && mC.dom[cci] < 0.3, `dom+nh4+phos ${conserved.toFixed(6)} (was 0.300), DOM ${mC.dom[cci].toFixed(4)}`);
@@ -1159,7 +1176,7 @@ check('microbial loop CONSERVES mass: DOM decomposed = N+P remineralized (no nut
 // deep than the warm oxic surface (slow cold+anoxic decomposition) — the realistic hypolimnetic organic build-up.
 seed(818); const dmw = new World().setDate(0.40);   // summer-stratified
 for (let i = 0; i < 1800; i++) dmw.step(1 / 30);
-const cxm = WORLD.W * 0.5, surfDOM = dmw.env.domAt(cxm, 20), deepDOM = dmw.env.domAt(cxm, bedY(cxm) - 12);
+const cxm = LAKE_C, surfDOM = dmw.env.domAt(cxm, 20), deepDOM = dmw.env.domAt(cxm, bedY(cxm) - 12);
 check('detritus dissolves into a standing DOM pool in the running lake (the microbial substrate exists)', dmw.env.meanDOM() > 0, `meanDOM ${dmw.env.meanDOM().toFixed(4)}`);
 check('EMERGENT: DOM accumulates more in the cold/hypoxic deep than the warm oxic surface (slow deep decomposition)', deepDOM > surfDOM, `deep DOM ${deepDOM.toFixed(4)} > surface ${surfDOM.toFixed(4)}`);
 check('the DOM field stays non-negative & finite after a run', [...dmw.env.dom].every(v => v >= 0 && Number.isFinite(v)));
@@ -1247,8 +1264,8 @@ for (let i = 0; i < 1500; i++) vw.step(1 / 30);
 const vlive = vw.plants.filter(p => !p.dead);
 const varieties = new Set(vlive.map(p => p.v));
 check('macrophytes come in multiple varieties (a typed registry, not one generic plant)', varieties.size >= 3, `${varieties.size} of ${MACRO.length} forms present: ${[...varieties].map(i => MACRO[i].key).join(',')}`);
-check('each macrophyte roots within its variety depth zone (depth zonation)', vlive.every(p => { const f = p.baseY / WORLD.H, z = MACRO[p.v].zone; return f >= z[0] - 0.03 && f <= z[1] + 0.03; }), `${vlive.length} plants checked`);
-const deepPlants = vlive.filter(p => p.baseY / WORLD.H > 0.72);
+check('each macrophyte roots within its variety depth zone (depth zonation, metres of bed)', vlive.every(p => { const d = p.baseY / WORLD.PX_PER_M, z = MACRO[p.v].zone; return (d >= z[0] - 0.5 && d <= z[1] + 0.5) || d > Math.max(...MACRO.map(m => m.zone[1])); }), `${vlive.length} plants checked`);   // (runners root a little outside; beyond every zone only the deepest form)
+const deepPlants = vlive.filter(p => p.baseY / WORLD.PX_PER_M > 5.0);
 check('the deep basin is colonised only by the deep/shade-tolerant form (milfoil), not shallow forms', deepPlants.length === 0 || deepPlants.every(p => MACRO[p.v].key === 'milfoil'), `${deepPlants.length} deep plants`);
 
 // ============================================================
@@ -1405,8 +1422,9 @@ check('follow converges on the followed agent', approx(cam.cx, tgt.x, 6) && appr
   const wc = wide.worldToScreen(WORLD.W / 2, WORLD.H / 2);
   const q = new Camera(WORLD.W, WORLD.H); q.setViewport(1600, 1200); q.fitNow();
   const qTop = q.worldToScreen(0, 0).y, qBot = 1200 - q.worldToScreen(0, WORLD.H).y;
-  check('tall views: the surface sits near the top (≤3% of the lake), the spare height goes below the bed; 16:9 stays centred',
-    top >= 0 && top <= 0.031 * WORLD.H * tall.zoom && 1920 - bot > top * 5 && qTop <= qBot && Math.abs(wc.x - 960) < 0.5 && Math.abs(wc.y - 540) < 0.5,
+  // (the landscape is wider than 16:9, so even a 16:9 view is fitted by width: centred across, the surface at the top)
+  check('tall views: the surface sits near the top (≤3% of the lake), the spare height goes below the bed; 16:9 stays centred across',
+    top >= 0 && top <= 0.031 * WORLD.H * tall.zoom && 1920 - bot > top * 5 && qTop <= qBot && Math.abs(wc.x - 960) < 0.5 && wide.worldToScreen(0, 0).y <= 0.031 * WORLD.H * wide.zoom,
     `portrait top ${top.toFixed(0)}px / bottom gap ${(1920 - bot).toFixed(0)}px; 4:3 top ${qTop.toFixed(0)} vs bottom ${qBot.toFixed(0)}; 16:9 centre ${wc.x.toFixed(1)},${wc.y.toFixed(1)}`);
 }
 
@@ -1544,7 +1562,7 @@ console.log('\n— save/load integrity (audit-fixes) —');
     for (const k of ['light', 'tempNorm', 'year', 'wind', 'flash', 'meanPhyto', 'meanCyano', 'meanDOM', 'W', 'H', 'cols', 'rows']) delete f.env[k];
     const lw = new World(); lw.load(f); for (let i = 0; i < 60; i++) lw.step(DTI);
     const ids = lw.agents.map(a => a.id);
-    check('saves are version 30, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 30 && finiteWorld(lw) && new Set(ids).size === ids.length); }
+    check('saves are version 31, and an older v23-shaped save still loads + runs (ids renumbered, no NaN)', base.version === 31 && finiteWorld(lw) && new Set(ids).size === ids.length); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];
@@ -1675,8 +1693,12 @@ console.log('\n— audit fixes: bio-ecology —');
     let maxBed = 0; for (let k = 0; k <= 16; k++) maxBed = Math.max(maxBed, bedY(Math.min(WORLD.W, (cx + k / 16) * CW)));
     if (!M.wet[br * COLS + cx] || (br + 1 < ROWS && M.wet[(br + 1) * COLS + cx]) || br * CH > maxBed || (br + 1) * CH <= maxBed - 1e-6) bedOk = false;
   }
-  check('wet mask: ~35% of field cells lie below the bed and are DRY', dry > 0.25 * COLS * ROWS && dry < 0.45 * COLS * ROWS, `${dry}/${COLS * ROWS} dry`);
-  check('wet mask: each row\'s wet cells are one contiguous run and each column\'s bedRow is its deepest wet cell (top above the bed)', contiguous && bedOk);
+  // (the landscape: a cell is wet iff it lies above its column's bed — rows below the stream's depth hold the lake's and the
+  // pond's water with dry ground between; bruns = each row's wet runs split by water body)
+  let colwise = true; for (let cy = 0; cy < ROWS; cy++) for (let cx = 0; cx < COLS; cx++) if (!!M.wet[cy * COLS + cx] !== (cy <= M.bedRow[cx])) colwise = false;
+  let runsOk = true; for (let cy = 0; cy < ROWS; cy++) { let n = 0; for (const [a, b] of M.bruns[cy]) { for (let cx = a; cx <= b; cx++) { if (!M.wet[cy * COLS + cx] || M.basin[cx] !== M.basin[a]) runsOk = false; n++; } } let w = 0; for (let cx = 0; cx < COLS; cx++) if (M.wet[cy * COLS + cx]) w++; if (w !== n) runsOk = false; }
+  check('wet mask: the cells below the bed are DRY (~50–80 % of the landscape\'s rectangle: the pond and stream are shallow)', dry > 0.5 * COLS * ROWS && dry < 0.8 * COLS * ROWS, `${dry}/${COLS * ROWS} dry`);
+  check('wet mask: a cell is wet iff it lies above its column\'s bed (bedRow = its deepest wet cell, top above the bed); the per-basin runs cover exactly the wet cells', colwise && bedOk && runsOk);
   const em = new Environment();
   let inRock = 0; for (let x = 1; x < WORLD.W; x += 7) for (const y of [bedY(x) - 1, bedY(x), bedY(x) + 3, WORLD.H]) if (!em.mask.wet[em.cellOf(x, y)]) inRock++;
   check('cellOf() clamps every lake point (even on/below the bed) to a WET cell — nothing reads/writes rock', inRock === 0, `${inRock} rock hits`);
@@ -1692,7 +1714,7 @@ console.log('\n— audit fixes: bio-ecology —');
   // 2 — CONSERVATIVE DIFFUSION (flux form, no-flux at edges & bed)
   const fd = new Float32Array(COLS * ROWS), td = new Float32Array(COLS * ROWS);
   for (let i = 0; i < fd.length; i++) fd[i] = M.wet[i] ? ((i * 2654435761) % 1000) / 1000 : 7;   // deterministic rough field
-  fd[10 * COLS] += 100;            // a slug at the inflow edge cell (col 0)
+  fd[M.bedRow[0] * COLS] += 100;   // a slug at the inflow edge (col 0's deepest wet cell)
   fd[COLS - 1] += 50;              // and in the surface corner (scum row 0, right edge)
   const d0 = sum64(fd, M);
   for (let s = 0; s < 1800; s++) cDiffuse(fd, td, NUTRIENT.DIFFUSE / 30, M);   // 60 sim-seconds
@@ -1742,7 +1764,7 @@ console.log('\n— audit fixes: bio-ecology —');
 
   // 5 — DEEP TEMPERATURE: the diurnal swing is a surface skin; the hypolimnion has its own slow, steady temperature
   seed(77); const tw2 = new World().setDate(0.40); tw2.env.setWeather(0);   // calm: a storm would (correctly) mix the deep
-  const tcx = WORLD.W * BASIN.CENTER, tdy = bedY(tcx) - 12;
+  const tcx = LAKE_C, tdy = bedY(tcx) - 12;
   let sMin = 99, sMax = -99, dMin = 99, dMax = -99;
   for (let s = 0; s < 2400; s++) { tw2.step(1 / 30); if (s > 600) { const ts = tw2.env.tempAt(tcx, 8), td2 = tw2.env.tempAt(tcx, tdy); sMin = Math.min(sMin, ts); sMax = Math.max(sMax, ts); dMin = Math.min(dMin, td2); dMax = Math.max(dMax, td2); } }
   check('the surface keeps its diurnal swing but the summer hypolimnion does not (deep range < 1 °C; was ±4 °C)', sMax - sMin > 3 && dMax - dMin < 1 && dMax < sMin, `surface ${sMin.toFixed(1)}..${sMax.toFixed(1)}, deep ${dMin.toFixed(1)}..${dMax.toFixed(1)} °C`);
@@ -1750,7 +1772,7 @@ console.log('\n— audit fixes: bio-ecology —');
   // 6 — NEGATIVE O₂ never reaches a rate term (the microbial Monod pole at −O2_HALF)
   let monodOk = true;
   for (const o of [-0.05, -0.099, -0.1, -0.5]) {
-    const e = new Environment(), i = e.cellOf(WORLD.W * 0.5, WORLD.H * 0.3);
+    const e = new Environment(), i = e.cellOf(LAKE_C, WORLD.H * 0.3);
     e.o2[i] = o; e.dom[i] = 1; e.phos[i] = 0.001; e.nh4[i] = 0.001;
     e.microbialLoop(1 / 30); e.nitrogenCycle(1 / 30); e.sedimentP(1 / 30);
     if (!(e.dom[i] <= 1) || e.phos[i] < 0 || e.nh4[i] < 0 || ![...e.dom, ...e.o2, ...e.phos].every(Number.isFinite)) monodOk = false;
@@ -1814,11 +1836,12 @@ console.log('\n— apex energetics: pursuit & hypoxia avoidance —');
       const b = tw.makeFish('bass', null, SP.bass.matureAge * 1.2); b.x = 1000; b.y = SP.bass.innate.homeDepth * tw.bedY(1000); b.heading = b.velHeading = 0;
       tw.agents.push(b);
       for (let i = 0; i < 12; i++) { tw.env.o2.fill(0.3); tw.step(1 / 30); }
-      return Math.sin(b.heading);
+      return b.y;
     } finally { ENVC.HYPOXIA_AVOID = keep; SP.bass.innate.spawnGround = keepG; }
   };
-  const offH = hypoRun(0), onH = hypoRun(ENVC.HYPOXIA_AVOID);
-  check('innate HYPOXIA AVOIDANCE steers a fish upward out of O₂-starved water (vs the reflex disabled)', onH < offH - 0.05, `sin(heading) ${onH.toFixed(2)} with avoidance vs ${offH.toFixed(2)} without (negative = upward)`);
+  // (measured as how far it rises: a bottom-dweller's reflex also heads it for the shallows, up and shoreward)
+  const y0 = SP.bass.innate.homeDepth * bedY(1000), offH = hypoRun(0), onH = hypoRun(ENVC.HYPOXIA_AVOID);
+  check('innate HYPOXIA AVOIDANCE moves a fish up out of O₂-starved water (vs the reflex disabled)', onH < offH - 2, `rose ${(y0 - onH).toFixed(1)} px with avoidance vs ${(y0 - offH).toFixed(1)} without`);
 }
 
 // ==== behavioural replacements for formula-copy checks (2026-10-12; AUDIT Tier 1 #5) ====
@@ -1956,7 +1979,7 @@ console.log('\n— realism: climate, ice, under-ice O₂, algae, diatoms, nests,
   // winter profile, not a lake-wide winterkill
   { seed(5152); const ww = new World().setDate(0.83);
     for (let i = 0; i < 30 * 120; i++) ww.step(1 / 30);
-    const e = ww.env, cxm = WORLD.W * BASIN.CENTER, deep = e.oxygenAt(cxm, bedY(cxm) - 12);
+    const e = ww.env, cxm = LAKE_C, deep = e.oxygenAt(cxm, bedY(cxm) - 12);
     let up = 0, n = 0; for (let cy = 0; cy < 8; cy++) for (let cx = e.mask.lo[cy]; cx <= e.mask.hi[cy]; cx++) { up += e.o2[cy * GRID.FIELD_COLS + cx]; n++; } up /= n;
     check('UNDER ICE the deep water runs out of O₂ while the upper water keeps it (no lake-wide winterkill)', e.ice > 0.9 && up > 0.5 && deep < up - 0.2, `${e.monthName()}: ice ${e.ice.toFixed(2)}, upper O₂ ${up.toFixed(2)}, deep ${deep.toFixed(2)}`); }
 
@@ -2274,7 +2297,8 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
     { seed(7104); const fw = new World(), sun = fw.agents.filter(a => a.species === 'sunfish'), juv = sun.filter(a => !a.mature).length;
       // (a species with a single founder — the pike, a visitor at this slice's size — opens with one ripe adult female)
       const pairs = SPECIES.every(k => { const f = fw.agents.filter(a => a.species === k).slice(0, 2); return f.length === 1 ? f[0].mature && f[0].sex === 0 && f[0].gon > 0 : f.length === 2 && f[0].mature && f[1].mature && f[0].sex === 0 && f[1].sex === 1 && f[0].gon > 0; });
-      check('founders: a stable age structure (many young, immature bluegills) and a ripe adult pair of every species (one ripe female of a single-founder visitor)', juv > sun.length * 0.35 && pairs, `${juv}/${sun.length} sunfish immature; pairs ${pairs}`); }
+      const young = sun.filter(a => a.age < SP.sunfish.matureAge).length;   // (since the northern maturity of 2026-10-15 most 2-year-olds are already mature)
+      check('founders: a stable age structure (young fish outnumber adults; the youngest still immature) and a ripe adult pair of every species (one ripe female of a single-founder visitor)', young > sun.length * 0.5 && juv > sun.length * 0.08 && pairs, `${young}/${sun.length} sunfish younger than ${(SP.sunfish.matureAge / TIME.YEAR_LEN).toFixed(0)} yr, ${juv} immature; pairs ${pairs}`); }
     // the YOY recruit as yearlings in spring: an overwintered school (age > OVERWINTER) recruits once spring comes
     { seed(7105); const rw = new World().setDate(0.05); rw.fry = [];
       const f = mkSchool(rw, 'sunfish', 500, 300, 60); f.L = 3; f.W = stdWeight(SP.sunfish.lw, 3); f.age = 0.7 * TIME.YEAR_LEN;
@@ -2319,7 +2343,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       seed(7601); const cw = new World(); const lim = CR.MAX_DEPTH * WORLD.H;
       const shallow = cw.cray.every(c => cw.bedY(c.x) <= lim + 1);
       const deep = cw._mkCray(1024); cw.cray = [deep]; for (let i = 0; i < 90; i++) cw.step(1 / 30);   // an old save's crayfish on the deep floor
-      const crawled = Math.abs(deep.x - 1024) > 5 && (deep.x < 1024) === (1024 < WORLD.W * BASIN.CENTER);
+      const crawled = Math.abs(deep.x - 1024) > 5 && (deep.x < 1024) === (1024 < LAKE_C);
       check('crayfish live on the littoral/sublittoral bed (CRAYFISH.MAX_DEPTH), and one on the deep floor walks back up', shallow && crawled, `all shallow ${shallow}; deep one moved ${(deep.x - 1024).toFixed(0)} px`);
       const grow = yf => { seed(7602); const gw = new World().setDate(yf); gw.agents = []; gw.fry = []; gw.cray = gw.cray.slice(0, 100);
         const n0 = gw.cray.length; for (let i = 0; i < 30 * 120; i++) gw.step(1 / 30); return { d: gw.cray.length - n0, T: gw.env.tempC }; };
@@ -2401,7 +2425,8 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
         const x = 150, y = pw.bedY(150) - 6, f = pw._mkFry(k, x, y, 500, 1, 200, Float32Array.from(pw.makeFish(k).g), new Float32Array(GENE_KEYS.length).fill(1));
         f.L = 1.0; f.W = stdWeight(SP[k].lw, 1.0); f.ni = 0; pw.fry = [f]; for (let i = 0; i < 90; i++) pw.step(1 / 30); return f; };
       const sfy = lim('sunfish'), cfy = lim('catfish');
-      check('bluegill fry have a limnetic phase (head for the open water), bullhead fry don’t', sfy.tx >= WORLD.W * FRYB.PELAGIC_X[0] && sfy.tx <= WORLD.W * FRYB.PELAGIC_X[1] && sfy.ty <= WORLD.H * FRYB.PELAGIC_D && !(cfy.tx >= WORLD.W * FRYB.PELAGIC_X[0] && cfy.ty <= WORLD.H * FRYB.PELAGIC_D),
+      const LW = LANDSCAPE.LAKE_W;   // (the band of the school's own water body — the lake)
+      check('bluegill fry have a limnetic phase (head for the open water), bullhead fry don’t', sfy.tx >= LW * FRYB.PELAGIC_X[0] && sfy.tx <= LW * FRYB.PELAGIC_X[1] && sfy.ty <= WORLD.H * FRYB.PELAGIC_D && !(cfy.tx >= LW * FRYB.PELAGIC_X[0] && cfy.ty <= WORLD.H * FRYB.PELAGIC_D),
         `bluegill target (${(sfy.tx / WORLD.W).toFixed(2)} W, ${(sfy.ty / WORLD.H).toFixed(2)} H); bullhead (${(cfy.tx / WORLD.W).toFixed(2)} W, ${(cfy.ty / WORLD.H).toFixed(2)} H)`);
       const sv = new World(); sv.env.sedOM[12] = 1234.5; const back = new World(); back.load(JSON.parse(JSON.stringify(sv.toJSON())));
       check('the bed’s organic layer round-trips through save/load (v28+)', Math.abs(back.env.sedOM[12] - 1234.5) < 1e-3 && sv.toJSON().version >= 28, `${back.env.sedOM[12]}`); }
@@ -2571,7 +2596,8 @@ console.log('\n— the bed\'s worms and scuds —');
   // ESCAPE: a school of perch larvae that finds itself in an anoxic layer over the bed swims up out of it within the hour
   // (FRY.ESCAPE), instead of drifting up at its feeding pace for days and dying there
   seed(9404); const aw = new World().setDate(0.25); aw.agents = []; aw.birds = [];
-  const ab = aw.env.mask.bedRow, cA = 20, xA = (cA + 0.5) * CW, yA = (ab[cA] + 0.5) * CH;
+  const ab = aw.env.mask.bedRow; let cA = 0; while (ab[cA] < 13) cA++;   // (a lake column ~3.3 m deep)
+  const xA = (cA + 0.5) * CW, yA = (ab[cA] + 0.5) * CH;
   const ls = aw._mkFry('perch', xA, yA - 2, 300, 1, 60, Float32Array.from(aw.makeFish('perch').g), new Float32Array(GENE_KEYS.length).fill(1));
   ls.L = 1; ls.W = stdWeight(SP.perch.lw, 1); aw.fry = [ls];
   const anox = () => { aw.env.o2.fill(1); for (let r = ab[cA] - 1; r <= ab[cA]; r++) for (let c = cA - 2; c <= cA + 2; c++) aw.env.o2[r * COLS + c] = 0; };

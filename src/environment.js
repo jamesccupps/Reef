@@ -3,14 +3,17 @@
 //
 // WET/DRY MASK: the field grid spans the full W×H rectangle, but ~35% of its cells lie entirely below the lake bed.
 // A cell is WET if any part of it is above the bed (its top is above the deepest bed point across its column), so a
-// column's wet cells are rows 0..bedRow[cx] and each row's wet cells are one contiguous run lo[cy]..hi[cy] (the basin
-// is unimodal). Every process loop visits WET cells only, diffusion is no-flux at the bed, all means are over wet
-// cells, and cellOf() clamps any point to its column's bed cell. Dry cells stay inert at their constructed defaults
+// column's wet cells are rows 0..bedRow[cx]. Since the landscape (2026-10-15: lake, stream, pond) a row's wet cells can
+// be several runs — below the stream's depth the lake and the pond are separate water with dry ground between — so
+// lo[cy]..hi[cy] is the row's wet SPAN and every loop over it checks wet[i]; `bruns[cy]` lists each row's wet runs split
+// by basin (the lake's, the stream's, the pond's water — for processes that act within one water body). Every process loop
+// visits WET cells only, diffusion is no-flux at the bed and the banks, all means are over wet cells, and cellOf() clamps
+// any point to its column's bed cell. Dry cells stay inert at their constructed defaults
 // (array shapes unchanged → save-compatible). Partial bed cells count as whole cells (unit volume).
 //
 // MASS BUDGET: every N/P transfer debits its source. Sources/sinks that cross the lake boundary are tallied in
 // `this.ledger` (inflow, outflow, sediment burial, denitrification, N-fixation) so the inventory can be audited.
-import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, ICE, PLANT, PLANKTON, BENTHOS, BIOE, bedY } from './config.js';
+import { WORLD, GRID, ENV, NUTRIENT, SED_P, SEDOM, NCYCLE, MICROBE, MACRO, SEASON, THERMAL, WIND, TURBIDITY, FLOW, OUTFLOW, PHYTO, CYANO, DIATOM, BASIN, BASINS, basinAt, basinCenterX, ICE, PLANT, PLANKTON, BENTHOS, BIOE, bedY } from './config.js';
 import { rand, clamp, TAU } from './core.js';
 
 const W = WORLD.W, H = WORLD.H;
@@ -32,23 +35,32 @@ export function seasonalSun(yearFrac) {
   return { dayFrac: SEASON.DAY_FRAC[0] + (SEASON.DAY_FRAC[1] - SEASON.DAY_FRAC[0]) * s, noon: SEASON.NOON[0] + (SEASON.NOON[1] - SEASON.NOON[0]) * s };
 }
 
-// wet/dry mask from the basin profile (pure function of config): per column the deepest wet row, per row the wet run.
+// wet/dry mask from the basin profile (pure function of config): per column the deepest wet row; per row the wet span
+// (lo..hi) and its wet runs split by basin (bruns); per column its basin id
 export function buildWetMask() {
-  const bedRow = new Int32Array(COLS), wet = new Uint8Array(COLS * ROWS);
+  const bedRow = new Int32Array(COLS), wet = new Uint8Array(COLS * ROWS), basin = new Uint8Array(COLS);
   const lo = new Int32Array(ROWS).fill(COLS), hi = new Int32Array(ROWS).fill(-1);
   const S = 16;
   for (let cx = 0; cx < COLS; cx++) {
-    let maxBed = 0;   // deepest bed point across the column's x-span (both edges + interior samples)
+    let maxBed = 0;   // deepest bed point across the column's x-span (both edges + interior samples, + a basin centre inside it)
     for (let k = 0; k <= S; k++) { const b = bedY(Math.min(W, (cx + k / S) * CW)); if (b > maxBed) maxBed = b; }
-    const c = W * BASIN.CENTER; if (c >= cx * CW && c <= (cx + 1) * CW) maxBed = Math.max(maxBed, bedY(c));   // basin centre
+    for (const B of BASINS) { const c = basinCenterX(B); if (c >= cx * CW && c <= (cx + 1) * CW) maxBed = Math.max(maxBed, bedY(c)); }
     bedRow[cx] = clamp(Math.floor(maxBed / CH - 1e-9), 0, ROWS - 1);   // a row is wet iff its top lies above the bed
+    basin[cx] = basinAt((cx + 0.5) * CW).id;
   }
-  for (let cy = 0; cy < ROWS; cy++) for (let cx = 0; cx < COLS; cx++) if (cy <= bedRow[cx]) { if (cx < lo[cy]) lo[cy] = cx; if (cx > hi[cy]) hi[cy] = cx; }
-  // the wet set of a row is one contiguous run (unimodal basin) — define it that way so loops & the mask agree exactly
   let n = 0;
-  for (let cy = 0; cy < ROWS; cy++) for (let cx = lo[cy]; cx <= hi[cy]; cx++) { wet[cy * COLS + cx] = 1; n++; }
-  for (let cx = 0; cx < COLS; cx++) { let r = 0; while (r + 1 < ROWS && wet[(r + 1) * COLS + cx]) r++; bedRow[cx] = r; }
-  return { bedRow, wet, lo, hi, n };
+  for (let cy = 0; cy < ROWS; cy++) for (let cx = 0; cx < COLS; cx++) if (cy <= bedRow[cx]) { wet[cy * COLS + cx] = 1; n++; if (cx < lo[cy]) lo[cy] = cx; if (cx > hi[cy]) hi[cy] = cx; }
+  const bruns = [];
+  for (let cy = 0; cy < ROWS; cy++) {
+    const rr = []; let a = -1;
+    for (let cx = 0; cx <= COLS; cx++) {
+      const w = cx < COLS && wet[cy * COLS + cx], cut = a >= 0 && (!w || basin[cx] !== basin[a]);
+      if (cut) { rr.push([a, cx - 1]); a = -1; }
+      if (w && a < 0) a = cx;
+    }
+    bruns.push(rr);
+  }
+  return { bedRow, wet, lo, hi, n, bruns, basin };
 }
 
 export class Environment {
@@ -116,7 +128,7 @@ export class Environment {
   }
   isWet(i) { return this.mask.wet[i] === 1; }
   // mean of a field over WET cells (dry cells are rock and excluded)
-  wetMean(f) { const { lo, hi } = this.mask; let s = 0; for (let cy = 0; cy < ROWS; cy++) { const b = cy * COLS; for (let cx = lo[cy]; cx <= hi[cy]; cx++) s += f[b + cx]; } return s / this.mask.n; }
+  wetMean(f) { const { lo, hi, wet } = this.mask; let s = 0; for (let cy = 0; cy < ROWS; cy++) { const b = cy * COLS; for (let cx = lo[cy]; cx <= hi[cy]; cx++) if (wet[b + cx]) s += f[b + cx]; } return s / this.mask.n; }
   wetSum(f) { return this.wetMean(f) * this.mask.n; }
   // effective light attenuation rises with turbidity (murky water = shallower photic zone)
   attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity); }
@@ -255,7 +267,8 @@ export class Environment {
       const qR = Math.pow(P.Q10_R, (T - 20) / 10), grR = P.GR_R * qR * dt, gR0 = P.G_R * dd, lR0 = (P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd, m2R = P.M2_R * dd;
       const grD = P.GR_D * qD * dt, grC = P.GR_C * qC * dt, base = cy * COLS, cold = dorm && T < P.DORM_T;
       for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
-        const i = base + cx, A = ph[i] + di[i], zd = D[i], zc = Cz[i], rf = ra[cx], lit = P.LIT_FOOD * Math.min(1, pm[i]);
+        const i = base + cx; if (!this.mask.wet[i]) continue;
+        const A = ph[i] + di[i], zd = D[i], zc = Cz[i], rf = ra[cx], lit = P.LIT_FOOD * Math.min(1, pm[i]);
         const cyn = Math.max(0, 1 - P.DAPH_CYANO * cyf[i] / CYANO.CAP);
         const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + P.K_C) * (1 - costC * rf) * qC;
         this.zooProd += pd + pc;   // (diagnostic: the step's production, g — never read by the sim)
@@ -307,7 +320,7 @@ export class Environment {
     for (let cy = 1; cy < ROWS; cy++) {
       const base = cy * COLS;
       for (let cx = lo[cy]; cx <= hi[cy]; cx++) {
-        const i = base + cx; if (o2[i] >= P.O2_MIN) continue;
+        const i = base + cx; if (!this.mask.wet[i] || o2[i] >= P.O2_MIN) continue;
         const j = i - COLS, md = D[i] * av, mc = Cz[i] * av, mr = Rz[i] * av;
         D[i] -= md; D[j] += md; Cz[i] -= mc; Cz[j] += mc; Rz[i] -= mr; Rz[j] += mr;
       }
@@ -318,8 +331,9 @@ export class Environment {
     // (SHORE AVOIDANCE: open-water Daphnia swim away from the shore — Siebeck 1980 — so their share leans to the deep columns:
     // each column weighted SHORE + (1 − SHORE) × its DVM refuge depth; copepods and the littoral's own crustaceans spread evenly)
     const hm = Math.min(1, P.HMIX * dt);
-    for (let cy = 0; cy < ROWS; cy++) {
-      const base = cy * COLS, a = lo[cy], b = hi[cy], n = b - a + 1; if (n < 2) continue;
+    // (within each water body: a row's wet run in the lake, the stream or the pond — they don't share plankton by mixing)
+    for (let cy = 0; cy < ROWS; cy++) for (const [a, b] of this.mask.bruns[cy]) {
+      const base = cy * COLS, n = b - a + 1; if (n < 2) continue;
       let sd = 0, sc = 0, sr = 0, sw = 0; for (let cx = a; cx <= b; cx++) { const i = base + cx; sd += D[i]; sc += Cz[i]; sr += Rz[i]; sw += P.SHORE + (1 - P.SHORE) * ra[cx]; }
       const fd = sd / sw, mc = sc / n, mr = sr / n;
       for (let cx = a; cx <= b; cx++) { const i = base + cx; D[i] += (fd * (P.SHORE + (1 - P.SHORE) * ra[cx]) - D[i]) * hm; Cz[i] += (mc - Cz[i]) * hm; Rz[i] += (mr - Rz[i]) * hm; }
@@ -435,6 +449,7 @@ export class Environment {
       // both are bacterial processes: strongly temperature-dependent (Q10 ≈ 2; nitrification nearly stalls in ice-cold water)
       const q = Math.pow(NCYCLE.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        if (!this.mask.wet[i]) continue;
         const oxy = o2[i] > 0 ? o2[i] : 0;   // a transiently negative O₂ must never drive a rate
         if (oxy >= NCYCLE.DENITRIF_O2) {
           // OXIC: nitrification (ammonium → nitrate), rate ∝ ammonium × O₂ availability (Monod); it consumes O₂.
@@ -464,6 +479,7 @@ export class Environment {
       const q10 = Math.pow(MICROBE.Q10, (this.tempAt(0, y) - MICROBE.REF_TEMP) / 10);  // warm → fast, cold → slow
       const baseRate = MICROBE.BACT * q10 * dt;
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        if (!this.mask.wet[i]) continue;
         const m = dom[i];
         if (m > 1e-6) {
           const ox = o2[i] > 0 ? o2[i] : 0;
@@ -500,6 +516,7 @@ export class Environment {
       const tf = clamp(1 - Math.abs(T - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), qP = Math.pow(PHYTO.Q10, (T - 20) / 10), rA = this.algaeRespAt(y);
       const pl = Math.min(lit, tf);   // Blackman: the temperature window caps the light-saturated rate; dim light is T-independent
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        if (!this.mask.wet[i]) continue;
         const b = dia[i], p = phos[i], a = nh4[i], nTot = a + no3[i];
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
         let growth = DIATOM.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
@@ -537,6 +554,7 @@ export class Environment {
       const tempFac = clamp(1 - Math.abs(this.tempAt(0, y) - CYANO.TEMP_OPT) / CYANO.TEMP_TOL, 0, 1);   // warm-water bloomer
       const qC = Math.pow(PHYTO.Q10, (this.tempAt(0, y) - 20) / 10);   // respiration + decay slow in the cold (as green algae)
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        if (!this.mask.wet[i]) continue;
         const cb = cyn[i], p = phos[i];
         const pMon = p / (p + NUTRIENT.KP);                                                             // P-limited only (N-fixing)
         // PER-CAPITA (logistic) growth from the standing biomass + a tiny inoculum (resting cells / akinetes) — a bloom
@@ -774,6 +792,7 @@ export class Environment {
       const qP = Math.pow(PHYTO.Q10, (this.tempAt(0, (cy + 0.5) * CH) - 20) / 10), rA = this.algaeRespAt((cy + 0.5) * CH);
       const pl = photoRate(lit, qP);
       for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) {
+        if (!this.mask.wet[i]) continue;
         const b = ph[i], p = phos[i], a = nh4[i], nTot = a + no3[i];                                // available inorganic N
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));                  // Liebig minimum
         let growth = PHYTO.GROW * pl * nLim * (1 - b / PHYTO.CAP) * dt;
@@ -835,7 +854,7 @@ export class Environment {
       const r = ramp((cy + 0.5) / ROWS);
       if (r <= 0) continue;
       const d = pel * r * qT((cy + 0.5) * CH);
-      for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) o2[i] = Math.max(0, o2[i] - d);
+      for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) if (this.mask.wet[i]) o2[i] = Math.max(0, o2[i] - d);
     }
     for (let cx = 0; cx < COLS; cx++) {
       const by = bedRow[cx], i = by * COLS + cx, r = ramp((by + 0.5) / ROWS);
@@ -860,7 +879,7 @@ export class Environment {
     const aer = (ENV.O2_AERATE * (ENV.AERATE_CALM + turb) + rainBoost * ENV.AERATE_RAIN) * (1 - this.ice);   // sealed under ice
     for (let cx = 0; cx < COLS; cx++) {
       o2[cx] += (sat - o2[cx]) * clamp(aer * dt, 0, 1);                                    // row 0 (surface)
-      o2[COLS + cx] += (sat - o2[COLS + cx]) * clamp(aer * ENV.AERATE_ROW1 * dt, 0, 1);   // row 1 (just below)
+      if (M.wet[COLS + cx]) o2[COLS + cx] += (sat - o2[COLS + cx]) * clamp(aer * ENV.AERATE_ROW1 * dt, 0, 1);   // row 1 (just below)
     }
 
     // diffuse (conservative flux form, no-flux at the bed & lake edges): nutrient blurs isotropically; O₂'s
@@ -888,7 +907,7 @@ export class Environment {
 
     this._throughFlow(dt);
 
-    for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) o2[i] = clamp(o2[i], 0, 1.5);
+    for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) if (this.mask.wet[i]) o2[i] = clamp(o2[i], 0, 1.5);
   }
 
   // THROUGH-FLOW: the inflow→outflow current carries every dissolved/suspended field (phosphate, ammonium, nitrate,
@@ -960,6 +979,11 @@ export class Environment {
     }
     const FIELD_MAX = 1e6;
     const cell = (v, d) => (typeof v === 'number' && Number.isFinite(v) ? clamp(v, 0, FIELD_MAX) : d);
+    // a save from a world of a different WIDTH (v30 and older: the single 2048-px lake, before the landscape) maps by ABSOLUTE
+    // x — its lake lies at the same place in the landscape — and the new water beyond it keeps the defaults; the same width
+    // (or an unknown one) maps by fraction, as before
+    const savedW = num(s.W, num(hint.W, 0)), byX = savedW > 0 && Math.abs(savedW - W) > 0.5;
+    const oxOf = (cx, c) => byX ? Math.floor((cx + 0.5) * CW / (savedW / c)) : c === COLS ? cx : Math.min(c - 1, Math.floor((cx + 0.5) * c / COLS));
     // read a 2-D field into a fresh copy of `def` — direct when the grid matches, nearest-cell RESAMPLE by (cx,cy) when
     // the saved grid differs; an unreadable shape keeps the default. `xf` transforms each value (legacy pool splits).
     const field2 = (src, def, xf = v => v) => {
@@ -970,7 +994,7 @@ export class Environment {
       for (let cy = 0; cy < ROWS; cy++) {
         const oy = r === ROWS ? cy : Math.min(r - 1, Math.floor((cy + 0.5) * r / ROWS));
         for (let cx = 0; cx < COLS; cx++) {
-          const ox = c === COLS ? cx : Math.min(c - 1, Math.floor((cx + 0.5) * c / COLS)), i = cy * COLS + cx;
+          const ox = oxOf(cx, c), i = cy * COLS + cx; if (ox >= c) continue;
           out[i] = cell(xf(src[oy * c + ox]), out[i]);
         }
       }
@@ -980,7 +1004,7 @@ export class Environment {
       const out = Float32Array.from(def);
       if (!Array.isArray(src)) return out;
       const c = src.length === sc ? sc : src.length === COLS ? COLS : 0; if (!c) return out;
-      for (let cx = 0; cx < COLS; cx++) out[cx] = cell(src[c === COLS ? cx : Math.min(c - 1, Math.floor((cx + 0.5) * c / COLS))], out[cx]);
+      for (let cx = 0; cx < COLS; cx++) { const ox = oxOf(cx, c); if (ox < c) out[cx] = cell(src[ox], out[cx]); }
       return out;
     };
     const o2 = field2(s.o2, new Float32Array(COLS * ROWS).fill(ENV.O2_START));
@@ -1011,7 +1035,7 @@ export class Environment {
     // (this.mask is geometry built in the constructor, independent of the save), photic band for green phyto, surface
     // scum band for cyano, every wet cell for DOM
     const { lo, hi } = this.mask;
-    const bandMean = (f, maxFrac) => { let sm = 0, n = 0; for (let cy = 0; cy < ROWS; cy++) { if (maxFrac < 1 && (cy + 0.5) / ROWS >= maxFrac) continue; for (let cx = lo[cy]; cx <= hi[cy]; cx++) { sm += f[cy * COLS + cx]; n++; } } return n ? sm / n : 0; };
+    const bandMean = (f, maxFrac) => { let sm = 0, n = 0; for (let cy = 0; cy < ROWS; cy++) { if (maxFrac < 1 && (cy + 0.5) / ROWS >= maxFrac) continue; for (let cx = lo[cy]; cx <= hi[cy]; cx++) { if (!this.mask.wet[cy * COLS + cx]) continue; sm += f[cy * COLS + cx]; n++; } } return n ? sm / n : 0; };
     const meanPhyto = Math.max(0, num(s.meanPhyto, bandMean(phyto, PHYTO.BAND)));
     const meanDiatom = Math.max(0, num(s.meanDiatom, bandMean(diatom, DIATOM.BAND)));
     const meanCyano = Math.max(0, num(s.meanCyano, bandMean(cyano, CYANO.SCUM_BAND)));
@@ -1038,16 +1062,17 @@ function diffuse(field, tmp, k, M) {
   for (let cy = 0; cy < ROWS; cy++) {
     const L = lo[cy], R = hi[cy], base = cy * COLS, down = cy < ROWS - 1;
     for (let cx = L; cx <= R; cx++) {
-      const i = base + cx, f = field[i];
+      const i = base + cx; if (!wet[i]) continue;
+      const f = field[i];
       let a = 0;
-      if (cx > L) a += field[i - 1] - f;
-      if (cx < R) a += field[i + 1] - f;
+      if (cx > L && wet[i - 1]) a += field[i - 1] - f;
+      if (cx < R && wet[i + 1]) a += field[i + 1] - f;
       if (cy > 0) a += field[i - COLS] - f;            // the cell above a wet cell is always wet
       if (down && wet[i + COLS]) a += field[i + COLS] - f;
       tmp[i] = f + c * a;
     }
   }
-  for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) field[i] = tmp[i];
+  for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) if (wet[i]) field[i] = tmp[i];
 }
 
 // like diffuse(), but VERTICAL exchange is weighted by a mixing factor that drops below the epilimnion as `strat`
@@ -1068,16 +1093,17 @@ function diffuseO2(field, tmp, k, strat, M) {
     const L = lo[cy], R = hi[cy], base = cy * COLS, down = cy < ROWS - 1;
     const vUp = _vRow[cy], vDn = down ? _vRow[cy + 1] : 0;   // interface (cy−1|cy) uses row cy; (cy|cy+1) uses row cy+1
     for (let cx = L; cx <= R; cx++) {
-      const i = base + cx, f = field[i];
+      const i = base + cx; if (!wet[i]) continue;
+      const f = field[i];
       let a = 0;
-      if (cx > L) a += field[i - 1] - f;
-      if (cx < R) a += field[i + 1] - f;
+      if (cx > L && wet[i - 1]) a += field[i - 1] - f;
+      if (cx < R && wet[i + 1]) a += field[i + 1] - f;
       if (cy > 0) a += (field[i - COLS] - f) * vUp;
       if (down && wet[i + COLS]) a += (field[i + COLS] - f) * vDn;
       tmp[i] = f + c * a;
     }
   }
-  for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) field[i] = tmp[i];
+  for (let cy = 0; cy < ROWS; cy++) for (let i = cy * COLS + lo[cy], e = cy * COLS + hi[cy]; i <= e; i++) if (wet[i]) field[i] = tmp[i];
 }
 
 export { daylight, diffuse, diffuseO2 };

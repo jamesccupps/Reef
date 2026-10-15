@@ -1,5 +1,5 @@
 // species.js — the six species: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
-import { WORLD, ENV, TIME } from './config.js';
+import { WORLD, ENV, TIME, littoralX } from './config.js';
 import { prepBio } from './bioenergetics.js';
 import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
 
@@ -7,11 +7,8 @@ const W = WORLD.W, H = WORLD.H;
 
 // x biased toward the shallow littoral shelves near each shore — where shelf-dwelling
 // fish (minnows, sunfish) naturally congregate. ~62% land on a shelf, the rest spread out.
-const SHELF = 0.18;   // width fraction of each shore that counts as the littoral shelf
-function littoralX(R) {
-  if (R() < 0.62) return R() < 0.5 ? R(8, W * SHELF) : R(W * (1 - SHELF), W - 8);
-  return R(10, W - 10);
-}
+// littoralX(R): a random littoral x in any water body (config.js — the landscape's 0–3.5 m water)
+
 
 // ---------- sensory helpers ----------
 function tgt(agent, t, range, inp, i) {
@@ -498,7 +495,8 @@ export const SP = {
     diet: { detritus: true, plants: true, larva: true, snail: true, cray: 0.15 },   // (2026-10-15: zooplankton only as a young fish — below Lzoo — now that the bed's worms and scuds (BENTHOS) feed the adults)   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
     matingCooldown: yr(0.5), pop: { start: 1.5, min: 3, max: 6 },   // K ≈ 40; ~10 founders ≈ 20 kg/ha
-    tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
+    tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06),   // (2026-10-15: no fixed spawning side — bullheads nest under cover in the shallows near home, the nearer shore of their own water body)
+      // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4, forage: 0.5 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),

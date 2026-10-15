@@ -185,7 +185,7 @@ body{
 .camctl{position:absolute; right:14px; bottom:14px; z-index:4; display:flex; gap:6px; background:rgba(4,12,18,.6); border:1px solid var(--line); border-radius:9px; padding:5px}
 .camctl button{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:5px 9px; cursor:pointer; transition:.14s; line-height:1}
 .camctl button:hover{border-color:var(--phosphor); color:#fff; background:#10303f}
-.minimap{position:absolute; left:14px; bottom:14px; z-index:3; width:clamp(150px,22%,260px); aspect-ratio:16/9; border:1px solid var(--line2); border-radius:7px; background:rgba(2,8,14,.7); cursor:pointer; image-rendering:pixelated; box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.minimap{position:absolute; left:14px; bottom:14px; z-index:3; width:clamp(200px,34%,420px); aspect-ratio:3904/1152; border:1px solid var(--line2); border-radius:7px; background:rgba(2,8,14,.7); cursor:pointer; image-rendering:pixelated; box-shadow:0 6px 20px rgba(0,0,0,.5)}
 .perf{position:absolute; top:14px; right:54px; z-index:4; display:none; max-width:60%; pointer-events:none;
   background:rgba(2,8,14,.72); border:1px solid var(--line); border-radius:8px; padding:5px 9px;
   font-family:var(--mono); font-size:10.5px; color:var(--phosphor); letter-spacing:.02em; line-height:1.4}
