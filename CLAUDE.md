@@ -11,6 +11,7 @@ This is the working brief for Claude Code. It's deliberately short.
 - `ROADMAP.md`: plans.
 - `AUDIT.md`: findings and their status.
 - `docs/GRAPHICS_RESEARCH.md`: the render roadmap.
+- `docs/ECOLOGY_RESEARCH.md`: real-lake values (zooplankton, larval fish, bass, pike, whole-lake energy flow) against the sim, with a ranked calibration list; its sourced notes are in `docs/research_notes/`.
 
 ## Vision
 A whole-lake ecosystem in which every fish is driven by its own neural network, and as many real ecological processes as possible interact to produce emergent, believable behaviour. It should be large, detailed, realistic and beautiful in full screen: part scientific toy, part living screensaver.
