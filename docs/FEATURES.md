@@ -5,7 +5,73 @@ This is the detailed reference for how each subsystem works and where it lives. 
 - **For quick facts:** read the short `CLAUDE.md`.
 - **Before touching a subsystem:** read the matching section below.
 
-The **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections come first, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+The **2026-10-15 zooplankton fields and food web** section comes first, then the **2026-10-14 visible evolution** and **2026-10-14 bed's organic layer** sections, then the **2026-10-13 bioenergetics** section, **polish**, **more life**, the **2026-10-12 realism overhaul** and the **2026-10-11 audit-fix changes**. Where any disagrees with the older narrative after them, the newer section wins. The narrative itself is kept as it was.
+
+---
+
+## 2026-10-15 zooplankton fields and a food web recalibrated to real lakes (save v30)
+
+Built after a literature pass (`docs/ECOLOGY_RESEARCH.md`, sourced notes in `docs/research_notes/`). The old zooplankton
+— ~2,000 swarm particles refilled at full size in proportion to the algae — produced about the right amount, but held a
+third to a sixth of a real lake's standing stock, turned it over 2–4× too fast and fed the fish an unlimited supply (~10–13
+kg a month in summer and 3–5 under the ice, ~75 % of their diet). Making the zooplankton real exposed the rest of the food
+web that had been tuned on that subsidy; this slice rebuilt it piece by piece, each step against field numbers, with the
+probes in `test/diag/` (see its README: half-monthly zooplankton budget, whole-lake energy audit, young-of-year fates,
+death ledger, per-species diet, bed food vs where the fish are).
+
+- **Zooplankton as fields** (`environment.js` `zooplankton()`, config `PLANKTON`): three biomass fields in g wet per field
+  cell (1 g/cell ≈ 40 µg dry/L; the slice is `WORLD.SLICE_M2` 700 m² at `WORLD.PX_PER_M` 79, so a cell is `WORLD.CELL_L`
+  ≈ 2,500 L) — `zooD` Daphnia and the other cladocerans, `zooC` copepods, `zooR` rotifers and nauplii. Each grows on its
+  cell's algae (Holling; Daphnia have the lowest food threshold, Gliwicz 1990) × Q10 (growth more temperature-sensitive than
+  losses), less maintenance and background mortality; Daphnia breed little below ~4–10 °C and suffer above 25 °C; rotifers
+  carry a density-dependent loss to their invertebrate predators and Daphnia's interference. Grazing is type II on the
+  cell's algae with the N + P returned at once (closed budgets). They die in anoxic water and in a toxic cyanobacterial scum.
+  Rates are per real day (÷ `BIOE.DAY`). A year: ~240–260 g wet/m² of production (Bay of Quinte ~240).
+- **Where they are**: the field is the animals' DAILY-MEAN place. Each column's oxic water shares them by its algae; each
+  depth layer mixes across the lake about daily (`HMIX`), except that open-water Daphnia avoid the shore (`SHORE`, Siebeck
+  1980).
+- **Refuges** (daily means — the diel light cycle is cosmetic, one sim night is ~6 physiological days): DIEL VERTICAL
+  MIGRATION (a share migrating that grows with the lake's fish biomass, where the column is deep enough, met by fish only at
+  twilight, paying a growth cost); dense weeds hide some; fish see poorly in dim deep water and under snowy ice (`zooVis`).
+  DVM protects zooplankton from the visual ADULT fish only (`zooFeed(..., dvm = false)` for larvae).
+- **Resting eggs** (`env.zooEgg`, per column): shortening days and cool water turn the active zooplankton into ephippia;
+  lengthening days and a warm bed hatch part of the bank each spring; a trace of arrivals keeps a floor. (The human pointed
+  out mid-slice that in winter zooplankton are "like eggs".)
+- **Feeding** (`env.zooFeed`, 3×3 cells, exposed density in µg dry/L): adults TYPE III (prey switching, K 25 µg/L) at up
+  to Cmax × the appetite (O₂, guarding — `apt` scales the rates); copepods escape half their strikes; fry type II (K 30)
+  taking rotifers and nauplii first, small cladocerans from first feeding, all by 1 cm. Brain sense: `env.zooBest`. Larval
+  Cmax × 1.5 (`FRY.CMAX_LARVA`, Breck 1997). Adult carp and bullheads eat zooplankton only below `Lzoo`.
+- **The bed's worms and scuds** (`env.benth`, config `BENTHOS`, per column): the non-insect zoobenthos (oligochaetes +
+  amphipods) growing on the organic layer (SEDOM) — G 0.16/day so the whole zoobenthos produces ~110–125 g/m²/yr as in the
+  Bay of Quinte — all of it staying in the lake; fish feed within ~1.5 m of the bed above a 3 g/m² refuge on a
+  handling-limited type II (K_FISH 0.5 g/m²). `env.benthProd` is a diagnostic tally.
+- **Bed foraging** (`env.benthBest` → `world.qBed`): a bottom forager senses the richest stretch of bed in sight that holds
+  worms and scuds above the refuge (≥ `BENTHOS.SENSE_MIN`) under water it can breathe — the `food` target of sunfish, perch,
+  bullheads and carp alongside larvae and zooplankton — so a fish whose patch is grazed bare moves on, and perch follow the
+  profundal worms offshore once the autumn overturn reoxygenates them. Young bottom foragers past `benthL` (sunfish back
+  from their limnetic phase, perch moving inshore, bullheads) live on the bed — larvae, worms and scuds, detritus — and go
+  out after open-water zooplankton only when the bed in reach has none (Werner & Hall 1988).
+- **Young fish** (`FRY`): larval mortality (`M_LARVA` ∝ 1/length, mostly predators the lake doesn't simulate) then juvenile
+  mortality (`M_JUV` 0.035/day, Irwin et al. 2009), BOTH × Q10 3 about 20 °C (larval mortality rises with temperature,
+  Pepin 1991: late-summer broods die fast, a small fingerling isn't culled at the summer rate under the ice); a school
+  thinned below one fish keeps its last fish with probability n (no truncation losses). Bluegill fry leave the nest at
+  swim-up (Beard 1982); bass egg → swim-up set to Carbine's ~5,650 fry per nest; carp recruitment held down by sunfish
+  eating carp eggs and larvae (Silbernagel & Sorensen 2013). Piscivores work a school across their HUNTING ARENA
+  (`FEED.HUNT_R` × reach, full rate within reach, less with distance), and every predator strike — at schools and at
+  single fish — slows in cold water (`coldPerf`).
+- **Visitors** (`sp.pop.visit {stay, gap}` days — pike 20/60, trout 30/60): wide-ranging fish pass through the 0.07-ha
+  slice — each leaves after a stay (removed, not a death) and another arrives after a gap; exempt from the REFUGE floor. (A
+  resident 3-kg pike ate ~25 of the slice's sunfish and perch a year.)
+- **The community** (`species.js` `pop`): founders at realistic densities (~260 kg/ha: sunfish ~40 kg/ha, perch ~25,
+  bullheads ~20, fathead minnows, 3 bass, 3 carp, visiting pike and trout).
+- **UI**: the environment rows show zooplankton in µg/L with kg of each kind and of resting eggs, and the bed's worms and
+  scuds; zooplankton are drawn as specks from the fields.
+- **Gate**: the zooplankton-field block (type-II fry response, DVM, vision, grazing with closed budgets, anoxia, a realistic
+  stock after a season), the worms-and-scuds block, visitors, and bed foraging (the sense picks the richest breathable bed;
+  a sunfish steers for it; young sunfish settle on it; schools in the hunting arena); particle-era tests rewritten (`noZoo`).
+- **Known limits**: the lake has no 0–3 m zone (`BASIN.SHELF_Y` 0.25 → a flat 3.6-m shelf), where real New England ponds
+  grow most of their littoral food and nest their sunfish; no weed-dwelling invertebrates as such; carp are not typical of
+  New England ponds. See SESSION_STATE for the multi-seed results.
 
 ---
 

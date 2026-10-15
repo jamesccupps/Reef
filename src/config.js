@@ -188,7 +188,9 @@ export const FRY = {
   M_JUV: 0.035,        // /day at 20 °C: JUVENILES (taking over from M_LARVA as it fades, ~3 cm on) keep dying to predators the lake
   M_JUV_Q10: 3,        //   doesn't simulate — Oneida age-0 perch from 18 mm to autumn: Z ≈ 0.035/day, ~1.3 % surviving (Irwin et al.
                        //   2009) — slower in cold water (× Q10: ~0.005/day under the ice, so ~40–50 % die over a first winter as
-                       //   with predators present, Neuswanger et al. 2015). (2026-10-15: without it a strong cohort of 2–4-cm
+                       //   with predators present, Neuswanger et al. 2015). The Q10 scales M_LARVA too (2026-10-15: larval
+                       //   mortality rises with temperature — Pepin 1991; without it a 2–2.6-cm fingerling still small in November
+                       //   died under the ice at the summer larval rate, ~4 %/day, and no young-of-year ever reached spring). (2026-10-15: without it a strong cohort of 2–4-cm
                        //   fry stripped the zooplankton every late July and the adults starved through the autumn)
   SWIM: 8,             // px/s a school's drift (× its fish's length/2, 0.5–4×)
   CATCH: 0.03,         // larvae a plankton/insect eater catches from a school per handling slot (dense school) — larvae
@@ -680,7 +682,9 @@ export const SEDOM = {
 export const BENTHOS = {
   START: 4,                // g wet/m² at the lake's opening (Quinte oligochaetes + amphipods ≈ 4.6 g/m²)
   CAP: 15,                 // g/m² the bed can hold (logistic; littoral zoobenthos 5–20 g/m²)
-  get G() { return 0.08 / BIOE.DAY; },     // /s growth at 20 °C on ample organic matter (P/B ~4–10/yr ⇒ ~0.02–0.05/day realised)
+  get G() { return 0.16 / BIOE.DAY; },     // /s growth at 20 °C on ample organic matter (2026-10-15: 0.08 → 0.16 — the bed's whole
+                                           //   zoobenthos then produces ~110–125 g/m²/yr as in the Bay of Quinte, oligochaete P/B ~10/yr;
+                                           //   at 0.08 it made ~78, with ~0.4× Quinte's bed food per kg of fish)
   get M() { return 0.01 / BIOE.DAY; },     // /s natural mortality at 20 °C (back to the organic layer)
   Q10: 2.0,
   K_SOM: 150,              // g of organic layer per column at which they grow at half speed (as the insect larvae)
@@ -688,8 +692,13 @@ export const BENTHOS = {
   O2_MIN: 0.05,            // bottom O₂ (normalised) below which they die off at …
   get ANOX_M() { return 0.02 / BIOE.DAY; },   // … this /s at 20 °C (oligochaetes tolerate weeks of anoxia; amphipods leave or die)
   REFUGE: 3,               // g/m² of every column out of fish reach (fish-exclusion studies: fish cut benthos only 20–60 %)
-  K_FISH: 2,               // g/m² of reachable invertebrates at which a bottom-foraging fish gets half its ration from them (type II)
+  K_FISH: 0.5,             // g/m² of reachable invertebrates at which a bottom-foraging fish gets half its ration from them (type II) —
+                           //   handling-limited: a sunfish working ~1 g/m² of exposed midges and scuds (~1,000+/m²) meets prey faster
+                           //   than it can handle them, so the response saturates well below 1 g/m² (2026-10-15: was 2, which held
+                           //   fish at ~45 % of their ration on a bed they had grazed to ~1.6 g/m²); what limits them is the refuge
   REACH: 120,              // px (~1.5 m) above the bed within which a bottom forager feeds on them (the mud and the weed band)
+  Q: 1.0,                  // a forager refills its gut with them at up to Q × its Cmax rate (bigger prey than zooplankton, fewer captures)
+  SENSE_MIN: 0.5,          // g/m² above the refuge a bed must hold for a forager to sense it as worth feeding on (env.benthBest)
 };
 
 // ZOOPLANKTON as two biomass FIELDS on the environment grid (env.zooD — Daphnia and the other cladocerans; env.zooC — copepods
@@ -780,7 +789,11 @@ export const PLANKTON = {
   // 30–75 µg/L of the small prey they take)
   K_ADULT: 25,             // (≈ 5 Daphnia/L; at 60 adults barely touched a typical 20–40 µg/L summer stock and starved)
   K_FRY: 30,
-  Q: 2,                    // at saturating density a fish refills its gut at up to Q × its Cmax rate
+  Q: 1.0,                  // at saturating density an adult refills its gut with zooplankton at up to Q × its Cmax rate — catching thousands
+                           //   of millimetre prey takes time, and fish carry 2–3× the digestive capacity they use (Armstrong & Schindler 2011);
+                           //   field panfish eat 1–4 % of body weight a day in summer (Seaburg & Moyle 1964, bias-corrected). (At 2 the adults
+                           //   ate at ~Cmax all June, stripped the zooplankton and starved from August; at 0.5 they couldn't hold their weight even
+                           //   among plentiful zooplankton — FB4 bluegill break even near 0.55–0.65 of Cmax.)
   CROP: 0.3,               // a fish or school takes at most this share of the zooplankton within reach in one step
   FRY_DAPH_L: [0.6, 1.0],  // cm: fry take the cladoceran field fully from 1.0 cm, from first feeding only its small animals (FRY_DAPH_MIN:
   FRY_DAPH_MIN: 0.3,       //   Bosmina, Ceriodaphnia, newborn Daphnia) — first-feeding larvae of 4.5–6 mm eat nauplii, rotifers and small

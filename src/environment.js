@@ -98,6 +98,7 @@ export class Environment {
     this.fishKgHa = 0;                 // the lake's fish biomass, kg/ha (set by the world each step: the kairomone level for DVM)
     this._migD = 0; this._migC = 0;    // DVM migrant shares (derived each step from fishKgHa)
     this.zooProd = 0;                  // DIAGNOSTIC: cumulative zooplankton production, g (growth before losses; not saved, never read by the sim)
+    this.benthProd = 0;                // DIAGNOSTIC: cumulative production of the bed's worms and scuds, g (not saved, never read by the sim)
     this._zI = new Int32Array(9); this._zD = new Float64Array(9); this._zC = new Float64Array(9); this._zR = new Float64Array(9);   // zooFeed scratch
     this._zW = new Float64Array(ROWS);   // the daily-round weights down a column (scratch)
     this._tmp = new Float32Array(COLS * ROWS);
@@ -338,6 +339,23 @@ export class Environment {
     const E = reach / COL_M2, g = Math.min(want * E / (E + BENTHOS.K_FISH), PLANKTON.CROP * reach);
     this.benth[c] -= g; return g;
   }
+  // a bottom forager's SENSE of the bed's worms and scuds: the column within r (its bed point, from (x, y)) whose bed holds the
+  // most of them above the refuge — at least BENTHOS.SENSE_MIN g/m² — under water with at least o2min O₂ (a fish won't feed in
+  // a dead zone). Fish sample the bed and settle where it pays, moving within days as the returns shift (Werner et al. 1983).
+  // Writes the point just above that bed into o (as zooBest); null when no column in reach qualifies.
+  benthBest(x, y, r, o2min, o) {
+    const B = BENTHOS, br = this.mask.bedRow, r2 = r * r;
+    const c0 = clamp(Math.floor((x - r) / CW), 0, COLS - 1), c1 = clamp(Math.floor((x + r) / CW), 0, COLS - 1);
+    let best = B.SENSE_MIN, bx = 0, by = 0, bd = -1;
+    for (let c = c0; c <= c1; c++) {
+      const yb = (br[c] + 0.5) * CH, cx = (c + 0.5) * CW, dx = cx - x, dy = yb - y, d2 = dx * dx + dy * dy; if (d2 > r2) continue;
+      const e = this.benth[c] / COL_M2 - B.REFUGE; if (!(e > best) || this.o2[br[c] * COLS + c] < o2min) continue;
+      best = e; bx = cx; by = yb; bd = d2;
+    }
+    if (bd < 0) return null;
+    o.item.x = bx; o.item.y = by; o.dist = Math.sqrt(bd);
+    return o;
+  }
   // the update: growth on the column's organic layer (Monod, logistic toward CAP, Q10; takes the layer at 1/YIELD), natural
   // mortality and an anoxic die-off returned to the layer
   benthos(dt) {
@@ -347,7 +365,7 @@ export class Environment {
       const s = som[cx], want = B.G * q * s / (s + B.K_SOM) * b * Math.max(0, 1 - b / cap) * dt;
       const ate = Math.min(s, want / B.YIELD); som[cx] = s - ate;
       const die = b * (B.M + (o2[by * COLS + cx] < B.O2_MIN ? B.ANOX_M : 0)) * q * dt;
-      som[cx] += die; this.benth[cx] = b + ate * B.YIELD - die;
+      som[cx] += die; this.benth[cx] = b + ate * B.YIELD - die; this.benthProd += ate * B.YIELD;   // (diagnostic tally)
     }
   }
   totalSedOM() { let s = 0; for (let i = 0; i < COLS; i++) s += this.sedOM[i]; return s; }

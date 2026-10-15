@@ -20,6 +20,8 @@ function tgt(agent, t, range, inp, i) {
     inp[i] = Math.sin(ang); inp[i + 1] = Math.cos(ang); inp[i + 2] = clamp(1 - t.dist / range, 0, 1);
   } else { inp[i] = 0; inp[i + 1] = 0; inp[i + 2] = 0; }
 }
+// the nearer of two sensed targets (either may be null)
+const nearer = (p, q) => !p ? q : !q ? p : (p.dist < q.dist ? p : q);
 function wallProx(a) {
   const dx = Math.cos(a.heading), dy = Math.sin(a.heading); let t = Infinity;
   if (dx > 1e-6) t = Math.min(t, (W - a.x) / dx); else if (dx < -1e-6) t = Math.min(t, (0 - a.x) / dx);
@@ -298,7 +300,7 @@ export const BIO = {
     bio: { CEQ: 2, CA: 0.5, CB: -0.287, CQ: 2.5, CTO: 28, CTM: 37, REQ: 1, RA: 0.00068, RB: -0.219, RQ: 0.0832, RTO: 0.3716, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
       SDA: 0.172, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 4800, src: 'composite: Beamish 1964, Chakraborty 1992, FB4 bighead-carp curve' },
     lw: { a: 0.01910, b: 2.920 }, vb: { Linf: 70, k: 0.2, t0: -0.2 },        // Ws Bister et al. 2000; ~15, 25, 33, 40, 45 cm (prior)
-    Lhatch: 0.6, sHatch: 0.03, L0: 10, Lref: 50, Lmat: 38, LmatM: 32, matMinAge: yrs(2), maxAge: yrs(25), matureAge: yrs(3.5), M: 0.15,
+    Lhatch: 0.6, sHatch: 0.005, L0: 10, Lref: 50, Lmat: 38, LmatM: 32, matMinAge: yrs(2), maxAge: yrs(25), matureAge: yrs(3.5), M: 0.15,   // (sHatch 0.005: in lakes with sunfish, bluegill eat carp eggs and larvae and hold carp recruitment down — Silbernagel & Sorensen 2013, Trans. Am. Fish. Soc. 142:1134; carp recruit mainly where winterkill removes those predators — Bajer & Sorensen 2010; at 0.03 carp fry were ~0.85 kg of the July young-of-year)
     gut: 0.04, gerMul: 1.0, gsiF: 0.15, gsiM: 0.07,   // stomachless: gut passage, fast in warm water (Hofer et al. 1982)
     fec: { a: 5.13e-5, b: 5.325 },   // log10 F = −9.615 + 5.325·log10 TL(mm) (Weber & Brown 2012; ~100–200k eggs/kg): 60 cm → ~150k
     Lzoo: 4, Lpisc: Infinity, gapeR: 0.05, depthR: 0.31, uilt: 36, o2Lethal: 0.5, vuln: 0.7,   // UILT 35.7 °C at 26 °C acclimation (Wismer & Christie 1987)
@@ -307,7 +309,7 @@ export const BIO = {
     bio: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
       SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, src: 'Rice et al. 1983 (FB4)' },
     lw: { a: 0.005559, b: 3.273 }, vb: { Linf: 60, k: 0.15, t0: -0.3 },      // Ws Henson 1991; Michigan 10.7, 18.0, 23.9, 29.5, 33.5, 37.3 cm
-    Lhatch: 0.6, sHatch: 0.4, L0: 6, Lref: 38, Lmat: 28, LmatM: 25, matMinAge: yrs(2), maxAge: yrs(16), matureAge: yrs(4), M: 0.40,
+    Lhatch: 0.6, sHatch: 0.1, L0: 6, Lref: 38, Lmat: 28, LmatM: 25, matMinAge: yrs(2), maxAge: yrs(16), matureAge: yrs(4), M: 0.40,   // (sHatch 0.1: the ovary count below (Michigan ~66,000 eggs/kg) is far above what a nest yields — Carbine 1948: ~5,650 swim-up fry per nest, 22,000–53,000 bass fry/ha; at 0.4 one pair made ~36,000 fry in this 0.07-ha slice, ~10× too many)
     gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
     fec: { a: 0.3755, b: 3.2857 },   // log10 F = −0.4254 + 3.2857·log10 TL(cm) (Laarman & Schneider 1985, Michigan): 38 cm → 58,700
     Lzoo: 4, Lpisc: 5, gapeR: 0.12, depthR: 0.24, uilt: 35.5, o2Lethal: 1.1, vuln: 0.6,   // CTmax 37.3–38.5 (Fields et al. 1987; Currie et al. 1998); mouth width 0.10–0.15 TL (Lawrence 1958; Hill: 0.14·TL − 5.6 mm); piscivory 5–10 cm
@@ -365,7 +367,7 @@ export const SP = {
     maxSpeed: 52, accel: 58, drag: 1.5, maxTurn: 2.6,
     // a fathead female spawns a batch every ~4 days through the summer (16–26 batches; Gale & Buynak 1982), putting most of
     // her surplus into eggs — which is why fatheads stay small and most die after their first spawning summer
-    matingCooldown: yr(0.012), reproAlloc: 0.8, pop: { start: 20, min: 7, max: 60 },   // K ≈ 400; ~135 founders (~1,900/ha: fatheads are vulnerable in a lake with bass, pike and perch; fishless prairie wetlands hold 5,400–19,700/ha by late summer)
+    matingCooldown: yr(0.012), reproAlloc: 0.8, pop: { start: 8, min: 7, max: 60 },   // K ≈ 400; ~54 founders (~770/ha: fatheads are vulnerable and sparse in a lake with bass, pike and perch — fishless prairie wetlands hold 5,400–19,700/ha by late summer; at ~1,900/ha their fry were the biggest July zooplankton eaters)
     tempOpt: 27, tempTol: 9, o2Crit: 0.26, spawnT: [16, 26],   // hypoxia-tolerant; a REPEAT spawner all summer (nest-guarding males under cover)
     innate: { homeDepth: 0.22, depthPull: 0.5, cruise: 0.55, weight: 0.40, school: 0.30, forage: 0.5 },   // shallow open water, active schooler
 
@@ -402,10 +404,9 @@ export const SP = {
     randomHue: (R) => R(8, 48),   // red-orange → amber (was −28..52, which wrapped into unnatural magenta 332–360°)
     spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 50) }),   // sunfish favour the weedy shelf
     senses(a, w) {
-      // the nearest ANIMAL food — zooplankton, an emerged insect, insect larvae on the weeds or the bed; weed (a poor food)
-      // only when there's none in sight
-      const inp = a.act.in, pk = w.qSurfaceFood(a), lv = w.qLarva(a.x, a.y, a.senseRange);
-      const food = (!pk ? lv : !lv ? pk : (pk.dist < lv.dist ? pk : lv)) || w.qPlant(a.x, a.y, a.senseRange);
+      // the nearest ANIMAL food — zooplankton, an emerged insect, insect larvae on the weeds or the bed, a stretch of bed rich
+      // in worms and scuds; weed (a poor food) only when there's none in sight
+      const inp = a.act.in, food = nearer(nearer(w.qSurfaceFood(a), w.qLarva(a.x, a.y, a.senseRange)), w.qBed(a)) || w.qPlant(a.x, a.y, a.senseRange);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = clamp(a.energy, 0, 1);
@@ -436,9 +437,9 @@ export const SP = {
     randomHue: (R) => R(46, 64),   // yellow-green with dark bars
     spawnPos: (R) => ({ x: littoralX(R), y: R(60, WORLD.FLOOR - 60) }),
     senses(a, w) {
-      // the nearest food it can take: a catchable fish OR a benthic larva (adults forage both)
-      const inp = a.act.in, pf = w.qPrey(a), lv = w.qLarva(a.x, a.y, a.senseRange);
-      const food = !pf ? lv : !lv ? pf : (pf.dist < lv.dist ? pf : lv);
+      // the nearest food it can take: a catchable fish, a benthic larva or a stretch of bed rich in worms and scuds (adults
+      // forage fish and the bed — and follow the profundal midges and worms offshore once the autumn overturn reoxygenates them)
+      const inp = a.act.in, food = nearer(nearer(w.qPrey(a), w.qLarva(a.x, a.y, a.senseRange)), w.qBed(a));
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = w.allyStats(a, 56).density;
@@ -463,7 +464,7 @@ export const SP = {
       'energy', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, insect: true, larva: true },
     maxSpeed: 62, accel: 72, drag: 1.2, maxTurn: 2.3,
-    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 1, rescue: 2 },   // K ≈ 4 (2 founders); stocked/visiting — the rescue keeps one or two in view
+    matingCooldown: yr(0.5), pop: { start: 0.3, min: 1, max: 0.6, refuge: 0, rescue: 0, visit: { stay: 30, gap: 60 } },   // a VISITOR (2026-10-15): trout roam the lake and pass through this slice — see world.js visitors;   // K ≈ 4 (2 founders); stocked/visiting — the rescue keeps one or two in view
     tempOpt: 15, tempTol: 6, o2Crit: 0.58, spawnT: [6, 11], spawnSide: -1, coldPerf: 0.6,   // cold-water guild (stressed above ~20 °C); spring stream spawner
     innate: { homeDepth: 0.45, depthPull: 0.45, cruise: 0.5, weight: 0.35, pursuit: 0.45, spawnGround: 0.5 },
     sat: 38, lbase: 46, lrange: 16,
@@ -492,7 +493,7 @@ export const SP = {
       'energy', 'on floor', 'oxygen', 'wall'],
     // brown bullheads are bottom omnivores: insect larvae, molluscs, crustaceans (cladocerans to crayfish), some fish, weed and
     // detritus (Scott & Crossman 1973) — on a lean bed they turn to snails and zooplankton
-    diet: { detritus: true, plants: true, larva: true, snail: true, plankton: true, cray: 0.15 },   // bullheads eat crayfish (and scavenge them)
+    diet: { detritus: true, plants: true, larva: true, snail: true, cray: 0.15 },   // (2026-10-15: zooplankton only as a young fish — below Lzoo — now that the bed's worms and scuds (BENTHOS) feed the adults)   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
     matingCooldown: yr(0.5), pop: { start: 1.5, min: 3, max: 6 },   // K ≈ 40; ~10 founders ≈ 20 kg/ha
     tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06), spawnSide: 1,   // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
@@ -501,8 +502,8 @@ export const SP = {
     randomHue: (R) => R(33, 50),
     spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 30, WORLD.FLOOR - 2) }),
     senses(a, w) {
-      // the nearest food: bottom invertebrates first (bullheads live on insect larvae), then detritus, then weed
-      const inp = a.act.in, food = w.qLarva(a.x, a.y, a.senseRange) || w.qDetritus(a.x, a.y, a.senseRange) || w.qPlant(a.x, a.y, a.senseRange);
+      // the nearest food: bottom invertebrates first (bullheads live on insect larvae, worms and scuds), then detritus, then weed
+      const inp = a.act.in, food = nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qDetritus(a.x, a.y, a.senseRange) || w.qPlant(a.x, a.y, a.senseRange);
       tgt(a, food, a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = clamp(a.energy, 0, 1);
@@ -519,10 +520,10 @@ export const SP = {
     shape: { in: 10, hid: 9 },
     inputLabels: ['food \u2220sin', 'food \u2220cos', 'food near', 'threat \u2220sin', 'threat \u2220cos', 'threat near',
       'energy', 'oxygen', 'wall', 'depth'],
-    diet: { plants: true, detritus: true, larva: true, snail: true, plankton: true },   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
+    diet: { plants: true, detritus: true, larva: true, snail: true },   // (2026-10-15: zooplankton only below Lzoo — adult carp root in the bottom)   // carp: midge larvae, molluscs, crustaceans incl. zooplankton,
                                                                                      //   weed and detritus (Scott & Crossman 1973)
     maxSpeed: 38, accel: 46, drag: 1.3, maxTurn: 1.8, sink: 6,   // negatively buoyant when feeding: it roots head-down in the sediment
-    matingCooldown: yr(0.4), pop: { start: 0.3, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 2 founders ≈ 45 kg/ha (damage threshold ~100 kg/ha)
+    matingCooldown: yr(0.4), pop: { start: 0.45, min: 1, max: 1.5 },   // K ≈ 10 (carp are big: ~1.5 kg each); 3 founders (a single pair rarely found each other in a season)
     tempOpt: 31, tempTol: 10, o2Crit: 0.21, spawnT: [17, 24], spawnSide: -1,   // warmwater; broadcast-spawns in flooded weeds in late spring; hugely fecund
     innate: { homeDepth: 0.95, depthPull: 0.5, cruise: 0.32, weight: 0.40, spawnGround: 0.4, forage: 0.5 },   // a bottom rooter (sifts the sediment)
     sat: 46, lbase: 34, lrange: 18,
@@ -531,7 +532,7 @@ export const SP = {
     senses(a, w) {
       const inp = a.act.in;
       // carp root the sediment for midge larvae and other bottom invertebrates (most of their diet), weed when there are none
-      tgt(a, w.qLarva(a.x, a.y, a.senseRange) || w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
+      tgt(a, nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qPlant(a.x, a.y, a.senseRange), a.senseRange, inp, 0);
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);   // normalise by qThreat's own search radius (1.1×), as the other species do
                                                            // (by 1× the outer band read 0 proximity yet still gave a bearing)
       inp[6] = clamp(a.energy, 0, 1);
@@ -576,7 +577,7 @@ export const SP = {
     inputLabels: ['prey \u2220sin', 'prey \u2220cos', 'prey near', 'energy', 'speed', 'oxygen', 'wall', 'light@depth', 'temp@depth'],
     diet: { fish: true, cray: 0.05 },   // a fish specialist: crayfish are an occasional item
     maxSpeed: 64, accel: 76, drag: 1.2, maxTurn: 2.0,
-    matingCooldown: yr(0.5), pop: { start: 0.15, min: 1, max: 0.3, refuge: 1, rescue: 1 },   // K ≈ 2; ONE founder — the rarest fish (Minnesota lakes: 1.6 pike > 60 cm per ha, ~0.1 in this slice — a resident pike here is a visitor from a bigger lake; 2026-10-15: two 2-kg pike ate ~10 small fish a month between them) (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
+    matingCooldown: yr(0.5), pop: { start: 0.15, min: 1, max: 0.3, refuge: 0, rescue: 0, visit: { stay: 20, gap: 60 } },   // a VISITOR (2026-10-15): a pike ranges over 1–10 ha and spends a few weeks at a time in this ~0.07-ha slice — present ~¼ of the time (as a resident one 3-kg pike ate ~25 of the slice's sunfish and perch a year: ~110 kg/ha of piscivores vs 6–30 real);   // K ≈ 2; ONE founder — the rarest fish (Minnesota lakes: 1.6 pike > 60 cm per ha, ~0.1 in this slice — a resident pike here is a visitor from a bigger lake; 2026-10-15: two 2-kg pike ate ~10 small fish a month between them) (a pike eats ~3–5× its own mass in fish a year: a slice of lake this size — ~0.07 ha — holds ~1 at real densities of ~10/ha, so the rescue keeps one in view; more are home-bred)
     tempOpt: 21, tempTol: 8, o2Crit: 0.32, spawnT: [4, 11], spawnSide: -1, coldPerf: 0.5,   // coolwater apex (summer-squeezed); spawns right after ice-out; hunts under ice
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.55, pursuit: 0.4, spawnGround: 0.5 },  // weed-edge ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 35, lbase: 30, lrange: 18,

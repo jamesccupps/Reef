@@ -32,7 +32,8 @@ for (const k of SPECIES) {
 check('world is much larger than the reference pond', WORLD.AREA_SCALE > 3, `${WORLD.AREA_SCALE.toFixed(2)}× area`);
 check('field grid scaled to keep cells ~constant', GRID.FIELD_COLS > 40 && GRID.FIELD_ROWS > 24, `${GRID.FIELD_COLS}x${GRID.FIELD_ROWS}`);
 check('oxygen field sized to grid', w.env.o2.length === GRID.FIELD_COLS * GRID.FIELD_ROWS, `${w.env.o2.length}`);
-check('initial populations scaled with area', w.agents.length > 200, `${w.agents.length} agents`);
+// (founders at realistic densities since 2026-10-15 — ~150 fish ≈ 260 kg/ha in the ~0.07-ha slice; the reference pond would hold ~22)
+check('initial populations scaled with area', w.agents.length > 100, `${w.agents.length} agents`);
 check('minnow start scaled', approx(start.minnow, scaleCount(SP.minnow.pop.start), 2), `${start.minnow} vs ~${scaleCount(SP.minnow.pop.start)}`);
 
 const t0 = Date.now();
@@ -68,7 +69,8 @@ console.log(`perf: ${STEPS} steps in ${ms}ms = ${(STEPS / (ms / 1000)).toFixed(0
 
 check('no NaN / out-of-range integrity hits', nanHits === 0, `${nanHits} hits`);
 // (an INVARIANT, not a test of ecology: the REFUGE backstop keeps ≥2 of every species — home-bred breeding is checked next)
-check('REFUGE invariant: all six species still present', SPECIES.every(k => end[k] > 0));
+// (visitors — pike, trout: sp.pop.visit — come and go; the resident species must all be here)
+check('REFUGE invariant: every resident species still present', SPECIES.every(k => SP[k].pop.visit || end[k] > 0));
 check('generations advanced (reproduction happening)', w.maxGen > prevGen, `gen ${w.maxGen}`);
 // spawning is seasonal (water-temperature windows): the lake opens in mid-May, so the early-spring spawners (pike, perch)
 // are checked from an April start below; every species whose window this month reached must breed home-bred
@@ -400,7 +402,7 @@ console.log('\n— benthic invertebrates (snails + crayfish) —');
 // (no other input, decay or grazer there); and they live on the lit littoral bed
 { const { SNAIL: SN } = await import('../src/config.js'), tx = 300;
   seed(51); const aw = new World().setDate(0.45); aw.agents = []; aw.cray = []; aw.larvae = []; aw.herps = []; aw.fry = []; aw.plants = []; aw.detritus = [];   // (no litter or particles either)
-  aw.env.sedimentOM = function () { this._colDecay.fill(0); }; const c = aw.env.colOf(tx); aw.env.sedOM[c] = 1000;
+  aw.env.sedimentOM = function () { this._colDecay.fill(0); }; aw.env.benthos = function () {}; const c = aw.env.colOf(tx); aw.env.sedOM[c] = 1000;   // (the worms and scuds off too)
   aw.snails = []; for (let i = 0; i < 60; i++) { const s = aw._mkSnail(tx); s.vx = 0; aw.snails.push(s); }
   for (let i = 0; i < 30; i++) { aw.larvae = []; aw.agents = []; aw.step(1 / 30); }
   const ate = 1000 - aw.env.sedOM[c], ration = 60 * SN.GRAZE * Math.pow(2, (aw.env.tempAt(tx, aw.bedY(tx)) - 20) / 10);
@@ -589,6 +591,7 @@ const { BIRD: BIRD_T } = await import('../src/config.js');
 function survivesTox(toxLevel) {
   seed(55); const hw = new World(); hw.birds = [];
   const keepArrive = BIRD_T.ARRIVE; BIRD_T.ARRIVE = 0;   // (no loon wandering in to take the test fish)
+  const keepVisit = SP.pike.pop.visit; SP.pike.pop.visit = undefined;   // (nor the visiting pike leaving the slice mid-test)
   const f = hw.makeFish('pike', null, SP.pike.matureAge * 1.2); f.x = 1024; f.y = 300; f.energy = 1.5; f.tox = toxLevel;   // an adult well under pike maxAge (so old age can't confound)
   // neutralize the brain-gated ACTIONS (strike/flee/hide) for this isolation — their energy cost is verified in the
   // action-space section; here we want ONLY the toxicant's mortality hazard, so a random brain's bursts can't confound.
@@ -597,7 +600,7 @@ function survivesTox(toxLevel) {
   f.lw = Float32Array.from(f.g);                     // forward() runs the plastic policy → sync so actions are really off (isolated pike never eats → no learning drift)
   hw.agents = [f]; noZoo(hw); hw.agentGrid.rebuild(hw.agents);
   for (let i = 0; i < 1200 && !f.dead; i++) hw.step(1 / 30);   // (40 s: a hazard of ~0.3/s can't be dodged by luck)
-  BIRD_T.ARRIVE = keepArrive;
+  BIRD_T.ARRIVE = keepArrive; SP.pike.pop.visit = keepVisit;
   return !f.dead;
 }
 check('contaminant HARM-mortality: a burden ≫ TOX.HARM kills the fish (a clean fish at the same energy/age survives)', survivesTox(0) && !survivesTox(TOX.HARM * 4), 'clean survives, high-burden dies');
@@ -675,7 +678,7 @@ check('the anoxic summer deep punishes O₂-demanding pike more than hypoxia-tol
 // no species is driven extinct by the new pressure within a season (the re-seed floors backstop)
 const nicheW = new World(); for (let i = 0; i < 1800; i++) nicheW.step(1 / 30);
 const nicheCensus = nicheW.census();
-check('REFUGE invariant: all six species present after a simulated season under thermal/O₂ pressure', SPECIES.every(k => nicheCensus[k] > 0),
+check('REFUGE invariant: every resident species present after a simulated season under thermal/O₂ pressure', SPECIES.every(k => SP[k].pop.visit || nicheCensus[k] > 0),
   SPECIES.map(k => `${k} ${nicheCensus[k]}`).join(' '));
 // the zooplankton fields live in the water column only — never in the cells below the sloped bed
 { const e = nicheW.env; let dry = 0; for (let i = 0; i < e.zooD.length; i++) if (!e.mask.wet[i] && (e.zooD[i] > 0 || e.zooC[i] > 0)) dry++;
@@ -821,7 +824,8 @@ for (const a of rw.agents) if (wiped.includes(a.species)) a.dead = true;
 rw.agents = rw.agents.filter(a => !a.dead); rw.step(1 / 30);
 // (each species' refuge: IMMIGRATION.REFUGE, lower for an apex predator a lake slice this size feeds only one of — pop.refuge)
 const refugeOf = k => Math.min(IMMIGRATION.REFUGE, SP[k].pop.refuge ?? Infinity);
-check('the REFUGE backstop guarantees no literal extinction — every wiped species is ≥ its refuge after one step', SPECIES.every(k => rw.census()[k] >= refugeOf(k) && refugeOf(k) >= 1), SPECIES.map(k => `${k} ${rw.census()[k]}`).join(' '));
+// (visitors — pike, trout: sp.pop.visit — come and go by design; every resident species must be back)
+check('the REFUGE backstop guarantees no literal extinction — every wiped resident species is ≥ its refuge after one step', SPECIES.every(k => SP[k].pop.visit || (rw.census()[k] >= refugeOf(k) && refugeOf(k) >= 1)), SPECIES.map(k => `${k} ${rw.census()[k]}`).join(' '));
 // self-sustaining species float FREE of the rescue: catfish should be mostly home-bred, not immigration-propped
 seed(99); const ssw = new World();
 for (let i = 0; i < 3000; i++) ssw.step(1 / 30);
@@ -852,11 +856,15 @@ check('innate depth-home produces real zonation (catfish ride deep, minnows ride
   dCat > 0.6 && dMin < 0.5 && dCat - dMin > 0.25, `catfish ${dCat.toFixed(2)} vs minnow ${dMin.toFixed(2)} (Δ${(dCat - dMin).toFixed(2)})`);
 // v2 ethogram: minnows school (cohesion), pike ambushes (lurk-and-burst)
 check('v2 ethogram configured (minnow schools, pike ambushes)', SP.minnow.innate.school > 0 && SP.pike.innate.ambush === true);
-const minnowNeighbors = (() => {
-  const mn = bw.agents.filter(a => a.species === 'minnow'); if (mn.length < 5) return 0;
-  let sum = 0; for (const a of mn) { let c = 0; for (const b of mn) { if (b === a) continue; const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy < 70 * 70) c++; } sum += c; } return sum / mn.length;
+// (measured against the same fish at their own depths but scattered at random across the lake: the founders are at a
+// realistic density since 2026-10-15 — ~50 fatheads in the slice — so a raw neighbour count no longer means much)
+const [minnowNeighbors, minnowRandom] = (() => {
+  const mn = bw.agents.filter(a => a.species === 'minnow'); if (mn.length < 5) return [0, 1];
+  const nb = P => { let sum = 0; for (const a of P) { let c = 0; for (const b of P) { if (b === a) continue; const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy < 70 * 70) c++; } sum += c; } return sum / P.length; };
+  let r = 0; for (let t = 0; t < 20; t++) r += nb(mn.map((a, i) => ({ x: ((i * 7919 + t * 104729) % 1000) / 1000 * WORLD.W, y: a.y })));
+  return [nb(mn), r / 20];
 })();
-check('schooling minnows cluster into loose shoals (a typical minnow has several near neighbours)', minnowNeighbors > 2, `mean ${minnowNeighbors.toFixed(1)} neighbours within 70px`);
+check('schooling minnows cluster into loose shoals (≥ 1.8× the neighbours of the same fish scattered at random)', minnowNeighbors > 1.8 * minnowRandom, `mean ${minnowNeighbors.toFixed(1)} neighbours within 70px vs ${minnowRandom.toFixed(2)} at random`);
 // ambush: an isolated pike with NO prey in range must lurk (stay slow) — a controlled, robust check
 // (the population-aggregate speed is noisy because some pike are mid-burst at any snapshot)
 // Isolate the ambush mechanism (don't depend on a random brain's thrust, which shifts with any genome-shape change):
@@ -1819,7 +1827,9 @@ console.log('\n— behavioural checks (real sim paths, A/B) —');
   // (held at 25 °C, where the published lethal level applies — the lethal O₂ falls ~5.5 %/°C in colder water)
   const ateIn = o2 => { seed(901); const tw = new World(); tw.agents = []; tw.birds = []; tw.fry = []; tw.env.tempAt = () => 25; const m = tw.makeFish('minnow', [1, 1, 1, 1, 1, 1, 1]); m.x = 1000; m.y = 200; tw.agents.push(m);
     noZoo(tw); for (let dx = -3; dx <= 3; dx++) for (let dy = -3; dy <= 3; dy++) tw.addZoo(1000 + dx * 24, 200 + dy * 24, 3, 0);   // Daphnia all around
-    let g = 0; for (let i = 0; i < 30; i++) { tw.env.o2.fill(o2); const g0 = m.gut; tw.step(1 / 30); g += Math.max(0, m.gut - g0); } return g; };
+    // (count the ZOOPLANKTON it takes: a fish whose appetite hypoxia has shrunk still tops up that little room with algae)
+    let g = 0; const ez = tw._eatZoo.bind(tw); tw._eatZoo = (a, ...r) => { const g0 = a.gut, k = ez(a, ...r); if (a === m) g += a.gut - g0; return k; };
+    for (let i = 0; i < 30; i++) { tw.env.o2.fill(o2); tw.step(1 / 30); } return g; };
   const eatOk = ateIn(1.0), eatLow = ateIn(SP.minnow.o2Lethal / ENVB.O2_MGL * 1.2);
   // (since v30 a fish's zooplankton intake is rate-limited — PLANKTON.Q × Cmax, type II — so the oxygenated fish no longer fills
   // its gut at once; the hypoxic one is held to its shrunken appetite)
@@ -2050,7 +2060,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       noZoo(tw); for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) tw.addZoo(f.x + dx * 24, f.y + dy * 24, 0.05, kind);
       tw.env._zooMig(); tw._eatZoo(f, 1e9, 0.1, 1 / 30); return f.gut; };
     const dap = take(0), cop = take(1);
-    check('…a copepod\'s escape jump beats ~COPE_ESCAPE of strikes (a fish takes ~(1 − COPE_ESCAPE) as much from copepods as from Daphnia)', dap > 0 && Math.abs(cop / dap - (1 - PK.COPE_ESCAPE)) < 0.08, `Daphnia ${dap.toExponential(2)} g, copepods ${cop.toExponential(2)} g (ratio ${(cop / dap).toFixed(2)})`); }
+    check('…a copepod\'s escape jump beats ~COPE_ESCAPE of strikes (from thin prey a fish takes ~(1 − COPE_ESCAPE)² as much from copepods as from Daphnia — adults feed on a type-III response)', dap > 0 && Math.abs(cop / dap - (1 - PK.COPE_ESCAPE) ** 2) < 0.06, `Daphnia ${dap.toExponential(2)} g, copepods ${cop.toExponential(2)} g (ratio ${(cop / dap).toFixed(2)})`); }
 
   // DRAGONFLIES: a nymph ambushes a fry within reach; a mature nymph emerges on a warm sunny day; adults lay eggs → nymphs
   quiet(() => {
@@ -2273,10 +2283,11 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
       const n0 = hw._counts.minnow, d = bass.eatRadius;
       const run = turb => { hw.env.turbidity = turb; let k = 0; for (let t = 0; t < 3000; t++) { prey.dead = false; bass.missCd = 0; prey.x = 1000 + d; prey.y = 300; hw.agentGrid.rebuild(hw.agents); if (hw.takePrey(bass, Infinity, 1 / 30)) k++; } hw._counts.minnow = n0; return k; };
       const reach = d * FEEDC.HUNT_R * (1 - hw.coverAt(1000 + d, 300) * COVER.REFUGE) * (1 - SCHOOL.DILUTE * hw.allyStats(prey, SCHOOL.DILUTE_R).density);
-      const clear = run(0), murky = run(1), cl1 = (() => { hw.env.turbidity = 0; return hw.env.clarity(); })();
+      const clear = run(0), murky = run(1), cl1 = (() => { hw.env.turbidity = 0; return hw.env.clarity(); })(), clM = (() => { hw.env.turbidity = 1; return hw.env.clarity(); })();
       const sz = Math.pow(1 - prey.L * SP.minnow.depthR * (prey.bodyMul || 1) / (bass.L * SP.bass.gapeR), FEEDC.SIZE_SEL);
-      const expect = 3000 * (1 - Math.exp(-FEEDC.ATTACK * cl1 * (1 - d / reach) * SP.bass.capture * SP.minnow.vuln * sz / 30));
-      check('HUNTING at compressed time: a bass beside a fathead kills at the rate FEED.ATTACK × closeness × capture × vuln — and less in murky water', Math.abs(clear - expect) < expect * 0.3 + 3 && murky < clear * 0.7, `clear ${clear} (expect ${expect.toFixed(0)}) vs murky ${murky} of 3000 steps`); }
+      const rate = c => 3000 * (1 - Math.exp(-FEEDC.ATTACK * c * (1 - d / reach) * SP.bass.capture * SP.minnow.vuln * sz / 30));
+      const expect = rate(cl1), expM = rate(clM);   // (murky water: the same rate × its clarity — compared with its own expectation, counts of ~100 are noisy)
+      check('HUNTING at compressed time: a bass beside a fathead kills at the rate FEED.ATTACK × closeness × capture × vuln — and less in murky water', Math.abs(clear - expect) < expect * 0.3 + 3 && Math.abs(murky - expM) < expM * 0.3 + 3 && murky < clear, `clear ${clear} (expect ${expect.toFixed(0)}) vs murky ${murky} (expect ${expM.toFixed(0)}) of 3000 steps`); }
     // …and it takes the fish that FITS its gut: a perch too heavy for the room left is passed over for a fathead further off
     { seed(7302); const gw = new World().setDate(0.40); gw.fry = []; gw.cray = [];
       const pk = gw.makeFish('pike', ONES7, SP.pike.matureAge + 10); pk.x = 1000; pk.y = 500;
@@ -2349,7 +2360,7 @@ console.log('\n— more life: Daphnia/copepods, dragonflies, frogs, turtles, tro
         `1 s at 20 °C ${warm.toFixed(1)} g (expect ${expect.toFixed(1)}), 4 °C ${cold.toFixed(1)}, anoxic ${anox.toFixed(1)}; settled ${settled.toFixed(1)} g per unit of dying algae`);
       // larvae on it: no input, no decomposition (only the larvae touch the layer), no fish, no new patches
       seed(7902); const lw = new World().setDate(0.45); lw.agents = []; lw.fry = []; lw.plants = []; lw.detritus = []; lw.insects = []; lw.nymphs = []; lw.herps = []; lw.snails = [];   // (snails graze the layer too)
-      lw.env.sedimentOM = function () { this._colDecay.fill(0); };
+      lw.env.sedimentOM = function () { this._colDecay.fill(0); }; lw.env.benthos = function () {};   // (the worms and scuds off: they eat the layer too)
       const keepR = IN.LARVA_RATE; IN.LARVA_RATE = 0;
       const xa = 250, xb = 350, ca = lw.env.colOf(xa), cb = lw.env.colOf(xb);
       const A = lw._mkLarva(xa, 0, 1), B = lw._mkLarva(xb, 0, 1); A.x = xa; A.y = lw.bedY(xa) - 2; B.x = xb; B.y = lw.bedY(xb) - 2; lw.larvae = [A, B];
@@ -2490,6 +2501,69 @@ console.log('\n— the bed\'s worms and scuds —');
   e.benth[5] = 123.25; const back = new World(); back.load(JSON.parse(JSON.stringify(bw.toJSON())));
   check('BENTHOS: the worms-and-scuds pool round-trips through save/load (v30)', Math.abs(back.env.benth[5] - 123.25) < 1e-3 && bw.toJSON().version >= 30, `${back.env.benth[5]}`);
   setRandState(rsB); }
+
+// VISITORS (sp.pop.visit, 2026-10-15): wide-ranging pike and trout pass through the slice — they leave after a stay and
+// another arrives after a gap, so the slice holds them a realistic share of the time (not as permanent residents)
+{ const rsV = getRandState(), keep = SP.pike.pop.visit;
+  SP.pike.pop.visit = { stay: 1, gap: 1 };   // (short stays and gaps: the probe sees many comings and goings)
+  seed(9301); const vw = new World().setDate(0.40); let here = 0, n = 0, left = 0;
+  const i0 = vw.stats.immigrants.pike;
+  for (let t = 0; t < Math.round(20 * BIOE.DAY * 30); t++) {
+    const before = vw.agents.filter(a => !a.dead && a.species === 'pike');
+    vw.step(1 / 30);
+    left += before.filter(a => a.dead && a.left).length;
+    if (t % 30 === 0) { n++; if (vw.agents.some(a => !a.dead && a.species === 'pike')) here++; }
+  }
+  SP.pike.pop.visit = keep; setRandState(rsV);
+  const frac = here / n, arrived = vw.stats.immigrants.pike - i0;
+  check('VISITORS: pike pass through the slice — they leave after a stay and another arrives after a gap (present part of the time)', left >= 3 && arrived >= 3 && frac > 0.2 && frac < 0.8,
+    `${left} left, ${arrived} arrived; present ${(frac * 100).toFixed(0)} % of the time (stay = gap = 1 day)`); }
+
+// BED FORAGING (2026-10-15): a bottom forager senses the richest stretch of bed in reach that holds worms and scuds above their
+// refuge under breathable water (env.benthBest → world.qBed, the `food` target of sunfish, perch, bullheads and carp), so a fish
+// whose patch is grazed bare moves on; young sunfish past their limnetic phase settle on such a bed; and a piscivore works a
+// school of young fish across its hunting arena, not only when it swims into the school
+{ const rsS = getRandState(), { BENTHOS: BN } = await import('../src/config.js'), ONES7 = [1, 1, 1, 1, 1, 1, 1];
+  const COLS = GRID.FIELD_COLS, CW = WORLD.W / COLS, CH = WORLD.H / GRID.FIELD_ROWS, cm2 = WORLD.SLICE_M2 / COLS, pt = () => ({ item: { x: 0, y: 0 }, dist: 0 });
+  seed(9401); const sw = new World().setDate(0.40); sw.agents = []; sw.fry = []; sw.step(1 / 30);
+  const e = sw.env, br = e.mask.bedRow;
+  let c0 = -1; for (let c = 2; c < COLS - 6 && c0 < 0; c++) if ([1, 2, 3, 4].every(k => br[c + k] === br[c])) c0 = c;   // five columns of flat shelf
+  for (let c = 0; c < COLS; c++) e.benth[c] = BN.REFUGE * cm2;   // every bed grazed to its refuge …
+  const x = (c0 + 2.5) * CW, y = (br[c0] + 0.5) * CH - 40, none = e.benthBest(x, y, 200, 0, pt());
+  e.benth[c0 + 4] = (BN.REFUGE + 3) * cm2; e.benth[c0 + 1] = (BN.REFUGE + 1) * cm2;   // … but two
+  const rich = e.benthBest(x, y, 200, 0, pt()), bi = br[c0 + 4] * COLS + c0 + 4, o2k = e.o2[bi]; e.o2[bi] = 0;
+  const dead = e.benthBest(x, y, 200, 0.3, pt()); e.o2[bi] = o2k;
+  check('BED SENSE: a forager senses the richest stretch of bed in reach above the refuge — none over a bare bed, never one under anoxic water',
+    none === null && rich && Math.abs(rich.item.x - (c0 + 4.5) * CW) < 1 && dead && Math.abs(dead.item.x - (c0 + 1.5) * CW) < 1,
+    `bare ${none}; rich at col ${rich ? ((rich.item.x / CW) - 0.5 - c0).toFixed(0) : '-'} (want 4); anoxic → col ${dead ? ((dead.item.x / CW) - 0.5 - c0).toFixed(0) : '-'} (want 1)`);
+  // a sunfish with nothing else in sight takes that bed as its food target
+  const sf = sw.makeFish('sunfish', ONES7); sf.x = x; sf.y = y; sw.agents = [sf]; sw.larvae = []; sw.insects = []; sw.plants = []; noZoo(sw);
+  sw.larvaeGrid.rebuild(sw.larvae); sw.insectGrid.rebuild(sw.insects);   // (the query grids too: nothing else in sight)
+  SP.sunfish.senses(sf, sw);
+  const ang = Math.atan2(sf.act.in[0], sf.act.in[1]) + sf.heading, want = Math.atan2(rich.item.y - y, rich.item.x - x);
+  check('BED SENSE: a sunfish with no other food in sight steers for the stretch of bed rich in worms and scuds', sf.act.in[2] > 0 && Math.abs(angDiff(ang, want)) < 0.05, `food near ${sf.act.in[2].toFixed(2)}, bearing off by ${Math.abs(angDiff(ang, want)).toFixed(3)} rad`);
+  // YOUNG SUNFISH past the limnetic phase settle on a rich bed (no zooplankton, no larvae: only the worms and scuds)
+  seed(9402); const yw = new World().setDate(0.45); yw.agents = []; yw.larvae = []; yw.detritus = []; noZoo(yw);
+  const yb = yw.env.mask.bedRow; let c1 = -1; for (let c = 2; c < COLS - 6 && c1 < 0; c++) if ([1, 2, 3, 4].every(k => yb[c + k] === yb[c])) c1 = c;
+  for (let c = 0; c < COLS; c++) yw.env.benth[c] = BN.REFUGE * cm2;
+  yw.env.benth[c1 + 4] = (BN.REFUGE + 4) * cm2;
+  const xs = (c1 + 2.5) * CW, ys = (yb[c1] + 0.5) * CH - 80;
+  const sch = yw._mkFry('sunfish', xs, ys, 200, 1, 30, Float32Array.from(yw.makeFish('sunfish').g), new Float32Array(GENE_KEYS.length).fill(1));
+  sch.L = 3; sch.W = stdWeight(SP.sunfish.lw, 3); yw.fry = [sch];
+  for (let i = 0; i < 60; i++) { yw.step(1 / 30); noZoo(yw); yw.larvae = []; }   // (no insect larvae either: only the worms and scuds)
+  check('YOUNG SUNFISH TO THE BED: past its limnetic phase a school settles on the stretch of bed rich in worms and scuds (Werner & Hall 1988)',
+    !sch.dead && Math.abs(sch.tx - (c1 + 4.5) * CW) < 1 && Math.abs(sch.ty - (yb[c1 + 4] + 0.5) * CH) < 1, `target (${sch.tx.toFixed(0)}, ${sch.ty.toFixed(0)}) vs bed (${((c1 + 4.5) * CW).toFixed(0)}, ${((yb[c1 + 4] + 0.5) * CH).toFixed(0)})`);
+  // SCHOOLS IN THE ARENA: a bass works a school of 3-cm fry across its hunting arena — fewer with distance, none beyond it
+  seed(9403); const bw = new World().setDate(0.40); bw.cray = [];
+  const bass = bw.makeFish('bass', ONES7); bass.x = 1000; bass.y = 300; bw.agents = [bass];
+  const R0 = bass.eatRadius + 6, Ra = R0 * FEED_H.HUNT_R;
+  const eatAt = d => { const f = bw._mkFry('minnow', 1000 + d, 300, 400, 1, 200, Float32Array.from(bw.makeFish('minnow').g), new Float32Array(GENE_KEYS.length).fill(1));
+    f.L = 3; f.W = stdWeight(SP.minnow.lw, 3); bw.fry = [f]; bw.fryGrid.rebuild(bw.fry);
+    let k = 0; for (let i = 0; i < 60; i++) { bass.gut = 0; const n0 = f.n; bw._eatFry(bass, SP.bass.gut * bass.W, 2, 1 / 30); k += n0 - f.n; } return k; };
+  const kNear = eatAt(R0 * 0.5), kMid = eatAt((R0 + Ra) / 2), kFar = eatAt(Ra * 1.2);
+  check('SCHOOLS IN THE ARENA: a piscivore works a school of young fish across its hunting arena (FEED.HUNT_R) — fewer with distance, none beyond',
+    kNear > kMid && kMid > 0 && kFar === 0, `${kNear} fry in 2 s at its reach, ${kMid} mid-arena, ${kFar} beyond`);
+  setRandState(rsS); }
 
 console.log(`\n${fail === 0 ? 'ALL CHECKS PASSED' : fail + ' CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

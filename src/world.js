@@ -52,7 +52,7 @@ export const coldPerf = (tC, tOpt, floor = ENV.COLD_PERF_MIN) => { const f = Mat
 const notDead = it => !it.dead;
 // scratch for the zooplankton field queries (env.zooBest's patch → the brain's plankton sense; env.zooFeed's grams by kind) —
 // read at once by the caller, never kept
-const ZB = { item: { x: 0, y: 0 }, dist: 0 }, ZF = new Float64Array(3);
+const ZB = { item: { x: 0, y: 0 }, dist: 0 }, QB = { item: { x: 0, y: 0 }, dist: 0 }, ZF = new Float64Array(3);
 // a larval patch with larvae outside the refuge: INSECT.REFUGE_M grams of every patch are burrowed in the mud or cased,
 // out of a predator's reach — the stock that rebuilds a grazed-down patch
 const larvaFree = it => !it.dead && it.m > INSECT.REFUGE_M + 1e-3;
@@ -670,6 +670,9 @@ export class World {
   qDetritus(x, y, r) { const c = this.env.clarity(); return this.detritusGrid.nearest(x, y, r * c, notDead); }
   qInsect(x, y, r) { const c = this.env.clarity(); return this.insectGrid.nearest(x, y, r * c, notDead); }
   qLarva(x, y, r) { const c = this.env.clarity(); return this.larvaeGrid.nearest(x, y, r * c, larvaFree); }   // benthic insect larvae (perch, bottom feeders)
+  // the bed's worms and scuds (BENTHOS): the richest stretch of bed in sight that holds them above their refuge, under water the
+  // fish can breathe (env.benthBest) — so a bottom forager whose own patch is grazed bare moves on to a richer one
+  qBed(a) { return this.env.benthBest(a.x, a.y, a.senseRange * this.env.clarity(), a.sp.o2Crit, QB); }
   // nearest surface food for a planktivore/omnivore — zooplankton OR an emerged insect (so fish RISE to a hatch).
   qSurfaceFood(a) { const p = this.qPlankton(a.x, a.y, a.senseRange), i = this.qInsect(a.x, a.y, a.senseRange); return !p ? i : !i ? p : (i.dist < p.dist ? i : p); }
   // a fish's plant SENSE: like the other q* senses, its visual range shrinks with water turbidity
@@ -1053,24 +1056,33 @@ export class World {
       // then starvation (_feedFry), heat and hypoxia as for the agents
       const o2 = env.oxygenAt(f.x, f.y), o2L = sp.o2Lethal / ENV.O2_MGL * Math.exp(BIOE.O2_LETHAL_T * (T - 25));
       const lf = Math.exp(-((f.L / FRY.LARVA_L) ** 2));   // the larval term's weight (fades by ~3 cm) — the juvenile term takes over
-      const hN = FRY.M_LARVA / Math.max(0.3, f.L) * lf / BIOE.DAY
-        + FRY.M_JUV * (1 - lf) * Math.pow(FRY.M_JUV_Q10, (T - 20) / 10) / BIOE.DAY
+      // (both slow in cold water, × M_JUV_Q10: their predators eat little there — larval mortality rises with temperature,
+      // Pepin 1991 — so a late-summer brood dies fast and a small fingerling isn't culled at the summer rate under the ice)
+      const hN = (FRY.M_LARVA / Math.max(0.3, f.L) * lf + FRY.M_JUV * (1 - lf)) * Math.pow(FRY.M_JUV_Q10, (T - 20) / 10) / BIOE.DAY
         + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(f.L / sp.Lref, -0.87)) / Y;
       const hH = T > sp.uilt - 2 ? Math.LN2 / (BIOE.UILT_DAYS * BIOE.DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
       const hO = o2 < o2L ? Math.LN2 / (BIOE.HYPOXIA_DAYS * BIOE.DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
       const h = hN + hS + hH + hO, lost = f.n * (1 - Math.exp(-h * st));
       if (this.fryDiag && h > 0) { const q = this.fryDiag[f.k] ??= { natural: 0, starve: 0, heat: 0, hypoxia: 0 }; q.natural += lost * hN / h; q.starve += lost * hS / h; q.heat += lost * hH / h; q.hypoxia += lost * hO / h; }   // (diagnostic only)
       f.n -= lost;
-      if (f.n < 1) { f.dead = true; continue; }
+      // (a school thinned below one fish: its last fish lives on with probability n — stochastic rounding keeps the expected
+      // survivors; dropping every fraction culled the last few fingerlings of a winter school by truncation alone)
+      if (f.n < 1) { if (rand() < f.n) f.n = 1; else { f.dead = true; continue; } }
       // NEXT TARGET: the nearest food these fish eat within SEEK_R; in water below their critical O₂ they head up, and
       // near their lethal temperature down (the young fish's own habitat choice)
       if (o2 < sp.o2Crit) { f.tx = f.x; f.ty = Math.max(4, f.y - 60); }
       else if (T > sp.uilt - 3) { f.tx = f.x; f.ty = f.y + 60; }
       else {
         const zoo = d.plankton || f.L < sp.Lzoo, benth = f.L >= (sp.benthL ?? FRY.BENTH_L);
-        let best = zoo ? this.env.zooBest(f.x, f.y, FRY.SEEK_R, ZB) : null, m;
+        // YOUNG BOTTOM FORAGERS (past benthL) LIVE ON THE BED: young sunfish back from their limnetic phase, perch moving
+        // inshore and bullheads stay in the weeds on the littoral invertebrates (Werner & Hall 1988; Post & McQueen 1988),
+        // taking the zooplankton among them — they go out after open-water zooplankton only when the bed in reach has none
+        // (insect larvae, the richest stretch of worms and scuds, detritus — the nearest)
+        let best = null, m;
+        if (benth && (d.larva || d.snail || d.detritus)) best = this.env.benthBest(f.x, f.y, FRY.SEEK_R, sp.o2Crit, QB);
         if (benth && insectEater(sp, f.L) && (m = this.larvaeGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, larvaFreeFry))) best = m;
         if (benth && d.detritus && (m = this.detritusGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, notDead))) best = m;
+        if (!best && zoo) best = this.env.zooBest(f.x, f.y, FRY.SEEK_R, ZB);
         if (d.fish && f.L >= sp.Lpisc && (m = this.fryGrid.nearest(f.x, f.y, best ? best.dist : FRY.SEEK_R, canSchoolEat, f))) best = m;
         // nothing in range: wander — young bottom feeders (larvae, detritus) head down to the bed to look there
         if (best) { f.tx = best.item.x; f.ty = best.item.y; } else { f.tx = clamp(f.x + rand(-80, 80), 4, W - 4); f.ty = benth && (d.larva || d.detritus) ? bedY(f.x) - 8 : f.y; }
@@ -1166,17 +1178,19 @@ export class World {
   // Weed cover shelters the young (COVER.REFUGE), and a school in its guarded nest zone (guardian on duty, on station) is
   // mostly protected (BROOD.PROTECT). (Tried: bouts across the whole hunting arena at 4× the rate — perch and the other
   // piscivores ate ~5× more young-of-year, recruitment failed and the lake thinned year on year; the bass gained nothing.)
-  _eatFry(a, gEff, slots, dt) {
-    const R0 = a.eatRadius + 6, pisc0 = a.sp.diet.fish && a.L >= a.sp.Lpisc;
-    // a piscivore works the nearest school of young FISH it is in (tiny larvae nearer by don't hide it); failing that, a
-    // fish that eats larvae (a big piscivore no longer does) picks at a school of them
-    let m = pisc0 ? this.fryGrid.nearest(a.x, a.y, R0, piscSchool, a) : null;
+  _eatFry(a, gEff, slots, dt, perf = 1) {
+    const R0 = a.eatRadius + 6, pisc0 = a.sp.diet.fish && a.L >= a.sp.Lpisc, Ra = R0 * FEED.HUNT_R;
+    // a piscivore works the nearest school of young FISH in its HUNTING ARENA (FEED.HUNT_R × its reach, as for single fish
+    // prey: one behavioural second is hours of hunting, and a school is spread over the weeds, not a point), at full rate
+    // within its reach and less with distance (tiny larvae nearer by don't hide it); failing that, a fish that eats larvae
+    // (a big piscivore no longer does) picks at a school of them that it is in
+    let m = pisc0 ? this.fryGrid.nearest(a.x, a.y, Ra, piscSchool, a) : null;
     if (!m && (!pisc0 || a.L < 3 * a.sp.Lpisc)) m = this.fryGrid.nearest(a.x, a.y, R0, canEatFry, a);
     if (!m) return;
-    const f = m.item, pisc = schoolPrey(f, a);
+    const f = m.item, pisc = schoolPrey(f, a), close = pisc ? clamp((Ra - m.dist) / (Ra - R0), 0, 1) : 1;
     const dens = f.n / (f.n + FRY.N_HALF) * (1 - this.coverAt(f.x, f.y) * COVER.REFUGE);   // a school is dense until it's down to a few fish
     const sz = pisc ? Math.pow(Math.max(0, 1 - f.L * SP[f.k].depthR / gapeOf(a)), FEED.SIZE_SEL) : 1;   // (the size refuge, as sizeSel)
-    const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * sz * dens * dt : FRY.CATCH * slots * dens));
+    const k = Math.min(Math.floor(f.n), Math.floor((gEff - a.gut) / f.W), poissonish(pisc ? FRY.ATTACK * a.sp.capture * SP[f.k].vuln * sz * dens * close * perf * dt : FRY.CATCH * slots * dens));   // (slots carry the cold slowdown already)
     if (k < 1) return;
     if (f.ni && this._guards) { const g = this._guards.get(f.ni); if (g && g.nt > 0 && !g.dead && Math.hypot(g.x - f.nx, g.y - f.ny) < BROOD.GUARD_R * 1.5 && rand() < BROOD.PROTECT) return; }
     f.n -= k; if (f.n < 1) f.dead = true;
@@ -1205,7 +1219,7 @@ export class World {
   // STRIKE lunge — so the strike and hide decisions both bite here (an arms race). A miss leaves the predator recovering
   // FEED.MISS_CD s and the prey alarmed (it flees on its fear drive). `maxW`: the most the predator can swallow now (the
   // room in its gut, g) — heavier fish aren't attacked. `dt` omitted: ONE strike at the best-placed prey (the tests' probe).
-  takePrey(a, maxW = Infinity, dt = Infinity) {
+  takePrey(a, maxW = Infinity, dt = Infinity, perf = 1) {
     if (a.missCd > 0) return null;   // still recovering from a missed strike
     const lunge = 1 + ACTION.STRIKE_REACH * engaged(a.act.strike), R = a.eatRadius * FEED.HUNT_R * lunge;
     const C = this._huntC || (this._huntC = []); C.length = 0;
@@ -1225,7 +1239,7 @@ export class World {
       if (rand() >= bestS) { a.missCd = FEED.MISS_CD; best.fear = 1; return null; }
       prey = best;
     } else {
-      const rate = FEED.ATTACK * this.env.clarity() * dt;
+      const rate = FEED.ATTACK * this.env.clarity() * perf * dt;   // (a cold predator hunts more slowly: coldPerf)
       if (rand() < 1 - Math.exp(-rate * sK)) {   // a kill: which fish ∝ closeness × success
         let u = rand() * sK; for (let i = 0; i < C.length; i += 3) { prey = C[i]; u -= C[i + 1] * C[i + 2]; if (u <= 0) break; }
       } else {
@@ -1831,7 +1845,7 @@ export class World {
       // gut — after a big meal it is out of action until it has digested room (a pike eats a fish every few days), and a
       // bass that snaps up a fry is ready again soon but gained little. The prey's energy is its own species' ED.
       if (sp.diet.fish && a.L >= sp.Lpisc && a.gut < gEff) {
-        const prey = this.takePrey(a, gEff - a.gut, dt);   // (transfers the prey's contaminant burden → biomagnification)
+        const prey = this.takePrey(a, gEff - a.gut, dt, perf);   // (transfers the prey's contaminant burden → biomagnification)
         if (prey) { this._meal(a, prey.W + prey.gon, energyDensity(prey.sp.bio, prey.W), 1); this.stats.fishEaten++; }
       }
       // amphibian / reptile prey: a hungry fish predator takes a frog, tadpole or turtle hatchling that fits its gape and
@@ -1855,14 +1869,15 @@ export class World {
       const R = a.eatRadius;
       // YOUNG-OF-YEAR: fry schools (FRY) are food for anything whose mouth they fit — larval fish for the planktivores and
       // invertivores, fingerlings for the piscivores (see _eatFry)
-      if (this.fry.length && a.gut < gEff) this._eatFry(a, gEff, slots, dt);
+      if (this.fry.length && a.gut < gEff) this._eatFry(a, gEff, slots, dt, perf);
       // The rest in order of PROFITABILITY (digestible J per g — optimal foraging: a fish takes the best food in reach
       // first): zooplankton and the benthic/surface invertebrates; the POOR foods — detritus (~340 J/g digestible),
       // algae (~730), plants (~540) — only as a hungry fish's filler: when it found nothing better this step, and only up
       // to FEED.POOR_GUT of its gut (a gut kept full of weed between the good meals would starve it at full ration).
       // FRY EAT ZOOPLANKTON: nearly every fish starts life as a zooplankton eater, whatever it eats as an adult (pike and
       // bass fry, carp and catfish fry alike), shifting to its adult diet past a species-specific length (sp.Lzoo)
-      if (a.gut < gEff && (sp.diet.plankton || a.L < sp.Lzoo)) this._eatZoo(a, gEff - a.gut, cm, dt);
+      const apt = gEff / gmax;   // the appetite (O₂ and brood guarding cut it) scales the feeding RATES too, not only the gut room
+      if (a.gut < gEff && (sp.diet.plankton || a.L < sp.Lzoo)) this._eatZoo(a, gEff - a.gut, cm * apt, dt);
       // (a piscivore past ~3× its piscivory length no longer bothers with insects — a 35-cm bass or a pike lives on fish and
       // crayfish; perch and trout, whose piscivory starts late, keep eating them — `bugs`)
       const bugs = !sp.diet.fish || a.L < 3 * sp.Lpisc;
@@ -1882,7 +1897,7 @@ export class World {
       // the bed's worms and scuds (BENTHOS): a bottom forager in the weedy water near the bed (BENTHOS.REACH — scuds live on the
       // weeds as much as in the mud) takes them at a rate set by their reachable density
       if (bugs && a.gut < gEff && (sp.diet.larva || sp.diet.snail || sp.diet.detritus) && a.y > bedY(a.x) - BENTHOS.REACH) {
-        const g = env.takeBenth(a.x, Math.min(gEff - a.gut, PLANKTON.Q * cm * a.W * dt / BIOE.DAY));
+        const g = env.takeBenth(a.x, Math.min(gEff - a.gut, BENTHOS.Q * cm * apt * a.W * dt / BIOE.DAY));
         if (g > 0) { a.gut += g; a.gutE += g * PREY.BENTH_ED; if (g >= PLANKTON.BITE_MIN * gmax) { a.eaten++; this.stats.foodEaten++; } }
       }
       let nS;
@@ -2040,6 +2055,16 @@ export class World {
       // (per species: an apex predator's refuge and rescue threshold are lower — a slice of lake this size feeds one or two
       // pike, and a backstop of more would eat out the forage base — species.js pop.refuge / pop.rescue)
       const refuge = Math.min(IMMIGRATION.REFUGE, sp.pop.refuge ?? Infinity), rescueN = Math.min(IMMIGRATION.RESCUE_N, sp.pop.rescue ?? Infinity);
+      // VISITORS (sp.pop.visit — wide-ranging fish: pike, trout): the slice is a small part of their home range, so each one
+      // leaves after a stay of ~visit.stay days (gone to the rest of the lake: removed, not a death) and, when none is here,
+      // another comes in after a gap of ~visit.gap days (from the regional gene pool) — present stay/(stay + gap) of the time
+      if (sp.pop.visit) {
+        const v = sp.pop.visit, leave = dt / (v.stay * BIOE.DAY);
+        for (const q of this.agents) if (!q.dead && q.species === key && rand() < leave) { q.dead = true; q.left = true; counts[key]--; if (q.id === this.selectedId) this.selectedId = null; }
+        this._counts[key] = counts[key];
+        if (counts[key] <= 0 && liveTotal < WORLD.GLOBAL_MAX && rand() < dt / (v.gap * BIOE.DAY)) immigrate();
+        continue;
+      }
       while (counts[key] < refuge && liveTotal < WORLD.GLOBAL_MAX) immigrate();
       // rarity rescue: a stochastic trickle, engaging only when genuinely rare, tapering to 0 at RESCUE_N
       const deficit = 1 - counts[key] / rescueN;

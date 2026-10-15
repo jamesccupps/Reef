@@ -5,7 +5,37 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-▶▶▶ IN PROGRESS (2026-10-15): ZOOPLANKTON FIELDS → WHOLE FOOD-WEB RECALIBRATION, branch `zoo-field` (not merged; science = main
+## ▶ NOW (2026-10-15, late) — ZOOPLANKTON FIELDS + FOOD-WEB RECALIBRATION, branch `zoo-field` (gate green; save v30)
+
+State: `zoo-field` = the whole slice (zooplankton fields, egg bank, rotifers, worms & scuds, visitors, bed foraging, young-of-year
+fixes) — committed and pushed; NOT yet merged to science/main (main = bc2ddc8: the research doc + the OLD particle model).
+Gate: `npm test` green (headless ALL PASS, 217 steps/s; smoke, UI, serve OK); browser: loads clean, no console errors.
+HUMAN DIRECTION: "just make it how it actually is in the real environment, at least in New England, the ponds and lakes seem to
+be sustaining". What the slice does: FEATURES.md "2026-10-15 zooplankton fields and a food web recalibrated to real lakes".
+Diagnostics now live in `test/diag/` (README there): zooflux2, energy, fryfate, deaths, dietsp, autumn, sunbed, zooonly; `SET=`
+overrides incl. `SP.*` and per-day `/d` rates (ovr.mjs), `SRC=` for A/B against a source snapshot.
+THE LAST ROUNDS (27–30) — what finally moved the lake: (1) BED FORAGING: `env.benthBest`/`world.qBed` (sunfish, perch,
+bullhead, carp food target; young bottom foragers past benthL live on the bed and leave it for open-water zooplankton only
+when the bed in reach has none); (2) BENTHOS.G 0.08 → 0.16/day (zoobenthos ~78 → toward Quinte's ~125 g/m²/yr) and K_FISH
+2 → 0.5 g/m² (handling-limited); (3) piscivores work fry schools across their hunting arena; all strikes slow in cold water
+(coldPerf); (4) THE KEY ONE, found with the fate audit (test/diag/fryfate.mjs): of ~160k sunfish hatched, starvation took ~600
+and predators ~1,000 — the rest died of the FIXED larval mortality, which had no temperature dependence, so 2–2.6-cm fingerlings
+died ~4 %/day under the ice and NO young-of-year ever reached spring (adults then just aged out). FRY.M_JUV_Q10 now scales
+M_LARVA too (Pepin 1991), and a school thinned below one fish keeps it with probability n. Result r30 (3 seeds): YOY 126 (Nov)
+→ 28 (Mar) → spring recruits +5/+12/+5 in yr 2, +0/+31/+16 in yr 3; sunfish 50 → 20–40 by yr 2 and recovering in 2 seeds
+(seed 1 weak: ~9–13); perch 22 → 7–12 (no yr-1 spawn: the lake opens after their season) then breeding; minnows cycle 13–65;
+starvation now rare, deaths = predation + background (~40 %/yr adults, as real bluegill). A 4-year 3-seed run + balance
+(seed 2024, 3 yr) were running at the end of the session (scratchpad verify/zf2_final_s*.txt, balance_final.txt).
+KNOWN LIMITS / HUMAN'S CALLS: (a) the basin has NO 0–3 m zone (BASIN.SHELF_Y 0.25 → flat 3.6-m shelf), where real New England
+ponds grow most littoral food and nest their sunfish — a bathymetry change is the biggest remaining realism lever (touches
+plants, light, heat; its own slice); (b) no weed-dwelling invertebrates as such; (c) species set: carp (~95 kg/ha here) are not
+typical of New England ponds, pike vs chain pickerel, golden shiner/white sucker absent; (d) settled densities are lower than
+real (sunfish ~15–30 kg/ha vs 50–150) — follows from (a)/(b); (e) perch YOY hypoxia deaths in spring (844 of 3,551 hatched,
+r30 s1) — check under-ice/ice-out O₂ at the weed beds.
+NEXT: read the 4-yr runs; if the community holds (no seed collapsing), merge zoo-field → science → main, push, backup zip;
+then the apex slice (bass spawn order, late-summer YOY binge) or the littoral bathymetry (ask the human which).
+
+▶▶▶ (history) ZOOPLANKTON FIELDS → WHOLE FOOD-WEB RECALIBRATION, branch `zoo-field` (not merged; science = main
 = bc2ddc8 has docs/ECOLOGY_RESEARCH.md + docs/research_notes/). HUMAN DIRECTION (mid-slice): "just make it how it actually is in
 the real environment, at least in New England, the ponds and lakes seem to be sustaining" → the target is a SELF-SUSTAINING lake
 on real numbers; also: winter zooplankton are resting eggs (done: egg bank); sunfish pool in warm stream pools between lakes in
@@ -47,6 +77,24 @@ readings) — zooflux2 now averages it. Round 20 running (3 seeds × 2 yr + ff_r
 FRY.CMAX_LARVA, M_LARVA, founders; species set (Midwest vs New England natives) and slice scale for big fish = human's call.
 LESSONS: memory research-to-design;
 diagnostic wrappers must forward ALL arguments (a dropped arg silently disabled type III in one round).
+ROUNDS 21–26 (2026-10-15, later; pushed WIP fea9089, then uncommitted): PLANKTON.Q 1.0 (Q 0.5 starved adults amid plenty — FB4
+bluegill on Daphnia breaks even at p ≈ 0.52 at 20 °C); the APPETITE (gEff/gmax) scales feeding rates; adult carp/bullheads eat
+zooplankton only below Lzoo; bass sHatch 0.1 (Carbine ~5,650 fry/nest), carp sHatch 0.005 (sunfish eat carp eggs — Bajer &
+Sorensen); founders carp 0.45, minnow 8; VISITORS (sp.pop.visit {stay, gap} days: pike 20/60, trout 30/60 — a wide-ranging fish
+leaves the 0.07-ha slice and another comes; exempt from REFUGE; gate block) — a RESIDENT 3-kg pike ate ~25 sunfish+perch/yr.
+r25 (visitors): predation no longer the killer; STARVATION is — every seed declines (sunfish 50 → 3–6, perch 22 → 4–8 by yr 2;
+survivors fat K 0.93–0.96 → density-dependent food limit, not a broken rule). Chain: YOY peak ~1.5 kg (≈210 kg/ha) in late July
+strips the zooplankton (to 5–10 µg/L Sep–Nov; realistic for a strong year class) → adults + YOY need the bed, but the 3.6-m
+shelf (the lake has NO 0–3 m zone: BASIN.SHELF_Y 0.25) holds only ~1 g/m² of worms/scuds and ~0.2 of larvae above refuge,
+and the deep basin's 9–10 g/m² sits under anoxic water till late-Oct turnover; agents get ~3 % of food as fish (real 10–15 %:
+a predator meets a fry school only by swimming into its point — bass 16 % of samples within reach, 43 % within the hunting
+arena). Year totals (verify/energy.mjs, now with worms+scuds production env.benthProd — DIAGNOSTIC): zoo 242–260 g/m²/yr ✓
+(Quinte 240), larvae 35–39, worms+scuds 39 → zoobenthos ~78 vs Quinte ~125; fish 240 kg/ha vs Quinte 165 → bed food per fish
+~0.4× Quinte. r26: BED-FOOD SENSE (env.benthBest / world.qBed: the richest bed in sight above the refuge with breathable water;
+sunfish, perch, bullhead, carp `food` target; BENTHOS.SENSE_MIN 0.5 g/m²) — helps one seed (s2 sunfish 31 in yr-2 June),
+not the others. Experiments running (verify/x_*): no carp; BENTHOS.G 0.16/d; K_FISH 0.5 (SET supports SP.* and "/d" rates via
+verify/ovr.mjs). Candidate next levers: fry-school encounters across the hunting arena (YOY → predators), YOY to the bed after
+the limnetic phase (env.benthBest for schools), FB4 below-6 °C cost (Wright et al. 1999 −16 %).
 
 ▶▶▶ HUMAN (2026-10-14 evening, before compaction): "we need compact first and maybe you should do some more research on how the
 ecosystem and bass and zooplankton and everything work in a real environment, after we compact though". → RESUME HERE: a
