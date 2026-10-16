@@ -240,8 +240,14 @@ const coldPerf = (T, tOpt, floor) => { const f = Math.max(floor || 0, ENV.COLD_P
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const vbLength = (vb, yrs) => vb.Linf * (1 - Math.exp(-vb.k * (yrs - vb.t0)));
 const vbAge = (vb, L) => vb.t0 - Math.log(1 - Math.min(0.98, L / vb.Linf)) / vb.k;
-// the light a fish sees by at depth z of column c (0 blind … 1 full sight, a log scale between PLANKTON.VIS_I0 and VIS_I1)
-function vision(I) { const P = PLANKTON; return I > P.VIS_I0 ? Math.min(1, Math.log(I / P.VIS_I0) / Math.log(P.VIS_I1 / P.VIS_I0)) : 0; }
+// SIGHT by the light at the fish's depth (lux): each species' reaction distance saturates with the light, RD = RD_max·I/(I + K_I)
+// (research realtime_foraging.md §1.2, §9.1) — K_I lux: yellow perch feed down to 2–5 lx (larvae's RD = 4.3·I/(0.1 + I) cm,
+// Richmond et al. 2004), bluegill 10 lx, pumpkinseed 25 lx; largemouth catch > 95 % of prey down to moonlight (3×10⁻³ lx) — the
+// smallmouth likewise; golden shiners feed in the hour after sunset, white perch at dusk and night; the esocids by day and
+// twilight; bullheads and suckers mostly by taste and touch (their nonVis). The fish's sight then sets its senses' range and
+// its visual feeding: the day's feeding follows the hour's light (the old sight followed the day's noon light all day)
+const K_I = { minnow: 0.3, sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5 };
+const sight = (lux, kI) => lux / (lux + kI);
 const WF = [0, 0];
 
 // one fish, or one school of n fish (every field set here, so every fish has the same shape)
@@ -506,7 +512,8 @@ export class Fish3 {
     // the lake's fish biomass (kg/ha) — the zooplankton's kairomone level (diel vertical migration)
     let bio = 0; for (const a of f) if (a.alive) bio += a.n * a.W; for (const q of this.yoy) if (q.alive) bio += q.n * q.W; ch.fishKgHa = bio / 1000 / this.lakeHa;
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
-    const vDay0 = e.lightDay;   // (the day's noon light — rates follow the day's light)
+    // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
+    const lux0 = e.lux, luxB = coarse ? [lux0, e.luxAhead(dt / 2), e.luxAhead(dt)] : null;
     for (let i = 0; i < f.length; i++) {
       const a = f[i]; if (!a.alive) continue;
       const s = a.s, sp = s.sp;
@@ -521,8 +528,10 @@ export class Fish3 {
       a.T = e.temp[j]; a.o2 = ch.o2[j];
       a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]);
       const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
-      a.vis = Math.max(s.nonVis, vision(e.light * iceCut * fade)) * clar;
-      const visDay = Math.max(s.nonVis, vision(vDay0 * iceCut * fade)) * clar;
+      const kI = K_I[s.key] ?? 1, lf = iceCut * fade;
+      a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
+      const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
+      a.visF = visDay;
       a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0);   // (very shallow water; the weeds' stems)
       a.fear *= Math.exp(-F3.FEAR_DECAY * mv);
       // decide (senses → brain), then the innate drives, then move
@@ -778,11 +787,15 @@ export class Fish3 {
     const cx = Math.cos(h), cy = Math.sin(h), n = Math.max(1, Math.ceil(len / GEO.CELL)), st = len / n;
     const ice = a.c >= 0 ? this.env.ice[a.c] : 0, shallow = F3.ZTOP + F3.ICE_M * ice + F3.ZBOT + 0.05 + a.L / 400;
     const inBand = m && a.bed >= m.bot[0] && a.bed <= m.bot[1];
+    // (a fish in water with enough O₂ won't swim on into water short of it: it senses hypoxia and stays at the oxic water's edge —
+    // under the ice, fish crowd there rather than following their winter depth into dead water)
+    const oxic = a.o2 >= a.o2Crit, G = this.G, o2 = this.chem.o2;
     let gone = 0;
     for (let k = 0; k < n; k++) {
-      const nx = a.x + cx * st, ny = a.y + cy * st, bed = GEO.depthAt(nx, ny);
-      if (!(bed >= shallow) || GEO.bodyAt(nx, ny) === LAND || this.env.colAt(nx, ny) < 0) break;
+      const nx = a.x + cx * st, ny = a.y + cy * st, bed = GEO.depthAt(nx, ny), c = this.env.colAt(nx, ny);
+      if (!(bed >= shallow) || GEO.bodyAt(nx, ny) === LAND || c < 0) break;
       if (inBand && (bed < m.bot[0] || bed > m.bot[1])) break;
+      if (oxic && o2[G.cell0[c] + Math.min(G.nL[c] - 1, Math.max(0, (Math.min(a.z, bed) / G.DZ) | 0))] < a.o2Crit) break;
       a.x = nx; a.y = ny; a.bed = bed; gone += st;
     }
     if (gone > 0) a.yaw = h;
@@ -862,19 +875,19 @@ export class Fish3 {
     }
     const want0 = want - got;
     if (tB > 0 && room > 0 && want > got && fB > 0) {   // the bed's worms and scuds and the weeds' fauna, by what each offers
-      const wB = Math.min(room, want0 * tB * BENTHOS.Q) * n * fB;
+      const wB = Math.min(room, want0 * tB * BENTHOS.Q) * n * fB * visDay;   // (by its sight: perch hunt the bed by eye, bullheads and suckers by taste — their nonVis)
       const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll, a.gape, cs) / n : 0, Jw = Ew > 0 ? lit.J / n : 0, gc = Ew > 0 ? lit.crG : 0;
       if (gb > 0) { a.gut += gb; a.gutE += gb * PREY.BENTH_ED; room -= gb; got += gb; this.stats.food.benth += gb * n; }
       if (gw > 0) { a.gut += gw; a.gutE += Jw; room -= gw; got += gw; this.stats.food.weed += gw * n - gc; this.stats.food.cray += gc; if (gc > 0) this.stats.crayBy[s.key] = (this.stats.crayBy[s.key] || 0) + gc; }
     }
     if (canS && room > 0 && want > got && fS > 0) {   // the surface: emerging midges and mayflies, the land's beetles and flies — taken
       // as met by a fish near it, whatever else it is about (big, conspicuous items: no search time of their own)
-      const g = lit.takeSurfCols(fp, fp.length, Math.min(room, want0 * fS) * n) / n;
+      const g = lit.takeSurfCols(fp, fp.length, Math.min(room, want0 * fS) * n * visDay) / n;
       if (g > 0) { a.gut += g; a.gutE += g * PREY.INSECT_ED; room -= g; got += g; this.stats.food.surf += g * n; }
     }
     if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);
-      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, F3.K_ZOO, out, true, true, 0);
+      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, F3.K_ZOO, out, true, true, 0, visDay * visDay);   // (seen by its own eyes at this hour: the water it searches ∝ its reaction distance² — Gerritsen & Strickler 1977)
       const g = (out[0] + out[1] + out[2]) / n;
       if (g > 0) { a.gut += g; a.gutE += (out[0] * PREY.DAPH_ED + out[1] * PREY.COPE_ED + out[2] * PREY.ROT_ED) / n; room -= g; got += g; this.stats.food.zoo += g * n; }
     }

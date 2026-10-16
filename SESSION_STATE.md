@@ -184,6 +184,10 @@ THE HUMAN'S REQUESTS (2026-10-16), in order:
 (2) LATER, once the sim works right: bring back a page of the lakes' and fish data (the 2-D app had charts/panels) and
     click-a-fish info (inspector).
 (3) Keep SESSION_STATE and the docs current at every step (auto-compaction).
+(5) SURFACE INSECTS AND RISES (2026-10-16): "don't forget about the bugs on the surface and bass or some fish jumping to get
+    them" — the sim already has the surface's insects (littoral3: the weeds' emergence + the land's fall-in) and fish take them
+    near the surface; make them VISIBLE at the real-time rung: insects on the film, each take an event → a rise ring/splash in
+    the view, some a LEAP (smallmouth, pumpkinseed at damselflies and dragonflies over the weeds; the dusk hatch).
 (4) GENES, GENE FLOW, POLLUTANT RESISTANCE (2026-10-16, "for the roadmap"): immigrants with their own gene distribution through
     the inflow/outlet; variation that lasts (Mendelian polygenic inheritance instead of blending; school agents' gene pools);
     a heritable resistance trait with a cost, and pollutant what-ifs — ROADMAP.md agreed plan #5. After stage R.

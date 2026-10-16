@@ -463,12 +463,12 @@ export class Chem3 {
     return this.zooFeedCells(L, n, cD, cC, want, K, out, sig, dvm, cR);
   }
   // … over a list of cells (a fish's foraging footprint: fish.js), each seen by its own light
-  zooFeedCells(L, nL, cD, cC, want, K, out, sig = false, dvm = true, cR = 0) {
+  zooFeedCells(L, nL, cD, cC, want, K, out, sig = false, dvm = true, cR = 0, vis = -1) {   // (vis ≥ 0: the feeding fish's own sight, else the cells' zv)
     out[0] = out[1] = out[2] = 0; if (!(want > 0) || !nL) return out;
     const P = PLANKTON;
     let sD = 0, sC = 0, sR = 0, sw = 0;
     for (let i = 0; i < nL; i++) {
-      const q = L[i], w = this.w[q], v = this.zv[q]; sw += w; if (v <= 0) continue;
+      const q = L[i], w = this.w[q], v = vis >= 0 ? vis : this.zv[q]; sw += w; if (v <= 0) continue;
       sD += this.zooD[q] * cD * this.zooExposed(q, 0, dvm) * w * v; sC += this.zooC[q] * cC * this.zooExposed(q, 1, dvm) * w * v;
       if (cR > 0) sR += this.zooR[q] * cR * (1 - this.plantRef[q]) * w * v;
     }
@@ -477,7 +477,7 @@ export class Chem3 {
     const tot = sD + sC + sR, tD = take * sD / tot, tC = take * sC / tot, tR = take - tD - tC;
     const fD = sD > 0 ? tD / sD : 0, fC = sC > 0 ? tC / sC : 0, fR = sR > 0 ? tR / sR : 0;   // (each cell gives this share of its exposed, seen grams)
     for (let i = 0; i < nL; i++) {
-      const q = L[i], v = this.zv[q]; if (v <= 0) continue;
+      const q = L[i], v = vis >= 0 ? vis : this.zv[q]; if (v <= 0) continue;
       if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm) * v;
       if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm) * v;
       if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - this.plantRef[q]) * v;

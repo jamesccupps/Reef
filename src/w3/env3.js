@@ -58,6 +58,11 @@ export const H3 = {
   // column's surface must be this many °C per m/s of wind colder than FORM_T before ice can start (× its exposure: the share of
   // the 8 directions with no land within the plants' SHELTER_R)
   ICE_WIND: 0.12,
+  // THE SKY'S LIGHT in lux, what the fish see by (research realtime_foraging.md §1.2, §9.1): LUX_NOON at a clear summer noon (the
+  // light fields' 1); TWILIGHT after sunset and before sunrise — TWI_LUX at the sun's edge, falling TWI_DEC decades an hour
+  // (civil twilight's end ~3.4 lx ~35 min after sunset, nautical ~0.008 lx at ~80 min, at Maine's latitude in summer) — to a
+  // starlit night's NIGHT_LUX
+  LUX_NOON: 100000, TWI_LUX: 500, TWI_DEC: 3.7, NIGHT_LUX: 0.002,
 };
 const DAY = 86400;
 const expm = x => -Math.expm1(-x);   // 1 − e^(−x): the share a first-order process completes over a step (exact at any dt)
@@ -204,7 +209,7 @@ export class Env3 {
     this.t = 0.30;                                   // time of day (0..1), mid-morning
     this.weather = 0; this.weatherTimer = ENV.WEATHER_DWELL[0] * H3.WEATHER_DWELL_MUL; this.forced = false;
     this.windDir = Math.PI * 1.25; this.windSpeed = H3.WIND_MS[0];   // direction the wind blows FROM (radians, 0 = from the north, clockwise)
-    this.light = 0; this.lightDay = 1; this.sun = 0; this.dayFrac = 0.5;
+    this.light = 0; this.lightDay = 1; this.sun = 0; this.dayFrac = 0.5; this.lux = 0;
     this.temp = new Float32Array(G.NCELL);
     this.age = new Float32Array(G.NCELL);           // water age: sim seconds since the water entered (a through-flow tracer)
     this.ice = new Float32Array(G.NC);
@@ -281,6 +286,15 @@ export class Env3 {
     }
     this.windSpeed = H3.WIND_MS[this.weather];
   }
+  // the surface's light in lux at time of day t (the day's sun and this weather's clouds), twilight included
+  _lux(t, sun, cover) {
+    const day = daylight(t, sun.dayFrac) * sun.noon * (1 - cover) * H3.LUX_NOON;
+    const rise = 0.5 - sun.dayFrac / 2, set = 0.5 + sun.dayFrac / 2;
+    const h = t > set ? Math.min(t - set, 1 - t + rise) * 24 : t < rise ? Math.min(rise - t, t + 1 - set) * 24 : 0;   // hours from the sun's edge (0 by day)
+    return Math.max(day, H3.TWI_LUX * Math.pow(10, -H3.TWI_DEC * h) * (1 - 0.5 * cover), H3.NIGHT_LUX);
+  }
+  // the light ahead by s seconds (the same weather): a coarse block that spans dusk samples it
+  luxAhead(s) { const sun = seasonalSun(this.yearFrac()); return this._lux(((this.t + s / CLOCK3.DAY_LEN) % 1 + 1) % 1, sun, ENV.CLOUD_COVER[this.weather]); }
   setWeather(w) { this.weather = w; this.weatherTimer = ENV.WEATHER_DWELL[w] * H3.WEATHER_DWELL_MUL; this.forced = true; this.windSpeed = H3.WIND_MS[w]; }
 
   // the mixed layer (m) the wind and the night's convection reach in an open column (2-D sim: THERMAL.MIX_M × weather, night
@@ -318,6 +332,7 @@ export class Env3 {
     const cover = ENV.CLOUD_COVER[this.weather];
     this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover);
     this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac); this.dayFrac = sun.dayFrac;
+    this.lux = this._lux(this.t, sun, cover);
     this._heat(dt, yf);
     if (this.chem) this.chem.step(dt);
     if (this.plants) this.plants.step(dt);
