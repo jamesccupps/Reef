@@ -16,7 +16,7 @@ const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
 export const FISH_MAX = 40000;   // instances
 const MEMBERS_MAX = 160;         // fish drawn per school at most
 const YOY_DRAW = 14, YOY_NEAR = 40;
-const FISH_STRIDE = 18, YOY_STRIDE = 11;   // (the snapshot's layout: render3/sim3worker.js)   // young-of-year: fish drawn per school, and within how far of the camera (m, × the size shown)
+const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (the snapshot's layout: render3/sim3worker.js)   // young-of-year: fish drawn per school, and within how far of the camera (m, × the size shown)
 
 // a unit fish along +x (snout +0.5 → tail fork −0.5), unit body depth along +y, right side +z; dark back, pale belly
 function fishGeometry() {
@@ -132,18 +132,19 @@ export function makeFishView() {
   }
   // one school's members: centre (x, y, z), the school's heading yaw, member length L, its spread r (m), the deepest a member
   // may go zMax, the bed's depth, the seed id, frame dt (s), and the drawing (c colour, D body depth, k shade base)
-  function swimCrew(c, id, x, y, z, yaw, L, r, zMax, dt, draw) {
+  function swimCrew(c, id, x, y, z, yaw, L, r, zMax, dt, draw, loose = 0) {
     // the school as drawn: its velocity, and a heading that turns at no more than 1.5 rad/s (the members' places turn with it)
     let vax = 0, vay = 0, vaz = 0; const jump = Math.hypot(x - c.ax, y - c.ay) > Math.max(5, 40 * L);
     if (dt > 0 && c.init && !jump) { vax = (x - c.ax) / dt; vay = (y - c.ay) / dt; vaz = (z - c.az) / dt; }
     c.ax = x; c.ay = y; c.az = z;
     if (!c.init || jump) c.hy = yaw; else c.hy += Math.max(-1.5 * dt, Math.min(1.5 * dt, angD(yaw, c.hy)));
-    const ch = Math.cos(c.hy), sh = Math.sin(c.hy), P = c.P, V = c.V, H = c.H, Pt = c.Pt, w2 = OMEGA * OMEGA, w = 2 * OMEGA;
+    // (scattered individuals: their places don't turn with the group, each wanders farther and slower, and follows gently)
+    const ch = loose ? 1 : Math.cos(c.hy), sh = loose ? 0 : Math.sin(c.hy), P = c.P, V = c.V, H = c.H, Pt = c.Pt, om = loose ? 0.8 : OMEGA, w2 = om * om, w = 2 * om, wan = loose ? 3 : 0.8, wf = loose ? 0.4 : 1;
     const vmax = Math.max(6 * L, 1.6 * Math.hypot(vax, vay)), tSec = draw.t;
     for (let q = 0; q < c.m; q++) {
       const h = ((id * 131 + q * 17) & 1023) * 4, ph = OFF[h + 3];
       // its place: the slot about the school's centre (in the school's frame), and a slow wander of its own
-      const ox = OFF[h] * r + Math.sin(tSec * 0.31 + ph) * 0.8 * L, oy = OFF[h + 1] * r + Math.cos(tSec * 0.27 + ph * 1.3) * 0.8 * L, oz = OFF[h + 2] * r * 0.35;
+      const ox = OFF[h] * r + Math.sin(tSec * 0.31 * wf + ph) * wan * L, oy = OFF[h + 1] * r + Math.cos(tSec * 0.27 * wf + ph * 1.3) * wan * L, oz = OFF[h + 2] * r * (loose ? 0.1 : 0.35);
       const tx = x + ox * ch - oy * sh, ty = y + ox * sh + oy * ch, tz = Math.min(zMax, Math.max(0.05, z + oz));
       const i3 = q * 3;
       if (!c.init || jump || q >= c.fresh && !c.init) { P[i3] = tx; P[i3 + 1] = ty; P[i3 + 2] = tz; V[i3] = vax; V[i3 + 1] = vay; V[i3 + 2] = 0; H[q] = c.hy; Pt[q] = 0; }
@@ -196,11 +197,17 @@ export function makeFishView() {
       if ((Y[o + 3] - cx) ** 2 + (Y[o + 4] - cy) ** 2 > near2) continue;
       const x = Y[o] + (Y[o + 3] - Y[o]) * alpha, y = Y[o + 1] + (Y[o + 4] - Y[o + 1]) * alpha, z = Y[o + 2] + (Y[o + 5] - Y[o + 2]) * alpha, sY = surfY(x, y);
       const Lc = Y[o + 6], k = Y[o + 7], nn = Y[o + 8], id = Y[o + 9], bed = Y[o + 10];
-      const L = Lc / 100 * scale, D = L * depthR[k] * 1.15, c = tint[k], m = Math.min(YOY_DRAW, Math.max(1, Math.round(nn))), r = Math.max(0.15, 6 * L) * (1 + night);
+      // how the young of each kind keep together (Keast 1980; Scott & Crossman): perch, white perch, shiners and suckers in
+      // SCHOOLS; smallmouth and bullhead fry in a tight BALL while a parent guards them; settled sunfish (past their open-water
+      // larval weeks), bass and bullheads after their parents leave, and pickerel SCATTERED — each a loose individual in the weeds
+      const kk = KEYS3[k], guarded = Y[o + 11] > 0, Lr = Lc / 100;
+      const mode = guarded ? 'ball' : kk === 'pike' || (kk === 'sunfish' && Lc >= 1.8) || ((kk === 'bass' || kk === 'catfish') && Lc >= 2.5) ? 'scatter' : 'school';
+      const L = Lr * scale, D = L * depthR[k] * 1.15, c = tint[k], m = Math.min(YOY_DRAW, Math.max(1, Math.round(nn)));
+      const r = mode === 'ball' ? Math.max(0.04, 1.5 * L * Math.cbrt(m)) : mode === 'scatter' ? Math.max(1.5, 40 * L) : Math.max(0.15, 6 * L) * (1 + night);
       // the young school's heading: the way it is going (its last step), its members swimmers like the adults'
       const yaw = Math.atan2(Y[o + 4] - Y[o + 1], Y[o + 3] - Y[o]);
       DRAW.D = D; DRAW.c = c; DRAW.k = 0.75; DRAW.bed = bed;
-      swimCrew(crewOf(yCrews, id, m, x, y, z), id + 7919, x, y, z, Number.isFinite(yaw) ? yaw : 0, L, r, Math.max(0.06, bed - 0.02), dt, DRAW);
+      swimCrew(crewOf(yCrews, id, m, x, y, z), id + 7919, x, y, z, Number.isFinite(yaw) ? yaw : 0, L, r, Math.max(0.06, bed - 0.02), dt, DRAW, mode === 'scatter' ? 1 : 0);
     }
     // (schools gone — eaten, merged, out of sight — leave their swimmers behind after a few seconds)
     if ((frame & 127) === 0) for (const map of [crews, yCrews]) for (const [key, c] of map) if (frame - c.seen > 240) map.delete(key);

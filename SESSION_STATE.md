@@ -107,9 +107,25 @@ turned instanced trees black in three r186 — the fog stays a legacy FogExp2. T
 SCHOOLS SWIM AS FISH (fish3view swimCrew): after "at ×4 they twitch… the schools should still be independent fish" — each drawn
 member of a school (and of a school of young) is now a swimmer with its own position/velocity/heading (damped follow of its slot,
 ≤ 3.5 rad/s turns, faces its motion), not a rigid pattern bolted to the agent.
-NEXT: odonate nymphs (predators of small fauna and fish larvae), redbreast + fallfish, the shore and wildlife (stage D: snow on
-the ice, the hydrograph), saves and resume. (The young pumpkinseed's "stall" was the mean of a summer-long spawning: the first
-cohort grows ~0.3 mm/day to 2.5 cm by mid-August — docs/HOT_BROOK_3D.md.) Perf idea: the fish
+YOUNG FISH GROUP BY SPECIES (fish3view; the worker's young snapshot gained a guarded flag, YOY_STRIDE 12): perch, white perch,
+shiners, suckers SCHOOL; bass and bullhead fry in a tight BALL while a parent guards them; settled sunfish (≥ 1.8 cm), bass and
+bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow wander, places not turning with the group).
+½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
+mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
+transport, foraging per step) rescaled: offered, not built.
+THE HUMAN'S REQUESTS (2026-10-16), in order:
+(1) "ADD EVERYTHING" — the missing animals: freshwater mussels (eastern elliptio; the human sees lots — filter the water,
+    glochidia on fish gills), the fish-eaters (the loon pair, great blue heron, belted kingfisher, osprey + bald eagle, otter +
+    mink), painted/snapping turtles, frogs + tadpoles, dragonfly/damselfly nymphs (predators of small fauna and fish larvae),
+    beaver/muskrat/raccoon. Research: docs/research_notes/Maine lake shores and catchment/ (shore_birds_and_mammals.md,
+    turtles_and_frogs.md), Hot Brook populations and water/invertebrates_plankton_plants.md §2 (mussels). Each a researched,
+    gated, rendered slice. STARTING WITH MUSSELS.
+(2) LATER, once the sim works right: bring back a page of the lakes' and fish data (the 2-D app had charts/panels) and
+    click-a-fish info (inspector).
+(3) Keep SESSION_STATE and the docs current at every step (auto-compaction).
+NEXT after (1): redbreast + fallfish, the shore (stage D: snow on the ice, the hydrograph), saves and resume. (The young
+pumpkinseed's "stall" was the mean of a summer-long spawning: the first cohort grows ~0.3 mm/day to 2.5 cm by mid-August —
+docs/HOT_BROOK_3D.md.) Perf idea: the fish
 view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.
 Consider moving the long w3 runs to a separate long suite (the gate is ~10 min for w3 alone).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow); do the lakes

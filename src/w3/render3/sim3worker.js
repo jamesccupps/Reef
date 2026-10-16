@@ -10,7 +10,7 @@ import { Fish3 } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
 import { PLANKTON } from '../../config.js';
 
-const FISH_STRIDE = 18, YOY_STRIDE = 11;   // (render3/fish3view.js reads the same layout)
+const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
 const PLANTS_MS = 4000;   // the weeds change slowly: their field every this often
 let env = null, F = null, run = true, speed = 1, acc = 0, envN = 0, show = 'plain', ticks = 0, plantsAt = -1e9;
@@ -60,6 +60,7 @@ function snapshot() {
   for (const q of Y) {
     if (!q.alive) continue;
     yb[o++] = q._px; yb[o++] = q._py; yb[o++] = q._pz; yb[o++] = q.x; yb[o++] = q.y; yb[o++] = q.z; yb[o++] = q.L; yb[o++] = q.k; yb[o++] = q.n; yb[o++] = q.id; yb[o++] = q.bed;
+    yb[o++] = q.gref && q.gref.alive && q.gref.nt > 0 ? 1 : 0;   // (a brood its parent still guards)
   }
   const ice = Float32Array.from(env.ice);
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
