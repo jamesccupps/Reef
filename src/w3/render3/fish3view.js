@@ -8,8 +8,9 @@ import { S3, KEYS3 } from '../fish3.js';
 
 const { attribute, positionLocal, positionGeometry, sin, time, float, max: tmax } = THREE.TSL;
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
-export const FISH_MAX = 30000;   // instances
+export const FISH_MAX = 40000;   // instances
 const MEMBERS_MAX = 160;         // fish drawn per school at most
+const YOY_DRAW = 14, YOY_NEAR = 40;   // young-of-year: fish drawn per school, and within how far of the camera (m, × the size shown)
 
 // a unit fish along +x (snout +0.5 → tail fork −0.5), unit body depth along +y, right side +z; dark back, pale belly
 function fishGeometry() {
@@ -85,7 +86,8 @@ export function makeFishView() {
   const surfY = (x, y) => { const b = GEO.bodyAt(x, y); return b === UPPER ? 0 : b === LOWER ? LOWER_DY : GEO.levelAt(x, y) - BASE; };
   // place every fish: F the sim's fish, alpha the interpolation between its last two steps, scale the size shown (1 = true),
   // night 0..1 (schools loosen), t the clock (s, for the members' wander)
-  function update(F, alpha, scale, night, t) {
+  // (cx, cy: the camera's place in the sim's frame — the young, a few centimetres long, are drawn only within YOY_NEAR × scale of it)
+  function update(F, alpha, scale, night, t, cx = 0, cy = 0) {
     n = 0;
     for (const a of F.fish) {
       if (!a.alive) continue;
@@ -104,11 +106,26 @@ export function makeFishView() {
         put(mx, sY - mz, -my, yaw + Math.sin(t * 0.8 + ph) * 0.18, pitch, L * (0.9 + 0.2 * (ph / 6.3)), D, c, 0.8 + 0.35 * (ph / 6.3), beat, ph);
       }
     }
+    // THE YOUNG-OF-YEAR: a school drawn as up to YOY_DRAW of its fish, a loose cloud about it (near the camera only)
+    const near2 = (YOY_NEAR * scale) ** 2;
+    for (const q of F.yoy) {
+      if (!q.alive || (q.x - cx) ** 2 + (q.y - cy) ** 2 > near2) continue;
+      const x = q._px + (q.x - q._px) * alpha, y = q._py + (q.y - q._py) * alpha, z = q._pz + (q.z - q._pz) * alpha, sY = surfY(x, y);
+      const L = q.L / 100 * scale, D = L * q.s.sp.depthR * 1.15, c = tint[q.k], m = Math.min(YOY_DRAW, Math.max(1, Math.round(q.n))), r = Math.max(0.15, 10 * L) * (1 + night);
+      for (let k = 0; k < m; k++) {
+        const h = ((q.id * 97 + k * 31) & 1023) * 4, ph = OFF[h + 3];
+        const mx = x + OFF[h] * r + Math.sin(t * 0.9 + ph) * 3 * L, my = y + OFF[h + 1] * r + Math.cos(t * 0.7 + ph) * 3 * L, mz = Math.min(Math.max(0.06, q.bed - 0.02), Math.max(0.04, z + OFF[h + 2] * r * 0.4));
+        put(mx, sY - mz, -my, ph, 0, L, D, c, 0.75 + 0.3 * (ph / 6.3), 14, ph);
+      }
+    }
     mesh.count = n;
     mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; swim.needsUpdate = true; side.needsUpdate = true;
     return n;
   }
   // before each sim step: remember where every fish was (the interpolation's start)
-  function remember(F) { for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; } }
+  function remember(F) {
+    for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; }
+    for (const q of F.yoy) { q._px = q.x; q._py = q.y; q._pz = q.z; }
+  }
   return { mesh, update, remember };
 }

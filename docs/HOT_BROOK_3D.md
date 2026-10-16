@@ -191,6 +191,59 @@ fish, a ~9-day algae–zooplankton cycle) and the type III response generous: th
 lack their real prey (young-of-year: slice b) and crayfish (stage 7); no birds or other shore predators yet (natural deaths are
 the 2-D sim's M_OTHER half); a dusk move is partial (a fish covers ~15 m of a night's 50 s).
 
+**Slice b (design) — reproduction, young-of-year, the brook.** From the habitat table (§9–11 of habitat3d.md) and the 2-D
+sim's young-of-year machinery (world.js `_stepFry`/`_feedFry`/`_eatFry`, config `FRY`/`BROOD`), the 2-D times ÷ TS:
+- SPAWNING HABITAT: a ripe fish (gonads ≥ GON_READY, condition ≥ K_READY, out of its cooldown) whose water nears its spawning
+  temperature goes to its spawning ground — a fourth habitat mode: pickerel to flooded margins ≤ 1 m at ice-out (6–11 °C),
+  yellow perch to brush at 0.5–2 m (7–13 °C), suckers up the brook to its riffles (≥ 10 °C; a waypoint path along the brook),
+  white perch onto 0.3–1.5-m flats (~15 °C), smallmouth to nests at 0.5–1.5 m (≥ 15 °C; a male returns within ~2 m — 20 m
+  real — of last year's nest), pumpkinseed to colonies at 0.15–1.7 m (≥ 17 °C, repeated bouts), bullheads to 0.3–1.5 m
+  (≥ 21 °C), shiners over the weeds at 0.5–2 m (≥ 20 °C, bouts). The rare species find mates by a cue (the nearest ripe fish of
+  the other sex within ~15 m); a school spawns within itself (both sexes) or with a ripe school beside it.
+- A SPAWNING: eggs = fecundity × the female's ripeness; larvae = eggs × hatch success; ONE young-of-year school at the site
+  (its genome a mutated crossover of the parents'). Nest guarders (smallmouth, pumpkinseed, bullhead males) stay on the nest
+  (BROOD: their fry held within ~1 m, a predator's reach cut by PROTECT, the male's feeding × GUARD_FEED and metabolism ×
+  GUARD_METAB) for the guarding time.
+- YOUNG-OF-YEAR SCHOOLS: brainless super-individuals (n, length, mass, age, genome) moving on the physiological clock (a
+  larva covers ~0.4 m a day, a 6-cm fingerling ~2 m): toward the richest zooplankton about them (rotifers and nauplii while
+  small — the 2-D sim's size ramps), sunfish fry in their limnetic phase over open water < 1.8 cm, then the bed's worms and
+  scuds past benthL; out of low O₂ and heat. Feeding, scramble starvation, the larval and juvenile mortality (∝ 1/length,
+  juvenile compensation by the cohort's density over the lakes, slower in cold water), heat, hypoxia, O₂ drawn from their
+  water — the 2-D sim's per school. Eaten by piscivores (a feeding bout: FRY.ATTACK × TS fish a second, gape-limited, fewer
+  in a thinned school) and their larvae by any plankton eater they fit (FRY.CATCH). Schools of a species and size meet and
+  merge (one genome, chosen ∝ n).
+- RECRUITMENT at the species' L0 (or the next spring): a school species' young become a school agent with a brain (their
+  genome); an individual species' survivors become individual agents (each a mutated sibling), up to 1.5 × the census.
+- THE BROOK IN SUMMER: a share of Upper's and Lower's pumpkinseed (a personality drawn at birth) moves into the brook's pools
+  from mid-May and stays until the autumn cooling (Lievense 1947: 654 pumpkinseed through a small inlet in 3 months; the
+  angler's pools) — a waypoint path in and out.
+- A YEAR: late April the pickerel, then the perch, then the suckers (into the brook) spawn; late May–June the white perch, the
+  smallmouth (males on nests ~4 weeks), the pumpkinseed (bouts to August), the bullheads (June–July), the shiners (June–
+  August); the larvae feed on rotifers and small zooplankton through June–July (the larval period's high mortality), the
+  young sunfish over open water; by August the fingerlings are on the bed and in the weeds (juvenile compensation), eaten
+  by bass, pickerel, perch and white perch; the bigger ones recruit by autumn (white perch ~5 cm, perch ~8), the rest next
+  spring; under the ice the young starve or freeze down slowly (cold-slowed mortality, size-selective starvation).
+
+**Built (slice b):** the design above, with two additions found in the runs. (1) SPAWNING GROUNDS: the pairing species
+(pickerel, smallmouth, pumpkinseed, bullheads, suckers on the lake's shoals) meet on a few traditional grounds per lake
+(seeded, in water of their spawning depth) — wandering, a sparse species couldn't find a mate in its two-week window (20
+pickerel/ha cruising at 0.1 m/s) — and a ripe fish's mate cue reaches ~1.5 × its species' spacing. (2) THE COMPRESSED
+CALENDAR LIMITS TRIPS: a fish swims at real speed through a one-hour year (the dusk hour is ~5 s, a spawning season a few
+minutes), so only the suckers living within ~150 m of their lake's end of the brook run up it (the rest spawn on shoals, as
+lake-spawning suckers do), only pumpkinseed within ~60 m summer in its pools (30 % of them), and a long goal trip goes at
+up to ~1.2 m/s. Founders start ripe if their spawning is still ahead of the start date. A spring (Apr 21 → late June, one
+seed): pickerel spawn first (day 12), then perch (15), suckers (32 — a third of them in the brook), white perch (35),
+smallmouth (38, nests at ~1.2 m, the males on them ~4 weeks), pumpkinseed (39, ~480 bouts), bullheads and shiners in late
+June; ~25 pumpkinseed in the brook's pools by June. test/w3.mjs +7 checks.
+KNOWN (slice b → the food web's calibration, next): the zooplankton is caught in a PREDATOR PIT — the adults (p ~0.9,
+eating benthos and zooplankton at once: their intakes add up instead of sharing foraging time) take more than its spring
+production, so its stock never builds (15–20 kg/ha, ~25 µg/L in May; 3–6 µg/L by August, against a real 45–100 and a
+clear-water phase in May–June), and every young fish that eats zooplankton starves into the autumn (pumpkinseed 0.8 cm,
+white perch 1.8, perch 2.2 in November; real 3–8 cm) — the bed-feeding young bullheads grow as they should (5–6 cm,
+recruiting). The fix, from docs/ECOLOGY_RESEARCH.md: adults share their foraging time between the bed and the open water
+(p = the better food's, not the sum), switch to the bed when zooplankton is scarce (perch > 5 cm: Wu & Culver 1992), feed at
+realistic summer rations (p 0.3–0.6), and the zooplankton gets a refuge (weeds: stage 7; darkness in coloured water: step 4b).
+
 **Known calibration problems to solve here** (the 2-D census of stage A, 3 seeds × 3–4 years, `test/diag` census, deaths,
 fryfate): total fish 130–140 kg/ha (inside the real 60–150) but the wrong mix — white perch 70–90 kg/ha (target 15–30) at a
 mean ~180 g (Maine's crowded white perch stay 25–45 g: real white perch STUNT — food competition among adults is too weak in

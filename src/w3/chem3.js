@@ -394,6 +394,9 @@ export class Chem3 {
     const v = this.zv[j]; if (v <= 0) return 0;
     return (this.zooD[j] * this.zooExposed(j, 0) + this.zooC[j] * (1 - PLANKTON.COPE_ESCAPE) * this.zooExposed(j, 1)) * v * UGL;
   }
+  // … and as a larva rates it (what it can catch: cD Daphnia, cC copepods, cR rotifers and nauplii — no migration: the small
+  // prey larvae take stay up in the lit water)
+  zooEl(j, cD, cC, cR) { const v = this.zv[j]; return v > 0 ? (this.zooD[j] * cD + this.zooC[j] * cC + this.zooR[j] * cR) * v * UGL : 0; }
   // A FISH OR A SCHOOL FEEDS on the zooplankton of its cell and the layers above and below it (environment.js zooFeed): what it
   // can catch (cD Daphnia, cC copepods, cR rotifers) × the share exposed × sight = the exposed prey, E its density (µg dry/L);
   // intake = want × E/(E + K) — type II (sig: type III, E²/(E² + K²): a fish with other food switches away from scarce

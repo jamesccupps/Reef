@@ -220,8 +220,9 @@ console.log('\n— fish 3-D: the agent core —');
       `${F.count().toFixed(0)} fish in ${F.fish.length} agents, ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`); }
   // a summer's day and night: the fish stay in the water, swim, and each species keeps to its own water
   { seed(502); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
-    const hab = (k, f) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };
-    const snap = () => ({ wpBot: hab('whiteperch', a => a.bed), sfBot: hab('sunfish', a => a.bed), bhOver: hab('catfish', a => a.bed - a.z), pkZ: hab('pike', a => a.z), ypBot: hab('perch', a => a.bed), bhSpd: hab('catfish', a => a.spd / (a.L / 100)) });
+    const hab = (k, f, ok = () => true) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k && ok(a)) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };   // (ok: which of them — the bullheads' rest is judged on the fish not breeding: spawning bullheads are active day and night)
+    const med = (k, f, ok) => { const v = F.fish.filter(a => a.alive && a.s.key === k && ok(a)).map(f).sort((p, q) => p - q); return v.length ? v[v.length >> 1] : 0; };   // (the typical fish: a few frightened ones bolt)
+    const snap = () => ({ wpBot: hab('whiteperch', a => a.bed), sfBot: hab('sunfish', a => a.bed), bhOver: hab('catfish', a => a.bed - a.z), pkZ: hab('pike', a => a.z), ypBot: hab('perch', a => a.bed), bhSpd: med('catfish', a => a.spd / (a.L / 100), a => !a.ripe && !(a.nt > 0)) });
     let wet = true, day = null, night = null, dark = 0;
     for (let i = 0; i < 1400; i++) {
       F.step(0.1); if (i % 2) e.step(0.2); if (i % 50 === 0 && !F.fish.every(inWater)) wet = false;
@@ -232,7 +233,7 @@ console.log('\n— fish 3-D: the agent core —');
     check('a summer\'s day and night: every fish stays in the water (above the bed, under the surface, never on land) and swims (mean > 5 m)', wet && moved > 5, `mean distance ${moved.toFixed(1)} m in 140 s`);
     check('by day each kind keeps to its water: white perch and yellow perch offshore (over ≥ 1 m deeper water than the pumpkinseed), bullheads on the bed, pickerel in the upper water',
       day && day.wpBot > day.sfBot + 1 && day.ypBot > day.sfBot + 1 && day.bhOver < 0.2 && day.pkZ < 1.5, day ? `bottom depth: white perch ${f2(day.wpBot)} m, yellow perch ${f2(day.ypBot)} m, pumpkinseed ${f2(day.sfBot)} m; bullheads ${f2(day.bhOver)} m over the bed; pickerel at ${f2(day.pkZ)} m` : 'no day sampled');
-    check('at dusk the white perch and yellow perch come inshore (over ≥ 0.4 m shallower water by night) and the bullheads leave their rest (swim ≥ 2× faster)', !!(day && night && night.wpBot < day.wpBot - 0.4 && night.ypBot < day.ypBot - 0.4 && night.bhSpd > 2 * day.bhSpd),
+    check('at dusk the white perch and yellow perch come inshore (over ≥ 0.4 m shallower water by night) and the bullheads not breeding leave their rest (the typical one swims ≥ 2× faster)', !!(day && night && night.wpBot < day.wpBot - 0.4 && night.ypBot < day.ypBot - 0.4 && night.bhSpd > 2 * day.bhSpd),
       day && night ? `white perch over ${f2(day.wpBot)} → ${f2(night.wpBot)} m, yellow perch ${f2(day.ypBot)} → ${f2(night.ypBot)} m; bullheads ${f2(day.bhSpd)} → ${f2(night.bhSpd)} BL/s` : 'no night sampled'); }
   // the bookkeeping: a school's zooplankton and a bottom feeder's worms leave the water's fields gram for gram; respiration
   // takes its O₂ from the fish's own water
@@ -298,6 +299,66 @@ console.log('\n— fish 3-D: the agent core —');
       !lowP.length && !gone.length && kg > 60 && kg < 170, `p ${txt.join(', ')}; biomass ${(B0 / 1000 / F.lakeHa).toFixed(0)} → ${kg.toFixed(0)} kg/ha; deaths ${all.toFixed(0)} (starved ${starve.toFixed(0)})${gone.length ? '; halved: ' + gone.join(', ') : ''}`);
     const ms = tf / steps;
     check('a fish step (~3,300 agents: senses, brains at 5 Hz, drives, movement, feeding, bioenergetics) costs ≤ 25 ms', ms < 25, `${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent)`); }
+}
+
+// ============================================================
+//  FISH 3-D, slice b — reproduction: spawning grounds and seasons, nests, the brook, young-of-year, recruitment
+// ============================================================
+console.log('\n— fish 3-D: reproduction and the young —');
+{
+  const { Env3 } = await import('../src/w3/env3.js');
+  const { Fish3, S3 } = await import('../src/w3/fish3.js');
+  const { PLANKTON } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  // A SPRING (Apr 21 → late June, the coarse grid): who spawns when and where, the nests, the brook
+  { seed(511); const e = new Env3({ col: 10, yf0: 0.14 }), F = new Fish3(e); const gd = [];
+    for (let i = 0; i < 62 * 98.6; i++) {
+      F.step(0.1); if (i % 2) e.step(0.2);
+      if (i % 50 === 0) for (const a of F.fish) if (a.nt > 0 && a.nt < a.s.guard - 2) gd.push(Math.hypot(a.x - a.nx, a.y - a.ny));
+    }
+    const st = F.stats, at = st.spawnAt, day = k => at[k].first < 0 ? Infinity : (at[k].first / 3600 - 0.14) * 365, bed = k => at[k].bed / Math.max(1, st.spawns[k]);
+    const sp6 = ['pike', 'perch', 'sucker', 'whiteperch', 'bass', 'sunfish'];
+    check('spring: pickerel, perch, suckers, white perch, smallmouth and pumpkinseed all spawn by late June — the cold-water spawners first (pickerel and perch in May, then the bass and the sunfish)',
+      sp6.every(k => st.spawns[k] > 0) && day('pike') < day('bass') && day('perch') < day('bass') && day('perch') < day('sunfish') && day('bass') <= day('sunfish') + 20,
+      'first spawning (days after Apr 21): ' + sp6.map(k => `${k} ${day(k).toFixed(0)}`).join(', ') + '; spawnings ' + sp6.map(k => st.spawns[k]).join('/'));
+    check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles',
+      bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.3 * st.spawns.sucker,
+      `mean bottom depth: perch ${f2(bed('perch'))} m, smallmouth ${f2(bed('bass'))} m, pumpkinseed ${f2(bed('sunfish'))} m; suckers ${at.sucker.brook} of ${st.spawns.sucker} in the brook`);
+    gd.sort((p, q) => p - q); const g90 = gd.length ? gd[Math.floor(gd.length * 0.9)] : Infinity;
+    check('the nest guarders (smallmouth, pumpkinseed, bullhead males) keep to their nests (90 % of the time within 1.5 m)', gd.length > 20 && g90 < 1.5, `${gd.length} samples, 90th percentile ${f2(g90)} m`);
+    let brook = 0, sun = 0; for (const a of F.fish) if (a.s.key === 'sunfish') { sun++; if (GEO.bodyAt(a.x, a.y) === BROOK) brook++; }
+    const c = F.census();
+    check('by June pumpkinseed are in the brook\'s pools (the angler\'s sunfish), and the young of the spring spawners swim in the lakes',
+      brook >= 5 && c.perch.yoyN > 0 && c.sunfish.yoyN > 0 && c.whiteperch.yoyN > 0, `${brook} of ${sun} pumpkinseed in the brook; young: ` + ['perch', 'whiteperch', 'sunfish', 'bass', 'sucker', 'pike'].map(k => `${k} ${(c[k].yoyN / 1e3).toFixed(1)}k at ${f1(c[k].yoyL || 0)} cm`).join(', ')); }
+  // THE YOUNG'S BOOKKEEPING: a school of larvae takes its zooplankton (rotifers too) from the water gram for gram
+  { seed(512); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 1; ch.zooC[j] = 1; ch.zooR[j] = 1; }
+    const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
+    const q = F._mkYoy(S3.perch.i, 20, 80, 1.0, 5000, null, null, 1, 0); q.L = 0.6; q.W = 0.002;
+    q.c = e.colAt(q.x, q.y); q.j = e.cellAt(q.x, q.y, q.z); q.jb = F.bedCell(q.c, q.bed);
+    const z0 = zooG(), r0 = ch.zooR[q.j], y0 = F.stats.food.yZoo, W0 = q.W; F._feedYoy(q, 0.4, 20);
+    const took = z0 - zooG(), ate = F.stats.food.yZoo - y0;
+    check('a school of first-feeding larvae takes its zooplankton — the rotifers and nauplii first — from the water gram for gram, and grows',
+      ate > 0 && Math.abs(took - ate) / ate < 1e-3 && ch.zooR[q.j] < r0 && q.W > W0, `${(ate * 1000).toFixed(1)} mg taken (water −${(took * 1000).toFixed(1)} mg), larva ${(W0 * 1000).toFixed(2)} → ${(q.W * 1000).toFixed(2)} mg`); }
+  // PREDATION ON THE YOUNG: a smallmouth working a school of 3-cm pumpkinseed eats a bout of them — the school loses exactly
+  // the fish eaten, the bass gets their mass
+  { seed(513); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+    const b = F.add('bass', 20, 80, 1.5, 4, 1), q = F._mkYoy(S3.sunfish.i, 20.3, 80, 1.5, 2000, null, null, 1, 0);
+    q.L = 3; q.W = 0.4; q.bdep = q.L * S3.sunfish.sp.depthR; F._yoyHash();
+    const n0 = q.n; let got = 0; for (let i = 0; i < 30; i++) { b.gut = 0; got += F._eatYoy(b, 50, 1, 0.1) * b.n; }
+    const k = n0 - q.n;
+    check('predation on the young: a smallmouth working a school of 3-cm pumpkinseed eats a bout of them — one school loses exactly the fish the bass gets',
+      k >= 3 && Math.abs(got - k * 0.4) < 1e-6 && F.stats.fry.sunfish.eaten === k, `${k} eaten in 3 s (${got.toFixed(1)} g), school ${n0} → ${q.n}`); }
+  // RECRUITMENT: grown young of a school species become a school agent with a brain (their genome); an individual species'
+  // become individuals — the fish conserved
+  { seed(514); const e = new Env3({ col: 10, yf0: 0.6 }), F = new Fish3(e, { founders: false });
+    const yp = F._mkYoy(S3.perch.i, 20, 80, 1.5, 500, F.add('perch', 20, 80, 1.5, 2, 2).g, null, 2, 0); yp.L = S3.perch.sp.L0; yp.W = 4.4; yp.genes = F.fish[0].genes; yp.age = 120;
+    const ys = F._mkYoy(S3.sunfish.i, 20.5, 80, 1.0, 40, F.fish[0].g, F.fish[0].genes, 2, 0); ys.L = S3.sunfish.sp.L0; ys.W = 1.4; ys.age = 120;
+    F.cnt.fill(0); const nA = F.fish.length; F._recruit(yp); F._recruit(ys);
+    const school = F.fish.find(a => a.s.key === 'perch' && a.n > 100), sun = F.fish.filter(a => a.s.key === 'sunfish');
+    check('recruitment: grown young perch become one school agent of all 500 with their genome; 40 young pumpkinseed become 40 individuals',
+      !!school && Math.abs(school.n - 500) < 1e-9 && school.g === yp.g && sun.length === 40 && F.fish.length === nA + 41 && !yp.alive && !ys.alive && F.stats.recruits.perch === 500,
+      `perch school of ${school ? school.n : 0} (L ${school ? f1(school.L) : '-'} cm), ${sun.length} pumpkinseed`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

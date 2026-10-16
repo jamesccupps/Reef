@@ -478,7 +478,7 @@ async function start() {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt);
     liveTick(dt); lightByDay();
-    if (LIVE.fish && S.fish) LIVE.drawn = fishView.update(LIVE.fish, Math.min(1, LIVE.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.env.sun * 4), now / 1000);
+    if (LIVE.fish && S.fish) LIVE.drawn = fishView.update(LIVE.fish, Math.min(1, LIVE.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.env.sun * 4), now / 1000, camera.position.x, -camera.position.z);
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
@@ -489,7 +489,7 @@ async function start() {
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'} · ${LIVE.fish ? Math.round(LIVE.fish.count()).toLocaleString() + ' fish (' + LIVE.fish.fish.length.toLocaleString() + ' brains)' : ''}`;
+    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'} · ${LIVE.fish ? Math.round(LIVE.fish.count()).toLocaleString() + ' fish (' + LIVE.fish.fish.length.toLocaleString() + ' brains) · ' + LIVE.fish.yoy.length.toLocaleString() + ' schools of young' : ''}`;
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });

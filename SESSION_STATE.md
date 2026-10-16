@@ -41,10 +41,21 @@ KNOWN: fish feed too well (p 0.5–0.97 vs ~0.3–0.6: the water too productive 
 algae–zooplankton cycle with O₂ swinging 6–14 mg/L — and the type III response generous) → biomass +20 %/summer month;
 piscivores lack young-of-year (slice b) and crayfish (stage 7; crayfish eaters forage the bed meanwhile); no shore predators
 yet; dusk moves partial (~15 m a night).
-NEXT: slice b — reproduction in 3-D (spawning grounds by species from habitat3d.md §9–11: nests, ribbons, the brook's riffles
-for suckers), young-of-year schools and recruitment, the brook (sunfish moving in for the summer), redbreast + fallfish; then
-stage 6 calibration (the food web's productivity — step 4b coloured water — and the planktivores' functional response) with
-3-seed censuses; a Web Worker for the sim (1× uses ~20 % of a core; 6× and 30× can't keep up on the main thread).
+SLICE B (28c05ab + this): reproduction — ripe fish go to their spawning grounds (habitat3d.md: depth bands; suckers up the
+brook's riffles; smallmouth back to last year's nest; a few traditional grounds per lake for the pairing species), mates by
+a cue scaled to the species' spacing, ONE young-of-year school per spawning (eggs × hatch), nest-guarding males (their brood
+held, protected), YOUNG-OF-YEAR schools (world.js _stepFry/_feedFry in 3-D: rotifer/nauplius→Daphnia ladder, limnetic sunfish
+fry, the bed past benthL, larval/juvenile mortality with density compensation, scramble starvation, eaten by piscivores in
+bouts and as larvae by plankton eaters, merging), RECRUITMENT (school species → a school agent; individuals → agents; ≤ 1.5 ×
+census), the BROOK (pumpkinseed within 60 m summer in its pools; routes along its path). The view draws the young near the
+camera. test/w3.mjs +7 checks (49).
+KNOWN: the PREDATOR PIT (docs/HOT_BROOK_3D.md §4 "Built (slice b)"): adults eat more zooplankton than its spring production →
+zoo 3–6 µg/L by August (real 45–100); the zooplankton-eating young starve (pumpkinseed 0.8 cm in Nov). Bed-feeding young grow.
+NEXT: STAGE 6 — the food web's calibration, from docs/ECOLOGY_RESEARCH.md's ranked list: adults share foraging time (p = the
+better food's), switch to the bed when zooplankton is scarce, summer p 0.3–0.6; a zooplankton refuge; then targets —
+zooplankton 45–100 µg/L with a May–June clear-water phase, fish taking < 30 % of its production, YOY 0.4–0.7 mm/day to 3–8 cm
+by autumn, 60–150 kg/ha — validated on ≥ 3 seeds over full years (fryfate per species). Then redbreast + fallfish, plants,
+and a Web Worker (1× uses ~35 % of the main thread with the view; 6× and 30× can't keep up there).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;

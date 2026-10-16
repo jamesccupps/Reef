@@ -18,13 +18,13 @@
 // functional response to the local density — what a fish meets over the hours one sim second stands for — and its rates
 // follow the day's light (lightDay), not the hour's: a two-minute day–night cycle stands for ~12 real days, each with its own
 // days and nights. BEHAVIOUR follows the hour: where a fish chooses to be by day and by night, how active it is.
-import { GEO, LAND, UPPER, LOWER, BODIES, cellIndex } from './geometry.js';
+import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js';
 import { CLOCK3, TS, DAY3 } from './clock3.js';
 import { A2 } from './chem3.js';
 import { SP, SPECIES } from '../species.js';
-import { rand, clamp, angDiff, randomGenes } from '../core.js';
+import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE } from '../config.js';
+import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -54,6 +54,21 @@ export const F3 = {
   ATTACK: 2.0, SCHOOL_EXP: 0.5,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6)
   BENTH_REACH: 0.35,    // m above the bed a fish feeds on it
+  // REPRODUCTION (slice b)
+  SPAWN_LEAD: 2,        // °C: a ripe fish heads for its spawning ground this far below its spawning temperature
+  SPAWN_RATE: 0.25,     // /s: on its ground, with a mate, at full spawning temperature, a fish spawns at this rate
+  MATE_R: 1.5,          // m: a mate this close (an individual species' pair)
+  MATE_CUE: 1.5,        // a ripe fish heads for the nearest ripe fish of the other sex within this × its species' spacing (6–40 m)
+  BROOK_NEAR: 60, BROOK_RUN: 150,   // m from their lake's end of the brook: the pumpkinseed that summer in it, the suckers that run up it
+  MIGRATE_V: 1.2,       // m/s: a long goal trip (> 20 m: a spawning run, last year's nest, the brook) at up to this (≤ half its sprint)
+  GOAL_W: 1.5,          // steer weight toward a goal (a spawning riffle, last year's nest, the brook's pools, back home)
+  GUARD_R: 1.0,         // m: a guardian keeps within this of its nest; its fry are held within it
+  CAP: 1.5,             // a species' fish ≥ its recruits at most this × its census (a safety: abundance is the sim's)
+  // YOUNG-OF-YEAR (the 2-D sim's FRY, its times ÷ TS)
+  YOY_TICK: 0.4,        // s between a school's feeding / physiology / mortality updates (staggered)
+  YOY_BL: 4, YOY_VMAX: 0.25,   // a young school moves at YOY_BL lengths a second (≤ YOY_VMAX m/s): it lives on the physiological clock
+  YOY_EAT_R: 0.6,       // m: a fish picks at a school of young within this (+ its own length)
+  YOY_MERGE_R: 1.5,     // m: schools of young of a species and size meet and merge within this
   MERGE_EVERY: 10,      // steps between the schools' merge/split pass
   MERGE_R: 2.5, MERGE_LR: 1.2, MERGE_MAX: 1.6, SPLIT: 2,
 };
@@ -103,6 +118,24 @@ export const S3 = {
   pike:       { school: 0, perHa: 20, cruise: 0.4, sprint: 7.5, sustain: 0.9, turn: 2.2, sense: 3.5, nonVis: 0.2, strikeR: 1.2, cohere: 0, home: 40, tPref: 25,
     hab: { day: H([0.5, 2.5], 0, 0.9, 0.2), night: H([0.5, 2.0], 0, 0.25, 0.1), winter: H([0.5, 2.5], 0, 0.6, 0.1) } },
 };
+// SPAWNING GROUNDS (habitat3d.md §9's spawn rows and §11): the bottom depth it spawns over (m) and h m over the bed; site
+// 'brook' — up the brook to its riffles; faith (m): a nester comes back within this of last year's nest (smallmouth: ~20 m
+// real); brook (pumpkinseed): the share of the fish that move into the brook's pools for the summer (Lievense 1947; the angler)
+// sites: the species' traditional spawning grounds per lake — the pairing species meet there (pickerel's marshy coves, bass
+// nesting areas, pumpkinseed colonies; a sparse species could not find mates by wandering in a two-week window)
+const SPAWN3 = {
+  minnow: { bot: [0.5, 2.0], h: 0.6 }, sunfish: { bot: [0.15, 1.7], h: 0.05, brook: 0.3, sites: 10 }, perch: { bot: [0.5, 2.0], h: 0.3 },
+  sucker: { bot: [0.2, 0.9], h: 0.05, site: 'brook', sites: 3 }, catfish: { bot: [0.3, 1.5], h: 0.02, sites: 6 }, whiteperch: { bot: [0.3, 1.5], h: 0.3 },
+  bass: { bot: [0.5, 1.5], h: 0.05, faith: 2, sites: 4 }, pike: { bot: [0.3, 1.0], h: 0.3, sites: 4 },
+};
+// THE BROOK: its path from Upper's outlet (vertex 0) to Lower (the last) — the pool below the mouth (vertices 1–2, ~1 m), the
+// riffles (3 and 6, ~0.3 m), the run between (4–5, ~0.5 m). Fish go in and out along it (Fish3._route)
+const BP = GEO.BROOK_PATH, BLAST = BP.length - 1;
+const nearestBP = (x, y) => { let b = 0, bd = 1e9; for (let k = 0; k <= BLAST; k++) { const d = Math.hypot(BP[k][0] - x, BP[k][1] - y); if (d < bd) { bd = d; b = k; } } return b; };
+// the water ≥ 1.5 m nearest each end of the brook in its lake — home for a fish born in the brook
+const lakeNear = (b, p) => { let best = null, bd = 1e9; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === b && GEO.depth[i] >= 1.5) { const [x, y] = GEO.cellCentre(i), d = Math.hypot(x - p[0], y - p[1]); if (d < bd) { bd = d; best = [x, y]; } } return best; };
+const LAKE_NEAR = { [UPPER]: lakeNear(UPPER, BP[0]), [LOWER]: lakeNear(LOWER, BP[BLAST]) };
+const poissonish = r => { const k = Math.floor(r); return k + (rand() < r - k ? 1 : 0); };
 export const KEYS3 = SPECIES.filter(k => S3[k]);
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
@@ -114,6 +147,8 @@ KEYS3.forEach((k, i) => {
   // crayfish eaters forage on the bed at any size: until the 3-D lakes have crayfish (stage 7) the bed's invertebrates stand in
   s.cray = !!sp.diet.cray;
   s.gsi = sex => sex === 0 ? sp.gsiF : sex === 1 ? sp.gsiM : (sp.gsiF + sp.gsiM) / 2;   // (a school: half and half)
+  s.spawn = SPAWN3[k]; s.guard = sp.nestGuard ? sp.nestGuard / Y2 * YEAR : 0;   // (s: how long a male keeps its nest)
+  s.mateCue = clamp(F3.MATE_CUE / Math.sqrt(s.perHa / 1e4), 6, 40);   // (m: ~1.5 × the species' spacing — the sparse ones search farther)
 });
 export const speciesIndex = k => S3[k].i;
 
@@ -189,7 +224,7 @@ class Fish {
     this.hunger = 1; this.fear = 0; this.energy = 1; this.uAvg = 0.1; this.xo = 1; this.xt = 15; this.rO2 = 0;
     this.eaten = 0; this.cons = 0; this.consMax = 0; this.thrust = 0; this.yawRate = 0; this.pitchT = 0; this.missCd = 0;
     // heritable traits (from the genes) and the brain
-    this.genes = null; this.g = null; this.lw = null; this.h = null; this.leak = null; this._dh = null; this._ate = false; this.tAvg = 0; this.esc = 0; this.o = new Float32Array(NO); this.active = HID3;
+    this.genes = null; this.g = null; this.lw = null; this.h = null; this.leak = null; this._dh = null; this._ate = false; this.tAvg = 0; this.esc = 0; this._far = false; this.o = new Float32Array(NO); this.active = HID3;
     this.spdGene = 1; this.turnMax0 = 1; this.sense0 = 1; this.bodyMul = 1; this.tempTol = 8; this.o2Crit = 0.3; this.o2Lethal = 0.1;
     this.o2Ice = 0; this.uilt = 30; this.metabMul = 1;
     this.gape = 0; this.bdep = 0; this.spdMax = 0; this.turnMax = 0; this.senseR = 0;
@@ -198,8 +233,23 @@ class Fish {
     // targets from the senses
     this.fx = 0; this.fy = 0; this.fz = 0; this.fd = -1; this.fv = 0; this.fk = 0;   // food (fk 0 none, 1 fish, 2 bed, 3 plankton)
     this.prey = null; this.threat = null; this.td = -1; this.ax = 0; this.ay = 0; this.az = 0; this.an = 0;
+    // reproduction: ripe (heading for its ground), on a nest (nt s left; the nest nx, ny, nz), last year's nest, a mate in view,
+    // its lake (1 Upper, 2 Lower) and home there, a brook-summering pumpkinseed
+    this.ripe = false; this.nt = 0; this.nx = 0; this.ny = 0; this.nz = 0; this.nestX = NaN; this.nestY = NaN; this.mate = null;
+    this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false;
     // RENDER-ONLY (render3/fish3view.js interpolates between steps from these; the sim never reads them)
     this._px = 0; this._py = 0; this._pz = 0; this._pyaw = 0; this._ppitch = 0;
+  }
+}
+
+// one school of young-of-year: n fish of one genome and one body (the 2-D sim's world.fry), brainless
+class Yoy {
+  constructor() {
+    this.id = 0; this.k = 0; this.s = null; this.alive = true; this.n = 0;
+    this.x = 0; this.y = 0; this.z = 0; this.tx = 0; this.ty = 0; this.tz = 0; this.bed = 1; this.c = -1; this.j = -1; this.jb = -1;
+    this.L = 0; this.W = 0; this.bdep = 0; this.age = 0; this.g = null; this.genes = null; this.gen = 0; this.hue = 0;
+    this.tk = 0; this.rO2 = 0; this.p = 0; this.cover = 0; this.guard = 0; this.gref = null; this.nx = 0; this.ny = 0;
+    this._px = 0; this._py = 0; this._pz = 0;   // RENDER-ONLY
   }
 }
 
@@ -209,11 +259,14 @@ export class Fish3 {
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, fish: 0, sed: 0 }, kills: 0, eggs: {}, spawns: {} };
-    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; }
-    this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4;
+    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, ySed: 0, yYoy: 0 }, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
+    this.stats.spawnAt = {};
+    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
+    this.yoy = [];      // the young-of-year schools (Yoy)
+    this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
+    this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
-    this._hashInit(); this._colStatics(); this._slopeStatics();
+    this._hashInit(); this._colStatics(); this._slopeStatics(); this._siteStatics();
     if (founders) this.found();
   }
 
@@ -253,6 +306,20 @@ export class Fish3 {
       if (g > 1e-6) { this.slopeX[i] = gx / g; this.slopeY[i] = gy / g; }
     }
   }
+  // each pairing species' spawning grounds: `sites` places per lake in water of its spawning depth, ≥ 6 m apart (seeded)
+  _siteStatics() {
+    this.sites = {};
+    for (const k of KEYS3) {
+      const sb = S3[k].spawn; if (!sb.sites) continue; const per = this.sites[k] = { [UPPER]: [], [LOWER]: [] };
+      for (const lake of [UPPER, LOWER]) {
+        const cand = []; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === lake && GEO.depth[i] >= sb.bot[0] && GEO.depth[i] <= sb.bot[1]) cand.push(i);
+        for (let t = 0; t < 200 && per[lake].length < sb.sites && cand.length; t++) {
+          const [x, y] = GEO.cellCentre(cand[(rand() * cand.length) | 0]);
+          if (per[lake].every(p => Math.hypot(p[0] - x, p[1] - y) > 6)) per[lake].push([x, y]);
+        }
+      }
+    }
+  }
   deeper(x, y, out) { const i = cellIndex(x, y); out[0] = i < 0 ? 0 : this.slopeX[i]; out[1] = i < 0 ? 0 : this.slopeY[i]; return out; }
   bedCell(c, bed) { return c < 0 ? -1 : this.bedOf[c * this.G.ML + Math.min(this.G.ML - 1, Math.max(0, Math.floor(bed / this.G.DZ)))]; }
 
@@ -284,6 +351,14 @@ export class Fish3 {
     a.L = clamp(vbLength(sp.vb, yrs) * Lmul, sp.Lhatch, sp.vb.Linf); a.K = rand(BIOE.K_START[0], BIOE.K_START[1]); a.W = a.K * stdWeight(sp.lw, a.L);
     a.mature = this._matureAt(a);
     a.mateCd = rand(0, s.mateCd);
+    const b0 = GEO.bodyAt(x, y); a.lake = b0 === LOWER ? LOWER : b0 === UPPER ? UPPER : nearestBP(x, y) <= BLAST / 2 ? UPPER : LOWER;
+    if (b0 === a.lake) { a.lhx = x; a.lhy = y; } else { [a.lhx, a.lhy] = LAKE_NEAR[a.lake]; a.hx = a.lhx; a.hy = a.lhy; }
+    // the brook's users live within reach of it (a fish swims at real speed through a compressed calendar: ~1 m/s is a long
+    // trip): pumpkinseed within BROOK_NEAR of their lake's end of the brook summer in its pools (a share of them); suckers
+    // within BROOK_RUN run up it to spawn — the rest spawn on the lake's shoals, as lake-spawning suckers do
+    const dB = Math.hypot(...(a.lake === UPPER ? BP[0] : BP[BLAST]).map((v, q) => v - (q ? a.lhy : a.lhx)));
+    a.brookie = !!s.spawn.brook && dB < F3.BROOK_NEAR && rand() < s.spawn.brook;
+    a.brookRun = s.spawn.site === 'brook' && dB < F3.BROOK_RUN;
     a.hue = rand(0, 1);
     this._settle(a);
     a.bed = Math.max(0.05, GEO.depthAt(x, y)); a.z = z === null ? this._zTarget(a, s.hab.day) : z;
@@ -323,6 +398,7 @@ export class Fish3 {
   // THE FOUNDERS: each species at the design census (fish ≥ 7.5 cm per hectare of lake) over its daytime habitat; ages from
   // its natural mortality (the age at 7.5 cm + an exponential with mean 1/M years), schools one cohort each
   found() {
+    const yf0 = this.env.yearFrac();
     for (const k of KEYS3) {
       const s = S3[k], sp = s.sp, target = Math.round(s.perHa * this.lakeHa), [lo, hi] = s.hab.day.bot;
       const cand = []; for (let i = 0; i < GEO.N; i++) { const b = GEO.body[i]; if ((b === UPPER || b === LOWER) && GEO.depth[i] >= lo && GEO.depth[i] <= hi) cand.push(i); }
@@ -333,8 +409,9 @@ export class Fish3 {
         const n = s.school ? Math.min(target - made, Math.max(4, Math.round(s.school * (0.5 + rand())))) : 1;
         const i = cand[(rand() * cand.length) | 0], [cx, cy] = GEO.cellCentre(i);
         const a = this.add(k, cx + (rand() - 0.5) * GEO.CELL, cy + (rand() - 0.5) * GEO.CELL, null, yrs, n, null, null, s.found || 1);
-        // mature fish carry gonads: ripe if their spawning is still ahead (the lake opens in mid-May)
-        if (a.mature) a.gon = s.gsi(a.sex) * a.W * (sp.spawnT[0] > 14 ? 1 : 0.15);
+        // mature fish carry gonads: ripe if this year's spawning is still ahead of the start date, spent if it is past
+        if (a.mature) a.gon = s.gsi(a.sex) * a.W * (yf0 < SPAWN.SEASON_END && seasonalTemp(yf0) < sp.spawnT[1] ? 1 : 0.15);
+        a.mateCd = 0;   // (founders are out of any cooldown — world.js)
         made += n;
       }
     }
@@ -345,6 +422,9 @@ export class Fish3 {
   _mode(a) {
     const s = a.s, H = s.hab, e = this.env, nf = 1 - smooth(0.02, 0.3, e.sun), wf = clamp((9 - a.T) / 4, 0, 1);
     const m = this._m || (this._m = { bot: [0, 0], v: 0, h: 0, act: 0 });
+    if (a.nt > 0) { m.bot[0] = 0; m.bot[1] = 99; m.v = 0; m.h = 0.05; m.act = BROOD.HOVER; return m; }   // on its nest
+    if (a.ripe) { const sb = s.spawn; m.bot[0] = sb.bot[0]; m.bot[1] = sb.bot[1]; m.v = 0; m.h = sb.h; m.act = 0.9; return m; }   // to its spawning ground
+    if (a.brookie && this._brookSeason(a) && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = 0.2; m.bot[1] = 1.3; m.v = 0; m.h = 0.25; m.act = 0.6; return m; }   // in the brook's pools
     const blend = (p, q, t) => p + (q - p) * t;
     const lo = blend(H.day.bot[0], H.night.bot[0], nf), hi = blend(H.day.bot[1], H.night.bot[1], nf);
     m.bot[0] = blend(lo, H.winter.bot[0], wf); m.bot[1] = blend(hi, H.winter.bot[1], wf);
@@ -362,15 +442,16 @@ export class Fish3 {
   step(dt) {
     const e = this.env, ch = this.chem, G = this.G, f = this.fish;
     this.time += dt; this.stepNo++; this.events.length = 0;
-    this._hashBuild();
+    this._hashBuild(); this._yoyHash();
+    this.cnt.fill(0); for (const a of f) if (a.alive) this.cnt[a.k] += a.n;
     // the lake's fish biomass (kg/ha) — the zooplankton's kairomone level (diel vertical migration)
-    let bio = 0; for (const a of f) if (a.alive) bio += a.n * a.W; ch.fishKgHa = bio / 1000 / this.lakeHa;
+    let bio = 0; for (const a of f) if (a.alive) bio += a.n * a.W; for (const q of this.yoy) if (q.alive) bio += q.n * q.W; ch.fishKgHa = bio / 1000 / this.lakeHa;
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
     const vDay0 = e.lightDay;   // (the day's noon light — rates follow the day's light)
     for (let i = 0; i < f.length; i++) {
       const a = f[i]; if (!a.alive) continue;
       const s = a.s, sp = s.sp;
-      a.age += dt; a.mateCd -= dt; if (a.missCd > 0) a.missCd -= dt;
+      a.age += dt; a.mateCd -= dt; if (a.missCd > 0) a.missCd -= dt; if (a.nt > 0) a.nt -= dt;
       if (!a.mature && this._matureAt(a)) a.mature = true;
       // surroundings
       a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y));
@@ -379,6 +460,7 @@ export class Fish3 {
       const k = Math.min(G.nL[c] - 1, Math.max(0, (a.z / G.DZ) | 0)), j = a.j = G.cell0[c] + k;
       a.jb = this.bedCell(c, a.bed);
       a.T = e.temp[j]; a.o2 = ch.o2[j];
+      a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]);
       const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
       a.vis = Math.max(s.nonVis, vision(e.light * iceCut * fade)) * clar;
       const visDay = Math.max(s.nonVis, vision(vDay0 * iceCut * fade)) * clar;
@@ -400,12 +482,14 @@ export class Fish3 {
       const ate = this._feed(a, i, cm, visDay, dt);
       a.hunger = 1 - clamp(a.gut / (sp.gut * a.W), 0, 1);
       if (ate) a._ate = true;
-      this._spawn(a, yf, e.ice[c]);
+      if (a.ripe) this._spawn(a, i, dt);
       // O₂: this step's respiration (all n fish) from the fish's water
       ch.o2[a.j] = Math.max(0, ch.o2[a.j] - a.n * a.rO2 * dt / (G.vol[a.j] * ENV.O2_MGL));
       this._hazards(a, T, dt);
     }
-    if (this.stepNo % F3.MERGE_EVERY === 0) this._schools();
+    this._stepYoy(dt, yf);
+    if (this.stepNo % F3.MERGE_EVERY === 0) { this._schools(); this._mergeYoy(); }
+    if (this.stepNo % 20 === 0 || this.yoy.some(q => !q.alive)) this.yoy = this.yoy.filter(q => q.alive);
     if (this.stepNo % 20 === 0 || f.some(a => !a.alive)) this.fish = f.filter(a => a.alive);
   }
 
@@ -491,9 +575,20 @@ export class Fish3 {
     let yr = (o[0] - a.tAvg) * tm * F3.BRAIN_TURN;
     const steer = (bx, by, w) => { yr += angDiff(Math.atan2(by, bx), a.yaw) * tm * w; };
     // habitat: back into the bottom-depth band (downhill when too shallow, uphill when too deep)
-    const [lo, hi] = m.bot, [gx, gy] = a._dh; let off = 0;
-    if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, F3.HAB_W * clamp(off, 0.2, 1)); }
-    else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, F3.HAB_W * clamp(off, 0.2, 1)); }
+    const [lo, hi] = m.bot, [gx, gy] = a._dh; let off = 0, goTrip = 0;
+    // A GOAL — its nest, a spawning riffle up the brook, last year's nest, the brook's pools for the summer, home across the
+    // brook — reached along the brook's path where it lies in another water (_route); while on the way, the band waits
+    const G0 = this._goal(a, this._g0 || (this._g0 = [0, 0, 0]));
+    if (G0) {
+      const r = this._route(a, G0[0], G0[1], this._g1 || (this._g1 = [0, 0])), d = Math.hypot(G0[0] - a.x, G0[1] - a.y);
+      if (d > G0[2]) { steer(r[0] - a.x, r[1] - a.y, (a.nt > 0 ? BROOD.GUARD_TETHER : F3.GOAL_W) * clamp(d / 3, 0.3, 1)); if (a.nt <= 0) { goTrip = clamp((d - G0[2]) / 3, 0, 1); a._far = d > 20; } }
+    }
+    if (!goTrip) {
+      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, F3.HAB_W * clamp(off, 0.2, 1)); }
+      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, F3.HAB_W * clamp(off, 0.2, 1)); }
+    }
+    // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
+    if (a.ripe && a.mate && a.mate.alive && a.mate.ripe) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1)); }
     // food: forage toward it (hungry), pursue a prey fish — less while it is on its way to its habitat (the dusk and dawn moves
     // go whatever the food), and no lingering in a patch then
     const going = clamp(off - 0.3, 0, 1), inPatch = a.fk >= 2 && a.fd < 1.5 && going <= 0;
@@ -508,10 +603,11 @@ export class Fish3 {
     // its own kind: schools keep together (their agents meet and merge); loose aggregations (sunfish colonies)
     if (a.an > 0 && s.cohere > 0) { const d = Math.hypot(a.ax - a.x, a.ay - a.y); if (d > 1) steer(a.ax - a.x, a.ay - a.y, s.cohere * clamp(a.an / 6, 0, 1)); }
     // home range
-    const hd = Math.hypot(a.hx - a.x, a.hy - a.y); if (hd > s.home) steer(a.hx - a.x, a.hy - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1));
+    const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
+    if (hd > s.home && !G0) { const r = this._route(a, a.hx, a.hy, this._g1 || (this._g1 = [0, 0])); steer(r[0] - a.x, r[1] - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1)); }
     // look ahead for shallows and shore: turn toward the deeper side
     // (only water too shallow to swim in is an obstacle — a rising bed the fish follows by its depth control)
-    const look = Math.max(0.8, a.spd * F3.LOOK), cy = Math.cos(a.yaw), sy = Math.sin(a.yaw), need = F3.ZTOP + F3.ZBOT + 0.1 + a.L / 300;
+    const look = Math.max(0.8, a.spd * F3.LOOK), cy = Math.cos(a.yaw), sy = Math.sin(a.yaw), need = F3.ZTOP + F3.ZBOT + 0.05 + a.L / 400;
     const dAhead = GEO.depthAt(a.x + cy * look, a.y + sy * look);
     if (dAhead < need || GEO.bodyAt(a.x + cy * look, a.y + sy * look) === LAND) {
       const l = a.yaw + 0.8, r = a.yaw - 0.8, dl = GEO.depthAt(a.x + Math.cos(l) * look, a.y + Math.sin(l) * look), dr = GEO.depthAt(a.x + Math.cos(r) * look, a.y + Math.sin(r) * look);
@@ -534,13 +630,15 @@ export class Fish3 {
     // a fish outside its habitat (the dusk and dawn moves, a long way from home) travels at up to its 30-min sustained speed —
     // the dusk hour is ~5 s of the sim's day, so the move is made at the pace a real fish keeps up for half an hour
     let th = s.uRoutine * m.act * (0.5 + o[2]);
-    const trip = clamp(Math.max((off - 0.2) / 0.3, hd / s.home - 1.5), 0, 1);
+    const trip = Math.max(goTrip, clamp(Math.max((off - 0.2) / 0.3, G0 ? 0 : hd / s.home - 1.5), 0, 1));
     if (trip > 0) th = Math.max(th, trip * s.sustain / s.sprint * (0.75 + 0.5 * o[2]));
+    if (goTrip > 0 && a._far) th = Math.max(th, Math.min(0.5, F3.MIGRATE_V / Math.max(1e-3, a.spdMax)));   // a long migration
     if (inPatch && a.hunger > 0.2) th *= FEED.RESIDE;
     const burst = Math.max(ACTION.STRIKE_BURST * aS, ACTION.FLEE_BURST * Math.max(aF, a.fear > 0.4 ? a.fear : 0));
     th = (th + (1 - th) * burst) * (1 - ACTION.HIDE_STILL * aH);
     a.thrust = clamp(th * coldPerf(a.T, s.sp.tempOpt, s.sp.coldPerf), 0, 1);
     if (a.esc) a.thrust = Math.max(a.thrust, 0.7);
+    if (a.nt > 0 && !a.esc && G0 && Math.hypot(G0[0] - a.x, G0[1] - a.y) < G0[2]) a.thrust = Math.min(a.thrust, s.uRoutine * BROOD.HOVER);   // hovering over its nest
   }
 
   // ---------- movement in 3-D, kept in the water ----------
@@ -576,7 +674,7 @@ export class Fish3 {
     a.uAvg += (a.spd / Math.max(1e-6, a.spdMax) - a.uAvg) * Math.min(1, dd);
     const act = routineActivity(bp, Wg, T) * Math.exp(BIOE.SWIM * Math.max(0, a.uAvg - s.uRoutine));
     const depress = 1 - 0.3 * clamp((0.9 - a.K) / (0.9 - 0.55), 0, 1);
-    const rO2 = respStd(bp, Wg, T) * a.metabMul * act * depress * Wg;   // g O₂ a day
+    const rO2 = respStd(bp, Wg, T) * a.metabMul * act * depress * (a.nt > 0 ? BROOD.GUARD_METAB : 1) * Wg;   // g O₂ a day (a guardian works harder)
     a.rO2 = rO2 / DAY;
     let net = C - F - U - S - rO2 * OXYCAL * dd;
     const ed = energyDensity(bp, Wg), gsi = s.gsi(a.sex);
@@ -592,12 +690,14 @@ export class Fish3 {
   _feed(a, i, cm, visDay, dt) {
     const s = a.s, sp = s.sp, ch = this.chem, gmax = sp.gut * a.W, n = a.n;
     const o2L = lethalO2(a.o2Lethal, a.o2Ice, a.T);
-    const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1), apt = gEff / gmax;
+    const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1) * (a.nt > 0 ? BROOD.GUARD_FEED : 1), apt = gEff / gmax;   // (a guardian hardly eats)
     const perf = coldPerf(a.T, sp.tempOpt, sp.coldPerf);
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
     const g0 = a.gut;
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0) { const g = this._strike(a, i, room, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
+    // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
+    if (room > 0 && want > got) { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
     const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray;
     if (s.benthic && small && room > 0 && want > got && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200) {
       const g = ch.takeBenth(a.jb, Math.min(room, (want - got) * BENTHOS.Q) * n) / n;
@@ -652,17 +752,302 @@ export class Fish3 {
     return g;
   }
 
-  // ---------- spawning (slice a: the eggs are laid and counted — the young-of-year come in slice b) ----------
-  _spawn(a, yf, ice) {
+  // ---------- REPRODUCTION ----------
+  // RIPE: mature, its gonads full (GON_READY of its ripe GSI), in condition, out of its cooldown, not on a nest, in the spawning
+  // season and open water, and the water over its ground (its column's surface) near its spawning temperature
+  _ripe(a, yf, ice, Ts) {
     const s = a.s, sp = s.sp;
-    if (!a.mature || a.mateCd > 0 || yf >= SPAWN.SEASON_END || ice >= 0.5) return;
-    const gsi = s.gsi(a.sex); if (a.gon < SPAWN.GON_READY * gsi * a.W || a.K < SPAWN.K_READY) return;
-    const E = SPAWN.EDGE, [lo, hi] = sp.spawnT, f = clamp((a.T - lo + E) / E, 0, 1) * clamp((hi + E - a.T) / E, 0, 1);
-    if (!(f > 0.5) || rand() > f * 0.02) return;
-    const females = a.sex === 0 ? 1 : a.sex === 2 ? a.n / 2 : 0;
-    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / (sp.gsiF * a.W), 0, 1);
-    this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++;
-    a.gon = 0; a.mateCd = s.mateCd;
+    if (!a.mature || a.mateCd > 0 || a.nt > 0 || yf >= SPAWN.SEASON_END || ice >= 0.5) return false;
+    if (a.gon < SPAWN.GON_READY * s.gsi(a.sex) * a.W || a.K < SPAWN.K_READY) return false;
+    return Ts >= sp.spawnT[0] - F3.SPAWN_LEAD && Ts <= sp.spawnT[1] + SPAWN.EDGE;
+  }
+  // its goal now (x, y, how near counts as there), or null: its nest; a ripe brook spawner's riffle; a faithful nester's
+  // last nest; a brook-summering pumpkinseed's pool; home in its lake when it is elsewhere
+  _goal(a, out) {
+    const s = a.s;
+    if (a.nt > 0) { out[0] = a.nx; out[1] = a.ny; out[2] = 0.5; return out; }
+    if (a.ripe && a.brookRun) { const v = BP[a.lake === UPPER ? 3 : 6]; out[0] = v[0]; out[1] = v[1]; out[2] = 2.5; return out; }
+    if (a.ripe && s.spawn.faith && a.nestX === a.nestX) { out[0] = a.nestX; out[1] = a.nestY; out[2] = s.spawn.faith; return out; }
+    if (a.ripe && this.sites[s.key]) {   // the nearest of its lake's spawning grounds
+      let best = null, bd = 1e9; for (const p of this.sites[s.key][a.lake]) { const d = Math.hypot(p[0] - a.x, p[1] - a.y); if (d < bd) { bd = d; best = p; } }
+      if (best) { out[0] = best[0]; out[1] = best[1]; out[2] = 3; return out; }
+    }
+    if (a.brookie && this._brookSeason(a)) { const v = BP[a.lake === UPPER ? 1 + (a.id & 1) : 4 + (a.id & 1)]; out[0] = v[0]; out[1] = v[1]; out[2] = 3; return out; }
+    if (GEO.bodyAt(a.x, a.y) !== a.lake) { out[0] = a.lhx; out[1] = a.lhy; out[2] = 4; return out; }
+    return null;
+  }
+  // the brook-summering season: from mid-May while the water is warm (> 14 °C) to the autumn cooling
+  _brookSeason(a) { const yf = this.env.yearFrac(); return yf > 0.22 && yf < 0.6 && a.T > 14; }
+  // the way to (tx, ty): straight within one water; out of a lake by its end of the brook, then along the brook's path
+  _route(a, tx, ty, out) {
+    const fb = GEO.bodyAt(a.x, a.y), tb = GEO.bodyAt(tx, ty);
+    out[0] = tx; out[1] = ty;
+    if (fb === tb || tb === LAND || fb === LAND) return out;
+    if (fb === UPPER || fb === LOWER) {
+      const v = fb === UPPER ? 0 : BLAST, w = fb === UPPER ? 1 : BLAST - 1, p = Math.hypot(BP[v][0] - a.x, BP[v][1] - a.y) > 2.5 ? BP[v] : BP[w];
+      out[0] = p[0]; out[1] = p[1]; return out;
+    }
+    const ni = nearestBP(a.x, a.y), ti = tb === UPPER ? -1 : tb === LOWER ? BLAST + 1 : nearestBP(tx, ty);
+    if (ti === ni) return out;
+    const dir = Math.sign(ti - ni); let k = ni + dir;
+    if (k >= 0 && k <= BLAST && Math.hypot(BP[k][0] - a.x, BP[k][1] - a.y) < 1.5) k += dir;
+    if (k < 0 || k > BLAST) return out;
+    out[0] = BP[k][0]; out[1] = BP[k][1]; return out;
+  }
+  // its mate: a school spawns within itself (both sexes — or with a ripe school beside it); a pairing species needs a ripe
+  // fish of the other sex within MATE_R (and heads for the nearest within MATE_CUE meanwhile — the drive)
+  _findMate(a, i, R) {
+    const f = this.fish, R2 = R * R, S = this.hStart, I = this.hItems; let best = null, bd = R2;
+    const gx0 = clamp(((a.x - R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1);
+    const gy0 = clamp(((a.y - R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1);
+    for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+      const c = gy * this.HX + gx;
+      for (let q = S[c]; q < S[c + 1]; q++) {
+        if (I[q] === i) continue; const b = f[I[q]];
+        if (!b.alive || b.k !== a.k || !b.ripe || (a.sex !== 2 && b.sex !== 2 && b.sex === a.sex)) continue;
+        const d2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2; if (d2 < bd) { bd = d2; best = b; }
+      }
+    }
+    return best;
+  }
+  // A SPAWNING: on its ground (the bottom-depth band; a brook spawner in the brook), with a mate, at a rate that peaks inside
+  // the spawning temperatures. Eggs = fecundity × the female's ripeness; larvae = eggs × hatch success → ONE young-of-year
+  // school at the site, its genome a mutated crossover of the parents'; both parents spent (gonads emptied, cooldown); a
+  // nest-guarding male takes the nest
+  _spawn(a, i, dt) {
+    const s = a.s, sp = s.sp, sb = s.spawn;
+    if ((this.stepNo + a.id) % F3.DECIDE_EVERY === 0) a.mate = a.sex === 2 ? (this._findMate(a, i, 3) || a) : this._findMate(a, i, s.mateCue);
+    const onGround = a.brookRun ? GEO.bodyAt(a.x, a.y) === BROOK : a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
+    if (!onGround || !a.mate || (a.sex === 1)) return;   // (the female, or the school, spawns)
+    const b = a.mate; if (b !== a && Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > (a.sex === 2 ? 3 : F3.MATE_R)) return;
+    const E = SPAWN.EDGE, [lo, hi] = sp.spawnT, Tq = a.T, f = clamp((Tq - lo + E) / E, 0, 1) * clamp((hi + E - Tq) / E, 0, 1);
+    if (!(f > 0) || rand() > 1 - Math.exp(-F3.SPAWN_RATE * f * dt)) return;
+    const females = a.sex === 2 ? a.n / 2 : 1;
+    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / (sp.gsiF * a.W), 0, 1), larvae = eggs * sp.sHatch;
+    this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
+    const sa = this.stats.spawnAt[s.key]; if (sa.first < 0) sa.first = this.env.time; sa.bed += a.bed; if (GEO.bodyAt(a.x, a.y) === BROOK) sa.brook++;   // (when and over what water)
+    const male = b === a ? null : b, nz = Math.max(0.05, a.bed - 0.03);
+    const q = this._mkYoy(a.k, a.x, a.y, nz, larvae, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)), Math.max(a.gen, b.gen) + 1, (a.hue + b.hue) / 2);
+    if (s.guard && male && male.n === 1) {   // the male keeps the nest; its fry stay by it while he does
+      male.nt = s.guard; male.nx = a.x; male.ny = a.y; male.nz = nz; q.guard = male.id; q.gref = male; q.nx = a.x; q.ny = a.y;
+      if (sb.faith) { male.nestX = a.x; male.nestY = a.y; }
+    }
+    a.gon = 0; a.mateCd = s.mateCd; a.ripe = false;
+    if (male) { male.gon = 0; male.mateCd = s.mateCd; male.ripe = false; }
+  }
+
+  // ============================================================ YOUNG-OF-YEAR ===========================================
+  _mkYoy(k, x, y, z, n, g, genes, gen, hue) {
+    const q = new Yoy(), s = S3[KEYS3[k]], sp = s.sp;
+    q.id = this.nextId++; q.k = k; q.s = s; q.n = n; q.x = q.tx = q._px = x; q.y = q.ty = q._py = y; q.z = q.tz = q._pz = z;
+    q.L = sp.Lhatch; q.W = stdWeight(sp.lw, q.L); q.g = g; q.genes = genes; q.gen = gen; q.hue = hue; q.tk = rand() * F3.YOY_TICK;
+    q.bdep = q.L * sp.depthR; q.bed = Math.max(0.05, GEO.depthAt(x, y));
+    this.yoy.push(q);
+    return q;
+  }
+  _yoyHash() {
+    const Y = this.yoy, n = Y.length, NH = this.HX * this.HY;
+    if (!this.yStart) { this.yStart = new Int32Array(NH + 1); this.yCur = new Int32Array(NH); this.yItems = new Int32Array(256); this.yCell = new Int32Array(256); }
+    if (this.yItems.length < n) { this.yItems = new Int32Array(n * 2); this.yCell = new Int32Array(n * 2); }
+    const S = this.yStart; S.fill(0);
+    for (let i = 0; i < n; i++) { const c = this._hc(Y[i].x, Y[i].y); this.yCell[i] = c; S[c + 1]++; }
+    for (let c = 0; c < NH; c++) S[c + 1] += S[c];
+    this.yCur.set(S.subarray(0, NH));
+    for (let i = 0; i < n; i++) this.yItems[this.yCur[this.yCell[i]]++] = i;
+    this._yoyList = Y;
+  }
+  // the nearest school of young within R of (x, y, z) that `ok` accepts (the hash of this step's start)
+  _nearYoy(x, y, z, R, ok) {
+    const Y = this._yoyList; if (!Y || !Y.length) return null;
+    const S = this.yStart, I = this.yItems, R2 = R * R; let best = null, bd = R2;
+    const gx0 = clamp(((x - R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((x + R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1);
+    const gy0 = clamp(((y - R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((y + R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1);
+    for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+      const c = gy * this.HX + gx;
+      for (let k = S[c]; k < S[c + 1]; k++) {
+        const q = Y[I[k]]; if (!q.alive) continue;
+        const d2 = (q.x - x) ** 2 + (q.y - y) ** 2 + (q.z - z) ** 2; if (d2 < bd && ok(q)) { bd = d2; best = q; }
+      }
+    }
+    this._nyd = Math.sqrt(bd);
+    return best;
+  }
+  // a fish eats from a school of young: a PISCIVORE works a school of young fish in its strike arena — a feeding bout of
+  // FRY.ATTACK × TS fish a second × its capture success (fewer from a thinned school, FRY.N_HALF), gape-limited (the size
+  // refuge); a plankton eater picks at larvae it fits (≤ ⅓ its length) at FRY.CATCH per handling slot. A school of eaters
+  // eats n times as much; a guarded brood is hard to take (BROOD.PROTECT). Returns grams per fish eaten (_preyED set)
+  _eatYoy(a, room, perf, dt) {
+    if (!this._yoyList || !this._yoyList.length) return 0;
+    const s = a.s, sp = s.sp, pisc = s.pisc && a.L >= sp.Lpisc, larv = !pisc || a.L < 3 * sp.Lpisc;
+    const R0 = F3.YOY_EAT_R + a.L / 100, Ra = pisc ? Math.max(R0, s.strikeR * 1.5) : R0;
+    const ok = q => q.guard !== a.id && ((pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L) || (larv && q.L <= FRY.LARVA_L && q.L <= a.L / 3));
+    const q = this._nearYoy(a.x, a.y, a.z, Ra, ok); if (!q) return 0;
+    const d = this._nyd, asPisc = pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L;
+    const dens = q.n / (q.n + FRY.N_HALF) * (1 - q.cover);
+    const sz = asPisc ? Math.pow(Math.max(0, 1 - q.bdep / a.gape), FEED.SIZE_SEL) : 1, close = asPisc && Ra > R0 ? clamp((Ra - d) / (Ra - R0), 0, 1) : 1;
+    const mean = (asPisc ? FRY.ATTACK * TS * sp.capture * q.s.sp.vuln * sz * dens * close * perf * dt : FRY.CATCH * TS * (dt / FEED.HANDLE) * dens * perf) * a.n;
+    let k = Math.min(Math.floor(q.n), Math.floor(room * a.n / q.W), poissonish(mean));
+    if (k < 1) return 0;
+    if (q.gref && q.gref.alive && q.gref.nt > 0 && Math.hypot(q.gref.x - q.nx, q.gref.y - q.ny) < F3.GUARD_R * 1.5 && rand() < BROOD.PROTECT) return 0;
+    q.n -= k; this.stats.fry[q.s.key].eaten += k;
+    if (q.n < 1) q.alive = false;
+    this._preyED = energyDensity(q.s.sp.bio, q.W);
+    return k * q.W / a.n;
+  }
+  // THE YOUNG-OF-YEAR SCHOOLS (world.js _stepFry, in 3-D): each moves toward its target at its own pace (it lives on the
+  // physiological clock), held near its nest while the guardian keeps it; every YOY_TICK it feeds (_feedYoy), dies by its
+  // larval and juvenile mortality, starvation, heat and hypoxia, picks its next target and, grown, recruits
+  _stepYoy(dt, yf) {
+    const Y = this.yoy; if (!Y.length) return;
+    const e = this.env, ch = this.chem, G = this.G;
+    const juvD = this._juvD || (this._juvD = new Float64Array(KEYS3.length)); juvD.fill(0);
+    for (const q of Y) if (q.alive) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
+    for (const q of Y) {
+      if (!q.alive) continue;
+      const s = q.s, sp = s.sp;
+      q.age += dt; q.tk += dt;
+      const held = q.gref && q.gref.alive && q.gref.nt > 0;
+      if (!held) { q.gref = null; q.guard = 0; }
+      // move toward the target (a guarded brood within GUARD_R of its nest)
+      let tx = q.tx, ty = q.ty; if (held) { tx = clamp(tx, q.nx - F3.GUARD_R, q.nx + F3.GUARD_R); ty = clamp(ty, q.ny - F3.GUARD_R, q.ny + F3.GUARD_R); }
+      const v = Math.min(F3.YOY_VMAX, F3.YOY_BL * q.L / 100) * dt, dx = tx - q.x, dy = ty - q.y, dz = q.tz - q.z, d = Math.hypot(dx, dy, dz);
+      if (d > 1e-3) {
+        const k = Math.min(1, v / d), nx = q.x + dx * k, ny = q.y + dy * k, bed = GEO.depthAt(nx, ny);
+        if (GEO.bodyAt(nx, ny) !== LAND && bed > 0.12) { q.x = nx; q.y = ny; q.bed = bed; } else { q.tx = q.x; q.ty = q.y; }
+        q.z = clamp(q.z + dz * k, 0.05, Math.max(0.06, q.bed - 0.02));
+      }
+      if (q.tk < F3.YOY_TICK) continue;
+      const st = q.tk; q.tk = 0;
+      const c = q.c = e.colAt(q.x, q.y); if (c < 0) { q.alive = false; continue; }
+      const j = q.j = G.cell0[c] + Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0)); q.jb = this.bedCell(c, q.bed);
+      const T = e.temp[j], o2 = ch.o2[j];
+      q.cover = F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1);
+      const hS = this._feedYoy(q, st, T);
+      ch.o2[j] = Math.max(0, ch.o2[j] - q.rO2 * st / (G.vol[j] * ENV.O2_MGL));
+      // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
+      // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
+      const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
+      const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
+        + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) / YEAR;
+      const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
+      const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
+      const h = hN + hS + hH + hO, lost = q.n * (1 - Math.exp(-h * st));
+      if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; }
+      this.chem.addSedOM(q.jb, lost * q.W);
+      q.n -= lost;
+      if (q.n < 1) { if (rand() < q.n) q.n = 1; else { q.alive = false; continue; } }
+      // NEXT TARGET: up out of low O₂, down out of heat; else the food these fish eat about them
+      this._yoyTarget(q, o2, T);
+      // RECRUITMENT: at the species' L0, or an overwintered school in spring
+      if (q.L >= sp.L0 || (q.age > FRY.OVERWINTER * YEAR && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) this._recruit(q);
+    }
+  }
+  // where a school of young goes next: the richest food of its stage about it (its column and the next ones)
+  _yoyTarget(q, o2, T) {
+    const s = q.s, sp = s.sp, d = sp.diet, G = this.G, ch = this.chem, c = q.c;
+    if (o2 < sp.o2Crit) { q.tx = q.x; q.ty = q.y; q.tz = Math.max(0.05, q.z - 1); return; }
+    if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
+    const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
+    if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂
+      let best = BENTHOS.SENSE_MIN, bc = -1;
+      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE; if (E > best) { best = E; bc = cc; } };
+      tryC(c); for (let k = 0; k < nb.length; k++) tryC(nb[k]);
+      if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
+    }
+    // zooplankton of a larva's size (rotifers and nauplii while small; the limnetic phase over open water for sunfish fry)
+    const P = PLANKTON, gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
+    const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
+    const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
+    let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
+    const tryJ = jj => { const cc = G.colOfCell[jj]; if (pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR); if (E > best) { best = E; bj = jj; } };
+    for (let k = 0; k < G.nL[c]; k++) tryJ(G.cell0[c] + k);
+    for (let k = 0; k < nb.length; k++) { const cc = nb[k]; tryJ(G.cell0[cc] + Math.min(G.nL[cc] - 1, k0)); }
+    if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 3; q.ty = G.cy[cc] + (rand() - 0.5) * 3; } q.tz = G.zMid[bj]; return; }
+    q.tx = q.x + (rand() - 0.5) * 6; q.ty = q.y + (rand() - 0.5) * 6;   // nothing about: wander
+  }
+  // a school's feeding over st at T (world.js _feedFry): young piscivores on other young, zooplankton of their size (type II in
+  // K_FRY), the bed's worms and scuds past benthL, the organic layer for the bottom-sifters; then one fish's energy budget on
+  // its share — SCRAMBLE: when what it found can't keep every fish at maintenance, the rest starve as their reserves run out.
+  // Returns the starvation hazard (/s)
+  _feedYoy(q, st, T) {
+    const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
+    const want = q.n * cmax(b, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+    let got = 0, J = 0;
+    if (d.fish && q.L >= sp.Lpisc) {   // young piscivores eat other young they can swallow
+      const r = this._nearYoy(q.x, q.y, q.z, F3.YOY_EAT_R, o => o !== q && o.L * o.s.sp.depthR <= q.L * sp.gapeR && o.L >= FEED.SCHOOL_MIN * q.L);
+      if (r) {
+        const k = Math.min(r.n, (want - got) / r.W, q.n * FRY.ATTACK * TS * sp.capture * r.s.sp.vuln * r.n / (r.n + FRY.N_HALF) * (1 - r.cover) * st);
+        if (k > 0) { r.n -= k; if (r.n < 1) r.alive = false; this.stats.fry[r.s.key].eaten += k; got += k * r.W; J += k * r.W * energyDensity(r.s.sp.bio, r.W); this.stats.food.yYoy += k * r.W; }
+      }
+    }
+    if ((d.plankton || q.L < sp.Lzoo) && want - got > 1e-12) {
+      const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
+      const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
+      const t = ch.zooFeed(q.j, gD, P.FRY_COPE, want - got, P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
+      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; this.stats.food.yZoo += g; }
+    }
+    const benthL = sp.benthL ?? FRY.BENTH_L;
+    if (q.L >= benthL && (d.larva || d.snail || d.detritus) && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
+      const g = ch.takeBenth(q.jb, want - got); if (g > 0) { got += g; J += g * PREY.BENTH_ED; this.stats.food.yBenth += g; }
+    }
+    if (q.L >= benthL && d.detritus && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
+      const g = ch.takeSedOM(q.jb, Math.min(want - got, FEED.POOR_GUT * q.n * sp.gut * q.W)); if (g > 0) { got += g; J += g * PREY.DETRITUS_ED * PREY.DETRITUS_DIG; this.stats.food.ySed += g; }
+    }
+    const p = want > 0 ? Math.min(1, got / want) : 0;
+    wasteFractions(b, T, p, WF);
+    const Wr = Math.max(q.W, FRY.R_WMIN), r = respStd(b, Wr, T) * routineActivity(b, Wr, T) * q.W, Rj = r * OXYCAL * dd;
+    const eff = (1 - WF[0]) * (1 - WF[1] - b.SDA), edF = got > 0 ? J / got : PREY.DAPH_ED;
+    const need = Rj / Math.max(1e-9, eff * edF), ed = energyDensity(b, q.W);
+    let hS = 0;
+    q.rO2 = q.n * r / DAY;
+    q.p += (p - q.p) * Math.min(1, dd);
+    if (got >= q.n * need) {
+      const C = J / q.n, F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F);
+      q.W = Math.max(1e-7, q.W + (C - F - U - S - Rj) / ed);
+      if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; }
+    } else {
+      const tStarve = 0.4 * ed / Math.max(1e-9, r * OXYCAL / q.W);
+      hS = (1 - got / Math.max(1e-12, q.n * need)) / (tStarve * DAY);
+    }
+    return hS;
+  }
+  // RECRUITMENT: a school species' young become a school agent with a brain (their genome); an individual species' survivors
+  // become individuals (siblings: fresh mutations of the school's genome) — up to F3.CAP × the species' census
+  _recruit(q) {
+    q.alive = false;
+    const s = q.s, sp = s.sp, k = s.key, room = Math.max(0, F3.CAP * s.perHa * this.lakeHa - this.cnt[q.k]);
+    const yrs = q.age / YEAR, born = [];
+    if (s.school) {
+      const n = Math.min(q.n, room); if (n < 1) return;
+      born.push(this.add(k, q.x, q.y, q.z, yrs, n, q.g, q.genes));
+    } else {
+      const n = Math.min(Math.floor(q.n + rand()), Math.floor(room));
+      for (let i = 0; i < n; i++) born.push(this.add(k, q.x + (rand() - 0.5) * 0.6, q.y + (rand() - 0.5) * 0.6, q.z, yrs, 1, i ? mutate(q.g) : q.g, i ? mutateGenes(q.genes) : q.genes));
+    }
+    for (const a of born) {
+      a.L = q.L; a.W = q.W; a.gen = q.gen; a.hue = q.hue; a.mature = false; a.gon = 0; a.mateCd = 0; this._settle(a);
+      a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y)); a.z = clamp(q.z, F3.ZTOP, Math.max(F3.ZTOP, a.bed - F3.ZBOT)); a._pz = a.z;
+      this.cnt[a.k] += a.n; this.stats.recruits[k] += a.n; this.stats.fry[k].recruited += a.n;
+    }
+  }
+  // schools of young of a species and size meet and merge (one genome, chosen ∝ n) — never a guarded brood
+  _mergeYoy() {
+    const Y = this._yoyList; if (!Y || Y.length < 2) return;
+    const S = this.yStart, I = this.yItems, R2 = F3.YOY_MERGE_R ** 2;
+    for (let i = 0; i < Y.length; i++) {
+      const a = Y[i]; if (!a.alive || a.gref) continue;
+      const hc = this._hc(a.x, a.y);
+      for (let k = S[hc]; k < S[hc + 1]; k++) {
+        const b = Y[I[k]]; if (b === a || !b.alive || b.gref || b.k !== a.k) continue;
+        if ((b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2 > R2) continue;
+        if ((a.L > b.L ? a.L / b.L : b.L / a.L) > 1.25) continue;
+        const tot = a.n + b.n, wb = b.n / tot;
+        if (rand() < wb) { a.g = b.g; a.genes = b.genes; a.gen = b.gen; a.hue = b.hue; }
+        a.W += (b.W - a.W) * wb; a.L += (b.L - a.L) * wb; a.age += (b.age - a.age) * wb; a.bdep = a.L * a.s.sp.depthR; a.n = tot;
+        b.alive = false; b.n = 0;
+        break;
+      }
+    }
   }
 
   // ---------- hazards: starvation, heat, hypoxia, other natural causes, old age ----------
@@ -725,12 +1110,13 @@ export class Fish3 {
   biomass(k) { let w = 0; for (const a of this.fish) if (a.alive && (k === undefined || a.s.key === k)) w += a.n * a.W; return w; }   // g
   census() {
     const out = {};
-    for (const k of KEYS3) out[k] = { n: 0, agents: 0, g: 0, L: 0, cons: 0, consMax: 0, mature: 0 };
+    for (const k of KEYS3) out[k] = { n: 0, agents: 0, g: 0, L: 0, cons: 0, consMax: 0, mature: 0, yoyN: 0, yoySchools: 0, yoyG: 0, yoyL: 0 };
+    for (const q of this.yoy) { if (!q.alive) continue; const r = out[q.s.key]; r.yoyN += q.n; r.yoySchools++; r.yoyG += q.n * q.W; r.yoyL += q.n * q.L; }
     for (const a of this.fish) {
       if (!a.alive) continue; const r = out[a.s.key];
       r.n += a.n; r.agents++; r.g += a.n * a.W; r.L += a.n * a.L; r.cons += a.n * a.cons; r.consMax += a.n * a.consMax; if (a.mature) r.mature += a.n;
     }
-    for (const k of KEYS3) { const r = out[k]; r.L /= Math.max(1e-9, r.n); r.p = r.cons / Math.max(1e-12, r.consMax); r.kgHa = r.g / 1000 / this.lakeHa; r.perHa = r.n / this.lakeHa; r.meanW = r.g / Math.max(1e-9, r.n); }
+    for (const k of KEYS3) { const r = out[k]; r.L /= Math.max(1e-9, r.n); r.yoyL /= Math.max(1e-9, r.yoyN); r.p = r.cons / Math.max(1e-12, r.consMax); r.kgHa = r.g / 1000 / this.lakeHa; r.perHa = r.n / this.lakeHa; r.meanW = r.g / Math.max(1e-9, r.n); }
     return out;
   }
   resetIntake() { for (const a of this.fish) { a.cons = 0; a.consMax = 0; } }
