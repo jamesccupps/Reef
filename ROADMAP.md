@@ -118,6 +118,10 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
    - **Roads and buildings.** The camp roads, the town road, the camps on Upper's east shore with their docks, and the
      fields: from public sources (OSM roads and buildings; the camps traced from NAIP), drawn on the land.
    - **The human's Google Earth images** stay the reference to check them against.
+   - **The scale (human, 2026-10-16: true-size trees "all seem a bit tall to the size of the lake … it's just supposed to be
+     realistic").** Trees are true size; the lakes are drawn at 1/10 of their real width, so every real object on the land
+     stands 10× tall against them. The only fully realistic fix is a truer-scale lake: 1/5 (4× the water cells and fish)
+     or true size (100×) — with the water model and the fish on the GPU (WebGPU compute). A later, deliberate decision.
 7. **Water levels that vary (human, 2026-10-16).** "The lake level can vary, not just by time of year but sometimes by the
    year … on a drier year the brook was real low, you could walk through parts." This needs a water balance: rain, snowmelt,
    evaporation, the inflow, the outlet's sill. The stage then rises and falls by season and year, and the brook's depth and its
