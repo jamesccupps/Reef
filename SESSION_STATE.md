@@ -113,13 +113,18 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ RESUME HERE (2026-10-16, after a compaction): (a) DONE — the MUSSELS (stage 7d) committed (gate green: 68 + the June check,
-which was restated: a 3-seed June A/B showed the mussels lower the zooplankton's June production ~30 % — they compete for its
-algae — and the fish's share of it 43–54 % → 50–58 %; "under half" was seed-fragile, now "under 65 %", the guard against the
-predator pit's 70–110 %; docs/HOT_BROOK_3D.md §5 "Built (stage 7d)"). test/w3.mjs has W3_ONLY=<sections> (env chem core young
-forage foodweb plants) for iterating on one section. (b) A background agent is writing docs/W3_REALTIME_AUDIT.md (the stage-R
-audit: every time-dependent rate classified A calendar-scaled / B compressed-clock shortcut / C step-size dependent / D
-day–night, with a cost table per fidelity rung) — read it, then start R2.
+▶ RESUME HERE (2026-10-16): the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
+(stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
+docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
+shortcuts; 24 C step-size items; 20 D day–night items; the cost per rung; the order of work §7). STAGE R IS UNDER WAY on branch
+`w3-realtime` (zoo-field stays green until it merges): R2 step 1, the COMPAT REFACTOR — the clock real (YEAR 365·86,400 s, DAY
+86,400 s, PER2D), every A7 constant at its compat value, Fish3.step(dtBio, dtMove) run at (876 s, 0.1 s) and the env at 1,752 s
+— must reproduce today's gate numbers to floating point. A research agent is writing docs/research_notes/Whole lake 3D fish
+simulation/realtime_foraging.md (reaction distances, search speeds, strikes, capture success, handling, rations — for R3).
+DECIDED (human, 2026-10-16, the audit's two questions): (R3-g) IN FAST-FORWARD THE BRAIN DECIDES PER BLOCK — each coarse block
+the fish's own network decides where to go next, how hard to forage, how much to hide, from what it senses at the block's
+scale; learning and evolution keep acting on the same brain (fast-forward somewhat slower). (R3-h) THE 1/10 SCALE: ACCEPT IT —
+real speed everywhere; trips, dusk moves and home-range crossings take 1/10 of their real time; encounter rates stay real.
 DECIDED (human, 2026-10-16): REAL TIME + FAST-FORWARD. "I want to make this a realistic simulation, with each animal actually
 thinking, learning, and behaving the way they would first, then eventually slowly evolving over time" — 1× becomes REAL TIME (a
 day is 24 h, a year a year); each animal lives the day in full detail (individual strikes, dives, prey captures, real dawn and
