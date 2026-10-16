@@ -9,13 +9,13 @@
 // The MUSSELS too (littoral3.js, stage 7d): dark shells half-buried in the bed at their real numbers, near the camera only.
 // Cosmetic scatter uses a hash (never core.rand).
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
-import { GEO, UPPER, LOWER, LAND } from '../geometry.js';
+import { GEO, UPPER, LOWER, LAND, BROOK } from '../geometry.js';
 import { FORMS3, NF3, PL3 } from '../plants3.js';
 import { waterOut } from './water3.js';
 const { attribute, positionLocal, positionGeometry, positionWorld, sin, cos, time, vec3 } = THREE.TSL;
 
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
-const PER = { EM: 5, FL: 6, SC: 3, IS: 3, DM: 3 };          // instances per 1.5-m cell at a full stand
+const PER = { EM: 5, FL: 16, SC: 3, IS: 3, DM: 3 };         // instances per 1.5-m cell at a full stand (lily pads are small: many)
 const TINT = { EM: 0.5, FL: 0.15, SC: 1, IS: 0.5, DM: 0.7 };  // how much each form's stand colours the bed seen from afar
 const COL = { EM: 0x6f8a3a, FL: 0x3f7434, SC: 0x4f6b2c, IS: 0x5f7a44, DM: 0x2c4630 };
 const SPRING = new THREE.Color(0x8fb04a), BROWN = new THREE.Color(0x7d6a38);
@@ -129,8 +129,9 @@ export function makePlantsView(W3) {
         for (let k = 0; k < n; k++) {
           const x = x0 + (hash(i, k * 7 + f) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 13 + f + 3) - 0.5) * GEO.CELL, rot = hash(i, k + 31 * f) * Math.PI * 2;
           const z = GEO.depthAt(x, y); if (!(z > 0.05)) continue;
-          if (F.key === 'FL') {   // pads float on the surface (a stand of overlapping pads, ~0.3–0.6 m across)
-            const r = 0.16 + 0.16 * hash(i, k + 5); p.set(x, sY + 0.03 + 0.004 * k, -y); s.set(r, 1, r); e.set(0, rot, 0);
+          if (F.key === 'FL') {   // pads float on the surface: water-lily 10–30 cm across, yellow pond-lily to ~40 (the human: the pads were too big)
+            if (GEO.body[i] === BROOK) continue;   // (never in the brook's running water — the plants slice will keep them out of it in the sim too)
+            const r = 0.05 + 0.1 * hash(i, k + 5); p.set(x, sY + 0.03 + 0.004 * k, -y); s.set(r, 1, r); e.set(0, rot, 0);
           } else if (F.key === 'EM') {   // reeds from the bed through the surface (0.5–1.3 m above it)
             const above = 0.5 + 0.8 * hash(i, k + 9) * (0.4 + 0.6 * cov); p.set(x, sY - z - 0.05, -y); s.set(1, z + above, 1); e.set((hash(i, k + 17) - 0.5) * 0.12, rot, (hash(i, k + 19) - 0.5) * 0.12);
           } else {   // fronds and tufts on the bed: the canopy's height by its stand (never above the surface)

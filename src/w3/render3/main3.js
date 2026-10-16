@@ -141,12 +141,12 @@ function placeGround() {   // heights (the land-height slider)
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { const y = -fp[i * 3 + 2]; fp[i * 3 + 1] = landY(farElev(i), farLevel(y)) - 0.06; }
   farMesh.geometry.attributes.position.needsUpdate = true; farMesh.geometry.computeVertexNormals();
 }
-function colourGround() {   // map colours by season (the bed by depth)
+function colourGround() {   // map colours by season (the bed by depth); a narrow stony waterline (the banks are vegetated to the water — the human's photos)
   const c = C(0), bc = band.geometry.attributes.color.array;
   for (let i = 0; i < GEO.N; i++) {
     const [x, y] = GEO.cellCentre(i);
     if (GEO.body[i] !== LAND) weedBed(i, bedColour(GEO.depth[i], c, x, y));
-    else { seasonal(GEO.CLASSES[GEO.cover[i]], c); const near = GEO.toWater[i]; if (near < 2.5) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 2.5) * 0.8); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
+    else { seasonal(GEO.CLASSES[GEO.cover[i]], c); const near = GEO.toWater[i]; if (near < 1.2) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 1.2) * 0.55); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
     bc[i * 3] = c.r; bc[i * 3 + 1] = c.g; bc[i * 3 + 2] = c.b;
   }
   band.geometry.attributes.color.needsUpdate = true;
@@ -228,14 +228,41 @@ const broadG = mergeGeo([
   new THREE.IcosahedronGeometry(0.21, 0).translate(-0.15, 0.58, -0.08), new THREE.IcosahedronGeometry(0.2, 0).translate(0.02, 0.55, 0.18),
   new THREE.IcosahedronGeometry(0.18, 0).translate(-0.04, 0.82, -0.04),
 ]);
+// TREES — TRUE SIZE BY THE WATER (decided by the human, 2026-10-16, after their photos from the brook beside the render at land
+// ×1: "the trees, at least in the 1 terrain height, are way off"). Within TRUE_D of the water a tree is its real size (white
+// pine 20–30 m, spruce and fir 12–20 m, red maple, birch and aspen 10–20 m) whatever the land height; inland it blends to the
+// land's scale by BLEND_D, so the hills still read right from above. The woods are DENSE (Maine forest closes ~85 %): a
+// CANOPY surface over the forested land (below), the shore's true-size trees at their real spacing, scattered trees standing
+// out of the canopy, and alder / sweetgale thickets at the water's edge.
+const TRUE_D = 3, BLEND_D = 18;   // m (world) from the water: 30 and 180 m real
+const nearW = d => d <= TRUE_D ? 1 : d >= BLEND_D ? 0 : (t => 1 - t * t * (3 - 2 * t))((d - TRUE_D) / (BLEND_D - TRUE_D));
+// (a tree takes the scale of the water it stands by: the lakes' shores true size; the BROOK is drawn at half its real size
+// (GEO.BROOK_SCALE), so its banks' trees are half size too — a 15-m pine by the 4-m brook stands as a 30-m one by the real 8-m
+// brook, the proportion of the human's photos)
+const treeScale = (d, ns = 1) => { const kl = kLand(); return kl + (Math.max(kl, ns) - kl) * nearW(d); };
+const BP_ = GEO.BROOK_PATH;
+const brookDist = (x, y) => { let b = 1e9; for (let k = 0; k + 1 < BP_.length; k++) { const [ax, ay] = BP_[k], [bx, by] = BP_[k + 1], vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))); b = Math.min(b, Math.hypot(x - ax - t * vx, y - ay - t * vy)); } return b; };
+const nearScaleAt = (x, y, d) => brookDist(x, y) <= d + GEO.BROOK_W / 2 + 0.75 ? GEO.BROOK_SCALE : 1;
 const TREES = { conifer: [], broad: [] };
 {
   const P = { evergreen: [0.1, 0.85], mixed: [0.1, 0.5], deciduous: [0.1, 0.18], woody_wet: [0.07, 0.65], shrub_wet: [0.012, 0.5] };   // [trees per 1.5-m cell, share conifer]
+  // within BLEND_D of the water the woods are individual trees, as many a cell as close the canopy (~85 %) at their size there
+  // at land ×1 (true-size crowns ~7 m across by the water: ~0.05 a cell; at a tenth that size inland: ~4 a cell — at higher land
+  // heights they overlap, as a forest does); trunks from 0.4 m (4 m real) of the water, their crowns leaning out over it.
+  // Beyond, the canopy surface (below) and a scattered tree in every ten cells standing out of it
+  const COVER = 0.85, CROWN = 7;
   for (let i = 0; i < GEO.N; i++) {
-    if (GEO.body[i] !== LAND || GEO.toWater[i] < 0.8) continue;
-    const p = P[GEO.CLASSES[GEO.cover[i]]]; if (!p || Math.random() > p[0]) continue;
-    const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75);
-    (Math.random() < p[1] ? TREES.conifer : TREES.broad).push({ x, y, elev: GEO.elevAt(x, y), level: GEO.levelAt(x, y), rot: rnd(0, 6.28), k: Math.random() });
+    if (GEO.body[i] !== LAND) continue;
+    const cls = GEO.CLASSES[GEO.cover[i]], p = P[cls], d = GEO.toWater[i]; if (!p || d < 0.4) continue;
+    const s1 = 0.1 + 0.9 * nearW(d), m = d < BLEND_D ? Math.min(4, COVER * GEO.CELL * GEO.CELL / (Math.PI * (CROWN * s1 / 2) ** 2)) * (cls === 'shrub_wet' ? 0.25 : cls === 'woody_wet' ? 0.7 : 1) : p[0];
+    for (let n = 0; n < m + 1; n++) {
+      if (Math.random() > m - n) break;
+      const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75), conifer = Math.random() < p[1], k = Math.random();
+      const ns = nearScaleAt(x, y, d), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
+      // (the trunk stands back from the water by ~40 % of its crown's half-width: crowns lean out over the bank, not across it)
+      if (d < 0.4 * 0.5 * h * (conifer ? 0.35 : 0.65) * Math.max(0.1, ns * nearW(d))) continue;
+      (conifer ? TREES.conifer : TREES.broad).push({ x, y, d, ns, h, elev: GEO.elevAt(x, y), level: GEO.levelAt(x, y), rot: rnd(0, 6.28), k });
+    }
   }
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) {   // the far land's forest (6-m cells), sparser
     const q = i % FAR3.NX, r = (i / FAR3.NX) | 0, cx = FAR3.X0 + (q + 0.5) * FAR3.CELL, cy = FAR3.Y0 + (r + 0.5) * FAR3.CELL;
@@ -243,12 +270,12 @@ const TREES = { conifer: [], broad: [] };
     const p = P[GEO.CLASSES[FAR_COVER[i]]]; if (!p) continue;
     for (let k = 0, m = p[0] * 16 * 0.3; k < m && Math.random() < m - k; k++) {
       const x = cx + rnd(-3, 3), y = cy + rnd(-3, 3);
-      (Math.random() < p[1] ? TREES.conifer : TREES.broad).push({ x, y, elev: farElev(i), level: farLevel(y), rot: rnd(0, 6.28), k: Math.random() });
+      (Math.random() < p[1] ? TREES.conifer : TREES.broad).push({ x, y, d: 1e9, ns: 1, elev: farElev(i), level: farLevel(y), rot: rnd(0, 6.28), k: Math.random() });
     }
   }
-  // real heights: spruce, fir, white pine 10–24 m; maple, birch, aspen, oak 9–20 m (drawn × the land's scale)
-  for (const t of TREES.conifer) t.h = 10 + Math.pow(t.k, 0.8) * 14;
-  for (const t of TREES.broad) t.h = 9 + t.k * 11;
+  // real heights: white pine (the tallest, 20–30 m), spruce and fir 12–20; maple, birch, aspen 10–20 m
+  for (const t of TREES.conifer) t.h ??= 12 + Math.pow(t.k, 0.8) * 16;
+  for (const t of TREES.broad) t.h ??= 10 + t.k * 10;
 }
 const treeMeshes = {
   conifer: new THREE.InstancedMesh(coniferG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREES.conifer.length),
@@ -259,12 +286,125 @@ function placeTrees() {
   for (const kind of ['conifer', 'broad']) {
     const mesh = treeMeshes[kind], bare = kind === 'broad' && S.season === 'winter';
     TREES[kind].forEach((t, j) => {
-      const H = t.h * kl, W = H * (kind === 'conifer' ? 0.85 : 0.95) * (0.85 + t.k * 0.3) * (bare ? 0.8 : 1);
+      // (crowns: real proportions by the water — conifers ~0.35 of their height across, hardwoods ~0.65 — broader on the
+      // land-scale trees inland so they read from afar)
+      const w = nearW(t.d), H = t.h * treeScale(t.d, t.ns), W = H * (kind === 'conifer' ? 0.85 - 0.5 * w : 0.95 - 0.3 * w) * (0.85 + t.k * 0.3) * (bare ? 0.8 : 1);
       p.set(t.x, landY(t.elev, t.level) - 0.05 * kl, -t.y); q.setFromAxisAngle(up, t.rot); mt.compose(p, q, sc.set(W, H, W)); mesh.setMatrixAt(j, mt);
     });
     mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere();
   }
+  placeCanopy(); placeShrubs();
 }
+// THE CANOPY: inland — past the shore's individual trees (BLEND_D from the water) — a surface over the forested land at its
+// stand height × the land's scale, rising crown by crown (value noise at about a crown's spacing), easing in over 6 m. Its
+// colour the stand's by season — or the aerial photo's in the photo look
+const CANOPY_H = { evergreen: 17, mixed: 18, deciduous: 18, woody_wet: 12, shrub_wet: 3 };   // m: the stands' real heights
+const canopyMat = (() => {
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 1, metalness: 0 });
+  let ph = texture(photoTex, attribute('puv', 'vec2')).rgb;
+  { const l0 = dot(ph, vec3(0.299, 0.587, 0.114)); ph = mix(vec3(l0, l0, l0), ph, 1.3).mul(0.62); }
+  m.colorNode = mix(attribute('color', 'vec3'), ph, U.photo); return m;
+})();
+// (info per vertex: [x, y, class — null: open land, undefined: water — distance to the water, elev, level])
+function canopyMesh(nx, ny, at) {
+  const n = nx * ny, g = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), col = new Float32Array(n * 3), puv = new Float32Array(n * 2), info = [];
+  for (let i = 0; i < n; i++) { const v = at(i); info.push(v); pos[i * 3] = v[0]; pos[i * 3 + 2] = -v[1]; const [u, w] = photoUV(v[0], v[1]); puv[i * 2] = u; puv[i * 2 + 1] = w; }
+  const forest = i => typeof info[i][2] === 'string', land = i => info[i][2] !== undefined;
+  const idx = []; for (let r = 0; r < ny - 1; r++) for (let q = 0; q < nx - 1; q++) {
+    const a = r * nx + q, b = a + 1, d = a + nx, e = d + 1;
+    if (!(land(a) && land(b) && land(d) && land(e)) || !(forest(a) || forest(b) || forest(d) || forest(e))) continue;
+    idx.push(a, b, d, b, e, d);
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('puv', new THREE.BufferAttribute(puv, 2)); g.setIndex(idx);
+  const mesh = new THREE.Mesh(g, canopyMat); mesh.userData.info = info; return mesh;
+}
+const canopyBand = canopyMesh(NX, NY, i => { const [x, y] = GEO.cellCentre(i), c = GEO.CLASSES[GEO.cover[i]];
+  return GEO.body[i] !== LAND ? [x, y, undefined] : [x, y, c in CANOPY_H ? c : null, GEO.toWater[i], GEO.elev[i], GEO.level[i]]; });
+const canopyFar = canopyMesh(FAR3.NX, FAR3.NY, i => { const x = FAR3.X0 + ((i % FAR3.NX) + 0.5) * FAR3.CELL, y = FAR3.Y0 + (Math.floor(i / FAR3.NX) + 0.5) * FAR3.CELL, c = GEO.CLASSES[FAR_COVER[i]];
+  if (x > X0 + FAR3.CELL && x < GEO.XMAX - FAR3.CELL && y > Y0 + FAR3.CELL && y < GEO.YMAX - FAR3.CELL) return [x, y, undefined];   // (the band draws its own)
+  return [x, y, c in CANOPY_H ? c : (c === 'water' || c === 'stream' ? undefined : null), 1e9, farElev(i), farLevel(y)]; });
+function placeCanopy() {
+  for (const mesh of [canopyBand, canopyFar]) {
+    const info = mesh.userData.info, pos = mesh.geometry.attributes.position.array;
+    for (let i = 0; i < info.length; i++) {
+      const [x, y, cls, d, elev, level] = info[i]; if (cls === undefined) { pos[i * 3 + 1] = -50; continue; }
+      const g = landY(elev, level);
+      if (cls === null) { pos[i * 3 + 1] = g - 0.05; continue; }
+      const crowns = 0.8 + 0.4 * vnoise(x * 0.9, y * 0.9) * (0.6 + 0.4 * vnoise(x * 2.3 + 5, y * 2.3 - 2));
+      const fade = Math.min(1, Math.max(0, (d - BLEND_D) / 6));
+      pos[i * 3 + 1] = g + Math.max(0, CANOPY_H[cls] * kLand() * crowns * fade - 0.05);
+    }
+    mesh.geometry.attributes.position.needsUpdate = true; mesh.geometry.computeVertexNormals(); mesh.geometry.computeBoundingSphere();
+  }
+}
+function colourCanopy() {
+  const c = C(0), cc = C(0), SHARE = { evergreen: 0.85, mixed: 0.5, deciduous: 0.18, woody_wet: 0.65, shrub_wet: 0.3 };
+  for (const mesh of [canopyBand, canopyFar]) {
+    const info = mesh.userData.info, col = mesh.geometry.attributes.color.array;
+    for (let i = 0; i < info.length; i++) {
+      const [x, y, cls] = info[i]; if (typeof cls !== 'string') continue;
+      const kind = vnoise(x * 1.7 + 3, y * 1.7 + 9) < SHARE[cls] ? 'conifer' : 'broad', cols = TREE_COLS[kind][S.season];
+      c.setHex(cols[Math.floor(hash2(x * 3.1, y * 2.7) * cols.length) % cols.length]);
+      if (cls === 'shrub_wet') c.lerp(cc.setHex(S.season === 'winter' ? 0x6a5a4a : 0x4d6a34), 0.6);
+      c.multiplyScalar(0.72 + 0.4 * vnoise(x * 2.1, y * 2.1)); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    mesh.geometry.attributes.color.needsUpdate = true;
+  }
+}
+// THE WATER'S EDGE: alder, sweetgale and leatherleaf thickets, true size (1.5–4 m), dense along every forested or wet bank
+const shrubG = mergeGeo(Array.from({ length: 11 }, (_, k) => {   // (a leafy mass: eleven lumps on a low dome, fixed pseudo-random)
+  const a = k * 2.399, r = 0.12 + 0.3 * ((k * 0.618) % 1), h = 0.25 + 0.45 * (1 - r / 0.42) * ((k * 0.381 + 0.3) % 1);
+  return new THREE.IcosahedronGeometry(0.16 + 0.1 * ((k * 0.73) % 1), 0).translate(Math.cos(a) * r, h, Math.sin(a) * r);
+}));
+const SHRUBS = [];
+{
+  const P = { evergreen: 0.45, mixed: 0.5, deciduous: 0.5, woody_wet: 0.7, shrub_wet: 0.85, emergent_wet: 0.3, shrub: 0.6, grass: 0.12 };
+  for (let i = 0; i < GEO.N; i++) {
+    if (GEO.body[i] !== LAND) continue;
+    const cls = GEO.CLASSES[GEO.cover[i]], d = GEO.toWater[i], p = P[cls];
+    if (!p || d < 0.15 || d > (cls === 'shrub_wet' || cls === 'woody_wet' ? 3.5 : 2.2)) continue;
+    for (let k = 0; k < 2; k++) {
+      if (Math.random() > p * 0.6) continue;
+      const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75);
+      SHRUBS.push({ x, y, elev: GEO.elevAt(x, y), level: GEO.levelAt(x, y), rot: rnd(0, 6.28), k: Math.random(), h: (1.2 + Math.random() * 2) * nearScaleAt(x, y, d) });
+    }
+  }
+}
+const shrubMesh = new THREE.InstancedMesh(shrubG, new THREE.MeshStandardNodeMaterial({ roughness: 0.95 }), Math.max(1, SHRUBS.length));
+function placeShrubs() {
+  const mt = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), bare = S.season === 'winter';
+  SHRUBS.forEach((t, j) => {
+    const H = t.h * (bare ? 0.75 : 1), W = t.h * (0.8 + t.k * 0.6);
+    p.set(t.x, landY(t.elev, t.level) - 0.1, -t.y); q.setFromAxisAngle(up, t.rot); mt.compose(p, q, sc.set(W, H, W)); shrubMesh.setMatrixAt(j, mt);
+  });
+  shrubMesh.count = SHRUBS.length; shrubMesh.instanceMatrix.needsUpdate = true; shrubMesh.computeBoundingSphere();
+}
+function colourShrubs() {
+  const c = C(0), cols = { spring: [0x6e9a44, 0x5d8a3a], summer: [0x3f6a2c, 0x4d7634, 0x37602a], fall: [0x9a6a2c, 0xb08436, 0x7a4a26], winter: [0x5a4a3e, 0x6a5a4c] }[S.season];
+  SHRUBS.forEach((t, j) => { shrubMesh.setColorAt(j, c.setHex(cols[Math.floor(t.k * 97) % cols.length]).multiplyScalar(0.8 + ((t.k * 7919) % 1) * 0.4)); });
+  if (shrubMesh.instanceColor) shrubMesh.instanceColor.needsUpdate = true;
+}
+// ROCKS IN THE BROOK (the human's photos, 2026-10-16: the riffle "after the pool where there is shallow type rapids" — cobbles
+// and boulders breaking the surface): on the brook's bed where it runs shallow, a few in the pool; partly buried, flattened
+const ROCKS = [];
+for (let i = 0; i < GEO.N; i++) {
+  if (GEO.body[i] !== BROOK) continue;
+  const [cx, cy] = GEO.cellCentre(i), n = GEO.depth[i] < 0.7 ? 5 : 1;
+  for (let k = 0; k < n; k++) {
+    const x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75), dd = GEO.depthAt(x, y); if (!(dd > 0.05) || GEO.bodyAt(x, y) !== BROOK) continue;
+    ROCKS.push({ x, y, dd, r: 0.08 + Math.pow(Math.random(), 2) * 0.42, sy: GEO.levelAt(x, y) - BASE, rx: rnd(0, 6.28), ry: rnd(0, 6.28), k: Math.random() });
+  }
+}
+const rockMesh = (() => {
+  const g = new THREE.DodecahedronGeometry(0.5, 0); g.setAttribute('sy', new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, ROCKS.length)), 1));
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.8, metalness: 0 }); m.outputNode = waterOut(attribute('sy', 'float').sub(positionWorld.y));
+  const mesh = new THREE.InstancedMesh(g, m, Math.max(1, ROCKS.length)), mt = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), p = new THREE.Vector3(), c = C(0);
+  ROCKS.forEach((r, j) => {
+    p.set(r.x, r.sy - r.dd + r.r * 0.3, -r.y); e.set(r.rx * 0.2, r.ry, 0); q.setFromEuler(e); mt.compose(p, q, sc.set(r.r * 2, r.r * 1.2, r.r * 1.7)); mesh.setMatrixAt(j, mt);
+    g.attributes.sy.array[j] = r.sy; mesh.setColorAt(j, c.setHex(r.k < 0.5 ? 0x4a4842 : 0x5e5446).multiplyScalar(0.75 + r.k * 0.5));
+  });
+  mesh.count = ROCKS.length; return mesh;
+})();
 function colourTrees() {
   const c = C(0);
   for (const kind of ['conifer', 'broad']) {
@@ -272,6 +412,7 @@ function colourTrees() {
     TREES[kind].forEach((t, j) => { mesh.setColorAt(j, c.setHex(cols[Math.floor(t.k * 997) % cols.length]).multiplyScalar(0.82 + ((t.k * 7919) % 1) * 0.36)); });
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   }
+  colourCanopy(); colourShrubs();
 }
 
 // ---------- sky and light ----------
@@ -322,7 +463,7 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
+clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, canopyBand, canopyFar, shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -470,7 +611,7 @@ $('t-cut').addEventListener('change', e => {
 $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; buildSection(); if (S.cut) rig.goal.target.z = -cutY(); });
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
-$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = S.trees; });
+$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = canopyBand.visible = canopyFar.visible = shrubMesh.visible = S.trees; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });

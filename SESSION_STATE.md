@@ -122,7 +122,9 @@ fetches data/lidar_dem_box.tif + lidar_dem_2m.tif + data/naip_hr/ 1-m NAIP RGB+N
 (tools/hotbrook/shallows.py: the visible-bottom band, its edge at 1.3 m = the human's "chest height where the water gets
 darker"; validated leave-one-out — no skill at 1–3 m, so used only for the fringe); env3 solveLaplace tolerance 1e-18 (the thin
 fringe stiffened the circulation solve; a uniform field drifted). Gate check: Lower's mean depth bound 2.45–2.8 (was 2.55).
-NEXT (the human's notes): trees denser + independent of the land-height slider, from lidar canopy or NAIP NIR; ROADS and
+THEN (same day): TREES TRUE SIZE BY THE WATER (the human's choice), dense canopy surface inland, shrub thickets at the edge,
+rocks in the brook's riffle, lily pads 10–30 cm and out of the brook (docs/HOT_BROOK_3D.md §6 "Built — TREES TRUE SIZE BY THE
+WATER"). NEXT (the human's notes): trees from real canopy data (lidar first returns / NAIP NIR) where they stand; ROADS and
 BUILDINGS on the land (ROADMAP agreed plan 6); water levels varying by season/year (plan 7); then (f) census/new species, (a)
 clarity.
 ▶ RESUME HERE (2026-10-16, after compacting). DONE THIS SESSION (docs/HOT_BROOK_3D.md §5 "Built — THE SEASON'S YOUNG SO FAR",
