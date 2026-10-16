@@ -16,6 +16,8 @@ gate test/w3.mjs (in npm test). DONE: stage 1 geometry (cb0f085) — src/w3/geom
 (tools/hotbrook/build_world3d.py): Upper 3.75 ha / mean 3.05 / max 5.52 m, Lower 2.79 ha / 2.67 / 3.94, brook 77 m with the
 angler's pool; 12 checks. Measured: a lean 3-D agent core runs 3,800 brains at 0.7 µs/agent (10 Hz decisions); three.js r186
 draws 20k fish in ~1.3 ms on the human's RTX 3060.
+FIRST LIGHT (7197e19): w3.html — the 1/10 world in three.js r186 (vendored, WebGPU), terrain and beds, far land to 250 m,
+~19.5k trees, water, sky, free camera + named views (fixed: an inside-out triangle winding hid the terrain and beds).
 NEXT: stage 3 — the environment in 3-D (src/w3/env3.js: 5-m columns × 0.5-m layers, per-column physics ported from
 environment.js, wind circulation from two precomputed fields, grid-scale mixing, the night siphon, under-ice exchange, weed
 damping, through-flow; closed budgets) + checks; then stage 4, the renderer's first light so the human sees the 3-D lakes.
