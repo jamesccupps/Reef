@@ -31,6 +31,7 @@ import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, 
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
+const expm = x => -Math.expm1(-x);   // 1 − e^(−x): the share a first-order process completes over a step (exact at any dt)
 
 // ============================================================ tunables ===============================================
 export const F3 = {
@@ -213,7 +214,7 @@ export function forward3(g, inp, h, o, hid, active, leak) {
 // plastic copy lw, pulled back toward the inherited g — Baldwinian (g is never written)
 const _post = new Float32Array(NO);
 export function reinforce3(lw, g, hid, h, o, reward, dt) {
-  const W2 = hid * NI + hid, dec = F3.LEARN_DECAY * dt, R = LEARN.RATE * reward, C = LEARN.CLAMP;
+  const W2 = hid * NI + hid, dec = expm(F3.LEARN_DECAY * dt), R = LEARN.RATE * reward, C = LEARN.CLAMP;
   _post[0] = o[0]; _post[1] = o[1]; for (let k = 2; k < NO; k++) _post[k] = o[k] * 2 - 1;
   for (let k = 0; k < NO; k++) {
     const pk = _post[k], b = W2 + k * hid;
@@ -726,7 +727,8 @@ export class Fish3 {
     const s = a.s, sp = s.sp, Wg = a.W, dd = dt / DAY, cm = cmax(bp, Wg, T);
     let C = 0, pNow = 0;
     if (a.gut > 0) {
-      const ev = Math.min(a.gut, Math.min(Math.max(BIOE.GER * Math.exp(BIOE.GER_T * T) * sp.gerMul, cm / sp.gut) * a.gut, cm * Wg) * dd);
+      // (gastric evacuation: proportional to the gut's contents — exact over the step — at most Cmax a day)
+      const ev = Math.min(a.gut * expm(Math.max(BIOE.GER * Math.exp(BIOE.GER_T * T) * sp.gerMul, cm / sp.gut) * dd), cm * Wg * dd);
       C = a.gutE * ev / a.gut; a.gut -= ev; a.gutE -= C; pNow = ev / Math.max(1e-12, cm * Wg * dd);
       a.cons += ev;
     }
@@ -1161,7 +1163,7 @@ export class Fish3 {
   _hazards(a, T, dt) {
     const s = a.s, sp = s.sp;
     const hS = a.K < BIOE.K_HAZARD ? -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * a.K))))) / DAY : 0;
-    const kx = Math.min(1, dt * TS / BIOE.EXPOSE_TAU); a.xo += (a.o2 - a.xo) * kx; a.xt += (T - a.xt) * kx;
+    const kx = expm(dt * TS / BIOE.EXPOSE_TAU); a.xo += (a.o2 - a.xo) * kx; a.xt += (T - a.xt) * kx;
     const hH = a.xt > a.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((a.xt - a.uilt) / BIOE.HEAT_STEEP) : 0;
     const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);
     const hO = a.xo < o2Lx ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2Lx - a.xo) / o2Lx) : 0;

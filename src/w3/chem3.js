@@ -223,7 +223,7 @@ export class Chem3 {
     const gD0 = P.G_D * dd, gC0 = P.G_C * dd, lD0 = (P.R_D + P.M_D) * dd, lC0 = (P.R_C + P.M_C) * dd, anox = P.ANOX_M * dd;
     const shorten = (((yf - SEASON.SOLSTICE) % 1) + 1) % 1 < 0.5, dorm = shorten && sun(yf).dayFrac < P.DORM_DAY;
     const dmD = P.DORM_D * dd, dmC = P.DORM_C * dd, toxAt = CYANO.TOX_THRESH * CYANO.CAP;
-    const kD = 1 - Math.min(1, CYANO.TOX_ZOO * P.DAPH_TOX * TS * dt), kC = 1 - Math.min(1, CYANO.TOX_ZOO * TS * dt), flr = Math.min(1, P.FLOOR_RATE * TS * dt);
+    const kD = Math.exp(-CYANO.TOX_ZOO * P.DAPH_TOX * TS * dt), kC = Math.exp(-CYANO.TOX_ZOO * TS * dt), flr = -Math.expm1(-P.FLOOR_RATE * TS * dt);
     const gR0 = P.G_R * dd, lR0 = (P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd, m2R = P.M2_R * dd;
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], rf = this.refAv[c];
@@ -264,13 +264,13 @@ export class Chem3 {
       // toward the column's total shared in proportion to its algae + FOOD0, volume-weighted — conservative)
       let k1 = -1; for (let k = 0; k < n && o2[j0 + k] >= P.O2_MIN; k++) k1 = k;
       if (k1 >= 1) {
-        const mx = Math.min(1, P.MIX * TS * dt), wq = this._w; let sd = 0, sc = 0, sr = 0, sw = 0;
+        const mx = -Math.expm1(-P.MIX * TS * dt), wq = this._w; let sd = 0, sc = 0, sr = 0, sw = 0;
         for (let k = 0; k <= k1; k++) { const j = j0 + k, w = this.w[j]; sd += D[j] * w; sc += Cz[j] * w; sr += Rz[j] * w; const v = (ph[j] + di[j] + P.FOOD0); wq[k] = v; sw += v * w; }
         const fd = sd / sw, fc = sc / sw, fr = sr / sw;
         for (let k = 0; k <= k1; k++) { const j = j0 + k; D[j] += (fd * wq[k] - D[j]) * mx; Cz[j] += (fc * wq[k] - Cz[j]) * mx; Rz[j] += (fr * wq[k] - Rz[j]) * mx; }
       }
       // out of anoxic water: a share swims up a layer each step
-      const av = Math.min(1, P.AVOID * TS * dt);
+      const av = -Math.expm1(-P.AVOID * TS * dt);
       for (let k = 1; k < n; k++) {
         const j = j0 + k; if (o2[j] >= P.O2_MIN) continue; const u = j - 1, f = this.w[j] / this.w[u];
         const md = D[j] * av, mc = Cz[j] * av, mr = Rz[j] * av; D[j] -= md; D[u] += md * f; Cz[j] -= mc; Cz[u] += mc * f; Rz[j] -= mr; Rz[u] += mr * f;
@@ -342,7 +342,7 @@ export class Chem3 {
         const j = j0 + k; if (!(G.bedA[j] > 0)) continue;
         const ox = Math.max(0, o2[j]), kk = SEDOM.K20 * TS * qAt(Q.som, T[j]) * (SEDOM.ANOX + (1 - SEDOM.ANOX) * ox / (ox + SEDOM.O2_HALF));
         const zb = Math.min(G.depthMax[c], (k + 1) * G.DZ), peri = SEDOM.PERI_G * TS * this.lightAt(c, zb) * qAt(Q.ph, T[j]) * dt;
-        som[j] = som[j] * Math.max(0, 1 - kk * dt) + share + peri + sub;
+        som[j] = som[j] * Math.exp(-kk * dt) + share + peri + sub;
       }
       colD[c] = 0;
     }

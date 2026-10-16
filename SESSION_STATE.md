@@ -126,6 +126,23 @@ patch_r2b.py — learning decay, gut evacuation, exposure, ice chill / bed heat 
 zooplankton's toxin / floor / round / avoid, the organic layer, the mussels' clearance), then steps 3–6 (transport sub-steps,
 real mixing times, the diel physics, the env rungs) and R3 (design draft: scratchpad r3_design_draft.md). A research agent is writing docs/research_notes/Whole lake 3D fish
 simulation/realtime_foraging.md (reaction distances, search speeds, strikes, capture success, handling, rations — for R3).
+RESEARCH IN (2026-10-16, committed 75aff98): (1) docs/research_notes/Whole lake 3D fish simulation/realtime_foraging.md — for
+R3: reaction distances (perch larvae 2.8–5 cm; pumpkinseed 20 cm on a 1.9-mm Daphnia; smallmouth 84–108 cm on fish, 40 in the
+dark; pike 1.5/1.0/0.5 m clear/brown/very brown), the sim's VISION RAMP (chem3 VIS_I0/VIS_I1 ~200 → 10,000 lx) goes blind
+40–100× too early and the daylight curve has NO TWILIGHT — dusk feeding can't emerge until both are fixed; strikes start at
+0.14–0.37 body lengths (the sim's strikeR 1.0–1.2 m is 3–8× long: detection stays at reaction distance, the gap a stalk);
+capture per strike (esocids 0.67 fathead / 0.14 bluegill; bass 0.57–0.83; perch 0.20 single vs 0.03 into a school; Daphnia
+0.76–0.96 vs copepods 0.07–0.28); vegetation cuts attacks not success; handling times; rations; Gerritsen–Strickler and the
+visual-range equations for the coarse rung; larval perch < 3 cm/s (YOY_VMAX 0.25 m/s far too fast for larvae). (2) docs/
+research_notes/Hot Brook populations and water/recent_maine_research.md — the human asked why the research is old: NO water
+measurement of either Hot Brook lake exists since the 1949 survey (DEP 2024: Category 2 "no data"; no station; no stocking
+2015–2025; no invasive plants); the nearest measured stand-in Skitacook Lake (NLA 2017: Secchi 4.2 m, colour 25 PCU, TP 7.6,
+chl 2.1, 22 °C and 8.2 mg/L O₂ top to bottom); where the sim differs: water too dark (Secchi ~3.2 vs 3.4–4.4; colour 30–60 vs
+22–27 PCU), white perch 0.70–0.80× the sim's length–weight (DEP 2011 local mercury samples), ice-out Apr 23 fits 2015–2026 but
+the 2020s ran Apr 17–18 (East Grand Lake, Danforth), Maine lakes +0.05 °C/yr since 1977 (August max +2.3 °C). Recommended:
+Secchi 3.5–4.2 m / colour 25–40, an ice-out spread (Apr 12–May 2), warm summers to 26–28 °C, white perch length–weight, the
+56-mm first-winter survival rule for young smallmouth (MDIFW plan) as an audit target. The human could open Lakes of Maine's
+MIDAS 1076 / 1072 pages (a bot check blocked the agent) for any volunteer Secchi readings.
 DECIDED (human, 2026-10-16, the audit's two questions): (R3-g) IN FAST-FORWARD THE BRAIN DECIDES PER BLOCK — each coarse block
 the fish's own network decides where to go next, how hard to forage, how much to hide, from what it senses at the block's
 scale; learning and evolution keep acting on the same brain (fast-forward somewhat slower). (R3-h) THE 1/10 SCALE: ACCEPT IT —

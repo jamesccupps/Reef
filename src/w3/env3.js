@@ -54,6 +54,7 @@ export const H3 = {
   WEATHER_DWELL_MUL: 1 / TS, // the weather's dwell times are sim seconds on the 2-D clock
 };
 const DAY = 86400;
+const expm = x => -Math.expm1(-x);   // 1 − e^(−x): the share a first-order process completes over a step (exact at any dt)
 
 const daylight = (t, dayFrac) => { const x = (t - (0.5 - dayFrac / 2)) / dayFrac; return x <= 0 || x >= 1 ? 0 : Math.sin(Math.PI * x); };
 function seasonalSun(yf) {
@@ -327,8 +328,8 @@ export class Env3 {
         // under ice: the ice chills the water touching it toward 0 °C; the BED gives off the summer's stored heat (1–4.5 W/m²,
         // Malm et al. 1997) and warms the water over it toward 4 °C — the densest water, which slides down the slopes into the
         // basin (_siphon). Thin water over a lot of bed warms fastest: the rate × the cell's bed area per volume
-        T[j0] += (0.2 - T[j0]) * clamp(H3.ICE_CHILL * TS * dt, 0, 1);
-        for (let q = 0; q < n; q++) { const j = j0 + q; if (G.bedA[j] > 0) T[j] += (4 - T[j]) * clamp(H3.BED_HEAT * TS * dt * G.bedA[j] * H3.DZ / G.vol[j], 0, 1); }
+        T[j0] += (0.2 - T[j0]) * expm(H3.ICE_CHILL * TS * dt);
+        for (let q = 0; q < n; q++) { const j = j0 + q; if (G.bedA[j] > 0) T[j] += (4 - T[j]) * expm(H3.BED_HEAT * TS * dt * G.bedA[j] * H3.DZ / G.vol[j]); }
       } else {
         // below 4 °C water grows LIGHTER as it cools, so in late autumn the cold water floats: only the wind mixes it down,
         // the surface layer chills and freezes while the deep water stays near 4 °C (the lake's inverse stratification)
@@ -337,7 +338,7 @@ export class Env3 {
         const amp = ENV.TEMP_DIURNAL * Math.min(1, skin / M * (1 - Math.exp(-M / skin)));   // the mixed layer's mean diel swing
         const target = Math.max(0.3, seasonal + wOff + amp * diurnal);
         const rate = ENV.TEMP_RELAX * TS * clamp(2.5 / M, 0.25, 4);
-        const k = clamp(rate * dt, 0, 1);
+        const k = expm(rate * dt);
         for (let q = 0; q < n; q++) if (G.zMid[j0 + q] <= M + 0.25) T[j0 + q] += (target - T[j0 + q]) * k;
       }
       // ice: forms on a column whose surface water nears freezing, then keeps growing while the season is cold (whatever the
@@ -486,7 +487,7 @@ export class Env3 {
     }
   }
   _mixVerticalAll(dt) {
-    const G = this.G, NF = this._bufNF, B = this._buf, mixM = this.mixDepth(), kMix = clamp(H3.MIX_RATE * dt, 0, 1), kStrat = clamp(H3.K_STRAT * dt, 0, 0.5);
+    const G = this.G, NF = this._bufNF, B = this._buf, mixM = this.mixDepth(), kMix = expm(H3.MIX_RATE * dt), kStrat = 0.5 * expm(2 * H3.K_STRAT * dt);
     const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] < 4, tb = this.fields.findIndex(fd => fd.a === this.temp), mean = this._acc;
     for (let col = 0; col < G.NC; col++) {
       const j0 = G.cell0[col], n = G.nL[col]; if (n < 2) continue;
@@ -580,7 +581,7 @@ export class Env3 {
   }
   // ---------- vertical mixing: the mixed layer mixes fast; below it (and under ice) layers exchange slowly ----------
   _mixVertical(dt) {
-    const G = this.G, mixM = this.mixDepth(), kMix = clamp(H3.MIX_RATE * dt, 0, 1), kStrat = clamp(H3.K_STRAT * dt, 0, 0.5);
+    const G = this.G, mixM = this.mixDepth(), kMix = expm(H3.MIX_RATE * dt), kStrat = 0.5 * expm(2 * H3.K_STRAT * dt);
     const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] < 4;
     for (const fd of this.fields) {
       const c = fd.a;

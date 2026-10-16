@@ -277,7 +277,7 @@ export class Littoral3 {
       const j = this.cells[i], N = this.mu[i]; if (!(N > 0)) continue;
       const Tj = T[j], A = G.bedA[j], q = Math.pow(2, (Tj - 20) / 10), open = Tj >= L3.MU_T;
       if (open) {
-        const vol = G.vol[j] * 1000, Vc = N * A * L3.MU_CR * q * hours, f = Math.min(0.5, Vc / vol), w = ch.w[j];
+        const vol = G.vol[j] * 1000, Vc = N * A * L3.MU_CR * q * hours, f = -Math.expm1(-Vc / vol), w = ch.w[j];   // (the share of the water cleared: exact at any step)
         this.muCleared += Vc;
         const rP = f * ch.phyto[j], rD = f * ch.diatom[j], rC = f * L3.MU_CYANO * ch.cyano[j], rR = f * L3.MU_ROT * ch.zooR[j];
         ch.phyto[j] -= rP; ch.diatom[j] -= rD; ch.cyano[j] -= rC; ch.zooR[j] -= rR;
