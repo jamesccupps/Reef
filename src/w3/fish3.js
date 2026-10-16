@@ -490,7 +490,7 @@ export class Fish3 {
       const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
       a.vis = Math.max(s.nonVis, vision(e.light * iceCut * fade)) * clar;
       const visDay = Math.max(s.nonVis, vision(vDay0 * iceCut * fade)) * clar;
-      a.cover = F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1);
+      a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0);   // (very shallow water; the weeds' stems)
       a.fear *= Math.exp(-F3.FEAR_DECAY * dt);
       // decide (senses → brain), then the innate drives, then move
       const m = this._mode(a);
@@ -975,7 +975,7 @@ export class Fish3 {
       const c = q.c = e.colAt(q.x, q.y); if (c < 0) { q.alive = false; continue; }
       const j = q.j = G.cell0[c] + Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0)); q.jb = this.bedCell(c, q.bed);
       const T = e.temp[j], o2 = ch.o2[j];
-      q.cover = F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1);
+      q.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0);
       const hS = this._feedYoy(q, st, T);
       ch.o2[j] = Math.max(0, ch.o2[j] - q.rO2 * st / (G.vol[j] * ENV.O2_MGL));
       // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with

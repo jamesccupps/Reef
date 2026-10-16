@@ -13,6 +13,7 @@ import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BEN
 import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
+import { GEO } from './geometry.js';
 
 export const V2 = WORLD.CELL_L / 1000;                 // m³: the 2-D cell the water units are "per"
 export const A2 = WORLD.SLICE_M2 / GRID.FIELD_COLS;    // m²: the 2-D column of bed the bed units are "per"
@@ -42,6 +43,16 @@ export const CHEM3 = {
   // (0.0015: the summer's dissolved P holds up 2–4×, and a year without fish keeps ~two-thirds of its P load: Larsen–Mercier
   // 0.66–0.72 — the bed's release balancing its binding and burial)
   REL_OXIC: 0.0015, REL_Q10: 2.5,
+  // COLOURED WATER (step 4b): the dissolved colour of a spruce–fir and wetland catchment (30–60 SPU) sets most of the light's
+  // attenuation (/m, added to the algae's and the stirred sediment's) — Secchi ~3 m, where the 2-D sim's water read 6–9 m
+  // (Maine report: colour, not phytoplankton, dominates a Hot Brook basin's light; stained Kd·SD ≈ 2.4–2.7 — Koenings &
+  // Edmundson 1991)
+  KD_COLOUR: 0.5,
+  // CATCHMENT ORGANIC MATTER — a brown lake's subsidy to its bed: ALLOCH g wet per m² of bed a year, half settling evenly (the
+  // inflow's and the runoff's particles, the wetland margins' detritus), half the autumn leaf fall (LEAF_YF), concentrated
+  // near the shore (e-folding LEAF_R m, world). In coloured lakes terrestrial carbon is often half or more of what the bed's
+  // animals live on (allochthony); colour shades out the bed's own algae (stage 7a)
+  ALLOCH: 800, LEAF_YF: [0.58, 0.72], LEAF_R: 15,   // (800: the low-middle of brown lakes' ~20–100 g C/m²/yr; 3 seeds: late-summer starvation halves)
 };
 
 // Q10 temperature factors from lookup tables (T −2 … 40 °C in 0.05° steps) — a step computes ~10 per cell
@@ -72,7 +83,10 @@ export class Chem3 {
     this.colBedA = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) this.colBedA[c] += G.bedA[G.cell0[c] + k];
     this.refAv = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) this.refAv[c] = clamp((G.depthMax[c] / HREF_M - PLANKTON.REF_DEPTH) / PLANKTON.REF_RAMP, 0, 1);
     this.colDecay = new Float64Array(G.NC); this._w = new Float64Array(G.ML);
-    this.plantMap = new Float32Array(n);   // weed stems per cell (from the plants, stage 6)
+    // each column's share of the leaf fall: nearer the shore more (normalised to a bed-area mean of 1)
+    this.leafW = new Float32Array(G.NC); { let s = 0, A = 0; for (let c = 0; c < G.NC; c++) { const w = Math.exp(-Math.max(0, GEO.shoreDist(G.cx[c], G.cy[c])) / CHEM3.LEAF_R); this.leafW[c] = w; s += w * this.colBedA[c]; A += this.colBedA[c]; } for (let c = 0; c < G.NC; c++) this.leafW[c] *= A / Math.max(1e-9, s); }
+    this.plantMap = new Float32Array(n);   // (the 2-D sim's weed stems per cell — unused in 3-D: plantRef)
+    this.plantRef = new Float32Array(n);   // the weeds' zooplankton refuge per cell, 0–0.8 (plants3.js: from the weed volume)
     this.zv = new Float32Array(n);         // a visual planktivore's sight in each cell by the day's light (zooVis; set each update)
     this.turbidity = TURBIDITY.BASE; this.fishKgHa = 0; this._migD = 0; this._migC = 0;
     this.meanPhyto = PHYTO.START; this.meanDiatom = DIATOM.START; this.meanCyano = CYANO.START; this.meanDOM = MICROBE.START;
@@ -96,12 +110,18 @@ export class Chem3 {
     const T = this.env.temp; for (let j = 0; j < this.G.NCELL; j++) this.o2[j] = this.sat(T[j]) * 0.95;
     this._sight();
   }
-  _sight() { const G = this.G; for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) { const j = G.cell0[c] + k; this.zv[j] = this.zooVis(c, G.zMid[j]); } }
+  _sight() {   // (zooVis per cell, its lake-wide terms hoisted: the same arithmetic)
+    const G = this.G, P = PLANKTON, e = this.env, kd = this.attenuation(), cl = this.clarity(), den = Math.log(P.VIS_I1 / P.VIS_I0), zv = this.zv;
+    for (let c = 0; c < G.NC; c++) {
+      const I0 = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]);
+      for (let k = 0, j = G.cell0[c]; k < G.nL[c]; k++, j++) { const I = I0 * Math.exp(-kd * G.zMid[j]); zv[j] = I > P.VIS_I0 ? Math.min(1, Math.log(I / P.VIS_I0) / den) * cl : 0; }
+    }
+  }
 
   // ---------- light and O₂ solubility ----------
   sat(T) { return clamp(1.0 - (T - 18) * ENV.SAT_TEMP_K, 0.5, 1.4); }   // O₂ at saturation (1 = the 18 °C reference, ×ENV.O2_MGL)
-  attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity) / HREF_M; }   // per metre
-  secchi() { return Math.LN10 / this.attenuation(); }                                            // m
+  attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity) / HREF_M + CHEM3.KD_COLOUR; }   // per metre
+  secchi() { return 2.55 / this.attenuation(); }   // m (stained water: Kd·SD ≈ 2.55)
   // the light at depth z in column c (the surface's × the ice's cut × the water's attenuation)
   lightAt(c, z) { const e = this.env; return e.light * (1 - ICE.LIGHT_CUT * e.ice[c]) * Math.exp(-this.attenuation() * z); }
 
@@ -210,7 +230,7 @@ export class Chem3 {
       for (let k = 0; k < n; k++) {
         const j = j0 + k, Tj = T[j], qD = qAt(Q.zD, Tj), qC = qAt(Q.zC, Tj), qL = qAt(Q.zL, Tj), qR = qAt(Q.zR, Tj);
         const wD = clamp((Tj - P.DAPH_T[0]) / (P.DAPH_T[1] - P.DAPH_T[0]), 0, 1) * clamp((P.DAPH_HOT[1] - Tj) / (P.DAPH_HOT[1] - P.DAPH_HOT[0]), 0, 1);
-        const A = ph[j] + di[j], zd = D[j], zc = Cz[j], zr = Rz[j], lit = P.LIT_FOOD * Math.min(1, this.plantMap[j]);
+        const A = ph[j] + di[j], zd = D[j], zc = Cz[j], zr = Rz[j], lit = P.LIT_FOOD * Math.min(1, this.plantRef[j] / 0.8);   // (periphyton in the weeds)
         const cyn = Math.max(0, 1 - P.DAPH_CYANO * cyf[j] / CYANO.CAP);
         const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + P.K_C) * (1 - costC * rf) * qC;
         this.zooProd += (pd + pc) * this.w[j];
@@ -314,13 +334,15 @@ export class Chem3 {
   // ---------- the bed's organic layer: the dying algae settle into it, bacteria decompose it; benthic algae on a lit bed ----------
   _sedimentOM(dt) {
     const G = this.G, e = this.env, T = e.temp, som = this.sedOM, o2 = this.o2, colD = this.colDecay;
+    const yf = e.yearFrac(), L = CHEM3.LEAF_YF, leaf = yf >= L[0] && yf < L[1] ? 1 / (L[1] - L[0]) : 0, al = CHEM3.ALLOCH * A2 * dt / CLOCK3.YEAR_LEN;
     for (let c = 0; c < G.NC; c++) {
+      const sub = al * (0.5 + 0.5 * leaf * this.leafW[c]);   // (the catchment's organic matter, per 2-D column of bed)
       const j0 = G.cell0[c], n = G.nL[c], share = colD[c] > 0 && this.colBedA[c] > 0 ? SEDOM.SINK * SEDOM.PP_G * colD[c] * A2 / this.colBedA[c] : 0;
       for (let k = 0; k < n; k++) {
         const j = j0 + k; if (!(G.bedA[j] > 0)) continue;
         const ox = Math.max(0, o2[j]), kk = SEDOM.K20 * TS * qAt(Q.som, T[j]) * (SEDOM.ANOX + (1 - SEDOM.ANOX) * ox / (ox + SEDOM.O2_HALF));
         const zb = Math.min(G.depthMax[c], (k + 1) * G.DZ), peri = SEDOM.PERI_G * TS * this.lightAt(c, zb) * qAt(Q.ph, T[j]) * dt;
-        som[j] = som[j] * Math.max(0, 1 - kk * dt) + share + peri;
+        som[j] = som[j] * Math.max(0, 1 - kk * dt) + share + peri + sub;
       }
       colD[c] = 0;
     }
@@ -374,10 +396,12 @@ export class Chem3 {
   inventoryP() {
     let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.phos[j] + (this.phyto[j] + this.diatom[j]) * PHYTO.P_USE + this.cyano[j] * CYANO.P_USE + this.dom[j] * NUTRIENT.ORGANIC_P) * this.w[j];
     for (const j of this.bedCells) s += this.sedP[j] * this.a[j];
+    if (this.env.plants) s += this.env.plants.inventoryP();
     return s;
   }
   inventoryN() {
     let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.nh4[j] + this.no3[j] + (this.phyto[j] + this.diatom[j]) * PHYTO.N_USE + this.cyano[j] * CYANO.N_USE + this.dom[j] * (1 - NUTRIENT.ORGANIC_P)) * this.w[j];
+    if (this.env.plants) s += this.env.plants.inventoryN();
     return s;
   }
   // O₂ in mg/L at a cell
@@ -395,7 +419,7 @@ export class Chem3 {
   // to hide in meet fish only at twilight; dense weeds hide some (environment.js zooExposed)
   zooExposed(j, kind, dvm = true) {
     const P = PLANKTON, m = dvm ? (kind ? this._migC : this._migD) : 0;
-    return (1 - m * this.refAv[this.G.colOfCell[j]] * (1 - P.TWILIGHT)) * (1 - P.WEED_REF * Math.min(1, this.plantMap[j]));
+    return (1 - m * this.refAv[this.G.colOfCell[j]] * (1 - P.TWILIGHT)) * (1 - this.plantRef[j]);
   }
   // the exposed zooplankton (µg dry/L) an adult planktivore rates at cell j — the fish's plankton sense
   zooE(j) {
@@ -423,7 +447,7 @@ export class Chem3 {
     for (let i = 0; i < nL; i++) {
       const q = L[i], w = this.w[q], v = this.zv[q]; sw += w; if (v <= 0) continue;
       sD += this.zooD[q] * cD * this.zooExposed(q, 0, dvm) * w * v; sC += this.zooC[q] * cC * this.zooExposed(q, 1, dvm) * w * v;
-      if (cR > 0) sR += this.zooR[q] * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * w * v;
+      if (cR > 0) sR += this.zooR[q] * cR * (1 - this.plantRef[q]) * w * v;
     }
     const S = sD + sC + sR; if (!(S > 1e-12)) return out;
     const E = S / sw * UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);   // (E: the mean seen density, µg dry/L)
@@ -433,7 +457,7 @@ export class Chem3 {
       const q = L[i], v = this.zv[q]; if (v <= 0) continue;
       if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm) * v;
       if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm) * v;
-      if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * v;
+      if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - this.plantRef[q]) * v;
     }
     out[0] = tD; out[1] = tC; out[2] = tR;
     return out;

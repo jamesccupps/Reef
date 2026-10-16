@@ -3,7 +3,8 @@
 // reply — and the worker advances the water and the fish by dt × speed (the fish at 10 steps a sim second, the water every
 // second step, as the gate runs them) within a time budget, then replies with a snapshot: the clock and the weather, the ice
 // per column, every fish with where it was a step before (the view interpolates), the schools of young, and the field the
-// cut-away shows. When the sim can't keep up (the higher speeds on a slow machine) it runs slower than asked.
+// cut-away shows. Every few seconds (and after a season jump) it also sends the weeds: the shoots per growth form per bed cell
+// (render3/plants3view.js). When the sim can't keep up (the higher speeds on a slow machine) it runs slower than asked.
 import { Env3 } from '../env3.js';
 import { Fish3 } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
@@ -11,7 +12,8 @@ import { PLANKTON } from '../../config.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 11;   // (render3/fish3view.js reads the same layout)
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
-let env = null, F = null, run = true, speed = 1, acc = 0, envN = 0, show = 'plain', ticks = 0;
+const PLANTS_MS = 4000;   // the weeds change slowly: their field every this often
+let env = null, F = null, run = true, speed = 1, acc = 0, envN = 0, show = 'plain', ticks = 0, plantsAt = -1e9;
 
 function remember() {
   for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; }
@@ -34,6 +36,12 @@ function fieldOf(name) {
   else if (name === 'algae') for (let j = 0; j < n; j++) out[j] = c.phyto[j] + c.diatom[j] + c.cyano[j];
   else if (name === 'zoo') for (let j = 0; j < n; j++) out[j] = (c.zooD[j] + c.zooC[j]) * PLANKTON.UGL;
   return out;
+}
+function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed cells in chem3.bedCells order
+  const P = env.plants; if (!P) return;
+  const nb = P.cells.length, out = new Float32Array(P.Bs.length * nb);
+  for (let f = 0; f < P.Bs.length; f++) out.set(P.Bs[f], f * nb);
+  postMessage({ type: 'plants', shoots: out, yf: env.yearFrac() }, [out.buffer]); plantsAt = performance.now();
 }
 function snapshot() {
   const fs = F.fish, Y = F.yoy;
@@ -66,10 +74,10 @@ onmessage = ev => {
   if (m.type === 'init') {
     env = new Env3(); F = new Fish3(env); remember();
     postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL });
-    snapshot();
-  } else if (m.type === 'tick') { ticks++; advance(m.dt); snapshot(); }
+    sendPlants(); snapshot();
+  } else if (m.type === 'tick') { ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot(); }
   else if (m.type === 'run') run = !!m.run;
   else if (m.type === 'speed') speed = +m.speed || 1;
   else if (m.type === 'show') show = m.show;
-  else if (m.type === 'season') { env.primeSeason(Math.floor(env.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + m.yf * CLOCK3.YEAR_LEN); remember(); }
+  else if (m.type === 'season') { env.primeSeason(Math.floor(env.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + m.yf * CLOCK3.YEAR_LEN); remember(); sendPlants(); }
 };

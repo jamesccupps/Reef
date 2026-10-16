@@ -146,7 +146,8 @@ console.log('\n— environment 3-D: columns, temperature, ice, transport —');
     let deepDye = 0; for (let c = 0; c < f.G.NC; c++) if (f.G.depthMax[c] > 2.5) deepDye += dye[f.G.cell0[c] + f.G.nL[c] - 1] * f.G.vol[f.G.cell0[c] + f.G.nL[c] - 1];
     check('the night siphon runs on calm nights and carries the coves\' water down the slope into the basin', q / n > 0 && deepDye > 0.002 * tot0,
       `siphon ${(q / n).toFixed(0)} m³/s (world) on average; ${(100 * deepDye / tot0).toFixed(2)} % of the cove dye in the basin's bottom layers`); }
-  { seed(307); const f = new Env3(); const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(0.1); const ms = (performance.now() - t0) / 50;
+  { seed(307); const f = new Env3(); for (let i = 0; i < 10; i++) f.step(0.1);   // (warmed up: the steady cost, not the JIT's)
+    const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(0.1); const ms = (performance.now() - t0) / 50;
     check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < 12, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
 }
 
@@ -190,7 +191,11 @@ console.log('\n— environment 3-D: chemistry and plankton —');
     }
     const L = c.ledger, ret = L.buryP / L.inP, keep = c.inventoryP() / P0;
     check('summer: the deep north basin\'s bottom water keeps its O₂ (≥ 4 mg/L: wind and night convection mix it — MDIFW "does not stratify")', sumMinDeep >= 4, `lowest ${sumMinDeep.toFixed(1)} mg/L (June–August)`);
-    check('winter: under the ice the basin\'s bottom water runs down toward anoxia by late winter while the lake as a whole keeps O₂ (≥ 5 mg/L)', winMinDeep < 3 && winMeanMin >= 5,
+    // (≥ 3 mg/L: with the coloured water (stage 7a) the ice passes little light for photosynthesis, and the bed's demand — 0.1–0.3
+    // g O₂/m²/day under the ice, the measured 0.2–0.39 — draws a 3-m-deep lake down ~10 mg/L over a 4-month ice season: a
+    // shallow brown lake's late winter, a hypoxic layer over the mud, the fish crowding up. The clear-water version's ≥ 5 came
+    // from under-ice photosynthesis snowy ice doesn't allow)
+    check('winter: under the ice the basin\'s bottom water runs down toward anoxia by late winter while the lake as a whole keeps O₂ (≥ 3 mg/L)', winMinDeep < 3 && winMeanMin >= 3,
       `bottom of the basin down to ${winMinDeep.toFixed(1)} mg/L; the lake's mean never below ${winMeanMin.toFixed(1)} mg/L`);
     check('ice-out comes in late April or early May (Maine: ~Apr 23)', iceOut !== null && iceOut > 0.13 && iceOut < 0.2, `half the lake open at yf ${iceOut?.toFixed(3)} (Apr 23 ≈ 0.145)`);
     check('the cold-water diatoms bloom in late winter and spring, not in summer', dia[0] / dia[1] > 2 * dia[2] / Math.max(1, dia[3]), `Mar–May mean ${(dia[0] / dia[1]).toFixed(3)}, Jun–Aug ${(dia[2] / Math.max(1, dia[3])).toFixed(3)}`);
@@ -427,6 +432,55 @@ console.log('\n— fish 3-D: the food web through a summer —');
     check('by September the young are fingerlings (perch and suckers ≥ 4.5 cm — real 5–8) and the lakes\' fish stay within 60–170 kg/ha',
       c.perch.yoyL >= 4.5 && c.sucker.yoyL >= 4.5 && Math.min(...B) > 60 && Math.max(...B) < 170,
       `young: perch ${f1(c.perch.yoyL)}, sucker ${f1(c.sucker.yoyL)}, white perch ${f1(c.whiteperch.yoyL)}, pumpkinseed ${f1(c.sunfish.yoyL)} cm; biomass ${Math.min(...B).toFixed(0)}–${Math.max(...B).toFixed(0)} kg/ha`); }
+}
+
+// ============================================================
+//  PLANTS 3-D, stage 7a — the weeds on the bed (src/w3/plants3.js): the depth limit in coloured water, the coves, the
+//  seasons, the O₂ of a dense bed
+// ============================================================
+console.log('\n— plants 3-D: the weeds —');
+{
+  const { Env3, CLOCK3 } = await import('../src/w3/env3.js');
+  const { FORMS3 } = await import('../src/w3/plants3.js');
+  const { ENV } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  // MID-MAY → THE NEXT AUGUST without fish (the coarse grid): a winter between two growing seasons
+  { seed(541); const e = new Env3({ col: 10, yf0: 0.2 }), P = e.plants, G = e.G, ch = e.chem;
+    const snap = () => {
+      const shoots = FORMS3.map((F, f) => P.total(f)), store = FORMS3.map((F, f) => { let s = 0; for (let i = 0; i < P.cells.length; i++) s += P.Br[f][i] * G.bedA[P.cells[i]]; return s; });
+      let bedA = 0, veg = 0, edge = 0; for (let c = 0; c < G.NC; c++) { bedA += G.area[c]; if (P.pvi[c] > 0.05) veg += G.area[c]; }
+      let deep = 0; for (let i = 0; i < P.cells.length; i++) if (P.Bs[2][i] > 30) deep = Math.max(deep, P.zb[i]);
+      // the floating-leaved and emergent forms' share of the vegetated bed (by the area their stands cover)
+      let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
+      return { shoots, store, veg: veg / bedA, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
+    };
+    let peak1 = 0, feb = null, aug = null;
+    for (let t = 0; t < 1.25 * CLOCK3.YEAR_LEN; t += 0.2) {
+      e.step(0.2); const yf = e.yearFrac(), y = t / CLOCK3.YEAR_LEN;
+      if (y < 0.5 && Math.round(t * 5) % 250 === 0) peak1 = Math.max(peak1, P.total(2));
+      if (!feb && y > 0.5 && yf > 0.95) feb = snap();
+      if (!aug && y > 1.0 && yf > 0.44) aug = snap();
+    }
+    const sum = a => a.reduce((s, v) => s + v, 0);
+    check('the second summer: weeds on about a quarter to a half of the bed (research ~30 %), the submerged canopy down to 1.3–2.8 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m)',
+      !!aug && aug.veg > 0.2 && aug.veg < 0.5 && aug.deep >= 1.3 && aug.deep <= 2.8 && aug.secchi > 2.5 && aug.secchi < 4,
+      aug ? `vegetated ${(aug.veg * 100).toFixed(0)} %, canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
+    check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
+      !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
+    check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',
+      !!feb && sum(feb.shoots) < 0.15 * peak1 * 3 && feb.store.every(v => v > 0) && aug.shoots[2] > 2 * feb.store[2],
+      feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(aug.shoots[2] / 1000).toFixed(0)} kg by August` : 'no February');
+    // A DENSE BED'S O₂: on a calm clear summer day the water in a thick canopy rises by day and falls by night more than bare
+    // water at the same depth does
+    e.setWeather(0);
+    let jb = -1, jo = -1, best = 0;
+    for (let i = 0; i < P.cells.length; i++) { const tot = P.Bs[2][i] + P.Bs[1][i]; if (tot > best && P.zb[i] > 0.8 && P.zb[i] < 1.6) { best = tot; jb = P.cells[i]; } }
+    { let low = 1e9; for (let i = 0; i < P.cells.length && jb >= 0; i++) { const tot = FORMS3.reduce((s, F, f) => s + P.Bs[f][i], 0); if (tot < low && Math.abs(G.zMid[P.cells[i]] - G.zMid[jb]) < 0.3) { low = tot; jo = P.cells[i]; } } }   // (the barest bed at its depth)
+    let bMin = 9, bMax = 0, oMin = 9, oMax = 0;
+    for (let t = 0; t < CLOCK3.DAY_LEN; t += 0.2) { e.step(0.2); if (jb >= 0) { bMin = Math.min(bMin, ch.o2[jb]); bMax = Math.max(bMax, ch.o2[jb]); } if (jo >= 0) { oMin = Math.min(oMin, ch.o2[jo]); oMax = Math.max(oMax, ch.o2[jo]); } }
+    const sb = (bMax - bMin) * ENV.O2_MGL, so = (oMax - oMin) * ENV.O2_MGL;
+    check('a dense weed bed\'s water swings in O₂ by day and night more than bare water at its depth (production by day, respiration always)',
+      jb >= 0 && jo >= 0 && sb > 1.3 * so, `bed (${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; bare: ${f2(so)} mg/L`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

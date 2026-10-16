@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, FISH (slice a), branch `zoo-field`
+## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, fish, food web, worker, WEEDS (7a), branch `zoo-field`
 
 DECIDED (human, 2026-10-15): rebuild the sim as BOTH WHOLE Hot Brook lakes + the brook in 3-D (not the slice in a 3-D
 display), at 1/10 horizontal scale with TRUE depths ("it can be scaled down a bit"), a 1-HOUR YEAR. Design:
@@ -60,12 +60,24 @@ STAGE 6b (this commit; docs/HOT_BROOK_3D.md §4 "Built (stage 6b)"): the bed's o
 0.0015; annual P retention 0.64) and the adults' zooplankton half-saturation 60 µg/L (F3.K_ZOO; the 2-D keeps PLANKTON.K_ADULT
 25): a June zooplankton peak (190–450 µg/L) with fish taking 31–47 % of its production, a midsummer collapse under a strong
 cohort of young (15–28 kg/ha), the young at real autumn sizes for perch/suckers/bullheads. test/w3.mjs 53 checks (~9 min).
-OPEN: young pumpkinseed small (1.4–3.7 cm vs 3–5); weak autumn zooplankton rebound; Secchi still 6–9 m (step 4b colour).
-NEXT: STAGE 7 — PLANTS in 3-D (the weeds: pondweed, milfoil, lilies, muskgrass on the bed by depth and light; the zooplankton's
-refuge and the young sunfish's nursery; periphyton; their place in the N/P budget), then snails/insects/crayfish (the
-littoral's food: sunfish, bass), coloured water (step 4b), redbreast + fallfish; a Web Worker (1× uses ~35 % of the main
-thread with the view). Consider moving the long w3 runs to a separate long suite if the gate grows past ~10 min.
-OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
+WORKER (9d818a1): the 3-D sim runs in a module Worker (src/w3/render3/sim3worker.js; docs/HOT_BROOK_3D.md §6 "Built"): packed
+snapshots, interpolation in the view; at most ~5× real time on a fast machine.
+STAGE 7a — THE WEEDS (this commit; src/w3/plants3.js, the view src/w3/render3/plants3view.js; docs/HOT_BROOK_3D.md §5 "Built
+(stage 7a)"; research docs/research_notes/Whole lake 3D fish simulation/macrophytes.md): five growth forms per bed cell
+(shoots + overwintering storage), depth limits emerging from the light, lilies/emergents only in wave-sheltered coves, N/P in
+the closed budgets, the zooplankton refuge (chem3 plantRef), stems as fish cover, the canopy's day/night O₂. Plus COLOURED
+WATER (CHEM3.KD_COLOUR 0.5: Secchi ~3.2 m) and the catchment's organic subsidy (CHEM3.ALLOCH 800, half an October leaf pulse).
+3 seeds × a year with fish: weeds on ~34 % of the bed, canopy to 1.9 m; June zooplankton peak 154–351 µg/L; 103–130 kg/ha;
+young pumpkinseed 2.7–2.9 cm (from 1.4–3.7). The view: swaying blade tufts, lily pads, reeds near the camera, the bed tinted
+by weed cover beyond; a Weeds toggle. Gate: the winter lake-mean O₂ check lowered 5 → 3 mg/L (coloured water: less light under
+the ice; the bed's under-ice O₂ demand 0.11–0.32 g/m²/d matches the measured 0.2–0.39). test/w3.mjs +4 checks.
+OPEN: young bass starve (no littoral invertebrates yet); weak autumn zooplankton rebound; perch starvation 300–500/yr.
+NEXT: STAGE 7b — the littoral's own food (snails, insects, crayfish on the weeds and the bed: sunfish and young bass), then
+redbreast + fallfish, the shore and wildlife (stage D: snow on the ice, the hydrograph), saves and resume. Perf idea: the fish
+view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.
+Consider moving the long w3 runs to a separate long suite (the gate is ~10 min for w3 alone).
+OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow); do the lakes
+get low in O₂ in late winter (winterkill, fish crowding near inlets or the brook)?
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;
 young bullheads starve in August; fish ≥ 7.5 cm 500–1,100/ha vs ~2,600.

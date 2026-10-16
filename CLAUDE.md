@@ -25,11 +25,11 @@ You may propose a different architecture, stack or runtime if it serves that goa
 ## Invariants
 - **Pure simulation layer: DOM-free and testable in Node.**
   - Files: `core.js`, `config.js`, `hotbrook_profile.js` (generated data), `bioenergetics.js`, `species.js`, `environment.js`, `world.js`, `camera.js`.
-  - The 3-D whole-lake sim being built alongside (`src/w3/`: `geometry.js`, `hotbrook3d.js` (generated data), `clock3.js`, `env3.js`, `chem3.js`, `fish3.js`; see `docs/HOT_BROOK_3D.md`) is pure too.
+  - The 3-D whole-lake sim being built alongside (`src/w3/`: `geometry.js`, `hotbrook3d.js` (generated data), `clock3.js`, `env3.js`, `chem3.js`, `fish3.js`, `plants3.js`; see `docs/HOT_BROOK_3D.md`) is pure too.
   - Never use `document`, `window`, `canvas` or `localStorage` there.
   - `species.js` `draw()` only calls a passed-in `put()`.
 - **Browser layer:** `render.js`, `glpost.js`, `inspector.js`, `ui.js`, `main.js`, `ffworker.js` (the fast-forward module Worker: imports only the pure modules).
-  - The 3-D view: `w3.html` + `w3.css` → `src/w3/render3/` (`main3.js`, `controls3.js`, `fish3view.js`, generated `far3d.js`), on three.js r186 vendored in `vendor/three-0.186.1/` (one bundled ES module, served from the project so the CSP stays `script-src 'self'`).
+  - The 3-D view: `w3.html` + `w3.css` → `src/w3/render3/` (`main3.js`, `controls3.js`, `fish3view.js`, `plants3view.js`, the sim's module Worker `sim3worker.js` (imports only the pure `src/w3/` modules), generated `far3d.js`), on three.js r186 vendored in `vendor/three-0.186.1/` (one bundled ES module, served from the project so the CSP stays `script-src 'self'`).
 - **Determinism.**
   - Use the seeded `core.rand` and a fixed timestep.
   - Render and cosmetic randomness must use `Math.random`, never `core.rand`.
@@ -44,7 +44,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
 
 ## Run, gate, verify
 - **Serve:** `npm run serve` (that is `node serve.mjs`, http://localhost:8000, localhost only), or `python serve.py`. The browser preview config is `reef` in `.claude/launch.json`.
-- **Gate:** `npm test` runs `test/headless.mjs`, `smoke.mjs`, `ui-check.mjs`, `serve-check.mjs` and `w3.mjs` (the 3-D sim's own gate). It takes about 8 minutes alone. Keep it green after every change.
+- **Gate:** `npm test` runs `test/headless.mjs`, `smoke.mjs`, `ui-check.mjs`, `serve-check.mjs` and `w3.mjs` (the 3-D sim's own gate). It takes about 18 minutes (w3 alone ~10). Keep it green after every change.
   - Add a check block for every new subsystem or fix **before the final summary line**. Both `headless.mjs` and `smoke.mjs` end with `process.exit`, so anything appended after it never runs.
   - Set `REEF_PERF_MIN=0` only while the CPU is shared. Otherwise the budget is strictly ≥60 steps/s; recent runs show about 120–135.
 - **Balance:** `npm run balance [years]` is a long-run analyzer, not part of the gate. REFUGE keeps every species "present", so judge balance by home-bred vs immigrant births per species, seasonal O₂ and phyto, and plants standing.

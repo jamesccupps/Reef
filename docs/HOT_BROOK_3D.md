@@ -295,6 +295,36 @@ otter, mink) as a depth × size × light risk. The shore mechanisms of `docs/rep
 (stage D): the catchment's water and loads on a hydrograph, colour, snow on the ice (1–12 % light under snowy ice), shore
 wood (logs in < 2 m near shore), insects across the waterline, leaves, shade, wind.
 
+**Built (stage 7a) — the weeds, coloured water, the catchment's organic load (`src/w3/plants3.js`; research
+`docs/research_notes/Whole lake 3D fish simulation/macrophytes.md`).** A field per bed cell × five growth forms of a soft,
+coloured Maine lake — emergent (pickerelweed, bulrush), floating-leaved (lilies, watershield), the submerged canopy (pondweeds,
+bladderwort), isoetid rosettes and the deep low meadow (Nitella, moss): living shoots and the storage they overwinter in, in
+g DW/m². Submerged growth follows the light at the canopy's top (the season's day-mean surface light × ice × the water ×
+floating-leaf shade × self-shading, a Monod response with the form's K½) and the temperature (Q10 2.5) and P (bed and water) and
+N; each form's losses are set so that its growth just pays them at its light limit (share of the surface light), so its DEPTH
+LIMIT emerges from the water's clarity. The floating-leaved and emergent forms grow in their depth windows and only where the
+shore shelters them from the waves (land in ≥ 4–5 of 8 directions within 20 m: the coves). Spring sprouting from storage,
+autumn reallocation to storage (from ~Sep 10) and litter, wave and ice scour in the shallowest water, colonisation of bare bed
+(paid for in nutrients). The plants' N and P are in the closed budgets (uptake from the bed's store by the roots' share, from
+the water by the shoots'; death returns them to the water, the bed's store and its organic layer). Their effects: the weed
+volume shelters zooplankton (chem3 `plantRef`, 0.8 × a logistic in PVI), their stems foil predators' strikes on small fish
+(1/(1 + (S/150)³), Crowder & Cooper 1982 — fish3 `cover`), the canopy's O₂ by day and its respiration by night spread over the
+water it fills, and the floating leaves shade the bed. With them came COLOURED WATER (CHEM3.KD_COLOUR 0.5/m: Secchi ~3.2 m,
+not the 2-D sim's 6–9 m; Kd·SD 2.55 for stained water) and the CATCHMENT'S ORGANIC SUBSIDY (CHEM3.ALLOCH 800 g wet/m²/yr to
+the bed's organic layer: half spread over the year, half an October leaf pulse weighted toward the shore). A season jump in
+the view (`Plants3.jump`) reshapes each stand for the new date conserving its mass, N and P.
+Results: a second summer with weeds on ~34 % of the bed (research ~30 %), the canopy to 1.9 m (research 2–2.7 m in coloured
+water), lilies and emergents on 16 % of the vegetated bed (the coves), every form overwintering, a dense bed's O₂ swinging
+10.6 mg/L a day vs 5.5 over bare bed at its depth. With fish, 3 seeds over a year: the June zooplankton peak 154–351 µg/L with
+the fish taking 29–47 % of its production; year-end biomass 103–130 kg/ha; young perch 5.5–6.2 cm, suckers 5.6–6.2, white
+perch 4.4–5.3, shiners 3.2–3.7, pumpkinseed 2.7–2.9 (from 1.4–3.7: the weeds' refuge feeds the plankton they need). Winter: the
+lake-mean O₂ minimum falls to ~3 mg/L in the coloured water (less light under the ice for the algae); the bed's O₂ demand under
+ice is 0.11–0.32 g/m²/day against a measured 0.2–0.39 for such lakes, so the gate's winter check is now ≥ 3 mg/L — whether the
+Hot Brook lakes really go that low in late winter is a question for the human (ice-fishing observations). test/w3.mjs +4
+checks. The view: `src/w3/render3/plants3view.js` (below).
+STILL OPEN: young bass starve (no littoral invertebrates yet: snails, insects, crayfish — stage 7b); the autumn zooplankton
+rebound is weak; perch starvation 300–500 a year.
+
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 
 three.js r186 (`WebGPURenderer`, which falls back to WebGL2 by itself; ES modules with an import map — self-hosted pinned
@@ -305,6 +335,18 @@ far away), water from above (reflection, refraction) and below (Snell's window, 
 tea-coloured water, caustics in the shallows, god rays), plants on instanced cards, trees with LOD, sky with clouds and sun,
 rain and snow, seasons (leaf colour, ice and snow), the camera anywhere (aerial → a single fish; follow; tour). Quality tiers
 and dynamic resolution for weaker GPUs.
+
+**Built — the simulation in a Web Worker (`src/w3/render3/sim3worker.js`).** The worker owns Env3, Fish3 and the plants; the
+view posts `tick` with the time passed only once the last reply is in, and the worker steps the fish at 10 Hz and the water at
+5 Hz within a 40-ms budget, then replies with packed snapshots (fish: 18 floats each with the last step's position for
+interpolation; young-of-year: 11; the ice; the cut-away's field every 10th tick) and, every 4 s and after a season jump, the
+weeds' shoots per form per bed cell. Behind, it runs slower than asked (the clock says "running at N×").
+**Built — the weeds on screen (`src/w3/render3/plants3view.js`).** Instanced tufts per form (thin swaying ribbon blades for the
+submerged canopy, reeds through the surface, low spikes and tufts for rosettes and moss, notched lily pads on the surface),
+scattered over each 1.5-m bed cell by its stand, fresh in spring, browning from the autumn reallocation (evergreens stay
+green). Stems are drawn near where the camera looks (submerged ~0.9 × the camera distance, 25–110 m; pads and reeds 2×) and
+kept out of the water's reflection (their own layer); farther off the bed is tinted by each cell's weed cover. Their instance
+buffers are static with update ranges — a dynamic buffer is re-sent whole every frame (it cost 8 ms a frame; now ~0.1 ms).
 
 ## 7. A year in the 3-D lakes (walk-through)
 

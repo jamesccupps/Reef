@@ -10,13 +10,14 @@ import { CameraRig } from './controls3.js';
 import { FAR3 } from './far3d.js';
 import { Env3, CLOCK3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
+import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
 const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, normalize, pow, sin, time, abs: tabs } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain', fish: true, fishScale: 1 };
+const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
 const kLand = () => S.exag / 10;
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -92,6 +93,16 @@ function groundMaterial() {
 }
 const groundMat = groundMaterial();
 
+// THE WATER MODEL's grid (src/w3/env3.js): the cut-away's, the ice's and the weeds' lookups
+const W3 = { G: buildColumns3() }; W3.colAt = Env3.prototype.colAt; W3.cellAt = Env3.prototype.cellAt;
+// the weeds colour the bed where they stand (from afar single stems are smaller than a pixel): olive-green by their cover
+const WEED = C(0x3e5426);
+function weedBed(i, c) { const k = S.plants && plantsView ? plantsView.cover[i] : 0; return k > 0 ? c.lerp(WEED, k * 0.55) : c; }
+function tintBed() {   // recolour only the bed (new plant data)
+  const c = C(0), bc = band.geometry.attributes.color.array;
+  for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] === LAND) continue; const [x, y] = GEO.cellCentre(i); weedBed(i, bedColour(GEO.depth[i], c, x, y)); bc[i * 3] = c.r; bc[i * 3 + 1] = c.g; bc[i * 3 + 2] = c.b; }
+  band.geometry.attributes.color.needsUpdate = true;
+}
 // cheap smooth value noise for patchy beds (cosmetic)
 const hash2 = (i, j) => { const h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return h - Math.floor(h); };
 function vnoise(x, y) { const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
@@ -99,7 +110,6 @@ function vnoise(x, y) { const i = Math.floor(x), j = Math.floor(y), fx = x - i, 
 function bedColour(d, c, x, y) {   // rocky gravel and sand in the shallows (MDIFW: mostly rocky shores) → organic mud in the basins
   const patch = vnoise(x * 0.18, y * 0.18), fine = vnoise(x * 0.9 + 7, y * 0.9 - 3);
   if (d < 1.4) c.set(patch > 0.55 ? 0xb7a57c : 0xa59672).lerp(C(0x7a6a4a), d / 1.4 * 0.7); else c.set(0x7a6a4a).lerp(C(0x52432f), Math.min(1, (d - 1.4) / 1.8));
-  if (d > 0.5 && d < 3.2 && patch < 0.3) c.lerp(C(0x4e5a2e), 0.45);   // weedy patches (until the plants are real)
   return c.multiplyScalar(0.8 + fine * 0.4);
 }
 
@@ -128,7 +138,7 @@ function colourGround() {   // map colours by season (the bed by depth)
   const c = C(0), bc = band.geometry.attributes.color.array;
   for (let i = 0; i < GEO.N; i++) {
     const [x, y] = GEO.cellCentre(i);
-    if (GEO.body[i] !== LAND) bedColour(GEO.depth[i], c, x, y);
+    if (GEO.body[i] !== LAND) weedBed(i, bedColour(GEO.depth[i], c, x, y));
     else { seasonal(GEO.CLASSES[GEO.cover[i]], c); const near = GEO.toWater[i]; if (near < 2.5) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 2.5) * 0.8); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
     bc[i * 3] = c.r; bc[i * 3 + 1] = c.g; bc[i * 3 + 2] = c.b;
   }
@@ -153,6 +163,8 @@ const water = (() => {
   // the surface mirrors the shore and the sky (a planar reflection at Upper's level — Lower's sits 0.6 m lower, too little
   // to see), more strongly at low angles (Fresnel), broken by a light ripple; under it the tea-coloured body of the water
   const refl = reflector({ resolutionScale: 0.5 }); refl.target.rotateX(-Math.PI / 2); refl.target.position.y = 0.01; scene.add(refl.target);
+  // (its camera, a clone of the view's made now, sees layer 0 only: the weeds' stems, on their own layer, stay out of the mirror)
+  refl.reflector.getVirtualCamera(camera); camera.layers.enable(PLANT_LAYER);
   const P = positionWorld, t = time;
   const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(0.0035);
   refl.uvNode = refl.uvNode.add(ripple);
@@ -270,7 +282,8 @@ const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-260, 42
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const clipped = new THREE.ClippingGroup(); clipped.clippingPlanes = [clipPlane]; clipped.enabled = false;
 const fishView = makeFishView();   // the fish (src/w3/fish3.js), every one an instance, schools as their n fish
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh);
+const plantsView = makePlantsView(W3);   // the weeds (src/w3/plants3.js): stems, fronds, pads and reeds by each patch's stand
+clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, plantsView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -420,6 +433,7 @@ $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; style
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = S.trees; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = S.fish; });
+$('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
 $('t-notes').addEventListener('change', e => document.body.classList.toggle('nonotes', !e.target.checked));
@@ -429,7 +443,6 @@ $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle(
 // THE SIM runs in a Worker (render3/sim3worker.js): each frame the view sends the time passed — only once the last reply is in —
 // and draws the latest snapshot meanwhile. W3: the water grid's geometry, for the cut-away's and the ice's lookups
 const LIVE = { worker: null, snap: null, waiting: false, dtAcc: 0, rate: 1, lastT: 0, lastW: 0, run: true, speed: 1, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0, field: null, fieldShow: 'plain' };
-const W3 = { G: buildColumns3() }; W3.colAt = Env3.prototype.colAt; W3.cellAt = Env3.prototype.cellAt;
 const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, early July, early Oct, Feb)
 const seasonOf = yf => yf < 0.25 ? 'spring' : yf < 0.5 ? 'summer' : yf < 0.75 ? 'fall' : 'winter';
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
@@ -441,6 +454,7 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
 }
 function onSnap(m) {
+  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf)) tintBed(); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false;
   if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }
@@ -482,6 +496,7 @@ async function start() {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt);
     liveTick(dt); lightByDay();
+    if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     if (LIVE.snap && S.fish) LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z);
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
@@ -497,4 +512,4 @@ async function start() {
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, plantsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
