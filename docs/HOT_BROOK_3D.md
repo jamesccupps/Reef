@@ -87,6 +87,16 @@ resting eggs), ice per column (shallow water first).
 
 **Not simulated:** the free surface (a 19-min seiche, 3-cm set-up — negligible), Langmuir cells (smaller than a cell).
 
+**Built (stage 3, slice 1 — `src/w3/env3.js`):** 2,671 columns, 15,663 layer cells (small shore columns and sliver bottom
+layers folded into their neighbours — tiny cells force tiny steps), 5,160 faces. Temperature per cell (the mixed layer follows
+the Maine calendar + weather + the day's swing, faster and wider in thin water; below 4 °C the cold water floats so the
+surface freezes while the deep stays near 4 °C; under ice the ice chills the top and the bed's stored heat warms the water
+over it); ice per column (the shallows first, all by about Dec 1); transport: the wind's gyres (two precomputed fields,
+friction stronger in the shallows), the top layer's drift and its return, the through-flow (a potential flow, solved
+implicitly upstream-first — stable at any step), grid-scale mixing, the night siphon and the under-ice density current (only
+water nearer 4 °C than the basin's slides down); a water-age tracer. Explicit wind transport is sub-stepped (≤ 4); in a gale
+the wind-driven currents are slowed uniformly instead (`transportScale`). ~2.3 ms per update (10 Hz) with two fields.
+
 ## 4. Fish in 3-D (`src/w3/fish3.js`)
 
 **Agents** (struct-of-arrays; position x, y, z; heading yaw and pitch; speed):

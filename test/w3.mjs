@@ -68,6 +68,88 @@ check('the inflow is at Upper\'s south end and the outlet at Lower\'s north end'
   const ns = (performance.now() - t0) * 1e6 / 1e6;
   check('depthAt costs well under a microsecond (it runs per fish per step)', ns < 300 && Number.isFinite(s), `${ns.toFixed(0)} ns/call`); }
 
+// ============================================================
+//  ENVIRONMENT 3-D, slice 1 — columns, temperature, ice, the water's movement (src/w3/env3.js)
+// ============================================================
+console.log('\n— environment 3-D: columns, temperature, ice, transport —');
+{
+  const { Env3, H3, REAL_S, CLOCK3 } = await import('../src/w3/env3.js');
+  const { seed } = await import('../src/core.js');
+  seed(301); const e = new Env3(); const G = e.G;
+  // the grid holds the lakes' true water: the layer cells' volumes sum to the beds' volume (every 1.5-m cell counted once)
+  let vGeo = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] !== LAND && GEO.depth[i] > 0) vGeo += GEO.depth[i] * GEO.CELL * GEO.CELL;
+  let vGrid = 0; for (let j = 0; j < G.NCELL; j++) vGrid += G.vol[j];
+  check('the water columns hold the lakes\' true volume (5-m columns × 0.5-m layers built from the 1.5-m beds)', Math.abs(vGrid - vGeo) / vGeo < 0.005 && G.NC > 2000 && G.NC < 3200,
+    `${G.NC} columns, ${G.NCELL} cells, ${(vGrid / 1e3).toFixed(1)} vs ${(vGeo / 1e3).toFixed(1)} thousand m³`);
+  { const par = Int32Array.from({ length: G.NC }, (_, i) => i), find = i => { while (par[i] !== i) i = par[i] = par[par[i]]; return i; };
+    for (let f = 0; f < G.NF; f++) par[find(G.fa[f])] = find(G.fb[f]); const roots = new Set(); for (let c = 0; c < G.NC; c++) roots.add(find(c));
+    check('the columns form one connected water system (Upper ↔ the brook ↔ Lower)', roots.size === 1, `${roots.size} component(s)`); }
+  // the wind's circulation: balanced in every column, two gyres — downwind over the shallows, upwind over the deep axis
+  { let worst = 0, tot = 0; const net = new Float64Array(G.NC);
+    for (let f = 0; f < G.NF; f++) { const Q = e.ux[f] * G.fh[f] * G.fl[f]; net[G.fa[f]] -= Q; net[G.fb[f]] += Q; tot += Math.abs(Q); }
+    for (let c = 0; c < G.NC; c++) worst = Math.max(worst, Math.abs(net[c])); worst /= tot / G.NF;
+    let sh = 0, deep = 0; for (let f = 0; f < G.NF; f++) { const Q = e.ux[f] * G.fh[f] * G.fl[f] * G.fnx[f]; if (G.fh[f] < 1.5) sh += Q; if (G.fh[f] > 3.5) deep += Q; }
+    check('the wind\'s circulation balances in every column and has two gyres: downwind over the shallows, back upwind over the deep axis',
+      worst < 1e-2 && sh > 0 && deep < 0, `imbalance ${worst.toExponential(1)} of a mean face flux; east wind: shallows ${sh.toFixed(1)}, deep ${deep.toFixed(1)} (transport east)`); }
+  // transport moves things without making or losing them: a uniform field stays uniform; a dye's total is kept
+  { e.step(0.1); const save = Float32Array.from(e.temp); let dev = 0;
+    for (const w of [0, 1, 2, 3]) { e.setWeather(w); e.temp.fill(13); e._transport(0.1); for (let j = 0; j < G.NCELL; j++) dev = Math.max(dev, Math.abs(e.temp[j] - 13)); }
+    const dye = new Float32Array(G.NCELL); for (let j = 0; j < G.NCELL; j++) dye[j] = (G.colOfCell[j] * 7919 % 13) / 13;
+    const tot0 = e.total(dye), dfd = { a: dye }; e.setWeather(2);
+    for (let i = 0; i < 5; i++) { for (let s = 0; s < e.nSub; s++) e._advect(dfd, e._F, 0.1 / e.nSub); e._mixH(dye, 0.1); }
+    const kept = Math.abs(e.total(dye) - tot0) / tot0;
+    e.temp.set(save);
+    check('transport moves water without making or losing anything: a uniform field stays uniform (every weather); a dye\'s total is kept',
+      dev < 0.02 && kept < 1e-5, `uniform within ${dev.toFixed(4)} °C; dye total changed ${kept.toExponential(1)}`); }
+  // the through-flow flushes each lake at its residence time. At steady state the water LEAVING a lake is as old as its
+  // residence (age in = 0: a mass balance), however mixed the lake is; its mean age lies between plug flow (τ/2) and full
+  // mixing (τ) — Upper is 3.4 km long with its inflow and outlet at opposite ends. Tested with residences 10× shorter (~6τ)
+  { const keep = [H3.RES_UPPER_D, H3.RES_LOWER_D]; H3.RES_UPPER_D = 10; H3.RES_LOWER_D = 5.5;
+    seed(302); const f = new Env3({ yf0: 0.4 }); f.age.fill(0); const day = 86400 / REAL_S;
+    for (let t = 0; t < 60 * day; t += 0.25) f.step(0.25);
+    const colMean = c => { let s = 0, v = 0; for (let k = 0; k < f.G.nL[c]; k++) { const j = f.G.cell0[c] + k; s += f.age[j] * f.G.vol[j]; v += f.G.vol[j]; } return s / v; };
+    let bc = -1, bd = 1e9; for (let c = 0; c < f.G.NC; c++) if (f.G.body[c] === BROOK) { const d = Math.hypot(f.G.cx[c], f.G.cy[c]); if (d < bd) { bd = d; bc = c; } }   // the brook's first column: Upper's outflow
+    const out = colMean(bc) / day, aU = f.mean(f.age, UPPER) / day;
+    H3.RES_UPPER_D = keep[0]; H3.RES_LOWER_D = keep[1];
+    check('the through-flow flushes each lake at its residence time: the water leaving Upper is as old as its residence; its mean age lies between plug flow (τ/2) and full mixing (τ)',
+      Math.abs(out - 10) < 2 && aU > 5 && aU < 10.5, `water entering the brook ${out.toFixed(1)} d (residence 10); Upper's mean ${aU.toFixed(1)} d`); }
+  // temperature: shallow water swings more through the day — warmer by afternoon, colder by dawn — than the basin
+  { seed(303); const f = new Env3({ yf0: 0.38 }); f.setWeather(0);
+    const shallow = [], deep = []; for (let c = 0; c < f.G.NC; c++) { if (f.G.depthMax[c] < 0.9 && f.G.body[c] !== BROOK) shallow.push(c); if (f.G.depthMax[c] > 4.5) deep.push(c); }
+    const meanT = cols => cols.reduce((s, c) => s + f.temp[f.G.cell0[c]], 0) / cols.length;
+    let maxD = -9, minD = 9; for (let t = 0; t < CLOCK3.DAY_LEN * 2; t += 0.1) { f.step(0.1); if (t > CLOCK3.DAY_LEN) { const d = meanT(shallow) - meanT(deep); maxD = Math.max(maxD, d); minD = Math.min(minD, d); } }
+    check('the coves\' water swings more through the day than the basin\'s: warmer by afternoon, colder by dawn (they siphon down on calm nights)',
+      maxD > 0.6 && minD < -0.3, `shallow − deep surface: +${maxD.toFixed(2)} by day, ${minD.toFixed(2)} by night (${shallow.length} cove columns, ${deep.length} deep)`); }
+  // summer: the lakes don't stay stratified — wind by day and convection by night mix the 5.5-m north basin (MDIFW: "does
+  // not stratify during summer months"; the 1949 August survey: 74 °F at the surface, ~71 °F at the bottom)
+  { seed(304); const f = new Env3({ yf0: 0.42 }); let dmax = 0, dsum = 0, n = 0; const c = f.colAt(...BODIES[0].deepest), j0 = f.G.cell0[c], jb = j0 + f.G.nL[c] - 1;
+    for (let t = 0; t < CLOCK3.DAY_LEN * 3; t += 0.1) { f.step(0.1); const d = f.temp[j0] - f.temp[jb]; dmax = Math.max(dmax, d); dsum += d; n++; }
+    check('summer: Upper\'s 5.5-m basin doesn\'t stay stratified (surface − bottom small on average, a degree or two at most)', dsum / n < 1.2 && dmax < 3.5,
+      `mean ${(dsum / n).toFixed(2)} °C, max ${dmax.toFixed(2)} °C over three days`); }
+  // ice: the shallow coves freeze first; under the ice the water is inversely layered (~0 °C at the ice, ~4 °C at the bottom)
+  { seed(305); const f = new Env3({ yf0: 0.69 }); let firstDepth = null, allT = null;
+    for (let t = 0; t < 0.14 * CLOCK3.YEAR_LEN && allT === null; t += 0.2) {
+      f.step(0.2);
+      if (firstDepth === null) for (let c = 0; c < f.G.NC; c++) if (f.ice[c] > 0.5) { firstDepth = f.G.depthMean[c]; break; }
+      if (firstDepth !== null && f.iceMean > 0.99) allT = f.yearFrac();
+    }
+    const c = f.colAt(...BODIES[0].deepest), j0 = f.G.cell0[c], jb = j0 + f.G.nL[c] - 1; while (f.yearFrac() < 0.86) f.step(0.25);   // (to January: the deep water warms toward 4 °C over weeks from the bed's stored heat)
+    const medDepth = [...f.G.depthMean].sort((a, b) => a - b)[f.G.NC >> 1];
+    check('ice: the shallows freeze first and the whole lake follows by early December; by January the water under it is inversely layered — ~0 °C at the ice, ~4 °C at the bottom of the basin',
+      firstDepth !== null && firstDepth < medDepth && allT !== null && allT < 0.8 && f.temp[j0] < 1.5 && f.temp[jb] > 3, `first ice over ${firstDepth?.toFixed(2)} m (median column ${medDepth.toFixed(2)} m), all frozen at yf ${allT?.toFixed(3)}; top ${f.temp[j0].toFixed(2)} °C, bottom ${f.temp[jb].toFixed(2)} °C`); }
+  // the night siphon: on a calm night the coves' colder water runs down into the basin — a dye from the coves reaches its deep layers
+  { seed(306); const f = new Env3({ yf0: 0.6 }); f.setWeather(0);
+    while (!f.isNight()) f.step(0.1);
+    const dye = new Float32Array(f.G.NCELL); for (let c = 0; c < f.G.NC; c++) if (f.G.depthMax[c] < 1.0) for (let k = 0; k < f.G.nL[c]; k++) dye[f.G.cell0[c] + k] = 1;
+    f.fields.push({ name: 'dye', a: dye }); const tot0 = f.total(dye); let q = 0, n = 0;
+    for (let t = 0; t < 15; t += 0.1) { f.step(0.1); q += f.siphonQ || 0; n++; }
+    let deepDye = 0; for (let c = 0; c < f.G.NC; c++) if (f.G.depthMax[c] > 2.5) deepDye += dye[f.G.cell0[c] + f.G.nL[c] - 1] * f.G.vol[f.G.cell0[c] + f.G.nL[c] - 1];
+    check('the night siphon runs on calm nights and carries the coves\' water down the slope into the basin', q / n > 0 && deepDye > 0.002 * tot0,
+      `siphon ${(q / n).toFixed(0)} m³/s (world) on average; ${(100 * deepDye / tot0).toFixed(2)} % of the cove dye in the basin's bottom layers`); }
+  { seed(307); const f = new Env3(); const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(0.1); const ms = (performance.now() - t0) / 50;
+    check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < 12, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');
