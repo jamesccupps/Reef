@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D (design done, geometry built), branch `zoo-field`
+## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, FISH (slice a), branch `zoo-field`
 
 DECIDED (human, 2026-10-15): rebuild the sim as BOTH WHOLE Hot Brook lakes + the brook in 3-D (not the slice in a 3-D
 display), at 1/10 horizontal scale with TRUE depths ("it can be scaled down a bit"), a 1-HOUR YEAR. Design:
@@ -25,11 +25,26 @@ planar reflection of the shore. STAGE 3 DONE: the water in 3-D — d87e7f8 (colu
 drift, through-flow at 100/55-day residence, mixing, the night siphon, under-ice density current) and f7eaed8 (chem3.js: the
 2-D chemistry and plankton per cell, closed budgets; BED_EXCH 0.35 and BURY_MUL 0.15 calibrated to ~75 % P retention).
 test/w3.mjs 30 checks pass (~2.5 min). Backup G:\synapse-reef-backups\…_w3-water.zip.
-NEXT: stage 5 — FISH IN 3-D (src/w3/fish3.js): the data-oriented agent core (struct-of-arrays, 3-D hash grid), individuals
-(sunfish, redbreast, bullhead, bass, pickerel, sucker, fallfish) + school agents (yellow/white perch, shiner), 3-D senses
-and brains (new input layout), movement (the research's rules), bioenergetics/feeding on the env3 fields, predation (a
-strike takes one fish from a school), the env's O₂/zooplankton coupling; then reproduction and recruitment. Also show the
-env fields in the w3 view (cut-away coloured by temperature/O₂).
+LIVE VIEW (20a0ed5): the w3 view runs the water model live (clock, ice per column, sun by time of day, cut-away coloured by
+temperature / O₂ / algae / zooplankton).
+STAGE 5 SLICE A — FISH IN 3-D (src/w3/fish3.js + the view src/w3/render3/fish3view.js; docs/HOT_BROOK_3D.md §4 "Built"):
+~16,600 fish ≥ 7.5 cm of the 8 Maine species at the design census in ~3,100 agents (white/yellow perch schools ~80,
+shiners ~60, the rest individuals), ~120 kg/ha; 26-input recurrent brains (6 outputs, 5 Hz, Baldwinian learning; the turn
+high-passed, actions in context); innate habitat drives from the new habitat table (docs/research_notes/Whole lake 3D fish
+simulation/habitat3d.md §9 — bottom depth by day/night/winter via the lake's 10-m-smoothed slope, place in the column,
+activity, tPref, O₂ escape); dusk/dawn moves at the 30-min sustained speed; feeding on the 3-D fields (chem3: zooFeed/zooE
+over the fish's cell ± a layer, takeBenth, takeSedOM, addSedOM, a per-cell sight cache `zv`); piscivory as a kill hazard
+(a strike takes one fish from a school); FB4 energetics; hazards; O₂ charged to the fish's cell; schools merge/split.
+~12 ms/step (4 µs/agent). test/w3.mjs +12 checks (42 total, ~4 min). The view: every fish an instance (schools as n fish),
+interpolated, swimming wave; Fish toggle and size ×1/×4/×12.
+KNOWN: fish feed too well (p 0.5–0.97 vs ~0.3–0.6: the water too productive — zooplankton 100–480 µg/L with fish, a ~9-day
+algae–zooplankton cycle with O₂ swinging 6–14 mg/L — and the type III response generous) → biomass +20 %/summer month;
+piscivores lack young-of-year (slice b) and crayfish (stage 7; crayfish eaters forage the bed meanwhile); no shore predators
+yet; dusk moves partial (~15 m a night).
+NEXT: slice b — reproduction in 3-D (spawning grounds by species from habitat3d.md §9–11: nests, ribbons, the brook's riffles
+for suckers), young-of-year schools and recruitment, the brook (sunfish moving in for the summer), redbreast + fallfish; then
+stage 6 calibration (the food web's productivity — step 4b coloured water — and the planktivores' functional response) with
+3-seed censuses; a Web Worker for the sim (1× uses ~20 % of a core; 6× and 30× can't keep up on the main thread).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;

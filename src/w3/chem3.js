@@ -16,7 +16,8 @@ import { TS, DAY3, CLOCK3 } from './clock3.js';
 
 export const V2 = WORLD.CELL_L / 1000;                 // m³: the 2-D cell the water units are "per"
 export const A2 = WORLD.SLICE_M2 / GRID.FIELD_COLS;    // m²: the 2-D column of bed the bed units are "per"
-const HREF_M = WORLD.DEPTH_REF / WORLD.PX_PER_M;       // m: the 14.6-m column the 2-D light and band constants are fractions of
+const HREF_M = WORLD.DEPTH_REF / WORLD.PX_PER_M;
+const UGL = PLANKTON.UGL;                              // µg dry/L per g wet per 2-D cell (a config getter: read once)       // m: the 14.6-m column the 2-D light and band constants are fractions of
 export const CHEM3 = {
   // what the inflow brings (concentrations, 2-D units). The 2-D slice's load (FLOW.NUTRIENT per second over its wet cells)
   // per unit of lake volume, delivered by the 3-D inflow at the real discharge: ~1.1 units of nutrient per 2-D cell of inflow
@@ -66,6 +67,7 @@ export class Chem3 {
     this.refAv = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) this.refAv[c] = clamp((G.depthMax[c] / HREF_M - PLANKTON.REF_DEPTH) / PLANKTON.REF_RAMP, 0, 1);
     this.colDecay = new Float64Array(G.NC); this._w = new Float64Array(G.ML);
     this.plantMap = new Float32Array(n);   // weed stems per cell (from the plants, stage 6)
+    this.zv = new Float32Array(n);         // a visual planktivore's sight in each cell by the day's light (zooVis; set each update)
     this.turbidity = TURBIDITY.BASE; this.fishKgHa = 0; this._migD = 0; this._migC = 0;
     this.meanPhyto = PHYTO.START; this.meanDiatom = DIATOM.START; this.meanCyano = CYANO.START; this.meanDOM = MICROBE.START;
     this.ledger = { inP: 0, inN: 0, outP: 0, outN: 0, buryP: 0, denitN: 0, fixN: 0 };
@@ -86,7 +88,9 @@ export class Chem3 {
   }
   prime() {   // a fresh lake at the season's start: O₂ at saturation for each cell's water
     const T = this.env.temp; for (let j = 0; j < this.G.NCELL; j++) this.o2[j] = this.sat(T[j]) * 0.95;
+    this._sight();
   }
+  _sight() { const G = this.G; for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) { const j = G.cell0[c] + k; this.zv[j] = this.zooVis(c, G.zMid[j]); } }
 
   // ---------- light and O₂ solubility ----------
   sat(T) { return clamp(1.0 - (T - 18) * ENV.SAT_TEMP_K, 0.5, 1.4); }   // O₂ at saturation (1 = the 18 °C reference, ×ENV.O2_MGL)
@@ -117,6 +121,7 @@ export class Chem3 {
       this._nitrogen(ds);
     }
     this._aerate(dt);
+    this._sight();
     const o2 = this.o2; for (let j = 0; j < G.NCELL; j++) { const v = o2[j]; o2[j] = v < 0 ? 0 : v > 1.5 ? 1.5 : v; }
   }
 
@@ -369,4 +374,65 @@ export class Chem3 {
   }
   // O₂ in mg/L at a cell
   o2mgl(j) { return this.o2[j] * ENV.O2_MGL; }
+
+  // ============================================================ what the fish take (fish3.js) =========================
+  clarity() { return clamp(1 - this.turbidity * TURBIDITY.SENSE, 0.35, 1); }
+  // VISUAL FEEDING at depth z in column c: the day's noon light there — a sim day stands for ~12 real days, so feeding follows
+  // the day's light, not the hour's — from blind (VIS_I0) to full sight (VIS_I1) on a log scale, × the water's clarity
+  zooVis(c, z) {
+    const P = PLANKTON, e = this.env, I = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]) * Math.exp(-this.attenuation() * z);
+    return I > P.VIS_I0 ? Math.min(1, Math.log(I / P.VIS_I0) / Math.log(P.VIS_I1 / P.VIS_I0)) * this.clarity() : 0;
+  }
+  // the share of a cell's zooplankton (kind 0 Daphnia, 1 copepods) a visual fish can get: the migrants of a column deep enough
+  // to hide in meet fish only at twilight; dense weeds hide some (environment.js zooExposed)
+  zooExposed(j, kind, dvm = true) {
+    const P = PLANKTON, m = dvm ? (kind ? this._migC : this._migD) : 0;
+    return (1 - m * this.refAv[this.G.colOfCell[j]] * (1 - P.TWILIGHT)) * (1 - P.WEED_REF * Math.min(1, this.plantMap[j]));
+  }
+  // the exposed zooplankton (µg dry/L) an adult planktivore rates at cell j — the fish's plankton sense
+  zooE(j) {
+    const v = this.zv[j]; if (v <= 0) return 0;
+    return (this.zooD[j] * this.zooExposed(j, 0) + this.zooC[j] * (1 - PLANKTON.COPE_ESCAPE) * this.zooExposed(j, 1)) * v * UGL;
+  }
+  // A FISH OR A SCHOOL FEEDS on the zooplankton of its cell and the layers above and below it (environment.js zooFeed): what it
+  // can catch (cD Daphnia, cC copepods, cR rotifers) × the share exposed × sight = the exposed prey, E its density (µg dry/L);
+  // intake = want × E/(E + K) — type II (sig: type III, E²/(E² + K²): a fish with other food switches away from scarce
+  // zooplankton) — at most CROP of what is exposed, taken from the cells in proportion to what each exposes. Grams (all
+  // eaters together, e.g. a school's n fish) of Daphnia, copepods and rotifers → out[0..2]
+  zooFeed(j, cD, cC, want, K, out, sig = false, dvm = true, cR = 0) {
+    out[0] = out[1] = out[2] = 0; if (!(want > 0)) return out;
+    const G = this.G, P = PLANKTON, c = G.colOfCell[j], vis = this.zv[j]; if (vis <= 0) return out;
+    const j0 = G.cell0[c], a = Math.max(j0, j - 1), b = Math.min(j0 + G.nL[c] - 1, j + 1);
+    let sD = 0, sC = 0, sR = 0, sw = 0;
+    for (let q = a; q <= b; q++) {
+      const w = this.w[q]; sw += w;
+      sD += this.zooD[q] * cD * this.zooExposed(q, 0, dvm) * w; sC += this.zooC[q] * cC * this.zooExposed(q, 1, dvm) * w;
+      if (cR > 0) sR += this.zooR[q] * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * w;
+    }
+    const S = (sD + sC + sR) * vis; if (!(S > 1e-12)) return out;
+    const E = S / sw * UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);
+    const tot = sD + sC + sR, tD = take * sD / tot, tC = take * sC / tot, tR = take - tD - tC;
+    const fD = sD > 0 ? tD / sD : 0, fC = sC > 0 ? tC / sC : 0, fR = sR > 0 ? tR / sR : 0;   // (each cell gives this share of its exposed grams)
+    for (let q = a; q <= b; q++) {
+      if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm);
+      if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm);
+      if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q]));
+    }
+    out[0] = tD; out[1] = tC; out[2] = tR;
+    return out;
+  }
+  // a bottom forager (or a school) takes from the worms and scuds of bed cell jb: want × E/(E + K_FISH), E the density above
+  // the REFUGE (g/m²), at most CROP of what is reachable; returns the grams taken
+  takeBenth(jb, want) {
+    if (!(want > 0) || jb < 0) return 0;
+    const E = this.benth[jb] / A2 - BENTHOS.REFUGE; if (!(E > 0)) return 0;
+    const g = Math.min(want * E / (E + BENTHOS.K_FISH), PLANKTON.CROP * E * this.G.bedA[jb]);
+    this.benth[jb] -= g / this.a[jb]; return g;
+  }
+  // a bottom-sifter takes the bed's organic layer (poor food); a dead fish's body joins it
+  takeSedOM(jb, want) {
+    if (!(want > 0) || jb < 0) return 0;
+    const g = Math.min(want, PLANKTON.CROP * this.sedOM[jb] * this.a[jb]); this.sedOM[jb] -= g / this.a[jb]; return g;
+  }
+  addSedOM(jb, g) { if (jb >= 0 && g > 0) this.sedOM[jb] += g / this.a[jb]; }
 }

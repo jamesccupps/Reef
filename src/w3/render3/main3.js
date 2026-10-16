@@ -9,13 +9,15 @@ import { GEO, BODIES, LAND, BROOK } from '../geometry.js';
 import { CameraRig } from './controls3.js';
 import { FAR3 } from './far3d.js';
 import { Env3, CLOCK3 } from '../env3.js';
+import { Fish3 } from '../fish3.js';
+import { makeFishView } from './fish3view.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
 const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, normalize, pow, sin, time, abs: tabs } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain' };
+const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain', fish: true, fishScale: 1 };
 const kLand = () => S.exag / 10;
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -268,7 +270,8 @@ const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-260, 42
 // ---------- the cut-away: a north–south position; everything south of it is clipped and the section face drawn ----------
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const clipped = new THREE.ClippingGroup(); clipped.clippingPlanes = [clipPlane]; clipped.enabled = false;
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad);
+const fishView = makeFishView();   // the fish (src/w3/fish3.js), every one an instance, schools as their n fish
+clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -417,22 +420,31 @@ $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; 
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = S.trees; });
+$('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = S.fish; });
+for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
 $('t-notes').addEventListener('change', e => document.body.classList.toggle('nonotes', !e.target.checked));
 $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle('folded'); $('fold').textContent = f ? '+' : '–'; $('fold').setAttribute('aria-expanded', String(!f)); });
 
 // ---------- the live water model and its clock ----------
-const LIVE = { env: null, run: true, speed: 1, acc: 0, lastSeason: null, sinceUI: 0, sinceSection: 0 };
+const LIVE = { env: null, fish: null, run: true, speed: 1, acc: 0, envN: 0, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0 };
 const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, early July, early Oct, Feb)
 const seasonOf = yf => yf < 0.25 ? 'spring' : yf < 0.5 ? 'summer' : yf < 0.75 ? 'fall' : 'winter';
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 const MDAYS = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28];
 function dateOf(yf) { let d = yf * 365; for (let m = 0; m < 12; m++) { if (d < MDAYS[m]) return `${MONTHS[m]} ${1 + Math.floor(d)}`; d -= MDAYS[m]; } return 'February 28'; }
+// the sim: the fish at 10 steps a sim second, the water every second step (as the gate runs them); at most ~14 ms of it a frame
+// — when it can't keep up (the higher speeds) it runs slower than asked rather than stall the view
 function liveTick(dtReal) {
-  const e = LIVE.env; if (!e || !LIVE.run) return;
+  const e = LIVE.env, F = LIVE.fish; if (!e || !LIVE.run) return;
   LIVE.acc += dtReal * LIVE.speed;
-  let n = 0; while (LIVE.acc >= 0.2 && n < 6) { e.step(0.2); LIVE.acc -= 0.2; n++; }   // (the water model at 5 updates a sim second)
-  if (n === 6) LIVE.acc = 0;
+  const t0 = performance.now();
+  while (LIVE.acc >= 0.1 && performance.now() - t0 < 14) {
+    if (F) { fishView.remember(F); F.step(0.1); }
+    if (++LIVE.envN % 2 === 0) e.step(0.2);
+    LIVE.acc -= 0.1;
+  }
+  LIVE.acc = Math.min(LIVE.acc, 0.1);
 }
 function lightByDay() {   // the sun's height and the sky's brightness follow the water model's day
   const e = LIVE.env; if (!e) return;
@@ -458,6 +470,7 @@ async function start() {
   await renderer.init();
   $('exag').value = String(S.exag);
   LIVE.env = new Env3();   // the 3-D water (src/w3/env3.js + chem3.js), opening in late May
+  LIVE.fish = new Fish3(LIVE.env);   // … and its fish at the real lakes' numbers
   placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
@@ -465,6 +478,7 @@ async function start() {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt);
     liveTick(dt); lightByDay();
+    if (LIVE.fish && S.fish) LIVE.drawn = fishView.update(LIVE.fish, Math.min(1, LIVE.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.env.sun * 4), now / 1000);
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
@@ -475,8 +489,8 @@ async function start() {
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'}`;
+    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'} · ${LIVE.fish ? Math.round(LIVE.fish.count()).toLocaleString() + ' fish (' + LIVE.fish.fish.length.toLocaleString() + ' brains)' : ''}`;
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

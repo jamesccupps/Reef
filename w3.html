@@ -18,11 +18,11 @@
     <button id="fold" aria-expanded="true" title="Hide or show the controls">–</button>
   </header>
   <div id="ctlbody">
-    <p class="sub">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes' scale; the water's depth, and everything that lives in it, is true size. The water is simulated live; the fish come next.</p>
+    <p class="sub">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes' scale; the water's depth, and everything that lives in it, is true size. The water and its fish are simulated live: about 17,000 fish of eight species at the real lakes' numbers, each fish (or each school of perch and shiners) with its own brain.</p>
     <div class="grp"><span class="gl">The lakes now</span>
       <div id="clock">—</div>
       <div class="row"><button id="play">⏸ pause</button><span class="row" id="speeds"><button data-speed="1" aria-pressed="true">1×</button><button data-speed="6">6×</button><button data-speed="30">30×</button></span></div>
-      <div class="hint">A year passes in an hour at 1× (each day and night is two minutes). The water — temperature, ice, currents, O₂, algae, plankton — is simulated live.</div>
+      <div class="hint">A year passes in an hour at 1× (each day and night is two minutes). The water — temperature, ice, currents, O₂, algae, plankton — and the fish are simulated live.</div>
     </div>
     <div class="grp"><span class="gl">View</span><div class="row" id="views"></div></div>
     <div class="grp"><span class="gl">Look</span><div class="row" id="looks">
@@ -47,8 +47,12 @@
       <label class="tog"><input id="t-clear" type="checkbox"> See into the water</label>
       <label class="tog"><input id="t-water" type="checkbox" checked> Water</label>
       <label class="tog"><input id="t-trees" type="checkbox" checked> Trees</label>
+      <label class="tog"><input id="t-fish" type="checkbox" checked> Fish</label>
       <label class="tog"><input id="t-labels" type="checkbox" checked> Labels</label>
       <label class="tog"><input id="t-notes" type="checkbox" checked> Field notes</label>
+    </div></div>
+    <div class="grp"><span class="gl">Fish size</span><div class="row" id="fishsize">
+      <button data-scale="1" aria-pressed="true">True size</button><button data-scale="4">×4</button><button data-scale="12">×12 (see them from the air)</button>
     </div></div>
     <div class="grp"><span class="gl" id="legtitle">Ground cover</span><div class="legend" id="legend"></div></div>
     <p class="help">Drag to look around · right-drag or shift-drag to pan · scroll to zoom · W A S D to move, R / F up and down</p>

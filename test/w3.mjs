@@ -200,6 +200,106 @@ console.log('\n— environment 3-D: chemistry and plankton —');
     check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16, `${ms.toFixed(1)} ms`); }
 }
 
+// ============================================================
+//  FISH 3-D, slice a — the agent core: founders, senses and brains, habitat drives, movement, feeding, bioenergetics, hazards
+//  (src/w3/fish3.js)
+// ============================================================
+console.log('\n— fish 3-D: the agent core —');
+{
+  const { Env3 } = await import('../src/w3/env3.js');
+  const { Fish3, KEYS3, S3 } = await import('../src/w3/fish3.js');
+  const { ENV } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  const inWater = a => GEO.bodyAt(a.x, a.y) !== LAND && a.z >= 0 && a.z <= Math.max(0.12, GEO.depthAt(a.x, a.y)) + 1e-3 && Number.isFinite(a.x + a.y + a.z + a.W + a.L);
+  const run = (e, F, secs) => { for (let i = 0; i < Math.round(secs / 0.1); i++) { F.step(0.1); if (i % 2) e.step(0.2); } };
+  // the founders: each species at the design census (fish ≥ 7.5 cm per hectare), the lakes' fish biomass inside Maine's range
+  { seed(501); const e = new Env3({ col: 10 }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
+    for (const k of KEYS3) { const r = c[k], d = Math.abs(r.perHa / S3[k].perHa - 1); worst = Math.max(worst, d); txt.push(`${k} ${r.perHa.toFixed(0)}`); }
+    const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
+    check('the founders: every species at its census density (±10 %), ~17,000 fish ≥ 7.5 cm in ~3,300 agents, 60–150 kg/ha, all in the water', worst < 0.1 && kg > 60 && kg < 150 && wet && schools,
+      `${F.count().toFixed(0)} fish in ${F.fish.length} agents, ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`); }
+  // a summer's day and night: the fish stay in the water, swim, and each species keeps to its own water
+  { seed(502); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
+    const hab = (k, f) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };
+    const snap = () => ({ wpBot: hab('whiteperch', a => a.bed), sfBot: hab('sunfish', a => a.bed), bhOver: hab('catfish', a => a.bed - a.z), pkZ: hab('pike', a => a.z), ypBot: hab('perch', a => a.bed), bhSpd: hab('catfish', a => a.spd / (a.L / 100)) });
+    let wet = true, day = null, night = null, dark = 0;
+    for (let i = 0; i < 1400; i++) {
+      F.step(0.1); if (i % 2) e.step(0.2); if (i % 50 === 0 && !F.fish.every(inWater)) wet = false;
+      if (!day && i > 300 && e.sun > 0.9) day = snap();
+      if (day && !night) { if (e.sun <= 0) dark++; if (dark > 300) night = snap(); }
+    }
+    let moved = 0, n = 0; for (const a of F.fish) { const p = x0.get(a.id); if (p) { moved += Math.hypot(a.x - p[0], a.y - p[1]); n++; } } moved /= n;
+    check('a summer\'s day and night: every fish stays in the water (above the bed, under the surface, never on land) and swims (mean > 5 m)', wet && moved > 5, `mean distance ${moved.toFixed(1)} m in 140 s`);
+    check('by day each kind keeps to its water: white perch and yellow perch offshore (over ≥ 1 m deeper water than the pumpkinseed), bullheads on the bed, pickerel in the upper water',
+      day && day.wpBot > day.sfBot + 1 && day.ypBot > day.sfBot + 1 && day.bhOver < 0.2 && day.pkZ < 1.5, day ? `bottom depth: white perch ${f2(day.wpBot)} m, yellow perch ${f2(day.ypBot)} m, pumpkinseed ${f2(day.sfBot)} m; bullheads ${f2(day.bhOver)} m over the bed; pickerel at ${f2(day.pkZ)} m` : 'no day sampled');
+    check('at dusk the white perch and yellow perch come inshore (over ≥ 0.4 m shallower water by night) and the bullheads leave their rest (swim ≥ 2× faster)', !!(day && night && night.wpBot < day.wpBot - 0.4 && night.ypBot < day.ypBot - 0.4 && night.bhSpd > 2 * day.bhSpd),
+      day && night ? `white perch over ${f2(day.wpBot)} → ${f2(night.wpBot)} m, yellow perch ${f2(day.ypBot)} → ${f2(night.ypBot)} m; bullheads ${f2(day.bhSpd)} → ${f2(night.bhSpd)} BL/s` : 'no night sampled'); }
+  // the bookkeeping: a school's zooplankton and a bottom feeder's worms leave the water's fields gram for gram; respiration
+  // takes its O₂ from the fish's own water
+  { seed(503); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
+    const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; return s; };
+    for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 2; ch.zooC[j] = 1; } for (const j of ch.bedCells) ch.benth[j] = 12 * 8.2;
+    let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2 && GEO.depth[i] < 2.4) { [px, py] = GEO.cellCentre(i); break; }
+    const sch = F.add('whiteperch', 20, 80, 1.5, 2, 50), sk = F.add('sucker', px, py, null, 4, 1); sk.z = GEO.depthAt(sk.x, sk.y) - 0.1;
+    sch.gut = 0; sk.gut = 0; F._hashBuild(); let dz = 0, dg = 0, db = 0, dgs = 0, wrong = 0;
+    for (let i = 0; i < 20; i++) {
+      const z0 = zooG(), b0 = benG(), g0 = sch.gut, gs0 = sk.gut;
+      for (const a of [sch, sk]) { a.c = e.colAt(a.x, a.y); a.j = e.cellAt(a.x, a.y, a.z); a.bed = GEO.depthAt(a.x, a.y); a.jb = F.bedCell(a.c, a.bed); a.T = e.temp[a.j]; a.o2 = ch.o2[a.j]; const cm = F._energetics(a, a.s.sp.bio, a.T, 1e-9); F._feed(a, F.fish.indexOf(a), cm, 1, 0.1); }
+      dz += z0 - zooG(); dg += (sch.gut - g0) * sch.n; db += b0 - benG(); dgs += sk.gut - gs0;
+      const j = sch.j, o0 = ch.o2[j]; ch.o2[j] = Math.max(0, ch.o2[j] - sch.n * 0.01 * 0.1 / (G.vol[j] * ENV.O2_MGL)); if (Math.abs((o0 - ch.o2[j]) * G.vol[j] * ENV.O2_MGL - sch.n * 0.01 * 0.1) > 2e-3 * sch.n * 0.01 * 0.1) wrong++;   // (Float32 fields)
+    }
+    check('a school\'s zooplankton and a sucker\'s worms leave the water\'s fields gram for gram (and the O₂ the fish breathe from their own cell)', dz > 0 && db > 0 && Math.abs(dz - dg) / dz < 1e-3 && Math.abs(db - dgs) / db < 1e-3 && !wrong,
+      `school ate ${dg.toFixed(3)} g (field −${dz.toFixed(3)}), sucker ${dgs.toFixed(3)} g (bed −${db.toFixed(3)})`); }
+  // PREDATION: a smallmouth beside a school of small shiners strikes; each kill takes ONE fish from the school, whose mass lands
+  // in the bass's gut
+  { seed(504); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+    const b = F.add('bass', 20, 80, 1.5, 4, 1), sh = F.add('minnow', 20.4, 80, 1.5, 0.6, 60); sh.L = 5; sh.W = 1.3; sh.gon = 0; F._settle(sh);
+    let kills = 0, gotG = 0; const n0 = sh.n;
+    for (let i = 0; i < 400 && kills < 3; i++) {
+      sh.x = b.x + 0.3; sh.y = b.y; sh.z = b.z; F._hashBuild(); b.missCd = 0;
+      const g = F._strike(b, F.fish.indexOf(b), 50, 1, 1, 0.1); if (g > 0) { kills++; gotG += g; }
+    }
+    check('predation: a smallmouth beside a school of small shiners kills, one fish per strike — the school loses exactly the fish eaten, the bass gets their mass',
+      kills >= 3 && Math.abs(n0 - sh.n - kills) < 1e-9 && Math.abs(gotG - kills * 1.3) < 1e-6 && F.stats.eatenBy['bass>minnow'] === kills, `${kills} kills, school ${n0} → ${sh.n}, ${gotG.toFixed(1)} g eaten`); }
+  // SCHOOLS meet and merge (keeping one parent's genome, never averaged), split above twice their size — the fish are conserved
+  { seed(505); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+    const a = F.add('perch', 20, 80, 1.5, 2, 30), b = F.add('perch', 21, 80, 1.5, 2, 25); F.add('perch', -40, 60, 1.0, 2, 2 * S3.perch.school + 20);
+    const ga = a.g, gb = b.g, tot = F.count(); F._hashBuild(); F._schools(); F.fish = F.fish.filter(x => x.alive);
+    const merged = F.fish.find(x => x.n === 55);
+    check('schools of one kind and size merge (one parent\'s genome kept, not averaged) and split above twice their size — no fish gained or lost',
+      !!merged && (merged.g === ga || merged.g === gb) && Math.abs(F.count() - tot) < 1e-9 && F.fish.length === 3 && Math.max(...F.fish.map(x => x.n)) <= 2 * S3.perch.school,
+      `${tot} fish → ${F.fish.map(x => x.n).join(' + ')}`); }
+  // STARVATION: a pumpkinseed in a lake emptied of its food loses condition and dies of hunger within weeks of summer
+  { seed(506); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem;
+    const a = F.add('sunfish', 20, 80, null, 3, 1); let t = 0, Kmin = a.K;
+    ch.zooD.fill(0); ch.zooC.fill(0); ch.zooR.fill(0); for (const j of ch.bedCells) ch.benth[j] = 0;
+    while (a.alive && t < 120 * 9.86) { F.step(0.1); Kmin = Math.min(Kmin, a.K); t += 0.1; }
+    check('starvation: a summer pumpkinseed without food wastes (condition K falls) and dies of hunger within weeks', !a.alive && a.cause === 'starve' && t / 9.86 < 100, `died after ${(t / 9.86).toFixed(0)} days (${a.cause || 'alive'}), K → ${f2(Kmin)}`); }
+  // HYPOXIA: a perch whose bottom water has no O₂ climbs out of it within seconds
+  { seed(507); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    let c0 = -1, dm = 0; for (let c = 0; c < G.NC; c++) if (G.depthMax[c] > dm) { dm = G.depthMax[c]; c0 = c; }
+    const a = F.add('perch', G.cx[c0], G.cy[c0], null, 3, 1); a.z = GEO.depthAt(a.x, a.y) - 0.2;
+    const z0 = a.z; for (let i = 0; i < 100; i++) { for (let k = 2; k < G.nL[c0]; k++) ch.o2[G.cell0[c0] + k] = 0.01; F.step(0.1); }
+    check('hypoxia: a perch on an anoxic bottom climbs out of the dead water within seconds (into water with O₂)', a.alive && a.z < 1.0 && a.o2 > a.o2Crit, `from ${f2(z0)} m to ${f2(a.z)} m (O₂ ${(a.o2 * ENV.O2_MGL).toFixed(1)} mg/L)`); }
+  // DETERMINISM: the same seed makes the same lake of fish
+  { const one = () => { seed(508); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); run(e, F, 6); return F.fish.map(a => `${a.x.toFixed(5)},${a.z.toFixed(5)},${a.W.toFixed(6)},${a.n.toFixed(4)}`).join(';'); };
+    check('determinism: the same seed gives the same fish (positions, masses, school sizes) after 60 steps', one() === one()); }
+  // A SUMMER MONTH (the coarse grid): every species feeds (consumption a realistic share of its maximum), none dies out, the
+  // lakes' fish biomass holds inside Maine's range; the fish step's cost
+  { seed(509); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); run(e, F, 20); F.resetIntake(); const B0 = F.biomass();
+    let tf = 0, steps = 0; for (let i = 0; i < 296 * 10; i++) { const t0 = performance.now(); F.step(0.1); tf += performance.now() - t0; steps++; if (i % 2) e.step(0.2); }
+    const c = F.census(), kg = F.biomass() / 1000 / F.lakeHa; const lowP = [], gone = [], txt = [];
+    for (const k of KEYS3) { const r = c[k]; txt.push(`${k} ${f2(r.p)}`); if (!(r.n > 0.5 * S3[k].perHa * F.lakeHa)) gone.push(k); if (!(r.p > 0.15)) lowP.push(k); }
+    const st = F.stats.died; let starve = 0, all = 0; for (const k in st) for (const cs in st[k]) { all += st[k][cs]; if (cs === 'starve') starve += st[k][cs]; }
+    // (how MUCH they eat — p, the share of the maximum ration — is the food web's calibration, stage 6: the water is still too
+    // productive and the type III response too generous, p ~0.5–0.97 vs ~0.3–0.6 in real lakes; here every species must feed)
+    check('a summer month: every species feeds (consumption ≥ 15 % of its maximum ration), none halves, biomass 60–170 kg/ha (Maine 60–150 + a summer of growth)',
+      !lowP.length && !gone.length && kg > 60 && kg < 170, `p ${txt.join(', ')}; biomass ${(B0 / 1000 / F.lakeHa).toFixed(0)} → ${kg.toFixed(0)} kg/ha; deaths ${all.toFixed(0)} (starved ${starve.toFixed(0)})${gone.length ? '; halved: ' + gone.join(', ') : ''}`);
+    const ms = tf / steps;
+    check('a fish step (~3,300 agents: senses, brains at 5 Hz, drives, movement, feeding, bioenergetics) costs ≤ 25 ms', ms < 25, `${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent)`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

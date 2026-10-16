@@ -166,6 +166,31 @@ mounds in the brook), young-of-year schools and recruitment (new individuals, or
 | Chain pickerel | ~20 | ~130 | individuals |
 | Banded killifish, blacknose dace (new) | — | shoals | super-individuals |
 
+**Built (stage 5, slice a — `src/w3/fish3.js`; the view `src/w3/render3/fish3view.js`):** the agent core. Founders at the
+census above (eight species — redbreast and fallfish come with slice b): ~16,600 fish ≥ 7.5 cm in ~3,100 agents (white
+perch and yellow perch in schools of ~80, shiners ~60; the rest one agent a fish), ages from each species' M, lengths from its
+growth curve (Maine's crowded white and yellow perch at 0.72 / 0.8 of it) — ~120 kg/ha. Each agent: a recurrent brain on the
+3-D inputs (26: food, threat and school bearings in its own frame with above/below, depth, height over the bed, bottom depth,
+shore, the way to deeper water, light, temperature, O₂, energy, hunger, fear, home) and six outputs (turn, pitch, thrust,
+strike, flee, hide), deciding at 5 Hz; Baldwinian learning on its hidden→output weights. The brain's turn is high-passed (a
+fresh brain's constant bias would only circle) and its actions act in context (a strike at a prey it senses, a flight from a
+threat). Innate drives from the habitat research (`docs/research_notes/Whole lake 3D fish simulation/habitat3d.md` §9): the
+bottom depth each species wants by day, by night and under ice (the lake's slope smoothed over ~10 m tells it the way), its
+place in the column, its activity, its preferred temperature; out of low O₂ (and an escape straight up near the lethal level);
+schools keep together, meet, merge (one parent's genome) and split; home ranges; the look-ahead keeps fish off the shore. A
+fish outside its habitat travels at its 30-min sustained speed (the dusk hour is ~5 s of the sim's day). Feeding as the 2-D
+sim's, on the 3-D fields: zooplankton from its cell and the layers above and below (type III, the day's light), the bed's worms
+and scuds (crayfish eaters at any size — the stand-in until crayfish), the organic layer for bullheads and suckers; piscivores'
+kill hazard over the catchable fish within their strike reach (a school counts n^0.5; very shallow water hides small fish); a
+strike takes one fish. FB4 bioenergetics on the 3-D calendar, gonads, a spawning that lays (and counts) the eggs; starvation,
+heat, hypoxia, other natural deaths; a dead fish's body joins the bed's organic layer; respiration takes O₂ from the fish's
+own water. ~12 ms per step (4 µs an agent). The view: every fish an instance of one body (a school drawn as its n fish, tight
+by day, loose at night), interpolated between the 10-Hz steps, its body waving as it swims; true size or ×4 / ×12.
+KNOWN (slice a): fish feed too well (p 0.5–0.97; real ~0.3–0.6) — the water is too productive (zooplankton 100–480 µg/L with
+fish, a ~9-day algae–zooplankton cycle) and the type III response generous: the food web's calibration (stage 6); piscivores
+lack their real prey (young-of-year: slice b) and crayfish (stage 7); no birds or other shore predators yet (natural deaths are
+the 2-D sim's M_OTHER half); a dusk move is partial (a fish covers ~15 m of a night's 50 s).
+
 **Known calibration problems to solve here** (the 2-D census of stage A, 3 seeds × 3–4 years, `test/diag` census, deaths,
 fryfate): total fish 130–140 kg/ha (inside the real 60–150) but the wrong mix — white perch 70–90 kg/ha (target 15–30) at a
 mean ~180 g (Maine's crowded white perch stay 25–45 g: real white perch STUNT — food competition among adults is too weak in
