@@ -5,7 +5,26 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-16) — THE REAL HOT BROOK LAKES, STAGE A DONE, branch `zoo-field` (save v33)
+## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D (design done, geometry built), branch `zoo-field`
+
+DECIDED (human, 2026-10-15): rebuild the sim as BOTH WHOLE Hot Brook lakes + the brook in 3-D (not the slice in a 3-D
+display), at 1/10 horizontal scale with TRUE depths ("it can be scaled down a bit"), a 1-HOUR YEAR. Design:
+docs/HOT_BROOK_3D.md (decisions and the scale/time/brains trade-off, the world, the 3-D environment, fish as individuals +
+school agents + brainless shoals, super-individual rules, movement, the renderer, a four-season walk-through, the plan);
+research: docs/research_notes/Whole lake 3D fish simulation/ (4 notes). Built alongside the 2-D sim in src/w3/ with its own
+gate test/w3.mjs (in npm test). DONE: stage 1 geometry (cb0f085) — src/w3/geometry.js + generated src/w3/hotbrook3d.js
+(tools/hotbrook/build_world3d.py): Upper 3.75 ha / mean 3.05 / max 5.52 m, Lower 2.79 ha / 2.67 / 3.94, brook 77 m with the
+angler's pool; 12 checks. Measured: a lean 3-D agent core runs 3,800 brains at 0.7 µs/agent (10 Hz decisions); three.js r186
+draws 20k fish in ~1.3 ms on the human's RTX 3060.
+NEXT: stage 3 — the environment in 3-D (src/w3/env3.js: 5-m columns × 0.5-m layers, per-column physics ported from
+environment.js, wind circulation from two precomputed fields, grid-scale mixing, the night siphon, under-ice exchange, weed
+damping, through-flow; closed budgets) + checks; then stage 4, the renderer's first light so the human sees the 3-D lakes.
+OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
+KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
+adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;
+young bullheads starve in August; fish ≥ 7.5 cm 500–1,100/ha vs ~2,600.
+
+## (previous) ▶ NOW (2026-10-16) — THE REAL HOT BROOK LAKES, STAGE A DONE, branch `zoo-field` (save v33)
 
 The human, looking at the full-screen display: most of the screen is soil (the 3.4:1 landscape at true depths is ~19 % water
 on their ~21:9 ultrawide, 14 % at 16:9), there is nothing above the water, "maybe 3d or isometric". Mockups shown (scratchpad
