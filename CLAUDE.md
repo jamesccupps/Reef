@@ -29,7 +29,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - Never use `document`, `window`, `canvas` or `localStorage` there.
   - `species.js` `draw()` only calls a passed-in `put()`.
 - **Browser layer:** `render.js`, `glpost.js`, `inspector.js`, `ui.js`, `main.js`, `ffworker.js` (the fast-forward module Worker: imports only the pure modules).
-  - The 3-D view: `w3.html` + `w3.css` → `src/w3/render3/` (`main3.js`, `controls3.js`, `fish3view.js`, `plants3view.js`, `water3.js` (how the water looks: attenuation, the fog's colour), the sim's module Worker `sim3worker.js` (imports only the pure `src/w3/` modules), generated `far3d.js`), on three.js r186 vendored in `vendor/three-0.186.1/` (one bundled ES module, served from the project so the CSP stays `script-src 'self'`).
+  - The 3-D view: `w3.html` + `w3.css` → `src/w3/render3/` (`main3.js`, `controls3.js`, `fish3view.js`, `plants3view.js`, `rises3view.js` (the insects on the water; the fish's rises, splashes and leaps), `water3.js` (how the water looks: attenuation, the fog's colour), the sim's module Worker `sim3worker.js` (imports only the pure `src/w3/` modules), generated `far3d.js`), on three.js r186 vendored in `vendor/three-0.186.1/` (one bundled ES module, served from the project so the CSP stays `script-src 'self'`).
 - **Determinism.**
   - Use the seeded `core.rand` and a fixed timestep.
   - Render and cosmetic randomness must use `Math.random`, never `core.rand`.

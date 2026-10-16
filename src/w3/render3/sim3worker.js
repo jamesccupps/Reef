@@ -18,6 +18,8 @@ const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on
 const PLANTS_MS = 4000;   // the weeds change slowly: their field every this often
 const FINE = 0.1, FINE_UP = 6, BLOCKS_S = 3, BLOCK_MAX = 1752, ENV_FINE = 60;   // s; ×; blocks a second; s; s of water step when fine
 let env = null, F = null, run = true, speed = 1, acc = 0, envAcc = 0, h = FINE, show = 'plain', ticks = 0, plantsAt = -1e9;
+const RISES_MAX = 300;   // rises a snapshot carries at most (the view's rings: the insects taken at the surface)
+let rises = [];
 
 function remember() {
   for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; }
@@ -32,6 +34,7 @@ function advance(dt) {
   const t0 = performance.now();
   while (acc >= h && performance.now() - t0 < BUDGET) {
     remember(); F.step(h); acc -= h;
+    for (let q = 0; q < F.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(F.rises[q]);
     // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour)
     envAcc += h; if (envAcc >= Math.max(h, ENV_FINE) - 1e-9) { env.step(envAcc); envAcc = 0; }
   }
@@ -51,7 +54,8 @@ function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed c
   const nb = P.cells.length, out = new Float32Array(P.Bs.length * nb);
   for (let f = 0; f < P.Bs.length; f++) out.set(P.Bs[f], f * nb);
   const mus = env.lit ? Float32Array.from(env.lit.mu) : new Float32Array(nb);   // (the mussels /m², the same cells)
-  postMessage({ type: 'plants', shoots: out, mus, yf: env.yearFrac() }, [out.buffer, mus.buffer]); plantsAt = performance.now();
+  const surf = new Float32Array(env.G.NC); if (env.lit) for (let c = 0; c < surf.length; c++) surf[c] = env.lit.surfA[c] + env.lit.surfT[c];   // (the insects on the water, g wet/m², per column)
+  postMessage({ type: 'plants', shoots: out, mus, surf, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer]); plantsAt = performance.now();
 }
 function snapshot() {
   const fs = F.fish, Y = F.yoy;
@@ -72,11 +76,11 @@ function snapshot() {
     yb[o++] = q._px; yb[o++] = q._py; yb[o++] = q._pz; yb[o++] = q.x; yb[o++] = q.y; yb[o++] = q.z; yb[o++] = q.L; yb[o++] = q.k; yb[o++] = q.n; yb[o++] = q.id; yb[o++] = q.bed;
     yb[o++] = q.gref && q.gref.alive && q.gref.nt > 0 ? 1 : 0;   // (a brood its parent still guards)
   }
-  const ice = Float32Array.from(env.ice);
+  const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises); rises = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun,
-    acc, h, nf, ny, fish: fb, yoy: yb, ice, count, agents: nf, field, show };
-  const tr = [fb.buffer, yb.buffer, ice.buffer]; if (field) tr.push(field.buffer);
+    acc, h, nf, ny, fish: fb, yoy: yb, ice, count, agents: nf, field, show, rises: rz };
+  const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer]; if (field) tr.push(field.buffer);
   postMessage(msg, tr);
 }
 

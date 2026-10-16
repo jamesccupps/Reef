@@ -56,6 +56,10 @@ export const F3 = {
   // re-aimed after each; drives weaker than RELOC_STILL leave it where it is; the rest of the block it wanders about the place
   // (its search path's persistence WANDER_TAU s: a net v·√(τ·t)); BAND_SLOPE the bed's typical slope at the 1/10 scale, to
   // judge how far its depth band lies
+  // RISES (for the view: the human's "the bugs on the surface and bass or some fish jumping to get them"): a fish's surface
+  // feeding counted as single insects of INSECT_G g wet (by count mostly midges, ~1–2 mg, and small land insects; mayflies tens of mg), each a
+  // rise — at most RISE_MAX an agent a step
+  INSECT_G: 0.002, RISE_MAX: 4,
   FINE_MAX: 1, RELOC_N: 6, RELOC_MIN: 1.5, RELOC_STILL: 0.12, BRAIN_BEND: 0.6, WANDER_TAU: 5, BAND_SLOPE: 0.12, FLEE_D: 2,
   ZTOP: 0.08, ZBOT: 0.04,   // m of clearance under the surface and over the bed
   ICE_M: 0.35,          // m: the ice's thickness at full cover (fish stay under it)
@@ -266,6 +270,7 @@ class Fish {
     this.gape = 0; this.bdep = 0; this.spdMax = 0; this.turnMax = 0; this.senseR = 0;
     // this step's surroundings (set at the start of the fish's turn)
     this.c = -1; this.j = -1; this.jb = -1; this.bed = 1; this.T = 15; this.o2 = 1; this.vis = 1; this.cover = 0;
+    this.visF = 1; this._vx = 0; this._vy = 0; this._need = Infinity; this._zT = 0; this.surfG = 0;   // (feeding's sight; a coarse block's heading, need and depth; surface insects toward the next rise)
     // targets from the senses
     this.fx = 0; this.fy = 0; this.fz = 0; this.fd = -1; this.fv = 0; this.fk = 0;   // food (fk 0 none, 1 fish, 2 bed, 3 plankton)
     this.prey = null; this.threat = null; this.td = -1; this.ax = 0; this.ay = 0; this.az = 0; this.an = 0;
@@ -294,6 +299,7 @@ export class Fish3 {
   constructor(env, { founders = true } = {}) {
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
+    this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
     this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
     this.stats.spawnAt = {};
@@ -506,7 +512,7 @@ export class Fish3 {
   step(dt, mv) {
     const coarse = this._coarse = mv === undefined && dt > F3.FINE_MAX; if (mv === undefined) mv = dt;   // (mv given: the R2 compat rung)
     const e = this.env, ch = this.chem, G = this.G, f = this.fish;
-    this.time += dt; this.stepNo++; this.events.length = 0;
+    this.time += dt; this.stepNo++; this.events.length = 0; this.rises.length = 0;
     this._hashBuild(); this._yoyHash();
     this.cnt.fill(0); for (const a of f) if (a.alive) this.cnt[a.k] += a.n;
     // the lake's fish biomass (kg/ha) — the zooplankton's kairomone level (diel vertical migration)
@@ -883,7 +889,12 @@ export class Fish3 {
     if (canS && room > 0 && want > got && fS > 0) {   // the surface: emerging midges and mayflies, the land's beetles and flies — taken
       // as met by a fish near it, whatever else it is about (big, conspicuous items: no search time of their own)
       const g = lit.takeSurfCols(fp, fp.length, Math.min(room, want0 * fS) * n * visDay) / n;
-      if (g > 0) { a.gut += g; a.gutE += g * PREY.INSECT_ED; room -= g; got += g; this.stats.food.surf += g * n; }
+      if (g > 0) {
+        a.gut += g; a.gutE += g * PREY.INSECT_ED; room -= g; got += g; this.stats.food.surf += g * n;
+        // (the insects, one by one: each a rise for the view — a school's fish rise together)
+        a.surfG += g * n; const k = Math.min(F3.RISE_MAX, Math.floor(a.surfG / F3.INSECT_G));
+        if (k > 0) { a.surfG -= k * F3.INSECT_G; if (a.surfG > F3.RISE_MAX * F3.INSECT_G) a.surfG = 0; if (this.rises.length < 3000) this.rises.push(a.x, a.y, a.L, a.k, a.id, k); }
+      }
     }
     if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);

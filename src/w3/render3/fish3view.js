@@ -175,7 +175,7 @@ export function makeFishView() {
   // two steps, scale the size shown (1 = true), night 0..1 (schools loosen), t the clock (s, for the members' wander), (cx, cy)
   // the camera's place in the sim's frame — the young, a few centimetres long, are drawn only within YOY_NEAR × scale of it
   const depthR = KEYS3.map(k => S3[k].sp.depthR);
-  function update(snap, alpha, scale, night, t, cx = 0, cy = 0, sunDir = null) {
+  function update(snap, alpha, scale, night, t, cx = 0, cy = 0, sunDir = null, leapAt = null) {   // (leapAt(id, t): a fish in a leap — rises3view)
     n = 0; ns = 0; if (sunDir) sun = sunDir;
     const dt = lastT < 0 ? 0 : Math.max(0, Math.min(0.1, t - lastT)); lastT = t; frame++; DRAW.t = t;
     const B = snap.fish, NF = snap.nf;
@@ -185,7 +185,11 @@ export function makeFishView() {
       const Lc = B[o + 10], k = B[o + 11], nn = B[o + 12], spd = B[o + 13], bed = B[o + 14], id = B[o + 15], school = B[o + 16], bodyMul = B[o + 17];
       const L = Lc / 100 * scale, D = L * depthR[k] * bodyMul * 1.15, c = tint[k];
       const beat = 6 + 18 * Math.min(1, spd / Math.max(1e-3, Lc / 100) / 4), sY = surfY(x, y);
-      if (!school || nn < 1.5) { put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat, id * 1.7, z); shade(x, -y, yaw, L, z, bed, sY); continue; }
+      if (!school || nn < 1.5) {
+        const lp = leapAt ? leapAt(id, t) : null;   // (leaping at an insect: up out of the water and back — drawn in the air)
+        if (lp) { put(lp.x, surfY(lp.x, lp.y) + lp.h, -lp.y, yaw, lp.pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat * 1.5, id * 1.7, -lp.h); continue; }
+        put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat, id * 1.7, z); shade(x, -y, yaw, L, z, bed, sY); continue;
+      }
       // a school: its n fish (up to MEMBERS_MAX), each a swimmer (swimCrew), ~3 body lengths apart by day, ~8 at night; flattened
       const m = Math.min(MEMBERS_MAX, Math.round(nn)), sp1 = (3 + 5 * night) * L, r = sp1 * Math.cbrt(m) * 0.55;
       DRAW.D = D; DRAW.c = c; DRAW.k = 0.8; DRAW.bed = bed;

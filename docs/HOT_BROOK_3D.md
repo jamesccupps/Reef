@@ -719,6 +719,18 @@ fish, especially the schools — the schools should still be independent fish").
 - **What the sim still does:** a school is one agent of n fish (super-individuals — the design's way to run ~16,600 fish).
   Its fish move individually only in the view.
 
+**Built — RISES, SPLASHES, LEAPS AND THE INSECTS ON THE WATER (2026-10-16; the human: "don't forget about the bugs on the surface
+and bass or some fish jumping to get them").** The sim already had the surface's insects (littoral3: the weeds' emergence and the
+land's fall-in) and fish taking them near the surface. Now fish3 counts each fish's surface feeding as single insects of
+`F3.INSECT_G` 2 mg wet (by count mostly midges and small land insects; ≤ `RISE_MAX` 4 an agent a step) and records each as a RISE
+[x, y, length, species, id, count]; sim3worker.js carries them in each snapshot (≤ 300) and the insects' density per column with
+the weeds every 4 s. `render3/rises3view.js` draws a ring spreading and fading on the water for each (2.6 s; a school's spread
+about it), a splash for a fish of 15 cm or more, and turns some into LEAPS — smallmouth (25 %) and pumpkinseed (6 %) arcing out of
+the water at a damselfly or dragonfly (cosmetic: Math.random; fish3view draws the leaping fish in the air) — and floats the insects
+as dark specks on the film near where the camera looks. In the real lake-like sim the fish keep the surface nearly bare (mean
+~0.05 mg/m²), so rises are sparse — a few a minute in view at dusk; fast-forward's blocks count at most 4 an agent. test/w3.mjs +1
+check. OPEN (audit B11): the real-time rung takes ~1/7 of what a block takes at the surface — the rungs' surface feeding to equate.
+
 ## 7. A year in the 3-D lakes (walk-through)
 
 - **Late April (ice-out ~Apr 23).** Shore leads open first; spring sunlight has already convected the column under the

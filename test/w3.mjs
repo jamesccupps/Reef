@@ -430,9 +430,9 @@ if (run('foodweb')) {
   // of its production — the adults turn to the bed when it thins (K_ZOO); a strong cohort of young then grazes it down in
   // midsummer (Mills & Forney 1983); the young grow to fingerlings by September
   { seed(531); const e = new Env3({ col: 10, yf0: 0.2 }), F = new Fish3(e), ch = e.chem;
-    let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [], bassL = 0;
+    let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [], bassL = 0, riseN = 0; const riseK = new Set();   // (rises: the surface's insects taken, for the view)
     for (let i = 0; i < 120 * 49.3; i++) {
-      F.step(FB); e.step(EW);
+      F.step(FB); e.step(EW); for (let q = 0; q < F.rises.length; q += 6) { riseN += F.rises[q + 5]; riseK.add(F.rises[q + 3]); }
       if (i % 50 === 0) {
         for (const q of F.yoy) if (q.alive && q.s.key === 'bass' && q.n >= 10) bassL = Math.max(bassL, q.L);   // (stage 7b)
         const yf = e.yearFrac(), z = (e.mean(ch.zooD) + e.mean(ch.zooC)) * PLANKTON.UGL, eat = F.stats.food.zoo + F.stats.food.yZoo;
@@ -452,6 +452,12 @@ if (run('foodweb')) {
     const fd = F.stats.food, wShare = fd.weed / Math.max(1e-9, fd.weed + fd.benth);
     check('the weeds feed the fish too: adults take their insects (and pumpkinseed their snails) as a minority of their bed food, the young their small fauna, fish near the surface the hatch',
       wShare > 0.02 && wShare < 0.4 && fd.yWeed > 0 && fd.surf > 0, `weeds ${(wShare * 100).toFixed(0)} % of the adults' bed food (${(fd.weed / 1000).toFixed(0)} kg; worms and scuds ${(fd.benth / 1000).toFixed(0)}); the young ${(fd.yWeed / 1000).toFixed(1)} kg; the surface ${(fd.surf / 1000).toFixed(2)} kg`);
+    // RISES (the human: "the bugs on the surface and bass or some fish jumping to get them"): the fish's surface feeding counted as
+    // single insects for the view — never more insects than they ate, only from the insect eaters
+    { const { F3, KEYS3, S3 } = await import('../src/w3/fish3.js'), kinds = [...riseK].map(k => KEYS3[k]);
+      check('the fish\'s surface feeding becomes RISES for the view: insects taken one by one (never more than were eaten), only by the insect eaters',
+        riseN > 100 && riseN * F3.INSECT_G <= fd.surf * 1.0001 && kinds.every(k => S3[k].sp.diet.insect),
+        `${riseN.toLocaleString()} rises (${(riseN * F3.INSECT_G / 1000).toFixed(1)} of the ${(fd.surf / 1000).toFixed(1)} kg eaten at the surface: the rest past a block's cap) by ${kinds.join(', ')}`); }
     check('young smallmouth cross from copepods to midge larvae (1.5–2.5 cm) and grow on insects past 3 cm by midsummer (Lake Opeongo 3.8–4.6 by late July)',
       bassL >= 3, `the largest school of young smallmouth reached ${f1(bassL)} cm`);
     // (stage 7c) CRAYFISH: the adult smallmouth's staple, some of the pickerel's and bullheads', hardly the perch's; the fish take

@@ -113,9 +113,10 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ RESUME HERE (2026-10-16, later): STAGE R's core is DONE and merged (below). NEXT: the human's request (5) SURFACE INSECTS AND
-RISES (events at the real-time rung → rise rings / splashes / leaps in the view), then R3's fine-rung mechanisms (strike events,
-real strike distances), the remaining compat constants, the small young shiners/pumpkinseed. (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
+▶ RESUME HERE (2026-10-16, later): STAGE R's core is DONE and merged (below), and the human's request (5) — RISES, SPLASHES, LEAPS
+and the insects on the water — is built (fish3 rises → render3/rises3view.js; docs/HOT_BROOK_3D.md §6 "Built — RISES …"). NEXT:
+R3's fine-rung mechanisms (strike events, real strike distances; equate the rungs' surface feeding — B11: the real-time rung takes
+~1/7 of a block's), the remaining compat constants, the small young shiners/pumpkinseed, then the wildlife (7e). (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
 shortcuts; 24 C step-size items; 20 D day–night items; the cost per rung; the order of work §7). STAGE R IS UNDER WAY on branch
