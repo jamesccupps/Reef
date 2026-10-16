@@ -113,6 +113,15 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
+▶ TRUE SCALE — DESIGN + PROTOTYPE DONE, AWAITING THE HUMAN'S GO (2026-10-16, late): the human asked "can we just make everything
+true to scale" and chose "design and prototype" first. docs/TRUE_SCALE.md: build_world3d.py takes HB_SCALE/HB_BROOK_SCALE/
+HB_BROOK_W/HB_MARGIN/HB_OUT (default unchanged); at true scale the existing sim RUNS — 369 + 274 ha, 2,606 water columns
+(53 ms an update), 1.63 M fish in 304,256 agents (889 MB heap, 3.0 KB an agent; 2.3 GB process), a 29-min block 14.6 s (~120×
+real time on one core), a 0.1-s step of ALL fish 8.4 s → needs: T1 geometry (5-m shore cells, the brook as a channel), T2 the
+water in real lengths (H3.REAL 1), T3 fish fidelity by distance from the camera, T4 compact brains (~1.2 KB an agent), T5 2–4
+workers, T6 tiled terrain/photo + ~1.2 M true-size trees with cut-outs (1 M simple trees measured ~45 fps on the human's GPU),
+T7 the gate restated. The human also questioned the fish count: ~1.6 M fish ≥ 7.5 cm IS realistic (~2,500/ha, ~100 kg/ha,
+mostly 10–20-cm panfish; the nets suggest 0.7–1.3 M) — crayfish/mussels/insects are separate populations.
 ▶ LATEST (2026-10-16, afternoon): THE LAKES' SHAPE FROM LIDAR AND PHOTOS (docs/HOT_BROOK_3D.md §2 "Rebuilt from lidar and
 aerial photos"; research note Hot Brook populations and water/lidar_and_shallows.md). The human supplied Google Earth images
 (hotbrooklakes2.zip; reference only — Google's licence: never copied into the repo) and asked for lidar and terrain. DONE:

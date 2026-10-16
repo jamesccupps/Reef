@@ -18,9 +18,14 @@ CLASSES = m['classes']; STREAM_C = CLASSES.index('stream')
 SURF = {1: M['surf']['upper'], 2: M['surf']['lower']}
 
 SCALE, BROOK_SCALE = 0.1, 0.5      # lakes, brook (horizontal)
-CELL = CR * SCALE                   # 1.5 m: one model cell per world cell
 MARGIN = 30.0                       # m of land kept around each lake (world)
 BROOK_W = 4.0                       # m channel width (world: a ~8-m brook at half scale)
+# (the TRUE-SCALE prototype, 2026-10-16 — the human: "can we just make everything true to scale": HB_SCALE=1 HB_BROOK_SCALE=1
+# HB_BROOK_W=8 HB_MARGIN=300 HB_OUT=<dir> builds the world at true size into <dir> instead of src/; the default build is unchanged)
+SCALE = float(os.environ.get('HB_SCALE', SCALE)); BROOK_SCALE = float(os.environ.get('HB_BROOK_SCALE', BROOK_SCALE))
+MARGIN = float(os.environ.get('HB_MARGIN', MARGIN)); BROOK_W = float(os.environ.get('HB_BROOK_W', BROOK_W))
+OUT_DIR = os.environ.get('HB_OUT')
+CELL = CR * SCALE                   # 1.5 m: one model cell per world cell
 rx = lambda i: (i + 0.5) * CR - M['w'] / 2          # model cell centre → real metres (x east)
 ry = lambda j: M['h'] / 2 - (j + 0.5) * CR          # (y north; row 0 is the north edge)
 
@@ -201,8 +206,9 @@ export const HB3 = {{
   cover: '{b64(W_cover.astype(np.uint8))}',
 }};
 """
-os.makedirs(os.path.join(HERE, '..', '..', 'src', 'w3'), exist_ok=True)
-out = os.path.join(HERE, '..', '..', 'src', 'w3', 'hotbrook3d.js')
+SRC = OUT_DIR or os.path.join(HERE, '..', '..', 'src')
+os.makedirs(os.path.join(SRC, 'w3', 'render3'), exist_ok=True)
+out = os.path.join(SRC, 'w3', 'hotbrook3d.js')
 open(out, 'w', encoding='utf-8', newline='\n').write(js); print('wrote src/w3/hotbrook3d.js', round(os.path.getsize(out) / 1e3), 'kB')
 
 try:   # a depth map to check by eye
@@ -215,7 +221,7 @@ try:   # a depth map to check by eye
     for n in notes:
         c = int((n['xy'][0] - X0) / CELL); r = int((n['xy'][1] - Y0) / CELL)
         img[max(0, r - 2):r + 3, max(0, c - 2):c + 3] = [255, 40, 40]
-    Image.fromarray(img[::-1]).resize((NX * 3, NY * 3), Image.NEAREST).save(os.path.join(HERE, 'sim', 'world3d.png')); print('wrote sim/world3d.png')
+    Image.fromarray(img[::-1]).resize((NX * 3, NY * 3), Image.NEAREST).save(os.path.join(OUT_DIR, 'world3d.png') if OUT_DIR else os.path.join(HERE, 'sim', 'world3d.png')); print('wrote world3d.png')
 except ImportError:
     pass
 
@@ -255,7 +261,7 @@ export const FAR3 = {{
   cover: '{b64(F_cover.astype(np.uint8))}',
 }};
 """
-fout = os.path.join(HERE, '..', '..', 'src', 'w3', 'render3', 'far3d.js')
+fout = os.path.join(SRC, 'w3', 'render3', 'far3d.js')
 open(fout, 'w', encoding='utf-8', newline='\n').write(far_js); print('wrote src/w3/render3/far3d.js', FNX, 'x', FNY, round(os.path.getsize(fout) / 1e3), 'kB')
 
 # ---------- the aerial photo on the 1/10 layout (render-only, src/w3/render3/naip3.jpg): USDA NAIP via the USGS National Map
@@ -292,7 +298,7 @@ try:
     lk2 = lake_at(xr, yr); still = ((lk2 == 2) & ~useL) | ((lk2 == 1) & useL)
     rng = np.random.default_rng(3); fill = np.array([62, 78, 50], np.float32) + rng.normal(0, 9, (int(still.sum()), 3)).astype(np.float32)
     out[still] = fill; print('photo: filled', int(still.sum()), 'pixels between the lakes')
-    pout = os.path.join(HERE, '..', '..', 'src', 'w3', 'render3', 'naip3.jpg')
+    pout = os.path.join(SRC, 'w3', 'render3', 'naip3.jpg')
     Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).save(pout, quality=82, optimize=True)
     print('wrote src/w3/render3/naip3.jpg', PW, 'x', PH, round(os.path.getsize(pout) / 1e3), 'kB')
     open(fout, 'a', encoding='utf-8', newline='\n').write(f"// the aerial photo naip3.jpg covers this grid's extent exactly ({PW} × {PH} px, {PHOTO_M} m per pixel, row 0 at the north edge)\nexport const PHOTO = {{ W: {PW}, H: {PH}, M: {PHOTO_M} }};\n")
