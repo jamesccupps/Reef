@@ -45,11 +45,25 @@ function chamfer(pred) {
 const toUpper = chamfer(i => body[i] === UPPER), toLower = chamfer(i => body[i] === LOWER), toBrook = chamfer(i => body[i] === BROOK);
 const shore = chamfer(i => body[i] === LAND);            // water cells: metres to the nearest land
 const toWater = chamfer(i => body[i] !== LAND);          // land cells: metres to the nearest water
+// the brook's water level at a point: its surface falls linearly along its path from Upper's level to Lower's
+const BP = HB3.BROOK.path, BCUM = [0]; for (let k = 1; k < BP.length; k++) BCUM.push(BCUM[k - 1] + Math.hypot(BP[k][0] - BP[k - 1][0], BP[k][1] - BP[k - 1][1]));
+function brookLevel(x, y) {
+  let best = 1e9, u = 0;
+  for (let k = 0; k < BP.length - 1; k++) {
+    const ax = BP[k][0], ay = BP[k][1], dx = BP[k + 1][0] - ax, dy = BP[k + 1][1] - ay, L2 = dx * dx + dy * dy;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)), d = Math.hypot(x - ax - t * dx, y - ay - t * dy);
+    if (d < best) { best = d; u = (BCUM[k] + t * Math.sqrt(L2)) / BCUM[BCUM.length - 1]; }
+  }
+  return HB3.SURF.upper + (HB3.SURF.lower - HB3.SURF.upper) * u;
+}
 for (let i = 0; i < N; i++) {
   const b = body[i];
   if (b !== LAND) { level[i] = elev[i]; depth[i] = depthCm[i] / 100; continue; }
-  const nearest = toBrook[i] < Math.min(toUpper[i], toLower[i]) ? BROOK : toUpper[i] <= toLower[i] ? UPPER : LOWER;
-  level[i] = nearest === UPPER ? HB3.SURF.upper : nearest === LOWER ? HB3.SURF.lower : elev[i] - 0.3;
+  // land: the level of the water around it, blended smoothly between the two lakes and the brook by distance (so the
+  // ground's height above the water is continuous — what the renderer scales when it raises or lowers the land)
+  const [x, y] = [X0 + ((i % NX) + 0.5) * CELL, Y0 + (Math.floor(i / NX) + 0.5) * CELL];
+  const wu = 1 / (toUpper[i] + 4) ** 2, wl = 1 / (toLower[i] + 4) ** 2, wb = 1 / (toBrook[i] + 4) ** 2;
+  level[i] = (wu * HB3.SURF.upper + wl * HB3.SURF.lower + wb * brookLevel(x, y)) / (wu + wl + wb);
   depth[i] = -(elev[i] - level[i]);                       // land: negative depth = the ground's height above that water
 }
 

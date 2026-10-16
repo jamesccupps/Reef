@@ -243,3 +243,44 @@ export const FAR3 = {{
 """
 fout = os.path.join(HERE, '..', '..', 'src', 'w3', 'render3', 'far3d.js')
 open(fout, 'w', encoding='utf-8', newline='\n').write(far_js); print('wrote src/w3/render3/far3d.js', FNX, 'x', FNY, round(os.path.getsize(fout) / 1e3), 'kB')
+
+# ---------- the aerial photo on the 1/10 layout (render-only, src/w3/render3/naip3.jpg): USDA NAIP via the USGS National Map
+# (public domain), re-cut under the same nearer-lake placement as the land (no blending — two photos would ghost), over the
+# far land's extent at PHOTO_M m per pixel; the renderer drapes it on the land ----------
+try:
+    from PIL import Image
+    PHOTO_M = 0.6
+    S_, N_, W_, E_ = 45.575, 45.690, -67.975, -67.900                  # the photo's box (fetch_data.py; = the model's)
+    LAT0_, LON0_ = (S_ + N_) / 2, (W_ + E_) / 2; MX_ = 111320 * math.cos(math.radians(LAT0_)); MY_ = 110540
+    nimg = np.asarray(Image.open(os.path.join(HERE, 'data', 'naip.jpg')).convert('RGB')).astype(np.float32); IH, IW = nimg.shape[:2]
+    PW = int(round(FNX * FAR_CELL / PHOTO_M)); PH = int(round(FNY * FAR_CELL / PHOTO_M))
+    pc, pr = np.meshgrid(np.arange(PW), np.arange(PH)); px = FX0 + (pc + 0.5) * PHOTO_M; py = FY0 + FNY * FAR_CELL - (pr + 0.5) * PHOTO_M   # row 0 = north (image)
+    # which lake's placement each pixel takes: the far grid's seam weight (nearest far cell)
+    fci = np.clip(((px - FX0) / FAR_CELL).astype(int), 0, FNX - 1); fri = np.clip(((py - FY0) / FAR_CELL).astype(int), 0, FNY - 1)
+    useL = fwL[fri, fci] >= 0.5
+    def placed(L):   # real metres under Upper's (L False) or Lower's (L True) placement
+        return np.where(L, (px - T[0]) / SCALE, px / SCALE) + P0[0], np.where(L, (py - T[1]) / SCALE, py / SCALE) + P0[1]
+    def lake_at(xr, yr):
+        i = np.clip(np.round((xr + M['w'] / 2) / CR - 0.5).astype(int), 0, NXR - 1); j = np.clip(np.round((M['h'] / 2 - yr) / CR - 0.5).astype(int), 0, NYR - 1)
+        return lake[j, i]
+    xr, yr = placed(useL)
+    # a placement landing on the OTHER lake's water (where that lake was before it moved) takes the other placement instead
+    lk = lake_at(xr, yr); wrong = ((lk == 2) & ~useL) | ((lk == 1) & useL)
+    useL = np.where(wrong, ~useL, useL); xr, yr = placed(useL)
+    lon = LON0_ + xr / MX_; lat = LAT0_ + yr / MY_
+    u = (lon - W_) / (E_ - W_) * IW - 0.5; v = (N_ - lat) / (N_ - S_) * IH - 0.5
+    # beyond the photo's box: mirror it back in (forest texture rather than smeared edge pixels)
+    refl = lambda a, n: np.abs(((a % (2 * (n - 1))) + 2 * (n - 1)) % (2 * (n - 1)) - (n - 1)) * -1 + (n - 1)
+    u = refl(u, IW); v = refl(v, IH)
+    u0 = np.clip(np.floor(u).astype(int), 0, IW - 2); v0 = np.clip(np.floor(v).astype(int), 0, IH - 2); fu = np.clip(u - u0, 0, 1)[..., None]; fv = np.clip(v - v0, 0, 1)[..., None]
+    out = (nimg[v0, u0] * (1 - fu) + nimg[v0, u0 + 1] * fu) * (1 - fv) + (nimg[v0 + 1, u0] * (1 - fu) + nimg[v0 + 1, u0 + 1] * fu) * fv
+    # where both placements land on the other lake's water (a sliver between the moved lakes), the forest's own tones
+    lk2 = lake_at(xr, yr); still = ((lk2 == 2) & ~useL) | ((lk2 == 1) & useL)
+    rng = np.random.default_rng(3); fill = np.array([62, 78, 50], np.float32) + rng.normal(0, 9, (int(still.sum()), 3)).astype(np.float32)
+    out[still] = fill; print('photo: filled', int(still.sum()), 'pixels between the lakes')
+    pout = os.path.join(HERE, '..', '..', 'src', 'w3', 'render3', 'naip3.jpg')
+    Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).save(pout, quality=82, optimize=True)
+    print('wrote src/w3/render3/naip3.jpg', PW, 'x', PH, round(os.path.getsize(pout) / 1e3), 'kB')
+    open(fout, 'a', encoding='utf-8', newline='\n').write(f"// the aerial photo naip3.jpg covers this grid's extent exactly ({PW} × {PH} px, {PHOTO_M} m per pixel, row 0 at the north edge)\nexport const PHOTO = {{ W: {PW}, H: {PH}, M: {PHOTO_M} }};\n")
+except FileNotFoundError:
+    print('no data/naip.jpg — run fetch_data.py for the aerial photo')
