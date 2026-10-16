@@ -325,6 +325,64 @@ checks. The view: `src/w3/render3/plants3view.js` (below).
 STILL OPEN: young bass starve (no littoral invertebrates yet: snails, insects, crayfish — stage 7b); the autumn zooplankton
 rebound is weak; perch starvation 300–500 a year.
 
+**Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
+simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/
+land_lake_subsidies.md` §1, §6).** Energy pools outside the N/P budget, like the bed's organic layer and its worms and scuds
+(chem3 `sedOM`, `benth`), in g wet per m² of each bed cell (the plants' cells):
+- THE WEEDS' INVERTEBRATES in two sizes: SMALL (early-instar midges, naidid worms, small crustaceans — food for young fish
+  only) and LARGE (late-instar midges, mayfly, caddis and damselfly nymphs, amphipods and isopods on the plants). Their
+  carrying capacity is the plants they live on: ~5 mg DW of fauna per g DW of plant (≈ 30 mg wet) × the form's factor
+  (submerged canopy and the Nitella meadow 1, floating-leaved and rosettes 0.5, emergent 0.25) — a full pondweed canopy
+  (150 g DW/m²) carries ~4.5 g wet/m² (0.5–1.5 g DW: Kirby 4,000–17,000 animals/m²). Production at 20 °C 0.08/day (small)
+  and 0.03/day (large), Q10 2, nothing below 4 °C (community P/B ~5 a year over Hot Brook's season); the small grow into the
+  large (0.04/day). EMERGENCE on a degree-day clock from ice-out (> 4 °C): the overwintered cohort's main pulse at ~100–600
+  degree-days (mid-May–June), a second generation's at ~1,500–2,200 (August–September); ~30 % of insect production leaves.
+  The emerging pupae and adults go to the SURFACE field of the column (food there for an hour or two) and then leave the lake.
+  As the shoots die back in autumn, the fauna above the capacity moves down into the bed's worms-and-scuds pool.
+- SNAILS: soft water (calcium ~2–5 mg/L, unmeasured — inferred) caps them: ~20 mg wet per g DW of broad-leaved plant
+  (floating-leaved and the submerged canopy 1, emergent 0.5, rosettes and meadow 0.3) plus 0.2 g/m² on bare lit bed (< 3 m)
+  — weed beds 0.5–5 g wet/m², bare mud ≤ 0.5. Growth 0.02/day at 20 °C (P/B 2–3 a year), born May–July above 10 °C.
+- THE SURFACE (per column, g wet/m² of water): the emergers, and TERRESTRIAL INSECTS falling in from the forested banks —
+  ~50 mg DW per m of bank a day at the July–August peak (20–120; spring and autumn a fraction), spread over the water by
+  exp(−d/λ) with λ 10 m real (the model's distances × 10), drowning to the bed's organic layer within a day; fly-off of
+  adults within hours.
+FISH: the bed's food becomes "the bed and its weeds" — worms and scuds, the large weed insects (shielded by the stems, 1/(1 +
+(S/250)³) — small sunfish pick inside the beds) and, for pumpkinseed ≥ 9.5 cm and bullheads, snails — taken in proportion to
+what each offers in the forager's footprint; the SURFACE is a third food for the insect eaters within ~1 m of it (shiner,
+pumpkinseed, perch, white perch, bass, small pickerel), shared with the bed and the open water by the same t ∝ f^Q rule.
+YOUNG-OF-YEAR take the small weed fauna from 1.2 cm and the large from 2.5 cm (smallmouth: copepods → midge larvae by 1.5–2.5
+cm, mainly insects by 2.5–5 cm, Opeongo).
+THE SEASONS: late April — ice-out; overwintered large larvae on the evergreen rosettes and meadow and in the bed; snails in the
+bed. May — the canopy sprouts and its fauna grows with it; the first emergence; the first fall-in. June — the weed fauna's
+peak; the main midge and damselfly emergence (surface feeding at dusk); smallmouth fry switch from copepods to midge larvae.
+July–August — fish crowd the weeds: the large insects fall 2–3× (emergence + cropping) while the small new generation grows;
+fall-in peaks; the second generation emerges late. September — partial recovery; shoots begin to die back. October–November
+— the fauna moves to the bed; leaves, not insects, fall in. Winter — nothing grows below 4 °C; the stocks wait in the bed and
+on the evergreens; no surface food. Gate targets (reproduced, not imposed): a full canopy's fauna 2–9 g wet/m² in June, ≥ 5×
+the bare bed's; annual emergence 0.5–2 g DW/m² of vegetated littoral with a May–June peak; the weeds' large insects falling
+from June to August; snails 0.5–5 g wet/m² in weed beds; young smallmouth eating mostly insects at 2.5–5 cm.
+
+**Built (stage 7b).** As designed, with what the runs taught: (1) the overwintering larvae stay in the bed beneath the dying
+shoots (above the shrinking capacity, no production) rather than joining the worms and scuds — otherwise the next spring's
+hatch had nothing to emerge from; (2) the small fauna have their own capacity (a third of the stand's) and are recruited from
+the eggs of the emerging adults (15 % of their mass) — sharing one capacity with the overwintered large larvae, the small
+collapsed in the second year; (3) the fauna and snails EAT their cell's organic layer and periphyton at the bed fauna's 25 %
+yield (no free production); (4) emergence peaks in the spring window (0.08/day) with a fifth or so of the summer generation in
+August–September (0.01); (5) surface insects are taken as MET by a fish near the surface, not by allocating search time to
+them (under the f⁴ time-share a minor food got none); (6) young smallmouth forage the bed from 2.0 cm (species.js benthL — at
+the default 2.5 they had no food between Lzoo 2 and 2.5 cm: a 3-seed A/B, none recruited → 28–267). Results without fish
+(the plant block's run): a full pondweed canopy carries 2.8 g wet/m² of fauna in its second August, 14× the barest lit bed;
+weed-bed snails ~1 g/m², bare 0.2; emergence 0.6 g DW/m² of the vegetated littoral a year, the spring hatch the larger; the
+land's insects concentrated along the forested banks. With fish (3 seeds, May → November): the weeds' large insects cropped to
+~0.3–0.5 g/m² (fishless 1.5–2: the research's 2–3× fall); the weeds are 3–5 % of the adults' bed food (the bed's worms and
+scuds, Quinte-calibrated, dominate) and a share of the young's; the June hatch fed fish at the surface; young smallmouth reach
+3.0–4.5 cm by late July (Opeongo 3.8–4.6) and 17–110 recruit (none before), starvation 32–38 % of the hatch (42–46); young
+perch 6.3–6.7 cm by October (5.5–6.2 before), shiners 3.4–3.8, white perch 4.7–5.2, pumpkinseed 2.4–3.0; adult perch
+starvation ~110 (300–500); 121–155 kg/ha. test/w3.mjs +6 checks.
+STILL OPEN: crayfish (stage 7c: the adult bass's and pickerel's staple, the snails' predator); young pumpkinseed stall at
+0.7–1.0 cm through their limnetic phase (June–August) and young smallmouth survive poorly (~0.3 % of the hatch to autumn;
+real age-0 survival a few %); odonate nymphs as predators of the small fauna and fish larvae.
+
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 
 three.js r186 (`WebGPURenderer`, which falls back to WebGL2 by itself; ES modules with an import map — self-hosted pinned

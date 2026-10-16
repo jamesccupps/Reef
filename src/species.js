@@ -359,6 +359,9 @@ export const BIO = {
     Lhatch: 0.9, sHatch: 0.1, L0: 6, Lref: 33, Lmat: 27, LmatM: 23, matMinAge: yrs(2.5), maxAge: yrs(15), matureAge: yrs(4.5), M: 0.36,   // ♂ 3–4 yr, ♀ 4–5 yr at 20–30 cm (MDIFW); swim-up at 9.1 mm (Shuter et al. 1980); M = 5.4/15. (sHatch 0.1: a female deposits only ~⅓ of her ovary — effective 2,000–3,000 eggs/lb against 7,000–8,000 — and ~40 % of nests fail, MDIFW)
     gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
     fec: { a: 0.1226, b: 3.20 },   // the ovary's 7,000–8,000 eggs per lb (~16,500/kg, MDIFW) × Ws: 30 cm → ~6,500, 40 cm → ~16,400
+    benthL: 2.0,   // cm: smallmouth fry turn from copepods to midge larvae at 1.5–2.5 cm and are mainly insect eaters by 2.5–5 cm (Lake
+                   //   Opeongo — docs/research_notes/Whole lake 3D fish simulation/littoral_invertebrates.md §3); at the default 2.5
+                   //   they had no food between Lzoo (2) and 2.5 cm and starved there (3-D A/B, 3 seeds: none recruited → 28–267)
     Lzoo: 2, Lpisc: 5, gapeR: 0.115, depthR: 0.24, uilt: 36, o2Lethal: 1.1, o2Ice: 0.8, vuln: 0.6,   // (under ice ~0.6–1.0 mg/L, inferred — no bass among the 15,000 fish that crowded an oxygenated inlet in a Michigan winterkill)   // insects by 20 mm, fish and crayfish by 50 mm; gape 0.120·TL − 1.8 mm (Fernando et al. 2018); UILT 36.0 °C
   },
   pike: {     // CHAIN PICKEREL (Esox niger; Mainers call them pike) — FB4 "Northern pike (adult)" (Bevelhimer et al. 1985) as published.

@@ -244,7 +244,7 @@ console.log('\n— fish 3-D: the agent core —');
   // takes its O₂ from the fish's own water
   { seed(503); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
-    const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; return s; };
+    const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; const Lt = e.lit; if (Lt) for (let i = 0; i < Lt.cells.length; i++) s += (Lt.S[i] + Lt.L[i] + Lt.sn[i]) * G.bedA[Lt.cells[i]]; return s; };   // (the bed and its weeds: stage 7b)
     for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 2; ch.zooC[j] = 1; } for (const j of ch.bedCells) ch.benth[j] = 12 * 8.2;
     let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2 && GEO.depth[i] < 2.4) { [px, py] = GEO.cellCentre(i); break; }
     const sch = F.add('whiteperch', 20, 80, 1.5, 2, 50), sk = F.add('sucker', px, py, null, 4, 1); sk.z = GEO.depthAt(sk.x, sk.y) - 0.1;
@@ -255,7 +255,7 @@ console.log('\n— fish 3-D: the agent core —');
       dz += z0 - zooG(); dg += (sch.gut - g0) * sch.n; db += b0 - benG(); dgs += sk.gut - gs0;
       const j = sch.j, o0 = ch.o2[j]; ch.o2[j] = Math.max(0, ch.o2[j] - sch.n * 0.01 * 0.1 / (G.vol[j] * ENV.O2_MGL)); if (Math.abs((o0 - ch.o2[j]) * G.vol[j] * ENV.O2_MGL - sch.n * 0.01 * 0.1) > 2e-3 * sch.n * 0.01 * 0.1) wrong++;   // (Float32 fields)
     }
-    check('a school\'s zooplankton and a sucker\'s worms leave the water\'s fields gram for gram (and the O₂ the fish breathe from their own cell)', dz > 0 && db > 0 && Math.abs(dz - dg) / dz < 1e-3 && Math.abs(db - dgs) / db < 1e-3 && !wrong,
+    check('a school\'s zooplankton and a sucker\'s worms (and weed insects and snails) leave the water\'s and the bed\'s fields gram for gram (and the O₂ the fish breathe from their own cell)', dz > 0 && db > 0 && Math.abs(dz - dg) / dz < 1e-3 && Math.abs(db - dgs) / db < 1e-3 && !wrong,
       `school ate ${dg.toFixed(3)} g (field −${dz.toFixed(3)}), sucker ${dgs.toFixed(3)} g (bed −${db.toFixed(3)})`); }
   // PREDATION: a smallmouth beside a school of small shiners strikes; each kill takes ONE fish from the school, whose mass lands
   // in the bass's gut
@@ -417,10 +417,11 @@ console.log('\n— fish 3-D: the food web through a summer —');
   // of its production — the adults turn to the bed when it thins (K_ZOO); a strong cohort of young then grazes it down in
   // midsummer (Mills & Forney 1983); the young grow to fingerlings by September
   { seed(531); const e = new Env3({ col: 10, yf0: 0.2 }), F = new Fish3(e), ch = e.chem;
-    let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [];
+    let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [], bassL = 0;
     for (let i = 0; i < 120 * 98.6; i++) {
       F.step(0.1); if (i % 2) e.step(0.2);
       if (i % 100 === 0) {
+        for (const q of F.yoy) if (q.alive && q.s.key === 'bass' && q.n >= 10) bassL = Math.max(bassL, q.L);   // (stage 7b)
         const yf = e.yearFrac(), z = (e.mean(ch.zooD) + e.mean(ch.zooC)) * PLANKTON.UGL, eat = F.stats.food.zoo + F.stats.food.yZoo;
         if (yf >= 0.25 && yf < 0.333) { peak = Math.max(peak, z); if (!jp0) { jp0 = ch.zooProd; je0 = eat; } jp1 = ch.zooProd; je1 = eat; }
         B.push(F.biomass() / 1000 / F.lakeHa);
@@ -431,14 +432,20 @@ console.log('\n— fish 3-D: the food web through a summer —');
       peak > 100 && share < 0.5, `peak ${peak.toFixed(0)} µg/L; fish took ${(share * 100).toFixed(0)} % of June's production`);
     check('by September the young are fingerlings (perch and suckers ≥ 4.5 cm — real 5–8) and the lakes\' fish stay within 60–170 kg/ha',
       c.perch.yoyL >= 4.5 && c.sucker.yoyL >= 4.5 && Math.min(...B) > 60 && Math.max(...B) < 170,
-      `young: perch ${f1(c.perch.yoyL)}, sucker ${f1(c.sucker.yoyL)}, white perch ${f1(c.whiteperch.yoyL)}, pumpkinseed ${f1(c.sunfish.yoyL)} cm; biomass ${Math.min(...B).toFixed(0)}–${Math.max(...B).toFixed(0)} kg/ha`); }
+      `young: perch ${f1(c.perch.yoyL)}, sucker ${f1(c.sucker.yoyL)}, white perch ${f1(c.whiteperch.yoyL)}, pumpkinseed ${f1(c.sunfish.yoyL)} cm; biomass ${Math.min(...B).toFixed(0)}–${Math.max(...B).toFixed(0)} kg/ha`);
+    // (stage 7b) THE LITTORAL'S OWN FOOD: the weeds' insects and snails, and the surface's emerging and fallen insects
+    const fd = F.stats.food, wShare = fd.weed / Math.max(1e-9, fd.weed + fd.benth);
+    check('the weeds feed the fish too: adults take their insects (and pumpkinseed their snails) as a minority of their bed food, the young their small fauna, fish near the surface the hatch',
+      wShare > 0.02 && wShare < 0.4 && fd.yWeed > 0 && fd.surf > 0, `weeds ${(wShare * 100).toFixed(0)} % of the adults' bed food (${(fd.weed / 1000).toFixed(0)} kg; worms and scuds ${(fd.benth / 1000).toFixed(0)}); the young ${(fd.yWeed / 1000).toFixed(1)} kg; the surface ${(fd.surf / 1000).toFixed(2)} kg`);
+    check('young smallmouth cross from copepods to midge larvae (1.5–2.5 cm) and grow on insects past 3 cm by midsummer (Lake Opeongo 3.8–4.6 by late July)',
+      bassL >= 3, `the largest school of young smallmouth reached ${f1(bassL)} cm`); }
 }
 
 // ============================================================
 //  PLANTS 3-D, stage 7a — the weeds on the bed (src/w3/plants3.js): the depth limit in coloured water, the coves, the
 //  seasons, the O₂ of a dense bed
 // ============================================================
-console.log('\n— plants 3-D: the weeds —');
+console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —');
 {
   const { Env3, CLOCK3 } = await import('../src/w3/env3.js');
   const { FORMS3 } = await import('../src/w3/plants3.js');
@@ -454,19 +461,44 @@ console.log('\n— plants 3-D: the weeds —');
       let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
       return { shoots, store, veg: veg / bedA, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
     };
-    let peak1 = 0, feb = null, aug = null;
+    // (stage 7b: the weeds' invertebrates, snails and the surface — littoral3.js — over the same run)
+    const Lt = e.lit, litSnap = () => {
+      let fu = 0, nf = 0; const lit = [];
+      for (let i = 0; i < P.cells.length; i++) {
+        let b = 0; for (let f = 0; f < FORMS3.length; f++) b += P.Bs[f][i];
+        if (P.Bs[2][i] > 120) { fu += Lt.S[i] + Lt.L[i]; nf++; }
+        if (P.zb[i] < 3) lit.push([b, i]);
+      }
+      // (the barest tenth of the lit bed < 3 m: every shallow cell grows a little)
+      lit.sort((p, q) => p[0] - q[0]); const bare = lit.slice(0, Math.max(1, Math.round(lit.length / 10)));
+      const ba = bare.reduce((s, [, i]) => s + Lt.S[i] + Lt.L[i], 0) / bare.length, snB = bare.reduce((s, [, i]) => s + Lt.sn[i], 0) / bare.length;
+      return { full: fu / Math.max(1, nf), nf, bare: ba, bareB: bare[bare.length - 1][0], snBare: snB, ...Lt.stock() };
+    };
+    let peak1 = 0, feb = null, aug = null, augL = null, em0 = -1, emSpring = 0, emLate = 0, emPrev = 0, julBank = -1, julOpen = -1;
     for (let t = 0; t < 1.25 * CLOCK3.YEAR_LEN; t += 0.2) {
       e.step(0.2); const yf = e.yearFrac(), y = t / CLOCK3.YEAR_LEN;
       if (y < 0.5 && Math.round(t * 5) % 250 === 0) peak1 = Math.max(peak1, P.total(2));
       if (!feb && y > 0.5 && yf > 0.95) feb = snap();
-      if (!aug && y > 1.0 && yf > 0.44) aug = snap();
+      if (!aug && y > 1.0 && yf > 0.44) { aug = snap(); augL = litSnap(); }
+      if (em0 < 0 && y >= 0.25) { em0 = Lt.emerged; emPrev = Lt.emerged; }
+      if (em0 >= 0) { const d = Lt.emerged - emPrev; emPrev = Lt.emerged; if (yf >= 0.15 && yf < 0.42) emSpring += d; else emLate += d; }
+      if (julBank < 0 && y > 1.0 && yf > 0.38) { let sb = 0, ab = 0, so = 0, ao = 0; for (let c = 0; c < G.NC; c++) { if (Lt.bank[c] > 0) { sb += Lt.surfT[c] * G.area[c]; ab += G.area[c]; } else { so += Lt.surfT[c] * G.area[c]; ao += G.area[c]; } } julBank = sb / ab; julOpen = so / Math.max(1, ao); }
     }
+    const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = augL.vegShare * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry)
     const sum = a => a.reduce((s, v) => s + v, 0);
     check('the second summer: weeds on about a quarter to a half of the bed (research ~30 %), the submerged canopy down to 1.3–2.8 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m)',
       !!aug && aug.veg > 0.2 && aug.veg < 0.5 && aug.deep >= 1.3 && aug.deep <= 2.8 && aug.secchi > 2.5 && aug.secchi < 4,
       aug ? `vegetated ${(aug.veg * 100).toFixed(0)} %, canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
     check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
       !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
+    check('the weeds\' invertebrates: a full pondweed canopy carries 2–9 g wet/m² in its second August (0.5–1.5 g DW — Kirby 4,000–17,000 animals/m²), ≥ 5× the bare lit bed\'s',
+      augL.nf > 0 && augL.full >= 2 && augL.full <= 9 && augL.full >= 5 * augL.bare, `full canopy ${f2(augL.full)} g/m² (${augL.nf} cells), the barest lit bed (≤ ${f1(augL.bareB)} g DW of plants/m²) ${f2(augL.bare)}; the beds' small ${f2(augL.vegS)}, large ${f2(augL.vegL)}`);
+    check('the snails of a soft-water lake: 0.5–5 g wet/m² in the weed beds, under 0.5 on the bare mud (calcium caps them — Vermont soft lakes)',
+      augL.vegSn >= 0.5 && augL.vegSn <= 5 && augL.snBare < 0.5, `weed beds ${f2(augL.vegSn)}, bare ${f2(augL.snBare)} g wet/m²`);
+    check('insects emerge from the weeds: 0.5–2 g DW/m² of the vegetated littoral a year (~30 % of their production), the spring hatch the larger',
+      emYr >= 0.5 && emYr <= 2 && emSpring > emLate, `${f2(emYr)} g DW/m² a year; spring–early summer ${(emSpring / 1000).toFixed(1)} kg, late summer–autumn ${(emLate / 1000).toFixed(1)} kg`);
+    check('the land\'s insects fall on the water by the forested banks: in July the bank columns\' surface holds ≥ 5× the open water\'s',
+      julBank > 5 * julOpen && julBank > 0, `${(julBank * 1000).toFixed(1)} vs ${(julOpen * 1000).toFixed(2)} mg wet/m²`);
     check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',
       !!feb && sum(feb.shoots) < 0.15 * peak1 * 3 && feb.store.every(v => v > 0) && aug.shoots[2] > 2 * feb.store[2],
       feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(aug.shoots[2] / 1000).toFixed(0)} kg by August` : 'no February');

@@ -22,6 +22,7 @@ import { rand, clamp } from '../core.js';
 import { CLOCK3, TS, REAL_S, DAY3 } from './clock3.js';
 import { Chem3 } from './chem3.js';
 import { Plants3 } from './plants3.js';
+import { Littoral3 } from './littoral3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
   COL: 5,               // m (world) column side — 50 m real
@@ -202,6 +203,7 @@ export class Env3 {
     this.chem = chem ? new Chem3(this) : null;   // O₂, N, P, algae, DOM, zooplankton, the bed (chem3.js)
     this.primeSeason(this.time);
     this.plants = this.chem && plants ? new Plants3(this) : null;   // the weeds on the bed (plants3.js)
+    this.lit = this.plants ? new Littoral3(this) : null;              // the weeds' invertebrates, snails, the surface (littoral3.js)
   }
 
   // ---------- precomputed transport patterns ----------
@@ -285,6 +287,7 @@ export class Env3 {
     for (let j = 0; j < G.NCELL; j++) { const b = G.body[G.colOfCell[j]]; this.age[j] = (b === LOWER ? H3.RES_LOWER_D : H3.RES_UPPER_D) * DAY / REAL_S; }
     if (this.chem) this.chem.prime();
     if (this.plants) this.plants.jump();   // (the weeds take the new season's shape, conserving their mass)
+    if (this.lit) this.lit.jump();
   }
   _iceProfile(z) { const s = clamp((z - THERMAL.ICE_TOP_M) / THERMAL.ICE_META_M, 0, 1); return 0.2 + 3.8 * s * s * (3 - 2 * s); }   // ~0 °C under the ice → 4 °C at depth
 
@@ -302,6 +305,7 @@ export class Env3 {
     this._heat(dt, yf);
     if (this.chem) this.chem.step(dt);
     if (this.plants) this.plants.step(dt);
+    if (this.lit) this.lit.step(dt);
     this._transport(dt);
     if (this.chem) this.chem._ledgerFlows();   // (the through-flow's in and out, tallied after it moved them)
     for (let j = 0; j < G.NCELL; j++) this.age[j] += dt;

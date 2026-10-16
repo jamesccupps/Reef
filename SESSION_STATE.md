@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, fish, food web, worker, WEEDS (7a), branch `zoo-field`
+## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, fish, food web, worker, weeds (7a), LITTORAL FOOD (7b), branch `zoo-field`
 
 DECIDED (human, 2026-10-15): rebuild the sim as BOTH WHOLE Hot Brook lakes + the brook in 3-D (not the slice in a 3-D
 display), at 1/10 horizontal scale with TRUE depths ("it can be scaled down a bit"), a 1-HOUR YEAR. Design:
@@ -71,9 +71,20 @@ WATER (CHEM3.KD_COLOUR 0.5: Secchi ~3.2 m) and the catchment's organic subsidy (
 young pumpkinseed 2.7–2.9 cm (from 1.4–3.7). The view: swaying blade tufts, lily pads, reeds near the camera, the bed tinted
 by weed cover beyond; a Weeds toggle. Gate: the winter lake-mean O₂ check lowered 5 → 3 mg/L (coloured water: less light under
 the ice; the bed's under-ice O₂ demand 0.11–0.32 g/m²/d matches the measured 0.2–0.39). test/w3.mjs +4 checks.
-OPEN: young bass starve (no littoral invertebrates yet); weak autumn zooplankton rebound; perch starvation 300–500/yr.
-NEXT: STAGE 7b — the littoral's own food (snails, insects, crayfish on the weeds and the bed: sunfish and young bass), then
-redbreast + fallfish, the shore and wildlife (stage D: snow on the ice, the hydrograph), saves and resume. Perf idea: the fish
+STAGE 7b — THE LITTORAL'S OWN FOOD (this commit; src/w3/littoral3.js; docs/HOT_BROOK_3D.md §5 "Design/Built (stage 7b)";
+research docs/research_notes/Whole lake 3D fish simulation/littoral_invertebrates.md): the weeds' invertebrates in two sizes
+(capacity ∝ the plants they live on; eat the organic layer; emerge on a degree-day clock — the spring hatch the main one; the
+summer generation overwinters in the bed), soft-water snails, the SURFACE (emerging insects + the land's insects falling in
+from forested banks). Fish: "the bed and its weeds" (worms and scuds + weed insects shielded by the stems + snails for
+pumpkinseed ≥ 8 cm), surface insects taken as met near the surface; young fish take the small fauna from 1.2 cm and the large
+from 2.5. Smallmouth benthL 2.0 (species.js — the 2-D too): their 2.0–2.5-cm feeding hole closed (A/B: 0 → 28–267 recruits).
+3 seeds May→Nov: young bass 3.0–4.5 cm by late July, 17–110 recruit; young perch 6.3–6.7 cm; adult perch starvation ~110
+(was 300–500); 121–155 kg/ha. test/w3.mjs +6 checks.
+OPEN: young pumpkinseed stall at 0.7–1.0 cm through their limnetic phase; young bass survival ~0.3 % (real a few %); weak
+autumn zooplankton rebound.
+NEXT: STAGE 7c — CRAYFISH (virile crayfish on the cobble and weeds; the adult bass's staple; snails' predator; research in
+invertebrates_plankton_plants.md §1 + littoral_invertebrates.md §5), odonate nymphs, then redbreast + fallfish, the shore and
+wildlife (stage D: snow on the ice, the hydrograph), saves and resume. Perf idea: the fish
 view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.
 Consider moving the long w3 runs to a separate long suite (the gate is ~10 min for w3 alone).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow); do the lakes

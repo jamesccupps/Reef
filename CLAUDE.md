@@ -25,7 +25,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
 ## Invariants
 - **Pure simulation layer: DOM-free and testable in Node.**
   - Files: `core.js`, `config.js`, `hotbrook_profile.js` (generated data), `bioenergetics.js`, `species.js`, `environment.js`, `world.js`, `camera.js`.
-  - The 3-D whole-lake sim being built alongside (`src/w3/`: `geometry.js`, `hotbrook3d.js` (generated data), `clock3.js`, `env3.js`, `chem3.js`, `fish3.js`, `plants3.js`; see `docs/HOT_BROOK_3D.md`) is pure too.
+  - The 3-D whole-lake sim being built alongside (`src/w3/`: `geometry.js`, `hotbrook3d.js` (generated data), `clock3.js`, `env3.js`, `chem3.js`, `fish3.js`, `plants3.js`, `littoral3.js`; see `docs/HOT_BROOK_3D.md`) is pure too.
   - Never use `document`, `window`, `canvas` or `localStorage` there.
   - `species.js` `draw()` only calls a passed-in `put()`.
 - **Browser layer:** `render.js`, `glpost.js`, `inspector.js`, `ui.js`, `main.js`, `ffworker.js` (the fast-forward module Worker: imports only the pure modules).

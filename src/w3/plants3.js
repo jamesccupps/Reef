@@ -82,7 +82,7 @@ export class Plants3 {
     // per column: the stems (per m², for the fish), the floating-leaf cover, the weed volume's refuge; per water cell: the
     // refuge (chem3.plantRef, read by the zooplankton feeding)
     this.stems = new Float32Array(G.NC); this.flCover = new Float32Array(G.NC); this.pvi = new Float32Array(G.NC);
-    this.ref = new Float32Array(G.NC); this._colA = new Float32Array(G.NC); this._canopy = new Float32Array(G.NC);
+    this.ref = new Float32Array(G.NC); this._colA = new Float32Array(G.NC); this._canopy = new Float32Array(G.NC);   // (_canopy: the weeds' height per column, m)
     if (!ch.plantRef) ch.plantRef = new Float32Array(G.NCELL);
     this._n = 0; this.prod = 0; this.litter = 0;
     this.seed();

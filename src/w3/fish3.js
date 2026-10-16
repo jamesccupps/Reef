@@ -21,6 +21,7 @@
 import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js';
 import { CLOCK3, TS, DAY3 } from './clock3.js';
 import { A2 } from './chem3.js';
+import { LIT3 } from './littoral3.js';
 import { SP, SPECIES } from '../species.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from '../bioenergetics.js';
@@ -273,7 +274,7 @@ export class Fish3 {
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, ySed: 0, yYoy: 0 }, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
+    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
     this.stats.spawnAt = {};
     for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
     this.yoy = [];      // the young-of-year schools (Yoy)
@@ -734,8 +735,13 @@ export class Fish3 {
     // pays best, shared toward the better food (t ∝ f^SHARE_Q): pond bluegill moved between the open water and the sediments
     // within days as their profitability changed (Werner et al. 1983); perch > 5 cm switch to the bed when the zooplankton runs
     // low (Wu & Culver 1992). (SHARE 0: both at once, the 2-D sim's way)
-    const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray;
-    const canB = s.benthic && small && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200, canZ = s.plank || a.L < sp.Lzoo;
+    // (stage 7b) THE BED AND ITS WEEDS: the worms and scuds within reach of the bed, the weeds' large insects (and snails for a
+    // molluscivore) within the canopy; THE SURFACE (emerging and fallen insects) for an insect eater near it — littoral3.js
+    const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray, lit = this.env.lit;
+    const nearBed = a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200;
+    const inWeeds = !!lit && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200 + this.env.plants._canopy[a.c];
+    const moll = !!sp.diet.snail && a.L >= (sp.Lsnail || 0);
+    const canB = s.benthic && small && (nearBed || inWeeds), canZ = s.plank || a.L < sp.Lzoo, canS = !!lit && !!sp.diet.insect && small && a.z <= LIT3.SURF_Z;
     // its footprint: the bed cells within FP_DZ of its depth, and its layer (± one in its own column) of the water, in the
     // columns within its forage radius
     const G = this.G, fp = this._footprint(s.forageR, a.c), LB = this._fpB, LZ = this._fpZ; let nB = 0, nZ = 0;
@@ -746,16 +752,24 @@ export class Fish3 {
       if (canZ && nZ < LZ.length - 4) { const j0 = G.cell0[cc], k1 = Math.min(G.nL[cc] - 1, kz); if (cc === a.c) { for (let k = Math.max(0, k1 - 1); k <= Math.min(G.nL[cc] - 1, k1 + 1); k++) LZ[nZ++] = j0 + k; } else LZ[nZ++] = j0 + k1; }
     }
     if (canB && !nB && a.jb >= 0) LB[nB++] = a.jb;
+    const Eb = canB && nearBed ? ch.benthEcells(LB, nB) : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll) : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
+    const KB = F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH, fB = Eb + Ew > 0 ? (Eb + Ew) / (Eb + Ew + KB) : 0, fS = Es > 0 ? Es / (Es + LIT3.K_SURF) : 0;
     let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
     if (F3.SHARE && canB && canZ) {
-      const Eb = ch.benthEcells(LB, nB), fB = Eb > 0 ? Eb / (Eb + F3.K_BENTH) : 0;
       const Ez = ch.zooEcells(LZ, nZ), fZ = Ez * Ez / (Ez * Ez + F3.K_ZOO * F3.K_ZOO);
       const qB = fB ** F3.SHARE_Q, qZ = fZ ** F3.SHARE_Q; tB = qB + qZ > 0 ? qB / (qB + qZ) : 0.5; tZ = 1 - tB;
     }
     const want0 = want - got;
-    if (tB > 0 && room > 0 && want > got) {
-      const g = ch.takeBenthCells(LB, nB, Math.min(room, want0 * tB * BENTHOS.Q) * n, F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH) / n;
-      if (g > 0) { a.gut += g; a.gutE += g * PREY.BENTH_ED; room -= g; got += g; this.stats.food.benth += g * n; }
+    if (tB > 0 && room > 0 && want > got && fB > 0) {   // the bed's worms and scuds and the weeds' fauna, by what each offers
+      const wB = Math.min(room, want0 * tB * BENTHOS.Q) * n * fB;
+      const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll) / n : 0, Jw = Ew > 0 ? lit.J / n : 0;
+      if (gb > 0) { a.gut += gb; a.gutE += gb * PREY.BENTH_ED; room -= gb; got += gb; this.stats.food.benth += gb * n; }
+      if (gw > 0) { a.gut += gw; a.gutE += Jw; room -= gw; got += gw; this.stats.food.weed += gw * n; }
+    }
+    if (canS && room > 0 && want > got && fS > 0) {   // the surface: emerging midges and mayflies, the land's beetles and flies — taken
+      // as met by a fish near it, whatever else it is about (big, conspicuous items: no search time of their own)
+      const g = lit.takeSurfCols(fp, fp.length, Math.min(room, want0 * fS) * n) / n;
+      if (g > 0) { a.gut += g; a.gutE += g * PREY.INSECT_ED; room -= g; got += g; this.stats.food.surf += g * n; }
     }
     if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);
@@ -1004,7 +1018,8 @@ export class Fish3 {
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
     if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂
       let best = BENTHOS.SENSE_MIN, bc = -1;
-      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE; if (E > best) { best = E; bc = cc; } };
+      const lit = this.env.lit;
+      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (E > best) { best = E; bc = cc; } };
       tryC(c); for (let k = 0; k < nb.length; k++) tryC(nb[k]);
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
@@ -1039,6 +1054,11 @@ export class Fish3 {
       const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
       const t = ch.zooFeed(q.j, gD, P.FRY_COPE, want - got, P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
       if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; this.stats.food.yZoo += g; }
+    }
+    // the weeds' small fauna from WEED_L, their large from LARGE_L (stage 7b), for a school in the canopy or near the bed
+    const lit = this.env.lit;
+    if (lit && (d.larva || d.insect) && q.L >= LIT3.WEED_L && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH + this.env.plants._canopy[q.c]) {
+      const g = lit.takeYoy(q.jb, want - got, q.L, BENTHOS.K_FISH); if (g > 0) { got += g; J += lit.J; this.stats.food.yWeed += g; }
     }
     const benthL = sp.benthL ?? FRY.BENTH_L;
     if (q.L >= benthL && (d.larva || d.snail || d.detritus) && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
