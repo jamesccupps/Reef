@@ -130,7 +130,19 @@ within ~2 days (65 schools by May 22, ~470 by May 30 — mostly pumpkinseed), BU
 year: their season (ice-out → mid-May, 7–12 °C) is over before the start (scratchpad-free check: /tmp/yoystart.mjs pattern — Env3()
 + Fish3, 49 blocks of 1,752 s a day). FIX: open the lake at ice-out (~Apr 23, as the gate's spring run, yf 0.14) or seed the young
 the spring's early spawners would already have on the start date (and after a season jump). Suggested order after compaction:
-start-date young (e) →
+start-date young (e) → (f) THE HUMAN (2026-10-16, before compacting): "what fish are actually in here? we should make it realistic to
+these lakes … the perch I feel are usually in the middle of the lake, maybe sometimes by the shore, but the sunfish are almost always
+in the shallower areas, and there's schools of real small minnows" and "the plants should be realistic too". Answered: the 8 species
+(golden shiner 430/ha in schools of 60, pumpkinseed 215, yellow perch 860 in schools of 80, white sucker 30, brown bullhead 140, white
+perch 800, smallmouth 40, chain pickerel 20 — fish ≥ 7.5 cm) and their habitat bands (S3 hab: perch offshore 3–5.5 m by day, inshore
+at night — matches; pumpkinseed 0.3–2.5 m day and night + the brook pools — matches). GAPS: the SMALL SCHOOLING MINNOWS (MDIFW 1949:
+minnows, blacknose dace, banded killifish; likely common shiner / young golden shiners) — the sim has no small-minnow species (only
+fish ≥ 7.5 cm + young-of-year); FALLFISH and REDBREAST missing; the census (perch-heavy) to revisit against the human's catches. PLANTS:
+five growth forms (EM, FL, SC, IS, DM) stand for guilds — make them REAL Maine species (research which grow in coloured eastern Maine
+lakes like these: pickerelweed, white water lily, watershield, bur-reed, pondweeds, waterweed, tape grass, bladderwort, pipewort,
+quillwort, native milfoils, Nitella/muskgrass; ROADMAP agreed plan 3's plant item). PLAN: one research pass (the fish community of
+small coloured eastern Maine lakes — species, relative abundance, the small-minnow guild — and their aquatic plants) → then the
+census, the new species (fallfish, redbreast, banded killifish / a small-minnow guild) and the plant species →
 clarity (a) → census and fallfish research + build (c, b) → the fine rung (strikes as events, B11) → wildlife 7e. (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
