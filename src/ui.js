@@ -510,7 +510,7 @@ export class UI {
     set('env-cyano', (ed.cyano * 100 | 0) + '%' + (ed.cyano > 0.4 ? ' scum' : ''));
     set('env-dom', ed.dom.toFixed(2));
     set('env-bedom', `${ed.bedOM.toFixed(1)} kg · ${fmtNum(ed.benth, 1)} kg worms & scuds`);
-    set('env-secchi', (ed.secchi | 0) + 'px');
+    set('env-secchi', (ed.secchi / WORLD.PX_PER_M).toFixed(1) + ' m');   // (Secchi depth in metres; it can exceed the lake's depth: "on the bottom")
   }
 
   // the click-a-fish readout. Agent fields can come straight from an imported file (gen, eaten, …), so every value is
@@ -522,7 +522,7 @@ export class UI {
     const esc = escapeHTML, pc = v => fmtInt(Math.round(Number(v) * 100)), sp = sel.sp, gn = sel.genes || [];
     const diet = Object.keys(sp.diet).filter(k => sp.diet[k]).join(', ');
     const stage = (sel.mature ? (sel.sex === 1 ? 'adult male' : 'adult female') : 'juvenile') + (sel.gon > 0 && sel.mature ? ' (ripening)' : '');
-    const zone = (sel.y > w.bedY(sel.x) * 0.7 && !isLittoralX(sel.x) ? 'profundal/benthic' : isLittoralX(sel.x) ? 'littoral' : 'pelagic') + ' of the ' + basinAt(sel.x).kind;
+    const zone = (sel.y > w.bedY(sel.x) * 0.7 && !isLittoralX(sel.x) ? 'profundal/benthic' : isLittoralX(sel.x) ? 'littoral' : 'pelagic') + ' of ' + basinAt(sel.x).name;
     if (selEl.style && selEl.style.setProperty) selEl.style.setProperty('--sp', sp.tag);
     selEl.innerHTML =
       `<b class="spname">${esc(sp.name)}</b> · gen ${fmtInt(sel.gen)} · ${esc(stage)} · in the ${esc(zone)}<br>` +
@@ -707,7 +707,7 @@ export class UI {
     trace(s => s.cyano, '#9bd6c0');              // cyanobacteria (surface scum)
     trace(s => s.dom / 0.6, '#c9a86a');          // dissolved organic matter (accumulates in the cold deep)
     ctx.globalAlpha = 0.65; ctx.fillStyle = '#9fb4c8'; ctx.font = '8px "Space Mono", monospace'; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
-    ctx.fillText(`column · ${basinAt(cx).kind} · ${isLittoralX(cx) ? 'littoral' : 'open water'}`, padL, 2);
+    ctx.fillText(`column · ${basinAt(cx).name} · ${isLittoralX(cx) ? 'littoral' : 'open water'}`, padL, 2);
     ctx.textAlign = 'right'; ctx.fillText('surface', Wd - padR, 2); ctx.textBaseline = 'bottom'; ctx.fillText('bed', Wd - padR, Hd - 1); ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(`${(prof.bed / this.world.H * 100) | 0}% deep`, padL, Hd - 10);
     ctx.globalAlpha = 1;
   }

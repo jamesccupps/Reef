@@ -273,10 +273,11 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
       CJ.interpX({ x: 3, y: 4, heading: 0 }, 0) === 3 && CJ.interpX(far, 0) === 500);
     const ag = [{ x: 1, y: 2, heading: 3 }]; CJ.snapshotPrev(ag);
     check('snapshotPrev records the pre-step pose', ag[0]._px === 1 && ag[0]._py === 2 && ag[0]._ph === 3);
-    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(8); cam.zoom = cam.tzoom;
-    const fish = { id: 777, x: 900, y: 500, heading: 0, _px: 860, _py: 460, _ph: 0 };
+    // (zoomed in far enough that the view is shorter than the 5.8-m-deep world, so the vertical clamp doesn't centre it)
+    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(16); cam.zoom = cam.tzoom;
+    const fish = { id: 777, x: 900, y: 300, heading: 0, _px: 860, _py: 260, _ph: 0 };
     cam.follow(777); cam.update(1e3, { agents: [fish] }, 0.25);
-    check('camera follow targets the INTERPOLATED (drawn) position', Math.abs(cam.tcx - 870) < 1e-9 && Math.abs(cam.tcy - 470) < 1e-9, `tcx ${cam.tcx}, tcy ${cam.tcy}`);
+    check('camera follow targets the INTERPOLATED (drawn) position', Math.abs(cam.tcx - 870) < 1e-9 && Math.abs(cam.tcy - 270) < 1e-9, `tcx ${cam.tcx}, tcy ${cam.tcy}`);
   }
 
   // (15) frame-loop guard: re-arms BEFORE the body, so a throwing frame never stops the loop
@@ -312,7 +313,7 @@ tryStep('effort buckets drive increasing undulation amplitude', () => {
 
   // (16) two-finger pinch keeps the world point under the fingers and zooms by the spread ratio
   {
-    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(4); cam.zoom = cam.tzoom; cam.cx = cam.tcx = 1000; cam.cy = cam.tcy = 600; cam._clamp();
+    const cam = new Camera(WORLD.W, WORLD.H, CAMERA); cam.setViewport(1280, 720); cam.setZoomRel(16); cam.zoom = cam.tzoom; cam.cx = cam.tcx = 1000; cam.cy = cam.tcy = 250; cam._clamp();   // (a view shorter than the world)
     const before = cam.screenToWorld(600, 300), z0 = cam.zoom;
     cam.pinch(600, 300, 640, 320, 1.5);
     const after = cam.screenToWorld(640, 320);

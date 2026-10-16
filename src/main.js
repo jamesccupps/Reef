@@ -17,9 +17,9 @@ tank = renderer.canvas;                          // (already swapped if WebGL di
 const inspector = new Inspector(document.getElementById('brain'));
 const ui = new UI(world, renderer, inspector, camera);
 
-// open on the WHOLE LAKE (shores, weed beds, the deep basin, every fish) — the "big picture first, then zoom to one
-// fish" the project is about; the stream and the pond lie to its right (pan or zoom out for the whole landscape)
-camera.setZoomRel(WORLD.W / LANDSCAPE.LAKE_W); camera.tcx = LANDSCAPE.LAKE_W * 0.5; camera.tcy = WORLD.H * 0.5;
+// open on UPPER HOT BROOK LAKE with its water column filling the screen's height (the real lakes are shallow and long: the
+// whole slice at once is a thin strip) — the deep north basin and the brook to the right; pan along or zoom out for both lakes
+{ const zH = camera.vh / WORLD.H * 0.92; camera.setZoomRel(Math.max(1, zH / camera.fitZoom)); camera.tcx = LANDSCAPE.LAKE_W * 0.55; camera.tcy = WORLD.H * 0.5; }
 
 // ---- camera input: drag-pan (primary pointer), two-finger pinch-zoom, wheel-zoom, click-select ----
 // Each pointer is tracked by id, so a second finger never makes the camera jump: one pointer pans, two pinch

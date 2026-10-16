@@ -8,7 +8,7 @@ import { SP, SPECIES } from './species.js';
 import { getRandState, setRandState, remapGenome, ACT_LABELS, GENE_MIN, GENE_MAX } from './core.js';
 import { brainEraOf } from './species.js';
 
-const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR;
+const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR, HREF = WORLD.DEPTH_REF;   // (HREF: the 14.6-m column the depth fractions were calibrated on)
 const WF = [0, 0];   // scratch for bioenergetics.wasteFractions (egested, excreted fractions) — no allocation per fish-step
 const DEATH_FADE = 1.4;   // seconds a natural-death body lingers & fades before becoming detritus
 
@@ -98,7 +98,7 @@ const isNymphFry = f => !f.dead && f.L <= ODONATA.FRY_MAX;     // … in a fry s
 // predator takes any of them, a larva-eater only tadpoles
 // (worth the chase: at least the mass of a fish PREY_MIN of its own length — mass ∝ length³)
 const canEatHerp = (h, a) => !h.dead && h.st !== 2 && (a.sp.diet.fish || h.k === 0) && herpDepth(h) <= gapeOf(a) && herpMass(h) >= FEED.PREY_MIN ** 3 * a.W;
-const isShallow = x => bedY(x) < H * 0.35;                     // over the littoral shelf (frogs, tadpoles, nymphs, basking)
+const isShallow = x => isLittoralX(x);                         // over the littoral (frogs, tadpoles, nymphs, basking)
 const toShore = x => shoreDir(x);          // horizontal direction to the nearer (shallow) shore (the landscape's own slope)
 // a nest site from a spawning pair at x: shoreward until the bed is no deeper than the species' nest depth (sp.nestD —
 // pumpkinseed nest in water under ~1 m — else SPAWN.NEST_D)
@@ -187,6 +187,9 @@ function parseSave(s) {
   for (const k of SAVE_ARRAYS) if (s[k] != null && !Array.isArray(s[k])) throw new Error(`load: "${k}" must be an array (got ${typeof s[k]})`);
   if (s.env != null && !isObj(s.env)) throw new Error('load: "env" must be an object');
   const rep = { version: num(s.version, 0), agents: 0, skippedSpecies: 0, skippedInvalid: 0, truncated: 0, reseeded: 0, migrated: 0, regenerated: [] };
+  // v33 (2026-10-15) made the world the REAL Hot Brook lakes — a different place, depth and shape: an older save's positions,
+  // water chemistry and beds don't belong in it. Its fish brains still do (Load champion brains).
+  if (isNum(s.version) && s.version < 33) throw new Error(`load: this save is from the old generic lake (save v${s.version}); the world is now the real Upper and Lower Hot Brook Lake — load its champion brains instead`);
   const time = Math.max(0, num(s.time, 0)), maxGen = nonNegInt(s.maxGen);
   const env = new Environment(); env.load(s.env || {}, { W: s.W, H: s.H, time });
   // stats: known counters + any other finite-number counters (or {key: number} maps), never prototype keys
@@ -663,12 +666,12 @@ export class World {
   _mkInsect(x, m = PREY.INSECT_G) { const px = clamp(x ?? rand(8, W - 8), 4, W - 4); return { x: px, y: rand(2, 14), life: INSECT.ADULT_LIFE * (0.7 + rand() * 0.6), vx: rand(-INSECT.ADULT_DRIFT, INSECT.ADULT_DRIFT), wob: rand(0, 6.28), m, dead: false }; }
   // a benthic snail crawling the lit bed (biased to the littoral shelf where algae/plants concentrate; shallower than
   // SNAIL.MAX_DEPTH). `ph` = render phase.
-  _mkSnail(x) { let px = x ?? plantX(); for (let t = 0; x === undefined && t < 20 && bedY(px) > SNAIL.MAX_DEPTH * H; t++) px = plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
+  _mkSnail(x) { let px = x ?? plantX(); for (let t = 0; x === undefined && t < 20 && bedY(px) > SNAIL.MAX_DEPTH * HREF; t++) px = plantX(); return { x: px, y: bedY(px) - rand(0, 3), vx: rand(-SNAIL.CRAWL, SNAIL.CRAWL), ph: rand(0, 6.28), dead: false }; }
   // a benthic crayfish walking the bed (drifts toward cover; crepuscular). `ph` = render leg-wiggle phase.
-  // (on the littoral/sublittoral bed: shallower than CRAYFISH.MAX_DEPTH × H)
+  // (on the littoral/sublittoral bed: shallower than CRAYFISH.MAX_DEPTH × the 14.6-m reference column, ~8 m)
   _mkCray(x) {
     let px = x ?? rand(8, W - 8);
-    for (let t = 0; x === undefined && t < 20 && bedY(px) > CRAYFISH.MAX_DEPTH * H; t++) px = rand(8, W - 8);
+    for (let t = 0; x === undefined && t < 20 && bedY(px) > CRAYFISH.MAX_DEPTH * HREF; t++) px = rand(8, W - 8);
     return { x: px, y: bedY(px) - rand(1, 4), vx: rand(-CRAYFISH.CRAWL, CRAYFISH.CRAWL), ph: rand(0, 6.28), dead: false };
   }
 
@@ -1122,7 +1125,7 @@ export class World {
       // a LIMNETIC PHASE (sp.pelagicFry cm): bluegill fry leave the nest for the open water and feed on its zooplankton for
       // weeks, coming back to the weeds at ~2–2.5 cm (Werner 1967, 1969) — so the lake's young sunfish spread over its whole
       // open-water zooplankton instead of crowding the shallows (and the young bass there) — once no guardian holds them
-      if (sp.pelagicFry && f.L < sp.pelagicFry && !held) { const pb = homeBasinAt(f.x), pw = pb.x1 - pb.x0; f.tx = clamp(f.tx, pb.x0 + pw * FRY.PELAGIC_X[0], pb.x0 + pw * FRY.PELAGIC_X[1]); f.ty = clamp(f.ty, 8, H * FRY.PELAGIC_D); }
+      if (sp.pelagicFry && f.L < sp.pelagicFry && !held) { const pb = homeBasinAt(f.x), pw = pb.x1 - pb.x0; f.tx = clamp(f.tx, pb.x0 + pw * FRY.PELAGIC_X[0], pb.x0 + pw * FRY.PELAGIC_X[1]); f.ty = clamp(f.ty, 8, Math.min(HREF * FRY.PELAGIC_D, bedY(f.x) - 8)); }
       // RECRUITMENT: one individual per N_PER_AGENT survivors (stochastic rounding; seeded RNG), as many as the species'
       // agent budget has room for, carrying the school's genome (its siblings a fresh mutation of it) at the school's size
       if (f.L >= sp.L0 || (f.age > FRY.OVERWINTER * Y && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) {
@@ -1372,7 +1375,7 @@ export class World {
       if (rand() < f / (f + SNAIL.K_SOM)) this.snails.push(s);
     }
     if (this.snails.length < snailFloor) for (let n = poissonish(6 * area * dt); n > 0 && this.snails.length < snailFloor; n--) this.snails.push(this._mkSnail());
-    const snLim = SNAIL.MAX_DEPTH * H;
+    const snLim = SNAIL.MAX_DEPTH * HREF;
     for (const s of this.snails) {
       if (s.dead) continue;
       if (rand() < SNAIL.M / TIME.YEAR_LEN * dt) { s.dead = true; continue; }                  // old age (an annual life)
@@ -1397,7 +1400,7 @@ export class World {
       cf.vx = clamp(cf.vx, -CRAYFISH.CRAWL, CRAYFISH.CRAWL);
       // a crayfish stays on the littoral/sublittoral bed: one below CRAYFISH.MAX_DEPTH (an old save) walks back up toward
       // the nearer shore, and one about to crawl deeper turns back
-      const crLim = CRAYFISH.MAX_DEPTH * H, x0 = cf.x;
+      const crLim = CRAYFISH.MAX_DEPTH * HREF, x0 = cf.x;
       if (bedY(cf.x) > crLim) cf.vx = shoreDir(cf.x) * CRAYFISH.CRAWL;
       cf.x += cf.vx * nightF * dt; if (cf.x < 4) { cf.x = 4; cf.vx = Math.abs(cf.vx); } else if (cf.x > W - 4) { cf.x = W - 4; cf.vx = -Math.abs(cf.vx); }
       if (bedY(cf.x) > crLim && bedY(cf.x) > bedY(x0)) { cf.x = x0; cf.vx = -cf.vx; }
@@ -1425,7 +1428,7 @@ export class World {
       const shade = oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1, lit = env.lightAtDepth(topY) * shade;
       // running-mean light (EMA over ~LIGHT_TAU) — what light-starvation is judged on. A new seedling (or a plant from an
       // older save lacking it) starts at the long-run mean light expected at its top, so it isn't born "starving" at night.
-      if (p.lightAvg == null) p.lightAvg = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * (topY / H)) * shade;
+      if (p.lightAvg == null) p.lightAvg = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * (topY / HREF)) * shade;
       else p.lightAvg += (lit - p.lightAvg) * kLight;
       // seasonal vigor (0..1): a temperature-driven growing-season factor — full when warm, 0 below the variety's
       // cold threshold (autumn/winter or the cold deep). Per-depth temp ⇒ deep/cold beds can't grow tall (a depth limit).
@@ -1475,7 +1478,7 @@ export class World {
       // Gaps and lit shallows still get colonised. Deterministic (no RNG beyond newPlant's).
       const ci = clamp((sd.x / RAD) | 0, 0, nB - 1);
       let oh = 0; for (let b = Math.max(0, ci - 1); b <= Math.min(nB - 1, ci + 1); b++) oh += overheadFrom(sd, pcols[b], RAD);
-      const expLight = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * ((sd.baseY - sd.height) / H)) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
+      const expLight = PLANT.DAY_MEAN_LIGHT * Math.exp(-atten * ((sd.baseY - sd.height) / HREF)) * (oh > 0 ? Math.exp(-COMPETE.SHADE * oh) : 1);
       if (expLight < sd.lightMin) continue;
       sd.lightAvg = expLight;
       this.plants.push(sd); plantCount++;
@@ -1721,7 +1724,7 @@ export class World {
         // than its habitat (IN.littoral × the lake's depth) turns back toward the nearer shore — harder the further out it
         // is. Real summer bass are fish of the littoral weed beds and the drop-off, seldom out over the open basin.
         if (IN.littoral && !(mig && mig.d > 120)) {
-          const over = (bedY(a.x) - IN.littoral * H) / (0.25 * H);
+          const over = (bedY(a.x) - IN.littoral * HREF) / (0.25 * HREF);
           if (over > 0) a.heading += angDiff(shoreDir(a.x) < 0 ? Math.PI : 0, a.heading) * a.maxTurn * (0.3 + clamp(over, 0, 1)) * dt;
         }
       }
@@ -2167,9 +2170,9 @@ export class World {
   avgNutrient() { return this.env.meanDin() + this.env.meanPhos(); }   // total dissolved nutrient (N + P)
 
   // ---- detailed statistics (pure; consumed by the UI dashboards, headless-testable) ----
-  // depth-resolved water chemistry & physics down a representative central column
+  // depth-resolved water chemistry & physics down the deepest column (Upper's north basin — its 18-ft "perch hole")
   envDetail() {
-    const e = this.env, cx = W * 0.5, midY = H * 0.40, deepY = bedY(cx) - 14;
+    const e = this.env, cx = basinCenterX(BASINS[0]), deepY = bedY(cx) - 14, midY = deepY * 0.5;
     return {
       tempSurf: e.tempAt(cx, 16), tempMid: e.tempAt(cx, midY), tempDeep: e.tempAt(cx, deepY),
       o2Surf: e.oxygenAt(cx, 16), o2Mid: e.oxygenAt(cx, midY), o2Deep: e.oxygenAt(cx, deepY),
@@ -2289,7 +2292,7 @@ export class World {
   // on load (rep.skippedSpecies) and the white perch and white sucker arrive by the refuge; the other six keep their fish.
   toJSON() {
     return {
-      version: 32, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
+      version: 33, W, H, time: this.time, maxGen: this.maxGen, stats: this.stats, rng: getRandState(), nid: this._nextId,
       evo: this.evo,   // the evolution history (EVO) — a record only: it never shapes the future
       env: this.env.toJSON(),
       agents: this.agents.map(a => {

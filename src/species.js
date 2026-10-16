@@ -1,9 +1,12 @@
 // species.js — the eight fish of a Maine lake: data + senses + drawing. Pure (no DOM); draw() only calls a put() callback.
-import { WORLD, ENV, TIME, littoralX } from './config.js';
+import { WORLD, ENV, TIME, littoralX, bedY } from './config.js';
 import { prepBio } from './bioenergetics.js';
 import { hsl, clamp, ACT_LABELS, layoutLen } from './core.js';
 
-const W = WORLD.W, H = WORLD.H;
+const W = WORLD.W, H = WORLD.H, HREF = WORLD.DEPTH_REF;   // (depth sensors read against the 14.6-m reference column)
+// a start position in the water column at x: between fractions a…b of the local depth (the real lakes' depth varies along
+// the slice — a fixed floor would put fish under the bed of the shallows)
+const inColumn = (R, x, a, b) => { const bed = bedY(x); return { x, y: Math.max(6, Math.min(bed - 4, bed * R(a, b))) }; };
 
 // x biased toward the shallow littoral shelves near each shore — where shelf-dwelling
 // fish (minnows, sunfish) naturally congregate. ~62% land on a shelf, the rest spread out.
@@ -427,7 +430,7 @@ export const SP = {
 
     sat: 58, lbase: 46, lrange: 16,
     randomHue: (R) => R(42, 54),   // brassy gold
-    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 60) }),  // shiners haunt the weedy shallows
+    spawnPos: (R) => inColumn(R, littoralX(R), 0.1, 0.8),  // shiners haunt the weedy shallows
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, w.qSurfaceFood(a), a.senseRange, inp, 0);   // nearest zooplankton OR emerged insect → minnow rises to a hatch
@@ -460,7 +463,7 @@ export const SP = {
     innate: { homeDepth: 0.42, depthPull: 0.4, cruise: 0.38, weight: 0.40, cover: 0.40, forage: 0.5 },   // mid littoral, hovers in weed beds
     sat: 50, lbase: 38, lrange: 20,
     randomHue: (R) => R(50, 68),   // olive-gold back and flanks; the orange breast and speckles are the 'pumpkin' markings
-    spawnPos: (R) => ({ x: littoralX(R), y: R(40, WORLD.FLOOR - 50) }),   // sunfish favour the weedy shelf
+    spawnPos: (R) => inColumn(R, littoralX(R), 0.1, 0.85),   // sunfish favour the weedy shelf
     senses(a, w) {
       // the nearest ANIMAL food — zooplankton, an emerged insect, insect larvae on the weeds or the bed, a stretch of bed rich
       // in worms and scuds; weed (a poor food) only when there's none in sight
@@ -470,7 +473,7 @@ export const SP = {
       inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
       inp[8] = clamp(w.oxygenGrad(a.x, a.y) * 4, -1, 1);
-      inp[9] = wallProx(a); inp[10] = clamp(a.y / H, 0, 1);
+      inp[9] = wallProx(a); inp[10] = clamp(a.y / HREF, 0, 1);
       inp[11] = clamp(w.lightAt(a.x, a.y), 0, 1); inp[12] = clamp((w.tempAt(a.x, a.y) - 10) / 25, 0, 1);
     },
     P: { L: 2.2, Hh: 1.06, snout: 1, dorsal: true, dorsalX: 0.0, dorsalW: 0.42, dorsalH: 1.5, earSpot: [214, 48, 36], pattern: 'pumpkin', scales: { p: 0.24, k: 0.12 },
@@ -493,7 +496,7 @@ export const SP = {
     innate: { homeDepth: 0.86, depthPull: 0.4, cruise: 0.40, weight: 0.40, school: 0.25, pursuit: 0.35, cover: 0.2, spawnGround: 0.4 },   // a near-bottom forager (adult yellow perch feed mostly on benthos)
     sat: 70, lbase: 40, lrange: 20,
     randomHue: (R) => R(46, 64),   // yellow-green with dark bars
-    spawnPos: (R) => ({ x: littoralX(R), y: R(60, WORLD.FLOOR - 60) }),
+    spawnPos: (R) => inColumn(R, littoralX(R), 0.15, 0.85),
     senses(a, w) {
       // the nearest food it can take: a catchable fish, a benthic larva or a stretch of bed rich in worms and scuds (adults
       // forage fish and the bed — and follow the profundal midges and worms offshore once the autumn overturn reoxygenates them)
@@ -527,7 +530,7 @@ export const SP = {
     innate: { homeDepth: 0.95, depthPull: 0.6, cruise: 0.32, weight: 0.40, spawnGround: 0.5, forage: 0.5 },   // hugs the bed, grazing as it goes
     sat: 30, lbase: 34, lrange: 18,
     randomHue: (R) => R(28, 42),   // olive-brown back, cream belly
-    spawnPos: (R) => ({ x: R(40, W - 40), y: R(120, WORLD.FLOOR - 20) }),
+    spawnPos: (R) => inColumn(R, R(40, W - 40), 0.5, 0.95),
     senses(a, w) {
       // the nearest bottom food: insect larvae and the bed's worms and scuds, then detritus
       const inp = a.act.in, food = nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qDetritus(a.x, a.y, a.senseRange);
@@ -558,7 +561,7 @@ export const SP = {
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4, forage: 0.5 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,
     randomHue: (R) => R(33, 50),
-    spawnPos: (R) => ({ x: R(10, W - 10), y: R(WORLD.FLOOR - 30, WORLD.FLOOR - 2) }),
+    spawnPos: (R) => inColumn(R, R(10, W - 10), 0.85, 0.97),
     senses(a, w) {
       // the nearest food: bottom invertebrates first (bullheads live on insect larvae, worms and scuds), then detritus, then weed
       const inp = a.act.in, food = nearer(w.qLarva(a.x, a.y, a.senseRange), w.qBed(a)) || w.qDetritus(a.x, a.y, a.senseRange) || w.qPlant(a.x, a.y, a.senseRange);
@@ -589,7 +592,7 @@ export const SP = {
     innate: { homeDepth: 0.6, depthPull: 0.4, cruise: 0.45, weight: 0.40, school: 0.30, pursuit: 0.3, spawnGround: 0.4, forage: 0.5 },   // open-water schools, down to the bed to feed
     sat: 9, lbase: 50, lrange: 16,
     randomHue: (R) => R(60, 85),   // olive-grey back, silvery flanks
-    spawnPos: (R) => ({ x: R(40, W - 40), y: R(60, WORLD.FLOOR - 40) }),
+    spawnPos: (R) => inColumn(R, R(40, W - 40), 0.15, 0.85),
     senses(a, w) {
       const inp = a.act.in;
       // the nearest food it can take: zooplankton or an emerged insect, an insect larva or a stretch of rich bed, and — a big
@@ -598,7 +601,7 @@ export const SP = {
       tgt(a, w.qThreat(a), a.senseRange * 1.1, inp, 3);
       inp[6] = clamp(a.energy, 0, 1);
       inp[7] = clamp(w.oxygenAt(a.x, a.y), 0, 1);
-      inp[8] = wallProx(a); inp[9] = clamp(a.y / H, 0, 1);
+      inp[8] = wallProx(a); inp[9] = clamp(a.y / HREF, 0, 1);
     },
     P: { L: 2.6, Hh: 0.94, snout: 1.1, dorsal: true, dorsalX: -0.04, dorsalW: 0.44, dorsalH: 1.6, pattern: 'silver', scales: { p: 0.2, k: 0.12 },
       tail: { len: 1.35, spread: 0.95, sweep: 0.9, fork: 0.34 }, profile: t => { const e = ell(t, 0.6), sh = 1 + 0.16 * t; return [e * sh * 1.0, e * sh * 0.9]; } },   // deep, compressed, a humped back
@@ -620,7 +623,7 @@ export const SP = {
     innate: { homeDepth: 0.85, depthPull: 0.35, cruise: 0.42, weight: 0.35, cover: 0.30, littoral: 0.5, pursuit: 0.5, spawnGround: 0.5 },  // works the bed and the shore's rocks, logs and weed edges; pursues prey it sees
     sat: 46, lbase: 32, lrange: 18,
     randomHue: (R) => R(26, 40),   // bronze-brown
-    spawnPos: (R) => ({ x: R(10, W - 10), y: R(60, WORLD.FLOOR - 40) }),
+    spawnPos: (R) => inColumn(R, R(10, W - 10), 0.15, 0.9),
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, nearer(w.qPrey(a), w.qCray(a)), a.senseRange, inp, 0);   // a catchable fish or an exposed crayfish
@@ -651,7 +654,7 @@ export const SP = {
     innate: { homeDepth: 0.55, depthPull: 0.28, cruise: 0.16, weight: 0.45, ambush: true, cover: 0.6, pursuit: 0.4, spawnGround: 0.5 },  // weed-bed ambush lurker — holds in cover, then turns on and bursts at prey
     sat: 42, lbase: 34, lrange: 18,
     randomHue: (R) => R(62, 82),   // green-gold
-    spawnPos: (R) => ({ x: littoralX(R), y: R(80, WORLD.FLOOR - 30) }),
+    spawnPos: (R) => inColumn(R, littoralX(R), 0.2, 0.85),
     senses(a, w) {
       const inp = a.act.in;
       tgt(a, nearer(w.qPrey(a), w.qCray(a)), a.senseRange, inp, 0);   // a catchable fish or an exposed crayfish

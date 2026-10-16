@@ -6,26 +6,34 @@
 // so a bigger lake is automatically more populated at the same per-area balance.
 // To grow (or shrink) the whole lake, change only WORLD.W / WORLD.H.
 
+import { HOTBROOK } from './hotbrook_profile.js';   // the real Hot Brook cross-section (generated data)
+
 const REF_W = 760, REF_H = 460;            // the reference pond all densities are tuned for
 const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
 const lerp = (a, b, t) => a + (b - a) * t;
 const smoothstep = s => { s = clamp(s, 0, 1); return s * s * (3 - 2 * s); };
 
 export const WORLD = {
-  // a LANDSCAPE (2026-10-15): the main LAKE (x 0 … LAKE_W), a STREAM (riffles and pools) and a POND to its right — see
-  // LANDSCAPE / BASINS / bedY below. W is their sum; H the deepest water drawn (the lake's hole)
-  get W() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W + LANDSCAPE.POND_W; },
-  H: 1152,           // internal sim height (14.6 m at PX_PER_M)
+  // THE REAL HOT BROOK LAKES (2026-10-15): the aquatic world spans the water from Upper Hot Brook Lake's south shore to Lower
+  // Hot Brook Lake's north shore (LANDSCAPE: Upper → the connecting brook → Lower), ending where the water is SHORE_D deep
+  // as before; the banks above the water lie just outside it (x < 0, x > W). H = the deepest water (Upper's north basin,
+  // 18 ft) plus a bed margin. Depths are true; the lakes are compressed ~90× along the slice (docs/HOT_BROOK_SIM.md)
+  get W() { return LANDSCAPE.W_PX; },
+  get H() { return LANDSCAPE.H_PX; },
   REF_W, REF_H,
-  get FLOOR() { return BASIN.DEEP_D * this.PX_PER_M; },  // deepest point of the lake bed
+  get FLOOR() { return LANDSCAPE.MAX_D * this.PX_PER_M; },  // deepest point of the lake bed
+  // DEPTH_REF: the column the "fraction of the column" parameters were calibrated on (the old 14.6-m lake, 1152 px). Light
+  // attenuation, crayfish/snail depth limits, the depth sensors, wind and outflow layers keep their ABSOLUTE depths by
+  // reading their fractions against this, not against the (now 5.8-m) world height
+  DEPTH_REF: 1152,
   // habitat size: the WATER cross-section (∫ bed depth dx) relative to the single deep lake all densities were tuned on
   // (1,499,639 px² at AREA_SCALE 6.7486 — 2048×1152 against the 760×460 reference pond) — a shallower or wider landscape
   // carries proportionally more or fewer organisms
   get AREA_SCALE() { return 6.7486 * wetArea() / 1499639; },
   get GLOBAL_MAX() { return Math.round(150 * this.AREA_SCALE); }, // hard cap on total agents
-  // REAL SCALE: the 2-D world is a vertical slice drawn at true size (79 px per metre: the lake 26 m wide and 14.6 m deep)
-  // standing for SLICE_M2 of water surface — the third dimension is SLICE_M2 / width (~27 m, the same for every column:
-  // 700 m² per 2048 px). A field cell is then a ~0.3 × 0.3 × 27 m box of CELL_L litres (densities in µg/L, fish in kg/ha)
+  // REAL SCALE: the 2-D world is a vertical slice drawn at true size (79 px per metre) standing for SLICE_M2 of water
+  // surface — the third dimension is SLICE_M2 / width (~27 m, the same for every column: 700 m² per 2048 px). A field cell
+  // is then a ~0.3 × 0.3 × 27 m box of CELL_L litres (densities in µg/L, fish in kg/ha)
   PX_PER_M: 79,
   get SLICE_M2() { return 700 * this.W / 2048; },
   get CELL_L() { return (this.W / GRID.FIELD_COLS / this.PX_PER_M) * (this.H / GRID.FIELD_ROWS / this.PX_PER_M) * this.SLICE_M2 / (this.W / this.PX_PER_M) * 1000; },
@@ -278,72 +286,67 @@ export const BROOD = {
   SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column
 };
 
-// ---------- the landscape: a lake, a stream and a pond (2026-10-15, the Maine re-base) ----------
-// docs/reports/Maine lakes ponds and streams.md. A cross-section with a flat water surface on top (y = 0) and the bed below
-// (bedY: larger y = deeper). Left to right:
-//   • the LAKE — a typical Maine lake: a sloping LITTORAL from a ~0.25-m shoreline down to ~3 m over the outer ~45 % of each
-//     side (the 0–3 m band where Maine's fish nest and most littoral food grows), a drop-off, and a hole to 14.4 m that
-//     stratifies (Maine lakes deeper than ~9 m do; median Maine lake 18 m max, 6.7 m mean — USGS WRI 80-69): mean ≈ 6.2 m
-//   • the STREAM — a short rocky outlet (Hot Brook between the Hot Brook lakes: ~200 m, wadeable) of riffles at STREAM.DEPTH
-//     and POOLS to STREAM.POOL_D, carrying the lake's outflow to the pond
-//   • the POND — a Hot Brook-style saucer: a sloping littoral, then a flat muddy floor to 4.0 m (Lower Hot Brook: 4.0 m max,
-//     2.7 m mean, 59 % of soundings ≤ 3 m), shallow enough never to stratify; its outlet is the world's right edge
-// The drawn widths are stylised (the real stream is ~200 m, the lakes hundreds of hectares); depths are true.
-export const LANDSCAPE = {
-  LAKE_W: 2048,      // px of the main lake
-  STREAM_W: 448,     // px of the connecting stream
-  POND_W: 1408,      // px of the pond
-  SHORE_D: 0.25,     // m of water at a natural shoreline (the world's two edges)
-  LITTORAL_D: 3.5,   // m: water this shallow (or less) counts as LITTORAL (spawning grounds, plant seeding, structure)
-};
-export const BASIN = {   // the main lake (x 0 … LAKE_W)
-  CENTER: 0.54,      // where the deepest point sits across the lake (slightly off-centre)
-  LIT_T: 0.45,       // the littoral slope spans this fraction of each shore→centre distance …
-  LIT_D: 3.2,        // … down to this depth (m)
-  DROP_T: 0.2,       // then the drop-off spans the next fraction …
-  DROP_D: 9.0,       // … down to this depth (m) at the top of the hole
-  DEEP_D: 14.4,      // m at the deepest point
-};
-export const STREAM = {
-  DEPTH: 0.35,       // m over the riffles (the stream's bed between pools; also where it meets lake and pond)
-  POOL_D: 1.1,       // m in the pools — the human's first-hand Hot Brook: "3 or 4 feet deep pools" (0.9–1.2 m), full of sunfish
-  POOLS: 2,          // pools along the stream
-};
-export const POND = {
-  CENTER: 0.5, LIT_T: 0.5, FLOOR_D: 3.3, MAX_D: 4.0,   // a saucer: littoral slope over half of each side, then a flat floor
-};
-// the three water bodies, left to right: [x0, x1) in world px
-export const BASINS = [
-  { id: 0, kind: 'lake', get x0() { return 0; }, get x1() { return LANDSCAPE.LAKE_W; } },
-  { id: 1, kind: 'stream', get x0() { return LANDSCAPE.LAKE_W; }, get x1() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W; } },
-  { id: 2, kind: 'pond', get x0() { return LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W; }, get x1() { return WORLD.W; } },
-];
-export const basinAt = x => x < LANDSCAPE.LAKE_W ? BASINS[0] : x < LANDSCAPE.LAKE_W + LANDSCAPE.STREAM_W ? BASINS[1] : BASINS[2];
-// a basin's deep centre (world px) — the lake's hole, the pond's middle, the stream's midpoint
-export const basinCenterX = b => b.kind === 'lake' ? LANDSCAPE.LAKE_W * BASIN.CENTER : b.kind === 'pond' ? b.x0 + (b.x1 - b.x0) * POND.CENTER : (b.x0 + b.x1) / 2;
-// a shore→centre-normalised position: 0 at either end of a basin, 1 at its centre c (a fraction of its width)
-const tOf = (u, c) => u < c ? u / c : (1 - u) / (1 - c);
+// ---------- the landscape: the REAL Upper and Lower Hot Brook Lake and the brook between them (2026-10-15) ----------
+// The human: "lets just model the real upper and lower hotbrook lake … make sure proportions and amount of water and animals
+// is realistic". The bed is DATA (src/hotbrook_profile.js, generated by tools/hotbrook/slice_profile.py from the landscape
+// model: the 1949 MDIFW soundings fitted to today's shoreline). Left to right: Upper Hot Brook Lake from its south shore (its
+// deep north basin, 18 ft, lies by the outlet) → the connecting brook (the deeper pool at its upper mouth, riffles, a
+// shallower run — the angler's description) → Lower Hot Brook Lake to its north shore (a flat 10–12-ft saucer, 13 ft max).
+// Depths are true; each lake has its real share of area at each depth (Upper 44 % ≤ 3 m, mean 3.06 m; Lower 56 %, 2.68 m);
+// along the slice the lakes are compressed ~90× (3.2 km → 36 m), the brook ~11×. docs/HOT_BROOK_SIM.md.
+// x = 0 is Upper's south waterline (SHORE_D deep), x = W Lower's north one; the banks rise beyond them (bedY < 0 there).
+export const LANDSCAPE = (() => {
+  const D = HOTBROOK.DEPTH, DX = HOTBROOK.DX, n = D.length, P = 79, SH = 0.25;
+  // the two waterlines: where the water first and last reaches SHORE_D deep (interpolated between profile points)
+  let iL = 0; while (iL < n - 2 && D[iL + 1] < SH) iL++;
+  const xL = (iL + (SH - D[iL]) / (D[iL + 1] - D[iL])) * DX;
+  let iR = n - 1; while (iR > 1 && D[iR - 1] < SH) iR--;
+  const xR = (iR - (SH - D[iR]) / (D[iR - 1] - D[iR])) * DX;
+  const maxD = Math.max(...D), seg = HOTBROOK.SEGMENTS;
+  const px = m => (m - xL) * P;   // profile metres → world px
+  return {
+    NAME: 'Upper and Lower Hot Brook Lake, T8 R4 NBPP / Danforth, Maine',
+    PROFILE: HOTBROOK, X0_M: xL, X1_M: xR,
+    W_PX: Math.round((xR - xL) * P),
+    H_PX: Math.ceil((maxD + 0.2) * P / 24) * 24,     // the deepest water + a bed margin, in whole 24-px field rows
+    MAX_D: maxD,
+    SHORE_D: SH,       // m of water at the world's two edges (the waterline the aquatic world ends at)
+    LITTORAL_D: 3.5,   // m: water this shallow (or less) counts as LITTORAL (spawning grounds, plant seeding, structure) — about the
+                       //   deepest rooted plants in a Secchi ~3 m lake (Canfield et al. 1985: log Zc = 0.61 log SD + 0.26 → 3.6 m)
+    // world-px bounds of the three water bodies (each join halfway across the profile's one-step seam)
+    UPPER: [px(seg.upper[0]), (px(seg.upper[1]) + px(seg.brook[0])) / 2],
+    BROOK: [(px(seg.upper[1]) + px(seg.brook[0])) / 2, (px(seg.brook[1]) + px(seg.lower[0])) / 2],
+    LOWER: [(px(seg.brook[1]) + px(seg.lower[0])) / 2, px(seg.lower[1])],
+    get LAKE_W() { return this.UPPER[1]; },   // (older call sites: the width of the first water body)
+  };
+})();
+// the bed depth (px; larger y = deeper) at world x — the profile, linearly interpolated; NEGATIVE beyond the waterlines (the
+// banks above the water, x < 0 or x > W)
 export function bedY(x) {
-  const P = WORLD.PX_PER_M, L = LANDSCAPE, Lw = L.LAKE_W, Sx1 = Lw + L.STREAM_W;
-  let d;
-  if (x < Lw) {   // the lake: its left shore is the world's edge, its right one the stream's mouth
-    const u = clamp(x / Lw, 0, 1), t = tOf(u, BASIN.CENTER), d0 = u < BASIN.CENTER ? L.SHORE_D : STREAM.DEPTH;
-    d = t <= BASIN.LIT_T ? lerp(d0, BASIN.LIT_D, t / BASIN.LIT_T)
-      : t <= BASIN.LIT_T + BASIN.DROP_T ? lerp(BASIN.LIT_D, BASIN.DROP_D, smoothstep((t - BASIN.LIT_T) / BASIN.DROP_T))
-      : lerp(BASIN.DROP_D, BASIN.DEEP_D, smoothstep((t - BASIN.LIT_T - BASIN.DROP_T) / (1 - BASIN.LIT_T - BASIN.DROP_T)));
-  } else if (x < Sx1) {   // the stream: riffles with POOLS deeper stretches
-    const sv = (x - Lw) / L.STREAM_W;
-    d = STREAM.DEPTH + (STREAM.POOL_D - STREAM.DEPTH) * Math.pow(Math.sin(Math.PI * STREAM.POOLS * sv), 2);   // (broad pools)
-  } else {   // the pond: its left shore is the stream's mouth, its right one the world's edge (its outlet)
-    const u = clamp((x - Sx1) / L.POND_W, 0, 1), t = tOf(u, POND.CENTER), d0 = u < POND.CENTER ? STREAM.DEPTH : L.SHORE_D;
-    d = t <= POND.LIT_T ? lerp(d0, POND.FLOOR_D, t / POND.LIT_T)
-      : lerp(POND.FLOOR_D, POND.MAX_D, smoothstep((t - POND.LIT_T) / (1 - POND.LIT_T)));
-  }
-  return d * P;
+  const D = HOTBROOK.DEPTH, n = D.length, u = (x / WORLD.PX_PER_M + LANDSCAPE.X0_M) / HOTBROOK.DX;
+  if (u <= 0) return D[0] * WORLD.PX_PER_M;
+  if (u >= n - 1) return D[n - 1] * WORLD.PX_PER_M;
+  const i = Math.floor(u), f = u - i;
+  return (D[i] + (D[i + 1] - D[i]) * f) * WORLD.PX_PER_M;
 }
+// kept for older call sites and tests: the old analytic basin's names, now the real lakes' figures
+export const BASIN = { get DEEP_D() { return LANDSCAPE.MAX_D; } };
+export const STREAM = { DEPTH: 0.35, POOL_D: 1.1 };   // m: the brook's riffles and its pools (the angler: "3 or 4 feet deep")
+// the three water bodies, left to right: [x0, x1) in world px. Kinds stay 'lake' / 'stream' / 'pond' (code keys on them);
+// `name` is what to show
+export const BASINS = [
+  { id: 0, kind: 'lake', name: 'Upper Hot Brook Lake', get x0() { return 0; }, get x1() { return LANDSCAPE.UPPER[1]; } },
+  { id: 1, kind: 'stream', name: 'Hot Brook', get x0() { return LANDSCAPE.BROOK[0]; }, get x1() { return LANDSCAPE.BROOK[1]; } },
+  { id: 2, kind: 'pond', name: 'Lower Hot Brook Lake', get x0() { return LANDSCAPE.LOWER[0]; }, get x1() { return WORLD.W; } },
+];
+export const basinAt = x => x < LANDSCAPE.BROOK[0] ? BASINS[0] : x < LANDSCAPE.BROOK[1] ? BASINS[1] : BASINS[2];
+// a basin's deep centre (world px): the deepest point of each lake (Upper's north basin), the brook's midpoint
+const _deepest = b => { let bx = (b.x0 + b.x1) / 2, bd = -1; for (let x = b.x0; x < b.x1; x += 4) { const d = bedY(x); if (d > bd) { bd = d; bx = x; } } return bx; };
+let _centres = null;
+export const basinCenterX = b => (_centres || (_centres = BASINS.map(B => B.kind === 'stream' ? (B.x0 + B.x1) / 2 : _deepest(B))))[b.id];
 // the water cross-section (px²) — memoised (the geometry is fixed for the run)
 let _wetArea = 0;
-export function wetArea() { if (!_wetArea) { for (let x = 0; x < WORLD.W; x += 2) _wetArea += bedY(x + 1) * 2; } return _wetArea; }
+export function wetArea() { if (!_wetArea) { for (let x = 0; x < WORLD.W; x += 2) _wetArea += Math.max(0, bedY(x + 1)) * 2; } return _wetArea; }
 // is the bed at x littoral (≤ LANDSCAPE.LITTORAL_D)?
 export const isLittoralX = x => bedY(x) <= LANDSCAPE.LITTORAL_D * WORLD.PX_PER_M;
 // a random littoral x (any basin), drawn with the caller's RNG R(lo, hi) — rejection sampling, deterministic for a seeded R
@@ -428,8 +431,21 @@ export const ICE = {
                    //   so the deep water runs down on its own while the upper water keeps the under-ice photosynthesis
 };
 export const THERMAL = {
-  EPI_FRAC: 0.28,      // top fraction of the column = epilimnion (warm, well-mixed)
-  HYPO_FRAC: 0.60,     // below this fraction = hypolimnion (cold)
+  // MIXING IN METRES (2026-10-15, the real Hot Brook lakes — was the top 28 % / below 60 % of a 14.6-m column). The
+  // wind-mixed layer of a lake ~3 km long reaches ~5–7 m in summer (empirical fetch relations, e.g. Patalas 1984), deeper
+  // than Upper Hot Brook (5.5 m) — MDIFW: "the lake is shallow and does not stratify during summer months". Calm clear
+  // weather shoals it (× the weather's wind, WIND.WEATHER), so a few calm hot days can stratify the bottom of the north
+  // basin weakly until the next wind; Lower (3.9 m) and the brook stay mixed.
+  MIX_M: 6.0,          // m: the wind-mixed depth at ordinary (cloudy-day) wind; × the weather's wind, clamped to …
+  MIX_CALM: 0.75,      // … at least this in calm clear weather (4.5 m: only the bottom metre of Upper's north basin can stratify
+                       //   — the 1949 August survey: 74 °F at the surface, ~71 °F at the bottom)
+  FULLMIX_EROSION: 0.6,// /s: once the mixed layer reaches the deepest water the whole lake mixes and stratification breaks down …
+  HYPO_TAU_FULLMIX: 3, // … and its bottom water takes the surface temperature within a day or so (s)
+  NIGHT_MIX_M: 6.0,    // m: NIGHT CONVECTION — the surface cools after dark, sinks and mixes the column this deep: a shallow lake's
+                       //   daytime stratification breaks most nights (why a 5.5-m lake "does not stratify" through a calm, clear week)
+  META_M: 1.5,         // m: the thermocline's thickness under the mixed layer
+  ICE_TOP_M: 0.3,      // m: under ice, 0 °C water just under the ice warms with depth …
+  ICE_META_M: 2.7,     // … to the 4 °C bottom water over this (the calm column's inverse stratification)
   STRAT_O2_MIX: 0.16,  // vertical O₂ mixing across/below the thermocline when stratified (low)
   TURNOVER_MIX: 3.2,   // vigorous vertical mixing when stratification collapses (wind-driven overturn)
   STRAT_RELAX: 0.5,    // /s rate stratification eases toward its seasonal target (re-stratification after mixing)
@@ -442,12 +458,12 @@ export const THERMAL = {
   // so it is "set" by the late-winter/spring mixed column and stays cool & steady all summer (no diurnal swing).
   HYPO_TAU_MIX: 150,   // s: deep-water temperature lag behind the surface when fully mixed (column heat capacity)
   HYPO_TAU_STRAT: 3000,// s: slow summer warming of the stratified hypolimnion (heat leaking through the thermocline)
-  DIEL_DEPTH: 0.06,    // depth fraction (of H) e-folding scale of the surface diurnal temperature swing (shallow skin)
+  DIEL_M: 0.9,         // m: e-folding depth of the surface diurnal temperature swing (a shallow skin; was 0.06 × the 14.6-m column)
 };
 export const WIND = {
   BASE: 5,             // baseline surface drift speed (px/s), direction flips slowly
   WEATHER: [0.6, 1.0, 1.6, 2.4], // wind multiplier per weather state (clear→storm)
-  SURFACE_FRAC: 0.30,  // top fraction of the column the surface current reaches
+  SURFACE_M: 4.4,      // m the wind-driven surface current reaches down (was 0.30 × the 14.6-m column)
 };
 
 // ---------- habitat structure & cover (refuge from predation) ----------
@@ -488,7 +504,8 @@ export const FLOW = {
 // confined to the sediment, this makes inflow → lake → outflow a real through-flow (a nutrient sink). Tallied in env.ledger.
 export const OUTFLOW = {
   ADVECT: 1.0,          // field advection speed as a multiple of FLOW.SPEED's depth profile (1 → ~1-year water residence)
-  DEPTH: 0.25,          // the advected outflow layer spans the top DEPTH fraction of the column (a surface outlet)
+  DEPTH_M: 3.6,         // m: the advected outflow layer (a surface outlet; was 0.25 × the 14.6-m column) — in Hot Brook nearly
+                        //   the whole column moves toward the outlet
 };
 
 export const TURBIDITY = {
@@ -628,7 +645,7 @@ export const ENV = {
 
   // temperature (deg C, normalised internally)
   TEMP_BASE: 12.5,         // a starting surface temperature before the calendar sets it (the curve is SEASON.TEMP_KNOTS)
-  TEMP_DIURNAL: 4,         // +/- swing over the day (surface; damped with depth — THERMAL.DIEL_DEPTH)
+  TEMP_DIURNAL: 4,         // +/- swing over the day (surface; damped with depth — THERMAL.DIEL_M)
   TEMP_RELAX: 0.4,         // /s rate the surface temperature eases toward its seasonal+diurnal+weather target
   TEMP_WEATHER: [0, -1, -2.5, -3], // cooling per weather state
 
@@ -643,9 +660,16 @@ export const ENV = {
                            //   rO2) — the one constant tying real grams to the 2-D field; set so the community's total draw equals
                            //   the earlier calibration of the lake's O₂ budget (fish ≈ 15–40 % of the sediment demand, as in real lakes)
   O2_PLANT_NIGHT: 0.006,   // plant respiration at night
-  O2_SED: 0.15,            // SEDIMENT O₂ demand /s at each column's bed cell (×depth ramp below the epilimnion)
-  O2_PELAGIC: 0.009,       // water-column O₂ demand /s below the epilimnion (decomposition of sinking particulate organic
-                           // matter, ×depth ramp). Together with O2_SED ≈ the old all-cells 0.018 ramp for a deep column.
+  // (2026-10-15, the real Hot Brook lakes: with the demand now acting on the whole bed, 0.15 / 0.009 drew a 2–5-m column down
+  // 0.2–0.3 mg/L/day under the ice — 2–3× the 0.06–0.12 of lakes this deep — and the bed's 0.5 g O₂/m²/day is well above cold
+  // sediment's ~0.1–0.2. Halved: ~0.8 g/m²/day at 20 °C and ~0.25 at 4 °C on a 3-m bed)
+  O2_SED: 0.08,            // SEDIMENT O₂ demand /s at each column's bed cell (× O2_DEMAND_Z's depth ramp, × Q10 about 12 °C)
+  O2_PELAGIC: 0.005,       // water-column O₂ demand /s (decomposition of sinking particulate organic matter, × the ramp)
+  // the demand's depth profile (2026-10-15, was "below the epilimnion" — 4.1 m of a 14.6-m column, which left a 5.5-m lake's
+  // whole bed without sediment O₂ demand, so its winter O₂ could never fall): every bed and water cell respires, rising with
+  // depth from O2_DEMAND_MIN at the surface to full at O2_DEMAND_Z — sand and rock in the shallows, organic muck focused in
+  // the deep basins (MDIFW: "the lake bottom is mostly muddy")
+  O2_DEMAND_MIN: 0.15, O2_DEMAND_Z: 10.5,
   O2_START: 0.85,
   SAT_TEMP_K: 0.020,       // saturation drop per deg above 18C
   HYPOXIA: 0.35,           // default critical O2 (species override via sp.o2Crit); below it, fish take stress

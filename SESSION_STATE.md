@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-15, late night) — THE REAL ENVIRONMENT FIRST (display → land/shore/air), branch `zoo-field` (save v32)
+## ▶ NOW (2026-10-16) — THE REAL HOT BROOK LAKES, STAGE A DONE, branch `zoo-field` (save v33)
 
 The human, looking at the full-screen display: most of the screen is soil (the 3.4:1 landscape at true depths is ~19 % water
 on their ~21:9 ultrawide, 14 % at 16:9), there is nothing above the water, "maybe 3d or isometric". Mockups shown (scratchpad
@@ -33,7 +33,30 @@ banded killifish (and no pumpkinseed — the human's catches win). The human off
 ice-fishing spots, fishing-app depth screenshots) — welcome when they come. The human asked if it stays the same
 realistic evolving sim "at a larger scale": yes — same engine in the real geometry; 637 ha can't hold a brain per fish,
 so the sim runs a section at real densities inside the full landscape (weather, inflow, ice, the brook can be whole).
-NEXT: design the land/shore/air in the slice (banks at both ends, the 2.5-D view, catchment hydrograph, snow
+STAGE A DONE (docs/HOT_BROOK_SIM.md; FEATURES "the real Hot Brook lakes, stage A"): the world is the real slice
+(src/hotbrook_profile.js from tools/hotbrook/slice_profile.py; W 6507 × H 456; 271 × 19 cells), DEPTH_REF for
+fraction-of-column parameters, mixing in metres + night convection (no summer stratification; inverse under ice), O₂ demand on
+the whole bed (O2_SED 0.08, O2_PELAGIC 0.005: winter keeps 5–12 mg/L, hypoxic mud layer), save v33 (older refused), opening
+view on Upper. Gate rewritten for the place: shape checks → the real proportions; stratification → "does not stratify" +
+under-ice inverse; test fish in Upper's north basin WITH their partners beside them (a predator–prey pair split by 120 px
+was the 9 "distance" fails); deep plants starve over days (5.5 m is just past pondweed's ~4.8-m limit at Secchi ~4 m);
+hypoxia probe 10 fish × 4 days (a fish's swim rhythm hangs on its id, so whether it reaches the re-aerated surface was a
+coin toss at 5 × 3); fry escape bar 0.85 (two 0.3-m rows cost ~1 larva in 10; without the escape a third die); the bass
+littoral probe compares its turn with/without the drive (in a 5.5-m lake the drive rests: every bed is within a bass's
+~7-m habitat, and cover/home depth take it shallow anyway). Perf ~175 steps/s, peak 174 agents.
+FINDING for stage B: the slice stands for 2,224 m² (0.22 ha) → at the design census ~580 fish ≥ 7.5 cm. Current K (pop.max
+× AREA_SCALE 5.76) vs real × slice: white perch 173 vs ~178, yellow perch 161 vs ~191, golden shiner 346 vs ~96, pumpkinseed
+259 vs ~48 (+ redbreast ~16), bullhead 35 vs ~31, sucker 9 vs ~7, smallmouth 5 vs ~9, pickerel 3 vs ~4, fallfish — vs ~7.
+RESEARCH DONE (docs/research_notes/Hot Brook populations and water/): no water-quality data for either lake (analogue
+Baskahegan Lake: Secchi 3.8 m, colour 46, TP 10, chl 3.1, pH 6.6); watersheds 66 / 77 km², residence ~100 / 55 days (the
+sim's through-flow assumes ~1 yr — fix in stage D's hydrograph); pumpkinseed IS on MDIFW's Upper list (2007); a state-
+Threatened YELLOW LAMPMUSSEL record in SW Upper (hosts: white & yellow perch); fish target ~2,600 fish ≥ 7.5 cm/ha at ~100
+kg/ha (Cassidy Lake MI census + per-species ranges); crayfish 0.5–1.5/m² (sim's 9 g/m² inside); elliptio 0.4–28/m² (Maine);
+zooplankton ~50 µg dry/L, copepod-heavy (the sim's ~60 % Daphnia is high); benthos production at the sim's ~110–125 g wet/m²/yr
+is at the upper bound. lakesofmaine.org (blocked to bots) holds Hot Brook WQ/plants/mussels — the human could look.
+NEXT (stage B): real per-species densities in the slice (agent budget ~300–500: choose the slice's third dimension), the new
+species (redbreast, fallfish, banded killifish & blacknose dace as schools), the zooplankton mix, Secchi/colour (step 4b).
+THEN: design the land/shore/air in the slice (banks at both ends, the 2.5-D view, catchment hydrograph, snow
 on ice, shore predators, wood, insects…) with a four-season walk-through, shown before coding. PARKED (still valid): larval
 food for shiner/perch; step 4b coloured water (now also mechanism #2 of the shore report); angler-realism audit; stream step 5.
 LOCAL SERVER: the human opens http://localhost:8000 in Chrome — it is down whenever the session's preview server is stopped;

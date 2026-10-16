@@ -9,6 +9,38 @@ The **2026-10-15 Maine re-base, parts 2 and 1** and **2026-10-15 zooplankton fie
 
 ---
 
+## 2026-10-15 the real Hot Brook lakes, stage A: the place and its physics (save v33)
+
+The human: "lets just model the real upper and lower hotbrook lake … make sure proportions and amount of water and animals
+is realistic". Design: `docs/HOT_BROOK_SIM.md`. The world is now a cross-section of the real system along its flow path.
+
+- **The landscape model** (`tools/hotbrook/`, artifact https://claude.ai/artifact/7e75Q4UqJJw4jEfx5gF7ye): OpenStreetMap
+  outlines, USGS 3DEP elevation, NWI wetlands, NLCD forest types, a NAIP aerial photo, and MEASURED lake beds — the 1949
+  MDIFW survey maps' 146 spot soundings (`soundings.py` finds them on the scans and fits each map onto today's shoreline by
+  trimmed ICP, median misfit 18 m; the bed = a 50-m shore taper × the soundings' basin depth). Means 3.05 / 2.67 m against the
+  published 3.35 / 2.74; max 18 / 13 ft.
+- **The slice** (`slice_profile.py` → `src/hotbrook_profile.js`, data): Upper's south shore → Upper Hot Brook Lake → the
+  brook → Lower Hot Brook Lake → Lower's north shore. Each lake keeps its real centreline pattern (Upper's deep north basin
+  by the outlet) quantile-mapped onto the lake's real area-at-depth, so the share of shallows and the mean depth are the
+  real lake's (Upper 3.06 m, 44 % ≤ 3 m; Lower 2.68 m, 56 %). True depths; lakes ~90× compressed along the slice; the brook
+  (~11×) from the angler: the 1.1-m pool at its upper mouth, riffles 0.32–0.36 m, a shallower run. `config.js` `LANDSCAPE`
+  reads it: the world spans the water between the two 0.25-m waterlines (W 6507 px, as the old world ended at 0.25 m), the
+  banks lie beyond (`bedY` < 0 for x < 0, x > W); H 456 px (5.8 m); the field grid 271 × 19.
+- **Absolute depths kept.** Parameters written as fractions of the old 14.6-m column (light attenuation 3.2/H ≈ 0.22/m,
+  crayfish/snail depth limits, plant light, fry depth, the depth sensors, the zooplankton refuge, the diatom/phyto bands) read
+  against `WORLD.DEPTH_REF` (1152 px), so the same real depth means the same thing.
+- **Mixing in metres** (`THERMAL.MIX_M` 6 m × the weather's wind, ≥ `MIX_CALM`; `NIGHT_MIX_M` night convection): a lake as
+  shallow as its wind-mixed layer mixes to the bottom (`fullMix`: stratification erodes, the bottom water takes the surface
+  temperature in a day or so). Upper doesn't stratify (MDIFW: "does not stratify"; 1949: 74 °F surface, ~71 °F bottom);
+  under ice the calm column is inversely stratified (`ICE_TOP_M`/`ICE_META_M`: ~0 °C under the ice, ~4 °C on the bottom).
+  Wind-driven turbulence relaxes every cell inside the mixed layer toward the surface O₂ (the bed's O₂ demand acting in the
+  shallows left an anoxic film on a mixed 4-m bed with diffusion alone).
+- **O₂ demand on the whole bed** (`ENV.O2_DEMAND_MIN`/`O2_DEMAND_Z`: rising from 15 % at the surface to full at 10.5 m; was
+  "below the epilimnion" only, which left a 5.5-m lake's bed without demand). `O2_SED` 0.15 → 0.08, `O2_PELAGIC` 0.009 → 0.005:
+  ~0.8 g O₂/m²/day at 20 °C and ~0.25 at 4 °C; under ice the 2–5-m columns lose ~0.06–0.15 mg/L/day (lakes this deep:
+  0.06–0.12) and keep 5–12 mg/L through the winter, with the layer over the north basin's mud going hypoxic.
+- **Saves.** v33; older full saves (the generic lake) are refused with a message — their champion brains still load.
+
 ## 2026-10-15 the Maine re-base, part 3: the Maine calendar and winter oxygen
 
 - **The calendar** (`config.js` `SEASON.TEMP_KNOTS`, `seasonalTemp(yf)`; used by `environment.js` `primeSeason`/`step`
