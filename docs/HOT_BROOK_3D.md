@@ -840,6 +840,12 @@ and roads, the rest of the terrain needs to be realistic too"). Of the result: "
   the water it showed as a green wall; the human: "that looks worse than before".
 - **Cost.** ~100 fps from above and on the water at land ×1.
 
+**Built — EACH FISH AT ITS REAL BODY WIDTH (fish3view `WIDTH`, 2026-10-16; the human: "why do all the fish look real thin").**
+- The problem: every fish was drawn with a sunfish's section, its width 0.38 of its depth, so the round-bodied fish were needles from above (the human's view looking down into the brook).
+- Now the width is a share of the depth for each species: sunfish 0.42, redbreast 0.45, white perch 0.48, perch and bass 0.6, fallfish and killifish 0.65, dace 0.8, sucker and pickerel 0.85, bullhead 1.0.
+- The tail's wave keeps its old reach.
+- Checked in the browser, looking down at the bed: suckers and fallfish now read as spindles.
+
 **Built — THE CRAYFISH AND SNAILS ON SCREEN (`render3/bed3view.js`, 2026-10-16; the human: "do you have snails and crawfish too?
 those are in there").** Both were already in the sim as biomass per bed cell (littoral3: virile crayfish, adults and the year's
 young, by shelter; soft-water snails on the weeds and the lit bed) — eaten, never drawn. `Littoral3.shown(night)` gives per bed
