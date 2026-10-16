@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Hot Brook Lakes 3D</title>
+<link rel="stylesheet" href="w3.css" />
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="labels"></div>
+<header id="hud">
+  <h1>Hot Brook Lakes <span>3-D · first light</span></h1>
+  <p id="sub">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). No water physics or fish yet: this is the place they will live in.</p>
+  <nav id="views"></nav>
+  <p id="help">Drag to look around · right-drag or shift-drag to pan · scroll to zoom · W A S D to move, R / F up and down (go below the surface to see the lake bed)</p>
+</header>
+<div id="status"></div>
+<div id="under" hidden>under water</div>
+<script type="module" src="src/w3/render3/main3.js"></script>
+</body>
+</html>
