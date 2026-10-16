@@ -76,6 +76,20 @@ W_cover[land] = np.where(wL >= 0.5, cover[jL, iL], cover[jU, iU])[land]
 W_elev[W_body == 1] = SURF[1]; W_elev[W_body == 2] = SURF[2]
 W_cover[W_body > 0] = cover[jU, iU][W_body > 0]
 W_cover[W_body == 2] = cover[jL, iL][W_body == 2]
+# a LAND cell whose placement lands on a lake's real water — the strip between the lakes, where the half-scale brook pulls
+# Lower in — takes the other placement's land cover, else the nearest real land's (the human, 2026-10-16: "there should be
+# trees by the brook where you don't have any" — the brook runs through forest; this strip was drawn as bare 'water' ground)
+WATER_C = CLASSES.index('water'); SHORE_C = [CLASSES.index(k) for k in ('rock_shore', 'beach')]   # (the shore ring's own classes don't spread inland)
+bad = bad0 = (W_body == 0) & (W_cover == WATER_C)
+alt = np.where(wL >= 0.5, cover[jU, iU], cover[jL, iL]); ok_alt = bad & (alt != WATER_C) & (alt != STREAM_C) & ~np.isin(alt, SHORE_C)
+W_cover[ok_alt] = alt[ok_alt]
+for _ in range(200):   # (nearest-neighbour fill from the land about it)
+    bad = (W_body == 0) & (W_cover == WATER_C)
+    if not bad.any(): break
+    for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        nb = np.roll(np.roll(W_cover, dr, 0), dc, 1); nbb = np.roll(np.roll(W_body, dr, 0), dc, 1)
+        take = bad & (nbb == 0) & (nb != WATER_C) & (nb != STREAM_C) & ~np.isin(nb, SHORE_C); W_cover[take] = nb[take]; bad &= ~take
+print('land cover: filled', int(bad0.sum()), 'land cells between the lakes from their surroundings')
 
 # the brook: the real path at half scale from Upper's outlet; its profile from the angler's description (slice_profile.py):
 # the outlet lip → the deeper pool at the upper mouth (3–4 ft) → riffle → a shallower run (sunfish) → riffle → Lower's lip
