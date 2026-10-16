@@ -399,6 +399,36 @@ console.log('\n— fish 3-D: foraging —');
       F.stats.food.benth - b0 > 0 && cols.size >= 5 && !cols.has(a.c), `${(F.stats.food.benth - b0).toFixed(2)} g from ${cols.size} columns within ${a.s.forageR} m`); }
 }
 
+// ============================================================
+//  FISH 3-D, stage 6b — the food web through a summer: the zooplankton's June peak, the fish's share of it, the young's growth
+// ============================================================
+console.log('\n— fish 3-D: the food web through a summer —');
+{
+  const { Env3 } = await import('../src/w3/env3.js');
+  const { Fish3 } = await import('../src/w3/fish3.js');
+  const { PLANKTON } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  // MAY 12 → SEPTEMBER (the coarse grid): the zooplankton peaks in June (the spring Daphnia peak) while the fish take a minority
+  // of its production — the adults turn to the bed when it thins (K_ZOO); a strong cohort of young then grazes it down in
+  // midsummer (Mills & Forney 1983); the young grow to fingerlings by September
+  { seed(531); const e = new Env3({ col: 10, yf0: 0.2 }), F = new Fish3(e), ch = e.chem;
+    let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [];
+    for (let i = 0; i < 120 * 98.6; i++) {
+      F.step(0.1); if (i % 2) e.step(0.2);
+      if (i % 100 === 0) {
+        const yf = e.yearFrac(), z = (e.mean(ch.zooD) + e.mean(ch.zooC)) * PLANKTON.UGL, eat = F.stats.food.zoo + F.stats.food.yZoo;
+        if (yf >= 0.25 && yf < 0.333) { peak = Math.max(peak, z); if (!jp0) { jp0 = ch.zooProd; je0 = eat; } jp1 = ch.zooProd; je1 = eat; }
+        B.push(F.biomass() / 1000 / F.lakeHa);
+      }
+    }
+    const share = (je1 - je0) / Math.max(1e-9, jp1 - jp0), c = F.census();
+    check('June: the zooplankton peaks above 100 µg/L (the spring Daphnia peak) while the fish eat under half of its production — the adults turn to the bed as it thins',
+      peak > 100 && share < 0.5, `peak ${peak.toFixed(0)} µg/L; fish took ${(share * 100).toFixed(0)} % of June's production`);
+    check('by September the young are fingerlings (perch and suckers ≥ 4.5 cm — real 5–8) and the lakes\' fish stay within 60–170 kg/ha',
+      c.perch.yoyL >= 4.5 && c.sucker.yoyL >= 4.5 && Math.min(...B) > 60 && Math.max(...B) < 170,
+      `young: perch ${f1(c.perch.yoyL)}, sucker ${f1(c.sucker.yoyL)}, white perch ${f1(c.whiteperch.yoyL)}, pumpkinseed ${f1(c.sunfish.yoyL)} cm; biomass ${Math.min(...B).toFixed(0)}–${Math.max(...B).toFixed(0)} kg/ha`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

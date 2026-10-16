@@ -262,6 +262,21 @@ algae fall near zero in July–August (the water's summer productivity: coloured
 refuge in these shallow lakes until the weeds (stage 7). The plankton-eating young stall: pumpkinseed 0.6–0.8 cm through
 August, shiners 1–2 cm, smallmouth ~1 cm (real 3–10 cm).
 
+**Built (stage 6b) — the food web through a summer.** Two diagnoses (scratchpad algaeprobe.mjs, foodweb.mjs, 3 seeds):
+(1) the summer's PHOSPHORUS ran out — the bed buried ~95 % of the inflow's P (it only released P when anoxic), so the algae
+were P-starved in July–August. Added the shallow lake's temperature-driven OXIC RELEASE of the bed's bound P (CHEM3.REL_OXIC
+0.0015 × Q10 2.5; Søndergaard et al. 2003): summer P holds up 2–4×, a year without fish keeps 64 % of its P load (Larsen–
+Mercier 0.66–0.72). (2) Even fed, the zooplankton was held down by the ADULTS: at the 2-D sim's K_ADULT 25 µg/L an adult
+planktivore fed near its ceiling on any zooplankton. With a bed to turn to, an adult's half-saturation of 60 µg/L (F3.K_ZOO;
+adult fish saturate at ~10–20 Daphnia/L) makes the zooplankton settle where it pays as well as the bed. Result (3 seeds, May
+→ October): a June peak of 190–450 µg/L (the spring Daphnia peak) with the fish taking 31–47 % of its production; a strong
+cohort of young (15–28 kg/ha by July — Oneida's Daphnia vanished above 20–40 kg/ha of young perch, Mills & Forney 1983)
+then grazes it down in July–August; the young reach real autumn sizes for perch (5.6–6.5 cm), suckers (5.5–6.2), bullheads
+(4.2–5.3), nearly for white perch (4.0–5.2; real 5–7) and shiners (2.5–4.5; real 4–5). test/w3.mjs +2 checks (53).
+STILL OPEN: young pumpkinseed stay small (1.4–3.7 cm; real 3–5) — their limnetic larvae starve in the open water through
+July; the autumn zooplankton rebound is weak; the adults' June feast (p 0.8–0.93) then a lean late summer (0.2–0.4). The
+weeds (stage 7) are the missing refuge and the littoral's own food (snails, insects) for sunfish.
+
 **Known calibration problems to solve here** (the 2-D census of stage A, 3 seeds × 3–4 years, `test/diag` census, deaths,
 fryfate): total fish 130–140 kg/ha (inside the real 60–150) but the wrong mix — white perch 70–90 kg/ha (target 15–30) at a
 mean ~180 g (Maine's crowded white perch stay 25–45 g: real white perch STUNT — food competition among adults is too weak in

@@ -36,6 +36,12 @@ export const CHEM3 = {
   // rest leaves by the outlet — Vollenweider/Kirchner–Dillon retention ~0.4–0.7 at these flushing rates); calibrated so a
   // year without fish keeps its P inventory (Larsen–Mercier R = 1/(1+√τ): Upper 0.66, Lower 0.72; the model ~0.75)
   BURY_MUL: 0.15,
+  // OXIC RELEASE of the bed's bound P (/s on the 2-D clock at 20 °C, × REL_Q10 per 10 °C): a shallow lake's internal loading is
+  // driven by temperature, highest in summer, even over oxic sediment — the mineralisation of the bed's organic P (Søndergaard
+  // et al. 2003; Jensen & Andersen 1992) — the redox switch (SED_P.RELEASE) adds to it when the bed goes anoxic. (0: off)
+  // (0.0015: the summer's dissolved P holds up 2–4×, and a year without fish keeps ~two-thirds of its P load: Larsen–Mercier
+  // 0.66–0.72 — the bed's release balancing its binding and burial)
+  REL_OXIC: 0.0015, REL_Q10: 2.5,
 };
 
 // Q10 temperature factors from lookup tables (T −2 … 40 °C in 0.05° steps) — a step computes ~10 per cell
@@ -285,7 +291,8 @@ export class Chem3 {
   // Per bed cell, per unit of bed: settling algae and a baseline P rain (debited from the water over it), binding of dissolved P
   // while the bottom is oxic, release of legacy P when it goes anoxic, slow burial (out of the lake, tallied)
   _sedimentP(dt) {
-    const ph = this.phyto, phos = this.phos, nh4 = this.nh4, sed = this.sedP, o2 = this.o2, pU = PHYTO.P_USE, nU = PHYTO.N_USE;
+    const ph = this.phyto, phos = this.phos, nh4 = this.nh4, sed = this.sedP, o2 = this.o2, pU = PHYTO.P_USE, nU = PHYTO.N_USE, T = this.env.temp;
+    const rel0 = CHEM3.REL_OXIC * TS * dt;
     let buried = 0;
     for (const j of this.bedCells) {
       const r = this.r[j], W = 1 / r, ox = o2[j] > 0 ? o2[j] : 0;
@@ -296,6 +303,7 @@ export class Chem3 {
         const rain = Math.min(phos[j] * W, SED_P.SETTLE * SED_P.RAIN_BASE * CHEM3.BED_EXCH * TS * dt, room);
         phos[j] -= rain * r; sed[j] += rain; room -= rain;
       }
+      if (rel0 > 0) { const rel = Math.min(sed[j], rel0 * Math.pow(CHEM3.REL_Q10, (T[j] - 20) / 10) * sed[j]); sed[j] -= rel; phos[j] += rel * r; }   // (oxic, temperature-driven)
       if (ox < SED_P.O2_THRESH) { const rel = SED_P.RELEASE * TS * sed[j] * (1 - ox / SED_P.O2_THRESH) * dt; sed[j] -= rel; phos[j] += rel * r; }
       else if (room > 0) { const bnd = Math.min(SED_P.BIND * CHEM3.BED_EXCH * TS * phos[j] * dt, room, phos[j] * W); phos[j] -= bnd * r; sed[j] += bnd; }
       const bury = SED_P.BURY * CHEM3.BURY_MUL * TS * sed[j] * dt; sed[j] -= bury; buried += bury * this.a[j];

@@ -56,12 +56,15 @@ the open water, a hungry fish goes down to bed food, a fish losing condition str
 feeds over a quarter of its home range: one sim second = ~2.4 h of foraging). 3 seeds May→Oct: biomass holds 95–115 kg/ha,
 adult starvation halves, summer p 0.25–0.5. test/w3.mjs +2 checks (51). Harness: scratchpad foodweb.mjs <seed> <yf0> <days>
 <every> [F3 KEY=value | BLOCK.KEY=value].
-NEXT: STAGE 6b — the water's summer productivity: the algae fall near zero in July–August, so the zooplankton collapses (2–17
-µg/L July–Oct vs real 45–100) and the plankton-eating young stall (pumpkinseed < 1 cm in August). Step 4b's coloured
-mesotrophic water (Secchi ~3.8 m, colour ~46, TP 10–20 µg/L: docs/reports/Maine lakes ponds and streams.md) and the nutrient
-supply through summer; then a zooplankton refuge (weeds, stage 7). Targets: zooplankton 45–100 µg/L, a May–June peak, fish
-taking < 30 % of its production, YOY 0.4–0.7 mm/day to 3–8 cm by autumn — ≥ 3 seeds, full years. Then redbreast + fallfish,
-plants, and a Web Worker (1× uses ~35 % of the main thread with the view).
+STAGE 6b (this commit; docs/HOT_BROOK_3D.md §4 "Built (stage 6b)"): the bed's oxic, temperature-driven P release (CHEM3.REL_OXIC
+0.0015; annual P retention 0.64) and the adults' zooplankton half-saturation 60 µg/L (F3.K_ZOO; the 2-D keeps PLANKTON.K_ADULT
+25): a June zooplankton peak (190–450 µg/L) with fish taking 31–47 % of its production, a midsummer collapse under a strong
+cohort of young (15–28 kg/ha), the young at real autumn sizes for perch/suckers/bullheads. test/w3.mjs 53 checks (~9 min).
+OPEN: young pumpkinseed small (1.4–3.7 cm vs 3–5); weak autumn zooplankton rebound; Secchi still 6–9 m (step 4b colour).
+NEXT: STAGE 7 — PLANTS in 3-D (the weeds: pondweed, milfoil, lilies, muskgrass on the bed by depth and light; the zooplankton's
+refuge and the young sunfish's nursery; periphyton; their place in the N/P budget), then snails/insects/crayfish (the
+littoral's food: sunfish, bass), coloured water (step 4b), redbreast + fallfish; a Web Worker (1× uses ~35 % of the main
+thread with the view). Consider moving the long w3 runs to a separate long suite if the gate grows past ~10 min.
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;

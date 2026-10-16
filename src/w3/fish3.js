@@ -57,6 +57,10 @@ export const F3 = {
   // THE BED OR THE OPEN WATER (stage 6): an adult shares its foraging time between its two foods toward the better (t ∝ f^SHARE_Q),
   // instead of eating both at once; K_BENTH (g/m² above the refuge) the half-saturation of an adult's bed foraging
   SHARE: 1, SHARE_Q: 4, K_BENTH: 3,
+  // K_ZOO (µg dry/L): an adult planktivore's half-saturation on zooplankton (type III) — adult fish saturate at ~10–20 Daphnia
+  // per litre (~50–100 µg/L). With a bed to turn to, the zooplankton settles where it pays as well as the bed (~90 µg/L at a
+  // 7 g/m² bed — the real 45–100); the 2-D sim's PLANKTON.K_ADULT (25) was low because its adults had nothing else to eat
+  K_ZOO: 60,
   // THE FORAGING FOOTPRINT: one sim second stands for ~2.4 real hours of foraging, over which a real fish works hundreds of
   // metres of its range — ground no fish can swim at real speed in a second. So an adult feeds from the water and the bed
   // about it within FP_HOME × its home range (FP_MIN–FP_MAX m), on the bed within FP_DZ of its own depth: it still chooses where
@@ -552,7 +556,7 @@ export class Fish3 {
       }
     }
     if (s.plank || a.L < s.sp.Lzoo) {
-      const K = PLANKTON.K_ADULT; let best = PLANKTON.SENSE_MIN * K, bj = -1;
+      const K = F3.K_ZOO; let best = PLANKTON.SENSE_MIN * K, bj = -1;
       const k0 = a.j - G.cell0[a.c];
       const tryJ = jj => { const E = ch.zooE(jj); if (E > best) { best = E; bj = jj; } };
       tryJ(a.j); if (k0 > 0) tryJ(a.j - 1); if (k0 < G.nL[a.c] - 1) tryJ(a.j + 1);
@@ -745,7 +749,7 @@ export class Fish3 {
     let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
     if (F3.SHARE && canB && canZ) {
       const Eb = ch.benthEcells(LB, nB), fB = Eb > 0 ? Eb / (Eb + F3.K_BENTH) : 0;
-      const Ez = ch.zooEcells(LZ, nZ), fZ = Ez * Ez / (Ez * Ez + PLANKTON.K_ADULT * PLANKTON.K_ADULT);
+      const Ez = ch.zooEcells(LZ, nZ), fZ = Ez * Ez / (Ez * Ez + F3.K_ZOO * F3.K_ZOO);
       const qB = fB ** F3.SHARE_Q, qZ = fZ ** F3.SHARE_Q; tB = qB + qZ > 0 ? qB / (qB + qZ) : 0.5; tZ = 1 - tB;
     }
     const want0 = want - got;
@@ -755,7 +759,7 @@ export class Fish3 {
     }
     if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);
-      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, PLANKTON.K_ADULT, out, true, true, 0);
+      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, F3.K_ZOO, out, true, true, 0);
       const g = (out[0] + out[1] + out[2]) / n;
       if (g > 0) { a.gut += g; a.gutE += (out[0] * PREY.DAPH_ED + out[1] * PREY.COPE_ED + out[2] * PREY.ROT_ED) / n; room -= g; got += g; this.stats.food.zoo += g * n; }
     }
