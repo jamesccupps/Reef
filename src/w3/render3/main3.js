@@ -11,13 +11,14 @@ import { FAR3 } from './far3d.js';
 import { Env3, CLOCK3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
+import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
-const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, normalize, pow, sin, time, abs: tabs } = THREE.TSL;
+const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, exp, time, abs: tabs } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
+const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
 const kLand = () => S.exag / 10;
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -28,11 +29,9 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000);
-const airFog = new THREE.FogExp2(0xc7d6dc, 0.0007);
-// tea-coloured water (Secchi ~3.8 m, colour ~46 Pt-Co): a dim amber-olive that hides things a few metres off; "see into the
-// water" thins it so the bed (and later the fish) can be seen
-const waterFog = new THREE.FogExp2(0x3d3c24, 0.12), clearFog = new THREE.FogExp2(0x5d6a5a, 0.02);
-scene.fog = airFog;
+// the fog: the air's above the water; under it the tea-coloured water's, its colour following the gaze (render3/water3.js)
+const airFog = new THREE.FogExp2(0xc7d6dc, 0.0007), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
+scene.fog = airFog; setClear(S.clear);
 
 // ---------- seasons: land cover and tree colours ----------
 const C = h => new THREE.Color(h);
@@ -87,8 +86,14 @@ function groundMaterial() {
   const bandIdx = dep.div(FT2).floor().mul(FT2).div(5.6);
   const chartBed = mix(vec3(0.55, 0.76, 0.84), vec3(0.02, 0.07, 0.2), tclamp(bandIdx, 0, 1));
   const f = fract(dep.div(FT2)), line = float(1).sub(smoothstep(0.0, 0.05, tmin(f, float(1).sub(f))));
-  const bedCol = mix(vc, mix(chartBed, vec3(0.05, 0.1, 0.18), line.mul(0.8)), U.chart.mul(smoothstep(0.02, 0.2, dep)));
+  // sunlight focused by the ripples into moving bright lines on the shallow bed (caustics), fading with depth
+  const P = positionWorld, tt = time;
+  const w1 = sin(P.x.mul(1.7).add(tt.mul(0.9)).add(sin(P.z.mul(1.3).add(tt.mul(0.6))).mul(1.4)));
+  const w2 = sin(P.z.mul(1.9).sub(tt.mul(0.8)).add(sin(P.x.mul(1.1).sub(tt.mul(0.5))).mul(1.4)));
+  const caust = pow(float(1).sub(tabs(w1.add(w2)).mul(0.5)), 6).mul(exp(dep.mul(-0.8))).mul(smoothstep(0.03, 0.2, dep)).mul(WU.day).mul(float(1).sub(U.chart));
+  const bedCol = mix(vc.mul(caust.mul(1.2).add(1)), mix(chartBed, vec3(0.05, 0.1, 0.18), line.mul(0.8)), U.chart.mul(smoothstep(0.02, 0.2, dep)));
   m.colorNode = mix(bedCol, landCol, land);
+  m.outputNode = waterOut(dep);   // (the water between the bed and the eye: render3/water3.js)
   return m;
 }
 const groundMat = groundMaterial();
@@ -169,18 +174,32 @@ const water = (() => {
   const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(0.0035);
   refl.uvNode = refl.uvNode.add(ripple);
   const view = normalize(cameraPosition.sub(P)), fres = pow(float(1).sub(tabs(view.y)), 4).mul(0.85).add(0.06);
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  m.userData = { alphaMul: uniform(1), body: uniform(new THREE.Color(0x2b2b17)), mirror: uniform(1) };
+  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, fog: false });
+  m.userData = { base: uniform(0.04), body: uniform(new THREE.Color(0x2b2b17)), mirror: uniform(1) };
   const ice = attribute('ice', 'float');   // the live ice cover (white-grey, snow-dusted, opaque)
-  m.colorNode = mix(mix(m.userData.body, refl.rgb, fres.mul(m.userData.mirror)), vec3(0.82, 0.86, 0.89), ice);
-  m.opacityNode = tclamp(attribute('wAlpha', 'float').mul(m.userData.alphaMul).add(fres.mul(m.userData.mirror).mul(0.6)).add(ice), 0, 1);
+  // FROM ABOVE: the mirror of the shore and the sky (Fresnel: strong at low angles) over the water — looking down, the surface
+  // is nearly clear and the bed, the weeds and the fish show through, dimmed and tinted by the water itself (water3.js)
+  const above = mix(m.userData.body.mul(WU.day), refl.rgb, fres.mul(m.userData.mirror));
+  const aboveA = m.userData.base.add(fres.mul(m.userData.mirror).mul(0.95));
+  // FROM BELOW: Snell's window — within ~48.6° of straight up the sky, bright and rippling; beyond it the surface mirrors the
+  // dark water below
+  // (the sky through the window is tinted by the water between it and the eye — golden-green in tea water — and broken by the
+  // waves into bright moving lines)
+  const s1 = sin(P.x.mul(3.1).add(t.mul(1.4)).add(sin(P.z.mul(2.2).add(t.mul(0.9))))), s2 = sin(P.z.mul(2.7).sub(t.mul(1.2)).add(sin(P.x.mul(1.9).sub(t.mul(0.8)))));
+  const glint = pow(float(1).sub(tabs(s1.add(s2)).mul(0.5)), 5);
+  const tintUp = exp(WU.kd.mul(WU.camDepth).negate());
+  const win = smoothstep(0.6, 0.7, tabs(view.y)), skyLit = vec3(0.5, 0.68, 0.82).mul(WU.day).mul(glint.mul(1.5).add(0.35)).mul(tintUp).mul(0.75);
+  const below = mix(WU.level.mul(WU.day).mul(glint.mul(0.6).add(1.1)), skyLit, win);
+  m.colorNode = mix(mix(above, below, WU.under), vec3(0.82, 0.86, 0.89).mul(mix(float(1), float(0.45), WU.under)), ice);
+  m.opacityNode = tclamp(mix(aboveA, float(1), WU.under).add(ice), 0, 1);
   const mesh = new THREE.Mesh(g, m); mesh.renderOrder = 2; return mesh;
 })();
 function styleWater() {
-  const m = water.material;
-  m.userData.body.value.set(S.look === 'chart' ? 0x6a8a96 : 0x2b2b17);
-  m.userData.mirror.value = S.look === 'chart' ? 0.2 : 1;
-  m.userData.alphaMul.value = S.look === 'chart' ? 0.12 : S.clear ? 0.25 : 1;
+  const m = water.material, chart = S.look === 'chart';
+  m.userData.body.value.set(chart ? 0x6a8a96 : 0x2b2b17);
+  m.userData.mirror.value = chart ? 0.2 : 1;
+  m.userData.base.value = chart ? 0.12 : 0.04;
+  WU.on.value = chart ? 0 : 1; setClear(S.clear);
   water.visible = S.water;
 }
 // the ice per vertex from the live water model's columns (each 1.5-m vertex reads the column it lies in)
@@ -283,7 +302,23 @@ const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const clipped = new THREE.ClippingGroup(); clipped.clippingPlanes = [clipPlane]; clipped.enabled = false;
 const fishView = makeFishView();   // the fish (src/w3/fish3.js), every one an instance, schools as their n fish
 const plantsView = makePlantsView(W3);   // the weeds (src/w3/plants3.js): stems, fronds, pads and reeds by each patch's stand
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, plantsView.group);
+// SPECKS in the water about the eye when under it (suspended detritus, plankton): a sense of depth and of the water moving —
+// 2,500 tiny motes in a 10-m box that follows the camera, drifting; the fog fades them with distance (cosmetic)
+const specks = (() => {
+  const N = 2500, B = 10, g = new THREE.OctahedronGeometry(0.004, 0), seed = new Float32Array(N * 3);
+  for (let i = 0; i < N * 3; i++) seed[i] = Math.random() * B;
+  g.setAttribute('seed', new THREE.InstancedBufferAttribute(seed, 3));
+  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
+  const sd = attribute('seed', 'vec3'), drift = vec3(time.mul(0.03), time.mul(-0.012), time.mul(0.02)).add(vec3(sin(time.mul(0.3).add(sd.x)).mul(0.15), sin(time.mul(0.23).add(sd.y)).mul(0.1), sin(time.mul(0.27).add(sd.z)).mul(0.15)));
+  const rel = fract(sd.add(drift).sub(cameraPosition).div(B)).sub(0.5).mul(B);   // (wrapped about the eye)
+  mat.positionNode = positionGeometry.add(cameraPosition).add(rel);
+  mat.colorNode = vec3(0.62, 0.6, 0.42).mul(WU.day).mul(0.6);
+  mat.opacityNode = float(0.35);
+  const m = new THREE.InstancedMesh(g, mat, N); m.frustumCulled = false; m.visible = false;
+  return m;
+})();
+scene.add(specks);
+clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, fishView.shadow, plantsView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -432,7 +467,7 @@ $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; 
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = S.trees; });
-$('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = S.fish; });
+$('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
@@ -463,9 +498,11 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
   const e = LIVE.snap; if (!e) return;
   const s = e.sun, cover = ENVC.CLOUD_COVER[e.weather], day = Math.min(1, s * 1.6);
   sun.intensity = 0.15 + 2.3 * day * (1 - 0.6 * cover); hemi.intensity = 0.18 + 0.75 * day * (1 - 0.3 * cover);
+  if (LIVE.under && S.clear) hemi.intensity *= 2.2;   // (under water, seeing into it: a fill light for watching — tea water is dim)
   const ang = (e.t - 0.25) * Math.PI * 2; sun.position.set(-300 * Math.cos(ang), 60 + 420 * Math.max(0.05, Math.sin(ang)), 260);
   sky.material.color = sky.material.color || new THREE.Color(); scene.environmentIntensity = 0.12 + 0.45 * day;
   skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover);
+  WU.day.value = 0.1 + 0.9 * day * (1 - 0.3 * cover);   // (the water's light: render3/water3.js)
 }
 function liveUI() {
   const e = LIVE.snap; if (!e) return;
@@ -480,7 +517,7 @@ function liveUI() {
 // ---------- frame ----------
 function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
-let last = performance.now(), fps = 60, nFrames = 0;
+let last = performance.now(), fps = 60, nFrames = 0; const UW_DIR = new THREE.Vector3(), SUN4 = [0, 1, 0, 0];
 async function start() {
   await renderer.init();
   $('exag').value = String(S.exag);
@@ -497,13 +534,19 @@ async function start() {
     rig.update(dt);
     liveTick(dt); lightByDay();
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
-    if (LIVE.snap && S.fish) LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z);
+    if (LIVE.snap && S.fish) {   // (the sun's direction and strength for the fish's shadows on the bed)
+      const sp = sun.position, sl = sp.length() || 1, open = 1;
+      SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.season === 'winter' ? 0 : open);
+      LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z, SUN4);
+    }
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
     const inBandXY = cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX;
     const under = inBandXY && GEO.bodyAt(cx, cy) !== LAND && ch < GEO.levelAt(cx, cy) && S.water;
-    scene.fog = under ? (S.clear ? clearFog : waterFog) : airFog; sky.visible = !under; scene.background = under ? scene.fog.color : null;
+    WU.under.value = under ? 1 : 0; WU.camDepth.value = under ? GEO.levelAt(cx, cy) - ch : 0; LIVE.under = under;
+    if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; }
+    scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
     $('uw').hidden = !under;
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);

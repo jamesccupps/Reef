@@ -10,7 +10,8 @@
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER, LAND } from '../geometry.js';
 import { FORMS3, NF3, PL3 } from '../plants3.js';
-const { attribute, positionLocal, positionGeometry, sin, cos, time, vec3 } = THREE.TSL;
+import { waterOut } from './water3.js';
+const { attribute, positionLocal, positionGeometry, positionWorld, sin, cos, time, vec3 } = THREE.TSL;
 
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
 const PER = { EM: 5, FL: 6, SC: 3, IS: 3, DM: 3 };          // instances per 1.5-m cell at a full stand
@@ -76,6 +77,8 @@ export function makePlantsView(W3) {
       const d = attribute('sway', 'float').mul(yy);
       mat.positionNode = P.add(vec3(sin(ph).mul(d), 0, cos(ph.mul(0.8)).mul(d).mul(0.6)));
     }
+    geo.setAttribute('sy', new THREE.InstancedBufferAttribute(new Float32Array(max), 1));   // the local surface's height (three y)
+    mat.outputNode = waterOut(attribute('sy', 'float').sub(positionWorld.y));   // (the water between the weed and the eye: water3.js)
     const m = new THREE.InstancedMesh(geo, mat, max); m.count = 0; m.frustumCulled = false;
     m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
     group.add(m); return m;
@@ -126,6 +129,7 @@ export function makePlantsView(W3) {
           }
           q.setFromEuler(e); mat.compose(p, q, s); meshes[f].setMatrixAt(cnt[f], mat);
           if (SWAY[F.key] > 0) meshes[f].geometry.attributes.sway.array[cnt[f]] = SWAY[F.key] * s.y;
+          meshes[f].geometry.attributes.sy.array[cnt[f]] = sY;
           c.setHex(COL[F.key]).lerp(SPRING, fresh * 0.5).lerp(BROWN, brown).multiplyScalar(0.8 + 0.4 * hash(i, k + 23)); meshes[f].setColorAt(cnt[f], c);
           cnt[f]++;
         }
@@ -134,7 +138,7 @@ export function makePlantsView(W3) {
     // (static buffers, sent only on a rebuild and only their used part: a dynamic one would be re-sent whole every frame)
     for (let f = 0; f < NF3; f++) {
       const m = meshes[f], n = cnt[f]; m.count = n;
-      for (const [buf, k] of [[m.instanceMatrix, 16], [m.instanceColor, 3], [m.geometry.attributes.sway, 1]]) if (buf && n) { buf.clearUpdateRanges(); buf.addUpdateRange(0, n * k); buf.needsUpdate = true; }
+      for (const [buf, k] of [[m.instanceMatrix, 16], [m.instanceColor, 3], [m.geometry.attributes.sway, 1], [m.geometry.attributes.sy, 1]]) if (buf && n) { buf.clearUpdateRanges(); buf.addUpdateRange(0, n * k); buf.needsUpdate = true; }
     }
   }
   // the stems sit on their own layer (LAYER), which the water's reflection camera leaves out (main3): they would cost a second

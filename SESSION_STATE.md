@@ -98,8 +98,16 @@ the ice). Same 2 years: hypoxia deaths ~5,000 → 7, year-3 May biomass 54 → 1
 ~0.3–0.46 adults/m², 5–7 g/m² (low end of real). test/w3.mjs +1 (67).
 OPEN: young bass survival; bass starvation ~200–500/yr (incl. recruits); whether Hot Brook's late-winter O₂ is really this low
 (ask the human).
+SEEING INTO THE WATER (this commit; render3/water3.js; docs/HOT_BROOK_3D.md §6): after the human's "you can't really see into
+the water to see the fish and even the underwater view is not good" — the bed, weeds and fish are now attenuated per colour by
+their water path (tea water: blue most) with the water's own colour filling in, the surface a Fresnel mirror that is nearly
+clear looking down, Snell's window from below, caustics on the shallow bed, fish shadows on the bed, underwater fog that follows
+the gaze, drifting specks, a fill light; "See into the water" on by default (water 0.3 × as absorbing). A custom scene.fogNode
+turned instanced trees black in three r186 — the fog stays a legacy FogExp2. Taste questions for the human: the default
+clarity, the tint, the fish size default (×1 true: flecks from above; ×4 reads well).
 NEXT: odonate nymphs (predators of small fauna and fish larvae), redbreast + fallfish, the shore and wildlife (stage D: snow on
-the ice, the hydrograph), saves and resume, the young pumpkinseed's limnetic stall. Perf idea: the fish
+the ice, the hydrograph), saves and resume. (The young pumpkinseed's "stall" was the mean of a summer-long spawning: the first
+cohort grows ~0.3 mm/day to 2.5 cm by mid-August — docs/HOT_BROOK_3D.md.) Perf idea: the fish
 view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.
 Consider moving the long w3 runs to a separate long suite (the gate is ~10 min for w3 alone).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow); do the lakes

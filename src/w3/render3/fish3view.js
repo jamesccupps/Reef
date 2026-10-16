@@ -1,12 +1,14 @@
 // fish3view.js — the fish of the 3-D lakes on screen (browser layer). Every fish is an instance of one low-poly body, placed
 // from snapshots of the sim's agents (src/w3/fish3.js, stepped in render3/sim3worker.js) and interpolated between its
 // 10-Hz steps (each fish's place a step before rides in the snapshot); a school agent is drawn as its n fish around it — a tight shoal by day, loose at night. The
-// body swims: a travelling wave down its rear half (the vertex shader), its beat with the fish's speed.
+// body swims: a travelling wave down its rear half (the vertex shader), its beat with the fish's speed. In sunlit shallow water
+// each fish casts a soft SHADOW on the bed below it, along the sun's direction — often what gives a fish away from above.
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER } from '../geometry.js';
 import { S3, KEYS3 } from '../fish3.js';
+import { waterOut, WU } from './water3.js';
 
-const { attribute, positionLocal, positionGeometry, sin, time, float, max: tmax } = THREE.TSL;
+const { attribute, positionLocal, positionGeometry, sin, time, float, max: tmax, uv, vec3, smoothstep, length } = THREE.TSL;
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
 export const FISH_MAX = 40000;   // instances
 const MEMBERS_MAX = 160;         // fish drawn per school at most
@@ -52,7 +54,8 @@ export function makeFishView() {
   const geo = fishGeometry();
   const swim = new THREE.InstancedBufferAttribute(new Float32Array(FISH_MAX * 2), 2); swim.setUsage(THREE.DynamicDrawUsage);
   const side = new THREE.InstancedBufferAttribute(new Float32Array(FISH_MAX * 3), 3); side.setUsage(THREE.DynamicDrawUsage);
-  geo.setAttribute('swim', swim); geo.setAttribute('side', side);
+  const wz = new THREE.InstancedBufferAttribute(new Float32Array(FISH_MAX), 1); wz.setUsage(THREE.DynamicDrawUsage);   // depth below the surface (m)
+  geo.setAttribute('swim', swim); geo.setAttribute('side', side); geo.setAttribute('wz', wz);
   const mat = new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.12 });
   // the body's wave: a sideways displacement growing toward the tail, travelling backward at the beat (swim.x rad/s, swim.y
   // phase) — on the body's own axis (the unit fish's x), pushed along the fish's side (the instance's, `side`): three applies
@@ -60,14 +63,37 @@ export function makeFishView() {
   const sw = attribute('swim', 'vec2'), px = positionGeometry.x, back = tmax(float(0), float(0.25).sub(px));   // (0 ahead of mid-body)
   const wave = sin(time.mul(sw.x).add(sw.y).add(px.mul(7))).mul(back.mul(back)).mul(0.55);
   mat.positionNode = positionLocal.add(attribute('side', 'vec3').mul(wave));
+  mat.outputNode = waterOut(attribute('wz', 'float'));   // (the water between the fish and the eye: water3.js)
   const mesh = new THREE.InstancedMesh(geo, mat, FISH_MAX);
   mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); mesh.frustumCulled = false; mesh.count = 0;
   mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(FISH_MAX * 3), 3); mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  // the shadows: a soft dark ellipse per fish on the bed (a disc, its darkness per instance — `sha`), drawn over the bed and
+  // under the water's surface
+  const sGeo = new THREE.CircleGeometry(0.5, 14); sGeo.rotateX(-Math.PI / 2);
+  const sha = new THREE.InstancedBufferAttribute(new Float32Array(FISH_MAX), 1); sha.setUsage(THREE.DynamicDrawUsage); sGeo.setAttribute('sha', sha);
+  const sMat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  sMat.colorNode = vec3(0.02, 0.018, 0.01);
+  sMat.opacityNode = attribute('sha', 'float').mul(float(1).sub(smoothstep(0.15, 0.5, length(uv().sub(0.5)))));   // (soft edged)
+  const shadow = new THREE.InstancedMesh(sGeo, sMat, FISH_MAX); shadow.instanceMatrix.setUsage(THREE.DynamicDrawUsage); shadow.frustumCulled = false; shadow.count = 0; shadow.renderOrder = 1;
+  const SM = shadow.instanceMatrix.array, SH = sha.array;
+  let sun = [0, 1, 0, 0], ns = 0;   // the sun: direction (x, up, z — three's frame, normalised) and strength
+  // a shadow for a fish at (X, Y, Z) (three), heading yaw, length L, `depth` below the surface over a bed `bed` deep (m)
+  function shade(X, Z, yaw, L, depth, bed, sY) {
+    const gap = bed - depth; if (!(sun[3] > 0.02) || gap > 2.5 || ns >= FISH_MAX) return;
+    const t = gap / Math.max(0.25, sun[1]), x = X - sun[0] * t, z = Z - sun[2] * t;   // (along the sun's ray down to the bed)
+    const k = Math.exp(-(WU.kd.value.y * 1.0) * bed) * sun[3] * Math.max(0, 1 - gap / 2.5) * 0.6; if (k < 0.02) return;
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), Lx = L * (1 + 0.6 * gap), W = L * 0.32 * (1 + 0.8 * gap), o = ns * 16;
+    SM[o] = cy * Lx; SM[o + 1] = 0; SM[o + 2] = -sy * Lx; SM[o + 3] = 0;
+    SM[o + 4] = 0; SM[o + 5] = 1; SM[o + 6] = 0; SM[o + 7] = 0;
+    SM[o + 8] = sy * W; SM[o + 9] = 0; SM[o + 10] = cy * W; SM[o + 11] = 0;
+    SM[o + 12] = x; SM[o + 13] = sY - bed + 0.015; SM[o + 14] = z; SM[o + 15] = 1;
+    SH[ns++] = k;
+  }
   const tint = KEYS3.map(k => new THREE.Color(S3[k].sp.tag));
-  const M = mesh.instanceMatrix.array, CC = mesh.instanceColor.array, SW = swim.array, SD = side.array;
+  const M = mesh.instanceMatrix.array, CC = mesh.instanceColor.array, SW = swim.array, SD = side.array, WZ = wz.array;
   let n = 0;
   // one fish at three-space position (X, Y, Z), heading yaw / pitch (sim frame), length L, depth D (m)
-  function put(X, Y, Z, yaw, pitch, L, D, c, shade, beat, phase) {
+  function put(X, Y, Z, yaw, pitch, L, D, c, shade, beat, phase, depth) {
     if (n >= FISH_MAX) return;
     const cp = Math.cos(pitch), spn = Math.sin(pitch), cy = Math.cos(yaw), sy = Math.sin(yaw);
     const fx = cp * cy, fy = spn, fz = -cp * sy;            // forward (sim x → X, up → Y, sim y → −Z)
@@ -79,7 +105,7 @@ export function makeFishView() {
     M[o + 8] = rx * W; M[o + 9] = ry * W; M[o + 10] = rz * W; M[o + 11] = 0;
     M[o + 12] = X; M[o + 13] = Y; M[o + 14] = Z; M[o + 15] = 1;
     CC[n * 3] = c.r * shade; CC[n * 3 + 1] = c.g * shade; CC[n * 3 + 2] = c.b * shade;
-    SW[n * 2] = beat; SW[n * 2 + 1] = phase; SD[n * 3] = rx * W; SD[n * 3 + 1] = ry * W; SD[n * 3 + 2] = rz * W;
+    SW[n * 2] = beat; SW[n * 2 + 1] = phase; SD[n * 3] = rx * W; SD[n * 3 + 1] = ry * W; SD[n * 3 + 2] = rz * W; WZ[n] = depth;
     n++;
   }
   const lerpA = (a, b, t) => { let d = b - a; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI; return a + d * t; };
@@ -90,8 +116,8 @@ export function makeFishView() {
   // two steps, scale the size shown (1 = true), night 0..1 (schools loosen), t the clock (s, for the members' wander), (cx, cy)
   // the camera's place in the sim's frame — the young, a few centimetres long, are drawn only within YOY_NEAR × scale of it
   const depthR = KEYS3.map(k => S3[k].sp.depthR);
-  function update(snap, alpha, scale, night, t, cx = 0, cy = 0) {
-    n = 0;
+  function update(snap, alpha, scale, night, t, cx = 0, cy = 0, sunDir = null) {
+    n = 0; ns = 0; if (sunDir) sun = sunDir;
     const B = snap.fish, NF = snap.nf;
     for (let i = 0, o = 0; i < NF; i++, o += FISH_STRIDE) {
       const x = B[o] + (B[o + 5] - B[o]) * alpha, y = B[o + 1] + (B[o + 6] - B[o + 1]) * alpha, z = B[o + 2] + (B[o + 7] - B[o + 2]) * alpha;
@@ -99,7 +125,7 @@ export function makeFishView() {
       const Lc = B[o + 10], k = B[o + 11], nn = B[o + 12], spd = B[o + 13], bed = B[o + 14], id = B[o + 15], school = B[o + 16], bodyMul = B[o + 17];
       const L = Lc / 100 * scale, D = L * depthR[k] * bodyMul * 1.15, c = tint[k];
       const beat = 6 + 18 * Math.min(1, spd / Math.max(1e-3, Lc / 100) / 4), sY = surfY(x, y);
-      if (!school || nn < 1.5) { put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat, id * 1.7); continue; }
+      if (!school || nn < 1.5) { put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat, id * 1.7, z); shade(x, -y, yaw, L, z, bed, sY); continue; }
       // a school: its n fish (up to MEMBERS_MAX) about the agent, ~3 body lengths apart by day, ~8 at night; flattened
       const m = Math.min(MEMBERS_MAX, Math.round(nn)), sp1 = (3 + 5 * night) * L, r = sp1 * Math.cbrt(m) * 0.55;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), zMax = Math.max(0.06, bed - 0.04);
@@ -107,7 +133,8 @@ export function makeFishView() {
         const h = ((id * 131 + q * 17) & 1023) * 4, ox = OFF[h] * r, oy = OFF[h + 1] * r, oz = OFF[h + 2] * r * 0.35, ph = OFF[h + 3];
         const wx = ox + Math.sin(t * 0.6 + ph) * 0.4 * L, wy = oy + Math.cos(t * 0.5 + ph * 1.3) * 0.4 * L;
         const mx = x + wx * cyw - wy * syw, my = y + wx * syw + wy * cyw, mz = Math.min(zMax, Math.max(0.05, z + oz));
-        put(mx, sY - mz, -my, yaw + Math.sin(t * 0.8 + ph) * 0.18, pitch, L * (0.9 + 0.2 * (ph / 6.3)), D, c, 0.8 + 0.35 * (ph / 6.3), beat, ph);
+        put(mx, sY - mz, -my, yaw + Math.sin(t * 0.8 + ph) * 0.18, pitch, L * (0.9 + 0.2 * (ph / 6.3)), D, c, 0.8 + 0.35 * (ph / 6.3), beat, ph, mz);
+        shade(mx, -my, yaw, L, mz, bed, sY);
       }
     }
     // THE YOUNG-OF-YEAR: a school drawn as up to YOY_DRAW of its fish, a loose cloud about it (near the camera only)
@@ -120,12 +147,13 @@ export function makeFishView() {
       for (let q = 0; q < m; q++) {
         const h = ((id * 97 + q * 31) & 1023) * 4, ph = OFF[h + 3];
         const mx = x + OFF[h] * r + Math.sin(t * 0.9 + ph) * 3 * L, my = y + OFF[h + 1] * r + Math.cos(t * 0.7 + ph) * 3 * L, mz = Math.min(Math.max(0.06, bed - 0.02), Math.max(0.04, z + OFF[h + 2] * r * 0.4));
-        put(mx, sY - mz, -my, ph, 0, L, D, c, 0.75 + 0.3 * (ph / 6.3), 14, ph);
+        put(mx, sY - mz, -my, ph, 0, L, D, c, 0.75 + 0.3 * (ph / 6.3), 14, ph, mz); shade(mx, -my, ph, L, mz, bed, sY);
       }
     }
-    mesh.count = n;
-    mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; swim.needsUpdate = true; side.needsUpdate = true;
+    mesh.count = n; shadow.count = ns;
+    if (ns) { shadow.instanceMatrix.clearUpdateRanges(); shadow.instanceMatrix.addUpdateRange(0, ns * 16); shadow.instanceMatrix.needsUpdate = true; sha.clearUpdateRanges(); sha.addUpdateRange(0, ns); sha.needsUpdate = true; }
+    mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; swim.needsUpdate = true; side.needsUpdate = true; wz.needsUpdate = true;
     return n;
   }
-  return { mesh, update };
+  return { mesh, shadow, update };
 }

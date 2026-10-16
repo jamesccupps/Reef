@@ -428,7 +428,10 @@ With fish (3 seeds, May → November):
 test/w3.mjs +3 checks.
 
 STILL OPEN:
-- Young pumpkinseed stall at 0.7–1.0 cm through their limnetic phase (June–August).
+- (Resolved: not a stall.) The young pumpkinseed's mean length sat at 0.7–1.0 cm all summer only because pumpkinseed spawn
+  from June into August. Their schools grow from ~170 to ~590, and new 0.5-cm larvae dominate the mean (L50 0.55–0.65).
+  The first cohort (scratchpad psfry.mjs, seed 11) grows 0.26 mm/day in June and ~0.32 in July (real Lepomis 0.3–0.5): 1.3 cm
+  by early July, 2.5 cm by mid-August, the fastest 3.4. The later cohorts meet the July–August zooplankton low and grow slowly.
 - Young smallmouth survive poorly: ~0.3–0.7 % of the hatch recruit, against a few % in real lakes.
 - Adult smallmouth starvation (~200–300 a year) includes the new recruits' first autumn.
 - Odonate nymphs are not yet predators of the small fauna and the fish larvae.
@@ -470,6 +473,30 @@ scattered over each 1.5-m bed cell by its stand, fresh in spring, browning from 
 green). Stems are drawn near where the camera looks (submerged ~0.9 × the camera distance, 25–110 m; pads and reeds 2×) and
 kept out of the water's reflection (their own layer); farther off the bed is tinted by each cell's weed cover. Their instance
 buffers are static with update ranges — a dynamic buffer is re-sent whole every frame (it cost 8 ms a frame; now ~0.1 ms).
+**Built — seeing into the water (`src/w3/render3/water3.js`, after the human's "you can't really see into the water to see
+the fish and even the underwater view is not good").**
+- **What it was:** a dark, mostly opaque surface (55–95 % opacity) hid everything below, and underwater was one flat
+  brown fog.
+- **Under the surface:** the bed, the weeds and the fish are dimmed and tinted by their water path (material.outputNode):
+  per-channel Beer–Lambert, Kd red 0.55, green 0.75, blue 1.9 /m — tea water absorbs blue most. The path is the sunlight's
+  way down plus, for an eye above, the way back up along the refracted ray. The water's own scattered colour fills in, so
+  deep water turns tea-brown.
+- **The surface from above:** a Fresnel mirror of the shore and sky over a nearly clear surface. Looking down you see the
+  bed, the weeds and the fish, fading with depth.
+- **The surface from below:** Snell's window. The sky shows within ~48.6° of straight up, tinted by the water and broken by
+  wave lines; beyond it the surface mirrors the dark water.
+- **The shallow bed:** moving bright lines (caustics), fading with depth.
+- **Each fish casts a soft shadow** on the bed below it, along the sun's ray, fading with height above the bed and with
+  depth. In shallow sunny water a shadow is often what gives a fish away.
+- **Underwater:**
+  - three's FogExp2, its colour following the gaze: bright looking up, the water's colour level, dark down, darker deeper;
+  - 2,500 drifting specks about the eye;
+  - with "See into the water", a fill light.
+- **"See into the water"** (on by default) thins the water to 0.3 × its Kd, so fish show to several metres — clearer than
+  the real lakes, for watching.
+- **A lesson:** a custom scene.fogNode turned the instanced trees black (three r186), so the fog stays a legacy FogExp2.
+- **For the human:** whether to keep this default and how strong the tint is are taste questions. True-size fish are still
+  flecks from a few metres up (as real ones are); the ×4 size shows them.
 
 ## 7. A year in the 3-D lakes (walk-through)
 
