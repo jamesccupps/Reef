@@ -90,8 +90,14 @@ organic layer and snails (the snails keep a refuge on the upper leaves). Fish ta
 meals); big bass and pickerel no longer eat worms. 3 seeds: crayfish 83–85 % of adult smallmouth's food, 65–69 % pickerel's;
 bass p 0.46–0.57 in summer; fish ate ~49 % of the crayfish production May–Sept (high vs trout lakes' 2–16 %); adult crayfish
 cropped to ~0.37/m² by November. test/w3.mjs +3 (66, ~12 min).
-OPEN: crayfish over several years (a 2-year run pending in scratchpad cray2/fw2y_11.txt); young bass survival; bass starvation
-~200–300/yr (incl. recruits).
+FISH SEEK OXYGENATED WATER (this commit; fish3 _o2Better): a 2-year run lost half its fish to hypoxia in the second late winter
+(the water model's lake-mean O₂ falls to ~2–3 mg/L by March, worst columns anoxic — the same with or without plants; a 3-m
+column's ~36 g O₂/m² at ice-on vs a measured-range bed demand of 0.2–0.3 g/m²/day × ~120 days of ice). Fish could only flee
+up; now, short of O₂, a fish or school also swims ACROSS toward the best-oxygenated column about it (toward the inflows under
+the ice). Same 2 years: hypoxia deaths ~5,000 → 7, year-3 May biomass 54 → 108 kg/ha. Crayfish over the 2 years settle at
+~0.3–0.46 adults/m², 5–7 g/m² (low end of real). test/w3.mjs +1 (67).
+OPEN: young bass survival; bass starvation ~200–500/yr (incl. recruits); whether Hot Brook's late-winter O₂ is really this low
+(ask the human).
 NEXT: odonate nymphs (predators of small fauna and fish larvae), redbreast + fallfish, the shore and wildlife (stage D: snow on
 the ice, the hydrograph), saves and resume, the young pumpkinseed's limnetic stall. Perf idea: the fish
 view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.

@@ -432,7 +432,21 @@ STILL OPEN:
 - Young smallmouth survive poorly: ~0.3–0.7 % of the hatch recruit, against a few % in real lakes.
 - Adult smallmouth starvation (~200–300 a year) includes the new recruits' first autumn.
 - Odonate nymphs are not yet predators of the small fauna and the fish larvae.
-- Crayfish over several years: fish crop the adults to the low end of the real range by autumn.
+- Crayfish over several years: fish crop the adults to the low end of the real range by autumn. In a 2-year run (seed 11)
+  they settle at ~0.3–0.46 adults/m² and 5–7 g/m² in all, the low end of Michigan's 4.6–21.
+
+**Built — fish seek oxygenated water under the ice (Fish3._o2Better).**
+- **The finding:** a 2-year run with fish lost half its biomass to hypoxia in the second late winter (~5,000 perch, white
+  perch and shiners). The fish could only escape low O₂ upward.
+- **What the water does:** the water model's late-winter O₂ is the same with or without plants. The lake-wide mean falls to
+  ~2–3 mg/L by March and the worst columns go anoxic. The budget agrees: a 3-m column holds ~36 g O₂/m² at ice-on, and a
+  measured-range bed demand of 0.2–0.3 g/m²/day over ~120 days of ice draws it down.
+- **The new behaviour:** short of O₂, a fish (and a school of young) also swims ACROSS the lake toward the best-oxygenated
+  column about it, at its sustained pace: under the ice, toward the inflows and the brook's mouth (15,000 fish crowded an
+  oxygenated inlet in a Michigan winterkill).
+- **Result:** hypoxia deaths over the same 2 years fell to 7, and May biomass in year 3 was 108 kg/ha (54 before).
+- **Still for the human:** whether Hot Brook's late-winter O₂ really falls this low (ice-fishing observations).
+- test/w3.mjs +1 check.
 
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 

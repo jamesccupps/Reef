@@ -45,6 +45,7 @@ export const F3 = {
   HAB_W: 0.8,           // weight of steering back into the species' bottom-depth band (per metre outside it, ≤ 1)
   FORAGE_W: 0.9, PURSUIT_W: 1.6, FLEE_W: 2.2, COHERE_W: 0.6, HOME_W: 0.5, AVOID_W: 4,
   ESC_O2: 3, ESC_PITCH: 1.1,   // below ESC_O2 × its lethal O2 (or half its critical) a fish escapes upward at up to ESC_PITCH rad
+  O2_W: 2.5,                   // below its critical O2 a fish also swims across the lake toward better water (O2_SEEK)
   LOOK: 1.2,            // s of swimming it looks ahead for shallows and shore (at least 0.8 m)
   ZTOP: 0.08, ZBOT: 0.04,   // m of clearance under the surface and over the bed
   ICE_M: 0.35,          // m: the ice's thickness at full cover (fish stay under it)
@@ -348,6 +349,19 @@ export class Fish3 {
     for (let q = 0; q < G.NC; q++) if (q !== c && (G.cx[q] - x) ** 2 + (G.cy[q] - y) ** 2 <= R * R) l.push(q);
     return (t[c] = Int32Array.from(l));
   }
+  // the best-oxygenated column about column c (its two rings of neighbours), if clearly better than c's own (by each column's
+  // best layer: under the ice the water just below it or the inflow's plume); -1 if none
+  _o2Better(c) {
+    if (this._o2cAt !== this.stepNo) {   // (each column's best O₂, once a step when some fish needs it)
+      const G = this.G, o = this.chem.o2, oc = this._o2c || (this._o2c = new Float32Array(G.NC));
+      for (let q = 0; q < G.NC; q++) { let m = 0; for (let k = 0, j = G.cell0[q]; k < G.nL[q]; k++, j++) if (o[j] > m) m = o[j]; oc[q] = m; }
+      this._o2cAt = this.stepNo;
+    }
+    if (c < 0) return -1;
+    const oc = this._o2c, nb = this.nbr2[c]; let best = oc[c] * 1.1 + 0.02, bc = -1;
+    for (let k = 0; k < nb.length; k++) if (oc[nb[k]] > best) { best = oc[nb[k]]; bc = nb[k]; }
+    return bc;
+  }
   bedCell(c, bed) { return c < 0 ? -1 : this.bedOf[c * this.G.ML + Math.min(this.G.ML - 1, Math.max(0, Math.floor(bed / this.G.DZ)))]; }
 
   // ---------- the neighbour hash (positions frozen for the step) ----------
@@ -637,6 +651,11 @@ export class Fish3 {
     // home range
     const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
     if (hd > s.home && !G0) { const r = this._route(a, a.hx, a.hy, this._g1 || (this._g1 = [0, 0])); steer(r[0] - a.x, r[1] - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1)); }
+    // O2_SEEK: short of O₂, across the lake toward better water too, not only up — under the ice toward the inflows and the
+    // brook's mouth (15,000 fish crowded an oxygenated inlet in a Michigan winterkill — Cooper & Washburn 1946; perch and
+    // other fish move horizontally out of hypoxic water under ice)
+    const seek = a.o2 < a.o2Crit ? this._o2Better(a.c) : -1;
+    if (seek >= 0) steer(this.G.cx[seek] - a.x, this.G.cy[seek] - a.y, F3.O2_W * clamp(1.3 - a.o2 / a.o2Crit, 0.3, 1.3));
     // look ahead for shallows and shore: turn toward the deeper side
     // (only water too shallow to swim in is an obstacle — a rising bed the fish follows by its depth control)
     const look = Math.max(0.8, a.spd * F3.LOOK), cy = Math.cos(a.yaw), sy = Math.sin(a.yaw), need = F3.ZTOP + F3.ZBOT + 0.05 + a.L / 400;
@@ -671,6 +690,7 @@ export class Fish3 {
     th = (th + (1 - th) * burst) * (1 - ACTION.HIDE_STILL * aH);
     a.thrust = clamp(th * coldPerf(a.T, s.sp.tempOpt, s.sp.coldPerf), 0, 1);
     if (a.esc) a.thrust = Math.max(a.thrust, 0.7);
+    else if (seek >= 0) a.thrust = Math.max(a.thrust, s.sustain / s.sprint);   // (searching for better water at its sustained pace)
     if (a.nt > 0 && !a.esc && G0 && Math.hypot(G0[0] - a.x, G0[1] - a.y) < G0[2]) a.thrust = Math.min(a.thrust, s.uRoutine * BROOD.HOVER);   // hovering over its nest
   }
 
@@ -1017,7 +1037,7 @@ export class Fish3 {
   // where a school of young goes next: the richest food of its stage about it (its column and the next ones)
   _yoyTarget(q, o2, T) {
     const s = q.s, sp = s.sp, d = sp.diet, G = this.G, ch = this.chem, c = q.c;
-    if (o2 < sp.o2Crit) { q.tx = q.x; q.ty = q.y; q.tz = Math.max(0.05, q.z - 1); return; }
+    if (o2 < sp.o2Crit) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
     if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂

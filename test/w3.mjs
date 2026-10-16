@@ -445,6 +445,17 @@ console.log('\n— fish 3-D: the food web through a summer —');
     check('crayfish: the adult smallmouth\'s staple (over a third of what they eat), a share of the pickerel\'s and bullheads\', a sliver of the perch\'s; the fish take part of the crayfish\'s production',
       sh('bass') > 0.33 && sh('pike') > 0.1 && sh('catfish') > 0.02 && sh('perch') < 0.15 && crShare > 0.05 && crShare < 0.7,
       `crayfish in the diet: smallmouth ${(sh('bass') * 100).toFixed(0)} %, pickerel ${(sh('pike') * 100).toFixed(0)} %, bullhead ${(sh('catfish') * 100).toFixed(0)} %, perch ${(sh('perch') * 100).toFixed(0)} %; fish ate ${(crShare * 100).toFixed(0)} % of the crayfish production (${(Lt.crEaten / 1000).toFixed(0)} of ${(Lt.crProd / 1000).toFixed(0)} kg)`); }
+  // SHORT OF O₂ UNDER THE ICE: a school in near-anoxic water swims ACROSS toward the oxygenated water beside it (the inflows,
+  // the brook's mouth in a real winter), not only up (Fish3._o2Better)
+  { seed(532); const e = new Env3({ col: 10, yf0: 0.95 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    let px = 0, py = 0;
+    for (let i = 0; i < GEO.N && !px; i++) { if (GEO.body[i] !== UPPER || GEO.depth[i] < 2.2) continue; const [x, y] = GEO.cellCentre(i); let ok = true; for (let d = 4; d <= 30; d += 2) if (GEO.bodyAt(x + d, y) !== UPPER || GEO.depthAt(x + d, y) < 1.5) ok = false; if (ok) { px = x; py = y; } }
+    const a = F.add('perch', px, py, 1.2, 3, 30), lo = 0.3 * a.o2Crit;
+    const setO2 = () => { for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) ch.o2[G.cell0[c] + k] = G.cx[c] > px + 12 ? 1.0 : lo; };
+    setO2(); const x0 = a.x;
+    for (let i = 0; i < 400; i++) { F.step(0.1); if (i % 50 === 0) setO2(); }
+    check('short of O₂ under the ice, a school swims across the lake toward better water, not only up (fish crowd oxygenated inlets in a winterkill — Cooper & Washburn 1946)',
+      a.alive && a.x > x0 + 8 && ch.o2[a.j] > lo, `moved ${f1(a.x - x0)} m east toward the oxygenated water (from ${f1(x0)}); O₂ where it is now ${(ch.o2[a.j] * 100).toFixed(0)} % of saturation`); }
 }
 
 // ============================================================
