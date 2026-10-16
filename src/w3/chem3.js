@@ -13,13 +13,26 @@ import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BEN
 import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
-import { GEO } from './geometry.js';
+import { GEO, UPPER, LOWER } from './geometry.js';
 
 export const V2 = WORLD.CELL_L / 1000;                 // m³: the 2-D cell the water units are "per"
 export const A2 = WORLD.SLICE_M2 / GRID.FIELD_COLS;    // m²: the 2-D column of bed the bed units are "per"
 const HREF_M = WORLD.DEPTH_REF / WORLD.PX_PER_M;
 const UGL = PLANKTON.UGL;                              // µg dry/L per g wet per 2-D cell (a config getter: read once)       // m: the 14.6-m column the 2-D light and band constants are fractions of
 export const CHEM3 = {
+  // SURFACE GAS EXCHANGE (stage R2; research_notes/Whole lake 3D fish simulation/oxygen_metabolism.md §1): the lake-size wind
+  // model k600 = 2.51 + 1.48·U + 0.39·U·log10(A) cm/h (Vachon & Prairie 2013; A the real lake's km²: 1.6–4.7 m/day at 2.5–10
+  // m/s on Upper — measured on a 64-ha boreal lake ~1.4 m/day), with a floor on cooling nights from convection (K600_NIGHT: 0.34–
+  // 0.93 m/day at 25–200 W/m² of heat loss — Read et al. 2012, Tedford et al. 2014), to O₂ by the Schmidt number (Sc/600)^-½;
+  // none under ice. (The 1-hour year's weather-state rate gave ~0.5 m/day all day — a calm pond's)
+  K600_NIGHT: 0.6,      // m/day
+  // O₂ AT SATURATION: Garcia & Gordon 1992 (the Benson & Krause fit), freshwater, mL/L → mg/L × 1.42905, at the lakes' ~130 m
+  // (× SAT_P) — the 2-D sim's linear curve read 6–10 % low at 0–4 °C
+  SAT_P: 0.985,
+  // the BED'S ALGAE (periphyton: SEDOM.PERI_G, into the organic layer) release their photosynthesis's O₂ into the water over the
+  // bed: ~50 g C per 1,000 g wet × 32/12 (their respiration, and the decay of what they make, are in the bed's O₂ demand O2_SED).
+  // ~0.9 g O₂/m² of lake/day in summer — benthic algae make 5–80 % of a shallow lake's production (oxygen_metabolism.md §2)
+  PERI_O2: 0.133,
   // what the inflow brings (concentrations, 2-D units). The 2-D slice's load (FLOW.NUTRIENT per second over its wet cells)
   // per unit of lake volume, delivered by the 3-D inflow at the real discharge: ~1.1 units of nutrient per 2-D cell of inflow
   // water, INFLOW_P of it phosphate, the rest ammonium (runoff) — to be re-judged with the catchment's real loads (stage D)
@@ -64,6 +77,11 @@ const Q = {
 };
 const sun = yf => { const s = 0.5 + 0.5 * Math.cos(2 * Math.PI * (yf - SEASON.SOLSTICE)); return { dayFrac: SEASON.DAY_FRAC[0] + (SEASON.DAY_FRAC[1] - SEASON.DAY_FRAC[0]) * s, noon: SEASON.NOON[0] + (SEASON.NOON[1] - SEASON.NOON[0]) * s }; };
 
+// O₂ at saturation in mg/L (Garcia & Gordon 1992, Benson & Krause coefficients; freshwater)
+function o2SatMgL(T) {
+  const Ts = Math.log((298.15 - T) / (273.15 + T));
+  return Math.exp(2.00907 + Ts * (3.22014 + Ts * (4.0501 + Ts * (4.94457 + Ts * (-0.256847 + Ts * 3.88767))))) * 1.42905;
+}
 export class Chem3 {
   constructor(env) {
     this.env = env; const G = this.G = env.G, n = G.NCELL;
@@ -119,7 +137,7 @@ export class Chem3 {
   }
 
   // ---------- light and O₂ solubility ----------
-  sat(T) { return clamp(1.0 - (T - 18) * ENV.SAT_TEMP_K, 0.5, 1.4); }   // O₂ at saturation (1 = the 18 °C reference, ×ENV.O2_MGL)
+  sat(T) { return o2SatMgL(T) * CHEM3.SAT_P / ENV.O2_MGL; }   // O₂ at saturation (normalised: × ENV.O2_MGL for mg/L)
   attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity) / HREF_M + CHEM3.KD_COLOUR; }   // per metre
   secchi() { return 2.55 / this.attenuation(); }   // m (stained water: Kd·SD ≈ 2.55)
   // the light at depth z in column c (the surface's × the ice's cut × the water's attenuation)
@@ -148,7 +166,7 @@ export class Chem3 {
     }
     this._aerate(dt);
     this._sight();
-    const o2 = this.o2; for (let j = 0; j < G.NCELL; j++) { const v = o2[j]; o2[j] = v < 0 ? 0 : v > 1.5 ? 1.5 : v; }
+    const o2 = this.o2; for (let j = 0; j < G.NCELL; j++) { const v = o2[j]; o2[j] = v < 0 ? 0 : v > 2.6 ? 2.6 : v; }   // (weed beds reach 205–235 % of saturation by afternoon)
   }
 
   // ---------- the algae: green phytoplankton, diatoms (cold-water), cyanobacteria (N-fixing, buoyant) ----------
@@ -343,6 +361,7 @@ export class Chem3 {
         const ox = Math.max(0, o2[j]), kk = SEDOM.K20 * TS * qAt(Q.som, T[j]) * (SEDOM.ANOX + (1 - SEDOM.ANOX) * ox / (ox + SEDOM.O2_HALF));
         const zb = Math.min(G.depthMax[c], (k + 1) * G.DZ), peri = SEDOM.PERI_G * TS * this.lightAt(c, zb) * qAt(Q.ph, T[j]) * dt;
         som[j] = som[j] * Math.exp(-kk * dt) + share + peri + sub;
+        if (peri > 0) o2[j] += peri * G.bedA[j] / A2 * CHEM3.PERI_O2 / (G.vol[j] * ENV.O2_MGL);   // (their O₂, into the water over the bed)
       }
       colD[c] = 0;
     }
@@ -375,12 +394,16 @@ export class Chem3 {
   // The 2-D surface cell (0.3 m) relaxes at the rate, its second row at AERATE_ROW1 × — the same transfer per unit of
   // surface, spread over the 3-D top layer's thickness
   _aerate(dt) {
-    const e = this.env, G = this.G, T = e.temp, o2 = this.o2, w = e.weather;
-    const aer = (ENV.O2_AERATE * (ENV.AERATE_CALM + ENV.TURBULENCE[w]) + ENV.RAIN[w] * ENV.AERATE_RAIN) * TS, h2 = V2 / A2;
+    const e = this.env, G = this.G, T = e.temp, o2 = this.o2, U = e.windSpeed, night = e.isNight();
+    if (!this._kU) { this._kU = {}; this._kU[UPPER] = Math.log10(GEO.STATS.upper.area_m2 * 100 / 1e6); this._kU[LOWER] = Math.log10(GEO.STATS.lower.area_m2 * 100 / 1e6); }   // (log10 of the real lakes' km²)
+    const kU = this._kU;
     for (let c = 0; c < G.NC; c++) {
       const j = G.cell0[c], open = 1 - e.ice[c]; if (open <= 0) continue;
+      const lgA = kU[G.body[c]] ?? -1.5;   // (the brook: a stream's surface, ~0.03 km²)
+      const k600 = Math.max((2.51 + 1.48 * U + 0.39 * U * lgA) * 0.24, night ? CHEM3.K600_NIGHT : 0);   // m/day
+      const t = T[j], Sc = 1568 - 86.04 * t + 2.142 * t * t - 0.0216 * t * t * t, k = k600 * Math.sqrt(600 / Math.max(300, Sc)) / 86400;   // m/s of O₂
       const thick = G.vol[j] / Math.max(1e-6, G.topA[j]);
-      o2[j] += (this.sat(T[j]) - o2[j]) * clamp(aer * open * dt * h2 * (1 + ENV.AERATE_ROW1) / thick, 0, 1);
+      o2[j] += (this.sat(T[j]) - o2[j]) * -Math.expm1(-k * open * dt / thick);
     }
   }
 
