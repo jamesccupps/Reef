@@ -19,9 +19,9 @@ import { GEO, LAND, UPPER, LOWER, BROOK } from './geometry.js';
 import { ENV, ICE, THERMAL, WIND, SEASON, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
-export const CLOCK3 = { YEAR_LEN: 3600, DAY_LEN: 120 };
-export const TS = 1800 / CLOCK3.YEAR_LEN;                      // the 2-D sim's per-second rates → this clock
-export const REAL_S = 365 * 86400 / CLOCK3.YEAR_LEN;            // real seconds per sim second (~2.4 h)
+import { CLOCK3, TS, REAL_S, DAY3 } from './clock3.js';
+import { Chem3 } from './chem3.js';
+export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
   COL: 5,               // m (world) column side — 50 m real
   DZ: 0.5,              // m layer thickness
@@ -43,6 +43,7 @@ export const H3 = {
   RES_UPPER_D: 100, RES_LOWER_D: 55,
   MIX_RATE: 1.0,        // /s: mixing inside the wind- or convection-mixed layer (minutes to hours real)
   MAX_SUB: 4,           // transport sub-steps at most per update (gales slow the wind-driven currents instead)
+  THRU_EVERY: 3,        // the through-flow runs every this-many updates (with as many steps' worth)
   K_STRAT: 0.02,        // /s: exchange between adjacent layers below the mixed layer and under ice (days per layer)
   DIEL_SKIN: THERMAL.DIEL_M, // m: e-folding depth of the day's heating (a shallow mixed layer swings more)
   WEATHER_DWELL_MUL: 1 / TS, // the weather's dwell times are sim seconds on the 2-D clock
@@ -185,8 +186,8 @@ function throughPattern(G, src) {
 
 // ============================================================ the environment =========================================
 export class Env3 {
-  constructor({ yf0 = SEASON.START_YF } = {}) {
-    const G = this.G = buildColumns3();
+  constructor({ yf0 = SEASON.START_YF, col = H3.COL, chem = true } = {}) {
+    const G = this.G = buildColumns3(col);
     this.time = yf0 * CLOCK3.YEAR_LEN;
     this.t = 0.30;                                   // time of day (0..1), mid-morning
     this.weather = 0; this.weatherTimer = ENV.WEATHER_DWELL[0] * H3.WEATHER_DWELL_MUL; this.forced = false;
@@ -195,8 +196,9 @@ export class Env3 {
     this.temp = new Float32Array(G.NCELL);
     this.age = new Float32Array(G.NCELL);           // water age: sim seconds since the water entered (a through-flow tracer)
     this.ice = new Float32Array(G.NC);
-    this.fields = [{ name: 'temp', a: this.temp }, { name: 'age', a: this.age, in: 0 }];   // transported fields (more in later slices)
+    this.fields = [{ name: 'temp', a: this.temp }, { name: 'age', a: this.age, in: 0 }];   // transported fields (the chemistry adds its own)
     this._statics();
+    this.chem = chem ? new Chem3(this) : null;   // O₂, N, P, algae, DOM, zooplankton, the bed (chem3.js)
     this.primeSeason(this.time);
   }
 
@@ -236,7 +238,7 @@ export class Env3 {
       FL.ia[n] = G.cell0[G.fa[f]] + k; FL.ib[n] = G.cell0[G.fb[f]] + k; FL.a[n] = a; FL.k[n] = k; FL.f[n] = f; FL.A[f] += a; if (k === 0) FL.top[f] = a; n++;
     }
     this._Fw = new Float32Array(n); this._F = new Float32Array(n); this._uF = new Float32Array(G.NF); this._unF = new Float32Array(G.NF);
-    this._net = new Float64Array(G.NCELL); this._tmp = new Float32Array(G.NCELL); this._out = new Float64Array(G.NCELL);
+    this._net = new Float64Array(G.NCELL); this._tmp = new Float32Array(G.NCELL); this._out = new Float64Array(G.NCELL); this._thN = 0;
   }
 
   // ---------- clock, sun, weather, wind ----------
@@ -279,6 +281,7 @@ export class Env3 {
     }
     // the water's age: well mixed at its lake's residence (a steady through-flow)
     for (let j = 0; j < G.NCELL; j++) { const b = G.body[G.colOfCell[j]]; this.age[j] = (b === LOWER ? H3.RES_LOWER_D : H3.RES_UPPER_D) * DAY / REAL_S; }
+    if (this.chem) this.chem.prime();
   }
   _iceProfile(z) { const s = clamp((z - THERMAL.ICE_TOP_M) / THERMAL.ICE_META_M, 0, 1); return 0.2 + 3.8 * s * s * (3 - 2 * s); }   // ~0 °C under the ice → 4 °C at depth
 
@@ -294,8 +297,9 @@ export class Env3 {
     this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover);
     this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac);
     this._heat(dt, yf);
+    if (this.chem) this.chem.step(dt);
     this._transport(dt);
-    this._mixVertical(dt);
+    if (this.chem) this.chem._ledgerFlows();   // (the through-flow's in and out, tallied after it moved them)
     for (let j = 0; j < G.NCELL; j++) this.age[j] += dt;
   }
 
@@ -327,7 +331,8 @@ export class Env3 {
       }
       // ice: forms on a column whose surface water nears freezing, then keeps growing while the season is cold (whatever the
       // water under it — the ice is the air's doing); melts once the season's water would be warm, shallow first
-      const surfT = T[j0], warm = seasonal + wOff + 0.6 * (1 - Math.min(1, depth / 3));
+      // (the melt counts the day's warmth — spring sun on the ice by afternoon — as the 2-D sim's surface temperature did)
+      const surfT = T[j0], warm = seasonal + wOff + 0.6 * (1 - Math.min(1, depth / 3)) + ENV.TEMP_DIURNAL * 0.5 * Math.max(0, diurnal);
       if (warm > ICE.MELT_T) { if (iceC > 0) this.ice[c] = Math.max(0, iceC - ICE.MELT * TS * dt); }
       else if (iceC < 1 && (surfT < ICE.FORM_T || iceC > 0.5)) this.ice[c] = Math.min(1, iceC + ICE.GROW * TS * dt);
     }
@@ -342,7 +347,9 @@ export class Env3 {
     // (u m/s real across a world face of a m² is u·a·REAL real m³ per real second; world volumes are real / 100 and a sim
     // second is REAL_S real seconds: u · a · REAL_S / REAL world m³ per sim second)
     const circ = this.circK * (W / 5) ** 2 * iceOpen, drift = H3.DRIFT * W * iceOpen, toW = REAL_S / H3.REAL;
-    const uF = this._uF, unF = this._unF;
+    const uF = this._uF, unF = this._unF, key = `${this.weather}|${this.windDir}|${Math.round(this.iceMean * 50)}|${dt}`;
+    if (key === this._windKey) { this._transportRun(dt); return; }   // (the same wind as last update: the same fluxes)
+    this._windKey = key;
     for (let f = 0; f < G.NF; f++) { uF[f] = circ * (wx * this.ux[f] + wy * this.uy[f]); unF[f] = drift * shallowDamp(G.fh[f]) * (wx * G.fnx[f] + wy * G.fny[f]); }
     for (let e = 0; e < FL.n; e++) {
       const f = FL.f[e], a = FL.a[e], un = unF[f], top = FL.top[f], A = FL.A[f];
@@ -366,23 +373,136 @@ export class Env3 {
     if (nSub > H3.MAX_SUB) { scale = Math.min(1, CFL * H3.MAX_SUB / worst); for (let it = 0; it < 3 && rate(scale) > CFL * H3.MAX_SUB; it++) scale *= 0.85; nSub = H3.MAX_SUB; }
     this.transportScale = scale; this.nSub = nSub;
     const F = this._F; for (let e = 0; e < FL.n; e++) F[e] = scale * Fw[e];
-    const h = dt / nSub;
-    if (scale * Math.abs(W) > 0) for (let s = 0; s < nSub; s++) for (const fd of this.fields) this._advect(fd, F, h);
-    for (const fd of this.fields) this._throughFlow(fd, dt);
-    for (const fd of this.fields) this._mixH(fd.a, dt);   // horizontal mixing between neighbouring columns (layer by layer)
-    this._siphon(dt);                                      // the night siphon (calm nights) and the under-ice down-slope current
+    this._windOn = scale * Math.abs(W) > 0;
+    this._transportRun(dt);
+  }
+  _transportRun(dt) {
+    const F = this._F, nSub = this.nSub, h = dt / nSub;
+    // all the fields move together, packed side by side (one pass over the faces per sub-step instead of one per field)
+    this._pack();
+    if (this._windOn) for (let s = 0; s < nSub; s++) this._advectAll(F, h);
+    // the through-flow (residences of months) every THRU_EVERY-th update with that many steps' worth (implicit: stable)
+    if (++this._thN >= H3.THRU_EVERY) { this._throughFlowAll(dt * this._thN); this._thN = 0; }
+    this._mixHAll(dt);        // horizontal mixing between neighbouring columns (layer by layer)
+    this._siphonAll(dt);      // the night siphon (calm nights) and the under-ice down-slope current
+    this._mixVerticalAll(dt); // the mixed layer mixes fast; below it (and under ice) layers exchange slowly
+    this._unpack();
+  }
+  _pack() {
+    const G = this.G, fs = this.fields, NF = fs.length, n = G.NCELL;
+    if (!this._buf || this._bufNF !== NF) { this._buf = new Float64Array(n * NF); this._dbuf = new Float64Array(n * NF); this._bufNF = NF; this._cm = new Float64Array(G.NC * NF); this._cn = new Float64Array(G.NC * NF); this._acc = new Float64Array(NF); }
+    const B = this._buf; for (let f = 0; f < NF; f++) { const a = fs[f].a; for (let j = 0; j < n; j++) B[j * NF + f] = a[j]; }
+  }
+  _unpack() { const fs = this.fields, NF = fs.length, B = this._buf, n = this.G.NCELL; for (let f = 0; f < NF; f++) { const a = fs[f].a; for (let j = 0; j < n; j++) a[j] = B[j * NF + f]; } }
+  // one upwind sub-step of every field (the wind-driven fluxes): the face fluxes per layer, then the vertical fluxes
+  // continuity requires (what a layer gains horizontally rises — or sinks — through the layers above it)
+  _advectAll(F, h) {
+    const G = this.G, FL = this._FL, NF = this._bufNF, B = this._buf, D = this._dbuf, net = this._net;
+    D.fill(0); net.fill(0);
+    for (let e = 0; e < FL.n; e++) {
+      const q = F[e], ia = FL.ia[e], ib = FL.ib[e], src = (q > 0 ? ia : ib) * NF, da = ia * NF, db = ib * NF;
+      net[ia] -= q; net[ib] += q;
+      for (let f = 0; f < NF; f++) { const m = q * B[src + f]; D[da + f] -= m; D[db + f] += m; }
+    }
+    for (let col = 0; col < G.NC; col++) {
+      const j0 = G.cell0[col]; let up = 0;
+      for (let k = G.nL[col] - 1; k > 0; k--) {
+        up += net[j0 + k]; const j = j0 + k, src = (up > 0 ? j : j - 1) * NF, dj = j * NF, du = (j - 1) * NF;
+        for (let f = 0; f < NF; f++) { const m = up * B[src + f]; D[dj + f] -= m; D[du + f] += m; }
+      }
+    }
+    for (let j = 0; j < G.NCELL; j++) { const k = h / G.vol[j], b = j * NF; for (let f = 0; f < NF; f++) B[b + f] += D[b + f] * k; }
+  }
+  // THROUGH-FLOW (as _throughFlow) on all fields: column means, the upstream-first implicit pass, each layer the column's change
+  _throughFlowAll(dt) {
+    const G = this.G, NF = this._bufNF, B = this._buf, M = this._cm, NM = this._cn, fs = this.fields, acc = this._acc;
+    M.fill(0);
+    for (let col = 0; col < G.NC; col++) {
+      const j0 = G.cell0[col], V = this._colV[col], mb = col * NF;
+      for (let k = 0; k < G.nL[col]; k++) { const j = j0 + k, v = G.vol[j], b = j * NF; for (let f = 0; f < NF; f++) M[mb + f] += B[b + f] * v; }
+      for (let f = 0; f < NF; f++) M[mb + f] /= V;
+    }
+    acc.fill(0);
+    for (const col of this._thOrder) {
+      const V = this._colV[col], ins = this._thIn[col], mb = col * NF, den = V + dt * this._thOut[col], S = this._thSrc[col];
+      for (let f = 0; f < NF; f++) {
+        let num = V * M[mb + f];
+        for (let i = 0; i < ins.length; i += 2) num += dt * ins[i + 1] * NM[ins[i] * NF + f];
+        if (S > 0) { const cin = fs[f].in; const a = dt * S * (cin ?? M[mb + f]); num += a; acc[f] += a; }
+        NM[mb + f] = num / den;
+      }
+    }
+    const ob = this.outCol * NF;
+    for (let f = 0; f < NF; f++) { fs[f].inAmt = (fs[f].inAmt || 0) + acc[f]; fs[f].outAmt = (fs[f].outAmt || 0) + dt * this.qOut * NM[ob + f]; }
+    for (let col = 0; col < G.NC; col++) {
+      const j0 = G.cell0[col], mb = col * NF;
+      for (let k = 0; k < G.nL[col]; k++) { const b = (j0 + k) * NF; for (let f = 0; f < NF; f++) B[b + f] += NM[mb + f] - M[mb + f]; }
+    }
+  }
+  _mixHAll(dt) {
+    const G = this.G, FL = this._FL, NF = this._bufNF, B = this._buf, D = this._dbuf, K = H3.K_H * REAL_S / 100;
+    D.fill(0);
+    for (let e = 0; e < FL.n; e++) {
+      const ka = K * FL.a[e] / G.fd[FL.f[e]], da = FL.ia[e] * NF, db = FL.ib[e] * NF;
+      for (let f = 0; f < NF; f++) { const m = ka * (B[da + f] - B[db + f]); D[da + f] -= m; D[db + f] += m; }
+    }
+    for (let j = 0; j < G.NCELL; j++) { const k = dt / G.vol[j], b = j * NF; for (let f = 0; f < NF; f++) B[b + f] += D[b + f] * k; }
+  }
+  _siphonAll(dt) {
+    const G = this.G, iceOpen = this.iceMean < 0.5, NF = this._bufNF, B = this._buf;
+    this.siphonQ = 0;
+    const night = this.isNight(), calm = this.windSpeed < H3.SIPHON_WIND;
+    if (iceOpen && !(night && calm)) return;
+    const toW = REAL_S / H3.REAL, loop = this._loop || (this._loop = new Int32Array(2 * G.ML + 2));
+    if (!this._prevB || this._prevB.length < (2 * G.ML + 2) * NF) this._prevB = new Float64Array((2 * G.ML + 2) * NF);
+    const prev = this._prevB, tb = this.fields.findIndex(fd => fd.a === this.temp);
+    for (let f = 0; f < G.NF; f++) {
+      let a = G.fa[f], b = G.fb[f]; if (G.depthMean[a] > G.depthMean[b]) { const t = a; a = b; b = t; }   // a: the shallower
+      const na = G.nL[a], nb = G.nL[b]; if (nb <= na) continue;                             // only down a real slope
+      const a0 = G.cell0[a], b0 = G.cell0[b], Ta = B[(a0 + na - 1) * NF + tb], Tb0 = B[b0 * NF + tb], Tbk = B[(b0 + na - 1) * NF + tb];
+      let u;
+      if (iceOpen) { const dT = Tb0 - Ta; if (dT <= 0) continue; u = H3.SIPHON_V * clamp(dT / H3.SIPHON_DT, 0, 2.9); }
+      else { const ex = Math.abs(Tbk - 4) - Math.abs(Ta - 4); if (ex <= 0.05) continue; u = H3.ICE_SLOPE_V * clamp(ex / 0.5, 0, 1); }   // under ice: only denser water
+      const q = u * G.fl[f] * Math.max(H3.DZ, G.depthMean[a]) * 0.5 * toW;   // the down-slope flow's cross-section: half the shallow depth
+      let n = 0; for (let k = 0; k < na; k++) loop[n++] = a0 + k; for (let k = na - 1; k >= 0; k--) loop[n++] = b0 + k;   // down a, out along its bed into b, up b
+      let vmin = Infinity; for (let i = 0; i < n; i++) vmin = Math.min(vmin, G.vol[loop[i]]);
+      const steps = Math.min(20, Math.max(1, Math.ceil(q * dt / (0.4 * vmin)))), hh = dt / steps;
+      this.siphonQ += q;
+      for (let s = 0; s < steps; s++) {
+        for (let i = 0; i < n; i++) { const src = loop[(i - 1 + n) % n] * NF; for (let fq = 0; fq < NF; fq++) prev[i * NF + fq] = B[src + fq]; }
+        for (let i = 0; i < n; i++) { const j = loop[i], k = q * hh / G.vol[j], b = j * NF; for (let fq = 0; fq < NF; fq++) B[b + fq] += k * (prev[i * NF + fq] - B[b + fq]); }
+      }
+    }
+  }
+  _mixVerticalAll(dt) {
+    const G = this.G, NF = this._bufNF, B = this._buf, mixM = this.mixDepth(), kMix = clamp(H3.MIX_RATE * dt, 0, 1), kStrat = clamp(H3.K_STRAT * dt, 0, 0.5);
+    const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] < 4, tb = this.fields.findIndex(fd => fd.a === this.temp), mean = this._acc;
+    for (let col = 0; col < G.NC; col++) {
+      const j0 = G.cell0[col], n = G.nL[col]; if (n < 2) continue;
+      let M = this.ice[col] > 0.5 ? 0 : Math.min(G.depthMax[col], mixM);
+      if (M > 0 && B[j0 * NF + tb] < 4 && cold) M = Math.min(M, Math.max(0.6, 1.5 * WIND.WEATHER[this.weather]));   // (cold water floats: see _heat)
+      let sv = 0, nm = 0; mean.fill(0);
+      for (let k = 0; k < n; k++) { const j = j0 + k; if (G.zMid[j] <= M) { const v = G.vol[j], b = j * NF; sv += v; for (let f = 0; f < NF; f++) mean[f] += B[b + f] * v; nm = k + 1; } }
+      if (nm > 1) { for (let f = 0; f < NF; f++) mean[f] /= sv; for (let k = 0; k < nm; k++) { const b = (j0 + k) * NF; for (let f = 0; f < NF; f++) B[b + f] += (mean[f] - B[b + f]) * kMix; } }
+      for (let k = Math.max(1, nm); k < n; k++) {   // below: a slow exchange with the layer above (volume-weighted, conservative)
+        const j = j0 + k, i = j - 1, w = kStrat * Math.min(G.vol[i], G.vol[j]), bj = j * NF, bi = i * NF, vj = G.vol[j], vi = G.vol[i];
+        for (let f = 0; f < NF; f++) { const m = (B[bi + f] - B[bj + f]) * w; B[bj + f] += m / vj; B[bi + f] -= m / vi; }
+      }
+    }
   }
   // THROUGH-FLOW, implicit upwind on column means in potential order (see _statics): c_new = (V c_old + dt Σ q_in c_up,new + dt S c_in)
   // / (V + dt q_out); each layer of the column takes the same change (the column's vertical profile kept; mass conserved)
   _throughFlow(fd, dt) {
     const G = this.G, c = fd.a, mean = this._colMean || (this._colMean = new Float64Array(G.NC)), newM = this._colNew || (this._colNew = new Float64Array(G.NC));
     for (let col = 0; col < G.NC; col++) { const j0 = G.cell0[col]; let s = 0; for (let k = 0; k < G.nL[col]; k++) s += c[j0 + k] * G.vol[j0 + k]; mean[col] = s / this._colV[col]; }
+    const cin = fd.in ?? null; let inAmt = 0;
     for (const col of this._thOrder) {
       const V = this._colV[col], ins = this._thIn[col]; let num = V * mean[col];
       for (let i = 0; i < ins.length; i += 2) num += dt * ins[i + 1] * newM[ins[i]];
-      if (this._thSrc[col] > 0) num += dt * this._thSrc[col] * (fd.in ?? mean[col]);
+      if (this._thSrc[col] > 0) { const a = dt * this._thSrc[col] * (cin ?? mean[col]); num += a; inAmt += a; }
       newM[col] = num / (V + dt * this._thOut[col]);
     }
+    fd.inAmt = (fd.inAmt || 0) + inAmt; fd.outAmt = (fd.outAmt || 0) + dt * this.qOut * newM[this.outCol];   // (m³ × concentration, cumulative)
     for (let col = 0; col < G.NC; col++) { const dlt = newM[col] - mean[col]; if (dlt === 0) continue; const j0 = G.cell0[col]; for (let k = 0; k < G.nL[col]; k++) c[j0 + k] += dlt; }
   }
   // one upwind sub-step of a field (the wind-driven fluxes): the face fluxes per layer, then the vertical fluxes continuity requires

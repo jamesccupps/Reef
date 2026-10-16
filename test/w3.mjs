@@ -150,6 +150,56 @@ console.log('\n— environment 3-D: columns, temperature, ice, transport —');
     check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < 12, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
 }
 
+// ============================================================
+//  ENVIRONMENT 3-D, slice 2 — the water's chemistry and plankton (src/w3/chem3.js)
+// ============================================================
+console.log('\n— environment 3-D: chemistry and plankton —');
+{
+  const { Env3, CLOCK3 } = await import('../src/w3/env3.js');
+  const { V2, A2 } = await import('../src/w3/chem3.js');
+  const { ENV: ENVC } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  // the N and P budgets close: inventory change = in − out − buried (− denitrified + fixed for N), in any season and weather
+  { let worst = 0, txt = [];
+    for (const [yf, w] of [[0.4, 0], [0.45, 3], [0.85, 1]]) {
+      seed(401); const e = new Env3({ col: 10, yf0: yf }); const c = e.chem; e.setWeather(w); for (let i = 0; i < 6; i++) e.step(0.1);
+      const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger };
+      for (let i = 0; i < 90; i++) e.step(0.1);
+      const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
+      const rP = Math.abs(c.inventoryP() - P0 - eP) / P0, rN = Math.abs(c.inventoryN() - N0 - eN) / N0; worst = Math.max(worst, rP, rN); txt.push(`${rP.toExponential(0)}/${rN.toExponential(0)}`);
+    }
+    check('the 3-D water\'s N and P budgets close (inventory change = in − out − buried, − denitrified + fixed) in summer, a storm and under ice', worst < 1e-5, `P/N relative error ${txt.join(', ')}`); }
+  // the bed's fluxes reach the water in proportion to its area over the water's volume: thin water over a lot of bed (the
+  // coves, the slopes) loses O₂ to the mud faster than the open water does
+  { seed(402); const e = new Env3({ col: 5, yf0: 0.4 }); const c = e.chem, G = e.G; let jc = -1, jd = -1;
+    for (let j = 0; j < G.NCELL; j++) { if (G.bedA[j] > 0 && c.r[j] > 0.8 && jc < 0) jc = j; if (G.bedA[j] === 0 && G.zMid[j] > 2 && jd < 0) jd = j; }
+    c.o2.fill(0.9); e.temp.fill(15); c._o2Demand(1); const dC = 0.9 - c.o2[jc], dD = 0.9 - c.o2[jd];
+    check('the bed\'s O₂ demand reaches the water in proportion to its area over the water\'s volume (thin water over the mud draws down fastest)', dC > 3 * dD && dD > 0,
+      `${(dC * ENVC.O2_MGL).toFixed(3)} vs ${(dD * ENVC.O2_MGL).toFixed(3)} mg/L a second (bed/water ${c.r[jc].toFixed(2)} vs mid-water); V2 ${V2.toFixed(2)} m³, A2 ${A2.toFixed(1)} m²`); }
+  // A YEAR of the lakes' water without fish (the coarse 10-m grid): the seasons of O₂, the spring diatoms, the P budget
+  { seed(403); const e = new Env3({ col: 10 }); const c = e.chem, G = e.G; const t0 = performance.now();
+    const deep = [], all = []; for (let q = 0; q < G.NC; q++) { all.push(q); if (G.depthMax[q] > 4.5) deep.push(q); }
+    const bottom = cols => cols.reduce((s, q) => s + c.o2[G.cell0[q] + G.nL[q] - 1], 0) / cols.length * ENVC.O2_MGL;
+    const P0 = c.inventoryP(); let sumMinDeep = 99, winMinDeep = 99, winMeanMin = 99, iceOut = null, frozen = false, dia = [0, 0, 0, 0];
+    for (let t = 0; t < CLOCK3.YEAR_LEN; t += 0.2) {
+      e.step(0.2); const yf = e.yearFrac();
+      if (yf > 0.38 && yf < 0.55) sumMinDeep = Math.min(sumMinDeep, bottom(deep));
+      if (yf > 0.9 || yf < 0.12) { winMinDeep = Math.min(winMinDeep, bottom(deep)); winMeanMin = Math.min(winMeanMin, e.mean(c.o2) * ENVC.O2_MGL); }
+      if (e.iceMean > 0.9) frozen = true; if (frozen && iceOut === null && e.iceMean < 0.5) iceOut = yf;   // (after the winter's ice)
+      if (yf > 0.05 && yf < 0.2) { dia[0] += c.meanDiatom; dia[1]++; } if (yf > 0.4 && yf < 0.55) { dia[2] += c.meanDiatom; dia[3]++; }
+    }
+    const L = c.ledger, ret = L.buryP / L.inP, keep = c.inventoryP() / P0;
+    check('summer: the deep north basin\'s bottom water keeps its O₂ (≥ 4 mg/L: wind and night convection mix it — MDIFW "does not stratify")', sumMinDeep >= 4, `lowest ${sumMinDeep.toFixed(1)} mg/L (June–August)`);
+    check('winter: under the ice the basin\'s bottom water runs down toward anoxia by late winter while the lake as a whole keeps O₂ (≥ 5 mg/L)', winMinDeep < 3 && winMeanMin >= 5,
+      `bottom of the basin down to ${winMinDeep.toFixed(1)} mg/L; the lake's mean never below ${winMeanMin.toFixed(1)} mg/L`);
+    check('ice-out comes in late April or early May (Maine: ~Apr 23)', iceOut !== null && iceOut > 0.13 && iceOut < 0.2, `half the lake open at yf ${iceOut?.toFixed(3)} (Apr 23 ≈ 0.145)`);
+    check('the cold-water diatoms bloom in late winter and spring, not in summer', dia[0] / dia[1] > 2 * dia[2] / Math.max(1, dia[3]), `Mar–May mean ${(dia[0] / dia[1]).toFixed(3)}, Jun–Aug ${(dia[2] / Math.max(1, dia[3])).toFixed(3)}`);
+    check('the lakes keep their P over a year with a realistic retention (the bed keeps ~half to three-quarters of the inflow\'s load: Larsen–Mercier 0.66–0.72)', ret > 0.5 && ret < 0.9 && keep > 0.7 && keep < 1.3,
+      `retention ${ret.toFixed(2)}, inventory ${(100 * keep).toFixed(0)} % of the start; a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
+  { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(0.1); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(0.1); const ms = (performance.now() - t0) / 40;
+    check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16, `${ms.toFixed(1)} ms`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

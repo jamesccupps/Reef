@@ -97,6 +97,20 @@ implicitly upstream-first — stable at any step), grid-scale mixing, the night 
 water nearer 4 °C than the basin's slides down); a water-age tracer. Explicit wind transport is sub-stepped (≤ 4); in a gale
 the wind-driven currents are slowed uniformly instead (`transportScale`). ~2.3 ms per update (10 Hz) with two fields.
 
+**Built (stage 3, slice 2 — `src/w3/chem3.js`):** the 2-D sim's calibrated chemistry and plankton on every cell — O₂,
+ammonium, nitrate, phosphate, green algae, diatoms, cyanobacteria, DOM, Daphnia, copepods, rotifers and their resting eggs,
+the bed's bound-P store, organic layer and worms and scuds — in the 2-D units read as concentrations ("per 2-D cell" for
+water, "per 2-D column" for the bed), the bed's fluxes reaching the water as bed area over water volume. The inflow brings
+nutrient at the 2-D slice's per-volume load; closed N and P budgets (to ~1e-7). Two 3-D calibrations: the bed captures
+dissolved P through a diffusive boundary layer (`BED_EXCH` 0.35 — the 2-D bed exchanged with a stagnant 0.3-m film) and
+buries its bound P at 0.15× the 2-D rate, so the lakes retain ~75 % of their P load (Larsen–Mercier 0.66–0.72 for these
+flushing rates). Slow processes (zooplankton, bacteria, N cycle, the bed) run every 3rd update; all fields move together
+packed (one pass over the faces). ~9 ms per update on the 5-m grid, ~1.8 ms on a 10-m grid (tests and long runs). A year
+without fish: summer bottom O₂ ≥ 5.7 mg/L in the north basin; under ice it runs down to ~0.5 mg/L by late winter while the
+lake keeps ≥ 5 mg/L; ice-out ~Apr 26; spring diatoms. Known (no fish yet): zooplankton boom to ~2,000 µg/L (real ~50),
+the water is too clear (Secchi 6–9 m; real ~3.8 — colour is step 4b), the coves keep their O₂ under ice (40 % of the light
+gets through: snowy ice passes 1–12 % — stage D).
+
 ## 4. Fish in 3-D (`src/w3/fish3.js`)
 
 **Agents** (struct-of-arrays; position x, y, z; heading yaw and pitch; speed):
