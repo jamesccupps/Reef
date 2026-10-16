@@ -403,33 +403,55 @@ export class Chem3 {
   // zooplankton) — at most CROP of what is exposed, taken from the cells in proportion to what each exposes. Grams (all
   // eaters together, e.g. a school's n fish) of Daphnia, copepods and rotifers → out[0..2]
   zooFeed(j, cD, cC, want, K, out, sig = false, dvm = true, cR = 0) {
-    out[0] = out[1] = out[2] = 0; if (!(want > 0)) return out;
-    const G = this.G, P = PLANKTON, c = G.colOfCell[j], vis = this.zv[j]; if (vis <= 0) return out;
-    const j0 = G.cell0[c], a = Math.max(j0, j - 1), b = Math.min(j0 + G.nL[c] - 1, j + 1);
+    const G = this.G, c = G.colOfCell[j], j0 = G.cell0[c], L = this._zl || (this._zl = new Int32Array(3)); let n = 0;
+    for (let q = Math.max(j0, j - 1); q <= Math.min(j0 + G.nL[c] - 1, j + 1); q++) L[n++] = q;
+    return this.zooFeedCells(L, n, cD, cC, want, K, out, sig, dvm, cR);
+  }
+  // … over a list of cells (a fish's foraging footprint: fish.js), each seen by its own light
+  zooFeedCells(L, nL, cD, cC, want, K, out, sig = false, dvm = true, cR = 0) {
+    out[0] = out[1] = out[2] = 0; if (!(want > 0) || !nL) return out;
+    const P = PLANKTON;
     let sD = 0, sC = 0, sR = 0, sw = 0;
-    for (let q = a; q <= b; q++) {
-      const w = this.w[q]; sw += w;
-      sD += this.zooD[q] * cD * this.zooExposed(q, 0, dvm) * w; sC += this.zooC[q] * cC * this.zooExposed(q, 1, dvm) * w;
-      if (cR > 0) sR += this.zooR[q] * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * w;
+    for (let i = 0; i < nL; i++) {
+      const q = L[i], w = this.w[q], v = this.zv[q]; sw += w; if (v <= 0) continue;
+      sD += this.zooD[q] * cD * this.zooExposed(q, 0, dvm) * w * v; sC += this.zooC[q] * cC * this.zooExposed(q, 1, dvm) * w * v;
+      if (cR > 0) sR += this.zooR[q] * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * w * v;
     }
-    const S = (sD + sC + sR) * vis; if (!(S > 1e-12)) return out;
-    const E = S / sw * UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);
+    const S = sD + sC + sR; if (!(S > 1e-12)) return out;
+    const E = S / sw * UGL, take = Math.min(want * (sig ? E * E / (E * E + K * K) : E / (E + K)), P.CROP * S);   // (E: the mean seen density, µg dry/L)
     const tot = sD + sC + sR, tD = take * sD / tot, tC = take * sC / tot, tR = take - tD - tC;
-    const fD = sD > 0 ? tD / sD : 0, fC = sC > 0 ? tC / sC : 0, fR = sR > 0 ? tR / sR : 0;   // (each cell gives this share of its exposed grams)
-    for (let q = a; q <= b; q++) {
-      if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm);
-      if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm);
-      if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q]));
+    const fD = sD > 0 ? tD / sD : 0, fC = sC > 0 ? tC / sC : 0, fR = sR > 0 ? tR / sR : 0;   // (each cell gives this share of its exposed, seen grams)
+    for (let i = 0; i < nL; i++) {
+      const q = L[i], v = this.zv[q]; if (v <= 0) continue;
+      if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm) * v;
+      if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm) * v;
+      if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - P.WEED_REF * Math.min(1, this.plantMap[q])) * v;
     }
     out[0] = tD; out[1] = tC; out[2] = tR;
     return out;
   }
+  // the seen, exposed zooplankton density (µg dry/L) over a list of cells — what an adult planktivore rates its footprint at
+  zooEcells(L, nL) {
+    let s = 0, sw = 0; const esc = 1 - PLANKTON.COPE_ESCAPE;
+    for (let i = 0; i < nL; i++) { const q = L[i], w = this.w[q]; sw += w; const v = this.zv[q]; if (v > 0) s += (this.zooD[q] * this.zooExposed(q, 0) + this.zooC[q] * esc * this.zooExposed(q, 1)) * v * w; }
+    return sw > 0 ? s / sw * UGL : 0;
+  }
+  // the bed's worms and scuds over a list of bed cells: the reachable density (g/m² above the refuge, area-weighted) and a take
+  benthEcells(L, nL) { let s = 0, A = 0; for (let i = 0; i < nL; i++) { const j = L[i], a = this.G.bedA[j]; A += a; s += Math.max(0, this.benth[j] / A2 - BENTHOS.REFUGE) * a; } return A > 0 ? s / A : 0; }
+  takeBenthCells(L, nL, want, K) {
+    if (!(want > 0) || !nL) return 0;
+    let s = 0, A = 0; for (let i = 0; i < nL; i++) { const j = L[i], a = this.G.bedA[j]; A += a; s += Math.max(0, this.benth[j] / A2 - BENTHOS.REFUGE) * a; }
+    if (!(s > 0)) return 0;
+    const E = s / A, g = Math.min(want * E / (E + K), PLANKTON.CROP * s), f = g / s;
+    for (let i = 0; i < nL; i++) { const j = L[i], e = this.benth[j] / A2 - BENTHOS.REFUGE; if (e > 0) this.benth[j] -= f * e * this.G.bedA[j] / this.a[j]; }
+    return g;
+  }
   // a bottom forager (or a school) takes from the worms and scuds of bed cell jb: want × E/(E + K_FISH), E the density above
   // the REFUGE (g/m²), at most CROP of what is reachable; returns the grams taken
-  takeBenth(jb, want) {
+  takeBenth(jb, want, K = BENTHOS.K_FISH) {
     if (!(want > 0) || jb < 0) return 0;
     const E = this.benth[jb] / A2 - BENTHOS.REFUGE; if (!(E > 0)) return 0;
-    const g = Math.min(want * E / (E + BENTHOS.K_FISH), PLANKTON.CROP * E * this.G.bedA[jb]);
+    const g = Math.min(want * E / (E + K), PLANKTON.CROP * E * this.G.bedA[jb]);
     this.benth[jb] -= g / this.a[jb]; return g;
   }
   // a bottom-sifter takes the bed's organic layer (poor food); a dead fish's body joins it

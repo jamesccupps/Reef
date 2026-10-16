@@ -54,6 +54,15 @@ export const F3 = {
   ATTACK: 2.0, SCHOOL_EXP: 0.5,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6)
   BENTH_REACH: 0.35,    // m above the bed a fish feeds on it
+  // THE BED OR THE OPEN WATER (stage 6): an adult shares its foraging time between its two foods toward the better (t ∝ f^SHARE_Q),
+  // instead of eating both at once; K_BENTH (g/m² above the refuge) the half-saturation of an adult's bed foraging
+  SHARE: 1, SHARE_Q: 4, K_BENTH: 3,
+  // THE FORAGING FOOTPRINT: one sim second stands for ~2.4 real hours of foraging, over which a real fish works hundreds of
+  // metres of its range — ground no fish can swim at real speed in a second. So an adult feeds from the water and the bed
+  // about it within FP_HOME × its home range (FP_MIN–FP_MAX m), on the bed within FP_DZ of its own depth: it still chooses where
+  // to be, and food is still depleted where fish crowd, on the scale of a fish's day rather than of its second. Adults feed at
+  // their decision rate (DECIDE_EVERY steps × dt)
+  FP_HOME: 0.25, FP_MIN: 4, FP_MAX: 20, FP_DZ: 0.75,
   // REPRODUCTION (slice b)
   SPAWN_LEAD: 2,        // °C: a ripe fish heads for its spawning ground this far below its spawning temperature
   SPAWN_RATE: 0.25,     // /s: on its ground, with a mate, at full spawning temperature, a fish spawns at this rate
@@ -148,7 +157,8 @@ KEYS3.forEach((k, i) => {
   s.cray = !!sp.diet.cray;
   s.gsi = sex => sex === 0 ? sp.gsiF : sex === 1 ? sp.gsiM : (sp.gsiF + sp.gsiM) / 2;   // (a school: half and half)
   s.spawn = SPAWN3[k]; s.guard = sp.nestGuard ? sp.nestGuard / Y2 * YEAR : 0;   // (s: how long a male keeps its nest)
-  s.mateCue = clamp(F3.MATE_CUE / Math.sqrt(s.perHa / 1e4), 6, 40);   // (m: ~1.5 × the species' spacing — the sparse ones search farther)
+  s.mateCue = clamp(F3.MATE_CUE / Math.sqrt(s.perHa / 1e4), 6, 40);
+  s.forageR = clamp(F3.FP_HOME * s.home, F3.FP_MIN, F3.FP_MAX);   // (m: its foraging footprint's radius)   // (m: ~1.5 × the species' spacing — the sparse ones search farther)
 });
 export const speciesIndex = k => S3[k].i;
 
@@ -277,6 +287,10 @@ export class Fish3 {
     const nb = Array.from({ length: G.NC }, () => []);
     for (let f = 0; f < G.NF; f++) { nb[G.fa[f]].push(G.fb[f]); nb[G.fb[f]].push(G.fa[f]); }
     this.nbr = nb.map(a => Int32Array.from(a));
+    this.colBed = Array.from({ length: G.NC }, (_, c) => { const l = []; for (let k = 0; k < G.nL[c]; k++) if (G.bedA[G.cell0[c] + k] > 0) l.push(G.cell0[c] + k); return Int32Array.from(l); });
+    this._fp = new Map(); this._fpB = new Int32Array(4096); this._fpZ = new Int32Array(4096);
+    // … and the next ring beyond them (a fish rates the bed's food over ~2 columns — tens of real metres — each side)
+    this.nbr2 = nb.map((a, c) => { const set = new Set(); for (const q of a) for (const r of nb[q]) if (r !== c && !a.includes(r)) set.add(r); return Int32Array.from([...a, ...set]); });
     // the bed cell for each column and layer: the nearest layer of that column whose cell holds some of its bed
     this.bedOf = new Int32Array(G.NC * G.ML).fill(-1);
     this.colBedJ = new Int32Array(G.NC);   // a column's representative bed cell (its mean depth's)
@@ -321,6 +335,14 @@ export class Fish3 {
     }
   }
   deeper(x, y, out) { const i = cellIndex(x, y); out[0] = i < 0 ? 0 : this.slopeX[i]; out[1] = i < 0 ? 0 : this.slopeY[i]; return out; }
+  // the columns within R of column c's centre (cached per radius)
+  _footprint(R, c) {
+    let t = this._fp.get(R); if (!t) { t = new Array(this.G.NC); this._fp.set(R, t); }
+    if (t[c]) return t[c];
+    const G = this.G, x = G.cx[c], y = G.cy[c], l = [c];
+    for (let q = 0; q < G.NC; q++) if (q !== c && (G.cx[q] - x) ** 2 + (G.cy[q] - y) ** 2 <= R * R) l.push(q);
+    return (t[c] = Int32Array.from(l));
+  }
   bedCell(c, bed) { return c < 0 ? -1 : this.bedOf[c * this.G.ML + Math.min(this.G.ML - 1, Math.max(0, Math.floor(bed / this.G.DZ)))]; }
 
   // ---------- the neighbour hash (positions frozen for the step) ----------
@@ -479,7 +501,7 @@ export class Fish3 {
       // the body, food, hazards
       const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
       const cm = this._energetics(a, bp, T, dt);
-      const ate = this._feed(a, i, cm, visDay, dt);
+      const ate = (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, visDay, dt * F3.DECIDE_EVERY) : false;
       a.hunger = 1 - clamp(a.gut / (sp.gut * a.W), 0, 1);
       if (ate) a._ate = true;
       if (a.ripe) this._spawn(a, i, dt);
@@ -521,11 +543,12 @@ export class Fish3 {
     const G = this.G, ch = this.chem, small = !s.pisc || a.L < 3 * s.sp.Lpisc || s.cray;
     if (s.benthic && small) {
       let best = BENTHOS.SENSE_MIN, bc = -1;
-      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < a.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE; if (E > best) { best = E; bc = cc; } };
-      tryC(a.c); const nb = this.nbr[a.c]; for (let q = 0; q < nb.length; q++) tryC(nb[q]);
+      // (its own patch by the bed cell it feeds from; the columns about it — two rings — by their mean-depth bed)
+      const tryC = (cc, jb) => { if (jb < 0 || ch.o2[jb] < a.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE; if (E > best) { best = E; bc = cc; } };
+      tryC(a.c, a.jb); const nb = this.nbr2[a.c]; for (let q = 0; q < nb.length; q++) tryC(nb[q], this.colBedJ[nb[q]]);
       if (bc >= 0) {
-        const v = best / (best + BENTHOS.K_FISH);
-        if (v > a.fv) { a.fk = 2; a.fv = v; a.fx = bc === a.c ? a.x : G.cx[bc]; a.fy = bc === a.c ? a.y : G.cy[bc]; a.fz = bc === a.c ? a.bed - 0.15 : Math.max(0.1, G.depthMean[bc] - 0.15); }
+        const v = best / (best + (F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH));
+        if (v > a.fv) { a.fk = 2; a.fv = v; a.fx = bc === a.c ? a.x : G.cx[bc]; a.fy = bc === a.c ? a.y : G.cy[bc]; a.fz = a.bed - 0.15; }   // (bed food is on the bed: it follows the bed it is over)
       }
     }
     if (s.plank || a.L < s.sp.Lzoo) {
@@ -583,9 +606,13 @@ export class Fish3 {
       const r = this._route(a, G0[0], G0[1], this._g1 || (this._g1 = [0, 0])), d = Math.hypot(G0[0] - a.x, G0[1] - a.y);
       if (d > G0[2]) { steer(r[0] - a.x, r[1] - a.y, (a.nt > 0 ? BROOD.GUARD_TETHER : F3.GOAL_W) * clamp(d / 3, 0.3, 1)); if (a.nt <= 0) { goTrip = clamp((d - G0[2]) / 3, 0, 1); a._far = d > 20; } }
     }
+    // (a fish losing condition strays from its preferred water to feed: the band's pull weakens, the food's grows)
+    const needy = a.hunger * clamp((0.95 - a.K) / 0.15, 0, 1);
     if (!goTrip) {
-      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, F3.HAB_W * clamp(off, 0.2, 1)); }
-      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, F3.HAB_W * clamp(off, 0.2, 1)); }
+      const hw = F3.HAB_W * (1 - 0.8 * needy);
+      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off, 0.2, 1)); }
+      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off, 0.2, 1)); }
+      off *= 1 - needy;
     }
     // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
     if (a.ripe && a.mate && a.mate.alive && a.mate.ripe) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1)); }
@@ -593,7 +620,7 @@ export class Fish3 {
     // go whatever the food), and no lingering in a patch then
     const going = clamp(off - 0.3, 0, 1), inPatch = a.fk >= 2 && a.fd < 1.5 && going <= 0;
     if (a.fk === 1) steer(a.fx - a.x, a.fy - a.y, F3.PURSUIT_W * clamp(1 - a.fd / Math.max(0.6, a.senseR), 0.2, 1) * (0.4 + 0.6 * a.hunger));
-    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going));
+    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going) * (1 + needy));
     // a threat: away from it (small fish also toward the shallows)
     if (a.threat && a.fear > 0.05) {
       let bx = a.x - a.threat.x, by = a.y - a.threat.y; const d = Math.hypot(bx, by) || 1; bx /= d; by /= d;
@@ -616,7 +643,8 @@ export class Fish3 {
     a.yawRate = clamp(yr, -tm, tm);
     // depth: the habitat's, the food's when foraging, up out of low O₂, down out of heat
     let zT = this._zTarget(a, m);
-    if (a.fk && (a.fk === 1 || a.hunger > 0.3)) zT += (a.fz - zT) * clamp(a.fk === 1 ? 0.8 : a.hunger * a.fv, 0, 1);
+    // (a hungry fish whose best food is on the bed goes right down to it — half-way it could feed on neither; Werner et al. 1983)
+    if (a.fk && (a.fk === 1 || a.hunger > 0.3)) zT += (a.fz - zT) * (a.fk === 1 ? 0.8 : smooth(0.1, 0.4, a.hunger * a.fv));
     if (a.o2 < a.o2Crit) zT = Math.min(zT, a.z - 0.5);
     if (a.T > s.tPref + a.tempTol / 4) zT = Math.max(zT, a.z + 0.5);
     zT = clamp(zT, F3.ZTOP, Math.max(F3.ZTOP, a.bed - F3.ZBOT));
@@ -651,7 +679,7 @@ export class Fish3 {
     let nx = a.x + Math.cos(a.yaw) * hs, ny = a.y + Math.sin(a.yaw) * hs, nz = a.z - Math.sin(a.pitch) * a.spd * dt;
     let bed = GEO.depthAt(nx, ny);
     const zTop = F3.ZTOP + F3.ICE_M * (a.c >= 0 ? this.env.ice[a.c] : 0);
-    if (GEO.bodyAt(nx, ny) === LAND || bed < zTop + F3.ZBOT + 0.02) {
+    if (GEO.bodyAt(nx, ny) === LAND || bed < zTop + F3.ZBOT + 0.02 || this.env.colAt(nx, ny) < 0) {   // (a 0-m edge cell belongs to no water column)
       // too shallow: stay put and turn toward deeper water
       nx = a.x; ny = a.y; bed = a.bed; a.spd *= 0.6;
       const [gx, gy] = GEO.downhill(a.x, a.y); if (gx || gy) a.yaw += angDiff(Math.atan2(gy, gx), a.yaw) * Math.min(1, 6 * dt);
@@ -698,14 +726,36 @@ export class Fish3 {
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0) { const g = this._strike(a, i, room, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (room > 0 && want > got) { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
+    // THE BED OR THE OPEN WATER: a fish can't search the mud and the open water at once — it spends its foraging time where it
+    // pays best, shared toward the better food (t ∝ f^SHARE_Q): pond bluegill moved between the open water and the sediments
+    // within days as their profitability changed (Werner et al. 1983); perch > 5 cm switch to the bed when the zooplankton runs
+    // low (Wu & Culver 1992). (SHARE 0: both at once, the 2-D sim's way)
     const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray;
-    if (s.benthic && small && room > 0 && want > got && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200) {
-      const g = ch.takeBenth(a.jb, Math.min(room, (want - got) * BENTHOS.Q) * n) / n;
+    const canB = s.benthic && small && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200, canZ = s.plank || a.L < sp.Lzoo;
+    // its footprint: the bed cells within FP_DZ of its depth, and its layer (± one in its own column) of the water, in the
+    // columns within its forage radius
+    const G = this.G, fp = this._footprint(s.forageR, a.c), LB = this._fpB, LZ = this._fpZ; let nB = 0, nZ = 0;
+    const kz = Math.min(G.nL[a.c] - 1, Math.max(0, (a.z / G.DZ) | 0));
+    for (let q = 0; q < fp.length && nB < LB.length - 16; q++) {
+      const cc = fp[q];
+      if (canB) { const bl = this.colBed[cc]; for (let k = 0; k < bl.length; k++) if (Math.abs(G.zMid[bl[k]] - a.bed) <= F3.FP_DZ) LB[nB++] = bl[k]; }
+      if (canZ && nZ < LZ.length - 4) { const j0 = G.cell0[cc], k1 = Math.min(G.nL[cc] - 1, kz); if (cc === a.c) { for (let k = Math.max(0, k1 - 1); k <= Math.min(G.nL[cc] - 1, k1 + 1); k++) LZ[nZ++] = j0 + k; } else LZ[nZ++] = j0 + k1; }
+    }
+    if (canB && !nB && a.jb >= 0) LB[nB++] = a.jb;
+    let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
+    if (F3.SHARE && canB && canZ) {
+      const Eb = ch.benthEcells(LB, nB), fB = Eb > 0 ? Eb / (Eb + F3.K_BENTH) : 0;
+      const Ez = ch.zooEcells(LZ, nZ), fZ = Ez * Ez / (Ez * Ez + PLANKTON.K_ADULT * PLANKTON.K_ADULT);
+      const qB = fB ** F3.SHARE_Q, qZ = fZ ** F3.SHARE_Q; tB = qB + qZ > 0 ? qB / (qB + qZ) : 0.5; tZ = 1 - tB;
+    }
+    const want0 = want - got;
+    if (tB > 0 && room > 0 && want > got) {
+      const g = ch.takeBenthCells(LB, nB, Math.min(room, want0 * tB * BENTHOS.Q) * n, F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH) / n;
       if (g > 0) { a.gut += g; a.gutE += g * PREY.BENTH_ED; room -= g; got += g; this.stats.food.benth += g * n; }
     }
-    if ((s.plank || a.L < sp.Lzoo) && room > 0 && want > got) {
+    if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);
-      ch.zooFeed(a.j, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (want - got) * PLANKTON.Q) * n, PLANKTON.K_ADULT, out, true, true, 0);
+      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, PLANKTON.K_ADULT, out, true, true, 0);
       const g = (out[0] + out[1] + out[2]) / n;
       if (g > 0) { a.gut += g; a.gutE += (out[0] * PREY.DAPH_ED + out[1] * PREY.COPE_ED + out[2] * PREY.ROT_ED) / n; room -= g; got += g; this.stats.food.zoo += g * n; }
     }
@@ -913,7 +963,7 @@ export class Fish3 {
       const v = Math.min(F3.YOY_VMAX, F3.YOY_BL * q.L / 100) * dt, dx = tx - q.x, dy = ty - q.y, dz = q.tz - q.z, d = Math.hypot(dx, dy, dz);
       if (d > 1e-3) {
         const k = Math.min(1, v / d), nx = q.x + dx * k, ny = q.y + dy * k, bed = GEO.depthAt(nx, ny);
-        if (GEO.bodyAt(nx, ny) !== LAND && bed > 0.12) { q.x = nx; q.y = ny; q.bed = bed; } else { q.tx = q.x; q.ty = q.y; }
+        if (GEO.bodyAt(nx, ny) !== LAND && bed > 0.12 && this.env.colAt(nx, ny) >= 0) { q.x = nx; q.y = ny; q.bed = bed; } else { q.tx = q.x; q.ty = q.y; }
         q.z = clamp(q.z + dz * k, 0.05, Math.max(0.06, q.bed - 0.02));
       }
       if (q.tk < F3.YOY_TICK) continue;

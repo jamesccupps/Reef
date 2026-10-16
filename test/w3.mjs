@@ -361,6 +361,44 @@ console.log('\n— fish 3-D: reproduction and the young —');
       `perch school of ${school ? school.n : 0} (L ${school ? f1(school.L) : '-'} cm), ${sun.length} pumpkinseed`); }
 }
 
+// ============================================================
+//  FISH 3-D, stage 6a — adult foraging: the bed or the open water (shared foraging time), the foraging footprint
+// ============================================================
+console.log('\n— fish 3-D: foraging —');
+{
+  const { Env3 } = await import('../src/w3/env3.js');
+  const { Fish3 } = await import('../src/w3/fish3.js');
+  const { A2 } = await import('../src/w3/chem3.js');
+  const { PLANKTON } = await import('../src/config.js');
+  const { seed } = await import('../src/core.js');
+  // a perch school on the bed: with rich worms and scarce zooplankton it feeds on the bed; with the bed bare to its refuge
+  // and rich zooplankton, in the open water — one or the other, its foraging time shared toward the better food
+  { seed(521); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2.4 && GEO.depth[i] < 2.6) { [px, py] = GEO.cellCentre(i); break; }
+    const a = F.add('perch', px, py, null, 3, 40); a.z = GEO.depthAt(px, py) - 0.1;
+    const feed = (benthGm2, zooUgl) => {
+      for (const j of ch.bedCells) ch.benth[j] = benthGm2 * A2; for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = zooUgl / PLANKTON.UGL; ch.zooC[j] = 0; ch.zooR[j] = 0; }
+      a.c = e.colAt(a.x, a.y); a.j = e.cellAt(a.x, a.y, a.z); a.bed = GEO.depthAt(a.x, a.y); a.jb = F.bedCell(a.c, a.bed); a.T = 20; a.o2 = 1; a.gut = 0; a.gutE = 0;
+      const b0 = F.stats.food.benth, z0 = F.stats.food.zoo; F._feed(a, 0, F._energetics(a, a.s.sp.bio, 20, 1e-9), 1, 0.2);
+      return [F.stats.food.benth - b0, F.stats.food.zoo - z0];
+    };
+    const [bA, zA] = feed(12, 5), [bB, zB] = feed(3, 300);
+    check('the bed or the open water: a perch school eats worms where they are rich and the zooplankton scarce, zooplankton where it is rich and the bed bare — not both at once',
+      bA > 0 && zA < 0.05 * bA && zB > 0 && bB === 0, `rich bed: ${bA.toFixed(2)} g worms, ${zA.toFixed(3)} g zooplankton; bare bed, rich water: ${bB.toFixed(2)} g worms, ${zB.toFixed(2)} g zooplankton`); }
+  // THE FORAGING FOOTPRINT: a fish whose own patch is stripped to its refuge still feeds from the bed about it (the ground it
+  // works over the hours a sim second stands for), and the take is spread over that ground
+  { seed(522); const e = new Env3({ col: 5, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+    let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2.4 && GEO.depth[i] < 2.6) { [px, py] = GEO.cellCentre(i); break; }
+    const a = F.add('whiteperch', px, py, null, 3, 60); a.z = GEO.depthAt(px, py) - 0.1;
+    for (const j of ch.bedCells) ch.benth[j] = 10 * A2; for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 0; ch.zooC[j] = 0; ch.zooR[j] = 0; }
+    a.c = e.colAt(a.x, a.y); a.j = e.cellAt(a.x, a.y, a.z); a.bed = GEO.depthAt(a.x, a.y); a.jb = F.bedCell(a.c, a.bed); a.T = 20; a.o2 = 1; a.gut = 0;
+    for (const j of F.colBed[a.c]) ch.benth[j] = 3 * A2;   // (its own column bare to the refuge)
+    const before = Float32Array.from(ch.benth); const b0 = F.stats.food.benth; F._feed(a, 0, F._energetics(a, a.s.sp.bio, 20, 1e-9), 1, 0.2);
+    let cols = new Set(); for (const j of ch.bedCells) if (ch.benth[j] < before[j] - 1e-6) cols.add(G.colOfCell[j]);
+    check('the foraging footprint: a white perch school on a stripped patch still feeds from the bed about it, its take spread over the ground it works in a day',
+      F.stats.food.benth - b0 > 0 && cols.size >= 5 && !cols.has(a.c), `${(F.stats.food.benth - b0).toFixed(2)} g from ${cols.size} columns within ${a.s.forageR} m`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

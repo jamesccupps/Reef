@@ -51,11 +51,17 @@ census), the BROOK (pumpkinseed within 60 m summer in its pools; routes along it
 camera. test/w3.mjs +7 checks (49).
 KNOWN: the PREDATOR PIT (docs/HOT_BROOK_3D.md §4 "Built (slice b)"): adults eat more zooplankton than its spring production →
 zoo 3–6 µg/L by August (real 45–100); the zooplankton-eating young starve (pumpkinseed 0.8 cm in Nov). Bed-feeding young grow.
-NEXT: STAGE 6 — the food web's calibration, from docs/ECOLOGY_RESEARCH.md's ranked list: adults share foraging time (p = the
-better food's), switch to the bed when zooplankton is scarce, summer p 0.3–0.6; a zooplankton refuge; then targets —
-zooplankton 45–100 µg/L with a May–June clear-water phase, fish taking < 30 % of its production, YOY 0.4–0.7 mm/day to 3–8 cm
-by autumn, 60–150 kg/ha — validated on ≥ 3 seeds over full years (fryfate per species). Then redbreast + fallfish, plants,
-and a Web Worker (1× uses ~35 % of the main thread with the view; 6× and 30× can't keep up there).
+STAGE 6a (this commit; docs/HOT_BROOK_3D.md §4 "Built (stage 6a)"): adult foraging — shared foraging time between the bed and
+the open water, a hungry fish goes down to bed food, a fish losing condition strays to feed, and the FORAGING FOOTPRINT (a fish
+feeds over a quarter of its home range: one sim second = ~2.4 h of foraging). 3 seeds May→Oct: biomass holds 95–115 kg/ha,
+adult starvation halves, summer p 0.25–0.5. test/w3.mjs +2 checks (51). Harness: scratchpad foodweb.mjs <seed> <yf0> <days>
+<every> [F3 KEY=value | BLOCK.KEY=value].
+NEXT: STAGE 6b — the water's summer productivity: the algae fall near zero in July–August, so the zooplankton collapses (2–17
+µg/L July–Oct vs real 45–100) and the plankton-eating young stall (pumpkinseed < 1 cm in August). Step 4b's coloured
+mesotrophic water (Secchi ~3.8 m, colour ~46, TP 10–20 µg/L: docs/reports/Maine lakes ponds and streams.md) and the nutrient
+supply through summer; then a zooplankton refuge (weeds, stage 7). Targets: zooplankton 45–100 µg/L, a May–June peak, fish
+taking < 30 % of its production, YOY 0.4–0.7 mm/day to 3–8 cm by autumn — ≥ 3 seeds, full years. Then redbreast + fallfish,
+plants, and a Web Worker (1× uses ~35 % of the main thread with the view).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;

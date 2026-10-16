@@ -244,6 +244,24 @@ recruiting). The fix, from docs/ECOLOGY_RESEARCH.md: adults share their foraging
 (p = the better food's, not the sum), switch to the bed when zooplankton is scarce (perch > 5 cm: Wu & Culver 1992), feed at
 realistic summer rations (p 0.3–0.6), and the zooplankton gets a refuge (weeds: stage 7; darkness in coloured water: step 4b).
 
+**Built (stage 6a) — adult foraging.** Two mechanisms, judged on 3 seeds over May → October (scratchpad foodweb.mjs):
+(1) THE BED OR THE OPEN WATER: an adult shares its foraging time toward the better of its two foods (t ∝ f⁴; bed food
+E/(E + 3 g/m²) above its refuge, zooplankton type III in K_ADULT) instead of eating both at once (Werner et al. 1983; Wu &
+Culver 1992); a hungry fish whose best food is on the bed goes right down to it; a fish losing condition strays from its
+preferred water to feed. (2) THE FORAGING FOOTPRINT: one sim second stands for ~2.4 real hours of foraging, over which a real
+fish works hundreds of metres — ground no fish can swim at real speed in a second (a white perch school stripped its 10-m
+patch in ~4 sim-days and needed ~11 to swim to the next; the bed held 8–11 g/m² at every depth while the schools fed on
+1–2). So an adult feeds from the bed (within 0.75 m of its own depth) and the water within a quarter of its home range
+(4–20 m) — depletion where fish crowd, on the scale of a fish's day. Adults feed at their 5-Hz decision rate. Result (vs the
+slice-b baseline, same seeds): fish biomass holds 95–115 kg/ha into October (was 64–72), adult starvation halves, summer p
+in the real range (white perch 0.3–0.4, perch 0.25–0.5, pumpkinseed 0.4–0.5); young bottom feeders grow at real rates
+(suckers 6 cm, bullheads 4.5 cm by October), white perch 3.9 cm and perch 4.2 (real 5–8).
+STILL OPEN → stage 6b: the zooplankton collapses in July on every seed (2–17 µg/L July–October; fish take 70–110 % of its
+production while their young are far below the 20–40 kg/ha that collapses real Daphnia) — its summer FOOD runs out: the
+algae fall near zero in July–August (the water's summer productivity: coloured mesotrophic water, step 4b), and it has no
+refuge in these shallow lakes until the weeds (stage 7). The plankton-eating young stall: pumpkinseed 0.6–0.8 cm through
+August, shiners 1–2 cm, smallmouth ~1 cm (real 3–10 cm).
+
 **Known calibration problems to solve here** (the 2-D census of stage A, 3 seeds × 3–4 years, `test/diag` census, deaths,
 fryfate): total fish 130–140 kg/ha (inside the real 60–150) but the wrong mix — white perch 70–90 kg/ha (target 15–30) at a
 mean ~180 g (Maine's crowded white perch stay 25–45 g: real white perch STUNT — food competition among adults is too weak in
