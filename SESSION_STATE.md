@@ -113,7 +113,14 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ TRUE SCALE — DESIGN + PROTOTYPE DONE, AWAITING THE HUMAN'S GO (2026-10-16, late): the human asked "can we just make everything
+▶▶ RESUME HERE (after the 2026-10-16 evening compaction): THE HUMAN APPROVED THE TRUE-SCALE REBUILD — "yeah but let's compact
+first". START T1 (docs/TRUE_SCALE.md): real-size geometry — 5-m cells within ~150 m of the water (lidar 2 m + the NAIP shelf),
+the brook as a carved channel (real path, ~8 m wide, the angler's pool/riffle profile), 15-m cells beyond; then T2 (H3.REAL 1,
+50-m columns) and T3 (fish fidelity by distance from the camera). Then the new species + census (fallfish, banded killifish,
+redbreast; eastern_maine_relative_abundance.md), then T4–T7, then roads/cabins at true size. Branch: zoo-field (latest e4d55ba,
+all pushed; backups G:\synapse-reef-backups\ …_w3-trees-true.zip). Keep the 1/10 world working until true scale passes the gate
+(build true scale alongside, e.g. HB_SCALE=1 into its own module/world file, switch when green).
+▶ TRUE SCALE — DESIGN + PROTOTYPE DONE (2026-10-16, late): the human asked "can we just make everything
 true to scale" and chose "design and prototype" first. docs/TRUE_SCALE.md: build_world3d.py takes HB_SCALE/HB_BROOK_SCALE/
 HB_BROOK_W/HB_MARGIN/HB_OUT (default unchanged); at true scale the existing sim RUNS — 369 + 274 ha, 2,606 water columns
 (53 ms an update), 1.63 M fish in 304,256 agents (889 MB heap, 3.0 KB an agent; 2.3 GB process), a 29-min block 14.6 s (~120×
