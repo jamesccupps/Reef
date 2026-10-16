@@ -116,7 +116,16 @@ transport, foraging per step) rescaled: offered, not built.
 ▶ RESUME HERE (2026-10-16, later): STAGE R's core is DONE and merged (below), and the human's request (5) — RISES, SPLASHES, LEAPS
 and the insects on the water — is built (fish3 rises → render3/rises3view.js; docs/HOT_BROOK_3D.md §6 "Built — RISES …"). NEXT:
 R3's fine-rung mechanisms (strike events, real strike distances; equate the rungs' surface feeding — B11: the real-time rung takes
-~1/7 of a block's), the remaining compat constants, the small young shiners/pumpkinseed, then the wildlife (7e). (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
+~1/7 of a block's), the remaining compat constants, the small young shiners/pumpkinseed, then the wildlife (7e).
+THE HUMAN'S FIELD OBSERVATIONS (2026-10-16, after the real-time view; memory hot-brook-field-observations): (a) the real water is
+"a bit clearer" than the sim's → raise Secchi toward 3.5–4.2 m / colour 25–40 (recent_maine_research.md: nearby lakes Secchi 3.4–4.4,
+colour 22–27; CHEM3.KD_COLOUR 0.5 gives ~3.2 m; the view's water3 KD_TRUE too) — re-check the weeds' depth limit, the winter O₂ and
+the fish's sight after; (b) "the perch are small" (and DEP 2011 local white perch weigh 0.70–0.80× the sim's length–weight); (c) from
+their catches "not nearly as many [perch] as FALLFISH and BASS — especially since you can't keep the bass" (Maine law: all bass
+released) → revisit the census (S3 perHa: perch 860, white perch 800, smallmouth 40/ha) against catch-and-release Maine lakes, and ADD
+FALLFISH (Semotilus corporalis; MDIFW 1949 lists it; backlog "redbreast + fallfish") — a large native minnow of the brook and the
+shores; (d) BALD EAGLES are there (already in the 7e wildlife design: one, all year — keep). Suggested order after compaction:
+clarity (a) → census and fallfish research + build (c, b) → the fine rung (strikes as events, B11) → wildlife 7e. (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
 shortcuts; 24 C step-size items; 20 D day–night items; the cost per rung; the order of work §7). STAGE R IS UNDER WAY on branch
