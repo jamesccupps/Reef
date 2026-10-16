@@ -113,21 +113,23 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶▶ RESUME HERE (2026-10-16, night): THE FISH FIRST, THEN TRUE SCALE. After the compaction the human asked to have "all the
-fish we need … accounted for and in before trying to add them to the environment", "only the fish that are actually in the
-lakes", small schooling fish one agent a school and the budget's rest to individual brains for the big fish ("as complex and
-realistic and true to the environment as we can"). DONE: docs/FISH_CENSUS.md (design; research: Hot Brook populations and
-water/species_numbers_northern_lakes.md + small_fish_numbers.md, new) — 11 species: white perch, yellow perch, smallmouth,
-chain pickerel, brown bullhead, white sucker, pumpkinseed (Upper + brook), REDBREAST (the human's brook catches — their
-photo: mostly redbreast, ~18–20 cm typical), FALLFISH ("lots"), BANDED KILLIFISH, BLACKNOSE DACE (brook); GOLDEN SHINER OUT
-(no record), largemouth out ("probably mislabeled smallmouth"), no eel/trout/salmon. Census /ha ≥ 7.5 cm: WP 750, YP 500,
-PS 50, RB 50, BB 100, WS 70, SMB 40, CP 25, FF 85 (~1,670/ha, ~1.07 M) + killifish ~150,000 and dace ~3,000 whole. Agents:
-~470/ha (≈ 300,000 at true scale, ~3,000 at 1/10): young = school records; killifish shoals of 40; perch/white perch < 10 cm
-schools; sunfish ≥ 7, bullhead ≥ 10, fallfish ≥ 12 cm and all suckers/bass/pickerel/dace individuals; the rest of the budget
-→ adult perch and white perch individuals from the largest down (cutoff ~20 cm at 300k), leaving their schools as they grow.
-NEXT: BUILD FISH_CENSUS.md §5 on the 1/10 world (a 3-D species table so the 2-D sim is untouched; the four new species'
-biology; S3 census; the agent rule; gate on 3 seeds), then TRUE_SCALE.md T1–T7. Branch zoo-field. Keep the 1/10 world
-working until true scale passes the gate.
+▶▶ RESUME HERE (2026-10-16, late night): THE FISH FIRST, THEN TRUE SCALE. The human: "all the fish we need … accounted for
+and in before trying to add them to the environment", "only the fish that are actually in the lakes", small schooling fish one
+agent a school + the budget's rest to big fish's own brains; then "pickerel swim through the brook … everything does"; "do they
+all just swim in circles?" (fast-forward); "we need the data and stats and everything page too along with this new full size
+environment" (→ TRUE_SCALE.md T8). DONE (this commit): docs/FISH_CENSUS.md (design + status); src/w3/species3.js — 11 species
+(species.js's 7 minus golden shiner + REDBREAST, FALLFISH, BANDED KILLIFISH, BLACKNOSE DACE); fish3 S3 census (WP 750, YP 500,
+PS 50 Upper only, RB 50, BB 100, WS 70, SMB 40, CP 25, FF 85 near the brook's ends, KF 233 in shoals of 40 from 4 cm, dace
+1.5/m² brook residents); THE LAKES ONE WATER (MOVE3 settle/trip rates from movement_between_lakes.md, e^(−d/1 km) from the
+mouths; the brook is every fish's water); THE RIFFLES' REFUGE (cover 0.9 < 10 cm in brook water < 0.6 m); THE YOUNG KEEP MOVING
+(F3.YOY_CRUISE; separate horizontal/vertical moves — a target depth below the bed had stalled 15 % of schools). Research notes
+(6 new): species_numbers_northern_lakes, small_fish_numbers, drainage_species_and_eel, habitat3d_new_species,
+movement_between_lakes. Field (memory hot-brook-field-observations): app catches; their sunfish photo (mostly redbreast,
+~18–20 cm, brook); no eel seen; crayfish species unknown (keep virile). KNOWN: the brook's dace die out within the year (eaten in
+pools at night/winter, starved — the brook feeds like lake bed; NEXT: the stream food web: riffle insects, outlet filter feeders
+on the outflowing plankton, drift); bass and bullheads fall by December (recruits starve — on the old code too); the year swings
+81–140 kg/ha between runs. NEXT after that: FISH_CENSUS §5 step 3 (the agent rule), then TRUE_SCALE T1–T8. Verify the young's
+cruise in the browser view (the human's "circles"). Branch zoo-field.
 ▶ TRUE SCALE — DESIGN + PROTOTYPE DONE (2026-10-16, late): the human asked "can we just make everything
 true to scale" and chose "design and prototype" first. docs/TRUE_SCALE.md: build_world3d.py takes HB_SCALE/HB_BROOK_SCALE/
 HB_BROOK_W/HB_MARGIN/HB_OUT (default unchanged); at true scale the existing sim RUNS — 369 + 274 ha, 2,606 water columns

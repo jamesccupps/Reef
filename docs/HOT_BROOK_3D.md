@@ -422,6 +422,52 @@ coarse block with the brain; (h) the real day (with R2 step 5). Each: the gate a
 - **The young:** perch larvae < 9.5 mm swim < 3 cm/s (YOY_VMAX 0.25 m/s is far too fast for them), 3–4 BL/s above; larval
   mortality ~0.04/day; bluegill swim-up fry lose 0.11–0.39/day for 4 days, then < 0.01.
 
+**Built — THE FISH ACTUALLY IN THE LAKES (2026-10-16, night; docs/FISH_CENSUS.md).** The human, before true scale: "make sure
+all the fish we need are accounted for and in", "only the fish that are actually in the lakes", small schooling fish one agent a
+school, the rest of the budget to the big fish's own brains. Research: Hot Brook populations and water/
+`species_numbers_northern_lakes.md`, `small_fish_numbers.md`, `drainage_species_and_eel.md`; Whole lake 3D fish simulation/
+`habitat3d_new_species.md`, `movement_between_lakes.md`.
+- **The species** (`src/w3/species3.js`, so the 2-D sim keeps its own):
+  - eleven: MDIFW's list plus the human's redbreast;
+  - golden shiner out (no record in either lake), largemouth out ("probably mislabeled smallmouth"), eel and alewife out (unrecorded; the human has seen no eel);
+  - the four new species:
+    - REDBREAST on FB4 bluegill;
+    - FALLFISH on the dace set, with pikeminnow allometry for adults;
+    - BANDED KILLIFISH on fathead minnow. The California killifish set was tried first: it starved the lake's killifish at any feeding level below ~75 % of Cmax.
+    - BLACKNOSE DACE on the *Phoxinus* dace set.
+
+    Each has its length–weight, growth, maturity, fecundity, spawning, diet by size, gape, limits, 3-D habitat by day, night and winter, DFO-curve speeds and spawning grounds.
+- **The census** (S3 perHa; fish ≥ minL per hectare):
+  - white perch 750, yellow perch 500, pumpkinseed 50 (founded in Upper only, `only`), redbreast 50, bullhead 100, sucker 70, smallmouth 40, pickerel 25;
+  - fallfish 85, founded toward the brook's ends (`nearBrook`);
+  - killifish 233 in shoals of 40, counted from 4 cm;
+  - dace 1.5/m² of the brook (`perM2`, `brookRes`: they live in it and turn back at its mouths).
+
+  At 1/10 that is ~12,700 fish in ~3,300 agents, ~100 kg/ha.
+- **The lakes are one water** (the human: "pickerel swim through the brook", "bass too", "everything does"):
+  - the brook is part of every fish's range; a fish is sent home only from the other lake;
+  - each year a share of each species settles in the other lake through the brook, weighted e^(−d/1 km) toward fish living near a mouth (MOVE3: sunfish 5–10 %, perch 15 % in September–October, white perch 15 %, others 5–10 %);
+  - pickerel make spring trips there and back (15 %).
+
+  Two seasons (April → December, 2 seeds): ~1,500–1,900 fish crossed (white and yellow perch schools, fallfish, killifish, all others), 11–18 pickerel trips.
+- **The riffles' refuge:** fish under 10 cm in the brook's water shallower than 0.6 m get cover 0.9. Without it, the brook's dace were eaten out in a summer once the lakes' predators ranged into the brook.
+- **The young keep moving** (the human, at fast-forward: "do they all just swim in circles all the time?"):
+  - The problem: a young school parked on its feeding spot for the hour between its decisions, and the view drew its fish milling around a fixed point.
+  - The fix: it now cruises about the spot at 1.5 lengths/s on a wandering heading, within 15 m and water of the spot's depth, slower at night and still in the cold (F3.YOY_CRUISE).
+  - Measured at the fine step: over 5 minutes, median 8.6 m of path, 6.5 m net, none circling.
+  - Two more stalls found and fixed:
+    - A school's one 3-D step shrank its horizontal move when its target depth lay below the bed under it, so 15 % stood still. The moves are now separate, with the target depth clamped to the water here.
+    - The dace's young are kept in the brook.
+
+    0 of 556 young schools stand still.
+- **Known, not new** (the same seeds on the committed code show them):
+  - bass fall from 40 to ~13–19/ha and bullheads by a third or more by December, mostly through the starvation of the year's recruits in autumn (open: young-bass survival);
+  - the whole lake's year swings widely between runs (81–140 kg/ha by December) with the strength of the summer's young cohort and the zooplankton crash under it.
+- **Known, open:**
+  - The brook's dace still die out within the year: half eaten (in the pools at night and in winter, outside the riffle refuge), a third starved.
+  - The brook feeds fish like a patch of lake bed. Real lake-outlet streams are far richer: riffle insects, filter feeders eating the outflowing plankton, drift.
+  - That stream food web is the next mechanism.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

@@ -70,6 +70,13 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - The ecology checks keep their meaning (per hectare, per fish).
   - The perf checks re-budgeted per rung.
   - The census, recruitment and food-web checks re-run on 3 seeds.
+- **T8 — The data and stats page (the human, 2026-10-16: "we need the data and stats and everything page too along with this
+  new full size environment").** Like the 2-D app's, for the whole real lakes:
+  - the census by species, lake and size class against FISH_CENSUS.md, and the agents (individuals, schools, the young's records);
+  - biomass, growth and condition, the young's numbers and fates through the season, recruitment, deaths by cause;
+  - the water (temperature, O₂, plankton, clarity, ice) by lake and depth, the weeds and the bed's animals;
+  - the brook's traffic (who passes, who stays, the spawning runs), and the lake-to-lake exchange;
+  - graphs over time, and click-a-fish (its species, size, age, sex, condition, brain's state, history).
 - **Carried over unchanged:** the species, their physiology and brains; the water chemistry; the weeds, littoral fauna, crayfish and mussels; the young-of-year model; everything per hectare or per fish.
 - **Better at true scale:** distances, trips, home ranges, the brook's length and the wind's fetch become real. The 1/10 compromises go away: fish crossing a 1/10 lake in a tenth of the time, and the insects falling in per metre of bank × SCALE.
 
@@ -87,7 +94,8 @@ the fish we need … accounted for and in before trying to add them to the envir
    carries straight over;
 2. T1–T3 (the core of true scale);
 3. T4–T7;
-4. roads, cabins, docks and the rest.
+4. T8 the data and stats page with the true-scale lakes (built as each piece lands, not after);
+5. roads, cabins, docks and the rest.
 
 ## Risks
 

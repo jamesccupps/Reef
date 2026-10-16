@@ -159,6 +159,16 @@ as now, with the same cutoffs. So the rule is built and tested now and carries s
 
 ## 5. The build (before T1, as the human asked)
 
+**Status (2026-10-16, night):**
+- **Steps 1–2 BUILT:** the eleven species and their census (`src/w3/species3.js`, fish3.js S3; HOT_BROOK_3D.md §4 "Built — the fish actually in the lakes").
+- **Built the same night, at the human's word:**
+  - the lakes as one water, with movement through the brook;
+  - the riffles' refuge;
+  - the young schools that keep moving.
+- **Next:**
+  - the brook's stream food web (its dace starve or are eaten within the year);
+  - step 3, the agent rule.
+
 1. **The new species' biology** (a 3-D species table, so the 2-D sim is untouched; research in
    `fish_numbers_and_new_species.md` Q5–Q6):
    - redbreast on the bluegill FB4 set;

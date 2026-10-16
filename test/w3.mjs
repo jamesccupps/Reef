@@ -228,12 +228,25 @@ if (run('core')) {
   const { seed } = await import('../src/core.js');
   const inWater = a => GEO.bodyAt(a.x, a.y) !== LAND && a.z >= 0 && a.z <= Math.max(0.12, GEO.depthAt(a.x, a.y)) + 1e-3 && Number.isFinite(a.x + a.y + a.z + a.W + a.L);
   const run = (e, F, secs) => { for (let i = 0; i < Math.round(secs / 0.2); i++) { F.step(FB); e.step(EW); } };   // (secs: the 1-hour year's)
-  // the founders: each species at the design census (fish ≥ 7.5 cm per hectare), the lakes' fish biomass inside Maine's range
+  // the founders: each species at its census (docs/FISH_CENSUS.md: fish ≥ minL per hectare; the brook's dace per m² of brook),
+  // the lakes' fish biomass inside Maine's range
   { seed(501); const e = new Env3({ col: 10 }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
-    for (const k of KEYS3) { const r = c[k], d = Math.abs(r.perHa / S3[k].perHa - 1); worst = Math.max(worst, d); txt.push(`${k} ${r.perHa.toFixed(0)}`); }
+    const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
+    for (const k of KEYS3) { const r = c[k], d = Math.abs((S3[k].brookRes ? r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
     const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
-    check('the founders: every species at its census density (±10 %), ~17,000 fish ≥ 7.5 cm in ~3,300 agents, 60–150 kg/ha, all in the water', worst < 0.1 && kg > 60 && kg < 150 && wet && schools,
-      `${F.count().toFixed(0)} fish in ${F.fish.length} agents, ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`); }
+    check('the founders: every species at its census (±10 %), ~12,700 fish in ~3,300 agents, 60–150 kg/ha, all in the water', worst < 0.1 && kg > 60 && kg < 150 && wet && schools,
+      `${F.count().toFixed(0)} fish in ${F.fish.length} agents, ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`);
+    // ONLY THE FISH ACTUALLY IN THE LAKES (the human, 2026-10-16; MDIFW's list + the human's redbreast; FISH_CENSUS.md §1): no
+    // golden shiner; pumpkinseed founded in Upper (MDIFW lists it there only); the dace in the brook; the fallfish crowded
+    // toward the brook's ends (fish of flowing water) — nearer them than the white perch, a fish of the open basin
+    const BPt = GEO.BROOK_PATH, dEnd = a => Math.min(Math.hypot(a.x - BPt[0][0], a.y - BPt[0][1]), Math.hypot(a.x - BPt[BPt.length - 1][0], a.y - BPt[BPt.length - 1][1]));
+    const mean = (k, f) => { let t = 0, n = 0; for (const a of F.fish) if (a.s.key === k) { t += f(a); n++; } return t / Math.max(1, n); };
+    const want = ['sunfish', 'perch', 'sucker', 'catfish', 'whiteperch', 'bass', 'pike', 'redbreast', 'fallfish', 'killifish', 'dace'];
+    const ps = F.fish.filter(a => a.s.key === 'sunfish'), bd = F.fish.filter(a => a.s.key === 'dace');
+    check("only the fish in the lakes: the eleven species of MDIFW's list and the human's catches (no golden shiner), pumpkinseed founded in Upper, the dace in the brook, the fallfish toward the brook's ends (nearer them than the pickerel of the same shallows)",
+      KEYS3.length === want.length && want.every(k => KEYS3.includes(k)) && ps.every(a => GEO.bodyAt(a.x, a.y) === UPPER) && bd.length > 50 && bd.every(a => GEO.bodyAt(a.x, a.y) === BROOK)
+        && mean('fallfish', dEnd) < 0.7 * mean('pike', dEnd),
+      `${KEYS3.join(', ')}; pumpkinseed ${ps.filter(a => GEO.bodyAt(a.x, a.y) === UPPER).length}/${ps.length} in Upper; dace ${bd.filter(a => GEO.bodyAt(a.x, a.y) === BROOK).length}/${bd.length} in the brook; mean distance to a brook end: fallfish ${mean('fallfish', dEnd).toFixed(0)} m, pickerel (the same shallow band) ${mean('pike', dEnd).toFixed(0)} m`); }
   // a summer's day and night: the fish stay in the water, swim, and each species keeps to its own water
   { seed(502); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
     const hab = (k, f, ok = () => true) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k && ok(a)) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };   // (ok: which of them — the bullheads' rest is judged on the fish not breeding: spawning bullheads are active day and night)
@@ -270,17 +283,17 @@ if (run('core')) {
     // little from the bed — so the sums are compared, each fish's main food shown)
     check('a school\'s zooplankton and a sucker\'s worms (and weed insects and snails) leave the water\'s and the bed\'s fields gram for gram (and the O₂ the fish breathe from their own cell)', dz > 0 && db > 0 && Math.abs((dz + db) - (dg + dgs)) / (dz + db) < 1e-3 && !wrong,
       `school ate ${dg.toFixed(3)} g (field −${dz.toFixed(3)}), sucker ${dgs.toFixed(3)} g (bed −${db.toFixed(3)}); together ${(dg + dgs).toFixed(3)} g eaten, ${(dz + db).toFixed(3)} g taken`); }
-  // PREDATION: a smallmouth beside a school of small shiners strikes; each kill takes ONE fish from the school, whose mass lands
+  // PREDATION: a smallmouth beside a shoal of banded killifish strikes; each kill takes ONE fish from the school, whose mass lands
   // in the bass's gut
   { seed(504); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
-    const b = F.add('bass', 20, 80, 1.5, 4, 1), sh = F.add('minnow', 20.4, 80, 1.5, 0.6, 60); sh.L = 5; sh.W = 1.3; sh.gon = 0; F._settle(sh);
+    const b = F.add('bass', 20, 80, 1.5, 4, 1), sh = F.add('killifish', 20.4, 80, 1.5, 0.6, 60); sh.L = 5; sh.W = 1.3; sh.gon = 0; F._settle(sh);
     let kills = 0, gotG = 0; const n0 = sh.n;
     for (let i = 0; i < 400 && kills < 3; i++) {
       sh.x = b.x + 0.3; sh.y = b.y; sh.z = b.z; F._hashBuild(); b.missCd = 0;
       const g = F._strike(b, F.fish.indexOf(b), 50, 1, 1, FB); if (g > 0) { kills++; gotG += g; }
     }
-    check('predation: a smallmouth beside a school of small shiners kills, one fish per strike — the school loses exactly the fish eaten, the bass gets their mass',
-      kills >= 3 && Math.abs(n0 - sh.n - kills) < 1e-9 && Math.abs(gotG - kills * 1.3) < 1e-6 && F.stats.eatenBy['bass>minnow'] === kills, `${kills} kills, school ${n0} → ${sh.n}, ${gotG.toFixed(1)} g eaten`); }
+    check('predation: a smallmouth beside a shoal of killifish kills, one fish per strike — the school loses exactly the fish eaten, the bass gets their mass',
+      kills >= 3 && Math.abs(n0 - sh.n - kills) < 1e-9 && Math.abs(gotG - kills * 1.3) < 1e-6 && F.stats.eatenBy['bass>killifish'] === kills, `${kills} kills, school ${n0} → ${sh.n}, ${gotG.toFixed(1)} g eaten`); }
   // SCHOOLS meet and merge (keeping one parent's genome, never averaged), split above twice their size — the fish are conserved
   { seed(505); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const a = F.add('perch', 20, 80, 1.5, 2, 30), b = F.add('perch', 21, 80, 1.5, 2, 25); F.add('perch', -40, 60, 1.0, 2, 2 * S3.perch.school + 20);
@@ -309,7 +322,8 @@ if (run('core')) {
   { seed(509); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); run(e, F, 20); F.resetIntake(); const B0 = F.biomass();
     let tf = 0, steps = 0; for (let i = 0; i < 296 * 5; i++) { const t0 = performance.now(); F.step(FB); tf += performance.now() - t0; steps++; e.step(EW); }
     const c = F.census(), kg = F.biomass() / 1000 / F.lakeHa; const lowP = [], gone = [], txt = [];
-    for (const k of KEYS3) { const r = c[k]; txt.push(`${k} ${f2(r.p)}`); if (!(r.n > 0.5 * S3[k].perHa * F.lakeHa)) gone.push(k); if (!(r.p > 0.15)) lowP.push(k); }
+    const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
+    for (const k of KEYS3) { const r = c[k]; txt.push(`${k} ${f2(r.p)}`); if (!(r.n > 0.5 * (S3[k].brookRes ? S3[k].perM2 * brookA : S3[k].perHa * F.lakeHa))) gone.push(k); if (!(r.p > 0.15)) lowP.push(k); }
     const st = F.stats.died; let starve = 0, all = 0; for (const k in st) for (const cs in st[k]) { all += st[k][cs]; if (cs === 'starve') starve += st[k][cs]; }
     // (how MUCH they eat — p, the share of the maximum ration — is the food web's calibration, stage 6: the water is still too
     // productive and the type III response too generous, p ~0.5–0.97 vs ~0.3–0.6 in real lakes; here every species must feed)
@@ -343,16 +357,32 @@ if (run('young')) {
     check('spring: pickerel, perch, suckers, white perch, smallmouth and pumpkinseed all spawn by late June — the cold-water spawners first (pickerel and perch in May, then the bass and the sunfish)',
       sp6.every(k => st.spawns[k] > 0) && day('pike') < day('bass') && day('perch') < day('bass') && day('perch') < day('sunfish') && day('bass') <= day('sunfish') + 20,
       'first spawning (days after Apr 21): ' + sp6.map(k => `${k} ${day(k).toFixed(0)}`).join(', ') + '; spawnings ' + sp6.map(k => st.spawns[k]).join('/'));
-    check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles',
-      bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.3 * st.spawns.sucker,
+    // (suckers: the census's 70/ha — up from 30, FISH_CENSUS.md — puts most of them beyond a run's reach of the brook; 4 seeds give
+    // 26–39 % of their spawnings in it, the rest on the lakes' shoals, standing in for the lakes' other inlets, not modelled)
+    check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles (a fifth or more)',
+      bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.2 * st.spawns.sucker,
       `mean bottom depth: perch ${f2(bed('perch'))} m, smallmouth ${f2(bed('bass'))} m, pumpkinseed ${f2(bed('sunfish'))} m; suckers ${at.sucker.brook} of ${st.spawns.sucker} in the brook`);
     gd.sort((p, q) => p - q); const g90 = gd.length ? gd[Math.floor(gd.length * 0.9)] : Infinity;
     check('the nest guarders (smallmouth, pumpkinseed, bullhead males) keep to their nests (90 % of the time within 1.5 m)', gd.length > 20 && g90 < 1.5, `${gd.length} samples, 90th percentile ${f2(g90)} m`);
+    // THE LAKES ARE ONE WATER (the human: "pickerel swim through the brook", "bass too", "everything does"; F3.ROAM_L, MOVE3):
+    // over the spring, fish of many species reach the other lake through the brook — settlers, and the pickerel's spring trips
+    const crossK = Object.keys(st.cross).filter(k => st.cross[k] > 0), crossN = Object.values(st.cross).reduce((p, q) => p + q, 0);
+    check('the lakes are one water: through the spring, fish of five or more species cross the brook to the other lake, the pickerel on their spring trips among them',
+      crossK.length >= 5 && st.trips.pike >= 3 && st.cross.pike > 0, `${crossN.toFixed(0)} fish crossed — ${crossK.map(k => `${k} ${st.cross[k].toFixed(0)}`).join(', ')}; pickerel trips ${st.trips.pike}`);
     let brook = 0, sun = 0; for (const a of F.fish) if (a.s.key === 'sunfish') { sun++; if (GEO.bodyAt(a.x, a.y) === BROOK) brook++; }
     const c = F.census();
     check('by June pumpkinseed are in the brook\'s pools (the angler\'s sunfish), and the young of the spring spawners swim in the lakes',
       brook >= 5 && c.perch.yoyN > 0 && c.sunfish.yoyN > 0 && c.whiteperch.yoyN > 0, `${brook} of ${sun} pumpkinseed in the brook; young: ` + ['perch', 'whiteperch', 'sunfish', 'bass', 'sucker', 'pike'].map(k => `${k} ${(c[k].yoyN / 1e3).toFixed(1)}k at ${f1(c[k].yoyL || 0)} cm`).join(', '));
-    // THE SEASON'S YOUNG SO FAR (Fish3.seedSeason — the human, on a fresh lake: "it's saying there aren't any schools of young
+    // THE YOUNG KEEP MOVING (the human, 2026-10-16: "do they all just swim in circles all the time?" — the young schools parked on
+  // their feeding spot between their hourly decisions and the view drew them milling in place): in summer at the fine step,
+  // over five minutes the young schools cruise — most move metres along a wandering path, none circles in place
+  { seed(521); const e = new Env3({ col: 10, yf0: 0.45 }), F = new Fish3(e, { young: true }); for (let i = 0; i < 49.3; i++) { F.step(FB); e.step(EW); }
+    const tr = new Map(); for (let t = 0; t < 3000; t++) { F.step(0.1); if (t % 10 === 0) for (const q of F.yoy) if (q.alive && !(q.gref && q.gref.alive)) { let r = tr.get(q.id); if (!r) tr.set(q.id, r = []); r.push([q.x, q.y]); } }
+    const mv = [...tr.values()].filter(r => r.length > 200).map(r => { let L = 0; for (let i = 1; i < r.length; i++) L += Math.hypot(r[i][0] - r[i - 1][0], r[i][1] - r[i - 1][1]); return [L, Math.hypot(r[r.length - 1][0] - r[0][0], r[r.length - 1][1] - r[0][1])]; });
+    const med = mv.map(m => m[0]).sort((p, q) => p - q)[mv.length >> 1] || 0, still = mv.filter(m => m[0] < 0.5).length;
+    check('the young keep moving: over five minutes of a summer day the free (unguarded) young schools cruise — the median one a few metres, under a tenth standing still',
+      mv.length > 20 && med > 3 && still < 0.1 * mv.length, `${mv.length} schools, median path ${f1(med)} m, ${still} still`); }
+  // THE SEASON'S YOUNG SO FAR (Fish3.seedSeason — the human, on a fresh lake: "it's saying there aren't any schools of young
     // fish, is that correct?"): a lake opened on May 20 holds the young of the spawnings before it — about as many and as big as
     // the spring above had on that day — and none of the later spawners'. (Calibrated on the full grid, 3 seeds: perch 1.05 cm
     // vs 1.05–1.07 run in full; the coarse grid's spring and this seed's weather spawn the perch a week later: ±30 % on size)
