@@ -113,7 +113,9 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ RESUME HERE (2026-10-16): the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
+▶ RESUME HERE (2026-10-16, later): STAGE R's core is DONE and merged (below). NEXT: the human's request (5) SURFACE INSECTS AND
+RISES (events at the real-time rung → rise rings / splashes / leaps in the view), then R3's fine-rung mechanisms (strike events,
+real strike distances), the remaining compat constants, the small young shiners/pumpkinseed. (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
 shortcuts; 24 C step-size items; 20 D day–night items; the cost per rung; the order of work §7). STAGE R IS UNDER WAY on branch
@@ -129,8 +131,9 @@ block, then _relocate hops where its drives point; the gate runs 1,752-s blocks)
 coves: H3.ICE_WIND × exposure), the VIEW IN REAL TIME (1× real, 4×, 1 min/s … max), the O₂ METABOLISM (Vachon–Prairie gas
 exchange, Garcia–Gordon saturation, the bed algae's O₂: summer 93–94 % of saturation), FEEDING BY THE HOUR'S LIGHT (lux with
 twilight, species' sight I/(I + K_I), zooplankton ∝ sight²), fish never hop into hypoxic water, and THE YOUNG'S FORAGING
-FOOTPRINT (young perch 6.8–7.3 cm by Sept 10, young bass starvation 3–17 %). The full gate is running (scratchpad gate_yfp.txt);
-if green → merge w3-realtime into zoo-field, push, back up. OPEN: young shiners/pumpkinseed small; the June zooplankton peak high;
+FOOTPRINT (young perch 6.8–7.3 cm by Sept 10, young bass starvation 3–17 %). ALL GREEN (npm test: headless, smoke, ui, serve,
+w3 69/69; a summer month's adult feeding 0.38–0.64 of Cmax) → MERGED into zoo-field at 33bff43, pushed, backed up
+(G:\synapse-reef-backups\synapse-reef_20261016_1221_w3-realtime.zip). The view: 1× is real time. OPEN: young shiners/pumpkinseed small; the June zooplankton peak high;
 the fine rung's mechanisms (strike events, short strike distances, the intake cap; SURFACE RISES AND LEAPS for the view — the
 human's request (5)); the remaining compat constants.
 RESEARCH IN (2026-10-16, committed 75aff98): (1) docs/research_notes/Whole lake 3D fish simulation/realtime_foraging.md — for
