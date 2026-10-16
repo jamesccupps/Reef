@@ -58,7 +58,6 @@ export const PL3 = {
   // the effects: the weed volume (PVI) → a zooplankton refuge 0.8 × logistic(PVI: ½ at 20 %); stems → fish cover (a searching
   // predator's capture falls as 1/(1 + (S/S50)³), S50 ~150 stems/m² — Crowder & Cooper 1982; Savino & Stein 1982)
   REF_MAX: 0.8, PVI_HALF: 0.2, PVI_STEEP: 0.05, S50: 150,
-  DAY_MEAN: 0.4,        // the surface's day-mean light as a share of its noon light (half-sine × clouds)
   SHELTER_R: 20,        // m (world; ~200 m real): a direction is sheltered if land lies within this
 };
 
@@ -211,7 +210,7 @@ export class Plants3 {
   // in the water about their canopy (the bed cell's and the ones above it the canopy reaches)
   _o2(dt) {
     const e = this.env, ch = this.chem, G = this.G, T = e.temp, dd = dt / DAY3;
-    const now = e.light / Math.max(1e-3, e.lightDay * PL3.DAY_MEAN);   // (this hour's light over the day's mean)
+    const now = e.sun / Math.max(1e-3, e.dayFrac * 2 / Math.PI);   // (the sun's curve over its day's mean: a day's sum is the day's)
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], A = G.bedA[j], qT = Math.pow(PL3.Q10, (T[j] - 20) / 10);
       let gross = 0, resp = 0, h = 0; const z = this.zb[i];

@@ -302,6 +302,74 @@ dwindle (~20–40/ha vs ~860); young bullheads starve in August (too little bed 
 500–1,100/ha vs ~2,600. The 3-D lakes' littoral–pelagic structure (weed refuges, cover, the brook) changes predator–prey
 encounter, so these are re-judged there with the same diagnostics.
 
+**Design (stage R3) — the fish on a real clock: the fidelity ladder.** (Blueprint `docs/W3_REALTIME_AUDIT.md` §3, §7 R3; the
+human's choices 2026-10-16: the brain decides per block in fast-forward; real speed at the 1/10 scale.)
+
+ONE fish, three ways of living a stretch of time. Every rung runs the same body (FB4 energetics, gut, gonads, hazards), the
+same senses and the same brain (inputs and network unchanged), the same innate drives (habitat band by day/night/winter, food,
+threat, school, home, goal, O₂, heat). What changes with the step is how a decision becomes movement, and how food and
+predators are met.
+
+| Rung | Fish step | Brain | Movement | Feeding | Predation |
+|---|---|---|---|---|---|
+| FINE (watching, ≤ ~4×) | 0.1 s | 5 Hz | integrated swimming (today's `_move`) | from the cells it is in, a search-limited functional response, intake bouts capped by handling (Q 2–4 × the daily-mean Cmax rate) | events: detect (light at depth), pursue, strike, capture p, miss refractory, handling |
+| MEDIUM (~10–60×) | 1–10 s | 1–2 Hz | kinematic sub-steps of ≤ 0.25 s | as fine, summed over the sub-steps | events (the strike resolved within the step) |
+| COARSE (fast-forward, gate, evolution) | 60–900 s | once a block | relocation: toward the block's chosen place, within reach (sustained speed × dt, along water: the brook's path) | the footprint over the ground covered (radius from the distance swum, ≤ the home range) — today's integrator, its radius now earned | encounter integrals: Poisson(λ·dt), λ = search rate × prey density in the block × capture p ÷ (1 + handling) |
+
+**THE BRAIN IN A COARSE BLOCK (the human's choice).** The fish senses at the block's scale — the richest food it could reach in
+the block (direction, distance, value), the nearest threat it would meet (a predator within its reach plus the predator's),
+its school, the habitat gradient, shore, light (the hour's), temperature, O₂, energy, hunger, fear, home — the SAME 26 inputs
+with ranges scaled to the reach. One forward pass. Its outputs read at the block's scale:
+- turn, pitch → the heading and the depth of its move, relative to the drives' choice (the drives propose; the brain bends);
+- thrust → how far it goes (activity: more ground → more food met and more predators met, and more respiration);
+- strike → foraging effort (the share of the block spent searching: the encounter rate with food and, for a piscivore, its
+  attack rate);
+- flee → how strongly it avoids the threat it senses (moves away, feeds less);
+- hide → cover use (time in the weeds or the shallows: less predation, less open-water food).
+Rewards for learning: the block's intake against its expectation, a kill, an escape. Evolution then acts on the same weights at
+every rung: a brain that forages boldly near predators eats more and dies more, whichever the step.
+
+**EQUIVALENCE.** The coarse rung must reproduce the fine one's ecology statistically: on the same seeds, a reduced scene
+(~300 agents) run fine through dusk–dawn windows vs coarse-60/300/900 — daily intake per species, kills per predator per day,
+the diel depth and shore-distance histograms, growth, the young's fates (a separate long suite). Its free parameters
+(effective search rates, the effort mapping) are fitted there.
+
+**THE DAY ON A REAL CLOCK (R2 step 5 with R3).** The day becomes 86,400 s: dusk moves take their real 30–90 min (5–9 min of
+travel at the 1/10 scale, then lingering), feeding follows the hour's light at the fish's depth (perch by day, shiners at dusk,
+bullheads at night), the zooplankton migrates into the weeds by day, the night siphon spins up over hours. The intake cap rises
+FIRST (B9) or fish feeding half the day starve.
+
+**ORDER.** (a) step split: kinematic sub-steps, brain cadence in Hz, schedules in seconds; (b) the intake cap (bouts), then the
+hour's light for senses and feeding; (c) local foraging in fine/medium, the footprint radius from the distance swum in coarse;
+(d) predation as events and encounter integrals; (e) the young's real displacement; (f) trips without distance limits; (g) the
+coarse block with the brain; (h) the real day (with R2 step 5). Each: the gate at the coarse rung (fish ~900 s, water ~1,800 s),
+≥ 3 seeds against stage 7d's numbers.
+
+**The numbers R3 builds on** (research `realtime_foraging.md`, 2026-10-16; its §9 maps each to a mechanism per rung):
+- **Light first (prerequisite).** Fish see far better in dim light than the sim's vision ramp (`PLANKTON.VIS_I0`/`VIS_I1`,
+  ~200 → 10,000 lx) allows: perch feed down to 2–5 lx, bluegill 10, pumpkinseed 25; largemouth catch > 95 % of prey at moonlight
+  (3×10⁻³ lx). The sky needs a TWILIGHT tail (~400–600 lx at sunset, 3.4 lx at the end of civil twilight, 0.008 lx nautical)
+  and each species its own saturating curve RD(I) = RD_max·I/(I + K_I) with a non-visual floor (perch 2.8 cm; bullheads by taste).
+- **Reaction distances:** zooplankton a few cm to ~30 cm (perch larvae 2.8–5 cm; pumpkinseed 20 cm on a 1.9-mm Daphnia;
+  bluegill's reaction angle 1.7 + 18.9/SL mrad); prey fish ~1 m (smallmouth 84–108 cm, 40 in the dark; pickerel ~1.5 m clear,
+  ~1.0 m in moderately brown water — R²·e^(cR) = const with c ≈ 1–2.5 m⁻¹ in Hot Brook's water).
+- **The strike** starts at 0.14–0.37 body lengths for pickerel (0.05–0.11 s) and ~1.2 BL for bass: the sim's `strikeR`
+  (1.0–1.2 m) is 3–8× long; detection stays at RD and the gap becomes the STALK, where prey see the predator and leave.
+- **Capture per strike:** pickerel 0.65–0.8 on shiner-like prey but 0.10–0.15 on spiny deep-bodied sunfish and perch; bass
+  0.6–0.8 on small sunfish; perch 0.20 on a single fish, 0.03 into a school; ambush ×3 over pursuit; Daphnia 0.8–0.95 vs
+  copepods 0.07–0.5. Confusion is predator-specific (perch ×0.15 into a school, bass ~n^−0.8, esocids none). Stems cut
+  ATTACKS, not success (bass captures/h ≈ 25 → 16 → 2.5 → 1 at 0/50/250/1,000 rope stems/m²; natural weed at 164 stems/m²
+  cut bass predation tenfold).
+- **Handling:** ~1 s per zooplankter (H = 0.536·e^(18.5·l/L)); 0.5–6 min per fish; then the gut gates hunting (pike clear a
+  meal in 48 h in summer, 12 days in winter; 47 % of pike stomachs empty).
+- **Rations to check against:** yellow perch 5.5–6.7 %BW/day in July (~4,300 Daphnia a day for a 10-g perch); smallmouth
+  > 30 cm hold 1–2 crayfish; time budgets (pickerel active 16–21 % of 5-min intervals, ~2 % at night; smallmouth moving 28 %).
+- **Coarse encounters:** a cruiser sweeps ½·π·RD²·v·N; an ambusher meets π·R²·u·N (u the prey's speed); intake
+  Σλp·m/(1 + Σλp·h) per foraging second × the share of the step spent foraging, capped by gut room; kills as clustered
+  Poisson events.
+- **The young:** perch larvae < 9.5 mm swim < 3 cm/s (YOY_VMAX 0.25 m/s is far too fast for them), 3–4 BL/s above; larval
+  mortality ~0.04/day; bluegill swim-up fry lose 0.11–0.39/day for 4 days, then < 0.01.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

@@ -44,9 +44,11 @@ export const H3 = {
   BED_HEAT: 0.03,       // /s (2-D clock) per unit bed-area-per-0.5-m-of-water: the bed's stored heat warms the water over it toward 4 °C
   // through-flow: water residence ~100 days in Upper, ~55 in Lower (hot_brook_lake_records: watersheds 66 / 77 km²)
   RES_UPPER_D: 100, RES_LOWER_D: 55,
-  MIX_RATE: 1.0 / OLD_S,   // /s: mixing inside the wind- or convection-mixed layer (compat: 1/sim-s of the 1-hour year, an
-                           //   e-fold of 2.4 h; R2 step 4 derives it from the wind and convection — minutes to hours)
-  MAX_SUB: 4,           // transport sub-steps at most per update (gales slow the wind-driven currents instead)
+  MIX_RATE: 1 / 1800,   // /s: mixing inside the wind- or convection-mixed layer — an e-fold of 30 min: convective velocities
+                        //   of 1–50 mm/s turn a few metres over in ~15–90 min (Bouffard & Wüest 2019; shallow_lake_3d_physics
+                        //   §2); windrows mix within 5–10 min
+  MAX_SUB: 24,          // transport sub-steps at most per update (beyond it gales would slow the wind-driven currents: not
+                        //   reached at water steps ≤ ~30 min — stage R2; at 4 the 1-hour year throttled every wet spell)
   THRU_EVERY: 3,        // the through-flow runs every this-many updates (with as many steps' worth)
   K_STRAT: 0.02 / OLD_S, // /s: exchange between adjacent layers below the mixed layer and under ice (compat: ~5 days per
                            //   layer; R2 step 4: Kz / DZ²)
@@ -198,7 +200,7 @@ export class Env3 {
     this.t = 0.30;                                   // time of day (0..1), mid-morning
     this.weather = 0; this.weatherTimer = ENV.WEATHER_DWELL[0] * H3.WEATHER_DWELL_MUL; this.forced = false;
     this.windDir = Math.PI * 1.25; this.windSpeed = H3.WIND_MS[0];   // direction the wind blows FROM (radians, 0 = from the north, clockwise)
-    this.light = 0; this.lightDay = 1; this.sun = 0;
+    this.light = 0; this.lightDay = 1; this.sun = 0; this.dayFrac = 0.5;
     this.temp = new Float32Array(G.NCELL);
     this.age = new Float32Array(G.NCELL);           // water age: sim seconds since the water entered (a through-flow tracer)
     this.ice = new Float32Array(G.NC);
@@ -305,7 +307,7 @@ export class Env3 {
     this.iceMean = iceMean;
     const cover = ENV.CLOUD_COVER[this.weather];
     this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover);
-    this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac);
+    this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac); this.dayFrac = sun.dayFrac;
     this._heat(dt, yf);
     if (this.chem) this.chem.step(dt);
     if (this.plants) this.plants.step(dt);
