@@ -113,13 +113,37 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
+▶ RESUME HERE (2026-10-16, before a compaction): (a) the MUSSEL code (stage 7d: src/w3/littoral3.js _mussels, the view in
+render3/plants3view.js + sim3worker.js + main3.js, test/w3.mjs +2 checks) is UNCOMMITTED, waiting on a full `node test/w3.mjs`
+run whose output is in the session scratchpad gate7d.txt (51/69 passed, none failed, when last read) — if it ended green, commit
+it ("The 3-D lakes' freshwater mussels, stage 7d"), push, back up; if not, fix and re-run. (b) A background agent is writing
+docs/W3_REALTIME_AUDIT.md (the stage-R audit: every time-dependent rate classified A calendar-scaled / B compressed-clock
+shortcut / C step-size dependent / D day–night, with a cost table per fidelity rung) — read it, then start R2.
+DECIDED (human, 2026-10-16): REAL TIME + FAST-FORWARD. "I want to make this a realistic simulation, with each animal actually
+thinking, learning, and behaving the way they would first, then eventually slowly evolving over time" — 1× becomes REAL TIME (a
+day is 24 h, a year a year); each animal lives the day in full detail (individual strikes, dives, prey captures, real dawn and
+dusk); fast-forward runs coarser time steps (rates per real second integrated over larger dt) up to ~800× or more for the seasons,
+the gate and evolution (a year ~11 h of running at 800×; evolution over years = weeks). This replaces the 1-hour year (2026-10-15).
+PLAN — STAGE R (real time), before the wildlife (7e, designed in docs/HOT_BROOK_3D.md, waits for R):
+ R1 audit every time-dependent rate in src/w3 (env3, chem3, plants3, littoral3, fish3): calendar-based (TS / DAY3 / REAL_S —
+    carry over), per-sim-second behavioural shortcuts made for the compressed clock (piscivory ATTACK hazard, the foraging
+    footprint "one sim second = 2.4 h", MIGRATE_V / BROOK_NEAR limits, YOY_TICK…) — re-derive as real mechanisms, and the
+    step-size limits (transport stability at large dt).
+ R2 clock3 → real time; the env stepped at minutes (its physics' natural scale), the slow pools at minutes to hours.
+ R3 fish: real-time mechanisms (strikes as events at real rates, local foraging), FIDELITY LADDER — fine (dt 0.1 s, brains 5 Hz:
+    watching), medium, coarse (dt ~60–300 s: habitat choice per block, feeding/predation as integrated rates) — the coarse mode
+    reproducing the fine mode's ecology statistically.
+ R4 the gate in coarse mode, re-calibrated on ≥ 3 seeds; R5 the worker/view: speeds 1× (real) … 1000×, max; the clock; R6 then 7e.
 THE HUMAN'S REQUESTS (2026-10-16), in order:
 (1) "ADD EVERYTHING" — the missing animals: freshwater mussels (eastern elliptio; the human sees lots — filter the water,
     glochidia on fish gills), the fish-eaters (the loon pair, great blue heron, belted kingfisher, osprey + bald eagle, otter +
     mink), painted/snapping turtles, frogs + tadpoles, dragonfly/damselfly nymphs (predators of small fauna and fish larvae),
     beaver/muskrat/raccoon. Research: docs/research_notes/Maine lake shores and catchment/ (shore_birds_and_mammals.md,
     turtles_and_frogs.md), Hot Brook populations and water/invertebrates_plankton_plants.md §2 (mussels). Each a researched,
-    gated, rendered slice. STARTING WITH MUSSELS.
+    gated, rendered slice. DONE: MUSSELS (stage 7d — littoral3.js _mussels: capacity by the bed — firm margins 15/m², coves 40,
+    edge 3, deep mud 2; recruitment in June by the host fish; summer filtering of algae and rotifers at 0.8 L/h/mussel, Q10 2,
+    burrowed below 5 °C; the algae's N to ammonium, P half dissolved half to the bed's store, the rest to the organic layer;
+    their O₂; the view: shells half-buried near the camera). NEXT IN (1): the fish-eating birds and mammals.
 (2) LATER, once the sim works right: bring back a page of the lakes' and fish data (the 2-D app had charts/panels) and
     click-a-fish info (inspector).
 (3) Keep SESSION_STATE and the docs current at every step (auto-compaction).

@@ -438,6 +438,85 @@ STILL OPEN:
 - Crayfish over several years: fish crop the adults to the low end of the real range by autumn. In a 2-year run (seed 11)
   they settle at ~0.3–0.46 adults/m² and 5–7 g/m² in all, the low end of Michigan's 4.6–21.
 
+**Design (stage 7d) — FRESHWATER MUSSELS (eastern elliptio; `littoral3.js`; research `Hot Brook populations and
+water/invertebrates_plankton_plants.md` §2; the human: "lots of mussels").**
+- **Where they live (per bed cell, mussels/m², the stock's capacity):**
+  - firm margins 0.5–3 m: 15/m² (5–25);
+  - sheltered coves (the plants' wave shelter): beds of up to 40/m² (30–60);
+  - the wave- and ice-scoured edge under 0.5 m: 3/m²;
+  - the soft deep mud past 3 m: 2/m² (0.5–5);
+  - ~1 g dry soft tissue each.
+- **Population:** long-lived (15–30 years), so the stock creeps toward its capacity at a few % a year. Recruitment depends on
+  the fish that carry the larvae: glochidia go onto yellow perch, white perch, pumpkinseed, smallmouth and sucker gills in June
+  at 15–18 °C, so it is ∝ the lake's fish biomass. ~4 %/yr die; long anoxia under the ice kills slowly (they close up and
+  live anaerobically for weeks).
+- **Filtering:** each clears ~0.8 L of water an hour at 20 °C (lab 0.05–0.19, field 2.6–3.1: the dominant uncertainty), Q10 2,
+  nothing below 5 °C (they burrow December–March). They take the green algae and diatoms fully, cyanobacteria at half, and
+  rotifers a little, from the water they sit in. Of what they filter:
+  - the algae's N returns as ammonium (excretion and fast mineralisation);
+  - half its P as dissolved phosphate (excretion), half to the bed's store (biodeposits);
+  - the organic matter 30 % assimilated (their slow growth), the rest to the bed's organic layer as faeces and pseudofaeces,
+    feeding the worms and scuds.
+- **The budget:** N and P stay closed; the mussels' own tissue is an energy pool like the fish's.
+- **Seasons:** spring — filtering resumes after ice-out, spawning in May; June — glochidia on the fish; summer — peak filtering
+  in the warm shallows (at 15/m² under a metre of water they clear ~30 % of it a day); autumn — slowing; winter — burrowed.
+- **Gate targets:**
+  - firm margins 5–25/m², coves to 30–60, deep mud 0.5–5;
+  - bed biomass 10–30 g DW/m² where they are dense, more than the other benthos together;
+  - summer clearance 0.4–24 % of the overlying water a day;
+  - none in winter;
+  - N and P conserved.
+- **The view:** dark half-buried shells on the bed near the camera.
+
+**Built (stage 7d).**
+- As designed. Recruitment is per capita × (1 − N/K) × the host fish (0.25/yr at full hosts): the first rate (0.06) could
+  never balance the deaths, and the stock would have dwindled over decades.
+- **Results without fish (the plant block's run, no hosts):** firm margins 11/m², coves 29, deep mud 1.4, the scoured edge
+  2.2. July clearance 22.5 % a day of the water they sit in, January none.
+- **Their effect:** they trim the June algae by ~17 % lake-wide; the July algae crash is the zooplankton's grazing, the same
+  without them. N and P drift 0.000 % over a year.
+- **The view:** each 1.5-m bed cell's real number of shells within 18 m of where the camera looks (plants3view).
+- test/w3.mjs +2 checks.
+
+**DECIDED (human, 2026-10-16) — REAL TIME.** "I want to make this a realistic simulation, with each animal actually thinking,
+learning, and behaving the way they would first, then eventually slowly evolving over time." The 1-hour year gives way to a
+real-time clock: at 1× a day is 24 hours and each animal lives it in full detail. Fast-forward integrates the same per-second
+rates over coarser steps (stage R, SESSION_STATE: the audit, the clock, the fish's fidelity ladder, the gate in coarse mode, the
+speeds). The wildlife below is designed for the old clock's catch-per-step and will be built on the real-time one: a loon's dives
+and catches then happen at their real pace.
+
+**Design (stage 7e) — the fish-eaters of the water, the shore and the air (`src/w3/wildlife3.js`; research
+`docs/research_notes/Maine lake shores and catchment/shore_birds_and_mammals.md`).** True-size animals, behaving as they do,
+in the numbers a person sees on the lakes. Their CATCH matches the real lakes' PER HECTARE: the model is a 1/10 replica holding
+1/100 of the real lakes' fish, so the model's total catch per kind is the real lakes' total × the area ratio (GEO.SCALE²), shared
+among the animals shown. Each takes its share as whole fish, a fish at a time, while it is hungry (its ration per calendar day).
+- **LOONS:** a pair on each lake (Upper 360 ha, Lower 277 ha; Maine ~1 pair per 95–280 ha), ice-out to mid-November, two chicks
+  from early July. They swim the surface and dive 40–60 s (rest ~20 s), pursuing fish of 10–70 g (perch, white perch, sunfish,
+  shiners; ≤ 25 cm) within ~5 m. A family takes ~2.5 kg a day (Barr: 423 kg in ~5.5 months).
+- **OSPREY:** a pair from a nest near the lakes, early April to early September. They circle 20–40 m up and plunge feet-first on
+  fish within ~1 m of the surface: 20–40 cm suckers, perch, white perch, bass, pickerel. ~0.3–0.4 kg a day each, ~1 kg while
+  feeding young; 50–80 % success in calm clear water, less in wind.
+- **BALD EAGLE:** one, all year. It perches in the shore pines and snatches fish at the surface — sluggish or dying fish,
+  bullheads, spawning suckers in the brook — and scavenges on the ice. 0.3–0.5 kg a day.
+- **GREAT BLUE HERONS:** two, April to November. They wade water ≤ 0.5 m (0.1–0.3 best) at dawn and dusk and take fish of
+  5–20 cm (≤ 25), frogs and crayfish; ~300 g a day each.
+- **BELTED KINGFISHERS:** three (~1 per 0.8 km of real shore, shown along the world's), April to November. They perch on bare
+  shore snags 2–6 m up and plunge on fish of 3–12 cm within ~15 cm of the surface in water ≤ 60 cm, only in calm, clear water.
+  ~70 g a day.
+- **RIVER OTTERS:** a family of three that visits for a few days every few weeks, all year (under the ice from the brook).
+  They swim and dive at any depth, mostly dawn to mid-morning, taking slow fish (suckers, bullheads, sunfish), crayfish and
+  frogs; ~1.5 kg a day each.
+- **MINK:** two along the brook and the shore, at night, within ~300 m of a den. Fish in winter and spring, crayfish in
+  summer; ~0.2 kg a day.
+- **(Later, with the shore: hooded mergansers, raccoon, beaver, muskrat.)**
+- **The fish respond:** a diving loon or otter near a fish is a threat it senses and flees (fish3's threat input). Very
+  shallow water is riskier by day — the heron's and kingfisher's — so the larger fish keep out of it in daylight (research §9).
+- **The view:** low-poly true-size animals (loon, heron, kingfisher, osprey, eagle, otter, mink) with their motions — the dive,
+  the wade, the plunge, the circle.
+- **Gate targets:** each kind's catch per calendar day = its real total × the area ratio (±30 %), of the sizes and depths it
+  takes; the calendar (no loons, ospreys or herons under the ice; the eagle all year); the fish flee a diving loon; total bird
+  and mammal predation a few % of the fish stock a year (loons ~1–4 %).
+
 **Built — fish seek oxygenated water under the ice (Fish3._o2Better).**
 - **The finding:** a 2-year run with fish lost half its biomass to hypoxia in the second late winter (~5,000 perch, white
   perch and shiners). The fish could only escape low O₂ upward.
