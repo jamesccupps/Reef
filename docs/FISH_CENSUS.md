@@ -37,7 +37,15 @@ Left out:
 - **Largemouth bass.** Three logged app catches on Upper. MDIFW has no record of it, and the same app logged a smallmouth as a
   rock bass. The human: "probably mislabeled smallmouth".
 - **Brook trout and Atlantic salmon.** From a real-estate listing; no survey or stocking record, no cold water.
-- **Others found in nearby lakes** (American eel, common shiner, creek chub in Baskahegan Lake, 13 km away). Not recorded
+- **American eel.** Probably present but never recorded (`drainage_species_and_eel.md`):
+  - recorded in 14 of 17 similar lakes in the drainage, including Baskahegan Lake upstream on the same stream;
+  - the two dams on the way from the sea (Milford, West Enfield) both pass eels;
+  - nets rarely catch them.
+
+  The human has never seen one, so it is left out until one is seen.
+- **Alewife.** Alewives reached Danforth in 2017 and swim past the mouth of Hot Brook. The state's restoration plan lists both
+  lakes as alewife habitat, but none are recorded in them. Left out; a restoration what-if later.
+- **Others found in nearby lakes** (golden shiner, common shiner, creek chub; 61 lakes of the drainage tabulated): not recorded
   here, so not added. They come in only if the human or a record confirms them.
 
 Where each lives at the start (they can move through the brook; where they end up is the sim's):
