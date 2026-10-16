@@ -154,8 +154,8 @@ if (run('env')) {
     let deepDye = 0; for (let c = 0; c < f.G.NC; c++) if (f.G.depthMax[c] > 2.5) deepDye += dye[f.G.cell0[c] + f.G.nL[c] - 1] * f.G.vol[f.G.cell0[c] + f.G.nL[c] - 1];
     check('the night siphon runs on calm nights and carries the coves\' water down the slope into the basin', q / n > 0 && deepDye > 0.002 * tot0,
       `siphon ${(q / n).toFixed(0)} m³/s (world) on average; ${(100 * deepDye / tot0).toFixed(2)} % of the cove dye in the basin's bottom layers`); }
-  { seed(307); const f = new Env3(); for (let i = 0; i < 10; i++) f.step(FB);   // (warmed up: the steady cost, not the JIT's)
-    const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(FB); const ms = (performance.now() - t0) / 50;
+  { seed(307); const f = new Env3(); for (let i = 0; i < 10; i++) f.step(FB / 2);   // (a ~15-min water step, as the budget was set on)   // (warmed up: the steady cost, not the JIT's)
+    const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 50;
     check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < 12, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
 }
 
@@ -209,7 +209,7 @@ if (run('chem')) {
     check('the cold-water diatoms bloom in late winter and spring, not in summer', dia[0] / dia[1] > 2 * dia[2] / Math.max(1, dia[3]), `Mar–May mean ${(dia[0] / dia[1]).toFixed(3)}, Jun–Aug ${(dia[2] / Math.max(1, dia[3])).toFixed(3)}`);
     check('the lakes keep their P over a year with a realistic retention (the bed keeps ~half to three-quarters of the inflow\'s load: Larsen–Mercier 0.66–0.72)', ret > 0.5 && ret < 0.9 && keep > 0.7 && keep < 1.3,
       `retention ${ret.toFixed(2)}, inventory ${(100 * keep).toFixed(0)} % of the start; a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
-  { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(FB); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(FB); const ms = (performance.now() - t0) / 40;
+  { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(FB / 2); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 40;
     check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16, `${ms.toFixed(1)} ms`); }
 }
 

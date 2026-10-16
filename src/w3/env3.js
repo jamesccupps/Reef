@@ -22,7 +22,7 @@ import { rand, clamp } from '../core.js';
 
 import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
 import { Chem3 } from './chem3.js';
-import { Plants3 } from './plants3.js';
+import { Plants3, PL3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
@@ -54,6 +54,10 @@ export const H3 = {
                            //   layer; R2 step 4: Kz / DZ²)
   DIEL_SKIN: THERMAL.DIEL_M, // m: e-folding depth of the day's heating (a shallow mixed layer swings more)
   WEATHER_DWELL_MUL: 1 / TS, // the weather's dwell times are sim seconds on the 2-D clock
+  // first ice: sheltered coves skim over on a calm cold night while the wind keeps the open water stirred and open — an exposed
+  // column's surface must be this many °C per m/s of wind colder than FORM_T before ice can start (× its exposure: the share of
+  // the 8 directions with no land within the plants' SHELTER_R)
+  ICE_WIND: 0.12,
 };
 const DAY = 86400;
 const expm = x => -Math.expm1(-x);   // 1 − e^(−x): the share a first-order process completes over a step (exact at any dt)
@@ -239,6 +243,12 @@ export class Env3 {
     for (let f = 0; f < G.NF; f++) { const q = this.through[f]; if (q > 0) { this._thIn[G.fb[f]].push(G.fa[f], q); this._thOut[G.fa[f]] += q; } else if (q < 0) { this._thIn[G.fa[f]].push(G.fb[f], -q); this._thOut[G.fb[f]] -= q; } }
     this._thSrc = new Float64Array(G.NC); this._thSrc[this.inCol] += qU; this._thSrc[this.lowerInCol] += this.qLocal; this._thOut[this.outCol] += this.qOut;
     this._colV = new Float64Array(G.NC); for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) this._colV[c] += G.vol[G.cell0[c] + k];
+    // each column's SHELTER from the wind and waves: how many of 8 directions meet land within SHELTER_R (ice; the weeds)
+    this.shelter = new Uint8Array(G.NC);
+    for (let c = 0; c < G.NC; c++) {
+      let k = 0; for (let d = 0; d < 8; d++) { const ang = d * Math.PI / 4, ux = Math.cos(ang), uy = Math.sin(ang); for (let r = 2; r <= PL3.SHELTER_R; r += 2) if (GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === LAND) { k++; break; } }
+      this.shelter[c] = k;
+    }
     // the wet face-layers as a compact list (cells either side, area, layer, face) — the transport's inner loop
     let n = 0; for (let e = 0; e < G.NF * G.ML; e++) if (G.fA[e] > 0) n++;
     const FL = this._FL = { n, ia: new Int32Array(n), ib: new Int32Array(n), a: new Float32Array(n), k: new Uint8Array(n), f: new Int32Array(n), A: new Float32Array(G.NF), top: new Float32Array(G.NF) };
@@ -345,10 +355,11 @@ export class Env3 {
       }
       // ice: forms on a column whose surface water nears freezing, then keeps growing while the season is cold (whatever the
       // water under it — the ice is the air's doing); melts once the season's water would be warm, shallow first
-      // (the melt counts the day's warmth — spring sun on the ice by afternoon — as the 2-D sim's surface temperature did)
-      const surfT = T[j0], warm = seasonal + wOff + 0.6 * (1 - Math.min(1, depth / 3)) + ENV.TEMP_DIURNAL * 0.5 * Math.max(0, diurnal);
+      // (the melt counts the day's warmth — spring sun on the ice by afternoons — as its DAILY MEAN on the real day: thin
+      // November ice doesn't melt every afternoon; the shallows, colder on clear nights, freeze first and keep their ice)
+      const surfT = T[j0], warm = seasonal + wOff + 0.6 * (1 - Math.min(1, depth / 3)) + ENV.TEMP_DIURNAL * 0.5 / Math.PI;
       if (warm > ICE.MELT_T) { if (iceC > 0) this.ice[c] = Math.max(0, iceC - ICE.MELT * TS * dt); }
-      else if (iceC < 1 && (surfT < ICE.FORM_T || iceC > 0.5)) this.ice[c] = Math.min(1, iceC + ICE.GROW * TS * dt);
+      else if (iceC < 1 && (surfT < ICE.FORM_T - H3.ICE_WIND * this.windSpeed * (1 - this.shelter[c] / 8) || iceC > 0.5)) this.ice[c] = Math.min(1, iceC + ICE.GROW * TS * dt);
     }
   }
 

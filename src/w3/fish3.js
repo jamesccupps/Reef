@@ -759,8 +759,12 @@ export class Fish3 {
     }
     if (left > 1e-3 && !(a.nt > 0)) { const r = Math.min(left, v * Math.sqrt(F3.WANDER_TAU * left / v)); if (r > 0.05) this._hop(a, rand() * Math.PI * 2, r, m); }
     // a nest guard is on its nest at the block's scale (its chases of intruders last seconds): within GUARD_R of it
-    if (a.nt > 0) { const dx = a.x - a.nx, dy = a.y - a.ny, d = Math.hypot(dx, dy); if (d > F3.GUARD_R) { const k = F3.GUARD_R / d; a.x = a.nx + dx * k; a.y = a.ny + dy * k; if (this.env.colAt(a.x, a.y) < 0) { a.x = a.nx; a.y = a.ny; } } }
-    if (this.env.colAt(a.x, a.y) < 0) { a.x = x0; a.y = y0; }   // (never off the water: back where the block began)
+    const wet = (x, y) => GEO.bodyAt(x, y) !== LAND && GEO.depthAt(x, y) >= F3.ZTOP + F3.ZBOT && this.env.colAt(x, y) >= 0;
+    if (a.nt > 0) {
+      const dx = a.x - a.nx, dy = a.y - a.ny, d = Math.hypot(dx, dy);
+      if (d > F3.GUARD_R) { const k = F3.GUARD_R / d, gx = a.nx + dx * k, gy = a.ny + dy * k; if (wet(gx, gy)) { a.x = gx; a.y = gy; } else if (wet(a.nx, a.ny)) { a.x = a.nx; a.y = a.ny; } }
+    }
+    if (!wet(a.x, a.y)) { a.x = x0; a.y = y0; }   // (never off the water: back where the block began)
     a.spd = v; a.pitch = 0; a.pitchT = 0;
     a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y)); a.c = this.env.colAt(a.x, a.y);
     if (a.fk === 2) a.fz = a.bed - 0.15;   // (bed food is on the bed it got to)

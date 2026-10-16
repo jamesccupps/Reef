@@ -1,34 +1,41 @@
 // sim3worker.js — the 3-D lakes' simulation off the main thread (browser layer: a module Worker that imports only the pure
 // sim, src/w3/env3.js + fish3.js). The view sends {type: 'tick', dt} once a frame — and only after this worker's previous
-// reply — and the worker advances the water and the fish by dt × speed (the fish at 10 steps a view second, the water every
-// second step, as the gate runs them — stage R2 compat: each fish step 876 real s of their lives with 0.1 s of swimming, each
-// water step 1,752 s, the 1-hour year's pace; R5 gives the view real time and fast-forward) within a time budget, then replies
+// reply — and the worker advances the lakes by dt × speed sim seconds (REAL TIME at 1×: stage R5), on the FIDELITY LADDER
+// (docs/HOT_BROOK_3D.md §4 "Design (stage R3)"): up to FINE_UP× the fish live second by second (0.1-s steps, brains at 5 Hz,
+// the water every simulated minute); faster, in coarse BLOCKS sized to ~BLOCKS_S a second (each fish's brain decides once a
+// block and it goes where it chose), up to 1,752-s blocks (the gate's) — within a time budget, then it replies
 // with a snapshot: the clock and the weather, the ice
 // per column, every fish with where it was a step before (the view interpolates), the schools of young, and the field the
 // cut-away shows. Every few seconds (and after a season jump) it also sends the weeds: the shoots per growth form per bed cell
 // (render3/plants3view.js). When the sim can't keep up (the higher speeds on a slow machine) it runs slower than asked.
 import { Env3 } from '../env3.js';
 import { Fish3 } from '../fish3.js';
-import { CLOCK3, OLD_S } from '../clock3.js';
+import { CLOCK3 } from '../clock3.js';
 import { PLANKTON } from '../../config.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
 const PLANTS_MS = 4000;   // the weeds change slowly: their field every this often
-let env = null, F = null, run = true, speed = 1, acc = 0, envN = 0, show = 'plain', ticks = 0, plantsAt = -1e9;
+const FINE = 0.1, FINE_UP = 6, BLOCKS_S = 3, BLOCK_MAX = 1752, ENV_FINE = 60;   // s; ×; blocks a second; s; s of water step when fine
+let env = null, F = null, run = true, speed = 1, acc = 0, envAcc = 0, h = FINE, show = 'plain', ticks = 0, plantsAt = -1e9;
 
 function remember() {
   for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; }
   for (const q of F.yoy) { q._px = q.x; q._py = q.y; q._pz = q.z; }
 }
+// the step for a speed: fine 0.1 s up to FINE_UP×, else a block of speed / BLOCKS_S s (at least 1.5 s, at most BLOCK_MAX)
+const stepFor = sp => sp <= FINE_UP ? FINE : Math.min(BLOCK_MAX, Math.max(1.5, sp / BLOCKS_S));
 function advance(dt) {
   if (!run) return;
+  h = stepFor(speed);
   acc += Math.min(0.25, dt) * speed;
   const t0 = performance.now();
-  while (acc >= 0.1 && performance.now() - t0 < BUDGET) {
-    remember(); F.step(0.1 * OLD_S, 0.1); if (++envN % 2 === 0) env.step(0.2 * OLD_S); acc -= 0.1;
+  while (acc >= h && performance.now() - t0 < BUDGET) {
+    remember(); F.step(h); acc -= h;
+    // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour)
+    envAcc += h; if (envAcc >= Math.max(h, ENV_FINE) - 1e-9) { env.step(envAcc); envAcc = 0; }
   }
-  acc = Math.min(acc, 0.1);   // (behind: drop the backlog — the sim runs slower than asked rather than lurch)
+  acc = Math.min(acc, h);   // (behind: drop the backlog — the sim runs slower than asked rather than lurch)
 }
 // the cut-away's field: temperature, O₂, algae or zooplankton per cell
 function fieldOf(name) {
@@ -68,7 +75,7 @@ function snapshot() {
   const ice = Float32Array.from(env.ice);
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun,
-    acc, nf, ny, fish: fb, yoy: yb, ice, count, agents: nf, field, show };
+    acc, h, nf, ny, fish: fb, yoy: yb, ice, count, agents: nf, field, show };
   const tr = [fb.buffer, yb.buffer, ice.buffer]; if (field) tr.push(field.buffer);
   postMessage(msg, tr);
 }

@@ -72,12 +72,8 @@ export class Plants3 {
     // each bed cell: its column, its bed depth (the cell's mid-depth — the layer its bed lies in), its water cells above
     this.col = new Int32Array(nb); this.zb = new Float32Array(nb);
     for (let i = 0; i < nb; i++) { const j = cells[i]; this.col[i] = G.colOfCell[j]; this.zb[i] = Math.max(0.05, G.zMid[j]); }
-    // each column's SHELTER from the waves: how many of 8 directions meet land within SHELTER_R
-    this.shelter = new Uint8Array(G.NC);
-    for (let c = 0; c < G.NC; c++) {
-      let k = 0; for (let d = 0; d < 8; d++) { const ang = d * Math.PI / 4, ux = Math.cos(ang), uy = Math.sin(ang); for (let r = 2; r <= PL3.SHELTER_R; r += 2) if (GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === LAND) { k++; break; } }
-      this.shelter[c] = k;
-    }
+    // each column's SHELTER from the waves: how many of 8 directions meet land within SHELTER_R (env3 computes it: ice uses it too)
+    this.shelter = env.shelter;
     // per column: the stems (per m², for the fish), the floating-leaf cover, the weed volume's refuge; per water cell: the
     // refuge (chem3.plantRef, read by the zooplankton feeding)
     this.stems = new Float32Array(G.NC); this.flCover = new Float32Array(G.NC); this.pvi = new Float32Array(G.NC);
