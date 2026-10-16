@@ -496,7 +496,21 @@ the fish and even the underwater view is not good").**
   the real lakes, for watching.
 - **A lesson:** a custom scene.fogNode turned the instanced trees black (three r186), so the fog stays a legacy FogExp2.
 - **For the human:** whether to keep this default and how strong the tint is are taste questions. True-size fish are still
-  flecks from a few metres up (as real ones are); the ×4 size shows them.
+  flecks from a few metres up (as real ones are); the ×4 size shows them. (The human: keep "see into the water" on.)
+**Built — a school's fish swim as fish (fish3view `swimCrew`, after the human's "at ×4 they start twitching and not behaving like
+fish, especially the schools — the schools should still be independent fish").**
+- **What it was:** a school agent's members were drawn on a rigid pattern bolted to the agent. When the school turned, the
+  whole pattern swung at once, faster and wider at ×4. The young-of-year faced fixed random directions.
+- **Now** each drawn member (adults' schools and the young's) is a swimmer with its own position, velocity and heading,
+  kept between frames:
+  - pulled to its place in the school (the slot turns with the school's heading at ≤ 1.5 rad/s) by a critically damped
+    follow (ω 2.2/s) with the school's velocity fed forward;
+  - at most a sprint (6 body lengths/s);
+  - turning at ≤ 3.5 rad/s toward the way it is going (with the school when idling);
+  - pitching with its climb or dive.
+- **Measured over 90 frames at 60 fps:** no member moves more than 0.016 body lengths a frame or turns faster than the cap.
+- **What the sim still does:** a school is one agent of n fish (super-individuals — the design's way to run ~16,600 fish).
+  Its fish move individually only in the view.
 
 ## 7. A year in the 3-D lakes (walk-through)
 

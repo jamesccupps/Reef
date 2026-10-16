@@ -103,8 +103,10 @@ the water to see the fish and even the underwater view is not good" — the bed,
 their water path (tea water: blue most) with the water's own colour filling in, the surface a Fresnel mirror that is nearly
 clear looking down, Snell's window from below, caustics on the shallow bed, fish shadows on the bed, underwater fog that follows
 the gaze, drifting specks, a fill light; "See into the water" on by default (water 0.3 × as absorbing). A custom scene.fogNode
-turned instanced trees black in three r186 — the fog stays a legacy FogExp2. Taste questions for the human: the default
-clarity, the tint, the fish size default (×1 true: flecks from above; ×4 reads well).
+turned instanced trees black in three r186 — the fog stays a legacy FogExp2. The human: keep "see into the water" on by default.
+SCHOOLS SWIM AS FISH (fish3view swimCrew): after "at ×4 they twitch… the schools should still be independent fish" — each drawn
+member of a school (and of a school of young) is now a swimmer with its own position/velocity/heading (damped follow of its slot,
+≤ 3.5 rad/s turns, faces its motion), not a rigid pattern bolted to the agent.
 NEXT: odonate nymphs (predators of small fauna and fish larvae), redbreast + fallfish, the shore and wildlife (stage D: snow on
 the ice, the hydrograph), saves and resume. (The young pumpkinseed's "stall" was the mean of a summer-long spawning: the first
 cohort grows ~0.3 mm/day to 2.5 cm by mid-August — docs/HOT_BROOK_3D.md.) Perf idea: the fish
