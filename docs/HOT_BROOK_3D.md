@@ -468,6 +468,18 @@ water/invertebrates_plankton_plants.md` §2; the human: "lots of mussels").**
   - N and P conserved.
 - **The view:** dark half-buried shells on the bed near the camera.
 
+**Built (stage 7d).** As designed (`littoral3.js` `_mussels`; capacities LIT3.MU_FIRM 15 / MU_COVE 40 / MU_EDGE 3 / MU_DEEP 2,
+recruitment MU_R 0.25 a year × the host fish's share in June, MU_CR 0.8 L/h at 20 °C, Q10 2, burrowed < 5 °C). Gate (seed 541):
+firm margins 11.0/m², coves 29.3, deep mud 1.4, the scoured edge 2.2; in July they clear 22.5 % a day of the water they sit in,
+in January none; P and N closed. **The mussels compete with the zooplankton for the algae** (bivalves' grazing on the
+phytoplankton — Strayer et al. 1999; the research's high end "is enough to matter for phytoplankton on the shallow margins"):
+a 3-seed A/B of June (mussels off → on): June algae 0.150 → 0.131, 0.151 → 0.100, 0.117 → 0.133; the zooplankton's June
+production 13.8 → 11.8, 16.0 → 6.0, 7.6 → 8.4 kg/ha/day (−30 % on average); the June peak still 207–322 µg/L; the fish's
+share of the production 43–54 % → 50–58 %. The gate's June check said "fish eat under half of it" — seed-fragile (one seed
+was at 54 % without mussels) — and is now restated as the guard it was meant to be, against the PREDATOR PIT (fish took 70–110 %
+of the production): under 65 %. The view: dark shells (a flattened ellipsoid ~8 × 4 × 2.5 cm) half-buried at each 1.5-m
+cell's real number within 18 m of where the camera looks (closer than 60 m), on the reflection-excluded layer like the weeds.
+
 **Built (stage 7d).**
 - As designed. Recruitment is per capita × (1 − N/K) × the host fish (0.25/yr at full hosts): the first rate (0.06) could
   never balance the deaths, and the stock would have dwindled over decades.

@@ -113,12 +113,13 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ RESUME HERE (2026-10-16, before a compaction): (a) the MUSSEL code (stage 7d: src/w3/littoral3.js _mussels, the view in
-render3/plants3view.js + sim3worker.js + main3.js, test/w3.mjs +2 checks) is UNCOMMITTED, waiting on a full `node test/w3.mjs`
-run whose output is in the session scratchpad gate7d.txt (51/69 passed, none failed, when last read) — if it ended green, commit
-it ("The 3-D lakes' freshwater mussels, stage 7d"), push, back up; if not, fix and re-run. (b) A background agent is writing
-docs/W3_REALTIME_AUDIT.md (the stage-R audit: every time-dependent rate classified A calendar-scaled / B compressed-clock
-shortcut / C step-size dependent / D day–night, with a cost table per fidelity rung) — read it, then start R2.
+▶ RESUME HERE (2026-10-16, after a compaction): (a) DONE — the MUSSELS (stage 7d) committed (gate green: 68 + the June check,
+which was restated: a 3-seed June A/B showed the mussels lower the zooplankton's June production ~30 % — they compete for its
+algae — and the fish's share of it 43–54 % → 50–58 %; "under half" was seed-fragile, now "under 65 %", the guard against the
+predator pit's 70–110 %; docs/HOT_BROOK_3D.md §5 "Built (stage 7d)"). test/w3.mjs has W3_ONLY=<sections> (env chem core young
+forage foodweb plants) for iterating on one section. (b) A background agent is writing docs/W3_REALTIME_AUDIT.md (the stage-R
+audit: every time-dependent rate classified A calendar-scaled / B compressed-clock shortcut / C step-size dependent / D
+day–night, with a cost table per fidelity rung) — read it, then start R2.
 DECIDED (human, 2026-10-16): REAL TIME + FAST-FORWARD. "I want to make this a realistic simulation, with each animal actually
 thinking, learning, and behaving the way they would first, then eventually slowly evolving over time" — 1× becomes REAL TIME (a
 day is 24 h, a year a year); each animal lives the day in full detail (individual strikes, dives, prey captures, real dawn and

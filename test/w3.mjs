@@ -5,6 +5,9 @@ import { GEO, BODIES, UPPER, LOWER, BROOK, LAND, cellIndex } from '../src/w3/geo
 let pass = 0, fail = 0;
 const check = (name, ok, detail = '') => { if (ok) pass++; else fail++; console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${detail ? '  — ' + detail : ''}`); };
 const f1 = v => v.toFixed(1), f2 = v => v.toFixed(2);
+// W3_ONLY=foodweb,plants runs only those sections (env chem core young forage foodweb plants; the geometry always) — for
+// iterating on one; the gate runs them all
+const ONLY = (process.env.W3_ONLY || '').split(',').filter(Boolean), run = k => !ONLY.length || ONLY.includes(k);
 
 // ============================================================
 //  GEOMETRY — both lakes and the brook at 1/10 of their real size, true depths (src/w3/geometry.js)
@@ -72,7 +75,7 @@ check('the inflow is at Upper\'s south end and the outlet at Lower\'s north end'
 //  ENVIRONMENT 3-D, slice 1 — columns, temperature, ice, the water's movement (src/w3/env3.js)
 // ============================================================
 console.log('\n— environment 3-D: columns, temperature, ice, transport —');
-{
+if (run('env')) {
   const { Env3, H3, REAL_S, CLOCK3 } = await import('../src/w3/env3.js');
   const { seed } = await import('../src/core.js');
   seed(301); const e = new Env3(); const G = e.G;
@@ -155,7 +158,7 @@ console.log('\n— environment 3-D: columns, temperature, ice, transport —');
 //  ENVIRONMENT 3-D, slice 2 — the water's chemistry and plankton (src/w3/chem3.js)
 // ============================================================
 console.log('\n— environment 3-D: chemistry and plankton —');
-{
+if (run('chem')) {
   const { Env3, CLOCK3 } = await import('../src/w3/env3.js');
   const { V2, A2 } = await import('../src/w3/chem3.js');
   const { ENV: ENVC } = await import('../src/config.js');
@@ -210,7 +213,7 @@ console.log('\n— environment 3-D: chemistry and plankton —');
 //  (src/w3/fish3.js)
 // ============================================================
 console.log('\n— fish 3-D: the agent core —');
-{
+if (run('core')) {
   const { Env3 } = await import('../src/w3/env3.js');
   const { Fish3, KEYS3, S3 } = await import('../src/w3/fish3.js');
   const { ENV } = await import('../src/config.js');
@@ -310,7 +313,7 @@ console.log('\n— fish 3-D: the agent core —');
 //  FISH 3-D, slice b — reproduction: spawning grounds and seasons, nests, the brook, young-of-year, recruitment
 // ============================================================
 console.log('\n— fish 3-D: reproduction and the young —');
-{
+if (run('young')) {
   const { Env3 } = await import('../src/w3/env3.js');
   const { Fish3, S3 } = await import('../src/w3/fish3.js');
   const { PLANKTON } = await import('../src/config.js');
@@ -370,7 +373,7 @@ console.log('\n— fish 3-D: reproduction and the young —');
 //  FISH 3-D, stage 6a — adult foraging: the bed or the open water (shared foraging time), the foraging footprint
 // ============================================================
 console.log('\n— fish 3-D: foraging —');
-{
+if (run('forage')) {
   const { Env3 } = await import('../src/w3/env3.js');
   const { Fish3 } = await import('../src/w3/fish3.js');
   const { A2 } = await import('../src/w3/chem3.js');
@@ -408,7 +411,7 @@ console.log('\n— fish 3-D: foraging —');
 //  FISH 3-D, stage 6b — the food web through a summer: the zooplankton's June peak, the fish's share of it, the young's growth
 // ============================================================
 console.log('\n— fish 3-D: the food web through a summer —');
-{
+if (run('foodweb')) {
   const { Env3 } = await import('../src/w3/env3.js');
   const { Fish3 } = await import('../src/w3/fish3.js');
   const { PLANKTON } = await import('../src/config.js');
@@ -428,8 +431,10 @@ console.log('\n— fish 3-D: the food web through a summer —');
       }
     }
     const share = (je1 - je0) / Math.max(1e-9, jp1 - jp0), c = F.census();
-    check('June: the zooplankton peaks above 100 µg/L (the spring Daphnia peak) while the fish eat under half of its production — the adults turn to the bed as it thins',
-      peak > 100 && share < 0.5, `peak ${peak.toFixed(0)} µg/L; fish took ${(share * 100).toFixed(0)} % of June's production`);
+    // (the share: 31–47 % at stage 6b, 43–54 % on 3 seeds by stage 7c, 50–58 % with the mussels (7d), whose filtering takes part
+    // of the zooplankton's algae — Strayer et al. 1999. The guard is against the predator pit, where fish took 70–110 %)
+    check('June: the zooplankton peaks above 100 µg/L (the spring Daphnia peak) while the fish eat well under all of its production (the predator pit took 70–110 %) — the adults turn to the bed as it thins',
+      peak > 100 && share < 0.65, `peak ${peak.toFixed(0)} µg/L; fish took ${(share * 100).toFixed(0)} % of June's production`);
     check('by September the young are fingerlings (perch and suckers ≥ 4.5 cm — real 5–8) and the lakes\' fish stay within 60–170 kg/ha',
       c.perch.yoyL >= 4.5 && c.sucker.yoyL >= 4.5 && Math.min(...B) > 60 && Math.max(...B) < 170,
       `young: perch ${f1(c.perch.yoyL)}, sucker ${f1(c.sucker.yoyL)}, white perch ${f1(c.whiteperch.yoyL)}, pumpkinseed ${f1(c.sunfish.yoyL)} cm; biomass ${Math.min(...B).toFixed(0)}–${Math.max(...B).toFixed(0)} kg/ha`);
@@ -463,7 +468,7 @@ console.log('\n— fish 3-D: the food web through a summer —');
 //  seasons, the O₂ of a dense bed
 // ============================================================
 console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —');
-{
+if (run('plants')) {
   const { Env3, CLOCK3 } = await import('../src/w3/env3.js');
   const { FORMS3 } = await import('../src/w3/plants3.js');
   const { ENV } = await import('../src/config.js');
@@ -493,6 +498,9 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
     };
     let peak1 = 0, feb = null, aug = null, augL = null, em0 = -1, emSpring = 0, emLate = 0, emPrev = 0, julBank = -1, julOpen = -1;
     let crRel = -1, crSep = null, crAug = null;   // (stage 7c: the crayfish)
+    // (stage 7d: the mussels — the water of the cells they sit in, and what they clear of it in July and in January)
+    let muV = 0; for (let i = 0; i < Lt.cells.length; i++) if (Lt.mu[i] > 0) muV += G.vol[Lt.cells[i]] * 1000;
+    const muClr = { jul: [0, 0, -1], jan: [0, 0, -1] };   // [litres cleared, days, the clearance count at the start]
     const crZones = () => { const z = [[0, 0], [0, 0], [0, 0]]; for (let i = 0; i < Lt.cells.length; i++) { const a = G.bedA[Lt.cells[i]], K = Lt.Kcr[i], k = K >= 20 ? 0 : K > 2 ? 1 : 2; z[k][0] += (Lt.crA[i] + Lt.crY[i]) * a; z[k][1] += a; } return z.map(v => v[0] / Math.max(1, v[1])); };
     for (let t = 0; t < 1.25 * CLOCK3.YEAR_LEN; t += 0.2) {
       e.step(0.2); const yf = e.yearFrac(), y = t / CLOCK3.YEAR_LEN;
@@ -501,6 +509,7 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
       if (!aug && y > 1.0 && yf > 0.44) { aug = snap(); augL = litSnap(); }
       if (em0 < 0 && y >= 0.25) { em0 = Lt.emerged; emPrev = Lt.emerged; }
       if (em0 >= 0) { const d = Lt.emerged - emPrev; emPrev = Lt.emerged; if (yf >= 0.15 && yf < 0.42) emSpring += d; else emLate += d; }
+      for (const [k, a, b] of [['jul', 0.36, 0.42], ['jan', 0.84, 0.9]]) if (y > 1.0 - (k === 'jan' ? 1 : 0) && y < 1.25 && yf >= a && yf < b) { const r = muClr[k]; if (r[2] < 0) r[2] = Lt.muCleared; r[0] = Lt.muCleared - r[2]; r[1] += 0.2 / (CLOCK3.YEAR_LEN / 365); }
       if (crRel < 0 && y < 0.5 && Lt.crReleased) crRel = Lt.stock().crYn;
       if (!crSep && y < 0.5 && yf > 0.5) crSep = Lt.stock();
       if (!crAug && y > 1.0 && yf > 0.44) crAug = { ...Lt.stock(), zones: crZones() };
@@ -525,6 +534,14 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
     check('the year\'s young crayfish: 5–20/m² released in early July, 60–90 % gone by mid-September (cannibalism), ~0.5–2 g each by then',
       crRel >= 5 && crRel <= 20 && !!crSep && crSep.crYn / crRel >= 0.1 && crSep.crYn / crRel <= 0.4 && crSep.wY >= 0.5 && crSep.wY <= 2,
       crSep ? `${f1(crRel)}/m² released; ${f1(crSep.crYn)}/m² left in mid-September (${((1 - crSep.crYn / crRel) * 100).toFixed(0)} % gone) at ${f2(crSep.wY)} g` : 'no September');
+    { const z = { edge: [0, 0], firm: [0, 0], cove: [0, 0], deep: [0, 0] }, L3 = Lt.constructor.LIT3 || null;
+      for (let i = 0; i < Lt.cells.length; i++) { const K = Lt.Kmu[i], a = G.bedA[Lt.cells[i]], k = K <= 3 ? (P.zb[i] < 0.5 ? 'edge' : 'deep') : K >= 30 ? 'cove' : 'firm'; z[k][0] += Lt.mu[i] * a; z[k][1] += a; }
+      const d = k => z[k][0] / Math.max(1, z[k][1]), jul = muClr.jul[1] > 0 ? muClr.jul[0] / muClr.jul[1] / muV * 100 : -1, jan = muClr.jan[1] > 0 ? muClr.jan[0] / muClr.jan[1] / muV * 100 : -1;
+      check('freshwater mussels (eastern elliptio): 5–25/m² on the firm margins, 25–60 in the sheltered coves, 0.5–5 on the deep mud (Maine 0.4–27.6; Connecticut 32–60)',
+        d('firm') >= 5 && d('firm') <= 25 && d('cove') >= 25 && d('cove') <= 60 && d('deep') >= 0.5 && d('deep') <= 5,
+        `firm ${f1(d('firm'))}, coves ${f1(d('cove'))}, deep mud ${f1(d('deep'))}, the scoured edge ${f1(d('edge'))} /m²`);
+      check('the mussels filter the water over them in summer (0.4–24 % of it a day — the research\'s bracket) and nothing in winter (burrowed)',
+        jul >= 0.4 && jul <= 30 && jan >= 0 && jan < 0.1, `July ${f1(jul)} %/day, January ${f2(jan)} %/day of the water they sit in`); }
     check('the land\'s insects fall on the water by the forested banks: in July the bank columns\' surface holds ≥ 5× the open water\'s',
       julBank > 5 * julOpen && julBank > 0, `${(julBank * 1000).toFixed(1)} vs ${(julOpen * 1000).toFixed(2)} mg wet/m²`);
     check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',

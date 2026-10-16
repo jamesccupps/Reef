@@ -489,7 +489,7 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
 }
 function onSnap(m) {
-  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf)) tintBed(); return; }
+  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus)) tintBed(); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false;
   if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }

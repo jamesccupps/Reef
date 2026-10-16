@@ -6,6 +6,7 @@
 // mosses stay green). Stems are drawn only near where the camera looks (the submerged forms within about the camera's
 // distance, the pads and reeds on the surface twice as far) and rebuilt when new plant data arrives or the view moves on;
 // farther off, each bed cell's weed cover tints the bed (main3), where single stems would be smaller than a pixel anyway.
+// The MUSSELS too (littoral3.js, stage 7d): dark shells half-buried in the bed at their real numbers, near the camera only.
 // Cosmetic scatter uses a hash (never core.rand).
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER, LAND } from '../geometry.js';
@@ -83,12 +84,22 @@ export function makePlantsView(W3) {
     m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
     group.add(m); return m;
   });
+  // the mussels: a flattened ellipsoid ~8 × 4 × 2.5 cm (an elliptio's shell), dark brown, half in the bed
+  const MU_MAX = 40000, muGeo = new THREE.SphereGeometry(0.5, 8, 5);
+  muGeo.setAttribute('sy', new THREE.InstancedBufferAttribute(new Float32Array(MU_MAX), 1));
+  const muMat = new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.1 });
+  muMat.outputNode = waterOut(attribute('sy', 'float').sub(positionWorld.y));
+  const musMesh = new THREE.InstancedMesh(muGeo, muMat, MU_MAX); musMesh.count = 0; musMesh.frustumCulled = false;
+  musMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MU_MAX * 3), 3);
+  group.add(musMesh);
+  const MU_COL = new THREE.Color(0x2e2618), MU_NEAR = 18;   // (m: shells drawn within this of where the camera looks)
+  let mus = null;
   const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
   let shoots = null, yf = 0, dirty = false, at = [1e9, 1e9, 1];
   // new plant data: shoots (g DW/m²) per form per bed cell (NF3 × nb), at year-fraction yf; the bed's tint at once (every cell)
-  function setData(arr, yf0) {
+  function setData(arr, yf0, mu = null) {
     if (arr.length !== NF3 * nb) return false;
-    shoots = arr; yf = yf0; dirty = true;
+    shoots = arr; yf = yf0; dirty = true; if (mu && mu.length === nb) mus = mu;
     for (let t = 0; t < fineI.length; t++) {
       let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = arr[f * nb + fineB[t]]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.key]; }
       cover[fineI[t]] = Math.min(1, tint);
@@ -135,6 +146,25 @@ export function makePlantsView(W3) {
         }
       }
     }
+    // THE MUSSELS near where the camera looks (closer than ~60 m): each 1.5-m cell's real number (/m² × 2.25 m²), at random
+    // places and turns in it, half-buried, tilted a little
+    let nm = 0;
+    if (mus && dist < 60) {
+      const R2 = MU_NEAR * MU_NEAR, M = musMesh.instanceMatrix.array, SY = muGeo.attributes.sy.array;
+      for (let t = 0; t < fineI.length && nm < MU_MAX; t++) {
+        const i = fineI[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
+        const n = Math.min(60, Math.floor(mus[fineB[t]] * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
+        for (let k = 0; k < n && nm < MU_MAX; k++) {
+          const x = x0 + (hash(i, k * 5 + 101) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 9 + 103) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.1)) continue;
+          const sz = 0.75 + 0.5 * hash(i, k + 107);
+          p.set(x, sY - z + 0.004, -y); s.set(0.08 * sz, 0.025 * sz, 0.04 * sz); e.set((hash(i, k + 109) - 0.5) * 0.5, hash(i, k + 113) * Math.PI * 2, (hash(i, k + 127) - 0.5) * 0.9);
+          q.setFromEuler(e); mat.compose(p, q, s); musMesh.setMatrixAt(nm, mat); SY[nm] = sY;
+          c.copy(MU_COL).multiplyScalar(0.7 + 0.6 * hash(i, k + 131)); musMesh.setColorAt(nm, c); nm++;
+        }
+      }
+    }
+    musMesh.count = nm;
+    if (nm) for (const [buf, k] of [[musMesh.instanceMatrix, 16], [musMesh.instanceColor, 3], [muGeo.attributes.sy, 1]]) { buf.clearUpdateRanges(); buf.addUpdateRange(0, nm * k); buf.needsUpdate = true; }
     // (static buffers, sent only on a rebuild and only their used part: a dynamic one would be re-sent whole every frame)
     for (let f = 0; f < NF3; f++) {
       const m = meshes[f], n = cnt[f]; m.count = n;
@@ -143,6 +173,6 @@ export function makePlantsView(W3) {
   }
   // the stems sit on their own layer (LAYER), which the water's reflection camera leaves out (main3): they would cost a second
   // draw for pads and reed tips that are barely seen in a ripple
-  for (const m of meshes) m.layers.set(LAYER);
+  for (const m of meshes) m.layers.set(LAYER); musMesh.layers.set(LAYER);
   return { group, setData, update, cover, nb, fine: fineI };
 }

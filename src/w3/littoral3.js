@@ -2,7 +2,8 @@
 // weeds (two sizes: the small — early-instar midges, naidid worms, small crustaceans, food for young fish — and the large —
 // late-instar midges, mayfly, caddis and damselfly nymphs, amphipods and isopods), the SNAILS of a soft-water lake, and the
 // SURFACE: the insects emerging from the lake and the land's insects falling in from the forested banks; and (stage 7c) the
-// CRAYFISH — virile crayfish, adults and the year's young, by the shelter of the bed. Energy pools outside
+// CRAYFISH — virile crayfish, adults and the year's young, by the shelter of the bed; and (stage 7d) the FRESHWATER MUSSELS —
+// eastern elliptio, filtering the water over the bed. Energy pools outside
 // the N/P budget, like the bed's organic layer and its worms and scuds (chem3 sedOM, benth), in g WET per m² of each bed cell
 // of the water model (the plants' cells) or, for the surface, per m² of a column's water.
 // Research: docs/research_notes/Whole lake 3D fish simulation/littoral_invertebrates.md (§1 the weed fauna per g of plant,
@@ -11,7 +12,7 @@
 // docs/HOT_BROOK_3D.md §5 "Design (stage 7b)".
 import { clamp } from '../core.js';
 import { GEO, LAND } from './geometry.js';
-import { BENTHOS, PLANKTON, PREY, seasonalTemp } from '../config.js';
+import { BENTHOS, PLANKTON, PREY, PHYTO, CYANO, SEDOM, ENV, seasonalTemp } from '../config.js';
 import { DAY3 } from './clock3.js';
 import { FORMS3, NF3 } from './plants3.js';
 
@@ -82,6 +83,24 @@ export const LIT3 = {
   CR_OUT: [0.3, 0.7],      // the share of the active crayfish out foraging by day, by night (the rest in burrows, under stones)
   CR_S50: 150,             // stems/m² at which the weeds hide half of those out
   CR_WIDTH: 2.2,           // cm: a 12-g crayfish's body width; × (W/12)^⅓ — a fish takes those its gape fits
+  // FRESHWATER MUSSELS (stage 7d; eastern elliptio, Maine's commonest — invertebrates_plankton_plants.md §2; the human: "lots
+  // of mussels"), mussels/m² per bed cell. Their CAPACITY by the bed: firm margins at MU_Z 15/m² (Maine 0.4–27.6; northeastern
+  // lakes 1–25), sheltered coves (the plants' wave shelter ≥ MU_COVE_SHELTER of 8 directions) beds of 40 (30–60; Connecticut,
+  // Ontario to 210), the scoured edge under 0.5 m 3, the soft mud past 3 m 2 (0.5–5: elliptio avoids deep semi-liquid silt)
+  MU_FIRM: 15, MU_COVE: 40, MU_EDGE: 3, MU_DEEP: 2, MU_Z: [0.5, 3], MU_COVE_SHELTER: 5,
+  MU_W: 1.0,               // g dry soft tissue a 70–80-mm adult (Lake Pocotopaug ~1.04 g)
+  MU_R: 0.25, MU_M: 0.04,  // /yr: recruitment toward the capacity (× the hosts, in June; per capita × (1 − N/K)) and deaths — they
+                           //   live 15–30 years: a long-lived stock that holds near its capacity on modest, sporadic recruitment
+  MU_HOST50: 40,           // kg/ha of fish at which the glochidia find half their best share of hosts (yellow perch, white perch,
+                           //   pumpkinseed, smallmouth, white sucker — all Hot Brook's; released in June at 15–18 °C)
+  MU_YF: [0.27, 0.36],     // June: the glochidia's weeks on the fish (juveniles drop off weeks later — recruitment then)
+  MU_ANOX: 0.0015, MU_ANOX_MGL: 1,  // /day deaths in water under 1 mg/L (closed up, anaerobic for weeks)
+  MU_CR: 0.8,              // L/h a mussel clears at 20 °C (Q10 2) — lab 0.05–0.19, field 2.6–3.1: the dominant uncertainty
+  MU_T: 5,                 // °C: below it they are burrowed (December–March) and filter nothing
+  MU_CYANO: 0.5, MU_ROT: 0.2,   // of the cyanobacteria and the rotifers in the water they clear, the share they retain
+  MU_P_DISS: 0.5,          // of the filtered algae's P, the share excreted dissolved (the rest to the bed's store as biodeposits)
+  MU_ASSIM: 0.3,           // of the filtered organic matter, the share assimilated (the rest to the bed's organic layer)
+  MU_O2: 0.15,             // mg O₂ a mussel uses an hour at 20 °C (~0.15 mg/g DW/h; Q10 2; a fifth when burrowed)
   CR_PREF: 5,              // a gram of catchable crayfish counts this many grams of small bed food in a forager's food response: big,
                            //   conspicuous meals (~1 out per 13 m² of bed: a bass meets several an hour and needs one or two a day) —
                            //   at the worms' half-saturation (3 g/m²) the crayfish eaters fed at p 0.2–0.3 and starved twice as often
@@ -96,6 +115,8 @@ export class Littoral3 {
     this.S = new Float32Array(nb); this.L = new Float32Array(nb); this.sn = new Float32Array(nb);   // g wet/m² of bed
     this.K = new Float32Array(nb); this.Ksn = new Float32Array(nb);
     this.crA = new Float32Array(nb); this.crY = new Float32Array(nb); this.Kcr = new Float32Array(nb);   // crayfish, g wet/m²; shelter
+    this.mu = new Float32Array(nb); this.Kmu = new Float32Array(nb);   // mussels /m²; their capacity
+    this.muCleared = 0; this.muWater = 0;   // L cleared since the last read (the gate); the water those cells hold (L)
     this.surfA = new Float32Array(G.NC); this.surfT = new Float32Array(G.NC);                       // g wet/m² of water
     // the forested bank along each column (world m × the bank's cover weight): every water cell's land edges
     this.bank = new Float32Array(G.NC);
@@ -115,6 +136,12 @@ export class Littoral3 {
     this.crProd = 0; this.crEaten = 0; this.crG = 0; this.crReleased = 0;
     this.dd = this._ddFor(env.yearFrac());
     this._capacity();
+    // the mussels' capacity by the bed (fixed: the substrate and the shelter), the stock at 80 % of it
+    for (let i = 0; i < nb; i++) {
+      const z = P.zb[i], sh = P.shelter[P.col[i]], L3 = LIT3;
+      this.Kmu[i] = z < L3.MU_Z[0] ? L3.MU_EDGE : z > L3.MU_Z[1] ? L3.MU_DEEP : sh >= L3.MU_COVE_SHELTER ? L3.MU_COVE : L3.MU_FIRM;
+      this.mu[i] = 0.8 * this.Kmu[i];
+    }
     for (let i = 0; i < nb; i++) { this.S[i] = 0.6 * LIT3.K_S * this.K[i]; this.L[i] = 0.5 * this.K[i]; this.sn[i] = 0.6 * this.Ksn[i]; this.crA[i] = 0.6 * this.Kcr[i]; }
     this._crDate(env.yearFrac(), true);
   }
@@ -198,6 +225,7 @@ export class Littoral3 {
       this.S[i] = Math.max(0, S); this.L[i] = Math.max(0, Lg); this.sn[i] = Math.max(0, sn);
     }
     this._crayfish(dd, yf, Tlit);
+    this._mussels(dd, yf);
     // THE SURFACE: the emerged fly off (exported), the land's insects fall in from the banks and drown to the bed
     const fall = yf > L3.FALL_YF[0] && yf < L3.FALL_YF[1] ? L3.FALL * L3.FALL_WW * GEO.SCALE * Math.sin(Math.PI * (yf - L3.FALL_YF[0]) / (L3.FALL_YF[1] - L3.FALL_YF[0])) : 0;
     const fly = Math.min(1, L3.FLY * dd), drown = Math.min(1, L3.DROWN * dd);
@@ -236,6 +264,34 @@ export class Littoral3 {
       const dA = a * L3.CR_MA * slow * dd + Math.max(0, a - this.Kcr[i]) * L3.CR_EVICT * slow * dd;
       y -= dY; a -= dA; ch.addSedOM(j, (dY + dA) * A);
       this.crA[i] = Math.max(0, a); this.crY[i] = Math.max(0, y);
+    }
+  }
+  // MUSSELS over dd days: filtering the water of the cell they sit in (algae and rotifers) — the algae's N back as ammonium, its
+  // P half dissolved and half to the bed's store, the organic matter mostly to the bed's organic layer — their O₂, their slow
+  // numbers (recruitment in June by the host fish; deaths; long anoxia)
+  _mussels(dd, yf) {
+    const L3 = LIT3, e = this.env, ch = this.chem, G = this.G, T = e.temp, hours = dd * 24;
+    const hosts = Math.max(0, ch.fishKgHa || 0), hostF = hosts / (hosts + L3.MU_HOST50);
+    const june = yf >= L3.MU_YF[0] && yf < L3.MU_YF[1], recr = june ? L3.MU_R / (365 * (L3.MU_YF[1] - L3.MU_YF[0])) : 0;
+    for (let i = 0; i < this.cells.length; i++) {
+      const j = this.cells[i], N = this.mu[i]; if (!(N > 0)) continue;
+      const Tj = T[j], A = G.bedA[j], q = Math.pow(2, (Tj - 20) / 10), open = Tj >= L3.MU_T;
+      if (open) {
+        const vol = G.vol[j] * 1000, Vc = N * A * L3.MU_CR * q * hours, f = Math.min(0.5, Vc / vol), w = ch.w[j];
+        this.muCleared += Vc;
+        const rP = f * ch.phyto[j], rD = f * ch.diatom[j], rC = f * L3.MU_CYANO * ch.cyano[j], rR = f * L3.MU_ROT * ch.zooR[j];
+        ch.phyto[j] -= rP; ch.diatom[j] -= rD; ch.cyano[j] -= rC; ch.zooR[j] -= rR;
+        const uA = (rP + rD) * w, uC = rC * w;   // (algae units × the cell's 2-D cells)
+        const Pa = uA * PHYTO.P_USE + uC * CYANO.P_USE, Na = uA * PHYTO.N_USE + uC * CYANO.N_USE;
+        ch.phos[j] += Pa * L3.MU_P_DISS / w; ch.sedP[j] += Pa * (1 - L3.MU_P_DISS) / ch.a[j]; ch.nh4[j] += Na / w;
+        ch.addSedOM(j, ((uA + uC) * SEDOM.PP_G + rR * w) * (1 - L3.MU_ASSIM));   // (faeces and pseudofaeces)
+      }
+      // their breath: from the cell's water (a fifth when burrowed and cold)
+      const o2g = N * A * L3.MU_O2 * (open ? q : 0.2 * Math.min(1, q)) * hours / 1000;   // g O₂
+      ch.o2[j] = Math.max(0, ch.o2[j] - o2g / G.vol[j] / ENV.O2_MGL);
+      // numbers: June's recruits by the hosts (toward the capacity), deaths, long anoxia
+      const K = this.Kmu[i], anox = ch.o2[j] * ENV.O2_MGL < L3.MU_ANOX_MGL ? L3.MU_ANOX : 0;
+      this.mu[i] = Math.max(0, N + (recr * hostF * N * Math.max(0, 1 - N / K) - (L3.MU_M / 365 + anox) * N) * dd);
     }
   }
   // the crayfish a fish can take in bed cell index i (g wet/m²): those out (by day or night, as active as the water lets them;
@@ -325,6 +381,6 @@ export class Littoral3 {
     }
     let cA = 0, cY = 0; for (let i = 0; i < this.cells.length; i++) { const a = G.bedA[this.cells[i]]; cA += this.crA[i] * a; cY += this.crY[i] * a; }
     return { S: S / A, L: L / A, sn: sn / A, vegS: Sv / Math.max(1, Av), vegL: Lv / Math.max(1, Av), vegSn: snv / Math.max(1, Av), vegShare: Av / A,
-      crA: cA / A, crY: cY / A, crAn: cA / A / LIT3.CR_WA, crYn: cY / A / this.wY, wY: this.wY };
+      crA: cA / A, crY: cY / A, crAn: cA / A / LIT3.CR_WA, crYn: cY / A / this.wY, wY: this.wY, mu: this.mu.reduce((s, v, i) => s + v * G.bedA[this.cells[i]], 0) / A };
   }
 }

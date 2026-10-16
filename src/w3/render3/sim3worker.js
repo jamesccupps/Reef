@@ -41,7 +41,8 @@ function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed c
   const P = env.plants; if (!P) return;
   const nb = P.cells.length, out = new Float32Array(P.Bs.length * nb);
   for (let f = 0; f < P.Bs.length; f++) out.set(P.Bs[f], f * nb);
-  postMessage({ type: 'plants', shoots: out, yf: env.yearFrac() }, [out.buffer]); plantsAt = performance.now();
+  const mus = env.lit ? Float32Array.from(env.lit.mu) : new Float32Array(nb);   // (the mussels /m², the same cells)
+  postMessage({ type: 'plants', shoots: out, mus, yf: env.yearFrac() }, [out.buffer, mus.buffer]); plantsAt = performance.now();
 }
 function snapshot() {
   const fs = F.fish, Y = F.yoy;
