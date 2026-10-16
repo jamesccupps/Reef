@@ -124,7 +124,13 @@ the fish's sight after; (b) "the perch are small" (and DEP 2011 local white perc
 their catches "not nearly as many [perch] as FALLFISH and BASS — especially since you can't keep the bass" (Maine law: all bass
 released) → revisit the census (S3 perHa: perch 860, white perch 800, smallmouth 40/ha) against catch-and-release Maine lakes, and ADD
 FALLFISH (Semotilus corporalis; MDIFW 1949 lists it; backlog "redbreast + fallfish") — a large native minnow of the brook and the
-shores; (d) BALD EAGLES are there (already in the 7e wildlife design: one, all year — keep). Suggested order after compaction:
+shores; (d) BALD EAGLES are there (already in the 7e wildlife design: one, all year — keep). (e) The human saw "0 schools of young"
+after a refresh: a fresh lake opens on May 20 (SEASON.START_YF 0.22) with adults only; suckers, white perch and smallmouth spawn
+within ~2 days (65 schools by May 22, ~470 by May 30 — mostly pumpkinseed), BUT YELLOW PERCH AND CHAIN PICKEREL NEVER SPAWN that
+year: their season (ice-out → mid-May, 7–12 °C) is over before the start (scratchpad-free check: /tmp/yoystart.mjs pattern — Env3()
++ Fish3, 49 blocks of 1,752 s a day). FIX: open the lake at ice-out (~Apr 23, as the gate's spring run, yf 0.14) or seed the young
+the spring's early spawners would already have on the start date (and after a season jump). Suggested order after compaction:
+start-date young (e) →
 clarity (a) → census and fallfish research + build (c, b) → the fine rung (strikes as events, B11) → wildlife 7e. (Earlier:) the MUSSELS (7d) are committed (da8bd4b; the June check restated — docs/HOT_BROOK_3D.md §5 "Built
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
