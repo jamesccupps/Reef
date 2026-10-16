@@ -113,13 +113,21 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶▶ RESUME HERE (after the 2026-10-16 evening compaction): THE HUMAN APPROVED THE TRUE-SCALE REBUILD — "yeah but let's compact
-first". START T1 (docs/TRUE_SCALE.md): real-size geometry — 5-m cells within ~150 m of the water (lidar 2 m + the NAIP shelf),
-the brook as a carved channel (real path, ~8 m wide, the angler's pool/riffle profile), 15-m cells beyond; then T2 (H3.REAL 1,
-50-m columns) and T3 (fish fidelity by distance from the camera). Then the new species + census (fallfish, banded killifish,
-redbreast; eastern_maine_relative_abundance.md), then T4–T7, then roads/cabins at true size. Branch: zoo-field (latest e4d55ba,
-all pushed; backups G:\synapse-reef-backups\ …_w3-trees-true.zip). Keep the 1/10 world working until true scale passes the gate
-(build true scale alongside, e.g. HB_SCALE=1 into its own module/world file, switch when green).
+▶▶ RESUME HERE (2026-10-16, night): THE FISH FIRST, THEN TRUE SCALE. After the compaction the human asked to have "all the
+fish we need … accounted for and in before trying to add them to the environment", "only the fish that are actually in the
+lakes", small schooling fish one agent a school and the budget's rest to individual brains for the big fish ("as complex and
+realistic and true to the environment as we can"). DONE: docs/FISH_CENSUS.md (design; research: Hot Brook populations and
+water/species_numbers_northern_lakes.md + small_fish_numbers.md, new) — 11 species: white perch, yellow perch, smallmouth,
+chain pickerel, brown bullhead, white sucker, pumpkinseed (Upper + brook), REDBREAST (the human's brook catches — their
+photo: mostly redbreast, ~18–20 cm typical), FALLFISH ("lots"), BANDED KILLIFISH, BLACKNOSE DACE (brook); GOLDEN SHINER OUT
+(no record), largemouth out ("probably mislabeled smallmouth"), no eel/trout/salmon. Census /ha ≥ 7.5 cm: WP 750, YP 500,
+PS 50, RB 50, BB 100, WS 70, SMB 40, CP 25, FF 85 (~1,670/ha, ~1.07 M) + killifish ~150,000 and dace ~3,000 whole. Agents:
+~470/ha (≈ 300,000 at true scale, ~3,000 at 1/10): young = school records; killifish shoals of 40; perch/white perch < 10 cm
+schools; sunfish ≥ 7, bullhead ≥ 10, fallfish ≥ 12 cm and all suckers/bass/pickerel/dace individuals; the rest of the budget
+→ adult perch and white perch individuals from the largest down (cutoff ~20 cm at 300k), leaving their schools as they grow.
+NEXT: BUILD FISH_CENSUS.md §5 on the 1/10 world (a 3-D species table so the 2-D sim is untouched; the four new species'
+biology; S3 census; the agent rule; gate on 3 seeds), then TRUE_SCALE.md T1–T7. Branch zoo-field. Keep the 1/10 world
+working until true scale passes the gate.
 ▶ TRUE SCALE — DESIGN + PROTOTYPE DONE (2026-10-16, late): the human asked "can we just make everything
 true to scale" and chose "design and prototype" first. docs/TRUE_SCALE.md: build_world3d.py takes HB_SCALE/HB_BROOK_SCALE/
 HB_BROOK_W/HB_MARGIN/HB_OUT (default unchanged); at true scale the existing sim RUNS — 369 + 274 ha, 2,606 water columns

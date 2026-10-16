@@ -126,6 +126,13 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
    year … on a drier year the brook was real low, you could walk through parts." This needs a water balance: rain, snowmelt,
    evaporation, the inflow, the outlet's sill. The stage then rises and falls by season and year, and the brook's depth and its
    passage for fish follow it. The lidar's 2017 levels (Upper 128.93 m, Lower 128.23 m) are one datum.
+8. **The fish actually in the lakes, in their real numbers, before true scale (human, 2026-10-16).** "Make sure all the fish
+   we need are accounted for and in before trying to add them to the environment … all the proportions are correct and
+   everything gets an agent that should have one"; "this should only have the fish that are actually in the lakes".
+   docs/FISH_CENSUS.md: 11 species (MDIFW's list + the human's redbreast; golden shiner out), ~1,670 fish ≥ 7.5 cm per ha
+   (~1.07 M), killifish and dace counted whole; agents: schools for the small schooling fish, individuals for the solitary
+   ones, the budget's rest to the biggest perch and white perch (~300,000 agents → every fish ≥ ~20 cm its own brain).
+   Built first, then TRUE_SCALE.md T1–T7.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*

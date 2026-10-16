@@ -81,9 +81,11 @@ The queued work carries over unchanged because it is per hectare or per species:
 - frogs and turtles;
 - lake levels.
 
-Roads and cabins should be built at true size, so after T1/T6. A reasonable order:
-1. T1–T3 (the core of true scale);
-2. the new species and census (small, carries over);
+Roads and cabins should be built at true size, so after T1/T6. The order (revised 2026-10-16: the human asked to have "all
+the fish we need … accounted for and in before trying to add them to the environment"):
+1. the species and the census, and the agent rule (docs/FISH_CENSUS.md) — built on the 1/10 world, per hectare, so it
+   carries straight over;
+2. T1–T3 (the core of true scale);
 3. T4–T7;
 4. roads, cabins, docks and the rest.
 
