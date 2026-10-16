@@ -117,9 +117,14 @@ transport, foraging per step) rescaled: offered, not built.
 (stage 7d)"); test/w3.mjs has W3_ONLY=<sections> (env chem core young forage foodweb plants). THE AUDIT IS IN:
 docs/W3_REALTIME_AUDIT.md (R1 done — A calendar rates carry over; 11 hidden per-sim-second constants (A7) that don't; 14 B
 shortcuts; 24 C step-size items; 20 D day–night items; the cost per rung; the order of work §7). STAGE R IS UNDER WAY on branch
-`w3-realtime` (zoo-field stays green until it merges): R2 step 1, the COMPAT REFACTOR — the clock real (YEAR 365·86,400 s, DAY
-86,400 s, PER2D), every A7 constant at its compat value, Fish3.step(dtBio, dtMove) run at (876 s, 0.1 s) and the env at 1,752 s
-— must reproduce today's gate numbers to floating point. A research agent is writing docs/research_notes/Whole lake 3D fish
+`w3-realtime` (zoo-field stays green until it merges). DONE R2 step 1, the COMPAT REFACTOR (gate 69/69; the view runs): the
+clock real (clock3: YEAR 365·86,400 s, PER2D = TS, OLD_S 8,760; DAY_LEN still the 1-hour year's 1,051,200 s until step 5),
+every A7 constant at its compat value (÷ OLD_S), Fish3.step(dt, mv) — the gate and the worker at (876 s, 0.1 s), the water at
+1,752 s; checked vs the old code (scratchpad envlock.mjs: the water a year to rounding; lockstep.mjs: all fish to 1e-6 over the
+first steps, then chaos from last-digit TS×dt differences). NEXT R2 step 2: exponential integrators (drafted: scratchpad
+patch_r2b.py — learning decay, gut evacuation, exposure, ice chill / bed heat / mixed-layer relax, kMix / kStrat, the
+zooplankton's toxin / floor / round / avoid, the organic layer, the mussels' clearance), then steps 3–6 (transport sub-steps,
+real mixing times, the diel physics, the env rungs) and R3 (design draft: scratchpad r3_design_draft.md). A research agent is writing docs/research_notes/Whole lake 3D fish
 simulation/realtime_foraging.md (reaction distances, search speeds, strikes, capture success, handling, rations — for R3).
 DECIDED (human, 2026-10-16, the audit's two questions): (R3-g) IN FAST-FORWARD THE BRAIN DECIDES PER BLOCK — each coarse block
 the fish's own network decides where to go next, how hard to forage, how much to hide, from what it senses at the block's
@@ -153,6 +158,9 @@ THE HUMAN'S REQUESTS (2026-10-16), in order:
 (2) LATER, once the sim works right: bring back a page of the lakes' and fish data (the 2-D app had charts/panels) and
     click-a-fish info (inspector).
 (3) Keep SESSION_STATE and the docs current at every step (auto-compaction).
+(4) GENES, GENE FLOW, POLLUTANT RESISTANCE (2026-10-16, "for the roadmap"): immigrants with their own gene distribution through
+    the inflow/outlet; variation that lasts (Mendelian polygenic inheritance instead of blending; school agents' gene pools);
+    a heritable resistance trait with a cost, and pollutant what-ifs — ROADMAP.md agreed plan #5. After stage R.
 NEXT after (1): redbreast + fallfish, the shore (stage D: snow on the ice, the hydrograph), saves and resume. (The young
 pumpkinseed's "stall" was the mean of a summer-long spawning: the first cohort grows ~0.3 mm/day to 2.5 cm by mid-August —
 docs/HOT_BROOK_3D.md.) Perf idea: the fish

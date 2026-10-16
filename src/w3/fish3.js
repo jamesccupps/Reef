@@ -13,13 +13,15 @@
 //
 // UNITS. Positions in world metres (x east, y north, z depth below the local water surface, down). Bodies, swimming speeds,
 // senses and densities are REAL (fish per square metre at the real lakes' numbers), so a fish meets its school, its prey and
-// its predators at real rates per second of its swimming; the lakes are 1/10 of their real size, and the PHYSIOLOGY runs on
-// the calendar (a real day = DAY3 ≈ 9.9 s: CLOCK3). Feeding on the water's fields (zooplankton, the bed's worms and scuds) is a
-// functional response to the local density — what a fish meets over the hours one sim second stands for — and its rates
-// follow the day's light (lightDay), not the hour's: a two-minute day–night cycle stands for ~12 real days, each with its own
-// days and nights. BEHAVIOUR follows the hour: where a fish chooses to be by day and by night, how active it is.
+// its predators at real rates per second of its swimming; the lakes are 1/10 of their real size (trips take 1/10 of their real
+// time — the human's choice, 2026-10-16). TIME (clock3.js) is REAL: a step covers dt real seconds of the fish's lives
+// (physiology, feeding, hazards, ageing: a day is DAY3 = 86,400 s) and mv seconds of their swimming. STAGE R2 COMPAT: the gate
+// and the view still run the 1-hour year's steps (dt 876 s with mv 0.1 s; docs/W3_REALTIME_AUDIT.md), so feeding on the
+// water's fields (zooplankton, the bed's worms and scuds) is still a functional response to the local density over the ~15 min
+// a step stands for, at rates by the day's light (lightDay), and the day–night cycle still the 1-hour year's (12.2 calendar
+// days); R3 gives each rung its own mechanisms. BEHAVIOUR follows the hour: where a fish chooses to be by day and by night.
 import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js';
-import { CLOCK3, TS, DAY3 } from './clock3.js';
+import { CLOCK3, TS, DAY3, OLD_S } from './clock3.js';
 import { A2 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { SP, SPECIES } from '../species.js';
@@ -50,10 +52,13 @@ export const F3 = {
   ZTOP: 0.08, ZBOT: 0.04,   // m of clearance under the surface and over the bed
   ICE_M: 0.35,          // m: the ice's thickness at full cover (fish stay under it)
   FEAR_DECAY: 0.5,      // /s (the 2-D sim's DRIVE.FEAR_DECAY — a moment-to-moment behaviour, not a calendar rate)
+  // LIFETIME LEARNING: the plastic weights relax toward the genome at LEARN_DECAY a second (compat: the 2-D LEARN.DECAY per sim
+  // second of the 1-hour year — ~4.9 h of calendar; R3: hours to days, rewards from events)
+  LEARN_DECAY: LEARN.DECAY / OLD_S,
   // PISCIVORY: a predator's kill hazard is ATTACK × Σ over the catchable fish within its strike reach of (1 − d/R) × capture ×
   // the prey's vulnerability × size selection × concealment, a school counting n^SCHOOL_EXP (dilution and confusion: the
   // per-capita risk falls with school size — Turner & Pitcher 1986)
-  ATTACK: 2.0, SCHOOL_EXP: 0.5,
+  ATTACK: 2.0 / OLD_S, SCHOOL_EXP: 0.5,   // (compat: 2 per sim second of the 1-hour year — its 2.4 h of hunting; R3: events)
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6)
   BENTH_REACH: 0.35,    // m above the bed a fish feeds on it
   // THE BED OR THE OPEN WATER (stage 6): an adult shares its foraging time between its two foods toward the better (t ∝ f^SHARE_Q),
@@ -71,7 +76,8 @@ export const F3 = {
   FP_HOME: 0.25, FP_MIN: 4, FP_MAX: 20, FP_DZ: 0.75,
   // REPRODUCTION (slice b)
   SPAWN_LEAD: 2,        // °C: a ripe fish heads for its spawning ground this far below its spawning temperature
-  SPAWN_RATE: 0.25,     // /s: on its ground, with a mate, at full spawning temperature, a fish spawns at this rate
+  SPAWN_RATE: 0.25 / OLD_S,   // /s: on its ground, with a mate, at full spawning temperature, a fish spawns at this rate
+                              //   (compat: ~10 h; R3: by the hour and the time of day)
   MATE_R: 1.5,          // m: a mate this close (an individual species' pair)
   MATE_CUE: 1.5,        // a ripe fish heads for the nearest ripe fish of the other sex within this × its species' spacing (6–40 m)
   BROOK_NEAR: 60, BROOK_RUN: 150,   // m from their lake's end of the brook: the pumpkinseed that summer in it, the suckers that run up it
@@ -80,7 +86,7 @@ export const F3 = {
   GUARD_R: 1.0,         // m: a guardian keeps within this of its nest; its fry are held within it
   CAP: 1.5,             // a species' fish ≥ its recruits at most this × its census (a safety: abundance is the sim's)
   // YOUNG-OF-YEAR (the 2-D sim's FRY, its times ÷ TS)
-  YOY_TICK: 0.4,        // s between a school's feeding / physiology / mortality updates (staggered)
+  YOY_TICK: 0.4 * OLD_S,   // s between a school's feeding / physiology / mortality updates (staggered; compat: 58 min)
   YOY_BL: 4, YOY_VMAX: 0.25,   // a young school moves at YOY_BL lengths a second (≤ YOY_VMAX m/s): it lives on the physiological clock
   YOY_EAT_R: 0.6,       // m: a fish picks at a school of young within this (+ its own length)
   YOY_MERGE_R: 1.5,     // m: schools of young of a species and size meet and merge within this
@@ -207,7 +213,7 @@ export function forward3(g, inp, h, o, hid, active, leak) {
 // plastic copy lw, pulled back toward the inherited g — Baldwinian (g is never written)
 const _post = new Float32Array(NO);
 export function reinforce3(lw, g, hid, h, o, reward, dt) {
-  const W2 = hid * NI + hid, dec = LEARN.DECAY * dt, R = LEARN.RATE * reward, C = LEARN.CLAMP;
+  const W2 = hid * NI + hid, dec = F3.LEARN_DECAY * dt, R = LEARN.RATE * reward, C = LEARN.CLAMP;
   _post[0] = o[0]; _post[1] = o[1]; for (let k = 2; k < NO; k++) _post[k] = o[k] * 2 - 1;
   for (let k = 0; k < NO; k++) {
     const pk = _post[k], b = W2 + k * hid;
@@ -480,7 +486,10 @@ export class Fish3 {
   }
 
   // ============================================================ step ===================================================
-  step(dt) {
+  // ONE STEP covers dt real seconds of the fish's lives (physiology, feeding, hazards, ageing) and mv seconds of their
+  // swimming (senses, brains, drives, movement). At the fine rung the two are one (mv = dt); stage R2's compat rung runs the
+  // 1-hour year's (dt 876 s with 0.1 s of swimming) until R3 gives the coarse rungs their own movement
+  step(dt, mv = dt) {
     const e = this.env, ch = this.chem, G = this.G, f = this.fish;
     this.time += dt; this.stepNo++; this.events.length = 0;
     this._hashBuild(); this._yoyHash();
@@ -506,17 +515,17 @@ export class Fish3 {
       a.vis = Math.max(s.nonVis, vision(e.light * iceCut * fade)) * clar;
       const visDay = Math.max(s.nonVis, vision(vDay0 * iceCut * fade)) * clar;
       a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0);   // (very shallow water; the weeds' stems)
-      a.fear *= Math.exp(-F3.FEAR_DECAY * dt);
+      a.fear *= Math.exp(-F3.FEAR_DECAY * mv);
       // decide (senses → brain), then the innate drives, then move
       const m = this._mode(a);
       if ((this.stepNo + a.id) % F3.DECIDE_EVERY === 0 || !a._dh) {
         // learning (on the decision just acted on: rewarded if it ate since), then the next decision
         if (a._dh) { reinforce3(a.lw, a.g, HID3, a.h, a.o, a._ate ? 1 : 0, dt * F3.DECIDE_EVERY); a._ate = false; }
-        this._sense(a, i); this._brain(a, m, dt);
+        this._sense(a, i); this._brain(a, m, mv);
       }
       else if (a.prey && !a.prey.alive) { a.prey = null; a.fk = 0; }
-      this._drive(a, m, dt);
-      this._move(a, dt);
+      this._drive(a, m, mv);
+      this._move(a, mv);
       // the body, food, hazards
       const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
       const cm = this._energetics(a, bp, T, dt);
@@ -528,7 +537,7 @@ export class Fish3 {
       ch.o2[a.j] = Math.max(0, ch.o2[a.j] - a.n * a.rO2 * dt / (G.vol[a.j] * ENV.O2_MGL));
       this._hazards(a, T, dt);
     }
-    this._stepYoy(dt, yf);
+    this._stepYoy(dt, mv, yf);
     if (this.stepNo % F3.MERGE_EVERY === 0) { this._schools(); this._mergeYoy(); }
     if (this.stepNo % 20 === 0 || this.yoy.some(q => !q.alive)) this.yoy = this.yoy.filter(q => q.alive);
     if (this.stepNo % 20 === 0 || f.some(a => !a.alive)) this.fish = f.filter(a => a.alive);
@@ -806,7 +815,7 @@ export class Fish3 {
       if (pRoom > 0) { const g = ch.takeSedOM(a.jb, Math.min(pRoom, (want - got)) * n) / n; if (g > 0) { a.gut += g; a.gutE += g * PREY.DETRITUS_ED * PREY.DETRITUS_DIG; got += g; this.stats.food.sed += g * n; } }
     }
     if (a.gut > g0) this.stats.intakeBy[s.key] = (this.stats.intakeBy[s.key] || 0) + (a.gut - g0) * n;
-    const ate = a.gut - g0 >= PLANKTON.BITE_MIN * gmax * dt / (1 / 30);   // (a meal: the 2-D bite threshold per 1/30-s step)
+    const ate = a.gut - g0 >= PLANKTON.BITE_MIN * gmax * (dt / OLD_S) / (1 / 30);   // (a meal: the 2-D bite threshold per 1/30-s step; compat)
     if (ate) a.eaten++;
     return ate;
   }
@@ -989,7 +998,7 @@ export class Fish3 {
   // THE YOUNG-OF-YEAR SCHOOLS (world.js _stepFry, in 3-D): each moves toward its target at its own pace (it lives on the
   // physiological clock), held near its nest while the guardian keeps it; every YOY_TICK it feeds (_feedYoy), dies by its
   // larval and juvenile mortality, starvation, heat and hypoxia, picks its next target and, grown, recruits
-  _stepYoy(dt, yf) {
+  _stepYoy(dt, mv, yf) {
     const Y = this.yoy; if (!Y.length) return;
     const e = this.env, ch = this.chem, G = this.G;
     const juvD = this._juvD || (this._juvD = new Float64Array(KEYS3.length)); juvD.fill(0);
@@ -1002,7 +1011,7 @@ export class Fish3 {
       if (!held) { q.gref = null; q.guard = 0; }
       // move toward the target (a guarded brood within GUARD_R of its nest)
       let tx = q.tx, ty = q.ty; if (held) { tx = clamp(tx, q.nx - F3.GUARD_R, q.nx + F3.GUARD_R); ty = clamp(ty, q.ny - F3.GUARD_R, q.ny + F3.GUARD_R); }
-      const v = Math.min(F3.YOY_VMAX, F3.YOY_BL * q.L / 100) * dt, dx = tx - q.x, dy = ty - q.y, dz = q.tz - q.z, d = Math.hypot(dx, dy, dz);
+      const v = Math.min(F3.YOY_VMAX, F3.YOY_BL * q.L / 100) * mv, dx = tx - q.x, dy = ty - q.y, dz = q.tz - q.z, d = Math.hypot(dx, dy, dz);
       if (d > 1e-3) {
         const k = Math.min(1, v / d), nx = q.x + dx * k, ny = q.y + dy * k, bed = GEO.depthAt(nx, ny);
         if (GEO.bodyAt(nx, ny) !== LAND && bed > 0.12 && this.env.colAt(nx, ny) >= 0) { q.x = nx; q.y = ny; q.bed = bed; } else { q.tx = q.x; q.ty = q.y; }

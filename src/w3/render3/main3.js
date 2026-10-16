@@ -8,7 +8,8 @@ import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, BODIES, LAND, BROOK } from '../geometry.js';
 import { CameraRig } from './controls3.js';
 import { FAR3 } from './far3d.js';
-import { Env3, CLOCK3, buildColumns3 } from '../env3.js';
+import { Env3, buildColumns3 } from '../env3.js';
+import { OLD_S } from '../clock3.js';
 import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
@@ -507,7 +508,8 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
 function liveUI() {
   const e = LIVE.snap; if (!e) return;
   // the speed the sim actually runs at (a busy machine can't keep up with the higher ones)
-  const now = performance.now(); if (LIVE.lastW) { const r = (e.time - LIVE.lastT) / Math.max(1e-3, (now - LIVE.lastW) / 1000); LIVE.rate += (r - LIVE.rate) * 0.3; } LIVE.lastT = e.time; LIVE.lastW = now;
+  // (the speed in the 1-hour year's terms — stage R2 compat: a view second is OLD_S real seconds at 1×)
+  const now = performance.now(); if (LIVE.lastW) { const r = (e.time - LIVE.lastT) / OLD_S / Math.max(1e-3, (now - LIVE.lastW) / 1000); LIVE.rate += (r - LIVE.rate) * 0.3; } LIVE.lastT = e.time; LIVE.lastW = now;
   const yf = e.yf, hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
   $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp0 ?? 0).toFixed(0)} °C${LIVE.run && LIVE.speed > 1 && LIVE.rate < LIVE.speed * 0.9 ? ` · running at ${LIVE.rate.toFixed(1)}×` : ''}`;
   const ss = seasonOf(yf); if (ss !== LIVE.lastSeason) { LIVE.lastSeason = ss; S.season = ss; applySeason(); }

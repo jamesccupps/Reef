@@ -86,6 +86,29 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      unionid model (eastern elliptio and kin): a population with growth and mortality, filtering, biodeposits feeding the
      bed, and larvae (glochidia) that ride on host fish gills (yellow perch, others) — a fish–mussel link.
 4. **What-if controls:** change a variable (warming, nutrient loading, stocking, pollution, rain) and see the response.
+5. **Genetic variation, gene flow and adaptation (human, 2026-10-16: "make sure the fish have genes … new fish come in and
+   sometimes they're different … if a pollutant gets introduced, maybe some fish are more resistant due to genes").**
+   What the 3-D fish already have: 7 heritable trait genes (`core.js` GENE_KEYS: size at maturity, speed, tolerance, fin, eye,
+   body, brain size — `fish3.js _traits`; `tol` sets each fish's heat, O₂ and under-ice limits at a metabolic cost) plus the
+   brain's genome; founders vary ±5 % around 1.0; every spawning gives its young a crossover of both parents with mutation;
+   selection acts through survival and reproduction. What's missing, to build after stage R (real time):
+   - **Gene flow — new fish arriving.** Fish come in from the regional population (up the inflow stream into Upper, up the
+     outlet into Lower) at real immigration rates, carrying their own population's gene distribution (not the lake's) — a
+     source of new variation and of "different" fish. The 2-D sim has `IMMIGRATION`; the 3-D has none yet.
+   - **Variation that lasts.** `crossoverGenes` BLENDS the parents (their mean), which halves the genetic variance every
+     generation unless mutation restores it. Replace it with Mendelian polygenic inheritance (each trait the sum of several
+     diploid loci, each young drawing one allele per locus from each parent), so variance persists, recessive variants hide
+     and re-appear, and rare resistance alleles can sweep under selection. And a school agent carries one genome for its n
+     fish, so a school species' variation lives only between schools: give school agents a small gene pool (a few genotypes
+     with their shares) instead.
+   - **Pollutants and heritable resistance.** A new trait gene per stressor class with a cost when unneeded (detoxification
+     is metabolically expensive), and the stressors themselves as what-if scenarios on the 3-D water: a biomagnifying
+     contaminant (mercury / PCB — the 2-D sim's `TOX`), road-salt chloride from the shore roads, acid pulses at snowmelt (Maine's
+     acid-rain legacy), a pesticide or spill pulse in the inflow. The real precedent: Atlantic killifish in four polluted US
+     estuaries evolved dioxin-like-PCB resistance within decades (Reid et al. 2016, Science), and Hudson River tomcod through a
+     single AHR2 variant (Wirgin et al. 2011, Science) — so the sim should be able to show a resistant genotype rising after a
+     pollutant arrives, at a cost elsewhere, and falling back after cleanup.
+   - **Show it:** each trait's distribution over time per species (the 2-D sim's evolution history), the immigrants' share.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*

@@ -1,13 +1,15 @@
 // sim3worker.js — the 3-D lakes' simulation off the main thread (browser layer: a module Worker that imports only the pure
 // sim, src/w3/env3.js + fish3.js). The view sends {type: 'tick', dt} once a frame — and only after this worker's previous
-// reply — and the worker advances the water and the fish by dt × speed (the fish at 10 steps a sim second, the water every
-// second step, as the gate runs them) within a time budget, then replies with a snapshot: the clock and the weather, the ice
+// reply — and the worker advances the water and the fish by dt × speed (the fish at 10 steps a view second, the water every
+// second step, as the gate runs them — stage R2 compat: each fish step 876 real s of their lives with 0.1 s of swimming, each
+// water step 1,752 s, the 1-hour year's pace; R5 gives the view real time and fast-forward) within a time budget, then replies
+// with a snapshot: the clock and the weather, the ice
 // per column, every fish with where it was a step before (the view interpolates), the schools of young, and the field the
 // cut-away shows. Every few seconds (and after a season jump) it also sends the weeds: the shoots per growth form per bed cell
 // (render3/plants3view.js). When the sim can't keep up (the higher speeds on a slow machine) it runs slower than asked.
 import { Env3 } from '../env3.js';
 import { Fish3 } from '../fish3.js';
-import { CLOCK3 } from '../clock3.js';
+import { CLOCK3, OLD_S } from '../clock3.js';
 import { PLANKTON } from '../../config.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
@@ -24,7 +26,7 @@ function advance(dt) {
   acc += Math.min(0.25, dt) * speed;
   const t0 = performance.now();
   while (acc >= 0.1 && performance.now() - t0 < BUDGET) {
-    remember(); F.step(0.1); if (++envN % 2 === 0) env.step(0.2); acc -= 0.1;
+    remember(); F.step(0.1 * OLD_S, 0.1); if (++envN % 2 === 0) env.step(0.2 * OLD_S); acc -= 0.1;
   }
   acc = Math.min(acc, 0.1);   // (behind: drop the backlog — the sim runs slower than asked rather than lurch)
 }

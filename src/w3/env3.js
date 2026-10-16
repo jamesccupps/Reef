@@ -6,9 +6,10 @@
 // from the 1.5-m geometry grid, so every layer cell has its TRUE water volume and bed area (a column's bed slopes within it),
 // and every pair of neighbouring columns its true shared face per layer (the brook's 4-m channel included).
 //
-// CLOCKS (the 1-hour year): one sim second = REAL_S real seconds on the calendar (365 days in YEAR_LEN). Every rate that
-// integrates over time runs on that clock; the day–night cycle (DAY_LEN) only modulates. The 2-D sim's calibrated
-// per-second rates (YEAR 1800 s, DAY 60 s) carry over × TS = 1800 / YEAR_LEN.
+// CLOCKS (clock3.js): REAL TIME — a sim second is a real second; every rate is per real second (the 2-D sim's calibrated
+// per-second rates × TS = PER2D), so a step of any length integrates the same rates (the fidelity ladder). Until stage R2
+// step 5 the day–night cycle keeps the 1-hour year's length (DAY_LEN, 12.2 calendar days), and the constants still calibrated
+// on that clock are marked "compat" (÷ OLD_S).
 //
 // TRANSPORT (finite volume, conservative, volume-preserving): per layer at every face a horizontal volume flux — the wind's
 // depth-averaged circulation (two precomputed fields, linear in wind stress), a surface drift with its bottom return, and the
@@ -19,7 +20,7 @@ import { GEO, LAND, UPPER, LOWER, BROOK } from './geometry.js';
 import { ENV, ICE, THERMAL, WIND, SEASON, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
-import { CLOCK3, TS, REAL_S, DAY3 } from './clock3.js';
+import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
 import { Chem3 } from './chem3.js';
 import { Plants3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
@@ -43,10 +44,12 @@ export const H3 = {
   BED_HEAT: 0.03,       // /s (2-D clock) per unit bed-area-per-0.5-m-of-water: the bed's stored heat warms the water over it toward 4 °C
   // through-flow: water residence ~100 days in Upper, ~55 in Lower (hot_brook_lake_records: watersheds 66 / 77 km²)
   RES_UPPER_D: 100, RES_LOWER_D: 55,
-  MIX_RATE: 1.0,        // /s: mixing inside the wind- or convection-mixed layer (minutes to hours real)
+  MIX_RATE: 1.0 / OLD_S,   // /s: mixing inside the wind- or convection-mixed layer (compat: 1/sim-s of the 1-hour year, an
+                           //   e-fold of 2.4 h; R2 step 4 derives it from the wind and convection — minutes to hours)
   MAX_SUB: 4,           // transport sub-steps at most per update (gales slow the wind-driven currents instead)
   THRU_EVERY: 3,        // the through-flow runs every this-many updates (with as many steps' worth)
-  K_STRAT: 0.02,        // /s: exchange between adjacent layers below the mixed layer and under ice (days per layer)
+  K_STRAT: 0.02 / OLD_S, // /s: exchange between adjacent layers below the mixed layer and under ice (compat: ~5 days per
+                           //   layer; R2 step 4: Kz / DZ²)
   DIEL_SKIN: THERMAL.DIEL_M, // m: e-folding depth of the day's heating (a shallow mixed layer swings more)
   WEATHER_DWELL_MUL: 1 / TS, // the weather's dwell times are sim seconds on the 2-D clock
 };

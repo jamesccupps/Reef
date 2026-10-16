@@ -27,7 +27,24 @@ many real fish one brain stands for. The options shown to the human:
 
 Depths, densities, plants and water are real in every option.
 
-**Clocks (1-hour year).** `YEAR_LEN` 3600 s; a physiological day `BIOE.DAY` = 3600/365 ≈ 9.9 s; the day–night cycle
+**Clocks — REAL TIME (decided 2026-10-16, superseding the 1-hour year below; blueprint `docs/W3_REALTIME_AUDIT.md`).** A sim
+second is a real second; a year is 365 days of 86,400 s (`clock3.js`). Every rate is per real second (the 2-D sim's calibrated
+rates × `PER2D`), so the FIDELITY LADDER changes the step, not the clock: fine (fish 0.1 s, brains 5 Hz) for watching at 1×,
+medium, and coarse rungs (fish ~60–900 s, the water ~300–1,800 s) for the seasons, the gate and evolution — in which each
+fish's own BRAIN STILL DECIDES, once per block (where to go next, how hard to forage, how much to hide: the human's choice).
+At the 1/10 scale fish swim at real speed everywhere, so trips, dusk moves and home-range crossings take 1/10 of their real
+time (the human's choice); encounter rates stay real. **Built (stage R2 step 1, the compat refactor):** the clock is real;
+`Fish3.step(dt, mv)` takes the calendar time a step covers and the swimming in it; the gate and the view run the 1-hour
+year's steps (fish 876 s with 0.1 s of swimming, the water 1,752 s) with the day–night cycle still 12.2 calendar days long and
+the constants calibrated on that clock at their compat values (`OLD_S` = 8,760: `H3.MIX_RATE`, `K_STRAT`, `F3.ATTACK`,
+`SPAWN_RATE`, `YOY_TICK`, `LEARN_DECAY`, the meal threshold). Checked against the old code: the water alone over a year
+agrees to rounding (the same weather and ice dates; P and N within 4e-4; the algae's summer blooms amplify last-digit
+differences to ≤ 2 %), and all ~3,000 fish's states agree to 1e-6 over the first steps, before the fish's chaotic steering
+amplifies the last-digit differences of `TS × dt` (as a 1e-15 nudge to the old code's clock does by step ~550). The later
+R2 steps give the rates exact exponential integrators, the transport its real sub-steps, the mixing real times and the day
+its 86,400 s; R3 gives the fish the rungs' own mechanisms.
+
+**Clocks (1-hour year — SUPERSEDED, kept for the record).** `YEAR_LEN` 3600 s; a physiological day `BIOE.DAY` = 3600/365 ≈ 9.9 s; the day–night cycle
 `DAY_LEN` 120 s, so a year still has 30 visible days and nights, each standing for ~12 real days. Rule: every RATE that
 integrates over time — growth, mortality, flushing, exchange, mixing, settling — runs on the physiological clock (real rate ×
 compression); the day–night cycle only MODULATES (light, the night siphon, diel migration, nocturnal feeding), with each
