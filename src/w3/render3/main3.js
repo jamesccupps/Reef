@@ -8,8 +8,7 @@ import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, BODIES, LAND, BROOK } from '../geometry.js';
 import { CameraRig } from './controls3.js';
 import { FAR3 } from './far3d.js';
-import { Env3, CLOCK3 } from '../env3.js';
-import { Fish3 } from '../fish3.js';
+import { Env3, CLOCK3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
@@ -174,9 +173,9 @@ function styleWater() {
 }
 // the ice per vertex from the live water model's columns (each 1.5-m vertex reads the column it lies in)
 const iceCol = new Int32Array(NX * NY).fill(-1);
-function placeIce(env) {
+function placeIce(ice) {
   const a = water.geometry.attributes.ice, v = a.array;
-  for (let i = 0; i < NX * NY; i++) { let c = iceCol[i]; if (c === -2) continue; if (c < 0) { const [x, y] = GEO.cellCentre(i); c = env.colAt(x, y); iceCol[i] = c < 0 ? -2 : c; if (c < 0) continue; } v[i] = env.ice[c] > 0.5 ? Math.min(1, (env.ice[c] - 0.5) * 2.5) : 0; }
+  for (let i = 0; i < NX * NY; i++) { let c = iceCol[i]; if (c === -2) continue; if (c < 0) { const [x, y] = GEO.cellCentre(i); c = W3.colAt(x, y); iceCol[i] = c < 0 ? -2 : c; if (c < 0) continue; } v[i] = ice[c] > 0.5 ? Math.min(1, (ice[c] - 0.5) * 2.5) : 0; }
   a.needsUpdate = true;
 }
 
@@ -312,13 +311,13 @@ function buildSection() {
 // the live water's state at (x, y, depth z) as a colour, by the "in the water" choice
 const LO = new THREE.Color(), HI = new THREE.Color(), MID = new THREE.Color();
 function waterColour(x, y, z, c) {
-  const e = LIVE.env, j = e ? e.cellAt(x, y, z) : -1;
+  const f = LIVE.field, j = f && LIVE.fieldShow === S.show ? W3.cellAt(x, y, z) : -1;
   if (j < 0 || S.show === 'plain') return c.set(0x6f7a52);
   const ramp = (t, a, m, b) => { t = Math.min(1, Math.max(0, t)); return t < 0.5 ? c.copy(LO.set(a)).lerp(MID.set(m), t * 2) : c.copy(MID.set(m)).lerp(HI.set(b), (t - 0.5) * 2); };
-  if (S.show === 'temp') return ramp(e.temp[j] / 26, 0x2a4fd0, 0x3fb0a0, 0xe0502a);                     // 0 → 26 °C
-  if (S.show === 'o2') return ramp(e.chem.o2[j] * ENVC.O2_MGL / 12, 0x9a1a1a, 0xd8b030, 0x2a80d8);       // 0 → 12 mg/L
-  if (S.show === 'algae') { const a = e.chem.phyto[j] + e.chem.diatom[j] + e.chem.cyano[j]; return ramp(a / 0.6, 0x4a4a40, 0x6a9a40, 0x40e040); }
-  if (S.show === 'zoo') { const z2 = (e.chem.zooD[j] + e.chem.zooC[j]) * PLANKTON.UGL; return ramp(Math.log10(1 + z2) / 3, 0x404048, 0xa08050, 0xffd070); }
+  if (S.show === 'temp') return ramp(f[j] / 26, 0x2a4fd0, 0x3fb0a0, 0xe0502a);                     // 0 → 26 °C
+  if (S.show === 'o2') return ramp(f[j] * ENVC.O2_MGL / 12, 0x9a1a1a, 0xd8b030, 0x2a80d8);       // 0 → 12 mg/L
+  if (S.show === 'algae') return ramp(f[j] / 0.6, 0x4a4a40, 0x6a9a40, 0x40e040);
+  if (S.show === 'zoo') return ramp(Math.log10(1 + f[j]) / 3, 0x404048, 0xa08050, 0xffd070);   // µg dry/L
   return c.set(0x6f7a52);
 }
 
@@ -404,10 +403,10 @@ function applySeason() {
 }
 function applyHeight() { $('exv').textContent = `×${S.exag}`; placeGround(); placeTrees(); buildSection(); }
 for (const b of $('looks').children) b.addEventListener('click', () => { S.look = b.dataset.look; applyLook(); });
-for (const b of $('seasons').children) b.addEventListener('click', () => { S.season = b.dataset.season; if (LIVE.env) { const e = LIVE.env, yf = SEASON_YF[S.season]; e.primeSeason(Math.floor(e.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + yf * CLOCK3.YEAR_LEN); LIVE.lastSeason = null; liveUI(); } applySeason(); buildSection(); });
-for (const b of $('shows').children) b.addEventListener('click', () => { S.show = b.dataset.show; for (const x of $('shows').children) x.setAttribute('aria-pressed', String(x === b)); if (!S.cut && S.show !== 'plain') { const c = $('t-cut'); c.checked = true; c.dispatchEvent(new Event('change')); } buildSection(); });
-$('play').addEventListener('click', () => { LIVE.run = !LIVE.run; $('play').textContent = LIVE.run ? '⏸ pause' : '▶ play'; });
-for (const b of $('speeds').children) b.addEventListener('click', () => { LIVE.speed = +b.dataset.speed; for (const x of $('speeds').children) x.setAttribute('aria-pressed', String(x === b)); });
+for (const b of $('seasons').children) b.addEventListener('click', () => { S.season = b.dataset.season; if (LIVE.worker) { LIVE.worker.postMessage({ type: 'season', yf: SEASON_YF[S.season] }); LIVE.lastSeason = null; } applySeason(); buildSection(); });
+for (const b of $('shows').children) b.addEventListener('click', () => { S.show = b.dataset.show; if (LIVE.worker) LIVE.worker.postMessage({ type: 'show', show: S.show }); for (const x of $('shows').children) x.setAttribute('aria-pressed', String(x === b)); if (!S.cut && S.show !== 'plain') { const c = $('t-cut'); c.checked = true; c.dispatchEvent(new Event('change')); } buildSection(); });
+$('play').addEventListener('click', () => { LIVE.run = !LIVE.run; $('play').textContent = LIVE.run ? '⏸ pause' : '▶ play'; LIVE.worker?.postMessage({ type: 'run', run: LIVE.run }); });
+for (const b of $('speeds').children) b.addEventListener('click', () => { LIVE.speed = +b.dataset.speed; LIVE.worker?.postMessage({ type: 'speed', speed: LIVE.speed }); for (const x of $('speeds').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('exag').addEventListener('input', e => { S.exag = +e.target.value; applyHeight(); });
 // (the cut opens through Upper's 18-ft north basin, the camera facing the water column; the slider moves it)
 const cutAt = y => Math.min(1, Math.max(0, (y - Y0 - 8) / (GEO.YMAX - Y0 - 16)));
@@ -427,27 +426,27 @@ $('t-notes').addEventListener('change', e => document.body.classList.toggle('non
 $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle('folded'); $('fold').textContent = f ? '+' : '–'; $('fold').setAttribute('aria-expanded', String(!f)); });
 
 // ---------- the live water model and its clock ----------
-const LIVE = { env: null, fish: null, run: true, speed: 1, acc: 0, envN: 0, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0 };
+// THE SIM runs in a Worker (render3/sim3worker.js): each frame the view sends the time passed — only once the last reply is in —
+// and draws the latest snapshot meanwhile. W3: the water grid's geometry, for the cut-away's and the ice's lookups
+const LIVE = { worker: null, snap: null, waiting: false, dtAcc: 0, rate: 1, lastT: 0, lastW: 0, run: true, speed: 1, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0, field: null, fieldShow: 'plain' };
+const W3 = { G: buildColumns3() }; W3.colAt = Env3.prototype.colAt; W3.cellAt = Env3.prototype.cellAt;
 const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, early July, early Oct, Feb)
 const seasonOf = yf => yf < 0.25 ? 'spring' : yf < 0.5 ? 'summer' : yf < 0.75 ? 'fall' : 'winter';
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 const MDAYS = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28];
 function dateOf(yf) { let d = yf * 365; for (let m = 0; m < 12; m++) { if (d < MDAYS[m]) return `${MONTHS[m]} ${1 + Math.floor(d)}`; d -= MDAYS[m]; } return 'February 28'; }
-// the sim: the fish at 10 steps a sim second, the water every second step (as the gate runs them); at most ~14 ms of it a frame
-// — when it can't keep up (the higher speeds) it runs slower than asked rather than stall the view
 function liveTick(dtReal) {
-  const e = LIVE.env, F = LIVE.fish; if (!e || !LIVE.run) return;
-  LIVE.acc += dtReal * LIVE.speed;
-  const t0 = performance.now();
-  while (LIVE.acc >= 0.1 && performance.now() - t0 < 14) {
-    if (F) { fishView.remember(F); F.step(0.1); }
-    if (++LIVE.envN % 2 === 0) e.step(0.2);
-    LIVE.acc -= 0.1;
-  }
-  LIVE.acc = Math.min(LIVE.acc, 0.1);
+  LIVE.dtAcc += dtReal;
+  if (!LIVE.worker || LIVE.waiting || !LIVE.snap) return;
+  LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
+}
+function onSnap(m) {
+  if (m.type !== 'snap') return;
+  LIVE.snap = m; LIVE.waiting = false;
+  if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }
 }
 function lightByDay() {   // the sun's height and the sky's brightness follow the water model's day
-  const e = LIVE.env; if (!e) return;
+  const e = LIVE.snap; if (!e) return;
   const s = e.sun, cover = ENVC.CLOUD_COVER[e.weather], day = Math.min(1, s * 1.6);
   sun.intensity = 0.15 + 2.3 * day * (1 - 0.6 * cover); hemi.intensity = 0.18 + 0.75 * day * (1 - 0.3 * cover);
   const ang = (e.t - 0.25) * Math.PI * 2; sun.position.set(-300 * Math.cos(ang), 60 + 420 * Math.max(0.05, Math.sin(ang)), 260);
@@ -455,11 +454,13 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
   skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover);
 }
 function liveUI() {
-  const e = LIVE.env; if (!e) return;
-  const yf = e.yearFrac(), hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
-  $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp[0] ?? 0).toFixed(0)} °C`;
+  const e = LIVE.snap; if (!e) return;
+  // the speed the sim actually runs at (a busy machine can't keep up with the higher ones)
+  const now = performance.now(); if (LIVE.lastW) { const r = (e.time - LIVE.lastT) / Math.max(1e-3, (now - LIVE.lastW) / 1000); LIVE.rate += (r - LIVE.rate) * 0.3; } LIVE.lastT = e.time; LIVE.lastW = now;
+  const yf = e.yf, hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
+  $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp0 ?? 0).toFixed(0)} °C${LIVE.run && LIVE.speed > 1 && LIVE.rate < LIVE.speed * 0.9 ? ` · running at ${LIVE.rate.toFixed(1)}×` : ''}`;
   const ss = seasonOf(yf); if (ss !== LIVE.lastSeason) { LIVE.lastSeason = ss; S.season = ss; applySeason(); }
-  placeIce(e);
+  placeIce(e.ice);
 }
 
 // ---------- frame ----------
@@ -469,8 +470,11 @@ let last = performance.now(), fps = 60, nFrames = 0;
 async function start() {
   await renderer.init();
   $('exag').value = String(S.exag);
-  LIVE.env = new Env3();   // the 3-D water (src/w3/env3.js + chem3.js), opening in late May
-  LIVE.fish = new Fish3(LIVE.env);   // … and its fish at the real lakes' numbers
+  // the 3-D water (src/w3/env3.js + chem3.js), opening in late May, and its fish at the real lakes' numbers — in the Worker
+  LIVE.worker = new Worker(new URL('./sim3worker.js', import.meta.url), { type: 'module' });
+  LIVE.worker.onmessage = ev => onSnap(ev.data);
+  LIVE.worker.onerror = ev => { $('status').textContent = 'the simulation stopped: ' + (ev.message || 'error'); console.error(ev); };
+  LIVE.worker.postMessage({ type: 'init' });
   placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
@@ -478,7 +482,7 @@ async function start() {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt);
     liveTick(dt); lightByDay();
-    if (LIVE.fish && S.fish) LIVE.drawn = fishView.update(LIVE.fish, Math.min(1, LIVE.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.env.sun * 4), now / 1000, camera.position.x, -camera.position.z);
+    if (LIVE.snap && S.fish) LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / 0.1), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z);
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
@@ -489,7 +493,7 @@ async function start() {
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'} · ${LIVE.fish ? Math.round(LIVE.fish.count()).toLocaleString() + ' fish (' + LIVE.fish.fish.length.toLocaleString() + ' brains) · ' + LIVE.fish.yoy.length.toLocaleString() + ' schools of young' : ''}`;
+    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + LIVE.snap.ny.toLocaleString() + ' schools of young' : 'starting the lakes…'}`;
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });

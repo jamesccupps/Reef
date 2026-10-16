@@ -1,6 +1,6 @@
 // fish3view.js — the fish of the 3-D lakes on screen (browser layer). Every fish is an instance of one low-poly body, placed
-// from the sim's agents (src/w3/fish3.js) and interpolated between its 10-Hz steps (render-only fields _px … on each agent,
-// which the sim never reads); a school agent is drawn as its n fish around it — a tight shoal by day, loose at night. The
+// from snapshots of the sim's agents (src/w3/fish3.js, stepped in render3/sim3worker.js) and interpolated between its
+// 10-Hz steps (each fish's place a step before rides in the snapshot); a school agent is drawn as its n fish around it — a tight shoal by day, loose at night. The
 // body swims: a travelling wave down its rear half (the vertex shader), its beat with the fish's speed.
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER } from '../geometry.js';
@@ -10,7 +10,8 @@ const { attribute, positionLocal, positionGeometry, sin, time, float, max: tmax 
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
 export const FISH_MAX = 40000;   // instances
 const MEMBERS_MAX = 160;         // fish drawn per school at most
-const YOY_DRAW = 14, YOY_NEAR = 40;   // young-of-year: fish drawn per school, and within how far of the camera (m, × the size shown)
+const YOY_DRAW = 14, YOY_NEAR = 40;
+const FISH_STRIDE = 18, YOY_STRIDE = 11;   // (the snapshot's layout: render3/sim3worker.js)   // young-of-year: fish drawn per school, and within how far of the camera (m, × the size shown)
 
 // a unit fish along +x (snout +0.5 → tail fork −0.5), unit body depth along +y, right side +z; dark back, pale belly
 function fishGeometry() {
@@ -84,37 +85,41 @@ export function makeFishView() {
   const lerpA = (a, b, t) => { let d = b - a; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI; return a + d * t; };
   // the surface's height (three's y) over (x, y): each lake's own level, the brook's falling one
   const surfY = (x, y) => { const b = GEO.bodyAt(x, y); return b === UPPER ? 0 : b === LOWER ? LOWER_DY : GEO.levelAt(x, y) - BASE; };
-  // place every fish: F the sim's fish, alpha the interpolation between its last two steps, scale the size shown (1 = true),
-  // night 0..1 (schools loosen), t the clock (s, for the members' wander)
-  // (cx, cy: the camera's place in the sim's frame — the young, a few centimetres long, are drawn only within YOY_NEAR × scale of it)
-  function update(F, alpha, scale, night, t, cx = 0, cy = 0) {
+  // place every fish from a snapshot of the sim (render3/sim3worker.js: per fish [px py pz pyaw ppitch | x y z yaw pitch | L k n
+  // spd bed id school bodyMul], per school of young [px py pz | x y z | L k n id bed]): alpha the interpolation between its last
+  // two steps, scale the size shown (1 = true), night 0..1 (schools loosen), t the clock (s, for the members' wander), (cx, cy)
+  // the camera's place in the sim's frame — the young, a few centimetres long, are drawn only within YOY_NEAR × scale of it
+  const depthR = KEYS3.map(k => S3[k].sp.depthR);
+  function update(snap, alpha, scale, night, t, cx = 0, cy = 0) {
     n = 0;
-    for (const a of F.fish) {
-      if (!a.alive) continue;
-      const x = a._px + (a.x - a._px) * alpha, y = a._py + (a.y - a._py) * alpha, z = a._pz + (a.z - a._pz) * alpha;
-      const yaw = lerpA(a._pyaw, a.yaw, alpha), pitch = a._ppitch + (a.pitch - a._ppitch) * alpha;
-      const sp = a.s.sp, L = a.L / 100 * scale, D = L * sp.depthR * a.bodyMul * 1.15, c = tint[a.k];
-      const beat = 6 + 18 * Math.min(1, a.spd / Math.max(1e-3, a.L / 100) / 4), sY = surfY(x, y);
-      if (!a.school || a.n < 1.5) { put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(a.id & 1023) * 4 + 3] / 6.3, beat, a.id * 1.7); continue; }
+    const B = snap.fish, NF = snap.nf;
+    for (let i = 0, o = 0; i < NF; i++, o += FISH_STRIDE) {
+      const x = B[o] + (B[o + 5] - B[o]) * alpha, y = B[o + 1] + (B[o + 6] - B[o + 1]) * alpha, z = B[o + 2] + (B[o + 7] - B[o + 2]) * alpha;
+      const yaw = lerpA(B[o + 3], B[o + 8], alpha), pitch = B[o + 4] + (B[o + 9] - B[o + 4]) * alpha;
+      const Lc = B[o + 10], k = B[o + 11], nn = B[o + 12], spd = B[o + 13], bed = B[o + 14], id = B[o + 15], school = B[o + 16], bodyMul = B[o + 17];
+      const L = Lc / 100 * scale, D = L * depthR[k] * bodyMul * 1.15, c = tint[k];
+      const beat = 6 + 18 * Math.min(1, spd / Math.max(1e-3, Lc / 100) / 4), sY = surfY(x, y);
+      if (!school || nn < 1.5) { put(x, sY - z, -y, yaw, pitch, L, D, c, 0.85 + 0.3 * OFF[(id & 1023) * 4 + 3] / 6.3, beat, id * 1.7); continue; }
       // a school: its n fish (up to MEMBERS_MAX) about the agent, ~3 body lengths apart by day, ~8 at night; flattened
-      const m = Math.min(MEMBERS_MAX, Math.round(a.n)), sp1 = (3 + 5 * night) * L, r = sp1 * Math.cbrt(m) * 0.55;
-      const cy = Math.cos(yaw), sy = Math.sin(yaw), zMax = Math.max(0.06, a.bed - 0.04);
-      for (let k = 0; k < m; k++) {
-        const h = ((a.id * 131 + k * 17) & 1023) * 4, ox = OFF[h] * r, oy = OFF[h + 1] * r, oz = OFF[h + 2] * r * 0.35, ph = OFF[h + 3];
+      const m = Math.min(MEMBERS_MAX, Math.round(nn)), sp1 = (3 + 5 * night) * L, r = sp1 * Math.cbrt(m) * 0.55;
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), zMax = Math.max(0.06, bed - 0.04);
+      for (let q = 0; q < m; q++) {
+        const h = ((id * 131 + q * 17) & 1023) * 4, ox = OFF[h] * r, oy = OFF[h + 1] * r, oz = OFF[h + 2] * r * 0.35, ph = OFF[h + 3];
         const wx = ox + Math.sin(t * 0.6 + ph) * 0.4 * L, wy = oy + Math.cos(t * 0.5 + ph * 1.3) * 0.4 * L;
-        const mx = x + wx * cy - wy * sy, my = y + wx * sy + wy * cy, mz = Math.min(zMax, Math.max(0.05, z + oz));
+        const mx = x + wx * cyw - wy * syw, my = y + wx * syw + wy * cyw, mz = Math.min(zMax, Math.max(0.05, z + oz));
         put(mx, sY - mz, -my, yaw + Math.sin(t * 0.8 + ph) * 0.18, pitch, L * (0.9 + 0.2 * (ph / 6.3)), D, c, 0.8 + 0.35 * (ph / 6.3), beat, ph);
       }
     }
     // THE YOUNG-OF-YEAR: a school drawn as up to YOY_DRAW of its fish, a loose cloud about it (near the camera only)
-    const near2 = (YOY_NEAR * scale) ** 2;
-    for (const q of F.yoy) {
-      if (!q.alive || (q.x - cx) ** 2 + (q.y - cy) ** 2 > near2) continue;
-      const x = q._px + (q.x - q._px) * alpha, y = q._py + (q.y - q._py) * alpha, z = q._pz + (q.z - q._pz) * alpha, sY = surfY(x, y);
-      const L = q.L / 100 * scale, D = L * q.s.sp.depthR * 1.15, c = tint[q.k], m = Math.min(YOY_DRAW, Math.max(1, Math.round(q.n))), r = Math.max(0.15, 10 * L) * (1 + night);
-      for (let k = 0; k < m; k++) {
-        const h = ((q.id * 97 + k * 31) & 1023) * 4, ph = OFF[h + 3];
-        const mx = x + OFF[h] * r + Math.sin(t * 0.9 + ph) * 3 * L, my = y + OFF[h + 1] * r + Math.cos(t * 0.7 + ph) * 3 * L, mz = Math.min(Math.max(0.06, q.bed - 0.02), Math.max(0.04, z + OFF[h + 2] * r * 0.4));
+    const Y = snap.yoy, NY = snap.ny, near2 = (YOY_NEAR * scale) ** 2;
+    for (let i = 0, o = 0; i < NY; i++, o += YOY_STRIDE) {
+      if ((Y[o + 3] - cx) ** 2 + (Y[o + 4] - cy) ** 2 > near2) continue;
+      const x = Y[o] + (Y[o + 3] - Y[o]) * alpha, y = Y[o + 1] + (Y[o + 4] - Y[o + 1]) * alpha, z = Y[o + 2] + (Y[o + 5] - Y[o + 2]) * alpha, sY = surfY(x, y);
+      const Lc = Y[o + 6], k = Y[o + 7], nn = Y[o + 8], id = Y[o + 9], bed = Y[o + 10];
+      const L = Lc / 100 * scale, D = L * depthR[k] * 1.15, c = tint[k], m = Math.min(YOY_DRAW, Math.max(1, Math.round(nn))), r = Math.max(0.15, 10 * L) * (1 + night);
+      for (let q = 0; q < m; q++) {
+        const h = ((id * 97 + q * 31) & 1023) * 4, ph = OFF[h + 3];
+        const mx = x + OFF[h] * r + Math.sin(t * 0.9 + ph) * 3 * L, my = y + OFF[h + 1] * r + Math.cos(t * 0.7 + ph) * 3 * L, mz = Math.min(Math.max(0.06, bed - 0.02), Math.max(0.04, z + OFF[h + 2] * r * 0.4));
         put(mx, sY - mz, -my, ph, 0, L, D, c, 0.75 + 0.3 * (ph / 6.3), 14, ph);
       }
     }
@@ -122,10 +127,5 @@ export function makeFishView() {
     mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; swim.needsUpdate = true; side.needsUpdate = true;
     return n;
   }
-  // before each sim step: remember where every fish was (the interpolation's start)
-  function remember(F) {
-    for (const a of F.fish) { a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch; }
-    for (const q of F.yoy) { q._px = q.x; q._py = q.y; q._pz = q.z; }
-  }
-  return { mesh, update, remember };
+  return { mesh, update };
 }
