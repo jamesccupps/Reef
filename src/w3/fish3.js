@@ -50,6 +50,13 @@ export const F3 = {
   ESC_O2: 3, ESC_PITCH: 1.1,   // below ESC_O2 × its lethal O2 (or half its critical) a fish escapes upward at up to ESC_PITCH rad
   O2_W: 2.5,                   // below its critical O2 a fish also swims across the lake toward better water (O2_SEEK)
   LOOK: 1.2,            // s of swimming it looks ahead for shallows and shore (at least 0.8 m)
+  // THE FIDELITY LADDER (stage R3; docs/HOT_BROOK_3D.md §4 "Design (stage R3)"): a step of dt ≤ FINE_MAX s swims (senses and
+  // brains at 5 Hz, the kinematics); a longer one is a COARSE BLOCK — one decision by the fish's own brain, then it goes where
+  // its drives point and its brain bends them (_relocate): at most RELOC_N hops of at least RELOC_MIN m (the bed grid's cell),
+  // re-aimed after each; drives weaker than RELOC_STILL leave it where it is; the rest of the block it wanders about the place
+  // (its search path's persistence WANDER_TAU s: a net v·√(τ·t)); BAND_SLOPE the bed's typical slope at the 1/10 scale, to
+  // judge how far its depth band lies
+  FINE_MAX: 1, RELOC_N: 6, RELOC_MIN: 1.5, RELOC_STILL: 0.12, BRAIN_BEND: 0.6, WANDER_TAU: 5, BAND_SLOPE: 0.12, FLEE_D: 2,
   ZTOP: 0.08, ZBOT: 0.04,   // m of clearance under the surface and over the bed
   ICE_M: 0.35,          // m: the ice's thickness at full cover (fish stay under it)
   FEAR_DECAY: 0.5,      // /s (the 2-D sim's DRIVE.FEAR_DECAY — a moment-to-moment behaviour, not a calendar rate)
@@ -490,7 +497,8 @@ export class Fish3 {
   // ONE STEP covers dt real seconds of the fish's lives (physiology, feeding, hazards, ageing) and mv seconds of their
   // swimming (senses, brains, drives, movement). At the fine rung the two are one (mv = dt); stage R2's compat rung runs the
   // 1-hour year's (dt 876 s with 0.1 s of swimming) until R3 gives the coarse rungs their own movement
-  step(dt, mv = dt) {
+  step(dt, mv) {
+    const coarse = this._coarse = mv === undefined && dt > F3.FINE_MAX; if (mv === undefined) mv = dt;   // (mv given: the R2 compat rung)
     const e = this.env, ch = this.chem, G = this.G, f = this.fish;
     this.time += dt; this.stepNo++; this.events.length = 0;
     this._hashBuild(); this._yoyHash();
@@ -519,18 +527,18 @@ export class Fish3 {
       a.fear *= Math.exp(-F3.FEAR_DECAY * mv);
       // decide (senses → brain), then the innate drives, then move
       const m = this._mode(a);
-      if ((this.stepNo + a.id) % F3.DECIDE_EVERY === 0 || !a._dh) {
-        // learning (on the decision just acted on: rewarded if it ate since), then the next decision
-        if (a._dh) { reinforce3(a.lw, a.g, HID3, a.h, a.o, a._ate ? 1 : 0, dt * F3.DECIDE_EVERY); a._ate = false; }
+      if (coarse || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 || !a._dh) {
+        // learning (on the decision just acted on: rewarded if it ate since), then the next decision (a coarse block: one)
+        if (a._dh) { reinforce3(a.lw, a.g, HID3, a.h, a.o, a._ate ? 1 : 0, coarse ? dt : dt * F3.DECIDE_EVERY); a._ate = false; }
         this._sense(a, i); this._brain(a, m, mv);
       }
       else if (a.prey && !a.prey.alive) { a.prey = null; a.fk = 0; }
-      this._drive(a, m, mv);
-      this._move(a, mv);
+      this._drive(a, m, coarse ? 0 : mv);
+      if (coarse) this._relocate(a, m, dt); else this._move(a, mv);
       // the body, food, hazards
       const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
       const cm = this._energetics(a, bp, T, dt);
-      const ate = (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, visDay, dt * F3.DECIDE_EVERY) : false;
+      const ate = coarse ? this._feed(a, i, cm, visDay, dt) : (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, visDay, dt * F3.DECIDE_EVERY) : false;
       a.hunger = 1 - clamp(a.gut / (sp.gut * a.W), 0, 1);
       if (ate) a._ate = true;
       if (a.ripe) this._spawn(a, i, dt);
@@ -625,7 +633,13 @@ export class Fish3 {
     // the brain's turn, high-passed: a constant bias (a fresh random brain's) would only make the fish circle; it steers by change
     a.tAvg += (o[0] - a.tAvg) * Math.min(1, dt / F3.TURN_HP);
     let yr = (o[0] - a.tAvg) * tm * F3.BRAIN_TURN;
-    const steer = (bx, by, w) => { yr += angDiff(Math.atan2(by, bx), a.yaw) * tm * w; };
+    // (each pull also adds to a heading vector and says how far it needs the fish to go — the coarse block's: _relocate)
+    let vx = 0, vy = 0, wTop = 0, wNeed = Infinity;
+    const steer = (bx, by, w, nd = Infinity) => {
+      yr += angDiff(Math.atan2(by, bx), a.yaw) * tm * w;
+      const d = Math.hypot(bx, by); if (!(d > 1e-9) || !(w > 0)) return;
+      vx += w * bx / d; vy += w * by / d; if (w > wTop) { wTop = w; wNeed = nd; }
+    };
     // habitat: back into the bottom-depth band (downhill when too shallow, uphill when too deep)
     const [lo, hi] = m.bot, [gx, gy] = a._dh; let off = 0, goTrip = 0;
     // A GOAL — its nest, a spawning riffle up the brook, last year's nest, the brook's pools for the summer, home across the
@@ -633,39 +647,39 @@ export class Fish3 {
     const G0 = this._goal(a, this._g0 || (this._g0 = [0, 0, 0]));
     if (G0) {
       const r = this._route(a, G0[0], G0[1], this._g1 || (this._g1 = [0, 0])), d = Math.hypot(G0[0] - a.x, G0[1] - a.y);
-      if (d > G0[2]) { steer(r[0] - a.x, r[1] - a.y, (a.nt > 0 ? BROOD.GUARD_TETHER : F3.GOAL_W) * clamp(d / 3, 0.3, 1)); if (a.nt <= 0) { goTrip = clamp((d - G0[2]) / 3, 0, 1); a._far = d > 20; } }
+      if (d > G0[2]) { const dr = Math.hypot(r[0] - a.x, r[1] - a.y); steer(r[0] - a.x, r[1] - a.y, (a.nt > 0 ? BROOD.GUARD_TETHER : F3.GOAL_W) * clamp(d / 3, 0.3, 1), r[0] === G0[0] && r[1] === G0[1] ? d - 0.8 * G0[2] : dr); if (a.nt <= 0) { goTrip = clamp((d - G0[2]) / 3, 0, 1); a._far = d > 20; } }
     }
     // (a fish losing condition strays from its preferred water to feed: the band's pull weakens, the food's grows)
     const needy = a.hunger * clamp((0.95 - a.K) / 0.15, 0, 1);
     if (!goTrip) {
       const hw = F3.HAB_W * (1 - 0.8 * needy);
-      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off, 0.2, 1)); }
-      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off, 0.2, 1)); }
+      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
+      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       off *= 1 - needy;
     }
     // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
-    if (a.ripe && a.mate && a.mate.alive && a.mate.ripe) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1)); }
+    if (a.ripe && a.mate && a.mate.alive && a.mate.ripe) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1), d - 0.5 * F3.MATE_R); }
     // food: forage toward it (hungry), pursue a prey fish — less while it is on its way to its habitat (the dusk and dawn moves
     // go whatever the food), and no lingering in a patch then
     const going = clamp(off - 0.3, 0, 1), inPatch = a.fk >= 2 && a.fd < 1.5 && going <= 0;
-    if (a.fk === 1) steer(a.fx - a.x, a.fy - a.y, F3.PURSUIT_W * clamp(1 - a.fd / Math.max(0.6, a.senseR), 0.2, 1) * (0.4 + 0.6 * a.hunger));
-    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going) * (1 + needy));
+    if (a.fk === 1) steer(a.fx - a.x, a.fy - a.y, F3.PURSUIT_W * clamp(1 - a.fd / Math.max(0.6, a.senseR), 0.2, 1) * (0.4 + 0.6 * a.hunger), a.fd - 0.5 * s.strikeR);
+    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going) * (1 + needy), Math.hypot(a.fx - a.x, a.fy - a.y));
     // a threat: away from it (small fish also toward the shallows)
     if (a.threat && a.fear > 0.05) {
       let bx = a.x - a.threat.x, by = a.y - a.threat.y; const d = Math.hypot(bx, by) || 1; bx /= d; by /= d;
       if (a.L < 15 && (gx || gy)) { bx -= 0.6 * gx; by -= 0.6 * gy; }
-      steer(bx, by, F3.FLEE_W * a.fear);
+      steer(bx, by, F3.FLEE_W * a.fear, F3.FLEE_D * a.senseR);
     }
     // its own kind: schools keep together (their agents meet and merge); loose aggregations (sunfish colonies)
-    if (a.an > 0 && s.cohere > 0) { const d = Math.hypot(a.ax - a.x, a.ay - a.y); if (d > 1) steer(a.ax - a.x, a.ay - a.y, s.cohere * clamp(a.an / 6, 0, 1)); }
+    if (a.an > 0 && s.cohere > 0) { const d = Math.hypot(a.ax - a.x, a.ay - a.y); if (d > 1) steer(a.ax - a.x, a.ay - a.y, s.cohere * clamp(a.an / 6, 0, 1), d - 1); }
     // home range
     const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
-    if (hd > s.home && !G0) { const r = this._route(a, a.hx, a.hy, this._g1 || (this._g1 = [0, 0])); steer(r[0] - a.x, r[1] - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1)); }
+    if (hd > s.home && !G0) { const r = this._route(a, a.hx, a.hy, this._g1 || (this._g1 = [0, 0])); steer(r[0] - a.x, r[1] - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1), r[0] === a.hx && r[1] === a.hy ? hd - 0.7 * s.home : Math.hypot(r[0] - a.x, r[1] - a.y)); }
     // O2_SEEK: short of O₂, across the lake toward better water too, not only up — under the ice toward the inflows and the
     // brook's mouth (15,000 fish crowded an oxygenated inlet in a Michigan winterkill — Cooper & Washburn 1946; perch and
     // other fish move horizontally out of hypoxic water under ice)
     const seek = a.o2 < a.o2Crit ? this._o2Better(a.c) : -1;
-    if (seek >= 0) steer(this.G.cx[seek] - a.x, this.G.cy[seek] - a.y, F3.O2_W * clamp(1.3 - a.o2 / a.o2Crit, 0.3, 1.3));
+    if (seek >= 0) steer(this.G.cx[seek] - a.x, this.G.cy[seek] - a.y, F3.O2_W * clamp(1.3 - a.o2 / a.o2Crit, 0.3, 1.3), Math.hypot(this.G.cx[seek] - a.x, this.G.cy[seek] - a.y));
     // look ahead for shallows and shore: turn toward the deeper side
     // (only water too shallow to swim in is an obstacle — a rising bed the fish follows by its depth control)
     const look = Math.max(0.8, a.spd * F3.LOOK), cy = Math.cos(a.yaw), sy = Math.sin(a.yaw), need = F3.ZTOP + F3.ZBOT + 0.05 + a.L / 400;
@@ -674,14 +688,9 @@ export class Fish3 {
       const l = a.yaw + 0.8, r = a.yaw - 0.8, dl = GEO.depthAt(a.x + Math.cos(l) * look, a.y + Math.sin(l) * look), dr = GEO.depthAt(a.x + Math.cos(r) * look, a.y + Math.sin(r) * look);
       yr += (dl >= dr ? 1 : -1) * tm * F3.AVOID_W;
     }
-    a.yawRate = clamp(yr, -tm, tm);
+    a.yawRate = clamp(yr, -tm, tm); a._vx = vx; a._vy = vy; a._need = wNeed;
     // depth: the habitat's, the food's when foraging, up out of low O₂, down out of heat
-    let zT = this._zTarget(a, m);
-    // (a hungry fish whose best food is on the bed goes right down to it — half-way it could feed on neither; Werner et al. 1983)
-    if (a.fk && (a.fk === 1 || a.hunger > 0.3)) zT += (a.fz - zT) * (a.fk === 1 ? 0.8 : smooth(0.1, 0.4, a.hunger * a.fv));
-    if (a.o2 < a.o2Crit) zT = Math.min(zT, a.z - 0.5);
-    if (a.T > s.tPref + a.tempTol / 4) zT = Math.max(zT, a.z + 0.5);
-    zT = clamp(zT, F3.ZTOP, Math.max(F3.ZTOP, a.bed - F3.ZBOT));
+    const zT = a._zT = this._zWant(a, m);
     a.pitchT = clamp((a.z - zT) * F3.PITCH_K, -F3.PITCH_MAX, F3.PITCH_MAX) + o[1] * F3.PITCH_MAX * F3.BRAIN_PITCH;
     // ESCAPE from water near its lethal O2: straight up and out, fast (world.js escUp)
     a.esc = a.o2 < F3.ESC_O2 * lethalO2(a.o2Lethal, a.o2Ice, a.T) || a.o2 < 0.5 * a.o2Crit ? 1 : 0;
@@ -704,6 +713,16 @@ export class Fish3 {
     if (a.nt > 0 && !a.esc && G0 && Math.hypot(G0[0] - a.x, G0[1] - a.y) < G0[2]) a.thrust = Math.min(a.thrust, s.uRoutine * BROOD.HOVER);   // hovering over its nest
   }
 
+  // the depth it wants: the habitat's, the food's when foraging, up out of low O₂, down out of heat
+  _zWant(a, m) {
+    let zT = this._zTarget(a, m);
+    // (a hungry fish whose best food is on the bed goes right down to it — half-way it could feed on neither; Werner et al. 1983)
+    if (a.fk && (a.fk === 1 || a.hunger > 0.3)) zT += (a.fz - zT) * (a.fk === 1 ? 0.8 : smooth(0.1, 0.4, a.hunger * a.fv));
+    if (a.o2 < a.o2Crit) zT = Math.min(zT, a.z - 0.5);
+    if (a.T > a.s.tPref + a.tempTol / 4) zT = Math.max(zT, a.z + 0.5);
+    return clamp(zT, F3.ZTOP, Math.max(F3.ZTOP, a.bed - F3.ZBOT));
+  }
+
   // ---------- movement in 3-D, kept in the water ----------
   _move(a, dt) {
     a.yaw += a.yawRate * dt; if (a.yaw > Math.PI) a.yaw -= 2 * Math.PI; else if (a.yaw < -Math.PI) a.yaw += 2 * Math.PI;
@@ -720,6 +739,50 @@ export class Fish3 {
       const [gx, gy] = GEO.downhill(a.x, a.y); if (gx || gy) a.yaw += angDiff(Math.atan2(gy, gx), a.yaw) * Math.min(1, 6 * dt);
     }
     a.x = nx; a.y = ny; a.z = clamp(nz, zTop, Math.max(zTop, bed - F3.ZBOT));
+  }
+
+  // ---------- a COARSE BLOCK's movement (stage R3; the human's choice: the brain decides per block) ----------
+  // The fish goes where its drives point — its depth band, its nest or goal (along the brook's path), a mate, food, away from
+  // a threat, its school, home, better water — its heading bent by its brain's turn, at the pace its drive and brain set
+  // (a.thrust): hop by hop through the water (each hop as long as its strongest pull needs, at most a RELOC_N-th of the block's
+  // swim), re-aimed from where it got to, until nothing pulls or the block's swimming is spent; the rest of the block it works
+  // the place it reached (a wander of v·√(τ·rest) within its depth band); its depth goes to the drives' target
+  _relocate(a, m, dt) {
+    const v = Math.max(1e-3, a.thrust * a.spdMax), x0 = a.x, y0 = a.y; let left = v * dt, hops = 0;
+    const hopMax = Math.max(F3.RELOC_MIN, left / F3.RELOC_N);
+    while (left > 1e-3 && hops < F3.RELOC_N) {
+      if (hops) { a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y)); a.c = this.env.colAt(a.x, a.y); a._dh = this.deeper(a.x, a.y, a._dh); this._drive(a, m, 0); }
+      if (Math.hypot(a._vx, a._vy) < F3.RELOC_STILL) break;
+      const h = Math.atan2(a._vy, a._vx) + a.o[0] * F3.BRAIN_BEND, len = Math.min(left, hopMax, Math.max(F3.RELOC_MIN, a._need));
+      const gone = this._hop(a, h, len); left -= Math.max(gone, 0.5 * F3.RELOC_MIN); hops++;
+      if (gone < 0.25 * len) break;   // (a shore in the way: the next block finds the way round)
+    }
+    if (left > 1e-3 && !(a.nt > 0)) { const r = Math.min(left, v * Math.sqrt(F3.WANDER_TAU * left / v)); if (r > 0.05) this._hop(a, rand() * Math.PI * 2, r, m); }
+    // a nest guard is on its nest at the block's scale (its chases of intruders last seconds): within GUARD_R of it
+    if (a.nt > 0) { const dx = a.x - a.nx, dy = a.y - a.ny, d = Math.hypot(dx, dy); if (d > F3.GUARD_R) { const k = F3.GUARD_R / d; a.x = a.nx + dx * k; a.y = a.ny + dy * k; if (this.env.colAt(a.x, a.y) < 0) { a.x = a.nx; a.y = a.ny; } } }
+    if (this.env.colAt(a.x, a.y) < 0) { a.x = x0; a.y = y0; }   // (never off the water: back where the block began)
+    a.spd = v; a.pitch = 0; a.pitchT = 0;
+    a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y)); a.c = this.env.colAt(a.x, a.y);
+    if (a.fk === 2) a.fz = a.bed - 0.15;   // (bed food is on the bed it got to)
+    const zTop = F3.ZTOP + F3.ICE_M * (a.c >= 0 ? this.env.ice[a.c] : 0);
+    a.z = clamp(this._zWant(a, m), zTop, Math.max(zTop, a.bed - F3.ZBOT));
+    if (a.c >= 0) { const G = this.G; a.j = G.cell0[a.c] + Math.min(G.nL[a.c] - 1, Math.max(0, (a.z / G.DZ) | 0)); a.jb = this.bedCell(a.c, a.bed); }   // (it feeds and breathes where it got to)
+  }
+  // one straight hop of up to len m along heading h through the water, a bed-grid cell at a time: it stops before land or water
+  // too shallow to swim in — and, given the mode m (a wander), before leaving its depth band. Returns the distance gone
+  _hop(a, h, len, m = null) {
+    const cx = Math.cos(h), cy = Math.sin(h), n = Math.max(1, Math.ceil(len / GEO.CELL)), st = len / n;
+    const ice = a.c >= 0 ? this.env.ice[a.c] : 0, shallow = F3.ZTOP + F3.ICE_M * ice + F3.ZBOT + 0.05 + a.L / 400;
+    const inBand = m && a.bed >= m.bot[0] && a.bed <= m.bot[1];
+    let gone = 0;
+    for (let k = 0; k < n; k++) {
+      const nx = a.x + cx * st, ny = a.y + cy * st, bed = GEO.depthAt(nx, ny);
+      if (!(bed >= shallow) || GEO.bodyAt(nx, ny) === LAND || this.env.colAt(nx, ny) < 0) break;
+      if (inBand && (bed < m.bot[0] || bed > m.bot[1])) break;
+      a.x = nx; a.y = ny; a.bed = bed; gone += st;
+    }
+    if (gone > 0) a.yaw = h;
+    return gone;
   }
 
   // ---------- the body: digestion, waste, respiration, gonads, growth (FB4; world.js) ----------
@@ -919,7 +982,7 @@ export class Fish3 {
   // nest-guarding male takes the nest
   _spawn(a, i, dt) {
     const s = a.s, sp = s.sp, sb = s.spawn;
-    if ((this.stepNo + a.id) % F3.DECIDE_EVERY === 0) a.mate = a.sex === 2 ? (this._findMate(a, i, 3) || a) : this._findMate(a, i, s.mateCue);
+    if (this._coarse || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0) a.mate = a.sex === 2 ? (this._findMate(a, i, 3) || a) : this._findMate(a, i, s.mateCue);
     const onGround = a.brookRun ? GEO.bodyAt(a.x, a.y) === BROOK : a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
     if (!onGround || !a.mate || (a.sex === 1)) return;   // (the female, or the school, spawns)
     const b = a.mate; if (b !== a && Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > (a.sex === 2 ? 3 : F3.MATE_R)) return;
