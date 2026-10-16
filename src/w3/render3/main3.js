@@ -12,6 +12,7 @@ import { Env3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
 import { makeRisesView } from './rises3view.js';
+import { makeBedView } from './bed3view.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
@@ -304,6 +305,7 @@ const clipped = new THREE.ClippingGroup(); clipped.clippingPlanes = [clipPlane];
 const fishView = makeFishView();   // the fish (src/w3/fish3.js), every one an instance, schools as their n fish
 const plantsView = makePlantsView(W3);   // the weeds (src/w3/plants3.js): stems, fronds, pads and reeds by each patch's stand
 const risesView = makeRisesView(W3);   // the insects on the film, the rises, splashes and leaps of the fish that take them
+const bedView = makeBedView(plantsView);   // the crayfish out on the bed and the snails (littoral3), near the camera
 // SPECKS in the water about the eye when under it (suspended detritus, plankton): a sense of depth and of the water moving —
 // 2,500 tiny motes in a 10-m box that follows the camera, drifting; the fog fades them with distance (cosmetic)
 const specks = (() => {
@@ -320,7 +322,7 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, fishView.shadow, plantsView.group, risesView.group);
+clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -469,7 +471,7 @@ $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; 
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = S.trees; });
-$('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = S.fish; });
+$('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
@@ -491,7 +493,7 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
 }
 function onSnap(m) {
-  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus)) tintBed(); if (m.surf) risesView.setSurf(m.surf); return; }
+  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false;
   if (m.rises && m.rises.length && S.fish) risesView.add(m.rises, LIVE.tNow, S.fishScale);   // (on the frame loop's clock)
@@ -538,6 +540,7 @@ async function start() {
     liveTick(dt); lightByDay();
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     risesView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
+    if (S.fish) bedView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
     if (LIVE.snap && S.fish) {   // (the sun's direction and strength for the fish's shadows on the bed)
       const sp = sun.position, sl = sp.length() || 1, open = 1;
       SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.season === 'winter' ? 0 : open);
@@ -559,4 +562,4 @@ async function start() {
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, plantsView, risesView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

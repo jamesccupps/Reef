@@ -113,7 +113,46 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶ RESUME HERE (2026-10-16, later): STAGE R's core is DONE and merged (below), and the human's request (5) — RISES, SPLASHES, LEAPS
+▶ RESUME HERE (2026-10-16, after compacting). DONE THIS SESSION (docs/HOT_BROOK_3D.md §5 "Built — THE SEASON'S YOUNG SO FAR",
+§6 "Built — THE CRAYFISH AND SNAILS ON SCREEN"): (e) Fish3.seedSeason — a lake opened on May 20 (or a forward season jump) holds
+the young of the spawnings before it (spawned as _spawn would, carried by _spinYoy at F3.SEED_P [0.73 spring → 0.5 by early July],
+SEED_M 1.2, SEED_SPREAD 10 days; calibrated vs full runs from ice-out on May 20 / late July / Sept 12; a.lastSpawn: once a year);
+Fish3 {young: true} in the worker (gate unit tests keep founders only); Env3._light() at primeSeason (a fresh lake sat in NIGHT
+until the water's first step — a minute at 1×); bed3view.js — crayfish (walking) and snails drawn at their real numbers
+(Littoral3.shown). FOUND: the env's spring water runs 1.5–3.5 °C below the calendar (May 20 11.7 vs 13.2 °C).
+NEXT, in order: (f) THE CENSUS AND THE NEW SPECIES — research IN (docs/research_notes/Hot Brook populations and water/
+eastern_maine_relative_abundance.md: EPA 1991–94 Northeast Lakes nets in 9 eastern Maine lakes 30–95 km away — median share of
+adults white perch 42 %, sucker 7 %, yellow perch 6 % (mostly juveniles), pumpkinseed 5 %, bullhead 3 %, smallmouth 2 % (0–40),
+golden shiner 1.3 %, FALLFISH 0.9 % (0–23; 6 of 9 lakes), pickerel 0.5 %; the sim's shares: yellow perch 34 %, white perch 32 %,
+golden shiner 17 % (too high; MDIFW lists none for Hot Brook), sucker 1.2 % (too low); yellow perch : bass 21:1 vs regional 7.5:1;
+the human's catches fit — bass caught 3–7× a year each under C&R, fallfish "very easy", perch take small baits: calibrate to nets,
+not angler catch) → revise S3 perHa (fewer yellow perch ≥ 7.5 cm and golden shiners, more suckers within the 12–25 kg/ha biomass
+bound, add FALLFISH ~75–250/ha and BANDED KILLIFISH as the small-minnow guild — life histories + FB4 surrogates in
+fish_numbers_and_new_species.md Q5–Q6; redbreast in the brook/coves). TROUT/SALMON: not supported (MDIFW sheets list neither, no
+coldwater tributaries, no stocking 2015–25; the claim likely from a real-estate listing) — at most rare spring/fall strays: tell
+the human, ask what they know. White perch 25-fish limit: a citizen petition, "not for biological reasons". Bass rules confirmed
+("larger than average size"; all bass released; artificial lures Oct 1–Dec 31). (a) CLARITY — now with local data
+(maine_dep_lakes_data_2025.md, from the human's LakesDataTables2025.zip: no Hot Brook data at all; Faulkner Lake (Weston) Secchi
+3.5–4.5 m, colour 18, chl 3.6–5.5, TP 9–12; North Lake (Orient) 3.3–4.6 over 1992–2014; Baskahegan 3.7–4.7, colour 46 → target
+Secchi ~3.9 m vs the sim's 3.2; late-August profiles of 4–7-m lakes mixed, 19–23 °C, bottom O₂ 7.6–8.9 — the sim agrees).
+MUSSELS (maine_freshwater_mussels.md, from the human's MDIFW poster): Maine's 10 species — for Hot Brook (Penobscot drainage)
+eastern elliptio (the sim's) + eastern floater (soft weedy mud, low O₂) + eastern lampmussel; maybe yellow lampmussel / tidewater
+mucket (threatened; white perch, killifish hosts); otters, raccoons, muskrats eat them (shell piles). Then: the water level
+(below), frogs + turtles (turtles_and_frogs.md), R3's fine-rung items, wildlife 7e.
+NEW FIELD OBSERVATIONS (2026-10-16, after compacting; memory hot-brook-field-observations, w3-backlog-requests item 7):
+FROGS of several species, "definitely bullfrogs"; SNAILS and CRAYFISH are there (the 3-D has both as bed biomass in littoral3 — eaten,
+NOT DRAWN); TURTLES. Research already in hand: Maine lake shores and catchment/turtles_and_frogs.md (painted, snapping, wood turtle;
+green frog, bullfrog, mink frog, vernal-pool amphibians). A search summary (Maine.gov-cited) the human shared: smallmouth managed for
+larger-than-average size; WHITE PERCH ABUNDANT (25-fish bag limit on Lower); pickerel common; yellow perch, bullhead, sucker,
+fallfish, minnows; Upper records OCCASIONAL BROOK TROUT and ATLANTIC SALMON ("maybe during the right time of year we have trout and
+salmon come through") → transient cold-water visitors via the inflow/brook in spring/fall. WATER LEVELS VARY by season AND year
+(rain): in a dry year the brook was so low "you could walk through parts that were almost out of the water" → a water balance
+(rain, evaporation, inflow, the outlet sill) with a varying stage; a dry-year brook nearly cutting the lakes apart. RESEARCH running:
+docs/research_notes/Hot Brook populations and water/eastern_maine_relative_abundance.md (relative abundance in eastern Maine lakes vs
+the human's catches, fallfish in lakes, the small-minnow guild, trout/salmon visits, the white perch bag limit). Existing research
+covers the new species' life histories + FB4 surrogates (fish_numbers_and_new_species.md Q5–Q6) and the plant species per growth
+form (Whole lake 3D fish simulation/macrophytes.md §1).
+(Before:) STAGE R's core is DONE and merged (below), and the human's request (5) — RISES, SPLASHES, LEAPS
 and the insects on the water — is built (fish3 rises → render3/rises3view.js; docs/HOT_BROOK_3D.md §6 "Built — RISES …"). NEXT:
 R3's fine-rung mechanisms (strike events, real strike distances; equate the rungs' surface feeding — B11: the real-time rung takes
 ~1/7 of a block's), the remaining compat constants, the small young shiners/pumpkinseed, then the wildlife (7e).

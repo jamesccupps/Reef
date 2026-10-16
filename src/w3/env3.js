@@ -318,6 +318,14 @@ export class Env3 {
     if (this.chem) this.chem.prime();
     if (this.plants) this.plants.jump();   // (the weeds take the new season's shape, conserving their mass)
     if (this.lit) this.lit.jump();
+    this._light();   // (the sky at once: a lake opened at 7 a.m. is in daylight before its first step)
+  }
+  // the light now: the sun's height, the daylight under the cloud, the surface's lux (by the hour, the season, the weather)
+  _light() {
+    const sun = seasonalSun(this.yearFrac()), cover = ENV.CLOUD_COVER[this.weather];
+    this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover);
+    this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac); this.dayFrac = sun.dayFrac;
+    this.lux = this._lux(this.t, sun, cover);
   }
   _iceProfile(z) { const s = clamp((z - THERMAL.ICE_TOP_M) / THERMAL.ICE_META_M, 0, 1); return 0.2 + 3.8 * s * s * (3 - 2 * s); }   // ~0 °C under the ice → 4 °C at depth
 
@@ -325,14 +333,11 @@ export class Env3 {
   step(dt) {
     const G = this.G;
     this.time += dt; this.t = (this.t + dt / CLOCK3.DAY_LEN) % 1;
-    const yf = this.yearFrac(), sun = seasonalSun(yf);
+    const yf = this.yearFrac();
     this._weather(dt);
     let iceMean = 0; for (let c = 0; c < G.NC; c++) iceMean += this.ice[c] * G.area[c]; iceMean /= this._area || (this._area = G.area.reduce((s, a) => s + a, 0));
     this.iceMean = iceMean;
-    const cover = ENV.CLOUD_COVER[this.weather];
-    this.light = daylight(this.t, sun.dayFrac) * sun.noon * (1 - cover);
-    this.lightDay = sun.noon; this.sun = daylight(this.t, sun.dayFrac); this.dayFrac = sun.dayFrac;
-    this.lux = this._lux(this.t, sun, cover);
+    this._light();
     this._heat(dt, yf);
     if (this.chem) this.chem.step(dt);
     if (this.plants) this.plants.step(dt);

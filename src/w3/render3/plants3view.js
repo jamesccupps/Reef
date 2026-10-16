@@ -174,5 +174,5 @@ export function makePlantsView(W3) {
   // the stems sit on their own layer (LAYER), which the water's reflection camera leaves out (main3): they would cost a second
   // draw for pads and reed tips that are barely seen in a ripple
   for (const m of meshes) m.layers.set(LAYER); musMesh.layers.set(LAYER);
-  return { group, setData, update, cover, nb, fine: fineI };
+  return { group, setData, update, cover, nb, fine: fineI, fineB };
 }

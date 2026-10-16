@@ -329,9 +329,10 @@ if (run('young')) {
   const { PLANKTON } = await import('../src/config.js');
   const { seed } = await import('../src/core.js');
   // A SPRING (Apr 21 → late June, the coarse grid): who spawns when and where, the nests, the brook
-  { seed(511); const e = new Env3({ col: 10, yf0: 0.14 }), F = new Fish3(e); const gd = [];
+  { seed(511); const e = new Env3({ col: 10, yf0: 0.14 }), F = new Fish3(e); const gd = []; let may = null, mayYf = 0;
     for (let i = 0; i < 62 * 49.3; i++) {
       F.step(FB); e.step(EW);
+      if (!may && e.yearFrac() >= 0.22) { may = F.census(); mayYf = e.yearFrac(); }   // (May 20: the young so far — for seedSeason below)
       if (i % 25 === 0) for (const a of F.fish) if (a.nt > 0 && a.nt < a.s.guard - 2) gd.push(Math.hypot(a.x - a.nx, a.y - a.ny));
     }
     const st = F.stats, at = st.spawnAt, day = k => at[k].first < 0 ? Infinity : (at[k].first / (365 * DAYS) - 0.14) * 365, bed = k => at[k].bed / Math.max(1, st.spawns[k]);
@@ -347,7 +348,17 @@ if (run('young')) {
     let brook = 0, sun = 0; for (const a of F.fish) if (a.s.key === 'sunfish') { sun++; if (GEO.bodyAt(a.x, a.y) === BROOK) brook++; }
     const c = F.census();
     check('by June pumpkinseed are in the brook\'s pools (the angler\'s sunfish), and the young of the spring spawners swim in the lakes',
-      brook >= 5 && c.perch.yoyN > 0 && c.sunfish.yoyN > 0 && c.whiteperch.yoyN > 0, `${brook} of ${sun} pumpkinseed in the brook; young: ` + ['perch', 'whiteperch', 'sunfish', 'bass', 'sucker', 'pike'].map(k => `${k} ${(c[k].yoyN / 1e3).toFixed(1)}k at ${f1(c[k].yoyL || 0)} cm`).join(', ')); }
+      brook >= 5 && c.perch.yoyN > 0 && c.sunfish.yoyN > 0 && c.whiteperch.yoyN > 0, `${brook} of ${sun} pumpkinseed in the brook; young: ` + ['perch', 'whiteperch', 'sunfish', 'bass', 'sucker', 'pike'].map(k => `${k} ${(c[k].yoyN / 1e3).toFixed(1)}k at ${f1(c[k].yoyL || 0)} cm`).join(', '));
+    // THE SEASON'S YOUNG SO FAR (Fish3.seedSeason — the human, on a fresh lake: "it's saying there aren't any schools of young
+    // fish, is that correct?"): a lake opened on May 20 holds the young of the spawnings before it — about as many and as big as
+    // the spring above had on that day — and none of the later spawners'. (Calibrated on the full grid, 3 seeds: perch 1.05 cm
+    // vs 1.05–1.07 run in full; the coarse grid's spring and this seed's weather spawn the perch a week later: ±30 % on size)
+    { seed(519); const e2 = new Env3({ col: 10, yf0: mayYf }), F2 = new Fish3(e2, { young: true }), c2 = F2.census(), sp3 = ['perch', 'pike', 'sucker'];
+      const near = k => c2[k].yoyN > 0.5 * may[k].yoyN && c2[k].yoyN < 2 * may[k].yoyN && Math.abs(c2[k].yoyL / may[k].yoyL - 1) < 0.3;
+      for (let i = 0; i < 10; i++) { F2.step(FB); e2.step(EW); }
+      check('a lake opened on May 20 already holds the young of the spawnings before it (perch, pickerel, suckers: ×0.5–2 the numbers, ±30 % the size of the same spring run in full), none of the later spawners (smallmouth, pumpkinseed), and runs on',
+        sp3.every(near) && c2.bass.yoyN === 0 && c2.sunfish.yoyN === 0 && F2.yoy.some(q => q.alive && q.s.key === 'perch'),
+        sp3.map(k => `${k} ${(c2[k].yoyN / 1e3).toFixed(1)}k at ${f2(c2[k].yoyL || 0)} cm (in full ${(may[k].yoyN / 1e3).toFixed(1)}k at ${f2(may[k].yoyL || 0)})`).join(', ')); } }
   // THE YOUNG'S BOOKKEEPING: a school of larvae takes its zooplankton (rotifers too) from the water gram for gram
   { seed(512); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 1; ch.zooC[j] = 1; ch.zooR[j] = 1; }

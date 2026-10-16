@@ -102,6 +102,16 @@ export const F3 = {
   YOY_BL: 4, YOY_VMAX: 0.25,   // a young school moves at YOY_BL lengths a second (≤ YOY_VMAX m/s): it lives on the physiological clock
   YOY_EAT_R: 0.6,       // m: a fish picks at a school of young within this (+ its own length)
   YOY_MERGE_R: 1.5,     // m: schools of young of a species and size meet and merge within this
+  // THE SEASON'S YOUNG SO FAR (seedSeason: a new lake or a season jump): the young are carried from their spawning day to the
+  // date at SEED_P of their Cmax with their own mortality × SEED_M (for the eaters' takes the live sim adds, _eatYoy). SEED_P is
+  // the spring's [0] until SEED_P_YF[0], easing to the summer's [1] by SEED_P_YF[1]: the live young feed at 0.7–1.0 of Cmax
+  // through June and fall to 0.25–0.45 in late July (the midsummer zooplankton collapse, scramble competition). Calibrated
+  // against the same lakes run in full from ice-out (3 seeds to May 20: perch 1.05, suckers 1.4, pickerel 1.05 cm, white perch
+  // just hatched, and their survival; 2 seeds to Sept 12: perch 5.0–5.5, suckers 4.9–5.6, white perch 3.9–4.6, bullheads
+  // 4.2–4.8, pumpkinseed 2.3–2.9 cm). (The young pickerel, fish eaters in the live sim, come out small: ~4 vs 7 cm by September)
+  SEED_P: [0.73, 0.5], SEED_P_YF: [0.28, 0.34], SEED_M: 1.2,
+  SEED_SPREAD: 10 * 86400,   // s: a population's spawning, once its water reaches the temperatures, spread over its first ~10 days (the
+                             //   live sim: perch 49 of 52 within ~5 days, suckers over ~4, pickerel ~18)
   MERGE_EVERY: 10,      // steps between the schools' merge/split pass
   MERGE_R: 2.5, MERGE_LR: 1.2, MERGE_MAX: 1.6, SPLIT: 2,
 };
@@ -259,7 +269,7 @@ class Fish {
   constructor() {
     this.id = 0; this.k = 0; this.s = null; this.alive = true; this.n = 1; this.school = false; this.cause = '';
     this.x = 0; this.y = 0; this.z = 0; this.yaw = 0; this.pitch = 0; this.spd = 0; this.hx = 0; this.hy = 0;
-    this.L = 0; this.W = 0; this.K = 1; this.sex = 0; this.mature = false; this.Lmat = 0; this.gon = 0; this.gut = 0; this.gutE = 0;
+    this.L = 0; this.W = 0; this.K = 1; this.sex = 0; this.mature = false; this.Lmat = 0; this.gon = 0; this.lastSpawn = -1e18; this.gut = 0; this.gutE = 0;
     this.age = 0; this.gen = 0; this.hue = 0; this.mateCd = 0;
     this.hunger = 1; this.fear = 0; this.energy = 1; this.uAvg = 0.1; this.xo = 1; this.xt = 15; this.rO2 = 0;
     this.eaten = 0; this.cons = 0; this.consMax = 0; this.thrust = 0; this.yawRate = 0; this.pitchT = 0; this.missCd = 0;
@@ -296,7 +306,7 @@ class Yoy {
 
 // ============================================================ the fish ===============================================
 export class Fish3 {
-  constructor(env, { founders = true } = {}) {
+  constructor(env, { founders = true, young = false } = {}) {   // (young: the season's young so far — seedSeason; the view's lake)
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
@@ -309,7 +319,7 @@ export class Fish3 {
     this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
     this._hashInit(); this._colStatics(); this._slopeStatics(); this._siteStatics();
-    if (founders) this.found();
+    if (founders) { this.found(); if (young) this.seedSeason(0, env.yearFrac()); }
   }
 
   // ---------- static lookups over the water grid ----------
@@ -482,6 +492,108 @@ export class Fish3 {
         made += n;
       }
     }
+  }
+
+  // THE SEASON'S YOUNG SO FAR. A new lake opens on a date (SEASON.START_YF: mid/late May), past the spawning of the fish that
+  // spawn just after ice-out (yellow perch, chain pickerel: 6–12 °C) and into the suckers' and white perch's; a season jump
+  // skips weeks. The real lake on that date holds those spawnings' young (the human, 2026-10-16, on a fresh lake: "it's saying
+  // there aren't any schools of young fish, is that correct?"). Over [yf0, yf1) each mature fish of a species whose spawning
+  // temperatures the season's water (seasonalTemp) passed spawns as _spawn would — with the chance of the share of its
+  // spawning that is past (a population spawns over its window's first days: SEED_SPREAD), on a day in it — on its ground
+  // (the brook for a brook runner, its species' traditional grounds, else water of its spawning depth near home): its eggs ×
+  // hatch, its genome crossed with a mate's, a nest guarded while the guarding lasts. The young are then carried from their day to yf1 by their own equations (_spinYoy) — with the young already in the
+  // lake too when `carry` (a season jump). Returns the schools made
+  seedSeason(yf0, yf1, carry = false) {
+    if (!(yf1 > yf0)) return 0;
+    const win = this._spawnWin || (this._spawnWin = this._spawnWindows()), made = carry ? this.yoy.filter(q => q.alive).map(q => [q, yf0]) : [], used = new Set();
+    const yr0 = Math.floor(this.env.time / YEAR) * YEAR, spent = b => b.lastSpawn >= yr0;   // (spawned already this year: once a year)
+    let nNew = 0;
+    for (let i = 0, n0 = this.fish.length; i < n0; i++) {
+      const a = this.fish[i]; if (!a.alive || !a.mature || a.sex === 1 || spent(a)) continue;   // (the female, or the school, spawns)
+      const s = a.s, sp = s.sp, w = win[a.k]; if (!w) continue;
+      const sp1 = w[0] + Math.min(w[1] - w[0], F3.SEED_SPREAD / YEAR), sh = y => clamp((y - w[0]) / (sp1 - w[0]), 0, 1);
+      const o0 = Math.max(w[0], yf0), o1 = Math.min(sp1, yf1);
+      if (!(o1 > o0) || rand() > (sh(yf1) - sh(yf0)) / (1 - sh(yf0))) continue;
+      const b = a.sex === 2 ? a : this._seedMate(a, used, spent); if (!b) continue;
+      const yfS = o0 + rand() * (o1 - o0), ago = (yf1 - yfS) * YEAR, [x, y] = this._seedGround(a), nz = Math.max(0.05, GEO.depthAt(x, y) - 0.03);
+      const females = a.sex === 2 ? a.n / 2 : 1, eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b), larvae = eggs * sp.sHatch;
+      this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
+      const q = this._mkYoy(a.k, x, y, nz, larvae, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)), Math.max(a.gen, b.gen) + 1, (a.hue + b.hue) / 2);
+      if (s.guard && b !== a && b.n === 1 && ago < s.guard) {   // (still on the nest: the male guards it — he is there)
+        b.nt = s.guard - ago; b.nx = x; b.ny = y; b.nz = nz; q.guard = b.id; q.gref = b; q.nx = x; q.ny = y;
+        if (s.spawn.faith) { b.nestX = x; b.nestY = y; }
+        b.x = b._px = x; b.y = b._py = y; b.bed = Math.max(0.05, GEO.depthAt(x, y)); b.z = b._pz = clamp(b.z, F3.ZTOP, Math.max(F3.ZTOP, b.bed - F3.ZBOT));
+      }
+      a.gon = 0; a.ripe = false; a.mateCd = Math.max(0, s.mateCd - ago); a.lastSpawn = yr0 + yfS * YEAR;
+      if (b !== a) { b.gon = 0; b.ripe = false; b.mateCd = Math.max(0, s.mateCd - ago); b.lastSpawn = a.lastSpawn; }
+      made.push([q, yfS]); nNew++;
+    }
+    this._spinYoy(made, yf1);
+    return nNew;
+  }
+  // each species' spawning window in the season (yf from, to): from when the season's water (seasonalTemp) reaches its
+  // spawning temperatures — _spawn's soft edges, SPAWN.EDGE: the sunlit shallows run ahead of the lake — until it passes
+  // them (or SPAWN.SEASON_END); null if it never reaches them
+  _spawnWindows() {
+    return KEYS3.map(k => {
+      const lo = S3[k].sp.spawnT[0] - SPAWN.EDGE, hi = S3[k].sp.spawnT[1] + SPAWN.EDGE; let a = -1, b = SPAWN.SEASON_END;
+      for (let yf = 0.05; yf < SPAWN.SEASON_END; yf += 0.0005) { const T = seasonalTemp(yf); if (a < 0) { if (T >= lo) a = yf; } else if (T > hi) { b = yf; break; } }
+      return a < 0 ? null : [a, b];
+    });
+  }
+  // a seeded spawning's mate: the mature male of its species in its lake living nearest it that hasn't spawned this year (any,
+  // if every one has)
+  _seedMate(a, used, spent) {
+    let best = null, bd = 1e18, any = null;
+    for (const b of this.fish) {
+      if (!b.alive || b.k !== a.k || b.sex !== 1 || !b.mature || b.lake !== a.lake) continue;
+      any = any || b; if (used.has(b) || spent(b)) continue;
+      const d = (b.lhx - a.lhx) ** 2 + (b.lhy - a.lhy) ** 2; if (d < bd) { bd = d; best = b; }
+    }
+    if (best) used.add(best);
+    return best || any;
+  }
+  // where a seeded spawning was: a brook runner's riffles, its species' traditional grounds in its lake, else the nearest of a
+  // few places of its spawning depth about its home
+  _seedGround(a) {
+    const s = a.s, sb = s.spawn, st = this.sites[s.key], wet = (x, y) => GEO.bodyAt(x, y) === a.lake && GEO.depthAt(x, y) > 0.12;
+    if (a.brookRun) { const p = BP[1 + ((rand() * (BLAST - 1)) | 0)]; return [p[0], p[1]]; }
+    if (st && st[a.lake].length) { const p = st[a.lake][(rand() * st[a.lake].length) | 0], x = p[0] + rand(-1, 1), y = p[1] + rand(-1, 1); return wet(x, y) ? [x, y] : [p[0], p[1]]; }
+    const bc = this._bandC || (this._bandC = {}), key = s.key + '_' + a.lake;
+    const cand = bc[key] || (bc[key] = (() => { const l = []; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === a.lake && GEO.depth[i] >= sb.bot[0] && GEO.depth[i] <= sb.bot[1]) l.push(i); return l; })());
+    if (!cand.length) return [a.x, a.y];
+    let best = null, bd = 1e18;
+    for (let t = 0; t < 12; t++) { const [x, y] = GEO.cellCentre(cand[(rand() * cand.length) | 0]), d = (x - a.lhx) ** 2 + (y - a.lhy) ** 2; if (d < bd) { bd = d; best = [x, y]; } }
+    return best;
+  }
+  // carry schools of young [school, the yf it starts from] to yf1, a day at a time on the season's temperature: FB4 growth at
+  // F3.SEED_P of their Cmax by the season (× the larvae's CMAX_LARVA) on the food of their stage (zooplankton; the bed's past benthL), and
+  // _stepYoy's mortality — the larval critical period, the juveniles' density-compensated predation, the species' M — × SEED_M
+  _spinYoy(made, yf1) {
+    if (!made.length) return;
+    const juvD = new Float64Array(KEYS3.length), dY = DAY / YEAR;
+    for (let yf = Math.min(...made.map(m => m[1])); yf < yf1 - 1e-9; yf += dY) {
+      const dd = Math.min(1, (yf1 - yf) / dY), T = seasonalTemp(yf + dY * dd / 2);
+      juvD.fill(0); for (const [q, y0] of made) if (q.alive && y0 <= yf) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
+      for (const [q, y0] of made) {
+        if (!q.alive || y0 > yf) continue;
+        const sp = q.s.sp, b = sp.bioJuv || sp.bio, d = sp.diet;
+        const pS = F3.SEED_P[0] + (F3.SEED_P[1] - F3.SEED_P[0]) * clamp((yf - F3.SEED_P_YF[0]) / (F3.SEED_P_YF[1] - F3.SEED_P_YF[0]), 0, 1);
+        const C = pS * cmax(b, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+        const J = C * (q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus) ? PREY.BENTH_ED : PREY.DAPH_ED);
+        wasteFractions(b, T, pS, WF);
+        const Wr = Math.max(q.W, FRY.R_WMIN), Rj = respStd(b, Wr, T) * routineActivity(b, Wr, T) * q.W * OXYCAL * dd;
+        const Fe = WF[0] * J, U = WF[1] * (J - Fe), net = J - Fe - U - b.SDA * (J - Fe) - Rj;
+        if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
+        const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
+        const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
+          + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) * DAY / YEAR;   // (/day)
+        const lost = q.n * -Math.expm1(-hN * F3.SEED_M * dd);
+        this.stats.fry[q.s.key].natural += lost; q.n -= lost; q.age += dd * DAY; q.p = pS;
+        if (q.n < 1) q.alive = false;
+      }
+    }
+    this.yoy = this.yoy.filter(q => q.alive);
   }
 
   // ---------- where a fish wants to be ----------
@@ -1026,8 +1138,8 @@ export class Fish3 {
       male.nt = s.guard; male.nx = a.x; male.ny = a.y; male.nz = nz; q.guard = male.id; q.gref = male; q.nx = a.x; q.ny = a.y;
       if (sb.faith) { male.nestX = a.x; male.nestY = a.y; }
     }
-    a.gon = 0; a.mateCd = s.mateCd; a.ripe = false;
-    if (male) { male.gon = 0; male.mateCd = s.mateCd; male.ripe = false; }
+    a.gon = 0; a.mateCd = s.mateCd; a.ripe = false; a.lastSpawn = this.env.time;
+    if (male) { male.gon = 0; male.mateCd = s.mateCd; male.ripe = false; male.lastSpawn = this.env.time; }
   }
 
   // ============================================================ YOUNG-OF-YEAR ===========================================

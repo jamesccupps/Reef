@@ -55,7 +55,10 @@ function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed c
   for (let f = 0; f < P.Bs.length; f++) out.set(P.Bs[f], f * nb);
   const mus = env.lit ? Float32Array.from(env.lit.mu) : new Float32Array(nb);   // (the mussels /m², the same cells)
   const surf = new Float32Array(env.G.NC); if (env.lit) for (let c = 0; c < surf.length; c++) surf[c] = env.lit.surfA[c] + env.lit.surfT[c];   // (the insects on the water, g wet/m², per column)
-  postMessage({ type: 'plants', shoots: out, mus, surf, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer]); plantsAt = performance.now();
+  // the crayfish out on the bed (adults, the year's young /m²; out by night more than by day) and the snails /m², per bed cell, with
+  // the young crayfish's mass (render3/bed3view.js)
+  const bed = env.lit ? env.lit.shown(env.sun < 0.05) : new Float32Array(nb * 3), wY = env.lit ? env.lit.wY : 1;
+  postMessage({ type: 'plants', shoots: out, mus, surf, bed, wY, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer, bed.buffer]); plantsAt = performance.now();
 }
 function snapshot() {
   const fs = F.fish, Y = F.yoy;
@@ -87,12 +90,16 @@ function snapshot() {
 onmessage = ev => {
   const m = ev.data;
   if (m.type === 'init') {
-    env = new Env3(); F = new Fish3(env); remember();
+    env = new Env3(); F = new Fish3(env, { young: true }); remember();   // (the lake opens with the season's young so far: seedSeason)
     postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL });
     sendPlants(); snapshot();
   } else if (m.type === 'tick') { ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot(); }
   else if (m.type === 'run') run = !!m.run;
   else if (m.type === 'speed') speed = +m.speed || 1;
   else if (m.type === 'show') show = m.show;
-  else if (m.type === 'season') { env.primeSeason(Math.floor(env.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + m.yf * CLOCK3.YEAR_LEN); remember(); sendPlants(); }
+  else if (m.type === 'season') {   // (a jump forward in the year carries the young along and adds the spawnings it skipped)
+    const y0 = env.yearFrac(); env.primeSeason(Math.floor(env.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + m.yf * CLOCK3.YEAR_LEN);
+    if (env.yearFrac() > y0) F.seedSeason(y0, env.yearFrac(), true);
+    remember(); sendPlants();
+  }
 };

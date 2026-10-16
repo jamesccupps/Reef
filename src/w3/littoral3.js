@@ -47,6 +47,7 @@ export const LIT3 = {
   // young born from May to July above SN_T °C
   SN_KAPPA: 0.02, SN_FORM: { EM: 0.5, FL: 1, SC: 1, IS: 0.3, DM: 0.3 }, SN_BARE: 0.2,
   SN_R: 0.02, SN_T: 10, SN_YF: [0.2, 0.45], SN_M: 0.003, SN_REF: 0.1,   // (M: most live about a year — Physa 12–13 months)
+  SN_W: 0.1,               // g wet a snail with its shell (an ~8-mm Physa, Gyraulus or Amnicola) — for the view: 5–50 a m² in the weeds
   // THE SURFACE — the land's insects fall in from forested banks: ~50 mg DW per m of bank a day at the July–August peak
   // (20–120; Mehner et al. 2005; streams under a canopy 25–80 mg/m²/day), a fraction in spring and autumn; per world metre
   // of bank × GEO.SCALE (the lakes are 1/10: their area per m of bank is) — by the bank's cover (forest 1, shrub 0.5, open 0.2)
@@ -293,6 +294,19 @@ export class Littoral3 {
       const K = this.Kmu[i], anox = ch.o2[j] * ENV.O2_MGL < L3.MU_ANOX_MGL ? L3.MU_ANOX : 0;
       this.mu[i] = Math.max(0, N + (recr * hostF * N * Math.max(0, 1 - N / K) - (L3.MU_M / 365 + anox) * N) * dd);
     }
+  }
+  // FOR THE VIEW (render3/bed3view.js), per bed cell: the crayfish out on the bed now — adults and the year's young, /m²: those
+  // out foraging by day or night as the water lets them, the weeds' stems hiding some, and every adult the shelter can't hold
+  // (as crayE) — and the snails (/m², at SN_W each)
+  shown(night, out = new Float32Array(this.cells.length * 3)) {
+    const L3 = LIT3;
+    for (let i = 0; i < this.cells.length; i++) {
+      const j = this.cells[i], act = clamp((this.env.temp[j] - L3.CR_T_ACT[0]) / (L3.CR_T_ACT[1] - L3.CR_T_ACT[0]), 0, 1);
+      const st = this.plants.stems[this.G.colOfCell[j]] / L3.CR_S50, o = act * L3.CR_OUT[night ? 1 : 0] / (1 + st * st * st);
+      const a = this.crA[i], over = Math.max(0, a - this.Kcr[i]);
+      out[i * 3] = (over + (a - over) * o) / L3.CR_WA; out[i * 3 + 1] = this.crY[i] * Math.min(1, o * 1.5) / this.wY; out[i * 3 + 2] = this.sn[i] / L3.SN_W;
+    }
+    return out;
   }
   // the crayfish a fish can take in bed cell index i (g wet/m²): those out (by day or night, as active as the water lets them;
   // the weeds' stems hide some) and every adult the shelter can't hold, of the sizes its gape fits, × its strike success

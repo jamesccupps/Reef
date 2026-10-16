@@ -658,6 +658,29 @@ among the animals shown. Each takes its share as whole fish, a fish at a time, w
 - **Still for the human:** whether Hot Brook's late-winter O₂ really falls this low (ice-fishing observations).
 - test/w3.mjs +1 check.
 
+**Built — THE SEASON'S YOUNG SO FAR (Fish3.seedSeason, 2026-10-16).** The human, on a fresh lake: "it's saying there aren't any
+schools of young fish, is that correct?" It wasn't: a lake opens on May 20 (SEASON.START_YF), after the yellow perch and pickerel
+have spawned (6–12 °C, just after ice-out) and while the suckers and white perch are spawning; the real lake holds their young.
+- **The mechanism:** over [yf0, yf1) each mature fish of a species whose spawning window (seasonalTemp within spawnT ± SPAWN.EDGE)
+  has passed spawns as `_spawn` would — with the chance of the share of its population's spawning that is past (spread over the
+  window's first F3.SEED_SPREAD 10 days: the live sim's perch spawned 49 of 52 within ~5 days) — on its ground (the brook for a
+  brook runner, the species' traditional sites, else water of its spawning depth near home): eggs × hatch, a crossed and mutated
+  genome, a nest guard while the guarding lasts. The young are then carried day by day to the date (`_spinYoy`): FB4 growth at
+  the season's temperature and F3.SEED_P of Cmax (0.73 in spring easing to 0.5 by early July, the live young's midsummer drop),
+  and `_stepYoy`'s mortality × SEED_M 1.2 (for the live sim's eaters).
+- **Calibration** (against the same lakes run in full from ice-out): May 20, 3 seeds — perch 1.05 cm (live 1.05–1.07), suckers 1.4
+  (1.43–1.47), pickerel 1.05 (1.01–1.04), white perch just hatched; late July — perch 4.0 (4.2), suckers 4.0 (4.1), white perch 2.9
+  (2.4–3.1); Sept 12 — perch 5.7 (5.0–5.5), suckers 5.5 (4.9–5.6), bullheads 4.5 (4.2–4.8), pumpkinseed 2.8 (2.3–2.9). Off: the
+  young pickerel (fish eaters live) ~4 vs 7 cm by September, and the young bass survive the spin far better than in the live sim
+  (its open young-bass survival problem).
+- **Where:** `new Fish3(env, { young: true })` (the worker; the gate's unit tests keep founders only); a FORWARD season jump calls
+  `seedSeason(y0, y1, true)` — the young already there are carried too, and `a.lastSpawn` keeps a fish to one spawning a year.
+- **Also fixed:** the water's light was computed only in `Env3.step`, so a fresh lake sat in night (sun 0, lux 0) until the water's
+  first step — at 1× a minute. `Env3._light()` now runs at `primeSeason` too.
+- **Found:** from ice-out to May 20 the water runs 1.5–3.5 °C below the calendar curve (May 20: 11.7 vs 13.2 °C) — for the
+  calendar calibration later.
+- test/w3.mjs +1 check (a May-20 lake vs the gate's spring run on that date: ×0.5–2 the numbers, ±30 % the sizes on the coarse grid).
+
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 
 three.js r186 (`WebGPURenderer`, which falls back to WebGL2 by itself; ES modules with an import map — self-hosted pinned
@@ -730,6 +753,16 @@ the water at a damselfly or dragonfly (cosmetic: Math.random; fish3view draws th
 as dark specks on the film near where the camera looks. In the real lake-like sim the fish keep the surface nearly bare (mean
 ~0.05 mg/m²), so rises are sparse — a few a minute in view at dusk; fast-forward's blocks count at most 4 an agent. test/w3.mjs +1
 check. OPEN (audit B11): the real-time rung takes ~1/7 of what a block takes at the surface — the rungs' surface feeding to equate.
+
+**Built — THE CRAYFISH AND SNAILS ON SCREEN (`render3/bed3view.js`, 2026-10-16; the human: "do you have snails and crawfish too?
+those are in there").** Both were already in the sim as biomass per bed cell (littoral3: virile crayfish, adults and the year's
+young, by shelter; soft-water snails on the weeds and the lit bed) — eaten, never drawn. `Littoral3.shown(night)` gives per bed
+cell the crayfish OUT on the bed now (/m²: out foraging 70 % by night, 30 % by day, none under 5 °C, the weeds' stems hiding some,
+plus every adult the shelter can't hold — as `crayE`) and the snails (/m² at LIT3.SN_W 0.1 g); the worker sends them with the
+weeds every 4 s. The view puts each 1.5-m cell's real number near where the camera looks (adults within 16 m, the young crayfish
+within 9 m, snails within 7 m): low-poly crayfish (carapace, abdomen, tail fan, claws; adults ~8.5 cm, the young at their mass)
+walking slowly about where they are (2–5 cm/s, pausing), olive to rusty brown — in the tea water they read as brown shapes on
+the mud; snails ~1 cm on the bed. Shown with the Fish toggle.
 
 ## 7. A year in the 3-D lakes (walk-through)
 
