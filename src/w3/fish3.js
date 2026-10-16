@@ -158,7 +158,7 @@ KEYS3.forEach((k, i) => {
   s.uRoutine = s.cruise / s.sprint;
   s.pisc = !!sp.diet.fish; s.plank = !!sp.diet.plankton; s.sift = !!sp.diet.detritus;
   s.benthic = !!(sp.diet.larva || sp.diet.snail || sp.diet.detritus || sp.diet.insect);
-  // crayfish eaters forage on the bed at any size: until the 3-D lakes have crayfish (stage 7) the bed's invertebrates stand in
+  // crayfish eaters forage on the bed at any size (stage 7c: the crayfish, littoral3.js — big ones no longer take worms and scuds)
   s.cray = !!sp.diet.cray;
   s.gsi = sex => sex === 0 ? sp.gsiF : sex === 1 ? sp.gsiM : (sp.gsiF + sp.gsiM) / 2;   // (a school: half and half)
   s.spawn = SPAWN3[k]; s.guard = sp.nestGuard ? sp.nestGuard / Y2 * YEAR : 0;   // (s: how long a male keeps its nest)
@@ -274,7 +274,7 @@ export class Fish3 {
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
+    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
     this.stats.spawnAt = {};
     for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
     this.yoy = [];      // the young-of-year schools (Yoy)
@@ -741,6 +741,9 @@ export class Fish3 {
     const nearBed = a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200;
     const inWeeds = !!lit && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200 + this.env.plants._canopy[a.c];
     const moll = !!sp.diet.snail && a.L >= (sp.Lsnail || 0);
+    // (stage 7c) a crayfish eater on the bed takes the crayfish its gape fits, at its strike success; the big ones (bass and
+    // pickerel past 3 × their piscivory length) no longer bother with worms and scuds
+    const cs = s.cray && nearBed && lit ? +sp.diet.cray : 0, big = s.pisc && s.cray && a.L >= 3 * sp.Lpisc;
     const canB = s.benthic && small && (nearBed || inWeeds), canZ = s.plank || a.L < sp.Lzoo, canS = !!lit && !!sp.diet.insect && small && a.z <= LIT3.SURF_Z;
     // its footprint: the bed cells within FP_DZ of its depth, and its layer (± one in its own column) of the water, in the
     // columns within its forage radius
@@ -752,7 +755,7 @@ export class Fish3 {
       if (canZ && nZ < LZ.length - 4) { const j0 = G.cell0[cc], k1 = Math.min(G.nL[cc] - 1, kz); if (cc === a.c) { for (let k = Math.max(0, k1 - 1); k <= Math.min(G.nL[cc] - 1, k1 + 1); k++) LZ[nZ++] = j0 + k; } else LZ[nZ++] = j0 + k1; }
     }
     if (canB && !nB && a.jb >= 0) LB[nB++] = a.jb;
-    const Eb = canB && nearBed ? ch.benthEcells(LB, nB) : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll) : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
+    const Eb = canB && nearBed && !big ? ch.benthEcells(LB, nB) : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll, a.gape, cs) : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
     const KB = F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH, fB = Eb + Ew > 0 ? (Eb + Ew) / (Eb + Ew + KB) : 0, fS = Es > 0 ? Es / (Es + LIT3.K_SURF) : 0;
     let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
     if (F3.SHARE && canB && canZ) {
@@ -762,9 +765,9 @@ export class Fish3 {
     const want0 = want - got;
     if (tB > 0 && room > 0 && want > got && fB > 0) {   // the bed's worms and scuds and the weeds' fauna, by what each offers
       const wB = Math.min(room, want0 * tB * BENTHOS.Q) * n * fB;
-      const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll) / n : 0, Jw = Ew > 0 ? lit.J / n : 0;
+      const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll, a.gape, cs) / n : 0, Jw = Ew > 0 ? lit.J / n : 0, gc = Ew > 0 ? lit.crG : 0;
       if (gb > 0) { a.gut += gb; a.gutE += gb * PREY.BENTH_ED; room -= gb; got += gb; this.stats.food.benth += gb * n; }
-      if (gw > 0) { a.gut += gw; a.gutE += Jw; room -= gw; got += gw; this.stats.food.weed += gw * n; }
+      if (gw > 0) { a.gut += gw; a.gutE += Jw; room -= gw; got += gw; this.stats.food.weed += gw * n - gc; this.stats.food.cray += gc; if (gc > 0) this.stats.crayBy[s.key] = (this.stats.crayBy[s.key] || 0) + gc; }
     }
     if (canS && room > 0 && want > got && fS > 0) {   // the surface: emerging midges and mayflies, the land's beetles and flies — taken
       // as met by a fish near it, whatever else it is about (big, conspicuous items: no search time of their own)
@@ -782,6 +785,7 @@ export class Fish3 {
       const pRoom = Math.min(gEff, FEED.POOR_GUT * gmax) - a.gut;
       if (pRoom > 0) { const g = ch.takeSedOM(a.jb, Math.min(pRoom, (want - got)) * n) / n; if (g > 0) { a.gut += g; a.gutE += g * PREY.DETRITUS_ED * PREY.DETRITUS_DIG; got += g; this.stats.food.sed += g * n; } }
     }
+    if (a.gut > g0) this.stats.intakeBy[s.key] = (this.stats.intakeBy[s.key] || 0) + (a.gut - g0) * n;
     const ate = a.gut - g0 >= PLANKTON.BITE_MIN * gmax * dt / (1 / 30);   // (a meal: the 2-D bite threshold per 1/30-s step)
     if (ate) a.eaten++;
     return ate;

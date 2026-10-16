@@ -244,7 +244,7 @@ console.log('\n— fish 3-D: the agent core —');
   // takes its O₂ from the fish's own water
   { seed(503); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
-    const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; const Lt = e.lit; if (Lt) for (let i = 0; i < Lt.cells.length; i++) s += (Lt.S[i] + Lt.L[i] + Lt.sn[i]) * G.bedA[Lt.cells[i]]; return s; };   // (the bed and its weeds: stage 7b)
+    const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; const Lt = e.lit; if (Lt) for (let i = 0; i < Lt.cells.length; i++) s += (Lt.S[i] + Lt.L[i] + Lt.sn[i] + Lt.crA[i] + Lt.crY[i]) * G.bedA[Lt.cells[i]]; return s; };   // (the bed and its weeds and crayfish: stages 7b–c)
     for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 2; ch.zooC[j] = 1; } for (const j of ch.bedCells) ch.benth[j] = 12 * 8.2;
     let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2 && GEO.depth[i] < 2.4) { [px, py] = GEO.cellCentre(i); break; }
     const sch = F.add('whiteperch', 20, 80, 1.5, 2, 50), sk = F.add('sucker', px, py, null, 4, 1); sk.z = GEO.depthAt(sk.x, sk.y) - 0.1;
@@ -438,7 +438,13 @@ console.log('\n— fish 3-D: the food web through a summer —');
     check('the weeds feed the fish too: adults take their insects (and pumpkinseed their snails) as a minority of their bed food, the young their small fauna, fish near the surface the hatch',
       wShare > 0.02 && wShare < 0.4 && fd.yWeed > 0 && fd.surf > 0, `weeds ${(wShare * 100).toFixed(0)} % of the adults' bed food (${(fd.weed / 1000).toFixed(0)} kg; worms and scuds ${(fd.benth / 1000).toFixed(0)}); the young ${(fd.yWeed / 1000).toFixed(1)} kg; the surface ${(fd.surf / 1000).toFixed(2)} kg`);
     check('young smallmouth cross from copepods to midge larvae (1.5–2.5 cm) and grow on insects past 3 cm by midsummer (Lake Opeongo 3.8–4.6 by late July)',
-      bassL >= 3, `the largest school of young smallmouth reached ${f1(bassL)} cm`); }
+      bassL >= 3, `the largest school of young smallmouth reached ${f1(bassL)} cm`);
+    // (stage 7c) CRAYFISH: the adult smallmouth's staple, some of the pickerel's and bullheads', hardly the perch's; the fish take
+    // part of the crayfish's production, not all of it
+    const cb = F.stats.crayBy, ib = F.stats.intakeBy, sh = k => (cb[k] || 0) / Math.max(1e-9, ib[k] || 0), Lt = e.lit, crShare = Lt.crEaten / Math.max(1e-9, Lt.crProd);
+    check('crayfish: the adult smallmouth\'s staple (over a third of what they eat), a share of the pickerel\'s and bullheads\', a sliver of the perch\'s; the fish take part of the crayfish\'s production',
+      sh('bass') > 0.33 && sh('pike') > 0.1 && sh('catfish') > 0.02 && sh('perch') < 0.15 && crShare > 0.05 && crShare < 0.7,
+      `crayfish in the diet: smallmouth ${(sh('bass') * 100).toFixed(0)} %, pickerel ${(sh('pike') * 100).toFixed(0)} %, bullhead ${(sh('catfish') * 100).toFixed(0)} %, perch ${(sh('perch') * 100).toFixed(0)} %; fish ate ${(crShare * 100).toFixed(0)} % of the crayfish production (${(Lt.crEaten / 1000).toFixed(0)} of ${(Lt.crProd / 1000).toFixed(0)} kg)`); }
 }
 
 // ============================================================
@@ -475,6 +481,8 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
       return { full: fu / Math.max(1, nf), nf, bare: ba, bareB: bare[bare.length - 1][0], snBare: snB, ...Lt.stock() };
     };
     let peak1 = 0, feb = null, aug = null, augL = null, em0 = -1, emSpring = 0, emLate = 0, emPrev = 0, julBank = -1, julOpen = -1;
+    let crRel = -1, crSep = null, crAug = null;   // (stage 7c: the crayfish)
+    const crZones = () => { const z = [[0, 0], [0, 0], [0, 0]]; for (let i = 0; i < Lt.cells.length; i++) { const a = G.bedA[Lt.cells[i]], K = Lt.Kcr[i], k = K >= 20 ? 0 : K > 2 ? 1 : 2; z[k][0] += (Lt.crA[i] + Lt.crY[i]) * a; z[k][1] += a; } return z.map(v => v[0] / Math.max(1, v[1])); };
     for (let t = 0; t < 1.25 * CLOCK3.YEAR_LEN; t += 0.2) {
       e.step(0.2); const yf = e.yearFrac(), y = t / CLOCK3.YEAR_LEN;
       if (y < 0.5 && Math.round(t * 5) % 250 === 0) peak1 = Math.max(peak1, P.total(2));
@@ -482,6 +490,9 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
       if (!aug && y > 1.0 && yf > 0.44) { aug = snap(); augL = litSnap(); }
       if (em0 < 0 && y >= 0.25) { em0 = Lt.emerged; emPrev = Lt.emerged; }
       if (em0 >= 0) { const d = Lt.emerged - emPrev; emPrev = Lt.emerged; if (yf >= 0.15 && yf < 0.42) emSpring += d; else emLate += d; }
+      if (crRel < 0 && y < 0.5 && Lt.crReleased) crRel = Lt.stock().crYn;
+      if (!crSep && y < 0.5 && yf > 0.5) crSep = Lt.stock();
+      if (!crAug && y > 1.0 && yf > 0.44) crAug = { ...Lt.stock(), zones: crZones() };
       if (julBank < 0 && y > 1.0 && yf > 0.38) { let sb = 0, ab = 0, so = 0, ao = 0; for (let c = 0; c < G.NC; c++) { if (Lt.bank[c] > 0) { sb += Lt.surfT[c] * G.area[c]; ab += G.area[c]; } else { so += Lt.surfT[c] * G.area[c]; ao += G.area[c]; } } julBank = sb / ab; julOpen = so / Math.max(1, ao); }
     }
     const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = augL.vegShare * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry)
@@ -497,6 +508,12 @@ console.log('\n— plants 3-D: the weeds (and their invertebrates, stage 7b) —
       augL.vegSn >= 0.5 && augL.vegSn <= 5 && augL.snBare < 0.5, `weed beds ${f2(augL.vegSn)}, bare ${f2(augL.snBare)} g wet/m²`);
     check('insects emerge from the weeds: 0.5–2 g DW/m² of the vegetated littoral a year (~30 % of their production), the spring hatch the larger',
       emYr >= 0.5 && emYr <= 2 && emSpring > emLate, `${f2(emYr)} g DW/m² a year; spring–early summer ${(emSpring / 1000).toFixed(1)} kg, late summer–autumn ${(emLate / 1000).toFixed(1)} kg`);
+    check('crayfish (virile): 5–20 g/m² over the whole lakes (Michigan 4.6–21), 0.3–1.5 adults/m², the rocky shallows ≥ 3× the bare mud and the weed beds between',
+      !!crAug && crAug.crA + crAug.crY >= 5 && crAug.crA + crAug.crY <= 20 && crAug.crAn >= 0.3 && crAug.crAn <= 1.5 && crAug.zones[0] >= 3 * crAug.zones[2] && crAug.zones[1] > crAug.zones[2],
+      crAug ? `${f1(crAug.crA + crAug.crY)} g/m² (adults ${f2(crAug.crAn)}/m², young ${f1(crAug.crYn)}/m²); shallows ${f1(crAug.zones[0])}, weed beds ${f1(crAug.zones[1])}, mud ${f1(crAug.zones[2])} g/m²` : 'no August');
+    check('the year\'s young crayfish: 5–20/m² released in early July, 60–90 % gone by mid-September (cannibalism), ~0.5–2 g each by then',
+      crRel >= 5 && crRel <= 20 && !!crSep && crSep.crYn / crRel >= 0.1 && crSep.crYn / crRel <= 0.4 && crSep.wY >= 0.5 && crSep.wY <= 2,
+      crSep ? `${f1(crRel)}/m² released; ${f1(crSep.crYn)}/m² left in mid-September (${((1 - crSep.crYn / crRel) * 100).toFixed(0)} % gone) at ${f2(crSep.wY)} g` : 'no September');
     check('the land\'s insects fall on the water by the forested banks: in July the bank columns\' surface holds ≥ 5× the open water\'s',
       julBank > 5 * julOpen && julBank > 0, `${(julBank * 1000).toFixed(1)} vs ${(julOpen * 1000).toFixed(2)} mg wet/m²`);
     check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',

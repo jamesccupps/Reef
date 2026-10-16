@@ -379,9 +379,60 @@ scuds, Quinte-calibrated, dominate) and a share of the young's; the June hatch f
 3.0–4.5 cm by late July (Opeongo 3.8–4.6) and 17–110 recruit (none before), starvation 32–38 % of the hatch (42–46); young
 perch 6.3–6.7 cm by October (5.5–6.2 before), shiners 3.4–3.8, white perch 4.7–5.2, pumpkinseed 2.4–3.0; adult perch
 starvation ~110 (300–500); 121–155 kg/ha. test/w3.mjs +6 checks.
-STILL OPEN: crayfish (stage 7c: the adult bass's and pickerel's staple, the snails' predator); young pumpkinseed stall at
-0.7–1.0 cm through their limnetic phase (June–August) and young smallmouth survive poorly (~0.3 % of the hatch to autumn;
-real age-0 survival a few %); odonate nymphs as predators of the small fauna and fish larvae.
+**Design (stage 7c) — CRAYFISH (virile crayfish, `littoral3.js`; research `docs/research_notes/Hot Brook populations and
+water/invertebrates_plankton_plants.md` §1, `littoral_invertebrates.md` §5).** Two cohorts per bed cell (g wet/m²): ADULTS
+(age 1+, ~12 g each — PREY.CRAY_G) and the YEAR'S YOUNG, with a lake-wide individual mass that grows (0.11 g, 6 mm CL, at
+release in early July → ~1.4 g, 14 mm, by mid-September → ~5 g, 21 mm, by the next June: W ≈ 0.00052·CL³). SHELTER sets where
+they live: the wave-washed shallows (< 1.5 m: gravel, cobble, rock — MDIFW "mostly rocky shores") 25 g/m², weed beds up to 15,
+bare mud 2, below 4 m 0.5 — whole-lake 5–20 g/m² (Michigan 4.6–21; rock and weeds 3–10× the average); adults above it are
+evicted into the open and die faster. CALENDAR: dormant below 5 °C in winter (no feeding, no exposure), active from ice-out,
+growing above 10 °C (most at 21–24 °C); the young RELEASED in early July (~0.23 g of young per g of adults: half females ×
+~100 eggs × half surviving to release — 10–15 young/m², as in Michigan's June census), when last year's young join the
+adults; the young's own mortality is density-dependent (cannibalism: 60–90 % die by September; 74 % of the rest by the next
+August); the adults' ~0.8/yr (a 3-year life). They EAT the bed's organic layer (at 25 % yield) and SNAILS (a few mg per g a
+day — they strip snails, Lodge et al. 1994). FISH: by night ~70 % of the active crayfish are out foraging, by day ~30 % (the
+rest in burrows and under stones; the stems hide some), plus every adult the shelter can't hold; a fish takes those its gape
+fits (a crayfish's width ≈ 2.2 cm × (W/12 g)^⅓ — young crayfish fit a 5–8-cm bass by August, adults only a bass or pickerel
+over ~20 cm) at its species' strike success (diet.cray: bass 0.4, pickerel and bullhead 0.15, perch 0.08), as part of "the bed
+and its weeds". The big crayfish eaters (bass, pickerel over 3 × their piscivory length) stop foraging worms and scuds: their
+bed food is crayfish and the weeds' big insects. THE SEASONS: winter — dormant in the deeper water. Late April — active, eggs
+carried. June — hatching under the females. Early July — the young released; young bass of 5–8 cm and perch feast on them.
+July–September — the young grow, thin by cannibalism; adults moult (soft, exposed) and mate. October–November — cooling,
+inactive below 10 °C, then 5. Gate targets (reproduced): whole-lake 5–20 g/m², ~0.3–1.5 adults/m², the shallows and weed beds
+≥ 3× the bare mud; 5–20 young/m² at release, 60–90 % gone by September, ~1–2 g each by then; fish take a minority of the
+production (Michigan trout 2–16 %); adult smallmouth eat crayfish as a large share of their food; nothing eaten under the ice.
+
+**Built (stage 7c).** As designed, with what the runs taught:
+1. **The young's growth slows with size** (×(W/0.11 g)^−¼). At a constant rate last year's young reached 8 g by June,
+   where real ones are ~5 g.
+2. **Their density-dependent deaths are stronger** (0.01 + 0.03·D/(D+5) a day). That gives ~80–85 % gone by
+   mid-September, as in Michigan.
+3. **Snails have a refuge** on the upper leaves (half their capacity) out of the crayfish's reach. Without it the crayfish
+   wiped the snails out lake-wide in one summer.
+4. **Crayfish count ×5 per gram** (CR_PREF) in a forager's food response. At the worms' half-saturation, big conspicuous
+   meals at ~1 out per 13 m² left smallmouth and pickerel feeding at p 0.2–0.3, and their starvation doubled.
+5. **Big bass and pickerel no longer forage worms and scuds.**
+
+Results without fish (the plant block's run):
+- 15 young/m² released in early July; ~80 % gone by mid-September, at ~1.2 g each.
+- Whole lakes ~12 g/m² by the next August, ~0.9 adults/m².
+- The rocky shallows hold 5× the mud, the weed beds 2×.
+- P/B ~1.3 (Michigan 0.94–1.53).
+
+With fish (3 seeds, May → November):
+- Crayfish are 83–85 % of what adult smallmouth eat, 65–69 % for pickerel, ~10 % for bullheads and 3–7 % for perch.
+- Smallmouth and pickerel feed at p 0.4–0.57 in summer.
+- Fish crop the adult crayfish from 0.63 to ~0.37/m² by November.
+- 124–245 young smallmouth recruit.
+
+test/w3.mjs +3 checks.
+
+STILL OPEN:
+- Young pumpkinseed stall at 0.7–1.0 cm through their limnetic phase (June–August).
+- Young smallmouth survive poorly: ~0.3–0.7 % of the hatch recruit, against a few % in real lakes.
+- Adult smallmouth starvation (~200–300 a year) includes the new recruits' first autumn.
+- Odonate nymphs are not yet predators of the small fauna and the fish larvae.
+- Crayfish over several years: fish crop the adults to the low end of the real range by autumn.
 
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 

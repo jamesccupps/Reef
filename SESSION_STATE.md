@@ -5,7 +5,7 @@ Living handoff log. The **NOW** block is the current state, so keep it accurate.
 
 ---
 
-## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, fish, food web, worker, weeds (7a), LITTORAL FOOD (7b), branch `zoo-field`
+## ▶ NOW (2026-10-16) — THE WHOLE LAKES IN 3-D: geometry, water, view, fish, food web, worker, weeds (7a), littoral food (7b), CRAYFISH (7c), branch `zoo-field`
 
 DECIDED (human, 2026-10-15): rebuild the sim as BOTH WHOLE Hot Brook lakes + the brook in 3-D (not the slice in a 3-D
 display), at 1/10 horizontal scale with TRUE depths ("it can be scaled down a bit"), a 1-HOUR YEAR. Design:
@@ -82,9 +82,18 @@ from 2.5. Smallmouth benthL 2.0 (species.js — the 2-D too): their 2.0–2.5-cm
 (was 300–500); 121–155 kg/ha. test/w3.mjs +6 checks.
 OPEN: young pumpkinseed stall at 0.7–1.0 cm through their limnetic phase; young bass survival ~0.3 % (real a few %); weak
 autumn zooplankton rebound.
-NEXT: STAGE 7c — CRAYFISH (virile crayfish on the cobble and weeds; the adult bass's staple; snails' predator; research in
-invertebrates_plankton_plants.md §1 + littoral_invertebrates.md §5), odonate nymphs, then redbreast + fallfish, the shore and
-wildlife (stage D: snow on the ice, the hydrograph), saves and resume. Perf idea: the fish
+STAGE 7c — CRAYFISH (this commit; littoral3.js; docs/HOT_BROOK_3D.md §5 "Design/Built (stage 7c)"): virile crayfish as adults
++ the year's young per bed cell, by shelter (rocky shallows 25 g/m², weeds ≤ 15, mud 2, deep 0.5); dormant < 5 °C, growing >
+10; the young released in early July (15/m²), thinned by cannibalism (~80 % by mid-September), ~1.2 g by then; they eat the
+organic layer and snails (the snails keep a refuge on the upper leaves). Fish take the crayfish their gape fits, out by night
+(70 %) more than by day (30 %), at their strike success; a gram of crayfish counts ×5 in the food response (CR_PREF: big
+meals); big bass and pickerel no longer eat worms. 3 seeds: crayfish 83–85 % of adult smallmouth's food, 65–69 % pickerel's;
+bass p 0.46–0.57 in summer; fish ate ~49 % of the crayfish production May–Sept (high vs trout lakes' 2–16 %); adult crayfish
+cropped to ~0.37/m² by November. test/w3.mjs +3 (66, ~12 min).
+OPEN: crayfish over several years (a 2-year run pending in scratchpad cray2/fw2y_11.txt); young bass survival; bass starvation
+~200–300/yr (incl. recruits).
+NEXT: odonate nymphs (predators of small fauna and fish larvae), redbreast + fallfish, the shore and wildlife (stage D: snow on
+the ice, the hydrograph), saves and resume, the young pumpkinseed's limnetic stall. Perf idea: the fish
 view's instance buffers are DynamicDraw (re-sent whole, 40k slots, every frame) — give them update ranges like the weeds'.
 Consider moving the long w3 runs to a separate long suite (the gate is ~10 min for w3 alone).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow); do the lakes
