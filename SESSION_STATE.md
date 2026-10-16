@@ -123,18 +123,16 @@ every A7 constant at its compat value (÷ OLD_S), Fish3.step(dt, mv) — the gat
 1,752 s; checked vs the old code (scratchpad envlock.mjs: the water a year to rounding; lockstep.mjs: all fish to 1e-6 over the
 first steps, then chaos from last-digit TS×dt differences). DONE R2 step 2 (eeaa33a: exact 1 − e^(−k·dt) integrators) and
 steps 3–4 (ec61f8f: transport sub-steps to 24 — the A/B moved nothing; mixed-layer e-fold 30 min; the WEEDS' O₂ now follows
-their growth's light — they were a net O₂ sink, −0.4 g/m²/day in summer, now +0.27). IN PROGRESS — R3 CORE, the COARSE BLOCK
-(fish3 _relocate/_hop/_zWant; F3.FINE_MAX, RELOC_*): a step longer than 1 s is a block — one decision by the fish's brain,
-then it hops (≤ 6, re-aimed) where its drives point (band, goal/nest via the brook, mate, food, flee, school, home, O₂), the
-heading bent by the brain's turn, at the pace its drive and brain set; the rest of the block it wanders in its band; its depth
-to the drives' target (bed food on the bed it reached). The gate now runs fish blocks of 1,752 s with the water every block
-(the old compat rung `step(dt, mv)` remains for the worker until R5). Core section: green (day/night habitats, dusk moves,
-hypoxia escape now ACROSS to oxic water, block 33 ms, real-time step 18 ms). The full gate is running (scratchpad gate_r3a.txt).
-NEXT: the REAL DAY (CLOCK3.DAY_LEN 86,400 — the env alone at the real day: summer lake-mean O₂ only 62 % of saturation, the
-algae's net O₂ +0.34 g/m²/day: the O₂ METABOLISM needs recalibrating — a research agent is writing docs/research_notes/Whole
-lake 3D fish simulation/oxygen_metabolism.md: gas transfer k600 for small lakes, GPP/R/NEP, SOD, pelagic R, macrophyte O₂,
-nitrification; scratchpad o2budget.mjs measures the budget by process); then R5 (the worker in real time + fast-forward), then
-R3's fine-rung mechanisms (light and twilight, events for strikes, the intake cap).
+their growth's light — they were a net O₂ sink, −0.4 g/m²/day in summer, now +0.27). THEN (all on `w3-realtime`, WIP commits
+a3e2b5e … 7b94379; docs/HOT_BROOK_3D.md §4 "Built (stage R, 2026-10-16)"): the COARSE BLOCK (each fish's brain decides once a
+block, then _relocate hops where its drives point; the gate runs 1,752-s blocks), the REAL DAY (86,400 s; ice first in sheltered
+coves: H3.ICE_WIND × exposure), the VIEW IN REAL TIME (1× real, 4×, 1 min/s … max), the O₂ METABOLISM (Vachon–Prairie gas
+exchange, Garcia–Gordon saturation, the bed algae's O₂: summer 93–94 % of saturation), FEEDING BY THE HOUR'S LIGHT (lux with
+twilight, species' sight I/(I + K_I), zooplankton ∝ sight²), fish never hop into hypoxic water, and THE YOUNG'S FORAGING
+FOOTPRINT (young perch 6.8–7.3 cm by Sept 10, young bass starvation 3–17 %). The full gate is running (scratchpad gate_yfp.txt);
+if green → merge w3-realtime into zoo-field, push, back up. OPEN: young shiners/pumpkinseed small; the June zooplankton peak high;
+the fine rung's mechanisms (strike events, short strike distances, the intake cap; SURFACE RISES AND LEAPS for the view — the
+human's request (5)); the remaining compat constants.
 RESEARCH IN (2026-10-16, committed 75aff98): (1) docs/research_notes/Whole lake 3D fish simulation/realtime_foraging.md — for
 R3: reaction distances (perch larvae 2.8–5 cm; pumpkinseed 20 cm on a 1.9-mm Daphnia; smallmouth 84–108 cm on fish, 40 in the
 dark; pike 1.5/1.0/0.5 m clear/brown/very brown), the sim's VISION RAMP (chem3 VIS_I0/VIS_I1 ~200 → 10,000 lx) goes blind

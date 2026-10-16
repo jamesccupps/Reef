@@ -345,6 +345,37 @@ hour's light for senses and feeding; (c) local foraging in fine/medium, the foot
 coarse block with the brain; (h) the real day (with R2 step 5). Each: the gate at the coarse rung (fish ~900 s, water ~1,800 s),
 ≥ 3 seeds against stage 7d's numbers.
 
+
+**Built (stage R, 2026-10-16, branch `w3-realtime`).**
+- **The coarse block** (`Fish3._relocate`, `_hop`, `_zWant`): a fish step longer than 1 s is a block. The fish senses, its own
+  brain decides once, then it hops (≤ 6, re-aimed after each, each as long as its strongest pull needs) where its drives point —
+  its depth band, nest or goal along the brook, a mate, food, away from a threat, its school, home, better O₂ — the heading bent
+  by the brain's turn (`BRAIN_BEND`), at the pace drive and brain set; the rest of the block it wanders within its band
+  (v·√(τ·t)); its depth goes to the drives' target where it got to. It never ends off the water, never hops from oxic water into
+  water short of O₂ (under the ice a school stays at the oxic edge instead of following its winter depth into dead water); nest
+  guards stay on their nests. The gate runs 1,752-s blocks with the water every block; a block costs ~33–41 ms, a real-time
+  0.1-s step ~18 ms.
+- **The real day** (86,400 s): the cove–basin diel swing +1.1/−0.9 °C (coloured lakes 2.1 ± 1.0); ice now forms first in the
+  sheltered coves (an exposed column must be 0.12 °C/m·s of wind colder — `H3.ICE_WIND` × its exposure, the columns' wave
+  shelter now in env3) and the melt decision uses the day's mean warmth.
+- **The view in real time** (R5): 1× is real time (0.1-s steps, brains at 5 Hz, the water every simulated minute), 4×;
+  fast-forward 1 min/s, 10 min/s, 1 h/s and max in blocks sized to ~3 a second (≤ 29 min).
+- **O₂ metabolism** (research `oxygen_metabolism.md`): the real day exposed a lake at 51–62 % of saturation in summer (real
+  86–102 %). Surface exchange now follows the lake-size wind model (Vachon & Prairie 2013) with a convective night floor and the
+  Schmidt number; saturation is Garcia & Gordon's; the bed's algae release their photosynthesis's O₂ (+0.35–0.53 g/m²/day). Summer
+  93–94 % of saturation, the basin's summer bottom minimum 7.2 mg/L, the winter lake mean ≥ 6.2 mg/L, P retention 0.70.
+- **Feeding by the hour's light** (audit D9/D10): the sky's lux with twilight (500 lx at the sun's edge, −3.7 decades an hour);
+  each species' sight I/(I + K_I) (perch 1 lx, shiners 0.3, white perch 0.5, pumpkinseed 5, smallmouth 0.003, pickerel 0.5;
+  bullheads and suckers by taste); zooplankton seen ∝ sight² (the water searched ∝ reaction distance²), the bed and the surface
+  ∝ sight; a block averages the light at its start, middle and end. Summer adults' feeding level 0.5–0.8 of Cmax (was 0.8–0.95).
+- **The young's foraging footprint**: in blocks every school of young jumped to the same best cell, merged and stripped it; now
+  a school of young feeds over its column and the ring about it (zooplankton and the bed). By September 10 (3 seeds): young
+  perch 6.8–7.3 cm, suckers 6.1–6.4, white perch 4.6–5.5, bullheads 4.6–5.2; young smallmouth starvation 3–17 % (was ~40 %),
+  220–274 recruits; the June zooplankton peak 740–910 µg/L grazed down to ~80–100 by September by the young (Mills & Forney 1983).
+- **Still open:** young shiners (2.7–2.9 cm) and pumpkinseed (1.9–2.2 cm) small by September (real 4–5, 3–5); the June
+  zooplankton peak high; the fine rung's own mechanisms (strikes as events, short strike distances, the intake cap, surface
+  rises and leaps for the view — the human's request); remaining compat constants (`F3.ATTACK`, `SPAWN_RATE`, `YOY_TICK`,
+  `LEARN_DECAY`, the meal threshold).
 **The numbers R3 builds on** (research `realtime_foraging.md`, 2026-10-16; its §9 maps each to a mechanism per rung):
 - **Light first (prerequisite).** Fish see far better in dim light than the sim's vision ramp (`PLANKTON.VIS_I0`/`VIS_I1`,
   ~200 → 10,000 lx) allows: perch feed down to 2–5 lx, bluegill 10, pumpkinseed 25; largemouth catch > 95 % of prey at moonlight

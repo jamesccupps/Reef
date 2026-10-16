@@ -1167,7 +1167,12 @@ export class Fish3 {
     if ((d.plankton || q.L < sp.Lzoo) && want - got > 1e-12) {
       const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
       const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
-      const t = ch.zooFeed(q.j, gD, P.FRY_COPE, want - got, P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
+      // (its FOOTPRINT: the water about it it ranges in a tick — its own column (its layer ± one) and the ring of columns round it at
+      // its layer: a school of young can't strip one cell and starve beside plenty; the adults' have theirs, _footprint)
+      const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0, YL = this._yl || (this._yl = new Int32Array(64)), nb = this.nbr[c]; let nY = 0;
+      for (let k = Math.max(0, k0 - 1); k <= Math.min(G.nL[c] - 1, k0 + 1); k++) YL[nY++] = j0 + k;
+      for (let i = 0; i < nb.length && nY < YL.length; i++) { const cc = nb[i]; YL[nY++] = G.cell0[cc] + Math.min(G.nL[cc] - 1, k0); }
+      const t = ch.zooFeedCells(YL, nY, gD, P.FRY_COPE, want - got, P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
       if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; this.stats.food.yZoo += g; }
     }
     // the weeds' small fauna from WEED_L, their large from LARGE_L (stage 7b), for a school in the canopy or near the bed
@@ -1177,7 +1182,10 @@ export class Fish3 {
     }
     const benthL = sp.benthL ?? FRY.BENTH_L;
     if (q.L >= benthL && (d.larva || d.snail || d.detritus) && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
-      const g = ch.takeBenth(q.jb, want - got); if (g > 0) { got += g; J += g * PREY.BENTH_ED; this.stats.food.yBenth += g; }
+      // (the bed about it too: its own bed cell and its neighbours' mean-depth bed cells)
+      const nb = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0; if (q.jb >= 0) BL[nB++] = q.jb;
+      for (let i = 0; i < nb.length && nB < BL.length; i++) { const jb = this.colBedJ[nb[i]]; if (jb >= 0) BL[nB++] = jb; }
+      const g = ch.takeBenthCells(BL, nB, want - got, BENTHOS.K_FISH); if (g > 0) { got += g; J += g * PREY.BENTH_ED; this.stats.food.yBenth += g; }
     }
     if (q.L >= benthL && d.detritus && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
       const g = ch.takeSedOM(q.jb, Math.min(want - got, FEED.POOR_GUT * q.n * sp.gut * q.W)); if (g > 0) { got += g; J += g * PREY.DETRITUS_ED * PREY.DETRITUS_DIG; this.stats.food.ySed += g; }
