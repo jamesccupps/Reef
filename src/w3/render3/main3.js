@@ -8,12 +8,14 @@ import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, BODIES, LAND, BROOK } from '../geometry.js';
 import { CameraRig } from './controls3.js';
 import { FAR3 } from './far3d.js';
+import { Env3, CLOCK3 } from '../env3.js';
+import { ENV as ENVC, PLANKTON } from '../../config.js';
 
 const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, normalize, pow, sin, time, abs: tabs } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true };
+const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: false, water: true, trees: true, show: 'plain' };
 const kLand = () => S.exag / 10;
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -145,7 +147,8 @@ const water = (() => {
   const idx = []; for (let r = 0; r < NY - 1; r++) for (let q = 0; q < NX - 1; q++) {
     const a = r * NX + q, b = a + 1, d = a + NX, e = d + 1; if (GEO.body[a] || GEO.body[b] || GEO.body[d] || GEO.body[e]) idx.push(a, b, d, b, e, d);
   }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('wAlpha', new THREE.BufferAttribute(alpha, 1)); g.setIndex(idx); g.computeVertexNormals();
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('wAlpha', new THREE.BufferAttribute(alpha, 1));
+  g.setAttribute('ice', new THREE.BufferAttribute(new Float32Array(n), 1)); g.setIndex(idx); g.computeVertexNormals();
   // the surface mirrors the shore and the sky (a planar reflection at Upper's level — Lower's sits 0.6 m lower, too little
   // to see), more strongly at low angles (Fresnel), broken by a light ripple; under it the tea-coloured body of the water
   const refl = reflector({ resolutionScale: 0.5 }); refl.target.rotateX(-Math.PI / 2); refl.target.position.y = 0.01; scene.add(refl.target);
@@ -155,16 +158,24 @@ const water = (() => {
   const view = normalize(cameraPosition.sub(P)), fres = pow(float(1).sub(tabs(view.y)), 4).mul(0.85).add(0.06);
   const m = new THREE.MeshBasicNodeMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false });
   m.userData = { alphaMul: uniform(1), body: uniform(new THREE.Color(0x2b2b17)), mirror: uniform(1) };
-  m.colorNode = mix(m.userData.body, refl.rgb, fres.mul(m.userData.mirror));
-  m.opacityNode = tclamp(attribute('wAlpha', 'float').mul(m.userData.alphaMul).add(fres.mul(m.userData.mirror).mul(0.6)), 0, 1);
+  const ice = attribute('ice', 'float');   // the live ice cover (white-grey, snow-dusted, opaque)
+  m.colorNode = mix(mix(m.userData.body, refl.rgb, fres.mul(m.userData.mirror)), vec3(0.82, 0.86, 0.89), ice);
+  m.opacityNode = tclamp(attribute('wAlpha', 'float').mul(m.userData.alphaMul).add(fres.mul(m.userData.mirror).mul(0.6)).add(ice), 0, 1);
   const mesh = new THREE.Mesh(g, m); mesh.renderOrder = 2; return mesh;
 })();
 function styleWater() {
-  const m = water.material, ice = S.season === 'winter';
-  m.userData.body.value.set(ice ? 0xc9d2d8 : S.look === 'chart' ? 0x6a8a96 : 0x2b2b17);
-  m.userData.mirror.value = ice ? 0 : S.look === 'chart' ? 0.2 : 1;
-  m.userData.alphaMul.value = ice ? 1.6 : S.look === 'chart' ? 0.12 : S.clear ? 0.25 : 1;
+  const m = water.material;
+  m.userData.body.value.set(S.look === 'chart' ? 0x6a8a96 : 0x2b2b17);
+  m.userData.mirror.value = S.look === 'chart' ? 0.2 : 1;
+  m.userData.alphaMul.value = S.look === 'chart' ? 0.12 : S.clear ? 0.25 : 1;
   water.visible = S.water;
+}
+// the ice per vertex from the live water model's columns (each 1.5-m vertex reads the column it lies in)
+const iceCol = new Int32Array(NX * NY).fill(-1);
+function placeIce(env) {
+  const a = water.geometry.attributes.ice, v = a.array;
+  for (let i = 0; i < NX * NY; i++) { let c = iceCol[i]; if (c === -2) continue; if (c < 0) { const [x, y] = GEO.cellCentre(i); c = env.colAt(x, y); iceCol[i] = c < 0 ? -2 : c; if (c < 0) continue; } v[i] = env.ice[c] > 0.5 ? Math.min(1, (env.ice[c] - 0.5) * 2.5) : 0; }
+  a.needsUpdate = true;
 }
 
 // ---------- trees: layered spruce/fir/pine and lumpy hardwood crowns, sized with the land ----------
@@ -230,9 +241,12 @@ function colourTrees() {
 }
 
 // ---------- sky and light ----------
+let _skyDim = null; const skyDimNode = () => _skyDim || (_skyDim = uniform(1));
 const sky = (() => {
   const g = new THREE.SphereGeometry(4500, 32, 16); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
-  const m = new THREE.Mesh(g, new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
+  const mat = new THREE.MeshBasicNodeMaterial({ side: THREE.BackSide, fog: false, depthWrite: false });
+  mat.colorNode = attribute('color', 'vec3').mul(skyDimNode());
+  const m = new THREE.Mesh(g, mat);
   m.position.set((X0 + GEO.XMAX) / 2, 0, -(Y0 + GEO.YMAX) / 2); m.renderOrder = -1; return m;
 })();
 function styleSky() {
@@ -247,7 +261,8 @@ function styleSky() {
   const env = new THREE.CanvasTexture(cv); env.mapping = THREE.EquirectangularReflectionMapping; env.colorSpace = THREE.SRGBColorSpace;
   scene.environment = env; scene.environmentIntensity = 0.55;
 }
-scene.add(new THREE.HemisphereLight(0xc9dcec, 0x4d4a34, 0.9));
+const hemi = new THREE.HemisphereLight(0xc9dcec, 0x4d4a34, 0.9); scene.add(hemi);
+const skyDim = skyDimNode();   // the sky dome's brightness (night → dark)
 const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-260, 420, 300); scene.add(sun, sun.target);
 
 // ---------- the cut-away: a north–south position; everything south of it is clipped and the section face drawn ----------
@@ -256,7 +271,7 @@ const clipped = new THREE.ClippingGroup(); clipped.clippingPlanes = [clipPlane];
 clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
-const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ color: 0x6f7a52, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false }));
+const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
 sectionWater.renderOrder = 3; scene.add(sectionSoil, sectionWater);
 const cutY = () => Y0 + 8 + S.cutPos * (GEO.YMAX - Y0 - 16);   // (the cut runs through the lakes' band)
 function buildSection() {
@@ -270,17 +285,38 @@ function buildSection() {
     else { const q = Math.min(FAR3.NX - 1, Math.max(0, Math.floor((x - FAR3.X0) / FAR3.CELL))), r = Math.min(FAR3.NY - 1, Math.max(0, Math.floor((y - FAR3.Y0) / FAR3.CELL))); g = landY(farElev(r * FAR3.NX + q), farLevel(y)); }
     xs.push(x); gy.push(g); wl.push(w);
   }
-  const sp = [], sc = [], wp = [], z = -y + 0.02, top = C(0x6b5a3f), deep = C(0x3a2e22), c = C(0);
+  const sp = [], sc = [], wp = [], wc = [], z = -y + 0.02, top = C(0x6b5a3f), deep = C(0x3a2e22), c = C(0);
   for (let k = 0; k < xs.length - 1; k++) {
     const a = [xs[k], gy[k]], b = [xs[k + 1], gy[k + 1]];
     sp.push(a[0], BOT, z, b[0], BOT, z, a[0], a[1], z, b[0], BOT, z, b[0], b[1], z, a[0], a[1], z);
     for (const yy of [BOT, BOT, a[1], BOT, b[1], a[1]]) { c.copy(deep).lerp(top, Math.min(1, Math.max(0, (yy - BOT) / (Math.max(a[1], b[1]) - BOT + 1e-6)))); sc.push(c.r, c.g, c.b); }
-    if (wl[k] !== null && wl[k + 1] !== null) wp.push(a[0], a[1], z, b[0], b[1], z, a[0], wl[k], z, b[0], b[1], z, b[0], wl[k + 1], z, a[0], wl[k], z);
+    if (wl[k] !== null && wl[k + 1] !== null) {
+      // the water column at this x, a band per 0.25 m coloured by the live water's state there
+      const xm = (a[0] + b[0]) / 2, top0 = Math.min(wl[k], wl[k + 1]), bot0 = Math.max(a[1], b[1]);
+      for (let zz = top0; zz > bot0 - 0.25; zz -= 0.25) {
+        const z1 = zz, z0 = Math.max(bot0, zz - 0.25); if (z1 <= z0) break;
+        waterColour(xm, y, -(z1 + z0) / 2, c);
+        wp.push(a[0], z0, z, b[0], z0, z, a[0], z1, z, b[0], z0, z, b[0], z1, z, a[0], z1, z); for (let q = 0; q < 6; q++) wc.push(c.r, c.g, c.b);
+      }
+    }
   }
   const g1 = new THREE.BufferGeometry(); g1.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); g1.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
-  const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3));
+  const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3)); g2.setAttribute('color', new THREE.Float32BufferAttribute(wc, 3));
   sectionSoil.geometry.dispose(); sectionWater.geometry.dispose(); sectionSoil.geometry = g1; sectionWater.geometry = g2;
   $('cutv').textContent = `${((y - Y0) * 10 / 1000).toFixed(2)} km from the south end`;
+}
+
+// the live water's state at (x, y, depth z) as a colour, by the "in the water" choice
+const LO = new THREE.Color(), HI = new THREE.Color(), MID = new THREE.Color();
+function waterColour(x, y, z, c) {
+  const e = LIVE.env, j = e ? e.cellAt(x, y, z) : -1;
+  if (j < 0 || S.show === 'plain') return c.set(0x6f7a52);
+  const ramp = (t, a, m, b) => { t = Math.min(1, Math.max(0, t)); return t < 0.5 ? c.copy(LO.set(a)).lerp(MID.set(m), t * 2) : c.copy(MID.set(m)).lerp(HI.set(b), (t - 0.5) * 2); };
+  if (S.show === 'temp') return ramp(e.temp[j] / 26, 0x2a4fd0, 0x3fb0a0, 0xe0502a);                     // 0 → 26 °C
+  if (S.show === 'o2') return ramp(e.chem.o2[j] * ENVC.O2_MGL / 12, 0x9a1a1a, 0xd8b030, 0x2a80d8);       // 0 → 12 mg/L
+  if (S.show === 'algae') { const a = e.chem.phyto[j] + e.chem.diatom[j] + e.chem.cyano[j]; return ramp(a / 0.6, 0x4a4a40, 0x6a9a40, 0x40e040); }
+  if (S.show === 'zoo') { const z2 = (e.chem.zooD[j] + e.chem.zooC[j]) * PLANKTON.UGL; return ramp(Math.log10(1 + z2) / 3, 0x404048, 0xa08050, 0xffd070); }
+  return c.set(0x6f7a52);
 }
 
 // ---------- labels and the angler's field notes ----------
@@ -365,7 +401,10 @@ function applySeason() {
 }
 function applyHeight() { $('exv').textContent = `×${S.exag}`; placeGround(); placeTrees(); buildSection(); }
 for (const b of $('looks').children) b.addEventListener('click', () => { S.look = b.dataset.look; applyLook(); });
-for (const b of $('seasons').children) b.addEventListener('click', () => { S.season = b.dataset.season; applySeason(); });
+for (const b of $('seasons').children) b.addEventListener('click', () => { S.season = b.dataset.season; if (LIVE.env) { const e = LIVE.env, yf = SEASON_YF[S.season]; e.primeSeason(Math.floor(e.time / CLOCK3.YEAR_LEN) * CLOCK3.YEAR_LEN + yf * CLOCK3.YEAR_LEN); LIVE.lastSeason = null; liveUI(); } applySeason(); buildSection(); });
+for (const b of $('shows').children) b.addEventListener('click', () => { S.show = b.dataset.show; for (const x of $('shows').children) x.setAttribute('aria-pressed', String(x === b)); if (!S.cut && S.show !== 'plain') { const c = $('t-cut'); c.checked = true; c.dispatchEvent(new Event('change')); } buildSection(); });
+$('play').addEventListener('click', () => { LIVE.run = !LIVE.run; $('play').textContent = LIVE.run ? '⏸ pause' : '▶ play'; });
+for (const b of $('speeds').children) b.addEventListener('click', () => { LIVE.speed = +b.dataset.speed; for (const x of $('speeds').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('exag').addEventListener('input', e => { S.exag = +e.target.value; applyHeight(); });
 // (the cut opens through Upper's 18-ft north basin, the camera facing the water column; the slider moves it)
 const cutAt = y => Math.min(1, Math.max(0, (y - Y0 - 8) / (GEO.YMAX - Y0 - 16)));
@@ -382,6 +421,35 @@ $('t-labels').addEventListener('change', e => document.body.classList.toggle('no
 $('t-notes').addEventListener('change', e => document.body.classList.toggle('nonotes', !e.target.checked));
 $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle('folded'); $('fold').textContent = f ? '+' : '–'; $('fold').setAttribute('aria-expanded', String(!f)); });
 
+// ---------- the live water model and its clock ----------
+const LIVE = { env: null, run: true, speed: 1, acc: 0, lastSeason: null, sinceUI: 0, sinceSection: 0 };
+const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, early July, early Oct, Feb)
+const seasonOf = yf => yf < 0.25 ? 'spring' : yf < 0.5 ? 'summer' : yf < 0.75 ? 'fall' : 'winter';
+const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
+const MDAYS = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28];
+function dateOf(yf) { let d = yf * 365; for (let m = 0; m < 12; m++) { if (d < MDAYS[m]) return `${MONTHS[m]} ${1 + Math.floor(d)}`; d -= MDAYS[m]; } return 'February 28'; }
+function liveTick(dtReal) {
+  const e = LIVE.env; if (!e || !LIVE.run) return;
+  LIVE.acc += dtReal * LIVE.speed;
+  let n = 0; while (LIVE.acc >= 0.2 && n < 6) { e.step(0.2); LIVE.acc -= 0.2; n++; }   // (the water model at 5 updates a sim second)
+  if (n === 6) LIVE.acc = 0;
+}
+function lightByDay() {   // the sun's height and the sky's brightness follow the water model's day
+  const e = LIVE.env; if (!e) return;
+  const s = e.sun, cover = ENVC.CLOUD_COVER[e.weather], day = Math.min(1, s * 1.6);
+  sun.intensity = 0.15 + 2.3 * day * (1 - 0.6 * cover); hemi.intensity = 0.18 + 0.75 * day * (1 - 0.3 * cover);
+  const ang = (e.t - 0.25) * Math.PI * 2; sun.position.set(-300 * Math.cos(ang), 60 + 420 * Math.max(0.05, Math.sin(ang)), 260);
+  sky.material.color = sky.material.color || new THREE.Color(); scene.environmentIntensity = 0.12 + 0.45 * day;
+  skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover);
+}
+function liveUI() {
+  const e = LIVE.env; if (!e) return;
+  const yf = e.yearFrac(), hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
+  $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp[0] ?? 0).toFixed(0)} °C`;
+  const ss = seasonOf(yf); if (ss !== LIVE.lastSeason) { LIVE.lastSeason = ss; S.season = ss; applySeason(); }
+  placeIce(e);
+}
+
 // ---------- frame ----------
 function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
@@ -389,12 +457,16 @@ let last = performance.now(), fps = 60, nFrames = 0;
 async function start() {
   await renderer.init();
   $('exag').value = String(S.exag);
-  placeGround(); applyLook(); applySeason(); buildSection();
+  LIVE.env = new Env3();   // the 3-D water (src/w3/env3.js + chem3.js), opening in late May
+  placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
   renderer.setAnimationLoop(now => {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt);
+    liveTick(dt); lightByDay();
+    if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
+    if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
     const inBandXY = cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX;
     const under = inBandXY && GEO.bodyAt(cx, cy) !== LAND && ch < GEO.levelAt(cx, cy) && S.water;
@@ -403,8 +475,8 @@ async function start() {
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · ${(TREES.conifer.length + TREES.broad.length).toLocaleString()} trees`;
+    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${LIVE.env ? LIVE.env.G.NCELL.toLocaleString() + ' cells' : '—'}`;
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, apply: { look: applyLook, season: applySeason, height: applyHeight } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

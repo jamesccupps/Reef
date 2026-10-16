@@ -18,12 +18,20 @@
     <button id="fold" aria-expanded="true" title="Hide or show the controls">–</button>
   </header>
   <div id="ctlbody">
-    <p class="sub">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes' scale; the water's depth, and everything that will live in it, is true size. No simulation runs here yet.</p>
+    <p class="sub">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes' scale; the water's depth, and everything that lives in it, is true size. The water is simulated live; the fish come next.</p>
+    <div class="grp"><span class="gl">The lakes now</span>
+      <div id="clock">—</div>
+      <div class="row"><button id="play">⏸ pause</button><span class="row" id="speeds"><button data-speed="1" aria-pressed="true">1×</button><button data-speed="6">6×</button><button data-speed="30">30×</button></span></div>
+      <div class="hint">A year passes in an hour at 1× (each day and night is two minutes). The water — temperature, ice, currents, O₂, algae, plankton — is simulated live.</div>
+    </div>
     <div class="grp"><span class="gl">View</span><div class="row" id="views"></div></div>
     <div class="grp"><span class="gl">Look</span><div class="row" id="looks">
       <button data-look="map">Map colours</button><button data-look="photo">Aerial photo</button><button data-look="chart">Depth chart</button>
     </div><div class="hint" id="lookhint"></div></div>
-    <div class="grp"><span class="gl">Season</span><div class="row" id="seasons">
+    <div class="grp"><span class="gl">In the water (the cut-away)</span><div class="row" id="shows">
+      <button data-show="plain" aria-pressed="true">Plain</button><button data-show="temp">Temperature</button><button data-show="o2">Oxygen</button><button data-show="algae">Algae</button><button data-show="zoo">Zooplankton</button>
+    </div></div>
+    <div class="grp"><span class="gl">Jump to</span><div class="row" id="seasons">
       <button data-season="spring">May</button><button data-season="summer">July</button><button data-season="fall">Early Oct</button><button data-season="winter">February</button>
     </div></div>
     <div class="grp"><span class="gl">Land height</span>
