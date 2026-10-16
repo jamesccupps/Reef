@@ -18,9 +18,18 @@ angler's pool; 12 checks. Measured: a lean 3-D agent core runs 3,800 brains at 0
 draws 20k fish in ~1.3 ms on the human's RTX 3060.
 FIRST LIGHT (7197e19): w3.html — the 1/10 world in three.js r186 (vendored, WebGPU), terrain and beds, far land to 250 m,
 ~19.5k trees, water, sky, free camera + named views (fixed: an inside-out triangle winding hid the terrain and beds).
-NEXT: stage 3 — the environment in 3-D (src/w3/env3.js: 5-m columns × 0.5-m layers, per-column physics ported from
-environment.js, wind circulation from two precomputed fields, grid-scale mixing, the night siphon, under-ice exchange, weed
-damping, through-flow; closed budgets) + checks; then stage 4, the renderer's first light so the human sees the 3-D lakes.
+VIEW REWORK (6cb2cf3, after the human's "trees too much… not the real shoreline… where are the original 3d's controls"):
+land drawn at the lakes' 1/10 scale × a land-height slider (water depth true), the real NAIP photo re-cut onto the layout,
+the original viewer's views/looks (map, photo, depth chart)/seasons/cut-away/toggles/legend/north arrow, layered trees,
+planar reflection of the shore. STAGE 3 DONE: the water in 3-D — d87e7f8 (columns, temperature, ice, transport: wind gyres,
+drift, through-flow at 100/55-day residence, mixing, the night siphon, under-ice density current) and f7eaed8 (chem3.js: the
+2-D chemistry and plankton per cell, closed budgets; BED_EXCH 0.35 and BURY_MUL 0.15 calibrated to ~75 % P retention).
+test/w3.mjs 30 checks pass (~2.5 min). Backup G:\synapse-reef-backups\…_w3-water.zip.
+NEXT: stage 5 — FISH IN 3-D (src/w3/fish3.js): the data-oriented agent core (struct-of-arrays, 3-D hash grid), individuals
+(sunfish, redbreast, bullhead, bass, pickerel, sucker, fallfish) + school agents (yellow/white perch, shiner), 3-D senses
+and brains (new input layout), movement (the research's rules), bioenergetics/feeding on the env3 fields, predation (a
+strike takes one fish from a school), the env's O₂/zooplankton coupling; then reproduction and recruitment. Also show the
+env fields in the w3 view (cut-away coloured by temperature/O₂).
 OPEN for the human: the real depth of the cove between Upper's west points (model 2–3 m; they call it shallow).
 KNOWN (2-D census of stage A, 3 seeds × 3–4 yr — re-judge in 3-D): white perch 70–90 kg/ha at ~180 g (real stunted 25–45 g:
 adult food competition too weak); golden shiner collapse (eaten by white perch, pickerel, perch, bass); yellow perch dwindle;
