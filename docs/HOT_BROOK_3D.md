@@ -775,26 +775,24 @@ as dark specks on the film near where the camera looks. In the real lake-like si
 ~0.05 mg/m²), so rises are sparse — a few a minute in view at dusk; fast-forward's blocks count at most 4 an agent. test/w3.mjs +1
 check. OPEN (audit B11): the real-time rung takes ~1/7 of what a block takes at the surface — the rungs' surface feeding to equate.
 
-**Built — TREES TRUE SIZE BY THE WATER, A DENSE FOREST, THE BROOK'S BANKS (2026-10-16).** The human compared their photos from
-the brook with the render at land ×1 ("the trees, at least in the 1 terrain height, are way off") and chose: TRUE SIZE BY THE
-WATER, dense woods. In `render3/main3.js`:
-- **The scale.** Within 3 m of the water (30 m real) a tree is its real size whatever the land height: white pine 20–28 m,
-  spruce and fir 12–20 m, maple, birch and aspen 10–20 m, at real crown proportions (conifers ~0.35 of their height across,
-  hardwoods ~0.65). It blends to the land's scale by 18 m. A tree takes the scale of the water it stands by: the brook is drawn
-  at half size, so its banks' trees are half size. A 15-m pine by the 4-m brook is the proportion of a 30-m pine by the real
-  8-m brook.
-- **Density.** Within 18 m of the water, individual trees as many per cell as close the canopy (~85 %) at their size at land ×1.
-  That is ~0.05 a cell by the water (crowns ~7 m) and up to 4 a cell farther in. Trunks stand back from the bank by ~40 % of
-  their crown's half-width.
-- **Inland.** A CANOPY SURFACE over the forested land at the stands' heights (12–18 m) × the land's scale, crown-bumped (value
-  noise), coloured by stand and season or by the aerial photo in that look. A scattered tree in every ten cells stands out of it.
+**Built — TREES TRUE SIZE EVERYWHERE, A DENSE FOREST, THE BROOK'S BANKS (2026-10-16).** The human compared their photos from
+the brook with the render at land ×1 ("the trees, at least in the 1 terrain height, are way off"). They chose true size by the
+water. Seeing trees shrink inland, they then asked for the whole map ("if we are making this realistic and going to add cabins,
+and roads, the rest of the terrain needs to be realistic too"). Of the result: "that looks better". In `render3/main3.js`:
+- **Size.** Every tree is its real size whatever the land height: white pine 20–28 m, spruce and fir 12–20 m, red maple, birch
+  and aspen 10–20 m. Crowns have real proportions: conifers ~0.35 of their height across, hardwoods ~0.65.
+- **Density.** The woods are as dense as Maine forest, ~85 % closed: one ~7-m crown for every 38 m² of forest × 0.85 × the
+  class's stocking (wooded swamp 0.7, shrub swamp 0.15). On the 1/10 land that is few trees, ~18,000 with the far land.
+- **The shore.** Within 6 m of the water a second row stands behind the first, so seen from the lake the treeline is continuous.
+- **The brook.** The brook is drawn at half size, so its banks' trees are half size too: a 15-m pine by the 4-m brook is the
+  proportion of a 30-m pine by the real 8-m brook. Trunks stand back from the water by ~40 % of their crown's half-width.
 - **The water's edge.** Alder, sweetgale and leatherleaf thickets: leafy masses of 11 lumps, 1.2–3.2 m, at the brook's scale by
   the brook. The stony waterline is narrowed to ~1 m.
-- **The brook.** Rocks in its riffle (5 a cell where it runs under 0.7 m, 1 in the pool): cobbles and boulders, partly buried,
-  some breaking the surface (the human: "after the pool where there is shallow type rapids").
-- **Lily pads** are 10–30 cm (were 32–64) and never in the brook (the sim's plants slice will keep them out of it too).
-- **Cost.** ~22,000 trees, ~1,300 shrubs at 220 triangles each; 72 fps at land ×3 overall, 98 fps on the brook (the human's
-  RTX 3060 class).
+- **Rocks in the brook's riffle:** 5 a cell where it runs under 0.7 m, 1 in the pool; partly buried, some breaking the surface.
+- **Lily pads** are 10–30 cm (were 32–64) and never in the brook.
+- **Tried and dropped:** a canopy surface at the land's scale inland, and then one rising to true height behind the shore. From
+  the water it showed as a green wall; the human: "that looks worse than before".
+- **Cost.** ~100 fps from above and on the water at land ×1.
 
 **Built — THE CRAYFISH AND SNAILS ON SCREEN (`render3/bed3view.js`, 2026-10-16; the human: "do you have snails and crawfish too?
 those are in there").** Both were already in the sim as biomass per bed cell (littoral3: virile crayfish, adults and the year's
