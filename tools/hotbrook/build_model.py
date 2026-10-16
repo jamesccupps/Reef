@@ -2,7 +2,9 @@
 # Build a 3-D-ready model of the real Hot Brook landscape (Upper & Lower Hot Brook Lake, Hot Brook; Danforth/T8 R4, Maine)
 # from public data:
 #   lake outlines + brooks  — OpenStreetMap (Nominatim polygon_geojson), © OpenStreetMap contributors (ODbL)
-#   elevation               — USGS 3DEP via AWS Terrain Tiles (terrarium, z14 ≈ 6.7 m/px here)
+#   elevation               — USGS 3DEP lidar (ME Eastern B1/B2 2017, its 1-m bare-earth DEM) when data/lidar_dem_box.tif is
+#                             there (fetch_data.py), else the AWS Terrain Tiles (terrarium, z14 ≈ 6.7 m/px here)
+#   lake outlines            — the same lidar's hydro-flattened lake surfaces (data/lidar_dem_2m.tif) when there, else OSM
 #   wetlands                — USFWS National Wetlands Inventory
 #   land cover              — NLCD 2021 (MRLC WMS)
 #   lake depths             — MDIFW lake survey / Lakes of Maine: Upper 360 ha, mean 3.35 m, max 5.5 m; Lower 277 ha, mean 2.74, max 4.0
@@ -39,6 +41,23 @@ tx0 = np.clip(np.floor(tx).astype(int), 0, mos.shape[1] - 2); ty0 = np.clip(np.f
 fx = tx - tx0; fy = ty - ty0
 elev = (mos[ty0, tx0] * (1 - fx) * (1 - fy) + mos[ty0, tx0 + 1] * fx * (1 - fy) + mos[ty0 + 1, tx0] * (1 - fx) * fy + mos[ty0 + 1, tx0 + 1] * fx * fy)
 print('elevation m', float(elev.min()), float(elev.max()))
+# THE LIDAR (2026-10-16; the human: "see if there's any lidar for that area too"): USGS 3DEP, ME Eastern B1/B2 2017 (QL2), its
+# 1-m bare-earth DEM via the 3DEP ImageServer over the whole box at ~3.5 × 5 m (fetch_data.py). Each cell takes the area mean
+# of the lidar under it (3 × 3 samples). Against the terrain tiles: 0.35 m higher on average, 1.8 m RMS, −3.1…+2.5 m (5–95 %)
+def lidar_sample(arr, ext, n=3):   # the area mean of a lon/lat raster over each cell (n × n samples)
+    LH, LW = arr.shape; acc = np.zeros((NY, NX)); off = [(k + 0.5) / n - 0.5 for k in range(n)]
+    for a in off:
+        for b in off:
+            px = ((lon + a * CELL / MX - ext['xmin']) / (ext['xmax'] - ext['xmin']) * LW).astype(int).clip(0, LW - 1)
+            py = ((ext['ymax'] - (lat + b * CELL / MY)) / (ext['ymax'] - ext['ymin']) * LH).astype(int).clip(0, LH - 1)
+            acc += arr[py, px]
+    return acc / (n * n)
+ELEV_SRC = 'USGS 3DEP via AWS Terrain Tiles (z14)'
+if os.path.exists('lidar_dem_box.tif'):
+    Image.MAX_IMAGE_PIXELS = None
+    elev = lidar_sample(np.asarray(Image.open('lidar_dem_box.tif'), dtype=np.float64), json.load(open('lidar_dem_box.json'))['extent'])
+    ELEV_SRC = 'USGS 3DEP lidar, ME Eastern B1/B2 2017 (1-m bare-earth DEM via the 3DEP ImageServer)'
+    print('elevation (lidar) m', round(float(elev.min()), 2), round(float(elev.max()), 2))
 
 # ---------- rasterise polygons ----------
 def poly_mask(rings_list):   # rings_list: list of polygons, each [outer, hole, hole...] in lon/lat
@@ -54,6 +73,37 @@ def geo_rings(g):
 up = json.load(open('Upper_Hot_Brook_Lake.json'))[0]['geojson']
 lo = json.load(open('Lower_Hot_Brook_Lake.json'))[0]['geojson']
 upper, lower = poly_mask(geo_rings(up)), poly_mask(geo_rings(lo))
+SHORE_SRC = 'OpenStreetMap'
+# the lakes' 2017 water from the lidar: lakes are hydro-flattened (one level each — Upper 128.93 m, Lower 128.23 m), so a cell
+# is water when half of it lies on its lake's flat level (5 × 5 samples of data/lidar_dem_2m.tif, ~1.4 × 1.8 m). The same cells
+# as OSM's outline but for a one-cell fringe (97–98 % in common; OSM's 375 / 279 ha vs the lidar's 369 / 274, MDIFW 360 / 277)
+if os.path.exists('lidar_dem_2m.tif'):
+    hd = np.asarray(Image.open('lidar_dem_2m.tif'), dtype=np.float64); hx = json.load(open('lidar_dem_2m.json'))['extent']; HH, HW = hd.shape
+    pad = np.pad(hd, 1, mode='edge'); win = [pad[i:i + HH, j:j + HW] for i in range(3) for j in range(3)]
+    flat = (np.max(win, axis=0) - np.min(win, axis=0)) < 1e-3
+    lv, cnt = np.unique(np.round(hd[flat], 2), return_counts=True)
+    new = {}
+    for v in lv[np.argsort(-cnt)][:4]:   # the biggest flat levels: which OSM lake each one is
+        wf = lidar_sample(np.where(flat & (np.abs(hd - v) < 0.02), 1.0, 0.0), hx, 5) >= 0.5
+        ov = [int((wf & upper).sum()), int((wf & lower).sum())]
+        if max(ov) > 0.5 * wf.sum() and (0 if ov[0] >= ov[1] else 1) not in new: new[0 if ov[0] >= ov[1] else 1] = (wf, float(v))
+    if len(new) == 2:
+        def main_body(mk):   # (each lake's one connected water — a flat patch at its level off by itself, e.g. up the inflow, is not it)
+            from collections import deque
+            lab = np.zeros(mk.shape, np.int32); best, bn, k = 0, 0, 0
+            for j0, i0 in zip(*np.nonzero(mk)):
+                if lab[j0, i0]: continue
+                k += 1; q = deque([(j0, i0)]); lab[j0, i0] = k; n = 0
+                while q:
+                    j, i = q.popleft(); n += 1
+                    for dj, di in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        jj_, ii_ = j + dj, i + di
+                        if 0 <= jj_ < NY and 0 <= ii_ < NX and mk[jj_, ii_] and not lab[jj_, ii_]: lab[jj_, ii_] = k; q.append((jj_, ii_))
+                if n > bn: bn, best = n, k
+            return lab == best
+        upper, lower = main_body(new[0][0] & ~new[1][0]), main_body(new[1][0])
+        SHORE_SRC = f'USGS 3DEP lidar 2017 (hydro-flattened lake surfaces: Upper {new[0][1]:.2f} m, Lower {new[1][1]:.2f} m)'
+        print('lake outlines from the lidar:', SHORE_SRC)
 lakes = upper | lower
 print('lake cells', upper.sum(), lower.sum(), 'ha', round(upper.sum() * CELL * CELL / 1e4), round(lower.sum() * CELL * CELL / 1e4))
 
@@ -142,6 +192,34 @@ if os.path.exists('soundings.json'):
     print('Lower (soundings):'); zl = from_soundings(lower, dl, snd['lower']['soundings'])
     bathy_src = 'measured: interpolated from the 1949 MDIFW soundings (83 Upper, 63 Lower), today\'s shoreline at 0'
 depth = zu + zl
+# THE SHALLOW FRINGE FROM AERIAL PHOTOS (shallows.py → shallows.json; the human, 2026-10-16: "could you estimate a more accurate
+# depth by the shores by looking at aerial photos?"). Tested against the soundings left out one at a time (21 at ≤ 3 m with
+# photo depths about them): at 1–3 m the photo's depths carry no skill (r −0.01; the bottom's light is near the noise there and
+# the 1949 map fits to ~18 m) while the taper × IDW bed does (r 0.55, RMS 0.71 m) — so the photos are used only for the visible
+# band itself, 0 at the waterline to D_EDGE 1.3 m where it darkens (the human's shore: "a foot or two deep … out a bit … chest
+# height before it gets deeper, where the water gets darker"), the fringe no sounding reached: the wide flats, the steep shores.
+# A cell's photo depth replaces the bed fully at ≤ PH_FULL m, fading to none by PH_NONE; floating-leaved beds cap it at PH_WEED
+PH_FULL, PH_NONE, PH_WEED = 1.0, 1.5, 1.8
+if os.path.exists('shallows.json'):
+    shl = json.load(open('shallows.json')); nph = 0
+    # (only the fringe joined to the shore: a lone 'bottom' cell out in open water is waves or glint, not a shoal)
+    bot = np.zeros(lakes.shape, bool)
+    for lid, j, i, zp, kind, *_ in shl['cells']:
+        if kind == 'bottom' and zp is not None and zp < PH_NONE: bot[j, i] = True
+    edge =lakes & (np.roll(~lakes, 1, 0) | np.roll(~lakes, -1, 0) | np.roll(~lakes, 1, 1) | np.roll(~lakes, -1, 1))
+    joined = bot & edge
+    for _ in range(40):   # grow along the 'bottom' cells from the shore's edge
+        g = joined | (bot & (np.roll(joined, 1, 0) | np.roll(joined, -1, 0) | np.roll(joined, 1, 1) | np.roll(joined, -1, 1)))
+        if (g == joined).all(): break
+        joined = g
+    for lid, j, i, zp, kind, *_ in shl['cells']:
+        if not lakes[j, i]: continue
+        if kind == 'bottom' and zp is not None and zp < PH_NONE and joined[j, i]:
+            w = min(1.0, max(0.0, (PH_NONE - zp) / (PH_NONE - PH_FULL))); depth[j, i] = w * max(0.15, zp) + (1 - w) * depth[j, i]; nph += 1
+        elif kind == 'weeds': depth[j, i] = min(depth[j, i], PH_WEED)
+    for nm, mk in (('Upper', upper), ('Lower', lower)):
+        print(f'  shallow fringe from the photos ({nph} cells): {nm} mean {depth[mk].mean():.2f} m, area ≤ 1 m {100 * (depth[mk] <= 1).mean():.0f} %, ≤ 3 m {100 * (depth[mk] <= 3).mean():.0f} %')
+    bathy_src += '; the 0–1.2 m fringe from aerial photos (USDA NAIP, satellite-derived depth: shallows.py)'
 # lake surface elevations from the DEM (flat water) — the median over cells well inside each lake
 surf_u = float(np.median(elev[upper & (du > 60)])); surf_l = float(np.median(elev[lower & (dl > 60)]))
 print('water surface m', round(surf_u, 2), round(surf_l, 2))
@@ -240,7 +318,7 @@ e0 = float(ground.min())
 model = {
     'meta': {'name': 'Hot Brook lakes, T8 R4 NBPP / Danforth, Maine', 'cell': CELL, 'nx': NX, 'ny': NY, 'w': W_M, 'h': H_M, 'lat0': LAT0, 'lon0': LON0,
              'bbox': [Wl, S, E, N], 'surf': {'upper': surf_u, 'lower': surf_l}, 'e0': e0, 'bathy': bathy_src,
-             'sources': ['Lake outlines, brooks: © OpenStreetMap contributors (ODbL)', 'Elevation: USGS 3DEP via AWS Terrain Tiles (z14)',
+             'sources': [f'Lake outlines: {SHORE_SRC}', 'Brooks: © OpenStreetMap contributors (ODbL)', f'Elevation: {ELEV_SRC}',
                          'Wetlands: USFWS National Wetlands Inventory', 'Land cover: NLCD 2021 (MRLC)', 'Lake areas and depths: MDIFW lake surveys; Lakes of Maine (MIDAS 1076, 1072)',
                          'Shore: MDIFW survey notes (mostly rocky; a large sandy beach on Upper\'s NE shore)',
                          'Lake beds: the 1949 MDIFW lake-survey soundings (revised 1965, 2004), digitised and fitted to today\'s shoreline',

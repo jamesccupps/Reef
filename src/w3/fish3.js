@@ -483,7 +483,8 @@ export class Fish3 {
       let made = 0;
       while (made < target) {
         let yrs = 0; for (let t = 0; t < 16; t++) { yrs = a0 - Math.log(1 - rand()) / sp.M; if (yrs < 0.9 * maxY) break; yrs = a0; }
-        const n = s.school ? Math.min(target - made, Math.max(4, Math.round(s.school * (0.5 + rand())))) : 1;
+        let n = s.school ? Math.min(target - made, Math.max(4, Math.round(s.school * (0.5 + rand())))) : 1;
+        if (s.school && target - made - n < 4) n = target - made;   // (the last few join this school: a "school" of one is no school)
         const i = cand[(rand() * cand.length) | 0], [cx, cy] = GEO.cellCentre(i);
         const a = this.add(k, cx + (rand() - 0.5) * GEO.CELL, cy + (rand() - 0.5) * GEO.CELL, null, yrs, n, null, null, s.found || 1);
         // mature fish carry gonads: ripe if this year's spawning is still ahead of the start date, spent if it is past
@@ -1398,13 +1399,19 @@ export class Fish3 {
       const a = f[i]; if (!a.alive || !a.school) continue;
       const s = a.s;
       if (a.n > s.school * F3.SPLIT) { born.push(this._split(a)); continue; }
-      // the nearest school of its kind and size within reach
-      const S = this.hStart, I = this.hItems, hc = this._hc(a.x, a.y);
-      for (let q = S[hc]; q < S[hc + 1]; q++) {
-        const b = f[I[q]]; if (!b || b === a || !b.alive || b.k !== a.k || !b.school) continue;
-        if (Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > F3.MERGE_R) continue;
-        const lr = a.L > b.L ? a.L / b.L : b.L / a.L; if (lr > F3.MERGE_LR || a.n + b.n > s.school * F3.MERGE_MAX) continue;
-        this._merge(a, b); break;
+      // the nearest school of its kind and size within reach (the hash cells within MERGE_R of it — two schools a metre apart
+      // across a cell's edge are as near as any)
+      const S = this.hStart, I = this.hItems, R = F3.MERGE_R;
+      const gx0 = clamp(((a.x - R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + R - GEO.X0) / F3.HC) | 0, 0, this.HX - 1);
+      const gy0 = clamp(((a.y - R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + R - GEO.Y0) / F3.HC) | 0, 0, this.HY - 1);
+      search: for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+        const hc = gy * this.HX + gx;
+        for (let q = S[hc]; q < S[hc + 1]; q++) {
+          const b = f[I[q]]; if (!b || b === a || !b.alive || b.k !== a.k || !b.school) continue;
+          if (Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > R) continue;
+          const lr = a.L > b.L ? a.L / b.L : b.L / a.L; if (lr > F3.MERGE_LR || a.n + b.n > s.school * F3.MERGE_MAX) continue;
+          this._merge(a, b); break search;
+        }
       }
     }
     for (const b of born) this.fish.push(b);

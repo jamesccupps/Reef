@@ -59,4 +59,27 @@ for name in ['upper', 'lower']:
     for n, m in enumerate(re.finditer(rb'<<([^<>]*?/Subtype/Image[^<>]*?)>>\s*stream\r?\n', data, re.S)):
         L = int(re.search(rb'/Length (\d+)', m.group(1)).group(1))
         Image.open(io.BytesIO(data[m.end(): m.end() + L])).save(os.path.join(D, 'ifw', f'{name}_p{n}.png'))
+# THE LIDAR (2026-10-16; USGS 3DEP, ME Eastern B1/B2 2017, QL2 — its 1-m bare-earth DEM, served by the 3DEP ImageServer). The
+# service makes the image (f=json) and returns a link to it; its grid must match the box in degrees, as for the photo. The
+# whole box at ~3.5 × 5 m (the model's terrain) and the lakes at ~1.4 × 1.8 m (their hydro-flattened water: the outlines)
+import json as _json
+def export(url, path, params):
+    r = urllib.request.urlopen(urllib.request.Request(url + '?' + urllib.parse.urlencode({**params, 'f': 'json'}), headers={'User-Agent': UA}), timeout=300)
+    meta = _json.load(r); get(meta['href'], path); _json.dump(meta, open(path.rsplit('.', 1)[0] + '.json', 'w')); time.sleep(2)
+DEP = 'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage'
+export(DEP, os.path.join(D, 'lidar_dem_box.tif'), {'bbox': f'{W},{S},{E},{N}', 'bboxSR': 4326, 'imageSR': 4326, 'size': '1663,2542',
+       'format': 'tiff', 'pixelType': 'F32', 'interpolation': 'RSP_BilinearInterpolation'})
+export(DEP, os.path.join(D, 'lidar_dem_2m.tif'), {'bbox': '-67.959,45.597,-67.917,45.668', 'bboxSR': 4326, 'imageSR': 4326, 'size': '2334,3945',
+       'format': 'tiff', 'pixelType': 'F32', 'interpolation': 'RSP_BilinearInterpolation'})
+# the lakes' aerial photos at ~1 m (NAIP, RGB and the near-infrared band) for the shallow shelf (shallows.py), 2 × 2 tiles a
+# lake (larger requests time out)
+NAIP = 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage'
+os.makedirs(os.path.join(D, 'naip_hr'), exist_ok=True)
+for name, (w0, e0, s0, n0) in {'upper': (-67.954, -67.923, 45.600, 45.636), 'lower': (-67.951, -67.922, 45.630, 45.666)}.items():
+    for tx in (0, 1):
+        for ty in (0, 1):
+            x0, x1 = w0 + (e0 - w0) * tx / 2, w0 + (e0 - w0) * (tx + 1) / 2; y0, y1 = s0 + (n0 - s0) * ty / 2, s0 + (n0 - s0) * (ty + 1) / 2
+            px = {'bbox': f'{x0},{y0},{x1},{y1}', 'bboxSR': 4326, 'imageSR': 4326, 'size': f'{round(2000 * (x1 - x0) / (y1 - y0))},2000', 'format': 'jpg', 'compressionQuality': 92}
+            export(NAIP, os.path.join(D, 'naip_hr', f'{name}_{tx}{ty}.jpg'), px)
+            export(NAIP, os.path.join(D, 'naip_hr', f'{name}NIR_{tx}{ty}.jpg'), {**px, 'bandIds': 3})
 print('fetched into', D)

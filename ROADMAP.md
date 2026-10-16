@@ -109,6 +109,19 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
      single AHR2 variant (Wirgin et al. 2011, Science) — so the sim should be able to show a resistant genotype rising after a
      pollutant arrives, at a cost elsewhere, and falling back after cleanup.
    - **Show it:** each trait's distribution over time per species (the 2-D sim's evolution history), the immigrants' share.
+6. **The land as the maps show it (human, 2026-10-16).** "When you turn the terrain height to 1, the trees are smaller and it
+   looks like there aren't enough, it's not dense enough … we should add roads and buildings to the surrounding terrain like
+   they are on the maps too." Now that the terrain is the 2017 lidar:
+   - **Trees.** Real canopy density and placement: from the lidar's first returns (canopy height = surface − bare earth) or
+     from NAIP's near-infrared (a 1-m canopy map). Keep them dense at every land height; trees shouldn't shrink with the
+     land-height slider.
+   - **Roads and buildings.** The camp roads, the town road, the camps on Upper's east shore with their docks, and the
+     fields: from public sources (OSM roads and buildings; the camps traced from NAIP), drawn on the land.
+   - **The human's Google Earth images** stay the reference to check them against.
+7. **Water levels that vary (human, 2026-10-16).** "The lake level can vary, not just by time of year but sometimes by the
+   year … on a drier year the brook was real low, you could walk through parts." This needs a water balance: rain, snowmelt,
+   evaporation, the inflow, the outlet's sill. The stage then rises and falls by season and year, and the brook's depth and its
+   passage for fish follow it. The lidar's 2017 levels (Upper 128.93 m, Lower 128.23 m) are one datum.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*

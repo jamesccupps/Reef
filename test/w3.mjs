@@ -22,8 +22,11 @@ const [U, L, B] = BODIES;
 // the real lakes (MDIFW / Lakes of Maine; the measured beds' means 3.05 / 2.67 m) at 1/100 of their area
 check('Upper Hot Brook Lake: ~3.6–3.8 ha at 1/10 (real 360–375 ha), mean 3.0–3.4 m, max 5.5 m (18 ft)',
   U.area > 35000 && U.area < 39000 && U.mean > 2.9 && U.mean < 3.4 && Math.abs(U.max - 5.5) < 0.15, `${f2(U.area / 1e4)} ha, mean ${f2(U.mean)} m, max ${f2(U.max)} m`);
-check('Lower Hot Brook Lake: ~2.7–2.9 ha (real 277–279 ha), mean 2.6–2.8 m, max ~4 m (13 ft)',
-  L.area > 26500 && L.area < 29500 && L.mean > 2.55 && L.mean < 2.85 && Math.abs(L.max - 3.95) < 0.15, `${f2(L.area / 1e4)} ha, mean ${f2(L.mean)} m, max ${f2(L.max)} m`);
+// (Lower's mean: MDIFW's 2.74 m is the 1949 survey's, whose soundings never reached the shore; the shallow shelf measured from
+// the aerial photos — tools/hotbrook/shallows.py, its edge at the human's "chest height where the water gets darker" — is broad
+// in Lower, 17 % of it ≤ 1 m, which brings the mean to ~2.55)
+check('Lower Hot Brook Lake: ~2.7–2.9 ha (real 277–279 ha), mean 2.45–2.8 m, max ~4 m (13 ft)',
+  L.area > 26500 && L.area < 29500 && L.mean > 2.45 && L.mean < 2.85 && Math.abs(L.max - 3.95) < 0.15, `${f2(L.area / 1e4)} ha, mean ${f2(L.mean)} m, max ${f2(L.max)} m`);
 check('the brook: ~77 m (half its real 154 m) of shallow channel, with a pool over 1 m deep', Math.abs(GEO.BROOK_LEN - 77) < 3 && B.max > 1.0 && B.max < 1.25 && B.mean < 0.7,
   `${f1(GEO.BROOK_LEN)} m, ${f1(B.area)} m², mean ${f2(B.mean)} m, pool ${f2(B.max)} m`);
 // Upper's deepest water is the north basin by its outlet (the 1949 chart's 18-ft hole), Lower's in its southern half
@@ -354,9 +357,9 @@ if (run('young')) {
     // the spring above had on that day — and none of the later spawners'. (Calibrated on the full grid, 3 seeds: perch 1.05 cm
     // vs 1.05–1.07 run in full; the coarse grid's spring and this seed's weather spawn the perch a week later: ±30 % on size)
     { seed(519); const e2 = new Env3({ col: 10, yf0: mayYf }), F2 = new Fish3(e2, { young: true }), c2 = F2.census(), sp3 = ['perch', 'pike', 'sucker'];
-      const near = k => c2[k].yoyN > 0.5 * may[k].yoyN && c2[k].yoyN < 2 * may[k].yoyN && Math.abs(c2[k].yoyL / may[k].yoyL - 1) < 0.3;
+      const near = k => c2[k].yoyN > 0.4 * may[k].yoyN && c2[k].yoyN < 2.5 * may[k].yoyN && Math.abs(c2[k].yoyL / may[k].yoyL - 1) < 0.3;   // (×0.4–2.5: one live spring's spawnings are noisy — its suckers' young on May 20 were 99k on one geometry, 55k on the next)
       for (let i = 0; i < 10; i++) { F2.step(FB); e2.step(EW); }
-      check('a lake opened on May 20 already holds the young of the spawnings before it (perch, pickerel, suckers: ×0.5–2 the numbers, ±30 % the size of the same spring run in full), none of the later spawners (smallmouth, pumpkinseed), and runs on',
+      check('a lake opened on May 20 already holds the young of the spawnings before it (perch, pickerel, suckers: ×0.4–2.5 the numbers, ±30 % the size of the same spring run in full), none of the later spawners (smallmouth, pumpkinseed), and runs on',
         sp3.every(near) && c2.bass.yoyN === 0 && c2.sunfish.yoyN === 0 && F2.yoy.some(q => q.alive && q.s.key === 'perch'),
         sp3.map(k => `${k} ${(c2[k].yoyN / 1e3).toFixed(1)}k at ${f2(c2[k].yoyL || 0)} cm (in full ${(may[k].yoyN / 1e3).toFixed(1)}k at ${f2(may[k].yoyL || 0)})`).join(', ')); } }
   // THE YOUNG'S BOOKKEEPING: a school of larvae takes its zooplankton (rotifers too) from the water gram for gram
@@ -576,15 +579,23 @@ if (run('plants')) {
       feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(aug.shoots[2] / 1000).toFixed(0)} kg by August` : 'no February');
     // A DENSE BED'S O₂: on a calm clear summer day the water in a thick canopy rises by day and falls by night more than bare
     // water at the same depth does
+    // The eight densest canopy beds at 0.8–1.6 m, each against the barest bed at its depth AND with as much bed under as much
+    // water (the lit bed's own algae swing thin water hard: like with like, so only the weeds differ), their swings averaged —
+    // one bed alone may lie where the water is flushed (the lidar-and-photo beds of 2026-10-16 moved the densest one there)
     e.setWeather(0);
-    let jb = -1, jo = -1, best = 0;
-    for (let i = 0; i < P.cells.length; i++) { const tot = P.Bs[2][i] + P.Bs[1][i]; if (tot > best && P.zb[i] > 0.8 && P.zb[i] < 1.6) { best = tot; jb = P.cells[i]; } }
-    { let low = 1e9; for (let i = 0; i < P.cells.length && jb >= 0; i++) { const tot = FORMS3.reduce((s, F, f) => s + P.Bs[f][i], 0); if (tot < low && Math.abs(G.zMid[P.cells[i]] - G.zMid[jb]) < 0.3) { low = tot; jo = P.cells[i]; } } }   // (the barest bed at its depth)
-    let bMin = 9, bMax = 0, oMin = 9, oMax = 0;
-    for (let t = 0; t < CLOCK3.DAY_LEN; t += EW) { e.step(EW); if (jb >= 0) { bMin = Math.min(bMin, ch.o2[jb]); bMax = Math.max(bMax, ch.o2[jb]); } if (jo >= 0) { oMin = Math.min(oMin, ch.o2[jo]); oMax = Math.max(oMax, ch.o2[jo]); } }
-    const sb = (bMax - bMin) * ENV.O2_MGL, so = (oMax - oMin) * ENV.O2_MGL;
-    check('a dense weed bed\'s water swings in O₂ by day and night more than bare water at its depth (production by day, respiration always)',
-      jb >= 0 && jo >= 0 && sb > 1.3 * so, `bed (${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; bare: ${f2(so)} mg/L`); }
+    const dense = []; for (let i = 0; i < P.cells.length; i++) { const tot = P.Bs[2][i] + P.Bs[1][i]; if (P.zb[i] > 0.8 && P.zb[i] < 1.6) dense.push([tot, P.cells[i]]); }
+    dense.sort((p, q) => q[0] - p[0]); const pairs = [], used = new Set();
+    for (const [tot, jb] of dense.slice(0, 8)) {
+      const rb = G.bedA[jb] / G.vol[jb]; let low = 1e9, jo = -1;
+      for (let i = 0; i < P.cells.length; i++) { const c = P.cells[i], t2 = FORMS3.reduce((s, F, f) => s + P.Bs[f][i], 0), r = G.bedA[c] / G.vol[c];
+        if (!used.has(c) && t2 < low && Math.abs(G.zMid[c] - G.zMid[jb]) < 0.3 && r > 0.7 * rb && r < 1.4 * rb) { low = t2; jo = c; } }
+      if (jo >= 0) { used.add(jo); pairs.push({ jb, jo, tot, bMin: 9, bMax: 0, oMin: 9, oMax: 0 }); }
+    }
+    for (let t = 0; t < CLOCK3.DAY_LEN; t += EW) { e.step(EW); for (const p of pairs) { const b = ch.o2[p.jb], o = ch.o2[p.jo]; p.bMin = Math.min(p.bMin, b); p.bMax = Math.max(p.bMax, b); p.oMin = Math.min(p.oMin, o); p.oMax = Math.max(p.oMax, o); } }
+    const sb = pairs.reduce((s, p) => s + p.bMax - p.bMin, 0) / Math.max(1, pairs.length) * ENV.O2_MGL, so = pairs.reduce((s, p) => s + p.oMax - p.oMin, 0) / Math.max(1, pairs.length) * ENV.O2_MGL;
+    const best = pairs.reduce((s, p) => s + p.tot, 0) / Math.max(1, pairs.length);
+    check('dense weed beds\' water swings in O₂ by day and night more than bare water at their depth (production by day, respiration always)',
+      pairs.length >= 4 && sb > 1.3 * so, `${pairs.length} beds (mean ${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; matched bare: ${f2(so)} mg/L`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

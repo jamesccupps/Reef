@@ -113,6 +113,18 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
+▶ LATEST (2026-10-16, afternoon): THE LAKES' SHAPE FROM LIDAR AND PHOTOS (docs/HOT_BROOK_3D.md §2 "Rebuilt from lidar and
+aerial photos"; research note Hot Brook populations and water/lidar_and_shallows.md). The human supplied Google Earth images
+(hotbrooklakes2.zip; reference only — Google's licence: never copied into the repo) and asked for lidar and terrain. DONE:
+the sunfish cove moved between the two long points (838948c); forest along the brook (65dc8db); then, in the commit after
+these, build_model.py takes the TERRAIN and LAKE OUTLINES from USGS 3DEP lidar (ME Eastern B1/B2 2017; fetch_data.py now
+fetches data/lidar_dem_box.tif + lidar_dem_2m.tif + data/naip_hr/ 1-m NAIP RGB+NIR tiles) and the 0–1.5 m SHELF from NAIP
+(tools/hotbrook/shallows.py: the visible-bottom band, its edge at 1.3 m = the human's "chest height where the water gets
+darker"; validated leave-one-out — no skill at 1–3 m, so used only for the fringe); env3 solveLaplace tolerance 1e-18 (the thin
+fringe stiffened the circulation solve; a uniform field drifted). Gate check: Lower's mean depth bound 2.45–2.8 (was 2.55).
+NEXT (the human's notes): trees denser + independent of the land-height slider, from lidar canopy or NAIP NIR; ROADS and
+BUILDINGS on the land (ROADMAP agreed plan 6); water levels varying by season/year (plan 7); then (f) census/new species, (a)
+clarity.
 ▶ RESUME HERE (2026-10-16, after compacting). DONE THIS SESSION (docs/HOT_BROOK_3D.md §5 "Built — THE SEASON'S YOUNG SO FAR",
 §6 "Built — THE CRAYFISH AND SNAILS ON SCREEN"): (e) Fish3.seedSeason — a lake opened on May 20 (or a forward season jump) holds
 the young of the spawnings before it (spawned as _spawn would, carried by _spinYoy at F3.SEED_P [0.73 spring → 0.5 by early July],

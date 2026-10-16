@@ -159,7 +159,7 @@ export function buildColumns3(COL = H3.COL, DZ = H3.DZ) {
 }
 
 // conjugate gradients on the graph Laplacian (Lx)_a = Σ_f w_f (x_a − x_b) = rhs (Σ rhs = 0; x defined up to a constant)
-function solveLaplace(G, w, rhs, iters = 2000, tol = 1e-10) {
+function solveLaplace(G, w, rhs, iters = 20000, tol = 1e-18) {   // (the lidar-and-photo beds' thin shallow fringe stiffens it; a tight tolerance: the smallest shallow columns hold ~2.7 m³, so a residual imbalance there shows)
   const n = G.NC, x = new Float64Array(n), r = Float64Array.from(rhs), p = new Float64Array(n), Ap = new Float64Array(n);
   let m = 0; for (let i = 0; i < n; i++) m += r[i]; m /= n; for (let i = 0; i < n; i++) r[i] -= m;   // (project out the null space)
   p.set(r); let rr = 0; for (let i = 0; i < n; i++) rr += r[i] * r[i]; const r0 = rr;
