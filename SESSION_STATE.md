@@ -128,7 +128,7 @@ yellow pond-lily, fragrant water-lily, watershield, ribbon-leaf / large-leaf / R
 lobelia, Nitella, water moss in the brook); mineral vs organic bed (PL3.MINERAL_Z/SHELTER); lilies/emergents to the aerial
 photos' fringe (shelter 6/5); species sort by depth within a form; bladderworts root 0.5; brook moss free of wave/ice scour;
 per-species invertebrates and view (pad sizes, colours, blades). Only two plants are recorded (Nitella ×2, Upper 2015): ASK the
-human for photos (offered) and the Lakes of Maine plant list (bot-walled for us; they can copy it). NEXT: plants' remaining roles
+human's plant photos come after compacting (Lakes of Maine has NO plant list for these lakes — they checked). NEXT: plants' remaining roles
 (bladderworts eat zooplankton; rosettes oxidise the sand; lily-pad insects; spawning on plants), then TRUE_SCALE T1–T8 (T8 the
 data/stats page). KNOWN: bass/bullhead recruits starve in autumn (old); the year swings 80–140 kg/ha between runs. Branch zoo-field.
 ▶ TRUE SCALE — DESIGN + PROTOTYPE DONE (2026-10-16, late): the human asked "can we just make everything

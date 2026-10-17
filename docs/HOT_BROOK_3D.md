@@ -591,7 +591,7 @@ What the runs taught (no fish, two years from May):
 - the rosettes oxidising the sand (the bed keeping its P);
 - the lily-pad insects;
 - spawning on plants (perch ribbons, pickerel, killifish on pondweed);
-- the human's photos and Lakes of Maine's list, to confirm or strike species.
+- the human's photos, to confirm or strike species (Lakes of Maine has no plant list for these lakes).
 
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/
