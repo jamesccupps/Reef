@@ -50,6 +50,24 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - The brook as a channel: its real path, width and depth profile, carved through the grid.
   - 15-m cells beyond.
   - The angler's notes, the inflow and the outlet at their real places.
+  - **Built (2026-10-17).**
+    - **The landscape model at 5 m.** `tools/hotbrook/build_model.py` takes `HB_CELL=5` and `HB_CROP` (the lakes' box with ~400 m of land). It keeps the whole box's local metres, so the soundings and the field notes keep their places.
+    - **The photos' shelf at 5 m.** `shallows.py` reads it through `HB_MODEL` / `HB_SHALLOWS_OUT`; its 45-m neighbourhood and its pixel minimum scale with the cell size. The photos' shelf is ~94 ha of visible bottom and 2.7 ha of weed beds.
+    - **The world.** `build_world3d.py` takes `HB_MODEL`, `HB_JS` and `HB_SIM_ONLY` and writes `src/w3/true/hotbrook3d.js` (5 MB): 455 × 1385 cells of 5 m, both lakes and 150 m of land about each.
+      - Upper: 369 ha, mean 2.99 m, max 5.52 m.
+      - Lower: 274 ha, mean 2.57 m, max 4.12 m (the deepest sounding resolved where 15-m cells averaged it to 3.9).
+      - The brook: 154.6 m long and ~8 m wide (11 m on average over the 5-m cells, with the mouths' short links), its pool 1.06–1.13 m.
+      - The water within one cell of shore averages 0.41 m.
+    - The default 15-m model and the 1/10 world rebuild byte-identical.
+    - **The geometry module.** `src/w3/geometry.js` became `makeGeometry(HB3)`.
+      - The sim's world is the 1/10 one, unless `HB_WORLD=true` (Node) or `globalThis.HB_WORLD = 'true'` asks for the true one; it is built in ~150 ms.
+      - env3's `H3.COL` and `H3.REAL` now follow the world's scale (50-m columns, ×1 at true scale).
+      - On the true world the water model builds 2,622 columns and 15,072 cells in 0.5 s, at 18.7 ms a 15-min step.
+    - **Gate.** test/w3.mjs's `true` section: 9 checks at true scale — the areas and depths, the brook, the north basin, the shallow shares, the connection inflow → brook → outlet, the angler's spots, the shallow shore, depthAt.
+    - **Not yet.** The far land and the photo at true scale (T6: tiles). The many constants written in world metres for the 1/10 lakes, listed for T2–T3:
+      - the plants' SHELTER_R and WOOD_W;
+      - the fish's home ranges, SUB_R, brook distances, site spacing, BAND_SLOPE and the hash cell;
+      - the insects' fall-in × GEO.SCALE (already scaled).
 - **T2 — The water model in real lengths.** `H3.REAL` 1, 50-m columns (25 m near shore if the coves need it). It is calibrated in real lengths already; re-check transport and circulation.
 - **T3 — Fish fidelity by distance.**
   - The fish near the camera (~150–250 m) live second by second: 0.1-s steps, brains at 5 Hz.

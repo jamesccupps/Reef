@@ -8,6 +8,15 @@ Maine), 5.8 × 12.7 km, on a 15 m grid. It is the reference for building the sho
     python tools/hotbrook/soundings.py     # the 1949 MDIFW soundings → data/soundings.json (maps fitted to today's shore)
     python tools/hotbrook/build_model.py   # → data/hotbrook_model.json (needs numpy + Pillow; node for the sim strip)
 
+TRUE SCALE (docs/TRUE_SCALE.md T1): the same chain at 5 m over the lakes' box, then the true-size world for the sim:
+
+    HB_CELL=5 HB_CROP=-67.9563,45.5995,-67.9209,45.6665 HB_MODEL_OUT=hotbrook_model_5m.json HB_SHALLOWS=shallows_5m.json python tools/hotbrook/build_model.py
+    HB_MODEL=hotbrook_model_5m.json HB_SHALLOWS_OUT=shallows_5m.json python tools/hotbrook/shallows.py
+    (build_model.py again, as above, to take the shelf in)
+    HB_MODEL=hotbrook_model_5m.json HB_SCALE=1 HB_BROOK_SCALE=1 HB_BROOK_W=8 HB_MARGIN=150 HB_JS=src/w3/true/hotbrook3d.js HB_SIM_ONLY=1 python tools/hotbrook/build_world3d.py
+
+(Set PYTHONIOENCODING=utf-8 on Windows: the scripts print λ and °.)
+
 `viewer.html` is the three.js viewer (map colours / aerial photo / depth chart with 2-ft contours and the soundings;
 seasons; a cut-away section you slide south↔north; an underwater dive; the human's field notes from `field_notes.json`).
 It loads three.js from public CDNs, so open it from the artifact, or from a plain static server next to

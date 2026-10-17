@@ -80,6 +80,51 @@ check('the inflow is at Upper\'s south end and the outlet at Lower\'s north end'
   check('depthAt costs well under a microsecond (it runs per fish per step)', ns < 300 && Number.isFinite(s), `${ns.toFixed(0)} ns/call`); }
 
 // ============================================================
+//  GEOMETRY AT TRUE SCALE (docs/TRUE_SCALE.md T1) — the same lakes at their real size: 5-m cells (the 0–1.3 m shelf is often
+//  under 15 m wide), the brook its real 154 m and ~8 m wide carved through the grid; src/w3/true/hotbrook3d.js through
+//  makeGeometry (the sim still runs the 1/10 world until T2–T3)
+// ============================================================
+console.log('\n— geometry: the Hot Brook lakes at TRUE SCALE (T1) —');
+if (run('true')) {
+  const { makeGeometry } = await import('../src/w3/geometry.js');
+  const t0 = performance.now(), { HB3: HBT } = await import('../src/w3/true/hotbrook3d.js'), W = makeGeometry(HBT), tMs = performance.now() - t0;
+  const TG = W.GEO, [TU, TL, TBk] = W.BODIES;
+  check('true scale: Upper Hot Brook Lake 360–375 ha (MDIFW 360, the lidar 369), mean 2.9–3.4 m, max 5.5 m (18 ft); 5-m cells',
+    TG.CELL === 5 && TU.area > 3.6e6 && TU.area < 3.75e6 && TU.mean > 2.9 && TU.mean < 3.4 && Math.abs(TU.max - 5.5) < 0.15,
+    `${f1(TU.area / 1e4)} ha, mean ${f2(TU.mean)} m, max ${f2(TU.max)} m; grid ${TG.NX} × ${TG.NY} (${(TG.N / 1e3).toFixed(0)}k cells) built in ${tMs.toFixed(0)} ms`);
+  // (the deepest sounding resolved: 4.1 m where the 15-m cells averaged it to 3.9; MDIFW's max 13 ft ≈ 4.0)
+  check('true scale: Lower Hot Brook Lake 270–280 ha (MDIFW 277, the lidar 274), mean 2.45–2.85 m, max ~4 m (13 ft)',
+    TL.area > 2.7e6 && TL.area < 2.8e6 && TL.mean > 2.45 && TL.mean < 2.85 && Math.abs(TL.max - 4.0) < 0.2, `${f1(TL.area / 1e4)} ha, mean ${f2(TL.mean)} m, max ${f2(TL.max)} m`);
+  check('true scale: the brook its real ~154 m, a channel ~8 m wide (on 5-m cells: 6–14 m), shallow, with the pool at its upper mouth over 1 m',
+    Math.abs(TG.BROOK_LEN - 154) < 6 && TBk.area / TG.BROOK_LEN > 6 && TBk.area / TG.BROOK_LEN < 14 && TBk.max > 1.0 && TBk.max < 1.25 && TBk.mean < 0.7,
+    `${f1(TG.BROOK_LEN)} m, ${f1(TBk.area / TG.BROOK_LEN)} m wide on average (${TBk.cells} cells), mean ${f2(TBk.mean)} m, pool ${f2(TBk.max)} m`);
+  check('true scale: Upper\'s deepest point lies in its north basin by the brook\'s mouth (within ~1 km)', Math.hypot(...TU.deepest) < 1000, `${f1(Math.hypot(...TU.deepest))} m from the mouth`);
+  const shareT = (b, z) => { let n = 0, s = 0; for (let i = 0; i < TG.N; i++) if (TG.body[i] === b) { n++; if (TG.depth[i] <= z) s++; } return s / n; };
+  // (the shelf the aerial photos measured — tools/hotbrook/shallows.py at 5 m — is the visible-bottom band to its 1.3-m edge)
+  check('true scale: each lake keeps its share of water ≤ 3 m (Upper ~44 %, Lower ~55 %) and the photos\' shelf ≤ 1 m (8–22 %)',
+    Math.abs(shareT(UPPER, 3) - 0.44) < 0.04 && Math.abs(shareT(LOWER, 3) - 0.56) < 0.04 && [UPPER, LOWER].every(b => shareT(b, 1) > 0.08 && shareT(b, 1) < 0.22),
+    `≤ 3 m: Upper ${(shareT(UPPER, 3) * 100).toFixed(0)} %, Lower ${(shareT(LOWER, 3) * 100).toFixed(0)} %; ≤ 1 m: ${(shareT(UPPER, 1) * 100).toFixed(0)} %, ${(shareT(LOWER, 1) * 100).toFixed(0)} %`);
+  { const seen = new Uint8Array(TG.N), q = []; let s0 = W.cellIndex(...TG.INFLOW);
+    if (s0 < 0 || TG.body[s0] === LAND) { let best = 1e9; for (let i = 0; i < TG.N; i++) if (TG.body[i] === UPPER) { const [x, y] = TG.cellCentre(i), d = Math.hypot(x - TG.INFLOW[0], y - TG.INFLOW[1]); if (d < best) { best = d; s0 = i; } } }
+    q.push(s0); seen[s0] = 1; const reached = new Set();
+    while (q.length) { const i = q.pop(); reached.add(TG.body[i]); const c = i % TG.NX, r = (i / TG.NX) | 0;
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const cc = c + dc, rr = r + dr; if (cc < 0 || rr < 0 || cc >= TG.NX || rr >= TG.NY) continue; const j = rr * TG.NX + cc; if (!seen[j] && TG.body[j] !== LAND) { seen[j] = 1; q.push(j); } } }
+    let wet = 0, got = 0; for (let i = 0; i < TG.N; i++) if (TG.body[i] !== LAND) { wet++; if (seen[i]) got++; }
+    check('true scale: one connected water system, Upper\'s inflow through the brook to Lower (every water cell reachable); inflow at Upper\'s south end, outlet at Lower\'s north',
+      reached.has(UPPER) && reached.has(BROOK) && reached.has(LOWER) && got === wet && TG.INFLOW[1] < -2500 && TG.OUTLET[1] > 2500, `${got}/${wet} water cells; inflow y ${f1(TG.INFLOW[1])}, outlet y ${f1(TG.OUTLET[1])}`); }
+  { const [pool, stretch, cove] = TG.NOTES.map(n => n.xy);
+    check('true scale: the angler\'s sunfish spots — the brook\'s upper-mouth pool (≥ 0.9 m), a shallower stretch, the cove between Upper\'s west points (< 3.3 m, ≤ 150 m from shore)',
+      TG.bodyAt(...pool) === BROOK && TG.bodyAt(...stretch) === BROOK && TG.depthAt(...pool) >= 0.9 && TG.depthAt(...stretch) < TG.depthAt(...pool) && TG.bodyAt(...cove) === UPPER && TG.depthAt(...cove) < 3.3 && TG.shoreDist(...cove) <= 150,
+      `pool ${f2(TG.depthAt(...pool))} m, stretch ${f2(TG.depthAt(...stretch))} m, cove ${f2(TG.depthAt(...cove))} m (${f1(TG.shoreDist(...cove))} m from shore)`); }
+  // at true scale the slopes are real: the water by the shore (within a cell) is shallow — the shore taper and the photos' band
+  { let worst = 0, n = 0, sum = 0; for (let i = 0; i < TG.N; i++) { if (TG.body[i] !== UPPER && TG.body[i] !== LOWER || TG.shore[i] > TG.CELL * 1.01) continue; n++; sum += TG.depth[i]; worst = Math.max(worst, TG.depth[i]); }
+    check('true scale: the water at the shore is shallow (the shore cells ≤ 1.5 m, averaging under 0.6 m)', worst <= 1.5 && sum / n < 0.6, `${n} shore cells, mean ${f2(sum / n)} m, deepest ${f2(worst)} m`); }
+  { let maxErr = 0; for (let i = 0; i < TG.N; i += 97) { const [x, y] = TG.cellCentre(i); maxErr = Math.max(maxErr, Math.abs(TG.depthAt(x, y) - TG.depth[i])); }
+    const t1 = performance.now(); let s = 0; for (let k = 0; k < 1e6; k++) s += TG.depthAt(-500 + (k % 997), -1500 + (k % 991) * 3); const ns = (performance.now() - t1);
+    check('true scale: depthAt matches the grid at cell centres and costs well under a microsecond', maxErr < 1e-3 && ns < 300 && Number.isFinite(s), `max centre error ${maxErr.toExponential(1)} m, ${ns.toFixed(0)} ns/call`); }
+}
+
+// ============================================================
 //  ENVIRONMENT 3-D, slice 1 — columns, temperature, ice, the water's movement (src/w3/env3.js)
 // ============================================================
 console.log('\n— environment 3-D: columns, temperature, ice, transport —');

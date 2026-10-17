@@ -37,9 +37,13 @@ VEG_N, VEG_NDVI = 10.0, 0.05                   # floating leaves / emergent stem
 NEAR = 60.0                                    # m (real): a cell this near shore with no bottom showing is deeper than its fade depth
 E0_R = 3                                       # cells (45 m) about a cell for the waterline's bottom brightness
 
-m = json.load(open(os.path.join(D, 'hotbrook_model.json'))); M = m['meta']; NX, NY, C = M['nx'], M['ny'], M['cell']
+# (TRUE SCALE T1: HB_MODEL names the model read — a finer or cropped one — and HB_SHALLOWS_OUT the cells written)
+m = json.load(open(os.path.join(D, os.environ.get('HB_MODEL', 'hotbrook_model.json')))); M = m['meta']; NX, NY, C = M['nx'], M['ny'], M['cell']
 S_, N_, W_, E_ = M['bbox'][1], M['bbox'][3], M['bbox'][0], M['bbox'][2]
-MX = 111320 * math.cos(math.radians((S_ + N_) / 2)); MY = 110540
+MX = M.get('mx', 111320 * math.cos(math.radians((S_ + N_) / 2))); MY = M.get('my', 110540)
+XW_, YN_ = M.get('xw', -M['w'] / 2), M.get('yn', M['h'] / 2)   # (the grid's west and north edges in the model's local metres)
+E0_R = max(1, round(E0_R * 15 / C))                              # (cells: ~45 m whatever the cell size)
+NW_MIN = 20 * (C / 15) ** 2                                      # (photo pixels a cell needs: 20 of a 15-m cell's ~225)
 dec = lambda k, t: np.frombuffer(base64.b64decode(m[k]), dtype=t).reshape(NY, NX)
 lake = dec('lake', np.uint8); depth = dec('depth_cm', np.uint16) / 100
 # the distance (m) from each lake cell to the shore (chamfer on the model grid)
@@ -103,7 +107,7 @@ for name, lid in (('upper', 1), ('lower', 2)):
 # the cells' estimates
 cells = []
 for lid in (1, 2):
-    sel = (lake == lid) & (nW > 20)
+    sel = (lake == lid) & (nW > NW_MIN)
     for j, i in zip(*np.nonzero(sel)):
         fb, fv = nB[j, i] / nW[j, i], nV[j, i] / nW[j, i]; fd = fadeS[j, i] / nW[j, i]
         if fb >= 0.5: cells.append([int(lid), int(j), int(i), round(float(zS[j, i] / nB[j, i]), 2), 'bottom', round(fb, 2), round(fv, 2), round(fd, 2)])
@@ -112,7 +116,7 @@ for lid in (1, 2):
 out = {'note': 'satellite-derived depths of the shallow shelf (tools/hotbrook/shallows.py); z in m below the surface',
        'g': G2, 'secchi': SECCHI, 'k_sig': K_SIG, 'tiles': report, 'cells': cells,
        'fields': ['lake', 'row', 'col', 'z (bottom cells)', 'kind', 'share showing the bottom', 'share weeds', 'fade depth m']}
-json.dump(out, open(os.path.join(D, 'shallows.json'), 'w'))
+json.dump(out, open(os.path.join(D, os.environ.get('HB_SHALLOWS_OUT', 'shallows.json')), 'w'))
 kinds = {k: sum(1 for c in cells if c[4] == k) for k in ('bottom', 'weeds', 'deeper')}
 zb = np.array([c[3] for c in cells if c[4] == 'bottom']); fd = np.array([c[7] for c in cells])
 print('cells', kinds, 'bottom z mean', round(float(zb.mean()), 2), 'p10/p50/p90', np.percentile(zb, [10, 50, 90]).round(2), '| fade depth p10/p50/p90', np.percentile(fd, [10, 50, 90]).round(2))
@@ -122,7 +126,7 @@ by = {(c[1], c[2]): c for c in cells}
 for name in ('upper', 'lower'):
     rows = []
     for x, y, d in snd[name]['soundings']:
-        i = int((x + M['w'] / 2) / C); j = int((M['h'] / 2 - y) / C)
+        i = int((x - XW_) / C); j = int((YN_ - y) / C)
         near = [by[(j + a, i + b)] for a in (-1, 0, 1) for b in (-1, 0, 1) if (j + a, i + b) in by]
         if near:
             zs = [c[3] for c in near if c[4] == 'bottom']; kinds_ = {c[4] for c in near}

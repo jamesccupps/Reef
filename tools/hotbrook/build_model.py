@@ -19,11 +19,19 @@ S, N, Wl, E = 45.575, 45.690, -67.975, -67.900
 LAT0, LON0 = (S + N) / 2, (Wl + E) / 2
 MX = 111320 * math.cos(math.radians(LAT0)); MY = 110540
 CELL = 15.0                                          # m per grid cell
-W_M, H_M = (E - Wl) * MX, (N - S) * MY
+# TRUE SCALE T1 (docs/TRUE_SCALE.md): HB_CELL (m) builds the model finer (5 m for the true-scale sim's shore); HB_CROP
+# "W,S,E,N" (degrees) covers only that part of the box — the local metres stay those of the WHOLE box (x east, y north from its
+# centre), so the soundings and the field notes keep their places; HB_MODEL_OUT / HB_SHALLOWS name the model written and the
+# photo shallows read. The defaults build the 15-m whole-box model as before
+CELL = float(os.environ.get('HB_CELL', CELL))
+gW, gS, gE, gN = (map(float, os.environ['HB_CROP'].split(',')) if os.environ.get('HB_CROP') else (Wl, S, E, N))
+MODEL_OUT = os.environ.get('HB_MODEL_OUT', 'hotbrook_model.json'); SHALLOWS_IN = os.environ.get('HB_SHALLOWS', 'shallows.json')
+W_M, H_M = (gE - gW) * MX, (gN - gS) * MY
+XW, YN = (gW - LON0) * MX, (gN - LAT0) * MY          # the grid's west edge and north edge in the box's local metres
 NX, NY = int(W_M / CELL), int(H_M / CELL)
-print('grid', NX, NY, 'cells', NX * NY, 'area km', round(W_M / 1000, 2), round(H_M / 1000, 2))
-# grid cell (i, j) → j row from the NORTH edge, i column from the WEST edge; local metres x east, y north from the centre
-def ll2px(lon, lat): return ((lon - Wl) * MX / CELL, (N - lat) * MY / CELL)
+print('grid', NX, NY, 'cells', NX * NY, 'area km', round(W_M / 1000, 2), round(H_M / 1000, 2), 'cell', CELL)
+# grid cell (i, j) → j row from the NORTH edge, i column from the WEST edge; local metres x east, y north from the box's centre
+def ll2px(lon, lat): return ((lon - gW) * MX / CELL, (gN - lat) * MY / CELL)
 def ll2m(lon, lat): return ((lon - LON0) * MX, (lat - LAT0) * MY)
 
 # ---------- elevation: mosaic the terrarium tiles, then sample at every cell centre ----------
@@ -34,7 +42,7 @@ for x in range(x0, x1 + 1):
         a = np.asarray(Image.open(f'tiles/{Z}_{x}_{y}.png').convert('RGB'), dtype=np.float32)
         mos[(y - y0) * 256:(y - y0 + 1) * 256, (x - x0) * 256:(x - x0 + 1) * 256] = a[..., 0] * 256 + a[..., 1] + a[..., 2] / 256 - 32768
 jj, ii = np.mgrid[0:NY, 0:NX]
-lon = Wl + (ii + 0.5) * CELL / MX; lat = N - (jj + 0.5) * CELL / MY
+lon = gW + (ii + 0.5) * CELL / MX; lat = gN - (jj + 0.5) * CELL / MY
 tx = (lon + 180) / 360 * 2 ** Z * 256 - x0 * 256
 r = np.radians(lat); ty = (1 - np.log(np.tan(r) + 1 / np.cos(r)) / np.pi) / 2 * 2 ** Z * 256 - y0 * 256
 tx0 = np.clip(np.floor(tx).astype(int), 0, mos.shape[1] - 2); ty0 = np.clip(np.floor(ty).astype(int), 0, mos.shape[0] - 2)
@@ -172,12 +180,12 @@ print('Lower:'); zl, dl = bathy(lower, 4.0, 2.74)
 # 2-D, so it sagged to a 1.9 m mean against the published 3.35 m.)
 LAM_SHORE = 50.0   # m: the shore taper (soundings 30–60 m off the beach are already 2–3 m: a fairly steep first slope)
 def from_soundings(mask, dshore, pts):
-    P = np.array([p for p in pts if 0 <= int((p[0] + W_M / 2) / CELL) < NX and 0 <= int((H_M / 2 - p[1]) / CELL) < NY])
-    pi_ = ((P[:, 0] + W_M / 2) / CELL).astype(int); pj = ((H_M / 2 - P[:, 1]) / CELL).astype(int)
+    P = np.array([p for p in pts if 0 <= int((p[0] - XW) / CELL) < NX and 0 <= int((YN - p[1]) / CELL) < NY])
+    pi_ = ((P[:, 0] - XW) / CELL).astype(int); pj = ((YN - P[:, 1]) / CELL).astype(int)
     f = lambda d: 1 - np.exp(-np.maximum(d, 0) / LAM_SHORE)
     ds = np.maximum(dshore[pj, pi_], 25.0)                     # (a sounding the map fit put on land or the beach: ≥ 25 m out)
     g = P[:, 2] / f(ds)
-    jj_, ii_ = np.nonzero(mask); X = (ii_ + 0.5) * CELL - W_M / 2; Y = H_M / 2 - (jj_ + 0.5) * CELL
+    jj_, ii_ = np.nonzero(mask); X = XW + (ii_ + 0.5) * CELL; Y = YN - (jj_ + 0.5) * CELL
     D2 = (X[:, None] - P[None, :, 0]) ** 2 + (Y[:, None] - P[None, :, 1]) ** 2
     w = 1 / (D2 + 15.0 ** 2); k = np.argsort(D2, 1)[:, 10:]; np.put_along_axis(w, k, 0, 1)   # IDW, power 2, 10 nearest
     gz = (w * g[None, :]).sum(1) / w.sum(1)
@@ -200,8 +208,8 @@ depth = zu + zl
 # height before it gets deeper, where the water gets darker"), the fringe no sounding reached: the wide flats, the steep shores.
 # A cell's photo depth replaces the bed fully at ≤ PH_FULL m, fading to none by PH_NONE; floating-leaved beds cap it at PH_WEED
 PH_FULL, PH_NONE, PH_WEED = 1.0, 1.5, 1.8
-if os.path.exists('shallows.json'):
-    shl = json.load(open('shallows.json')); nph = 0
+if os.path.exists(SHALLOWS_IN):
+    shl = json.load(open(SHALLOWS_IN)); nph = 0
     # (only the fringe joined to the shore: a lone 'bottom' cell out in open water is waves or glint, not a shoal)
     bot = np.zeros(lakes.shape, bool)
     for lid, j, i, zp, kind, *_ in shl['cells']:
@@ -267,7 +275,7 @@ path = [ll2m(*p) for p in cl[max(0, first - 1): last + 2]]
 # its real cross-section: sample depth / ground every 15 m along the path
 prof = []; acc = 0.0
 def sample(arr, x, y):
-    i_ = int((x + W_M / 2) / CELL); j_ = int((H_M / 2 - y) / CELL)
+    i_ = int((x - XW) / CELL); j_ = int((YN - y) / CELL)
     return float(arr[min(max(j_, 0), NY - 1), min(max(i_, 0), NX - 1)])
 for k in range(len(path) - 1):
     (ax, ay), (bx, by) = path[k], path[k + 1]; seg = math.dist(path[k], path[k + 1]); n = max(1, int(seg / 15))
@@ -278,9 +286,9 @@ for k in range(len(path) - 1):
 print('slice path length m', round(acc))
 
 # ---------- labels ----------
-def centroid(m): j_, i_ = np.nonzero(m); return ((i_.mean() + 0.5) * CELL - W_M / 2, H_M / 2 - (j_.mean() + 0.5) * CELL)
+def centroid(m): j_, i_ = np.nonzero(m); return (XW + (i_.mean() + 0.5) * CELL, YN - (j_.mean() + 0.5) * CELL)
 deep_u = np.unravel_index(np.argmax(zu), zu.shape); deep_l = np.unravel_index(np.argmax(zl), zl.shape)
-cxy = lambda jj_, ii_: ((ii_ + 0.5) * CELL - W_M / 2, H_M / 2 - (jj_ + 0.5) * CELL)
+cxy = lambda jj_, ii_: (XW + (ii_ + 0.5) * CELL, YN - (jj_ + 0.5) * CELL)
 labels = [
     {'t': 'Upper Hot Brook Lake', 's': '360 ha · mean 3.4 m · max 5.5 m (18 ft)', 'xy': centroid(upper), 'z': surf_u},
     {'t': 'Lower Hot Brook Lake', 's': '277 ha · mean 2.7 m · max 4.0 m (13 ft)', 'xy': centroid(lower), 'z': surf_l},
@@ -317,7 +325,8 @@ def b64(a): return base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 e0 = float(ground.min())
 model = {
     'meta': {'name': 'Hot Brook lakes, T8 R4 NBPP / Danforth, Maine', 'cell': CELL, 'nx': NX, 'ny': NY, 'w': W_M, 'h': H_M, 'lat0': LAT0, 'lon0': LON0,
-             'bbox': [Wl, S, E, N], 'surf': {'upper': surf_u, 'lower': surf_l}, 'e0': e0, 'bathy': bathy_src,
+             'xw': XW, 'yn': YN, 'mx': MX, 'my': MY,   # (the grid's west and north edges in the local metres; metres per degree)
+             'bbox': [gW, gS, gE, gN], 'surf': {'upper': surf_u, 'lower': surf_l}, 'e0': e0, 'bathy': bathy_src,
              'sources': [f'Lake outlines: {SHORE_SRC}', 'Brooks: © OpenStreetMap contributors (ODbL)', f'Elevation: {ELEV_SRC}',
                          'Wetlands: USFWS National Wetlands Inventory', 'Land cover: NLCD 2021 (MRLC)', 'Lake areas and depths: MDIFW lake surveys; Lakes of Maine (MIDAS 1076, 1072)',
                          'Shore: MDIFW survey notes (mostly rocky; a large sandy beach on Upper\'s NE shore)',
@@ -333,8 +342,8 @@ model = {
     'soundings': {k: v['soundings'] for k, v in (json.load(open('soundings.json')).items() if os.path.exists('soundings.json') else [])},
     'notes': field_notes(),
 }
-json.dump(model, open('hotbrook_model.json', 'w'), separators=(',', ':'))
-print('wrote hotbrook_model.json', round(os.path.getsize('hotbrook_model.json') / 1e6, 2), 'MB')
+json.dump(model, open(MODEL_OUT, 'w'), separators=(',', ':'))
+print('wrote', MODEL_OUT, round(os.path.getsize(MODEL_OUT) / 1e6, 2), 'MB')
 from collections import Counter
 cc = Counter(cover.ravel().tolist()); print({CLASSES[k]: round(v * CELL * CELL / 1e4) for k, v in sorted(cc.items(), key=lambda t: -t[1])})
 
@@ -346,5 +355,5 @@ js = ("const C = await import(process.argv[1]); const { WORLD, bedY, LANDSCAPE }
 cfg = 'file:///' + os.path.abspath(os.path.join(HERE, '..', '..', 'src', 'config.js')).replace(os.sep, '/')
 out = subprocess.run(['node', '--input-type=module', '-e', js, cfg], capture_output=True, text=True)
 if out.returncode == 0:
-    model['sim'] = json.loads(out.stdout); json.dump(model, open('hotbrook_model.json', 'w'), separators=(',', ':')); print('added the sim cross-section')
+    model['sim'] = json.loads(out.stdout); json.dump(model, open(MODEL_OUT, 'w'), separators=(',', ':')); print('added the sim cross-section')
 else: print('node failed (sim cross-section left out):', out.stderr[:300])

@@ -133,7 +133,12 @@ Lessons:
 - A "perch spawn a week late" turned out to be the shifted weather, not the mechanism. Before blaming a mechanism, compare the
   temperature curve.
 - The test's band must be measured as the fish read it.
-NEXT: TRUE_SCALE T1–T8 (docs/TRUE_SCALE.md; T8 = the data/stats page with click-a-fish). Still open from 7g (HOT_BROOK_3D.md):
+TRUE_SCALE T1 DONE (2026-10-17; TRUE_SCALE.md "T1 Built"): the 5-m landscape model and photo shelf (build_model.py HB_CELL/HB_CROP,
+shallows.py HB_MODEL), the true-size world src/w3/true/hotbrook3d.js (5 MB; 369 + 274 ha, the brook 154.6 m), geometry.js →
+makeGeometry + the HB_WORLD=true switch, H3.COL/REAL from GEO.SCALE; the gate's `true` section (9 checks; w3 90/90).
+NEXT: T2 — the water model in real lengths (HB_WORLD=true builds it: 2,622 columns, 18.7 ms a 15-min step), and the AUDIT of every
+constant in world metres for the 1/10 lakes (plants SHELTER_R/WOOD_W; fish home ranges, SUB_R, brook distances, site spacing,
+BAND_SLOPE, the hash cell, ...) — then T3 (fish fidelity by distance) … T8 (the data/stats page with click-a-fish). Still open from 7g (HOT_BROOK_3D.md):
 - the nest builders' plant avoidance;
 - pickerel capacity per vegetated area;
 - perch ribbon wind losses;

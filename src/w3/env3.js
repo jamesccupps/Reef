@@ -26,9 +26,9 @@ import { Plants3, PL3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
-  COL: 5,               // m (world) column side — 50 m real
+  COL: 50 * GEO.SCALE,  // m (world) column side — 50 m real (5 at 1/10)
   DZ: 0.5,              // m layer thickness
-  REAL: 10,             // real metres per world metre, horizontally (the lakes at 1/10)
+  REAL: 1 / GEO.SCALE,  // real metres per world metre, horizontally (10: the lakes at 1/10; 1 at true scale — TRUE_SCALE.md)
   // the wind's depth-averaged circulation: two counter-rotating gyres, downwind over the shallows and upwind over the deep axis;
   // its strength set so the area-weighted RMS current is CIRC_RMS at 5 m/s wind (small shallow lakes: 1–10 cm/s)
   CIRC_RMS: 0.02,       // m/s real at 5 m/s wind
