@@ -546,7 +546,7 @@ they provide places for the fish to be, food and things for the water, places fo
 - the aerial photos' fringe (lilies and emergents on ~0.6 % of Upper and ~0.3 % of Lower, 15–45 m from shore at 0.3–1 m);
 - the soft water, which rules out the hard-water pondweeds.
 
-The full plant list for these lakes is on lakesofmaine.org, behind a bot wall; the human can copy it, and has photos. As with the fish, a species the human or a record rules out comes out.
+Lakes of Maine has no plant list for these lakes (the human checked, 2026-10-17); the human's photos are the local evidence. As with the fish, a species the human or a record rules out comes out.
 
 **The set: twelve species in place of the five growth forms.**
 
