@@ -564,7 +564,7 @@ function dateOf(yf) { let d = yf * 365; for (let m = 0; m < 12; m++) { if (d < M
 function liveTick(dtReal) {
   LIVE.dtAcc += dtReal;
   if (!LIVE.worker || LIVE.waiting || !LIVE.snap) return;
-  LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
+  LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc, cam: [rig.target.x, -rig.target.z, rig.dist] }); LIVE.dtAcc = 0; LIVE.waiting = true;   // (cam: where the view looks — the true-size lakes' focus)
 }
 function onSnap(m) {
   if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }

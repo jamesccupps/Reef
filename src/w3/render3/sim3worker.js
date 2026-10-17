@@ -11,6 +11,7 @@
 import { Env3 } from '../env3.js';
 import { Fish3 } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
+import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
@@ -18,7 +19,8 @@ const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on
 const PLANTS_MS = 4000;   // the weeds change slowly: their field every this often
 const FINE = 0.1, FINE_UP = 6, BLOCKS_S = 3, BLOCK_MAX = 1752, ENV_FINE = 60;   // s; ×; blocks a second; s; s of water step when fine
 let env = null, F = null, run = true, speed = 1, acc = 0, envAcc = 0, h = FINE, show = 'plain', ticks = 0, plantsAt = -1e9;
-const RISES_MAX = 300;   // rises a snapshot carries at most (the view's rings: the insects taken at the surface)
+const RISES_MAX = 300;
+const FOCUS_R = [80, 250];   // m: the true-size lakes' focus radius, twice the camera's distance within these   // rises a snapshot carries at most (the view's rings: the insects taken at the surface)
 let rises = [];
 
 function remember() {
@@ -94,7 +96,11 @@ onmessage = ev => {
     env = new Env3(); F = new Fish3(env, { young: true }); remember();   // (the lake opens with the season's young so far: seedSeason)
     postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL });
     sendPlants(); snapshot();
-  } else if (m.type === 'tick') { ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot(); }
+  } else if (m.type === 'tick') {
+    // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): on the true-size lakes, at the fine speeds, the fish within FOCUS_R of where the view
+    // looks live second by second and the rest in banked blocks (the 1/10 world, every fish drawn, steps them all alike)
+    if (WORLD_TRUE && m.cam && stepFor(speed) === FINE) F.setFocus(m.cam[0], m.cam[1], Math.min(FOCUS_R[1], Math.max(FOCUS_R[0], m.cam[2] * 2))); else F.setFocus(null);
+    ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot(); }
   else if (m.type === 'run') run = !!m.run;
   else if (m.type === 'speed') speed = +m.speed || 1;
   else if (m.type === 'show') show = m.show;

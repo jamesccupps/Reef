@@ -106,7 +106,19 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
       - moving and feeding the rest.
 
       The brook's realistic crowd (dace 0.8/m², fallfish) packs ~1,000 agents into its 2-cell-wide channel.
-  - **Next (part 2):** fidelity by distance. Within ~150–250 m of the camera the fish live second by second; the rest bank their time and run a coarse block about a minute at 1×. A fish that comes into view first settles its bank. The hash and the per-step bookkeeping cover the near fish and their surroundings. Then the senses' field scans cached per column per step.
+  - **Built, part 2 — fidelity by distance (2026-10-17).** `Fish3.setFocus(x, y, r)`.
+    - **Near fish.** At the fine rung the fish within r of the focus live second by second (0.1-s steps, brains at 5 Hz).
+    - **Far fish.** They are SCHEDULED: each is due FAR_BLOCK (60 s) after its last block, staggered by id, so each step carries ~1/600 of them. It then lives that time as one coarse block, its brain deciding once, lit by the block just past.
+    - **Crossing the edge.** A fish coming into the focus first lives its time since its last block. One leaving it starts its schedule. The way out is r × FOCUS_HYST, so a fish at the edge doesn't flicker between the two.
+    - **What a step touches.** Not the 300,000: the near fish, the far ones due, and the bookkeeping.
+      - The whole lakes' hash, counts and biomass come once a simulated second (HASH_EVERY 10).
+      - The focus has its own hash every step over the region within REGION_M 50 m of its edge. The near fish's senses, strikes and close mates read it.
+      - The dead are compacted every 50 steps, not rebuilt each step.
+      - The step's per-fish body became `_live`, shared by every rung.
+    - **The view.** It sends where it looks with each tick. On the true-size lakes at the fine speeds the worker sets the focus at twice the camera's distance, 80–250 m. The 1/10 world, every fish drawn, steps them all alike.
+    - **Measured on the true lakes**, focus 200 m at the west cove: ~3,900 near agents, a fine step ~54 ms on average (it was 114–134 with every fish stepped). So 1× needs ~0.54 s of the worker a second. The spikes (~1.2 s) are the whole lakes' merge pass once a simulated minute.
+    - **Gate.** On the 1/10 world, a 200-m-real focus for two minutes: the near fish swim, every fish has lived the time to within a block, the population is kept.
+  - **Next (part 3):** the merge pass and the far fish's senses (their field scans cached per column per step), toward ≤ 15 µs an agent for the blocks; and the young schools at true scale (~11,000, all stepped each fine step for now).
   - The fish near the camera (~150–250 m) live second by second: 0.1-s steps, brains at 5 Hz.
   - The rest live in coarse blocks (a minute at 1×, up to 30 min in fast-forward), each still deciding with its own brain once a block.
   - Fish switch rung as the camera moves.

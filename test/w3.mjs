@@ -409,6 +409,20 @@ if (run('core')) {
     for (let i = 0; i < 5; i++) F.step(0.1); const t1 = performance.now(); for (let i = 0; i < 20; i++) F.step(0.1); const msF = (performance.now() - t1) / 20;
     check('the fish\'s cost: a coarse 29-min block (~3,300 agents: one decision each, the relocation, feeding, bioenergetics) ≤ 45 ms — the 1-hour year\'s two steps; a real-time 0.1-s step (senses, brains at 5 Hz, swimming) ≤ 25 ms',
       ms < 45 && msF < 25, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms`); }
+  // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): with a focus the near fish live second by second, the far ones in banked blocks
+  // (scheduled, each FAR_BLOCK s); over two minutes every fish's lived time keeps up with the clock within a block, the near ones
+  // swim, none goes astray
+  { const { F3 } = await import('../src/w3/fish3.js');
+    seed(510); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE);
+    const age0 = new Map(F.fish.map(a => [a.id, a.age])), pos0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]])), n0 = F.count(), T = 120;
+    let ms = 0; for (let i = 0; i < T * 10; i++) { const t = performance.now(); F.step(0.1); ms += performance.now() - t; if (i % 600 === 599) e.step(60); }
+    let lag = 0, near = 0, moved = 0, bad = 0, far = 0;
+    for (const a of F.fish) { if (!a.alive || !age0.has(a.id)) continue; if (!Number.isFinite(a.x + a.y + a.z + a.W + a.age)) bad++;
+      lag = Math.max(lag, T - (a.age - age0.get(a.id))); if (a.near) { near++; const p = pos0.get(a.id); if (Math.hypot(a.x - p[0], a.y - p[1]) > 0.05) moved++; } else far++; }
+    F.setFocus(null);
+    check('fidelity by distance: with a focus the fish within it swim second by second and the rest live their time in banked blocks — after two minutes every fish has lived it to within a block, the population kept',
+      near > 5 && moved >= 0.8 * near && far > near && lag <= F3.FAR_BLOCK + 0.2 && lag >= -0.2 && !bad && Math.abs(F.count() - n0) / n0 < 0.01,
+      `${near} near (${moved} swam), ${far} far; the most behind ${lag.toFixed(1)} s (a block ${F3.FAR_BLOCK} s); fish ${n0.toFixed(0)} → ${F.count().toFixed(0)}; ${(ms / (T * 10)).toFixed(1)} ms a step`); }
 }
 
 // ============================================================

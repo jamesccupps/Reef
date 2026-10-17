@@ -143,8 +143,14 @@ check takes the best of 3 rounds — the machine swings ±1 ms). The 1/10 gate 9
 T3 PART 1 DONE (2026-10-17; TRUE_SCALE.md "T3 Built, part 1"): the fish's landscape distances × GEO.SCALE (1/10 bit-identical),
 HOME from the research at true scale, the brook as range at true scale, the mate search's ripe index + pairs kept, spawning grounds
 × the lake's area; true lakes: 303,807 agents, a 29-min block 8.2 s (27 µs/agent). The 1/10 gate 90/90.
-NEXT: T3 part 2 — fidelity by distance (near the camera second by second, the rest in banked blocks), then caching the senses'
-field scans per column. (Below, the audit notes that led to part 1:)
+T3 PART 2 DONE (2026-10-17; TRUE_SCALE.md "T3 Built, part 2"): Fish3.setFocus — near fish second by second, far fish SCHEDULED
+(each due FAR_BLOCK 60 s after its last block, staggered) and living that time as a coarse block; the lakes' hash every simulated
+second, the focus's own hash every step (REGION_M), the step's per-fish body now `_live`; the worker sets the focus from the
+camera on the true lakes at fine speeds (80–250 m). True lakes: a 0.1-s step ~54 ms with ~3,900 near agents (was 114–134). The
+1/10 gate 91/91 (+ the fidelity check).
+NEXT: T3 part 3 — the merge pass's spikes and the far fish's senses (cache their field scans per column per step), the young
+schools at true scale; then T4 (memory), T5 (workers), T6 (drawing at true size — the true world in the browser), T7, T8.
+(Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
 site spacing 6, fallfish nearBrook 40, the brook runners' mate search 40 (×2 brook scale), dace home 12 (brook scale),
