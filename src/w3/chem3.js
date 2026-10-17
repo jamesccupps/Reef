@@ -77,7 +77,8 @@ export const CHEM3 = {
   // inflow's and the runoff's particles, the wetland margins' detritus), half the autumn leaf fall (LEAF_YF), concentrated
   // near the shore (e-folding LEAF_R m, world). In coloured lakes terrestrial carbon is often half or more of what the bed's
   // animals live on (allochthony); colour shades out the bed's own algae (stage 7a)
-  ALLOCH: 800, LEAF_YF: [0.58, 0.72], LEAF_R: 15,   // (800: the low-middle of brown lakes' ~20–100 g C/m²/yr; 3 seeds: late-summer starvation halves)
+  ALLOCH: 800, LEAF_YF: [0.58, 0.72], LEAF_R: 150 * GEO.SCALE,   // (LEAF_R: ~150 m real; 15 at 1/10)
+    // (800: the low-middle of brown lakes' ~20–100 g C/m²/yr; 3 seeds: late-summer starvation halves)
 };
 
 // Q10 temperature factors from lookup tables (T −2 … 40 °C in 0.05° steps) — a step computes ~10 per cell

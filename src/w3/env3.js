@@ -16,7 +16,7 @@
 // inflow → Upper → brook → Lower → outlet through-flow — with the vertical fluxes that continuity requires; upwind,
 // sub-stepped for stability. Horizontal mixing at the grid scale; the night thermal siphon and its under-ice cousin as
 // closed exchange loops; vertical mixing in each column's wind/convection-mixed layer.
-import { GEO, LAND, UPPER, LOWER, BROOK } from './geometry.js';
+import { GEO, LAND, UPPER, LOWER, BROOK, cellIndex } from './geometry.js';
 import { ENV, ICE, THERMAL, WIND, SEASON, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
@@ -47,6 +47,7 @@ export const H3 = {
   MIX_RATE: 1 / 1800,   // /s: mixing inside the wind- or convection-mixed layer — an e-fold of 30 min: convective velocities
                         //   of 1–50 mm/s turn a few metres over in ~15–90 min (Bouffard & Wüest 2019; shallow_lake_3d_physics
                         //   §2); windrows mix within 5–10 min
+  BROOK_SEG: 20,        // m real: the brook's own columns' length along it (TRUE SCALE: buildColumns3)
   MAX_SUB: 24,          // transport sub-steps at most per update (beyond it gales would slow the wind-driven currents: not
                         //   reached at water steps ≤ ~30 min — stage R2; at 4 the 1-hour year throttled every wet spell)
   THRU_EVERY: 3,        // the through-flow runs every this-many updates (with as many steps' worth)
@@ -79,12 +80,26 @@ export function buildColumns3(COL = H3.COL, DZ = H3.DZ) {
   const CX = Math.ceil(NX * CELL / COL), CY = Math.ceil(NY * CELL / COL);
   const colOfFine = new Int32Array(GEO.N).fill(-1), gridCol = new Int32Array(CX * CY).fill(-1);
   const fineIn = [];   // per column: its fine water cells
+  // THE BROOK'S OWN COLUMNS (TRUE SCALE T2): where the columns are much wider than the brook — true scale's 50-m columns and an
+  // 8-m brook — its water would vanish into its banks' columns (1 of 2,622 at 50 m, none at 100 m), and with it the brook's
+  // moss, dace and riffles. Its fine cells go to their own columns, BROOK_SEG m (real) stretches along its path, never merged
+  // away; their faces (fBrook) carry no wind circulation or drift — a sheltered stream, its flow the lakes' through-flow
+  // (implicit: stable however small the stretch). The 1/10 world's brook, half scale in 5-m columns, is a column wide already
+  const ownBrook = COL > 4 * GEO.BROOK_W, brookSeg = new Map(), isBrookCol = [];
+  const BPp = GEO.BROOK_PATH, BC = [0]; for (let k = 1; k < BPp.length; k++) BC.push(BC[k - 1] + Math.hypot(BPp[k][0] - BPp[k - 1][0], BPp[k][1] - BPp[k - 1][1]));
+  const alongBrook = (x, y) => { let best = 1e18, u = 0; for (let k = 0; k < BPp.length - 1; k++) { const ax = BPp[k][0], ay = BPp[k][1], dx = BPp[k + 1][0] - ax, dy = BPp[k + 1][1] - ay, L2 = dx * dx + dy * dy || 1, t = clamp(((x - ax) * dx + (y - ay) * dy) / L2, 0, 1), d = (x - ax - t * dx) ** 2 + (y - ay - t * dy) ** 2; if (d < best) { best = d; u = BC[k] + t * Math.sqrt(L2); } } return u; };
   for (let i = 0; i < GEO.N; i++) {
     if (GEO.body[i] === LAND || GEO.depth[i] <= 0) continue;
+    if (ownBrook && GEO.body[i] === BROOK) {
+      const [x, y] = GEO.cellCentre(i), sg = Math.floor(alongBrook(x, y) / (H3.BROOK_SEG * GEO.SCALE));
+      if (!brookSeg.has(sg)) { brookSeg.set(sg, fineIn.length); fineIn.push([]); isBrookCol[fineIn.length - 1] = 1; }
+      colOfFine[i] = brookSeg.get(sg); fineIn[colOfFine[i]].push(i); continue;
+    }
     const [x, y] = GEO.cellCentre(i), gx = Math.floor((x - X0) / COL), gy = Math.floor((y - Y0) / COL), g = gy * CX + gx;
     if (gridCol[g] < 0) { gridCol[g] = fineIn.length; fineIn.push([]); }
     colOfFine[i] = gridCol[g]; fineIn[gridCol[g]].push(i);
   }
+  for (let c = 0; c < fineIn.length; c++) isBrookCol[c] = isBrookCol[c] || 0;
   // small shore columns (a few fine cells of water at a column's corner) join the neighbour they share most edge with — a tiny
   // cell under the currents would force tiny time steps
   {
@@ -92,18 +107,19 @@ export function buildColumns3(COL = H3.COL, DZ = H3.DZ) {
     while (merged) {
       merged = false;
       for (let c = 0; c < fineIn.length; c++) {
-        if (!fineIn[c].length || fineIn[c].length * CELL * CELL >= 0.4 * COL * COL) continue;
+        if (!fineIn[c].length || isBrookCol[c] || fineIn[c].length * CELL * CELL >= 0.4 * COL * COL) continue;   // (the brook's own stretches stay)
         const share = new Map();
         for (const i of fineIn[c]) for (const j of [i - 1, i + 1, i - NX, i + NX]) { if (j < 0 || j >= GEO.N) continue; const o = colOfFine[j]; if (o >= 0 && o !== c) share.set(o, (share.get(o) || 0) + 1); }
         if (!share.size) continue;
-        let best = -1, bn = 0; for (const [o, n] of share) if (n > bn && fineIn[o].length) { bn = n; best = o; }
+        let best = -1, bn = 0; for (const [o, n] of share) if (n > bn && fineIn[o].length && !isBrookCol[o]) { bn = n; best = o; }   // (a lake's sliver joins its lake, not the brook)
         if (best < 0) continue;
         for (const i of fineIn[c]) { colOfFine[i] = best; fineIn[best].push(i); }
         fineIn[c] = []; merged = true;
       }
     }
-    const keep = []; const remap = new Int32Array(fineIn.length).fill(-1);
-    fineIn.forEach((f, c) => { if (f.length) { remap[c] = keep.length; keep.push(f); } });
+    const keep = [], keepB = []; const remap = new Int32Array(fineIn.length).fill(-1);
+    fineIn.forEach((f, c) => { if (f.length) { remap[c] = keep.length; keep.push(f); keepB.push(isBrookCol[c]); } });
+    isBrookCol.length = 0; isBrookCol.push(...keepB);
     for (let i = 0; i < GEO.N; i++) if (colOfFine[i] >= 0) colOfFine[i] = remap[colOfFine[i]];
     for (let g = 0; g < gridCol.length; g++) if (gridCol[g] >= 0) gridCol[g] = remap[gridCol[g]];
     // grid squares whose column was merged away point at the column that took their water
@@ -121,7 +137,8 @@ export function buildColumns3(COL = H3.COL, DZ = H3.DZ) {
     // layers: one per DZ down to the deepest point, but a sliver at the bottom (a bed just dipping past a layer boundary)
     // joins the layer above — a tiny cell under big vertical fluxes is unstable
     let L = Math.max(1, Math.ceil(dm / DZ - 1e-6));
-    while (L > 1) { let v = 0; for (const i of fineIn[c]) v += clamp(GEO.depth[i] - (L - 1) * DZ, 0, DZ) * A1; if (v >= 0.35 * COL * COL * DZ) break; L--; }
+    const full = isBrookCol[c] ? n * A1 : COL * COL;   // (a brook stretch's layers against its own area)
+    while (L > 1) { let v = 0; for (const i of fineIn[c]) v += clamp(GEO.depth[i] - (L - 1) * DZ, 0, DZ) * A1; if (v >= 0.35 * full * DZ) break; L--; }
     nL[c] = L;
   }
   // layer cells: volume (m³) and bed area (m²: the part of the column's bed lying in this layer) and horizontal area at its top
@@ -148,14 +165,15 @@ export function buildColumns3(COL = H3.COL, DZ = H3.DZ) {
   };
   for (let r = 0; r < NY; r++) for (let q = 0; q < NX; q++) { const i = r * NX + q; if (colOfFine[i] < 0) continue; if (q + 1 < NX) add(i, i + 1); if (r + 1 < NY) add(i, i + NX); }
   const NF = fa.length, ML = Math.max(...nL);
-  const fA = new Float32Array(NF * ML), fnx = new Float32Array(NF), fny = new Float32Array(NF), fd = new Float32Array(NF), fh = new Float32Array(NF);
+  const fA = new Float32Array(NF * ML), fnx = new Float32Array(NF), fny = new Float32Array(NF), fd = new Float32Array(NF), fh = new Float32Array(NF), fBrook = new Uint8Array(NF);
   for (let f = 0; f < NF; f++) {
     let s = 0; for (let k = 0; k < fArea[f].length; k++) { fA[f * ML + k] = fArea[f][k]; s += fArea[f][k]; }
     const dx = cx[fb[f]] - cx[fa[f]], dy = cy[fb[f]] - cy[fa[f]], d = Math.hypot(dx, dy) || COL;
-    fnx[f] = dx / d; fny[f] = dy / d; fd[f] = Math.max(d, COL * 0.5); fh[f] = s / fl[f];
+    fnx[f] = dx / d; fny[f] = dy / d; fd[f] = Math.max(d, isBrookCol[fa[f]] || isBrookCol[fb[f]] ? CELL : COL * 0.5); fh[f] = s / fl[f];
+    fBrook[f] = isBrookCol[fa[f]] || isBrookCol[fb[f]] ? 1 : 0;
   }
-  return { COL, DZ, CX, CY, X0, Y0, NC, NCELL, NF, ML, gridCol, cx, cy, area, depthMax, depthMean, nL, body, cell0, vol, bedA, topA, zMid, colOfCell, layer,
-    fa: Int32Array.from(fa), fb: Int32Array.from(fb), fl: Float32Array.from(fl), fA, fnx, fny, fd, fh };
+  return { COL, DZ, CX, CY, X0, Y0, NC, NCELL, NF, ML, gridCol, colOfFine, ownBrook, cx, cy, area, depthMax, depthMean, nL, body, cell0, vol, bedA, topA, zMid, colOfCell, layer,
+    fa: Int32Array.from(fa), fb: Int32Array.from(fb), fl: Float32Array.from(fl), fA, fnx, fny, fd, fh, fBrook };
 }
 
 // conjugate gradients on the graph Laplacian (Lx)_a = Σ_f w_f (x_a − x_b) = rhs (Σ rhs = 0; x defined up to a constant)
@@ -183,11 +201,11 @@ export const shallowDamp = h => clamp((h - 0.3) / 2.2, 0.12, 1);
 function windPattern(G, ex, ey) {
   const w = new Float64Array(G.NF), rhs = new Float64Array(G.NC);
   for (let f = 0; f < G.NF; f++) {
-    const h = G.fh[f], L = G.fl[f], k = shallowDamp(h); w[f] = k * h * h * L / G.fd[f];
+    const h = G.fh[f], L = G.fl[f], k = G.fBrook[f] ? 0 : shallowDamp(h); w[f] = k * h * h * L / G.fd[f];   // (no wind gyre through the brook's own stretches)
     const tn = k * h * L * (ex * G.fnx[f] + ey * G.fny[f]); rhs[G.fa[f]] -= tn; rhs[G.fb[f]] += tn;   // (−div of the stress-driven transport)
   }
   const eta = solveLaplace(G, w, rhs), u = new Float32Array(G.NF);
-  for (let f = 0; f < G.NF; f++) { const h = G.fh[f], L = G.fl[f], Q = shallowDamp(h) * h * L * (ex * G.fnx[f] + ey * G.fny[f]) - w[f] * (eta[G.fb[f]] - eta[G.fa[f]]); u[f] = Q / (h * L); }
+  for (let f = 0; f < G.NF; f++) { const h = G.fh[f], L = G.fl[f], Q = (G.fBrook[f] ? 0 : shallowDamp(h)) * h * L * (ex * G.fnx[f] + ey * G.fny[f]) - w[f] * (eta[G.fb[f]] - eta[G.fa[f]]); u[f] = Q / (h * L); }
   return u;
 }
 
@@ -255,7 +273,7 @@ export class Env3 {
     // each column's SHELTER from the wind and waves: how many of 8 directions meet land within SHELTER_R (ice; the weeds)
     this.shelter = new Uint8Array(G.NC);
     for (let c = 0; c < G.NC; c++) {
-      let k = 0; for (let d = 0; d < 8; d++) { const ang = d * Math.PI / 4, ux = Math.cos(ang), uy = Math.sin(ang); for (let r = 2; r <= PL3.SHELTER_R; r += 2) if (GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === LAND) { k++; break; } }
+      let k = 0; for (let d = 0; d < 8; d++) { const ang = d * Math.PI / 4, ux = Math.cos(ang), uy = Math.sin(ang); for (let r = PL3.SHELTER_R / 10; r <= PL3.SHELTER_R; r += PL3.SHELTER_R / 10) if (GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === LAND) { k++; break; } }
       this.shelter[c] = k;
     }
     // the wet face-layers as a compact list (cells either side, area, layer, face) — the transport's inner loop
@@ -405,7 +423,7 @@ export class Env3 {
     const uF = this._uF, unF = this._unF, key = `${this.weather}|${this.windDir}|${Math.round(this.iceMean * 50)}|${dt}`;
     if (key === this._windKey) { this._transportRun(dt); return; }   // (the same wind as last update: the same fluxes)
     this._windKey = key;
-    for (let f = 0; f < G.NF; f++) { uF[f] = circ * (wx * this.ux[f] + wy * this.uy[f]); unF[f] = drift * shallowDamp(G.fh[f]) * (wx * G.fnx[f] + wy * G.fny[f]); }
+    for (let f = 0; f < G.NF; f++) { uF[f] = circ * (wx * this.ux[f] + wy * this.uy[f]); unF[f] = G.fBrook[f] ? 0 : drift * shallowDamp(G.fh[f]) * (wx * G.fnx[f] + wy * G.fny[f]); }
     for (let e = 0; e < FL.n; e++) {
       const f = FL.f[e], a = FL.a[e], un = unF[f], top = FL.top[f], A = FL.A[f];
       // the drift in the top layer, returned below (zero net) — a face only one layer deep has nowhere to return it: no drift
@@ -512,6 +530,7 @@ export class Env3 {
     if (!this._prevB || this._prevB.length < (2 * G.ML + 2) * NF) this._prevB = new Float64Array((2 * G.ML + 2) * NF);
     const prev = this._prevB, tb = this.fields.findIndex(fd => fd.a === this.temp);
     for (let f = 0; f < G.NF; f++) {
+      if (G.fBrook[f]) continue;   // (the brook's own stretches flow: no density currents down them)
       let a = G.fa[f], b = G.fb[f]; if (G.depthMean[a] > G.depthMean[b]) { const t = a; a = b; b = t; }   // a: the shallower
       const na = G.nL[a], nb = G.nL[b]; if (nb <= na) continue;                             // only down a real slope
       const a0 = G.cell0[a], b0 = G.cell0[b], Ta = B[(a0 + na - 1) * NF + tb], Tb0 = B[b0 * NF + tb], Tbk = B[(b0 + na - 1) * NF + tb];
@@ -599,6 +618,7 @@ export class Env3 {
     const toW = REAL_S / H3.REAL, loop = this._loop || (this._loop = new Int32Array(2 * G.ML + 2)), prev = this._prev || (this._prev = new Float64Array(2 * G.ML + 2));
     this.siphonQ = 0;
     for (let f = 0; f < G.NF; f++) {
+      if (G.fBrook[f]) continue;   // (the brook's own stretches flow: no density currents down them)
       let a = G.fa[f], b = G.fb[f]; if (G.depthMean[a] > G.depthMean[b]) { const t = a; a = b; b = t; }   // a: the shallower
       const na = G.nL[a], nb = G.nL[b]; if (nb <= na) continue;                             // only down a real slope
       const a0 = G.cell0[a], b0 = G.cell0[b];
@@ -643,7 +663,10 @@ export class Env3 {
   }
 
   // ============================================================ queries ==================================================
-  colAt(x, y) { const G = this.G, gx = Math.floor((x - G.X0) / G.COL), gy = Math.floor((y - G.Y0) / G.COL); return gx < 0 || gy < 0 || gx >= G.CX || gy >= G.CY ? -1 : G.gridCol[gy * G.CX + gx]; }
+  colAt(x, y) {   // (a water cell's own column — the brook's stretches at true scale — else the coarse square's)
+    const G = this.G; if (G.ownBrook) { const i = cellIndex(x, y); if (i >= 0 && G.colOfFine[i] >= 0) return G.colOfFine[i]; }
+    const gx = Math.floor((x - G.X0) / G.COL), gy = Math.floor((y - G.Y0) / G.COL); return gx < 0 || gy < 0 || gx >= G.CX || gy >= G.CY ? -1 : G.gridCol[gy * G.CX + gx];
+  }
   cellAt(x, y, z) { const c = this.colAt(x, y); if (c < 0) return -1; const k = Math.min(this.G.nL[c] - 1, Math.max(0, Math.floor(z / this.G.DZ))); return this.G.cell0[c] + k; }
   tempAt(x, y, z) { const j = this.cellAt(x, y, z); return j < 0 ? seasonalTemp(this.yearFrac()) : this.temp[j]; }
   iceAt(x, y) { const c = this.colAt(x, y); return c < 0 ? 0 : this.ice[c]; }

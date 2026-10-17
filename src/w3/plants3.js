@@ -97,7 +97,7 @@ export const PL3 = {
   // the effects: the weed volume (PVI) → a zooplankton refuge 0.8 × logistic(PVI: ½ at 20 %); stems → fish cover (a searching
   // predator's capture falls as 1/(1 + (S/S50)³), S50 ~150 stems/m² — Crowder & Cooper 1982; Savino & Stein 1982)
   REF_MAX: 0.8, PVI_HALF: 0.2, PVI_STEEP: 0.05, S50: 150,
-  SHELTER_R: 20,        // m (world; ~200 m real): a direction is sheltered if land lies within this
+  SHELTER_R: 200 * GEO.SCALE,   // m (world): a direction is sheltered if land lies within ~200 m real (20 at 1/10)
   // THE BED A SPECIES ROOTS IN: sand and gravel on the wave-washed shallows (shallower than MINERAL_Z m where no more than
   // MINERAL_SHELTER of 8 directions are sheltered) and in the brook; organic mud in the coves and deeper (Maine's lake plant
   // communities sort so: pipewort–lobelia on mineral soils under ~1 m, water-lily beds on organic soils at 0.5–1.5 m — MNAP)
@@ -155,7 +155,7 @@ export const PL3 = {
   },
   SPAWN_HALF: 30,       // structure (stems/m² × cover) at which an index reaches 1 − 1/e: a moderate stand
   WOOD: 60,             // the structure a wooded shore's band of fallen trees and brush gives (as stems/m² × cover)
-  WOOD_W: 1.5,          // m (world): the band's width from the bank (~15 m real across the 1/10 lakes)
+  WOOD_W: 15 * GEO.SCALE,       // m (world): the band's width from the bank, ~15 m real (1.5 at 1/10)
   WOOD_Z: 2.5,          // m: wood lies in water shallower than this (a column's deepest)
 };
 

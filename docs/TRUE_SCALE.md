@@ -69,6 +69,21 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
       - the fish's home ranges, SUB_R, brook distances, site spacing, BAND_SLOPE and the hash cell;
       - the insects' fall-in × GEO.SCALE (already scaled).
 - **T2 — The water model in real lengths.** `H3.REAL` 1, 50-m columns (25 m near shore if the coves need it). It is calibrated in real lengths already; re-check transport and circulation.
+  - **Built — the water, the chemistry, the plants and the bed's animals (2026-10-17).** `HB_WORLD=true W3_ONLY=env,chem,plants node test/w3.mjs` passes 36/36 on the true-size lakes. That covers:
+    - temperature, ice-on and ice-out (Apr 23), the coves' daily swing and the night siphon, the unstratified basin;
+    - the N and P budgets, the year's O₂ (winter by a 3-seed median), retention;
+    - the diatoms, the weeds as species and their roles, the invertebrates, crayfish, mussels and the land's insects.
+
+    What it took:
+    - **The world-metre constants that meant real distances now scale with the world:** the plants' SHELTER_R (200 m real), WOOD_W (15 m), and the leaf fall's LEAF_R (150 m). The gate asks for its water columns in real metres (`col: 10 * CS`, 100 m).
+    - **THE BROOK'S OWN COLUMNS.** An 8-m brook in 50-m columns vanished into its banks' columns (1 of 2,622; none at 100 m) and its moss died out. Where the columns are > 4× the brook's width, `buildColumns3` gives its fine cells their own columns:
+      - 20-m stretches along its path, never merged away; 8 stretches, the pool's 1.13 m and the riffles' 0.45 m kept;
+      - no wind gyre, drift or siphon through their faces (a sheltered stream: its flow is the implicit through-flow, stable however small the stretch);
+      - `colAt` reads the fine cell's column.
+
+      The 1/10 world's brook is a column wide already, and its columns are unchanged.
+    - **Cost.** ~12.5 ms an update at true scale (budget 20; 12 at 1/10).
+  - **Not yet:** the fish (T3: the constants in world metres written for the 1/10 lakes — home ranges, SUB_R, the brook distances, site spacing, BAND_SLOPE, the foraging footprint — then fidelity by distance), and running the true world's sections in the default gate (T7).
 - **T3 — Fish fidelity by distance.**
   - The fish near the camera (~150–250 m) live second by second: 0.1-s steps, brains at 5 Hz.
   - The rest live in coarse blocks (a minute at 1×, up to 30 min in fast-forward), each still deciding with its own brain once a block.

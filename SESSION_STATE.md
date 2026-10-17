@@ -136,9 +136,18 @@ Lessons:
 TRUE_SCALE T1 DONE (2026-10-17; TRUE_SCALE.md "T1 Built"): the 5-m landscape model and photo shelf (build_model.py HB_CELL/HB_CROP,
 shallows.py HB_MODEL), the true-size world src/w3/true/hotbrook3d.js (5 MB; 369 + 274 ha, the brook 154.6 m), geometry.js →
 makeGeometry + the HB_WORLD=true switch, H3.COL/REAL from GEO.SCALE; the gate's `true` section (9 checks; w3 90/90).
-NEXT: T2 — the water model in real lengths (HB_WORLD=true builds it: 2,622 columns, 18.7 ms a 15-min step), and the AUDIT of every
-constant in world metres for the 1/10 lakes (plants SHELTER_R/WOOD_W; fish home ranges, SUB_R, brook distances, site spacing,
-BAND_SLOPE, the hash cell, ...) — then T3 (fish fidelity by distance) … T8 (the data/stats page with click-a-fish). Still open from 7g (HOT_BROOK_3D.md):
+T2 (the water) DONE (2026-10-17; TRUE_SCALE.md "T2 Built"): HB_WORLD=true W3_ONLY=env,chem,plants passes 36/36 on the true lakes
+(SHELTER_R/WOOD_W/LEAF_R in real metres × GEO.SCALE; the gate's columns in real metres, col: 10 * CS; THE BROOK'S OWN COLUMNS —
+20-m stretches where columns are > 4× its width, no wind gyre/drift/siphon through them, colAt by the fine cell; the env cost
+check takes the best of 3 rounds — the machine swings ±1 ms). The 1/10 gate 90/90.
+NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
+SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
+site spacing 6, fallfish nearBrook 40, the brook runners' mate search 40 (×2 brook scale), dace home 12 (brook scale),
+RELOC_MIN (= GEO.CELL), _slopeStatics R 3 cells (~100 m real), _yoyTarget scatter ±1.5 (0.3·COL) and wander ±3, YOY_ROAM 15,
+the brain's shore cue /20, _far > 20 — and the HOME ranges, which ×10 would overshoot sunfish/sucker/bullhead/pickerel and
+undershoot bass: re-derive from habitat3d.md at true scale (radii ~ sunfish 45, redbreast 80, bullhead 120, pickerel 120,
+sucker 230, bass 700 m), keeping the 1/10 values. Also at true scale: the brook as range again (the passage rule and the young's
+brook ban were 1/10 compromises), the hash grid's size (~1M cells: make it sparse/incremental), then fidelity by distance. Still open from 7g (HOT_BROOK_3D.md):
 - the nest builders' plant avoidance;
 - pickerel capacity per vegetated area;
 - perch ribbon wind losses;

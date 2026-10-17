@@ -1,6 +1,9 @@
 // test/w3.mjs — the gate for the 3-D whole-lake sim (src/w3/), built alongside the 2-D one until it reaches parity.
 // Run: node test/w3.mjs
-import { GEO, BODIES, UPPER, LOWER, BROOK, LAND, cellIndex } from '../src/w3/geometry.js';
+import { GEO, BODIES, UPPER, LOWER, BROOK, LAND, cellIndex, WORLD_TRUE } from '../src/w3/geometry.js';
+// (TRUE SCALE T2: HB_WORLD=true runs the sections on the true-size lakes — the water model's columns asked for in REAL metres:
+// CS = 10 × the world's scale, so `col: 10 * CS` is 100 m real in either world)
+const CS = 10 * GEO.SCALE;
 
 let pass = 0, fail = 0;
 const check = (name, ok, detail = '') => { if (ok) pass++; else fail++; console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${detail ? '  — ' + detail : ''}`); };
@@ -19,6 +22,7 @@ const OLD = 8760, FB = 0.2 * OLD, FM = 0.1, EW = 0.2 * OLD, DAYS = 86400;   // (
 // ============================================================
 console.log('\n— geometry: the Hot Brook lakes at 1/10 —');
 const [U, L, B] = BODIES;
+if (!WORLD_TRUE) {   // (the 1/10 world's own checks; on the true world the `true` section checks the geometry)
 // the real lakes (MDIFW / Lakes of Maine; the measured beds' means 3.05 / 2.67 m) at 1/100 of their area
 check('Upper Hot Brook Lake: ~3.6–3.8 ha at 1/10 (real 360–375 ha), mean 3.0–3.4 m, max 5.5 m (18 ft)',
   U.area > 35000 && U.area < 39000 && U.mean > 2.9 && U.mean < 3.4 && Math.abs(U.max - 5.5) < 0.15, `${f2(U.area / 1e4)} ha, mean ${f2(U.mean)} m, max ${f2(U.max)} m`);
@@ -78,6 +82,7 @@ check('the inflow is at Upper\'s south end and the outlet at Lower\'s north end'
   const t0 = performance.now(); let s = 0; for (let k = 0; k < 1e6; k++) s += GEO.depthAt(-50 + (k % 997) * 0.1, -150 + (k % 991) * 0.3);
   const ns = (performance.now() - t0) * 1e6 / 1e6;
   check('depthAt costs well under a microsecond (it runs per fish per step)', ns < 300 && Number.isFinite(s), `${ns.toFixed(0)} ns/call`); }
+}
 
 // ============================================================
 //  GEOMETRY AT TRUE SCALE (docs/TRUE_SCALE.md T1) — the same lakes at their real size: 5-m cells (the 0–1.3 m shelf is often
@@ -140,6 +145,14 @@ if (run('env')) {
   { const par = Int32Array.from({ length: G.NC }, (_, i) => i), find = i => { while (par[i] !== i) i = par[i] = par[par[i]]; return i; };
     for (let f = 0; f < G.NF; f++) par[find(G.fa[f])] = find(G.fb[f]); const roots = new Set(); for (let c = 0; c < G.NC; c++) roots.add(find(c));
     check('the columns form one connected water system (Upper ↔ the brook ↔ Lower)', roots.size === 1, `${roots.size} component(s)`); }
+  // (TRUE SCALE T2: an 8-m brook in 50-m columns would vanish into its banks' — it has its own stretches, ~20 m each, the pool's
+  // and the riffles' depths kept, with no wind gyre through them)
+  if (WORLD_TRUE) { const bc = []; for (let c = 0; c < G.NC; c++) if (G.body[c] === BROOK) bc.push(c);
+    const fw = []; for (let f = 0; f < G.NF; f++) if (G.fBrook[f]) fw.push(Math.abs(e.ux[f]) + Math.abs(e.uy[f]));
+    const pool = e.colAt(...GEO.NOTES[0].xy), dm = bc.map(c => G.depthMax[c]);
+    check("true scale: the brook keeps its own water — ≥ 6 stretches of its own columns along its 154 m, its pool (> 0.9 m) and its riffles (< 0.5 m), no wind gyre through it; the angler's pool lies in it",
+      bc.length >= 6 && Math.max(...dm) > 0.9 && Math.min(...dm) < 0.5 && fw.every(v => v === 0) && G.body[pool] === BROOK,
+      `${bc.length} stretches, deepest ${f2(Math.max(...dm))} m, shallowest ${f2(Math.min(...dm))} m; ${fw.length} brook faces`); }
   // the wind's circulation: balanced in every column, two gyres — downwind over the shallows, upwind over the deep axis
   { let worst = 0, tot = 0; const net = new Float64Array(G.NC);
     for (let f = 0; f < G.NF; f++) { const Q = e.ux[f] * G.fh[f] * G.fl[f]; net[G.fa[f]] -= Q; net[G.fb[f]] += Q; tot += Math.abs(Q); }
@@ -203,8 +216,10 @@ if (run('env')) {
     check('the night siphon runs on calm nights and carries the coves\' water down the slope into the basin', q / n > 0 && deepDye > 0.002 * tot0,
       `siphon ${(q / n).toFixed(0)} m³/s (world) on average; ${(100 * deepDye / tot0).toFixed(2)} % of the cove dye in the basin's bottom layers`); }
   { seed(307); const f = new Env3(); for (let i = 0; i < 10; i++) f.step(FB / 2);   // (a ~15-min water step, as the budget was set on)   // (warmed up: the steady cost, not the JIT's)
-    const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 50;
-    check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < 12, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
+    let ms = Infinity; for (let r = 0; r < 3; r++) { const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(FB / 2); ms = Math.min(ms, (performance.now() - t0) / 50); }   // (the best of three rounds: the code's cost, not the machine's moment — it swings ±1 ms over a session)
+    // (TRUE SCALE: the same ~15,000 water cells at real lengths need more transport sub-steps and the brook its own stretches;
+    // at 1× the water updates once a simulated minute, and in fast-forward ~20 ms a 15-min update is ~2 s a simulated day)
+    check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < (WORLD_TRUE ? 20 : 12), `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
 }
 
 // ============================================================
@@ -219,7 +234,7 @@ if (run('chem')) {
   // the N and P budgets close: inventory change = in − out − buried (− denitrified + fixed for N), in any season and weather
   { let worst = 0, txt = [];
     for (const [yf, w] of [[0.4, 0], [0.45, 3], [0.85, 1]]) {
-      seed(401); const e = new Env3({ col: 10, yf0: yf }); const c = e.chem; e.setWeather(w); for (let i = 0; i < 6; i++) e.step(FB);
+      seed(401); const e = new Env3({ col: 10 * CS, yf0: yf }); const c = e.chem; e.setWeather(w); for (let i = 0; i < 6; i++) e.step(FB);
       const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger };
       for (let i = 0; i < 90; i++) e.step(FB);
       const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
@@ -228,13 +243,13 @@ if (run('chem')) {
     check('the 3-D water\'s N and P budgets close (inventory change = in − out − buried, − denitrified + fixed) in summer, a storm and under ice', worst < 1e-5, `P/N relative error ${txt.join(', ')}`); }
   // the bed's fluxes reach the water in proportion to its area over the water's volume: thin water over a lot of bed (the
   // coves, the slopes) loses O₂ to the mud faster than the open water does
-  { seed(402); const e = new Env3({ col: 5, yf0: 0.4 }); const c = e.chem, G = e.G; let jc = -1, jd = -1;
+  { seed(402); const e = new Env3({ col: 5 * CS, yf0: 0.4 }); const c = e.chem, G = e.G; let jc = -1, jd = -1;
     for (let j = 0; j < G.NCELL; j++) { if (G.bedA[j] > 0 && c.r[j] > 0.8 && jc < 0) jc = j; if (G.bedA[j] === 0 && G.zMid[j] > 2 && jd < 0) jd = j; }
     c.o2.fill(0.9); e.temp.fill(15); c._o2Demand(OLD); const dC = 0.9 - c.o2[jc], dD = 0.9 - c.o2[jd];
     check('the bed\'s O₂ demand reaches the water in proportion to its area over the water\'s volume (thin water over the mud draws down fastest)', dC > 3 * dD && dD > 0,
       `${(dC * ENVC.O2_MGL).toFixed(3)} vs ${(dD * ENVC.O2_MGL).toFixed(3)} mg/L in 2.4 h (bed/water ${c.r[jc].toFixed(2)} vs mid-water); V2 ${V2.toFixed(2)} m³, A2 ${A2.toFixed(1)} m²`); }
   // A YEAR of the lakes' water without fish (the coarse 10-m grid): the seasons of O₂, the spring diatoms, the P budget
-  { seed(403); const e = new Env3({ col: 10 }); const c = e.chem, G = e.G; const t0 = performance.now();
+  { seed(403); const e = new Env3({ col: 10 * CS }); const c = e.chem, G = e.G; const t0 = performance.now();
     const deep = [], all = []; for (let q = 0; q < G.NC; q++) { all.push(q); if (G.depthMax[q] > 4.5) deep.push(q); }
     const bottom = cols => cols.reduce((s, q) => s + c.o2[G.cell0[q] + G.nL[q] - 1], 0) / cols.length * ENVC.O2_MGL;
     const P0 = c.inventoryP(); let sumMinDeep = 99, winMinDeep = 99, winMeanMin = 99, iceOut = null, frozen = false, dia = [0, 0, 0, 0];
@@ -251,7 +266,7 @@ if (run('chem')) {
     // median, not one draw's)
     const yr = [[winMeanMin, keep0]];
     for (const sd of [404, 405]) {
-      seed(sd); const e2 = new Env3({ col: 10 }), c2 = e2.chem, Q0 = c2.inventoryP(); let wm = 99;
+      seed(sd); const e2 = new Env3({ col: 10 * CS }), c2 = e2.chem, Q0 = c2.inventoryP(); let wm = 99;
       for (let t = 0; t < CLOCK3.YEAR_LEN; t += EW) { e2.step(EW); const yf = e2.yearFrac(); if (yf > 0.9 || yf < 0.12) wm = Math.min(wm, e2.mean(c2.o2) * ENVC.O2_MGL); }
       yr.push([wm, c2.inventoryP() / Q0]);
     }
@@ -285,7 +300,7 @@ if (run('core')) {
   const run = (e, F, secs) => { for (let i = 0; i < Math.round(secs / 0.2); i++) { F.step(FB); e.step(EW); } };   // (secs: the 1-hour year's)
   // the founders: each species at its census (docs/FISH_CENSUS.md: fish ≥ minL per hectare; the brook's dace per m² of brook),
   // the lakes' fish biomass inside Maine's range
-  { seed(501); const e = new Env3({ col: 10 }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
+  { seed(501); const e = new Env3({ col: 10 * CS }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
     for (const k of KEYS3) { const r = c[k], d = Math.abs((S3[k].brookRes ? r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
     const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
@@ -306,7 +321,7 @@ if (run('core')) {
         && mean('fallfish', dEnd) < 0.7 * mean('pike', dEnd),
       `${KEYS3.join(', ')}; pumpkinseed ${ps.filter(a => GEO.bodyAt(a.x, a.y) === UPPER).length}/${ps.length} in Upper; dace ${bd.filter(a => GEO.bodyAt(a.x, a.y) === BROOK).length}/${bd.length} in the brook; mean distance to a brook end: fallfish ${mean('fallfish', dEnd).toFixed(0)} m, pickerel (the same shallow band) ${mean('pike', dEnd).toFixed(0)} m`); }
   // a summer's day and night: the fish stay in the water, swim, and each species keeps to its own water
-  { seed(502); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
+  { seed(502); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
     const hab = (k, f, ok = () => true) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k && ok(a)) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };   // (ok: which of them — the bullheads' rest is judged on the fish not breeding: spawning bullheads are active day and night)
     const med = (k, f, ok) => { const v = F.fish.filter(a => a.alive && a.s.key === k && ok(a)).map(f).sort((p, q) => p - q); return v.length ? v[v.length >> 1] : 0; };   // (the typical fish: a few frightened ones bolt)
     const snap = () => ({ wpBot: hab('whiteperch', a => a.bed), sfBot: hab('sunfish', a => a.bed), bhOver: hab('catfish', a => a.bed - a.z), pkZ: hab('pike', a => a.z), ypBot: hab('perch', a => a.bed), bhSpd: med('catfish', a => a.spd / (a.L / 100), a => !a.ripe && !(a.nt > 0)) });
@@ -324,7 +339,7 @@ if (run('core')) {
       day && night ? `white perch over ${f2(day.wpBot)} → ${f2(night.wpBot)} m, yellow perch ${f2(day.ypBot)} → ${f2(night.ypBot)} m; bullheads ${f2(day.bhSpd)} → ${f2(night.bhSpd)} BL/s` : 'no night sampled'); }
   // the bookkeeping: a school's zooplankton and a bottom feeder's worms leave the water's fields gram for gram; respiration
   // takes its O₂ from the fish's own water
-  { seed(503); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(503); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
     const benG = () => { let s = 0; for (const j of ch.bedCells) s += ch.benth[j] * ch.a[j]; const Lt = e.lit; if (Lt) for (let i = 0; i < Lt.cells.length; i++) s += (Lt.S[i] + Lt.L[i] + Lt.sn[i] + Lt.crA[i] + Lt.crY[i]) * G.bedA[Lt.cells[i]]; return s; };   // (the bed and its weeds and crayfish: stages 7b–c)
     for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 2; ch.zooC[j] = 1; } for (const j of ch.bedCells) ch.benth[j] = 12 * 8.2;
@@ -343,7 +358,7 @@ if (run('core')) {
       `school ate ${dg.toFixed(3)} g (field −${dz.toFixed(3)}), sucker ${dgs.toFixed(3)} g (bed −${db.toFixed(3)}); together ${(dg + dgs).toFixed(3)} g eaten, ${(dz + db).toFixed(3)} g taken`); }
   // PREDATION: a smallmouth beside a shoal of banded killifish strikes; each kill takes ONE fish from the school, whose mass lands
   // in the bass's gut
-  { seed(504); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+  { seed(504); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const b = F.add('bass', 20, 80, 1.5, 4, 1), sh = F.add('killifish', 20.4, 80, 1.5, 0.6, 60); sh.L = 5; sh.W = 1.3; sh.gon = 0; F._settle(sh);
     let kills = 0, gotG = 0; const n0 = sh.n;
     for (let i = 0; i < 400 && kills < 3; i++) {
@@ -353,7 +368,7 @@ if (run('core')) {
     check('predation: a smallmouth beside a shoal of killifish kills, one fish per strike — the school loses exactly the fish eaten, the bass gets their mass',
       kills >= 3 && Math.abs(n0 - sh.n - kills) < 1e-9 && Math.abs(gotG - kills * 1.3) < 1e-6 && F.stats.eatenBy['bass>killifish'] === kills, `${kills} kills, school ${n0} → ${sh.n}, ${gotG.toFixed(1)} g eaten`); }
   // SCHOOLS meet and merge (keeping one parent's genome, never averaged), split above twice their size — the fish are conserved
-  { seed(505); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+  { seed(505); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const a = F.add('perch', 20, 80, 1.5, 2, 30), b = F.add('perch', 21, 80, 1.5, 2, 25); F.add('perch', -40, 60, 1.0, 2, 2 * S3.perch.school + 20);
     // (the budget off: in an empty lake it has room for every perch to have its own brain — FISH_CENSUS.md §3 — and they would)
     F._soloAt = Infinity; F.soloL = Infinity;
@@ -363,23 +378,23 @@ if (run('core')) {
       !!merged && (merged.g === ga || merged.g === gb) && Math.abs(F.count() - tot) < 1e-9 && F.fish.length === 3 && Math.max(...F.fish.map(x => x.n)) <= 2 * S3.perch.school,
       `${tot} fish → ${F.fish.map(x => x.n).join(' + ')}`); }
   // STARVATION: a pumpkinseed in a lake emptied of its food loses condition and dies of hunger within weeks of summer
-  { seed(506); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem;
+  { seed(506); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem;
     const a = F.add('sunfish', 20, 80, null, 3, 1); let t = 0, Kmin = a.K;
     ch.zooD.fill(0); ch.zooC.fill(0); ch.zooR.fill(0); for (const j of ch.bedCells) ch.benth[j] = 0;
     while (a.alive && t < 120 * DAYS) { F.step(FB); Kmin = Math.min(Kmin, a.K); t += FB; }
     check('starvation: a summer pumpkinseed without food wastes (condition K falls) and dies of hunger within weeks', !a.alive && a.cause === 'starve' && t / DAYS < 100, `died after ${(t / DAYS).toFixed(0)} days (${a.cause || 'alive'}), K → ${f2(Kmin)}`); }
   // HYPOXIA: a perch whose bottom water has no O₂ climbs out of it within seconds
-  { seed(507); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(507); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     let c0 = -1, dm = 0; for (let c = 0; c < G.NC; c++) if (G.depthMax[c] > dm) { dm = G.depthMax[c]; c0 = c; }
     const a = F.add('perch', G.cx[c0], G.cy[c0], null, 3, 1); a.z = GEO.depthAt(a.x, a.y) - 0.2;
     const z0 = a.z; for (let i = 0; i < 50; i++) { for (let k = 2; k < G.nL[c0]; k++) ch.o2[G.cell0[c0] + k] = 0.01; F.step(FB); }
     check('hypoxia: a perch on an anoxic bottom gets out of the dead water — up, or (in a block) across to a column with O₂', a.alive && a.o2 > a.o2Crit && (a.z < 1.0 || a.c !== c0), `from ${f2(z0)} m to ${f2(a.z)} m${a.c !== c0 ? ` in another column, ${f1(Math.hypot(a.x - G.cx[c0], a.y - G.cy[c0]))} m away` : ''} (O₂ ${(a.o2 * ENV.O2_MGL).toFixed(1)} mg/L)`); }
   // DETERMINISM: the same seed makes the same lake of fish
-  { const one = () => { seed(508); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); run(e, F, 6); return F.fish.map(a => `${a.x.toFixed(5)},${a.z.toFixed(5)},${a.W.toFixed(6)},${a.n.toFixed(4)}`).join(';'); };
+  { const one = () => { seed(508); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); run(e, F, 6); return F.fish.map(a => `${a.x.toFixed(5)},${a.z.toFixed(5)},${a.W.toFixed(6)},${a.n.toFixed(4)}`).join(';'); };
     check('determinism: the same seed gives the same fish (positions, masses, school sizes) after 30 blocks', one() === one()); }
   // A SUMMER MONTH (the coarse grid): every species feeds (consumption a realistic share of its maximum), none dies out, the
   // lakes' fish biomass holds inside Maine's range; the fish step's cost
-  { seed(509); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e); run(e, F, 20); F.resetIntake(); const B0 = F.biomass();
+  { seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); run(e, F, 20); F.resetIntake(); const B0 = F.biomass();
     let tf = 0, steps = 0; for (let i = 0; i < 296 * 5; i++) { const t0 = performance.now(); F.step(FB); tf += performance.now() - t0; steps++; e.step(EW); }
     const c = F.census(), kg = F.biomass() / 1000 / F.lakeHa; const lowP = [], gone = [], txt = [];
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
@@ -406,7 +421,7 @@ if (run('young')) {
   const { PLANKTON } = await import('../src/config.js');
   const { seed } = await import('../src/core.js');
   // A SPRING (Apr 21 → late June, the coarse grid): who spawns when and where, the nests, the brook
-  { seed(511); const e = new Env3({ col: 10, yf0: 0.14 }), F = new Fish3(e); const gd = []; let may = null, mayYf = 0;
+  { seed(511); const e = new Env3({ col: 10 * CS, yf0: 0.14 }), F = new Fish3(e); const gd = []; let may = null, mayYf = 0;
     // (stage 7g: the plant spawners — the structure index of their band's water as they spawn, against where they spawned)
     // (the band: every point of the lakes at the species' spawning depths, read as the fish read them — F._subAt)
     const { GEO } = await import('../src/w3/geometry.js'), bandPts = {};
@@ -450,7 +465,7 @@ if (run('young')) {
     // THE YOUNG KEEP MOVING (the human, 2026-10-16: "do they all just swim in circles all the time?" — the young schools parked on
   // their feeding spot between their hourly decisions and the view drew them milling in place): in summer at the fine step,
   // over five minutes the young schools cruise — most move metres along a wandering path, none circles in place
-  { seed(521); const e = new Env3({ col: 10, yf0: 0.45 }), F = new Fish3(e, { young: true }); for (let i = 0; i < 49.3; i++) { F.step(FB); e.step(EW); }
+  { seed(521); const e = new Env3({ col: 10 * CS, yf0: 0.45 }), F = new Fish3(e, { young: true }); for (let i = 0; i < 49.3; i++) { F.step(FB); e.step(EW); }
     const tr = new Map(); for (let t = 0; t < 3000; t++) { F.step(0.1); if (t % 10 === 0) for (const q of F.yoy) if (q.alive && !(q.gref && q.gref.alive)) { let r = tr.get(q.id); if (!r) tr.set(q.id, r = []); r.push([q.x, q.y]); } }
     const mv = [...tr.values()].filter(r => r.length > 200).map(r => { let L = 0; for (let i = 1; i < r.length; i++) L += Math.hypot(r[i][0] - r[i - 1][0], r[i][1] - r[i - 1][1]); return [L, Math.hypot(r[r.length - 1][0] - r[0][0], r[r.length - 1][1] - r[0][1])]; });
     const med = mv.map(m => m[0]).sort((p, q) => p - q)[mv.length >> 1] || 0, still = mv.filter(m => m[0] < 0.5).length;
@@ -460,14 +475,14 @@ if (run('young')) {
     // fish, is that correct?"): a lake opened on May 20 holds the young of the spawnings before it — about as many and as big as
     // the spring above had on that day — and none of the later spawners'. (Calibrated on the full grid, 3 seeds: perch 1.05 cm
     // vs 1.05–1.07 run in full; the coarse grid's spring and this seed's weather spawn the perch a week later: ±30 % on size)
-    { seed(519); const e2 = new Env3({ col: 10, yf0: mayYf }), F2 = new Fish3(e2, { young: true }), c2 = F2.census(), sp3 = ['perch', 'pike', 'sucker'];
+    { seed(519); const e2 = new Env3({ col: 10 * CS, yf0: mayYf }), F2 = new Fish3(e2, { young: true }), c2 = F2.census(), sp3 = ['perch', 'pike', 'sucker'];
       const near = k => c2[k].yoyN > 0.4 * may[k].yoyN && c2[k].yoyN < 2.5 * may[k].yoyN && Math.abs(c2[k].yoyL / may[k].yoyL - 1) < 0.3;   // (×0.4–2.5: one live spring's spawnings are noisy — its suckers' young on May 20 were 99k on one geometry, 55k on the next)
       for (let i = 0; i < 10; i++) { F2.step(FB); e2.step(EW); }
       check('a lake opened on May 20 already holds the young of the spawnings before it (perch, pickerel, suckers: ×0.4–2.5 the numbers, ±30 % the size of the same spring run in full), none of the later spawners (smallmouth, pumpkinseed), and runs on',
         sp3.every(near) && c2.bass.yoyN === 0 && c2.sunfish.yoyN === 0 && F2.yoy.some(q => q.alive && q.s.key === 'perch'),
         sp3.map(k => `${k} ${(c2[k].yoyN / 1e3).toFixed(1)}k at ${f2(c2[k].yoyL || 0)} cm (in full ${(may[k].yoyN / 1e3).toFixed(1)}k at ${f2(may[k].yoyL || 0)})`).join(', ')); } }
   // THE YOUNG'S BOOKKEEPING: a school of larvae takes its zooplankton (rotifers too) from the water gram for gram
-  { seed(512); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(512); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 1; ch.zooC[j] = 1; ch.zooR[j] = 1; }
     const zooG = () => { let s = 0; for (let j = 0; j < G.NCELL; j++) s += (ch.zooD[j] + ch.zooC[j] + ch.zooR[j]) * ch.w[j]; return s; };
     const q = F._mkYoy(S3.perch.i, 20, 80, 1.0, 5000, null, null, 1, 0); q.L = 0.6; q.W = 0.002;
@@ -478,7 +493,7 @@ if (run('young')) {
       ate > 0 && Math.abs(took - ate) / ate < 1e-3 && ch.zooR[q.j] < r0 && q.W > W0, `${(ate * 1000).toFixed(1)} mg taken (water −${(took * 1000).toFixed(1)} mg), larva ${(W0 * 1000).toFixed(2)} → ${(q.W * 1000).toFixed(2)} mg`); }
   // PREDATION ON THE YOUNG: a smallmouth working a school of 3-cm pumpkinseed eats a bout of them — the school loses exactly
   // the fish eaten, the bass gets their mass
-  { seed(513); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+  { seed(513); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const b = F.add('bass', 20, 80, 1.5, 4, 1), q = F._mkYoy(S3.sunfish.i, 20.3, 80, 1.5, 2000, null, null, 1, 0);
     q.L = 3; q.W = 0.4; q.bdep = q.L * S3.sunfish.sp.depthR; F._yoyHash();
     const n0 = q.n; let got = 0; for (let i = 0; i < 30; i++) { b.gut = 0; got += F._eatYoy(b, 50, 1, FB) * b.n; }
@@ -487,7 +502,7 @@ if (run('young')) {
       k >= 3 && Math.abs(got - k * 0.4) < 1e-6 && F.stats.fry.sunfish.eaten === k, `${k} eaten in 3 s (${got.toFixed(1)} g), school ${n0} → ${q.n}`); }
   // RECRUITMENT: grown young of a school species become a school agent with a brain (their genome); an individual species'
   // become individuals — the fish conserved
-  { seed(514); const e = new Env3({ col: 10, yf0: 0.6 }), F = new Fish3(e, { founders: false });
+  { seed(514); const e = new Env3({ col: 10 * CS, yf0: 0.6 }), F = new Fish3(e, { founders: false });
     const yp = F._mkYoy(S3.perch.i, 20, 80, 1.5, 500, F.add('perch', 20, 80, 1.5, 2, 2).g, null, 2, 0); yp.L = S3.perch.sp.L0; yp.W = 4.4; yp.genes = F.fish[0].genes; yp.age = 120;
     const ys = F._mkYoy(S3.sunfish.i, 20.5, 80, 1.0, 40, F.fish[0].g, F.fish[0].genes, 2, 0); ys.L = S3.sunfish.sp.L0; ys.W = 1.4; ys.age = 120;
     F.cnt.fill(0); const nA = F.fish.length; F._recruit(yp); F._recruit(ys);
@@ -522,7 +537,7 @@ if (run('forage')) {
   const { seed } = await import('../src/core.js');
   // a perch school on the bed: with rich worms and scarce zooplankton it feeds on the bed; with the bed bare to its refuge
   // and rich zooplankton, in the open water — one or the other, its foraging time shared toward the better food
-  { seed(521); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(521); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2.4 && GEO.depth[i] < 2.6) { [px, py] = GEO.cellCentre(i); break; }
     const a = F.add('perch', px, py, null, 3, 40); a.z = GEO.depthAt(px, py) - 0.1;
     const feed = (benthGm2, zooUgl) => {
@@ -536,7 +551,7 @@ if (run('forage')) {
       bA > 0 && zA < 0.05 * bA && zB > 0 && bB === 0, `rich bed: ${bA.toFixed(2)} g worms, ${zA.toFixed(3)} g zooplankton; bare bed, rich water: ${bB.toFixed(2)} g worms, ${zB.toFixed(2)} g zooplankton`); }
   // THE FORAGING FOOTPRINT: a fish whose own patch is stripped to its refuge still feeds from the bed about it (the ground it
   // works over the hours a sim second stands for), and the take is spread over that ground
-  { seed(522); const e = new Env3({ col: 5, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(522); const e = new Env3({ col: 5 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     let px = 0, py = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] > 2.4 && GEO.depth[i] < 2.6) { [px, py] = GEO.cellCentre(i); break; }
     const a = F.add('whiteperch', px, py, null, 3, 60); a.z = GEO.depthAt(px, py) - 0.1;
     for (const j of ch.bedCells) ch.benth[j] = 10 * A2; for (let j = 0; j < G.NCELL; j++) { ch.zooD[j] = 0; ch.zooC[j] = 0; ch.zooR[j] = 0; }
@@ -560,7 +575,7 @@ if (run('foodweb')) {
   // MAY 12 → SEPTEMBER (the coarse grid): the zooplankton peaks in June (the spring Daphnia peak) while the fish take a minority
   // of its production — the adults turn to the bed when it thins (K_ZOO); a strong cohort of young then grazes it down in
   // midsummer (Mills & Forney 1983); the young grow to fingerlings by September
-  { seed(531); const e = new Env3({ col: 10, yf0: 0.2 }), F = new Fish3(e), ch = e.chem;
+  { seed(531); const e = new Env3({ col: 10 * CS, yf0: 0.2 }), F = new Fish3(e), ch = e.chem;
     let peak = 0, jp0 = 0, je0 = 0, jp1 = 0, je1 = 0, B = [], bassL = 0, riseN = 0; const riseK = new Set();   // (rises: the surface's insects taken, for the view)
     for (let i = 0; i < 120 * 49.3; i++) {
       F.step(FB); e.step(EW); for (let q = 0; q < F.rises.length; q += 6) { riseN += F.rises[q + 5]; riseK.add(F.rises[q + 3]); }
@@ -599,7 +614,7 @@ if (run('foodweb')) {
       `crayfish in the diet: smallmouth ${(sh('bass') * 100).toFixed(0)} %, pickerel ${(sh('pike') * 100).toFixed(0)} %, bullhead ${(sh('catfish') * 100).toFixed(0)} %, perch ${(sh('perch') * 100).toFixed(0)} %; fish ate ${(crShare * 100).toFixed(0)} % of the crayfish production (${(Lt.crEaten / 1000).toFixed(0)} of ${(Lt.crProd / 1000).toFixed(0)} kg)`); }
   // SHORT OF O₂ UNDER THE ICE: a school in near-anoxic water swims ACROSS toward the oxygenated water beside it (the inflows,
   // the brook's mouth in a real winter), not only up (Fish3._o2Better)
-  { seed(532); const e = new Env3({ col: 10, yf0: 0.95 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
+  { seed(532); const e = new Env3({ col: 10 * CS, yf0: 0.95 }), F = new Fish3(e, { founders: false }), ch = e.chem, G = e.G;
     let px = 0, py = 0;
     for (let i = 0; i < GEO.N && !px; i++) { if (GEO.body[i] !== UPPER || GEO.depth[i] < 2.2) continue; const [x, y] = GEO.cellCentre(i); let ok = true; for (let d = 4; d <= 30; d += 2) if (GEO.bodyAt(x + d, y) !== UPPER || GEO.depthAt(x + d, y) < 1.5) ok = false; if (ok) { px = x; py = y; } }
     const a = F.add('perch', px, py, 1.2, 3, 30), lo = 0.3 * a.o2Crit;
@@ -621,7 +636,7 @@ if (run('plants')) {
   const { ENV } = await import('../src/config.js');
   const { seed } = await import('../src/core.js');
   // MID-MAY → THE NEXT AUGUST without fish (the coarse grid): a winter between two growing seasons
-  { seed(541); const e = new Env3({ col: 10, yf0: 0.2 }), P = e.plants, G = e.G, ch = e.chem;
+  { seed(541); const e = new Env3({ col: 10 * CS, yf0: 0.2 }), P = e.plants, G = e.G, ch = e.chem;
     // (stage 7f: the plants are species — the submerged canopy's four summed, the floating-leaved three)
     const SCf = FORMS3.map((F, f) => F.form === 'SC' ? f : -1).filter(f => f >= 0), FLf = FORMS3.map((F, f) => F.form === 'FL' ? f : -1).filter(f => f >= 0);
     const scB = i => SCf.reduce((t, f) => t + P.Bs[f][i], 0), flB = i => FLf.reduce((t, f) => t + P.Bs[f][i], 0), scTot = () => SCf.reduce((t, f) => t + P.total(f), 0);
