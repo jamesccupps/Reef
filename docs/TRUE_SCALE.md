@@ -85,6 +85,28 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
     - **Cost.** ~12.5 ms an update at true scale (budget 20; 12 at 1/10).
   - **Not yet:** the fish (T3: the constants in world metres written for the 1/10 lakes — home ranges, SUB_R, the brook distances, site spacing, BAND_SLOPE, the foraging footprint — then fidelity by distance), and running the true world's sections in the default gate (T7).
 - **T3 — Fish fidelity by distance.**
+  - **Built, part 1 — the fish's distances and the cost of a crowd (2026-10-17).**
+    - **The landscape distances, as real metres × GEO.SCALE.** These were written in world metres for the 1/10 lakes; the 1/10 world keeps them bit for bit, and every product is exact in floating point:
+      - SUB_R 400 m, BROOK_NEAR / BROOK_RUN 600 / 1500 m, FP_MIN–FP_MAX 40–200 m;
+      - the bed's slope, now 0.012; a smallmouth's nest faith 20 m; a species' grounds ≥ 60 m apart;
+      - the fallfish's nearBrook 400 m, YOY_ROAM 150 m, the far-trip and shore-cue distance 200 m;
+      - the young's scatter about a column; the slope field's smoothing (~100 m);
+      - RELOC_MIN, the bed grid's cell.
+
+      The brook's ones scale with GEO.BROOK_SCALE: the runners' mate search and the dace's home.
+    - **HOME at true scale.** The research's ranges as radii (habitat3d.md): sunfish 45, redbreast 80, bullhead and pickerel 120, sucker 230, perch 300 [inf], white perch 400 [inf], fallfish 300 [inf], killifish 60 [inf], smallmouth 700 m. The 1/10 leash radii read ×10 would overshoot most of these and undershoot bass.
+    - **The brook as range again at true scale.** A lake fish in the brook no longer goes home, and the lakes' young may feed in it. Both were 1/10 compromises (there the brook was ~25× its real share of the shallows).
+    - **The cost of a crowd.** On the true lakes in June, 80,000 fish are ripe at once:
+      - The mate search scanned ~400 4-m hash cells of every fish per ripe fish. Now short reaches (a school's 3 m) use the hash, longer ones a per-step index of the ripe fish by species in 40-m cells, and a pair stays a pair: a mate still ripe and in reach is kept, a behaviour change; the 1/10 gate is still 90/90.
+      - Each species' traditional grounds now scale with the lake's area: Upper 264 and Lower 175 pumpkinseed colonies, where the 1/10 world's 10 a lake had piled ~1,500 ripe sunfish to a colony. A nearest-ground index serves the hundreds.
+    - **Measured on the true lakes.** 303,807 agents (1.23 M fish, 1,905/ha, 105 kg/ha) found in 3.9 s and ~1 GB. A coarse 29-min block costs 8.2 s (27 µs an agent; it was 11.1 s, 37 µs):
+      - the senses ~3.2 s;
+      - the step's bookkeeping ~1.4 s;
+      - GC ~0.8 s;
+      - moving and feeding the rest.
+
+      The brook's realistic crowd (dace 0.8/m², fallfish) packs ~1,000 agents into its 2-cell-wide channel.
+  - **Next (part 2):** fidelity by distance. Within ~150–250 m of the camera the fish live second by second; the rest bank their time and run a coarse block about a minute at 1×. A fish that comes into view first settles its bank. The hash and the per-step bookkeeping cover the near fish and their surroundings. Then the senses' field scans cached per column per step.
   - The fish near the camera (~150–250 m) live second by second: 0.1-s steps, brains at 5 Hz.
   - The rest live in coarse blocks (a minute at 1×, up to 30 min in fast-forward), each still deciding with its own brain once a block.
   - Fish switch rung as the camera moves.

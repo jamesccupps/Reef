@@ -140,7 +140,12 @@ T2 (the water) DONE (2026-10-17; TRUE_SCALE.md "T2 Built"): HB_WORLD=true W3_ONL
 (SHELTER_R/WOOD_W/LEAF_R in real metres × GEO.SCALE; the gate's columns in real metres, col: 10 * CS; THE BROOK'S OWN COLUMNS —
 20-m stretches where columns are > 4× its width, no wind gyre/drift/siphon through them, colAt by the fine cell; the env cost
 check takes the best of 3 rounds — the machine swings ±1 ms). The 1/10 gate 90/90.
-NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
+T3 PART 1 DONE (2026-10-17; TRUE_SCALE.md "T3 Built, part 1"): the fish's landscape distances × GEO.SCALE (1/10 bit-identical),
+HOME from the research at true scale, the brook as range at true scale, the mate search's ripe index + pairs kept, spawning grounds
+× the lake's area; true lakes: 303,807 agents, a 29-min block 8.2 s (27 µs/agent). The 1/10 gate 90/90.
+NEXT: T3 part 2 — fidelity by distance (near the camera second by second, the rest in banked blocks), then caching the senses'
+field scans per column. (Below, the audit notes that led to part 1:)
+(was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
 site spacing 6, fallfish nearBrook 40, the brook runners' mate search 40 (×2 brook scale), dace home 12 (brook scale),
 RELOC_MIN (= GEO.CELL), _slopeStatics R 3 cells (~100 m real), _yoyTarget scatter ±1.5 (0.3·COL) and wander ±3, YOY_ROAM 15,
