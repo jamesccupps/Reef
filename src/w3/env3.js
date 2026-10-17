@@ -208,6 +208,10 @@ export class Env3 {
     this.time = yf0 * CLOCK3.YEAR_LEN;
     this.t = 0.30;                                   // time of day (0..1), mid-morning
     this.weather = 0; this.weatherTimer = ENV.WEATHER_DWELL[0] * H3.WEATHER_DWELL_MUL; this.forced = false;
+    // THE WEATHER'S OWN RANDOM STREAM (mulberry32, seeded once from the sim's): the fish's and the plants' draws no longer shift
+    // the spells — a change to how a fish chooses its spawning place gave seed 511 a stormier, colder spring and read as a
+    // week's delay in the perch's spawning. Deterministic as before (the seed sets both streams)
+    this._wx = ((rand() * 4294967296) >>> 0) || 1;
     this.windDir = Math.PI * 1.25; this.windSpeed = H3.WIND_MS[0];   // direction the wind blows FROM (radians, 0 = from the north, clockwise)
     this.light = 0; this.lightDay = 1; this.sun = 0; this.dayFrac = 0.5; this.lux = 0;
     this.temp = new Float32Array(G.NCELL);
@@ -272,16 +276,22 @@ export class Env3 {
   windVec() {   // the direction the wind blows TOWARD (unit), and its speed (m/s real); none under full ice
     const d = this.windDir + Math.PI; return [Math.sin(d), Math.cos(d), this.windSpeed];
   }
+  _wrand() {   // (the weather's stream: core.rand's mulberry32 on its own state)
+    this._wx = (this._wx + 0x6D2B79F5) | 0;
+    let t = Math.imul(this._wx ^ (this._wx >>> 15), 1 | this._wx);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
   _weather(dt) {
     if (!this.forced) {
       this.weatherTimer -= dt;
       if (this.weatherTimer <= 0) {
-        const r = rand(), w = this.weather;
+        const r = this._wrand(), w = this.weather;
         this.weather = w === 0 ? (r < 0.6 ? 0 : 1) : w === 1 ? (r < 0.4 ? 0 : r < 0.85 ? 2 : 1) : w === 2 ? (r < 0.45 ? 1 : r < 0.8 ? 3 : 2) : (r < 0.7 ? 2 : 3);
-        this.weatherTimer = ENV.WEATHER_DWELL[this.weather] * H3.WEATHER_DWELL_MUL * (0.6 + rand() * 0.8);
+        this.weatherTimer = ENV.WEATHER_DWELL[this.weather] * H3.WEATHER_DWELL_MUL * (0.6 + this._wrand() * 0.8);
         // Maine's prevailing winds: from the SW in summer, the NW the rest of the year; each spell veers about it
         const yf = this.yearFrac(), summer = yf > 0.22 && yf < 0.55, prev = summer ? Math.PI * 1.25 : Math.PI * 1.75;
-        this.windDir = prev + (rand() - 0.5) * 1.4;
+        this.windDir = prev + (this._wrand() - 0.5) * 1.4;
       }
     }
     this.windSpeed = H3.WIND_MS[this.weather];

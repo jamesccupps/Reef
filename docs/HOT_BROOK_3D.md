@@ -587,14 +587,75 @@ What the runs taught (no fish, two years from May):
 - **The brook's moss** was scoured by the lakes' waves and ice every winter. In the brook: no waves, and it holds to the stones.
 
 **Next:**
-- the bladderworts eating zooplankton;
-- the rosettes oxidising the sand (the bed keeping its P);
-- the lily-pad insects;
-- spawning on plants (perch ribbons, pickerel, killifish on pondweed);
+- ~~the bladderworts eating zooplankton; the rosettes oxidising the sand; the lily-pad insects; spawning on plants~~ — stage 7g, below;
 - ~~the human's photos~~ (received 2026-10-17; `plant_species_hot_brook.md` §6). They confirm emergent bulrush stands, ribbon-leaved pondweed in the brook and moss on the riffle stones, and strike nothing. They also show:
   - a bare cobble dock shore, which the sim's wave-washed shallows match;
   - the brook nearly dry in August 2025, for the water-level work;
   - a common merganser brood, for the shore predators.
+
+**Built (stage 7g) — THE PLANTS' ROLES (2026-10-17).**
+
+Research:
+- `Whole lake 3D fish simulation/spawning_on_plants.md`;
+- `bladderwort_isoetid_chemistry.md`;
+- `lily_pad_fauna.md`.
+
+Plants3 (PL3), plus what chem3, littoral3 and fish3 read from it:
+- **Last year's stems.**
+  - Of an emergent's autumn die-back, its `standDead` share stays standing through the winter: bulrush 0.7, pickerelweed 0.15.
+  - Their N and P leach out at death; their body falls into the bed's organic layer at DEAD_FALL 0.005/day, faster under the ice and in the waves' reach.
+  - They count as stems (fish cover) and as spawning structure.
+  - The view draws them straw-coloured.
+  - Result: ~110 kg DW stands after the die-back and ~38 kg in April.
+- **Bladderworts catch zooplankton.**
+  - Capture is first-order in the prey about their canopy: `prey` 10 L per g DW a day at 20 °C. Selectivity is the littoral crustaceans (the copepod field) 1, Daphnia 0.3, rotifers 0.2.
+  - The catch's N and P (9 % and 1.2 % of dry mass; 80 % and 90 % absorbed) are drawn from the water about the canopy into the plant's credit, which is counted in the budgets.
+  - The sim's zooplankton carry no N or P, because their food's nutrients come straight back to the water. The water about the canopy is therefore where the prey's nutrients are.
+  - The bed's share (root) drops from 0.5 to 0.3.
+  - Result: the traps take ~3–4 % of the lakes' zooplankton production. The stand holds 250–320 kg DW in its second August, against 78 kg on the water and bed alone.
+  - At 20 L/g/day the sim's rich littoral water (its June peak 150–350 µg/L) gave the field range's top.
+- **The rosettes' roots.**
+  - `rootO2`: lobelia 0.95 of its photosynthetic O₂, pipewort 0.6 (unmeasured), goes into the sand. It pays the bed's O₂ demand first (chem3 `rootO2`), and none of it reaches the water.
+  - The oxidised sand holds its P on iron: a full lawn cuts the bed's P release to 1 − ISO_RET (0.2).
+  - Result: the thickest third of lawns' sand holds 1.31 units of bound P against 0.87 under the thinnest third. The sand at their depths holds 16 % more P than before.
+- **The evergreens** (rosettes, Nitella, moss: carry > 0.8):
+  - They keep their shoots through the winter and grow whenever it is warm and light enough; there is no autumn reallocation.
+  - A lake starts them at 0.6 of a stand, because they grow ~0.4/yr at best.
+  - The rosettes take a quarter of the wave scour (WAVE_IS).
+  - Result: second-summer stands roughly double (pipewort 169 kg against 72, lobelia 88 against 40, Nitella 273 against 112).
+  - Nitella's sparse meadow now reaches 3.25 m, deeper than the canopy's 1.9 m, as the research's charophyte Zc says (4.5–6.8 m at Secchi 2.5–4 against the angiosperms' 3.7–4.8).
+  - The gate's vegetated share therefore counts the canopy, lilies, emergents and rosettes (36 %); with the meadow it is 54 %.
+- **The pads' grazers.**
+  - Water-lily leaf beetles, Donacia, leaf-case and petiole-boring caterpillars and midge miners eat `padGraze` 0.05 of the floating leaves' production (Finland: 3–6 %).
+  - Frass goes to the bed; their bodies go onto the water as surface food (littoral3 PAD_YIELD 0.13 g wet per g DW eaten).
+  - Result: ~0.3 kg wet a year on the water, against the banks' ~6 kg of land insects. This is a small food, as the research says.
+- **Spawning on structure.** Plants3 `spawnS`: three indices per BED CELL, each 1 − e^(−S/30) of the structure S (stems/m² × cover × the species' weight for that use). They are per bed cell, not per column, because a 10-m column on a slope holds both shallow structure and bare deep bed; averaged, a perch at 1 m read the deep half's bareness.
+  - **Rigid**, for yellow perch: last year's stems, the forested shore's fallen wood (a band 1.5 m wide where the column's water is < 2.5 m), Nitella, moss and live emergents.
+  - **Mat**, for chain pickerel: rosette turf, bladderwort, moss, Robbins' carpets and flattened dead stems.
+  - **Plant**, for banded killifish: the live pondweeds, bladderwort and rosettes.
+  - The structure is scarce in April, against July's weeds.
+
+  In fish3:
+  - A ripe perch or killifish chooses its place once a season (ripeness flickers at the edge of its temperatures): the best structure of 80 tries within 40 m, at its spawning depths, a 40-m detour costing a quarter of an index. It lays within 4 m of the place, or on structure as good on its way.
+  - The pickerel's grounds are re-chosen each spring (SITE_YF ~mid-April) by the mats: per site, the best of 80 places. The pickerel spawn on them (within 4 m); before, they spawned wherever they met a mate in their band, which made their grounds' structure irrelevant.
+  - Hatch = sHatch × (bare + (1 − bare) × index), with bare 0.47 for perch (Ward & Barnes 2020) and 0.3 for pickerel and killifish (inferred).
+  - Result (seed 511's spring; the band is every point of the lakes at the species' spawning depths, as the fish read it):
+    - perch lay on 0.61 against their band's 0.46 (+0.10–0.15 on seeds 511–513);
+    - the pickerel's grounds lie at the band's top, 0.77 against a median of 0.53. Where they spawn, within 4 m of a ground, is 0.64 against 0.60: the mats vary within a few metres, and the band fills in with growth through the spawning weeks.
+    - Pickerel first spawn ~10 days after Apr 21, against ~2 before, because they now go to their grounds.
+- **The weather's own random stream** (env3 `_wrand`, seeded once from the sim's). A change to the perch's place choice had shifted seed 511's weather into a stormier, colder spring, which read as a week's spawning delay; I first mistook it for the mechanism. Now the weather is identical with and without fish.
+  - Each seed's weather is therefore new. Seed 403's became the harshest winter of six: the lake-mean O₂ minimum ranges 2.7–8.3 mg/L and the P kept 0.69–0.76 across seeds 403–408, and the old code fails on that seed too.
+  - So the gate judges the winter's O₂ and the year's P by the median of three seeds' years.
+- **Dormant shoots respire at a third** in the per-step O₂, as in `_grow`'s dormant loss. With the evergreens keeping their shoots, full respiration under the ice had drawn the winter's O₂ down.
+- **Gate:** test/w3.mjs adds five plant checks and the on-structure check: perch lay ≥ 0.07 above their band; the pickerel's grounds ≥ 0.15 above it. An index saturates near 1, so the check uses a margin, not a ratio. The vegetated-share check is restated, and winter O₂ and P kept use a three-seed median. The environment step is 11.5 ms (budget 12): the per-step O₂ loop was tightened and the spawning indices refresh every 16th plant update.
+
+**Still open:**
+- the nest builders' weak avoidance of dense plants;
+- the pickerel's carrying capacity per vegetated area (Grimm);
+- wind losses of perch ribbons in < 1 m;
+- the isoetids' organic-matter threshold (2.4 % labile);
+- the lawns' coupled nitrification–denitrification (> 6× bare);
+- whether bladderworts grow in the brook's slow runs (one photo, unsure).
 
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/

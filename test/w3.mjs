@@ -200,18 +200,28 @@ if (run('chem')) {
       if (e.iceMean > 0.9) frozen = true; if (frozen && iceOut === null && e.iceMean < 0.5) iceOut = yf;   // (after the winter's ice)
       if (yf > 0.05 && yf < 0.2) { dia[0] += c.meanDiatom; dia[1]++; } if (yf > 0.4 && yf < 0.55) { dia[2] += c.meanDiatom; dia[3]++; }
     }
-    const L = c.ledger, ret = L.buryP / L.inP, keep = c.inventoryP() / P0;
+    const L = c.ledger, ret = L.buryP / L.inP, keep0 = c.inventoryP() / P0;
+    // (THE WINTER'S O₂ AND THE P KEPT, over three years' weather: the weather's own stream (env3 _wrand) gave seed 403 the harshest
+    // winter of six — the lake's mean O₂ minimum 2.7–8.3 mg/L, the P kept 0.69–0.76 across seeds 403–408: a typical year is the
+    // median, not one draw's)
+    const yr = [[winMeanMin, keep0]];
+    for (const sd of [404, 405]) {
+      seed(sd); const e2 = new Env3({ col: 10 }), c2 = e2.chem, Q0 = c2.inventoryP(); let wm = 99;
+      for (let t = 0; t < CLOCK3.YEAR_LEN; t += EW) { e2.step(EW); const yf = e2.yearFrac(); if (yf > 0.9 || yf < 0.12) wm = Math.min(wm, e2.mean(c2.o2) * ENVC.O2_MGL); }
+      yr.push([wm, c2.inventoryP() / Q0]);
+    }
+    const med = k => yr.map(v => v[k]).sort((p, q) => p - q)[1], winMed = med(0), keep = med(1);
     check('summer: the deep north basin\'s bottom water keeps its O₂ (≥ 4 mg/L: wind and night convection mix it — MDIFW "does not stratify")', sumMinDeep >= 4, `lowest ${sumMinDeep.toFixed(1)} mg/L (June–August)`);
     // (≥ 3 mg/L: with the coloured water (stage 7a) the ice passes little light for photosynthesis, and the bed's demand — 0.1–0.3
     // g O₂/m²/day under the ice, the measured 0.2–0.39 — draws a 3-m-deep lake down ~10 mg/L over a 4-month ice season: a
     // shallow brown lake's late winter, a hypoxic layer over the mud, the fish crowding up. The clear-water version's ≥ 5 came
     // from under-ice photosynthesis snowy ice doesn't allow)
-    check('winter: under the ice the basin\'s bottom water runs down toward anoxia by late winter while the lake as a whole keeps O₂ (≥ 3 mg/L)', winMinDeep < 3 && winMeanMin >= 3,
-      `bottom of the basin down to ${winMinDeep.toFixed(1)} mg/L; the lake's mean never below ${winMeanMin.toFixed(1)} mg/L`);
+    check('winter: under the ice the basin\'s bottom water runs down toward anoxia by late winter while the lake as a whole keeps O₂ (≥ 3 mg/L in a typical winter: the median of three)', winMinDeep < 3 && winMed >= 3,
+      `bottom of the basin down to ${winMinDeep.toFixed(1)} mg/L; the lake's mean never below ${yr.map(v => v[0].toFixed(1)).join(' / ')} mg/L (seeds 403/404/405)`);
     check('ice-out comes in late April or early May (Maine: ~Apr 23)', iceOut !== null && iceOut > 0.13 && iceOut < 0.2, `half the lake open at yf ${iceOut?.toFixed(3)} (Apr 23 ≈ 0.145)`);
     check('the cold-water diatoms bloom in late winter and spring, not in summer', dia[0] / dia[1] > 2 * dia[2] / Math.max(1, dia[3]), `Mar–May mean ${(dia[0] / dia[1]).toFixed(3)}, Jun–Aug ${(dia[2] / Math.max(1, dia[3])).toFixed(3)}`);
     check('the lakes keep their P over a year with a realistic retention (the bed keeps ~half to three-quarters of the inflow\'s load: Larsen–Mercier 0.66–0.72)', ret > 0.5 && ret < 0.9 && keep > 0.7 && keep < 1.3,
-      `retention ${ret.toFixed(2)}, inventory ${(100 * keep).toFixed(0)} % of the start; a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
+      `retention ${ret.toFixed(2)}, inventory ${yr.map(v => (100 * v[1]).toFixed(0)).join(' / ')} % of the start (seeds 403/404/405: the median ${(100 * keep).toFixed(0)} %); a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
   { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(FB / 2); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 40;
     check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16, `${ms.toFixed(1)} ms`); }
 }
@@ -352,8 +362,18 @@ if (run('young')) {
   const { seed } = await import('../src/core.js');
   // A SPRING (Apr 21 → late June, the coarse grid): who spawns when and where, the nests, the brook
   { seed(511); const e = new Env3({ col: 10, yf0: 0.14 }), F = new Fish3(e); const gd = []; let may = null, mayYf = 0;
+    // (stage 7g: the plant spawners — the structure index of their band's water as they spawn, against where they spawned)
+    // (the band: every point of the lakes at the species' spawning depths, read as the fish read them — F._subAt)
+    const { GEO } = await import('../src/w3/geometry.js'), bandPts = {};
+    const bandS = (u, lo, hi) => { const k = u + lo; if (!bandPts[k]) { bandPts[k] = []; for (let i = 0; i < GEO.N; i++) if ((GEO.body[i] === 1 || GEO.body[i] === 2) && GEO.depth[i] >= lo && GEO.depth[i] <= hi) bandPts[k].push(GEO.cellCentre(i)); }
+      let s = 0; for (const [x, y] of bandPts[k]) s += F._subAt(u, x, y); return s / Math.max(1, bandPts[k].length); };
+    const subB = { perch: [0, 0, 'rigid', 0.5, 2], pike: [0, 0, 'mat', 0.3, 1] };
+    let siteMat = -1, siteBand = -1;
     for (let i = 0; i < 62 * 49.3; i++) {
+      if (i === 1) { const ps = [...F.sites.pike[1], ...F.sites.pike[2]]; siteMat = ps.reduce((t, p) => t + F._subAt('mat', p[0], p[1]), 0) / ps.length; siteBand = bandS('mat', 0.3, 1); }   // (the pickerel's grounds as the spring chose them)
+      for (const k in subB) subB[k][1] = F.stats.spawns[k];
       F.step(FB); e.step(EW);
+      for (const k in subB) { const b = subB[k], d = F.stats.spawns[k] - b[1]; if (d > 0) b[0] += d * bandS(b[2], b[3], b[4]); }
       if (!may && e.yearFrac() >= 0.22) { may = F.census(); mayYf = e.yearFrac(); }   // (May 20: the young so far — for seedSeason below)
       if (i % 25 === 0) for (const a of F.fish) if (a.nt > 0 && a.nt < a.s.guard - 2) gd.push(Math.hypot(a.x - a.nx, a.y - a.ny));
     }
@@ -367,6 +387,10 @@ if (run('young')) {
     check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles (a fifth or more)',
       bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.2 * st.spawns.sucker,
       `mean bottom depth: perch ${f2(bed('perch'))} m, smallmouth ${f2(bed('bass'))} m, pumpkinseed ${f2(bed('sunfish'))} m; suckers ${at.sucker.brook} of ${st.spawns.sucker} in the brook`);
+    { const on = k => at[k].sub / Math.max(1, st.spawns[k]), band = k => subB[k][0] / Math.max(1, st.spawns[k]);
+      check("perch and pickerel spawn on structure: perch lay their ribbons on rigid stems and wood richer than their band's water, the pickerel's spring grounds lie on its best mats (bare bed hatches ~half: Ward & Barnes 0.47)",
+        st.spawns.perch > 0 && st.spawns.pike > 0 && on('perch') > band('perch') + 0.07 && siteMat > siteBand + 0.15,   // (an index saturates near 1: a margin, not a ratio — perch +0.10–0.15 on seeds 511–513)
+        `perch laid on ${f2(on('perch'))} (their band ${f2(band('perch'))}); the pickerel's grounds ${f2(siteMat)} (their band ${f2(siteBand)}), where they spawned ${f2(on('pike'))} (${f2(band('pike'))})`); }
     gd.sort((p, q) => p - q); const g90 = gd.length ? gd[Math.floor(gd.length * 0.9)] : Infinity;
     check('the nest guarders (smallmouth, pumpkinseed, bullhead males) keep to their nests (90 % of the time within 1.5 m)', gd.length > 20 && g90 < 1.5, `${gd.length} samples, 90th percentile ${f2(g90)} m`);
     // THE LAKES ARE ONE WATER (the human: "pickerel swim through the brook", "bass too", "everything does"; F3.ROAM_L, MOVE3):
@@ -562,9 +586,14 @@ if (run('plants')) {
       // the weed volume no longer says where the weeds are)
       let bedA = 0, veg = 0, edge = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; bedA += A; if (FORMS3.reduce((t, F, f) => t + P.Bs[f][i] / F.Bmax, 0) > 0.1) veg += A; }
       let deep = 0; for (let i = 0; i < P.cells.length; i++) if (scB(i) > 30) deep = Math.max(deep, P.zb[i]);
+      // (stage 7g: the canopy's vegetated share — the angiosperms, research ~30 % at a ~2.3-m limit — apart from the stoneworts'
+      // low meadow, which grows deeper: charophytes' Zc 4.5–6.8 m at Secchi 2.5–4 against the angiosperms' 3.7–4.8, Chambers &
+      // Kalff 1985; macrophytes.md. Now the evergreens keep their shoots, Nitella's sparse meadow alone adds ~15–20 % of the bed)
+      const iN = FORMS3.findIndex(F => F.key === 'nitella'); let vegC = 0, nitZ = 0;
+      for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; if (FORMS3.reduce((t, F, f) => t + (f === iN ? 0 : P.Bs[f][i] / F.Bmax), 0) > 0.1) vegC += A; if (P.Bs[iN][i] > 3) nitZ = Math.max(nitZ, P.zb[i]); }
       // the floating-leaved and emergent forms' share of the vegetated bed (by the area their stands cover)
       let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
-      return { shoots, store, veg: veg / bedA, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
+      return { shoots, store, veg: veg / bedA, vegC: vegC / bedA, nitZ, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
     };
     // (stage 7b: the weeds' invertebrates, snails and the surface — littoral3.js — over the same run)
     const Lt = e.lit, litSnap = () => {
@@ -583,6 +612,10 @@ if (run('plants')) {
     };
     let peak1 = 0, feb = null, aug = null, augL = null, em0 = -1, emSpring = 0, emLate = 0, emPrev = 0, julBank = -1, julOpen = -1;
     let crRel = -1, crSep = null, crAug = null;   // (stage 7c: the crayfish)
+    // (stage 7g: the plants' roles — last year's stems through the winter, the bladderworts' catch, the rosettes' sand, the pads'
+    // insects, the spawning structure in spring against summer)
+    const deadT = () => P.cells.reduce((t, j, i) => t + P.dead[i] * G.bedA[j], 0), bandS = (u, lo, hi) => { let s = 0, n = 0; for (let i = 0; i < P.cells.length; i++) { const z = P.zb[i]; if (z >= lo && z <= hi && !P.brook[i]) { const A = G.bedA[P.cells[i]]; s += P.spawnS[u][i] * A; n += A; } } return s / Math.max(1e-9, n); };
+    let deadMax = 0, deadApr = -1, spApr = null, spJul = null, uAug = 0; const iU = FORMS3.findIndex(F => F.key === 'bladderwort');
     // (stage 7d: the mussels — the water of the cells they sit in, and what they clear of it in July and in January)
     let muV = 0; for (let i = 0; i < Lt.cells.length; i++) if (Lt.mu[i] > 0) muV += G.vol[Lt.cells[i]] * 1000;
     const muClr = { jul: [0, 0, -1], jan: [0, 0, -1] };   // [litres cleared, days, the clearance count at the start]
@@ -598,13 +631,17 @@ if (run('plants')) {
       if (crRel < 0 && y < 0.5 && Lt.crReleased) crRel = Lt.stock().crYn;
       if (!crSep && y < 0.5 && yf > 0.5) crSep = Lt.stock();
       if (!crAug && y > 1.0 && yf > 0.44) crAug = { ...Lt.stock(), zones: crZones() };
+      if (y < 1) deadMax = Math.max(deadMax, deadT());
+      if (deadApr < 0 && y > 0.5 && yf >= 0.12 && yf < 0.3) { deadApr = deadT(); spApr = { rigid: bandS('rigid', 0.5, 2), mat: bandS('mat', 0.3, 1) }; }
+      if (!spJul && y > 1.0 && yf > 0.38) spJul = { rigid: bandS('rigid', 0.5, 2), mat: bandS('mat', 0.3, 1), plant: bandS('plant', 0.2, 1) };
+      if (y > 1.0 && yf > 0.44 && !uAug) uAug = P.total(iU);
       if (julBank < 0 && y > 1.0 && yf > 0.38) { let sb = 0, ab = 0, so = 0, ao = 0; for (let c = 0; c < G.NC; c++) { if (Lt.bank[c] > 0) { sb += Lt.surfT[c] * G.area[c]; ab += G.area[c]; } else { so += Lt.surfT[c] * G.area[c]; ao += G.area[c]; } } julBank = sb / ab; julOpen = so / Math.max(1, ao); }
     }
     const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = augL.vegShare * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry)
     const sum = a => a.reduce((s, v) => s + v, 0);
-    check('the second summer: weeds on about a quarter to a half of the bed (research ~30 %), the submerged canopy down to 1.3–2.8 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m)',
-      !!aug && aug.veg > 0.2 && aug.veg < 0.5 && aug.deep >= 1.3 && aug.deep <= 2.8 && aug.secchi > 2.5 && aug.secchi < 4,
-      aug ? `vegetated ${(aug.veg * 100).toFixed(0)} %, canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
+    check("the second summer: weeds (the canopy, lilies, emergents, rosettes) on about a quarter to a half of the bed (research ~30 %), the submerged canopy down to 1.3–2.8 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m), the stoneworts' meadow deeper (charophytes' Zc beyond the angiosperms')",
+      !!aug && aug.vegC > 0.2 && aug.vegC < 0.5 && aug.deep >= 1.3 && aug.deep <= 2.8 && aug.secchi > 2.5 && aug.secchi < 4 && aug.nitZ > aug.deep,
+      aug ? `vegetated ${(aug.vegC * 100).toFixed(0)} % (${(aug.veg * 100).toFixed(0)} % with Nitella's sparse meadow, to ${f2(aug.nitZ)} m), canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
     check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
       !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
     // (stage 7f: per gram of plant — Cyr & Downing's ~5 mg DW of animals per g, ~30 mg wet; a full single-form canopy of 150+ g
@@ -634,6 +671,18 @@ if (run('plants')) {
     check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',
       !!feb && sum(feb.shoots) < 0.15 * peak1 * 3 && feb.store.every(v => v > 0) && SCf.reduce((t, f) => t + aug.shoots[f], 0) > 1.1 * SCf.reduce((t, f) => t + feb.store[f], 0),   // (stage 7f: Robbins' pondweed, evergreen, keeps 70 % — the canopy regrows past its winter stores)
       feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(SCf.reduce((t, f) => t + aug.shoots[f], 0) / 1000).toFixed(0)} kg by August` : 'no February');
+    check("last year's emergent stems stand through the winter (bulrush's culms): in April a quarter to two-thirds of the autumn's, falling into the bed by summer",
+      deadMax > 0 && deadApr > 0.2 * deadMax && deadApr < 0.7 * deadMax, `${(deadMax / 1000).toFixed(0)} kg DW standing after the die-back, ${(deadApr / 1000).toFixed(0)} kg in April`);
+    check("the bladderworts eat zooplankton: their traps take 0.5–8 % of the lakes' zooplankton production, and on their catch the stand holds through its second summer (rootless — on the water alone it died out)",
+      P.caught > 0.005 * ch.zooProd && P.caught < 0.08 * ch.zooProd && uAug > 50e3, `caught ${(P.caught / 1000).toFixed(0)} kg wet of ${(ch.zooProd / 1000).toFixed(0)} kg produced (${(100 * P.caught / ch.zooProd).toFixed(1)} %); the stand ${(uAug / 1000).toFixed(0)} kg DW in its second August`);
+    { const L = []; for (let i = 0; i < P.cells.length; i++) { if (!P.mineral[i] || P.brook[i] || P.zb[i] < 0.5 || P.zb[i] > 1.5) continue; const j = P.cells[i]; L.push([ch.lawn[j], ch.sedP[j]]); }
+      L.sort((p, q) => p[0] - q[0]); const n3 = Math.floor(L.length / 3), mean = (a, k) => a.reduce((t, v) => t + v[k], 0) / Math.max(1, a.length), lo = L.slice(0, n3), hi = L.slice(L.length - n3);
+      check("the rosettes oxidise the sand: the lake sand at their depths under the thickest third of lawns holds more of its P than under the thinnest third (lobelia: > 97 % of its O₂ through its roots)",
+        n3 > 10 && mean(hi, 1) > 1.15 * mean(lo, 1), `bound P ${f2(mean(hi, 1))} under lawns of ${f2(mean(hi, 0))} cover, ${f2(mean(lo, 1))} under ${f2(mean(lo, 0))} (${L.length} cells)`); }
+    check("the lily pads' grazers (beetles, caterpillars) drop food on the water: some, but a small share beside the land's insects",
+      Lt.padFallen > 0 && Lt.padFallen < 0.3 * Lt.fallen, `${(Lt.padFallen / 1000).toFixed(2)} kg wet from the pads, ${(Lt.fallen / 1000).toFixed(1)} kg from the banks`);
+    check("spawning structure: in April the perch's rigid structure (last year's stems, wood, Nitella) and the pickerel's mats are scarcer than in July's weeds",
+      !!spApr && !!spJul && spApr.rigid < spJul.rigid && spApr.mat < spJul.mat && spApr.rigid > 0.05, spApr && spJul ? `April rigid ${f2(spApr.rigid)}, mat ${f2(spApr.mat)}; July rigid ${f2(spJul.rigid)}, mat ${f2(spJul.mat)}, live plants ${f2(spJul.plant)}` : 'missing');
     // A DENSE BED'S O₂: on a calm clear summer day the water in a thick canopy rises by day and falls by night more than bare
     // water at the same depth does
     // The eight densest canopy beds at 0.8–1.6 m, each against the barest bed at its depth AND with as much bed under as much

@@ -567,7 +567,7 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc }); LIVE.dtAcc = 0; LIVE.waiting = true;
 }
 function onSnap(m) {
-  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
+  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false;
   if (m.rises && m.rises.length && S.fish) risesView.add(m.rises, LIVE.tNow, S.fishScale);   // (on the frame loop's clock)

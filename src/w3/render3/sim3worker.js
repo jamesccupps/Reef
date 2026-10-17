@@ -58,7 +58,8 @@ function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed c
   // the crayfish out on the bed (adults, the year's young /m²; out by night more than by day) and the snails /m², per bed cell, with
   // the young crayfish's mass (render3/bed3view.js)
   const bed = env.lit ? env.lit.shown(env.sun < 0.05) : new Float32Array(nb * 3), wY = env.lit ? env.lit.wY : 1;
-  postMessage({ type: 'plants', shoots: out, mus, surf, bed, wY, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer, bed.buffer]); plantsAt = performance.now();
+  const dead = Float32Array.from(P.dead);   // (last year's standing stems, g DW/m², the same cells)
+  postMessage({ type: 'plants', shoots: out, mus, surf, bed, wY, dead, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer, bed.buffer, dead.buffer]); plantsAt = performance.now();
 }
 function snapshot() {
   const fs = F.fish, Y = F.yoy;

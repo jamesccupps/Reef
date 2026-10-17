@@ -113,36 +113,33 @@ bullheads past 2.5 cm without a parent, and pickerel SCATTER (each its own slow 
 ½× SPEED (w3.html): everything at half speed — fish in slow motion, a day 4 min. The human asked for "a .5 or more realistic
 mode, just for viewing" — a slower CALENDAR with real-speed fish would need the per-sim-second ecology (strike hazards, water
 transport, foraging per step) rescaled: offered, not built.
-▶▶▶ RESUME HERE FIRST (2026-10-17, the human restarted the computer mid-slice). STAGE 7g, THE PLANTS' ROLES: CODE WRITTEN, NOT
-YET VERIFIED OR COMMITTED. The changes are in the working tree (a copy of the diff is at
-G:/synapse-reef-backups/synapse-reef_20261016_2153_wip-plant-roles.patch); this commit holds only the research and this note.
-Research (committed): Whole lake 3D fish simulation/{spawning_on_plants, bladderwort_isoetid_chemistry, lily_pad_fauna}.md.
-The human's 12 photos: plant_species_hot_brook.md §6 (7b6f153).
-What the uncommitted code does:
-- plants3:
-  - PL3.DEAD_* — last year's emergent stems standing through the winter (`dead`, per bed cell), as stems and spawning structure;
-  - bladderwort `prey: 10` + PL3.PREY_*: `_capture`, a prey N/P credit preyP/preyN counted in the inventories; root 0.5 → 0.3;
-  - rosettes `rootO2`: chem3 rootO2 pays the bed's O₂ demand; ch.lawn → chem3 _sedimentP release × (1 − ISO_RET·lawn);
-  - lilies `padGraze: 0.05` → padEaten → littoral3 LIT3.PAD_YIELD onto surfT;
-  - evergreens (carry > 0.8) keep their shoots over winter (no autumn reallocation) and are seeded at 0.6 Bmax;
-  - PL3.WAVE_IS 0.25: rosettes resist wave scour;
-  - PL3.SPAWN, spawnS {rigid, mat, plant} per column, plus the forested shore's wood.
-- fish3: SPAWN3 sub/bare (perch rigid 0.47, pike mat 0.3, killifish plant 0.3); _pickSpot (a ripe plant spawner seeks
-  structure), _siteSub (the pickerel's grounds re-chosen each spring at F3.SITE_YF), _hatchMul (hatch × (bare + (1 − bare) × index)),
-  stats.spawnAt.sub.
-- The view: the dead stems drawn straw-coloured (plants3view STRAW, sim3worker sends `dead`).
-- test/w3.mjs: +5 plant checks, +1 spawning-on-structure check.
-Measured without fish (seed 541): the traps take ~2–4 % of zooplankton production; bladderworts hold 270–320 kg DW in summer 2
-(were 78); lawns' bed P 1.4 vs bare 0.9; ~110 kg dead stems in autumn, ~30 kg in April. The 30 % P inventory fall over two years
-is the old behaviour (outflow), not new.
-TO DO NEXT:
-1. W3_ONLY=plants,young node test/w3.mjs — fix what fails.
-2. The 3-seed A/B (scratchpad season3s.mjs <seed> 0.12 400 50, SRC= a worktree of HEAD for the baseline): perch and pickerel
-   recruitment with the bare-bed penalty against without; adjust sHatch only if the young-of-year fate audit says so.
-3. The full npm test (park the browser first).
-4. Check the straw stems in the browser (a spring date).
-5. Update HOT_BROOK_3D §5 (stage 7g Built; mark its Next list done); commit, push, back up.
-Then TRUE_SCALE T1–T8.
+▶▶▶ RESUME HERE (2026-10-17): STAGE 7g, THE PLANTS' ROLES, IS DONE (gate green: headless, smoke, ui, serve, w3 81/81;
+browser-verified). See HOT_BROOK_3D.md §5 "Built (stage 7g)". Research: Whole lake 3D fish simulation/{spawning_on_plants,
+bladderwort_isoetid_chemistry, lily_pad_fauna}.md. The human's 12 photos are in plant_species_hot_brook.md §6: they confirm
+bulrush, ribbon-leaved pondweed in the brook and riffle moss; strike nothing; show the dry year (Aug 2025) and a merganser brood.
+What it adds:
+- Last year's standing stems (plants3 `dead`). The view draws them straw-coloured.
+- Bladderworts catch zooplankton (~3–4 % of its production), and their prey's N and P credit holds the stand.
+- The rosettes' root O₂ goes into the sand and pays the bed's demand. Their lawns hold the bed's P (ISO_RET).
+- Evergreens keep their shoots over winter (seeded at 0.3 of a stand); dormant shoots respire at a third. Rosettes take ¼ of
+  the wave scour.
+- Pad grazers eat 5 % of the floating leaves' production; their bodies land on the water as surface food.
+- Spawning structure per bed cell: rigid / mat / plant, plus the forested shore's wood. Perch choose their place once a season
+  and lay there. The pickerel's grounds are re-chosen each spring by the mats, and they spawn on them. Hatch is
+  × (bare + (1 − bare) × index).
+- THE WEATHER'S OWN RANDOM STREAM (env3 `_wrand`): fish and plant draws no longer shift the weather. Every seed's weather is
+  new, so winter O₂ and the year's P kept are judged on a 3-seed median (seed 403 drew the harshest winter of six).
+Lessons:
+- A "perch spawn a week late" turned out to be the shifted weather, not the mechanism. Before blaming a mechanism, compare the
+  temperature curve.
+- The test's band must be measured as the fish read it.
+NEXT: TRUE_SCALE T1–T8 (docs/TRUE_SCALE.md; T8 = the data/stats page with click-a-fish). Still open from 7g (HOT_BROOK_3D.md):
+- the nest builders' plant avoidance;
+- pickerel capacity per vegetated area;
+- perch ribbon wind losses;
+- the isoetids' organic threshold;
+- the lawns' denitrification;
+- bladderworts in the brook's slow runs.
 
 ▶▶ RESUME HERE (2026-10-17, early): THE FISH, THE BROOK AND THE PLANTS — THEN TRUE SCALE. Committed before: 283216b (the 11
 species, the census, the lakes one water, the riffle refuge, the young that keep moving, the fish's body widths). THIS COMMIT

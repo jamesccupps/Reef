@@ -53,6 +53,11 @@ export const LIT3 = {
   // of bank × GEO.SCALE (the lakes are 1/10: their area per m of bank is) — by the bank's cover (forest 1, shrub 0.5, open 0.2)
   FALL: 0.05, FALL_YF: [0.15, 0.65], FALL_WW: 3.3,   // g DW/m/day; the season (Apr 25 → Oct 25, a sine); wet/dry of beetles, flies
   FLY: 6,                  // /day: emerged adults leave the water within hours (they are exported: the lake loses them)
+  // THE PADS' INSECTS (plants3 padGraze; lily_pad_fauna.md): of each g DW of pad their grazers eat, ~0.12 g DW of beetles and
+  // caterpillars is made (assimilation ~0.3 × growth efficiency ~0.4), ~0.4 g wet; about a third of it reaches the fish on the
+  // water — larvae falling as they move between leaves, drowned adults as damaged pads sink, caterpillars swimming ashore to
+  // pupate (no fish diet names them: inferred); the rest emerges or dies on the pads
+  PAD_YIELD: 0.13,         // g wet on the water per g DW of pad eaten
   DROWN: 1.5,              // /day: the land's insects drown and sink to the bed's organic layer
   SURF_Z: 1.0,             // m: a fish this near the surface feeds on what is there
   K_SURF: 0.02,            // g wet/m² at which a surface feeder gets half its ration there: big, conspicuous items (a 20-mg beetle per
@@ -133,7 +138,7 @@ export class Littoral3 {
       if (!w) continue;
       const [x, y] = GEO.cellCentre(i), c = env.colAt(x, y); if (c >= 0) this.bank[c] += w * GEO.CELL * 0.8;   // (a raster shore's stair-steps overstate its length)
     }
-    this._n = 0; this.emerged = 0; this.fallen = 0; this.prod = 0; this.J = 0; this._emStep = 0;
+    this._n = 0; this.emerged = 0; this.fallen = 0; this.padFallen = 0; this.prod = 0; this.J = 0; this._emStep = 0;
     this.crProd = 0; this.crEaten = 0; this.crG = 0; this.crReleased = 0;
     this.dd = this._ddFor(env.yearFrac());
     this._capacity();
@@ -233,6 +238,7 @@ export class Littoral3 {
     for (let c = 0; c < G.NC; c++) {
       surfA[c] -= surfA[c] * fly;
       if (fall > 0 && this.bank[c] > 0) { const g = fall * this.bank[c] * dd * (1 - e.ice[c]); this.surfT[c] += g / G.area[c]; this.fallen += g; }
+      const pe = this.plants.padEaten; if (pe[c] > 0) { const g = pe[c] * LIT3.PAD_YIELD; pe[c] = 0; this.surfT[c] += g / G.area[c]; this.padFallen += g; }   // (the pads' insects)
       const dr = this.surfT[c] * drown; if (dr > 0) { this.surfT[c] -= dr; ch.addSedOM(this._colBed(c), dr * G.area[c]); }
     }
   }

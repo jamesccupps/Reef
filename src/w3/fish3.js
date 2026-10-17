@@ -93,6 +93,12 @@ export const F3 = {
   FP_HOME: 0.25, FP_MIN: 4, FP_MAX: 20, FP_DZ: 0.75,
   // REPRODUCTION (slice b)
   SPAWN_LEAD: 2,        // °C: a ripe fish heads for its spawning ground this far below its spawning temperature
+  // SPAWNING ON STRUCTURE (S3 spawn.sub; plants3 PL3.SPAWN): a ripe plant spawner without traditional grounds looks over
+  // SUB_TRIES places within SUB_R m (world: ~400 m real across the 1/10 lakes — perch gather from their wintering water to the
+  // spawning shallows) and heads for the best structure, a detour of SUB_R costing SUB_DETOUR of an index; the species with
+  // grounds (chain pickerel) re-choose them each spring at SITE_YF (~mid-April, before ice-out) by the structure then — last
+  // year's standing stems and the evergreen mats
+  SUB_TRIES: 80, SUB_R: 40, SUB_DETOUR: 0.25, SITE_YF: 0.1,   // (tries: most land outside the spawning depths — once a season a fish, cheap)
   SPAWN_RATE: 0.25 / OLD_S,   // /s: on its ground, with a mate, at full spawning temperature, a fish spawns at this rate
                               //   (compat: ~10 h; R3: by the hour and the time of day)
   MATE_R: 1.5,          // m: a mate this close (an individual species' pair)
@@ -222,16 +228,20 @@ const MOVE3 = {
 // real); brook (pumpkinseed): the share of the fish that move into the brook's pools for the summer (Lievense 1947; the angler)
 // sites: the species' traditional spawning grounds per lake — the pairing species meet there (pickerel's marshy coves, bass
 // nesting areas, pumpkinseed colonies; a sparse species could not find mates by wandering in a two-week window)
+// sub: the structure a plant spawner lays on (plants3 spawnS: 'rigid', 'mat', 'plant') and bare: its eggs' hatch on bare bed
+// against on full structure — yellow perch eggs hatched 46 % on bare bottom against 99 % on artificial vegetation (Ward & Barnes
+// 2020: 0.47); chain pickerel and banded killifish (eggs on plants, the pickerel's larvae hanging on them ~10 days) 0.3,
+// inferred (spawning_on_plants.md); hatch = sHatch × (bare + (1 − bare) × the index where it spawns)
 const SPAWN3 = {
-  sunfish: { bot: [0.15, 1.7], h: 0.05, brook: 0.3, sites: 10 }, perch: { bot: [0.5, 2.0], h: 0.3 },
+  sunfish: { bot: [0.15, 1.7], h: 0.05, brook: 0.3, sites: 10 }, perch: { bot: [0.5, 2.0], h: 0.3, sub: 'rigid', bare: 0.47 },
   sucker: { bot: [0.2, 0.9], h: 0.05, site: 'brook', sites: 3 }, catfish: { bot: [0.3, 1.5], h: 0.02, sites: 6 }, whiteperch: { bot: [0.3, 1.5], h: 0.3 },
-  bass: { bot: [0.5, 1.5], h: 0.05, faith: 2, sites: 4 }, pike: { bot: [0.3, 1.0], h: 0.3, sites: 4 },
+  bass: { bot: [0.5, 1.5], h: 0.05, faith: 2, sites: 4 }, pike: { bot: [0.3, 1.0], h: 0.3, sites: 4, sub: 'mat', bare: 0.3 },
   // redbreast nests: 0.43 m of water on average (0.25–0.6), sand to fine gravel within 1 m of rock or wood, mostly > 5 m apart
   // (COSEWIC); the brook's fish spawn in it. Fallfish: in Maine they run from the lakes into streams to spawn (Trial et al. 1983)
   // — males' pebble mounds at the run and riffle heads ≤ 0.5 m, communal, from 15 °C (the lake's fish far from the brook on
   // gravel shoals). Killifish: on plants (Potamogeton) at 0.2–1 m, ~3 clutches. Dace: en masse over riffle gravel < 0.25 m
   redbreast: { bot: [0.25, 0.6], h: 0.05, brook: 0.5, sites: 8 }, fallfish: { bot: [0.15, 0.5], h: 0.05, site: 'brook', sites: 4 },
-  killifish: { bot: [0.2, 1.0], h: 0.2 }, dace: { bot: [0.1, 0.3], h: 0.02, site: 'brook' },
+  killifish: { bot: [0.2, 1.0], h: 0.2, sub: 'plant', bare: 0.3 }, dace: { bot: [0.1, 0.3], h: 0.02, site: 'brook' },
 };
 // THE BROOK: its path from Upper's outlet (vertex 0) to Lower (the last) — the pool below the mouth (vertices 1–2, ~1 m), the
 // riffles (3 and 6, ~0.3 m), the run between (4–5, ~0.5 m). Fish go in and out along it (Fish3._route)
@@ -350,6 +360,7 @@ class Fish {
     // reproduction: ripe (heading for its ground), on a nest (nt s left; the nest nx, ny, nz), last year's nest, a mate in view,
     // its lake (1 Upper, 2 Lower) and home there, a brook-summering pumpkinseed
     this.ripe = false; this.nt = 0; this.nx = 0; this.ny = 0; this.nz = 0; this.nestX = NaN; this.nestY = NaN; this.mate = null;
+    this.spX = NaN; this.spY = NaN; this.spYr = -1;   // a ripe plant spawner's chosen place (F3.SUB_*) and the year it chose it
     this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false;
     this.tripEnd = 0; this.tpx = 0; this.tpy = 0; this.inLake = 1;   // a trip into the other lake (until, where); the lake it was last in
     // RENDER-ONLY (render3/fish3view.js interpolates between steps from these; the sim never reads them)
@@ -380,13 +391,13 @@ export class Fish3 {
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
     for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
-    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
+    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0, sub: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
     this.yoy = [];      // the young-of-year schools (Yoy)
     this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
     this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
-    this._hashInit(); this._colStatics(); this._slopeStatics(); this._siteStatics();
+    this._hashInit(); this._colStatics(); this._slopeStatics(); this._siteStatics(); this._siteYr = -1;
     if (founders) { this.found(); if (young) this.seedSeason(0, env.yearFrac()); }
   }
 
@@ -443,6 +454,45 @@ export class Fish3 {
         }
       }
     }
+  }
+  // each spring (F3.SITE_YF) a plant spawner's grounds move to the best structure of its spawning depths: per site, the best of
+  // F3.SUB_TRIES random places ≥ 6 m from the others (its lake's coves of last year's stems and mats)
+  _siteSub() {
+    const P = this.env.plants; if (!P) return;
+    for (const k of KEYS3) {
+      const sb = S3[k].spawn; if (!sb.sites || !sb.sub) continue; const per = this.sites[k];
+      for (const lake of [UPPER, LOWER]) {
+        const cand = []; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === lake && GEO.depth[i] >= sb.bot[0] && GEO.depth[i] <= sb.bot[1]) cand.push(i);
+        if (!cand.length) continue; const got = [];
+        for (let s = 0; s < sb.sites; s++) {
+          let best = null, bs = -1;
+          for (let t = 0; t < F3.SUB_TRIES; t++) {
+            const [x, y] = GEO.cellCentre(cand[(rand() * cand.length) | 0]); if (got.some(p => Math.hypot(p[0] - x, p[1] - y) <= 6)) continue;
+            const v = this._subAt(sb.sub, x, y); if (v > bs) { bs = v; best = [x, y]; }
+          }
+          if (best) got.push(best);
+        }
+        if (got.length) per[lake] = got;
+      }
+    }
+  }
+  // the spawning-structure index (0–1) at (x, y) for use u; 1 without plants (a lake without its weeds: the old rule)
+  _subAt(u, x, y) {   // (the bed cell under (x, y): plants3's index there)
+    const P = this.env.plants; if (!P || !u) return 1; const c = this.env.colAt(x, y); if (c < 0) return 0;
+    const i = P.idxOf[this.bedCell(c, Math.max(0.05, GEO.depthAt(x, y)))]; return i >= 0 ? P.spawnS[u][i] : 0;
+  }
+  // a spawning's hatch: × (bare + (1 − bare) × the index) for a plant spawner; the index tallied (stats.spawnAt.sub)
+  _hatchMul(s, x, y) { const sb = s.spawn; if (!sb.sub) return 1; const v = this._subAt(sb.sub, x, y); this.stats.spawnAt[s.key].sub += v; return sb.bare + (1 - sb.bare) * v; }
+  // a ripe plant spawner without grounds picks its place: the best structure of F3.SUB_TRIES places within SUB_R of it in its
+  // lake at its spawning depths, a detour costing SUB_DETOUR × d / SUB_R of an index
+  _pickSpot(a) {
+    const sb = a.s.spawn, R = F3.SUB_R; let best = -1e9;
+    for (let t = 0; t < F3.SUB_TRIES; t++) {
+      const x = a.x + rand(-R, R), y = a.y + rand(-R, R); if (GEO.bodyAt(x, y) !== a.lake) continue;
+      const bed = GEO.depthAt(x, y); if (bed < sb.bot[0] || bed > sb.bot[1] || this.env.colAt(x, y) < 0) continue;
+      const v = this._subAt(sb.sub, x, y) - F3.SUB_DETOUR * Math.hypot(x - a.x, y - a.y) / R; if (v > best) { best = v; a.spX = x; a.spY = y; }
+    }
+    if (best === -1e9) { a.spX = a.x; a.spY = a.y; }   // (none in reach: where it is)
   }
   deeper(x, y, out) { const i = cellIndex(x, y); out[0] = i < 0 ? 0 : this.slopeX[i]; out[1] = i < 0 ? 0 : this.slopeY[i]; return out; }
   // the columns within R of column c's centre (cached per radius)
@@ -637,7 +687,7 @@ export class Fish3 {
       if (!(o1 > o0) || rand() > (sh(yf1) - sh(yf0)) / (1 - sh(yf0))) continue;
       const b = a.sex === 2 ? a : this._seedMate(a, used, spent); if (!b) continue;
       const yfS = o0 + rand() * (o1 - o0), ago = (yf1 - yfS) * YEAR, [x, y] = this._seedGround(a), nz = Math.max(0.05, GEO.depthAt(x, y) - 0.03);
-      const females = a.sex === 2 ? a.n / 2 : 1, eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b), larvae = eggs * sp.sHatch;
+      const females = a.sex === 2 ? a.n / 2 : 1, eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b), larvae = eggs * sp.sHatch * this._hatchMul(s, x, y);
       this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
       const q = this._mkYoy(a.k, x, y, nz, larvae, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)), Math.max(a.gen, b.gen) + 1, (a.hue + b.hue) / 2);
       if (s.guard && b !== a && b.n === 1 && ago < s.guard) {   // (still on the nest: the male guards it — he is there)
@@ -680,6 +730,7 @@ export class Fish3 {
     const s = a.s, sb = s.spawn, st = this.sites[s.key], wet = (x, y) => GEO.bodyAt(x, y) === a.lake && GEO.depthAt(x, y) > 0.12;
     if (a.brookRun) { const p = BP[1 + ((rand() * (BLAST - 1)) | 0)]; return [p[0], p[1]]; }
     if (st && st[a.lake].length) { const p = st[a.lake][(rand() * st[a.lake].length) | 0], x = p[0] + rand(-1, 1), y = p[1] + rand(-1, 1); return wet(x, y) ? [x, y] : [p[0], p[1]]; }
+    if (sb.sub) { const x0 = a.x, y0 = a.y; a.x = a.lhx; a.y = a.lhy; this._pickSpot(a); a.x = x0; a.y = y0; const p = [a.spX, a.spY]; a.spX = a.spY = NaN; if (wet(p[0], p[1])) return p; }
     const bc = this._bandC || (this._bandC = {}), key = s.key + '_' + a.lake;
     const cand = bc[key] || (bc[key] = (() => { const l = []; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === a.lake && GEO.depth[i] >= sb.bot[0] && GEO.depth[i] <= sb.bot[1]) l.push(i); return l; })());
     if (!cand.length) return [a.x, a.y];
@@ -751,6 +802,7 @@ export class Fish3 {
     // the lake's fish biomass (kg/ha) — the zooplankton's kairomone level (diel vertical migration)
     let bio = 0; for (const a of f) if (a.alive) bio += a.n * a.W; for (const q of this.yoy) if (q.alive) bio += q.n * q.W; ch.fishKgHa = bio / 1000 / this.lakeHa;
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
+    { const yr = this._yr = Math.floor(e.time / YEAR); if (yf >= F3.SITE_YF && yf < 0.5 && this._siteYr !== yr) { this._siteYr = yr; this._siteSub(); } }   // (the plant spawners' grounds, each spring)
     // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
     const lux0 = e.lux, luxB = coarse ? [lux0, e.luxAhead(dt / 2), e.luxAhead(dt)] : null;
     for (let i = 0; i < f.length; i++) {
@@ -766,6 +818,7 @@ export class Fish3 {
       a.jb = this.bedCell(c, a.bed);
       a.T = e.temp[j]; a.o2 = ch.o2[j];
       a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]);
+      if (a.ripe && s.spawn.sub && !this.sites[s.key] && (a.spX !== a.spX || a.spYr !== this._yr)) { this._pickSpot(a); a.spYr = this._yr; }   // (a plant spawner's place: chosen once a season — ripeness flickers at its temperatures' edge)
       this._roam(a, yf, dt);
       const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
       const kI = K_I[s.key] ?? 1, lf = iceCut * fade;
@@ -1198,6 +1251,7 @@ export class Fish3 {
     if (a.nt > 0) { out[0] = a.nx; out[1] = a.ny; out[2] = 0.5; return out; }
     if (a.ripe && a.brookRun) { const v = BP[a.lake === UPPER ? 3 : 6]; out[0] = v[0]; out[1] = v[1]; out[2] = 2.5; return out; }
     if (a.ripe && s.spawn.faith && a.nestX === a.nestX) { out[0] = a.nestX; out[1] = a.nestY; out[2] = s.spawn.faith; return out; }
+    if (a.ripe && a.spX === a.spX) { out[0] = a.spX; out[1] = a.spY; out[2] = 2; return out; }   // (a plant spawner's chosen structure)
     if (a.ripe && this.sites[s.key]) {   // the nearest of its lake's spawning grounds
       let best = null, bd = 1e9; for (const p of this.sites[s.key][a.lake]) { const d = Math.hypot(p[0] - a.x, p[1] - a.y); if (d < bd) { bd = d; best = p; } }
       if (best) { out[0] = best[0]; out[1] = best[1]; out[2] = 3; return out; }
@@ -1293,11 +1347,13 @@ export class Fish3 {
     if (this._coarse || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0) a.mate = a.sex === 2 ? (this._findMate(a, i, 3) || a) : this._findMate(a, i, a.brookRun && GEO.bodyAt(a.x, a.y) === BROOK ? 40 : s.mateCue);
     const onGround = a.brookRun ? GEO.bodyAt(a.x, a.y) === BROOK : a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
     if (!onGround || !a.mate || (a.sex === 1)) return;   // (the female, or the school, spawns)
+    if (a.spX === a.spX && Math.hypot(a.x - a.spX, a.y - a.spY) > 4 && this._subAt(sb.sub, a.x, a.y) < this._subAt(sb.sub, a.spX, a.spY)) return;   // (a plant spawner lays at its chosen structure, or on as good on its way)
+    if (sb.sub && this.sites[s.key] && !this.sites[s.key][a.lake].some(p => Math.hypot(p[0] - a.x, p[1] - a.y) <= 4)) return;   // (a plant spawner with grounds — chain pickerel — spawns on them: the spring's chosen mats)
     const b = a.mate; if (b !== a && Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > (a.sex === 2 ? 3 : F3.MATE_R)) return;
     const E = SPAWN.EDGE, [lo, hi] = sp.spawnT, Tq = a.T, f = clamp((Tq - lo + E) / E, 0, 1) * clamp((hi + E - Tq) / E, 0, 1);
     if (!(f > 0) || rand() > 1 - Math.exp(-F3.SPAWN_RATE * f * dt)) return;
     const females = a.sex === 2 ? a.n / 2 : 1;
-    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / (sp.gsiF * a.W), 0, 1), larvae = eggs * sp.sHatch;
+    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / (sp.gsiF * a.W), 0, 1), larvae = eggs * sp.sHatch * this._hatchMul(s, a.x, a.y);
     this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
     const sa = this.stats.spawnAt[s.key]; if (sa.first < 0) sa.first = this.env.time; sa.bed += a.bed; if (GEO.bodyAt(a.x, a.y) === BROOK) sa.brook++;   // (when and over what water)
     const male = b === a ? null : b, nz = Math.max(0.05, a.bed - 0.03);

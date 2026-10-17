@@ -14,6 +14,7 @@ import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
 import { GEO, UPPER, LOWER, BROOK } from './geometry.js';
+import { PL3 } from './plants3.js';
 
 export const V2 = WORLD.CELL_L / 1000;                 // m³: the 2-D cell the water units are "per"
 export const A2 = WORLD.SLICE_M2 / GRID.FIELD_COLS;    // m²: the 2-D column of bed the bed units are "per"
@@ -315,11 +316,15 @@ export class Chem3 {
   _o2Demand(dt) {
     const G = this.G, T = this.env.temp, o2 = this.o2;
     const ramp = z => ENV.O2_DEMAND_MIN + (1 - ENV.O2_DEMAND_MIN) * clamp(z / ENV.O2_DEMAND_Z, 0, 1);
-    const pel = ENV.O2_PELAGIC * TS * dt, sed = ENV.O2_SED * TS * dt;
+    const pel = ENV.O2_PELAGIC * TS * dt, sed = ENV.O2_SED * TS * dt, rO = this.rootO2;
     for (let j = 0; j < G.NCELL; j++) {
       const qT = qAt(Q.mic12, T[j]), z = G.zMid[j];
       let d = pel * ramp(z) * qT;
-      if (G.bedA[j] > 0) d += sed * ramp(z) * qT * this.r[j];   // per unit of bed: its share of this cell's water
+      if (G.bedA[j] > 0) {   // per unit of bed: its share of this cell's water — less what the rosettes' roots put into the sand (plants3 rootO2:
+        let b = sed * ramp(z) * qT * this.r[j];   //   by day it pays the bed's demand, the rest oxidising the sand; by night the roots draw on it)
+        if (rO && rO[j] !== 0) { b = Math.max(0, b - rO[j] / G.vol[j]); rO[j] = 0; }
+        d += b;
+      }
       o2[j] = Math.max(0, o2[j] - d);
     }
   }
@@ -356,8 +361,9 @@ export class Chem3 {
         const rain = Math.min(phos[j] * W, SED_P.SETTLE * SED_P.RAIN_BASE * CHEM3.BED_EXCH * TS * dt, room);
         phos[j] -= rain * r; sed[j] += rain; room -= rain;
       }
-      if (rel0 > 0) { const rel = Math.min(sed[j], rel0 * Math.pow(CHEM3.REL_Q10, (T[j] - 20) / 10) * sed[j]); sed[j] -= rel; phos[j] += rel * r; }   // (oxic, temperature-driven)
-      if (ox < SED_P.O2_THRESH) { const rel = SED_P.RELEASE * TS * sed[j] * (1 - ox / SED_P.O2_THRESH) * dt; sed[j] -= rel; phos[j] += rel * r; }
+      const hold = this.lawn ? 1 - PL3.ISO_RET * this.lawn[j] : 1;   // (under a rosette lawn the oxidised sand holds its P on iron: plants3)
+      if (rel0 > 0) { const rel = Math.min(sed[j], rel0 * Math.pow(CHEM3.REL_Q10, (T[j] - 20) / 10) * sed[j]) * hold; sed[j] -= rel; phos[j] += rel * r; }   // (oxic, temperature-driven)
+      if (ox < SED_P.O2_THRESH) { const rel = SED_P.RELEASE * TS * sed[j] * (1 - ox / SED_P.O2_THRESH) * dt * hold; sed[j] -= rel; phos[j] += rel * r; }
       else if (room > 0) { const bnd = Math.min(SED_P.BIND * CHEM3.BED_EXCH * TS * phos[j] * dt, room, phos[j] * W); phos[j] -= bnd * r; sed[j] += bnd; }
       const bury = SED_P.BURY * CHEM3.BURY_MUL * TS * sed[j] * dt; sed[j] -= bury; buried += bury * this.a[j];
     }

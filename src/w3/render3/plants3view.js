@@ -18,7 +18,8 @@ const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
 const PER = { EM: 5, FL: 16, SC: 3, IS: 3, DM: 3 };         // instances per 1.5-m cell at a full stand (lily pads are small: many)
 const TINT = { EM: 0.5, FL: 0.15, SC: 1, IS: 0.5, DM: 0.7 };  // how much each form's stand colours the bed seen from afar
 const COL = { EM: 0x6f8a3a, FL: 0x3f7434, SC: 0x4f6b2c, IS: 0x5f7a44, DM: 0x2c4630 };
-const SPRING = new THREE.Color(0x8fb04a), BROWN = new THREE.Color(0x7d6a38);
+const SPRING = new THREE.Color(0x8fb04a), BROWN = new THREE.Color(0x7d6a38), STRAW = new THREE.Color(0xa8945e);   // (last year's standing stems: plants3 dead)
+const DEAD_FULL = 60;   // g DW/m² of standing dead stems drawn as a full cell of them (on the bulrush's mesh)
 export const LAYER = 2;
 
 // geometries, y from 0 (the bed) to 1 (scaled to the stand's height): a TUFT of nb thin blades fanning from one base — each a
@@ -98,11 +99,12 @@ export function makePlantsView(W3) {
   const MU_COL = new THREE.Color(0x2e2618), MU_NEAR = 18;   // (m: shells drawn within this of where the camera looks)
   let mus = null;
   const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
-  let shoots = null, yf = 0, dirty = false, at = [1e9, 1e9, 1];
+  let shoots = null, yf = 0, dirty = false, at = [1e9, 1e9, 1], dead = null;
+  const fDead = FORMS3.findIndex(F => F.key === 'bulrush');   // (the dead stems borrow the bulrush's reed mesh)
   // new plant data: shoots (g DW/m²) per form per bed cell (NF3 × nb), at year-fraction yf; the bed's tint at once (every cell)
-  function setData(arr, yf0, mu = null) {
+  function setData(arr, yf0, mu = null, dd = null) {
     if (arr.length !== NF3 * nb) return false;
-    shoots = arr; yf = yf0; dirty = true; if (mu && mu.length === nb) mus = mu;
+    shoots = arr; yf = yf0; dirty = true; if (mu && mu.length === nb) mus = mu; dead = dd && dd.length === nb ? dd : null;
     for (let t = 0; t < fineI.length; t++) {
       let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = arr[f * nb + fineB[t]]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.form]; }
       cover[fineI[t]] = Math.min(1, tint);
@@ -146,6 +148,19 @@ export function makePlantsView(W3) {
           meshes[f].geometry.attributes.sy.array[cnt[f]] = sY;
           c.setHex(F.look && F.look.col ? F.look.col : COL[F.form]).lerp(SPRING, fresh * 0.5).lerp(BROWN, brown).multiplyScalar(0.8 + 0.4 * hash(i, k + 23)); meshes[f].setColorAt(cnt[f], c);
           cnt[f]++;
+        }
+      }
+      // LAST YEAR'S STEMS still standing (plants3 dead): straw-coloured reeds, leaning, a little shorter above the water
+      const dv = dead && fDead >= 0 ? dead[ib] : 0;
+      if (dv > 1 && r2 <= R2f) {
+        const m = meshes[fDead], n = Math.min(PER.EM, Math.floor(Math.min(1, dv / DEAD_FULL) * PER.EM + hash(i, 77)), maxOf[fDead] - cnt[fDead]);
+        for (let k = 0; k < n; k++) {
+          const x = x0 + (hash(i, k * 11 + 41) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 17 + 43) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.05)) continue;
+          const above = 0.3 + 0.6 * hash(i, k + 47); p.set(x, sY - z - 0.05, -y); s.set(1, z + above, 1); e.set((hash(i, k + 53) - 0.5) * 0.4, hash(i, k + 59) * Math.PI * 2, (hash(i, k + 61) - 0.5) * 0.4);
+          q.setFromEuler(e); mat.compose(p, q, s); m.setMatrixAt(cnt[fDead], mat);
+          if (SWAY.EM > 0) m.geometry.attributes.sway.array[cnt[fDead]] = SWAY.EM * s.y;
+          m.geometry.attributes.sy.array[cnt[fDead]] = sY;
+          c.copy(STRAW).multiplyScalar(0.75 + 0.45 * hash(i, k + 67)); m.setColorAt(cnt[fDead], c); cnt[fDead]++;
         }
       }
     }
