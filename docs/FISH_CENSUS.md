@@ -79,7 +79,7 @@ a reasoned estimate inside the measured range of similar northern lakes. Lakes: 
 **Small species and small fish** (counted whole, all ages 1+; most below 7.5 cm):
 - **Banded killifish:** ~150,000 across both lakes (range 20,000–300,000). That is ~0.2/m² of the 88 ha shelf ≤ 1 m.
   The only absolute count (two Newfoundland ponds) found ~20,600 in their shallows. Shoals hold 25–40 fish.
-- **Blacknose dace:** ~3,000 in the brook (~1,230 m²). Catskill streams hold 1.1 dace and 2.2 fish of all species per m².
+- **Blacknose dace:** ~1,000 from age 1 in the brook (~1,230 m², ~0.8/m²). Catskill streams hold 1.1 dace of all ages (the year's young among them) and 2.2 fish of all species per m² in late summer.
 
 **Biomass:** ~70–110 kg/ha of fish ≥ 7.5 cm at founding, depending on the growth curves. The soft-water evidence is 50–90
 kg/ha (Hot Brook: TP 9–10 µg/L, alkalinity ~5). The main levers if it runs high are white perch size and sucker numbers.
@@ -165,9 +165,13 @@ as now, with the same cutoffs. So the rule is built and tested now and carries s
   - the lakes as one water, with movement through the brook;
   - the riffles' refuge;
   - the young schools that keep moving.
-- **Next:**
-  - the brook's stream food web (its dace starve or are eaten within the year);
-  - step 3, the agent rule.
+- **Step 3 BUILT — the agent rule** (fish3.js F3.AGENTS_HA 470, S3 `solo` / `group`, `_soloCut`, `_dissolve`):
+  - the young of sunfish, redbreast, bullhead and fallfish recruit into groups of 20–25 and leave them as individuals at 7, 7, 10 and 12 cm;
+  - perch and white perch schools whose fish reach the budget's cutoff break up into individuals, who school by choice (SOLO_COHERE);
+  - the cutoff is recomputed every 10 days;
+  - at founding (1/10) the lakes hold 2,990 agents against a budget of 3,023, with perch and white perch ≥ 20.4 cm on their own (46 + 104 fish) — the true-scale calculation's ~20 cm.
+- **The brook's food web BUILT** (HOT_BROOK_3D.md §4 "Built — the brook as a lake-outlet stream"): the dace hold through the year.
+- **Next:** TRUE_SCALE.md T1–T8.
 
 1. **The new species' biology** (a 3-D species table, so the 2-D sim is untouched; research in
    `fish_numbers_and_new_species.md` Q5–Q6):

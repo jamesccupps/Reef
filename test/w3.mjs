@@ -234,8 +234,11 @@ if (run('core')) {
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
     for (const k of KEYS3) { const r = c[k], d = Math.abs((S3[k].brookRes ? r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
     const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
-    check('the founders: every species at its census (±10 %), ~12,700 fish in ~3,300 agents, 60–150 kg/ha, all in the water', worst < 0.1 && kg > 60 && kg < 150 && wet && schools,
-      `${F.count().toFixed(0)} fish in ${F.fish.length} agents, ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`);
+    // (the agents: within the budget — F3.AGENTS_HA a hectare of lake, the brook's dace aside — with the founders' solitary fish
+    // all individuals; or, if the solitary fish alone exceed it, no schooling fish given its own brain)
+    const { F3 } = await import('../src/w3/fish3.js'), lakeAg = F.fish.filter(a => !a.s.brookRes).length, budget = F3.AGENTS_HA * F.lakeHa, soloK = F.fish.filter(a => a.s.solo && !a.school).length;
+    check('the founders: every species at its census (±10 %), ~12,700 fish in ~3,300 agents, 60–150 kg/ha, all in the water; the agents within the budget (the schooling fish with brains of their own only as it allows)', worst < 0.1 && kg > 60 && kg < 150 && wet && schools && (lakeAg <= budget || soloK === 0),
+      `${F.count().toFixed(0)} fish in ${F.fish.length} agents (lakes ${lakeAg} of a budget of ${budget.toFixed(0)}; ${soloK} perch and white perch on their own, from ${F.soloL === Infinity ? '—' : f1(F.soloL) + ' cm'}), ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`);
     // ONLY THE FISH ACTUALLY IN THE LAKES (the human, 2026-10-16; MDIFW's list + the human's redbreast; FISH_CENSUS.md §1): no
     // golden shiner; pumpkinseed founded in Upper (MDIFW lists it there only); the dace in the brook; the fallfish crowded
     // toward the brook's ends (fish of flowing water) — nearer them than the white perch, a fish of the open basin
@@ -297,6 +300,8 @@ if (run('core')) {
   // SCHOOLS meet and merge (keeping one parent's genome, never averaged), split above twice their size — the fish are conserved
   { seed(505); const e = new Env3({ col: 10, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const a = F.add('perch', 20, 80, 1.5, 2, 30), b = F.add('perch', 21, 80, 1.5, 2, 25); F.add('perch', -40, 60, 1.0, 2, 2 * S3.perch.school + 20);
+    // (the budget off: in an empty lake it has room for every perch to have its own brain — FISH_CENSUS.md §3 — and they would)
+    F._soloAt = Infinity; F.soloL = Infinity;
     const ga = a.g, gb = b.g, tot = F.count(); F._hashBuild(); F._schools(); F.fish = F.fish.filter(x => x.alive);
     const merged = F.fish.find(x => x.n === 55);
     check('schools of one kind and size merge (one parent\'s genome kept, not averaged) and split above twice their size — no fish gained or lost',
@@ -418,9 +423,22 @@ if (run('young')) {
     const ys = F._mkYoy(S3.sunfish.i, 20.5, 80, 1.0, 40, F.fish[0].g, F.fish[0].genes, 2, 0); ys.L = S3.sunfish.sp.L0; ys.W = 1.4; ys.age = 120;
     F.cnt.fill(0); const nA = F.fish.length; F._recruit(yp); F._recruit(ys);
     const school = F.fish.find(a => a.s.key === 'perch' && a.n > 100), sun = F.fish.filter(a => a.s.key === 'sunfish');
-    check('recruitment: grown young perch become one school agent of all 500 with their genome; 40 young pumpkinseed become 40 individuals',
-      !!school && Math.abs(school.n - 500) < 1e-9 && school.g === yp.g && sun.length === 40 && F.fish.length === nA + 41 && !yp.alive && !ys.alive && F.stats.recruits.perch === 500,
-      `perch school of ${school ? school.n : 0} (L ${school ? f1(school.L) : '-'} cm), ${sun.length} pumpkinseed`); }
+    // (the young pumpkinseed recruit at 5 cm, under their 7-cm own-brain size: groups of ≤ 25 — FISH_CENSUS.md §3)
+    const sunN = sun.reduce((t, a) => t + a.n, 0);
+    check('recruitment: grown young perch become one school agent of all 500 with their genome; 40 young pumpkinseed (5 cm) become two groups of them',
+      !!school && Math.abs(school.n - 500) < 1e-9 && school.g === yp.g && sun.length === 2 && Math.abs(sunN - 40) < 1e-9 && sun.every(a => a.school && a.n <= 25) && F.fish.length === nA + 3 && !yp.alive && !ys.alive && F.stats.recruits.perch === 500,
+      `perch school of ${school ? school.n : 0} (L ${school ? f1(school.L) : '-'} cm), pumpkinseed groups ${sun.map(a => a.n).join(' + ')}`);
+    // WHO GETS A BRAIN (FISH_CENSUS.md §3): a school whose fish reach the own-brain length breaks up into individuals — the fish
+    // conserved, the first with the school's genome and the rest its mutations — who keep schooling by choice; a group of young
+    // pumpkinseed grown past 7 cm breaks up likewise
+    const big = F.add('perch', -30, 60, 1.5, 4, 37); big.L = 24; big.W = 160; F._settle(big); F.soloL = 22;
+    const grp = sun[0]; grp.L = 7.3; grp.W = 6; F._settle(grp); const gN = Math.floor(grp.n), bigG = big.g, n0 = F.count('perch'), m0 = F.count('sunfish');
+    F._soloAt = e.time; F._schools();
+    const solo = F.fish.filter(a => a.alive && a.s.key === 'perch' && !a.school && a.L === 24);
+    check('who gets a brain: a school of 37 big perch past the cutoff becomes 37 perch with brains of their own (the fish conserved, one with the school\'s genome, the rest its mutations); young pumpkinseed past 7 cm leave their group as individuals',
+      !big.alive && solo.length === 37 && Math.abs(F.count('perch') - n0) < 1e-9 && solo.filter(a => a.g === bigG).length === 1 && new Set(solo.map(a => a.g)).size === 37 && solo.every(a => a.n === 1 && a.sex !== 2)
+        && !grp.alive && Math.abs(F.count('sunfish') - m0) < 1 && F.fish.filter(a => a.alive && a.s.key === 'sunfish' && !a.school).length >= gN,
+      `${solo.length} perch on their own (perch ${n0} → ${F.count('perch')}), pumpkinseed ${m0} → ${F.count('sunfish').toFixed(0)} with ${F.fish.filter(a => a.alive && a.s.key === 'sunfish' && !a.school).length} on their own`); }
 }
 
 // ============================================================
@@ -535,26 +553,33 @@ if (run('plants')) {
   const { seed } = await import('../src/core.js');
   // MID-MAY → THE NEXT AUGUST without fish (the coarse grid): a winter between two growing seasons
   { seed(541); const e = new Env3({ col: 10, yf0: 0.2 }), P = e.plants, G = e.G, ch = e.chem;
+    // (stage 7f: the plants are species — the submerged canopy's four summed, the floating-leaved three)
+    const SCf = FORMS3.map((F, f) => F.form === 'SC' ? f : -1).filter(f => f >= 0), FLf = FORMS3.map((F, f) => F.form === 'FL' ? f : -1).filter(f => f >= 0);
+    const scB = i => SCf.reduce((t, f) => t + P.Bs[f][i], 0), flB = i => FLf.reduce((t, f) => t + P.Bs[f][i], 0), scTot = () => SCf.reduce((t, f) => t + P.total(f), 0);
     const snap = () => {
       const shoots = FORMS3.map((F, f) => P.total(f)), store = FORMS3.map((F, f) => { let s = 0; for (let i = 0; i < P.cells.length; i++) s += P.Br[f][i] * G.bedA[P.cells[i]]; return s; });
-      let bedA = 0, veg = 0, edge = 0; for (let c = 0; c < G.NC; c++) { bedA += G.area[c]; if (P.pvi[c] > 0.05) veg += G.area[c]; }
-      let deep = 0; for (let i = 0; i < P.cells.length; i++) if (P.Bs[2][i] > 30) deep = Math.max(deep, P.zb[i]);
+      // (vegetated: bed under a tenth or more of a stand of any species — stage 7f: the low carpets fill little of the water, so
+      // the weed volume no longer says where the weeds are)
+      let bedA = 0, veg = 0, edge = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; bedA += A; if (FORMS3.reduce((t, F, f) => t + P.Bs[f][i] / F.Bmax, 0) > 0.1) veg += A; }
+      let deep = 0; for (let i = 0; i < P.cells.length; i++) if (scB(i) > 30) deep = Math.max(deep, P.zb[i]);
       // the floating-leaved and emergent forms' share of the vegetated bed (by the area their stands cover)
       let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
       return { shoots, store, veg: veg / bedA, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
     };
     // (stage 7b: the weeds' invertebrates, snails and the surface — littoral3.js — over the same run)
     const Lt = e.lit, litSnap = () => {
-      let fu = 0, nf = 0; const lit = [];
+      let fu = 0, nf = 0; const lit = [], can = [];
       for (let i = 0; i < P.cells.length; i++) {
         let b = 0; for (let f = 0; f < FORMS3.length; f++) b += P.Bs[f][i];
-        if (P.Bs[2][i] > 120) { fu += Lt.S[i] + Lt.L[i]; nf++; }
+        const occ = SCf.reduce((t, f) => t + P.Bs[f][i] / FORMS3[f].Bmax, 0); if (occ > 0.3) can.push([occ, i]);
         if (P.zb[i] < 3) lit.push([b, i]);
       }
+      // (the full canopy: the twenty densest pondweed beds — stage 7f: four species share the canopy's room and seldom fill it)
+      let fb = 0; can.sort((p, q) => q[0] - p[0]); for (const [, i] of can.slice(0, 20)) { fu += Lt.S[i] + Lt.L[i]; nf++; for (let f = 0; f < FORMS3.length; f++) fb += P.Bs[f][i]; }
       // (the barest tenth of the lit bed < 3 m: every shallow cell grows a little)
       lit.sort((p, q) => p[0] - q[0]); const bare = lit.slice(0, Math.max(1, Math.round(lit.length / 10)));
       const ba = bare.reduce((s, [, i]) => s + Lt.S[i] + Lt.L[i], 0) / bare.length, snB = bare.reduce((s, [, i]) => s + Lt.sn[i], 0) / bare.length;
-      return { full: fu / Math.max(1, nf), nf, bare: ba, bareB: bare[bare.length - 1][0], snBare: snB, ...Lt.stock() };
+      return { full: fu / Math.max(1, nf), perG: fu / Math.max(1e-9, fb) * 1000, fullB: fb / Math.max(1, nf), nf, bare: ba, bareB: bare[bare.length - 1][0], snBare: snB, ...Lt.stock() };
     };
     let peak1 = 0, feb = null, aug = null, augL = null, em0 = -1, emSpring = 0, emLate = 0, emPrev = 0, julBank = -1, julOpen = -1;
     let crRel = -1, crSep = null, crAug = null;   // (stage 7c: the crayfish)
@@ -564,7 +589,7 @@ if (run('plants')) {
     const crZones = () => { const z = [[0, 0], [0, 0], [0, 0]]; for (let i = 0; i < Lt.cells.length; i++) { const a = G.bedA[Lt.cells[i]], K = Lt.Kcr[i], k = K >= 20 ? 0 : K > 2 ? 1 : 2; z[k][0] += (Lt.crA[i] + Lt.crY[i]) * a; z[k][1] += a; } return z.map(v => v[0] / Math.max(1, v[1])); };
     for (let t = 0; t < 1.25 * CLOCK3.YEAR_LEN; t += EW) {
       e.step(EW); const yf = e.yearFrac(), y = t / CLOCK3.YEAR_LEN;
-      if (y < 0.5 && Math.round(t * 5) % 250 === 0) peak1 = Math.max(peak1, P.total(2));
+      if (y < 0.5 && Math.round(t * 5) % 250 === 0) peak1 = Math.max(peak1, scTot());
       if (!feb && y > 0.5 && yf > 0.95) feb = snap();
       if (!aug && y > 1.0 && yf > 0.44) { aug = snap(); augL = litSnap(); }
       if (em0 < 0 && y >= 0.25) { em0 = Lt.emerged; emPrev = Lt.emerged; }
@@ -582,8 +607,10 @@ if (run('plants')) {
       aug ? `vegetated ${(aug.veg * 100).toFixed(0)} %, canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
     check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
       !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
-    check('the weeds\' invertebrates: a full pondweed canopy carries 2–9 g wet/m² in its second August (0.5–1.5 g DW — Kirby 4,000–17,000 animals/m²), ≥ 5× the bare lit bed\'s',
-      augL.nf > 0 && augL.full >= 2 && augL.full <= 9 && augL.full >= 5 * augL.bare, `full canopy ${f2(augL.full)} g/m² (${augL.nf} cells), the barest lit bed (≤ ${f1(augL.bareB)} g DW of plants/m²) ${f2(augL.bare)}; the beds' small ${f2(augL.vegS)}, large ${f2(augL.vegL)}`);
+    // (stage 7f: per gram of plant — Cyr & Downing's ~5 mg DW of animals per g, ~30 mg wet; a full single-form canopy of 150+ g
+    // carried 2–9 g/m², Kirby's 4,000–17,000 animals/m², but four species now share the canopy and its densest beds are lighter)
+    check('the weeds\' invertebrates: the densest pondweed beds carry 10–80 mg wet per g of plant in their second August (Cyr & Downing ~5 mg DW/g), ≥ 5× the bare lit bed\'s per m²',
+      augL.nf > 0 && augL.perG >= 10 && augL.perG <= 80 && augL.full >= 5 * augL.bare, `densest canopy ${f2(augL.full)} g/m² on ${f1(augL.fullB)} g DW of plants (${f1(augL.perG)} mg wet per g; ${augL.nf} cells), the barest lit bed (≤ ${f1(augL.bareB)} g DW of plants/m²) ${f2(augL.bare)}; the beds' small ${f2(augL.vegS)}, large ${f2(augL.vegL)}`);
     check('the snails of a soft-water lake: 0.5–5 g wet/m² in the weed beds, under 0.5 on the bare mud (calcium caps them — Vermont soft lakes)',
       augL.vegSn >= 0.5 && augL.vegSn <= 5 && augL.snBare < 0.5, `weed beds ${f2(augL.vegSn)}, bare ${f2(augL.snBare)} g wet/m²`);
     check('insects emerge from the weeds: 0.5–2 g DW/m² of the vegetated littoral a year (~30 % of their production), the spring hatch the larger',
@@ -605,15 +632,15 @@ if (run('plants')) {
     check('the land\'s insects fall on the water by the forested banks: in July the bank columns\' surface holds ≥ 5× the open water\'s',
       julBank > 5 * julOpen && julBank > 0, `${(julBank * 1000).toFixed(1)} vs ${(julOpen * 1000).toFixed(2)} mg wet/m²`);
     check('the weeds die back in autumn and overwinter as storage and evergreen shoots (every form keeps some), then grow again',
-      !!feb && sum(feb.shoots) < 0.15 * peak1 * 3 && feb.store.every(v => v > 0) && aug.shoots[2] > 2 * feb.store[2],
-      feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(aug.shoots[2] / 1000).toFixed(0)} kg by August` : 'no February');
+      !!feb && sum(feb.shoots) < 0.15 * peak1 * 3 && feb.store.every(v => v > 0) && SCf.reduce((t, f) => t + aug.shoots[f], 0) > 1.1 * SCf.reduce((t, f) => t + feb.store[f], 0),   // (stage 7f: Robbins' pondweed, evergreen, keeps 70 % — the canopy regrows past its winter stores)
+      feb ? `February: shoots ${(sum(feb.shoots) / 1000).toFixed(1)} kg, storage ${feb.store.map(v => (v / 1000).toFixed(0)).join('/')} kg; the canopy ${(SCf.reduce((t, f) => t + aug.shoots[f], 0) / 1000).toFixed(0)} kg by August` : 'no February');
     // A DENSE BED'S O₂: on a calm clear summer day the water in a thick canopy rises by day and falls by night more than bare
     // water at the same depth does
     // The eight densest canopy beds at 0.8–1.6 m, each against the barest bed at its depth AND with as much bed under as much
     // water (the lit bed's own algae swing thin water hard: like with like, so only the weeds differ), their swings averaged —
     // one bed alone may lie where the water is flushed (the lidar-and-photo beds of 2026-10-16 moved the densest one there)
     e.setWeather(0);
-    const dense = []; for (let i = 0; i < P.cells.length; i++) { const tot = P.Bs[2][i] + P.Bs[1][i]; if (P.zb[i] > 0.8 && P.zb[i] < 1.6) dense.push([tot, P.cells[i]]); }
+    const dense = []; for (let i = 0; i < P.cells.length; i++) { const tot = scB(i) + flB(i); if (P.zb[i] > 0.8 && P.zb[i] < 1.6) dense.push([tot, P.cells[i]]); }
     dense.sort((p, q) => q[0] - p[0]); const pairs = [], used = new Set();
     for (const [tot, jb] of dense.slice(0, 8)) {
       const rb = G.bedA[jb] / G.vol[jb]; let low = 1e9, jo = -1;

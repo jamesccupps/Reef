@@ -130,6 +130,14 @@ export const F3 = {
   SEED_P: [0.73, 0.5], SEED_P_YF: [0.28, 0.34], SEED_M: 1.2,
   SEED_SPREAD: 10 * 86400,   // s: a population's spawning, once its water reaches the temperatures, spread over its first ~10 days (the
                              //   live sim: perch 49 of 52 within ~5 days, suckers over ~4, pickerel ~18)
+  // WHO GETS A BRAIN (docs/FISH_CENSUS.md §3; the human: "some things like minnow that are always in schools can just have one
+  // agent", "if there are enough agents … the larger ones can still be their own; we want this as complex and realistic … as we
+  // can"): a budget of AGENTS_HA agents a hectare of lake (≈ 300,000 over the real lakes; the brook's own dace aside). The young
+  // of the solitary species live in groups until they reach their size (S3 group: [cm, fish a group] — young sunfish school,
+  // young bullheads keep together); the schooling species (S3 solo) give their fish brains of their own from the largest down
+  // while the budget lasts — a school whose fish reach the cutoff (soloL, recomputed every SOLO_EVERY days) breaks up into
+  // individuals (each a fresh mutation of the school's genome, as recruits are), which school by their own brains (SOLO_COHERE)
+  AGENTS_HA: 470, SOLO_COHERE: 0.6, SOLO_EVERY: 10,
   MERGE_EVERY: 10,      // steps between the schools' merge/split pass
   MERGE_R: 2.5, MERGE_LR: 1.2, MERGE_MAX: 1.6, SPLIT: 2,
 };
@@ -150,22 +158,22 @@ const H = (bot, v, h, act) => ({ bot, v, h, act });
 export const S3 = {
   // pumpkinseed (MDIFW records it in Upper only: the founders live in Upper and its end of the brook — `only`): within ~25-30 m (real) of shore in the weeds, pairs and small groups; rests by the bed in cover at night;
   // near-still below 8 °C (Reeve 2022)
-  sunfish:    { school: 0, perHa: 50, only: UPPER, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: 25, tPref: 28,
+  sunfish:    { school: 0, group: [7, 25], perHa: 50, only: UPPER, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: 25, tPref: 28,
     hab: { day: H([0.3, 2.5], 0, 0.7, 0.7), night: H([0.3, 2.5], 0, 0.15, 0.35), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // yellow perch: schools of 50-200 over open mud and sand offshore by day; at dusk inshore along the bed, resting on it at night
   // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C
-  perch:      { school: 80, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: 60, tPref: 20,
+  perch:      { school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: 60, tPref: 20,
     hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) } },
   // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter
   sucker:     { school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: 80, tPref: 18,
     hab: { day: H([2.5, 5.5], 0, 0.2, 0.5), night: H([0.5, 2.5], 0, 0.2, 0.8), winter: H([3.5, 5.5], 0, 0.2, 0.3) } },
   // brown bullhead: on the bed in soft weedy coves by day; out over the open mud flats once the light falls below ~1 lux, foraging
   // by taste and smell (Eriksson 1978); buried in the mud in winter
-  catfish:    { school: 0, perHa: 100, cruise: 0.45, sprint: 7.5, sustain: 2.1, turn: 2.2, sense: 1.5, nonVis: 0.8, strikeR: 0, cohere: 0.2, home: 40, tPref: 28,
+  catfish:    { school: 0, group: [10, 25], perHa: 100, cruise: 0.45, sprint: 7.5, sustain: 2.1, turn: 2.2, sense: 1.5, nonVis: 0.8, strikeR: 0, cohere: 0.2, home: 40, tPref: 28,
     hab: { day: H([0.5, 3.0], 0, 0.02, 0.1), night: H([0.3, 2.5], 0, 0.1, 0.6), winter: H([1.0, 4.0], 0, 0.0, 0.0) } },
   // white perch: schools offshore over level fine sediment by day, 0-2 m over the bed; onto the 0.9-1.5-m flats at night; the
   // open basin's deepest water under the ice, compact and roaming
-  whiteperch: { school: 80, perHa: 750, found: 0.72, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: 80, tPref: 28,
+  whiteperch: { school: 80, solo: true, perHa: 750, found: 0.72, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: 80, tPref: 28,
     hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) } },
   // smallmouth bass: solitary, within ~50 m (real) of shore on rock, drop-offs and wood; shallower at night; a few deep wintering
   // sites, nearly still Dec-Mar (Sergio 2026; Suski & Ridgway 2009); ~1 BL/s around the clock in summer (Cooke 2001)
@@ -180,23 +188,25 @@ export const S3 = {
   // killifish, the salmon–walleye group for the cyprinids). Redbreast sunfish: by rock and wood in slow current (≤ 35 cm/s) and
   // vegetated margins, sedentary (two-thirds moved < 100 m), into 15–46-cm shallows above ~17 °C, gathered in deep slow water
   // below 5 °C (COSEWIC); the human's brook fish — half the redbreast near the brook summer in its pools
-  redbreast:  { school: 0, perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: 20, tPref: 27,
+  redbreast:  { school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: 20, tPref: 27,
     hab: { day: H([0.3, 2.0], 0, 0.4, 0.6), night: H([0.3, 2.0], 0, 0.15, 0.4), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // fallfish: gravel and cobble near the mouths and the brook's pools, solitary adults, loose juvenile shoals; densest near
   // flowing water (EMAP 9–23 % of adults in lakes with streams; Maine rivers 50–200 a km) — founders weighted to the brook's
   // ends (nearBrook m); a visual drift feeder with an evening feeding peak, partly piscivorous above 10 cm
-  fallfish:   { school: 0, perHa: 85, nearBrook: 40, cruise: 1.0, sprint: 12, sustain: 2.4, turn: 2.8, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0.15, home: 50, tPref: 22.3,
+  fallfish:   { school: 0, group: [12, 20], perHa: 85, nearBrook: 40, brookYoy: true, cruise: 1.0, sprint: 12, sustain: 2.4, turn: 2.8, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0.15, home: 50, tPref: 22.3,
     hab: { day: H([0.5, 2.5], 0, 0.5, 0.6), night: H([0.5, 2.5], 0, 0.25, 0.4), winter: H([2.0, 4.0], 0, 0.3, 0.2) } },
   // banded killifish: size-sorted shoals of 25–40 near the surface over the plant-covered shelf by day (74–93 % of seine
   // catches ≤ 1.2 m); into deeper rocky water near the bed at night; deeper and quiescent below ~12 °C (COSEWIC 2014). Counted
   // whole from age 1 (minL: the yearlings' spring length)
   killifish:  { school: 40, perHa: 233, minL: 4, cruise: 1.0, sprint: 12.5, sustain: 3.4, turn: 3.0, sense: 2.0, nonVis: 0.2, strikeR: 0, cohere: 0, home: 30, tPref: 21,
     hab: { day: H([0.1, 1.3], 2, 0.15, 0.8), night: H([1.0, 2.5], 0, 0.25, 0.3), winter: H([1.5, 3.0], 0, 0.25, 0.05) } },
-  // blacknose dace: the BROOK's own (brookRes): on the bed of its riffles and runs by day (15–45 cm/s over gravel, under cover),
-  // its pools and slack margins at night and in winter; day-active; ~1.5 a m² of the brook from age 1 (Catskill streams 1.1
-  // dace and 2.2 fish of all kinds a m², 3–4-pass depletion; Baldigo et al. 2008)
-  dace:       { school: 0, perM2: 1.5, brookRes: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 12, tPref: 21,
-    hab: { day: H([0.15, 0.5], 0, 0.1, 0.8), night: H([0.2, 1.0], 0, 0.05, 0.2), winter: H([0.8, 1.2], 0, 0.05, 0.2) } },
+  // blacknose dace: the BROOK's own (brookRes): on the bed of its riffles and runs (15–45 cm/s over gravel, under cover), resting
+  // there at night; day-active; its pools in winter; ~0.8 a m² of the brook from age 1 (Catskill streams: 1.1 dace a m² of all ages
+  // in July–August, the year's young among them, and 2.2 fish of all kinds — 3–4-pass depletion, Baldigo et al. 2008; at 1.5 from
+  // age 1, the summer's recruits took the brook to ~2.7 a m² and grazed its insects to their refuge — the dace starved). (The night in the pools was an inference; there the pickerel took
+  // ~430 of ~500 a season — bass in streams hold the pools > 50 cm and push small fish into the shallow riffles: brook_food_web.md)
+  dace:       { school: 0, perM2: 0.8, brookRes: true, brookYoy: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 12, tPref: 21,
+    hab: { day: H([0.15, 0.5], 0, 0.1, 0.8), night: H([0.15, 0.5], 0, 0.05, 0.2), winter: H([0.8, 1.2], 0, 0.05, 0.2) } },
 };
 // MOVING BETWEEN THE LAKES (F3.ROAM_L; movement_between_lakes.md's starting values, [inf]): settle — the chance a year that a
 // fish (a school) settles in the other lake, in its season yf [from, to] when given (perch: September–October); trip — the
@@ -361,17 +371,18 @@ class Yoy {
 
 // ============================================================ the fish ===============================================
 export class Fish3 {
-  constructor(env, { founders = true, young = false } = {}) {   // (young: the season's young so far — seedSeason; the view's lake)
+  constructor(env, { founders = true, young = false, budget = founders } = {}) {   // (young: the season's young so far — seedSeason; the view's lake. budget: F3.AGENTS_HA — off in a hand-built lake, where it would give every fish a brain)
     this.env = env; this.chem = env.chem; this.G = env.G;
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
     this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
     this.stats.spawnAt = {};
-    this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {};
-    for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; }
+    this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
+    for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
     for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
     this.yoy = [];      // the young-of-year schools (Yoy)
+    this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
     this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
@@ -477,7 +488,7 @@ export class Fish3 {
   // a fish (n = 1) or a school (n > 1) of species k at (x, y) (z from its habitat when null), `yrs` old
   add(k, x, y, z = null, yrs = 1, n = 1, genome = null, genes = null, Lmul = 1) {
     const s = S3[k], sp = s.sp, a = new Fish();
-    a.id = this.nextId++; a.k = s.i; a.s = s; a.n = n; a.school = !!s.school;
+    a.id = this.nextId++; a.k = s.i; a.s = s; a.n = n; a.school = n > 1;   // (a school, or a group of a solitary species' young; one fish: its own brain)
     a.x = x; a.y = y; a.hx = x; a.hy = y; a.yaw = rand(0, Math.PI * 2);
     a.age = yrs * YEAR; a.sex = a.school ? 2 : rand() < 0.5 ? 0 : 1;
     a.genes = genes || randomGenes(); a.g = genome || randomGenome3(); a.lw = Float32Array.from(a.g); a.h = new Float32Array(HID3); a.leak = leak3(a.g);
@@ -537,10 +548,9 @@ export class Fish3 {
   // mean 1/M years), schools one cohort each
   found() {
     const yf0 = this.env.yearFrac();
-    const brookA = this._brookArea || (this._brookArea = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0));
     for (const k of KEYS3) {
       const s = S3[k], sp = s.sp, [lo, hi] = s.hab.day.bot;
-      const target = Math.round(s.brookRes ? s.perM2 * brookA : s.perHa * this.lakeHa);
+      const target = Math.round(this._target(s));
       const ok = b => s.brookRes ? b === BROOK : s.only ? b === s.only : b === UPPER || b === LOWER;
       const cand = []; for (let i = 0; i < GEO.N; i++) if (ok(GEO.body[i]) && GEO.depth[i] >= lo && GEO.depth[i] <= hi) cand.push(i);
       if (s.nearBrook) {   // (each cell kept with the chance 0.08 + e^(−d/nearBrook), d its distance to the nearer end of the brook)
@@ -563,6 +573,46 @@ export class Fish3 {
         made += n;
       }
     }
+    this._soloCut(); this._schools(); this.fish = this.fish.filter(a => a.alive);   // (who has a brain of its own from the start)
+  }
+  // a spot within r of (x, y) in the same water — or (x, y) itself (a narrow brook's cell is not all water)
+  _near(x, y, r) {
+    const b = GEO.bodyAt(x, y), nx = x + (rand() - 0.5) * r, ny = y + (rand() - 0.5) * r;
+    return GEO.bodyAt(nx, ny) === b && this.env.colAt(nx, ny) >= 0 && GEO.depthAt(nx, ny) > F3.ZTOP + F3.ZBOT ? [nx, ny] : [x, y];
+  }
+  // a species' census in fish: per hectare of lake, or the brook's own per m² of the brook
+  _target(s) {
+    if (!s.brookRes) return s.perHa * this.lakeHa;
+    const A = this._brookArea || (this._brookArea = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0));
+    return s.perM2 * A;
+  }
+  // the fish a group of the species holds (its schools, or its young's groups); the length from which its fish has its own brain
+  _gSize(s) { return s.school || (s.group ? s.group[1] : 0); }
+  _soloOf(s) { return s.solo ? this.soloL : s.group ? s.group[0] : s.school ? Infinity : 0; }
+  // THE BUDGET'S CUTOFF (F3.AGENTS_HA): while the lakes' agents are under budget, the schools of the schooling species give their
+  // fish brains of their own from the largest down — each school that breaks up adds its fish less one — and the cutoff is the
+  // smallest length so reached; with no room (the recruits, the fish already on their own — they keep their brains) no school
+  // breaks up until there is (the cutoff past every school: as schools grow, a fixed cutoff would let them all through)
+  _soloCut() {
+    const B = F3.AGENTS_HA * this.lakeHa; let A = 0;
+    for (const a of this.fish) if (a.alive && !a.s.brookRes) A++;
+    const sch = this.fish.filter(a => a.alive && a.school && a.s.solo && !a.ripe).sort((p, q) => q.L - p.L);
+    let cut = Infinity;
+    for (const a of sch) { const more = Math.max(0, Math.floor(a.n) - 1); if (A + more > B) break; A += more; cut = a.L; }
+    this.soloL = cut; this._soloAt = this.env.time;
+  }
+  // a school whose fish have reached their own-brain length breaks up into individuals (the fish conserved: n of them, the first
+  // with the school's genome, the rest fresh mutations of it — siblings, as recruits are)
+  _dissolve(a) {
+    const s = a.s, k = s.key, n = Math.max(1, Math.floor(a.n + rand())), yrs = a.age / YEAR;
+    for (let i = 0; i < n; i++) {
+      const [x, y] = this._near(a.x, a.y, 0.8), b = this.add(k, x, y, a.z, yrs, 1, i ? mutate(a.g) : a.g, i ? mutateGenes(a.genes) : a.genes);
+      b.L = a.L; b.W = a.W; b.gen = a.gen; b.hue = a.hue; b.age = a.age; b.lake = a.lake; b.lhx = a.lhx; b.lhy = a.lhy; b.hx = a.hx; b.hy = a.hy; b.inLake = a.inLake;
+      b.gut = a.gut; b.gutE = a.gutE; b.mature = a.mature; b.gon = b.mature ? s.gsi(b.sex) * b.W * clamp(a.gon / Math.max(1e-9, s.gsi(2) * a.W), 0, 1) : 0;
+      b.mateCd = a.mateCd; b.lastSpawn = a.lastSpawn; this._traits(b); this._settle(b);
+      b.bed = Math.max(0.05, GEO.depthAt(b.x, b.y)); b.z = clamp(a.z, F3.ZTOP, Math.max(F3.ZTOP, b.bed - F3.ZBOT)); b._pz = b.z;
+    }
+    this.stats.solo[k] += n; a.alive = false; a.cause = 'dissolved'; a.n = 0;
   }
 
   // THE SEASON'S YOUNG SO FAR. A new lake opens on a date (SEASON.START_YF: mid/late May), past the spawning of the fish that
@@ -870,7 +920,8 @@ export class Fish3 {
       steer(bx, by, F3.FLEE_W * a.fear, F3.FLEE_D * a.senseR);
     }
     // its own kind: schools keep together (their agents meet and merge); loose aggregations (sunfish colonies)
-    if (a.an > 0 && s.cohere > 0) { const d = Math.hypot(a.ax - a.x, a.ay - a.y); if (d > 1) steer(a.ax - a.x, a.ay - a.y, s.cohere * clamp(a.an / 6, 0, 1), d - 1); }
+    const coh = !a.school && s.school ? F3.SOLO_COHERE : s.cohere;   // (a schooling species' fish with its own brain schools by choice)
+    if (a.an > 0 && coh > 0) { const d = Math.hypot(a.ax - a.x, a.ay - a.y); if (d > 1) steer(a.ax - a.x, a.ay - a.y, coh * clamp(a.an / 6, 0, 1), d - 1); }
     // home range
     const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
     if (hd > s.home && !G0) { const r = this._route(a, a.hx, a.hy, this._g1 || (this._g1 = [0, 0])); steer(r[0] - a.x, r[1] - a.y, F3.HOME_W * clamp((hd - s.home) / s.home, 0, 1), r[0] === a.hx && r[1] === a.hy ? hd - 0.7 * s.home : Math.hypot(r[0] - a.x, r[1] - a.y)); }
@@ -1154,8 +1205,12 @@ export class Fish3 {
     if (a.brookie && this._brookSeason(a)) { const v = BP[a.lake === UPPER ? 1 + (a.id & 1) : 4 + (a.id & 1)]; out[0] = v[0]; out[1] = v[1]; out[2] = 3; return out; }
     if (s.brookRes) { if (GEO.bodyAt(a.x, a.y) !== BROOK) { out[0] = a.hx; out[1] = a.hy; out[2] = 1; return out; } return null; }   // (the brook's own stay in it)
     if (a.tripEnd > this.env.time) { out[0] = a.tpx; out[1] = a.tpy; out[2] = 5; return out; }   // (a trip through the brook)
+    // (the brook is a PASSAGE for the lakes' fish — they cross it moving lakes, on trips and spawning runs, and the sunfish summer
+    // in its pools — and a fish that strays into it goes home. At 1/10 the brook is ~25× the share of the lakes' shallows it is
+    // in the real lakes (0.5 % against 0.02 %): with every fish ranging in it, white perch schools at night (171 fish once) and
+    // the pickerel grazed and hunted its dace out within the summer. At true scale (TRUE_SCALE.md T1) it can be range again)
     const b = GEO.bodyAt(a.x, a.y);
-    if (b !== a.lake && b !== BROOK) { out[0] = a.lhx; out[1] = a.lhy; out[2] = 4; return out; }   // (home from the other lake; the brook is its water too)
+    if (b !== a.lake) { out[0] = a.lhx; out[1] = a.lhy; out[2] = 4; return out; }
     return null;
   }
   // MOVING BETWEEN THE LAKES (F3.ROAM_L, MOVE3): a fish's chance this step of settling in the other lake or setting off on a
@@ -1322,7 +1377,8 @@ export class Fish3 {
   // brook's own); slower at night, nearly still in the cold. A coarse block: somewhere about the spot (its wander over the block)
   _yoyCruise(q, mv) {
     const out = this._yc || (this._yc = [0, 0]), e = this.env, T = q.j >= 0 ? e.temp[q.j] : 15;
-    const ok = (x, y) => { const b = GEO.bodyAt(x, y), bed = GEO.depthAt(x, y); return b !== LAND && bed > 0.12 && e.colAt(x, y) >= 0 && Math.abs(bed - q.spotBed) < F3.YOY_DBED && (!q.s.brookRes || b === BROOK); };
+    const inB = GEO.bodyAt(q.x, q.y) === BROOK;   // (the lakes' young don't cruise into the brook; the brook's own don't leave it)
+    const ok = (x, y) => { const b = GEO.bodyAt(x, y), bed = GEO.depthAt(x, y); return b !== LAND && bed > 0.12 && e.colAt(x, y) >= 0 && Math.abs(bed - q.spotBed) < F3.YOY_DBED && (!q.s.brookRes || b === BROOK) && (q.s.brookYoy || inB || b !== BROOK); };
     if (Math.abs(q.bed - q.spotBed) >= F3.YOY_DBED) { out[0] = q.tx; out[1] = q.ty; return out; }   // (off its spot's water: back to the spot)
     if (q.s.brookRes && GEO.bodyAt(q.x, q.y) !== BROOK) { const p = BP[nearestBP(q.x, q.y)]; out[0] = p[0]; out[1] = p[1]; return out; }   // (the brook's own: back into it)
     if (mv > F3.FINE_MAX) {
@@ -1391,13 +1447,19 @@ export class Fish3 {
   // where a school of young goes next: the richest food of its stage about it (its column and the next ones)
   _yoyTarget(q, o2, T) {
     const s = q.s, sp = s.sp, d = sp.diet, G = this.G, ch = this.chem, c = q.c;
+    // THE LAKES' YOUNG DON'T RAISE IN THE BROOK: a stream fish's young (dace, fallfish — S3 brookYoy) live in it; the others'
+    // drift down it into Lower (sucker larvae leave their spawning stream for the lake) and never choose it to feed in. (At 1/10
+    // the brook was the richest bed near a large share of the lakes' young: young bass, perch, suckers, bullheads and white perch
+    // took 85–95 % of its insects in July and August and its dace starved)
+    const inB = G.body[c] === BROOK, ok = cc => s.brookYoy || G.body[cc] !== BROOK;
+    if (inB && !s.brookYoy) { const k = nearestBP(q.x, q.y), p = k >= BLAST ? LAKE_NEAR[LOWER] : BP[k + 1]; q.tx = p[0]; q.ty = p[1]; q.tz = Math.max(0.05, q.z); return; }
     if (o2 < sp.o2Crit) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
     if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂
       let best = BENTHOS.SENSE_MIN, bc = -1;
       const lit = this.env.lit;
-      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (E > best) { best = E; bc = cc; } };
+      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit || !ok(cc)) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (E > best) { best = E; bc = cc; } };
       tryC(c); for (let k = 0; k < nb.length; k++) tryC(nb[k]);
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
@@ -1406,7 +1468,7 @@ export class Fish3 {
     const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
-    const tryJ = jj => { const cc = G.colOfCell[jj]; if (pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR); if (E > best) { best = E; bj = jj; } };
+    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR); if (E > best) { best = E; bj = jj; } };
     for (let k = 0; k < G.nL[c]; k++) tryJ(G.cell0[c] + k);
     for (let k = 0; k < nb.length; k++) { const cc = nb[k]; tryJ(G.cell0[cc] + Math.min(G.nL[cc] - 1, k0)); }
     if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 3; q.ty = G.cy[cc] + (rand() - 0.5) * 3; } q.tz = G.zMid[bj]; return; }
@@ -1471,18 +1533,19 @@ export class Fish3 {
     }
     return hS;
   }
-  // RECRUITMENT: a school species' young become a school agent with a brain (their genome); an individual species' survivors
-  // become individuals (siblings: fresh mutations of the school's genome) — up to F3.CAP × the species' census
+  // RECRUITMENT: a school species' young become a school agent with a brain (their genome); a solitary species' young below their
+  // size become groups of them (F3.AGENTS_HA: S3 group), past it individuals (siblings: fresh mutations of the school's genome) —
+  // up to F3.CAP × the species' census
   _recruit(q) {
     q.alive = false;
-    const s = q.s, sp = s.sp, k = s.key, room = Math.max(0, F3.CAP * s.perHa * this.lakeHa - this.cnt[q.k]);
+    const s = q.s, sp = s.sp, k = s.key, room = Math.max(0, F3.CAP * this._target(s) - this.cnt[q.k]);
     const yrs = q.age / YEAR, born = [];
-    if (s.school) {
-      const n = Math.min(q.n, room); if (n < 1) return;
-      born.push(this.add(k, q.x, q.y, q.z, yrs, n, q.g, q.genes));
+    if (s.school || (s.group && q.L < s.group[0])) {
+      let left = Math.min(q.n, room), first = true; const gs = s.school ? Infinity : s.group[1];
+      while (left >= 1) { const n = Math.min(left, gs), [x, y] = first ? [q.x, q.y] : this._near(q.x, q.y, 0.6); born.push(this.add(k, x, y, q.z, yrs, n, first ? q.g : mutate(q.g), first ? q.genes : mutateGenes(q.genes))); left -= n; first = false; }
     } else {
       const n = Math.min(Math.floor(q.n + rand()), Math.floor(room));
-      for (let i = 0; i < n; i++) born.push(this.add(k, q.x + (rand() - 0.5) * 0.6, q.y + (rand() - 0.5) * 0.6, q.z, yrs, 1, i ? mutate(q.g) : q.g, i ? mutateGenes(q.genes) : q.genes));
+      for (let i = 0; i < n; i++) { const [x, y] = this._near(q.x, q.y, 0.6); born.push(this.add(k, x, y, q.z, yrs, 1, i ? mutate(q.g) : q.g, i ? mutateGenes(q.genes) : q.genes)); }
     }
     for (const a of born) {
       a.L = q.L; a.W = q.W; a.gen = q.gen; a.hue = q.hue; a.mature = false; a.gon = 0; a.mateCd = 0; this._settle(a);
@@ -1534,10 +1597,12 @@ export class Fish3 {
   // ---------- schools meet and merge, and split when large ----------
   _schools() {
     const f = this.fish, born = [];
-    for (let i = 0; i < f.length; i++) {
+    if (this.env.time - this._soloAt > F3.SOLO_EVERY * DAY) this._soloCut();
+    for (let i = 0, n0 = f.length; i < n0; i++) {
       const a = f[i]; if (!a.alive || !a.school) continue;
-      const s = a.s;
-      if (a.n > s.school * F3.SPLIT) { born.push(this._split(a)); continue; }
+      const s = a.s, gs = this._gSize(s);
+      if (a.L >= this._soloOf(s) && !a.ripe && !(a.nt > 0)) { this._dissolve(a); continue; }   // (grown to its own brain)
+      if (a.n > gs * F3.SPLIT) { born.push(this._split(a)); continue; }
       // the nearest school of its kind and size within reach (the hash cells within MERGE_R of it — two schools a metre apart
       // across a cell's edge are as near as any)
       const S = this.hStart, I = this.hItems, R = F3.MERGE_R;
@@ -1548,7 +1613,7 @@ export class Fish3 {
         for (let q = S[hc]; q < S[hc + 1]; q++) {
           const b = f[I[q]]; if (!b || b === a || !b.alive || b.k !== a.k || !b.school) continue;
           if (Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > R) continue;
-          const lr = a.L > b.L ? a.L / b.L : b.L / a.L; if (lr > F3.MERGE_LR || a.n + b.n > s.school * F3.MERGE_MAX) continue;
+          const lr = a.L > b.L ? a.L / b.L : b.L / a.L; if (lr > F3.MERGE_LR || a.n + b.n > gs * F3.MERGE_MAX) continue;
           this._merge(a, b); break search;
         }
       }

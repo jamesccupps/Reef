@@ -13,13 +13,24 @@ import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BEN
 import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
-import { GEO, UPPER, LOWER } from './geometry.js';
+import { GEO, UPPER, LOWER, BROOK } from './geometry.js';
 
 export const V2 = WORLD.CELL_L / 1000;                 // m³: the 2-D cell the water units are "per"
 export const A2 = WORLD.SLICE_M2 / GRID.FIELD_COLS;    // m²: the 2-D column of bed the bed units are "per"
 const HREF_M = WORLD.DEPTH_REF / WORLD.PX_PER_M;
 const UGL = PLANKTON.UGL;                              // µg dry/L per g wet per 2-D cell (a config getter: read once)       // m: the 14.6-m column the 2-D light and band constants are fractions of
 export const CHEM3 = {
+  // THE BROOK AS A LAKE-OUTLET STREAM (docs/research_notes/Whole lake 3D fish simulation/brook_food_web.md): the filter feeders
+  // on its stones — net-spinning caddis, blackflies — strain the algae from Upper's outflow (blackflies alone take 0.24–0.35 %
+  // a metre, 21–30 % a 100 m, at ~0.3 m/s; outlet filterers peak 40–160 m below a lake and the whole 150-m brook lies in that
+  // zone), up to what they can catch (Maine's outlet filterers track their capture capacity, not the seston's amount — Demi et
+  // al. 2012; a hydropsychid makes ~18 g DW/m²/yr just below an outlet, ~5× that eaten). What they catch feeds the brook bed's
+  // invertebrates (its organic layer: they ARE them); its nutrients go back to the water as the algae's decay's would. Riffles
+  // hold more invertebrates than a lake's mud (BROOK_BENTH × the bed's capacity). Without this the brook fed its dace like a
+  // patch of lake bed and they starved (Maine's Piscataquis dace make 5.3 g wet/m²/yr on ~4.7 g AFDM/m²/yr of prey)
+  BROOK_FILTER: 8.6e-4,   // /s (real): the share of the water's algae a filter-feeder bed takes, −ln(0.75) per 100 m at 0.3 m/s
+  BROOK_CAP: 1.5,         // g wet/m²/day at 20 °C: what they can catch (~90 g DW/m²/yr eaten for ~18 g DW/m²/yr made)
+  BROOK_BENTH: 3,         // × BENTHOS.CAP: a riffle's invertebrate stock against a lake bed's
   // SURFACE GAS EXCHANGE (stage R2; research_notes/Whole lake 3D fish simulation/oxygen_metabolism.md §1): the lake-size wind
   // model k600 = 2.51 + 1.48·U + 0.39·U·log10(A) cm/h (Vachon & Prairie 2013; A the real lake's km²: 1.6–4.7 m/day at 2.5–10
   // m/s on Upper — measured on a 64-ha boreal lake ~1.4 m/day), with a floor on cooling nights from convection (K600_NIGHT: 0.34–
@@ -99,6 +110,9 @@ export class Chem3 {
     for (let j = 0; j < n; j++) { this.w[j] = G.vol[j] / V2; this.a[j] = G.bedA[j] / A2; this.r[j] = this.a[j] / this.w[j]; }
     // per column: its bed area (for sharing the algae that die in it), its depth's DVM refuge for zooplankton
     this.colBedA = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) this.colBedA[c] += G.bedA[G.cell0[c] + k];
+    this.brookCols = []; for (let c = 0; c < G.NC; c++) if (G.body[c] === BROOK) this.brookCols.push(c);
+    this.brookCell = new Uint8Array(n); for (const c of this.brookCols) for (let k = 0; k < G.nL[c]; k++) this.brookCell[G.cell0[c] + k] = 1;
+    this.brookCaught = 0;   // g wet of algae the brook's filter feeders have taken (a running total, for the diagnostics)
     this.refAv = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) this.refAv[c] = clamp((G.depthMax[c] / HREF_M - PLANKTON.REF_DEPTH) / PLANKTON.REF_RAMP, 0, 1);
     this.colDecay = new Float64Array(G.NC); this._w = new Float64Array(G.ML);
     // each column's share of the leaf fall: nearer the shore more (normalised to a bed-area mean of 1)
@@ -152,6 +166,7 @@ export class Chem3 {
     this.turbidity += (turbT - this.turbidity) * clamp(dt * TURBIDITY.RELAX * TS, 0, 1);
     for (const fd of this.tf) if (fd.name === 'o2') fd.in = this.sat(seasonalTemp(yf));   // stream water is well aerated
     this._algae(dt);
+    this._brookFilter(dt);
     this._o2Demand(dt);
     // the slow processes (rates per day: zooplankton, bacteria, the N cycle, the bed) run every SLOW-th update with SLOW × dt
     // — the algae and O₂, which follow the day and night, every update
@@ -366,11 +381,32 @@ export class Chem3 {
       colD[c] = 0;
     }
   }
+  // ---------- the brook's filter feeders (CHEM3.BROOK_FILTER): the outflow's algae → the brook bed's organic layer ----------
+  _brookFilter(dt) {
+    const G = this.G, T = this.env.temp, som = this.sedOM, w = this.w, PP = SEDOM.PP_G;
+    const flds = [[this.phyto, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.diatom, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.cyano, CYANO.RECYCLE, CYANO.P_USE, CYANO.N_USE]];
+    const kF = 1 - Math.exp(-CHEM3.BROOK_FILTER * dt);
+    for (const c of this.brookCols) {
+      const A = this.colBedA[c]; if (!(A > 0)) continue;
+      const j0 = G.cell0[c], n = G.nL[c];
+      let room = CHEM3.BROOK_CAP * qAt(Q.ben, T[j0 + n - 1]) * A * dt / DAY3, got = 0;   // (g wet they can take this step)
+      for (let k = 0; k < n && room > 0; k++) {
+        const j = j0 + k;
+        for (const [f, R, pU, nU] of flds) {
+          const b = f[j]; if (!(b > 0)) continue;
+          const take = Math.min(b * kF, room / (w[j] * PP)), g = take * w[j] * PP; if (!(take > 0)) continue;
+          f[j] = b - take; room -= g; got += g;
+          this.phos[j] += take * R * pU; this.nh4[j] += take * R * nU; this.dom[j] += take * (1 - R) * (pU + nU);   // (as the algae's decay)
+        }
+      }
+      if (got > 0) { const add = got * A2 / A; for (let k = 0; k < n; k++) if (G.bedA[j0 + k] > 0) som[j0 + k] += add; this.brookCaught += got; }
+    }
+  }
   // ---------- the bed's worms and scuds: grow on the organic layer, die back into it (more in anoxic water) ----------
   _benthos(dt) {
-    const B = BENTHOS, T = this.env.temp, som = this.sedOM, o2 = this.o2, cap = B.CAP * A2;
+    const B = BENTHOS, T = this.env.temp, som = this.sedOM, o2 = this.o2, cap0 = B.CAP * A2, bc = this.brookCell;
     for (const j of this.bedCells) {
-      const b = this.benth[j], q = qAt(Q.ben, T[j]), s = som[j];
+      const b = this.benth[j], q = qAt(Q.ben, T[j]), s = som[j], cap = bc[j] ? cap0 * CHEM3.BROOK_BENTH : cap0;
       const want = B.G * TS * q * s / (s + B.K_SOM) * b * Math.max(0, 1 - b / cap) * dt, ate = Math.min(s, want / B.YIELD);
       som[j] = s - ate;
       const die = b * (B.M + (o2[j] < B.O2_MIN ? B.ANOX_M : 0)) * TS * q * dt;

@@ -40,13 +40,15 @@ function tuft(nb, w0, w1, spread, segs, bend) {
   return g;
 }
 function pad() { const g = new THREE.CircleGeometry(1, 10, 0.25, Math.PI * 2 - 0.5); g.rotateX(-Math.PI / 2); return g; }
+// each species' shape from its form and its look (plants3.js FORMS3 look: blade width w and count n)
 const GEOM = {
-  EM: () => tuft(6, 0.03, 0.006, 0.12, 2, 1.6),     // reeds and pickerelweed: thin stiff stems
-  FL: pad,
-  SC: () => tuft(5, 0.09, 0.045, 0.38, 3, 1.3),     // pondweeds: ribbon fronds that lean and sway
+  EM: L => tuft(L.n || 6, L.w || 0.03, (L.w || 0.03) * 0.2, 0.12, 2, 1.6),   // pickerelweed's broad leaves, bulrush's thin round stems
+  FL: () => pad(),
+  SC: L => tuft(L.n || 5, L.w || 0.09, (L.w || 0.09) * 0.5, 0.38, 3, 1.3),   // ribbon, broad and fern-like pondweeds; bladderwort's fine shoots
   IS: () => tuft(8, 0.03, 0.005, 0.10, 1, 1),       // rosettes: short stiff spikes in a ring
   DM: () => tuft(6, 0.10, 0.06, 0.18, 1, 1),        // Nitella and moss: a low bushy tuft
 };
+const INST_MAX = 150000;   // (instances a species' mesh holds at most: only the cells near the camera are drawn)
 const SWAY = { EM: 0.03, FL: 0, SC: 0.16, IS: 0.005, DM: 0.03 };   // m of sway at a 1-m plant's tip (× its height)
 
 // a cheap hash for each cell's scatter (cosmetic)
@@ -69,10 +71,10 @@ export function makePlantsView(W3) {
   const fineI = Int32Array.from(fi), fineB = Int32Array.from(fb);
   const cover = new Float32Array(GEO.N);   // per 1.5-m cell: the weeds' tint of the bed, 0–1
   const meshes = FORMS3.map(F => {
-    const max = fineI.length * PER[F.key];
-    const mat = new THREE.MeshStandardNodeMaterial({ roughness: F.key === 'FL' ? 0.45 : 0.85, metalness: 0, side: THREE.DoubleSide });
-    const geo = GEOM[F.key]();
-    if (SWAY[F.key] > 0) {   // the stems sway in the water's slow surge: more toward the tip, a wave passing across the bed
+    const max = Math.min(INST_MAX, fineI.length * PER[F.form]);
+    const mat = new THREE.MeshStandardNodeMaterial({ roughness: F.form === 'FL' ? 0.45 : 0.85, metalness: 0, side: THREE.DoubleSide });
+    const geo = GEOM[F.form](F.look || {});
+    if (SWAY[F.form] > 0) {   // the stems sway in the water's slow surge: more toward the tip, a wave passing across the bed
       const amp = new THREE.InstancedBufferAttribute(new Float32Array(max), 1); geo.setAttribute('sway', amp);
       const P = positionLocal, ph = time.mul(0.9).add(P.x.mul(0.45)).add(P.z.mul(0.3)), yy = positionGeometry.y.mul(positionGeometry.y);
       const d = attribute('sway', 'float').mul(yy);
@@ -84,6 +86,7 @@ export function makePlantsView(W3) {
     m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
     group.add(m); return m;
   });
+  const maxOf = meshes.map((m, f) => Math.min(INST_MAX, fineI.length * PER[FORMS3[f].form]));
   // the mussels: a flattened ellipsoid ~8 × 4 × 2.5 cm (an elliptio's shell), dark brown, half in the bed
   const MU_MAX = 40000, muGeo = new THREE.SphereGeometry(0.5, 8, 5);
   muGeo.setAttribute('sy', new THREE.InstancedBufferAttribute(new Float32Array(MU_MAX), 1));
@@ -101,7 +104,7 @@ export function makePlantsView(W3) {
     if (arr.length !== NF3 * nb) return false;
     shoots = arr; yf = yf0; dirty = true; if (mu && mu.length === nb) mus = mu;
     for (let t = 0; t < fineI.length; t++) {
-      let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = arr[f * nb + fineB[t]]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.key]; }
+      let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = arr[f * nb + fineB[t]]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.form]; }
       cover[fineI[t]] = Math.min(1, tint);
     }
     return true;
@@ -123,26 +126,25 @@ export function makePlantsView(W3) {
       for (let f = 0; f < NF3; f++) {
         const F = FORMS3[f], b = shoots[f * nb + ib]; if (!(b > 0.3)) continue;
         if (!F.window && r2 > R2s) continue;
-        const cov = Math.min(1, b / F.Bmax), per = PER[F.key];
-        const n = Math.min(per, Math.floor(cov * per + hash(i, f)));
+        const cov = Math.min(1, b / F.Bmax), per = PER[F.form];
+        const n = Math.min(per, Math.floor(cov * per + hash(i, f)), maxOf[f] - cnt[f]);
         const brown = F.carry > 0.8 ? brownT * 0.25 : brownT;
         for (let k = 0; k < n; k++) {
           const x = x0 + (hash(i, k * 7 + f) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 13 + f + 3) - 0.5) * GEO.CELL, rot = hash(i, k + 31 * f) * Math.PI * 2;
           const z = GEO.depthAt(x, y); if (!(z > 0.05)) continue;
-          if (F.key === 'FL') {   // pads float on the surface: water-lily 10–30 cm across, yellow pond-lily to ~40 (the human: the pads were too big)
-            if (GEO.body[i] === BROOK) continue;   // (never in the brook's running water — the plants slice will keep them out of it in the sim too)
-            const r = 0.05 + 0.1 * hash(i, k + 5); p.set(x, sY + 0.03 + 0.004 * k, -y); s.set(r, 1, r); e.set(0, rot, 0);
-          } else if (F.key === 'EM') {   // reeds from the bed through the surface (0.5–1.3 m above it)
+          if (F.form === 'FL') {   // pads float on the surface, each species its size: water-lily 10–30 cm across, yellow pond-lily to ~40, watershield 5–13 (the sim keeps them out of the brook)
+            const R0 = F.look && F.look.r ? F.look.r : [0.05, 0.15], r = R0[0] + (R0[1] - R0[0]) * hash(i, k + 5); p.set(x, sY + 0.03 + 0.004 * k, -y); s.set(r, 1, r); e.set(0, rot, 0);
+          } else if (F.form === 'EM') {   // reeds from the bed through the surface (0.5–1.3 m above it)
             const above = 0.5 + 0.8 * hash(i, k + 9) * (0.4 + 0.6 * cov); p.set(x, sY - z - 0.05, -y); s.set(1, z + above, 1); e.set((hash(i, k + 17) - 0.5) * 0.12, rot, (hash(i, k + 19) - 0.5) * 0.12);
           } else {   // fronds and tufts on the bed: the canopy's height by its stand (never above the surface)
-            const h = Math.min(z - 0.08, F.hFull * (F.key === 'SC' ? Math.max(0.12, cov) : 1) * (0.65 + 0.6 * hash(i, k + 11)));   // (rosettes and moss: low at any cover)
+            const h = Math.min(z - 0.08, F.hFull * (F.form === 'SC' ? Math.max(0.12, cov) : 1) * (0.65 + 0.6 * hash(i, k + 11)));   // (rosettes and moss: low at any cover)
             if (!(h > 0.03)) continue;
             p.set(x, sY - z - 0.03, -y); s.set(1, h, 1); e.set((hash(i, k + 17) - 0.5) * 0.35, rot, (hash(i, k + 19) - 0.5) * 0.35);
           }
           q.setFromEuler(e); mat.compose(p, q, s); meshes[f].setMatrixAt(cnt[f], mat);
-          if (SWAY[F.key] > 0) meshes[f].geometry.attributes.sway.array[cnt[f]] = SWAY[F.key] * s.y;
+          if (SWAY[F.form] > 0) meshes[f].geometry.attributes.sway.array[cnt[f]] = SWAY[F.form] * s.y;
           meshes[f].geometry.attributes.sy.array[cnt[f]] = sY;
-          c.setHex(COL[F.key]).lerp(SPRING, fresh * 0.5).lerp(BROWN, brown).multiplyScalar(0.8 + 0.4 * hash(i, k + 23)); meshes[f].setColorAt(cnt[f], c);
+          c.setHex(F.look && F.look.col ? F.look.col : COL[F.form]).lerp(SPRING, fresh * 0.5).lerp(BROWN, brown).multiplyScalar(0.8 + 0.4 * hash(i, k + 23)); meshes[f].setColorAt(cnt[f], c);
           cnt[f]++;
         }
       }

@@ -7,34 +7,72 @@
 // Research: docs/research_notes/Whole lake 3D fish simulation/macrophytes.md (§8 the parameters per growth form; §7 the
 // suggested mechanisms; sources and their weaknesses there).
 import { clamp } from '../core.js';
-import { GEO, LAND } from './geometry.js';
+import { GEO, LAND, BROOK } from './geometry.js';
 import { ENV, ICE, SEASON } from '../config.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
 
-// THE GROWTH FORMS (Hot Brook is soft, coloured water — Hellquist 1980's group I/II pondweeds; Nitella and mosses, not Chara,
-// the deep low form). depth: the bed depths it roots in (m); lightLim: the share of the surface's (season-mean) light at its
-// canopy top where its growth just meets its respiration — its DEPTH LIMIT emerges there (floating-leaved and emergent forms
-// are set by their depth window instead: their leaves are in full light); Bmax its stand's peak shoot mass (g DW/m²); mu its
-// maximum net growth at 20 °C (/day); tStart the water temperature its shoots grow from (°C); carry the share of the summer's
-// mass that overwinters (storage, or evergreen shoots); N / P its tissue content (% of dry mass); root the share of its P
-// taken from the bed (Carignan 1982); hFull its canopy's height at full biomass (m, ≤ the water's depth); stem g DW per shoot;
-// refuge/cover how much its weed volume shelters zooplankton and its stems hide fish (floating-leaved and emergent 0.3×);
-// core (floating-leaved and emergent): the depths it grows best in — deeper, its leaves must climb farther on its stores (a
-// lily is densest ~1 m, gone by ~2.5–2.9 m; an emergent stand thins past ~0.6 m); KL its light half-saturation (share of the
-// day-mean surface light: K½ 80–100 µmol/m²/s ≈ 15 %; Nitella and moss lower); shelter: the floating-leaved and emergent
-// forms need shelter from the waves (their leaves tear) — land in at least this many of 8 directions within SHELTER_R (full
-// growth one more): coves, not open shores (the aerial photo's likely lily beds are in Upper's south and south-west coves)
+// THE PLANTS OF THE LAKES, AS SPECIES (stage 7f, 2026-10-16; the human: plants "provide places for the fish to be, food and
+// things for the water, places for insects and other things to be on top of"; research: docs/research_notes/Hot Brook
+// populations and water/plant_species_hot_brook.md and Whole lake 3D fish simulation/plant_species_traits.md §6). Only two
+// plants are on record in these waters (Nitella flexilis and N. tenuissima, Upper, 2015); the rest is the near-certain flora of
+// a soft, coloured eastern Maine lake (nearby lakes, the aerial photos' fringe of lilies and emergents in the coves, Hellquist's
+// soft-water group — no hard-water pondweeds). A species the human or a record rules out comes out, as with the fish.
+// Each species keeps its GROWTH FORM (EM emergent, FL floating-leaved, SC submerged canopy, IS isoetid rosette, DM deep low
+// meadow) for the shared physiology: depth: the bed depths it roots in (m); lightLim: the share of the surface's (season-mean)
+// light at its canopy top where its growth just meets its respiration — its DEPTH LIMIT emerges there (floating-leaved and
+// emergent forms are set by their depth window instead: their leaves are in full light); Bmax its stand's peak shoot mass
+// (g DW/m²); mu its maximum net growth at 20 °C (/day); tStart the water temperature its shoots grow from (°C); carry the share of
+// the summer's mass that overwinters (storage, or evergreen shoots); N / P its tissue content (% of dry mass); root the share of
+// its P taken from the bed (Carignan 1982); hFull its canopy's height at full biomass (m); stem g DW per shoot; refuge/cover how
+// much its weed volume shelters zooplankton and its stems hide fish; core (FL, EM): the depths it grows best in; KL its light
+// half-saturation; shelter: the FL and EM species need shelter from the waves (land in at least this many of 8 directions within
+// SHELTER_R — set so the lilies and emergents hold the aerial photos' fringe: ~0.6 % of Upper and ~0.3 % of Lower in the
+// sheltered coves, 15–45 m from shore at 0.3–1 m; bulrush stands a little more exposed). Per species too: sub — the bed it roots in ('mineral' sand and gravel: the wave-washed
+// shallows and the brook; 'organic' mud: coves and the deeper bed; 'any'); noBrook — not in the brook's running water (lilies,
+// watershield: "never in swift water"); brookOnly — the brook's stones; invert — its invertebrates per g against a broad pondweed
+// (littoral3: finely divided leaves and dense carpets hold the most, rosettes and lilies less); snail — × its form's snails; look —
+// the view's (colour; pad radius in m; blade width and count). Values are the research table's; most per-species numbers there
+// are scaled from the form ranges (marked there)
 export const FORMS3 = [
-  { key: 'EM', name: 'Emergent (pickerelweed, bulrush)', depth: [0, 1.0], window: true, core: [0, 0.6], shelter: 4, Bmax: 500, mu: 0.03, tStart: 9, carry: 0.5,
-    N: 2.1, P: 0.14, root: 1.0, hFull: 99, stem: 5, refuge: 0.3, cover: 0.6 },
-  { key: 'FL', name: 'Floating-leaved (lilies, watershield)', depth: [0.3, 2.5], window: true, core: [0.5, 1.4], shelter: 5, Bmax: 120, mu: 0.035, tStart: 9, carry: 0.75,
-    N: 2.7, P: 0.20, root: 0.85, hFull: 99, stem: 2, refuge: 0.3, cover: 0.8 },
-  { key: 'SC', name: 'Submerged canopy (pondweeds, bladderwort)', depth: [0.4, 6], lightLim: 0.18, KL: 0.15, Bmax: 150, mu: 0.10, tStart: 6, carry: 0.25,
-    N: 2.0, P: 0.15, root: 0.8, hFull: 3.0, stem: 0.5, refuge: 1.0, cover: 1.0 },
-  { key: 'IS', name: 'Isoetid rosettes (pipewort, quillwort)', depth: [0, 1.5], lightLim: 0.40, KL: 0.15, Bmax: 100, mu: 0.008, tStart: 3, carry: 0.9,
-    N: 1.5, P: 0.10, root: 0.87, hFull: 0.12, stem: 0.3, refuge: 0.1, cover: 0.2, mineral: true },
-  { key: 'DM', name: 'Deep low meadow (Nitella, moss)', depth: [1.0, 6], lightLim: 0.07, KL: 0.08, Bmax: 40, mu: 0.02, tStart: 3, carry: 0.9,
-    N: 2.0, P: 0.15, root: 0.3, hFull: 0.2, stem: 0.2, refuge: 0.15, cover: 0.2 },
+  // EMERGENT: pickerelweed in sheltered organic shallows (its stems carry the dragonflies' emergence, Bellura borers, Donacia);
+  // bulrush on sand to mud, wave-tolerant, buffering the waves — its dead stems the perch's and pickerel's spawning stems
+  { key: 'pickerelweed', name: 'Pickerelweed', form: 'EM', sub: 'organic', noBrook: true, depth: [0, 0.9], window: true, core: [0, 0.45], shelter: 6, Bmax: 500, mu: 0.03, tStart: 10, carry: 0.5,
+    N: 2.1, P: 0.14, root: 1.0, hFull: 99, stem: 5, refuge: 0.3, cover: 0.6, invert: 0.25, look: { col: 0x5f8a34, w: 0.07, n: 5 } },
+  { key: 'bulrush', name: 'Bulrush', form: 'EM', sub: 'any', depth: [0, 1.2], window: true, core: [0.3, 0.9], shelter: 5, Bmax: 400, mu: 0.03, tStart: 9, carry: 0.5,
+    N: 2.0, P: 0.13, root: 1.0, hFull: 99, stem: 3, refuge: 0.3, cover: 0.5, invert: 0.4, look: { col: 0x6f8a3a, w: 0.012, n: 9 } },
+  // FLOATING-LEAVED, in the coves' mud, sorting by depth (their cores: fragrant water-lily — round notched pads, the commonest of
+  // Maine's lilies, from ~12 °C — the shallowest; watershield — small oval pads, ramets living one season, the clone carried by
+  // its winter buds, Adams 1969 — between; yellow pond-lily — the larger pads, earlier — the deepest; sharing a form's room, one
+  // would otherwise take every cove)
+  { key: 'yellowlily', name: 'Yellow pond-lily', form: 'FL', sub: 'organic', noBrook: true, depth: [0.4, 2.1], window: true, core: [0.9, 1.8], shelter: 6, Bmax: 110, mu: 0.035, tStart: 8, carry: 0.75,
+    N: 2.7, P: 0.20, root: 0.85, hFull: 99, stem: 2, refuge: 0.3, cover: 0.8, invert: 0.35, look: { col: 0x4a7a2e, r: [0.07, 0.2] } },
+  { key: 'whitelily', name: 'Fragrant water-lily', form: 'FL', sub: 'organic', noBrook: true, depth: [0.3, 2.5], window: true, core: [0.3, 1.0], shelter: 6, Bmax: 100, mu: 0.035, tStart: 12, carry: 0.75,
+    N: 2.7, P: 0.20, root: 0.85, hFull: 99, stem: 2, refuge: 0.3, cover: 0.8, invert: 0.3, look: { col: 0x3f7434, r: [0.05, 0.15] } },
+  { key: 'watershield', name: 'Watershield', form: 'FL', sub: 'organic', noBrook: true, depth: [0.5, 2.1], window: true, core: [0.6, 1.6], shelter: 6, Bmax: 80, mu: 0.04, tStart: 6, carry: 0.35,
+    N: 2.7, P: 0.20, root: 0.85, hFull: 99, stem: 1.5, refuge: 0.3, cover: 0.7, invert: 0.35, look: { col: 0x56702c, r: [0.025, 0.065] } },
+  // SUBMERGED: ribbon-leaf pondweed (the commonest of a soft Maine lake — 81 % of Highland Lake's sites), large-leaf pondweed (the
+  // tall "bass weed", ice-out growth), Robbins' pondweed (a low fern-like carpet deeper than the others, green under the ice),
+  // bladderworts (rootless, finely divided, carnivorous; under the lilies)
+  { key: 'ribbonleaf', name: 'Ribbon-leaf pondweed', form: 'SC', sub: 'any', depth: [0.3, 3], lightLim: 0.20, KL: 0.15, Bmax: 80, mu: 0.06, tStart: 8, carry: 0.3,
+    N: 2.0, P: 0.15, root: 0.8, hFull: 2.0, stem: 0.5, refuge: 0.8, cover: 0.7, invert: 0.6, look: { col: 0x5b6f2a, w: 0.012, n: 6 } },
+  { key: 'largeleaf', name: 'Large-leaf pondweed', form: 'SC', sub: 'organic', noBrook: true, depth: [0.8, 4], lightLim: 0.16, KL: 0.15, Bmax: 130, mu: 0.08, tStart: 5, carry: 0.3,
+    N: 2.0, P: 0.15, root: 0.8, hFull: 3.0, stem: 0.8, refuge: 1.0, cover: 1.0, invert: 1.0, look: { col: 0x4f6b2c, w: 0.09, n: 4 } },
+  { key: 'robbins', name: "Robbins' pondweed", form: 'SC', sub: 'organic', noBrook: true, depth: [1.2, 5], lightLim: 0.11, KL: 0.10, Bmax: 80, mu: 0.04, tStart: 3, carry: 0.7,
+    N: 2.0, P: 0.15, root: 0.8, hFull: 0.4, stem: 0.2, refuge: 0.6, cover: 0.6, invert: 0.8, snail: 1.5, look: { col: 0x3d5a26, w: 0.05, n: 7 } },
+  { key: 'bladderwort', name: 'Bladderworts', form: 'SC', sub: 'any', noBrook: true, depth: [0.3, 2.5], lightLim: 0.15, KL: 0.15, Bmax: 50, mu: 0.08, tStart: 10, carry: 0.15,
+    N: 2.0, P: 0.15, root: 0.5, hFull: 1.0, stem: 0.1, refuge: 1.0, cover: 0.5, invert: 1.3, look: { col: 0x6d7a32, w: 0.006, n: 10 } },   // (root 0.5: rootless, but its prey and the flocculent bed it lies in feed it N and P — on the water's alone it died out)
+  // ROSETTES on the wave-washed sand and gravel: pipewort and water lobelia (lobelia takes its CO₂ from the sediment and sends
+  // > 97 % of its O₂ into it; lost on organic mud)
+  { key: 'pipewort', name: 'Pipewort', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.1, 1.5], lightLim: 0.37, KL: 0.15, Bmax: 80, mu: 0.008, tStart: 3, carry: 0.9,
+    N: 1.5, P: 0.10, root: 0.87, hFull: 0.1, stem: 0.3, refuge: 0.1, cover: 0.2, invert: 0.5, look: { col: 0x5f7a44 } },
+  { key: 'lobelia', name: 'Water lobelia', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.3, 1.2], lightLim: 0.43, KL: 0.15, Bmax: 90, mu: 0.005, tStart: 3, carry: 0.95,
+    N: 1.5, P: 0.10, root: 0.87, hFull: 0.08, stem: 0.3, refuge: 0.1, cover: 0.2, invert: 0.5, look: { col: 0x4f7040 } },
+  // LOW MEADOW: the stoneworts (Nitella — the lakes' only recorded plants) on the deeper mud; water moss (Fontinalis) on the brook's
+  // stones
+  { key: 'nitella', name: 'Stoneworts (Nitella)', form: 'DM', sub: 'organic', noBrook: true, depth: [1.0, 4.2], lightLim: 0.06, KL: 0.08, Bmax: 30, mu: 0.02, tStart: 3, carry: 0.9,
+    N: 2.0, P: 0.15, root: 0.3, hFull: 0.2, stem: 0.2, refuge: 0.15, cover: 0.2, invert: 1.0, look: { col: 0x2c4630 } },
+  { key: 'moss', name: 'Water moss (Fontinalis)', form: 'DM', sub: 'mineral', brookOnly: true, depth: [0.05, 1.3], lightLim: 0.05, KL: 0.08, Bmax: 40, mu: 0.02, tStart: 2, carry: 0.9,
+    N: 2.0, P: 0.15, root: 0, hFull: 0.15, stem: 0.2, refuge: 0.15, cover: 0.3, invert: 1.0, look: { col: 0x24402a } },
 ];
 export const NF3 = FORMS3.length;
 export const PL3 = {
@@ -59,6 +97,11 @@ export const PL3 = {
   // predator's capture falls as 1/(1 + (S/S50)³), S50 ~150 stems/m² — Crowder & Cooper 1982; Savino & Stein 1982)
   REF_MAX: 0.8, PVI_HALF: 0.2, PVI_STEEP: 0.05, S50: 150,
   SHELTER_R: 20,        // m (world; ~200 m real): a direction is sheltered if land lies within this
+  // THE BED A SPECIES ROOTS IN: sand and gravel on the wave-washed shallows (shallower than MINERAL_Z m where no more than
+  // MINERAL_SHELTER of 8 directions are sheltered) and in the brook; organic mud in the coves and deeper (Maine's lake plant
+  // communities sort so: pipewort–lobelia on mineral soils under ~1 m, water-lily beds on organic soils at 0.5–1.5 m — MNAP)
+  MINERAL_Z: 1.6, MINERAL_SHELTER: 4,
+  FORMS: ['EM', 'FL', 'SC', 'IS', 'DM'],
 };
 
 const MIX = 1e-9;
@@ -72,6 +115,11 @@ export class Plants3 {
     // each bed cell: its column, its bed depth (the cell's mid-depth — the layer its bed lies in), its water cells above
     this.col = new Int32Array(nb); this.zb = new Float32Array(nb);
     for (let i = 0; i < nb; i++) { const j = cells[i]; this.col[i] = G.colOfCell[j]; this.zb[i] = Math.max(0.05, G.zMid[j]); }
+    // each bed cell's water (the brook's running water or a lake's) and its bed (PL3.MINERAL_Z: sand and gravel, or mud)
+    this.brook = new Uint8Array(nb); this.mineral = new Uint8Array(nb);
+    for (let i = 0; i < nb; i++) { const c = this.col[i]; this.brook[i] = G.body[c] === BROOK ? 1 : 0; this.mineral[i] = this.brook[i] || (this.zb[i] < PL3.MINERAL_Z && env.shelter[c] <= PL3.MINERAL_SHELTER) ? 1 : 0; }
+    // each species' form (index into PL3.FORMS), for the stand's shared space: a form's species share its room in a cell
+    this.formOf = FORMS3.map(F => PL3.FORMS.indexOf(F.form)); this._occ = new Float32Array(PL3.FORMS.length);
     // each column's SHELTER from the waves: how many of 8 directions meet land within SHELTER_R (env3 computes it: ice uses it too)
     this.shelter = env.shelter;
     // per column: the stems (per m², for the fish), the floating-leaf cover, the weed volume's refuge; per water cell: the
@@ -115,7 +163,8 @@ export class Plants3 {
   }
   _inRange(F, i) {
     const z = this.zb[i]; if (z < F.depth[0] || z > F.depth[1]) return false;
-    return true;
+    const br = this.brook[i]; if ((F.noBrook && br) || (F.brookOnly && !br)) return false;
+    return F.sub === 'any' || (F.sub === 'mineral') === !!this.mineral[i];
   }
   // N and P held by the plants (the sim's units) — counted in chem3's inventories
   inventoryP() { let s = 0; for (let f = 0; f < NF3; f++) { const u = FORMS3[f].P * PL3.P_UNIT, Bs = this.Bs[f], Br = this.Br[f]; for (let i = 0; i < this.cells.length; i++) s += (Bs[i] + Br[i]) * u * this.G.bedA[this.cells[i]]; } return s; }
@@ -137,7 +186,8 @@ export class Plants3 {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
       const qT = Math.pow(PL3.Q10, (Tj - 20) / 10), iceCut = 1 - ICE.LIGHT_CUT * e.ice[c];
       // the light at the bed: the surface's day-mean × the ice × the water × the floating leaves' shade
-      const flShade = 1 - PL3.SHADE_FL * this.flCover[c];
+      const flShade = 1 - PL3.SHADE_FL * this.flCover[c], occ = this._occ; occ.fill(0);
+      for (let f = 0; f < NF3; f++) occ[this.formOf[f]] += this.Bs[f][i] / FORMS3[f].Bmax;   // (a form's species share its room)
       for (let f = 0; f < NF3; f++) {
         const F = FORMS3[f], Bs = this.Bs[f], Br = this.Br[f];
         if (!this._inRange(F, i)) { if (Bs[i] + Br[i] > 0) { lit += this._die(f, i, Bs[i] + Br[i], j, A, a, w); Bs[i] = 0; Br[i] = 0; } this.gnet[f][i] = 0; continue; }
@@ -163,17 +213,18 @@ export class Plants3 {
         const fP = (sp * F.root + ph * 4 * (1 - F.root)) / (sp * F.root + ph * 4 * (1 - F.root) + 0.15), fN = nT / (nT + 0.1);
         const growing = Tj > F.tStart && !store;
         const rate = growing ? (F.mu + lossR) * qT * fL * Math.min(fP, fN) - lossR * qT : -lossR * qT * 0.3;   // (/day; dormant: a third)
-        let g = rate > 0 ? rate * Math.max(0, 1 - b / F.Bmax) * b * dd : 0;   // (space limits the net growth: a good site fills its stand)
+        let g = rate > 0 ? rate * Math.max(0, 1 - occ[this.formOf[f]]) * b * dd : 0;   // (space limits the net growth: a good site fills its stand — shared by its form's species)
         if (g > 0) { g = this._take(F, g, j, A, a, w); b += g; prod += g * A; }
         this.gnet[f][i] = g / Math.max(MIX, dd);
         let loss = rate < 0 ? -rate * b * dd : 0;
         // and the shallowest beds' wave scour, autumn's reallocation, ice scour
-        if (z < 0.6) loss += PL3.WAVE_M * PL3.WAVE_D / (z + PL3.WAVE_D) * b * dd;
+        const br = this.brook[i];   // (the brook: running water, no waves; its moss holds to the stones under the ice)
+        if (z < 0.6 && !br) loss += PL3.WAVE_M * PL3.WAVE_D / (z + PL3.WAVE_D) * b * dd;
         if (store && b > 0) {   // shoots → storage (carry) and litter (the rest)
           const m = Math.min(b, b * PL3.STORE_RATE * dd);
           Br[i] += m * F.carry; loss += m * (1 - F.carry); b -= m * F.carry;
         }
-        if (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR) loss += b * Math.min(1, dd);
+        if (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !br) loss += b * Math.min(1, dd);
         loss = Math.min(loss, b);
         if (loss > 0) { lit += this._die(f, i, loss, j, A, a, w); b -= loss; }
         Bs[i] = b;
@@ -234,7 +285,7 @@ export class Plants3 {
       for (let f = 0; f < NF3; f++) {
         const b = this.Bs[f][i]; if (!(b > 0)) continue; const F = FORMS3[f], cov = clamp(b / F.Bmax, 0, 1);
         st[c] += b / F.stem * A * F.cover;
-        if (F.key === 'FL') fl[c] += cov * A;
+        if (F.form === 'FL') fl[c] += cov * A;
         const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1));
         pv[c] += cov * (h / z) * F.refuge * A;
         this._canopy[c] = Math.max(this._canopy[c], F.window ? z : h);

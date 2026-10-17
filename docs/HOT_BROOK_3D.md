@@ -468,6 +468,31 @@ school, the rest of the budget to the big fish's own brains. Research: Hot Brook
   - The brook feeds fish like a patch of lake bed. Real lake-outlet streams are far richer: riffle insects, filter feeders eating the outflowing plankton, drift.
   - That stream food web is the next mechanism.
 
+**Built — WHO GETS A BRAIN (FISH_CENSUS.md §3; fish3.js F3.AGENTS_HA, S3 `solo` / `group`, `_soloCut`, `_dissolve`).**
+- **The budget:** 470 agents a hectare of lake, ~300,000 over the real lakes; the brook's dace are counted apart.
+- **The young of the solitary species** recruit into groups (sunfish and redbreast of 25, bullhead of 25, fallfish of 20). Each fish leaves its group as an individual at 7, 7, 10 and 12 cm.
+- **The schooling species' schools** break up into individuals once their fish reach the budget's cutoff. The fish are conserved: the first keeps the school's genome, the rest are its mutations. Those individuals school by choice (SOLO_COHERE 0.6).
+- **The cutoff** is recomputed every 10 days. While the lakes are at or over budget, no school breaks up; a fixed cutoff let every growing school through, and the lakes reached 4,200 agents against 3,023.
+- **Measured (1/10, two seeds, April → December):**
+  - at founding, 2,990 agents against a budget of 3,023, with perch and white perch ≥ 20.4 cm on their own — the true-scale calculation's ~20 cm;
+  - through the season, 2,870–3,040 agents.
+
+**Built — THE BROOK AS A LAKE-OUTLET STREAM (chem3.js CHEM3.BROOK_FILTER / BROOK_CAP / BROOK_BENTH; research `brook_food_web.md`).**
+- **The filter feeders** on its stones strain the algae from Upper's outflow:
+  - at up to 8.6e-4 /s, blackflies' 21–30 % a 100 m at 0.3 m/s;
+  - up to their capacity of 1.5 g wet/m²/day at 20 °C — Maine's outlet filterers track their capture capacity, not the seston.
+
+  The algae's nutrients go back to the water as its decay's would, and what they catch feeds the brook bed's invertebrates. Their capacity is 3× the lake bed's.
+- **Measured** (two seeds, April → December), against the brook's 4 g/m² before:
+  - they catch 0.9–1.8 g/m²/day through the summer;
+  - the brook's invertebrates stand at 25–36 g/m².
+- **What the brook's dace needed besides** — each found by measuring who ate them and its insects:
+  - **The riffles' refuge:** cover 0.9 for fish under 10 cm in brook water under 0.6 m. The dace now rest in the riffles at night too; the pools at night had been an inference, and there the pickerel took ~430 a season.
+  - **The brook as a passage for the lakes' fish at 1/10.** At this scale the brook is ~25× the share of the lakes' shallows it is in reality (0.5 % against 0.02 %), and with every fish ranging in it, white perch schools (171 fish once) and pickerel grazed and hunted it out. A lake fish now goes home if it strays in; it crosses on its trips, its settling, its spawning runs and the sunfish's summer. At true scale (T1) the brook can be every fish's range again.
+  - **The lakes' young don't raise in the brook.** Only the stream fish's do (S3 `brookYoy`: dace, fallfish); the others drift down into Lower and never choose it to feed in. Before this, young bass, perch, suckers, bullheads and white perch took 85–95 % of its insects in July and August.
+  - **The dace census** is 0.8/m² from age 1, not 1.5: the Catskill 1.1/m² counts every age, the year's young among them.
+- **Result:** the dace hold through the year on both seeds (41 → 48–54/ha-equivalent by December), with no starvation and ~50 eaten.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);
@@ -507,6 +532,66 @@ Hot Brook lakes really go that low in late winter is a question for the human (i
 checks. The view: `src/w3/render3/plants3view.js` (below).
 STILL OPEN: young bass starve (no littoral invertebrates yet: snails, insects, crayfish — stage 7b); the autumn zooplankton
 rebound is weak; perch starvation 300–500 a year.
+
+**Design (stage 7f) — THE PLANTS AS SPECIES (2026-10-16, night).** The human: "plants are probably going to be important too,
+they provide places for the fish to be, food and things for the water, places for insects and other things to be on top of".
+
+**Research:**
+- `Hot Brook populations and water/plant_species_hot_brook.md`
+- `Whole lake 3D fish simulation/plant_species_traits.md`
+- `macrophytes.md`
+
+**Evidence for the species.** Only two plants are on record in these waters: *Nitella flexilis* and *N. tenuissima*, in Upper, July 2015. The rest is ranked from:
+- nearby lakes;
+- the aerial photos' fringe (lilies and emergents on ~0.6 % of Upper and ~0.3 % of Lower, 15–45 m from shore at 0.3–1 m);
+- the soft water, which rules out the hard-water pondweeds.
+
+The full plant list for these lakes is on lakesofmaine.org, behind a bot wall; the human can copy it, and has photos. As with the fish, a species the human or a record rules out comes out.
+
+**The set: twelve species in place of the five growth forms.**
+
+| Group | Species |
+|---|---|
+| Emergent | pickerelweed, bulrush |
+| Floating-leaved | yellow pond-lily, fragrant water-lily, watershield |
+| Submerged canopy | ribbon-leaf pondweed (with its floating leaves), large-leaf pondweed (tall "bass weed"), Robbins' pondweed (a low carpet, green under the ice) |
+| Free-floating | bladderworts (rootless, carnivorous) |
+| Rosettes | pipewort, water lobelia (sand and gravel only) |
+| Low meadow | *Nitella* and mosses (deep; mosses on the brook's stones) |
+
+**The mechanisms:**
+- **One growth engine.** Each species keeps its form (EM/FL/SC/IS/DM) for the shared physiology and the view. It gets its own depth window, light limit, peak mass, growth rate, start temperature, overwintering share, canopy height, shelter need, substrate, invertebrate factor and cover.
+- **Competition** is as now: light (floating leaves shade the bed, canopies shade themselves), substrate (rosettes only on mineral beds; lobelia lost on organic mud), and shelter (lilies need coves; bulrush tolerates waves).
+- **The roles the human named:**
+  - places for fish: the cover and stems per species — tall pondweed for bass and pickerel, dense carpets for small fish;
+  - food:
+    - invertebrates per gram of each species: finely divided plants and Robbins' carpets hold the most, rosettes and lilies less;
+    - snails;
+    - crayfish eating the soft and divided plants;
+  - the water: O₂ by day and night (as now), the rosettes' root O₂ oxidising the sand (the bed keeps its P), the bladderworts eating zooplankton, the lilies' shade;
+  - on top of them: the emerging insects need emergent and floating stems; later, frogs on the pads and the lily-pad beetles.
+- **The view:** each species drawn as itself — round notched water-lily pads, the larger yellow pond-lily, small oval watershield leaves, heart-leaved pickerelweed, bulrush stems, ribbon and broad pondweed leaves, fine bladderwort shoots, rosettes, and a low meadow.
+
+**Built (stage 7f).** As designed (plants3.js FORMS3 — now 13 species, each with its form; `_inRange`: depth, bed, brook; a
+form's species share its room in a cell; littoral3 invertebrates per species; plants3view per species: pad sizes and colours, blade
+widths). PL3.MINERAL_Z / MINERAL_SHELTER set the bed:
+- sand and gravel in the wave-washed shallows under 1.6 m and the brook — 16 % of the bed;
+- mud elsewhere.
+
+What the runs taught (no fish, two years from May):
+- **The floating-leaved and emergent species** held 1.4 ha of bulrush and ~0.3 ha of lilies at the forms' shelter needs. The aerial photos show the fringe on ~0.6 % of Upper and ~0.3 % of Lower. Now:
+  - lilies and pickerelweed need 6 of 8 directions sheltered, bulrush 5;
+  - about 1,100 m² of dense beds (bulrush 580, yellow pond-lily 520), with sparse ones over 1,300–3,600 m².
+- **Within a form the species sort by depth** — fragrant water-lily shallowest, watershield between, yellow pond-lily deepest; pickerelweed shallower than bulrush. Without that, the earliest grower took every cove.
+- **Bladderworts died out on the water's P alone**, being rootless. They now take half their nutrients from the bed they lie in and their prey (root 0.5).
+- **The brook's moss** was scoured by the lakes' waves and ice every winter. In the brook: no waves, and it holds to the stones.
+
+**Next:**
+- the bladderworts eating zooplankton;
+- the rosettes oxidising the sand (the bed keeping its P);
+- the lily-pad insects;
+- spawning on plants (perch ribbons, pickerel, killifish on pondweed);
+- the human's photos and Lakes of Maine's list, to confirm or strike species.
 
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/

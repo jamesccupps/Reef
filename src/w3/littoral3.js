@@ -172,7 +172,7 @@ export class Littoral3 {
     const P = this.plants, K = this.K, Ks = this.Ksn;
     for (let i = 0; i < this.cells.length; i++) {
       let k = 0, s = 0;
-      for (let f = 0; f < NF3; f++) { const b = P.Bs[f][i]; if (b > 0) { const key = FORMS3[f].key; k += b * LIT3.FORM[key]; s += b * LIT3.SN_FORM[key]; } }
+      for (let f = 0; f < NF3; f++) { const b = P.Bs[f][i]; if (b > 0) { const F = FORMS3[f]; k += b * (F.invert ?? LIT3.FORM[F.form]); s += b * LIT3.SN_FORM[F.form] * (F.snail ?? 1); } }   // (per species: plant_species_traits.md)
       const lit = P.zb[i] < LIT3.BARE_Z;
       K[i] = LIT3.KAPPA * k + (lit ? LIT3.BARE : 0); Ks[i] = LIT3.SN_KAPPA * s + (lit ? LIT3.SN_BARE : 0);
       // the crayfish's shelter: rock and gravel in the wave-washed shallows, the weeds' stems and roots, mud, the deep basin
