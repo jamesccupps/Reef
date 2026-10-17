@@ -492,3 +492,31 @@ Hot Brook's soft water (~6–10 mg HCO₃⁻/L) is below the recorded range of c
 - Whether either lake has ever had a Lake Stewards IPP or DEP screening survey: the monitoring pages are on Lakes of Maine, behind the bot wall.
 - Whether the Lee curly-leaf record is a verified DEP infestation or a misidentification. The waterbody is not named in the record.
 - The *Typha angustifolia* NAS record's status: whether it is treated as introduced or as cryptogenic in Maine, and its exact place.
+
+## 6. The human's photos (sent 2026-10-17)
+
+### Takeaway
+Twelve photos from the lakes and the brook, May 2024 – July 2026, with no GPS. They confirm several of the sim's species at the level of their growth form, and show two things the records don't: a bare cobble shore and the brook in a dry year. Nothing in them rules a species out. Lilies and rosettes are simply not in frame, and a few photos can't show absence.
+
+### Findings (my identifications, by eye; [photo date])
+- **Emergent bulrush [7 Jul 2026].** Stands of slender, round, green stems, with small brownish spikelet clusters just below the tips. They grow in shallow water in front of a shore fringe of grass and sedge, around a boulder.
+  - The habit fits *Schoenoplectus*: soft-stem or hardstem bulrush, the sim's emergent "bulrush". A rush (*Juncus*) can't be ruled out at this resolution.
+  - A **common merganser** brood (female and large ducklings) sat on the boulder among them. They eat fish: add them to the shore predators.
+- **Submerged ribbon leaves in the brook [26 May 2024; 9 Jul 2025].** Long golden-olive strap leaves stream in the current over orange-brown sand in the slow brook and at its mouth. A chain pickerel was caught wading over them in July 2025.
+  - These fit **ribbon-leaf pondweed** (*P. epihydrus*, whose submerged leaves are ribbons) or **bur-reed** (*Sparganium*, also ribbon-leaved in flowing water). Tape grass (*Vallisneria*) is also possible.
+  - The sim's ribbon-leaf pondweed is allowed in the brook.
+- **Fine-leaved submerged shoots [26 May 2024].** Branched stems with many short, narrow leaves, pale olive, among the ribbons.
+  - These fit **bladderwort** or **milfoil** (*Myriophyllum*: the natives *M. tenellum*, *M. humile*). I can't tell which from the photo.
+  - If bladderwort, it is growing in the brook's slow run, where the sim keeps bladderworts out (noBrook). That is left as is until a closer photo.
+- **A dark leafy tuft on a stone in the cobble riffle at a brook mouth [8 Jul 2025].** This fits **water moss** (*Fontinalis*: the sim's brook moss), or a lodged clump of drift.
+- **The camp dock shore [24 Aug 2024].** Clear golden water over cobble and gravel, with **no rooted plants out to ~0.6 m**. Northern white cedar and boulders on the bank.
+  - The sim's wave-washed sand and gravel (second summer, no fish, seed 541): bare at 0–0.3 m (wave and ice scour); a thin ~18 g DW/m² of pondweed, bladderwort and rosettes at 0.3–0.6 m; denser below.
+  - That is consistent enough. One shore doesn't justify a separate cobble bed class.
+- **The dry year [24 Aug 2025].** The brook was nearly dry: a cobble bed with one thin channel, sensitive fern (*Onoclea sensibilis*) and grasses on the bars, and alder and birch over it. The same day, a lake shore showed a band of exposed stones grown with grass.
+  - These are the human's "dry year" (memory: the brook "almost out of the water altogether").
+  - They are evidence for the water-level work: stage varying by year, a dry-year brook that nearly cuts the lakes apart.
+- **Along the banks:** shrub thickets at the waterline (sweet gale, *Myrica gale*, and alder), ferns, white pine, birch, cedar, spruce and fir. These agree with the landscape view's alder and shrub edge.
+
+### Gaps
+- No photo shows the coves where the aerial photos put the lilies, or the deeper beds.
+- Which brook mouth the riffle photos show: Upper's outlet, or the brook entering Lower.

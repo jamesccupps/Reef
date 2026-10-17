@@ -591,7 +591,10 @@ What the runs taught (no fish, two years from May):
 - the rosettes oxidising the sand (the bed keeping its P);
 - the lily-pad insects;
 - spawning on plants (perch ribbons, pickerel, killifish on pondweed);
-- the human's photos, to confirm or strike species (Lakes of Maine has no plant list for these lakes).
+- ~~the human's photos~~ (received 2026-10-17; `plant_species_hot_brook.md` §6). They confirm emergent bulrush stands, ribbon-leaved pondweed in the brook and moss on the riffle stones, and strike nothing. They also show:
+  - a bare cobble dock shore, which the sim's wave-washed shallows match;
+  - the brook nearly dry in August 2025, for the water-level work;
+  - a common merganser brood, for the shore predators.
 
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/
