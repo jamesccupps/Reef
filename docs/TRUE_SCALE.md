@@ -257,6 +257,7 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
     - **Graphs** over the run: fish by species (log), biomass, each lake's temperature and O₂ at the surface and bottom.
     - **Click a fish** (or a school of young) in the view. Its card follows it each snapshot: length, weight, age, sex, maturity, condition, what it is doing, depth over the bed, the water at it, home lake, whether it lives second by second, generation; bars for hunger, fear, energy, ration, its brain's six outputs and its seven genes. The camera can follow it.
     - Checked in the preview on both worlds: on the true lakes 1.23 M fish in 303,806 agents, every species at its census.
+  - **Built, part 2a (2026-10-18): the spawning run on the Brook tab** — per species with nest sites (fallfish): the brook's sites, the ripe runners on them now, and the ripe runners turned back to their lakes' shoals this season.
   - **Next:** the size split and the young's numbers against FISH_CENSUS.md's; history across sessions (the graphs fill only while the page is open in this run); the brain's inputs; lineage.
   - the census by species, lake and size class against FISH_CENSUS.md, and the agents (individuals, schools, the young's records);
   - biomass, growth and condition, the young's numbers and fates through the season, recruitment, deaths by cause;

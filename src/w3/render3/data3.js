@@ -85,6 +85,12 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     } else if (tab === 'Brook') {
       body.append(note('Hot Brook joins the lakes. Fish in it now; and since the lake opened, those that reached the other lake (crossed), moved home there (settled), or went on a trip to it.'));
       body.append(table(['Species', 'in the brook', 'crossed', 'settled', 'trips'], sp.map(([, r]) => [r, fmt(r.brook), fmt(r.cross), fmt(r.settle), fmt(r.trips)])));
+      // (the spawning run: a runner reaching the brook's mouth takes one of its nest sites if one is free, or spawns on its lake's shoals)
+      const runs = sp.filter(([, r]) => r.sites > 0);
+      if (runs.length) {
+        body.append(el('h3', null, 'The spawning run'), note('The brook holds only so many spawning fish at once — fallfish build pebble mounds, a few to a nest. A ripe runner reaching its mouth takes a free site, or turns back and spawns on its lake’s gravel shoals this season.'));
+        body.append(table(['Species', 'nest sites', 'on them now', 'turned back (ripe)'], runs.map(([, r]) => [r, fmt(r.sites), fmt(r.runIn), fmt(r.runBack)])));
+      }
     } else if (tab === 'Graphs') {
       body.append(el('h3', null, 'Fish by species (log scale)'));
       body.append(chart(hist.map(h => h.t), sp.map(([k, r]) => ({ col: r.tag, v: hist.map(h => h.n[k]) })), { log: true }));
