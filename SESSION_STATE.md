@@ -198,7 +198,11 @@ Gate check "the brook's nest sites" (w3 young). Probes: scratchpad brookcrowd2.m
 PICKEREL (researched: research_notes/…/pickerel_mortality_cannibalism.md): the −2.9 %/wk was mostly yearlings eaten by bigger pickerel
 (60 of 69 victims < 20 cm); for ≥ 20 cm ~1.3 %/wk, cannibalism ~0.34 %/wk — in range. Built PREY_LR (fish3: the longest prey a fraction
 of the eater's length — pickerel 0.55, bass 0.45, others 0.45; slim fish fit a gape at ~0.9 L). 3 seeds × 7 d true: pickerel 0.97×.
-NEXT: T6b part 2, T7 (more validation runs: summer, autumn, winter; the pickerel), T8 part 2; the sim's shore inputs from the photo forest.
+SEASONS (a week each, true lakes): Aug / late Sep / Jan under ice all steady (0.97–0.99×, 103 kg/ha, nothing starved). A WHOLE
+SIMULATED YEAR is running in the background (scratchpad true_year.txt: tools/w3_season.mjs 0.22 365 611 14) — read it on resuming.
+Also done: tree tiers' ragged edges (main3 RAG); the data page's spawning run (Brook tab).
+NEXT: the year's result (recruitment against loss); T6b part 2; T8 part 2 (size split vs FISH_CENSUS, history); the sim's shore
+inputs from the photo forest.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
