@@ -184,7 +184,7 @@ export const F3 = {
 // cruising and sprint speeds (body lengths/s), turning (rad/s), sense range (m, clear water, full light; nonVis the
 // fraction kept in the dark — lateral line, smell), strike reach (m), cohesion with its own kind, home range (m).
 // found: the founders' length as a share of the growth curve's (species.js vb is a prior from unstunted lakes; Maine's
-// crowded white perch stay ~25–45 g and its yellow perch ~20 cm as adults — docs/HOT_BROOK_3D.md §4).
+// crowded yellow perch stay ~20 cm as adults — docs/HOT_BROOK_3D.md §4; the white perch: near-normal, see its entry).
 // tPref the temperature it seeks (°C). HAB: the habitat it chooses — the bottom depth it wants to be over (m; Upper's — in the
 // shallower Lower a fish wanting deeper water finds the deepest there is), its place in the column (v 0: h m above the bed;
 // 1: the fraction h of the column; 2: h m below the surface) and its activity (× cruise), by day, by night and in winter.
@@ -208,8 +208,12 @@ export const S3 = {
   catfish:    { school: 0, group: [10, 25], perHa: 100, cruise: 0.45, sprint: 7.5, sustain: 2.1, turn: 2.2, sense: 1.5, nonVis: 0.8, strikeR: 0, cohere: 0.2, home: HOME(40, 120), tPref: 28,
     hab: { day: H([0.5, 3.0], 0, 0.02, 0.1), night: H([0.3, 2.5], 0, 0.1, 0.6), winter: H([1.0, 4.0], 0, 0.0, 0.0) } },
   // white perch: schools offshore over level fine sediment by day, 0-2 m over the bed; onto the 0.9-1.5-m flats at night; the
-  // open basin's deepest water under the ice, compact and roaming
-  whiteperch: { school: 80, solo: true, perHa: 750, found: 0.72, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
+  // open basin's deepest water under the ice, compact and roaming. NEAR-NORMAL GROWTH at ~450/ha (the human, 2026-10-18: the
+  // white perch they catch here are "probably bigger than 6 to 8" in; FISH_CENSUS.md "The size splits revisited": the census's
+  // 750/ha held only for stunted fish — ~47 g, none over 22 cm — while moderately rich water, abundant bass and pickerel and the
+  // Washington County lakes' normal-sized white perch point to near-normal growth): founders at 0.85 of the growth curve
+  // (~55/35/10 % at 7.5–15 / 15–22 / > 22 cm, ~71 g), was 0.72 at 750/ha
+  whiteperch: { school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
     hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) } },
   // smallmouth bass: solitary, within ~50 m (real) of shore on rock, drop-offs and wood; shallower at night; a few deep wintering
   // sites, nearly still Dec-Mar (Sergio 2026; Suski & Ridgway 2009); ~1 BL/s around the clock in summer (Cooke 2001)

@@ -64,7 +64,7 @@ a reasoned estimate inside the measured range of similar northern lakes. Lakes: 
 
 | Species | Now (/ha) | Census (/ha) | Range | Whole lakes | Size split (by number) | Basis |
 |---|---|---|---|---|---|---|
-| White perch | 800 | **750** | 400–1,200 | ~480,000 | ~35 % 7.5–15 cm, ~45 % 15–22, ~20 % > 22 — **inconsistent with the density (2026-10-18, below): stunted at 750/ha, or ~55/35/10 at ~450/ha** | most numerous adults in eastern Maine nets (median 42 %); no northern per-ha count exists |
+| White perch | 800 | **450** (was 750) | 300–1,200 | ~290,000 | **~55 % 7.5–15 cm, ~35 % 15–22, ~10 % > 22** (near-normal growth, ~71 g; 2026-10-18, below) | most numerous adults in eastern Maine nets (median 42 %); no northern per-ha count exists; the human: those caught are "probably bigger than 6 to 8" in |
 | Yellow perch | 860 | **500** | 300–700 | ~320,000 | ~60 % 7.5–12, ~25 % 12–15, ~15 % ≥ 15 | soft-water Crystal and Nebish lakes 230–240/ha; mostly juveniles in Maine nets; "small" |
 | Pumpkinseed | 215 | **50** | 25–75 | ~32,000 | adults 15–20 cm in the brook | soft-water lakes 12–150/ha; shared with redbreast |
 | Redbreast sunfish | — | **50** | 25–75 | ~32,000 | adults 15–20 cm in the brook | the human's catches; EMAP lakes with both have them in similar numbers |
@@ -91,8 +91,8 @@ anglers under-sample small fish (eastern Maine's EPA nets caught ~90 % adult suc
   community's 50–90. Two consistent pairs: **stunted at ~750/ha** (the sim's founders, S3 `found` 0.72: 68/32/0 %, ~47 g) or **near-
   normal growth at ~450/ha** (~55/35/10 %, ~71 g: `found` ~0.85). For a lake like Hot Brook the evidence leans to the second —
   moderately rich water, abundant bass and pickerel (stunting goes with eutrophic water and few predators), Washington County lakes
-  with normal-sized perch (Crawford ~30 % over 10 in, Meddybemps 10–12 in) — at low–moderate confidence. **The question for the
-  human:** are the white perch caught at Hot Brook mostly 6–8 in, or 9–12 in?
+  with normal-sized perch (Crawford ~30 % over 10 in, Meddybemps 10–12 in) — at low–moderate confidence. **The human (2026-10-18):
+  the white perch they catch are "probably bigger than 6 to 8" in — so near-normal growth at ~450/ha** (fish3 S3 whiteperch).
 
 **Small species and small fish** (counted whole, all ages 1+; most below 7.5 cm):
 - **Banded killifish:** ~150,000 across both lakes (range 20,000–300,000). That is ~0.2/m² of the 88 ha shelf ≤ 1 m.
