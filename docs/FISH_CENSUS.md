@@ -64,17 +64,35 @@ a reasoned estimate inside the measured range of similar northern lakes. Lakes: 
 
 | Species | Now (/ha) | Census (/ha) | Range | Whole lakes | Size split (by number) | Basis |
 |---|---|---|---|---|---|---|
-| White perch | 800 | **750** | 400–1,200 | ~480,000 | ~35 % 7.5–15 cm, ~45 % 15–22, ~20 % > 22 | most numerous adults in eastern Maine nets (median 42 %); no northern per-ha count exists |
+| White perch | 800 | **750** | 400–1,200 | ~480,000 | ~35 % 7.5–15 cm, ~45 % 15–22, ~20 % > 22 — **inconsistent with the density (2026-10-18, below): stunted at 750/ha, or ~55/35/10 at ~450/ha** | most numerous adults in eastern Maine nets (median 42 %); no northern per-ha count exists |
 | Yellow perch | 860 | **500** | 300–700 | ~320,000 | ~60 % 7.5–12, ~25 % 12–15, ~15 % ≥ 15 | soft-water Crystal and Nebish lakes 230–240/ha; mostly juveniles in Maine nets; "small" |
 | Pumpkinseed | 215 | **50** | 25–75 | ~32,000 | adults 15–20 cm in the brook | soft-water lakes 12–150/ha; shared with redbreast |
 | Redbreast sunfish | — | **50** | 25–75 | ~32,000 | adults 15–20 cm in the brook | the human's catches; EMAP lakes with both have them in similar numbers |
-| Brown bullhead | 140 | **100** | 50–150 | ~64,000 | ~50 % < 20 cm | Moe Pond 260, Cassidy 48/ha |
-| White sucker | 30 | **70** | 50–100 | ~45,000 | ~45 % juveniles < 30 cm | 20–110 adults/ha in northern lakes; 30 was below every estimate |
+| Brown bullhead | 140 | **100** | 50–150 | ~64,000 | **~70 % < 20 cm** (60–80; was ~50 %, an arithmetic slip — below) | Moe Pond 260, Cassidy 48/ha |
+| White sucker | 30 | **70** | 50–100 | ~45,000 | **~60 % juveniles < 30 cm** (50–75; was ~45 % — below) | 20–110 adults/ha in northern lakes; 30 was below every estimate |
 | Smallmouth bass | 40 | **40** | 25–45 | ~26,000 (~10,000 adults) | ~33 % age 1, 17 % age 2, 10 % age 3, 40 % age 4+ | soft-water Pallette and Nebish; catch-and-release lengthens the age tail |
 | Chain pickerel | 20 | **25** | 15–40 | ~16,000 | ~55 % < 25 cm, 30 % 25–38, 15 % ≥ 38 | no northern count exists; Maine size data |
 | Fallfish | — | **85** | 25–100 | ~55,000 | mostly < 20 cm; adults to 35–45 cm | EMAP 0–23 % of adults in lakes with streams; the human: "lots" |
 | Golden shiner | 430 | **0** | | | | not in these lakes |
 | **Total ≥ 7.5 cm** | **2,535** | **~1,670** | 1,300–2,500 | **~1.07 million** | | |
+
+**The size splits revisited (2026-10-18; research_notes/Whole lake 3D fish simulation/size_structure_whiteperch_sucker_bullhead.md).**
+The data page compared the founders with the splits above and found white perch, suckers and bullheads smaller than them. The
+research re-ran the founders' rule under the literature's growth curves and checked each split against its own biomass. Nets and
+anglers under-sample small fish (eastern Maine's EPA nets caught ~90 % adult suckers and bullheads), and a true count of every fish
+≥ 7.5 cm is dominated by the youngest year-classes unless growth is fast:
+- **Brown bullhead:** at Moe Pond's 48 % yearly survival age 1 alone is 52 % of the fish and ages 1–2 are 77 %; even fast-growing
+  Ottawa River bullheads pass 20 cm only at about age 3; Moe Pond's 50-g mean means most are under 20 cm. **~70 % < 20 cm**
+  (moderate confidence) — the sim's founders (69 %) agree.
+- **White sucker:** 45 % < 30 cm needs suckers at 30 cm by ~age 2.2 or steady recruitment (thinned Big Bear Lake, Michigan; nothing
+  northern found). Dense Big Bear gives 55–62 %, the sim's curve 66 %, subarctic Québec 84 %. **~60 %** (50–75; low confidence).
+- **White perch: the split and the density can't both hold.** The split above is what normal Maine growth gives (20–25 cm at age 4;
+  mean ~113 g): at 750/ha that is 82–112 kg/ha of white perch alone, against this census's own 20–35 kg/ha and the whole soft-water
+  community's 50–90. Two consistent pairs: **stunted at ~750/ha** (the sim's founders, S3 `found` 0.72: 68/32/0 %, ~47 g) or **near-
+  normal growth at ~450/ha** (~55/35/10 %, ~71 g: `found` ~0.85). For a lake like Hot Brook the evidence leans to the second —
+  moderately rich water, abundant bass and pickerel (stunting goes with eutrophic water and few predators), Washington County lakes
+  with normal-sized perch (Crawford ~30 % over 10 in, Meddybemps 10–12 in) — at low–moderate confidence. **The question for the
+  human:** are the white perch caught at Hot Brook mostly 6–8 in, or 9–12 in?
 
 **Small species and small fish** (counted whole, all ages 1+; most below 7.5 cm):
 - **Banded killifish:** ~150,000 across both lakes (range 20,000–300,000). That is ~0.2/m² of the 88 ha shelf ≤ 1 m.

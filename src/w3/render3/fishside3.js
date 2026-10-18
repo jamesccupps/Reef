@@ -12,12 +12,13 @@ export const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads
 export const DRAW_R = 320, DRAW_CAM = 900;        // (m about where the view looks; none when the camera is farther than DRAW_CAM: they'd be sub-pixel)
 export const SIZE_CL = [7.5, 15, 25, 35];         // (cm: the data page's size classes)
 // THE CENSUS'S SIZE SPLIT (docs/FISH_CENSUS.md §2: fish ≥ 7.5 cm by number, each species in its own bands; smallmouth by age,
-// years 1, 2, 3, 4+), for the data page's comparison
+// years 1, 2, 3, 4+), for the data page's comparison — bullhead and sucker as revised 2026-10-18 ("The size splits revisited");
+// white perch the census's, which its density contradicts (stunted at 750/ha, or ~55/35/10 at ~450/ha: the human's call)
 export const CENSUS_SIZE = {
   whiteperch: { by: 'L', edges: [15, 22], frac: [0.35, 0.45, 0.20] },
   perch: { by: 'L', edges: [12, 15], frac: [0.60, 0.25, 0.15] },
-  catfish: { by: 'L', edges: [20], frac: [0.5, 0.5] },
-  sucker: { by: 'L', edges: [30], frac: [0.45, 0.55] },
+  catfish: { by: 'L', edges: [20], frac: [0.7, 0.3] },
+  sucker: { by: 'L', edges: [30], frac: [0.6, 0.4] },
   pike: { by: 'L', edges: [25, 38], frac: [0.55, 0.30, 0.15] },
   bass: { by: 'age', edges: [2, 3, 4], frac: [0.33, 0.17, 0.10, 0.40] },
 };
