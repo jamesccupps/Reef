@@ -11,6 +11,16 @@ import { PLANKTON, ENV } from '../../config.js';
 export const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
 export const DRAW_R = 320, DRAW_CAM = 900;        // (m about where the view looks; none when the camera is farther than DRAW_CAM: they'd be sub-pixel)
 export const SIZE_CL = [7.5, 15, 25, 35];         // (cm: the data page's size classes)
+// THE CENSUS'S SIZE SPLIT (docs/FISH_CENSUS.md §2: fish ≥ 7.5 cm by number, each species in its own bands; smallmouth by age,
+// years 1, 2, 3, 4+), for the data page's comparison
+export const CENSUS_SIZE = {
+  whiteperch: { by: 'L', edges: [15, 22], frac: [0.35, 0.45, 0.20] },
+  perch: { by: 'L', edges: [12, 15], frac: [0.60, 0.25, 0.15] },
+  catfish: { by: 'L', edges: [20], frac: [0.5, 0.5] },
+  sucker: { by: 'L', edges: [30], frac: [0.45, 0.55] },
+  pike: { by: 'L', edges: [25, 38], frac: [0.55, 0.30, 0.15] },
+  bass: { by: 'age', edges: [2, 3, 4], frac: [0.33, 0.17, 0.10, 0.40] },
+};
 
 // the poses a step starts from (with a focus on the true lakes: only the fish and young about it — they are the ones drawn)
 export function remember(F, trueWorld) {
@@ -71,7 +81,7 @@ export function statsPart(F) {
   for (const k of KEYS3) {
     const r = c[k];
     sp[k] = { n: r.n, agents: r.agents, g: r.g, Ln: r.L * r.n, mature: r.mature, cons: r.cons, consMax: r.consMax, yoyN: r.yoyN, yoySchools: r.yoySchools, yoyLn: r.yoyL * r.yoyN,
-      up: 0, low: 0, brook: 0, runIn: 0, runBack: 0, size: [0, 0, 0, 0, 0], target: F._target(S3[k]) };
+      up: 0, low: 0, brook: 0, runIn: 0, runBack: 0, size: [0, 0, 0, 0, 0], cs: CENSUS_SIZE[k] ? new Array(CENSUS_SIZE[k].frac.length).fill(0) : [], target: F._target(S3[k]) };
   }
   for (const a of F.fish) {
     if (!a.alive) continue; const r = sp[a.s.key], L = a.L;
@@ -79,6 +89,7 @@ export function statsPart(F) {
     if (GEO.bodyAt(a.x, a.y) === BROOK) r.brook += a.n;
     if (a.ripe && a.brookRun) { if (a.inRun) r.runIn += a.n; else if (a.runYr === F._yr) r.runBack += a.n; }   // (the spawning run: on the brook's nest sites; turned back to the shoals)
     let q = 0; while (q < SIZE_CL.length && L >= SIZE_CL[q]) q++; r.size[q] += a.n;
+    const cz = CENSUS_SIZE[a.s.key]; if (cz && L >= 7.5) { const v = cz.by === 'age' ? a.age / CLOCK3.YEAR_LEN : L; let b = 0; while (b < cz.edges.length && v >= cz.edges[b]) b++; r.cs[b] += a.n; }
   }
   return { sp, stats: F.stats, agents: F.fish.filter(a => a.alive).length, yoySchools: F.yoy.filter(q => q.alive).length };
 }
@@ -89,12 +100,12 @@ export function statsMerge(parts, env, lakeHa) {
   const sp = {}, Gc = env.G, ch = env.chem; let stats = null, agents = 0, yoySchools = 0;
   for (const p of parts) { stats = addTree(stats, JSON.parse(JSON.stringify(p.stats))); agents += p.agents; yoySchools += p.yoySchools; }
   for (const k of KEYS3) {
-    const r = { n: 0, agents: 0, g: 0, Ln: 0, mature: 0, cons: 0, consMax: 0, yoyN: 0, yoySchools: 0, yoyLn: 0, up: 0, low: 0, brook: 0, runIn: 0, runBack: 0, size: [0, 0, 0, 0, 0] };
-    for (const p of parts) { const q = p.sp[k]; for (const f of Object.keys(r)) if (f === 'size') q.size.forEach((v, i) => { r.size[i] += v; }); else r[f] += q[f]; }
+    const r = { n: 0, agents: 0, g: 0, Ln: 0, mature: 0, cons: 0, consMax: 0, yoyN: 0, yoySchools: 0, yoyLn: 0, up: 0, low: 0, brook: 0, runIn: 0, runBack: 0, size: [0, 0, 0, 0, 0], cs: CENSUS_SIZE[k] ? new Array(CENSUS_SIZE[k].frac.length).fill(0) : [] };
+    for (const p of parts) { const q = p.sp[k]; for (const f of Object.keys(r)) if (f === 'size' || f === 'cs') (q[f] || []).forEach((v, i) => { r[f][i] += v; }); else r[f] += q[f]; }
     const S = S3[k];
     sp[k] = { name: S.name || k, tag: S.tag || (S.sp && S.sp.tag) || '#999', n: r.n, agents: r.agents, kgHa: r.g / 1000 / lakeHa, perHa: r.n / lakeHa, L: r.Ln / Math.max(1e-9, r.n), mature: r.mature,
       p: r.cons / Math.max(1e-12, r.consMax), yoyN: r.yoyN, yoySchools: r.yoySchools, yoyL: r.yoyLn / Math.max(1e-9, r.yoyN), target: parts[0].sp[k].target / lakeHa,
-      up: r.up, low: r.low, brook: r.brook, size: r.size, fry: stats.fry[k], died: stats.died[k] || {}, spawns: stats.spawns[k], eggs: stats.eggs[k], recruits: stats.recruits[k],
+      up: r.up, low: r.low, brook: r.brook, size: r.size, cs: r.cs, fry: stats.fry[k], died: stats.died[k] || {}, spawns: stats.spawns[k], eggs: stats.eggs[k], recruits: stats.recruits[k],
       cross: stats.cross[k], settle: stats.settle[k], trips: stats.trips[k], runIn: r.runIn, runBack: r.runBack, sites: S.spawn.runK ? S.spawn.runK * lakeArea(BROOK) : 0 };
   }
   // the water per lake: area-weighted at the surface and the bottom, the zooplankton over the column, the ice

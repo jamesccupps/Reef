@@ -9,6 +9,7 @@
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER } from '../geometry.js';
 import { OUT3 } from '../fish3.js';
+import { CENSUS_SIZE } from './fishside3.js';
 import { GENE_KEYS } from '../../core.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 12, PICK_PX = 22, HIST_MAX = 1500;
@@ -63,6 +64,11 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
         sp.map(([, r]) => [r, fmt(r.n), fmt(r.perHa), fmt(r.target), r.kgHa.toFixed(1), r.L.toFixed(1), fmt(100 * r.mature / Math.max(1, r.n)), fmt(r.up), fmt(r.low)])));
       body.append(el('h3', null, 'By size (fish)'));
       const E = m.sizeCl; body.append(table(['Species', `< ${E[0]} cm`, `${E[0]}–${E[1]}`, `${E[1]}–${E[2]}`, `${E[2]}–${E[3]}`, `≥ ${E[3]}`], sp.map(([, r]) => [r, ...r.size.map(v => fmt(v))])));
+      // (against the census's size split: each species in its own bands, the sim's share then the census's)
+      body.append(el('h3', null, 'Sizes against the census (fish ≥ 7.5 cm, by number)'));
+      const band = (cz, b) => { const u = cz.by === 'age' ? '' : ' cm', e = cz.edges; return cz.by === 'age' ? (b < e.length ? `age ${e[0] - 1 + b}` : `age ${e[e.length - 1]}+`) : b === 0 ? `7.5–${e[0]}${u}` : b === e.length ? `≥ ${e[b - 1]}${u}` : `${e[b - 1]}–${e[b]}${u}`; };
+      body.append(table(['Species', 'the sim % (the census %)'], sp.filter(([k]) => CENSUS_SIZE[k]).map(([k, r]) => { const cz = CENSUS_SIZE[k], t = r.cs.reduce((a, v) => a + v, 0) || 1;
+        return [r, cz.frac.map((f, b) => `${band(cz, b)}: ${fmt(100 * r.cs[b] / t)} (${fmt(100 * f)})`).join(' · ')]; })));
       body.append(el('h3', null, 'Deaths since the lake opened (fish)'));
       const causes = ['starve', 'eaten', 'heat', 'hypoxia', 'other', 'old', 'stranded'];
       body.append(table(['Species', ...causes], sp.map(([, r]) => [r, ...causes.map(c => fmt(r.died[c] || 0))])));
