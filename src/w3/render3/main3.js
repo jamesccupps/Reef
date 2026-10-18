@@ -501,7 +501,10 @@ function tierMesh(geo, cap, { holes = [], side = THREE.FrontSide, bare = null, l
   let p = positionGeometry; if (bare && leafy) p = p.mul(float(1).sub(fol.mul(bare)));
   p = p.mul(vec3(Wr.x, P.w, Wr.x));
   const co = cos(Wr.y), si = sin(Wr.y);
-  let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R, length(vec2(P.x, P.z).sub(h.C))));
+  // (each tree leaves for the next tier at its own distance — RAG of the hole's radius, by its random turn — so a tier's edge is a
+  // ragged band of mixed trees, not a circle on the forest)
+  const rag = Wr.y.div(6.28).mul(0.5).add(0.75);
+  let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R.mul(rag), length(vec2(P.x, P.z).sub(h.C))));
   m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).mul(keep).add(vec3(P.x, P.y, P.z));
   m.colorNode = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), TC.w), TC.xyz, fol).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
   const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(layer); mesh.userData.cap = cap; return mesh;
@@ -530,9 +533,12 @@ function putTree(mesh, j, T, i, kind, wf) {
   tc[j * 4 + 3] = kind === 'broad' && ((k * 7919 * 3) % 1) < 0.18 ? 230 : kind === 'broad' ? 18 : 8;   // (a birch in six: white bark; the rest dark)
 }
 function tierDone(mesh, n) { const g = mesh.geometry; g.instanceCount = n; g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true; }
-// the trees of a store within R of (x, y) by its tiles: fn(i) for each
-function treesNear(T, x, y, R, fn) {
+// the trees of a store within R of (x, y) by its tiles: fn(i) for each. ragged: each tree within its own RAG × R (0.75–1.25 by its
+// random turn: the tier's edge a band of mixed trees, as tierMesh's holes take them)
+const RAG = rot => 0.75 + 0.5 * rot / 6.28;
+function treesNear(T, x, y, R, fn, ragged = false) {
   if (!Number.isFinite(R)) { for (let i = 0; i < T.n; i++) fn(i); return; }
+  if (ragged) { const R0 = R; R *= 1.25; const f0 = fn; fn = i => { const r = R0 * RAG(T.rot[i]); if ((T.x[i] - x) ** 2 + (T.y[i] - y) ** 2 < r * r) f0(i); }; }
   const R2 = R * R, g0 = Math.max(0, Math.floor((x - R - TT.X0) / TREE_TILE)), g1 = Math.min(TT.NX - 1, Math.floor((x + R - TT.X0) / TREE_TILE));
   const h0 = Math.max(0, Math.floor((y - R - TT.Y0) / TREE_TILE)), h1 = Math.min(TT.NY - 1, Math.floor((y + R - TT.Y0) / TREE_TILE));
   for (let gy = h0; gy <= h1; gy++) for (let gx = g0; gx <= g1; gx++) {
@@ -548,8 +554,8 @@ let treeAt = null, detAt = null;   // (where the mid tier was picked about — t
 function placeNearTrees() {   // the near tier about the camera, and the hole the others leave it
   const x = camera.position.x, y = -camera.position.z; detAt = [x, y]; camHole.C.value.set(x, -y);
   let ns = 0, np = 0, nh = 0;
-  treesNear(TREES.conifer, x, y, DET_R, i => { const pine = TREES.conifer.H[i] >= PINE_H; if (pine) { if (np < TIERS.pine.userData.cap) putTree(TIERS.pine, np++, TREES.conifer, i, 'conifer', 0.5); } else if (ns < TIERS.spire.userData.cap) putTree(TIERS.spire, ns++, TREES.conifer, i, 'conifer', 0.33); });
-  treesNear(TREES.broad, x, y, DET_R, i => { if (nh < TIERS.hard.userData.cap) putTree(TIERS.hard, nh++, TREES.broad, i, 'broad', 0.65); });
+  treesNear(TREES.conifer, x, y, DET_R, i => { const pine = TREES.conifer.H[i] >= PINE_H; if (pine) { if (np < TIERS.pine.userData.cap) putTree(TIERS.pine, np++, TREES.conifer, i, 'conifer', 0.5); } else if (ns < TIERS.spire.userData.cap) putTree(TIERS.spire, ns++, TREES.conifer, i, 'conifer', 0.33); }, true);
+  treesNear(TREES.broad, x, y, DET_R, i => { if (nh < TIERS.hard.userData.cap) putTree(TIERS.hard, nh++, TREES.broad, i, 'broad', 0.65); }, true);
   tierDone(TIERS.spire, ns); tierDone(TIERS.pine, np); tierDone(TIERS.hard, nh);
 }
 function placeTrees(treesOnly = false) {   // the mid tier about where the view looks (each tree's place, size and colour), then the near
@@ -557,7 +563,7 @@ function placeTrees(treesOnly = false) {   // the mid tier about where the view 
   if (!treesOnly) placeFarForest();
   for (const [kind, mesh] of [['conifer', TIERS.midConifer], ['broad', TIERS.midBroad]]) {
     const T = TREES[kind], cap = mesh.userData.cap, wf = kind === 'conifer' ? 0.35 : 0.65; let j = 0;
-    treesNear(T, tx, ty, TREE_R, i => { if (j < cap) putTree(mesh, j++, T, i, kind, wf); });
+    treesNear(T, tx, ty, TREE_R, i => { if (j < cap) putTree(mesh, j++, T, i, kind, wf); }, true);
     tierDone(mesh, j);
   }
   placeNearTrees();

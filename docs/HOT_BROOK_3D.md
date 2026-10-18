@@ -959,6 +959,10 @@ the plants in the water... these shouldnt just be squares").** Both looks came f
   beside them, the tracks through the woods on Lower's east shore and the farm fields east of the lakes fall where the photo
   has them; the "clearings" NLCD put along Lower's east shore were forest with a road (they are gone). Not resolved: roads
   beyond the tiles (the coarse photo is too blurred for them); the 1/10 world keeps NLCD (its land is a re-cut placement).
+- **The forest's tiers without rings:** the near tier (detailed spires, pines, hardwoods within 250 m of the camera) and the mid
+  tier (within 1.2 km of where the view looks) met in circles drawn on the forest. Each tree now leaves for the next tier at its
+  own distance, 0.75–1.25 × the radius by its random turn (main3 `RAG`, in `treesNear` and in `tierMesh`'s holes alike, so each
+  tree is drawn once): the edges are ragged bands of mixed trees.
 - **Cost:** the noise is read from lattices cached over the far land (a Math.sin hash a sample cost ~2 s at start-up). The
   true world's start-up (page to ready) is unchanged within its run-to-run noise: 2.2–3.7 s before, 1.8–2.8 s after (three
   loads each); the new work itself is ~0.5 s (the shown classes 0.06, the trees 0.3, the weeds' blend 0.17).
