@@ -65,6 +65,22 @@ GPU work stalls.
    feeding, growth, the scramble competition, being eaten); recruits become agents (`_recruit`). New agents append through a prefix sum; the dead are compacted every few blocks.
 10. **The schools:** merge and split (`_schools`).
 
+## G0 results (2026-10-18)
+
+- **Where a coarse block's time goes** (true lakes, one thread, 303,810 agents and 83,503 young schools; 5.2 s a block — the
+  water model only 35–76 ms of it, ~1 %): the senses 25 %, feeding 20 % (the zooplankton, weeds, bed animals and crayfish
+  taken from the columns about each fish), the relocation 18 % (its hops 7 %), the brain 9 % (with learning), the drives 7 %,
+  strikes at prey 4 %, the body (FB4) 4 %, the young's schools ~6 %, the per-fish step's own work ~9 %. Nearly all of it is the
+  same work for every fish: what the GPU is built for. Feeding is the one that needs care (fish sharing a column's food).
+- **The senses on the RTX 3060** (`tools/gpu/sense_bench.html?world=true`): the neighbour scan for all 303,841 fish — nearest
+  threat, nearest prey, its own kind about it, the CPU's grid uploaded — **3.2 ms on the GPU against 984 ms on the CPU** (the
+  CPU's with the food fields' look-up, ~25 % of it): ~300×. The GPU picks the same prey for 20,927 of 20,927 fish, the same
+  threat for 16,885 of 16,886, the same count of its own kind for 303,829 of 303,841 (the rest float32 ties at a sense range's
+  edge). Upload 49 ms and read-back 14 ms — once, in an engine whose data stays on the GPU.
+- **What it means:** offloading only the senses would give ~1.3× (Amdahl: the rest stays on the CPU); the speed comes from the
+  whole block on the GPU (G1). At ~300× a kernel, the block's ~5 s could become tens of milliseconds — a year in minutes —
+  with feeding, predation and births (the parts with shared state) the ones to design carefully.
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the
