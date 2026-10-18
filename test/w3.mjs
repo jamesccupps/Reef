@@ -471,7 +471,7 @@ if (run('young')) {
     const bandS = (u, lo, hi) => { const k = u + lo; if (!bandPts[k]) { bandPts[k] = []; for (let i = 0; i < GEO.N; i++) if ((GEO.body[i] === 1 || GEO.body[i] === 2) && GEO.depth[i] >= lo && GEO.depth[i] <= hi) bandPts[k].push(GEO.cellCentre(i)); }
       let s = 0; for (const [x, y] of bandPts[k]) s += F._subAt(u, x, y); return s / Math.max(1, bandPts[k].length); };
     const subB = { perch: [0, 0, 'rigid', 0.5, 2], pike: [0, 0, 'mat', 0.3, 1] };
-    let siteMat = -1, siteBand = -1;
+    let siteMat = -1, siteBand = -1, ffIn = 0, ffBack = 0;   // (the brook's fallfish at their peak: ripe in it; turned back but in it)
     for (let i = 0; i < 62 * 49.3; i++) {
       if (i === 1) { const ps = [...F.sites.pike[1], ...F.sites.pike[2]]; siteMat = ps.reduce((t, p) => t + F._subAt('mat', p[0], p[1]), 0) / ps.length; siteBand = bandS('mat', 0.3, 1); }   // (the pickerel's grounds as the spring chose them)
       for (const k in subB) subB[k][1] = F.stats.spawns[k];
@@ -479,6 +479,7 @@ if (run('young')) {
       for (const k in subB) { const b = subB[k], d = F.stats.spawns[k] - b[1]; if (d > 0) b[0] += d * bandS(b[2], b[3], b[4]); }
       if (!may && e.yearFrac() >= 0.22) { may = F.census(); mayYf = e.yearFrac(); }   // (May 20: the young so far — for seedSeason below)
       if (i % 25 === 0) for (const a of F.fish) if (a.nt > 0 && a.nt < a.s.guard - 2) gd.push(Math.hypot(a.x - a.nx, a.y - a.ny));
+      if (i % 5 === 0) { let n = 0, nb = 0; for (const a of F.fish) if (a.alive && a.ripe && a.s.key === 'fallfish' && GEO.bodyAt(a.x, a.y) === BROOK) { n += a.n; if (a.runYr === F._yr) nb += a.n; } ffIn = Math.max(ffIn, n); ffBack = Math.max(ffBack, nb); }
     }
     const st = F.stats, at = st.spawnAt, day = k => at[k].first < 0 ? Infinity : (at[k].first / (365 * DAYS) - 0.14) * 365, bed = k => at[k].bed / Math.max(1, st.spawns[k]);
     const sp6 = ['pike', 'perch', 'sucker', 'whiteperch', 'bass', 'sunfish'];
@@ -494,6 +495,13 @@ if (run('young')) {
       check("perch and pickerel spawn on structure: perch lay their ribbons on rigid stems and wood richer than their band's water, the pickerel's spring grounds lie on its best mats (bare bed hatches ~half: Ward & Barnes 0.47)",
         st.spawns.perch > 0 && st.spawns.pike > 0 && on('perch') > band('perch') + 0.07 && siteMat > siteBand + 0.15,   // (an index saturates near 1: a margin, not a ratio — perch +0.10–0.15 on seeds 511–513)
         `perch laid on ${f2(on('perch'))} (their band ${f2(band('perch'))}); the pickerel's grounds ${f2(siteMat)} (their band ${f2(siteBand)}), where they spawned ${f2(on('pike'))} (${f2(band('pike'))})`); }
+    // THE BROOK'S NEST SITES (fish3 spawn.runK; research_notes/…/fallfish_spawning_brook.md): ripe fallfish fill the brook to its
+    // nest sites — a runner that finds them taken at the mouth spawns on its lake's shoals instead, and goes there (it neither
+    // lingers in the brook nor hunts its dace; at true scale thousands did) — so they spawn both in the brook and on the shoals
+    { const K = S3.fallfish.spawn.runK * GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
+      check("the brook's nest sites: ripe fallfish in it peak at about its sites' number, the runners it turned back don't linger there, and fallfish spawn both in the brook and on the lakes' shoals",
+        ffIn <= 1.3 * K + 3 && ffBack <= 0.3 * K + 2 && at.fallfish.brook > 0 && st.spawns.fallfish > at.fallfish.brook,
+        `peak ${ffIn.toFixed(0)} ripe fallfish in the brook (its sites ${K.toFixed(0)}), turned back but in it ${ffBack.toFixed(0)}; spawnings ${at.fallfish.brook} in the brook of ${st.spawns.fallfish}`); }
     gd.sort((p, q) => p - q); const g90 = gd.length ? gd[Math.floor(gd.length * 0.9)] : Infinity;
     check('the nest guarders (smallmouth, pumpkinseed, bullhead males) keep to their nests (90 % of the time within 1.5 m)', gd.length > 20 && g90 < 1.5, `${gd.length} samples, 90th percentile ${f2(g90)} m`);
     // THE LAKES ARE ONE WATER (the human: "pickerel swim through the brook", "bass too", "everything does"; F3.ROAM_L, MOVE3):

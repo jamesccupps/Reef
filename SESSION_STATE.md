@@ -186,24 +186,17 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
-▶▶▶ RESUME HERE (2026-10-18 ~09:30, context compacted mid-slice). UNCOMMITTED in the working tree (also saved as
-G:/synapse-reef-backups/synapse-reef_20261018_0926_wip-T4-fallfish-cap.patch):
-(1) T4 PART 1 — the learned copy is the hidden→output block only (fish3 forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3,
-W2OFF3): BIT-IDENTICAL (tools/w3_fingerprint.mjs), −348 MB array buffers on the true lakes; TRUE_SCALE.md T4 "Built, part 1"
-written. W3_ONLY=core passed except "the fish's cost" — machine load at the time (HEAD measured equally slow: 88 vs 85 ms); rerun.
-(2) THE BROOK'S NEST SITES for fallfish (IN PROGRESS, not gated): T7 VALIDATION FOUND at true scale 5,400 ripe fallfish (a tenth of
-the lakes') crowd the 154-m brook and eat its dace ~30 %/week (dace 0.39× by day 14; season run log: scratchpad
-true_season_may.txt — everything else held 0.94–0.99×, 102 kg/ha, no starvation; pickerel 0.94× from cannibalism/bass — watch).
-Research note: docs/research_notes/Whole lake 3D fish simulation/fallfish_spawning_brook.md (brook holds 50–300 spawning
-fallfish at once, ~150; the rest spawn on lake gravel margins / other streams; realistic dace loss 0.5–1.5 %/wk). Built so far:
-spawn.runK 150/1725 per m² (fallfish), Fish3.runIn (admitted ripe runners in the brook, tallied each full step), _runs(a),
-a.runYr (turned back this season → lake shoals), a.inRun (admitted on entering the brook if a site is free, counted at once),
-seedSeason _seedRunP (F3.SEED_RUNS 3). RESULT SO FAR: 1/10 world 32 fallfish in the brook (cap 29) ✓; TRUE lakes still 1,039
-(cap 150) ✗ — find why (turned-back fish still physically in the brook? fish admitted by seedSeason's young/ripe at start? fish
-arriving through Lower handed between shards? check counts of inRun vs ripe in brook with scratchpad brookcrowd.mjs). Then
-tools/w3_season.mjs 0.22 7 (shards, predator table) → dace loss ≤ ~1–2 %/wk; full gate; commit T4 + the nest sites + the note.
-NEW TOOL (uncommitted): tools/w3_season.mjs — headless true-scale season run on 2 shard threads with weekly census + who ate whom.
-NEXT after that: T6b part 2, T7 (more validation runs: summer, autumn, winter), T8 part 2.
+▶▶▶ RESUME HERE (2026-10-18 afternoon): T4 PART 1 + THE BROOK'S NEST SITES committed together (gate run before committing).
+(1) T4 PART 1 — the learned copy is the hidden→output block only (forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3): bit-
+identical (tools/w3_fingerprint.mjs), −348 MB on the true lakes; TRUE_SCALE.md T4 "Built, part 1".
+(2) THE BROOK'S NEST SITES (TRUE_SCALE.md T7 "Validation" + "Built: the brook's nest sites"): runK 150 fallfish at once; admission
+at the brook's MOUTH (F3.RUN_MOUTH); turned-back runners (a.runYr) go to the lake ground nearest HOME, don't spawn on the brook's
+gravel nor chase mates into it; EVERY fish leaving the brook goes out through the lake's GATE (fish3 GATE — the old straight line
+from the path's end crossed the bank: a real bug, all species); RIPE fish hunt/forage at F3.RIPE_HUNT 0.5. True lakes: ~440 ripe
+fallfish in the brook at 3 h, ~250 at 12 h (was 5,400); 7 days from May 20: dace −4 % (fallfish ate 20 = 1.45 %/wk), no starvation.
+Gate check "the brook's nest sites" (w3 young). Probes: scratchpad brookcrowd2.mjs, brooktrace2.mjs, brookpulls.mjs.
+WATCH: chain pickerel −2.9 %/wk at true scale (232 cannibalism, 51 bass) — research pickerel mortality/cannibalism before acting.
+NEXT: T6b part 2, T7 (more validation runs: summer, autumn, winter; the pickerel), T8 part 2; the sim's shore inputs from the photo forest.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),

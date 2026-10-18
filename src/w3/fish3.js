@@ -115,6 +115,8 @@ export const F3 = {
                               //   (compat: ~10 h; R3: by the hour and the time of day)
   MATE_R: 1.5,          // m: a mate this close (an individual species' pair)
   MATE_CUE: 1.5,        // a ripe fish heads for the nearest ripe fish of the other sex within this × its species' spacing (6–40 m)
+  SEED_RUNS: 3,          // (the season's start: the brook's nest sites filled this many times over a run — fish come and go over its ~3 weeks; an estimate)
+  RUN_MOUTH: Math.max(30 * GEO.SCALE, 3 * GEO.CELL),   // m: a runner this near the brook's mouth finds whether its nest sites are taken
   BROOK_NEAR: 600 * GEO.SCALE, BROOK_RUN: 1500 * GEO.SCALE,   // m from their lake's end of the brook: the pumpkinseed that summer in it, the suckers that run up it (60 / 150 at 1/10)
   // THE LAKES ARE ONE WATER (the human, 2026-10-16: "pickerel swim through the brook", "bass too", "everything does"; research
   // docs/research_notes/Whole lake 3D fish simulation/movement_between_lakes.md). A fish ranges into the brook like any of its
@@ -126,6 +128,7 @@ export const F3 = {
   ROAM_L: 1000,         // m real: the distance from the brook's mouth over which the chance of crossing falls by e
   MIGRATE_V: 1.2,       // m/s: a long goal trip (> 20 m: a spawning run, last year's nest, the brook) at up to this (≤ half its sprint)
   GOAL_W: 1.5,          // steer weight toward a goal (a spawning riffle, last year's nest, the brook's pools, back home)
+  RIPE_HUNT: 0.5,       // a ripe fish's hunting and foraging pulls × this (spawners feed at reduced intensity, ~half: fallfish_spawning_brook.md §3 [inf])
   GUARD_R: 1.0,         // m: a guardian keeps within this of its nest; its fry are held within it
   CAP: 1.5,             // a species' fish ≥ its recruits at most this × its census (a safety: abundance is the sim's)
   // YOUNG-OF-YEAR (the 2-D sim's FRY, its times ÷ TS)
@@ -170,6 +173,12 @@ export const F3 = {
 };
 
 // ============================================================ the species in 3-D ======================================
+// THE BROOK'S NEST SITES (runK: spawning fish a m² of the brook holds at once — research_notes/Whole lake 3D fish simulation/
+// fallfish_spawning_brook.md): fallfish spawn on pebble mounds each built by one male, 3–5 females and 1–2 satellite males to a
+// rush and ~20 about a nest, 5–15 nests in a 154-m brook → 50–300 spawning at once (~150 best guess). A runner that finds the
+// brook full spawns on its lake's shoals that season, as Maine's lake fallfish do on gravel margins and in the lakes' other streams
+// (outside the sim). At true scale the brook is its real 0.03 % of the lakes: without the limit a tenth of the lakes' fallfish
+// (5,400) packed into it and ate its dace at ~30 % a week; the field's dace lose ~2–3 % a week to everything
 // Per species: school size (0 = individuals), the census (fish ≥ minL cm — 7.5 unless set — per hectare of lake: docs/FISH_CENSUS.md;
 // only the species actually in the lakes — the human, 2026-10-16),
 // cruising and sprint speeds (body lengths/s), turning (rad/s), sense range (m, clear water, full light; nonVis the
@@ -261,12 +270,30 @@ const SPAWN3 = {
   // (COSEWIC); the brook's fish spawn in it. Fallfish: in Maine they run from the lakes into streams to spawn (Trial et al. 1983)
   // — males' pebble mounds at the run and riffle heads ≤ 0.5 m, communal, from 15 °C (the lake's fish far from the brook on
   // gravel shoals). Killifish: on plants (Potamogeton) at 0.2–1 m, ~3 clutches. Dace: en masse over riffle gravel < 0.25 m
-  redbreast: { bot: [0.25, 0.6], h: 0.05, brook: 0.5, sites: 8 }, fallfish: { bot: [0.15, 0.5], h: 0.05, site: 'brook', sites: 4 },
+  redbreast: { bot: [0.25, 0.6], h: 0.05, brook: 0.5, sites: 8 }, fallfish: { bot: [0.15, 0.5], h: 0.05, site: 'brook', sites: 4, runK: 150 / 1725 },
   killifish: { bot: [0.2, 1.0], h: 0.2, sub: 'plant', bare: 0.3 }, dace: { bot: [0.1, 0.3], h: 0.02, site: 'brook' },
 };
 // THE BROOK: its path from Upper's outlet (vertex 0) to Lower (the last) — the pool below the mouth (vertices 1–2, ~1 m), the
 // riffles (3 and 6, ~0.3 m), the run between (4–5, ~0.5 m). Fish go in and out along it (Fish3._route)
 const BP = GEO.BROOK_PATH, BLAST = BP.length - 1;
+// each lake's GATE from the brook: its water cell beside the brook's nearest that lake's end of the brook's path (≥ 0.3 m deep) —
+// where a fish leaving the brook for the lake goes out through the mouth (the path's end lies inside the brook's mouth, and a
+// straight line from there to a goal in the lake can cross the bank)
+const GATE = (() => {
+  const g = {};
+  for (const [lake, end] of [[UPPER, BP[0]], [LOWER, BP[BP.length - 1]]]) {
+    let best = null, bd = Infinity;
+    for (let i = 0; i < GEO.N; i++) {
+      if (GEO.body[i] !== BROOK) continue;
+      for (const j of [i - 1, i + 1, i - GEO.NX, i + GEO.NX]) {
+        if (j < 0 || j >= GEO.N || GEO.body[j] !== lake || GEO.depth[j] < 0.3) continue;
+        const [x, y] = GEO.cellCentre(j), d = (x - end[0]) ** 2 + (y - end[1]) ** 2; if (d < bd) { bd = d; best = [x, y]; }
+      }
+    }
+    g[lake] = best || end;
+  }
+  return g;
+})();
 const nearestBP = (x, y) => { let b = 0, bd = 1e9; for (let k = 0; k <= BLAST; k++) { const d = Math.hypot(BP[k][0] - x, BP[k][1] - y); if (d < bd) { bd = d; b = k; } } return b; };
 // the water ≥ 1.5 m nearest each end of the brook in its lake — home for a fish born in the brook
 const lakeNear = (b, p) => { let best = null, bd = 1e9; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === b && GEO.depth[i] >= 1.5) { const [x, y] = GEO.cellCentre(i), d = Math.hypot(x - p[0], y - p[1]); if (d < bd) { bd = d; best = [x, y]; } } return best; };
@@ -311,7 +338,11 @@ export function randomGenome3(hid = HID3) {
 }
 // (leak: the units' memory, sigmoid of the genome's LEAK block — fixed for a genome, so computed once: leak3)
 export function leak3(g, hid = HID3) { const LK = hid * NI + hid + NO * hid + NO, l = new Float32Array(hid); for (let j = 0; j < hid; j++) l[j] = 1 / (1 + Math.exp(-g[LK + j])); return l; }
-export function forward3(g, inp, h, o, hid, active, leak) {
+// (the brain runs the inherited genome g, but its hidden→output weights from lw2 — the fish's PLASTIC copy of that block alone,
+// the only weights its learning changes: TRUE_SCALE.md T4, ~1.1 KB an agent saved over a whole copy of the genome)
+export const W2OFF3 = HID3 * NI + HID3, NW2_3 = NO * HID3;
+export const plastic3 = g => g.slice(W2OFF3, W2OFF3 + NW2_3);   // (a fresh plastic copy: the genome's own block)
+export function forward3(g, lw2, inp, h, o, hid, active, leak) {
   const W2 = hid * NI + hid, B2 = W2 + NO * hid;
   for (let j = 0; j < hid; j++) {
     if (j >= active) { h[j] = 0; continue; }
@@ -320,23 +351,23 @@ export function forward3(g, inp, h, o, hid, active, leak) {
     h[j] = leak[j] * h[j] + (1 - leak[j]) * Math.tanh(s);
   }
   for (let k = 0; k < NO; k++) {
-    let s = g[B2 + k]; const b = W2 + k * hid;
-    for (let j = 0; j < active; j++) s += g[b + j] * h[j];
+    let s = g[B2 + k]; const b = k * hid;
+    for (let j = 0; j < active; j++) s += lw2[b + j] * h[j];
     o[k] = k < 2 ? Math.tanh(s) : 1 / (1 + Math.exp(-s));
   }
 }
 // lifetime learning (core.js reinforce, six outputs): reward-modulated Hebbian change of the hidden→output weights in the
 // plastic copy lw, pulled back toward the inherited g — Baldwinian (g is never written)
 const _post = new Float32Array(NO);
-export function reinforce3(lw, g, hid, h, o, reward, dt) {
+export function reinforce3(lw2, g, hid, h, o, reward, dt) {   // (lw2: the plastic hidden→output block; g's own block is what it relaxes to)
   const W2 = hid * NI + hid, dec = expm(F3.LEARN_DECAY * dt), R = LEARN.RATE * reward, C = LEARN.CLAMP;
   _post[0] = o[0]; _post[1] = o[1]; for (let k = 2; k < NO; k++) _post[k] = o[k] * 2 - 1;
   for (let k = 0; k < NO; k++) {
-    const pk = _post[k], b = W2 + k * hid;
+    const pk = _post[k], b = k * hid, bg = W2 + k * hid;
     for (let j = 0; j < hid; j++) {
-      const i = b + j; let w = lw[i] + dec * (g[i] - lw[i]);
+      const i = b + j; let w = lw2[i] + dec * (g[bg + j] - lw2[i]);
       if (R > 0) w += R * h[j] * pk;
-      lw[i] = w < -C ? -C : w > C ? C : w;
+      lw2[i] = w < -C ? -C : w > C ? C : w;
     }
   }
 }
@@ -384,7 +415,7 @@ class Fish {
     this.near = false; this._i = -1; this._t0 = 0; this._due = -1;   // (fidelity by distance: inside the focus; its index in the list, its last step's time, the step its next block is due)
     this._out = false;   // (SHARDS: it swam into another shard's water this step)
     this.spX = NaN; this.spY = NaN; this.spYr = -1;   // a ripe plant spawner's chosen place (F3.SUB_*) and the year it chose it
-    this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false;
+    this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false; this.runYr = -1; this.inRun = false;   // (runYr: the year a full brook turned it back; inRun: it holds one of the brook's nest sites)
     this.tripEnd = 0; this.tpx = 0; this.tpy = 0; this.inLake = 1;   // a trip into the other lake (until, where); the lake it was last in
     // RENDER-ONLY (render3/fish3view.js interpolates between steps from these; the sim never reads them)
     this._px = 0; this._py = 0; this._pz = 0; this._pyaw = 0; this._ppitch = 0;
@@ -427,7 +458,7 @@ function unpackYoy(d) { const q = new Yoy(); Object.assign(q, d.v); q.s = S3[d.k
 // fraction (the year's first nest, the first missed strike…). So each number field that can hold a fraction is made one here, on a
 // template kept for good, before any real fish exists; integer fields stay integers. (Exported so that it IS kept: V8 holds a shape
 // only while some object has it, and an unexported const nothing reads dies once the module has run — its shapes with it)
-const INT_FIELDS = new Set(['id', 'k', 'sex', 'gen', 'active', 'c', 'j', 'jb', 'fk', 'spYr', 'lake', 'inLake', '_i', '_due']);
+const INT_FIELDS = new Set(['id', 'k', 'sex', 'gen', 'active', 'c', 'j', 'jb', 'fk', 'spYr', 'lake', 'inLake', '_i', '_due', 'runYr']);
 export const SHAPES = [Fish, Yoy].map(C => { const t = new C(); for (const key of Object.keys(t)) if (typeof t[key] === 'number' && !INT_FIELDS.has(key)) t[key] = 0.5; return t; });
 
 // ============================================================ the fish ===============================================
@@ -445,6 +476,7 @@ export class Fish3 {
     this.yoy = [];      // the young-of-year schools (Yoy)
     this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
+    this.runIn = new Float64Array(KEYS3.length); this.brookA = BODIES[2].area;   // ripe runners in the brook (its nest sites: spawn.runK)
     this.shard = null; this.cntOther = null; this.juvOther = null; this.juvOwn = null; this.bio = 0; this._fpOwn = null;   // (SHARDS: setShard)
     this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
@@ -613,10 +645,10 @@ export class Fish3 {
     // (and P: every fish's x, y, z by index, four to a fish — the senses' scan reads these contiguous numbers, not 300,000 scattered
     // fish; each fish's own step keeps its entry current — _live, _posAt — so P holds exactly where each fish is now)
     if (!this.P || this.P.length < 4 * n) this.P = new Float64Array(8 * n + 1024);
-    const P = this.P, cnt = this.cnt; let bio = 0; if (tally) cnt.fill(0);
+    const P = this.P, cnt = this.cnt, runIn = this.runIn; let bio = 0; if (tally) { cnt.fill(0); runIn.fill(0); }
     for (let i = 0; i < n; i++) {
       const a = f[i], o = 4 * i, c = this._hc(a.x, a.y); this.hCell[i] = c; S[c + 1]++; P[o] = a.x; P[o + 1] = a.y; P[o + 2] = a.z;
-      if (tally && a.alive) { cnt[a.k] += a.n; bio += a.n * a.W; }
+      if (tally && a.alive) { cnt[a.k] += a.n; bio += a.n * a.W; if (a.inRun && a.ripe) runIn[a.k] += a.n; }   // (the run's admitted fish, in the brook or on their way in from its mouth)
     }
     if (tally) { for (const q of this.yoy) if (q.alive) bio += q.n * q.W; this.bio = bio; if (!this.shard) this.chem.fishKgHa = bio / 1000 / this.lakeHa; }   // (SHARDS: the set sums the shards' bio)   // (the zooplankton's kairomone level: diel vertical migration)
     for (let c = 0; c < NH; c++) S[c + 1] += S[c];
@@ -643,7 +675,7 @@ export class Fish3 {
     a.id = this.nextId++; a.k = s.i; a.s = s; a.n = n; a.school = n > 1;   // (a school, or a group of a solitary species' young; one fish: its own brain)
     a.x = x; a.y = y; a.hx = x; a.hy = y; a.yaw = rand(0, Math.PI * 2);
     a.age = yrs * YEAR; a.sex = a.school ? 2 : rand() < 0.5 ? 0 : 1;
-    a.genes = genes || randomGenes(); a.g = genome || randomGenome3(); a.lw = Float32Array.from(a.g); a.h = new Float32Array(HID3); a.leak = leak3(a.g);
+    a.genes = genes || randomGenes(); a.g = genome || randomGenome3(); a.lw = plastic3(a.g); a.h = new Float32Array(HID3); a.leak = leak3(a.g);
     this._traits(a);
     a.L = clamp(vbLength(sp.vb, yrs) * Lmul, sp.Lhatch, sp.vb.Linf); a.K = rand(BIOE.K_START[0], BIOE.K_START[1]); a.W = a.K * stdWeight(sp.lw, a.L);
     a.mature = this._matureAt(a);
@@ -781,6 +813,10 @@ export class Fish3 {
     if (!(yf1 > yf0)) return 0;
     const win = this._spawnWin || (this._spawnWin = this._spawnWindows()), made = carry ? this.yoy.filter(q => q.alive).map(q => [q, yf0]) : [], used = new Set();
     const yr0 = Math.floor(this.env.time / YEAR) * YEAR, spent = b => b.lastSpawn >= yr0, mates = this._mateIndex();   // (spawned already this year: once a year)
+    // (the brook's share of a species' runners, by its nest sites: SEED_RUNS sets at once over the season — a run's fish come and go
+    // over its ~3 weeks)
+    const nRun = new Float64Array(KEYS3.length); for (const b of this.fish) if (b.alive && b.mature && b.brookRun && b.s.spawn.runK) nRun[b.k] += b.n;
+    this._seedRunP = KEYS3.map((k, i) => S3[k].spawn.runK ? Math.min(1, F3.SEED_RUNS * S3[k].spawn.runK * this.brookA / Math.max(1, nRun[i])) : 1);
     let nNew = 0;
     for (let i = 0, n0 = this.fish.length; i < n0; i++) {
       const a = this.fish[i]; if (!a.alive || !a.mature || a.sex === 1 || spent(a)) continue;   // (the female, or the school, spawns)
@@ -854,7 +890,7 @@ export class Fish3 {
   // few places of its spawning depth about its home
   _seedGround(a) {
     const s = a.s, sb = s.spawn, st = this.sites[s.key], wet = (x, y) => GEO.bodyAt(x, y) === a.lake && GEO.depthAt(x, y) > 0.12;
-    if (a.brookRun) { const p = BP[1 + ((rand() * (BLAST - 1)) | 0)]; return [p[0], p[1]]; }
+    if (a.brookRun && (!sb.runK || rand() < this._seedRunP[a.k])) { const p = BP[1 + ((rand() * (BLAST - 1)) | 0)]; return [p[0], p[1]]; }
     if (st && st[a.lake].length) { const p = st[a.lake][(rand() * st[a.lake].length) | 0], x = p[0] + rand(-1, 1), y = p[1] + rand(-1, 1); return wet(x, y) ? [x, y] : [p[0], p[1]]; }
     if (sb.sub) { const x0 = a.x, y0 = a.y; a.x = a.lhx; a.y = a.lhy; this._pickSpot(a); a.x = x0; a.y = y0; const p = [a.spX, a.spY]; a.spX = a.spY = NaN; if (wet(p[0], p[1])) return p; }
     const bc = this._bandC || (this._bandC = {}), key = s.key + '_' + a.lake;
@@ -963,7 +999,7 @@ export class Fish3 {
     const k = Math.min(G.nL[c] - 1, Math.max(0, (a.z / G.DZ) | 0)), j = a.j = G.cell0[c] + k;
     a.jb = this.bedCell(c, a.bed);
     a.T = e.temp[j]; a.o2 = ch.o2[j];
-    { const was = a.ripe; a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]); if (a.ripe && !was && i < this._hashN) this._ripeAdd(i); }
+    { const was = a.ripe; a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]); if (a.ripe && !was && i < this._hashN) this._ripeAdd(i); if (!a.ripe) a.inRun = false; }
     if (a.ripe && s.spawn.sub && !this.sites[s.key] && (a.spX !== a.spX || a.spYr !== this._yr)) { this._pickSpot(a); a.spYr = this._yr; }   // (a plant spawner's place: chosen once a season — ripeness flickers at its temperatures' edge)
     this._roam(a, yf, dtA);
     const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
@@ -1158,7 +1194,7 @@ export class Fish3 {
     const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
     if (hd > 0.5) rel(a.hx, a.hy, 23); else inp[23] = inp[24] = 0;
     inp[25] = clamp(hd / (2 * s.home), 0, 1);
-    forward3(a.lw, inp, a.h, a.o, HID3, a.active, a.leak);
+    forward3(a.g, a.lw, inp, a.h, a.o, HID3, a.active, a.leak);
   }
 
   // ---------- innate drives: steer (yaw rate), a target depth (pitch) and thrust ----------
@@ -1194,12 +1230,16 @@ export class Fish3 {
       off *= 1 - needy;
     }
     // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
-    if (a.ripe && a.mate && a.mate.alive && a.mate.ripe) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1), d - 0.5 * F3.MATE_R); }
+    if (a.ripe && a.mate && a.mate.alive && a.mate.ripe && !(a.brookRun && !this._runs(a) && GEO.bodyAt(a.mate.x, a.mate.y) === BROOK)) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1), d - 0.5 * F3.MATE_R); }   // (not a turned-back runner after a mate in the brook)
     // food: forage toward it (hungry), pursue a prey fish — less while it is on its way to its habitat (the dusk and dawn moves
     // go whatever the food), and no lingering in a patch then
-    const going = clamp(off - 0.3, 0, 1), inPatch = a.fk >= 2 && a.fd < 1.5 && going <= 0;
-    if (a.fk === 1) steer(a.fx - a.x, a.fy - a.y, F3.PURSUIT_W * clamp(1 - a.fd / Math.max(0.6, a.senseR), 0.2, 1) * (0.4 + 0.6 * a.hunger), a.fd - 0.5 * s.strikeR);
-    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going) * (1 + needy), Math.hypot(a.fx - a.x, a.fy - a.y));
+    // (a RIPE fish hunts and forages at RIPE_HUNT of its pull: spawners keep feeding, less — so on its way to spawn the ground's
+    // pull beats a passing prey's; research_notes/Whole lake 3D fish simulation/fallfish_spawning_brook.md §3. At true scale the
+    // ripe fallfish the full brook turned back stayed in it chasing its dace, the prey's pull at a hungry fish's 1.55 over the
+    // ground's 1.5)
+    const going = clamp(off - 0.3, 0, 1), inPatch = a.fk >= 2 && a.fd < 1.5 && going <= 0, hk = a.ripe ? F3.RIPE_HUNT : 1;
+    if (a.fk === 1) steer(a.fx - a.x, a.fy - a.y, hk * F3.PURSUIT_W * clamp(1 - a.fd / Math.max(0.6, a.senseR), 0.2, 1) * (0.4 + 0.6 * a.hunger), a.fd - 0.5 * s.strikeR);
+    else if (a.fk >= 2 && !inPatch) steer(a.fx - a.x, a.fy - a.y, hk * F3.FORAGE_W * a.hunger * a.fv * (1 - 0.8 * going) * (1 + needy), Math.hypot(a.fx - a.x, a.fy - a.y));
     // a threat: away from it (small fish also toward the shallows)
     if (a.threat && a.fear > 0.05) {
       let bx = a.x - a.threat.x, by = a.y - a.threat.y; const d = Math.hypot(bx, by) || 1; bx /= d; by /= d;
@@ -1482,14 +1522,26 @@ export class Fish3 {
   }
   // its goal now (x, y, how near counts as there), or null: its nest; a ripe brook spawner's riffle; a faithful nester's
   // last nest; a brook-summering pumpkinseed's pool; home in its lake when it is elsewhere
+  _runs(a) { return a.brookRun && a.runYr !== this._yr; }   // (a brook runner this season: not turned back by a full brook)
+  _atMouth(a) { const R = F3.RUN_MOUTH, m0 = BP[0], m1 = BP[BLAST]; return (a.x - m0[0]) ** 2 + (a.y - m0[1]) ** 2 < R * R || (a.x - m1[0]) ** 2 + (a.y - m1[1]) ** 2 < R * R; }
   _goal(a, out) {
     const s = a.s;
     if (a.nt > 0) { out[0] = a.nx; out[1] = a.ny; out[2] = 0.5; return out; }
-    if (a.ripe && a.brookRun) { const v = BP[a.lake === UPPER ? 3 : 6]; out[0] = v[0]; out[1] = v[1]; out[2] = 2.5; return out; }
+    if (a.ripe && this._runs(a)) {
+      // (a runner reaching the brook's mouth — or in it — takes a nest site if one is free, counted at once so a block's arrivals
+      // can't all crowd in; or, the brook full, turns back at the mouth and spawns on its lake's shoals this season. A site frees as
+      // its fish spawns and leaves. At true scale thousands arrive within days: turned back only once inside, they milled in the
+      // brook by the thousand)
+      const K = s.spawn.runK;
+      if (K && !a.inRun && (GEO.bodyAt(a.x, a.y) === BROOK || this._atMouth(a))) { if (this.runIn[a.k] + a.n <= K * this.brookA) { a.inRun = true; this.runIn[a.k] += a.n; } else a.runYr = this._yr; }
+      if (a.runYr !== this._yr) { const v = BP[a.lake === UPPER ? 3 : 6]; out[0] = v[0]; out[1] = v[1]; out[2] = 2.5; return out; }
+    }
     if (a.ripe && s.spawn.faith && a.nestX === a.nestX) { out[0] = a.nestX; out[1] = a.nestY; out[2] = s.spawn.faith; return out; }
     if (a.ripe && a.spX === a.spX) { out[0] = a.spX; out[1] = a.spY; out[2] = 2; return out; }   // (a plant spawner's chosen structure)
     if (a.ripe && this.sites[s.key]) {   // the nearest of its lake's spawning grounds
-      const best = this._siteNear(s.key, a.lake, a.x, a.y);
+      // (a runner the full brook turned back: the ground nearest its home, not the one by the brook's mouth where it stands — there
+      // the true lakes' turned-back fallfish milled by the hundred, half on the brook's own cells)
+      const tb = a.brookRun && !this._runs(a), best = this._siteNear(s.key, a.lake, tb ? a.lhx : a.x, tb ? a.lhy : a.y);
       if (best) { out[0] = best[0]; out[1] = best[1]; out[2] = 3; return out; }
     }
     if (a.brookie && this._brookSeason(a)) { const v = BP[a.lake === UPPER ? 1 + (a.id & 1) : 4 + (a.id & 1)]; out[0] = v[0]; out[1] = v[1]; out[2] = 3; return out; }
@@ -1554,7 +1606,12 @@ export class Fish3 {
     if (ti === ni) return out;
     const dir = Math.sign(ti - ni); let k = ni + dir;
     if (k >= 0 && k <= BLAST && Math.hypot(BP[k][0] - a.x, BP[k][1] - a.y) < 1.5) k += dir;
-    if (k < 0 || k > BLAST) return out;
+    if (k < 0 || k > BLAST) {   // (past the path's end: out through the mouth's gate into the lake, then for the goal — at true scale the
+      // straight line from the mouth crossed the bank, and fish leaving the brook for a goal off its line stayed in it)
+      const gt = tb === UPPER || tb === LOWER ? GATE[tb] : null;
+      if (gt && Math.hypot(gt[0] - a.x, gt[1] - a.y) > 1.5) { out[0] = gt[0]; out[1] = gt[1]; }
+      return out;
+    }
     out[0] = BP[k][0]; out[1] = BP[k][1]; return out;
   }
   // its mate: a school spawns within itself (both sexes — or with a ripe school beside it); a pairing species needs a ripe
@@ -1600,10 +1657,11 @@ export class Fish3 {
     if (this._coarse || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0) {
       // (a pair stays a pair: a mate still ripe and in reach is kept — the search runs only for a fish without one, and at true scale
       // in June tens of thousands of fish are ripe at once)
-      const Rm = a.sex === 2 ? 3 : a.brookRun && GEO.bodyAt(a.x, a.y) === BROOK ? 80 * GEO.BROOK_SCALE : s.mateCue, m = a.mate;
+      const Rm = a.sex === 2 ? 3 : this._runs(a) && GEO.bodyAt(a.x, a.y) === BROOK ? 80 * GEO.BROOK_SCALE : s.mateCue, m = a.mate;   // (the run's reach: not a turned-back fish's)
       if (!(m && m !== a && m.alive && m.ripe && (m.x - a.x) ** 2 + (m.y - a.y) ** 2 + (m.z - a.z) ** 2 < Rm * Rm)) a.mate = a.sex === 2 ? (this._findMate(a, i, 3) || a) : this._findMate(a, i, Rm);
     }
-    const onGround = a.brookRun ? GEO.bodyAt(a.x, a.y) === BROOK : a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
+    // (a turned-back runner spawns on its lake's shoals, not on the brook's gravel, as shallow as theirs)
+    const inB = GEO.bodyAt(a.x, a.y) === BROOK, onGround = this._runs(a) ? inB : !(inB && a.brookRun) && a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
     if (!onGround || !a.mate || (a.sex === 1)) return;   // (the female, or the school, spawns)
     if (a.spX === a.spX && Math.hypot(a.x - a.spX, a.y - a.spY) > 4 && this._subAt(sb.sub, a.x, a.y) < this._subAt(sb.sub, a.spX, a.spY)) return;   // (a plant spawner lays at its chosen structure, or on as good on its way)
     if (sb.sub && this.sites[s.key]) { const p = this._siteNear(s.key, a.lake, a.x, a.y); if (!p || Math.hypot(p[0] - a.x, p[1] - a.y) > 4) return; }   // (a plant spawner with grounds — chain pickerel — spawns on them: the spring's chosen mats)
