@@ -186,7 +186,28 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
-▶▶▶ RESUME HERE (2026-10-18 afternoon): T4 PART 1 + THE BROOK'S NEST SITES committed together (gate run before committing).
+▶▶▶ RESUME HERE (2026-10-18 evening): GPU STAGE G1 — THE WHOLE COARSE BLOCK RUNS ON THE GPU (the human: "ok now do the gpu").
+docs/GPU_SIM.md "G1 — the design as built" + results tables. Code: src/w3/gpu/layout.js (pure: the struct-of-arrays fields, pack/
+unpack from a Fish3, statics, water sections, WGSL constants generated from the CPU's config — gate section `gpu` checks the round
+trip), src/w3/gpu/wgsl.js (every kernel, each a port of the fish3 function it names), src/w3/gpu/gpufish.js (WebGPU host;
+GpuFish.block(dt) = one coarse block in one submit, the water written back; schools() every MERGE_EVERY blocks and compact()
+every 10 as their own submits; census()). Checks: tools/gpu/g1_check.html (each phase on fish3 and the GPU from the same fish:
+true lakes — prey/threat identical for every fish, moves 28.30 m on both, body exact, food totals within 0.5 %, O2 identical,
+the young within 2 %); tools/gpu/g2_run.html (multi-day runs, GPU vs fish3's own blocks, several seeds). fish3.js: _livePre
+split out of _live (fingerprint identical), GATE/LAKE_NEAR exported. Commits 8669e80, 1f0bf92, c644e71 (+ schools, pending).
+KEY DESIGN: phases for all fish at once; mates/threats read from a snapshot; counter-based RNG; grid cells sorted by index;
+64-bit fixed-point sums; food shared by RATIONING (each its ask while a cell's food lasts — the exponential first version starved
+the crowded young 9 %); births/recruits/dissolves get slots from one workgroup walking in index order.
+FINDING (docs/GPU_SIM.md): fish3's coarse-block STRIKES search the block-START grid after every fish moved (~28 m true lakes) — far
+fish are struck far less than near ones (fine steps, fresh grid); the GPU emulates fish3's list order for parity; correcting it
+needs the predation recalibrated (pickerel ~1.3 %/wk, dace) — a decision for after G2. Same for the mate search (spawning).
+G2 FIRST RESULT (1/10, seed 611, 30 days from yf 0.3): day 10 CPU · GPU 104.0 · 103.9 kg/ha, each species' adults and young within
+~1 % (perch 0.990 · 0.990, young white perch 147k @ 2.02 cm both); GPU ~17 ms a block vs ~75 ms CPU (the 1/10 world's fixed overheads).
+NEXT: finish G2 (3 seeds × 30 days at 1/10; then the true lakes against the CPU year run, true_year.txt — the GPU's true block
+~50 ms + the CPU water model ~50 ms → pipeline the water); the schools pass's check; then G3 (the browser's fast-forward on the GPU).
+The CPU year run (scratchpad true_year.txt, tools/w3_season.mjs 0.22 365 611 14) is still going: read it on resuming.
+
+▶▶▶ (earlier) RESUME HERE (2026-10-18 afternoon): T4 PART 1 + THE BROOK'S NEST SITES committed together (gate run before committing).
 (1) T4 PART 1 — the learned copy is the hidden→output block only (forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3): bit-
 identical (tools/w3_fingerprint.mjs), −348 MB on the true lakes; TRUE_SCALE.md T4 "Built, part 1".
 (2) THE BROOK'S NEST SITES (TRUE_SCALE.md T7 "Validation" + "Built: the brook's nest sites"): runK 150 fallfish at once; admission

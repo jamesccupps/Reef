@@ -3,7 +3,7 @@
 // It holds a Fish3's agents (and, as the kernels come, its young) on the GPU as struct-of-arrays buffers (layout.js), the lakes'
 // statics, the water each block, and runs the block's kernels (wgsl.js) in fish3's order.
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, NAF, NYF, NBR, NGN, AF, FL } from './layout.js';
-import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, moduleSource } from './wgsl.js';
+import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, moduleSource } from './wgsl.js';
 import { F3, KEYS3 } from '../fish3.js';
 import { GEO } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
@@ -32,7 +32,8 @@ export class GpuFish {
     this.consts = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
     // the feeding's per-cell accumulators (pairs: 64-bit) and shares, by kind
     { const NC = env.G.NCELL, NCo = env.G.NC; let o = 0; const ac = {}; for (const [k, len] of [['TB', NC], ['TL', NC], ['TS', NC], ['RC', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['O2', NC], ['SEDADD', NC],
-        ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap]]) { ac[k] = o; o += 2 * len; }
+        ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap],
+        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC]]) { ac[k] = o; o += 2 * len; }   // (…W: the wants weighted by their appetite's elasticity — bShare)
       this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
       this.consts += '\n' + Object.entries(ac).map(([k, v]) => `const AC_${k}: u32 = ${v}u;`).join('\n') + '\n' + Object.entries(rc).map(([k, v]) => `const R_${k}: u32 = ${v}u;`).join('\n'); }
     // the footprint's CSR by radius class (fish3 forageR: a few distinct radii)
@@ -52,7 +53,7 @@ export class GpuFish {
     let so = 0; for (const L of this.levels) { L.sums = so; so += L.b; L.dstNext = so; so += L.b; }
     B.SUMS = d.createBuffer({ size: 4 * Math.max(16, so), usage: ST_() });
     B.TL = d.createBuffer({ size: 4 * NTALLY, usage: ST_() }); B.GL = d.createBuffer({ size: 4 * 1024, usage: ST_() });
-    B.GS = d.createBuffer({ size: 4 * (512 + 2 * this.cap), usage: ST_() }); B.PX = d.createBuffer({ size: 16 * this.cap, usage: ST_() });
+    B.GS = d.createBuffer({ size: 4 * (512 + 8193 + 2 * this.cap + this.ycap), usage: ST_() }); B.PX = d.createBuffer({ size: 16 * this.cap, usage: ST_() });
     B.ACC = d.createBuffer({ size: 4 * this.accWords, usage: ST_() }); B.RC = d.createBuffer({ size: 4 * this.rcWords, usage: ST_() });
     // the young: their struct of arrays, genomes, their grid
     B.Y = d.createBuffer({ size: 4 * NYF * this.ycap, usage: ST_() }); B.YG = d.createBuffer({ size: 4 * NGN * this.ycap, usage: ST_() });
@@ -74,6 +75,7 @@ export class GpuFish {
     this.LY = L([R, R, S, S, S, S, S, S, S]);
     this.LB = L([R, R, S, S, R, S, S, S, S, S]);
     this.LC = L([S, S, S, S, S, S, S, S, S, S]);
+    this.LSc = L([R, R, R, R, S, S, S, S, S, S]);
     this.LS = L([R, R, S, S, R, S, S, S, S]);
     const B = this.B;
     this.bg0 = d.createBindGroup({ layout: this.L0, entries: [B.U, B.A, B.ST, B.WD, B.BR, B.GN].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
@@ -83,6 +85,7 @@ export class GpuFish {
     const bgG = (u, hs = B.HS, hi = B.HI, hc = B.HC) => d.createBindGroup({ layout: this.LG, entries: [B.CNT, hs, hi, hc, B.SUMS, u, B.Y].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
     this.bgY = d.createBindGroup({ layout: this.LY, entries: [B.YHS, B.YHI, B.TL, B.GL, B.Y, B.YG, B.GS, B.ACC, B.RC].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
     this.bgC = d.createBindGroup({ layout: this.LC, entries: [B.MAP, B.A2, B.BR2, B.GN2, B.Y, B.YG, B.Y2, B.YG2, B.GL, B.CEN].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
+    this.bgSc = d.createBindGroup({ layout: this.LSc, entries: [B.HS, B.HI, B.YHS, B.YHI, B.Y, B.YG, B.GL, B.GS, B.TL, B.IND].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
     this.bgB = d.createBindGroup({ layout: this.LB, entries: [B.HS, B.HI, B.TL, B.GL, B.SI, B.GS, B.PX, B.Y, B.YG, B.IND].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
     const NONE = 0xFFFFFFFF;
     this.gpItems = gp([0, this.NH, 0, 0, 0, 0, 0, 0]); this.bgItems = bgG(this.gpItems);
@@ -109,10 +112,11 @@ export class GpuFish {
       ['y_snap', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
     mk(moduleSource(this.consts, COMPACT_BINDINGS, COMPACT), [this.L0, this.LC], ['c_walk', 'c_gatherA', 'c_gatherY', 'c_census']);
+    mk(moduleSource(this.consts, SCHOOL_BINDINGS, TALLY, FB4, SCHOOL), [this.L0, this.LSc], ['s_hist', 's_cut', 's_mark', 's_merge', 's_slots', 's_fill', 's_retire', 's_count', 's_yMark', 's_yMerge']);
   }
   // ---------- data in ----------
   uploadAgents(fish = this.F.fish) {
-    const P = packAgents(fish, this.cap); this.n = P.n; this.setGlobalsU({ 36: this.F.nextId >>> 0 }); this.slotOf = P.slot; this.bySlot = []; for (const [a, i] of P.slot) this.bySlot[i] = a;
+    const P = packAgents(fish, this.cap); this.n = P.n; this.setGlobalsU({ 36: this.F.nextId >>> 0 }); this.dev.queue.writeBuffer(this.B.GL, 4 * 40, Float32Array.of(Math.min(3e38, this.F.soloL))); this._soloAt = this.F._soloAt; this.slotOf = P.slot; this.bySlot = []; for (const [a, i] of P.slot) this.bySlot[i] = a;
     const q = this.dev.queue; q.writeBuffer(this.B.A, 0, P.A); q.writeBuffer(this.B.BR, 0, P.BR); q.writeBuffer(this.B.GN, 0, P.GN);
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH]));
     return P;
@@ -208,6 +212,23 @@ export class GpuFish {
     const p = enc.beginComputePass(); p.setPipeline(this.P.b_recruitFill); p.setBindGroup(0, this.bg0); p.setBindGroup(1, this.bgB); p.dispatchWorkgroupsIndirect(this.B.INDA, 0); p.end();
     this._passB(enc, 'b_count', 1, 1);
   }
+  // THE SCHOOLS (fish3 _schools + _mergeYoy, at a step's end every MERGE_EVERY): a submit of its own at the next block's start (its new
+  // agents append after the counts are known); the own-brain cut every SOLO_EVERY days
+  async schools() {
+    const e = this.env; this.setUniforms(this._dt || 1752, this._lux || {});
+    const cut = e.time - (this._soloAt ?? -1e18) > F3.SOLO_EVERY * 86400; if (cut) this._soloAt = e.time;
+    this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
+    await this.run(enc => {
+      enc.clearBuffer(this.B.GS, 4 * 512); this.encodeGrid(enc); this.encodeYGrid(enc);
+      const sc = (name, n, wg) => this._pass(enc, this.P[name], [this.bg0, this.bgSc], n, wg);
+      if (cut) { sc('s_hist', this.n, 256); sc('s_cut', 1, 1); }
+      sc('s_mark', this.n, 128); sc('s_merge', this.n, 128); sc('s_slots', 256, 256);
+      enc.copyBufferToBuffer(this.B.IND, 16, this.B.INDA, 0, 12);
+      const p = enc.beginComputePass(); p.setPipeline(this.P.s_fill); p.setBindGroup(0, this.bg0); p.setBindGroup(1, this.bgSc); p.dispatchWorkgroupsIndirect(this.B.INDA, 0); p.end();
+      sc('s_retire', this.n, 128); sc('s_count', 1, 1); sc('s_yMark', this.ny, 128); sc('s_yMerge', this.ny, 128);
+    });
+    const g = new Float32Array(await this.read(this.B.GL, 256)), u = new Uint32Array(g.buffer); this.n = g[34]; this.F.nextId = u[36]; this.F.soloL = g[40];
+  }
   // COMPACTING (fish3 filters its lists): a submit of its own, the counts read back after
   async compact() {
     this.setUniforms(this._dt || 1752, this._lux || {});
@@ -234,6 +255,7 @@ export class GpuFish {
   // the water model after (as with Fish3: F.step(dt); env.step(dt))
   async block(dt) {
     const e = this.env, F = this.F, YEAR = CLOCK3.YEAR_LEN, yf = e.yearFrac(), yr = Math.floor(e.time / YEAR);
+    if (this.blk > 0 && this.blk % F3.MERGE_EVERY === 0) await this.schools();   // (fish3: at the end of every MERGE_EVERY-th step — here the next one's start)
     if ((this.blk + 1) % (this.compactEvery || 10) === 0) await this.compact();
     F._yr = yr; if (yf >= F3.SITE_YF && yf < 0.5 && F._siteYr !== yr) { F._siteYr = yr; F._siteSub(); this.uploadSites(); }
     this.uploadWater(); this._dt = dt; this._lux = { lux0: e.lux, luxB: [e.lux, e.luxAhead(dt / 2), e.luxAhead(dt)] }; this.setUniforms(dt, this._lux);

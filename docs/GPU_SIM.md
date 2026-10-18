@@ -128,10 +128,15 @@ So far ~40 ms on the GPU against ~6.5 s on the CPU for the same phases (the CPU 
 processor).
 
 - **Sharing food.** Every fish (and school of young) asks for grams from the cells of its footprint as fish3 would on the
-  untouched water; the asks are summed per cell and kind as T, the share of the cell's reachable food asked for; each gets its
-  whole ask while T ≤ 1, its 1/T beyond. A first version shared by 1 − e^(−T) (each feeder a fraction of what is left) and starved
-  the crowded young by ~9 % with food to spare: fish3's feeders ask for grams and get them until the food runs out. The crayfish
-  keep the exponential (a crowd can't take every crayfish of a cell, the sheltered ones too, in a block).
+  untouched water; the asks are summed per cell and kind as T, the share of the cell's reachable food asked for, and V, the asks
+  weighted by each feeder's appetite elasticity (its functional response's K/(E + K), 2K²/(E² + K²) for the adults' type III
+  on zooplankton, 1 when capped at CROP of what is there). A cell gives up (1 − W)·min(T, 1) + W·(1 − e^(−T)) of its reachable
+  food (W = V/T), each feeder that share of its ask: fish3's feeders, one after another, each ask for grams — an appetite that
+  doesn't fall with the food gets its whole ask until the food runs out, one that falls in step with it strips the cell
+  geometrically. Two first versions missed: the exponential alone (each a fraction of what is left) starved the crowded young
+  by ~9 % with food to spare; rationing alone fed them ~3–5 % too well (the brook's young dace reached recruiting size days early,
+  and recruited in 2 of 3 seeds where fish3's didn't). The crayfish keep the exponential (a crowd can't take every crayfish of a
+  cell, the sheltered ones too, in a block).
 - **Strikes: a finding about the CPU sim.** A coarse block's strikes look for prey through the neighbour grid built at the
   block's START, while by then every fish has moved (~28 m on the true lakes): a predator finds a prey only where its start cell
   is near where the predator got to — in practice the fish after it in the list, which haven't moved yet. With the grid rebuilt
@@ -142,9 +147,30 @@ processor).
   week, the dace's losses) — a decision for after G2. (The per-phase harness can't compare strikes: in it every prey has moved
   before any predator feeds, as never happens in the CPU's own block — that comparison is G2's, on real blocks.)
 
-Next: spawning (mates, the spawn, a mutated crossover genome for each new school, the nest guard), recruitment (the young into
-agents), the schools (merge, split, the budget's own-brain cut, dissolve), compacting the dead; then the whole block in a loop
-with the water model.
+- **Births and schools.** Spawning (mates in fish3's list order; claims so a male or partner school spawns once a block; the
+  newborn school's genome a mutated crossover — core.js's operators on the newborn's own counter stream; the nest-guarding male),
+  recruitment (the grown young into agents up to the species' cap), and every MERGE_EVERY blocks the schools (the own-brain cut
+  from a length histogram, dissolves into fresh siblings, splits, merges by claims; the young's schools merge) — slots and ids
+  from ordered single-workgroup walks. Compaction every 10 blocks. GpuFish.block(dt) runs the whole block in one submit.
+
+### G2 — first validation (1/10 lakes, 3 seeds × 30 days from mid-June, tools/gpu/g2_run.html)
+
+Each species' adults at day 30 as a share of the start, mean over seeds 611–613 [range], fish3's own blocks · the GPU engine
+(before the schools pass and the blended sharing):
+
+| | sunfish | perch | sucker | bullhead | white perch | bass | pickerel | redbreast | fallfish | killifish | dace |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| fish3 | 0.969 | 0.970 | 0.960 | 0.908 | 0.976 | 0.923 | 0.896 | 0.958 | 0.912 | 0.855 | 0.891 |
+| GPU | 0.966 | 0.971 | 0.968 | 0.902 | 0.977 | 0.925 | 0.901 | 0.957 | 0.902 | 0.855 | 1.081 |
+
+Biomass, the young's numbers and lengths agree within the seeds' spread; so do the random processes the per-phase harness
+couldn't compare — seed 611: spawnings 28 bullhead, 2 white perch, 1 sunfish, 3 dace (fish3) against 28, 2, 1, 4 (GPU); followed
+fish eaten 245 against 224 — the list-order emulation of strikes and mates reproduces fish3's. The dace: the GPU's young dace grew
+past their recruiting length (3.5 cm) days early (fish3's largest school 3.37 cm at day 30, seed 612) — the food sharing (fixed
+since: the blended rule above) and the young's merging (the schools pass, added since). GPU ~17 ms a block, fish3 ~45–75 ms.
+
+Next: re-run with the schools pass and the blended sharing; then the true lakes against the CPU's year run; pipeline the water
+model (the CPU's ~50 ms a true block would match the GPU's).
 
 ## Stages
 

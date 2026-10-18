@@ -47,7 +47,7 @@ export const YOY_FIELDS = [
   'n', 'x', 'y', 'z', 'tx', 'ty', 'tz', 'bed', 'L', 'W', 'bdep', 'hue', 'tk', 'rO2', 'p', 'cover', 'nx', 'ny', 'hd', 'spotBed',
   // SCRATCH: where it began the block; this tick's water, wants, its requests of each food, what it got, its starvation hazard
   ['sx', 's'], ['sy', 's'], ['sz', 's'], ['feeds', 's'], ['st', 's'], ['yT', 's'], ['yo2', 's'], ['want', 's'], ['got', 's'], ['J', 's'], ['hS', 's'],
-  ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'],
+  ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'], ['wZ', 's'],
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const YF = Object.fromEntries(YOY_FIELDS.map(([n], i) => [n, i]));
 export const NYF = YOY_FIELDS.length;

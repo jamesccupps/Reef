@@ -869,7 +869,18 @@ const PW: f32 = 1e12;   // the wanted fractions' fixed point (a tiny fish's shar
 const GW: f32 = 1e9;    // grams' fixed point (O₂ breathed, organic matter wanted or added)
 fn acc64(at: u32, v: f32, scale: f32) { add64(&ACC, at, v, scale); }
 fn rdAcc(at: u32, scale: f32) -> f32 { return (f32(atomicLoad(&ACC[at])) + f32(atomicLoad(&ACC[at + 1u])) * 4294967296.0) / scale; }
-fn ration(T: f32) -> f32 { if (T > 1.0) { return 1.0 / T; } return 1.0; }   // (each its whole want while the cell's food lasts; else its share)
+// THE SHARE of its want each feeder of a cell gets: T the summed wants (as shares of the cell's reachable food), W their weight on
+// appetites that fall with the food (each feeder's K/(E + K) — its functional response's elasticity — or 1 when it was capped at
+// CROP of what is there): fish3's feeders, one after another, each ask for grams; an appetite that doesn't fall with the food
+// gets its whole ask until the food runs out (rationing: min(T, 1) taken), one that falls in step with it strips the cell
+// geometrically (1 − e^(−T)). A first version rationed every feeder alike and the young grew ~3–5 % fast at 1/10 (the brook's
+// young dace reached recruiting size days early)
+fn bShare(T: f32, V: f32) -> f32 {
+  if (!(T > 0.0)) { return 1.0; }
+  let W = clamp(V / T, 0.0, 1.0); let lin = select(1.0, 1.0 / T, T > 1.0); var ex = 1.0 - 0.5 * T; if (T > 1e-4) { ex = (1.0 - exp(-T)) / T; }
+  return (1.0 - W) * lin + W * ex;
+}
+fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
 // ---- fish3 _feed's set-up: the gut's room by the O₂ and a guardian's appetite, what it can take this block ----
 @compute @workgroup_size(128) fn k_feed0(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -1033,26 +1044,28 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
     let Ez = select(0.0, zE / zEw * PLANKTON_UGL, zEw > 0.0); let fZ = Ez * Ez / (Ez * Ez + F3_K_ZOO * F3_K_ZOO);
     let qB = pow(fB, F3_SHARE_Q); let qZ = pow(fZ, F3_SHARE_Q); tB = select(0.5, qB / (qB + qZ), qB + qZ > 0.0); tZ = 1.0 - tB;
   }
-  let want0 = want - got; var qf = 0u;
+  let want0 = want - got; var qf = 0u; var wB_ = 0.0; var wW_ = 0.0; var wS_ = 0.0; var wZ_ = 0.0;   // (each request's appetite elasticity: see bShare)
   // the bed and the weeds: split by what each offers; the bed's worms and scuds (K 0: at most CROP of the reachable), the weeds' fauna
   if (tB > 0.0 && room > 0.0 && want > got && fB > 0.0) {
     let wB = min(room, want0 * tB * BENTHOS_Q) * n * fB * visDay;
     var gB = 0.0;
-    if (Eb > 0.0 && sB > 0.0) { let gr = min(wB * Eb / (Eb + Ew), PLANKTON_CROP * sB); let f = gr / sB; sa(A_qB, i, f); gB += gr; }
-    if (Ew > 0.0 && sW > 0.0) { let f = min(wB * Ew / (Eb + Ew), PLANKTON_CROP * sW) / sW; let cf = min(f * LIT3_CR_PREF, PLANKTON_CROP); sa(A_qW, i, f); sa(A_qC, i, cf); gB += f * sWls + cf * sWc; }
+    let el = KB / (Eb + Ew + KB);
+    if (Eb > 0.0 && sB > 0.0) { let ask = wB * Eb / (Eb + Ew); let gr = min(ask, PLANKTON_CROP * sB); let f = gr / sB; sa(A_qB, i, f); gB += gr; wB_ = select(el, 1.0, ask >= PLANKTON_CROP * sB); }
+    if (Ew > 0.0 && sW > 0.0) { let ask = wB * Ew / (Eb + Ew); let f = min(ask, PLANKTON_CROP * sW) / sW; let cf = min(f * LIT3_CR_PREF, PLANKTON_CROP); sa(A_qW, i, f); sa(A_qC, i, cf); gB += f * sWls + cf * sWc; wW_ = select(el, 1.0, ask >= PLANKTON_CROP * sW); }
     if (ownOnly) { qf |= 1u; }
     room -= gB / n; got += gB / n;
   }
   // the surface: its insects, met by a fish near it
   if (canS && room > 0.0 && want > got && fS > 0.0 && sS > 0.0) {
-    let gS = min(min(room, want0 * fS) * n * visDay, PLANKTON_CROP * sS); let f = gS / sS; sa(A_qS, i, f);
+    let askS = min(room, want0 * fS) * n * visDay; let gS = min(askS, PLANKTON_CROP * sS); let f = gS / sS; sa(A_qS, i, f); wS_ = select(LIT3_K_SURF / (Es + LIT3_K_SURF), 1.0, askS >= PLANKTON_CROP * sS);
     room -= gS / n; got += gS / n;
   }
   // the zooplankton (type III in K_ZOO: a fish with other food switches away from scarce zooplankton), seen by its own eyes
   if (tZ > 0.0 && room > 0.0 && want > got) {
     let v = visDay * visDay; let sD = zD * v; let sC = zC * v; let S = sD + sC;
     if (S > 1e-12 && zw > 0.0) {
-      let E = S / zw * PLANKTON_UGL; let take = min(min(room, want0 * tZ * PLANKTON_Q) * n * (E * E / (E * E + F3_K_ZOO * F3_K_ZOO)), PLANKTON_CROP * S);
+      let E = S / zw * PLANKTON_UGL; let askZ = min(room, want0 * tZ * PLANKTON_Q) * n * (E * E / (E * E + F3_K_ZOO * F3_K_ZOO)); let take = min(askZ, PLANKTON_CROP * S);
+      wZ_ = select(min(1.0, 2.0 * F3_K_ZOO * F3_K_ZOO / (E * E + F3_K_ZOO * F3_K_ZOO)), 1.0, askZ >= PLANKTON_CROP * S);   // (type III: the ask falls as E² at low density)
       let tD = take * sD / S; let tC = take - tD;
       if (sD > 0.0) { sa(A_qZD, i, tD / sD * v); } if (sC > 0.0) { sa(A_qZC, i, tC / sC * v); }
     }
@@ -1061,36 +1074,36 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
   // the wants into the cells
   let qB = ga(A_qB, i); let qW = ga(A_qW, i); let qC = ga(A_qC, i); let qS = ga(A_qS, i); let qZD = ga(A_qZD, i); let qZC = ga(A_qZC, i);
   if (qB > 0.0 || qW > 0.0) {
-    if (ownOnly) { let j = u32(jb); acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TL + 2u * j, qW, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); }
+    if (ownOnly) { let j = u32(jb); acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TBW + 2u * j, qB * wB_, PW); acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
       let li = sti(O_litIdx + j); if (qC > 0.0 && li >= 0) { acc64(AC_RC + 2u * j, qC * crayE(u32(li), j, cu, gape, cs), PW); } }
     else {
       for (var q = fp.s0; q < fp.s1; q++) {
         let cc = u32(sti(fp.base + q)); let b0 = u32(sti(O_fColBed0 + cc)); let b1 = u32(sti(O_fColBed0 + cc + 1u));
         for (var t = b0; t < b1; t++) {
           let j = u32(sti(O_fColBedL + t)); if (abs(stf(O_wZMid + j) - bed) > F3_FP_DZ) { continue; }
-          if (qB > 0.0) { acc64(AC_TB + 2u * j, qB, PW); }
-          if (qW > 0.0) { acc64(AC_TL + 2u * j, qW, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); }
+          if (qB > 0.0) { acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TBW + 2u * j, qB * wB_, PW); }
+          if (qW > 0.0) { acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
             let li = sti(O_litIdx + j); if (qC > 0.0 && li >= 0) { let e = crayE(u32(li), j, cc, gape, cs); if (e > 0.0) { acc64(AC_RC + 2u * j, qC * e, PW); } } }
         }
       }
     }
   }
-  if (qS > 0.0) { for (var q = fp.s0; q < fp.s1; q++) { acc64(AC_SURF + 2u * u32(sti(fp.base + q)), qS, PW); } }
+  if (qS > 0.0) { for (var q = fp.s0; q < fp.s1; q++) { let cc = u32(sti(fp.base + q)); acc64(AC_SURF + 2u * cc, qS, PW); acc64(AC_SURFW + 2u * cc, qS * wS_, PW); } }
   if (qZD > 0.0 || qZC > 0.0) {
     for (var q = fp.s0; q < fp.s1; q++) {
       let cc = u32(sti(fp.base + q)); let j0 = cell0(cc); let k1 = min(nL(cc) - 1u, fp.kz);
       var ka = k1; var kb = k1; if (cc == cu) { ka = u32(max(0, i32(k1) - 1)); kb = min(nL(cc) - 1u, k1 + 1u); }
-      for (var kk = ka; kk <= kb; kk++) { if (qZD > 0.0) { acc64(AC_ZD + 2u * (j0 + kk), qZD, PW); } if (qZC > 0.0) { acc64(AC_ZC + 2u * (j0 + kk), qZC, PW); } }
+      for (var kk = ka; kk <= kb; kk++) { if (qZD > 0.0) { acc64(AC_ZD + 2u * (j0 + kk), qZD, PW); acc64(AC_ZDW + 2u * (j0 + kk), qZD * wZ_, PW); } if (qZC > 0.0) { acc64(AC_ZC + 2u * (j0 + kk), qZC, PW); acc64(AC_ZCW + 2u * (j0 + kk), qZC * wZ_, PW); } }
     }
   }
 }
 // per cell: the share of each kind's wants that is got — (1 − e^(−T))/T (the crayfish: of the grams wanted against those there)
 @compute @workgroup_size(256) fn k_fieldCell(@builtin(global_invocation_id) g: vec3u) {
   let j = g.x;
-  if (j < WNC) { RC[R_SURF + j] = ration(rdAcc(AC_SURF + 2u * j, PW)); }
+  if (j < WNC) { RC[R_SURF + j] = bShare(rdAcc(AC_SURF + 2u * j, PW), rdAcc(AC_SURFW + 2u * j, PW)); }
   if (j >= WNCELL) { return; }
-  RC[R_B + j] = ration(rdAcc(AC_TB + 2u * j, PW)); RC[R_L + j] = ration(rdAcc(AC_TL + 2u * j, PW)); RC[R_S + j] = ration(rdAcc(AC_TS + 2u * j, PW));
-  RC[R_ZD + j] = ration(rdAcc(AC_ZD + 2u * j, PW)); RC[R_ZC + j] = ration(rdAcc(AC_ZC + 2u * j, PW));
+  RC[R_B + j] = bShare(rdAcc(AC_TB + 2u * j, PW), rdAcc(AC_TBW + 2u * j, PW)); RC[R_L + j] = bShare(rdAcc(AC_TL + 2u * j, PW), rdAcc(AC_TLW + 2u * j, PW)); RC[R_S + j] = bShare(rdAcc(AC_TS + 2u * j, PW), rdAcc(AC_TSW + 2u * j, PW));
+  RC[R_ZD + j] = bShare(rdAcc(AC_ZD + 2u * j, PW), rdAcc(AC_ZDW + 2u * j, PW)); RC[R_ZC + j] = bShare(rdAcc(AC_ZC + 2u * j, PW), rdAcc(AC_ZCW + 2u * j, PW));
   let R = rdAcc(AC_RC + 2u * j, PW); var rc = 1.0;
   let li = sti(O_litIdx + j);
   if (R > 0.0 && li >= 0) { let V = wd(W_litCrA + u32(li)) + wd(W_litCrY + u32(li)); if (V > 0.0) { rc = V * (1.0 - exp(-R / V)) / R; } else { rc = 0.0; } }
@@ -1145,15 +1158,15 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
 // the cells emptied: each kind loses 1 − e^(−T) of what was reachable; the crayfish the grams got, from adults and young alike
 @compute @workgroup_size(256) fn k_fieldApply(@builtin(global_invocation_id) g: vec3u) {
   let j = g.x;
-  if (j < WNC) { let T = rdAcc(AC_SURF + 2u * j, PW); if (T > 0.0) { let keep = 1.0 - min(T, 1.0); WD[W_surfA + j] *= keep; WD[W_surfT + j] *= keep; } }
+  if (j < WNC) { let T = rdAcc(AC_SURF + 2u * j, PW); if (T > 0.0) { let keep = 1.0 - bTaken(T, rdAcc(AC_SURFW + 2u * j, PW)); WD[W_surfA + j] *= keep; WD[W_surfT + j] *= keep; } }
   if (j >= WNCELL) { return; }
-  { let T = rdAcc(AC_TB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= min(T, 1.0) * benthE(j) * A2; } }
-  { let T = rdAcc(AC_ZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - min(T, 1.0) * zooExposed(j, 0u); } }
-  { let T = rdAcc(AC_ZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - min(T, 1.0) * (1.0 - PLANKTON_COPE_ESCAPE) * zooExposed(j, 1u); } }
+  { let T = rdAcc(AC_TB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= bTaken(T, rdAcc(AC_TBW + 2u * j, PW)) * benthE(j) * A2; } }
+  { let T = rdAcc(AC_ZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - bTaken(T, rdAcc(AC_ZDW + 2u * j, PW)) * zooExposed(j, 0u); } }
+  { let T = rdAcc(AC_ZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_ZCW + 2u * j, PW)) * (1.0 - PLANKTON_COPE_ESCAPE) * zooExposed(j, 1u); } }
   let li = sti(O_litIdx + j); if (li < 0) { return; }
   let l = u32(li); let cc = u32(sti(O_wColOfCell + j));
-  { let T = rdAcc(AC_TL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= min(T, 1.0) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(cc); } }
-  { let T = rdAcc(AC_TS + 2u * j, PW); if (T > 0.0) { WD[W_litSn + l] -= min(T, 1.0) * max(0.0, wd(W_litSn + l) - LIT3_SN_REF); } }
+  { let T = rdAcc(AC_TL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= bTaken(T, rdAcc(AC_TLW + 2u * j, PW)) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(cc); } }
+  { let T = rdAcc(AC_TS + 2u * j, PW); if (T > 0.0) { WD[W_litSn + l] -= bTaken(T, rdAcc(AC_TSW + 2u * j, PW)) * max(0.0, wd(W_litSn + l) - LIT3_SN_REF); } }
   { let R = rdAcc(AC_RC + 2u * j, PW); let cA = wd(W_litCrA + l); let cY = wd(W_litCrY + l); let V = cA + cY;
     if (R > 0.0 && V > 0.0) { let G = V * (1.0 - exp(-R / V)); WD[W_litCrA + l] = cA - G * cA / V; WD[W_litCrY + l] = cY - G * cY / V; } }
 }
@@ -1261,7 +1274,18 @@ fn yDie(q: u32) { syu(Y_flags, q, gyu(Y_flags, q) & ~1u); }
 const PW: f32 = 1e12; const GW: f32 = 1e9; const KW: f32 = 1e6;
 fn acc64(at: u32, v: f32, scale: f32) { add64(&ACC, at, v, scale); }
 fn rdAcc(at: u32, scale: f32) -> f32 { return (f32(atomicLoad(&ACC[at])) + f32(atomicLoad(&ACC[at + 1u])) * 4294967296.0) / scale; }
-fn ration(T: f32) -> f32 { if (T > 1.0) { return 1.0 / T; } return 1.0; }
+// THE SHARE of its want each feeder of a cell gets: T the summed wants (as shares of the cell's reachable food), W their weight on
+// appetites that fall with the food (each feeder's K/(E + K) — its functional response's elasticity — or 1 when it was capped at
+// CROP of what is there): fish3's feeders, one after another, each ask for grams; an appetite that doesn't fall with the food
+// gets its whole ask until the food runs out (rationing: min(T, 1) taken), one that falls in step with it strips the cell
+// geometrically (1 − e^(−T)). A first version rationed every feeder alike and the young grew ~3–5 % fast at 1/10 (the brook's
+// young dace reached recruiting size days early)
+fn bShare(T: f32, V: f32) -> f32 {
+  if (!(T > 0.0)) { return 1.0; }
+  let W = clamp(V / T, 0.0, 1.0); let lin = select(1.0, 1.0 / T, T > 1.0); var ex = 1.0 - 0.5 * T; if (T > 1e-4) { ex = (1.0 - exp(-T)) / T; }
+  return (1.0 - W) * lin + W * ex;
+}
+fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
 fn reach(c: u32) -> f32 { let s = wd(W_stems + c) / LIT3_S50; return 1.0 / (1.0 + s * s * s); }
 fn benthE(j: u32) -> f32 { return max(0.0, wd(W_benth + j) / A2 - BENTHOS_REFUGE); }
 fn yrnd(q: u32, purpose: u32, k: u32) -> f32 { return rnd(gyu(Y_id, q), purpose, k); }
@@ -1440,7 +1464,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
       if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; sD += wd(W_zooD + jj) * gD * pr; sC += wd(W_zooC + jj) * PLANKTON_FRY_COPE * pr; sR += wd(W_zooR + jj) * cR * pr; } }
     let S = sD + sC + sR;
     if (S > 1e-12) {
-      let E = S / sw * PLANKTON_UGL; let take = min((want - got) * E / (E + PLANKTON_K_FRY), PLANKTON_CROP * S);
+      let E = S / sw * PLANKTON_UGL; let ask = (want - got) * E / (E + PLANKTON_K_FRY); let take = min(ask, PLANKTON_CROP * S); sy(Y_wZ, q, select(PLANKTON_K_FRY / (E + PLANKTON_K_FRY), 1.0, ask >= PLANKTON_CROP * S));
       let tD = take * sD / S; let tC = take * sC / S; let tR = take - tD - tC;
       if (sD > 0.0) { sy(Y_qD, q, tD / sD * gD); } if (sC > 0.0) { sy(Y_qC, q, tC / sC * PLANKTON_FRY_COPE); } if (sR > 0.0) { sy(Y_qR, q, tR / sR * cR); }
       got += take;
@@ -1450,8 +1474,8 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let dl = spv(k, S_dLarva) > 0.5; let di = spv(k, S_dInsect) > 0.5;
   if (U.lit != 0u && (dl || di) && L >= LIT3_WEED_L && want - got > 1e-12 && bed - z <= F3_BENTH_REACH + wd(W_canopy + c)) {
     let e = weedEyoy(jb, L); let E = e.x + e.y;
-    if (E > 0.0) { let a = stf(O_wBedA + u32(jb)); let gw = min((want - got) * E / (E + BENTHOS_K_FISH), PLANKTON_CROP * E * a); let f = gw / (E * a);
-      sy(Y_qWs, q, f); if (e.y > 0.0) { sy(Y_qWl, q, f); } acc64(AC_YWS + 2u * u32(jb), f, PW); if (e.y > 0.0) { acc64(AC_YWL + 2u * u32(jb), f, PW); } got += gw; }
+    if (E > 0.0) { let a = stf(O_wBedA + u32(jb)); let ask = (want - got) * E / (E + BENTHOS_K_FISH); let gw = min(ask, PLANKTON_CROP * E * a); let f = gw / (E * a); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * E * a);
+      sy(Y_qWs, q, f); if (e.y > 0.0) { sy(Y_qWl, q, f); } acc64(AC_YWS + 2u * u32(jb), f, PW); acc64(AC_YWSW + 2u * u32(jb), f * w, PW); if (e.y > 0.0) { acc64(AC_YWL + 2u * u32(jb), f, PW); acc64(AC_YWLW + 2u * u32(jb), f * w, PW); } got += gw; }
   }
   // the bed about it: its own bed cell and its neighbours' mean-depth bed cells
   let benthL = spv(k, S_benthL); let dD = spv(k, S_dDetritus) > 0.5;
@@ -1461,9 +1485,9 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 63u);
     for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { let a = stf(O_wBedA + u32(jj)); A += a; s += benthE(u32(jj)) * a; } }
     if (s > 0.0) {
-      let E = s / A; let gb = min((want - got) * E / (E + BENTHOS_K_FISH), PLANKTON_CROP * s); let f = gb / s; sy(Y_qB, q, f);
-      if (jb >= 0) { acc64(AC_YB + 2u * u32(jb), f, PW); }
-      for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { acc64(AC_YB + 2u * u32(jj), f, PW); } }
+      let E = s / A; let ask = (want - got) * E / (E + BENTHOS_K_FISH); let gb = min(ask, PLANKTON_CROP * s); let f = gb / s; sy(Y_qB, q, f); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * s);
+      if (jb >= 0) { acc64(AC_YB + 2u * u32(jb), f, PW); acc64(AC_YBW + 2u * u32(jb), f * w, PW); }
+      for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { acc64(AC_YB + 2u * u32(jj), f, PW); acc64(AC_YBW + 2u * u32(jj), f * w, PW); } }
       got += gb;
     }
   }
@@ -1475,8 +1499,8 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 @compute @workgroup_size(256) fn y_fieldCell(@builtin(global_invocation_id) g: vec3u) {
   let j = g.x; if (j >= WNCELL) { return; }
   let pr = 1.0 - wd(W_plantRef + j); let v = wd(W_zv + j);
-  RC[R_YD + j] = ration(rdAcc(AC_YZD + 2u * j, PW)); RC[R_YC + j] = ration(rdAcc(AC_YZC + 2u * j, PW)); RC[R_YR + j] = ration(rdAcc(AC_YZR + 2u * j, PW));
-  RC[R_YWS + j] = ration(rdAcc(AC_YWS + 2u * j, PW)); RC[R_YWL + j] = ration(rdAcc(AC_YWL + 2u * j, PW)); RC[R_YB + j] = ration(rdAcc(AC_YB + 2u * j, PW));
+  RC[R_YD + j] = bShare(rdAcc(AC_YZD + 2u * j, PW), rdAcc(AC_YZDW + 2u * j, PW)); RC[R_YC + j] = bShare(rdAcc(AC_YZC + 2u * j, PW), rdAcc(AC_YZCW + 2u * j, PW)); RC[R_YR + j] = bShare(rdAcc(AC_YZR + 2u * j, PW), rdAcc(AC_YZRW + 2u * j, PW));
+  RC[R_YWS + j] = bShare(rdAcc(AC_YWS + 2u * j, PW), rdAcc(AC_YWSW + 2u * j, PW)); RC[R_YWL + j] = bShare(rdAcc(AC_YWL + 2u * j, PW), rdAcc(AC_YWLW + 2u * j, PW)); RC[R_YB + j] = bShare(rdAcc(AC_YB + 2u * j, PW), rdAcc(AC_YBW + 2u * j, PW));
   let D = rdAcc(AC_YSED + 2u * j, GW); var r = 1.0; if (D > 0.0) { let V = wd(W_sedOM + j) * stf(O_wA + j); r = select(0.0, min(D, V) / D, V > 0.0); }
   RC[R_YSED + j] = r;
 }
@@ -1486,9 +1510,10 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q); if (qD <= 0.0 && qC <= 0.0 && qR <= 0.0) { return; }
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let j0 = cell0(c); let k0 = j - j0;
   let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
-  for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); }
+  let wz = gy(Y_wZ, q);
+  for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); }
   let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
-  for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); }
+  for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); }
 }
 // what it got, and one fish's energy budget on its share — SCRAMBLE: when it can't keep every fish at maintenance, the rest starve
 @compute @workgroup_size(64) fn y_feedTake(@builtin(global_invocation_id) g: vec3u) {
@@ -1541,15 +1566,15 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 @compute @workgroup_size(256) fn y_fieldApply(@builtin(global_invocation_id) g: vec3u) {
   let j = g.x; if (j >= WNCELL) { return; }
   let pr = 1.0 - wd(W_plantRef + j); let v = wd(W_zv + j);
-  { let T = rdAcc(AC_YZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - min(T, 1.0) * pr * v; } }
-  { let T = rdAcc(AC_YZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - min(T, 1.0) * pr * v; } }
-  { let T = rdAcc(AC_YZR + 2u * j, PW); if (T > 0.0) { WD[W_zooR + j] *= 1.0 - min(T, 1.0) * pr * v; } }
-  { let T = rdAcc(AC_YB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= min(T, 1.0) * benthE(j) * A2; } }
+  { let T = rdAcc(AC_YZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - bTaken(T, rdAcc(AC_YZDW + 2u * j, PW)) * pr * v; } }
+  { let T = rdAcc(AC_YZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_YZCW + 2u * j, PW)) * pr * v; } }
+  { let T = rdAcc(AC_YZR + 2u * j, PW); if (T > 0.0) { WD[W_zooR + j] *= 1.0 - bTaken(T, rdAcc(AC_YZRW + 2u * j, PW)) * pr * v; } }
+  { let T = rdAcc(AC_YB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= bTaken(T, rdAcc(AC_YBW + 2u * j, PW)) * benthE(j) * A2; } }
   { let D = rdAcc(AC_YSED + 2u * j, GW); if (D > 0.0) { let V = wd(W_sedOM + j) * stf(O_wA + j); if (V > 0.0) { WD[W_sedOM + j] -= min(D, V) / stf(O_wA + j); } } }
   let li = sti(O_litIdx + j); if (li < 0) { return; }
   let l = u32(li);
-  { let T = rdAcc(AC_YWS + 2u * j, PW); if (T > 0.0) { WD[W_litS + l] *= 1.0 - min(T, 1.0); } }
-  { let T = rdAcc(AC_YWL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= min(T, 1.0) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(u32(sti(O_wColOfCell + j))); } }
+  { let T = rdAcc(AC_YWS + 2u * j, PW); if (T > 0.0) { WD[W_litS + l] *= 1.0 - bTaken(T, rdAcc(AC_YWSW + 2u * j, PW)); } }
+  { let T = rdAcc(AC_YWL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= bTaken(T, rdAcc(AC_YWLW + 2u * j, PW)) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(u32(sti(O_wColOfCell + j))); } }
 }
 // young eaten by young piscivores: each school's share of the asking
 @compute @workgroup_size(256) fn y_preyApply(@builtin(global_invocation_id) g: vec3u) {
@@ -1986,6 +2011,253 @@ fn cadd(k: u32, f: u32, v: f32, scale: f32) {
       cadd(k, 7u, n, 1e3); cadd(k, 8u, n * Y[Y_W * U.ycap + i], 1e3); cadd(k, 9u, n * Y[Y_L * U.ycap + i], 1e3); cadd(k, 10u, 1.0, 1.0);
     }
   }
+}
+`;
+
+// ============================================================ THE SCHOOLS (fish3 _schools, _soloCut, _dissolve, _split, _merge, _mergeYoy)
+// every MERGE_EVERY blocks: the budget's own-brain length (every SOLO_EVERY days: a histogram of the schools' lengths, walked from the
+// longest — fish3 sorts them), schools grown to it break up into individuals, schools past twice their size split, and schools of a
+// species and size near each other merge (one genome, chosen ∝ n). A merge is a claim: each school proposes to the first fit
+// school it finds (fish3's scan order), the lowest-numbered proposer wins, and a school absorbed can't absorb in the same pass
+export const SCHOOL_BINDINGS = /* wgsl */`
+@group(1) @binding(0) var<storage, read> HS: array<u32>;
+@group(1) @binding(1) var<storage, read> HI: array<u32>;
+@group(1) @binding(2) var<storage, read> YHS: array<u32>;
+@group(1) @binding(3) var<storage, read> YHI: array<u32>;
+@group(1) @binding(4) var<storage, read_write> Y: array<f32>;
+@group(1) @binding(5) var<storage, read_write> YG: array<f32>;
+@group(1) @binding(6) var<storage, read_write> GL: array<f32>;
+@group(1) @binding(7) var<storage, read_write> GS: array<atomic<u32>>;
+@group(1) @binding(8) var<storage, read_write> TL: array<atomic<u32>>;
+@group(1) @binding(9) var<storage, read_write> IND: array<u32>;
+const G_N: u32 = 34u; const G_NEXTID: u32 = 36u; const G_SOLOL: u32 = 40u; const G_NBORN2: u32 = 41u; const G_NLIST2: u32 = 42u;
+const GS_HIST: u32 = 512u;      // the own-brain cut's histogram (SOLO_BINS words), then the claims (ABS: cap words)
+const SOLO_BINS: u32 = 8192u; const SOLO_BIN_CM: f32 = 0.01;
+const NONE: u32 = 0xFFFFFFFFu;
+const REC_LIST2: u32 = 16u;
+fn keyOf(i: u32) -> u32 { return 0xFFFFFFFEu - i; }`;
+export const SCHOOL = /* wgsl */`
+fn gy(f: u32, q: u32) -> f32 { return Y[f * U.ycap + q]; }
+fn gyu(f: u32, q: u32) -> u32 { return bitcast<u32>(Y[f * U.ycap + q]); }
+fn gyi(f: u32, q: u32) -> i32 { return bitcast<i32>(Y[f * U.ycap + q]); }
+fn sy(f: u32, q: u32, v: f32) { Y[f * U.ycap + q] = v; }
+fn syu(f: u32, q: u32, v: u32) { Y[f * U.ycap + q] = bitcast<f32>(v); }
+fn glu(at: u32) -> u32 { return bitcast<u32>(GL[at]); }
+fn gaussR(id: u32, purpose: u32, k: u32) -> f32 { let u = max(rnd(id, purpose, 2u * k), 1e-7); let v = rnd(id, purpose, 2u * k + 1u); return sqrt(-2.0 * log(u)) * cos(6.283185307179586 * v); }
+fn mutW(id: u32, e: u32, w: f32) -> f32 {
+  if (rnd(id, 70u, e) < 0.015) { return rndR(id, 71u, e, -1.2, 1.2); }
+  if (rnd(id, 72u, e) < 0.10) { return clamp(w + gaussR(id, 73u, e) * 0.35, -4.0, 4.0); }
+  return w;
+}
+fn mutGene(id: u32, e: u32, v: f32) -> f32 { var x = v; if (rnd(id, 74u, e) < 0.5) { x += gaussR(id, 75u, e) * 0.05; } return clamp(x, 0.7, 1.35); }
+fn gSize(k: u32) -> f32 { if (spv(k, S_school) > 0.0) { return spv(k, S_school); } return spv(k, S_group1); }
+fn soloOf(k: u32) -> f32 { if (spv(k, S_solo) > 0.0) { return GL[G_SOLOL]; } if (spv(k, S_group0) > 0.0) { return spv(k, S_group0); } if (spv(k, S_school) > 0.0) { return 3e38; } return 0.0; }
+// ---- the own-brain cut (fish3 _soloCut): the agents outside the brook's own, and the schools of the solo species by length ----
+@compute @workgroup_size(256) fn s_hist(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
+  let k = gau(A_k, i);
+  if (spv(k, S_brookRes) < 0.5) { atomicAdd(&GS[GS_HIST + SOLO_BINS], 1u); }
+  if ((fl & FL_SCHOOL) != 0u && spv(k, S_solo) > 0.0 && (fl & FL_RIPE) == 0u) {
+    let b = min(SOLO_BINS - 1u, u32(ga(A_L, i) / SOLO_BIN_CM)); let more = u32(max(0.0, floor(ga(A_n, i)) - 1.0));
+    atomicAdd(&GS[GS_HIST + b], more);
+  }
+}
+@compute @workgroup_size(1) fn s_cut() {   // (from the longest bin down while the budget lasts; the cut the last bin taken whole)
+  var A = atomicLoad(&GS[GS_HIST + SOLO_BINS]); let Bud = u32(F3_AGENTS_HA * LAKE_HA); var cut = 3e38;
+  for (var b = i32(SOLO_BINS) - 1; b >= 0; b--) {
+    let m = atomicLoad(&GS[GS_HIST + u32(b)]); if (m == 0u) { continue; }
+    if (A + m > Bud) { break; } A += m; cut = f32(b) * SOLO_BIN_CM;
+  }
+  GL[G_SOLOL] = cut;
+}
+// ---- who dissolves (its fish their own agents) or splits (one more agent): the count of new agents each school makes ----
+@compute @workgroup_size(128) fn s_mark(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  sai(A_birth, i, -1); sai(A_claim, i, -1); sau(A_bid, i, 0u);
+  let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u || (fl & FL_SCHOOL) == 0u) { return; }
+  let k = gau(A_k, i); let gs = gSize(k);
+  if (dissolves(i, fl, k)) { sau(A_bid, i, u32(max(1.0, floor(ga(A_n, i) + rnd(gau(A_id, i), 90u, 0u))))); sai(A_birth, i, 1); return; }
+  if (ga(A_n, i) > gs * F3_SPLIT) { sau(A_bid, i, 1u); sai(A_birth, i, 2); return; }   // (split)
+  // a merge (fish3 merges each school, in index order, with the first fit one it finds — in effect the first with the second, the
+  // third with the fourth…): here the schools of its species in its grid cell, in index order, paired neighbour with neighbour —
+  // the pairs' offset alternating pass by pass — each target with one absorber, so no claims and none both absorbed and absorbing
+  let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i); let L = ga(A_L, i); let n = ga(A_n, i);
+  let c = u32(clamp(i32((y - GY0) / F3_HC), 0, i32(HHY) - 1)) * HHX + u32(clamp(i32((x - GX0) / F3_HC), 0, i32(HHX) - 1));
+  var rank = 0u; var t = HS[c];
+  for (; t < HS[c + 1u]; t++) { let b = HI[t]; if (b == i) { break; } if (mergeable(b, k)) { rank += 1u; } }
+  if (((rank + (U.blk / u32(F3_MERGE_EVERY))) & 1u) != 0u) { return; }   // (this pass it is a target, or unpaired)
+  for (t = t + 1u; t < HS[c + 1u]; t++) {
+    let b = HI[t]; if (!mergeable(b, k)) { continue; }
+    let Lb = ga(A_L, b); let lr = select(Lb / L, L / Lb, L > Lb);
+    if (length(vec3f(ga(A_x, b) - x, ga(A_y, b) - y, ga(A_z, b) - z)) <= F3_MERGE_R && lr <= F3_MERGE_LR && n + ga(A_n, b) <= gs * F3_MERGE_MAX) { sai(A_claim, i, i32(b)); }
+    return;
+  }
+}
+fn dissolves(i: u32, fl: u32, k: u32) -> bool { return ga(A_L, i) >= soloOf(k) && (fl & FL_RIPE) == 0u && !(ga(A_nt, i) > 0.0); }
+fn mergeable(b: u32, k: u32) -> bool {   // (a school of species k that neither dissolves nor splits this pass)
+  let fb = gau(A_flags, b); if ((fb & FL_ALIVE) == 0u || (fb & FL_SCHOOL) == 0u || gau(A_k, b) != k) { return false; }
+  return !dissolves(b, fb, k) && !(ga(A_n, b) > gSize(k) * F3_SPLIT);
+}
+// the merge: b joins i; the school keeps one parent's genome (and brain), chosen ∝ n
+@compute @workgroup_size(128) fn s_merge(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  let bi = gai(A_claim, i); if (bi < 0) { return; }
+  let b = u32(bi);
+  let na = ga(A_n, i); let nb = ga(A_n, b); let tot = na + nb; let wa = na / tot; let wb = nb / tot; let k = gau(A_k, i);
+  if (rnd(gau(A_id, i), 91u, gau(A_id, b)) < wb) {   // (b's genome and brain)
+    for (var r = 0u; r < NGN; r++) { GN[r * U.cap + i] = GN[r * U.cap + b]; }
+    for (var r = 0u; r < NBR; r++) { BR[r * U.cap + i] = BR[r * U.cap + b]; }
+    sau(A_gen, i, gau(A_gen, b)); sa(A_hue, i, ga(A_hue, b)); retrait(i, k);
+  }
+  sa(A_W, i, ga(A_W, i) * wa + ga(A_W, b) * wb); sa(A_L, i, max(ga(A_L, i) * wa + ga(A_L, b) * wb, 0.1));
+  sa(A_gut, i, ga(A_gut, i) * wa + ga(A_gut, b) * wb); sa(A_gutE, i, ga(A_gutE, i) * wa + ga(A_gutE, b) * wb); sa(A_gon, i, ga(A_gon, i) * wa + ga(A_gon, b) * wb);
+  sau(A_age, i, u32(round(f32(gau(A_age, i)) * wa + f32(gau(A_age, b)) * wb)));
+  sa(A_cons, i, ga(A_cons, i) + ga(A_cons, b)); sa(A_consMax, i, ga(A_consMax, i) + ga(A_consMax, b));
+  var fl = gau(A_flags, i); if ((gau(A_flags, b) & FL_MATURE) != 0u) { fl |= FL_MATURE; } sau(A_flags, i, fl);
+  sa(A_n, i, tot); sau(A_flags, b, gau(A_flags, b) & ~FL_ALIVE); sa(A_n, b, 0.0);
+  settle(i, k);
+}
+// fish3 _traits from the genes (a merged school taking the other's genome)
+fn retrait(s: u32, k: u32) {
+  let gSz = gn(NG, s); let gSpeed = gn(NG + 1u, s); let gTol = gn(NG + 2u, s); let gFin = gn(NG + 3u, s); let gEye = gn(NG + 4u, s); let gBody = gn(NG + 5u, s); let gBrain = gn(NG + 6u, s);
+  let act = u32(clamp(round(f32(HID) * gBrain), min(BRAIN_HID_MIN, f32(HID)), f32(HID))); sau(A_active, s, act);
+  sa(A_turnMax0, s, spv(k, S_turn) * (0.6 + 0.4 * gFin)); sa(A_sense0, s, spv(k, S_sense) * (0.6 + 0.4 * gEye));
+  sa(A_spdGene, s, gSpeed * (1.18 - 0.18 * gBody) * (1.05 - 0.05 * gFin)); sa(A_bodyMul, s, 0.8 + 0.2 * gBody);
+  sa(A_tempTol, s, spv(k, S_tempTolS) * gTol); sa(A_o2Crit, s, clamp(spv(k, S_o2CritS) * (2.0 - gTol), 0.05, 0.9));
+  sa(A_o2Lethal, s, clamp(spv(k, S_o2LethalS) / ENV_O2_MGL * (2.0 - gTol), 0.005, 0.5)); sa(A_o2Ice, s, clamp(spv(k, S_o2IceS) / ENV_O2_MGL * (2.0 - gTol), 0.0, 0.5));
+  sa(A_uilt, s, spv(k, S_uiltS) + BIOE_UILT_GENE * (gTol - 1.0));
+  sa(A_metabMul, s, (0.85 + 0.15 * gSpeed) * (0.9 + 0.1 * gTol) * (0.95 + 0.05 * gFin) * (0.93 + 0.07 * gEye) * (0.92 + 0.08 * gBody) * (1.0 - BRAIN_COST * f32(HID - act) / f32(HID)));
+  let lm = spv(k, S_Lmat) * pow(gSz, BIOE_LMAT_GENE); let lmm = spv(k, S_LmatM); let sex = gau(A_sex, s); var Lmat = lm;
+  if (lmm > 0.0) { if (sex == 1u) { Lmat = lm * lmm / spv(k, S_Lmat); } else if (sex == 2u) { Lmat = lm * (1.0 + lmm / spv(k, S_Lmat)) / 2.0; } }
+  sa(A_Lmat, s, Lmat);
+}
+// ---- the new agents' slots: one workgroup walks the schools in order (dissolves and splits) ----
+var<workgroup> wsc: array<u32, 256>;
+var<workgroup> wbase: u32;
+var<workgroup> wnl: u32;
+@compute @workgroup_size(256) fn s_slots(@builtin(local_invocation_id) l: vec3u) {
+  let t = l.x;
+  if (t == 0u) { wbase = 0u; wnl = 0u; }
+  workgroupBarrier();
+  for (var base = 0u; base < U.n; base += 256u) {
+    let i = base + t; var v = 0u; if (i < U.n && gai(A_birth, i) >= 0) { v = gau(A_bid, i); }
+    wsc[t] = v;
+    for (var o = 1u; o < 256u; o <<= 1u) { workgroupBarrier(); let x = select(0u, wsc[t - o], t >= o); workgroupBarrier(); wsc[t] += x; }
+    workgroupBarrier();
+    // (in order: thread 0 lists the schools of these 256 — the list's starts for the fill's search)
+    if (t == 0u) {
+      for (var m = 0u; m < 256u; m++) {
+        let ii = base + m; if (ii >= U.n || gai(A_birth, ii) < 0) { continue; }
+        let c = gau(A_bid, ii); let st = wbase + (wsc[m] - c);
+        if (U.n + st + c > U.cap) { sai(A_birth, ii, -1); continue; }   // (no room: the host makes room ahead)
+        IND[REC_LIST2 + 2u * wnl] = ii; IND[REC_LIST2 + 2u * wnl + 1u] = st; wnl += 1u;
+      }
+    }
+    workgroupBarrier();
+    if (t == 0u) { wbase += wsc[255]; }
+    workgroupBarrier();
+  }
+  if (t == 0u) {
+    var last = 0u; if (wnl > 0u) { let li = IND[REC_LIST2 + 2u * (wnl - 1u)]; last = IND[REC_LIST2 + 2u * (wnl - 1u) + 1u] + select(0u, gau(A_bid, li), gai(A_birth, li) >= 0); }
+    IND[REC_LIST2 + 2u * wnl + 1u] = last; GL[G_NBORN2] = f32(last); GL[G_NLIST2] = f32(wnl);
+    IND[4] = (last + 63u) / 64u; IND[5] = 1u; IND[6] = 1u;
+  }
+}
+// fish3 _near (the dissolving school's fish spread about it)
+fn nearSpotS(x: f32, y: f32, r: f32, id: u32) -> vec2f {
+  let b = bodyAt(x, y); let nx = x + (rnd(id, 80u, 0u) - 0.5) * r; let ny = y + (rnd(id, 80u, 1u) - 0.5) * r;
+  if (bodyAt(nx, ny) == b && colAt(nx, ny) >= 0 && depthAt(nx, ny) > F3_ZTOP + F3_ZBOT) { return vec2f(nx, ny); }
+  return vec2f(x, y);
+}
+// each new agent: a dissolving school's fish (the first its genome, the rest fresh mutations — siblings; its body, gonads by ripeness)
+// or a split's half (the school copied, brain state and all)
+@compute @workgroup_size(64) fn s_fill(@builtin(global_invocation_id) g: vec3u) {
+  let t = g.x; let tot = u32(GL[G_NBORN2]); if (t >= tot) { return; }
+  var lo = 0u; var hi = u32(GL[G_NLIST2]);
+  while (hi - lo > 1u) { let mid = (lo + hi) / 2u; if (IND[REC_LIST2 + 2u * mid + 1u] <= t) { lo = mid; } else { hi = mid; } }
+  let a = IND[REC_LIST2 + 2u * lo]; let st = IND[REC_LIST2 + 2u * lo + 1u]; let m = t - st; let k = gau(A_k, a);
+  let s = U.n + t; let id = glu(G_NEXTID) + t;
+  if (gai(A_birth, a) == 2) {   // a split: the school copied, n halved (fish3 _split)
+    for (var f = 0u; f < NAF; f++) { A[f * U.cap + s] = A[f * U.cap + a]; }
+    for (var r = 0u; r < NBR; r++) { BR[r * U.cap + s] = BR[r * U.cap + a]; }
+    for (var r = 0u; r < NGN; r++) { GN[r * U.cap + s] = GN[r * U.cap + a]; }
+    sau(A_id, s, id); let hn = ga(A_n, a) / 2.0; sa(A_n, s, hn);
+    sa(A_cons, s, ga(A_cons, a) / 2.0); sa(A_consMax, s, ga(A_consMax, a) / 2.0);
+    sa(A_yaw, s, ga(A_yaw, a) + select(-0.7, 0.7, rnd(id, 92u, 0u) < 0.5)); sai(A_prey, s, -1); sai(A_threat, s, -1); sai(A_birth, s, -1); sai(A_claim, s, -1);
+    return;
+  }
+  // a dissolving school's fish m: its genome (or a sibling's mutation), then add()'s fields, then the school's body
+  let first = m == 0u; let p = nearSpotS(ga(A_x, a), ga(A_y, a), 0.8, id);
+  for (var e = 0u; e < NG; e++) { var w = GN[e * U.cap + a]; if (!first) { w = mutW(id, e, w); } GN[e * U.cap + s] = w; }
+  for (var e = 0u; e < NGENES; e++) { var v = GN[(NG + e) * U.cap + a]; if (!first) { v = mutGene(id, e, v); } GN[(NG + e) * U.cap + s] = v; }
+  newAgentS(s, k, id, p.x, p.y, gau(A_age, a));
+  sa(A_L, s, ga(A_L, a)); sa(A_W, s, ga(A_W, a)); sau(A_gen, s, gau(A_gen, a)); sa(A_hue, s, ga(A_hue, a));
+  sau(A_lake, s, gau(A_lake, a)); sa(A_lhx, s, ga(A_lhx, a)); sa(A_lhy, s, ga(A_lhy, a)); sa(A_hx, s, ga(A_hx, a)); sa(A_hy, s, ga(A_hy, a)); sau(A_inLake, s, gau(A_inLake, a));
+  sa(A_gut, s, ga(A_gut, a)); sa(A_gutE, s, ga(A_gutE, a));
+  let mat = (gau(A_flags, a) & FL_MATURE) != 0u; var fl = gau(A_flags, s); if (mat) { fl |= FL_MATURE; } sau(A_flags, s, fl);
+  let W = ga(A_W, a); var gon = 0.0; if (mat) { gon = gsiOf(k, gau(A_sex, s)) * W * clamp(ga(A_gon, a) / max(1e-9, gsiOf(k, 2u) * W), 0.0, 1.0); } sa(A_gon, s, gon);
+  sa(A_mateCd, s, ga(A_mateCd, a)); sa(A_lastSpawnD, s, ga(A_lastSpawnD, a));
+  settle(s, k);
+  let bed = max(0.05, depthAt(p.x, p.y)); sa(A_bed, s, bed); sa(A_z, s, clamp(ga(A_z, a), F3_ZTOP, max(F3_ZTOP, bed - F3_ZBOT)));
+  sa(A_spd, s, spv(k, S_cruise) * ga(A_L, a) / 100.0);
+  if (first) { add64(&TL, T_SOLO + 2u * k, f32(gau(A_bid, a)), TSCALE); }
+}
+@compute @workgroup_size(128) fn s_retire(@builtin(global_invocation_id) g: vec3u) {   // (the dissolved schools gone; the split ones halved)
+  let i = g.x; if (i >= U.n) { return; }
+  let b = gai(A_birth, i); if (b == 1) { sau(A_flags, i, gau(A_flags, i) & ~FL_ALIVE); sa(A_n, i, 0.0); }
+  else if (b == 2) { let hn = ga(A_n, i) / 2.0; sa(A_n, i, ga(A_n, i) - hn); sa(A_cons, i, ga(A_cons, i) / 2.0); sa(A_consMax, i, ga(A_consMax, i) / 2.0); }
+}
+@compute @workgroup_size(1) fn s_count() { let nb = u32(GL[G_NBORN2]); GL[G_N] = f32(U.n + nb); GL[G_NEXTID] = bitcast<f32>(glu(G_NEXTID) + nb); }
+// a new agent's own fields (fish3 add + _traits; the genome already in GN) — the school's body is copied after
+fn newAgentS(s: u32, k: u32, id: u32, x: f32, y: f32, age: u32) {
+  for (var f = 0u; f < NAF; f++) { A[f * U.cap + s] = 0.0; }
+  for (var r = 0u; r < NBR; r++) { BR[r * U.cap + s] = 0.0; }
+  sau(A_id, s, id); sau(A_k, s, k); sa(A_n, s, 1.0);
+  sa(A_x, s, x); sa(A_y, s, y); sa(A_yaw, s, rnd(id, 81u, 0u) * 6.283185307179586); sau(A_age, s, age);
+  let sex = select(1u, 0u, rnd(id, 81u, 1u) < 0.5); sau(A_sex, s, sex);
+  for (var r = 0u; r < NW2; r++) { BR[r * U.cap + s] = GN[(W2OFF + r) * U.cap + s]; }
+  retrait(s, k);
+  var fl = FL_ALIVE;
+  sai(A_spYr, s, -1); sai(A_runYr, s, -1); sai(A_prey, s, -1); sai(A_threat, s, -1); sai(A_mate, s, -1); sai(A_c, s, -1); sai(A_j, s, -1); sai(A_jb, s, -1); sai(A_claim, s, -1); sai(A_birth, s, -1);
+  sa(A_xo, s, 1.0); sa(A_xt, s, 15.0); sa(A_uAvg, s, spv(k, S_uRoutine)); sa(A_fd, s, -1.0); sa(A_td, s, -1.0);
+  // the brook's users (fish3 add: by where it lives)
+  let b0 = bodyAt(x, y); var lk = UPPER; if (b0 == LOWER) { lk = LOWER; } else if (b0 != UPPER) { lk = select(LOWER, UPPER, nearestBP(x, y) <= i32(BLAST) / 2); }
+  var lh = vec2f(x, y); if (b0 != lk) { lh = vec2f(stf(O_bLakeNear + 2u * lk), stf(O_bLakeNear + 2u * lk + 1u)); }
+  let dB = length(select(bp(BLAST), bp(0u), lk == UPPER) - lh);
+  if (spv(k, S_sbBrook) > 0.0 && dB < F3_BROOK_NEAR && rnd(id, 81u, 2u) < spv(k, S_sbBrook)) { fl |= FL_BROOKIE; }
+  if (spv(k, S_sbSiteBrook) > 0.0 && (spv(k, S_brookRes) > 0.0 || dB < F3_BROOK_RUN)) { fl |= FL_BROOKRUN; }
+  sau(A_flags, s, fl);
+}
+// ---- the young's schools meet and merge (fish3 _mergeYoy: in their own grid cell, a species and size, never a guarded brood) ----
+@compute @workgroup_size(128) fn s_yMark(@builtin(global_invocation_id) g: vec3u) {
+  let q = g.x; if (q >= U.ny) { return; }
+  syu(Y_qPrey, q, NONE);
+  if ((gyu(Y_flags, q) & 1u) == 0u || gyi(Y_gref, q) >= 0) { return; }
+  let x = gy(Y_x, q); let y = gy(Y_y, q); let z = gy(Y_z, q); let k = gyu(Y_k, q); let L = gy(Y_L, q);
+  let gx = clamp(i32((x - GX0) / F3_HC), 0, i32(HHX) - 1); let gyy = clamp(i32((y - GY0) / F3_HC), 0, i32(HHY) - 1); let c = u32(gyy) * HHX + u32(gx);
+  var rank = 0u; var t = YHS[c];
+  for (; t < YHS[c + 1u]; t++) { let b = YHI[t]; if (b == q) { break; } if (yMergeable(b, k)) { rank += 1u; } }
+  if (((rank + (U.blk / u32(F3_MERGE_EVERY))) & 1u) != 0u) { return; }
+  for (t = t + 1u; t < YHS[c + 1u]; t++) {
+    let b = YHI[t]; if (!yMergeable(b, k)) { continue; }
+    let d = vec3f(gy(Y_x, b) - x, gy(Y_y, b) - y, gy(Y_z, b) - z); let Lb = gy(Y_L, b);
+    if (dot(d, d) <= F3_YOY_MERGE_R * F3_YOY_MERGE_R && select(Lb / L, L / Lb, L > Lb) <= 1.25) { syu(Y_qPrey, q, b); }
+    return;
+  }
+}
+fn yMergeable(b: u32, k: u32) -> bool { return (gyu(Y_flags, b) & 1u) != 0u && gyi(Y_gref, b) < 0 && gyu(Y_k, b) == k; }
+@compute @workgroup_size(128) fn s_yMerge(@builtin(global_invocation_id) g: vec3u) {
+  let q = g.x; if (q >= U.ny) { return; }
+  let b = gyu(Y_qPrey, q); if (b == NONE) { return; }
+  let na = gy(Y_n, q); let nb = gy(Y_n, b); let tot = na + nb; let wb = nb / tot;
+  if (rnd(gyu(Y_id, q), 93u, gyu(Y_id, b)) < wb) {
+    for (var r = 0u; r < NGN; r++) { YG[r * U.ycap + q] = YG[r * U.ycap + b]; }
+    syu(Y_gen, q, gyu(Y_gen, b)); sy(Y_hue, q, gy(Y_hue, b));
+  }
+  sy(Y_W, q, gy(Y_W, q) + (gy(Y_W, b) - gy(Y_W, q)) * wb); let L = gy(Y_L, q) + (gy(Y_L, b) - gy(Y_L, q)) * wb; sy(Y_L, q, L);
+  syu(Y_age, q, u32(round(f32(gyu(Y_age, q)) + (f32(gyu(Y_age, b)) - f32(gyu(Y_age, q))) * wb))); sy(Y_bdep, q, L * spv(gyu(Y_k, q), S_depthR)); sy(Y_n, q, tot);
+  syu(Y_flags, b, gyu(Y_flags, b) & ~1u); sy(Y_n, b, 0.0);
 }
 `;
 
