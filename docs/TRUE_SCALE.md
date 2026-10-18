@@ -171,6 +171,30 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
       - **The land at its height.** The land-height slider's ×1 means true metres there.
       - **The camera's reach, the sky and the fog at kilometres:** far plane, sky dome, fog density, the rig's zoom limit. The named views and labels, which were placed in 1/10 metres.
       - **Trees.** All of them (~10⁶) as simple low instances, plus full trees within ~500 m of the camera, re-picked as it moves. The prototype measured 1 M simple trees at ~45 fps.
+    - **Built, T6a (2026-10-17): `w3.html?world=true`** — the real lakes in the browser; the panel links the two worlds.
+      - **The world switch.** `render3/world3sel.js`, imported first by the page and by the worker (its URL carries the query).
+        - The worker now says `loaded` before the page sends `init`. In the true world geometry.js awaits its 5-MB data module, and a module worker's messages sent before its handler exists are lost: the first try sat at "starting the lakes" for good.
+        - The start reports its stages and any error.
+      - **Start-up ~15 s** (Node 7.5 s). The season's spin-up had scanned every fish for each spawning female's mate: ~110 s at true scale. It now uses an index of the males by home and picks the same mates (T3 part 3).
+      - **The ground.** The band's 455 × 1,385 cells of 5 m and the water as before.
+        - The far land is 266 × 498 cells of 20 m, out to 1.5 km, from the full-box 15-m model.
+        - The photo is 3,547 × 6,640 px at 1.5 m, with the ~1-m NAIP tiles where they cover: single crowns show on the shore. Both are in `src/w3/true/` (tools/hotbrook/README.md).
+        - The default 1/10 build stays byte-identical.
+      - **The land at its height** (the slider ×1–3).
+      - **At kilometres:** the camera's reach and far plane, the sky dome, the named views and label reach. The haze is the 1/10 world's at ten times the distance. The lakes' labels give their real areas.
+      - **The forest: 860,000 true-size trees** (377,000 conifers, 483,000 hardwoods) in typed arrays, binned in 200-m tiles.
+        - Full trees stand within 1.2 km of where the view looks, re-picked every 240 m it moves.
+        - Every other tree is a simple cone or blob in one instanced draw per kind, from four numbers a tree (no matrices). These collapse inside the near disc, stay out of the water's mirror, and are hidden while the camera is under water.
+      - **The fish drawn are those living second by second** (the focus), while the camera is within 900 m; from farther they would be sub-pixel. Fast-forward (no focus) draws those within 320 m.
+        - The focus is twice the camera's distance (40–250 m), shrunk while more than 6,000 agents live in it. The brook's mouth packs 20,000 agents into 250 m, which cost 154 ms a step.
+        - Measured in the browser: steps of 37–54 ms with ~4,500 fish drawn, ~2× real time at the fine rung.
+      - **Weeds, the bed's animals and the insects** keep their densities per m² on 5-m cells (their per-cell counts and caps × the cell's area). The weeds' field comes every 20 s.
+      - **Measured in the preview pane (800 × 600):** both lakes from 5.6 km 58 fps, the west cove from ~220 m 34 fps, under water 32 fps. Judge it at full screen in real Chrome.
+      - **Not yet.**
+        - Terrain and photo tiles that sharpen near the camera (T6b).
+        - The ice per vertex is every 2 s.
+        - Fast-forward at true scale crawls: a coarse block of all 300,000 agents is ~4.8 s whatever its length (T5's cores).
+        - Memory: ~1.3 GB in the worker (T4).
     - **T6b — terrain and photo tiles that sharpen near the camera** (lidar detail near), and the forest's far look.
     - **T6c — the views at true scale:** the cut-away's sampling, the ice per vertex (630,000 vertices, so less often), the weeds and the bed's animals near the camera only.
 - **T7 — The gate.**

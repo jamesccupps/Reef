@@ -1,13 +1,14 @@
 // main3.js — the 3-D view of the whole Hot Brook lakes (browser layer), from the pure geometry module (src/w3/geometry.js).
-// The lakes are at 1/10 of their real horizontal size with TRUE depths; the LAND (hills, banks, trees) is drawn at the
-// lakes' scale × the "land height" slider (×1: in proportion to the lakes, so every view matches the real place; ×10: true
-// metres), while the water's depth — and everything that will live in it — stays true size. Looks (map colours, the real
-// aerial photo, a depth chart), seasons, a cut-away section, see-into-the-water, labels and the angler's field notes.
+// Two worlds (render3/world3sel.js): by default the lakes at 1/10 of their real horizontal size with TRUE depths, the LAND
+// (hills, banks) drawn at the lakes' scale × the "land height" slider (×1: in proportion to the lakes; ×10: true metres);
+// with `?world=true` the lakes at their TRUE size (docs/TRUE_SCALE.md T6), the land at true height (the slider ×1). The
+// water's depth — and everything that lives in it — is true size in both. Looks (map colours, the real aerial photo, a depth
+// chart), seasons, a cut-away section, see-into-the-water, labels and the angler's field notes.
 // three.js r186 (vendor/, WebGPURenderer → WebGL2). Cosmetic randomness uses Math.random (never core.rand).
+import { WORLD_Q } from './world3sel.js';   // (first: it picks the world before geometry.js loads)
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
-import { GEO, BODIES, LAND, BROOK } from '../geometry.js';
+import { GEO, BODIES, LAND, BROOK, WORLD_TRUE } from '../geometry.js';
 import { CameraRig } from './controls3.js';
-import { FAR3 } from './far3d.js';
 import { Env3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
@@ -16,12 +17,16 @@ import { makeBedView } from './bed3view.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
-const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, exp, time, abs: tabs } = THREE.TSL;
+// the far land and the photo of the world shown (the true world's: tools/hotbrook/build_world3d.py at true size → src/w3/true/)
+const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('./far3d.js');
+const PHOTO_URL = new URL(WORLD_TRUE ? '../true/naip3.jpg' : './naip3.jpg', import.meta.url).href;
+const KM = WORLD_TRUE ? 10 : 1;   // (the view's distances — camera reach, sky, fog, named views, label reach — at kilometres in the true world)
+const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, exp, time, abs: tabs, step, length } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
-const kLand = () => S.exag / 10;
+const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
+const kLand = () => WORLD_TRUE ? S.exag : S.exag / 10;   // (the land's height × true: the 1/10 world's ×1 is in proportion to its lakes)
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 // ---------- renderer, scene, camera ----------
@@ -30,9 +35,10 @@ const renderer = new THREE.WebGPURenderer({ canvas, antialias: true, logarithmic
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000 * KM);
 // the fog: the air's above the water; under it the tea-coloured water's, its colour following the gaze (render3/water3.js)
-const airFog = new THREE.FogExp2(0xc7d6dc, 0.0007), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
+// (the air's haze: the true world's as the 1/10 world's at ten times the distance)
+const airFog = new THREE.FogExp2(0xc7d6dc, 0.0007 / KM), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
 scene.fog = airFog; setClear(S.clear);
 
 // ---------- seasons: land cover and tree colours ----------
@@ -65,11 +71,11 @@ const landY = (elev, level) => (level - BASE) + (elev - level) * kLand();
 const farDec = (b64, T) => { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new T(u.buffer); };
 const FAR_ELEV = farDec(FAR3.elev_cm, Uint16Array), FAR_COVER = farDec(FAR3.cover, Uint8Array);
 const farElev = i => FAR3.E0 + FAR_ELEV[i] / 100;
-const farLevel = y => GEO.SURF.upper + (GEO.SURF.lower - GEO.SURF.upper) * Math.min(1, Math.max(0, (y + 15) / 70));
+const farLevel = y => GEO.SURF.upper + (GEO.SURF.lower - GEO.SURF.upper) * Math.min(1, Math.max(0, (y + 15 / GEO.SCALE / 10) / (70 / GEO.SCALE / 10)));
 const PW = FAR3.NX * FAR3.CELL, PH = FAR3.NY * FAR3.CELL;   // the photo covers the far grid's extent, row 0 north
 const photoUV = (x, y) => [(x - FAR3.X0) / PW, (y - FAR3.Y0) / PH];
 
-const photoTex = new THREE.TextureLoader().load(new URL('./naip3.jpg', import.meta.url).href);
+const photoTex = new THREE.TextureLoader().load(PHOTO_URL);
 photoTex.colorSpace = THREE.SRGBColorSpace; photoTex.anisotropy = 8;
 const U = { photo: uniform(0), chart: uniform(0), snow: uniform(0), fallTint: uniform(0), springTint: uniform(0) };
 // depth-chart colours: lighter → darker blue every 2 ft (MDIFW charts are in feet), a contour line at every 2-ft step
@@ -237,10 +243,19 @@ const broadG = mergeGeo([
 // each a real tree. The brook's banks take its scale: the brook is drawn at half its real size (GEO.BROOK_SCALE), so are the
 // trees beside it — a 15-m pine by the 4-m brook stands as a 30-m one by the real 8-m brook (the proportion of the photos).
 // By the water a second row stands behind the first (crowns overlap): seen from the lake the treeline is continuous.
-const BP_ = GEO.BROOK_PATH;
+const BP_ = GEO.BROOK_PATH, HC = GEO.CELL / 2;   // (HC: half a cell — the scatter about a cell's centre)
 const brookDist = (x, y) => { let b = 1e9; for (let k = 0; k + 1 < BP_.length; k++) { const [ax, ay] = BP_[k], [bx, by] = BP_[k + 1], vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))); b = Math.min(b, Math.hypot(x - ax - t * vx, y - ay - t * vy)); } return b; };
 const nearScaleAt = (x, y, d) => brookDist(x, y) <= d + GEO.BROOK_W / 2 + 0.75 ? GEO.BROOK_SCALE : 1;
-const TREES = { conifer: [], broad: [] };
+// (TRUE_SCALE T6a: each kind's trees in typed arrays — the true-size lakes and their land hold ~a million — binned in TREE_TILE
+// tiles; there only those within TREE_R of where the camera looks are drawn, re-picked as it moves. The 1/10 world draws all)
+const TREE_R = WORLD_TRUE ? 1200 : Infinity, TREE_TILE = 200, TREE_F = ['x', 'y', 'H', 'el', 'lv', 'rot', 'k'];
+const treeStore = () => ({ n: 0, cap: 0 });
+function treePush(T, v) {
+  if (T.n === T.cap) { const cap = Math.max(4096, T.cap * 2); for (const f of TREE_F) { const a = new Float32Array(cap); if (T[f]) a.set(T[f]); T[f] = a; } T.cap = cap; }
+  for (let q = 0; q < TREE_F.length; q++) T[TREE_F[q]][T.n] = v[q];
+  T.n++;
+}
+const TREES = { conifer: treeStore(), broad: treeStore() };
 {
   const P = { evergreen: [1, 0.85], mixed: [1, 0.5], deciduous: [1, 0.18], woody_wet: [0.7, 0.65], shrub_wet: [0.15, 0.5] };   // [stocking, share conifer]
   const COVER = 0.85, CROWN = 7, SHORE_ROWS = 2, SHORE_D = 6;   // (crown m across; by the water ×SHORE_ROWS within SHORE_D m)
@@ -249,7 +264,7 @@ const TREES = { conifer: [], broad: [] };
     const conifer = Math.random() < share, k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
     // (the trunk stands back from the water by ~40 % of its crown's half-width: crowns lean out over the bank, not across it)
     if (d < 0.4 * 0.5 * h * ns * (conifer ? 0.35 : 0.65)) return;
-    (conifer ? TREES.conifer : TREES.broad).push({ x, y, d, ns, h, elev, level, rot: rnd(0, 6.28), k });
+    treePush(conifer ? TREES.conifer : TREES.broad, [x, y, h * ns, elev, level, rnd(0, 6.28), k]);
   };
   for (let i = 0; i < GEO.N; i++) {
     if (GEO.body[i] !== LAND) continue;
@@ -257,7 +272,7 @@ const TREES = { conifer: [], broad: [] };
     const [cx, cy] = GEO.cellCentre(i), ns = d < 40 ? nearScaleAt(cx, cy, d) : 1, m = p[0] * perArea(GEO.CELL * GEO.CELL, ns) * (d < SHORE_D ? SHORE_ROWS : 1);
     for (let n = 0; n < m + 1; n++) {
       if (Math.random() > m - n) break;
-      const x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75); add(x, y, d, ns, GEO.elevAt(x, y), GEO.levelAt(x, y), p[1]);
+      const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC); add(x, y, d, ns, GEO.elevAt(x, y), GEO.levelAt(x, y), p[1]);
     }
   }
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) {   // the far land's forest (6-m cells), the same stocking
@@ -265,24 +280,84 @@ const TREES = { conifer: [], broad: [] };
     if (cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX) continue;
     const p = P[GEO.CLASSES[FAR_COVER[i]]]; if (!p) continue;
     const m = p[0] * perArea(FAR3.CELL * FAR3.CELL, 1);
-    for (let n = 0; n < m + 1; n++) { if (Math.random() > m - n) break; const x = cx + rnd(-3, 3), y = cy + rnd(-3, 3); add(x, y, 1e9, 1, farElev(i), farLevel(y), p[1]); }
+    for (let n = 0; n < m + 1; n++) { if (Math.random() > m - n) break; const x = cx + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), y = cy + rnd(-FAR3.CELL / 2, FAR3.CELL / 2); add(x, y, 1e9, 1, farElev(i), farLevel(y), p[1]); }
   }
 }
+// the tiles: each store's trees ordered by TREE_TILE tile (a counting sort) over the far land's extent
+const TT = { X0: FAR3.X0, Y0: FAR3.Y0, NX: Math.ceil(FAR3.NX * FAR3.CELL / TREE_TILE) + 1, NY: Math.ceil(FAR3.NY * FAR3.CELL / TREE_TILE) + 1 };
+const tileOf = (x, y) => Math.min(TT.NY - 1, Math.max(0, Math.floor((y - TT.Y0) / TREE_TILE))) * TT.NX + Math.min(TT.NX - 1, Math.max(0, Math.floor((x - TT.X0) / TREE_TILE)));
+for (const T of Object.values(TREES)) {
+  T.start = new Int32Array(TT.NX * TT.NY + 1); T.ord = new Int32Array(T.n); const cur = new Int32Array(TT.NX * TT.NY);
+  for (let i = 0; i < T.n; i++) T.start[tileOf(T.x[i], T.y[i]) + 1]++;
+  for (let t = 0; t < TT.NX * TT.NY; t++) T.start[t + 1] += T.start[t];
+  cur.set(T.start.subarray(0, TT.NX * TT.NY)); for (let i = 0; i < T.n; i++) T.ord[cur[tileOf(T.x[i], T.y[i])]++] = i;
+}
+const TREE_CAP = n => WORLD_TRUE ? Math.min(n, 200000) : Math.max(1, n);
 const treeMeshes = {
-  conifer: new THREE.InstancedMesh(coniferG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREES.conifer.length),
-  broad: new THREE.InstancedMesh(broadG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREES.broad.length),
+  conifer: new THREE.InstancedMesh(coniferG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREE_CAP(TREES.conifer.n)),
+  broad: new THREE.InstancedMesh(broadG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREE_CAP(TREES.broad.n)),
 };
-function placeTrees() {
-  const mt = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), kl = kLand();
+// THE FAR FOREST (the true-size lakes, T6a): every tree beyond the near disc as a simple cone (conifers) or blob (hardwoods) — one
+// instanced draw a kind from compact per-tree numbers (a million trees: no matrices), lit as the near ones. Inside the disc, where
+// the full trees stand, they collapse to nothing; they stay out of the water's mirror (its camera sees layer 0 only)
+const farForest = WORLD_TRUE ? (() => {
+  const nearC = uniform(new THREE.Vector2(1e9, 1e9)), nearR = uniform(TREE_R), meshes = {};
+  const base = { conifer: new THREE.ConeGeometry(0.4, 0.85, 6, 1, true).translate(0, 0.575, 0), broad: new THREE.OctahedronGeometry(0.36, 0).scale(1, 0.8, 1).translate(0, 0.62, 0) };
   for (const kind of ['conifer', 'broad']) {
-    const mesh = treeMeshes[kind], bare = kind === 'broad' && S.season === 'winter';
-    TREES[kind].forEach((t, j) => {
-      const H = t.h * t.ns, W = H * (kind === 'conifer' ? 0.35 : 0.65) * (0.85 + t.k * 0.3) * (bare ? 0.8 : 1);
-      p.set(t.x, landY(t.elev, t.level) - 0.05 * kl, -t.y); q.setFromAxisAngle(up, t.rot); mt.compose(p, q, sc.set(W, H, W)); mesh.setMatrixAt(j, mt);
-    });
-    mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere();
+    const T = TREES[kind], b = base[kind], g = new THREE.InstancedBufferGeometry();
+    g.setIndex(b.index); g.setAttribute('position', b.attributes.position); g.setAttribute('normal', b.attributes.normal); g.instanceCount = T.n;
+    g.setAttribute('tp', new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, T.n) * 4), 4));   // x, the ground's y, z, height
+    g.setAttribute('tw', new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, T.n)), 1));       // crown width
+    g.setAttribute('tc', new THREE.InstancedBufferAttribute(new Uint8Array(Math.max(1, T.n) * 3), 3, true));   // colour
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), P = attribute('tp', 'vec4'), W = attribute('tw', 'float');
+    const out = step(nearR, length(vec2(P.x, P.z).sub(nearC)));   // (1 outside the near disc)
+    m.positionNode = positionGeometry.mul(vec3(W, P.w, W)).mul(out).add(vec3(P.x, P.y, P.z));
+    m.colorNode = attribute('tc', 'vec3');
+    const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(PLANT_LAYER); meshes[kind] = mesh;
   }
-  placeShrubs();
+  return { nearC, meshes };
+})() : null;
+function placeFarForest() {   // every tree's place, size and colour for the far forest (the land's height, the season)
+  if (!farForest) return;
+  const kl = kLand(), c = C(0);
+  for (const kind of ['conifer', 'broad']) {
+    const T = TREES[kind], g = farForest.meshes[kind].geometry, tp = g.attributes.tp.array, tw = g.attributes.tw.array, tc = g.attributes.tc.array;
+    const bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season], wf = kind === 'conifer' ? 0.35 : 0.65;
+    for (let i = 0; i < T.n; i++) {
+      const H = T.H[i], k = T.k[i];
+      tp[i * 4] = T.x[i]; tp[i * 4 + 1] = landY(T.el[i], T.lv[i]) - 0.05 * kl; tp[i * 4 + 2] = -T.y[i]; tp[i * 4 + 3] = H;
+      tw[i] = H * wf * (0.85 + k * 0.3) * (bare ? 0.8 : 1);
+      c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36);
+      tc[i * 3] = Math.min(255, c.r * 255); tc[i * 3 + 1] = Math.min(255, c.g * 255); tc[i * 3 + 2] = Math.min(255, c.b * 255);
+    }
+    g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true;
+  }
+}
+let treeAt = null;   // (where the drawn trees were picked about)
+function placeTrees(treesOnly = false) {   // each tree's place, size and colour (the land's height, the season), those within reach
+  const mt = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), kl = kLand(), c = C(0);
+  const tx = rig.goal.target.x, ty = -rig.goal.target.z, R2 = TREE_R * TREE_R; treeAt = [tx, ty];
+  if (farForest) { farForest.nearC.value.set(tx, -ty); if (!treesOnly) placeFarForest(); }   // (the far forest leaves the disc to the full trees)
+  for (const kind of ['conifer', 'broad']) {
+    const T = TREES[kind], mesh = treeMeshes[kind], bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season], cap = mesh.instanceMatrix.count, wf = kind === 'conifer' ? 0.35 : 0.65;
+    let j = 0;
+    const put = i => {
+      const H = T.H[i], k = T.k[i], W = H * wf * (0.85 + k * 0.3) * (bare ? 0.8 : 1);
+      p.set(T.x[i], landY(T.el[i], T.lv[i]) - 0.05 * kl, -T.y[i]); q.setFromAxisAngle(up, T.rot[i]); mt.compose(p, q, sc.set(W, H, W)); mesh.setMatrixAt(j, mt);
+      mesh.setColorAt(j, c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36)); j++;
+    };
+    if (!Number.isFinite(TREE_R)) for (let i = 0; i < T.n; i++) put(i);
+    else {
+      const g0 = Math.max(0, Math.floor((tx - TREE_R - TT.X0) / TREE_TILE)), g1 = Math.min(TT.NX - 1, Math.floor((tx + TREE_R - TT.X0) / TREE_TILE));
+      const h0 = Math.max(0, Math.floor((ty - TREE_R - TT.Y0) / TREE_TILE)), h1 = Math.min(TT.NY - 1, Math.floor((ty + TREE_R - TT.Y0) / TREE_TILE));
+      for (let gy = h0; gy <= h1 && j < cap; gy++) for (let gx = g0; gx <= g1 && j < cap; gx++) {
+        const t = gy * TT.NX + gx;
+        for (let o = T.start[t]; o < T.start[t + 1] && j < cap; o++) { const i = T.ord[o]; if ((T.x[i] - tx) ** 2 + (T.y[i] - ty) ** 2 < R2) put(i); }
+      }
+    }
+    mesh.count = j; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true; mesh.computeBoundingSphere();
+  }
+  if (!treesOnly) placeShrubs();
 }
 // THE WATER'S EDGE: alder, sweetgale and leatherleaf thickets, true size (1.5–4 m), dense along every forested or wet bank
 const shrubG = mergeGeo(Array.from({ length: 11 }, (_, k) => {   // (a leafy mass: eleven lumps on a low dome, fixed pseudo-random)
@@ -295,10 +370,10 @@ const SHRUBS = [];
   for (let i = 0; i < GEO.N; i++) {
     if (GEO.body[i] !== LAND) continue;
     const cls = GEO.CLASSES[GEO.cover[i]], d = GEO.toWater[i], p = P[cls];
-    if (!p || d < 0.15 || d > (cls === 'shrub_wet' || cls === 'woody_wet' ? 3.5 : 2.2)) continue;
-    for (let k = 0; k < 2; k++) {
+    if (!p || d < 0.15 || d > Math.max(cls === 'shrub_wet' || cls === 'woody_wet' ? 3.5 : 2.2, 1.1 * GEO.CELL)) continue;   // (the first row of cells by the water, whatever the cell)
+    for (let k = 0; k < 2 * GEO.CELL / 1.5; k++) {   // (two to a 1.5-m cell's length of bank)
       if (Math.random() > p * 0.6) continue;
-      const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75);
+      const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC);
       SHRUBS.push({ x, y, elev: GEO.elevAt(x, y), level: GEO.levelAt(x, y), rot: rnd(0, 6.28), k: Math.random(), h: (1.2 + Math.random() * 2) * nearScaleAt(x, y, d) });
     }
   }
@@ -322,9 +397,9 @@ function colourShrubs() {
 const ROCKS = [];
 for (let i = 0; i < GEO.N; i++) {
   if (GEO.body[i] !== BROOK) continue;
-  const [cx, cy] = GEO.cellCentre(i), n = GEO.depth[i] < 0.7 ? 5 : 1;
+  const [cx, cy] = GEO.cellCentre(i), n = Math.round((GEO.depth[i] < 0.7 ? 5 : 1) * (GEO.CELL / 1.5) ** 2);
   for (let k = 0; k < n; k++) {
-    const x = cx + rnd(-0.75, 0.75), y = cy + rnd(-0.75, 0.75), dd = GEO.depthAt(x, y); if (!(dd > 0.05) || GEO.bodyAt(x, y) !== BROOK) continue;
+    const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC), dd = GEO.depthAt(x, y); if (!(dd > 0.05) || GEO.bodyAt(x, y) !== BROOK) continue;
     ROCKS.push({ x, y, dd, r: 0.08 + Math.pow(Math.random(), 2) * 0.42, sy: GEO.levelAt(x, y) - BASE, rx: rnd(0, 6.28), ry: rnd(0, 6.28), k: Math.random() });
   }
 }
@@ -338,20 +413,12 @@ const rockMesh = (() => {
   });
   mesh.count = ROCKS.length; return mesh;
 })();
-function colourTrees() {
-  const c = C(0);
-  for (const kind of ['conifer', 'broad']) {
-    const cols = TREE_COLS[kind][S.season], mesh = treeMeshes[kind];
-    TREES[kind].forEach((t, j) => { mesh.setColorAt(j, c.setHex(cols[Math.floor(t.k * 997) % cols.length]).multiplyScalar(0.82 + ((t.k * 7919) % 1) * 0.36)); });
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  }
-  colourShrubs();
-}
+function colourTrees() { colourShrubs(); }   // (the trees take their colours where placeTrees puts them)
 
 // ---------- sky and light ----------
 let _skyDim = null; const skyDimNode = () => _skyDim || (_skyDim = uniform(1));
 const sky = (() => {
-  const g = new THREE.SphereGeometry(4500, 32, 16); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
+  const g = new THREE.SphereGeometry(4500 * KM, 32, 16); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
   const mat = new THREE.MeshBasicNodeMaterial({ side: THREE.BackSide, fog: false, depthWrite: false });
   mat.colorNode = attribute('color', 'vec3').mul(skyDimNode());
   const m = new THREE.Mesh(g, mat);
@@ -359,7 +426,7 @@ const sky = (() => {
 })();
 function styleSky() {
   const top = C(S.season === 'winter' ? 0x8aa6c0 : 0x4f84c0), hor = C(S.season === 'winter' ? 0xe2e8ec : 0xcfdde3), g = sky.geometry, col = g.attributes.color.array, c = C(0);
-  for (let k = 0; k < g.attributes.position.count; k++) { const t = Math.max(0, g.attributes.position.getY(k) / 4500); c.copy(hor).lerp(top, Math.pow(t, 0.6)); col.set([c.r, c.g, c.b], k * 3); }
+  for (let k = 0; k < g.attributes.position.count; k++) { const t = Math.max(0, g.attributes.position.getY(k) / (4500 * KM)); c.copy(hor).lerp(top, Math.pow(t, 0.6)); col.set([c.r, c.g, c.b], k * 3); }
   g.attributes.color.needsUpdate = true; airFog.color.copy(hor).lerp(C(0xc7d6dc), 0.5);
 }
 { // the sky as an environment map, so the water reflects it
@@ -397,6 +464,7 @@ const specks = (() => {
 })();
 scene.add(specks);
 clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
+if (farForest) clipped.add(farForest.meshes.conifer, farForest.meshes.broad);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -406,7 +474,7 @@ function buildSection() {
   sectionSoil.visible = sectionWater.visible = S.cut; clipped.enabled = S.cut; if (!S.cut) return;
   const y = cutY(); clipPlane.constant = -y;   // keep z ≤ −y (north of the cut)
   const xs = [], gy = [], wl = [], BOT = -40;
-  for (let x = FAR3.X0 + 3; x <= FAR3.X0 + PW - 3; x += 0.75) {
+  for (let x = FAR3.X0 + 3; x <= FAR3.X0 + PW - 3; x += Math.max(0.75, GEO.CELL / 2)) {
     const inside = x > X0 && x < GEO.XMAX;
     let g, w = null;
     if (inside) { const b = GEO.bodyAt(x, y), d = GEO.depthAt(x, y), lv = GEO.levelAt(x, y); if (b !== LAND && d > 0) { g = lv - d - BASE; w = lv - BASE; } else g = landY(lv - d, lv); }
@@ -431,7 +499,7 @@ function buildSection() {
   const g1 = new THREE.BufferGeometry(); g1.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); g1.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
   const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3)); g2.setAttribute('color', new THREE.Float32BufferAttribute(wc, 3));
   sectionSoil.geometry.dispose(); sectionWater.geometry.dispose(); sectionSoil.geometry = g1; sectionWater.geometry = g2;
-  $('cutv').textContent = `${((y - Y0) * 10 / 1000).toFixed(2)} km from the south end`;
+  $('cutv').textContent = `${((y - Y0) / GEO.SCALE / 1000).toFixed(2)} km from the south end`;
 }
 
 // the live water's state at (x, y, depth z) as a colour, by the "in the water" choice
@@ -449,7 +517,7 @@ function waterColour(x, y, z, c) {
 
 // ---------- labels and the angler's field notes ----------
 const labels = [], lp = new THREE.Vector3(), lw = new THREE.Vector3();
-function label(text, sub, x, y, h, cls, reach = 2500) {
+function label(text, sub, x, y, h, cls, reach = 2500 * KM) {
   const el = document.createElement('div'); el.className = 'lbl ' + cls;
   const b = document.createElement('b'); b.textContent = text; el.append(b);
   if (sub) { const s = document.createElement('small'); s.textContent = sub; el.append(s); }
@@ -458,11 +526,11 @@ function label(text, sub, x, y, h, cls, reach = 2500) {
 for (const B of BODIES) {
   if (B.id === BROOK) continue;
   let sx = 0, sy = 0, n = 0; for (let i = 0; i < GEO.N; i += 7) if (GEO.body[i] === B.id) { const [x, y] = GEO.cellCentre(i); sx += x; sy += y; n++; }
-  label(B.name, `${(B.area / 1e4 * 100).toFixed(0)} ha · mean ${B.mean.toFixed(1)} m · max ${B.max.toFixed(1)} m (${(B.max / 0.3048).toFixed(0)} ft)`, sx / n, sy / n, 6, 'name');
+  label(B.name, `${(B.area / 1e4 / GEO.SCALE ** 2).toFixed(0)} ha · mean ${B.mean.toFixed(1)} m · max ${B.max.toFixed(1)} m (${(B.max / 0.3048).toFixed(0)} ft)`, sx / n, sy / n, 6, 'name');
 }
-{ const p = GEO.BROOK_PATH[Math.floor(GEO.BROOK_PATH.length / 2)]; label('Hot Brook', '154 m (shown at half length)', p[0], p[1], 4, 'name', 500); }
-label('inflow', 'from the south', GEO.INFLOW[0], GEO.INFLOW[1], 3, 'name', 600); label('outlet', 'to Baskahegan Stream', GEO.OUTLET[0], GEO.OUTLET[1], 3, 'name', 600);
-for (const n of GEO.NOTES) label(n.t.replace('Sunfish: ', 'sunfish · '), n.s.replace(/ \(angler's note, 2026\)/, ''), n.xy[0], n.xy[1], 2, 'note', 220);
+{ const p = GEO.BROOK_PATH[Math.floor(GEO.BROOK_PATH.length / 2)]; label('Hot Brook', WORLD_TRUE ? '154 m' : '154 m (shown at half length)', p[0], p[1], 4, 'name', 500 * Math.sqrt(KM)); }
+label('inflow', 'from the south', GEO.INFLOW[0], GEO.INFLOW[1], 3, 'name', 600 * KM); label('outlet', 'to Baskahegan Stream', GEO.OUTLET[0], GEO.OUTLET[1], 3, 'name', 600 * KM);
+for (const n of GEO.NOTES) label(n.t.replace('Sunfish: ', 'sunfish · '), n.s.replace(/ \(angler's note, 2026\)/, ''), n.xy[0], n.xy[1], 2, 'note', 220 * Math.sqrt(KM));
 function placeLabels(w, h) {
   for (const L of labels) {
     lw.set(L.x, GEO.levelAt(L.x, L.y) - BASE + L.h, -L.y); lp.copy(lw).project(camera);
@@ -487,7 +555,7 @@ function legend() {
     for (const ft of [0, 4, 8, 12, 16, 18]) { const t = Math.min(1, ft * 0.3048 / 5.6), c = C(0).setRGB(0.55 + (0.02 - 0.55) * t, 0.76 + (0.07 - 0.76) * t, 0.84 + (0.2 - 0.84) * t); item('#' + c.getHexString(), `${ft} ft`); }
     item('#0d1a2e', 'contour every 2 ft');
   } else if (S.look === 'photo') {
-    $('legtitle').textContent = 'Aerial photo'; const d = document.createElement('div'); d.textContent = 'USDA NAIP (public domain), re-cut onto the 1/10 layout; tinted for the season'; el.append(d);
+    $('legtitle').textContent = 'Aerial photo'; const d = document.createElement('div'); d.textContent = WORLD_TRUE ? 'USDA NAIP (public domain); tinted for the season' : 'USDA NAIP (public domain), re-cut onto the 1/10 layout; tinted for the season'; el.append(d);
   } else {
     $('legtitle').textContent = 'Ground cover';
     const seen = new Set(), c = C(0);
@@ -499,14 +567,14 @@ function legend() {
 
 // ---------- camera: a free rig, named views, under water ----------
 const groundAt = (x, z) => { const y = -z; if (x > X0 && x < GEO.XMAX && y > Y0 && y < GEO.YMAX) { const b = GEO.bodyAt(x, y), lv = GEO.levelAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? lv - d - BASE : landY(lv - d, lv); } return -2; };
-const rig = new CameraRig(camera, canvas, { groundAt });
-const [ux, uy] = BODIES[0].deepest, [lx, ly] = BODIES[1].deepest;
+const rig = new CameraRig(camera, canvas, { groundAt, maxDist: 2200 * KM });
+const [ux, uy] = BODIES[0].deepest, [lx, ly] = BODIES[1].deepest, BM = GEO.BROOK_PATH[Math.floor(GEO.BROOK_PATH.length / 2)], kN = Math.sqrt(KM);   // (kN: the near views' reach)
 const VIEWS = {
-  'Both lakes': { t: [-5, 10, 0], yaw: 0.25, pitch: -0.62, dist: 560 },
-  'Upper lake': { t: [-35, -150, 0], yaw: 0.1, pitch: -0.5, dist: 300 },
-  'The brook': { t: [30, 10, 0], yaw: -0.5, pitch: -0.6, dist: 80 },
-  'Lower lake': { t: [lx, ly + 30, 0], yaw: 0.2, pitch: -0.5, dist: 260 },
-  'West cove': { t: [GEO.NOTES[2].xy[0] + 10, GEO.NOTES[2].xy[1] - 5, 0], yaw: -0.9, pitch: -0.32, dist: 70 },
+  'Both lakes': { t: [-5 * KM, 10 * KM, 0], yaw: 0.25, pitch: -0.62, dist: 560 * KM },
+  'Upper lake': { t: [-35 * KM, -150 * KM, 0], yaw: 0.1, pitch: -0.5, dist: 300 * KM },
+  'The brook': { t: [WORLD_TRUE ? BM[0] : 30, WORLD_TRUE ? BM[1] : 10, 0], yaw: -0.5, pitch: -0.6, dist: 80 * kN },
+  'Lower lake': { t: [lx, ly + 30 * KM, 0], yaw: 0.2, pitch: -0.5, dist: 260 * KM },
+  'West cove': { t: [GEO.NOTES[2].xy[0] + 10 * kN, GEO.NOTES[2].xy[1] - 5 * kN, 0], yaw: -0.9, pitch: -0.32, dist: 70 * kN },
   'On the water': { t: [ux - 20, uy - 60, 0.2], yaw: 0.05, pitch: -0.04, dist: 28 },
   'Dive in': { t: [ux, uy - 8, -3.4], yaw: 0.9, pitch: -0.25, dist: 5 },
 };
@@ -544,7 +612,7 @@ $('t-cut').addEventListener('change', e => {
 $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; buildSection(); if (S.cut) rig.goal.target.z = -cutY(); });
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
-$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = shrubMesh.visible = S.trees; });
+$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = shrubMesh.visible = S.trees; if (farForest) farForest.meshes.conifer.visible = farForest.meshes.broad.visible = S.trees; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
@@ -567,6 +635,8 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc, cam: [rig.target.x, -rig.target.z, rig.dist] }); LIVE.dtAcc = 0; LIVE.waiting = true;   // (cam: where the view looks — the true-size lakes' focus)
 }
 function onSnap(m) {
+  if (m.type === 'progress') { LIVE.progress = `${m.text} (${m.s.toFixed(1)} s)`; return; }
+  if (m.type === 'error') { LIVE.failed = m.text; $('status').textContent = 'the simulation stopped: ' + m.text.split(String.fromCharCode(10))[0]; console.error(m.text); return; }
   if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false;
@@ -590,7 +660,14 @@ function liveUI() {
   const yf = e.yf, hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
   $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp0 ?? 0).toFixed(0)} °C${LIVE.run && LIVE.speed > 1 && LIVE.rate < LIVE.speed * 0.9 ? ` · running at ${LIVE.rate >= 100 ? Math.round(LIVE.rate).toLocaleString() : LIVE.rate.toFixed(1)}×` : ''}`;
   const ss = seasonOf(yf); if (ss !== LIVE.lastSeason) { LIVE.lastSeason = ss; S.season = ss; applySeason(); }
-  placeIce(e.ice);
+  if (!WORLD_TRUE || (LIVE.iceN = (LIVE.iceN || 0) + 1) % 8 === 1) placeIce(e.ice);   // (the true world's 630,000 vertices: every 2 s)
+}
+// the link between the two worlds, and what the panel says of the one shown
+function worldLink() {
+  if (!WORLD_TRUE) return;
+  $('worldlink').href = 'w3.html'; $('worldlink').textContent = 'Open the 1/10-size lakes instead';
+  $('about').textContent = 'Upper and Lower Hot Brook Lake and the brook between them at their REAL size — 369 and 274 ha, the brook 154 m — with their real depths (the 1949 survey soundings) and the land at its true height. The water and its fish are simulated live: about 1.2 million fish of the eleven species recorded in these lakes, at the real lakes\' numbers, each fish (or each school) with its own brain. The fish near where you look live second by second; the rest live their time in blocks.';
+  $('exv').nextElementSibling.textContent = '×3'; $('exv').previousElementSibling.textContent = 'true';
 }
 
 // ---------- frame ----------
@@ -599,18 +676,21 @@ addEventListener('resize', resize);
 let last = performance.now(), fps = 60, nFrames = 0; const UW_DIR = new THREE.Vector3(), SUN4 = [0, 1, 0, 0];
 async function start() {
   await renderer.init();
-  $('exag').value = String(S.exag);
+  if (WORLD_TRUE) { const ex = $('exag'); ex.min = '1'; ex.max = '3'; ex.step = '0.25'; ex.setAttribute('aria-label', 'Land height: 1 = true metres'); }
+  $('exag').value = String(S.exag); worldLink();
   // the 3-D water (src/w3/env3.js + chem3.js), opening in late May, and its fish at the real lakes' numbers — in the Worker
-  LIVE.worker = new Worker(new URL('./sim3worker.js', import.meta.url), { type: 'module' });
-  LIVE.worker.onmessage = ev => onSnap(ev.data);
+  LIVE.worker = new Worker(new URL('./sim3worker.js' + WORLD_Q, import.meta.url), { type: 'module' });
+  // (the worker says when its modules have loaded — the true world's geometry awaits its 5-MB data module, and a message sent
+  // before its handler exists would be lost — and only then is told to found the lakes)
+  LIVE.worker.onmessage = ev => { if (ev.data.type === 'loaded') LIVE.worker.postMessage({ type: 'init', cam: [rig.goal.target.x, -rig.goal.target.z, rig.goal.dist] }); else onSnap(ev.data); };
   LIVE.worker.onerror = ev => { $('status').textContent = 'the simulation stopped: ' + (ev.message || 'error'); console.error(ev); };
-  LIVE.worker.postMessage({ type: 'init' });
   placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
   renderer.setAnimationLoop(now => {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt); LIVE.tNow = now / 1000;
+    if (Number.isFinite(TREE_R) && S.trees && treeAt && Math.hypot(rig.goal.target.x - treeAt[0], -rig.goal.target.z - treeAt[1]) > TREE_R / 5) placeTrees(true);
     liveTick(dt); lightByDay();
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     risesView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
@@ -627,13 +707,15 @@ async function start() {
     const under = inBandXY && GEO.bodyAt(cx, cy) !== LAND && ch < GEO.levelAt(cx, cy) && S.water;
     WU.under.value = under ? 1 : 0; WU.camDepth.value = under ? GEO.levelAt(cx, cy) - ch : 0; LIVE.under = under;
     if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; }
+    // (under water the tea-coloured water hides everything past ~20 m: the land's trees aren't drawn — the true world's million)
+    if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; treeMeshes.conifer.visible = treeMeshes.broad.visible = shrubMesh.visible = tv; if (farForest) farForest.meshes.conifer.visible = farForest.meshes.broad.visible = tv; }
     scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
     $('uw').hidden = !under;
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
     renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + LIVE.snap.ny.toLocaleString() + ' schools of young' : 'starting the lakes…'}`;
+    if ((nFrames++ & 15) === 0 && !LIVE.failed) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + (LIVE.snap.nyAll ?? LIVE.snap.ny).toLocaleString() + ' schools of young' + (WORLD_TRUE ? ` · ${LIVE.snap.nf.toLocaleString()} drawn near the view` : '') : 'starting the lakes…' + (LIVE.progress ? ' ' + LIVE.progress : '')}`;
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

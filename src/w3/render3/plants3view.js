@@ -15,7 +15,8 @@ import { waterOut } from './water3.js';
 const { attribute, positionLocal, positionGeometry, positionWorld, sin, cos, time, vec3 } = THREE.TSL;
 
 const BASE = GEO.SURF.upper, LOWER_DY = GEO.SURF.lower - BASE;
-const PER = { EM: 5, FL: 16, SC: 3, IS: 3, DM: 3 };         // instances per 1.5-m cell at a full stand (lily pads are small: many)
+const PER_K = (GEO.CELL / 1.5) ** 2;   // (the counts below are per 1.5-m cell: a bigger cell — the true-size lakes' 5 m — holds its area's worth)
+const PER = Object.fromEntries(Object.entries({ EM: 5, FL: 16, SC: 3, IS: 3, DM: 3 }).map(([k, v]) => [k, Math.round(v * PER_K)]));   // instances per cell at a full stand (lily pads are small: many)
 const TINT = { EM: 0.5, FL: 0.15, SC: 1, IS: 0.5, DM: 0.7 };  // how much each form's stand colours the bed seen from afar
 const COL = { EM: 0x6f8a3a, FL: 0x3f7434, SC: 0x4f6b2c, IS: 0x5f7a44, DM: 0x2c4630 };
 const SPRING = new THREE.Color(0x8fb04a), BROWN = new THREE.Color(0x7d6a38), STRAW = new THREE.Color(0xa8945e);   // (last year's standing stems: plants3 dead)
@@ -171,7 +172,7 @@ export function makePlantsView(W3) {
       const R2 = MU_NEAR * MU_NEAR, M = musMesh.instanceMatrix.array, SY = muGeo.attributes.sy.array;
       for (let t = 0; t < fineI.length && nm < MU_MAX; t++) {
         const i = fineI[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
-        const n = Math.min(60, Math.floor(mus[fineB[t]] * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
+        const n = Math.min(60 * PER_K, Math.floor(mus[fineB[t]] * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
         for (let k = 0; k < n && nm < MU_MAX; k++) {
           const x = x0 + (hash(i, k * 5 + 101) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 9 + 103) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.1)) continue;
           const sz = 0.75 + 0.5 * hash(i, k + 107);

@@ -994,13 +994,16 @@ export class Fish3 {
     if (full || !this._region) this._regionBuild(fo, Math.sqrt(rOut2) + F3.REGION_M);
     this._localHash();
     this._useHash(this._lh);
+    let nn = 0;
     for (const a of this._region) {
       if (!a.alive) continue;
       const wasNear = a.near, near = a.near = (a.x - fo.x) ** 2 + (a.y - fo.y) ** 2 < (wasNear ? rOut2 : rIn2);
       if (!near) { if (wasNear) { a._t0 = this.time; this._sched(a, NB); } continue; }
+      nn++;
       if (!wasNear) { a._due = -1; const d = this.time - a._t0; if (d > 1.5 * dt) { a._t0 = this.time; this._live(a, a._i, d, d, true, blockLux(d)); continue; } }
       this._live(a, a._i, dt, mv, false, null); a._t0 = this.time;
     }
+    this.nearN = nn;   // (the agents living second by second this step: the view's worker sizes the focus by it)
     this._useHash(this._gh);
     const slot = this.stepNo % NB, due = this._bk[slot]; this._bk[slot] = [];
     for (const a of due) {

@@ -156,8 +156,14 @@ YOUNG BY DISTANCE (_stepYoyMixed: near schools each step, the rest in scheduled 
 (~15 µs/agent through the year), a fine step median 51 → 34 ms with the season's 84,000 young schools, no stalls. The 1/10
 world without a focus BIT-IDENTICAL (tools/w3_fingerprint.mjs fingerprints every fish after spring/summer runs — use it for any perf
 change). The 1/10 gate 92 checks (the fidelity check + the young and P).
-NEXT (the human 2026-10-17: "can i view this yet?" — not yet, the browser draws the 1/10 world): T6 — drawing at true size,
-with whatever part of T4 the browser's worker needs to hold the true world (~1.3 GB heap in Node); then T4, T5, T7, T8.
+T6a DONE (2026-10-17; TRUE_SCALE.md "Built, T6a"): THE REAL LAKES IN THE BROWSER — w3.html?world=true (the panel links the
+two worlds). render3/world3sel.js picks the world in page + worker; the worker says 'loaded' before init (a TLA module worker
+LOSES messages sent before its handler exists); start ~15 s (seedSeason's mate scan was ~110 s → an index, same mates). The far
+land + 1.5-m photo (1-m NAIP tiles where they cover) in src/w3/true/ (build_world3d.py HB_FAR_M/HB_FAR_CELL/HB_PHOTO_M/HB_PHOTO_HR/
+HB_FAR_OUT; default build byte-identical); 860k true-size trees (full within 1.2 km, the rest one instanced draw a kind);
+fish drawn = the focus's (camera ≤ 900 m), the focus shrunk to ≤ 6,000 near agents (fish3 nearN) → ~2× real time. A HIDDEN
+Browser pane pauses rAF: the page then never ticks the sim — drive ticks by hand from the console to measure.
+NEXT: the human looks at it (full screen, real Chrome); then T6b (terrain/photo tiles sharpening near the camera), T4, T5, T7, T8.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),

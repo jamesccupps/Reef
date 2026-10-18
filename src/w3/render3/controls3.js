@@ -3,8 +3,8 @@
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 
 export class CameraRig {
-  constructor(camera, el, { groundAt }) {
-    this.camera = camera; this.el = el; this.groundAt = groundAt;
+  constructor(camera, el, { groundAt, maxDist = 2200 }) {   // (maxDist: the farthest zoom out — the true-size lakes need kilometres)
+    this.camera = camera; this.el = el; this.groundAt = groundAt; this.maxDist = maxDist;
     this.target = new THREE.Vector3(); this.yaw = 0; this.pitch = -0.6; this.dist = 300;
     this.goal = { target: new THREE.Vector3(), yaw: 0, pitch: -0.6, dist: 300 };
     this.keys = new Set(); this._drag = null; this._pts = new Map();
@@ -13,7 +13,7 @@ export class CameraRig {
     el.addEventListener('pointermove', e => this._move(e));
     const up = e => { this._pts.delete(e.pointerId); if (!this._pts.size) { this._drag = null; el.classList.remove('drag'); } this._pinch = null; };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
-    el.addEventListener('wheel', e => { e.preventDefault(); this.goal.dist = THREE.MathUtils.clamp(this.goal.dist * Math.exp(e.deltaY * 0.0011), 1.2, 2200); }, { passive: false });
+    el.addEventListener('wheel', e => { e.preventDefault(); this.goal.dist = THREE.MathUtils.clamp(this.goal.dist * Math.exp(e.deltaY * 0.0011), 1.2, this.maxDist); }, { passive: false });
     addEventListener('keydown', e => { if (!(e.target instanceof HTMLInputElement)) this.keys.add(e.key.toLowerCase()); });
     addEventListener('keyup', e => this.keys.delete(e.key.toLowerCase()));
     addEventListener('blur', () => this.keys.clear());
@@ -24,7 +24,7 @@ export class CameraRig {
     if (this._pts.has(e.pointerId)) this._pts.set(e.pointerId, [e.clientX, e.clientY]);
     if (this._pts.size === 2) {   // pinch: zoom
       const [a, b] = [...this._pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      if (this._pinch) this.goal.dist = THREE.MathUtils.clamp(this.goal.dist * this._pinch / Math.max(d, 1), 1.2, 2200);
+      if (this._pinch) this.goal.dist = THREE.MathUtils.clamp(this.goal.dist * this._pinch / Math.max(d, 1), 1.2, this.maxDist);
       this._pinch = d; return;
     }
     const dx = e.clientX - this._drag.x, dy = e.clientY - this._drag.y; this._drag.x = e.clientX; this._drag.y = e.clientY;

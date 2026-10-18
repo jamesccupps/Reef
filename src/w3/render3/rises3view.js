@@ -93,7 +93,7 @@ export function makeRisesView(W3) {
         if (r < 0 || c < 0 || r >= GEO.NY || c >= GEO.NX) continue;
         const i = r * GEO.NX + c, [x0, y0] = GEO.cellCentre(i); if (GEO.depthAt(x0, y0) <= 0.05) continue;
         const col = W3.colAt(x0, y0); if (col < 0) continue;
-        const m = Math.min(24, Math.floor(surf[col] / F3.INSECT_G * GEO.CELL * GEO.CELL + hash(i, 7)));
+        const m = Math.min(24 * GEO.CELL * GEO.CELL / 2.25, Math.floor(surf[col] / F3.INSECT_G * GEO.CELL * GEO.CELL + hash(i, 7)));   // (the cap per 1.5-m cell's 2.25 m²)
         for (let k = 0; k < m && nb < BUG_MAX; k++) {
           const x = x0 + (hash(i, k * 3 + 1) - 0.5) * GEO.CELL + 0.08 * Math.sin(t * 0.21 + k), y = y0 + (hash(i, k * 3 + 2) - 0.5) * GEO.CELL + 0.08 * Math.cos(t * 0.17 + k);
           const s = 0.6 + 0.9 * hash(i, k * 3 + 3);

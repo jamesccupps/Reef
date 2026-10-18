@@ -15,6 +15,14 @@ TRUE SCALE (docs/TRUE_SCALE.md T1): the same chain at 5 m over the lakes' box, t
     (build_model.py again, as above, to take the shelf in)
     HB_MODEL=hotbrook_model_5m.json HB_SCALE=1 HB_BROOK_SCALE=1 HB_BROOK_W=8 HB_MARGIN=150 HB_JS=src/w3/true/hotbrook3d.js HB_SIM_ONLY=1 python tools/hotbrook/build_world3d.py
 
+Then the renderer's far land and aerial photo for the true world (T6a). They come from the full-box 15-m model, since the 5-m one
+stops ~250 m past the lakes' band. The photo takes the ~1-m NAIP tiles (`data/naip_hr`) where they cover. Run it with
+HB_OUT=<scratch dir> so the run's own band module doesn't overwrite anything; take far3d.js and naip3.jpg from HB_FAR_OUT:
+
+    HB_MODEL=hotbrook_model.json HB_SCALE=1 HB_BROOK_SCALE=1 HB_BROOK_W=8 HB_MARGIN=150 HB_OUT=<scratch> HB_FAR_M=1500 HB_FAR_CELL=20 HB_PHOTO_M=1.5 HB_PHOTO_HR=1 HB_FAR_OUT=src/w3/true python tools/hotbrook/build_world3d.py
+
+(the default 1/10 build is byte-identical to before: hotbrook3d.js, far3d.js and naip3.jpg)
+
 (Set PYTHONIOENCODING=utf-8 on Windows: the scripts print λ and °.)
 
 `viewer.html` is the three.js viewer (map colours / aerial photo / depth chart with 2-ft contours and the soundings;
