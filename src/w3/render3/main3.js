@@ -21,7 +21,7 @@ import { ENV as ENVC, PLANKTON } from '../../config.js';
 const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('./far3d.js');
 const PHOTO_URL = new URL(WORLD_TRUE ? '../true/naip3.jpg' : './naip3.jpg', import.meta.url).href;
 const KM = WORLD_TRUE ? 10 : 1;   // (the view's distances — camera reach, sky, fog, named views, label reach — at kilometres in the true world)
-const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, exp, time, abs: tabs, step, length } = THREE.TSL;
+const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, cos, exp, time, abs: tabs, step, length } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
@@ -292,73 +292,168 @@ for (const T of Object.values(TREES)) {
   for (let t = 0; t < TT.NX * TT.NY; t++) T.start[t + 1] += T.start[t];
   cur.set(T.start.subarray(0, TT.NX * TT.NY)); for (let i = 0; i < T.n; i++) T.ord[cur[tileOf(T.x[i], T.y[i])]++] = i;
 }
-const TREE_CAP = n => WORLD_TRUE ? Math.min(n, 200000) : Math.max(1, n);
-const treeMeshes = {
-  conifer: new THREE.InstancedMesh(coniferG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREE_CAP(TREES.conifer.n)),
-  broad: new THREE.InstancedMesh(broadG, new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), TREE_CAP(TREES.broad.n)),
-};
-// THE FAR FOREST (the true-size lakes, T6a): every tree beyond the near disc as a simple cone (conifers) or blob (hardwoods) — one
-// instanced draw a kind from compact per-tree numbers (a million trees: no matrices), lit as the near ones. Inside the disc, where
-// the full trees stand, they collapse to nothing; they stay out of the water's mirror (its camera sees layer 0 only)
-const farForest = WORLD_TRUE ? (() => {
-  const nearC = uniform(new THREE.Vector2(1e9, 1e9)), nearR = uniform(TREE_R), meshes = {};
-  const base = { conifer: new THREE.ConeGeometry(0.4, 0.85, 6, 1, true).translate(0, 0.575, 0), broad: new THREE.OctahedronGeometry(0.36, 0).scale(1, 0.8, 1).translate(0, 0.62, 0) };
-  for (const kind of ['conifer', 'broad']) {
-    const T = TREES[kind], b = base[kind], g = new THREE.InstancedBufferGeometry();
-    g.setIndex(b.index); g.setAttribute('position', b.attributes.position); g.setAttribute('normal', b.attributes.normal); g.instanceCount = T.n;
-    g.setAttribute('tp', new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, T.n) * 4), 4));   // x, the ground's y, z, height
-    g.setAttribute('tw', new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, T.n)), 1));       // crown width
-    g.setAttribute('tc', new THREE.InstancedBufferAttribute(new Uint8Array(Math.max(1, T.n) * 3), 3, true));   // colour
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9 }), P = attribute('tp', 'vec4'), W = attribute('tw', 'float');
-    const out = step(nearR, length(vec2(P.x, P.z).sub(nearC)));   // (1 outside the near disc)
-    m.positionNode = positionGeometry.mul(vec3(W, P.w, W)).mul(out).add(vec3(P.x, P.y, P.z));
-    m.colorNode = attribute('tc', 'vec3');
-    const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(PLANT_LAYER); meshes[kind] = mesh;
-  }
-  return { nearC, meshes };
-})() : null;
-function placeFarForest() {   // every tree's place, size and colour for the far forest (the land's height, the season)
-  if (!farForest) return;
-  const kl = kLand(), c = C(0);
-  for (const kind of ['conifer', 'broad']) {
-    const T = TREES[kind], g = farForest.meshes[kind].geometry, tp = g.attributes.tp.array, tw = g.attributes.tw.array, tc = g.attributes.tc.array;
-    const bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season], wf = kind === 'conifer' ? 0.35 : 0.65;
-    for (let i = 0; i < T.n; i++) {
-      const H = T.H[i], k = T.k[i];
-      tp[i * 4] = T.x[i]; tp[i * 4 + 1] = landY(T.el[i], T.lv[i]) - 0.05 * kl; tp[i * 4 + 2] = -T.y[i]; tp[i * 4 + 3] = H;
-      tw[i] = H * wf * (0.85 + k * 0.3) * (bare ? 0.8 : 1);
-      c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36);
-      tc[i * 3] = Math.min(255, c.r * 255); tc[i * 3 + 1] = Math.min(255, c.g * 255); tc[i * 3 + 2] = Math.min(255, c.b * 255);
+// THE FOREST IN THREE TIERS (TRUE_SCALE T6b). Every tier is one instanced draw per model from compact per-tree numbers — x,
+// the ground's y, z, height (tp); crown width and rotation (tw); colour and bark brightness (tc) — so no matrices, and a tier
+// leaves another's ground to it by collapsing the instances in its hole on the GPU (no rebuilds as the camera moves):
+// - NEAR, within DET_R of the camera: the real forms. Spruce and fir are narrow spires of ragged, drooping whorls on a trunk; the
+//   tallest conifers are white pines, tiers of irregular plumes above a long bare trunk; hardwoods have a trunk and limbs under a
+//   lumpy crown, a birch's bark white, the crown gone in winter (bare limbs).
+// - MID, within TREE_R of where the view looks (the 1/10 world: every tree): the simple layered cones and lumpy crowns.
+// - FAR (the true world): every other tree a cone or a blob, out of the water's mirror (its camera sees layer 0 only).
+const DET_R = 250, DET_MOVE = 30;   // m: the near tier's reach about the camera; how far the camera moves before it is re-picked
+// geometry: triangles with a foliage flag (fol: 1 leaves, 0 bark) and a shade (ao: darker low and inside the crown)
+function treeBuilder() {
+  const P = [], F = [], A = [], N = [];
+  const nrm = v => { const l = Math.hypot(...v) || 1; return v.map(x => x / l); };
+  const faceN = (a, b, c) => nrm([(b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]), (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]), (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])]);
+  // (a triangle; its corners' normals given — or its face's, lifted toward the sky: a whorl of needles lit from above)
+  const tri = (a, b, c, fol, ao, na = null, nb = null, nc = null) => {
+    if (!na) { const f = faceN(a, b, c), u = nrm([f[0], Math.abs(f[1]) + 0.8, f[2]]); na = nb = nc = u; }
+    P.push(...a, ...b, ...c); N.push(...na, ...nb, ...nc); F.push(fol, fol, fol); A.push(ao, ao, ao);
+  };
+  const cyl = (x0, y0, z0, x1, y1, z1, r0, r1, seg, ao) => {   // a tapered stem from (x0,y0,z0) to (x1,y1,z1)
+    const d = [x1 - x0, y1 - y0, z1 - z0], L = Math.hypot(...d), u = d.map(v => v / L);
+    const t = Math.abs(u[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = [u[1] * t[2] - u[2] * t[1], u[2] * t[0] - u[0] * t[2], u[0] * t[1] - u[1] * t[0]], n1 = Math.hypot(...e1);
+    const a = e1.map(v => v / n1), b = [u[1] * a[2] - u[2] * a[1], u[2] * a[0] - u[0] * a[2], u[0] * a[1] - u[1] * a[0]];
+    const ring = (c, r, s) => { const g = s / seg * Math.PI * 2, co = Math.cos(g) * r, si = Math.sin(g) * r; return [c[0] + a[0] * co + b[0] * si, c[1] + a[1] * co + b[1] * si, c[2] + a[2] * co + b[2] * si]; };
+    const rn = s => { const g = s / seg * Math.PI * 2, co = Math.cos(g), si = Math.sin(g); return [a[0] * co + b[0] * si, a[1] * co + b[1] * si, a[2] * co + b[2] * si]; };
+    for (let s = 0; s < seg; s++) {
+      const p00 = ring([x0, y0, z0], r0, s), p01 = ring([x0, y0, z0], r0, s + 1), p10 = ring([x1, y1, z1], r1, s), p11 = ring([x1, y1, z1], r1, s + 1), n0 = rn(s), n1 = rn(s + 1);
+      tri(p00, p10, p01, 0, ao, n0, n0, n1); tri(p01, p10, p11, 0, ao, n1, n0, n1);
     }
-    g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true;
+  };
+  const blob = (cx, cy, cz, rx, ry, rz, ao, seed) => {   // a lump of leaves: an icosahedron, its corners pushed in and out a little
+    const g = new THREE.IcosahedronGeometry(1, 0).toNonIndexed(), p = g.attributes.position.array;
+    const jit = v => 0.82 + 0.36 * ((Math.sin(seed * 12.9898 + v * 78.233) * 43758.5453) % 1 + 1) % 1;
+    for (let q = 0; q < p.length; q += 9) {
+      const v = [0, 1, 2].map(k => { const o = q + k * 3, j = jit(Math.round(p[o] * 7 + p[o + 1] * 13 + p[o + 2] * 29)); return [cx + p[o] * rx * j, cy + p[o + 1] * ry * j, cz + p[o + 2] * rz * j]; });
+      const n = v.map(w => nrm([(w[0] - cx) / rx, (w[1] - cy) / ry + 0.35, (w[2] - cz) / rz]));   // (rounded: the clump's own normal, a little skyward)
+      tri(v[0], v[1], v[2], 1, ao * (0.85 + 0.15 * Math.max(0, (v[0][1] + v[1][1] + v[2][1]) / 3 - cy) / ry), n[0], n[1], n[2]);
+    }
+  };
+  const hsh = (i, k) => { const h = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return h - Math.floor(h); };
+  const done = () => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+    g.setAttribute('fol', new THREE.Float32BufferAttribute(F, 1)); g.setAttribute('ao', new THREE.Float32BufferAttribute(A, 1)); return g;
+  };
+  return { tri, cyl, blob, hsh, done };
+}
+function spireG() {   // spruce and balsam fir: a narrow spire of drooping, ragged whorls about a trunk; a spike on top
+  const B = treeBuilder(), N = 12, SEG = 9;
+  B.cyl(0, 0, 0, 0, 0.9, 0, 0.028, 0.008, 6, 0.75);
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1), y = 0.1 + t * 0.78, r = 0.5 * Math.pow(1 - t, 0.85) + 0.05, droop = 0.05 + 0.11 * (1 - t), rot = i * 0.71;
+    const apex = [0, y + 0.05 + 0.05 * (1 - t), 0], rim = [];
+    for (let s = 0; s < SEG; s++) { const a = rot + s / SEG * Math.PI * 2, rr = r * (0.78 + 0.44 * B.hsh(i, s)); rim.push([Math.cos(a) * rr, y - droop * (0.6 + 0.8 * B.hsh(i, s + 50)), Math.sin(a) * rr]); }
+    for (let s = 0; s < SEG; s++) B.tri(apex, rim[(s + 1) % SEG], rim[s], 1, 0.58 + 0.42 * t);
+  }
+  for (let s = 0; s < 6; s++) { const a = s / 6 * Math.PI * 2, b = (s + 1) / 6 * Math.PI * 2; B.tri([0, 1, 0], [Math.cos(b) * 0.04, 0.86, Math.sin(b) * 0.04], [Math.cos(a) * 0.04, 0.86, Math.sin(a) * 0.04], 1, 1); }
+  return B.done();
+}
+function pineG() {   // eastern white pine: a long trunk, then tiers of irregular plumes held out level, the top a plume too
+  const B = treeBuilder();
+  B.cyl(0, 0, 0, 0, 0.93, 0, 0.032, 0.01, 6, 0.75);
+  for (let i = 0; i < 6; i++) {
+    const y = 0.42 + i * 0.095, n = 3 + (i % 2), reach = (0.42 - i * 0.05) * (0.8 + 0.4 * B.hsh(i, 9));
+    for (let b = 0; b < n; b++) {
+      const a = i * 1.37 + b / n * Math.PI * 2 + (B.hsh(i, b) - 0.5) * 0.8, rr = reach * (0.75 + 0.5 * B.hsh(i, b + 20));
+      B.cyl(0, y - 0.02, 0, Math.cos(a) * rr * 0.75, y + 0.01, Math.sin(a) * rr * 0.75, 0.008, 0.004, 4, 0.7);   // (the limb)
+      B.blob(Math.cos(a) * rr * 0.62, y + 0.02, Math.sin(a) * rr * 0.62, rr * 0.48, 0.055 + 0.03 * B.hsh(i, b + 40), rr * 0.36, 0.62 + 0.38 * i / 5, i * 10 + b);
+    }
+  }
+  B.blob(0.02, 0.97, 0, 0.1, 0.05, 0.08, 1, 99);
+  return B.done();
+}
+function hardG() {   // red maple, aspen, birch: a trunk forking into limbs under a lumpy crown
+  const B = treeBuilder();
+  B.cyl(0, 0, 0, 0.01, 0.5, 0, 0.042, 0.028, 7, 0.8);
+  for (let l = 0; l < 3; l++) { const a = l * 2.1 + 0.4; B.cyl(0.01, 0.46, 0, Math.cos(a) * 0.17, 0.74, Math.sin(a) * 0.17, 0.022, 0.009, 5, 0.75); }
+  for (let q = 0; q < 24; q++) {
+    const a = q * 2.399, u = B.hsh(q, 3), rr = 0.32 * Math.sqrt(B.hsh(q, 5)), y = 0.5 + 0.44 * u;
+    const sz = 0.09 + 0.07 * B.hsh(q, 7);
+    B.blob(Math.cos(a) * rr * (1 - 0.35 * u), y, Math.sin(a) * rr * (1 - 0.35 * u), sz * 1.15, sz * 0.9, sz * 1.15, 0.62 + 0.38 * u, q);
+  }
+  return B.done();
+}
+// a tier: one instanced draw of geometry `geo` holding up to `cap` trees; `holes`: [{C (uniform vec2: x, −y), R}] its trees inside
+// are collapsed (another tier's ground); `bare`: a uniform that takes the leaves away (winter)
+function tierMesh(geo, cap, { holes = [], side = THREE.FrontSide, bare = null, layer = 0 } = {}) {
+  const g = new THREE.InstancedBufferGeometry(); if (geo.index) g.setIndex(geo.index);
+  for (const k in geo.attributes) g.setAttribute(k, geo.attributes[k]);
+  g.instanceCount = 0;
+  const n = Math.max(1, cap);
+  g.setAttribute('tp', new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4));
+  g.setAttribute('tw', new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2));
+  g.setAttribute('tc', new THREE.InstancedBufferAttribute(new Uint8Array(n * 4), 4, true));
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, side }), P = attribute('tp', 'vec4'), Wr = attribute('tw', 'vec2'), TC = attribute('tc', 'vec4');
+  const leafy = !!geo.attributes.fol, fol = leafy ? attribute('fol', 'float') : float(1), ao = leafy ? attribute('ao', 'float') : float(1);
+  let p = positionGeometry; if (bare && leafy) p = p.mul(float(1).sub(fol.mul(bare)));
+  p = p.mul(vec3(Wr.x, P.w, Wr.x));
+  const co = cos(Wr.y), si = sin(Wr.y);
+  let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R, length(vec2(P.x, P.z).sub(h.C))));
+  m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).mul(keep).add(vec3(P.x, P.y, P.z));
+  m.colorNode = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), TC.w), TC.xyz, fol).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
+  const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(layer); mesh.userData.cap = cap; return mesh;
+}
+const camHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(DET_R) }, viewHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(TREE_R) }, bareU = uniform(0);
+const TIERS = {
+  midConifer: tierMesh(coniferG, WORLD_TRUE ? Math.min(TREES.conifer.n, 200000) : TREES.conifer.n, { holes: [camHole] }),
+  midBroad: tierMesh(broadG, WORLD_TRUE ? Math.min(TREES.broad.n, 200000) : TREES.broad.n, { holes: [camHole] }),
+  spire: tierMesh(spireG(), 20000, { side: THREE.DoubleSide }),
+  pine: tierMesh(pineG(), 8000, { side: THREE.DoubleSide }),
+  hard: tierMesh(hardG(), 20000, { side: THREE.DoubleSide, bare: bareU }),
+};
+if (WORLD_TRUE) {
+  TIERS.farConifer = tierMesh(new THREE.ConeGeometry(0.4, 0.85, 6, 1, true).translate(0, 0.575, 0), TREES.conifer.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
+  TIERS.farBroad = tierMesh(new THREE.OctahedronGeometry(0.36, 0).scale(1, 0.8, 1).translate(0, 0.62, 0), TREES.broad.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
+}
+const PINE_H = 21;   // m: conifers this tall drawn as white pines near the camera (the canopy's emergent pines; spruce and fir are 12–20 m)
+// one tree into a tier's slot j
+function putTree(mesh, j, T, i, kind, wf) {
+  const g = mesh.geometry, tp = g.attributes.tp.array, tw = g.attributes.tw.array, tc = g.attributes.tc.array, c = putTree.c || (putTree.c = C(0));
+  const H = T.H[i], k = T.k[i], bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season];
+  tp[j * 4] = T.x[i]; tp[j * 4 + 1] = landY(T.el[i], T.lv[i]) - 0.05 * kLand(); tp[j * 4 + 2] = -T.y[i]; tp[j * 4 + 3] = H;
+  tw[j * 2] = H * wf * (0.85 + k * 0.3) * (bare && wf === 0.65 ? 0.8 : 1); tw[j * 2 + 1] = T.rot[i];
+  c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36);
+  tc[j * 4] = Math.min(255, c.r * 255); tc[j * 4 + 1] = Math.min(255, c.g * 255); tc[j * 4 + 2] = Math.min(255, c.b * 255);
+  tc[j * 4 + 3] = kind === 'broad' && ((k * 7919 * 3) % 1) < 0.18 ? 230 : kind === 'broad' ? 18 : 8;   // (a birch in six: white bark; the rest dark)
+}
+function tierDone(mesh, n) { const g = mesh.geometry; g.instanceCount = n; g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true; }
+// the trees of a store within R of (x, y) by its tiles: fn(i) for each
+function treesNear(T, x, y, R, fn) {
+  if (!Number.isFinite(R)) { for (let i = 0; i < T.n; i++) fn(i); return; }
+  const R2 = R * R, g0 = Math.max(0, Math.floor((x - R - TT.X0) / TREE_TILE)), g1 = Math.min(TT.NX - 1, Math.floor((x + R - TT.X0) / TREE_TILE));
+  const h0 = Math.max(0, Math.floor((y - R - TT.Y0) / TREE_TILE)), h1 = Math.min(TT.NY - 1, Math.floor((y + R - TT.Y0) / TREE_TILE));
+  for (let gy = h0; gy <= h1; gy++) for (let gx = g0; gx <= g1; gx++) {
+    const t = gy * TT.NX + gx;
+    for (let o = T.start[t]; o < T.start[t + 1]; o++) { const i = T.ord[o]; if ((T.x[i] - x) ** 2 + (T.y[i] - y) ** 2 < R2) fn(i); }
   }
 }
-let treeAt = null;   // (where the drawn trees were picked about)
-function placeTrees(treesOnly = false) {   // each tree's place, size and colour (the land's height, the season), those within reach
-  const mt = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), kl = kLand(), c = C(0);
-  const tx = rig.goal.target.x, ty = -rig.goal.target.z, R2 = TREE_R * TREE_R; treeAt = [tx, ty];
-  if (farForest) { farForest.nearC.value.set(tx, -ty); if (!treesOnly) placeFarForest(); }   // (the far forest leaves the disc to the full trees)
-  for (const kind of ['conifer', 'broad']) {
-    const T = TREES[kind], mesh = treeMeshes[kind], bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season], cap = mesh.instanceMatrix.count, wf = kind === 'conifer' ? 0.35 : 0.65;
-    let j = 0;
-    const put = i => {
-      const H = T.H[i], k = T.k[i], W = H * wf * (0.85 + k * 0.3) * (bare ? 0.8 : 1);
-      p.set(T.x[i], landY(T.el[i], T.lv[i]) - 0.05 * kl, -T.y[i]); q.setFromAxisAngle(up, T.rot[i]); mt.compose(p, q, sc.set(W, H, W)); mesh.setMatrixAt(j, mt);
-      mesh.setColorAt(j, c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36)); j++;
-    };
-    if (!Number.isFinite(TREE_R)) for (let i = 0; i < T.n; i++) put(i);
-    else {
-      const g0 = Math.max(0, Math.floor((tx - TREE_R - TT.X0) / TREE_TILE)), g1 = Math.min(TT.NX - 1, Math.floor((tx + TREE_R - TT.X0) / TREE_TILE));
-      const h0 = Math.max(0, Math.floor((ty - TREE_R - TT.Y0) / TREE_TILE)), h1 = Math.min(TT.NY - 1, Math.floor((ty + TREE_R - TT.Y0) / TREE_TILE));
-      for (let gy = h0; gy <= h1 && j < cap; gy++) for (let gx = g0; gx <= g1 && j < cap; gx++) {
-        const t = gy * TT.NX + gx;
-        for (let o = T.start[t]; o < T.start[t + 1] && j < cap; o++) { const i = T.ord[o]; if ((T.x[i] - tx) ** 2 + (T.y[i] - ty) ** 2 < R2) put(i); }
-      }
-    }
-    mesh.count = j; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true; mesh.computeBoundingSphere();
+function placeFarForest() {   // every tree in the far tier (the true world): on a change of the land's height or the season
+  if (!TIERS.farConifer) return;
+  for (const [kind, mesh] of [['conifer', TIERS.farConifer], ['broad', TIERS.farBroad]]) { const T = TREES[kind], wf = kind === 'conifer' ? 0.35 : 0.65; for (let i = 0; i < T.n; i++) putTree(mesh, i, T, i, kind, wf); tierDone(mesh, T.n); }
+}
+let treeAt = null, detAt = null;   // (where the mid tier was picked about — the view's target — and the near tier — the camera)
+function placeNearTrees() {   // the near tier about the camera, and the hole the others leave it
+  const x = camera.position.x, y = -camera.position.z; detAt = [x, y]; camHole.C.value.set(x, -y);
+  let ns = 0, np = 0, nh = 0;
+  treesNear(TREES.conifer, x, y, DET_R, i => { const pine = TREES.conifer.H[i] >= PINE_H; if (pine) { if (np < TIERS.pine.userData.cap) putTree(TIERS.pine, np++, TREES.conifer, i, 'conifer', 0.5); } else if (ns < TIERS.spire.userData.cap) putTree(TIERS.spire, ns++, TREES.conifer, i, 'conifer', 0.33); });
+  treesNear(TREES.broad, x, y, DET_R, i => { if (nh < TIERS.hard.userData.cap) putTree(TIERS.hard, nh++, TREES.broad, i, 'broad', 0.65); });
+  tierDone(TIERS.spire, ns); tierDone(TIERS.pine, np); tierDone(TIERS.hard, nh);
+}
+function placeTrees(treesOnly = false) {   // the mid tier about where the view looks (each tree's place, size and colour), then the near
+  const tx = rig.goal.target.x, ty = -rig.goal.target.z; treeAt = [tx, ty]; viewHole.C.value.set(tx, -ty); bareU.value = S.season === 'winter' ? 1 : 0;
+  if (!treesOnly) placeFarForest();
+  for (const [kind, mesh] of [['conifer', TIERS.midConifer], ['broad', TIERS.midBroad]]) {
+    const T = TREES[kind], cap = mesh.userData.cap, wf = kind === 'conifer' ? 0.35 : 0.65; let j = 0;
+    treesNear(T, tx, ty, TREE_R, i => { if (j < cap) putTree(mesh, j++, T, i, kind, wf); });
+    tierDone(mesh, j);
   }
+  placeNearTrees();
   if (!treesOnly) placeShrubs();
 }
+const treeMeshList = () => Object.values(TIERS);
 // THE WATER'S EDGE: alder, sweetgale and leatherleaf thickets, true size (1.5–4 m), dense along every forested or wet bank
 const shrubG = mergeGeo(Array.from({ length: 11 }, (_, k) => {   // (a leafy mass: eleven lumps on a low dome, fixed pseudo-random)
   const a = k * 2.399, r = 0.12 + 0.3 * ((k * 0.618) % 1), h = 0.25 + 0.45 * (1 - r / 0.42) * ((k * 0.381 + 0.3) % 1);
@@ -463,8 +558,7 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, water, treeMeshes.conifer, treeMeshes.broad, shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
-if (farForest) clipped.add(farForest.meshes.conifer, farForest.meshes.broad);
+clipped.add(band, farMesh, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -612,7 +706,7 @@ $('t-cut').addEventListener('change', e => {
 $('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; buildSection(); if (S.cut) rig.goal.target.z = -cutY(); });
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
-$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; treeMeshes.conifer.visible = treeMeshes.broad.visible = shrubMesh.visible = S.trees; if (farForest) farForest.meshes.conifer.visible = farForest.meshes.broad.visible = S.trees; });
+$('t-trees').addEventListener('change', e => { S.trees = e.target.checked; for (const m of treeMeshList()) m.visible = S.trees; shrubMesh.visible = S.trees; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
@@ -691,6 +785,7 @@ async function start() {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
     rig.update(dt); LIVE.tNow = now / 1000;
     if (Number.isFinite(TREE_R) && S.trees && treeAt && Math.hypot(rig.goal.target.x - treeAt[0], -rig.goal.target.z - treeAt[1]) > TREE_R / 5) placeTrees(true);
+    else if (S.trees && detAt && Math.hypot(camera.position.x - detAt[0], -camera.position.z - detAt[1]) > DET_MOVE) placeNearTrees();   // (the near tier follows the camera)
     liveTick(dt); lightByDay();
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     risesView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
@@ -708,7 +803,7 @@ async function start() {
     WU.under.value = under ? 1 : 0; WU.camDepth.value = under ? GEO.levelAt(cx, cy) - ch : 0; LIVE.under = under;
     if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; }
     // (under water the tea-coloured water hides everything past ~20 m: the land's trees aren't drawn — the true world's million)
-    if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; treeMeshes.conifer.visible = treeMeshes.broad.visible = shrubMesh.visible = tv; if (farForest) farForest.meshes.conifer.visible = farForest.meshes.broad.visible = tv; }
+    if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; for (const m of treeMeshList()) m.visible = tv; shrubMesh.visible = tv; }
     scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
     $('uw').hidden = !under;
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
@@ -718,4 +813,4 @@ async function start() {
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

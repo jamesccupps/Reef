@@ -195,6 +195,18 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
         - The ice per vertex is every 2 s.
         - Fast-forward at true scale crawls: a coarse block of all 300,000 agents is ~4.8 s whatever its length (T5's cores).
         - Memory: ~1.3 GB in the worker (T4).
+    - **Built, T6b part 1 (2026-10-17): the forest in three tiers, and fast-forward at its speed.**
+      - **The tiers.** Every tier is one instanced draw per model from compact per-tree numbers (place, height, width, rotation, colour, bark). A tier leaves another's ground to it by collapsing the instances in its hole on the GPU, so nothing is rebuilt as the camera moves.
+        - **Near (within 250 m of the camera, re-picked every 30 m it moves):** the real forms.
+          - Spruce and fir are narrow spires of ragged, drooping whorls on a trunk.
+          - Conifers ≥ 21 m are white pines, with tiers of irregular plumes on limbs above a long trunk.
+          - Hardwoods have a trunk forking into limbs under 24 leaf clumps; a sixth of them are white-barked birches, and they go bare in winter.
+          - Normals are rounded on the stems and clumps, and the whorls are lit from above.
+        - **Mid (1.2 km about where the view looks; the 1/10 world: every tree):** the simple layered cones and lumpy crowns.
+        - **Far (the true world):** a cone or blob each.
+        - The 1/10 world gets the near tier too.
+        - Measured from a boat in the west cove: 63 fps in the 800 × 600 preview.
+      - **Fast-forward at its speed.** A true-size block costs ~5 s whatever its length, so a 20-s block at 1 min/s ran 4×. The worker now sizes blocks to the speed × their measured cost, and counts the seconds a long block took in the next tick: 1 min/s runs ~54×.
     - **T6b — terrain and photo tiles that sharpen near the camera** (lidar detail near), and the forest's far look.
     - **T6c — the views at true scale:** the cut-away's sampling, the ice per vertex (630,000 vertices, so less often), the weeds and the bed's animals near the camera only.
 - **T7 — The gate.**

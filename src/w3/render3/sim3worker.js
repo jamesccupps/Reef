@@ -46,20 +46,25 @@ function drawn(list, near) {
 }
 // (a fish that has just come into the focus last remembered its pose long ago: drawn where it is, not glided from there)
 const fresh = a => !(F.focus && Math.abs(a._px - a.x) + Math.abs(a._py - a.y) > 5);
-// the step for a speed: fine 0.1 s up to FINE_UP×, else a block of speed / BLOCKS_S s (at least 1.5 s, at most BLOCK_MAX)
-const stepFor = sp => sp <= FINE_UP ? FINE : Math.min(BLOCK_MAX, Math.max(1.5, sp / BLOCKS_S));
+// the step for a speed: fine 0.1 s up to FINE_UP×, else a block of speed / BLOCKS_S s (at least 1.5 s, at most BLOCK_MAX) — and
+// at least as long as the speed × what a block costs: the true-size lakes' blocks cost ~5 s each whatever their length (every
+// agent lives each one), so at 1 min/s a 20-s block ran 4× real time, not 60×; a block of speed × its cost runs at the speed asked
+let blockMs = WORLD_TRUE ? 5000 : 0, busyS = 0;
+const stepFor = sp => sp <= FINE_UP ? FINE : Math.min(BLOCK_MAX, Math.max(1.5, sp / BLOCKS_S, sp * blockMs * 1.1 / 1000));
 function advance(dt) {
   if (!run) return;
   h = stepFor(speed);
-  acc += Math.min(0.25, dt) * speed;
+  acc += Math.min(Math.max(0.25, 1.5 * busyS), dt) * speed;   // (no catch-up after a pause — but the seconds a long block itself took count)
   const t0 = performance.now();
   while (acc >= h && performance.now() - t0 < BUDGET) {
-    const ts = performance.now(); remember(); F.step(h); acc -= h; stepMs += (performance.now() - ts - stepMs) * 0.1;   // (a step's cost, for the status)
+    const ts = performance.now(); remember(); F.step(h); acc -= h; const dur = performance.now() - ts; stepMs += (dur - stepMs) * 0.1;   // (a step's cost, for the status)
+    if (h > FINE) blockMs += (dur - blockMs) * 0.3;   // (a block's cost: the next blocks' length)
     for (let q = 0; q < F.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(F.rises[q]);
     // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour)
     envAcc += h; if (envAcc >= Math.max(h, ENV_FINE) - 1e-9) { env.step(envAcc); envAcc = 0; }
   }
   acc = Math.min(acc, h);   // (behind: drop the backlog — the sim runs slower than asked rather than lurch)
+  busyS = (performance.now() - t0) / 1000;
 }
 // the cut-away's field: temperature, O₂, algae or zooplankton per cell
 function fieldOf(name) {
