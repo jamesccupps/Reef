@@ -66,5 +66,5 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .brow { display: grid; grid-template-columns: 70px 1fr 40px; align-items: center; gap: 6px; font-size: 11.5px; }
 .bl { color: var(--dim); } .bv { text-align: right; font-variant-numeric: tabular-nums; }
 .bar { display: block; height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden; }
-.bar i { display: block; height: 100%; width: var(--w); background: var(--accent); }
+.bar i { display: block; height: 100%; width: var(--w); margin-left: var(--l, 0); background: var(--accent); }
 @media (max-width: 600px) { #databtn { top: auto; bottom: 96px; } #data { top: 8px; bottom: 8px; right: 8px; } }

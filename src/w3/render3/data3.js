@@ -157,7 +157,9 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     } else kv.push(['depth', `${f.z.toFixed(1)} m (bed ${f.bed.toFixed(1)} m)`], ['water', f.T !== null ? `${f.T.toFixed(1)} °C · O₂ ${f.o2.toFixed(1)} mg/L` : '—'], ['guarded', f.guarded ? 'yes, by a parent on its nest' : 'no']);
     const dl = el('dl', 'kv'); for (const [k, v] of kv) dl.append(el('dt', null, k), el('dd', null, v)); card.append(dl);
     if (f.kind === 'fish') {
-      const bars = (title, items) => { card.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } card.append(box); };
+      const bars = (title, items) => { card.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); const c = Math.min(1, Math.max(-1, v));   // (a signed value — right/ahead/above — from the bar's middle; the rest from its left)
+        if (lo < 0) { i.style.setProperty('--l', `${(50 + 50 * Math.min(0, c)).toFixed(0)}%`); i.style.setProperty('--w', `${(50 * Math.abs(c)).toFixed(0)}%`); }
+        else i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } card.append(box); };
       bars('State', [['hunger', f.hunger, 0, 1], ['fear', f.fear, 0, 1], ['energy', f.energy, 0, 1], ['ration', f.p, 0, 1]]);
       // (what it senses — its brain's inputs: directions as right/ahead/above in −1…1, the rest 0…1 — then what its brain does with them)
       if (f.inp) { const SIGNED = new Set([0, 1, 2, 4, 5, 6, 8, 9, 15, 16, 18, 23, 24]); bars('What it senses (its brain’s inputs)', IN3.map((k, q) => [k, f.inp[q] ?? 0, SIGNED.has(q) ? -1 : 0, 1])); }
