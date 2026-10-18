@@ -1,6 +1,7 @@
 // plants3view.js — the weeds of the 3-D lakes on screen (browser layer). The plants are a field on the bed (src/w3/plants3.js:
 // shoots per bed cell of the water model and growth form, sent by render3/sim3worker.js every few seconds); here each 1.5-m
-// cell of the lake bed gets instances of the forms its water-model cell holds, in proportion to their stands — fronds for the
+// cell of the lake bed gets instances of the forms the water-model cells about it hold (blended, then in clumps — no squares),
+// in proportion to their stands — fronds for the
 // submerged canopy (as tall as the canopy), lily pads on the surface, reeds standing out of the water, low tufts for the
 // rosettes and the deep meadow — fresh green in spring, browning in autumn as the shoots die back (the evergreen rosettes and
 // mosses stay green). Stems are drawn only near where the camera looks (the submerged forms within about the camera's
@@ -55,6 +56,10 @@ const SWAY = { EM: 0.03, FL: 0, SC: 0.16, IS: 0.005, DM: 0.03 };   // m of sway 
 
 // a cheap hash for each cell's scatter (cosmetic)
 const hash = (i, k) => { let h = Math.imul(i, 374761393) + Math.imul(k, 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+function vnoise(x, y) {   // smooth value noise, 0–1 (cosmetic)
+  const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+  return (hash(i, j) * (1 - u) + hash(i + 1, j) * u) * (1 - v) + (hash(i, j + 1) * (1 - u) + hash(i + 1, j + 1) * u) * v;
+}
 const surfY = (x, y) => { const b = GEO.bodyAt(x, y); return b === UPPER ? 0 : b === LOWER ? LOWER_DY : GEO.levelAt(x, y) - BASE; };
 
 export function makePlantsView(W3) {
@@ -70,7 +75,52 @@ export function makePlantsView(W3) {
     for (let d = 0; d < n && ib < 0; d++) for (const kk of [k - d, k + d]) if (kk >= 0 && kk < n && bedIdx[j0 + kk] >= 0) { ib = bedIdx[j0 + kk]; break; }
     if (ib >= 0) { fi.push(i); fb.push(ib); }
   }
-  const fineI = Int32Array.from(fi), fineB = Int32Array.from(fb);
+  const fineI = Int32Array.from(fi), fineB = Int32Array.from(fb), nF = fineI.length;
+  // THE WEEDS WITHOUT THE WATER MODEL'S SQUARES (the human, 2026-10-18: "why is everything like all square? ... the plants in the
+  // water"): the sim keeps the plants per column of the water model — 50-m squares in the true-size lakes, 5 m in the 1/10 ones —
+  // and per 0.5-m layer of depth in it, so drawn by its column every cell of a square took one stand: a weed bed was a 50-m
+  // square. Each cell instead takes its stand from the four columns about it by nearness (bilinear between their centres; a
+  // column of the other water left out), each column's at the cell's own depth — between the mid-depths of its layers with bed
+  // about it, or, the cell beyond them, its nearest layer's, weighed down by the depth between (DZ_FIT) — so the beds fade from
+  // square to square and from depth to depth, following the bed's contours; then grows it in clumps, as real beds grow — patchy
+  // at metres to tens of metres (clonal spread from where a plant took, wave exposure, the bed's grain): each form's stand × a
+  // smooth random field about 1 on average, its clumps PATCH_L across
+  const NW = 8, DZ_FIT = 0.5, WB = new Int32Array(nF * NW).fill(-1), WW = new Float32Array(nF * NW);
+  let wq = 0, wo = 0, wd = 0, wb = 0;   // (the cell being weighed: entries so far, its first entry, its depth, its water)
+  const put = (ib, w) => { if (w > 1e-4 && wq < NW) { WB[wo + wq] = ib; WW[wo + wq] = w; wq++; } };
+  const col = (c, w) => {   // column c's stand at depth wd, weight w
+    const j0 = G.cell0[c], n = G.nL[c]; let lo = -1, hi = -1;
+    for (let k = 0; k < n; k++) { if (bedIdx[j0 + k] < 0) continue; if (G.zMid[j0 + k] <= wd) lo = k; else { hi = k; break; } }
+    if (lo >= 0 && hi >= 0) { const za = G.zMid[j0 + lo], f = (wd - za) / (G.zMid[j0 + hi] - za); put(bedIdx[j0 + lo], w * (1 - f)); put(bedIdx[j0 + hi], w * f); }
+    else if (lo >= 0 || hi >= 0) { const k = lo >= 0 ? lo : hi, dz = (wd - G.zMid[j0 + k]) / DZ_FIT; put(bedIdx[j0 + k], w * Math.exp(-dz * dz)); }
+  };
+  const corner = (X, Y, w) => { if (!(w > 0) || X < 0 || Y < 0 || X >= G.CX || Y >= G.CY) return; const c = G.gridCol[Y * G.CX + X]; if (c >= 0 && G.body[c] === wb) col(c, w); };
+  for (let t = 0; t < nF; t++) {
+    const i = fineI[t], [x, y] = GEO.cellCentre(i); wb = GEO.body[i]; wd = GEO.depth[i]; wo = t * NW; wq = 0;
+    if (G.ownBrook && wb === BROOK) col(G.colOfFine[i], 1);   // (the true-size brook's own stretches: by its own column)
+    else {
+      const u = (x - G.X0) / G.COL - 0.5, v = (y - G.Y0) / G.COL - 0.5, gx = Math.floor(u), gy = Math.floor(v), fu = u - gx, fv = v - gy;
+      corner(gx, gy, (1 - fu) * (1 - fv)); corner(gx + 1, gy, fu * (1 - fv)); corner(gx, gy + 1, (1 - fu) * fv); corner(gx + 1, gy + 1, fu * fv);
+    }
+    let sw = 0; for (let r = 0; r < wq; r++) sw += WW[wo + r];
+    if (!(sw > 1e-6)) { WB[wo] = fineB[t]; WW[wo] = 1; WB[wo + 1] = -1; wq = 1; sw = 1; }
+    for (let r = 0; r < wq; r++) WW[wo + r] /= sw;
+  }
+  // a bed-cell array's value at fine cell t, blended (stride values a bed cell; the off-th)
+  const blend = (arr, t, stride = 1, off = 0) => { let s = 0; for (let r = t * NW, e = r + NW; r < e && WB[r] >= 0; r++) s += WW[r] * arr[WB[r] * stride + off]; return s; };
+  // (one field of clumps over the cell grid, each form reading it shifted by its own whole number of cells — 7 and 11 a form,
+  // more than its clumps' width, so the forms clump apart)
+  const PATCH_L = Math.max(9 * GEO.SCALE, 3 * GEO.CELL), PX = GEO.NX + 7 * NF3, PY = GEO.NY + 11 * NF3, PT = new Float32Array(PX * PY);
+  for (let r = 0; r < PY; r++) for (let c = 0; c < PX; c++) {
+    const X = (GEO.X0 + (c + 0.5) * GEO.CELL) / PATCH_L, Y = (GEO.Y0 + (r + 0.5) * GEO.CELL) / PATCH_L;
+    PT[r * PX + c] = 0.65 * vnoise(X, Y) + 0.35 * vnoise(X * 2.7 + 5.5, Y * 2.7 + 9.5);
+  }
+  const patch = new Float32Array(NF3 * nF);
+  for (let t = 0; t < nF; t++) {
+    const i = fineI[t], c = i % GEO.NX, r = (i - c) / GEO.NX;
+    for (let f = 0; f < NF3; f++) patch[f * nF + t] = 2 * Math.min(1, Math.max(0, (PT[(r + 11 * f) * PX + c + 7 * f] - 0.3) / 0.4));   // (~a tenth of the bed bare between clumps, a tenth twice the stand)
+  }
+  const stand = new Float32Array(NF3 * nF);   // per form per fine cell: the stand drawn (g DW/m²), blended and clumped
   const cover = new Float32Array(GEO.N);   // per 1.5-m cell: the weeds' tint of the bed, 0–1
   const meshes = FORMS3.map(F => {
     const max = Math.min(INST_MAX, fineI.length * PER[F.form]);
@@ -106,8 +156,9 @@ export function makePlantsView(W3) {
   function setData(arr, yf0, mu = null, dd = null) {
     if (arr.length !== NF3 * nb) return false;
     shoots = arr; yf = yf0; dirty = true; if (mu && mu.length === nb) mus = mu; dead = dd && dd.length === nb ? dd : null;
-    for (let t = 0; t < fineI.length; t++) {
-      let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = arr[f * nb + fineB[t]]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.form]; }
+    for (let f = 0; f < NF3; f++) { const sub = arr.subarray(f * nb, (f + 1) * nb), o = f * nF; for (let t = 0; t < nF; t++) stand[o + t] = blend(sub, t) * patch[o + t]; }
+    for (let t = 0; t < nF; t++) {
+      let tint = 0; for (let f = 0; f < NF3; f++) { const F = FORMS3[f], b = stand[f * nF + t]; if (b > 0.3) tint += Math.min(1, b / F.Bmax) * TINT[F.form]; }
       cover[fineI[t]] = Math.min(1, tint);
     }
     return true;
@@ -123,11 +174,11 @@ export function makePlantsView(W3) {
     const fresh = Math.max(0, 1 - Math.abs(yf - 0.22) / 0.08), brownT = Math.min(1, Math.max(0, (yf - PL3.YF_STORE) / 0.15)) * (yf < 0.97 ? 1 : 0);
     const cnt = new Int32Array(NF3);
     for (let t = 0; t < fineI.length; t++) {
-      const i = fineI[t], ib = fineB[t], [x0, y0] = GEO.cellCentre(i), r2 = (x0 - tx) ** 2 + (y0 - ty) ** 2;
+      const i = fineI[t], [x0, y0] = GEO.cellCentre(i), r2 = (x0 - tx) ** 2 + (y0 - ty) ** 2;
       if (r2 > R2f) continue;
       const sY = surfY(x0, y0);
       for (let f = 0; f < NF3; f++) {
-        const F = FORMS3[f], b = shoots[f * nb + ib]; if (!(b > 0.3)) continue;
+        const F = FORMS3[f], b = stand[f * nF + t]; if (!(b > 0.3)) continue;
         if (!F.window && r2 > R2s) continue;
         const cov = Math.min(1, b / F.Bmax), per = PER[F.form];
         const n = Math.min(per, Math.floor(cov * per + hash(i, f)), maxOf[f] - cnt[f]);
@@ -152,7 +203,7 @@ export function makePlantsView(W3) {
         }
       }
       // LAST YEAR'S STEMS still standing (plants3 dead): straw-coloured reeds, leaning, a little shorter above the water
-      const dv = dead && fDead >= 0 ? dead[ib] : 0;
+      const dv = dead && fDead >= 0 ? blend(dead, t) * patch[fDead * nF + t] : 0;
       if (dv > 1 && r2 <= R2f) {
         const m = meshes[fDead], n = Math.min(PER.EM, Math.floor(Math.min(1, dv / DEAD_FULL) * PER.EM + hash(i, 77)), maxOf[fDead] - cnt[fDead]);
         for (let k = 0; k < n; k++) {
@@ -172,7 +223,7 @@ export function makePlantsView(W3) {
       const R2 = MU_NEAR * MU_NEAR, M = musMesh.instanceMatrix.array, SY = muGeo.attributes.sy.array;
       for (let t = 0; t < fineI.length && nm < MU_MAX; t++) {
         const i = fineI[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
-        const n = Math.min(60 * PER_K, Math.floor(mus[fineB[t]] * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
+        const n = Math.min(60 * PER_K, Math.floor(blend(mus, t) * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
         for (let k = 0; k < n && nm < MU_MAX; k++) {
           const x = x0 + (hash(i, k * 5 + 101) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 9 + 103) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.1)) continue;
           const sz = 0.75 + 0.5 * hash(i, k + 107);
@@ -193,5 +244,5 @@ export function makePlantsView(W3) {
   // the stems sit on their own layer (LAYER), which the water's reflection camera leaves out (main3): they would cost a second
   // draw for pads and reed tips that are barely seen in a ripple
   for (const m of meshes) m.layers.set(LAYER); musMesh.layers.set(LAYER);
-  return { group, setData, update, cover, nb, fine: fineI, fineB };
+  return { group, setData, update, cover, nb, fine: fineI, fineB, blend };
 }

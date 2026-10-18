@@ -175,6 +175,11 @@ on w3.html, COEP on scripts — and ≥ 4 cores; ?shards=0 off), tools/w3_shard_
 tools/w3_bench_shards.mjs. The threaded pool matches the in-process set BIT FOR BIT (water identical after 12 blocks). True lakes:
 359× → 547× real time (2 shards). A crossing fish finishes its step in the cells it started in, then is handed over.
 A TRUE-SCALE SEASON RUN is in the background (scratchpad true_season.mjs → true_season_may.txt: May 20 + 30 days, weekly census).
+DONE 2026-10-18 (after compacting; render only, committed on its own): NO SQUARES — the human asked "why is everything like all
+square?" (the woods' clearings, the weed beds). The weeds were drawn per 50-m water column: now each bed cell blends the four
+columns about it at its own depth and grows in clumps (plants3view `blend`, also bed3view's crayfish/snails); the land's NLCD
+30-m pixels: now domain-warped (main3 coverAt/SHOWN; the trees' candidates kept by the class their place shows; conifers in
+clumps). HOT_BROOK_3D.md "Built — no squares". Checked in the browser (true + 1/10 worlds); start-up unchanged within noise.
 ▶▶▶ RESUME HERE (2026-10-18 ~09:30, context compacted mid-slice). UNCOMMITTED in the working tree (also saved as
 G:/synapse-reef-backups/synapse-reef_20261018_0926_wip-T4-fallfish-cap.patch):
 (1) T4 PART 1 — the learned copy is the hidden→output block only (fish3 forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3,

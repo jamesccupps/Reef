@@ -7,7 +7,7 @@
 // three.js r186 (vendor/, WebGPURenderer → WebGL2). Cosmetic randomness uses Math.random (never core.rand).
 import { WORLD_Q } from './world3sel.js';   // (first: it picks the world before geometry.js loads)
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
-import { GEO, BODIES, LAND, BROOK, WORLD_TRUE } from '../geometry.js';
+import { GEO, BODIES, LAND, BROOK, WORLD_TRUE, cellIndex } from '../geometry.js';
 import { CameraRig } from './controls3.js';
 import { Env3, buildColumns3 } from '../env3.js';
 import { makeFishView } from './fish3view.js';
@@ -127,6 +127,48 @@ function bedColour(d, c, x, y) {   // rocky gravel and sand in the shallows (MDI
   return c.multiplyScalar(0.8 + fine * 0.4);
 }
 
+// THE LAND'S PATCHES WITHOUT THE MAP'S SQUARES (the human, 2026-10-18, of the woods: "why is everything like all square? the
+// plots in the woods..."). The land cover is NLCD's 30-m pixels (and the wetland inventory's), so a stand, a clearing or a field
+// drawn cell by cell was a 30-m square or a staircase of them, and a conifer stand met the hardwoods along a ruler-straight line.
+// Each point of the land now shows the class of a point displaced from it by a smooth random field (domain warping: up to
+// WARP_A m, typically a third of that — about half a pixel, within the map's own error), so the patches keep their places and
+// sizes but take ragged, natural edges. The shore's narrow classes (beach, rocky shore) neither spread nor give way, and the
+// first WARP_SHORE m from the water keep the map's class (the shrub fringe). Cosmetic (a hash, never core.rand).
+const WARP_A = 30 * GEO.SCALE, WARP_L = 70 * GEO.SCALE, WARP_SHORE = 6 * GEO.SCALE;
+const WATERY = new Set(['water', 'stream'].map(k => GEO.CLASSES.indexOf(k))), FIXED = new Uint8Array(GEO.CLASSES.length);
+for (const k of ['water', 'stream', 'beach', 'rock_shore']) FIXED[GEO.CLASSES.indexOf(k)] = 1;
+// (smooth value noise from a lattice cached over the far land's extent, L m between its points: the displacement is sampled
+// a few million times at start-up — the trees' places — and a Math.sin hash for each would cost seconds)
+function latticeNoise(L, salt) {
+  const nx = Math.ceil(FAR3.NX * FAR3.CELL / L) + 3, ny = Math.ceil(FAR3.NY * FAR3.CELL / L) + 3, t = new Float32Array(nx * ny);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) t[j * nx + i] = hash2(i + salt, j - salt * 0.61);
+  return (x, y) => {
+    let u = (x - FAR3.X0) / L + 1, v = (y - FAR3.Y0) / L + 1; u = u < 0 ? 0 : u > nx - 2 ? nx - 2 : u; v = v < 0 ? 0 : v > ny - 2 ? ny - 2 : v;
+    const i = u | 0, j = v | 0, fx = u - i, fy = v - j, a = fx * fx * (3 - 2 * fx), b = fy * fy * (3 - 2 * fy), o = j * nx + i;
+    return (t[o] * (1 - a) + t[o + 1] * a) * (1 - b) + (t[o + nx] * (1 - a) + t[o + nx + 1] * a) * b;
+  };
+}
+// the displacement: three octaves (WARP_L, /2.7, /8.1 across) for each of x and y (dropped once the trees are placed)
+let WARPN = [1, 2.7, 8.1].flatMap((f, k) => [latticeNoise(WARP_L / f, 11 + 7 * k), latticeNoise(WARP_L / f, 53 + 13 * k)]);
+const WARPK = [0.55, 0.3, 0.15];
+function mapCover(x, y) {   // the map's class at a point: the band's cell (-1 on its water), else the far land's (-1 off it)
+  const i = cellIndex(x, y); if (i >= 0) return GEO.body[i] === LAND ? GEO.cover[i] : -1;
+  const q = Math.floor((x - FAR3.X0) / FAR3.CELL), r = Math.floor((y - FAR3.Y0) / FAR3.CELL);
+  return q < 0 || r < 0 || q >= FAR3.NX || r >= FAR3.NY ? -1 : FAR_COVER[r * FAR3.NX + q];
+}
+// the class a point of land shows: its displaced point's — unless that is water or off the map (then `own`, its own cell's);
+// d: its distance from the water (m)
+function coverAt(x, y, d, own) {
+  if (d < WARP_SHORE || FIXED[own]) return own;
+  let wx = 0, wy = 0; for (let k = 0; k < 3; k++) { wx += WARPK[k] * WARPN[2 * k](x, y); wy += WARPK[k] * WARPN[2 * k + 1](x, y); }
+  const c = mapCover(x + WARP_A * (2 * wx - 1), y + WARP_A * (2 * wy - 1));
+  return c < 0 || FIXED[c] ? own : c;
+}
+// each cell's shown class at its centre (the ground's colours): the band's land cells, the far land's cells
+const SHOWN = new Uint8Array(GEO.N), FAR_SHOWN = new Uint8Array(FAR3.NX * FAR3.NY);
+for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] !== LAND) continue; const [x, y] = GEO.cellCentre(i); SHOWN[i] = coverAt(x, y, GEO.toWater[i], GEO.cover[i]); }
+for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { const own = FAR_COVER[i]; FAR_SHOWN[i] = WATERY.has(own) ? own : coverAt(FAR3.X0 + ((i % FAR3.NX) + 0.5) * FAR3.CELL, FAR3.Y0 + (Math.floor(i / FAR3.NX) + 0.5) * FAR3.CELL, 1e9, own); }
+
 function gridMesh(nx, ny, at, keep) {   // a heightfield over a grid of cell centres; at(i) → [x, y]; keep(q, r) for each quad
   const n = nx * ny, g = new THREE.BufferGeometry();
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), land = new Float32Array(n), dep = new Float32Array(n), puv = new Float32Array(n * 2);
@@ -153,12 +195,12 @@ function colourGround() {   // map colours by season (the bed by depth); a narro
   for (let i = 0; i < GEO.N; i++) {
     const [x, y] = GEO.cellCentre(i);
     if (GEO.body[i] !== LAND) weedBed(i, bedColour(GEO.depth[i], c, x, y));
-    else { seasonal(GEO.CLASSES[GEO.cover[i]], c); const near = GEO.toWater[i]; if (near < 1.2) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 1.2) * 0.55); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
+    else { seasonal(GEO.CLASSES[SHOWN[i]], c); const near = GEO.toWater[i]; if (near < 1.2) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 1.2) * 0.55); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
     bc[i * 3] = c.r; bc[i * 3 + 1] = c.g; bc[i * 3 + 2] = c.b;
   }
   band.geometry.attributes.color.needsUpdate = true;
   const fc = farMesh.geometry.attributes.color.array;
-  for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { seasonal(GEO.CLASSES[FAR_COVER[i]], c).multiplyScalar(0.9 + hash2(i, 7) * 0.2); fc[i * 3] = c.r; fc[i * 3 + 1] = c.g; fc[i * 3 + 2] = c.b; }
+  for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { seasonal(GEO.CLASSES[FAR_SHOWN[i]], c).multiplyScalar(0.9 + hash2(i, 7) * 0.2); fc[i * 3] = c.r; fc[i * 3 + 1] = c.g; fc[i * 3 + 2] = c.b; }
   farMesh.geometry.attributes.color.needsUpdate = true;
 }
 
@@ -261,28 +303,44 @@ const TREES = { conifer: treeStore(), broad: treeStore() };
   const P = { evergreen: [1, 0.85], mixed: [1, 0.5], deciduous: [1, 0.18], woody_wet: [0.7, 0.65], shrub_wet: [0.15, 0.5] };   // [stocking, share conifer]
   const COVER = 0.85, CROWN = 7, SHORE_ROWS = 2, SHORE_D = 6;   // (crown m across; by the water ×SHORE_ROWS within SHORE_D m)
   const perArea = (area, ns) => COVER * area / (Math.PI * (CROWN * ns / 2) ** 2);
+  // (the conifers in clumps — stands of spruce and fir, of hemlock, among the hardwoods — not salt-and-pepper: each class's
+  // conifer share ± up to CLUMP_D by a smooth random field CLUMP_L across)
+  const CLUMP_L = 45 * GEO.SCALE, CLUMP_D = 0.6;
+  const clumpN = latticeNoise(CLUMP_L, 97), shareAt = (x, y, sh) => Math.min(1, Math.max(0, sh + CLUMP_D * (2 * clumpN(x, y) - 1)));
+  const PC = GEO.CLASSES.map(k => P[k] || null);   // (by class index)
+  // (a cell takes candidate trees only if a wooded class lies within the displacement's reach of it)
+  const woodedAt = (x, y) => { const c = mapCover(x, y); return c >= 0 && !!PC[c]; };
+  const woodedNear = (x, y, own) => !!PC[own] || woodedAt(x + WARP_A, y) || woodedAt(x - WARP_A, y) || woodedAt(x, y + WARP_A) || woodedAt(x, y - WARP_A);
   const add = (x, y, d, ns, elev, level, share) => {
-    const conifer = Math.random() < share, k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
+    const conifer = Math.random() < shareAt(x, y, share), k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
     // (the trunk stands back from the water by ~40 % of its crown's half-width: crowns lean out over the bank, not across it)
     if (d < 0.4 * 0.5 * h * ns * (conifer ? 0.35 : 0.65)) return;
     treePush(conifer ? TREES.conifer : TREES.broad, [x, y, h * ns, elev, level, rnd(0, 6.28), k]);
   };
+  // (each cell's candidates at full stocking, each kept by the stocking of the class its own place shows — coverAt)
   for (let i = 0; i < GEO.N; i++) {
     if (GEO.body[i] !== LAND) continue;
-    const p = P[GEO.CLASSES[GEO.cover[i]]], d = GEO.toWater[i]; if (!p || d < 0.4) continue;
-    const [cx, cy] = GEO.cellCentre(i), ns = d < 40 ? nearScaleAt(cx, cy, d) : 1, m = p[0] * perArea(GEO.CELL * GEO.CELL, ns) * (d < SHORE_D ? SHORE_ROWS : 1);
+    const own = GEO.cover[i], d = GEO.toWater[i]; if (d < 0.4) continue;
+    const [cx, cy] = GEO.cellCentre(i); if (!woodedNear(cx, cy, own)) continue;
+    const ns = d < 40 ? nearScaleAt(cx, cy, d) : 1, m = perArea(GEO.CELL * GEO.CELL, ns) * (d < SHORE_D ? SHORE_ROWS : 1);
     for (let n = 0; n < m + 1; n++) {
       if (Math.random() > m - n) break;
-      const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC); add(x, y, d, ns, GEO.elevAt(x, y), GEO.levelAt(x, y), p[1]);
+      const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC), p = PC[coverAt(x, y, d, own)]; if (!p || Math.random() > p[0]) continue;
+      add(x, y, d, ns, GEO.elevAt(x, y), GEO.levelAt(x, y), p[1]);
     }
   }
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) {   // the far land's forest (6-m cells), the same stocking
     const q = i % FAR3.NX, r = (i / FAR3.NX) | 0, cx = FAR3.X0 + (q + 0.5) * FAR3.CELL, cy = FAR3.Y0 + (r + 0.5) * FAR3.CELL;
     if (cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX) continue;
-    const p = P[GEO.CLASSES[FAR_COVER[i]]]; if (!p) continue;
-    const m = p[0] * perArea(FAR3.CELL * FAR3.CELL, 1);
-    for (let n = 0; n < m + 1; n++) { if (Math.random() > m - n) break; const x = cx + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), y = cy + rnd(-FAR3.CELL / 2, FAR3.CELL / 2); add(x, y, 1e9, 1, farElev(i), farLevel(y), p[1]); }
+    const own = FAR_COVER[i]; if (WATERY.has(own) || !woodedNear(cx, cy, own)) continue;
+    const m = perArea(FAR3.CELL * FAR3.CELL, 1);
+    for (let n = 0; n < m + 1; n++) {
+      if (Math.random() > m - n) break;
+      const x = cx + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), y = cy + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), p = PC[coverAt(x, y, 1e9, own)]; if (!p || Math.random() > p[0]) continue;
+      add(x, y, 1e9, 1, farElev(i), farLevel(y), p[1]);
+    }
   }
+  WARPN = null;   // (the displacement's lattices: only the start-up's)
 }
 // the tiles: each store's trees ordered by TREE_TILE tile (a counting sort) over the far land's extent
 const TT = { X0: FAR3.X0, Y0: FAR3.Y0, NX: Math.ceil(FAR3.NX * FAR3.CELL / TREE_TILE) + 1, NY: Math.ceil(FAR3.NY * FAR3.CELL / TREE_TILE) + 1 };

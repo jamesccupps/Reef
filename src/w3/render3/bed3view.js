@@ -52,9 +52,9 @@ function instanced(geo, max, rough) {
   return m;
 }
 
-// plantsView: its per-1.5-m-cell map onto the water model's bed cells (fine, fineB)
+// plantsView: its per-1.5-m-cell map onto the water model's bed cells (fine; blend: a cell's value from the columns about it)
 export function makeBedView(plantsView) {
-  const group = new THREE.Group(), fineI = plantsView.fine, fineB = plantsView.fineB, nb = plantsView.nb;
+  const group = new THREE.Group(), fineI = plantsView.fine, nb = plantsView.nb, blend = plantsView.blend;   // (blend: a cell's value from the columns about it — no 50-m squares)
   const cray = instanced(crayGeo(), CR_MAX, 0.6), snail = instanced(new THREE.SphereGeometry(0.5, 6, 5), SN_MAX, 0.5);
   group.add(cray, snail);
   let bed = null, wY = 1, dirty = false, at = [1e9, 1e9, 1];
@@ -69,15 +69,15 @@ export function makeBedView(plantsView) {
     if (bed && dist < 60) {
       const R2 = CR_NEAR * CR_NEAR, Ly = CR_LEN * Math.cbrt(Math.min(1, wY / LIT3.CR_WA)), near = (x, y, r) => (x - tx) ** 2 + (y - ty) ** 2 <= r * r;
       for (let t = 0; t < fineI.length; t++) {
-        const i = fineI[t], ib = fineB[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
-        const A = GEO.CELL * GEO.CELL, kA = A / 2.25, nA = Math.min(12 * kA, Math.floor(bed[ib * 3] * A + hash(i, 201))), nY = near(x0, y0, CRY_NEAR) ? Math.min(20 * kA, Math.floor(bed[ib * 3 + 1] * A + hash(i, 203))) : 0;   // (the caps per 1.5-m cell's 2.25 m²)
+        const i = fineI[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
+        const A = GEO.CELL * GEO.CELL, kA = A / 2.25, nA = Math.min(12 * kA, Math.floor(blend(bed, t, 3, 0) * A + hash(i, 201))), nY = near(x0, y0, CRY_NEAR) ? Math.min(20 * kA, Math.floor(blend(bed, t, 3, 1) * A + hash(i, 203))) : 0;   // (the caps per 1.5-m cell's 2.25 m²)
         for (let k = 0; k < nA + nY && C.length < CR_MAX; k++) {
           const x = x0 + (hash(i, k * 3 + 211) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 3 + 213) - 0.5) * GEO.CELL; if (!(GEO.depthAt(x, y) > 0.08)) continue;
           C.push({ bx: x, by: y, L: k < nA ? CR_LEN * (0.75 + 0.4 * hash(i, k + 221)) : Ly * (0.8 + 0.4 * hash(i, k + 223)), ph: hash(i, k + 227) * 6.28, ph2: hash(i, k + 229) * 6.28,
             R: 0.12 + 0.3 * hash(i, k + 231), w: 0.04 + 0.05 * hash(i, k + 233), tint: 0.7 + 0.6 * hash(i, k + 237) });
         }
         if (dist < 30 && near(x0, y0, SN_NEAR)) {   // the snails: ~5–50 a m² in the weeds, a few on bare lit bed
-          const n = Math.min(60 * kA, Math.floor(bed[ib * 3 + 2] * A + hash(i, 241))), sY = surfY(x0, y0);
+          const n = Math.min(60 * kA, Math.floor(blend(bed, t, 3, 2) * A + hash(i, 241))), sY = surfY(x0, y0);
           for (let k = 0; k < n && ns < SN_MAX; k++) {
             const x = x0 + (hash(i, k * 5 + 251) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 5 + 253) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.08)) continue;
             const sz = 0.006 + 0.006 * hash(i, k + 257);

@@ -919,6 +919,25 @@ scattered over each 1.5-m bed cell by its stand, fresh in spring, browning from 
 green). Stems are drawn near where the camera looks (submerged ~0.9 × the camera distance, 25–110 m; pads and reeds 2×) and
 kept out of the water's reflection (their own layer); farther off the bed is tinted by each cell's weed cover. Their instance
 buffers are static with update ranges — a dynamic buffer is re-sent whole every frame (it cost 8 ms a frame; now ~0.1 ms).
+**Built — no squares (2026-10-18; the human, of the true-size lakes: "why is everything like all square? the plots in the woods,
+the plants in the water... these shouldnt just be squares").** Both looks came from the grids beneath:
+- **The weeds** (plants3view): the sim keeps the plants per water-model column (50-m squares at true size, 5 m in the 1/10
+  lakes) and 0.5-m layer, and every bed cell drew its own column's stand, so a weed bed was a 50-m square. Each bed cell now
+  blends the four columns about it (bilinear between their centres, the other water left out), each column's stand taken
+  at the cell's own depth (linear between the mid-depths of its layers with bed; beyond them, its nearest layer's, weighed
+  down by exp(−(Δz/0.5 m)²)), so stands fade across columns and follow the depth contours. Then it is clumped: × a smooth
+  random field (mean ~1; ~a tenth bare, ~a tenth twice the stand; clumps ~15 m at true size), each form its own clumps, as
+  real beds are patchy (clonal spread, wave exposure, the bed's grain). The bed's tint, the dead stems, the mussels and
+  (bed3view) the crayfish and snails read the same blend (`plantsView.blend`).
+- **The land** (main3): NLCD's 30-m pixels made 30-m squares of clearings and ruler-straight stand edges. Each point of land
+  shows the class of a point displaced from it by a smooth random field (domain warping: three octaves, 70/26/9 m across,
+  up to 30 m, typically ~10 — about half a pixel, within the map's own error), for the ground's colours (each cell's
+  `SHOWN` class) and each candidate tree (candidates at full stocking, kept by the stocking of the class their own place
+  shows). The shore's narrow classes (beach, rocky shore) never move, and the first 6 m from the water keep the map's class.
+  Conifers grow in clumps (a class's conifer share ± 0.6 by a 45-m field) instead of salt-and-pepper.
+- **Cost:** the noise is read from lattices cached over the far land (a Math.sin hash a sample cost ~2 s at start-up). The
+  true world's start-up (page to ready) is unchanged within its run-to-run noise: 2.2–3.7 s before, 1.8–2.8 s after (three
+  loads each); the new work itself is ~0.5 s (the shown classes 0.06, the trees 0.3, the weeds' blend 0.17).
 **Built — seeing into the water (`src/w3/render3/water3.js`, after the human's "you can't really see into the water to see
 the fish and even the underwater view is not good").**
 - **What it was:** a dark, mostly opaque surface (55–95 % opacity) hid everything below, and underwater was one flat
