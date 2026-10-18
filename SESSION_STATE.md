@@ -180,6 +180,12 @@ square?" (the woods' clearings, the weed beds). The weeds were drawn per 50-m wa
 columns about it at its own depth and grows in clumps (plants3view `blend`, also bed3view's crayfish/snails); the land's NLCD
 30-m pixels: now domain-warped (main3 coverAt/SHOWN; the trees' candidates kept by the class their place shows; conifers in
 clumps). HOT_BROOK_3D.md "Built — no squares". Checked in the browser (true + 1/10 worlds); start-up unchanged within noise.
+THEN (the human: "use the aerial photos for the real clearings"): THE FOREST FROM THE AERIAL PHOTOS — tools/hotbrook/build_canopy3.py
+(NAIP 1-m colour + near-infrared tiles about the lakes, the 3.3-m photo beyond) → src/w3/true/canopy3.jpg + canopy3.js: per 4-m
+cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; class means = NLCD's shares), bare ground, trust.
+main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
+against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
+"Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
 ▶▶▶ RESUME HERE (2026-10-18 ~09:30, context compacted mid-slice). UNCOMMITTED in the working tree (also saved as
 G:/synapse-reef-backups/synapse-reef_20261018_0926_wip-T4-fallfish-cap.patch):
 (1) T4 PART 1 — the learned copy is the hidden→output block only (fish3 forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3,

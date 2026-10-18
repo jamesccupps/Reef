@@ -23,6 +23,13 @@ HB_OUT=<scratch dir> so the run's own band module doesn't overwrite anything; ta
 
 (the default 1/10 build is byte-identical to before: hotbrook3d.js, far3d.js and naip3.jpg)
 
+Then the forest from the aerial photos (render-only; after far3d.js, whose grid it covers): per 4-m cell the tree cover, the
+conifer share, the bare ground and how far to trust them, from the ~1-m NAIP colour + near-infrared tiles about the lakes and the
+~4-m colour photo beyond (`docs/HOT_BROOK_3D.md` "Built — the forest from the aerial photos"). `--stats` prints how each NLCD class
+looks to the photo; `--look DIR` writes crops (photo | cover | conifer share | bare | NLCD) to check by eye:
+
+    python -I tools/hotbrook/build_canopy3.py    # → src/w3/true/canopy3.jpg + canopy3.js
+
 (Set PYTHONIOENCODING=utf-8 on Windows: the scripts print λ and °.)
 
 `viewer.html` is the three.js viewer (map colours / aerial photo / depth chart with 2-ft contours and the soundings;
@@ -39,6 +46,7 @@ It loads three.js from public CDNs, so open it from the artifact, or from a plai
 | Land cover | NLCD 2021 (30 m) | forest type (evergreen / mixed / deciduous), fields, camps and roads |
 | Lake beds | MDIFW lake-survey maps, 1949 (rev. 1965, 2004): 83 spot soundings on Upper, 63 on Lower (feet) | **measured**: the scans fitted onto the OSM shoreline by trimmed ICP (similarity → affine; median misfit 18 m), depth = a 50 m shore taper × the soundings' basin depth spread by IDW. Means 3.05 / 2.67 m (published 3.35 / 2.74), max 18 / 13 ft |
 | Aerial photo | USDA NAIP via the USGS National Map (public domain), ~3.3 m/px | the viewer's photo layer |
+| Forest (true world) | USDA NAIP ~1 m RGB + near-infrared (`naip_hr/`) and the ~3.3-m photo, `build_canopy3.py` | tree cover from the vegetation index; conifer share by a logistic fit labelled by NLCD's surest patches (its class means match NLCD's shares: 0.84 / 0.52 / 0.20); roads as bare ground |
 | Shallow shelf | USDA NAIP ~1 m RGB + near-infrared (`naip_hr/`), `shallows.py` | satellite-derived depth of the visible-bottom band, its edge at 1.3 m (the human: "chest height … where the water gets darker"); used only for the 0–1.5 m fringe (at 1–3 m it has no skill against the soundings left out: r −0.01 vs the bed's 0.55) |
 | Field notes | the human (fishes these lakes): `field_notes.json` | pumpkinseed + redbreast at the brook's upper-mouth pool, a shallow brook stretch, the cove between Upper's west points |
 | Shore | MDIFW survey notes | mostly rocky; one sandy beach on Upper's NE shore (placed by hand from the description) |

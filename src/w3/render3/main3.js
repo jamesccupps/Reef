@@ -72,6 +72,34 @@ const landY = (elev, level) => (level - BASE) + (elev - level) * kLand();
 const farDec = (b64, T) => { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new T(u.buffer); };
 const FAR_ELEV = farDec(FAR3.elev_cm, Uint16Array), FAR_COVER = farDec(FAR3.cover, Uint8Array);
 const farElev = i => FAR3.E0 + FAR_ELEV[i] / 100;
+// THE FOREST FROM THE AERIAL PHOTOS (the true world; the human, 2026-10-18: "use the aerial photos for the real clearings"):
+// tools/hotbrook/build_canopy3.py reads USDA NAIP — the ~1-m colour and near-infrared tiles about both lakes, the ~4-m colour
+// photo beyond — into true/canopy3.jpg: per 4-m cell the tree cover, the conifer share, the bare ground (roads, roofs, gravel)
+// and how far to trust them (1 under the tiles, 0.6 on the coarse photo, 0 off it). Where trusted, the trees stand where the
+// photo shows crowns, conifers where it shows conifers, and the ground is open where it is open; elsewhere (and in the 1/10
+// world) NLCD's classes as before.
+const CAN = WORLD_TRUE ? await loadCanopy() : null;
+async function loadCanopy() {
+  try {
+    const { CANOPY } = await import('../true/canopy3.js');
+    const blob = await (await fetch(new URL('../true/canopy3.jpg', import.meta.url))).blob();
+    const bmp = await createImageBitmap(blob, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+    const { W, H } = CANOPY, cv = document.createElement('canvas'); cv.width = bmp.width; cv.height = bmp.height;
+    const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0); bmp.close();
+    const P = [0, 1, 2, 3].map(k => { const px = g.getImageData(k * W, 0, W, H).data, a = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) a[i] = px[i * 4]; return a; });
+    return { ...CANOPY, P };   // (P: cover, conifer share, bare, trust; 0–255, row 0 north)
+  } catch (e) { console.warn('canopy3.jpg not read: the forest from NLCD alone', e); return null; }
+}
+const canQ = new Float32Array(4);   // canopyAt's answer: cover, conifer share, bare, trust (0–1)
+function canopyAt(x, y) {   // the photos' forest at a point (bilinear); trust 0 off them
+  canQ[3] = 0; if (!CAN) return canQ;
+  const u = (x - FAR3.X0) / CAN.M - 0.5, v = (FAR3.Y0 + FAR3.NY * FAR3.CELL - y) / CAN.M - 0.5;
+  if (!(u >= 0 && v >= 0 && u < CAN.W - 1 && v < CAN.H - 1)) return canQ;
+  const i = u | 0, j = v | 0, a = u - i, b = v - j, o = j * CAN.W + i, W = CAN.W;
+  const w00 = (1 - a) * (1 - b) / 255, w10 = a * (1 - b) / 255, w01 = (1 - a) * b / 255, w11 = a * b / 255;
+  for (let k = 0; k < 4; k++) { const A = CAN.P[k]; canQ[k] = A[o] * w00 + A[o + 1] * w10 + A[o + W] * w01 + A[o + W + 1] * w11; }
+  return canQ;
+}
 const farLevel = y => GEO.SURF.upper + (GEO.SURF.lower - GEO.SURF.upper) * Math.min(1, Math.max(0, (y + 15 / GEO.SCALE / 10) / (70 / GEO.SCALE / 10)));
 const PW = FAR3.NX * FAR3.CELL, PH = FAR3.NY * FAR3.CELL;   // the photo covers the far grid's extent, row 0 north
 const photoUV = (x, y) => [(x - FAR3.X0) / PW, (y - FAR3.Y0) / PH];
@@ -164,10 +192,23 @@ function coverAt(x, y, d, own) {
   const c = mapCover(x + WARP_A * (2 * wx - 1), y + WARP_A * (2 * wy - 1));
   return c < 0 || FIXED[c] ? own : c;
 }
+// the ground's class at a point of land: NLCD's (displaced) — then, where the photos are trusted, a wooded class with no crowns
+// shows as a clearing (bare ground: a road or a yard — in a wooded swamp, the bog's open mat), an open class under crowns as a stand by its conifer share; the
+// wetlands, the shore and the water keep NLCD's
+const CLI = k => GEO.CLASSES.indexOf(k), WOODED = new Uint8Array(GEO.CLASSES.length), OPENLAND = new Uint8Array(GEO.CLASSES.length);
+for (const k of ['evergreen', 'mixed', 'deciduous', 'woody_wet']) WOODED[CLI(k)] = 1;
+for (const k of ['grass', 'pasture', 'crops', 'shrub', 'dev_open', 'dev_low', 'barren']) OPENLAND[CLI(k)] = 1;
+function shownAt(x, y, d, own) {
+  const c = coverAt(x, y, d, own), q = canopyAt(x, y); if (q[3] < 0.5 || !(WOODED[c] || OPENLAND[c])) return c;
+  if (q[2] > 0.6) return CLI(c === CLI('woody_wet') ? 'emergent_wet' : 'dev_open');   // (bare in a swamp: the bog's open mat and pools, not a road)
+  if (q[0] < 0.35 && WOODED[c]) return CLI('shrub');
+  if (q[0] > 0.65 && OPENLAND[c]) return CLI(q[1] > 0.65 ? 'evergreen' : q[1] < 0.35 ? 'deciduous' : 'mixed');
+  return c;
+}
 // each cell's shown class at its centre (the ground's colours): the band's land cells, the far land's cells
 const SHOWN = new Uint8Array(GEO.N), FAR_SHOWN = new Uint8Array(FAR3.NX * FAR3.NY);
-for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] !== LAND) continue; const [x, y] = GEO.cellCentre(i); SHOWN[i] = coverAt(x, y, GEO.toWater[i], GEO.cover[i]); }
-for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { const own = FAR_COVER[i]; FAR_SHOWN[i] = WATERY.has(own) ? own : coverAt(FAR3.X0 + ((i % FAR3.NX) + 0.5) * FAR3.CELL, FAR3.Y0 + (Math.floor(i / FAR3.NX) + 0.5) * FAR3.CELL, 1e9, own); }
+for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] !== LAND) continue; const [x, y] = GEO.cellCentre(i); SHOWN[i] = shownAt(x, y, GEO.toWater[i], GEO.cover[i]); }
+for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { const own = FAR_COVER[i]; FAR_SHOWN[i] = WATERY.has(own) ? own : shownAt(FAR3.X0 + ((i % FAR3.NX) + 0.5) * FAR3.CELL, FAR3.Y0 + (Math.floor(i / FAR3.NX) + 0.5) * FAR3.CELL, 1e9, own); }
 
 function gridMesh(nx, ny, at, keep) {   // a heightfield over a grid of cell centres; at(i) → [x, y]; keep(q, r) for each quad
   const n = nx * ny, g = new THREE.BufferGeometry();
@@ -310,14 +351,24 @@ const TREES = { conifer: treeStore(), broad: treeStore() };
   const PC = GEO.CLASSES.map(k => P[k] || null);   // (by class index)
   // (a cell takes candidate trees only if a wooded class lies within the displacement's reach of it)
   const woodedAt = (x, y) => { const c = mapCover(x, y); return c >= 0 && !!PC[c]; };
-  const woodedNear = (x, y, own) => !!PC[own] || woodedAt(x + WARP_A, y) || woodedAt(x - WARP_A, y) || woodedAt(x, y + WARP_A) || woodedAt(x, y - WARP_A);
-  const add = (x, y, d, ns, elev, level, share) => {
-    const conifer = Math.random() < shareAt(x, y, share), k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
+  const woodedNear = (x, y, own) => !!PC[own] || woodedAt(x + WARP_A, y) || woodedAt(x - WARP_A, y) || woodedAt(x, y + WARP_A) || woodedAt(x, y - WARP_A)
+    || canopyAt(x, y)[3] > 0;   // (or the photos are trusted here: they may show crowns where NLCD has none)
+  // a candidate's [stocking, conifer chance]: NLCD's for the class its place shows — or, where the photos are trusted, theirs:
+  // the crowns' cover there (capped in the shrub swamps and marshes: alder and the bog's shrubs are as green as trees) and the
+  // photo's conifer share. NLCD's own share is clumped (shareAt)
+  const CAP = GEO.CLASSES.map((k, c) => FIXED[c] ? 0 : k === 'shrub_wet' ? 0.3 : k === 'emergent_wet' ? 0.4 : 1), st = new Float32Array(2);
+  const stand = (x, y, cls) => {
+    const p = PC[cls]; let s = p ? p[0] : 0, c = shareAt(x, y, p ? p[1] : 0.5); const q = canopyAt(x, y), t = q[3];
+    if (t > 0) { s = t * q[0] * (1 - q[2]) * CAP[cls] + (1 - t) * s; c = t * q[1] + (1 - t) * c; }   // (none on bare ground: the roads, read at 4 m)
+    st[0] = s; st[1] = c; return st;
+  };
+  const add = (x, y, d, ns, elev, level, cChance) => {
+    const conifer = Math.random() < cChance, k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
     // (the trunk stands back from the water by ~40 % of its crown's half-width: crowns lean out over the bank, not across it)
     if (d < 0.4 * 0.5 * h * ns * (conifer ? 0.35 : 0.65)) return;
     treePush(conifer ? TREES.conifer : TREES.broad, [x, y, h * ns, elev, level, rnd(0, 6.28), k]);
   };
-  // (each cell's candidates at full stocking, each kept by the stocking of the class its own place shows — coverAt)
+  // (each cell's candidates at full stocking, each kept by the stocking where it stands — stand)
   for (let i = 0; i < GEO.N; i++) {
     if (GEO.body[i] !== LAND) continue;
     const own = GEO.cover[i], d = GEO.toWater[i]; if (d < 0.4) continue;
@@ -325,7 +376,7 @@ const TREES = { conifer: treeStore(), broad: treeStore() };
     const ns = d < 40 ? nearScaleAt(cx, cy, d) : 1, m = perArea(GEO.CELL * GEO.CELL, ns) * (d < SHORE_D ? SHORE_ROWS : 1);
     for (let n = 0; n < m + 1; n++) {
       if (Math.random() > m - n) break;
-      const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC), p = PC[coverAt(x, y, d, own)]; if (!p || Math.random() > p[0]) continue;
+      const x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC), p = stand(x, y, coverAt(x, y, d, own)); if (!(p[0] > 0) || Math.random() > p[0]) continue;
       add(x, y, d, ns, GEO.elevAt(x, y), GEO.levelAt(x, y), p[1]);
     }
   }
@@ -336,7 +387,7 @@ const TREES = { conifer: treeStore(), broad: treeStore() };
     const m = perArea(FAR3.CELL * FAR3.CELL, 1);
     for (let n = 0; n < m + 1; n++) {
       if (Math.random() > m - n) break;
-      const x = cx + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), y = cy + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), p = PC[coverAt(x, y, 1e9, own)]; if (!p || Math.random() > p[0]) continue;
+      const x = cx + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), y = cy + rnd(-FAR3.CELL / 2, FAR3.CELL / 2), p = stand(x, y, coverAt(x, y, 1e9, own)); if (!(p[0] > 0) || Math.random() > p[0]) continue;
       add(x, y, 1e9, 1, farElev(i), farLevel(y), p[1]);
     }
   }
@@ -715,7 +766,7 @@ function legend() {
     for (const k of ['evergreen', 'mixed', 'deciduous', 'woody_wet', 'shrub_wet', 'emergent_wet', 'pasture', 'dev_low', 'beach', 'rock_shore']) { const lab = COVER[k][0]; if (seen.has(lab)) continue; seen.add(lab); item('#' + seasonal(k, c).getHexString(), lab); }
     item('#a59672', 'Lake bed: gravel / sand'); item('#52432f', 'Lake bed: mud');
   }
-  $('lookhint').textContent = { map: 'Land cover from NLCD 2021 and the wetland inventory; the lake beds from the 1949 soundings.', photo: 'The real shoreline from above: forest, rocky points, the beach on Upper\'s NE shore, the camps, the roads and fields.', chart: 'Every 2 ft of depth a shade darker, with a contour line — like the 1949 MDIFW charts. The water is made see-through.' }[S.look];
+  $('lookhint').textContent = { map: CAN ? 'Land cover from NLCD 2021 and the wetland inventory; the trees, clearings and roads near the lakes from the USDA NAIP aerial photos; the lake beds from the 1949 soundings.' : 'Land cover from NLCD 2021 and the wetland inventory; the lake beds from the 1949 soundings.', photo: 'The real shoreline from above: forest, rocky points, the beach on Upper\'s NE shore, the camps, the roads and fields.', chart: 'Every 2 ft of depth a shade darker, with a contour line — like the 1949 MDIFW charts. The water is made see-through.' }[S.look];
 }
 
 // ---------- camera: a free rig, named views, under water ----------

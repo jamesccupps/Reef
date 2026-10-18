@@ -935,6 +935,30 @@ the plants in the water... these shouldnt just be squares").** Both looks came f
   `SHOWN` class) and each candidate tree (candidates at full stocking, kept by the stocking of the class their own place
   shows). The shore's narrow classes (beach, rocky shore) never move, and the first 6 m from the water keep the map's class.
   Conifers grow in clumps (a class's conifer share ± 0.6 by a 45-m field) instead of salt-and-pepper.
+- **Then the real clearings (the human: "use the aerial photos for the real clearings") — Built — the forest from the aerial
+  photos (true world).** `tools/hotbrook/build_canopy3.py` reads USDA NAIP (public domain) — the ~1-m colour and near-infrared
+  tiles about both lakes (32 % of the far grid: the lakes and ~1 km round), the ~3.3-m colour photo of the box beyond — into
+  `src/w3/true/canopy3.jpg` (+ `canopy3.js`, its size): per 4-m cell over the far grid,
+  - **tree cover** — under the tiles from the vegetation index (NDVI), ramped from the marsh's median (0.06) to the conifers'
+    10th percentile (0.16), half at 4 m and half over 12 m. Measured first (`--stats`, on NLCD's surest patches): the canopy is
+    green from above, marsh and roads and roofs are not; texture added nothing (NLCD's few open patches here are as rough as the
+    forest); and a logistic fit on every measure marked the conifer stands (darker in the near-infrared) as thin, so it was
+    dropped. On the coarse photo, a logistic fit (forest vs open; 89 % / 79 % agreement with NLCD's surest), ramped 0.3–0.7;
+  - **conifer share** — a logistic fit on the photo's own cells labelled by NLCD's surest evergreen vs deciduous patches (92 %
+    / 93 %); averaged over the crowns within ~12 m. Its mean by NLCD class comes out at NLCD's shares — evergreen 0.84, mixed
+    0.52, deciduous 0.20, wooded swamp 0.62 (the renderer's were 0.85 / 0.5 / 0.18 / 0.65) — so the totals hold and the photo
+    says where each stand is;
+  - **bare ground** (NDVI near zero: roads, roofs, gravel) and **trust** (1 under the tiles, feathered 40 m in; 0.6 on the coarse
+    photo; 0 off it).
+
+  The renderer (main3 `canopyAt`, loaded once at start-up): each candidate tree's stocking is the trusted mix of the photo's
+  (cover × (1 − bare), capped 0.3 in shrub swamps and 0.4 in marsh — alder and bog shrubs are as green as trees) and NLCD's;
+  its conifer chance the photo's share. The ground: a wooded class with no crowns shows as a clearing (`shrub`; bare: a road —
+  in a wooded swamp the bog's open mat, `emergent_wet`), an open class under crowns as a stand by its share. Checked against the
+  photo itself in the browser (trees hidden, the photo look): the bog and the rocky opening east of Lower, the conifer stand
+  beside them, the tracks through the woods on Lower's east shore and the farm fields east of the lakes fall where the photo
+  has them; the "clearings" NLCD put along Lower's east shore were forest with a road (they are gone). Not resolved: roads
+  beyond the tiles (the coarse photo is too blurred for them); the 1/10 world keeps NLCD (its land is a re-cut placement).
 - **Cost:** the noise is read from lattices cached over the far land (a Math.sin hash a sample cost ~2 s at start-up). The
   true world's start-up (page to ready) is unchanged within its run-to-run noise: 2.2–3.7 s before, 1.8–2.8 s after (three
   loads each); the new work itself is ~0.5 s (the shown classes 0.06, the trees 0.3, the weeds' blend 0.17).
