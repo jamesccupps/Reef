@@ -2,7 +2,7 @@
 // alone, or each of the shards' render3/shard3worker.js) does with them for the view — remember their poses before a step (the view
 // interpolates), choose and pack the fish and young it draws, the picked fish's card (click-a-fish), and its part of the data
 // page's numbers (summed across the shards by statsMerge).
-import { S3, KEYS3 } from '../fish3.js';
+import { S3, KEYS3, IN3 } from '../fish3.js';
 import { FORMS3 } from '../plants3.js';
 import { CLOCK3 } from '../clock3.js';
 import { GEO, BODIES, UPPER, LOWER, BROOK } from '../geometry.js';
@@ -73,7 +73,8 @@ export function selInfoOf(F, env, memo, selId, selKind, fine) {
   return { ...base, sex: a.sex, mature: a.mature, ripe: a.ripe, school: a.school, K: a.K, hunger: a.hunger, fear: a.fear, energy: a.energy, gen: a.gen,
     p: a.cons / Math.max(1e-12, a.consMax), T: a.T, o2: a.o2 * ENV.O2_MGL, lake: a.lake, doing, genes: Array.from(a.genes || []),
     near: F.focus ? !!a.near : fine,   // (lived second by second: every fish at the fine speeds when there is no focus)
-    out: Array.from(a.o), vis: a.vis, spd: a.spd, yaw: a.yaw };
+    out: Array.from(a.o), vis: a.vis, spd: a.spd, yaw: a.yaw,
+    inp: Array.from(F.senses(a, new Float64Array(IN3.length), F.deeper(a.x, a.y, [0, 0]))) };   // (what it senses: its brain's inputs, read without touching it)
 }
 // this side's part of the data page's numbers: sums by species (summed again across the shards)
 export function statsPart(F) {

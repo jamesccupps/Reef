@@ -8,7 +8,7 @@
 // Everything is built with the DOM API (no inline styles or scripts: the page's CSP); text is set as textContent.
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER } from '../geometry.js';
-import { OUT3 } from '../fish3.js';
+import { OUT3, IN3 } from '../fish3.js';
 import { CENSUS_SIZE } from './fishside3.js';
 import { GENE_KEYS } from '../../core.js';
 
@@ -162,6 +162,8 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     if (f.kind === 'fish') {
       const bars = (title, items) => { card.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } card.append(box); };
       bars('State', [['hunger', f.hunger, 0, 1], ['fear', f.fear, 0, 1], ['energy', f.energy, 0, 1], ['ration', f.p, 0, 1]]);
+      // (what it senses — its brain's inputs: directions as right/ahead/above in −1…1, the rest 0…1 — then what its brain does with them)
+      if (f.inp) { const SIGNED = new Set([0, 1, 2, 4, 5, 6, 8, 9, 15, 16, 18, 23, 24]); bars('What it senses (its brain’s inputs)', IN3.map((k, q) => [k, f.inp[q] ?? 0, SIGNED.has(q) ? -1 : 0, 1])); }
       bars('Its brain now (outputs)', OUT3.map((k, q) => [k, f.out[q] ?? 0, q < 2 ? -1 : 0, 1]));   // (turn and pitch −1…1; the rest 0…1)
       if (f.genes.length) bars('Its genes (1 = the species’ mean)', GENE_KEYS.map((k, q) => [k, f.genes[q] ?? 1, 0.7, 1.35]));
     }

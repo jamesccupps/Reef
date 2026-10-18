@@ -1186,7 +1186,14 @@ export class Fish3 {
 
   // ---------- the brain ----------
   _brain(a, m, dt) {
-    const inp = this._inp, s = a.s, cy = Math.cos(a.yaw), sy = Math.sin(a.yaw);
+    a._dh = this.deeper(a.x, a.y, a._dh || [0, 0]);   // (the lake's smoothed slope toward deeper water: the band's steering reads it too)
+    this.senses(a, this._inp, a._dh);
+    forward3(a.g, a.lw, this._inp, a.h, a.o, HID3, a.active, a.leak);
+  }
+  // what a fish senses now — its brain's inputs (IN3) into inp; dh: the bed's slope at it (deeper). Reads the fish only: the data
+  // page's card calls it with its own buffers
+  senses(a, inp, dh) {
+    const s = a.s, cy = Math.cos(a.yaw), sy = Math.sin(a.yaw);
     const rel = (tx, ty, o) => { const dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy) || 1e-6; inp[o] = (dx * sy - dy * cy) / d; inp[o + 1] = (dx * cy + dy * sy) / d; };   // (right, ahead)
     if (a.fk) { rel(a.fx, a.fy, 0); inp[2] = clamp((a.z - a.fz) / 2, -1, 1); inp[3] = a.fk === 1 ? clamp(1 - a.fd / Math.max(0.6, a.senseR), 0, 1) : a.fv; }
     else inp[0] = inp[1] = inp[2] = inp[3] = 0;
@@ -1194,14 +1201,13 @@ export class Fish3 {
     if (a.an > 0) { rel(a.ax, a.ay, 8); inp[10] = clamp(a.an / 8, 0, 1); } else inp[8] = inp[9] = inp[10] = 0;
     inp[11] = clamp(a.z / 6, 0, 1); inp[12] = clamp((a.bed - a.z) / 3, 0, 1); inp[13] = clamp(a.bed / 6, 0, 1);
     inp[14] = clamp(1 - GEO.shoreDist(a.x, a.y) / F3.FAR, 0, 1);
-    a._dh = this.deeper(a.x, a.y, a._dh || [0, 0]);   // (the lake's smoothed slope toward deeper water)
-    const [gx, gy] = a._dh; inp[15] = gx * sy - gy * cy; inp[16] = gx * cy + gy * sy;
+    const gx = dh[0], gy = dh[1]; inp[15] = gx * sy - gy * cy; inp[16] = gx * cy + gy * sy;
     inp[17] = a.vis; inp[18] = clamp((a.T - s.sp.tempOpt) / 10, -1, 1); inp[19] = clamp(a.o2 / 1.2, 0, 1);
     inp[20] = a.energy; inp[21] = a.hunger; inp[22] = a.fear;
     const hd = Math.hypot(a.hx - a.x, a.hy - a.y);
     if (hd > 0.5) rel(a.hx, a.hy, 23); else inp[23] = inp[24] = 0;
     inp[25] = clamp(hd / (2 * s.home), 0, 1);
-    forward3(a.g, a.lw, inp, a.h, a.o, HID3, a.active, a.leak);
+    return inp;
   }
 
   // ---------- innate drives: steer (yaw rate), a target depth (pitch) and thrust ----------
