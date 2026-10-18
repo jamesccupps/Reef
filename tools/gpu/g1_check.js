@@ -11,6 +11,7 @@ const qs = new URLSearchParams(location.search), SEED = +(qs.get('seed') || 611)
 const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, F3, HID3, reinforce3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
+const { ENV } = await import('../../src/config.js');
 const { CLOCK3 } = await import('../../src/w3/clock3.js');
 const L = await import('../../src/w3/gpu/layout.js');
 const { GpuFish, HHX, HHY } = await import('../../src/w3/gpu/gpufish.js');
@@ -26,11 +27,12 @@ F._hashBuild(true); F._yoyHash();
 const yf = env.yearFrac(), att = env.chem.attenuation(), clar = env.chem.clarity(); F._yr = Math.floor(env.time / YEAR);
 const lux0 = env.lux, luxB = [lux0, env.luxAhead(B / 2), env.luxAhead(B)]; F._cx = { yf, att, clar, lux0 };
 const fish = F.fish, n = fish.length; for (const a of fish) if (!a.alive) throw new Error('a dead fish in the list');
+const yoy = F.yoy, ny = yoy.length; for (const q of yoy) if (!q.alive) throw new Error('a dead school in the list');
 // ---------- the GPU, from the same state ----------
 const { dev, info } = await GpuFish.device(); log(`GPU: ${info.vendor} ${info.architecture}`);
 const tau0 = F3.WANDER_TAU; F3.WANDER_TAU = 0;   // (the GPU built without the block's random wander — see the move check)
 const G = new GpuFish(dev, F, env, { seed: SEED }); F3.WANDER_TAU = tau0;
-G.uploadAgents(fish); G.uploadWater(); G.setUniforms(B, { lux0, luxB }); G.clearTallies();
+G.uploadAgents(fish); G.uploadYoy(F.yoy); G.uploadWater(); G.setUniforms(B, { lux0, luxB }); G.clearTallies();
 await dev.queue.onSubmittedWorkDone();
 const cap = G.cap;
 // ---------- comparing ----------
@@ -65,6 +67,10 @@ const timeIt = async (fn, reps = 10) => { await G.run(fn); const t = performance
   for (let q = 0; q < n; q++) if (HI[q] !== F.hItems[q]) itemsBad++;
   const tg = await timeIt(enc => G.encodeGrid(enc));
   log(`grid (${HHX}×${HHY} cells of ${F3.HC} m): starts differ in ${cellsBad} of ${G.NH + 1} cells, items in ${itemsBad} of ${n} — ${tg.toFixed(2)} ms on the GPU`);
+  await G.run(enc => G.encodeYGrid(enc));
+  const YS = new Uint32Array(await G.read(G.B.YHS)), YI = new Uint32Array(await G.read(G.B.YHI)); let ys = 0, yi = 0;
+  for (let c = 0; c <= G.NH; c++) if (YS[c] !== F.yStart[c]) ys++; for (let q = 0; q < ny; q++) if (YI[q] !== F.yItems[q]) yi++;
+  log(`the young's grid: starts differ in ${ys} cells, items in ${yi} of ${ny} schools`);
 }
 // ===== 2. THE START OF THE BLOCK (fish3 _livePre) =====
 const pre0 = fish.map(a => ({ lake: a.lake, tripEnd: a.tripEnd, lhx: a.lhx }));
@@ -134,8 +140,8 @@ BR = (await G.readAgents()).BR;
   { let r = 0; for (let i = 0; i < n; i++) if (runner(i)) r++; const gl = await G.readGlobals(); log(`   (${r} ripe brook runners left out; the GPU's sums: ${gl.slice(0, 11).reduce((t, v) => t + v, 0).toFixed(0)} fish, ${(gl[32] / 1000 / F.lakeHa).toFixed(1)} kg/ha; the run's held sites ${gl.slice(16, 27).map(v => v.toFixed(0)).join(',')})`); }
 }
 // ===== 7. THE BODY (fish3 _energetics: FB4) =====
+const cmC = new Float64Array(n);
 {
-  const cmC = new Float64Array(n);
   tc = performance.now();
   for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; const sp = a.s.sp, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio; cmC[i] = F._energetics(a, bp, a.T, B); }
   tc = performance.now() - tc;
@@ -143,6 +149,92 @@ BR = (await G.readAgents()).BR;
   A = (await G.readAgents()).A;
   compare(`body (CPU ${tc.toFixed(0)} ms)`, ['cm', 'W', 'L', 'K', 'gut', 'gutE', 'gon', 'rO2', 'uAvg', 'cons', 'consMax', 'spdMax', 'turnMax', 'senseR', 'gape', 'bdep', 'energy', 'hunger'], A,
     (a, f, i) => f === 'cm' ? cmC[i] : a[f], { tol: 2e-4, abs: 1e-7, skip: i => !fish[i].alive });
+}
+// ===== 8. FEEDING (fish3 _feed: strikes, the bed and weeds, the surface, the zooplankton, the organic layer) =====
+// (fish3 feeds fish after fish, each on what those before it left; the GPU all at once, sharing a contested cell's food — so the
+// check is on the totals and on each fish's meal where little is contested; the young aren't on the GPU yet: fish3's fish don't eat
+// them here either)
+{
+  const ch = env.chem, lit = env.lit, Gg = env.G, sum = a => { let t = 0; for (let q = 0; q < a.length; q++) t += a[q]; return t; };
+  const bedTot = () => { let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += ch.benth[j] * ch.a[j]; return t; };
+  const zooTot = (f) => { let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += f[j] * ch.w[j]; return t; };
+  const surfTot = () => { let t = 0; for (let c = 0; c < Gg.NC; c++) t += (lit.surfA[c] + lit.surfT[c]) * Gg.area[c]; return t; };
+  const litTot = (f) => { let t = 0; for (let q = 0; q < lit.cells.length; q++) t += f[q] * Gg.bedA[lit.cells[q]]; return t; };
+  const before = { bed: bedTot(), zD: zooTot(ch.zooD), zC: zooTot(ch.zooC), surf: surfTot(), L: litTot(lit.L), sn: litTot(lit.sn), cr: litTot(lit.crA) + litTot(lit.crY), sed: zooTot(ch.sedOM) };
+  const food0 = { ...F.stats.food }, kills0 = F.stats.kills, gut0 = fish.map(a => a.gut), fryE0 = Object.fromEntries(Object.entries(F.stats.fry).map(([k, v]) => [k, v.eaten]));
+  tc = performance.now();
+  for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; const sp = a.s.sp, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
+    const ate = F._feed(a, i, cmC[i], a.visF, B); a.hunger = 1 - Math.min(1, Math.max(0, a.gut / (sp.gut * a.W))); if (ate) a._ate = true; }
+  tc = performance.now() - tc;
+  const after = { bed: bedTot(), zD: zooTot(ch.zooD), zC: zooTot(ch.zooC), surf: surfTot(), L: litTot(lit.L), sn: litTot(lit.sn), cr: litTot(lit.crA) + litTot(lit.crY), sed: zooTot(ch.sedOM) };
+  G.clearTallies();
+  const Wb = G.W.slice(); await G.run(enc => G.encodeFeed(enc));
+  const Wa = new Float32Array(await G.read(G.B.WD)), o = G.WL.offs; A = (await G.readAgents()).A;
+  const gsec = (W, sec, len) => W.subarray(o[sec], o[sec] + len);
+  const gBed = W => { const b = gsec(W, 'benth', Gg.NCELL); let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += b[j] * ch.a[j]; return t; };
+  const gZoo = (W, s) => { const b = gsec(W, s, Gg.NCELL); let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += b[j] * ch.w[j]; return t; };
+  const gSurf = W => { const A1 = gsec(W, 'surfA', Gg.NC), T1 = gsec(W, 'surfT', Gg.NC); let t = 0; for (let c = 0; c < Gg.NC; c++) t += (A1[c] + T1[c]) * Gg.area[c]; return t; };
+  const gLit = (W, s) => { const b = gsec(W, s, lit.cells.length); let t = 0; for (let q = 0; q < lit.cells.length; q++) t += b[q] * Gg.bedA[lit.cells[q]]; return t; };
+  const used = (b, a) => `${(100 * (b - a) / Math.max(1e-12, b)).toFixed(2)} %`;
+  log(`feeding (CPU ${tc.toFixed(0)} ms) — the share of each food eaten this block, CPU · GPU:`);
+  log(`   the bed's worms ${used(before.bed, after.bed)} · ${used(gBed(Wb), gBed(Wa))}; Daphnia ${used(before.zD, after.zD)} · ${used(gZoo(Wb, 'zooD'), gZoo(Wa, 'zooD'))}; copepods ${used(before.zC, after.zC)} · ${used(gZoo(Wb, 'zooC'), gZoo(Wa, 'zooC'))}`);
+  log(`   the surface's insects ${used(before.surf, after.surf)} · ${used(gSurf(Wb), gSurf(Wa))}; the weeds' insects ${used(before.L, after.L)} · ${used(gLit(Wb, 'litL'), gLit(Wa, 'litL'))}; snails ${used(before.sn, after.sn)} · ${used(gLit(Wb, 'litSn'), gLit(Wa, 'litSn'))}; crayfish ${used(before.cr, after.cr)} · ${used(gLit(Wb, 'litCrA') + gLit(Wb, 'litCrY'), gLit(Wa, 'litCrA') + gLit(Wa, 'litCrY'))}`);
+  const tl = await G.readTallies(), FK = ['zoo', 'benth', 'weed', 'cray', 'surf', 'fish', 'sed', 'yoy'];
+  { let fe = 0, fg = 0; const KS = Object.keys(F.stats.fry); KS.forEach((k, q) => { fe += F.stats.fry[k].eaten - fryE0[k]; fg += tl[320 + q * 6 + 4] / 1e6; }); log(`   young eaten by followed fish: CPU ${fe.toFixed(0)} · GPU ${fg.toFixed(0)}`); }
+  log('   grams eaten, CPU · GPU: ' + FK.map((k, q) => `${k} ${(F.stats.food[k] - food0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
+  let gk = 0; for (let q = 0; q < 121; q++) gk += tl[96 + q] / 1e6; log(`   fish killed by followed fish: CPU ${F.stats.kills - kills0} · GPU ${gk.toFixed(0)}`);
+  // each fish's meal
+  let within = 0, fed = 0, both = 0, sc = 0, sg = 0; const bySp = {};
+  for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; const g = L.readAgent(A, cap, i); if (!g.alive) continue;
+    const dc = (a.gut - gut0[i]) * a.n, dg = (g.gut - gut0[i]) * g.n; sc += dc; sg += dg;
+    const r = bySp[a.s.key] || (bySp[a.s.key] = [0, 0]); r[0] += dc; r[1] += dg;
+    if (dc > 0 || dg > 0) { fed++; if (Math.abs(dc - dg) <= 0.05 * Math.max(dc, dg) + 1e-9) within++; if (dc > 0 && dg > 0) both++; } }
+  log(`   meals: ${fed} fish ate on one engine or both, ${both} on both, ${within} within 5 % of each other; total ${(sc / 1000).toFixed(1)} kg (CPU) · ${(sg / 1000).toFixed(1)} kg (GPU)`);
+  log('   by species (kg, CPU · GPU): ' + Object.entries(bySp).map(([k, [c, g]]) => `${k} ${(c / 1000).toFixed(2)} · ${(g / 1000).toFixed(2)}`).join('; '));
+}
+// ===== 9. BREATH AND DEATH (fish3 _live's O₂, _hazards) =====
+{
+  const ch = env.chem, Gg = env.G, o2c = Float32Array.from(ch.o2);
+  const died0 = JSON.parse(JSON.stringify(F.stats.died)), n0 = fish.map(a => a.n);
+  tc = performance.now();
+  for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; ch.o2[a.j] = Math.max(0, ch.o2[a.j] - a.n * a.rO2 * B / (Gg.vol[a.j] * ENV.O2_MGL)); }
+  let expDeaths = 0; for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; F._hazards(a, a.T, B); }
+  tc = performance.now() - tc;
+  await G.run(enc => G.encodeHaz(enc));
+  const Wa = new Float32Array(await G.read(G.B.WD)), o = G.WL.offs; A = (await G.readAgents()).A;
+  let o2bad = 0; for (let j = 0; j < Gg.NCELL; j++) if (Math.abs(Wa[o.o2 + j] - ch.o2[j]) > 1e-4 * Math.max(0.1, ch.o2[j])) o2bad++;
+  compare(`hazards (CPU ${tc.toFixed(0)} ms): exposure`, ['xo', 'xt'], A, (a, f) => a[f], { tol: 1e-4, skip: i => !fish[i].alive });
+  let schoolsBad = 0, schools = 0, deadC = 0, deadG = 0;
+  for (let i = 0; i < n; i++) { const a = fish[i], g = L.readAgent(A, cap, i); if (n0[i] > 1) { schools++; if (Math.abs(a.n - g.n) > 1e-3 * n0[i] && a.alive && g.alive) schoolsBad++; } }
+  const tl = await G.readTallies(); const causes = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
+  const dC = {}, dG = {}; for (const k in F.stats.died) for (const c in F.stats.died[k]) dC[c] = (dC[c] || 0) + F.stats.died[k][c] - ((died0[k] || {})[c] || 0);
+  for (let k = 0; k < 11; k++) causes.forEach((c, q) => { dG[c] = (dG[c] || 0) + tl[224 + k * 7 + q] / 1e6; });
+  log(`   O₂ after breathing: ${o2bad} of ${Gg.NCELL} cells differ; schools' losses: ${schoolsBad} of ${schools} differ`);
+  log('   deaths this block by cause, CPU · GPU (the GPU’s eaten: its strikes this block): ' + causes.map(c => `${c} ${(dC[c] || 0).toFixed(1)} · ${(dG[c] || 0).toFixed(1)}`).join('; '));
+}
+// ===== 10. THE YOUNG (fish3 _stepYoy: each school's move, its feeding tick, its deaths, its next spot) =====
+{
+  const ch = env.chem, Gg = env.G, lit = env.lit, fr0 = JSON.parse(JSON.stringify(F.stats.fry)), yf0 = { ...F.stats.food };
+  const zTot = f => { let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += f[j] * ch.w[j]; return t; };
+  const b0 = { zD: zTot(ch.zooD), zC: zTot(ch.zooC), zR: zTot(ch.zooR) };
+  const n0 = yoy.map(q => q.n), L0 = yoy.map(q => q.L), tk0 = yoy.map(q => q.tk);
+  tc = performance.now(); F._stepYoy(B, B, yf); tc = performance.now() - tc;
+  const b1 = { zD: zTot(ch.zooD), zC: zTot(ch.zooC), zR: zTot(ch.zooR) };
+  G.clearTallies();
+  const Wb = new Float32Array(await G.read(G.B.WD)); await G.run(enc => G.encodeYoy(enc)); const Wa = new Float32Array(await G.read(G.B.WD)), o = G.WL.offs;
+  const Yg = await G.readYoyArr(), tl = await G.readTallies();
+  const gz = (W, s) => { const b = W.subarray(o[s], o[s] + Gg.NCELL); let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += b[j] * ch.w[j]; return t; };
+  const used = (b, a) => `${(100 * (b - a) / Math.max(1e-12, b)).toFixed(3)} %`;
+  let feeders = 0, nOk = 0, LOk = 0, recC = 0, recG = 0, aliveC = 0, aliveG = 0, nC = 0, nG = 0;
+  for (let q = 0; q < ny; q++) { const c = yoy[q], g = L.readYoy(Yg, G.ycap, q);
+    if (c.alive) { aliveC++; nC += c.n; } if (g.alive) { aliveG++; nG += g.n; } if (g.recruit > 0) recG++; if (!c.alive && c.L >= c.s.sp.L0) recC++;
+    if (tk0[q] + B >= F3.YOY_TICK) { feeders++; if (c.alive && g.alive) { if (Math.abs(c.n - g.n) <= 0.02 * Math.max(c.n, 1)) nOk++; if (Math.abs(c.L - g.L) <= 0.01 * c.L) LOk++; } } }
+  log(`the young (CPU ${tc.toFixed(0)} ms): ${feeders} schools fed this block — ${nOk} with numbers within 2 %, ${LOk} lengths within 1 % of fish3's; ${aliveC} · ${aliveG} schools alive (${(nC / 1e3).toFixed(0)}k · ${(nG / 1e3).toFixed(0)}k fish); recruiting ${recC} · ${recG}`);
+  log(`   zooplankton the young ate this block, CPU · GPU: Daphnia ${used(b0.zD, b1.zD)} · ${used(gz(Wb, 'zooD'), gz(Wa, 'zooD'))}; copepods ${used(b0.zC, b1.zC)} · ${used(gz(Wb, 'zooC'), gz(Wa, 'zooC'))}; rotifers ${used(b0.zR, b1.zR)} · ${used(gz(Wb, 'zooR'), gz(Wa, 'zooR'))}`);
+  const FY = [['yZoo', 8], ['yWeed', 9], ['yBenth', 10], ['ySed', 11]]; log('   grams the young ate, CPU · GPU: ' + FY.map(([k, q]) => `${k} ${(F.stats.food[k] - yf0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
+  const C6 = ['natural', 'starve', 'heat', 'hypoxia', 'eaten'], KS = Object.keys(F.stats.fry);
+  log('   the young\u2019s deaths this block, CPU · GPU: ' + C6.map((cs, ci) => { let c = 0, g = 0; KS.forEach((k, q) => { c += F.stats.fry[k][cs] - fr0[k][cs]; g += tl[320 + q * 6 + ci] / 1e6; }); return `${cs} ${c.toFixed(0)} · ${g.toFixed(0)}`; }).join('; '));
+  { const ts = {}; for (const k of ['y_move', 'y_feedReq', 'y_feedTake', 'y_mort', 'y_target']) ts[k] = await timeIt(enc => G.encodeY(enc, k)); log(`   GPU per kernel (ms, ${ny} schools): ` + Object.entries(ts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')); }
 }
 // ===== timings of the kernels so far =====
 {

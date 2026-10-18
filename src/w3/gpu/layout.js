@@ -30,6 +30,9 @@ export const AGENT_FIELDS = [
   'gape', 'bdep', 'spdMax', 'turnMax', 'senseR', 'bed', 'T', 'o2', 'vis', 'cover', 'visF', '_vx', '_vy', '_need',
   'fx', 'fy', 'fz', 'fd', 'fv', 'td', 'ax', 'ay', 'az', 'an', 'nt', 'nx', 'ny', 'nz', 'nestX', 'nestY', 'spX', 'spY',
   'lhx', 'lhy', 'tpx', 'tpy', 'dhx', 'dhy', 'cm', 'surfG',
+  // SCRATCH (the block's working values on the GPU; never packed nor unpacked): the feeding's room, want, got…, a strike's claim
+  ['fGEff', 's'], ['fPerf', 's'], ['fRoom', 's'], ['fWant', 's'], ['fGot', 's'], ['gut0', 's'], ['claim', 'si'], ['claimP', 'su'],
+  ['qB', 's'], ['qW', 's'], ['qC', 's'], ['qS', 's'], ['qZD', 's'], ['qZC', 's'], ['qFlags', 's'], ['qSed', 's'],
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const AF = Object.fromEntries(AGENT_FIELDS.map(([n], i) => [n, i]));
 export const NAF = AGENT_FIELDS.length;
@@ -42,6 +45,9 @@ const FLAG_OF = [['alive', FL.ALIVE], ['school', FL.SCHOOL], ['mature', FL.MATUR
 export const YOY_FIELDS = [
   ['id', 'u'], ['k', 'u'], ['flags', 'u'], ['gen', 'u'], ['c', 'i'], ['j', 'i'], ['jb', 'i'], ['guard', 'u'], ['gref', 'i'], ['age', 'u'],
   'n', 'x', 'y', 'z', 'tx', 'ty', 'tz', 'bed', 'L', 'W', 'bdep', 'hue', 'tk', 'rO2', 'p', 'cover', 'nx', 'ny', 'hd', 'spotBed',
+  // SCRATCH: where it began the block; this tick's water, wants, its requests of each food, what it got, its starvation hazard
+  ['sx', 's'], ['sy', 's'], ['sz', 's'], ['feeds', 's'], ['st', 's'], ['yT', 's'], ['yo2', 's'], ['want', 's'], ['got', 's'], ['J', 's'], ['hS', 's'],
+  ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'],
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const YF = Object.fromEntries(YOY_FIELDS.map(([n], i) => [n, i]));
 export const NYF = YOY_FIELDS.length;
@@ -49,8 +55,9 @@ export const YFL = { ALIVE: 1 };
 
 const DAY = DAY3, YEAR = CLOCK3.YEAR_LEN;
 const f32 = new Float32Array(1), u32 = new Uint32Array(f32.buffer), i32 = new Int32Array(f32.buffer);
-const asF = (v, t) => { if (t === 'u') { u32[0] = v >>> 0; return f32[0]; } if (t === 'i') { i32[0] = v | 0; return f32[0]; } return v; };
-const fromF = (v, t) => { f32[0] = v; return t === 'u' ? u32[0] : t === 'i' ? i32[0] : v; };
+const asF = (v, t) => { if (t === 'u' || t === 'su') { u32[0] = v >>> 0; return f32[0]; } if (t === 'i' || t === 'si') { i32[0] = v | 0; return f32[0]; } return v; };
+const fromF = (v, t) => { f32[0] = v; return t === 'u' || t === 'su' ? u32[0] : t === 'i' || t === 'si' ? i32[0] : v; };
+const SCRATCH = t => t[0] === 's';
 const cleanF = v => v === Infinity ? 3e38 : v === -Infinity ? -3e38 : v !== v ? 0 : v;   // (NaN fields — "none" — packed as 0 with a flag where it matters)
 const tD = t => t < -1e17 ? -1e18 : t / DAY;   // (a time, s → days; "never" stays "never")
 
@@ -82,7 +89,7 @@ export function packAgents(fish, cap, out = null) {
         case 'dhx': v = a._dh ? a._dh[0] : 0; break;
         case 'dhy': v = a._dh ? a._dh[1] : 0; break;
         case 'cm': v = 0; break;
-        default: v = a[name];
+        default: v = SCRATCH(t) ? (t === 'si' ? -1 : 0) : a[name];
       }
       A[f * cap + i] = asF(t === 'f' ? cleanF(+v) : v, t);
     }
@@ -108,6 +115,7 @@ export function unpackAgents(P, cap, fishBySlot, opts = {}) {
     const a = fishBySlot[i]; if (!a) continue;
     const o = readAgent(A, cap, i);
     for (const [name, t] of AGENT_FIELDS) {
+      if (SCRATCH(t)) continue;
       switch (name) {
         case 'flags': case 'prey': case 'threat': case 'mate': case 'mateId': case 'dhx': case 'dhy': case 'cm': break;
         case 'lastSpawnD': a.lastSpawn = o.lastSpawnD < -1e17 ? -1e18 : o.lastSpawnD * DAY; break;
@@ -143,7 +151,7 @@ export function packYoy(yoy, ycap, agentSlot, out = null) {
         case 'flags': v = YFL.ALIVE; break;
         case 'gref': v = q.gref && agentSlot && agentSlot.has(q.gref) ? agentSlot.get(q.gref) : -1; break;
         case 'age': v = Math.round(q.age); break;
-        default: v = q[name];
+        default: v = SCRATCH(t) ? (t === 'si' ? -1 : 0) : q[name];
       }
       Y[f * ycap + i] = asF(t === 'f' ? cleanF(+v) : v, t);
     }

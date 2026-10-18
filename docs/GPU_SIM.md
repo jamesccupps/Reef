@@ -117,11 +117,34 @@ GPU work stalls.
 | senses (`_sense`) | all | prey and threat identical for every fish; 12 school counts at the radius' edge | ~4–5 | 1,300–1,700 |
 | brain (`forward3`) | all (≤ 1.4e-4) | 0.9 % of fish > 2e-4 (an ill-conditioned school direction when the school's centre is within a hair of the fish; f32 inputs) | ~1.8 | 650–750 |
 | movement (`_drive`, `_relocate`, `_hop`; no wander) | 1 fish's heading | mean move 28.30 m on both; 20 fish end > 1 m from the CPU's | ~1.8 | 1,600 |
-| body (`_energetics`, FB4) | all 18 fields | (pending) | | |
+| body (`_energetics`, FB4) | all 18 fields | all but 2 fish (whose moves differed) | ~0.5 | 265–360 |
+| feeding (`_feed`: the fields) | totals within 0.5 %; 3,191 of 3,200 meals within 5 % | zooplankton 17,547 · 17,616 g, bed 5,607 · 5,602, weeds 5,468 · 5,466, crayfish 4,544 · 4,542; 301,610 of 303,526 meals within 5 % | — | 1,300 |
+| fish eating the young (`_eatYoy`) | 28 · 24 | 2,896 · 2,825 young | — | (in feeding) |
+| strikes (`_strike`) | (random; see below) | (random; see below) | — | |
+| breath and death (`_hazards`, O₂) | O₂ identical in every cell; deaths 0.2 · 0.2 | O₂ identical in all 15,081 cells; deaths 23 · 26 (individuals' random draws) | — | 130 |
+| the young (`_yoyLive`, `_feedYoy`, `_yoyTarget`) | 407 of 409 feeding schools' numbers within 2 %, every length within 1 % | 41,675 of 41,901 within 2 %; zooplankton 47,660 · 48,289 g, weeds 26,728 · 26,486; natural deaths 9,907 · 9,880 | ~10 | 230 |
 
-So far ~15–20 ms on the GPU against ~4.5 s on the CPU for the same phases (the CPU numbers are with the year run sharing the
-processor). Next: feeding (fixed-point demands per column, proportional shares), strikes (claims), hazards, spawning, the young,
-recruitment, the schools; then the whole block in a loop with the water model.
+So far ~40 ms on the GPU against ~6.5 s on the CPU for the same phases (the CPU numbers are with the year run sharing the
+processor).
+
+- **Sharing food.** Every fish (and school of young) asks for grams from the cells of its footprint as fish3 would on the
+  untouched water; the asks are summed per cell and kind as T, the share of the cell's reachable food asked for; each gets its
+  whole ask while T ≤ 1, its 1/T beyond. A first version shared by 1 − e^(−T) (each feeder a fraction of what is left) and starved
+  the crowded young by ~9 % with food to spare: fish3's feeders ask for grams and get them until the food runs out. The crayfish
+  keep the exponential (a crowd can't take every crayfish of a cell, the sheltered ones too, in a block).
+- **Strikes: a finding about the CPU sim.** A coarse block's strikes look for prey through the neighbour grid built at the
+  block's START, while by then every fish has moved (~28 m on the true lakes): a predator finds a prey only where its start cell
+  is near where the predator got to — in practice the fish after it in the list, which haven't moved yet. With the grid rebuilt
+  where all had moved, the true lakes' predators struck ~9× as often. The fish near the camera, stepped second by second with a
+  fresh grid, are struck at the formula's full rate — so the far fish's predation runs below the near fish's. The GPU keeps the
+  CPU's behaviour for now (the block-start grid; a fish earlier in the list where it moved to, a later one where it began), so the
+  two can be validated against each other; correcting it means re-checking the predation calibration (the pickerel's ~1.3 % a
+  week, the dace's losses) — a decision for after G2. (The per-phase harness can't compare strikes: in it every prey has moved
+  before any predator feeds, as never happens in the CPU's own block — that comparison is G2's, on real blocks.)
+
+Next: spawning (mates, the spawn, a mutated crossover genome for each new school, the nest guard), recruitment (the young into
+agents), the schools (merge, split, the budget's own-brain cut, dissolve), compacting the dead; then the whole block in a loop
+with the water model.
 
 ## Stages
 
