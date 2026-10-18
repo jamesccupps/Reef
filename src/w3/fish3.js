@@ -382,6 +382,7 @@ class Fish {
     // its lake (1 Upper, 2 Lower) and home there, a brook-summering pumpkinseed
     this.ripe = false; this.nt = 0; this.nx = 0; this.ny = 0; this.nz = 0; this.nestX = NaN; this.nestY = NaN; this.mate = null;
     this.near = false; this._i = -1; this._t0 = 0; this._due = -1;   // (fidelity by distance: inside the focus; its index in the list, its last step's time, the step its next block is due)
+    this._out = false;   // (SHARDS: it swam into another shard's water this step)
     this.spX = NaN; this.spY = NaN; this.spYr = -1;   // a ripe plant spawner's chosen place (F3.SUB_*) and the year it chose it
     this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false;
     this.tripEnd = 0; this.tpx = 0; this.tpy = 0; this.inLake = 1;   // a trip into the other lake (until, where); the lake it was last in
@@ -398,10 +399,28 @@ class Yoy {
     this.L = 0; this.W = 0; this.bdep = 0; this.age = 0; this.g = null; this.genes = null; this.gen = 0; this.hue = 0;
     this.tk = 0; this.rO2 = 0; this.p = 0; this.cover = 0; this.guard = 0; this.gref = null; this.nx = 0; this.ny = 0;
     this.hd = 0; this.spotBed = 1;   // its cruise's heading, and the bed's depth at its feeding spot
-    this.near = false; this._t0 = 0; this._due = -1;   // (fidelity by distance, as the fish's)
+    this.near = false; this._t0 = 0; this._due = -1; this._out = false;   // (fidelity by distance, as the fish's; SHARDS: left its shard's water)
     this._px = 0; this._py = 0; this._pz = 0;   // RENDER-ONLY
   }
 }
+
+// a fish or a young school as plain data and back (SHARDS: handed between workers). The object references — its species, the
+// prey, threat, mate or guarding parent it had in view — are dropped or kept by key; its genome, learned weights and brain state
+// are copied
+const FISH_REF = new Set(['s', 'prey', 'threat', 'mate', 'genes', 'g', 'lw', 'h', 'o', 'leak', '_dh']), YOY_REF = new Set(['s', 'g', 'genes', 'gref']);
+function packFish(a) {
+  const d = { key: a.s.key, genes: a.genes && Float32Array.from(a.genes), g: a.g && Float32Array.from(a.g), lw: a.lw && Float32Array.from(a.lw), h: a.h && Float32Array.from(a.h),
+    o: Float32Array.from(a.o), leak: a.leak && Float32Array.from(a.leak), dh: a._dh ? [a._dh[0], a._dh[1]] : null, v: {} };
+  for (const k of Object.keys(a)) if (!FISH_REF.has(k)) d.v[k] = a[k];
+  return d;
+}
+function unpackFish(d) {
+  const a = new Fish(); Object.assign(a, d.v); a.s = S3[d.key]; a.genes = d.genes; a.g = d.g; a.lw = d.lw; a.h = d.h; a.o = d.o; a.leak = d.leak; a._dh = d.dh;
+  a.prey = a.threat = a.mate = null; a.alive = true; a._out = false; a.near = false; a._due = -1;
+  return a;
+}
+function packYoy(q) { const d = { key: q.s.key, g: q.g, genes: q.genes, v: {} }; for (const k of Object.keys(q)) if (!YOY_REF.has(k)) d.v[k] = q[k]; return d; }
+function unpackYoy(d) { const q = new Yoy(); Object.assign(q, d.v); q.s = S3[d.key]; q.g = d.g; q.genes = d.genes; q.gref = null; q.guard = 0; q.alive = true; q._out = false; q.near = false; q._due = -1; return q; }
 
 // ONE SHAPE FOR GOOD (V8): a number field first written as an integer is held as a small integer, and the first fraction later
 // written to it re-shapes EVERY object of the class — at true scale ~1 s for the 300,000 fish, each time some field first takes a
@@ -426,6 +445,7 @@ export class Fish3 {
     this.yoy = [];      // the young-of-year schools (Yoy)
     this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
+    this.shard = null; this.cntOther = null; this.juvOther = null; this.juvOwn = null; this.bio = 0; this._fpOwn = null;   // (SHARDS: setShard)
     this.lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4; this.lakeM2 = this.lakeHa * 1e4;
     this._inp = new Float32Array(NI);
     this._hashInit(); this._colStatics(); this._slopeStatics(); this._siteStatics(); this._siteYr = -1;
@@ -558,7 +578,7 @@ export class Fish3 {
     let t = this._fp.get(R); if (!t) { t = new Array(this.G.NC); this._fp.set(R, t); }
     if (t[c]) return t[c];
     const G = this.G, x = G.cx[c], y = G.cy[c], l = [c];
-    for (let q = 0; q < G.NC; q++) if (q !== c && (G.cx[q] - x) ** 2 + (G.cy[q] - y) ** 2 <= R * R) l.push(q);
+    for (let q = 0; q < G.NC; q++) if (q !== c && (G.cx[q] - x) ** 2 + (G.cy[q] - y) ** 2 <= R * R && (!this._fpOwn || this._fpOwn(q))) l.push(q);   // (a shard's: its own columns)
     return (t[c] = Int32Array.from(l));
   }
   // the best-oxygenated column about column c (its two rings of neighbours), if clearly better than c's own (by each column's
@@ -598,7 +618,7 @@ export class Fish3 {
       const a = f[i], o = 4 * i, c = this._hc(a.x, a.y); this.hCell[i] = c; S[c + 1]++; P[o] = a.x; P[o + 1] = a.y; P[o + 2] = a.z;
       if (tally && a.alive) { cnt[a.k] += a.n; bio += a.n * a.W; }
     }
-    if (tally) { for (const q of this.yoy) if (q.alive) bio += q.n * q.W; this.chem.fishKgHa = bio / 1000 / this.lakeHa; }   // (the zooplankton's kairomone level: diel vertical migration)
+    if (tally) { for (const q of this.yoy) if (q.alive) bio += q.n * q.W; this.bio = bio; if (!this.shard) this.chem.fishKgHa = bio / 1000 / this.lakeHa; }   // (SHARDS: the set sums the shards' bio)   // (the zooplankton's kairomone level: diel vertical migration)
     for (let c = 0; c < NH; c++) S[c + 1] += S[c];
     this.hCur.set(S.subarray(0, NH));
     for (let i = 0; i < n; i++) this.hItems[this.hCur[this.hCell[i]]++] = i;
@@ -727,7 +747,7 @@ export class Fish3 {
   // smallest length so reached; with no room (the recruits, the fish already on their own — they keep their brains) no school
   // breaks up until there is (the cutoff past every school: as schools grow, a fixed cutoff would let them all through)
   _soloCut() {
-    const B = F3.AGENTS_HA * this.lakeHa; let A = 0;
+    const B = F3.AGENTS_HA * (this.shard ? this.shard.budgetHa : this.lakeHa); let A = 0;   // (SHARDS: its share of the brains: its water's area)
     for (const a of this.fish) if (a.alive && !a.s.brookRes) A++;
     const sch = this.fish.filter(a => a.alive && a.school && a.s.solo && !a.ripe).sort((p, q) => q.L - p.L);
     let cut = Infinity;
@@ -962,8 +982,12 @@ export class Fish3 {
     }
     else if (a.prey && !a.prey.alive) { a.prey = null; a.fk = 0; }
     this._drive(a, m, co ? 0 : mvA);
+    const c0 = a.c, j0 = a.j, jb0 = a.jb;   // (SHARDS: the cells it started the step in — its own shard's)
     if (co) this._relocate(a, m, dtA); else this._move(a, mvA);
     this._posAt(a, i);
+    // (SHARDS: it swam into another shard's water — it finishes this step feeding and breathing where it was, in its own water, and is
+    // handed over after it; a block's relocation had moved its cells to where it got to)
+    if (this.shard && this.shard.owner[e.colAt(a.x, a.y)] !== this.shard.me) { a._out = true; a.c = c0; a.j = j0; a.jb = jb0; }
     // the body, food, hazards
     const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
     const cm = this._energetics(a, bp, T, dtA);
@@ -1031,6 +1055,32 @@ export class Fish3 {
     for (let q = 0; q < n; q++) h.I[h.cur[h.cell[q]]++] = L[q]._i;
   }
   _useHash(h) { this.hStart = h.S; this.hItems = h.I; this.HX = h.HX; this.HY = h.HY; this.hX0 = h.X0; this.hY0 = h.Y0; }
+
+  // ---------- SHARDS (docs/TRUE_SCALE.md T5): several Fish3 share one water model, each holding the fish and young of its own
+  // columns (owner[c] === me: by water — Upper and the brook; Lower). A fish's step reads and writes only its own water: the
+  // columns about it and its foraging footprint are its shard's (the lists filtered here, once); one that swims into another's
+  // water finishes its step in the cells it started in and is handed over (takeOut → the set → adopt). The lake-wide couplings — the young's
+  // density, the recruitment cap, the fish biomass the zooplankton answer — come from the set (shard3.js) each step
+  setShard(me, owner, budgetHa) {
+    this.shard = { me, owner, budgetHa };
+    const own = c => owner[c] === me;
+    this.nbr = this.nbr.map(l => l.filter(own)); this.nbr2 = this.nbr2.map(l => l.filter(own));
+    this._fp = new Map(); this._fpOwn = own;
+    this.fish = this.fish.filter(a => own(this.env.colAt(a.x, a.y))); this.yoy = this.yoy.filter(q => own(this.env.colAt(q.x, q.y)));
+    this._needHash = true; this._region = null; this._yRegion = null;
+  }
+  // the fish and young that left this shard's water this step, packed (plain data: a structured clone carries them to another
+  // worker); they leave this shard's lists
+  takeOut() {
+    const out = { fish: [], yoy: [] };
+    for (const a of this.fish) if (a.alive && a._out) { a._out = false; out.fish.push(packFish(a)); a.alive = false; a.cause = 'handed'; }
+    for (const q of this.yoy) if (q.alive && q._out) { q._out = false; out.yoy.push(packYoy(q)); q.alive = false; }
+    return out;
+  }
+  adopt(pack) {
+    for (const d of pack.fish) { const a = unpackFish(d); this.fish.push(a); if (this._mixOn) { a._i = this.fish.length - 1; a.near = false; a._t0 = this.time; this._sched(a, this._nb); } }
+    for (const d of pack.yoy) { const q = unpackYoy(d); this.yoy.push(q); if (this._yMixOn) { q._t0 = this.time; this._ysched(q, this._ynb); } }
+  }
 
   // THE FOCUS (fidelity by distance): fish within r m of (x, y) live second by second, the rest in banked blocks; null: all alike
   setFocus(x, y, r) { this.focus = x === null || x === undefined ? null : { x, y, r }; }
@@ -1667,6 +1717,7 @@ export class Fish3 {
   _juvDens() {
     const juvD = this._juvD || (this._juvD = new Float64Array(KEYS3.length)); juvD.fill(0);
     for (const q of this.yoy) if (q.alive) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
+    if (this.shard) { this.juvOwn = Float64Array.from(juvD); if (this.juvOther) for (let k = 0; k < juvD.length; k++) juvD[k] += this.juvOther[k]; }   // (SHARDS: the lakes' young, the others' too)
     return juvD;
   }
   // ONE SCHOOL OF YOUNG'S STEP: dt s of its life (mv of its swimming: a coarse block's cruise when mv > FINE_MAX)
@@ -1687,6 +1738,7 @@ export class Fish3 {
     }
     const zT = clamp(q.tz, 0.05, Math.max(0.06, q.bed - 0.02)), dz = zT - q.z;
     q.z = clamp(q.z + Math.sign(dz) * Math.min(Math.abs(dz), v), 0.05, Math.max(0.06, q.bed - 0.02));
+    if (this.shard && this.shard.owner[e.colAt(q.x, q.y)] !== this.shard.me) { q._out = true; return; }   // (SHARDS: as the fish's)
     if (q.tk < F3.YOY_TICK) return;
     const st = q.tk; q.tk = 0;
     const c = q.c = e.colAt(q.x, q.y); if (c < 0) { q.alive = false; return; }
@@ -1842,7 +1894,7 @@ export class Fish3 {
   // up to F3.CAP × the species' census
   _recruit(q) {
     q.alive = false;
-    const s = q.s, sp = s.sp, k = s.key, room = Math.max(0, F3.CAP * this._target(s) - this.cnt[q.k]);
+    const s = q.s, sp = s.sp, k = s.key, room = Math.max(0, F3.CAP * this._target(s) - this.cnt[q.k] - (this.cntOther ? this.cntOther[q.k] : 0));   // (SHARDS: the lakes' fish, the others' too)
     const yrs = q.age / YEAR, born = [];
     if (s.school || (s.group && q.L < s.group[0])) {
       let left = Math.min(q.n, room), first = true; const gs = s.school ? Infinity : s.group[1];

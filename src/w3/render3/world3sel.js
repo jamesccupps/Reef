@@ -3,4 +3,4 @@
 // the same query), so that src/w3/geometry.js — which reads globalThis.HB_WORLD as Node reads HB_WORLD=true — picks the world.
 const q = new URLSearchParams(globalThis.location ? globalThis.location.search : '');
 if (q.get('world') === 'true') globalThis.HB_WORLD = 'true';
-export const WORLD_Q = q.get('world') === 'true' ? '?world=true' : '';   // (the worker's URL takes it along)
+export const WORLD_Q = globalThis.location ? globalThis.location.search : '';   // (the worker's URL takes the page's query along: ?world=true, ?shards=0)

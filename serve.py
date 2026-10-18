@@ -60,7 +60,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def guess_type(self, path):
         return MIME.get(os.path.splitext(path)[1].lower(), "application/octet-stream")
 
+    # cross-origin isolation for the 3-D page (its sim's shards share memory): COOP + COEP on w3.html, COEP on the scripts —
+    # keep in sync with isoHeaders in serve.mjs
+    _iso = {}
+
     def end_headers(self):
+        for k, v in self._iso.items():
+            self.send_header(k, v)
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Security-Policy", CSP)
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -107,6 +113,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return None
         try:
             fs = os.fstat(f.fileno())
+            rel = os.path.relpath(path, os.path.realpath(ROOT)).replace(os.sep, "/")
+            self._iso = ({"Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp"} if rel == "w3.html"
+                         else {"Cross-Origin-Embedder-Policy": "require-corp"} if re.search(r"\.m?js$", rel) else {})
             self.send_response(200)
             self.send_header("Content-Type", self.guess_type(path))
             self.send_header("Content-Length", str(fs.st_size))

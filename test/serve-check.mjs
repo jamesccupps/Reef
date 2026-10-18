@@ -30,6 +30,8 @@ try {
   check('/ → 200 index.html with the CSP + no-store headers', root.status === 200 && /<html/i.test(root.body) && root.headers['content-security-policy'] === CSP && root.headers['cache-control'] === 'no-store', `${root.status}`);
   check('CSP forbids inline/foreign script and plugins', /script-src 'self'(;|$)/.test(CSP) && CSP.includes("object-src 'none'") && CSP.includes("base-uri 'none'") && !CSP.includes('unsafe-inline'));
   const js = await get(port, '/src/main.js');
+  const w3 = await get(port, '/w3.html');
+  check("the 3-D page is cross-origin isolated (COOP + COEP: its sim's shards share memory) and the 2-D page is not", w3.status === 200 && w3.headers['cross-origin-opener-policy'] === 'same-origin' && w3.headers['cross-origin-embedder-policy'] === 'require-corp' && !root.headers['cross-origin-embedder-policy'], `${w3.headers['cross-origin-opener-policy']} / ${w3.headers['cross-origin-embedder-policy']}`);
   check('a module script is served as text/javascript', js.status === 200 && /^text\/javascript/.test(js.headers['content-type'] || ''), js.headers['content-type']);
   const css = await get(port, '/styles.css');
   check('the stylesheet is served as text/css', css.status === 200 && /^text\/css/.test(css.headers['content-type'] || ''), css.headers['content-type']);

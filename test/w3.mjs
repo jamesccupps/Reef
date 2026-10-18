@@ -433,6 +433,25 @@ if (run('core')) {
     check("fidelity by distance, the young: the schools within the focus swim each step and the rest live their time in scheduled blocks — every school has lived the two minutes to within a block, the young kept (alive + recruited); the senses' positions (P) exactly every fish's",
       yNear > 0 && yMoved >= 0.8 * yNear && yFar > yNear && yLag <= F3.FAR_BLOCK + 0.2 && yLag >= -0.2 && Math.abs(yN1 - yN0) / yN0 < 0.02 && pOff === 0,
       `${yNear} near (${yMoved} swam), ${yFar} far; the most behind ${yLag.toFixed(1)} s; young ${yN0.toFixed(0)} → ${yN1.toFixed(0)}; P off for ${pOff} of ${F._hashN}`); }
+  // SHARDS (TRUE_SCALE.md T5): the fish split by water — Upper and the brook; Lower — each shard stepping only its own fish in its
+  // own water, one after another here as they run side by side in workers: the founding split is the single founding's, a run
+  // keeps the lakes as a single run does, fish that swim across are handed over, none is left in another's water, and a run
+  // repeats itself exactly
+  { const { ShardSet } = await import('../src/w3/shard3.js'); const { KEYS3 } = await import('../src/w3/fish3.js'); const { createHash } = await import('node:crypto');
+    const tot = c => KEYS3.reduce((t, k) => t + c[k].n, 0), kgOf = c => KEYS3.reduce((t, k) => t + c[k].kgHa, 0);
+    const fpOf = list => { const h = createHash('sha1'); for (const a of [...list].filter(a => a.alive).sort((p, q) => p.id - q.id)) h.update(`${a.id},${a.x},${a.n},${a.W};`); return h.digest('hex'); };
+    const runS = sharded => { seed(520); const e = new Env3({ col: 10 * CS, yf0: 0.3 }); const F = sharded ? new ShardSet(e, { young: true }) : new Fish3(e, { young: true }); const c0 = F.census();
+      for (let b = 0; b < 30; b++) { F.step(1752); e.step(1752); }
+      const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE); let acc = 0; for (let i = 0; i < 600; i++) { F.step(0.1); acc += 0.1; if (acc >= 60) { e.step(acc); acc = 0; } }
+      F.setFocus(null); for (let b = 0; b < 4; b++) { F.step(1752); e.step(1752); }
+      return { c0, c1: F.census(), F, fp: fpOf(F.fish) }; };
+    const A = runS(false), B = runS(true), B2 = runS(true);
+    const sameFound = KEYS3.every(k => Math.abs(A.c0[k].n - B.c0[k].n) < 1e-6);
+    let wrong = 0, dup = 0; const ids = new Set(); B.F.shards.forEach((sh, i) => { for (const a of sh.F.fish) if (a.alive) { if (ids.has(a.id)) dup++; ids.add(a.id); if (B.F.owner[B.F.env.colAt(a.x, a.y)] !== i) wrong++; } });
+    const dN = Math.abs(tot(B.c1) - tot(A.c1)) / tot(A.c1), dKg = Math.abs(kgOf(B.c1) - kgOf(A.c1)) / kgOf(A.c1);
+    check('shards: the fish split by water (Upper and the brook; Lower) found as one, keep the lakes as one run does (fish and biomass within 2 %), hand over the fish that cross, leave none in another\'s water, and repeat a run exactly',
+      sameFound && dN < 0.02 && dKg < 0.02 && B.F.handed > 0 && !wrong && !dup && B.fp === B2.fp,
+      `founding ${sameFound ? 'the same' : 'DIFFERS'}; fish ${tot(A.c1).toFixed(0)} one / ${tot(B.c1).toFixed(0)} sharded, ${kgOf(A.c1).toFixed(1)} / ${kgOf(B.c1).toFixed(1)} kg/ha; handed over ${B.F.handed}; in another's water ${wrong}, duplicate ids ${dup}; repeats ${B.fp === B2.fp}`); }
 }
 
 // ============================================================

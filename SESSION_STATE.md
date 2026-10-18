@@ -168,7 +168,14 @@ birches, bare in winter; mid; far), every tier one instanced draw that collapses
 speed × their cost (1 min/s ~54× on the true lakes, was 4×). T8 PART 1 DONE: render3/data3.js — the Data panel (census vs target by
 species/lake/size, deaths, who eats whom, the young's fates, water per lake, weeds, mussels, brook traffic, graphs) + CLICK-A-FISH
 (card with state, doing, water, genes, brain outputs; camera follow); worker sendStats every 2 s while open, sel in each snapshot.
-NEXT: the human looks; then T6b part 2 (terrain/photo tiles near the camera), T4 (memory), T5 (cores), T7, T8 part 2.
+T5 DONE (2026-10-18; TRUE_SCALE.md T5 "Built"): the fish in SHARDS by water (0 Upper + the brook, 1 Lower) — shard3.js ShardSet
+(in one thread, deterministic), envshare3.js (the water's 160 arrays on SharedArrayBuffers + 217 scalars per water step),
+shardpool3.js + render3/shard3worker.js (workers; the page uses them when crossOriginIsolated — serve.mjs/serve.py now send COOP+COEP
+on w3.html, COEP on scripts — and ≥ 4 cores; ?shards=0 off), tools/w3_shard_host.mjs (the same worker on Node worker_threads),
+tools/w3_bench_shards.mjs. The threaded pool matches the in-process set BIT FOR BIT (water identical after 12 blocks). True lakes:
+359× → 547× real time (2 shards). A crossing fish finishes its step in the cells it started in, then is handed over.
+A TRUE-SCALE SEASON RUN is in the background (scratchpad true_season.mjs → true_season_may.txt: May 20 + 30 days, weekly census).
+NEXT: read the season run (T7 validation: does the ecology hold at true size?); then T6b part 2, T4, T7, T8 part 2.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),

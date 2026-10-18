@@ -59,6 +59,13 @@ function realInside(full, realRoot) {
   return real;
 }
 
+// CROSS-ORIGIN ISOLATION for the 3-D page (docs/TRUE_SCALE.md T5): its sim's shards share the water model's memory
+// (SharedArrayBuffer), which a browser allows only a cross-origin-isolated page — COOP + COEP on w3.html, COEP on the scripts
+// (its workers). The 2-D page (index.html) is left as it was: it loads Google's fonts, which COEP would block.
+// keep in sync with serve.py
+export const isoHeaders = rel => rel === 'w3.html' ? { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' }
+  : /\.m?js$/.test(rel) ? { 'Cross-Origin-Embedder-Policy': 'require-corp' } : {};
+
 export function createServer(root = ROOT) {
   const realRoot = fs.realpathSync.native(root);
   return http.createServer((req, res) => {
@@ -73,7 +80,7 @@ export function createServer(root = ROOT) {
     const real = full && realInside(full, realRoot);
     let st = null; if (real) { try { st = fs.statSync(real); } catch { st = null; } }
     if (!st || !st.isFile()) return fail(404, 'Not found\n');   // includes every directory (no listings)
-    res.writeHead(200, { ...base, 'Content-Type': MIME[path.extname(real).toLowerCase()] || 'application/octet-stream', 'Content-Length': st.size });
+    res.writeHead(200, { ...base, ...isoHeaders(path.relative(realRoot, real).split(path.sep).join('/')), 'Content-Type': MIME[path.extname(real).toLowerCase()] || 'application/octet-stream', 'Content-Length': st.size });
     if (req.method === 'HEAD') return res.end();
     const s = fs.createReadStream(real);
     s.on('error', () => res.destroy());

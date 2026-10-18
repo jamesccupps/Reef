@@ -153,6 +153,26 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - Target: ≤ 15 µs an agent per block.
 - **T4 — Memory.** Store the inherited brain compactly (16-bit or 8-bit with a scale). Allocate the learned copy only once a fish has learned something. Target ~1.2 KB an agent (~370 MB).
 - **T5 — Several cores.** Split the population across 2–4 workers by water (Upper; Lower + the brook); fish that cross are handed over. Or use shared memory, which needs the COOP/COEP headers in serve.mjs / serve.py; fine on localhost. Target fast-forward ≥ 500×, a simulated year in under ~18 h.
+  - **Built (2026-10-18): the fish in shards by water, the water in shared memory.**
+    - **`src/w3/shard3.js` — the shards, in one thread.** Shard 0 holds Upper's and the brook's fish and young, shard 1 Lower's. The brook went with Upper because Upper's pumpkinseed and redbreast run in and out of its pools all season.
+      - **Each shard is a Fish3 on the one water model (`setShard`).** Its fish read and write only its own water: the columns about them and the foraging footprint are filtered to its own, once.
+      - **Crossing.** A fish that swims into the other water finishes the step feeding and breathing in the cells it started in, then is handed over (`takeOut` / `adopt`: plain data, genome, learned weights and brain state copied).
+      - **The lake-wide couplings come from the step before**, as threads get them: the other shard's fish per species (the recruitment cap), its young (the young's density compensation), and the biomass the zooplankton answer.
+      - **Founding.** Each shard founds as one thread would (the same draws) and keeps its own water's fish. New ids get a range per shard.
+      - **Random streams.** Each shard has its own, swapped in for its turn, so a run is deterministic.
+    - **`src/w3/envshare3.js` — shared memory.** The water model's 160 typed arrays (7.4 MB at true size) go onto SharedArrayBuffers, every reference to each moved together. A shard's replica, built alike, adopts them. The 217 scalars (the clock, light, weather, turbidity…) follow each water step.
+    - **`src/w3/shardpool3.js` and `render3/shard3worker.js` — the shards in workers.** The pool keeps the water and steps it; each step goes to every shard at once, with the hand-overs and couplings. `render3/fishside3.js` is what a fish-holding worker does for the view: poses, drawn fish, the picked fish's card, its share of the data page.
+      - The page runs the shards when it is cross-origin isolated (serve.mjs / serve.py send COOP + COEP on w3.html, COEP on the scripts; the 2-D page is left alone for its fonts) and on ≥ 4 cores. `?shards=0` keeps one worker.
+      - `tools/w3_shard_host.mjs` runs the same worker code on Node's worker_threads, for headless runs.
+    - **Measured.**
+      - The founding split is the single founding's exactly.
+      - On the 1/10 lakes a 15-hour run keeps the fish and biomass of a single run (12,483 vs 12,485, 101.2 kg/ha both) and repeats exactly.
+      - **The threaded pool matches the in-process set bit for bit:** after 12 blocks the water's temperature, O₂, zooplankton, bed animals and the fish biomass are identical, with the same 79 hand-overs (scratchpad threadeq).
+      - **True lakes in Node (`tools/w3_bench_shards.mjs`): a 29-min block 4.9 s on one thread (359× real time), 3.2 s in 2 shards (547×).** That is 1.5× against a ceiling of ~1.7× (Upper and the brook hold ~58 % of the agents).
+      - Hand-overs: ~2,000 a block on the true lakes, nearly all the brook-spawned sucker and fallfish young ranging between the brook and both lakes. A young school's feeding tick accumulates, so it loses nothing.
+      - In the browser the hidden preview pane gave noisy numbers (276–676×). Judge it with the page in view.
+    - **Gate.** On the 1/10 lakes: the founding split, a run within 2 % of a single one, hand-overs, none left in the other's water, unique ids, repeats exactly. serve-check: the 3-D page is cross-origin isolated and the 2-D page is not.
+    - **Next.** More shards would need a line within a lake: fish interact across it (prey, schools, mates), so it needs a halo of the neighbours' fish. Or fewer, cheaper agents per block.
 - **T6 — Drawing at true size.**
   - Terrain in tiles that sharpen near the camera (15-m base, lidar detail near).
   - NAIP in tiles: the true-scale photo is 5,170 × 12,920 px, beyond one GPU texture.
