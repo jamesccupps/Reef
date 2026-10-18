@@ -414,7 +414,7 @@ if (run('core')) {
   // swim, none goes astray; the season's young the same (part 3)
   { const { F3 } = await import('../src/w3/fish3.js');
     seed(510); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { young: true }); const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE);
-    const age0 = new Map(F.fish.map(a => [a.id, a.age])), pos0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]])), n0 = F.count(), T = 120;
+    const age0 = new Map(F.fish.map(a => [a.id, a.age])), pos0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]])), fN0 = new Map(F.fish.map(a => [a.id, a.n])), n0 = F.count(), T = 120;
     const yAge0 = new Map(F.yoy.map(q => [q.id, [q.age, q.n]])), yPos0 = new Map(F.yoy.map(q => [q.id, [q.x, q.y]])), yN0 = F.yoy.reduce((t, q) => t + (q.alive ? q.n : 0), 0);
     let ms = 0; for (let i = 0; i < T * 10; i++) { const t = performance.now(); F.step(0.1); ms += performance.now() - t; if (i % 600 === 599) e.step(60); }
     // (the young: each school's lived time against the clock — not one that took in another, its age the pair's mean — the near ones' swimming)
@@ -425,7 +425,8 @@ if (run('core')) {
     F.step(0.1); let pOff = 0; for (let i = 0; i < F._hashN; i++) { const a = F.fish[i], o = 4 * i; if (F.P[o] !== a.x || F.P[o + 1] !== a.y || F.P[o + 2] !== a.z) pOff++; }
     let lag = 0, near = 0, moved = 0, bad = 0, far = 0;
     for (const a of F.fish) { if (!a.alive || !age0.has(a.id)) continue; if (!Number.isFinite(a.x + a.y + a.z + a.W + a.age)) bad++;
-      lag = Math.max(lag, T - (a.age - age0.get(a.id))); if (a.near) { near++; const p = pos0.get(a.id); if (Math.hypot(a.x - p[0], a.y - p[1]) > 0.05) moved++; } else far++; }
+      if (a.n <= fN0.get(a.id) * 1.0001) lag = Math.max(lag, T - (a.age - age0.get(a.id)));   // (not a school that took in another: its age is the pair's mean)
+      if (a.near) { near++; const p = pos0.get(a.id); if (Math.hypot(a.x - p[0], a.y - p[1]) > 0.05) moved++; } else far++; }
     F.setFocus(null);
     check('fidelity by distance: with a focus the fish within it swim second by second and the rest live their time in banked blocks — after two minutes every fish has lived it to within a block, the population kept',
       near > 5 && moved >= 0.8 * near && far > near && lag <= F3.FAR_BLOCK + 0.2 && lag >= -0.2 && !bad && Math.abs(F.count() - n0) / n0 < 0.01,

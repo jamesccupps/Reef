@@ -300,9 +300,16 @@ const lakeNear = (b, p) => { let best = null, bd = 1e9; for (let i = 0; i < GEO.
 const LAKE_NEAR = { [UPPER]: lakeNear(UPPER, BP[0]), [LOWER]: lakeNear(LOWER, BP[BLAST]) };
 const poissonish = r => { const k = Math.floor(r); return k + (rand() < r - k ? 1 : 0); };
 export const KEYS3 = SPECIES.filter(k => S3[k]);
+// THE LONGEST PREY a fish takes, as a fraction of its own length. A prey's body within the gape is not the whole limit: a slim
+// fish — a pickerel, a fallfish — fits a gape at nearly its eater's length, and handling sets the bound (Lawrence 1958: a
+// pickerel can swallow any fish as deep as itself). Field maxima across piscivores are 0.32–0.46 of the predator's length (Gaeta et al. 2018); pike
+// take conspecifics to 0.55 (Persson et al. 2006 [sur]); smallmouth ~0.4–0.5 (research_notes/Whole lake 3D fish simulation/
+// pickerel_mortality_cannibalism.md). Without it, at true scale the pickerel ate each other at ~1.5 % of the adults a week — a
+// 24-cm pickerel within reach of a 26-cm one — where the evidence allows ≤ ~0.1–0.3 %
+export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
-  s.key = k; s.i = i; s.sp = sp; s.name = sp.name;
+  s.key = k; s.i = i; s.sp = sp; s.name = sp.name; s.preyLR = PREY_LR[k] ?? PREY_LR0;
   s.maxAge = sp.maxAge / Y2 * YEAR; s.matMinAge = sp.matMinAge / Y2 * YEAR; s.mateCd = sp.matingCooldown / Y2 * YEAR;
   s.uRoutine = s.cruise / s.sprint;
   s.pisc = !!sp.diet.fish; s.plank = !!sp.diet.plankton; s.sift = !!sp.diet.detritus;
@@ -1174,7 +1181,7 @@ export class Fish3 {
   // can `p` eat `q`: a fish-eater at its piscivorous length, q's body no deeper than p's gape and not too small to bother with
   canPrey(p, q) {
     const s = p.s; if (!s.pisc || p.L < s.sp.Lpisc || p === q) return false;
-    return q.bdep <= p.gape && q.L >= FEED.PREY_MIN * p.L;
+    return q.bdep <= p.gape && q.L >= FEED.PREY_MIN * p.L && q.L <= s.preyLR * p.L;
   }
 
   // ---------- the brain ----------
@@ -1728,9 +1735,9 @@ export class Fish3 {
     if (!this._yoyList || !this._yoyList.length) return 0;
     const s = a.s, sp = s.sp, pisc = s.pisc && a.L >= sp.Lpisc, larv = !pisc || a.L < 3 * sp.Lpisc;
     const R0 = F3.YOY_EAT_R + a.L / 100, Ra = pisc ? Math.max(R0, s.strikeR * 1.5) : R0;
-    const ok = q => q.guard !== a.id && ((pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L) || (larv && q.L <= FRY.LARVA_L && q.L <= a.L / 3));
+    const ok = q => q.guard !== a.id && ((pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L && q.L <= a.s.preyLR * a.L) || (larv && q.L <= FRY.LARVA_L && q.L <= a.L / 3));
     const q = this._nearYoy(a.x, a.y, a.z, Ra, ok); if (!q) return 0;
-    const d = this._nyd, asPisc = pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L;
+    const d = this._nyd, asPisc = pisc && q.bdep <= a.gape && q.L >= FEED.SCHOOL_MIN * a.L && q.L <= a.s.preyLR * a.L;
     const dens = q.n / (q.n + FRY.N_HALF) * (1 - q.cover);
     const sz = asPisc ? Math.pow(Math.max(0, 1 - q.bdep / a.gape), FEED.SIZE_SEL) : 1, close = asPisc && Ra > R0 ? clamp((Ra - d) / (Ra - R0), 0, 1) : 1;
     const mean = (asPisc ? FRY.ATTACK * TS * sp.capture * q.s.sp.vuln * sz * dens * close * perf * dt : FRY.CATCH * TS * (dt / FEED.HANDLE) * dens * perf) * a.n;
