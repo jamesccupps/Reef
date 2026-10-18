@@ -111,7 +111,7 @@ export const LIT3 = {
                            //   conspicuous meals (~1 out per 13 m² of bed: a bass meets several an hour and needs one or two a day) —
                            //   at the worms' half-saturation (3 g/m²) the crayfish eaters fed at p 0.2–0.3 and starved twice as often
 };
-const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.5, emergent_wet: 0.5 };
+const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.5, emergent_wet: 0.5 }, SHRUBBY = { shrub_wet: 0.5, shrub: 0.5, emergent_wet: 0.5 };
 
 export class Littoral3 {
   constructor(env) {
@@ -133,7 +133,10 @@ export class Littoral3 {
       for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue;
         const k = rr * NX + qq; if (GEO.body[k] !== LAND) continue;
-        w += FOREST[GEO.CLASSES[GEO.cover[k]]] ?? 0.2;
+        // (the true world: the photo's crowns over the bank — 0.2 for its grass and shrubs, to 1 under full canopy; the wet shrubs and
+        // marsh at least their own 0.5)
+        const cls = GEO.CLASSES[GEO.cover[k]];
+        w += GEO.canopy ? Math.max(0.2 + 0.8 * GEO.bankTrees(k, k - i), SHRUBBY[cls] ?? 0) : FOREST[cls] ?? 0.2;
       }
       if (!w) continue;
       const [x, y] = GEO.cellCentre(i), c = env.colAt(x, y); if (c >= 0) this.bank[c] += w * GEO.CELL * 0.8;   // (a raster shore's stair-steps overstate its length)

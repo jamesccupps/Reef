@@ -959,6 +959,13 @@ the plants in the water... these shouldnt just be squares").** Both looks came f
   beside them, the tracks through the woods on Lower's east shore and the farm fields east of the lakes fall where the photo
   has them; the "clearings" NLCD put along Lower's east shore were forest with a road (they are gone). Not resolved: roads
   beyond the tiles (the coarse photo is too blurred for them); the 1/10 world keeps NLCD (its land is a re-cut placement).
+- **The sim's banks from the photo too (true world).** build_canopy3.py also writes `src/w3/true/shore3.js`: the photo's tree
+  cover on each 5-m cell of the sim's band (all of it under the 1-m tiles), which geometry.js reads as `GEO.canopy`. The insects
+  falling in (littoral3: a bank's weight 0.2 + 0.8 × its trees; the wet shrubs and marsh at least 0.5) and the wood in the
+  shallows (plants3: its trees) now follow the real treeline instead of NLCD's classes. A bank cell's trees are its cover or the
+  next cell inland's, whichever is more (`GEO.bankTrees`): a cell at the water's edge holds part of the water in its pixels and
+  reads low while the crowns lean out over it. Totals: insect fall 93–95 %, wood 91 % of the NLCD rule's, now less by the camps,
+  roads and open bog shores. The 1/10 world is unchanged (GEO.canopy null).
 - **The forest's tiers without rings:** the near tier (detailed spires, pines, hardwoods within 250 m of the camera) and the mid
   tier (within 1.2 km of where the view looks) met in circles drawn on the forest. Each tree now leaves for the next tier at its
   own distance, 0.75–1.25 × the radius by its random turn (main3 `RAG`, in `treesNear` and in `tierMesh`'s holes alike, so each

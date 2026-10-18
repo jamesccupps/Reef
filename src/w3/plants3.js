@@ -194,11 +194,12 @@ export class Plants3 {
     this._tS = Float32Array.from(FORMS3, F => F.tStart); this._ev = Uint8Array.from(FORMS3, F => F.carry > 0.8 ? 1 : 0); this._rO = Float32Array.from(FORMS3, F => F.rootO2 || 0);
     this._isF = FORMS3.map((F, f) => F.rootO2 ? f : -1).filter(f => f >= 0);   // (the rosettes: their lawn)
     this._win = Uint8Array.from(FORMS3, F => F.window ? 1 : 0); this._hF = Float32Array.from(FORMS3, F => F.hFull); this._bM = Float32Array.from(FORMS3, F => F.Bmax);
-    { const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.3 }, bank = new Float32Array(G.NC), NX = GEO.NX, NY = GEO.NY;
+    // (the wood falls from the trees on the bank: NLCD's wooded classes — or in the true world the aerial photos' crowns there, GEO.canopy)
+    { const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.3 }, SHRUBW = { shrub_wet: 0.5, shrub: 0.3 }, bank = new Float32Array(G.NC), NX = GEO.NX, NY = GEO.NY;
       for (let i = 0; i < GEO.N; i++) {
         if (GEO.body[i] === LAND || GEO.body[i] === BROOK) continue;
         const r = Math.floor(i / NX), q = i % NX; let w = 0;
-        for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; const k = rr * NX + qq; if (GEO.body[k] === LAND) w += FOREST[GEO.CLASSES[GEO.cover[k]]] ?? 0; }
+        for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; const k = rr * NX + qq; if (GEO.body[k] === LAND) w += GEO.canopy ? Math.max(GEO.bankTrees(k, k - i), SHRUBW[GEO.CLASSES[GEO.cover[k]]] ?? 0) : FOREST[GEO.CLASSES[GEO.cover[k]]] ?? 0; }
         if (!w) continue; const [x, y] = GEO.cellCentre(i), c = env.colAt(x, y); if (c >= 0) bank[c] += w * GEO.CELL * 0.8;
       }
       for (let c = 0; c < G.NC; c++) if (bank[c] > 0) this.wood[c] = PL3.WOOD * clamp(bank[c] * PL3.WOOD_W / G.area[c], 0, 1);   // (on the column's bed cells shallower than WOOD_Z)

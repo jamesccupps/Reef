@@ -124,3 +124,12 @@ export function makeGeometry(HB3) {
 export const WORLD_TRUE = (typeof process !== 'undefined' && process.env && process.env.HB_WORLD === 'true') || globalThis.HB_WORLD === 'true';
 const W = makeGeometry(WORLD_TRUE ? (await import('./true/hotbrook3d.js')).HB3 : HB3);
 export const GEO = W.GEO, BODIES = W.BODIES, cellIndex = W.cellIndex;
+// THE TREES ON THE BANKS (the true world): the aerial photos' tree cover on each cell, 0–255 (tools/hotbrook/build_canopy3.py →
+// true/shore3.js), so the insects falling in and the wood in the shallows follow the real treeline (littoral3, plants3); null in
+// the 1/10 world, whose land is a re-cut placement — its banks keep NLCD's classes
+GEO.canopy = null;
+if (WORLD_TRUE) { const { SHORE3 } = await import('./true/shore3.js'); if (SHORE3.NX === GEO.NX && SHORE3.NY === GEO.NY) GEO.canopy = decode(SHORE3.canopy, Uint8Array); }
+// a bank cell's trees (0–1): the photo's cover on it or the next cell inland, whichever is more — a 5-m cell at the water's edge
+// holds part of the water in its pixels and reads low, while the crowns of the trees along the bank lean out over it.
+// (i: the water cell; k: the land cell beside it, in the step dk)
+GEO.bankTrees = (k, dk) => { const a = GEO.canopy[k], k2 = k + dk; return Math.max(a, k2 >= 0 && k2 < GEO.N && GEO.body[k2] === LAND ? GEO.canopy[k2] : 0) / 255; };
