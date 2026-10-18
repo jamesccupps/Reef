@@ -205,8 +205,17 @@ white perch 0 % > 22 cm vs census 20 % — the founders' S3 found 0.72 from an o
 smaller too — research running: docs/research_notes/…/size_structure_whiteperch_sucker_bullhead.md), what a fish senses (its
 card: Fish3.senses split out of _brain, fingerprint bit-identical), the run's history kept while the page is closed; the sim's
 banks from the photo (true world: GEO.canopy from true/shore3.js → littoral3 insect fall, plants3 wood; totals 91–95 %).
-NEXT: the year's result (recruitment against loss); T6b part 2; T8 part 2 (size split vs FISH_CENSUS, history); the sim's shore
-inputs from the photo forest.
+WHITE PERCH: the human's catches are "probably bigger than 6 to 8" in → near-normal growth, S3 whiteperch perHa 450, found 0.85
+(founders 50/39/10 %, 72 g); gate green 94/94; committed c39d59e. The year run RESTARTED on it (true_year.txt).
+THE GPU (the human: "if the gpu makes this whole project better, we should do it") — docs/GPU_SIM.md: the CPU sim stays the
+reference (tests, resume, 1/10, the fine steps near the camera); a WebGPU engine for the coarse blocks (the year engine:
+decades for evolution), validated statistically against the CPU (≥ 3 seeds); counter-based RNG + fixed-point integer
+atomics for determinism on the GPU; runs in Chrome (no native deps). Machine: RTX 3060 + Ryzen 5 5600G (6 cores).
+G0 DONE: block profile (senses 25 %, feeding 20 %, relocation 18 %, brain 9 %, drives 7 %, strikes 4 %, body 4 %, young 6 %,
+water ~1 %); tools/gpu/sense_bench.html?world=true: senses 3.2 ms GPU vs 984 ms CPU (~300×), agreement ~100 %.
+NEXT: G1 — the whole coarse block on the GPU, kernel by kernel (grid, senses, brain, drives+relocation, feeding with
+fixed-point atomics, strikes with claim resolution, body, hazards, births/young, schools), each checked against the CPU on
+the same inputs; the year run (CPU) is the reference for G2.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
