@@ -199,7 +199,7 @@ const G_BIO: u32 = 32u;    // g of fish (followed + young)
 const G_CAND: u32 = 33u;   // any runner at the brook's mouth this block (k_admit runs)
 const G_JUVD: u32 = 48u;   // + k: the young's density (/m²)
 const GS_CNT: u32 = 0u; const GS_RUNIN: u32 = 32u; const GS_BIO: u32 = 64u; const GS_CAND: u32 = 66u; const GS_JUVD: u32 = 80u;
-const GS_CLAIMP0: u32 = 256u;   // + i: the highest priority claiming fish i (then + cap + i: how many claimed it)`;
+const GS_CLAIMP0: u32 = 512u;   // + i: the highest priority claiming fish i (then + cap + i: how many claimed it)`;
 // tallies: [pairs] — cross by species, settle, trips, stranded deaths; more as the kernels come (index helpers)
 export const TALLY = /* wgsl */`
 const T_CROSS: u32 = 0u;      // + 2k: fish that reached the other lake
@@ -212,7 +212,8 @@ const T_DIED: u32 = 448u;     // + 2·(k·NCAUSE + cause)
 const FOOD_ZOO: u32 = 0u; const FOOD_BENTH: u32 = 1u; const FOOD_WEED: u32 = 2u; const FOOD_CRAY: u32 = 3u; const FOOD_SURF: u32 = 4u; const FOOD_FISH: u32 = 5u; const FOOD_SED: u32 = 6u; const FOOD_YOY: u32 = 7u;
 const FOOD_YZOO: u32 = 8u; const FOOD_YWEED: u32 = 9u; const FOOD_YBENTH: u32 = 10u; const FOOD_YSED: u32 = 11u;   // (the young's own eating)
 const T_FRY: u32 = 640u;     // + 2·(k·NFRY + cause): the young's fates
-const FRY_NATURAL: u32 = 0u; const FRY_STARVE: u32 = 1u; const FRY_HEAT: u32 = 2u; const FRY_HYPOXIA: u32 = 3u; const FRY_EATEN: u32 = 4u; const FRY_RECRUITED: u32 = 5u; const NFRY: u32 = 6u;
+const FRY_NATURAL: u32 = 0u; const FRY_STARVE: u32 = 1u; const FRY_HEAT: u32 = 2u; const FRY_HYPOXIA: u32 = 3u; const FRY_EATEN: u32 = 4u; const FRY_RECRUITED: u32 = 5u; const FRY_HATCHED: u32 = 6u; const NFRY: u32 = 7u;
+const T_EGGS: u32 = 800u; const T_SPAWNS: u32 = 824u; const T_SPAWNSUB: u32 = 848u; const T_SPAWNBED: u32 = 872u; const T_SPAWNBROOK: u32 = 896u; const T_RECRUITS: u32 = 920u; const T_SOLO: u32 = 944u;   // + 2k
 const CAUSE_STARVE: u32 = 0u; const CAUSE_HEAT: u32 = 1u; const CAUSE_HYPOXIA: u32 = 2u; const CAUSE_OTHER: u32 = 3u; const CAUSE_OLD: u32 = 4u; const CAUSE_EATEN: u32 = 5u; const CAUSE_STRANDED: u32 = 6u;
 const NCAUSE: u32 = 7u;
 const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
@@ -1617,6 +1618,374 @@ fn zooEl(j: u32, cD: f32, cC: f32, cR: f32) -> f32 { let v = wd(W_zv + j); if (v
   sy(Y_tx, q, tx); sy(Y_ty, q, ty); sy(Y_tz, q, tz); sy(Y_spotBed, q, max(0.12, depthAt(tx, ty)));
   // RECRUITMENT: at the species' L0, or an overwintered school in spring
   if (L >= spv(k, S_L0) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= FRY_SPRING_YF && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }
+}
+`;
+
+// ============================================================ BIRTHS (fish3 _findMate, _spawn, _mkYoy, _recruit, add) =========
+export const BIRTH_BINDINGS = /* wgsl */`
+@group(1) @binding(0) var<storage, read> HS: array<u32>;
+@group(1) @binding(1) var<storage, read> HI: array<u32>;
+@group(1) @binding(2) var<storage, read_write> TL: array<atomic<u32>>;
+@group(1) @binding(3) var<storage, read_write> GL: array<f32>;
+@group(1) @binding(4) var<storage, read> SI: array<f32>;
+@group(1) @binding(5) var<storage, read_write> GS: array<atomic<u32>>;
+@group(1) @binding(6) var<storage, read_write> PX: array<vec4f>;
+@group(1) @binding(7) var<storage, read_write> Y: array<f32>;
+@group(1) @binding(8) var<storage, read_write> YG: array<f32>;
+@group(1) @binding(9) var<storage, read_write> IND: array<u32>;   // indirect dispatch arguments (x, y, z) × 4, then the recruits' list
+const G_CNT: u32 = 0u; const G_N: u32 = 34u; const G_NY: u32 = 35u; const G_NEXTID: u32 = 36u; const G_BORN: u32 = 37u; const G_RECRUITS: u32 = 38u; const G_NREC: u32 = 39u;
+const GS_CLAIMP0: u32 = 512u; const GS_BIRTHS: u32 = 67u; const REC_LIST: u32 = 16u;`;
+export const BIRTH = /* wgsl */`
+fn gy(f: u32, q: u32) -> f32 { return Y[f * U.ycap + q]; }
+fn gyu(f: u32, q: u32) -> u32 { return bitcast<u32>(Y[f * U.ycap + q]); }
+fn gyi(f: u32, q: u32) -> i32 { return bitcast<i32>(Y[f * U.ycap + q]); }
+fn sy(f: u32, q: u32, v: f32) { Y[f * U.ycap + q] = v; }
+fn syu(f: u32, q: u32, v: u32) { Y[f * U.ycap + q] = bitcast<f32>(v); }
+fn syi(f: u32, q: u32, v: i32) { Y[f * U.ycap + q] = bitcast<f32>(v); }
+fn glu(at: u32) -> u32 { return bitcast<u32>(GL[at]); }
+// the genome's operators (core.js mutate, crossover, mutateGenes, crossoverGenes) on the counter stream of the newborn's id
+fn gaussR(id: u32, purpose: u32, k: u32) -> f32 { let u = max(rnd(id, purpose, 2u * k), 1e-7); let v = rnd(id, purpose, 2u * k + 1u); return sqrt(-2.0 * log(u)) * cos(6.283185307179586 * v); }
+fn mutW(id: u32, e: u32, w: f32) -> f32 {
+  if (rnd(id, 70u, e) < 0.015) { return rndR(id, 71u, e, -1.2, 1.2); }
+  if (rnd(id, 72u, e) < 0.10) { return clamp(w + gaussR(id, 73u, e) * 0.35, -4.0, 4.0); }
+  return w;
+}
+fn mutGene(id: u32, e: u32, v: f32) -> f32 { var x = v; if (rnd(id, 74u, e) < 0.5) { x += gaussR(id, 75u, e) * 0.05; } return clamp(x, 0.7, 1.35); }
+// positions in fish3's list order (the grid the block's start; a fish before this one where it moved to, after it where it began)
+fn posLO(b: u32, i: u32) -> vec3f { if (b < i) { return vec3f(ga(A_x, b), ga(A_y, b), ga(A_z, b)); } return PX[b].xyz; }
+fn runsB(fl: u32, i: u32) -> bool { return (fl & FL_BROOKRUN) != 0u && gai(A_runYr, i) != U.yr; }
+// ---- the nearest ripe fish of its species and the other sex (a school: any ripe school) within R (fish3 _findMate) ----
+fn findMate(i: u32, R: f32) -> i32 {
+  let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i); let k = gau(A_k, i); let sx = gau(A_sex, i);
+  let M = R + F3_HC; var best = -1; var bd = R * R;
+  let gx0 = clamp(i32((x - M - GX0) / F3_HC), 0, i32(HHX) - 1); let gx1 = clamp(i32((x + M - GX0) / F3_HC), 0, i32(HHX) - 1);
+  let gy0 = clamp(i32((y - M - GY0) / F3_HC), 0, i32(HHY) - 1); let gy1 = clamp(i32((y + M - GY0) / F3_HC), 0, i32(HHY) - 1);
+  for (var gyy = gy0; gyy <= gy1; gyy++) {
+    for (var gxx = gx0; gxx <= gx1; gxx++) {
+      let c = u32(gyy) * HHX + u32(gxx);
+      for (var t = HS[c]; t < HS[c + 1u]; t++) {
+        let j = HI[t]; if (j == i) { continue; }
+        let p = posLO(j, i); let d = p - vec3f(x, y, z); let d2 = dot(d, d); if (!(d2 < bd)) { continue; }
+        let fj = gau(A_flags, j); if ((fj & FL_ALIVE) == 0u || (fj & FL_RIPE) == 0u || gau(A_k, j) != k) { continue; }
+        let sj = gau(A_sex, j); if (sx != 2u && sj != 2u && sj == sx) { continue; }
+        bd = d2; best = i32(j);
+      }
+    }
+  }
+  return best;
+}
+@compute @workgroup_size(64) fn b_mate(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  sai(A_birth, i, -1);
+  let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u || (fl & FL_RIPE) == 0u) { return; }
+  let k = gau(A_k, i); let sx = gau(A_sex, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i);
+  var Rm = spv(k, S_mateCue); if (sx == 2u) { Rm = 3.0; } else if (runsB(fl, i) && bodyAt(x, y) == BROOK) { Rm = 80.0 * GBROOK_SCALE; }
+  let m = gai(A_mate, i); var ok = false;
+  if (m >= 0) { let mu = u32(m); let fm = gau(A_flags, mu);
+    if (mu != i && gau(A_id, mu) == gau(A_mateId, i) && (fm & FL_ALIVE) != 0u && (fm & FL_RIPE) != 0u) { let d = posLO(mu, i) - vec3f(x, y, z); ok = dot(d, d) < Rm * Rm; } }
+  if (ok) { return; }
+  var nm = -1;
+  if (sx == 2u) { nm = findMate(i, 3.0); if (nm < 0) { nm = i32(i); } } else { nm = findMate(i, Rm); }
+  sai(A_mate, i, nm); if (nm >= 0) { sau(A_mateId, i, gau(A_id, u32(nm))); }
+}
+fn subAtB(u: u32, x: f32, y: f32) -> f32 {
+  if (U.plants == 0u || u == 0u) { return 1.0; }
+  let c = colAt(x, y); if (c < 0) { return 0.0; }
+  let jb = bedCell(c, max(0.05, depthAt(x, y))); if (jb < 0) { return 0.0; }
+  let ix = sti(O_plIdx + u32(jb)); if (ix < 0) { return 0.0; }
+  if (u == 1u) { return wd(W_spRigid + u32(ix)); } if (u == 2u) { return wd(W_spMat + u32(ix)); } return wd(W_spPlant + u32(ix));
+}
+fn siteNearB(k: u32, lake: u32, x: f32, y: f32) -> vec3f {
+  let h = (k * 2u + lake - 1u) * 4u; let s0 = u32(bitcast<i32>(SI[h])); let cnt = u32(bitcast<i32>(SI[h + 1u])); let go = bitcast<i32>(SI[h + 2u]);
+  if (cnt == 0u) { return vec3f(0.0); }
+  let co = U.siCoord + 2u * s0;
+  if (go < 0) { var best = 0u; var bd = 1e18; for (var q = 0u; q < cnt; q++) { let dx = SI[co + 2u * q] - x; let dy = SI[co + 2u * q + 1u] - y; let d = dx * dx + dy * dy; if (d < bd) { bd = d; best = q; } } return vec3f(SI[co + 2u * best], SI[co + 2u * best + 1u], 1.0); }
+  let glen = u32(bitcast<i32>(SI[h + 3u])); let gx = u32(clamp(i32((x - GX0) / F3_MATE_HC), 0, i32(U.siNX) - 1)); let gyy = u32(max(0, i32((y - GY0) / F3_MATE_HC)));
+  let q = u32(bitcast<i32>(SI[U.siGrid + u32(go) + min(glen - 1u, gyy * U.siNX + gx)]));
+  return vec3f(SI[co + 2u * q], SI[co + 2u * q + 1u], 1.0);
+}
+// ---- A SPAWNING (fish3 _spawn): on its ground, with its mate in reach, at a rate that peaks inside the spawning temperatures. The
+// female (or the school) claims itself and its mate with a priority: a male spawns with one female a block (fish3: once spent he is
+// no longer ripe for the next) ----
+@compute @workgroup_size(64) fn b_spawn(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  sai(A_claim, i, -1);
+  let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u || (fl & FL_RIPE) == 0u) { return; }
+  let sx = gau(A_sex, i); let m = gai(A_mate, i); if (sx == 1u || m < 0) { return; }
+  let k = gau(A_k, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i); let bed = ga(A_bed, i);
+  let inB = bodyAt(x, y) == BROOK; let rn = runsB(fl, i);
+  var onGround = !(inB && (fl & FL_BROOKRUN) != 0u) && bed >= spv(k, S_sbBot0) - 0.1 && bed <= spv(k, S_sbBot1) + 0.2; if (rn) { onGround = inB; }
+  if (!onGround) { return; }
+  let sub = u32(spv(k, S_sbSub));
+  if ((fl & FL_SP) != 0u && length(vec2f(x - ga(A_spX, i), y - ga(A_spY, i))) > 4.0 && subAtB(sub, x, y) < subAtB(sub, ga(A_spX, i), ga(A_spY, i))) { return; }
+  if (sub > 0u && spv(k, S_sbSites) > 0.0) { let p = siteNearB(k, gau(A_lake, i), x, y); if (p.z == 0.0 || length(p.xy - vec2f(x, y)) > 4.0) { return; } }
+  let b = u32(m); if (b != i) { let d = posLO(b, i) - vec3f(x, y, z); if (length(d) > select(F3_MATE_R, 3.0, sx == 2u)) { return; } }
+  let E = SPAWN_EDGE; let T = ga(A_T, i); let lo = spv(k, S_spawnT0); let hi = spv(k, S_spawnT1);
+  let f = clamp((T - lo + E) / E, 0.0, 1.0) * clamp((hi + E - T) / E, 0.0, 1.0);
+  let id = gau(A_id, i);
+  if (!(f > 0.0) || rnd(id, 76u, 0u) > expm(F3_SPAWN_RATE * f * U.dt)) { return; }
+  let prio = ((hash32(id ^ hash32(U.blk ^ 0x5A5Au)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
+  sai(A_claim, i, i32(b)); sau(A_claimP, i, prio);
+  atomicMax(&GS[GS_CLAIMP0 + i], prio); if (b != i) { atomicMax(&GS[GS_CLAIMP0 + b], prio); }
+}
+@compute @workgroup_size(128) fn b_spawnWin(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  let b = gai(A_claim, i); if (b < 0) { return; }
+  let p = gau(A_claimP, i);
+  if (atomicLoad(&GS[GS_CLAIMP0 + i]) == p && atomicLoad(&GS[GS_CLAIMP0 + u32(b)]) == p) { sai(A_birth, i, 0); atomicMax(&GS[GS_BIRTHS], 1u); } else { sai(A_claim, i, -1); }
+}
+// ---- the newborn schools' and recruits' places in the arrays: one workgroup walks the fish (then the young) in index order,
+// each birth taking the next slot and id — the same however the threads ran ----
+var<workgroup> wsc: array<u32, 256>;
+var<workgroup> wbase: u32;
+var<workgroup> wflag: u32;
+@compute @workgroup_size(256) fn b_slots(@builtin(local_invocation_id) l: vec3u) {
+  let t = l.x;
+  if (t == 0u) { wflag = atomicLoad(&GS[GS_BIRTHS]); wbase = 0u; }
+  if (workgroupUniformLoad(&wflag) == 0u) { if (t == 0u) { GL[G_BORN] = 0.0; GL[G_NY] = f32(U.ny); } return; }
+  for (var base = 0u; base < U.n; base += 256u) {
+    let i = base + t; var v = 0u; if (i < U.n && gai(A_birth, i) >= 0) { v = 1u; }
+    wsc[t] = v;
+    for (var off = 1u; off < 256u; off <<= 1u) { workgroupBarrier(); let w = select(0u, wsc[t - off], t >= off); workgroupBarrier(); wsc[t] += w; }
+    workgroupBarrier();
+    if (v == 1u) { let r = wbase + wsc[t] - 1u; if (U.ny + r < U.ycap) { sai(A_birth, i, i32(U.ny + r)); sau(A_bid, i, glu(G_NEXTID) + r); } else { sai(A_birth, i, -1); } }   // (no room left in the arrays: no spawning — the host makes room)
+    workgroupBarrier();
+    if (t == 255u) { wbase += wsc[255]; }
+    workgroupBarrier();
+  }
+  if (t == 0u) { let nb = min(wbase, U.ycap - U.ny); GL[G_BORN] = f32(nb); GL[G_NY] = f32(U.ny + nb); GL[G_NEXTID] = bitcast<f32>(glu(G_NEXTID) + nb); }
+}
+fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
+  let u = u32(spv(k, S_sbSub)); if (u == 0u) { return 1.0; }
+  let v = subAtB(u, x, y); add64(&TL, T_SPAWNSUB + 2u * k, v, TSCALE); let bare = spv(k, S_sbBare); return bare + (1.0 - bare) * v;
+}
+// the spawning itself: eggs by the female's fecundity and ripeness, larvae by hatching (on the plant spawners' structure) → ONE
+// school at the site, its genome a mutated crossover of the parents'; both parents spent; a nest-guarding male keeps the nest
+@compute @workgroup_size(64) fn b_spawnFill(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  let slot = gai(A_birth, i); if (slot < 0) { return; }
+  let q = u32(slot); let b = u32(gai(A_claim, i)); let k = gau(A_k, i); let sx = gau(A_sex, i); let nid = gau(A_bid, i);
+  let x = ga(A_x, i); let y = ga(A_y, i); let bed = ga(A_bed, i); let W = ga(A_W, i); let L = ga(A_L, i);
+  var females = 1.0; if (sx == 2u) { females = ga(A_n, i) / 2.0; }
+  let eggs = females * spv(k, S_fecA) * pow(L, spv(k, S_fecB)) * clamp(ga(A_gon, i) / (spv(k, S_gsiF) * W), 0.0, 1.0);
+  let larvae = eggs * spv(k, S_sHatch) * hatchMul(k, x, y);
+  add64(&TL, T_EGGS + 2u * k, eggs, 1.0); add64(&TL, T_SPAWNS + 2u * k, 1.0, TSCALE); add64(&TL, T_FRY + 2u * (k * NFRY + FRY_HATCHED), larvae, TSCALE);
+  add64(&TL, T_SPAWNBED + 2u * k, bed, TSCALE); if (bodyAt(x, y) == BROOK) { add64(&TL, T_SPAWNBROOK + 2u * k, 1.0, TSCALE); }
+  let nz = max(0.05, bed - 0.03); let Lh = spv(k, S_Lhatch);
+  for (var f = 0u; f < NYF; f++) { Y[f * U.ycap + q] = 0.0; }
+  syu(Y_id, q, nid); syu(Y_k, q, k); syu(Y_flags, q, 1u); syu(Y_gen, q, max(gau(A_gen, i), gau(A_gen, b)) + 1u);
+  syi(Y_c, q, -1); syi(Y_j, q, -1); syi(Y_jb, q, -1); syi(Y_gref, q, -1); syi(Y_qPrey, q, -1);
+  sy(Y_n, q, larvae); sy(Y_x, q, x); sy(Y_y, q, y); sy(Y_z, q, nz); sy(Y_tx, q, x); sy(Y_ty, q, y); sy(Y_tz, q, nz); sy(Y_sx, q, x); sy(Y_sy, q, y); sy(Y_sz, q, nz);
+  sy(Y_bed, q, max(0.05, depthAt(x, y))); sy(Y_L, q, Lh); sy(Y_W, q, stdWeight(k, Lh)); sy(Y_bdep, q, Lh * spv(k, S_depthR));
+  sy(Y_hue, q, (ga(A_hue, i) + ga(A_hue, b)) / 2.0); sy(Y_tk, q, rnd(nid, 77u, 0u) * F3_YOY_TICK); sy(Y_hd, q, rnd(nid, 77u, 1u) * 6.283185307179586);
+  sy(Y_spotBed, q, max(0.12, depthAt(x, y)));
+  for (var e = 0u; e < NG; e++) { let w = select(gn(e, b), gn(e, i), rnd(nid, 78u, e) < 0.5); YG[e * U.ycap + q] = mutW(nid, e, w); }
+  for (var e = 0u; e < NGENES; e++) { YG[(NG + e) * U.ycap + q] = mutGene(nid, e, (gn(NG + e, i) + gn(NG + e, b)) * 0.5); }
+  // the male keeps the nest; its fry stay by it while he does
+  let guard = spv(k, S_guard);
+  if (guard > 0.0 && b != i && ga(A_n, b) <= 1.0) {
+    sa(A_nt, b, guard); sa(A_nx, b, x); sa(A_ny, b, y); sa(A_nz, b, nz); syu(Y_guard, q, gau(A_id, b)); syi(Y_gref, q, i32(b)); sy(Y_nx, q, x); sy(Y_ny, q, y);
+    if (spv(k, S_sbFaith) > 0.0) { sa(A_nestX, b, x); sa(A_nestY, b, y); sau(A_flags, b, gau(A_flags, b) | FL_NEST); }
+  }
+  sa(A_gon, i, 0.0); sa(A_mateCd, i, spv(k, S_mateCdS)); sau(A_flags, i, gau(A_flags, i) & ~FL_RIPE); sa(A_lastSpawnD, i, U.timeD);
+  if (b != i) { sa(A_gon, b, 0.0); sa(A_mateCd, b, spv(k, S_mateCdS)); sau(A_flags, b, gau(A_flags, b) & ~FL_RIPE); sa(A_lastSpawnD, b, U.timeD); }
+}
+// ---- RECRUITMENT (fish3 _recruit): a schooling species' young become a school agent; a solitary species' young below their group
+// size groups, past it individuals (siblings: fresh mutations) — up to F3.CAP × the species' census. One workgroup walks the young in
+// index order (the room each species has left falls as the schools before take it), listing each recruiting school's agents ----
+var<workgroup> wroom: array<f32, 16>;
+var<workgroup> wcnt: array<u32, 256>;
+var<workgroup> wnrec: u32;
+@compute @workgroup_size(256) fn b_recruitWalk(@builtin(local_invocation_id) l: vec3u) {
+  let t = l.x;
+  if (t < NK) { wroom[t] = max(0.0, F3_CAP * spTarget(t) - GL[G_CNT + t]); }
+  if (t == 0u) { wbase = 0u; wnrec = 0u; }
+  workgroupBarrier();
+  for (var base = 0u; base < U.ny; base += 256u) {
+    let q = base + t; var isR = false;
+    if (q < U.ny) { isR = (gyu(Y_flags, q) & 1u) != 0u && gy(Y_recruit, q) > 0.5; }
+    wcnt[t] = select(0u, 1u, isR);
+    workgroupBarrier();
+    // (in index order: thread 0 settles each recruiting school of these 256 — the room is shared by species in order)
+    if (t == 0u) {
+      for (var m = 0u; m < 256u; m++) {
+        if (wcnt[m] == 0u) { continue; }
+        let qq = base + m; let k = gyu(Y_k, qq); let n = gy(Y_n, qq); let L = gy(Y_L, qq);
+        let grp = spv(k, S_school) > 0.0 || (spv(k, S_group0) > 0.0 && L < spv(k, S_group0));
+        var nA = 0u; var per = 1.0; var last = 1.0; var tot = 0.0;
+        if (grp) {   // (chunks of the group's size, the remainder last if ≥ 1 — fish3's while (left ≥ 1); a school species: one agent)
+          let left = min(n, wroom[k]);
+          if (left >= 1.0) {
+            if (spv(k, S_school) > 0.0) { nA = 1u; per = left; last = left; tot = left; }
+            else { let gs = spv(k, S_group1); let full = floor(left / gs); let rem = left - full * gs; nA = u32(full) + select(0u, 1u, rem >= 1.0); per = gs; last = select(gs, rem, rem >= 1.0); tot = full * gs + select(0.0, rem, rem >= 1.0); }
+          }
+        } else {
+          nA = u32(max(0.0, min(floor(n + yrnd2(qq, 79u, 0u)), floor(wroom[k])))); tot = f32(nA);
+        }
+        wroom[k] = max(0.0, wroom[k] - tot);
+        syu(Y_flags, qq, gyu(Y_flags, qq) & ~1u);   // (the school is gone: its fish recruited, or lost with no room)
+        add64(&TL, T_FRY + 2u * (k * NFRY + FRY_RECRUITED), tot, TSCALE); add64(&TL, T_RECRUITS + 2u * k, tot, TSCALE);
+        if (U.n + wbase + nA > U.cap) { nA = 0u; }   // (no room left in the arrays: the recruits lost — the host makes room ahead)
+        if (nA > 0u) { let r = wnrec; IND[REC_LIST + 4u * r] = qq; IND[REC_LIST + 4u * r + 1u] = wbase; IND[REC_LIST + 4u * r + 2u] = bitcast<u32>(per); IND[REC_LIST + 4u * r + 3u] = bitcast<u32>(last); wnrec = r + 1u; wbase += nA; }
+      }
+    }
+    workgroupBarrier();
+  }
+  if (t == 0u) {
+    IND[REC_LIST + 4u * wnrec + 1u] = wbase;   // (the end sentinel)
+    GL[G_RECRUITS] = f32(wbase); GL[G_NREC] = f32(wnrec); GL[G_N] = f32(U.n + wbase);
+    IND[0] = (wbase + 63u) / 64u; IND[1] = 1u; IND[2] = 1u;
+  }
+}
+fn yrnd2(q: u32, purpose: u32, k: u32) -> f32 { return rnd(gyu(Y_id, q), purpose, k); }
+fn spTarget(k: u32) -> f32 { if (spv(k, S_brookRes) > 0.5) { return spv(k, S_perM2) * BROOK_AREA; } return spv(k, S_perHa) * LAKE_HA; }
+// fish3 _near: a spot within r of (x, y) in the same water — or (x, y) itself
+fn nearSpot(x: f32, y: f32, r: f32, id: u32) -> vec2f {
+  let b = bodyAt(x, y); let nx = x + (rnd(id, 80u, 0u) - 0.5) * r; let ny = y + (rnd(id, 80u, 1u) - 0.5) * r;
+  if (bodyAt(nx, ny) == b && colAt(nx, ny) >= 0 && depthAt(nx, ny) > F3_ZTOP + F3_ZBOT) { return vec2f(nx, ny); }
+  return vec2f(x, y);
+}
+// a new agent (fish3 add + _traits + _settle; the recruit's own length, mass, generation): slot s from the young school q
+fn newAgent(s: u32, k: u32, id: u32, x: f32, y: f32, age: u32, n: f32) {
+  for (var f = 0u; f < NAF; f++) { A[f * U.cap + s] = 0.0; }
+  for (var r = 0u; r < NBR; r++) { BR[r * U.cap + s] = 0.0; }
+  sau(A_id, s, id); sau(A_k, s, k); sa(A_n, s, n);
+  var fl = FL_ALIVE; let school = n > 1.0; if (school) { fl |= FL_SCHOOL; }
+  sa(A_x, s, x); sa(A_y, s, y); sa(A_hx, s, x); sa(A_hy, s, y); sa(A_yaw, s, rnd(id, 81u, 0u) * 6.283185307179586);
+  sau(A_age, s, age);
+  var sex = 2u; if (!school) { sex = select(1u, 0u, rnd(id, 81u, 1u) < 0.5); } sau(A_sex, s, sex);
+  // the plastic block: the genome's own
+  for (var r = 0u; r < NW2; r++) { BR[r * U.cap + s] = GN[(W2OFF + r) * U.cap + s]; }
+  // _traits
+  let gSize = gn(NG, s); let gSpeed = gn(NG + 1u, s); let gTol = gn(NG + 2u, s); let gFin = gn(NG + 3u, s); let gEye = gn(NG + 4u, s); let gBody = gn(NG + 5u, s); let gBrain = gn(NG + 6u, s);
+  let act = u32(clamp(round(f32(HID) * gBrain), min(BRAIN_HID_MIN, f32(HID)), f32(HID))); sau(A_active, s, act);
+  sa(A_turnMax0, s, spv(k, S_turn) * (0.6 + 0.4 * gFin)); sa(A_sense0, s, spv(k, S_sense) * (0.6 + 0.4 * gEye));
+  sa(A_spdGene, s, gSpeed * (1.18 - 0.18 * gBody) * (1.05 - 0.05 * gFin)); sa(A_bodyMul, s, 0.8 + 0.2 * gBody);
+  sa(A_tempTol, s, spv(k, S_tempTolS) * gTol); sa(A_o2Crit, s, clamp(spv(k, S_o2CritS) * (2.0 - gTol), 0.05, 0.9));
+  sa(A_o2Lethal, s, clamp(spv(k, S_o2LethalS) / ENV_O2_MGL * (2.0 - gTol), 0.005, 0.5)); sa(A_o2Ice, s, clamp(spv(k, S_o2IceS) / ENV_O2_MGL * (2.0 - gTol), 0.0, 0.5));
+  sa(A_uilt, s, spv(k, S_uiltS) + BIOE_UILT_GENE * (gTol - 1.0));
+  sa(A_metabMul, s, (0.85 + 0.15 * gSpeed) * (0.9 + 0.1 * gTol) * (0.95 + 0.05 * gFin) * (0.93 + 0.07 * gEye) * (0.92 + 0.08 * gBody) * (1.0 - BRAIN_COST * f32(HID - act) / f32(HID)));
+  let lm = spv(k, S_Lmat) * pow(gSize, BIOE_LMAT_GENE); let lmm = spv(k, S_LmatM); var Lmat = lm;
+  if (lmm > 0.0) { if (sex == 1u) { Lmat = lm * lmm / spv(k, S_Lmat); } else if (sex == 2u) { Lmat = lm * (1.0 + lmm / spv(k, S_Lmat)) / 2.0; } }
+  sa(A_Lmat, s, Lmat);
+  // its lake and home there; the brook's users
+  let b0 = bodyAt(x, y); var lake = UPPER; if (b0 == LOWER) { lake = LOWER; } else if (b0 != UPPER) { lake = select(LOWER, UPPER, nearestBP(x, y) <= i32(BLAST) / 2); }
+  var lh = vec2f(x, y); if (b0 != lake) { lh = vec2f(stf(O_bLakeNear + 2u * lake), stf(O_bLakeNear + 2u * lake + 1u)); sa(A_hx, s, lh.x); sa(A_hy, s, lh.y); }
+  sau(A_lake, s, lake); sau(A_inLake, s, lake);
+  let dB = length(select(bp(BLAST), bp(0u), lake == UPPER) - lh);
+  if (spv(k, S_sbBrook) > 0.0 && dB < F3_BROOK_NEAR && rnd(id, 81u, 2u) < spv(k, S_sbBrook)) { fl |= FL_BROOKIE; }
+  if (spv(k, S_sbSiteBrook) > 0.0 && (spv(k, S_brookRes) > 0.0 || dB < F3_BROOK_RUN)) { fl |= FL_BROOKRUN; }
+  if (spv(k, S_brookRes) > 0.0) { var p = vec2f(x, y); if (b0 != BROOK) { p = bp(u32(nearestBP(x, y))); } lh = p; sa(A_hx, s, p.x); sa(A_hy, s, p.y); }
+  sa(A_lhx, s, lh.x); sa(A_lhy, s, lh.y);
+  sai(A_spYr, s, -1); sai(A_runYr, s, -1); sai(A_prey, s, -1); sai(A_threat, s, -1); sai(A_mate, s, -1); sai(A_c, s, -1); sai(A_j, s, -1); sai(A_jb, s, -1); sai(A_claim, s, -1); sai(A_birth, s, -1);
+  sa(A_lastSpawnD, s, -1e18); sa(A_xo, s, 1.0); sa(A_xt, s, 15.0); sa(A_uAvg, s, spv(k, S_uRoutine)); sa(A_fd, s, -1.0); sa(A_td, s, -1.0);
+  sau(A_flags, s, fl);
+}
+@compute @workgroup_size(64) fn b_recruitFill(@builtin(global_invocation_id) g: vec3u) {
+  let t = g.x; let tot = u32(GL[G_RECRUITS]); if (t >= tot) { return; }
+  // its school: the last listed whose first agent ≤ t
+  var lo = 0u; var hi = u32(GL[G_NREC]);
+  while (hi - lo > 1u) { let mid = (lo + hi) / 2u; if (IND[REC_LIST + 4u * mid + 1u] <= t) { lo = mid; } else { hi = mid; } }
+  let q = IND[REC_LIST + 4u * lo]; let st = IND[REC_LIST + 4u * lo + 1u]; let en = IND[REC_LIST + 4u * (lo + 1u) + 1u];
+  let m = t - st; let nA = en - st; let first = m == 0u;
+  let k = gyu(Y_k, q); let L = gy(Y_L, q);
+  var na = bitcast<f32>(IND[REC_LIST + 4u * lo + 2u]); if (m == nA - 1u) { na = bitcast<f32>(IND[REC_LIST + 4u * lo + 3u]); }
+  let s = U.n + t; let id = glu(G_NEXTID) + t;
+  let qx = gy(Y_x, q); let qy = gy(Y_y, q); var p = vec2f(qx, qy); if (!first) { p = nearSpot(qx, qy, 0.6, id); }
+  // the genome: the school's for the first, a fresh mutation of it for each sibling
+  for (var e = 0u; e < NG; e++) { var w = YG[e * U.ycap + q]; if (!first) { w = mutW(id, e, w); } GN[e * U.cap + s] = w; }
+  for (var e = 0u; e < NGENES; e++) { var v = YG[(NG + e) * U.ycap + q]; if (!first) { v = mutGene(id, e, v); } GN[(NG + e) * U.cap + s] = v; }
+  newAgent(s, k, id, p.x, p.y, gyu(Y_age, q), na);
+  // the recruit's own body
+  sa(A_L, s, L); sa(A_W, s, gy(Y_W, q)); sau(A_gen, s, gyu(Y_gen, q)); sa(A_hue, s, gy(Y_hue, q));
+  settle(s, k);
+  let bed = max(0.05, depthAt(p.x, p.y)); sa(A_bed, s, bed); sa(A_z, s, clamp(gy(Y_z, q), F3_ZTOP, max(F3_ZTOP, bed - F3_ZBOT)));
+  sa(A_spd, s, spv(k, S_cruise) * L / 100.0);
+}
+@compute @workgroup_size(1) fn b_count() { if (GL[G_RECRUITS] > 0.0) { GL[G_NEXTID] = bitcast<f32>(glu(G_NEXTID) + u32(GL[G_RECRUITS])); } }
+`;
+
+// ============================================================ COMPACTING AND COUNTING =========================================
+// the dead squeezed out of the arrays (fish3 filters its lists at a step's end): one workgroup walks the slots in order giving each
+// living one its new place, then every slot is copied to it in a second set of buffers (copied back after) — mates and a brood's
+// guardian follow their fish's new slot; and the census: each species' fish, grams, lengths, intake, the mature, and the young
+export const COMPACT_BINDINGS = /* wgsl */`
+@group(1) @binding(0) var<storage, read_write> MAP: array<u32>;
+@group(1) @binding(1) var<storage, read_write> CPA: array<f32>;
+@group(1) @binding(2) var<storage, read_write> CPBR: array<f32>;
+@group(1) @binding(3) var<storage, read_write> CPGN: array<f32>;
+@group(1) @binding(4) var<storage, read_write> Y: array<f32>;
+@group(1) @binding(5) var<storage, read_write> YG: array<f32>;
+@group(1) @binding(6) var<storage, read_write> CPY: array<f32>;
+@group(1) @binding(7) var<storage, read_write> CPYG: array<f32>;
+@group(1) @binding(8) var<storage, read_write> GL: array<f32>;
+@group(1) @binding(9) var<storage, read_write> CEN: array<atomic<u32>>;
+const G_N: u32 = 34u; const G_NY: u32 = 35u;
+const NONE: u32 = 0xFFFFFFFFu;`;
+export const COMPACT = /* wgsl */`
+var<workgroup> wsc: array<u32, 256>;
+var<workgroup> wbase: u32;
+// kind 0: the agents (MAP[0..n)); kind 1: the young (MAP[cap..cap + ny))
+@compute @workgroup_size(256) fn c_walk(@builtin(local_invocation_id) l: vec3u, @builtin(workgroup_id) w: vec3u) {
+  let t = l.x; let kind = w.x; var N = U.n; var off = 0u; if (kind == 1u) { N = U.ny; off = U.cap; }
+  if (t == 0u) { wbase = 0u; }
+  workgroupBarrier();
+  for (var base = 0u; base < N; base += 256u) {
+    let i = base + t; var v = 0u;
+    if (i < N) { if (kind == 0u) { v = select(0u, 1u, (bitcast<u32>(A[A_flags * U.cap + i]) & FL_ALIVE) != 0u); } else { v = select(0u, 1u, (bitcast<u32>(Y[Y_flags * U.ycap + i]) & 1u) != 0u); } }
+    wsc[t] = v;
+    for (var o = 1u; o < 256u; o <<= 1u) { workgroupBarrier(); let x = select(0u, wsc[t - o], t >= o); workgroupBarrier(); wsc[t] += x; }
+    workgroupBarrier();
+    if (i < N) { MAP[off + i] = select(NONE, wbase + wsc[t] - 1u, v == 1u); }
+    workgroupBarrier();
+    if (t == 255u) { wbase += wsc[255]; }
+    workgroupBarrier();
+  }
+  if (t == 0u) { if (kind == 0u) { GL[G_N] = f32(wbase); } else { GL[G_NY] = f32(wbase); } }
+}
+fn cpai(f: u32, d: u32, v: i32) { CPA[f * U.cap + d] = bitcast<f32>(v); }   // (an i32 through a parameter: a constant -1 bitcast is a NaN the compiler refuses)
+@compute @workgroup_size(128) fn c_gatherA(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  let d = MAP[i]; if (d == NONE) { return; }
+  for (var f = 0u; f < NAF; f++) { CPA[f * U.cap + d] = A[f * U.cap + i]; }
+  for (var r = 0u; r < NBR; r++) { CPBR[r * U.cap + d] = BR[r * U.cap + i]; }
+  for (var r = 0u; r < NGN; r++) { CPGN[r * U.cap + d] = GN[r * U.cap + i]; }
+  // its mate's new slot (none if it died); the senses' prey and threat are the block's own
+  let m = bitcast<i32>(A[A_mate * U.cap + i]); var nm = -1; if (m >= 0 && u32(m) < U.n) { let mm = MAP[u32(m)]; if (mm != NONE) { nm = i32(mm); } }
+  cpai(A_mate, d, nm); cpai(A_prey, d, -1); cpai(A_threat, d, -1);
+}
+@compute @workgroup_size(128) fn c_gatherY(@builtin(global_invocation_id) g: vec3u) {
+  let q = g.x; if (q >= U.ny) { return; }
+  let d = MAP[U.cap + q]; if (d == NONE) { return; }
+  for (var f = 0u; f < NYF; f++) { CPY[f * U.ycap + d] = Y[f * U.ycap + q]; }
+  for (var r = 0u; r < NGN; r++) { CPYG[r * U.ycap + d] = YG[r * U.ycap + q]; }
+  let gr = bitcast<i32>(Y[Y_gref * U.ycap + q]); var ng = -1; if (gr >= 0 && u32(gr) < U.n) { let mm = MAP[u32(gr)]; if (mm != NONE) { ng = i32(mm); } }
+  CPY[Y_gref * U.ycap + d] = bitcast<f32>(ng);
+}
+// THE CENSUS (fish3 census): per species [fish, grams, Σ n·L, Σ n·cons, Σ n·consMax, mature fish, agents, young fish, young grams,
+// Σ young n·L, young schools] — 64-bit fixed point
+const CEN_REC: u32 = 24u;   // words a species (12 pairs)
+fn cadd(k: u32, f: u32, v: f32, scale: f32) {
+  let q = max(v, 0.0) * scale; if (!(q >= 1.0)) { return; }
+  let at = k * CEN_REC + 2u * f; let hi = floor(q / 4294967296.0); let lo = u32(min(q - hi * 4294967296.0, 4294967295.0));
+  let old = atomicAdd(&CEN[at], lo); var carry = u32(hi); if (old > 0xFFFFFFFFu - lo) { carry += 1u; } if (carry > 0u) { atomicAdd(&CEN[at + 1u], carry); }
+}
+@compute @workgroup_size(256) fn c_census(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x;
+  if (i < U.n) {
+    let fl = bitcast<u32>(A[A_flags * U.cap + i]);
+    if ((fl & FL_ALIVE) != 0u) {
+      let k = gau(A_k, i); let n = ga(A_n, i);
+      cadd(k, 0u, n, 1e3); cadd(k, 1u, n * ga(A_W, i), 1e3); cadd(k, 2u, n * ga(A_L, i), 1e3); cadd(k, 3u, n * ga(A_cons, i), 1e6); cadd(k, 4u, n * ga(A_consMax, i), 1e6);
+      if ((fl & FL_MATURE) != 0u) { cadd(k, 5u, n, 1e3); } cadd(k, 6u, 1.0, 1.0);
+    }
+  }
+  if (i < U.ny) {
+    if ((bitcast<u32>(Y[Y_flags * U.ycap + i]) & 1u) != 0u) {
+      let k = bitcast<u32>(Y[Y_k * U.ycap + i]); let n = Y[Y_n * U.ycap + i];
+      cadd(k, 7u, n, 1e3); cadd(k, 8u, n * Y[Y_W * U.ycap + i], 1e3); cadd(k, 9u, n * Y[Y_L * U.ycap + i], 1e3); cadd(k, 10u, 1.0, 1.0);
+    }
+  }
 }
 `;
 

@@ -32,7 +32,7 @@ export const AGENT_FIELDS = [
   'lhx', 'lhy', 'tpx', 'tpy', 'dhx', 'dhy', 'cm', 'surfG',
   // SCRATCH (the block's working values on the GPU; never packed nor unpacked): the feeding's room, want, got…, a strike's claim
   ['fGEff', 's'], ['fPerf', 's'], ['fRoom', 's'], ['fWant', 's'], ['fGot', 's'], ['gut0', 's'], ['claim', 'si'], ['claimP', 'su'],
-  ['qB', 's'], ['qW', 's'], ['qC', 's'], ['qS', 's'], ['qZD', 's'], ['qZC', 's'], ['qFlags', 's'], ['qSed', 's'],
+  ['qB', 's'], ['qW', 's'], ['qC', 's'], ['qS', 's'], ['qZD', 's'], ['qZC', 's'], ['qFlags', 's'], ['qSed', 's'], ['birth', 'si'], ['bid', 'su'],
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const AF = Object.fromEntries(AGENT_FIELDS.map(([n], i) => [n, i]));
 export const NAF = AGENT_FIELDS.length;
@@ -163,7 +163,7 @@ export function packYoy(yoy, ycap, agentSlot, out = null) {
 export function readYoy(Y, ycap, i) { const o = {}; for (let f = 0; f < NYF; f++) { const [name, t] = YOY_FIELDS[f]; o[name] = fromF(Y[f * ycap + i], t); } o.alive = !!(o.flags & YFL.ALIVE); return o; }
 
 // ---------- the species table (SP_REC floats a species) and the FB4 sets (BIO_REC a set; two a species: adult, juvenile) ----------
-export const SPF = ['school', 'perHa', 'cruise', 'sprint', 'sustain', 'turn', 'sense', 'nonVis', 'strikeR', 'cohere', 'home', 'tPref', 'kI', 'uRoutine',
+export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', 'turn', 'sense', 'nonVis', 'strikeR', 'cohere', 'home', 'tPref', 'kI', 'uRoutine',
   'pisc', 'plank', 'sift', 'benthic', 'cray', 'preyLR', 'maxAge', 'matMinAge', 'mateCdS', 'forageR', 'mateCue', 'guard', 'gsiF', 'gsiM', 'Lpisc', 'Lzoo',
   'Lsnail', 'benthL', 'capture', 'vuln', 'gapeR', 'depthR', 'gut', 'gerMul', 'tempOpt', 'coldPerf', 'Lref', 'lwA', 'lwB', 'juvMode', 'juvW', 'M',
   'uiltS', 'o2LethalS', 'o2IceS', 'spawnT0', 'spawnT1', 'sbBot0', 'sbBot1', 'sbH', 'sbBrook', 'sbSiteBrook', 'sbSub', 'sbFaith', 'sbSites', 'sbRunK', 'sbBare',
@@ -197,7 +197,7 @@ export function packSpecies() {
   KEYS3.forEach((k, i) => {
     const s = S3[k], sp = s.sp, sb = s.spawn, mv = s.move || {}, o = i * SP_REC, d = sp.diet;
     const V = {
-      school: s.school || 0, perHa: s.perHa || 0, cruise: s.cruise, sprint: s.sprint, sustain: s.sustain, turn: s.turn, sense: s.sense, nonVis: s.nonVis,
+      school: s.school || 0, perHa: s.perHa || 0, perM2: s.perM2 || 0, cruise: s.cruise, sprint: s.sprint, sustain: s.sustain, turn: s.turn, sense: s.sense, nonVis: s.nonVis,
       strikeR: s.strikeR, cohere: s.cohere, home: s.home, tPref: s.tPref, kI: K_I[k] ?? 1, uRoutine: s.uRoutine, pisc: s.pisc ? 1 : 0, plank: s.plank ? 1 : 0,
       sift: s.sift ? 1 : 0, benthic: s.benthic ? 1 : 0, cray: s.cray ? +d.cray : 0, preyLR: s.preyLR ?? PREY_LR0, maxAge: s.maxAge, matMinAge: s.matMinAge,
       mateCdS: s.mateCd, forageR: s.forageR, mateCue: s.mateCue, guard: s.guard, gsiF: sp.gsiF, gsiM: sp.gsiM, Lpisc: sp.Lpisc, Lzoo: sp.Lzoo ?? 0,

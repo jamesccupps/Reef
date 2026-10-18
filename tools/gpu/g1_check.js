@@ -180,7 +180,7 @@ const cmC = new Float64Array(n);
   log(`   the bed's worms ${used(before.bed, after.bed)} · ${used(gBed(Wb), gBed(Wa))}; Daphnia ${used(before.zD, after.zD)} · ${used(gZoo(Wb, 'zooD'), gZoo(Wa, 'zooD'))}; copepods ${used(before.zC, after.zC)} · ${used(gZoo(Wb, 'zooC'), gZoo(Wa, 'zooC'))}`);
   log(`   the surface's insects ${used(before.surf, after.surf)} · ${used(gSurf(Wb), gSurf(Wa))}; the weeds' insects ${used(before.L, after.L)} · ${used(gLit(Wb, 'litL'), gLit(Wa, 'litL'))}; snails ${used(before.sn, after.sn)} · ${used(gLit(Wb, 'litSn'), gLit(Wa, 'litSn'))}; crayfish ${used(before.cr, after.cr)} · ${used(gLit(Wb, 'litCrA') + gLit(Wb, 'litCrY'), gLit(Wa, 'litCrA') + gLit(Wa, 'litCrY'))}`);
   const tl = await G.readTallies(), FK = ['zoo', 'benth', 'weed', 'cray', 'surf', 'fish', 'sed', 'yoy'];
-  { let fe = 0, fg = 0; const KS = Object.keys(F.stats.fry); KS.forEach((k, q) => { fe += F.stats.fry[k].eaten - fryE0[k]; fg += tl[320 + q * 6 + 4] / 1e6; }); log(`   young eaten by followed fish: CPU ${fe.toFixed(0)} · GPU ${fg.toFixed(0)}`); }
+  { let fe = 0, fg = 0; const KS = Object.keys(F.stats.fry); KS.forEach((k, q) => { fe += F.stats.fry[k].eaten - fryE0[k]; fg += tl[320 + q * 7 + 4] / 1e6; }); log(`   young eaten by followed fish: CPU ${fe.toFixed(0)} · GPU ${fg.toFixed(0)}`); }
   log('   grams eaten, CPU · GPU: ' + FK.map((k, q) => `${k} ${(F.stats.food[k] - food0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
   let gk = 0; for (let q = 0; q < 121; q++) gk += tl[96 + q] / 1e6; log(`   fish killed by followed fish: CPU ${F.stats.kills - kills0} · GPU ${gk.toFixed(0)}`);
   // each fish's meal
@@ -191,6 +191,17 @@ const cmC = new Float64Array(n);
     if (dc > 0 || dg > 0) { fed++; if (Math.abs(dc - dg) <= 0.05 * Math.max(dc, dg) + 1e-9) within++; if (dc > 0 && dg > 0) both++; } }
   log(`   meals: ${fed} fish ate on one engine or both, ${both} on both, ${within} within 5 % of each other; total ${(sc / 1000).toFixed(1)} kg (CPU) · ${(sg / 1000).toFixed(1)} kg (GPU)`);
   log('   by species (kg, CPU · GPU): ' + Object.entries(bySp).map(([k, [c, g]]) => `${k} ${(c / 1000).toFixed(2)} · ${(g / 1000).toFixed(2)}`).join('; '));
+}
+// ===== 8b. SPAWNING (fish3 _spawn: mates, the spawn, the newborn school, the nest) =====
+{
+  const KS = Object.keys(F.stats.spawns), sp0 = { ...F.stats.spawns }, eg0 = { ...F.stats.eggs }, h0 = Object.fromEntries(KS.map(k => [k, F.stats.fry[k].hatched])), ny0 = F.yoy.length;
+  let ripe = 0; for (const a of fish) if (a.alive && a.ripe) ripe++;
+  tc = performance.now(); for (let i = 0; i < n; i++) { const a = fish[i]; if (a.alive && a.ripe) F._spawn(a, i, B); } tc = performance.now() - tc;
+  G.clearTallies(); await G.run(enc => G.encodeSpawn(enc)); const cnt = await G.readCounts(), tl = await G.readTallies();
+  log(`spawning (CPU ${tc.toFixed(0)} ms): ${ripe} ripe fish; new schools CPU ${F.yoy.length - ny0} · GPU ${cnt.born}`);
+  log('   spawnings by species, CPU · GPU: ' + KS.map((k, q) => `${k} ${F.stats.spawns[k] - sp0[k]} · ${(tl[412 + q] / 1e6).toFixed(0)}`).filter(x => !/ 0 · 0$/.test(x)).join('; '));
+  log('   larvae hatched (thousands), CPU · GPU: ' + KS.map((k, q) => `${k} ${((F.stats.fry[k].hatched - h0[k]) / 1e3).toFixed(0)} · ${(tl[320 + q * 7 + 6] / 1e9).toFixed(0)}`).filter(x => !/ 0 · 0$/.test(x)).join('; '));
+  G.ny = cnt.ny;
 }
 // ===== 9. BREATH AND DEATH (fish3 _live's O₂, _hazards) =====
 {
@@ -228,12 +239,14 @@ const cmC = new Float64Array(n);
   let feeders = 0, nOk = 0, LOk = 0, recC = 0, recG = 0, aliveC = 0, aliveG = 0, nC = 0, nG = 0;
   for (let q = 0; q < ny; q++) { const c = yoy[q], g = L.readYoy(Yg, G.ycap, q);
     if (c.alive) { aliveC++; nC += c.n; } if (g.alive) { aliveG++; nG += g.n; } if (g.recruit > 0) recG++; if (!c.alive && c.L >= c.s.sp.L0) recC++;
-    if (tk0[q] + B >= F3.YOY_TICK) { feeders++; if (c.alive && g.alive) { if (Math.abs(c.n - g.n) <= 0.02 * Math.max(c.n, 1)) nOk++; if (Math.abs(c.L - g.L) <= 0.01 * c.L) LOk++; } } }
+    if (q < ny && tk0[q] + B >= F3.YOY_TICK) { feeders++; if (c.alive && g.alive) { if (Math.abs(c.n - g.n) <= 0.02 * Math.max(c.n, 1)) nOk++; if (Math.abs(c.L - g.L) <= 0.01 * c.L) LOk++; } } }
   log(`the young (CPU ${tc.toFixed(0)} ms): ${feeders} schools fed this block — ${nOk} with numbers within 2 %, ${LOk} lengths within 1 % of fish3's; ${aliveC} · ${aliveG} schools alive (${(nC / 1e3).toFixed(0)}k · ${(nG / 1e3).toFixed(0)}k fish); recruiting ${recC} · ${recG}`);
   log(`   zooplankton the young ate this block, CPU · GPU: Daphnia ${used(b0.zD, b1.zD)} · ${used(gz(Wb, 'zooD'), gz(Wa, 'zooD'))}; copepods ${used(b0.zC, b1.zC)} · ${used(gz(Wb, 'zooC'), gz(Wa, 'zooC'))}; rotifers ${used(b0.zR, b1.zR)} · ${used(gz(Wb, 'zooR'), gz(Wa, 'zooR'))}`);
   const FY = [['yZoo', 8], ['yWeed', 9], ['yBenth', 10], ['ySed', 11]]; log('   grams the young ate, CPU · GPU: ' + FY.map(([k, q]) => `${k} ${(F.stats.food[k] - yf0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
   const C6 = ['natural', 'starve', 'heat', 'hypoxia', 'eaten'], KS = Object.keys(F.stats.fry);
-  log('   the young\u2019s deaths this block, CPU · GPU: ' + C6.map((cs, ci) => { let c = 0, g = 0; KS.forEach((k, q) => { c += F.stats.fry[k][cs] - fr0[k][cs]; g += tl[320 + q * 6 + ci] / 1e6; }); return `${cs} ${c.toFixed(0)} · ${g.toFixed(0)}`; }).join('; '));
+  log('   the young\u2019s deaths this block, CPU · GPU: ' + C6.map((cs, ci) => { let c = 0, g = 0; KS.forEach((k, q) => { c += F.stats.fry[k][cs] - fr0[k][cs]; g += tl[320 + q * 7 + ci] / 1e6; }); return `${cs} ${c.toFixed(0)} · ${g.toFixed(0)}`; }).join('; '));
+  { const r0 = fr0, nA0 = G.n; await G.run(enc => G.encodeRecruit(enc)); const cnt = await G.readCounts(), tl2 = await G.readTallies(); let rc = 0, rg = 0; KS.forEach((k, q) => { rc += F.stats.fry[k].recruited - r0[k].recruited; rg += tl2[460 + q] / 1e6; });
+    log(`   recruits (fish): CPU ${rc.toFixed(0)} · GPU ${rg.toFixed(0)}; agents ${nA0} → ${cnt.n} on the GPU (+${cnt.recruits})`); G.n = cnt.n; }
   { const ts = {}; for (const k of ['y_move', 'y_feedReq', 'y_feedTake', 'y_mort', 'y_target']) ts[k] = await timeIt(enc => G.encodeY(enc, k)); log(`   GPU per kernel (ms, ${ny} schools): ` + Object.entries(ts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')); }
 }
 // ===== timings of the kernels so far =====
