@@ -322,10 +322,32 @@ a one-fish winter in Node, `scratchpad/winter_fish.mjs`; two research notes, `do
 | sunfish · perch · sucker · white perch · redbreast | 1.29 · 1.12 · 1.39 · 1.43 · 1.30 | 1.34 · 1.12 · 1.36 · 1.43 · 1.31 | |
 | dace (brook) | 0 | 0 | |
 
-Biomass 111 kg/ha. Winter starvation is gone (the adult bass's K 0.95–0.97 through the winter; the young bass and bullhead
+Seed 612 the same (bass 0.660, pickerel 0.453, bullhead 0.832, fallfish 0.843, killifish 0.637; 129 kg/ha). **The year's young**
+(seed 612, hatched → fates; tools/gpu/year.html now prints them): pickerel 0.8 M → 81.6 % background (the larval and juvenile M),
+10.9 % eaten, 1.2 % starved, 0.3 % recruited; bass 4.1 M → 52 % background, 17 % starved, 9 % eaten, 0.9 % recruited; killifish 6.2 %
+recruited; perch 0.3 %, white perch 0.2 %. Biomass 111 kg/ha (seed 611). Winter starvation is gone (the adult bass's K 0.95–0.97 through the winter; the young bass and bullhead
 recruited in August come through it). **Still open:** the pickerel's recruitment (and so its decline), the bass's July starvation (a
 crayfish-heavy diet at ~3,000 J/g after its shell, at 23–24 °C, on Whitledge's summer respiration), the young bass's losses to
 pickerel, the brook's dace, the cap the prey species fill.
+
+**The ladder, checked (1/10, July, `scratchpad/fine_vs_coarse.mjs`, `ladder.mjs`):** the young fish eaten an hour are no lower in coarse
+blocks than in fine steps (38 against 16 — strikes rare either way: the bass's few young fish are the model's encounter rate, not the
+block), but the CRAYFISH eaten are: ~83–97 g an hour at blocks of 1,752 s down to 30 s, 126–128 at 5 s, 149 in fine 0.1-s steps — the
+long runs (all coarse) feed the crayfish eaters ~⅓ less than the fine steps near the camera. **Traced** (`scratchpad/nearbed.mjs`): a
+coarse block places a fish at its habitat's mean height, and at that height only ~10 % of the bass and ~30 % of the pickerel were
+within reach of the bed, against ~51 % and ~55 % over fine steps (a swimming fish drifts up and down). **Fixed** (`F3.BED_SHARE`, both
+engines): a coarse block's bed and weed feeding is the share of the block within reach — the heights gamma-distributed (shape 2) about
+the mean height h, 1 − e^(−x)(1 + x), x = 2·reach/h (an exponential spread, tried first, gave the fish that keep off the bottom 2–4× too
+much: sunfish 40 % against the fine steps' 11 %, and parted the engines' sunfish 2 %). Against the fine steps' share within reach: bass
+~50 % (42–51 %), pickerel 59 % (53–55 %), sunfish 13 % (11 %), redbreast 18 % (22 %), white perch 3 % (0 %), the bottom-huggers ~99 %
+(91–100 %; fallfish 21 % against 39 % — some on the bottom, some high). The crayfish eaten 133–135 g an hour at blocks of 1,752 s down
+to 120 s against the fine steps' 149 (83–97 before), the bed's and the weeds' as before.
+**The juvenile rate by size** (`FRY.M_JUV_B`, Lorenzen's L^−0.87 about 4 cm): A/B on the true-lakes year (seed 611) — the pickerel's
+recruits 2,201 against 2,492 without, the bass's 27,782 against 28,051: no help (most young pickerel die as larvae, below the size
+where it bites) — left off. That run stalled on the GPU at day 210 (no error; the device answered a fresh request): the year runner
+now has a watchdog (it says which stage a block is waiting on — gpufish.js `stage`) and logs the grid's fullest cell (g_sort's
+insertion sort costs ~ the count squared — a suspect, unconfirmed). The CPU's own year run (the code before the fixes) agrees with the
+GPU's at day 98 too (bass 1.430 · 1.406, pickerel 0.742 · 0.734, killifish 1.400 · 1.393), except the brook's 1,380 dace (211 · 50 left).
 
 ## Stages
 

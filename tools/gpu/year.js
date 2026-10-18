@@ -16,6 +16,8 @@ const { Fish3, KEYS3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
 const { waterOf } = await import('../../src/w3/render3/fishside3.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
+// A/B switches on the model's numbers, set before anything is built (each documented in config.js): ?mjuvb= FRY.M_JUV_B
+{ const { FRY } = await import('../../src/config.js'); if (qs.has('mjuvb')) FRY.M_JUV_B = +qs.get('mjuvb'); }
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
@@ -28,11 +30,11 @@ for (const sd of SEEDS) {
   const st0 = JSON.parse(JSON.stringify(F.stats)), lines = window.YEAR[sd] = [];
   const say = s => { log(s); lines.push(s); };
   say(`\n#### seed ${sd} · founded in ${((performance.now() - t0) / 1000).toFixed(1)} s: ${F.fish.length} agents, ${F.yoy.length} young schools · arrays ${G.cap} agents, ${G.ycap} young`);
-  let first = null, tB = 0, nB = 0, tlPrev = null;
+  let first = null, tB = 0, nB = 0, tlPrev = null; const lastYoy = {};
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
-    const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env);
-    say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''}`);
+    const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env), gl = await G.gridLoad();
+    say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
     KEYS3.forEach((k, q) => {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });
@@ -41,16 +43,22 @@ for (const sd of SEEDS) {
       if (DIET && tlPrev) {
         const g = FOODS.map((f, j) => tl[T_FOODK + q * NFOODK + j] - tlPrev[T_FOODK + q * NFOODK + j]), tot = g.reduce((a, b) => a + b, 0) / 1e6;
         if (tot > 0) say(`      diet ${(tot / 1000).toFixed(0)} kg: ` + FOODS.map((f, j) => [f, g[j] / 1e6 / tot]).filter(x => x[1] >= 0.005).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' · '));
+        // the young's losses since the last report, by fate (wgsl.js FRY_*), as a share of the young alive then
+        const fd = j => (tl[320 + q * 7 + j] - tlPrev[320 + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);
+        if (y0 > 1000) say(`      young's fates (of ${(y0 / 1e3).toFixed(0)}k): ` + ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited'].map((f, j) => [f, fd(j) / y0]).filter(x => x[1] >= 0.001).map(([f, v]) => `${f} ${(100 * v).toFixed(1)}%`).join(' · '));
       }
     });
-    tlPrev = tl; if (DIET) await G.resetIntake();
+    tlPrev = tl; KEYS3.forEach(k => { lastYoy[k] = c[k].yoyN; }); if (DIET) await G.resetIntake();
     return tl;
   };
   await report('start');
+  // a watchdog: a block that hasn't returned in WATCH s says what it is waiting on (gpufish.js block's stage) — once
+  let tlast = performance.now(), told = false; const WATCH = 30;
+  const dog = setInterval(() => { if (!told && performance.now() - tlast > WATCH * 1000) { told = true; say(`!! WATCHDOG: a block has not returned in ${WATCH} s — waiting on '${G.stage}' · agents ${G.n}/${G.cap}, young ${G.ny}/${G.ycap}, block ${G.blk}`); } }, 5000);
   let tl;
   for (let day = 1; day <= DAYS; day++) {
     for (let b = 0; b < PER_DAY; b++) {   // (the water model stepped while the GPU works — ?overlap=0: after, as fish3's runs do)
-      const tb = performance.now(); if (OVERLAP) await G.block(B, () => env.step(B)); else { await G.block(B); env.step(B); } tB += performance.now() - tb; nB++;
+      const tb = performance.now(); if (OVERLAP) await G.block(B, () => env.step(B)); else { await G.block(B); env.step(B); } tB += performance.now() - tb; nB++; tlast = performance.now();
     }
     if (day % EVERY === 0 || day === DAYS) tl = await report(`day ${day}`);
   }
@@ -60,6 +68,6 @@ for (const sd of SEEDS) {
   const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited'], T_FRY = 320;
   const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
   say("the year's young (hatched → fates): " + KEYS3.map((k, q) => { const f0 = st0.fry[k] || {}, v = j => tl[T_FRY + q * 7 + j] / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
-  G.destroy();
+  clearInterval(dog); G.destroy();
 }
 document.title = 'done';

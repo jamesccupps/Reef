@@ -216,6 +216,10 @@ export const FRY = {
   // 2001); bluegill nest poisoning didn't cut autumn young (Beyerle & Williams 1967). Larval mortality stays density-
   // independent (Irwin et al. 2009). M = M0·(1 + N/N50) is the Beverton–Holt form
   JUV_DREF: 3, JUV_D50: 0.5,
+  // THE JUVENILES' RATE BY SIZE (Lorenzen 1996: M ∝ W^−0.29, ~L^−0.87 — the agents' own scaling): M_JUV holds at M_JUV_L cm (the
+  // Oneida calibration's young perch, 18 mm to autumn) and scales as (L/M_JUV_L)^−M_JUV_B, within M_JUV_CLAMP — a fast-growing young
+  // piscivore escapes it as it grows, the smallest young die faster. M_JUV_B 0: one rate for every size (before 2026-10-18)
+  M_JUV_L: 4, M_JUV_B: 0, M_JUV_CLAMP: [0.4, 2.5],
   M_JUV_Q10: 3,        //   doesn't simulate — Oneida age-0 perch from 18 mm to autumn: Z ≈ 0.035/day, ~1.3 % surviving (Irwin et al.
                        //   2009) — slower in cold water (× Q10: ~0.005/day under the ice, so ~40–50 % die over a first winter as
                        //   with predators present, Neuswanger et al. 2015). The Q10 scales M_LARVA too, below 20 °C only

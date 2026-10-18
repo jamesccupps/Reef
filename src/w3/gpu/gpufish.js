@@ -301,8 +301,10 @@ export class GpuFish {
   // the fish's takes are added to the water after it as differences (G3: the CPU's water step hidden behind the GPU's block)
   async block(dt, during = null) {
     const e = this.env, F = this.F, YEAR = CLOCK3.YEAR_LEN, yf = e.yearFrac(), yr = Math.floor(e.time / YEAR);
-    if (this.blk > 0 && this.blk % F3.MERGE_EVERY === 0) await this.schools();   // (fish3: at the end of every MERGE_EVERY-th step — here the next one's start)
-    if ((this.blk + 1) % (this.compactEvery || 10) === 0) await this.compact();
+    // (this.stage: what the block is waiting on — a watchdog's report if one never returns)
+    this.stage = 'schools'; if (this.blk > 0 && this.blk % F3.MERGE_EVERY === 0) await this.schools();   // (fish3: at the end of every MERGE_EVERY-th step — here the next one's start)
+    this.stage = 'compact'; if ((this.blk + 1) % (this.compactEvery || 10) === 0) await this.compact();
+    this.stage = 'prepare';
     F._yr = yr; if (yf >= F3.SITE_YF && yf < 0.5 && F._siteYr !== yr) { F._siteYr = yr; F._siteSub(); this.uploadSites(); }
     this.uploadWater(); this._dt = dt; this._lux = { lux0: e.lux, luxB: [e.lux, e.luxAhead(dt / 2), e.luxAhead(dt)] }; this.setUniforms(dt, this._lux);
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
@@ -316,11 +318,11 @@ export class GpuFish {
       this.encodeFeed(enc); this.encodeSpawn(enc); this.encodeHaz(enc); this.encodeYoy(enc); this.encodeRecruit(enc);
     });
     if (during) during();
-    await done;
-    const c = await this.readCounts(); this.n = c.n; this.ny = c.ny; F.nextId = c.nextId;
+    this.stage = 'kernels'; await done;
+    this.stage = 'counts'; const c = await this.readCounts(); this.n = c.n; this.ny = c.ny; F.nextId = c.nextId;
     if (this.bio > 0) e.chem.fishKgHa = this.bio / 1000 / F.lakeHa;   // (the zooplankton's kairomone level and the mussels' hosts: the fish and young at the block's start, as fish3's hash sets it)
-    await this.applyWater();
-    await this.ensureRoom(c.needA, c.needY);
+    this.stage = 'water'; await this.applyWater();
+    this.stage = 'room'; await this.ensureRoom(c.needA, c.needY); this.stage = 'idle';
     this.blk++; F.time += dt; F.stepNo++;
     return c;
   }
@@ -351,6 +353,12 @@ export class GpuFish {
     await rb.mapAsync(GPUMapMode.READ); const out = rb.getMappedRange().slice(0); rb.unmap(); rb.destroy(); return out;
   }
   async readAgents() { const [A, BR, GN] = await Promise.all([this.read(this.B.A), this.read(this.B.BR), this.read(this.B.GN)]); return { A: new Float32Array(A), BR: new Float32Array(BR), GN: new Float32Array(GN) }; }
+  // the grid's fullest cells (diagnostics: g_sort orders each cell by insertion — its cost ~ the count squared)
+  async gridLoad() {
+    const HS = new Uint32Array(await this.read(this.B.HS)); let max = 0, at = -1, big = 0;
+    for (let c = 0; c < this.NH; c++) { const k = HS[c + 1] - HS[c]; if (k > max) { max = k; at = c; } if (k > 256) big++; }
+    return { max, at, big, x: at >= 0 ? GEO.X0 + (at % HHX + 0.5) * F3.HC : 0, y: at >= 0 ? GEO.Y0 + (Math.floor(at / HHX) + 0.5) * F3.HC : 0 };
+  }
   async readGrid() { const [HS, HI, HC] = await Promise.all([this.read(this.B.HS), this.read(this.B.HI), this.read(this.B.HC)]); return { HS: new Uint32Array(HS), HI: new Uint32Array(HI), HC: new Uint32Array(HC) }; }
   async readTallies() { const t = new Uint32Array(await this.read(this.B.TL)); const out = new Float64Array(NTALLY / 2); for (let q = 0; q < out.length; q++) out[q] = t[2 * q] + t[2 * q + 1] * 4294967296; return out; }
   // the first `n` columns of `rows` field-major rows (stride `stride`) packed to stride n — the live slots only, read back in one go

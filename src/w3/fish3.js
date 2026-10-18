@@ -90,6 +90,14 @@ export const F3 = {
   // dace were eaten out in a summer once the lakes' predators could range into the brook
   RIFFLE_REFUGE: 0.9, RIFFLE_D: 0.6, RIFFLE_L: 10,
   BENTH_REACH: 0.35,    // m above the bed a fish feeds on it
+  // A COARSE BLOCK's place is the fish's mean height over the block, and it drifts up and down about it: its bed and weed feeding
+  // is the share of the block within reach — the heights gamma-distributed (shape 2) about the mean h: 1 − e^(−x)(1 + x), x =
+  // 2·reach/h. At their block heights only ~10 % of the bass and ~30 % of the pickerel were within reach, against 42–51 % and ~55 % over
+  // fine steps (1/10, July: the long runs fed the crayfish eaters ~⅓ less than the fine steps near the camera); the share gives ~50 %
+  // and ~59 %, sunfish 13 % (fine 11 %), redbreast 18 % (22 %), white perch 3 % (0 %), the bottom-huggers ~99 % (91–100 %) — an
+  // exponential spread gave the fish that keep off the bottom 2–4× too much. (0: in reach or not, by the block's place — before
+  // 2026-10-18; a fine step is where the fish is either way)
+  BED_SHARE: 1,
   // THE BED OR THE OPEN WATER (stage 6): an adult shares its foraging time between its two foods toward the better (t ∝ f^SHARE_Q),
   // instead of eating both at once; K_BENTH (g/m² above the refuge) the half-saturation of an adult's bed foraging
   SHARE: 1, SHARE_Q: 4, K_BENTH: 3,
@@ -468,6 +476,8 @@ function unpackFish(d) {
 function packYoy(q) { const d = { key: q.s.key, g: q.g, genes: q.genes, v: {} }; for (const k of Object.keys(q)) if (!YOY_REF.has(k)) d.v[k] = q[k]; return d; }
 function unpackYoy(d) { const q = new Yoy(); Object.assign(q, d.v); q.s = S3[d.key]; q.g = d.g; q.genes = d.genes; q.gref = null; q.guard = 0; q.alive = true; q._out = false; q.near = false; q._due = -1; return q; }
 
+// the share of a coarse block a fish spends within r of the bed, its heights gamma-distributed (shape 2) about its block height h
+const reachShare = (r, h) => { const x = 2 * r / Math.max(0.02, h); return 1 - Math.exp(-x) * (1 + x); };
 // a guard's stage: 0 over its eggs and the fry to swim-up (its first GUARD_EARLY days), 1 over the free-swimming fry
 const guardStage = a => a.s.guard - a.nt < BROOD.GUARD_EARLY * DAY3 ? 0 : 1;
 // a tally tree's counts zeroed (its times of first events kept)
@@ -940,7 +950,7 @@ export class Fish3 {
         const Fe = WF[0] * J, U = WF[1] * (J - Fe), net = J - Fe - U - b.SDA * (J - Fe) - Rj;
         if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
-        const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
+        const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
           + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) * DAY / YEAR;   // (/day)
         const lost = q.n * -Math.expm1(-hN * F3.SEED_M * dd);
         this.stats.fry[q.s.key].natural += lost; q.n -= lost; q.age += dd * DAY; q.p = pS;
@@ -1476,12 +1486,14 @@ export class Fish3 {
     // (stage 7b) THE BED AND ITS WEEDS: the worms and scuds within reach of the bed, the weeds' large insects (and snails for a
     // molluscivore) within the canopy; THE SURFACE (emerging and fallen insects) for an insect eater near it — littoral3.js
     const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray, lit = this.env.lit;
-    const nearBed = a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200;
-    const inWeeds = !!lit && a.jb >= 0 && a.bed - a.z <= F3.BENTH_REACH + a.L / 200 + this.env.plants._canopy[a.c];
+    const reach = F3.BENTH_REACH + a.L / 200, hb = a.bed - a.z, canopy = lit ? this.env.plants._canopy[a.c] : 0, share = this._coarse && F3.BED_SHARE;
+    const fNear = a.jb < 0 ? 0 : share ? reachShare(reach, hb) : hb <= reach ? 1 : 0;   // (a coarse block: its share of the block within reach — F3.BED_SHARE)
+    const fWeed = a.jb < 0 || !lit ? 0 : share ? reachShare(reach + canopy, hb) : hb <= reach + canopy ? 1 : 0;
+    const nearBed = fNear > 0, inWeeds = fWeed > 0;
     const moll = !!sp.diet.snail && a.L >= (sp.Lsnail || 0);
     // (stage 7c) a crayfish eater on the bed takes the crayfish its gape fits, at its strike success; the big ones (bass and
     // pickerel past 3 × their piscivory length) no longer bother with worms and scuds
-    const cs = s.cray && nearBed && lit ? +sp.diet.cray : 0, big = s.pisc && s.cray && a.L >= 3 * sp.Lpisc;
+    const cs = s.cray && nearBed && lit ? +sp.diet.cray * fNear / Math.max(fWeed, 1e-9) : 0, big = s.pisc && s.cray && a.L >= 3 * sp.Lpisc;   // (the crayfish by its share near the bed; the weeds' fauna by its share in them — Ew × fWeed below)
     const canB = s.benthic && small && (nearBed || inWeeds), canZ = s.plank || a.L < sp.Lzoo, canS = !!lit && !!sp.diet.insect && small && a.z <= LIT3.SURF_Z;
     // its footprint: the bed cells within FP_DZ of its depth, and its layer (± one in its own column) of the water, in the
     // columns within its forage radius
@@ -1493,7 +1505,7 @@ export class Fish3 {
       if (canZ && nZ < LZ.length - 4) { const j0 = G.cell0[cc], k1 = Math.min(G.nL[cc] - 1, kz); if (cc === a.c) { for (let k = Math.max(0, k1 - 1); k <= Math.min(G.nL[cc] - 1, k1 + 1); k++) LZ[nZ++] = j0 + k; } else LZ[nZ++] = j0 + k1; }
     }
     if (canB && !nB && a.jb >= 0) LB[nB++] = a.jb;
-    const Eb = canB && nearBed && !big ? ch.benthEcells(LB, nB) : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll, a.gape, cs) : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
+    const Eb = canB && nearBed && !big ? ch.benthEcells(LB, nB) * fNear : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll, a.gape, cs) * fWeed : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
     const KB = F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH, fB = Eb + Ew > 0 ? (Eb + Ew) / (Eb + Ew + KB) : 0, fS = Es > 0 ? Es / (Es + LIT3.K_SURF) : 0;
     let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
     if (F3.SHARE && canB && canZ) {
@@ -1864,7 +1876,7 @@ export class Fish3 {
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
     const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
-    const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50)) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
+    const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
       + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) / YEAR;
     const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;

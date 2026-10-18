@@ -1013,6 +1013,15 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
 }
 // what a fish (n of them) asks of the bed, the weeds, the surface and the zooplankton this block (fish3 _feed's middle), and its wants
 // added to the cells
+// fish3 _feed's reach of the bed and the weeds: in a block (every GPU step is one) the share of it within reach — the heights
+// gamma-distributed (shape 2) about the block's mean height h, 1 − e^(−x)(1 + x), x = 2·reach/h (F3.BED_SHARE); 0 or 1 by the place
+// itself when off
+fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f {
+  if (jb < 0) { return vec2f(0.0); }
+  let reachB = F3_BENTH_REACH + L / 200.0; let hb = bed - z;
+  if (F3_BED_SHARE > 0.5) { let h = max(0.02, hb); let x1 = 2.0 * reachB / h; let x2 = 2.0 * (reachB + canopy) / h; return vec2f(1.0 - exp(-x1) * (1.0 + x1), select(0.0, 1.0 - exp(-x2) * (1.0 + x2), lit)); }
+  return vec2f(select(0.0, 1.0, hb <= reachB), select(0.0, 1.0, lit && hb <= reachB + canopy));
+}
 @compute @workgroup_size(64) fn k_fieldReq(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
   let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
@@ -1024,10 +1033,10 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
   let cu = u32(c); let gape = ga(A_gape, i); let visDay = ga(A_visF, i);
   let pisc = spv(k, S_pisc) > 0.5; let crayS = spv(k, S_cray);
   let small = !pisc || L < 3.0 * spv(k, S_Lpisc) || crayS > 0.0; let lit = U.lit != 0u;
-  let nearBed = jb >= 0 && bed - z <= F3_BENTH_REACH + L / 200.0;
-  let inWeeds = lit && jb >= 0 && bed - z <= F3_BENTH_REACH + L / 200.0 + wd(W_canopy + cu);
+  let fNW = bedShares(jb, bed, z, L, wd(W_canopy + cu), lit); let fNear = fNW.x; let fWeed = fNW.y;   // (fish3: a block's share within reach — F3.BED_SHARE)
+  let nearBed = fNear > 0.0; let inWeeds = fWeed > 0.0;
   let moll = spv(k, S_dSnail) > 0.5 && L >= spv(k, S_Lsnail);
-  let cs = select(0.0, crayS, crayS > 0.0 && nearBed && lit); let big = pisc && crayS > 0.0 && L >= 3.0 * spv(k, S_Lpisc);
+  let cs = select(0.0, crayS * fNear / max(fWeed, 1e-9), crayS > 0.0 && nearBed && lit); let big = pisc && crayS > 0.0 && L >= 3.0 * spv(k, S_Lpisc);
   let canB = spv(k, S_benthic) > 0.5 && small && (nearBed || inWeeds); let canZ = spv(k, S_plank) > 0.5 || L < spv(k, S_Lzoo);
   let canS = lit && spv(k, S_dInsect) > 0.5 && small && z <= LIT3_SURF_Z;
   let fp = fpOf(k, cu, z);
@@ -1066,8 +1075,8 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
     if (li >= 0) { let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(cu); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cu, gape, cs);
       sWls = (eL + eS) * a; sWc = eC * a; sW = (eL + eS + LIT3_CR_PREF * eC) * a; }
   }
-  let Eb = select(0.0, sB / max(aB, 1e-12), canB && nearBed && !big && aB > 0.0);
-  let Ew = select(0.0, sW / max(aB, 1e-12), canB && lit && aB > 0.0);
+  let Eb = select(0.0, sB / max(aB, 1e-12), canB && nearBed && !big && aB > 0.0) * fNear;
+  let Ew = select(0.0, sW / max(aB, 1e-12), canB && lit && aB > 0.0) * fWeed;
   let Es = select(0.0, sS / max(aS, 1e-12), canS && aS > 0.0);
   let KB = F3_K_BENTH; var fB = 0.0; if (Eb + Ew > 0.0) { fB = (Eb + Ew) / (Eb + Ew + KB); }
   var fS = 0.0; if (Es > 0.0) { fS = Es / (Es + LIT3_K_SURF); }
@@ -1149,8 +1158,8 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
   if (qB <= 0.0 && qW <= 0.0 && qS <= 0.0 && qZD <= 0.0 && qZC <= 0.0) { return; }
   let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let z = ga(A_z, i); let bed = ga(A_bed, i); let cu = u32(gai(A_c, i)); let jb = gai(A_jb, i);
   let gape = ga(A_gape, i); let crayS = spv(k, S_cray); let lit = U.lit != 0u;
-  let nearBed = jb >= 0 && bed - z <= F3_BENTH_REACH + L / 200.0;
-  let moll = spv(k, S_dSnail) > 0.5 && L >= spv(k, S_Lsnail); let cs = select(0.0, crayS, crayS > 0.0 && nearBed && lit);
+  let fNW = bedShares(jb, bed, z, L, wd(W_canopy + cu), lit); let nearBed = fNW.x > 0.0;
+  let moll = spv(k, S_dSnail) > 0.5 && L >= spv(k, S_Lsnail); let cs = select(0.0, crayS * fNW.x / max(fNW.y, 1e-9), crayS > 0.0 && nearBed && lit);
   let ownOnly = (u32(ga(A_qFlags, i)) & 1u) != 0u;
   let fp = fpOf(k, cu, z);
   var gb = 0.0; var gw = 0.0; var Jw = 0.0; var gc = 0.0; var gs = 0.0; var gzD = 0.0; var gzC = 0.0;
@@ -1625,7 +1634,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   acc64(AC_O2 + 2u * j, gy(Y_rO2, q) * st, GW);
   let o2L = lethalO2(spv(k, S_o2LethalS) / ENV_O2_MGL, spv(k, S_o2IceS) / ENV_O2_MGL, T); let lf = exp(-(L / FRY_LARVA_L) * (L / FRY_LARVA_L));
   let jd = GL[G_JUVD + k];
-  let hN = (FRY_M_LARVA / max(0.3, L) * lf + FRY_M_JUV * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
+  let hN = (FRY_M_LARVA / max(0.3, L) * lf + FRY_M_JUV * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
     + spv(k, S_M) * BIOE_M_OTHER * min(30.0, pow(L / spv(k, S_Lref), -0.87)) / YEAR;
   let uilt = spv(k, S_uiltS); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }
