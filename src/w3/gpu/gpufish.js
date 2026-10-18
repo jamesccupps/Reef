@@ -10,7 +10,7 @@ import { CLOCK3 } from '../clock3.js';
 
 const ST_ = () => GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC;
 export const HHX = Math.ceil((GEO.XMAX - GEO.X0) / F3.HC), HHY = Math.ceil((GEO.YMAX - GEO.Y0) / F3.HC);
-const NTALLY = 1024;   // tally words (pairs)
+const NTALLY = 2048;   // tally words (pairs; 1024+ the diagnostics: the diet by species)
 
 export class GpuFish {
   static async device() {
@@ -290,7 +290,8 @@ export class GpuFish {
     this.setUniforms(this._dt || 1752, this._lux || {});
     await this.run(enc => { enc.clearBuffer(this.B.CEN); this._pass(enc, this.P.c_census, [this.bg0, this.bgC], Math.max(this.n, this.ny), 256); });
     const u = new Uint32Array(await this.read(this.B.CEN)), v = (k, f, sc) => (u[k * 24 + 2 * f] + u[k * 24 + 2 * f + 1] * 4294967296) / sc, out = {};
-    KEYS3.forEach((key, k) => { const r = { n: v(k, 0, 1e3), g: v(k, 1, 1e3), L: v(k, 2, 1e3), cons: v(k, 3, 1e6), consMax: v(k, 4, 1e6), mature: v(k, 5, 1e3), agents: v(k, 6, 1), yoyN: v(k, 7, 1e3), yoyG: v(k, 8, 1e3), yoyL: v(k, 9, 1e3), yoySchools: v(k, 10, 1) };
+    KEYS3.forEach((key, k) => { const r = { n: v(k, 0, 1e3), g: v(k, 1, 1e3), L: v(k, 2, 1e3), cons: v(k, 3, 1e6), consMax: v(k, 4, 1e6), mature: v(k, 5, 1e3), agents: v(k, 6, 1), yoyN: v(k, 7, 1e3), yoyG: v(k, 8, 1e3), yoyL: v(k, 9, 1e3), yoySchools: v(k, 10, 1), K: v(k, 11, 1e3) };
+      r.K /= Math.max(1e-9, r.n);
       r.L /= Math.max(1e-9, r.n); r.yoyL /= Math.max(1e-9, r.yoyN); r.p = r.cons / Math.max(1e-12, r.consMax); r.kgHa = r.g / 1000 / this.F.lakeHa; r.perHa = r.n / this.F.lakeHa; r.meanW = r.g / Math.max(1e-9, r.n); out[key] = r; });
     return out;
   }
@@ -307,7 +308,11 @@ export class GpuFish {
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
     const done = this.run(enc => {
       this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
-      this.encodeKernel(enc, 'k_learn'); this.encodeKernel(enc, 'k_sense'); this.encodeKernel(enc, 'k_brain', 64); this.encodeKernel(enc, 'k_move', 64); this.encodeKernel(enc, 'k_body');
+      this.encodeKernel(enc, 'k_learn'); this.encodeKernel(enc, 'k_sense'); this.encodeKernel(enc, 'k_brain', 64); this.encodeKernel(enc, 'k_move', 64);
+      // (fish3's coarse block in two passes, F3.FRESH_HASH: the grid and the snapshot rebuilt where every fish got to — strikes and mate
+      // searches find the others there; PX then holds the moved places for all, so the kernels' list-order reads agree with fish3's)
+      if (F3.FRESH_HASH) this.encodeRegrid(enc);
+      this.encodeKernel(enc, 'k_body');
       this.encodeFeed(enc); this.encodeSpawn(enc); this.encodeHaz(enc); this.encodeYoy(enc); this.encodeRecruit(enc);
     });
     if (during) during();
@@ -337,6 +342,8 @@ export class GpuFish {
   async readGlobals() { return new Float32Array(await this.read(this.B.GL)); }
   run(fn) { const enc = this.dev.createCommandEncoder(); fn(enc); this.dev.queue.submit([enc.finish()]); return this.dev.queue.onSubmittedWorkDone(); }
   clearTallies() { this.dev.queue.writeBuffer(this.B.TL, 0, new Uint32Array(NTALLY)); }
+  // every agent's intake tallies (cons, consMax) zeroed: the census's ration p is then over the time since (diagnostics)
+  resetIntake() { return this.run(enc => { enc.clearBuffer(this.B.A, 4 * AF.cons * this.cap, 4 * this.cap); enc.clearBuffer(this.B.A, 4 * AF.consMax * this.cap, 4 * this.cap); }); }
   // ---------- data out ----------
   async read(buf, bytes = buf.size, off = 0) {
     const rb = this.dev.createBuffer({ size: bytes, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });

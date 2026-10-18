@@ -270,6 +270,63 @@ the next calibration work: why bass and pickerel can't feed through the summer, 
 the strikes' reach — the coarse block's strike finding above — winter rations), the recruits' fall starvation, the dace in the
 brook, and whether the cap should bind at all.
 
+### G3 — calibrating the year (2026-10-18; the human: "yeah keep going")
+
+**The diagnosis** (the year runner's diagnostics — each fortnight's ration, mean condition and diet by species — seed 612 as 611;
+a one-fish winter in Node, `scratchpad/winter_fish.mjs`; two research notes, `docs/research_notes/Predator winter energetics/`):
+- **The young recruits starve in fall and winter, the adults mostly don't.** ~17,000 young bass and ~38,000 young bullhead die from
+  October; the adult bass keep K ~0.85 all winter. Both young run on the Rice largemouth stand-in, whose respiration barely falls
+  with the cold (Q10 1.37): at 4 °C a 5-g fish burns ~227 mg O₂ kg⁻¹ h⁻¹, 5.5× the bullhead's own set — over a 208-day winter,
+  energy 3.6× its mass: every one dies whatever it eats.
+- **Whitledge's smallmouth respiration** was measured at 18–30 °C; its mass exponent (−0.756) makes 100–150-g bass 2–4× too costly
+  in winter (64 vs the field's 20–35 mg O₂ kg⁻¹ h⁻¹ at 4 °C). The **pike set** overstates the esocids' winter needs 2–4× (Chipps et
+  al. 2000): maintenance at 1–4 °C was 72–77 % of Cmax, the pickerel getting ~40 % (realistic) and losing condition 0.84 → 0.72.
+- **A constant energy density** (4,184 J/g) turned a lipid-dominated winter loss into 1.5–2× too much mass loss.
+- **Nest guarding killed ~14 % of the adult bass in late June:** respiration ×1.6 (Hinch & Collins's PEAK) with feeding ×0.2 and the
+  swimming cost on top — ~2 % of the body's energy a day, where real guards lose 3–8 % of their mass over ~4 weeks and none starve.
+- **The strikes' stale grid** (above) was a real bias but a small one at true scale: the hash rebuilt after the moves raised the
+  kills 12 % and the fish eaten 37 % over 2 days (CPU, seed 611) — bass and pickerel eat mostly crayfish (78 % / 57 % in June).
+- **The water under the ice** is 1–2 °C through the column (3 °C in the bottom layer), where Maine lakes run ~0–1 °C under the ice
+  and ~3–4 °C at the bottom, warming from the sediment through the winter — noted, not yet changed.
+
+**The fixes** (both engines; CPU and GPU from one set of numbers):
+- `F3.FRESH_HASH`: fish3's coarse block in two passes (every fish moves; the hash rebuilt where they got to; every fish feeds,
+  spawns, breathes, meets its hazards); the GPU rebuilds its grid between k_move and k_body. Parity re-checked at 1/10 (3 seeds × 30
+  days: ten species within the seeds' spread, bullhead 0.873 · 0.900). It exposed a hand-back bug: a mate later in the list was
+  dropped when the arrays became new objects (its id checked before set) — fixed, the gate's hand-back check passing again.
+- `bioenergetics.js coldResp / coldCmax`: a species' cold rule below T1, wholly below T0. **Bass** (every set, the Rice stand-in too):
+  30 mg O₂ kg⁻¹ h⁻¹ at 5 °C for 100 g × (W/100)^−0.2 × 2^((T−5)/10) × 0.7 once it stops feeding (12 → 8 °C), FB4's above 18 °C, and a
+  small bass's appetite in the cold its own species' set's. **Young bullhead**: the bullhead's own respiration and appetite below
+  15 °C, × 0.7 buried and fasting. **Pickerel**: the pike set's respiration ×½ at ≤ 8 °C, back to FB4's by 15 °C.
+- `bioenergetics.js energyOf / massOf`: below its standard weight a fish's energy density follows its condition — E = W·ED0·(1 +
+  γ(K − 1)), γ 0.8 adults (the fat goes first, ~7.5 kJ a gram near K 1; the field's 7–9), 0.3 the year's young; at and above Ws
+  FB4's own ED0, so summer growth is as the sets were fit.
+- **Guarding by stage** (`BROOD.GUARD_METAB3 / GUARD_FEED3 / GUARD_EARLY / GUARD_QUIT`): ×1.4 and ~0.12 of a free fish's feeding over
+  the eggs to swim-up (the first 9 days), then ×1.12 and ~0.45; no swimming cost on top; a guard under K 0.80 leaves its nest. The
+  bullhead's guard 12 days (was 22; 10–14 in the field).
+- One fish through a winter (Oct 16 → May 12), old → new: a 30-cm bass −35 % → −10 % of its mass (−18 % energy; the field −5 to
+  −15 %, −15 to −25 %); a 21-cm bass −78 % → −12 %; young bass all dying → −33 to −45 % of their energy (those under ~6 cm ending in
+  starving condition, over ~8 cm through — the field's 48–92-mm threshold); young bullhead all dying → −37 to −44 % (the 4-cm ones
+  die); pickerel −30 to −45 % → holding or gaining; perch, white perch, sunfish, fallfish as before.
+
+**The year with the fixes** (seed 611, the true lakes on the GPU, 23.6 min): each species' adults at the year's end, before → after
+(deaths over the year, starved · eaten):
+
+| | before | after | starved · eaten (after) |
+|---|---|---|---|
+| bass | 0.229 | **0.664** | 3,902 (July) · 30,777 (the August recruits: pickerel 18,135, other bass 12,246) |
+| pickerel | 0.117 | **0.448** | 690 · 5,531 — only ~2,500 of the year's young reach their recruiting length |
+| bullhead | 0.548 | **0.844** | 11,385 · 37,748 (pickerel 33,609) |
+| fallfish | 0.711 | 0.707 | 2,834 · 27,642 |
+| killifish | 0.578 | 0.534 | 2,540 · 105,013 (pickerel 79,516) |
+| sunfish · perch · sucker · white perch · redbreast | 1.29 · 1.12 · 1.39 · 1.43 · 1.30 | 1.34 · 1.12 · 1.36 · 1.43 · 1.31 | |
+| dace (brook) | 0 | 0 | |
+
+Biomass 111 kg/ha. Winter starvation is gone (the adult bass's K 0.95–0.97 through the winter; the young bass and bullhead
+recruited in August come through it). **Still open:** the pickerel's recruitment (and so its decline), the bass's July starvation (a
+crayfish-heavy diet at ~3,000 J/g after its shell, at 23–24 °C, on Whitledge's summer respiration), the young bass's losses to
+pickerel, the brook's dace, the cap the prey species fill.
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the

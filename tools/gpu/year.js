@@ -1,6 +1,8 @@
 // GPU stage G3 (docs/GPU_SIM.md): THE YEAR RUNNER — the GPU engine's coarse blocks through whole years, seed after seed, its lines
 // in tools/w3_season.mjs's format (the CPU's own year run) so the two compare line by line: each species' fish against the start,
 // kg/ha, ration, mean cm, the young, spawnings and deaths (counted from the founding, as the CPU's are), and who ate whom at the end.
+// THE DIAGNOSTICS (?diet=0 off): the ration p is the report interval's (the intake tallies reset after each report — the CPU's lines
+// give it since the founding), with each species' mean condition K, and a line of its diet over the interval by food.
 //   http://localhost:8000/tools/gpu/year.html?world=true&seeds=611,612,613&yf=0.22&days=365&every=14
 // The lines also go to window.YEAR (by seed) for a script to read; the page's title is 'done' at the end.
 import '../../src/w3/render3/world3sel.js';
@@ -15,7 +17,8 @@ const { seed } = await import('../../src/core.js');
 const { waterOf } = await import('../../src/w3/render3/fishside3.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
-const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460;   // (tally pairs: wgsl.js's word offsets / 2)
+const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
+const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
 const { dev, info } = await GpuFish.device(); log(`GPU: ${info.vendor} ${info.architecture}`);
 window.YEAR = {};
 for (const sd of SEEDS) {
@@ -25,7 +28,7 @@ for (const sd of SEEDS) {
   const st0 = JSON.parse(JSON.stringify(F.stats)), lines = window.YEAR[sd] = [];
   const say = s => { log(s); lines.push(s); };
   say(`\n#### seed ${sd} · founded in ${((performance.now() - t0) / 1000).toFixed(1)} s: ${F.fish.length} agents, ${F.yoy.length} young schools · arrays ${G.cap} agents, ${G.ycap} young`);
-  let first = null, tB = 0, nB = 0;
+  let first = null, tB = 0, nB = 0, tlPrev = null;
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
     const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env);
@@ -34,8 +37,13 @@ for (const sd of SEEDS) {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });
       const sp = (st0.spawns[k] || 0) + tl[T_SPAWNS + q] / 1e6;
-      say(`   ${k.padEnd(10)} ${(r.n / Math.max(1, r0.n)).toFixed(3)}× ${String(Math.round(r.n)).padStart(7)} fish ${r.kgHa.toFixed(1).padStart(5)} kg/ha p ${r.p.toFixed(2)} ${r.L.toFixed(1)} cm · young ${(r.yoyN / 1000).toFixed(0)}k @ ${r.yoyL.toFixed(1)} cm · spawnings ${Math.round(sp)} · starved ${Math.round(died.starve)} eaten ${Math.round(died.eaten)} other ${Math.round(died.other + died.old + died.heat + died.hypoxia)} · recruits ${Math.round((st0.recruits[k] || 0) + tl[T_RECRUITS + q] / 1e6)}`);
+      say(`   ${k.padEnd(10)} ${(r.n / Math.max(1, r0.n)).toFixed(3)}× ${String(Math.round(r.n)).padStart(7)} fish ${r.kgHa.toFixed(1).padStart(5)} kg/ha p ${r.p.toFixed(2)}${DIET ? ` K ${r.K.toFixed(2)}` : ''} ${r.L.toFixed(1)} cm · young ${(r.yoyN / 1000).toFixed(0)}k @ ${r.yoyL.toFixed(1)} cm · spawnings ${Math.round(sp)} · starved ${Math.round(died.starve)} eaten ${Math.round(died.eaten)} other ${Math.round(died.other + died.old + died.heat + died.hypoxia)} · recruits ${Math.round((st0.recruits[k] || 0) + tl[T_RECRUITS + q] / 1e6)}`);
+      if (DIET && tlPrev) {
+        const g = FOODS.map((f, j) => tl[T_FOODK + q * NFOODK + j] - tlPrev[T_FOODK + q * NFOODK + j]), tot = g.reduce((a, b) => a + b, 0) / 1e6;
+        if (tot > 0) say(`      diet ${(tot / 1000).toFixed(0)} kg: ` + FOODS.map((f, j) => [f, g[j] / 1e6 / tot]).filter(x => x[1] >= 0.005).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' · '));
+      }
     });
+    tlPrev = tl; if (DIET) await G.resetIntake();
     return tl;
   };
   await report('start');
@@ -48,6 +56,10 @@ for (const sd of SEEDS) {
   }
   const kills = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v > 0) kills.push([`${kp}>${kq}`, v]); }));
   kills.sort((a, b) => b[1] - a[1]); say('who ate whom (kills): ' + kills.slice(0, 14).map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+  // the year's young by species: hatched, then their fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
+  const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited'], T_FRY = 320;
+  const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
+  say("the year's young (hatched → fates): " + KEYS3.map((k, q) => { const f0 = st0.fry[k] || {}, v = j => tl[T_FRY + q * 7 + j] / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
   G.destroy();
 }
 document.title = 'done';

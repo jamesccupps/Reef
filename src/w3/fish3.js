@@ -26,7 +26,7 @@ import { A2 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
-import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL } from '../bioenergetics.js';
+import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
 import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
@@ -167,6 +167,7 @@ export const F3 = {
   // radius × this to leave it (no flicker at its edge). The far fish's blocks are staggered by id, so each fine step carries
   // ~1/(FAR_BLOCK/dt) of them
   FAR_BLOCK: 60, FOCUS_HYST: 1.15,
+  FRESH_HASH: 1,        // a coarse block's strikes and mate searches through the hash rebuilt after every fish moved (0: the block's start — before G3)
   HASH_EVERY: 10,       // fine steps between the whole lakes' hash (and counts, biomass) with a focus: the far fish live in blocks
   REGION_M: 50,         // m about the focus's edge its own hash covers (the near fish's senses, strikes and close mates; a second's swim)
   MERGE_R: 2.5, MERGE_LR: 1.2, MERGE_MAX: 1.6, SPLIT: 2,
@@ -467,6 +468,8 @@ function unpackFish(d) {
 function packYoy(q) { const d = { key: q.s.key, g: q.g, genes: q.genes, v: {} }; for (const k of Object.keys(q)) if (!YOY_REF.has(k)) d.v[k] = q[k]; return d; }
 function unpackYoy(d) { const q = new Yoy(); Object.assign(q, d.v); q.s = S3[d.key]; q.g = d.g; q.genes = d.genes; q.gref = null; q.guard = 0; q.alive = true; q._out = false; q.near = false; q._due = -1; return q; }
 
+// a guard's stage: 0 over its eggs and the fry to swim-up (its first GUARD_EARLY days), 1 over the free-swimming fry
+const guardStage = a => a.s.guard - a.nt < BROOD.GUARD_EARLY * DAY3 ? 0 : 1;
 // a tally tree's counts zeroed (its times of first events kept)
 const zeroTally = o => { for (const k of Object.keys(o)) { if (typeof o[k] === 'number') { if (k !== 'first') o[k] = 0; } else if (o[k] && typeof o[k] === 'object') zeroTally(o[k]); } };
 
@@ -930,10 +933,10 @@ export class Fish3 {
         if (!q.alive || y0 > yf) continue;
         const sp = q.s.sp, b = sp.bioJuv || sp.bio, d = sp.diet;
         const pS = F3.SEED_P[0] + (F3.SEED_P[1] - F3.SEED_P[0]) * clamp((yf - F3.SEED_P_YF[0]) / (F3.SEED_P_YF[1] - F3.SEED_P_YF[0]), 0, 1);
-        const C = pS * cmax(b, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+        const C = pS * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
         const J = C * (q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus) ? PREY.BENTH_ED : PREY.DAPH_ED);
         wasteFractions(b, T, pS, WF);
-        const Wr = Math.max(q.W, FRY.R_WMIN), Rj = respStd(b, Wr, T) * routineActivity(b, Wr, T) * q.W * OXYCAL * dd;
+        const Wr = Math.max(q.W, FRY.R_WMIN), Rj = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W * OXYCAL * dd;
         const Fe = WF[0] * J, U = WF[1] * (J - Fe), net = J - Fe - U - b.SDA * (J - Fe) - Rj;
         if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
@@ -988,7 +991,20 @@ export class Fish3 {
     // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
     const lux0 = e.lux, luxB0 = coarse ? [lux0, e.luxAhead(dt / 2), e.luxAhead(dt)] : null;
     this._cx = { yf, att, clar, lux0 };
-    if (!mixed) { this._mixOn = false; for (let i = 0; i < f.length; i++) { const a = f[i]; if (a.alive) this._live(a, i, dt, mv, coarse, luxB0); } }
+    if (!mixed) {
+      this._mixOn = false;
+      if (coarse && F3.FRESH_HASH) {
+        // A COARSE BLOCK IN TWO PASSES: every fish decides and moves; the lakes' hash is rebuilt where they all got to; then every fish
+        // feeds, spawns, breathes and meets its hazards. In one pass a fish's strikes (and its mate search) looked for the others
+        // through the hash of the block's START while they had moved ~28 m since (the true lakes): it found prey only where their
+        // start cells lay near where it had got to — the far fish's predation ran ~9× below the formula's, the near fish's (fine
+        // steps, a fresh hash) at its full rate (docs/GPU_SIM.md "Strikes: a finding about the CPU sim"; G3)
+        const go = this._go || (this._go = []); go.length = f.length;
+        for (let i = 0; i < f.length; i++) { const a = f[i]; go[i] = a.alive && this._liveMove(a, i, dt, mv, coarse, luxB0); }
+        this._hashBuild(false);
+        for (let i = 0; i < f.length; i++) { const a = f[i]; if (go[i] && a.alive) this._liveRest(a, i, dt, mv, coarse); }
+      } else for (let i = 0; i < f.length; i++) { const a = f[i]; if (a.alive) this._live(a, i, dt, mv, coarse, luxB0); }
+    }
     else this._stepMixed(dt, mv, full);
     if (mixed) this._stepYoyMixed(dt, mv, yf, full); else { this._yMixOn = false; this._stepYoy(dt, mv, yf); }
     if (mixed ? this.time - (this._mergeAt ?? -1e9) >= F3.FAR_BLOCK : this.stepNo % F3.MERGE_EVERY === 0) { this._mergeAt = this.time; this._schools(); this._mergeYoy(); }
@@ -1004,9 +1020,11 @@ export class Fish3 {
     }
   }
   // ONE FISH'S STEP: dtA s of its life (mvA of its swimming; a coarse block when co, its light luxB over the block)
-  _live(a, i, dtA, mvA, co, luxB) {
-    const m = this._livePre(a, i, dtA, mvA, co, luxB); if (!m) return;
-    const s = a.s, sp = s.sp, e = this.env, ch = this.chem, G = this.G;
+  _live(a, i, dtA, mvA, co, luxB) { if (this._liveMove(a, i, dtA, mvA, co, luxB)) this._liveRest(a, i, dtA, mvA, co); }
+  // ITS STEP'S FIRST HALF: its surroundings, the decision, the drives, the move — false if it died (stranded)
+  _liveMove(a, i, dtA, mvA, co, luxB) {
+    const m = this._livePre(a, i, dtA, mvA, co, luxB); if (!m) return false;
+    const e = this.env;
     // decide (senses → brain), then the innate drives, then move
     if (co || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 || !a._dh) {
       // learning (on the decision just acted on: rewarded if it ate since), then the next decision (a coarse block: one)
@@ -1021,7 +1039,11 @@ export class Fish3 {
     // (SHARDS: it swam into another shard's water — it finishes this step feeding and breathing where it was, in its own water, and is
     // handed over after it; a block's relocation had moved its cells to where it got to)
     if (this.shard && this.shard.owner[e.colAt(a.x, a.y)] !== this.shard.me) { a._out = true; a.c = c0; a.j = j0; a.jb = jb0; }
-    // the body, food, hazards
+    return true;
+  }
+  // ITS STEP'S SECOND HALF: the body, food (strikes at fish among them), spawning, its breath, the hazards
+  _liveRest(a, i, dtA, mvA, co) {
+    const s = a.s, sp = s.sp, ch = this.chem, G = this.G;
     const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
     const cm = this._energetics(a, bp, T, dtA);
     const ate = co ? this._feed(a, i, cm, a.visF, dtA) : (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, a.visF, dtA * F3.DECIDE_EVERY) : false;
@@ -1038,7 +1060,7 @@ export class Fish3 {
   _livePre(a, i, dtA, mvA, co, luxB) {
     const s = a.s, e = this.env, ch = this.chem, G = this.G, { yf, att, clar, lux0 } = this._cx;
     this._coarse = co;
-    a.age += dtA; a.mateCd -= dtA; if (a.missCd > 0) a.missCd -= dtA; if (a.nt > 0) a.nt -= dtA;
+    a.age += dtA; a.mateCd -= dtA; if (a.missCd > 0) a.missCd -= dtA; if (a.nt > 0) { a.nt -= dtA; if (a.K < BROOD.GUARD_QUIT) a.nt = 0; }   // (a guard grown too thin leaves its nest)
     if (!a.mature && this._matureAt(a)) a.mature = true;
     // surroundings
     a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y));
@@ -1406,7 +1428,7 @@ export class Fish3 {
 
   // ---------- the body: digestion, waste, respiration, gonads, growth (FB4; world.js) ----------
   _energetics(a, bp, T, dt) {
-    const s = a.s, sp = s.sp, Wg = a.W, dd = dt / DAY, cm = cmax(bp, Wg, T);
+    const s = a.s, sp = s.sp, Wg = a.W, dd = dt / DAY, cm = coldCmax(sp.cold, bp, sp.bio, Wg, T);   // (a juvenile stand-in's appetite in the cold: the species' own — bioenergetics.js coldCmax)
     let C = 0, pNow = 0;
     if (a.gut > 0) {
       // (gastric evacuation: proportional to the gut's contents — exact over the step — at most Cmax a day)
@@ -1418,16 +1440,19 @@ export class Fish3 {
     wasteFractions(bp, T, clamp(pNow, 0, 1), WF);
     const F = WF[0] * C, U = WF[1] * (C - F), S = bp.SDA * (C - F);
     a.uAvg += (a.spd / Math.max(1e-6, a.spdMax) - a.uAvg) * Math.min(1, dd);
-    const act = routineActivity(bp, Wg, T) * Math.exp(BIOE.SWIM * Math.max(0, a.uAvg - s.uRoutine));
+    const act = a.nt > 0 ? 1 : Math.exp(BIOE.SWIM * Math.max(0, a.uAvg - s.uRoutine));   // (swimming beyond the routine: the routine is in the respiration; a guard's chases are in its ×)
     const depress = 1 - 0.3 * clamp((0.9 - a.K) / (0.9 - 0.55), 0, 1);
-    const rO2 = respStd(bp, Wg, T) * a.metabMul * act * depress * (a.nt > 0 ? BROOD.GUARD_METAB : 1) * Wg;   // g O₂ a day (a guardian works harder)
+    const rO2 = coldResp(sp.cold, bp, sp.bio, Wg, T) * a.metabMul * act * depress * (a.nt > 0 ? BROOD.GUARD_METAB3[guardStage(a)] : 1) * Wg;   // g O₂ a day (FB4's routine respiration, the species' cold rule below its T1; a guardian works harder)
     a.rO2 = rO2 / DAY;
     let net = C - F - U - S - rO2 * OXYCAL * dd;
     const ed = energyDensity(bp, Wg), gsi = s.gsi(a.sex);
     if (net > 0 && a.mature && a.gon < gsi * Wg) { const toG = Math.min(net * BIOE.REPRO_ALLOC, (gsi * Wg - a.gon) * ed); a.gon += toG / ed; net -= toG; }
     else if (net <= 0 && a.gon > 0 && a.K < BIOE.K_RESORB) { const fromG = Math.min(a.gon * ed, -net); a.gon -= fromG / ed; net += fromG; }
-    a.W = Math.max(1e-6, Wg + net / ed);
-    if (a.W > stdWeight(sp.lw, a.L)) a.L = lengthFor(sp.lw, a.W);
+    // its mass for its energy: below its standard weight the energy density follows its condition (bioenergetics.js energyOf: a
+    // deficit takes the fat first), at and above it FB4's own — it grows in length
+    const Ws = stdWeight(sp.lw, a.L), gK = a.age < YEAR ? BIOE.ED_K_JUV : BIOE.ED_K;
+    a.W = Math.max(1e-6, massOf(energyOf(Wg, Ws, ed, gK) + net, Ws, ed, gK));
+    if (a.W > Ws) a.L = lengthFor(sp.lw, a.W);
     this._settle(a);
     return cm;
   }
@@ -1436,7 +1461,7 @@ export class Fish3 {
   _feed(a, i, cm, visDay, dt) {
     const s = a.s, sp = s.sp, ch = this.chem, gmax = sp.gut * a.W, n = a.n;
     const o2L = lethalO2(a.o2Lethal, a.o2Ice, a.T);
-    const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1) * (a.nt > 0 ? BROOD.GUARD_FEED : 1), apt = gEff / gmax;   // (a guardian hardly eats)
+    const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1) * (a.nt > 0 ? BROOD.GUARD_FEED3[guardStage(a)] : 1), apt = gEff / gmax;   // (a guardian eats little — least over its eggs)
     const perf = coldPerf(a.T, sp.tempOpt, sp.coldPerf);
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
@@ -1925,7 +1950,7 @@ export class Fish3 {
   // Returns the starvation hazard (/s)
   _feedYoy(q, st, T) {
     const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
-    const want = q.n * cmax(b, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+    const want = q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
     let got = 0, J = 0;
     if (d.fish && q.L >= sp.Lpisc) {   // young piscivores eat other young they can swallow
       const r = this._nearYoy(q.x, q.y, q.z, F3.YOY_EAT_R, o => o !== q && o.L * o.s.sp.depthR <= q.L * sp.gapeR && o.L >= FEED.SCHOOL_MIN * q.L);
@@ -1962,7 +1987,7 @@ export class Fish3 {
     }
     const p = want > 0 ? Math.min(1, got / want) : 0;
     wasteFractions(b, T, p, WF);
-    const Wr = Math.max(q.W, FRY.R_WMIN), r = respStd(b, Wr, T) * routineActivity(b, Wr, T) * q.W, Rj = r * OXYCAL * dd;
+    const Wr = Math.max(q.W, FRY.R_WMIN), r = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W, Rj = r * OXYCAL * dd;
     const eff = (1 - WF[0]) * (1 - WF[1] - b.SDA), edF = got > 0 ? J / got : PREY.DAPH_ED;
     const need = Rj / Math.max(1e-9, eff * edF), ed = energyDensity(b, q.W);
     let hS = 0;

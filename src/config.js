@@ -121,6 +121,9 @@ export const BIOE = {
   // & Post 1990). K is W / the standard weight (the 75th-percentile weight-at-length, so populations average ~0.85–1.0
   // and a lean fish at 0.8 is thin, not dying). Not computed above K_HAZARD (negligible there).
   K_S50: 0.55, K_S99: 0.68, K_HAZARD: 0.78,
+  // the energy density's slope with condition below the standard weight (bioenergetics.js energyOf): adults lose fat first
+  // (~7–9 kJ/g of winter loss), the year's young leaner tissue (~5–6 kJ/g) — docs/research_notes/Predator winter energetics
+  ED_K: 0.8, ED_K_JUV: 0.3,
   // METABOLIC DEPRESSION under food deprivation: below condition K_DEPRESS respiration falls, linearly to STARVE_DEPRESS
   // less at K_S50 (food-deprived fish lower their standard metabolism 10–40 %: Méndez & Wieser 1993; Mehner & Wieser 1994)
   K_DEPRESS: 0.9, STARVE_DEPRESS: 0.3,
@@ -278,9 +281,14 @@ export const BROOD = {
   GUARD_TETHER: 2.5,    // steer weight pulling a guardian back to its nest (outweighs a brain's full turn once ~half-way out)
   HOVER: 0.3,           // a guardian on station with no intruder slows to this × its cruise (hovering/fanning over the nest)
   FRY_TETHER: 0.9,      // steer weight keeping guarded fry near the nest
-  // the cost of guarding: nesting male bass are ~2× as active day and night (Cooke et al. 2002) with metabolic rate up to
-  // +60 % (smallmouth: Hinch & Collins 1991) while their feeding is cut 70–100 % — they lose condition over the nest
-  GUARD_METAB: 1.6, GUARD_FEED: 0.2,
+  // THE COST OF GUARDING, staged (docs/research_notes/Predator winter energetics/nest_guarding_costs.md): the eggs to swim-up (the
+  // first GUARD_EARLY days) cost most — respiration ×1.4, feeding ~0.12 of a free fish's; the free-swimming fry's weeks ×1.12, ~0.45
+  // (smallmouth +17.6 % averaged over the whole guard, Cooke et al. 2002; ×1.2–1.28, Steinhart et al. 2005; 60–100 % of guards with
+  // food in the gut, Mackereth et al. 1999 — the old ×1.6 was Hinch & Collins's PEAK, and with feeding ×0.2 starved ~14 % of the adult
+  // bass on their nests where real ones lose 3–8 % of their mass over ~4 weeks and none starve). A guard's chases are in the ×, not
+  // charged again as swimming; one whose condition falls below GUARD_QUIT leaves its nest (males abandon rather than starve)
+  GUARD_METAB: 1.6, GUARD_FEED: 0.2,   // (the 2-D sim's, unchanged)
+  GUARD_METAB3: [1.4, 1.12], GUARD_FEED3: [0.12, 0.45], GUARD_EARLY: 9, GUARD_QUIT: 0.8,   // (the 3-D lakes', by stage)
   // NURSERY: young fish shelter in vegetation and structure (the littoral nursery habitat), more so when frightened
   NURSERY: 0.45,        // cover-seeking steer weight for juveniles (age < half their maturity), × (1 + fear)
   SCATTER: [14, 40],  // px: newborns are placed this far (annulus) from the parent(s), clamped into the water column

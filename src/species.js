@@ -319,6 +319,9 @@ export const BIO = {
     // assumption, used only in the first year
     bioJuv: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, CTL: undefined, CK1: undefined, CK4: undefined, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
       SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, src: 'Rice et al. 1983 (FB4 largemouth bass) — YOY bullhead stand-in' },
+    // THE COLD: below 15 °C the young breathe on the bullhead's own set (Hartman: 41 mg O₂ kg⁻¹ h⁻¹ at 5 g, 4 °C, Q10 2.5 — the Rice
+    // stand-in's 227 starved every one), and all × 0.7 buried and fasting below ~8 °C (no feeding at 2 °C, Massengill 1973)
+    cold: { adultR: true, adultC: true, quiet: 0.7, quietT: [10, 6], T0: 15, T1: 18 },
     lw: { a: 0.01069, b: 3.105 }, vb: { Linf: 38, k: 0.25, t0: 0 },          // Ws Bister et al. 2000; ~8.5, 15, 20, 24, 27 cm (prior)
     Lhatch: 1.0, sHatch: 0.6, L0: 6, Lref: 27, Lmat: 19, matMinAge: yrs(2), maxAge: yrs(10), matureAge: yrs(2.5), M: 0.54,
     gut: 0.06, gerMul: 0.5, gsiF: 0.12, gsiM: 0.015,
@@ -355,6 +358,10 @@ export const BIO = {
     bioJuv: { CEQ: 2, CA: 0.33, CB: -0.325, CQ: 2.65, CTO: 27.5, CTM: 37, REQ: 1, RA: 0.008352, RB: -0.355, RQ: 0.0313, RTO: 0.0196, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
       SDA: 0.15848, EGEQ: 1, FA: 0.104, EXEQ: 1, UA: 0.08817, PREDEDEQ: 1, ED: 4184, hot: undefined, src: 'Rice et al. 1983 (FB4 largemouth bass) — small smallmouth stand-in' },
     juvW: 30,   // g: below this a smallmouth runs on bioJuv
+    // THE COLD (bioenergetics.js coldResp): below 15 °C every bass — the Rice stand-in too — breathes as quiescent bass do in the field:
+    // 30 mg O₂ kg⁻¹ h⁻¹ at 5 °C for 100 g, × (W/100)^−0.2, Q10 2, × 0.7 once it stops feeding at ~10 °C (field budgets 15–30 for
+    // adults, 30–55 for YOY at 2–6 °C; Reeve 2025 Warner Lake largemouth −5.3 % fall to spring) — FB4's from 18 °C up
+    cold: { R5: 30, Wref: 100, b: -0.2, Q10: 2, quiet: 0.7, quietT: [12, 8], T0: 15, T1: 18, adultC: true },   // (a small bass's appetite in the cold: its own species' set's, not the largemouth stand-in's)
     lw: { a: 0.00743, b: 3.20 }, vb: { Linf: 56.4, k: 0.14, t0: -0.5 },      // Ws Kolander et al. 1993; Maine L∞ 56.4, k 0.14 (FishBase); t0 through 56–76-mm young by autumn (Dudley & Trial 2014): ~11, 17, 22, 26, 30 cm at 1–5
     Lhatch: 0.9, sHatch: 0.1, L0: 6, Lref: 33, Lmat: 27, LmatM: 23, matMinAge: yrs(2.5), maxAge: yrs(15), matureAge: yrs(4.5), M: 0.36,   // ♂ 3–4 yr, ♀ 4–5 yr at 20–30 cm (MDIFW); swim-up at 9.1 mm (Shuter et al. 1980); M = 5.4/15. (sHatch 0.1: a female deposits only ~⅓ of her ovary — effective 2,000–3,000 eggs/lb against 7,000–8,000 — and ~40 % of nests fail, MDIFW)
     gut: 0.08, gerMul: 0.4, gsiF: 0.08, gsiM: 0.008,   // between panfish (~21 h) and pike (~50 h) at 18–23 °C (Seaburg & Moyle 1964)
@@ -371,6 +378,7 @@ export const BIO = {
               // at full ration, where Maine pickerel feed through the winter — anglers catch 1.18 a day on the ice vs 0.49 in summer)
     bio: { CEQ: 4, CA: 0.0244, CB: -0.18, CQ: -0.024, CK1: 0.0125, CK4: -0.000326, REQ: 1, RA: 0.0026445, RB: -0.18, RQ: 0.055, RTO: 0.1222, RTL: 0, RK1: 1, RK4: 0, RK5: 0, ACT: 1, BACT: 0,
       SDA: 0.175, EGEQ: 1, FA: 0.2, EXEQ: 1, UA: 0.0875, PREDEDEQ: 1, ED: 3598, src: 'Bevelhimer et al. 1985 (FB4 northern pike) — chain pickerel stand-in' },
+    cold: { mul: 0.5, T0: 8, T1: 15 },   // (the pike set's winter respiration ×½ at ≤ 8 °C — its maintenance then p ~0.35–0.4, the pickerel's ~40 % under ice holding its weight; Chipps et al. 2000: winter consumption overestimated 2–4×)
     lw: { a: 0.002624, b: 3.243 }, vb: { Linf: 65, k: 0.2, t0: -0.47 },     // Ws chain pickerel (FSA WSlit); 10–13 cm after the first season, then 6.4–8.9 cm a year, 36–48 cm at 3–5 (MDIFW): ~17, 25, 32, 38, 43 cm at 1–5
     Lhatch: 0.9, sHatch: 0.05, L0: 8, Lref: 43, Lmat: 37, LmatM: 33, matMinAge: yrs(2), maxAge: yrs(9), matureAge: yrs(3.5), M: 0.62,   // mature at age 3–4 at 33–41 cm; Maine ice anglers' fish average 43 cm (MDIFW); M = 5.4/9 – Then et al. 0.66
     gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // (pike: ♂ GSI 2.5 %, Medford & Mackay 1978; 50 % of a meal in ~20 h, all in ~48–50 h in summer, Diana 1979)
@@ -559,7 +567,7 @@ export const SP = {
     diet: { detritus: true, plants: true, larva: true, snail: true, cray: 0.15 },   // (2026-10-15: zooplankton only as a young fish — below Lzoo — now that the bed's worms and scuds (BENTHOS) feed the adults)   // bullheads eat crayfish (and scavenge them)
     maxSpeed: 34, accel: 44, maxTurn: 2.0, sink: 8,
     matingCooldown: yr(0.5), pop: { start: 1.5, min: 3, max: 6 },   // K ≈ 40; ~10 founders ≈ 20 kg/ha
-    tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.06),   // (2026-10-15: no fixed spawning side — bullheads nest under cover in the shallows near home, the nearer shore of their own water body)
+    tempOpt: 29, tempTol: 9, o2Crit: 0.21, spawnT: [21, 28], nestGuard: yr(0.033),   // (2026-10-15: no fixed spawning side — bullheads nest under cover in the shallows near home, the nearer shore of their own water body)
       // warmwater bottom-dweller; spawns once in early summer; nests in cavities, guarded
     innate: { homeDepth: 0.92, depthPull: 0.7, cruise: 0.30, weight: 0.45, nocturnal: true, dayRest: 0.5, spawnGround: 0.4, forage: 0.5 },   // hugs the bottom; forages more at night
     sat: 30, lbase: 30, lrange: 18,

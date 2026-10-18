@@ -85,6 +85,46 @@ export function respStd(b, W, T) { return b.RA * Math.pow(W, b.RB) * respiration
 // FB4's full respiration (routine activity), g O₂ / g / day — for checks against published runs
 export function respiration(b, W, T) { return respStd(b, W, T) * routineActivity(b, W, T); }
 
+// ---------- THE COLD (docs/research_notes/Predator winter energetics/predator_winter_energetics.md) ----------
+// FB4's respiration sets were fit in warm water and in the cold burn 2–6× what fish do there: Whitledge's smallmouth (18–30 °C, its
+// steep mass exponent) at 100–150 g, the Rice largemouth set (Q10 1.37) on every small bass and young bullhead (~5× the bullhead's own
+// at 4 °C: a 208-day winter cost 3.6× their mass), the pike set 2–4× in winter (Chipps et al. 2000). A species' `cold` rule takes over
+// below T1 — wholly below T0, linearly between: an empirical curve (R5 mg O₂ kg⁻¹ h⁻¹ at 5 °C for a Wref-g fish, mass exponent b,
+// Q10 — field energy budgets of quiescent bass, Curry 2005's YOY depletion), the species' ADULT set for a juvenile stand-in, or
+// FB4's × mul; × quiet once it has stopped feeding (ramped over quietT: a fasting, inactive fish's resting rate). Returns g O₂ / g /
+// day with the routine activity in (FB4's respStd × routineActivity). bAdult: the species' adult set (sp.bio). (adultR: a juvenile
+// stand-in breathes on the adult set; adultC: it eats by the adult set's appetite too — coldCmax)
+export function coldResp(c, b, bAdult, W, T) {
+  const rFB = respStd(b, W, T) * routineActivity(b, W, T);
+  if (!c || !(T < c.T1)) return rFB;
+  let rc;
+  if (c.R5) rc = c.R5 * 24e-6 * Math.pow(W / c.Wref, c.b) * Math.pow(c.Q10, (T - 5) / 10);   // (mg/kg/h → g/g/day)
+  else if (c.adultR) rc = b === bAdult ? rFB : respStd(bAdult, W, T) * routineActivity(bAdult, W, T);
+  else rc = rFB * (c.mul ?? 1);
+  if (c.quiet) rc *= 1 - (1 - c.quiet) * Math.min(1, Math.max(0, (c.quietT[0] - T) / (c.quietT[0] - c.quietT[1])));
+  const w = T <= c.T0 ? 1 : (c.T1 - T) / (c.T1 - c.T0);
+  return rFB + (rc - rFB) * w;
+}
+// a juvenile stand-in set's maximum consumption in the cold: the species' adult set's below T1 (wholly below T0) when the rule says
+// so — young bullhead stop feeding near 4 °C as their own set has it, not as the largemouth stand-in's appetite would
+export function coldCmax(c, b, bAdult, W, T) {
+  const cm = cmax(b, W, T);
+  if (!c || !c.adultC || b === bAdult || !(T < c.T1)) return cm;
+  const w = T <= c.T0 ? 1 : (c.T1 - T) / (c.T1 - c.T0);
+  return cm + (cmax(bAdult, W, T) - cm) * w;
+}
+// THE ENERGY OF A FISH BY ITS CONDITION: below its standard weight Ws a fish's energy density falls with its condition (its reserves
+// are lipid — Breck 2008: energy density linear in the water fraction): E = W·ED0·(1 + γ(K − 1)), K = W/Ws — so a winter's deficit
+// takes the fat first, at γ = 0.8 ~7.5 kJ a gram near K 1 (the field's 7–9 kJ/g; 4,184 constant overstated the mass lost 1.5–2×).
+// At and above Ws the fish grows in length at K 1 with FB4's own ED0 — summer growth as the sets were fit. massOf inverts it.
+export function energyOf(W, Ws, ed0, g) { return W >= Ws ? (Ws + (W - Ws)) * ed0 : W * ed0 * (1 + g * (W / Ws - 1)); }
+export function massOf(E, Ws, ed0, g) {
+  if (E >= Ws * ed0) return E / ed0;
+  if (!(g > 0)) return E / ed0;
+  const a = g / Ws, bq = 1 - g, D = bq * bq + 4 * a * (E / ed0);   // (a·W² + (1 − γ)·W − E/ED0 = 0)
+  return D > 0 ? Math.max(0, (-bq + Math.sqrt(D)) / (2 * a)) : 0;
+}
+
 // ---------- egestion & excretion (fractions) ----------
 // EGEQ 1: F = FA·C.  EGEQ 2 (Elliott 1976): F = FA·T^FB·e^(FG·p)·C.  EGEQ 3 (Stewart et al. 1983): PE = FA·T^FB·e^(FG·p),
 // F = ((PE − 0.1)/0.9)·C for digestible prey (world.js handles each prey's own indigestible share).  EGEQ 4: FA·T^FB·C.

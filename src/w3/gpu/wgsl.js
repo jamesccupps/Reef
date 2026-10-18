@@ -206,6 +206,8 @@ const T_CROSS: u32 = 0u;      // + 2k: fish that reached the other lake
 const T_SETTLE: u32 = 32u;    // + 2k: settled there
 const T_TRIPS: u32 = 64u;     // + 2k: set off on a trip
 const T_FOOD: u32 = 128u;     // + 2·kind: grams eaten by the followed fish
+const T_FOODK: u32 = 1024u;   // + 2·(k·NFOODK + kind): the followed fish's grams by species and food (G3 diagnostics: fish, young, bed, weeds, crayfish, surface, zooplankton, organic layer)
+const NFOODK: u32 = 8u;
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
 const T_DIED: u32 = 448u;     // + 2·(k·NCAUSE + cause)
@@ -216,6 +218,7 @@ const FRY_NATURAL: u32 = 0u; const FRY_STARVE: u32 = 1u; const FRY_HEAT: u32 = 2
 const T_EGGS: u32 = 800u; const T_SPAWNS: u32 = 824u; const T_SPAWNSUB: u32 = 848u; const T_SPAWNBED: u32 = 872u; const T_SPAWNBROOK: u32 = 896u; const T_RECRUITS: u32 = 920u; const T_SOLO: u32 = 944u;   // + 2k
 const CAUSE_STARVE: u32 = 0u; const CAUSE_HEAT: u32 = 1u; const CAUSE_HYPOXIA: u32 = 2u; const CAUSE_OTHER: u32 = 3u; const CAUSE_OLD: u32 = 4u; const CAUSE_EATEN: u32 = 5u; const CAUSE_STRANDED: u32 = 6u;
 const NCAUSE: u32 = 7u;
+fn foodK(k: u32, kind: u32, g: f32) { if (g > 0.0) { add64(&TL, T_FOODK + 2u * (k * NFOODK + kind), g, TSCALE); } }
 const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
 `;
 
@@ -290,7 +293,7 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
   let k = gau(A_k, i); let id = gau(A_id, i); let dt = U.dt;
   sau(A_age, i, gau(A_age, i) + U.dtU); sa(A_mateCd, i, ga(A_mateCd, i) - dt);
   let mc = ga(A_missCd, i); if (mc > 0.0) { sa(A_missCd, i, mc - dt); }
-  var nt = ga(A_nt, i); if (nt > 0.0) { nt -= dt; sa(A_nt, i, nt); }
+  var nt = ga(A_nt, i); if (nt > 0.0) { nt -= dt; if (ga(A_K, i) < BROOD_GUARD_QUIT) { nt = 0.0; } sa(A_nt, i, nt); }   // (a guard grown too thin leaves its nest)
   if ((fl & FL_MATURE) == 0u && matureAt(i, k)) { fl |= FL_MATURE; }
   let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i);
   let bed = max(0.05, depthAt(x, y)); sa(A_bed, i, bed);
@@ -802,6 +805,34 @@ fn energyDensity(bs: u32, W: f32) -> f32 {
   if (q == 3.0) { return bio(bs, BAlpha1) * pow(W, bio(bs, BBeta1)); }
   return bio(bs, BED);
 }
+// bioenergetics.js coldResp / coldCmax: the species' cold rule below cT1 (wholly below cT0) — an empirical curve, the adult set's for a
+// juvenile stand-in, or FB4's × mul; × quiet once it stops feeding (over cQa → cQb); a juvenile's appetite by the adult set (cAdC)
+fn coldW(k: u32, T: f32) -> f32 { let t0 = spv(k, S_cT0); let t1 = spv(k, S_cT1); if (T <= t0) { return 1.0; } return clamp((t1 - T) / (t1 - t0), 0.0, 1.0); }
+fn coldResp(k: u32, bs: u32, W: f32, T: f32) -> f32 {
+  let rFB = respStd(bs, W, T) * routineActivity(bs, W, T);
+  let m = spv(k, S_cMode); if (m == 0.0 || !(T < spv(k, S_cT1))) { return rFB; }
+  var rc = rFB; let ba = 2u * k;
+  if (m == 1.0) { rc = spv(k, S_cR5) * 24e-6 * pow(W / spv(k, S_cWref), spv(k, S_cB)) * pow(spv(k, S_cQ10), (T - 5.0) / 10.0); }
+  else if (m == 2.0) { if (bs != ba) { rc = respStd(ba, W, T) * routineActivity(ba, W, T); } }
+  else { rc = rFB * spv(k, S_cMul); }
+  let q = spv(k, S_cQuiet); if (q > 0.0) { let qa = spv(k, S_cQa); let qb = spv(k, S_cQb); rc *= 1.0 - (1.0 - q) * clamp((qa - T) / (qa - qb), 0.0, 1.0); }
+  return rFB + (rc - rFB) * coldW(k, T);
+}
+fn coldCmax(k: u32, bs: u32, W: f32, T: f32) -> f32 {
+  let cm = cmaxB(bs, W, T); let ba = 2u * k;
+  if (spv(k, S_cAdC) < 0.5 || bs == ba || !(T < spv(k, S_cT1))) { return cm; }
+  return cm + (cmaxB(ba, W, T) - cm) * coldW(k, T);
+}
+// bioenergetics.js energyOf / massOf: below the standard weight the energy density follows the condition
+fn energyOf(W: f32, Ws: f32, ed: f32, g: f32) -> f32 { if (W >= Ws) { return W * ed; } return W * ed * (1.0 + g * (W / Ws - 1.0)); }
+fn massOf(E: f32, Ws: f32, ed: f32, g: f32) -> f32 {
+  if (E >= Ws * ed || !(g > 0.0)) { return E / ed; }
+  let a = g / Ws; let bq = 1.0 - g; let D = bq * bq + 4.0 * a * (E / ed);
+  if (!(D > 0.0)) { return 0.0; }
+  return max(0.0, (-bq + sqrt(D)) / (2.0 * a));
+}
+// a guard's multiplier by its stage (fish3 guardStage: its first GUARD_EARLY days, then the free-swimming fry's weeks); 1 off a nest
+fn guardMul(i: u32, k: u32, early: f32, late: f32) -> f32 { let nt = ga(A_nt, i); if (!(nt > 0.0)) { return 1.0; } return select(late, early, spv(k, S_guard) - nt < BROOD_GUARD_EARLY * DAY); }
 fn bioSet(k: u32, W: f32, age: f32) -> u32 {   // fish3: the juvenile set below juvW g (or in its first year)
   let jm = spv(k, S_juvMode);
   if ((jm == 1.0 && W < spv(k, S_juvW)) || (jm == 2.0 && age < YEAR)) { return 2u * k + 1u; }
@@ -827,7 +858,7 @@ export const BODY = /* wgsl */`
   let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
   let k = gau(A_k, i); let T = ga(A_T, i); let Wg = ga(A_W, i); let dd = U.dt / DAY;
   let bs = bioSet(k, Wg, f32(gau(A_age, i)));
-  let cm = cmaxB(bs, Wg, T); sa(A_cm, i, cm);
+  let cm = coldCmax(k, bs, Wg, T); sa(A_cm, i, cm);
   var C = 0.0; var pNow = 0.0; var gut = ga(A_gut, i); var gutE = ga(A_gutE, i);
   if (gut > 0.0) {
     let ev = min(gut * expm(max(BIOE_GER * exp(BIOE_GER_T * T) * spv(k, S_gerMul), cm / spv(k, S_gut)) * dd), cm * Wg * dd);
@@ -839,17 +870,18 @@ export const BODY = /* wgsl */`
   let wf = wasteFr(bs, T, clamp(pNow, 0.0, 1.0));
   let Fz = wf.x * C; let Ux = wf.y * (C - Fz); let Sd = bio(bs, BSDA) * (C - Fz);
   var uAvg = ga(A_uAvg, i); uAvg += (ga(A_spd, i) / max(1e-6, ga(A_spdMax, i)) - uAvg) * min(1.0, dd); sa(A_uAvg, i, uAvg);
-  let act = routineActivity(bs, Wg, T) * exp(BIOE_SWIM * max(0.0, uAvg - spv(k, S_uRoutine)));
+  var act = exp(BIOE_SWIM * max(0.0, uAvg - spv(k, S_uRoutine))); if (ga(A_nt, i) > 0.0) { act = 1.0; }   // (a guard's chases are in its ×)
   let K = ga(A_K, i); let depress = 1.0 - 0.3 * clamp((0.9 - K) / (0.9 - 0.55), 0.0, 1.0);
-  let rO2 = respStd(bs, Wg, T) * ga(A_metabMul, i) * act * depress * select(1.0, BROOD_GUARD_METAB, ga(A_nt, i) > 0.0) * Wg;
+  let rO2 = coldResp(k, bs, Wg, T) * ga(A_metabMul, i) * act * depress * guardMul(i, k, BROOD_GUARD_METAB3_0, BROOD_GUARD_METAB3_1) * Wg;
   sa(A_rO2, i, rO2 / DAY);
   var net = C - Fz - Ux - Sd - rO2 * OXYCAL * dd;
   let ed = energyDensity(bs, Wg); let gsi = gsiOf(k, gau(A_sex, i)); var gon = ga(A_gon, i);
   if (net > 0.0 && (fl & FL_MATURE) != 0u && gon < gsi * Wg) { let toG = min(net * BIOE_REPRO_ALLOC, (gsi * Wg - gon) * ed); gon += toG / ed; net -= toG; }
   else if (net <= 0.0 && gon > 0.0 && K < BIOE_K_RESORB) { let fromG = min(gon * ed, -net); gon -= fromG / ed; net += fromG; }
   sa(A_gon, i, gon);
-  let W = max(1e-6, Wg + net / ed); sa(A_W, i, W);
-  if (W > stdWeight(k, ga(A_L, i))) { sa(A_L, i, lengthFor(k, W)); }
+  let Ws = stdWeight(k, ga(A_L, i)); let gK = select(BIOE_ED_K, BIOE_ED_K_JUV, f32(gau(A_age, i)) < YEAR);
+  let W = max(1e-6, massOf(energyOf(Wg, Ws, ed, gK) + net, Ws, ed, gK)); sa(A_W, i, W);
+  if (W > Ws) { sa(A_L, i, lengthFor(k, W)); }
   settle(i, k);
 }
 `;
@@ -887,7 +919,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
   let k = gau(A_k, i); let W = ga(A_W, i); let gmax = spv(k, S_gut) * W; let T = ga(A_T, i); let o2 = ga(A_o2, i); let o2c = ga(A_o2Crit, i);
   let o2L = lethalO2(ga(A_o2Lethal, i), ga(A_o2Ice, i), T);
-  let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * select(1.0, BROOD_GUARD_FEED, ga(A_nt, i) > 0.0);
+  let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * guardMul(i, k, BROOD_GUARD_FEED3_0, BROOD_GUARD_FEED3_1);
   let apt = gEff / gmax;
   sa(A_fGEff, i, gEff); sa(A_fPerf, i, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)));
   sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
@@ -946,7 +978,7 @@ fn strikesFor(n: f32) -> u32 { return 1u + u32(max(0.0, ceil(n - 1.5))); }
   let kp = gau(A_k, pu); let gr = ga(A_W, pu) + ga(A_gon, pu);
   sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + gr * energyDensity(2u * kp, ga(A_W, pu)));
   sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr); sa(A_missCd, i, FEED_MISS_CD / TS);
-  add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE);
+  add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE); foodK(gau(A_k, i), 0u, gr * ga(A_n, i));
 }
 @compute @workgroup_size(128) fn k_strikeApply(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -1154,6 +1186,7 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
   sa(A_fGot, i, ga(A_fGot, i) + G / n); sa(A_fRoom, i, ga(A_fRoom, i) - G / n);
   add64(&TL, T_FOOD + 2u * FOOD_BENTH, gb, TSCALE); add64(&TL, T_FOOD + 2u * FOOD_WEED, gw - gc, TSCALE); add64(&TL, T_FOOD + 2u * FOOD_CRAY, gc, TSCALE);
   add64(&TL, T_FOOD + 2u * FOOD_SURF, gs, TSCALE); add64(&TL, T_FOOD + 2u * FOOD_ZOO, gzD + gzC, TSCALE);
+  { let kf = gau(A_k, i); foodK(kf, 2u, gb); foodK(kf, 3u, gw - gc); foodK(kf, 4u, gc); foodK(kf, 5u, gs); foodK(kf, 6u, gzD + gzC); }
 }
 // the cells emptied: each kind loses 1 − e^(−T) of what was reachable; the crayfish the grams got, from adults and young alike
 @compute @workgroup_size(256) fn k_fieldApply(@builtin(global_invocation_id) g: vec3u) {
@@ -1192,7 +1225,7 @@ fn fpOf(k: u32, c: u32, z: f32) -> Fp {
   let q = ga(A_qSed, i); if (!(q > 0.0)) { return; }
   let gr = q * RC[R_SED + u32(gai(A_jb, i))]; let n = ga(A_n, i);
   sa(A_gut, i, ga(A_gut, i) + gr / n); sa(A_gutE, i, ga(A_gutE, i) + gr / n * PREY_DETRITUS_ED * PREY_DETRITUS_DIG); sa(A_fGot, i, ga(A_fGot, i) + gr / n);
-  add64(&TL, T_FOOD + 2u * FOOD_SED, gr, TSCALE);
+  add64(&TL, T_FOOD + 2u * FOOD_SED, gr, TSCALE); foodK(gau(A_k, i), 7u, gr);
 }
 // ---- fish3 _feed's end and _live's after it: hunger, a meal (the learning's reward), the intake tally ----
 @compute @workgroup_size(128) fn k_feedEnd(@builtin(global_invocation_id) g: vec3u) {
@@ -1359,7 +1392,7 @@ fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 
   let n = ga(A_n, i); let W = gy(Y_W, q); let gr = kk * W / n;
   sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + gr * energyDensity(2u * gyu(Y_k, q), W));
   sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr);
-  add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE);
+  add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE); foodK(gau(A_k, i), 1u, gr * n);
 }
 @compute @workgroup_size(256) fn k_eatYoyApply(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q)) { return; }
@@ -1441,7 +1474,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (!yAlive(q) || gy(Y_feeds, q) < 0.5) { return; }
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let W = gy(Y_W, q); let n = gy(Y_n, q); let T = gy(Y_yT, q); let st = gy(Y_st, q);
   let bs = yBioSet(k); let dd = st / DAY;
-  let want = n * cmaxB(bs, W, T) * W * dd * (1.0 + (FRY_CMAX_LARVA - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
+  let want = n * coldCmax(k, bs, W, T) * W * dd * (1.0 + (FRY_CMAX_LARVA - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
   sy(Y_want, q, want); var got = 0.0;
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
@@ -1549,7 +1582,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (qS > 0.0 && jb >= 0) { let gs = qS * RC[R_YSED + u32(jb)]; got += gs; J += gs * PREY_DETRITUS_ED * PREY_DETRITUS_DIG; add64(&TL, T_FOOD + 2u * FOOD_YSED, gs, TSCALE); }
   // the energy budget
   let bs = yBioSet(k); var p = 0.0; if (want > 0.0) { p = min(1.0, got / want); }
-  let wf = wasteFr(bs, T, p); let Wr = max(W, FRY_R_WMIN); let r = respStd(bs, Wr, T) * routineActivity(bs, Wr, T) * W; let Rj = r * OXYCAL * dd;
+  let wf = wasteFr(bs, T, p); let Wr = max(W, FRY_R_WMIN); let r = coldResp(k, bs, Wr, T) * W; let Rj = r * OXYCAL * dd;
   let eff = (1.0 - wf.x) * (1.0 - wf.y - bio(bs, BSDA)); var edF = PREY_DAPH_ED; if (got > 0.0) { edF = J / got; }
   let need = Rj / max(1e-9, eff * edF); let ed = energyDensity(bs, W);
   sy(Y_rO2, q, n * r / DAY); sy(Y_p, q, gy(Y_p, q) + (p - gy(Y_p, q)) * min(1.0, dd));
@@ -2004,7 +2037,7 @@ fn cadd(k: u32, f: u32, v: f32, scale: f32) {
     if ((fl & FL_ALIVE) != 0u) {
       let k = gau(A_k, i); let n = ga(A_n, i);
       cadd(k, 0u, n, 1e3); cadd(k, 1u, n * ga(A_W, i), 1e3); cadd(k, 2u, n * ga(A_L, i), 1e3); cadd(k, 3u, n * ga(A_cons, i), 1e6); cadd(k, 4u, n * ga(A_consMax, i), 1e6);
-      if ((fl & FL_MATURE) != 0u) { cadd(k, 5u, n, 1e3); } cadd(k, 6u, 1.0, 1.0);
+      if ((fl & FL_MATURE) != 0u) { cadd(k, 5u, n, 1e3); } cadd(k, 6u, 1.0, 1.0); cadd(k, 11u, n * ga(A_K, i), 1e3);
     }
   }
   if (i < U.ny) {

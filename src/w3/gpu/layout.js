@@ -118,7 +118,7 @@ export function unpackAgents(P, cap, fishBySlot, opts = {}) {
     if (!(flags & FL_SP)) { a.spX = NaN; a.spY = NaN; } if (!(flags & FL_NEST)) { a.nestX = NaN; a.nestY = NaN; }
     const pr = Ai[AF.prey * cap + i], th = Ai[AF.threat * cap + i], ma = Ai[AF.mate * cap + i];
     a.prey = pr >= 0 ? fishBySlot[pr] || null : null; a.threat = th >= 0 ? fishBySlot[th] || null : null;
-    a.mate = ma >= 0 && fishBySlot[ma] && fishBySlot[ma].id === Au[AF.mateId * cap + i] ? fishBySlot[ma] : null;
+    a.mate = ma >= 0 && fishBySlot[ma] && Au[AF.id * cap + ma] === Au[AF.mateId * cap + i] ? fishBySlot[ma] : null;   // (the mate's id as the arrays hold it: a new object later in the list has no id yet)
     if (opts.brain !== false) {
       const g = a.g, lw = a.lw, h = a.h, o = a.o, ge = a.genes;
       for (let q = 0; q < NG; q++) g[q] = GN[q * cap + i];
@@ -224,7 +224,9 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   'fecA', 'fecB', 'sHatch', 'Lhatch', 'L0', 'pelagicFry', 'Lmat', 'LmatM', 'tempTolS', 'o2CritS', 'Linf', 'vbK', 'vbT0',
   'mvSettle', 'mvYf0', 'mvYf1', 'mvTrip', 'mvTripYf0', 'mvTripYf1', 'mvTripD',
   // the habitat: day, night, winter × [bot0, bot1, v, h, act]
-  'hD0', 'hD1', 'hDv', 'hDh', 'hDa', 'hN0', 'hN1', 'hNv', 'hNh', 'hNa', 'hW0', 'hW1', 'hWv', 'hWh', 'hWa'];
+  'hD0', 'hD1', 'hDv', 'hDh', 'hDa', 'hN0', 'hN1', 'hNv', 'hNh', 'hNa', 'hW0', 'hW1', 'hWv', 'hWh', 'hWa',
+  // the cold rule (bioenergetics.js coldResp/coldCmax): mode 0 none, 1 an empirical curve, 2 the adult set's for a juvenile, 3 FB4's × mul
+  'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC'];
 export const SP_REC = 128;
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
@@ -268,6 +270,9 @@ export function packSpecies() {
       mvTripYf0: mv.tripYf ? mv.tripYf[0] : -1, mvTripYf1: mv.tripYf ? mv.tripYf[1] : -1, mvTripD: mv.tripD || 0,
     };
     for (const [m, H] of [['D', s.hab.day], ['N', s.hab.night], ['W', s.hab.winter]]) { V['h' + m + '0'] = H.bot[0]; V['h' + m + '1'] = H.bot[1]; V['h' + m + 'v'] = H.v; V['h' + m + 'h'] = H.h; V['h' + m + 'a'] = H.act; }
+    { const c = sp.cold; Object.assign(V, c ? { cMode: c.R5 ? 1 : c.adultR ? 2 : 3, cT0: c.T0, cT1: c.T1, cR5: c.R5 || 0, cWref: c.Wref || 1, cB: c.b || 0, cQ10: c.Q10 || 1,
+      cMul: c.mul ?? 1, cQuiet: c.quiet || 0, cQa: c.quietT ? c.quietT[0] : 1, cQb: c.quietT ? c.quietT[1] : 0, cAdC: c.adultC ? 1 : 0 }
+      : { cMode: 0, cT0: 0, cT1: -1e9, cR5: 0, cWref: 1, cB: 0, cQ10: 1, cMul: 1, cQuiet: 0, cQa: 1, cQb: 0, cAdC: 0 }); }
     for (const n of SPF) SPT[o + SPO[n]] = cleanF(V[n]);
     packBio(sp.bio, BIO, (2 * i) * BIO_REC); packBio(sp.bioJuv || sp.bio, BIO, (2 * i + 1) * BIO_REC);
   });

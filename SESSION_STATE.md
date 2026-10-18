@@ -186,6 +186,24 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-18, late night): CALIBRATING THE YEAR (the human: "yeah keep going" — fix the predators' feeding first).
+docs/GPU_SIM.md "G3 — calibrating the year" (diagnosis + fixes); research: docs/research_notes/Predator winter energetics/
+(predator_winter_energetics.md, nest_guarding_costs.md). DIAGNOSED with the year runner's new diagnostics (tools/gpu/year.html: each
+fortnight's ration p — intake reset after each report —, mean K, diet by food per species; GPU tallies T_FOODK, census K): the young
+recruits (bass < 30 g, bullhead yr 1, on the Rice largemouth stand-in, Q10 1.37) starve every fall/winter; Whitledge's bass and the
+pike set burn 2–4× too much in the cold; constant ED overstates winter mass loss; nest guarding (×1.6, feed ×0.2, swim cost on top)
+starved ~14 % of adult bass in June. FIXED (both engines): F3.FRESH_HASH (coarse block in two passes, GPU regrid — kills +12 % at true
+scale; it exposed a hand-back bug: mates later in the list dropped — fixed); bioenergetics.js coldResp/coldCmax (species `cold` rules:
+bass curve 30 mg O₂/kg/h at 5 °C ×(W/100)^−0.2 ×2^((T−5)/10) ×0.7 fasting; young bullhead on the adult set; pickerel ×½ ≤ 8 °C) and
+energyOf/massOf (ED by condition below Ws: γ 0.8 adults, 0.3 young); staged guarding (BROOD.GUARD_METAB3/FEED3/EARLY/QUIT; bullhead
+guard 12 d). Checks: gate w3 core/young/forage/foodweb/gpu 52/52; CPU⇄GPU parity 1/10 3 seeds × 30 d all species within spread.
+NOT YET: the water under the ice (1–2 °C through the column; real ~3–4 °C at the bottom — no sediment heat flux in env3 under ice);
+fall fattening (K capped at 1: length grows from any surplus); the dace in the brook; the recruitment cap (F3.CAP).
+RESULT (seed 611, true lakes, a year): bass 0.229 → 0.664, pickerel 0.117 → 0.448, bullhead 0.548 → 0.844; winter starvation gone
+(GPU_SIM.md table). NEXT: the pickerel's recruitment (~2,500 of the young reach L0 8 cm: the year runner now prints the young's fates
+at the year's end), the bass's July starvation, the dace, the cap. Gates: w3 all sections (the env perf check fails under load, as the
+previous commit does), headless, smoke, serve, ui pass; CPU⇄GPU parity 1/10 within the seeds' spread.
+
 ▶▶▶ RESUME HERE (2026-10-18 night): GPU STAGE G3 — THE GPU IN USE (docs/GPU_SIM.md "G3 — in use" + the year's table).
 DONE: the YEAR RUNNER tools/gpu/year.html (?world=true&seeds=…&yf=0.22&days=365&every=14; lines in w3_season's format; window.YEAR);
 ROOM TO GROW (kernels hold back what has no room and say how much — GL 43–45; GpuFish.grow/ensureRoom re-stride the arrays;
