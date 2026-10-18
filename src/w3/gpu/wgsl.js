@@ -1659,6 +1659,7 @@ export const BIRTH_BINDINGS = /* wgsl */`
 @group(1) @binding(8) var<storage, read_write> YG: array<f32>;
 @group(1) @binding(9) var<storage, read_write> IND: array<u32>;   // indirect dispatch arguments (x, y, z) × 4, then the recruits' list
 const G_CNT: u32 = 0u; const G_N: u32 = 34u; const G_NY: u32 = 35u; const G_NEXTID: u32 = 36u; const G_BORN: u32 = 37u; const G_RECRUITS: u32 = 38u; const G_NREC: u32 = 39u;
+const G_NEEDA: u32 = 43u; const G_NEEDY: u32 = 44u;   // (agents / young schools wanted past the arrays' room this block: the host grows them, and they come the next)
 const GS_CLAIMP0: u32 = 512u; const GS_BIRTHS: u32 = 67u; const REC_LIST: u32 = 16u;`;
 export const BIRTH = /* wgsl */`
 fn gy(f: u32, q: u32) -> f32 { return Y[f * U.ycap + q]; }
@@ -1767,7 +1768,7 @@ var<workgroup> wflag: u32;
 @compute @workgroup_size(256) fn b_slots(@builtin(local_invocation_id) l: vec3u) {
   let t = l.x;
   if (t == 0u) { wflag = atomicLoad(&GS[GS_BIRTHS]); wbase = 0u; }
-  if (workgroupUniformLoad(&wflag) == 0u) { if (t == 0u) { GL[G_BORN] = 0.0; GL[G_NY] = f32(U.ny); } return; }
+  if (workgroupUniformLoad(&wflag) == 0u) { if (t == 0u) { GL[G_BORN] = 0.0; GL[G_NY] = f32(U.ny); GL[G_NEEDY] = 0.0; } return; }
   for (var base = 0u; base < U.n; base += 256u) {
     let i = base + t; var v = 0u; if (i < U.n && gai(A_birth, i) >= 0) { v = 1u; }
     wsc[t] = v;
@@ -1778,7 +1779,7 @@ var<workgroup> wflag: u32;
     if (t == 255u) { wbase += wsc[255]; }
     workgroupBarrier();
   }
-  if (t == 0u) { let nb = min(wbase, U.ycap - U.ny); GL[G_BORN] = f32(nb); GL[G_NY] = f32(U.ny + nb); GL[G_NEXTID] = bitcast<f32>(glu(G_NEXTID) + nb); }
+  if (t == 0u) { let nb = min(wbase, U.ycap - U.ny); GL[G_BORN] = f32(nb); GL[G_NY] = f32(U.ny + nb); GL[G_NEXTID] = bitcast<f32>(glu(G_NEXTID) + nb); GL[G_NEEDY] = f32(wbase - nb); }
 }
 fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
   let u = u32(spv(k, S_sbSub)); if (u == 0u) { return 1.0; }
@@ -1821,10 +1822,11 @@ fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
 var<workgroup> wroom: array<f32, 16>;
 var<workgroup> wcnt: array<u32, 256>;
 var<workgroup> wnrec: u32;
+var<workgroup> wneed: u32;
 @compute @workgroup_size(256) fn b_recruitWalk(@builtin(local_invocation_id) l: vec3u) {
   let t = l.x;
   if (t < NK) { wroom[t] = max(0.0, F3_CAP * spTarget(t) - GL[G_CNT + t]); }
-  if (t == 0u) { wbase = 0u; wnrec = 0u; }
+  if (t == 0u) { wbase = 0u; wnrec = 0u; wneed = 0u; }
   workgroupBarrier();
   for (var base = 0u; base < U.ny; base += 256u) {
     let q = base + t; var isR = false;
@@ -1847,10 +1849,10 @@ var<workgroup> wnrec: u32;
         } else {
           nA = u32(max(0.0, min(floor(n + yrnd2(qq, 79u, 0u)), floor(wroom[k])))); tot = f32(nA);
         }
+        if (U.n + wbase + wneed + nA > U.cap) { wneed += nA; continue; }   // (no room left in the arrays: the school waits a block — the host grows them)
         wroom[k] = max(0.0, wroom[k] - tot);
-        syu(Y_flags, qq, gyu(Y_flags, qq) & ~1u);   // (the school is gone: its fish recruited, or lost with no room)
+        syu(Y_flags, qq, gyu(Y_flags, qq) & ~1u);   // (the school is gone: its fish recruited, or none with no room in the census)
         add64(&TL, T_FRY + 2u * (k * NFRY + FRY_RECRUITED), tot, TSCALE); add64(&TL, T_RECRUITS + 2u * k, tot, TSCALE);
-        if (U.n + wbase + nA > U.cap) { nA = 0u; }   // (no room left in the arrays: the recruits lost — the host makes room ahead)
         if (nA > 0u) { let r = wnrec; IND[REC_LIST + 4u * r] = qq; IND[REC_LIST + 4u * r + 1u] = wbase; IND[REC_LIST + 4u * r + 2u] = bitcast<u32>(per); IND[REC_LIST + 4u * r + 3u] = bitcast<u32>(last); wnrec = r + 1u; wbase += nA; }
       }
     }
@@ -1858,7 +1860,7 @@ var<workgroup> wnrec: u32;
   }
   if (t == 0u) {
     IND[REC_LIST + 4u * wnrec + 1u] = wbase;   // (the end sentinel)
-    GL[G_RECRUITS] = f32(wbase); GL[G_NREC] = f32(wnrec); GL[G_N] = f32(U.n + wbase);
+    GL[G_RECRUITS] = f32(wbase); GL[G_NREC] = f32(wnrec); GL[G_N] = f32(U.n + wbase); GL[G_NEEDA] = f32(wneed);
     IND[0] = (wbase + 63u) / 64u; IND[1] = 1u; IND[2] = 1u;
   }
 }
@@ -2136,9 +2138,10 @@ fn retrait(s: u32, k: u32) {
 var<workgroup> wsc: array<u32, 256>;
 var<workgroup> wbase: u32;
 var<workgroup> wnl: u32;
+var<workgroup> wneedS: u32;
 @compute @workgroup_size(256) fn s_slots(@builtin(local_invocation_id) l: vec3u) {
   let t = l.x;
-  if (t == 0u) { wbase = 0u; wnl = 0u; }
+  if (t == 0u) { wbase = 0u; wnl = 0u; wneedS = 0u; }
   workgroupBarrier();
   for (var base = 0u; base < U.n; base += 256u) {
     let i = base + t; var v = 0u; if (i < U.n && gai(A_birth, i) >= 0) { v = gau(A_bid, i); }
@@ -2150,7 +2153,7 @@ var<workgroup> wnl: u32;
       for (var m = 0u; m < 256u; m++) {
         let ii = base + m; if (ii >= U.n || gai(A_birth, ii) < 0) { continue; }
         let c = gau(A_bid, ii); let st = wbase + (wsc[m] - c);
-        if (U.n + st + c > U.cap) { sai(A_birth, ii, -1); continue; }   // (no room: the host makes room ahead)
+        if (U.n + st + c > U.cap) { sai(A_birth, ii, -1); wneedS += c; continue; }   // (no room: it waits for the next pass — the host grows the arrays)
         IND[REC_LIST2 + 2u * wnl] = ii; IND[REC_LIST2 + 2u * wnl + 1u] = st; wnl += 1u;
       }
     }
@@ -2160,7 +2163,7 @@ var<workgroup> wnl: u32;
   }
   if (t == 0u) {
     var last = 0u; if (wnl > 0u) { let li = IND[REC_LIST2 + 2u * (wnl - 1u)]; last = IND[REC_LIST2 + 2u * (wnl - 1u) + 1u] + select(0u, gau(A_bid, li), gai(A_birth, li) >= 0); }
-    IND[REC_LIST2 + 2u * wnl + 1u] = last; GL[G_NBORN2] = f32(last); GL[G_NLIST2] = f32(wnl);
+    IND[REC_LIST2 + 2u * wnl + 1u] = last; GL[G_NBORN2] = f32(last); GL[G_NLIST2] = f32(wnl); GL[45] = f32(wneedS);
     IND[4] = (last + 63u) / 64u; IND[5] = 1u; IND[6] = 1u;
   }
 }
@@ -2262,4 +2265,55 @@ fn yMergeable(b: u32, k: u32) -> bool { return (gyu(Y_flags, b) & 1u) != 0u && g
 `;
 
 // a kernel module: the constants, the uniforms, the core bindings, a family's bindings, the helpers and the kernels
+// ============================================================ THE VIEW (G3: the browser's fast-forward on the GPU engine)
+// What the view draws, gathered on the GPU so that only it comes back: the agents and young schools within R of where the camera
+// looks (in the order the threads find them — the view keys them by id), and the slot of the fish or school the data card follows.
+// VO: [0] agents found, [1] schools found, [2] the followed one's slot (atomicMin; none 0xFFFFFFFF), then maxF agents of VF words
+// (x y z yaw pitch L k n spd bed id school bodyMul slot), then maxY schools of VY words (x y z L k n id bed guarded slot)
+export const VIEW_BINDINGS = /* wgsl */`
+struct ViewP { cx: f32, cy: f32, r2: f32, maxF: u32, maxY: u32, selId: u32, selKind: u32, p: u32 };
+@group(1) @binding(0) var<storage, read> Y: array<f32>;
+@group(1) @binding(1) var<storage, read_write> VO: array<atomic<u32>>;
+@group(1) @binding(2) var<uniform> VP: ViewP;
+const VF: u32 = 14u; const VY: u32 = 10u; const VO_HEAD: u32 = 16u;`;
+export const VIEW = /* wgsl */`
+fn vput(o: u32, v: f32) { atomicStore(&VO[o], bitcast<u32>(v)); }
+fn gyv(f: u32, q: u32) -> f32 { return Y[f * U.ycap + q]; }
+@compute @workgroup_size(256) fn v_drawn(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x;
+  if (i < U.n) {
+    let fl = gau(A_flags, i);
+    if ((fl & FL_ALIVE) != 0u) {
+      if (VP.selKind == 0u && gau(A_id, i) == VP.selId) { atomicMin(&VO[2], i); }
+      let dx = ga(A_x, i) - VP.cx; let dy = ga(A_y, i) - VP.cy;
+      if (dx * dx + dy * dy < VP.r2) {
+        let r = atomicAdd(&VO[0], 1u);
+        if (r < VP.maxF) {
+          let o = VO_HEAD + r * VF;
+          vput(o, ga(A_x, i)); vput(o + 1u, ga(A_y, i)); vput(o + 2u, ga(A_z, i)); vput(o + 3u, ga(A_yaw, i)); vput(o + 4u, ga(A_pitch, i));
+          vput(o + 5u, ga(A_L, i)); vput(o + 6u, f32(gau(A_k, i))); vput(o + 7u, ga(A_n, i)); vput(o + 8u, ga(A_spd, i)); vput(o + 9u, ga(A_bed, i));
+          atomicStore(&VO[o + 10u], gau(A_id, i)); vput(o + 11u, select(0.0, 1.0, (fl & FL_SCHOOL) != 0u)); vput(o + 12u, ga(A_bodyMul, i)); atomicStore(&VO[o + 13u], i);
+        }
+      }
+    }
+  }
+  if (i < U.ny) {
+    if ((bitcast<u32>(gyv(Y_flags, i)) & 1u) != 0u) {
+      if (VP.selKind == 1u && bitcast<u32>(gyv(Y_id, i)) == VP.selId) { atomicMin(&VO[2], i); }
+      let dx = gyv(Y_x, i) - VP.cx; let dy = gyv(Y_y, i) - VP.cy;
+      if (dx * dx + dy * dy < VP.r2) {
+        let r = atomicAdd(&VO[1], 1u);
+        if (r < VP.maxY) {
+          let o = VO_HEAD + VP.maxF * VF + r * VY;
+          let gr = bitcast<i32>(gyv(Y_gref, i)); var guarded = 0.0;
+          if (gr >= 0 && u32(gr) < U.n) { let gq = u32(gr); if ((gau(A_flags, gq) & FL_ALIVE) != 0u && ga(A_nt, gq) > 0.0) { guarded = 1.0; } }
+          vput(o, gyv(Y_x, i)); vput(o + 1u, gyv(Y_y, i)); vput(o + 2u, gyv(Y_z, i)); vput(o + 3u, gyv(Y_L, i)); vput(o + 4u, f32(bitcast<u32>(gyv(Y_k, i))));
+          vput(o + 5u, gyv(Y_n, i)); atomicStore(&VO[o + 6u], bitcast<u32>(gyv(Y_id, i))); vput(o + 7u, gyv(Y_bed, i)); vput(o + 8u, guarded); atomicStore(&VO[o + 9u], i);
+        }
+      }
+    }
+  }
+}
+`;
+
 export function moduleSource(consts, family, ...parts) { return [consts, UNIFORMS, CORE_BINDINGS, family, COMMON, ...parts].join('\n'); }

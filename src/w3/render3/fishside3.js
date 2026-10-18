@@ -4,9 +4,10 @@
 // page's numbers (summed across the shards by statsMerge).
 import { S3, KEYS3, IN3 } from '../fish3.js';
 import { FORMS3 } from '../plants3.js';
-import { CLOCK3 } from '../clock3.js';
+import { CLOCK3, DAY3 } from '../clock3.js';
 import { GEO, BODIES, UPPER, LOWER, BROOK } from '../geometry.js';
 import { PLANKTON, ENV } from '../../config.js';
+import { statsAdd, FL } from '../gpu/layout.js';
 
 export const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
 export const DRAW_R = 320, DRAW_CAM = 900;        // (m about where the view looks; none when the camera is farther than DRAW_CAM: they'd be sub-pixel)
@@ -94,6 +95,39 @@ export function statsPart(F) {
     const cz = CENSUS_SIZE[a.s.key]; if (cz && L >= 7.5) { const v = cz.by === 'age' ? a.age / CLOCK3.YEAR_LEN : L; let b = 0; while (b < cz.edges.length && v >= cz.edges[b]) b++; r.cs[b] += a.n; }
   }
   return { sp, stats: F.stats, agents: F.fish.filter(a => a.alive).length, yoySchools: F.yoy.filter(q => q.alive).length };
+}
+// THE SAME WHILE THE GPU ENGINE HOLDS THE LAKES (docs/GPU_SIM.md G3): its census, a light copy of every agent's census fields, and
+// the stats tree with the GPU's tallies so far folded into a copy (G: a GpuFish; F the Fish3 it hands the lakes back to)
+export async function gpuStatsPart(G, F) {
+  const c = await G.census(), Lt = await G.lite(), tl = await G.readTallies(), stats = statsAdd(JSON.parse(JSON.stringify(F.stats)), tl, F.env.time), sp = {};
+  let agents = 0, yoySchools = 0;
+  for (const k of KEYS3) {
+    const r = c[k]; agents += r.agents; yoySchools += r.yoySchools;
+    sp[k] = { n: r.n, agents: r.agents, g: r.g, Ln: r.L * r.n, mature: r.mature, cons: r.cons, consMax: r.consMax, yoyN: r.yoyN, yoySchools: r.yoySchools, yoyLn: r.yoyL * r.yoyN,
+      up: 0, low: 0, brook: 0, runIn: 0, runBack: 0, size: [0, 0, 0, 0, 0], cs: CENSUS_SIZE[k] ? new Array(CENSUS_SIZE[k].frac.length).fill(0) : [], target: F._target(S3[k]) };
+  }
+  const u = a => new Uint32Array(a.buffer, a.byteOffset, a.length), fl = u(Lt.flags), kk = u(Lt.k), lk = u(Lt.lake), ag = u(Lt.age), ry = new Int32Array(Lt.runYr.buffer, Lt.runYr.byteOffset, Lt.runYr.length);
+  for (let i = 0; i < Lt.n_; i++) {
+    if (!(fl[i] & FL.ALIVE)) continue;
+    const key = KEYS3[kk[i]], r = sp[key], L = Lt.L[i], n = Lt.n[i];
+    if (lk[i] === UPPER) r.up += n; else r.low += n;
+    if (GEO.bodyAt(Lt.x[i], Lt.y[i]) === BROOK) r.brook += n;
+    if ((fl[i] & FL.RIPE) && (fl[i] & FL.BROOKRUN)) { if (fl[i] & FL.INRUN) r.runIn += n; else if (ry[i] === F._yr) r.runBack += n; }
+    let q = 0; while (q < SIZE_CL.length && L >= SIZE_CL[q]) q++; r.size[q] += n;
+    const cz = CENSUS_SIZE[key]; if (cz && L >= 7.5) { const v = cz.by === 'age' ? ag[i] / CLOCK3.YEAR_LEN : L; let b = 0; while (b < cz.edges.length && v >= cz.edges[b]) b++; r.cs[b] += n; }
+  }
+  return { sp, stats, agents, yoySchools };
+}
+// the followed fish's (or young school's) card from its fields on the GPU (GpuFish.one: readAgent / readYoy's names) — selInfoOf's
+// shape, without what only the CPU's objects know (the prey's or threat's species, the brain's inputs)
+export function gpuCard(o, kind, env) {
+  const S = S3[KEYS3[o.k]], base = { id: o.id, kind, key: S.key, name: S.name || S.key, n: o.n, L: o.L, W: o.W, age: o.age / CLOCK3.YEAR_LEN, x: o.x, y: o.y, z: o.z, bed: o.bed };
+  if (kind === 'yoy') return { ...base, T: o.j >= 0 ? env.temp[o.j] : null, o2: o.j >= 0 ? env.chem.o2[o.j] * ENV.O2_MGL : null };
+  const doing = o.nt > 0 ? 'guarding its nest' : o.esc ? 'escaping low oxygen' : o.threat >= 0 && o.fear > 0.2 ? 'wary of a predator' : o.fk === 1 && o.prey >= 0 ? 'hunting'
+    : o.ripe ? 'ripe, heading for its spawning ground' : o.tripEndD * DAY3 > env.time ? 'on a trip to the other lake'
+    : o.fk === 2 ? 'feeding on the bed' : o.fk === 3 ? 'feeding on zooplankton' : o.hunger > 0.6 ? 'searching for food' : 'cruising';
+  return { ...base, sex: o.sex, mature: o.mature, ripe: o.ripe, school: o.school, K: o.K, hunger: o.hunger, fear: o.fear, energy: o.energy, gen: o.gen,
+    p: o.cons / Math.max(1e-12, o.consMax), T: o.T, o2: o.o2 * ENV.O2_MGL, lake: o.lake, doing, genes: o.genes || [], near: false, out: o.out || [], vis: o.vis, spd: o.spd, yaw: o.yaw };
 }
 const lakeArea = id => BODIES.find(b => b.id === id).area;
 const addTree = (a, b) => { if (typeof b === 'number') return (a || 0) + b; if (!b || typeof b !== 'object') return a ?? b; const o = a && typeof a === 'object' ? a : {}; for (const k of Object.keys(b)) o[k] = addTree(o[k], b[k]); return o; };

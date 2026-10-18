@@ -5,7 +5,7 @@
 // lakes' static tables (the bed's rasters, the water's columns and cells, the fish's species and FB4 sets, the brook's path…)
 // and writes the WGSL constants for all of it FROM THE CPU SIM'S OWN CONFIG — the two engines read one set of numbers.
 import { GEO, LAND, UPPER, LOWER, BROOK } from '../geometry.js';
-import { F3, S3, KEYS3, HID3, genomeLen3, W2OFF3, NW2_3, IN3, OUT3, PREY_LR0, GATE, LAKE_NEAR } from '../fish3.js';
+import { F3, S3, KEYS3, HID3, genomeLen3, W2OFF3, NW2_3, IN3, OUT3, PREY_LR0, GATE, LAKE_NEAR, leak3, newFish, newYoy } from '../fish3.js';
 import { CLOCK3, TS, DAY3, OLD_S } from '../clock3.js';
 import { A2 } from '../chem3.js';
 import { OXYCAL } from '../../bioenergetics.js';
@@ -66,38 +66,34 @@ const tD = t => t < -1e17 ? -1e18 : t / DAY;   // (a time, s → days; "never" s
 // guardian) can be written as slots. Spawning sites, a plant spawner's chosen place and last year's nest are NaN when unset: they
 // pack as NaN-free values with flags in spare bits of `flags` (bit 16 spX set, bit 17 nest set)
 export const FL_SP = 1 << 16, FL_NEST = 1 << 17;
+// (the fields' kinds, once: a plain number of its type, a scratch value, or one of the special cases below — the writes and reads go
+// straight through the arrays' u32/i32 views: G3's hand-overs move 300,000 fish each way)
+const SPECIAL = new Set(['flags', 'prey', 'threat', 'mate', 'mateId', 'age', 'lastSpawnD', 'tripEndD', 'dhx', 'dhy', 'cm']);
+const FK = AGENT_FIELDS.map(([name, t], f) => ({ f, name, t, sp: SPECIAL.has(name) }));
+const FK_PLAIN = FK.filter(k => !k.sp && !SCRATCH(k.t)), FK_SCR = FK.filter(k => SCRATCH(k.t));
+const views = A => [new Uint32Array(A.buffer, A.byteOffset, A.length), new Int32Array(A.buffer, A.byteOffset, A.length)];
 export function packAgents(fish, cap, out = null) {
-  const A = out?.A || new Float32Array(NAF * cap), GN = out?.GN || new Float32Array(NGN * cap), BR = out?.BR || new Float32Array(NBR * cap);
+  const A = out?.A || new Float32Array(NAF * cap), GN = out?.GN || new Float32Array(NGN * cap), BR = out?.BR || new Float32Array(NBR * cap), [Au, Ai] = views(A);
   const slot = new Map(); let n = 0;
   for (const a of fish) { if (!a.alive) continue; slot.set(a, n++); }
   if (n > cap) throw new Error(`packAgents: ${n} fish over capacity ${cap}`);
+  const ref = r => r && slot.has(r) ? slot.get(r) : -1;
   for (const [a, i] of slot) {
     let flags = 0; for (const [k, b] of FLAG_OF) if (a[k]) flags |= b;
     if (a._dh) flags |= FL.DECIDED; if (a.esc) flags |= FL.ESC;
     if (a.spX === a.spX) flags |= FL_SP; if (a.nestX === a.nestX) flags |= FL_NEST;
-    for (let f = 0; f < NAF; f++) {
-      const [name, t] = AGENT_FIELDS[f]; let v;
-      switch (name) {
-        case 'flags': v = flags; break;
-        case 'prey': v = a.prey && slot.has(a.prey) ? slot.get(a.prey) : -1; break;
-        case 'threat': v = a.threat && slot.has(a.threat) ? slot.get(a.threat) : -1; break;
-        case 'mate': v = a.mate && slot.has(a.mate) ? slot.get(a.mate) : -1; break;
-        case 'mateId': v = a.mate ? a.mate.id : 0; break;
-        case 'age': v = Math.round(a.age); break;
-        case 'lastSpawnD': v = tD(a.lastSpawn); break;
-        case 'tripEndD': v = tD(a.tripEnd); break;
-        case 'dhx': v = a._dh ? a._dh[0] : 0; break;
-        case 'dhy': v = a._dh ? a._dh[1] : 0; break;
-        case 'cm': v = 0; break;
-        default: v = SCRATCH(t) ? (t === 'si' ? -1 : 0) : a[name];
-      }
-      A[f * cap + i] = asF(t === 'f' ? cleanF(+v) : v, t);
-    }
-    for (let q = 0; q < NG; q++) GN[q * cap + i] = a.g[q];
-    for (let q = 0; q < NW2_3; q++) BR[q * cap + i] = a.lw[q];
-    for (let q = 0; q < HID3; q++) BR[(NW2_3 + q) * cap + i] = a.h[q];
-    for (let q = 0; q < OUT3.length; q++) BR[(NW2_3 + HID3 + q) * cap + i] = a.o[q];
-    for (let q = 0; q < NGENES; q++) GN[(NG + q) * cap + i] = a.genes[q];
+    for (const k of FK_PLAIN) { const o = k.f * cap + i, v = a[k.name]; if (k.t === 'f') A[o] = cleanF(+v); else if (k.t === 'u') Au[o] = v >>> 0; else Ai[o] = v | 0; }
+    for (const k of FK_SCR) { if (k.t === 'si') Ai[k.f * cap + i] = -1; else A[k.f * cap + i] = 0; }
+    Au[AF.flags * cap + i] = flags >>> 0;
+    Ai[AF.prey * cap + i] = ref(a.prey); Ai[AF.threat * cap + i] = ref(a.threat); Ai[AF.mate * cap + i] = ref(a.mate); Au[AF.mateId * cap + i] = a.mate ? a.mate.id >>> 0 : 0;
+    Au[AF.age * cap + i] = Math.round(a.age) >>> 0; A[AF.lastSpawnD * cap + i] = cleanF(tD(a.lastSpawn)); A[AF.tripEndD * cap + i] = cleanF(tD(a.tripEnd));
+    A[AF.dhx * cap + i] = a._dh ? cleanF(a._dh[0]) : 0; A[AF.dhy * cap + i] = a._dh ? cleanF(a._dh[1]) : 0; A[AF.cm * cap + i] = 0;
+    const g = a.g, lw = a.lw, h = a.h, o = a.o, ge = a.genes;
+    for (let q = 0; q < NG; q++) GN[q * cap + i] = g[q];
+    for (let q = 0; q < NW2_3; q++) BR[q * cap + i] = lw[q];
+    for (let q = 0; q < HID3; q++) BR[(NW2_3 + q) * cap + i] = h[q];
+    for (let q = 0; q < OUT3.length; q++) BR[(NW2_3 + HID3 + q) * cap + i] = o[q];
+    for (let q = 0; q < NGENES; q++) GN[(NG + q) * cap + i] = ge[q];
   }
   return { A, GN, BR, n, slot };
 }
@@ -108,32 +104,28 @@ export function readAgent(A, cap, i) {
   return o;
 }
 // the arrays back into the Fish3's objects (by slot), every simulated field — genome, learned block, brain state too; references
-// resolved through the slots (byId: slot → fish)
+// resolved through the slots (fishBySlot: slot → fish)
 export function unpackAgents(P, cap, fishBySlot, opts = {}) {
-  const { A, GN, BR } = P;
+  const { A, GN, BR } = P, [Au, Ai] = views(A);
   for (let i = 0; i < fishBySlot.length; i++) {
     const a = fishBySlot[i]; if (!a) continue;
-    const o = readAgent(A, cap, i);
-    for (const [name, t] of AGENT_FIELDS) {
-      if (SCRATCH(t)) continue;
-      switch (name) {
-        case 'flags': case 'prey': case 'threat': case 'mate': case 'mateId': case 'dhx': case 'dhy': case 'cm': break;
-        case 'lastSpawnD': a.lastSpawn = o.lastSpawnD < -1e17 ? -1e18 : o.lastSpawnD * DAY; break;
-        case 'tripEndD': a.tripEnd = o.tripEndD < -1e17 ? -1e18 : o.tripEndD * DAY; break;
-        default: a[name] = o[name];
-      }
-    }
-    for (const [k] of FLAG_OF) a[k] = o[k];
-    a.esc = o.esc; a._dh = o.decided ? [o.dhx, o.dhy] : null;
-    if (!(o.flags & FL_SP)) { a.spX = NaN; a.spY = NaN; } if (!(o.flags & FL_NEST)) { a.nestX = NaN; a.nestY = NaN; }
-    a.prey = o.prey >= 0 ? fishBySlot[o.prey] || null : null; a.threat = o.threat >= 0 ? fishBySlot[o.threat] || null : null;
-    a.mate = o.mate >= 0 && fishBySlot[o.mate] && fishBySlot[o.mate].id === o.mateId ? fishBySlot[o.mate] : null;
+    for (const k of FK_PLAIN) { const o = k.f * cap + i; a[k.name] = k.t === 'f' ? A[o] : k.t === 'u' ? Au[o] : Ai[o]; }
+    const flags = Au[AF.flags * cap + i];
+    for (const [k, b] of FLAG_OF) a[k] = !!(flags & b);
+    a.esc = flags & FL.ESC ? 1 : 0; a._dh = flags & FL.DECIDED ? [A[AF.dhx * cap + i], A[AF.dhy * cap + i]] : null;
+    a.age = Au[AF.age * cap + i];
+    const ls = A[AF.lastSpawnD * cap + i], te = A[AF.tripEndD * cap + i]; a.lastSpawn = ls < -1e17 ? -1e18 : ls * DAY; a.tripEnd = te < -1e17 ? -1e18 : te * DAY;
+    if (!(flags & FL_SP)) { a.spX = NaN; a.spY = NaN; } if (!(flags & FL_NEST)) { a.nestX = NaN; a.nestY = NaN; }
+    const pr = Ai[AF.prey * cap + i], th = Ai[AF.threat * cap + i], ma = Ai[AF.mate * cap + i];
+    a.prey = pr >= 0 ? fishBySlot[pr] || null : null; a.threat = th >= 0 ? fishBySlot[th] || null : null;
+    a.mate = ma >= 0 && fishBySlot[ma] && fishBySlot[ma].id === Au[AF.mateId * cap + i] ? fishBySlot[ma] : null;
     if (opts.brain !== false) {
-      for (let q = 0; q < NG; q++) a.g[q] = GN[q * cap + i];
-      for (let q = 0; q < NW2_3; q++) a.lw[q] = BR[q * cap + i];
-      for (let q = 0; q < HID3; q++) a.h[q] = BR[(NW2_3 + q) * cap + i];
-      for (let q = 0; q < OUT3.length; q++) a.o[q] = BR[(NW2_3 + HID3 + q) * cap + i];
-      for (let q = 0; q < NGENES; q++) a.genes[q] = GN[(NG + q) * cap + i];
+      const g = a.g, lw = a.lw, h = a.h, o = a.o, ge = a.genes;
+      for (let q = 0; q < NG; q++) g[q] = GN[q * cap + i];
+      for (let q = 0; q < NW2_3; q++) lw[q] = BR[q * cap + i];
+      for (let q = 0; q < HID3; q++) h[q] = BR[(NW2_3 + q) * cap + i];
+      for (let q = 0; q < OUT3.length; q++) o[q] = BR[(NW2_3 + HID3 + q) * cap + i];
+      for (let q = 0; q < NGENES; q++) ge[q] = GN[(NG + q) * cap + i];
     }
   }
 }
@@ -161,6 +153,67 @@ export function packYoy(yoy, ycap, agentSlot, out = null) {
   return { Y, YG, n, slot };
 }
 export function readYoy(Y, ycap, i) { const o = {}; for (let f = 0; f < NYF; f++) { const [name, t] = YOY_FIELDS[f]; o[name] = fromF(Y[f * ycap + i], t); } o.alive = !!(o.flags & YFL.ALIVE); return o; }
+
+// ---------- THE HAND-BACK: the GPU engine's lakes back into a Fish3 (fast-forward ends; the fine steps near the camera resume) ----------
+// The live agents (slots 0..n) and young schools (0..ny) as F's objects, in slot order: one that was in F's lists before (by id)
+// keeps its object, one born on the GPU gets a new one; every simulated field, the genome (a school's merge may have given it the
+// other's — its leak recomputed), the learned block and the brain's state; references through the slots. An object F held that is
+// not among them died on the GPU. The fidelity ladder's bookkeeping restarts: the next step rebuilds the lakes' hash and, with a
+// focus, the far fish's schedule. P: { A, BR, GN, Y, YG } as the engine's buffers (field-major, strides cap and ycap)
+export function materialize(F, P, cap, ycap, n, ny, nextId) {
+  const byId = new Map(), yById = new Map(); for (const a of F.fish) byId.set(a.id, a); for (const q of F.yoy) yById.set(q.id, q);
+  const { A, Y, YG } = P, seen = new Set(), own = (o, key, len) => { if (!o[key] || o[key].length !== len || seen.has(o[key])) o[key] = new Float32Array(len); seen.add(o[key]); };
+  const bySlot = new Array(n).fill(null), fish = [];
+  for (let i = 0; i < n; i++) {
+    if (!(fromF(A[AF.flags * cap + i], 'u') & FL.ALIVE)) continue;
+    const id = fromF(A[AF.id * cap + i], 'u'), k = fromF(A[AF.k * cap + i], 'u');
+    let a = byId.get(id); if (a && a.k !== k) a = null;
+    if (a) byId.delete(id); else { a = newFish(); a.s = S3[KEYS3[k]]; }
+    own(a, 'g', NG); own(a, 'lw', NW2_3); own(a, 'h', HID3); own(a, 'o', OUT3.length); own(a, 'genes', NGENES);   // (arrays a fish shared with another — a merge's genome — made its own)
+    bySlot[i] = a; fish.push(a);
+  }
+  unpackAgents(P, cap, bySlot);
+  for (let i = 0; i < fish.length; i++) {
+    const a = fish[i]; a.leak = leak3(a.g); a.cause = ''; a.near = false; a._i = i; a._t0 = F.time; a._due = -1; a._out = false;
+    a._px = a.x; a._py = a.y; a._pz = a.z; a._pyaw = a.yaw; a._ppitch = a.pitch;
+  }
+  for (const a of byId.values()) if (a.alive) { a.alive = false; a.cause = a.cause || 'died'; }
+  const yoy = [];
+  for (let q = 0; q < ny; q++) {
+    if (!(fromF(Y[YF.flags * ycap + q], 'u') & YFL.ALIVE)) continue;
+    const o = readYoy(Y, ycap, q); let y = yById.get(o.id); if (y && y.k !== o.k) y = null;
+    if (y) yById.delete(o.id); else { y = newYoy(); y.s = S3[KEYS3[o.k]]; }
+    for (const [name, t] of YOY_FIELDS) if (!SCRATCH(t) && name !== 'flags' && name !== 'gref') y[name] = o[name];
+    y.gref = o.gref >= 0 && o.gref < n ? bySlot[o.gref] : null;
+    own(y, 'g', NG); own(y, 'genes', NGENES);
+    for (let r = 0; r < NG; r++) y.g[r] = YG[r * ycap + q];
+    for (let r = 0; r < NGENES; r++) y.genes[r] = YG[(NG + r) * ycap + q];
+    y.alive = true; y.near = false; y._t0 = F.time; y._due = -1; y._out = false; y._px = y.x; y._py = y.y; y._pz = y.z;
+    yoy.push(y);
+  }
+  for (const q of yById.values()) q.alive = false;
+  F.fish = fish; F.yoy = yoy; if (nextId !== undefined) F.nextId = nextId;
+  F._mixOn = false; F._yMixOn = false; F._needHash = true; F._region = null; F._yRegion = null;
+  return { fish: fish.length, yoy: yoy.length };
+}
+// the engine's tallies (pairs, already summed to numbers: GpuFish.readTallies) into a Fish3's stats tree — what the GPU's blocks
+// counted since the tallies were last cleared (wgsl.js TALLY's layout: word offsets / 2)
+const T_FOODS = ['zoo', 'benth', 'weed', 'cray', 'surf', 'fish', 'sed', 'yoy', 'yZoo', 'yWeed', 'yBenth', 'ySed'];
+const T_CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'], T_FATES = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];
+export function statsAdd(st, tl, time = 0) {
+  const NK = KEYS3.length, M = 1e6;
+  T_FOODS.forEach((f, q) => { st.food[f] = (st.food[f] || 0) + tl[64 + q] / M; });
+  KEYS3.forEach((k, q) => {
+    st.cross[k] += tl[q] / M; st.settle[k] += tl[16 + q] / M; st.trips[k] += tl[32 + q] / M;
+    const g = tl[80 + q] / M; if (g > 0) st.intakeBy[k] = (st.intakeBy[k] || 0) + g;
+    KEYS3.forEach((kq, r) => { const v = tl[96 + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
+    const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * 7 + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
+    T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; });
+    const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
+    const at = st.spawnAt[k]; at.sub += tl[424 + q] / M; at.bed += tl[436 + q] / M; at.brook += tl[448 + q] / M; if (sp > 0 && at.first < 0) at.first = time;
+  });
+  return st;
+}
 
 // ---------- the species table (SP_REC floats a species) and the FB4 sets (BIO_REC a set; two a species: adult, juvenile) ----------
 export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', 'turn', 'sense', 'nonVis', 'strikeR', 'cohere', 'home', 'tPref', 'kI', 'uRoutine',

@@ -11,6 +11,10 @@
 // SHARDS (docs/TRUE_SCALE.md T5): on the true-size lakes, when the page is cross-origin isolated (shared memory) and the machine
 // has the cores, the fish live in SHARD WORKERS — Upper's in one, Lower's and the brook's in another (render3/shard3worker.js) —
 // side by side on the one water model, which this worker keeps and steps; `?shards=0` keeps them here.
+// THE GPU (docs/GPU_SIM.md G3): where WebGPU is (the true-size lakes; `?gpu=0` off, `?gpu=1` on the 1/10 world too), the
+// fast-forward blocks run on the GPU engine (src/w3/gpu/gpufish.js, ~70 ms a true-size block against ~2.5 s on the CPU's cores)
+// and the fine speeds on one Fish3 here: the lakes are handed to the GPU when the speed goes past FINE_UP and back when it drops
+// (a few seconds each way), and while the GPU holds them the view gets only what it draws, gathered there.
 import './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
 import { Env3 } from '../env3.js';
 import { Fish3 } from '../fish3.js';
@@ -19,7 +23,7 @@ import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
 import { ShardPool } from '../shardpool3.js';
 import { getRandState } from '../../core.js';
-import { remember, drawnOf, packDrawn, selInfoOf, statsPart, statsMerge, histPoint, FISH_STRIDE, YOY_STRIDE, DRAW_CAM } from './fishside3.js';
+import { remember, drawnOf, packDrawn, selInfoOf, statsPart, statsMerge, histPoint, gpuStatsPart, gpuCard, FISH_STRIDE, YOY_STRIDE, DRAW_CAM, DRAW_R } from './fishside3.js';
 
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
 const PLANTS_MS = WORLD_TRUE ? 20000 : 4000;   // the weeds change slowly: their field every this often (the true lakes': ~257,000 bed cells × 13 forms)
@@ -50,6 +54,7 @@ function soloSide() {
   const F = new Fish3(env, { young: true }), memo = {};   // (the lake opens with the season's young so far: seedSeason)
   remember(F, WORLD_TRUE);
   return {
+    F, memo,
     get nearN() { return F.nearN || 0; },
     setFocus(f) { if (f) F.setFocus(f[0], f[1], f[2]); else F.setFocus(null); },
     step(dt) { remember(F, WORLD_TRUE); F.step(dt); for (let q = 0; q < F.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(F.rises[q]); },
@@ -95,6 +100,53 @@ async function poolSide(n, say, st0) {   // (st0: the random state before the wa
   };
 }
 
+// ---------- THE FISH'S SIDE WITH THE GPU (docs/GPU_SIM.md G3): the fine steps on the solo side's Fish3, the blocks on the GPU ----------
+async function gpuSide(say) {
+  const solo = soloSide(), F = solo.F;
+  say('the GPU engine');
+  const { GpuFish } = await import('../gpu/gpufish.js');
+  const { dev, info } = await GpuFish.device();
+  const G = new GpuFish(dev, F, env, { seed: (getRandState() ^ 0x5bd1e995) >>> 0 });
+  let onGpu = false, drawn = null, card = null, poses = null, fresh = false, handing = 0, gotAt = null;
+  const toGpu = async () => { if (onGpu) return; const t0 = performance.now(); await G.upload(); onGpu = true; handing = performance.now() - t0; poses = null; fresh = true; };
+  const toCpu = async () => { if (!onGpu) return; const t0 = performance.now(); await G.download(); onGpu = false; handing = performance.now() - t0; remember(F, WORLD_TRUE); solo.memo.sel = null; drawn = null; card = null; gotAt = null; };
+  return {
+    gpu: info ? `${info.vendor} ${info.architecture}` : 'GPU', get onGpu() { return onGpu; },
+    takeHand() { const h = handing; handing = 0; return h; },   // (ms the last hand-over took: not a block's cost)
+    get nearN() { return onGpu ? 0 : solo.nearN; },
+    setFocus(f) { solo.setFocus(onGpu ? null : f); },
+    async step(dt, during) {   // (during: the water's step, run while the GPU works on a block; the CPU's fine step leaves it to the caller)
+      if (dt > FINE) { await toGpu(); await G.block(dt, during); fresh = true; }
+      else { await toCpu(); solo.step(dt); }
+    },
+    envStepped() {},
+    // (before a snapshot: while the GPU holds the lakes, what the view draws — gathered there after each block — and the card's fish)
+    async prep() {
+      if (!onGpu) return;
+      const want = !(WORLD_TRUE && (!cam || cam[2] > DRAW_CAM)), sel = selId >= 0 ? [selId, selKind] : null;
+      const cx = cam ? cam[0] : 0, cy = cam ? cam[1] : 0, moved = !gotAt || Math.hypot(cx - gotAt[0], cy - gotAt[1]) > DRAW_R / 4 || want !== gotAt[2];   // (the camera moved on with no block since: paused, or slow blocks)
+      if (fresh || moved || (sel && (!card || card.id !== selId || card.kind !== selKind))) {
+        const r = want ? (WORLD_TRUE ? DRAW_R : 1e6) : 0;
+        drawn = await G.drawn(cx, cy, r, sel, poses); poses = drawn.poses; fresh = false; gotAt = [cx, cy, want];
+        card = sel ? (drawn.selSlot >= 0 ? gpuCard(await G.one(drawn.selSlot, selKind), selKind, env) : { id: selId, kind: selKind, gone: true, cause: 'gone' }) : null;
+      }
+    },
+    view() {
+      if (!onGpu) return solo.view();
+      if (!drawn) return { fb: new Float32Array(0), yb: new Float32Array(0), nf: 0, ny: 0, count: 0 };
+      return { ...drawn, fb: drawn.fb.slice(), yb: drawn.yb.slice() };   // (copies: a snapshot hands its arrays to the view, and a tick with no block sends these again)
+    },
+    sel() { return onGpu ? card : solo.sel(); },
+    async stats() { return onGpu ? statsMerge([await gpuStatsPart(G, F)], env, F.lakeHa) : solo.stats(); },
+    totals(count, nf, ny) {
+      if (!onGpu) return solo.totals(count, nf, ny);
+      let c = 0; for (let k = 0; k < (G.cnt || []).length; k++) c += G.cnt[k]; return { count: c, agents: G.n, nyAll: G.ny };
+    },
+    async seedSeason(y0, y1) { await toCpu(); solo.seedSeason(y0, y1); },
+    counts() { return onGpu && G.cnt ? { cnt: G.cnt, bio: G.bio, lakeHa: F.lakeHa } : solo.counts(); },
+  };
+}
+
 // the step for a speed: fine 0.1 s up to FINE_UP×, else a block of speed / BLOCKS_S s (at least 1.5 s, at most BLOCK_MAX) — and
 // at least as long as the speed × what a block costs: the true-size lakes' blocks cost ~5 s each whatever their length (every
 // agent lives each one), so at 1 min/s a 20-s block ran 4× real time, not 60×; a block of speed × its cost runs at the speed asked
@@ -106,11 +158,15 @@ async function advance(dt) {
   acc += Math.min(Math.max(0.25, 1.5 * busyS), dt) * speed;   // (no catch-up after a pause — but the seconds a long block itself took count)
   const t0 = performance.now();
   while (acc >= h && performance.now() - t0 < BUDGET) {
-    const ts = performance.now(); await side.step(h); acc -= h; const dur = performance.now() - ts; stepMs += (dur - stepMs) * 0.1;   // (a step's cost, for the status)
+    // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour) — after
+    // the fish's step, or (a GPU block) while the GPU works, the fish's takes added to it after (gpufish.js block's `during`)
+    envAcc += h; let stepped = false; const water = () => { env.step(envAcc); envAcc = 0; stepped = true; };
+    const due = envAcc >= Math.max(h, ENV_FINE) - 1e-9;
+    const ts = performance.now(); await side.step(h, due ? water : null); acc -= h; if (due && !stepped) water();
+    const dur = performance.now() - ts - (side.takeHand ? side.takeHand() : 0); stepMs += (dur - stepMs) * 0.1;   // (a step's cost — its water's too — for the status; a hand-over to or from the GPU isn't one)
+    if (stepped) side.envStepped();
     histTick();
     if (h > FINE) blockMs += (dur - blockMs) * 0.3;   // (a block's cost: the next blocks' length)
-    // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour)
-    envAcc += h; if (envAcc >= Math.max(h, ENV_FINE) - 1e-9) { env.step(envAcc); envAcc = 0; side.envStepped(); }
   }
   acc = Math.min(acc, h);   // (behind: drop the backlog — the sim runs slower than asked rather than lurch)
   busyS = (performance.now() - t0) / 1000;
@@ -141,7 +197,7 @@ function snapshot() {
   const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises); rises = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun,
-    acc, h, nf, ny, simT: env.time, stepMs, shards: side.pool ? 2 : 0, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, ...side.totals(count, nf, ny) };
+    acc, h, nf, ny, simT: env.time, stepMs, shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, ...side.totals(count, nf, ny) };
   const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer]; if (field) tr.push(field.buffer);
   postMessage(msg, tr);
 }
@@ -156,10 +212,12 @@ onmessage = async ev => {
       const t0 = performance.now(), say = text => postMessage({ type: 'progress', text, s: (performance.now() - t0) / 1000 });
       const q = new URLSearchParams(self.location.search), cores = self.navigator?.hardwareConcurrency || 2;
       const shards = WORLD_TRUE && self.crossOriginIsolated && cores >= 4 && q.get('shards') !== '0';
+      const gpu = !!self.navigator?.gpu && (WORLD_TRUE ? q.get('gpu') !== '0' : q.get('gpu') === '1');
       say('the water'); const st0 = getRandState(); env = new Env3();
-      if (shards) side = await poolSide(2, say, st0);
-      else { say("the fish and the season's young"); side = soloSide(); }
-      say('the first look'); postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL, shards: side.pool ? 2 : 0 });
+      if (gpu) { say("the fish and the season's young"); try { side = await gpuSide(say); blockMs = 100; } catch (e) { console.warn('no GPU engine:', e); side = null; } }
+      if (!side && shards) side = await poolSide(2, say, st0);
+      else if (!side) { say("the fish and the season's young"); side = soloSide(); }
+      say('the first look'); postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL, shards: side.pool ? 2 : 0, gpu: side.gpu || null });
       sendPlants(); snapshot();
     } else if (m.type === 'tick') {
       if (busy) return; busy = true;
@@ -172,11 +230,11 @@ onmessage = async ev => {
         focusR = Math.max(FOCUS_R[0] / 2, Math.min(want, focusR));
         side.setFocus([m.cam[0], m.cam[1], focusR]);
       } else side.setFocus(null);
-      ticks++; await advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot();
-      if (statsOn && !side.pool && performance.now() - statsAt > STATS_MS) { statsAt = performance.now(); postStats(side.stats()); }
+      ticks++; await advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); if (side.prep) await side.prep(); snapshot();
+      if (statsOn && !side.pool && performance.now() - statsAt > STATS_MS) { statsAt = performance.now(); postStats(await side.stats()); }
       busy = false;
     }
-    else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn) sendHistory(); if (statsOn && !side.pool) { statsAt = performance.now(); postStats(side.stats()); } else statsAt = -1e9; }
+    else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn) sendHistory(); if (statsOn && !side.pool) { statsAt = performance.now(); postStats(await side.stats()); } else statsAt = -1e9; }
     else if (m.type === 'select') { selId = m.id ?? -1; selKind = m.kind || 'fish'; }
     else if (m.type === 'run') run = !!m.run;
     else if (m.type === 'speed') speed = +m.speed || 1;

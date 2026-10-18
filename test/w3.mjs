@@ -441,13 +441,13 @@ if (run('core')) {
   { const { ShardSet } = await import('../src/w3/shard3.js'); const { KEYS3 } = await import('../src/w3/fish3.js'); const { createHash } = await import('node:crypto');
     const tot = c => KEYS3.reduce((t, k) => t + c[k].n, 0), kgOf = c => KEYS3.reduce((t, k) => t + c[k].kgHa, 0);
     const fpOf = list => { const h = createHash('sha1'); for (const a of [...list].filter(a => a.alive).sort((p, q) => p.id - q.id)) h.update(`${a.id},${a.x},${a.n},${a.W};`); return h.digest('hex'); };
-    const runS = sharded => { seed(520); const e = new Env3({ col: 10 * CS, yf0: 0.3 }); const F = sharded ? new ShardSet(e, { young: true }) : new Fish3(e, { young: true }); const c0 = F.census();
+    const runS = sharded => { seed(520); const e = new Env3({ col: 10 * CS, yf0: 0.3 }); const F = sharded ? new ShardSet(e, { young: true }) : new Fish3(e, { young: true }); const c0 = F.census(), sp0 = JSON.stringify(F.stats.spawns) + JSON.stringify(F.stats.fry);
       for (let b = 0; b < 30; b++) { F.step(1752); e.step(1752); }
       const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE); let acc = 0; for (let i = 0; i < 600; i++) { F.step(0.1); acc += 0.1; if (acc >= 60) { e.step(acc); acc = 0; } }
       F.setFocus(null); for (let b = 0; b < 4; b++) { F.step(1752); e.step(1752); }
-      return { c0, c1: F.census(), F, fp: fpOf(F.fish) }; };
+      return { c0, sp0, c1: F.census(), F, fp: fpOf(F.fish) }; };
     const A = runS(false), B = runS(true), B2 = runS(true);
-    const sameFound = KEYS3.every(k => Math.abs(A.c0[k].n - B.c0[k].n) < 1e-6);
+    const sameFound = KEYS3.every(k => Math.abs(A.c0[k].n - B.c0[k].n) < 1e-6) && A.sp0 === B.sp0;   // (the founding's tallies counted once, not once a shard)
     let wrong = 0, dup = 0; const ids = new Set(); B.F.shards.forEach((sh, i) => { for (const a of sh.F.fish) if (a.alive) { if (ids.has(a.id)) dup++; ids.add(a.id); if (B.F.owner[B.F.env.colAt(a.x, a.y)] !== i) wrong++; } });
     const dN = Math.abs(tot(B.c1) - tot(A.c1)) / tot(A.c1), dKg = Math.abs(kgOf(B.c1) - kgOf(A.c1)) / kgOf(A.c1);
     check('shards: the fish split by water (Upper and the brook; Lower) found as one, keep the lakes as one run does (fish and biomass within 2 %), hand over the fish that cross, leave none in another\'s water, and repeat a run exactly',
@@ -843,6 +843,26 @@ if (run('gpu')) {
   check('the GPU engine\'s layout: every fish packs into the struct of arrays and back exactly (fields, genome, learned block), the young too; its statics and WGSL constants have no NaN or hole',
     bad === 0 && Y.n === F.yoy.filter(q => q.alive).length && holes.length === 0 && S.ST.length > 1000 && W.length === WL.size,
     `${fish.length} fish (${Lg.NAF} fields, ${Lg.NGN} genome + genes, ${Lg.NBR} brain), ${bad} mismatches; ${Y.n} young schools; statics ${(S.ST.length * 4 / 1e6).toFixed(1)} MB, water ${(W.length * 4 / 1e3).toFixed(0)} KB, ${src.split('\n').length} constants${holes.length ? ', holes: ' + holes.slice(0, 3).join(' | ') : ''}`);
+  // THE HAND-BACK (G3: fast-forward ends — the GPU's arrays become the CPU sim's objects again): two like worlds, each packed into
+  // the arrays and materialized back — one into the objects it had (by id), one into objects all new (as the fish born on the GPU
+  // get) — then lived on alike: they must stay identical (nothing a fish needs is left out of the arrays or the new objects); and
+  // the GPU's tallies fold into the stats tree
+  { const { getRandState, setRandState } = await import('../src/core.js'); const { createHash } = await import('node:crypto'); const { KEYS3 } = await import('../src/w3/fish3.js');
+    const world = () => { seed(78); const e = new Env3({ yf0: 0.3 }), F = new Fish3(e, { young: true }); F.step(FB); e.step(FB); return { e, F }; };
+    const hand = (F, fresh) => { const cap = F.fish.length + 99, ycap = F.yoy.length + 99, P = Lg.packAgents(F.fish, cap), Y = Lg.packYoy(F.yoy, ycap, P.slot);
+      if (fresh) { F.fish = []; F.yoy = []; } return Lg.materialize(F, { A: P.A, BR: P.BR, GN: P.GN, Y: Y.Y, YG: Y.YG }, cap, ycap, P.n, Y.n, F.nextId); };
+    const fp = F => { const h = createHash('sha1'); for (const a of [...F.fish].filter(a => a.alive).sort((p, q) => p.id - q.id)) h.update(`${a.id},${a.x},${a.y},${a.z},${a.n},${a.W},${a.L},${a.gut},${a.gon},${a.age},${a.yaw};`);
+      for (const q of [...F.yoy].filter(q => q.alive).sort((p, r) => p.id - r.id)) h.update(`y${q.id},${q.n},${q.L},${q.W},${q.x},${q.y};`); return h.digest('hex'); };
+    const W1 = world(), W2 = world(), h1 = hand(W1.F, false), h2 = hand(W2.F, true), st = getRandState();
+    const live = ({ e, F }) => { setRandState(st); for (let b = 0; b < 4; b++) { F.step(FB); e.step(FB); } return fp(F); };
+    const f1 = live(W1), f2 = live(W2);
+    const st0 = W1.F.stats, stt = JSON.parse(JSON.stringify(st0)), tl = new Float64Array(512), NK = KEYS3.length;
+    tl[412 + 2] = 3e6; tl[400 + 2] = 5000; tl[224 + 1 * 7 + 5] = 2.5e6; tl[96 + 6 * NK + 1] = 4e6;
+    Lg.statsAdd(stt, tl, 99);
+    const okS = stt.spawns.sucker === st0.spawns.sucker + 3 && stt.eggs.sucker === st0.eggs.sucker + 5000 && Math.abs((stt.died.perch.eaten || 0) - ((st0.died.perch || {}).eaten || 0) - 2.5) < 1e-9
+      && stt.eatenBy['pike>perch'] - (st0.eatenBy['pike>perch'] || 0) === 4 && stt.kills === st0.kills + 4;
+    check('the GPU engine\'s hand-back: the arrays materialized into the fish\'s own objects and into all-new ones live on identically (4 blocks); the GPU\'s tallies fold into the stats',
+      f1 === f2 && h1.fish === h2.fish && h1.yoy === h2.yoy && h1.fish > 100 && h1.yoy > 10 && okS, `${h1.fish} fish, ${h1.yoy} young schools; own objects ${f1.slice(0, 8)} vs new ${f2.slice(0, 8)}; stats ${okS ? 'folded' : 'WRONG'}`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

@@ -198,10 +198,77 @@ species' adults within 0.003, the young within ~4 %). **Time: 73.9 ms a block on
 read-back included) against ~3.1 s on the CPU's two cores — ~40×: the 28 days in ~1.7 min against 85, a year in ~22 min against
 ~20 h.**
 
-Next (G3): the browser's fast-forward on the GPU engine (the view downloads only what it draws); a headless year runner page;
-pipelining the CPU's water model with the GPU's block (the fish reading the water one block old, their takes applied as
-differences) for ~2× more; longer validations (the whole year against the CPU run, ≥ 3 seeds). Then, the human's choice, the
-speed spent on bigger brains, a larger agent budget, a finer water model.
+## G3 — in use (2026-10-18)
+
+- **The year runner** (`tools/gpu/year.html?world=true&seeds=611,612,613&yf=0.22&days=365&every=14`): the GPU engine through
+  whole years, seed after seed, its lines in tools/w3_season.mjs's format (each species against the start, kg/ha, ration, cm,
+  the young, spawnings and deaths counted from the founding as the CPU's are, recruits; who ate whom at the end) — the CPU's year
+  run and the GPU's compare line by line. `window.YEAR[seed]` holds the lines.
+- **Room to grow.** A year's fish outgrow the arrays sized at the founding (the spring's recruits, June's spawnings). The kernels
+  now hold back what has no room — a recruiting school waits a block, a spawning a block, a dissolving school a pass — and say
+  how much they wanted (GL 43–45); `GpuFish.ensureRoom` then re-makes the arrays larger (`grow`: each field's column copied to
+  its new stride, the scratch re-made, the pipelines rebuilt — the feeding's per-school sums are laid out by ycap). Checked
+  (`tools/gpu/g3_grow.html`): the engine repeats a run exactly; a run grown ×1.5 at block 20 ends bit-identical to one with the
+  larger arrays from the start; one started with no room grows itself and ends the same.
+- **The hand-overs.** `GpuFish.upload()` puts the CPU sim's lakes on the GPU (room first, the spawning grounds, the block counter
+  — the random draws' key — from fish3's step count). `GpuFish.download()` hands them back: the live slots read back (only the
+  first n of each field), `layout.js materialize` makes them F's objects again — a fish F held keeps its object (by id), one born
+  on the GPU gets a new one, arrays a fish shared (a merge's genome) made its own, the leak recomputed, the fidelity ladder's
+  bookkeeping restarted — and `statsAdd` folds the GPU's tallies into F.stats. Gate (`gpu`): two like worlds materialized, one into
+  its own objects and one into all-new ones, live on identically for 4 blocks; the tallies fold in.
+- **The browser's fast-forward** (`render3/sim3worker.js`, the true lakes wherever WebGPU is; `?gpu=0` off, `?gpu=1` on the 1/10
+  world): the fine speeds (½×–4×) on one Fish3 in the sim worker, as before shards; past FINE_UP the lakes go to the GPU and come
+  back when the speed drops. While the GPU holds them the view gets only what it draws — `v_drawn` gathers the agents and young
+  within DRAW_R of where the camera looks (≤ 30,000 and 20,000; the previous poses from the last gather, by id, for the view's
+  interpolation) — the followed fish's card from its slot (`GpuFish.one`; the prey's species and the brain's inputs only the CPU
+  knows), the data page from the GPU's census, a light copy of nine fields per agent and the tallies (`fishside3 gpuStatsPart`),
+  and the run's history from each block's counts. `tools/gpu/g3_worker.html` drives the worker as the view does (no renderer).
+  Measured on the true lakes: max speed ~13,000× real time (a day in 6.6 s; the CPU's fast-forward was ~54×), ~85 ms a tick with
+  a block, the view's 60 Hz ticks keeping 1 h/s; the hand-over to the GPU ~5 s and back ~7 s (the sim pauses, the view keeps
+  drawing) — most of it JS reading and writing 120 named fields on 300,000 objects (packAgents/unpackAgents now go through the
+  arrays' typed views, ~1.5× faster; code generated per field would be the next step — the CSP rules out building it at run time).
+  The fine speeds now run on one Fish3 (~48 ms a 0.1-s step: 1× keeps up, 4× runs ~2×, as before the shards).
+- **The water model overlapped with the GPU's block.** `GpuFish.block(dt, during)`: the caller's water step runs while the GPU
+  works, and the fish's takes come back as DIFFERENCES from what was uploaded (a cell no fish touched keeps its exact float64 value
+  — before, every cell was rounded to float32 each block). The worker and the year runner use it (`?overlap=0` off).
+- **Two couplings fixed.** The GPU path never set `chem.fishKgHa` (the fish biomass the zooplankton's daily migration and the
+  mussels' hosts answer): it stayed at the founding's value — now each block's (the fish and young at its start, as fish3's hash
+  sets it). The CPU's shards each counted the founding's tallies (the season's spawnings so far): the two-shard runs' spawnings
+  read high by that much — now counted once, in shard 0 (gate `core`: the sharded founding's tallies equal one run's).
+
+### G3 — the whole year on the GPU (seed 611 from May 20, true lakes; the CPU's own year run as far as it has got)
+
+**A true-scale year in 27 minutes** (67–75 ms a block, the water model after the block — before the overlap; the CPU's two shards
+need ~20 h). Where the CPU's run has got to, the two agree as at day 28 — day 42, CPU · GPU: lakes 105 · 105 kg/ha; bass 0.832 ·
+0.833 with 3,190 · 3,199 starved; perch 0.957 · 0.957; killifish 0.842 · 0.845; the brook's dace 0.539 · 0.547; the young within
+~3 % (perch 6.76M · 6.79M @ 3.6 cm both) — the GPU's young are held in fewer schools (46,900 · 61,300: its merges pair neighbours
+more readily; the fish in them alike).
+
+**What the first whole year shows — the MODEL, not the engine (the two agree where compared): the lakes are not yet
+self-sustaining.** Each species' adults as a share of the start (fish, then deaths over the year by cause):
+
+| | day 56 | day 126 | day 182 (Nov 19) | day 308 (Mar 25) | day 365 (May 20) | starved · eaten over the year |
+|---|---|---|---|---|---|---|
+| bass | 0.774 | 1.167 (recruits) | 0.530 | 0.271 | **0.230** | 22,054 · 18,758 |
+| pickerel | 0.809 | 0.751 | 0.602 | 0.274 | **0.121** | 7,918 · 3,932 |
+| bullhead | 0.895 | 1.499 (recruits) | 0.752 | 0.593 | **0.549** | 42,585 (late Sep–Nov) · 15,203 |
+| dace (brook) | 0.295 | 0.018 | 0 | 0 | **0** | — · 1,209 (by fallfish and pickerel) |
+| killifish | 0.801 | 1.495 | 1.231 | 0.690 | **0.562** | 5,433 · 97,883 (pickerel 71k) |
+| fallfish | 0.895 | 1.500 | 1.280 | 0.797 | **0.686** | 7,441 · 24,824 |
+| sunfish | 0.949 | 0.883 | 0.814 | 0.537 | 1.296 (spring recruits) | 11,162 · 1,518 |
+| perch | 0.944 | 1.487 | 1.392 | 1.192 | 1.115 | 1,471 · 9,328 |
+| white perch | 0.957 | 0.913 | 1.500 | 1.443 | 1.431 | 324 · 1,160 |
+| sucker | 0.954 | 0.897 | 0.861 | 1.498 | 1.376 | 6 · 3,573 |
+
+Biomass stays 109–131 kg/ha, but the community turns over: the piscivores STARVE — bass adults in midsummer (4,400, 17 % of
+them, by mid-July), then the young bass recruited in August through October–November (+10,000), then on through the winter;
+pickerel steadily, most of them over the winter (1,600 by November, 5,600 by late March) — while white perch and suckers fill to
+the recruitment cap (F3.CAP × the census: the young beyond it are simply not made agents) and the young bullhead recruited in
+August starve in the fall. The brook's dace are nearly gone by mid-August and extinct by November (the T7 finding: the spawning
+fallfish packed into the brook). These are the first findings the GPU's speed makes visible — a year was 20 h on the CPU — and
+the next calibration work: why bass and pickerel can't feed through the summer, fall and winter (their prey's sizes and numbers,
+the strikes' reach — the coarse block's strike finding above — winter rations), the recruits' fall starvation, the dace in the
+brook, and whether the cap should bind at all.
 
 ## Stages
 

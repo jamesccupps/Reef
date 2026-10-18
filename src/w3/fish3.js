@@ -446,6 +446,9 @@ class Yoy {
   }
 }
 
+// blank objects of the two kinds (the GPU engine's hand-back builds the fish and schools born on the GPU: gpu/layout.js materialize)
+export const newFish = () => new Fish(), newYoy = () => new Yoy();
+
 // a fish or a young school as plain data and back (SHARDS: handed between workers). The object references — its species, the
 // prey, threat, mate or guarding parent it had in view — are dropped or kept by key; its genome, learned weights and brain state
 // are copied
@@ -463,6 +466,9 @@ function unpackFish(d) {
 }
 function packYoy(q) { const d = { key: q.s.key, g: q.g, genes: q.genes, v: {} }; for (const k of Object.keys(q)) if (!YOY_REF.has(k)) d.v[k] = q[k]; return d; }
 function unpackYoy(d) { const q = new Yoy(); Object.assign(q, d.v); q.s = S3[d.key]; q.g = d.g; q.genes = d.genes; q.gref = null; q.guard = 0; q.alive = true; q._out = false; q.near = false; q._due = -1; return q; }
+
+// a tally tree's counts zeroed (its times of first events kept)
+const zeroTally = o => { for (const k of Object.keys(o)) { if (typeof o[k] === 'number') { if (k !== 'first') o[k] = 0; } else if (o[k] && typeof o[k] === 'object') zeroTally(o[k]); } };
 
 // ONE SHAPE FOR GOOD (V8): a number field first written as an integer is held as a small integer, and the first fraction later
 // written to it re-shapes EVERY object of the class — at true scale ~1 s for the 300,000 fish, each time some field first takes a
@@ -1122,6 +1128,7 @@ export class Fish3 {
     this._fp = new Map(); this._fpOwn = own;
     this.fish = this.fish.filter(a => own(this.env.colAt(a.x, a.y))); this.yoy = this.yoy.filter(q => own(this.env.colAt(q.x, q.y)));
     this._needHash = true; this._region = null; this._yRegion = null;
+    if (me > 0) zeroTally(this.stats);   // (the founding's tallies — the season's spawnings so far — are the lakes': counted once, in shard 0)
   }
   // the fish and young that left this shard's water this step, packed (plain data: a structured clone carries them to another
   // worker); they leave this shard's lists

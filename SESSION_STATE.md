@@ -186,6 +186,29 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-18 night): GPU STAGE G3 — THE GPU IN USE (docs/GPU_SIM.md "G3 — in use" + the year's table).
+DONE: the YEAR RUNNER tools/gpu/year.html (?world=true&seeds=…&yf=0.22&days=365&every=14; lines in w3_season's format; window.YEAR);
+ROOM TO GROW (kernels hold back what has no room and say how much — GL 43–45; GpuFish.grow/ensureRoom re-stride the arrays;
+tools/gpu/g3_grow.html: grown = never-grown bit-identical); THE HAND-OVERS (GpuFish.upload / download; layout.js materialize +
+statsAdd; gate `gpu` check: materialized into own vs all-new objects live on identically); THE BROWSER'S FAST-FORWARD ON THE GPU
+(sim3worker gpuSide: fine speeds on one Fish3, blocks on the GPU; the view's fish gathered there — wgsl VIEW v_drawn; the card —
+GpuFish.one + fishside3 gpuCard; the data page — gpuStatsPart; ?gpu=0 off, ?gpu=1 on the 1/10 world; tools/gpu/g3_worker.html drives
+the worker without the renderer); THE WATER OVERLAPPED (GpuFish.block(dt, during): the water steps while the GPU works, the takes
+added as differences); FIXES: chem.fishKgHa never set on the GPU path (now each block's); the CPU shards counted the founding's
+tallies twice (now once; gate `core` checks).
+MEASURED (true lakes): a whole YEAR in 27 min on the GPU (CPU ~20 h); in the worker max speed ~13,000× (a day in 6.6 s; the CPU's
+fast-forward was ~54×), ~85 ms a GPU block tick; hand-over to the GPU 5.2 s, back 7.2 s (JS packing of 300k fish — can be made
+faster); real time on the solo Fish3 ~48 ms a 0.1-s step (1× fine; 4× runs ~2×, as before shards — the shards aren't used with the GPU).
+THE YEAR'S FINDING (the MODEL — the GPU matches the CPU's own run to day 42, bass 0.833/0.832 etc.): the lakes are NOT yet
+self-sustaining: after one year bass 0.23× (22k starved, adults from midsummer, the recruits in the fall), pickerel 0.12× (starve
+over the winter), bullhead 0.55× (42k recruits starve Sep–Nov), the brook's dace extinct by November, killifish 0.56×, fallfish
+0.69× — while white perch and suckers fill to the F3.CAP recruitment cap. → the next calibration work (ask the human's field
+knowledge where it helps).
+SIDE TASK (the human asked mid-session): a 3-D PRINT of the true lakes — tools/print3d/export_stl.mjs (+ check_stl.mjs) writes
+exports/print3d/ (git-ignored): the land and each lake's drop-in water piece (clear PETG), ×5 and true-to-scale, 250 mm long,
+north along +X; basins 1 mm + depth × exaggeration; the brook a widened 1.2-mm groove. Sent to the human.
+RUNNING: the 3-seed year (seeds 611–613, the overlap + fishKgHa) in the browser tab; the CPU year run (scratchpad true_year.txt).
+
 ▶▶▶ RESUME HERE (2026-10-18 evening): GPU STAGE G1 — THE WHOLE COARSE BLOCK RUNS ON THE GPU (the human: "ok now do the gpu").
 docs/GPU_SIM.md "G1 — the design as built" + results tables. Code: src/w3/gpu/layout.js (pure: the struct-of-arrays fields, pack/
 unpack from a Fish3, statics, water sections, WGSL constants generated from the CPU's config — gate section `gpu` checks the round
