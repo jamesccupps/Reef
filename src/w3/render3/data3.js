@@ -12,7 +12,7 @@ import { OUT3, IN3 } from '../fish3.js';
 import { CENSUS_SIZE } from './fishside3.js';
 import { GENE_KEYS } from '../../core.js';
 
-const FISH_STRIDE = 18, YOY_STRIDE = 12, PICK_PX = 22, HIST_MAX = 1500;
+const FISH_STRIDE = 18, YOY_STRIDE = 12, PICK_PX = 22, HIST_MAX = 4000;
 const fmt = (v, d = 0) => v === null || v === undefined || !Number.isFinite(v) ? '—' : v >= 1e6 ? (v / 1e6).toFixed(2) + ' M' : v >= 1e4 ? Math.round(v).toLocaleString() : v.toFixed(d);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 const MONTHS = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
@@ -35,15 +35,12 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
   btn.addEventListener('click', () => open(panel.hidden)); close.addEventListener('click', () => open(false));
 
   // ---------- the numbers and their history ----------
+  // (the history: the worker's — every point since the lake opened, kept whether this page is open or not — then each update's new ones)
   let last = null; const hist = [];
+  function onHistory(h) { hist.length = 0; hist.push(...h); if (last) render(); }
   function onStats(m) {
     last = m;
-    const tot = Object.values(m.sp).reduce((s, r) => s + r.n, 0), kg = Object.values(m.sp).reduce((s, r) => s + r.kgHa, 0);
-    if (!hist.length || m.time - hist[hist.length - 1].t > 30) {   // (a point every simulated half minute at least)
-      hist.push({ t: m.time, yf: m.yf, n: Object.fromEntries(Object.entries(m.sp).map(([k, r]) => [k, r.n])), yoy: Object.fromEntries(Object.entries(m.sp).map(([k, r]) => [k, r.yoyN])), tot, kg,
-        w: [m.water[UPPER], m.water[LOWER]].map(w => [w.tS, w.tB, w.oS, w.oB]) });
-      if (hist.length > HIST_MAX) hist.splice(0, hist.length - HIST_MAX);
-    }
+    if (m.histAdd && m.histAdd.length) { hist.push(...m.histAdd); if (hist.length > HIST_MAX) hist.splice(0, hist.length - HIST_MAX); }
     render();
   }
   const table = (cols, rows) => {
@@ -100,13 +97,13 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     } else if (tab === 'Graphs') {
       body.append(el('h3', null, 'Fish by species (log scale)'));
       body.append(chart(hist.map(h => h.t), sp.map(([k, r]) => ({ col: r.tag, v: hist.map(h => h.n[k]) })), { log: true }));
-      body.append(el('h3', null, 'Fish biomass (kg/ha)'));
+      body.append(el('h3', null, 'Fish biomass, the young included (kg/ha)'));
       body.append(chart(hist.map(h => h.t), [{ col: '#8fe3b5', v: hist.map(h => h.kg) }], {}));
       body.append(el('h3', null, 'Water: Upper surface / bottom °C (solid), Lower (dashed)'));
       body.append(chart(hist.map(h => h.t), [{ col: '#ffb070', v: hist.map(h => h.w[0][0]) }, { col: '#7090ff', v: hist.map(h => h.w[0][1]) }, { col: '#ffb070', v: hist.map(h => h.w[1][0]), dash: true }, { col: '#7090ff', v: hist.map(h => h.w[1][1]), dash: true }], {}));
       body.append(el('h3', null, 'Water: O₂ mg/L, surface (green) and bottom (red); Lower dashed'));
       body.append(chart(hist.map(h => h.t), [{ col: '#8fe3b5', v: hist.map(h => h.w[0][2]) }, { col: '#ff7070', v: hist.map(h => h.w[0][3]) }, { col: '#8fe3b5', v: hist.map(h => h.w[1][2]), dash: true }, { col: '#ff7070', v: hist.map(h => h.w[1][3]), dash: true }], {}));
-      if (hist.length < 2) body.append(note('The graphs fill in as the lakes run (a point every simulated half minute or more; fast-forward to see seasons).'));
+      body.append(note(hist.length < 2 ? 'The graphs fill in as the lakes run (fast-forward to see seasons).' : 'Since the lake opened, whether this page was open or not: points every simulated half minute at first, farther apart as the run grows.'));
     }
   }
   // a line chart on a canvas: x the sim's time, series {col, v[], dash}
@@ -175,5 +172,5 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     if (!follow || !lastSel || lastSel.gone) return;
     rig.goal.target.set(lastSel.x, surfY(lastSel.x, lastSel.y) - lastSel.z, -lastSel.y);
   }
-  return { onStats, onSel, update, isOpen: () => !panel.hidden };
+  return { onStats, onHistory, onSel, update, isOpen: () => !panel.hidden };
 }

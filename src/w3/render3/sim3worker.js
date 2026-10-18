@@ -19,7 +19,7 @@ import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
 import { ShardPool } from '../shardpool3.js';
 import { getRandState } from '../../core.js';
-import { remember, drawnOf, packDrawn, selInfoOf, statsPart, statsMerge, FISH_STRIDE, YOY_STRIDE, DRAW_CAM } from './fishside3.js';
+import { remember, drawnOf, packDrawn, selInfoOf, statsPart, statsMerge, histPoint, FISH_STRIDE, YOY_STRIDE, DRAW_CAM } from './fishside3.js';
 
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
 const PLANTS_MS = WORLD_TRUE ? 20000 : 4000;   // the weeds change slowly: their field every this often (the true lakes': ~257,000 bed cells × 13 forms)
@@ -33,6 +33,17 @@ let focusR = 150, focus = null;
 let rises = [];
 const STATS_MS = 2000;   // the data page's numbers every this often while it is open (render3/data3.js)
 let statsOn = false, statsAt = -1e9, selId = -1, selKind = 'fish';
+// THE RUN'S HISTORY (TRUE_SCALE T8: the graphs had filled only while the data page was open): a point every histDt simulated
+// seconds whether it is open or not (fishside3.histPoint); when HIST_MAX are kept, every other is dropped and the spacing
+// doubles — the whole run since the lake opened, coarser as it grows. The page gets them all when it opens, then the new ones
+const HIST_MAX = 2000; let hist = [], histDt = 30, histAt = -1e9, histSent = 0;
+function histTick() {
+  if (env.time - histAt < histDt) return;
+  const c = side.counts(); histAt = env.time; hist.push(histPoint(env, c.cnt, c.bio, c.lakeHa));
+  if (hist.length > HIST_MAX) { hist = hist.filter((_, i) => i % 2 === 0); histDt *= 2; if (statsOn) sendHistory(); }
+}
+function sendHistory() { postMessage({ type: 'history', hist }); histSent = hist.length; }
+function postStats(m) { m.histAdd = hist.slice(histSent); histSent = hist.length; postMessage(m); }
 
 // ---------- THE FISH'S SIDE, alone in this worker: one Fish3 ----------
 function soloSide() {
@@ -51,6 +62,7 @@ function soloSide() {
       let c = 0; for (let k = 0; k < F.cnt.length; k++) c += F.cnt[k]; return { count: c, agents: F.fish.length, nyAll: F.yoy.length };
     },
     seedSeason(y0, y1) { F.seedSeason(y0, y1, true); remember(F, WORLD_TRUE); },
+    counts() { return { cnt: F.cnt, bio: F.bio, lakeHa: F.lakeHa }; },
   };
 }
 
@@ -66,7 +78,7 @@ async function poolSide(n, say, st0) {   // (st0: the random state before the wa
       const stats = statsOn && performance.now() - statsAt > STATS_MS;
       const reps = await P.step(dt, { focus, cam, sel: selId >= 0 ? [selId, selKind] : null, stats });
       for (const r of reps) for (let q = 0; q < r.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(r.rises[q]);
-      if (stats) { statsAt = performance.now(); postMessage(statsMerge(reps.map(r => r.stats), env, P.lakeHa)); }
+      if (stats) { statsAt = performance.now(); postStats(statsMerge(reps.map(r => r.stats), env, P.lakeHa)); }
     },
     envStepped() { P.envStepped(); },
     view() {   // (the shards' latest drawn fish and young, one after another: a tick with no step draws the last again)
@@ -79,6 +91,7 @@ async function poolSide(n, say, st0) {   // (st0: the random state before the wa
     stats() { return null; },   // (they come with a step: see step)
     totals() { return { count: P.count(), agents: P.sum('agents'), nyAll: P.sum('nyAll') }; },
     seedSeason(y0, y1) { return P.seedSeason(y0, y1); },
+    counts() { const cnt = new Float64Array(P.last[0].cnt.length); let bio = 0; for (const r of P.last) { for (let k = 0; k < cnt.length; k++) cnt[k] += r.cnt[k]; bio += r.bio || 0; } return { cnt, bio, lakeHa: P.lakeHa }; },
   };
 }
 
@@ -94,6 +107,7 @@ async function advance(dt) {
   const t0 = performance.now();
   while (acc >= h && performance.now() - t0 < BUDGET) {
     const ts = performance.now(); await side.step(h); acc -= h; const dur = performance.now() - ts; stepMs += (dur - stepMs) * 0.1;   // (a step's cost, for the status)
+    histTick();
     if (h > FINE) blockMs += (dur - blockMs) * 0.3;   // (a block's cost: the next blocks' length)
     // the water: every simulated minute, or every block when blocks are longer (its physics' scale: minutes to half an hour)
     envAcc += h; if (envAcc >= Math.max(h, ENV_FINE) - 1e-9) { env.step(envAcc); envAcc = 0; side.envStepped(); }
@@ -159,10 +173,10 @@ onmessage = async ev => {
         side.setFocus([m.cam[0], m.cam[1], focusR]);
       } else side.setFocus(null);
       ticks++; await advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot();
-      if (statsOn && !side.pool && performance.now() - statsAt > STATS_MS) { statsAt = performance.now(); postMessage(side.stats()); }
+      if (statsOn && !side.pool && performance.now() - statsAt > STATS_MS) { statsAt = performance.now(); postStats(side.stats()); }
       busy = false;
     }
-    else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn && !side.pool) { statsAt = performance.now(); postMessage(side.stats()); } else statsAt = -1e9; }
+    else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn) sendHistory(); if (statsOn && !side.pool) { statsAt = performance.now(); postStats(side.stats()); } else statsAt = -1e9; }
     else if (m.type === 'select') { selId = m.id ?? -1; selKind = m.kind || 'fish'; }
     else if (m.type === 'run') run = !!m.run;
     else if (m.type === 'speed') speed = +m.speed || 1;

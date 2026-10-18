@@ -846,6 +846,7 @@ function liveTick(dtReal) {
 }
 function onSnap(m) {
   if (m.type === 'stats') { LIVE.data3?.onStats(m); return; }
+  if (m.type === 'history') { LIVE.data3?.onHistory(m.hist); return; }
   if (m.type === 'progress') { LIVE.progress = `${m.text} (${m.s.toFixed(1)} s)`; return; }
   if (m.type === 'error') { LIVE.failed = m.text; $('status').textContent = 'the simulation stopped: ' + m.text.split(String.fromCharCode(10))[0]; console.error(m.text); return; }
   if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }

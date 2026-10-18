@@ -96,6 +96,26 @@ export function statsPart(F) {
 }
 const lakeArea = id => BODIES.find(b => b.id === id).area;
 const addTree = (a, b) => { if (typeof b === 'number') return (a || 0) + b; if (!b || typeof b !== 'object') return a ?? b; const o = a && typeof a === 'object' ? a : {}; for (const k of Object.keys(b)) o[k] = addTree(o[k], b[k]); return o; };
+// the water per lake: area-weighted at the surface and the bottom, the zooplankton over the column, the ice
+export function waterOf(env) {
+  const Gc = env.G, ch = env.chem, water = {};
+  for (const lake of [UPPER, LOWER]) {
+    let A = 0, ts = 0, tb = 0, os = 0, ob = 0, alg = 0, zoo = 0, ice = 0, zv = 0;
+    for (let col = 0; col < Gc.NC; col++) {
+      if (Gc.body[col] !== lake) continue; const a = Gc.area[col], j0 = Gc.cell0[col], jb = j0 + Gc.nL[col] - 1;
+      A += a; ts += env.temp[j0] * a; tb += env.temp[jb] * a; os += ch.o2[j0] * a; ob += ch.o2[jb] * a; alg += (ch.phyto[j0] + ch.diatom[j0] + ch.cyano[j0]) * a; ice += env.ice[col] * a;
+      for (let j = j0; j <= jb; j++) { zoo += (ch.zooD[j] + ch.zooC[j]) * Gc.vol[j]; zv += Gc.vol[j]; }
+    }
+    water[lake] = { ha: lakeArea(lake) / 1e4, tS: ts / A, tB: tb / A, oS: os / A * ENV.O2_MGL, oB: ob / A * ENV.O2_MGL, algae: alg / A, zoo: zoo / Math.max(1e-9, zv) * PLANKTON.UGL, ice: ice / A };
+  }
+  return water;
+}
+// THE RUN'S HISTORY, a point (render3/sim3worker.js keeps them whether the data page is open or not): the fish by species (the
+// step's counts, cnt in KEYS3 order), their biomass (kg/ha), each lake's surface and bottom temperature and O₂
+export function histPoint(env, cnt, bio, lakeHa) {
+  const W = waterOf(env), n = {}; KEYS3.forEach((k, i) => { n[k] = cnt[i]; });
+  return { t: env.time, yf: env.yearFrac(), n, kg: bio / 1000 / lakeHa, w: [W[UPPER], W[LOWER]].map(w => [w.tS, w.tB, w.oS, w.oB]) };
+}
 // the data page's message from the sides' parts and the water model (render3/data3.js reads it)
 export function statsMerge(parts, env, lakeHa) {
   const sp = {}, Gc = env.G, ch = env.chem; let stats = null, agents = 0, yoySchools = 0;
@@ -109,17 +129,7 @@ export function statsMerge(parts, env, lakeHa) {
       up: r.up, low: r.low, brook: r.brook, size: r.size, cs: r.cs, fry: stats.fry[k], died: stats.died[k] || {}, spawns: stats.spawns[k], eggs: stats.eggs[k], recruits: stats.recruits[k],
       cross: stats.cross[k], settle: stats.settle[k], trips: stats.trips[k], runIn: r.runIn, runBack: r.runBack, sites: S.spawn.runK ? S.spawn.runK * lakeArea(BROOK) : 0 };
   }
-  // the water per lake: area-weighted at the surface and the bottom, the zooplankton over the column, the ice
-  const water = {};
-  for (const lake of [UPPER, LOWER]) {
-    let A = 0, ts = 0, tb = 0, os = 0, ob = 0, alg = 0, zoo = 0, ice = 0, zv = 0;
-    for (let col = 0; col < Gc.NC; col++) {
-      if (Gc.body[col] !== lake) continue; const a = Gc.area[col], j0 = Gc.cell0[col], jb = j0 + Gc.nL[col] - 1;
-      A += a; ts += env.temp[j0] * a; tb += env.temp[jb] * a; os += ch.o2[j0] * a; ob += ch.o2[jb] * a; alg += (ch.phyto[j0] + ch.diatom[j0] + ch.cyano[j0]) * a; ice += env.ice[col] * a;
-      for (let j = j0; j <= jb; j++) { zoo += (ch.zooD[j] + ch.zooC[j]) * Gc.vol[j]; zv += Gc.vol[j]; }
-    }
-    water[lake] = { ha: lakeArea(lake) / 1e4, tS: ts / A, tB: tb / A, oS: os / A * ENV.O2_MGL, oB: ob / A * ENV.O2_MGL, algae: alg / A, zoo: zoo / Math.max(1e-9, zv) * PLANKTON.UGL, ice: ice / A };
-  }
+  const water = waterOf(env);
   const P = env.plants, weeds = P ? FORMS3.map((Fm, f) => ({ name: Fm.name, kgHa: P.total(f) / 1000 / lakeHa })) : [];
   let mussels = 0; if (env.lit && P) for (let i = 0; i < P.cells.length; i++) mussels += env.lit.mu[i] * Gc.bedA[P.cells[i]];
   const eaten = Object.entries(stats.eatenBy).sort((a, b) => b[1] - a[1]).slice(0, 14);
