@@ -175,7 +175,24 @@ on w3.html, COEP on scripts — and ≥ 4 cores; ?shards=0 off), tools/w3_shard_
 tools/w3_bench_shards.mjs. The threaded pool matches the in-process set BIT FOR BIT (water identical after 12 blocks). True lakes:
 359× → 547× real time (2 shards). A crossing fish finishes its step in the cells it started in, then is handed over.
 A TRUE-SCALE SEASON RUN is in the background (scratchpad true_season.mjs → true_season_may.txt: May 20 + 30 days, weekly census).
-NEXT: read the season run (T7 validation: does the ecology hold at true size?); then T6b part 2, T4, T7, T8 part 2.
+▶▶▶ RESUME HERE (2026-10-18 ~09:30, context compacted mid-slice). UNCOMMITTED in the working tree (also saved as
+G:/synapse-reef-backups/synapse-reef_20261018_0926_wip-T4-fallfish-cap.patch):
+(1) T4 PART 1 — the learned copy is the hidden→output block only (fish3 forward3(g, lw2, …), reinforce3(lw2, g, …), plastic3,
+W2OFF3): BIT-IDENTICAL (tools/w3_fingerprint.mjs), −348 MB array buffers on the true lakes; TRUE_SCALE.md T4 "Built, part 1"
+written. W3_ONLY=core passed except "the fish's cost" — machine load at the time (HEAD measured equally slow: 88 vs 85 ms); rerun.
+(2) THE BROOK'S NEST SITES for fallfish (IN PROGRESS, not gated): T7 VALIDATION FOUND at true scale 5,400 ripe fallfish (a tenth of
+the lakes') crowd the 154-m brook and eat its dace ~30 %/week (dace 0.39× by day 14; season run log: scratchpad
+true_season_may.txt — everything else held 0.94–0.99×, 102 kg/ha, no starvation; pickerel 0.94× from cannibalism/bass — watch).
+Research note: docs/research_notes/Whole lake 3D fish simulation/fallfish_spawning_brook.md (brook holds 50–300 spawning
+fallfish at once, ~150; the rest spawn on lake gravel margins / other streams; realistic dace loss 0.5–1.5 %/wk). Built so far:
+spawn.runK 150/1725 per m² (fallfish), Fish3.runIn (admitted ripe runners in the brook, tallied each full step), _runs(a),
+a.runYr (turned back this season → lake shoals), a.inRun (admitted on entering the brook if a site is free, counted at once),
+seedSeason _seedRunP (F3.SEED_RUNS 3). RESULT SO FAR: 1/10 world 32 fallfish in the brook (cap 29) ✓; TRUE lakes still 1,039
+(cap 150) ✗ — find why (turned-back fish still physically in the brook? fish admitted by seedSeason's young/ripe at start? fish
+arriving through Lower handed between shards? check counts of inRun vs ripe in brook with scratchpad brookcrowd.mjs). Then
+tools/w3_season.mjs 0.22 7 (shards, predator table) → dace loss ≤ ~1–2 %/wk; full gate; commit T4 + the nest sites + the note.
+NEW TOOL (uncommitted): tools/w3_season.mjs — headless true-scale season run on 2 shard threads with weekly census + who ate whom.
+NEXT after that: T6b part 2, T7 (more validation runs: summer, autumn, winter), T8 part 2.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
