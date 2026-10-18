@@ -10,10 +10,11 @@
 // (render3/plants3view.js). When the sim can't keep up (the higher speeds on a slow machine) it runs slower than asked.
 import './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
 import { Env3 } from '../env3.js';
-import { Fish3 } from '../fish3.js';
+import { Fish3, S3, KEYS3 } from '../fish3.js';
+import { FORMS3 } from '../plants3.js';
 import { CLOCK3 } from '../clock3.js';
-import { WORLD_TRUE } from '../geometry.js';
-import { PLANKTON } from '../../config.js';
+import { WORLD_TRUE, GEO, BODIES, UPPER, LOWER, BROOK } from '../geometry.js';
+import { PLANKTON, ENV } from '../../config.js';
 
 const FISH_STRIDE = 18, YOY_STRIDE = 12;   // (render3/fish3view.js reads the same layout)
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
@@ -106,7 +107,7 @@ function snapshot() {
   const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises); rises = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun,
-    acc, h, nf, ny, simT: F.time, stepMs, fish: fb, yoy: yb, ice, field, show, rises: rz, ...totals(count, nf, ny) };
+    acc, h, nf, ny, simT: F.time, stepMs, sel: selInfo(), fish: fb, yoy: yb, ice, field, show, rises: rz, ...totals(count, nf, ny) };
   const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer]; if (field) tr.push(field.buffer);
   postMessage(msg, tr);
 }
@@ -117,6 +118,62 @@ function totals(count, nf, ny) {
   if (!WORLD_TRUE) return { count, agents: nf, nyAll: ny };
   let c = 0; for (let k = 0; k < F.cnt.length; k++) c += F.cnt[k];
   return { count: c, agents: F.fish.length, nyAll: F.yoy.length };
+}
+
+// THE DATA PAGE (TRUE_SCALE T8; render3/data3.js): while it is open, every STATS_MS the lakes' numbers — the census by species,
+// lake and size against docs/FISH_CENSUS.md's, the young's fates, deaths by cause, who eats whom, the spawnings, the brook's
+// traffic, the water per lake, the weeds and mussels. And CLICK-A-FISH: the fish (or school of young) the view picked rides in
+// every snapshot — its body, state, what it is doing, the water about it, its genes and its brain's outputs
+const STATS_MS = 2000, SIZE_CL = [7.5, 15, 25, 35];   // (cm: the size classes' edges)
+let statsOn = false, statsAt = -1e9, selId = -1, selKind = 'fish', sel = null;
+const lakeArea = id => BODIES.find(b => b.id === id).area;
+function sendStats() {
+  const c = F.census(), sp = {}, Gc = env.G, ch = env.chem;
+  for (const k of KEYS3) {
+    const r = c[k], S = S3[k];
+    sp[k] = { name: S.name || k, tag: S.tag || (S.sp && S.sp.tag) || '#999', n: r.n, agents: r.agents, kgHa: r.kgHa, perHa: r.perHa, L: r.L, mature: r.mature, p: r.p,
+      yoyN: r.yoyN, yoySchools: r.yoySchools, yoyL: r.yoyL, target: F._target(S) / F.lakeHa, up: 0, low: 0, brook: 0, size: [0, 0, 0, 0, 0],
+      fry: F.stats.fry[k], died: F.stats.died[k] || {}, spawns: F.stats.spawns[k], eggs: F.stats.eggs[k], recruits: F.stats.recruits[k],
+      cross: F.stats.cross[k], settle: F.stats.settle[k], trips: F.stats.trips[k] };
+  }
+  for (const a of F.fish) {
+    if (!a.alive) continue; const r = sp[a.s.key], L = a.L;
+    if (a.lake === UPPER) r.up += a.n; else r.low += a.n;
+    if (GEO.bodyAt(a.x, a.y) === BROOK) r.brook += a.n;
+    let q = 0; while (q < SIZE_CL.length && L >= SIZE_CL[q]) q++; r.size[q] += a.n;
+  }
+  // the water per lake: area-weighted at the surface and the bottom, the zooplankton over the column, the ice
+  const water = {};
+  for (const lake of [UPPER, LOWER]) {
+    let A = 0, ts = 0, tb = 0, os = 0, ob = 0, alg = 0, zoo = 0, ice = 0, zv = 0;
+    for (let col = 0; col < Gc.NC; col++) {
+      if (Gc.body[col] !== lake) continue; const a = Gc.area[col], j0 = Gc.cell0[col], jb = j0 + Gc.nL[col] - 1;
+      A += a; ts += env.temp[j0] * a; tb += env.temp[jb] * a; os += ch.o2[j0] * a; ob += ch.o2[jb] * a; alg += (ch.phyto[j0] + ch.diatom[j0] + ch.cyano[j0]) * a; ice += env.ice[col] * a;
+      for (let j = j0; j <= jb; j++) { zoo += (ch.zooD[j] + ch.zooC[j]) * Gc.vol[j]; zv += Gc.vol[j]; }
+    }
+    water[lake] = { ha: lakeArea(lake) / 1e4, tS: ts / A, tB: tb / A, oS: os / A * ENV.O2_MGL, oB: ob / A * ENV.O2_MGL, algae: alg / A, zoo: zoo / Math.max(1e-9, zv) * PLANKTON.UGL, ice: ice / A };
+  }
+  const P = env.plants, weeds = P ? FORMS3.map((Fm, f) => ({ name: Fm.name, kgHa: P.total(f) / 1000 / F.lakeHa })) : [];
+  let mussels = 0; if (env.lit && P) for (let i = 0; i < P.cells.length; i++) mussels += env.lit.mu[i] * Gc.bedA[P.cells[i]];
+  const eaten = Object.entries(F.stats.eatenBy).sort((a, b) => b[1] - a[1]).slice(0, 14);
+  postMessage({ type: 'stats', time: env.time, yf: env.yearFrac(), lakeHa: F.lakeHa, sizeCl: SIZE_CL, sp, water, weeds, mussels, eaten, secchi: ch.secchi(),
+    food: F.stats.food, agents: F.fish.length, yoySchools: F.yoy.length });
+  statsAt = performance.now();
+}
+// the picked fish's (or young school's) state, for its card; found by id once, then followed
+function selInfo() {
+  if (selId < 0) return null;
+  if (!sel || sel.id !== selId) sel = (selKind === 'yoy' ? F.yoy : F.fish).find(a => a.id === selId) || null;
+  if (!sel) return { id: selId, kind: selKind, gone: true, cause: 'gone' };
+  const a = sel, S = a.s, base = { id: a.id, kind: selKind, key: S.key, name: S.name || S.key, n: a.n, L: a.L, W: a.W, age: a.age / CLOCK3.YEAR_LEN, x: a.x, y: a.y, z: a.z, bed: a.bed };
+  if (!a.alive) return { ...base, gone: true, cause: a.cause || 'died' };
+  if (selKind === 'yoy') return { ...base, guarded: !!(a.gref && a.gref.alive && a.gref.nt > 0), T: a.j >= 0 ? env.temp[a.j] : null, o2: a.j >= 0 ? env.chem.o2[a.j] * ENV.O2_MGL : null };
+  const doing = a.nt > 0 ? 'guarding its nest' : a.esc ? 'escaping low oxygen' : a.threat && a.fear > 0.2 ? `wary of a ${a.threat.s.name || a.threat.s.key}` : a.fk === 1 && a.prey ? `hunting a ${a.prey.s.name || a.prey.s.key}`
+    : a.ripe ? (a.mate && a.mate !== a ? 'ripe, with a mate in view' : 'ripe, heading for its spawning ground') : a.tripEnd > env.time ? 'on a trip to the other lake'
+    : a.fk === 2 ? 'feeding on the bed' : a.fk === 3 ? 'feeding on zooplankton' : a.hunger > 0.6 ? 'searching for food' : 'cruising';
+  return { ...base, sex: a.sex, mature: a.mature, ripe: a.ripe, school: a.school, K: a.K, hunger: a.hunger, fear: a.fear, energy: a.energy, gen: a.gen,
+    p: a.cons / Math.max(1e-12, a.consMax), T: a.T, o2: a.o2 * ENV.O2_MGL, lake: a.lake, near: F.focus ? !!a.near : h <= FINE, doing,   // (near: lived second by second — every fish at the fine speeds when there is no focus) genes: Array.from(a.genes || []),
+    out: Array.from(a.o), vis: a.vis, spd: a.spd, yaw: a.yaw };
 }
 
 onmessage = ev => {
@@ -141,7 +198,10 @@ onmessage = ev => {
       focusR = Math.max(FOCUS_R[0] / 2, Math.min(want, focusR));
       F.setFocus(m.cam[0], m.cam[1], focusR);
     } else F.setFocus(null);
-    ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot(); }
+    ticks++; advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); snapshot();
+    if (statsOn && performance.now() - statsAt > STATS_MS) sendStats(); }
+  else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn) sendStats(); }
+  else if (m.type === 'select') { selId = m.id ?? -1; selKind = m.kind || 'fish'; sel = null; }
   else if (m.type === 'run') run = !!m.run;
   else if (m.type === 'speed') speed = +m.speed || 1;
   else if (m.type === 'show') show = m.show;

@@ -216,6 +216,15 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - The census, recruitment and food-web checks re-run on 3 seeds.
 - **T8 — The data and stats page (the human, 2026-10-16: "we need the data and stats and everything page too along with this
   new full size environment").** Like the 2-D app's, for the whole real lakes:
+  - **Built, part 1 (2026-10-17): `render3/data3.js`.** A Data button opens the lakes in numbers. While it is open the worker sends them every 2 s (`sendStats`):
+    - **Fish:** by species — fish, per ha, FISH_CENSUS.md's census per ha, kg/ha, mean length, mature %, Upper and Lower. Also by size class (< 7.5, 7.5–15, 15–25, 25–35, ≥ 35 cm), deaths by cause, and who eats whom.
+    - **Young:** now, schools, mean length; spawnings, hatched, eaten, starved, natural, recruited.
+    - **Water & weeds:** per lake — surface and bottom temperature and O₂, algae, zooplankton, ice; the 13 weeds in kg/ha; the mussels.
+    - **Brook:** fish in it now; crossed, settled and trips since the lake opened.
+    - **Graphs** over the run: fish by species (log), biomass, each lake's temperature and O₂ at the surface and bottom.
+    - **Click a fish** (or a school of young) in the view. Its card follows it each snapshot: length, weight, age, sex, maturity, condition, what it is doing, depth over the bed, the water at it, home lake, whether it lives second by second, generation; bars for hunger, fear, energy, ration, its brain's six outputs and its seven genes. The camera can follow it.
+    - Checked in the preview on both worlds: on the true lakes 1.23 M fish in 303,806 agents, every species at its census.
+  - **Next:** the size split and the young's numbers against FISH_CENSUS.md's; history across sessions (the graphs fill only while the page is open in this run); the brain's inputs; lineage.
   - the census by species, lake and size class against FISH_CENSUS.md, and the agents (individuals, schools, the young's records);
   - biomass, growth and condition, the young's numbers and fates through the season, recruitment, deaths by cause;
   - the water (temperature, O₂, plankton, clarity, ice) by lake and depth, the weeds and the bed's animals;

@@ -14,6 +14,7 @@ import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
 import { makeRisesView } from './rises3view.js';
 import { makeBedView } from './bed3view.js';
+import { makeData3 } from './data3.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 
@@ -729,11 +730,12 @@ function liveTick(dtReal) {
   LIVE.worker.postMessage({ type: 'tick', dt: LIVE.dtAcc, cam: [rig.target.x, -rig.target.z, rig.dist] }); LIVE.dtAcc = 0; LIVE.waiting = true;   // (cam: where the view looks — the true-size lakes' focus)
 }
 function onSnap(m) {
+  if (m.type === 'stats') { LIVE.data3?.onStats(m); return; }
   if (m.type === 'progress') { LIVE.progress = `${m.text} (${m.s.toFixed(1)} s)`; return; }
   if (m.type === 'error') { LIVE.failed = m.text; $('status').textContent = 'the simulation stopped: ' + m.text.split(String.fromCharCode(10))[0]; console.error(m.text); return; }
   if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
   if (m.type !== 'snap') return;
-  LIVE.snap = m; LIVE.waiting = false;
+  LIVE.snap = m; LIVE.waiting = false; if (m.sel) LIVE.data3?.onSel(m.sel);
   if (m.rises && m.rises.length && S.fish) risesView.add(m.rises, LIVE.tNow, S.fishScale);   // (on the frame loop's clock)
   if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }
 }
@@ -777,13 +779,14 @@ async function start() {
   // (the worker says when its modules have loaded — the true world's geometry awaits its 5-MB data module, and a message sent
   // before its handler exists would be lost — and only then is told to found the lakes)
   LIVE.worker.onmessage = ev => { if (ev.data.type === 'loaded') LIVE.worker.postMessage({ type: 'init', cam: [rig.goal.target.x, -rig.goal.target.z, rig.goal.dist] }); else onSnap(ev.data); };
+  LIVE.data3 = makeData3({ LIVE, camera, canvas, rig });   // (the data page and click-a-fish: render3/data3.js)
   LIVE.worker.onerror = ev => { $('status').textContent = 'the simulation stopped: ' + (ev.message || 'error'); console.error(ev); };
   placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
   renderer.setAnimationLoop(now => {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
-    rig.update(dt); LIVE.tNow = now / 1000;
+    LIVE.data3?.update(); rig.update(dt); LIVE.tNow = now / 1000;
     if (Number.isFinite(TREE_R) && S.trees && treeAt && Math.hypot(rig.goal.target.x - treeAt[0], -rig.goal.target.z - treeAt[1]) > TREE_R / 5) placeTrees(true);
     else if (S.trees && detAt && Math.hypot(camera.position.x - detAt[0], -camera.position.z - detAt[1]) > DET_MOVE) placeNearTrees();   // (the near tier follows the camera)
     liveTick(dt); lightByDay();

@@ -163,7 +163,12 @@ land + 1.5-m photo (1-m NAIP tiles where they cover) in src/w3/true/ (build_worl
 HB_FAR_OUT; default build byte-identical); 860k true-size trees (full within 1.2 km, the rest one instanced draw a kind);
 fish drawn = the focus's (camera ≤ 900 m), the focus shrunk to ≤ 6,000 near agents (fish3 nearN) → ~2× real time. A HIDDEN
 Browser pane pauses rAF: the page then never ticks the sim — drive ticks by hand from the console to measure.
-NEXT: the human looks at it (full screen, real Chrome); then T6b (terrain/photo tiles sharpening near the camera), T4, T5, T7, T8.
+T6b PART 1 DONE (b9573ec): the forest in three tiers (near real forms within 250 m of the camera — spires, white pines, hardwoods with
+birches, bare in winter; mid; far), every tier one instanced draw that collapses its hole on the GPU; fast-forward blocks sized to
+speed × their cost (1 min/s ~54× on the true lakes, was 4×). T8 PART 1 DONE: render3/data3.js — the Data panel (census vs target by
+species/lake/size, deaths, who eats whom, the young's fates, water per lake, weeds, mussels, brook traffic, graphs) + CLICK-A-FISH
+(card with state, doing, water, genes, brain outputs; camera follow); worker sendStats every 2 s while open, sel in each snapshot.
+NEXT: the human looks; then T6b part 2 (terrain/photo tiles near the camera), T4 (memory), T5 (cores), T7, T8 part 2.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
