@@ -169,8 +169,39 @@ fish eaten 245 against 224 — the list-order emulation of strikes and mates rep
 past their recruiting length (3.5 cm) days early (fish3's largest school 3.37 cm at day 30, seed 612) — the food sharing (fixed
 since: the blended rule above) and the young's merging (the schools pass, added since). GPU ~17 ms a block, fish3 ~45–75 ms.
 
-Next: re-run with the schools pass and the blended sharing; then the true lakes against the CPU's year run; pipeline the water
-model (the CPU's ~50 ms a true block would match the GPU's).
+After the schools pass (merges in fish3's pair order) and the blended sharing, re-run (GPU, the same seeds): the young dace track
+fish3's within ~4 % of length (the largest school 3.17 cm at day 25 against 3.05) — one school still crosses 3.5 cm a few days
+before fish3's would (a threshold's timing); every other species as before.
+
+### G2 — THE TRUE LAKES against the CPU's own year run (seed 611 from May 20; the CPU in its 2 shards, tools/w3_season.mjs)
+
+Each species' adults as a share of the start · the young (millions @ mean cm), the CPU's year run · the GPU engine:
+
+| day 28 | CPU | GPU |
+|---|---|---|
+| lakes | 102 kg/ha | 102.3 kg/ha |
+| sunfish | 0.972 · 15.95M @ 0.8 | 0.974 · 15.99M @ 0.78 |
+| perch | 0.971 · 8.87M @ 2.6 | 0.971 · 8.88M @ 2.62 |
+| sucker | 0.976 · 11.63M @ 2.7 | 0.977 · 11.65M @ 2.72 |
+| bullhead | 0.944 · 0.69M @ 1.6 | 0.947 · 0.77M @ 1.65 |
+| white perch | 0.978 · 21.76M @ 1.6 | 0.978 · 21.58M @ 1.62 |
+| bass | 0.949 · 1.95M @ 2.2 | 0.953 · 1.91M @ 2.18 |
+| pickerel | 0.887 · 71k @ 2.2 | 0.888 · 68k @ 2.24 |
+| redbreast | 0.965 · 4.04M @ 0.7 | 0.966 · 3.99M @ 0.67 |
+| fallfish | 0.944 · 2.96M @ 2.3 | 0.943 · 3.00M @ 2.27 |
+| killifish | 0.887 · 396k @ 1.1 | 0.890 · 394k @ 1.12 |
+| dace | 0.747 · 3k @ 1.0 | 0.753 · 3k @ 0.93 |
+
+Spawnings over the 28 days, CPU · GPU: sunfish 14,187 · 14,129, white perch 6,774 · 6,905, bass 4,006 · 3,960, redbreast
+7,179 · 7,041, fallfish 10,201 · 10,245, killifish 1,983 · 2,034, bullhead 571 · 619, dace 107 · 121. Day 14 alike (every
+species' adults within 0.003, the young within ~4 %). **Time: 73.9 ms a block on the GPU (the CPU's water model, its upload and
+read-back included) against ~3.1 s on the CPU's two cores — ~40×: the 28 days in ~1.7 min against 85, a year in ~22 min against
+~20 h.**
+
+Next (G3): the browser's fast-forward on the GPU engine (the view downloads only what it draws); a headless year runner page;
+pipelining the CPU's water model with the GPU's block (the fish reading the water one block old, their takes applied as
+differences) for ~2× more; longer validations (the whole year against the CPU run, ≥ 3 seeds). Then, the human's choice, the
+speed spent on bigger brains, a larger agent budget, a finer water model.
 
 ## Stages
 

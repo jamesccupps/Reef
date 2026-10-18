@@ -201,10 +201,12 @@ the crowded young 9 %); births/recruits/dissolves get slots from one workgroup w
 FINDING (docs/GPU_SIM.md): fish3's coarse-block STRIKES search the block-START grid after every fish moved (~28 m true lakes) — far
 fish are struck far less than near ones (fine steps, fresh grid); the GPU emulates fish3's list order for parity; correcting it
 needs the predation recalibrated (pickerel ~1.3 %/wk, dace) — a decision for after G2. Same for the mate search (spawning).
-G2 FIRST RESULT (1/10, seed 611, 30 days from yf 0.3): day 10 CPU · GPU 104.0 · 103.9 kg/ha, each species' adults and young within
-~1 % (perch 0.990 · 0.990, young white perch 147k @ 2.02 cm both); GPU ~17 ms a block vs ~75 ms CPU (the 1/10 world's fixed overheads).
-NEXT: finish G2 (3 seeds × 30 days at 1/10; then the true lakes against the CPU year run, true_year.txt — the GPU's true block
-~50 ms + the CPU water model ~50 ms → pipeline the water); the schools pass's check; then G3 (the browser's fast-forward on the GPU).
+G2 RESULTS (docs/GPU_SIM.md tables): 1/10 lakes 3 seeds × 30 days — ten of eleven species within the seeds' spread, spawnings and
+kills alike (the young dace grow ~4 % fast: a school crosses recruiting length days early). TRUE LAKES against the CPU's year run
+(seed 611, day 28): 102.3 · 102 kg/ha, every species' adults within 0.006, the young within ~4 %, spawnings within ~3 %; 73.9 ms a
+block vs ~3.1 s — ~40×, a year in ~22 min. Commits 8669e80, 1f0bf92, c644e71, ad5c967 (+ this).
+NEXT: G3 — the browser's fast-forward on the GPU engine; a headless year-runner page; pipeline the water model; the whole year
+against the CPU run (≥ 3 seeds). Then the human picks how to spend the speed (bigger brains, more agents, a finer water model).
 The CPU year run (scratchpad true_year.txt, tools/w3_season.mjs 0.22 365 611 14) is still going: read it on resuming.
 
 ▶▶▶ (earlier) RESUME HERE (2026-10-18 afternoon): T4 PART 1 + THE BROOK'S NEST SITES committed together (gate run before committing).

@@ -27,7 +27,7 @@ export class GpuFish {
   constructor(dev, F, env, { cap = 0, ycap = 0, seed = 1 } = {}) {
     this.dev = dev; this.F = F; this.env = env; this.seed = seed >>> 0; this.blk = 0; this.ny = 0;
     const n0 = F.fish.filter(a => a.alive).length; this.cap = cap || Math.max(1024, Math.ceil(n0 * 1.3));
-    const y0 = F.yoy.filter(q => q.alive).length; this.ycap = ycap || Math.max(4096, Math.ceil(y0 * 1.5) + 8192);
+    const y0 = F.yoy.filter(q => q.alive).length; this.ycap = ycap || Math.max(4096, Math.ceil(y0 * 3) + 16384, Math.ceil(0.4 * n0));   // (June's spawnings: the true lakes went from 18k to 57k schools in four weeks)
     this.STL = packStatics(F, env); this.WL = waterLayout(env);
     this.consts = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
     // the feeding's per-cell accumulators (pairs: 64-bit) and shares, by kind
