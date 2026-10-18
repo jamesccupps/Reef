@@ -411,18 +411,28 @@ if (run('core')) {
       ms < 45 && msF < 25, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms`); }
   // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): with a focus the near fish live second by second, the far ones in banked blocks
   // (scheduled, each FAR_BLOCK s); over two minutes every fish's lived time keeps up with the clock within a block, the near ones
-  // swim, none goes astray
+  // swim, none goes astray; the season's young the same (part 3)
   { const { F3 } = await import('../src/w3/fish3.js');
-    seed(510); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE);
+    seed(510); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { young: true }); const [cx, cy] = GEO.NOTES[2].xy; F.setFocus(cx, cy, 200 * GEO.SCALE);
     const age0 = new Map(F.fish.map(a => [a.id, a.age])), pos0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]])), n0 = F.count(), T = 120;
+    const yAge0 = new Map(F.yoy.map(q => [q.id, [q.age, q.n]])), yPos0 = new Map(F.yoy.map(q => [q.id, [q.x, q.y]])), yN0 = F.yoy.reduce((t, q) => t + (q.alive ? q.n : 0), 0);
     let ms = 0; for (let i = 0; i < T * 10; i++) { const t = performance.now(); F.step(0.1); ms += performance.now() - t; if (i % 600 === 599) e.step(60); }
+    // (the young: each school's lived time against the clock — not one that took in another, its age the pair's mean — the near ones' swimming)
+    let yLag = 0, yNear = 0, yMoved = 0, yFar = 0;
+    for (const q of F.yoy) { if (!q.alive || !yAge0.has(q.id)) continue; const [ag0, n0q] = yAge0.get(q.id); if (q.n <= n0q * 1.0001) yLag = Math.max(yLag, T - (q.age - ag0)); if (q.near) { yNear++; const p = yPos0.get(q.id); if (Math.hypot(q.x - p[0], q.y - p[1]) > 0.02) yMoved++; } else yFar++; }
+    const yN1 = F.yoy.reduce((t, q) => t + (q.alive ? q.n : 0), 0) + Object.values(F.stats.fry).reduce((t, r) => t + r.recruited, 0);
+    // (P, the senses' copy of where each fish is, after a step: exactly every fish's place — each fish's own step keeps it)
+    F.step(0.1); let pOff = 0; for (let i = 0; i < F._hashN; i++) { const a = F.fish[i], o = 4 * i; if (F.P[o] !== a.x || F.P[o + 1] !== a.y || F.P[o + 2] !== a.z) pOff++; }
     let lag = 0, near = 0, moved = 0, bad = 0, far = 0;
     for (const a of F.fish) { if (!a.alive || !age0.has(a.id)) continue; if (!Number.isFinite(a.x + a.y + a.z + a.W + a.age)) bad++;
       lag = Math.max(lag, T - (a.age - age0.get(a.id))); if (a.near) { near++; const p = pos0.get(a.id); if (Math.hypot(a.x - p[0], a.y - p[1]) > 0.05) moved++; } else far++; }
     F.setFocus(null);
     check('fidelity by distance: with a focus the fish within it swim second by second and the rest live their time in banked blocks — after two minutes every fish has lived it to within a block, the population kept',
       near > 5 && moved >= 0.8 * near && far > near && lag <= F3.FAR_BLOCK + 0.2 && lag >= -0.2 && !bad && Math.abs(F.count() - n0) / n0 < 0.01,
-      `${near} near (${moved} swam), ${far} far; the most behind ${lag.toFixed(1)} s (a block ${F3.FAR_BLOCK} s); fish ${n0.toFixed(0)} → ${F.count().toFixed(0)}; ${(ms / (T * 10)).toFixed(1)} ms a step`); }
+      `${near} near (${moved} swam), ${far} far; the most behind ${lag.toFixed(1)} s (a block ${F3.FAR_BLOCK} s); fish ${n0.toFixed(0)} → ${F.count().toFixed(0)}; ${(ms / (T * 10)).toFixed(1)} ms a step`);
+    check("fidelity by distance, the young: the schools within the focus swim each step and the rest live their time in scheduled blocks — every school has lived the two minutes to within a block, the young kept (alive + recruited); the senses' positions (P) exactly every fish's",
+      yNear > 0 && yMoved >= 0.8 * yNear && yFar > yNear && yLag <= F3.FAR_BLOCK + 0.2 && yLag >= -0.2 && Math.abs(yN1 - yN0) / yN0 < 0.02 && pOff === 0,
+      `${yNear} near (${yMoved} swam), ${yFar} far; the most behind ${yLag.toFixed(1)} s; young ${yN0.toFixed(0)} → ${yN1.toFixed(0)}; P off for ${pOff} of ${F._hashN}`); }
 }
 
 // ============================================================

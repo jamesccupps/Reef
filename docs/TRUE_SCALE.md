@@ -118,7 +118,34 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
     - **The view.** It sends where it looks with each tick. On the true-size lakes at the fine speeds the worker sets the focus at twice the camera's distance, 80–250 m. The 1/10 world, every fish drawn, steps them all alike.
     - **Measured on the true lakes**, focus 200 m at the west cove: ~3,900 near agents, a fine step ~54 ms on average (it was 114–134 with every fish stepped). So 1× needs ~0.54 s of the worker a second. The spikes (~1.2 s) are the whole lakes' merge pass once a simulated minute.
     - **Gate.** On the 1/10 world, a 200-m-real focus for two minutes: the near fish swim, every fish has lived the time to within a block, the population is kept.
-  - **Next (part 3):** the merge pass and the far fish's senses (their field scans cached per column per step), toward ≤ 15 µs an agent for the blocks; and the young schools at true scale (~11,000, all stepped each fine step for now).
+  - **Built, part 3 — the cost at true scale (2026-10-17).** Measured first; the causes were not the ones guessed.
+    - **The 1-s stalls were V8 re-shaping every fish.** A number field first written as an integer is held as a small integer. The first fraction later written to it (the year's first nest, the first missed strike, …) re-shapes every object of the class: ~1 s for the 300,000 fish, at a different moment for each such field. It also slowed the merge pass, which was paying for it (680 ms → 16 ms).
+      - Fixed: `SHAPES` in fish3.js turns each number field that can hold a fraction into one, on a template fish and young school made before any real one.
+      - The template must stay alive, so it is exported: V8 holds a shape only while some object has it, and an unexported const that nothing reads dies once the module has run.
+    - **The senses' scan was memory-bound, not arithmetic.** Each fish scans ~18 neighbours: 300,000 scattered objects, with their numbers boxed. Fixed with `P`, every fish's x, y, z by index (four numbers a fish, contiguous):
+      - filled by the hash build, kept exact by each fish's own step (`_posAt`);
+      - the senses and the mate search test distance on P and touch a fish only when it is in reach.
+    - **A block's drive skips the fine swim's work** (the turn, the look ahead, the pitch: only `_move` reads them).
+    - **One pass over the fish once a simulated second.** The counts by species, the biomass and the focus's region now come in the hash's pass, the region read from P.
+    - **The season's start.** A new lake opens with the season's young so far (`seedSeason`). It found each spawning female's mate by scanning every fish: ~110 s at true scale. An index of the males by home now gives the same mates in 7.5 s for the whole start.
+    - **The field-scan cache per column was not needed.** The food fields are ~1 % of a block.
+    - **The young by distance, as the fish.** The schools within the focus live each fine step. The rest live scheduled FAR_BLOCK blocks: a block's cruise about their spot, their feeding tick over the block. Their density, region and hash come once a simulated second. The season's young at true scale is ~84,000 schools, not ~11,000.
+    - **Behaviour.** The 1/10 world without a focus is **bit-identical** through the shape fix, P, the mate search and the drive. A fingerprint (`tools/w3_fingerprint.mjs`) of every fish and young school after spring and summer runs (blocks, fine steps, a focus minute, blocks again) matches the old code exactly. The young by distance changes focus runs only, by design.
+    - **Measured on the true lakes.**
+      - **A coarse 29-min block.** July went from 7.8 s to 4.8 s (26 → 16 µs an agent). Through the year:
+        - late April 14.4 µs;
+        - the June spawning 18.0 µs;
+        - September 13.6 µs;
+        - under the ice 11.6 µs.
+
+        That is ~15 µs on average, the target.
+      - **A fine 0.1-s step**, focus 200 m in July with the season's young:
+        - median 51 → 34 ms, mean 64 → 45 ms;
+        - the once-a-second full step ~105–115 ms;
+        - no stalls past the first step.
+
+        The young went from 19 ms a step to ~1 ms.
+    - **Gate.** The fidelity check now runs with the season's young. Each school lives the two minutes to within a block; the young are kept (alive + recruited); P is exactly every fish's place after a step.
   - The fish near the camera (~150–250 m) live second by second: 0.1-s steps, brains at 5 Hz.
   - The rest live in coarse blocks (a minute at 1×, up to 30 min in fast-forward), each still deciding with its own brain once a block.
   - Fish switch rung as the camera moves.
@@ -132,6 +159,20 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - ~1.2 million true-size trees: full trees near the camera, cut-outs beyond.
   - Fish drawn within ~250 m (the sim knows all 1.6 M).
   - Weeds, crayfish and mussels near the camera, as now.
+  - **Plan (2026-10-17, from reading the view's code).** T6a is the first view of the real lakes; T6b–c follow.
+    - **T6a — the true world in the browser.**
+      - **The switch.** `w3.html?world=true` opens the true lakes. A first-import module sets `globalThis.HB_WORLD` from the URL in the page and in the worker (the worker's URL carries it), so geometry.js picks the world as Node does. The panel gets a link between the two.
+      - **The worker sends only the fish near the view.** Today every snapshot carries every fish (300,000 × 18 numbers ≈ 22 MB a frame) and each step's `remember()` walks them all. At true scale:
+        - the snapshot takes the fish within the drawing radius of where the view looks, read from P;
+        - `remember()` covers the focus's region only;
+        - the weeds' field is sent less often (13 forms × ~257,000 bed cells).
+      - **The ground.** The band (455 × 1,385 cells of 5 m, ~1.3 M triangles) and the water as now. The far land from `build_world3d.py` at true scale: ~1.5 km beyond the band on ~20-m cells, into `src/w3/true/far3d.js`.
+      - **The photo.** NAIP re-cut at ~1.5 m a pixel, ≤ 8,192 px a side (one WebGPU texture), into `src/w3/true/naip3.jpg`.
+      - **The land at its height.** The land-height slider's ×1 means true metres there.
+      - **The camera's reach, the sky and the fog at kilometres:** far plane, sky dome, fog density, the rig's zoom limit. The named views and labels, which were placed in 1/10 metres.
+      - **Trees.** All of them (~10⁶) as simple low instances, plus full trees within ~500 m of the camera, re-picked as it moves. The prototype measured 1 M simple trees at ~45 fps.
+    - **T6b — terrain and photo tiles that sharpen near the camera** (lidar detail near), and the forest's far look.
+    - **T6c — the views at true scale:** the cut-away's sampling, the ice per vertex (630,000 vertices, so less often), the weeds and the bed's animals near the camera only.
 - **T7 — The gate.**
   - Geometry checks restated at true size.
   - The ecology checks keep their meaning (per hectare, per fish).
@@ -163,6 +204,8 @@ the fish we need … accounted for and in before trying to add them to the envir
 3. T4–T7;
 4. T8 the data and stats page with the true-scale lakes (built as each piece lands, not after);
 5. roads, cabins, docks and the rest.
+
+Revised 2026-10-17 after T3, when the human asked to see it ("can i view this yet?"): **T6 comes next**, with whatever part of T4 the browser's worker needs to hold the true world, then the rest of T4, T5 and T7.
 
 ## Risks
 

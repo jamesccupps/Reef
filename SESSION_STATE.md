@@ -148,8 +148,16 @@ T3 PART 2 DONE (2026-10-17; TRUE_SCALE.md "T3 Built, part 2"): Fish3.setFocus �
 second, the focus's own hash every step (REGION_M), the step's per-fish body now `_live`; the worker sets the focus from the
 camera on the true lakes at fine speeds (80–250 m). True lakes: a 0.1-s step ~54 ms with ~3,900 near agents (was 114–134). The
 1/10 gate 91/91 (+ the fidelity check).
-NEXT: T3 part 3 — the merge pass's spikes and the far fish's senses (cache their field scans per column per step), the young
-schools at true scale; then T4 (memory), T5 (workers), T6 (drawing at true size — the true world in the browser), T7, T8.
+T3 PART 3 DONE (2026-10-17; TRUE_SCALE.md "T3 Built, part 3"): the 1-s stalls were V8 RE-SHAPING all 300,000 fish whenever a
+field first took a fraction (fixed: fish3 `SHAPES`, an EXPORTED template — unexported it is collected and the fix silently
+vanishes); the senses' scan was memory-bound (fixed: `P`, every fish's x/y/z by index, exact via `_posAt` in each fish's step;
+the senses and mate search read it); a block's drive skips the fine swim's work; counts/biomass/region in the hash's pass; THE
+YOUNG BY DISTANCE (_stepYoyMixed: near schools each step, the rest in scheduled blocks). True lakes: a July block 7.8 → 4.8 s
+(~15 µs/agent through the year), a fine step median 51 → 34 ms with the season's 84,000 young schools, no stalls. The 1/10
+world without a focus BIT-IDENTICAL (tools/w3_fingerprint.mjs fingerprints every fish after spring/summer runs — use it for any perf
+change). The 1/10 gate 92 checks (the fidelity check + the young and P).
+NEXT (the human 2026-10-17: "can i view this yet?" — not yet, the browser draws the 1/10 world): T6 — drawing at true size,
+with whatever part of T4 the browser's worker needs to hold the true world (~1.3 GB heap in Node); then T4, T5, T7, T8.
 (Below, the audit notes that led to part 1:)
 (was) NEXT: T3 — the fish at true scale. The audit (this session) lists ~19 landscape distances written for the 1/10 lakes to convert —
 SUB_R 40 (=400 m real), BROOK_NEAR 60 / BROOK_RUN 150, FP_MIN/MAX 4/20, BAND_SLOPE 0.12 (→ 0.012 true), bass faith 2 (20 m),
