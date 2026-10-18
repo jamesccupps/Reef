@@ -283,7 +283,7 @@ const BP = GEO.BROOK_PATH, BLAST = BP.length - 1;
 // each lake's GATE from the brook: its water cell beside the brook's nearest that lake's end of the brook's path (≥ 0.3 m deep) —
 // where a fish leaving the brook for the lake goes out through the mouth (the path's end lies inside the brook's mouth, and a
 // straight line from there to a goal in the lake can cross the bank)
-const GATE = (() => {
+export const GATE = (() => {
   const g = {};
   for (const [lake, end] of [[UPPER, BP[0]], [LOWER, BP[BP.length - 1]]]) {
     let best = null, bd = Infinity;
@@ -301,7 +301,7 @@ const GATE = (() => {
 const nearestBP = (x, y) => { let b = 0, bd = 1e9; for (let k = 0; k <= BLAST; k++) { const d = Math.hypot(BP[k][0] - x, BP[k][1] - y); if (d < bd) { bd = d; b = k; } } return b; };
 // the water ≥ 1.5 m nearest each end of the brook in its lake — home for a fish born in the brook
 const lakeNear = (b, p) => { let best = null, bd = 1e9; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === b && GEO.depth[i] >= 1.5) { const [x, y] = GEO.cellCentre(i), d = Math.hypot(x - p[0], y - p[1]); if (d < bd) { bd = d; best = [x, y]; } } return best; };
-const LAKE_NEAR = { [UPPER]: lakeNear(UPPER, BP[0]), [LOWER]: lakeNear(LOWER, BP[BLAST]) };
+export const LAKE_NEAR = { [UPPER]: lakeNear(UPPER, BP[0]), [LOWER]: lakeNear(LOWER, BP[BLAST]) };
 const poissonish = r => { const k = Math.floor(r); return k + (rand() < r - k ? 1 : 0); };
 export const KEYS3 = SPECIES.filter(k => S3[k]);
 // THE LONGEST PREY a fish takes, as a fraction of its own length. A prey's body within the gape is not the whole limit: a slim
@@ -999,29 +999,9 @@ export class Fish3 {
   }
   // ONE FISH'S STEP: dtA s of its life (mvA of its swimming; a coarse block when co, its light luxB over the block)
   _live(a, i, dtA, mvA, co, luxB) {
-    const s = a.s, sp = s.sp, e = this.env, ch = this.chem, G = this.G, { yf, att, clar, lux0 } = this._cx;
-    this._coarse = co;
-    a.age += dtA; a.mateCd -= dtA; if (a.missCd > 0) a.missCd -= dtA; if (a.nt > 0) a.nt -= dtA;
-    if (!a.mature && this._matureAt(a)) a.mature = true;
-    // surroundings
-    a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y));
-    const c = a.c = e.colAt(a.x, a.y);
-    if (c < 0) { this._tallyDeath(s.key, 'stranded', a.n); a.alive = false; a.cause = 'stranded'; return; }   // (never: movement keeps fish in the water)
-    const k = Math.min(G.nL[c] - 1, Math.max(0, (a.z / G.DZ) | 0)), j = a.j = G.cell0[c] + k;
-    a.jb = this.bedCell(c, a.bed);
-    a.T = e.temp[j]; a.o2 = ch.o2[j];
-    { const was = a.ripe; a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]); if (a.ripe && !was && i < this._hashN) this._ripeAdd(i); if (!a.ripe) a.inRun = false; }
-    if (a.ripe && s.spawn.sub && !this.sites[s.key] && (a.spX !== a.spX || a.spYr !== this._yr)) { this._pickSpot(a); a.spYr = this._yr; }   // (a plant spawner's place: chosen once a season — ripeness flickers at its temperatures' edge)
-    this._roam(a, yf, dtA);
-    const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
-    const kI = K_I[s.key] ?? 1, lf = iceCut * fade;
-    a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
-    const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
-    a.visF = visDay;
-    a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0, this._riffle(a));   // (very shallow water; the weeds' stems; the brook's riffles)
-    a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
+    const m = this._livePre(a, i, dtA, mvA, co, luxB); if (!m) return;
+    const s = a.s, sp = s.sp, e = this.env, ch = this.chem, G = this.G;
     // decide (senses → brain), then the innate drives, then move
-    const m = this._mode(a);
     if (co || (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 || !a._dh) {
       // learning (on the decision just acted on: rewarded if it ate since), then the next decision (a coarse block: one)
       if (a._dh) { reinforce3(a.lw, a.g, HID3, a.h, a.o, a._ate ? 1 : 0, co ? dtA : dtA * F3.DECIDE_EVERY); a._ate = false; }
@@ -1038,13 +1018,40 @@ export class Fish3 {
     // the body, food, hazards
     const T = a.T, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
     const cm = this._energetics(a, bp, T, dtA);
-    const ate = co ? this._feed(a, i, cm, visDay, dtA) : (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, visDay, dtA * F3.DECIDE_EVERY) : false;
+    const ate = co ? this._feed(a, i, cm, a.visF, dtA) : (this.stepNo + a.id) % F3.DECIDE_EVERY === 0 ? this._feed(a, i, cm, a.visF, dtA * F3.DECIDE_EVERY) : false;
     a.hunger = 1 - clamp(a.gut / (sp.gut * a.W), 0, 1);
     if (ate) a._ate = true;
     if (a.ripe) this._spawn(a, i, dtA);
     // O₂: this step's respiration (all n fish) from the fish's water
     ch.o2[a.j] = Math.max(0, ch.o2[a.j] - a.n * a.rO2 * dtA / (G.vol[a.j] * ENV.O2_MGL));
     this._hazards(a, T, dtA);
+  }
+  // THE START OF A FISH'S STEP (its own clocks, its surroundings, ripeness, a plant spawner's place, moving between the lakes, its
+  // sight and cover, its fear fading) — returns its habitat mode now, or null if it died (stranded). Split out of _live so that the
+  // GPU engine's checks (docs/GPU_SIM.md) can run it alone on every fish; a.visF is its feeding's sight over the step
+  _livePre(a, i, dtA, mvA, co, luxB) {
+    const s = a.s, e = this.env, ch = this.chem, G = this.G, { yf, att, clar, lux0 } = this._cx;
+    this._coarse = co;
+    a.age += dtA; a.mateCd -= dtA; if (a.missCd > 0) a.missCd -= dtA; if (a.nt > 0) a.nt -= dtA;
+    if (!a.mature && this._matureAt(a)) a.mature = true;
+    // surroundings
+    a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y));
+    const c = a.c = e.colAt(a.x, a.y);
+    if (c < 0) { this._tallyDeath(s.key, 'stranded', a.n); a.alive = false; a.cause = 'stranded'; return null; }   // (never: movement keeps fish in the water)
+    const k = Math.min(G.nL[c] - 1, Math.max(0, (a.z / G.DZ) | 0)), j = a.j = G.cell0[c] + k;
+    a.jb = this.bedCell(c, a.bed);
+    a.T = e.temp[j]; a.o2 = ch.o2[j];
+    { const was = a.ripe; a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]); if (a.ripe && !was && i < this._hashN) this._ripeAdd(i); if (!a.ripe) a.inRun = false; }
+    if (a.ripe && s.spawn.sub && !this.sites[s.key] && (a.spX !== a.spX || a.spYr !== this._yr)) { this._pickSpot(a); a.spYr = this._yr; }   // (a plant spawner's place: chosen once a season — ripeness flickers at its temperatures' edge)
+    this._roam(a, yf, dtA);
+    const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
+    const kI = K_I[s.key] ?? 1, lf = iceCut * fade;
+    a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
+    const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
+    a.visF = visDay;
+    a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0, this._riffle(a));   // (very shallow water; the weeds' stems; the brook's riffles)
+    a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
+    return this._mode(a);
   }
   // THE MIXED STEP (fidelity by distance): the fish within the focus live this fine step with the focus's own hash; a fish coming
   // into it first lives its time since its last block as one; one leaving it starts banking. The far fish are SCHEDULED: each due

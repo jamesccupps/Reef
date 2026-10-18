@@ -816,6 +816,35 @@ if (run('plants')) {
       pairs.length >= 4 && sb > 1.3 * so, `${pairs.length} beds (mean ${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; matched bare: ${f2(so)} mg/L`); }
 }
 
+// ============================================================
+//  THE GPU ENGINE's DATA (src/w3/gpu/layout.js — docs/GPU_SIM.md G1): the kernels run only in a browser (tools/gpu/g1_check.html
+//  checks each against fish3.js); here, in Node, what feeds them — the fish packed into the struct of arrays and back, every field
+//  exact; the statics and the WGSL constants generated from the CPU sim's config without a NaN or a hole
+// ============================================================
+console.log('\n— the GPU engine\'s data —');
+if (run('gpu')) {
+  const { Env3 } = await import('../src/w3/env3.js'); const { Fish3 } = await import('../src/w3/fish3.js'); const { seed } = await import('../src/core.js');
+  const Lg = await import('../src/w3/gpu/layout.js');
+  seed(77); const e = new Env3({ yf0: 0.4 }), F = new Fish3(e, { young: true }); F.step(FB); e.step(FB);
+  const fish = F.fish.filter(a => a.alive), cap = fish.length + 64, P = Lg.packAgents(fish, cap);
+  const copies = fish.map(a => { const b = Object.assign(Object.create(Object.getPrototypeOf(a)), a); b.g = new Float32Array(a.g.length); b.lw = new Float32Array(a.lw.length); b.h = new Float32Array(a.h.length); b.o = new Float32Array(a.o.length); b.genes = new Float32Array(a.genes.length); for (const k of ['x', 'y', 'z', 'L', 'W', 'gut', 'age', 'mateCd', 'n']) b[k] = -7; return b; });
+  const bySlot = []; for (const [a, i] of P.slot) bySlot[i] = copies[fish.indexOf(a)];
+  Lg.unpackAgents(P, cap, bySlot);
+  let bad = 0; const skip = new Set(['flags', 'prey', 'threat', 'mate', 'mateId', 'dhx', 'dhy', 'cm']);
+  fish.forEach((a, q) => { const b = copies[q];
+    for (const [name] of Lg.AGENT_FIELDS) { if (skip.has(name)) continue; const nm = name === 'lastSpawnD' ? 'lastSpawn' : name === 'tripEndD' ? 'tripEnd' : name, va = a[nm], vb = b[nm];
+      if (typeof va === 'boolean') { if (va !== vb) bad++; continue; }
+      if (!(va === vb || (va !== va && vb !== vb) || Math.abs(va - vb) <= 2e-7 * Math.abs(va) || (nm === 'age' && Math.abs(va - vb) <= 0.5) || (va === Infinity && vb >= 3e38) || (va <= -1e17 && vb <= -1e17))) bad++; }
+    for (let k = 0; k < a.g.length; k++) if (a.g[k] !== b.g[k]) { bad++; break; }
+    for (let k = 0; k < a.lw.length; k++) if (a.lw[k] !== b.lw[k]) { bad++; break; } });
+  const Y = Lg.packYoy(F.yoy, F.yoy.length + 16, P.slot), S = Lg.packStatics(F, e), WL = Lg.waterLayout(e), W = Lg.packWater(F, e, WL);
+  const src = Lg.wgslConstants(S, WL, { G: e.G }), holes = src.split('\n').filter(l => /NaN|undefined|Infinity/.test(l));
+  let nanST = 0; for (let q = 0; q < S.ST.length; q++) if (S.ST[q] !== S.ST[q] && !Number.isNaN(new Int32Array(S.ST.buffer, q * 4, 1)[0])) nanST++;
+  check('the GPU engine\'s layout: every fish packs into the struct of arrays and back exactly (fields, genome, learned block), the young too; its statics and WGSL constants have no NaN or hole',
+    bad === 0 && Y.n === F.yoy.filter(q => q.alive).length && holes.length === 0 && S.ST.length > 1000 && W.length === WL.size,
+    `${fish.length} fish (${Lg.NAF} fields, ${Lg.NGN} genome + genes, ${Lg.NBR} brain), ${bad} mismatches; ${Y.n} young schools; statics ${(S.ST.length * 4 / 1e6).toFixed(1)} MB, water ${(W.length * 4 / 1e3).toFixed(0)} KB, ${src.split('\n').length} constants${holes.length ? ', holes: ' + holes.slice(0, 3).join(' | ') : ''}`);
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

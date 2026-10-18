@@ -81,6 +81,48 @@ GPU work stalls.
   whole block on the GPU (G1). At ~300× a kernel, the block's ~5 s could become tens of milliseconds — a year in minutes —
   with feeding, predation and births (the parts with shared state) the ones to design carefully.
 
+## G1 — the design as built (2026-10-18)
+
+- **Files.** `src/w3/gpu/layout.js` (pure, Node-testable: the fields, packing a Fish3's agents and young into the struct of
+  arrays and back, the statics, the water's sections, and the WGSL constants generated from the CPU sim's own config — the two
+  engines read one set of numbers); `src/w3/gpu/wgsl.js` (the kernels as WGSL strings, each a port of the fish3.js function it
+  names); `src/w3/gpu/gpufish.js` (the WebGPU host: buffers, pipelines, uploads, read-backs); `tools/gpu/g1_check.html`
+  (each kernel against fish3.js on the same fish). The gate's `gpu` section checks the layout's round trip in Node.
+- **Data.** One f32 buffer per kind, field-major (field f of agent i at f·cap + i: neighbouring threads read neighbouring
+  words), integers as bit patterns. Agents: 102 fields; GN the genome (346) + genes (7); BR the brain's state (the plastic
+  hidden→output block 60, h 10, o 6). Age in whole seconds (u32 — f32 would round a block's 1,752 s at a 17-year age by
+  ~0.5 %), times of day-scale events in days (f32). Statics (5.4 MB at 1/10): the bed's rasters, the water's columns and cells,
+  fish3's lookups (bedOf, the neighbour rings, each column's bed cells, the foraging footprints per radius), the species and FB4
+  tables. The water the fish read (temperature, O₂, zooplankton, the bed's animals and organic layer, the weeds, the surface
+  insects…) is uploaded each block (~0.7 MB).
+- **Order.** The GPU runs the block's phases for every fish at once (all fish's start, then all learn, all sense, …); fish3
+  runs each fish's whole step before the next's. So on the GPU every fish senses the others where the block began, and reads a
+  mate's or a threat's place from a SNAPSHOT (PX) taken after the start — never a position another thread is writing. This is
+  the known, deliberate difference G2 validates statistically.
+- **Determinism.** Counter-based random numbers (a hash of the seed, the agent's id, the block, a purpose and a draw index);
+  the grid's cells sorted by agent index after the atomic scatter (the scan order — and ties in the senses — are the CPU's);
+  shared sums in 64-bit fixed point (two u32 atomics, the carry by hand), the same in any thread order; the brook's nest sites
+  given out by one workgroup walking the fish in index order.
+- **Precision.** Two float32 traps found by the checks: summing schoolmates' absolute positions (~3 km out) lost ~0.2 m —
+  summed as offsets from the fish now; the GPU's built-in tanh is the hardware's approximation (~5e-4 on NVIDIA) — the brain
+  uses an exp-based tanh to f32 accuracy.
+
+### G1 results so far (the checks: 1/10 lakes 3,202 agents; true lakes 303,841 agents, 83,503 young schools)
+
+| Kernel (fish3.js) | 1/10 | True lakes | GPU ms (true) | CPU ms (true) |
+|---|---|---|---|---|
+| grid (`_hashBuild`) | exact | 21 fish within 1e-4 m of a cell edge land in the next (f32) | ~1–4 | — |
+| start (`_livePre`) | 1 cover value at 2e-4 | 54 cover / 24 bed values at ~3e-4 (f32 bilinear); 2 fish on a column edge | ~4–7 | 420–650 |
+| learning (`reinforce3`) | all | all | ~1 | 130–200 |
+| senses (`_sense`) | all | prey and threat identical for every fish; 12 school counts at the radius' edge | ~4–5 | 1,300–1,700 |
+| brain (`forward3`) | all (≤ 1.4e-4) | 0.9 % of fish > 2e-4 (an ill-conditioned school direction when the school's centre is within a hair of the fish; f32 inputs) | ~1.8 | 650–750 |
+| movement (`_drive`, `_relocate`, `_hop`; no wander) | 1 fish's heading | mean move 28.30 m on both; 20 fish end > 1 m from the CPU's | ~1.8 | 1,600 |
+| body (`_energetics`, FB4) | all 18 fields | (pending) | | |
+
+So far ~15–20 ms on the GPU against ~4.5 s on the CPU for the same phases (the CPU numbers are with the year run sharing the
+processor). Next: feeding (fixed-point demands per column, proportional shares), strikes (claims), hazards, spawning, the young,
+recruitment, the schools; then the whole block in a loop with the water model.
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the
