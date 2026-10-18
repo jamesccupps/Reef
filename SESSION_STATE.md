@@ -200,7 +200,11 @@ PICKEREL (researched: research_notes/…/pickerel_mortality_cannibalism.md): the
 of the eater's length — pickerel 0.55, bass 0.45, others 0.45; slim fish fit a gape at ~0.9 L). 3 seeds × 7 d true: pickerel 0.97×.
 SEASONS (a week each, true lakes): Aug / late Sep / Jan under ice all steady (0.97–0.99×, 103 kg/ha, nothing starved). A WHOLE
 SIMULATED YEAR is running in the background (scratchpad true_year.txt: tools/w3_season.mjs 0.22 365 611 14) — read it on resuming.
-Also done: tree tiers' ragged edges (main3 RAG); the data page's spawning run (Brook tab).
+Also done: tree tiers' ragged edges (main3 RAG); data page — the spawning run (Brook tab), sizes against the census (Fish tab:
+white perch 0 % > 22 cm vs census 20 % — the founders' S3 found 0.72 from an older stunting calibration; sucker and bullhead
+smaller too — research running: docs/research_notes/…/size_structure_whiteperch_sucker_bullhead.md), what a fish senses (its
+card: Fish3.senses split out of _brain, fingerprint bit-identical), the run's history kept while the page is closed; the sim's
+banks from the photo (true world: GEO.canopy from true/shore3.js → littoral3 insect fall, plants3 wood; totals 91–95 %).
 NEXT: the year's result (recruitment against loss); T6b part 2; T8 part 2 (size split vs FISH_CENSUS, history); the sim's shore
 inputs from the photo forest.
 (Below, the audit notes that led to part 1:)
