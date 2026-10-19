@@ -208,6 +208,9 @@ const T_TRIPS: u32 = 64u;     // + 2k: set off on a trip
 const T_FOOD: u32 = 128u;     // + 2·kind: grams eaten by the followed fish
 const T_FOODK: u32 = 1024u;   // + 2·(k·NFOODK + kind): the followed fish's grams by species and food (G3 diagnostics: fish, young, bed, weeds, crayfish, surface, zooplankton, organic layer)
 const NFOODK: u32 = 8u;
+const T_YKILLS: u32 = 1216u;  // + 2·(predator·NK + prey): young-of-year fish eaten by the followed fish (diagnostics)
+const T_YYKILLS: u32 = 1458u; // + 2·(predator·NK + prey): young eaten by other young (a young piscivore's school)
+const T_YFOODK: u32 = 1700u;  // + 2·(k·5 + kind): the young's grams by species and food (young fish, zooplankton, weeds' fauna, bed, organic layer)
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
 const T_DIED: u32 = 448u;     // + 2·(k·NCAUSE + cause)
@@ -1401,7 +1404,7 @@ fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 
   let n = ga(A_n, i); let W = gy(Y_W, q); let gr = kk * W / n;
   sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + gr * energyDensity(2u * gyu(Y_k, q), W));
   sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr);
-  add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE); foodK(gau(A_k, i), 1u, gr * n);
+  add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE); foodK(gau(A_k, i), 1u, gr * n); add64(&TL, T_YKILLS + 2u * (gau(A_k, i) * NK + gyu(Y_k, q)), kk, TSCALE);
 }
 @compute @workgroup_size(256) fn k_eatYoyApply(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q)) { return; }
@@ -1565,7 +1568,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   var got = 0.0; var J = 0.0;
   let pr = gyi(Y_qPrey, q);
   if (pr >= 0) { let r = u32(pr); let D = rdAcc(AC_YP + 2u * r, KW); let kk = gy(Y_qPk, q) * min(1.0, gy(Y_n, r) / max(D, 1e-12)); let rW = gy(Y_W, r);
-    got += kk * rW; J += kk * rW * energyDensity(2u * gyu(Y_k, r), rW); acc64(AC_YPT + 2u * r, kk, KW); }
+    got += kk * rW; J += kk * rW * energyDensity(2u * gyu(Y_k, r), rW); acc64(AC_YPT + 2u * r, kk, KW); add64(&TL, T_YYKILLS + 2u * (gyu(Y_k, q) * NK + gyu(Y_k, r)), kk, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u), kk * rW, TSCALE); }
   let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q);
   if (qD > 0.0 || qC > 0.0 || qR > 0.0) {
     let j0 = cell0(c); let k0 = j - j0; var gd = 0.0; var gc = 0.0; var gr = 0.0;
@@ -1575,20 +1578,20 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); let pw = (1.0 - wd(W_plantRef + jj)) * stf(O_wW + jj) * wd(W_zv + jj);
       gd += qD * wd(W_zooD + jj) * pw * RC[R_YD + jj]; gc += qC * wd(W_zooC + jj) * pw * RC[R_YC + jj]; gr += qR * wd(W_zooR + jj) * pw * RC[R_YR + jj]; }
-    got += gd + gc + gr; J += gd * PREY_DAPH_ED + gc * PREY_COPE_ED + gr * PREY_ROT_ED; add64(&TL, T_FOOD + 2u * FOOD_YZOO, gd + gc + gr, TSCALE);
+    got += gd + gc + gr; J += gd * PREY_DAPH_ED + gc * PREY_COPE_ED + gr * PREY_ROT_ED; add64(&TL, T_FOOD + 2u * FOOD_YZOO, gd + gc + gr, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 1u), gd + gc + gr, TSCALE);
   }
   let qWs = gy(Y_qWs, q);
-  if (qWs > 0.0 && jb >= 0) { let e = weedEyoy(jb, L); let a = stf(O_wBedA + u32(jb)); let gw = qWs * a * (e.x * RC[R_YWS + u32(jb)] + e.y * RC[R_YWL + u32(jb)]); got += gw; J += gw * LIT3_ED_INS; add64(&TL, T_FOOD + 2u * FOOD_YWEED, gw, TSCALE); }
+  if (qWs > 0.0 && jb >= 0) { let e = weedEyoy(jb, L); let a = stf(O_wBedA + u32(jb)); let gw = qWs * a * (e.x * RC[R_YWS + u32(jb)] + e.y * RC[R_YWL + u32(jb)]); got += gw; J += gw * LIT3_ED_INS; add64(&TL, T_FOOD + 2u * FOOD_YWEED, gw, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 2u), gw, TSCALE); }
   let qB = gy(Y_qB, q);
   if (qB > 0.0) {
     var gb = 0.0;
     if (jb >= 0) { gb += qB * benthE(u32(jb)) * stf(O_wBedA + u32(jb)) * RC[R_YB + u32(jb)]; }
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 63u);
     for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { gb += qB * benthE(u32(jj)) * stf(O_wBedA + u32(jj)) * RC[R_YB + u32(jj)]; } }
-    got += gb; J += gb * PREY_BENTH_ED; add64(&TL, T_FOOD + 2u * FOOD_YBENTH, gb, TSCALE);
+    got += gb; J += gb * PREY_BENTH_ED; add64(&TL, T_FOOD + 2u * FOOD_YBENTH, gb, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 3u), gb, TSCALE);
   }
   let qS = gy(Y_qSed, q);
-  if (qS > 0.0 && jb >= 0) { let gs = qS * RC[R_YSED + u32(jb)]; got += gs; J += gs * PREY_DETRITUS_ED * PREY_DETRITUS_DIG; add64(&TL, T_FOOD + 2u * FOOD_YSED, gs, TSCALE); }
+  if (qS > 0.0 && jb >= 0) { let gs = qS * RC[R_YSED + u32(jb)]; got += gs; J += gs * PREY_DETRITUS_ED * PREY_DETRITUS_DIG; add64(&TL, T_FOOD + 2u * FOOD_YSED, gs, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 4u), gs, TSCALE); }
   // the energy budget
   let bs = yBioSet(k); var p = 0.0; if (want > 0.0) { p = min(1.0, got / want); }
   let wf = wasteFr(bs, T, p); let Wr = max(W, FRY_R_WMIN); let r = coldResp(k, bs, Wr, T) * W; let Rj = r * OXYCAL * dd;

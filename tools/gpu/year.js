@@ -64,6 +64,13 @@ for (const sd of SEEDS) {
   }
   const kills = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v > 0) kills.push([`${kp}>${kq}`, v]); }));
   kills.sort((a, b) => b[1] - a[1]); say('who ate whom (kills): ' + kills.slice(0, 14).map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+  // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)
+  for (const [tag, at] of [['followed fish', 608], ['young schools', 729]]) {
+    const yk = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[at + p * NK + q] / 1e6; if (v >= 1) yk.push([`${kp}>${kq}`, v]); }));
+    yk.sort((a, b) => b[1] - a[1]); if (yk.length) say(`young fish eaten by the ${tag}: ` + yk.slice(0, 14).map(([k, n]) => `${k} ${n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : Math.round(n)}`).join(' · '));
+  }
+  // the young's diet over the year by species (T_YFOODK: pairs 850 + k·5 + kind)
+  say("the young's diet over the year: " + KEYS3.map((k, q) => { const g = [0, 1, 2, 3, 4].map(j => tl[850 + q * 5 + j] / 1e6), t = g.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e3).toFixed(0)} kg (` + ['young fish', 'zoo', 'weeds', 'bed', 'mud'].map((f, j) => [f, g[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
   // the year's young by species: hatched, then their fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
   const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited'], T_FRY = 320;
   const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];   // (fish3 stats.fry's keys: the founding's season so far counted in)

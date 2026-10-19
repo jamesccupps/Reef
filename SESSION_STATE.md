@@ -186,6 +186,23 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, ~1 a.m.): CALIBRATING THE YEAR, round 2 — the human said "keep going" (fix the predators first).
+COMMITTED since round 1: 612b2a1 F3.BED_SHARE (coarse blocks feed on the bed by their share of time within reach, gamma shape 2 —
+crayfish 133–135 g/h in blocks vs 149 fine, was 83–97; CPU⇄GPU parity all species), FRY.M_JUV_B (Lorenzen juvenile scaling, OFF —
+A/B no help), watchdog + grid load in the year runner. THIS COMMIT: tools/gpu/year_cdp.mjs (THE WAY TO RUN YEARS NOW: opens year.html
+in its own Chrome window, throttling off, copies window.YEAR to a file — `node tools/gpu/year_cdp.mjs "world=true&seeds=611&yf=0.22&
+days=365&every=14" out.txt`; ~45 ms a block, a true year ~14 min — the app's browser pane pauses hidden pages, which explained the
+"stall" at day 210); new GPU tallies (T_YKILLS young eaten by followed fish, T_YYKILLS by young schools, T_YFOODK the young's diet by
+species) printed by year.js at the year's end, + the young's fates every fortnight; research notes esocid_first_year_survival.md.
+FINDINGS (seed 611/612, true lakes): bass 0.66×, pickerel 0.45×, bullhead 0.84× after a year (winter starvation fixed). PICKEREL:
+recruitment is the gap (research: ~8,500 fall recruits needed, sim ~2,500); larval loss is fine (~0.045/d vs 0.06–0.12 target) but
+at 3–4 cm (early July) the young are EATEN ~26 %/fortnight + 14 % background (Z ~0.04/d vs 0.012–0.025 target) — real young pickerel
+hide in dense weeds (Grimm; MDIFW: largemouth eat them); fish3 _yoyTarget/GPU y_target choose spots by food only, no cover term →
+NEXT: check the T_YKILLS attribution in the running year (scratchpad year611_bed.txt), then a weed preference for young pickerel
+(spot value × (1 + w·cover)), A/B on the GPU year. Also: young bass starve ~14 %/fortnight in July at 5 cm (diet now tallied);
+cannibalism on pickerel ≥ 8 cm 2–4× high; the brook's dace (GPU loses more than CPU: 50 vs 211 left at day 98, old code).
+The CPU reference year (old code) still running: scratchpad true_year.txt.
+
 ▶▶▶ RESUME HERE (2026-10-18, late night): CALIBRATING THE YEAR (the human: "yeah keep going" — fix the predators' feeding first).
 docs/GPU_SIM.md "G3 — calibrating the year" (diagnosis + fixes); research: docs/research_notes/Predator winter energetics/
 (predator_winter_energetics.md, nest_guarding_costs.md). DIAGNOSED with the year runner's new diagnostics (tools/gpu/year.html: each
