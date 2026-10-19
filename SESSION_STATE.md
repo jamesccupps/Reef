@@ -186,6 +186,28 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, evening): STAGE P3 + THE MULTI-YEAR FINDING COMMITTED — NEXT: STAGE R, THE PLANKTIVORES' REGULATION.
+- P3 (in): a predator strikes at full effect only over water ≥ F3.SHALLOW_K (0.02 m/cm) × its length (the followed fish's prey-side
+  SHALLOW_REFUGE retired; the young's kept); gate +1 (a 35-cm pickerel takes no killifish over 0.2 m, does over 1.5 m). GPU tallies
+  of kills by the prey's bed depth and cover (T_KILLD/T_KILLC); year.js prints each lake's zooplankton. July: killifish kills −5 %
+  only — the sim's pickerel average 25 cm then, and small pickerel do take killifish (Guillory). P4 (the small pickerel on the
+  flats) tried and dropped: cannibalism −22 % but killifish kills +33 %.
+- THE FINDING (docs/FINDINGS.md, HOT_BROOK_3D.md §4): the first 3-YEAR runs collapse in years 2–3 under stage P AND under the
+  committed Y1 (y612_p3_3yr, y612_y1_3yr): pumpkinseed, redbreast, killifish → ~0, fallfish down, then the pickerel; perch/white
+  perch/suckers hold. Year 1's zooplankton 500–970 µg/L (field ~60–100) grows the fish ~100 → ~165 kg/ha; from year 2 it never
+  recovers (2–40 µg/L); late spawners' young stall at 1–2 cm. The census cap was the white perch's only regulator.
+- NEXT — STAGE R (design in HOT_BROOK_3D.md §4 "Design (stage R, next)"; research `Whole lake 3D fish simulation/
+  white_perch_regulation.md` §7 — written without web search, the budget spent; its §8 lists what to fetch): (1) the young
+  overwinter as schools and recruit next spring, with size-dependent first-winter mortality (Johnson & Evans 1990); (2) the
+  larvae's own food (rotifers/nauplii; the weeds' microcrustaceans for young sunfish; white perch benthL ~4 cm); (3) white perch
+  adult A 0.45–0.55 (maxAge 10, the unsimulated share not halved); (4) why year 1's zooplankton is 10× the field's. Judge on
+  ≥ 3 seeds × ≥ 5 years; targets: white perch 15–35 kg/ha, pumpkinseed 0.05–0.3× white perch adults, perch small and fewer than
+  fallfish and bass (the human), fallfish plentiful.
+- Results still landing (scratchpad): y612_y1_3yr (year 3), then y613_p3 / y611_p3 (P3, a year; snap_p3 :8104). Snapshot servers
+  (node serve.mjs in snap_*/) on :8102–8105 can be stopped when done.
+- ASK THE HUMAN (field knowledge): do blacknose dace live in Hot Brook above and below the lakes too (the closed brook can't hold
+  them against the lakes' predators passing through)?
+
 ▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
 (docs/HOT_BROOK_3D.md §4 "Design/Results (stage P1)", "Design/Built (stage P2)"; research `Whole lake 3D fish simulation/
 predator_diets_and_prey_mortality.md` — the field targets in its §7; docs/FINDINGS.md; docs/GPU_SIM.md "G3 — round 5").

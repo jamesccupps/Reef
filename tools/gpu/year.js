@@ -47,7 +47,7 @@ for (const sd of SEEDS) {
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
     const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env), gl = await G.gridLoad();
-    say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
+    say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · zooplankton ${w[1].zoo.toFixed(0)} / ${w[2].zoo.toFixed(0)} µg/L (Upper / Lower) · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
     KEYS3.forEach((k, q) => {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });
@@ -82,6 +82,11 @@ for (const sd of SEEDS) {
     const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
     KEYS3.forEach((kp, p) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v >= 1) by.push([kp, v]); });
     by.sort((a, b) => b[1] - a[1]); if (by.length) say(`${kq} killed by: ` + by.map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+  }
+  // where the followed fish were eaten (wgsl T_KILLD: pairs 1390 + prey·5 + the bed's depth class; T_KILLC: 1445 + prey·3 + cover class)
+  for (const kq of (qs.get('kby') || 'perch,killifish,catfish,dace').split(',')) {
+    const q = KEYS3.indexOf(kq); if (q < 0) continue; const d = [0, 1, 2, 3, 4].map(c => tl[1390 + q * 5 + c] / 1e6), cv = [0, 1, 2].map(c => tl[1445 + q * 3 + c] / 1e6), t = d.reduce((a, b) => a + b, 0);
+    if (t >= 1) say(`${kq} eaten over the bed's depth: ` + ['< 0.3', '0.3–0.6', '0.6–1', '1–2', '≥ 2 m'].map((c, j) => `${c} ${(100 * d[j] / t).toFixed(0)}%`).join(' · ') + ` — at cover ` + ['< 0.1', '0.1–0.5', '≥ 0.5'].map((c, j) => `${c} ${(100 * cv[j] / t).toFixed(0)}%`).join(' · '));
   }
   // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
   // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills

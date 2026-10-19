@@ -644,6 +644,42 @@ perch ≥ 15–30 % of their older-fish kills, killifish ≤ 15–25 %, bullhead
   Next: whether it settles (a 3-year run), the small pickerel's refuge in the weeds (research: small esocids keep to dense
   vegetation, the large hold structure), the killifish's shallow refuge (Power 1987: fish predators can't work water < 20 cm).
 
+**Stage P3 — THE SHALLOWS ARE THE SMALL FISH'S (2026-10-19).** A GPU tally of kills by the prey's bottom depth and cover (wgsl
+T_KILLD/T_KILLC; year.js "X eaten over the bed's depth") found 57 % of July's killifish kills inside their own 0.1–0.6-m band, at cover
+0.1–0.4 — the prey-side SHALLOW_REFUGE (≤ 0.6, the same for a killifish as for a bass) was the wrong form. Replaced, for the followed
+fish, by the PREDATOR's reach (F3.SHALLOW_K 0.02 m/cm): a strike's weight × clamp((prey's bed − dm/2)/(dm/2)), dm = SHALLOW_K × the
+predator's length — a 35-cm pickerel strikes at full effect from 0.7 m and not at all under 0.35, a 20-cm bass from 0.4, a 12-cm
+perch from 0.24: big fish don't work the shallows (Power 1987: fish > 3–4 cm avoided water < 20 cm; large bass in pools > 50 cm)
+while small predators still hunt there (Schlosser 1987). The young's cover in the density table keeps SHALLOW_REFUGE. Gate: a
+35-cm pickerel takes no killifish over 0.2 m of water and does over 1.5 m. *July (a week, seed 612):* killifish kills −5 % only —
+the sim's pickerel then average 25 cm, and small pickerel do work 0.3–0.6 m and do select killifish (Guillory 1979: selected below
+30 cm SL, avoided above). *Tried and dropped (P4):* the small pickerel on the flats (0.3–1.2 m below 20 cm; anglers: "small
+pickerel stay shallow in lily pads and grass"; Grimm 1981, Skov & Koed 2004) cut cannibalism 22 % but raised their killifish kills
+33 %. The founding size structure (16,000 pickerel at a mean 24 cm; a lightly fished population's fish ≥ 20 cm average 30–35) may
+drive the first year: the multi-year run decides.
+
+**The first multi-year runs (2026-10-19) — the lakes collapse in years 2–3, under stage Y1 too.** Seed 612, 3 years (y612_p3_3yr,
+y612_y1_3yr): pumpkinseed 1.7 → ~0 kg/ha, redbreast 2.2 → ~0, killifish extinct, fallfish 7.1 → 1.4 (P) / 1.8 (Y1), the pickerel
+→ 0.7 / 0.5; perch, white perch and suckers hold (36/54/19) — the two versions nearly identical by year 3. The base of the web: year 1's summer zooplankton 500–970 µg/L (field ~60–100)
+grows the fish ~100 → ~165 kg/ha (white perch 31 → 61, perch 19.5 → 36); from year 2 it never recovers (2 µg/L all winter, 2–40 all
+summer) and the late spawners' young stall at 1–2 cm. The census cap had been the white perch's only regulator.
+
+**Design (stage R, next) — THE PLANKTIVORES' REGULATION** (research `Whole lake 3D fish simulation/white_perch_regulation.md` §7;
+`fish_zooplankton_coupling.md`), judged on ≥ 3 seeds × ≥ 5 years, with the cap no longer binding:
+1. **The first winter as young**: young-of-year stay schools through their first winter and recruit as yearlings next spring
+   (never at L0 in their first September), with SIZE-DEPENDENT FIRST-WINTER MORTALITY (Johnson & Evans 1990: crowded cohorts end
+   the summer small and die over the winter — survival ~0.2–0.5 at 45–55 mm, 0.5–0.8 at 60–70, ≥ 0.8 from 80) — the compensatory
+   brake; FRY.M_JUV_Q10's cold slowing must not cancel it.
+2. **The larvae's own food**: the larvae of every species (< ~15–20 mm) on rotifers, nauplii and small cladocerans (which larvae
+   barely deplete); young sunfish and redbreast on the weeds' microcrustaceans and insects, killifish along the shore, fallfish on
+   the brook's drift — not all on one Daphnia-weighted field; young white perch on Daphnia from ~2–3 cm, onto the bed at ~4 cm
+   (benthL), adults on Daphnia only above ~20/L.
+3. **Adult background mortality where predation doesn't emerge**: white perch A 0.45–0.55 (ages 3+), maxAge 10 (M ≈ 0.6), the
+   unsimulated share not halved (predators take ≲ 5–10 %/yr of adults); the same check for yellow perch.
+4. **The year-1 zooplankton**: why 500–970 µg/L (the start's seeding? production vs grazing?) — the field's 60–100.
+5. Growth stays food-limited (stunting) with maturity at small sizes; targets: white perch 15–35 kg/ha, 250–750/ha; pumpkinseed
+   adults 0.05–0.3× white perch adults; perch small and fewer than fallfish and bass (the human); fallfish plentiful.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

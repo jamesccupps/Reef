@@ -22,6 +22,10 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
 1. **Finish implementing and make it accurate.** The bioenergetics/food-web leftovers (the bed's organic layer feeding
    the benthos, pike in year 2, perch growth), then **visible evolution** (trait history and variance over time, saved
    history, fast-forward).
+   - **Self-sustaining over years, not one** (2026-10-19): the first 3-year runs of the 3-D lakes collapse in years 2–3 (a
+     year-1 zooplankton boom grows the planktivores; the sunfish, killifish, fallfish and then the pickerel go) — NEXT, stage R,
+     the planktivores' regulation (the young's first winter, the larvae's own food, white perch adult mortality, the year-1
+     zooplankton; docs/HOT_BROOK_3D.md §4); every balance change judged on ≥ 3 seeds × ≥ 5 years from then on.
 2. **Full review of the presentation:** the GUI, the graphics, the webpage's information text, and the graphs/charts.
    Known items: far-zoom wildlife silhouettes (turtles were rectangles — fixed 2026-10-14; re-check the rest).
 3. **Landscape: several lakes, ponds, streams and rivers**, connected. Water itself becomes a dynamic quantity here

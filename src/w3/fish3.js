@@ -92,7 +92,15 @@ export const F3 = {
   // §7.2). The 2-D sim's (1 − x)^FEED.SIZE_SEL (2) made a 10–13-cm perch 4–8× less catchable than a 6-cm killifish to a 35-cm
   // pickerel — the field's rules ~2× — and the lakes' perch, the pickerel's first-named prey in Maine, lost < 1 % a year to them
   SIZE_K: 2,
-  SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6)
+  SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6) (the young's)
+  // THE SHALLOWS ARE THE SMALL FISH'S (stage P3): a predator strikes at full effect only over water ≥ SHALLOW_K × its length (m/cm),
+  // not at all over half that — a 35-cm pickerel from 0.7 m (none under 0.35), a 20-cm bass 0.4, a 12-cm perch 0.24: big fish don't
+  // work the shallows — fish > 3–4 cm avoided water < 20 cm, large bass held pools > 50 cm on 72 of 75 pool-dates (Power 1987), the
+  // small fish of a stream kept to its shallows where bass were (Schlosser 1987), pickerel half their time at 0.76–1.82 m
+  // (Milipsigate Lake telemetry) — while small predators still hunt there (Schlosser: bass took prey in the refuges). It replaces
+  // the followed fish's SHALLOW_REFUGE cover (the same for a killifish as for a bass): with it the pickerel took the killifish in
+  // their own 0.1–0.6-m water (57 % of July's kills; cover there 0.1–0.4) and fell from 0.30 to 0.13× in a year (docs/FINDINGS.md)
+  SHALLOW_K: 0.02,
   // A BURROWER'S WINTER (S3 bury): in cold water — fully at ≤ 5 °C, none from 9 °C, the habitat's winter blend — a fish within
   // BURY_H m of the bed is dug into it: cover = bury (× the blend)
   BURY_H: 0.3,
@@ -174,7 +182,10 @@ export const F3 = {
   // against the same lakes run in full from ice-out (3 seeds to May 20: perch 1.05, suckers 1.4, pickerel 1.05 cm, white perch
   // just hatched, and their survival; 2 seeds to Sept 12: perch 5.0–5.5, suckers 4.9–5.6, white perch 3.9–4.6, bullheads
   // 4.2–4.8, pumpkinseed 2.3–2.9 cm). (The young pickerel, fish eaters in the live sim, come out small: ~4 vs 7 cm by September)
-  SEED_P: [0.73, 0.5], SEED_P_YF: [0.28, 0.34], SEED_M: 1.2,
+  // (SEED_M 1.2 → 1.6, 2026-10-19: since predation on the young by density (Y1) and stage P's predators the live spring keeps fewer
+  // young — the gate's seed 519 on May 20, seeded/live: perch 2.65 → 2.27×, pickerel 1.4 → 1.1×, suckers 1.4 → 1.36×; a 3-seed
+  // recalibration belongs with stage R's first winter as young)
+  SEED_P: [0.73, 0.5], SEED_P_YF: [0.28, 0.34], SEED_M: 1.6,
   SEED_SPREAD: 10 * 86400,   // s: a population's spawning, once its water reaches the temperatures, spread over its first ~10 days (the
                              //   live sim: perch 49 of 52 within ~5 days, suckers over ~4, pickerel ~18)
   // WHO GETS A BRAIN (docs/FISH_CENSUS.md §3; the human: "some things like minnow that are always in schools can just have one
@@ -1137,7 +1148,7 @@ export class Fish3 {
     a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
     const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
     a.visF = visDay;
-    a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (very shallow water; the weeds' stems — in them; the brook's riffles)
+    a.cover = Math.max(this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (the weeds' stems — in them; the brook's riffles. The shallows: the predator's reach, _strike)
     if (s.bury && a.bed - a.z <= F3.BURY_H) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
@@ -1602,7 +1613,7 @@ export class Fish3 {
   // a piscivore's strike: the kill hazard over the catchable fish within its reach; one fish taken (a school loses one)
   _strike(a, i, room, visDay, perf, dt) {
     const s = a.s, f = this.fish, lunge = 1 + ACTION.STRIKE_REACH * (a.fk === 1 ? engaged(a.o[3]) : 0);
-    const R = s.strikeR * lunge * Math.max(0.3, visDay), R2 = R * R;
+    const R = s.strikeR * lunge * Math.max(0.3, visDay), R2 = R * R, dmH = 0.5 * F3.SHALLOW_K * a.L;   // (dmH: half the water it needs)
     let sK = 0, best = null;
     const gx0 = clamp(((a.x - R - this.hX0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + R - this.hX0) / F3.HC) | 0, 0, this.HX - 1);
     const gy0 = clamp(((a.y - R - this.hY0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + R - this.hY0) / F3.HC) | 0, 0, this.HY - 1);
@@ -1615,7 +1626,7 @@ export class Fish3 {
         if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
         const d = Math.sqrt(d2), hide = 1 - ACTION.HIDE_CONCEAL * engaged(b.o[5]);
         const sel = Math.max(0, 1 - Math.pow(b.bdep / a.gape, F3.SIZE_K));
-        const w = (1 - d / R) * s.sp.capture * b.s.sp.vuln * sel * hide * (1 - b.cover) * (b.n > 1 ? Math.pow(b.n, s.schoolExp ?? F3.SCHOOL_EXP) : 1);
+        const w = (1 - d / R) * s.sp.capture * b.s.sp.vuln * sel * hide * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (b.n > 1 ? Math.pow(b.n, s.schoolExp ?? F3.SCHOOL_EXP) : 1);
         if (w > 0) { sK += w; cand.push(b, w); }
       }
     }

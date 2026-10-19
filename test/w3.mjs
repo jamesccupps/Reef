@@ -367,6 +367,18 @@ if (run('core')) {
     }
     check('predation: a smallmouth beside a shoal of killifish kills, one fish per strike — the school loses exactly the fish eaten, the bass gets their mass',
       kills >= 3 && Math.abs(n0 - sh.n - kills) < 1e-9 && Math.abs(gotG - kills * 1.3) < 1e-6 && F.stats.eatenBy['bass>killifish'] === kills, `${kills} kills, school ${n0} → ${sh.n}, ${gotG.toFixed(1)} g eaten`); }
+  // (stage P3) THE SHALLOWS ARE THE SMALL FISH'S: a 35-cm pickerel beside a shoal of killifish over 0.2 m of water takes none
+  // (it needs ≥ SHALLOW_K × its length to strike); over 1.5 m it kills
+  { seed(514); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+    const at = (lo, hi) => { for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === UPPER && GEO.depth[i] >= lo && GEO.depth[i] <= hi) return GEO.cellCentre(i); return null; };
+    const tryAt = ([x, y]) => {
+      const p = F.add('pike', x, y, null, 4, 1), sh = F.add('killifish', x + 0.2, y, null, 1, 40); p.L = 35; p.gape = p.L * p.s.sp.gapeR; sh.L = 6; sh.W = 2; sh.gon = 0; F._settle(sh);
+      let kills = 0; for (let i = 0; i < 300; i++) { sh.x = p.x + 0.3; sh.y = p.y; sh.z = p.z; sh.bed = Math.max(0.05, GEO.depthAt(sh.x, sh.y)); sh.cover = 0; F._hashBuild(); p.missCd = 0; if (F._strike(p, F.fish.indexOf(p), 50, 1, 1, FB) > 0) kills++; }
+      p.alive = sh.alive = false; F.fish = F.fish.filter(a => a.alive); return kills;
+    };
+    const sp = at(0.15, 0.22), dp = at(1.4, 1.6), ks = sp ? tryAt(sp) : -1, kd = dp ? tryAt(dp) : -1;
+    check("the shallows are the small fish's (stage P3): a 35-cm pickerel takes no killifish over 0.2 m of water, and does over 1.5 m",
+      ks === 0 && kd > 0, `${ks} kills over ${sp ? f2(GEO.depthAt(...sp)) : '?'} m, ${kd} over ${dp ? f2(GEO.depthAt(...dp)) : '?'} m (in 300 tries)`); }
   // SCHOOLS meet and merge (keeping one parent's genome, never averaged), split above twice their size — the fish are conserved
   { seed(505); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
     const a = F.add('perch', 20, 80, 1.5, 2, 30), b = F.add('perch', 21, 80, 1.5, 2, 25); F.add('perch', -40, 60, 1.0, 2, 2 * S3.perch.school + 20);

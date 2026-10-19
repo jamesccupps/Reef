@@ -226,6 +226,8 @@ const T_KILLPZ: u32 = 1940u;  // + 2·(predator·4 + class): the same by the pre
 const T_STRM: u32 = 2048u;    // + 2·(predator·NK + prey): THE STRIKES' ENCOUNTERS (diagnostics, stage P2) — fish within a strike's reach,
 const T_STRG: u32 = 2290u;    //   those it could take (gape, size, room),
 const T_STRW: u32 = 2532u;    //   and their strike weight (capture × vuln × size × hide × cover × school), summed over the strikes' scans
+const T_KILLD: u32 = 2780u;   // + 2·(prey·5 + class): followed fish eaten by the bed's depth under them (< 0.3, 0.3–0.6, 0.6–1, 1–2, ≥ 2 m)
+const T_KILLC: u32 = 2890u;   // + 2·(prey·3 + class): … by their cover then (< 0.1, 0.1–0.5, ≥ 0.5)
 fn lenClass(L: f32) -> u32 { return select(select(select(3u, 2u, L < 30.0), 1u, L < 20.0), 0u, L < 10.0); }
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
@@ -330,7 +332,7 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
   sa(A_vis, i, max(nv, sight(U.lux0 * lf, kI)) * U.clar);
   sa(A_visF, i, max(nv, (sight(U.luxB0 * lf, kI) + 2.0 * sight(U.luxB1 * lf, kI) + sight(U.luxB2 * lf, kI)) / 4.0) * U.clar);
   let rif = select(0.0, F3_RIFFLE_REFUGE, ga(A_L, i) < F3_RIFFLE_L && bed < F3_RIFFLE_D && bodyAt(x, y) == BROOK);
-  var cov = max(max(F3_SHALLOW_REFUGE * clamp((0.8 - bed) / 0.6, 0.0, 1.0), inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5)), rif);
+  var cov = max(inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5), rif);   // (fish3: the shallows are the predator's reach — k_strike)
   let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
   sa(A_cover, i, cov);
   sa(A_fear, i, ga(A_fear, i) * exp(-F3_FEAR_DECAY * dt));
@@ -963,7 +965,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let id = gau(A_id, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i);
   let lunge = 1.0 + ACTION_STRIKE_REACH * select(0.0, engaged(br(NW2 + HID + 3u, i)), gau(A_fk, i) == 1u);
   let R = spv(k, S_strikeR) * lunge * max(0.3, ga(A_visF, i)); let R2 = R * R;
-  let gape = ga(A_gape, i); let cap = spv(k, S_capture);
+  let gape = ga(A_gape, i); let cap = spv(k, S_capture); let dmH = 0.5 * F3_SHALLOW_K * L;   // (fish3 _strike: half the water it needs)
   var sK = 0.0; var best = -1; var bkey = -3e38;
   var dM: array<f32, NK>; var dG: array<f32, NK>; var dW: array<f32, NK>;   // (the diagnostics' sums by prey species)
   let gx0 = clamp(i32((x - R - GX0) / F3_HC), 0, i32(HHX) - 1); let gx1 = clamp(i32((x + R - GX0) / F3_HC), 0, i32(HHX) - 1);
@@ -983,7 +985,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
         dG[kb] += ga(A_n, b);
         let d = sqrt(d2); let hide = 1.0 - ACTION_HIDE_CONCEAL * engaged(br(NW2 + HID + 5u, b));
         let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
-        let w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0);
+        let w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0);
         if (w > 0.0) { sK += w; dW[kb] += w; let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / w; if (key > bkey) { bkey = key; best = i32(b); } }   // (u^(1/w) in logs: small weights underflowed)
       }
     }
@@ -1009,6 +1011,9 @@ fn strikesFor(n: f32) -> u32 { return 1u + u32(max(0.0, ceil(n - 1.5))); }
   sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr); sa(A_missCd, i, FEED_MISS_CD / TS);
   add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE); foodK(gau(A_k, i), 0u, gr * ga(A_n, i));
   let lc = lenClass(ga(A_L, pu)); add64(&TL, T_KILLSZ + 2u * (kp * 4u + lc), 1.0, TSCALE); add64(&TL, T_KILLPZ + 2u * (gau(A_k, i) * 4u + lc), 1.0, TSCALE);
+  let bd = ga(A_bed, pu); let dc = select(select(select(select(4u, 3u, bd < 2.0), 2u, bd < 1.0), 1u, bd < 0.6), 0u, bd < 0.3);
+  let cv = ga(A_cover, pu); let cc = select(select(2u, 1u, cv < 0.5), 0u, cv < 0.1);
+  add64(&TL, T_KILLD + 2u * (kp * 5u + dc), 1.0, TSCALE); add64(&TL, T_KILLC + 2u * (kp * 3u + cc), 1.0, TSCALE);
 }
 @compute @workgroup_size(128) fn k_strikeApply(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }

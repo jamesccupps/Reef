@@ -4,6 +4,23 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — The first multi-year runs: the lakes collapse in years 2–3 (docs/HOT_BROOK_3D.md §4 "Stage P3")
+- **A year is not a test of self-sustainment.** Every calibration so far had been judged on one year; the first 3-year runs (seed
+  612, true lakes) collapse in years 2–3 under the committed stage Y1 AND under stage P: pumpkinseed 1.7 → ~0 kg/ha, redbreast
+  2.2 → ~0, killifish extinct, fallfish 7.1 → 1.4–1.8, then the pickerel (→ 0.5–0.7 kg/ha) — leaving perch, white perch and
+  suckers; by year 3 the two versions are within a few tenths of a kg/ha of each other: stage P's predators hasten the littoral
+  species' fall in years 1–2; they don't cause it.
+- **The cause is the base of the web.** Year 1's summer zooplankton runs 500–970 µg/L (field summer crustaceans ~60–100); the fish
+  grow from ~100 to ~165 kg/ha on it (white perch 31 → 61 kg/ha, perch 19.5 → 36 — research: white perch 15–35, and the human: "not
+  nearly as many perch as fallfish and bass", the perch small); from year 2 the zooplankton never recovers (2 µg/L all winter, a
+  May peak ~100–120, then 2–40 all summer), every adult's ration falls to 0.25–0.35, and the late-spawning sunfish's, killifish's
+  and fallfish's young stall at 1–2 cm while the white perch's (3× year 1's cohort) keep growing. How: year.js's zooplankton
+  line (fishside3 waterOf), the young's lengths by species, the 3-year runs (scratchpad y612_p3_3yr, y612_y1_3yr).
+- **The census cap was the white perch's only regulator** (recruits held at 1.5× the census; ~91 % of each year's recruiting
+  young discarded): with adults losing ~30 %/yr (field 45–65 %: research `white_perch_regulation.md`) and their recruits entering
+  at 8 cm in their first September (field: overwinter as age-0, size-dependent first-winter mortality — the compensatory brake),
+  nothing in the model's ecology limits them. A cap that binds is a missing mechanism.
+
 ## 2026-10-19 — Where the prey are and what the predators take (stages P1–P2; docs/HOT_BROOK_3D.md §4)
 - **The lake's commonest fish were all but immune to its predators.** Yellow and white perch (~780,000 fish ≥ 7.5 cm) lost < 1 %
   a year to predators (2,800 and 900 eaten) while the bullhead fell to 0.66× and the killifish to 0.31× in a year; in the field
@@ -33,6 +50,13 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   other prey fell further — killifish 0.30 → 0.13×, fallfish 0.7–0.8 → 0.5×, sunfish 1.0 → 0.7 kg/ha: a food-limited predator kills each
   prey in proportion to meeting it, so a new abundant prey feeds more predators rather than sparing the rare ones (Holt 1977). Whether
   the small species then persist depends on their refuges — an open question in the model (3 seeds, a year).
+- **Where the prey die is measurable, and it overturned the obvious fix.** A GPU tally of kills by the prey's bottom depth showed
+  57 % of the killifish taken inside their own shallow band (0.1–0.6 m), mostly at partial cover — so a predator-side rule (a
+  predator strikes at full effect only over water ≥ 0.02 m per cm of its length; Power 1987) replaced the prey-side shallow cover.
+  It changed July's killifish kills by only ~5 %: the sim's pickerel then averaged 25 cm, and small pickerel do work that water —
+  and do select killifish (Guillory 1979: selected by pickerel < 30 cm SL, avoided above). Moving the small pickerel onto the flats
+  (the anglers' "small pickerel stay shallow in lily pads") cut cannibalism 22 % but raised their killifish kills 33 %: the founding
+  size structure (16,000 pickerel at a mean 24 cm against a lightly fished population's 30–35) may drive the first year's losses.
 - **A closed connecting brook can't hold its dace** once the lakes' predators pass through it (pickerel and bass take ~900 a year of
   ~1,400; at 1/10, without them, the dace hold): the field's brook dace are likely part of a stream population above and below the
   lakes that a two-lake model leaves out.
