@@ -4,6 +4,33 @@ The human fetched these files into `docs/research_notes/fetched/`. That folder i
 
 ---
 
+## The background agent's digest: checked in the scans
+
+The digest (`fetched_sources_digest.md`) covers the two big scans. I checked its three headline tables against the rendered pages:
+
+- **Rupp & DeRoche 1965, Table 12 (p. 23).**
+  - Shagg 55 ac, 1,308 fish and 39.7 lb per acre.
+  - Coleback 20 ac, 5,670 fish and 104.5 lb per acre.
+  - Hills 19 ac, 2,863 fish and 62.5 lb per acre.
+  - That is 44.5 / 117.1 / 70.1 kg/ha. ✓
+- **Cooper 1941, Table XVII (pickerel; p. 158–159).** 110 fish of 12.6–25.0 in, 51 with food, 397.3 cc of food in all:
+  - white perch 217.2 cc (54.7 %);
+  - golden shiner 55.5 cc;
+  - yellow perch 29.7 cc;
+  - pickerel 24.5 cc;
+  - horned pout 18.0 cc;
+  - tadpoles 17.5 cc;
+  - smelt 12.0 cc;
+  - crayfish 2.1 cc (0.5 %);
+  - insects 0.87 cc. ✓
+- **Cooper 1941, Table XVI (smallmouth; p. 157).** 66 fish of 8.5–21.3 in, 36 with food, 238.6 cc of food in all:
+  - white perch 145.5 cc (61 %), 86.5 cc of it from 5 fish in Snow Pond;
+  - crayfish 34.3 cc (14.4 %, 7 items of 48);
+  - yellow perch 33.6 cc;
+  - insects 8.7 cc;
+  - pumpkinseed 5.0 cc. ✓
+  - A small sample, with a few lakes dominating the volume.
+
 ## A03. MDIFW lake survey sheets, Upper and Lower Hot Brook Lake
 
 Surveyed August 1949; revised 1965 and 2004.
@@ -80,7 +107,7 @@ Surveyed August 1949; revised 1965 and 2004.
 - Region F catch rates: 1.29 white perch per angler-day through the ice; 1.90 per angler-day on lakes in open water.
 
 **For the sim**
-- A 5–7-year average life fits annual mortality A ≈ 0.45–0.55 (`white_perch_regulation.md` §7).
+- A 5–7-year average life is about as long as the sim's adults live. **Correction (after Cooper 1941; see the digest):** the A ≈ 0.45–0.55 of `white_perch_regulation.md` §7 is not supported. Cooper's ages give A ≈ 0.15–0.3 at ages 5–9 and ≈ 0.5 from age 9, a mortality that rises with age.
 - Size at age 4 of about 20–25 cm is the growth check for unstunted Maine fish.
 - In the field, crowding regulates white perch mainly through growth (stunting), not through mortality. A stage-R population that holds its numbers by starving its young into 1–2 cm "stalled" fish is the wrong mechanism, but slow, stunted growth at high density is right.
 - Year-class failure comes from spawning-time weather.

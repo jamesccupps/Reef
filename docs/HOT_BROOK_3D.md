@@ -662,7 +662,10 @@ drive the first year: the multi-year run decides.
 y612_y1_3yr): pumpkinseed 1.7 → ~0 kg/ha, redbreast 2.2 → ~0, killifish extinct, fallfish 7.1 → 1.4 (P) / 1.8 (Y1), the pickerel
 → 0.7 / 0.5; perch, white perch and suckers hold (36/54/19) — the two versions nearly identical by year 3. The base of the web: year 1's summer zooplankton 500–970 µg/L (field ~60–100)
 grows the fish ~100 → ~165 kg/ha (white perch 31 → 61, perch 19.5 → 36); from year 2 it never recovers (2 µg/L all winter, 2–40 all
-summer) and the late spawners' young stall at 1–2 cm. The census cap had been the white perch's only regulator.
+summer) and the late spawners' young stall at 1–2 cm. The census cap had been the white perch's only regulator. Stage P3's
+single years on seeds 613 / 611 end the same way: 155 / 140 kg/ha at day 365, zooplankton 23 / 13–17 µg/L, white perch 63 / 55
+kg/ha (target 15–35), perch 37 / 32, suckers 22 / 21, bass 11.6 / 11.3, pickerel 4.3 / 4.6, fallfish 6.4 / 5.5, bullhead 8.1 /
+7.8, sunfish 0.9 / 0.8, redbreast 1.2 / 1.1, killifish 0.16 / 0.15×, dace 0.
 
 **Design (stage R, next) — THE PLANKTIVORES' REGULATION** (research `Whole lake 3D fish simulation/white_perch_regulation.md` §7;
 `fish_zooplankton_coupling.md`), judged on ≥ 3 seeds × ≥ 5 years, with the cap no longer binding:
@@ -679,6 +682,42 @@ summer) and the late spawners' young stall at 1–2 cm. The census cap had been 
 4. **The year-1 zooplankton**: why 500–970 µg/L (the start's seeding? production vs grazing?) — the field's 60–100.
 5. Growth stays food-limited (stunting) with maturity at small sizes; targets: white perch 15–35 kg/ha, 250–750/ha; pumpkinseed
    adults 0.05–0.3× white perch adults; perch small and fewer than fallfish and bass (the human); fallfish plentiful.
+
+*From the fetched sources (2026-10-19; `docs/research_notes/fetched_sources_read_by_me.md`):*
+- **Item 1 for the bass, ready to build** (USGS SIR 2014-5164, Spednic Lake ~30 km east, after Shuter et al. 1980): winter days
+  WD = days from < 10 °C in autumn to ≥ 10 °C in spring (Spednic 208 ± 4, the sim's own calendar); C_max = 0.3375·WD + 22.1 mm
+  (92), C_min = 0.1938·WD + 7.9 mm (48); a young bass's chance of dying over its first winter = (C_max − L)/(C_max − C_min),
+  clamped 0–1. Maine's young bass are 56–74 mm by autumn (MDIFW bass plan; Spednic measured 70–76 mm) → ~40 % lost, more after
+  cool summers (1986/92/96 weak year classes) — "a direct relationship between size and overwinter survival", the ~200-day
+  winter without feeding setting the smallmouth's northern limit. The same form for the other species needs their thresholds
+  (Johnson & Evans 1990/91 for white and yellow perch; NAJFM 17:581 for pumpkinseed — not yet fetched).
+- **Item 5 confirmed** (MDIFW white perch plan): crowding works through growth — "a 6-year-old perch may be only 4 inches"; even
+  small slow fish mature and spawn; year-class failures come only from spawning-time weather; average life 5–7 years; ~20–25 cm
+  at age 4 in typical Maine water. Big white perch eat their own young.
+- **Item 4's checks** (EPA 1993, Oneida Lake after Mills et al. 1987): Daphnia pulex vanishes when age-0 yellow perch exceed
+  ~14,000/ha in August (count the sim's young per ha); past ~18 mm, predation (walleye, adult perch) controls their numbers;
+  zooplankton keep refuges (DVM to deep water by day, the weeds — chem3 `plantRef` has the weeds); small fish under predation
+  crowd the littoral and graze the open water less; Benndorf's "critical" planktivore biomass is lowest (~20 kg/ha) for age-0
+  perch; piscivores at 30–40 % of fish biomass hold planktivores down (the sim: bass + pickerel ≈ 16 of 140–155 kg/ha ≈ 11 %).
+- **Bass abundance** (MDIFW): objective 2.0 fish/acre and 2.3 lb/acre of bass ≥ 10 in (≈ 2.6 kg/ha); eastern Maine's dense
+  populations are mostly 8–13-in fish (abundant spawning habitat, few predators on the young); the sim's 11–12 kg/ha is high.
+- **Brook to-do**: white perch make "heavy spawning runs … in streams" in spring.
+- **The Maine standing crop** (Rupp & DeRoche 1965, rotenone + SCUBA, three small Maine lakes; Table 12 checked in the scan):
+  44.5 / 70.1 / 117.1 kg/ha for ALL species; pickerel 4.1 / 8.4, white sucker 24–38, pumpkinseed 14.9 (Coleback, Washington Co.,
+  no perch or bass). The sim's 140–165 kg/ha (white perch alone 55–63) overshoots every one → the whole-lake target is ~50–120.
+  EPA's MEI regression for Hot Brook (TDS ~15–20 mg/L, z̄ ~3 m) gives ~75 kg/ha (`fetched_sources_digest.md`).
+- **Item 3 CORRECTED** (Cooper 1941, ages of 1,827 white perch; digest §6): the adult A 0.50–0.56 "from Cooper" is not in Cooper;
+  his ages give A ≈ 0.15–0.3 at ages 5–9 and ≈ 0.5 from age 9 ("a considerable per cent live to be at least 8 to 10 years old,
+  after which the rate of mortality increases greatly"). So: an age-rising adult M (the sim's ~30 %/yr is inside the Maine
+  range), and the regulation in the young — the first winter and stunted growth — not a flat 0.45–0.55.
+- **White perch food** (Cooper): adults ≥ 15 cm 67 % bed animals (mayflies 44 %), 26 % fish, ~6 % plankton by volume (0–98 % by
+  lake); growth tracks the share of fish eaten, not bed-fauna density → the sim's `Lzoo` 40 (zooplankton to 40 cm) is too
+  planktivorous; the young are the grazers (Oneida's 14,000/ha).
+- **Predator diets** (Cooper, summer, white-perch lakes; Tables XVI–XVII checked): pickerel 32–64 cm ≈ 95 % fish (white perch
+  55 %), crayfish 0.5 %; smallmouth 22–54 cm 80 % fish (white perch 61 %), crayfish 14 % — the sim's 34–36 % and 63–64 %
+  crayfish are far above Maine's (the old targets came from non-Maine lakes; small samples; Hot Brook's crayfish unknown).
+- **Cooper's field checks**: August crustacean zooplankton ≈ 31/L (≈ 90 µg/L) at 0–15 ft over 53 lakes — the 60–100 target;
+  Ekman bed fauna ≈ 5 g/m² in shallow lakes (BENTHOS.CAP 15 is the high side); adult white perch scale growth only July–Aug.
 
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 

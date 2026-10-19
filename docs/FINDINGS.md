@@ -4,6 +4,27 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — Maine's own field data move the calibration targets (docs/research_notes/fetched_sources_digest.md, fetched_sources_read_by_me.md)
+- **What.** The human fetched the primary Maine sources the project had cited second-hand. Three of the project's targets were
+  wrong, and the sim's year 1 overshoots the only Maine whole-lake counts.
+- **Total fish biomass.** Rupp & DeRoche 1965 (*TAFS* 94:9, rotenone plus SCUBA counts of sunken fish, three small Maine lakes)
+  give 44.5, 70.1 and 117.1 kg/ha for ALL species (Table 12: 39.7 / 62.5 / 104.5 lb/acre — checked in the scan). The sim's lakes
+  grow to 140–165 kg/ha in year 1, and its white perch alone (55–63 kg/ha) exceed two of the three lakes' totals. Per species
+  there: pickerel 4.1 and 8.4 kg/ha, white sucker 24–38, pumpkinseed 14.9 (mostly young-of-year, in a Washington County lake
+  without perch or bass).
+- **Predator diets.** Cooper 1941 (MDIFW Fish Survey Report 4; Tables XVI–XVII, checked in the scan), summer, white-perch lakes:
+  adult pickerel (32–64 cm, 51 with food) ate 55 % white perch, ≈ 95 % fish and 0.5 % crayfish by volume; smallmouth (22–54 cm,
+  36 with food) ate 61 % white perch, 80 % fish and 14 % crayfish. The project's targets (pickerel crayfish 10–30 %, bass 35–55 %)
+  came from non-Maine lakes, and Cooper notes crayfish were "generally rare in Maine". The sim's pickerel take 34–36 % crayfish
+  and its bass 63–64 %. The samples are small and a few lakes dominate the volumes (Snow Pond gives most of the bass's white perch).
+  Hot Brook's crayfish density is unknown.
+- **White perch mortality.** The adult A ≈ 0.50–0.56 the notes attributed to Cooper is not in Cooper. His ages of 1,827 fish
+  give a catch curve with A ≈ 0.15–0.3 at ages 5–9 and ≈ 0.5 from age 9 (agent's arithmetic). So adult mortality rises with
+  age, and the sim's ~30 %/yr is inside the Maine range; the regulation belongs in the young (first winter, stunting).
+  Adults ≥ 15 cm ate 67 % bed animals and only ~6 % plankton by volume, so the sim's white perch zooplankton feeding to 40 cm is too planktivorous.
+- **What it changes.** Stage R's targets (docs/HOT_BROOK_3D.md §4): a whole-lake total near 50–120 kg/ha; predators fed mostly
+  on white and yellow perch; white perch regulated through the young and growth, not by a flat adult death rate.
+
 ## 2026-10-19 — The first multi-year runs: the lakes collapse in years 2–3 (docs/HOT_BROOK_3D.md §4 "Stage P3")
 - **A year is not a test of self-sustainment.** Every calibration so far had been judged on one year; the first 3-year runs (seed
   612, true lakes) collapse in years 2–3 under the committed stage Y1 AND under stage P: pumpkinseed 1.7 → ~0 kg/ha, redbreast

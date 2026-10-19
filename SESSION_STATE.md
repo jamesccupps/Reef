@@ -186,6 +186,28 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, latest): ALL 12 FETCHED FILES READ — the agent's digest (docs/research_notes/fetched_sources_digest.md,
+big scans) + mine (fetched_sources_read_by_me.md, its headline tables re-checked in the rendered scans). STAGE R's TARGETS MOVED
+(docs/FINDINGS.md top entry; HOT_BROOK_3D.md §4 "Design (stage R)" + "From the fetched sources"):
+- WHOLE-LAKE FISH ≈ 50–120 kg/ha (Rupp & DeRoche 1965, the only Maine counts: 44.5 / 70.1 / 117.1; EPA MEI ~75) — the sim
+  reaches 140–165 in year 1, white perch alone 55–63. Pickerel 4–8 kg/ha in Maine (sim 4.3–4.6 ✓, falls later), sucker 24–38
+  (sim 21–22), pumpkinseed can reach ~15 (sim ~1).
+- PREDATOR DIETS (Cooper 1941, summer, white-perch lakes): pickerel ~95 % fish (white perch 55 %), crayfish 0.5 %; smallmouth
+  80 % fish (white perch 61 %), crayfish 14 % — the sim's crayfish shares (34–36 % / 63–64 %) are Maine-wrong (crayfish
+  "generally rare in Maine" in 1941; Hot Brook's crayfish unknown — maybe ASK THE HUMAN: crayfish common at Hot Brook?).
+- WHITE PERCH: adult mortality rises with age (A ≈ 0.15–0.3 at 5–9, ≈ 0.5 from 9) — NOT a flat 0.45–0.55; adults eat bed
+  animals (only ~6 % plankton) → `Lzoo` 40 too planktivorous; density regulates by stunting + the young's first winter.
+- YOUNG BASS FIRST WINTER: Shuter/Dudley equations (WD 208 = the sim's; C_max 92 mm, C_min 48 mm) — ready to build.
+- ZOOPLANKTON: Cooper's August ≈ 31 crustaceans/L ≈ 90 µg/L; Oneida: age-0 perch > 14,000/ha in August remove Daphnia.
+- P3 single years 613/611 landed: 155/140 kg/ha, zooplankton 23/13–17 µg/L at day 365 (HOT_BROOK_3D.md Stage P3 paragraph).
+- TELL THE HUMAN: noaa_2897_DS1.pdf is the wrong file (summer flounder); yellowperch.pdf is the commercial permit form, not the
+  plan; still wanted — Warner 1973 pp. 150–151 (A01), Johnson & Evans 1990/1991 (A06/A07, white perch first winter), the
+  pumpkinseed overwinter paper NAJFM 17:581 (B04), Lakes of Maine pages (A02, a bot check — the human must fetch), and new leads
+  Fuller & Cooper 1946, Barr 1962 (Maine pickerel food), Jordan 1988 (age-0 smallmouth growth, nine eastern Maine lakes).
+- NEXT: stage R build — (1) the young's first winter (bass by Shuter; others by threshold pending sources), (2) the larvae's
+  own food, (3) white perch adults onto the bed (Lzoo), age-rising M, (4) the year-1 zooplankton excess (seeding vs production),
+  (5) predator diets toward fish (crayfish exposure/encounter), judged ≥ 3 seeds × ≥ 5 years against the totals above.
+
 ▶▶▶ ADDED (2026-10-19, late night): THE HUMAN FETCHED 12 SOURCES into docs/research_notes/fetched/ (gitignored: large scans, some
 copyrighted): the MDIFW survey sheets for UPPER and LOWER Hot Brook Lake, the MDIFW white perch / yellow perch / black bass plans,
 Cooper 1941 (Fish Survey Report No. 4, a 176-MB scan), the Bass Technical Work Group 2019, USGS SIR 2014-5164, a NOAA report,
