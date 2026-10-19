@@ -493,6 +493,62 @@ school, the rest of the budget to the big fish's own brains. Research: Hot Brook
   - **The dace census** is 0.8/m² from age 1, not 1.5: the Catskill 1.1/m² counts every age, the year's young among them.
 - **Result:** the dace hold through the year on both seeds (41 → 48–54/ha-equivalent by December), with no starvation and ~50 eaten.
 
+**Design (stage Y1) — PREDATION ON THE YOUNG BY DENSITY (2026-10-19; research `Whole lake 3D fish simulation/
+young_piscivore_functional_response.md`).** Why: a young school is a point, and today a predator eats from the nearest school
+within 0.6 m (+ its length, or 1.5 × its strike reach) at a rate set by that school's head count (FRY.N_HALF 30) whatever its
+spread. Schools meet only by piling onto the same targets (young pickerel allowed fish from 5 cm recruited +4 %), and prey that
+gather are easier to catch, not harder (a cover preference for young pickerel cut recruits to 2). The field's rule is a predator's
+clearance of the water it searches (~3–10 m³ a day for a 3–15-cm piscivore — Persson et al. 2004: 400·L(mm)^0.6 L/d; pikeperch 9.6
+m³/d, Persson & Brönmark 2002), saturating on its gut (handling = prey mass / the predator's maximum intake).
+
+1. **The prey table** (each step / block, before anyone feeds): per water column × prey species × length class (log2 classes from
+   0.5 cm), the young available — Σ n·(1 − cover) over the column's schools (a guarded brood × (1 − BROOD.PROTECT)) — their mean
+   length and mass, and Σ n (to share the deaths).
+2. **A predator's request** (a followed fish with room in its gut, or a school of young piscivores): over the bins its mouth and
+   size window allow — prey depth ≤ gape; r = L_prey/L_pred inside Persson & Brönmark's window w(r) = [(R/5.3)·e^(1 − R/5.3)]^6.5,
+   R = 1/r (peak at r ≈ 0.19, nil below ~0.05); a plankton or insect eater only the larvae it fits (≤ LARVA_L, ≤ ⅓ its length) —
+   clearance a = A0·L^0.6 × w × its capture success × the prey's vulnerability × its sight (vision, light) [× FRY.LARV_A for the
+   non-piscivores], density D = available / the column's water volume, handling h = W_prey / Imax (Imax: its FB4 Cmax at its mass and
+   temperature): fish eaten per predator per second Σa·D / (1 + Σa·h·D), shared over the bins ∝ a·D, × n_pred × dt, capped by its
+   gut room.
+3. **The take** (order-free — no first-come-first-served; research §4.4): per bin the requests summed; each predator gets its request
+   × min(1, available / requested); each school in the bin loses n·(1 − cover) × (requested, capped) / available. Mass conserved.
+   CPU: requests gathered through the step and settled at its end (the predator's gut credited then — its meal digests from the next
+   step); GPU: the request → take kernels it already has (AC_YP), keyed by bin instead of by school.
+4. **Background mortality**: FRY.M_LARVA and M_JUV stood for the predators the lake didn't simulate (the lake's own fish ate ~1 % of
+   its larvae — verify/fryfate). With the lake's fish now eating by density, M_JUV keeps only the unsimulated (birds, invertebrates,
+   disease): recalibrated so the young's TOTAL loss meets the field — bluegill fry Z 0.11–0.39/d for days after dispersal then
+   < 0.01/d; perch larvae ~0.04/d; August–October young 0.008–0.06/d; young bass removing 58–93 % of the littoral fry; young
+   piscivores' rations 10–25 %/d at 20–24 °C.
+
+**Four seasons on paper.** *Spring (ice-out → May):* the pickerel's and perch's larvae hatch dense on their spawning grounds; the
+table holds them in a few columns at high density — the adults' clearance there is gut-limited (a perch's ration of larvae) and the
+larvae's loss is spread over their whole crowd (dilution: per-capita risk ∝ 1/n inside a saturated school). *June–July:* the larvae
+disperse — densities fall, predators clear a smaller share each; the young bass and pickerel past 5 cm start on the young they fit
+(r ≈ 0.1–0.4: sunfish fry, young perch, killifish, suckers), their rations rising with the fry's density; weed cover rises with the
+beds and shelters the young in the stands (cover × available). *August–October:* the cohorts thin and grow out of the panfish's
+windows (r > 0.4); the piscivores take the stragglers; the bass and pickerel recruits (6–8 cm) join the followed fish. *Winter:*
+cold slows every Imax (the gut limit) and the young school in their wintering water — predation low, as the field's ~0.005/d.
+
+**Checks:** the gate's young section — a predator's meal saturates on its gut in a dense school and scales with density between
+schools; a crowd's per-capita loss falls with its size; the bin take conserves fish. The fate audit (≥ 3 seeds, the GPU year) against
+the field rates above; CPU ⇄ GPU parity (1/10, 3 seeds × 30 days).
+
+**Built (stage Y1, 2026-10-19).** As designed (fish3 `_yTable`/`_yReq`/`_ySettle`; wgsl `y_table`, the density branches of
+`k_eatYoyReq/Get/Apply`, `y_feedReq/Take`, `y_preyApply`; FRY.DENSITY, CLEAR_A/B, WIN_*, LARV_A, DETECT_L, NS), with what the
+runs taught (docs/GPU_SIM.md G3 round 4):
+- **Order:** the followed fish take first, the young piscivores' schools from what is left — the GPU's block order; a CPU school's
+  catch is banked for its next tick (the GPU's lands the same tick).
+- **The panfish's larvae:** at LARV_A 0.3 the panfish and bottom feeders took 41 % of the suckers' hatch and three prey species'
+  recruits fell 83–92 %; 0.1 kept them.
+- **The background halves:** the 3-D sim's own M_LARVA3 0.04 and M_JUV3 0.015 (the 2-D sim's 0.08 / 0.035 stood for the
+  predators a lake didn't simulate) — the young perch's total Z 0.03–0.04/d as larvae → 0.016/d at 8 cm (Oneida 0.035/d).
+- **Results** (true lakes, a year, seeds 611/613): the prey species' recruits within ~15 % of the old rule's but for killifish
+  (61–68k vs 126k); bass 0.62–0.65× by count but 1.2× by biomass, pickerel 0.51× and 1.06–1.09× by biomass, their recruits 1.8k
+  (257 on the old rule); 78 % of the young perch reaching 8 cm still discarded at the census cap.
+- **Gate:** a yearling bass's request — per head the same among 5 or 50 fry, far less in a crowd of ten million (its gut full),
+  the young lost exactly the grams it got.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

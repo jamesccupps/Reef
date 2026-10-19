@@ -4,6 +4,21 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — Predation on the young by density (stage Y1; docs/HOT_BROOK_3D.md §4)
+- **The point-school encounter hid most of the predation on larvae.** Replacing "a predator eats from the nearest school within
+  0.6 m" with clearance of the water's density (Holling II, gut-limited; Persson et al. 2004's 400·L^0.6 L/d) raised the followed
+  fish's take of young fish ~24× in the first fortnight (1/10 lakes) — the larvae of perch, white perch and suckers now meet the
+  panfish that feed among them.
+- **The recruitment cap had been doing the predators' work.** On the old rule a share of every prey species' young reached their
+  recruiting length only to be discarded at the census cap (bullhead 19 %, bass 14 %, fallfish 12 % of the year's hatch); with
+  density predation the surplus is eaten instead — and the background larval and juvenile mortality, calibrated when the lake's
+  fish ate ~1 % of its larvae, now counts those predators twice (the perch's total loss unchanged, 75 → 73 %, but killifish, sucker
+  and redbreast recruits fell 83–92 %): a background rate that stands in for unsimulated predators must shrink as they are simulated.
+- CPU ⇄ GPU parity holds for the new rule (1/10, 3 seeds × 30 days), killifish at the edge (0.866 vs 0.843).
+- **Three seeds, a year (old rule → density, calibrated):** pickerel recruits 175–257 → 1,742–1,789 and their biomass 2.4 → 3.4 kg/ha
+  (start 3.2), bass 8.3 → 11.0 kg/ha (start 9.1) — the predators were starved of the young fish real ones live on; bullhead and
+  killifish counts fall (0.83 → 0.66×, 0.46 → 0.31×). Counts and biomass tell different stories: report both.
+
 ## 2026-10-18 — The weed beds (stage 7h; docs/HOT_BROOK_3D.md §5)
 - **A uniform starting state hid the beds' equilibrium.** Every species seeded at 15 % of its stand in every cell of its range gave
   a first summer with plants on 96–100 % of the bed and every species declining from June; all year runs and views had opened on

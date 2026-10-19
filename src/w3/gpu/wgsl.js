@@ -1385,6 +1385,42 @@ fn yoyOk(q: u32, i: u32, mode: u32, self_: u32) -> bool {
   return (pisc && gy(Y_bdep, q) <= ga(A_gape, i) && qL >= FEED_SCHOOL_MIN * L && qL <= spv(k, S_preyLR) * L) || (larv && qL <= FRY_LARVA_L && qL <= L / 3.0);
 }
 fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 1.0, u < r - k); }
+// ---- (stage Y1) PREDATION ON THE YOUNG BY DENSITY (fish3 _yTable, _yReq, _ySettle) ----
+const BSC: f32 = 1e6;
+fn yBin(c: u32, k: u32, L: f32) -> u32 { let s = u32(clamp(floor(log2(max(L, 1e-3) / 0.5)), 0.0, FRY_NS - 1.0)); return (c * NK + k) * u32(FRY_NS) + s; }
+fn colVol(c: u32) -> f32 { var v = 0.0; for (var k = 0u; k < nL(c); k++) { v += stf(O_wVol + cell0(c) + k); } return v; }
+// a bin's w × available (fish3 _yReq's per-bin weight before the clearance and the volume): a piscivore's size window on prey within
+// its gape and preyLR, × the prey's vulnerability; or the larvae a plankton or insect eater fits, × LARV_A by their detectability
+fn yBinW(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32) -> f32 {
+  let av = rdAcc(AC_BAV + 2u * b, BSC); if (!(av > 0.0)) { return 0.0; }
+  let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = (b / u32(FRY_NS)) % NK; var w = 0.0;
+  if (pisc && rdAcc(AC_BSD + 2u * b, BSC) / av <= gape && r >= FRY_WIN_MIN && r <= preyLR) { let R = 1.0 / r; let u = R / FRY_WIN_R * exp(1.0 - R / FRY_WIN_R); w = pow(u, FRY_WIN_E) * spv(kq, S_vuln); }
+  if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { w = max(w, FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0)); }
+  return w * av;
+}
+// a predator's request over its column's bins: (K fish over dt for its n, Σ a·D) — Holling II, handling = the prey's mass / imax,
+// capped at gMax g a fish
+fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc: bool, larv: bool, eff: f32, preyLR: f32) -> vec2f {
+  let V = colVol(c); if (!(V > 0.0) || !(imax > 0.0) || !(gMax > 0.0) || !(eff > 0.0)) { return vec2f(0.0); }
+  let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / V; let NB = NK * u32(FRY_NS); let b0 = c * NB;
+  var sA = 0.0; var sAH = 0.0; var sG = 0.0;
+  for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, gape, pisc, larv, preyLR); if (!(w > 0.0)) { continue; }
+    let aD = a0 * w; let Wq = rdAcc(AC_BSW + 2u * b, BSC) / rdAcc(AC_BAV + 2u * b, BSC); sA += aD; sAH += aD * Wq / imax; sG += aD * Wq; }
+  if (!(sA > 0.0)) { return vec2f(0.0); }
+  var K = n * dt * sA / (1.0 + sAH); let g = K * sG / sA; if (g > gMax * n) { K *= gMax * n / g; }
+  return vec2f(K, sA);
+}
+@compute @workgroup_size(256) fn y_table(@builtin(global_invocation_id) g: vec3u) {
+  let q = g.x; if (q >= U.ny) { return; }
+  syi(Y_yb, q, -1); sy(Y_ya, q, 0.0);
+  if (FRY_DENSITY < 0.5 || !yAlive(q)) { return; }
+  let c = gyi(Y_c, q); let n = gy(Y_n, q); if (c < 0 || !(n > 0.0)) { return; }
+  var held = false; let gr = gyi(Y_gref, q); if (gr >= 0) { let gi = u32(gr); held = (gau(A_flags, gi) & FL_ALIVE) != 0u && gau(A_id, gi) == gyu(Y_guard, q) && ga(A_nt, gi) > 0.0; }
+  let a = n * (1.0 - gy(Y_cover, q)) * select(1.0, 1.0 - BROOD_PROTECT, held); if (!(a > 0.0)) { return; }
+  let L = gy(Y_L, q); let b = yBin(u32(c), gyu(Y_k, q), L);
+  acc64(AC_BAV + 2u * b, a, BSC); acc64(AC_BSL + 2u * b, a * L, BSC); acc64(AC_BSW + 2u * b, a * gy(Y_W, q), BSC); acc64(AC_BSD + 2u * b, a * gy(Y_bdep, q), BSC);
+  syi(Y_yb, q, i32(b)); sy(Y_ya, q, a);
+}
 @compute @workgroup_size(64) fn k_eatYoyReq(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
   sai(A_claim, i, -1); sa(A_qB, i, 0.0);
@@ -1392,6 +1428,15 @@ fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 
   let room = ga(A_fRoom, i); if (!(room > 0.0) || !(ga(A_fWant, i) > ga(A_fGot, i))) { return; }
   let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let id = gau(A_id, i);
   let pisc = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc);
+  if (FRY_DENSITY > 0.5) {   // (stage Y1: a request over its column's bins, settled in k_eatYoyGet)
+    let c = gai(A_c, i); if (c < 0) { return; }
+    let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);
+    let r = yReqK(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR));
+    if (!(r.x > 0.0)) { return; }
+    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(u32(c)); let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (w > 0.0) { acc64(AC_BREQ + 2u * b, r.x * a0 * w / r.y, BSC); } }
+    sai(A_claim, i, -2); sa(A_qB, i, r.x); return;
+  }
   let R0 = F3_YOY_EAT_R + L / 100.0; var Ra = R0; if (pisc) { Ra = max(R0, spv(k, S_strikeR) * 1.5); }
   let near = nearYoy(ga(A_x, i), ga(A_y, i), ga(A_z, i), Ra, i, 0u, 0u); if (near.x < 0.0) { return; }
   let q = u32(near.x); let d = near.y; let qL = gy(Y_L, q); let qn = gy(Y_n, q); let qk = gyu(Y_k, q);
@@ -1411,7 +1456,28 @@ fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 
 }
 @compute @workgroup_size(128) fn k_eatYoyGet(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
-  let qi = gai(A_claim, i); if (qi < 0) { return; }
+  let qi = gai(A_claim, i);
+  if (qi == -2) {   // (stage Y1) its share of each bin: min(1, available / requested), as much as its gut has room for now
+    let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let c = u32(gai(A_c, i)); let K = ga(A_qB, i);
+    let pisc = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);
+    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
+    var sA = 0.0; for (var j = 0u; j < NB; j++) { sA += a0 * yBinW(b0 + j, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); }
+    if (!(sA > 0.0)) { return; }
+    var gS = 0.0; var jS = 0.0;
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = a0 * yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (!(w > 0.0)) { continue; }
+      let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av;
+      gS += kk * Wq; jS += kk * Wq * energyDensity(2u * ((b / u32(FRY_NS)) % NK), Wq); }
+    if (!(gS > 0.0)) { return; }
+    let room = ga(A_fRoom, i); var s = 1.0; if (room > 0.0) { s = min(1.0, room * n / gS); } else { s = 0.0; } if (!(s > 0.0)) { return; }
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = a0 * yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (!(w > 0.0)) { continue; }
+      let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)) * s;
+      acc64(AC_BGOT + 2u * b, kk, BSC); add64(&TL, T_YKILLS + 2u * (k * NK + (b / u32(FRY_NS)) % NK), kk, TSCALE); }
+    let gr = gS * s / n;
+    sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + jS * s / n); sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr);
+    add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE); foodK(k, 1u, gr * n); sau(A_flags, i, gau(A_flags, i) | FL_ATE);
+    return;
+  }
+  if (qi < 0) { return; }
   let q = u32(qi); let D = rdAcc(AC_YD + 2u * q, KW); let avail = floor(gy(Y_n, q));
   let kk = floor(ga(A_qB, i) * min(1.0, avail / max(D, 1e-9))); if (kk < 1.0) { return; }
   acc64(AC_YT + 2u * q, kk, KW);
@@ -1422,7 +1488,10 @@ fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 
 }
 @compute @workgroup_size(256) fn k_eatYoyApply(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q)) { return; }
-  let t = rdAcc(AC_YT + 2u * q, KW); if (!(t > 0.0)) { return; }
+  var t = 0.0;
+  if (FRY_DENSITY > 0.5) { let b = gyi(Y_yb, q); if (b < 0) { return; } let got = rdAcc(AC_BGOT + 2u * u32(b), BSC); if (!(got > 0.0)) { return; } t = min(gy(Y_n, q), gy(Y_ya, q) / rdAcc(AC_BAV + 2u * u32(b), BSC) * got); }   // (stage Y1: its share of its bin's take)
+  else { t = rdAcc(AC_YT + 2u * q, KW); }
+  if (!(t > 0.0)) { return; }
   let n = gy(Y_n, q) - t; sy(Y_n, q, n); sy(Y_eaten, q, gy(Y_eaten, q) + t);
   add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE);
   if (n < 1.0) { yDie(q); }
@@ -1504,7 +1573,14 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   sy(Y_want, q, want); var got = 0.0;
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
-  if (spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {
+  if (FRY_DENSITY > 0.5 && spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {   // (stage Y1: a request over its column's bins)
+    let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), spv(k, S_preyLR));
+    if (r.x > 0.0) {
+      let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)) / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
+      for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, L * spv(k, S_gapeR), true, false, spv(k, S_preyLR)); if (w > 0.0) { acc64(AC_BREQY + 2u * b, r.x * a0 * w / r.y, BSC); } }
+      syi(Y_qPrey, q, -2); sy(Y_qPk, q, r.x);
+    }
+  } else if (spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {
     let near = nearYoy(gy(Y_x, q), gy(Y_y, q), z, F3_YOY_EAT_R, 0u, 1u, q);
     if (near.x >= 0.0) {
       let r = u32(near.x); let rn = gy(Y_n, r); let rW = gy(Y_W, r);
@@ -1581,6 +1657,16 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let want = gy(Y_want, q);
   var got = 0.0; var J = 0.0;
   let pr = gyi(Y_qPrey, q);
+  if (pr == -2) {   // (stage Y1) its share of each bin's young the followed fish left: min(1, left / the schools' requests)
+    let K = gy(Y_qPk, q); let cp = coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)); let gape = L * spv(k, S_gapeR); let pLR = spv(k, S_preyLR);
+    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * cp / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
+    var sA = 0.0; for (var m = 0u; m < NB; m++) { sA += a0 * yBinW(b0 + m, L, gape, true, false, pLR); }
+    if (sA > 0.0) { for (var m = 0u; m < NB; m++) { let b = b0 + m; let w = a0 * yBinW(b, L, gape, true, false, pLR); if (!(w > 0.0)) { continue; }
+      let av = rdAcc(AC_BAV + 2u * b, BSC); let left = av - rdAcc(AC_BGOT + 2u * b, BSC); if (!(left > 0.0)) { continue; }
+      let kk = K * w / sA * min(1.0, left / max(rdAcc(AC_BREQY + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av; let kq = (b / u32(FRY_NS)) % NK;
+      got += kk * Wq; J += kk * Wq * energyDensity(2u * kq, Wq); acc64(AC_BGOTY + 2u * b, kk, BSC);
+      add64(&TL, T_YYKILLS + 2u * (k * NK + kq), kk, TSCALE); add64(&TL, T_YFOODK + 2u * (k * 5u), kk * Wq, TSCALE); } }
+  }
   if (pr >= 0) { let r = u32(pr); let D = rdAcc(AC_YP + 2u * r, KW); let kk = gy(Y_qPk, q) * min(1.0, gy(Y_n, r) / max(D, 1e-12)); let rW = gy(Y_W, r);
     got += kk * rW; J += kk * rW * energyDensity(2u * gyu(Y_k, r), rW); acc64(AC_YPT + 2u * r, kk, KW); add64(&TL, T_YYKILLS + 2u * (gyu(Y_k, q) * NK + gyu(Y_k, r)), kk, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u), kk * rW, TSCALE); }
   let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q);
@@ -1638,7 +1724,10 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 // young eaten by young piscivores: each school's share of the asking
 @compute @workgroup_size(256) fn y_preyApply(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q)) { return; }
-  let t = rdAcc(AC_YPT + 2u * q, KW); if (!(t > 0.0)) { return; }
+  var t = 0.0;
+  if (FRY_DENSITY > 0.5) { let b = gyi(Y_yb, q); if (b < 0) { return; } let got = rdAcc(AC_BGOTY + 2u * u32(b), BSC); if (!(got > 0.0)) { return; } t = min(gy(Y_n, q), gy(Y_ya, q) / rdAcc(AC_BAV + 2u * u32(b), BSC) * got); }   // (stage Y1: its share of its bin's take by the young schools)
+  else { t = rdAcc(AC_YPT + 2u * q, KW); }
+  if (!(t > 0.0)) { return; }
   let n = gy(Y_n, q) - t; sy(Y_n, q, n); add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE);
   if (n < 1.0) { yDie(q); }
 }
@@ -1651,7 +1740,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   acc64(AC_O2 + 2u * j, gy(Y_rO2, q) * st, GW);
   let o2L = lethalO2(spv(k, S_o2LethalS) / ENV_O2_MGL, spv(k, S_o2IceS) / ENV_O2_MGL, T); let lf = exp(-(L / FRY_LARVA_L) * (L / FRY_LARVA_L));
   let jd = GL[G_JUVD + k];
-  let hN = (FRY_M_LARVA / max(0.3, L) * lf + FRY_M_JUV * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
+  let hN = (FRY_M_LARVA3 / max(0.3, L) * lf + FRY_M_JUV3 * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
     + spv(k, S_M) * BIOE_M_OTHER * min(30.0, pow(L / spv(k, S_Lref), -0.87)) / YEAR;
   let uilt = spv(k, S_uiltS); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }

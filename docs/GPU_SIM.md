@@ -395,6 +395,31 @@ GPU's at day 98 too (bass 1.430 · 1.406, pickerel 0.742 · 0.734, killifish 1.4
   young 0.049 · 0.066) — scratchpad parity_7h.txt.
 - `tools/gpu/year_cdp.mjs` runs any of tools/gpu's pages now (5th argument: e.g. `g2_run`; its #out written at 'done').
 
+### G3 — round 4: predation on the young by density (stage Y1, 2026-10-19; docs/HOT_BROOK_3D.md §4)
+**Built, both engines:** the prey table (per column × species × log2 length class — available n, Σ n·L, n·W, n·depth) before
+anyone feeds; each predator's request over its column's bins (Holling II on the bins' densities, clearance FRY.CLEAR_A·L^CLEAR_B ×
+the size window × vulnerability × sight, handling = prey mass / its maximum intake, capped by its gut); the take order-free within
+each kind — the followed fish first (min(1, available / requested)), then the young piscivores' schools from what is left — and each
+school's deaths its share of its bin's take. GPU: accumulator sections BAV/BSL/BSW/BSD/BREQ/BGOT/BREQY/BGOTY (8 × NC × NK × NS × 2
+words; ~11 MB at true scale), kernels y_table, k_eatYoyReq/Get/Apply and y_feedReq/Take/y_preyApply in their density branches;
+CPU: _yTable, _yReq, _ySettle (a school's meal banked for its next tick — the GPU's is the same tick). FRY.DENSITY 0 keeps the old
+nearest-school rule. Parity (1/10, seeds 611–613 × 30 days): every species within or at the seeds' spread (killifish 0.866 vs 0.843).
+
+**Calibration** (true lakes, seed 611, a year; recruits — old rule → first density run → the adopted):
+sucker 40.7k → 5.5k → 38.7k · redbreast 27.5k → 4.6k → 27.8k · killifish 125.6k → 10.4k → 67.6k · fallfish 49.4k → 27.5k → 43.8k ·
+bass 39.2k → 33.7k → 42.8k · pickerel 257 → 93 → 1,789 · perch 197k → 165k → 196k · white perch 240k → 188k → 235k. The first run
+(LARV_A 0.3 with the old background) took 41 % of the suckers' hatch and collapsed three prey species; LARV_A 0.1 alone restored
+half; halving the background (3-D's own M_LARVA3 0.04, M_JUV3 0.015 — the 2-D sim keeps its 0.08 / 0.035) the rest. The young
+perch's total loss then 0.03–0.04/d as larvae → 0.016/d at 8 cm (Oneida 0.035/d); 78 % of those reaching 8 cm are still discarded
+at the census cap. **The young pickerel's cover preference** (yCover 0.8) under density predation: 557 recruits against 1,234 —
+in late May the beds are barely up and the shallow weedy spots are where the perch are: off for good. Young pickerel are eaten
+mostly by yellow perch (~49k a year — Hunt & Carbine's finding for pike), 35–38 % a fortnight at 3–6 cm, ~3× the juvenile target.
+**Three seeds** (611–613, a year; the old rule → density; count × · kg/ha · recruits): pickerel 0.43 → 0.51× · 2.4–2.5 → 3.4–3.5 kg/ha
+(start 3.2) · 175–257 → 1,742–1,789; bass 0.56–0.63 → 0.61–0.65× · 8.2–8.4 → 10.9–11.1 (start 9.1); perch and white perch by
+biomass +30 % / +20 %; fallfish 4.3–5.1 → 6.0–6.9 kg/ha; bullhead 0.81–0.85 → 0.65–0.67× (recruits 75–85k → 67–69k); killifish
+0.43–0.48 → 0.29–0.32× (recruits 120–129k → 61–68k). The density rule feeds the predators (their biomass now holds or grows) at the
+bullhead's and killifish's cost — next to look at.
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the

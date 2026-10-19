@@ -552,6 +552,23 @@ if (run('young')) {
     const k = n0 - q.n;
     check('predation on the young: a smallmouth working a school of 3-cm pumpkinseed eats a bout of them — one school loses exactly the fish the bass gets',
       k >= 3 && Math.abs(got - k * 0.4) < 1e-6 && F.stats.fry.sunfish.eaten === k, `${k} eaten in 3 s (${got.toFixed(1)} g), school ${n0} → ${q.n}`); }
+  // (stage Y1) PREDATION ON THE YOUNG BY DENSITY: a yearling smallmouth's request on the 2-cm pumpkinseed of its column (Holling II
+  // on their density, its gut the handling) — per head the same at low densities (linear), far less in a vast crowd (it is fed:
+  // dilution), the take conserving fish (the bass's grams = the young lost × their mass)
+  { seed(515); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e, { founders: false });
+    const b = F.add('bass', 20, 80, 1.5, 1, 1); b.c = e.colAt(b.x, b.y);
+    const imax = 0.15 * b.W / 86400, run = nq => {   // (one request and its settlement on a school of nq; returns [lost, grams])
+      F.yoy.length = 0; const q = F._mkYoy(S3.sunfish.i, 20.3, 80, 1.5, nq, null, null, 1, 0);
+      q.L = 2; q.W = 0.1; q.bdep = q.L * S3.sunfish.sp.depthR; q.c = e.colAt(q.x, q.y); q.cover = 0;
+      F._yTable(); b.gut = 0; const g0 = F.stats.food.yoy;
+      F._yReq(b, null, b.c, b.n, b.L, b.gape, imax, FB, 1e9, true, false, 1, b.s.preyLR); F._ySettle();
+      return [nq - q.n, F.stats.food.yoy - g0];
+    };
+    const [l1, g1] = run(5), [l2, g2] = run(50), [l3, g3] = run(1e7), pc = (l, n) => l / n;   // (this column's half-saturation ~2,000 fry)
+    const lin = Math.abs(pc(l1, 5) / pc(l2, 50) - 1), cap = imax * FB / 0.1;   // (its gut's fish in the block)
+    check('predation on the young by density (stage Y1): a yearling bass clears its column — per head the same among 5 or 50 fry, far less in a crowd of ten million (its gut is full), the young lost exactly the grams it got',
+      l1 > 0 && lin < 0.05 && pc(l3, 1e7) < 0.1 * pc(l2, 50) && l3 <= cap * 1.0001 && Math.abs(g1 - l1 * 0.1) < 1e-9 * Math.max(1, g1) && Math.abs(g3 - l3 * 0.1) < 1e-6 * g3,
+      `per head ${pc(l1, 5).toExponential(2)} · ${pc(l2, 50).toExponential(2)} · ${pc(l3, 1e7).toExponential(2)} (the gut's ${cap.toFixed(2)} fish a block: ${l3.toFixed(2)} taken)`); }
   // RECRUITMENT: grown young of a school species become a school agent with a brain (their genome); an individual species'
   // become individuals — the fish conserved
   { seed(514); const e = new Env3({ col: 10 * CS, yf0: 0.6 }), F = new Fish3(e, { founders: false });

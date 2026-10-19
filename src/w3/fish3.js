@@ -459,6 +459,7 @@ class Yoy {
     this.L = 0; this.W = 0; this.bdep = 0; this.age = 0; this.g = null; this.genes = null; this.gen = 0; this.hue = 0;
     this.tk = 0; this.rO2 = 0; this.p = 0; this.cover = 0; this.guard = 0; this.gref = null; this.nx = 0; this.ny = 0;
     this.hd = 0; this.spotBed = 1;   // its cruise's heading, and the bed's depth at its feeding spot
+    this.bankG = 0; this.bankJ = 0; this._yb = -1; this._ya = 0;   // (stage Y1: young fish caught for its next tick, g and J; its prey-table bin and available n)
     this.near = false; this._t0 = 0; this._due = -1; this._out = false;   // (fidelity by distance, as the fish's; SHARDS: left its shard's water)
     this._px = 0; this._py = 0; this._pz = 0;   // RENDER-ONLY
   }
@@ -959,7 +960,7 @@ export class Fish3 {
         const Fe = WF[0] * J, U = WF[1] * (J - Fe), net = J - Fe - U - b.SDA * (J - Fe) - Rj;
         if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
-        const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
+        const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
           + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) * DAY / YEAR;   // (/day)
         const lost = q.n * -Math.expm1(-hN * F3.SEED_M * dd);
         this.stats.fry[q.s.key].natural += lost; q.n -= lost; q.age += dd * DAY; q.p = pS;
@@ -1005,6 +1006,7 @@ export class Fish3 {
       this._needHash = false; this._hashBuild(true);   // (and the counts by species, the lakes' fish biomass in kg/ha)
     }
     if (full) this._yoyHash();
+    if (FRY.DENSITY) this._yTable();   // (stage Y1: the young available, per column × species × length — before anyone feeds)
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
     { const yr = this._yr = Math.floor(e.time / YEAR); if (yf >= F3.SITE_YF && yf < 0.5 && this._siteYr !== yr) { this._siteYr = yr; this._siteSub(); } }   // (the plant spawners' grounds, each spring)
     // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
@@ -1026,6 +1028,7 @@ export class Fish3 {
     }
     else this._stepMixed(dt, mv, full);
     if (mixed) this._stepYoyMixed(dt, mv, yf, full); else { this._yMixOn = false; this._stepYoy(dt, mv, yf); }
+    if (FRY.DENSITY) this._ySettle();   // (the step's requests on the young, settled order-free)
     if (mixed ? this.time - (this._mergeAt ?? -1e9) >= F3.FAR_BLOCK : this.stepNo % F3.MERGE_EVERY === 0) { this._mergeAt = this.time; this._schools(); this._mergeYoy(); }
     this._coarse = coarse;
     if (!mixed) {
@@ -1487,7 +1490,10 @@ export class Fish3 {
     const g0 = a.gut;
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0) { const g = this._strike(a, i, room, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
-    if (room > 0 && want > got) { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
+    if (room > 0 && want > got) {
+      if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
+      else { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
+    }
     // THE BED OR THE OPEN WATER: a fish can't search the mud and the open water at once — it spends its foraging time where it
     // pays best, shared toward the better food (t ∝ f^SHARE_Q): pond bluegill moved between the open water and the sediments
     // within days as their profitability changed (Werner et al. 1983); perch > 5 cm switch to the bed when the zooplankton runs
@@ -1791,6 +1797,75 @@ export class Fish3 {
     for (let i = 0; i < n; i++) this.yItems[this.yCur[this.yCell[i]]++] = i;
     this._yoyList = Y;
   }
+  // (stage Y1) THE PREY TABLE: per water column × species × length class (log2 from 0.5 cm) the young available to a predator —
+  // n × (1 − their cover), a guarded brood × (1 − BROOD.PROTECT) — their summed length, mass and body depth (the bin's means) — and
+  // each school's bin and share (its deaths at the settlement)
+  _yTable() {
+    const G = this.G, NK = KEYS3.length, NS = FRY.NS, nb = G.NC * NK * NS;
+    let T = this._yt;
+    if (!T || T.nb !== nb) {
+      T = this._yt = { nb, av: new Float64Array(nb), sL: new Float64Array(nb), sW: new Float64Array(nb), sD: new Float64Array(nb), req: new Float64Array(nb), reqY: new Float64Array(nb), got: new Float64Array(nb), gotF: new Float64Array(nb), rec: [], vol: new Float64Array(G.NC) };
+      for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) T.vol[c] += G.vol[G.cell0[c] + k];
+    }
+    T.av.fill(0); T.sL.fill(0); T.sW.fill(0); T.sD.fill(0); T.req.fill(0); T.reqY.fill(0); T.got.fill(0); T.rec.length = 0;
+    for (const q of this.yoy) {
+      q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0)) continue;
+      const held = q.gref && q.gref.alive && q.gref.nt > 0, a = q.n * (1 - q.cover) * (held ? 1 - BROOD.PROTECT : 1); if (!(a > 0)) continue;
+      const s = Math.min(NS - 1, Math.max(0, Math.floor(Math.log2(q.L / 0.5)))), b = (q.c * NK + q.k) * NS + s;
+      T.av[b] += a; T.sL[b] += a * q.L; T.sW[b] += a * q.W; T.sD[b] += a * q.bdep; q._yb = b; q._ya = a;
+    }
+  }
+  // A PREDATOR'S REQUEST on the young of its column (a followed fish p, or a school of young piscivores q): Holling II on the bins'
+  // densities — clearance FRY.CLEAR_A·L(mm)^CLEAR_B (× eff: its sight, its cold) × the size window (a piscivore: prey within its gape
+  // and preyLR) or the larvae it fits (a plankton or insect eater, × LARV_A, by their detectability) × the prey's vulnerability;
+  // handling = the prey's mass / imax (g/s a fish); over dt for its n fish, capped by gMax g a fish. Recorded for _ySettle
+  _yReq(p, q, c, n, L, gape, imax, dt, gMax, pisc, larv, eff, preyLR) {
+    const T = this._yt; if (!T || c < 0 || !(gMax > 0) || !(imax > 0) || !(eff > 0)) return;
+    const NK = KEYS3.length, NS = FRY.NS, NB = NK * NS, b0 = c * NB, V = T.vol[c]; if (!(V > 0)) return;
+    const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, A = this._yA || (this._yA = new Float64Array(NB));
+    let sA = 0, sAH = 0;
+    for (let j = 0; j < NB; j++) {
+      A[j] = 0; const av = T.av[b0 + j]; if (!(av > 0)) continue;
+      const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / NS) | 0; let w = 0;
+      if (pisc && T.sD[b0 + j] / av <= gape && r >= FRY.WIN_MIN && r <= preyLR) { const R = 1 / r, u = R / FRY.WIN_R * Math.exp(1 - R / FRY.WIN_R); w = Math.pow(u, FRY.WIN_E) * S3[KEYS3[k]].sp.vuln; }
+      if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) w = Math.max(w, FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1));
+      if (!(w > 0)) continue;
+      const aD = a0 * w * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax;
+    }
+    if (!(sA > 0)) return;
+    let K = n * dt * sA / (1 + sAH), g = 0;
+    for (let j = 0; j < NB; j++) if (A[j] > 0) g += K * A[j] / sA * T.sW[b0 + j] / T.av[b0 + j];
+    if (g > gMax * n) K *= gMax * n / g;
+    const bins = [], ks = [];
+    const RQ = p ? T.req : T.reqY; for (let j = 0; j < NB; j++) if (A[j] > 0) { const kj = K * A[j] / sA; bins.push(b0 + j); ks.push(kj); RQ[b0 + j] += kj; }
+    T.rec.push({ p, q, bins, ks });
+  }
+  // THE SETTLEMENT (order-free within each kind): the followed fish first — each bin meets min(1, available / requested) of their
+  // requests — then the young piscivores' schools from what is left (the GPU's order: its followed fish feed before the schools'
+  // pass); a followed fish's share into its gut (as much as it has room for now), a school's into its bank for its next tick; each
+  // school of young in a bin loses its share of what was taken
+  _ySettle() {
+    const T = this._yt; if (!T || !T.rec.length) return;
+    for (const young of [false, true]) for (const r of (young && T.gotF.set(T.got), T.rec)) {   // (the schools share what the followed fish left: gotF)
+      if (!!r.q !== young) continue;
+      let g = 0, J = 0; const f = [];
+      for (let m = 0; m < r.bins.length; m++) {
+        const b = r.bins[m], left = young ? T.av[b] - T.gotF[b] : T.av[b], rq = young ? T.reqY[b] : T.req[b];
+        const ff = left > 0 ? Math.min(1, left / rq) : 0, k = r.ks[m] * ff, Wq = T.sW[b] / T.av[b]; f.push(k); g += k * Wq; J += k * Wq * energyDensity(S3[KEYS3[((b / FRY.NS) | 0) % KEYS3.length]].sp.bio, Wq);
+      }
+      if (!(g > 0)) continue;
+      let s = 1;
+      if (r.p) {   // a followed fish: its gut now (its room — what it has eaten since its request)
+        const a = r.p; if (!a.alive) continue; const room = a.s.sp.gut * a.W - a.gut; s = room > 0 ? Math.min(1, room * a.n / g) : 0; if (!(s > 0)) continue;
+        a.gut += g * s / a.n; a.gutE += J * s / a.n; a._ate = true; this.stats.food.yoy += g * s;
+      } else { const q = r.q; if (!q.alive) continue; q.bankG += g; q.bankJ += J; this.stats.food.yYoy += g; }
+      for (let m = 0; m < r.bins.length; m++) T.got[r.bins[m]] += f[m] * s;
+    }
+    for (const q of this.yoy) {
+      if (q._ya > 0 && T.got[q._yb] > 0) { const d = Math.min(q.n, q._ya / T.av[q._yb] * T.got[q._yb]); q.n -= d; this.stats.fry[q.s.key].eaten += d; if (q.n < 1) q.alive = false; }
+    }
+    T.rec.length = 0; T.req.fill(0); T.reqY.fill(0); T.got.fill(0);
+  }
   // the nearest school of young within R of (x, y, z) that `ok` accepts (the hash of this step's start)
   _nearYoy(x, y, z, R, ok) {
     const Y = this._yoyList; if (!Y || !Y.length) return null;
@@ -1895,7 +1970,7 @@ export class Fish3 {
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
     const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
-    const hN = (FRY.M_LARVA / Math.max(0.3, q.L) * lf + FRY.M_JUV * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
+    const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
       + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) / YEAR;
     const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
@@ -1987,7 +2062,9 @@ export class Fish3 {
     const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
     const want = q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
     let got = 0, J = 0;
-    if (d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) {   // young piscivores eat other young they can swallow (from the species' yLpisc)
+    if (FRY.DENSITY && q.bankG > 0) { const g = Math.min(q.bankG, want), f = g / q.bankG; got += g; J += q.bankJ * f; q.bankG -= g; q.bankJ -= q.bankJ * f; }   // (stage Y1: the young fish it caught last tick)
+    if (FRY.DENSITY && d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) this._yReq(null, q, q.c, q.n, q.L, q.L * sp.gapeR, want / Math.max(1, q.n * st), st, Math.max(0, want / q.n - q.bankG / q.n), true, false, coldPerf(T, sp.tempOpt, sp.coldPerf), s.preyLR);
+    else if (d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) {   // young piscivores eat other young they can swallow (from the species' yLpisc)
       const r = this._nearYoy(q.x, q.y, q.z, F3.YOY_EAT_R, o => o !== q && o.L * o.s.sp.depthR <= q.L * sp.gapeR && o.L >= FEED.SCHOOL_MIN * q.L);
       if (r) {
         const k = Math.min(r.n, (want - got) / r.W, q.n * FRY.ATTACK * TS * sp.capture * r.s.sp.vuln * r.n / (r.n + FRY.N_HALF) * (1 - r.cover) * st);

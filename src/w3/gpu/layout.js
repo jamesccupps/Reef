@@ -48,6 +48,7 @@ export const YOY_FIELDS = [
   // SCRATCH: where it began the block; this tick's water, wants, its requests of each food, what it got, its starvation hazard
   ['sx', 's'], ['sy', 's'], ['sz', 's'], ['feeds', 's'], ['st', 's'], ['yT', 's'], ['yo2', 's'], ['want', 's'], ['got', 's'], ['J', 's'], ['hS', 's'],
   ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'], ['wZ', 's'],
+  ['yb', 'si'], ['ya', 's'],   // (stage Y1: its prey-table bin and the n of it available — fish3 _yTable)
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const YF = Object.fromEntries(YOY_FIELDS.map(([n], i) => [n, i]));
 export const NYF = YOY_FIELDS.length;

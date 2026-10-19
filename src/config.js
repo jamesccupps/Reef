@@ -239,6 +239,29 @@ export const FRY = {
   PELAGIC_X: [0.3, 0.7], // the open-water band (× W) a limnetic-phase school (sp.pelagicFry) keeps to …
   PELAGIC_D: 0.3,      // … above this × the lake's depth (the lit, zooplankton-rich epilimnion)
   LARVA_L: 2.0,        // cm: larvae this small are taken by any plankton/insect eater whose mouth they fit (≤ ⅓ of its length)
+  // (stage Y1, the 3-D sim) PREDATION ON THE YOUNG BY DENSITY (docs/HOT_BROOK_3D.md §4 "Design (stage Y1)"; research Whole lake 3D
+  // fish simulation/young_piscivore_functional_response.md): a predator CLEARS CLEAR_A·L(mm)^CLEAR_B m³ of water a day at its best
+  // prey size (perch cannibals 400·L^0.6 L/d — 3.1 m³/d at 30 mm, 6.3 at 100: Persson et al. 2004; pikeperch 9.6 ± 2 m³/d, Persson &
+  // Brönmark 2002), × the size window w(r) = [(R/WIN_R)·e^(1 − R/WIN_R)]^WIN_E (R = 1/r, r = prey/predator length: peak at r ≈ 0.19,
+  // nil below WIN_MIN; Persson & Brönmark) × the prey's vulnerability × its sight; the young's DENSITY is the column's (its water
+  // volume) — Holling II, handling = the prey's mass / the predator's maximum intake (the gut, not seconds of handling, limits a
+  // piscivore). The prey table (per column × species × NS log2 length classes from 0.5 cm) is built before anyone feeds and the
+  // requests settled order-free at the step's end. 0: the nearest school within F3.YOY_EAT_R at FRY.ATTACK / CATCH (before 2026-10-19)
+  DENSITY: 1,
+  CLEAR_A: 0.4, CLEAR_B: 0.6,
+  WIN_R: 5.3, WIN_E: 6.5, WIN_MIN: 0.04,
+  LARV_A: 0.1,         // × a plankton or insect eater's clearance for the larvae it fits (≤ LARVA_L, ≤ ⅓ its length) — it meets
+                       //   them while it feeds on the zooplankton, not searching for fish [inf; calibrated on the year's fates — at 0.3
+                       //   the panfish took 41 % of the suckers' hatch and the killifish's, sucker's and redbreast's recruits fell 83–92 %]
+  // THE 3-D SIM's BACKGROUND RATES with the lake's own fish eating its young by density: M_LARVA and M_JUV (the 2-D sim's) stood for
+  // the predators a lake didn't simulate when its fish ate ~1 % of its larvae; now the panfish's and piscivores' share is explicit,
+  // what remains is the unsimulated (cyclopoids, Chaoborus, insects, birds, disease, failed first feeding). Calibrated on the GPU year
+  // (true lakes, seed 611; docs/GPU_SIM.md round 4): the young perch's total Z 0.03–0.04/d as larvae → 0.016 at 8 cm (Oneida 18 mm →
+  // autumn 0.035/d); recruits of every prey species within ~15 % of the old rule's but for killifish (68k vs 126k) — the surplus the
+  // census cap discarded on the old rule now eaten
+  M_LARVA3: 0.04, M_JUV3: 0.015,
+  DETECT_L: [0.6, 1.5], // cm: larvae this small are seen 0.2 → 1 (Folkvord & Hunter 1986: 6-mm larvae undetected; Margulies 1989)
+  NS: 6,
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …
   OVERWINTER: 0.4,     // … if it is at least this old (yr)
 };

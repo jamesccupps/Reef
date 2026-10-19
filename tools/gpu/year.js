@@ -18,7 +18,8 @@ const { waterOf } = await import('../../src/w3/render3/fishside3.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 // A/B switches on the model's numbers, set before anything is built (each documented where it's defined): ?mjuvb= FRY.M_JUV_B,
 // ?ycover= the young pickerel's weight on cover (fish3 S3.pike.yCover)
-{ const { FRY } = await import('../../src/config.js'); if (qs.has('mjuvb')) FRY.M_JUV_B = +qs.get('mjuvb'); }
+{ const { FRY } = await import('../../src/config.js'); if (qs.has('mjuvb')) FRY.M_JUV_B = +qs.get('mjuvb');
+  for (const [k, v] of qs) if (k.startsWith('fry.') && k.slice(4) in FRY && typeof FRY[k.slice(4)] === 'number') FRY[k.slice(4)] = +v; }   // (?fry.KEY=v: any of FRY's numbers — calibration A/Bs)
 // ?ylpisc= the length the young pickerel's schools take their first fish (species.js BIO.pike.yLpisc)
 { const { S3 } = await import('../../src/w3/fish3.js'); if (qs.has('ycover')) S3.pike.yCover = +qs.get('ycover'); if (qs.has('ylpisc')) S3.pike.sp.yLpisc = +qs.get('ylpisc'); }
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];

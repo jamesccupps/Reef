@@ -5,6 +5,7 @@
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3 } from '../fish3.js';
+import { FRY } from '../../config.js';
 import { GEO } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
 
@@ -103,7 +104,10 @@ export class GpuFish {
     const env = this.env;
     { const NC = env.G.NCELL, NCo = env.G.NC; let o = 0; const ac = {}; for (const [k, len] of [['TB', NC], ['TL', NC], ['TS', NC], ['RC', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['O2', NC], ['SEDADD', NC],
         ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap],
-        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC]]) { ac[k] = o; o += 2 * len; }   // (…W: the wants weighted by their appetite's elasticity — bShare)
+        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC],
+        // (stage Y1) the prey table per column × species × length class: available n, Σ n·L, Σ n·W, Σ n·depth; the followed fish's
+        // requests and takes; the young schools' requests and takes
+        ...['BAV', 'BSL', 'BSW', 'BSD', 'BREQ', 'BGOT', 'BREQY', 'BGOTY'].map(k => [k, NCo * KEYS3.length * FRY.NS])]) { ac[k] = o; o += 2 * len; }   // (…W: the wants weighted by their appetite's elasticity — bShare)
       this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
       this.consts = this.consts0 + '\n' + Object.entries(ac).map(([k, v]) => `const AC_${k}: u32 = ${v}u;`).join('\n') + '\n' + Object.entries(rc).map(([k, v]) => `const R_${k}: u32 = ${v}u;`).join('\n'); }
   }
@@ -151,7 +155,7 @@ export class GpuFish {
       ['k_pre', 'k_learn', 'k_sense', 'k_brain', 'k_snap', 'k_sums', 'k_glob', 'k_admit', 'k_move', 'k_body', 'k_feed0', 'k_strike', 'k_strikeWin', 'k_strikeApply',
        'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply']);
     mk(moduleSource(this.consts, YOY_BINDINGS, TALLY, FB4, YOY), [this.L0, this.LY],
-      ['y_snap', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target']);
+      ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
     mk(moduleSource(this.consts, COMPACT_BINDINGS, COMPACT), [this.L0, this.LC], ['c_walk', 'c_gatherA', 'c_gatherY', 'c_census']);
     mk(moduleSource(this.consts, SCHOOL_BINDINGS, TALLY, FB4, SCHOOL), [this.L0, this.LSc], ['s_hist', 's_cut', 's_mark', 's_merge', 's_slots', 's_fill', 's_retire', 's_count', 's_yMark', 's_yMerge']);
@@ -223,7 +227,7 @@ export class GpuFish {
   encodeFeed(enc) {
     enc.clearBuffer(this.B.ACC);
     this.encodeKernel(enc, 'k_feed0'); this.encodeKernel(enc, 'k_strike', 64); this.encodeKernel(enc, 'k_strikeWin'); this.encodeKernel(enc, 'k_strikeApply');
-    if (this.yoyOn !== false) { this._pass(enc, this.P.k_eatYoyReq, [this.bg0, this.bgY], this.n, 64); this._pass(enc, this.P.k_eatYoyGet, [this.bg0, this.bgY], this.n, 128); this.encodeY(enc, 'k_eatYoyApply', 256); }
+    if (this.yoyOn !== false) { this.encodeY(enc, 'y_table', 256); this._pass(enc, this.P.k_eatYoyReq, [this.bg0, this.bgY], this.n, 64); this._pass(enc, this.P.k_eatYoyGet, [this.bg0, this.bgY], this.n, 128); this.encodeY(enc, 'k_eatYoyApply', 256); }
     this.encodeKernel(enc, 'k_fieldReq', 64); this._cells(enc, 'k_fieldCell'); this.encodeKernel(enc, 'k_fieldTake', 64); this._cells(enc, 'k_fieldApply');
     this.encodeKernel(enc, 'k_sedReq'); this._cells(enc, 'k_sedCell'); this.encodeKernel(enc, 'k_sedTake'); this.encodeKernel(enc, 'k_feedEnd');
   }
