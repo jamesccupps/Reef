@@ -420,6 +420,17 @@ biomass +30 % / +20 %; fallfish 4.3–5.1 → 6.0–6.9 kg/ha; bullhead 0.81–0
 0.43–0.48 → 0.29–0.32× (recruits 120–129k → 61–68k). The density rule feeds the predators (their biomass now holds or grows) at the
 bullhead's and killifish's cost — next to look at.
 
+### G3 — round 5: where the prey are (stage P, 2026-10-19; docs/HOT_BROOK_3D.md §4): the strikes' encounters, the species table's new fields
+- The species table: `hJL0/hJL1/hJ0/hJ1` (the young's day band by size, S3 `habJ`), `hJW0/hJW1` (their winter band), `bury`, `schExp`
+  (a predator's school exponent) — SP_REC 128 → 136. `modeOf` takes the fish's length (habJ; bigger-deeper in the brook).
+- **Strike diagnostics** (wgsl `k_strike`; NTALLY 2048 → 4096): per predator × prey species, the fish met within strike reach
+  (T_STRM), those it could take (T_STRG: gape, size, room) and their strike weight (T_STRW), summed per predator over its scan and
+  written once (NK atomics a strike). year.js prints a "X's strikes met" line per piscivore.
+- Parity (1/10, seeds 611–613 × 30 days from mid-June): every species' fish, kg/ha and young within the seeds' spread (killifish
+  0.597 [0.575–0.629] CPU vs 0.583 [0.504–0.667] GPU).
+- **Frozen code for runs** (scratchpad snap.sh + year_cdp's REEF_PORT): a GPU year loads the code when it starts, so a queue of
+  runs froze the tree for an hour; a snapshot (src, tools/gpu, serve.mjs) served on its own port lets the code move on.
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the

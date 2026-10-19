@@ -228,8 +228,9 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   'hD0', 'hD1', 'hDv', 'hDh', 'hDa', 'hN0', 'hN1', 'hNv', 'hNh', 'hNa', 'hW0', 'hW1', 'hWv', 'hWh', 'hWa',
   // the cold rule (bioenergetics.js coldResp/coldCmax): mode 0 none, 1 an empirical curve, 2 the adult set's for a juvenile, 3 FB4's × mul
   'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC',
-  'yCover', 'yLpisc'];   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
-export const SP_REC = 128;
+  'yCover', 'yLpisc',   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
+  'hJL0', 'hJL1', 'hJ0', 'hJ1', 'hJW0', 'hJW1', 'bury', 'schExp'];   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
+export const SP_REC = 136;
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
 const SUB_KIND = { rigid: 1, mat: 2, plant: 3 };
@@ -270,6 +271,8 @@ export function packSpecies() {
       tempTolS: sp.tempTol, o2CritS: sp.o2Crit, Linf: sp.vb.Linf, vbK: sp.vb.k, vbT0: sp.vb.t0,
       mvSettle: mv.settle || 0, mvYf0: mv.yf ? mv.yf[0] : -1, mvYf1: mv.yf ? mv.yf[1] : -1, mvTrip: mv.trip || 0,
       mvTripYf0: mv.tripYf ? mv.tripYf[0] : -1, mvTripYf1: mv.tripYf ? mv.tripYf[1] : -1, mvTripD: mv.tripD || 0, yCover: s.yCover || 0, yLpisc: sp.yLpisc ?? sp.Lpisc,
+      hJL0: s.habJ ? s.habJ.L[0] : 0, hJL1: s.habJ ? s.habJ.L[1] : 0, hJ0: s.habJ ? s.habJ.bot[0] : 0, hJ1: s.habJ ? s.habJ.bot[1] : 0,
+      hJW0: s.habJ?.wbot ? s.habJ.wbot[0] : 0, hJW1: s.habJ?.wbot ? s.habJ.wbot[1] : 0, bury: s.bury || 0, schExp: s.schoolExp ?? F3.SCHOOL_EXP,
     };
     for (const [m, H] of [['D', s.hab.day], ['N', s.hab.night], ['W', s.hab.winter]]) { V['h' + m + '0'] = H.bot[0]; V['h' + m + '1'] = H.bot[1]; V['h' + m + 'v'] = H.v; V['h' + m + 'h'] = H.h; V['h' + m + 'a'] = H.act; }
     { const c = sp.cold; Object.assign(V, c ? { cMode: c.R5 ? 1 : c.adultR ? 2 : 3, cT0: c.T0, cT1: c.T1, cR5: c.R5 || 0, cWref: c.Wref || 1, cB: c.b || 0, cQ10: c.Q10 || 1,

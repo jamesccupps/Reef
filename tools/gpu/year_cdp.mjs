@@ -11,7 +11,7 @@ import { join } from 'node:path';
 const query = process.argv[2] || 'world=true&seeds=611&days=365&every=14', outFile = process.argv[3] || 'year_cdp.txt', port = +(process.argv[4] || 9335), page = process.argv[5] || 'year';
 const chrome = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const profile = join(process.env.LOCALAPPDATA || '.', 'SynapseReef', port === 9335 ? 'gpuyear' : 'gpuyear' + port); mkdirSync(profile, { recursive: true });   // (a profile a port: runs side by side)
-const url = `http://localhost:8000/tools/gpu/${page}.html?${query}`;
+const url = `http://localhost:${process.env.REEF_PORT || 8000}/tools/gpu/${page}.html?${query}`;   // (REEF_PORT: a snapshot's server — runs of a frozen copy while the code moves on)
 const proc = spawn(chrome, [`--app=${url}`, `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`, '--window-size=720,520', '--no-first-run',
   '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling'], { detached: true, stdio: 'ignore' });
 proc.unref();

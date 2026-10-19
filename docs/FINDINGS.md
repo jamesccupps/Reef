@@ -4,6 +4,39 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — Where the prey are and what the predators take (stages P1–P2; docs/HOT_BROOK_3D.md §4)
+- **The lake's commonest fish were all but immune to its predators.** Yellow and white perch (~780,000 fish ≥ 7.5 cm) lost < 1 %
+  a year to predators (2,800 and 900 eaten) while the bullhead fell to 0.66× and the killifish to 0.31× in a year; in the field
+  perch are the pickerel's first-named prey in Maine and predators take ~15–35 %/yr of 7.5–15-cm perch (research
+  `predator_diets_and_prey_mortality.md`). How: a strike diagnostic (`scratchpad/diag_strike.mjs`) tallying, per predator and prey
+  species, the fish met within strike reach, those within gape, the size factor and the strike weights. A perch's per-capita
+  risk to a pickerel was ~1/60 of a killifish's: encounter ×4.7 (every perch offshore by day), gape ×2, size selection ×3,
+  spines ×1.7, the larger school ×1.4. **A predator-prey model's emergent diet is the product of several factors each
+  individually defensible; check the product against field diets, not each factor.**
+- **One behaviour fixed a third of a species' losses**: the bullhead's winter in the mud (cover 0.9 below 9 °C, research: "buries
+  in soft, leafy ooze or mud … only mouth and gills exposed") cut the pickerel's kills of them from ~51k to ~31k a year and lifted
+  the bullhead from 0.65–0.67× to 0.85–0.88× by count (3 seeds). In winter the pickerel had been taking bullheads at nearly the
+  summer rate — 45 % of their winter strike weight.
+- **Size-dependent habitat alone barely moved the perch** (eaten 2.8–4.4k → 5.1–6.3k a year): the year's recruits arrive at 8 cm in
+  September and spend only ~6 weeks in the littoral before cold water sends every perch to the deep basin.
+- **A habitat band is not where the fish are.** At true scale in July the killifish, given the whole shelf (0.1–1.3 m) by day,
+  spent ~3/4 of it over water ≥ 0.6 m — the pickerel's — and 23 % deeper than their band; at 1/10 scale the same test could not
+  separate predator from prey at all (the shelf 10× steeper puts every depth within a strike's reach). Habitat overlap must be
+  measured in the world the predation runs in. How: `scratchpad/where.mjs` (bottom depth under each species, day and night).
+- **The size rule was the largest single error** (research: the field's capture success falls ~linearly with relative size; the sim
+  had (1 − depth/gape)²): it made a 10–13-cm perch 4–8× less catchable than a 6-cm killifish where field rules give ~2×. Replaced by
+  1 − (depth/gape)², the pickerel's diet moved from 53 % to ~61 % fish and from 42 % to ~36 % crayfish (field 65–85 / 10–30).
+- **Winter is where predator meets prey.** Putting the young perch in the shallow weeds at first ice (dishpan lakes' perch at 1.2–2.4 m)
+  — while bass, sunfish, bullheads and crayfish go still or bury — took the perch lost to predators from ~19k to ~72k a year (~20 %/yr,
+  the field's 15–35 %). A habitat assigned for one season can hide a whole predator–prey link for the other three.
+- **Apparent competition emerges.** With perch in reach the pickerel grew (3.4 → 5.2–5.5 kg/ha, within the field's 2–6) and their
+  other prey fell further — killifish 0.30 → 0.13×, fallfish 0.7–0.8 → 0.5×, sunfish 1.0 → 0.7 kg/ha: a food-limited predator kills each
+  prey in proportion to meeting it, so a new abundant prey feeds more predators rather than sparing the rare ones (Holt 1977). Whether
+  the small species then persist depends on their refuges — an open question in the model (3 seeds, a year).
+- **A closed connecting brook can't hold its dace** once the lakes' predators pass through it (pickerel and bass take ~900 a year of
+  ~1,400; at 1/10, without them, the dace hold): the field's brook dace are likely part of a stream population above and below the
+  lakes that a two-lake model leaves out.
+
 ## 2026-10-19 — Predation on the young by density (stage Y1; docs/HOT_BROOK_3D.md §4)
 - **The point-school encounter hid most of the predation on larvae.** Replacing "a predator eats from the nearest school within
   0.6 m" with clearance of the water's density (Holling II, gut-limited; Persson et al. 2004's 400·L^0.6 L/d) raised the followed

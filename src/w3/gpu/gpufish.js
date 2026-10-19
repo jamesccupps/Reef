@@ -11,7 +11,7 @@ import { CLOCK3 } from '../clock3.js';
 
 const ST_ = () => GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC;
 export const HHX = Math.ceil((GEO.XMAX - GEO.X0) / F3.HC), HHY = Math.ceil((GEO.YMAX - GEO.Y0) / F3.HC);
-const NTALLY = 2048;   // tally words (pairs; 1024+ the diagnostics: the diet by species)
+const NTALLY = 4096;   // tally words (pairs; 1024+ the diagnostics: the diet by species; 2048+ the strikes' encounters)
 
 export class GpuFish {
   static async device() {

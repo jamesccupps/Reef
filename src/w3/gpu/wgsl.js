@@ -223,6 +223,9 @@ const T_YFOODK: u32 = 1700u;  // + 2·(k·5 + kind): the young's grams by specie
 const T_YCAP: u32 = 1820u;    // + 2k: the young a recruiting school had no room for in the census (fish3 stats.fry.capped)
 const T_KILLSZ: u32 = 1850u;  // + 2·(prey·4 + class): followed fish eaten by the prey's length class (< 10, 10–20, 20–30, ≥ 30 cm)
 const T_KILLPZ: u32 = 1940u;  // + 2·(predator·4 + class): the same by the predator
+const T_STRM: u32 = 2048u;    // + 2·(predator·NK + prey): THE STRIKES' ENCOUNTERS (diagnostics, stage P2) — fish within a strike's reach,
+const T_STRG: u32 = 2290u;    //   those it could take (gape, size, room),
+const T_STRW: u32 = 2532u;    //   and their strike weight (capture × vuln × size × hide × cover × school), summed over the strikes' scans
 fn lenClass(L: f32) -> u32 { return select(select(select(3u, 2u, L < 30.0), 1u, L < 20.0), 0u, L < 10.0); }
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
@@ -327,7 +330,9 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
   sa(A_vis, i, max(nv, sight(U.lux0 * lf, kI)) * U.clar);
   sa(A_visF, i, max(nv, (sight(U.luxB0 * lf, kI) + 2.0 * sight(U.luxB1 * lf, kI) + sight(U.luxB2 * lf, kI)) / 4.0) * U.clar);
   let rif = select(0.0, F3_RIFFLE_REFUGE, ga(A_L, i) < F3_RIFFLE_L && bed < F3_RIFFLE_D && bodyAt(x, y) == BROOK);
-  sa(A_cover, i, max(max(F3_SHALLOW_REFUGE * clamp((0.8 - bed) / 0.6, 0.0, 1.0), inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5)), rif));
+  var cov = max(max(F3_SHALLOW_REFUGE * clamp((0.8 - bed) / 0.6, 0.0, 1.0), inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5)), rif);
+  let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
+  sa(A_cover, i, cov);
   sa(A_fear, i, ga(A_fear, i) * exp(-F3_FEAR_DECAY * dt));
   sau(A_flags, i, fl);
 }
@@ -561,18 +566,22 @@ export const MOVE = /* wgsl */`
 struct Mode { b0: f32, b1: f32, v: f32, h: f32, act: f32 };
 fn brookSeason(T: f32) -> bool { return U.yf > 0.22 && U.yf < 0.6 && T > 14.0; }
 fn bl(p: f32, q: f32, t: f32) -> f32 { return p + (q - p) * t; }
-fn modeOf(k: u32, fl: u32, nt: f32, T: f32, x: f32, y: f32) -> Mode {
+fn modeOf(k: u32, fl: u32, nt: f32, T: f32, L: f32, x: f32, y: f32) -> Mode {
   if (nt > 0.0) { return Mode(0.0, 99.0, 0.0, 0.05, BROOD_HOVER); }
   if ((fl & FL_RIPE) != 0u) { return Mode(spv(k, S_sbBot0), spv(k, S_sbBot1), 0.0, spv(k, S_sbH), 0.9); }
-  if ((fl & FL_BROOKIE) != 0u && brookSeason(T) && bodyAt(x, y) == BROOK) { return Mode(0.2, 1.3, 0.0, 0.25, 0.6); }
+  if ((fl & FL_BROOKIE) != 0u && brookSeason(T) && bodyAt(x, y) == BROOK) { return Mode(select(0.2, F3_RIFFLE_D, L >= F3_RIFFLE_L), 1.3, 0.0, 0.25, 0.6); }   // (bigger-deeper)
   let nf = 1.0 - smooth01(0.02, 0.3, U.sun); let wf = clamp((9.0 - T) / 4.0, 0.0, 1.0);
-  let lo = bl(spv(k, S_hD0), spv(k, S_hN0), nf); let hi = bl(spv(k, S_hD1), spv(k, S_hN1), nf);
-  var m: Mode; m.b0 = bl(lo, spv(k, S_hW0), wf); m.b1 = bl(hi, spv(k, S_hW1), wf);
+  let jL0 = spv(k, S_hJL0); let jL1 = spv(k, S_hJL1); let jf = select(0.0, 1.0 - clamp((L - jL0) / max(1e-6, jL1 - jL0), 0.0, 1.0), jL1 > 0.0);   // (fish3 _mode: the young's day band)
+  let dlo = bl(spv(k, S_hD0), spv(k, S_hJ0), jf); let dhi = bl(spv(k, S_hD1), spv(k, S_hJ1), jf);
+  let lo = bl(dlo, spv(k, S_hN0), nf); let hi = bl(dhi, spv(k, S_hN1), nf);
+  let jw = select(0.0, jf, spv(k, S_hJW1) > 0.0); let wlo = bl(spv(k, S_hW0), spv(k, S_hJW0), jw); let whi = bl(spv(k, S_hW1), spv(k, S_hJW1), jw);   // (the young's winter water)
+  var m: Mode; m.b0 = bl(lo, wlo, wf); m.b1 = bl(hi, whi, wf);
   let same = spv(k, S_hDv) == spv(k, S_hNv); let hb = bl(spv(k, S_hDh), spv(k, S_hNh), nf);
   if (wf > 0.5) { m.v = spv(k, S_hWv); m.h = spv(k, S_hWh); }
   else if (nf < 0.5) { m.v = spv(k, S_hDv); m.h = select(spv(k, S_hDh), hb, same); }
   else { m.v = spv(k, S_hNv); m.h = select(spv(k, S_hNh), hb, same); }
   m.act = bl(bl(spv(k, S_hDa), spv(k, S_hNa), nf), spv(k, S_hWa), wf);
+  if (L >= F3_RIFFLE_L && bodyAt(x, y) == BROOK) { m.b0 = max(m.b0, F3_RIFFLE_D); m.b1 = max(m.b1, m.b0); }   // (fish3: bigger-deeper — the brook's pools)
   return m;
 }
 fn zTarget(bed: f32, L: f32, m: Mode) -> f32 { if (m.v == 0.0) { return bed - m.h - L / 200.0; } if (m.v == 1.0) { return bed * m.h; } return min(m.h, bed * 0.8); }
@@ -728,7 +737,7 @@ fn wet(x: f32, y: f32) -> bool { return bodyAt(x, y) != LAND && depthAt(x, y) >=
   var fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
   let k = gau(A_k, i); let id = gau(A_id, i); let nt = ga(A_nt, i);
   let x0 = ga(A_x, i); let y0 = ga(A_y, i);
-  let m = modeOf(k, fl, nt, ga(A_T, i), x0, y0);
+  let m = modeOf(k, fl, nt, ga(A_T, i), ga(A_L, i), x0, y0);
   var c = gai(A_c, i); var dh = vec2f(ga(A_dhx, i), ga(A_dhy, i));
   var p = vec3f(x0, y0, ga(A_bed, i));   // (x, y, the bed's depth there)
   var dv = drive(i, k, id, fl, m, p.x, p.y, p.z, c, dh);
@@ -956,6 +965,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let R = spv(k, S_strikeR) * lunge * max(0.3, ga(A_visF, i)); let R2 = R * R;
   let gape = ga(A_gape, i); let cap = spv(k, S_capture);
   var sK = 0.0; var best = -1; var bkey = -3e38;
+  var dM: array<f32, NK>; var dG: array<f32, NK>; var dW: array<f32, NK>;   // (the diagnostics' sums by prey species)
   let gx0 = clamp(i32((x - R - GX0) / F3_HC), 0, i32(HHX) - 1); let gx1 = clamp(i32((x + R - GX0) / F3_HC), 0, i32(HHX) - 1);
   let gy0 = clamp(i32((y - R - GY0) / F3_HC), 0, i32(HHY) - 1); let gy1 = clamp(i32((y + R - GY0) / F3_HC), 0, i32(HHY) - 1);
   for (var gy = gy0; gy <= gy1; gy++) {
@@ -968,14 +978,17 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
         // yet: where the block began. Kept so: with the grid rebuilt where all had moved, the true lakes' predators struck ~9× as often)
         var pb = PX[b].xyz; if (b < i) { pb = vec3f(ga(A_x, b), ga(A_y, b), ga(A_z, b)); }
         let dx = pb.x - x; let dy = pb.y - y; let dz = pb.z - z; let d2 = dx * dx + dy * dy + dz * dz; if (d2 > R2) { continue; }
+        let kb = gau(A_k, b); dM[kb] += ga(A_n, b);
         if (!canPrey(i, b) || ga(A_W, b) + ga(A_gon, b) > room) { continue; }
+        dG[kb] += ga(A_n, b);
         let d = sqrt(d2); let hide = 1.0 - ACTION_HIDE_CONCEAL * engaged(br(NW2 + HID + 5u, b));
-        let sel = pow(max(0.0, 1.0 - ga(A_bdep, b) / gape), FEED_SIZE_SEL); let nb = ga(A_n, b);
-        let w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * select(1.0, pow(nb, F3_SCHOOL_EXP), nb > 1.0);
-        if (w > 0.0) { sK += w; let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / w; if (key > bkey) { bkey = key; best = i32(b); } }   // (u^(1/w) in logs: small weights underflowed)
+        let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
+        let w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0);
+        if (w > 0.0) { sK += w; dW[kb] += w; let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / w; if (key > bkey) { bkey = key; best = i32(b); } }   // (u^(1/w) in logs: small weights underflowed)
       }
     }
   }
+  for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt;
   if (rnd(id, 31u, 0u) >= 1.0 - exp(-rate * sK)) { return; }

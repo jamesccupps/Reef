@@ -83,11 +83,28 @@ export const F3 = {
   // the prey's vulnerability × size selection × concealment, a school counting n^SCHOOL_EXP (dilution and confusion: the
   // per-capita risk falls with school size — Turner & Pitcher 1986)
   ATTACK: 2.0 / OLD_S, SCHOOL_EXP: 0.5,   // (compat: 2 per sim second of the 1-hour year — its 2.4 h of hunting; R3: events)
+  // (a predator that isn't confused by a school takes its own S3 schoolExp: esocids attack from inside a school at ~70 % success
+  // — Jolles et al. 2022 — and catch as well in schools as singly, Turesson & Brönmark 2004; perch and bass are confused)
+  // THE SIZE RULE (stage P2): a strike's success × (1 − x^SIZE_K), x = the prey's body depth / the predator's gape — near flat over
+  // the small prey and falling to nil at the gape. Field capture success falls about linearly with relative size (soft-rayed prey
+  // 1 − r, spiny 0.70 − 1.34·r; Miller 1988, Scharf 2003) while encounter rises with prey length (reaction distance), and adult
+  // pickerel's prey average ~0.3 of their length (research `Whole lake 3D fish simulation/predator_diets_and_prey_mortality.md`
+  // §7.2). The 2-D sim's (1 − x)^FEED.SIZE_SEL (2) made a 10–13-cm perch 4–8× less catchable than a 6-cm killifish to a 35-cm
+  // pickerel — the field's rules ~2× — and the lakes' perch, the pickerel's first-named prey in Maine, lost < 1 % a year to them
+  SIZE_K: 2,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6)
+  // A BURROWER'S WINTER (S3 bury): in cold water — fully at ≤ 5 °C, none from 9 °C, the habitat's winter blend — a fish within
+  // BURY_H m of the bed is dug into it: cover = bury (× the blend)
+  BURY_H: 0.3,
   // THE RIFFLES' REFUGE: in the brook's riffles and runs (bed < RIFFLE_D m) a fish under RIFFLE_L cm hides between the stones in
   // the current, where ambush predators don't hold — dace and young fallfish live with pickerel, bass and fallfish in streams
   // (habitat3d_new_species.md: dace under overhead cover at 15–45 cm/s; predators keep to the pools). Without it the brook's
-  // dace were eaten out in a summer once the lakes' predators could range into the brook
+  // dace were eaten out in a summer once the lakes' predators could range into the brook.
+  // BIGGER-DEEPER (stage P2): in the brook a fish of RIFFLE_L cm or more holds the pools — water ≥ RIFFLE_D m — unless it is
+  // spawning or on its nest: large bass occupied pools > 50 cm deep on 72 of 75 pool-dates, fish > 3–4 cm avoided water < 20 cm
+  // (Power 1987), and with bass present juveniles kept to the shallow riffles (Schlosser 1987); pickerel ambush from the pools'
+  // banks and wood (research brook_food_web.md §4). The refuge alone was not enough: the lakes' pickerel and bass, holding their
+  // own depth bands (≥ 0.5 m), sat in the brook's 0.5–0.6-m runs and took ~1,000 of its ~1,400 dace in a summer
   RIFFLE_REFUGE: 0.9, RIFFLE_D: 0.6, RIFFLE_L: 10,
   BENTH_REACH: 0.35,    // m above the bed a fish feeds on it
   // A COARSE BLOCK's place is the fish's mean height over the block, and it drifts up and down about it: its bed and weed feeding
@@ -206,15 +223,28 @@ export const S3 = {
   sunfish:    { school: 0, group: [7, 25], perHa: 50, only: UPPER, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
     hab: { day: H([0.3, 2.5], 0, 0.7, 0.7), night: H([0.3, 2.5], 0, 0.15, 0.35), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // yellow perch: schools of 50-200 over open mud and sand offshore by day; at dusk inshore along the bed, resting on it at night
-  // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C
+  // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C.
+  // BY SIZE (habJ): perch to ~15 cm keep by day to the weed edge and the open bottom beyond it, over 1.5-4 m, the large ones taking the
+  // offshore water — sub-adults and juveniles littoral, larger perch pelagic (Crystal Lake, Wisconsin: Mrnak et al.; Feucht et al.
+  // 2023); perch > 22 cm offshore over open bottom, never in the weeds (Lake Sinai, SD: Bauer 2006); perch with predators turn
+  // littoral and benthic at ~8 cm (Lippert et al. 2007); schools sorted by size (Krieger & Terrell 1983). Lakes 4-5.5 m deep with
+  // weeds to ~3.5 m have little offshore refuge (research predator_diets_and_prey_mortality.md §6). Without it every perch held the
+  // deep band by day, where the pickerel (0.5-2.5 m) met a perch 1/20 as often as a killifish — the lake's most numerous prey all
+  // but out of its predators' reach (docs/FINDINGS.md). IN WINTER (habJ.wbot) the young keep to 1.5-3.5 m: in shallow "dishpan"
+  // lakes perch are at 1.2-2.4 m at first ice, "in around healthy green vegetation", deeper as winter goes on, near the bottom
+  // whether in 3 m or 9 m (MN DNR; anglers — research Seasonal fish habitat use/perch_pickerel_smallmouth_pumpkinseed.md §1) —
+  // the pickerel's winter water, where the field puts perch first in their winter diet (predator_diets_and_prey_mortality.md
+  // §1.4); the large perch the deepest water. With every perch in the deepest hole all winter, the pickerel's only winter fish
+  // were the killifish and the young bass
   perch:      { school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
-    hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) } },
+    hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) }, habJ: { L: [15, 22], bot: [1.5, 4.0], wbot: [1.5, 3.5] } },
   // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter
   sucker:     { school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: HOME(80, 230), tPref: 18,
     hab: { day: H([2.5, 5.5], 0, 0.2, 0.5), night: H([0.5, 2.5], 0, 0.2, 0.8), winter: H([3.5, 5.5], 0, 0.2, 0.3) } },
   // brown bullhead: on the bed in soft weedy coves by day; out over the open mud flats once the light falls below ~1 lux, foraging
-  // by taste and smell (Eriksson 1978); buried in the mud in winter
-  catfish:    { school: 0, group: [10, 25], perHa: 100, cruise: 0.45, sprint: 7.5, sustain: 2.1, turn: 2.2, sense: 1.5, nonVis: 0.8, strikeR: 0, cohere: 0.2, home: HOME(40, 120), tPref: 28,
+  // by taste and smell (Eriksson 1978); BURIED IN THE MUD IN WINTER — "often buries in soft, leafy ooze or mud … with only mouth
+  // and gills exposed" (research_notes/Seasonal fish habitat use/whiteperch_shiner_sucker_bullhead.md): bury, its cover then
+  catfish:    { school: 0, group: [10, 25], perHa: 100, bury: 0.9, cruise: 0.45, sprint: 7.5, sustain: 2.1, turn: 2.2, sense: 1.5, nonVis: 0.8, strikeR: 0, cohere: 0.2, home: HOME(40, 120), tPref: 28,
     hab: { day: H([0.5, 3.0], 0, 0.02, 0.1), night: H([0.3, 2.5], 0, 0.1, 0.6), winter: H([1.0, 4.0], 0, 0.0, 0.0) } },
   // white perch: schools offshore over level fine sediment by day, 0-2 m over the bed; onto the 0.9-1.5-m flats at night; the
   // open basin's deepest water under the ice, compact and roaming. NEAR-NORMAL GROWTH at ~450/ha (the human, 2026-10-18: the
@@ -223,7 +253,8 @@ export const S3 = {
   // Washington County lakes' normal-sized white perch point to near-normal growth): founders at 0.85 of the growth curve
   // (~55/35/10 % at 7.5–15 / 15–22 / > 22 cm, ~71 g), was 0.72 at 750/ha
   whiteperch: { school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
-    hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) } },
+    hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) },
+    habJ: { L: [8, 12], bot: [2.4, 3.6] } },   // (juveniles inshore: "in lakes at 2.4-3.6 m" — Stanley & Danie 1983; ♀ mature at 9-10 cm)
   // smallmouth bass: solitary, within ~50 m (real) of shore on rock, drop-offs and wood; shallower at night; a few deep wintering
   // sites, nearly still Dec-Mar (Sergio 2026; Suski & Ridgway 2009); ~1 BL/s around the clock in summer (Cooke 2001)
   bass:       { school: 0, perHa: 40, cruise: 1.0, sprint: 7, sustain: 1.9, turn: 2.4, sense: 4.0, nonVis: 0.25, strikeR: 1.0, cohere: 0, home: HOME(50, 700), tPref: 25,
@@ -239,7 +270,7 @@ export const S3 = {
   // in the first fortnight against 14 % — in late May the beds are barely up, the young crowd into the few covered spots and their
   // schools merge, and a predator at a school eats at its full rate whatever its spread: aggregating makes them easier, not
   // harder (the 0.6-m nearest-school encounter — density-based predation between cohorts is the fix, docs/GPU_SIM.md round 3)
-  pike:       { school: 0, perHa: 25, yCover: 0, cruise: 0.4, sprint: 7.5, sustain: 0.9, turn: 2.2, sense: 3.5, nonVis: 0.2, strikeR: 1.2, cohere: 0, home: HOME(40, 120), tPref: 25,
+  pike:       { school: 0, perHa: 25, yCover: 0, schoolExp: 0.65, cruise: 0.4, sprint: 7.5, sustain: 0.9, turn: 2.2, sense: 3.5, nonVis: 0.2, strikeR: 1.2, cohere: 0, home: HOME(40, 120), tPref: 25,
     hab: { day: H([0.5, 2.5], 0, 0.9, 0.2), night: H([0.5, 2.0], 0, 0.25, 0.1), winter: H([0.5, 2.5], 0, 0.6, 0.1) } },
   // THE FOUR OF THE 3-D's OWN (species3.js; docs/FISH_CENSUS.md; behaviour: docs/research_notes/Whole lake 3D fish simulation/
   // habitat3d_new_species.md — speeds from the DFO fatigue curves, the sunfish group for redbreast and the weak-swimming
@@ -257,7 +288,11 @@ export const S3 = {
   // catches ≤ 1.2 m); into deeper rocky water near the bed at night; deeper and quiescent below ~12 °C (COSEWIC 2014). Counted
   // whole from age 1 (minL: the yearlings' spring length)
   killifish:  { school: 40, perHa: 233, minL: 4, cruise: 1.0, sprint: 12.5, sustain: 3.4, turn: 3.0, sense: 2.0, nonVis: 0.2, strikeR: 0, cohere: 0, home: HOME(30, 60), tPref: 21,
-    hab: { day: H([0.1, 1.3], 2, 0.15, 0.8), night: H([1.0, 2.5], 0, 0.25, 0.3), winter: H([1.5, 3.0], 0, 0.25, 0.05) } },
+    // (stage P2: by day the shelf's shallowest water, 0.1-0.6 m — "often in water under 6 in" (CT DEEP), moving shallower where bass
+    // are (Dunlop 1987; Gabora & Colgan 1990), below the pickerel's 0.6-3 m: the refuge that lets them live with pickerel, as Hot
+    // Brook's have for a century (research predator_diets_and_prey_mortality.md §5.2). Over the whole shelf, 0.1-1.3 m, the true
+    // lakes' killifish spent ~3/4 of the day over water ≥ 0.6 m, where the pickerel are (scratchpad where.mjs, July))
+    hab: { day: H([0.1, 0.6], 2, 0.15, 0.8), night: H([1.0, 2.5], 0, 0.25, 0.3), winter: H([1.5, 3.0], 0, 0.25, 0.05) } },
   // blacknose dace: the BROOK's own (brookRes): on the bed of its riffles and runs (15–45 cm/s over gravel, under cover), resting
   // there at night; day-active; its pools in winter; ~0.8 a m² of the brook from age 1 (Catskill streams: 1.1 dace a m² of all ages
   // in July–August, the year's young among them, and 2.2 fish of all kinds — 3–4-pass depletion, Baldigo et al. 2008; at 1.5 from
@@ -977,13 +1012,16 @@ export class Fish3 {
     const m = this._m || (this._m = { bot: [0, 0], v: 0, h: 0, act: 0 });
     if (a.nt > 0) { m.bot[0] = 0; m.bot[1] = 99; m.v = 0; m.h = 0.05; m.act = BROOD.HOVER; return m; }   // on its nest
     if (a.ripe) { const sb = s.spawn; m.bot[0] = sb.bot[0]; m.bot[1] = sb.bot[1]; m.v = 0; m.h = sb.h; m.act = 0.9; return m; }   // to its spawning ground
-    if (a.brookie && this._brookSeason(a) && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = 0.2; m.bot[1] = 1.3; m.v = 0; m.h = 0.25; m.act = 0.6; return m; }   // in the brook's pools
-    const blend = (p, q, t) => p + (q - p) * t;
-    const lo = blend(H.day.bot[0], H.night.bot[0], nf), hi = blend(H.day.bot[1], H.night.bot[1], nf);
-    m.bot[0] = blend(lo, H.winter.bot[0], wf); m.bot[1] = blend(hi, H.winter.bot[1], wf);
+    if (a.brookie && this._brookSeason(a) && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = a.L >= F3.RIFFLE_L ? F3.RIFFLE_D : 0.2; m.bot[1] = 1.3; m.v = 0; m.h = 0.25; m.act = 0.6; return m; }   // in the brook's pools (bigger-deeper)
+    const blend = (p, q, t) => p + (q - p) * t, J = s.habJ, jf = J ? 1 - clamp((a.L - J.L[0]) / (J.L[1] - J.L[0]), 0, 1) : 0;   // (jf: how young — its day band's share of the juveniles')
+    const dlo = blend(H.day.bot[0], J ? J.bot[0] : 0, jf), dhi = blend(H.day.bot[1], J ? J.bot[1] : 0, jf);
+    const lo = blend(dlo, H.night.bot[0], nf), hi = blend(dhi, H.night.bot[1], nf);
+    const wlo = J && J.wbot ? blend(H.winter.bot[0], J.wbot[0], jf) : H.winter.bot[0], whi = J && J.wbot ? blend(H.winter.bot[1], J.wbot[1], jf) : H.winter.bot[1];   // (the young's winter water)
+    m.bot[0] = blend(lo, wlo, wf); m.bot[1] = blend(hi, whi, wf);
     const md = wf > 0.5 ? H.winter : nf < 0.5 ? H.day : H.night;   // (its place in the column: blended when day and night agree on the kind)
     m.v = md.v; m.h = md !== H.winter && H.day.v === H.night.v ? blend(H.day.h, H.night.h, nf) : md.h;
     m.act = blend(blend(H.day.act, H.night.act, nf), H.winter.act, wf);
+    if (a.L >= F3.RIFFLE_L && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = Math.max(m.bot[0], F3.RIFFLE_D); m.bot[1] = Math.max(m.bot[1], m.bot[0]); }   // (bigger-deeper: the brook's pools)
     return m;
   }
   _zTarget(a, m) {
@@ -1100,6 +1138,7 @@ export class Fish3 {
     const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
     a.visF = visDay;
     a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (very shallow water; the weeds' stems — in them; the brook's riffles)
+    if (s.bury && a.bed - a.z <= F3.BURY_H) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -1575,8 +1614,8 @@ export class Fish3 {
         const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, d2 = dx * dx + dy * dy + dz * dz; if (d2 > R2) continue;
         if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
         const d = Math.sqrt(d2), hide = 1 - ACTION.HIDE_CONCEAL * engaged(b.o[5]);
-        const sel = Math.pow(Math.max(0, 1 - b.bdep / a.gape), FEED.SIZE_SEL);
-        const w = (1 - d / R) * s.sp.capture * b.s.sp.vuln * sel * hide * (1 - b.cover) * (b.n > 1 ? Math.pow(b.n, F3.SCHOOL_EXP) : 1);
+        const sel = Math.max(0, 1 - Math.pow(b.bdep / a.gape, F3.SIZE_K));
+        const w = (1 - d / R) * s.sp.capture * b.s.sp.vuln * sel * hide * (1 - b.cover) * (b.n > 1 ? Math.pow(b.n, s.schoolExp ?? F3.SCHOOL_EXP) : 1);
         if (w > 0) { sK += w; cand.push(b, w); }
       }
     }

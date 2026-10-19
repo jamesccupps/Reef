@@ -549,6 +549,101 @@ runs taught (docs/GPU_SIM.md G3 round 4):
 - **Gate:** a yearling bass's request — per head the same among 5 or 50 fry, far less in a crowd of ten million (its gut full),
   the young lost exactly the grams it got.
 
+**Design (stage P1) — WHERE THE PREY ARE (2026-10-19).** Why: under the density rule the bullhead fell to 0.66× and the killifish to
+0.31× by count in a year while the yellow and white perch — 780,000 fish, the lakes' commonest — lost < 1 % a year to predators
+(2,800 and 900 eaten; ~145,000 and ~108,000 to the background hazard). In the field yellow perch are the fish most often found in
+smallmouth stomachs (Scott & Crossman) and a staple of chain pickerel. A strike diagnostic (scratchpad diag_strike.mjs: what each
+predator meets within its reach, by prey species; 1/10 lakes, July, 10 days) found why: a pickerel met a perch 1/20 as often per
+perch as a killifish — every perch held the 3–5.5-m band by day while the pickerel keep to 0.5–2.5 m — and then took it ~5× less
+for size (85 % of the perch ≥ 10 cm: (1 − depth/gape)² ≈ 0.07 against the killifish's 0.35); their strike weight went 55 % to
+killifish and 22 % to bullhead, 0 % to perch. In winter the bullhead — buried in the mud in the field — were 45 % of it.
+1. **The young perch's littoral** (S3 `habJ`): perch below 10 cm keep by day to the littoral's 1–3 m (the weed edge), above 16 cm
+   the offshore band, blended between — sub-adults and juveniles littoral, larger perch pelagic (Crystal Lake, Wisconsin; Mrnak et
+   al.; Feucht et al. 2023), schools sorted by size. White perch below 8 cm at 2.4–3.6 m, offshore from 12 cm ("juveniles in
+   lakes at 2.4–3.6 m", Stanley & Danie 1983). Night and winter unchanged.
+2. **The bullhead's winter in the mud** (S3 `bury` 0.9, F3.BURY_H 0.3 m): in cold water — fully at ≤ 5 °C, none from 9 °C, the
+   habitat's own winter blend — a bullhead within 0.3 m of the bed is dug in: its cover 0.9 against strikes ("often buries in
+   soft, leafy ooze or mud … with only mouth and gills exposed" — research `Seasonal fish habitat use/whiteperch_shiner_sucker_
+   bullhead.md`). The banded killifish don't bury (their congener the mummichog: "no evidence of burying", Reeve et al. 2022):
+   inactive below ~12 °C, they move to 1.5–3 m and stay exposed.
+
+**Four seasons on paper.** *Spring:* the bullheads come out of the mud as the water passes 9 °C (late April); last autumn's perch
+recruits (8–10 cm) spend the days on the weed edges, where the pickerel and bass are. *Summer:* the yearling perch along the
+weed edge by day, inshore with the adults at night; the adults offshore; the young of the year in the density table (stage Y1).
+*Autumn:* the year's perch recruit at ~8 cm in September (field 6.6–8.1 cm by fall) straight into the littoral — ~6 weeks of
+exposure before the water falls below 9 °C. *Winter:* all perch in the deepest water, the bullheads buried; the pickerel's
+winter prey the killifish, young bass and fallfish on the shallow shelf (the field's under-ice pickerel take perch and shiners —
+these lakes have no shiners).
+
+**Checks:** the gate (core): a young perch's day band is the littoral's, a large one's offshore; a bullhead on the bed is buried in
+winter (cover 0.9) and not in summer. The year (≥ 2 seeds, A/B against stage Y1): perch eaten, killifish and bullhead.
+
+**Results (stage P1; true lakes, a year, seeds 611/612/613 against stage Y1's).** The bullhead 0.65–0.67× → 0.85–0.88× by count
+(8.2–8.5 kg/ha against 7.9–8.3; the pickerel's kills of them 50–53k → 29–33k a year); perch eaten 2.8–4.4k → 5.1–6.3k — doubled,
+still < 2 % a year; everything else within the seeds' spread. Why so little for the perch: a strike diagnostic in September (the
+recruits' month) still put a perch's per-capita risk ~1/60 of a killifish's — encounter ×4.7, the gape ×2, size selection ×3,
+spines ×1.7, the larger school ×1.4 — and the year's recruits spend only ~6 weeks in the littoral before the water passes 9 °C.
+
+**Design (stage P2) — WHAT THE PREDATORS TAKE (2026-10-19; research `Whole lake 3D fish simulation/predator_diets_and_prey_
+mortality.md`).** The field: adult chain pickerel eat 65–85 % fish by mass (LaHave, Nova Scotia 85 %; Kejimkujik isotopes ~72 %),
+35–60 % older fish, crayfish 10–30 %; yellow perch is the first-named prey in Maine (15–35 % of the fish mass); predators take
+~15–35 %/yr of the 7.5–15-cm perch (total natural loss 35–70 %/yr: Mill Lake 70 %, Murphy Flowage ~55 %). The sim: pickerel 53 %
+fish, 15 % older fish, 42 % crayfish, perch ~0; killifish 38 % of their older-fish kills (no northeastern record; selected only
+by small pickerel in Florida), bullhead 28 %. Prey vulnerabilities sit inside the field's ranges (perch 0.6, bullhead 0.4,
+sunfish 0.35) — the error is the SIZE RULE:
+1. **The size rule** (F3.SIZE_K 2): a strike's success × (1 − x^2), x = prey depth / gape — near flat over the small prey, nil at
+   the gape — for the 2-D sim's (1 − x)². Field capture success falls about linearly with relative size (soft-rayed 1 − r,
+   spiny 0.70 − 1.34·r; Miller 1988, Scharf 2003) while encounter rises with prey length; adult pickerel's prey average ~0.3
+   of their length. A 35-cm pickerel: killifish 6 cm 0.92, perch 10 cm 0.74, 13 cm 0.55 (were 0.50, 0.24, 0.11) — the
+   killifish's lead ~2× (the field's 1.5–2.5×), not 4–8×.
+2. **Esocids aren't confused by schools** (S3 pike `schoolExp` 0.65 against F3.SCHOOL_EXP 0.5): pike attack shiner schools from
+   inside at 70 % success (Jolles et al. 2022) and catch as well in schools as singly (Turesson & Brönmark 2004); bass and perch
+   are confused (largemouth captures 100 % → 11 % from 1 to 15 prey).
+3. **The killifish's refuge** (their day band 0.1–0.6 m, was the whole shelf 0.1–1.3): "often in water under 6 in" (CT DEEP),
+   shallower where bass are (Dunlop 1987) — below the pickerel's 0.6–3 m; Hot Brook's killifish have lived with pickerel for a
+   century (both on MDIFW's 1949 list) while introduced pickerel emptied small Nova Scotia lakes of small fish. At true scale
+   (scratchpad where.mjs, July) the whole-shelf band left ~3/4 of their day over water ≥ 0.6 m, the pickerel's; the shallow band
+   halves it.
+
+*The seasons:* summer — the pickerel's strikes fall on what they meet at its catchability: the yearling perch on the weed edge,
+fallfish, sunfish and young suckers, the killifish mostly out of reach in the shallows; autumn — the perch recruits (8 cm, x ≈
+0.4, success 0.84) on the weed edge; winter — the killifish off the shelf at 1.5–3 m and the young bass and fallfish exposed;
+the bullheads buried.
+*Checks:* the year (3 seeds) against §7.1's ranges: the pickerel's diet (fish 65–85 %, older fish 35–60 %, crayfish 10–30 %;
+perch ≥ 15–30 % of their older-fish kills, killifish ≤ 15–25 %, bullhead ≤ 10–20 %), perch lost to predators 15–35 %/yr at
+7.5–15 cm, the smallmouth's crayfish 35–55 %, pickerel cannibalism (its research's ≤ 0.1–0.3 %/wk of adults).
+
+**Built (stage P2, 2026-10-19).** As designed, with what the runs taught:
+- **The size rule and the killifish's band alone** (seed 612): the pickerel's diet moved toward the field's (fish 60 %, crayfish 37 %)
+  but their strikes fell on what shares their water — killifish 0.14×, young bass 0.46×, fallfish 0.56× — and perch were still 3 %
+  of their kills: the perch's daytime band was too timid (offshore from 10–16 cm, most of the population). Revised to the research's
+  §6: perch to 15 cm over 1.5–4 m by day, offshore by 22 cm (S3 perch `habJ` L [15, 22], bot [1.5, 4]).
+- **The winter is where the pickerel meet the perch** (S3 perch `habJ.wbot` [1.5, 3.5]): shallow "dishpan" lakes hold perch at
+  1.2–2.4 m at first ice in the weeds — the pickerel's water — while bass, sunfish, bullheads and crayfish go still or bury (the field
+  puts perch first in the pickerel's winter diet). With every perch in the deepest hole all winter the pickerel had only killifish
+  and young bass. The winter band alone took perch predation from ~19k to ~72k a year.
+- **Bigger-deeper in the brook** (F3 RIFFLE_L/RIFFLE_D in `_mode` / wgsl `modeOf`): fish ≥ 10 cm hold its pools (Power 1987: large
+  bass in pools > 50 cm on 72 of 75 pool-dates). It did NOT save the brook's dace: they still die in late May–July (pickerel ~550,
+  bass ~400, fallfish ~280 a year) as the lakes' fish pass through on their spring moves — an 8-m brook has no water out of a pool's
+  strike reach. At 1/10 (the lakes' fish not ranging in the brook) the dace hold at 0.89× through a month. The real Hot Brook runs
+  on above and below the lakes; its dace are likely a stream population that the closed brook can't represent (a question).
+- **The GPU's strike diagnostics** (wgsl T_STRM/T_STRG/T_STRW; NTALLY 4096; year.js "X's strikes met: prey N (takeable %, weight %)"):
+  per predator and prey, the fish met within strike reach, those within gape, and the strike weight — the habitat bands are held only
+  loosely at the block's scale (a hungry fish's hops toward food leave its band; at true scale in July the killifish spent ~half
+  the day deeper than their 0.6-m band), so who meets whom must be measured, not read off the bands.
+- **Results** (true lakes, a year, seeds 611/612/613; stage Y1 → P2): perch eaten 2.8–4.4k → **72–79k (~20 %/yr; field 15–35)**,
+  64 % of them by pickerel; the pickerel's diet fish 53 % → **61–63 %** (older fish 15 → 36–38 %; field 65–85, 35–60), crayfish
+  42 → **34–36 %** (field 10–30); perch 18 % of their kills (field ≥ 15–30), killifish 30 % (≤ 15–25), bullhead 17 % (≤ 10–20); the
+  pickerel 3.4 → **5.2–5.5 kg/ha** (field 2–6) as fewer, larger fish (0.37×). The smallmouth unchanged (crayfish 63–64 %; field 35–55
+  for a weedy perch lake). White perch eaten 0.9–1.7k → 7–13k (2–3 %/yr; most too deep for a pickerel's gape). CPU ⇄ GPU parity
+  (1/10, 3 seeds × 30 days): every species within the seeds' spread.
+- **Open — the littoral's small fish pay for it:** the perch now feed the pickerel (apparent competition), which take the
+  killifish (0.29–0.32× → 0.13–0.14×), fallfish (0.69–0.80 → 0.47–0.57×), young bass (0.47× by count; biomass 11.4–11.6 kg/ha held),
+  sunfish (1.0–1.1 → 0.6–0.8 kg/ha), redbreast (1.3–1.4 → 0.9–1.0) and bullhead (0.66–0.71×; their winter burial's gain spent in
+  summer). Pickerel cannibalism 5k → 8.6k a year (2.5 % of their kills, ~4 % of their diet by mass, but most of their 10–30-cm fish).
+  Next: whether it settles (a 3-year run), the small pickerel's refuge in the weeds (research: small esocids keep to dense
+  vegetation, the large hold structure), the killifish's shallow refuge (Power 1987: fish predators can't work water < 20 cm).
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

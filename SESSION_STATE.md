@@ -186,6 +186,24 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
+(docs/HOT_BROOK_3D.md §4 "Design/Results (stage P1)", "Design/Built (stage P2)"; research `Whole lake 3D fish simulation/
+predator_diets_and_prey_mortality.md` — the field targets in its §7; docs/FINDINGS.md; docs/GPU_SIM.md "G3 — round 5").
+- In: the bullhead buried in winter (S3 `bury`); perch by size (S3 `habJ`: to 15 cm over 1.5–4 m by day, offshore by 22; winter
+  1.5–3.5 m — dishpan lakes' perch at first ice in the weeds); white perch juveniles 2.4–3.6 m; F3.SIZE_K 2 (1 − (depth/gape)²);
+  pickerel schoolExp 0.65; killifish day band 0.1–0.6 m; bigger-deeper in the brook (fish ≥ 10 cm hold its pools); GPU strike
+  encounter tallies (T_STRM/G/W, NTALLY 4096; year.js "X's strikes met"), year.js ?f3./?s3./?yby=/?kby= and the year's diet by mass.
+- Results (3 seeds, a year, vs Y1): perch eaten ~3k → 72–79k (~20 %/yr, field 15–35); pickerel 61–63 % fish / 34–36 % crayfish
+  (field 65–85 / 10–30), 5.2–5.5 kg/ha (field 2–6); BUT killifish 0.13–0.14×, fallfish ~0.5×, sunfish 0.6–0.8 kg/ha, redbreast ~0.9,
+  bullhead ~0.7× — the perch feed the pickerel, which take the littoral's small fish (apparent competition). Dace still die (the lakes'
+  predators passing through the brook; a closed brook may be the wrong model — ASK the human whether Hot Brook's dace live above and
+  below the lakes too). Pickerel cannibalism 8.6k/yr (most of their 10–30-cm fish).
+- RUNNING: a 3-year run, seed 612 (scratchpad y612_p2c_3yr.txt, snapshot snap_p2c on :8103): do the small species settle or fall?
+- NEXT: the small pickerel's refuge (small esocids in dense weeds, the large on structure — Grimm 1981, Skov & Koed 2004); the
+  killifish's very-shallow refuge (fish predators can't work water < 20 cm — Power 1987; today SHALLOW_REFUGE ≤ 0.6 for all sizes);
+  then the census cap and the 3-year balance. Gate: w3 97/99 under load (the two timing checks pass idle: env 11.9 ms, fish step 22 ms).
+- Tools (scratchpad): diag_strike.mjs, where.mjs (HB_WORLD=true), snap.sh + REEF_PORT, peek.mjs, closecdp.mjs.
+
 ▶▶▶ RESUME HERE (2026-10-19, morning): STAGE Y1 — PREDATION ON THE YOUNG BY DENSITY — COMMITTED (03a0497, pushed, backup
 ..._density_predation.zip). Both engines: a prey table per column × species × length class, Holling II requests (clearance
 400·L^0.6 L/d, gut-limited), order-free settlement (followed fish first, young schools from the rest); FRY.DENSITY 0 = the old

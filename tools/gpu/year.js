@@ -1,6 +1,8 @@
 // GPU stage G3 (docs/GPU_SIM.md): THE YEAR RUNNER — the GPU engine's coarse blocks through whole years, seed after seed, its lines
 // in tools/w3_season.mjs's format (the CPU's own year run) so the two compare line by line: each species' fish against the start,
 // kg/ha, ration, mean cm, the young, spawnings and deaths (counted from the founding, as the CPU's are), and who ate whom at the end.
+// ?kby=perch,dace: the species whose followed fish's killers get a line (default perch, killifish, bullhead, dace)
+// ?yby=pike,bass,killifish: the species whose young's predators get a line (default the two piscivores)
 // THE DIAGNOSTICS (?diet=0 off): the ration p is the report interval's (the intake tallies reset after each report — the CPU's lines
 // give it since the founding), with each species' mean condition K, and a line of its diet over the interval by food.
 //   http://localhost:8000/tools/gpu/year.html?world=true&seeds=611,612,613&yf=0.22&days=365&every=14
@@ -22,6 +24,13 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
   for (const [k, v] of qs) if (k.startsWith('fry.') && k.slice(4) in FRY && typeof FRY[k.slice(4)] === 'number') FRY[k.slice(4)] = +v; }   // (?fry.KEY=v: any of FRY's numbers — calibration A/Bs)
 // ?ylpisc= the length the young pickerel's schools take their first fish (species.js BIO.pike.yLpisc)
 { const { S3 } = await import('../../src/w3/fish3.js'); if (qs.has('ycover')) S3.pike.yCover = +qs.get('ycover'); if (qs.has('ylpisc')) S3.pike.sp.yLpisc = +qs.get('ylpisc'); }
+// ?f3.KEY=v: any of F3's numbers; ?s3.<species>.<path>=v: a species' entry (numbers, or comma lists — e.g. s3.killifish.hab.day.bot=0.1,0.6,
+// s3.pike.schoolExp=0.5) — both read when the GPU tables and constants are built, after this
+{ const { F3, S3 } = await import('../../src/w3/fish3.js');
+  for (const [k, v] of qs) {
+    if (k.startsWith('f3.') && typeof F3[k.slice(3)] === 'number') F3[k.slice(3)] = +v;
+    else if (k.startsWith('s3.')) { const path = k.slice(3).split('.'), last = path.pop(); let o = S3; for (const q of path) o = o?.[q]; if (o) o[last] = v.includes(',') ? v.split(',').map(Number) : +v; }
+  } }
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
@@ -34,7 +43,7 @@ for (const sd of SEEDS) {
   const st0 = JSON.parse(JSON.stringify(F.stats)), lines = window.YEAR[sd] = [];
   const say = s => { log(s); lines.push(s); };
   say(`\n#### seed ${sd} · founded in ${((performance.now() - t0) / 1000).toFixed(1)} s: ${F.fish.length} agents, ${F.yoy.length} young schools · arrays ${G.cap} agents, ${G.ycap} young`);
-  let first = null, tB = 0, nB = 0, tlPrev = null; const lastYoy = {};
+  let first = null, tB = 0, nB = 0, tlPrev = null; const lastYoy = {}, dietYr = {};
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
     const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env), gl = await G.gridLoad();
@@ -47,6 +56,7 @@ for (const sd of SEEDS) {
       if (DIET && tlPrev) {
         const g = FOODS.map((f, j) => tl[T_FOODK + q * NFOODK + j] - tlPrev[T_FOODK + q * NFOODK + j]), tot = g.reduce((a, b) => a + b, 0) / 1e6;
         if (tot > 0) say(`      diet ${(tot / 1000).toFixed(0)} kg: ` + FOODS.map((f, j) => [f, g[j] / 1e6 / tot]).filter(x => x[1] >= 0.005).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' · '));
+        { const y = dietYr[k] || (dietYr[k] = FOODS.map(() => 0)); g.forEach((v, j) => { y[j] += v / 1e6; }); }   // (the year's, by food)
         // the young's losses since the last report, by fate (wgsl.js FRY_*), as a share of the young alive then
         const fd = j => j === 7 ? (tl[910 + q] - tlPrev[910 + q]) / 1e6 : (tl[320 + q * 7 + j] - tlPrev[320 + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);   // (7: capped — T_YCAP, pairs 910 + k)
         if (y0 > 1000) say(`      young's fates (of ${(y0 / 1e3).toFixed(0)}k): ` + [['natural', 0], ['starved', 1], ['heat', 2], ['hypoxia', 3], ['eaten', 4], ['recruited', 5], ['capped', 7]].map(([f, j]) => [f, fd(j) / y0]).filter(x => x[1] >= 0.001).map(([f, v]) => `${f} ${(100 * v).toFixed(1)}%`).join(' · '));
@@ -68,6 +78,18 @@ for (const sd of SEEDS) {
   }
   const kills = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v > 0) kills.push([`${kp}>${kq}`, v]); }));
   kills.sort((a, b) => b[1] - a[1]); say('who ate whom (kills): ' + kills.slice(0, 14).map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+  for (const kq of (qs.get('kby') || 'perch,killifish,catfish,dace').split(',')) {   // (?kby=: whose followed fish — every predator of each)
+    const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
+    KEYS3.forEach((kp, p) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v >= 1) by.push([kp, v]); });
+    by.sort((a, b) => b[1] - a[1]); if (by.length) say(`${kq} killed by: ` + by.map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+  }
+  // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
+  // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills
+  for (const kp of ['pike', 'bass', 'fallfish', 'perch', 'whiteperch']) {
+    const p = KEYS3.indexOf(kp); if (p < 0) continue; const rows = []; let W = 0;
+    KEYS3.forEach((kq, q) => { const m = tl[1024 + p * NK + q], g = tl[1145 + p * NK + q], w = tl[1266 + p * NK + q] / 1e6; if (m > 0) { rows.push([kq, m, g, w]); W += w; } });
+    rows.sort((a, b) => b[3] - a[3]); if (rows.length) say(`${kp}'s strikes met: ` + rows.map(([k, m, g, w]) => `${k} ${m >= 1e6 ? (m / 1e6).toFixed(1) + 'M' : (m / 1e3).toFixed(0) + 'k'} (${(100 * g / m).toFixed(0)}% takeable, ${(100 * w / Math.max(1e-12, W)).toFixed(0)}% of the weight)`).join(' · '));
+  }
   // the followed fish eaten by their length (T_KILLSZ: pairs 925 + prey·4 + class) and by the predator (T_KILLPZ: 970 + pred·4 + class)
   for (const [tag, at] of [['followed fish eaten by length (prey)', 925], ['kills by length (predator)', 970]]) {
     const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => tl[at + q * 4 + c] / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, f]) => `${c} ${(100 * f).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
@@ -79,11 +101,13 @@ for (const sd of SEEDS) {
     yk.sort((a, b) => b[1] - a[1]); if (yk.length) say(`young fish eaten by the ${tag}: ` + yk.slice(0, 14).map(([k, n]) => `${k} ${n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : Math.round(n)}`).join(' · '));
   }
   // the predators' young: who ate them, the followed fish and the young schools together
-  for (const kq of ['pike', 'bass']) {
+  for (const kq of (qs.get('yby') || 'pike,bass').split(',')) {   // (?yby=: whose young — default the predators')
     const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
     KEYS3.forEach((kp, p) => { const v = (tl[608 + p * NK + q] + tl[729 + p * NK + q]) / 1e6; if (v >= 1) by.push([kp, v, tl[729 + p * NK + q] / 1e6]); });
     by.sort((a, b) => b[1] - a[1]); if (by.length) say(`young ${kq} eaten by: ` + by.map(([k, n, y]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}${y >= 1 ? ` (${Math.round(100 * y / n)}% by its young)` : ''}`).join(' · '));
   }
+  // the followed fish's diet over the year by mass (the report intervals' summed)
+  if (DIET) say("the year's diet (followed fish, by mass): " + KEYS3.filter(k => dietYr[k]).map(k => { const y = dietYr[k], t = y.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e6).toFixed(1)} t (` + FOODS.map((f, j) => [f, y[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
   // the young's diet over the year by species (T_YFOODK: pairs 850 + k·5 + kind)
   say("the young's diet over the year: " + KEYS3.map((k, q) => { const g = [0, 1, 2, 3, 4].map(j => tl[850 + q * 5 + j] / 1e6), t = g.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e3).toFixed(0)} kg (` + ['young fish', 'zoo', 'weeds', 'bed', 'mud'].map((f, j) => [f, g[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
   // the year's young by species: hatched, then their fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)

@@ -293,7 +293,7 @@ if (run('chem')) {
 console.log('\n— fish 3-D: the agent core —');
 if (run('core')) {
   const { Env3 } = await import('../src/w3/env3.js');
-  const { Fish3, KEYS3, S3 } = await import('../src/w3/fish3.js');
+  const { Fish3, KEYS3, S3, F3 } = await import('../src/w3/fish3.js');
   const { ENV } = await import('../src/config.js');
   const { seed } = await import('../src/core.js');
   const inWater = a => GEO.bodyAt(a.x, a.y) !== LAND && a.z >= 0 && a.z <= Math.max(0.12, GEO.depthAt(a.x, a.y)) + 1e-3 && Number.isFinite(a.x + a.y + a.z + a.W + a.L);
@@ -389,6 +389,21 @@ if (run('core')) {
     const a = F.add('perch', G.cx[c0], G.cy[c0], null, 3, 1); a.z = GEO.depthAt(a.x, a.y) - 0.2;
     const z0 = a.z; for (let i = 0; i < 50; i++) { for (let k = 2; k < G.nL[c0]; k++) ch.o2[G.cell0[c0] + k] = 0.01; F.step(FB); }
     check('hypoxia: a perch on an anoxic bottom gets out of the dead water — up, or (in a block) across to a column with O₂', a.alive && a.o2 > a.o2Crit && (a.z < 1.0 || a.c !== c0), `from ${f2(z0)} m to ${f2(a.z)} m${a.c !== c0 ? ` in another column, ${f1(Math.hypot(a.x - G.cx[c0], a.y - G.cy[c0]))} m away` : ''} (O₂ ${(a.o2 * ENV.O2_MGL).toFixed(1)} mg/L)`); }
+  // (stage P1) WHERE THE PREY ARE: a young perch school keeps to the littoral by day (the weed edge, 1-3 m), a large one offshore
+  // (S3 habJ); a bullhead on the bed is dug into the mud in winter (S3 bury: its cover then) and not in summer
+  { seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.85 }), F = new Fish3(e, { founders: false });
+    const yp = F.add('perch', 20, 80, 1.5, 1, 40), op = F.add('perch', 22, 80, 1.5, 4, 40); yp.L = 12; op.L = 24; yp.T = op.T = 20; e.sun = 1;
+    const by = [...F._mode(yp).bot], bo = [...F._mode(op).bot];
+    const bh = F.add('catfish', 20, 80, null, 5, 1), z0 = Math.max(0.05, GEO.depthAt(bh.x, bh.y)) - 0.1; bh.z = z0; F.step(FB); const cW = bh.cover;
+    seed(509); const e2 = new Env3({ col: 10 * CS, yf0: 0.4 }), F2 = new Fish3(e2, { founders: false });
+    const bs = F2.add('catfish', 20, 80, null, 5, 1); bs.z = Math.max(0.05, GEO.depthAt(bs.x, bs.y)) - 0.1; F2.step(FB); const cS = bs.cover;
+    // (and in the brook a 30-cm pickerel holds the pools, ≥ RIFFLE_D, where a 6-cm dace keeps its riffles: bigger-deeper)
+    let bx = 0, byy = 0; for (let i = 0; i < GEO.N; i++) if (GEO.body[i] === BROOK) { const cc = GEO.cellCentre(i); bx = cc[0]; byy = cc[1]; break; }
+    const pk = F2.add('pike', bx, byy, null, 3, 1), dc = F2.add('dace', bx, byy, null, 2, 1); pk.L = 30; dc.L = 6; pk.T = dc.T = 20; e2.sun = 1;
+    const pkb = [...F2._mode(pk).bot], dcb = [...F2._mode(dc).bot];
+    check('where the prey are (stage P1–P2): a young perch school keeps to the littoral by day, a large one offshore; a bullhead on the bed is buried in winter mud (cover 0.9) and not in summer; in the brook a pickerel holds the pools while the dace keep the riffles',
+      by[0] === 1.5 && by[1] === 4 && bo[0] === 3 && bo[1] === 5.5 && cW > 0.85 && cS < 0.5 + 1e-9 && bh.T < 5 && pkb[0] >= F3.RIFFLE_D && dcb[0] < F3.RIFFLE_D,
+      `12-cm perch over ${by.map(f1).join('–')} m, 24-cm over ${bo.map(f1).join('–')} m by day; bullhead cover ${f2(cW)} at ${f1(bh.T)} °C, ${f2(cS)} at ${f1(bs.T)} °C; in the brook a pickerel over ≥ ${f1(pkb[0])} m, a dace from ${f2(dcb[0])} m`); }
   // DETERMINISM: the same seed makes the same lake of fish
   { const one = () => { seed(508); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); run(e, F, 6); return F.fish.map(a => `${a.x.toFixed(5)},${a.z.toFixed(5)},${a.W.toFixed(6)},${a.n.toFixed(4)}`).join(';'); };
     check('determinism: the same seed gives the same fish (positions, masses, school sizes) after 30 blocks', one() === one()); }
