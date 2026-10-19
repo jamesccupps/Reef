@@ -216,7 +216,10 @@ against the photo look in the browser (bog, rocky opening, conifer stand, tracks
   small minnows that swim through" (an ambush point at the corridor's mouth — emergent if the schools pass and bass follow prey);
   no resident dace mentioned. And "the pike [pickerel] swim through too and seem to hang out in there" — pickerel regulars in the
   brook's pools and weedy runs (the sim: at true scale the brook is their range, the bigger-deeper rule holds them in its pools ✓;
-  they took ~550 of the brook's dace a year — consistent with dace being rare there). To build with stage R's young: small bass summering in the brook's pools; young fallfish schools
+  they took ~550 of the brook's dace a year — consistent with dace being rare there). THE HUMAN THEN QUALIFIED: the passing schools
+  "may be schools of dace going through too, not sure", and "not sure if the bass actually stay there or if they just use the water
+  to spawn" → both OPEN: research smallmouth use of lake-connecting streams (summer residence vs a spawning run; Maine/northern
+  lakes) and whether blacknose dace travel lake to lake in schools, before building either. To build with stage R's young: small bass summering in the brook's pools; young fallfish schools
   travelling lake to lake through it; check that big bass gather at the upper pool when the schools run.
 
 ▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
