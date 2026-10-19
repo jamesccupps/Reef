@@ -186,6 +186,13 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ ADDED (2026-10-19, late night): THE HUMAN FETCHED 12 SOURCES into docs/research_notes/fetched/ (gitignored: large scans, some
+copyrighted): the MDIFW survey sheets for UPPER and LOWER Hot Brook Lake, the MDIFW white perch / yellow perch / black bass plans,
+Cooper 1941 (Fish Survey Report No. 4, a 176-MB scan), the Bass Technical Work Group 2019, USGS SIR 2014-5164, a NOAA report,
+2491-36-10.pdf, a lakes-and-reservoirs fisheries text, and page 1 of Warner 1973 (pickerel spring food, a GIF). A background agent
+is writing docs/research_notes/fetched_sources_digest.md (and marking the rows of blocked_sources_to_fetch.md) — READ IT FIRST and
+fold it into stage R (white perch mortality, growth; the lakes' own survey facts). More fetches to come from the human.
+
 ▶▶▶ ADDED (2026-10-19, night): RESEARCH "Fish in streams connecting lakes" (the human asked: do other stream-connected lakes have
 this ecosystem?) — report docs/reports/Fish in streams connecting lakes.md (notes in research_notes/Fish in streams connecting
 lakes/, 4 notes). Headlines: lake-to-lake movement is RARE (Adirondack chain: 0.9 % of recaptures changed lakes over ~2 yr, mostly
