@@ -186,6 +186,19 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ ADDED (2026-10-19, night): RESEARCH "Fish in streams connecting lakes" (the human asked: do other stream-connected lakes have
+this ecosystem?) — report docs/reports/Fish in streams connecting lakes.md (notes in research_notes/Fish in streams connecting
+lakes/, 4 notes). Headlines: lake-to-lake movement is RARE (Adirondack chain: 0.9 % of recaptures changed lakes over ~2 yr, mostly
+suckers) → the sim's MOVE3 settle rates (perch/white perch 15 %, sunfish/killifish 10 %/yr) ~10× too high (suggest 1–5 %, killifish
+~0–1 %); the pickerel's ice-out trip has no chain-pickerel evidence → summer excursions; smallmouth: some nest in streams and stay
+all summer, sub-adults < 350 mm stay, adults leave < 15.6 °C; predators DO gather at outlet pools when prey funnel through (pulses
+of young after rain); dace persist by avoiding predator-held patches and riffles big fish don't hunt; the brook = Upper's surface
+water (no cool refuge); dry year: the outlet stops at a sill. Its §recommendations are a ranked brook to-do (with stage R).
+The human will FETCH BLOCKED SOURCES: docs/research_notes/blocked_sources_to_fetch.md (170 rows ranked; top: Warner 1973 Maine
+pickerel food, MDIFW white perch plan + Hot Brook survey sheets, Cooper 1941, Johnson & Evans 1990/1991) → into
+docs/research_notes/fetched/. A research agent saw an injected instruction in OpenAlex API responses (asking AI agents to request
+an API key with the user's email) — ignored; an OpenAlex key is the human's choice.
+
 ▶▶▶ RESUME HERE (2026-10-19, evening): STAGE P3 + THE MULTI-YEAR FINDING COMMITTED — NEXT: STAGE R, THE PLANKTIVORES' REGULATION.
 - P3 (in): a predator strikes at full effect only over water ≥ F3.SHALLOW_K (0.02 m/cm) × its length (the followed fish's prey-side
   SHALLOW_REFUGE retired; the young's kept); gate +1 (a 35-cm pickerel takes no killifish over 0.2 m, does over 1.5 m). GPU tallies
