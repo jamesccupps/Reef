@@ -719,6 +719,27 @@ kg/ha (target 15–35), perch 37 / 32, suckers 22 / 21, bass 11.6 / 11.3, picker
 - **Cooper's field checks**: August crustacean zooplankton ≈ 31/L (≈ 90 µg/L) at 0–15 ft over 53 lakes — the 60–100 target;
   Ekman bed fauna ≈ 5 g/m² in shallow lakes (BENTHOS.CAP 15 is the high side); adult white perch scale growth only July–Aug.
 
+**Item 4 found: the algae's zero-order growth was a free lunch (2026-10-19, night).** Probes of the water alone (no fish; scratchpad
+`probe/water_only.mjs`, `npp.mjs`, `alg.mjs`, `budget.mjs`): Daphnia rose 40 → 900 µg/L in three weeks of May and then HELD 900–1,500
+all summer on algae grazed to 0.013 units — because chem3's algae grew at `GROW·light·nutrient·(1 − b)`, with no × b: grazed down
+they still made ~90 % of their ungrazed production (381 vs 425 unit·L/m²/day, ten turnovers a day; phytoplankton manage ~1–2 —
+Eppley 1972), while their O₂, which is × b, said their net production had fallen 662 → 37 mg C/m²/day. The zooplankton's
+production, 0.34–0.67 g DW/m²/day (≈ 160–320 mg C), EXCEEDED the algae's — impossible; the field's crustaceans make ~5–25 g DW/m²
+a YEAR. That production fed the planktivores' year-1 swelling (101 → 171 kg/ha). At normal densities the old growth was sound (the
+O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24); only the grazed-down end was wrong.
+- **The fix, PER-CAPITA ALGAE** (config `PHYTO.PER_CAPITA`, `GROW_PC` 6, `DECAY_PC` 0.03, `INOC`; `DIATOM.GROW_PC` 4.5, `DECAY_PC`
+  0.035 — the cyanobacteria's form, `(b + INOC) × GROW_PC`): calibrated without zooplankton so the ungrazed season matches the old
+  one (summer stock 0.155–0.167 vs 0.152–0.160 units; realised growth 0.30–0.35/day, half lost to die-off, half to the mussels,
+  the outflow and the brook's filterers). With the grazers back and still no fish, the PEG pattern appears: Daphnia peak ~340 µg/L
+  in mid-May, clear the water (algae 0.008) and crash to ~190, then 200–330 through June–July — a fishless lake's level — and
+  their production falls ~4× to ~10 g DW/m²/yr, inside the field's range.
+- **Still wrong (next)**: copepods are excluded by Daphnia (59 → 1 µg/L by August) and the crustaceans fall to 1–3 µg/L under the
+  ice (field: the community keeps ~25 % of its summer density, copepods carrying — Hampton et al. 2017); the egg bank hatches
+  0.5 %/day where Daphnia's ephippia give ~1 % of the bank a YEAR, only in early spring (Cáceres 1998).
+- **The weather's spells are too long** (found on the way): clear spells average 14 days (max 57), and seed 611's August–September
+  had six weeks of cloud and storm (Maine's fronts pass every ~3–5 days). The 2-D chain's dwell times × 1/TS. Per-capita algae dip
+  ~5× through such a spell and recover in two weeks; a realistic chain is a separate to-do.
+
 ## 5. Plants, invertebrates, wildlife, the shore and the air
 
 Plants on the bed by depth, light and substrate (pondweed, milfoil, lilies, muskgrass; the colonisation depth from Secchi);

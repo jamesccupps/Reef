@@ -4,6 +4,24 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — Zero-order algal growth gave the zooplankton a free lunch (docs/HOT_BROOK_3D.md §4 "Item 4 found")
+- **What.** The algae's growth term, inherited from the 2-D sim, was `GROW·light·nutrient·(1 − b)`, with no factor of the
+  biomass b. Grazed to almost nothing, the algae kept making ~90 % of their ungrazed production, so the zooplankton were fed
+  without limit and Daphnia held 900–1,500 µg/L all summer in a lake whose field level is ~50–150.
+- **How.** The 3-D water run alone for a year without fish (true lakes, seed 611, CPU `Env3`), with tallies of the algae's
+  growth and die-off (chem3 `algProd`, `algDecay`), their net production from their own O₂, and the zooplankton's production
+  (`zooProd`); a zooplankton-free run to calibrate the replacement.
+- **Evidence.** Grazed to 0.013 units, the algae grew 381 unit·L/m²/day against 425 ungrazed (ten turnovers a day); their O₂
+  said net production had fallen from 662 to 37 mg C/m²/day. The zooplankton's production (0.34–0.67 g DW/m²/day ≈ 160–320 mg C)
+  exceeded the algae's own, which is impossible. Field crustacean production is ~5–25 g DW/m² a year; the sim's capacity was
+  ~60–100. With per-capita growth (`(b + INOC)·GROW_PC`, the form the sim's cyanobacteria already used), calibrated so the
+  ungrazed season matches, fish-free Daphnia show the PEG pattern instead: a ~340 µg/L peak in mid-May, a clear-water crash to
+  ~190, then 200–330 µg/L through early summer, with production ~4× lower (~10 g DW/m²/yr).
+- **Why it matters.** A model that makes a resource's production independent of its standing stock cannot show
+  consumer–resource control. The bug was invisible in the O₂ budgets because O₂ was computed per-capita while biomass was not:
+  two descriptions of the same photosynthesis, which agreed only at the densities they were calibrated at. A check of production
+  against an independent measure of the same process (here O₂) catches this; a check of standing stocks alone does not.
+
 ## 2026-10-19 — Maine's own field data move the calibration targets (docs/research_notes/fetched_sources_digest.md, fetched_sources_read_by_me.md)
 - **What.** The human fetched the primary Maine sources the project had cited second-hand. Three of the project's targets were
   wrong, and the sim's year 1 overshoots the only Maine whole-lake counts.

@@ -17,6 +17,7 @@ const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, KEYS3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
 const { waterOf } = await import('../../src/w3/render3/fishside3.js');
+const { PLANKTON } = await import('../../src/config.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 // A/B switches on the model's numbers, set before anything is built (each documented where it's defined): ?mjuvb= FRY.M_JUV_B,
 // ?ycover= the young pickerel's weight on cover (fish3 S3.pike.yCover)
@@ -31,6 +32,9 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
     if (k.startsWith('f3.') && typeof F3[k.slice(3)] === 'number') F3[k.slice(3)] = +v;
     else if (k.startsWith('s3.')) { const path = k.slice(3).split('.'), last = path.pop(); let o = S3; for (const q of path) o = o?.[q]; if (o) o[last] = v.includes(',') ? v.split(',').map(Number) : +v; }
   } }
+// ?cfg.BLOCK.KEY=v: any number or switch of config.js's blocks (e.g. cfg.PHYTO.PER_CAPITA=true), set before the lakes are built
+{ const C = await import('../../src/config.js');
+  for (const [k, v] of qs) if (k.startsWith('cfg.')) { const [, blk, key] = k.split('.'), o = C[blk]; if (o && key in o) o[key] = v === 'true' ? true : v === 'false' ? false : +v; } }
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
@@ -44,10 +48,21 @@ for (const sd of SEEDS) {
   const say = s => { log(s); lines.push(s); };
   say(`\n#### seed ${sd} · founded in ${((performance.now() - t0) / 1000).toFixed(1)} s: ${F.fish.length} agents, ${F.yoy.length} young schools · arrays ${G.cap} agents, ${G.ycap} young`);
   let first = null, tB = 0, nB = 0, tlPrev = null; const lastYoy = {}, dietYr = {};
+  // the plankton's own line: Daphnia / copepods / rotifers (µg dry/L, both lakes), the surface's algae, the zooplankton's production
+  // over the interval (g dry/m² of water a day) — the year-1 bloom diagnosis (stage R item 4)
+  const Gw = env.G, chw = env.chem; let wA = 0; for (let c = 0; c < Gw.NC; c++) wA += Gw.area[c];
+  let zp0 = chw.zooProd, tz0 = env.time;
+  const plankton = () => {
+    let d = 0, cz = 0, r = 0, v = 0; for (let j = 0; j < Gw.NCELL; j++) { const q = Gw.vol[j]; d += chw.zooD[j] * q; cz += chw.zooC[j] * q; r += chw.zooR[j] * q; v += q; }
+    const U = PLANKTON.UGL / v, days = Math.max(1e-9, (env.time - tz0) / 86400), prod = (chw.zooProd - zp0) * PLANKTON.DRY / wA / days;
+    zp0 = chw.zooProd; tz0 = env.time;
+    return `D ${(d * U).toFixed(0)} C ${(cz * U).toFixed(0)} R ${(r * U).toFixed(0)} µg/L, production ${prod.toFixed(3)} g DW/m²/day`;
+  };
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
     const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env), gl = await G.gridLoad();
     say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · zooplankton ${w[1].zoo.toFixed(0)} / ${w[2].zoo.toFixed(0)} µg/L (Upper / Lower) · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
+    say(`   plankton: ${plankton()} · surface algae ${w[1].algae.toFixed(3)} / ${w[2].algae.toFixed(3)} · Secchi ${chw.secchi().toFixed(2)} m`);
     KEYS3.forEach((k, q) => {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });

@@ -125,7 +125,7 @@ export class Chem3 {
     this.turbidity = TURBIDITY.BASE; this.fishKgHa = 0; this._migD = 0; this._migC = 0;
     this.meanPhyto = PHYTO.START; this.meanDiatom = DIATOM.START; this.meanCyano = CYANO.START; this.meanDOM = MICROBE.START;
     this.ledger = { inP: 0, inN: 0, outP: 0, outN: 0, buryP: 0, denitN: 0, fixN: 0 };
-    this.zooProd = 0; this.benthProd = 0; this._slowN = 0;
+    this.zooProd = 0; this.benthProd = 0; this._slowN = 0; this.algProd = 0; this.algDecay = 0;   // (the green algae's and diatoms' growth and die-off, units × 2-D cells — diagnostics)
     // transported with the water (the inflow brings `in`): the budget's P and N weights per field, for the ledger
     const nIn = CHEM3.IN_NUT * (1 - NUTRIENT.INFLOW_P), pIn = CHEM3.IN_NUT * NUTRIENT.INFLOW_P;
     this.tf = [
@@ -191,21 +191,22 @@ export class Chem3 {
     const e = this.env, G = this.G, T = e.temp, ph = this.phyto, di = this.diatom, cy = this.cyano, phos = this.phos, nh4 = this.nh4, no3 = this.no3, dom = this.dom, o2 = this.o2;
     const pU = PHYTO.P_USE, nU = PHYTO.N_USE, R = PHYTO.RECYCLE, toDom = (1 - R) * (pU + nU);
     const cpU = CYANO.P_USE, cnU = CYANO.N_USE, cR = CYANO.RECYCLE, ctoDom = (1 - cR) * (cpU + cnU);
-    const kd = this.attenuation(), s = sun(e.yearFrac()), mixM = e.mixDepth();
+    const kd = this.attenuation(), s = sun(e.yearFrac()), mixM = e.mixDepth(), PC = PHYTO.PER_CAPITA;
     let litSum = 0, litN = 0, diaSum = 0, diaN = 0, cySum = 0, cyN = 0, fixed = 0;
     const colD = this.colDecay;
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], Ls = e.light * iceCut, Ld = s.noon * iceCut;
       for (let k = 0; k < n; k++) {
         const j = j0 + k, z = G.zMid[j], att = Math.exp(-kd * z), lit = Ls * att, Tj = T[j], w = this.w[j];
-        const qP = qAt(Q.ph, Tj), rA = PHYTO.DARK_RESP + (1 - PHYTO.DARK_RESP) * Math.min(1, Ld * att / PHYTO.RESP_IK);
+        const qP = qAt(Q.ph, Tj), dark = Math.min(1, Ld * att / PHYTO.RESP_IK), rA = PHYTO.DARK_RESP + (1 - PHYTO.DARK_RESP) * dark;
+        const rD = PC ? PHYTO.DARK_DECAY + (1 - PHYTO.DARK_DECAY) * dark : 1;   // (per-capita algae: starved cells in the dark die slower)
         // GREEN PHYTOPLANKTON: light × Liebig-co-limited nutrient, Redfield N+P taken (ammonium first); decay returns N+P
         // (RECYCLE at once, the rest via DOM); O₂ by day, respiration always
         let p = phos[j], a = nh4[j], nTot = a + no3[j], b = ph[j];
         const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP)), pl = photoRate(lit, qP);
-        let g = PHYTO.GROW * TS * pl * nLim * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
-        let dc = PHYTO.DECAY * TS * qP * b * dt;
-        ph[j] = b + g - dc; colD[c] += dc * w;
+        let g = (PC ? PHYTO.GROW_PC * (b + PHYTO.INOC) : PHYTO.GROW) * TS * pl * nLim * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
+        let dc = (PC ? PHYTO.DECAY_PC : PHYTO.DECAY) * TS * qP * rD * b * dt;
+        ph[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
         p = p - g * pU + dc * R * pU; let need = g * nU, upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
         dom[j] += dc * toDom;
         o2[j] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * TS * dt;
@@ -214,9 +215,9 @@ export class Chem3 {
         b = di[j]; nTot = a + no3[j];
         const tf = clamp(1 - Math.abs(Tj - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), pd = Math.min(lit, tf);
         const nLd = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
-        g = DIATOM.GROW * TS * pd * nLd * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
-        dc = DIATOM.DECAY * TS * qP * b * dt;
-        di[j] = b + g - dc; colD[c] += dc * w;
+        g = (PC ? DIATOM.GROW_PC * (b + PHYTO.INOC) : DIATOM.GROW) * TS * pd * nLd * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
+        dc = (PC ? DIATOM.DECAY_PC : DIATOM.DECAY) * TS * qP * rD * b * dt;
+        di[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
         p = p - g * pU + dc * R * pU; need = g * nU; upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
         dom[j] += dc * toDom;
         o2[j] += (PHYTO.O2_PHOTO * b * pd - PHYTO.O2_RESP * rA * b * qP) * TS * dt;

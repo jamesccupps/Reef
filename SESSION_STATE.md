@@ -186,6 +186,23 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, night, IN PROGRESS — uncommitted): STAGE R ITEM 4, THE YEAR-1 ZOOPLANKTON — ROOT CAUSE FOUND.
+Probes (scratchpad/probe/: water_only.mjs, npp.mjs, alg.mjs — the 3-D water alone, HB_WORLD=true, no fish):
+- Fish-free, Daphnia go 40 → 900 µg/L in 3 weeks of May and HOLD 900–1,500 all summer on algae grazed to 0.013 units; copepods
+  are driven extinct (61 → 1), rotifers 0; under ice everything falls to 1–5 µg/L (DORM sends the actives to eggs; field keeps
+  ~25 % of summer density, copepods carrying); the egg bank grows 16 → 97 and hatches 0.5 %/day (field ~1 %/YEAR, Cáceres 1998).
+- THE FREE LUNCH: the algae's growth is ZERO-ORDER (chem3 _algae: g = GROW·pl·nLim·(1 − b), no ×b). Grazed to 0.013 they still
+  grow 381 vs 425 unit·L/m²/d ungrazed (10 turnovers/day), while their O₂ (∝ b) says NPP fell 662 → 37 mg C/m²/d. Zooplankton
+  production (0.34–0.67 g DW/m²/d ≈ 160–320 mg C) EXCEEDED the algae's O₂-NPP — impossible. Field crustacean production is
+  ~5–25 g DW/m²/yr; the sim's capacity is ~60–100 → it overfeeds the planktivores (year-1 fish 101 → 171 kg/ha).
+- At normal density (day 14, b ≈ 0.24) the O₂ gives 1 algae unit ≈ 1.57 mg C/L and turnover ~0.75/day — realistic; only the
+  low-density behaviour is wrong. FIX UNDER TEST: PER-CAPITA algae (config PHYTO.PER_CAPITA/GROW_PC/INOC/DARK_DECAY, DIATOM.GROW_PC;
+  chem3 uses them when PER_CAPITA — the cyanobacteria's form), calibrated on a zooplankton-free probe to keep the ungrazed
+  seasonal algae/NPP/Secchi/O₂, then grazers back on (expect the PEG pattern: clear-water phase → crash → fish-held summer).
+  Also added chem3 `algProd` (diagnostic tally). THEN: winter (actives ~25 %, copepods carry; ephippia hatch ~1 %/yr in spring),
+  copepods' coexistence, then fish years (≥ 3 seeds × ≥ 5 years). Targets: summer crustaceans 50–150 µg/L (Maine Aug ≈ 90),
+  production 5–25 g DW/m²/yr, NPP mesotrophic ~200–800 mg C/m²/d, chl 3–8 µg/L, Secchi 2.5–4 m.
+
 ▶▶▶ RESUME HERE (2026-10-19, latest): ALL 12 FETCHED FILES READ — the agent's digest (docs/research_notes/fetched_sources_digest.md,
 big scans) + mine (fetched_sources_read_by_me.md, its headline tables re-checked in the rendered scans). STAGE R's TARGETS MOVED
 (docs/FINDINGS.md top entry; HOT_BROOK_3D.md §4 "Design (stage R)" + "From the fetched sources"):

@@ -562,6 +562,8 @@ export const TURBIDITY = {
 // (they draw on the same N and P pools, so the budgets stay closed); zooplankton graze them like green algae.
 export const DIATOM = {
   GROW: 0.7,        // max growth /s at full light × nutrient × the cold-water temperature window
+  GROW_PC: 4.5,     // … per unit of diatoms (the 3-D lakes' per-capita growth: PHYTO.PER_CAPITA)
+  DECAY_PC: 0.035,  // … and their die-off then (as DECAY: a lower one piled diatoms up under the ice)
   TEMP_OPT: 7,      // °C of fastest growth (cold-adapted)
   TEMP_TOL: 10,     // °C half-width: little growth above ~17 °C
   DECAY: 0.035,     // /s mortality (× the Q10 like the other algae)
@@ -588,6 +590,16 @@ export const PHYTO = {
   BAND: 0.45,            // depth fraction of the photic band meanPhyto() averages over (where algae live)
   DIFFUSE: 0.06,         // spreads between cells
   START: 0.12,
+  // PER-CAPITA GROWTH (the 3-D lakes, chem3.js; the 2-D sim keeps GROW above): growth ∝ the algae present, (b + INOC) ×
+  // GROW_PC, as the cyanobacteria's. GROW's zero-order growth made a cell's production nearly independent of its algae: grazed
+  // to 0.013 units, the 3-D lakes' algae still made ~90 % of their ungrazed production (10 turnovers a day where phytoplankton
+  // manage ~1–2 — Eppley 1972), and the zooplankton built 0.67 g dry/m²/day on it, more than the algae's own production by their
+  // O₂ — a free lunch that let Daphnia hold 1,000–1,500 µg/L all summer (real summer crustaceans ~50–150; stage R item 4)
+  PER_CAPITA: false,
+  GROW_PC: 6,            // /s (2-D units) per unit of algae at full light × nutrient: ~0.30–0.35/day realised in summer (phytoplankton turn over ~0.3–1/day)
+  INOC: 0.002,           // resting cells and the inflow's: the floor growth works on (as CYANO.INOC)
+  DECAY_PC: 0.03,        // /s natural die-off (× Q10): 0.15/day at 20 °C (sinking and lysis ~0.1–0.2; with these the ungrazed season matches GROW's)
+  DARK_DECAY: 1,         // share of DECAY kept in the dark (1: none spared)
 };
 
 // ---------- cyanobacteria (the N-fixing phytoplankton strain — a 2nd producer field) ----------
