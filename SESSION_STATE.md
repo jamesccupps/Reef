@@ -201,8 +201,23 @@ fold it into stage R (white perch mortality, growth; the lakes' own survey facts
   smallmouth, white perch, pickerel; bass managed for larger-than-average size; 25-fish white perch bag; no camps on Lower.
   (2) WARNER 1973 page 149 only (the GIF): Kendall Warner, MDIFG Bangor; Maine lakes, spring, ~1 month from ice-out, with the stocked-
   salmonid predation study (Warner et al. 1968); cites Maine pickerel food studies Cooper 1941, Fuller & Cooper 1946, Barr 1962 —
-  the RESULTS are on pp. 150–151: ask the human for those two pages. Still to read myself: whiteperch.pdf, yellowperch.pdf,
-  blackbass.pdf, BassTechnicalWorkGroupNov2019.pdf (small); the agent digests the big scans (Cooper 1941, 2491-36-10.pdf).
+  the RESULTS are on pp. 150–151: ask the human for those two pages.
+  (3) NOW ALL THE SMALL ONES READ — committed record docs/research_notes/fetched_sources_read_by_me.md (the fetched folder is
+  gitignored). Headlines for stage R: WHITE PERCH PLAN (A04) — avg life 5–7 yr (A ≈ 0.45–0.55 ✓), ~4 yr old at 8–10 in (20–25 cm)
+  in typical Maine water, density regulates by STUNTING (a 6-yr-old at 4 in) not by killing the young, year-class failures only
+  from spawning weather, big white perch cannibals, heavy spring spawning runs up streams (a brook to-do). BLACK BASS PLAN (A11)
+  — the smallmouth's Maine limit IS first-year size vs a ~200-day no-feeding winter (< 50 °F), "direct relationship between size
+  and overwinter survival"; YOY 56–74 mm by autumn; cool summers (1986/92/96) cut cohorts; ≥ 10-in bass objective 2.6 kg/ha.
+  USGS SIR 2014-5164 (A15, Spednic, ~30 km E): the Shuter 1980 equations, ready to use — WD = days < 10 °C (208 ± 4, = the
+  sim's), C_max = 0.3375·WD + 22.1 mm (92), C_min = 0.1938·WD + 7.9 mm (48), winter mortality = (C_max − L)/(C_max − C_min);
+  nest loss by T_min; daily growth 0.12·T − 1.7 mm (14.2–25.5 °C); measured YOY 70–76 mm → ~40 % first-winter loss. EPA 1993
+  lakes-and-reservoirs text: age-0 yellow perch > ~14,000/ha in August wipe out Daphnia pulex (Oneida); after ~18 mm predation
+  controls them; critical planktivore biomass 20–1,000 kg/ha (lowest for age-0 perch); zooplankton refuges (DVM, weeds) and
+  small fish hiding in the littoral under predation keep the field's zooplankton moderate — CHECK the sim's age-0 per ha, the
+  zooplankton's refuge, the piscivore share (30–40 % controls planktivores). The yellow perch "plan" is only a commercial-permit
+  form (Hot Brook NOT on the commercial perch list — perch not overabundant ✓); the Bass TWG slides: harvest 2.6 % / 10.3 %.
+  noaa_2897_DS1.pdf is the WRONG FILE (a summer flounder synthesis) — tell the human. The agent digests the big scans: Cooper 1941
+  (A05) and 2491-36-10.pdf = Rupp & DeRoche 1965 (A14), THE ONLY MAINE WHOLE-LAKE STANDING CROP (kg/ha) — stage R's targets.
 
 ▶▶▶ ADDED (2026-10-19, night): RESEARCH "Fish in streams connecting lakes" (the human asked: do other stream-connected lakes have
 this ecosystem?) — report docs/reports/Fish in streams connecting lakes.md (notes in research_notes/Fish in streams connecting
