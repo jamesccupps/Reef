@@ -9,3 +9,6 @@ __pycache__/
 Thumbs.db
 tools/hotbrook/data/
 exports/
+
+# sources the human fetched (PDFs/scans: large, some copyrighted) — the notes made from them are committed, not the files
+docs/research_notes/fetched/
