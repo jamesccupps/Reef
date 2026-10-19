@@ -186,7 +186,13 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
-▶▶▶ RESUME HERE (2026-10-18, late evening): REALISTIC PLANTS BUILT (stage 7h), being generated + gated. Since the block below:
+▶▶▶ RESUME HERE (2026-10-19, ~1 a.m.): STAGE 7h REALISTIC PLANTS COMMITTED (16b5257, pushed, backup ..._0056_realistic_beds.zip).
+Gate: w3 96/97 + headless + smoke — the env-update timing check reads 12.3–12.6 ms vs its 12-ms budget while the OLD CPU reference
+year (tools/w3_season.mjs, pid ~25180, scratchpad true_year.txt, day ~250, ~8 h left) holds a core; HEAD before read 12.2 ms the same
+— RE-RUN `W3_ONLY=env node test/w3.mjs` once that run ends (if still > 12 idle, profile plants3 _grow). Also since: a fish has the
+weeds' cover only IN them (fish3 _inWeeds / wgsl inWeeds); yCover re-tested on realistic beds — worse (2 recruits) → off; with
+realistic beds the young pickerel recruit 247–344 (the lawn had propped them up — docs/FINDINGS.md). NEXT: the density-based
+predation slice (below). The block below is the stage-7h work in detail:
 - plants3: per-form maintenance (`resp`: rosettes 0.007, Nitella/moss 0.010), losses calibrated at the light limit UNDER THE LAKES'
   NUTRIENTS (PL3.NUT_REF 0.85) AND OVER A YEAR (r_lim = ln(1/(carry·WINTER_KEEP))/SEASON_D), WAVES BY FETCH (env3 `fetch`, plants3
   `zWave` — CEM storm waves, U_CRIT 0.1 m/s: 0.7–1.2 m in these lakes; WAVE_M 0.10/day above it, rosettes ×0.02, lilies/emergents
