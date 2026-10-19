@@ -192,6 +192,17 @@ Cooper 1941 (Fish Survey Report No. 4, a 176-MB scan), the Bass Technical Work G
 2491-36-10.pdf, a lakes-and-reservoirs fisheries text, and page 1 of Warner 1973 (pickerel spring food, a GIF). A background agent
 is writing docs/research_notes/fetched_sources_digest.md (and marking the rows of blocked_sources_to_fetch.md) — READ IT FIRST and
 fold it into stage R (white perch mortality, growth; the lakes' own survey facts). More fetches to come from the human.
+  READ BY ME (the human asked me to read everything myself and keep this current): (1) the MDIFW SHEETS (surveyed Aug 1949, rev.
+  1965/2004): Upper 912 acres (369 ha), max 18 ft; Lower 713 acres (289 ha), max 13 ft; both 74 °F surface / 71 °F bottom in August
+  (no stratification); species = the sim's eleven; shores mostly rocky with sand and mud, beds mostly muddy, a large sandy beach in
+  Upper's NE, wetlands (Upper S/W, Lower N/E), spruce–fir; the brook 1/8 mile, "rocky and hard bottomed", non-navigable (paddle/pole/
+  walk), the only way into Lower; flow Upper's N outlet → Lower's S inlet → Lower's N outlet → Baskahegan Stream (the sim's geometry
+  matches — built from these soundings); "excellent spawning and adult habitat for bass, perch, and pickerel"; principal fisheries
+  smallmouth, white perch, pickerel; bass managed for larger-than-average size; 25-fish white perch bag; no camps on Lower.
+  (2) WARNER 1973 page 149 only (the GIF): Kendall Warner, MDIFG Bangor; Maine lakes, spring, ~1 month from ice-out, with the stocked-
+  salmonid predation study (Warner et al. 1968); cites Maine pickerel food studies Cooper 1941, Fuller & Cooper 1946, Barr 1962 —
+  the RESULTS are on pp. 150–151: ask the human for those two pages. Still to read myself: whiteperch.pdf, yellowperch.pdf,
+  blackbass.pdf, BassTechnicalWorkGroupNov2019.pdf (small); the agent digests the big scans (Cooper 1941, 2491-36-10.pdf).
 
 ▶▶▶ ADDED (2026-10-19, night): RESEARCH "Fish in streams connecting lakes" (the human asked: do other stream-connected lakes have
 this ecosystem?) — report docs/reports/Fish in streams connecting lakes.md (notes in research_notes/Fish in streams connecting
