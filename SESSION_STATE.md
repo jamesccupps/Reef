@@ -210,6 +210,12 @@ against the photo look in the browser (bog, rocky opening, conifer stand, tracks
   fallfish are dace-sized and striped). Lake-to-lake schools fit YOUNG FALLFISH (dace are stream residents in loose aggregations)
   → with stage R's young: young fallfish groups using the brook as a summer corridor between the lakes (count crossings by size:
   fish3 stats.cross); the dace's status stays open (a rare resident? the closed brook loses them to the lakes' passing predators).
+  And WHO IS IN THE BROOK IN SUMMER (the human): RESIDENT — sunfish (the sim: pumpkinseed 30 % / redbreast 50 % of those near the
+  brook summer in its pools ✓) and sometimes SMALLER BASS (not modelled); PASSING — schools of fallfish (the sim: only the spring
+  spawning run) and sometimes LARGER BASS, especially in the deep pool at the Upper end, "probably waiting for all the schools of
+  small minnows that swim through" (an ambush point at the corridor's mouth — emergent if the schools pass and bass follow prey);
+  no resident dace mentioned. To build with stage R's young: small bass summering in the brook's pools; young fallfish schools
+  travelling lake to lake through it; check that big bass gather at the upper pool when the schools run.
 
 ▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
 (docs/HOT_BROOK_3D.md §4 "Design/Results (stage P1)", "Design/Built (stage P2)"; research `Whole lake 3D fish simulation/
