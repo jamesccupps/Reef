@@ -205,8 +205,11 @@ against the photo look in the browser (bog, rocky opening, conifer stand, tracks
   fallfish and bass (the human), fallfish plentiful.
 - Results still landing (scratchpad): y612_y1_3yr (year 3), then y613_p3 / y611_p3 (P3, a year; snap_p3 :8104). Snapshot servers
   (node serve.mjs in snap_*/) on :8102–8105 can be stopped when done.
-- ASK THE HUMAN (field knowledge): do blacknose dace live in Hot Brook above and below the lakes too (the closed brook can't hold
-  them against the lakes' predators passing through)?
+- THE HUMAN (2026-10-19, asked about the dace): "schools of either dace or fallfish swim between the lakes through the stream, you
+  can see them, at least during the summer" (they had wondered whether dace and fallfish are the same fish — they're not; young
+  fallfish are dace-sized and striped). Lake-to-lake schools fit YOUNG FALLFISH (dace are stream residents in loose aggregations)
+  → with stage R's young: young fallfish groups using the brook as a summer corridor between the lakes (count crossings by size:
+  fish3 stats.cross); the dace's status stays open (a rare resident? the closed brook loses them to the lakes' passing predators).
 
 ▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
 (docs/HOT_BROOK_3D.md §4 "Design/Results (stage P1)", "Design/Built (stage P2)"; research `Whole lake 3D fish simulation/
