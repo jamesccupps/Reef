@@ -186,6 +186,16 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-19, morning): STAGE Y1 — PREDATION ON THE YOUNG BY DENSITY — COMMITTED (03a0497, pushed, backup
+..._density_predation.zip). Both engines: a prey table per column × species × length class, Holling II requests (clearance
+400·L^0.6 L/d, gut-limited), order-free settlement (followed fish first, young schools from the rest); FRY.DENSITY 0 = the old
+rule; the 3-D sim's own background M_LARVA3 0.04 / M_JUV3 0.015 (2-D keeps 0.08 / 0.035), LARV_A 0.1. Three seeds, a year: pickerel
+recruits ~1,770 (175–257 old), biomass 3.4 kg/ha (start 3.2); bass 11.0 kg/ha (9.1); perch/white perch biomass up; BULLHEAD 0.66×
+and KILLIFISH 0.31× by count (old 0.83 / 0.46) — NEXT: why (who eats their young and adults; killifish ~79k adults/yr to pickerel),
+the young pickerel's juvenile predation by perch (35–38 %/fortnight at 3–6 cm, ~3× the target), the census cap (78 % of the young
+perch reaching 8 cm discarded), the env-update timing check (12.4 ms vs 12 — re-run idle once the old CPU reference year
+`tools/w3_season.mjs` (scratchpad true_year.txt) finishes). year.js takes ?fry.KEY=v; year_cdp.mjs runs any tools/gpu page.
+
 ▶▶▶ RESUME HERE (2026-10-19, ~1 a.m.): STAGE 7h REALISTIC PLANTS COMMITTED (16b5257, pushed, backup ..._0056_realistic_beds.zip).
 Gate: w3 96/97 + headless + smoke — the env-update timing check reads 12.3–12.6 ms vs its 12-ms budget while the OLD CPU reference
 year (tools/w3_season.mjs, pid ~25180, scratchpad true_year.txt, day ~250, ~8 h left) holds a core; HEAD before read 12.2 ms the same
