@@ -214,7 +214,9 @@ against the photo look in the browser (bog, rocky opening, conifer stand, tracks
   brook summer in its pools ✓) and sometimes SMALLER BASS (not modelled); PASSING — schools of fallfish (the sim: only the spring
   spawning run) and sometimes LARGER BASS, especially in the deep pool at the Upper end, "probably waiting for all the schools of
   small minnows that swim through" (an ambush point at the corridor's mouth — emergent if the schools pass and bass follow prey);
-  no resident dace mentioned. To build with stage R's young: small bass summering in the brook's pools; young fallfish schools
+  no resident dace mentioned. And "the pike [pickerel] swim through too and seem to hang out in there" — pickerel regulars in the
+  brook's pools and weedy runs (the sim: at true scale the brook is their range, the bigger-deeper rule holds them in its pools ✓;
+  they took ~550 of the brook's dace a year — consistent with dace being rare there). To build with stage R's young: small bass summering in the brook's pools; young fallfish schools
   travelling lake to lake through it; check that big bass gather at the upper pool when the schools run.
 
 ▶▶▶ RESUME HERE (2026-10-19, afternoon): STAGE P — WHERE THE PREY ARE AND WHAT THE PREDATORS TAKE — COMMITTED AS A CHECKPOINT
