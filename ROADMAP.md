@@ -133,6 +133,9 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
    (~1.07 M), killifish and dace counted whole; agents: schools for the small schooling fish, individuals for the solitary
    ones, the budget's rest to the biggest perch and white perch (~300,000 agents → every fish ≥ ~20 cm its own brain).
    Built first, then TRUE_SCALE.md T1–T7.
+9. **A research paper when the build is done (human, 2026-10-18).** "When we are finished with all of this, we should write
+   some sort of research paper, that puts together everything we have researched and found out by testing and making this
+   environment." The capstone write-up — see "📄 The paper" below. Its running findings log starts now: `docs/FINDINGS.md`.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*
@@ -164,6 +167,26 @@ beautiful makes it a *predictive sandbox*: load a baseline lake, perturb one var
 - *Definition of done:* a researcher loads a scenario, perturbs one input, and gets a believable, reproducible,
   exportable trajectory of how the ecosystem responds. *(This is the capstone — it needs the realism phases first,
   but every config-driven, headless-tested, deterministic subsystem we build is a brick in it.)*
+
+## 📄 The paper — what we researched and what building the lakes taught (human, 2026-10-18; write when the build is done)
+A research paper that puts together everything researched for, and found out by testing and building, the Hot Brook lakes'
+simulation. Two halves:
+- **The synthesis of the field** — the Hot Brook lakes and brook (the 1949 soundings, the true-scale bathymetry, the fish
+  census, the human's own observations), Maine lake limnology, and each organism's sourced parameters: the research notes
+  (`docs/research_notes/` — ~60 notes, every number tagged primary/abstract/secondary/inference), `docs/ECOLOGY_RESEARCH.md`,
+  `docs/reports/`, `docs/FISH_CENSUS.md`. Where the literature is thin (no chain pickerel age-0 survival, no isoetid dark
+  respiration, no young-piscivore attack rates at these sizes), say so: those gaps are findings too.
+- **What building and testing taught** — the things only a running whole-lake model could show, each with its evidence (the
+  runs, seeds, the gate's checks): model artifacts and their fixes (a uniform plant seeding that hid the beds' real equilibrium
+  for every earlier run; super-individual schools that can only meet by coinciding; the coarse block's bed feeding; a
+  hand-over bug the GPU exposed), mechanisms that mattered (winter respiration in the cold, energy density by condition, the
+  plants' annual budget at their depth limit, the waves' fetch setting the shallow edge, cover by stand), what the lakes need
+  to be self-sustaining (recruitment, cannibalism, the census cap), and the engine itself (CPU reference vs WebGPU blocks,
+  statistical parity, ~40× speed).
+- **Form:** a manuscript (Markdown → PDF; figures from the year runner and the audits, the scripts that made them kept with
+  it), Methods reproducible from the repo (seeded runs, the gate). Write it once the lakes run self-sustaining for decades and
+  the evolution stage has results — but log findings as they happen in `docs/FINDINGS.md` (one dated entry each: what was
+  found, how, the evidence, where it's documented), so nothing has to be reconstructed later.
 
 ## "Every organism on its own neural network" — the lower trophic web as agents
 The vision is that **every organism is driven by its own NN**. Today only the **fish** are NN agents; the rest are

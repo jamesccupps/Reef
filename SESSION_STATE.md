@@ -186,6 +186,49 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
+▶▶▶ RESUME HERE (2026-10-18, late evening): REALISTIC PLANTS BUILT (stage 7h), being generated + gated. Since the block below:
+- plants3: per-form maintenance (`resp`: rosettes 0.007, Nitella/moss 0.010), losses calibrated at the light limit UNDER THE LAKES'
+  NUTRIENTS (PL3.NUT_REF 0.85) AND OVER A YEAR (r_lim = ln(1/(carry·WINTER_KEEP))/SEASON_D), WAVES BY FETCH (env3 `fetch`, plants3
+  `zWave` — CEM storm waves, U_CRIT 0.1 m/s: 0.7–1.2 m in these lakes; WAVE_M 0.10/day above it, rosettes ×0.02, lilies/emergents
+  ×0.15), ice scour spares the rosettes, COVER BY STAND (plants3 `cov`/`reachB` per bed cell, `covC` per column; littoral3 reach and
+  crayfish use them; GPU water sections pCov/pReach replace stems). Spin-ups (scratchpad plants_spin.mjs; true lakes, no fish):
+  stands incl. the Nitella meadow 52 → 46 → 42 % of the bed (yrs 2–4, converging), canopy 0–0.5 m ~2 %, 0.5–1 m 63 %, 1–2 m
+  68–78 %, 2–3 m 27 % → ~20 % (a logistic equilibrium: the deep stands grow above their annual break-even, room-limited), 3–4 m 2 %.
+- RUNNING: both worlds' generated starts (5 years each: scratchpad build_tenth.txt / build_true.txt → src/w3/plants3init.js,
+  src/w3/true/plants3init.js). THEN: W3_ONLY=plants (the second-summer checks from the bare seeding will need their bands re-set to
+  the new model — vegetated was 52 % vs 25–50 %; insect emergence 0.45 vs ≥ 0.5 g/m² of vegetated littoral, more vegetated area), the
+  new stage-7h check (generated start, stands 15–50 % by July, the wave zone bare of canopy), the full w3 gate, doc_7h.md (scratchpad)
+  into HOT_BROOK_3D.md §5 with the results table, FINDINGS, commit + push + backup.
+- The human (2026-10-18): a RESEARCH PAPER at the end — ROADMAP item 9 + "📄 The paper"; the findings log docs/FINDINGS.md (new).
+- NEXT SLICE: density-based predation on the young (research: young_piscivore_functional_response.md §5) — per-column × species ×
+  size-class prey tables, Holling II (clearance 400·L^0.6 L/d, gut-limited handling), deaths shared by bin (order-free); replaces
+  the 0.6-m nearest-school rule for young schools AND followed fish eating young; then cut FRY.M_JUV/M_LARVA's share that stood for
+  unsimulated predators (double counting); calibrate vs field Z (bluegill fry 0.11–0.39/d after dispersal, perch larvae ~0.04/d,
+  Aug–Oct YOY 0.008–0.06/d; young-piscivore rations 10–25 %/d); ≥ 3 seeds on the GPU year.
+
+▶▶▶ RESUME HERE (2026-10-18 evening, after a /compact): REALISTIC PLANTS — the human: "well make it realistic, the plants should be
+realistic" (after the young pickerel's cover A/B failed). UNCOMMITTED WORK IN THE TREE (gate not yet run on it):
+- fish3/GPU: S3.pike.yCover (young weigh a spot's food by its cover; OFF — A/B seed 612: 1,799 recruits vs 2,657 without), BIO.pike
+  yLpisc 5 (young schools eat fish from 5 cm — pickerel_young_of_year.md; +4 % recruits only: young-on-young encounters need a
+  prey school within YOY_EAT_R 0.6 m — a super-individual artifact, TODO density-based "footprint" predation for young schools);
+  GPU tallies T_YCAP (young discarded at the census cap — fish3 stats.fry.capped; bass lose ~700k of 1.1M at recruitment there),
+  T_KILLSZ/T_KILLPZ (kills by prey length, by prey and predator); year.js ?ycover= ?ylpisc=, "young pike/bass eaten by" lines;
+  year_cdp.mjs a profile per port (two runs side by side: the second window gets most of the GPU, +30 % throughput).
+- PLANTS: the runs all started from Plants3.seed()'s UNIFORM LAWN (every species at 15 % of its stand in every cell of its range):
+  first summer 96–100 % of the bed "vegetated", every species declining from June (an artifact). The model's own beds after 2–3
+  years (scratchpad plants_spin.mjs, true lakes, no fish): stands on 26/24 % (yr 2) → 20/17 % (yr 3) of Upper/Lower's bed, canopy to
+  2.7–3.0 m — the research's ~20/24 % and depth bands (weed_bed_structure.md, new) — BUT STILL DECLINING at year 3 (large-leaf 28 →
+  7 → 3.9 t): diagnosing (scratchpad plants_why.mjs → why4.txt: Secchi, sed/water P, plants' P, fL/fP/fN per species by July).
+  BUILT: Plants3 loads a generated start (src/w3/plants3init.js, true/plants3init.js — tools/hotbrook/build_plants3.mjs spins up
+  N years from the bare seeding, Uint16 log codes, keyed to the bed cells; Env3 option plantInit:false = the bare seeding); the 1/10
+  file exists (2 years, PRELIMINARY — regenerate once the equilibrium holds). NEXT: fix the decline if it's a model fault, generate
+  both worlds' starts, then fish cover by STAND (Σ stand share × in-stand cover, not cover of cell-mean stems — the Hill curve
+  dilutes; littoral3 reach/crayfish the same), then the research's refuge rules (per-form architecture, pickerel ~600 stems/m² vs
+  bass ~175, edges, lily shade). Gate the plants section; commit.
+Results this session (true lakes, seed 611/612, a year): BED_SHARE no help (bass 0.63 · 0.61, pickerel 0.45 · 0.46); by BIOMASS bass
+hold (1.02×), pickerel 0.69×, bullhead 0.76×, fallfish 0.62×, sunfishes ~0.55×; pickerel cannibalism 4.7–5.3k a year (90 % on
+10–20-cm fish; ~2.5 %/week in late May vs the evidence's ≤ 0.1–0.3 %) against 2.2–2.7k recruits — a lever once the weeds are real.
+
 ▶▶▶ RESUME HERE (2026-10-19, ~1 a.m.): CALIBRATING THE YEAR, round 2 — the human said "keep going" (fix the predators first).
 COMMITTED since round 1: 612b2a1 F3.BED_SHARE (coarse blocks feed on the bed by their share of time within reach, gamma shape 2 —
 crayfish 133–135 g/h in blocks vs 149 fine, was 83–97; CPU⇄GPU parity all species), FRY.M_JUV_B (Lorenzen juvenile scaling, OFF —

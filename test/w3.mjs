@@ -701,11 +701,14 @@ if (run('plants')) {
       // (stage 7g: the canopy's vegetated share — the angiosperms, research ~30 % at a ~2.3-m limit — apart from the stoneworts'
       // low meadow, which grows deeper: charophytes' Zc 4.5–6.8 m at Secchi 2.5–4 against the angiosperms' 3.7–4.8, Chambers &
       // Kalff 1985; macrophytes.md. Now the evergreens keep their shoots, Nitella's sparse meadow alone adds ~15–20 % of the bed)
-      const iN = FORMS3.findIndex(F => F.key === 'nitella'); let vegC = 0, nitZ = 0;
-      for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; if (FORMS3.reduce((t, F, f) => t + (f === iN ? 0 : P.Bs[f][i] / F.Bmax), 0) > 0.1) vegC += A; if (P.Bs[iN][i] > 3) nitZ = Math.max(nitZ, P.zb[i]); }
+      // (stage 7h: BY STAND AREA — each species' shoots / its stand's peak, the share of its cell its stand holds; the research's
+      // "bed covered", as plants3's cover — the presence count, > 0.1 of any stand, counted a cell with a thin stand as vegetated)
+      const iN = FORMS3.findIndex(F => F.key === 'nitella'); let vegC = 0, vegP = 0, nitZ = 0;
+      for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; const st = FORMS3.reduce((t, F, f) => t + (f === iN ? 0 : Math.min(1, P.Bs[f][i] / F.Bmax)), 0); vegC += Math.min(1, st) * A; if (st > 0.1) vegP += A; if (P.Bs[iN][i] > 3) nitZ = Math.max(nitZ, P.zb[i]); }
       // the floating-leaved and emergent forms' share of the vegetated bed (by the area their stands cover)
       let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
-      return { shoots, store, veg: veg / bedA, vegC: vegC / bedA, nitZ, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
+      let stand = 0; for (let i = 0; i < P.cells.length; i++) stand += Math.min(1, FORMS3.reduce((t, F, f) => t + Math.min(1, P.Bs[f][i] / F.Bmax), 0)) * G.bedA[P.cells[i]];   // (every form's stands: the beds' area)
+      return { shoots, store, veg: veg / bedA, vegC: vegC / bedA, vegP: vegP / bedA, stand, nitZ, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
     };
     // (stage 7b: the weeds' invertebrates, snails and the surface — littoral3.js — over the same run)
     const Lt = e.lit, litSnap = () => {
@@ -749,11 +752,11 @@ if (run('plants')) {
       if (y > 1.0 && yf > 0.44 && !uAug) uAug = P.total(iU);
       if (julBank < 0 && y > 1.0 && yf > 0.38) { let sb = 0, ab = 0, so = 0, ao = 0; for (let c = 0; c < G.NC; c++) { if (Lt.bank[c] > 0) { sb += Lt.surfT[c] * G.area[c]; ab += G.area[c]; } else { so += Lt.surfT[c] * G.area[c]; ao += G.area[c]; } } julBank = sb / ab; julOpen = so / Math.max(1, ao); }
     }
-    const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = augL.vegShare * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry)
+    const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = aug.vegC * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry; per m² of the weed BEDS — the canopy's, lilies', emergents' and rosettes' stands' area, stage 7h — not the deep Nitella meadow's sparse carpet, which emergence studies of the vegetated littoral don't sample)
     const sum = a => a.reduce((s, v) => s + v, 0);
-    check("the second summer: weeds (the canopy, lilies, emergents, rosettes) on about a quarter to a half of the bed (research ~30 %), the submerged canopy down to 1.3–2.8 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m), the stoneworts' meadow deeper (charophytes' Zc beyond the angiosperms')",
-      !!aug && aug.vegC > 0.2 && aug.vegC < 0.5 && aug.deep >= 1.3 && aug.deep <= 2.8 && aug.secchi > 2.5 && aug.secchi < 4 && aug.nitZ > aug.deep,
-      aug ? `vegetated ${(aug.vegC * 100).toFixed(0)} % (${(aug.veg * 100).toFixed(0)} % with Nitella's sparse meadow, to ${f2(aug.nitZ)} m), canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
+    check("the second summer: weeds (the canopy, lilies, emergents, rosettes) in stands over about a fifth to a half of the bed (research ~20–30 %), the submerged canopy down to 1.3–3.2 m in coloured water (Secchi 2.5–4 m; research 2–2.7 m — colour lowers Duarte's Zmc = 1.9 + 0.63·Secchi ≈ 4 m), the stoneworts' meadow deeper (charophytes' Zc beyond the angiosperms')",
+      !!aug && aug.vegC > 0.2 && aug.vegC < 0.5 && aug.deep >= 1.3 && aug.deep <= 3.2 && aug.secchi > 2.5 && aug.secchi < 4 && aug.nitZ > aug.deep,
+      aug ? `in stands ${(aug.vegC * 100).toFixed(0)} % of the bed (present on ${(aug.vegP * 100).toFixed(0)} %; ${(aug.veg * 100).toFixed(0)} % with Nitella's sparse meadow, to ${f2(aug.nitZ)} m), canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
     check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
       !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
     // (stage 7f: per gram of plant — Cyr & Downing's ~5 mg DW of animals per g, ~30 mg wet; a full single-form canopy of 150+ g
@@ -814,6 +817,24 @@ if (run('plants')) {
     const best = pairs.reduce((s, p) => s + p.tot, 0) / Math.max(1, pairs.length);
     check('dense weed beds\' water swings in O₂ by day and night more than bare water at their depth (production by day, respiration always)',
       pairs.length >= 4 && sb > 1.3 * so, `${pairs.length} beds (mean ${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; matched bare: ${f2(so)} mg/L`); }
+  // (stage 7h) THE LAKES' WEEDS AT THEIR START, AND THE WAVES: a lake opens on its generated beds (plants3init.js — the model's own
+  // after years grown from the bare seeding, tools/hotbrook/build_plants3.mjs), not the uniform lawn, and by July holds stands on a
+  // fifth to a half of its bed (the canopy, lilies, emergents, rosettes; research ~20–25 %, rake hits 4–56 % of littoral points —
+  // weed_bed_structure.md), the storm waves keeping the exposed shallows bare of the canopy (Chambers 1987: the submerged plants'
+  // upper limit is the wave-mixing depth — plants3 zWave from env3's fetch)
+  { const { SEASON } = await import('../src/config.js');
+    seed(561); const e = new Env3({ yf0: SEASON.START_YF }), P = e.plants, G = e.G;
+    for (let t = 0; t < 60 * CLOCK3.DAY_LEN; t += 1752) e.step(1752);   // (to mid-July)
+    let bedA = 0, stA = 0, wA = 0, wSC = 0, dA = 0, dSC = 0; const SC = FORMS3.map(F => F.form === 'SC'), DM = FORMS3.map(F => F.form === 'DM');
+    for (let i = 0; i < P.cells.length; i++) {
+      const A = G.bedA[P.cells[i]], c = P.col[i], z = P.zb[i]; if (P.brook[i]) continue; bedA += A;
+      let st = 0, sc = 0; FORMS3.forEach((F, f) => { const phi = Math.min(1, P.Bs[f][i] / F.Bmax); if (!DM[f]) st += phi; if (SC[f]) sc += phi; });
+      stA += Math.min(1, st) * A;
+      if (z < 0.5 * P.zWave[c]) { wA += A; wSC += Math.min(1, sc) * A; } else if (z > P.zWave[c] && z < 2.5) { dA += A; dSC += Math.min(1, sc) * A; }
+    }
+    const share = stA / bedA, wv = wSC / Math.max(1, wA), dp = dSC / Math.max(1, dA);
+    check("a lake opens on its generated weed beds (the model's own after years, not a uniform lawn): stands on a fifth to a half of the bed by July, the storm waves keeping the exposed shallows bare of the canopy",
+      P.fromInit && share > 0.15 && share < 0.5 && wv < 0.3 * dp, `generated start ${!!P.fromInit}; stands (no Nitella meadow) ${(100 * share).toFixed(0)} % of the bed; canopy stand share in the wave zone ${f2(wv)} vs ${f2(dp)} below it to 2.5 m`); }
 }
 
 // ============================================================

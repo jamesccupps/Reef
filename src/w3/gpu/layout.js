@@ -208,7 +208,7 @@ export function statsAdd(st, tl, time = 0) {
     const g = tl[80 + q] / M; if (g > 0) st.intakeBy[k] = (st.intakeBy[k] || 0) + g;
     KEYS3.forEach((kq, r) => { const v = tl[96 + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
     const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * 7 + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
-    T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; });
+    T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[910 + q] / M;
     const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
     const at = st.spawnAt[k]; at.sub += tl[424 + q] / M; at.bed += tl[436 + q] / M; at.brook += tl[448 + q] / M; if (sp > 0 && at.first < 0) at.first = time;
   });
@@ -226,7 +226,8 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   // the habitat: day, night, winter × [bot0, bot1, v, h, act]
   'hD0', 'hD1', 'hDv', 'hDh', 'hDa', 'hN0', 'hN1', 'hNv', 'hNh', 'hNa', 'hW0', 'hW1', 'hWv', 'hWh', 'hWa',
   // the cold rule (bioenergetics.js coldResp/coldCmax): mode 0 none, 1 an empirical curve, 2 the adult set's for a juvenile, 3 FB4's × mul
-  'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC'];
+  'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC',
+  'yCover', 'yLpisc'];   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
 export const SP_REC = 128;
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
@@ -267,7 +268,7 @@ export function packSpecies() {
       fecA: sp.fec.a, fecB: sp.fec.b, sHatch: sp.sHatch, Lhatch: sp.Lhatch, L0: sp.L0, pelagicFry: sp.pelagicFry || 0, Lmat: sp.Lmat, LmatM: sp.LmatM || 0,
       tempTolS: sp.tempTol, o2CritS: sp.o2Crit, Linf: sp.vb.Linf, vbK: sp.vb.k, vbT0: sp.vb.t0,
       mvSettle: mv.settle || 0, mvYf0: mv.yf ? mv.yf[0] : -1, mvYf1: mv.yf ? mv.yf[1] : -1, mvTrip: mv.trip || 0,
-      mvTripYf0: mv.tripYf ? mv.tripYf[0] : -1, mvTripYf1: mv.tripYf ? mv.tripYf[1] : -1, mvTripD: mv.tripD || 0,
+      mvTripYf0: mv.tripYf ? mv.tripYf[0] : -1, mvTripYf1: mv.tripYf ? mv.tripYf[1] : -1, mvTripD: mv.tripD || 0, yCover: s.yCover || 0, yLpisc: sp.yLpisc ?? sp.Lpisc,
     };
     for (const [m, H] of [['D', s.hab.day], ['N', s.hab.night], ['W', s.hab.winter]]) { V['h' + m + '0'] = H.bot[0]; V['h' + m + '1'] = H.bot[1]; V['h' + m + 'v'] = H.v; V['h' + m + 'h'] = H.h; V['h' + m + 'a'] = H.act; }
     { const c = sp.cold; Object.assign(V, c ? { cMode: c.R5 ? 1 : c.adultR ? 2 : 3, cT0: c.T0, cT1: c.T1, cR5: c.R5 || 0, cWref: c.Wref || 1, cB: c.b || 0, cQ10: c.Q10 || 1,
@@ -345,8 +346,8 @@ export function packSites(F) {
 export function waterSections(env) {
   const G = env.G, ch = env.chem, lit = env.lit, pl = env.plants, NB = lit ? lit.cells.length : 1, NP = pl ? pl.spawnS.rigid.length : 1;
   return [['temp', G.NCELL], ['o2', G.NCELL], ['zooD', G.NCELL], ['zooC', G.NCELL], ['zooR', G.NCELL], ['zv', G.NCELL], ['plantRef', G.NCELL],
-    ['benth', G.NCELL], ['sedOM', G.NCELL], ['ice', G.NC], ['stems', G.NC], ['canopy', G.NC], ['coverC', G.NC], ['o2Best', G.NC], ['surfA', G.NC], ['surfT', G.NC],
-    ['litL', NB], ['litSn', NB], ['litS', NB], ['litCrA', NB], ['litCrY', NB], ['litKcr', NB], ['spRigid', NP], ['spMat', NP], ['spPlant', NP]];
+    ['benth', G.NCELL], ['sedOM', G.NCELL], ['ice', G.NC], ['canopy', G.NC], ['coverC', G.NC], ['o2Best', G.NC], ['surfA', G.NC], ['surfT', G.NC],
+    ['litL', NB], ['litSn', NB], ['litS', NB], ['litCrA', NB], ['litCrY', NB], ['litKcr', NB], ['spRigid', NP], ['spMat', NP], ['spPlant', NP], ['pCov', NP], ['pReach', NP]];   // (pCov, pReach: plants3 cov, reachB per bed cell)
 }
 export function waterLayout(env) { let off = 0; const offs = {}, lens = {}; for (const [n, l] of waterSections(env)) { offs[n] = off; lens[n] = l; off += l; off = (off + 3) & ~3; } return { offs, lens, size: off }; }
 // fill the dynamic water buffer from the env (o2Best: each column's better-oxygenated neighbour, fish3 _o2Better, or −1)
@@ -354,7 +355,7 @@ export function packWater(F, env, WL, out = null) {
   const W = out || new Float32Array(WL.size), I = new Int32Array(W.buffer), ch = env.chem, lit = env.lit, pl = env.plants, G = env.G, o = WL.offs;
   W.set(env.temp, o.temp); W.set(ch.o2, o.o2); W.set(ch.zooD, o.zooD); W.set(ch.zooC, o.zooC); W.set(ch.zooR, o.zooR); W.set(ch.zv, o.zv); W.set(ch.plantRef, o.plantRef);
   W.set(ch.benth, o.benth); W.set(ch.sedOM, o.sedOM); W.set(env.ice, o.ice);
-  if (pl) { W.set(pl.stems, o.stems); W.set(pl._canopy, o.canopy); for (let c = 0; c < G.NC; c++) W[o.coverC + c] = pl.coverAt(c); W.set(pl.spawnS.rigid, o.spRigid); W.set(pl.spawnS.mat, o.spMat); W.set(pl.spawnS.plant, o.spPlant); }
+  if (pl) { W.set(pl.cov, o.pCov); W.set(pl.reachB, o.pReach); W.set(pl._canopy, o.canopy); for (let c = 0; c < G.NC; c++) W[o.coverC + c] = pl.coverAt(c); W.set(pl.spawnS.rigid, o.spRigid); W.set(pl.spawnS.mat, o.spMat); W.set(pl.spawnS.plant, o.spPlant); }
   F._o2cAt = -1; for (let c = 0; c < G.NC; c++) I[o.o2Best + c] = F._o2Better(c);
   if (lit) { W.set(lit.surfA, o.surfA); W.set(lit.surfT, o.surfT); W.set(lit.L, o.litL); W.set(lit.sn, o.litSn); W.set(lit.S, o.litS); W.set(lit.crA, o.litCrA); W.set(lit.crY, o.litCrY); W.set(lit.Kcr, o.litKcr); }
   return W;

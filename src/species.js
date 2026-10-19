@@ -383,6 +383,10 @@ export const BIO = {
     Lhatch: 0.9, sHatch: 0.05, L0: 8, Lref: 43, Lmat: 37, LmatM: 33, matMinAge: yrs(2), maxAge: yrs(9), matureAge: yrs(3.5), M: 0.62,   // mature at age 3–4 at 33–41 cm; Maine ice anglers' fish average 43 cm (MDIFW); M = 5.4/9 – Then et al. 0.66
     gut: 0.18, gerMul: 0.25, gsiF: 0.15, gsiM: 0.025,   // (pike: ♂ GSI 2.5 %, Medford & Mackay 1978; 50 % of a meal in ~20 h, all in ~48–50 h in summer, Diana 1979)
     fec: { a: 0.0630, b: 3.243 },   // 10,000–12,000 eggs per lb (~24,000/kg, MDIFW) × Ws: 43 cm → ~12,500
+    yLpisc: 5,   // cm: the YEAR'S YOUNG take their first fish at ~4–6 cm (a Sebago pickerel < 64 mm held a 13-mm sucker, Kendall 1917; the
+                 //   smallest grass-pickerel fish eater 54 mm, Crossman 1962; fish in Kleinert & Mraz's 15–40-mm class) and fish dominate by
+                 //   ~8–10 cm (Meyers & Muncy 1962; Flemer 1959) — pickerel_young_of_year.md. (Lpisc 8 kept for the followed fish: their
+                 //   insect years, 3 × Lpisc, fit Maine's "strongly piscivorous at 7–9 in"; a young school uses yLpisc, default Lpisc)
     Lzoo: 4, Lpisc: 8, gapeR: 0.13, depthR: 0.14, uilt: 30, o2Lethal: 0.5, o2Ice: 0.35, vuln: 0.8,   // (under ice ~0.3–0.4 mg/L — the mud pickerel's, Cooper & Washburn 1946)   // insects first, "strongly piscivorous" after 18–23 cm (MDIFW); Massachusetts fish ≤ 30 cm ate 40–65 % crayfish; UILT: one 28.4 °C value at 17.7 °C acclimation (ORNL) — prior
   },
 };

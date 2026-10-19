@@ -657,6 +657,72 @@ Plants3 (PL3), plus what chem3, littoral3 and fish3 read from it:
 - the lawns' coupled nitrification–denitrification (> 6× bare);
 - whether bladderworts grow in the brook's slow runs (one photo, unsure).
 
+**Built (stage 7h) — REALISTIC BEDS (2026-10-18; the human: "well make it realistic, the plants should be realistic").**
+Research: `Whole lake 3D fish simulation/weed_bed_structure.md` (extent and patchiness, refuge by architecture, Hot Brook),
+`weed_bed_controls.md` (depth band, waves and fetch, slope, substrate, ice — Duarte's 1987 thesis, Chambers 1987, Rowan 1992),
+`weed_bed_density.md` (stems and biomass inside stands, by form).
+
+What an audit found (true lakes, no fish; scratchpad `plants_audit.mjs`, `plants_spin.mjs`, `plants_why.mjs`):
+- **Every run started from a uniform lawn.** `Plants3.seed()` put every species at 15 % of its stand in every cell of its range: the
+  first summer had plants on 96–100 % of the bed, both lakes' shallows under 2 m were 83 % in fish cover ≥ 0.5 by August, lilies held
+  ~10 ha (the aerial photos ~2), and every species shrank from June as the unfit stands died — the year runs and the view all opened
+  on it.
+- **The model's own beds kept shrinking for years** (26 → 20 → 17 → 17 % of Upper's bed in stands at years 2–5; the canopy's deepest
+  ~2 m): the evergreen rosettes and Nitella could grow nowhere — the canopy plants' 0.022/day maintenance floor exceeded their best
+  growth (mu 0.005–0.02) — and every species' losses were set to break even on its light limit's DAY with unlimited nutrients, so the
+  deep edges, which must regrow each summer what the autumn sheds, lost ground every year.
+- **Waves acted alike on every shore** (a fixed term under 0.6 m), so the canopy was densest (77–79 %) in the exposed 0.5–1 m band
+  where the field has bare sand, rosette lawns and rock (Duarte: submerged plants start at 0.75–1.25 m in 25 northeastern lakes;
+  Chambers: at the wave-mixing depth; the human's dock shore is bare to 0.6 m).
+- **Fish cover read the cell's mean stems**: the Hill cube made a patchy cell's dense stand count for little (a third of a cell in a
+  250-stem bladderwort mat read 0.11 instead of ~0.27).
+
+Built:
+- **A generated start** (`tools/hotbrook/build_plants3.mjs` → `src/w3/plants3init.js`, `src/w3/true/plants3init.js`): the water and
+  the plants grown 5 years from the bare seeding at a lake's opening (no fish), each species' shoots and storage per bed cell and the
+  standing stems (Uint16 log codes, ~250 KB). `Plants3.seed()` loads it where it fits the world's bed cells (count and key) and reshapes
+  it to another start date (`jump`); else the old seeding. `Env3({ plantInit: false })` keeps the bare seeding (the builder; the
+  gate's growth checks). Re-run the builder whenever the plants' numbers, the bed or the columns change.
+- **Maintenance by form**: a species' `resp` replaces PL3.RESP (0.022, the canopy models'): rosettes 0.007, Nitella and moss 0.010 —
+  slow stress-tolerators [inf: no isoetid dark respiration found; Lobelia grows ~4× slower than Zostera, Isoetes leaves turn over
+  1.5–1.6×/yr].
+- **The light limit under the lakes' nutrients and over a year**: losses are set so that at its observed light limit a species' net
+  growth under the lakes' typical nutrient factor (PL3.NUT_REF 0.85, the summer's min(fP, fN)) is r_lim = ln(1/(carry·WINTER_KEEP)) /
+  SEASON_D (evergreens ln(1/EVER_KEEP) / SEASON_D) — the season's growth that regrows what the autumn sheds and the winter loses.
+- **The waves by fetch**: env3 `fetch` — each column's effective fetch (16 directions, cosine-weighted over ±45°, the most exposed:
+  Scheffer et al. 1992) — and plants3 `zWave`, the depth a 10 m/s storm's waves stir the bed to (CEM fetch-limited Hm0 and Tp, the
+  depth where their orbital velocity at the bed falls to 0.10 m/s: fetch 100 m → 0.13 m, 500 m → 0.45, 2 km → 1.25; the lakes' columns
+  0.7–1.2 m). Shoots shallower than zWave are torn at up to WAVE_M 0.10/day in open water (rosettes × 0.05, lilies and emergents ×
+  0.15 — their shelter need already places them); none under the ice. Ice scour no longer strips the evergreen rosettes.
+- **Cover by stand**: per bed cell, Σ each species' stand share (shoots / its peak) × the cover inside its stand (its peak's stems,
+  × its cover a stem, through 1/(1 + (S/150)³)), with last year's standing stems; per column the area mean (`coverAt`). A FISH
+  HAS IT ONLY IN THE WEEDS (fish3 `_inWeeds`, wgsl `inWeeds`): its bed cell's stand cover while it is within the canopy's height of
+  the bed (a coarse block: its share of the block there, as its bed feeding), none above the weeds — structure protects only the
+  fish that use it (Savino & Stein 1982). A species whose young keep to cover (S3 `yCover`) holds them in the canopy. The weed fauna's reach (littoral3 `reach`, S50 250) inside each stand, weighted by the plants it lives on; the
+  crayfish out by the stands' cover. The GPU reads both per bed cell (`pCov`, `pReach`) in place of the column's stems.
+
+Results (true lakes, no fish, mid-August — % of each depth band's bed under stands, Upper; Lower within a few points):
+
+| | 0–0.5 m | 0.5–1 | 1–1.5 | 1.5–2 | 2–3 | 3–4 | the bed, all stands | canopy's deepest |
+|---|---|---|---|---|---|---|---|---|
+| the uniform seeding, first summer | 54 | 99 | 97 | 95 | 69 | 29 | 49 % (96 % with any plant) | 4.2 m |
+| the old model's own beds, year 5 | — | — | — | — | — | — | 17 %, still falling | ~2 m |
+| **stage 7h, from the generated start** (canopy share in brackets) | 15 (1) | 83 (66) | 93 (83) | 97 (72) | 77 (25) | 13 (1) | **42 %** (stands of canopy, lilies, emergents, rosettes ~21 % by July) | ~3 m |
+| research (weed_bed_structure.md, inferred bands) | 20–40 | 40–70 | 40–70 | 40–70 | 15–40 | 0–15 | ~20–25 % surface beds; rake hits 4–56 % | 2–2.7 m (colour), Zmc ≈ 4 m |
+
+- The canopy is absent from the storm waves' reach (canopy stand share 0.00 above half zWave against 0.45 below it to 2.5 m);
+  the rosettes hold the wave-washed sand (MNAP's 0.2–1.1-m lawns: 40–55 % of the 0.5–1-m band); the Nitella meadow lies deeper
+  (to ~3.4 m — the lakes' only recorded plants); lilies and emergents keep to the sheltered fringe.
+- The first summer from the generated start grows smoothly to an August–September peak (stands 34 % in mid-May → 42 %); the year's
+  change from year 4 to 5 of the build is a few % for most species (large-leaf pondweed still −15 %/yr — open).
+- Fish cover in August: the 1–2-m band's mean 0.5–0.7, the 0.5–1-m band ~0.45, the wave zone ~0.
+- With fish (GPU year, seeds 611/612): the community much as before (bass 0.60–0.64×, bullhead 0.80–0.85×), but THE YOUNG PICKEREL's
+  recruits fell 2,183/2,657 → 247/344: the lawn had covered the shallows in June, when the young are 2–4 cm; with real beds still
+  growing they are eaten 37–50 % a fortnight (docs/GPU_SIM.md, round 3).
+- Gate (test/w3.mjs plants): the vegetated share and the insects' emergence now by STAND AREA (the research's "bed covered"; emergence
+  per m² of the weed beds — not the deep Nitella carpet); the canopy's depth band 1.3–3.2 m (colour lowers Duarte's Zmc ≈ 4 m); a new
+  check: a lake opens on its generated beds, stands 15–50 % of the bed by July, the wave zone bare of canopy.
+
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/
 land_lake_subsidies.md` §1, §6).** Energy pools outside the N/P budget, like the bed's organic layer and its worms and scuds

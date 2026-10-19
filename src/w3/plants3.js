@@ -7,7 +7,7 @@
 // Research: docs/research_notes/Whole lake 3D fish simulation/macrophytes.md (§8 the parameters per growth form; §7 the
 // suggested mechanisms; sources and their weaknesses there).
 import { clamp } from '../core.js';
-import { GEO, LAND, BROOK } from './geometry.js';
+import { GEO, LAND, BROOK, WORLD_TRUE } from './geometry.js';
 import { ENV, ICE, SEASON, PLANKTON } from '../config.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
 
@@ -63,20 +63,29 @@ export const FORMS3 = [
     N: 2.0, P: 0.15, root: 0.3, prey: 10, hFull: 1.0, stem: 0.1, refuge: 1.0, cover: 0.5, invert: 1.3, look: { col: 0x6d7a32, w: 0.006, n: 10 } },   // (rootless: the flocculent bed it lies in (root 0.3) and its PREY (PL3.PREY_*) feed it N and P — on the water's alone it died out)
   // ROSETTES on the wave-washed sand and gravel: pipewort and water lobelia (lobelia takes its CO₂ from the sediment and sends
   // > 97 % of its O₂ into it; lost on organic mud)
-  { key: 'pipewort', name: 'Pipewort', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.1, 1.5], lightLim: 0.37, KL: 0.15, Bmax: 80, mu: 0.008, tStart: 3, carry: 0.9, rootO2: 0.6,
+  { key: 'pipewort', name: 'Pipewort', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.1, 1.5], lightLim: 0.37, KL: 0.15, Bmax: 80, mu: 0.008, resp: 0.007, tStart: 3, carry: 0.9, rootO2: 0.6,
     N: 1.5, P: 0.10, root: 0.87, hFull: 0.1, stem: 0.3, refuge: 0.1, cover: 0.2, invert: 0.5, look: { col: 0x5f7a44 } },
-  { key: 'lobelia', name: 'Water lobelia', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.3, 1.2], lightLim: 0.43, KL: 0.15, Bmax: 90, mu: 0.005, tStart: 3, carry: 0.95, rootO2: 0.95,
+  { key: 'lobelia', name: 'Water lobelia', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.3, 1.2], lightLim: 0.43, KL: 0.15, Bmax: 90, mu: 0.005, resp: 0.007, tStart: 3, carry: 0.95, rootO2: 0.95,
     N: 1.5, P: 0.10, root: 0.87, hFull: 0.08, stem: 0.3, refuge: 0.1, cover: 0.2, invert: 0.5, look: { col: 0x4f7040 } },
   // LOW MEADOW: the stoneworts (Nitella — the lakes' only recorded plants) on the deeper mud; water moss (Fontinalis) on the brook's
   // stones
-  { key: 'nitella', name: 'Stoneworts (Nitella)', form: 'DM', sub: 'organic', noBrook: true, depth: [1.0, 4.2], lightLim: 0.06, KL: 0.08, Bmax: 30, mu: 0.02, tStart: 3, carry: 0.9,
+  { key: 'nitella', name: 'Stoneworts (Nitella)', form: 'DM', sub: 'organic', noBrook: true, depth: [1.0, 4.2], lightLim: 0.06, KL: 0.08, Bmax: 30, mu: 0.02, resp: 0.010, tStart: 3, carry: 0.9,
     N: 2.0, P: 0.15, root: 0.3, hFull: 0.2, stem: 0.2, refuge: 0.15, cover: 0.2, invert: 1.0, look: { col: 0x2c4630 } },
-  { key: 'moss', name: 'Water moss (Fontinalis)', form: 'DM', sub: 'mineral', brookOnly: true, depth: [0.05, 1.3], lightLim: 0.05, KL: 0.08, Bmax: 40, mu: 0.02, tStart: 2, carry: 0.9,
+  { key: 'moss', name: 'Water moss (Fontinalis)', form: 'DM', sub: 'mineral', brookOnly: true, depth: [0.05, 1.3], lightLim: 0.05, KL: 0.08, Bmax: 40, mu: 0.02, resp: 0.010, tStart: 2, carry: 0.9,
     N: 2.0, P: 0.15, root: 0, hFull: 0.15, stem: 0.2, refuge: 0.15, cover: 0.3, invert: 1.0, look: { col: 0x24402a } },
 ];
 export const NF3 = FORMS3.length;
 export const PL3 = {
-  RESP: 0.022,          // /day at 20 °C: the shoots' maintenance respiration (0.02–0.024; Q10 below)
+  RESP: 0.022,          // /day at 20 °C: the shoots' maintenance respiration (0.02–0.024 — CHARISMA, PCLake: canopy plants; Q10 below).
+                        //   A species' own `resp` replaces it: the evergreen rosettes (~0.007) and the low meadows (~0.010) are slow
+                        //   stress-tolerators — Lobelia grows ~4× slower than Zostera, its leaves and roots live > a year, Isoetes leaves
+                        //   turn over 1.5–1.6×/yr (plant_species_traits.md; weed_bed_density.md §5) — and maintenance scales with growth
+                        //   capacity [inf: no isoetid dark respiration found]. At the canopy plants' 0.022 they could grow nowhere (their
+                        //   best, mu 0.005–0.02, under it): the rosettes and Nitella died out over 3–4 years
+  NUT_REF: 0.85,        // the lakes' typical nutrient factor at the plants (summer min(fP, fN) ~0.83–0.88 — scratchpad plants_why): a
+                        //   species' losses are set so its growth just pays them at its light limit UNDER THESE NUTRIENTS, as the field's
+                        //   limits were measured in real lakes (at 1 every plant stopped short of its observed depth: the canopy to 1.9 m
+                        //   against 2–2.7 m in coloured water, Duarte's biomass peak at 1.1 + 0.4·Secchi ≈ 2.4 m — weed_bed_controls.md)
   Q10: 2.5,             // growth and respiration (2–3)
   SLOW: 3,              // growth runs every SLOW-th water update (with SLOW × dt)
   SPROUT: 0.10,         // /day: storage feeds the new shoots in spring at up to this (CHARISMA ≤ 10 %)
@@ -85,18 +94,43 @@ export const PL3 = {
   STORE_RATE: 0.07,     // /day, autumn: shoots → storage (the carry share) and litter (the rest)
   SHADE_FL: 0.9,        // floating leaves at full cover cut the light below them by this
   SELF: 0.01,           // m²/g: a canopy's self-shading (0.006–0.02)
-  WAVE_D: 0.15,         // m: the wave mortality's half-saturation depth (CHARISMA) — the shallowest beds are scoured
-  WAVE_M: 0.03,         // /day of the shoots at the water's edge
-  WAVE_IS: 0.25,        // × for the rosettes: low, tough and deep-rooted, the plants of wave-washed sand (Maine's pipewort–lobelia shores)
-  ICE_SCOUR: 0.5,       // m: shoots shallower than this are lost when the ice forms (ice scour)
+  // THE WAVES (weed_bed_controls.md §2): the shallowest submerged plants sit at the depth the waves stir the bed to (Chambers 1987:
+  // minimum depth vs wave-mixing depth r 0.86, slope 1 and intercept 0; exposure first among the controls of biomass, Hudon et al.
+  // 2000): per column zWave from its effective fetch (env3 fetch) — CEM/SPM fetch-limited waves at a STORM_U m/s wind (Hm0, Tp,
+  // the deep-water wavelength) and the depth where their orbital velocity at the bed falls to U_CRIT, the speed that moves fine
+  // sediment (Håkanson & Jansson 1983): fetch 100 m → 0.13 m, 500 m → 0.45, 2 km → 1.26 (the helper's 1.2–1.3). Shoots in open
+  // water shallower than zWave are torn at WAVE_M a day at the top (smoothstep to none at zWave); was a fixed 0.03 × 0.15/(z +
+  // 0.15) on every shore under 0.6 m, which kept the canopy dense in the exposed 0.5–1 m band (77–79 %) where the field has bare
+  // sand, rosettes and rock
+  STORM_U: 10, U_CRIT: 0.10,
+  WAVE_M: 0.10,         // /day of the shoots at the top of the wave zone (over the canopy's best net growth, ~0.07: none hold there)
+  WAVE_IS: 0.02,        // × for the rosettes: low (5–10 cm), tough and deep-rooted, THE plants of wave-washed sand (Maine's pipewort–lobelia
+                        //   lawns at 0.2–1.1 m on mineral soil, MNAP; isoetids increase with exposure, Keddy 1983) — at 0.25 none held, at
+                        //   0.05 the lawns under 0.5 m thinned 12 → 6 → 3 % of the band over years 2–4
+  WAVE_WIN: 0.15,       // × for the lilies and emergents: their exposure is their SHELTER need (the window forms' growth — set to the
+                        //   aerial photos' fringe); the waves on top ~0.015/day at the top of the zone, as the old edge term's 0.01–0.02
+  WAVE_DEAD: 0.2,       // × for last year's standing stems (breaking and falling into the bed)
+  ICE_SCOUR: 0.5,       // m: shoots shallower than this are lost when the ice forms (ice scour) — not the rosettes', evergreen and
+                        //   pressed into the sand (the erosion-resistant small isoetids persist where ice disturbance is heavy,
+                        //   Hellsten 2000); the canopy's storage lies in the mud below it
+  // THE ANNUAL BUDGET AT THE DEPTH LIMIT: a species' observed depth limit (lightLim) is where a YEAR's growth just pays the year —
+  // the summer must regrow what the autumn sheds (1 − carry) and the winter's storage losses — so at its light limit its season's
+  // net growth is r_lim = ln(1/(carry·WINTER_KEEP)) / SEASON_D (evergreens: ln(1/EVER_KEEP) / SEASON_D), not zero. Calibrated to a
+  // break-even day instead, a pondweed keeping 30 % of its summer's mass lost ground every year at its deep edge (the canopy at
+  // 2–3 m 30 → 17 → 12 % of the bed over years 2–4)
+  SEASON_D: 110, WINTER_KEEP: 0.9, EVER_KEEP: 0.85,
   // N and P in the sim's units per g DW per % of tissue content (the water's units are abstract: these set the beds' share of
   // the lakes' nutrients — ~10 % of the P at a summer's peak)
   P_UNIT: 0.003, N_UNIT: 0.0028,   // (N:P by mass ~13 in plants vs ~7 in algae — the units carry that ratio)
   DEATH_DISS: 0.25,     // share of a dying shoot's P released dissolved into the water (the rest stays in the bed's store)
   O2_YIELD: 1.07,       // g O₂ per g DW of growth (and of respiration)
   // the effects: the weed volume (PVI) → a zooplankton refuge 0.8 × logistic(PVI: ½ at 20 %); stems → fish cover (a searching
-  // predator's capture falls as 1/(1 + (S/S50)³), S50 ~150 stems/m² — Crowder & Cooper 1982; Savino & Stein 1982)
-  REF_MAX: 0.8, PVI_HALF: 0.2, PVI_STEEP: 0.05, S50: 150,
+  // predator's capture falls as 1/(1 + (S/S50)³), S50 ~150 stems/m² — Crowder & Cooper 1982; Savino & Stein 1982). BY STAND: a
+  // species' shoots / its stand's peak is the share of its cell its stand holds (a form's species share their room), and inside
+  // the stand its stems are its peak's (Bmax / g a stem × its cover a stem) — a fish's cover in a cell is Σ share × the stand's
+  // cover, not the cover of the cell's mean stems (the cube made a patchy cell's dense half count for little: a third of a cell in
+  // a 250-stem bladderwort mat read 0.11, not ~0.27). The weed fauna's reach the same, weighted by the plants it lives on
+  REF_MAX: 0.8, PVI_HALF: 0.2, PVI_STEEP: 0.05, S50: 150, S50_FAUNA: 250,   // (S50_FAUNA: littoral3 LIT3.S50 sets it — Littoral3 calls faunaS50())
   SHELTER_R: 200 * GEO.SCALE,   // m (world): a direction is sheltered if land lies within ~200 m real (20 at 1/10)
   // THE BED A SPECIES ROOTS IN: sand and gravel on the wave-washed shallows (shallower than MINERAL_Z m where no more than
   // MINERAL_SHELTER of 8 directions are sheltered) and in the brook; organic mud in the coves and deeper (Maine's lake plant
@@ -160,8 +194,21 @@ export const PL3 = {
 };
 
 const MIX = 1e-9;
+// THE LAKES' WEEDS AT THEIR START (generated: tools/hotbrook/build_plants3.mjs → plants3init.js, true/plants3init.js): the model's
+// own beds after years grown from a bare seeding, at a lake's opening date. Seeded uniformly — every species at a share of its
+// stand in every cell of its range — the first summer was a lawn over the whole bed (Upper 96 %, both lakes' shallows under 2 m
+// 83 % in fish cover ≥ 0.5 by August) that then died back where it couldn't hold: lilies on ~10 ha, not the aerial photos' ~2 ha,
+// and every species shrinking from June. Used where it fits this world's bed cells (its count and their key); otherwise the
+// uniform seeding as before
+let PI3 = null;
+try { PI3 = (await import(WORLD_TRUE ? './true/plants3init.js' : './plants3init.js')).PI3; } catch { PI3 = null; }
+// the generated state's numbers: Uint16, log-spaced over 1e-3–1e4 g DW/m² (0 = none) — 0.025 % steps
+export const PI3_LOG = [-3, 7];
+export const encodeQ = v => v > 0 ? Math.max(1, Math.min(65535, Math.round((Math.log10(v) - PI3_LOG[0]) / PI3_LOG[1] * 65535))) : 0;
+const decodeQ = q => q > 0 ? Math.pow(10, PI3_LOG[0] + q / 65535 * PI3_LOG[1]) : 0;
 export class Plants3 {
-  constructor(env) {
+  constructor(env, { init = true } = {}) {
+    this._initOK = init;
     this.env = env; const ch = this.chem = env.chem, G = this.G = env.G;
     const cells = this.cells = ch.bedCells, nb = cells.length;
     this.Bs = Array.from({ length: NF3 }, () => new Float32Array(nb));   // shoots, g DW/m²
@@ -184,6 +231,11 @@ export class Plants3 {
     // per column: the stems (per m², for the fish), the floating-leaf cover, the weed volume's refuge; per water cell: the
     // refuge (chem3.plantRef, read by the zooplankton feeding)
     this.stems = new Float32Array(G.NC); this.flCover = new Float32Array(G.NC); this.pvi = new Float32Array(G.NC);
+    // per BED CELL the fish cover its stands give (S50) and the share of its weed fauna a searching fish can reach (S50_FAUNA); per
+    // column the cover's area mean (coverAt) — each species' stems inside its stand and the cover and reach they give
+    this.cov = new Float32Array(nb); this.reachB = new Float32Array(nb).fill(1); this.covC = new Float32Array(G.NC);
+    this._sIn = Float32Array.from(FORMS3, F => F.Bmax / F.stem * F.cover); this._cIn = Float32Array.from(this._sIn, s => 1 - 1 / (1 + (s / PL3.S50) ** 3));
+    this.faunaS50(PL3.S50_FAUNA);
     // the spawning structure per column (PL3.SPAWN): the indices, the species' weights per use, the shore's wood
     // (per BED CELL, not per column: a 10-m column on a slope holds its shallow structure and its bare deeper bed — averaged, a
     // perch at 1 m read the deep half's bareness; idxOf maps a chem cell to its bed-cell index here)
@@ -194,6 +246,15 @@ export class Plants3 {
     this._tS = Float32Array.from(FORMS3, F => F.tStart); this._ev = Uint8Array.from(FORMS3, F => F.carry > 0.8 ? 1 : 0); this._rO = Float32Array.from(FORMS3, F => F.rootO2 || 0);
     this._isF = FORMS3.map((F, f) => F.rootO2 ? f : -1).filter(f => f >= 0);   // (the rosettes: their lawn)
     this._win = Uint8Array.from(FORMS3, F => F.window ? 1 : 0); this._hF = Float32Array.from(FORMS3, F => F.hFull); this._bM = Float32Array.from(FORMS3, F => F.Bmax);
+    this._resp = Float32Array.from(FORMS3, F => F.resp ?? PL3.RESP);   // (each species' maintenance floor)
+    this._rLim = Float64Array.from(FORMS3, F => Math.log(1 / (F.carry > 0.8 ? PL3.EVER_KEEP : F.carry * PL3.WINTER_KEEP)) / PL3.SEASON_D);   // (the season's net growth at its light limit)
+    // each species' losses (/day at 20 °C): its maintenance floor; for the submerged forms, the loss that its season's growth at its
+    // light limit (under NUT_REF) just pays with r_lim to spare — the window forms (lilies, emergents) set by their depth window
+    this._lossR = Float64Array.from(FORMS3, (F, f) => { const r = F.resp ?? PL3.RESP; if (F.window) return r; const phi = F.lightLim / (F.lightLim + F.KL) * PL3.NUT_REF; return Math.max(r, (F.mu * phi - this._rLim[f]) / (1 - phi)); });
+    this._wvF = Float32Array.from(FORMS3, F => F.form === 'IS' ? PL3.WAVE_IS : F.window ? PL3.WAVE_WIN : 1);   // (each form's share of the waves' tearing)
+    // each column's wave depth (m) from its fetch, and each bed cell's share of the storm waves' force on it
+    this.zWave = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) this.zWave[c] = env.fetch && G.body[c] !== BROOK ? Plants3.waveDepth(env.fetch[c]) : 0;
+    this._wv = new Float32Array(nb); for (let i = 0; i < nb; i++) { const zw = this.zWave[this.col[i]], x = zw > 0 ? clamp(this.zb[i] / zw, 0, 1) : 1; const t = clamp((x - 0.5) * 2, 0, 1); this._wv[i] = 1 - t * t * (3 - 2 * t); }
     // (the wood falls from the trees on the bank: NLCD's wooded classes — or in the true world the aerial photos' crowns there, GEO.canopy)
     { const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.3 }, SHRUBW = { shrub_wet: 0.5, shrub: 0.3 }, bank = new Float32Array(G.NC), NX = GEO.NX, NY = GEO.NY;
       for (let i = 0; i < GEO.N; i++) {
@@ -209,17 +270,39 @@ export class Plants3 {
     this._n = 0; this.prod = 0; this.litter = 0;
     this.seed();
   }
-  // a lake's plants at its start: each form in its range, at the share of its stand the season allows (from storage)
+  // the depth (m) the storm waves stir the bed to over fetch F (m): CEM/SPM fetch-limited growth (Cd = 0.001(1.1 + 0.035U), u* =
+  // √Cd·U, x̂ = gF/u*², Hm0 = 0.0413 x̂^½ u*²/g, Tp = 0.751 x̂^⅓ u*/g — USGS UMESC wind–fetch–wave 2012), the deep-water wavelength,
+  // and the depth where π·Hm0 / (Tp·sinh(2πh/L)) falls to U_CRIT
+  static waveDepth(F) {
+    const g = 9.81, U = PL3.STORM_U, us = Math.sqrt(0.001 * (1.1 + 0.035 * U)) * U, x = g * Math.max(F, 1) / (us * us);
+    const H = 0.0413 * Math.sqrt(x) * us * us / g, T = 0.751 * Math.cbrt(x) * us / g, L = g * T * T / (2 * Math.PI);
+    return L / (2 * Math.PI) * Math.asinh(Math.PI * H / (T * PL3.U_CRIT));
+  }
+  _wave(i) { return this._wv[i]; }   // (1 above half the wave depth, smoothstep to 0 at it)
+  // the key of this world's bed cells (their chem cells and columns) — a generated start must match it
+  cellKey() { let h = 2166136261; for (let i = 0; i < this.cells.length; i++) { h = Math.imul(h ^ this.cells[i], 16777619) >>> 0; h = Math.imul(h ^ this.col[i], 16777619) >>> 0; } return h; }
+  // a lake's plants at its start: the generated beds where they fit (then reshaped to the date: jump), else each form in its
+  // range at the share of its stand the season allows (from storage)
   seed() {
     const yf = this.env.yearFrac(), T = this.env.temp;
+    const I = this._initOK ? PI3 : null, done = new Uint8Array(NF3);
+    if (I && I.n === this.cells.length && I.key === this.cellKey()) {
+      const s = atob(I.q), n = I.n, NS = I.species.length, q = new Uint16Array(n * (2 * NS + 1));
+      for (let k = 0; k < q.length; k++) q[k] = s.charCodeAt(2 * k) | (s.charCodeAt(2 * k + 1) << 8);
+      I.species.forEach((key, m) => { const f = FORMS3.findIndex(F => F.key === key); if (f < 0) return; done[f] = 1;
+        for (let i = 0; i < n; i++) { this.Bs[f][i] = decodeQ(q[(2 * m) * n + i]); this.Br[f][i] = decodeQ(q[(2 * m + 1) * n + i]); } });
+      for (let i = 0; i < n; i++) this.dead[i] = decodeQ(q[2 * NS * n + i]);
+      this.fromInit = true;
+    }
     for (let f = 0; f < NF3; f++) {
-      const F = FORMS3[f];
+      const F = FORMS3[f]; if (done[f]) continue;
       for (let i = 0; i < this.cells.length; i++) {
         if (!this._inRange(F, i)) continue;
         const grow = yf > 0.15 && yf < 0.6 && T[this.cells[i]] > F.tStart;   // (growing season: part of its stand up)
         this.Br[f][i] = F.Bmax * 0.15; this.Bs[f][i] = F.carry > 0.8 ? F.Bmax * 0.3 : grow ? F.Bmax * 0.15 : F.Bmax * 0.02;   // (the evergreens — rosettes, Nitella, moss — stand all year at about what they hold (0.2–0.3 of a stand by their second summer); slow growers, ~0.4/yr at best, they would take years to fill in from a sprouting stand)
       }
     }
+    if (this.fromInit && Math.abs(((yf - PI3.yf) % 1 + 1.5) % 1 - 0.5) > 0.005) this.jump();   // (generated at PI3.yf: reshaped to this date)
     this._outputs(true);
   }
   // the date JUMPED (the view's season buttons): each stand takes the new season's shape at once, conserving its mass, N and P —
@@ -271,7 +354,7 @@ export class Plants3 {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
       const qT = Math.pow(PL3.Q10, (Tj - 20) / 10), iceCut = 1 - ICE.LIGHT_CUT * e.ice[c];
       if (this.dead[i] > 0) {   // last year's stems fall into the bed's organic layer (faster in the ice's and the waves' reach)
-        const kF = PL3.DEAD_FALL * (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !this.brook[i] ? PL3.DEAD_ICE : 1) + (z < 0.6 && !this.brook[i] ? PL3.WAVE_M * PL3.WAVE_D / (z + PL3.WAVE_D) : 0);
+        const kF = PL3.DEAD_FALL * (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !this.brook[i] ? PL3.DEAD_ICE : 1) + (e.ice[c] < 0.5 && !this.brook[i] ? PL3.WAVE_M * PL3.WAVE_DEAD * this._wave(i) : 0);
         const d = this.dead[i] * Math.min(1, kF * dd); this.dead[i] -= d; ch.sedOM[j] += d * A / a;   // (kF·dd ≪ 1 a growth step)
       }
       // the light at the bed: the surface's day-mean × the ice × the water × the floating leaves' shade
@@ -290,13 +373,12 @@ export class Plants3 {
         // the form's own — respiration and, past it, what the field's light limits imply: epiphyte shading, sloughing, grazing,
         // the cost of next year's stores — set so that its growth just pays them at its light limit (lightLim of the day-mean
         // surface light): its DEPTH LIMIT emerges there, while plants near the surface grow light-saturated
-        let fL, lossR = PL3.RESP;
+        let fL; const lossR = this._lossR[f];
         if (F.window) fL = (z <= F.core[1] ? (z >= F.core[0] ? 1 : clamp((z - F.depth[0]) / Math.max(0.05, F.core[0] - F.depth[0]), 0, 1)) : clamp((F.depth[1] - z) / (F.depth[1] - F.core[1]), 0, 1))
           * clamp(this.shelter[c] - F.shelter + 1, 0, 2) / 2;   // (and the waves: half growth at its shelter, full one direction more)
         else {
           const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1)), Itop = iceCut * flShade * Math.exp(-kd * (z - h)) * Math.exp(-PL3.SELF * b * 0.3);   // (share of the surface's)
           fL = Itop * seasonL / (Itop * seasonL + F.KL);
-          const phi = F.lightLim / (F.lightLim + F.KL); lossR = Math.max(PL3.RESP, F.mu * phi / (1 - phi));
         }
         const sp = ch.sedP[j], ph = ch.phos[j], nT = ch.nh4[j] + ch.no3[j];
         let fP = (sp * F.root + ph * 4 * (1 - F.root)) / (sp * F.root + ph * 4 * (1 - F.root) + 0.15), fN = nT / (nT + 0.1);
@@ -316,14 +398,14 @@ export class Plants3 {
         let loss = rate < 0 ? -rate * b * dd : 0;
         // and the shallowest beds' wave scour, autumn's reallocation, ice scour
         const br = this.brook[i];   // (the brook: running water, no waves; its moss holds to the stones under the ice)
-        if (z < 0.6 && !br) loss += PL3.WAVE_M * PL3.WAVE_D / (z + PL3.WAVE_D) * (F.form === 'IS' ? PL3.WAVE_IS : 1) * b * dd;
+        if (!br && e.ice[c] < 0.5) { const wv = this._wv[i]; if (wv > 0) loss += PL3.WAVE_M * wv * this._wvF[f] * b * dd; }   // (the storm waves above zWave; none under the ice)
         let stand = 0;
         if (store && b > 0 && !ever) {   // shoots → storage (carry) and litter (the rest; an emergent's standDead share of it stays standing)
           const m = Math.min(b, b * PL3.STORE_RATE * dd);
           Br[i] += m * F.carry; loss += m * (1 - F.carry); b -= m * F.carry;
           if (F.standDead) stand = m * (1 - F.carry) * F.standDead;
         }
-        if (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !br) loss += b * Math.min(1, dd);
+        if (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !br && F.form !== 'IS') loss += b * Math.min(1, dd);
         loss = Math.min(loss, b);
         if (loss > 0) {
           const sd = Math.min(stand, loss);   // (the standing dead: their N and P leach now, their body falls later)
@@ -332,7 +414,7 @@ export class Plants3 {
         }
         Bs[i] = b;
         // storage slowly ages (respiration of the reserves)
-        if (Br[i] > 0) { const r = Br[i] * PL3.RESP * 0.1 * qT * dd; Br[i] -= r; lit += this._die(f, i, r, j, A, a, w, true); }
+        if (Br[i] > 0) { const r = Br[i] * (F.resp ?? PL3.RESP) * 0.1 * qT * dd; Br[i] -= r; lit += this._die(f, i, r, j, A, a, w, true); }
       }
     }
     this.prod += prod; this.litter += lit;
@@ -394,13 +476,13 @@ export class Plants3 {
   _o2(dt) {
     const e = this.env, ch = this.chem, G = this.G, T = e.temp, dd = dt / DAY3, yf = e.yearFrac(), store = yf >= PL3.YF_STORE && yf < 0.9;
     const now = e.sun / Math.max(1e-3, e.dayFrac * 2 / Math.PI);   // (the sun's curve over its day's mean: a day's sum is the day's)
-    const Bs = this.Bs, gn = this.gnet, tS = this._tS, ev = this._ev, rO = this._rO, win = this._win, hF = this._hF, bM = this._bM, R0 = PL3.RESP;
+    const Bs = this.Bs, gn = this.gnet, tS = this._tS, ev = this._ev, rO = this._rO, win = this._win, hF = this._hF, bM = this._bM, R0s = this._resp;
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], A = G.bedA[j], Tj = T[j], qT = Math.pow(PL3.Q10, (Tj - 20) / 10);
       let gross = 0, resp = 0, h = 0, root = 0; const z = this.zb[i];
       for (let f = 0; f < NF3; f++) {
         const b = Bs[f][i]; if (!(b > 0)) continue;
-        const rr = R0 * qT * b, r = Tj > tS[f] && (!store || ev[f]) ? rr : rr * 0.3, g = (gn[f][i] + rr) * now;   // (the day's gross production, made as the light comes; a dormant shoot respires at a third, as _grow's dormant loss)
+        const rr = R0s[f] * qT * b, r = Tj > tS[f] && (!store || ev[f]) ? rr : rr * 0.3, g = (gn[f][i] + rr) * now;   // (the day's gross production, made as the light comes; a dormant shoot respires at a third, as _grow's dormant loss)
         const ro = rO[f];
         if (ro) { root += (g - r) * ro; resp += r * (1 - ro); gross += g * (1 - ro); }   // (a rosette's roots: into the sand)
         else { resp += r; gross += g; }
@@ -420,9 +502,11 @@ export class Plants3 {
   _outputs(full = false) {
     const G = this.G, ch = this.chem, st = this.stems, fl = this.flCover, pv = this.pvi, cA = this._colA, SP = PL3.SPAWN;
     const doSp = full || ++this._spN % 16 === 0, sR = this.spawnS.rigid, sM = this.spawnS.mat, sPl = this.spawnS.plant, Wr = this._spW.rigid, Wm = this._spW.mat, Wp = this._spW.plant;   // (the spawning structure changes slowly: every 16th)
-    st.fill(0); fl.fill(0); pv.fill(0); cA.fill(0); this._canopy.fill(0);
+    st.fill(0); fl.fill(0); pv.fill(0); cA.fill(0); this._canopy.fill(0); this.covC.fill(0);
+    const cIn = this._cIn, rIn = this._rIn;
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], z = this.zb[i]; cA[c] += A;
+      let live = 0, wI = 0, rI = 0;   // (the cell's cover by stand and its fauna's reach, gathered in the species loop below)
       if (this.dead[i] > 0) st[c] += this.dead[i] / PL3.DEAD_STEM * A * PL3.DEAD_COVER;   // (last year's standing stems)
       if (doSp) {   // (the spawning structure: each species' stems × its cover × its weight for the use, and the standing dead)
         const d = this.dead[i] / PL3.DEAD_STEM * PL3.DEAD_COVER; let r = d * SP.rigid.dead, m = d * SP.mat.dead, q = d * SP.plant.dead;
@@ -434,21 +518,29 @@ export class Plants3 {
       ch.lawn[j] = Math.min(1, lawn);   // (the rosettes' oxidised sand: chem3 _sedimentP holds its P)
       for (let f = 0; f < NF3; f++) {
         const b = this.Bs[f][i]; if (!(b > 0)) continue; const F = FORMS3[f], cov = clamp(b / F.Bmax, 0, 1);
+        live += cov * cIn[f]; const m = b * F.invert; wI += m; rI += m * rIn[f];
         st[c] += b / F.stem * A * F.cover;
         if (F.form === 'FL') fl[c] += cov * A;
         const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1));
         pv[c] += cov * (h / z) * F.refuge * A;
         this._canopy[c] = Math.max(this._canopy[c], F.window ? z : h);
       }
+      // the cell's cover by stand (with last year's standing stems over it) and its fauna's reach (weighted by the plants it lives on)
+      const ds = this.dead[i] / PL3.DEAD_STEM * PL3.DEAD_COVER / PL3.S50, cd = ds > 0 ? 1 - 1 / (1 + ds * ds * ds) : 0;
+      this.cov[i] = 1 - (1 - Math.min(1, live)) * (1 - cd); this.reachB[i] = wI > 0 ? rI / wI : 1; this.covC[c] += this.cov[i] * A;
     }
     for (let c = 0; c < G.NC; c++) {
-      if (cA[c] > 0) { st[c] /= cA[c]; fl[c] = clamp(fl[c] / cA[c], 0, 1); pv[c] /= cA[c]; }
+      if (cA[c] > 0) { st[c] /= cA[c]; fl[c] = clamp(fl[c] / cA[c], 0, 1); pv[c] /= cA[c]; this.covC[c] /= cA[c]; }
       this.ref[c] = PL3.REF_MAX / (1 + Math.exp(-(pv[c] - PL3.PVI_HALF) / PL3.PVI_STEEP));
       if (pv[c] < 0.02) this.ref[c] = 0;
       const j0 = G.cell0[c], n = G.nL[c], top = G.depthMax[c] - this._canopy[c];
       for (let k = 0; k < n; k++) { const j = j0 + k; ch.plantRef[j] = G.zMid[j] >= top - 0.25 ? this.ref[c] : 0; }
     }
   }
-  // fish cover at column c: the share of a searching predator's strikes the stems foil (1 − 1/(1 + (S/S50)³))
-  coverAt(c) { if (c < 0) return 0; const s = this.stems[c] / PL3.S50; return 1 - 1 / (1 + s * s * s); }
+  // fish cover at column c: the share of a searching predator's strikes its stands foil, over the column's bed (by stand: above)
+  coverAt(c) { return c < 0 ? 0 : this.covC[c]; }
+  // the cover of the stands on bed cell jb (a chem cell) — what a fish IN the weeds there has (fish3: within the canopy's height)
+  standCover(jb) { const i = jb >= 0 ? this.idxOf[jb] : -1; return i >= 0 ? this.cov[i] : 0; }
+  // the weed fauna's reach inside each species' stand at S50 stems/m² (Littoral3 sets its own)
+  faunaS50(S50) { this._rIn = Float32Array.from(this._sIn, s => 1 / (1 + (s / S50) ** 3)); if (this.Bs && this._colA && this._canopy) this._outputs(true); }
 }

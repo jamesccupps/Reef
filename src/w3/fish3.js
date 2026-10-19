@@ -230,7 +230,16 @@ export const S3 = {
     hab: { day: H([1.5, 4.0], 0, 0.8, 0.8), night: H([1.0, 2.5], 0, 0.2, 0.3), winter: H([2.5, 5.5], 0, 0.0, 0.05) } },
   // chain pickerel: a solitary ambusher in the weeds and their edges, 0.3-1.5 m over the bed; low in cover at night; within ~30 m
   // (real) of shore under the ice, day-active (the ice-fishery's fish); the steepest speed curve (0.5 BL/s sustained, 7.5 burst)
-  pike:       { school: 0, perHa: 25, cruise: 0.4, sprint: 7.5, sustain: 0.9, turn: 2.2, sense: 3.5, nonVis: 0.2, strikeR: 1.2, cohere: 0, home: HOME(40, 120), tPref: 25,
+  // yCover: its YOUNG weigh a spot's food by its cover — food × (1 − yCover + yCover · cover): pike under ~14 cm stay in dense
+  // vegetation larger pike can't reach (Grimm 1994), juveniles need 35–70 % macrophyte cover (Casselman & Lewis 1996), and in Maine
+  // largemouth eat the young pickerel, confined to weed patches (MDIFW) — esocid_first_year_survival.md. OFF (0): at 0.8 the young
+  // pickerel crowded into the weeds' best cover, where the larva-eating panfish and the adult pickerel are, and fewer recruited
+  // (true lakes, seed 612: 1,799 against 2,657 — larvae eaten 15 % a fortnight against 10 %, the 5–7-cm young starving more). AGAIN
+  // with the realistic beds and cover only in the weeds (stage 7h; seed 611, the young held in the canopy): 2 against 257, eaten 45 %
+  // in the first fortnight against 14 % — in late May the beds are barely up, the young crowd into the few covered spots and their
+  // schools merge, and a predator at a school eats at its full rate whatever its spread: aggregating makes them easier, not
+  // harder (the 0.6-m nearest-school encounter — density-based predation between cohorts is the fix, docs/GPU_SIM.md round 3)
+  pike:       { school: 0, perHa: 25, yCover: 0, cruise: 0.4, sprint: 7.5, sustain: 0.9, turn: 2.2, sense: 3.5, nonVis: 0.2, strikeR: 1.2, cohere: 0, home: HOME(40, 120), tPref: 25,
     hab: { day: H([0.5, 2.5], 0, 0.9, 0.2), night: H([0.5, 2.0], 0, 0.25, 0.1), winter: H([0.5, 2.5], 0, 0.6, 0.1) } },
   // THE FOUR OF THE 3-D's OWN (species3.js; docs/FISH_CENSUS.md; behaviour: docs/research_notes/Whole lake 3D fish simulation/
   // habitat3d_new_species.md — speeds from the DFO fatigue curves, the sunfish group for redbreast and the weak-swimming
@@ -502,7 +511,7 @@ export class Fish3 {
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
     for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
-    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0, sub: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0 }; }
+    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0, sub: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0, capped: 0 }; }   // (capped: past the census's room at recruitment, _recruit)
     this.yoy = [];      // the young-of-year schools (Yoy)
     this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
@@ -1087,7 +1096,7 @@ export class Fish3 {
     a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
     const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
     a.visF = visDay;
-    a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0, this._riffle(a));   // (very shallow water; the weeds' stems; the brook's riffles)
+    a.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - a.bed) / 0.6, 0, 1), this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (very shallow water; the weeds' stems — in them; the brook's riffles)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -1659,6 +1668,16 @@ export class Fish3 {
   }
   // the riffles' refuge for a small fish (or a school of young) in the brook's shallow, running water (F3.RIFFLE_REFUGE)
   _riffle(a) { return a.L < F3.RIFFLE_L && a.bed < F3.RIFFLE_D && GEO.bodyAt(a.x, a.y) === BROOK ? F3.RIFFLE_REFUGE : 0; }
+  // THE WEEDS' COVER FOR A FISH IN THEM (stage 7h): the stands on its bed cell (plants3 standCover — each species' share × the cover
+  // inside its stand) while it is within the canopy's height of the bed; above the weeds, none — structure protects only the fish
+  // that use it (Savino & Stein 1982; weed_bed_structure.md §4). A coarse block: its share of the block within the canopy (heights
+  // gamma-distributed about its mean, as its bed feeding — F3.BED_SHARE). (Was the column's mean cover at any height)
+  _inWeeds(a, c, share) {
+    const pl = this.env.plants; if (!pl || a.jb < 0) return 0;
+    const cn = pl._canopy[c]; if (!(cn > 0)) return 0;
+    const hb = a.bed - a.z, f = share ? reachShare(cn, hb) : hb <= cn ? 1 : 0;
+    return f > 0 ? f * pl.standCover(a.jb) : 0;
+  }
   // the brook-summering season: from mid-May while the water is warm (> 14 °C) to the autumn cooling
   _brookSeason(a) { const yf = this.env.yearFrac(); return yf > 0.22 && yf < 0.6 && a.T > 14; }
   // the way to (tx, ty): straight within one water; out of a lake by its end of the brook, then along the brook's path
@@ -1870,7 +1889,7 @@ export class Fish3 {
     const c = q.c = e.colAt(q.x, q.y); if (c < 0) { q.alive = false; return; }
     const j = q.j = G.cell0[c] + Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0)); q.jb = this.bedCell(c, q.bed);
     const T = e.temp[j], o2 = ch.o2[j];
-    q.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1), e.plants ? e.plants.coverAt(c) : 0, this._riffle(q));
+    q.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1), this._inWeeds(q, c, false), this._riffle(q));
     const hS = this._feedYoy(q, st, T);
     ch.o2[j] = Math.max(0, ch.o2[j] - q.rO2 * st / (G.vol[j] * ENV.O2_MGL));
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
@@ -1926,9 +1945,11 @@ export class Fish3 {
     }
   }
   _ysched(q, steps) { const t = this.stepNo + steps; q._due = t; this._ybk[t % this._ynb].push(q); }
-  // where a school of young goes next: the richest food of its stage about it (its column and the next ones)
+  // where a school of young goes next: the richest food of its stage about it (its column and the next ones) — weighed by the
+  // spot's cover for a species whose young keep to it (S3 yCover: the weeds' stems, very shallow water)
   _yoyTarget(q, o2, T) {
-    const s = q.s, sp = s.sp, d = sp.diet, G = this.G, ch = this.chem, c = q.c;
+    const s = q.s, sp = s.sp, d = sp.diet, G = this.G, ch = this.chem, c = q.c, yc = s.yCover || 0, pl = this.env.plants;
+    const cov = cc => yc > 0 ? 1 - yc + yc * Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0) : 1;   // (the stands of the bed it would hold to there)
     // THE LAKES' YOUNG DON'T RAISE IN THE BROOK: a stream fish's young (dace, fallfish — S3 brookYoy) live in it; the others'
     // drift down it into Lower (sucker larvae leave their spawning stream for the lake) and never choose it to feed in. (At 1/10
     // the brook was the richest bed near a large share of the lakes' young: young bass, perch, suckers, bullheads and white perch
@@ -1939,9 +1960,9 @@ export class Fish3 {
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
     if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂
-      let best = BENTHOS.SENSE_MIN, bc = -1;
+      let best = -Infinity, bc = -1;
       const lit = this.env.lit;
-      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit || !ok(cc)) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (E > best) { best = E; bc = cc; } };
+      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit || !ok(cc)) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (!(E > BENTHOS.SENSE_MIN)) return; const V = E * cov(cc); if (V > best) { best = V; bc = cc; } };
       tryC(c); for (let k = 0; k < nb.length; k++) tryC(nb[k]);
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
@@ -1950,10 +1971,12 @@ export class Fish3 {
     const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
-    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR); if (E > best) { best = E; bj = jj; } };
+    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR) * cov(cc); if (E > best) { best = E; bj = jj; } };
     for (let k = 0; k < G.nL[c]; k++) tryJ(G.cell0[c] + k);
     for (let k = 0; k < nb.length; k++) { const cc = nb[k]; tryJ(G.cell0[cc] + Math.min(G.nL[cc] - 1, k0)); }
-    if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 30 * GEO.SCALE; q.ty = G.cy[cc] + (rand() - 0.5) * 30 * GEO.SCALE; } q.tz = G.zMid[bj]; return; }
+    if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 30 * GEO.SCALE; q.ty = G.cy[cc] + (rand() - 0.5) * 30 * GEO.SCALE; } q.tz = G.zMid[bj];
+      if (yc > 0 && pl && pl._canopy[cc] > 0.1) q.tz = Math.max(0.05, Math.max(q.tz, G.depthMean[cc] - 0.5 * pl._canopy[cc]));   // (a cover keeper's young hold IN the weeds — pickerel fry cling to the stems, the fingerlings live in them)
+      return; }
     q.tx = q.x + (rand() - 0.5) * 60 * GEO.SCALE; q.ty = q.y + (rand() - 0.5) * 60 * GEO.SCALE;   // nothing about: wander
   }
   // a school's feeding over st at T (world.js _feedFry): young piscivores on other young, zooplankton of their size (type II in
@@ -1964,7 +1987,7 @@ export class Fish3 {
     const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
     const want = q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
     let got = 0, J = 0;
-    if (d.fish && q.L >= sp.Lpisc) {   // young piscivores eat other young they can swallow
+    if (d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) {   // young piscivores eat other young they can swallow (from the species' yLpisc)
       const r = this._nearYoy(q.x, q.y, q.z, F3.YOY_EAT_R, o => o !== q && o.L * o.s.sp.depthR <= q.L * sp.gapeR && o.L >= FEED.SCHOOL_MIN * q.L);
       if (r) {
         const k = Math.min(r.n, (want - got) / r.W, q.n * FRY.ATTACK * TS * sp.capture * r.s.sp.vuln * r.n / (r.n + FRY.N_HALF) * (1 - r.cover) * st);
@@ -2034,6 +2057,7 @@ export class Fish3 {
       a.bed = Math.max(0.05, GEO.depthAt(a.x, a.y)); a.z = clamp(q.z, F3.ZTOP, Math.max(F3.ZTOP, a.bed - F3.ZBOT)); a._pz = a.z;
       this.cnt[a.k] += a.n; this.stats.recruits[k] += a.n; this.stats.fry[k].recruited += a.n;
     }
+    let tot = 0; for (const a of born) tot += a.n; this.stats.fry[k].capped += Math.max(0, q.n - tot);   // (the school's fish the census had no room for)
   }
   // schools of young of a species and size meet and merge (one genome, chosen ∝ n) — never a guarded brood
   _mergeYoy() {

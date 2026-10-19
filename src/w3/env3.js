@@ -221,7 +221,7 @@ function throughPattern(G, src) {
 
 // ============================================================ the environment =========================================
 export class Env3 {
-  constructor({ yf0 = SEASON.START_YF, col = H3.COL, chem = true, plants = true } = {}) {
+  constructor({ yf0 = SEASON.START_YF, col = H3.COL, chem = true, plants = true, plantInit = true } = {}) {
     const G = this.G = buildColumns3(col);
     this.time = yf0 * CLOCK3.YEAR_LEN;
     this.t = 0.30;                                   // time of day (0..1), mid-morning
@@ -239,7 +239,7 @@ export class Env3 {
     this._statics();
     this.chem = chem ? new Chem3(this) : null;   // O₂, N, P, algae, DOM, zooplankton, the bed (chem3.js)
     this.primeSeason(this.time);
-    this.plants = this.chem && plants ? new Plants3(this) : null;   // the weeds on the bed (plants3.js)
+    this.plants = this.chem && plants ? new Plants3(this, { init: plantInit }) : null;   // the weeds on the bed (plants3.js; plantInit false: the bare seeding, not the spun-up start)
     this.lit = this.plants ? new Littoral3(this) : null;              // the weeds' invertebrates, snails, the surface (littoral3.js)
   }
 
@@ -275,6 +275,18 @@ export class Env3 {
     for (let c = 0; c < G.NC; c++) {
       let k = 0; for (let d = 0; d < 8; d++) { const ang = d * Math.PI / 4, ux = Math.cos(ang), uy = Math.sin(ang); for (let r = PL3.SHELTER_R / 10; r <= PL3.SHELTER_R; r += PL3.SHELTER_R / 10) if (GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === LAND) { k++; break; } }
       this.shelter[c] = k;
+    }
+    // each column's EFFECTIVE FETCH (m, real): the open water upwind — per 16 directions the distance to its water's shore (land, or
+    // the brook's mouth), cosine-weighted over ±45° (Scheffer et al. 1992; Randall et al. 2004), its most exposed direction's. The
+    // storm waves it raises set how deep the bed is stirred (plants3 zWave: the weeds' upper limit). (weed_bed_controls.md §2)
+    this.fetch = new Float32Array(G.NC);
+    { const ND = 16, D = new Float32Array(ND), step = GEO.CELL, rMax = 6000 * GEO.SCALE, W = [-2, -1, 0, 1, 2].map(k => Math.cos(k * Math.PI / 8));
+      for (let c = 0; c < G.NC; c++) {
+        const b = G.body[c]; if (b === BROOK) continue;
+        for (let d = 0; d < ND; d++) { const ang = d * 2 * Math.PI / ND, ux = Math.cos(ang), uy = Math.sin(ang); let r = step; while (r < rMax && GEO.bodyAt(G.cx[c] + ux * r, G.cy[c] + uy * r) === b) r += step; D[d] = r / GEO.SCALE; }
+        let best = 0; for (let d = 0; d < ND; d++) { let s = 0, w = 0; for (let k = -2; k <= 2; k++) { s += W[k + 2] * D[(d + k + ND) % ND]; w += W[k + 2]; } best = Math.max(best, s / w); }
+        this.fetch[c] = best;
+      }
     }
     // the wet face-layers as a compact list (cells either side, area, layer, face) — the transport's inner loop
     let n = 0; for (let e = 0; e < G.NF * G.ML; e++) if (G.fA[e] > 0) n++;

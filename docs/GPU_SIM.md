@@ -349,6 +349,52 @@ now has a watchdog (it says which stage a block is waiting on — gpufish.js `st
 insertion sort costs ~ the count squared — a suspect, unconfirmed). The CPU's own year run (the code before the fixes) agrees with the
 GPU's at day 98 too (bass 1.430 · 1.406, pickerel 0.742 · 0.734, killifish 1.400 · 1.393), except the brook's 1,380 dace (211 · 50 left).
 
+### G3 — calibrating the year, round 2 (2026-10-18 evening)
+**Runs** (true lakes, a year from May 20, `tools/gpu/year_cdp.mjs`; two side by side — the second window gets most of the GPU,
+~30 % more throughput together):
+- **BED_SHARE in the year** (seed 611): bass 0.627×, pickerel 0.451×, bullhead 0.803× (round 1: 0.664 · 0.448 · 0.844) — no help.
+  By BIOMASS the picture differs: bass 1.02× (the count falls as the small recruits are eaten), pickerel 0.69×, bullhead 0.76×,
+  fallfish 0.62×, the sunfishes ~0.55×, killifish 0.50×; perch 1.24×, white perch 1.33×, sucker 1.15×.
+- **The young pickerel by fortnight**: 290k at 1.1 cm (May 20) → 2,183 recruits at 8 cm (late August); natural losses 41 → 9 % a
+  fortnight as they grow, eaten 10 → 33 %, STARVED 16–18 % a fortnight from 5 cm (they compete for the bed's fauna with the perch,
+  white perch and suckers). The research (`Predator winter energetics/pickerel_young_of_year.md`): first fish at 4–6 cm, fish
+  dominant by 8–10 cm; Maine growth 25–40 mm at the end of June, 55–75 July, 80–105 August, 100–130 September — the sim on track to
+  June, behind in July–August (food).
+- **Who eats the young pickerel** (new "young pike eaten by" line, seeds 611/612): yellow perch 24–27k, adult pickerel 26–28k, bass
+  22–23k (a quarter by young bass), white perch 9k — as Hunt & Carbine found for pike (yellow perch the main fish predator).
+- **A cover preference for young pickerel** (S3 yCover 0.8; seed 612): 1,799 recruits against 2,657 without — larvae eaten 15 %
+  a fortnight against 10 %, the 5–7-cm young starving more: the weeds were where the panfish and adult pickerel were (and the
+  weeds were the uniform lawn, docs/HOT_BROOK_3D.md stage 7h). OFF.
+- **Young schools eating fish from 5 cm** (BIO.pike yLpisc; seeds 611/612): recruits 2,270 · 2,762 against 2,183 · 2,657 (+4 %).
+  A young school eats only a prey school within F3.YOY_EAT_R 0.6 m of it — with ~10,000 schools over 644 ha they meet only by piling
+  onto the same targets. The fix is density-based predation between cohorts (`Whole lake 3D fish simulation/
+  young_piscivore_functional_response.md` §5: a Holling II on the prey's local density, clearance ~3–10 m³ per predator a day,
+  per-cell tables in coarse blocks) — NEXT after the plants.
+- **The census cap** (new tally T_YCAP, fish3 stats.fry.capped): young bass 1.13 M at 5 cm → 21k recruited and ~700k DISCARDED
+  at the cap in the next fortnight; the "young bass starving in July" is beside that.
+- **Kills by length** (new T_KILLSZ/T_KILLPZ): of the followed bass eaten, 90 % under 10 cm (the summer's recruits); of the
+  pickerel, 27–37 % under 10, 44–53 % 10–20, ~20 % 20–30 cm. Pickerel cannibalism ~2.5 %/week of the pickerel in late May (90 % on
+  10–20-cm fish; the evidence ≤ 0.1–0.3 %) — 4.7–5.3k a year against 2.2–2.7k recruits. The research on refuges (weed_bed_
+  structure.md §4) says pike enter structure below ~600 stems/m² (bass ~150): the weeds can't be what keeps real pickerel from
+  eating each other — spacing and the small ones' avoidance of the large are the candidates.
+
+### G3 — round 3: the year on realistic weeds (2026-10-18, night; docs/HOT_BROOK_3D.md stage 7h)
+- **The same year on the generated (realistic) beds** (seeds 611/612): bass 0.640 · 0.604×, bullhead 0.795 · 0.845×, fallfish
+  0.648 · 0.812×, killifish 0.426 · 0.490×, the rest as before — but the young pickerel's recruits 247 · 344 (2,183 · 2,657 on the
+  uniform lawn): 225k at swim-up (290k — fewer mats in spring), eaten 37–50 % a fortnight at 3–5 cm (16–33 %). The lawn had covered
+  the shallows in June; real beds are still growing then. The same predators (adult pickerel ~28k, bass ~23k, yellow perch ~22k,
+  white perch ~11k young pickerel a year).
+- **Cover only in the weeds** (fish3 `_inWeeds`: the bed cell's stand cover within the canopy's height, none above; seed 611): 257
+  recruits (247 with the column's mean cover) — no change for the pickerel; the rest of the year: see the run.
+- **A cover preference again** (yCover 0.8, the young held in the canopy): 2 recruits, 45 % eaten in the first fortnight (14 %
+  without) — the young crowd into the few early-covered spots, their schools merge, and a predator at a school eats at its full
+  rate whatever the school's spread. OFF. With the 0.6-m nearest-school encounter, aggregation makes prey easier; the density-based
+  rule (young_piscivore_functional_response.md §5) is the next slice.
+- **Parity** (1/10, seeds 611–613 × 30 days from mid-June, `year_cdp.mjs … g2_run`): every species' fish, kg/ha and young within or
+  touching the seeds' spread between the engines (bullhead 0.847 [0.829–0.858] CPU · 0.870 [0.858–0.883] GPU, as before; pickerel
+  young 0.049 · 0.066) — scratchpad parity_7h.txt.
+- `tools/gpu/year_cdp.mjs` runs any of tools/gpu's pages now (5th argument: e.g. `g2_run`; its #out written at 'done').
+
 ## Stages
 
 - **G0 — feasibility (first):** profile the CPU coarse block to see where the time goes, then port the costliest kernels (the
