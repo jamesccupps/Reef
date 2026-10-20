@@ -179,7 +179,25 @@ No electrofishing, creel or growth survey and no stocking record specific to the
 
 **Current regulation (2019 and 2023 law books):** 25 white perch a day, **all bass catch-and-release**, and artificial lures only from Oct 1 to Dec 31.
 
+**UPDATE 2026-10-20 — MDIFW's 2024 depth chart for Lower (from the human):** it lists **pumpkinseed** and **sea-run alewife** for
+Lower Hot Brook Lake. That confirms the inference below (pumpkinseed's absence from Lower's 2007 list was a gap). It also gives the
+first record of alewives in the lakes: the restoration notes predicted them (`drainage_species_and_eel.md` §4: alewives at Danforth
+from 2017, both lakes mapped as habitat for ~382,000 adults at 235 an acre) but found no record.
+
 ### Cited Findings
+- **MDIFW depth chart, "Lower Hot Brook Lake", Bancroft, Danforth, T8 R4 NBPP, Washington Co.** [FT; a one-page chart, the human's
+  copy `Lower-Hot-Brook-Lake-1072.pdf`, 2026-10-20; not in the repository]:
+  - Surface area 684 acres (277 ha); perimeter 6.7 miles; mean depth 8 ft (2.44 m); maximum depth recorded 13 ft (3.96 m);
+    Delorme page 45. Contours at 10 ft and 2.5 ft; the 10-ft contour encloses a long central trough. "Data source: Maine IFW –
+    Historic", so the soundings are the old survey's, redrawn.
+  - **Principal fish species (2024):** chain pickerel, smallmouth bass, white perch.
+  - **Other fish species (2024):** banded killifish, blacknose dace, brown bullhead, fallfish, **pumpkinseed sunfish**, **sea-run
+    alewife**, white sucker, yellow perch.
+  - Against the sim: area matches (277 ha); the sim's Lower mean is 2.67 m (the 1949 soundings plus the photo-measured shelf),
+    ~9 % deeper than the chart's 2.44 m; max matches (3.94 m).
+- **MDIFW fishing guides 2016 and 2024 (Region F, bass waters)** [FT; the human's copies]: "Hot Brook Lakes (Upper & Lower)
+  Danforth, Washington County. Max Depth: 18 feet, & 13 feet, Area: 912 acres & 713 acres. Primary Fishery: SMB, WHP, PKL. Access:
+  Town landing off Rte 169" — the same entry as the 2021 guide. Nothing new on species.
 - **Species lists, MDIFW *Lake Fish of Maine*.** The data come from MDIFW's lake survey database (2007 update), compiled for the Gulf of Maine KB by P. Vaux and uploaded in 2009. The data set is "a composite… based primarily on lake fish surveys, but also… informal observations." — [Lake Fish of Maine xls](https://ww3.gulfofmaine.org/kb/files/9008/LakeFish_Maine.xls) ([KB record](https://ww3.gulfofmaine.org/kb/record.html?recordid=9008))
   - **Upper Hot Brook Lake (1076):** brown bullhead, white sucker, chain pickerel, banded killifish, **pumpkinseed**, smallmouth bass, white perch, yellow perch, blacknose dace, fallfish.
   - **Lower Hot Brook Lake (1072):** brown bullhead, white sucker, chain pickerel, banded killifish, smallmouth bass, white perch, yellow perch, blacknose dace, fallfish (no pumpkinseed).
