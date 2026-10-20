@@ -226,8 +226,10 @@ export class GpuFish {
   // FEEDING (fish3 _feed): strikes, then the fields (the bed and weeds, the surface, the zooplankton), the organic layer; hunger, a meal
   encodeFeed(enc) {
     enc.clearBuffer(this.B.ACC);
-    this.encodeKernel(enc, 'k_feed0'); this.encodeKernel(enc, 'k_strike', 64); this.encodeKernel(enc, 'k_strikeWin'); this.encodeKernel(enc, 'k_strikeApply');
-    if (this.yoyOn !== false) { this.encodeY(enc, 'y_table', 256); this._pass(enc, this.P.k_eatYoyReq, [this.bg0, this.bgY], this.n, 64); this._pass(enc, this.P.k_eatYoyGet, [this.bg0, this.bgY], this.n, 128); this.encodeY(enc, 'k_eatYoyApply', 256); }
+    // (F3.STRIKE2 — fish3 _feed: the young first, the bulk of a summer predator's food, and the strikes at the followed fish with the room left)
+    const strikes = () => { this.encodeKernel(enc, 'k_strike', 64); this.encodeKernel(enc, 'k_strikeWin'); this.encodeKernel(enc, 'k_strikeApply'); };
+    const young = () => { if (this.yoyOn !== false) { this.encodeY(enc, 'y_table', 256); this._pass(enc, this.P.k_eatYoyReq, [this.bg0, this.bgY], this.n, 64); this._pass(enc, this.P.k_eatYoyGet, [this.bg0, this.bgY], this.n, 128); this.encodeY(enc, 'k_eatYoyApply', 256); } };
+    this.encodeKernel(enc, 'k_feed0'); if (F3.STRIKE2) { young(); strikes(); } else { strikes(); young(); }
     this.encodeKernel(enc, 'k_fieldReq', 64); this._cells(enc, 'k_fieldCell'); this.encodeKernel(enc, 'k_fieldTake', 64); this._cells(enc, 'k_fieldApply');
     this.encodeKernel(enc, 'k_sedReq'); this._cells(enc, 'k_sedCell'); this.encodeKernel(enc, 'k_sedTake'); this.encodeKernel(enc, 'k_feedEnd');
   }

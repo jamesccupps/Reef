@@ -8,6 +8,7 @@ import '../../src/w3/render3/world3sel.js';
 const out = document.getElementById('out');
 const log = (...a) => { out.textContent += a.join(' ') + '\n'; console.log(...a); };
 const qs = new URLSearchParams(location.search), SEED = +(qs.get('seed') || 611);
+{ const { stageR5 } = await import('../../src/w3/fish3.js'); if (qs.get('r5') === '1') stageR5(true); }   // (?r5=1: stage R item 5's package)
 const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, F3, HID3, reinforce3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');

@@ -102,7 +102,7 @@ export const F3 = {
   // esocids take a school's fish as singly (Turesson & Brönmark 2004), bass are confused (× n^−0.8), perch-like × 0.15 into a
   // school; P(kill in dt) = 1 − e^(−S·CS̄·perf·dt), the fish struck ∝ encounters × success, the gut's room gating it. Field
   // targets: 0.5–2 fish a day, 35–60 % empty stomachs; Maine pickerel ~95 % fish (55 % white perch), smallmouth ~80 % (Cooper 1941)
-  STRIKE2: false,       // (OFF until the young enter the same encounter rule and the GPU has it: see HOT_BROOK_3D.md §4 "Item 5")
+  STRIKE2: 0,           // (1 on — stageR5(); OFF until the young enter the same encounter rule and the GPU has it: see HOT_BROOK_3D.md §4 "Item 5")
   ENC_R: 6,             // m: the neighbourhood read for prey density
   ENC_U: 0.1,           // m/s: the prey's own movement through a predator's reach
   ENC_EH: 30 / 3600,    // /s: the encounter rate at which strikes run at half their maximum
@@ -389,6 +389,13 @@ export const KEYS3 = SPECIES.filter(k => S3[k]);
 // pickerel_mortality_cannibalism.md). Without it, at true scale the pickerel ate each other at ~1.5 % of the adults a week — a
 // 24-cm pickerel within reach of a 26-cm one — where the evidence allows ≤ ~0.1–0.3 %
 export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
+// STAGE R ITEM 5 as one package (before the lakes and the GPU are built — the year runner's ?r5=1): the encounter–strike–capture
+// rule, and the crayfish of soft Maine water — not common at Hot Brook (the human, 2026-10-20; crayfish nearly vanish below ~2 mg/L
+// Ca) — at a fifth of the Michigan-based capacity, preferred no more than fish, 15 % out by day (piscivore_encounter_attack.md §e)
+export function stageR5(on = true) {
+  F3.STRIKE2 = on ? 1 : 0;
+  Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
+}
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
 // 1.4–5.8, smallmouth ~12 in half cover, perch-like a prior), its own speed hunting (m/s: the pickerel waits in ambush), its kind
 export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0 }, bass: { aMax: 12, v: 0.2, cls: 1 }, other: { aMax: 4, v: 0.1, cls: 2 } };

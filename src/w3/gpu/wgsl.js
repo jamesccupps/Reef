@@ -973,11 +973,13 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let id = gau(A_id, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i);
   let lunge = 1.0 + ACTION_STRIKE_REACH * select(0.0, engaged(br(NW2 + HID + 3u, i)), gau(A_fk, i) == 1u);
   let R = spv(k, S_strikeR) * lunge * max(0.3, ga(A_visF, i)); let R2 = R * R;
+  // (F3.STRIKE2 — fish3 _strike2: the encounter–strike–capture rule over the column's catchable fish within ENC_R; else the old rule)
+  let s2 = F3_STRIKE2 > 0.5; let Rs = select(R, F3_ENC_R, s2); let Rs2 = Rs * Rs; let cls = u32(spv(k, S_predCls)); var sE = 0.0;
   let gape = ga(A_gape, i); let cap = spv(k, S_capture); let dmH = 0.5 * F3_SHALLOW_K * L;   // (fish3 _strike: half the water it needs)
   var sK = 0.0; var best = -1; var bkey = -3e38;
   var dM: array<f32, NK>; var dG: array<f32, NK>; var dW: array<f32, NK>;   // (the diagnostics' sums by prey species)
-  let gx0 = clamp(i32((x - R - GX0) / F3_HC), 0, i32(HHX) - 1); let gx1 = clamp(i32((x + R - GX0) / F3_HC), 0, i32(HHX) - 1);
-  let gy0 = clamp(i32((y - R - GY0) / F3_HC), 0, i32(HHY) - 1); let gy1 = clamp(i32((y + R - GY0) / F3_HC), 0, i32(HHY) - 1);
+  let gx0 = clamp(i32((x - Rs - GX0) / F3_HC), 0, i32(HHX) - 1); let gx1 = clamp(i32((x + Rs - GX0) / F3_HC), 0, i32(HHX) - 1);
+  let gy0 = clamp(i32((y - Rs - GY0) / F3_HC), 0, i32(HHY) - 1); let gy1 = clamp(i32((y + Rs - GY0) / F3_HC), 0, i32(HHY) - 1);
   for (var gy = gy0; gy <= gy1; gy++) {
     for (var gx = gx0; gx <= gx1; gx++) {
       let c = u32(gy) * HHX + u32(gx);
@@ -987,21 +989,29 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
         // (fish3's order: the grid is the block's start; a fish before this one in the list has moved — where it got to — one after it hasn't
         // yet: where the block began. Kept so: with the grid rebuilt where all had moved, the true lakes' predators struck ~9× as often)
         var pb = PX[b].xyz; if (b < i) { pb = vec3f(ga(A_x, b), ga(A_y, b), ga(A_z, b)); }
-        let dx = pb.x - x; let dy = pb.y - y; let dz = pb.z - z; let d2 = dx * dx + dy * dy + dz * dz; if (d2 > R2) { continue; }
+        let dx = pb.x - x; let dy = pb.y - y; let dz = pb.z - z; let d2 = dx * dx + dy * dy + dz * dz;
+        if (s2) { if (dx * dx + dy * dy > Rs2) { continue; } } else if (d2 > R2) { continue; }
         let kb = gau(A_k, b); dM[kb] += ga(A_n, b);
         if (!canPrey(i, b) || ga(A_W, b) + ga(A_gon, b) > room) { continue; }
         dG[kb] += ga(A_n, b);
         let d = sqrt(d2); let hide = 1.0 - ACTION_HIDE_CONCEAL * engaged(br(NW2 + HID + 5u, b));
         let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
-        let w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0);
+        var w = 0.0;
+        if (s2) {   // (an encounter for each fish of a school, × concealment, cover, the shallows; × capture success by kind, size, school)
+          let nn = max(nb, 1.0); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0);
+          if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, -0.8), cls == 1u); }
+            let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch; sE += enc; w = enc * cs; }
+        } else { w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0); }
         if (w > 0.0) { sK += w; dW[kb] += w; let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / w; if (key > bkey) { bkey = key; best = i32(b); } }   // (u^(1/w) in logs: small weights underflowed)
       }
     }
   }
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
-  let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt;
-  if (rnd(id, 31u, 0u) >= 1.0 - exp(-rate * sK)) { return; }
+  var pK = 0.0;
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * U.dt); }   // (π cancels)
+  else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
+  if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
   sai(A_claim, i, best); sau(A_claimP, i, prio);
   atomicMax(&GS[GS_CLAIMP0 + u32(best)], prio); atomicAdd(&GS[GS_CLAIMP0 + U.cap + u32(best)], 1u);
