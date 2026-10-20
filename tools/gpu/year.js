@@ -25,6 +25,8 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
   for (const [k, v] of qs) if (k.startsWith('fry.') && k.slice(4) in FRY && typeof FRY[k.slice(4)] === 'number') FRY[k.slice(4)] = +v; }   // (?fry.KEY=v: any of FRY's numbers — calibration A/Bs)
 // ?ylpisc= the length the young pickerel's schools take their first fish (species.js BIO.pike.yLpisc)
 { const { S3 } = await import('../../src/w3/fish3.js'); if (qs.has('ycover')) S3.pike.yCover = +qs.get('ycover'); if (qs.has('ylpisc')) S3.pike.sp.yLpisc = +qs.get('ylpisc'); }
+// ?r5=1: stage R item 5's package (fish3 stageR5: the encounter–strike–capture rule; soft water's few crayfish, item 6's water — before the overrides below, which win)
+{ const { stageR5 } = await import('../../src/w3/fish3.js'); if (qs.get('r5') === '1') stageR5(true); }
 // ?f3.KEY=v: any of F3's numbers; ?s3.<species>.<path>=v: a species' entry (numbers, or comma lists — e.g. s3.killifish.hab.day.bot=0.1,0.6,
 // s3.pike.schoolExp=0.5) — both read when the GPU tables and constants are built, after this
 { const { F3, S3 } = await import('../../src/w3/fish3.js');
@@ -32,8 +34,6 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
     if (k.startsWith('f3.') && typeof F3[k.slice(3)] === 'number') F3[k.slice(3)] = +v;
     else if (k.startsWith('s3.')) { const path = k.slice(3).split('.'), last = path.pop(); let o = S3; for (const q of path) o = o?.[q]; if (o) o[last] = v.includes(',') ? v.split(',').map(Number) : +v; }
   } }
-// ?r5=1: stage R item 5's package (fish3 stageR5: the encounter–strike–capture rule; soft water's few crayfish)
-{ const { stageR5 } = await import('../../src/w3/fish3.js'); if (qs.get('r5') === '1') stageR5(true); }
 // ?cfg.BLOCK.KEY=v: any number or switch of config.js's blocks (e.g. cfg.PHYTO.PER_CAPITA=true), set before the lakes are built
 { const C = await import('../../src/config.js');
   for (const [k, v] of qs) if (k.startsWith('cfg.')) { const [, blk, key] = k.split('.'), o = C[blk]; if (o && key in o) o[key] = v === 'true' ? true : v === 'false' ? false : +v; } }
