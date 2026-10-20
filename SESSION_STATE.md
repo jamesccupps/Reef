@@ -192,7 +192,22 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~1 p.m. — the newest): ARM G (b7a34c8 + tallies) and ARM H (6d: pickerel meet schools as n^0.65,
+▶▶▶ RESUME HERE (2026-10-20 ~4:20 p.m. — the newest): THE BASS ARE FIXED BY THE HUNGER GATE (6g). Arms on 613 × 1 yr (r6<X>_613.txt):
+I (shore band) and J (killifish night shallows) changed nothing for the bass (~23 kg/ha). Research piscivore_field_feeding_rates.md:
+Maine growth needs p ≈ 0.34 on the sim's own FB4 set (0.7–1.1 kg food/yr; Mille Lacs 0.87 kg); the 8-%BW gut was the only brake.
+K (gate G0 0.5 %BW + bass aMax 2.5/h, v 0.1, act [0.2,0.5,0.05]): bass 6.1 kg/ha, p 0.16–0.21, 76 % empty, 7,900 starved — too
+much. L (G0 1 %BW): bass HOLD at 7.4 kg/ha (from 9.4), ~28 → 33.5 cm, summer p 0.20 / autumn 0.44–0.51 (the fall-heavy shape that
+also fits Maine growth), 62 % empty; pickerel 4.9 (target 4–8), total 96, white perch 36.4, perch 23. Killifish still gone (L:
+fallfish 49.7k, pickerel 44.7k, white perch 18.5k). Research killifish_persistence_and_predators.md (+ addendum of 3 sub-reports):
+adult losses ~77 %/yr are normal; persistence = recruitment (egg→age-1 ≥ ~0.2 %); age-0 25.6–32 mm by late Sep; NO record of fallfish
+eating killifish; white perch on killifish schools = dilution, no confusion; yellow perch piscivory rare, diurnal; kingfishers are
+the best-documented killifish predator. COMMITTED c1685d9 (6h–6i): S3 yBed (young keep to water ≤ yBed m while ≥ F3.YBED_T 10 °C;
+killifish 1.2, benthL 1.0 — their young had followed zooplankton offshore and stalled at ~2 cm) and fallfish Lpisc 18. CPU probe
+kyoung.mjs: young killifish 2.45 cm by mid-October, 0.3 % of hatched alive then. RUNNING: ARM M (snapshot m :8125 = c1685d9) 613 ×
+1 yr → r6M_613.txt (~16:50). NEXT: read M (killifish recruits in spring? fallfish kills gone? who eats killifish now?); then white
+perch's school term (dilution not 0.15 confusion), yellow perch no fish at night; then ≥ 3 seeds × 5 yr of the package; then make
+stageR5 the default (full gate); then SEA-RUN ALEWIFE (stage A, designed).
+▶▶▶ RESUME HERE (2026-10-20 ~1 p.m.): ARM G (b7a34c8 + tallies) and ARM H (6d: pickerel meet schools as n^0.65,
 ce8a6e1) done, 613 × 1 yr each (r6G_613.txt, r6H_613.txt): both ~ bass 23.5 kg/ha, killifish gone; killifish hold their strip by
 day (59–60 % over < 0.3 m) but die over 0.3–0.6 m (46 %) and > 0.6 m (43 % — twilight/night, their night band 1–2.5 m);
 stomachs field-like (bass 35 % empty, pickerel 38 %); bass kills 68 % 10–20-cm prey, perch eaten 58 % over ≥ 2 m. NOTE the
