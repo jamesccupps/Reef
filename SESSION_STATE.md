@@ -192,7 +192,19 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~9:50 a.m. — the newest): ARM F STOPPED at day ~200 of 613 (r6F_613.txt): spring recruitment
+▶▶▶ RESUME HERE (2026-10-20 ~1 p.m. — the newest): ARM G (b7a34c8 + tallies) and ARM H (6d: pickerel meet schools as n^0.65,
+ce8a6e1) done, 613 × 1 yr each (r6G_613.txt, r6H_613.txt): both ~ bass 23.5 kg/ha, killifish gone; killifish hold their strip by
+day (59–60 % over < 0.3 m) but die over 0.3–0.6 m (46 %) and > 0.6 m (43 % — twilight/night, their night band 1–2.5 m);
+stomachs field-like (bass 35 % empty, pickerel 38 %); bass kills 68 % 10–20-cm prey, perch eaten 58 % over ≥ 2 m. NOTE the
+T_KILLPZ tally is each predator's kills by the PREY's length (misread once as the predators' — corrected 230a416). The human:
+bass "usually closer to shore, but some in the open"; they fish Upper's shallow stream end; not sure about Lower's sunfish or
+alewives (don't re-ask). COMMITTED 6f2784d (6e): the bass's SHORE BAND (S3 shore → _mode s0/s1 → _drive pull down shoreDist; GPU
+SPF shD*/shN*/shT*, SP_REC 158; stageR5 bass {day [60,120], night [50,100], tw [150,250]} m, bed 1–3 / 0.5–2) from research
+smallmouth_horizontal_habitat.md; gate core+strike+gpu 34/34; g1 moves agree. RUNNING: ARM I (snapshot i :8121) 613 × 1 yr →
+r6I_613.txt. NEXT: if bass still overgrow — the perch's juvenile band (1.5–4 m, mostly offshore here: research flag), structure;
+killifish NIGHT band [0.1, 0.6] (Helfman 1981 Opinicon via McInerny & Cross [SEC]: dispersing < 0.6 m at night, a bass-and-pike
+lake; vs COSEWIC's inferred deeper move) for arm J; the killifish's young (none reached spring in G/H).
+▶▶▶ RESUME HERE (2026-10-20 ~9:50 a.m.): ARM F STOPPED at day ~200 of 613 (r6F_613.txt): spring recruitment
 removed the young-bass feast but the bass STILL overgrow at true scale (17.5 → 23.1 kg/ha day 98 → 126, 42 cm, p 0.62–0.75),
 living on adult perch and white perch (perch 233k → 179k in a month). The 1/10 CPU world with the same package gives bass p
 0.24–0.28 (arm B settings or not — probe/gut2.mjs ARMB=1) — the true-scale GPU world is the one to calibrate. FB4's own gut
