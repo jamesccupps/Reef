@@ -119,6 +119,7 @@ export const F3 = {
   // food, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303; juvenile_refuges_and_bass_young.md §2).
   // Recruitment to the followed fish at age 1, as fisheries count it. 0: off (stageR5 sets it)
   RECRUIT_SPRING: 0,
+  HUNGER_GATE: 0,   // (1: the hunger gate in _feed — S3 G0, %BW as a fraction; stageR5 sets it)
   // A NARROW BAND HELD (stage R item 6c): the pull back into the bottom-depth band grows per metre outside it (HAB_W × clamp(off,
   // 0.2, 1)); with BAND_REL per band-width for bands under 1 m — a killifish 0.2 m too deep for its 0.3-m band pulled at 0.16 of
   // HAB_W, beaten by any food's pull, and sat just outside it, over 0.35–0.6 m where the pickerel are (arm E: 41 % of the killifish
@@ -436,7 +437,13 @@ export function stageR5(on = true) {
   S3.bass.shore = on ? { day: [60, 120], night: [50, 100], tw: [150, 250] } : undefined;
   S3.bass.hab.day.bot = on ? [1.0, 3.0] : [1.5, 4.0]; S3.bass.hab.night.bot = on ? [0.5, 2.0] : [1.0, 2.5];
   F3.RECRUIT_SPRING = on ? 1 : 0;
-  F3.BAND_REL = on ? 1 : 0;   // (a narrow band held)   // (the year's young recruit at age 1, in spring)
+  F3.BAND_REL = on ? 1 : 0;   // (a narrow band held)
+  // (item 6g: the hunger gate — bass G0 0.5 %BW, pickerel 1 %BW (meals of 2.8–4.3 %BW give its 2–3-day meal interval) — with the
+  // bass's field strike values in PRED3: research piscivore_field_feeding_rates.md: Maine growth needs p ≈ 0.34 on the sim's own
+  // FB4 set (0.7–1.1 kg of food a year; Mille Lacs 0.87 kg), field strikes at fish ~0.3 per hunting hour)
+  // (pickerel ungated: at G0 1 %BW the June pickerel fell to p 0.13, 90 % empty, 0.09 kills a day — they were not overfeeding:
+  // the true lakes' summer pickerel ran p 0.29–0.31 against ~0.37 (arms H–I))
+  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = on ? 0.005 : 0;   // (the year's young recruit at age 1, in spring)
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
@@ -444,7 +451,7 @@ export function stageR5(on = true) {
 // act: the share of the time it hunts by [day, twilight, night] (sun > 0.3, > 0.02, below) — pickerel 2 % active at night against
 // 17–22 % by day, peaks at dawn and dusk; smallmouth ~0.3 by day (piscivore_encounter_attack.md (c)); without it the predators
 // hunted round the clock, fed at their maximum and tripled in a summer (arm D, seed 613)
-export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 12, v: 0.2, cls: 1, act: [0.3, 0.3, 0.1] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
+export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 2.5, v: 0.1, cls: 1, act: [0.2, 0.5, 0.05] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
 // predators a prior); SPINY: the spiny-rayed and deep-bodied, whose success falls faster with relative size (Scharf et al. 1998)
@@ -1620,14 +1627,18 @@ export class Fish3 {
     const perf = coldPerf(a.T, sp.tempOpt, sp.coldPerf);
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
+    // THE HUNGER GATE (F3.HUNGER_GATE, S3 G0): a predator hunts and forages in proportion to how empty it is, h = 1 − gut / (G0 × its
+    // weight) — wild bass hold ~0.4 % of their weight (Lake Ontario), use a third to a half of their gut, rest after a meal; the
+    // 8-%BW gut as the only brake let a bass eat at Cmax wherever prey were about (research piscivore_field_feeding_rates.md (b))
+    const hg = F3.HUNGER_GATE && s.G0 > 0 ? clamp(1 - a.gut / (s.G0 * a.W), 0, 1) : 1; if (!(hg > 0)) return false; want *= hg;
     const g0 = a.gut;
     // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
     let yAsk = 0;
-    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const pisc = s.pisc && a.L >= sp.Lpisc; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR) || 0; }
-    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
+    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const pisc = s.pisc && a.L >= sp.Lpisc; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR) || 0; }
+    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, perf * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
-      if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
+      if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
       else { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
     }
     // THE BED OR THE OPEN WATER: a fish can't search the mud and the open water at once — it spends its foraging time where it

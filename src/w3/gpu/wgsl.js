@@ -962,7 +962,8 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * guardMul(i, k, BROOD_GUARD_FEED3_0, BROOD_GUARD_FEED3_1);
   let apt = gEff / gmax;
   sa(A_fGEff, i, gEff); sa(A_fPerf, i, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)));
-  sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
+  let hg = select(1.0, clamp(1.0 - ga(A_gut, i) / max(1e-9, spv(k, S_g0) * W), 0.0, 1.0), F3_HUNGER_GATE > 0.5 && spv(k, S_g0) > 0.0);   // (fish3 _feed: the hunger gate)
+  sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY * hg); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
   sai(A_claim, i, -1);
 }
 // ---- STRIKES (fish3 _strike): the kill hazard over the catchable fish within reach; the prey drawn ∝ its weight (each candidate a
@@ -1014,7 +1015,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * act * U.dt); }   // (π cancels)
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = select(1.0, clamp(1.0 - ga(A_gut0, i) / max(1e-9, spv(k, S_g0) * ga(A_W, i)), 0.0, 1.0), F3_HUNGER_GATE > 0.5 && spv(k, S_g0) > 0.0); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * act * hg * U.dt); }   // (× the hunger gate)   // (π cancels)
   else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
