@@ -192,6 +192,35 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ 2026-10-20 ~2 a.m. — THE A/B SO FAR (scratchpad r1A_613, r1B_613, r1A_611 done; yrsum.mjs / yrdem.mjs summarise): A and B
+alike over 5 years: total 95–105 kg/ha (field ✓), summer zooplankton years 2–5 ~20–70 µg/L (copepods 20–60 %), BUT the community
+collapses to perch (20–29) + white perch (38 → 44–48; target 15–35) + suckers (16–18): pumpkinseed, redbreast, killifish, dace
+EXTINCT; bullhead 7.5 → 1.2; pickerel 4.6 → 0.1–0.5; bass 10.6 → 4–8; fallfish 4 → 0.4. B (adults onto the bed) changes nothing.
+WHY (yrdem on A613): pickerel recruit ~0 from year 2 (801, 0, 0, 0, 15) and their adults STARVE (~1,500/yr years 2–3); bass recruit
+~50k/yr but their adults starve 14–23k/yr; bullheads recruit 80–113k/yr but starve (adults gone, mean 17 → 8.5 cm). In SUMMER the
+predators eat crayfish (bass 65–77 %, pickerel 27–43 %) and the young; adult/juvenile fish only 3–22 %; ration p 0.24–0.44.
+Maine (Cooper 1941): pickerel ~95 % fish (55 % white perch), 0.5 % crayfish; smallmouth 80 % fish (61 % white perch), 14 %
+crayfish. → STAGE R ITEM 5 IS THE CORE: the predators can't make a living on the perch and white perch (encounter? strike
+success? the prey's refuges/schools?), starve, and the unregulated perch + white perch take the bed food from the small benthivores.
+PREDATION PIPELINE DIAGNOSED (~3 a.m.; CPU 1/10 lakes, a summer month from yf 0.3, seed 509; scratchpad/probe strike_diag.mjs,
+overlap.mjs, strike_period.mjs): pickerel (27 cm, gape 3.6 cm) have a catchable fish in their strike range on 8.8 % of checks;
+what they meet is mostly BULLHEADS (71k encounters) and other pickerel; perch/white perch only 1.9k/1.2k and those met are the
+20–21-cm adults (4 % / 11 % swallowable). Kills: killifish 214, bullheads 103, fallfish 55, pickerel 29, white perch 17, perch
+14. Bass: a candidate on 2.5 % of checks. White perch DO move inshore at night (1.3 m bed, 78 % ≤ 1.5 m; day 3.2 m) — the habitat
+switch follows the sun (nf from sun 0.3 → 0.02, so they arrive about dark), but catchable perch/white perch in range stay scarce
+in every period (pickerel kills per 1,000 checks: dawn 4.9, day 3.2, dusk 3.9, night 0.9; night sight ×0.38). Pickerel's TOTAL
+intake ~1.3–1.8 %/day ≈ a real pickerel's; the MIX is wrong: summer crayfish 27–43 %, young-of-year 26–50 %, other fish ~20 %
+(Cooper: ~95 % fish, 0.5 % crayfish). Bass 65–77 % crayfish (Cooper 14 %). → Item 5 turns on the CRAYFISH (too many or too
+easy in the sim, or Hot Brook really has many — ASK THE HUMAN) and on encounters with the 6–15-cm perch/white perch (the ATTACK
+constant is the 1-hour year's compat value: 2/8760 per s ⇒ ~73 min to strike a weight-1 prey in range — re-derive in real time).
+ALSO DONE (~10:30 p.m.): STAGE R ITEM 1 COMMITTED (8a9f9b0) — the first winter: config WINTER0 (Shuter's ramp per species,
+208-day window from the season's curve, (p1 − p0)/(1 − p0) a step in place of the young's starvation, only for fish alive when the
+winter began), fish3 _hazards/_yoyLive + GPU wHaz in k_hazards/y_mort; new gate check (young, 27/27); g1_check at yf 0.9 agrees.
+QUEUE 2 (scratchpad/queue_r3.sh, waits for queue_r1.done): arm C = arm B's diet overrides + the first winter (snapshot r3 :8114 =
+8a9f9b0) on seeds 613, 611, 612 × 5 years → r3C_<seed>.txt; done when queue_r3.done appears.
+EARLY SIGNAL (r1B_613, years 2–3): B alone doesn't save the small species — white perch 42–45 kg/ha (A-like run 38), pumpkinseed,
+redbreast, killifish, dace → ~0, pickerel 1.9 → 1.0, total ~101 kg/ha; the second summer's zooplankton ~30 µg/L (was 12–20).
+Judge on all seeds. Suspects for the small species: their young's food (item 2), predation on them, habitat.
 RUNNING (launched ~9:10 p.m., SERIALLY — parallel runner windows starve each other on this machine: only the foreground one
 advances): queue scratchpad/queue_r1.sh → r1B_613 (going), then r1A_613, r1A_611, r1B_611, r1A_612, r1B_612 (each 5 years, ~75 min;
 snapshot snap_r1 :8112 = commit 7c26519; arm B's query in armB_query.txt; done when scratchpad/queue_r1.done appears). The research

@@ -4,6 +4,20 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-20 — With the plankton fixed, the community collapses to perch and white perch; the predators eat crayfish (SESSION_STATE)
+- **What.** Over five GPU years (seeds 613, 611; arms A and B), total biomass sits in Maine's range (95–105 kg/ha) and the summer
+  zooplankton is realistic, but the community collapses to yellow perch, white perch (38 → 44–48 kg/ha) and suckers: pumpkinseed,
+  redbreast, killifish and dace go extinct, bullheads 7.5 → 1.2, pickerel 4.6 → 0.1–0.5, bass 10.6 → 4–8. Moving the
+  zooplankton-feeding species' adults to the bed (arm B) changes nothing.
+- **Why.** Pickerel stop recruiting from year 2 and their adults starve; bass and bullhead adults starve too. In summer the
+  predators eat crayfish (bass 65–77 %, pickerel 27–43 %) and young-of-year; other fish are ~3–22 %. Measured in the 1/10 lakes,
+  pickerel meet mostly bullheads, and the perch and white perch they meet are adults too deep-bodied to swallow; bass find a
+  catchable fish in range on 2.5 % of their strike checks. The pickerel's total intake is near a real one's; the mix is wrong
+  (Cooper 1941, Maine: pickerel ~95 % fish, 0.5 % crayfish; smallmouth 80 % fish, 14 % crayfish).
+- **Why it matters.** Fixing the base of the web exposed the top: a model's predators can hit their energy targets on the wrong
+  prey, and the regulation that piscivory should provide (on the planktivores) never happens. Diet composition, not just intake,
+  has to be a calibration target.
+
 ## 2026-10-19 — Copepods need a trade-off, and the winter O₂ budget leaned on too-bright ice (docs/HOT_BROOK_3D.md §4)
 - **What.** With per-capita algae the zooplankton bloomed and crashed realistically, but copepods were still excluded by Daphnia
   and the crustaceans collapsed under the ice. The copepods' parameters gave them a higher food threshold AND lower growth than
