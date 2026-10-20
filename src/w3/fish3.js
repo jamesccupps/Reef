@@ -523,6 +523,10 @@ export function stageR5(on = true) {
   // (item 23) the young bottom fish's water: sucker fry < 5 cm feed in 15–20 cm along the shores, young bullheads in quiet coves
   // (SFH §3–4); they sat over 2–3.5 m in June–August
   S3.sucker.yBed = on ? 0.8 : 0; S3.catfish.yBed = on ? 1.5 : 0;
+  // (item 13) the sunfishes seek cover by day — the small fully, the larger at 0.4 — and hold low in it (h 0.3 m above the bed:
+  // within most canopies; the weeds protect only the fish within their height)
+  S3.sunfish.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined; S3.redbreast.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined;
+  S3.sunfish.hab.day.h = on ? 0.3 : 0.7; S3.redbreast.hab.day.h = on ? 0.3 : 0.4;
   // (item 6h: the killifish's young — they hatch on the plants of the shelf and stay in its weedy shallows, growing linearly to ~5 cm
   // by mid-October (Keast & Eadie 1984), cladocerans young, midges and amphipods older (Phillips 2007): yBed 1.2 m (74–93 % of
   // seine catches ≤ 1.2 m) and the bed's food from 2 cm (was FRY.BENTH_L 2.5, which they never reached). Without it the young
@@ -1541,6 +1545,16 @@ export class Fish3 {
       if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       off *= 1 - needy;
+      // ITS COVER (S3 seek, the review's phase 3 item 13): by day in the open-water season, toward the best cover about it — the
+      // weeds' stands and the shallows beyond a large predator's reach (the young's cover, _yoyTarget cov) — fully while small (≤
+      // seek.L cm), at seek.big larger: pumpkinseed shelter in the weeds until their deep bodies outgrow the gapes ("predation
+      // ceases at ~7 cm"), redbreast at the stony and wooded margins (no substrate map yet: the shallows stand in); without it
+      // they held a depth band and 77 % of the pumpkinseed founders were eaten in year 1
+      const sk = s.seek; if (sk && this.env.sun > 0.02 && a.T > 9 && a.c >= 0) {
+        const G = this.G, pl = this.env.plants, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0);
+        const nb = this.nbr[a.c], v0 = cv(a.c); let best = v0, bc = -1; for (let q = 0; q < nb.length; q++) { const v = cv(nb[q]); if (v > best) { best = v; bc = nb[q]; } }
+        if (bc >= 0 && best > v0 + 0.05) { const dx = G.cx[bc] - a.x, dy = G.cy[bc] - a.y; steer(dx, dy, sk.w * (a.L <= sk.L ? 1 : sk.big) * (1 - needy), Math.hypot(dx, dy)); }
+      }
       // its shore band (S3 shore): back toward the nearest shore — down the gradient of the distance to it
       if (m.s1 > 0) { const d = GEO.shoreDist(a.x, a.y); if (d > m.s0) { const h = GEO.CELL, sX = GEO.shoreDist(a.x + h, a.y) - GEO.shoreDist(a.x - h, a.y), sY = GEO.shoreDist(a.x, a.y + h) - GEO.shoreDist(a.x, a.y - h); if (sX || sY) steer(-sX, -sY, hw * clamp((d - m.s0) / Math.max(1e-3, m.s1 - m.s0), 0.2, 1), d - 0.9 * m.s0); } }
     }

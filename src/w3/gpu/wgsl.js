@@ -666,6 +666,10 @@ fn steer(s: ptr<function, Steer>, bx: f32, by: f32, w: f32, nd: f32) {
 }
 struct DriveOut { vx: f32, vy: f32, need: f32, thrust: f32, esc: u32, far: u32, farSet: u32 };
 // fish3 _drive at a block's scale (dt 0: the heading's pulls and the pace; the turn, the look ahead and the pitch are the fine swim's)
+fn covAt(cc: u32) -> f32 {   // fish3 _drive's cover (S3 seek): the weeds' stands and the shallows beyond a large predator's reach
+  let jb = sti(O_fColBedJ + cc); var pc = 0.0; if (U.plants != 0u && jb >= 0) { let li = sti(O_litIdx + u32(jb)); if (li >= 0) { pc = wd(W_pCov + u32(li)); } }
+  return max(F3_SHALLOW_REFUGE * clamp((0.8 - stf(O_wDepthMean + cc)) / 0.6, 0.0, 1.0), pc);
+}
 fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c: i32, dh: vec2f) -> DriveOut {
   var st = Steer(0.0, 0.0, 0.0, 3e38); var r: DriveOut; r.farSet = 0u; r.far = 0u;
   let nt = ga(A_nt, i); let L = ga(A_L, i); let hunger = ga(A_hunger, i); let fear = ga(A_fear, i); let senseR = ga(A_senseR, i);
@@ -689,6 +693,11 @@ fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c:
     else if (bed > hi) { off = bed - hi; if (gx != 0.0 || gy != 0.0) { steer(&st, -gx, -gy, hw * clamp(off / bw, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
     if (m.s1 > 0.0) { let d = shoreDist(x, y); if (d > m.s0) { let sX = shoreDist(x + GCELL, y) - shoreDist(x - GCELL, y); let sY = shoreDist(x, y + GCELL) - shoreDist(x, y - GCELL); if (sX != 0.0 || sY != 0.0) { steer(&st, -sX, -sY, hw * clamp((d - m.s0) / max(1e-3, m.s1 - m.s0), 0.2, 1.0), d - 0.9 * m.s0); } } }   // (fish3 _drive: its shore band)
     off *= 1.0 - needy;
+    if (spv(k, S_skW) > 0.0 && U.sun > 0.02 && ga(A_T, i) > 9.0 && c >= 0) {   // (fish3 _drive: its cover, S3 seek)
+      let cu = u32(c); let v0 = covAt(cu); var best = v0; var bc = -1; let s0 = u32(sti(O_fNbr0 + cu)); let s1 = u32(sti(O_fNbr0 + cu + 1u));
+      for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let v = covAt(cc); if (v > best) { best = v; bc = i32(cc); } }
+      if (bc >= 0 && best > v0 + 0.05) { let dx = colX(u32(bc)) - x; let dy = colY(u32(bc)) - y; steer(&st, dx, dy, spv(k, S_skW) * select(spv(k, S_skBig), 1.0, L <= spv(k, S_skL)) * (1.0 - needy), length(vec2f(dx, dy))); }
+    }
   }
   // a mate (from the snapshot)
   let mt = gai(A_mate, i);
