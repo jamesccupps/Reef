@@ -258,3 +258,71 @@ Compiled 2026-10-20 for the 3-D sim of Upper and Lower Hot Brook Lake, Maine: sh
 3. Kills by predator against the table above; fallfish ≤ 10 %.
 4. Adult fallfish diet ≤ 20 % fish by mass outside the May–June fry pulse.
 5. White perch fish share ~20–30 %, killifish a minor part of it.
+
+---
+
+## Addendum (2026-10-20): the three literature sub-reports (Q1 dynamics; Q2 predators and persistence; Q3–Q4 fallfish and perch)
+
+The note above was handed back before its sub-researchers reported. Their findings, condensed (tags as above; [SUR] surrogate).
+
+### Q1 — population dynamics
+- **No direct survival estimate** (mark–recapture or life table) exists for banded killifish. Fritz & Garside 1975 (Can. J. Zool.
+  53:361, doi:10.1139/z75-047) 403; Chippett 2004 (MUN thesis) too large to fetch.
+- **Catch curve** (Phillips, Ewert & Speares 2007, Northeast. Nat. 14:269 [FT]; summer seine sample ages 1/2/3 = 139/95/9):
+  Z ≈ 1.37/yr (S ≈ 0.25; Chapman–Robson S 0.32); stepwise S age 1→2 0.68, 2→3 0.095 — "no age-3 fish survived spawning".
+  Fall age-0: 32 ± 1.9 mm TL. Fecundity 526 ± 37 (age 1, 67 mm), 744 (age 2), 1,062 (age 3); ~3 clutches; GSI peak 15.8 % mid-July.
+- **Density:** Onondaga Lake (NY) quarter-sweep seine, 2009: 62.9 ± 15.7 non-YOY killifish per haul ≈ **0.34 fish/m² (~3,400/ha
+  of the seined shore zone)**, a minimum [derived]; larval catch per haul 0.06–43.6 over 2000–03 (**~700-fold** year-to-year).
+  Burton's Pond (NL, 0.81 ha; Mitchell & Purchase 2014 [FT]): ≥ 568 adults (≥ 700/ha) 13 yr after 6–9 founders (λ ≥ 1.38/yr).
+- **Young-of-year:** 25.6 ± 4.5 mm SL on 21 Sep (Burton's Pond); length gain roughly linear early, plateau by early September,
+  size set by spawning date (Keast & Eadie 1984 [ABS]); Opinicon 49.5 mm by mid-October (COSEWIC). Hatch: 0 % at 10 °C, ≤ 10 % at
+  16 °C, > 74 % at 22–28 °C (12.5 d at 22 °C, 7.1 mm SL) — "complete cohort failures" possible in cool summers (Penney et al. 2019,
+  J. Freshw. Ecol. 34:771, via the thesis [FT]).
+- **Winter:** into deeper parts of lakes in late fall and winter, back to the shallows after ice-out (COSEWIC 2003, Godin pers.
+  comm. [FT]). Mummichog [SUR]: fasting at ≤ 3.1 °C (Reeve et al. 2022); YOY annual mortality "up to 99.5 %", adults 54 %
+  (Meredith & Lotrich 1979, via Abraham 1985 [SEC]).
+- **Replacement** [derived]: lifetime eggs per female 526 + 744S + 1,062S² → egg-to-age-1 survival of **~0.17–0.28 %** replaces
+  the stock (~1 % at mainland fecundity ≤ 250). Adult losses of ~77 % a year are not unrealistic for a fish that lives 3–4 years
+  and often dies after spawning — persistence rests on the eggs and young.
+
+### Q2 — who eats killifish, declines, what lets them persist
+- **No numeric killifish share** found for pickerel, smallmouth, perch, white perch, fallfish, loon, merganser or eel diets. The
+  best numbers are BELTED KINGFISHER pellets (White 1953, Bull. FRB Can. 97 [FT]): killifish 10.5 % of items (Gaspereau Lake NS),
+  18.7 % (North River NB), 12.4 % (Moser River NS); "largely" sticklebacks and killifish at shallow, weedy Mill Lake. Great blue
+  heron: "killifish" in 5 of 150 stomachs (USBS 1930 [SEC]). Eel: none of 880 (Moffatt 2020 [FT]).
+- **Smallmouth in Nova Scotia lakes:** > 99 % invertebrates by weight (Wentzells Lake 2019 lavage, 85 bass [FT]); "dominated by
+  insects" (Lake Ainslie; LeBlanc 2010 [FT]). Pickerel there: white perch, pickerel, salmon smolts, brook trout, sucker — no killifish.
+- **Declines:** lakes with pickerel, bass and burbot have "scarce small shore fishes" (White 1953); littoral predators → median 0 vs
+  2 minnow species in 195 northeastern lakes, intact only in northern Maine (Whittier et al. 1997, CJFAS 54:1593 [ABS]); a third as
+  many minnow species with top predators in the Adirondacks (Findlay et al. 2000 [ABS]); killifish densities fell within ~3–4
+  years of an introduced snakehead (Rohrback et al. 2023, NE Nat. 30:429 [ABS]). Long coexistence: Grand Lake NS (bass since 1960,
+  killifish still "rich"), and Hot Brook (both since 1949).
+- **Depth — conflicting evidence:** Helfman 1981 (via McInerny & Cross 2004 [SEC]) — schools at 1–1.6 m by day, dispersing into
+  < 0.6 m at night; Chippett 2004 (via COSEWIC) — dense shallow vegetation by day, deeper rocky water at night; Everhart 1958 (Maine)
+  — "rarely stray into water much over a foot in depth" [FT]. Power 1987 [SUR, FT]: in streams birds took tethered catfish in
+  < 18 cm (0 of 6 survived); fish < 3 cm favoured in the shallows; Laplante-Albert 2008 [FT]: shallow water not always a refuge.
+- **Behaviour:** predator-experienced Opinicon killifish kept farther from a bass and moved shallower (Dunlop 1988, via Gabora &
+  Colgan 1990 [FT]); larger groups with alarm cues (Hoare et al. 2004); hungry fish leave shoals more (Hensor et al. 2003).
+
+### Q3–Q4 — fallfish, white perch, yellow perch as predators
+- **Fallfish:** the food of fallfish in Canada "practically unknown" (Scott & Crossman 1973 [FT]); omnivores — algae, fish,
+  insects, crayfish (Reed 1971, TAFS 100:717 [ABS]); in a NY salmon river, eggs 86 % of the diet of fish ≥ 150 mm in the fall egg
+  pulse (Johnson et al. 2009 [ABS]), parr in May (Johnson et al. 2016 [ABS]); terrestrial invertebrates the largest share in summer
+  (Johnson 2015 [ABS]). NO record anywhere of fallfish eating killifish; no lake diet numbers. Speculative only: White 1953 blamed a
+  river's scant small fish on "pickerel and possibly the perch and large fallfish".
+- **White perch:** fish > 110 mm in Tedford Lake NS ate killifish, yellow perch, sticklebacks (Smith 1947 via Scott & Crossman
+  [SEC]); fish ~35 % at 178 mm, ~70 % at 216–254 mm (Bay of Quinte, Leach 1962 [SEC]); Lake George ME (no alewives) mainly Cladocera
+  (Moring & Mink 2002 [ABS]); amphipods and chironomids, fish only > 300 mm (L. Ontario, Elrod et al. 1981 [ABS]). Morgan & Godin
+  1985 (Z. Tierpsychol. 70:236 [ABS]): white perch on killifish — risk falls with school size (dilution), NO confusion effect,
+  stragglers attacked more.
+- **Yellow perch:** piscivory "relatively uncommon" — one minnow per 35 h per perch in the lab with prey always present
+  (Paszkowski & Tonn 1994, TAFS 123:855 [FT]); fish < 6 % of the diet of ≥ 200-mm perch except June (West Long Lake, Wilkens et al.
+  2002 [ABS]); feeding ~07:00–18:00, little or none at night (Scott & Crossman).
+- **Cooper 1941** (repo): no killifish in 1,252 white perch or 160 fed yellow perch stomachs [derived bound: < 0.3–0.6 killifish per
+  white perch per summer, < 2–5 per yellow perch — if his lakes held killifish where sampled].
+
+### Implications added
+- Fallfish should take killifish rarely if ever (done: Lpisc 18, 2026-10-20); white perch's school term should be dilution (~1/n)
+  without confusion; yellow perch should not hunt fish at night.
+- Judge killifish by recruitment (egg → age 1 ≥ ~0.2 %) and by age-0 length (~25–32 mm by late September), not by adult survival.
+- Birds (kingfisher, heron, merganser) are real killifish predators the 3-D lakes don't have yet.
