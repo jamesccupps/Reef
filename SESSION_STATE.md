@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~6:20 p.m. — the newest): A FULL REVIEW IS RUNNING (the human: "do a full review of all the fish and
+▶▶▶ RESUME HERE (2026-10-20 ~7:30 p.m. — the newest): THE REVIEW IS DONE — docs/review/PLAN.md is THE plan (40 items in 9
+phases, merged from the five reviews + white_perch_habitat_and_predation.md + three Gemini reports the human supplied, filed in
+docs/research_notes/fetched/gemini_2026-10-20_*.txt (git-ignored) and being checked by two agents → gemini_hot_brook_checked.md and
+gemini_white_perch_checked.md). Diagnosis: predators can't reach white perch (55–61 % of Maine diets) so they eat the small fish;
+no refuges; the 1 %BW hunger gate starves small bass; strikes ignore the cold; the young die of under-ice hypoxia on anoxic organic
+beds; the census cap regulates white perch/pumpkinseed. NEXT: phase 0 (tallies: length at age, death depth/cover, young eaten by
+predator kind, post-recruit loss, first-winter loss by cause; probe the young's under-ice growth; KD_COLOUR 0.5 → 0.35) then phase 1
+(hunger gate ∝ Cmax, bass juvW, cold appetite for every strike, recruit at the spring crossing). Arm O (r8O_*.txt) still running.
+▶▶▶ RESUME HERE (2026-10-20 ~6:20 p.m.): A FULL REVIEW IS RUNNING (the human: "do a full review of all the fish and
 everything and make sure its all behaving as it really would in the environment and make sure we have all aspects of the environment
 and the animals covered"). Five background review agents write docs/review/: predators.md (pickerel, smallmouth), perches.md (yellow
 perch, white perch), small_fish.md (pumpkinseed, redbreast, killifish, dace, fallfish), bottom_fish_and_young.md (sucker, bullhead,
