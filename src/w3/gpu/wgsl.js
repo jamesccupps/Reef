@@ -675,8 +675,9 @@ fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c:
   let lo = m.b0; let hi = m.b1;
   if (goTrip == 0.0) {
     let hw = F3_HAB_W * (1.0 - 0.8 * needy);
-    if (bed < lo) { off = lo - bed; if (gx != 0.0 || gy != 0.0) { steer(&st, gx, gy, hw * clamp(off, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
-    else if (bed > hi) { off = bed - hi; if (gx != 0.0 || gy != 0.0) { steer(&st, -gx, -gy, hw * clamp(off, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
+    let bw = select(1.0, min(1.0, max(0.25, hi - lo)), F3_BAND_REL > 0.5);   // (F3.BAND_REL: per band-width, bands under 1 m)
+    if (bed < lo) { off = lo - bed; if (gx != 0.0 || gy != 0.0) { steer(&st, gx, gy, hw * clamp(off / bw, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
+    else if (bed > hi) { off = bed - hi; if (gx != 0.0 || gy != 0.0) { steer(&st, -gx, -gy, hw * clamp(off / bw, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
     off *= 1.0 - needy;
   }
   // a mate (from the snapshot)

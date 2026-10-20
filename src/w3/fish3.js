@@ -119,6 +119,11 @@ export const F3 = {
   // food, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303; juvenile_refuges_and_bass_young.md §2).
   // Recruitment to the followed fish at age 1, as fisheries count it. 0: off (stageR5 sets it)
   RECRUIT_SPRING: 0,
+  // A NARROW BAND HELD (stage R item 6c): the pull back into the bottom-depth band grows per metre outside it (HAB_W × clamp(off,
+  // 0.2, 1)); with BAND_REL per band-width for bands under 1 m — a killifish 0.2 m too deep for its 0.3-m band pulled at 0.16 of
+  // HAB_W, beaten by any food's pull, and sat just outside it, over 0.35–0.6 m where the pickerel are (arm E: 41 % of the killifish
+  // eaten over 0.3–0.6 m, 29 % over 0.6–1). 0: off (stageR5 sets it)
+  BAND_REL: 0,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6) (the young's)
   // THE SHALLOWS ARE THE SMALL FISH'S (stage P3): a predator strikes at full effect only over water ≥ SHALLOW_K × its length (m/cm),
   // not at all over half that — a 35-cm pickerel from 0.7 m (none under 0.35), a 20-cm bass 0.4, a 12-cm perch 0.24: big fish don't
@@ -418,7 +423,8 @@ export function stageR5(on = true) {
   // juvenile_refuges_and_bass_young.md (a)). Without it the 6-cm recruits joined the adults' 1.5-4-m water and in August were
   // 53-72 % of the bass's kills, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303))
   S3.bass.habJ = on ? { L: [12, 25], bot: [0.4, 2.0], wbot: [1.0, 3.0] } : undefined;
-  F3.RECRUIT_SPRING = on ? 1 : 0;   // (the year's young recruit at age 1, in spring)
+  F3.RECRUIT_SPRING = on ? 1 : 0;
+  F3.BAND_REL = on ? 1 : 0;   // (a narrow band held)   // (the year's young recruit at age 1, in spring)
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
@@ -1409,8 +1415,9 @@ export class Fish3 {
     const needy = a.hunger * clamp((0.95 - a.K) / 0.15, 0, 1);
     if (!goTrip) {
       const hw = F3.HAB_W * (1 - 0.8 * needy);
-      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
-      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
+      const bw = F3.BAND_REL ? Math.min(1, Math.max(0.25, hi - lo)) : 1;   // (F3.BAND_REL: the pull per band-width outside it, for bands under 1 m)
+      if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
+      else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       off *= 1 - needy;
     }
     // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
