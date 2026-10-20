@@ -764,6 +764,10 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   winter starvation of the young's schools had been HARSHER than the ramp: white perch schools lost ~60 % by mid-March without
   it, ~35 % with it (the research's ~25–50 % at 57–66 mm FL). Gate: a 5-cm bass group loses 42 % over a late-winter month (the
   ramp 38 % of it), a 9-cm group 4 %. GPU kernels agree with fish3 at yf 0.9 (g1_check). Judged in multi-year runs (arm C).
+- **The A/B, complete (2026-10-20; seeds 611/612/613 × 5 years, GPU; scratchpad r1A_/r1B_*, yrsum.mjs):** A (the committed lakes)
+  and B (+ the adults of the six zooplankton-flagged species onto the bed) alike — year 5: total 94–99 kg/ha; pumpkinseed,
+  redbreast, killifish, dace extinct; bullhead 1.1–1.4; pickerel 0.1–0.5; bass 4–8; fallfish 0.4; white perch 44–49 (B +2–3);
+  perch 22–28; summer zooplankton 20–70 µg/L. B is not the lever; the predators are (item 5).
 - **Item 5 — the predators (diagnosed 2026-10-20; CPU rule built, OFF)**. Five GPU years (A/B, seeds 613/611): the community
   collapses to perch + white perch (44–48 kg/ha) + suckers; pickerel stop recruiting and starve, bass and bullhead adults starve;
   summer diets crayfish (bass 65–77 %, pickerel 27–43 %) where Maine's are ~95 % / ~80 % fish (Cooper 1941). Measured in the 1/10
