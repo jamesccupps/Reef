@@ -192,6 +192,13 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-20 ~9 a.m.): ARM D (no hunting share, r4D_613_noact.txt) fed the predators at their maximum — pickerel
+91 % fish, bass 85 % (Maine-like!) but pickerel 3.9 → 13.9 kg/ha, bass 10 → 25 by day 112, killifish gone by day 28. FIXED in 8f7047c:
+PRED3 act (the share of the time a predator hunts by the sun: pickerel 0.15/0.2/0.02, bass 0.3/0.3/0.1, perch-like 0.3/0.3/0.05;
+GPU fields act0-2, SP_REC 152). CPU June month with it: pickerel 0.28 fish/day at p 0.34, bass 0.33 at p 0.39 — realistic — but the
+small species still fall hard in June (bass the main killer; the young are below the window until July): the founding's age-1+ prey
+~1,540/ha against predators that need ~7,000 fish/ha/yr — the young must carry it from July. RUNNING: queue_r5.sh = ARM D2 (snapshot
+r5 :8116 = 8f7047c; B overrides + winter + r5=1) on 613/611/612 × 5 yr → r5D_<seed>.txt, flag queue_r5.done. Compare with r1A/r1B.
 ▶▶▶ RESUME HERE (2026-10-20 ~7:30 a.m.): THE HUMAN ANSWERED — CRAYFISH NOT COMMON; SCHOOLS OF SMALL FISH IN THE SHALLOWS (memory
 hot-brook-field-observations). Committed 0ddd1ef: fish3 stageR5(on) = F3.STRIKE2 1 + crayfish at a fifth of the Michigan capacity
 (CR_ROCK 5, CR_WEED 3, CR_MUD 0.4, CR_DEEP 0.1), CR_PREF 1, 15 % out by day; the GPU port (k_strike STRIKE2 branch, species fields
