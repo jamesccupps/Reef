@@ -805,9 +805,27 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   `stageR5`. June fortnight (CPU, 1/10 lakes, seed 509): killifish lost 60 % → 29 % (the depth term alone 36 → 21 %, the gate's
   `strike` section). The 1/10 world's shelf is under a metre wide (water < 0.35 m: 2.2 % of the area in both worlds, ~14 ha in
   the true one), so the band can only be judged at true scale (GPU). Fish can't swim into water under ~0.19 m (`_hop`'s
-  shallow: ZTOP + ZBOT + 0.05 + L/400). NEXT: the young bass's own water (a `habJ` for bass, researched), g1_check parity of
-  ENC_DZ, then arm E on the GPU (≥ 3 seeds × 5 years) judged by the predators' p (bass ~0.3, pickerel ~0.37), length-at-age,
-  biomass, and whether the small species persist.
+  shallow: ZTOP + ZBOT + 0.05 + L/400).
+  ARM E (GPU, seed 613, 1 year; r6E_613.txt) — item 6 so far: barely different from D2 (bass 23.7 kg/ha at 43.9 cm, perch 11.9,
+  white perch 31.1, killifish 0.0 by year's end, though 79k vs 47k at day 14). Its tallies found the cause: BASS>BASS the year's
+  largest pair (282,870 kills, 97 % of the bass eaten < 10 cm) and the recruits themselves the killers — kills made by predators
+  < 10 cm: bass 55 %, pickerel 76 %, perch 95 %, white perch 93 %, fallfish 93 %. The same 6-cm fish had two rules: as a young
+  school the density rule calibrated to the field's young (stage Y1, ~1 %/day eaten); once recruited at L0 (bass 6 cm) the agents'
+  rule (~15 %/day), and with the adults' strike rates as predators. 386,000 young bass and 350,000 young perch recruited in July–
+  August; nearly all were eaten within days. Killifish were still taken over 0.3–1 m (70 %): the < 0.35-m water is a ~4-m strip
+  along ~25 km of shore, and the half-hour hops don't hold it.
+  BUILT (in stageR5): `F3.RECRUIT_SPRING` (CPU `_stepYoy` + GPU y_target: a school recruits only as an overwintered school in
+  spring — age 1, as fisheries count recruitment) and the young bass's own water, `S3.bass.habJ` {L [12, 25], bot [0.4, 2.0],
+  wbot [1.0, 3.0]} (research `Real lake ecology for calibration/juvenile_refuges_and_bass_young.md`: age-0 within ~88 m of the
+  nest among stones in the shallows; field cannibalism ~0 — Maine 0 of 36 stomachs, Wisconsin 0 of 303). CPU summer (1/10 lakes):
+  the bass's kills of young bass 58–73 % in August → 0; bass p 0.26–0.32 — but 50 % of adult bass under K 0.9 and pickerel p 0.21–0.28
+  (n 80 → 39): the 1/10 CPU lakes now underfeed where the true-scale GPU overfed, so judge on the GPU. Also: PUMPKINSEED IN BOTH LAKES
+  (MDIFW's 2024 chart for Lower lists it; was `only: UPPER`; default, gate 103/103).
+  NEXT: arm F on the GPU (snapshot of this commit; 613 first, then ≥ 3 seeds × 5 years) judged by length-at-age and condition
+  (FB4 says p ≈ 0.3 for bass and ≈ 0.37 for pickerel without the sim's swimming and gonad costs — a floor, not the target), biomass,
+  diets, small species persisting. Then the killifish's strip (a shore-hugging rule, not a wider band); then SEA-RUN ALEWIFE
+  (MDIFW 2024 lists them in Lower; research `Hot Brook populations and water/sea_run_alewife.md` — a colonising run ~15/acre
+  default, young that never recruit and leave through the outlet).
 - **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
   of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
   photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food

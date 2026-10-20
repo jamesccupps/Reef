@@ -112,6 +112,13 @@ export const F3 = {
   // block (June, CPU: 65 % of the pickerel's killifish were taken over 0.3–0.6 m by pickerel lying over 0.6–2 m). On the basin's
   // flats the beds within 6 m differ little and the weight stays ~1. 0: off (stageR5 sets it)
   ENC_DZ: 0,
+  // THE YEAR'S YOUNG STAY YOUNG (stage R item 6): with RECRUIT_SPRING a school recruits only as an overwintered school in spring,
+  // never at L0 in its first summer. Two rules took the same 6-cm fish: as a young school the density rule calibrated to the field's
+  // young (stage Y1: ~1 % a day eaten), as a recruit the agents' encounter rule (~15 % a day) — on the GPU in arm E 386,000 young
+  // bass and 350,000 young perch recruited in July–August and nearly all were eaten within days, up to ~40 % of the adult bass's
+  // food, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303; juvenile_refuges_and_bass_young.md §2).
+  // Recruitment to the followed fish at age 1, as fisheries count it. 0: off (stageR5 sets it)
+  RECRUIT_SPRING: 0,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6) (the young's)
   // THE SHALLOWS ARE THE SMALL FISH'S (stage P3): a predator strikes at full effect only over water ≥ SHALLOW_K × its length (m/cm),
   // not at all over half that — a 35-cm pickerel from 0.7 m (none under 0.35), a 20-cm bass 0.4, a 12-cm perch 0.24: big fish don't
@@ -249,9 +256,10 @@ export const F3 = {
 // sustain its 30-min speed and sprint its 3-s burst on the DFO fatigue curves — Katopodis & Gervais 2016).
 const H = (bot, v, h, act) => ({ bot, v, h, act });
 export const S3 = {
-  // pumpkinseed (MDIFW records it in Upper only: the founders live in Upper and its end of the brook — `only`): within ~25-30 m (real) of shore in the weeds, pairs and small groups; rests by the bed in cover at night;
+  // pumpkinseed (both lakes: MDIFW's 2007 list had it in Upper only and the founders lived there — `only: UPPER` — until MDIFW's 2024
+  // chart for Lower listed it too): within ~25-30 m (real) of shore in the weeds, pairs and small groups; rests by the bed in cover at night;
   // near-still below 8 °C (Reeve 2022)
-  sunfish:    { school: 0, group: [7, 25], perHa: 50, only: UPPER, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
+  sunfish:    { school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
     hab: { day: H([0.3, 2.5], 0, 0.7, 0.7), night: H([0.3, 2.5], 0, 0.15, 0.35), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // yellow perch: schools of 50-200 over open mud and sand offshore by day; at dusk inshore along the bed, resting on it at night
   // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C.
@@ -404,6 +412,13 @@ export function stageR5(on = true) {
   // 15 cm of water 2.5 m from shore (Ward et al. 2002), "a few inches below the surface", "often in water under 6 in" (CT DEEP) —
   // under a 30-cm pickerel's 0.3 m (F3.SHALLOW_K), where at 0.1-0.6 m they lost 60 % in a June fortnight)
   F3.ENC_DZ = on ? 0.3 : 0; S3.killifish.hab.day.bot = on ? [0.05, 0.35] : [0.1, 0.6];
+  // (and the young bass's own water: age-0 smallmouth stay within ~88 m of the nest, solitary among stones over cobble and sand in
+  // the shallows; age 1-4 in small groups in the shallow littoral, 25-28-cm Maine bass still shallower than large adults (Ridgway
+  // 2002; Cole & Moring 1997) — over 0.4-2 m by day, 1-3 m in winter, blending to the adults' water from 12 to 25 cm (research
+  // juvenile_refuges_and_bass_young.md (a)). Without it the 6-cm recruits joined the adults' 1.5-4-m water and in August were
+  // 53-72 % of the bass's kills, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303))
+  S3.bass.habJ = on ? { L: [12, 25], bot: [0.4, 2.0], wbot: [1.0, 3.0] } : undefined;
+  F3.RECRUIT_SPRING = on ? 1 : 0;   // (the year's young recruit at age 1, in spring)
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
@@ -2126,8 +2141,8 @@ export class Fish3 {
     this._yoyTarget(q, o2, T);
     if (q.s.brookRes && GEO.bodyAt(q.tx, q.ty) !== BROOK) { const p = BP[nearestBP(q.tx, q.ty)]; q.tx = p[0]; q.ty = p[1]; }   // (the brook's own young feed in the brook)
     q.spotBed = Math.max(0.12, GEO.depthAt(q.tx, q.ty));   // (its cruise keeps to water like its spot's)
-    // RECRUITMENT: at the species' L0, or an overwintered school in spring
-    if (q.L >= sp.L0 || (q.age > FRY.OVERWINTER * YEAR && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) this._recruit(q);
+    // RECRUITMENT: at the species' L0, or an overwintered school in spring (F3.RECRUIT_SPRING: only in spring — the year's young one rule all year)
+    if ((!F3.RECRUIT_SPRING && q.L >= sp.L0) || (q.age > FRY.OVERWINTER * YEAR && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) this._recruit(q);
   }
   // THE YOUNG BY DISTANCE (as the fish, _stepMixed): the schools within the focus live this fine step; the rest are scheduled
   // FAR_BLOCK blocks (a block's cruise about their spot, their feeding tick over the block). Their density and the region about the

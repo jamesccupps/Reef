@@ -1835,7 +1835,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
   if (spv(k, S_brookRes) > 0.5 && bodyAt(tx, ty) != BROOK) { let p = bp(u32(nearestBP(tx, ty))); tx = p.x; ty = p.y; }
   sy(Y_tx, q, tx); sy(Y_ty, q, ty); sy(Y_tz, q, tz); sy(Y_spotBed, q, max(0.12, depthAt(tx, ty)));
   // RECRUITMENT: at the species' L0, or an overwintered school in spring
-  if (L >= spv(k, S_L0) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= FRY_SPRING_YF && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }
+  if ((F3_RECRUIT_SPRING < 0.5 && L >= spv(k, S_L0)) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= FRY_SPRING_YF && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }
 }
 `;
 

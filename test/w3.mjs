@@ -310,16 +310,16 @@ if (run('core')) {
     check('the founders: every species at its census (±10 %), ~12,700 fish in ~3,300 agents, 60–150 kg/ha, all in the water; the agents within the budget (the schooling fish with brains of their own only as it allows)', worst < 0.1 && kg > 60 && kg < 150 && wet && schools && (lakeAg <= budget || soloK === 0),
       `${F.count().toFixed(0)} fish in ${F.fish.length} agents (lakes ${lakeAg} of a budget of ${budget.toFixed(0)}; ${soloK} perch and white perch on their own, from ${F.soloL === Infinity ? '—' : f1(F.soloL) + ' cm'}), ${kg.toFixed(0)} kg/ha; per ha ${txt.join(', ')}`);
     // ONLY THE FISH ACTUALLY IN THE LAKES (the human, 2026-10-16; MDIFW's list + the human's redbreast; FISH_CENSUS.md §1): no
-    // golden shiner; pumpkinseed founded in Upper (MDIFW lists it there only); the dace in the brook; the fallfish crowded
+    // golden shiner; pumpkinseed in both lakes (MDIFW's 2024 chart lists it in Lower as well as Upper); the dace in the brook; the fallfish crowded
     // toward the brook's ends (fish of flowing water) — nearer them than the white perch, a fish of the open basin
     const BPt = GEO.BROOK_PATH, dEnd = a => Math.min(Math.hypot(a.x - BPt[0][0], a.y - BPt[0][1]), Math.hypot(a.x - BPt[BPt.length - 1][0], a.y - BPt[BPt.length - 1][1]));
     const mean = (k, f) => { let t = 0, n = 0; for (const a of F.fish) if (a.s.key === k) { t += f(a); n++; } return t / Math.max(1, n); };
     const want = ['sunfish', 'perch', 'sucker', 'catfish', 'whiteperch', 'bass', 'pike', 'redbreast', 'fallfish', 'killifish', 'dace'];
     const ps = F.fish.filter(a => a.s.key === 'sunfish'), bd = F.fish.filter(a => a.s.key === 'dace');
-    check("only the fish in the lakes: the eleven species of MDIFW's list and the human's catches (no golden shiner), pumpkinseed founded in Upper, the dace in the brook, the fallfish toward the brook's ends (nearer them than the pickerel of the same shallows)",
-      KEYS3.length === want.length && want.every(k => KEYS3.includes(k)) && ps.every(a => GEO.bodyAt(a.x, a.y) === UPPER) && bd.length > 50 && bd.every(a => GEO.bodyAt(a.x, a.y) === BROOK)
+    check("only the fish in the lakes: the eleven species of MDIFW's list and the human's catches (no golden shiner), pumpkinseed in both lakes, the dace in the brook, the fallfish toward the brook's ends (nearer them than the pickerel of the same shallows)",
+      KEYS3.length === want.length && want.every(k => KEYS3.includes(k)) && ps.some(a => GEO.bodyAt(a.x, a.y) === UPPER) && ps.some(a => GEO.bodyAt(a.x, a.y) === LOWER) && bd.length > 50 && bd.every(a => GEO.bodyAt(a.x, a.y) === BROOK)
         && mean('fallfish', dEnd) < 0.7 * mean('pike', dEnd),
-      `${KEYS3.join(', ')}; pumpkinseed ${ps.filter(a => GEO.bodyAt(a.x, a.y) === UPPER).length}/${ps.length} in Upper; dace ${bd.filter(a => GEO.bodyAt(a.x, a.y) === BROOK).length}/${bd.length} in the brook; mean distance to a brook end: fallfish ${mean('fallfish', dEnd).toFixed(0)} m, pickerel (the same shallow band) ${mean('pike', dEnd).toFixed(0)} m`); }
+      `${KEYS3.join(', ')}; pumpkinseed ${ps.filter(a => GEO.bodyAt(a.x, a.y) === UPPER).length} in Upper, ${ps.filter(a => GEO.bodyAt(a.x, a.y) === LOWER).length} in Lower; dace ${bd.filter(a => GEO.bodyAt(a.x, a.y) === BROOK).length}/${bd.length} in the brook; mean distance to a brook end: fallfish ${mean('fallfish', dEnd).toFixed(0)} m, pickerel (the same shallow band) ${mean('pike', dEnd).toFixed(0)} m`); }
   // a summer's day and night: the fish stay in the water, swim, and each species keeps to its own water
   { seed(502); const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new Fish3(e); const x0 = new Map(F.fish.map(a => [a.id, [a.x, a.y]]));
     const hab = (k, f, ok = () => true) => { let s = 0, n = 0; for (const a of F.fish) if (a.alive && a.s.key === k && ok(a)) { s += f(a) * a.n; n += a.n; } return s / Math.max(1, n); };   // (ok: which of them — the bullheads' rest is judged on the fish not breeding: spawning bullheads are active day and night)

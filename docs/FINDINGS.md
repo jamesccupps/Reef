@@ -4,6 +4,21 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-20 — Two rules for one fish: the recruits fed the predators and did most of the killing (docs/HOT_BROOK_3D.md §4 "Item 6")
+- **What.** In a true-scale GPU year with the encounter rule (arm E, seed 613), bass eating bass was the year's largest
+  predator–prey pair (282,870 kills; 97 % of the bass eaten < 10 cm), and most kills were made by predators under 10 cm (bass 55 %,
+  pickerel 76 %, yellow perch 95 %, white perch 93 %, fallfish 93 %). Field stomachs hold almost no young bass (Maine 0 of 36,
+  Wisconsin 0 of 303).
+- **Why.** A young-of-year school becomes followed agents at its recruitment length (bass 6 cm). As a school it was hunted by a
+  density rule calibrated to field young-of-year mortality (~1 %/day eaten); as agents, by the adults' encounter rule (~15 %/day),
+  and the recruits hunted with the adults' strike rates in turn. 386,000 young bass and 350,000 young perch recruited in July–August
+  and nearly all were eaten within days — food that grew the adult bass ~2.5× in biomass.
+- **Fix.** Recruitment only in the spring of age 1 (as fisheries count it), so each fish meets one rule through its first year;
+  and the young bass's own shallow water. CPU: the bass's August kills of young bass 58–73 % → 0.
+- **Why it matters.** Individual-based models that switch representation by size (super-individuals → individuals) must keep the
+  hazards continuous across the switch; a discontinuity becomes a hidden food subsidy that no diet target catches, because the
+  diets still look piscivorous and plausible.
+
 ## 2026-10-20 — Growth pins the predators' feeding level, and a 6-m encounter disc erased the shallows' refuge (docs/HOT_BROOK_3D.md §4 "Item 6")
 - **What.** With the encounter–strike–capture rule (arm D2, GPU, seed 613, year 1) the predators' diets turned to fish (pickerel
   76–98 %, bass 51–94 %), but the bass rose from 9.4 to 24.8 kg/ha and their mean length from 25.6 to 44.7 cm, and 100,000 of
