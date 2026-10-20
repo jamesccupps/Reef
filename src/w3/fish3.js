@@ -444,6 +444,8 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 // rule, and the crayfish of soft Maine water — not common at Hot Brook (the human, 2026-10-20; crayfish nearly vanish below ~2 mg/L
 // Ca) — at a fifth of the Michigan-based capacity, preferred no more than fish, 15 % out by day (piscivore_encounter_attack.md §e)
 const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
+// (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
+const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
   // (item 6: the water it holds — F3.ENC_DZ — and the killifish's own water by day, the shelf's very edge: shoals netted whole in
@@ -527,6 +529,14 @@ export function stageR5(on = true) {
   // within most canopies; the weeds protect only the fish within their height)
   S3.sunfish.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined; S3.redbreast.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined;
   S3.sunfish.hab.day.h = on ? 0.3 : 0.7; S3.redbreast.hab.day.h = on ? 0.3 : 0.4;
+  // (phase 5, item 24) ARM B's DIETS, from the year runner's URL into the package (they were validated only as overrides): the adults
+  // of white perch (to 12 cm: Cooper's adults ate the bed's insects, the young zooplankton), the sunfishes (5), fallfish (10) and
+  // dace (3) off the zooplankton — and yellow perch take it to 16 cm, not 25 (Cooper: none in perch ≥ 16 cm; they ate 54–94 %
+  // zooplankton in early summer). The killifish keep their cladocerans and copepods (Phillips; COSEWIC: arm B had removed them)
+  for (const [k, z] of [['whiteperch', 12], ['sunfish', 5], ['redbreast', 5], ['fallfish', 10], ['dace', 3], ['perch', 16]]) {
+    const d0 = DIET0[k], noPl = on && k !== 'perch';
+    S3[k].plank = noPl ? false : d0.plank; SP[k].diet.plankton = noPl ? false : d0.plank; SP[k].Lzoo = on ? z : d0.Lzoo;
+  }
   // (item 6h: the killifish's young — they hatch on the plants of the shelf and stay in its weedy shallows, growing linearly to ~5 cm
   // by mid-October (Keast & Eadie 1984), cladocerans young, midges and amphipods older (Phillips 2007): yBed 1.2 m (74–93 % of
   // seine catches ≤ 1.2 m) and the bed's food from 2 cm (was FRY.BENTH_L 2.5, which they never reached). Without it the young
