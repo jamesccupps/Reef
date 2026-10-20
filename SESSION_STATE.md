@@ -186,13 +186,19 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
-▶▶▶ RESUME HERE (2026-10-20, ~1 a.m.): STAGE R ITEM 4 DONE AND COMMITTED (per-capita algae ON + ZOO3; see the commit after
+▶▶▶ RESUME HERE (2026-10-19, ~8:30 p.m.): STAGE R ITEM 4 DONE AND COMMITTED (7c26519, backup …_20261019_2028_zoo3.zip) (per-capita algae ON + ZOO3; see the commit after
 a312120). Gate: w3 green (the fine fish step's budget made per agent: ≤ 8 µs; measured 7.6–7.9), the env update 11.6 ms after
 speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton realistic (clear-water phase, crash, autumn
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-NEXT (planned, about to launch): GPU A/B, seeds 611/612/613 × 5 years, 6 windows: A = committed; B = + adults of the six
+RUNNING (launched ~9:10 p.m., SERIALLY — parallel runner windows starve each other on this machine: only the foreground one
+advances): queue scratchpad/queue_r1.sh → r1B_613 (going), then r1A_613, r1A_611, r1B_611, r1A_612, r1B_612 (each 5 years, ~75 min;
+snapshot snap_r1 :8112 = commit 7c26519; arm B's query in armB_query.txt; done when scratchpad/queue_r1.done appears). The research
+for item 1 is in (`Real lake ecology for calibration/first_winter_mortality.md`: Shuter's ramp per species — bass 48–92 mm at WD
+208, perch ~50–80, white perch Johnson & Evans' PMORT(WD, FL), pumpkinseed ~25–42; daily hazard Δp/(1−p); switch off double-
+counted starvation in winter); blocked rows A06/A07/A10/B04/C43 annotated.
+PLAN (was): GPU A/B, seeds 611/612/613 × 5 years: A = committed; B = + adults of the six
 `diet.plankton` species onto the bed past a switch size, via year.js overrides (no code change yet):
   s3.<k>.plank=0 & s3.<k>.sp.diet.plankton=0 & s3.<k>.sp.Lzoo=X — whiteperch 10, sunfish 5, redbreast 5, fallfish 10,
   killifish 3.5, dace 3 (white perch: Feiner 2011 <12 cm ~90 % bed by IRI, Zuerlein, Cooper; pumpkinseed: shift at 40–50 mm SL
@@ -203,7 +209,7 @@ Answered the human: what the plants do in winter (plants3: storage from ~Sep 10 
 emergents 50 %; standing dead stems; evergreens — rosettes, Nitella, moss, Robbins' — stay green; ice scour < 0.5 m; spring sprout
 ≤ 10 %/day from each species' start temperature; the 40 %-light ice is the known flaw).
 
-▶▶▶ (2026-10-19, late night): STAGE R ITEM 4 CONTINUED — per-capita algae COMMITTED (a312120, switch
+▶▶▶ (2026-10-19, evening): STAGE R ITEM 4 CONTINUED — per-capita algae COMMITTED (a312120, switch
 off) and now ON in the working tree (config PHYTO.PER_CAPITA true); w3 gate with it on: 98/100, the 2 fails are the perf probes at
 their edge (env update 13.0 vs < 12 ms at 1/10; fish 0.1-s step 25.2 vs ≤ 25 — the last clean gate had 11.9 / 24.7: contention;
 re-run on a quiet machine). GPU year seed 613 with per-capita algae (scratchpad y613_pc1.txt): total 110 kg/ha at day 365 (old

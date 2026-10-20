@@ -1,4 +1,4 @@
-# Blocked sources to fetch
+| C43 (still wanted (Cargnelli & Gross 1996, CJFAS 53:360)) || B04 (identified: Bernard & Fox 1997 — abstract read (first_winter_mortality.md); full text still wanted) || A10 (still wanted: Shuter et al. 1989 lab endurance; the bass rule comes from Shuter 1980 via USGS SIR 2014-5164) || A07 (abstract formula used in first_winter_mortality.md — PMORT(WD, FL) at 4 and 2.5 °C; full text still wanted) || A06 (abstract-level numbers in first_winter_mortality.md; full text still wanted) |# Blocked sources to fetch
 
 This is every source the project's research could not read because of a paywall, a login, an HTTP 401/402/403/429 error, a bot check or CAPTCHA, a dead host, a scanned PDF with no text, or a file too large for the fetch tool. It was compiled on 2026-10-19 from the notes alone (`docs/research_notes/**` and `docs/reports/`), with no new web access. Duplicates across notes are merged into one row.
 
