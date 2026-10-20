@@ -27,6 +27,22 @@ The total biomass, the predator biomasses and adult growth are in range. **Who e
 - **First winter:** the young of every species die of under-ice hypoxia (8–25 % a fortnight) because they sit on the organic beds that go anoxic first. Hot Brook is not a winterkill lake.
 - **Census cap:** with the real mechanisms missing, the cap does the regulating. It discards 55–64 % of white perch and pumpkinseed recruits.
 
+## Progress (2026-10-20 evening)
+All in `stageR5` (not yet the default), CPU and GPU, each behind its own F3 flag or S3 value; GPU parity checked (g1_check ?r5=1).
+- **Done in code, being tested (arm Q, seed 613, two true-scale years):** items 1, 2 (probe: the young grew under the ice), 4, 5, 6, 7,
+  8 (bands, habJ, shore; not yet the autumn and early-ice bands or white perch's own diel feeding), 9 (yellow perch by day; not
+  yet the juveniles' shore term), 10 (the bass's school term; white perch's dilution not yet), 11, 12 (spines, success; not yet the
+  bullheads' day cover), 13, 14 (pickerel and sucker habJ, small bass's cold shelter), 15, 17, 19, 23 (sucker and bullhead young's
+  water, the bullhead spawning window).
+- **Done in code since arm Q's snapshot:** 24 (diets), 26 (the sunfishes' and fallfish's energy stand-ins), 28 (brook's
+  sunfish share), 31 (settle rates), and the young's O₂ cushion made absolute (mg/L) and cold-water only.
+- **Pending:**
+  - 3: KD_COLOUR 0.4 with rebuilt plant starts (the weeds check ranges updated);
+  - 16: birds — redistributing M_OTHER also lowers the large deep fish's background mortality, so it needs a per-species
+    normalisation or a smaller share;
+  - 18, 20, 21, 22 (the esocid size window, size-scaled M), 25, 27, 29, and phases 6–9;
+  - bullhead growth: research running (bullhead_growth_and_young_white_perch.md).
+
 ## Order of work
 
 Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's continuation. Phase 6 validates them. Phases 7–9 build what's missing.
