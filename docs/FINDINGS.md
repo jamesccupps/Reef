@@ -4,6 +4,26 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-20 — A full gut is the wrong satiation signal: the predators ate at Cmax until a hunger gate (docs/HOT_BROOK_3D.md §4 "Item 6")
+- **What.** Through arms F–J (true-scale GPU, seed 613) every refuge added for the prey — depth overlap, the killifish's day and
+  night water, encounter dilution for pickerel, a shore band for bass — moved WHERE prey died, not how many: the bass rose from
+  9.4 to ~23 kg/ha a year every time, at p 0.46–0.67 in summer and ~0.9 in autumn, with field-like stomachs (35 % empty).
+- **Why.** In the encounter–strike–capture rule a littoral bass meets prey far faster than its half-saturation (E ≫ E_h), so it
+  strikes at aMax nearly everywhere, and the only brake was the gut's capacity (8 % of body weight). On the sim's own gastric
+  evacuation any gut above ~2.5 %BW empties at the full Cmax rate, so feeding runs at p → 0.9–1 whatever the prey's refuges. Real
+  bass hold ~0.4 %BW (Lake Ontario), use a third to a half of their gut, rest after a meal; field strikes at fish are ~0.3 per
+  hunting hour; Maine growth needs p ≈ 0.34 on the sim's own FB4 set (0.7–1.1 kg of food a year; Mille Lacs 0.87 kg per bass) —
+  research `piscivore_field_feeding_rates.md`. (A meal-then-rest cycle on the full gut alone still gives p 0.6–0.8: digestion clears
+  a day's meal in about a day.)
+- **Fix and evidence.** A hunger gate: a predator hunts and forages in proportion to h = 1 − gut/(G0·W), with the bass's field
+  strike values (aMax 12 → 2.5 /h, hunting speed 0.1 m/s, act 0.2/0.5/0.05 by day/twilight/night). G0 0.5 %BW: bass 6.1 kg/ha, p
+  0.16–0.21, 76 % empty, ~7,900 starved — too strong; G0 1 %BW (the research range 0.3–1): bass held at 7.4 kg/ha, ~28 → 33.5 cm
+  in a year, p 0.20 in summer and 0.44–0.51 in autumn (the fall-heavy shape that also fits Maine growth), pickerel 4.9 kg/ha
+  (target 4–8), whole lake 96 kg/ha. Pickerel were left ungated: they were not overfeeding (summer p 0.29–0.31).
+- **Why it matters.** In predator–prey models the satiation brake decides the feeding level wherever prey are plentiful. A gut
+  capacity is a physical maximum, not a satiation signal; using it as one silently pins predators at Cmax, and no amount of prey
+  refuge, habitat or diet realism can then bring their growth down to the field's.
+
 ## 2026-10-20 — Two rules for one fish: the recruits fed the predators and did most of the killing (docs/HOT_BROOK_3D.md §4 "Item 6")
 - **What.** In a true-scale GPU year with the encounter rule (arm E, seed 613), bass eating bass was the year's largest
   predator–prey pair (282,870 kills; 97 % of the bass eaten < 10 cm), and most kills took prey under 10 cm (bass's kills 55 %,
