@@ -1475,7 +1475,7 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   let pisc = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc);
   if (FRY_DENSITY > 0.5) {   // (stage Y1: a request over its column's bins, settled in k_eatYoyGet)
     let c = gai(A_c, i); if (c < 0) { return; }
-    let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);
+    let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
     let r = yReqK(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR));
     if (!(r.x > 0.0)) { return; }
     let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(u32(c)); let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
@@ -1619,7 +1619,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
   if (FRY_DENSITY > 0.5 && spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {   // (stage Y1: a request over its column's bins)
-    let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), spv(k, S_preyLR));
+    let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, select(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), min(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), consumptionT(bs, T)), F3_YCOLD > 0.5), spv(k, S_preyLR));
     if (r.x > 0.0) {
       let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)) / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
       for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, L * spv(k, S_gapeR), true, false, spv(k, S_preyLR)); if (w > 0.0) { acc64(AC_BREQY + 2u * b, r.x * a0 * w / r.y, BSC); } }
