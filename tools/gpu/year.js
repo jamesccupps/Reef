@@ -42,6 +42,10 @@ const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 51
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
 const { dev, info } = await GpuFish.device(); log(`GPU: ${info.vendor} ${info.architecture}`);
 window.YEAR = {};
+// (a lost device or an uncaught GPU error goes into the run's lines, which year_cdp copies — a hang after a driver reset said only
+// 'waiting on counts')
+{ const gsay = m => { log(m); (window.YEAR.gpu = window.YEAR.gpu || []).push(m); };
+  dev.lost.then(i => gsay(`!! GPU DEVICE LOST: ${i.reason} — ${i.message}`)); dev.onuncapturederror = e => gsay(`!! GPU ERROR: ${e.error && e.error.message}`); }
 for (const sd of SEEDS) {
   const t0 = performance.now();
   seed(sd); const env = new Env3({ yf0: YF }), F = new Fish3(env, { young: true });

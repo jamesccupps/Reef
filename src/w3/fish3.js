@@ -417,6 +417,10 @@ export function stageR5(on = true) {
   // 15 cm of water 2.5 m from shore (Ward et al. 2002), "a few inches below the surface", "often in water under 6 in" (CT DEEP) —
   // under a 30-cm pickerel's 0.3 m (F3.SHALLOW_K), where at 0.1-0.6 m they lost 60 % in a June fortnight)
   F3.ENC_DZ = on ? 0.3 : 0; S3.killifish.hab.day.bot = on ? [0.05, 0.35] : [0.1, 0.6];
+  // (item 6f: and at night the shallows too — in Lake Opinicon, with bass and pike, killifish schools disperse into < 0.6 m at night
+  // (Helfman 1981, via McInerny & Cross [SEC]); the 1-2.5-m night band was an inference from fyke catches of "some nocturnal
+  // movement" (COSEWIC). With it, 43 % of the killifish's deaths came over > 0.6 m, where they spent 7 % of the day (arms G, H))
+  S3.killifish.hab.night.bot = on ? [0.1, 0.6] : [1.0, 2.5];
   // (and the young bass's own water: age-0 smallmouth stay within ~88 m of the nest, solitary among stones over cobble and sand in
   // the shallows; age 1-4 in small groups in the shallow littoral, 25-28-cm Maine bass still shallower than large adults (Ridgway
   // 2002; Cole & Moring 1997) — over 0.4-2 m by day, 1-3 m in winter, blending to the adults' water from 12 to 25 cm (research
