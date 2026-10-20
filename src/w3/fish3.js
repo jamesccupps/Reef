@@ -27,7 +27,7 @@ import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -2015,7 +2015,10 @@ export class Fish3 {
     const j = q.j = G.cell0[c] + Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0)); q.jb = this.bedCell(c, q.bed);
     const T = e.temp[j], o2 = ch.o2[j];
     q.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1), this._inWeeds(q, c, false), this._riffle(q));
-    const hS = this._feedYoy(q, st, T);
+    const hF = this._feedYoy(q, st, T);
+    // THE FIRST WINTER (config WINTER0): past the autumn the ramp's share of the school this tick takes the place of its starvation
+    const wk = WINTER0.ON && q.age < YEAR ? WINTER0.K[s.key] : null, w_ = wk ? winterDays(yf) : 0, wd = w_ < q.age / DAY ? w_ : 0;   // (not this spring's larvae)
+    const fW = wd > 0 ? winterStep(q.L * 10, wd, st / DAY, wk) : 0, hS = wd > 0 ? (fW >= 1 ? 50 / st : -Math.log1p(-fW) / st) : hF;
     ch.o2[j] = Math.max(0, ch.o2[j] - q.rO2 * st / (G.vol[j] * ENV.O2_MGL));
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
@@ -2209,7 +2212,11 @@ export class Fish3 {
   // ---------- hazards: starvation, heat, hypoxia, other natural causes, old age ----------
   _hazards(a, T, dt) {
     const s = a.s, sp = s.sp;
-    const hS = a.K < BIOE.K_HAZARD ? -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * a.K))))) / DAY : 0;
+    // THE FIRST WINTER (config WINTER0): a young-of-year past its autumn — the ramp's share of the survivors this step, in place of
+    // its starvation (the ramp IS its winter's starvation)
+    const wk = WINTER0.ON && a.age < YEAR ? WINTER0.K[s.key] : null, w_ = wk ? winterDays(this.env.yearFrac()) : 0, wd = w_ < a.age / DAY ? w_ : 0;   // (only a fish alive at the winter's start: not this spring's larvae, hatched before the window closes)
+    const fW = wd > 0 ? winterStep(a.L * 10, wd, dt / DAY, wk) : 0, hW = fW >= 1 ? 50 / dt : fW > 0 ? -Math.log1p(-fW) / dt : 0;
+    const hS = (a.K < BIOE.K_HAZARD && !(wd > 0) ? -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * a.K))))) / DAY : 0) + hW;
     const kx = expm(dt * TS / BIOE.EXPOSE_TAU); a.xo += (a.o2 - a.xo) * kx; a.xt += (T - a.xt) * kx;
     const hH = a.xt > a.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((a.xt - a.uilt) / BIOE.HEAT_STEEP) : 0;
     const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);

@@ -431,6 +431,36 @@ export function seasonalTemp(yf) {
   const h = X[i + 1] - X[i], t = (yf - X[i]) / h, t2 = t * t, t3 = t2 * t;
   return (2 * t3 - 3 * t2 + 1) * Y[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * Y[i + 1] + (t3 - t2) * h * m[i + 1];
 }
+// THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
+// a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —
+// the compensatory brake (crowded or late cohorts end the summer small and die; sparse or early ones are large and live).
+// Shuter et al. 1980's smallmouth rule (as USGS SIR 2014-5164 applies it to Spednic Lake, ~30 km east): with w days of winter
+// (water < T °C) behind it, a fish of L mm has died with probability p = (Cmax(w) − L)/(Cmax(w) − Cmin(w)) clamped 0–1,
+// Cmax = kmax·(0.3375·w + 22.083), Cmin = kmin·(0.1938·w + 7.917) — at Hot Brook's 208 days 48–92 mm for a bass (Maine: young
+// < 56 mm don't live — MDIFW; < 50 mm died under ice in New Brunswick — Curry et al. 2005). The other species' k scale the bass
+// lines to their own thresholds: perch ~50–80 mm (Post & Evans 1989; Boussion 2025 66–73; Fitzgerald 2000 60), white perch the
+// same (Johnson & Evans 1990's starved fish at 4 °C: all < 50 mm FL, half at 57, a tenth at 72), pumpkinseed and redbreast
+// ~25–42 mm (low confidence — Bernard & Fox 1997; Shoup & Wahl), pickerel 40–70 (a late-runt filter: their young are 10–13 cm),
+// sucker and bullhead placeholders; fallfish, killifish and dace: no data, none. Applied as the step's share of the survivors
+// (p1 − p0)/(1 − p0), so the deaths fall through the winter and an early spring stops them — to a fish alive when the winter
+// began (its age in days past the winter's; the spring's larvae hatch before the window closes); the young's starvation (FB4 / the
+// schools' ration) is off for these species while it runs — the ramp IS their winter starvation.
+export const WINTER0 = {
+  ON: true,
+  T: 10,                     // °C: the season's water (seasonalTemp) below this is winter
+  A_MAX: 0.3375, B_MAX: 22.083, A_MIN: 0.1938, B_MIN: 7.917,   // mm (Shuter et al. 1980)
+  K: { bass: [1, 1], perch: [1.04, 0.87], whiteperch: [1.04, 0.87], sunfish: [0.52, 0.455], redbreast: [0.57, 0.5], pike: [0.83, 0.76],
+    sucker: [0.73, 0.65], catfish: [0.73, 0.60] },   // [kmin, kmax]
+};
+// the winter's window on the season's curve: [the autumn crossing below WINTER0.T, the spring crossing back] (year-fractions)
+export const winterWindow = (() => { let a = -1, s = -1; const N = 3650; for (let i = 0; i < N; i++) { const y0 = i / N, y1 = (i + 1) / N, t0 = seasonalTemp(y0), t1 = seasonalTemp(y1); if (t0 >= WINTER0.T && t1 < WINTER0.T) a = y1; if (t0 < WINTER0.T && t1 >= WINTER0.T) s = y1; } return [a, s]; })();
+// days of winter behind a fish at year-fraction yf (0 outside the window)
+export function winterDays(yf) { const [a, s] = winterWindow; const d = ((yf - a) % 1 + 1) % 1, span = ((s - a) % 1 + 1) % 1; return d < span ? d * 365 : 0; }
+// p: the share of a first-winter cohort of length Lmm (mm) dead after w winter days, by the species' [kmin, kmax]
+export function winterP(Lmm, w, k) { const cx = k[1] * (WINTER0.A_MAX * w + WINTER0.B_MAX), cn = k[0] * (WINTER0.A_MIN * w + WINTER0.B_MIN); return cx <= cn ? (Lmm < cx ? 1 : 0) : Math.min(1, Math.max(0, (cx - Lmm) / (cx - cn))); }
+// the share of the survivors that die over the step that brought the winter from w − dw to w days
+export function winterStep(Lmm, w, dw, k) { if (!(w > 0)) return 0; const p0 = winterP(Lmm, Math.max(0, w - dw), k), p1 = winterP(Lmm, w, k); return p0 >= 1 ? 1 : Math.max(0, (p1 - p0) / (1 - p0)); }
+
 // A fish-eating diving BIRD (a common loon): visits the open lake from ice-out to late autumn, rests on the surface and
 // dives in daylight to chase fish underwater (loons pursue prey by sight, propelled by their feet), surfacing for air
 // between dives, and flies off once sated. Fish sense a diving loon as a threat (World.qThreat). Times are sim seconds.

@@ -619,6 +619,22 @@ if (run('young')) {
       !big.alive && solo.length === 37 && Math.abs(F.count('perch') - n0) < 1e-9 && solo.filter(a => a.g === bigG).length === 1 && new Set(solo.map(a => a.g)).size === 37 && solo.every(a => a.n === 1 && a.sex !== 2)
         && !grp.alive && Math.abs(F.count('sunfish') - m0) < 1 && F.fish.filter(a => a.alive && a.s.key === 'sunfish' && !a.school).length >= gN,
       `${solo.length} perch on their own (perch ${n0} → ${F.count('perch')}), pumpkinseed ${m0} → ${F.count('sunfish').toFixed(0)} with ${F.fish.filter(a => a.alive && a.s.key === 'sunfish' && !a.school).length} on their own`); }
+  // (stage R item 1) THE FIRST WINTER (config WINTER0): the small young die over their first winter by Shuter's ramp, the large live —
+  // the compensatory brake; the window is the season's water below 10 °C (~208 days, Spednic's own); a winter's deaths by step add
+  // up to the ramp's p; in late winter a 5-cm bass school loses the ramp's share on top of its background, a 9-cm one only the
+  // background; the ramp counts as the young's (winter) starvation
+  { const C = await import('../src/config.js'), { stdWeight } = await import('../src/bioenergetics.js'), YL = 365 * 86400, [wa, ws] = C.winterWindow, span = ((ws - wa) % 1 + 1) % 1 * 365, kB = C.WINTER0.K.bass;
+    const viaSteps = L => { let s = 1; for (let w = 0.5; w <= C.winterDays(ws - 1e-6); w += 0.5) s *= 1 - C.winterStep(L, w, 0.5, kB); return 1 - s; };
+    const p50 = viaSteps(50), p90 = viaSteps(90);
+    // (a late-winter month for a group of 1,000 age-0 bass of each length, each in its own lake: the young bass of this size are fish of their own)
+    const month = L => { seed(517); const e = new Env3({ col: 10 * CS, yf0: 0.95 }), F = new Fish3(e, { founders: false });
+      const a = F.add('bass', 20.3, 80, 1.0, 0.45, 1000); a.L = L; a.W = a.K * stdWeight(S3.bass.sp.lw, L); const w0 = C.winterDays(e.yearFrac());
+      for (let i = 0; i < 30 * 49; i++) { F.step(FB); e.step(EW); }
+      return [1 - F.count('bass') / 1000, w0, C.winterDays(e.yearFrac()), F.stats.died.bass ? F.stats.died.bass.starve || 0 : 0]; };
+    const [lostS, w0, w1, starveS] = month(5), [lostB] = month(9), ramp = (1 - C.winterP(50, w1, kB)) / (1 - C.winterP(50, w0, kB));
+    check('the first winter (stage R item 1, Shuter et al. 1980 — WINTER0): the window ~208 days; a winter\'s steps add up to the ramp (a 50-mm bass ~96 % dead by spring, a 90-mm ~5 %); in late winter a 5-cm school loses the ramp\'s share on top of what a 9-cm one loses',
+      span > 200 && span < 216 && Math.abs(p50 - C.winterP(50, span, kB)) < 0.02 && p50 > 0.9 && p90 < 0.1 && lostS > lostB + 0.7 * (1 - ramp) && lostB < 0.25 && starveS > 0,
+      `window ${span.toFixed(0)} days (yf ${wa.toFixed(3)} → ${ws.toFixed(3)}); by steps 50 mm ${(100 * p50).toFixed(0)} %, 90 mm ${(100 * p90).toFixed(0)} %; days ${w0.toFixed(0)} → ${w1.toFixed(0)}: 5-cm school lost ${(100 * lostS).toFixed(0)} % (the ramp alone ${(100 * (1 - ramp)).toFixed(0)} %), 9-cm ${(100 * lostB).toFixed(0)} %`); }
 }
 
 // ============================================================

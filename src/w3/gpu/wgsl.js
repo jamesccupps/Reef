@@ -61,6 +61,14 @@ fn sight(lux: f32, kI: f32) -> f32 { return lux / (lux + kI); }
 // tanh to f32 accuracy (the built-in is the hardware's approximation on some GPUs: ~5e-4 on NVIDIA's — the brains then drifted from the CPU's)
 fn tanh_(x: f32) -> f32 { let a = abs(x); if (a < 0.0625) { let x2 = x * x; return x * (1.0 - x2 * (0.33333334 - x2 * 0.13333334)); } let e = exp(-2.0 * a); return sign(x) * (1.0 - e) / (1.0 + e); }
 fn sigm(x: f32) -> f32 { return 1.0 / (1.0 + exp(-x)); }
+// THE FIRST WINTER (config WINTER0, winterDays/winterP/winterStep): the days of winter behind a fish, and the ramp's share of the
+// survivors over a step that brought it from w − dw to w days
+fn wDays(yf: f32) -> f32 { let d = fract(yf - WIN_YF0 + 2.0); let span = fract(WIN_YF1 - WIN_YF0 + 2.0); return select(0.0, d * 365.0, d < span); }
+fn wP(Lmm: f32, w: f32, kn: f32, kx: f32) -> f32 { let cx = kx * (WINTER0_A_MAX * w + WINTER0_B_MAX); let cn = kn * (WINTER0_A_MIN * w + WINTER0_B_MIN); if (cx <= cn) { return select(0.0, 1.0, Lmm < cx); } return clamp((cx - Lmm) / (cx - cn), 0.0, 1.0); }
+fn wStep(Lmm: f32, w: f32, dw: f32, kn: f32, kx: f32) -> f32 { if (!(w > 0.0)) { return 0.0; } let p0 = wP(Lmm, max(0.0, w - dw), kn, kx); let p1 = wP(Lmm, w, kn, kx); if (p0 >= 1.0) { return 1.0; } return max(0.0, (p1 - p0) / (1.0 - p0)); }
+// the winter's hazard rate over a step of dt s for a first-winter fish of L cm — in place of its starvation; −1: no ramp applies
+// (not winter, not its first year, a fish born since the winter began — this spring's larvae —, or a species without one)
+fn wHaz(k: u32, L: f32, age: f32, dt: f32) -> f32 { let kn = spv(k, S_wkMin); if (WINTER0_ON < 0.5 || kn <= 0.0 || age >= YEAR) { return -1.0; } let wd = wDays(U.yf); if (!(wd > 0.0) || wd >= age / DAY) { return -1.0; } let f = wStep(L * 10.0, wd, dt / DAY, kn, spv(k, S_wkMax)); if (f >= 1.0) { return 50.0 / dt; } return -log(1.0 - f) / dt; }
 fn smooth01(a: f32, b: f32, x: f32) -> f32 { let t = clamp((x - a) / (b - a), 0.0, 1.0); return t * t * (3.0 - 2.0 * t); }
 fn lethalO2(l25: f32, floor_: f32, T: f32) -> f32 { return max(l25 * exp(BIOE_O2_LETHAL_T * (T - 25.0)), floor_); }
 fn engaged(x: f32) -> f32 { if (x > ACTION_ENGAGE) { return (x - ACTION_ENGAGE) / (1.0 - ACTION_ENGAGE); } return 0.0; }
@@ -1303,6 +1311,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   var fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
   let k = gau(A_k, i); let id = gau(A_id, i); let dt = U.dt; let K = ga(A_K, i); let T = ga(A_T, i); let L = ga(A_L, i); let W = ga(A_W, i); let jb = gai(A_jb, i);
   var hS = 0.0; if (K < BIOE_K_HAZARD) { hS = -log(max(1e-9, sigm(BIOE_STARVE_A + BIOE_STARVE_B * K))) / DAY; }
+  { let hW = wHaz(k, L, f32(gau(A_age, i)), dt); if (hW >= 0.0) { hS = hW; } }   // (the first winter: the ramp in place of starvation)
   let kx = expm(dt * TS / BIOE_EXPOSE_TAU); let xo = ga(A_xo, i) + (ga(A_o2, i) - ga(A_xo, i)) * kx; let xt = ga(A_xt, i) + (T - ga(A_xt, i)) * kx;
   sa(A_xo, i, xo); sa(A_xt, i, xt);
   let uilt = ga(A_uilt, i); var hH = 0.0; if (xt > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((xt - uilt) / BIOE_HEAT_STEEP); }
@@ -1762,7 +1771,8 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
     + spv(k, S_M) * BIOE_M_OTHER * min(30.0, pow(L / spv(k, S_Lref), -0.87)) / YEAR;
   let uilt = spv(k, S_uiltS); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }
-  let hS = gy(Y_hS, q); let h = hN + hS + hH + hO; let n = gy(Y_n, q); let lost = n * expm(h * st);
+  var hS = gy(Y_hS, q); { let hW = wHaz(k, L, f32(gyu(Y_age, q)), st); if (hW >= 0.0) { hS = hW; } }   // (the first winter)
+  let h = hN + hS + hH + hO; let n = gy(Y_n, q); let lost = n * expm(h * st);
   if (h > 0.0) { let b = T_FRY + 2u * k * NFRY; add64(&TL, b + 2u * FRY_NATURAL, lost * hN / h, TSCALE); add64(&TL, b + 2u * FRY_STARVE, lost * hS / h, TSCALE); add64(&TL, b + 2u * FRY_HEAT, lost * hH / h, TSCALE); add64(&TL, b + 2u * FRY_HYPOXIA, lost * hO / h, TSCALE); }
   if (jb >= 0 && lost * W > 0.0) { acc64(AC_SEDADD + 2u * u32(jb), lost * W, GW); }
   var left = n - lost;

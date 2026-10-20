@@ -10,7 +10,7 @@ import { CLOCK3, TS, DAY3, OLD_S } from '../clock3.js';
 import { A2 } from '../chem3.js';
 import { OXYCAL } from '../../bioenergetics.js';
 import { LIT3 } from '../littoral3.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD } from '../../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD, WINTER0, winterWindow } from '../../config.js';
 
 export const NG = genomeLen3(HID3);   // 346 genome weights
 export const NBR = NW2_3 + HID3 + OUT3.length;   // the brain's state an agent: its plastic hidden→output block (60), h (10), o (6)
@@ -229,7 +229,7 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   // the cold rule (bioenergetics.js coldResp/coldCmax): mode 0 none, 1 an empirical curve, 2 the adult set's for a juvenile, 3 FB4's × mul
   'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC',
   'yCover', 'yLpisc',   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
-  'hJL0', 'hJL1', 'hJ0', 'hJ1', 'hJW0', 'hJW1', 'bury', 'schExp'];   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
+  'hJL0', 'hJL1', 'hJ0', 'hJ1', 'hJW0', 'hJW1', 'bury', 'schExp', 'wkMin', 'wkMax'];   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
 export const SP_REC = 136;
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
@@ -273,6 +273,7 @@ export function packSpecies() {
       mvTripYf0: mv.tripYf ? mv.tripYf[0] : -1, mvTripYf1: mv.tripYf ? mv.tripYf[1] : -1, mvTripD: mv.tripD || 0, yCover: s.yCover || 0, yLpisc: sp.yLpisc ?? sp.Lpisc,
       hJL0: s.habJ ? s.habJ.L[0] : 0, hJL1: s.habJ ? s.habJ.L[1] : 0, hJ0: s.habJ ? s.habJ.bot[0] : 0, hJ1: s.habJ ? s.habJ.bot[1] : 0,
       hJW0: s.habJ?.wbot ? s.habJ.wbot[0] : 0, hJW1: s.habJ?.wbot ? s.habJ.wbot[1] : 0, bury: s.bury || 0, schExp: s.schoolExp ?? F3.SCHOOL_EXP,
+      wkMin: WINTER0.K[k] ? WINTER0.K[k][0] : 0, wkMax: WINTER0.K[k] ? WINTER0.K[k][1] : 0,   // (the first winter's ramp, config WINTER0: 0 none)
     };
     for (const [m, H] of [['D', s.hab.day], ['N', s.hab.night], ['W', s.hab.winter]]) { V['h' + m + '0'] = H.bot[0]; V['h' + m + '1'] = H.bot[1]; V['h' + m + 'v'] = H.v; V['h' + m + 'h'] = H.h; V['h' + m + 'a'] = H.act; }
     { const c = sp.cold; Object.assign(V, c ? { cMode: c.R5 ? 1 : c.adultR ? 2 : 3, cT0: c.T0, cT1: c.T1, cR5: c.R5 || 0, cWref: c.Wref || 1, cB: c.b || 0, cQ10: c.Q10 || 1,
@@ -378,8 +379,9 @@ export function wgslConstants(STL, WL, extra = {}) {
   CU('OWN_BROOK', G.ownBrook ? 1 : 0); C('A2', A2);
   // the fish's tunables
   for (const [k, v] of Object.entries(F3)) if (typeof v === 'number') C('F3_' + k, v);
-  for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3]])
+  for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3], ['WINTER0', WINTER0]])
     for (const [k, v] of Object.entries(o)) { if (typeof v === 'number') C(blk + '_' + k, v); else if (Array.isArray(v) && v.length <= 4 && v.every(x => typeof x === 'number')) v.forEach((x, q) => C(`${blk}_${k}_${q}`, x)); }
+  C('WINTER0_ON', WINTER0.ON ? 1 : 0); C('WIN_YF0', winterWindow[0]); C('WIN_YF1', winterWindow[1]);
   C('ENV_O2_MGL', ENV.O2_MGL); C('ENV_COLD_PERF_MIN', ENV.COLD_PERF_MIN); C('ENV_HYPOXIA', ENV.HYPOXIA);
   C('OXYCAL', OXYCAL); C('YEAR', YEAR); C('DAY', DAY); C('TS', TS); C('OLD_S', OLD_S);
   CU('NK', KEYS3.length); CU('HID', HID3); CU('NI', IN3.length); CU('NO', OUT3.length); CU('NG', NG); CU('NBR', NBR); CU('NW2', NW2_3); CU('W2OFF', W2OFF3); CU('NGENES', NGENES); CU('NGN', NGN);

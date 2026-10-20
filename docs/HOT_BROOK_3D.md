@@ -753,6 +753,17 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   redbreast, fallfish, killifish, dace), where real adults move to the bed (pumpkinseed snails and insects from ~45–75 mm —
   Osenberg; white perch midge larvae from ~10–12 cm — Feiner 2011, Zuerlein 1981, Cooper 1941; fallfish insects and fish from
   ~10 cm).
+- **Item 1 built — THE FIRST WINTER (config `WINTER0`; fish3 `_hazards` and `_yoyLive`, the GPU's `k_hazards` and `y_mort` via
+  `wHaz`)**, from `Real lake ecology for calibration/first_winter_mortality.md`: Shuter et al. 1980's ramp (USGS SIR 2014-5164's
+  Spednic form) p = (Cmax(w) − L)/(Cmax(w) − Cmin(w)) on the winter days w behind a fish (the season's water below 10 °C: Oct 16
+  → May 12, 208 days — Spednic's own), scaled per species by [kmin, kmax] (bass 1/1: 48–92 mm; perch and white perch 1.04/0.87:
+  50–80; pumpkinseed 0.52/0.455: 25–42; redbreast ×1.1 of that; pickerel 0.83/0.76; sucker 0.73/0.65; bullhead 0.73/0.60;
+  fallfish, killifish, dace none — no data), applied as the step's share of the survivors (p1 − p0)/(1 − p0) to a first-year
+  school or fish alive at the winter's start (not this spring's larvae, hatched before May 12 — the gate caught that), in place
+  of its starvation (the ramp IS its winter starvation; tallied as 'starve'). On the CPU (1/10 lakes, Sep → May) the existing
+  winter starvation of the young's schools had been HARSHER than the ramp: white perch schools lost ~60 % by mid-March without
+  it, ~35 % with it (the research's ~25–50 % at 57–66 mm FL). Gate: a 5-cm bass group loses 42 % over a late-winter month (the
+  ramp 38 % of it), a 9-cm group 4 %. GPU kernels agree with fish3 at yf 0.9 (g1_check). Judged in multi-year runs (arm C).
 - **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
   of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
   photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food
