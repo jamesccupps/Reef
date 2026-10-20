@@ -211,7 +211,7 @@ tallies (who ate whom, kills by predator length, eaten over the bed's depth) pri
 ~11/17/22/26/30 cm at 1–5; pickerel ~17/25/32/38/43) and condition K ~0.95–1.0, biomass 50–120 kg/ha (white perch 15–35, pickerel
 4–8, bass toward Maine levels), small species persisting, diets fish-dominated without cannibalism. COMMITTED c75429a (item 6b):
 F3.RECRUIT_SPRING (the young stay schools — one predation rule — until the spring of age 1; arm E's tallies: bass>bass 282,870
-kills, 97 % < 10 cm; most kills by predators < 10 cm, the recruits with the adults' strike rates), S3.bass.habJ (research
+kills, 97 % < 10 cm; most kills of PREY < 10 cm — the recruits; the tally is by the prey's length, first misread as the predators'), S3.bass.habJ (research
 juvenile_refuges_and_bass_young.md), pumpkinseed in both lakes (MDIFW 2024 chart for Lower; default; gate w3 103/103). The human
 sent MDIFW's 2024 Lower chart (684 ac, mean 8 ft, max 13; lists PUMPKINSEED and SEA-RUN ALEWIFE) and the 2016/2024 fishing guides
 (nothing new): research_notes hot_brook_lake_records.md updated; alewife research done (sea_run_alewife.md: ~15/acre colonising

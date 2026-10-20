@@ -808,10 +808,10 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   shallow: ZTOP + ZBOT + 0.05 + L/400).
   ARM E (GPU, seed 613, 1 year; r6E_613.txt) — item 6 so far: barely different from D2 (bass 23.7 kg/ha at 43.9 cm, perch 11.9,
   white perch 31.1, killifish 0.0 by year's end, though 79k vs 47k at day 14). Its tallies found the cause: BASS>BASS the year's
-  largest pair (282,870 kills, 97 % of the bass eaten < 10 cm) and the recruits themselves the killers — kills made by predators
-  < 10 cm: bass 55 %, pickerel 76 %, perch 95 %, white perch 93 %, fallfish 93 %. The same 6-cm fish had two rules: as a young
-  school the density rule calibrated to the field's young (stage Y1, ~1 %/day eaten); once recruited at L0 (bass 6 cm) the agents'
-  rule (~15 %/day), and with the adults' strike rates as predators. 386,000 young bass and 350,000 young perch recruited in July–
+  largest pair (282,870 kills, 97 % of the bass eaten < 10 cm) and most kills of prey < 10 cm — the recruits — (bass's kills 55 %,
+  pickerel's 76 %, perch's 95 %; the T_KILLPZ tally is by the PREY's length — first misread as the predators'). The same 6-cm fish
+  had two rules: as a young school the density rule calibrated to the field's young (stage Y1, ~1 %/day eaten); once recruited at L0
+  (bass 6 cm) the agents' rule (~15 %/day). 386,000 young bass and 350,000 young perch recruited in July–
   August; nearly all were eaten within days. Killifish were still taken over 0.3–1 m (70 %): the < 0.35-m water is a ~4-m strip
   along ~25 km of shore, and the half-hour hops don't hold it.
   BUILT (in stageR5): `F3.RECRUIT_SPRING` (CPU `_stepYoy` + GPU y_target: a school recruits only as an overwintered school in

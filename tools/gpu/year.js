@@ -118,8 +118,8 @@ for (const sd of SEEDS) {
     KEYS3.forEach((kq, q) => { const m = tl[1024 + p * NK + q], g = tl[1145 + p * NK + q], w = tl[1266 + p * NK + q] / 1e6; if (m > 0) { rows.push([kq, m, g, w]); W += w; } });
     rows.sort((a, b) => b[3] - a[3]); if (rows.length) say(`${kp}'s strikes met: ` + rows.map(([k, m, g, w]) => `${k} ${m >= 1e6 ? (m / 1e6).toFixed(1) + 'M' : (m / 1e3).toFixed(0) + 'k'} (${(100 * g / m).toFixed(0)}% takeable, ${(100 * w / Math.max(1e-12, W)).toFixed(0)}% of the weight)`).join(' · '));
   }
-  // the followed fish eaten by their length (T_KILLSZ: pairs 925 + prey·4 + class) and by the predator (T_KILLPZ: 970 + pred·4 + class)
-  for (const [tag, at] of [['followed fish eaten by length (prey)', 925], ['kills by length (predator)', 970]]) {
+  // the followed fish eaten by their length (T_KILLSZ: pairs 925 + prey·4 + class) and each predator's kills by the prey's length (T_KILLPZ: 970 + pred·4 + the PREY's class)
+  for (const [tag, at] of [['followed fish eaten by length (prey)', 925], ["each predator's kills by the PREY's length", 970]]) {
     const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => tl[at + q * 4 + c] / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, f]) => `${c} ${(100 * f).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
     if (parts.length) say(`${tag}: ` + parts.join(' · '));
   }

@@ -6,15 +6,18 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
 
 ## 2026-10-20 — Two rules for one fish: the recruits fed the predators and did most of the killing (docs/HOT_BROOK_3D.md §4 "Item 6")
 - **What.** In a true-scale GPU year with the encounter rule (arm E, seed 613), bass eating bass was the year's largest
-  predator–prey pair (282,870 kills; 97 % of the bass eaten < 10 cm), and most kills were made by predators under 10 cm (bass 55 %,
-  pickerel 76 %, yellow perch 95 %, white perch 93 %, fallfish 93 %). Field stomachs hold almost no young bass (Maine 0 of 36,
-  Wisconsin 0 of 303).
+  predator–prey pair (282,870 kills; 97 % of the bass eaten < 10 cm), and most kills took prey under 10 cm (bass's kills 55 %,
+  pickerel's 76 %, yellow perch's 95 %, white perch's 93 %, fallfish's 93 % — the year's recruits; CORRECTED 2026-10-20: this tally
+  is by the PREY's length, first misread as the predators'). Field stomachs hold almost no young bass (Maine 0 of 36, Wisconsin 0 of 303).
 - **Why.** A young-of-year school becomes followed agents at its recruitment length (bass 6 cm). As a school it was hunted by a
   density rule calibrated to field young-of-year mortality (~1 %/day eaten); as agents, by the adults' encounter rule (~15 %/day),
   and the recruits hunted with the adults' strike rates in turn. 386,000 young bass and 350,000 young perch recruited in July–August
-  and nearly all were eaten within days — food that grew the adult bass ~2.5× in biomass.
+  and nearly all were eaten within days.
 - **Fix.** Recruitment only in the spring of age 1 (as fisheries count it), so each fish meets one rule through its first year;
   and the young bass's own shallow water. CPU: the bass's August kills of young bass 58–73 % → 0.
+- **But not the bass's overgrowth.** Arm F (spring recruitment) and G (+ the narrow band) grew the bass as fast (9.4 → 23.6
+  kg/ha in a year): without the recruits they ate 10–20-cm perch and white perch (68 % of their kills by the prey's length), mostly
+  over ≥ 2 m — 35 % of their stomachs empty by day (field 35–60 %), ~0.25 fish a day each.
 - **Why it matters.** Individual-based models that switch representation by size (super-individuals → individuals) must keep the
   hazards continuous across the switch; a discontinuity becomes a hidden food subsidy that no diet target catches, because the
   diets still look piscivorous and plausible.
