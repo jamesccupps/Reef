@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~6:10 p.m. — the newest): ARM O still RUNNING (613 in year 2: white perch 34.5 → 38.9, pickerel
+▶▶▶ RESUME HERE (2026-10-20 ~6:20 p.m. — the newest): A FULL REVIEW IS RUNNING (the human: "do a full review of all the fish and
+everything and make sure its all behaving as it really would in the environment and make sure we have all aspects of the environment
+and the animals covered"). Five background review agents write docs/review/: predators.md (pickerel, smallmouth), perches.md (yellow
+perch, white perch), small_fish.md (pumpkinseed, redbreast, killifish, dace, fallfish), bottom_fish_and_young.md (sucker, bullhead,
+the young-of-year system), environment_coverage.md (water, plankton, plants, invertebrates, wildlife, brook, water levels, weather,
+people, alewives — what's covered vs missing). Each: real (cited from the repo's research notes) vs the sim (code, values) → OK / off
+/ missing → priority. NEXT after compacting: read docs/review/*.md, merge into docs/review/PLAN.md (one prioritized list), show the
+human, then work it. Also pending: the white-perch research agent (white_perch_habitat_and_predation.md) and ARM O (r8O_*.txt).
+▶▶▶ RESUME HERE (2026-10-20 ~6:10 p.m.): ARM O still RUNNING (613 in year 2: white perch 34.5 → 38.9, pickerel
 5.0 → 3.8, pumpkinseed/redbreast ~0.1, the summer's Daphnia 146 → 38 µg/L). COMMITTED 72a3a21 (6k, F3.YCOLD in stageR5): predators
 hunt the young at min(cold performance, FB4 consumptionT) — arm O's killifish young grew right (2.7 cm early Nov, 3.2 Jan) but were
 eaten 13–22 %/fortnight under the ice; CPU probe: winter predation on the young now ~0. THE NEXT PROBLEM — WHITE PERCH ESCAPE THEIR
