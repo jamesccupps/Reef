@@ -192,7 +192,19 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~9:25 a.m. — the newest): ARM F RUNNING — queue_r6.sh (snapshot f :8118 = c75429a; arm B overrides +
+▶▶▶ RESUME HERE (2026-10-20 ~9:50 a.m. — the newest): ARM F STOPPED at day ~200 of 613 (r6F_613.txt): spring recruitment
+removed the young-bass feast but the bass STILL overgrow at true scale (17.5 → 23.1 kg/ha day 98 → 126, 42 cm, p 0.62–0.75),
+living on adult perch and white perch (perch 233k → 179k in a month). The 1/10 CPU world with the same package gives bass p
+0.24–0.28 (arm B settings or not — probe/gut2.mjs ARMB=1) — the true-scale GPU world is the one to calibrate. FB4's own gut
+(probe/satcycle.mjs): even a meal-then-rest cycle with prey always at hand gives bass p 0.6–0.8 (digestion ~1 day at 22 °C), so
+Maine's slow growth and 35–60 % empty stomachs mean real bass SEARCH a lot — prey are harder to find than in the sim's true lakes.
+ADDED (b7a34c8 BAND_REL in stageR5; a45c4c6 T_WHERE; 59f40c3 T_GUT): GPU tallies of where each kind spends the day by bed depth and
+of the piscivores' stomach fullness, printed at a run's end. RUNNING: ARM G (snapshot g :8119 = 59f40c3) seed 613, 1 YEAR →
+r6G_613.txt (tallies at day 365): read who ate whom, kills by prey length, eaten over depth/cover, by-day depth shares (do the
+killifish hold < 0.3 m?), stomachs (field 35–60 % empty). Then decide the prey-availability fix with evidence (perch schools vs
+solitary fish, cover, the bass's act/aMax priors). (Careful: Stop-Process by command-line match also kills this session's own
+shell if the pattern is in the command — filter by Name.)
+▶▶▶ RESUME HERE (2026-10-20 ~9:25 a.m.): ARM F RUNNING — queue_r6.sh (snapshot f :8118 = c75429a; arm B overrides +
 winter + r5=1 with item 6 AND 6b) on 613/611/612 × 5 yr → r6F_<seed>.txt, flag queue_r6.done. Compare with r6E_613.txt (item 6
 only, 1 yr: bass 23.7 kg/ha at 43.9 cm — unchanged from D2) and r5D_613.txt. Analyse: node yrsum.mjs / yrdem.mjs; the final
 tallies (who ate whom, kills by predator length, eaten over the bed's depth) print at day 1825. JUDGE BY length-at-age (Maine bass
