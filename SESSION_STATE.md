@@ -192,7 +192,22 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~8:15 a.m. — the newest; the "~9 a.m." block below was mis-stamped, it is from ~6 a.m.): ARM D2
+▶▶▶ RESUME HERE (2026-10-20 ~9:25 a.m. — the newest): ARM F RUNNING — queue_r6.sh (snapshot f :8118 = c75429a; arm B overrides +
+winter + r5=1 with item 6 AND 6b) on 613/611/612 × 5 yr → r6F_<seed>.txt, flag queue_r6.done. Compare with r6E_613.txt (item 6
+only, 1 yr: bass 23.7 kg/ha at 43.9 cm — unchanged from D2) and r5D_613.txt. Analyse: node yrsum.mjs / yrdem.mjs; the final
+tallies (who ate whom, kills by predator length, eaten over the bed's depth) print at day 1825. JUDGE BY length-at-age (Maine bass
+~11/17/22/26/30 cm at 1–5; pickerel ~17/25/32/38/43) and condition K ~0.95–1.0, biomass 50–120 kg/ha (white perch 15–35, pickerel
+4–8, bass toward Maine levels), small species persisting, diets fish-dominated without cannibalism. COMMITTED c75429a (item 6b):
+F3.RECRUIT_SPRING (the young stay schools — one predation rule — until the spring of age 1; arm E's tallies: bass>bass 282,870
+kills, 97 % < 10 cm; most kills by predators < 10 cm, the recruits with the adults' strike rates), S3.bass.habJ (research
+juvenile_refuges_and_bass_young.md), pumpkinseed in both lakes (MDIFW 2024 chart for Lower; default; gate w3 103/103). The human
+sent MDIFW's 2024 Lower chart (684 ac, mean 8 ft, max 13; lists PUMPKINSEED and SEA-RUN ALEWIFE) and the 2016/2024 fishing guides
+(nothing new): research_notes hot_brook_lake_records.md updated; alewife research done (sea_run_alewife.md: ~15/acre colonising
+run, young never recruit, leave via the outlet in rain pulses mid-July–ice-on; FB4 alewife set). ASKED the human (no answer yet):
+seen alewives/herring runs or silvery schools? sunfish caught in Lower itself? NEXT after F: the killifish's < 0.35-m strip (~4 m
+wide at true scale; half-hour hops leave it: arm E 70 % eaten over 0.3–1 m) — a shore-hugging rule; the per-species/by-light
+SHALLOW_K (research (b)); then SEA-RUN ALEWIFE as the 12th species.
+▶▶▶ RESUME HERE (2026-10-20 ~8:15 a.m.): ARM D2
 STOPPED at day 532 of seed 613 (r5D_613.txt): year 1 diets fish (pickerel 76–98 %, bass 51–94 %) but bass 9.4 → 24.8 kg/ha at
 44.7 cm mean, and in year 2 → 55.5 kg/ha (53 cm) while perch 10.7 → 1.9, white perch 31 → 12, pickerel 3.3 → 0.9, fallfish → 0.1;
 killifish 100k of 148k eaten in the first fortnight. TARGET FOUND: the sim's FB4 smallmouth over the Maine calendar grows a 26-cm
