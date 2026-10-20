@@ -199,7 +199,9 @@ scratchpad probe/diet5.mjs; OLD=1 the old rule): pickerel 0.78 fish/day, ration 
 young in _feed, so the gut fills on followed fish and the abundant young go untouched. NEXT: the young schools INTO the same
 encounter rule (choose ∝ encounters × success over agents and schools), then the GPU k_strike port + g1_check, then 3 seeds × 5
 years; crayfish CR_PREF 1 / CR_OUT 0.15,0.6 go with it (restored to 5 / 0.3,0.7 while off). Docs: HOT_BROOK_3D.md §4 "Item 5".
-The A/B queue and arm C still running (queue_r1.sh, queue_r3.sh).
+Tried: young-first feeding under STRIKE2 (little change — June's young are below the piscivores' window). The
+month test can't show the settling point: port to the GPU and run years; check the small species' shallow refuges (killifish
+by day ~0.7 m) and the bass's biomass (10–12 kg/ha vs MDIFW ~2.6 of ≥ 10 in). The A/B queue and arm C still running (queue_r1.sh, queue_r3.sh).
 ▶▶▶ 2026-10-20 ~2 a.m. — THE A/B SO FAR (scratchpad r1A_613, r1B_613, r1A_611 done; yrsum.mjs / yrdem.mjs summarise): A and B
 alike over 5 years: total 95–105 kg/ha (field ✓), summer zooplankton years 2–5 ~20–70 µg/L (copepods 20–60 %), BUT the community
 collapses to perch (20–29) + white perch (38 → 44–48; target 15–35) + suckers (16–18): pumpkinseed, redbreast, killifish, dace

@@ -778,6 +778,12 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   small species are eaten out in the month (killifish 1,499 → 0, dace 0.09×, pumpkinseed 0.27×; pickerel and bass halve, much of
   it cannibalism): the agents' strike comes BEFORE the young-of-year in `_feed`, so with realistic strikes the gut fills on the
   followed fish and the abundant young (the field's bulk of a summer predator's food — juvenile perch 6–11 cm) go untouched.
+  Tried (2026-10-20, STRIKE2 only): the young first in _feed (_yReq returns the grams asked) and the strike with the room left —
+  little change in late May–June: the young are < 3 cm, below the piscivores' window (7 kg of young vs 60 kg of followed fish in
+  the month). The month-long test starts from the founding's densities (~80 pickerel and ~130 bass against 1,500 killifish; the sim's
+  bass 10–12 kg/ha against MDIFW's ~2.6 kg/ha of ≥ 10-in bass) and can't show where the predators and prey settle; and the small
+  species' refuges look too thin (banded killifish by day over ~0.7 m of water, within a pickerel's reach; the field's live in
+  < 0.5 m among the plants).
   NEXT: the young schools into the same encounter rule (prey chosen ∝ encounters × success across agents AND schools), then the
   GPU port (k_strike) and g1_check, then ≥ 3 seeds × 5 years. And the crayfish stock itself: Hot Brook's soft water (Ca ≲ 2–4
   mg/L) may hold far fewer than the Michigan-based CR_ROCK 25 / CR_WEED 15 g/m² — ASK THE HUMAN / look up the lakes' calcium.

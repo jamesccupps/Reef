@@ -1562,9 +1562,12 @@ export class Fish3 {
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
     const g0 = a.gut;
-    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0) { const g = this._strike(a, i, room, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
+    // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
+    let yAsk = 0;
+    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const pisc = s.pisc && a.L >= sp.Lpisc; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR) || 0; }
+    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
-    if (room > 0 && want > got) {
+    if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
       if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, perf * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
       else { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
     }
@@ -1950,10 +1953,11 @@ export class Fish3 {
     if (!(sA > 0)) return;
     let K = n * dt * sA / (1 + sAH), g = 0;
     for (let j = 0; j < NB; j++) if (A[j] > 0) g += K * A[j] / sA * T.sW[b0 + j] / T.av[b0 + j];
-    if (g > gMax * n) K *= gMax * n / g;
+    if (g > gMax * n) { K *= gMax * n / g; g = gMax * n; }
     const bins = [], ks = [];
     const RQ = p ? T.req : T.reqY; for (let j = 0; j < NB; j++) if (A[j] > 0) { const kj = K * A[j] / sA; bins.push(b0 + j); ks.push(kj); RQ[b0 + j] += kj; }
     T.rec.push({ p, q, bins, ks });
+    return g / n;   // (the grams a fish asked for: F3.STRIKE2's predators strike at the followed fish with the room left)
   }
   // THE SETTLEMENT (order-free within each kind): the followed fish first — each bin meets min(1, available / requested) of their
   // requests — then the young piscivores' schools from what is left (the GPU's order: its followed fish feed before the schools'
