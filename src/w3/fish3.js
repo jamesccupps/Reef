@@ -1697,7 +1697,10 @@ export class Fish3 {
         const b = f[I[q]]; if (!b.alive || I[q] === i) continue;
         const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy > Rs2) continue;
         if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
-        const nb = b.n > 1 ? b.n : 1, enc = nb * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
+        // (an esocid meets a school of n as n^schoolExp fish — 0.65: it finds a school about as it finds one big fish and takes one fish
+        // an attack, its success unreduced inside it (Turesson & Brönmark 2004) — the encounter dilution the old rule had and STRIKE2
+        // first dropped: pickerel then took a 36-fish killifish school as 36 separate fish; bass keep their confusion term below)
+        const nb = b.n > 1 ? b.n : 1, ne = nb > 1 && cls === 0 ? Math.pow(nb, s.schoolExp ?? F3.SCHOOL_EXP) : nb, enc = ne * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
         if (!(enc > 0)) continue;
         const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, -0.8) : cls === 2 ? 0.15 : 1) : 1);
         sE += enc; const w = enc * cs; if (w > 0) { sW += w; cand.push(b, w); }
