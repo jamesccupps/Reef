@@ -462,6 +462,10 @@ export function stageR5(on = true) {
   // (arm M: at 18 cm the founded adults, ~25 cm, still took 45k killifish; fish in a fallfish's diet are documented only in pulses of
   // naive salmon fry and eggs in rivers — only the largest, ≥ 30 cm, hunt fish here)
   S3.fallfish.sp.Lpisc = on ? 30 : 10;
+  // (item 6j: the year's young smallmouth eat plankton and insects to ~10 cm, fish appearing at 10–15 cm (Dunlop 2005; Weidel 2000 —
+  // research juvenile_refuges_and_bass_young.md); their schools ate fish from Lpisc 5 cm — in arm M 212k young killifish, 729k young
+  // pumpkinseed, 387k young redbreast — so a young bass school takes fish only from 10 cm (yLpisc; its age-0 rarely gets there)
+  S3.bass.sp.yLpisc = on ? 10 : undefined;
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
