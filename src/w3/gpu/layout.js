@@ -10,7 +10,7 @@ import { CLOCK3, TS, DAY3, OLD_S } from '../clock3.js';
 import { A2 } from '../chem3.js';
 import { OXYCAL } from '../../bioenergetics.js';
 import { LIT3 } from '../littoral3.js';
-import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD } from '../../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD } from '../../config.js';
 
 export const NG = genomeLen3(HID3);   // 346 genome weights
 export const NBR = NW2_3 + HID3 + OUT3.length;   // the brain's state an agent: its plastic hidden→output block (60), h (10), o (6)
@@ -378,7 +378,7 @@ export function wgslConstants(STL, WL, extra = {}) {
   CU('OWN_BROOK', G.ownBrook ? 1 : 0); C('A2', A2);
   // the fish's tunables
   for (const [k, v] of Object.entries(F3)) if (typeof v === 'number') C('F3_' + k, v);
-  for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3]])
+  for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3]])
     for (const [k, v] of Object.entries(o)) { if (typeof v === 'number') C(blk + '_' + k, v); else if (Array.isArray(v) && v.length <= 4 && v.every(x => typeof x === 'number')) v.forEach((x, q) => C(`${blk}_${k}_${q}`, x)); }
   C('ENV_O2_MGL', ENV.O2_MGL); C('ENV_COLD_PERF_MIN', ENV.COLD_PERF_MIN); C('ENV_HYPOXIA', ENV.HYPOXIA);
   C('OXYCAL', OXYCAL); C('YEAR', YEAR); C('DAY', DAY); C('TS', TS); C('OLD_S', OLD_S);

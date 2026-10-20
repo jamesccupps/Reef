@@ -186,7 +186,41 @@ cell tree cover (NDVI ramp), conifer share (logistic on NLCD's surest patches; c
 main3 canopyAt: trees, conifers and the ground's clearings/roads follow the photo where trusted (true world only). Verified
 against the photo look in the browser (bog, rocky opening, conifer stand, tracks, farm fields line up). HOT_BROOK_3D.md
 "Built — the forest from the aerial photos". Open: roads beyond the 1-m tiles; the sim's shore inputs (leaf/insect fall) still read NLCD.
-▶▶▶ RESUME HERE (2026-10-19, night, IN PROGRESS — uncommitted): STAGE R ITEM 4, THE YEAR-1 ZOOPLANKTON — ROOT CAUSE FOUND.
+▶▶▶ RESUME HERE (2026-10-20, ~1 a.m.): STAGE R ITEM 4 DONE AND COMMITTED (per-capita algae ON + ZOO3; see the commit after
+a312120). Gate: w3 green (the fine fish step's budget made per agent: ≤ 8 µs; measured 7.6–7.9), the env update 11.6 ms after
+speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton realistic (clear-water phase, crash, autumn
+rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
+second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
+→ 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+NEXT (planned, about to launch): GPU A/B, seeds 611/612/613 × 5 years, 6 windows: A = committed; B = + adults of the six
+`diet.plankton` species onto the bed past a switch size, via year.js overrides (no code change yet):
+  s3.<k>.plank=0 & s3.<k>.sp.diet.plankton=0 & s3.<k>.sp.Lzoo=X — whiteperch 10, sunfish 5, redbreast 5, fallfish 10,
+  killifish 3.5, dace 3 (white perch: Feiner 2011 <12 cm ~90 % bed by IRI, Zuerlein, Cooper; pumpkinseed: shift at 40–50 mm SL
+  — forage_fish_early_life.md; fallfish ~10 cm). If B helps, make it real in species3.js as 3-D overrides (species.js is shared
+  with the 2-D). Then stage R item 1 (young keep their schools through the first winter + Shuter/Dudley loss for bass) and
+  item 5 (predator diets). Under-ice light (snow) is stage D: it moves the winter O₂.
+Answered the human: what the plants do in winter (plants3: storage from ~Sep 10 at 7 %/day — pondweeds keep 30 %, lilies 75 %,
+emergents 50 %; standing dead stems; evergreens — rosettes, Nitella, moss, Robbins' — stay green; ice scour < 0.5 m; spring sprout
+≤ 10 %/day from each species' start temperature; the 40 %-light ice is the known flaw).
+
+▶▶▶ (2026-10-19, late night): STAGE R ITEM 4 CONTINUED — per-capita algae COMMITTED (a312120, switch
+off) and now ON in the working tree (config PHYTO.PER_CAPITA true); w3 gate with it on: 98/100, the 2 fails are the perf probes at
+their edge (env update 13.0 vs < 12 ms at 1/10; fish 0.1-s step 25.2 vs ≤ 25 — the last clean gate had 11.9 / 24.7: contention;
+re-run on a quiet machine). GPU year seed 613 with per-capita algae (scratchpad y613_pc1.txt): total 110 kg/ha at day 365 (old
+155; field 50–120 ✓), white perch 39 (63), perch 24 (37), pickerel 4.5, sucker 18.6, but pumpkinseed 0.5, fallfish 3.9,
+killifish 0.06× (the small zooplanktivores — stage R item 2). Zooplankton 85–380 µg/L May–July, then 20 Aug–Sep, 1–5 Oct–winter;
+copepods still excluded (49 → 1).
+NOW BUILDING: the 3-D ZOOPLANKTON (config ZOO3 — the 2-D keeps PLANKTON's; chem3 + fish3 + GPU layout/wgsl read it) from the
+research note `Real lake ecology for calibration/copepod_daphnia_coexistence.md` (agent, 2026-10-19): copepods G 0.27, R 0.04,
+M 0.012, K 0.15 (threshold ~1.06× Daphnia's, was 1.8×); losses' Q10 3.0 (Daphnia) / 3.5 (copepods) instead of 2.0; COPE_ESCAPE
+0.65; autumn dormancy ~30 % (DORM_D 0.005, DORM_C 0.006; copepodites keep 85 % of mass); Daphnia ephippia hatch ~1 %/yr
+(HATCH_D 0.0002), copepodites at bed ≥ 10 °C (HATCH_C 0.03). RUNNING: fish-free CPU year probe/z_zoo3.txt; GPU 2 years seed 613
+(snapshot snap_zoo3 :8111 → y613_zoo3_2y.txt). Targets: summer copepods 50–65 % of crustaceans, under ice 20–40 % of summer,
+≥ 70 % copepods; Daphnia spring peak then decline; summer total 50–150 µg/L.
+Also read the human's 2nd batch (A17 Begley/Coghlan/Zydlewski 2018 Maine suckers; C29 Zuerlein 1981 Nebraska white perch; C34
+Feiner 2011 thesis) → fetched_sources_read_by_me.md "second batch". Weather spells too long (clear mean 14 d, max 57) — a to-do.
+
+▶▶▶ (2026-10-19, night): STAGE R ITEM 4, THE YEAR-1 ZOOPLANKTON — ROOT CAUSE FOUND.
 Probes (scratchpad/probe/: water_only.mjs, npp.mjs, alg.mjs — the 3-D water alone, HB_WORLD=true, no fish):
 - Fish-free, Daphnia go 40 → 900 µg/L in 3 weeks of May and HOLD 900–1,500 all summer on algae grazed to 0.013 units; copepods
   are driven extinct (61 → 1), rotifers 0; under ice everything falls to 1–5 µg/L (DORM sends the actives to eggs; field keeps

@@ -679,7 +679,7 @@ kg/ha (target 15–35), perch 37 / 32, suckers 22 / 21, bass 11.6 / 11.3, picker
    (benthL), adults on Daphnia only above ~20/L.
 3. **Adult background mortality where predation doesn't emerge**: white perch A 0.45–0.55 (ages 3+), maxAge 10 (M ≈ 0.6), the
    unsimulated share not halved (predators take ≲ 5–10 %/yr of adults); the same check for yellow perch.
-4. **The year-1 zooplankton**: why 500–970 µg/L (the start's seeding? production vs grazing?) — the field's 60–100.
+4. **The year-1 zooplankton**: why 500–970 µg/L — FOUND (below, "Item 4 found"): the algae's zero-order growth; per-capita algae + the 3-D zooplankton (ZOO3).
 5. Growth stays food-limited (stunting) with maturity at small sizes; targets: white perch 15–35 kg/ha, 250–750/ha; pumpkinseed
    adults 0.05–0.3× white perch adults; perch small and fewer than fallfish and bass (the human); fallfish plentiful.
 
@@ -733,9 +733,30 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   the outflow and the brook's filterers). With the grazers back and still no fish, the PEG pattern appears: Daphnia peak ~340 µg/L
   in mid-May, clear the water (algae 0.008) and crash to ~190, then 200–330 through June–July — a fishless lake's level — and
   their production falls ~4× to ~10 g DW/m²/yr, inside the field's range.
-- **Still wrong (next)**: copepods are excluded by Daphnia (59 → 1 µg/L by August) and the crustaceans fall to 1–3 µg/L under the
-  ice (field: the community keeps ~25 % of its summer density, copepods carrying — Hampton et al. 2017); the egg bank hatches
-  0.5 %/day where Daphnia's ephippia give ~1 % of the bank a YEAR, only in early spring (Cáceres 1998).
+- **Copepods and the winter: the 3-D's own zooplankton (`ZOO3` in config; the 2-D keeps `PLANKTON`'s)**, from the research note
+  `Real lake ecology for calibration/copepod_daphnia_coexistence.md`. PLANKTON's copepods had a 1.8× higher food threshold AND half
+  Daphnia's growth — no trade-off — so Daphnia excluded them by August even with fish (49 → 1 µg/L in the fish run), and losses at
+  Q10 2.0 plus dormancy that sent ~65 % of the autumn copepods to eggs at 30 % efficiency left ~3 % active at ice-out (1–3 µg/L
+  under the ice; the field keeps ~25 % of summer density, ~80 % copepods). Real copepods persist by LOSING less: fish land 0.07–
+  0.28 of their strikes at copepods against 0.76–0.96 at cladocerans (Drenner 1978); overwintering *L. minutus* lose ~0.0005/day
+  (Cooley 1973); calanoid thresholds are ~1.0–1.5× Daphnia's (Hart 1996; Kreutzer & Lampert 1999). So: copepods G 0.27, R 0.04,
+  M 0.012, K 0.15 (threshold ~1.06× Daphnia's); growth Q10 3.5 (development Q10 ≈ 3.7 — not faster in the cold); losses' Q10 3.0
+  (Daphnia) / 3.5 (copepods); COPE_ESCAPE 0.65; ~30 % of either into the bank in autumn (DORM 0.005/0.006; buried copepodites keep
+  85 %); Daphnia's ephippia hatch ~1 %/yr (HATCH_D 0.0002 — Cáceres), copepodites at a ≥ 10 °C bed. Fish-free year: Daphnia's
+  clear-water peak (380 µg/L) and crash, an autumn Daphnia rebound (~160), and under the ice copepods ~10–11 µg/L with Daphnia 2–5
+  (field 10–20 total; Daphnia 1–3 ind/L). With fish (GPU, seed 613, at copepod growth Q10 2.7): copepods hold 55–105 µg/L through
+  summer beside Daphnia, ~60–70 % of the crustaceans late in summer, and 26–30 µg/L in the autumn (the old model 1–5).
+- **Year 2 still collapses** (same run, 730 days): the second summer's zooplankton 12–20 µg/L, Daphnia ~0; 395,000 white perch
+  (38 kg/ha), 270,000 perch and 26 million young perch graze it; pumpkinseed, redbreast and killifish → ~0, fallfish 1.8 kg/ha,
+  pickerel 2.6, total 98 kg/ha. The plankton fix alone does not regulate the planktivores — stage R's items 1 and 3 are the levers;
+  and six species carry `diet.plankton`, which keeps their ADULTS on zooplankton at every size (pumpkinseed, white perch,
+  redbreast, fallfish, killifish, dace), where real adults move to the bed (pumpkinseed snails and insects from ~45–75 mm —
+  Osenberg; white perch midge larvae from ~10–12 cm — Feiner 2011, Zuerlein 1981, Cooper 1941; fallfish insects and fish from
+  ~10 cm).
+- **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
+  of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
+  photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food
+  depending on it.
 - **The weather's spells are too long** (found on the way): clear spells average 14 days (max 57), and seed 611's August–September
   had six weeks of cloud and storm (Maine's fronts pass every ~3–5 days). The 2-D chain's dwell times × 1/TS. Per-capita algae dip
   ~5× through such a spell and recover in two weeks; a realistic chain is a separate to-do.

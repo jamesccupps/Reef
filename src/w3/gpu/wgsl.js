@@ -374,7 +374,7 @@ fn zooExposed(j: u32, kind: u32) -> f32 {
 }
 fn zooE(j: u32) -> f32 {
   let v = wd(W_zv + j); if (v <= 0.0) { return 0.0; }
-  return (wd(W_zooD + j) * zooExposed(j, 0u) + wd(W_zooC + j) * (1.0 - PLANKTON_COPE_ESCAPE) * zooExposed(j, 1u)) * v * PLANKTON_UGL;
+  return (wd(W_zooD + j) * zooExposed(j, 0u) + wd(W_zooC + j) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(j, 1u)) * v * PLANKTON_UGL;
 }
 @compute @workgroup_size(128) fn k_sense(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -1037,7 +1037,7 @@ fn crayE(li: u32, j: u32, c: u32, gape: f32, s: f32) -> f32 {
   return E * s;
 }
 fn benthE(j: u32) -> f32 { return max(0.0, wd(W_benth + j) / A2 - BENTHOS_REFUGE); }
-fn zooSeen(q: u32, kind: u32) -> f32 { if (kind == 0u) { return wd(W_zooD + q) * zooExposed(q, 0u); } return wd(W_zooC + q) * (1.0 - PLANKTON_COPE_ESCAPE) * zooExposed(q, 1u); }
+fn zooSeen(q: u32, kind: u32) -> f32 { if (kind == 0u) { return wd(W_zooD + q) * zooExposed(q, 0u); } return wd(W_zooC + q) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(q, 1u); }
 // the footprint (fish3 _feed): its columns (by forage radius), each column's bed cells within FP_DZ of its bed, and its layer of the
 // water (± one in its own column)
 struct Fp { s0: u32, s1: u32, base: u32, kz: u32 };
@@ -1239,7 +1239,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   if (j >= WNCELL) { return; }
   { let T = rdAcc(AC_TB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= bTaken(T, rdAcc(AC_TBW + 2u * j, PW)) * benthE(j) * A2; } }
   { let T = rdAcc(AC_ZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - bTaken(T, rdAcc(AC_ZDW + 2u * j, PW)) * zooExposed(j, 0u); } }
-  { let T = rdAcc(AC_ZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_ZCW + 2u * j, PW)) * (1.0 - PLANKTON_COPE_ESCAPE) * zooExposed(j, 1u); } }
+  { let T = rdAcc(AC_ZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_ZCW + 2u * j, PW)) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(j, 1u); } }
   let li = sti(O_litIdx + j); if (li < 0) { return; }
   let l = u32(li); let cc = u32(sti(O_wColOfCell + j));
   { let T = rdAcc(AC_TL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= bTaken(T, rdAcc(AC_TLW + 2u * j, PW)) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l); } }

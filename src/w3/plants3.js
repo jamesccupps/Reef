@@ -194,6 +194,10 @@ export const PL3 = {
 };
 
 const MIX = 1e-9;
+// the shoots' Q10 factor from a table (−2 … 40 °C in 0.05° steps, as chem3's): a Math.pow per bed cell every update cost more
+// than the arithmetic around it
+const QT_TAB = new Float32Array(841); for (let i = 0; i < 841; i++) QT_TAB[i] = Math.pow(PL3.Q10, (i * 0.05 - 2 - 20) / 10);
+const qPl = T => { let i = ((T + 2) * 20 + 0.5) | 0; if (i < 0) i = 0; else if (i > 840) i = 840; return QT_TAB[i]; };
 // THE LAKES' WEEDS AT THEIR START (generated: tools/hotbrook/build_plants3.mjs → plants3init.js, true/plants3init.js): the model's
 // own beds after years grown from a bare seeding, at a lake's opening date. Seeded uniformly — every species at a share of its
 // stand in every cell of its range — the first summer was a lawn over the whole bed (Upper 96 %, both lakes' shallows under 2 m
@@ -352,7 +356,7 @@ export class Plants3 {
     let prod = 0, lit = 0;
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
-      const qT = Math.pow(PL3.Q10, (Tj - 20) / 10), iceCut = 1 - ICE.LIGHT_CUT * e.ice[c];
+      const qT = qPl(Tj), iceCut = 1 - ICE.LIGHT_CUT * e.ice[c];
       if (this.dead[i] > 0) {   // last year's stems fall into the bed's organic layer (faster in the ice's and the waves' reach)
         const kF = PL3.DEAD_FALL * (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !this.brook[i] ? PL3.DEAD_ICE : 1) + (e.ice[c] < 0.5 && !this.brook[i] ? PL3.WAVE_M * PL3.WAVE_DEAD * this._wave(i) : 0);
         const d = this.dead[i] * Math.min(1, kF * dd); this.dead[i] -= d; ch.sedOM[j] += d * A / a;   // (kF·dd ≪ 1 a growth step)
@@ -377,7 +381,7 @@ export class Plants3 {
         if (F.window) fL = (z <= F.core[1] ? (z >= F.core[0] ? 1 : clamp((z - F.depth[0]) / Math.max(0.05, F.core[0] - F.depth[0]), 0, 1)) : clamp((F.depth[1] - z) / (F.depth[1] - F.core[1]), 0, 1))
           * clamp(this.shelter[c] - F.shelter + 1, 0, 2) / 2;   // (and the waves: half growth at its shelter, full one direction more)
         else {
-          const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1)), Itop = iceCut * flShade * Math.exp(-kd * (z - h)) * Math.exp(-PL3.SELF * b * 0.3);   // (share of the surface's)
+          const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1)), Itop = iceCut * flShade * Math.exp(-kd * (z - h) - PL3.SELF * b * 0.3);   // (share of the surface's)
           fL = Itop * seasonL / (Itop * seasonL + F.KL);
         }
         const sp = ch.sedP[j], ph = ch.phos[j], nT = ch.nh4[j] + ch.no3[j];
@@ -478,7 +482,7 @@ export class Plants3 {
     const now = e.sun / Math.max(1e-3, e.dayFrac * 2 / Math.PI);   // (the sun's curve over its day's mean: a day's sum is the day's)
     const Bs = this.Bs, gn = this.gnet, tS = this._tS, ev = this._ev, rO = this._rO, win = this._win, hF = this._hF, bM = this._bM, R0s = this._resp;
     for (let i = 0; i < this.cells.length; i++) {
-      const j = this.cells[i], A = G.bedA[j], Tj = T[j], qT = Math.pow(PL3.Q10, (Tj - 20) / 10);
+      const j = this.cells[i], A = G.bedA[j], Tj = T[j], qT = qPl(Tj);
       let gross = 0, resp = 0, h = 0, root = 0; const z = this.zb[i];
       for (let f = 0; f < NF3; f++) {
         const b = Bs[f][i]; if (!(b > 0)) continue;

@@ -27,7 +27,7 @@ import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { cmax, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -1596,7 +1596,7 @@ export class Fish3 {
     }
     if (tZ > 0 && room > 0 && want > got) {
       const out = this._zo || (this._zo = [0, 0, 0]);
-      ch.zooFeedCells(LZ, nZ, 1, 1 - PLANKTON.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, F3.K_ZOO, out, true, true, 0, visDay * visDay);   // (seen by its own eyes at this hour: the water it searches ∝ its reaction distance² — Gerritsen & Strickler 1977)
+      ch.zooFeedCells(LZ, nZ, 1, 1 - ZOO3.COPE_ESCAPE, Math.min(room, (F3.SHARE ? want0 * tZ : want - got) * PLANKTON.Q) * n, F3.K_ZOO, out, true, true, 0, visDay * visDay);   // (seen by its own eyes at this hour: the water it searches ∝ its reaction distance² — Gerritsen & Strickler 1977)
       const g = (out[0] + out[1] + out[2]) / n;
       if (g > 0) { a.gut += g; a.gutE += (out[0] * PREY.DAPH_ED + out[1] * PREY.COPE_ED + out[2] * PREY.ROT_ED) / n; room -= g; got += g; this.stats.food.zoo += g * n; }
     }

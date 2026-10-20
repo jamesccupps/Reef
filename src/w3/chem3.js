@@ -9,7 +9,7 @@
 // of bed, as the 2-D formulas give it) changes the water's concentration by flux × (b/A2)/(v/V2) — the bed's area over the
 // water's volume, × the 2-D bed cell's thickness: thin water over a lot of bed changes fastest (the coves, under ice).
 // Rates: the 2-D sim's per-second rates × TS; its per-day rates on the calendar day DAY3.
-import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BENTHOS, PLANKTON, TURBIDITY, ICE, SEASON, WORLD, GRID, seasonalTemp } from '../config.js';
+import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BENTHOS, PLANKTON, ZOO3, TURBIDITY, ICE, SEASON, WORLD, GRID, seasonalTemp } from '../config.js';
 import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
@@ -87,6 +87,7 @@ const qAt = (tab, T) => { let i = ((T + 2) * 20 + 0.5) | 0; if (i < 0) i = 0; el
 const Q = {
   ph: qLUT(PHYTO.Q10, 20), mic12: qLUT(MICROBE.Q10, 12), mic: qLUT(MICROBE.Q10, MICROBE.REF_TEMP), n: qLUT(NCYCLE.Q10, 20), som: qLUT(SEDOM.Q10, 20),
   ben: qLUT(BENTHOS.Q10, 20), zD: qLUT(PLANKTON.Q10_D, 20), zC: qLUT(PLANKTON.Q10_C, 20), zL: qLUT(PLANKTON.Q10_L, 20), zR: qLUT(PLANKTON.Q10_R, 20),
+  zLD: qLUT(ZOO3.Q10_LD, 20), zLC: qLUT(ZOO3.Q10_LC, 20), zC3: qLUT(ZOO3.Q10_C, 20),
 };
 const sun = yf => { const s = 0.5 + 0.5 * Math.cos(2 * Math.PI * (yf - SEASON.SOLSTICE)); return { dayFrac: SEASON.DAY_FRAC[0] + (SEASON.DAY_FRAC[1] - SEASON.DAY_FRAC[0]) * s, noon: SEASON.NOON[0] + (SEASON.NOON[1] - SEASON.NOON[0]) * s }; };
 
@@ -144,11 +145,11 @@ export class Chem3 {
     const T = this.env.temp; for (let j = 0; j < this.G.NCELL; j++) this.o2[j] = this.sat(T[j]) * 0.95;
     this._sight();
   }
-  _sight() {   // (zooVis per cell, its lake-wide terms hoisted: the same arithmetic)
-    const G = this.G, P = PLANKTON, e = this.env, kd = this.attenuation(), cl = this.clarity(), den = Math.log(P.VIS_I1 / P.VIS_I0), zv = this.zv;
+  _sight() {   // (zooVis per cell, its lake-wide terms hoisted; ln(I/VIS_I0) = ln(I0/VIS_I0) − kd·z: one log a column, no exp a cell)
+    const G = this.G, P = PLANKTON, e = this.env, kd = this.attenuation(), cl = this.clarity(), iden = 1 / Math.log(P.VIS_I1 / P.VIS_I0), zv = this.zv;
     for (let c = 0; c < G.NC; c++) {
-      const I0 = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]);
-      for (let k = 0, j = G.cell0[c]; k < G.nL[c]; k++, j++) { const I = I0 * Math.exp(-kd * G.zMid[j]); zv[j] = I > P.VIS_I0 ? Math.min(1, Math.log(I / P.VIS_I0) / den) * cl : 0; }
+      const I0 = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]), L0 = I0 > 0 ? Math.log(I0 / P.VIS_I0) : -Infinity;
+      for (let k = 0, j = G.cell0[c]; k < G.nL[c]; k++, j++) { const x = L0 - kd * G.zMid[j]; zv[j] = x > 0 ? Math.min(1, x * iden) * cl : 0; }
     }
   }
 
@@ -256,28 +257,28 @@ export class Chem3 {
     const phos = this.phos, nh4 = this.nh4, dom = this.dom, ex = NUTRIENT.GRAZE_EXCRETE, pU = PHYTO.P_USE, nU = PHYTO.N_USE;
     const b = Math.max(0, this.fishKgHa), sB = b / (b + P.DVM_B50); this._migD = P.DVM_MAX_D * sB; this._migC = P.DVM_MAX_C * sB;
     const costD = P.DVM_COST * this._migD, costC = P.DVM_COST * this._migC;
-    const gD0 = P.G_D * dd, gC0 = P.G_C * dd, lD0 = (P.R_D + P.M_D) * dd, lC0 = (P.R_C + P.M_C) * dd, anox = P.ANOX_M * dd;
+    const Z = ZOO3, gD0 = P.G_D * dd, gC0 = Z.G_C * dd, lD0 = (P.R_D + P.M_D) * dd, lC0 = (Z.R_C + Z.M_C) * dd, anox = P.ANOX_M * dd;
     const shorten = (((yf - SEASON.SOLSTICE) % 1) + 1) % 1 < 0.5, dorm = shorten && sun(yf).dayFrac < P.DORM_DAY;
-    const dmD = P.DORM_D * dd, dmC = P.DORM_C * dd, toxAt = CYANO.TOX_THRESH * CYANO.CAP;
+    const dmD = Z.DORM_D * dd, dmC = Z.DORM_C * dd, toxAt = CYANO.TOX_THRESH * CYANO.CAP;
     const kD = Math.exp(-CYANO.TOX_ZOO * P.DAPH_TOX * TS * dt), kC = Math.exp(-CYANO.TOX_ZOO * TS * dt), flr = -Math.expm1(-P.FLOOR_RATE * TS * dt);
     const gR0 = P.G_R * dd, lR0 = (P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd, m2R = P.M2_R * dd;
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], rf = this.refAv[c];
       for (let k = 0; k < n; k++) {
-        const j = j0 + k, Tj = T[j], qD = qAt(Q.zD, Tj), qC = qAt(Q.zC, Tj), qL = qAt(Q.zL, Tj), qR = qAt(Q.zR, Tj);
+        const j = j0 + k, Tj = T[j], qD = qAt(Q.zD, Tj), qC = qAt(Q.zC3, Tj), qL = qAt(Q.zL, Tj), qR = qAt(Q.zR, Tj), qLD = qAt(Q.zLD, Tj), qLC = qAt(Q.zLC, Tj);
         const wD = clamp((Tj - P.DAPH_T[0]) / (P.DAPH_T[1] - P.DAPH_T[0]), 0, 1) * clamp((P.DAPH_HOT[1] - Tj) / (P.DAPH_HOT[1] - P.DAPH_HOT[0]), 0, 1);
         const A = ph[j] + di[j], zd = D[j], zc = Cz[j], zr = Rz[j], lit = P.LIT_FOOD * Math.min(1, this.plantRef[j] / 0.8);   // (periphyton in the weeds)
         const cyn = Math.max(0, 1 - P.DAPH_CYANO * cyf[j] / CYANO.CAP);
-        const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + P.K_C) * (1 - costC * rf) * qC;
+        const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + Z.K_C) * (1 - costC * rf) * qC;
         this.zooProd += (pd + pc) * this.w[j];
-        let nd = zd + pd - zd * lD0 * qL, nc = zc + pc - zc * lC0 * qL;
+        let nd = zd + pd - zd * lD0 * qLD, nc = zc + pc - zc * lC0 * qLC;
         let nr = zr + zr * (gR0 * A / (A + P.K_R) * qR - (lR0 + iR * zd + m2R * zr) * qL);
         const bedHere = G.bedA[j] > 0;
         if (dorm && Tj < P.DORM_T) {   // → the egg bank (on this column's bed: its bottom bed cell)
           const ed = zd * dmD, ec = zc * dmC; nd -= ed; nc -= ec;
-          const jb = j0 + n - 1, s = this.w[j] / this.a[jb]; this.eggD[jb] += ed * P.EGG_EFF * s; this.eggC[jb] += ec * P.EGG_EFF * s;
+          const jb = j0 + n - 1, s = this.w[j] / this.a[jb]; this.eggD[jb] += ed * P.EGG_EFF * s; this.eggC[jb] += ec * Z.EGG_EFF_C * s;
         }
-        let gr = zd * P.GR_D * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * qC * TS * dt * A / (A + P.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R);
+        let gr = zd * P.GR_D * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R);
         if (gr > 0) { if (gr > A) gr = A; const gp = Math.min(ph[j], gr), gd = gr - gp; ph[j] -= gp; di[j] -= gd; phos[j] += gr * ex * pU; nh4[j] += gr * ex * nU; dom[j] += gr * (1 - ex) * (pU + nU); }
         const ox = o2[j] >= P.O2_MIN;
         if (!ox) { nd -= zd * anox; nc -= zc * anox; nr -= zr * anox; }
@@ -287,13 +288,13 @@ export class Chem3 {
         void bedHere;
       }
       // the egg bank: on lengthening days part hatches into oxic bottom water once the bed is warm enough; eggs are slowly lost
-      const jb = j0 + n - 1, lossE = 1 - P.EGG_LOSS * dd / 365, hz = P.HATCH * dd;
+      const jb = j0 + n - 1, lossE = 1 - P.EGG_LOSS * dd / 365, hzD = Z.HATCH_D * dd, hzC = Z.HATCH_C * dd;
       for (let k = 0; k < n; k++) { const j = j0 + k; if (G.bedA[j] > 0) { this.eggD[j] *= lossE; this.eggC[j] *= lossE; } }
       if (!shorten && o2[jb] >= P.O2_MIN) {
         for (let k = 0; k < n; k++) {
           const j = j0 + k; if (!(G.bedA[j] > 0)) continue; const Tb = T[j], s = this.a[j] / this.w[j];
-          if (Tb >= P.HATCH_T_D) { const h = this.eggD[j] * hz; this.eggD[j] -= h; D[j] += h * s; }
-          if (Tb >= P.HATCH_T_C) { const h = this.eggC[j] * hz; this.eggC[j] -= h; Cz[j] += h * s; }
+          if (Tb >= P.HATCH_T_D) { const h = this.eggD[j] * hzD; this.eggD[j] -= h; D[j] += h * s; }
+          if (Tb >= Z.HATCH_T_C) { const h = this.eggC[j] * hzC; this.eggC[j] -= h; Cz[j] += h * s; }
         }
       }
       // THE DAILY ROUND: over a day the animals spread through the column's oxic water where the food is (each oxic cell relaxes
@@ -491,7 +492,7 @@ export class Chem3 {
   // the exposed zooplankton (µg dry/L) an adult planktivore rates at cell j — the fish's plankton sense
   zooE(j) {
     const v = this.zv[j]; if (v <= 0) return 0;
-    return (this.zooD[j] * this.zooExposed(j, 0) + this.zooC[j] * (1 - PLANKTON.COPE_ESCAPE) * this.zooExposed(j, 1)) * v * UGL;
+    return (this.zooD[j] * this.zooExposed(j, 0) + this.zooC[j] * (1 - ZOO3.COPE_ESCAPE) * this.zooExposed(j, 1)) * v * UGL;
   }
   // … and as a larva rates it (what it can catch: cD Daphnia, cC copepods, cR rotifers and nauplii — no migration: the small
   // prey larvae take stay up in the lit water)
@@ -531,7 +532,7 @@ export class Chem3 {
   }
   // the seen, exposed zooplankton density (µg dry/L) over a list of cells — what an adult planktivore rates its footprint at
   zooEcells(L, nL) {
-    let s = 0, sw = 0; const esc = 1 - PLANKTON.COPE_ESCAPE;
+    let s = 0, sw = 0; const esc = 1 - ZOO3.COPE_ESCAPE;
     for (let i = 0; i < nL; i++) { const q = L[i], w = this.w[q]; sw += w; const v = this.zv[q]; if (v > 0) s += (this.zooD[q] * this.zooExposed(q, 0) + this.zooC[q] * esc * this.zooExposed(q, 1)) * v * w; }
     return sw > 0 ? s / sw * UGL : 0;
   }

@@ -75,7 +75,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
   - **world and time:** `WORLD`, `TIME`, `SEASON`, `ICE`, `GRID`, `BASIN`, `CAMERA`;
   - **physics:** `THERMAL`, `ENV` (light, O₂, weather), `WIND`, `FLOW`, `OUTFLOW`, `TURBIDITY`;
   - **chemistry:** `NUTRIENT`, `SED_P`, `NCYCLE`, `MICROBE`;
-  - **producers and invertebrates:** `PHYTO`, `DIATOM`, `CYANO`, `PLANKTON` (the zooplankton fields), `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`, `SEDOM` (the bed's organic layer), `BENTHOS` (its worms and scuds);
+  - **producers and invertebrates:** `PHYTO`, `DIATOM`, `CYANO`, `PLANKTON` (the zooplankton fields; `ZOO3` the 3-D lakes' own copepods, dormancy and hatching), `MUSSEL`, `INSECT`, `SNAIL`, `CRAYFISH`, `DETRITUS`, `SEDOM` (the bed's organic layer), `BENTHOS` (its worms and scuds);
   - **plants:** `PLANT`, `MACRO`, `COMPETE`;
   - **habitat:** `STRUCTURE`, `COVER`;
   - **fish behaviour:** `SCHOOL`, `ACTION`, `MOTION`, `DRIVE`, `LEARN`, `BRAIN`, `FEED`;

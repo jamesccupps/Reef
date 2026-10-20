@@ -277,3 +277,62 @@ Things to check in the sim:
 - the age-0 densities per ha against Oneida's threshold of about 14,000/ha;
 - whether the zooplankton fields have any refuge from the young;
 - the piscivore share of fish biomass (30–40 % controls planktivores).
+
+## The second batch (fetched 2026-10-19 evening; read by me the same night)
+
+Three files (`fulltext (1).pdf` is a byte-identical copy of `fulltext.pdf`):
+
+### A17 — Begley, Coghlan & Zydlewski 2018, *J. Freshwater Ecology* 33:413–428 (doi 10.1080/02705060.2018.1496951; open access, HTML)
+A Leslie-type age model of **Maine** white suckers, parameterised from Begley et al. 2017 (A16, still not fetched) and MDIFW data.
+- **Age and size**: Maine fish to age 26 (Begley 2017); the model ends at 21. Mean fork length at age 201–474 mm in three unfished
+  Maine lakes (otoliths, n = 444).
+- **Maturity**: mature males from age 2 (< 2 % of the run), females from 3; P(mature) 0.20 at 3, 0.30 at 4, 0.60 at 5, 1.0 from 6;
+  after a first spawning, 0.65 a year spawn again (Geen 1966; Trippel & Harvey 1989 found 0.17).
+- **Fecundity**: 3,910–26,060 eggs a female in the model (Maine fork length–fecundity fit); 5,000–59,000 elsewhere.
+- **Mortality**: M = 0.97 at age 1, **0.25 from age 2** (A ≈ 0.22/yr; McPhee 2007, Miller 2013, Begley 2017). Harvested Maine
+  lakes F ≈ 0.47. Unfished age structure: ages 4–8 about half the run, < 10 % age 18+.
+- **Recruitment**: eggs → six-month young at low density α = 0.0035 (0.35 %; Johnson 1975, a 2.45-km² Minnesota lake after spawner
+  removal); months 6–12 at M 0.37. Beverton–Holt vs Ricker unresolved; age structure identical under both.
+- **A shallow Maine pond's density**: Little Moxie Pond (0.30 km², max 2.7 m — Hot Brook's kind of water), MDIFW removal from
+  1994 (11,003, 7,100, 188 fish the first three years): **19,141 spawners** by depletion ≈ 640 adults/ha. At ~0.4–1 kg each this is
+  far above Rupp & DeRoche's 24–38 kg/ha of suckers — one pond, a removal estimate; treat as a high end, not a target.
+- For the sim: sucker adult M ≈ 0.25 (A 0.22) and maturity at 3–6 are the Maine values; the sim's suckers (18.6–22.5 kg/ha) sit
+  just below Rupp & DeRoche's 24–38.
+
+### C29 — Zuerlein 1981, *The White Perch, Morone americana, in Nebraska* (Nebraska Tech. Series 8; 109 pp.)
+Two shallow, eutrophic, unstratified flood-control reservoirs (Wagon Train 128 ha, z̄ 2.6 m; Stagecoach 79 ha, z̄ 3.0 m, weedy)
+invaded in 1964/1970 and poisoned out in 1975/1976.
+- **Growth**: fast — 102–128 mm at age 1, 178–203 at 2, 229–232 at 3, 274 at 4; **native-range comparison (Table 4)**: New England
+  lakes ~84–109 mm at 1, 150–165 at 2, 198–213 at 3, 226–246 at 4, 239–254 at 5, ~270 at 6, ~280–290 at 7, 305–330 at 8–10
+  (Quabbin, Rhode Island lakes); a stunted New York lake (Cross Lake) 91 / 142 / 168 / 170 / 216 … 277 at 12.
+- **Mortality**: short-lived where they grow fast — few past age 3, A ≈ 0.36–0.63 between ages 2 and 4, ~1 after 4; only two
+  age-5 fish ever found in Nebraska.
+- **Maturity**: Nebraska at age 1 (~127 mm); native range "sexually mature during the second year of life and spawn for the first
+  time during the spring of the third year" (VanCamp 1949).
+- **Fecundity**: 6,256–113,952 (mean 34,746; 112–307 mm); age-2 Stagecoach mean 167,462; Quabbin (MA) ages 3–4 mean 271,000
+  (190,000–321,000; Taub 1966); "average ~40,000" (VanCamp; Carlander).
+- **Spawning**: last week of May–first week of June at 14.4–23.3 °C, schools of 25–50 milling in ≤ 0.3 m along the WHOLE shore,
+  no habitat preference; bluegill and gizzard shad ate the eggs as laid. Eggs hatch in ~6 days at 11 °C, 4–4.5 at 14.4 °C. Young
+  40–50 mm by late June–early July (fast Nebraska growth).
+- **Food (226 stomachs, ages 1–3, 127–272 mm)**: immature aquatic insects, above all **midge larvae** (in 78–100 % of stomachs;
+  65–75 % of volume and dry weight at age 2), fingernail clams, leeches; zooplankton numerous but small by volume and falling from
+  age 1 to 2; fish rare (4 white perch in 3 stomachs). They came into the shallows at dusk to feed on the bed.
+- **Predators**: largemouth and black crappie seldom ate them; Thoits 1958 (Massachusetts) found poor use of white perch by
+  largemouth, smallmouth and chain pickerel — the opposite of Cooper 1941's Maine diets (pickerel 55 %, smallmouth 61 % white
+  perch): predation on white perch differs by lake. Bantam Lake (CT): northern pike stocked into stunted white perch cut age 1–2
+  fish (51–104 mm) and the population stabilised with better growth (Cantele 1971; Moulton 1972–76).
+- **Maine notes**: Fuller & Cooper 1946 — in white perch and pickerel lakes the white perch should be controlled; Hilton 1977 —
+  398 Maine lakes hold white perch. A partial shoreline poisoning killed 93 kg/ha (mostly gizzard shad and 50,052 white perch)
+  and failed: "capable of recovery to pre-renovation population levels within one or two years".
+
+### C34 (part) — Feiner 2011, MS thesis, NC State (*Life history and trophic dynamics of invasive white perch across stages of invasion*)
+Three large North Carolina reservoirs invaded 1–21 years before (2009–2010; the thesis behind Feiner et al. 2012).
+- **Density shapes life history**: the newest, sparse population grew fastest, matured younger and had the highest female GSI; in
+  the dense old ones a **200-mm white perch was ~6 years old (2 in the new)**. Age-2 maturity 2009: new 93 % of females / 100 %
+  of males; old 24–37 % / 71–80 %; age-2 mean TL 150–165 mm in the old lakes vs 185–200 in the new (Table 1.4). In 2010 the old
+  populations' age-2 maturity rose to 80–84 % at shorter lengths — maturity follows age and condition, not a fixed length.
+- **Diet by size (July, %IRI)**: < 120 mm ~90 % bed invertebrates (chironomid, ceratopogonid, mayfly larvae), a little zooplankton
+  and surface food; 121–180 mm 70–80 % bed invertebrates plus surface insects, Chaoborus and some fish; > 181 mm 18–41 % fish
+  (shad). Medium white perch overlap most with bluegill.
+- For the sim: the young-of-year are the zooplankton grazers; from ~10–12 cm white perch are bed feeders (`Lzoo` 40 → ~10–12),
+  turning partly piscivorous above ~18 cm — the same story as Cooper's Maine stomachs.

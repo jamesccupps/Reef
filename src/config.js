@@ -595,7 +595,7 @@ export const PHYTO = {
   // to 0.013 units, the 3-D lakes' algae still made ~90 % of their ungrazed production (10 turnovers a day where phytoplankton
   // manage ~1–2 — Eppley 1972), and the zooplankton built 0.67 g dry/m²/day on it, more than the algae's own production by their
   // O₂ — a free lunch that let Daphnia hold 1,000–1,500 µg/L all summer (real summer crustaceans ~50–150; stage R item 4)
-  PER_CAPITA: false,
+  PER_CAPITA: true,
   GROW_PC: 6,            // /s (2-D units) per unit of algae at full light × nutrient: ~0.30–0.35/day realised in summer (phytoplankton turn over ~0.3–1/day)
   INOC: 0.002,           // resting cells and the inflow's: the floor growth works on (as CYANO.INOC)
   DECAY_PC: 0.03,        // /s natural die-off (× Q10): 0.15/day at 20 °C (sinking and lysis ~0.1–0.2; with these the ungrazed season matches GROW's)
@@ -997,6 +997,34 @@ export const PLANKTON = {
   FALLBACK_GRAZE: 1.32,    // phyto biomass a hungry planktivore clears per SECOND (× dt) when it finds no zooplankton
   FALLBACK_MIN: 0.18,      // per SECOND (× dt): grazing less than this in a step finds no meal
   get UGL() { return this.DRY * 1e6 / WORLD.CELL_L; },   // µg DRY per litre for 1 g WET per field cell
+};
+
+// THE 3-D LAKES' ZOOPLANKTON (chem3.js and the fish; the 2-D sim keeps PLANKTON's): copepods that persist beside Daphnia and
+// carry the plankton through the winter (research_notes/Real lake ecology for calibration/copepod_daphnia_coexistence.md).
+// With PLANKTON's set the copepods had a 1.8× higher food threshold AND half the growth — no trade-off: Daphnia excluded them
+// by August even with fish, and the crustaceans fell to 1–3 µg/L under the ice (field: ~25 % of summer density, ~80 % of it
+// copepods — Hampton et al. 2017). Real copepods persist by LOSING less: fish catch 0.07–0.28 of the copepods they strike
+// against 0.76–0.96 of cladocerans (Drenner et al. 1978); adults live months and overwinter on lipid (Leptodiaptomus minutus
+// lost ~0.0005/day Nov–May in Bluff Lake, N.S. — Cooley 1973; Grosbois et al. 2017); calanoid thresholds are ~1.0–1.5×
+// Daphnia's (Hart 1996; Kreutzer & Lampert 1999), not lower.
+export const ZOO3 = {
+  G_C: 0.27, R_C: 0.04, M_C: 0.012, K_C: 0.15,   // copepods: growth 0.45× Daphnia's (field P/B), maintenance ~0.5×, background
+                           //   mortality ~0.4×, half-saturation so the zero-growth food is ~1.06× Daphnia's (0.036 vs 0.034 units)
+  Q10_C: 3.5,              // copepods' growth: development Q10 ≈ 3.7 for L. minutus between 4 and 20 °C (Bělehrádek fits) — copepods
+                           //   are not faster in the cold (PLANKTON.Q10_C 2.7, the P/B slope, let them grow 60–120 µg/L under the ice on the
+                           //   under-ice algae; at 3.5 they hold ~10–15 — the field's 10–20 µg/L of under-ice crustaceans)
+  Q10_LD: 3.0, Q10_LC: 3.5, // the losses' Q10 for Daphnia and copepods (PLANKTON.Q10_L 2.0 starved them through the winter at
+                           //   2–3 %/day: overwintering Daphnia live months at 4 °C; copepods ~0.1–0.5 %/day)
+  COPE_ESCAPE: 0.65,       // chance a copepod's escape beats a fish's strike (Drenner: copepods 0.2–0.5× the cladocerans' capture)
+  // AUTUMN: shortening days below PLANKTON.DORM_DAY in water below DORM_T — Daphnia make ephippia (13–27 % of females carry them
+  // in autumn — Cáceres 1998; Boulianne et al. 2025) and some cyclopoids (Mesocyclops) bury as copepodites for ~7 months
+  // (Wærvågen & Nilssen 2010); the rest stay active. ~30 % of either goes to the bank over the ~65 days of the window
+  DORM_D: 0.005, DORM_C: 0.006,
+  EGG_EFF_C: 0.85,         // a buried copepodite keeps most of its mass (Daphnia's ephippia: PLANKTON.EGG_EFF 0.3)
+  // SPRING: Daphnia's ephippia hatch ~1 % of the bank a YEAR, only in the weeks after ice-out (Cáceres 1998: 0–25 Daphnia/m²,
+  // emergence over by ~9 weeks after ice-out) — the spring population is the overwintered one; the copepodites come up in
+  // May–June once the bed passes ~10 °C
+  HATCH_D: 0.0002, HATCH_C: 0.03, HATCH_T_C: 10,
 };
 
 export const DETRITUS = {

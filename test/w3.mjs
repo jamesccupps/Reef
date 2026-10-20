@@ -434,8 +434,8 @@ if (run('core')) {
     const ms = tf / steps;
     // (the fine rung — watching in real time: ten 0.1-s steps after the warm month)
     for (let i = 0; i < 5; i++) F.step(0.1); const t1 = performance.now(); for (let i = 0; i < 20; i++) F.step(0.1); const msF = (performance.now() - t1) / 20;
-    check('the fish\'s cost: a coarse 29-min block (~3,300 agents: one decision each, the relocation, feeding, bioenergetics) ≤ 45 ms — the 1-hour year\'s two steps; a real-time 0.1-s step (senses, brains at 5 Hz, swimming) ≤ 25 ms',
-      ms < 45 && msF < 25, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms`); }
+    check('the fish\'s cost: a coarse 29-min block (~3,300 agents: one decision each, the relocation, feeding, bioenergetics) ≤ 45 ms — the 1-hour year\'s two steps; a real-time 0.1-s step (senses, brains at 5 Hz, swimming) ≤ 8 µs an agent (25 ms at ~3,300: per agent, so a month that leaves more fish alive does not fail it — 2026-10-19: with per-capita algae the lakes held ~5 % more after the month at the same 7.6 µs)',
+      ms < 45 && msF / F.fish.length * 1000 < 8, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms (${(msF / F.fish.length * 1000).toFixed(2)} µs an agent, ${F.fish.length} agents)`); }
   // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): with a focus the near fish live second by second, the far ones in banked blocks
   // (scheduled, each FAR_BLOCK s); over two minutes every fish's lived time keeps up with the clock within a block, the near ones
   // swim, none goes astray; the season's young the same (part 3)

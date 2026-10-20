@@ -4,6 +4,21 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-19 — Copepods need a trade-off, and the winter O₂ budget leaned on too-bright ice (docs/HOT_BROOK_3D.md §4)
+- **What.** With per-capita algae the zooplankton bloomed and crashed realistically, but copepods were still excluded by Daphnia
+  and the crustaceans collapsed under the ice. The copepods' parameters gave them a higher food threshold AND lower growth than
+  Daphnia — no trade-off, so they lost at every food level. Real copepods persist through low losses (fish rarely catch them;
+  adults overwinter on lipid at ~0.05 %/day), not a lower threshold.
+- **Evidence.** A research synthesis (copepod_daphnia_coexistence.md) set the copepods' threshold at ~1.06× Daphnia's, their
+  growth at ~0.45×, their losses lower and colder-insensitive, ~30 % autumn dormancy and ephippia hatching at ~1 %/yr. Fish-free,
+  the year then shows a clear-water peak and crash, an autumn Daphnia rebound and a copepod-dominated winter (10–15 µg/L, the
+  field's 10–20); with fish, copepods hold 55–105 µg/L through summer (60–70 % of the crustaceans late in the season).
+- **A side finding.** Under snowy ice (1–12 % of light) the winter algae fall to field levels but the fish-free lake's mean O₂
+  falls to 2.7 mg/L: the model's under-ice O₂ had depended on photosynthesis through ice that passes 40 % of the light. Two errors
+  (bright ice, and whatever sets the winter O₂ demand) had been cancelling.
+- **What it leaves.** Year 2 still collapses: a planktivore crowd (white perch adults, which the model keeps on zooplankton at all
+  sizes, and tens of millions of young perch) grazes the second summer's zooplankton to 12–20 µg/L.
+
 ## 2026-10-19 — Zero-order algal growth gave the zooplankton a free lunch (docs/HOT_BROOK_3D.md §4 "Item 4 found")
 - **What.** The algae's growth term, inherited from the 2-D sim, was `GROW·light·nutrient·(1 − b)`, with no factor of the
   biomass b. Grazed to almost nothing, the algae kept making ~90 % of their ungrazed production, so the zooplankton were fed
