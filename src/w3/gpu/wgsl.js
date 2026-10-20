@@ -236,6 +236,7 @@ const T_STRG: u32 = 2290u;    //   those it could take (gape, size, room),
 const T_STRW: u32 = 2532u;    //   and their strike weight (capture × vuln × size × hide × cover × school), summed over the strikes' scans
 const T_KILLD: u32 = 2780u;   // + 2·(prey·5 + class): followed fish eaten by the bed's depth under them (< 0.3, 0.3–0.6, 0.6–1, 1–2, ≥ 2 m)
 const T_KILLC: u32 = 2890u;   // + 2·(prey·3 + class): … by their cover then (< 0.1, 0.1–0.5, ≥ 0.5)
+const T_WHERE: u32 = 2960u;   // + 2·(k·5 + class): BY DAY, every 8th followed fish's n by the bed's depth under it (the KILLD classes) — where each kind spends the day (diagnostics, stage R item 6)
 fn lenClass(L: f32) -> u32 { return select(select(select(3u, 2u, L < 30.0), 1u, L < 20.0), 0u, L < 10.0); }
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
@@ -1321,6 +1322,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   let i = g.x; if (i >= U.n) { return; }
   var fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
   let k = gau(A_k, i); let id = gau(A_id, i); let dt = U.dt; let K = ga(A_K, i); let T = ga(A_T, i); let L = ga(A_L, i); let W = ga(A_W, i); let jb = gai(A_jb, i);
+  if (U.sun > 0.3 && (i & 7u) == 0u) { let bd = ga(A_bed, i); let dc = select(select(select(select(4u, 3u, bd < 2.0), 2u, bd < 1.0), 1u, bd < 0.6), 0u, bd < 0.3); add64(&TL, T_WHERE + 2u * (k * 5u + dc), ga(A_n, i), TSCALE); }   // (T_WHERE)
   var hS = 0.0; if (K < BIOE_K_HAZARD) { hS = -log(max(1e-9, sigm(BIOE_STARVE_A + BIOE_STARVE_B * K))) / DAY; }
   { let hW = wHaz(k, L, f32(gau(A_age, i)), dt); if (hW >= 0.0) { hS = hW; } }   // (the first winter: the ramp in place of starvation)
   let kx = expm(dt * TS / BIOE_EXPOSE_TAU); let xo = ga(A_xo, i) + (ga(A_o2, i) - ga(A_xo, i)) * kx; let xt = ga(A_xt, i) + (T - ga(A_xt, i)) * kx;

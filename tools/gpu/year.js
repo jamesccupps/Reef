@@ -105,6 +105,9 @@ for (const sd of SEEDS) {
     const q = KEYS3.indexOf(kq); if (q < 0) continue; const d = [0, 1, 2, 3, 4].map(c => tl[1390 + q * 5 + c] / 1e6), cv = [0, 1, 2].map(c => tl[1445 + q * 3 + c] / 1e6), t = d.reduce((a, b) => a + b, 0);
     if (t >= 1) say(`${kq} eaten over the bed's depth: ` + ['< 0.3', '0.3–0.6', '0.6–1', '1–2', '≥ 2 m'].map((c, j) => `${c} ${(100 * d[j] / t).toFixed(0)}%`).join(' · ') + ` — at cover ` + ['< 0.1', '0.1–0.5', '≥ 0.5'].map((c, j) => `${c} ${(100 * cv[j] / t).toFixed(0)}%`).join(' · '));
   }
+  // where each kind spends the day (wgsl T_WHERE: pairs 1480 + k·5 + the bed's depth class, every 8th followed fish's n by day)
+  { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => tl[1480 + q * 5 + c]), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
+    if (parts.length) say('by day over the bed's depth (< 0.3 / 0.3–0.6 / 0.6–1 / 1–2 / ≥ 2 m, % of fish-blocks): ' + parts.join(' · ')); }
   // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
   // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills
   for (const kp of ['pike', 'bass', 'fallfish', 'perch', 'whiteperch']) {
