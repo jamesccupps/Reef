@@ -25,13 +25,19 @@ await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
 const send = (method, params = {}) => new Promise(res => { const id = nextId++; pending.set(id, res); ws.send(JSON.stringify({ id, method, params })); });
 const evaluate = async expr => { const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true }); return r.result?.result?.value; };
 writeFileSync(outFile, `# ${url}\n`);
-const seen = {};
+const seen = {}, t0 = Date.now(), STALL = (+process.env.STALL_MIN || 30) * 60e3; let lastNew = Date.now();
+// (guards: a page whose script never ran — a syntax or import error leaves window.YEAR undefined — is reported after 3 minutes, and a
+// run that writes no new line for STALL_MIN minutes (default 30) is stopped: the 2026-10-20 run that waited 1.5 h on a syntax error)
+const stop = async (msg, code) => { appendFileSync(outFile, `# ${msg}
+`); console.error(msg); try { await send('Page.close'); } catch {} try { process.kill(proc.pid); } catch {} process.exit(code); };
 for (;;) {
   await sleep(15000);
+  if (page === 'year' && Date.now() - t0 > 180e3 && Object.keys(seen).length === 0) { const ran = await evaluate('typeof window.YEAR'); if (ran !== 'object') await stop("the page's script never ran (window.YEAR " + ran + ') — a syntax or import error? check the page in a browser', 3); }
+  if (Date.now() - lastNew > STALL) await stop(`no new line for ${STALL / 60e3} minutes — stopped`, 2);
   let v; try { v = await evaluate(page === 'year' ? `JSON.stringify({ t: document.title, y: window.YEAR || {} })` : `JSON.stringify({ t: document.title, y: document.title === 'done' ? { out: (document.getElementById('out')?.textContent || '').split(String.fromCharCode(10)) } : {} })`); } catch { break; }
   if (!v) continue;
   const { t, y } = JSON.parse(v);
-  for (const [sd, lines] of Object.entries(y)) { const from = seen[sd] || 0; if (lines.length > from) { const add = lines.slice(from).join('\n') + '\n'; appendFileSync(outFile, add); process.stdout.write(add); seen[sd] = lines.length; } }
+  for (const [sd, lines] of Object.entries(y)) { const from = seen[sd] || 0; if (lines.length > from) { const add = lines.slice(from).join('\n') + '\n'; appendFileSync(outFile, add); process.stdout.write(add); lastNew = Date.now(); seen[sd] = lines.length; } }
   if (t === 'done') { appendFileSync(outFile, '# done\n'); break; }
 }
 try { await send('Page.close'); } catch {}
