@@ -791,6 +791,23 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   NEXT: the young schools into the same encounter rule (prey chosen ∝ encounters × success across agents AND schools), then the
   GPU port (k_strike) and g1_check, then ≥ 3 seeds × 5 years. And the crayfish stock itself: Hot Brook's soft water (Ca ≲ 2–4
   mg/L) may hold far fewer than the Michigan-based CR_ROCK 25 / CR_WEED 15 g/m² — ASK THE HUMAN / look up the lakes' calcium.
+- **Item 6 — the small fish's water and the predators' feeding level (2026-10-20; in `stageR5`, OFF by default)**. Arm D2 (GPU,
+  stageR5 with the hunting share, seed 613, year 1): diets fish-dominated (pickerel 76–98 %, bass 51–94 %), but bass 9.4 → 24.8
+  kg/ha at a mean 44.7 cm, perch 19 → 11, fallfish 6.2 → 1.2, and ~100,000 of ~148,000 killifish eaten in the first FORTNIGHT.
+  THE TARGET: FB4 growth is steep in p — the sim's own smallmouth set over the Maine calendar grows a 26-cm bass 4.4 cm a year at
+  p 0.3, 9.5 at 0.4, 14.5 at 0.5 (scratchpad bassgrow.mjs), so Maine's ~4 cm pins the bass's season-long p ≈ 0.3 and the
+  pickerel's 6 cm at 32 cm p ≈ 0.37; D2's bass ran 0.4–0.5 to July and 0.63–0.84 from August. Stomachs in June (CPU) 44–57 %
+  empty, inside the field's 35–60 % — the excess comes with the young's recruitment (CPU, August: 53–72 % of the bass's kills
+  young bass, recruited at 6 cm into the adults' 1.5–4-m water). THE ARTIFACT: in June 65 % of the pickerel's killifish were
+  taken over 0.3–0.6 m of water by pickerel lying over 0.6–2 m — the 6-m encounter disc spans a shore slope's depths of water,
+  which fish hold apart (killifish: shoals netted whole in 15 cm of water, Ward et al. 2002). BUILT: `F3.ENC_DZ` (each prey ×
+  (1 − |Δbed|/0.3 m), CPU `_strike2` and GPU `k_strike`) and the killifish's day water [0.05, 0.35] m (was [0.1, 0.6]) — both in
+  `stageR5`. June fortnight (CPU, 1/10 lakes, seed 509): killifish lost 60 % → 29 % (the depth term alone 36 → 21 %, the gate's
+  `strike` section). The 1/10 world's shelf is under a metre wide (water < 0.35 m: 2.2 % of the area in both worlds, ~14 ha in
+  the true one), so the band can only be judged at true scale (GPU). Fish can't swim into water under ~0.19 m (`_hop`'s
+  shallow: ZTOP + ZBOT + 0.05 + L/400). NEXT: the young bass's own water (a `habJ` for bass, researched), g1_check parity of
+  ENC_DZ, then arm E on the GPU (≥ 3 seeds × 5 years) judged by the predators' p (bass ~0.3, pickerel ~0.37), length-at-age,
+  biomass, and whether the small species persist.
 - **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
   of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
   photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food

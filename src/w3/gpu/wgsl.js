@@ -998,7 +998,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
         let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
         var w = 0.0;
         if (s2) {   // (an encounter for each fish of a school, × concealment, cover, the shallows; × capture success by kind, size, school)
-          let nn = max(nb, 1.0); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0);
+          let nn = max(nb, 1.0); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, clamp(1.0 - abs(ga(A_bed, b) - ga(A_bed, i)) / max(F3_ENC_DZ, 1e-6), 0.0, 1.0), F3_ENC_DZ > 0.0);   // (F3.ENC_DZ: the water it holds)
           if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, -0.8), cls == 1u); }
             let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch; sE += enc; w = enc * cs; }
         } else { w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0); }

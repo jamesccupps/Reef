@@ -4,6 +4,25 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-20 — Growth pins the predators' feeding level, and a 6-m encounter disc erased the shallows' refuge (docs/HOT_BROOK_3D.md §4 "Item 6")
+- **What.** With the encounter–strike–capture rule (arm D2, GPU, seed 613, year 1) the predators' diets turned to fish (pickerel
+  76–98 %, bass 51–94 %), but the bass rose from 9.4 to 24.8 kg/ha and their mean length from 25.6 to 44.7 cm, and 100,000 of
+  the lake's ~148,000 killifish were eaten in the first two weeks.
+- **How.** The sim's own FB4 smallmouth set over the Maine calendar (scratchpad probe bassgrow.mjs): a 26-cm bass grows 4.4 cm
+  in a year at a season-long p of 0.3, 9.5 at 0.4, 14.5 at 0.5, 22 at 0.65 — Maine's ~4 cm (MDIFW, ~22→26→30 cm at ages 3–5)
+  pins p ≈ 0.3; the pickerel's 6 cm a year at ~32 cm pins p ≈ 0.37. D2's bass ran p 0.4–0.5 in June–July and 0.63–0.84 from
+  August, when the year's young recruited — and on the CPU in August 53–72 % of the bass's kills were young bass, which recruit at
+  6 cm into the adults' deep water (no juvenile habitat for bass).
+- **Stomachs.** June (CPU, 1/10 lakes): 44–57 % of pickerel and bass empty, inside the field's 35–60 % — the predators did not eat
+  too often early in the summer; the excess came with the recruits.
+- **The refuge artifact.** 65 % of the pickerel's killifish were taken over 0.3–0.6 m of water by pickerel lying over 0.6–2 m:
+  the rule counts prey over a 6-m disc, and on a shore's slope that disc spans fish that hold different depths of water. Weighting
+  each prey by how near its water's depth is to the predator's own (1 − |Δbed|/0.3 m) and the killifish's day water at the shelf's
+  edge (≤ 0.35 m, as netted in the field) cut a June fortnight's killifish losses 60 % → 29 % (the depth term alone 36 → 21 %).
+- **Why it matters.** FB4 growth is steep in p (Δp 0.1 ≈ 2× a year's growth), so field length-at-age is a sharp, independent
+  target for any predation rule — sharper than diets or stomach counts. And a neighbourhood density in place of positions is a
+  mean-field assumption that silently removes the fine-scale habitat segregation that refuges are made of.
+
 ## 2026-10-20 — With the plankton fixed, the community collapses to perch and white perch; the predators eat crayfish (SESSION_STATE)
 - **What.** Over five GPU years (seeds 613, 611; arms A and B), total biomass sits in Maine's range (95–105 kg/ha) and the summer
   zooplankton is realistic, but the community collapses to yellow perch, white perch (38 → 44–48 kg/ha) and suckers: pumpkinseed,

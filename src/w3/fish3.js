@@ -106,6 +106,12 @@ export const F3 = {
   ENC_R: 6,             // m: the neighbourhood read for prey density
   ENC_U: 0.1,           // m/s: the prey's own movement through a predator's reach
   ENC_EH: 30 / 3600,    // /s: the encounter rate at which strikes run at half their maximum
+  // THE WATER IT HOLDS (stage R item 6): a prey fish within ENC_R counts by how near the depth of the water under it is to the
+  // predator's own — weight 1 − |Δbed| / ENC_DZ. ENC_R's disc smears the prey over 6 m, but on a shore's slope fish keep to their
+  // own depth of water: a killifish shoal over 0.4 m and a pickerel lying over 1 m are 3–10 m apart and hold those depths all the
+  // block (June, CPU: 65 % of the pickerel's killifish were taken over 0.3–0.6 m by pickerel lying over 0.6–2 m). On the basin's
+  // flats the beds within 6 m differ little and the weight stays ~1. 0: off (stageR5 sets it)
+  ENC_DZ: 0,
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6) (the young's)
   // THE SHALLOWS ARE THE SMALL FISH'S (stage P3): a predator strikes at full effect only over water ≥ SHALLOW_K × its length (m/cm),
   // not at all over half that — a 35-cm pickerel from 0.7 m (none under 0.35), a 20-cm bass 0.4, a 12-cm perch 0.24: big fish don't
@@ -394,6 +400,10 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 // Ca) — at a fifth of the Michigan-based capacity, preferred no more than fish, 15 % out by day (piscivore_encounter_attack.md §e)
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
+  // (item 6: the water it holds — F3.ENC_DZ — and the killifish's own water by day, the shelf's very edge: shoals netted whole in
+  // 15 cm of water 2.5 m from shore (Ward et al. 2002), "a few inches below the surface", "often in water under 6 in" (CT DEEP) —
+  // under a 30-cm pickerel's 0.3 m (F3.SHALLOW_K), where at 0.1-0.6 m they lost 60 % in a June fortnight)
+  F3.ENC_DZ = on ? 0.3 : 0; S3.killifish.hab.day.bot = on ? [0.05, 0.35] : [0.1, 0.6];
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
@@ -1665,7 +1675,7 @@ export class Fish3 {
         const b = f[I[q]]; if (!b.alive || I[q] === i) continue;
         const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy > Rs2) continue;
         if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
-        const nb = b.n > 1 ? b.n : 1, enc = nb * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1);
+        const nb = b.n > 1 ? b.n : 1, enc = nb * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
         if (!(enc > 0)) continue;
         const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, -0.8) : cls === 2 ? 0.15 : 1) : 1);
         sE += enc; const w = enc * cs; if (w > 0) { sW += w; cand.push(b, w); }

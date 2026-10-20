@@ -946,6 +946,29 @@ if (run('gpu')) {
       f1 === f2 && h1.fish === h2.fish && h1.yoy === h2.yoy && h1.fish > 100 && h1.yoy > 10 && okS, `${h1.fish} fish, ${h1.yoy} young schools; own objects ${f1.slice(0, 8)} vs new ${f2.slice(0, 8)}; stats ${okS ? 'folded' : 'WRONG'}`); }
 }
 
+// ============================================================
+//  STAGE R ITEMS 5–6 — the predators' encounters, strikes and stomachs; the water each fish holds (stageR5: off by default until
+//  the GPU year runner validates it — docs/HOT_BROOK_3D.md §4)
+// ============================================================
+if (run('strike')) {
+  console.log('\n— stage R items 5–6: the encounter–strike–capture rule (stageR5) —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js');
+  // a June fortnight from the same seed, the water it holds on (ENC_DZ 0.3 m) and off: the pickerel's stomachs (empty: < 5 % of
+  // its gut's capacity, after the first 3 days), its kills a day, and the killifish lost
+  const fortnight = dz => { fm.stageR5(true); fm.F3.ENC_DZ = dz; seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.27 }), F = new fm.Fish3(e);
+    const n0 = F.count('killifish'); let n = 0, empty = 0;
+    for (let b = 0; b < 14 * 49; b++) { F.step(FB); e.step(FB); if (b < 3 * 49) continue;
+      for (const a of F.fish) if (a.alive && a.s.key === 'pike' && a.L >= 20) { n++; if (a.gut < 0.05 * a.s.sp.gut * a.W) empty++; } }
+    const kills = Object.entries(F.stats.eatenBy).filter(([k]) => k.startsWith('pike>')).reduce((t, [, v]) => t + v, 0), nP = F.fish.filter(a => a.alive && a.s.key === 'pike' && a.L >= 20).length;
+    return { lost: 1 - F.count('killifish') / n0, empty: empty / Math.max(1, n), kpd: kills / Math.max(1, nP) / 14, p: F.census().pike.p };
+  };
+  const on = fortnight(0.3), off = fortnight(0); fm.stageR5(false);
+  check('the encounter rule meets the field: a pickerel kills 0.1–2 fish a day and 30–70 % of the pickerel have empty stomachs (field 0.5–2 a day, 35–60 % empty — Diana 1979; piscivore_encounter_attack.md)',
+    on.kpd > 0.1 && on.kpd < 2 && on.empty > 0.3 && on.empty < 0.7, `${f2(on.kpd)} kills a day, ${(100 * on.empty).toFixed(0)} % empty, p ${f2(on.p)}`);
+  check('the water it holds (F3.ENC_DZ): with it the killifish of the shelf\'s edge lose under 3/4 of what they lose to predators lying over deeper water without it (a June fortnight, same seed)',
+    on.lost < 0.75 * off.lost && off.lost > 0.1, `killifish lost ${(100 * on.lost).toFixed(0)} % against ${(100 * off.lost).toFixed(0)} %`);
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');
