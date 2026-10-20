@@ -192,7 +192,23 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~9 a.m.): ARM D (no hunting share, r4D_613_noact.txt) fed the predators at their maximum — pickerel
+▶▶▶ RESUME HERE (2026-10-20 ~8:15 a.m. — the newest; the "~9 a.m." block below was mis-stamped, it is from ~6 a.m.): ARM D2
+STOPPED at day 532 of seed 613 (r5D_613.txt): year 1 diets fish (pickerel 76–98 %, bass 51–94 %) but bass 9.4 → 24.8 kg/ha at
+44.7 cm mean, and in year 2 → 55.5 kg/ha (53 cm) while perch 10.7 → 1.9, white perch 31 → 12, pickerel 3.3 → 0.9, fallfish → 0.1;
+killifish 100k of 148k eaten in the first fortnight. TARGET FOUND: the sim's FB4 smallmouth over the Maine calendar grows a 26-cm
+bass 4.4 cm/yr at p 0.3, 9.5 at 0.4, 14.5 at 0.5 (scratchpad probe/bassgrow.mjs) → Maine's growth pins bass p ≈ 0.3, pickerel ≈
+0.37 (D2's bass 0.4–0.5 to July, 0.63–0.88 after). June stomachs field-like (CPU probe/gut.mjs: 44–57 % empty); the excess comes
+with the young's recruitment (CPU probe/gut2.mjs: in August 53–72 % of the bass's kills were young bass, recruited at 6 cm into
+the adults' 1.5–4-m water — bass have no habJ). COMMITTED d769dd5 (item 6): F3.ENC_DZ (prey × (1 − |Δbed|/0.3), CPU+GPU — the 6-m
+disc had let pickerel over 0.6–2 m take killifish over 0.3–0.6 m) + killifish day water [0.05, 0.35]; both in stageR5; gate
+section `strike` (W3_ONLY=strike, ~50 s); g1_check ?r5=1 fine (kills 6/5). 6e7bb3a: year.js applies ?r5=1 before ?f3./?s3.
+RUNNING: arm E = r5 + item 6, seed 613, 1 year (snapshot e :8117 = 6e7bb3a; r6E_613.txt). A research agent is writing
+`Real lake ecology for calibration/juvenile_refuges_and_bass_young.md` (young smallmouth's water by size, cannibalism, size-depth
+refuges, pickerel's depths). NEXT: a bass habJ from it, then arm F 3 seeds × 5 yr; judge by bass p ~0.3 / pickerel ~0.37,
+length-at-age, biomass, small species persisting. The human asked (2026-10-20) why it wasn't already accurate and what else
+isn't — answered with the known-issues list (this block's NEXT, white perch high, fallfish, snow on ice, weather spells, fixed
+water levels, larvae's food, white perch ageing mortality, brook).
+▶▶▶ RESUME HERE (2026-10-20 ~6 a.m.): ARM D (no hunting share, r4D_613_noact.txt) fed the predators at their maximum — pickerel
 91 % fish, bass 85 % (Maine-like!) but pickerel 3.9 → 13.9 kg/ha, bass 10 → 25 by day 112, killifish gone by day 28. FIXED in 8f7047c:
 PRED3 act (the share of the time a predator hunts by the sun: pickerel 0.15/0.2/0.02, bass 0.3/0.3/0.1, perch-like 0.3/0.3/0.05;
 GPU fields act0-2, SP_REC 152). CPU June month with it: pickerel 0.28 fish/day at p 0.34, bass 0.33 at p 0.39 — realistic — but the
