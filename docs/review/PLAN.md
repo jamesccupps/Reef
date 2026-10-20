@@ -117,7 +117,7 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
     - mergansers;
     - loon: 10–70 g fish in open water;
     - osprey: 25–35 cm fish near the surface;
-    - **bald eagle** (the human sees them on Upper; a nest is recorded there): bullheads, suckers, pickerel, white perch, spawning fish in the brook;
+    - **bald eagle** (the human sees them on Upper; a nest on Kittery Island in Upper is reported, from a search excerpt only): bullheads, suckers, pickerel, white perch, spawning fish in the brook;
     - otter.
 
     The fish read it as a habitat cost. Each species' total M is unchanged.
@@ -138,12 +138,12 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
     - Layered light transmission: 1–12 % under snow, about 30 % after a thaw.
     - Late-winter convection; the bed's O₂ demand falling through winter.
     - **Why:** ice passes 40 % of light today, so winter algae beat summer's and the O₂ budget leans on it.
-    - **Field:** East Grand Lake ice-out is Apr 12–21 (2021–26); ice 8–10 in by 1 January.
+    - **Field:** East Grand Lake ice-out about Apr 12–21 (2021–26, from search excerpts); ice 8–10 in by 1 January.
     - **Check:** under-ice algae about 40 % of summer; no winterkill in a 3-m basin; no supersaturation at ice-out.
     - Refs: EN1.
 19. **The young's unsimulated mortality is cold-scaled**, with its Lorenzen size multiplier capped at 3. Today it alone kills 20–35 % of the young over winter.
     - Refs: BY2.
-20. **Size-dependent first-winter loss for white perch:** Johnson & Evans 1990/1991. The young stay active under ice, so mortality is about 11 % at 4 °C against about 71 % at 2.5 °C over 150 days. This is pending the Gemini check.
+20. **Size-dependent first-winter loss for white perch:** Johnson & Evans 1990/1991. The young stay active under ice, so mortality is about 11 % at 4 °C against about 71 % at 2.5 °C over 150 days (Johnson & Evans 1991, confirmed). In Oneida Lake their winter loss rose with predator biomass and their own numbers, not winter severity (Fitzgerald et al. 2006, confirmed).
     - Refs: PE1c.
 21. **An egg stage (incubation) for every species.** Today larvae feed on the day of spawning.
     - Perch 8–27 days; white perch 4–5 days at 15 °C; pickerel and bass 2–3 weeks to swim-up.
@@ -225,11 +225,10 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
 ### Phase 8: what's missing from the lakes
 35. **Sea-run alewife** (stage A; designed). Run presets 0 / 6 / 15 / 35 / 120 / 235 per acre.
     - **New:**
-      - the alewife floater, a mussel whose larvae need alewives, is recorded in both lakes;
-      - Hot Brook enters Baskahegan Stream below the Danforth dam;
-      - Maine DMR's target is 235 adults per acre.
+      - Hot Brook enters Baskahegan Stream about 7 km below the Danforth dam, so alewives never needed its 2024 fishway;
+      - Maine DMR's 235 per acre is total production (a fishery threshold), not an escapement; a report also gives a 35-per-acre escapement target (to check).
     - Refs: EN7.
-36. **Mussels by species and host.** Recorded in both lakes: yellow lampmussel (state threatened) and alewife floater. Eastern elliptio is at the Route 169 crossing. Each species' recruitment is tied to its host fish. Refs: EN13.
+36. **Mussels by species and host.** Yellow lampmussel (state threatened) is mapped in Upper (state GIS); brook floater (threatened) in Baskahegan Stream at Bancroft, near Hot Brook's mouth; the human sees lots of mussels. Gemini's alewife floater and Route 169 elliptio records did not check out. Each species' recruitment is tied to its host fish. Refs: EN13.
 37. **Angling:**
     - a harvest hazard by species, legal size and season (white perch bag 25);
     - bass catch-and-release mortality;
@@ -241,6 +240,13 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
 
 ### Phase 9: what-ifs and completeness
 40. Warming and browning knobs, eel, beaver, *Chaoborus*, moon phase, camps and docks, invasive milfoil. Refs: EN P3.
+
+## Corrections and additions from checking the Gemini reports
+- Checked in `docs/research_notes/Hot Brook populations and water/gemini_hot_brook_checked.md` and `docs/research_notes/Real lake ecology for calibration/gemini_white_perch_checked.md`.
+- **Coexistence evidence:** Lake Jesse, Nova Scotia (6.6 m, unstratified; Smith 1939, open) held about 550 killifish/ha alongside 316 white perch/ha and 780 yellow perch/ha. Use it as a target for items 13–16.
+- **White perch spawning temperature:** AuClair's Maine account gives about 15.6 °C against the notes' 18–21 °C. Settle it before item 21.
+- **The inflow:** Hot Brook enters Upper on its south shore; the stream drains about 55 % of Upper's catchment and brings about 0.74 m³/s. Route 169 crosses it about 2.5 km upstream.
+- **Unreliable:** Gemini's telemetry citation (the authors are McCauley et al. 2014, in a tidal river), Coleback Lake's 47–50 kg/ha (eels alone), and its 'Schoenebeck 160 mm'.
 
 ## Questions for the human (field knowledge only)
 1. How many sunfish do you see in the brook's pools on a summer day: dozens, or hundreds?
