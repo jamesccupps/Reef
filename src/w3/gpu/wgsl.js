@@ -1822,7 +1822,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     var best = -3.0e38; var bc = -1; let o2c = spv(k, S_o2CritS);
     for (var m = 0u; m <= s1 - s0; m++) {   // (its own column first, then the ring: fish3's order — the first of equals wins)
       var cc = c; if (m > 0u) { cc = u32(sti(O_fNbrL + s0 + m - 1u)); }
-      let jj = sti(O_fColBedJ + cc); if (jj < 0 || wd(W_o2 + u32(jj)) < o2c || !(byoy || free || stu(O_wCBody + cc) != BROOK)) { continue; }
+      let jj = sti(O_fColBedJ + cc); if (jj < 0 || wd(W_o2 + u32(jj)) < o2c || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed))) { continue; }
       let w = weedEyoy(jj, L); let E = wd(W_benth + u32(jj)) / A2 - BENTHOS_REFUGE + w.x + w.y;
       if (!(E > BENTHOS_SENSE_MIN)) { continue; } let V = E * yCov(k, cc);
       if (V > best) { best = V; bc = i32(cc); }
@@ -1833,9 +1833,9 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     let gD = fryD(L); let cR = fryR(L); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
     var best = -1.0; var bj = -1; let k0 = min(nL(c) - 1u, u32(max(0, i32(z / WDZ))));
     let cv0 = yCov(k, c);
-    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if (pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) { continue; } let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * cv0; if (E > best) { best = E; bj = i32(jj); } }
+    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed))) { continue; } let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * cv0; if (E > best) { best = E; bj = i32(jj); } }
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0);
-      if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK)) { continue; }
+      if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed))) { continue; }
       let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * yCov(k, cc); if (E > best) { best = E; bj = i32(jj); } }
     if (bj >= 0) { let cc = u32(sti(O_wColOfCell + u32(bj))); if (cc != c) { tx = colX(cc) + (yrnd(q, 62u, 0u) - 0.5) * 30.0 * GSCALE; ty = colY(cc) + (yrnd(q, 62u, 1u) - 0.5) * 30.0 * GSCALE; } tz = stf(O_wZMid + u32(bj));  if (spv(k, S_yCover) > 0.0 && U.plants != 0u && wd(W_canopy + cc) > 0.1) { tz = max(0.05, max(tz, stf(O_wDepthMean + cc) - 0.5 * wd(W_canopy + cc))); } }   // (fish3: a cover keeper's young hold in the weeds)
     else { tx = x + (yrnd(q, 62u, 2u) - 0.5) * 60.0 * GSCALE; ty = y + (yrnd(q, 62u, 3u) - 0.5) * 60.0 * GSCALE; }

@@ -119,7 +119,8 @@ export const F3 = {
   // food, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303; juvenile_refuges_and_bass_young.md §2).
   // Recruitment to the followed fish at age 1, as fisheries count it. 0: off (stageR5 sets it)
   RECRUIT_SPRING: 0,
-  HUNGER_GATE: 0,   // (1: the hunger gate in _feed — S3 G0, %BW as a fraction; stageR5 sets it)
+  HUNGER_GATE: 0,
+  YBED_T: 10,       // °C: a young school keeps to its species' shelf (S3 yBed) only in water at least this warm   // (1: the hunger gate in _feed — S3 G0, %BW as a fraction; stageR5 sets it)
   // A NARROW BAND HELD (stage R item 6c): the pull back into the bottom-depth band grows per metre outside it (HAB_W × clamp(off,
   // 0.2, 1)); with BAND_REL per band-width for bands under 1 m — a killifish 0.2 m too deep for its 0.3-m band pulled at 0.16 of
   // HAB_W, beaten by any food's pull, and sat just outside it, over 0.35–0.6 m where the pickerel are (arm E: 41 % of the killifish
@@ -446,6 +447,19 @@ export function stageR5(on = true) {
   // (bass G0 1 %BW, the research range 0.3–1: at 0.5 %BW the true lakes' bass ran p 0.16–0.21 in summer, 76 % empty, ~7,900 starved
   // in a year — arm K; the toy: 0.5 → 1 %BW raises p ~0.28 → 0.35)
   F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = on ? 0.01 : 0;
+  // (item 6h: the killifish's young — they hatch on the plants of the shelf and stay in its weedy shallows, growing linearly to ~5 cm
+  // by mid-October (Keast & Eadie 1984), cladocerans young, midges and amphipods older (Phillips 2007): yBed 1.2 m (74–93 % of
+  // seine catches ≤ 1.2 m) and the bed's food from 2 cm (was FRY.BENTH_L 2.5, which they never reached). Without it the young
+  // followed zooplankton offshore over ~3.4 m, stalled at ~2 cm, and none reached their first spring — research
+  // killifish_persistence_and_predators.md: replacing the stock needs only ~0.2 % egg-to-age-1 survival)
+  // (benthL 1 cm: young killifish take the weeds' and the bed's small fauna — chydorids, midges — from 1 cm; at 2 cm they stayed
+  // ~1.5–2 cm through the summer (1/10 CPU), against the field's 25.6 mm SL by 21 Sep (Burton's Pond, NL) and 32 mm TL in the fall
+  // (Presque Isle) — research killifish population dynamics, 2026-10-20)
+  S3.killifish.yBed = on ? 1.2 : 0; S3.killifish.sp.benthL = on ? 1.0 : undefined;
+  // (item 6i: fallfish fish-eating only from 18 cm: adults are insect and drift feeders, fish a large share only in pulses of naive
+  // fry, fish ≤ 10–20 % of their diet otherwise, fallfish < 10 cm ate none (research killifish_persistence_and_predators.md); from
+  // 10 cm they struck at the perch-like rate and became the killifish's top predator once the bass were gated (arm K: 51k kills))
+  S3.fallfish.sp.Lpisc = on ? 18 : 10;
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
@@ -2227,7 +2241,10 @@ export class Fish3 {
     // drift down it into Lower (sucker larvae leave their spawning stream for the lake) and never choose it to feed in. (At 1/10
     // the brook was the richest bed near a large share of the lakes' young: young bass, perch, suckers, bullheads and white perch
     // took 85–95 % of its insects in July and August and its dace starved)
-    const free = GEO.SCALE >= 1, inB = G.body[c] === BROOK, ok = cc => s.brookYoy || free || G.body[cc] !== BROOK;   // (true scale: the brook is its real share again — the young may feed in it)
+    // (S3 yBed: a littoral spawner's young keep to its shelf — the water no deeper than yBed m; the killifish's followed zooplankton
+    // offshore over 3–3.6 m and stalled at ~2 cm, where real young grow to 2.6–3.2 cm in the weedy shallows by September) — in the
+    // open-water season only (≥ YBED_T °C): killifish move into the lakes' deeper parts in late fall and winter (COSEWIC 2003, Godin)
+    const free = GEO.SCALE >= 1, inB = G.body[c] === BROOK, yB = T >= F3.YBED_T ? s.yBed || 0 : 0, ok = cc => (s.brookYoy || free || G.body[cc] !== BROOK) && !(yB > 0 && G.depthMean[cc] > yB);   // (true scale: the brook is its real share again — the young may feed in it)
     if (inB && !s.brookYoy && !free) { const k = nearestBP(q.x, q.y), p = k >= BLAST ? LAKE_NEAR[LOWER] : BP[k + 1]; q.tx = p[0]; q.ty = p[1]; q.tz = Math.max(0.05, q.z); return; }
     if (o2 < sp.o2Crit) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
