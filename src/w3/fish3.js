@@ -27,7 +27,7 @@ import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { cmax, consumptionT, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -121,7 +121,36 @@ export const F3 = {
   RECRUIT_SPRING: 0,
   HUNGER_GATE: 0,
   YBED_T: 10,
-  YCOLD: 0,         // (1: a predator hunts the young at min(its cold performance, its FB4 consumptionT) — stageR5 sets it)       // °C: a young school keeps to its species' shelf (S3 yBed) only in water at least this warm   // (1: the hunger gate in _feed — S3 G0, %BW as a fraction; stageR5 sets it)
+  YCOLD: 0,
+  // (the review's phase 1, docs/review/PLAN.md item 6) the followed fish's strikes at the predator's own appetite in cold water too —
+  // min(its cold performance, FB4's consumption curve), as YCOLD does for the young: a bass near-still below ~8–10 °C (Oliver 1977;
+  // MDIFW) took suckers at 4–7 °C in April at 0.2–0.36 of its summer pace, and 62–126 % of each spring's recruits were lost in the
+  // eight weeks around recruiting (arm O)
+  SCOLD: 0,
+  // (item 7) the spring's recruiting when the water warms back past WINTER0.T (config winterWindow[1], ~12 May), not FRY.SPRING_YF
+  // (30 March, three weeks before ice-out): a school recruiting under the ice met the followed fish's strike rule in 1–7-°C water
+  RECRUIT_WARM: 0,
+  // (the review's phase 2, docs/review/PLAN.md items 8–12) BAND_LAKE m: a band's top is kept this far above its own lake's deepest
+  // water (Lower's 3.9 m against Upper's 5.5) — Lower's perches otherwise crowd onto the 0.9 % of it that is ≥ 3.9 m all winter;
+  // BASS_SCH: a smallmouth's capture success per fish of a school (n^BASS_SCH; was −0.8 — ×0.03 for an 80-fish school — PDM §7.2);
+  // PREY_PREF/PREY_OPT: the strike's CHOICE among the fish it meets weighted by a log-normal preference for prey PREY_OPT of its
+  // own length (σ PREY_PREF in ln units; 0 off) — optimal prey 25–43 % of a predator's length (Wahl & Stein 1988), field prey
+  // ~0.3 of it, where the capture term alone favours the smallest (a 42-cm pickerel cropped 6-cm killifish); the strike rate is
+  // the capture success's, unchanged
+  BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3,
+  // (the review's phase 4, items 17 and 19) YO2_MARGIN: the young choose their water — the bed, the zooplankton's cells, the escape —
+  // with O₂ ≥ YO2_MARGIN × their critical level (0: only ≥ critical, and the zooplankton's choice untested): in arm O the young of
+  // every species died of hypoxia under the ice at 8–25 % a fortnight, sitting all winter on the richest bed — the organic beds
+  // that go anoxic first — and testing O₂ only once it was below critical; Hot Brook is no winterkill lake (white perch winter in
+  // it) and the adults in the same water did not die. YM_COLD: the young's unsimulated mortality (BIOE.M_OTHER's share of M)
+  // slows in cold water as their predation does (FRY.M_JUV_Q10), its size multiplier capped at YM_CAP (the agents' 3; it was 30):
+  // alone it took 20–35 % of the young over a winter when no heron, kingfisher or merganser is about
+  YO2_MARGIN: 0, YM_COLD: 0, YM_CAP: 30,
+  // (phase 4, docs/review/PLAN.md item 2's finding) YW_T0/YW_T1 °C: a young school past its first YW_AGE days feeds in proportion to
+  // (T − YW_T0)/(YW_T1 − YW_T0) — none below YW_T0 (0: off): followed by id from September to March, the same schools of yellow perch,
+  // white perch, sucker and fallfish grew 1.9–2.2 cm, most of it at 1–2 °C under the ice (probe/wgrow.mjs), where young perch stop
+  // growing below ~10 °C and live on their autumn reserves — so the first winter's size-selective loss never bit
+  YW_T0: 0, YW_T1: 10, YW_AGE: 90,         // (1: a predator hunts the young at min(its cold performance, its FB4 consumptionT) — stageR5 sets it)       // °C: a young school keeps to its species' shelf (S3 yBed) only in water at least this warm   // (1: the hunger gate in _feed — S3 G0, %BW as a fraction; stageR5 sets it)
   // A NARROW BAND HELD (stage R item 6c): the pull back into the bottom-depth band grows per metre outside it (HAB_W × clamp(off,
   // 0.2, 1)); with BAND_REL per band-width for bands under 1 m — a killifish 0.2 m too deep for its 0.3-m band pulled at 0.16 of
   // HAB_W, beaten by any food's pull, and sat just outside it, over 0.35–0.6 m where the pickerel are (arm E: 41 % of the killifish
@@ -414,6 +443,7 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 // STAGE R ITEM 5 as one package (before the lakes and the GPU are built — the year runner's ?r5=1): the encounter–strike–capture
 // rule, and the crayfish of soft Maine water — not common at Hot Brook (the human, 2026-10-20; crayfish nearly vanish below ~2 mg/L
 // Ca) — at a fifth of the Michigan-based capacity, preferred no more than fish, 15 % out by day (piscivore_encounter_attack.md §e)
+const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
   // (item 6: the water it holds — F3.ENC_DZ — and the killifish's own water by day, the shelf's very edge: shoals netted whole in
@@ -447,7 +477,52 @@ export function stageR5(on = true) {
   // the true lakes' summer pickerel ran p 0.29–0.31 against ~0.37 (arms H–I))
   // (bass G0 1 %BW, the research range 0.3–1: at 0.5 %BW the true lakes' bass ran p 0.16–0.21 in summer, 76 % empty, ~7,900 starved
   // in a year — arm K; the toy: 0.5 → 1 %BW raises p ~0.28 → 0.35)
-  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = on ? 0.01 : 0;
+  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = 0; S3.bass.pGate = on ? 0.5 : 0;
+  // (the review's phase 1, docs/review/PLAN.md item 4: the gate in proportion to its own appetite — pGate 0.5 of Cmax at any size
+  // and temperature, in place of G0 1 %BW: that capped p at k·G0/Cmax, 0.35–0.46 for a 250-g bass in summer but 0.20–0.27 for a
+  // 15-cm one (gatek.mjs), and let a fall bass store nothing; 0.5 holds ≥ 1.5× maintenance from 9 to 40 cm on the sets below)
+  F3.SCOLD = on ? 1 : 0;   // (item 6: strikes at the cold appetite)
+  F3.RECRUIT_WARM = on ? 1 : 0;   // (item 7: the spring's recruiting when the water warms past 10 °C)
+  // (item 5: a smallmouth runs on Rice's set to 250 g, not 30 — Whitledge's RB −0.756 needs p 0.42–0.70 of Cmax just to hold a 30–60-g
+  // bass at 20–24 °C against 0.26–0.32 on Rice's; the two sets' maintenance as %BW a day meet at ~250–300 g, 26 cm, about maturity:
+  // probe/bassets.mjs. The species object is species.js's own, shared with the 2-D sim: set here, in the 3-D package)
+  S3.bass.sp.juvW = on ? 250 : BASS_JUVW0;
+  // (phase 2, items 8–12: the predators meet their real prey — research white_perch_habitat_and_predation.md and the review)
+  // (item 8) white perch: the adults on the whole open bottom by day, 2.5–5.5 m (in brown water the light a clear lake's white perch
+  // meet at 4–9 m lies at ~1.5–5 m; Missisquoi Bay's 3–4.9-m open water held them at every station), not only the deep hole; the
+  // young of the year in the shallows (0.5–2.5 m; Cooper's day seines, Missisquoi's), the 7–15-cm fish between; at night pulled
+  // within 20–60 m of shore onto the flats, crossing the weed edge at dusk and dawn (twilight 60–200 m) — where the predators are
+  S3.whiteperch.hab.day.bot = on ? [2.5, 5.5] : [3.5, 5.5];
+  S3.whiteperch.habJ = on ? { L: [7, 15], bot: [0.5, 2.5] } : { L: [8, 12], bot: [2.4, 3.6] };
+  S3.whiteperch.shore = on ? { day: [1e4, 1e4], night: [20, 60], tw: [60, 200] } : undefined;   // (by day no pull: 10 km)
+  F3.BAND_LAKE = on ? 0.6 : 0;   // (item 8: Lower's bands within its 3.9 m)
+  F3.BASS_SCH = on ? -0.6 : -0.8;   // (item 10)
+  F3.PREY_PREF = on ? 0.6 : 0;   // (item 11: the strike's choice by prey size, σ 0.6 in ln units about 0.3 of its length)
+  // (item 12) bullheads: spines in the gape test and a bass's poor success on them (Mauck & Coble 1971: least vulnerable; no record of
+  // smallmouth eating brown bullhead, Maine ~0 — Cooper 1941; in arm M they were 18 % of the bass's kills)
+  S3.catfish.spineW = on ? 1.6 : 1; S3.catfish.cs[1] = on ? 0.05 : 0.2;
+  // (item 9) yellow perch take fish by day and at twilight only (visual predators; the review PE12)
+  S3.perch.act = on ? [0.3, 0.3, 0] : PRED3.other.act;
+  // (phase 4, items 17 and 19: the young's winter — O₂ with room to spare; their unsimulated mortality slower in the cold, × ≤ 3)
+  F3.YO2_MARGIN = on ? 2 : 0; F3.YM_COLD = on ? 1 : 0; F3.YM_CAP = on ? 3 : 30;
+  F3.YW_T0 = on ? 4 : 0;   // (the young fast below 4 °C, eat in proportion to 10 °C: their growth stops for the winter)
+  // (phase 3, items 14–15, and phase 4, item 23: the refuges' settings)
+  // (item 15) killifish: the young's day nursery in the very shallow, weedy margin (≤ 0.5 m: inside SHALLOW_REFUGE, full at ≤ 0.2 m)
+  // and spawning kept inside the strip (0.1–0.5 m, on plants): with yBed 1.2 and spawning at 0.2–1.0 m, 0.001 % of the young
+  // recruited (replacement needs ~0.2 %) and ripe adults left their refuge to spawn
+  S3.killifish.yBed = on ? 0.5 : 0; S3.killifish.spawn.bot = on ? [0.1, 0.5] : [0.2, 1.0];
+  // (item 14) young pickerel in the weeds' shallows (the stems their refuge from cannibals: Grimm), 12–35 cm over 0.3–1.5 m — about
+  // 55 % of the founded pickerel were eaten by bigger ones in year 1; their young schools weighted to the weeds' cover (yCover)
+  S3.pike.habJ = on ? { L: [12, 35], bot: [0.3, 1.5] } : undefined; S3.pike.yCover = on ? 0.6 : 0;
+  // small bass dug into cover on the bed in cold water (below ~9 °C; ≤ 25 cm) — 63 % of the spring's age-1 bass were eaten within
+  // ~6 weeks; young smallmouth winter among rocks and on the bed, near-still (Shuter et al. 1989; MDIFW)
+  S3.bass.bury = on ? 0.8 : 0; S3.bass.buryL = on ? 25 : 0;
+  // age-1 suckers in the shallows (on the CPU they sat over ~3 m among the perches and 99 % were gone by June) — juvenile white
+  // suckers keep to the littoral, the largest moving offshore
+  S3.sucker.habJ = on ? { L: [12, 25], bot: [0.5, 2.0] } : undefined;
+  // (item 23) the young bottom fish's water: sucker fry < 5 cm feed in 15–20 cm along the shores, young bullheads in quiet coves
+  // (SFH §3–4); they sat over 2–3.5 m in June–August
+  S3.sucker.yBed = on ? 0.8 : 0; S3.catfish.yBed = on ? 1.5 : 0;
   // (item 6h: the killifish's young — they hatch on the plants of the shelf and stay in its weedy shallows, growing linearly to ~5 cm
   // by mid-October (Keast & Eadie 1984), cladocerans young, midges and amphipods older (Phillips 2007): yBed 1.2 m (74–93 % of
   // seine catches ≤ 1.2 m) and the bed's food from 2 cm (was FRY.BENTH_L 2.5, which they never reached). Without it the young
@@ -456,7 +531,7 @@ export function stageR5(on = true) {
   // (benthL 1 cm: young killifish take the weeds' and the bed's small fauna — chydorids, midges — from 1 cm; at 2 cm they stayed
   // ~1.5–2 cm through the summer (1/10 CPU), against the field's 25.6 mm SL by 21 Sep (Burton's Pond, NL) and 32 mm TL in the fall
   // (Presque Isle) — research killifish population dynamics, 2026-10-20)
-  S3.killifish.yBed = on ? 1.2 : 0; S3.killifish.sp.benthL = on ? 1.0 : undefined;
+  S3.killifish.sp.benthL = on ? 1.0 : undefined;   // (yBed: below, phase 3 item 15 — 0.5 m; it was 1.2)
   // (item 6i: fallfish fish-eating only from 18 cm: adults are insect and drift feeders, fish a large share only in pulses of naive
   // fry, fish ≤ 10–20 % of their diet otherwise, fallfish < 10 cm ate none (research killifish_persistence_and_predators.md); from
   // 10 cm they struck at the perch-like rate and became the killifish's top predator once the bass were gated (arm K: 51k kills))
@@ -1115,7 +1190,7 @@ export class Fish3 {
         if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
         const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
-          + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) * DAY / YEAR;   // (/day)
+          + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) * DAY / YEAR;   // (/day; F3.YM_COLD, YM_CAP as _yoyLive)
         const lost = q.n * -Math.expm1(-hN * F3.SEED_M * dd);
         this.stats.fry[q.s.key].natural += lost; q.n -= lost; q.age += dd * DAY; q.p = pS;
         if (q.n < 1) q.alive = false;
@@ -1140,6 +1215,7 @@ export class Fish3 {
     const md = wf > 0.5 ? H.winter : nf < 0.5 ? H.day : H.night;   // (its place in the column: blended when day and night agree on the kind)
     m.v = md.v; m.h = md !== H.winter && H.day.v === H.night.v ? blend(H.day.h, H.night.h, nf) : md.h;
     m.act = blend(blend(H.day.act, H.night.act, nf), H.winter.act, wf);
+    if (F3.BAND_LAKE > 0) { const b = GEO.bodyAt(a.x, a.y); if (b === UPPER || b === LOWER) { const zL = BODIES[b - 1].max - F3.BAND_LAKE; if (m.bot[0] > zL) { m.bot[0] = zL; m.bot[1] = Math.max(m.bot[1], zL); } } }   // (F3.BAND_LAKE: within its own lake's depth)
     if (a.L >= F3.RIFFLE_L && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = Math.max(m.bot[0], F3.RIFFLE_D); m.bot[1] = Math.max(m.bot[1], m.bot[0]); }   // (bigger-deeper: the brook's pools)
     // ITS SHORE BAND (S3 shore, real metres × the world's scale): pulled back toward shore beyond s0, fully from s1 — day and night
     // blended by the light, widened toward the twilight values at dusk and dawn; none in winter
@@ -1260,7 +1336,7 @@ export class Fish3 {
     const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
     a.visF = visDay;
     a.cover = Math.max(this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (the weeds' stems — in them; the brook's riffles. The shallows: the predator's reach, _strike)
-    if (s.bury && a.bed - a.z <= F3.BURY_H) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter)
+    if (s.bury && a.bed - a.z <= F3.BURY_H && !(s.buryL > 0 && a.L > s.buryL)) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter — S3 buryL: only the fish up to buryL cm)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -1404,7 +1480,7 @@ export class Fish3 {
   // can `p` eat `q`: a fish-eater at its piscivorous length, q's body no deeper than p's gape and not too small to bother with
   canPrey(p, q) {
     const s = p.s; if (!s.pisc || p.L < s.sp.Lpisc || p === q) return false;
-    return q.bdep <= p.gape && q.L >= FEED.PREY_MIN * p.L && q.L <= s.preyLR * p.L;
+    return q.bdep * (q.s.spineW || 1) <= p.gape && q.L >= FEED.PREY_MIN * p.L && q.L <= s.preyLR * p.L;   // (spineW: a bullhead's locked pectoral and dorsal spines widen what a mouth must take — S3 spineW)
   }
 
   // ---------- the brain ----------
@@ -1643,6 +1719,17 @@ export class Fish3 {
     return cm;
   }
 
+  // THE HUNGER GATE's opening (F3.HUNGER_GATE) for a fish with `gut` g in its gut: 1 − gut / G. S3 pGate: G is the gut that empties
+  // at pGate × its Cmax — G = pGate · Cmax · W / k, k its gastric evacuation a day (as _energetics evacuates) — so when prey abound
+  // it takes ~pGate of its Cmax at any size and temperature; S3 G0: G = G0 × W, a fixed share of its weight (that capped a 15-cm
+  // bass at p 0.20–0.27 against the 0.48–0.60 it needs, and pickerel at p 0.13: its evacuation is slow); neither: no gate
+  _gate(a, cm, gut = a.gut) {
+    const s = a.s, sp = s.sp; let G;
+    if (s.pGate > 0) G = s.pGate * cm * a.W / Math.max(1e-9, Math.max(BIOE.GER * Math.exp(BIOE.GER_T * a.T) * sp.gerMul, cm / sp.gut));
+    else if (s.G0 > 0) G = s.G0 * a.W; else return 1;
+    return clamp(1 - gut / Math.max(1e-9, G), 0, 1);
+  }
+
   // ---------- feeding: fish, the bed's worms and scuds, zooplankton, the bed's organic layer (poor food) ----------
   _feed(a, i, cm, visDay, dt) {
     const s = a.s, sp = s.sp, ch = this.chem, gmax = sp.gut * a.W, n = a.n;
@@ -1654,16 +1741,17 @@ export class Fish3 {
     // THE HUNGER GATE (F3.HUNGER_GATE, S3 G0): a predator hunts and forages in proportion to how empty it is, h = 1 − gut / (G0 × its
     // weight) — wild bass hold ~0.4 % of their weight (Lake Ontario), use a third to a half of their gut, rest after a meal; the
     // 8-%BW gut as the only brake let a bass eat at Cmax wherever prey were about (research piscivore_field_feeding_rates.md (b))
-    const hg = F3.HUNGER_GATE && s.G0 > 0 ? clamp(1 - a.gut / (s.G0 * a.W), 0, 1) : 1; if (!(hg > 0)) return false; want *= hg;
+    const hg = F3.HUNGER_GATE ? this._gate(a, cm) : 1; if (!(hg > 0)) return false; want *= hg;
     // (F3.YCOLD: its hunting of the young at its own appetite's temperature curve — FB4 consumptionT, ~0 under the ice — not only its
     // cold performance, 0.4–0.55 at 0–2 °C: in arm O the young killifish were still eaten 13–22 % a fortnight at 0.5 °C, where the
     // field's first winters lose ~40–50 % in all (Neuswanger et al. 2015) and winter predation is low)
-    const yEff = F3.YCOLD ? Math.min(perf, consumptionT((sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio, a.T)) : perf;
+    const cT = F3.YCOLD || F3.SCOLD ? consumptionT((sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio, a.T) : 1;
+    const yEff = F3.YCOLD ? Math.min(perf, cT) : perf, sEff = F3.SCOLD ? Math.min(perf, cT) : perf;
     const g0 = a.gut;
     // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
     let yAsk = 0;
     if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const pisc = s.pisc && a.L >= sp.Lpisc; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR) || 0; }
-    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, perf * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
+    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
       if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
@@ -1743,7 +1831,7 @@ export class Fish3 {
   _strike2(a, i, room, visDay, perf, dt) {
     const s = a.s, f = this.fish, lunge = 1 + ACTION.STRIKE_REACH * (a.fk === 1 ? engaged(a.o[3]) : 0), cls = s.predCls;
     const RD = s.strikeR * lunge * Math.max(0.3, visDay), Rs = F3.ENC_R, Rs2 = Rs * Rs, dmH = 0.5 * F3.SHALLOW_K * a.L;
-    let sE = 0, sW = 0, best = null;
+    let sE = 0, sW = 0, sWp = 0, best = null;   // (sWp: the choice's weights — sW × the size preference)
     const gx0 = clamp(((a.x - Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1);
     const gy0 = clamp(((a.y - Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1);
     const S0 = this.hStart, I = this.hItems, cand = this._cand || (this._cand = []); cand.length = 0;
@@ -1758,15 +1846,15 @@ export class Fish3 {
         // first dropped: pickerel then took a 36-fish killifish school as 36 separate fish; bass keep their confusion term below)
         const nb = b.n > 1 ? b.n : 1, ne = nb > 1 && cls === 0 ? Math.pow(nb, s.schoolExp ?? F3.SCHOOL_EXP) : nb, enc = ne * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
         if (!(enc > 0)) continue;
-        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, -0.8) : cls === 2 ? 0.15 : 1) : 1);
-        sE += enc; const w = enc * cs; if (w > 0) { sW += w; cand.push(b, w); }
+        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1);
+        sE += enc; const w = enc * cs; if (w > 0) { sW += w; const wp = F3.PREY_PREF > 0 ? w * Math.exp(-0.5 * (Math.log(b.L / a.L / F3.PREY_OPT) / F3.PREY_PREF) ** 2) : w; sWp += wp; cand.push(b, wp); }
       }
     }
     if (!(sW > 0)) return 0;
     const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + F3.ENC_EH);
     const sun = this.env.sun, act = s.act[sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2];   // (the share of the time it hunts now)
     if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt)) return 0;
-    let r = rand() * sW; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
+    let r = rand() * sWp; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
     best = best || cand[cand.length - 2];
     return this._killed(a, best);
   }
@@ -2195,7 +2283,7 @@ export class Fish3 {
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
     const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
     const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
-      + sp.M * BIOE.M_OTHER * Math.min(30, Math.pow(q.L / sp.Lref, -0.87)) / YEAR;
+      + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) / YEAR;
     const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
     const h = hN + hS + hH + hO, lost = q.n * (1 - Math.exp(-h * st));
@@ -2208,7 +2296,7 @@ export class Fish3 {
     if (q.s.brookRes && GEO.bodyAt(q.tx, q.ty) !== BROOK) { const p = BP[nearestBP(q.tx, q.ty)]; q.tx = p[0]; q.ty = p[1]; }   // (the brook's own young feed in the brook)
     q.spotBed = Math.max(0.12, GEO.depthAt(q.tx, q.ty));   // (its cruise keeps to water like its spot's)
     // RECRUITMENT: at the species' L0, or an overwintered school in spring (F3.RECRUIT_SPRING: only in spring — the year's young one rule all year)
-    if ((!F3.RECRUIT_SPRING && q.L >= sp.L0) || (q.age > FRY.OVERWINTER * YEAR && yf >= FRY.SPRING_YF && yf < SPAWN.SEASON_END)) this._recruit(q);
+    if ((!F3.RECRUIT_SPRING && q.L >= sp.L0) || (q.age > FRY.OVERWINTER * YEAR && yf >= (F3.RECRUIT_WARM ? winterWindow[1] : FRY.SPRING_YF) && yf < SPAWN.SEASON_END)) this._recruit(q);
   }
   // THE YOUNG BY DISTANCE (as the fish, _stepMixed): the schools within the focus live this fine step; the rest are scheduled
   // FAR_BLOCK blocks (a block's cruise about their spot, their feeding tick over the block). Their density and the region about the
@@ -2258,13 +2346,14 @@ export class Fish3 {
     // open-water season only (≥ YBED_T °C): killifish move into the lakes' deeper parts in late fall and winter (COSEWIC 2003, Godin)
     const free = GEO.SCALE >= 1, inB = G.body[c] === BROOK, yB = T >= F3.YBED_T ? s.yBed || 0 : 0, ok = cc => (s.brookYoy || free || G.body[cc] !== BROOK) && !(yB > 0 && G.depthMean[cc] > yB);   // (true scale: the brook is its real share again — the young may feed in it)
     if (inB && !s.brookYoy && !free) { const k = nearestBP(q.x, q.y), p = k >= BLAST ? LAKE_NEAR[LOWER] : BP[k + 1]; q.tx = p[0]; q.ty = p[1]; q.tz = Math.max(0.05, q.z); return; }
-    if (o2 < sp.o2Crit) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
+    const o2m = sp.o2Crit * Math.max(1, F3.YO2_MARGIN);   // (F3.YO2_MARGIN: the water they choose, with room to spare)
+    if (o2 < o2m) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];
     if (benth) {   // young bottom foragers live on the bed (Werner & Hall 1988): the richest bed about them with O₂
       let best = -Infinity, bc = -1;
       const lit = this.env.lit;
-      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < sp.o2Crit || !ok(cc)) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (!(E > BENTHOS.SENSE_MIN)) return; const V = E * cov(cc); if (V > best) { best = V; bc = cc; } };
+      const tryC = cc => { const jb = this.colBedJ[cc]; if (jb < 0 || ch.o2[jb] < o2m || !ok(cc)) return; const E = ch.benth[jb] / A2 - BENTHOS.REFUGE + (lit ? lit.weedEyoy(jb, q.L) : 0); if (!(E > BENTHOS.SENSE_MIN)) return; const V = E * cov(cc); if (V > best) { best = V; bc = cc; } };
       tryC(c); for (let k = 0; k < nb.length; k++) tryC(nb[k]);
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
@@ -2273,7 +2362,7 @@ export class Fish3 {
     const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
-    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR) * cov(cc); if (E > best) { best = E; bj = jj; } };
+    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc) || (F3.YO2_MARGIN > 0 && ch.o2[jj] < o2m)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR) * cov(cc); if (E > best) { best = E; bj = jj; } };
     for (let k = 0; k < G.nL[c]; k++) tryJ(G.cell0[c] + k);
     for (let k = 0; k < nb.length; k++) { const cc = nb[k]; tryJ(G.cell0[cc] + Math.min(G.nL[cc] - 1, k0)); }
     if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 30 * GEO.SCALE; q.ty = G.cy[cc] + (rand() - 0.5) * 30 * GEO.SCALE; } q.tz = G.zMid[bj];
@@ -2287,7 +2376,8 @@ export class Fish3 {
   // Returns the starvation hazard (/s)
   _feedYoy(q, st, T) {
     const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
-    const want = q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+    const yw = F3.YW_T0 > 0 && q.age > F3.YW_AGE * DAY ? clamp((T - F3.YW_T0) / (F3.YW_T1 - F3.YW_T0), 0, 1) : 1;   // (F3.YW_T0: the winter's fast)
+    const want = yw * q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
     let got = 0, J = 0;
     if (FRY.DENSITY && q.bankG > 0) { const g = Math.min(q.bankG, want), f = g / q.bankG; got += g; J += q.bankJ * f; q.bankG -= g; q.bankJ -= q.bankJ * f; }   // (stage Y1: the young fish it caught last tick)
     if (FRY.DENSITY && d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) this._yReq(null, q, q.c, q.n, q.L, q.L * sp.gapeR, want / Math.max(1, q.n * st), st, Math.max(0, want / q.n - q.bankG / q.n), true, false, F3.YCOLD ? Math.min(coldPerf(T, sp.tempOpt, sp.coldPerf), consumptionT(sp.bioJuv || sp.bio, T)) : coldPerf(T, sp.tempOpt, sp.coldPerf), s.preyLR);

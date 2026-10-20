@@ -2,11 +2,11 @@
 // (navigator.gpu) — the gate's Node never loads it; tools/gpu/g1_check.html checks every kernel against fish3.js on the same fish.
 // It holds a Fish3's agents (and, as the kernels come, its young) on the GPU as struct-of-arrays buffers (layout.js), the lakes'
 // statics, the water each block, and runs the block's kernels (wgsl.js) in fish3's order.
-import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
+import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3 } from '../fish3.js';
 import { FRY } from '../../config.js';
-import { GEO } from '../geometry.js';
+import { GEO, BODIES } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
 
 const ST_ = () => GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC;
@@ -30,7 +30,7 @@ export class GpuFish {
     const n0 = F.fish.filter(a => a.alive).length; this.cap = cap || Math.max(1024, Math.ceil(n0 * 1.3));
     const y0 = F.yoy.filter(q => q.alive).length; this.ycap = ycap || Math.max(4096, Math.ceil(y0 * 3) + 16384, Math.ceil(0.4 * n0));   // (June's spawnings: the true lakes went from 18k to 57k schools in four weeks)
     this.STL = packStatics(F, env); this.WL = waterLayout(env);
-    this.consts0 = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
+    this.consts0 = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst LAKE_Z1: f32 = ${BODIES[0].max};\nconst LAKE_Z2: f32 = ${BODIES[1].max};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
     this._acc();
     // the footprint's CSR by radius class (fish3 forageR: a few distinct radii)
     this.fpSelect = Array.from({ length: this.STL.nFp }, (_, r) => r ? `if (r == ${r}u) { o0 = O_fFp${r}0; oL = O_fFp${r}L; }` : '').join(' ');
@@ -357,6 +357,17 @@ export class GpuFish {
     const rb = this.dev.createBuffer({ size: bytes, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
     const enc = this.dev.createCommandEncoder(); enc.copyBufferToBuffer(buf, off, rb, 0, bytes); this.dev.queue.submit([enc.finish()]);
     await rb.mapAsync(GPUMapMode.READ); const out = rb.getMappedRange().slice(0); rb.unmap(); rb.destroy(); return out;
+  }
+  // chosen fields of the live slots (the agents' 0..n − 1, or with young = true the young schools' 0..ny − 1), by name — the year
+  // runner's snapshot tallies (length at age, the brook's fish: docs/review/PLAN.md item 1). Each comes back as the f32 rows' bits;
+  // a u32 or i32 field is read through new Uint32Array(v.buffer, v.byteOffset, v.length)
+  async readFields(names, young = false) {
+    const buf = young ? this.B.Y : this.B.A, cap = young ? this.ycap : this.cap, n = young ? this.ny : this.n, map = young ? YF : AF, out = {};
+    if (n <= 0) { for (const nm of names) out[nm] = new Float32Array(0); return out; }
+    const rb = this.dev.createBuffer({ size: 4 * names.length * n, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+    const enc = this.dev.createCommandEncoder(); names.forEach((nm, r) => enc.copyBufferToBuffer(buf, 4 * map[nm] * cap, rb, 4 * r * n, 4 * n));
+    this.dev.queue.submit([enc.finish()]); await rb.mapAsync(GPUMapMode.READ); const all = new Float32Array(rb.getMappedRange().slice(0)); rb.unmap(); rb.destroy();
+    names.forEach((nm, r) => { out[nm] = all.subarray(r * n, (r + 1) * n); }); return out;
   }
   async readAgents() { const [A, BR, GN] = await Promise.all([this.read(this.B.A), this.read(this.B.BR), this.read(this.B.GN)]); return { A: new Float32Array(A), BR: new Float32Array(BR), GN: new Float32Array(GN) }; }
   // the grid's fullest cells (diagnostics: g_sort orders each cell by insertion — its cost ~ the count squared)

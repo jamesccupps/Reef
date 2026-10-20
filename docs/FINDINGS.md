@@ -4,6 +4,42 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-20 — A whole-model review against the field: who meets whom is wrong, not how much (docs/review/PLAN.md)
+- **What.** Five parallel reviews compared every fish species and the environment with the research notes and the human's field
+  observations, item by item (docs/review/*.md), on the true-scale GPU runs (arm O, seed 613, five years). The totals were in
+  range — 80–96 kg/ha, predator biomass and adult growth plausible — but the food web was wrong in kind: pickerel and bass met
+  white perch, 55–61 % of their food in Maine (Cooper 1941), for ≤ 5.5 % and ~10 % of their kills, and ate the small littoral
+  fish, bullheads and spring recruits instead; pumpkinseed, killifish and dace went extinct while white perch rose 34.5 → 41.9
+  kg/ha over four years and the census cap discarded 55–64 % of white perch and pumpkinseed recruits each spring.
+- **Why.** No single error: the white perch's daytime band (3.5–5.5 m) kept them out of the predators' water; the small fish
+  had no refuge behaviour (weeds, rock, the shallow strip); the young of every species died of under-ice hypoxia on the organic
+  beds that go anoxic first; strikes ignored the cold; a fixed hunger gate starved small bass.
+- **Why it matters.** Aggregate calibration (biomass, growth) can hold while the trophic links are wrong, and the wrong links
+  surface only as extinctions years later. A model's diet matrix by predator and prey, its kills by place and time of day, and
+  its census cap's discards are the diagnostics that catch it; the year runner now tallies all of them.
+
+## 2026-10-20 — The young grew under the ice (docs/review/PLAN.md item 2)
+- **What.** A CPU probe followed every young school BY ID from mid-September to March (1/10 lakes, seed 509, stageR5): the same
+  schools grew through the winter — yellow perch +2.2 cm, white perch +1.9, sucker +2.2, fallfish +2.2 — most of it at 1–2 °C
+  under the ice (yellow perch +0.9 cm by 1 December, +2.2 by March) at rations p 0.5–0.8 of their cold Cmax. Only the bass
+  (+0.65, stopping at ~5 °C) and the bullheads (≈ 0) stopped: the two species with a cold-feeding rule.
+- **Field.** Young perch stop growing below ~10–13.5 °C and live on their autumn lipid through the first winter (HSI; Boussion;
+  Cooper's growth window July–early September); winter loss is size-selective because the small run out first (Johnson &
+  Evans 1990, 1991; Post & Evans 1989).
+- **Why it matters.** FB4's consumption curves leave a few percent of Cmax at 1–2 °C, and a young fish's maintenance there is
+  tinier still, so a model fish that keeps feeding grows all winter — and the size-dependent first-winter mortality, the main
+  regulator of perch and white perch recruitment in northern lakes, never bites. A winter-feeding cut is a mechanism the
+  bioenergetics parameters alone don't supply.
+
+## 2026-10-20 — A hunger gate must scale with the fish's own appetite (docs/review/PLAN.md item 4)
+- **What.** The fixed gate (gut ≤ G0 = 1 %BW) caps the sustained ration at p = k·G0/Cmax, k the gastric evacuation a day: for
+  bass 0.35–0.46 at 250 g in summer, but 0.20–0.27 at 43 g (15 cm), below its maintenance (0.48–0.60 on the sim's adult set) —
+  no supply of prey could grow a small bass; pickerel, with slow evacuation, were capped at p 0.13.
+- **Fix.** A gate in proportion to the fish's own appetite: G = pGate · Cmax · W / k, which holds the most a gated fish takes at
+  ~pGate of Cmax at any size and temperature (bass pGate 0.5). With it, the smallmouth's adult FB4 set (Whitledge et al. 2003; RB
+  −0.756) applies only from 250 g: on it a 30–60-g bass needs p 0.42–0.70 just to hold weight at 20–24 °C, against 0.26–0.32 on
+  Rice et al.'s set; the two sets' maintenance as %BW a day meet at ~250–300 g (probe/bassets.mjs, gatek.mjs).
+
 ## 2026-10-20 — A full gut is the wrong satiation signal: the predators ate at Cmax until a hunger gate (docs/HOT_BROOK_3D.md §4 "Item 6")
 - **What.** Through arms F–J (true-scale GPU, seed 613) every refuge added for the prey — depth overlap, the killifish's day and
   night water, encounter dilution for pickerel, a shore band for bass — moved WHERE prey died, not how many: the bass rose from

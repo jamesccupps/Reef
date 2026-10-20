@@ -238,6 +238,11 @@ const T_KILLD: u32 = 2780u;   // + 2·(prey·5 + class): followed fish eaten by 
 const T_KILLC: u32 = 2890u;   // + 2·(prey·3 + class): … by their cover then (< 0.1, 0.1–0.5, ≥ 0.5)
 const T_WHERE: u32 = 2960u;   // + 2·(k·5 + class): BY DAY, every 8th followed fish's n by the bed's depth under it (the KILLD classes) — where each kind spends the day (diagnostics, stage R item 6)
 const T_GUT: u32 = 3080u;     // + 2·(k·5 + class): BY DAY, every 8th piscivore's (L ≥ Lpisc) gut fullness (< 5 %, 5–25, 25–50, 50–75, ≥ 75 % of its capacity) — the field's 35–60 % empty stomachs (diagnostics, stage R item 6)
+// the review's tallies (docs/review/PLAN.md item 1): where each kind and size spends the day from the shore, when the kills happen, who starves
+const T_SHORE: u32 = 3200u;   // + 2·((k·3 + size)·5 + class): BY DAY, every 8th followed fish's n by its distance from the shore (< 10, 10–30, 30–60, 60–120, ≥ 120 m) and length (< 10, 10–20, ≥ 20 cm)
+const T_KILLLT: u32 = 3540u;  // + 2·(prey·3 + light): followed fish eaten by day (sun > 0.3), at twilight (> 0.02), at night — the strike's own light classes
+const T_KILLLP: u32 = 3610u;  // + 2·(predator·3 + light): each predator's kills by the light
+const T_STARVSZ: u32 = 3680u; // + 2·(k·4 + class): starvation deaths by length class (lenClass)
 fn lenClass(L: f32) -> u32 { return select(select(select(3u, 2u, L < 30.0), 1u, L < 20.0), 0u, L < 10.0); }
 const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
 const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
@@ -343,7 +348,7 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
   sa(A_visF, i, max(nv, (sight(U.luxB0 * lf, kI) + 2.0 * sight(U.luxB1 * lf, kI) + sight(U.luxB2 * lf, kI)) / 4.0) * U.clar);
   let rif = select(0.0, F3_RIFFLE_REFUGE, ga(A_L, i) < F3_RIFFLE_L && bed < F3_RIFFLE_D && bodyAt(x, y) == BROOK);
   var cov = max(inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5), rif);   // (fish3: the shallows are the predator's reach — k_strike)
-  let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
+  let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H && !(spv(k, S_buryL) > 0.0 && ga(A_L, i) > spv(k, S_buryL))) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
   sa(A_cover, i, cov);
   sa(A_fear, i, ga(A_fear, i) * exp(-F3_FEAR_DECAY * dt));
   sau(A_flags, i, fl);
@@ -376,7 +381,7 @@ export const SENSE = /* wgsl */`
 fn canPrey(p: u32, q: u32) -> bool {
   let kp = gau(A_k, p); if (spv(kp, S_pisc) < 0.5 || ga(A_L, p) < spv(kp, S_Lpisc) || p == q) { return false; }
   let Lp = ga(A_L, p); let Lq = ga(A_L, q);
-  return ga(A_bdep, q) <= ga(A_gape, p) && Lq >= FEED_PREY_MIN * Lp && Lq <= spv(kp, S_preyLR) * Lp;
+  return ga(A_bdep, q) * spv(gau(A_k, q), S_spineW) <= ga(A_gape, p) && Lq >= FEED_PREY_MIN * Lp && Lq <= spv(kp, S_preyLR) * Lp;   // (fish3 canPrey: spineW)
 }
 fn zooExposed(j: u32, kind: u32) -> f32 {
   let m = select(U.migD, U.migC, kind == 1u);
@@ -593,6 +598,7 @@ fn modeOf(k: u32, fl: u32, nt: f32, T: f32, L: f32, x: f32, y: f32) -> Mode {
   else if (nf < 0.5) { m.v = spv(k, S_hDv); m.h = select(spv(k, S_hDh), hb, same); }
   else { m.v = spv(k, S_hNv); m.h = select(spv(k, S_hNh), hb, same); }
   m.act = bl(bl(spv(k, S_hDa), spv(k, S_hNa), nf), spv(k, S_hWa), wf);
+  if (F3_BAND_LAKE > 0.0) { let bb = bodyAt(x, y); if (bb == UPPER || bb == LOWER) { let zL = select(LAKE_Z2, LAKE_Z1, bb == UPPER) - F3_BAND_LAKE; if (m.b0 > zL) { m.b0 = zL; m.b1 = max(m.b1, zL); } } }   // (fish3 _mode: F3.BAND_LAKE)
   if (L >= F3_RIFFLE_L && bodyAt(x, y) == BROOK) { m.b0 = max(m.b0, F3_RIFFLE_D); m.b1 = max(m.b1, m.b0); }   // (fish3: bigger-deeper — the brook's pools)
   m.s0 = 0.0; m.s1 = 0.0; if (spv(k, S_shD1) > 0.0 && wf < 0.5) { let tw = 1.0 - abs(2.0 * nf - 1.0); m.s0 = bl(bl(spv(k, S_shD0), spv(k, S_shN0), nf), spv(k, S_shT0), tw); m.s1 = bl(bl(spv(k, S_shD1), spv(k, S_shN1), nf), spv(k, S_shT1), tw); }   // (fish3 _mode: its shore band)
   return m;
@@ -953,6 +959,13 @@ fn bShare(T: f32, V: f32) -> f32 {
   return (1.0 - W) * lin + W * ex;
 }
 fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
+// ---- fish3 _gate: the hunger gate's opening for fish i with gut g in its gut (S3 pGate: G = pGate · Cmax · W / k; S3 G0: G0 × W) ----
+fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
+  if (!(F3_HUNGER_GATE > 0.5)) { return 1.0; }
+  let W = ga(A_W, i); let cm = ga(A_cm, i); let pg = spv(k, S_pGate); var G = spv(k, S_g0) * W;
+  if (pg > 0.0) { G = pg * cm * W / max(1e-9, max(BIOE_GER * exp(BIOE_GER_T * ga(A_T, i)) * spv(k, S_gerMul), cm / spv(k, S_gut))); } else if (!(G > 0.0)) { return 1.0; }
+  return clamp(1.0 - gut / max(1e-9, G), 0.0, 1.0);
+}
 // ---- fish3 _feed's set-up: the gut's room by the O₂ and a guardian's appetite, what it can take this block ----
 @compute @workgroup_size(128) fn k_feed0(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -962,7 +975,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * guardMul(i, k, BROOD_GUARD_FEED3_0, BROOD_GUARD_FEED3_1);
   let apt = gEff / gmax;
   sa(A_fGEff, i, gEff); sa(A_fPerf, i, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)));
-  let hg = select(1.0, clamp(1.0 - ga(A_gut, i) / max(1e-9, spv(k, S_g0) * W), 0.0, 1.0), F3_HUNGER_GATE > 0.5 && spv(k, S_g0) > 0.0);   // (fish3 _feed: the hunger gate)
+  let hg = gateHg(i, k, ga(A_gut, i));   // (fish3 _feed: the hunger gate)
   sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY * hg); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
   sai(A_claim, i, -1);
 }
@@ -1005,17 +1018,18 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
         var w = 0.0;
         if (s2) {   // (an encounter for each fish of a school, × concealment, cover, the shallows; × capture success by kind, size, school)
           let nn = select(max(nb, 1.0), pow(nb, spv(k, S_schExp)), nb > 1.0 && cls == 0u); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, clamp(1.0 - abs(ga(A_bed, b) - ga(A_bed, i)) / max(F3_ENC_DZ, 1e-6), 0.0, 1.0), F3_ENC_DZ > 0.0);   // (F3.ENC_DZ: the water it holds)
-          if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, -0.8), cls == 1u); }
+          if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, F3_BASS_SCH), cls == 1u); }
             let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch; sE += enc; w = enc * cs; }
         } else { w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0); }
-        if (w > 0.0) { sK += w; dW[kb] += w; let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / w; if (key > bkey) { bkey = key; best = i32(b); } }   // (u^(1/w) in logs: small weights underflowed)
+        if (w > 0.0) { sK += w; dW[kb] += w; var wp = w; if (s2 && F3_PREY_PREF > 0.0) { let lr = log(ga(A_L, b) / L / F3_PREY_OPT) / F3_PREY_PREF; wp = w * exp(-0.5 * lr * lr); }   // (fish3 _strike2: the choice by prey size)
+          if (wp > 0.0) { let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / wp; if (key > bkey) { bkey = key; best = i32(b); } } }   // (u^(1/w) in logs: small weights underflowed)
       }
     }
   }
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = select(1.0, clamp(1.0 - ga(A_gut0, i) / max(1e-9, spv(k, S_g0) * ga(A_W, i)), 0.0, 1.0), F3_HUNGER_GATE > 0.5 && spv(k, S_g0) > 0.0); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * act * hg * U.dt); }   // (× the hunger gate)   // (π cancels)
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
   else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
@@ -1035,6 +1049,7 @@ fn strikesFor(n: f32) -> u32 { return 1u + u32(max(0.0, ceil(n - 1.5))); }
   sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr); sa(A_missCd, i, FEED_MISS_CD / TS);
   add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE); foodK(gau(A_k, i), 0u, gr * ga(A_n, i));
   let lc = lenClass(ga(A_L, pu)); add64(&TL, T_KILLSZ + 2u * (kp * 4u + lc), 1.0, TSCALE); add64(&TL, T_KILLPZ + 2u * (gau(A_k, i) * 4u + lc), 1.0, TSCALE);
+  { let lt = select(select(2u, 1u, U.sun > 0.02), 0u, U.sun > 0.3); add64(&TL, T_KILLLT + 2u * (kp * 3u + lt), 1.0, TSCALE); add64(&TL, T_KILLLP + 2u * (gau(A_k, i) * 3u + lt), 1.0, TSCALE); }   // (T_KILLLT/LP)
   let bd = ga(A_bed, pu); let dc = select(select(select(select(4u, 3u, bd < 2.0), 2u, bd < 1.0), 1u, bd < 0.6), 0u, bd < 0.3);
   let cv = ga(A_cover, pu); let cc = select(select(2u, 1u, cv < 0.5), 0u, cv < 0.1);
   add64(&TL, T_KILLD + 2u * (kp * 5u + dc), 1.0, TSCALE); add64(&TL, T_KILLC + 2u * (kp * 3u + cc), 1.0, TSCALE);
@@ -1321,6 +1336,7 @@ export const HAZ = /* wgsl */`
   let add = rdAcc(AC_SEDADD + 2u * j, GW); if (add > 0.0) { WD[W_sedOM + j] += add / stf(O_wA + j); }
 }
 fn tallyDeath(k: u32, cause: u32, n: f32) { add64(&TL, T_DIED + 2u * (k * NCAUSE + cause), n, TSCALE); }
+fn starveSz(k: u32, L: f32, n: f32) { add64(&TL, T_STARVSZ + 2u * (k * 4u + lenClass(L)), n, TSCALE); }   // (T_STARVSZ)
 fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32(jb), g, GW); } }
 @compute @workgroup_size(128) fn k_hazards(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -1328,6 +1344,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   let k = gau(A_k, i); let id = gau(A_id, i); let dt = U.dt; let K = ga(A_K, i); let T = ga(A_T, i); let L = ga(A_L, i); let W = ga(A_W, i); let jb = gai(A_jb, i);
   if (U.sun > 0.3 && (i & 7u) == 0u) { let bd = ga(A_bed, i); let dc = select(select(select(select(4u, 3u, bd < 2.0), 2u, bd < 1.0), 1u, bd < 0.6), 0u, bd < 0.3); add64(&TL, T_WHERE + 2u * (k * 5u + dc), ga(A_n, i), TSCALE); }   // (T_WHERE)
   if (U.sun > 0.3 && (i & 7u) == 0u && spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc)) { let fu = ga(A_gut, i) / max(1e-9, spv(k, S_gut) * W); let gc = select(select(select(select(4u, 3u, fu < 0.75), 2u, fu < 0.5), 1u, fu < 0.25), 0u, fu < 0.05); add64(&TL, T_GUT + 2u * (k * 5u + gc), ga(A_n, i), TSCALE); }   // (T_GUT)
+  if (U.sun > 0.3 && (i & 7u) == 0u) { let sd = shoreDist(ga(A_x, i), ga(A_y, i)) / GSCALE; let sc = select(select(select(select(4u, 3u, sd < 120.0), 2u, sd < 60.0), 1u, sd < 30.0), 0u, sd < 10.0); let zc = select(select(2u, 1u, L < 20.0), 0u, L < 10.0); add64(&TL, T_SHORE + 2u * ((k * 3u + zc) * 5u + sc), ga(A_n, i), TSCALE); }   // (T_SHORE)
   var hS = 0.0; if (K < BIOE_K_HAZARD) { hS = -log(max(1e-9, sigm(BIOE_STARVE_A + BIOE_STARVE_B * K))) / DAY; }
   { let hW = wHaz(k, L, f32(gau(A_age, i)), dt); if (hW >= 0.0) { hS = hW; } }   // (the first winter: the ramp in place of starvation)
   let kx = expm(dt * TS / BIOE_EXPOSE_TAU); let xo = ga(A_xo, i) + (ga(A_o2, i) - ga(A_xo, i)) * kx; let xt = ga(A_xt, i) + (T - ga(A_xt, i)) * kx;
@@ -1340,17 +1357,17 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   var cause = CAUSE_OTHER;
   if (old) { cause = CAUSE_OLD; } else if (hS >= hH && hS >= hO && hS >= hM) { cause = CAUSE_STARVE; } else if (hH >= hO && hH >= hM) { cause = CAUSE_HEAT; } else if (hO >= hM) { cause = CAUSE_HYPOXIA; }
   let n = ga(A_n, i);
-  if (old || !(W > 0.0)) { tallyDeath(k, cause, n); toBed(jb, n * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); return; }
+  if (old || !(W > 0.0)) { tallyDeath(k, cause, n); if (cause == CAUSE_STARVE) { starveSz(k, L, n); } toBed(jb, n * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); return; }
   if (n > 1.0) {   // a school loses a fraction; the shares by cause
     let lost = n * expm(hz * dt);
     if (lost > 0.0) {
-      if (hS > 0.0) { tallyDeath(k, CAUSE_STARVE, lost * hS / hz); } if (hH > 0.0) { tallyDeath(k, CAUSE_HEAT, lost * hH / hz); }
+      if (hS > 0.0) { tallyDeath(k, CAUSE_STARVE, lost * hS / hz); starveSz(k, L, lost * hS / hz); } if (hH > 0.0) { tallyDeath(k, CAUSE_HEAT, lost * hH / hz); }
       if (hO > 0.0) { tallyDeath(k, CAUSE_HYPOXIA, lost * hO / hz); } if (hM > 0.0) { tallyDeath(k, CAUSE_OTHER, lost * hM / hz); }
       toBed(jb, lost * W);
     }
     let left = n - lost;
     if (left < 1.0) { toBed(jb, left * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); } else { sa(A_n, i, left); }
-  } else if (hz > 0.0 && rnd(id, 40u, 0u) < expm(hz * dt)) { tallyDeath(k, cause, 1.0); toBed(jb, n * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); }
+  } else if (hz > 0.0 && rnd(id, 40u, 0u) < expm(hz * dt)) { tallyDeath(k, cause, 1.0); if (cause == CAUSE_STARVE) { starveSz(k, L, 1.0); } toBed(jb, n * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); }
 }
 `;
 
@@ -1614,7 +1631,8 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (!yAlive(q) || gy(Y_feeds, q) < 0.5) { return; }
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let W = gy(Y_W, q); let n = gy(Y_n, q); let T = gy(Y_yT, q); let st = gy(Y_st, q);
   let bs = yBioSet(k); let dd = st / DAY;
-  let want = n * coldCmax(k, bs, W, T) * W * dd * (1.0 + (FRY_CMAX_LARVA - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
+  var yw = 1.0; if (F3_YW_T0 > 0.0 && f32(gyu(Y_age, q)) > F3_YW_AGE * DAY) { yw = clamp((T - F3_YW_T0) / (F3_YW_T1 - F3_YW_T0), 0.0, 1.0); }   // (fish3 _feedYoy: F3.YW_T0, the winter's fast)
+  let want = yw * n * coldCmax(k, bs, W, T) * W * dd * (1.0 + (FRY_CMAX_LARVA - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
   sy(Y_want, q, want); var got = 0.0;
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
@@ -1786,7 +1804,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let o2L = lethalO2(spv(k, S_o2LethalS) / ENV_O2_MGL, spv(k, S_o2IceS) / ENV_O2_MGL, T); let lf = exp(-(L / FRY_LARVA_L) * (L / FRY_LARVA_L));
   let jd = GL[G_JUVD + k];
   let hN = (FRY_M_LARVA3 / max(0.3, L) * lf + FRY_M_JUV3 * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
-    + spv(k, S_M) * BIOE_M_OTHER * min(30.0, pow(L / spv(k, S_Lref), -0.87)) / YEAR;
+    + spv(k, S_M) * BIOE_M_OTHER * min(F3_YM_CAP, pow(L / spv(k, S_Lref), -0.87)) * select(1.0, min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)), F3_YM_COLD > 0.5) / YEAR;   // (F3.YM_COLD, YM_CAP)
   let uilt = spv(k, S_uiltS); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }
   var hS = gy(Y_hS, q); { let hW = wHaz(k, L, f32(gyu(Y_age, q)), st); if (hW >= 0.0) { hS = hW; } }   // (the first winter)
@@ -1815,11 +1833,12 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     let kb = nearestBP(x, y); var p = bp(u32(min(kb + 1, i32(BLAST)))); if (kb >= i32(BLAST)) { p = vec2f(stf(O_bLakeNear + 4u), stf(O_bLakeNear + 5u)); }
     tx = p.x; ty = p.y; tz = max(0.05, z); done = true;
   }
-  if (!done && o2 < spv(k, S_o2CritS)) { let bc = wdi(W_o2Best + c); if (bc >= 0) { tx = colX(u32(bc)); ty = colY(u32(bc)); } else { tx = x; ty = y; } tz = max(0.05, z - 1.0); done = true; }
+  let o2m = spv(k, S_o2CritS) * max(1.0, F3_YO2_MARGIN);   // (F3.YO2_MARGIN: the water they choose, with room to spare)
+  if (!done && o2 < o2m) { let bc = wdi(W_o2Best + c); if (bc >= 0) { tx = colX(u32(bc)); ty = colY(u32(bc)); } else { tx = x; ty = y; } tz = max(0.05, z - 1.0); done = true; }
   if (!done && T > spv(k, S_uiltS) - 3.0) { tx = x; ty = y; tz = bed - 0.05; done = true; }
   let s0 = u32(sti(O_fNbr0 + c)); let s1 = u32(sti(O_fNbr0 + c + 1u));
   if (!done && L >= spv(k, S_benthL) && (spv(k, S_dLarva) > 0.5 || spv(k, S_dSnail) > 0.5 || spv(k, S_dDetritus) > 0.5)) {
-    var best = -3.0e38; var bc = -1; let o2c = spv(k, S_o2CritS);
+    var best = -3.0e38; var bc = -1; let o2c = o2m;
     for (var m = 0u; m <= s1 - s0; m++) {   // (its own column first, then the ring: fish3's order — the first of equals wins)
       var cc = c; if (m > 0u) { cc = u32(sti(O_fNbrL + s0 + m - 1u)); }
       let jj = sti(O_fColBedJ + cc); if (jj < 0 || wd(W_o2 + u32(jj)) < o2c || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed))) { continue; }
@@ -1833,9 +1852,9 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     let gD = fryD(L); let cR = fryR(L); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
     var best = -1.0; var bj = -1; let k0 = min(nL(c) - 1u, u32(max(0, i32(z / WDZ))));
     let cv0 = yCov(k, c);
-    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed))) { continue; } let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * cv0; if (E > best) { best = E; bj = i32(jj); } }
+    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; } let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * cv0; if (E > best) { best = E; bj = i32(jj); } }
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0);
-      if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed))) { continue; }
+      if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; }
       let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * yCov(k, cc); if (E > best) { best = E; bj = i32(jj); } }
     if (bj >= 0) { let cc = u32(sti(O_wColOfCell + u32(bj))); if (cc != c) { tx = colX(cc) + (yrnd(q, 62u, 0u) - 0.5) * 30.0 * GSCALE; ty = colY(cc) + (yrnd(q, 62u, 1u) - 0.5) * 30.0 * GSCALE; } tz = stf(O_wZMid + u32(bj));  if (spv(k, S_yCover) > 0.0 && U.plants != 0u && wd(W_canopy + cc) > 0.1) { tz = max(0.05, max(tz, stf(O_wDepthMean + cc) - 0.5 * wd(W_canopy + cc))); } }   // (fish3: a cover keeper's young hold in the weeds)
     else { tx = x + (yrnd(q, 62u, 2u) - 0.5) * 60.0 * GSCALE; ty = y + (yrnd(q, 62u, 3u) - 0.5) * 60.0 * GSCALE; }
@@ -1843,7 +1862,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
   if (spv(k, S_brookRes) > 0.5 && bodyAt(tx, ty) != BROOK) { let p = bp(u32(nearestBP(tx, ty))); tx = p.x; ty = p.y; }
   sy(Y_tx, q, tx); sy(Y_ty, q, ty); sy(Y_tz, q, tz); sy(Y_spotBed, q, max(0.12, depthAt(tx, ty)));
   // RECRUITMENT: at the species' L0, or an overwintered school in spring
-  if ((F3_RECRUIT_SPRING < 0.5 && L >= spv(k, S_L0)) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= FRY_SPRING_YF && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }
+  if ((F3_RECRUIT_SPRING < 0.5 && L >= spv(k, S_L0)) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= select(FRY_SPRING_YF, WIN_YF1, F3_RECRUIT_WARM > 0.5) && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }   // (F3.RECRUIT_WARM: from the spring crossing)
 }
 `;
 

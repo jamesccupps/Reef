@@ -40,6 +40,8 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
+const KBY = (qs.get('kby') || 'perch,whiteperch,sunfish,redbreast,fallfish,killifish,catfish,dace').split(','), YBY = (qs.get('yby') || 'pike,bass,killifish,sunfish,perch,whiteperch').split(',');   // (the review's defaults: docs/review/PLAN.md item 1)
+const { CLOCK3 } = await import('../../src/w3/clock3.js');
 const { dev, info } = await GpuFish.device(); log(`GPU: ${info.vendor} ${info.architecture}`);
 window.YEAR = {};
 // (a lost device or an uncaught GPU error goes into the run's lines, which year_cdp copies — a hang after a driver reset said only
@@ -90,62 +92,106 @@ for (const sd of SEEDS) {
   // a watchdog: a block that hasn't returned in WATCH s says what it is waiting on (gpufish.js block's stage) — once
   let tlast = performance.now(), told = false; const WATCH = 30;
   const dog = setInterval(() => { if (!told && performance.now() - tlast > WATCH * 1000) { told = true; say(`!! WATCHDOG: a block has not returned in ${WATCH} s — waiting on '${G.stage}' · agents ${G.n}/${G.cap}, young ${G.ny}/${G.ycap}, block ${G.blk}`); } }, 5000);
-  let tl;
+  let tl, tlY = null, laaYr = -1, sumN = 0;
+  // the snapshot tallies (docs/review/PLAN.md item 1), read from the agents at a report: the followed fish's length at age (once a
+  // year, at the first report from 30 September — the field's autumn lengths — and at the end), the age-1 fish alive and the fish in
+  // the brook (every report: the loss after the spring's recruiting; who summers in the brook)
+  const NA = 9, BROOK3 = 3, bodyC = env.G.body, YR = CLOCK3.YEAR_LEN;
+  const snap = async laa => {
+    const f = await G.readFields(['k', 'flags', 'age', 'n', 'L', 'c']), u = v => new Uint32Array(v.buffer, v.byteOffset, v.length);
+    const kk = u(f.k), fl = u(f.flags), ag = u(f.age), cc = new Int32Array(f.c.buffer, f.c.byteOffset, f.c.length);
+    const nA = new Float64Array(NK * NA), lA = new Float64Array(NK * NA), brook = new Float64Array(NK);
+    for (let i = 0; i < kk.length; i++) {
+      if (!(fl[i] & 1)) continue; const k = kk[i], n = f.n[i], a = Math.min(NA - 1, Math.floor(ag[i] / YR));
+      nA[k * NA + a] += n; lA[k * NA + a] += n * f.L[i]; if (cc[i] >= 0 && bodyC[cc[i]] === BROOK3) brook[k] += n;
+    }
+    say('   age-1 followed fish: ' + KEYS3.map((k, q) => nA[q * NA + 1] >= 1 ? `${k} ${Math.round(nA[q * NA + 1])}` : null).filter(Boolean).join(' · ')
+      + ' · in the brook: ' + (KEYS3.map((k, q) => brook[q] >= 1 ? `${k} ${Math.round(brook[q])}` : null).filter(Boolean).join(' · ') || 'none'));
+    if (laa) {
+      const c = await G.census();
+      say('   LENGTH AT AGE (cm, followed fish n; age 0 = the young schools): ' + KEYS3.map((k, q) => `${k} 0:${c[k].yoyL.toFixed(1)}` + [1, 2, 3, 4, 5, 6, 7, 8].map(a => nA[q * NA + a] >= 1 ? ` ${a}${a === 8 ? '+' : ''}:${(lA[q * NA + a] / nA[q * NA + a]).toFixed(1)} (${Math.round(nA[q * NA + a])})` : '').join('')).join(' · '));
+    }
+  };
+  // the period's summary (each run-year's last report, and the run's end): the tallies since the last summary (base null: since the
+  // founding, with the founding's own counts added)
+  const summary = (tl, base, label) => {
+    const D = q => tl[q] - (base ? base[q] : 0);
+    say(`-- ${label}`);
+    const kills = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = D(T_KILLS + p * NK + q) / 1e6; if (v > 0) kills.push([`${kp}>${kq}`, v]); }));
+    kills.sort((a, b) => b[1] - a[1]); say('who ate whom (kills): ' + kills.slice(0, 14).map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+    for (const kq of KBY) {   // (?kby=: whose followed fish — every predator of each)
+      const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
+      KEYS3.forEach((kp, p) => { const v = D(T_KILLS + p * NK + q) / 1e6; if (v >= 1) by.push([kp, v]); });
+      by.sort((a, b) => b[1] - a[1]); if (by.length) say(`${kq} killed by: ` + by.map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
+    }
+    // where the followed fish were eaten (wgsl T_KILLD: pairs 1390 + prey·5 + the bed's depth class; T_KILLC: 1445 + prey·3 + cover class)
+    for (const kq of KBY) {
+      const q = KEYS3.indexOf(kq); if (q < 0) continue; const d = [0, 1, 2, 3, 4].map(c => D(1390 + q * 5 + c) / 1e6), cv = [0, 1, 2].map(c => D(1445 + q * 3 + c) / 1e6), t = d.reduce((a, b) => a + b, 0);
+      if (t >= 1) say(`${kq} eaten over the bed's depth: ` + ['< 0.3', '0.3–0.6', '0.6–1', '1–2', '≥ 2 m'].map((c, j) => `${c} ${(100 * d[j] / t).toFixed(0)}%`).join(' · ') + ` — at cover ` + ['< 0.1', '0.1–0.5', '≥ 0.5'].map((c, j) => `${c} ${(100 * cv[j] / t).toFixed(0)}%`).join(' · '));
+    }
+    // when the followed fish were eaten, by the light (wgsl T_KILLLT: pairs 1770 + prey·3 + day / twilight / night) and each predator's
+    // kills (T_KILLLP: 1805 + pred·3 + …)
+    for (const [tag, at] of [['eaten by the light (day / twilight / night %)', 1770], ["each predator's kills by the light (day / twilight / night %)", 1805]]) {
+      const parts = KEYS3.map((k, q) => { const v = [0, 1, 2].map(c => D(at + q * 3 + c) / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + v.map(x => (100 * x / t).toFixed(0)).join('/') + ')' : null; }).filter(Boolean);
+      if (parts.length) say(`${tag}: ` + parts.join(' · '));
+    }
+    // where each kind spends the day (wgsl T_WHERE: pairs 1480 + k·5 + the bed's depth class, every 8th followed fish's n by day)
+    { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => D(1480 + q * 5 + c)), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
+      if (parts.length) say("by day over the bed's depth (< 0.3 / 0.3–0.6 / 0.6–1 / 1–2 / ≥ 2 m, % of fish-blocks): " + parts.join(' · ')); }
+    // … and from the shore, by size (wgsl T_SHORE: pairs 1600 + (k·3 + size)·5 + class)
+    { const parts = []; KEYS3.forEach((k, q) => ['<10', '10-20', '20+'].forEach((z, zc) => { const v = [0, 1, 2, 3, 4].map(c => D(1600 + (q * 3 + zc) * 5 + c)), t = v.reduce((a, b) => a + b, 0); if (t > 0) parts.push(`${k} ${z} ` + v.map(x => (100 * x / t).toFixed(0)).join('/')); }));
+      if (parts.length) say('by day from the shore (< 10 / 10–30 / 30–60 / 60–120 / ≥ 120 m, % of fish-blocks; by length cm): ' + parts.join(' · ')); }
+    // the piscivores' stomachs by day (wgsl T_GUT: pairs 1540 + k·5 + fullness class, every 8th)
+    { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => D(1540 + q * 5 + c)), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
+      if (parts.length) say("piscivores' stomachs by day (empty < 5 % / 5–25 / 25–50 / 50–75 / ≥ 75 % full, % of fish-blocks; field 35–60 % empty): " + parts.join(' · ')); }
+    // starvation deaths by length (wgsl T_STARVSZ: pairs 1840 + k·4 + class)
+    { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => D(1840 + q * 4 + c) / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, x]) => `${c} ${(100 * x).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
+      if (parts.length) say('starved by length: ' + parts.join(' · ')); }
+    // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
+    // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills
+    for (const kp of ['pike', 'bass', 'fallfish', 'perch', 'whiteperch']) {
+      const p = KEYS3.indexOf(kp); if (p < 0) continue; const rows = []; let W = 0;
+      KEYS3.forEach((kq, q) => { const m = D(1024 + p * NK + q), g = D(1145 + p * NK + q), w = D(1266 + p * NK + q) / 1e6; if (m > 0) { rows.push([kq, m, g, w]); W += w; } });
+      rows.sort((a, b) => b[3] - a[3]); if (rows.length) say(`${kp}'s strikes met: ` + rows.map(([k, m, g, w]) => `${k} ${m >= 1e6 ? (m / 1e6).toFixed(1) + 'M' : (m / 1e3).toFixed(0) + 'k'} (${(100 * g / m).toFixed(0)}% takeable, ${(100 * w / Math.max(1e-12, W)).toFixed(0)}% of the weight)`).join(' · '));
+    }
+    // the followed fish eaten by their length (T_KILLSZ: pairs 925 + prey·4 + class) and each predator's kills by the prey's length (T_KILLPZ: 970 + pred·4 + the PREY's class)
+    for (const [tag, at] of [['followed fish eaten by length (prey)', 925], ["each predator's kills by the PREY's length", 970]]) {
+      const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => D(at + q * 4 + c) / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, x]) => `${c} ${(100 * x).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
+      if (parts.length) say(`${tag}: ` + parts.join(' · '));
+    }
+    // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)
+    for (const [tag, at] of [['followed fish', 608], ['young schools', 729]]) {
+      const yk = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = D(at + p * NK + q) / 1e6; if (v >= 1) yk.push([`${kp}>${kq}`, v]); }));
+      yk.sort((a, b) => b[1] - a[1]); if (yk.length) say(`young fish eaten by the ${tag}: ` + yk.slice(0, 14).map(([k, n]) => `${k} ${n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : Math.round(n)}`).join(' · '));
+    }
+    // each listed species' young: who ate them, the followed fish and the young schools together
+    for (const kq of YBY) {   // (?yby=: whose young)
+      const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
+      KEYS3.forEach((kp, p) => { const v = (D(608 + p * NK + q) + D(729 + p * NK + q)) / 1e6; if (v >= 1) by.push([kp, v, D(729 + p * NK + q) / 1e6]); });
+      by.sort((a, b) => b[1] - a[1]); if (by.length) say(`young ${kq} eaten by: ` + by.map(([k, n, y]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}${y >= 1 ? ` (${Math.round(100 * y / n)}% by its young)` : ''}`).join(' · '));
+    }
+    // the followed fish's diet over the period by mass (the report intervals' summed)
+    if (DIET) say("the period's diet (followed fish, by mass): " + KEYS3.filter(k => dietYr[k]).map(k => { const y = dietYr[k], t = y.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e6).toFixed(1)} t (` + FOODS.map((f, j) => [f, y[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
+    for (const k in dietYr) delete dietYr[k];
+    // the young's diet over the period by species (T_YFOODK: pairs 850 + k·5 + kind)
+    say("the period's young's diet: " + KEYS3.map((k, q) => { const g = [0, 1, 2, 3, 4].map(j => D(850 + q * 5 + j) / 1e6), t = g.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e3).toFixed(0)} kg (` + ['young fish', 'zoo', 'weeds', 'bed', 'mud'].map((f, j) => [f, g[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
+    // the young by species: hatched in the period and the period's fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
+    const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited', , 'capped'], T_FRY = 320;
+    const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched', 'capped'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
+    say("the period's young (hatched → the period's fates): " + KEYS3.map((k, q) => { const f0 = base ? {} : (st0.fry[k] || {}), v = j => (j === 7 ? D(910 + q) : D(T_FRY + q * 7 + j)) / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
+  };
   for (let day = 1; day <= DAYS; day++) {
     for (let b = 0; b < PER_DAY; b++) {   // (the water model stepped while the GPU works — ?overlap=0: after, as fish3's runs do)
       const tb = performance.now(); if (OVERLAP) await G.block(B, () => env.step(B)); else { await G.block(B); env.step(B); } tB += performance.now() - tb; nB++; tlast = performance.now();
     }
-    if (day % EVERY === 0 || day === DAYS) tl = await report(`day ${day}`);
+    if (day % EVERY === 0 || day === DAYS) {
+      tl = await report(`day ${day}`);
+      const yr = Math.floor(env.time / YR), laa = (env.yearFrac() >= 0.58 && laaYr !== yr) || day === DAYS; if (laa) laaYr = yr;
+      await snap(laa);
+      // the period's summary at each run-year's last report (the next would pass the founding's anniversary; the last year runs to the end)
+      if ((Math.floor((day + EVERY) / 365) > Math.floor(day / 365) && day + EVERY <= DAYS) || day === DAYS) { sumN++; summary(tl, tlY, `RUN-YEAR ${sumN} (to day ${day})`); tlY = tl; }
+    }
   }
-  const kills = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v > 0) kills.push([`${kp}>${kq}`, v]); }));
-  kills.sort((a, b) => b[1] - a[1]); say('who ate whom (kills): ' + kills.slice(0, 14).map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
-  for (const kq of (qs.get('kby') || 'perch,killifish,catfish,dace').split(',')) {   // (?kby=: whose followed fish — every predator of each)
-    const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
-    KEYS3.forEach((kp, p) => { const v = tl[T_KILLS + p * NK + q] / 1e6; if (v >= 1) by.push([kp, v]); });
-    by.sort((a, b) => b[1] - a[1]); if (by.length) say(`${kq} killed by: ` + by.map(([k, n]) => `${k} ${Math.round(n)}`).join(' · '));
-  }
-  // where the followed fish were eaten (wgsl T_KILLD: pairs 1390 + prey·5 + the bed's depth class; T_KILLC: 1445 + prey·3 + cover class)
-  for (const kq of (qs.get('kby') || 'perch,killifish,catfish,dace').split(',')) {
-    const q = KEYS3.indexOf(kq); if (q < 0) continue; const d = [0, 1, 2, 3, 4].map(c => tl[1390 + q * 5 + c] / 1e6), cv = [0, 1, 2].map(c => tl[1445 + q * 3 + c] / 1e6), t = d.reduce((a, b) => a + b, 0);
-    if (t >= 1) say(`${kq} eaten over the bed's depth: ` + ['< 0.3', '0.3–0.6', '0.6–1', '1–2', '≥ 2 m'].map((c, j) => `${c} ${(100 * d[j] / t).toFixed(0)}%`).join(' · ') + ` — at cover ` + ['< 0.1', '0.1–0.5', '≥ 0.5'].map((c, j) => `${c} ${(100 * cv[j] / t).toFixed(0)}%`).join(' · '));
-  }
-  // where each kind spends the day (wgsl T_WHERE: pairs 1480 + k·5 + the bed's depth class, every 8th followed fish's n by day)
-  { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => tl[1480 + q * 5 + c]), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
-    if (parts.length) say("by day over the bed's depth (< 0.3 / 0.3–0.6 / 0.6–1 / 1–2 / ≥ 2 m, % of fish-blocks): " + parts.join(" · ")); }
-  // the piscivores' stomachs by day (wgsl T_GUT: pairs 1540 + k·5 + fullness class, every 8th)
-  { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => tl[1540 + q * 5 + c]), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
-    if (parts.length) say("piscivores' stomachs by day (empty < 5 % / 5–25 / 25–50 / 50–75 / ≥ 75 % full, % of fish-blocks; field 35–60 % empty): " + parts.join(" · ")); }
-  // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
-  // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills
-  for (const kp of ['pike', 'bass', 'fallfish', 'perch', 'whiteperch']) {
-    const p = KEYS3.indexOf(kp); if (p < 0) continue; const rows = []; let W = 0;
-    KEYS3.forEach((kq, q) => { const m = tl[1024 + p * NK + q], g = tl[1145 + p * NK + q], w = tl[1266 + p * NK + q] / 1e6; if (m > 0) { rows.push([kq, m, g, w]); W += w; } });
-    rows.sort((a, b) => b[3] - a[3]); if (rows.length) say(`${kp}'s strikes met: ` + rows.map(([k, m, g, w]) => `${k} ${m >= 1e6 ? (m / 1e6).toFixed(1) + 'M' : (m / 1e3).toFixed(0) + 'k'} (${(100 * g / m).toFixed(0)}% takeable, ${(100 * w / Math.max(1e-12, W)).toFixed(0)}% of the weight)`).join(' · '));
-  }
-  // the followed fish eaten by their length (T_KILLSZ: pairs 925 + prey·4 + class) and each predator's kills by the prey's length (T_KILLPZ: 970 + pred·4 + the PREY's class)
-  for (const [tag, at] of [['followed fish eaten by length (prey)', 925], ["each predator's kills by the PREY's length", 970]]) {
-    const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => tl[at + q * 4 + c] / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, f]) => `${c} ${(100 * f).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
-    if (parts.length) say(`${tag}: ` + parts.join(' · '));
-  }
-  // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)
-  for (const [tag, at] of [['followed fish', 608], ['young schools', 729]]) {
-    const yk = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = tl[at + p * NK + q] / 1e6; if (v >= 1) yk.push([`${kp}>${kq}`, v]); }));
-    yk.sort((a, b) => b[1] - a[1]); if (yk.length) say(`young fish eaten by the ${tag}: ` + yk.slice(0, 14).map(([k, n]) => `${k} ${n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : Math.round(n)}`).join(' · '));
-  }
-  // the predators' young: who ate them, the followed fish and the young schools together
-  for (const kq of (qs.get('yby') || 'pike,bass').split(',')) {   // (?yby=: whose young — default the predators')
-    const q = KEYS3.indexOf(kq); if (q < 0) continue; const by = [];
-    KEYS3.forEach((kp, p) => { const v = (tl[608 + p * NK + q] + tl[729 + p * NK + q]) / 1e6; if (v >= 1) by.push([kp, v, tl[729 + p * NK + q] / 1e6]); });
-    by.sort((a, b) => b[1] - a[1]); if (by.length) say(`young ${kq} eaten by: ` + by.map(([k, n, y]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}${y >= 1 ? ` (${Math.round(100 * y / n)}% by its young)` : ''}`).join(' · '));
-  }
-  // the followed fish's diet over the year by mass (the report intervals' summed)
-  if (DIET) say("the year's diet (followed fish, by mass): " + KEYS3.filter(k => dietYr[k]).map(k => { const y = dietYr[k], t = y.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e6).toFixed(1)} t (` + FOODS.map((f, j) => [f, y[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
-  // the young's diet over the year by species (T_YFOODK: pairs 850 + k·5 + kind)
-  say("the young's diet over the year: " + KEYS3.map((k, q) => { const g = [0, 1, 2, 3, 4].map(j => tl[850 + q * 5 + j] / 1e6), t = g.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e3).toFixed(0)} kg (` + ['young fish', 'zoo', 'weeds', 'bed', 'mud'].map((f, j) => [f, g[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
-  // the year's young by species: hatched, then their fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
-  const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited', , 'capped'], T_FRY = 320;
-  const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched', 'capped'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
-  say("the year's young (hatched → fates): " + KEYS3.map((k, q) => { const f0 = st0.fry[k] || {}, v = j => (j === 7 ? tl[910 + q] : tl[T_FRY + q * 7 + j]) / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
   clearInterval(dog); G.destroy();
 }
 document.title = 'done';
