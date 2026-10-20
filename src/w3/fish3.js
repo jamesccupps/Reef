@@ -459,7 +459,9 @@ export function stageR5(on = true) {
   // (item 6i: fallfish fish-eating only from 18 cm: adults are insect and drift feeders, fish a large share only in pulses of naive
   // fry, fish ≤ 10–20 % of their diet otherwise, fallfish < 10 cm ate none (research killifish_persistence_and_predators.md); from
   // 10 cm they struck at the perch-like rate and became the killifish's top predator once the bass were gated (arm K: 51k kills))
-  S3.fallfish.sp.Lpisc = on ? 18 : 10;
+  // (arm M: at 18 cm the founded adults, ~25 cm, still took 45k killifish; fish in a fallfish's diet are documented only in pulses of
+  // naive salmon fry and eggs in rivers — only the largest, ≥ 30 cm, hunt fish here)
+  S3.fallfish.sp.Lpisc = on ? 30 : 10;
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
