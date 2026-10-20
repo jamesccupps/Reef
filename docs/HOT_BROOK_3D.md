@@ -845,6 +845,21 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   by day and 0.5–2 at night. Targets: ≥ 80 % of summer daytime positions within 100 m, ≤ 10 % beyond 150 m (< 40 cm).
   Still open: the bass's structure (rock/wood ×3–4, mud ×0.3 — no substrate map yet), strip home ranges, the juvenile perch's
   1.5–4-m band (mostly offshore here — flagged by the research).
+  ARM I (6e, 613; hung at day ~316 — the spring recruits took the agents ~300k → 388k with 45–49 cells > 256; year_cdp's stall
+  guard stopped it; year.js now logs a lost device): the shore band changed nothing in the bass's growth (24.8 vs 25.2 kg/ha at
+  day 168). 6f (b03b61a): the killifish's NIGHT water [0.1, 0.6] m (Helfman 1981, Opinicon, via McInerny & Cross [SEC]; was an
+  inferred 1–2.5). ARM J: their deaths over > 0.6 m 43 → 24 %, but still eaten out (bass 56k, fallfish 32k, pickerel 28k), mostly
+  over 0.3–0.6 m (61 %); bass 23.2 kg/ha. Every refuge moved WHERE prey die, not how many: the predators catch fish too easily.
+  6g (4875ba0): research `piscivore_field_feeding_rates.md` — Maine growth on the sim's own FB4 set needs p ≈ 0.34 (0.7–1.1 kg of
+  food a year; Mille Lacs 0.87 kg per smallmouth); wild bass hold ~0.4 %BW and use ⅓–½ of their gut; field strikes at fish ~0.3 per
+  hunting hour. In the sim E ≫ E_h wherever bass live (S = aMax) and the 8-%BW gut was the only brake, which on the sim's
+  evacuation empties at full Cmax above ~2.5 %BW (p → 0.9–1). BUILT: THE HUNGER GATE (F3.HUNGER_GATE, S3 G0: hunting and foraging
+  × h = 1 − gut/(G0·W); CPU _feed — want, the young's request, the strike; GPU k_feed0 fWant, k_strike; SPF g0) with bass G0
+  0.5 %BW (pickerel ungated: at 1 %BW they fell to p 0.13 in June; the true lakes' summer pickerel ran 0.29–0.31, below ~0.37), and
+  the bass's field strike values (PRED3: aMax 12 → 2.5 /h, hunting speed 0.2 → 0.1 m/s, act [0.2, 0.5, 0.05]). The note's toy:
+  p ≈ 0.28–0.35, ~1–1.5 fish a day. The 1/10 CPU lakes now starve the bass (p ~0.1; they underfed there already) — judge on the
+  GPU: ARM K (613, 1 yr) running. Not yet: the prey-vigilance factor (timing and prey choice), the bass's faster evacuation for
+  small prey (for the empty-stomach share), capture-success cuts (only if still needed), diets with insects (~25–40 %).
 - **Stage A — the SEA-RUN ALEWIFE (designed 2026-10-20; build after stage R settles).** MDIFW's 2024 chart lists sea-run
   alewife in Lower (the human's PDF); alewives reached Danforth by 2017 and the Baskahegan fishway opened in 2023; no count
   exists for Hot Brook (research `Hot Brook populations and water/sea_run_alewife.md`, its four seasons and §Implications).
