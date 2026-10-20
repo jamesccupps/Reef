@@ -192,6 +192,14 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-20 ~4:45 a.m.): STAGE R ITEM 5 — the encounter–strike–capture rule BUILT on the CPU, OFF (fish3
+_strike2, F3.STRIKE2 false; PRED3/CS3/SPINY3; research piscivore_encounter_attack.md). With it on, a summer month (1/10 lakes,
+scratchpad probe/diet5.mjs; OLD=1 the old rule): pickerel 0.78 fish/day, ration 0.77, crayfish 6 % (was 50); bass 0.44/day, crayfish
+20 % (was 83) — but killifish, dace, pumpkinseed eaten out in the month and pickerel/bass halve: the agents' strike precedes the
+young in _feed, so the gut fills on followed fish and the abundant young go untouched. NEXT: the young schools INTO the same
+encounter rule (choose ∝ encounters × success over agents and schools), then the GPU k_strike port + g1_check, then 3 seeds × 5
+years; crayfish CR_PREF 1 / CR_OUT 0.15,0.6 go with it (restored to 5 / 0.3,0.7 while off). Docs: HOT_BROOK_3D.md §4 "Item 5".
+The A/B queue and arm C still running (queue_r1.sh, queue_r3.sh).
 ▶▶▶ 2026-10-20 ~2 a.m. — THE A/B SO FAR (scratchpad r1A_613, r1B_613, r1A_611 done; yrsum.mjs / yrdem.mjs summarise): A and B
 alike over 5 years: total 95–105 kg/ha (field ✓), summer zooplankton years 2–5 ~20–70 µg/L (copepods 20–60 %), BUT the community
 collapses to perch (20–29) + white perch (38 → 44–48; target 15–35) + suckers (16–18): pumpkinseed, redbreast, killifish, dace

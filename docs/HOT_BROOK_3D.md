@@ -764,6 +764,23 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   winter starvation of the young's schools had been HARSHER than the ramp: white perch schools lost ~60 % by mid-March without
   it, ~35 % with it (the research's ~25–50 % at 57–66 mm FL). Gate: a 5-cm bass group loses 42 % over a late-winter month (the
   ramp 38 % of it), a 9-cm group 4 %. GPU kernels agree with fish3 at yf 0.9 (g1_check). Judged in multi-year runs (arm C).
+- **Item 5 — the predators (diagnosed 2026-10-20; CPU rule built, OFF)**. Five GPU years (A/B, seeds 613/611): the community
+  collapses to perch + white perch (44–48 kg/ha) + suckers; pickerel stop recruiting and starve, bass and bullhead adults starve;
+  summer diets crayfish (bass 65–77 %, pickerel 27–43 %) where Maine's are ~95 % / ~80 % fish (Cooper 1941). Measured in the 1/10
+  lakes (scratchpad probe strike_diag, overlap, strike_period): pickerel meet bullheads and adult perch too deep to swallow; the
+  1-hour year's ATTACK makes a hungry pickerel kill ~0.017 fish an hour among perch where esocids make 0.4–1.7 (research
+  `Real lake ecology for calibration/piscivore_encounter_attack.md`); crayfish come through a continuous ×5-weighted food response
+  that fills the gut first. BUILT (fish3 `_strike2`, `F3.STRIKE2`, `PRED3`, `CS3`, `SPINY3`; OFF by default): encounters from the
+  prey density within ENC_R 6 m of the column, E = π·RD²·(u + v)·N; strikes S = aMax·E/(E + E_h) (pickerel 3 /h, smallmouth 12,
+  perch-like 4; E_h 30 /h); capture success by prey kind × (1 − PPR/PPR0); esocids unconfused by schools, bass × n^−0.8; with it
+  crayfish CR_PREF 5 → 1 and CR_OUT 0.3/0.7 → 0.15/0.6. A summer month (1/10 lakes): pickerel 0.78 fish a day, ration 0.44 → 0.77,
+  crayfish 50 → 6 % of intake, white perch and perch their 2nd and 3rd prey; bass 0.44 fish a day, crayfish 83 → 20 % — BUT the
+  small species are eaten out in the month (killifish 1,499 → 0, dace 0.09×, pumpkinseed 0.27×; pickerel and bass halve, much of
+  it cannibalism): the agents' strike comes BEFORE the young-of-year in `_feed`, so with realistic strikes the gut fills on the
+  followed fish and the abundant young (the field's bulk of a summer predator's food — juvenile perch 6–11 cm) go untouched.
+  NEXT: the young schools into the same encounter rule (prey chosen ∝ encounters × success across agents AND schools), then the
+  GPU port (k_strike) and g1_check, then ≥ 3 seeds × 5 years. And the crayfish stock itself: Hot Brook's soft water (Ca ≲ 2–4
+  mg/L) may hold far fewer than the Michigan-based CR_ROCK 25 / CR_WEED 15 g/m² — ASK THE HUMAN / look up the lakes' calcium.
 - **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
   of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
   photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food

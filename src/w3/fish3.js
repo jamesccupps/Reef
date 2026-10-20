@@ -92,6 +92,20 @@ export const F3 = {
   // §7.2). The 2-D sim's (1 − x)^FEED.SIZE_SEL (2) made a 10–13-cm perch 4–8× less catchable than a 6-cm killifish to a 35-cm
   // pickerel — the field's rules ~2× — and the lakes' perch, the pickerel's first-named prey in Maine, lost < 1 % a year to them
   SIZE_K: 2,
+  // THE ENCOUNTER–STRIKE–CAPTURE RULE (stage R item 5; research_notes/Real lake ecology for calibration/piscivore_encounter_attack.md),
+  // in place of ATTACK × Σ when STRIKE2: the 1-hour year's ATTACK gave a 40-cm pickerel among perch ~0.017 kills an hour against
+  // the 0.4–1.7 a hungry esocid makes (lab strike rates 1.4–5.8 /h × capture success), and a snapshot of the 1-m strike sphere —
+  // empty ~90 % of blocks — fed into it. Now: ENCOUNTERS from the prey density about it (the block's prey drifting past from ENC_R
+  // m around, per m³ of its water column): E = π·RD²·(ENC_U + its own hunting speed)·N (RD the strike reach × its sight); STRIKES
+  // S = aMax·E/(E + ENC_EH) (PRED3: pickerel 3 /h, smallmouth 12, perch-like 4); each strike lands with the prey's CAPTURE success
+  // by the predator's kind (CS3, Wahl & Stein 1988; Mauck & Coble; Scharf et al. 1998) × (1 − prey/predator length ÷ PPR0) —
+  // esocids take a school's fish as singly (Turesson & Brönmark 2004), bass are confused (× n^−0.8), perch-like × 0.15 into a
+  // school; P(kill in dt) = 1 − e^(−S·CS̄·perf·dt), the fish struck ∝ encounters × success, the gut's room gating it. Field
+  // targets: 0.5–2 fish a day, 35–60 % empty stomachs; Maine pickerel ~95 % fish (55 % white perch), smallmouth ~80 % (Cooper 1941)
+  STRIKE2: false,       // (OFF until the young enter the same encounter rule and the GPU has it: see HOT_BROOK_3D.md §4 "Item 5")
+  ENC_R: 6,             // m: the neighbourhood read for prey density
+  ENC_U: 0.1,           // m/s: the prey's own movement through a predator's reach
+  ENC_EH: 30 / 3600,    // /s: the encounter rate at which strikes run at half their maximum
   SHALLOW_REFUGE: 0.6,  // very shallow water hides small fish from gape-limited predators: cover = this × clamp((0.8 − bed)/0.6) (the young's)
   // THE SHALLOWS ARE THE SMALL FISH'S (stage P3): a predator strikes at full effect only over water ≥ SHALLOW_K × its length (m/cm),
   // not at all over half that — a 35-cm pickerel from 0.7 m (none under 0.35), a 20-cm bass 0.4, a 12-cm perch 0.24: big fish don't
@@ -375,9 +389,19 @@ export const KEYS3 = SPECIES.filter(k => S3[k]);
 // pickerel_mortality_cannibalism.md). Without it, at true scale the pickerel ate each other at ~1.5 % of the adults a week — a
 // 24-cm pickerel within reach of a 26-cm one — where the evidence allows ≤ ~0.1–0.3 %
 export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
+// THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
+// 1.4–5.8, smallmouth ~12 in half cover, perch-like a prior), its own speed hunting (m/s: the pickerel waits in ambush), its kind
+export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0 }, bass: { aMax: 12, v: 0.2, cls: 1 }, other: { aMax: 4, v: 0.1, cls: 2 } };
+// capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
+// bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
+// predators a prior); SPINY: the spiny-rayed and deep-bodied, whose success falls faster with relative size (Scharf et al. 1998)
+export const CS3 = { killifish: [0.7, 0.6, 0.5], dace: [0.7, 0.6, 0.5], fallfish: [0.7, 0.6, 0.5], sucker: [0.7, 0.6, 0.5], pike: [0.6, 0.55, 0.4],
+  perch: [0.35, 0.45, 0.3], whiteperch: [0.3, 0.4, 0.25], bass: [0.3, 0.4, 0.25], sunfish: [0.12, 0.55, 0.3], redbreast: [0.12, 0.55, 0.3], catfish: [0.1, 0.2, 0.1] };
+export const SPINY3 = { perch: 1, whiteperch: 1, bass: 1, sunfish: 1, redbreast: 1, catfish: 1 }, PPR0 = [0.88, 0.6];   // (soft, spiny)
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
   s.key = k; s.i = i; s.sp = sp; s.name = sp.name; s.preyLR = PREY_LR[k] ?? PREY_LR0;
+  { const pd = PRED3[k] || PRED3.other; s.aMax = pd.aMax / 3600; s.vHunt = pd.v; s.predCls = pd.cls; s.cs = CS3[k] || [0.3, 0.3, 0.3]; s.ppr0 = PPR0[SPINY3[k] ? 1 : 0]; }   // (F3.STRIKE2)
   s.maxAge = sp.maxAge / Y2 * YEAR; s.matMinAge = sp.matMinAge / Y2 * YEAR; s.mateCd = sp.matingCooldown / Y2 * YEAR;
   s.uRoutine = s.cruise / s.sprint;
   s.pisc = !!sp.diet.fish; s.plank = !!sp.diet.plankton; s.sift = !!sp.diet.detritus;
@@ -1611,7 +1635,48 @@ export class Fish3 {
     return ate;
   }
   // a piscivore's strike: the kill hazard over the catchable fish within its reach; one fish taken (a school loses one)
+  // THE ENCOUNTER–STRIKE–CAPTURE RULE (F3.STRIKE2): the catchable fish of its water column within ENC_R m — each fish of a school
+  // an encounter, × its concealment, its cover, the shallows it may be in — give the prey density; encounters E = π·RD²·(u + v)·N;
+  // strikes S = aMax·E/(E + ENC_EH); each lands with the prey's capture success (its kind's against this predator's, × the size
+  // term, a school's confusion for bass and perch-like predators); one kill a block at most, the fish struck ∝ encounters × success
+  _strike2(a, i, room, visDay, perf, dt) {
+    const s = a.s, f = this.fish, lunge = 1 + ACTION.STRIKE_REACH * (a.fk === 1 ? engaged(a.o[3]) : 0), cls = s.predCls;
+    const RD = s.strikeR * lunge * Math.max(0.3, visDay), Rs = F3.ENC_R, Rs2 = Rs * Rs, dmH = 0.5 * F3.SHALLOW_K * a.L;
+    let sE = 0, sW = 0, best = null;
+    const gx0 = clamp(((a.x - Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1);
+    const gy0 = clamp(((a.y - Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1);
+    const S0 = this.hStart, I = this.hItems, cand = this._cand || (this._cand = []); cand.length = 0;
+    for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+      const c = gy * this.HX + gx;
+      for (let q = S0[c]; q < S0[c + 1]; q++) {
+        const b = f[I[q]]; if (!b.alive || I[q] === i) continue;
+        const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy > Rs2) continue;
+        if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
+        const nb = b.n > 1 ? b.n : 1, enc = nb * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1);
+        if (!(enc > 0)) continue;
+        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, -0.8) : cls === 2 ? 0.15 : 1) : 1);
+        sE += enc; const w = enc * cs; if (w > 0) { sW += w; cand.push(b, w); }
+      }
+    }
+    if (!(sW > 0)) return 0;
+    const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + F3.ENC_EH);
+    if (rand() >= -Math.expm1(-S * (sW / sE) * perf * dt)) return 0;
+    let r = rand() * sW; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
+    best = best || cand[cand.length - 2];
+    return this._killed(a, best);
+  }
+  // a predator's kill: the prey's grams to its gut (the caller), its energy density, the tallies, one fish from a school
+  _killed(a, best) {
+    const s = a.s, g = best.W + best.gon; this._preyED = energyDensity(best.s.sp.bio, best.W);
+    this.events.push(best.x, best.y, best.z, a.id);
+    this.stats.kills++; const key = `${s.key}>${best.s.key}`; this.stats.eatenBy[key] = (this.stats.eatenBy[key] || 0) + 1;
+    if (best.n > 1.5) best.n -= 1; else { best.alive = false; best.cause = 'eaten'; best.n = 0; }
+    this._tallyDeath(best.s.key, 'eaten', 1);
+    a.missCd = FEED.MISS_CD / TS;
+    return g;
+  }
   _strike(a, i, room, visDay, perf, dt) {
+    if (F3.STRIKE2) return this._strike2(a, i, room, visDay, perf, dt);
     const s = a.s, f = this.fish, lunge = 1 + ACTION.STRIKE_REACH * (a.fk === 1 ? engaged(a.o[3]) : 0);
     const R = s.strikeR * lunge * Math.max(0.3, visDay), R2 = R * R, dmH = 0.5 * F3.SHALLOW_K * a.L;   // (dmH: half the water it needs)
     let sK = 0, best = null;

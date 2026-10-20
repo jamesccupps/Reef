@@ -86,7 +86,8 @@ export const LIT3 = {
   CR_SNAIL: 0.002, CR_SNAIL_K: 0.5,   // g of snails a g of crayfish eats a day at 20 °C (type II in the snails within reach, g/m²) — they
   CR_SNAIL_REF: 0.5,       //   cut snail beds hard (Lodge et al. 1994), but the share on the upper leaves (this × the snails' capacity) is
                            //   out of their reach: snails persist in native-crayfish lakes
-  CR_OUT: [0.3, 0.7],      // the share of the active crayfish out foraging by day, by night (the rest in burrows, under stones)
+  CR_OUT: [0.3, 0.7],      // the share of the active crayfish out foraging by day, by night (the rest in burrows, under stones) — (with fish3's
+                           //   STRIKE2, stage R item 5: 0.15/0.6 — 10–20 % by day, Stein & Magnuson 1976; piscivore_encounter_attack.md §e)
                            //   (the weeds' stands hide some of those out: their fish cover, plants3 cov — S50 150 stems/m², as before)
   CR_WIDTH: 2.2,           // cm: a 12-g crayfish's body width; × (W/12)^⅓ — a fish takes those its gape fits
   // FRESHWATER MUSSELS (stage 7d; eastern elliptio, Maine's commonest — invertebrates_plankton_plants.md §2; the human: "lots
@@ -107,7 +108,9 @@ export const LIT3 = {
   MU_P_DISS: 0.5,          // of the filtered algae's P, the share excreted dissolved (the rest to the bed's store as biodeposits)
   MU_ASSIM: 0.3,           // of the filtered organic matter, the share assimilated (the rest to the bed's organic layer)
   MU_O2: 0.15,             // mg O₂ a mussel uses an hour at 20 °C (~0.15 mg/g DW/h; Q10 2; a fifth when burrowed)
-  CR_PREF: 5,              // a gram of catchable crayfish counts this many grams of small bed food in a forager's food response: big,
+  CR_PREF: 5,              // (with fish3's STRIKE2, stage R item 5: 1 — given fish, smallmouth avoid crayfish or take them at chance, Carter et al. 2010; bass ate
+                           //   35 % of sculpin and 1.7 % of crayfish in 36 h, McNeely et al. 1990; with fish predation working a gram is a gram; 5 propped up predators the old fish rule starved) —
+                           //   a gram of catchable crayfish counts this many grams of small bed food in a forager's food response: big,
                            //   conspicuous meals (~1 out per 13 m² of bed: a bass meets several an hour and needs one or two a day) —
                            //   at the worms' half-saturation (3 g/m²) the crayfish eaters fed at p 0.2–0.3 and starved twice as often
 };
