@@ -108,6 +108,9 @@ for (const sd of SEEDS) {
   // where each kind spends the day (wgsl T_WHERE: pairs 1480 + k·5 + the bed's depth class, every 8th followed fish's n by day)
   { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => tl[1480 + q * 5 + c]), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
     if (parts.length) say('by day over the bed's depth (< 0.3 / 0.3–0.6 / 0.6–1 / 1–2 / ≥ 2 m, % of fish-blocks): ' + parts.join(' · ')); }
+  // the piscivores' stomachs by day (wgsl T_GUT: pairs 1540 + k·5 + fullness class, every 8th)
+  { const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3, 4].map(c => tl[1540 + q * 5 + c]), t = v.reduce((a, b) => a + b, 0); return t > 0 ? `${k} ` + v.map(x => (100 * x / t).toFixed(0)).join('/') : null; }).filter(Boolean);
+    if (parts.length) say('piscivores' stomachs by day (empty < 5 % / 5–25 / 25–50 / 50–75 / ≥ 75 % full, % of fish-blocks; field 35–60 % empty): ' + parts.join(' · ')); }
   // the strikes' encounters (wgsl T_STRM/T_STRG/T_STRW: pairs 1024 / 1145 / 1266 + pred·NK + prey): per predator, each prey's fish met
   // within reach, those it could take, and its share of the strike weight — who meets whom, and what decides the kills
   for (const kp of ['pike', 'bass', 'fallfish', 'perch', 'whiteperch']) {
