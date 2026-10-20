@@ -1009,7 +1009,7 @@ fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * U.dt); }   // (π cancels)
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); pK = expm(S * (sK / sE) * ga(A_fPerf, i) * act * U.dt); }   // (π cancels)
   else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);

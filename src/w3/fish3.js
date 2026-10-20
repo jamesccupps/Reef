@@ -398,7 +398,10 @@ export function stageR5(on = true) {
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
 // 1.4–5.8, smallmouth ~12 in half cover, perch-like a prior), its own speed hunting (m/s: the pickerel waits in ambush), its kind
-export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0 }, bass: { aMax: 12, v: 0.2, cls: 1 }, other: { aMax: 4, v: 0.1, cls: 2 } };
+// act: the share of the time it hunts by [day, twilight, night] (sun > 0.3, > 0.02, below) — pickerel 2 % active at night against
+// 17–22 % by day, peaks at dawn and dusk; smallmouth ~0.3 by day (piscivore_encounter_attack.md (c)); without it the predators
+// hunted round the clock, fed at their maximum and tripled in a summer (arm D, seed 613)
+export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 12, v: 0.2, cls: 1, act: [0.3, 0.3, 0.1] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
 // predators a prior); SPINY: the spiny-rayed and deep-bodied, whose success falls faster with relative size (Scharf et al. 1998)
@@ -408,7 +411,7 @@ export const SPINY3 = { perch: 1, whiteperch: 1, bass: 1, sunfish: 1, redbreast:
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
   s.key = k; s.i = i; s.sp = sp; s.name = sp.name; s.preyLR = PREY_LR[k] ?? PREY_LR0;
-  { const pd = PRED3[k] || PRED3.other; s.aMax = pd.aMax / 3600; s.vHunt = pd.v; s.predCls = pd.cls; s.cs = CS3[k] || [0.3, 0.3, 0.3]; s.ppr0 = PPR0[SPINY3[k] ? 1 : 0]; }   // (F3.STRIKE2)
+  { const pd = PRED3[k] || PRED3.other; s.aMax = pd.aMax / 3600; s.vHunt = pd.v; s.predCls = pd.cls; s.act = pd.act; s.cs = CS3[k] || [0.3, 0.3, 0.3]; s.ppr0 = PPR0[SPINY3[k] ? 1 : 0]; }   // (F3.STRIKE2)
   s.maxAge = sp.maxAge / Y2 * YEAR; s.matMinAge = sp.matMinAge / Y2 * YEAR; s.mateCd = sp.matingCooldown / Y2 * YEAR;
   s.uRoutine = s.cruise / s.sprint;
   s.pisc = !!sp.diet.fish; s.plank = !!sp.diet.plankton; s.sift = !!sp.diet.detritus;
@@ -1670,7 +1673,8 @@ export class Fish3 {
     }
     if (!(sW > 0)) return 0;
     const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + F3.ENC_EH);
-    if (rand() >= -Math.expm1(-S * (sW / sE) * perf * dt)) return 0;
+    const sun = this.env.sun, act = s.act[sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2];   // (the share of the time it hunts now)
+    if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt)) return 0;
     let r = rand() * sW; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
     best = best || cand[cand.length - 2];
     return this._killed(a, best);
