@@ -546,6 +546,12 @@ export function stageR5(on = true) {
   // (item 23) bullheads spawn late May–June, most eggs in a 10–15-day window, once a year (Blumer 1985): spawnT [21, 28] started
   // at ~19.5 °C (12 June on the sim's curve) and nothing ended it before 1 September — 30–40 % spawned after mid-July
   SP.catfish.spawnT = on ? [18, 24] : BIO0.catfishT; S3.catfish.spawnEnd = on ? 0.38 : 0;
+  // (item 28) THE BROOK'S POOLS HOLD SO MANY: the share of the sunfishes near the brook's ends that summer in it — at 0.3 (pumpkinseed)
+  // and 0.5 (redbreast) ~3,200 summered in ~300 m² of its pool water (10.8 per m²: arm M), starving its dace's food; ~0.2–0.5 per m²
+  // of the ≥ 0.6-m water is the review's estimate (HSI: abundance rises with depth; the larger move upstream — Hall 1972), ~100–150
+  // at true scale. Redbreast are the brook's own sunfish and keep the larger share. (The human sees sunfish in the pools: a count
+  // would pin it.) The year runner's 'in the brook' line counts them
+  S3.sunfish.spawn.brook = on ? 0.01 : 0.3; S3.redbreast.spawn.brook = on ? 0.02 : 0.5;
   for (const [k, z] of [['whiteperch', 12], ['sunfish', 5], ['redbreast', 5], ['fallfish', 10], ['dace', 3], ['perch', 16]]) {
     const d0 = DIET0[k], noPl = on && k !== 'perch';
     S3[k].plank = noPl ? false : d0.plank; SP[k].diet.plankton = noPl ? false : d0.plank; SP[k].Lzoo = on ? z : d0.Lzoo;
