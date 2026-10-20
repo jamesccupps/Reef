@@ -192,6 +192,14 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-20 ~7:30 a.m.): THE HUMAN ANSWERED — CRAYFISH NOT COMMON; SCHOOLS OF SMALL FISH IN THE SHALLOWS (memory
+hot-brook-field-observations). Committed 0ddd1ef: fish3 stageR5(on) = F3.STRIKE2 1 + crayfish at a fifth of the Michigan capacity
+(CR_ROCK 5, CR_WEED 3, CR_MUD 0.4, CR_DEEP 0.1), CR_PREF 1, 15 % out by day; the GPU port (k_strike STRIKE2 branch, species fields
+aMax/vHunt/predCls/cs0-2/ppr0, SP_REC 144, the young fed before the strikes); ?r5=1 in year.js and g1_check (kernels agree at yf
+0.42). Defaults OFF. QUEUE CHANGED: arm C dropped; queue_r4.sh runs ARM D = arm B overrides + the first winter + r5=1 (snapshot r4
+:8115 = 0ddd1ef) on 613/611/612 × 5 yr after the A/B (queue_r1.done) → r4D_<seed>.txt, done flag queue_r4.done. Compare with
+r1A/r1B (yrsum.mjs, yrdem.mjs). Small-fish refuge: read the GPU kill tallies by prey depth (T_KILLD) before changing habitats.
+Explained the OpenAlex "injection" (an API notice asking AI agents to register a key with the user's email; ignored; optional).
 ▶▶▶ RESUME HERE (2026-10-20 ~4:45 a.m.): STAGE R ITEM 5 — the encounter–strike–capture rule BUILT on the CPU, OFF (fish3
 _strike2, F3.STRIKE2 false; PRED3/CS3/SPINY3; research piscivore_encounter_attack.md). With it on, a summer month (1/10 lakes,
 scratchpad probe/diet5.mjs; OLD=1 the old rule): pickerel 0.78 fish/day, ration 0.77, crayfish 6 % (was 50); bass 0.44/day, crayfish
