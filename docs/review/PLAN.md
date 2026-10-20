@@ -156,8 +156,9 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
 23. **The young bottom fish's water:**
     - sucker young in about 0.8 m of water (to 5 cm); bullhead young about 1.5 m;
     - fix what empties their food in August (summer starvation should be rare);
-    - the bullhead spawning window [18, 24] °C, with a spawning end.
-    - Refs: BY5–7.
+    - the bullhead spawning window [18, 24] °C, with a spawning end;
+    - age-1 suckers get a juvenile band (habJ) in the shallows: on the CPU they sat over ~3 m among the perches, and 99 % were gone by June.
+    - Refs: BY3, BY5–7.
 
 ### Phase 5: diets, energetics, the brook
 24. **Commit the arm-B diets into the code.** Today they exist only as URL overrides; they must be in the code before `stageR5` becomes the default.
@@ -176,7 +177,8 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
     - fallfish take pikeminnow's own waste fractions.
 
     This lowers maintenance from p ~0.40 to ~0.28.
-    - Refs: SF7.
+    - **Bullheads barely grow** (+0.04–0.25 cm a season; on the sim's FB4 set and the Maine calendar a 15-cm fish gains at most 2.3 cm a year even at p 0.7), so recruits never mature, spawnings fall 12.5k → 4.2k a year and biomass 10.4 → 3.0 kg/ha. Check the bullhead set against Maine and New England length at age, and use a better-founded set or a cold-water correction.
+    - Refs: SF7, BY (bullhead growth).
 27. **Gonads grow in autumn and winter**, not right after spawning. Refs: PE10.
 28. **The brook.**
     - Brook-summering sunfish capped by pool area: about 60–150 instead of about 3,200. Ask the human.

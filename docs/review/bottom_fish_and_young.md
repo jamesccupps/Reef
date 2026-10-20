@@ -35,7 +35,8 @@ winter, YOY densities of suckers and bullheads, sucker age-0 length) this file s
 
 **Runs read:**
 - GPU, true-size lakes, seed 613, all with the arm-B URL overrides (white perch, sunfish, redbreast, fallfish, killifish
-  and dace adults off zooplankton; not in the code — they do not touch suckers or bullheads directly):
+  and dace adults off zooplankton; not in the code). They push the adult white perch onto the bed (bed 77 % of their
+  year's diet in arm M), so they reach the bottom fish through the bed's food:
   - r8O_613 (arm O: the package through 6j + 6k YCOLD), read to day 952 (year 3's first winter); scratchpad tools
     `yrsum.mjs`, `yrdem.mjs`, plus `review/ysp.mjs` and `review/ytab.mjs` (per-species time series);
   - r6M_613 (arm M, one year, with the end-of-year tallies: who ate whom, kills by length, the young's fates and diets).
@@ -44,6 +45,9 @@ winter, YOY densities of suckers and bullheads, sucker age-0 length) this file s
   - `spawnwhere.mjs` — where and when suckers and bullheads spawn, the young's water, who eats suckers and bullheads (seed 611);
   - `growth.mjs` — a season's growth and fate of the followed suckers and bullheads by starting length (seed 611);
   - `winterO2y.mjs` — the young's first winter: the O₂ in the cells they sit in, school sizes, fates (seed 611).
+  - `growth2.mjs` — a season's p, K, gonads and length gain by size class (seed 612);
+  - `recruits.mjs` — who eats the spring recruits, and over what water (seed 611);
+  - `bgrow.mjs` — a year's growth on the sim's own FB4 sets and calendar at fixed p (no sim run).
 
 Single-seed GPU numbers swing; the patterns below recur in every season and both CPU seeds unless said otherwise.
 
@@ -62,6 +66,9 @@ Single-seed GPU numbers swing; the patterns below recur in every season and both
    the mechanism (§3.L):
    - the young keep sitting on the RICHEST bed all winter, the organic beds that go anoxic first;
    - they test O₂ only in their own cell, against o2Crit, and only after the hour's hazard is charged.
+   - The severity follows the late-winter O₂ of the run. On the CPU's full-year runs it was small (~1–3 % of the young);
+     in the autumn-seeded CPU probe it took ~20–29 % of the January young by 21 March; on the GPU's true-size lakes,
+     with ~100× bigger schools and longer blocks, it is the largest.
 
    Hot Brook is not a winterkill lake: white perch, which need oxygenated deep water in winter, persist there.
 2. **H — The young's "unsimulated" mortality is not cold-scaled and carries a Lorenzen size multiplier up to ×30**
@@ -85,32 +92,46 @@ Single-seed GPU numbers swing; the patterns below recur in every season and both
    | Perch | 19 % | 47 % |
    | White perch | 11 % | 19 % |
 
-   The same fish, as young schools in the eight weeks before, had lost ~3 % a fortnight to predators. The CPU shows
-   smallmouth killing suckers and bullheads at 4–7 °C in April, when Maine bass are near-still. The predators review found
-   the same for age-1 bass (63 % eaten within ~6 weeks).
+   The same fish, as young schools in the eight weeks before, had lost ~3 % a fortnight to predators. Two things meet
+   at the switch:
+   - the strike rule's cold factor: smallmouth killed suckers and bullheads at 4–7 °C in April on the CPU, when Maine bass
+     are near-still;
+   - the WATER the recruit is given. A recruit takes its species' adult bands unless the species has a `habJ`.
+
+   The CPU's age-1 suckers sat over ~3.1 m under the ice, among the yellow and white perch schools, and went 294 → 81 in
+   the first 20 days of April (white perch 117 kills, yellow perch 114, bass 22). Juvenile suckers live in the shallows
+   and brooks. The predators review found the same for age-1 bass (63 % eaten within ~6 weeks, mostly by pickerel).
 4. **H — Bullheads are the smallmouth's commonest prey by count** (arm M: 16,389 kills, 18 % of the bass's kills; CPU 1/10:
    bass + pickerel took ~25 % of the founding bullheads between May and August). Field: no record of smallmouth eating brown
    bullhead, Maine smallmouth ~0 bullhead (Cooper 1941; PDM §2.2, §7.1); bullheads are "least vulnerable" (Mauck & Coble
    1971); spines deter esocids (aquarium pike 0/10). Bullhead biomass falls 10.4 → 6.6 → 4.1 → 3.0 kg/ha over 2.6 years
    (census ~10).
-5. **M — The young bottom fish live in the wrong water.** Sucker and bullhead young settle on the richest bed anywhere: on the
+5. **H — Bullheads (and, less, suckers) barely grow.**
+   - On the CPU, over a whole season (mid-May → mid-September/October), followed bullheads grew **0.04–0.25 cm** at every
+     size, at p 0.44–0.48 and K ~0.95. Suckers grew 1.3–1.7 cm at 12–25 cm and 0.2–0.6 cm as adults (p 0.36–0.40).
+   - Field: bullheads +3–5 cm a year at 10–20 cm (Ottawa River 127 → 162 → 196 mm; the sim's own prior 8.5 → 15 → 20).
+   - The sim's FB4 bullhead set on the Maine calendar cannot do it at any plausible p: a 15-cm bullhead gains 0.0, 0.5,
+     1.4 and 2.3 cm a year at p 0.4, 0.5, 0.6 and 0.7 (its Cmax is 47 % of the maximum at 15 °C and 9 % at 10 °C).
+   - So the age-1 recruits (~7 cm) never reach Lmat 19 cm. Spawnings fall 12.5k → 6.8k → 4.2k a year, and the population
+     turns into small fish that the bass eat (item 4).
+6. **M — The young bottom fish live in the wrong water.** Sucker and bullhead young settle on the richest bed anywhere: on the
    CPU they sat over 2–3.5 m of water in June–August. Field: sucker fry under 51 mm feed in 15–20 cm of water along shores
    (SFH §3); young bullheads keep to quiet coves in compact schools (FFE; SFH §4). Only killifish have a shelf limit (`yBed`).
-6. **M — Starvation is a main SUMMER killer of young bullheads** (CPU: 26–29 % of the hatch starved by October, more than were
+7. **M — Starvation is a main SUMMER killer of young bullheads** (CPU: 26–29 % of the hatch starved by October, more than were
    eaten; GPU: 15–32 % a fortnight in August–September). Pickerel, bass and late sunfish young starve too. Field: predation,
    not starvation, kills the young in summer; starvation belongs in the first winter (FZC §2).
-7. **M — Bullheads spawn late and over too long** (GPU years 2–3: mid-June to early September, peak late June – mid-July,
+8. **M — Bullheads spawn late and over too long** (GPU years 2–3: mid-June to early September, peak late June – mid-July,
    ~30–40 % after mid-July). Field: late May – mid-June, most eggs laid in a 10–15-day window, once a year (Blumer 1985;
    FFE). `spawnT [21, 28]` (`species.js:574`) starts at ~19.5 °C (12 June on the sim's curve), and nothing ends it before
    SPAWN.SEASON_END (1 September).
-8. **M — The census cap is doing white perch's and sunfish's regulation.** At the year-1 spring recruitment the cap discarded
+9. **M — The census cap is doing white perch's and sunfish's regulation.** At the year-1 spring recruitment the cap discarded
    64 % of the surviving white perch cohort and 55 % of the pumpkinseed (arm O). The same problem is named in FINDINGS
    2026-10-19 ("a cap that binds is a missing mechanism").
-9. **M — Chain pickerel recruitment is ~0.** Arm O: 237,000 hatched → 2 and 4 recruits a year. The young pickerel die by late
+10. **M — Chain pickerel recruitment is ~0.** Arm O: 237,000 hatched → 2 and 4 recruits a year. The young pickerel die by late
    August at 6–8 cm: starved 17–21 %, eaten 20–37 % and natural 6–30 % a fortnight. Field: Maine YOY pickerel are 10–13 cm by
    fall and 60–80 % survive the winter. Killifish recruit 13 (KPP needs ≥ ~0.2 % egg → age 1). Both are mainly other
    reviews' species; the mechanism belongs to the YOY system.
-10. **L–M** — the smaller items in the tables: no egg incubation, no larval drift from the brook, sucker capture success set
+11. **L–M** — the smaller items in the tables: no egg incubation, no larval drift from the brook, sucker capture success set
     at the "most vulnerable" tier, no bury for young bullheads, sucker brook runs without a capacity, and others.
 
 What is RIGHT and should be kept:
@@ -130,7 +151,7 @@ Code: `S3.sucker` `fish3.js:288–290`; `MOVE3` `:356`; `SPAWN3` `:371`; `CS3` `
 
 | # | Aspect | Real (source) | Sim (file:line, value) | Status | Pri | Fix |
 |---|---|---|---|---|---|---|
-| 1 | Numbers, biomass, size | Census 70/ha ≥ 7.5 cm (FISH_CENSUS); ~60 % < 30 cm (50–75), ~300 g mean → ~21 kg/ha (SIZ §2); 12–20 % of a Maine lake's fish biomass (species.js note, MDIFW) | perHa 70 (`fish3.js:289`). Arm O: 17.1 → 14.1 → 11.5 → 12.0 kg/ha (years 0–3); **n 45,052 → 25,092 → 16,003 → 13,100; mean length 24.5 → 30.6 → 33.6 → 37.2 cm** | Biomass OK; numbers and size structure OFF (an ageing population, recruits about half of deaths) | H | Follow from items 18–19 below; judge on n and % < 30 cm, not kg/ha |
+| 1 | Numbers, biomass, size | Census 70/ha ≥ 7.5 cm (FISH_CENSUS); ~60 % < 30 cm (50–75), ~300 g mean → ~21 kg/ha (SIZ §2); 12–20 % of a Maine lake's fish biomass (species.js note, MDIFW) | perHa 70 (`fish3.js:289`). Arm O: 17.1 → 14.1 → 11.5 → 12.0 kg/ha (years 0–3); **n 45,052 → 25,092 → 16,003 → 13,100; mean length 24.5 → 30.6 → 33.6 → 37.2 cm** | Biomass OK; numbers and size structure OFF (an ageing population, recruits about half of deaths) | H | Rows 19 (first winter), 20 and 24 (the juveniles' first spring and water); judge on n and % < 30 cm, not kg/ha |
 | 2 | Habitat by season and time of day | Nearshore benthic forager, within 1 m of the bottom 84–88 % of the time; flat bays, avoids steep basins; mean 3.8 m in spring, 4.9 summer, 5.0 fall, 6.1 winter in a 34-m lake; more active and inshore at night (secondary sources); in winter slightly deeper, least movement (Richter et al. 2024; SFH §3) | Day bed [2.5, 5.5] m, h 0.2, act 0.5; night [0.5, 2.5], act 0.8; winter [3.5, 5.5], act 0.3 (`fish3.js:290`). GPU: 91 % of fish-blocks by day over ≥ 2 m | OK (in a 5.5-m unstratified lake the deeper flats are the field's "deeper than summer"; the night inshore move rests on secondary sources) | — | — |
 | 3 | Home range, movement | 95 % kernel 14.6–18.4 ha, core ~2 ha, 74–82 % seasonal overlap, 2.1–3.2 km/day (Richter 2024) | HOME(80, 230): a 230-m leash ≈ 16.6 ha | OK | — | — |
 | 4 | Lake-to-lake | Connected Adirondack lakes: a subset commutes daily through the channel, larger fish more (Marcy-Quay & Kraft 2021, SFH §3) | settle 0.07 /yr (`fish3.js:356`); no daily commuting | MISSING (minor) | L | Optional: a `trip`-like diel commute for large suckers living near a mouth |
@@ -138,7 +159,7 @@ Code: `S3.sucker` `fish3.js:288–290`; `MOVE3` `:356`; `SPAWN3` `:371`; `CS3` `
 | 6 | O₂, winter | "Anoxia-intolerant": killed after ~12 days at max DO < 1 mg/L; survived at ~4 mg/L (Shroyer 2007) | o2Lethal 1.0 (25 °C), under-ice floor 0.8 mg/L, o2Crit 0.3 × 9.5 = 2.9 mg/L (`species.js:311`); BIOE.HYPOXIA_DAYS 2 | OK (threshold right; the 2-day half-life at threshold is faster than the field's 12 days at < 1 mg/L — a shared parameter) | L | — |
 | 7 | Adult diet | Invertivore/detritivore: chironomids, microcrustaceans, detritus, small molluscs; strong benthic competitor (SSB §4) | detritus, larva, snail (`species.js:541`), Lsnail 12; year's diet bed 97 %, weeds 3 % (arm M) | OK | — | — |
 | 8 | Bioenergetics | No published model; yellow perch set is the nearest curve (SSB §1) | FB4 yellow perch set, ED 5,300 (`species.js:303–305`), flagged "uncalibrated" | UNKNOWN (stated assumption) | L | Validate against growth (row 9) once Maine length-at-age is in hand (Begley et al. 2017, blocked) |
-| 9 | Growth | Big Bear MI (45 °N): 342 mm at age III (dense) – 418 (thinned); La Grande QC: ~30 cm at age 7; the sim's prior reaches 30 cm at ~age 4 (SIZ §2) | vb prior L∞ 52, k 0.2 → 12/19/25/30/34 cm (`species.js:306`, founders only); growth emerges from FB4. CPU season's growth by size: [PENDING-GROWTH] | UNKNOWN → see probe | M | — |
+| 9 | Growth | Big Bear MI (45 °N): 342 mm at age III (dense) – 418 (thinned); La Grande QC: ~30 cm at age 7; the sim's prior reaches 30 cm at ~age 4 (SIZ §2); no Maine length-at-age readable | vb prior L∞ 52, k 0.2 → 12/19/25/30/34 cm (`species.js:306`, founders only); growth emerges from FB4.<br>**CPU (`growth.mjs`/`growth2.mjs`, seeds 611/612, 120–150 days from mid-May):** +1.6–1.7 cm at 12–18 cm, +1.3–1.4 at 18–25, +0.2–0.6 for adults; p 0.36–0.40; K 0.96 → 0.91; mature fish carry 6–7.5 % of their mass in gonads by mid-September (built in summer).<br>On the sim's own set (`review/bgrow.mjs`, bed prey 3,300 J/g, Maine calendar) the prior needs p ≈ 0.5 (+6.7 / +6.0 / +5.2 cm at 12 / 20 / 30 cm); p 0.4 gives +3.6 / +2.7 / +1.7 | OFF (about half the prior) | M | The bed food that sets p (§3.H: the bed is shared with the adult white perch); gonads built in autumn–winter, not right after spawning (as in the perches review) |
 | 10 | Maturity | ♂ 2–3, ♀ 3–4 yr (Ontario); NJ ♂ 2–6, ♀ 3–7; Missouri age 3 at 275 mm (SIZ §2.2) | Lmat 30 ♀ / 26 ♂, matMinAge 2 yr, PMRN floor 0.7 (`species.js:307`) | OK | — | — |
 | 11 | Fecundity | 12,500–140,000 (Ontario); 20,000–50,000 (DFO); 36,000–139,000 (Vermont) | ~60 eggs/g: 30 cm 16,000, 40 cm 40,000, 50 cm 81,000 (`species.js:309`) | OK | — | — |
 | 12 | Spawning time | Runs from ~10 °C soon after ice-out, peak 11–15 °C, about six weeks; entry peaks at sunset (SSB §3, SFH §3) | spawnT [10, 15] (`species.js:544`). CPU: first spawning 15 May; GPU: early May – 9 June, peak mid-May. 10 °C falls on 11 May on the sim's curve | OK | — | — |
@@ -149,10 +170,11 @@ Code: `S3.sucker` `fish3.js:288–290`; `MOVE3` `:356`; `SPAWN3` `:371`; `CS3` `
 | 17 | Young's growth | No Maine data; ~50–80 mm (FWM table, a guess); vb prior 12 cm at age 1 | GPU: 6.6 cm 26 Aug, 7.2 cm 23 Sep, 8.0 cm 4 Nov (year 1); 6.7 / 7.6 (year 2). CPU: 6.7–6.9 cm 10 Oct, 7.4–7.5 mid-Nov | OK / UNKNOWN | — | — |
 | 18 | Young's survival, summer | No sucker data; juvenile Z 0.03–0.06 /d generic (FZC §2) | GPU: Z 0.039 /d (3 June → 26 Aug), 0.023 /d (→ 4 Nov). CPU: 2.6–3.5 % of the hatch alive on 10 October | OK | — | — |
 | 19 | First winter | No study; suckers live to the Arctic, so the young should tolerate winter well; a ramp is a placeholder (FWM §4); with predators ~30–70 % survive generally | WINTER0 K [0.73, 0.65] → 35–60 mm (`config.js:453`): ~0 % at 75–80 mm. **GPU survival 4 Nov → 22 Mar: 22 % (year 1), 14 % (year 2)**: hypoxia 10–25 %, natural 2.2–2.8 %, eaten ~3 % a fortnight | OFF | H | §3.L (hypoxia), §3.D (M_OTHER) |
-| 20 | Recruitment and hand-off | — | Spring at 30 March (FRY.SPRING_YF 0.08) as individual agents. Arm O: 21,366 (year 1, 0.086 % of the seeded hatch) and 8,321 (year 2); **between 22 March and 17 May (0.7 → 9 °C) the suckers lost 21,000 fish in year 1 (19,700 eaten) — as many as had just recruited — and 10,500 against 8,321 recruits in year 2**. Mostly bass, then pickerel, perch, white perch and fallfish (CPU April tallies) | OFF | H | §3.M |
-| 21 | Replacement | Lifetime eggs ~100–150k per female; at field-like juvenile survival (age 1 → 4 ≈ 0.3) egg → age 1 of ~0.005 % replaces, at the sim's (~0.13) ~0.012 % [inf] | Egg → age 1: 0.0086 % (year 1), ~0.005 % (year 2) | Recruitment OK in the summer; the deficit is the first winter and the spring hand-off | H | Fix 19–20; then re-check |
+| 20 | Recruitment and hand-off | — | Spring at 30 March (FRY.SPRING_YF 0.08) as individual agents. Arm O: 21,366 (year 1, 0.086 % of the seeded hatch) and 8,321 (year 2); **between 22 March and 17 May (0.7 → 9 °C) the suckers lost 21,000 fish in year 1 (19,700 eaten) — as many as had just recruited — and 10,500 against 8,321 recruits in year 2**. **CPU (`recruits.mjs`, seed 611):** the age-1 suckers stay in the adults' day water (over ~3.1 m) under the ice and go 294 → 81 in the first 20 days (1–21 April, 0.4–3 °C), eaten by white perch 117, yellow perch 114, bass 22, fallfish 7 and pickerel 5; by early June 99 % are gone | OFF | H | Row 24 (their water) first; §3.M (the cold-water strike) second |
+| 21 | Replacement | Lifetime eggs ~100–150k per female. At field-like juvenile survival (age 1 → 4 ≈ 0.3) an egg → age-1 survival of ~0.005 % replaces the stock [inf] | Egg → age 1: 0.0086 % (year 1), ~0.005 % (year 2) — enough. But the age-1 fish then die at 92–99 % within weeks (rows 20, 24), so age 1 → 4 survival is ~0.01, not ~0.3 | The summer is fine; the first winter, the hand-off and the juveniles' water are not | H | Rows 19, 20, 24; then re-check |
 | 22 | Adult mortality | Survival 70–75 % for fish > 38 cm (Coble 1967); interior-Maine bald eagles take mostly bullheads, suckers and pickerel (Todd et al. 1982, PFR) | M 0.32 → M_OTHER 0.16 /yr × (L/40)^−0.87 (×0.5–3) (`fish3.js:2398`). Year 2: deaths 52 % of the population; eaten by length 37 % < 10 cm, 57 % 10–20, 6 % 20–30, none ≥ 30 (arm M) | Adults OK; juveniles high (items 19–20) | — | — |
 | 23 | As prey | "Young suckers" in Maine pickerel and bass diets (Cooper 1941); target for pickerel: fallfish, dace, killifish and young sucker 15–35 % of fish mass (PDM §7.1). **Mauck & Coble 1971 rank white sucker "intermediate" with yellow perch and golden shiner** (PEA §b), not with fathead and shad | CS3 sucker [0.7, 0.6, 0.5] (`fish3.js:482`): the "most vulnerable" soft-rayed tier, with killifish and dace (PEA's own table lists "small sucker" at 0.70, contradicting its Mauck & Coble line) | OFF (likely) | L | ~[0.5, 0.5, 0.4] (between perch and killifish); check the pickerel's sucker share after |
+| 24 | **Juveniles' water (age 1–2)** | Juveniles live in the shallows and brooks where nets do not fish: eastern-Maine EMAP nets took 183 adult suckers and 21 juveniles (SIZ §2.1); the young-of-year are in 15–20-cm shore water (row 15); with adult predators about, small suckers keep to shallow riffles (Schlosser 1987, PFR) | No `habJ`: a 9-cm recruit takes the adults' bands (day [2.5, 5.5] m, winter [3.5, 5.5]) among the yellow and white perch schools (day [3.0–3.5, 5.5]). CPU: 7.5–12-cm suckers 94–100 % gone in a summer, 12–18 cm ~50 %; ≥ 25 cm none | **MISSING** | **H** | `S3.sucker.habJ = { L: [15, 28], bot: [0.3, 1.5], wbot: [1.0, 2.5] }` (inshore, blending to the adults' water by ~28 cm), as perch and bass have; check the young's and juveniles' share of the brook |
 
 ---
 
@@ -163,13 +185,13 @@ Code: `S3.catfish` `fish3.js:291–295` (bury, group); `F3.BURY_H` `:141`; `MOVE
 
 | # | Aspect | Real (source) | Sim (file:line, value) | Status | Pri | Fix |
 |---|---|---|---|---|---|---|
-| 1 | Numbers, biomass, size | Census 100/ha ≥ 7.5 cm; ~70 % < 20 cm; ~95 g mean → ~10 kg/ha (SIZ §3); Moe Pond 260/ha, 13 kg/ha; Cassidy 48/ha at ~290 g (with bass) | perHa 100 (`fish3.js:294`). Arm O: **10.4 → 6.6 → 4.1 → 3.0 kg/ha** (day 952); n 64,361 → 77,197 → 55,419 → 22,124; mean length 16.9 → 11.3 → 10.9 → 14.4 cm; spawnings 12.5k → 6.8k → 4.2k a year | OFF (a steady decline, numbers and biomass) | H | Items 9, 13, 15, 16 |
+| 1 | Numbers, biomass, size | Census 100/ha ≥ 7.5 cm; ~70 % < 20 cm; ~95 g mean → ~10 kg/ha (SIZ §3); Moe Pond 260/ha, 13 kg/ha; Cassidy 48/ha at ~290 g (with bass) | perHa 100 (`fish3.js:294`). Arm O: **10.4 → 6.6 → 4.1 → 3.0 kg/ha** (day 952); n 64,361 → 77,197 → 55,419 → 22,124; mean length 16.9 → 11.3 → 10.9 → 14.4 cm; spawnings 12.5k → 6.8k → 4.2k a year | OFF (a steady decline, numbers and biomass) | H | Items 7 (growth), 16 (predation), 15 (first winter), 9, 13 |
 | 2 | Day/night habitat | Inactive by day in weeds or cover; forages over open mud after dark (activity gated at ~1 lux, Eriksson 1978); dawn and dusk feeding peaks; sheltered muddy coves; home range ~4.5 ha in summer, up to ~20 ha in spring (Sakaris & Jesien 2005; SFH §4) | Day bed [0.5, 3.0] m, h 0.02, act 0.1; night [0.3, 2.5], act 0.6 (`fish3.js:295`); HOME(40, 120) ≈ 4.5 ha | OK in place and timing. MISSING: daytime SHELTER — 45 % of the bullheads eaten were at cover < 0.1 (arm M tally) | M | A day-rest cover rule: by day a bullhead seeks and holds cover (weeds, wood, a burrow), cover ≈ 0.6–0.8 while resting — as S3 `bury` does in winter |
 | 3 | Winter | Stops feeding, buries in soft ooze with only mouth and gills out; survives 0.2–0.3 ppm O₂; last fish standing in a winterkill (Cooper & Washburn 1946; SFH §4) | bury 0.9 at ≤ 5 °C within 0.3 m of the bed (`fish3.js:141, 294`); winter band [1, 4] m, act 0; cold rule quiet ×0.7 below 6 °C (`species.js:324`); o2Ice 0.2 mg/L (`:329`) | OK (adults). The young schools do not bury | L | Young bullhead schools: the same bury cover in cold water (`_yoyLive` cover, `fish3.js:2188`) |
 | 4 | Temperature | Preferred 25–31 °C, UILT ~36–37.5 (SSB §5) | tPref 28, tempOpt 29, uilt 36 | OK | — | — |
 | 5 | Adult diet | Bottom omnivore: chironomids, molluscs, crustaceans to crayfish, plants, detritus, **fish eggs and fish**; 7 % of substrate predation on bluegill nests (Gross & MacMillan 1981, RCM §2) | detritus, plants, larva, snail, cray 0.15 (`species.js:571`); year's diet bed 91–97 %, weeds 1–5 %, cray 2–3 %; eats larvae ≤ 2 cm (LARV_A) | OK. MISSING: nest-egg predation, carrion | L | Eggs on nests as food for bullheads (egg predation instead of a fixed sHatch) — later |
 | 6 | Bioenergetics | FB4 brown bullhead (Hartman et al. 2017), official | Adults on it (`species.js:314`); YOY on largemouth (Rice) because FB4's set gives < 2 %/d at 1–4 cm (`:316–321`); cold respiration on the bullhead's own (`:322–324`) | OK (stated assumption, checked against field YOY growth) | — | — |
-| 7 | Growth | Ottawa River 127/162/196/222/243 mm at annuli 1–5 (fast); 20 cm only at ~age 3; Maine adults usually ~25 cm (SIZ §3.2) | vb prior 8.5/15/20/24/27 cm (`species.js:325`); growth emerges. CPU season's growth by size: [PENDING-GROWTH] | see probe | M | — |
+| 7 | Growth | Ottawa River 127/162/196/222/243 mm at annuli 1–5 (fast); 20 cm only at ~age 3; NJ adults 140–340 mm; Maine adults usually ~25 cm (SIZ §3.2) | vb prior 8.5/15/20/24/27 cm (`species.js:325`); growth emerges from the FB4 Hartman set.<br>**CPU (seeds 611/612, a season from mid-May):** **+0.04–0.25 cm at every size**, p 0.44–0.48, K ~0.95.<br>On the set itself (`review/bgrow.mjs`, Maine calendar, bed prey 3,300 J/g): a 15-cm bullhead gains +0.0 / +0.5 / +1.4 / +2.3 cm a year at p 0.4 / 0.5 / 0.6 / 0.7 (a 10-cm one 0 / 0.4 / 1.1 / 1.9). Its Cmax is 9 % of the maximum at 10 °C, 47 % at 15 °C and 77 % at 18 °C (CEQ 3, CQ 15), with ED 6,700 J/g. ED 4,500 adds only ~0.5 cm; CA ×1.5 (0.18) gives +2.7 at p 0.5 and +4.1 at p 0.6 | **OFF** — the recruits (~7 cm at age 1) never reach Lmat 19; spawnings fall each year | H | Calibrate the bullhead's consumption to northern growth at p ~0.5 (CA ≈ 0.18–0.2, or the Thornton–Lessem lower limb), as Breck raised larval CA 50 % (FRY.CMAX_LARVA); check the 6,700-J/g ED (the FB4 file's, whose lab basis is unpublished — SSB §1 gaps). Gate: an immature 10–15-cm bullhead gains ~3–5 cm a year at the run's p |
 | 8 | Maturity, fecundity | First breeding at age 3 (Blumer; MI DNR); 2–3 yr (Ontario); 1,050–13,800 eggs (Ontario), Polish mean 3,227 (46/g) (SSB §3) | Lmat 19 cm both sexes, matMinAge 2 yr (`species.js:326`); 0.274·L^2.9 → 25 cm ≈ 3,100 (13/g) (`:328`) | OK | — | — |
 | 9 | Spawning time | Michigan: late May – early June, peak in the first 16 days of June, **most eggs laid in a 10–15-day window**, once a year (Blumer 1985); NH from ~18 °C; Ontario 14–25 °C; Wisconsin 21–25 (SSB §3; FFE) | spawnT [21, 28] (`species.js:574`) → starts at 19.5 °C (12 June on the sim's curve), full from 21 °C (22 June), open until SPAWN.SEASON_END (1 Sep). CPU 1/10 (founders): 12 June – early July. **GPU years 2–3: 14 June – 6 Sep, peak late June – mid-July, 30–40 % after mid-July** | OFF | M | spawnT ≈ [18, 24]; a per-species spawning end (bullhead ~yf 0.38, mid-July) after which unspawned gonads are resorbed. Late-August broods are the ones that die in the winter |
 | 10 | Nest and care | Saucer nests in sand, gravel or mud under logs, rocks, roots or banks in shallow water; both parents in 56 % of broods, male alone in 39 %; hatch in ~5.6 d; care to ~20 days after laying (to ~25–50 mm); fry balls (Blumer 1985; FFE; PDM §5.1) | Traditional grounds over [0.3, 1.5] m (`fish3.js:371`); male guards nestGuard 0.033 yr ≈ 12 d (`species.js:574`); guarded brood × (1 − BROOD.PROTECT 0.8) (`config.js:307`); sHatch 0.6; CPU spawning bed 0.79–0.81 m | OK. MISSING: cover/cavity needed for a nest | L | `SPAWN3.catfish.sub` = rigid structure or wood |
@@ -200,12 +222,12 @@ line for line in the parts read (mortality `y_mort` `:1781`, targeting `y_target
 | E | Diet ladder | Nauplii/rotifers → small cladocerans and copepods by ~8–12 mm → Daphnia; insects and benthos from ~2 cm (bass 1.5–2.5 cm), fish at 4–6 cm (pickerel), ~10 cm (smallmouth) (FZC §1; species notes) | PLANKTON.FRY_* ladder (`config.js:1001–1018`); weed fauna from 1.2 / 2.5 cm (`littoral3.js:67`); bed from benthL; fish from yLpisc | OK | — | — |
 | F | Feeding order | Young benthic feeders take what they meet; bullhead YOY 60/25 crustacea/chironomids | `_feedYoy` takes zooplankton first, then weeds, bed, mud (`fish3.js:2301–2326`) | OK-ish | L | Share by profitability as the adults do (F3.SHARE) |
 | G | Habitat / targeting | Bottom-fish and littoral young in the shallows (sucker < 51 mm in 15–20 cm water; bullhead coves; killifish ≤ 1.2 m; perch inshore by 30 mm; bass within ~88 m of the nest; SFH; SFN §Q6) | The richest food about the school (own column + ring), O₂ ≥ o2Crit for bed choices, `yBed` only for killifish (`fish3.js:2259–2270`), pelagic sunfish fry, no `yBed` elsewhere | OFF for sucker and bullhead (rows 1.15, 2.13) | M | `yBed` (and `yCover` where the field says weeds) per species |
-| H | Starvation (scramble) | Predation, not starvation, kills young fish in summer; starvation is a first-winter, size-selective process (FZC §2) | `_feedYoy` scramble starvation (`fish3.js:2335–2342`). GPU arm M year: bass young 28.6 % starved, bullhead 11.9 %; pickerel 17–21 % a fortnight in Jul–Aug; CPU bullhead 26–29 % of the hatch | OFF (bottom-fish and piscivore young) | M | Find what empties their food: the bed's worms and scuds in August (shared with the adult white perch, whose diet runs 77 % bed in arm M) and the young piscivores' prey bins. Keep starvation, fix the food |
+| H | Starvation (scramble) | Predation, not starvation, kills young fish in summer; starvation is a first-winter, size-selective process (FZC §2) | `_feedYoy` scramble starvation (`fish3.js:2335–2342`). GPU arm M year: bass young 28.6 % starved, bullhead 11.9 %; pickerel 17–21 % a fortnight in Jul–Aug; CPU bullhead 26–29 % of the hatch | OFF (bottom-fish and piscivore young) | M | Find what empties their food: the bed's worms and scuds in August (shared with the adult white perch, whose diet runs 77 % bed in arm M under the arm-B overrides) and the young piscivores' prey bins. Keep starvation, fix the food |
 | I | Growth by autumn | Field age-0 lengths: perch 55–75 mm (productive 66–81); smallmouth 56–76 (Maine); pumpkinseed 25–45; bullhead 50–76; killifish 26–32 mm late Sep (to 49.5 at Opinicon); pickerel 10–13 cm; white perch ~45–70 (NJ annulus I 71); sucker unknown (~50–80) | Arm O, 23 Sep / 4 Nov (year 1; year 2 in brackets): perch 7.8/8.7 (7.0/7.9); bass 7.8/9.2 (5.2/7.8); pumpkinseed 3.3/3.6 (1.7/1.9); bullhead 6.7/6.8 (5.7/6.3); white perch 6.2/7.4 (5.7/6.7); sucker 7.2/8.0 (6.7/7.6); redbreast 3.1/3.4 (1.3/1.7); fallfish 6.5/7.3; killifish 2.4/2.7; pickerel 8.1 (Sep) then none | OK for most; killifish slightly small; pickerel OFF; year-2 pumpkinseed and redbreast late runts (few adults left) | — | — |
 | J | Predation on the young | Clearance by density, Holling II on the gut (Persson et al. 2004); first-winter predation ~10–25 % (FWM §7) | Y1 (`fish3.js:2023–2089`), LARV_A 0.1, YCOLD (`:1661`). Summer young-school predation 0.02–0.03 /d (sucker); under ice 2–5 % a fortnight (~20–40 % a winter) | OK in summer; under-ice slightly high | L | Recheck after D and L |
 | K | First-winter ramp | Shuter et al. 1980 lines scaled per species (FWM §5–7) | WINTER0 (`config.js:448–462`), applied in place of starvation (`fish3.js:2191–2192`) | OK in design; it kills little because the hypoxia does the killing first | — | — |
-| L | The young under the ice: O₂ | Bullhead and sucker young should be the hardiest; adults of the same lake do not die of hypoxia | GPU arm O: **every species' young lose 8–25 % a fortnight to hypoxia from mid-January to recruitment** (perch 10–18 %, white perch 11–17 %, bass 9–18 %, pumpkinseed 8–15 %, redbreast 9–18 %, fallfish 8–16 %, sucker 10–25 %, bullhead 10–21 %), while the header's Upper bottom O₂ reads 7.7–10 mg/L (year 1). **CPU (`winterO2y`, seed 611, 1/10):**<br>• the young sit 0.1–0.6 m over the bed, in water 1–3 mg/L below their column's mean;<br>• lake cells < 1 mg/L rise from 0.3 % (late January) to 3 % (March), and the young's hypoxia deaths start with them: by 4 March sucker ~17 %, bullhead ~17 %, perch ~23 % of the young;<br>• the mean O₂ at the young stays 3–9 mg/L, so a minority of schools caught in near-anoxic bed cells dies;<br>• schools hold ≤ 5k fish at 1/10, so this is not self-depletion there.<br>**Why (code):**<br>(1) all winter a benthic school keeps targeting the RICHEST bed (`fish3.js:2263–2269`), though it barely feeds below ~4 °C; the food-rich organic beds are the high-demand ones that go anoxic first;<br>(2) it tests O₂ only in its own cell, against o2Crit, and AFTER the tick's hazard is charged (`:2196–2207`). An hour in an anoxic cell costs ~6 % of the school (h = ln2/2 d × e^1.5 ≈ 1.55 /d), more over a far block;<br>(3) the bed choice tests the column's representative bed cell at choosing time, with no margin;<br>(4) the zooplankton fallback, common in winter when no bed is above SENSE_MIN, ignores O₂ (`:2276`).<br>The adults hold h above the bed and escape early: at 3 × lethal or half o2Crit (F3.ESC_O2), and across the lake (O2_SEEK). | OFF | H | (a) Below ~6 °C, when the young are not feeding, pick the winter station by O₂ first: the best of the column and its ring with O₂ ≥ 2 × o2Crit, h ~0.3–0.5 m off the bed (the adults' winter hab), the bullhead young buried.<br>(b) Each tick, test O₂ and move BEFORE charging the hazard.<br>(c) Give the zooplankton fallback the same O₂ test.<br>(d) At true scale, spread a big merged school's O₂ draw (`:2193`) over its footprint.<br>Target: the young's winter hypoxia ≈ the adults' (~0). |
-| M | Recruitment timing and the hand-off | Fisheries count recruits at age 1; the hazard a fish meets should be continuous across the switch (FINDINGS 2026-10-20 "Two rules for one fish") | At FRY.SPRING_YF 0.08 (30 March, ~3 weeks before ice-out) any school older than 0.4 yr recruits (`config.js:265–266`, `fish3.js:2211`). As a school it was hunted at min(cold performance, FB4 consumption) (YCOLD); as an agent at the cold performance alone (`fish3.js:1666, 1768`): bass 0.20–0.36 against 0.015–0.09 at 1–7 °C (×4–13); perch and fallfish ×2–2.5; white perch ×1.1; pickerel ×1 (its FB4 curve is not normalised, so YCOLD leaves it at perf). **Arm O, 22 Mar → 17 May (0.7 → 9 °C), the fish lost as a share of the spring's recruits (years 1 / 2):** sucker 98 / 126 % (19,700 eaten in year 1), bass 79 / 62 %, fallfish 75 / 112 %, redbreast 74 %, sunfish 31 / 78 %, bullhead 23 / 25 %, perch 19 / 47 %, white perch 11 / 19 %. The young schools lost ~3 % a fortnight in the eight weeks before | OFF | H | (a) Apply YCOLD's gate to `_strike2` too (`perf → min(perf, consumptionT)` for predators whose FB4 curve is normalised), so a bass at 4 °C hunts as little as it eats; (b) recruit at the spring crossing of WINTER0.T (`winterWindow[1]`, ≈ 12 May) instead of yf 0.08, so the ramp ends and the agents' rule begins in the same water |
+| L | The young under the ice: O₂ | Bullhead and sucker young should be the hardiest; adults of the same lake do not die of hypoxia | GPU arm O: **every species' young lose 8–25 % a fortnight to hypoxia from mid-January to recruitment** (perch 10–18 %, white perch 11–17 %, bass 9–18 %, pumpkinseed 8–15 %, redbreast 9–18 %, fallfish 8–16 %, sucker 10–25 %, bullhead 10–21 %), while the header's Upper bottom O₂ reads 7.7–10 mg/L (year 1). **CPU (`winterO2y`, seed 611, 1/10):**<br>• the young sit 0.1–0.6 m over the bed, in water 1–3 mg/L below their column's mean;<br>• lake cells < 1 mg/L rise from 0.3 % (late January) to 3 % (March), and the young's hypoxia deaths start with them: by 21 March sucker ~23 %, bullhead ~20 %, perch ~29 % of the young alive in early January; on 21 March the bullhead young sat in 5.8 mg/L against their columns' 10.1 and the perch in 6.3 against 12.4;<br>• the mean O₂ at the young stays 3–9 mg/L, so a minority of schools caught in near-anoxic bed cells dies;<br>• schools hold ≤ 5k fish at 1/10, so this is not self-depletion there.<br>**Why (code):**<br>(1) all winter a benthic school keeps targeting the RICHEST bed (`fish3.js:2263–2269`), though it barely feeds below ~4 °C; the food-rich organic beds are the high-demand ones that go anoxic first;<br>(2) it tests O₂ only in its own cell, against o2Crit, and AFTER the tick's hazard is charged (`:2196–2207`). An hour in an anoxic cell costs ~6 % of the school (h = ln2/2 d × e^1.5 ≈ 1.55 /d), more over a far block;<br>(3) the bed choice tests the column's representative bed cell at choosing time, with no margin;<br>(4) the zooplankton fallback, common in winter when no bed is above SENSE_MIN, ignores O₂ (`:2276`).<br>The adults hold h above the bed and escape early: at 3 × lethal or half o2Crit (F3.ESC_O2), and across the lake (O2_SEEK). | OFF | H | (a) Below ~6 °C, when the young are not feeding, pick the winter station by O₂ first: the best of the column and its ring with O₂ ≥ 2 × o2Crit, h ~0.3–0.5 m off the bed (the adults' winter hab), the bullhead young buried.<br>(b) Each tick, test O₂ and move BEFORE charging the hazard.<br>(c) Give the zooplankton fallback the same O₂ test.<br>(d) At true scale, spread a big merged school's O₂ draw (`:2193`) over its footprint.<br>Target: the young's winter hypoxia ≈ the adults' (~0). |
+| M | Recruitment timing and the hand-off | Fisheries count recruits at age 1; the hazard a fish meets should be continuous across the switch (FINDINGS 2026-10-20 "Two rules for one fish") | At FRY.SPRING_YF 0.08 (30 March, ~3 weeks before ice-out) any school older than 0.4 yr recruits (`config.js:265–266`, `fish3.js:2211`). As a school it was hunted at min(cold performance, FB4 consumption) (YCOLD); as an agent at the cold performance alone (`fish3.js:1666, 1768`): bass 0.20–0.36 against 0.015–0.09 at 1–7 °C (×4–13); perch and fallfish ×2–2.5; white perch ×1.1; pickerel ×1 (its FB4 curve is not normalised, so YCOLD leaves it at perf). **Arm O, 22 Mar → 17 May (0.7 → 9 °C), the fish lost as a share of the spring's recruits (years 1 / 2):** sucker 98 / 126 % (19,700 eaten in year 1), bass 79 / 62 %, fallfish 75 / 112 %, redbreast 74 %, sunfish 31 / 78 %, bullhead 23 / 25 %, perch 19 / 47 %, white perch 11 / 19 %. The young schools lost ~3 % a fortnight in the eight weeks before | OFF | H | (a) Apply YCOLD's gate to `_strike2` too (`perf → min(perf, consumptionT)` for predators whose FB4 curve is normalised), so a bass at 4 °C hunts as little as it eats; (b) recruit at the spring crossing of WINTER0.T (`winterWindow[1]`, ≈ 12 May) instead of yf 0.08, so the ramp ends and the agents' rule begins in the same water; (c) a recruit keeps its young's water: a `habJ` for species without one (sucker — CPU `recruits.mjs`: age-1 suckers over ~3.1 m eaten by white and yellow perch under the ice, 294 → 81 in 20 days) |
 | N | The census cap | A cap that binds is a missing mechanism (FINDINGS 2026-10-19) | `_recruit` keeps at most F3.CAP 1.5 × census (`fish3.js:2350`). Arm O year-1 spring: **white perch 64 % of the surviving cohort discarded, pumpkinseed 55 %**; sucker 0.2 %, bass 0.4 %, white perch year 2 again | OFF (for white perch; sunfish then collapsed anyway — §4) | M | Leave the cap as a safety but report it as a failure in every run; the white perch review's regulation (first winter, stunting) should make it slack |
 | O | Merging | Real young schools of hundreds; the sim's school is a super-individual | `_mergeYoy` merges same-species, similar-size schools within 1.5 m with **no cap on n** (`fish3.js:2367–2383`); a school draws its O₂ from its one cell (`fish3.js:2193`) | See L | — | — |
 | P | Young piscivores | YOY pickerel take fish from ~4–6 cm, 10–13 cm by fall, 60–80 % survive winter (PDM; FWM §4) | yLpisc 5 (`species.js:386`); arm O: 237k hatched → 34k on 1 Jul (3.5 cm) → 1k on 26 Aug (7.4 cm) → 0 by mid-Sep; starved 17–21 %, eaten 18–37 %, natural 6–31 % a fortnight; recruits 2 and 4 | OFF | H (for pickerel) | Diagnose the young pickerel's food: their bins of prey-sized young (r 0.1–0.4) and cover; field rations 10–25 %/d at 20–24 °C (HOT_BROOK_3D §4 Y1 targets) |
@@ -227,7 +249,8 @@ line for line in the parts read (mortality `y_mort` `:1781`, targeting `y_target
 | Banded killifish | ~0.001 % (1–13 recruits) | ≥ ~0.2 % egg → age 1 to persist (KPP) | OFF |
 
 The summer (hatch → autumn) is close to the field for most species. The losses that do not match come after the summer:
-the first winter (L, D) and the six weeks after recruitment (M). Adult survival, the other reviews' subject, comes after that.
+the first winter (L, D) and the weeks after recruitment (M; for suckers, the juveniles' water, §1 row 24). Then comes
+adult growth (bullheads barely grow, §2 row 7) and adult survival, the other reviews' subject.
 
 ---
 
@@ -248,6 +271,8 @@ Pumpkinseed, redbreast, killifish and dace are gone; fallfish 0.8 kg/ha; pickere
 - Spawnings per year: 6,605 in year 1, 6,205 in year 2. The run peaks in mid-May.
 - Adult diet ~100 % bed, p 0.3–0.55, K 0.91–0.99: they feed well.
 - The young are at 7.2 cm by late September and 8 cm in November, then die under the ice (hypoxia).
+- Those that reach spring are eaten within weeks of recruiting (no juvenile water: §1 row 24). The cohorts that
+  survive to adult size are few, so the stock ages.
 
 **Bullhead.**
 - Recruits 71,131 (year 1) and 44,961 (year 2).
@@ -259,7 +284,8 @@ Pumpkinseed, redbreast, killifish and dace are gone; fallfish 0.8 kg/ha; pickere
 **The young, every species.**
 - Summer survival and growth are field-like.
 - Winter hypoxia runs 8–25 % a fortnight from January.
-- The spring hand-off loses 5–57 % of each species' fish in six weeks of cold water.
+- In the eight weeks around the spring hand-off (0.7 → 9 °C) each species loses 11–98 % of its new recruits, suckers nearly
+  all of them.
 
 **CPU 1/10 (seeds 611, 612).**
 - Sucker young: 3.5 % / 2.6 % of the hatch alive on 10 October, at 6.7–6.9 cm, over 2.1–2.5 m of water.
@@ -268,7 +294,25 @@ Pumpkinseed, redbreast, killifish and dace are gone; fallfish 0.8 kg/ha; pickere
 - Founders, mid-May → mid-November: suckers −34 % (eaten 25 %), bullheads −42 % (eaten 27 %).
 - Bullhead spawning on the CPU (founders) is 12 June – early July. The GPU's late tail comes from fish ripening late in poor
   condition in later years.
-- [PENDING-CPU-WINTER] [PENDING-GROWTH-SUMMARY]
+- First winter, full-year runs: sucker young 7.1k → 5.1k (72 % alive, mid-Nov → late March), bullhead 3.1k → 1.6k
+  (52 %). Most of the bullhead loss is the 'natural' term (M_OTHER) and little is hypoxia. In the autumn-seeded probe
+  (`winterO2y`), hypoxia took ~23 % of the sucker, ~20 % of the bullhead and ~29 % of the perch young by 21 March, in a minority of
+  schools in near-anoxic bed cells (§3.L). Late-winter O₂ varies by run; the GPU's true-size lakes are the worst case.
+- **The 1/10 lakes' young survive ~20× better than the true-size lakes'.** Sucker: 2.0 % / 1.5 % of the hatch at spring
+  on the CPU, 0.1 % on the GPU. The 1/10 census cap then discarded 92 % / 88 % of the sucker cohort at recruitment. CPU
+  numbers for the young do not transfer to true scale; calibrate on the GPU.
+- **After the spring recruitment (5 April → 4 June):**
+  - age-1 suckers 327 → 3 and 316 → 24 (99 % and 92 % gone; eaten 183 → 500 in seed 611);
+  - age-1 bass 174 → 50 and 158 → 45;
+  - age-1 pumpkinseed 419 → 166 and 411 → 269 (eaten and starved);
+  - age-1 bullheads 623 → 504 and 639 → 539 (−16–19 %).
+- **Growth over a season** (`growth.mjs`, `growth2.mjs`):
+  - bullheads +0.04–0.25 cm at every size (p 0.44–0.48, K ~0.95);
+  - suckers +1.3–1.7 cm at 12–25 cm and +0.2–0.6 as adults (p 0.36–0.40, K 0.96 → 0.91);
+  - mature suckers had 6–7.5 % of their mass in gonads by mid-September.
+  - Bullheads 10–14 cm: 53–55 % gone over the season (42 % eaten, seed 611); bullheads ≥ 22 cm: none eaten. Suckers
+    7.5–12 cm: 94–100 % gone, nearly all eaten; suckers ≥ 25 cm: none eaten. The eaters were pickerel and bass in about equal numbers (pike>catfish 72, bass>catfish
+    70, pike>sucker 60, bass>sucker 28).
 
 ---
 
@@ -289,19 +333,27 @@ Pumpkinseed, redbreast, killifish and dace are gone; fallfish 0.8 kg/ha; pickere
    - (a) `_strike2`'s `perf` → `F3.YCOLD ? min(perf, consumptionT(...)) : perf` as in `_feed`'s `yEff` (`fish3.js:1661`), CPU and
      GPU. This is a predator-review lever too: smallmouth near-still below ~8–10 °C (Oliver 1977; MDIFW).
    - (b) FRY.SPRING_YF → the spring crossing `winterWindow[1]` (or a per-school temperature ≥ WINTER0.T).
+   - (c) A recruit keeps its young's water: the sucker `habJ` (item 7).
    - Judge by each species' loss in the six weeks after recruitment against its summer juvenile Z.
 4. **Bullhead spines and shelter:**
    - `canPrey`/the young's bins test `bdep × (sp.spineW || 1)` against the gape; bullhead spineW 1.6.
    - CS3 catfish bass 0.2 → 0.05.
    - A day-rest cover for bullheads.
    - Targets: bass ~0 bullhead, pickerel 3–10 % of fish mass (PDM §7.1).
-5. **Bullhead spawning window:** spawnT [18, 24] plus a spawning end (a `spawnEnd` yf per species; bullhead ~0.38), with
+5. **Bullhead growth** (`BIO.catfish.bio`, `species.js:314`):
+   - calibrate consumption so an immature 10–15-cm bullhead gains ~3–5 cm a year at p ~0.5 on the Maine calendar (CA ≈ 0.18–0.2,
+     or the cool limb of the Thornton–Lessem curve), and check its ED;
+   - the probe is `review/bgrow.mjs` (and `predgrow.mjs` for the other species);
+   - then re-run the decline: do the recruits reach Lmat in ~3 years?
+   - for suckers and all spawners, build the gonads in autumn and winter (perches review item 10).
+6. **Bullhead spawning window:** spawnT [18, 24] plus a spawning end (a `spawnEnd` yf per species; bullhead ~0.38), with
    resorption of unspawned gonads.
-6. **Young bottom fish's water:** `yBed` sucker ~0.8 m (to ~5 cm), bullhead ~1.5 m (+ a little `yCover`); bury for the young
-   bullheads in cold water.
-7. **Summer starvation of young bottom fish and piscivores:** trace what empties their food in August. Suspects: the bed
+7. **Young and juvenile bottom fish's water:** `yBed` sucker ~0.8 m (to ~5 cm), bullhead ~1.5 m (+ a little `yCover`); bury
+   for the young bullheads in cold water. A sucker `habJ` (inshore 0.3–1.5 m, winter 1–2.5 m, blending out by ~28 cm) — **H**
+   for the suckers: without it nearly every age-1 sucker is eaten in its first spring and summer.
+8. **Summer starvation of young bottom fish and piscivores:** trace what empties their food in August. Suspects: the bed
    shared with the adult white perch (77 % bed), and the young pickerel's prey bins. Fix the supply, not the starvation rule.
-8. **L items:**
+9. **L items:**
    - an egg stage (incubation);
    - larval drift down the brook;
    - sucker CS3 ~[0.5, 0.5, 0.4];
