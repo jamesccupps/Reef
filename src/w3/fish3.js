@@ -448,6 +448,8 @@ const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
 // (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
 const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT };
+// (stageR5 item 31: the settle rates before the package — restored when it is off)
+const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
@@ -552,6 +554,10 @@ export function stageR5(on = true) {
   // at true scale. Redbreast are the brook's own sunfish and keep the larger share. (The human sees sunfish in the pools: a count
   // would pin it.) The year runner's 'in the brook' line counts them
   S3.sunfish.spawn.brook = on ? 0.01 : 0.3; S3.redbreast.spawn.brook = on ? 0.02 : 0.5;
+  // (item 31) SETTLING IN THE OTHER LAKE at the field's rates (STR #2–3; movement_between_lakes.md): marked fish of connected lakes
+  // mostly stay — perch, white perch, the sunfishes 1–5 % a year, bass and bullheads 2–5, suckers 3–10, killifish (weak swimmers,
+  // blocked by current) ≤ 1; the starting values (5–15 %) were [inf] and moved fish ~10× too often
+  for (const [k, v] of [['sunfish', 0.03], ['redbreast', 0.03], ['perch', 0.03], ['whiteperch', 0.03], ['sucker', 0.06], ['catfish', 0.03], ['bass', 0.03], ['fallfish', 0.05], ['killifish', 0.005], ['pike', 0.03]]) MOVE3[k].settle = on ? v : SETTLE0[k];
   for (const [k, z] of [['whiteperch', 12], ['sunfish', 5], ['redbreast', 5], ['fallfish', 10], ['dace', 3], ['perch', 16]]) {
     const d0 = DIET0[k], noPl = on && k !== 'perch';
     S3[k].plank = noPl ? false : d0.plank; SP[k].diet.plankton = noPl ? false : d0.plank; SP[k].Lzoo = on ? z : d0.Lzoo;
