@@ -826,6 +826,25 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   diets, small species persisting. Then the killifish's strip (a shore-hugging rule, not a wider band); then SEA-RUN ALEWIFE
   (MDIFW 2024 lists them in Lower; research `Hot Brook populations and water/sea_run_alewife.md` — a colonising run ~15/acre
   default, young that never recruit and leave through the outlet).
+- **Item 6, arms F–G and 6c–6e (2026-10-20).** ARM F (6b, GPU 613): no young-bass feast, yet the bass grew as fast (17.5 → 23.1
+  kg/ha day 98 → 126, 42 cm, p 0.62–0.75) on adult perch and white perch. ARM G (+ 6c BAND_REL and the new tallies, 1 yr): bass
+  9.4 → 23.6 kg/ha; their kills by the prey's length 68 % 10–20 cm (perch 171k, white perch 93k), perch eaten 58 % over ≥ 2 m;
+  by day (T_WHERE) bass 52 % over ≥ 2 m, perch 77 %; stomachs (T_GUT) bass 35 % empty, pickerel 38 % (field 35–60 %); KILLIFISH
+  now hold their strip — 60 % of their days over < 0.3 m, only 10 % of their deaths there — but 47 % of deaths over 0.3–0.6 m and
+  none of the year's young reached spring. The 1/10 CPU world with the same package underfeeds (bass p 0.24–0.28, arm B or not):
+  judge on the true lakes. FB4's own gut (probe satcycle.mjs) gives bass p 0.6–0.8 even in a meal-then-rest cycle with prey
+  always at hand — Maine's slow growth means real bass search a lot.
+  6d (ce8a6e1): ESOCIDS MEET A SCHOOL AS n^0.65 FISH — the encounter dilution the old rule had (S3.pike.schoolExp) and STRIKE2
+  dropped (June CPU: the pickerel's killifish kills 192 → 120 in 20 days). ARM H (6d, 613, 1 yr) running.
+  6e: THE BASS'S SHORE (research `Real lake ecology for calibration/smallmouth_horizontal_habitat.md`: summer adults along the
+  shore by rock and wood, ~90 % within 100 m by day, out at dusk and dawn; strip home ranges; no evidence of bass hunting perch
+  schools offshore; the human: "usually closer to shore, but some in the open"). On the depth band alone the true lakes put the
+  median bass 150–180 m from shore. BUILT: S3 `shore` {day, night, tw: [no pull within, full beyond] real m} → `_mode` m.s0/s1
+  (day–night by the light, widened at twilight, none in winter) → a pull down the gradient of `GEO.shoreDist` in `_drive`
+  (GPU: SPF shD*/shN*/shT*, SP_REC 158, Mode s0/s1, drive); stageR5: bass {day [60, 120], night [50, 100], tw [150, 250]}, bed 1–3 m
+  by day and 0.5–2 at night. Targets: ≥ 80 % of summer daytime positions within 100 m, ≤ 10 % beyond 150 m (< 40 cm).
+  Still open: the bass's structure (rock/wood ×3–4, mud ×0.3 — no substrate map yet), strip home ranges, the juvenile perch's
+  1.5–4-m band (mostly offshore here — flagged by the research).
 - **Stage A — the SEA-RUN ALEWIFE (designed 2026-10-20; build after stage R settles).** MDIFW's 2024 chart lists sea-run
   alewife in Lower (the human's PDF); alewives reached Danforth by 2017 and the Baskahegan fishway opened in 2023; no count
   exists for Hot Brook (research `Hot Brook populations and water/sea_run_alewife.md`, its four seasons and §Implications).

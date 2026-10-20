@@ -423,6 +423,14 @@ export function stageR5(on = true) {
   // juvenile_refuges_and_bass_young.md (a)). Without it the 6-cm recruits joined the adults' 1.5-4-m water and in August were
   // 53-72 % of the bass's kills, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303))
   S3.bass.habJ = on ? { L: [12, 25], bot: [0.4, 2.0], wbot: [1.0, 3.0] } : undefined;
+  // (item 6e: the bass's shore — summer adults live along the shore near rock and wood, a minority over open water: within 5 m of
+  // shore most of the time in a reservoir (Bevelhimer 1995), 79 % of June positions within 50 m (Milipsigate, Sergio 2026), home
+  // ranges strips of 0.8-1.7 km of shoreline; out at dusk and dawn (research smallmouth_horizontal_habitat.md). On the depth band
+  // alone the median bass was 150-180 m from shore and half the day over the open basin, eating perch schools there; the human:
+  // "usually closer to shore, but I've got some in the open area". Shore bands in real m [no pull within, full beyond]; bed 1-3 m
+  // by day, 0.5-2 at night)
+  S3.bass.shore = on ? { day: [60, 120], night: [50, 100], tw: [150, 250] } : undefined;
+  S3.bass.hab.day.bot = on ? [1.0, 3.0] : [1.5, 4.0]; S3.bass.hab.night.bot = on ? [0.5, 2.0] : [1.0, 2.5];
   F3.RECRUIT_SPRING = on ? 1 : 0;
   F3.BAND_REL = on ? 1 : 0;   // (a narrow band held)   // (the year's young recruit at age 1, in spring)
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
@@ -1085,7 +1093,7 @@ export class Fish3 {
   // the habitat mode now: day ↔ night by the sun, → winter in cold water
   _mode(a) {
     const s = a.s, H = s.hab, e = this.env, nf = 1 - smooth(0.02, 0.3, e.sun), wf = clamp((9 - a.T) / 4, 0, 1);
-    const m = this._m || (this._m = { bot: [0, 0], v: 0, h: 0, act: 0 });
+    const m = this._m || (this._m = { bot: [0, 0], v: 0, h: 0, act: 0, s0: 0, s1: 0 }); m.s0 = 0; m.s1 = 0;   // (s0/s1: its shore band, S3 shore — 0: none)
     if (a.nt > 0) { m.bot[0] = 0; m.bot[1] = 99; m.v = 0; m.h = 0.05; m.act = BROOD.HOVER; return m; }   // on its nest
     if (a.ripe) { const sb = s.spawn; m.bot[0] = sb.bot[0]; m.bot[1] = sb.bot[1]; m.v = 0; m.h = sb.h; m.act = 0.9; return m; }   // to its spawning ground
     if (a.brookie && this._brookSeason(a) && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = a.L >= F3.RIFFLE_L ? F3.RIFFLE_D : 0.2; m.bot[1] = 1.3; m.v = 0; m.h = 0.25; m.act = 0.6; return m; }   // in the brook's pools (bigger-deeper)
@@ -1098,6 +1106,9 @@ export class Fish3 {
     m.v = md.v; m.h = md !== H.winter && H.day.v === H.night.v ? blend(H.day.h, H.night.h, nf) : md.h;
     m.act = blend(blend(H.day.act, H.night.act, nf), H.winter.act, wf);
     if (a.L >= F3.RIFFLE_L && GEO.bodyAt(a.x, a.y) === BROOK) { m.bot[0] = Math.max(m.bot[0], F3.RIFFLE_D); m.bot[1] = Math.max(m.bot[1], m.bot[0]); }   // (bigger-deeper: the brook's pools)
+    // ITS SHORE BAND (S3 shore, real metres × the world's scale): pulled back toward shore beyond s0, fully from s1 — day and night
+    // blended by the light, widened toward the twilight values at dusk and dawn; none in winter
+    const sh = s.shore; if (sh && wf < 0.5) { const tw = 1 - Math.abs(2 * nf - 1); m.s0 = GEO.SCALE * blend(blend(sh.day[0], sh.night[0], nf), sh.tw[0], tw); m.s1 = GEO.SCALE * blend(blend(sh.day[1], sh.night[1], nf), sh.tw[1], tw); }
     return m;
   }
   _zTarget(a, m) {
@@ -1419,6 +1430,8 @@ export class Fish3 {
       if (a.bed < lo) { off = lo - a.bed; if (gx || gy) steer(gx, gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       else if (a.bed > hi) { off = a.bed - hi; if (gx || gy) steer(-gx, -gy, hw * clamp(off / bw, 0.2, 1), (off + 0.1 * (hi - lo)) / F3.BAND_SLOPE); }
       off *= 1 - needy;
+      // its shore band (S3 shore): back toward the nearest shore — down the gradient of the distance to it
+      if (m.s1 > 0) { const d = GEO.shoreDist(a.x, a.y); if (d > m.s0) { const h = GEO.CELL, sX = GEO.shoreDist(a.x + h, a.y) - GEO.shoreDist(a.x - h, a.y), sY = GEO.shoreDist(a.x, a.y + h) - GEO.shoreDist(a.x, a.y - h); if (sX || sY) steer(-sX, -sY, hw * clamp((d - m.s0) / Math.max(1e-3, m.s1 - m.s0), 0.2, 1), d - 0.9 * m.s0); } }
     }
     // a ripe fish of a species that pairs heads for the nearest ripe fish of the other sex it knows of
     if (a.ripe && a.mate && a.mate.alive && a.mate.ripe && !(a.brookRun && !this._runs(a) && GEO.bodyAt(a.mate.x, a.mate.y) === BROOK)) { const d = Math.hypot(a.mate.x - a.x, a.mate.y - a.y); if (d > F3.MATE_R * 0.6) steer(a.mate.x - a.x, a.mate.y - a.y, 0.8 * clamp(d / 3, 0.3, 1), d - 0.5 * F3.MATE_R); }   // (not a turned-back runner after a mate in the brook)

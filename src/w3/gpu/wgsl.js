@@ -575,13 +575,13 @@ var<workgroup> wflag: f32;
 // through the bed's grid, re-aimed after each; then a wander about the place; its depth to the drives' target. Other fish's
 // places (a mate, a threat) are read from the snapshot PX
 export const MOVE = /* wgsl */`
-struct Mode { b0: f32, b1: f32, v: f32, h: f32, act: f32 };
+struct Mode { b0: f32, b1: f32, v: f32, h: f32, act: f32, s0: f32, s1: f32 };   // (s0/s1: the shore band, fish3 _mode — 0: none)
 fn brookSeason(T: f32) -> bool { return U.yf > 0.22 && U.yf < 0.6 && T > 14.0; }
 fn bl(p: f32, q: f32, t: f32) -> f32 { return p + (q - p) * t; }
 fn modeOf(k: u32, fl: u32, nt: f32, T: f32, L: f32, x: f32, y: f32) -> Mode {
-  if (nt > 0.0) { return Mode(0.0, 99.0, 0.0, 0.05, BROOD_HOVER); }
-  if ((fl & FL_RIPE) != 0u) { return Mode(spv(k, S_sbBot0), spv(k, S_sbBot1), 0.0, spv(k, S_sbH), 0.9); }
-  if ((fl & FL_BROOKIE) != 0u && brookSeason(T) && bodyAt(x, y) == BROOK) { return Mode(select(0.2, F3_RIFFLE_D, L >= F3_RIFFLE_L), 1.3, 0.0, 0.25, 0.6); }   // (bigger-deeper)
+  if (nt > 0.0) { return Mode(0.0, 99.0, 0.0, 0.05, BROOD_HOVER, 0.0, 0.0); }
+  if ((fl & FL_RIPE) != 0u) { return Mode(spv(k, S_sbBot0), spv(k, S_sbBot1), 0.0, spv(k, S_sbH), 0.9, 0.0, 0.0); }
+  if ((fl & FL_BROOKIE) != 0u && brookSeason(T) && bodyAt(x, y) == BROOK) { return Mode(select(0.2, F3_RIFFLE_D, L >= F3_RIFFLE_L), 1.3, 0.0, 0.25, 0.6, 0.0, 0.0); }   // (bigger-deeper)
   let nf = 1.0 - smooth01(0.02, 0.3, U.sun); let wf = clamp((9.0 - T) / 4.0, 0.0, 1.0);
   let jL0 = spv(k, S_hJL0); let jL1 = spv(k, S_hJL1); let jf = select(0.0, 1.0 - clamp((L - jL0) / max(1e-6, jL1 - jL0), 0.0, 1.0), jL1 > 0.0);   // (fish3 _mode: the young's day band)
   let dlo = bl(spv(k, S_hD0), spv(k, S_hJ0), jf); let dhi = bl(spv(k, S_hD1), spv(k, S_hJ1), jf);
@@ -594,6 +594,7 @@ fn modeOf(k: u32, fl: u32, nt: f32, T: f32, L: f32, x: f32, y: f32) -> Mode {
   else { m.v = spv(k, S_hNv); m.h = select(spv(k, S_hNh), hb, same); }
   m.act = bl(bl(spv(k, S_hDa), spv(k, S_hNa), nf), spv(k, S_hWa), wf);
   if (L >= F3_RIFFLE_L && bodyAt(x, y) == BROOK) { m.b0 = max(m.b0, F3_RIFFLE_D); m.b1 = max(m.b1, m.b0); }   // (fish3: bigger-deeper — the brook's pools)
+  m.s0 = 0.0; m.s1 = 0.0; if (spv(k, S_shD1) > 0.0 && wf < 0.5) { let tw = 1.0 - abs(2.0 * nf - 1.0); m.s0 = bl(bl(spv(k, S_shD0), spv(k, S_shN0), nf), spv(k, S_shT0), tw); m.s1 = bl(bl(spv(k, S_shD1), spv(k, S_shN1), nf), spv(k, S_shT1), tw); }   // (fish3 _mode: its shore band)
   return m;
 }
 fn zTarget(bed: f32, L: f32, m: Mode) -> f32 { if (m.v == 0.0) { return bed - m.h - L / 200.0; } if (m.v == 1.0) { return bed * m.h; } return min(m.h, bed * 0.8); }
@@ -680,6 +681,7 @@ fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c:
     let bw = select(1.0, min(1.0, max(0.25, hi - lo)), F3_BAND_REL > 0.5);   // (F3.BAND_REL: per band-width, bands under 1 m)
     if (bed < lo) { off = lo - bed; if (gx != 0.0 || gy != 0.0) { steer(&st, gx, gy, hw * clamp(off / bw, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
     else if (bed > hi) { off = bed - hi; if (gx != 0.0 || gy != 0.0) { steer(&st, -gx, -gy, hw * clamp(off / bw, 0.2, 1.0), (off + 0.1 * (hi - lo)) / F3_BAND_SLOPE); } }
+    if (m.s1 > 0.0) { let d = shoreDist(x, y); if (d > m.s0) { let sX = shoreDist(x + GCELL, y) - shoreDist(x - GCELL, y); let sY = shoreDist(x, y + GCELL) - shoreDist(x, y - GCELL); if (sX != 0.0 || sY != 0.0) { steer(&st, -sX, -sY, hw * clamp((d - m.s0) / max(1e-3, m.s1 - m.s0), 0.2, 1.0), d - 0.9 * m.s0); } } }   // (fish3 _drive: its shore band)
     off *= 1.0 - needy;
   }
   // a mate (from the snapshot)

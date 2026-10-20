@@ -230,8 +230,8 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC',
   'yCover', 'yLpisc',   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
   'hJL0', 'hJL1', 'hJ0', 'hJ1', 'hJW0', 'hJW1', 'bury', 'schExp', 'wkMin', 'wkMax',
-  'aMax', 'vHunt', 'predCls', 'cs0', 'cs1', 'cs2', 'ppr0', 'act0', 'act1', 'act2'];   // (F3.STRIKE2: strikes /s at most, its hunting speed, its kind; the prey's capture success by an esocid, a bass, a perch-like predator; its size term's PPR0)   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
-export const SP_REC = 152;
+  'aMax', 'vHunt', 'predCls', 'cs0', 'cs1', 'cs2', 'ppr0', 'act0', 'act1', 'act2', 'shD0', 'shD1', 'shN0', 'shN1', 'shT0', 'shT1'];   // (sh*: its shore band by day, night, twilight in the world's metres — S3 shore; 0: none)   // (F3.STRIKE2: strikes /s at most, its hunting speed, its kind; the prey's capture success by an esocid, a bass, a perch-like predator; its size term's PPR0)   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
+export const SP_REC = 158;
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
 const SUB_KIND = { rigid: 1, mat: 2, plant: 3 };
@@ -275,7 +275,8 @@ export function packSpecies() {
       hJL0: s.habJ ? s.habJ.L[0] : 0, hJL1: s.habJ ? s.habJ.L[1] : 0, hJ0: s.habJ ? s.habJ.bot[0] : 0, hJ1: s.habJ ? s.habJ.bot[1] : 0,
       hJW0: s.habJ?.wbot ? s.habJ.wbot[0] : 0, hJW1: s.habJ?.wbot ? s.habJ.wbot[1] : 0, bury: s.bury || 0, schExp: s.schoolExp ?? F3.SCHOOL_EXP,
       wkMin: WINTER0.K[k] ? WINTER0.K[k][0] : 0, wkMax: WINTER0.K[k] ? WINTER0.K[k][1] : 0,
-      aMax: s.aMax, vHunt: s.vHunt, predCls: s.predCls, cs0: s.cs[0], cs1: s.cs[1], cs2: s.cs[2], ppr0: s.ppr0, act0: s.act[0], act1: s.act[1], act2: s.act[2],   // (the first winter's ramp, config WINTER0: 0 none)
+      aMax: s.aMax, vHunt: s.vHunt, predCls: s.predCls, cs0: s.cs[0], cs1: s.cs[1], cs2: s.cs[2], ppr0: s.ppr0, act0: s.act[0], act1: s.act[1], act2: s.act[2],
+      shD0: s.shore ? GEO.SCALE * s.shore.day[0] : 0, shD1: s.shore ? GEO.SCALE * s.shore.day[1] : 0, shN0: s.shore ? GEO.SCALE * s.shore.night[0] : 0, shN1: s.shore ? GEO.SCALE * s.shore.night[1] : 0, shT0: s.shore ? GEO.SCALE * s.shore.tw[0] : 0, shT1: s.shore ? GEO.SCALE * s.shore.tw[1] : 0,   // (the first winter's ramp, config WINTER0: 0 none)
     };
     for (const [m, H] of [['D', s.hab.day], ['N', s.hab.night], ['W', s.hab.winter]]) { V['h' + m + '0'] = H.bot[0]; V['h' + m + '1'] = H.bot[1]; V['h' + m + 'v'] = H.v; V['h' + m + 'h'] = H.h; V['h' + m + 'a'] = H.act; }
     { const c = sp.cold; Object.assign(V, c ? { cMode: c.R5 ? 1 : c.adultR ? 2 : 3, cT0: c.T0, cT1: c.T1, cR5: c.R5 || 0, cWref: c.Wref || 1, cB: c.b || 0, cQ10: c.Q10 || 1,
