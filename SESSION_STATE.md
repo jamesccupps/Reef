@@ -192,7 +192,17 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~4:20 p.m. — the newest): THE BASS ARE FIXED BY THE HUNGER GATE (6g). Arms on 613 × 1 yr (r6<X>_613.txt):
+▶▶▶ RESUME HERE (2026-10-20 ~5 p.m. — the newest): ARM O RUNNING — the MULTI-SEED VALIDATION of the stage R package through item 6j:
+queue_r8.sh (snapshot o :8127 = 42cbec3; r5=1 + arm B overrides) on 613/611/612 × 5 yr → r8O_<seed>.txt, flag queue_r8.done (~2.5 h a
+seed). Since 4:20: arm M (6h–6i) ~ L for the community; fallfish still took 45k killifish (founded adults ~25 cm > Lpisc 18) → fallfish
+Lpisc 30 (2d9db30); the killifish's young on the GPU: 1.1M hatched, 55 % eaten (212k by YOUNG BASS SCHOOLS, which ate fish from 5 cm),
+44.5 % natural, 1 recruit → 6j (42cbec3): bass yLpisc 10 (young smallmouth eat plankton and insects to ~10 cm — research): CPU probe
+kyoung.mjs: killifish young 0.72 % of hatched alive in mid-October at 2.66 cm (field 25.6–32 mm by late Sep). FINDINGS b4a03df (the
+gut as the satiation brake). Arm N (6i only) was stopped after 9 min for O. JUDGE O BY: bass ~5–10 kg/ha with ~4 cm/yr growth, p
+≈ 0.3 season; pickerel 4–8; white perch 15–35 (36 in L/M); perch; the small species (killifish recruits in spring? pumpkinseed,
+redbreast, fallfish persist?); total 50–120; stability over 5 years and across seeds. Then: white perch's school term (dilution, no
+confusion — Morgan & Godin 1985), yellow perch no fish at night; make stageR5 the default (full gate); SEA-RUN ALEWIFE (stage A).
+▶▶▶ RESUME HERE (2026-10-20 ~4:20 p.m.): THE BASS ARE FIXED BY THE HUNGER GATE (6g). Arms on 613 × 1 yr (r6<X>_613.txt):
 I (shore band) and J (killifish night shallows) changed nothing for the bass (~23 kg/ha). Research piscivore_field_feeding_rates.md:
 Maine growth needs p ≈ 0.34 on the sim's own FB4 set (0.7–1.1 kg food/yr; Mille Lacs 0.87 kg); the 8-%BW gut was the only brake.
 K (gate G0 0.5 %BW + bass aMax 2.5/h, v 0.1, act [0.2,0.5,0.05]): bass 6.1 kg/ha, p 0.16–0.21, 76 % empty, 7,900 starved — too
