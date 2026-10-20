@@ -436,16 +436,16 @@ export function stageR5(on = true) {
   // by day, 0.5-2 at night)
   S3.bass.shore = on ? { day: [60, 120], night: [50, 100], tw: [150, 250] } : undefined;
   S3.bass.hab.day.bot = on ? [1.0, 3.0] : [1.5, 4.0]; S3.bass.hab.night.bot = on ? [0.5, 2.0] : [1.0, 2.5];
-  F3.RECRUIT_SPRING = on ? 1 : 0;
+  F3.RECRUIT_SPRING = on ? 1 : 0;   // (the year's young recruit at age 1, in spring)
   F3.BAND_REL = on ? 1 : 0;   // (a narrow band held)
-  // (item 6g: the hunger gate — bass G0 0.5 %BW, pickerel 1 %BW (meals of 2.8–4.3 %BW give its 2–3-day meal interval) — with the
+  // (item 6g: the hunger gate (the research: bass G0 0.3–1 %BW, pickerel ~1 %BW — meals of 2.8–4.3 %BW give its 2–3-day interval) with the
   // bass's field strike values in PRED3: research piscivore_field_feeding_rates.md: Maine growth needs p ≈ 0.34 on the sim's own
   // FB4 set (0.7–1.1 kg of food a year; Mille Lacs 0.87 kg), field strikes at fish ~0.3 per hunting hour)
   // (pickerel ungated: at G0 1 %BW the June pickerel fell to p 0.13, 90 % empty, 0.09 kills a day — they were not overfeeding:
   // the true lakes' summer pickerel ran p 0.29–0.31 against ~0.37 (arms H–I))
   // (bass G0 1 %BW, the research range 0.3–1: at 0.5 %BW the true lakes' bass ran p 0.16–0.21 in summer, 76 % empty, ~7,900 starved
   // in a year — arm K; the toy: 0.5 → 1 %BW raises p ~0.28 → 0.35)
-  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = on ? 0.01 : 0;   // (the year's young recruit at age 1, in spring)
+  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = on ? 0.01 : 0;
   Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
