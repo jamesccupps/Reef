@@ -192,7 +192,18 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~5 p.m. — the newest): ARM O RUNNING — the MULTI-SEED VALIDATION of the stage R package through item 6j:
+▶▶▶ RESUME HERE (2026-10-20 ~6:10 p.m. — the newest): ARM O still RUNNING (613 in year 2: white perch 34.5 → 38.9, pickerel
+5.0 → 3.8, pumpkinseed/redbreast ~0.1, the summer's Daphnia 146 → 38 µg/L). COMMITTED 72a3a21 (6k, F3.YCOLD in stageR5): predators
+hunt the young at min(cold performance, FB4 consumptionT) — arm O's killifish young grew right (2.7 cm early Nov, 3.2 Jan) but were
+eaten 13–22 %/fortnight under the ice; CPU probe: winter predation on the young now ~0. THE NEXT PROBLEM — WHITE PERCH ESCAPE THEIR
+PREDATORS: Cooper 1941 (Maine white-perch lakes) pickerel 95 % fish of which 55 % white perch, smallmouth 80 % fish of which 61 %;
+the sim's pickerel ~10 %, bass less; CPU July probe: 1 white perch killed in 20 days — white perch by day over 3.5–5.5 m (from
+deep-lake sources) while the predators hold the shore and weed edge and rest at night. A research agent is writing
+`Real lake ecology for calibration/white_perch_habitat_and_predation.md` (shallow-lake white perch habitat by time of day, where/when
+pickerel and bass catch them, regulation). Then: white perch bands for a 3–5.5-m lake → an arm on the GPU after O. The human asked
+why CPU and GPU (answered: the CPU is the readable deterministic reference + the live view + the headless gate; the GPU the fast
+multi-year runner; the parity check keeps them agreeing; the 1/10 CPU lakes are for mechanisms only).
+▶▶▶ RESUME HERE (2026-10-20 ~5 p.m.): ARM O RUNNING — the MULTI-SEED VALIDATION of the stage R package through item 6j:
 queue_r8.sh (snapshot o :8127 = 42cbec3; r5=1 + arm B overrides) on 613/611/612 × 5 yr → r8O_<seed>.txt, flag queue_r8.done (~2.5 h a
 seed). Since 4:20: arm M (6h–6i) ~ L for the community; fallfish still took 45k killifish (founded adults ~25 cm > Lpisc 18) → fallfish
 Lpisc 30 (2d9db30); the killifish's young on the GPU: 1.1M hatched, 55 % eaten (212k by YOUNG BASS SCHOOLS, which ate fish from 5 cm),
