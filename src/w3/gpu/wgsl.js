@@ -266,7 +266,7 @@ fn matureAt(i: u32, k: u32) -> bool {
   return age >= mma && ga(A_L, i) >= ga(A_Lmat, i) * lmatAt;
 }
 fn ripeNow(i: u32, k: u32, fl: u32, ice: f32, Ts: f32, nt: f32) -> bool {   // fish3 _ripe
-  if ((fl & FL_MATURE) == 0u || ga(A_mateCd, i) > 0.0 || nt > 0.0 || U.yf >= SPAWN_SEASON_END || ice >= 0.5) { return false; }
+  if ((fl & FL_MATURE) == 0u || ga(A_mateCd, i) > 0.0 || nt > 0.0 || U.yf >= select(SPAWN_SEASON_END, spv(k, S_spawnEnd), spv(k, S_spawnEnd) > 0.0) || ice >= 0.5) { return false; }   // (S3 spawnEnd)
   if (ga(A_gon, i) < SPAWN_GON_READY * gsiOf(k, gau(A_sex, i)) * ga(A_W, i) || ga(A_K, i) < SPAWN_K_READY) { return false; }
   return Ts >= spv(k, S_spawnT0) - F3_SPAWN_LEAD && Ts <= spv(k, S_spawnT1) + SPAWN_EDGE;
 }

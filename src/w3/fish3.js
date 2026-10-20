@@ -446,6 +446,8 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 // Ca) — at a fifth of the Michigan-based capacity, preferred no more than fish, 15 % out by day (piscivore_encounter_attack.md §e)
 const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
+// (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
+const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT };
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
@@ -534,6 +536,16 @@ export function stageR5(on = true) {
   // of white perch (to 12 cm: Cooper's adults ate the bed's insects, the young zooplankton), the sunfishes (5), fallfish (10) and
   // dace (3) off the zooplankton — and yellow perch take it to 16 cm, not 25 (Cooper: none in perch ≥ 16 cm; they ate 54–94 %
   // zooplankton in early summer). The killifish keep their cladocerans and copepods (Phillips; COSEWIC: arm B had removed them)
+  // (item 26) THE ENERGY STAND-INS: the sunfishes run on FB4's bluegill set, whose respiration is 1.2–1.7× the routine O₂ uptake
+  // measured on 30-g pumpkinseed (Roberts 1964) — × 0.7 lowers their maintenance from p ~0.40 to ~0.28 (they needed 39–46 % of Cmax
+  // to hold weight against the perches' 25–30 %); fallfish adults take their pikeminnow CA/CB's own waste fractions (FA 0.2, UA
+  // 0.07), not the dace set's 0.4 / 0.1
+  SP.sunfish.bio.RA = BIO0.sunfish[0] * (on ? 0.7 : 1); SP.sunfish.bioJuv.RA = BIO0.sunfish[1] * (on ? 0.7 : 1);
+  SP.redbreast.bio.RA = BIO0.redbreast[0] * (on ? 0.7 : 1); SP.redbreast.bioJuv.RA = BIO0.redbreast[1] * (on ? 0.7 : 1);
+  SP.fallfish.bio.FA = on ? 0.2 : BIO0.fallfish[0]; SP.fallfish.bio.UA = on ? 0.07 : BIO0.fallfish[1];
+  // (item 23) bullheads spawn late May–June, most eggs in a 10–15-day window, once a year (Blumer 1985): spawnT [21, 28] started
+  // at ~19.5 °C (12 June on the sim's curve) and nothing ended it before 1 September — 30–40 % spawned after mid-July
+  SP.catfish.spawnT = on ? [18, 24] : BIO0.catfishT; S3.catfish.spawnEnd = on ? 0.38 : 0;
   for (const [k, z] of [['whiteperch', 12], ['sunfish', 5], ['redbreast', 5], ['fallfish', 10], ['dace', 3], ['perch', 16]]) {
     const d0 = DIET0[k], noPl = on && k !== 'perch';
     S3[k].plank = noPl ? false : d0.plank; SP[k].diet.plankton = noPl ? false : d0.plank; SP[k].Lzoo = on ? z : d0.Lzoo;
@@ -1932,7 +1944,7 @@ export class Fish3 {
   // season and open water, and the water over its ground (its column's surface) near its spawning temperature
   _ripe(a, yf, ice, Ts) {
     const s = a.s, sp = s.sp;
-    if (!a.mature || a.mateCd > 0 || a.nt > 0 || yf >= SPAWN.SEASON_END || ice >= 0.5) return false;
+    if (!a.mature || a.mateCd > 0 || a.nt > 0 || yf >= (s.spawnEnd || SPAWN.SEASON_END) || ice >= 0.5) return false;   // (S3 spawnEnd: its own season's end)
     if (a.gon < SPAWN.GON_READY * s.gsi(a.sex) * a.W || a.K < SPAWN.K_READY) return false;
     return Ts >= sp.spawnT[0] - F3.SPAWN_LEAD && Ts <= sp.spawnT[1] + SPAWN.EDGE;
   }
