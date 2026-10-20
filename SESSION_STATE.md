@@ -192,7 +192,18 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~7:30 p.m. — the newest): THE REVIEW IS DONE — docs/review/PLAN.md is THE plan (40 items in 9
+▶▶▶ RESUME HERE (2026-10-20 ~7:20 p.m. — the newest): PLAN PHASES 0–4 (IN PART) COMMITTED (03e31d4), NOT YET GPU-TESTED. In stageR5:
+the appetite gate ∝ Cmax (pGate), bass juvW 250, SCOLD, RECRUIT_WARM; white perch bands/habJ/shore, BAND_LAKE, BASS_SCH −0.6,
+PREY_PREF, bullhead spines; killifish/pickerel/bass/sucker refuge settings; the young's winter (YO2_MARGIN 2, YM_COLD, YM_CAP 3,
+YW_T0 4). Year runner: new tallies + per-run-year summaries. UNCOMMITTED: chem3 KD_COLOUR 0.5 → 0.35 (Secchi) — waiting on the
+plants3init rebuilds (both running in the background, ~2 h each: tools/hotbrook/build_plants3.mjs, HB_WORLD=true for the true
+lakes), then W3_ONLY=plants,chem gate (the Secchi check's 2.5–4 m range may need 3.5–4.5). Snapshot p (:8128) = phases 0–1 only.
+NEXT: when arm O 613 ends (~7:45 p.m.) stop queue_r8 (611/612 cancelled — they'd test superseded code); g1_check parity
+(preview, then close it); snapshot q of the working tree → arm Q: 613 × 2 years (r5=1 + armB_query) and read the new tallies;
+then phase 3's code items (the sunfish cover drive, the bird hazard out of M_OTHER), phase 5. Probe wgrow2.mjs (the young's
+winter with the fixes) running. The human: Windows server + Pis are CPU-only (Tailscale) — offered the server for the gate/CPU
+probes via SSH; waiting on its name. Gemini reports all 7 in docs/research_notes/fetched/ and checked (gemini_*_checked.md).
+▶▶▶ RESUME HERE (2026-10-20 ~7:30 p.m.): THE REVIEW IS DONE — docs/review/PLAN.md is THE plan (40 items in 9
 phases, merged from the five reviews + white_perch_habitat_and_predation.md + three Gemini reports the human supplied, filed in
 docs/research_notes/fetched/gemini_2026-10-20_*.txt (git-ignored) and being checked by two agents → gemini_hot_brook_checked.md and
 gemini_white_perch_checked.md). Diagnosis: predators can't reach white perch (55–61 % of Maine diets) so they eat the small fish;
