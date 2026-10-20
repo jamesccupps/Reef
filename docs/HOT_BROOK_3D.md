@@ -826,6 +826,32 @@ O₂ gives 1 algae unit ≈ 1.6 mg C/L and ~0.75 turnovers a day at b ≈ 0.24);
   diets, small species persisting. Then the killifish's strip (a shore-hugging rule, not a wider band); then SEA-RUN ALEWIFE
   (MDIFW 2024 lists them in Lower; research `Hot Brook populations and water/sea_run_alewife.md` — a colonising run ~15/acre
   default, young that never recruit and leave through the outlet).
+- **Stage A — the SEA-RUN ALEWIFE (designed 2026-10-20; build after stage R settles).** MDIFW's 2024 chart lists sea-run
+  alewife in Lower (the human's PDF); alewives reached Danforth by 2017 and the Baskahegan fishway opened in 2023; no count
+  exists for Hot Brook (research `Hot Brook populations and water/sea_run_alewife.md`, its four seasons and §Implications).
+  THE DESIGN — the 12th species, a migrant that never lives here year-round:
+  - **Run size** `ALEWIFE.RUN_PER_ACRE` 15 (a colonising run, inference; ~13,000 adults Upper, ~10,000 Lower), presets 6 / 35 /
+    120 / 235 (DMR's potential) for what-ifs, CV ~0.5 a year. The base community stays the 1949–2017 one (run 0); the present
+    day is a run.
+  - **Adults** — transient super-individual schools of a few hundred, entering Lower by the outlet from Lower ≥ 10 °C plus
+    travel (~May 15–20, peak late May – mid June, none after ~20 °C), some up the brook to Upper (riffle depth ≥ 1.5 × body
+    depth); spawn at night over 0.15–1 m at 10.5–21 °C; feed (zooplankton, chironomids, perch larvae); leave 1–4 weeks after
+    spawning by the outlet; 50 % die in the lake (carcasses → sedOM and water, mass-conserving); any left at ≥ 23.5 °C die.
+    Prey of eagles and ospreys at the mouths (the shore predators, later), little of fish.
+  - **Young** — `fry` schools that NEVER recruit: hatch 25.1·e^(−0.089·T) days; pelagic; size-selective on the largest Daphnia
+    from ~25–30 mm; offshore and low by day, up and inshore at night; FB4 alewife set (Stewart & Binkowski 1986; juvenile CTO
+    24 / CTM 26); emigrate mid-July → ice-on in 2–3 pulses (rain, flow rise, ≥ 2 °C drop, dark moon; dawn in July, night from
+    August), blocked by a near-zero outflow; die at ice-on. Calibration: emigrants ~2–50 per adult, a ~100× decline June →
+    August, summer cladoceran length 0.35–0.5 mm (vs 0.6–0.7 without).
+  - **Predation** — through the young's density rule (one rule all year, item 6b): bass < 30 cm, pickerel, white perch (late
+    summer almost wholly), yellow perch; the outlet and brook-mouth pools as ambush points in the pulses.
+  - **Nutrients** — import 0.42 % P, 2.49 % N of the adults' mass; excretion while resident; export 0.43 % P in emigrants (the
+    closed budgets get an import/export term, both ledgered).
+  - **Watch** — yellow perch (adults eat perch larvae, young compete for Daphnia: a candidate mechanism for the human's "perch
+    small and few"), white perch's switch, bass growth equal or better.
+  - **Build** — species3/S3 entry, the run's arrival and exit through the outlet column, a never-recruit flag for the young,
+    emigration pulses (the weather's rain and the outflow), GPU support (NK 12: layout, tallies), the view (silvery schools),
+    gate checks (arrival and exit dates, the zooplankton crash, P/N budgets closed with the import/export).
 - **The under-ice light**: snowy ice (90 % cut) brings the winter algae to field levels (0.03–0.07 units against 0.2–0.5 with 40 %
   of the light) but the fish-free lake's mean O₂ then falls to 2.7 mg/L by March — the winter O₂ budget leans on under-ice
   photosynthesis through too-bright ice. A stage D item (snow's season, the winter O₂ budget), now with the copepods' winter food
