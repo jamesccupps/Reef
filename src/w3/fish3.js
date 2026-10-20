@@ -138,14 +138,15 @@ export const F3 = {
   // ~0.3 of it, where the capture term alone favours the smallest (a 42-cm pickerel cropped 6-cm killifish); the strike rate is
   // the capture success's, unchanged
   BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3,
-  // (the review's phase 4, items 17 and 19) YO2_MARGIN: the young choose their water — the bed, the zooplankton's cells, the escape —
-  // with O₂ ≥ YO2_MARGIN × their critical level (0: only ≥ critical, and the zooplankton's choice untested): in arm O the young of
+  // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
+  // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
+  // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
   // every species died of hypoxia under the ice at 8–25 % a fortnight, sitting all winter on the richest bed — the organic beds
   // that go anoxic first — and testing O₂ only once it was below critical; Hot Brook is no winterkill lake (white perch winter in
   // it) and the adults in the same water did not die. YM_COLD: the young's unsimulated mortality (BIOE.M_OTHER's share of M)
   // slows in cold water as their predation does (FRY.M_JUV_Q10), its size multiplier capped at YM_CAP (the agents' 3; it was 30):
   // alone it took 20–35 % of the young over a winter when no heron, kingfisher or merganser is about
-  YO2_MARGIN: 0, YM_COLD: 0, YM_CAP: 30,
+  YO2_MARGIN: 0, YO2_T: 10, YM_COLD: 0, YM_CAP: 30,
   // (phase 4, docs/review/PLAN.md item 2's finding) YW_T0/YW_T1 °C: a young school past its first YW_AGE days feeds in proportion to
   // (T − YW_T0)/(YW_T1 − YW_T0) — none below YW_T0 (0: off): followed by id from September to March, the same schools of yellow perch,
   // white perch, sucker and fallfish grew 1.9–2.2 cm, most of it at 1–2 °C under the ice (probe/wgrow.mjs), where young perch stop
@@ -2370,7 +2371,7 @@ export class Fish3 {
     // open-water season only (≥ YBED_T °C): killifish move into the lakes' deeper parts in late fall and winter (COSEWIC 2003, Godin)
     const free = GEO.SCALE >= 1, inB = G.body[c] === BROOK, yB = T >= F3.YBED_T ? s.yBed || 0 : 0, ok = cc => (s.brookYoy || free || G.body[cc] !== BROOK) && !(yB > 0 && G.depthMean[cc] > yB);   // (true scale: the brook is its real share again — the young may feed in it)
     if (inB && !s.brookYoy && !free) { const k = nearestBP(q.x, q.y), p = k >= BLAST ? LAKE_NEAR[LOWER] : BP[k + 1]; q.tx = p[0]; q.ty = p[1]; q.tz = Math.max(0.05, q.z); return; }
-    const o2m = sp.o2Crit * Math.max(1, F3.YO2_MARGIN);   // (F3.YO2_MARGIN: the water they choose, with room to spare)
+    const o2m = sp.o2Crit + (T < F3.YO2_T ? F3.YO2_MARGIN / ENV.O2_MGL : 0);   // (F3.YO2_MARGIN mg/L: the water they choose in cold water, with room to spare)
     if (o2 < o2m) { const bc = this._o2Better(c); if (bc >= 0) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } else { q.tx = q.x; q.ty = q.y; } q.tz = Math.max(0.05, q.z - 1); return; }   // (up, and across to better water)
     if (T > sp.uilt - 3) { q.tx = q.x; q.ty = q.y; q.tz = q.bed - 0.05; return; }
     const benth = q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus), nb = this.nbr[c];

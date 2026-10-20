@@ -1842,7 +1842,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     let kb = nearestBP(x, y); var p = bp(u32(min(kb + 1, i32(BLAST)))); if (kb >= i32(BLAST)) { p = vec2f(stf(O_bLakeNear + 4u), stf(O_bLakeNear + 5u)); }
     tx = p.x; ty = p.y; tz = max(0.05, z); done = true;
   }
-  let o2m = spv(k, S_o2CritS) * max(1.0, F3_YO2_MARGIN);   // (F3.YO2_MARGIN: the water they choose, with room to spare)
+  let o2m = spv(k, S_o2CritS) + select(0.0, F3_YO2_MARGIN / ENV_O2_MGL, T < F3_YO2_T);   // (F3.YO2_MARGIN mg/L: the water they choose in cold water, with room to spare)
   if (!done && o2 < o2m) { let bc = wdi(W_o2Best + c); if (bc >= 0) { tx = colX(u32(bc)); ty = colY(u32(bc)); } else { tx = x; ty = y; } tz = max(0.05, z - 1.0); done = true; }
   if (!done && T > spv(k, S_uiltS) - 3.0) { tx = x; ty = y; tz = bed - 0.05; done = true; }
   let s0 = u32(sti(O_fNbr0 + c)); let s1 = u32(sti(O_fNbr0 + c + 1u));
