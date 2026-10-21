@@ -386,7 +386,7 @@ export function wgslConstants(STL, WL, extra = {}) {
   for (const [k, v] of Object.entries(F3)) if (typeof v === 'number') C('F3_' + k, v);
   for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3], ['WINTER0', WINTER0]])
     for (const [k, v] of Object.entries(o)) { if (typeof v === 'number') C(blk + '_' + k, v); else if (Array.isArray(v) && v.length <= 4 && v.every(x => typeof x === 'number')) v.forEach((x, q) => C(`${blk}_${k}_${q}`, x)); }
-  C('WINTER0_ON', WINTER0.ON ? 1 : 0); C('WIN_YF0', winterWindow[0]); C('WIN_YF1', winterWindow[1]); C('WINJE_YF0', winterWindowJE[0]); C('WINJE_YF1', winterWindowJE[1]); C('WINTER0_JE_FL', WINTER0.JE_FL);
+  C('WINTER0_ON', WINTER0.ON ? 1 : 0); C('WIN_YF0', winterWindow[0]); C('WIN_YF1', winterWindow[1]); C('WINJE_YF0', winterWindowJE[0]); C('WINJE_YF1', winterWindowJE[1]);
   C('ENV_O2_MGL', ENV.O2_MGL); C('ENV_COLD_PERF_MIN', ENV.COLD_PERF_MIN); C('ENV_HYPOXIA', ENV.HYPOXIA);
   C('OXYCAL', OXYCAL); C('YEAR', YEAR); C('DAY', DAY); C('TS', TS); C('OLD_S', OLD_S);
   CU('NK', KEYS3.length); CU('HID', HID3); CU('NI', IN3.length); CU('NO', OUT3.length); CU('NG', NG); CU('NBR', NBR); CU('NW2', NW2_3); CU('W2OFF', W2OFF3); CU('NGENES', NGENES); CU('NGN', NGN);
