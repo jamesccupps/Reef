@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~4:10 p.m. EDT — the newest). COMMITTED 29bb796 (in stageR5, CPU+GPU): R2·4 the young pickerel's own set
+▶▶▶ RESUME HERE (2026-10-21 ~4:50 p.m. EDT — the newest). COMMITTED since 4:10: 7a89163 F3.WIN_JE (white perch's first winter on
+Johnson & Evans 1990's measured 4 °C model, days < 4 °C — 161; layout SP_REC 172→180 + an overflow guard); b0f986c F3.YSCHOOL (the young met
+in their schools by the followed fish's school terms: esocid n^schoolExp, bass n^BASS_SCH, other 0.15; school = S3 school / group[1] / 1);
+3d42b44 (a duplicate WGSL const). All in stageR5. Strike section 23/23; g1_check ?r5=1 all agree (young eaten 65/65), ?yf=0.75 winter 8/8.
+WHY YSCHOOL: ARM AA (29bb796, 611, yr 1; stopped at day 448) ate the young out — perch young eaten Z 0.05–0.16/d (25 M → 2 k by Aug;
+Oneida ~0.035 total, arm Y's old rule ~0.03), bass and pickerel young wiped; adult perch and white perch eat most young (3–5 % of their
+diets). 1/10 probe ywp_509: young white perch's "natural" deaths 17–54 %/fortnight (M_JUV3 × density) — R0 next: re-derive M_LARVA3/M_JUV3,
+drop the density scaling (it stood in for predation now explicit).
+RUNNING: ARM AB (queue_r20.sh, snapshot ac :8141 = b0f986c + 3d42b44, r5=1) 611 → 612 → 613, ~90 min each from ~4:45 → r20AB_<seed>.txt.
+GATE 3 on occ-server for b0f986c → occ_gate_r3.txt. Gate 2 (29bb796) "failed" only because I started gate 3 while it ran — both sync into
+~/reef (memory remote-cpu-host: never overlap remote runs); its own checks passed (w3 109/109 before the swap).
+READ ARM AB: node yz.mjs r20AB_611.txt perch,whiteperch,bass,pike,sunfish (the young's Z by cause — target perch ~0.035/d total), yrsum,
+LENGTH AT AGE, recruits (bass, pickerel, white perch), white perch kg/ha 15–35.
+▶▶▶ RESUME HERE (2026-10-21 ~4:10 p.m. EDT). COMMITTED 29bb796 (in stageR5, CPU+GPU): R2·4 the young pickerel's own set
 (PIKE_JUV below 10 g: Cmax W^−0.24, R Q10 2.5, FA 0.13/SDA 0.14; the adults' ×0.5 winter cut now adult-set-only in coldResp) + yCover
 0.8; R2·3 F3.YDEPTH (the young's table by bed depth, 4 classes 0.3/0.6/1.2 m, each predator reaching a bin by SHALLOW_K on the bin's mean
 bed; GPU yBin/yBin2/ybK + AC_BSB) + S3.bass.yBed 1.0. Strike section 21/21 locally; g1_check ?r5=1 all agree (young eaten 131/131).
