@@ -24,6 +24,21 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   food web by an order of magnitude and handed regulation to the census cap. A periodic audit of every value against its source,
   classifying it as field / compensation / stacked / prior, is a necessary part of building such a model.
 
+## 2026-10-21 — Fed predators grow to giants: the satiation level is set by growth, not by the encounter rule (arms W, X)
+- **What.** With the strike rule's stacked brakes undone (R1), the true-scale predators fed at the field's summer rations (pickerel p
+  0.37–0.41) and white perch came off the census cap (31 → 22 kg/ha in three years) — but bass ran at p 0.55–0.65 all year and grew
+  to a mean 66 cm at 8+ (Maine smallmouth Linf ~50), pickerel to 60 cm by age 5 and 85 at 8+ (Maine ~43 at 5, Linf 65), while the
+  prey (yellow perch 17 → 6 kg/ha, the sunfishes, bullheads, killifish) fell. Two causes: a sated bass, barred only from hunting fish,
+  grazed crayfish, insects and the bed between meals (a sated fish now forages for nothing); and the hunger gate's level, which in a
+  Wisconsin-model fit is exactly what length at age sets (p), had been chosen when encounters, not appetite, limited the predators.
+- **And a units slip in a cold rule.** The rule that slows strikes in cold water used FB4's consumption temperature curve as a 0–1
+  appetite. Eq. 2 and 3 curves are ~1 at their optimum; Eq. 4 — the northern-pike set the chain pickerel run on — peaks at ~8.3, so at
+  2 °C it read 1.0 and pickerel struck all winter at their full cold performance (field pike: a meal every ~25 days in winter, Diana
+  1979); at 2 °C the relative appetite is 0.12.
+- **Why it matters.** Once the encounter physics is right, the predators' growth is set by their satiation and their winter, and both
+  must be checked against length at age, not only against summer rations or kill rates. Borrowed parameter sets carry their own
+  conventions (an unnormalised temperature curve) that silently break rules written for another set's.
+
 ## 2026-10-21 — Two bookkeeping bugs that look like ecology (docs/review/PLAN.md progress)
 - **A school laid ≤ 59 % of its eggs**: a schooling spawner's gonads are built to the sexes' mean GSI, but its eggs were scaled by
   the female's — killifish, yellow and white perch all ~0.6 of their fecundity (F3.EGG_SCHOOL).

@@ -997,6 +997,15 @@ if (run('strike')) {
       check('R2b: the small fish reach the weeds\' small fauna — a fish ≤ 7.5 cm sees it with the large insects and takes from it; one ≥ 15 cm sees none',
         jb >= 0 && Math.abs(eSmall - eBig - S0) < 1e-6 * Math.max(1, S0) && got > 0 && S1 < S0 && smAt(6) === 1 && smAt(15) === 0,
         `bed cell ${jb}: small fauna ${S0.toFixed(3)} g/m², seen ${eBig.toFixed(3)} → ${eSmall.toFixed(3)}; took ${got.toFixed(3)} g, small fauna → ${S1.toFixed(3)}`); }
+    // (the cold rules on a relative appetite: FB4's Eq. 4 curve, the pickerel's, peaks at ~8.3 — not 1 — so the cold rules divide by
+    // its peak; and R1b: white perch's unsimulated adult mortality at the field's non-predation 0.45–0.65 a year, maxAge 10, restored
+    // when the package is off)
+    { const be = await import('../src/bioenergetics.js'), wp = fm.S3.whiteperch, pk = fm.S3.pike.sp.bio, bs = fm.S3.bass.sp.bio;
+      const relP2 = be.consumptionTrel(pk, 2), relB2 = be.consumptionTrel(bs, 2), wpOn = wp.sp.M * wp.mOther, ageOn = wp.maxAge / (365 * 86400);
+      fm.stageR5(false); const wpOff = wp.sp.M * 0.5, ageOff = wp.maxAge / (365 * 86400), offOK = wp.mOther === undefined && Math.abs(ageOff - 12) < 0.01; fm.stageR5(true);
+      check('the cold rules read a relative appetite (the pickerel\'s Eq. 4 curve divided by its peak: ~0.12 of it at 2 °C, not 1.0; the bass\'s Eq. 2 unchanged); R1b: white perch\'s adult background mortality 0.45–0.65 a year with maxAge 10 under the package, 0.23 and 12 off it',
+        relP2 > 0.08 && relP2 < 0.2 && Math.abs(relB2 - be.consumptionT(bs, 2)) < 1e-9 && wpOn >= 0.45 && wpOn <= 0.65 && Math.abs(ageOn - 10) < 0.01 && offOK,
+        `pickerel ${relP2.toFixed(3)} at 2 °C (peak ${pk.cTmax.toFixed(2)}), bass ${relB2.toFixed(3)}; white perch ${wpOn.toFixed(2)}/yr to ${ageOn.toFixed(1)} yr (off: ${wpOff.toFixed(2)}, ${ageOff.toFixed(1)})`); }
     fm.stageR5(false);
     check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 5× what is left with the zooplankton first, and the young take the bed\'s and weeds\' food for ≥ 15 % of their diet',
       b.D >= 20 && b.D >= 5 * a.D && b.zoo <= 0.85, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }

@@ -155,4 +155,10 @@ export const stdWeight = (lw, L) => lw.a * Math.pow(L, lw.b);
 export const lengthFor = (lw, W) => Math.pow(W / lw.a, 1 / lw.b);
 
 // precompute the derived constants of a parameter set (in place; idempotent)
-export function prepBio(b) { prepC(b); prepR(b); return b; }
+export function prepBio(b) { prepC(b); prepR(b); b.cTmax = cTmaxOf(b); return b; }
+// the consumption temperature curve's peak over 0–35 °C: FB4's Eq. 1–3 curves are ~1 at their optimum, Eq. 4's (the pike set the
+// chain pickerel run on) is not — it peaks at ~8.3 at 24.5 °C — so a RELATIVE appetite, the share of the summer's, divides by it
+function cTmaxOf(b) { let m = 0; for (let T = 0; T <= 35; T += 0.25) m = Math.max(m, consumptionT(b, T)); return m > 0 ? m : 1; }
+// … the relative appetite at T (0–1): fish3's cold rules (F3.SCOLD, YCOLD) — with the raw Eq. 4 curve, 1.0 at 2 °C, the pickerel
+// struck in winter at their full cold performance where pike in the field take a meal every ~25 days (Diana 1979)
+export function consumptionTrel(b, T) { return consumptionT(b, T) / (b.cTmax || 1); }

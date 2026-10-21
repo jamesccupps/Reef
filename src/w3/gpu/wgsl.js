@@ -834,6 +834,7 @@ fn consumptionT(bs: u32, T: f32) -> f32 {
   if (hT < 1e30 && T > hT - 0.5) { let w = min(1.0, T - hT + 0.5); var cold = 0.0; if (w < 1.0) { cold = consT1(bs, T, false); } return cold * (1.0 - w) + consT1(bs, T, true) * w; }
   return consT1(bs, T, false);
 }
+fn consumptionTrel(bs: u32, T: f32) -> f32 { return consumptionT(bs, T) / max(1e-9, bio(bs, BcTmax)); }   // (bioenergetics consumptionTrel: the share of its peak appetite)
 fn cmaxB(bs: u32, W: f32, T: f32) -> f32 { return bio(bs, BCA) * pow(W, bio(bs, BCB)) * consumptionT(bs, T); }
 fn respirationT(bs: u32, T: f32) -> f32 {
   if (bio(bs, BREQ) == 1.0) { return exp(bio(bs, BRQ) * T); }
@@ -1046,7 +1047,7 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + select(F3_ENC_EH, spv(k, S_aMax), F3_EH_AMAX > 0.5)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + select(F3_ENC_EH, spv(k, S_aMax), F3_EH_AMAX > 0.5)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
   else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
@@ -1374,7 +1375,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   let uilt = ga(A_uilt, i); var hH = 0.0; if (xt > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((xt - uilt) / BIOE_HEAT_STEEP); }
   let o2Lx = lethalO2(ga(A_o2Lethal, i), ga(A_o2Ice, i), xt);
   var hO = 0.0; if (xo < o2Lx) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2Lx - xo) / o2Lx); }
-  let hM = spv(k, S_M) * BIOE_M_OTHER * clamp(pow(L / spv(k, S_Lref), -0.87), 0.5, 3.0) / YEAR;
+  let hM = spv(k, S_M) * spv(k, S_mOther) * select(clamp(pow(L / spv(k, S_Lref), -0.87), 0.5, 3.0), 1.0, F3_MOTHER_FLAT > 0.5) / YEAR;   // (S3 mOther, F3.MOTHER_FLAT)
   let hz = hS + hH + hO + hM; let old = f32(gau(A_age, i)) > spv(k, S_maxAge);
   var cause = CAUSE_OTHER;
   if (old) { cause = CAUSE_OLD; } else if (hS >= hH && hS >= hO && hS >= hM) { cause = CAUSE_STARVE; } else if (hH >= hO && hH >= hM) { cause = CAUSE_HEAT; } else if (hO >= hM) { cause = CAUSE_HYPOXIA; }
@@ -1514,7 +1515,7 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0);   // (F3.REST_DIGEST: no fish while it rests)
   if (FRY_DENSITY > 0.5) {   // (stage Y1: a request over its column's bins, settled in k_eatYoyGet)
     let c = gai(A_c, i); if (c < 0) { return; }
-    let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
+    let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
     let r = yReqK(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR));
     if (!(r.x > 0.0)) { return; }
     let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(u32(c)); let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
@@ -1659,7 +1660,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
   if (FRY_DENSITY > 0.5 && spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {   // (stage Y1: a request over its column's bins)
-    let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, select(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), min(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), consumptionT(bs, T)), F3_YCOLD > 0.5), spv(k, S_preyLR));
+    let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, select(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), min(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), consumptionTrel(bs, T)), F3_YCOLD > 0.5), spv(k, S_preyLR));
     if (r.x > 0.0) {
       let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)) / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
       for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, L * spv(k, S_gapeR), true, false, spv(k, S_preyLR)); if (w > 0.0) { acc64(AC_BREQY + 2u * b, r.x * a0 * w / r.y, BSC); } }

@@ -26,7 +26,7 @@ import { A2 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
-import { cmax, consumptionT, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
+import { cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
 import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
@@ -168,7 +168,10 @@ export const F3 = {
   // R2b — SMALL_S: a small followed fish takes the weeds' small fauna (chydorids, early midges, small worms) with the large, fully to
   // LIT3.SM_L[0] cm and none from SM_L[1] — before, only the young's schools could: killifish, small sunfish and dace (the year-old
   // recruits too) foraged the weeds for the large insects only, and the killifish's ration fell to 0.43–0.47 in their strip
-  SMALL_S: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
+  SMALL_S: 0,
+  // R1b — MOTHER_FLAT: an adult's unsimulated mortality (M × its S3 mOther share) without Lorenzen's size slope (L/Lref)^−0.87 —
+  // that slope is mostly predation's (Lorenzen; audit_physiology.md B), which the encounter rule now simulates
+  MOTHER_FLAT: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -478,7 +481,7 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
 // (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
-const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
+const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER0.K.whiteperch, sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
 const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
@@ -628,6 +631,13 @@ export function stageR5(on = true) {
   // did (world.js sp.reproAlloc; FEATURES.md 'a batch every ~4 days') — lost in the 3-D port, every species at BIOE.REPRO_ALLOC 0.5:
   // three killifish clutches in ~6 weeks need p ≈ 0.8 at 0.5, 0.6–0.65 at 0.8 (audit_physiology.md C)
   F3.SMALL_S = on ? 1 : 0; for (const k of ['killifish', 'sunfish', 'redbreast']) S3[k].reproA = on ? 0.8 : undefined;
+  // (R1b) MORTALITY BY CAUSE — WHITE PERCH, which the census cap alone held: adults' non-predation mortality 0.45–0.65 a year, 'not
+  // halved' (Z 0.6–0.8, predation ≲ 0.05–0.10, F 0.02–0.08; white_perch_regulation.md), the sim's 0.45 × 0.5 = 0.23; maxAge 10, M ≈
+  // 0.54 with the full share (mOther 1); their young die 3.3× faster than yellow perch's over a first winter (Johnson & Evans 1991), so
+  // a harsher WINTER0 ramp than the perch's they shared ([1.04, 0.87] → [1.1, 0.95]); the adults' size slope off (MOTHER_FLAT)
+  F3.MOTHER_FLAT = on ? 1 : 0; S3.whiteperch.mOther = on ? 1 : undefined;
+  SP.whiteperch.M = on ? 0.54 : BIO0.wpM; SP.whiteperch.maxAge = BIO0.wpMaxAge * (on ? 10 / 12 : 1); S3.whiteperch.maxAge = SP.whiteperch.maxAge / Y2 * YEAR;   // (as the species' set-up)
+  WINTER0.K.whiteperch = on ? [1.1, 0.95] : BIO0.wpK;
   F3.YSHARE = on ? 1 : 0; F3.RWMIN_STEEP = on ? 1 : 0; PLANKTON.K_FRY = on ? 60 : K_FRY0;
   for (const k of KEYS3) S3[k].cmaxL = on && k !== 'sunfish' && k !== 'redbreast' ? 1 : undefined;
   F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0; F3.REST_ALL = on ? 1 : 0;
@@ -1903,7 +1913,7 @@ export class Fish3 {
     // (F3.YCOLD: its hunting of the young at its own appetite's temperature curve — FB4 consumptionT, ~0 under the ice — not only its
     // cold performance, 0.4–0.55 at 0–2 °C: in arm O the young killifish were still eaten 13–22 % a fortnight at 0.5 °C, where the
     // field's first winters lose ~40–50 % in all (Neuswanger et al. 2015) and winter predation is low)
-    const cT = F3.YCOLD || F3.SCOLD ? consumptionT((sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio, a.T) : 1;
+    const cT = F3.YCOLD || F3.SCOLD ? consumptionTrel((sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio, a.T) : 1;   // (relative: bioenergetics consumptionTrel)
     const yEff = F3.YCOLD ? Math.min(perf, cT) : perf, sEff = F3.SCOLD ? Math.min(perf, cT) : perf;
     const g0 = a.gut;
     // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
@@ -2546,7 +2556,7 @@ export class Fish3 {
     const want = yw * q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + ((s.cmaxL ?? FRY.CMAX_LARVA) - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));   // (S3 cmaxL: its own larvae's)
     let got = 0, J = 0;
     if (FRY.DENSITY && q.bankG > 0) { const g = Math.min(q.bankG, want), f = g / q.bankG; got += g; J += q.bankJ * f; q.bankG -= g; q.bankJ -= q.bankJ * f; }   // (stage Y1: the young fish it caught last tick)
-    if (FRY.DENSITY && d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) this._yReq(null, q, q.c, q.n, q.L, q.L * sp.gapeR, want / Math.max(1, q.n * st), st, Math.max(0, want / q.n - q.bankG / q.n), true, false, F3.YCOLD ? Math.min(coldPerf(T, sp.tempOpt, sp.coldPerf), consumptionT(sp.bioJuv || sp.bio, T)) : coldPerf(T, sp.tempOpt, sp.coldPerf), s.preyLR);
+    if (FRY.DENSITY && d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) this._yReq(null, q, q.c, q.n, q.L, q.L * sp.gapeR, want / Math.max(1, q.n * st), st, Math.max(0, want / q.n - q.bankG / q.n), true, false, F3.YCOLD ? Math.min(coldPerf(T, sp.tempOpt, sp.coldPerf), consumptionTrel(sp.bioJuv || sp.bio, T)) : coldPerf(T, sp.tempOpt, sp.coldPerf), s.preyLR);
     else if (d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) {   // young piscivores eat other young they can swallow (from the species' yLpisc)
       const r = this._nearYoy(q.x, q.y, q.z, F3.YOY_EAT_R, o => o !== q && o.L * o.s.sp.depthR <= q.L * sp.gapeR && o.L >= FEED.SCHOOL_MIN * q.L);
       if (r) {
@@ -2667,7 +2677,7 @@ export class Fish3 {
     const hH = a.xt > a.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((a.xt - a.uilt) / BIOE.HEAT_STEEP) : 0;
     const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);
     const hO = a.xo < o2Lx ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2Lx - a.xo) / o2Lx) : 0;
-    const hM = sp.M * BIOE.M_OTHER * clamp(Math.pow(a.L / sp.Lref, -0.87), 0.5, 3) / YEAR;
+    const hM = sp.M * (s.mOther ?? BIOE.M_OTHER) * (F3.MOTHER_FLAT ? 1 : clamp(Math.pow(a.L / sp.Lref, -0.87), 0.5, 3)) / YEAR;   // (S3 mOther, F3.MOTHER_FLAT)
     const hz = hS + hH + hO + hM, old = a.age > s.maxAge;
     const cause = old ? 'old' : hS >= hH && hS >= hO && hS >= hM ? 'starve' : hH >= hO && hH >= hM ? 'heat' : hO >= hM ? 'hypoxia' : 'other';
     if (old || !(a.W > 0)) return this._die(a, cause, a.n);
