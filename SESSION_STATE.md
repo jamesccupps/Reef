@@ -192,7 +192,17 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~7:20 p.m. — the newest): PLAN PHASES 0–4 (IN PART) COMMITTED (03e31d4), NOT YET GPU-TESTED. In stageR5:
+▶▶▶ RESUME HERE (2026-10-20 ~8:35 p.m. — the newest): w3 GATE 103/103 at eefcece (KD_COLOUR 0.4, both plants3init rebuilt;
+backup …_20261020_2028_review-phases.zip). Since 7:20: items 13 (sunfish cover drive), 24 (arm B diets in code), 26 (sunfish RA×0.7,
+fallfish FA/UA, bullhead juvW 30 + ED 5000 — research bullhead_growth_and_young_white_perch.md), 23 (bullhead spawnT [18,24] +
+spawnEnd 0.38), 28 (brook sunfish share 0.01/0.02), 31 (settle 0.03…), the young's O₂ cushion fixed (mg/L, cold only — the ×2
+rule barred summer water). PLAN.md has a Progress section. ARM Q RUNNING (snapshot r :8130 = phases 0–4 + the O₂ fix, KD 0.5,
+armB_query; r9Q_613.txt, 2 yrs, ~9:35 p.m.): year 1 tracks arm O closely through summer. Arm O 613 × 5 yrs DONE (the baseline:
+pickerel 5.0→0.4, bass 7.3→3.6, bullhead 6.6→0.9, white perch 34.5→44, small fish gone). NEXT: read arm Q's RUN-YEAR summaries
+(kills by light/prey, from shore, starvation by size, LENGTH AT AGE), then arm R = HEAD (r5=1 only — no armB_query — KD 0.4) on
+613, then 3 seeds. Deferred: item 16 birds (redistributing M_OTHER lowers big deep fish's M: needs per-species normalisation),
+18 snow/ice optics, 21 egg stage, 22 pickerel first year (YOY 7.8 cm vs 10–13), 29 zooplankton shape.
+▶▶▶ RESUME HERE (2026-10-20 ~7:20 p.m.): PLAN PHASES 0–4 (IN PART) COMMITTED (03e31d4), NOT YET GPU-TESTED. In stageR5:
 the appetite gate ∝ Cmax (pGate), bass juvW 250, SCOLD, RECRUIT_WARM; white perch bands/habJ/shore, BAND_LAKE, BASS_SCH −0.6,
 PREY_PREF, bullhead spines; killifish/pickerel/bass/sucker refuge settings; the young's winter (YO2_MARGIN 2, YM_COLD, YM_CAP 3,
 YW_T0 4). Year runner: new tallies + per-run-year summaries. UNCOMMITTED: chem3 KD_COLOUR 0.5 → 0.35 (Secchi) — waiting on the
