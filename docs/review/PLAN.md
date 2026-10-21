@@ -274,3 +274,4 @@ Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's c
 5. Frogs and turtles: which ones?
 6. People: boats on a summer day, ice shacks in winter, and what gets kept (white perch, pickerel, perch)?
 7. The brook in a dry August: can you still float a canoe through, or do you walk it? Any beaver dams?
+8. ~~Do suckers run up Upper's south inlet in spring? Any barrier at Lower's outlet?~~ The human hasn't been up those streams (2026-10-21). Item 38's stream runs go on the literature and the MDIFW records: the sea-run alewives in Lower show the outlet is passable at least to them.
