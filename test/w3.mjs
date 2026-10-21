@@ -985,7 +985,19 @@ if (run('strike')) {
       const G = F.G; let v = 0, zD = 0; for (let j = 0; j < G.NCELL; j++) { const w = G.vol[j]; if (w > 0) { v += w; zD += F.chem.zooD[j] * w; } }
       const fd = F.stats.food, yz = fd.yZoo - f0.yZoo, yo = fd.yWeed - f0.yWeed + fd.yBenth - f0.yBenth;
       return { D: zD / v * PLANKTON.UGL, zoo: yz / Math.max(1e-9, yz + yo) }; };
-    const b = six(true), a = six(false); fm.stageR5(false);
+    const b = six(true), a = six(false);
+    // (R2b) the small fish reach the weeds' small fauna: on a weedy bed cell a followed fish ≤ LIT3.SM_L[0] cm sees the small fauna
+    // with the large (weedEcells's sm) and takes from it in proportion; a fish ≥ SM_L[1] sees none of it
+    { const e = new Env3({ col: 10 * CS, yf0: 0.45 }), lit = e.lit, L3 = (await import('../src/w3/littoral3.js')).LIT3;
+      let jb = -1; for (let j = 0; j < lit.idx.length; j++) { const i = lit.idx[j]; if (i >= 0 && lit.S[i] > 0.05) { jb = j; break; } }
+      const i = jb >= 0 ? lit.idx[jb] : -1, S0 = i >= 0 ? lit.S[i] : 0, a = e.G.bedA[jb] || 0;
+      const eBig = jb >= 0 ? lit.weedEcells([jb], 1, false, 0, 0, 1, 0) : 0, eSmall = jb >= 0 ? lit.weedEcells([jb], 1, false, 0, 0, 1, 1) : 0;
+      const got = jb >= 0 ? lit.takeWeedCells([jb], 1, 0.5 * eSmall * a, false, 0, 0, 1, 1) : 0, S1 = i >= 0 ? lit.S[i] : 0;
+      const smAt = L => Math.max(0, Math.min(1, (L3.SM_L[1] - L) / (L3.SM_L[1] - L3.SM_L[0])));
+      check('R2b: the small fish reach the weeds\' small fauna — a fish ≤ 7.5 cm sees it with the large insects and takes from it; one ≥ 15 cm sees none',
+        jb >= 0 && Math.abs(eSmall - eBig - S0) < 1e-6 * Math.max(1, S0) && got > 0 && S1 < S0 && smAt(6) === 1 && smAt(15) === 0,
+        `bed cell ${jb}: small fauna ${S0.toFixed(3)} g/m², seen ${eBig.toFixed(3)} → ${eSmall.toFixed(3)}; took ${got.toFixed(3)} g, small fauna → ${S1.toFixed(3)}`); }
+    fm.stageR5(false);
     check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 5× what is left with the zooplankton first, and the young take the bed\'s and weeds\' food for ≥ 15 % of their diet',
       b.D >= 20 && b.D >= 5 * a.D && b.zoo <= 0.85, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
 }

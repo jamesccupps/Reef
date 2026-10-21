@@ -932,7 +932,7 @@ export const BODY = /* wgsl */`
   sa(A_rO2, i, rO2 / DAY);
   var net = C - Fz - Ux - Sd - rO2 * OXYCAL * dd;
   let ed = energyDensity(bs, Wg); let gsi = gsiOf(k, gau(A_sex, i)); var gon = ga(A_gon, i);
-  if (net > 0.0 && (fl & FL_MATURE) != 0u && gon < gsi * Wg) { let toG = min(net * BIOE_REPRO_ALLOC, (gsi * Wg - gon) * ed); gon += toG / ed; net -= toG; }
+  if (net > 0.0 && (fl & FL_MATURE) != 0u && gon < gsi * Wg) { let toG = min(net * spv(k, S_reproA), (gsi * Wg - gon) * ed); gon += toG / ed; net -= toG; }   // (S3 reproA)
   else if (net <= 0.0 && gon > 0.0 && K < BIOE_K_RESORB) { let fromG = min(gon * ed, -net); gon -= fromG / ed; net += fromG; }
   sa(A_gon, i, gon);
   let Ws = stdWeight(k, ga(A_L, i)); let gK = select(BIOE_ED_K, BIOE_ED_K_JUV, f32(gau(A_age, i)) < YEAR);
@@ -986,11 +986,13 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * guardMul(i, k, BROOD_GUARD_FEED3_0, BROOD_GUARD_FEED3_1);
   let apt = gEff / gmax;
   sa(A_fGEff, i, gEff); sa(A_fPerf, i, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)));
+  var sated = false;
   if (F3_REST_DIGEST > 0.5 && F3_HUNGER_GATE > 0.5 && spv(k, S_pisc) > 0.5 && ga(A_L, i) >= spv(k, S_Lpisc)) {   // (fish3 _feed, F3.REST_DIGEST: sated — it rests while it digests)
     let G = gateG(i, k); let gut = ga(A_gut, i); if (G > 0.0 && gut >= G) { sa(A_missCd, i, max(ga(A_missCd, i), log(gut / (F3_REST_TO * G)) / evacK(i, k) * DAY)); }
+    sated = F3_REST_ALL > 0.5 && G > 0.0 && ga(A_missCd, i) > 0.0 && gut > F3_REST_TO * G;   // (F3.REST_ALL: it forages for nothing while it rests)
   }
   let hg = gateHg(i, k, ga(A_gut, i));   // (fish3 _feed: the hunger gate)
-  sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY * hg); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
+  sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, select(ga(A_cm, i) * apt * W * U.dt / DAY * hg, 0.0, sated)); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
   sai(A_claim, i, -1);
 }
 // ---- STRIKES (fish3 _strike): the kill hazard over the catchable fish within reach; the prey drawn ∝ its weight (each candidate a
@@ -1111,6 +1113,10 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   if (F3_BED_SHARE > 0.5) { let h = max(0.02, hb); let x1 = 2.0 * reachB / h; let x2 = 2.0 * (reachB + canopy) / h; return vec2f(1.0 - exp(-x1) * (1.0 + x1), select(0.0, 1.0 - exp(-x2) * (1.0 + x2), lit)); }
   return vec2f(select(0.0, 1.0, hb <= reachB), select(0.0, 1.0, lit && hb <= reachB + canopy));
 }
+fn smallS(k: u32, L: f32) -> f32 {   // (fish3 F3.SMALL_S: a small fish's share of the weeds' small fauna)
+  if (!(F3_SMALL_S > 0.5) || !(spv(k, S_dLarva) > 0.5 || spv(k, S_dInsect) > 0.5 || spv(k, S_dPlankton) > 0.5)) { return 0.0; }
+  return clamp((LIT3_SM_L_1 - L) / (LIT3_SM_L_1 - LIT3_SM_L_0), 0.0, 1.0);
+}
 @compute @workgroup_size(64) fn k_fieldReq(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
   let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
@@ -1128,7 +1134,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   let cs = select(0.0, crayS * fNear / max(fWeed, 1e-9), crayS > 0.0 && nearBed && lit); let big = pisc && crayS > 0.0 && L >= 3.0 * spv(k, S_Lpisc);
   let canB = spv(k, S_benthic) > 0.5 && small && (nearBed || inWeeds); let canZ = spv(k, S_plank) > 0.5 || L < spv(k, S_Lzoo);
   let canS = lit && spv(k, S_dInsect) > 0.5 && small && z <= LIT3_SURF_Z + spv(k, S_insR);
-  let fp = fpOf(k, cu, z);
+  let fp = fpOf(k, cu, z); let sm = smallS(k, L);
   // the offers over the footprint
   var sB = 0.0; var aB = 0.0; var sW = 0.0; var sWls = 0.0; var sWc = 0.0; var nBc = 0u; var sS = 0.0; var aS = 0.0;
   var zD = 0.0; var zC = 0.0; var zw = 0.0; var zE = 0.0; var zEw = 0.0;
@@ -1141,7 +1147,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
         let j = u32(sti(O_fColBedL + t)); if (abs(stf(O_wZMid + j) - bed) > F3_FP_DZ) { continue; }
         nBc += 1u; let a = stf(O_wBedA + j); aB += a; sB += benthE(j) * a;
         let li = sti(O_litIdx + j);
-        if (li >= 0) { let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cc, gape, cs);
+        if (li >= 0) { let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l) + sm * wd(W_litS + l); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cc, gape, cs);   // (+ F3.SMALL_S's small fauna)
           sWls += (eL + eS) * a; sWc += eC * a; sW += (eL + eS + LIT3_CR_PREF * eC) * a; }
       }
     }
@@ -1161,7 +1167,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   if (canB && nBc == 0u && jb >= 0) {
     ownOnly = true; let j = u32(jb); let a = stf(O_wBedA + j); aB = a; sB = benthE(j) * a; sW = 0.0; sWls = 0.0; sWc = 0.0;
     let li = sti(O_litIdx + j);
-    if (li >= 0) { let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cu, gape, cs);
+    if (li >= 0) { let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l) + sm * wd(W_litS + l); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cu, gape, cs);   // (+ F3.SMALL_S)
       sWls = (eL + eS) * a; sWc = eC * a; sW = (eL + eS + LIT3_CR_PREF * eC) * a; }
   }
   let Eb = select(0.0, sB / max(aB, 1e-12), canB && nearBed && !big && aB > 0.0) * fNear;
@@ -1204,7 +1210,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   // the wants into the cells
   let qB = ga(A_qB, i); let qW = ga(A_qW, i); let qC = ga(A_qC, i); let qS = ga(A_qS, i); let qZD = ga(A_qZD, i); let qZC = ga(A_qZC, i);
   if (qB > 0.0 || qW > 0.0) {
-    if (ownOnly) { let j = u32(jb); acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TBW + 2u * j, qB * wB_, PW); acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
+    if (ownOnly) { let j = u32(jb); acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TBW + 2u * j, qB * wB_, PW); acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (sm > 0.0 && qW > 0.0) { acc64(AC_TSM + 2u * j, qW * sm, PW); acc64(AC_TSMW + 2u * j, qW * sm * wW_, PW); } if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
       let li = sti(O_litIdx + j); if (qC > 0.0 && li >= 0) { acc64(AC_RC + 2u * j, qC * crayE(u32(li), j, cu, gape, cs), PW); } }
     else {
       for (var q = fp.s0; q < fp.s1; q++) {
@@ -1212,7 +1218,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
         for (var t = b0; t < b1; t++) {
           let j = u32(sti(O_fColBedL + t)); if (abs(stf(O_wZMid + j) - bed) > F3_FP_DZ) { continue; }
           if (qB > 0.0) { acc64(AC_TB + 2u * j, qB, PW); acc64(AC_TBW + 2u * j, qB * wB_, PW); }
-          if (qW > 0.0) { acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
+          if (qW > 0.0) { acc64(AC_TL + 2u * j, qW, PW); acc64(AC_TLW + 2u * j, qW * wW_, PW); if (sm > 0.0) { acc64(AC_TSM + 2u * j, qW * sm, PW); acc64(AC_TSMW + 2u * j, qW * sm * wW_, PW); } if (moll) { acc64(AC_TS + 2u * j, qW, PW); acc64(AC_TSW + 2u * j, qW * wW_, PW); }
             let li = sti(O_litIdx + j); if (qC > 0.0 && li >= 0) { let e = crayE(u32(li), j, cc, gape, cs); if (e > 0.0) { acc64(AC_RC + 2u * j, qC * e, PW); } } }
         }
       }
@@ -1232,7 +1238,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   let j = g.x;
   if (j < WNC) { RC[R_SURF + j] = bShare(rdAcc(AC_SURF + 2u * j, PW), rdAcc(AC_SURFW + 2u * j, PW)); }
   if (j >= WNCELL) { return; }
-  RC[R_B + j] = bShare(rdAcc(AC_TB + 2u * j, PW), rdAcc(AC_TBW + 2u * j, PW)); RC[R_L + j] = bShare(rdAcc(AC_TL + 2u * j, PW), rdAcc(AC_TLW + 2u * j, PW)); RC[R_S + j] = bShare(rdAcc(AC_TS + 2u * j, PW), rdAcc(AC_TSW + 2u * j, PW));
+  RC[R_B + j] = bShare(rdAcc(AC_TB + 2u * j, PW), rdAcc(AC_TBW + 2u * j, PW)); RC[R_L + j] = bShare(rdAcc(AC_TL + 2u * j, PW), rdAcc(AC_TLW + 2u * j, PW)); RC[R_S + j] = bShare(rdAcc(AC_TS + 2u * j, PW), rdAcc(AC_TSW + 2u * j, PW)); RC[R_SM + j] = bShare(rdAcc(AC_TSM + 2u * j, PW), rdAcc(AC_TSMW + 2u * j, PW));
   RC[R_ZD + j] = bShare(rdAcc(AC_ZD + 2u * j, PW), rdAcc(AC_ZDW + 2u * j, PW)); RC[R_ZC + j] = bShare(rdAcc(AC_ZC + 2u * j, PW), rdAcc(AC_ZCW + 2u * j, PW));
   let R = rdAcc(AC_RC + 2u * j, PW); var rc = 1.0;
   let li = sti(O_litIdx + j);
@@ -1250,7 +1256,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   let fNW = bedShares(jb, bed, z, L, wd(W_canopy + cu), lit); let nearBed = fNW.x > 0.0;
   let moll = spv(k, S_dSnail) > 0.5 && L >= spv(k, S_Lsnail); let cs = select(0.0, crayS * fNW.x / max(fNW.y, 1e-9), crayS > 0.0 && nearBed && lit);
   let ownOnly = (u32(ga(A_qFlags, i)) & 1u) != 0u;
-  let fp = fpOf(k, cu, z);
+  let fp = fpOf(k, cu, z); let sm = smallS(k, L);
   var gb = 0.0; var gw = 0.0; var Jw = 0.0; var gc = 0.0; var gs = 0.0; var gzD = 0.0; var gzC = 0.0;
   if (qB > 0.0 || qW > 0.0) {
     var t0 = fp.s0; var t1 = fp.s1; if (ownOnly) { t0 = 0u; t1 = 1u; }
@@ -1264,8 +1270,8 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
         let li = sti(O_litIdx + j);
         if (qW > 0.0 && li >= 0) {
           let l = u32(li); let eL = max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l); let eS = select(0.0, max(0.0, wd(W_litSn + l) - LIT3_SN_REF), moll); let eC = crayE(l, j, cc, gape, cs);
-          let gl = qW * eL * a * RC[R_L + j]; let gsn = qW * eS * a * RC[R_S + j]; let gcr = qC * eC * a * RC[R_C + j];
-          gw += gl + gsn + gcr; gc += gcr; Jw += gl * LIT3_ED_INS + gsn * PREY_SNAIL_ED * PREY_SNAIL_DIG + gcr * PREY_CRAY_ED * PREY_CRAY_DIG;
+          let gl = qW * eL * a * RC[R_L + j]; let gsn = qW * eS * a * RC[R_S + j]; let gcr = qC * eC * a * RC[R_C + j]; let gsm = qW * sm * wd(W_litS + l) * a * RC[R_SM + j];   // (F3.SMALL_S)
+          gw += gl + gsn + gcr + gsm; gc += gcr; Jw += (gl + gsm) * LIT3_ED_INS + gsn * PREY_SNAIL_ED * PREY_SNAIL_DIG + gcr * PREY_CRAY_ED * PREY_CRAY_DIG;
         }
       }
     }
@@ -1298,6 +1304,7 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   let l = u32(li); let cc = u32(sti(O_wColOfCell + j));
   { let T = rdAcc(AC_TL + 2u * j, PW); if (T > 0.0) { WD[W_litL + l] -= bTaken(T, rdAcc(AC_TLW + 2u * j, PW)) * max(0.0, wd(W_litL + l) - LIT3_REF) * reach(l); } }
   { let T = rdAcc(AC_TS + 2u * j, PW); if (T > 0.0) { WD[W_litSn + l] -= bTaken(T, rdAcc(AC_TSW + 2u * j, PW)) * max(0.0, wd(W_litSn + l) - LIT3_SN_REF); } }
+  { let T = rdAcc(AC_TSM + 2u * j, PW); if (T > 0.0) { WD[W_litS + l] *= 1.0 - bTaken(T, rdAcc(AC_TSMW + 2u * j, PW)); } }   // (F3.SMALL_S: the small fish's take of the small fauna)
   { let R = rdAcc(AC_RC + 2u * j, PW); let cA = wd(W_litCrA + l); let cY = wd(W_litCrY + l); let V = cA + cY;
     if (R > 0.0 && V > 0.0) { let G = V * (1.0 - exp(-R / V)); WD[W_litCrA + l] = cA - G * cA / V; WD[W_litCrY + l] = cY - G * cY / V; } }
 }

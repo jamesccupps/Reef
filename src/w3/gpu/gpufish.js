@@ -102,13 +102,13 @@ export class GpuFish {
   // the feeding's per-cell accumulators (pairs: 64-bit) and shares, by kind — their offsets as constants (the per-school ones by ycap)
   _acc() {
     const env = this.env;
-    { const NC = env.G.NCELL, NCo = env.G.NC; let o = 0; const ac = {}; for (const [k, len] of [['TB', NC], ['TL', NC], ['TS', NC], ['RC', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['O2', NC], ['SEDADD', NC],
+    { const NC = env.G.NCELL, NCo = env.G.NC; let o = 0; const ac = {}; for (const [k, len] of [['TB', NC], ['TL', NC], ['TS', NC], ['TSM', NC], ['RC', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['O2', NC], ['SEDADD', NC],
         ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap],
-        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC],
+        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['TSMW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC],
         // (stage Y1) the prey table per column × species × length class: available n, Σ n·L, Σ n·W, Σ n·depth; the followed fish's
         // requests and takes; the young schools' requests and takes
         ...['BAV', 'BSL', 'BSW', 'BSD', 'BREQ', 'BGOT', 'BREQY', 'BGOTY'].map(k => [k, NCo * KEYS3.length * FRY.NS])]) { ac[k] = o; o += 2 * len; }   // (…W: the wants weighted by their appetite's elasticity — bShare)
-      this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
+      this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['SM', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
       this.consts = this.consts0 + '\n' + Object.entries(ac).map(([k, v]) => `const AC_${k}: u32 = ${v}u;`).join('\n') + '\n' + Object.entries(rc).map(([k, v]) => `const R_${k}: u32 = ${v}u;`).join('\n'); }
   }
   _layouts() {

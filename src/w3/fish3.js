@@ -154,6 +154,9 @@ export const F3 = {
   // 10-g kill (1.2 G) — strike check: 16–20 % empty at p 0.53–0.55. REST_TO 0.1: it hunts again when ~90 % of a satiating meal is
   // evacuated (ET90, the standard measure of a meal's digestion — piscivore_field_feeding_rates.md 'Digestion'); 0.2 gave 28 % empty
   REST_DIGEST: 0, REST_TO: 0.1,
+  // REST_ALL: the rest is from all foraging, not only fish — a sated bass grazed crayfish, the weeds' insects and the bed's worms between
+  // its meals and ran at p 0.55–0.65 all year, growing to a mean 66 cm at 8+ (arm W, 613; Maine smallmouth Linf ~50)
+  REST_ALL: 0,
   // REALISM_PLAN R2a — THE YOUNG'S FOOD BY WHAT IT PAYS (YSHARE): a school splits its foraging among the zooplankton, the weeds' small
   // fauna and the bed's worms and scuds toward the better (t ∝ f^SHARE_Q, f each food's own response), as the adults do (_feed) —
   // not the zooplankton first whatever else is about: young perch move to the bed when the zooplankton runs low (> 5 cm, Wu & Culver
@@ -161,7 +164,11 @@ export const F3 = {
   // September to May (arm T; audit_foodweb_environment.md §2). RWMIN_STEEP: FRY.R_WMIN, written for the bass's steep set, holds a larva's
   // respiration at 0.1 g's only for sets with RB < −0.3 (the Rice set of young bass and bullheads) — on the bluegill and perch sets it
   // cut it to a third or less of Breck's fitted larval rate (audit_habitat_young.md F6)
-  YSHARE: 0, RWMIN_STEEP: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
+  YSHARE: 0, RWMIN_STEEP: 0,
+  // R2b — SMALL_S: a small followed fish takes the weeds' small fauna (chydorids, early midges, small worms) with the large, fully to
+  // LIT3.SM_L[0] cm and none from SM_L[1] — before, only the young's schools could: killifish, small sunfish and dace (the year-old
+  // recruits too) foraged the weeds for the large insects only, and the killifish's ration fell to 0.43–0.47 in their strip
+  SMALL_S: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -512,7 +519,9 @@ export function stageR5(on = true) {
   // the true lakes' summer pickerel ran p 0.29–0.31 against ~0.37 (arms H–I))
   // (bass G0 1 %BW, the research range 0.3–1: at 0.5 %BW the true lakes' bass ran p 0.16–0.21 in summer, 76 % empty, ~7,900 starved
   // in a year — arm K; the toy: 0.5 → 1 %BW raises p ~0.28 → 0.35)
-  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = 0; S3.bass.pGate = on ? 0.5 : 0;
+  // (pGate after arm W: the gate is the satiation an FB4 fit sets p by — the bass's 0.35 the season-long p Maine growth needs on the
+  // sim's set (piscivore_field_feeding_rates.md: 0.30–0.36); at 0.5, with the R1 rule, the bass ran at p 0.55–0.65 and grew to 66 cm)
+  F3.HUNGER_GATE = on ? 1 : 0; S3.bass.G0 = 0; S3.bass.pGate = on ? 0.35 : 0;
   // (the review's phase 1, docs/review/PLAN.md item 4: the gate in proportion to its own appetite — pGate 0.5 of Cmax at any size
   // and temperature, in place of G0 1 %BW: that capped p at k·G0/Cmax, 0.35–0.46 for a 250-g bass in summer but 0.20–0.27 for a
   // 15-cm one (gatek.mjs), and let a fall bass store nothing; 0.5 holds ≥ 1.5× maintenance from 9 to 40 cm on the sets below)
@@ -614,9 +623,14 @@ export function stageR5(on = true) {
   // (F3.YSHARE); the larvae's ×1.5 Cmax (Breck 1997's bluegill fit, paired there with a higher respiration) only for the sunfishes —
   // perch larvae run at ~0.9× FB4 Cmax; R_WMIN only for the steep sets; the young's half-saturation K_FRY 30 → 60 µg/L, inside its
   // cited 30–75 (Breck: growth falls 0.6 → 0.2 mm/d below ~50 crustaceans/L) — 30 let the young keep cropping at 1–10 µg/L
+  // (R2b) the small fish's food: F3.SMALL_S; and the BATCH SPAWNERS' gonads — killifish (~3 clutches of ~200 yolked eggs a season),
+  // pumpkinseed and redbreast (several batches) put 0.8 of their surplus into their gonads in season, as the 2-D engine's fathead minnow
+  // did (world.js sp.reproAlloc; FEATURES.md 'a batch every ~4 days') — lost in the 3-D port, every species at BIOE.REPRO_ALLOC 0.5:
+  // three killifish clutches in ~6 weeks need p ≈ 0.8 at 0.5, 0.6–0.65 at 0.8 (audit_physiology.md C)
+  F3.SMALL_S = on ? 1 : 0; for (const k of ['killifish', 'sunfish', 'redbreast']) S3[k].reproA = on ? 0.8 : undefined;
   F3.YSHARE = on ? 1 : 0; F3.RWMIN_STEEP = on ? 1 : 0; PLANKTON.K_FRY = on ? 60 : K_FRY0;
   for (const k of KEYS3) S3[k].cmaxL = on && k !== 'sunfish' && k !== 'redbreast' ? 1 : undefined;
-  F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0;
+  F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0; F3.REST_ALL = on ? 1 : 0;
   // (R1) THE PREDATORS' BRAKE IS THE HUNGER GATE: act was arm D's brake against overfeeding, set before the gate existed, and an
   // ambusher hunts while still (Diana's 16–22 % 'active' is movement, not hunting) — now a diel rhythm only (pickerel dawn/dusk
   // peaks, little at night; smallmouth by day, little at night), with pGate 0.4 for pickerel (their field p 0.39–0.42; a meal every ~2.7 days,
@@ -624,7 +638,7 @@ export function stageR5(on = true) {
   // was the only brake — a realised field rate used as a ceiling). Field targets: p pickerel 0.39–0.42, bass 0.30–0.36; kills
   // pickerel 0.4–0.8 a day, bass ~1; 35–60 % empty stomachs (piscivore_field_feeding_rates.md)
   S3.pike.act = on ? [0.7, 1, 0.1] : PRED3.pike.act; S3.bass.act = on ? [0.8, 1, 0.1] : PRED3.bass.act;
-  S3.bass.aMax = (on ? 12 : PRED3.bass.aMax) / 3600; S3.pike.pGate = on ? 0.4 : 0;
+  S3.bass.aMax = (on ? 12 : PRED3.bass.aMax) / 3600; S3.pike.pGate = on ? 0.3 : 0;   // (0.3 after arm W: at 0.4 the pickerel grew 60 cm by 5, 85 at 8+, against Maine's ~43 cm at 5 — vb Linf 65 — where arm T's summer p ~0.3 matched Maine's lengths)
   // A SCHOOL'S EGGS: its gonads are built to its own ripe GSI, (gsiF + gsiM)/2 (half female, half male) — its ripeness for its
   // eggs was measured against the female's gsiF, so a ripe school laid at most gsi/gsiF of them: 0.59 of a killifish school's
   // (0.095/0.16), ~0.6 of the perches'. Single fish unchanged (killi.mjs: ~900–1,800 eggs a school spawning, ~1 clutch a summer)
@@ -1847,7 +1861,7 @@ export class Fish3 {
     a.rO2 = rO2 / DAY;
     let net = C - F - U - S - rO2 * OXYCAL * dd;
     const ed = energyDensity(bp, Wg), gsi = s.gsi(a.sex);
-    if (net > 0 && a.mature && a.gon < gsi * Wg) { const toG = Math.min(net * BIOE.REPRO_ALLOC, (gsi * Wg - a.gon) * ed); a.gon += toG / ed; net -= toG; }
+    if (net > 0 && a.mature && a.gon < gsi * Wg) { const toG = Math.min(net * (s.reproA ?? BIOE.REPRO_ALLOC), (gsi * Wg - a.gon) * ed); a.gon += toG / ed; net -= toG; }   // (S3 reproA: its own share)
     else if (net <= 0 && a.gon > 0 && a.K < BIOE.K_RESORB) { const fromG = Math.min(a.gon * ed, -net); a.gon -= fromG / ed; net += fromG; }
     // its mass for its energy: below its standard weight the energy density follows its condition (bioenergetics.js energyOf: a
     // deficit takes the fat first), at and above it FB4's own — it grows in length
@@ -1876,7 +1890,9 @@ export class Fish3 {
     const o2L = lethalO2(a.o2Lethal, a.o2Ice, a.T);
     const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1) * (a.nt > 0 ? BROOD.GUARD_FEED3[guardStage(a)] : 1), apt = gEff / gmax;   // (a guardian eats little — least over its eggs)
     const perf = coldPerf(a.T, sp.tempOpt, sp.coldPerf);
-    if (F3.REST_DIGEST && F3.HUNGER_GATE && s.pisc && a.L >= sp.Lpisc) { const G = this._gateG(a, cm); if (G > 0 && a.gut >= G) a.missCd = Math.max(a.missCd, Math.log(a.gut / (F3.REST_TO * G)) / this._evac(a, cm) * DAY); }   // (F3.REST_DIGEST: sated — it rests while it digests)
+    let sated = false;
+    if (F3.REST_DIGEST && F3.HUNGER_GATE && s.pisc && a.L >= sp.Lpisc) { const G = this._gateG(a, cm); if (G > 0 && a.gut >= G) a.missCd = Math.max(a.missCd, Math.log(a.gut / (F3.REST_TO * G)) / this._evac(a, cm) * DAY); sated = F3.REST_ALL && G > 0 && a.missCd > 0 && a.gut > F3.REST_TO * G; }   // (F3.REST_DIGEST: sated — it rests while it digests)
+    if (sated) return false;   // (F3.REST_ALL: resting, it forages for nothing — not the crayfish, the weeds' insects or the bed's either)
     const rest = F3.REST_DIGEST && a.missCd > 0;
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
@@ -1926,7 +1942,8 @@ export class Fish3 {
       if (canZ && nZ < LZ.length - 4) { const j0 = G.cell0[cc], k1 = Math.min(G.nL[cc] - 1, kz); if (cc === a.c) { for (let k = Math.max(0, k1 - 1); k <= Math.min(G.nL[cc] - 1, k1 + 1); k++) LZ[nZ++] = j0 + k; } else LZ[nZ++] = j0 + k1; }
     }
     if (canB && !nB && a.jb >= 0) LB[nB++] = a.jb;
-    const Eb = canB && nearBed && !big ? ch.benthEcells(LB, nB) * fNear : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll, a.gape, cs) * fWeed : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
+    const sm = F3.SMALL_S && (sp.diet.larva || sp.diet.insect || sp.diet.plankton) ? clamp((LIT3.SM_L[1] - a.L) / (LIT3.SM_L[1] - LIT3.SM_L[0]), 0, 1) : 0;   // (F3.SMALL_S)
+    const Eb = canB && nearBed && !big ? ch.benthEcells(LB, nB) * fNear : 0, Ew = canB && lit ? lit.weedEcells(LB, nB, moll, a.gape, cs, 1, sm) * fWeed : 0, Es = canS ? lit.surfEcols(fp, fp.length) : 0;
     const KB = F3.SHARE ? F3.K_BENTH : BENTHOS.K_FISH, fB = Eb + Ew > 0 ? (Eb + Ew) / (Eb + Ew + KB) : 0, fS = Es > 0 ? Es / (Es + LIT3.K_SURF) : 0;
     let tB = canB ? 1 : 0, tZ = canZ ? 1 : 0;
     if (F3.SHARE && canB && canZ) {
@@ -1936,7 +1953,7 @@ export class Fish3 {
     const want0 = want - got;
     if (tB > 0 && room > 0 && want > got && fB > 0) {   // the bed's worms and scuds and the weeds' fauna, by what each offers
       const wB = Math.min(room, want0 * tB * BENTHOS.Q) * n * fB * visDay;   // (by its sight: perch hunt the bed by eye, bullheads and suckers by taste — their nonVis)
-      const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll, a.gape, cs) / n : 0, Jw = Ew > 0 ? lit.J / n : 0, gc = Ew > 0 ? lit.crG : 0;
+      const gb = Eb > 0 ? ch.takeBenthCells(LB, nB, wB * Eb / (Eb + Ew), 0) / n : 0, gw = Ew > 0 ? lit.takeWeedCells(LB, nB, wB * Ew / (Eb + Ew), moll, a.gape, cs, 1, sm) / n : 0, Jw = Ew > 0 ? lit.J / n : 0, gc = Ew > 0 ? lit.crG : 0;
       if (gb > 0) { a.gut += gb; a.gutE += gb * PREY.BENTH_ED; room -= gb; got += gb; this.stats.food.benth += gb * n; }
       if (gw > 0) { a.gut += gw; a.gutE += Jw; room -= gw; got += gw; this.stats.food.weed += gw * n - gc; this.stats.food.cray += gc; if (gc > 0) this.stats.crayBy[s.key] = (this.stats.crayBy[s.key] || 0) + gc; }
     }

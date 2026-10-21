@@ -65,6 +65,11 @@ export const LIT3 = {
   // YOUNG FISH take the small fauna from WEED_L and the large from LARGE_L (cm): smallmouth eat copepods, then midge larvae by
   // 1.5–2.5 cm and mainly insects by 2.5–5 cm (Lake Opeongo); perch and pumpkinseed likewise
   WEED_L: 1.2, LARGE_L: 2.5,
+  // SMALL FISH (followed fish, not only the young's schools) take the small fauna too — fully to SM_L[0] cm, none from SM_L[1]
+  // (fish3 F3.SMALL_S): pumpkinseed and bluegill < 75 mm take 76–91 % of their food from the vegetation, chydorids and small midges
+  // among it (Keast 1980 via the foodweb audit); banded killifish eat cladocerans, midges and amphipods (Phillips 2007); the large
+  // perch and bass no longer bother with them
+  SM_L: [7.5, 15],
   ED_INS: 2700,            // J/g wet: the weed insects (chironomids 2,300–2,750, mayflies 2,700+ — PREY.LARVA_ED)
   // CRAYFISH (stage 7c; research: invertebrates_plankton_plants.md §1, littoral_invertebrates.md §5). Two cohorts per bed cell
   // (g wet/m²): ADULTS (age 1+, CR_WA g each) and the YEAR'S YOUNG with a lake-wide individual mass (released at CR_W0 g — 6 mm
@@ -340,39 +345,39 @@ export class Littoral3 {
   reach(i) { return this.plants.reachB[i]; }
   // E (g wet/m²) of the weeds' large fauna (and snails for a molluscivore; crayfish for a crayfish eater on the bed, gape cg and
   // strike success cs — crayE) a fish can reach over bed cells L[0..nL); `ins` 0 leaves out the weeds' insects
-  weedEcells(L, nL, moll, cg = 0, cs = 0, ins = 1) {
+  weedEcells(L, nL, moll, cg = 0, cs = 0, ins = 1, sm = 0) {   // (sm: a small fish's share of the small fauna — fish3 F3.SMALL_S)
     let s = 0, A = 0; const G = this.G, night = cs > 0 && this.env.isNight();
     for (let k = 0; k < nL; k++) {
       const j = L[k], a = G.bedA[j]; A += a; const i = this.idx[j]; if (i < 0) continue;
-      s += (ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i) + (moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0) + (cs > 0 ? LIT3.CR_PREF * this.crayE(i, cg, cs, night) : 0)) * a;
+      s += (ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i) + sm * this.S[i] + (moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0) + (cs > 0 ? LIT3.CR_PREF * this.crayE(i, cg, cs, night) : 0)) * a;
     }
     return A > 0 ? s / A : 0;   // (crayfish weighted by CR_PREF: the food response's grams, not the grams there)
   }
   // take up to `want` g from them (in proportion to what each cell offers, at most CROP of it); this.J: the energy (J) taken;
   // this.crG: the grams of it that were crayfish
-  takeWeedCells(L, nL, want, moll, cg = 0, cs = 0, ins = 1) {
+  takeWeedCells(L, nL, want, moll, cg = 0, cs = 0, ins = 1, sm = 0) {
     this.J = 0; this.crG = 0; if (!(want > 0) || !nL) return 0;
     const G = this.G, night = cs > 0 && this.env.isNight(), E = this._E || (this._E = []); let s = 0;
     for (let k = 0; k < nL; k++) {
-      const j = L[k], i = this.idx[j]; if (i < 0) { E[k * 3] = E[k * 3 + 1] = E[k * 3 + 2] = 0; continue; }
-      const eL = ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i), eS = moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0, eC = cs > 0 ? this.crayE(i, cg, cs, night) : 0;
-      E[k * 3] = eL; E[k * 3 + 1] = eS; E[k * 3 + 2] = eC; s += (eL + eS + LIT3.CR_PREF * eC) * G.bedA[j];
+      const j = L[k], i = this.idx[j]; if (i < 0) { E[k * 4] = E[k * 4 + 1] = E[k * 4 + 2] = E[k * 4 + 3] = 0; continue; }
+      const eL = ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i), eS = moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0, eC = cs > 0 ? this.crayE(i, cg, cs, night) : 0, eM = sm * this.S[i];
+      E[k * 4] = eL; E[k * 4 + 1] = eS; E[k * 4 + 2] = eC; E[k * 4 + 3] = eM; s += (eL + eS + eM + LIT3.CR_PREF * eC) * G.bedA[j];
     }
     if (!(s > 0)) return 0;
     // the grams wanted, split over the cells and the kinds by what each offers (crayfish weighted by CR_PREF), each kind taken
     // at most CROP of what is catchable; returns the grams actually taken
     const crop = PLANKTON.CROP, f = Math.min(want, crop * s) / s; let got = 0;
     for (let k = 0; k < nL; k++) {
-      const j = L[k], i = this.idx[j]; if (i < 0) continue; const a = G.bedA[j], eL = E[k * 3], eS = E[k * 3 + 1], eC = E[k * 3 + 2];
-      this.L[i] -= f * eL; this.sn[i] -= f * eS;
+      const j = L[k], i = this.idx[j]; if (i < 0) continue; const a = G.bedA[j], eL = E[k * 4], eS = E[k * 4 + 1], eC = E[k * 4 + 2], eM = E[k * 4 + 3];
+      this.L[i] -= f * eL; this.sn[i] -= f * eS; this.S[i] -= f * eM;
       let c = 0;
       if (eC > 0) {   // (the crayfish taken: from the adults and the young in proportion to what of each was catchable)
         c = Math.min(f * LIT3.CR_PREF, crop) * eC; const cA = this.crA[i], cY = this.crY[i], tot = cA + cY;
         if (tot > 0) { const fa = Math.min(1, c * (cA / tot) / Math.max(1e-12, cA)), fy = Math.min(1, c * (cY / tot) / Math.max(1e-12, cY)); this.crA[i] -= fa * cA; this.crY[i] -= fy * cY; }
         this.crG += c * a;
       }
-      got += (f * (eL + eS) + c) * a;
-      this.J += (f * (eL * LIT3.ED_INS + eS * PREY.SNAIL_ED * PREY.SNAIL_DIG) + c * PREY.CRAY_ED * PREY.CRAY_DIG) * a;
+      got += (f * (eL + eS + eM) + c) * a;
+      this.J += (f * ((eL + eM) * LIT3.ED_INS + eS * PREY.SNAIL_ED * PREY.SNAIL_DIG) + c * PREY.CRAY_ED * PREY.CRAY_DIG) * a;
     }
     this.crEaten += this.crG;
     return got;
