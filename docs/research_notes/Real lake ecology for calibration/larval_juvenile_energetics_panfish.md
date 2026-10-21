@@ -506,3 +506,39 @@ OCR; [primary]; [abstract]; [snippet]; [secondary]; [inf]).
 Blocked or unreadable (none bypassed): spo.nmfs.noaa.gov scanned PDFs, Semantic Scholar (429), int-res MEPS (429), cdnsciencepub (403),
 CPW (404), VIMS (404), NH Fish & Game (403), UVM ScholarWorks (403), Saint Mary's thesis (403), W&M ScholarWorks (403), Wiley (403),
 Springer (login), OpenAlex content (401). Every OpenAlex response asked for an e-mail to register an API key; none was given.
+
+---
+
+## 9. Addendum (2026-10-21): the yellow perch sub-search
+
+Recorded by the coordinator from the sub-search's report (it could read no PDFs — every one came back undecoded; full texts read were
+HTML only: three TAFS articles, two PMC articles, the Oneida KNB data table). Tags as given.
+
+- **Post 1990** (CJFAS, doi 10.1139/f90-063) [abstract]: YOY consumption above adult allometry; YOY active metabolism with the adult
+  mass slope but 4.4× adult standard respiration. As used by **Essington & Houser 2003** (TAFS 132:57) [primary]: age-0 Cmax
+  0.51·W^0.58·fc(T) g/d (specific CB −0.42 [inf]), respiration ACT·0.035·W^0.8·fr(T) g/d with ACT 4.4 for age 0, assimilation 0.65.
+  FB4's larval perch row (CA 0.51, CB −0.42, RA 0.0065, ED 2512) re-expresses the same 0.035·W^0.8 respiration for a 600-cal/g larva
+  [inf]. Post's Cmax is 5× the juvenile set's at 2.4 mg and 2× at 1.3 g — implausible below ~10 mg (2.8 g/g/d for a first feeder at
+  15 °C) [inf].
+- **Worischka & Mehner 1998** (J. Fish Biol. 53:1050) [abstract]: Eurasian perch of 13.1 mm ate 0.21–0.27 g/g/d in the field (hourly
+  gut sampling); the bioenergetic ration with ACT 1 was only slightly above it, ACT > 1 far above. On the sim's juvenile set that field
+  ration grows a 13-mm perch only ~0.18 mm/d; with the larval ED 2,512 and ACT 1, ~0.41 mm/d [inf].
+- **Hrabik et al. 2001** (TAFS 130:568) [primary]: Crystal Lake WI, first feeding 5.6 mm, 2.4 mg; perch spawn at ~9 °C, hatch ~10 d
+  later; on Post's parameters field growth needed P = 0.19–0.63 of Cmax.
+- **Mills & Forney 1981** (TAFS 110:479) [abstract]: Oneida YOY (20–50 mm, early summer) ate 23 % of body energy a day, assimilated
+  ~68 %, gross efficiency 27 % — at or above the juvenile set's Cmax at 30 mm, 22 °C (15 %/d by energy) [inf].
+- **Field growth.** Oneida larvae 8 → 18 mm at 0.48 ± 0.02 mm/d (11 years; hatch ~4 mm; Irwin et al. 2009) [primary]; South Dakota
+  glacial lakes 0.16–0.49 mm/d (Isermann 2003) [abstract]. **Oneida YOY (KNB data, 54 years) [primary data]: 1 August mean 52.6 mm
+  (37.3–64.6), 15 October mean 74.9 mm (57–93)**; strongly density-dependent (Aug-1 densities 20,000–39,000/ha: 37–41 mm on 1 Aug and
+  57–60 mm on 15 Oct; < 1,000/ha: 51–65 and 68–82 mm). Red Lakes MN: 71–79 mm at the first annulus (Ney & Smith 1975) [abstract].
+- **Energy density.** Age-0 perch: J/g = 23,231·(dry/wet) − 658.7 (Saginaw Bay; Pothoven, Höök & Roswell 2014) [snippet]; all fishes:
+  45.29·DW%^1.507 (Hartman & Brandt 1995). 4,186 J/g implies ~21 % dry (fall YOY and adults); larval 2,512 implies ~13–14 % [inf].
+- **Metabolism.** Juvenile yellow perch SMR 4.1–20.9× below bioenergetic-model predictions (4.4–24.7 g, 12–20 °C; Enders et al. 2006)
+  [snippet]; Eurasian perch SMR exponent 0.86, Q10 1.9 (Christensen et al. 2020) [abstract]; larval metabolism near mass-independent
+  (Post & Lee 1996) [abstract].
+- **The sub-search's reading [inf].** On the juvenile set a 12-mm larva at 17 °C grows ~0.38 mm/d at a full ration — slightly below
+  Oneida's 0.48 at partial rations; with the larval ED 2,512 ~0.6 mm/d, giving the field rate at P ≈ 0.7–0.8. Ranked levers: a
+  size-dependent energy density (~2,500–3,000 J/g for larvae rising to ~4,000 by the fall), then a steeper Cmax exponent above ~10 mg,
+  ACT 1 for larvae.
+- **Access.** Every PDF failed to decode; 403 at cdnsciencepub, Deep Blue, Wiley, ScienceDirect, ResearchGate; an Anubis bot check at
+  a library catalogue was not bypassed; OpenAlex asked for an e-mail for an API key — none was given.
