@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~10:50 p.m. — the newest): ARM S RUNNING (queue_r11.sh; snapshot t :8132 = c313818; r5=1 only; 613, 611,
+▶▶▶ RESUME HERE (2026-10-21 ~3:30 a.m. — the newest): ARM T RUNNING (queue_r12.sh; snapshot u :8133 = 85bd755; r5=1; 613/611/612 ×
+3 yrs → r12T_<seed>.txt, done ~7:30 a.m.). ARM S (r11S_*.txt, 3 seeds) ≈ arm R: bass insR/seek and the killifish strip changed ~nothing;
+bass ~6.5→2 kg/ha on every seed (recruitment failure: by yr 3 almost all bass ≥ 7 yrs), killifish gone yr 1, white perch 42–45 AT THE
+CAP (1.49×). CPU probe probe/bassk.mjs (kills of bass < 15 cm, 60 days from founding): 48 of 75 eaten (bass, pickerel, white perch) by
+day over 0.3–2 m. Rock cover (S3 rockC) alone: unchanged (hungry predators at aMax only re-choose prey); + F3.COVER_CS (cover cuts the
+capture too — Savino & Stein): 23 eaten, 46 of 75 alive → arm T. NEXT: read r12T (yrsum.mjs r11S_613.txt r12T_*.txt; RUN-YEAR
+summaries: bass age structure in LENGTH AT AGE, killifish, sunfish). Open: white perch at the cap (needs their own regulation —
+adult A 0.5 in Cooper: angling? first winter?), bass weed insects cropped to the refuge by the small fish, item 16 birds.
+▶▶▶ RESUME HERE (2026-10-20 ~10:50 p.m.): ARM S RUNNING (queue_r11.sh; snapshot t :8132 = c313818; r5=1 only; 613, 611,
 612 × 3 yrs → r11S_<seed>.txt, ~80 min each, done ~3 a.m.). ARM R (613 × 3, snapshot s = 80c2bc0, r10R_613.txt) vs arm O (yr 3):
 pickerel 2.7 (2.0), bullhead 3.6 (2.6), fallfish 2.7 steady (0.6), pumpkinseed/redbreast 0.2 (0), killifish 0 by yr 1 (as O), white
 perch 44.3 (40.2) — now 35 % of bass kills, 18 %+ of pickerel's; BUT bass 6.5→2.2 (O 5.0): p ~0.2 all year, K→0.81, crayfish 31 %
