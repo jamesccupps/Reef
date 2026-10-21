@@ -15,7 +15,7 @@ The question is what keeps the small prey alive in real lakes, and at what level
   - (A) rotifers and the microbial loop (Q1, Q4);
   - (B) nauplii, small cladocerans and *Chaoborus* (Q2, Q3, Q6).
 
-  Their results are **not** in this note and should be appended as addenda.
+  Sub-search B's results are now appended as **§5**, and §3 point 3 is revised to match. Sub-search A's results are **not** in this note yet.
 - **Why so many gaps:** the session's shared web-search budget ran out during this pass. Q1–Q4 and Q6 below therefore rest on numbers already held in the companion notes (cited, not repeated in full) plus the gaps they leave.
 
 **Companion notes (not repeated):**
@@ -271,7 +271,7 @@ The question is what keeps the small prey alive in real lakes, and at what level
 3. **Split small cladocerans from Daphnia** (a fourth pool, `zooS`: *Bosmina*, *Ceriodaphnia*, *Chydorus*, *Diaphanosoma*).
    - **Masses:** 0.35–3 µg (0.25–0.5 mm).
    - **Growth:** egg development as *Bosmina* (2.4 d at 20 °C).
-   - **Threshold:** above Daphnia's (Gliwicz 1990); suggest **1.2–1.5× K_D** [inf].
+   - **Threshold: about equal to Daphnia's, ≈1.0–1.2× K_D.** This replaces the 1.2–1.5× first proposed from Gliwicz 1990. DeMott 1982 finds *Bosmina*'s weight-specific ingestion at low food 1.6–4.8× Daphnia's (§5 addendum). The small-cladoceran advantage should come from size-selective fish predation and the low calcium that limits Daphnia, not from food [inf].
    - **Food:** a bacterial and detrital share like the rotifers' (allochthony 0.31).
    - **Losses:**
      - fish capture lower per encounter than for Daphnia (smaller and less visible), so they are released when fish suppress Daphnia (PEG; Ersoy et al. 2019);
@@ -315,3 +315,158 @@ The question is what keeps the small prey alive in real lakes, and at what level
 - **Beard 1982 PDF:** the WebFetch tool cached a copy *outside the repo* (`~/.claude/projects/.../tool-results/`). Its text layer could not be decoded, so it was not used. No PDF was saved in the repo.
 - **Search budget:** exhausted mid-pass (shared across agents); nothing was worked around.
 - **Other:** no email address was given to any service. No fetched page contained instructions aimed at the agent.
+
+---
+
+## 5. Addendum (2026-10-21): sub-search B — nauplii, small cladocerans, *Chaoborus* (Q2, Q3, Q6)
+
+This sub-search reported after §1–4 were written. The coordinator recorded it here with the sub-search's own tags.
+
+**Coverage.** The sub-search's web-search budget ran out after 13 searches. After that it only fetched records it already knew of, by DOI (OpenAlex or Europe PMC) or by URL; it did not search through any other route. It gave no email anywhere, met no CAPTCHA and bypassed no block.
+
+**Source weight.** The CMU "Zooplankton of the Great Lakes" pages are a teaching site that cites Balcer et al. 1984 and others. Treat them as secondary and coarse.
+
+### Q2. Nauplii and copepodites
+- **Pace 1986** (L&O 31:45, [doi:10.4319/lo.1986.31.1.0045](https://doi.org/10.4319/lo.1986.31.1.0045)) [abstract]:
+  - 12 Québec sites.
+  - Seasonal-mean nauplii, rotifers, ciliates, cladocerans and cyclopoids all rise with TP; calanoids do not.
+  - **Microzooplankton (ciliates + rotifers + nauplii) ≈ 40 % of total zooplankton biomass on average.** The share does not change with trophic state: the micro and macro regressions on TP do not differ (r² 0.72 and 0.86).
+- **Nauplius masses:**
+  - Cyclopoid nauplius W(µg) = 2.5968·L(mm)^1.6349 [snippet — a larval-fish prey review table citing Culver et al. 1985; not verified]. That gives [inf]:
+
+    | Length (mm) | Dry mass (µg) |
+    |---|---|
+    | 0.1 | 0.06 |
+    | 0.2 | 0.19 |
+    | 0.3 | 0.36 |
+    | 0.4 | 0.58 |
+
+  - A default nauplius dry mass of 0.40 µg [snippet — EPA GLNPO SOP LG403 citing Bottrell et al. 1976 and Dumont et al. 1975; unverified].
+  - Culver et al. 1985 ([doi:10.1139/f85-173](https://doi.org/10.1139/f85-173)) [abstract] has the stage tables, but they were not obtained.
+- **Adult cyclopoid dry masses** [secondary — NOAA COPEPEDIA citing the Hébert et al. 2016 trait compilation]:
+
+  | Species | Dry mass (µg) | Length (mm) |
+  |---|---|---|
+  | *Mesocyclops edax* | ≈5.5 (3.8–7.2) | 0.91 |
+  | *Tropocyclops prasinus* | 1.5 | 0.55–0.67 |
+  | *Diacyclops thomasi* | 4.5 | — |
+  | *Cyclops vernalis* | 4.9 | — |
+
+- ***Mesocyclops edax*** [secondary — CMU citing Balcer et al. 1984 and others]:
+  - Warm-water: scarce below 8 °C in spring and after the water cools below 13 °C.
+  - Bivoltine. It overwinters as diapausing CV and reproduces in spring, so **nauplii come in spring and summer**.
+  - About 70 days from egg to adult.
+  - Up to 22 ind/L.
+  - Omnivore: rotifers, *Diaphanosoma*, *Daphnia* and other copepods.
+- ***Diacyclops*** copepodids arrest development when algae are scarce (Hansen & Hairston 1998, [doi:10.1007/s004420050523](https://doi.org/10.1007/s004420050523)) [secondary — CMU citing it].
+- ***Chaoborus* on nauplii:** they ate a mean **2 %** of the naupliar standing crop in Eunice Lake, BC (Fedorenko 1975, [doi:10.4319/lo.1975.20.2.0250](https://doi.org/10.4319/lo.1975.20.2.0250)) [abstract].
+
+### Q3. Small cladocerans
+- **DeMott 1982** (L&O 27:518, [doi:10.4319/lo.1982.27.3.0518](https://doi.org/10.4319/lo.1982.27.3.0518)) [abstract]:
+  - *Bosmina longirostris* selects algae over bacteria: its clearance selectivity, algae : bacteria, is **2.8–13.7**. *Daphnia rosea* does not select.
+  - At low food (500–10,000 *Chlamydomonas* cells/mL), *Bosmina*'s weight-specific ingestion is **1.6–4.8× Daphnia's**. At high food the two are equal.
+- **Gliwicz & Lampert 1990** (Ecology 71:691, [doi:10.2307/1940323](https://doi.org/10.2307/1940323)) [abstract]:
+  - Food thresholds rise from *D. pulicaria* < *D. hyalina* < *D. cucullata*.
+  - The order reverses when cyanobacterial filaments are present.
+  - The abstract gives no threshold values.
+- ***B. longirostris* at the lowest food level** of a life-table study: few matured, all were dead by the 3rd adult instar, and r = −0.136/d [snippet; the source is probably Sci. Rep. 2018, attribution uncertain].
+- **Brendelberger 1991** (L&O 36:884, [doi:10.4319/lo.1991.36.5.0884](https://doi.org/10.4319/lo.1991.36.5.0884)) [abstract]:
+  - Bacteria-sized particles were retained at 33–154 % of the rate for *Scenedesmus*, across *D. magna*, *D. pulex*, *Simocephalus* and *Diaphanosoma*.
+  - Coarser filter mesh means lower retention of bacteria; juveniles retain small particles better than adults.
+- **Small-cladoceran species notes** [secondary — CMU pages citing Balcer et al. 1984, Fryer 1968 and others]:
+  - ***Bosmina longirostris*:**
+    - females 0.4–0.6 mm;
+    - 9–12 eggs/female in early June, with numbers rising **7× by mid-July**;
+    - eats 1–3 µm algae and protozoa;
+    - summer density 1–100/L [inf from 10³–10⁵/m³].
+  - ***Chydorus sphaericus*:**
+    - 0.3–0.5 mm; lives in the littoral and on the bed, entering the plankton at night;
+    - **peaks in August and November**; overwinters as adults and breeds under the ice;
+    - 8–15/L, up to 1,400/L near the bottom;
+    - eats detritus and diatoms.
+  - ***Ceriodaphnia*:**
+    - 0.4–1.4 mm; parthenogenetic in summer only, with an optimum at 20–22 °C;
+    - *C. lacustris* clears bacteria at 0.31 mL/animal/h;
+    - in open water by day, the littoral by night.
+- **Jeziorski et al. 2015** (Proc. R. Soc. B 282:20142449, [doi:10.1098/rspb.2014.2449](https://doi.org/10.1098/rspb.2014.2449)) [primary]:
+  - **Daphniids are impaired below 1.5–2 mg/L Ca.** Hot Brook's neighbours run 2–4 mg/L.
+  - *Holopedium* needs ~1/10 the Ca and ~1/2 the P of daphniids, and its clutches are 2× larger.
+  - A Ca drop from 3 to 1 mg/L raises its probability of occurrence by ~34 %.
+  - Ontario median density rose from 0.3 to 0.6/L between the 1980s and 2004–05.
+  - Its jelly capsule largely protects it from *Chaoborus*. Planktivorous fish eat it "with relative ease"; larval fish were not studied.
+- **Hessen et al. 1995** ([doi:10.1139/f95-073](https://doi.org/10.1139/f95-073)) [abstract]: in poor lakes, pH and Ca decide which herbivore species wins.
+- **Shuter & Ing 1997** [abstract]: production per unit biomass ranks Rotifera > Chydoroidea (small cladocerans) > Cyclopoida > Calanoida.
+- **Vijverberg 1980** (Freshw. Biol. 10:317, [doi:10.1111/j.1365-2427.1980.tb01206.x](https://doi.org/10.1111/j.1365-2427.1980.tb01206.x)) [abstract]:
+  - Fits ln D = ln a + b·(ln T)² for the durations of the egg, naupliar and copepodite stages and of adult life.
+  - Species: *Bosmina*, *Chydorus*, *Ceriodaphnia*, *Diaphanosoma*, *M. leuckarti* and *Diacyclops*.
+  - The coefficients were not obtained; this paper is the best target for them.
+- **Models.** Letcher et al. 1996 (CJFAS 53:787, [doi:10.1139/f95-241](https://doi.org/10.1139/f95-241)) [abstract], a generalized larval-fish IBM:
+  - Whether a larva dies of starvation or predation depends mainly on its metabolism, its starvation resistance and **the density of the smallest prey type**.
+  - Predator size explains 83 % of the variance in survival.
+- **Lake Hiidenvesi** (Horppila et al. 2000) [snippet]: with smelt and *C. flavicans* present, cladocerans stay below 50 µg C/L all summer.
+
+### Q6. *Chaoborus*
+- **Lencioni 2006** (J. Young Investigators; Campus Lake, IL) [primary, student journal]:
+  - Lake: 16 ha, 4.8 m maximum depth, with bluegill and bass.
+  - **0.32 larvae/L at midnight, <0.06/L at noon; ~4,100/m² in the sediment.**
+  - Field predation **1.7 prey/larva/day**: rotifers 0.90, copepods 0.03.
+  - Selectivity: Manly's α for *Keratella* 0.943; *Bosmina*, Daphnia and copepods were not selected.
+  - Removal ≈0.54 prey/L/d [inf].
+- **Schröder 2013** (PLoS ONE 8:e75839, [doi:10.1371/journal.pone.0075839](https://doi.org/10.1371/journal.pone.0075839)) [primary]:
+  - Lake: a fishless bog lake of 0.42 ha, 7 m maximum depth, TP 8.3 µg/L.
+  - Autumn *C. flavicans* 0–131 larvae/m³.
+  - Over winter, survival fell from 80 % to 56 % as density rose. Small larvae survived 25 % and the largest 85 %.
+  - Early instars eat rotifers; later instars eat small cladocerans.
+- **Fedorenko 1975** [abstract]: mean share of each prey's standing crop eaten:
+
+  | Prey | Share eaten |
+  |---|---|
+  | Nauplii | 2 % |
+  | *Diaptomus tyrelli* | 3 % |
+  | *D. kenai* | 9 % |
+  | *Diaphanosoma* | 4 % |
+
+  Seasonal, spatial and size mismatches reduced the predation.
+- **Yan et al. 1991** (Ecol. Appl. 1:52, [doi:10.2307/1941847](https://doi.org/10.2307/1941847)) [abstract]: in a fishless acid lake, *Bosmina*'s production rarely exceeded its loss to *Chaoborus*, while *Keratella*'s almost always exceeded what *Chaoborus* ate.
+- **Croteau et al. 2003** ([doi:10.1127/0003-9136/2003/0158-0057](https://doi.org/10.1127/0003-9136/2003/0158-0057)) [abstract]: *C. punctipennis* feeds only at night in the water column; *C. americanus* feeds day and night.
+- **Crisman & Beaver 1990** ([doi:10.1080/03680770.1989.11898796](https://doi.org/10.1080/03680770.1989.11898796)) [abstract]:
+  - The regions studied include **Maine lakes**.
+  - *Chaoborus* abundance, mainly *C. punctipennis*, is unrelated to pH or trophic state; depth is the best predictor.
+  - The Maine numbers were not obtained.
+- **Feeding mechanics** [snippet]:
+  - *C. punctipennis* 4th instars pause 2.5 ± 1.0 h to digest each prey (Kauffman, UTK dissertation).
+  - Assimilation ≈80 % at 24 °C (SFU thesis).
+
+### What this changes in §3 [inf]
+- **The micro share (point 1).** Rotifers + nauplii + ciliates ≈ 40 % of zooplankton biomass (Pace 1986), and about 34 % at ice-melt (Boulianne 2025). Read against a 30–80 µg/L crustacean summer stock, that supports a summer micro pool of roughly **15–50 µg/L**. The §3 rotifer floor of 10–25 µg/L sits inside this range.
+- **Small-cladoceran threshold (point 3).** Now ≈1.0–1.2× Daphnia's, not higher (DeMott 1982); point 3 above is edited to match. Their summer success comes from warm-water breeding (*Ceriodaphnia*, *Diaphanosoma*; *Bosmina* ×7 by mid-July; *Chydorus* peaking in August), from size-selective fish predation, and from Ca limiting Daphnia.
+- **Nauplii (point 2).** Summer nauplii come from *Mesocyclops* and other warm-water cyclopoids, not from *L. minutus*. If the copepod pool's naupliar share is seasonal, its summer value should be set by cyclopoid breeding above ~8–13 °C. The 0.1–0.2 guess still stands, unmeasured.
+- ***Holopedium*.** Ca of 2–4 mg/L sits at the daphniid limit, so a *Holopedium* share is realistic: ~0.3–0.6/L and 1.5–2.2 mm (≈40–120 µg [inf, from the ZD length–weight]). The jelly protects it from *Chaoborus*, and larval fish cannot take it. If it is added, it belongs with the large-cladoceran pool, out of the fry's reach.
+- ***Chaoborus* (point 6).**
+  - Type: *C. punctipennis*, burrowing in the mud by day.
+  - Density: 40–4,000/m² (Campus Lake ~4,100/m² is the upper bound for a shallow fish lake).
+  - Ration: ~1–2 prey/larva/day in the field.
+  - Prey: rotifers first (*Keratella* strongly selected), then *Bosmina*.
+  - Impact: small on nauplii (~2–3 % of standing crop); meaningful only for rotifers and *Bosmina*.
+  - Verdict: a second-order term, lower priority than points 1–5.
+- **Model support (Letcher et al. 1996).** The density of the *smallest* prey type decides whether larvae starve, which supports a separate micro pool.
+
+### Gaps that remain from sub-search B
+- Stage-specific nauplius and copepodite masses (Culver 1985 tables; Bottrell 1976; Dumont 1975).
+- The naupliar share of copepod production; freshwater naupliar mortality.
+- Stage-duration coefficients (Vijverberg 1980).
+- Seasonal densities of nauplii and *Bosmina* in small humic north-eastern lakes.
+- The numbers of Gliwicz 1990, DeMott & Kerfoot 1982 and Romanovsky & Feniova 1985.
+- The prey groupings of Rose et al. 1999, Hoxmeier and Madenjian & Carpenter.
+- Crisman & Beaver's Maine densities.
+
+### Access (sub-search B)
+- **Read in full:** PMC3790810 (Schröder 2013); PMC4262185 (Jeziorski 2015); the JYI page (Lencioni 2006); NOAA COPEPEDIA; the CMU Great Lakes zooplankton pages.
+- **Abstract or metadata only:** the rest, via OpenAlex or Europe PMC by DOI, with no email given.
+- **Blocked, none bypassed:**
+  - HTTP 403: SUNY SOAR, Wiley, DOAJ, Notre Dame CURATE, UMN Conservancy.
+  - HTTP 429: int-res.
+  - UBC Open Collections: block notice.
+  - Springer: auth redirect, not followed.
+- **Cached PDFs:** three scanned PDFs were cached automatically by the fetch tool, outside the repo; they were not opened or used.
+- **No PDF was saved in the repo.** No fetched page contained instructions aimed at the agent.
