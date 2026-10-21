@@ -137,7 +137,7 @@ export const F3 = {
   // own length (σ PREY_PREF in ln units; 0 off) — optimal prey 25–43 % of a predator's length (Wahl & Stein 1988), field prey
   // ~0.3 of it, where the capture term alone favours the smallest (a 42-cm pickerel cropped 6-cm killifish); the strike rate is
   // the capture success's, unchanged
-  BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3,
+  BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3, COVER_CS: 0,
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -564,6 +564,16 @@ export function stageR5(on = true) {
   // (item 14) the year's bass recruits (≤ 12 cm) keep to cover and the shallows by day (young smallmouth in the rocky shallows,
   // < 1 m), below a large predator's reach; their day band 0.3–1.2 m
   S3.bass.seek = on ? { w: 0.6, L: 12, big: 0 } : undefined;
+  // ROCK COVER (S3 rockC up to rockL cm; after arm S — a CPU probe of the small bass's first 60 days: 52 of 75 lost, 48 eaten — by
+  // bass 22, pickerel 16, white perch 8 — by day over 0.3–2 m, half of them in no cover; a solitary young bass has no school to hide
+  // in, and at 10 cm is the 30-cm predators' preferred size): young smallmouth live among the stones of the rocky shallows (MDIFW:
+  // Hot Brook's shores 'rocky with sand and mud areas'), redbreast at stony and wooded margins, young fallfish over cobble
+  // F3.COVER_CS: structure cuts the strike's capture success as well as the encounter (Savino & Stein 1982: at high stem densities
+  // largemouth caught few bluegill; capture success falls with complexity) — with the encounter alone, a hungry predator striking at
+  // its maximum rate took as many small bass in cover as out of it (the probe: 50 of 75 eaten in 60 days with 85 % of them in rock
+  // cover ≥ 0.5; with the capture cut too 23, and 46 of the 75 alive at day 60)
+  F3.COVER_CS = on ? 1 : 0;
+  S3.bass.rockC = on ? 0.6 : 0; S3.bass.rockL = on ? 15 : 0; S3.redbreast.rockC = on ? 0.5 : 0; S3.redbreast.rockL = on ? 20 : 0; S3.fallfish.rockC = on ? 0.4 : 0; S3.fallfish.rockL = on ? 12 : 0;
   // (item 15) the killifish's strip: by day ≤ 0.25 m and at night ≤ 0.4 m — in arm R, 60 % of their kills were over 0.3–0.6 m, 11 %
   // under 0.3 m where they spent 55 % of their days (the predators' shallow reach)
   S3.killifish.hab.day.bot = on ? [0.05, 0.25] : [0.1, 0.6]; S3.killifish.hab.night.bot = on ? [0.05, 0.4] : [1.0, 2.5];
@@ -1395,6 +1405,7 @@ export class Fish3 {
     a.visF = visDay;
     a.cover = Math.max(this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (the weeds' stems — in them; the brook's riffles. The shallows: the predator's reach, _strike)
     if (s.bury && a.bed - a.z <= F3.BURY_H && !(s.buryL > 0 && a.L > s.buryL)) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter — S3 buryL: only the fish up to buryL cm)
+    if (s.rockC > 0 && a.L <= s.rockL && a.bed < LIT3.CR_ROCK_Z) a.cover = Math.max(a.cover, s.rockC * clamp((LIT3.CR_ROCK_Z - a.bed) / 0.5, 0, 1));   // (S3 rockC: among the rocky shallows' stones — no substrate map yet: the wave-washed shallows < CR_ROCK_Z, as the crayfish's shelter)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -1605,7 +1616,7 @@ export class Fish3 {
       // ceases at ~7 cm"), redbreast at the stony and wooded margins (no substrate map yet: the shallows stand in); without it
       // they held a depth band and 77 % of the pumpkinseed founders were eaten in year 1
       const sk = s.seek; if (sk && this.env.sun > 0.02 && a.T > 9 && a.c >= 0) {
-        const G = this.G, pl = this.env.plants, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0);
+        const G = this.G, pl = this.env.plants, rk = s.rockC > 0 && a.L <= s.rockL ? s.rockC : 0, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0, rk * clamp((LIT3.CR_ROCK_Z - G.depthMean[cc]) / 0.5, 0, 1));   // (and the rocky shallows for a rock dweller: S3 rockC)
         const nb = this.nbr[a.c], v0 = cv(a.c); let best = v0, bc = -1; for (let q = 0; q < nb.length; q++) { const v = cv(nb[q]); if (v > best) { best = v; bc = nb[q]; } }
         if (bc >= 0 && best > v0 + 0.05) { const dx = G.cx[bc] - a.x, dy = G.cy[bc] - a.y; steer(dx, dy, sk.w * (a.L <= sk.L ? 1 : sk.big) * (1 - needy), Math.hypot(dx, dy)); }
       }
@@ -1915,7 +1926,7 @@ export class Fish3 {
         // first dropped: pickerel then took a 36-fish killifish school as 36 separate fish; bass keep their confusion term below)
         const nb = b.n > 1 ? b.n : 1, ne = nb > 1 && cls === 0 ? Math.pow(nb, s.schoolExp ?? F3.SCHOOL_EXP) : nb, enc = ne * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
         if (!(enc > 0)) continue;
-        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1);
+        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1) * (F3.COVER_CS ? 1 - b.cover : 1);   // (F3.COVER_CS: structure cuts the capture too, not only the encounter — Savino & Stein 1982)
         sE += enc; const w = enc * cs; if (w > 0) { sW += w; const wp = F3.PREY_PREF > 0 ? w * Math.exp(-0.5 * (Math.log(b.L / a.L / F3.PREY_OPT) / F3.PREY_PREF) ** 2) : w; sWp += wp; cand.push(b, wp); }
       }
     }

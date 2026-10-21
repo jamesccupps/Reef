@@ -348,6 +348,7 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
   sa(A_visF, i, max(nv, (sight(U.luxB0 * lf, kI) + 2.0 * sight(U.luxB1 * lf, kI) + sight(U.luxB2 * lf, kI)) / 4.0) * U.clar);
   let rif = select(0.0, F3_RIFFLE_REFUGE, ga(A_L, i) < F3_RIFFLE_L && bed < F3_RIFFLE_D && bodyAt(x, y) == BROOK);
   var cov = max(inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5), rif);   // (fish3: the shallows are the predator's reach — k_strike)
+  if (spv(k, S_rockC) > 0.0 && ga(A_L, i) <= spv(k, S_rockL) && bed < LIT3_CR_ROCK_Z) { cov = max(cov, spv(k, S_rockC) * clamp((LIT3_CR_ROCK_Z - bed) / 0.5, 0.0, 1.0)); }   // (fish3: S3 rockC — the rocky shallows)
   let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H && !(spv(k, S_buryL) > 0.0 && ga(A_L, i) > spv(k, S_buryL))) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
   sa(A_cover, i, cov);
   sa(A_fear, i, ga(A_fear, i) * exp(-F3_FEAR_DECAY * dt));
@@ -666,9 +667,9 @@ fn steer(s: ptr<function, Steer>, bx: f32, by: f32, w: f32, nd: f32) {
 }
 struct DriveOut { vx: f32, vy: f32, need: f32, thrust: f32, esc: u32, far: u32, farSet: u32 };
 // fish3 _drive at a block's scale (dt 0: the heading's pulls and the pace; the turn, the look ahead and the pitch are the fine swim's)
-fn covAt(cc: u32) -> f32 {   // fish3 _drive's cover (S3 seek): the weeds' stands and the shallows beyond a large predator's reach
+fn covAt(cc: u32, rk: f32) -> f32 {   // fish3 _drive's cover (S3 seek): the weeds' stands, the shallows beyond a large predator's reach, a rock dweller's stones (rk)
   let jb = sti(O_fColBedJ + cc); var pc = 0.0; if (U.plants != 0u && jb >= 0) { let li = sti(O_litIdx + u32(jb)); if (li >= 0) { pc = wd(W_pCov + u32(li)); } }
-  return max(F3_SHALLOW_REFUGE * clamp((0.8 - stf(O_wDepthMean + cc)) / 0.6, 0.0, 1.0), pc);
+  return max(max(F3_SHALLOW_REFUGE * clamp((0.8 - stf(O_wDepthMean + cc)) / 0.6, 0.0, 1.0), pc), rk * clamp((LIT3_CR_ROCK_Z - stf(O_wDepthMean + cc)) / 0.5, 0.0, 1.0));
 }
 fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c: i32, dh: vec2f) -> DriveOut {
   var st = Steer(0.0, 0.0, 0.0, 3e38); var r: DriveOut; r.farSet = 0u; r.far = 0u;
@@ -694,8 +695,8 @@ fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c:
     if (m.s1 > 0.0) { let d = shoreDist(x, y); if (d > m.s0) { let sX = shoreDist(x + GCELL, y) - shoreDist(x - GCELL, y); let sY = shoreDist(x, y + GCELL) - shoreDist(x, y - GCELL); if (sX != 0.0 || sY != 0.0) { steer(&st, -sX, -sY, hw * clamp((d - m.s0) / max(1e-3, m.s1 - m.s0), 0.2, 1.0), d - 0.9 * m.s0); } } }   // (fish3 _drive: its shore band)
     off *= 1.0 - needy;
     if (spv(k, S_skW) > 0.0 && U.sun > 0.02 && ga(A_T, i) > 9.0 && c >= 0) {   // (fish3 _drive: its cover, S3 seek)
-      let cu = u32(c); let v0 = covAt(cu); var best = v0; var bc = -1; let s0 = u32(sti(O_fNbr0 + cu)); let s1 = u32(sti(O_fNbr0 + cu + 1u));
-      for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let v = covAt(cc); if (v > best) { best = v; bc = i32(cc); } }
+      let rk = select(0.0, spv(k, S_rockC), spv(k, S_rockC) > 0.0 && L <= spv(k, S_rockL)); let cu = u32(c); let v0 = covAt(cu, rk); var best = v0; var bc = -1; let s0 = u32(sti(O_fNbr0 + cu)); let s1 = u32(sti(O_fNbr0 + cu + 1u));
+      for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let v = covAt(cc, rk); if (v > best) { best = v; bc = i32(cc); } }
       if (bc >= 0 && best > v0 + 0.05) { let dx = colX(u32(bc)) - x; let dy = colY(u32(bc)) - y; steer(&st, dx, dy, spv(k, S_skW) * select(spv(k, S_skBig), 1.0, L <= spv(k, S_skL)) * (1.0 - needy), length(vec2f(dx, dy))); }
     }
   }
@@ -1028,7 +1029,7 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
         if (s2) {   // (an encounter for each fish of a school, × concealment, cover, the shallows; × capture success by kind, size, school)
           let nn = select(max(nb, 1.0), pow(nb, spv(k, S_schExp)), nb > 1.0 && cls == 0u); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, clamp(1.0 - abs(ga(A_bed, b) - ga(A_bed, i)) / max(F3_ENC_DZ, 1e-6), 0.0, 1.0), F3_ENC_DZ > 0.0);   // (F3.ENC_DZ: the water it holds)
           if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, F3_BASS_SCH), cls == 1u); }
-            let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch; sE += enc; w = enc * cs; }
+            let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch * select(1.0, 1.0 - ga(A_cover, b), F3_COVER_CS > 0.5); sE += enc; w = enc * cs; }   // (F3.COVER_CS)
         } else { w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0); }
         if (w > 0.0) { sK += w; dW[kb] += w; var wp = w; if (s2 && F3_PREY_PREF > 0.0) { let lr = log(ga(A_L, b) / L / F3_PREY_OPT) / F3_PREY_PREF; wp = w * exp(-0.5 * lr * lr); }   // (fish3 _strike2: the choice by prey size)
           if (wp > 0.0) { let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / wp; if (key > bkey) { bkey = key; best = i32(b); } } }   // (u^(1/w) in logs: small weights underflowed)
