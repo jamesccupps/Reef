@@ -43,6 +43,9 @@ All in `stageR5` (not yet the default), CPU and GPU, each behind its own F3 flag
   - 18, 20, 21, 22 (the esocid size window, size-scaled M), 25, 27, 29, and phases 6–9;
   - bullhead growth: research running (bullhead_growth_and_young_white_perch.md).
 
+> **From 2026-10-21 the order of work is [`REALISM_PLAN.md`](REALISM_PLAN.md)** (the compensation audit's merged plan: restore the
+> field values, build what the lakes are missing). The items below stay as the record; REALISM_PLAN maps the open ones.
+
 ## Progress (2026-10-21 morning): arms R–U read; CPU probes on occ-server
 - **Arms R–U (seed 613, three true-scale years):** the predators fall every year (pickerel 5 → 1.6 kg/ha, bass 6.5 → 1.5 in arm T),
   white perch climb to the census cap, killifish die out in year 1. Arm U (the perches' young at yBed 2.5 m) made it worse (white
