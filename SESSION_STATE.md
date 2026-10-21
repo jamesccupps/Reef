@@ -192,7 +192,29 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~1:45 p.m. — the newest): ARM X RUNNING (queue_r16.sh, snapshot y :8137 = the working tree after
+▶▶▶ RESUME HERE (2026-10-21 ~1:40 p.m. EDT — the newest; COMPACTING). THE REALISM PHASE (docs/review/REALISM_PLAN.md; the human: fix
+by restoring field values + building missing environment, never tuning — memory realism-over-compensation). CPU WORK RUNS ON
+OCC-SERVER (memory remote-cpu-host): `node tools/remote/run.mjs occ-server [-e K=V] [--put probe.mjs] -- <cmd>`; full gate there with
+`-e W3_PERF_MUL=1.3 -- npm test` (~39 min; it is ~15 % slower per core than this desktop — use it for parallel capacity); probes go
+in scratchpad/probe/ and run as `--put <file> -- node .remote/put/<file>`; several probes can run there at once, never beside a gate.
+GPU (this desktop) runs ONE arm at a time; g1_check ?r5=1 in the preview only when the GPU is free (then preview_stop + close tab).
+COMMITTED TODAY (all in stageR5, CPU+GPU): f7ca62a R1 predation rule undone (COVER_ONCE, SIZE_RENORM, EH_AMAX, bass aMax 12, act diel,
+pickerel gated, ENC_DZ 0, REST_DIGEST) · 3215c3e R2a young by what pays (YSHARE, cmaxL, RWMIN_STEEP, K_FRY 60) · a2ec762 R2b small fish
+eat the weeds' small fauna (SMALL_S), batch spawners reproA 0.8, REST_ALL, pGates bass 0.35 / pickerel 0.3 · 1b5baa5 consumptionTrel
+(the pickerel's Eq.4 curve peaks 8.3 — the cold rules now relative) + R1b white perch mOther 1, M 0.54, maxAge 10, WINTER0 [1.1,0.95],
+MOTHER_FLAT · 8b82143 F3.YENC (the young met through the predator's own encounter volume; gate check 18/18 strike section).
+RUNNING: (1) ARM Y on the GPU — queue_r17.sh, snapshot z :8138 = 1b5baa5 (NOT YENC), 613/611/612 × 3 yrs → r17Y_<seed>.txt, ~90 min
+each from ~1:20 p.m.; 613 at day 224 at 1:40. (2) Full gate on occ-server for 8b82143 → scratchpad occ_gate_yenc.txt; if it fails, fix.
+ARMS SO FAR (seed 613): W (R1) — predators fed but giants (bass 66 cm, pickerel 60 cm by 5), prey fell, total 88→60. X (+R2a,R2b,REST_ALL,
+gates) — zooplankton fixed (8–31 µg/L in winter vs 1–6), white perch 31→46 (no R1b yet), pickerel still 51.5 cm at 5 (the cold-rule
+units slip), bass 2–6 yrs missing, sunfishes/killifish ~0; the GPU driver reset (nvlddmkm 153 at 12:56) killed X-613 at day 1092 —
+if it recurs, note it; TDR settings are the human's. READ ARM Y: node yrsum.mjs r16X_613.txt r17Y_*.txt in scratchpad; LENGTH AT AGE
+(pickerel ~43 at 5, bass ≤ 50), white perch 15–35, p (pickerel 0.39–0.42 summer, bass 0.30–0.36), winter p, zooplankton, small fish.
+NEXT: g1_check for 8b82143 when the GPU frees; an arm with YENC (Y + YENC); then R4 remaining (one rule for young and agents — size
+windows per species (WIN is the perch-cannibal window, too steep below r 0.1 for pickerel/bass), predator habitat by size, weed edge,
+prey vigilance), R0 young Z tallies (then re-derive M_LARVA3/M_JUV3 and drop the young's M_OTHER double charge), R3 substrate map,
+R5 birds/angling/eggs → retire the census cap. FINDINGS has today's entries (stacked compensations, two bugs, fed predators → giants).
+▶▶▶ RESUME HERE (2026-10-21 ~1:45 p.m.): ARM X RUNNING (queue_r16.sh, snapshot y :8137 = the working tree after
 3215c3e + R2b + REST_ALL + pGates, 613/611/612 × 3 yrs → r16X_<seed>.txt, ~60–90 min each from ~1:45). Full gate on occ-server running
 (occ_gate_r2b.txt) — COMMIT R2b + REST_ALL when it is green (uncommitted now: littoral3 SM_L/sm, fish3 SMALL_S/reproA/REST_ALL/pGates,
 GPU gpufish TSM/TSMW/R_SM, wgsl smallS/reproA/sated, layout reproA). g1_check ?r5=1 passed on this tree (young's food 70/67, kills 37/39).
