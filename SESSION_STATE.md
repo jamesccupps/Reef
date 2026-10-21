@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-20 ~8:35 p.m. — the newest): w3 GATE 103/103 at eefcece (KD_COLOUR 0.4, both plants3init rebuilt;
+▶▶▶ RESUME HERE (2026-10-20 ~10:50 p.m. — the newest): ARM S RUNNING (queue_r11.sh; snapshot t :8132 = c313818; r5=1 only; 613, 611,
+612 × 3 yrs → r11S_<seed>.txt, ~80 min each, done ~3 a.m.). ARM R (613 × 3, snapshot s = 80c2bc0, r10R_613.txt) vs arm O (yr 3):
+pickerel 2.7 (2.0), bullhead 3.6 (2.6), fallfish 2.7 steady (0.6), pumpkinseed/redbreast 0.2 (0), killifish 0 by yr 1 (as O), white
+perch 44.3 (40.2) — now 35 % of bass kills, 18 %+ of pickerel's; BUT bass 6.5→2.2 (O 5.0): p ~0.2 all year, K→0.81, crayfish 31 %
+of food, insects ~1 %, recruits ~2/3 eaten in 6 weeks (by bass and white perch). Arm S adds: bass insR 2 m (weeds' + surface insects;
+item 25), bass ≤ 12 cm seek cover (big 0) + habJ 0.3–1.2 m, killifish day ≤ 0.25 m / night ≤ 0.4 m. NEXT: read r11S (yrsum.mjs,
+the RUN-YEAR summaries) on all 3 seeds; then item 16 birds (needs per-species normalisation), 22 pickerel first year, 18 ice
+optics, 29 zooplankton, white perch regulation (44 kg/ha vs 15–35). Arm Q (r9Q_613.txt, year 1 only) was stopped for arm R.
+▶▶▶ RESUME HERE (2026-10-20 ~8:35 p.m.): w3 GATE 103/103 at eefcece (KD_COLOUR 0.4, both plants3init rebuilt;
 backup …_20261020_2028_review-phases.zip). Since 7:20: items 13 (sunfish cover drive), 24 (arm B diets in code), 26 (sunfish RA×0.7,
 fallfish FA/UA, bullhead juvW 30 + ED 5000 — research bullhead_growth_and_young_white_perch.md), 23 (bullhead spawnT [18,24] +
 spawnEnd 0.38), 28 (brook sunfish share 0.01/0.02), 31 (settle 0.03…), the young's O₂ cushion fixed (mg/L, cold only — the ×2
