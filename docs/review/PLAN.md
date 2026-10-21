@@ -60,8 +60,19 @@ All in `stageR5` (not yet the default), CPU and GPU, each behind its own F3 flag
   (piscivore_encounter_attack.md), bass 0.02–0.03 and live on crayfish (p 0.09–0.12, K 0.94 → 0.74). The young they ask for are
   always delivered in full: the young are not the bottleneck. The strike rule's terms stack: 60–80 % of calls find no catchable prey
   within 6 m, saturation E/(E+E_h) 0.14–0.22 where the design assumed E ≫ E_h, capture success 0.09–0.13 (cover now cuts the
-  encounter AND the capture — F3.COVER_CS, arm T), hunting 10–17 % of the time. Product ~10–40× below the field. A six-variant
-  screen (COVER_CS, act, ENC_DZ) on occ-server is next.
+  encounter AND the capture — F3.COVER_CS, arm T), hunting 10–17 % of the time. Product ~10–40× below the field.
+- **Screens on occ-server (screen.mjs, 1/10, 112 days, 12 variants):** no single term restores the predators; cover counted once
+  (COVER_CS 0) + no depth-contour band (ENC_DZ 0) + the bass's research aMax (12 /h — cut to 2.5 at 4875ba0 when bass overfed,
+  before the hunger gate existed) + doubled act gives pickerel p 0.32–0.45 and bass 0.21–0.35, kills still ~5× under the field;
+  killifish fall out in every variant. Screening terms against each other is the wrong road (the human, 2026-10-21): the
+  predators' rules hold several COMPENSATIONS from before plants, cover and the gate existed.
+- **The food base collapses (zshal.mjs; arm T's tallies):** zooplankton 400–600 µg/L in late May on the true lakes, then ~1–6 µg/L
+  from September to the next May (Lower from mid-June); on the 1/10 lakes ~0 from mid-June, the weeds' small fauna down 10×, with
+  180k–615k young-of-year per ha in late May. Real lakes keep tens to hundreds of µg/L through summer and active copepods all winter.
+- **THE COMPENSATION AUDIT (running, 2026-10-21):** every parameter and rule moved away from its field value to fix a symptom, or a
+  refuge made redundant by a later mechanism, with the realistic value to restore and the missing environment it stood in for —
+  four reports: `audit_predation.md`, `audit_habitat_young.md`, `audit_physiology.md`, `audit_foodweb_environment.md`. They set the
+  next phase: restore the real values and build what the lakes are missing, instead of tuning.
 
 ## Order of work
 
