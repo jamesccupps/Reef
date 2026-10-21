@@ -370,7 +370,7 @@ export class GpuFish {
     names.forEach((nm, r) => { out[nm] = all.subarray(r * n, (r + 1) * n); }); return out;
   }
   async readAgents() { const [A, BR, GN] = await Promise.all([this.read(this.B.A), this.read(this.B.BR), this.read(this.B.GN)]); return { A: new Float32Array(A), BR: new Float32Array(BR), GN: new Float32Array(GN) }; }
-  // the grid's fullest cells (diagnostics: g_sort orders each cell by insertion — its cost ~ the count squared)
+  // the grid's fullest cells (diagnostics: g_sort orders each cell by a Shell sort — its cost ~ the count^1.25; an insertion sort hung the GPU at ~n² in crowded cells)
   async gridLoad() {
     const HS = new Uint32Array(await this.read(this.B.HS)); let max = 0, at = -1, big = 0;
     for (let c = 0; c < this.NH; c++) { const k = HS[c + 1] - HS[c]; if (k > max) { max = k; at = c; } if (k > 256) big++; }

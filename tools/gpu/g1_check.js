@@ -12,7 +12,7 @@ const qs = new URLSearchParams(location.search), SEED = +(qs.get('seed') || 611)
 const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, F3, HID3, reinforce3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
-const { ENV } = await import('../../src/config.js');
+const { ENV, FRY } = await import('../../src/config.js');
 const { CLOCK3 } = await import('../../src/w3/clock3.js');
 const L = await import('../../src/w3/gpu/layout.js');
 const { GpuFish, HHX, HHY } = await import('../../src/w3/gpu/gpufish.js');
@@ -153,8 +153,8 @@ const cmC = new Float64Array(n);
 }
 // ===== 8. FEEDING (fish3 _feed: strikes, the bed and weeds, the surface, the zooplankton, the organic layer) =====
 // (fish3 feeds fish after fish, each on what those before it left; the GPU all at once, sharing a contested cell's food — so the
-// check is on the totals and on each fish's meal where little is contested; the young aren't on the GPU yet: fish3's fish don't eat
-// them here either)
+// check is on the totals and on each fish's meal where little is contested; the young: fish3's table built fresh and its requests
+// settled at the end, _yTable/_ySettle, as the GPU's encodeFeed does with y_table, k_eatYoyReq and k_eatYoyGet)
 {
   const ch = env.chem, lit = env.lit, Gg = env.G, sum = a => { let t = 0; for (let q = 0; q < a.length; q++) t += a[q]; return t; };
   const bedTot = () => { let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += ch.benth[j] * ch.a[j]; return t; };
@@ -164,8 +164,10 @@ const cmC = new Float64Array(n);
   const before = { bed: bedTot(), zD: zooTot(ch.zooD), zC: zooTot(ch.zooC), surf: surfTot(), L: litTot(lit.L), sn: litTot(lit.sn), cr: litTot(lit.crA) + litTot(lit.crY), sed: zooTot(ch.sedOM) };
   const food0 = { ...F.stats.food }, kills0 = F.stats.kills, gut0 = fish.map(a => a.gut), fryE0 = Object.fromEntries(Object.entries(F.stats.fry).map(([k, v]) => [k, v.eaten]));
   tc = performance.now();
+  if (FRY.DENSITY && F._yTable) F._yTable();   // (the young available now, before anyone feeds)
   for (let i = 0; i < n; i++) { const a = fish[i]; if (!a.alive) continue; const sp = a.s.sp, bp = (sp.bioJuv && (sp.juvW ? a.W < sp.juvW : a.age < YEAR)) ? sp.bioJuv : sp.bio;
     const ate = F._feed(a, i, cmC[i], a.visF, B); a.hunger = 1 - Math.min(1, Math.max(0, a.gut / (sp.gut * a.W))); if (ate) a._ate = true; }
+  if (FRY.DENSITY && F._ySettle) F._ySettle();   // (the young the followed fish asked for, settled)
   tc = performance.now() - tc;
   const after = { bed: bedTot(), zD: zooTot(ch.zooD), zC: zooTot(ch.zooC), surf: surfTot(), L: litTot(lit.L), sn: litTot(lit.sn), cr: litTot(lit.crA) + litTot(lit.crY), sed: zooTot(ch.sedOM) };
   G.clearTallies();

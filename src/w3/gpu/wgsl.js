@@ -192,10 +192,19 @@ var<workgroup> sh: array<u32, 512>;
   let i = g.x; if (i >= GP.nItems) { return; } let c = HC[i]; if (c == 0xFFFFFFFFu) { return; }
   let p = atomicAdd(&CNT[c], 1u); HI[p] = i;
 }
-@compute @workgroup_size(256) fn g_sort(@builtin(global_invocation_id) g: vec3u) {   // each cell's items in index order (insertion sort: a cell holds a few)
+// each cell's items in index order — a Shell sort (Knuth's gaps 1, 4, 13, 40 …; one thread a cell): the items are distinct indices, so
+// the order is the insertion sort's exactly, but a crowded cell costs ~n^1.25, not n² — the insertion sort ("a cell holds a few")
+// hung the GPU past Windows' 2-s watchdog (DXGI_ERROR_DEVICE_HUNG) when the deep basin's wintering cells held ~1,400 agents and the
+// year-4 spring's recruits were placed within 0.6 m of their schools (arms X and Y, seed 613, both at block 53592)
+@compute @workgroup_size(256) fn g_sort(@builtin(global_invocation_id) g: vec3u) {
   let c = g.x; if (c >= GP.nCells) { return; }
-  let s = HS[c]; let e = HS[c + 1u]; if (e - s < 2u) { return; }
-  for (var q = s + 1u; q < e; q++) { let v = HI[q]; var r = q; while (r > s && HI[r - 1u] > v) { HI[r] = HI[r - 1u]; r -= 1u; } HI[r] = v; }
+  let s = HS[c]; let e = HS[c + 1u]; let n = e - s; if (n < 2u) { return; }
+  var gap = 1u; while (gap < n / 3u) { gap = 3u * gap + 1u; }
+  loop {
+    for (var q = s + gap; q < e; q++) { let v = HI[q]; var r = q; while (r >= s + gap && HI[r - gap] > v) { HI[r] = HI[r - gap]; r -= gap; } HI[r] = v; }
+    if (gap == 1u) { break; }
+    gap = gap / 3u;
+  }
 }`;
 
 // ============================================================ THE SIM FAMILY's bindings ==========================================
@@ -835,6 +844,18 @@ fn consumptionT(bs: u32, T: f32) -> f32 {
   return consT1(bs, T, false);
 }
 fn consumptionTrel(bs: u32, T: f32) -> f32 { return consumptionT(bs, T) / max(1e-9, bio(bs, BcTmax)); }   // (bioenergetics consumptionTrel: the share of its peak appetite)
+// (shared by the feeding and the young's modules — FB4 is in both)
+// a piscivore's reaction distance to prey of L cm when it sees prey of RD_LREF cm at R0 m (fish3 rdOf: F3.RD_SIZE)
+fn rdOf(R0: f32, L: f32) -> f32 {
+  if (!(R0 > 0.0) || !(L > 0.0)) { return 0.0; }
+  let c = F3_RD_C; let T = 2.0 * log(R0) + c * R0 + 2.0 * log(L / F3_RD_LREF); var R = R0 * pow(L / F3_RD_LREF, 2.0 / (2.0 + c * R0));
+  for (var k = 0; k < 3; k++) { R = max(0.5 * R, R - (2.0 * log(R) + c * R - T) / (2.0 / R + c)); }
+  return R;
+}
+fn csOf(kb: u32, cls: u32, r: f32) -> f32 {
+  var cz = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - r / spv(kb, S_ppr0)); if (F3_SIZE_RENORM > 0.5) { cz = min(F3_CS_MAX, cz / (1.0 - spv(kb, S_pprm0 + cls) / spv(kb, S_ppr0))); }   // (F3.SIZE_RENORM)
+  return cz;
+}
 fn cmaxB(bs: u32, W: f32, T: f32) -> f32 { return bio(bs, BCA) * pow(W, bio(bs, BCB)) * consumptionT(bs, T); }
 fn respirationT(bs: u32, T: f32) -> f32 {
   if (bio(bs, BREQ) == 1.0) { return exp(bio(bs, BRQ) * T); }
@@ -1478,17 +1499,6 @@ fn colVol(c: u32) -> f32 { var v = 0.0; for (var k = 0u; k < nL(c); k++) { v += 
 // a bin's w × available (fish3 _yReq's per-bin weight before the clearance and the volume): a piscivore's size window on prey within
 // its gape and preyLR, × the prey's vulnerability; or the larvae a plankton or insect eater fits, × LARV_A by their detectability
 // a strike's capture success on prey kb by a predator of kind cls at prey/predator length r (fish3 csOf: k_strike; the young's, F3.YWIN_CS)
-// a piscivore's reaction distance to prey of L cm when it sees prey of RD_LREF cm at R0 m (fish3 rdOf: F3.RD_SIZE)
-fn rdOf(R0: f32, L: f32) -> f32 {
-  if (!(R0 > 0.0) || !(L > 0.0)) { return 0.0; }
-  let c = F3_RD_C; let T = 2.0 * log(R0) + c * R0 + 2.0 * log(L / F3_RD_LREF); var R = R0 * pow(L / F3_RD_LREF, 2.0 / (2.0 + c * R0));
-  for (var k = 0; k < 3; k++) { R = max(0.5 * R, R - (2.0 * log(R) + c * R - T) / (2.0 / R + c)); }
-  return R;
-}
-fn csOf(kb: u32, cls: u32, r: f32) -> f32 {
-  var cz = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - r / spv(kb, S_ppr0)); if (F3_SIZE_RENORM > 0.5) { cz = min(F3_CS_MAX, cz / (1.0 - spv(kb, S_pprm0 + cls) / spv(kb, S_ppr0))); }   // (F3.SIZE_RENORM)
-  return cz;
-}
 fn yBinA(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32, aL: f32, kp: u32, rd0: f32) -> f32 { return yBin2(b, L, gape, pisc, larv, preyLR, aP, aL, kp, rd0).x; }
 // (the bin's weight and the piscivore's attacks on it — F3.YWIN_CS: rd0 > 0 on the encounter volume)
 fn yBin2(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32, aL: f32, kp: u32, rd0: f32) -> vec2f {   // (fish3 _yReq: the piscivore's window on its volume aP, the larvae on the picker's clearance aL — F3.YENC)
