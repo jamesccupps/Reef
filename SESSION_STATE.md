@@ -192,7 +192,19 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~9:45 a.m. — the newest): OCC-SERVER RUNS THE CPU WORK (tools/remote/run.mjs; memory remote-cpu-host:
+▶▶▶ RESUME HERE (2026-10-21 ~10:35 a.m. — the newest): THE REALISM PHASE. The human: "make it realistic and provide everything the
+environment has" — fix by restoring field values + building missing environment, never by tuning (memory realism-over-compensation).
+The COMPENSATION AUDIT is done (docs/review/audit_{predation,habitat_young,physiology,foodweb_environment}.md) and merged into
+docs/review/REALISM_PLAN.md (R0 measure · R1 predation rule · R1b mortality/reproduction · R2 the young + zooplankton · R3 substrate
+· R4 where predators/prey are · R5 birds, angling, eggs, weather → retire the census cap · R6 winter · R7 streams, alewife, etc.).
+R1 DONE AND COMMITTED (f7ca62a; backup …_20261021_1031_realism_r1.zip): COVER_ONCE, SIZE_RENORM (S3 pprM), EH_AMAX, bass aMax 12,
+act diel, pickerel pGate 0.4, ENC_DZ 0, REST_DIGEST (rest until 90 % of a satiating meal is digested). Strike check: pickerel 0.37
+kills/d, p 0.40, 34 % empty. Gate 103/103 on occ-server (W3_PERF_MUL=1.3). ARM W RUNNING (queue_r15.sh, snapshot x :8136 = f7ca62a,
+613/611/612 × 3 yrs → r15W_<seed>.txt, ~100 min each, from ~10:35). Arm V (r14V_613: + the young's shelf) ≈ arm T. READ W against
+REALISM_PLAN's field targets (p, kills/d, empties, pickerel 4–8 kg/ha, bass every age, white perch 15–35 never at the cap, zooplankton).
+NEXT while W runs: R2 (the young's prey switch by profitability; the plant-dwelling microcrustaceans; the young's depth geometry;
+their energetics) — or R1b (per-species M_OTHER, the young's double charge, per-species REPRO_ALLOC, white perch's set).
+▶▶▶ RESUME HERE (2026-10-21 ~9:45 a.m.): OCC-SERVER RUNS THE CPU WORK (tools/remote/run.mjs; memory remote-cpu-host:
 `node tools/remote/run.mjs occ-server [-e K=V] [--put probe.mjs] -- <cmd>`; ~15 % SLOWER per core than this desktop — its worth is 12
 threads beside the GPU; gate there with -e W3_PERF_MUL=1.3; never run probes beside a gate (timing checks)). ARM U READ AND TAKEN OUT
 (613: white perch 59.6 vs T's 46.4; queue stopped). Committed: 3206eb6 (the young's shelf: off-shelf schools head shallower — CPU+GPU,
