@@ -44,7 +44,7 @@ fetched. Several key papers were therefore not read (see each section's Gaps and
 |---|---|---|
 | Boulder–cobble share of nearshore AREA (≤ 3 m), small Shield lakes | **~11 %** although it lines km of shore; detritus–sand mixes ~40 %, organic > 10 %, pure sand and bedrock ~5 % each | Cooley 1997, six ELA lakes [primary] |
 | Measured 0–3-m cover, soft coloured lake (Sanford, WI) | silt 70 %, sand 12.7 %, organic debris 4.4 %, **gravel and coarser ~6 %** | Short 2001 [primary] |
-| Wave base that sets the rock/sand → mud boundary | EBD ≈ **1.66·√Fmax(km)** m (¼ of the deep-water wavelength); critical (annual-storm) waves ~77 % of maximum; slopes > ~3–10 % push mud deeper | Rowan et al. 1992 [snippet; secondary via Cooley]; [inf] |
+| Wave base that sets the rock/sand → mud boundary | EBD ≈ **1.66·√Fmax(km)** m (¼ of the deep-water wavelength); critical (annual-storm) waves ~77 % of maximum; slopes > ~3 % (Rowan) or ~10° (Cooley) push mud deeper | Rowan et al. 1992 [snippet; secondary via Cooley]; [inf] |
 | Share of bed that is erosion + transport (Håkanson) | 25·DR·41^(0.061/DR), DR = √a/D̄ → **21–24 %** for Hot Brook (DR 0.57–0.68) | Håkanson 1982 [secondary — USBR]; [inf] |
 | Same share from per-cell fetch (Hot Brook grid) | **23.8 % / 24.0 %**; mud line 1.5–2.3 m, median ~1.8 m; 89–98 % of the < 30-m shore strip wave-worked | [inf] |
 | Proposed Hot Brook bed (whole lake) | boulder–cobble 3–5 %, cobble–gravel–sand 4–5 %, sand 2.5–4.5 %, sand–detritus 3–5 %, organic shore water 6–8 %, gyttja ~76 % | [inf] |
@@ -83,8 +83,11 @@ fetched. Several key papers were therefore not read (see each section's Gaps and
   23.8 % (Upper) and 24.0 % (Lower) [inf]. The NAIP photo shelf's dark edge (1.3 m, LID) and the user's "where the water gets
   darker" sit just inside that boundary: the darkening is likely substrate (pale cobble/sand → dark gyttja) as much as depth.
 - **The sim today treats the whole bed under 1.5 m as "rock"** (`LIT3.CR_ROCK_Z`; fish3 `rockC`): ~19–20 % of each lake. By the
-  ELA proportions the true hard (boulder/cobble/gravel) bottom is more like **4–8 %** of the lake, the sand–gravel–detritus
-  transition another ~10–15 %, and wetland-fringed shores carry organic bottom right to the waterline [inf].
+  ELA and Sanford proportions, and by the rule in the Hot Brook table below, the true hard (boulder/cobble/gravel) bottom is more
+  like **6–8 %** of the lake, the sand–gravel–detritus transition another ~10 %, and wetland-fringed shores (6–8 % of the lake)
+  carry organic bottom right to the waterline [inf].
+- **Measured analogue:** a 36-ha, colour-30, alkalinity-6 Wisconsin lake (Sanford) had **gravel and coarser ~6 %** and silt 70 %
+  of its 0–3-m bed (Short 2001).
 
 ### Cited findings
 
@@ -602,7 +605,7 @@ All of this is design suggestion, built from the findings above; none of it is m
      disturbance); the brook → cobble riffles, sand and wood in the runs, the 1.1-m pool's bed mixed (FIELD photos).
   4. Optional refinements: NAIP's bright-bottom excess E0 (LID) as a texture hint (bright = sand, mottled = cobble, dark nearshore =
      organic); Cooley's sheltered-bay test (mean fetch < 150 m → depositional) for small coves the 15-m test missed.
-- **Checks** (gate or tool printout): hard (rock + gravel) **6–10 %** of each lake; sand + mixed 8–15 %; mud + organic **75–80 %**;
+- **Checks** (gate or tool printout): hard (rock + gravel) **6–8 %** of each lake (the rule above gives 6.3 % / 7.7 % [inf]); sand + mixed 8–15 %; mud + organic **75–80 %**;
   erosion/transport (r < 1) 21–25 %; ≥ 50 % of shore cells with a stony waterline; the mud line's median depth 1.6–2.0 m.
 
 ### (b) Coarse woody debris as placed logs
@@ -618,7 +621,7 @@ All of this is design suggestion, built from the findings above; none of it is m
 ### (c) Consequences to wire, one slice at a time
 1. **Crayfish shelter (littoral3 `Kcr`)**: replace `z < CR_ROCK_Z` with the cell's rock + gravel fractions (crevices) plus wood:
    K = CR_ROCK·(f_rock + ½ f_grav) + CR_WOOD·wood + weeds + CR_MUD·f_mud. The rocky area falls from ~19–20 % of the lake (today's
-   proxy) to ~6–10 %, cutting whole-lake crayfish toward the user's "not common". Keep the size refuge (≥ 28 mm CL safe from 30-cm
+   proxy) to ~6–8 %, cutting whole-lake crayfish toward the user's "not common". Keep the size refuge (≥ 28 mm CL safe from 30-cm
    bass; ~20 % of predator length) and the young's need for ~2-cm crevices.
 2. **Fish cover (fish3 `rockC`)**: crevice cover from f_rock (not depth); wood cover from the log map (bass station-holding
    ×4–5 at rest, SHH (c); perch and sunfish edge use; predation highest at the wood's edge, lower inside).

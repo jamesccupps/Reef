@@ -15,7 +15,11 @@ The question is what keeps the small prey alive in real lakes, and at what level
   - (A) rotifers and the microbial loop (Q1, Q4);
   - (B) nauplii, small cladocerans and *Chaoborus* (Q2, Q3, Q6).
 
-  Sub-search B's results are now appended as **§5**, and §3 point 3 is revised to match. Sub-search A's results are **not** in this note yet.
+  Both have now reported:
+  - sub-search B is appended as **§5**;
+  - sub-search A is appended as **§6**.
+
+  Where they change §1–3, those sections are edited and marked "(rev. §5)" or "(rev. §6)".
 - **Why so many gaps:** the session's shared web-search budget ran out during this pass. Q1–Q4 and Q6 below therefore rest on numbers already held in the companion notes (cited, not repeated in full) plus the gaps they leave.
 
 **Companion notes (not repeated):**
@@ -51,7 +55,12 @@ The question is what keeps the small prey alive in real lakes, and at what level
 | Rotifer P/B (Shuter & Ing) | log10 P/B = −1.631 + 0.0434·T: **0.035 /d at 4 °C, 0.105 at 15 °C, 0.17 at 20 °C, 0.28 at 25 °C** | [repo ZD] |
 | Rotifer generation time | ~8–10 d at 17 °C (Mirror Lake) | [repo ZD] |
 | Under-ice rotifers | *Kellicottia* 12 % of community biomass, Lake Simoncouche, QC (TP 7 µg/L, mean depth 2.2 m) | Boulianne et al. 2025 [repo ZD] |
-| Do rotifers vanish in summer? | **No evidence in the repo's sources that they vanish.** Mirror Lake's 40 % production share and the Adirondack 19 µg/L are lake means; the PEG summer is "small species and rotifers". A summer series for a comparable lake is still a gap (sub-search A). | [repo ZD, IPP]; [inf] |
+| Do rotifers vanish in summer? (rev. §6) | **No.** Every comparable series has them through summer. Lake Gjerstadvann (oligotrophic, colour 10–30, TP ~8, perch lake): ≈150 ind/L in summer (*Conochilus* >100, *Polyarthra* ~50, *Kellicottia* 8–10). In eutrophic Lake Oglethorpe rotifers *peak* in summer (>69 % of metazoan biomass, Jun–Sep). The rotifer trophic index at Hot Brook's TSI ≈ 40–46 gives **≈50–140 ind/L, ≈1.3–3.8 µg DW/L**. | Wærvågen & Andersen 2017 [primary]; Orcutt & Pace 1984 [abstract]; Ejsmont-Karabin 2012 [secondary]; [inf] |
+| What suppresses them (rev. §6) | **Large Daphnia (>1.2 mm) by interference**: high rotifer mortality even at 1–5 Daphnia/L. Small cladocerans "often coexist with rotifers at high densities". Exploitation bites only below the rotifers' saturating food. | Gilbert 1988; Burns & Gilbert 1986; MacIsaac & Gilbert 1991 [abstract] |
+| Rotifer food (rev. §6) | Microbes (bacteria, heterotrophic nanoflagellates, small ciliates) = **10–40 % of rotifer food**. *Keratella*, *Kellicottia* and *Conochilus* ingest bacteria-sized (0.5 µm) particles. *Keratella* threshold **0.02–0.03 mg C/L**, rmax 0.28 /d at 20 °C. | Arndt 1993; Ooms-Wilms et al. 1995; Stemberger & Gilbert 1985 [abstract / secondary] |
+| Bacteria at Hot Brook's chlorophyll (rev. §6) | 1.7–2.6×10⁶ cells/mL ≈ **57–85 µg C/L** | Bird & Kalff 1984 + Tulonen 1993 [abstract]; [inf] |
+| Bacterial production, mesohumic lake (rev. §6) | **1.8–13.2 µg C/L/d** growing season, 0.2–2.9 in winter; 19–33 % of primary production | Tulonen 1993 [abstract] |
+| Allochthonous support of bacteria (rev. §6) | Terrestrial C ≈ 90 % of bacterial demand in a humic lake; 35–70 % in small forested lakes | Hessen 1992; Kritzberg et al. 2004 [abstract] |
 | Daphnia suppresses rotifers, HNF and ciliates | Daphnia cut *Bosmina*, a rotifer and nauplii (Vanni 1986). Flagellate and ciliate growth near zero or negative, and rotifer growth usually lower, under Daphnia dominance (Pace & Vaqué 1994). | [repo CDC] |
 | Release from fish | When fish are removed, rotifers and small cladocerans proliferate within ~2 weeks | Ersoy et al. 2019 [repo ZD] |
 | Copepods eat rotifers | *Skistodiaptomus pallidus* clears rotifers 5.5–6.2× faster than algae. *Mesocyclops leuckarti* needs rotifers to finish development. | [repo CDC] |
@@ -72,7 +81,7 @@ The question is what keeps the small prey alive in real lakes, and at what level
 | Prey densities larvae need, crustacean prey | Bluegill growth 0.6 → 0.2 mm/d below ~50 crustaceans/L (Breck 1997) | [repo FZC] |
 | | Walleye consumption saturates at 20–30 crustaceans/L (Hoxmeier et al. 2004) | [repo FZC] |
 | | Yellow perch foraging success rose from 25 to 150 zooplankton/L, but only for larvae >10 mm (Martin, Wahl & Czesny 2012) | [abstract] |
-| Biomass-equivalent threshold | Both rules come to ≈ **25–100 µg DW/L of size-appropriate prey**, which brackets the sim's K_FRY 30 | [inf] §5 |
+| Biomass-equivalent threshold (rev. §6) | Crustacean prey: 20–50/L ≈ **20–100 µg DW/L**. Rotifer-sized prey: 160–250/L ≈ **5–25 µg DW/L** at 0.03–0.1 µg per rotifer, or 30–75 µg/L if nauplii. Larval needs are set in **counts**, so one biomass half-saturation (K_FRY 30) overstates what a rotifer-feeding larva needs and hides how little it gains. | [inf] §2 Q5, §6 |
 | *Chaoborus* | Oneida Lake: 42/m² at 4 m, 430–627/m² at ≥11 m, >1,000/m² in late summer. Fishless or anoxic lakes: 6,000–30,000/m². | [repo ZD] |
 | | Lac La Belle, WI: 7–460/m² | [repo IPP] |
 | | Hot Brook-like lake (no anoxic refuge): ~50–500/m² | [repo IPP, inf] |
@@ -226,7 +235,7 @@ The question is what keeps the small prey alive in real lakes, and at what level
 
   | Rule | Count | Assumed individual mass | Biomass |
   |---|---|---|---|
-  | Hart & Werner 1987 | 160–250 plankters/L | 0.1–0.3 µg (UNVERIFIED rotifer and nauplius masses) | **≈16–75 µg DW/L** |
+  | Hart & Werner 1987 | 160–250 plankters/L | 0.1–0.3 µg (UNVERIFIED rotifer and nauplius masses); **rev. §6:** rotifers more likely ~0.03–0.1 µg | **≈16–75 µg DW/L**; **≈5–25 µg/L** if the prey were rotifers |
   | Breck 1997; Hoxmeier et al. 2004 | 20–50 crustaceans/L | 1–2 µg | **≈20–100 µg DW/L** |
 
   The two rules agree within their uncertainty. The sim's K_FRY 30 µg/L (half-saturation of fry intake) sits at their low end, which is appropriate as a half-saturation. The sim's fault is *what is counted as available to a 6–8 mm larva*, not K_FRY.
@@ -255,13 +264,14 @@ The question is what keeps the small prey alive in real lakes, and at what level
 ## 3. What the sim should model [inf — design suggestions; values provisional until sub-searches A and B are appended]
 
 1. **Rotifers persist in summer.**
-   - **Target:** a lake-mean summer floor of **≈10–25 µg DW/L** (≈0.25–0.35× a 30–80 µg/L crustacean stock), never below ~5 µg/L in open water.
-   - **Under ice:** **≈2–5 µg/L** (Kellicottia ≈12 % of a 10–20 µg/L winter community).
+   - **Target (rev. §6):** a summer lake-mean of **≈50–200 rotifers/L, ≈2–10 µg DW/L**, never ~0. The Adirondack 19 µg/L and Oglethorpe 19 µg DW/L are lake-wide or eutrophic means: they set an upper bound, not the target for an oligo-mesotrophic lake. Gjerstadvann (~150/L) and the rotifer TSI inversion (50–140/L, 1.3–3.8 µg DW/L) are the closest analogues.
+   - **Under ice:** lower but present and reproducing, **≈1–3 µg DW/L**, with a peak at ice-out (Simoncouche: rotifer biomass rises into winter and peaks at spring overturn; >20 % of *Kellicottia* and *Keratella* fecund at melt).
    - **Rates:** realised P/B of **0.17/d at 20 °C and 0.035/d at 4 °C** (Shuter & Ing) as the check on G_R − losses.
    - **Mechanisms**, in order of evidence:
      - **(a) A food channel Daphnia cannot strip.** Today rotifers eat only edible algae, with a threshold above Daphnia's, so exclusion is certain. Give them a food term like the copepods' `LIT_FOOD`:
        - bacteria, small flagellates and detritus, supplied in proportion to the DOM decomposition the sim already computes (MICROBE) and to the weeds (periphyton and detritus);
        - weighted ~0.3–0.5 of their diet (cladoceran allochthony 0.31 is the nearest held number; the rotifer share is pending A).
+     - **(b′) Size-gate the interference (rev. §6).** Interference kills only above ~1.2 mm Daphnia length (Gilbert 1988; Burns & Gilbert 1986). Apply `DAPH_INTERF` only to the large-Daphnia share, which fish shrink in summer, and set it to 0 for the small-cladoceran pool. Exploitation then acts only below the rotifers' saturating food (MacIsaac & Gilbert 1991).
      - **(b) Lower interference where Daphnia are scarce.** The sim already holds Daphnia off the shore (`SHORE` 0.25), so littoral and weedy cells should hold most of the rotifers in midsummer. Scale `DAPH_INTERF` by local Daphnia biomass (it is already per g/cell); check that the littoral cells actually keep rotifers.
      - **(c) Route `M2_R` into copepod growth** (CDC's recommendation, at 0.3–0.5 assimilation). Then the predation that caps rotifers also feeds the cyclopoids. That makes rotifer abundance and cyclopoid growth coupled, not a sink.
 2. **Expose nauplii separately to larvae.**
@@ -288,10 +298,14 @@ The question is what keeps the small prey alive in real lakes, and at what level
    | 30–35 mm | perch prefer Daphnia |
 
    Smallmouth fry (first feeding ~9 mm) and pickerel (~10 mm) start at the second rung. White perch (3.4 mm SL) and pumpkinseed and yellow perch (5–6 mm) start at the first.
-5. **Keep K_FRY ≈ 30 µg/L, applied to the prey a larva can take.** Expected outcome: with (1)–(3), a 7-mm sunfish in July meets ≈ rotifers 10–25 + nauplii ~4–5 + small cladocerans ~3–8 µg/L ≈ **17–38 µg/L** of takeable prey, against ≈10–12 µg/L now. Intake rises to ≈0.4–0.55 of maximum, above maintenance, so growth resumes at a reduced rate. That fits the field, where larval growth tracks prey but survival is often density-independent (Welker et al. 1994; Garvey et al. 2002).
+5. **Fry feeding by prey COUNT for the smallest prey (rev. §6).** Larval thresholds are counts: 160–250 plankters/L (Hart & Werner) and 20–50 crustaceans/L (Breck; Hoxmeier). Rotifers are ~0.03–0.1 µg each and nauplii 0.06–0.6 µg (§5), so one biomass K_FRY of 30 µg/L would starve a larva on a realistic 2–10 µg/L of rotifers.
+   - **Option A:** a per-prey-class half-saturation: rotifers ≈ 3–8 µg/L (≈100 ind/L), nauplii ≈ 10–20 µg/L, crustaceans 30 µg/L. Each class contributes intake × its energy density.
+   - **Option B:** convert each pool to ind/L with a mean mass, and use K ≈ 100–150 small plankters/L.
+   - **Expected July outcome at 7 mm [inf]:** rotifers 50–200/L + nauplii 7–11/L + small cladocerans ~5–25/L ≈ **60–235 prey/L**, near Hart & Werner's growth threshold (250/L). Growth then resumes at a reduced rate, about 0.1–0.3 mm/d, rather than stalling.
+   - **Why that is right:** field larval growth tracks prey, survival is often density-independent (Welker et al. 1994; Garvey et al. 2002), and rotifers alone give "little or no growth" (Graeb et al. 2004 [repo FZC]). So the jump to nauplii and small cladocerans at ~7–8 mm is what makes growth fast.
 6. ***Chaoborus* (optional, later):** an implicit night-time loss on rotifers, nauplii and small cladocerans, scaled by ~50–500 larvae/m² (fish-suppressed, no anoxic refuge). Rates are pending B.
 7. **Validation (multi-seed):**
-   - summer lake-mean rotifers 10–25 µg/L;
+   - summer lake-mean rotifers 2–10 µg DW/L (50–200/L) (rev. §6), never ~0;
    - nauplii present in summer;
    - small cladocerans ≈10 % of crustaceans;
    - pumpkinseed larvae growing ≥0.2–0.4 mm/d through 7–12 mm in July (field limnetic bluegill 0.4–0.7 mm/d in their first 14 days, Beard 1982 [repo LJE]; 0.12–0.30 mm/d in food-poor ponds, Partridge & DeVries [repo FZC]);
@@ -470,3 +484,164 @@ This sub-search reported after §1–4 were written. The coordinator recorded it
   - Springer: auth redirect, not followed.
 - **Cached PDFs:** three scanned PDFs were cached automatically by the fetch tool, outside the repo; they were not opened or used.
 - **No PDF was saved in the repo.** No fetched page contained instructions aimed at the agent.
+
+---
+
+## 6. Addendum (2026-10-21): sub-search A — rotifers and the microbial loop (Q1, Q4)
+
+Recorded by the coordinator with the sub-search's own tags. The sub-search's WebSearch budget ran out after ~14 searches. The rest were direct lookups by DOI or URL (OpenAlex, Europe PMC, OUP, NIES), so the long tail of regional surveys is thin.
+
+### Q1. Rotifers
+**Seasonal series: no summer collapse anywhere**
+- **Lake Gjerstadvann, Norway** (Wærvågen & Andersen 2017, J. Limnol., [doi:10.4081/jlimnol.2017.1685](https://doi.org/10.4081/jlimnol.2017.1685)) [primary].
+  - The lake: oligotrophic (TP ~8 µg/L), colour 10–30 mg Pt/L, pH 5.0–5.6. Perch keep Daphnia scarce, and *Bosmina* dominates.
+  - Summer numbers:
+    - *Conochilus unicornis* slightly >100 ind/L in the upper water;
+    - *Polyarthra* ~50 ind/L through the ice-free season (*P. minor* in summer), much lower in winter;
+    - *Kellicottia longispina* mean peaks ~8 ind/L (early summer) and ~10 ind/L (early autumn), maxima ~50, winter 2–4;
+    - *Keratella cochlearis* mean maximum ~1 ind/L;
+    - *K. hiemalis* peaks in autumn–winter (maximum 20/L, February, near the bed);
+    - *Asplanchna* ~0.3 ind/L (autumn).
+  - **Summer total ≈150–160 ind/L** [inf].
+- **Lake Simoncouche, QC** (Boulianne et al. 2025, [doi:10.1093/plankt/fbaf035](https://doi.org/10.1093/plankt/fbaf035)) [primary, via Europe PMC].
+  - Rotifer biomass rose from autumn into winter, dipped in late winter and peaked at spring overturn.
+  - *K. cochlearis* was ~20 % of total zooplankton biomass in early winter and ~9 % at ice-off.
+  - More than 20 % of *Kellicottia* and *Keratella* were fecund at melt and at overturn.
+  - 11–16 rotifer taxa were present under the ice.
+- **Lake Oglethorpe, GA** (eutrophic; Orcutt & Pace 1984, Hydrobiologia 119:73) [abstract].
+  - Rotifers were **>69 % of rotifer + crustacean biomass in June–September**.
+  - Annual means: rotifers 19.26 µg DW/L, crustaceans 46.99 µg DW/L.
+  - Abundance ranged 217–7,980 ind/L.
+- **Mirror Lake, NH** (Makarewicz & Likens 1979) [abstract].
+  - Rotifer turnover 30.9 vs crustaceans 10.1 (as given, presumably per year).
+  - Community production : biomass ≈ 12.6 /yr [inf].
+- **10 humic lakes, NE Poland, July** (DOC 8.7 ± 2.6 mg/L; Karpowicz et al. 2023, Sci. Rep. 13:7913, [doi:10.1038/s41598-023-35039-1](https://doi.org/10.1038/s41598-023-35039-1)) [primary].
+  - *Asplanchna priodonta* reached 1,204 ind/L.
+  - *Trichocerca* was usually <10 /L.
+- **Rotifer trophic index** (Ejsmont-Karabin 2012) [secondary — Rosińska et al. 2019 citing it]:
+  - TSI_ROT1 = 5.38·ln N(ind/L) + 19.28;
+  - TSI_ROT2 = 5.63·ln B(mg WW/L) + 64.47.
+  - At Hot Brook's TSI ≈ 40–46 [inf]: **N ≈ 47–144 /L and B ≈ 13–38 µg WW/L ≈ 1.3–3.8 µg DW/L**. That implies ~0.026 µg DW per rotifer [inf; DW:WW 0.1 assumed, and the index's calibration season was not verified].
+
+**Thresholds and growth**
+- ***K. cochlearis*:**
+  - zero-growth food 0.03 mg C/L and rmax 0.28 /d at 20 °C (Stemberger & Gilbert 1985) [secondary — Ramos-Rodríguez et al. 2020, [doi:10.1242/jeb.209676](https://doi.org/10.1242/jeb.209676)];
+  - another clone 0.018 mg C/L [secondary].
+- **Ramos-Rodríguez et al. 2020's own clones** [primary]:
+  - threshold <0.1 mg C/L at 9.7 °C and <0.03 at 15.6 °C, rising ~4× to 0.13 at 18.5 °C;
+  - realised r 0.02–0.125 /d;
+  - ~1 mg C/L saturates growth.
+- **Across 8 species** (Stemberger & Gilbert 1985, Ecology 66:1151, [doi:10.2307/1939167](https://doi.org/10.2307/1939167)) [abstract]: the zero-growth food level varies 17× and the half-rmax level 35×. Both rise with body mass, and larger species have higher rmax.
+- **Allometry** (Stemberger & Gilbert 1987) [abstract]: clearance ∝ mass^0.42; respiration ∝ mass^0.66.
+- **Other thresholds** [snippet]: *Synchaeta* 0.074–0.66 mg C/L (Stelzer 1998); *Brachionus* ~0.2.
+- **Assimilation:** maximum ≈32 % for *Keratella* and *Kellicottia* (Lair & Oulad Ali 1990) [abstract].
+
+**Food: the microbial share**
+- **Arndt 1993** (Hydrobiologia 255/256:231) [abstract]: heterotrophic microbes = **10–40 % of rotifer food**. Bacteria, heterotrophic nanoflagellates (HNF) and small ciliates are common; synchaetids and *Asplanchna* prey on ciliates.
+- **Clearance on *Chlamydomonas*** (Lair & Oulad Ali 1990) [abstract]: *K. cochlearis* 4–53, *Kellicottia* 3–52 µL/ind/h.
+- **In situ** (Bogdan & Gilbert 1982, L&O 27:918) [abstract]:
+  - clearance <0.002–13 µL/ind/h;
+  - *Keratella* ate all five tracers, bacteria included; *Polyarthra* only the algae;
+  - *Keratella* did ~80 % of the grazing on *Chlamydomonas*-like cells over the year.
+- **Bacteria-sized particles** (Ooms-Wilms et al. 1995, J. Plankton Res. 17:1057) [abstract]:
+  - *K. cochlearis* and *Conochilus* ingested only 0.5-µm particles;
+  - rotifers out-grazed cladocerans as bacterivores from April to September in eutrophic Loosdrecht.
+
+**Suppression**
+- **Gilbert 1988** (L&O 33:1286) [abstract]:
+  - Rotifers cannot become abundant beside **large (>1.2 mm) Daphnia**; interference kills even at 1–5 Daphnia/L.
+  - **Small cladocerans (<1.2 mm) often coexist with rotifers at high densities.**
+- **Burns & Gilbert 1986** (L&O 31:848) [abstract]:
+  - Keratella killed per Daphnia per hour, Y = 0.485·L(mm) − 0.588; there is no killing below 1.2 mm.
+  - Keratella's mortality was independent of its density over 125–1,000 /L.
+  - Daphnia clear live *Keratella* at ≈3× their clearance on *Cryptomonas*.
+  - The units of Y are ambiguous; the full text was blocked.
+- **Burns & Gilbert 1986** (L&O 31:859) [abstract]: lethal encounters rise with Daphnia size and fall above the incipient limiting food level.
+- **Gilbert 1985** [abstract]: *D. pulex* excluded *K. cochlearis* and *Brachionus* in 1–3 weeks.
+- **MacIsaac & Gilbert 1991** (Ecology 72:924) [abstract]:
+  - *D. pulex* and *D. galeata mendotae* suppress rotifers mainly by interference; *Ceriodaphnia* only by exploitation; *D. ambigua* mainly by exploitation.
+  - Exploitation starts only once food falls below the rotifers' saturating level.
+
+**Predation**
+- **Cyclopoids** (Plaßmann et al. 1997, J. Plankton Res. 19:1069) [abstract]: *Cyclops vicinus* ate up to 37 *Synchaeta* per predator per day at ~1,200 /L. It selects *Synchaeta*; *Keratella* and *Polyarthra* were not selected.
+- **Protozoa in eutrophic Oglethorpe** (Pace & Orcutt 1981, L&O 26:822) [abstract]: protozoa were 15–62 % of zooplankton biomass in July–October.
+
+### Q4. The microbial loop
+- **Bacterial biomass.**
+  - Abundance: log10 cells/mL = 5.867 + 0.776·log10 chl (r² 0.88) (Bird & Kalff 1984, [doi:10.1139/f84-118](https://doi.org/10.1139/f84-118)) [abstract]. At chl 3–5 µg/L that gives 1.7–2.6×10⁶ cells/mL [inf].
+  - Carbon per cell: 33.1 fg (Tulonen 1993) [abstract]. So **≈57–85 µg C/L** [inf].
+- **Bacterial production (BP).**
+  - Mesohumic Lake Pääjärvi (Tulonen 1993, Microb. Ecol. 26:201, [doi:10.1007/BF00176953](https://doi.org/10.1007/BF00176953)) [abstract]:
+    - **1.8–13.2 µg C/L/d** in the growing season and 0.2–2.9 in winter;
+    - 19–33 % of primary production, which it tracked;
+    - turnover ≈0.03–0.2 /d [inf].
+  - Across systems (Cole et al. 1988) [abstract]: BP is 0.4–150 µg C/L/d, a mean 20 % of primary production.
+  - Upton Lake, NY (Pace, McManus & Findlay 1990) [abstract]:
+    - bacterial turnover 1.5–16 d;
+    - flagellates are the main bacterivores in winter and autumn, and Daphnia take most BP otherwise;
+    - ciliates and rotifers were never important.
+- **Growth efficiency and DOC.**
+  - Ten oligotrophic lakes, clear to polyhumic (Tranvik 1988) [abstract]: **9.5 % of DOC bioavailable; bacterial growth efficiency (BGE) 26 %**.
+  - del Giorgio & Cole 1998 [abstract]: BGE runs <0.05 to 0.6 across systems, ~0.01 in the most oligotrophic.
+- **Allochthony.**
+  - Hessen 1992 [abstract]: terrestrial C ≈90 % of bacterial demand in a humic lake.
+  - Kritzberg et al. 2004 [abstract]: in small forested lakes, bacterial biomass is 35–70 % allochthonous, though recent algal DOC supports 30–65 % of BP.
+  - Hessen, Andersen & Lyche 1990 [abstract]: detritus supplies 46–82 % of zooplankton body carbon.
+- **HNF and ciliates.**
+  - 108 water bodies (Berninger et al. 1991) [abstract]:
+    - HNF 3×10²–4×10⁶ /mL;
+    - HNF growth 0.01–0.02 /h, i.e. 0.24–0.48 /d [inf];
+    - HNF can consume all of BP.
+  - Simoncouche under ice [primary]: HNF 27–218 µg C/L, which is high against typical values [inf].
+  - Mesotrophic lakes (Auer et al. 2004) [abstract]: protozoa ≈24 % of zooplankton biomass, up to 60 % in spring; ciliates are 62–80 % of the protozoa.
+- **Who eats the bacteria.**
+  - Eutrophic Oglethorpe (Sanders et al. 1989) [abstract]:
+    - HNF did 49–81 % of the bacterivory;
+    - rotifers averaged 3 % (up to 25 %), ciliates 11 %, cladocerans <1 %;
+    - total grazing equalled 11–162 % of BP.
+  - Vaqué & Pace 1992 [abstract]: *Bosmina* grazed 0.18–35×10⁶ bacteria/L/h, comparable to *D. pulex* (0.34–30×10⁶) and to the flagellates (0.1–20×10⁶).
+  - Polyhumic lake (Kankaala 1988) [abstract]: *D. longispina* cleared bacteria at 26–92 % of its rate on algae, and algae were 56–93 % of what it ate in June–August.
+  - Carrick et al. 1991 [abstract]: the flux from HNF to macrozooplankton was 0.2–6.0 µg C/L/d.
+- **Model formulations:** no parameter table was reached (Fasham 1990, PCLake). This remains a gap.
+
+### What §6 changes in §1–3 [inf]
+- **Rotifer target.** Summer 2–10 µg DW/L at 50–200 ind/L, not 10–25 µg/L; §1 and §3 point 1 are edited. Under ice ~1–3 µg/L, with a peak at ice-out.
+- **Interference (point 1b′).** It acts through Daphnia above 1.2 mm only. With planktivores keeping Daphnia small in summer, it should be ~0 then.
+- **Rotifer food (point 1a).** The microbial share is now sourced: 10–40 % of rotifer food is bacteria, HNF and small ciliates (Arndt 1993). *Keratella*, *Kellicottia* and *Conochilus* are microphagous; *Polyarthra* and *Synchaeta* need larger algae (and ciliates for *Synchaeta*).
+- **Thresholds and rates.** Small-rotifer threshold **~0.02–0.03 mg C/L at 20 °C**, which is *below* Daphnia's (0.04–0.06 C\* in CDC). rmax ~0.28 /d at 20 °C. The sim's rotifer K_R should give a zero-growth food *at or below* Daphnia's, not above it as now (0.05 vs 0.034 units).
+- **Predation (point 1c).** Cyclopoids select *Synchaeta*, not *Keratella* or *Polyarthra*, so the generic `M2_R` overstates the loss of the small taxa. Use a saturating (type II) loss that feeds the copepods.
+- **A minimal bacteria pool**, if built:
+  - biomass ≈ **35–85 µg C/L**;
+  - BP ≈ **2–13 µg C/L/d** in summer and 0.2–3 in winter (≈20–30 % of primary production, plus terrestrial DOC);
+  - BGE ≈ 0.25;
+  - ~10 % of DOC labile.
+
+  It would be grazed by HNF (0.24–0.48 /d, taking most of BP), by rotifers (≤10–40 % of their diet) and by *Bosmina* and Daphnia. A simpler version: let the existing MICROBE DOM decomposition supply a "microbial food" term to rotifers and the small cladocerans at ~0.25 × 0.3 of the C decomposed (BGE × one transfer to HNF) [inf].
+- **Fry feeding (point 5).** Because rotifers are tiny (~0.03 µg), the larvae's needs must be counted in prey numbers or with a per-class K. Point 5 is edited.
+
+### Gaps that remain from sub-search A
+- Rotifer individual masses (Dumont 1975; Bottrell 1976; Ejsmont-Karabin 1998).
+- Mirror Lake's seasonal rotifer biomass.
+- The per-species threshold and rmax table of Stemberger & Gilbert 1985.
+- The units of Burns & Gilbert's Y.
+- *Asplanchna* and cyclopoid feeding rates on *Keratella* and *Polyarthra*.
+- Ciliate µg C/L in oligo-humic lakes.
+- Monthly rotifer series for Maine, NH and Adirondack lakes.
+- Bacteria parameters from Fasham, PCLake or ERSEM.
+- Jansson's DOC threshold, where BP overtakes primary production.
+
+### Access (sub-search A)
+- **Read in full:**
+  - Boulianne 2025 and Karpowicz 2023, through Europe PMC's REST full text. pmc.ncbi.nlm.nih.gov had served a browser check, which was not bypassed.
+  - Rosińska 2019's Table 1.
+  - Wærvågen & Andersen 2017 (J. Limnol. HTML).
+  - Ramos-Rodríguez 2020 (JEB).
+- **Abstract-only:** the rest, via OpenAlex or Europe PMC by DOI, OUP and NIES records.
+- **Blocked, none bypassed:**
+  - HTTP 403: Wiley (Burns & Gilbert 1986; Makarewicz & Likens), SUNY SOAR.
+  - HTTP 429: int-res.
+  - Springer: auth redirect, not followed.
+  - journals.bsu.by: redirect loop.
+  - NIES: two records refused.
+- **Cached PDFs:** two PDFs were cached automatically by the fetch tool, outside the repo (`~/.claude/projects/.../tool-results/`); they were not opened or used.
+- **No email was given** to any service. No prompt-injection text was encountered.
