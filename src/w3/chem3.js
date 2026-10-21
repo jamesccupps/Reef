@@ -71,8 +71,10 @@ export const CHEM3 = {
   // COLOURED WATER (step 4b): the dissolved colour of a spruce–fir and wetland catchment (30–60 SPU) sets most of the light's
   // attenuation (/m, added to the algae's and the stirred sediment's) — Secchi ~3 m, where the 2-D sim's water read 6–9 m
   // (Maine report: colour, not phytoplankton, dominates a Hot Brook basin's light; stained Kd·SD ≈ 2.4–2.7 — Koenings &
-  // Edmundson 1991)
-  KD_COLOUR: 0.5,
+  // Edmundson 1991). 0.4 (the review's phase 0, docs/review/PLAN.md item 3): 0.5 read Secchi 2.9–3.4 m, where the region's
+  // shallow lakes read 3.5–4.5 (Baskahegan Lake, the same drainage: 3.7–4.7 m at colour 46 SPU) and the human finds the water
+  // clearer than the sim's; 0.4 reads ~3.8 m in the second August (0.35: 4.2 m, the weeds' stands then over 51 % of the bed)
+  KD_COLOUR: 0.4,
   // CATCHMENT ORGANIC MATTER — a brown lake's subsidy to its bed: ALLOCH g wet per m² of bed a year, half settling evenly (the
   // inflow's and the runoff's particles, the wetland margins' detritus), half the autumn leaf fall (LEAF_YF), concentrated
   // near the shore (e-folding LEAF_R m, world). In coloured lakes terrestrial carbon is often half or more of what the bed's
