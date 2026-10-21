@@ -12,3 +12,6 @@ exports/
 
 # sources the human fetched (PDFs/scans: large, some copyrighted) — the notes made from them are committed, not the files
 docs/research_notes/fetched/
+
+# tools/remote/run.mjs: the last copy to each remote host
+.remote/

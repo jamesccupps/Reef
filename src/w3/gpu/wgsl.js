@@ -1867,6 +1867,10 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
       if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; }
       let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * yCov(k, cc); if (E > best) { best = E; bj = i32(jj); } }
     if (bj >= 0) { let cc = u32(sti(O_wColOfCell + u32(bj))); if (cc != c) { tx = colX(cc) + (yrnd(q, 62u, 0u) - 0.5) * 30.0 * GSCALE; ty = colY(cc) + (yrnd(q, 62u, 1u) - 0.5) * 30.0 * GSCALE; } tz = stf(O_wZMid + u32(bj));  if (spv(k, S_yCover) > 0.0 && U.plants != 0u && wd(W_canopy + cc) > 0.1) { tz = max(0.05, max(tz, stf(O_wDepthMean + cc) - 0.5 * wd(W_canopy + cc))); } }   // (fish3: a cover keeper's young hold in the weeds)
+    else if (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T) {   // (fish3: S3 yBed — off its shelf with nothing about, to the shallowest column about it)
+      var sc = c; for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); if (stf(O_wDepthMean + cc) < stf(O_wDepthMean + sc)) { sc = cc; } }
+      if (sc != c) { tx = colX(sc); ty = colY(sc); } else { tx = x; ty = y; }
+    }
     else { tx = x + (yrnd(q, 62u, 2u) - 0.5) * 60.0 * GSCALE; ty = y + (yrnd(q, 62u, 3u) - 0.5) * 60.0 * GSCALE; }
   }
   if (spv(k, S_brookRes) > 0.5 && bodyAt(tx, ty) != BROOK) { let p = bp(u32(nearestBP(tx, ty))); tx = p.x; ty = p.y; }

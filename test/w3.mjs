@@ -11,6 +11,9 @@ const f1 = v => v.toFixed(1), f2 = v => v.toFixed(2);
 // W3_ONLY=foodweb,plants runs only those sections (env chem core young forage foodweb plants; the geometry always) — for
 // iterating on one; the gate runs them all
 const ONLY = (process.env.W3_ONLY || '').split(',').filter(Boolean), run = k => !ONLY.length || ONLY.includes(k);
+// W3_PERF_MUL scales the timing budgets (default 1: this desktop's). Another machine's speed is its own — occ-server, ~15 % slower per
+// core on the water's update, runs the gate with W3_PERF_MUL=1.3 (tools/remote/run.mjs); the strict verdict on speed is the desktop's
+const PERF_MUL = +(process.env.W3_PERF_MUL || 1);
 // TIME (stage R2): sim time is REAL seconds (src/w3/clock3.js). The gate runs the COARSE rung (stage R3): a fish step is a
 // block of FB s (one decision, then the fish goes where its drives and brain point), a water step EW s — the 1-hour year's
 // calendar resolution of feeding and the water (docs/W3_REALTIME_AUDIT.md §6.3); OLD is the 1-hour year's real seconds per sim second, for the checks
@@ -219,7 +222,7 @@ if (run('env')) {
     let ms = Infinity; for (let r = 0; r < 3; r++) { const t0 = performance.now(); for (let i = 0; i < 50; i++) f.step(FB / 2); ms = Math.min(ms, (performance.now() - t0) / 50); }   // (the best of three rounds: the code's cost, not the machine's moment — it swings ±1 ms over a session)
     // (TRUE SCALE: the same ~15,000 water cells at real lengths need more transport sub-steps and the brook its own stretches;
     // at 1× the water updates once a simulated minute, and in fast-forward ~20 ms a 15-min update is ~2 s a simulated day)
-    check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < (WORLD_TRUE ? 20 : 12), `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
+    check('one environment update (temperature, ice, transport of its fields) costs a few milliseconds', ms < (WORLD_TRUE ? 20 : 12) * PERF_MUL, `${ms.toFixed(2)} ms per update with ${f.fields.length} fields`); }
 }
 
 // ============================================================
@@ -283,7 +286,7 @@ if (run('chem')) {
     check('the lakes keep their P over a year with a realistic retention (the bed keeps ~half to three-quarters of the inflow\'s load: Larsen–Mercier 0.66–0.72)', ret > 0.5 && ret < 0.9 && keep > 0.7 && keep < 1.3,
       `retention ${ret.toFixed(2)}, inventory ${yr.map(v => (100 * v[1]).toFixed(0)).join(' / ')} % of the start (seeds 403/404/405: the median ${(100 * keep).toFixed(0)} %); a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
   { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(FB / 2); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 40;
-    check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16, `${ms.toFixed(1)} ms`); }
+    check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16 * PERF_MUL, `${ms.toFixed(1)} ms`); }
 }
 
 // ============================================================
@@ -435,7 +438,7 @@ if (run('core')) {
     // (the fine rung — watching in real time: ten 0.1-s steps after the warm month)
     for (let i = 0; i < 5; i++) F.step(0.1); const t1 = performance.now(); for (let i = 0; i < 20; i++) F.step(0.1); const msF = (performance.now() - t1) / 20;
     check('the fish\'s cost: a coarse 29-min block (~3,300 agents: one decision each, the relocation, feeding, bioenergetics) ≤ 45 ms — the 1-hour year\'s two steps; a real-time 0.1-s step (senses, brains at 5 Hz, swimming) ≤ 8 µs an agent (25 ms at ~3,300: per agent, so a month that leaves more fish alive does not fail it — 2026-10-19: with per-capita algae the lakes held ~5 % more after the month at the same 7.6 µs)',
-      ms < 45 && msF / F.fish.length * 1000 < 8, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms (${(msF / F.fish.length * 1000).toFixed(2)} µs an agent, ${F.fish.length} agents)`); }
+      ms < 45 * PERF_MUL && msF / F.fish.length * 1000 < 8 * PERF_MUL, `block ${ms.toFixed(1)} ms (${(ms / F.fish.length * 1000).toFixed(1)} µs an agent); 0.1-s step ${msF.toFixed(1)} ms (${(msF / F.fish.length * 1000).toFixed(2)} µs an agent, ${F.fish.length} agents)`); }
   // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): with a focus the near fish live second by second, the far ones in banked blocks
   // (scheduled, each FAR_BLOCK s); over two minutes every fish's lived time keeps up with the clock within a block, the near ones
   // swim, none goes astray; the season's young the same (part 3)

@@ -533,8 +533,11 @@ export function stageR5(on = true) {
   // (after arm T) THE PERCHES' YOUNG IN THE PREDATORS' WATER: young white perch by day in the shallows, 0.5–2.5 m (Cooper's day seines;
   // Missisquoi Bay's September seines; research white_perch_habitat_and_predation.md), young yellow perch on the littoral bottom from
   // August (Irwin et al. 2009) — the schools had followed the best zooplankton offshore, where of 124–209 M young white perch hatched a
-  // year ~20 % were eaten, 13–18 M each by yellow and white perch and 0.1–0.5 M by bass or pickerel, which starved beside them
-  S3.whiteperch.yBed = on ? 2.5 : 0; S3.perch.yBed = on ? 2.5 : 0;
+  // year ~20 % were eaten, 13–18 M each by yellow and white perch and 0.1–0.5 M by bass or pickerel, which starved beside them.
+  // TRIED AND TAKEN OUT (arm U, yBed 2.5 m for both, seed 613, 3 years): bass and pickerel took only ~35 % more of the young
+  // perches (0.73–0.74 M), the small fish and the perches themselves took the rest, more young white perch grew and recruited —
+  // white perch 41.5 / 51.4 / 59.6 kg/ha against arm T's 37.2 / 43.3 / 46.4, bass 0.6 against 1.5, pickerel 0.8 against 1.6
+  S3.whiteperch.yBed = 0; S3.perch.yBed = 0;
   // (item 13) the sunfishes seek cover by day — the small fully, the larger at 0.4 — and hold low in it (h 0.3 m above the bed:
   // within most canopies; the weeds protect only the fish within their height)
   S3.sunfish.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined; S3.redbreast.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined;
@@ -2453,6 +2456,10 @@ export class Fish3 {
     if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 30 * GEO.SCALE; q.ty = G.cy[cc] + (rand() - 0.5) * 30 * GEO.SCALE; } q.tz = G.zMid[bj];
       if (yc > 0 && pl && pl._canopy[cc] > 0.1) q.tz = Math.max(0.05, Math.max(q.tz, G.depthMean[cc] - 0.5 * pl._canopy[cc]));   // (a cover keeper's young hold IN the weeds — pickerel fry cling to the stems, the fingerlings live in them)
       return; }
+    // (S3 yBed: off its shelf with no shelf water about — back toward the shore, to the shallowest column about it. The wander below
+    // ignored the shelf: only ~2 % of the 50-m columns average ≤ 0.5 m, so a killifish school beside none of them wandered out over
+    // 2–3 m and never found its way back — killi.mjs, 1/10 CPU: the young's bed 1.7–2.8 m all summer, against yBed 0.5)
+    if (yB > 0) { let sc = c; for (let k = 0; k < nb.length; k++) if (G.depthMean[nb[k]] < G.depthMean[sc]) sc = nb[k]; if (sc !== c) { q.tx = G.cx[sc]; q.ty = G.cy[sc]; } else { q.tx = q.x; q.ty = q.y; } return; }
     q.tx = q.x + (rand() - 0.5) * 60 * GEO.SCALE; q.ty = q.y + (rand() - 0.5) * 60 * GEO.SCALE;   // nothing about: wander
   }
   // a school's feeding over st at T (world.js _feedFry): young piscivores on other young, zooplankton of their size (type II in
