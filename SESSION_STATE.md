@@ -192,7 +192,19 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~10:35 a.m. — the newest): THE REALISM PHASE. The human: "make it realistic and provide everything the
+▶▶▶ RESUME HERE (2026-10-21 ~1:45 p.m. — the newest): ARM X RUNNING (queue_r16.sh, snapshot y :8137 = the working tree after
+3215c3e + R2b + REST_ALL + pGates, 613/611/612 × 3 yrs → r16X_<seed>.txt, ~60–90 min each from ~1:45). Full gate on occ-server running
+(occ_gate_r2b.txt) — COMMIT R2b + REST_ALL when it is green (uncommitted now: littoral3 SM_L/sm, fish3 SMALL_S/reproA/REST_ALL/pGates,
+GPU gpufish TSM/TSMW/R_SM, wgsl smallS/reproA/sated, layout reproA). g1_check ?r5=1 passed on this tree (young's food 70/67, kills 37/39).
+ARM W READ (r15W_613 only; 611/612 stopped: superseded): R1 fed the predators (pickerel summer p 0.37–0.41, bass K held 0.94–0.99; white
+perch 31 → 22 kg/ha — no longer at the cap) but bass p 0.55–0.65 grew to 66 cm at 8+ and pickerel 60 cm by 5 / 85 at 8+ (Maine: ~43 at 5,
+Linf 65); bass 11 → 16 kg/ha, yellow perch 17 → 6, sunfishes and killifish gone, total 88 → 60. Hence REST_ALL (a sated fish forages for
+nothing) and pGates calibrated to growth (bass 0.35, pickerel 0.3 — p is what an FB4 fit sets from growth). R2a COMMITTED (3215c3e): the
+young by what pays (YSHARE), larval Cmax per species, R_WMIN for steep sets, K_FRY 60 — 1/10 A/B: Daphnia summer 48–409 vs 0–2, autumn
+10–64 vs ~0; young autumn lengths in field ranges. R2b (uncommitted): small fish (≤ 7.5 cm, none ≥ 15) eat the weeds' small fauna;
+batch spawners' reproA 0.8. 1/10: killifish rations 0.5–0.6 now but adults still eaten out by day ~60 (the 1/10 strip is 10× narrower).
+READ ARM X: length at age (bass ≤ ~50 cm, pickerel ~43 at 5), p (0.30–0.42), killifish/sunfish persistence, zooplankton, white perch.
+▶▶▶ RESUME HERE (2026-10-21 ~10:35 a.m.): THE REALISM PHASE. The human: "make it realistic and provide everything the
 environment has" — fix by restoring field values + building missing environment, never by tuning (memory realism-over-compensation).
 The COMPENSATION AUDIT is done (docs/review/audit_{predation,habitat_young,physiology,foodweb_environment}.md) and merged into
 docs/review/REALISM_PLAN.md (R0 measure · R1 predation rule · R1b mortality/reproduction · R2 the young + zooplankton · R3 substrate

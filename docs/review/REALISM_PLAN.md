@@ -236,6 +236,17 @@ PLAN items 35, 38 and the foodweb list.
 **Retires:** dace plankton off, fallfish Lpisc 30's role, bass insR 2, the fallfish hybrid set (one coherent set), killifish on the
 fathead set (try its congener's at ACT 1 once its food exists).
 
+## Progress
+
+- **R1 (f7ca62a):** the predation rule undone — COVER_ONCE, SIZE_RENORM, EH_AMAX, bass aMax 12, act diel, pickerel gated, ENC_DZ off,
+  REST_DIGEST. Arm W (613, 3 yrs): predators fed (pickerel summer p 0.37–0.41), white perch off the cap (31 → 22 kg/ha) — but bass p
+  0.55–0.65 grew to 66 cm, pickerel to 60 cm by 5; prey (yellow perch, sunfishes, bullheads, killifish) fell. Follow-up (with R2b):
+  REST_ALL (a sated fish forages for nothing) and pGates from growth (bass 0.35, pickerel 0.3).
+- **R2a (3215c3e):** the young by what pays (YSHARE), per-species larval Cmax, R_WMIN for steep sets only, K_FRY 60, no adult ×0.7 on
+  the sunfishes' larvae. 1/10 A/B: summer Daphnia 48–409 µg/L against 0–2; autumn 10–64 against ~0; young's autumn lengths in range.
+- **R2b:** small fish reach the weeds' small fauna (SMALL_S, SM_L 7.5–15 cm); batch spawners' gonads 0.8 of surplus (reproA).
+- **Arm X** (R1 + follow-up + R2a + R2b; 613/611/612 × 3 yrs) running.
+
 ## How PLAN.md's open items map here
 
 | PLAN item | Goes to |
