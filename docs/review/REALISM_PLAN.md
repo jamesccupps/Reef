@@ -299,8 +299,15 @@ fathead set (try its congener's at ACT 1 once its food exists).
   - **Known, parked:** the bass's cold respiration switches from the empirical curve to the Rice set between 15 and 18 °C — a
     ~5× step that grows young bass faster at 15 °C than at 18; the yellow perch's first-winter loss ~13 % against the field's
     40–50 % (Z 0.001/d against ~0.004).
-  - Still to do in R4·6: the young's school dilution for bass (the followed rule's n^−0.8), a shared strike budget between the two
-    routes (now each route has its own ceiling), the young piscivores' schools (still the percid clearance with its window).
+  - **YSCHOOL (b0f986c):** the young met in their schools by the followed fish's school terms (esocid n^schoolExp, bass n^BASS_SCH,
+    other 0.15; school = S3 school / group[1] / 1). Arm AA (without it) ate the young out (perch Z 0.05–0.16/d eaten); arm AB (with it,
+    seed 611 yr 1): perch Z 0.009–0.034 all told (Oneida ~0.035), white perch 0.016–0.046 (field 0.03–0.08), bass eaten 0.045–0.09
+    (DeAngelis's curve; field 1–4 % egg → autumn). Still off: young pickerel eaten 0.17–0.23/d as larvae by adult perch and white perch
+    (field ~0.04–0.07/d through the larval stage, 0.01–0.015 after; esocid_first_year_survival.md) — their nursery's dense shallow
+    vegetation is weaker in the sim (cover 0.4–0.7); adult bass ate 1.5 M young bass (field stomachs ~none) — the young smallmouth's
+    stony refuge waits on R3's substrate map; young pumpkinseed's background deaths 0.016–0.037/d against Beard 1982's 0.001–0.022.
+  - Still to do in R4·6: a shared strike budget between the two routes (now each route has its own ceiling), the young piscivores'
+    schools (still the percid clearance with its window).
 
 ## How PLAN.md's open items map here
 

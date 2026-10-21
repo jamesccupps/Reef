@@ -57,6 +57,13 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
 - **Why it matters.** An individual-based model that represents the young as super-individuals must give them the same predator
   physics as the individuals; otherwise the predation shifts to whichever representation is easier to find, and the diet tables
   still look plausible.
+- **…and the whole physics, schooling included (arms AA, AB).** With the encounter volume, the capture success and the reaction
+  distance shared but the young met as evenly spread fish, a true-scale year (arm AA, seed 611) ate young yellow perch at Z 0.05–0.16/d
+  by July (25 M → 2 k by August), against Oneida's ~0.035/d all told. A followed school is met as n^0.65 fish by an esocid, confuses a
+  bass (× n^−0.6) and cuts a perch-like predator's capture to 0.15; given the same terms by their species' school size (F3.YSCHOOL),
+  the young perch died at 0.009–0.034/d all told (2.1 M at 6.3 cm in late September), white perch at 0.016–0.046 (field larvae
+  0.03–0.08), and young bass at 0.045–0.09 eaten — inside DeAngelis et al.'s young-smallmouth curve and the field's 1–4 % from egg to
+  autumn. Each shared piece alone moved predation the wrong way; only the complete rule landed in the field's range.
 
 ## 2026-10-21 — Compensations stack: every fix for a missing mechanism outlives it (docs/review/audit_*.md, REALISM_PLAN.md)
 - **What.** Probes of the strike rule's terms (1/10 and true-scale CPU) found pickerel killing ~0.06 fish a day over the GPU year
