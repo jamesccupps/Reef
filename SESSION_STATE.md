@@ -192,7 +192,22 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~2:50 p.m. EDT — the newest). R4·6 SECOND PART COMMITTED (e395ab3): F3.YWIN_CS (a followed piscivore
+▶▶▶ RESUME HERE (2026-10-21 ~3:30 p.m. EDT — the newest). c08b186: (1) csOf/rdOf moved into WGSL's FB4 section — e395ab3 had them
+in the YOY module only, so k_strike failed to compile on the GPU (g1_check caught it; the CPU gate can't); (2) g_sort's insertion sort
+→ Shell sort (identical order): it hung the GPU (DXGI_ERROR_DEVICE_HUNG) at block 53592 in arms X AND Y — crowded wintering cells +
+year-4 recruits; (3) g1_check builds the CPU's young table and settles it (young eaten now compared: 137/137). g1_check ?r5=1 on
+c08b186: all agree (pre/learn/senses/move/body), kills 39/39, young 137/137.
+RUNNING: ARM Z on the GPU — queue_r18.sh, snapshot aa :8139 = c08b186, 613/611/612 × 3 yrs → r18Z_<seed>.txt (~60–80 min each from
+3:10 p.m.). The gate for e395ab3 on occ-server → occ_gate_ywin.txt. TWO RESEARCH AGENTS: (a) esocid_larval_energetics.md (Predator
+winter energetics/), (b) larval_juvenile_energetics_panfish.md (Real lake ecology for calibration/) — the young's FB4 sets at larval
+size: pickerel can't grow (0.05–0.1 mm/d at full ration < 15 °C); white perch/pumpkinseed/redbreast young end autumn at 4.4–5.5 /
+2.7–3.0 / 2.1–2.9 cm, under WINTER0's survival sizes (white perch all < 53 mm die) → NO white perch recruitment after the founding
+year in arms X and Y (year-2 cohort 111M larvae → 0 by May at 4.8 cm, all starved by the winter ramp). Decide the larval sets from
+the research (measured Cmax/metabolism/field growth), not by fitting. scratchpad yz.mjs <arm.txt> [species] [d0] [d1]: the young's Z
+by cause per fortnight (R0).
+ARM Y READ (613; 611/612 stopped): total 92→79→62; white perch 25→18→11; perch 23→12; pickerel 2.7→1.0; sunfishes/killifish gone;
+bass ~10 but recruits eaten (35,655→1,736), only 58-cm 8+ left.
+▶▶▶ RESUME HERE (2026-10-21 ~2:50 p.m. EDT). R4·6 SECOND PART COMMITTED (e395ab3): F3.YWIN_CS (a followed piscivore
 on its encounter volume catches the young with the strike rule's capture success × larval detectability, its attacks against the
 strike ceiling h = 1/aMax) + F3.RD_SIZE (every prey, young or followed, seen at its own reaction distance — visual model R²e^(cR) ∝ L²,
 c 1.7 /m, strikeR at 6-cm prey; rdOf/csOf shared by _strike2/_yReq, GPU k_strike/yBin2/yVolA vec4f). Strike section 19/19 locally;
