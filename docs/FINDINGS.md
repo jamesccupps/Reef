@@ -19,6 +19,16 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
 - **Why it matters.** Bioenergetics sets are fitted over a size range; extrapolated to larvae — four orders of magnitude lighter —
   they can fail silently, and the failure surfaces years later as a missing species, read as predation or habitat.
 
+## 2026-10-21 — The ecology broke the engine: fish crowding into wintering water hung the GPU (c08b186)
+- **What.** Two true-scale three-year runs (arms X and Y, seed 613) lost the GPU at the same block (53592, the fourth spring's
+  recruitment) with DXGI_ERROR_DEVICE_HUNG. The spatial grid put each cell's agents in index order with an insertion sort, one GPU
+  thread a cell, written for cells that "hold a few"; by the fourth winter the deep basin's wintering cells held ~1,400 agents (from
+  ~250–700 in earlier winters), and each young school's recruits are placed within 0.6 m of it — one thread's n² work passed the
+  operating system's 2-second watchdog. A Shell sort gives the identical order at ~n^1.25.
+- **Why it matters.** An agent model's data structures carry assumptions about the ecology (fish spread out); the emergent
+  behaviour (aggregation at wintering sites, as real fish do) can violate them years into a run, deterministically, with a symptom
+  (a driver reset) that reads as hardware.
+
 ## 2026-10-21 — Two rules for one fish, again: the young-of-year were 1,700× harder to find and caught by another window (R4·6)
 - **What.** A followed piscivore met the young-of-year schools through the percid cannibals' DAILY clearance (~15 m³/day for a 45-cm
   pickerel) and the followed fish through its in-bout encounter volume (π·RD²·(U + v) × the time it hunts: ~27,000 m³/day), and it

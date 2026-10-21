@@ -251,14 +251,26 @@ fathead set (try its congener's at ACT 1 once its food exists).
   sunfishes and killifish ~0. (The GPU driver reset at day 1092; 611/612 superseded.)
 - **The cold rules on a relative appetite + R1b white perch (1b5baa5):** FB4's Eq. 4 curve (the pickerel's) peaks at 8.3, so the
   cold rules divide by its peak (consumptionTrel: 0.12 at 2 °C, not 1.0); white perch mOther 1, M 0.54, maxAge 10, a harsher first
-  winter (WINTER0 [1.1, 0.95]), the adults' size slope off (MOTHER_FLAT). **Arm Y** (to here; 613/611/612 × 3 yrs) running.
+  winter (WINTER0 [1.1, 0.95]), the adults' size slope off (MOTHER_FLAT). **Arm Y** (to here; seed 613, 3 yrs; 611/612 stopped,
+  superseded by arm Z): total 92 → 79 → 62 kg/ha; white perch 25 → 18 → 11 (below the field's 15–35), yellow perch 23 → 12,
+  bullheads 7.6 → 3.7, pickerel 2.7 → 1.0 (no year-classes: the larvae's energy budget, FINDINGS), pumpkinseed, redbreast and
+  killifish gone, bass ~10 — their age-1 recruits eaten in their first summer (35,655 → 1,736) and only 58-cm fish of 8+ left
+  (Maine Linf ~50). The GPU hung at the year-4 recruitment (as arm X): the grid's insertion sort, fixed in c08b186.
 - **R4·6, one rule for the young and the followed fish:**
   - **YENC (8b82143):** the young met through the predator's own encounter volume, not the percid cannibals' daily clearance
     (~1/1,700 of it). Six weeks at 1/10: pickerel and bass eat 0.91 kg of young against 0.12.
   - **YWIN_CS + RD_SIZE (e395ab3):** on that volume, the young are caught with the strike rule's capture success (not the
     perch-cannibal window: a 2.5-cm young pumpkinseed weighed 0.001 against 0.21 as an agent), their attacks count against the
     strike ceiling, and every prey — young or followed — is seen at its own reaction distance (the visual model R²·e^(cR) ∝ L², c
-    1.7 /m). Six weeks at 1/10: 1.08 kg against 0.11. A 1/10 screen (3 seeds) and the gate on occ-server running.
+    1.7 /m). Six weeks at 1/10: 1.08 kg against 0.11. A 1/10 screen (3 seeds, 140 days): pickerel eat 2.1–2.9× the young,
+    bass 2.3–3.1×, their kills of followed fish and p unchanged. The GPU's copy (c08b186) checked in g1_check (young eaten 137/137).
+    **Arm Z** (c08b186 = arm Y + YENC + YWIN_CS + RD_SIZE; 613/611/612 × 3 yrs) running.
+  - **The pickerel's first year (found in arm Y):** the young run on the adult FB4 pike set, on which a full ration grows a 0.9-cm
+    larva 0.05–0.10 mm/d below 15 °C — no year-classes. Research on larval esocid energetics running; then a sourced juvenile
+    set, then S3.pike.yCover restored (switched off when the young pickerel in the weeds recruited less — they couldn't grow).
+  - **Known, parked:** the bass's cold respiration switches from the empirical curve to the Rice set between 15 and 18 °C — a
+    ~5× step that grows young bass faster at 15 °C than at 18; the yellow perch's first-winter loss ~13 % against the field's
+    40–50 % (Z 0.001/d against ~0.004).
   - Still to do in R4·6: the young's school dilution for bass (the followed rule's n^−0.8), a shared strike budget between the two
     routes (now each route has its own ceiling), the young piscivores' schools (still the percid clearance with its window).
 
