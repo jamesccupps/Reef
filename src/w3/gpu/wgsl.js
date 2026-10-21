@@ -1517,7 +1517,11 @@ fn yBin2(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32
   let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = ybK(b); var w = 0.0; var wL = 0.0; var att = 0.0;
   var acc = 1.0; if (F3_YDEPTH > 0.5) { let dm = 0.5 * F3_SHALLOW_K * L; acc = clamp((rdAcc(AC_BSB + 2u * b, BSC) / av - dm) / dm, 0.0, 1.0); if (!(acc > 0.0)) { return vec2f(0.0); } }   // (F3.YDEPTH: the shallows' rule)
   if (pisc && rdAcc(AC_BSD + 2u * b, BSC) / av <= gape && r >= FRY_WIN_MIN && r <= preyLR) {
-    if (F3_YWIN_CS > 0.5 && rd0 > 0.0 && aP > 0.0) { att = clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); if (F3_RD_SIZE > 0.5) { let rq = rdOf(rd0, Lq) / rd0; att *= rq * rq; } w = att * csOf(kq, u32(spv(kp, S_predCls)), r); }   // (F3.YWIN_CS: kp the predator's species; its attacks at their reaction distance)
+    if (F3_YWIN_CS > 0.5 && rd0 > 0.0 && aP > 0.0) { att = clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); if (F3_RD_SIZE > 0.5) { let rq = rdOf(rd0, Lq) / rd0; att *= rq * rq; }
+      let cls = u32(spv(kp, S_predCls)); var nbY = 1.0; if (F3_YSCHOOL > 0.5) { nbY = max(1.0, select(spv(kq, S_group1), spv(kq, S_school), spv(kq, S_school) > 0.0)); }   // (F3.YSCHOOL: met in its schools)
+      if (nbY > 1.0 && cls == 0u) { att *= pow(nbY, spv(kp, S_schExp)) / nbY; }
+      var sch = 1.0; if (nbY > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nbY, F3_BASS_SCH), cls == 1u); }
+      w = att * csOf(kq, cls, r) * sch; }   // (F3.YWIN_CS: kp the predator's species; its attacks at their reaction distance)
     else { let R = 1.0 / r; let u = R / FRY_WIN_R * exp(1.0 - R / FRY_WIN_R); w = pow(u, FRY_WIN_E) * spv(kq, S_vuln); }
   }
   if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { wL = FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); }

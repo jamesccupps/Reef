@@ -1000,19 +1000,24 @@ if (run('strike')) {
     // perch cannibal's window × the 2-D vulnerability, ~0.12 and ~0.001; F3.RD_SIZE: with its reaction distance to 6-cm prey 1.2 m,
     // the 2.5-cm young are seen at the visual model's R²·e^(cR) ∝ L² — checked against a bisection — ~0.4 of the volume)
     { const { FRY } = await import('../src/config.js'), NB = fm.KEYS3.length * FRY.NS;
-      const wOf = (on, k, Lq, rd0 = 0) => { fm.stageR5(true); fm.F3.YWIN_CS = on;
+      const wOf = (on, k, Lq, rd0 = 0, sch = 0) => { fm.stageR5(true); fm.F3.YWIN_CS = on; fm.F3.YSCHOOL = sch;   // (F3.YSCHOOL off: against a solitary agent)
         const z = () => new Float64Array(NB), T = { vol: [1000], av: z(), sL: z(), sW: z(), sD: z(), req: z(), reqY: z(), rec: [] }, j = fm.KEYS3.indexOf(k) * FRY.NS + Math.floor(Math.log2(Lq / 0.5));
         T.av[j] = 100; T.sL[j] = 100 * Lq; T.sW[j] = 100 * 0.01 * Lq ** 3; T.sD[j] = 100 * 0.25 * Lq;
         const me = { _yt: T }; fm.Fish3.prototype._yReq.call(me, { s: fm.S3.pike }, null, 0, 1, 40, 10, 1e9, 1, 1e9, true, false, 1, 0.5, 1, rd0);
         return me._yA[j] * T.vol[0] / T.av[j]; };   // (encV 1 m³/s: the bin's weight is aD·V/av)
       const csAt = (k, r) => { const b = fm.S3[k]; return Math.min(fm.F3.CS_MAX, b.cs[0] * (1 - r / b.ppr0) / (1 - b.pprM[0] / b.ppr0)); };
-      const pOn = wOf(1, 'perch', 4), pOff = wOf(0, 'perch', 4), sOn = wOf(1, 'sunfish', 2.5), sOff = wOf(0, 'sunfish', 2.5), sRD = wOf(1, 'sunfish', 2.5, 1.2); fm.stageR5(true);
+      const pOn = wOf(1, 'perch', 4), pOff = wOf(0, 'perch', 4), sOn = wOf(1, 'sunfish', 2.5), sOff = wOf(0, 'sunfish', 2.5), sRD = wOf(1, 'sunfish', 2.5, 1.2), pSch = wOf(1, 'perch', 4, 0, 1); fm.stageR5(true);
       const ep = csAt('perch', 0.1), es = csAt('sunfish', 2.5 / 40), c = fm.F3.RD_C, K = 1.2 ** 2 * Math.exp(c * 1.2) / fm.F3.RD_LREF ** 2;
       let lo = 0, hi = 1.2; for (let it = 0; it < 60; it++) { const m = (lo + hi) / 2; if (m * m * Math.exp(c * m) < K * 2.5 ** 2) lo = m; else hi = m; }
       const vRD = (lo / 1.2) ** 2;
       check('R4·6 (F3.YWIN_CS, F3.RD_SIZE): the young-of-year meet the followed fish\'s capture success — a 40-cm pickerel on 4-cm young perch and 2.5-cm young pumpkinseed weighs each as the strike rule does at that size ratio, not by the perch cannibal\'s window; the small young are seen at their own reaction distance (the visual model)',
         Math.abs(pOn - ep) < 1e-9 && Math.abs(sOn - es) < 1e-9 && pOn >= 3 * pOff && sOn >= 50 * sOff && Math.abs(sRD / sOn - vRD) < 1e-6 && vRD > 0.25 && vRD < 0.6,
-        `young perch ${pOn.toFixed(3)} (agents ${ep.toFixed(3)}; the window ${pOff.toFixed(3)}), young pumpkinseed ${sOn.toFixed(3)} (agents ${es.toFixed(3)}; the window ${sOff.toFixed(4)}); at their reaction distance ×${(sRD / sOn).toFixed(3)} (bisection ${vRD.toFixed(3)}: ${lo.toFixed(2)} m against 1.2 m at 6 cm)`); }
+        `young perch ${pOn.toFixed(3)} (agents ${ep.toFixed(3)}; the window ${pOff.toFixed(3)}), young pumpkinseed ${sOn.toFixed(3)} (agents ${es.toFixed(3)}; the window ${sOff.toFixed(4)}); at their reaction distance ×${(sRD / sOn).toFixed(3)} (bisection ${vRD.toFixed(3)}: ${lo.toFixed(2)} m against 1.2 m at 6 cm)`);
+      // (F3.YSCHOOL: the young met in their schools — young yellow perch in schools of S3 school 80 meet a pickerel as 80^0.65 fish a school,
+      // the followed fish's esocid term: × 80^(0.65 − 1) ≈ 0.22 a fish)
+      const xs = Math.pow(fm.S3.perch.school, fm.S3.pike.schoolExp - 1);
+      check('R4·6 (F3.YSCHOOL): the young are met in their schools as the followed fish are — a pickerel meets young yellow perch (schools of 80) as 80^0.65 fish a school, ~0.22 of the weight of a solitary young fish',
+        Math.abs(pSch / pOn - xs) < 1e-9 && xs > 0.15 && xs < 0.3, `young perch in schools ${pSch.toFixed(4)} against ${pOn.toFixed(4)} alone (×${(pSch / pOn).toFixed(3)}; 80^(0.65 − 1) = ${xs.toFixed(3)})`); }
     // (R2·3, F3.YDEPTH: the young's depth in the predators' reach — the table's bins by the bed's depth; a 40-cm pickerel (the water it
     // needs: 0.5·SHALLOW_K·40 = 0.4 m) reaches 4-cm young perch over 0.25 m not at all, over 0.6 m at half, over 1.0 m fully — the
     // followed fish's rule (_strike2's clamp((bed − dmH)/dmH, 0, 1)))

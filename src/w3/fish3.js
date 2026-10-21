@@ -203,6 +203,13 @@ export const F3 = {
   // WIN_JE: the first winter of a species with WINTER0.JE (white perch) on its own measured model — Johnson & Evans 1990, starved YOY at
   // 4 °C, counted in days below 4 °C (the young's fast) — in place of the Shuter ramp scaled to it (config WINTER0.JE)
   WIN_JE: 0,
+  // R4·6 — YSCHOOL: THE YOUNG'S SCHOOLS PROTECT THEM AS THE FOLLOWED FISH'S DO. On the one encounter volume (YENC) the young were met
+  // as evenly spread fish, while a followed school of n is met as n^schoolExp fish by an esocid (one fish an attack, success unreduced:
+  // Turesson & Brönmark 2004), confuses a bass (capture × n^BASS_SCH) and cuts a perch-like predator's capture to 0.15 — so arm AA
+  // (seed 611) ate young perch at Z 0.05–0.16/d by July (25 M → 2 k by August) where Oneida's young perch die at ~0.035/d all told and
+  // the old rule gave ~0.03. With it the young of a species are met in its schools (S3 school; a group species' S3 group[1]; solitary:
+  // 1) by the followed fish's school terms
+  YSCHOOL: 0,
   // R2·3 — YDEPTH: THE YOUNG'S DEPTH IN THE PREDATORS' REACH. The young's prey table held a column's schools by species and length
   // only, so a 40-cm bass reached young in 0.3 m of water as in 3 m, where a followed fish of the same size is out of its reach over
   // a bed shallower than half the water the predator needs (SHALLOW_K: none at ≤ 0.5·K·L, full at ≥ K·L). With it the table's bins
@@ -682,6 +689,7 @@ export function stageR5(on = true) {
   // recesses among stones near the nest, < 5 cm fish over sand and rock near shore (Forbes 1981's review; age-0 mean depth 0.34 m in
   // streams, Aadland 1993; most within 200 m of the nest, Ridgway 2002) — S3 yBed 1.0 m in the open-water season
   F3.YDEPTH = on ? 1 : 0; S3.bass.yBed = on ? 1.0 : 0;
+  F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
   F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
   SP.whiteperch.M = on ? 0.54 : BIO0.wpM; SP.whiteperch.maxAge = BIO0.wpMaxAge * (on ? 10 / 12 : 1); S3.whiteperch.maxAge = SP.whiteperch.maxAge / Y2 * YEAR;   // (as the species' set-up)
@@ -2393,7 +2401,9 @@ export class Fish3 {
       const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / (NS * ND)) | 0; let w = 0, wL = 0, att = 0;
       const acc = ND > 1 ? clamp((T.sB[b0 + j] / av - dmH) / dmH, 0, 1) : 1; if (!(acc > 0)) continue;   // (F3.YDEPTH: the shallows' rule, SHALLOW_K)
       if (pisc && T.sD[b0 + j] / av <= gape && r >= FRY.WIN_MIN && r <= preyLR) {
-        if (F3.YWIN_CS && encV > 0) { att = clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1) * (F3.RD_SIZE && rd0 > 0 ? (rdOf(rd0, Lq) / rd0) ** 2 : 1); w = att * csOf(S3[KEYS3[k]], cls, r); }   // (its attacks: as larvae by their detectability, at their reaction distance; × the strike rule's capture success)
+        if (F3.YWIN_CS && encV > 0) { const ps = S3[KEYS3[k]], nbY = F3.YSCHOOL ? (ps.school || (ps.group ? ps.group[1] : 1) || 1) : 1;   // (F3.YSCHOOL: met in its schools)
+          att = clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1) * (F3.RD_SIZE && rd0 > 0 ? (rdOf(rd0, Lq) / rd0) ** 2 : 1) * (nbY > 1 && cls === 0 ? Math.pow(nbY, (p || q).s.schoolExp ?? F3.SCHOOL_EXP) / nbY : 1);
+          w = att * csOf(ps, cls, r) * (nbY > 1 ? (cls === 1 ? Math.pow(nbY, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1); }   // (its attacks: as larvae by their detectability, at their reaction distance; × the strike rule's capture success)
         else { const R = 1 / r, u = R / FRY.WIN_R * Math.exp(1 - R / FRY.WIN_R); w = Math.pow(u, FRY.WIN_E) * S3[KEYS3[k]].sp.vuln; }
       }
       if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) wL = FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1);
