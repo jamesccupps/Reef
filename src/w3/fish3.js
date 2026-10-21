@@ -447,7 +447,7 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
 // (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
-const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT };
+const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
@@ -548,6 +548,12 @@ export function stageR5(on = true) {
   // (item 23) bullheads spawn late May–June, most eggs in a 10–15-day window, once a year (Blumer 1985): spawnT [21, 28] started
   // at ~19.5 °C (12 June on the sim's curve) and nothing ended it before 1 September — 30–40 % spawned after mid-July
   SP.catfish.spawnT = on ? [18, 24] : BIO0.catfishT; S3.catfish.spawnEnd = on ? 0.38 : 0;
+  // (item 26) BULLHEAD GROWTH (research bullhead_growth_and_young_white_perch.md): on FB4's Hartman et al. 2017 set a bullhead
+  // needs 0.35–0.56 of its Cmax just to hold weight at 18–24 °C (ration falls as W^−0.225, respiration as W^−0.271), and a 6.5-cm
+  // yearling at 70 % of Cmax is still ~12 cm after six years, where northern bullheads reach ~5, 11, 15, 19, 22, 24 cm at ages 1–6:
+  // fish under 30 g (~13 cm) stay on the juvenile set (as smallmouth do), and the energy density 6,700 J/g (fatty farmed catfish)
+  // → 5,000 (wild ictalurid muscle 3,350–4,780 J/g; no brown bullhead whole-body value found)
+  SP.catfish.juvW = on ? 30 : BIO0.catfishJuvW; SP.catfish.bio.ED = on ? 5000 : BIO0.catfishED;
   // (item 28) THE BROOK'S POOLS HOLD SO MANY: the share of the sunfishes near the brook's ends that summer in it — at 0.3 (pumpkinseed)
   // and 0.5 (redbreast) ~3,200 summered in ~300 m² of its pool water (10.8 per m²: arm M), starving its dace's food; ~0.2–0.5 per m²
   // of the ≥ 0.6-m water is the review's estimate (HSI: abundance rises with depth; the larger move upstream — Hall 1972), ~100–150
