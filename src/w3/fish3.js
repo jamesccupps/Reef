@@ -466,7 +466,7 @@ export function stageR5(on = true) {
   // 2002; Cole & Moring 1997) — over 0.4-2 m by day, 1-3 m in winter, blending to the adults' water from 12 to 25 cm (research
   // juvenile_refuges_and_bass_young.md (a)). Without it the 6-cm recruits joined the adults' 1.5-4-m water and in August were
   // 53-72 % of the bass's kills, where field stomachs hold ~no young bass (Maine 0 of 36, Wisconsin 0 of 303))
-  S3.bass.habJ = on ? { L: [12, 25], bot: [0.4, 2.0], wbot: [1.0, 3.0] } : undefined;
+  S3.bass.habJ = on ? { L: [12, 25], bot: [0.3, 1.2], wbot: [1.0, 3.0] } : undefined;   // (arm S: 0.3–1.2 m for the smallest; it was 0.4–2.0)
   // (item 6e: the bass's shore — summer adults live along the shore near rock and wood, a minority over open water: within 5 m of
   // shore most of the time in a reservoir (Bevelhimer 1995), 79 % of June positions within 50 m (Milipsigate, Sergio 2026), home
   // ranges strips of 0.8-1.7 km of shoreline; out at dusk and dawn (research smallmouth_horizontal_habitat.md). On the depth band
@@ -554,6 +554,19 @@ export function stageR5(on = true) {
   // fish under 30 g (~13 cm) stay on the juvenile set (as smallmouth do), and the energy density 6,700 J/g (fatty farmed catfish)
   // → 5,000 (wild ictalurid muscle 3,350–4,780 J/g; no brown bullhead whole-body value found)
   SP.catfish.juvW = on ? 30 : BIO0.catfishJuvW; SP.catfish.bio.ED = on ? 5000 : BIO0.catfishED;
+  // (arm S, after arm R — bass fell 6.5 → 2.2 kg/ha in three years: p ~0.2 all year, condition 0.90 → 0.81, crayfish 31 % of their
+  // food, insects ~1 %; and the spring's recruits (~9.5 cm) were ~2/3 eaten within six weeks, by bass and white perch)
+  // (item 25) INSECTS FOR BASS: a smallmouth darts into the weeds and rises to the surface for the large insects — dragonfly and mayfly
+  // nymphs, emergers, fallen insects — 25–40 % of the food of bass ≥ 30 cm and 50–70 % at 15–25 cm (predators.md B14; Cooper's
+  // 4 % is a stomach count of large fish): holding ~0.8 m over a 1–3-m bed it was rarely within the weeds' canopy reach or 1 m of the
+  // surface. 2 m more reach for both
+  S3.bass.insR = on ? 2 : 0;
+  // (item 14) the year's bass recruits (≤ 12 cm) keep to cover and the shallows by day (young smallmouth in the rocky shallows,
+  // < 1 m), below a large predator's reach; their day band 0.3–1.2 m
+  S3.bass.seek = on ? { w: 0.6, L: 12, big: 0 } : undefined;
+  // (item 15) the killifish's strip: by day ≤ 0.25 m and at night ≤ 0.4 m — in arm R, 60 % of their kills were over 0.3–0.6 m, 11 %
+  // under 0.3 m where they spent 55 % of their days (the predators' shallow reach)
+  S3.killifish.hab.day.bot = on ? [0.05, 0.25] : [0.1, 0.6]; S3.killifish.hab.night.bot = on ? [0.05, 0.4] : [1.0, 2.5];
   // (item 28) THE BROOK'S POOLS HOLD SO MANY: the share of the sunfishes near the brook's ends that summer in it — at 0.3 (pumpkinseed)
   // and 0.5 (redbreast) ~3,200 summered in ~300 m² of its pool water (10.8 per m²: arm M), starving its dace's food; ~0.2–0.5 per m²
   // of the ≥ 0.6-m water is the review's estimate (HSI: abundance rises with depth; the larger move upstream — Hall 1972), ~100–150
@@ -1821,13 +1834,14 @@ export class Fish3 {
     const small = !s.pisc || a.L < 3 * sp.Lpisc || s.cray, lit = this.env.lit;
     const reach = F3.BENTH_REACH + a.L / 200, hb = a.bed - a.z, canopy = lit ? this.env.plants._canopy[a.c] : 0, share = this._coarse && F3.BED_SHARE;
     const fNear = a.jb < 0 ? 0 : share ? reachShare(reach, hb) : hb <= reach ? 1 : 0;   // (a coarse block: its share of the block within reach — F3.BED_SHARE)
-    const fWeed = a.jb < 0 || !lit ? 0 : share ? reachShare(reach + canopy, hb) : hb <= reach + canopy ? 1 : 0;
+    const IR = s.insR || 0;   // (S3 insR m: a fish that darts into the weeds and rises to the surface for insects reaches them this much farther)
+    const fWeed = a.jb < 0 || !lit ? 0 : share ? reachShare(reach + canopy + IR, hb) : hb <= reach + canopy + IR ? 1 : 0;
     const nearBed = fNear > 0, inWeeds = fWeed > 0;
     const moll = !!sp.diet.snail && a.L >= (sp.Lsnail || 0);
     // (stage 7c) a crayfish eater on the bed takes the crayfish its gape fits, at its strike success; the big ones (bass and
     // pickerel past 3 × their piscivory length) no longer bother with worms and scuds
     const cs = s.cray && nearBed && lit ? +sp.diet.cray * fNear / Math.max(fWeed, 1e-9) : 0, big = s.pisc && s.cray && a.L >= 3 * sp.Lpisc;   // (the crayfish by its share near the bed; the weeds' fauna by its share in them — Ew × fWeed below)
-    const canB = s.benthic && small && (nearBed || inWeeds), canZ = s.plank || a.L < sp.Lzoo, canS = !!lit && !!sp.diet.insect && small && a.z <= LIT3.SURF_Z;
+    const canB = s.benthic && small && (nearBed || inWeeds), canZ = s.plank || a.L < sp.Lzoo, canS = !!lit && !!sp.diet.insect && small && a.z <= LIT3.SURF_Z + IR;
     // its footprint: the bed cells within FP_DZ of its depth, and its layer (± one in its own column) of the water, in the
     // columns within its forage radius
     const G = this.G, fp = this._footprint(s.forageR, a.c), LB = this._fpB, LZ = this._fpZ; let nB = 0, nZ = 0;

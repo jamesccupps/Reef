@@ -1116,12 +1116,12 @@ fn bedShares(jb: i32, bed: f32, z: f32, L: f32, canopy: f32, lit: bool) -> vec2f
   let cu = u32(c); let gape = ga(A_gape, i); let visDay = ga(A_visF, i);
   let pisc = spv(k, S_pisc) > 0.5; let crayS = spv(k, S_cray);
   let small = !pisc || L < 3.0 * spv(k, S_Lpisc) || crayS > 0.0; let lit = U.lit != 0u;
-  let fNW = bedShares(jb, bed, z, L, wd(W_canopy + cu), lit); let fNear = fNW.x; let fWeed = fNW.y;   // (fish3: a block's share within reach — F3.BED_SHARE)
+  let fNW = bedShares(jb, bed, z, L, wd(W_canopy + cu) + spv(k, S_insR), lit); let fNear = fNW.x; let fWeed = fNW.y;   // (fish3: a block's share within reach — F3.BED_SHARE; + S3 insR)
   let nearBed = fNear > 0.0; let inWeeds = fWeed > 0.0;
   let moll = spv(k, S_dSnail) > 0.5 && L >= spv(k, S_Lsnail);
   let cs = select(0.0, crayS * fNear / max(fWeed, 1e-9), crayS > 0.0 && nearBed && lit); let big = pisc && crayS > 0.0 && L >= 3.0 * spv(k, S_Lpisc);
   let canB = spv(k, S_benthic) > 0.5 && small && (nearBed || inWeeds); let canZ = spv(k, S_plank) > 0.5 || L < spv(k, S_Lzoo);
-  let canS = lit && spv(k, S_dInsect) > 0.5 && small && z <= LIT3_SURF_Z;
+  let canS = lit && spv(k, S_dInsect) > 0.5 && small && z <= LIT3_SURF_Z + spv(k, S_insR);
   let fp = fpOf(k, cu, z);
   // the offers over the footprint
   var sB = 0.0; var aB = 0.0; var sW = 0.0; var sWls = 0.0; var sWc = 0.0; var nBc = 0u; var sS = 0.0; var aS = 0.0;
