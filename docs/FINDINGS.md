@@ -4,6 +4,32 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-21 — Compensations stack: every fix for a missing mechanism outlives it (docs/review/audit_*.md, REALISM_PLAN.md)
+- **What.** Probes of the strike rule's terms (1/10 and true-scale CPU) found pickerel killing ~0.06 fish a day over the GPU year
+  against the field's 0.4–0.8 and bass living on crayfish at p 0.09–0.22, under a product of brakes each added for an old symptom:
+  the bass's strike ceiling cut 12 → 2.5 /h and a 'time hunting' share (10–20 %) set when bass met prey constantly and the gut
+  was the only brake — before a hunger gate existed; cover counted in the encounter and again in the capture; prey size counted
+  twice (capture successes measured at a typical size ratio, then cut again by 1 − PPR/PPR0); an unsourced half-saturation (30
+  encounters /h against a 3 /h ceiling: a starving pickerel ignored ~90 % of the prey it met); a depth-contour band fixing an
+  artifact of the 10×-steeper 1/10 slopes. A four-part audit of every parameter (predation, habitat and young, physiology, food
+  web) found the same pattern across the model: the young's mortality halved to keep the old recruit counts (they then eat the
+  zooplankton out — 400–600 µg/L in late May, 1–6 µg/L from September to May); bed food raised 4× for a 2-D slice with no
+  shallows; consumers' energetics patched (respiration × 0.7) where their food was missing; a census cap regulating white perch.
+- **The fix in kind.** Undo each compensation to its research value and let the mechanism the research named do the work: with
+  cover once, the size term renormalised, E_h = aMax, the bass's lab ceiling, act a diel rhythm, and the hunger gate plus a meal's
+  rest (no fish hunted until ~90 % of a satiating meal is digested — ET90) as the only brake, a June pickerel kills 0.37 fish a
+  day at p 0.40 with 34 % empty stomachs (field 0.4–0.8, p 0.39–0.42, 35–60 % empty) — from 0.05–0.09 kills before.
+- **Why it matters.** In an incrementally built ecosystem model a parameter moved to fix a symptom is a debt: when the missing
+  mechanism arrives, the old fix stays and multiplies with it. Each looked defensible alone; together they starved the top of the
+  food web by an order of magnitude and handed regulation to the census cap. A periodic audit of every value against its source,
+  classifying it as field / compensation / stacked / prior, is a necessary part of building such a model.
+
+## 2026-10-21 — Two bookkeeping bugs that look like ecology (docs/review/PLAN.md progress)
+- **A school laid ≤ 59 % of its eggs**: a schooling spawner's gonads are built to the sexes' mean GSI, but its eggs were scaled by
+  the female's — killifish, yellow and white perch all ~0.6 of their fecundity (F3.EGG_SCHOOL).
+- **A shelf rule on column means**: young kept to water ≤ 0.5 m tested the 50-m columns' MEAN depth, and only ~2 % of columns
+  average that shallow — a school beside none of them wandered offshore and never came back (the killifish's young over 1.7–2.8 m).
+
 ## 2026-10-20 — A whole-model review against the field: who meets whom is wrong, not how much (docs/review/PLAN.md)
 - **What.** Five parallel reviews compared every fish species and the environment with the research notes and the human's field
   observations, item by item (docs/review/*.md), on the true-scale GPU runs (arm O, seed 613, five years). The totals were in

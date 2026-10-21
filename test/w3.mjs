@@ -956,20 +956,24 @@ if (run('gpu')) {
 if (run('strike')) {
   console.log('\n— stage R items 5–6: the encounter–strike–capture rule (stageR5) —');
   const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js');
-  // a June fortnight from the same seed, the water it holds on (ENC_DZ 0.3 m) and off: the pickerel's stomachs (empty: < 5 % of
-  // its gut's capacity, after the first 3 days), its kills a day, and the killifish lost
-  const fortnight = dz => { fm.stageR5(true); fm.F3.ENC_DZ = dz; seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.27 }), F = new fm.Fish3(e);
+  // a June fortnight (stageR5 — REALISM_PLAN R1: the rule undone to its research design, the hunger gate and the meal's rest the
+  // brake): the pickerel's stomachs (empty: < 5 % of its gut's capacity, after the first 3 days), its kills a day, the killifish lost,
+  // and every pickerel kill's prey bed against the water the pickerel needs (F3.SHALLOW_K: none over a bed under 0.01 m per cm of its
+  // length — the shallows' refuge, which the retired ENC_DZ had stood beside)
+  const shallow = { n: 0, under: 0 }, k0 = fm.Fish3.prototype._killed;
+  fm.Fish3.prototype._killed = function (a, b) { if (a.s.key === 'pike') { shallow.n++; if (b.bed < 0.5 * fm.F3.SHALLOW_K * a.L) shallow.under++; } return k0.call(this, a, b); };
+  const fortnight = () => { fm.stageR5(true); seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.27 }), F = new fm.Fish3(e);
     const n0 = F.count('killifish'); let n = 0, empty = 0;
     for (let b = 0; b < 14 * 49; b++) { F.step(FB); e.step(FB); if (b < 3 * 49) continue;
       for (const a of F.fish) if (a.alive && a.s.key === 'pike' && a.L >= 20) { n++; if (a.gut < 0.05 * a.s.sp.gut * a.W) empty++; } }
     const kills = Object.entries(F.stats.eatenBy).filter(([k]) => k.startsWith('pike>')).reduce((t, [, v]) => t + v, 0), nP = F.fish.filter(a => a.alive && a.s.key === 'pike' && a.L >= 20).length;
     return { lost: 1 - F.count('killifish') / n0, empty: empty / Math.max(1, n), kpd: kills / Math.max(1, nP) / 14, p: F.census().pike.p };
   };
-  const on = fortnight(0.3), off = fortnight(0); fm.stageR5(false);
+  const on = fortnight(); fm.Fish3.prototype._killed = k0; fm.stageR5(false);
   check('the encounter rule meets the field: a pickerel kills 0.1–2 fish a day and 30–70 % of the pickerel have empty stomachs (field 0.5–2 a day, 35–60 % empty — Diana 1979; piscivore_encounter_attack.md)',
     on.kpd > 0.1 && on.kpd < 2 && on.empty > 0.3 && on.empty < 0.7, `${f2(on.kpd)} kills a day, ${(100 * on.empty).toFixed(0)} % empty, p ${f2(on.p)}`);
-  check('the water it holds (F3.ENC_DZ): with it the killifish of the shelf\'s edge lose under 3/4 of what they lose to predators lying over deeper water without it (a June fortnight, same seed)',
-    on.lost < 0.75 * off.lost && off.lost > 0.1, `killifish lost ${(100 * on.lost).toFixed(0)} % against ${(100 * off.lost).toFixed(0)} %`);
+  check('the shallows\' refuge (F3.SHALLOW_K): no pickerel kill over a bed shallower than the water it needs (half of 0.02 m per cm of its length), a June fortnight with the R1 rule',
+    shallow.n > 20 && shallow.under === 0, `${shallow.under} of ${shallow.n} pickerel kills over too-shallow water; killifish lost ${(100 * on.lost).toFixed(0)} %`);
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

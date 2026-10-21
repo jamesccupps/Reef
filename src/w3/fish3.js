@@ -138,7 +138,22 @@ export const F3 = {
   // ~0.3 of it, where the capture term alone favours the smallest (a 42-cm pickerel cropped 6-cm killifish); the strike rate is
   // the capture success's, unchanged
   BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3, COVER_CS: 0,
-  EGG_SCHOOL: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
+  EGG_SCHOOL: 0,
+  // REALISM_PLAN R1 (audit_predation.md §5; the stacked brakes of arms D–T undone to the research design, the hunger gate the brake):
+  // COVER_ONCE — cover acts once, on attack initiation (Savino & Stein: vegetation cuts encounters and attacks, not success per
+  // attack): every prey counts toward the encounter rate E, (1 − cover) multiplies its attack weight — under E/(E+E_h) cover was
+  // lost when E ≫ E_h and squared (with COVER_CS) when E ≪ E_h; SIZE_RENORM — CS3's values were measured at prey 25–43 % of the
+  // predator's length (Wahl & Stein 1988), so the size term is 1 at that ratio (S3 pprM by the prey's fins and the predator's kind),
+  // not at 0 (it cut capture × 0.6 at the typical 0.32), capped at CS_MAX; EH_AMAX — strikes saturate at E_h = aMax (Holling's
+  // S = E/(1 + h·E), h = 1/aMax): ENC_EH 30 /h had no source and made a starving pickerel ignore ~90 % of the prey it met
+  COVER_ONCE: 0, SIZE_RENORM: 0, CS_MAX: 0.9, EH_AMAX: 0,
+  // REST_DIGEST — THE MEAL AND THE REST: a piscivore sated by its meal (its gut at or over the hunger gate's G) rests while it digests,
+  // hunting no fish — strikes or the young — until its gut is down to REST_TO × G, then hunts again with an emptying stomach. Pike in
+  // summer eat a meal of ~3–4 %BW every 2.7 days and are 40–58 % empty (Diana 1979; Kakisa Lake 35–40 %), wild bass 25–50 % empty
+  // (Dunlop 2005; piscivore_field_feeding_rates.md §2): the gate alone, 1 − gut/G, let a pickerel hunt again a few hours after a
+  // 10-g kill (1.2 G) — strike check: 16–20 % empty at p 0.53–0.55. REST_TO 0.1: it hunts again when ~90 % of a satiating meal is
+  // evacuated (ET90, the standard measure of a meal's digestion — piscivore_field_feeding_rates.md 'Digestion'); 0.2 gave 28 % empty
+  REST_DIGEST: 0, REST_TO: 0.1,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -457,7 +472,10 @@ export function stageR5(on = true) {
   // (item 6: the water it holds — F3.ENC_DZ — and the killifish's own water by day, the shelf's very edge: shoals netted whole in
   // 15 cm of water 2.5 m from shore (Ward et al. 2002), "a few inches below the surface", "often in water under 6 in" (CT DEEP) —
   // under a 30-cm pickerel's 0.3 m (F3.SHALLOW_K), where at 0.1-0.6 m they lost 60 % in a June fortnight)
-  F3.ENC_DZ = on ? 0.3 : 0; S3.killifish.hab.day.bot = on ? [0.05, 0.35] : [0.1, 0.6];
+  // (R1: ENC_DZ off again — it patched the 6-m disc smearing a shore's slope, a 10×-amplified artifact of the 1/10 lakes (6 m spans
+  // ~0.7 m of bed there, ~0.07 m on the true lakes); SHALLOW_K and the killifish's strip carry the shallows' refuge; and being
+  // symmetric it also hid the prey just deeper than a predator — the weed edge's perch and white perch. audit_predation.md 2a)
+  F3.ENC_DZ = 0; S3.killifish.hab.day.bot = on ? [0.05, 0.35] : [0.1, 0.6];
   // (item 6f: and at night the shallows too — in Lake Opinicon, with bass and pike, killifish schools disperse into < 0.6 m at night
   // (Helfman 1981, via McInerny & Cross [SEC]); the 1-2.5-m night band was an inference from fyke catches of "some nocturnal
   // movement" (COSEWIC). With it, 43 % of the killifish's deaths came over > 0.6 m, where they spent 7 % of the day (arms G, H))
@@ -581,7 +599,16 @@ export function stageR5(on = true) {
   // largemouth caught few bluegill; capture success falls with complexity) — with the encounter alone, a hungry predator striking at
   // its maximum rate took as many small bass in cover as out of it (the probe: 50 of 75 eaten in 60 days with 85 % of them in rock
   // cover ≥ 0.5; with the capture cut too 23, and 46 of the 75 alive at day 60)
-  F3.COVER_CS = on ? 1 : 0;
+  // (R1: cover once, on attack initiation — F3.COVER_ONCE replaces COVER_CS's second count; see F3)
+  F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0;
+  // (R1) THE PREDATORS' BRAKE IS THE HUNGER GATE: act was arm D's brake against overfeeding, set before the gate existed, and an
+  // ambusher hunts while still (Diana's 16–22 % 'active' is movement, not hunting) — now a diel rhythm only (pickerel dawn/dusk
+  // peaks, little at night; smallmouth by day, little at night), with pGate 0.4 for pickerel (their field p 0.39–0.42; a meal every ~2.7 days,
+  // Diana 1979); the bass's aMax back to its lab ceiling 12 /h (cut to 2.5 at 4875ba0 when bass met prey constantly and the 8-%BW gut
+  // was the only brake — a realised field rate used as a ceiling). Field targets: p pickerel 0.39–0.42, bass 0.30–0.36; kills
+  // pickerel 0.4–0.8 a day, bass ~1; 35–60 % empty stomachs (piscivore_field_feeding_rates.md)
+  S3.pike.act = on ? [0.7, 1, 0.1] : PRED3.pike.act; S3.bass.act = on ? [0.8, 1, 0.1] : PRED3.bass.act;
+  S3.bass.aMax = (on ? 12 : PRED3.bass.aMax) / 3600; S3.pike.pGate = on ? 0.4 : 0;
   // A SCHOOL'S EGGS: its gonads are built to its own ripe GSI, (gsiF + gsiM)/2 (half female, half male) — its ripeness for its
   // eggs was measured against the female's gsiF, so a ripe school laid at most gsi/gsiF of them: 0.59 of a killifish school's
   // (0.095/0.16), ~0.6 of the perches'. Single fish unchanged (killi.mjs: ~900–1,800 eggs a school spawning, ~1 clutch a summer)
@@ -638,10 +665,14 @@ export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, 
 export const CS3 = { killifish: [0.7, 0.6, 0.5], dace: [0.7, 0.6, 0.5], fallfish: [0.7, 0.6, 0.5], sucker: [0.7, 0.6, 0.5], pike: [0.6, 0.55, 0.4],
   perch: [0.35, 0.45, 0.3], whiteperch: [0.3, 0.4, 0.25], bass: [0.3, 0.4, 0.25], sunfish: [0.12, 0.55, 0.3], redbreast: [0.12, 0.55, 0.3], catfish: [0.1, 0.2, 0.1] };
 export const SPINY3 = { perch: 1, whiteperch: 1, bass: 1, sunfish: 1, redbreast: 1, catfish: 1 }, PPR0 = [0.88, 0.6];   // (soft, spiny)
+// (F3.SIZE_RENORM) the prey/predator length ratio each CS3 value was measured at, by the prey's fins [soft, spiny] and the predator's kind
+// [esocid, bass, other]: soft-rayed ~0.4 (fathead and shad at 0.37–0.43 of an esocid's length, Wahl & Stein 1988), spiny 0.3 to an
+// esocid (pike ambush 0.36 at ~0.30, Turesson & Brönmark 2004), 0.12 to a bass (largemouth 0.57–0.83 on bluegill at 0.12, Savino & Stein)
+export const PPRM = [[0.4, 0.4, 0.4], [0.3, 0.12, 0.3]];
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
   s.key = k; s.i = i; s.sp = sp; s.name = sp.name; s.preyLR = PREY_LR[k] ?? PREY_LR0;
-  { const pd = PRED3[k] || PRED3.other; s.aMax = pd.aMax / 3600; s.vHunt = pd.v; s.predCls = pd.cls; s.act = pd.act; s.cs = CS3[k] || [0.3, 0.3, 0.3]; s.ppr0 = PPR0[SPINY3[k] ? 1 : 0]; }   // (F3.STRIKE2)
+  { const pd = PRED3[k] || PRED3.other; s.aMax = pd.aMax / 3600; s.vHunt = pd.v; s.predCls = pd.cls; s.act = pd.act; s.cs = CS3[k] || [0.3, 0.3, 0.3]; s.ppr0 = PPR0[SPINY3[k] ? 1 : 0]; s.pprM = PPRM[SPINY3[k] ? 1 : 0]; }   // (F3.STRIKE2)
   s.maxAge = sp.maxAge / Y2 * YEAR; s.matMinAge = sp.matMinAge / Y2 * YEAR; s.mateCd = sp.matingCooldown / Y2 * YEAR;
   s.uRoutine = s.cruise / s.sprint;
   s.pisc = !!sp.diet.fish; s.plank = !!sp.diet.plankton; s.sift = !!sp.diet.detritus;
@@ -1816,10 +1847,11 @@ export class Fish3 {
   // it takes ~pGate of its Cmax at any size and temperature; S3 G0: G = G0 × W, a fixed share of its weight (that capped a 15-cm
   // bass at p 0.20–0.27 against the 0.48–0.60 it needs, and pickerel at p 0.13: its evacuation is slow); neither: no gate
   _gate(a, cm, gut = a.gut) {
-    const s = a.s, sp = s.sp; let G;
-    if (s.pGate > 0) G = s.pGate * cm * a.W / Math.max(1e-9, Math.max(BIOE.GER * Math.exp(BIOE.GER_T * a.T) * sp.gerMul, cm / sp.gut));
-    else if (s.G0 > 0) G = s.G0 * a.W; else return 1;
+    const G = this._gateG(a, cm); if (!(G > 0)) return 1;
     return clamp(1 - gut / Math.max(1e-9, G), 0, 1);
+  }
+  _evac(a, cm) { const sp = a.s.sp; return Math.max(BIOE.GER * Math.exp(BIOE.GER_T * a.T) * sp.gerMul, cm / sp.gut); }   // (its gastric evacuation a day, as _energetics)
+  _gateG(a, cm) { const s = a.s; return s.pGate > 0 ? s.pGate * cm * a.W / Math.max(1e-9, this._evac(a, cm)) : s.G0 > 0 ? s.G0 * a.W : 0;
   }
 
   // ---------- feeding: fish, the bed's worms and scuds, zooplankton, the bed's organic layer (poor food) ----------
@@ -1828,6 +1860,8 @@ export class Fish3 {
     const o2L = lethalO2(a.o2Lethal, a.o2Ice, a.T);
     const gEff = gmax * clamp((a.o2 - o2L) / Math.max(1e-3, a.o2Crit - o2L), 0, 1) * (a.nt > 0 ? BROOD.GUARD_FEED3[guardStage(a)] : 1), apt = gEff / gmax;   // (a guardian eats little — least over its eggs)
     const perf = coldPerf(a.T, sp.tempOpt, sp.coldPerf);
+    if (F3.REST_DIGEST && F3.HUNGER_GATE && s.pisc && a.L >= sp.Lpisc) { const G = this._gateG(a, cm); if (G > 0 && a.gut >= G) a.missCd = Math.max(a.missCd, Math.log(a.gut / (F3.REST_TO * G)) / this._evac(a, cm) * DAY); }   // (F3.REST_DIGEST: sated — it rests while it digests)
+    const rest = F3.REST_DIGEST && a.missCd > 0;
     let room = gEff - a.gut; if (!(room > 0)) return false;
     let want = cm * apt * a.W * dt / DAY, got = 0;   // what it can take this step (per fish)
     // THE HUNGER GATE (F3.HUNGER_GATE, S3 G0): a predator hunts and forages in proportion to how empty it is, h = 1 − gut / (G0 × its
@@ -1842,11 +1876,11 @@ export class Fish3 {
     const g0 = a.gut;
     // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
     let yAsk = 0;
-    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const pisc = s.pisc && a.L >= sp.Lpisc; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR) || 0; }
+    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR) || 0; }
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
-      if (FRY.DENSITY) { const pisc = s.pisc && a.L >= sp.Lpisc; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !pisc || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
+      if (FRY.DENSITY) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
       else { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
     }
     // THE BED OR THE OPEN WATER: a fish can't search the mud and the open water at once — it spends its foraging time where it
@@ -1937,14 +1971,15 @@ export class Fish3 {
         // (an esocid meets a school of n as n^schoolExp fish — 0.65: it finds a school about as it finds one big fish and takes one fish
         // an attack, its success unreduced inside it (Turesson & Brönmark 2004) — the encounter dilution the old rule had and STRIKE2
         // first dropped: pickerel then took a 36-fish killifish school as 36 separate fish; bass keep their confusion term below)
-        const nb = b.n > 1 ? b.n : 1, ne = nb > 1 && cls === 0 ? Math.pow(nb, s.schoolExp ?? F3.SCHOOL_EXP) : nb, enc = ne * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
+        const nb = b.n > 1 ? b.n : 1, ne = nb > 1 && cls === 0 ? Math.pow(nb, s.schoolExp ?? F3.SCHOOL_EXP) : nb, enc = ne * (1 - ACTION.HIDE_CONCEAL * engaged(b.o[5])) * (F3.COVER_ONCE ? 1 : 1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (F3.ENC_DZ > 0 ? clamp(1 - Math.abs(b.bed - a.bed) / F3.ENC_DZ, 0, 1) : 1);
         if (!(enc > 0)) continue;
-        const bs = b.s, cs = bs.cs[cls] * Math.max(0, 1 - b.L / a.L / bs.ppr0) * (nb > 1 ? (cls === 1 ? Math.pow(nb, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1) * (F3.COVER_CS ? 1 - b.cover : 1);   // (F3.COVER_CS: structure cuts the capture too, not only the encounter — Savino & Stein 1982)
+        const bs = b.s, fz = Math.max(0, 1 - b.L / a.L / bs.ppr0), cz = F3.SIZE_RENORM ? Math.min(F3.CS_MAX, bs.cs[cls] * fz / (1 - bs.pprM[cls] / bs.ppr0)) : bs.cs[cls] * fz;   // (F3.SIZE_RENORM: 1 at the size ratio CS3 was measured at)
+        const cs = cz * (nb > 1 ? (cls === 1 ? Math.pow(nb, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1) * (F3.COVER_CS || F3.COVER_ONCE ? 1 - b.cover : 1);   // (F3.COVER_CS: structure cuts the capture too, not only the encounter — Savino & Stein 1982; F3.COVER_ONCE: only here)
         sE += enc; const w = enc * cs; if (w > 0) { sW += w; const wp = F3.PREY_PREF > 0 ? w * Math.exp(-0.5 * (Math.log(b.L / a.L / F3.PREY_OPT) / F3.PREY_PREF) ** 2) : w; sWp += wp; cand.push(b, wp); }
       }
     }
     if (!(sW > 0)) return 0;
-    const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + F3.ENC_EH);
+    const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + (F3.EH_AMAX ? s.aMax : F3.ENC_EH));   // (F3.EH_AMAX: Holling's E_h = aMax)
     const sun = this.env.sun, act = s.act[sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2];   // (the share of the time it hunts now)
     if (this._sdiag) this._sdiag(a, E, S, sW / sE, perf, act, sE, cand.length / 2, dt);   // (a probe's hook: the rule's terms — scratchpad prd.mjs; never set by the sim)
     if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt)) return 0;

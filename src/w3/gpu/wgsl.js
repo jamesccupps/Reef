@@ -970,10 +970,11 @@ fn bShare(T: f32, V: f32) -> f32 {
 }
 fn bTaken(T: f32, V: f32) -> f32 { return T * bShare(T, V); }
 // ---- fish3 _gate: the hunger gate's opening for fish i with gut g in its gut (S3 pGate: G = pGate · Cmax · W / k; S3 G0: G0 × W) ----
+fn evacK(i: u32, k: u32) -> f32 { return max(BIOE_GER * exp(BIOE_GER_T * ga(A_T, i)) * spv(k, S_gerMul), ga(A_cm, i) / spv(k, S_gut)); }   // (fish3 _evac)
+fn gateG(i: u32, k: u32) -> f32 { let W = ga(A_W, i); let pg = spv(k, S_pGate); if (pg > 0.0) { return pg * ga(A_cm, i) * W / max(1e-9, evacK(i, k)); } return max(0.0, spv(k, S_g0) * W); }   // (fish3 _gateG)
 fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   if (!(F3_HUNGER_GATE > 0.5)) { return 1.0; }
-  let W = ga(A_W, i); let cm = ga(A_cm, i); let pg = spv(k, S_pGate); var G = spv(k, S_g0) * W;
-  if (pg > 0.0) { G = pg * cm * W / max(1e-9, max(BIOE_GER * exp(BIOE_GER_T * ga(A_T, i)) * spv(k, S_gerMul), cm / spv(k, S_gut))); } else if (!(G > 0.0)) { return 1.0; }
+  let G = gateG(i, k); if (!(G > 0.0)) { return 1.0; }
   return clamp(1.0 - gut / max(1e-9, G), 0.0, 1.0);
 }
 // ---- fish3 _feed's set-up: the gut's room by the O₂ and a guardian's appetite, what it can take this block ----
@@ -985,6 +986,9 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   let gEff = gmax * clamp((o2 - o2L) / max(1e-3, o2c - o2L), 0.0, 1.0) * guardMul(i, k, BROOD_GUARD_FEED3_0, BROOD_GUARD_FEED3_1);
   let apt = gEff / gmax;
   sa(A_fGEff, i, gEff); sa(A_fPerf, i, coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)));
+  if (F3_REST_DIGEST > 0.5 && F3_HUNGER_GATE > 0.5 && spv(k, S_pisc) > 0.5 && ga(A_L, i) >= spv(k, S_Lpisc)) {   // (fish3 _feed, F3.REST_DIGEST: sated — it rests while it digests)
+    let G = gateG(i, k); let gut = ga(A_gut, i); if (G > 0.0 && gut >= G) { sa(A_missCd, i, max(ga(A_missCd, i), log(gut / (F3_REST_TO * G)) / evacK(i, k) * DAY)); }
+  }
   let hg = gateHg(i, k, ga(A_gut, i));   // (fish3 _feed: the hunger gate)
   sa(A_fRoom, i, gEff - ga(A_gut, i)); sa(A_fWant, i, ga(A_cm, i) * apt * W * U.dt / DAY * hg); sa(A_fGot, i, 0.0); sa(A_gut0, i, ga(A_gut, i));
   sai(A_claim, i, -1);
@@ -1027,9 +1031,10 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
         let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
         var w = 0.0;
         if (s2) {   // (an encounter for each fish of a school, × concealment, cover, the shallows; × capture success by kind, size, school)
-          let nn = select(max(nb, 1.0), pow(nb, spv(k, S_schExp)), nb > 1.0 && cls == 0u); let enc = nn * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, clamp(1.0 - abs(ga(A_bed, b) - ga(A_bed, i)) / max(F3_ENC_DZ, 1e-6), 0.0, 1.0), F3_ENC_DZ > 0.0);   // (F3.ENC_DZ: the water it holds)
+          let nn = select(max(nb, 1.0), pow(nb, spv(k, S_schExp)), nb > 1.0 && cls == 0u); let enc = nn * hide * select(1.0 - ga(A_cover, b), 1.0, F3_COVER_ONCE > 0.5) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, clamp(1.0 - abs(ga(A_bed, b) - ga(A_bed, i)) / max(F3_ENC_DZ, 1e-6), 0.0, 1.0), F3_ENC_DZ > 0.0);   // (F3.ENC_DZ: the water it holds)
           if (enc > 0.0) { var sch = 1.0; if (nb > 1.0) { sch = select(select(1.0, 0.15, cls == 2u), pow(nb, F3_BASS_SCH), cls == 1u); }
-            let cs = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)) * sch * select(1.0, 1.0 - ga(A_cover, b), F3_COVER_CS > 0.5); sE += enc; w = enc * cs; }   // (F3.COVER_CS)
+            var cz = spv(kb, S_cs0 + cls) * max(0.0, 1.0 - ga(A_L, b) / L / spv(kb, S_ppr0)); if (F3_SIZE_RENORM > 0.5) { cz = min(F3_CS_MAX, cz / (1.0 - spv(kb, S_pprm0 + cls) / spv(kb, S_ppr0))); }   // (F3.SIZE_RENORM)
+            let cs = cz * sch * select(1.0, 1.0 - ga(A_cover, b), F3_COVER_CS > 0.5 || F3_COVER_ONCE > 0.5); sE += enc; w = enc * cs; }   // (F3.COVER_CS; F3.COVER_ONCE: cover only here)
         } else { w = (1.0 - d / R) * cap * spv(gau(A_k, b), S_vuln) * sel * hide * (1.0 - ga(A_cover, b)) * clamp((ga(A_bed, b) - dmH) / dmH, 0.0, 1.0) * select(1.0, pow(nb, spv(k, S_schExp)), nb > 1.0); }
         if (w > 0.0) { sK += w; dW[kb] += w; var wp = w; if (s2 && F3_PREY_PREF > 0.0) { let lr = log(ga(A_L, b) / L / F3_PREY_OPT) / F3_PREY_PREF; wp = w * exp(-0.5 * lr * lr); }   // (fish3 _strike2: the choice by prey size)
           if (wp > 0.0) { let key = log(max(rnd(id, 30u, gau(A_id, b)), 1e-30)) / wp; if (key > bkey) { bkey = key; best = i32(b); } } }   // (u^(1/w) in logs: small weights underflowed)
@@ -1039,7 +1044,7 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + F3_ENC_EH); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + select(F3_ENC_EH, spv(k, S_aMax), F3_EH_AMAX > 0.5)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
   else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
@@ -1499,10 +1504,10 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   let fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u || U.ny == 0u) { return; }
   let room = ga(A_fRoom, i); if (!(room > 0.0) || !(ga(A_fWant, i) > ga(A_fGot, i))) { return; }
   let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let id = gau(A_id, i);
-  let pisc = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc);
+  let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0);   // (F3.REST_DIGEST: no fish while it rests)
   if (FRY_DENSITY > 0.5) {   // (stage Y1: a request over its column's bins, settled in k_eatYoyGet)
     let c = gai(A_c, i); if (c < 0) { return; }
-    let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
+    let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionT(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
     let r = yReqK(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR));
     if (!(r.x > 0.0)) { return; }
     let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(u32(c)); let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
@@ -1531,7 +1536,7 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   let qi = gai(A_claim, i);
   if (qi == -2) {   // (stage Y1) its share of each bin: min(1, available / requested), as much as its gut has room for now
     let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let c = u32(gai(A_c, i)); let K = ga(A_qB, i);
-    let pisc = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let larv = !pisc || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);
+    let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0); let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);   // (F3.REST_DIGEST, as the request)
     let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
     var sA = 0.0; for (var j = 0u; j < NB; j++) { sA += a0 * yBinW(b0 + j, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); }
     if (!(sA > 0.0)) { return; }
