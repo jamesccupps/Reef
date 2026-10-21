@@ -530,6 +530,11 @@ export function stageR5(on = true) {
   // (item 23) the young bottom fish's water: sucker fry < 5 cm feed in 15–20 cm along the shores, young bullheads in quiet coves
   // (SFH §3–4); they sat over 2–3.5 m in June–August
   S3.sucker.yBed = on ? 0.8 : 0; S3.catfish.yBed = on ? 1.5 : 0;
+  // (after arm T) THE PERCHES' YOUNG IN THE PREDATORS' WATER: young white perch by day in the shallows, 0.5–2.5 m (Cooper's day seines;
+  // Missisquoi Bay's September seines; research white_perch_habitat_and_predation.md), young yellow perch on the littoral bottom from
+  // August (Irwin et al. 2009) — the schools had followed the best zooplankton offshore, where of 124–209 M young white perch hatched a
+  // year ~20 % were eaten, 13–18 M each by yellow and white perch and 0.1–0.5 M by bass or pickerel, which starved beside them
+  S3.whiteperch.yBed = on ? 2.5 : 0; S3.perch.yBed = on ? 2.5 : 0;
   // (item 13) the sunfishes seek cover by day — the small fully, the larger at 0.4 — and hold low in it (h 0.3 m above the bed:
   // within most canopies; the weeds protect only the fish within their height)
   S3.sunfish.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined; S3.redbreast.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined;
