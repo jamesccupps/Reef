@@ -192,7 +192,21 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~3:30 p.m. EDT — the newest). c08b186: (1) csOf/rdOf moved into WGSL's FB4 section — e395ab3 had them
+▶▶▶ RESUME HERE (2026-10-21 ~4:10 p.m. EDT — the newest). COMMITTED 29bb796 (in stageR5, CPU+GPU): R2·4 the young pickerel's own set
+(PIKE_JUV below 10 g: Cmax W^−0.24, R Q10 2.5, FA 0.13/SDA 0.14; the adults' ×0.5 winter cut now adult-set-only in coldResp) + yCover
+0.8; R2·3 F3.YDEPTH (the young's table by bed depth, 4 classes 0.3/0.6/1.2 m, each predator reaching a bin by SHALLOW_K on the bin's mean
+bed; GPU yBin/yBin2/ybK + AC_BSB) + S3.bass.yBed 1.0. Strike section 21/21 locally; g1_check ?r5=1 all agree (young eaten 131/131).
+Research notes (committed): esocid_larval_energetics.md; larval_juvenile_energetics_panfish.md + addenda §7 centrarchids, §8 white
+perch/killifish, §9 yellow perch. R2·4b (the young's energy density) is SPECIES BY SPECIES — see REALISM_PLAN: perch → a size-dependent ED
+(~2,500–3,000 larvae → ~4,000 by fall) supported; sunfish 2,300 (Breck) a refinement; white perch larvae already OVERgrow on the YP set
+(Margulies 1989) and YOY are energy-rich (5.7–6.3 kJ/g) — their small autumn size is ration/crowding + the R1b ramp killing < 53 mm;
+bass in range. Bass giants (65 cm at 8+): summer p 0.27–0.43 is field-like — suspect Whitledge's RB −0.756 (tiny maintenance at 2 kg).
+ARM Z (c08b186) READ (613; 611/612 stopped): bass 0 recruits all 3 yrs (adult bass ate 1.36 M young bass in yr 1), pickerel 0, white perch
+once (91k), perch 20→13→7.6, white perch 24→14→7; Z-613 passed block 53592 (the Shell sort works).
+RUNNING: ARM AA (queue_r19.sh, snapshot ab :8140 = 29bb796) 611 → 612, then 613 RE-RUN (its first try died at founding — a CDP start
+collision just after arm Z's Chrome was killed; r19AA_613_failed.*); ~90 min a seed (97 ms a block: the depth classes cost ~30 %).
+Gates on occ-server: occ_gate_pikejuv.txt (the tree before YDEPTH) then occ_gate_r2.txt (29bb796).
+▶▶▶ RESUME HERE (2026-10-21 ~3:30 p.m. EDT). c08b186: (1) csOf/rdOf moved into WGSL's FB4 section — e395ab3 had them
 in the YOY module only, so k_strike failed to compile on the GPU (g1_check caught it; the CPU gate can't); (2) g_sort's insertion sort
 → Shell sort (identical order): it hung the GPU (DXGI_ERROR_DEVICE_HUNG) at block 53592 in arms X AND Y — crowded wintering cells +
 year-4 recruits; (3) g1_check builds the CPU's young table and settles it (young eaten now compared: 137/137). g1_check ?r5=1 on
