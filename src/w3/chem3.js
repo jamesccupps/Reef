@@ -532,6 +532,12 @@ export class Chem3 {
     out[0] = tD; out[1] = tC; out[2] = tR;
     return out;
   }
+  // … what a young school would see there (µg dry/L): zooFeedCells's E without the take (fish3 F3.YSHARE rates its foods first)
+  zooEyoy(L, nL, cD, cC, cR) {
+    let s = 0, sw = 0;
+    for (let i = 0; i < nL; i++) { const q = L[i], w = this.w[q], v = this.zv[q]; sw += w; if (v <= 0) continue; s += (this.zooD[q] * cD * this.zooExposed(q, 0, false) + this.zooC[q] * cC * this.zooExposed(q, 1, false) + (cR > 0 ? this.zooR[q] * cR * (1 - this.plantRef[q]) : 0)) * w * v; }
+    return sw > 0 ? s / sw * UGL : 0;
+  }
   // the seen, exposed zooplankton density (µg dry/L) over a list of cells — what an adult planktivore rates its footprint at
   zooEcells(L, nL) {
     let s = 0, sw = 0; const esc = 1 - ZOO3.COPE_ESCAPE;

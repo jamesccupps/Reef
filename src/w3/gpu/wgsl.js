@@ -1647,7 +1647,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let W = gy(Y_W, q); let n = gy(Y_n, q); let T = gy(Y_yT, q); let st = gy(Y_st, q);
   let bs = yBioSet(k); let dd = st / DAY;
   var yw = 1.0; if (F3_YW_T0 > 0.0 && f32(gyu(Y_age, q)) > F3_YW_AGE * DAY) { yw = clamp((T - F3_YW_T0) / (F3_YW_T1 - F3_YW_T0), 0.0, 1.0); }   // (fish3 _feedYoy: F3.YW_T0, the winter's fast)
-  let want = yw * n * coldCmax(k, bs, W, T) * W * dd * (1.0 + (FRY_CMAX_LARVA - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
+  let want = yw * n * coldCmax(k, bs, W, T) * W * dd * (1.0 + (spv(k, S_cmaxL) - 1.0) * clamp((FRY_LARVA_CM_1 - L) / (FRY_LARVA_CM_1 - FRY_LARVA_CM_0), 0.0, 1.0));
   sy(Y_want, q, want); var got = 0.0;
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let jb = gyi(Y_jb, q); let bed = gy(Y_bed, q); let z = gy(Y_z, q);
   // young piscivores on other young they can swallow (the snapshot's places, fish3's list order)
@@ -1666,41 +1666,60 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
       if (kk > 0.0) { syi(Y_qPrey, q, i32(r)); sy(Y_qPk, q, kk); acc64(AC_YP + 2u * r, kk, KW); got += kk * rW; }
     }
   }
+  // (fish3 _feedYoy, F3.YSHARE: the zooplankton's, the weeds' and the bed's sums first — each food rated by its own response, then
+  // asked for base × its time share t ∝ f^SHARE_Q; without it, the old order: zooplankton, then weeds, then bed, each on what is left)
+  let dl = spv(k, S_dLarva) > 0.5; let di = spv(k, S_dInsect) > 0.5; let benthL = spv(k, S_benthL); let dD = spv(k, S_dDetritus) > 0.5;
+  let canZ = spv(k, S_dPlankton) > 0.5 || L < spv(k, S_Lzoo);
+  let canW = U.lit != 0u && (dl || di) && L >= LIT3_WEED_L && bed - z <= F3_BENTH_REACH + wd(W_canopy + c);
+  let canB = L >= benthL && (dl || spv(k, S_dSnail) > 0.5 || dD) && bed - z <= F3_BENTH_REACH;
+  let base = want - got;
   // zooplankton of its size (type II in K_FRY), each cell seen by its own light; its footprint its layer ± one and the ring at its layer
-  if ((spv(k, S_dPlankton) > 0.5 || L < spv(k, S_Lzoo)) && want - got > 1e-12) {
-    let gD = fryD(L); let cR = fryR(L); let j0 = cell0(c); let k0 = j - j0;
-    var sD = 0.0; var sC = 0.0; var sR = 0.0; var sw = 0.0;
+  let gD = fryD(L); let cR = fryR(L); let j0 = cell0(c); let k0 = j - j0;
+  var sD = 0.0; var sC = 0.0; var sR = 0.0; var sw = 0.0;
+  if (canZ) {
     let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
     for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; let w = stf(O_wW + jj); sw += w; let v = wd(W_zv + jj); if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; sD += wd(W_zooD + jj) * gD * pr; sC += wd(W_zooC + jj) * PLANKTON_FRY_COPE * pr; sR += wd(W_zooR + jj) * cR * pr; } }
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); let w = stf(O_wW + jj); sw += w; let v = wd(W_zv + jj);
       if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; sD += wd(W_zooD + jj) * gD * pr; sC += wd(W_zooC + jj) * PLANKTON_FRY_COPE * pr; sR += wd(W_zooR + jj) * cR * pr; } }
-    let S = sD + sC + sR;
-    if (S > 1e-12) {
-      let E = S / sw * PLANKTON_UGL; let ask = (want - got) * E / (E + PLANKTON_K_FRY); let take = min(ask, PLANKTON_CROP * S); sy(Y_wZ, q, select(PLANKTON_K_FRY / (E + PLANKTON_K_FRY), 1.0, ask >= PLANKTON_CROP * S));
-      let tD = take * sD / S; let tC = take * sC / S; let tR = take - tD - tC;
-      if (sD > 0.0) { sy(Y_qD, q, tD / sD * gD); } if (sC > 0.0) { sy(Y_qC, q, tC / sC * PLANKTON_FRY_COPE); } if (sR > 0.0) { sy(Y_qR, q, tR / sR * cR); }
-      got += take;
-    }
-  }
-  // the weeds' small fauna from WEED_L, their large from LARGE_L, for a school in the canopy or near the bed
-  let dl = spv(k, S_dLarva) > 0.5; let di = spv(k, S_dInsect) > 0.5;
-  if (U.lit != 0u && (dl || di) && L >= LIT3_WEED_L && want - got > 1e-12 && bed - z <= F3_BENTH_REACH + wd(W_canopy + c)) {
-    let e = weedEyoy(jb, L); let E = e.x + e.y;
-    if (E > 0.0) { let a = stf(O_wBedA + u32(jb)); let ask = (want - got) * E / (E + BENTHOS_K_FISH); let gw = min(ask, PLANKTON_CROP * E * a); let f = gw / (E * a); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * E * a);
-      sy(Y_qWs, q, f); if (e.y > 0.0) { sy(Y_qWl, q, f); } acc64(AC_YWS + 2u * u32(jb), f, PW); acc64(AC_YWSW + 2u * u32(jb), f * w, PW); if (e.y > 0.0) { acc64(AC_YWL + 2u * u32(jb), f, PW); acc64(AC_YWLW + 2u * u32(jb), f * w, PW); } got += gw; }
   }
   // the bed about it: its own bed cell and its neighbours' mean-depth bed cells
-  let benthL = spv(k, S_benthL); let dD = spv(k, S_dDetritus) > 0.5;
-  if (L >= benthL && (dl || spv(k, S_dSnail) > 0.5 || dD) && want - got > 1e-12 && bed - z <= F3_BENTH_REACH) {
-    var s = 0.0; var A = 0.0;
-    if (jb >= 0) { let a = stf(O_wBedA + u32(jb)); A += a; s += benthE(u32(jb)) * a; }
-    let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 63u);
-    for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { let a = stf(O_wBedA + u32(jj)); A += a; s += benthE(u32(jj)) * a; } }
-    if (s > 0.0) {
-      let E = s / A; let ask = (want - got) * E / (E + BENTHOS_K_FISH); let gb = min(ask, PLANKTON_CROP * s); let f = gb / s; sy(Y_qB, q, f); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * s);
+  let bs0 = u32(sti(O_fNbr0 + c)); let bs1 = min(u32(sti(O_fNbr0 + c + 1u)), bs0 + 63u);
+  var bS = 0.0; var bA = 0.0;
+  if (canB) {
+    if (jb >= 0) { let a = stf(O_wBedA + u32(jb)); bA += a; bS += benthE(u32(jb)) * a; }
+    for (var t = bs0; t < bs1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { let a = stf(O_wBedA + u32(jj)); bA += a; bS += benthE(u32(jj)) * a; } }
+  }
+  let we = weedEyoy(jb, L);
+  var tZ = 1.0; var tW = 1.0; var tB = 1.0;
+  if (F3_YSHARE > 0.5 && base > 1e-12) {
+    var fZ = 0.0; var fW = 0.0; var fB = 0.0;
+    if (canZ && sw > 0.0) { let E = (sD + sC + sR) / sw * PLANKTON_UGL; fZ = E / (E + PLANKTON_K_FRY); }
+    if (canW) { let E = we.x + we.y; if (E > 0.0) { fW = E / (E + BENTHOS_K_FISH); } }
+    if (canB && bA > 0.0) { let E = bS / bA; if (E > 0.0) { fB = E / (E + BENTHOS_K_FISH); } }
+    let qZ = select(0.0, pow(fZ, F3_SHARE_Q), fZ > 0.0); let qW = select(0.0, pow(fW, F3_SHARE_Q), fW > 0.0); let qB = select(0.0, pow(fB, F3_SHARE_Q), fB > 0.0); let sq = qZ + qW + qB;
+    if (sq > 0.0) { tZ = qZ / sq; tW = qW / sq; tB = qB / sq; }
+  }
+  let S = sD + sC + sR; var aZ = want - got; if (F3_YSHARE > 0.5) { aZ = base * tZ; }
+  if (canZ && aZ > 1e-12 && S > 1e-12) {
+    let E = S / sw * PLANKTON_UGL; let ask = aZ * E / (E + PLANKTON_K_FRY); let take = min(ask, PLANKTON_CROP * S); sy(Y_wZ, q, select(PLANKTON_K_FRY / (E + PLANKTON_K_FRY), 1.0, ask >= PLANKTON_CROP * S));
+    let tD = take * sD / S; let tC = take * sC / S; let tR = take - tD - tC;
+    if (sD > 0.0) { sy(Y_qD, q, tD / sD * gD); } if (sC > 0.0) { sy(Y_qC, q, tC / sC * PLANKTON_FRY_COPE); } if (sR > 0.0) { sy(Y_qR, q, tR / sR * cR); }
+    got += take;
+  }
+  // the weeds' small fauna from WEED_L, their large from LARGE_L, for a school in the canopy or near the bed
+  var aW = want - got; if (F3_YSHARE > 0.5) { aW = base * tW; }
+  if (canW && aW > 1e-12) {
+    let E = we.x + we.y;
+    if (E > 0.0) { let a = stf(O_wBedA + u32(jb)); let ask = aW * E / (E + BENTHOS_K_FISH); let gw = min(ask, PLANKTON_CROP * E * a); let f = gw / (E * a); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * E * a);
+      sy(Y_qWs, q, f); if (we.y > 0.0) { sy(Y_qWl, q, f); } acc64(AC_YWS + 2u * u32(jb), f, PW); acc64(AC_YWSW + 2u * u32(jb), f * w, PW); if (we.y > 0.0) { acc64(AC_YWL + 2u * u32(jb), f, PW); acc64(AC_YWLW + 2u * u32(jb), f * w, PW); } got += gw; }
+  }
+  var aB = want - got; if (F3_YSHARE > 0.5) { aB = base * tB; }
+  if (canB && aB > 1e-12) {
+    if (bS > 0.0) {
+      let E = bS / bA; let ask = aB * E / (E + BENTHOS_K_FISH); let gb = min(ask, PLANKTON_CROP * bS); let f = gb / bS; sy(Y_qB, q, f); let w = select(BENTHOS_K_FISH / (E + BENTHOS_K_FISH), 1.0, ask >= PLANKTON_CROP * bS);
       if (jb >= 0) { acc64(AC_YB + 2u * u32(jb), f, PW); acc64(AC_YBW + 2u * u32(jb), f * w, PW); }
-      for (var t = s0; t < s1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { acc64(AC_YB + 2u * u32(jj), f, PW); acc64(AC_YBW + 2u * u32(jj), f * w, PW); } }
+      for (var t = bs0; t < bs1; t++) { let jj = sti(O_fColBedJ + u32(sti(O_fNbrL + t))); if (jj >= 0) { acc64(AC_YB + 2u * u32(jj), f, PW); acc64(AC_YBW + 2u * u32(jj), f * w, PW); } }
       got += gb;
     }
   }
@@ -1772,7 +1791,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (qS > 0.0 && jb >= 0) { let gs = qS * RC[R_YSED + u32(jb)]; got += gs; J += gs * PREY_DETRITUS_ED * PREY_DETRITUS_DIG; add64(&TL, T_FOOD + 2u * FOOD_YSED, gs, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 4u), gs, TSCALE); }
   // the energy budget
   let bs = yBioSet(k); var p = 0.0; if (want > 0.0) { p = min(1.0, got / want); }
-  let wf = wasteFr(bs, T, p); let Wr = max(W, FRY_R_WMIN); let r = coldResp(k, bs, Wr, T) * W; let Rj = r * OXYCAL * dd;
+  let wf = wasteFr(bs, T, p); var Wr = max(W, FRY_R_WMIN); if (F3_RWMIN_STEEP > 0.5 && !(bio(bs, BRB) < -0.3)) { Wr = W; } let r = coldResp(k, bs, Wr, T) * W; let Rj = r * OXYCAL * dd;   // (F3.RWMIN_STEEP)
   let eff = (1.0 - wf.x) * (1.0 - wf.y - bio(bs, BSDA)); var edF = PREY_DAPH_ED; if (got > 0.0) { edF = J / got; }
   let need = Rj / max(1e-9, eff * edF); let ed = energyDensity(bs, W);
   sy(Y_rO2, q, n * r / DAY); sy(Y_p, q, gy(Y_p, q) + (p - gy(Y_p, q)) * min(1.0, dd));

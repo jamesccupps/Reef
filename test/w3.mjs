@@ -974,6 +974,20 @@ if (run('strike')) {
     on.kpd > 0.1 && on.kpd < 2 && on.empty > 0.3 && on.empty < 0.7, `${f2(on.kpd)} kills a day, ${(100 * on.empty).toFixed(0)} % empty, p ${f2(on.p)}`);
   check('the shallows\' refuge (F3.SHALLOW_K): no pickerel kill over a bed shallower than the water it needs (half of 0.02 m per cm of its length), a June fortnight with the R1 rule',
     shallow.n > 20 && shallow.under === 0, `${shallow.under} of ${shallow.n} pickerel kills over too-shallow water; killifish lost ${(100 * on.lost).toFixed(0)} %`);
+  // REALISM_PLAN R2a: the young's food by what it pays (F3.YSHARE) and their energetics at the field's values — six weeks from the founding
+  // (mid-May → early July, with the year's young), the same seed with them and as before (zooplankton first, K_FRY 30, ×1.5 larval Cmax for
+  // all, R_WMIN for all): the Daphnia left in early July (µg dry/L, volume-weighted) and the young's diet. Field: the zooplankton's
+  // summer stays tens of µg/L under strong cohorts (Mills & Forney 1983); the 1/10 probe: 85 against 2 at day 42
+  { const { PLANKTON } = await import('../src/config.js');
+    const six = r2a => { fm.stageR5(true); if (!r2a) { fm.F3.YSHARE = 0; fm.F3.RWMIN_STEEP = 0; PLANKTON.K_FRY = 30; for (const k of Object.keys(fm.S3)) fm.S3[k].cmaxL = undefined; }
+      seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.22 }), F = new fm.Fish3(e, { young: true }), f0 = { ...F.stats.food };
+      for (let b = 0; b < 42 * 49; b++) { F.step(FB); e.step(FB); }
+      const G = F.G; let v = 0, zD = 0; for (let j = 0; j < G.NCELL; j++) { const w = G.vol[j]; if (w > 0) { v += w; zD += F.chem.zooD[j] * w; } }
+      const fd = F.stats.food, yz = fd.yZoo - f0.yZoo, yo = fd.yWeed - f0.yWeed + fd.yBenth - f0.yBenth;
+      return { D: zD / v * PLANKTON.UGL, zoo: yz / Math.max(1e-9, yz + yo) }; };
+    const b = six(true), a = six(false); fm.stageR5(false);
+    check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 5× what is left with the zooplankton first, and the young take the bed\'s and weeds\' food for ≥ 15 % of their diet',
+      b.D >= 20 && b.D >= 5 * a.D && b.zoo <= 0.85, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

@@ -153,7 +153,15 @@ export const F3 = {
   // (Dunlop 2005; piscivore_field_feeding_rates.md §2): the gate alone, 1 − gut/G, let a pickerel hunt again a few hours after a
   // 10-g kill (1.2 G) — strike check: 16–20 % empty at p 0.53–0.55. REST_TO 0.1: it hunts again when ~90 % of a satiating meal is
   // evacuated (ET90, the standard measure of a meal's digestion — piscivore_field_feeding_rates.md 'Digestion'); 0.2 gave 28 % empty
-  REST_DIGEST: 0, REST_TO: 0.1,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
+  REST_DIGEST: 0, REST_TO: 0.1,
+  // REALISM_PLAN R2a — THE YOUNG'S FOOD BY WHAT IT PAYS (YSHARE): a school splits its foraging among the zooplankton, the weeds' small
+  // fauna and the bed's worms and scuds toward the better (t ∝ f^SHARE_Q, f each food's own response), as the adults do (_feed) —
+  // not the zooplankton first whatever else is about: young perch move to the bed when the zooplankton runs low (> 5 cm, Wu & Culver
+  // 1992), white perch at ~4 cm; with the zooplankton first the year's young cropped it from 400–600 µg/L in late May to 1–6 from
+  // September to May (arm T; audit_foodweb_environment.md §2). RWMIN_STEEP: FRY.R_WMIN, written for the bass's steep set, holds a larva's
+  // respiration at 0.1 g's only for sets with RB < −0.3 (the Rice set of young bass and bullheads) — on the bluegill and perch sets it
+  // cut it to a third or less of Breck's fitted larval rate (audit_habitat_young.md F6)
+  YSHARE: 0, RWMIN_STEEP: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -466,6 +474,7 @@ const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 const BIO0 = { sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
+const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
@@ -569,8 +578,9 @@ export function stageR5(on = true) {
   // measured on 30-g pumpkinseed (Roberts 1964) — × 0.7 lowers their maintenance from p ~0.40 to ~0.28 (they needed 39–46 % of Cmax
   // to hold weight against the perches' 25–30 %); fallfish adults take their pikeminnow CA/CB's own waste fractions (FA 0.2, UA
   // 0.07), not the dace set's 0.4 / 0.1
-  SP.sunfish.bio.RA = BIO0.sunfish[0] * (on ? 0.7 : 1); SP.sunfish.bioJuv.RA = BIO0.sunfish[1] * (on ? 0.7 : 1);
-  SP.redbreast.bio.RA = BIO0.redbreast[0] * (on ? 0.7 : 1); SP.redbreast.bioJuv.RA = BIO0.redbreast[1] * (on ? 0.7 : 1);
+  // (R2a: the × 0.7 is Roberts 1964's 30-g ADULT pumpkinseed — not on the juvenile set, whose larvae it put at a third of Breck's)
+  SP.sunfish.bio.RA = BIO0.sunfish[0] * (on ? 0.7 : 1); SP.sunfish.bioJuv.RA = BIO0.sunfish[1];
+  SP.redbreast.bio.RA = BIO0.redbreast[0] * (on ? 0.7 : 1); SP.redbreast.bioJuv.RA = BIO0.redbreast[1];
   SP.fallfish.bio.FA = on ? 0.2 : BIO0.fallfish[0]; SP.fallfish.bio.UA = on ? 0.07 : BIO0.fallfish[1];
   // (item 23) bullheads spawn late May–June, most eggs in a 10–15-day window, once a year (Blumer 1985): spawnT [21, 28] started
   // at ~19.5 °C (12 June on the sim's curve) and nothing ended it before 1 September — 30–40 % spawned after mid-July
@@ -600,6 +610,12 @@ export function stageR5(on = true) {
   // its maximum rate took as many small bass in cover as out of it (the probe: 50 of 75 eaten in 60 days with 85 % of them in rock
   // cover ≥ 0.5; with the capture cut too 23, and 46 of the 75 alive at day 60)
   // (R1: cover once, on attack initiation — F3.COVER_ONCE replaces COVER_CS's second count; see F3)
+  // (R2a) THE YOUNG'S FOOD AND ENERGETICS AT THE FIELD'S VALUES (audit_habitat_young.md F5–F7): their foods by what each pays
+  // (F3.YSHARE); the larvae's ×1.5 Cmax (Breck 1997's bluegill fit, paired there with a higher respiration) only for the sunfishes —
+  // perch larvae run at ~0.9× FB4 Cmax; R_WMIN only for the steep sets; the young's half-saturation K_FRY 30 → 60 µg/L, inside its
+  // cited 30–75 (Breck: growth falls 0.6 → 0.2 mm/d below ~50 crustaceans/L) — 30 let the young keep cropping at 1–10 µg/L
+  F3.YSHARE = on ? 1 : 0; F3.RWMIN_STEEP = on ? 1 : 0; PLANKTON.K_FRY = on ? 60 : K_FRY0;
+  for (const k of KEYS3) S3[k].cmaxL = on && k !== 'sunfish' && k !== 'redbreast' ? 1 : undefined;
   F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0;
   // (R1) THE PREDATORS' BRAKE IS THE HUNGER GATE: act was arm D's brake against overfeeding, set before the gate existed, and an
   // ambusher hunts while still (Diana's 16–22 % 'active' is movement, not hunting) — now a diel rhythm only (pickerel dawn/dusk
@@ -1294,10 +1310,10 @@ export class Fish3 {
         if (!q.alive || y0 > yf) continue;
         const sp = q.s.sp, b = sp.bioJuv || sp.bio, d = sp.diet;
         const pS = F3.SEED_P[0] + (F3.SEED_P[1] - F3.SEED_P[0]) * clamp((yf - F3.SEED_P_YF[0]) / (F3.SEED_P_YF[1] - F3.SEED_P_YF[0]), 0, 1);
-        const C = pS * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+        const C = pS * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + ((q.s.cmaxL ?? FRY.CMAX_LARVA) - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
         const J = C * (q.L >= (sp.benthL ?? FRY.BENTH_L) && (d.larva || d.snail || d.detritus) ? PREY.BENTH_ED : PREY.DAPH_ED);
         wasteFractions(b, T, pS, WF);
-        const Wr = Math.max(q.W, FRY.R_WMIN), Rj = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W * OXYCAL * dd;
+        const Wr = F3.RWMIN_STEEP && !(b.RB < -0.3) ? q.W : Math.max(q.W, FRY.R_WMIN), Rj = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W * OXYCAL * dd;   // (F3.RWMIN_STEEP)
         const Fe = WF[0] * J, U = WF[1] * (J - Fe), net = J - Fe - U - b.SDA * (J - Fe) - Rj;
         if (net > 0) { q.W += net / energyDensity(b, q.W); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
@@ -2510,7 +2526,7 @@ export class Fish3 {
   _feedYoy(q, st, T) {
     const s = q.s, sp = s.sp, d = sp.diet, ch = this.chem, b = sp.bioJuv || sp.bio, dd = st / DAY, P = PLANKTON;
     const yw = F3.YW_T0 > 0 && q.age > F3.YW_AGE * DAY ? clamp((T - F3.YW_T0) / (F3.YW_T1 - F3.YW_T0), 0, 1) : 1;   // (F3.YW_T0: the winter's fast)
-    const want = yw * q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + (FRY.CMAX_LARVA - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
+    const want = yw * q.n * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + ((s.cmaxL ?? FRY.CMAX_LARVA) - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));   // (S3 cmaxL: its own larvae's)
     let got = 0, J = 0;
     if (FRY.DENSITY && q.bankG > 0) { const g = Math.min(q.bankG, want), f = g / q.bankG; got += g; J += q.bankJ * f; q.bankG -= g; q.bankJ -= q.bankJ * f; }   // (stage Y1: the young fish it caught last tick)
     if (FRY.DENSITY && d.fish && q.L >= (sp.yLpisc ?? sp.Lpisc)) this._yReq(null, q, q.c, q.n, q.L, q.L * sp.gapeR, want / Math.max(1, q.n * st), st, Math.max(0, want / q.n - q.bankG / q.n), true, false, F3.YCOLD ? Math.min(coldPerf(T, sp.tempOpt, sp.coldPerf), consumptionT(sp.bioJuv || sp.bio, T)) : coldPerf(T, sp.tempOpt, sp.coldPerf), s.preyLR);
@@ -2521,7 +2537,27 @@ export class Fish3 {
         if (k > 0) { r.n -= k; if (r.n < 1) r.alive = false; this.stats.fry[r.s.key].eaten += k; got += k * r.W; J += k * r.W * energyDensity(r.s.sp.bio, r.W); this.stats.food.yYoy += k * r.W; }
       }
     }
-    if ((d.plankton || q.L < sp.Lzoo) && want - got > 1e-12) {
+    // (F3.YSHARE: rate the zooplankton, the weeds' fauna and the bed first; each then asked for base × its time share — its own response
+    // applied by its take, as before)
+    const lit = this.env.lit, benthL = sp.benthL ?? FRY.BENTH_L, base = want - got;
+    const canZ = d.plankton || q.L < sp.Lzoo, canW = !!lit && (d.larva || d.insect) && q.L >= LIT3.WEED_L && q.bed - q.z <= F3.BENTH_REACH + this.env.plants._canopy[q.c];
+    const canB = q.L >= benthL && (d.larva || d.snail || d.detritus) && q.bed - q.z <= F3.BENTH_REACH;
+    const nbY = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0;
+    if (canB) { if (q.jb >= 0) BL[nB++] = q.jb; for (let i = 0; i < nbY.length && nB < BL.length; i++) { const jb = this.colBedJ[nbY[i]]; if (jb >= 0) BL[nB++] = jb; } }
+    let tZ = 1, tW = 1, tB = 1;
+    if (F3.YSHARE && base > 1e-12) {
+      let fZ = 0, fW = 0, fB = 0;
+      if (canZ) { const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1), cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1), YL = this._ylyshare || (this._ylyshare = new Int32Array(64)); const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0; let nY = 0;
+        for (let k = Math.max(0, k0 - 1); k <= Math.min(G.nL[c] - 1, k0 + 1); k++) YL[nY++] = j0 + k;
+        for (let i = 0; i < nbY.length && nY < YL.length; i++) { const cc = nbY[i]; YL[nY++] = G.cell0[cc] + Math.min(G.nL[cc] - 1, k0); }
+        const E = ch.zooEyoy(YL, nY, gD, P.FRY_COPE, cR); fZ = E / (E + P.K_FRY); }
+      if (canW) { const E = lit.weedEyoy(q.jb, q.L); fW = E > 0 ? E / (E + BENTHOS.K_FISH) : 0; }
+      if (canB && nB) { const E = ch.benthEcells(BL, nB); fB = E > 0 ? E / (E + BENTHOS.K_FISH) : 0; }
+      const Q = F3.SHARE_Q, qZ = fZ ** Q, qW = fW ** Q, qB = fB ** Q, sq = qZ + qW + qB;
+      if (sq > 0) { tZ = qZ / sq; tW = qW / sq; tB = qB / sq; }
+    }
+    const ask = t => F3.YSHARE ? base * t : want - got;
+    if (canZ && ask(tZ) > 1e-12) {
       const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
       const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
       // (its FOOTPRINT: the water about it it ranges in a tick — its own column (its layer ± one) and the ring of columns round it at
@@ -2529,27 +2565,23 @@ export class Fish3 {
       const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0, YL = this._yl || (this._yl = new Int32Array(64)), nb = this.nbr[c]; let nY = 0;
       for (let k = Math.max(0, k0 - 1); k <= Math.min(G.nL[c] - 1, k0 + 1); k++) YL[nY++] = j0 + k;
       for (let i = 0; i < nb.length && nY < YL.length; i++) { const cc = nb[i]; YL[nY++] = G.cell0[cc] + Math.min(G.nL[cc] - 1, k0); }
-      const t = ch.zooFeedCells(YL, nY, gD, P.FRY_COPE, want - got, P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
+      const t = ch.zooFeedCells(YL, nY, gD, P.FRY_COPE, ask(tZ), P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
       if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; this.stats.food.yZoo += g; }
     }
     // the weeds' small fauna from WEED_L, their large from LARGE_L (stage 7b), for a school in the canopy or near the bed
-    const lit = this.env.lit;
-    if (lit && (d.larva || d.insect) && q.L >= LIT3.WEED_L && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH + this.env.plants._canopy[q.c]) {
-      const g = lit.takeYoy(q.jb, want - got, q.L, BENTHOS.K_FISH); if (g > 0) { got += g; J += lit.J; this.stats.food.yWeed += g; }
+    if (canW && ask(tW) > 1e-12) {
+      const g = lit.takeYoy(q.jb, ask(tW), q.L, BENTHOS.K_FISH); if (g > 0) { got += g; J += lit.J; this.stats.food.yWeed += g; }
     }
-    const benthL = sp.benthL ?? FRY.BENTH_L;
-    if (q.L >= benthL && (d.larva || d.snail || d.detritus) && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
-      // (the bed about it too: its own bed cell and its neighbours' mean-depth bed cells)
-      const nb = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0; if (q.jb >= 0) BL[nB++] = q.jb;
-      for (let i = 0; i < nb.length && nB < BL.length; i++) { const jb = this.colBedJ[nb[i]]; if (jb >= 0) BL[nB++] = jb; }
-      const g = ch.takeBenthCells(BL, nB, want - got, BENTHOS.K_FISH); if (g > 0) { got += g; J += g * PREY.BENTH_ED; this.stats.food.yBenth += g; }
+    if (canB && ask(tB) > 1e-12) {
+      // (the bed about it too: its own bed cell and its neighbours' mean-depth bed cells — BL, above)
+      const g = ch.takeBenthCells(BL, nB, ask(tB), BENTHOS.K_FISH); if (g > 0) { got += g; J += g * PREY.BENTH_ED; this.stats.food.yBenth += g; }
     }
     if (q.L >= benthL && d.detritus && want - got > 1e-12 && q.bed - q.z <= F3.BENTH_REACH) {
       const g = ch.takeSedOM(q.jb, Math.min(want - got, FEED.POOR_GUT * q.n * sp.gut * q.W)); if (g > 0) { got += g; J += g * PREY.DETRITUS_ED * PREY.DETRITUS_DIG; this.stats.food.ySed += g; }
     }
     const p = want > 0 ? Math.min(1, got / want) : 0;
     wasteFractions(b, T, p, WF);
-    const Wr = Math.max(q.W, FRY.R_WMIN), r = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W, Rj = r * OXYCAL * dd;
+    const Wr = F3.RWMIN_STEEP && !(b.RB < -0.3) ? q.W : Math.max(q.W, FRY.R_WMIN), r = coldResp(sp.cold, b, sp.bio, Wr, T) * q.W, Rj = r * OXYCAL * dd;   // (F3.RWMIN_STEEP)
     const eff = (1 - WF[0]) * (1 - WF[1] - b.SDA), edF = got > 0 ? J / got : PREY.DAPH_ED;
     const need = Rj / Math.max(1e-9, eff * edF), ed = energyDensity(b, q.W);
     let hS = 0;
