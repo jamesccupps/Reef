@@ -286,6 +286,16 @@ fathead set (try its congener's at ACT 1 once its food exists).
       against field first-winter survival of 45–55-mm Maine-like cohorts before touching growth;
     - smallmouth: 6–8.4 cm in autumn, inside Opeongo's 55–85 and Spednic's 71–76 — leave;
     - pickerel: done (R2·4).
+  - **White perch's first winter (7a89163, F3.WIN_JE):** on Johnson & Evans 1990's own fitted model (starved YOY at 4 °C, counted in
+    days below 4 °C — 161 at Hot Brook; the young fast below 4 °C) in place of R1b's scaled Shuter ramp (half dead at 70 mm TL against
+    the measured ~60). Still a starved-fish bound: their fed fish lost none. **Open (R6 with R0):** do young white perch feed under
+    the ice? A mechanistic winter (the young's ration under ice against their reserves) would replace the ramps.
+  - **R0 now pressing — the young's background mortality double-charges predation.** 1/10 probe (ywp_509.txt): young white perch
+    grow field-like (0.17 mm/d in their first 6 weeks; field larvae 0.21–0.29; 4.0 cm by late October), but their "natural" deaths
+    are 17–54 % a fortnight through the summer against 3–20 % eaten (yellow perch at the same sizes 2–16 %): M_JUV3 is scaled up by
+    the cohort's own density (FRY.JUV_D50/JUV_DREF), a stand-in for the predation the encounter rule now simulates. Re-derive
+    M_LARVA3/M_JUV3 and drop the density scaling from the field's totals (white perch larvae Z 0.03–0.08/d, Kerr 2008; perch
+    Oneida 0.035/d) minus the tallied explicit predation (scratchpad yz.mjs on arm AA).
   - **Known, parked:** the bass's cold respiration switches from the empirical curve to the Rice set between 15 and 18 °C — a
     ~5× step that grows young bass faster at 15 °C than at 18; the yellow perch's first-winter loss ~13 % against the field's
     40–50 % (Z 0.001/d against ~0.004).
