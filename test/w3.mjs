@@ -995,6 +995,24 @@ if (run('strike')) {
       run('on'); run('off'); fm.stageR5(true);
       check('R4·6 (F3.YENC): the followed piscivores meet the young-of-year through their own encounter volume — six weeks from the founding, pickerel and bass eat ≥ 3× the young they eat on the percid clearance',
         yG.on >= 3 * yG.off && yG.on > 0, `${(yG.on / 1000).toFixed(2)} kg against ${(yG.off / 1000).toFixed(2)} kg`); }
+    // (R4·6, F3.YWIN_CS: the young caught by the strike rule's capture success — a 40-cm pickerel's request on one bin of 4-cm young
+    // perch, then one of 2.5-cm young pumpkinseed: each bin's weight is the followed fish's capture success at that size ratio, not the
+    // perch cannibal's window × the 2-D vulnerability, ~0.12 and ~0.001; F3.RD_SIZE: with its reaction distance to 6-cm prey 1.2 m,
+    // the 2.5-cm young are seen at the visual model's R²·e^(cR) ∝ L² — checked against a bisection — ~0.4 of the volume)
+    { const { FRY } = await import('../src/config.js'), NB = fm.KEYS3.length * FRY.NS;
+      const wOf = (on, k, Lq, rd0 = 0) => { fm.stageR5(true); fm.F3.YWIN_CS = on;
+        const z = () => new Float64Array(NB), T = { vol: [1000], av: z(), sL: z(), sW: z(), sD: z(), req: z(), reqY: z(), rec: [] }, j = fm.KEYS3.indexOf(k) * FRY.NS + Math.floor(Math.log2(Lq / 0.5));
+        T.av[j] = 100; T.sL[j] = 100 * Lq; T.sW[j] = 100 * 0.01 * Lq ** 3; T.sD[j] = 100 * 0.25 * Lq;
+        const me = { _yt: T }; fm.Fish3.prototype._yReq.call(me, { s: fm.S3.pike }, null, 0, 1, 40, 10, 1e9, 1, 1e9, true, false, 1, 0.5, 1, rd0);
+        return me._yA[j] * T.vol[0] / T.av[j]; };   // (encV 1 m³/s: the bin's weight is aD·V/av)
+      const csAt = (k, r) => { const b = fm.S3[k]; return Math.min(fm.F3.CS_MAX, b.cs[0] * (1 - r / b.ppr0) / (1 - b.pprM[0] / b.ppr0)); };
+      const pOn = wOf(1, 'perch', 4), pOff = wOf(0, 'perch', 4), sOn = wOf(1, 'sunfish', 2.5), sOff = wOf(0, 'sunfish', 2.5), sRD = wOf(1, 'sunfish', 2.5, 1.2); fm.stageR5(true);
+      const ep = csAt('perch', 0.1), es = csAt('sunfish', 2.5 / 40), c = fm.F3.RD_C, K = 1.2 ** 2 * Math.exp(c * 1.2) / fm.F3.RD_LREF ** 2;
+      let lo = 0, hi = 1.2; for (let it = 0; it < 60; it++) { const m = (lo + hi) / 2; if (m * m * Math.exp(c * m) < K * 2.5 ** 2) lo = m; else hi = m; }
+      const vRD = (lo / 1.2) ** 2;
+      check('R4·6 (F3.YWIN_CS, F3.RD_SIZE): the young-of-year meet the followed fish\'s capture success — a 40-cm pickerel on 4-cm young perch and 2.5-cm young pumpkinseed weighs each as the strike rule does at that size ratio, not by the perch cannibal\'s window; the small young are seen at their own reaction distance (the visual model)',
+        Math.abs(pOn - ep) < 1e-9 && Math.abs(sOn - es) < 1e-9 && pOn >= 3 * pOff && sOn >= 50 * sOff && Math.abs(sRD / sOn - vRD) < 1e-6 && vRD > 0.25 && vRD < 0.6,
+        `young perch ${pOn.toFixed(3)} (agents ${ep.toFixed(3)}; the window ${pOff.toFixed(3)}), young pumpkinseed ${sOn.toFixed(3)} (agents ${es.toFixed(3)}; the window ${sOff.toFixed(4)}); at their reaction distance ×${(sRD / sOn).toFixed(3)} (bisection ${vRD.toFixed(3)}: ${lo.toFixed(2)} m against 1.2 m at 6 cm)`); }
     // (R2b) the small fish reach the weeds' small fauna: on a weedy bed cell a followed fish ≤ LIT3.SM_L[0] cm sees the small fauna
     // with the large (weedEcells's sm) and takes from it in proportion; a fish ≥ SM_L[1] sees none of it
     { const e = new Env3({ col: 10 * CS, yf0: 0.45 }), lit = e.lit, L3 = (await import('../src/w3/littoral3.js')).LIT3;
