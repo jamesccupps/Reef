@@ -192,7 +192,21 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~3:30 a.m. — the newest): ARM T RUNNING (queue_r12.sh; snapshot u :8133 = 85bd755; r5=1; 613/611/612 ×
+▶▶▶ RESUME HERE (2026-10-21 ~7:10 a.m. — the newest; COMPACTING): ARM U RUNNING (queue_r13.sh, snapshot v :8134 = b840a49, r5=1;
+613/611/612 × 3 yrs → r13U_<seed>.txt, ~80 min each, done ~11 a.m.; then stop the snapshot servers :8128 p, :8131 s, :8132 t if
+still up — kill by Name node.exe + 'serve.mjs 81'+'NN'). Arm U = arm T + young white/yellow perch yBed 2.5 m. WHY: arm T (r12T_*,
+cover cuts capture, F3.COVER_CS + rock cover S3 rockC) starved the predators (bass 1.3–1.5, pickerel 1.6 kg/ha yr 3); the tallies show
+124–209 M young white perch hatched/yr, ~20 % eaten — 13–18 M each by yellow and white perch, 0.1–0.5 M by bass/pickerel: the
+young schools sat offshore with the zooplankton. READ ARM U: `node yrsum.mjs r12T_613.txt r13U_*.txt`, then each RUN-YEAR summary's
+'young whiteperch eaten by', 'the period's diet', LENGTH AT AGE (bass ages 1–6 present?), killifish, white perch vs 15–35 kg/ha and
+the cap (×1.5). Compare arms in scratchpad: r8O_613 (5 yr baseline), r10R_613, r11S_*, r12T_*, r13U_*. Tools: yrsum.mjs,
+cmpday.mjs, probe/bassk.mjs (kills of small bass), probe/wgrow2.mjs (the young through winter). Arms R–T lessons (FINDINGS-worthy):
+hungry predators striking at aMax only re-choose prey, so refuges move kills unless there is accessible alternative prey; bass
+recruitment failure (by yr 3 nearly all bass ≥ 7 yrs). OPEN: white perch at the cap (42–46 kg/ha), killifish gone in yr 1 on every arm,
+bass weeds' insects cropped to the refuge, item 16 birds, streams as boundaries (the human asked: fish moving through the inflow and
+outlet — none in the sim; plan item 38; asked the human about sucker runs up Upper's south inlet and barriers at Lower's outlet).
+The human's open offer: a CPU-only Windows server + Pis over Tailscale for gate/CPU probes (waiting on its name).
+▶▶▶ RESUME HERE (2026-10-21 ~3:30 a.m.): ARM T RUNNING (queue_r12.sh; snapshot u :8133 = 85bd755; r5=1; 613/611/612 ×
 3 yrs → r12T_<seed>.txt, done ~7:30 a.m.). ARM S (r11S_*.txt, 3 seeds) ≈ arm R: bass insR/seek and the killifish strip changed ~nothing;
 bass ~6.5→2 kg/ha on every seed (recruitment failure: by yr 3 almost all bass ≥ 7 yrs), killifish gone yr 1, white perch 42–45 AT THE
 CAP (1.49×). CPU probe probe/bassk.mjs (kills of bass < 15 cm, 60 days from founding): 48 of 75 eaten (bass, pickerel, white perch) by
