@@ -43,6 +43,26 @@ All in `stageR5` (not yet the default), CPU and GPU, each behind its own F3 flag
   - 18, 20, 21, 22 (the esocid size window, size-scaled M), 25, 27, 29, and phases 6–9;
   - bullhead growth: research running (bullhead_growth_and_young_white_perch.md).
 
+## Progress (2026-10-21 morning): arms R–U read; CPU probes on occ-server
+- **Arms R–U (seed 613, three true-scale years):** the predators fall every year (pickerel 5 → 1.6 kg/ha, bass 6.5 → 1.5 in arm T),
+  white perch climb to the census cap, killifish die out in year 1. Arm U (the perches' young at yBed 2.5 m) made it worse (white
+  perch 59.6 kg/ha in year 3 against arm T's 46.4) and is taken out.
+- **Killifish (probe killi.mjs, 1/10 CPU):**
+  - *bug, fixed:* the young's shelf rule (yBed) tested column means; only ~2 % of the 50-m columns average ≤ 0.5 m, so a school
+    beside none of them wandered offshore (1.7–2.8 m) and never came back. An off-shelf school now heads for the shallowest column
+    about it (young over 0.7–0.8 m after the fix);
+  - *bug, fixed (F3.EGG_SCHOOL):* a ripe school laid at most 59 % of its eggs (its ripeness measured against the female's GSI,
+    not its own) — killifish, yellow and white perch alike;
+  - *open:* the adults lay ~1 clutch a summer, not ~3 — their ration falls to 0.43–0.47 by June (zooplankton gone from the
+    shallows, then bed fauna only) and condition 0.99 → 0.84, so the gonads never rebuild; the young's ration is 0.23–0.32 in the
+    shallows. The shoreline strip's food (chydorids, midges, epiphytes, fallen insects) is the next question.
+- **The predators' kill rate (probes prd.mjs, prd2.mjs):** pickerel make **0.05–0.09 kills a fish-day** against the field's 0.5–2
+  (piscivore_encounter_attack.md), bass 0.02–0.03 and live on crayfish (p 0.09–0.12, K 0.94 → 0.74). The young they ask for are
+  always delivered in full: the young are not the bottleneck. The strike rule's terms stack: 60–80 % of calls find no catchable prey
+  within 6 m, saturation E/(E+E_h) 0.14–0.22 where the design assumed E ≫ E_h, capture success 0.09–0.13 (cover now cuts the
+  encounter AND the capture — F3.COVER_CS, arm T), hunting 10–17 % of the time. Product ~10–40× below the field. A six-variant
+  screen (COVER_CS, act, ENC_DZ) on occ-server is next.
+
 ## Order of work
 
 Each phase is one or more slices, gated and pushed. Phases 1–5 are stage R's continuation. Phase 6 validates them. Phases 7–9 build what's missing.

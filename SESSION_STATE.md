@@ -192,7 +192,18 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~7:10 a.m. — the newest; COMPACTING): ARM U RUNNING (queue_r13.sh, snapshot v :8134 = b840a49, r5=1;
+▶▶▶ RESUME HERE (2026-10-21 ~9:45 a.m. — the newest): OCC-SERVER RUNS THE CPU WORK (tools/remote/run.mjs; memory remote-cpu-host:
+`node tools/remote/run.mjs occ-server [-e K=V] [--put probe.mjs] -- <cmd>`; ~15 % SLOWER per core than this desktop — its worth is 12
+threads beside the GPU; gate there with -e W3_PERF_MUL=1.3; never run probes beside a gate (timing checks)). ARM U READ AND TAKEN OUT
+(613: white perch 59.6 vs T's 46.4; queue stopped). Committed: 3206eb6 (the young's shelf: off-shelf schools head shallower — CPU+GPU,
+g1_check ?r5=1 as before), 00b413d (F3.EGG_SCHOOL: schools laid ≤ 59 % of their eggs; _sdiag probe hook). ARM V RUNNING on the GPU
+(queue_r14.sh, snapshot w :8135 = 3206eb6, 613 × 3 yrs → r14V_613.txt, ~100 min from ~9:05; it predates EGG_SCHOOL). PROBES (scratchpad
+probe/, outputs scratchpad *.txt): killi.mjs (killifish: one clutch a summer — adults underfed in the strip), prd.mjs + prd2.mjs (the
+predators kill 0.05–0.09 fish a day vs the field's 0.5–2: no prey in reach 60–80 % of calls, saturation 0.14–0.22, capture 0.09–0.13
+with COVER_CS, act 0.10–0.17), screen.mjs (env SET='F3.X=…;S3.k.y=…' variants) — SIX VARIANTS RUNNING on occ-server (screen_q.sh →
+scr_A..F.txt: base, COVER_CS 0, act ×2, ENC_DZ 0, combos). NEXT: read the screen, pick the predator fix, port/arm it; the killifish
+strip's food. docs/review/PLAN.md "Progress (2026-10-21 morning)" has the findings.
+▶▶▶ RESUME HERE (2026-10-21 ~7:10 a.m.; COMPACTING): ARM U RUNNING (queue_r13.sh, snapshot v :8134 = b840a49, r5=1;
 613/611/612 × 3 yrs → r13U_<seed>.txt, ~80 min each, done ~11 a.m.; then stop the snapshot servers :8128 p, :8131 s, :8132 t if
 still up — kill by Name node.exe + 'serve.mjs 81'+'NN'). Arm U = arm T + young white/yellow perch yBed 2.5 m. WHY: arm T (r12T_*,
 cover cuts capture, F3.COVER_CS + rock cover S3 rockC) starved the predators (bass 1.3–1.5, pickerel 1.6 kg/ha yr 3); the tallies show
