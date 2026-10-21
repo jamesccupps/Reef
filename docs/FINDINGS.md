@@ -14,8 +14,19 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   larva it gives an appetite close to the measured (29 %BW/d at 15 °C, 42 % at 18 °C; pike larvae ~30 %/d at 13–16 mm, Grès et al.
   1996) but, with its respiration and waste, a full ration grows the larva only 0.05–0.10 mm a day below 15 °C and 0.2–0.3 at
   18–21 °C. The same functions grow perch larvae 0.2–0.5 mm/d and bass 0.2–0.95. The predators, the zooplankton and the young's
-  habitat cannot rescue a fish whose energy budget is negative or flat at the temperatures it hatches into. (Research running on
-  larval esocid consumption, growth and metabolism: docs/research_notes/Predator winter energetics/esocid_larval_energetics.md.)
+  habitat cannot rescue a fish whose energy budget is negative or flat at the temperatures it hatches into.
+- **Which part fails (docs/research_notes/Predator winter energetics/esocid_larval_energetics.md).** The set was fitted on 9–53-g
+  pike eating minnows. Its respiration is within 5–27 % of first-feeding pike's at 15–25 °C, but with too shallow a temperature slope
+  (Q10 1.73 against the larva's 2.5, Woynárovich 1960) — the adults' ×0.5 winter cut had stood in for that. Its consumption ceiling
+  is 1.2–2.6× short below ~0.1–0.3 g: its mass exponent −0.18 against the larval growth exponent −0.24 (Wieser et al. 1992).
+- **Fix, from measurements only.** Below 10 g (the fitted range's floor) the young pickerel run on the same set with Cmax ∝ W^−0.24
+  (continuous at 10 g), respiration Q10 2.5 (equal to the adult's at 22.5 °C; the winter cut off for it) and FB4's juvenile esocid
+  losses (FA 0.13, SDA 0.14). Unfitted, a 1.25-cm larva at a full ration of zooplankton then grows 0.23 / 0.31 / 0.49 / 0.71 / 0.92
+  / 0.98 mm/d at 10 / 12 / 15 / 18 / 21 / 24 °C against the measured 0.25 / 0.45 / 0.48–0.65 / 0.64–0.82 / 0.68–0.96 / 0.80–1.21
+  (Górny 1992; Fey & Greszkiewicz 2021). At 1/10 scale the first week's starvation fell from 18.5 % to 0.2 % and the larvae grew
+  0.92 → 1.22 cm (from 0.92 → 0.92) — though there they were still eaten at 64–91 % a week (the 1/10 strip packs the panfish 10×).
+  Their cover preference (yCover 0.8: Grimm 1994; Casselman & Lewis 1996), switched off when the young in the weeds "recruited
+  less", is back: they recruited less because they could not grow.
 - **Why it matters.** Bioenergetics sets are fitted over a size range; extrapolated to larvae — four orders of magnitude lighter —
   they can fail silently, and the failure surfaces years later as a missing species, read as predation or habitat.
 

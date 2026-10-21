@@ -1013,6 +1013,19 @@ if (run('strike')) {
       check('R4·6 (F3.YWIN_CS, F3.RD_SIZE): the young-of-year meet the followed fish\'s capture success — a 40-cm pickerel on 4-cm young perch and 2.5-cm young pumpkinseed weighs each as the strike rule does at that size ratio, not by the perch cannibal\'s window; the small young are seen at their own reaction distance (the visual model)',
         Math.abs(pOn - ep) < 1e-9 && Math.abs(sOn - es) < 1e-9 && pOn >= 3 * pOff && sOn >= 50 * sOff && Math.abs(sRD / sOn - vRD) < 1e-6 && vRD > 0.25 && vRD < 0.6,
         `young perch ${pOn.toFixed(3)} (agents ${ep.toFixed(3)}; the window ${pOff.toFixed(3)}), young pumpkinseed ${sOn.toFixed(3)} (agents ${es.toFixed(3)}; the window ${sOff.toFixed(4)}); at their reaction distance ×${(sRD / sOn).toFixed(3)} (bisection ${vRD.toFixed(3)}: ${lo.toFixed(2)} m against 1.2 m at 6 cm)`); }
+    // (R2·3, F3.YDEPTH: the young's depth in the predators' reach — the table's bins by the bed's depth; a 40-cm pickerel (the water it
+    // needs: 0.5·SHALLOW_K·40 = 0.4 m) reaches 4-cm young perch over 0.25 m not at all, over 0.6 m at half, over 1.0 m fully — the
+    // followed fish's rule (_strike2's clamp((bed − dmH)/dmH, 0, 1)))
+    { const { FRY } = await import('../src/config.js'), ND = 4, NB = fm.KEYS3.length * FRY.NS * ND;
+      const wAt = bed => { fm.stageR5(true);
+        const z = () => new Float64Array(NB), T = { nd: ND, vol: [1000], av: z(), sB: z(), sL: z(), sW: z(), sD: z(), req: z(), reqY: z(), rec: [] }, d = bed < fm.F3.YD_E0 ? 0 : bed < fm.F3.YD_E1 ? 1 : bed < fm.F3.YD_E2 ? 2 : 3, j = (fm.KEYS3.indexOf('perch') * FRY.NS + Math.floor(Math.log2(4 / 0.5))) * ND + d;
+        T.av[j] = 100; T.sB[j] = 100 * bed; T.sL[j] = 400; T.sW[j] = 100 * 0.01 * 64; T.sD[j] = 100 * 0.25 * 4;
+        const me = { _yt: T }; fm.Fish3.prototype._yReq.call(me, { s: fm.S3.pike }, null, 0, 1, 40, 10, 1e9, 1, 1e9, true, false, 1, 0.5, 1);
+        return (me._yA ? me._yA[j] : 0) * T.vol[0] / T.av[j]; };
+      const w25 = wAt(0.25), w60 = wAt(0.6), w100 = wAt(1.0); fm.stageR5(true);
+      check('R2·3 (F3.YDEPTH): the young\'s depth in the predators\' reach — a 40-cm pickerel reaches 4-cm young perch over 0.25 m of water not at all, over 0.6 m at half, over 1.0 m fully (the followed fish\'s shallows rule); the package keeps young smallmouth in their first summer\'s shallows',
+        w25 === 0 && w100 > 0 && Math.abs(w60 / w100 - 0.5) < 1e-9 && fm.F3.YDEPTH === 1 && fm.S3.bass.yBed === 1,
+        `weights ${w25.toFixed(3)} / ${w60.toFixed(3)} / ${w100.toFixed(3)} over 0.25 / 0.6 / 1.0 m; young bass shelf ${fm.S3.bass.yBed} m`); }
     // (R2b) the small fish reach the weeds' small fauna: on a weedy bed cell a followed fish ≤ LIT3.SM_L[0] cm sees the small fauna
     // with the large (weedEcells's sm) and takes from it in proportion; a fish ≥ SM_L[1] sees none of it
     { const e = new Env3({ col: 10 * CS, yf0: 0.45 }), lit = e.lit, L3 = (await import('../src/w3/littoral3.js')).LIT3;
@@ -1033,6 +1046,16 @@ if (run('strike')) {
       check('the cold rules read a relative appetite (the pickerel\'s Eq. 4 curve divided by its peak: ~0.12 of it at 2 °C, not 1.0; the bass\'s Eq. 2 unchanged); R1b: white perch\'s adult background mortality 0.45–0.65 a year with maxAge 10 under the package, 0.23 and 12 off it',
         relP2 > 0.08 && relP2 < 0.2 && Math.abs(relB2 - be.consumptionT(bs, 2)) < 1e-9 && wpOn >= 0.45 && wpOn <= 0.65 && Math.abs(ageOn - 10) < 0.01 && offOK,
         `pickerel ${relP2.toFixed(3)} at 2 °C (peak ${pk.cTmax.toFixed(2)}), bass ${relB2.toFixed(3)}; white perch ${wpOn.toFixed(2)}/yr to ${ageOn.toFixed(1)} yr (off: ${wpOff.toFixed(2)}, ${ageOff.toFixed(1)})`); }
+    // (R2·4: the young pickerel's own set — a 1.25-cm larva's growth at a full ration of zooplankton (2,550 J/g) on the sim's own
+    // bioenergetics: within the measured larval pike growth fed to excess at 15 and 21 °C (0.48–0.65, 0.68–0.96 mm/d: Górny 1992, Fey
+    // & Greszkiewicz 2021), where the adult set gives ~0.13 and ~0.37; the adult set's winter cut off for it, on for the adults)
+    { const be = await import('../src/bioenergetics.js'), sp = fm.S3.pike.sp, WF = new Float64Array(3), Wt = be.stdWeight(sp.lw, 1.25);
+      const mmd = (b, T) => { be.wasteFractions(b, T, 1, WF); const net = be.coldCmax(sp.cold, b, sp.bio, Wt, T) * 2550 * (1 - WF[0]) * (1 - WF[1] - b.SDA) - be.coldResp(sp.cold, b, sp.bio, Wt, T) * be.OXYCAL; const g = net / be.energyDensity(b, Wt); return 12.5 * (Math.pow(1 + g, 1 / sp.lw.b) - 1); };
+      const j = sp.bioJuv, j15 = j ? mmd(j, 15) : 0, j21 = j ? mmd(j, 21) : 0, a15 = mmd(sp.bio, 15), a21 = mmd(sp.bio, 21);
+      const cutJ = j ? be.coldResp(sp.cold, j, sp.bio, Wt, 5) / be.respiration(j, Wt, 5) : 0, cutA = be.coldResp(sp.cold, sp.bio, sp.bio, 50, 5) / be.respiration(sp.bio, 50, 5);
+      check('R2·4: the young pickerel grow at the measured larval pike rates — a 1.25-cm larva at a full ration of zooplankton grows 0.48–0.65 mm/d at 15 °C and 0.68–0.96 at 21 °C on its own set (the adult FB4 pike set: ~0.13 and ~0.37); the adult set\'s winter respiration cut applies to the adults only',
+        j15 >= 0.45 && j15 <= 0.7 && j21 >= 0.65 && j21 <= 1.0 && a15 < 0.25 && Math.abs(cutJ - 1) < 1e-9 && cutA < 0.6,
+        `juvenile set ${j15.toFixed(2)} / ${j21.toFixed(2)} mm/d, adult set ${a15.toFixed(2)} / ${a21.toFixed(2)}; at 5 °C the cold cut ×${cutJ.toFixed(2)} (young) ×${cutA.toFixed(2)} (adults)`); }
     fm.stageR5(false);
     // (≥ 2×: with F3.YENC the predators take more of the young in both, and the zooplankton-first case keeps more than it did — 26 µg/L
     // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it)

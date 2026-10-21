@@ -265,9 +265,23 @@ fathead set (try its congener's at ACT 1 once its food exists).
     1.7 /m). Six weeks at 1/10: 1.08 kg against 0.11. A 1/10 screen (3 seeds, 140 days): pickerel eat 2.1–2.9× the young,
     bass 2.3–3.1×, their kills of followed fish and p unchanged. The GPU's copy (c08b186) checked in g1_check (young eaten 137/137).
     **Arm Z** (c08b186 = arm Y + YENC + YWIN_CS + RD_SIZE; 613/611/612 × 3 yrs) running.
-  - **The pickerel's first year (found in arm Y):** the young run on the adult FB4 pike set, on which a full ration grows a 0.9-cm
-    larva 0.05–0.10 mm/d below 15 °C — no year-classes. Research on larval esocid energetics running; then a sourced juvenile
-    set, then S3.pike.yCover restored (switched off when the young pickerel in the weeds recruited less — they couldn't grow).
+  - **R2·4 — the pickerel's first year (found in arm Y):** the young ran on the adult FB4 pike set, on which a full ration grows a
+    0.9-cm larva 0.05–0.10 mm/d below 15 °C — no year-classes. From the measurements (esocid_larval_energetics.md): below 10 g, Cmax ∝
+    W^−0.24 (Wieser et al. 1992) continuous at 10 g, respiration Q10 2.5 (Woynárovich 1960) equal at 22.5 °C with the adults' ×0.5
+    winter cut off for it, FB4's juvenile esocid losses (FA 0.13, SDA 0.14). Unfitted, it reproduces lab pike larvae fed to excess
+    (0.23–0.98 mm/d at 10–24 °C against 0.25–1.21). S3.pike.yCover 0.8 restored (Grimm 1994; Casselman & Lewis 1996).
+  - **R2·3 — YDEPTH, the young's depth in the predators' reach (after arm Z: adult bass ate 1.36 M young bass, the cohort 3.1 M →
+    16 k by mid-August):** the young's table by the bed's depth too (classes at 0.3 / 0.6 / 1.2 m), each predator reaching a bin by
+    the followed fish's shallows rule (none at ≤ 0.5·SHALLOW_K·L, full at ≥ SHALLOW_K·L, on the bin's mean bed); young smallmouth on
+    their first summer's shallows (S3 yBed 1.0 m: Forbes 1981's review, Aadland 1993, Ridgway 2002).
+  - **R2·4b — next: the young's energy density.** The young grow on their adult sets' energy density (perch and bass 4,186, white
+    perch 5,300 J/g) where larvae measure ~1.8–2.5 kJ/g rising to ~3–3.5 at 2–5 cm (Weil et al. 2019's dry-fraction regression; age-0
+    bluegill 2,300 J/g, Breck 1993; larval perch 2,512, Post 1990; smallmouth dry 15–16.5 %, DeAngelis et al. 1993) — the adult value
+    roughly halves larval length growth (Kitchell's bluegill set: 0.25 → 0.46 mm/d at 21 °C), and the young end autumn under the
+    first winter's survival sizes (white perch 4.4–5.5, pumpkinseed 2.7–3.0, redbreast 2.1–2.9 cm). Pike larvae (~3.5–3.7 kJ/g,
+    Trabelsi) are already near their set's 3,598. Design (a weight-dependent ED for each young set, the young as prey at their own
+    ED, the recruits' hand-over) and validate against Beard 1982, Breck 1993, Shuter & Ridgway 2002 before an arm
+    (larval_juvenile_energetics_panfish.md §3–4, §7).
   - **Known, parked:** the bass's cold respiration switches from the empirical curve to the Rice set between 15 and 18 °C — a
     ~5× step that grows young bass faster at 15 °C than at 18; the yellow perch's first-winter loss ~13 % against the field's
     40–50 % (Z 0.001/d against ~0.004).

@@ -26,7 +26,7 @@ import { A2 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
-import { cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
+import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
 import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
@@ -200,6 +200,14 @@ export const F3 = {
   // fish is seen at ~0.55 of a 6-cm one's distance, a 15-cm perch at ~1.4 — larval roach "severely" less seen by young pike in
   // degraded water (Jönsson et al. 2012) — where the strike rule met every size at the same distance and the young's window stood in
   RD_SIZE: 0, RD_C: 1.7, RD_LREF: 6,
+  // R2·3 — YDEPTH: THE YOUNG'S DEPTH IN THE PREDATORS' REACH. The young's prey table held a column's schools by species and length
+  // only, so a 40-cm bass reached young in 0.3 m of water as in 3 m, where a followed fish of the same size is out of its reach over
+  // a bed shallower than half the water the predator needs (SHALLOW_K: none at ≤ 0.5·K·L, full at ≥ K·L). With it the table's bins
+  // are also by the bed's depth (classes at YD_E0–2 m) and each predator's request reaches a bin by that rule on the bin's mean bed —
+  // one shallows' rule for young and followed fish. (Arm Z, seed 613, with the young met through the encounter volume: adult bass
+  // ate 1.36 M young bass in the first summer, the cohort 3.1 M → 16 k by mid-August, against field stomachs with almost none —
+  // Maine 0 of 36, Wisconsin 0 of 303 — while young smallmouth live in the shallows near their nests: juvenile_refuges_and_bass_young.md)
+  YDEPTH: 0, YD_E0: 0.3, YD_E1: 0.6, YD_E2: 1.2,
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -509,6 +517,8 @@ export const PREY_LR = { pike: 0.55, bass: 0.45 }, PREY_LR0 = 0.45;
 const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
 // (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
+// (R2·4) the young pickerel's set (stageR5): the adult pike set's temperature curves; Cmax W^−0.24 continuous at 10 g; R Q10 2.5 equal at 22.5 °C
+const PIKE_JUV = (() => { const a = SP.pike.bio; return prepBio({ ...a, CA: a.CA * Math.pow(10, a.CB + 0.24), CB: -0.24, RQ: Math.log(2.5) / 10, RA: a.RA * Math.exp((a.RQ - Math.log(2.5) / 10) * 22.5), FA: 0.13, UA: 0.0805, SDA: 0.14, src: 'the young pickerel: Bevelhimer et al. 1985 below 10 g with the larval mass exponent (Wieser et al. 1992), Q10 (Woynárovich 1960) and losses (Schoenebeck et al. 2008)' }); })();
 const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER0.K.whiteperch, sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
@@ -665,9 +675,26 @@ export function stageR5(on = true) {
   // a harsher WINTER0 ramp than the perch's they shared ([1.04, 0.87] → [1.1, 0.95]); the adults' size slope off (MOTHER_FLAT)
   F3.MOTHER_FLAT = on ? 1 : 0; S3.whiteperch.mOther = on ? 1 : undefined;
   F3.YENC = on ? 1 : 0;   // (R4·6: the young met through the predator's own encounter volume — see F3)
+  // (R2·3) the young's depth in the predators' reach, and the young smallmouth's first-summer shallows: solitary after dispersal, in
+  // recesses among stones near the nest, < 5 cm fish over sand and rock near shore (Forbes 1981's review; age-0 mean depth 0.34 m in
+  // streams, Aadland 1993; most within 200 m of the nest, Ridgway 2002) — S3 yBed 1.0 m in the open-water season
+  F3.YDEPTH = on ? 1 : 0; S3.bass.yBed = on ? 1.0 : 0;
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
   SP.whiteperch.M = on ? 0.54 : BIO0.wpM; SP.whiteperch.maxAge = BIO0.wpMaxAge * (on ? 10 / 12 : 1); S3.whiteperch.maxAge = SP.whiteperch.maxAge / Y2 * YEAR;   // (as the species' set-up)
   WINTER0.K.whiteperch = on ? [1.1, 0.95] : BIO0.wpK;
+  // (R2·4) THE YOUNG PICKEREL'S OWN SET (esocid_larval_energetics.md): the adult FB4 pike set (Bevelhimer et al. 1985, fitted on
+  // 9–53-g pike eating minnows) grew a 1-cm larva 0.01–0.4 mm/d at a full ration of zooplankton, where pike larvae fed to excess grow
+  // 0.25 (10 °C) – 0.45 (12) – 0.5–0.65 (15) – 0.65–0.8 (18) – 0.7–1.0 (21) – 0.8–1.2 mm/d (24; Górny 1992, Fey & Greszkiewicz 2021)
+  // — so the pickerel had no year-classes (arm Y). Below 10 g (the fitted range's floor): Cmax's mass exponent −0.24 (Wieser et al.
+  // 1992's larval growth exponent; the hatchery SGR's ≈ −0.3), continuous with the adult set at 10 g; respiration's Q10 2.5 (first-
+  // feeding pike, Woynárovich 1960) equal to the adult set's at 22.5 °C — the adult's ×0.5 winter cut (Chipps et al. 2000's age-0
+  // esocid errors in cold water) stood in for it, and is off for this set (bioenergetics coldResp); the losses of FB4's juvenile
+  // esocid set (muskellunge juvenile, Schoenebeck et al. 2008: FA 0.13, UA 0.0805, SDA 0.14). Full-ration growth then 0.23 / 0.31
+  // / 0.49 / 0.71 / 0.92 / 0.98 mm/d at 10 / 12 / 15 / 18 / 21 / 24 °C for a 1.25-cm larva on zooplankton: the measured growth, unfitted
+  SP.pike.bioJuv = on ? PIKE_JUV : undefined; SP.pike.juvW = on ? 10 : undefined;
+  // (R2·4) and their cover again: young pike under ~14 cm keep to dense vegetation (Grimm 1994), juveniles need 35–70 % macrophyte cover
+  // (Casselman & Lewis 1996) — S3 yCover 0.8, switched off when the young pickerel in the weeds recruited less: they could not grow
+  S3.pike.yCover = on ? 0.8 : 0;
   F3.YSHARE = on ? 1 : 0; F3.RWMIN_STEEP = on ? 1 : 0; PLANKTON.K_FRY = on ? 60 : K_FRY0;
   for (const k of KEYS3) S3[k].cmaxL = on && k !== 'sunfish' && k !== 'redbreast' ? 1 : undefined;
   F3.COVER_CS = 0; F3.COVER_ONCE = on ? 1 : 0; F3.SIZE_RENORM = on ? 1 : 0; F3.EH_AMAX = on ? 1 : 0; F3.REST_DIGEST = on ? 1 : 0; F3.REST_ALL = on ? 1 : 0;
@@ -748,6 +775,8 @@ function rdOf(R0, L) {
   for (let k = 0; k < 3; k++) R = Math.max(0.5 * R, R - (2 * Math.log(R) + c * R - T) / (2 / R + c));
   return R;
 }
+// the young's table: depth classes (F3.YDEPTH — 4, else 1) and a school's class by its bed
+const yND = () => (F3.YDEPTH ? 4 : 1), yDC = bed => (!F3.YDEPTH ? 0 : bed < F3.YD_E0 ? 0 : bed < F3.YD_E1 ? 1 : bed < F3.YD_E2 ? 2 : 3);
 function csOf(bs, cls, r) { const fz = Math.max(0, 1 - r / bs.ppr0); return F3.SIZE_RENORM ? Math.min(F3.CS_MAX, bs.cs[cls] * fz / (1 - bs.pprM[cls] / bs.ppr0)) : bs.cs[cls] * fz; }
 KEYS3.forEach((k, i) => {
   const s = S3[k], sp = SP[k];
@@ -2325,18 +2354,18 @@ export class Fish3 {
   // n × (1 − their cover), a guarded brood × (1 − BROOD.PROTECT) — their summed length, mass and body depth (the bin's means) — and
   // each school's bin and share (its deaths at the settlement)
   _yTable() {
-    const G = this.G, NK = KEYS3.length, NS = FRY.NS, nb = G.NC * NK * NS;
+    const G = this.G, NK = KEYS3.length, NS = FRY.NS, ND = yND(), nb = G.NC * NK * NS * ND;
     let T = this._yt;
     if (!T || T.nb !== nb) {
-      T = this._yt = { nb, av: new Float64Array(nb), sL: new Float64Array(nb), sW: new Float64Array(nb), sD: new Float64Array(nb), req: new Float64Array(nb), reqY: new Float64Array(nb), got: new Float64Array(nb), gotF: new Float64Array(nb), rec: [], vol: new Float64Array(G.NC) };
+      T = this._yt = { nb, nd: ND, av: new Float64Array(nb), sB: new Float64Array(nb), sL: new Float64Array(nb), sW: new Float64Array(nb), sD: new Float64Array(nb), req: new Float64Array(nb), reqY: new Float64Array(nb), got: new Float64Array(nb), gotF: new Float64Array(nb), rec: [], vol: new Float64Array(G.NC) };
       for (let c = 0; c < G.NC; c++) for (let k = 0; k < G.nL[c]; k++) T.vol[c] += G.vol[G.cell0[c] + k];
     }
-    T.av.fill(0); T.sL.fill(0); T.sW.fill(0); T.sD.fill(0); T.req.fill(0); T.reqY.fill(0); T.got.fill(0); T.rec.length = 0;
+    T.av.fill(0); T.sB.fill(0); T.sL.fill(0); T.sW.fill(0); T.sD.fill(0); T.req.fill(0); T.reqY.fill(0); T.got.fill(0); T.rec.length = 0;
     for (const q of this.yoy) {
       q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0)) continue;
       const held = q.gref && q.gref.alive && q.gref.nt > 0, a = q.n * (1 - q.cover) * (held ? 1 - BROOD.PROTECT : 1); if (!(a > 0)) continue;
-      const s = Math.min(NS - 1, Math.max(0, Math.floor(Math.log2(q.L / 0.5)))), b = (q.c * NK + q.k) * NS + s;
-      T.av[b] += a; T.sL[b] += a * q.L; T.sW[b] += a * q.W; T.sD[b] += a * q.bdep; q._yb = b; q._ya = a;
+      const s = Math.min(NS - 1, Math.max(0, Math.floor(Math.log2(q.L / 0.5)))), b = ((q.c * NK + q.k) * NS + s) * ND + yDC(q.bed);   // (F3.YDEPTH: by its bed's depth too)
+      T.av[b] += a; T.sB[b] += a * q.bed; T.sL[b] += a * q.L; T.sW[b] += a * q.W; T.sD[b] += a * q.bdep; q._yb = b; q._ya = a;
     }
   }
   // A PREDATOR'S REQUEST on the young of its column (a followed fish p, or a school of young piscivores q): Holling II on the bins'
@@ -2345,19 +2374,20 @@ export class Fish3 {
   // handling = the prey's mass / imax (g/s a fish); over dt for its n fish, capped by gMax g a fish. Recorded for _ySettle
   _yReq(p, q, c, n, L, gape, imax, dt, gMax, pisc, larv, eff, preyLR, encV = 0, rd0 = 0, hS = 0) {   // (encV m³/s: a followed piscivore's encounter volume — F3.YENC; rd0 its reaction distance to RD_LREF-cm prey, hS s an attack — F3.YWIN_CS)
     const T = this._yt; if (!T || c < 0 || !(gMax > 0) || !(imax > 0) || !(eff > 0)) return;
-    const NK = KEYS3.length, NS = FRY.NS, NB = NK * NS, b0 = c * NB, V = T.vol[c], cls = (p || q).s.predCls; if (!(V > 0)) return;
-    const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, aP = encV > 0 ? encV : a0, A = this._yA || (this._yA = new Float64Array(NB));   // (aP: the piscivore's volume, a0 the larva-picker's)
+    const NK = KEYS3.length, NS = FRY.NS, ND = T.nd || 1, NB = NK * NS * ND, b0 = c * NB, V = T.vol[c], cls = (p || q).s.predCls, dmH = 0.5 * F3.SHALLOW_K * L; if (!(V > 0)) return;
+    const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, aP = encV > 0 ? encV : a0, A = this._yA && this._yA.length >= NB ? this._yA : (this._yA = new Float64Array(NB));   // (aP: the piscivore's volume, a0 the larva-picker's)
     let sA = 0, sAH = 0;
     for (let j = 0; j < NB; j++) {
       A[j] = 0; const av = T.av[b0 + j]; if (!(av > 0)) continue;
-      const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / NS) | 0; let w = 0, wL = 0, att = 0;
+      const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / (NS * ND)) | 0; let w = 0, wL = 0, att = 0;
+      const acc = ND > 1 ? clamp((T.sB[b0 + j] / av - dmH) / dmH, 0, 1) : 1; if (!(acc > 0)) continue;   // (F3.YDEPTH: the shallows' rule, SHALLOW_K)
       if (pisc && T.sD[b0 + j] / av <= gape && r >= FRY.WIN_MIN && r <= preyLR) {
         if (F3.YWIN_CS && encV > 0) { att = clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1) * (F3.RD_SIZE && rd0 > 0 ? (rdOf(rd0, Lq) / rd0) ** 2 : 1); w = att * csOf(S3[KEYS3[k]], cls, r); }   // (its attacks: as larvae by their detectability, at their reaction distance; × the strike rule's capture success)
         else { const R = 1 / r, u = R / FRY.WIN_R * Math.exp(1 - R / FRY.WIN_R); w = Math.pow(u, FRY.WIN_E) * S3[KEYS3[k]].sp.vuln; }
       }
       if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) wL = FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1);
-      const aW = Math.max(aP * w, a0 * wL); if (!(aW > 0)) continue;   // (the piscivore's window on its volume, the larvae on the picker's clearance)
-      const aD = aW * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax + (hS > 0 && aP * w >= a0 * wL ? aP * att * av / V * hS : 0);   // (F3.YWIN_CS: its attacks' time)
+      const aW = Math.max(aP * w, a0 * wL) * acc; if (!(aW > 0)) continue;   // (the piscivore's window on its volume, the larvae on the picker's clearance)
+      const aD = aW * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax + (hS > 0 && aP * w >= a0 * wL ? aP * att * acc * av / V * hS : 0);   // (F3.YWIN_CS: its attacks' time)
     }
     if (!(sA > 0)) return;
     let K = n * dt * sA / (1 + sAH), g = 0;
@@ -2379,7 +2409,7 @@ export class Fish3 {
       let g = 0, J = 0; const f = [];
       for (let m = 0; m < r.bins.length; m++) {
         const b = r.bins[m], left = young ? T.av[b] - T.gotF[b] : T.av[b], rq = young ? T.reqY[b] : T.req[b];
-        const ff = left > 0 ? Math.min(1, left / rq) : 0, k = r.ks[m] * ff, Wq = T.sW[b] / T.av[b]; f.push(k); g += k * Wq; J += k * Wq * energyDensity(S3[KEYS3[((b / FRY.NS) | 0) % KEYS3.length]].sp.bio, Wq);
+        const ff = left > 0 ? Math.min(1, left / rq) : 0, k = r.ks[m] * ff, Wq = T.sW[b] / T.av[b]; f.push(k); g += k * Wq; J += k * Wq * energyDensity(S3[KEYS3[((b / (FRY.NS * (T.nd || 1))) | 0) % KEYS3.length]].sp.bio, Wq);
       }
       if (!(g > 0)) continue;
       let s = 1;

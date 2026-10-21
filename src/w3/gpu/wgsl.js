@@ -892,7 +892,7 @@ fn coldResp(k: u32, bs: u32, W: f32, T: f32) -> f32 {
   var rc = rFB; let ba = 2u * k;
   if (m == 1.0) { rc = spv(k, S_cR5) * 24e-6 * pow(W / spv(k, S_cWref), spv(k, S_cB)) * pow(spv(k, S_cQ10), (T - 5.0) / 10.0); }
   else if (m == 2.0) { if (bs != ba) { rc = respStd(ba, W, T) * routineActivity(ba, W, T); } }
-  else { rc = rFB * spv(k, S_cMul); }
+  else if (bs == ba) { rc = rFB * spv(k, S_cMul); }   // (bioenergetics coldResp: FB4 × mul on the adult set only)
   let q = spv(k, S_cQuiet); if (q > 0.0) { let qa = spv(k, S_cQa); let qb = spv(k, S_cQb); rc *= 1.0 - (1.0 - q) * clamp((qa - T) / (qa - qb), 0.0, 1.0); }
   return rFB + (rc - rFB) * coldW(k, T);
 }
@@ -1494,7 +1494,11 @@ fn yoyOk(q: u32, i: u32, mode: u32, self_: u32) -> bool {
 fn poissonish(r: f32, u: f32) -> f32 { let k = floor(r); return k + select(0.0, 1.0, u < r - k); }
 // ---- (stage Y1) PREDATION ON THE YOUNG BY DENSITY (fish3 _yTable, _yReq, _ySettle) ----
 const BSC: f32 = 1e6;
-fn yBin(c: u32, k: u32, L: f32) -> u32 { let s = u32(clamp(floor(log2(max(L, 1e-3) / 0.5)), 0.0, FRY_NS - 1.0)); return (c * NK + k) * u32(FRY_NS) + s; }
+// the young's table (fish3 _yTable): by column, species, log2 length and — F3.YDEPTH — the bed's depth class (yND 4, else 1)
+fn yND() -> u32 { return select(1u, 4u, F3_YDEPTH > 0.5); }
+fn yDC(bed: f32) -> u32 { if (F3_YDEPTH < 0.5) { return 0u; } if (bed < F3_YD_E0) { return 0u; } if (bed < F3_YD_E1) { return 1u; } if (bed < F3_YD_E2) { return 2u; } return 3u; }
+fn ybK(b: u32) -> u32 { return (b / (u32(FRY_NS) * yND())) % NK; }   // (a bin's species)
+fn yBin(c: u32, k: u32, L: f32, bed: f32) -> u32 { let s = u32(clamp(floor(log2(max(L, 1e-3) / 0.5)), 0.0, FRY_NS - 1.0)); return ((c * NK + k) * u32(FRY_NS) + s) * yND() + yDC(bed); }
 fn colVol(c: u32) -> f32 { var v = 0.0; for (var k = 0u; k < nL(c); k++) { v += stf(O_wVol + cell0(c) + k); } return v; }
 // a bin's w × available (fish3 _yReq's per-bin weight before the clearance and the volume): a piscivore's size window on prey within
 // its gape and preyLR, × the prey's vulnerability; or the larvae a plankton or insect eater fits, × LARV_A by their detectability
@@ -1503,13 +1507,14 @@ fn yBinA(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32
 // (the bin's weight and the piscivore's attacks on it — F3.YWIN_CS: rd0 > 0 on the encounter volume)
 fn yBin2(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32, aL: f32, kp: u32, rd0: f32) -> vec2f {   // (fish3 _yReq: the piscivore's window on its volume aP, the larvae on the picker's clearance aL — F3.YENC)
   let av = rdAcc(AC_BAV + 2u * b, BSC); if (!(av > 0.0)) { return vec2f(0.0); }
-  let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = (b / u32(FRY_NS)) % NK; var w = 0.0; var wL = 0.0; var att = 0.0;
+  let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = ybK(b); var w = 0.0; var wL = 0.0; var att = 0.0;
+  var acc = 1.0; if (F3_YDEPTH > 0.5) { let dm = 0.5 * F3_SHALLOW_K * L; acc = clamp((rdAcc(AC_BSB + 2u * b, BSC) / av - dm) / dm, 0.0, 1.0); if (!(acc > 0.0)) { return vec2f(0.0); } }   // (F3.YDEPTH: the shallows' rule)
   if (pisc && rdAcc(AC_BSD + 2u * b, BSC) / av <= gape && r >= FRY_WIN_MIN && r <= preyLR) {
     if (F3_YWIN_CS > 0.5 && rd0 > 0.0 && aP > 0.0) { att = clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); if (F3_RD_SIZE > 0.5) { let rq = rdOf(rd0, Lq) / rd0; att *= rq * rq; } w = att * csOf(kq, u32(spv(kp, S_predCls)), r); }   // (F3.YWIN_CS: kp the predator's species; its attacks at their reaction distance)
     else { let R = 1.0 / r; let u = R / FRY_WIN_R * exp(1.0 - R / FRY_WIN_R); w = pow(u, FRY_WIN_E) * spv(kq, S_vuln); }
   }
   if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { wL = FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); }
-  return vec2f(max(aP * w, aL * wL) * av, select(0.0, aP * att * av, aP * w >= aL * wL));
+  return vec2f(max(aP * w, aL * wL) * av * acc, select(0.0, aP * att * acc * av, aP * w >= aL * wL));
 }
 fn yBinW(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, kp: u32) -> f32 { return yBinA(b, L, gape, pisc, larv, preyLR, 1.0, 1.0, kp, 0.0); }
 // a followed fish's volumes for the young (per m³ of its column): (the piscivore's — its strikes' encounter volume under F3.YENC, else the
@@ -1528,7 +1533,7 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
 }
 fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc: bool, larv: bool, eff: f32, preyLR: f32, aP: f32, aL: f32, kp: u32, rd0: f32, hS: f32) -> vec2f {   // (on two volumes: yVolA)
   let V = colVol(c); if (!(V > 0.0) || !(imax > 0.0) || !(gMax > 0.0) || !(eff > 0.0)) { return vec2f(0.0); }
-  let NB = NK * u32(FRY_NS); let b0 = c * NB;
+  let NB = NK * u32(FRY_NS) * yND(); let b0 = c * NB;
   var sA = 0.0; var sAH = 0.0; var sG = 0.0;
   for (var j = 0u; j < NB; j++) { let b = b0 + j; let w2 = yBin2(b, L, gape, pisc, larv, preyLR, aP, aL, kp, rd0); let w = w2.x; if (!(w > 0.0)) { continue; }
     let aD = w; let Wq = rdAcc(AC_BSW + 2u * b, BSC) / rdAcc(AC_BAV + 2u * b, BSC); sA += aD; sAH += aD * Wq / imax + w2.y * hS; sG += aD * Wq; }   // (F3.YWIN_CS: its attacks' time)
@@ -1543,8 +1548,8 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
   let c = gyi(Y_c, q); let n = gy(Y_n, q); if (c < 0 || !(n > 0.0)) { return; }
   var held = false; let gr = gyi(Y_gref, q); if (gr >= 0) { let gi = u32(gr); held = (gau(A_flags, gi) & FL_ALIVE) != 0u && gau(A_id, gi) == gyu(Y_guard, q) && ga(A_nt, gi) > 0.0; }
   let a = n * (1.0 - gy(Y_cover, q)) * select(1.0, 1.0 - BROOD_PROTECT, held); if (!(a > 0.0)) { return; }
-  let L = gy(Y_L, q); let b = yBin(u32(c), gyu(Y_k, q), L);
-  acc64(AC_BAV + 2u * b, a, BSC); acc64(AC_BSL + 2u * b, a * L, BSC); acc64(AC_BSW + 2u * b, a * gy(Y_W, q), BSC); acc64(AC_BSD + 2u * b, a * gy(Y_bdep, q), BSC);
+  let L = gy(Y_L, q); let b = yBin(u32(c), gyu(Y_k, q), L, gy(Y_bed, q));
+  acc64(AC_BAV + 2u * b, a, BSC); acc64(AC_BSB + 2u * b, a * gy(Y_bed, q), BSC); acc64(AC_BSL + 2u * b, a * L, BSC); acc64(AC_BSW + 2u * b, a * gy(Y_W, q), BSC); acc64(AC_BSD + 2u * b, a * gy(Y_bdep, q), BSC);
   syi(Y_yb, q, i32(b)); sy(Y_ya, q, a);
 }
 @compute @workgroup_size(64) fn k_eatYoyReq(@builtin(global_invocation_id) g: vec3u) {
@@ -1560,7 +1565,7 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
     let va = yVolA(i, k, L, pf, pisc, colVol(u32(c)));   // (F3.YENC)
     let r = yReqKA(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR), va.x, va.y, k, va.z, va.w);
     if (!(r.x > 0.0)) { return; }
-    let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
+    let NB = NK * u32(FRY_NS) * yND(); let b0 = u32(c) * NB;
     for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y, k, va.z); if (w > 0.0) { acc64(AC_BREQ + 2u * b, r.x * w / r.y, BSC); } }
     sai(A_claim, i, -2); sa(A_qB, i, r.x); return;
   }
@@ -1588,18 +1593,18 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
     let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let c = u32(gai(A_c, i)); let K = ga(A_qB, i);
     let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0); let larv = !p0 || L < 3.0 * spv(k, S_Lpisc);   // (F3.REST_DIGEST, as the request)
     var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let va = yVolA(i, k, L, pf, pisc, colVol(c));   // (the request's volumes)
-    let NB = NK * u32(FRY_NS); let b0 = c * NB;
+    let NB = NK * u32(FRY_NS) * yND(); let b0 = c * NB;
     var sA = 0.0; for (var j = 0u; j < NB; j++) { sA += yBinA(b0 + j, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y, k, va.z); }
     if (!(sA > 0.0)) { return; }
     var gS = 0.0; var jS = 0.0;
     for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y, k, va.z); if (!(w > 0.0)) { continue; }
       let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av;
-      gS += kk * Wq; jS += kk * Wq * energyDensity(2u * ((b / u32(FRY_NS)) % NK), Wq); }
+      gS += kk * Wq; jS += kk * Wq * energyDensity(2u * ybK(b), Wq); }
     if (!(gS > 0.0)) { return; }
     let room = ga(A_fRoom, i); var s = 1.0; if (room > 0.0) { s = min(1.0, room * n / gS); } else { s = 0.0; } if (!(s > 0.0)) { return; }
     for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y, k, va.z); if (!(w > 0.0)) { continue; }
       let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)) * s;
-      acc64(AC_BGOT + 2u * b, kk, BSC); add64(&TL, T_YKILLS + 2u * (k * NK + (b / u32(FRY_NS)) % NK), kk, TSCALE); }
+      acc64(AC_BGOT + 2u * b, kk, BSC); add64(&TL, T_YKILLS + 2u * (k * NK + ybK(b)), kk, TSCALE); }
     let gr = gS * s / n;
     sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + jS * s / n); sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr);
     add64(&TL, T_FOOD + 2u * FOOD_YOY, gr * n, TSCALE); foodK(k, 1u, gr * n); sau(A_flags, i, gau(A_flags, i) | FL_ATE);
@@ -1705,7 +1710,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (FRY_DENSITY > 0.5 && spv(k, S_dFish) > 0.5 && L >= spv(k, S_yLpisc)) {   // (stage Y1: a request over its column's bins)
     let r = yReqK(c, n, L, L * spv(k, S_gapeR), want / max(1.0, n * st), st, want / max(1.0, n), true, false, select(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), min(coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)), consumptionTrel(bs, T)), F3_YCOLD > 0.5), spv(k, S_preyLR), k);
     if (r.x > 0.0) {
-      let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)) / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
+      let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)) / colVol(c); let NB = NK * u32(FRY_NS) * yND(); let b0 = c * NB;
       for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, L * spv(k, S_gapeR), true, false, spv(k, S_preyLR), k); if (w > 0.0) { acc64(AC_BREQY + 2u * b, r.x * a0 * w / r.y, BSC); } }
       syi(Y_qPrey, q, -2); sy(Y_qPk, q, r.x);
     }
@@ -1807,11 +1812,11 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let pr = gyi(Y_qPrey, q);
   if (pr == -2) {   // (stage Y1) its share of each bin's young the followed fish left: min(1, left / the schools' requests)
     let K = gy(Y_qPk, q); let cp = coldPerf(T, spv(k, S_tempOpt), spv(k, S_coldPerf)); let gape = L * spv(k, S_gapeR); let pLR = spv(k, S_preyLR);
-    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * cp / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
+    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * cp / colVol(c); let NB = NK * u32(FRY_NS) * yND(); let b0 = c * NB;
     var sA = 0.0; for (var m = 0u; m < NB; m++) { sA += a0 * yBinW(b0 + m, L, gape, true, false, pLR, k); }
     if (sA > 0.0) { for (var m = 0u; m < NB; m++) { let b = b0 + m; let w = a0 * yBinW(b, L, gape, true, false, pLR, k); if (!(w > 0.0)) { continue; }
       let av = rdAcc(AC_BAV + 2u * b, BSC); let left = av - rdAcc(AC_BGOT + 2u * b, BSC); if (!(left > 0.0)) { continue; }
-      let kk = K * w / sA * min(1.0, left / max(rdAcc(AC_BREQY + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av; let kq = (b / u32(FRY_NS)) % NK;
+      let kk = K * w / sA * min(1.0, left / max(rdAcc(AC_BREQY + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av; let kq = ybK(b);
       got += kk * Wq; J += kk * Wq * energyDensity(2u * kq, Wq); acc64(AC_BGOTY + 2u * b, kk, BSC);
       add64(&TL, T_YYKILLS + 2u * (k * NK + kq), kk, TSCALE); add64(&TL, T_YFOODK + 2u * (k * 5u), kk * Wq, TSCALE); } }
   }

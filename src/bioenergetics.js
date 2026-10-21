@@ -100,7 +100,7 @@ export function coldResp(c, b, bAdult, W, T) {
   let rc;
   if (c.R5) rc = c.R5 * 24e-6 * Math.pow(W / c.Wref, c.b) * Math.pow(c.Q10, (T - 5) / 10);   // (mg/kg/h → g/g/day)
   else if (c.adultR) rc = b === bAdult ? rFB : respStd(bAdult, W, T) * routineActivity(bAdult, W, T);
-  else rc = rFB * (c.mul ?? 1);
+  else rc = b === bAdult ? rFB * (c.mul ?? 1) : rFB;   // (FB4 × mul: the adult set's winter correction — a juvenile set carries its own measured cold slope)
   if (c.quiet) rc *= 1 - (1 - c.quiet) * Math.min(1, Math.max(0, (c.quietT[0] - T) / (c.quietT[0] - c.quietT[1])));
   const w = T <= c.T0 ? 1 : (c.T1 - T) / (c.T1 - c.T0);
   return rFB + (rc - rFB) * w;
