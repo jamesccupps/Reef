@@ -4,6 +4,39 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-21 — An adult bioenergetics set cannot grow a larva: the pickerel's missing year-classes (arm Y; scratchpad probe ypike.mjs)
+- **What.** In the true-scale arm Y (seed 613) chain pickerel fell from 16,090 fish to 1,258 in under two years with 18 recruits in
+  the first year: every year-class died as larvae. The young pickerel stayed at 0.9 cm for six weeks after hatching in early May
+  (water 5–15 °C), starving at 29–52 % a fortnight, and then grew ~0.3 mm a day — 1.5 cm on 1 July, 4.4 cm in late September against
+  the field's 25–40 mm at the end of June and 100–130 mm at the end of September (Underhill 1949 via Scott & Crossman; MDIFW
+  102–127 mm) — so they spent the whole summer at sizes every panfish eats (eaten 17–39 % a fortnight) and never reached fish (5 cm).
+- **Why.** The young run on the adult FB4 northern-pike set (Bevelhimer et al. 1985; consumption mass exponent −0.18). At a 2-mg
+  larva it gives an appetite close to the measured (29 %BW/d at 15 °C, 42 % at 18 °C; pike larvae ~30 %/d at 13–16 mm, Grès et al.
+  1996) but, with its respiration and waste, a full ration grows the larva only 0.05–0.10 mm a day below 15 °C and 0.2–0.3 at
+  18–21 °C. The same functions grow perch larvae 0.2–0.5 mm/d and bass 0.2–0.95. The predators, the zooplankton and the young's
+  habitat cannot rescue a fish whose energy budget is negative or flat at the temperatures it hatches into. (Research running on
+  larval esocid consumption, growth and metabolism: docs/research_notes/Predator winter energetics/esocid_larval_energetics.md.)
+- **Why it matters.** Bioenergetics sets are fitted over a size range; extrapolated to larvae — four orders of magnitude lighter —
+  they can fail silently, and the failure surfaces years later as a missing species, read as predation or habitat.
+
+## 2026-10-21 — Two rules for one fish, again: the young-of-year were 1,700× harder to find and caught by another window (R4·6)
+- **What.** A followed piscivore met the young-of-year schools through the percid cannibals' DAILY clearance (~15 m³/day for a 45-cm
+  pickerel) and the followed fish through its in-bout encounter volume (π·RD²·(U + v) × the time it hunts: ~27,000 m³/day), and it
+  caught the young by a perch-cannibal window peaking at a prey 19 % of its length (0.0015 at 6 %) where the followed fish met the
+  strike rule's capture success, highest for the smallest prey. A 40-cm pickerel weighed a 4-cm young perch at 0.12 against 0.58 as a
+  followed fish, a 2.5-cm young pumpkinseed at 0.001 against 0.21; the field's piscivores eat prey of a median 10–20 % of their length
+  and their smallest prey barely rise with their size (Gaeta et al. 2018). So the spring's recruits and every small adult bore the
+  predation the field puts on the year's young, and bass of ages 1–6 vanished in every arm.
+- **Fix.** One encounter volume (F3.YENC), one capture success (YWIN_CS), each attack on the young against the same strike ceiling
+  (h = 1/aMax), and every prey — young or followed — seen at its own reaction distance by the visual model R²·e^(cR) ∝ L² (Aksnes &
+  Utne 1997; RD_SIZE), which a size window had stood in for.
+- **Evidence.** Six weeks at 1/10 scale: pickerel and bass ate 0.12 kg of young on the old rule, 0.91 kg with the one volume, 1.08 kg
+  with the whole rule. A 140-day screen on three seeds (509, 611, 613): pickerel ate 2.1–2.9× and bass 2.3–3.1× the young of the
+  one-volume rule, while their kills of followed fish (pickerel 0.06–0.19 a day) and rations (p 0.27–0.45) hardly moved.
+- **Why it matters.** An individual-based model that represents the young as super-individuals must give them the same predator
+  physics as the individuals; otherwise the predation shifts to whichever representation is easier to find, and the diet tables
+  still look plausible.
+
 ## 2026-10-21 — Compensations stack: every fix for a missing mechanism outlives it (docs/review/audit_*.md, REALISM_PLAN.md)
 - **What.** Probes of the strike rule's terms (1/10 and true-scale CPU) found pickerel killing ~0.06 fish a day over the GPU year
   against the field's 0.4–0.8 and bass living on crayfish at p 0.09–0.22, under a product of brakes each added for an old symptom:

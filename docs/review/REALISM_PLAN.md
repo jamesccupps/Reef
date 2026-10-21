@@ -244,8 +244,23 @@ fathead set (try its congener's at ACT 1 once its food exists).
   REST_ALL (a sated fish forages for nothing) and pGates from growth (bass 0.35, pickerel 0.3).
 - **R2a (3215c3e):** the young by what pays (YSHARE), per-species larval Cmax, R_WMIN for steep sets only, K_FRY 60, no adult ×0.7 on
   the sunfishes' larvae. 1/10 A/B: summer Daphnia 48–409 µg/L against 0–2; autumn 10–64 against ~0; young's autumn lengths in range.
-- **R2b:** small fish reach the weeds' small fauna (SMALL_S, SM_L 7.5–15 cm); batch spawners' gonads 0.8 of surplus (reproA).
-- **Arm X** (R1 + follow-up + R2a + R2b; 613/611/612 × 3 yrs) running.
+- **R2b (a2ec762):** small fish reach the weeds' small fauna (SMALL_S, SM_L 7.5–15 cm); batch spawners' gonads 0.8 of surplus
+  (reproA); with R1's follow-up (REST_ALL, pGates bass 0.35, pickerel 0.3).
+- **Arm X** (R1 + follow-up + R2a + R2b; seed 613, 3 yrs): the zooplankton fixed (winter 8–31 µg/L against 1–6); white perch 31 → 46
+  kg/ha (R1b not yet in); pickerel still 51.5 cm at age 5 — the cold-rule units slip, below; bass of ages 1–6 missing; the
+  sunfishes and killifish ~0. (The GPU driver reset at day 1092; 611/612 superseded.)
+- **The cold rules on a relative appetite + R1b white perch (1b5baa5):** FB4's Eq. 4 curve (the pickerel's) peaks at 8.3, so the
+  cold rules divide by its peak (consumptionTrel: 0.12 at 2 °C, not 1.0); white perch mOther 1, M 0.54, maxAge 10, a harsher first
+  winter (WINTER0 [1.1, 0.95]), the adults' size slope off (MOTHER_FLAT). **Arm Y** (to here; 613/611/612 × 3 yrs) running.
+- **R4·6, one rule for the young and the followed fish:**
+  - **YENC (8b82143):** the young met through the predator's own encounter volume, not the percid cannibals' daily clearance
+    (~1/1,700 of it). Six weeks at 1/10: pickerel and bass eat 0.91 kg of young against 0.12.
+  - **YWIN_CS + RD_SIZE (e395ab3):** on that volume, the young are caught with the strike rule's capture success (not the
+    perch-cannibal window: a 2.5-cm young pumpkinseed weighed 0.001 against 0.21 as an agent), their attacks count against the
+    strike ceiling, and every prey — young or followed — is seen at its own reaction distance (the visual model R²·e^(cR) ∝ L², c
+    1.7 /m). Six weeks at 1/10: 1.08 kg against 0.11. A 1/10 screen (3 seeds) and the gate on occ-server running.
+  - Still to do in R4·6: the young's school dilution for bass (the followed rule's n^−0.8), a shared strike budget between the two
+    routes (now each route has its own ceiling), the young piscivores' schools (still the percid clearance with its window).
 
 ## How PLAN.md's open items map here
 

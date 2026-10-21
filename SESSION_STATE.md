@@ -192,7 +192,26 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~1:40 p.m. EDT — the newest; COMPACTING). THE REALISM PHASE (docs/review/REALISM_PLAN.md; the human: fix
+▶▶▶ RESUME HERE (2026-10-21 ~2:50 p.m. EDT — the newest). R4·6 SECOND PART COMMITTED (e395ab3): F3.YWIN_CS (a followed piscivore
+on its encounter volume catches the young with the strike rule's capture success × larval detectability, its attacks against the
+strike ceiling h = 1/aMax) + F3.RD_SIZE (every prey, young or followed, seen at its own reaction distance — visual model R²e^(cR) ∝ L²,
+c 1.7 /m, strikeR at 6-cm prey; rdOf/csOf shared by _strike2/_yReq, GPU k_strike/yBin2/yVolA vec4f). Strike section 19/19 locally;
+full gate for 8b82143 GREEN on occ-server (w3 107/107); the gate for e395ab3 RUNNING there → scratchpad occ_gate_ywin.txt (~3:25).
+1/10 screen (screen_q3.sh, 3 seeds × 140 d, scr3_Y0/Y1_<seed>.txt): young eaten by pickerel 2.1–2.9×, bass 2.3–3.1×; kills of
+followed fish and p unchanged. NOTE: two of six parallel run.mjs sessions HUNG after the remote node exited (output complete) —
+killed by hand (Name node.exe + 'remote/run'+'.mjs … SEED=61'); watch for it.
+FOUND (arm Y 613 + probe/ypike.mjs, FINDINGS today): THE PICKEREL HAVE NO YEAR-CLASSES — 16,090 → 1,258 in < 2 yrs, 18 recruits in yr 1.
+Their larvae hatch early May, sit at 0.9 cm six weeks starving 29–52 %/fortnight, then grow ~0.3 mm/d (4.4 cm late Sept vs field
+100–130 mm). Cause: the ADULT FB4 pike set at larval size — full-ration growth 0.05–0.10 mm/d below 15 °C, 0.2–0.3 at 18–21 °C (perch
+larvae 0.2–0.5, bass up to 0.95 on the same functions); its Cmax at 2 mg is near the measured (~30 %/d), so it's the budget, not
+appetite alone. A RESEARCH AGENT is writing docs/research_notes/Predator winter energetics/esocid_larval_energetics.md (larval/juvenile
+esocid Cmax, SGR, metabolism, any juvenile set). THEN: a sourced juvenile esocid set (bioJuv for pike) — not a fudge; then restore
+S3.pike.yCover (turned off as a compensation: the young pickerel in the weeds recruited less — because they couldn't grow).
+ARM Y (snapshot z :8138 = 1b5baa5, no YENC) on the GPU: 613 done ~3:05, then 611, 612 (~90 min each). NEXT on the GPU: g1_check ?r5=1
+for e395ab3 (YENC/YWIN_CS/RD_SIZE changed WGSL), then arm Z = e395ab3 (+ the pickerel fix if ready) on 3 seeds. R0: the arm's
+fortnightly "young's fates" give Z by cause per species — re-derive M_LARVA3/M_JUV3 from arm Z and drop the young's M_OTHER term.
+scratchpad oas.sh/oad.sh had a placeholder mailto= in OpenAlex queries — REMOVED (standing rule: no email to any API).
+▶▶▶ RESUME HERE (2026-10-21 ~1:40 p.m. EDT). THE REALISM PHASE (docs/review/REALISM_PLAN.md; the human: fix
 by restoring field values + building missing environment, never tuning — memory realism-over-compensation). CPU WORK RUNS ON
 OCC-SERVER (memory remote-cpu-host): `node tools/remote/run.mjs occ-server [-e K=V] [--put probe.mjs] -- <cmd>`; full gate there with
 `-e W3_PERF_MUL=1.3 -- npm test` (~39 min; it is ~15 % slower per core than this desktop — use it for parallel capacity); probes go
