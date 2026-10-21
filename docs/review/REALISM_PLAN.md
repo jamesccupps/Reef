@@ -274,14 +274,18 @@ fathead set (try its congener's at ACT 1 once its food exists).
     16 k by mid-August):** the young's table by the bed's depth too (classes at 0.3 / 0.6 / 1.2 m), each predator reaching a bin by
     the followed fish's shallows rule (none at ≤ 0.5·SHALLOW_K·L, full at ≥ SHALLOW_K·L, on the bin's mean bed); young smallmouth on
     their first summer's shallows (S3 yBed 1.0 m: Forbes 1981's review, Aadland 1993, Ridgway 2002).
-  - **R2·4b — next: the young's energy density.** The young grow on their adult sets' energy density (perch and bass 4,186, white
-    perch 5,300 J/g) where larvae measure ~1.8–2.5 kJ/g rising to ~3–3.5 at 2–5 cm (Weil et al. 2019's dry-fraction regression; age-0
-    bluegill 2,300 J/g, Breck 1993; larval perch 2,512, Post 1990; smallmouth dry 15–16.5 %, DeAngelis et al. 1993) — the adult value
-    roughly halves larval length growth (Kitchell's bluegill set: 0.25 → 0.46 mm/d at 21 °C), and the young end autumn under the
-    first winter's survival sizes (white perch 4.4–5.5, pumpkinseed 2.7–3.0, redbreast 2.1–2.9 cm). Pike larvae (~3.5–3.7 kJ/g,
-    Trabelsi) are already near their set's 3,598. Design (a weight-dependent ED for each young set, the young as prey at their own
-    ED, the recruits' hand-over) and validate against Beard 1982, Breck 1993, Shuter & Ridgway 2002 before an arm
-    (larval_juvenile_energetics_panfish.md §3–4, §7).
+  - **R2·4b — the young's energy budgets, species by species (larval_juvenile_energetics_panfish.md §3–4, §7–8). NOT one fix:**
+    - sunfishes: Kitchell's bluegill set on the adult 4,186 J/g caps a larva at ~0.25 mm/d (21 °C); at age-0 bluegill's measured
+      2,300 J/g (Breck 1993) it gives the ponds' 0.46–0.66 — the larval ×1.5 Cmax (FRY.CMAX_LARVA, kept for the sunfishes in R2a)
+      stood in for it. But the young pumpkinseed's 2.7–3.0 cm are already inside the northern range (Beard 1982: Sept 26–42 mm);
+      their collapse is the age-1 recruits eaten (47k → 5k a year), so this is a refinement, not the fix;
+    - white perch: on the yellow perch juvenile set a larva grows 1.6–3.8× Margulies' 1989 larvae fed to excess (efficiency 56 %
+      against the measured K1 0.14–0.32), and young WP are energy-RICH (5.7–6.3 kJ/g at 3–9 g, Hanks 2009). Their small autumn size
+      (4.4–5.5 cm; Lake Erie August 58, Hudson October 63–82) is the ration they get (67–111 M larvae a year — dense cohorts grow
+      slower, Oneida, Hudson) — and the R1b winter ramp then kills all < 53 mm (Johnson & Evans's STARVED lab fish). Check the ramp
+      against field first-winter survival of 45–55-mm Maine-like cohorts before touching growth;
+    - smallmouth: 6–8.4 cm in autumn, inside Opeongo's 55–85 and Spednic's 71–76 — leave;
+    - pickerel: done (R2·4).
   - **Known, parked:** the bass's cold respiration switches from the empirical curve to the Rice set between 15 and 18 °C — a
     ~5× step that grows young bass faster at 15 °C than at 18; the yellow perch's first-winter loss ~13 % against the field's
     40–50 % (Z 0.001/d against ~0.004).

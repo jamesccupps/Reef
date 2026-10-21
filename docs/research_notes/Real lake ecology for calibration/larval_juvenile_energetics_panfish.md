@@ -453,3 +453,56 @@ Read: the FB4 parameter CSV (raw GitHub), COSEWIC ch. 6, OpenAlex abstracts, bea
 BioOne (empty), the Coutant & DeAngelis 1983 ARLIS copy (copyright request form), afs.confex.com (DNS), novascotia.ca (refused),
 Springer (login), cpw.state.co.us (404), okstate.edu (403), Friesen 1998 (> 10 MB). An OpenAlex response asked for an e-mail to
 register an API key; none was given.
+
+---
+
+## 8. Addendum (2026-10-21): the white perch / Morone and banded killifish sub-search
+
+Returned after the note above (recorded by the coordinator; tags as given: [fetch-full] = full text via WebFetch, mostly archive.org
+OCR; [primary]; [abstract]; [snippet]; [secondary]; [inf]).
+
+### White perch (WP) and Morone proxies
+- **Margulies 1989** (Fish. Bull. 87:63–72) [fetch-full]: WP hatch 2.46–2.53 mm SL (34–36 µg dry); first feeding 3.43–3.49 mm SL. Growth
+  at food excess (800 rotifers/L, 8 d): 0.054 / 0.202 / 0.276 mm/d at 13 / 17 / 21 °C; dry-weight G 0.048 / 0.141 / 0.197 /d
+  (G = 0.0187·T − 0.1882, zero near 10.1 °C [inf]); at 50 rotifers/L G 0.006–0.015 /d; a 4-day feeding delay cut survival 60–80 %;
+  hatch success ~80 / 60 / 20 % at 13 / 17 / 21 °C. Houde 1989's compilation: WP larval G 0.03–0.18 /d [fetch-full].
+- Striped bass larvae at prey excess: 0.28–0.36 mm/d, G 0.140–0.174 /d at 19 °C (Houde & Lubbers 1986); gross efficiency K1 0.14–0.32
+  (Houde 1989); O₂ ∝ W^0.72 at 18 °C (Eldridge et al. 1982). Generic larval relations: QO₂ = 2.40 + 0.219T µL/mg/h; mean K1 0.29
+  (Houde 1989) [fetch-full].
+- **FB4's "striped/white bass larval" set** (attributed to Johnson 1995, a Lake Mendota PhD thesis): CB −0.252 equals Hartman &
+  Brandt's striped bass CB, ED 3349 = 800 cal/g, RTO = CTM — very likely compiled, not measured on larvae [inf].
+- **YOY WP (Hanks 2009 MS, UMD; Hanks & Secor 2011, Mar. Biol. 158:805)** [primary]: ad-lib intake 0.03–0.19 g dry/g dry/d (3–9 g,
+  6–28 °C; peak at 28 °C), no mass effect over 3–9 g; growth (dry G) ~0.018 /d at 20 °C, 0.03–0.035 at 28 °C, ~0.0006 at 12 °C,
+  negative at 6 °C; gross efficiency ~15 % at 20–28 °C; egestion 3–7 %; wild intake ~63 % of ad lib. **YOY WP energy density 5,724–6,331
+  J/g wet (26.5 % dry)**, 21.6–23.9 kJ/g dry (lab-fed). Kerr 2008 (PhD, UMD) at 25 °C, 2.1 g: feeding 11.7–15.7 %/d dry, growth
+  0.30–0.59 %/d, efficiency 6.8–15.9 %, ED 18.4–19.9 kJ/g dry. Behr 1993 (REU, abstract): YOY Cmax 0.42 g/g/d at 25.1 °C (0.92–1.78 g).
+- Energy density from dry weight, all fish (Hartman & Brandt 1995, TAFS 124:347) [abstract]: ED (J/g wet) = 45.29·DW%^1.507 →
+  larvae ~2.7–4.1 kJ/g at 15–20 % dry [inf].
+- Field WP growth: Hudson larvae 0.212 mm/d (Limburg et al. 1999); Patuxent 0.10–0.29 mm/d over the first 45 d, larval Z 0.03–0.08 /d
+  (Kerr 2008); Potomac 0.29–0.69 mm/d; Hudson juveniles 0.33–0.74 mm/d and **October YOY 73.9 mm (62.8–82.3) over 1992–2013**, larger in
+  warm summers (r 0.70), smaller with dense larvae (r −0.46) (Gallagher 2016); Hudson 1970 mode 50–54 mm July–Nov (Bath & O'Connor
+  1982); **western Lake Erie age-0 in August 58 mm long-term mean** (69 in 2010; Forage Task Group 2011); Oneida: dense year-classes
+  grew slower and died more (VanDeValk et al. 2016) [abstract]. No first-summer data found for Maine, New Hampshire, Champlain or
+  Quebec waters (several sources blocked).
+
+### What this says about the sim [inf]
+- On the FB4 yellow perch juvenile set the sim's WP larva (6 mm) grows 0.44 mm/d at 21 °C and 0.30 at 15 °C at a full ration — **1.6–3.8×
+  Margulies' larvae at food excess** (and above the field means of ~0.21–0.25 mm/d), because the set converts ~56 % of the energy eaten
+  to growth against the measured K1 0.14–0.32; measured routine respiration is 1.1–2.4× the set's. The temperature SHAPE matches the
+  field's. So the WP young's small autumn size in the sim (4.4–5.5 cm; field 58–74 mm in warmer waters) is not the set's ceiling: it is
+  the ration they get (crowding: 67–111 M larvae a year; field: dense cohorts grow slower).
+- The young WP's energy density is HIGH (5.7–6.3 kJ/g at 3–9 g), not low; a lower young ED would be wrong for them past the larval stage.
+
+### Banded killifish (BK) and Fundulus proxies
+- YOY BK autumn length: 49.5 mm by mid-October, growth stopping until spring (Lake Opinicon; Keast & Eadie 1984 via COSEWIC 2014)
+  [secondary]; 32 ± 1.9 mm TL in Sept–Oct (Presque Isle Bay, Lake Erie; peak spawning 9–18 July; ages 1–3 at 67 / 79 / 93 mm; ln W(g) =
+  −11.032 + 2.919·ln L(mm)) (Phillips et al. 2007) [fetch-full]. Mature at age 1; Newfoundland spawning late June–August at 19–23 °C
+  (COSEWIC 2014). Final thermal preference ~28.6 °C (Melisky et al. 1980) [primary]. No measured BK consumption, metabolism or energy
+  density. FB4 killifish rows: California killifish (Madon et al. 2001: CA 0.2, CB −0.25, CTO 27, CTM 34; RA 0.02, RB −0.17; ACT 1.25;
+  ED 5021); plains killifish (Offill 2003). Mummichog: northern fish grow faster in their first 3 weeks at 21 and 28 °C (Schultz et al.
+  1996); O₂ uptake Q10 2.65.
+
+### Access (this sub-search)
+Blocked or unreadable (none bypassed): spo.nmfs.noaa.gov scanned PDFs, Semantic Scholar (429), int-res MEPS (429), cdnsciencepub (403),
+CPW (404), VIMS (404), NH Fish & Game (403), UVM ScholarWorks (403), Saint Mary's thesis (403), W&M ScholarWorks (403), Wiley (403),
+Springer (login), OpenAlex content (401). Every OpenAlex response asked for an e-mail to register an API key; none was given.
