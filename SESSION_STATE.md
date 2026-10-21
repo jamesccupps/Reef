@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~4:50 p.m. EDT — the newest). COMMITTED since 4:10: 7a89163 F3.WIN_JE (white perch's first winter on
+▶▶▶ RESUME HERE (2026-10-21 ~7 p.m. EDT — the newest; the human's weekly usage nearly out, context near full). NEW DIRECTION (the human):
+"add everything that needs to be in the environment … any animals or plants or anything that isn't in there needs to be in there too" +
+"weather needs to be taken into account". STOP tuning/arm-chasing; BUILD the complete ecosystem first (memory realism-over-compensation).
+THE PLAN: docs/review/ECOSYSTEM_BUILD.md (E1 substrate+wood, E2 small zooplankton+microbial loop, E3 egg stage, E4 wildlife, E5 angling,
+E6 herps, E7 emergence+drift, E8 streams+alewife, E9 WEATHER (full: air temp, heat budget, year types, rain→flow→level), E10 winter, E11
+behaviour, E12 the rest — the sim's own inventory is summarised there). E4 CPU BUILT (fish3 WILD3…; F3.WILD off in stageR5 until the GPU
+mirrors it) — NEXT: the GPU half of E4, then gate + g1_check, then E1/E2/E3 from the research notes.
+RESEARCH AGENTS launched ~6:40 p.m. (may have been cut off by the usage limit — check whether these files exist, relaunch any missing):
+docs/research_notes/Hot Brook populations and water/full_biota_and_processes.md (the real lakes' full biota list),
+Maine lake shores and catchment/littoral_substrate_and_wood.md, Real lake ecology for calibration/small_zooplankton_and_microbial_loop.md,
+Whole lake 3D fish simulation/egg_stage.md.
+ARM AB (b0f986c+3d42b44) on the GPU: r20AB_611 done (75→65→52 kg/ha: perch recruits eaten at age 1, white perch winter, bass/pickerel 0
+recruits); 612, 613 running → read with yrsum/yz. Gate 3 (b0f986c) GREEN (w3 112/112).
+▶▶▶ RESUME HERE (2026-10-21 ~4:50 p.m. EDT). COMMITTED since 4:10: 7a89163 F3.WIN_JE (white perch's first winter on
 Johnson & Evans 1990's measured 4 °C model, days < 4 °C — 161; layout SP_REC 172→180 + an overflow guard); b0f986c F3.YSCHOOL (the young met
 in their schools by the followed fish's school terms: esocid n^schoolExp, bass n^BASS_SCH, other 0.15; school = S3 school / group[1] / 1);
 3d42b44 (a duplicate WGSL const). All in stageR5. Strike section 23/23; g1_check ?r5=1 all agree (young eaten 65/65), ?yf=0.75 winter 8/8.

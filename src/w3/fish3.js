@@ -210,6 +210,10 @@ export const F3 = {
   // the old rule gave ~0.03. With it the young of a species are met in its schools (S3 school; a group species' S3 group[1]; solitary:
   // 1) by the followed fish's school terms
   YSCHOOL: 0,
+  // E4 — WILD: THE LAKES' FISH-EATING WILDLIFE (WILD3; docs/review/ECOSYSTEM_BUILD.md): loons, herons, kingfishers, ospreys, the eagles,
+  // mergansers, otters and mink take their field needs from the fish they can reach — by size, depth, cover, ice, light and preference —
+  // the followed fish and the young alike. Before it, nothing but the census cap and M_OTHER stood for them
+  WILD: 0,
   // R2·3 — YDEPTH: THE YOUNG'S DEPTH IN THE PREDATORS' REACH. The young's prey table held a column's schools by species and length
   // only, so a 40-cm bass reached young in 0.3 m of water as in 3 m, where a followed fish of the same size is out of its reach over
   // a bed shallower than half the water the predator needs (SHALLOW_K: none at ≤ 0.5·K·L, full at ≥ K·L). With it the table's bins
@@ -689,6 +693,7 @@ export function stageR5(on = true) {
   // recesses among stones near the nest, < 5 cm fish over sand and rock near shore (Forbes 1981's review; age-0 mean depth 0.34 m in
   // streams, Aadland 1993; most within 200 m of the nest, Ridgway 2002) — S3 yBed 1.0 m in the open-water season
   F3.YDEPTH = on ? 1 : 0; S3.bass.yBed = on ? 1.0 : 0;
+  // (E4) F3.WILD stays off in the package until the GPU mirrors it (the arms run on the GPU); F3.WILD = 1 turns it on for the CPU
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
   F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
@@ -767,6 +772,50 @@ export function stageR5(on = true) {
 // act: the share of the time it hunts by [day, twilight, night] (sun > 0.3, > 0.02, below) — pickerel 2 % active at night against
 // 17–22 % by day, peaks at dawn and dusk; smallmouth ~0.3 by day (piscivore_encounter_attack.md (c)); without it the predators
 // hunted round the clock, fed at their maximum and tripled in a summer (arm D, seed 613)
+
+// THE LAKES' FISH-EATING WILDLIFE (F3.WILD; docs/review/ECOSYSTEM_BUILD.md E4; every value from docs/research_notes/Maine lake shores and
+// catchment/shore_birds_and_mammals.md unless [inf]). Each is a predator population on the lakes: its calendar (yf, 0 = March 1), its
+// number (per pair of the lakes' hectares, or per km of their shore), its daily need (g a bird or mammal), the share of it fish (the rest
+// crayfish, frogs, insects — seasonal for otter and mink: winter / summer), the fish lengths it takes (cm: none below L[0], all from L[1]
+// to L[2], none above L[3]), where (the fish's depth below the surface: all to z[0], none past z[1]; the bed under it: all to b[0],
+// none past b[1]), its activity by [day, twilight, night], whether it hunts under ice, and its preferences by fish species. It takes its
+// need from the fish it can reach — each fish's share its mass × its accessibility × the preference — halving when the reachable fish are
+// one day's need (Holling II, K = a day's fish [inf]); the rest of its diet is not fish
+export const WILD3 = {
+  // common loon: ice-out to Oct–Nov; a pair per 40–280 ha (Belgrade 95–280) — 1 per 150 ha [inf]; an adult ~1.1 kg/day (Barr 1996's
+  // 423 kg a family-season less two chicks); chicks July on, 160–380 g/day, ~0.6 a pair [inf: Belgrade hatch/fledge]; fish 10–70 g, up
+  // to ~300 g, "often yellow perch", streamlined fish; pursuit dives < 10 m, by day
+  loon: { yf: [0.14, 0.75], perHa: 2 / 150, need: 1100, chick: { yf: 0.33, perPair: 0.6, need: 250 }, fish: [0.9, 0.9], L: [6, 10, 20, 30], z: [8, 10], b: [99, 99], act: [1, 0.2, 0], ice: 0, pref: { perch: 1.5, fallfish: 1.2, killifish: 1.2, dace: 1.2, sunfish: 0.6, redbreast: 0.6, catfish: 0.5 } },
+  // great blue heron: mid-March to ~November; wades ≤ 50 cm (mostly 15–25 cm), fish ≤ 25 cm (mostly ≤ 20), ~300 g/day; dawn and dusk
+  // peaks, some night; 1 per 4 km of shore [inf: Maine colonies forage widely]
+  heron: { yf: [0.05, 0.70], perKm: 0.25, need: 300, fish: [0.8, 0.8], L: [3, 5, 20, 25], z: [0.5, 0.6], b: [0.3, 0.5], act: [0.6, 1, 0.3], ice: 0, pref: {} },
+  // belted kingfisher: fish 4–14 cm (mostly < 10) from the top ~15 cm (never past 60) of water < 60 cm deep; ~70 kcal/day ≈ 60–75 g;
+  // ~0.8 km of shore a bird [the note's synthesis]; crayfish 12–21 %, frogs; by day, best at dusk
+  kingfisher: { yf: [0.12, 0.70], perKm: 1 / 0.8, need: 65, fish: [0.7, 0.7], L: [3, 4, 10, 14], z: [0.15, 0.6], b: [0.4, 0.6], act: [1, 0.8, 0], ice: 0, pref: {} },
+  // osprey: early April – early September; plunges ≤ ~1 m; fish 150–300 g (~25–35 cm), 50–1,200 g; an adult 300–400 g/day, a family
+  // 850–1,250; 2 pairs [inf: lakes of 650 ha], their brood from July [inf]; pale, surface-oriented fish — suckers in the shallows
+  osprey: { yf: [0.10, 0.52], perLake: 4, need: 350, chick: { yf: 0.30, perPair: 1.5, need: 250 }, fish: [1, 1], L: [15, 25, 35, 45], z: [0.5, 1.0], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { sucker: 1.5, catfish: 0.7 } },
+  // bald eagle: all year (a pair nests on Upper — the human); inland Maine remains 79 % fish, brown bullhead, white sucker and chain
+  // pickerel favoured; ~500 g/day; takes fish at the surface; in winter it scavenges (no open water: none here)
+  eagle: { yf: [0, 1], perLake: 2, need: 500, chick: { yf: 0.25, perPair: 1.2, need: 400 }, fish: [0.8, 0.8], L: [18, 25, 50, 60], z: [0.3, 0.6], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { catfish: 2, sucker: 2, pike: 1.5 } },
+  // common merganser: broods on lakes and streams; ~255–285 g/day captive (~30 % of body mass), 400 wild; prefers 10–13 cm fish, girth
+  // limits; pursuit diver in shallow to mid water [inf: ≤ 3–5 m]; 10 on the lakes [inf: a brood or two]
+  cmerganser: { yf: [0.14, 0.75], perLake: 10, need: 300, fish: [0.9, 0.9], L: [5, 8, 13, 18], z: [3, 5], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: {} },
+  // hooded merganser: beaver ponds and small lakes; fish 44 %, crayfish 22 %, insects 13 % of items; small fish in shallow edges
+  // [inf: ≤ 2 m]; ~150 g/day [inf]; 4 on the lakes [inf]
+  hmerganser: { yf: [0.14, 0.75], perLake: 4, need: 150, fish: [0.45, 0.45], L: [3, 5, 10, 13], z: [2, 3], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: {} },
+  // river otter: all year, roams (routes > 30 km); 1.1–1.8 kg prey/day; crayfish dominate in summer (85 % of scats), fish in winter
+  // (13 → ~58 % of scats) — fish share summer 0.15, winter 0.6 [inf from the scat shares]; slow fish (suckers, bullheads, minnows) above
+  // their abundance; the whole column, under the ice too; any time, a dawn peak; 1 per 8 km of the lakes' shore [inf: it uses them part-time]
+  otter: { yf: [0, 1], perKm: 1 / 8, need: 1400, fish: [0.6, 0.15], L: [8, 12, 35, 50], z: [99, 99], b: [99, 99], act: [1, 1, 0.6], ice: 1, pref: { sucker: 2, catfish: 2, killifish: 1.5, dace: 1.5, fallfish: 1.5, pike: 0.5, bass: 0.5 } },
+  // mink: all year, chiefly nocturnal; fish in winter and spring, crayfish in summer; small fish in the shore's shallows [inf: bed
+  // ≤ 0.5–1 m]; ~175 g/day [inf: 15–20 % of ~1 kg]; 1.5 to > 3 a km of good shore — 0.5 a km of these lakes' [inf]
+  mink: { yf: [0, 1], perKm: 0.5, need: 175, fish: [0.6, 0.2], L: [4, 6, 15, 20], z: [1, 1.5], b: [0.6, 1.0], act: [0.2, 0.6, 1], ice: 1, pref: {} },
+};
+export const WILDK = Object.keys(WILD3);
+// (the day's share of hours by light: day, twilight, night — the activities' daily mean [inf: a Maine summer's day])
+const WILD_HOURS = [0.55, 0.1, 0.35];
+const WILD_LAKE_HA = 643.6;   // (the real lakes' area, ha: Upper 369 + Lower 274)
 export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 2.5, v: 0.1, cls: 1, act: [0.2, 0.5, 0.05] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
@@ -977,7 +1026,7 @@ export class Fish3 {
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
+    this.stats = { wild: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
     for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
@@ -1483,6 +1532,7 @@ export class Fish3 {
     }
     if (full) this._yoyHash();
     if (FRY.DENSITY) this._yTable();   // (stage Y1: the young available, per column × species × length — before anyone feeds)
+    if (F3.WILD) this._wildPrep(); else if (this._wRho) this._wRho.fill(0);   // (E4: the wildlife's demand and the fish it can reach now)
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
     { const yr = this._yr = Math.floor(e.time / YEAR); if (yf >= F3.SITE_YF && yf < 0.5 && this._siteYr !== yr) { this._siteYr = yr; this._siteSub(); } }   // (the plant spawners' grounds, each spring)
     // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
@@ -2555,9 +2605,10 @@ export class Fish3 {
       + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) / YEAR;
     const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
-    const h = hN + hS + hH + hO, lost = q.n * (1 - Math.exp(-h * st));
-    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; }
-    this.chem.addSedOM(q.jb, lost * q.W);
+    const HWy = this._wHy || (this._wHy = new Float64Array(WILDK.length)), hWd = F3.WILD ? this._wildH(s.key, q.L, q.z, q.bed, q.cover, this.env.ice[c], HWy) : 0;   // (E4: the wildlife)
+    const h = hN + hS + hH + hO + hWd, lost = q.n * (1 - Math.exp(-h * st));
+    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; if (hWd > 0) { fr.wild = (fr.wild || 0) + lost * hWd / h; this._wildTally(s.key, HWy, h, lost, q.W); } }
+    this.chem.addSedOM(q.jb, lost * q.W * (h > 0 ? 1 - hWd / h : 1));   // (the wildlife's take leaves the lake)
     q.n -= lost;
     if (q.n < 1) { if (rand() < q.n) q.n = 1; else { q.alive = false; return; } }
     // NEXT TARGET: up out of low O₂, down out of heat; else the food these fish eat about them
@@ -2774,18 +2825,76 @@ export class Fish3 {
     const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);
     const hO = a.xo < o2Lx ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2Lx - a.xo) / o2Lx) : 0;
     const hM = sp.M * (s.mOther ?? BIOE.M_OTHER) * (F3.MOTHER_FLAT ? 1 : clamp(Math.pow(a.L / sp.Lref, -0.87), 0.5, 3)) / YEAR;   // (S3 mOther, F3.MOTHER_FLAT)
-    const hz = hS + hH + hO + hM, old = a.age > s.maxAge;
-    const cause = old ? 'old' : hS >= hH && hS >= hO && hS >= hM ? 'starve' : hH >= hO && hH >= hM ? 'heat' : hO >= hM ? 'hypoxia' : 'other';
+    const HW = this._wH || (this._wH = new Float64Array(WILDK.length)), hWd = F3.WILD && a.c >= 0 ? this._wildH(s.key, a.L, a.z, a.bed, a.cover, this.env.ice[a.c], HW) : 0;   // (E4: the wildlife)
+    const hz = hS + hH + hO + hM + hWd, old = a.age > s.maxAge;
+    const cause = old ? 'old' : hWd > hS && hWd > hH && hWd > hO && hWd > hM ? 'wild' : hS >= hH && hS >= hO && hS >= hM ? 'starve' : hH >= hO && hH >= hM ? 'heat' : hO >= hM ? 'hypoxia' : 'other';
     if (old || !(a.W > 0)) return this._die(a, cause, a.n);
     if (a.n > 1) {   // a school loses a fraction; the shares by cause
       const lost = a.n * (1 - Math.exp(-hz * dt));
-      if (lost > 0) { for (const [c, h] of [['starve', hS], ['heat', hH], ['hypoxia', hO], ['other', hM]]) if (h > 0) this._tallyDeath(s.key, c, lost * h / hz); this.chem.addSedOM(a.jb, lost * a.W); a.n -= lost; }
+      if (lost > 0) { for (const [c, h] of [['starve', hS], ['heat', hH], ['hypoxia', hO], ['other', hM], ['wild', hWd]]) if (h > 0) this._tallyDeath(s.key, c, lost * h / hz); if (hWd > 0) this._wildTally(s.key, HW, hz, lost, a.W); this.chem.addSedOM(a.jb, lost * a.W * (1 - hWd / hz)); a.n -= lost; }   // (the wildlife's take leaves the lake)
       if (a.n < 1) { a.alive = false; a.cause = cause; this.chem.addSedOM(a.jb, a.n * a.W); a.n = 0; }
-    } else if (hz > 0 && rand() < 1 - Math.exp(-hz * dt)) this._die(a, cause, 1);
+    } else if (hz > 0 && rand() < 1 - Math.exp(-hz * dt)) { if (cause === 'wild') { this._wildTally(s.key, HW, hWd, 1, a.W); a.alive = false; a.cause = 'wild'; this._tallyDeath(s.key, 'wild', 1); a.n = 0; } else this._die(a, cause, 1); }   // (the wildlife's: no body left)
   }
   _die(a, cause, n) { a.alive = false; a.cause = cause; this._tallyDeath(a.s.key, cause, n); this.chem.addSedOM(a.jb, n * a.W); a.n = 0; }
   _tallyDeath(k, cause, n) { const d = this.stats.died; (d[k] || (d[k] = {}))[cause] = (d[k][cause] || 0) + n; }
 
+  // ---------- THE LAKES' FISH-EATING WILDLIFE (F3.WILD; WILD3) ----------
+  // the shore's length (km: every water cell's land edges, × 0.8 for a raster's stair-steps — as littoral3's bank)
+  _shoreKm() {
+    if (this._shoreKmV) return this._shoreKmV;
+    let m = 0; const NX = GEO.NX, NY = GEO.NY;
+    for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] === LAND) continue; const r = Math.floor(i / NX), q = i % NX;
+      for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; if (GEO.body[rr * NX + qq] === LAND) m += GEO.CELL * 0.8; } }
+    return (this._shoreKmV = m / 1000);   // (the world's km: at 1/10 scale a tenth of the real shore, its fish a hundredth — densities per km
+    // are scaled by the world's area against the real lakes', _wildN)
+  }
+  // how many of wildlife w are on the lakes at yf, and its fish share then (otter, mink: winter → summer)
+  _wildN(w, yf) {
+    const d = WILD3[w], [y0, y1] = d.yf; if (!(yf >= y0 && yf < y1)) return 0;
+    const fa = this.lakeHa / WILD_LAKE_HA;   // (the world's share of the real lakes: 1 at true scale, ~0.01 at 1/10 — every count scales with the fish)
+    const n = d.perHa ? d.perHa * this.lakeHa : d.perKm ? d.perKm * this._shoreKm() / GEO.SCALE * fa : d.perLake * fa;
+    return n;
+  }
+  _wildNeed(w, yf) {   // g a day of fish for all of w on the lakes
+    const d = WILD3[w], n = this._wildN(w, yf); if (!(n > 0)) return 0;
+    const cold = clamp((15 - seasonalTemp(yf)) / 12, 0, 1), share = d.fish[1] + (d.fish[0] - d.fish[1]) * cold;
+    let g = n * d.need; if (d.chick && yf >= d.chick.yf) g += n / 2 * d.chick.perPair * d.chick.need;
+    return g * share;
+  }
+  // a fish's accessibility to w (0–1 × its preference): its length, its depth below the surface, the bed under it, its cover, the ice
+  _wildV(w, key, L, z, bed, cover, ice) {
+    const d = WILD3[w];
+    const fL = L <= d.L[0] || L >= d.L[3] ? 0 : L < d.L[1] ? (L - d.L[0]) / (d.L[1] - d.L[0]) : L > d.L[2] ? (d.L[3] - L) / (d.L[3] - d.L[2]) : 1; if (!(fL > 0)) return 0;
+    const fz = z <= d.z[0] ? 1 : z >= d.z[1] ? 0 : (d.z[1] - z) / (d.z[1] - d.z[0]), fb = bed <= d.b[0] ? 1 : bed >= d.b[1] ? 0 : (d.b[1] - bed) / (d.b[1] - d.b[0]);
+    const fi = d.ice ? 1 : 1 - clamp(ice, 0, 1);
+    return fL * fz * fb * fi * (1 - clamp(cover, 0, 1)) * (d.pref[key] ?? 1);
+  }
+  // each step: each wildlife's demand now (g/s: its day's fish need × its activity by the light, its daily mean 1), the fish it can reach
+  // (Σ accessibility × mass, followed fish and the young), and its per-fish hazard per unit of accessibility, ρ = D / (A + K)
+  _wildPrep() {
+    const e = this.env, yf = e.yearFrac(), sun = e.sun, li = sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2, R = this._wRho || (this._wRho = new Float64Array(WILDK.length));
+    const ice = e.ice, A = this._wA || (this._wA = new Float64Array(WILDK.length)); A.fill(0); R.fill(0);
+    const D = this._wD || (this._wD = new Float64Array(WILDK.length)); let any = false;
+    for (let w = 0; w < WILDK.length; w++) {
+      const d = WILD3[WILDK[w]], mean = WILD_HOURS[0] * d.act[0] + WILD_HOURS[1] * d.act[1] + WILD_HOURS[2] * d.act[2];
+      D[w] = mean > 0 ? this._wildNeed(WILDK[w], yf) * d.act[li] / mean / DAY : 0; if (D[w] > 0) any = true;
+    }
+    if (!any) return;
+    for (const a of this.fish) { if (!a.alive || a.c < 0) continue; const ic = ice[a.c];
+      for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], a.s.key, a.L, a.z, a.bed, a.cover, ic); if (v > 0) A[w] += v * a.W * a.n; } }
+    for (const q of this.yoy) { if (!q.alive || q.c < 0) continue; const ic = ice[q.c];
+      for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], q.s.key, q.L, q.z, q.bed, q.cover, ic); if (v > 0) A[w] += v * q.W * q.n; } }
+    for (let w = 0; w < WILDK.length; w++) if (D[w] > 0 && A[w] > 0) R[w] = D[w] / (A[w] + D[w] * DAY);   // (K: a day's need)
+  }
+  // a fish's wildlife hazard (/s), its parts by wildlife into H (for the tallies)
+  _wildH(key, L, z, bed, cover, ic, H) {
+    const R = this._wRho; if (!R) return 0; let h = 0;
+    for (let w = 0; w < WILDK.length; w++) { const r = R[w] > 0 ? R[w] * this._wildV(WILDK[w], key, L, z, bed, cover, ic) : 0; if (H) H[w] = r; h += r; }
+    return h;
+  }
+  _wildTally(key, H, h, n, W) {   // n fish of mass W taken by the wildlife, by their shares of the hazard h
+    const t = this.stats.wild; for (let w = 0; w < WILDK.length; w++) if (H[w] > 0) { const k = WILDK[w], o = t[k] || (t[k] = { n: {}, g: 0 }), x = n * H[w] / h; o.n[key] = (o.n[key] || 0) + x; o.g += x * W; }
+  }
   // ---------- schools meet and merge, and split when large ----------
   _schools() {
     const f = this.fish, born = [];
