@@ -986,6 +986,15 @@ if (run('strike')) {
       const fd = F.stats.food, yz = fd.yZoo - f0.yZoo, yo = fd.yWeed - f0.yWeed + fd.yBenth - f0.yBenth;
       return { D: zD / v * PLANKTON.UGL, zoo: yz / Math.max(1e-9, yz + yo) }; };
     const b = six(true), a = six(false);
+    // (R4·6, F3.YENC: the followed piscivores meet the young through their strikes' encounter volume — the same six weeks with it and with
+    // the percid clearance (~1/1,700 of it): the young eaten by pickerel and bass; the 1/10 screen: ~8× in the first six weeks)
+    { const yG = { on: 0, off: 0 }, s0 = fm.Fish3.prototype._ySettle;
+      const run = key => { fm.stageR5(true); if (key === 'off') fm.F3.YENC = 0; seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.22 }), F = new fm.Fish3(e, { young: true });
+        F._ySettle = function () { const pr = this.fish.filter(x => x.alive && (x.s.key === 'pike' || x.s.key === 'bass')), g0 = pr.map(x => x.gut * x.n); const out = s0.call(this); pr.forEach((x, i) => { if (x.alive) yG[key] += x.gut * x.n - g0[i]; }); return out; };
+        for (let bk = 0; bk < 42 * 49; bk++) { F.step(FB); e.step(FB); } };
+      run('on'); run('off'); fm.stageR5(true);
+      check('R4·6 (F3.YENC): the followed piscivores meet the young-of-year through their own encounter volume — six weeks from the founding, pickerel and bass eat ≥ 3× the young they eat on the percid clearance',
+        yG.on >= 3 * yG.off && yG.on > 0, `${(yG.on / 1000).toFixed(2)} kg against ${(yG.off / 1000).toFixed(2)} kg`); }
     // (R2b) the small fish reach the weeds' small fauna: on a weedy bed cell a followed fish ≤ LIT3.SM_L[0] cm sees the small fauna
     // with the large (weedEcells's sm) and takes from it in proportion; a fish ≥ SM_L[1] sees none of it
     { const e = new Env3({ col: 10 * CS, yf0: 0.45 }), lit = e.lit, L3 = (await import('../src/w3/littoral3.js')).LIT3;
@@ -1007,8 +1016,10 @@ if (run('strike')) {
         relP2 > 0.08 && relP2 < 0.2 && Math.abs(relB2 - be.consumptionT(bs, 2)) < 1e-9 && wpOn >= 0.45 && wpOn <= 0.65 && Math.abs(ageOn - 10) < 0.01 && offOK,
         `pickerel ${relP2.toFixed(3)} at 2 °C (peak ${pk.cTmax.toFixed(2)}), bass ${relB2.toFixed(3)}; white perch ${wpOn.toFixed(2)}/yr to ${ageOn.toFixed(1)} yr (off: ${wpOff.toFixed(2)}, ${ageOff.toFixed(1)})`); }
     fm.stageR5(false);
-    check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 5× what is left with the zooplankton first, and the young take the bed\'s and weeds\' food for ≥ 15 % of their diet',
-      b.D >= 20 && b.D >= 5 * a.D && b.zoo <= 0.85, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
+    // (≥ 2×: with F3.YENC the predators take more of the young in both, and the zooplankton-first case keeps more than it did — 26 µg/L
+    // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it)
+    check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 2× what is left with the zooplankton first',
+      b.D >= 20 && b.D >= 2 * a.D, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

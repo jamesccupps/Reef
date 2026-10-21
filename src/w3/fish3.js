@@ -171,7 +171,16 @@ export const F3 = {
   SMALL_S: 0,
   // R1b — MOTHER_FLAT: an adult's unsimulated mortality (M × its S3 mOther share) without Lorenzen's size slope (L/Lref)^−0.87 —
   // that slope is mostly predation's (Lorenzen; audit_physiology.md B), which the encounter rule now simulates
-  MOTHER_FLAT: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
+  MOTHER_FLAT: 0,
+  // R4·6 — YENC: ONE ENCOUNTER PHYSICS FOR THE YOUNG AND THE FOLLOWED FISH. A followed piscivore met the young-of-year schools of its
+  // column through the percid cannibals' DAILY clearance (FRY.CLEAR_A·L^CLEAR_B: ~15 m³/day for a 45-cm pickerel) and the followed
+  // fish through its in-bout encounter volume (π·RD²·(ENC_U + v) × act: ~27,000 m³/day) — the same 8-cm fish ~1,700× more
+  // encounterable as a yearling agent than as a young-of-year (audit_predation.md 2e). So pickerel took ~1,600 young bass and ~3,400
+  // young perch a year against tens of thousands of followed fish (arm X), the spring's recruits and every small adult (killifish,
+  // pumpkinseed) bore the predation the field's piscivores put on the year's young (Maine pickerel ~55 % white perch, mostly small),
+  // and bass of ages 1–6 vanished in every arm. With it, the young are met through the same volume — the satiation (the hunger gate,
+  // the meal's rest) and the young's Holling handling, not a smaller search, keep the intake to the predator's appetite
+  YENC: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -636,6 +645,7 @@ export function stageR5(on = true) {
   // 0.54 with the full share (mOther 1); their young die 3.3× faster than yellow perch's over a first winter (Johnson & Evans 1991), so
   // a harsher WINTER0 ramp than the perch's they shared ([1.04, 0.87] → [1.1, 0.95]); the adults' size slope off (MOTHER_FLAT)
   F3.MOTHER_FLAT = on ? 1 : 0; S3.whiteperch.mOther = on ? 1 : undefined;
+  F3.YENC = on ? 1 : 0;   // (R4·6: the young met through the predator's own encounter volume — see F3)
   SP.whiteperch.M = on ? 0.54 : BIO0.wpM; SP.whiteperch.maxAge = BIO0.wpMaxAge * (on ? 10 / 12 : 1); S3.whiteperch.maxAge = SP.whiteperch.maxAge / Y2 * YEAR;   // (as the species' set-up)
   WINTER0.K.whiteperch = on ? [1.1, 0.95] : BIO0.wpK;
   F3.YSHARE = on ? 1 : 0; F3.RWMIN_STEEP = on ? 1 : 0; PLANKTON.K_FRY = on ? 60 : K_FRY0;
@@ -1918,7 +1928,9 @@ export class Fish3 {
     const g0 = a.gut;
     // (F3.STRIKE2: the young first — a summer predator's bulk — and the followed fish with the room left; else the old order)
     let yAsk = 0;
-    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR) || 0; }
+    // (F3.YENC: the young met through its strikes' volume — RD the strike reach × its sight, as _strike2, × the share of the time it hunts)
+    const encV = F3.YENC && s.pisc && a.L >= sp.Lpisc ? Math.PI * (s.strikeR * Math.max(0.3, visDay)) ** 2 * (F3.ENC_U + s.vHunt) * s.act[this.env.sun > 0.3 ? 0 : this.env.sun > 0.02 ? 1 : 2] * yEff : 0;
+    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR, encV) || 0; }
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
@@ -2299,18 +2311,18 @@ export class Fish3 {
   // densities — clearance FRY.CLEAR_A·L(mm)^CLEAR_B (× eff: its sight, its cold) × the size window (a piscivore: prey within its gape
   // and preyLR) or the larvae it fits (a plankton or insect eater, × LARV_A, by their detectability) × the prey's vulnerability;
   // handling = the prey's mass / imax (g/s a fish); over dt for its n fish, capped by gMax g a fish. Recorded for _ySettle
-  _yReq(p, q, c, n, L, gape, imax, dt, gMax, pisc, larv, eff, preyLR) {
+  _yReq(p, q, c, n, L, gape, imax, dt, gMax, pisc, larv, eff, preyLR, encV = 0) {   // (encV m³/s: a followed piscivore's encounter volume — F3.YENC)
     const T = this._yt; if (!T || c < 0 || !(gMax > 0) || !(imax > 0) || !(eff > 0)) return;
     const NK = KEYS3.length, NS = FRY.NS, NB = NK * NS, b0 = c * NB, V = T.vol[c]; if (!(V > 0)) return;
-    const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, A = this._yA || (this._yA = new Float64Array(NB));
+    const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, aP = encV > 0 ? encV : a0, A = this._yA || (this._yA = new Float64Array(NB));   // (aP: the piscivore's volume, a0 the larva-picker's)
     let sA = 0, sAH = 0;
     for (let j = 0; j < NB; j++) {
       A[j] = 0; const av = T.av[b0 + j]; if (!(av > 0)) continue;
-      const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / NS) | 0; let w = 0;
+      const Lq = T.sL[b0 + j] / av, r = Lq / L, k = (j / NS) | 0; let w = 0, wL = 0;
       if (pisc && T.sD[b0 + j] / av <= gape && r >= FRY.WIN_MIN && r <= preyLR) { const R = 1 / r, u = R / FRY.WIN_R * Math.exp(1 - R / FRY.WIN_R); w = Math.pow(u, FRY.WIN_E) * S3[KEYS3[k]].sp.vuln; }
-      if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) w = Math.max(w, FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1));
-      if (!(w > 0)) continue;
-      const aD = a0 * w * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax;
+      if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) wL = FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1);
+      const aW = Math.max(aP * w, a0 * wL); if (!(aW > 0)) continue;   // (the piscivore's window on its volume, the larvae on the picker's clearance)
+      const aD = aW * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax;
     }
     if (!(sA > 0)) return;
     let K = n * dt * sA / (1 + sAH), g = 0;

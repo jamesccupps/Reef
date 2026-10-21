@@ -1476,21 +1476,33 @@ fn yBin(c: u32, k: u32, L: f32) -> u32 { let s = u32(clamp(floor(log2(max(L, 1e-
 fn colVol(c: u32) -> f32 { var v = 0.0; for (var k = 0u; k < nL(c); k++) { v += stf(O_wVol + cell0(c) + k); } return v; }
 // a bin's w × available (fish3 _yReq's per-bin weight before the clearance and the volume): a piscivore's size window on prey within
 // its gape and preyLR, × the prey's vulnerability; or the larvae a plankton or insect eater fits, × LARV_A by their detectability
-fn yBinW(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32) -> f32 {
+fn yBinA(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32, aL: f32) -> f32 {   // (fish3 _yReq: the piscivore's window on its volume aP, the larvae on the picker's clearance aL — F3.YENC)
   let av = rdAcc(AC_BAV + 2u * b, BSC); if (!(av > 0.0)) { return 0.0; }
-  let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = (b / u32(FRY_NS)) % NK; var w = 0.0;
+  let Lq = rdAcc(AC_BSL + 2u * b, BSC) / av; let r = Lq / L; let kq = (b / u32(FRY_NS)) % NK; var w = 0.0; var wL = 0.0;
   if (pisc && rdAcc(AC_BSD + 2u * b, BSC) / av <= gape && r >= FRY_WIN_MIN && r <= preyLR) { let R = 1.0 / r; let u = R / FRY_WIN_R * exp(1.0 - R / FRY_WIN_R); w = pow(u, FRY_WIN_E) * spv(kq, S_vuln); }
-  if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { w = max(w, FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0)); }
-  return w * av;
+  if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { wL = FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); }
+  return max(aP * w, aL * wL) * av;
+}
+fn yBinW(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32) -> f32 { return yBinA(b, L, gape, pisc, larv, preyLR, 1.0, 1.0); }
+// a followed fish's volumes for the young (per m³ of its column): (the piscivore's — its strikes' encounter volume under F3.YENC, else the
+// clearance —, the larva-picker's clearance); pf its cold performance, without its sight (the volume's RD carries it)
+fn yVolA(i: u32, k: u32, L: f32, pf: f32, pisc: bool, V: f32) -> vec2f {
+  let aL = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * pf * ga(A_visF, i) / V; var aP = aL;
+  if (F3_YENC > 0.5 && pisc) { let RD = spv(k, S_strikeR) * max(0.3, ga(A_visF, i)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); aP = 3.14159265 * RD * RD * (F3_ENC_U + spv(k, S_vHunt)) * act * pf / V; }
+  return vec2f(aP, aL);
 }
 // a predator's request over its column's bins: (K fish over dt for its n, Σ a·D) — Holling II, handling = the prey's mass / imax,
 // capped at gMax g a fish
 fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc: bool, larv: bool, eff: f32, preyLR: f32) -> vec2f {
+  let V = colVol(c); if (!(V > 0.0)) { return vec2f(0.0); } let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / V;
+  return yReqKA(c, n, L, gape, imax, dt, gMax, pisc, larv, eff, preyLR, a0, a0);
+}
+fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc: bool, larv: bool, eff: f32, preyLR: f32, aP: f32, aL: f32) -> vec2f {   // (on two volumes: yVolA)
   let V = colVol(c); if (!(V > 0.0) || !(imax > 0.0) || !(gMax > 0.0) || !(eff > 0.0)) { return vec2f(0.0); }
-  let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / V; let NB = NK * u32(FRY_NS); let b0 = c * NB;
+  let NB = NK * u32(FRY_NS); let b0 = c * NB;
   var sA = 0.0; var sAH = 0.0; var sG = 0.0;
-  for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, gape, pisc, larv, preyLR); if (!(w > 0.0)) { continue; }
-    let aD = a0 * w; let Wq = rdAcc(AC_BSW + 2u * b, BSC) / rdAcc(AC_BAV + 2u * b, BSC); sA += aD; sAH += aD * Wq / imax; sG += aD * Wq; }
+  for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, gape, pisc, larv, preyLR, aP, aL); if (!(w > 0.0)) { continue; }
+    let aD = w; let Wq = rdAcc(AC_BSW + 2u * b, BSC) / rdAcc(AC_BAV + 2u * b, BSC); sA += aD; sAH += aD * Wq / imax; sG += aD * Wq; }
   if (!(sA > 0.0)) { return vec2f(0.0); }
   var K = n * dt * sA / (1.0 + sAH); let g = K * sG / sA; if (g > gMax * n) { K *= gMax * n / g; }
   return vec2f(K, sA);
@@ -1516,10 +1528,11 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   if (FRY_DENSITY > 0.5) {   // (stage Y1: a request over its column's bins, settled in k_eatYoyGet)
     let c = gai(A_c, i); if (c < 0) { return; }
     let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let eff = pf * ga(A_visF, i);   // (F3.YCOLD)
-    let r = yReqK(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR));
+    let va = yVolA(i, k, L, pf, pisc, colVol(u32(c)));   // (F3.YENC)
+    let r = yReqKA(u32(c), n, L, ga(A_gape, i), ga(A_fWant, i) / U.dt, U.dt, min(room, ga(A_fWant, i) - ga(A_fGot, i)), pisc, larv, eff, spv(k, S_preyLR), va.x, va.y);
     if (!(r.x > 0.0)) { return; }
-    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(u32(c)); let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
-    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (w > 0.0) { acc64(AC_BREQ + 2u * b, r.x * a0 * w / r.y, BSC); } }
+    let NB = NK * u32(FRY_NS); let b0 = u32(c) * NB;
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y); if (w > 0.0) { acc64(AC_BREQ + 2u * b, r.x * w / r.y, BSC); } }
     sai(A_claim, i, -2); sa(A_qB, i, r.x); return;
   }
   let R0 = F3_YOY_EAT_R + L / 100.0; var Ra = R0; if (pisc) { Ra = max(R0, spv(k, S_strikeR) * 1.5); }
@@ -1544,17 +1557,18 @@ fn yReqK(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc:
   let qi = gai(A_claim, i);
   if (qi == -2) {   // (stage Y1) its share of each bin: min(1, available / requested), as much as its gut has room for now
     let k = gau(A_k, i); let L = ga(A_L, i); let n = ga(A_n, i); let c = u32(gai(A_c, i)); let K = ga(A_qB, i);
-    let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0); let larv = !p0 || L < 3.0 * spv(k, S_Lpisc); let eff = ga(A_fPerf, i) * ga(A_visF, i);   // (F3.REST_DIGEST, as the request)
-    let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * eff / colVol(c); let NB = NK * u32(FRY_NS); let b0 = c * NB;
-    var sA = 0.0; for (var j = 0u; j < NB; j++) { sA += a0 * yBinW(b0 + j, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); }
+    let p0 = spv(k, S_pisc) > 0.5 && L >= spv(k, S_Lpisc); let pisc = p0 && !(F3_REST_DIGEST > 0.5 && ga(A_missCd, i) > 0.0); let larv = !p0 || L < 3.0 * spv(k, S_Lpisc);   // (F3.REST_DIGEST, as the request)
+    var pf = ga(A_fPerf, i); if (F3_YCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } let va = yVolA(i, k, L, pf, pisc, colVol(c));   // (the request's volumes)
+    let NB = NK * u32(FRY_NS); let b0 = c * NB;
+    var sA = 0.0; for (var j = 0u; j < NB; j++) { sA += yBinA(b0 + j, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y); }
     if (!(sA > 0.0)) { return; }
     var gS = 0.0; var jS = 0.0;
-    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = a0 * yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (!(w > 0.0)) { continue; }
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y); if (!(w > 0.0)) { continue; }
       let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)); let Wq = rdAcc(AC_BSW + 2u * b, BSC) / av;
       gS += kk * Wq; jS += kk * Wq * energyDensity(2u * ((b / u32(FRY_NS)) % NK), Wq); }
     if (!(gS > 0.0)) { return; }
     let room = ga(A_fRoom, i); var s = 1.0; if (room > 0.0) { s = min(1.0, room * n / gS); } else { s = 0.0; } if (!(s > 0.0)) { return; }
-    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = a0 * yBinW(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR)); if (!(w > 0.0)) { continue; }
+    for (var j = 0u; j < NB; j++) { let b = b0 + j; let w = yBinA(b, L, ga(A_gape, i), pisc, larv, spv(k, S_preyLR), va.x, va.y); if (!(w > 0.0)) { continue; }
       let av = rdAcc(AC_BAV + 2u * b, BSC); let kk = K * w / sA * min(1.0, av / max(rdAcc(AC_BREQ + 2u * b, BSC), 1e-12)) * s;
       acc64(AC_BGOT + 2u * b, kk, BSC); add64(&TL, T_YKILLS + 2u * (k * NK + (b / u32(FRY_NS)) % NK), kk, TSCALE); }
     let gr = gS * s / n;
