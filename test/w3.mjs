@@ -1056,6 +1056,15 @@ if (run('strike')) {
       check('R2·4: the young pickerel grow at the measured larval pike rates — a 1.25-cm larva at a full ration of zooplankton grows 0.48–0.65 mm/d at 15 °C and 0.68–0.96 at 21 °C on its own set (the adult FB4 pike set: ~0.13 and ~0.37); the adult set\'s winter respiration cut applies to the adults only',
         j15 >= 0.45 && j15 <= 0.7 && j21 >= 0.65 && j21 <= 1.0 && a15 < 0.25 && Math.abs(cutJ - 1) < 1e-9 && cutA < 0.6,
         `juvenile set ${j15.toFixed(2)} / ${j21.toFixed(2)} mm/d, adult set ${a15.toFixed(2)} / ${a21.toFixed(2)}; at 5 °C the cold cut ×${cutJ.toFixed(2)} (young) ×${cutA.toFixed(2)} (adults)`); }
+    // (F3.WIN_JE: white perch's first winter on Johnson & Evans 1990's own fitted model — their starved YOY at 4.0 °C lost 40.6 % in
+    // 180 days at a mean ~62.5 mm FL; counted in the days below 4 °C (Hot Brook ~161): all < FL 50 die, half at FL ~57 — and only
+    // under the package)
+    { const cfg = await import('../src/config.js'), je = cfg.WINTER0.JE.whiteperch, p180 = cfg.winterPJE(62.5 * cfg.WINTER0.JE_FL, 180, je);
+      const span = Math.round(((cfg.winterWindowJE[1] - cfg.winterWindowJE[0] + 1) % 1) * 365), pS = cfg.winterPJE(57 * cfg.WINTER0.JE_FL, span, je), pA = cfg.winterPJE(49 * cfg.WINTER0.JE_FL, span, je);
+      const on = fm.F3.WIN_JE; fm.stageR5(false); const off = fm.F3.WIN_JE; fm.stageR5(true);
+      check('F3.WIN_JE: white perch\'s first winter on Johnson & Evans 1990\'s measured model — 40.6 % dead after 180 days at FL 62.5 mm; at Hot Brook\'s days below 4 °C all < FL 50 and about half at FL 57 die; on only in the package',
+        Math.abs(p180 - 0.406) < 0.01 && span >= 140 && span <= 180 && pA === 1 && pS > 0.4 && pS < 0.65 && on === 1 && off === 0,
+        `p(FL 62.5, 180 d) ${p180.toFixed(3)}; ${span} days < 4 °C: p(FL 49) ${pA.toFixed(2)}, p(FL 57) ${pS.toFixed(2)}`); }
     fm.stageR5(false);
     // (≥ 2×: with F3.YENC the predators take more of the young in both, and the zooplankton-first case keeps more than it did — 26 µg/L
     // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it)

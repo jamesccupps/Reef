@@ -68,7 +68,14 @@ fn wP(Lmm: f32, w: f32, kn: f32, kx: f32) -> f32 { let cx = kx * (WINTER0_A_MAX 
 fn wStep(Lmm: f32, w: f32, dw: f32, kn: f32, kx: f32) -> f32 { if (!(w > 0.0)) { return 0.0; } let p0 = wP(Lmm, max(0.0, w - dw), kn, kx); let p1 = wP(Lmm, w, kn, kx); if (p0 >= 1.0) { return 1.0; } return max(0.0, (p1 - p0) / (1.0 - p0)); }
 // the winter's hazard rate over a step of dt s for a first-winter fish of L cm — in place of its starvation; −1: no ramp applies
 // (not winter, not its first year, a fish born since the winter began — this spring's larvae —, or a species without one)
-fn wHaz(k: u32, L: f32, age: f32, dt: f32) -> f32 { let kn = spv(k, S_wkMin); if (WINTER0_ON < 0.5 || kn <= 0.0 || age >= YEAR) { return -1.0; } let wd = wDays(U.yf); if (!(wd > 0.0) || wd >= age / DAY) { return -1.0; } let f = wStep(L * 10.0, wd, dt / DAY, kn, spv(k, S_wkMax)); if (f >= 1.0) { return 50.0 / dt; } return -log(1.0 - f) / dt; }
+// (F3.WIN_JE: a species' own measured winter — Johnson & Evans 1990: p = min(1, A·e^(B·WD − C·FL)), WD the days below 4 °C)
+fn wDaysJE(yf: f32) -> f32 { let d = fract(yf - WINJE_YF0 + 2.0); let span = fract(WINJE_YF1 - WINJE_YF0 + 2.0); return select(0.0, d * 365.0, d < span); }
+fn wPJE(Lmm: f32, w: f32, k: u32) -> f32 { return min(1.0, spv(k, S_wjA) * exp(spv(k, S_wjB) * w - spv(k, S_wjC) * Lmm / WINTER0_JE_FL)); }
+fn wHaz(k: u32, L: f32, age: f32, dt: f32) -> f32 {
+  if (WINTER0_ON > 0.5 && spv(k, S_wjA) > 0.0 && age < YEAR) { let w = wDaysJE(U.yf); if (!(w > 0.0) || w >= age / DAY) { return -1.0; }
+    let dw = dt / DAY; var p0 = 0.0; if (w > dw) { p0 = wPJE(L * 10.0, w - dw, k); } let p1 = wPJE(L * 10.0, w, k); if (p0 >= 1.0) { return 50.0 / dt; }
+    let f = max(0.0, (p1 - p0) / (1.0 - p0)); if (f >= 1.0) { return 50.0 / dt; } return -log(1.0 - f) / dt; }
+  let kn = spv(k, S_wkMin); if (WINTER0_ON < 0.5 || kn <= 0.0 || age >= YEAR) { return -1.0; } let wd = wDays(U.yf); if (!(wd > 0.0) || wd >= age / DAY) { return -1.0; } let f = wStep(L * 10.0, wd, dt / DAY, kn, spv(k, S_wkMax)); if (f >= 1.0) { return 50.0 / dt; } return -log(1.0 - f) / dt; }
 fn smooth01(a: f32, b: f32, x: f32) -> f32 { let t = clamp((x - a) / (b - a), 0.0, 1.0); return t * t * (3.0 - 2.0 * t); }
 fn lethalO2(l25: f32, floor_: f32, T: f32) -> f32 { return max(l25 * exp(BIOE_O2_LETHAL_T * (T - 25.0)), floor_); }
 fn engaged(x: f32) -> f32 { if (x > ACTION_ENGAGE) { return (x - ACTION_ENGAGE) / (1.0 - ACTION_ENGAGE); } return 0.0; }

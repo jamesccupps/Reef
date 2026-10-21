@@ -27,7 +27,7 @@ import { LIT3 } from './littoral3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -200,6 +200,9 @@ export const F3 = {
   // fish is seen at ~0.55 of a 6-cm one's distance, a 15-cm perch at ~1.4 — larval roach "severely" less seen by young pike in
   // degraded water (Jönsson et al. 2012) — where the strike rule met every size at the same distance and the young's window stood in
   RD_SIZE: 0, RD_C: 1.7, RD_LREF: 6,
+  // WIN_JE: the first winter of a species with WINTER0.JE (white perch) on its own measured model — Johnson & Evans 1990, starved YOY at
+  // 4 °C, counted in days below 4 °C (the young's fast) — in place of the Shuter ramp scaled to it (config WINTER0.JE)
+  WIN_JE: 0,
   // R2·3 — YDEPTH: THE YOUNG'S DEPTH IN THE PREDATORS' REACH. The young's prey table held a column's schools by species and length
   // only, so a 40-cm bass reached young in 0.3 m of water as in 3 m, where a followed fish of the same size is out of its reach over
   // a bed shallower than half the water the predator needs (SHALLOW_K: none at ≤ 0.5·K·L, full at ≥ K·L). With it the table's bins
@@ -679,6 +682,7 @@ export function stageR5(on = true) {
   // recesses among stones near the nest, < 5 cm fish over sand and rock near shore (Forbes 1981's review; age-0 mean depth 0.34 m in
   // streams, Aadland 1993; most within 200 m of the nest, Ridgway 2002) — S3 yBed 1.0 m in the open-water season
   F3.YDEPTH = on ? 1 : 0; S3.bass.yBed = on ? 1.0 : 0;
+  F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
   SP.whiteperch.M = on ? 0.54 : BIO0.wpM; SP.whiteperch.maxAge = BIO0.wpMaxAge * (on ? 10 / 12 : 1); S3.whiteperch.maxAge = SP.whiteperch.maxAge / Y2 * YEAR;   // (as the species' set-up)
   WINTER0.K.whiteperch = on ? [1.1, 0.95] : BIO0.wpK;
@@ -774,6 +778,13 @@ function rdOf(R0, L) {
   const c = F3.RD_C, T = 2 * Math.log(R0) + c * R0 + 2 * Math.log(L / F3.RD_LREF); let R = R0 * Math.pow(L / F3.RD_LREF, 2 / (2 + c * R0));
   for (let k = 0; k < 3; k++) R = Math.max(0.5 * R, R - (2 * Math.log(R) + c * R - T) / (2 / R + c));
   return R;
+}
+// THE FIRST WINTER's share of a first-winter fish (WINTER0) over dt s at yf: the Shuter ramp, or a species' own measured model (F3.WIN_JE);
+// −1 when none applies (not winter, not its first year, a fish born since the winter began, a species without one) — then its starvation
+function winterF(key, Lcm, age, yf, dt) {
+  if (!WINTER0.ON || !(age < YEAR)) return -1;
+  const je = F3.WIN_JE ? WINTER0.JE[key] : null; if (je) { const w = winterDaysJE(yf); return w > 0 && w < age / DAY ? winterStepJE(Lcm * 10, w, dt / DAY, je) : -1; }
+  const wk = WINTER0.K[key]; if (!wk) return -1; const w = winterDays(yf); return w > 0 && w < age / DAY ? winterStep(Lcm * 10, w, dt / DAY, wk) : -1;
 }
 // the young's table: depth classes (F3.YDEPTH — 4, else 1) and a school's class by its bed
 const yND = () => (F3.YDEPTH ? 4 : 1), yDC = bed => (!F3.YDEPTH ? 0 : bed < F3.YD_E0 ? 0 : bed < F3.YD_E1 ? 1 : bed < F3.YD_E2 ? 2 : 3);
@@ -2525,8 +2536,7 @@ export class Fish3 {
     q.cover = Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - q.bed) / 0.6, 0, 1), this._inWeeds(q, c, false), this._riffle(q));
     const hF = this._feedYoy(q, st, T);
     // THE FIRST WINTER (config WINTER0): past the autumn the ramp's share of the school this tick takes the place of its starvation
-    const wk = WINTER0.ON && q.age < YEAR ? WINTER0.K[s.key] : null, w_ = wk ? winterDays(yf) : 0, wd = w_ < q.age / DAY ? w_ : 0;   // (not this spring's larvae)
-    const fW = wd > 0 ? winterStep(q.L * 10, wd, st / DAY, wk) : 0, hS = wd > 0 ? (fW >= 1 ? 50 / st : -Math.log1p(-fW) / st) : hF;
+    const fW = winterF(s.key, q.L, q.age, yf, st), hS = fW >= 0 ? (fW >= 1 ? 50 / st : -Math.log1p(-fW) / st) : hF;   // (not this spring's larvae)
     ch.o2[j] = Math.max(0, ch.o2[j] - q.rO2 * st / (G.vol[j] * ENV.O2_MGL));
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
@@ -2747,9 +2757,8 @@ export class Fish3 {
     const s = a.s, sp = s.sp;
     // THE FIRST WINTER (config WINTER0): a young-of-year past its autumn — the ramp's share of the survivors this step, in place of
     // its starvation (the ramp IS its winter's starvation)
-    const wk = WINTER0.ON && a.age < YEAR ? WINTER0.K[s.key] : null, w_ = wk ? winterDays(this.env.yearFrac()) : 0, wd = w_ < a.age / DAY ? w_ : 0;   // (only a fish alive at the winter's start: not this spring's larvae, hatched before the window closes)
-    const fW = wd > 0 ? winterStep(a.L * 10, wd, dt / DAY, wk) : 0, hW = fW >= 1 ? 50 / dt : fW > 0 ? -Math.log1p(-fW) / dt : 0;
-    const hS = (a.K < BIOE.K_HAZARD && !(wd > 0) ? -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * a.K))))) / DAY : 0) + hW;
+    const fW = winterF(s.key, a.L, a.age, this.env.yearFrac(), dt), hW = fW >= 1 ? 50 / dt : fW > 0 ? -Math.log1p(-fW) / dt : 0;   // (only a fish alive at the winter's start: not this spring's larvae, hatched before the window closes)
+    const hS = (a.K < BIOE.K_HAZARD && !(fW >= 0) ? -Math.log(Math.max(1e-9, 1 / (1 + Math.exp(-(BIOE.STARVE_A + BIOE.STARVE_B * a.K))))) / DAY : 0) + hW;
     const kx = expm(dt * TS / BIOE.EXPOSE_TAU); a.xo += (a.o2 - a.xo) * kx; a.xt += (T - a.xt) * kx;
     const hH = a.xt > a.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((a.xt - a.uilt) / BIOE.HEAT_STEEP) : 0;
     const o2Lx = lethalO2(a.o2Lethal, a.o2Ice, a.xt);

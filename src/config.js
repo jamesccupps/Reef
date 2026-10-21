@@ -451,6 +451,12 @@ export const WINTER0 = {
   A_MAX: 0.3375, B_MAX: 22.083, A_MIN: 0.1938, B_MIN: 7.917,   // mm (Shuter et al. 1980)
   K: { bass: [1, 1], perch: [1.04, 0.87], whiteperch: [1.04, 0.87], sunfish: [0.52, 0.455], redbreast: [0.57, 0.5], pike: [0.83, 0.76],
     sucker: [0.73, 0.65], catfish: [0.73, 0.60] },   // [kmin, kmax]
+  // (the 3-D sim's F3.WIN_JE) WHITE PERCH ON THEIR OWN MEASURED WINTER: Johnson & Evans 1990 (TAFS 119:301) held YOY at 4.0 °C,
+  // starved or fed: fed fish 0 % dead, starved 40.6 % at 180 d — p = min(1, A·e^(B·WD − C·FL)), WD the days at (here: below) JE_T °C,
+  // FL ≈ TL/JE_FL mm; at Hot Brook's ~161 days < 4 °C: all < FL 50 mm, half at 57, a tenth at 72 (first_winter_mortality.md §2).
+  // The young fast below 4 °C (F3.YW_T0), so a starved fish's winter is theirs; the Shuter ramp scaled to white perch killed half
+  // at ~70 mm TL over 208 days of < 10 °C
+  JE: { whiteperch: [7.29543, 0.02145, 0.10804] }, JE_T: 4, JE_FL: 1.06,
 };
 // the winter's window on the season's curve: [the autumn crossing below WINTER0.T, the spring crossing back] (year-fractions)
 export const winterWindow = (() => { let a = -1, s = -1; const N = 3650; for (let i = 0; i < N; i++) { const y0 = i / N, y1 = (i + 1) / N, t0 = seasonalTemp(y0), t1 = seasonalTemp(y1); if (t0 >= WINTER0.T && t1 < WINTER0.T) a = y1; if (t0 < WINTER0.T && t1 >= WINTER0.T) s = y1; } return [a, s]; })();
@@ -459,6 +465,11 @@ export function winterDays(yf) { const [a, s] = winterWindow; const d = ((yf - a
 // p: the share of a first-winter cohort of length Lmm (mm) dead after w winter days, by the species' [kmin, kmax]
 export function winterP(Lmm, w, k) { const cx = k[1] * (WINTER0.A_MAX * w + WINTER0.B_MAX), cn = k[0] * (WINTER0.A_MIN * w + WINTER0.B_MIN); return cx <= cn ? (Lmm < cx ? 1 : 0) : Math.min(1, Math.max(0, (cx - Lmm) / (cx - cn))); }
 // the share of the survivors that die over the step that brought the winter from w − dw to w days
+// (WINTER0.JE) the window below JE_T °C, its days behind a fish, and Johnson & Evans's share dead — and the step's share of the survivors
+export const winterWindowJE = (() => { let a = -1, s = -1; const N = 3650; for (let i = 0; i < N; i++) { const y0 = i / N, y1 = (i + 1) / N, t0 = seasonalTemp(y0), t1 = seasonalTemp(y1); if (t0 >= WINTER0.JE_T && t1 < WINTER0.JE_T) a = y1; if (t0 < WINTER0.JE_T && t1 >= WINTER0.JE_T) s = y1; } return [a, s]; })();
+export function winterDaysJE(yf) { const [a, s] = winterWindowJE; const d = ((yf - a) % 1 + 1) % 1, span = ((s - a) % 1 + 1) % 1; return d < span ? d * 365 : 0; }
+export function winterPJE(Lmm, w, je) { return Math.min(1, je[0] * Math.exp(je[1] * w - je[2] * Lmm / WINTER0.JE_FL)); }
+export function winterStepJE(Lmm, w, dw, je) { if (!(w > 0)) return 0; const p0 = w > dw ? winterPJE(Lmm, w - dw, je) : 0, p1 = winterPJE(Lmm, w, je); return p0 >= 1 ? 1 : Math.max(0, (p1 - p0) / (1 - p0)); }
 export function winterStep(Lmm, w, dw, k) { if (!(w > 0)) return 0; const p0 = winterP(Lmm, Math.max(0, w - dw), k), p1 = winterP(Lmm, w, k); return p0 >= 1 ? 1 : Math.max(0, (p1 - p0) / (1 - p0)); }
 
 // A fish-eating diving BIRD (a common loon): visits the open lake from ice-out to late autumn, rests on the surface and
