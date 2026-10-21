@@ -67,7 +67,8 @@ All in `stageR5` (not yet the default), CPU and GPU, each behind its own F3 flag
   killifish fall out in every variant. Screening terms against each other is the wrong road (the human, 2026-10-21): the
   predators' rules hold several COMPENSATIONS from before plants, cover and the gate existed.
 - **The food base collapses (zshal.mjs; arm T's tallies):** zooplankton 400–600 µg/L in late May on the true lakes, then ~1–6 µg/L
-  from September to the next May (Lower from mid-June); on the 1/10 lakes ~0 from mid-June, the weeds' small fauna down 10×, with
+  from September to the next May (Lower from mid-June); on the 1/10 lakes ~320/80 µg/L (D/C) in late May, ~0 from mid-June through
+  July, ~40/40–80 in August (zshal.mjs prints g wet per 2-D cell: × 40 for µg/L), the weeds' small fauna down 10×, with
   180k–615k young-of-year per ha in late May. Real lakes keep tens to hundreds of µg/L through summer and active copepods all winter.
 - **THE COMPENSATION AUDIT (running, 2026-10-21):** every parameter and rule moved away from its field value to fix a symptom, or a
   refuge made redundant by a later mechanism, with the realistic value to restore and the missing environment it stood in for —
