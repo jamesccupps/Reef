@@ -3,7 +3,8 @@
 // only the files changed since the last copy, by hash — then runs the command there in cmd, streaming its output.
 //   node tools/remote/run.mjs <host> [-e K=V ...] [--put file ...] [--full] [--sync-only] [--] <command...>
 //   e.g. node tools/remote/run.mjs occ-server -e W3_ONLY=plants -- node test/w3.mjs
-// --put sends a file from outside the repo (a probe) to .remote/put/<name> there: it imports the sim as '../../src/...'
+// --put sends a file from outside the repo (a probe) to .remote/put/<name> there (it stays, with every earlier one, until deleted
+// from the local .remote/put/): it imports the sim as '../../src/...'
 //   e.g. node tools/remote/run.mjs occ-server --put scratch/killi.mjs -e DAYS=120 -- node .remote/put/killi.mjs
 // The gate's timing budgets are this desktop's: on a slower host pass -e W3_PERF_MUL=1.3 (test/w3.mjs) and -e REEF_PERF_MIN=… (headless);
 // occ-server is ~15 % slower per core on the 3-D water's update, so its worth is the twelve threads beside the GPU runs, not speed.
@@ -45,7 +46,7 @@ const run = (args, opts = {}) => new Promise((res) => {
 for (const p of put) { const d = path.join(ROOT, '.remote', 'put'); fs.mkdirSync(d, { recursive: true }); fs.copyFileSync(p, path.join(d, path.basename(p))); }
 const files = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], { cwd: ROOT }).toString().split('\0').filter(Boolean)
   .filter(f => fs.existsSync(path.join(ROOT, f)) && fs.statSync(path.join(ROOT, f)).isFile())
-  .concat(put.map(p => `.remote/put/${path.basename(p)}`));
+  .concat(fs.existsSync(path.join(ROOT, '.remote', 'put')) ? fs.readdirSync(path.join(ROOT, '.remote', 'put')).map(n => `.remote/put/${n}`) : []);   // (every probe sent so far stays there — a run without --put must not delete the last one's)
 const man = path.join(ROOT, '.remote', `${host}.json`);
 const old = !full && fs.existsSync(man) ? JSON.parse(fs.readFileSync(man, 'utf8')) : {};
 const now = {};

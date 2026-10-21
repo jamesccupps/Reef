@@ -138,6 +138,7 @@ export const F3 = {
   // ~0.3 of it, where the capture term alone favours the smallest (a 42-cm pickerel cropped 6-cm killifish); the strike rate is
   // the capture success's, unchanged
   BAND_LAKE: 0, BASS_SCH: -0.8, PREY_PREF: 0, PREY_OPT: 0.3, COVER_CS: 0,
+  EGG_SCHOOL: 0,   // (1: a school's ripeness for its eggs is its gonads against ITS ripe GSI — the sexes' mean — not the female's: stageR5)
   // (the review's phase 4, items 17 and 19) YO2_MARGIN mg/L: in cold water (< YO2_T °C) the young choose their water — the bed, the
   // zooplankton's cells, the escape — with O₂ ≥ their critical level + YO2_MARGIN (0: only ≥ critical, and the zooplankton's choice
   // untested; a multiple of the critical level was wrong: 2× a white perch's 4.3 mg/L is summer's saturation): in arm O the young of
@@ -581,6 +582,10 @@ export function stageR5(on = true) {
   // its maximum rate took as many small bass in cover as out of it (the probe: 50 of 75 eaten in 60 days with 85 % of them in rock
   // cover ≥ 0.5; with the capture cut too 23, and 46 of the 75 alive at day 60)
   F3.COVER_CS = on ? 1 : 0;
+  // A SCHOOL'S EGGS: its gonads are built to its own ripe GSI, (gsiF + gsiM)/2 (half female, half male) — its ripeness for its
+  // eggs was measured against the female's gsiF, so a ripe school laid at most gsi/gsiF of them: 0.59 of a killifish school's
+  // (0.095/0.16), ~0.6 of the perches'. Single fish unchanged (killi.mjs: ~900–1,800 eggs a school spawning, ~1 clutch a summer)
+  F3.EGG_SCHOOL = on ? 1 : 0;
   S3.bass.rockC = on ? 0.6 : 0; S3.bass.rockL = on ? 15 : 0; S3.redbreast.rockC = on ? 0.5 : 0; S3.redbreast.rockL = on ? 20 : 0; S3.fallfish.rockC = on ? 0.4 : 0; S3.fallfish.rockL = on ? 12 : 0;
   // (item 15) the killifish's strip: by day ≤ 0.25 m and at night ≤ 0.4 m — in arm R, 60 % of their kills were over 0.3–0.6 m, 11 %
   // under 0.3 m where they spent 55 % of their days (the predators' shallow reach)
@@ -1941,6 +1946,7 @@ export class Fish3 {
     if (!(sW > 0)) return 0;
     const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + F3.ENC_EH);
     const sun = this.env.sun, act = s.act[sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2];   // (the share of the time it hunts now)
+    if (this._sdiag) this._sdiag(a, E, S, sW / sE, perf, act, sE, cand.length / 2, dt);   // (a probe's hook: the rule's terms — scratchpad prd.mjs; never set by the sim)
     if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt)) return 0;
     let r = rand() * sWp; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
     best = best || cand[cand.length - 2];
@@ -2158,7 +2164,7 @@ export class Fish3 {
     const E = SPAWN.EDGE, [lo, hi] = sp.spawnT, Tq = a.T, f = clamp((Tq - lo + E) / E, 0, 1) * clamp((hi + E - Tq) / E, 0, 1);
     if (!(f > 0) || rand() > 1 - Math.exp(-F3.SPAWN_RATE * f * dt)) return;
     const females = a.sex === 2 ? a.n / 2 : 1;
-    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / (sp.gsiF * a.W), 0, 1), larvae = eggs * sp.sHatch * this._hatchMul(s, a.x, a.y);
+    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / ((F3.EGG_SCHOOL ? s.gsi(a.sex) : sp.gsiF) * a.W), 0, 1), larvae = eggs * sp.sHatch * this._hatchMul(s, a.x, a.y);
     this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
     const sa = this.stats.spawnAt[s.key]; if (sa.first < 0) sa.first = this.env.time; sa.bed += a.bed; if (GEO.bodyAt(a.x, a.y) === BROOK) sa.brook++;   // (when and over what water)
     const male = b === a ? null : b, nz = Math.max(0.05, a.bed - 0.03);

@@ -2027,7 +2027,7 @@ fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
   let q = u32(slot); let b = u32(gai(A_claim, i)); let k = gau(A_k, i); let sx = gau(A_sex, i); let nid = gau(A_bid, i);
   let x = ga(A_x, i); let y = ga(A_y, i); let bed = ga(A_bed, i); let W = ga(A_W, i); let L = ga(A_L, i);
   var females = 1.0; if (sx == 2u) { females = ga(A_n, i) / 2.0; }
-  let eggs = females * spv(k, S_fecA) * pow(L, spv(k, S_fecB)) * clamp(ga(A_gon, i) / (spv(k, S_gsiF) * W), 0.0, 1.0);
+  let eggs = females * spv(k, S_fecA) * pow(L, spv(k, S_fecB)) * clamp(ga(A_gon, i) / (select(spv(k, S_gsiF), gsiOf(k, sx), F3_EGG_SCHOOL > 0.5) * W), 0.0, 1.0);   // (F3.EGG_SCHOOL: a school's own ripe GSI)
   let larvae = eggs * spv(k, S_sHatch) * hatchMul(k, x, y);
   add64(&TL, T_EGGS + 2u * k, eggs, 1.0); add64(&TL, T_SPAWNS + 2u * k, 1.0, TSCALE); add64(&TL, T_FRY + 2u * (k * NFRY + FRY_HATCHED), larvae, TSCALE);
   add64(&TL, T_SPAWNBED + 2u * k, bed, TSCALE); if (bodyAt(x, y) == BROOK) { add64(&TL, T_SPAWNBROOK + 2u * k, 1.0, TSCALE); }
