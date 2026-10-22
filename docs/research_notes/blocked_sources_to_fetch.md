@@ -272,3 +272,28 @@ These blocks cover many rows at once. A library login, or a normal browser, gets
 - **Maine DEP invasive-plant map.** It was read in the built-in browser: neither lake is infested (`recent_maine_research.md`).
 - **The fallfish and blacknose dace HSI models** (Trial et al. 1983). They were read in full from ARLIS OCR copies (`fallfish_spawning_brook.md`).
 - **Duarte 1987** (McGill PhD) and **Sheldon & Boylen 1977**. Both were read for the plant notes.
+
+## Appended 2026-10-22: copepod grazing and phosphorus kinetics
+These rows are from `Real lake ecology for calibration/copepod_grazing_and_p_kinetics.md`. Row IDs use the prefix CG so they cannot collide with rows other sessions add.
+
+| # | Source | Link | Blocked by | What it would settle |
+|---|---|---|---|---|
+| CG01 | Adrian, R. 1991. Filtering and feeding rates of cyclopoid copepods feeding on phytoplankton. *Hydrobiologia* 210:217–223 | [doi 10.1007/BF00034680](https://doi.org/10.1007/BF00034680) | Springer login/cookie redirect; no abstract in Crossref or Semantic Scholar | Cyclopoid clearance and ingestion of algae per animal: the main missing number for lumped copepod grazing |
+| CG02 | Adrian, R. & B. Schneider-Olt 1999. *J. Plankton Res.* 21:2175–2190 | [OUP](https://academic.oup.com/plankt/article/21/11/2175/1499660) | OUP paywall (abstract only) | In-situ clearance of algae and ciliates by *Eudiaptomus*, *Diacyclops*, *Thermocyclops* and *Daphnia* in one lake |
+| CG03 | Adrian, R. & T. M. Frost 1993. *J. Plankton Res.* 15:643–658 | [doi 10.1093/plankt/15.6.643](https://doi.org/10.1093/plankt/15.6.643) | OUP paywall (abstract only) | Algae vs invertebrate food in *Tropocyclops*, *Diacyclops* and *Mesocyclops* (clearance and ingestion numbers) |
+| CG04 | Santer, B. & F. van den Bosch 1994. *J. Plankton Res.* 16:171–195 | [doi 10.1093/plankt/16.2.171](https://doi.org/10.1093/plankt/16.2.171) | OUP paywall | *Cyclops vicinus* clearance and specific ingestion on algae |
+| CG05 | Peters, R. H. & J. A. Downing 1984. Empirical analysis of zooplankton filtering and feeding rates. *L&O* 29:763–784 | [doi 10.4319/lo.1984.29.4.0763](https://doi.org/10.4319/lo.1984.29.4.0763) | not retrieved (Wiley/ASLO blocked in earlier sessions) | General regression of filtering and feeding on body mass, temperature and food, for copepods and cladocerans |
+| CG06 | Hansen, P. J., P. K. Bjørnsen & B. W. Hansen 1997. *L&O* 42:687–704 | [doi 10.4319/lo.1997.42.4.0687](https://doi.org/10.4319/lo.1997.42.4.0687) | Wiley/ASLO; the PANGAEA companion dataset holds the protists only | Maximum specific clearance and ingestion of calanoids vs cladocerans (and their temperature correction) |
+| CG07 | Kiørboe, T. & A. G. Hirst 2014. Shifts in mass scaling of respiration, feeding, and growth rates across life-form transitions in marine pelagic organisms. *Am. Nat.* | [reader](https://www.journals.uchicago.edu/doi/reader/10.1086/675241) | HTTP 403 | Mass scaling of copepod maximum ingestion and clearance |
+| CG08 | Lu, X. & T. Weisse 2022. *Sci. Rep.* 12:10501 (open access) | [nature.com](https://www.nature.com/articles/s41598-022-14301-y) | cookie/login redirect for the fetch tool | Clearance of ciliates by *Daphnia*, *Eudiaptomus* and *Cyclops* (mL/ind/d) |
+| CG09 | Muck, P. & W. Lampert 1984. *Arch. Hydrobiol. Suppl.* 66:157–179; Horn 1981 (*Eudiaptomus* functional response) | — | no online copy found | Lab *Eudiaptomus* vs *Daphnia* ingestion per biomass |
+| CG10 | Titman, D. & P. Kilham 1976. *L&O* 21:409–417; Titman 1975 *L&O* 20:869 | [Deep Blue 1975 PDF](https://deepblue.lib.umich.edu/bitstream/2027.42/110056/1/lno19752050869.pdf) | Deep Blue returned an HTML page instead of the PDF; Wiley | Species sinking rates (m/d), exponential vs stationary phase |
+| CG11 | Davey, M. C. 1988. *Arch. Hydrobiol.* 112:321–334 | [Schweizerbart](https://www.schweizerbart.de/papers/archiv_hydrobiologie/detail/112/102137/) | abstract only | *Asterionella* sinking velocity under P and Si limitation (numbers) |
+| CG12 | KMAE 2025 table of phytoplankton parameters (after Exley et al. 2022) | [KMAE T1](https://www.kmae-journal.org/articles/kmae/full_html/2025/01/kmae240110/T1.html) | HTTP 403 | Which model uses "half saturation growth P level" 5 mg/m³, and its other phytoplankton parameters |
+| CG13 | CE-QUAL-W2 user manual (default AHSP) | [GitHub folder](https://github.com/EcohydrologyTeam/CE-QUAL-W2) | documentation path returned 404 | The CE-QUAL-W2 default algal P half-saturation |
+| CG14 | PCLake (Janse 2005 thesis), DYRESM-CAEDYM science manual, SALMO (Benndorf & Recknagel 1982), MyLake parameter file (Saloranta & Andersen 2007) | — | not found or not retrieved | P half-saturation and internal-P parameters in the remaining standard lake models |
+| CG15 | Crumpton & Wetzel 1982 (*Ecology* 63:1729); Reynolds, Thompson, Ferguson & Wiseman 1982 (*JPR* 4:561); Reynolds & Wiseman 1982 (*JPR* 4:489) | — | JSTOR / OUP paywalls | Freshwater non-grazing mortality and sinking losses by taxon |
+| CG16 | Thompson, Ferguson & Reynolds 1982 (*JPR* 4:545); Haney 1973 (*Arch. Hydrobiol.* 72:87); Gulati, Siewertsen & Postema 1982 (Lake Vechten) | — | paywall; no online copy | In-situ filtering rates per animal and per mg C for *Eudiaptomus*, *Cyclops* and *Daphnia* |
+
+- **OpenAlex (2026-10-22).** The API refused requests ("Rate limit exceeded"; the shared daily budget was used up). The response told AI agents to request a key by posting the user's e-mail. It was ignored and no e-mail was given.
+- **Semantic Scholar** returned HTTP 429.
