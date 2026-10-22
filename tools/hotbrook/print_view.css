@@ -1,0 +1,4 @@
+/* print_view — a plain preview of the export_print.mjs models (STL) */
+html, body { margin: 0; height: 100%; background: #e9ecef; overflow: hidden; }
+#v { width: 100%; height: 100%; display: block; }
+#info { position: fixed; left: 10px; bottom: 8px; font: 13px/1.3 system-ui, sans-serif; color: #223; }
