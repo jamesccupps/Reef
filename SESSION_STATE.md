@@ -202,6 +202,12 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~11:30 EDT — THE NEWEST). ALL THREE AGENTS MERGED: E12b 91f701d, E14 forest 98d8bd3, RENDER 7925423 (every
+animal drawn: wild3view/shallows3view/wild3kit, Wildlife toggle, Find an animal, Out now; fish3 wildEv render-only) + 36976c5 (Find skips
+forest animals deep under the crowns; checked in the preview: a deer at the brook's bank, 36/38 hidden at 07:11, no console errors).
+CLAUDE.md's browser-layer list lacks the three new render3 files (not edited — for the human/next session). The tree (uncommitted, on
+36976c5) still holds Z1b + Z2 + FEED_CV + R7 + FINDINGS (see the block below). Waiting: gate_z1.txt (remote, 14b9d3b), bury_z2on/off.txt,
+ARM AL (r22AL_611/613). Then: the full remote gate of the tree → commit → push → back up.
 ▶▶▶ RESUME HERE (2026-10-22 ~11:00 EDT — THE NEWEST). MERGED E14 (forest agent: bears/deer/moose, forest3.js, WILD3.bear both engines;
 98d8bd3; W3_ONLY=forest,wild 20/0). ARM AJ done (seed 611 only: 79 → 49 → 31 kg/ha, no recruits — the pre-fix lake). IN THE TREE (uncommitted,
 on 98d8bd3): Z1b + Z2 (as below) + FEED_CV 0.25 in stageR5 (FRY.FEED_CV_R5; g1_check young parity ✓) + R7 (a school's strikes: hazard ×n,
