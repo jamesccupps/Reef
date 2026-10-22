@@ -5,7 +5,7 @@
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3, WILDK } from '../fish3.js';
-import { FRY } from '../../config.js';
+import { FRY, ICE } from '../../config.js';
 import { GEO, BODIES } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
 
@@ -187,7 +187,7 @@ export class GpuFish {
     const yf = e.yearFrac(), YEAR = CLOCK3.YEAR_LEN, l0 = lux0 ?? e.lux, lb = luxB || [l0, e.luxAhead(dt / 2), e.luxAhead(dt)];
     const V = { n: this.n, cap: this.cap, ny: this.ny, ycap: this.ycap, blk: this.blk, seed: this.seed, dtU: Math.round(dt), yr: Math.floor(e.time / YEAR), dt, yf, lux0: l0, luxB0: lb[0], luxB1: lb[1], luxB2: lb[2],
       att: ch.attenuation(), clar: ch.clarity(), sun: e.sun, night: e.isNight() ? 1 : 0, migD: ch._migD, migC: ch._migC, timeD: e.time / 86400, yr0D: Math.floor(e.time / YEAR) * YEAR / 86400,
-      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, q1: 0, q2: 0, q3: 0 };
+      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, iceCut: e.iceCut ?? ICE.LIGHT_CUT, brookD: GEO.brookLevel ?? 1, q3: 0 };
     UNI_FIELDS.forEach((s, q) => { const [n, t] = s.split(':'); if (t === 'u') u[q] = V[n] >>> 0; else if (t === 'i') i[q] = V[n] | 0; else f[q] = V[n]; });
     this.dev.queue.writeBuffer(this.B.U, 0, buf);
   }

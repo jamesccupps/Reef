@@ -13,11 +13,11 @@ struct Uni {
   dt: f32, yf: f32, lux0: f32, luxB0: f32, luxB1: f32, luxB2: f32, att: f32, clar: f32,
   sun: f32, night: f32, migD: f32, migC: f32, timeD: f32, yr0D: f32, siteYr: i32, plants: u32,
   lit: u32, siCoord: u32, siGrid: u32, siNX: u32,
-  wY: f32, q1: f32, q2: f32, q3: f32,
+  wY: f32, iceCut: f32, brookD: f32, q3: f32,
 };`;
 // the uniform block's layout for the host (same order; 4 bytes each)
 export const UNI_FIELDS = ['n:u', 'cap:u', 'ny:u', 'ycap:u', 'blk:u', 'seed:u', 'dtU:u', 'yr:i', 'dt', 'yf', 'lux0', 'luxB0', 'luxB1', 'luxB2', 'att', 'clar',
-  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'q1', 'q2', 'q3'];
+  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'iceCut', 'brookD', 'q3'];
 
 export const CORE_BINDINGS = /* wgsl */`
 @group(0) @binding(0) var<uniform> U: Uni;
@@ -93,7 +93,10 @@ fn bilin(off: u32, x: f32, y: f32) -> f32 {
   let c = u32(fx); let r = u32(fy); let tx = fx - f32(c); let ty = fy - f32(r); let i = off + r * GNX + c;
   return (ST[i] * (1.0 - tx) + ST[i + 1u] * tx) * (1.0 - ty) + (ST[i + GNX] * (1.0 - tx) + ST[i + GNX + 1u] * tx) * ty;
 }
-fn depthAt(x: f32, y: f32) -> f32 { return bilin(O_gDepth, x, y); }
+fn depthAt(x: f32, y: f32) -> f32 {   // (E9c: the brook's cells × its level with the flow, GEO.brookLevel)
+  let d = bilin(O_gDepth, x, y); if (U.brookD == 1.0 || !(d > 0.0)) { return d; } let i = cellIndex(x, y);
+  if (i >= 0 && stu(O_gBody + u32(i)) == BROOK) { return d * U.brookD; } return d;
+}
 fn shoreDist(x: f32, y: f32) -> f32 { let i = cellIndex(x, y); if (i < 0) { return -1e3; } if (stu(O_gBody + u32(i)) != LAND) { return bilin(O_gShore, x, y); } return -stf(O_gToWater + u32(i)); }
 fn cellCentre(i: u32) -> vec2f { return vec2f(GX0 + (f32(i % GNX) + 0.5) * GCELL, GY0 + (f32(i / GNX) + 0.5) * GCELL); }
 fn deeper(x: f32, y: f32) -> vec2f { let i = cellIndex(x, y); if (i < 0) { return vec2f(0.0); } return vec2f(stf(O_gSlX + u32(i)), stf(O_gSlY + u32(i))); }
@@ -372,12 +375,14 @@ fn roam(i: u32, k: u32, id: u32, flIn: u32, x: f32, y: f32, nt: f32) -> u32 {   
     pickSpot(i, k, id, gau(A_lake, i)); fl |= FL_SP; sai(A_spYr, i, U.yr);
   }
   fl = roam(i, k, id, fl, x, y, nt);
-  let iceCut = 1.0 - ICE_LIGHT_CUT * ice; let fade = exp(-U.att * z); let kI = spv(k, S_kI); let lf = iceCut * fade; let nv = spv(k, S_nonVis);
+  let iceCut = 1.0 - U.iceCut * ice; let fade = exp(-U.att * z); let kI = spv(k, S_kI); let lf = iceCut * fade; let nv = spv(k, S_nonVis);
   sa(A_vis, i, max(nv, sight(U.lux0 * lf, kI)) * U.clar);
   sa(A_visF, i, max(nv, (sight(U.luxB0 * lf, kI) + 2.0 * sight(U.luxB1 * lf, kI) + sight(U.luxB2 * lf, kI)) / 4.0) * U.clar);
   let rif = select(0.0, F3_RIFFLE_REFUGE, ga(A_L, i) < F3_RIFFLE_L && bed < F3_RIFFLE_D && bodyAt(x, y) == BROOK);
   var cov = max(inWeeds(bedCell(c, bed), cu, bed - z, F3_BED_SHARE > 0.5), rif);   // (fish3: the shallows are the predator's reach — k_strike)
-  if (spv(k, S_rockC) > 0.0 && ga(A_L, i) <= spv(k, S_rockL) && bed < LIT3_CR_ROCK_Z) { cov = max(cov, spv(k, S_rockC) * clamp((LIT3_CR_ROCK_Z - bed) / 0.5, 0.0, 1.0)); }   // (fish3: S3 rockC — the rocky shallows)
+  if (spv(k, S_rockC) > 0.0 && ga(A_L, i) <= spv(k, S_rockL)) {   // (fish3: S3 rockC — among the stones: E1's substrate map, else the rocky shallows by depth)
+    if (LIT3_SUB_MAP > 0.5) { let gi = cellIndex(x, y); if (gi >= 0) { cov = max(cov, spv(k, S_rockC) * min(1.0, stf(O_gCrev + u32(gi)) / LIT3_CREV_FULL)); } }
+    else if (bed < LIT3_CR_ROCK_Z) { cov = max(cov, spv(k, S_rockC) * clamp((LIT3_CR_ROCK_Z - bed) / 0.5, 0.0, 1.0)); } }
   let bury = spv(k, S_bury); if (bury > 0.0 && bed - z <= F3_BURY_H && !(spv(k, S_buryL) > 0.0 && ga(A_L, i) > spv(k, S_buryL))) { cov = max(cov, bury * clamp((9.0 - wd(W_temp + j)) / 4.0, 0.0, 1.0)); }   // (fish3: dug into the mud in winter)
   sa(A_cover, i, cov);
   sa(A_fear, i, ga(A_fear, i) * exp(-F3_FEAR_DECAY * dt));
@@ -698,7 +703,7 @@ struct DriveOut { vx: f32, vy: f32, need: f32, thrust: f32, esc: u32, far: u32, 
 // fish3 _drive at a block's scale (dt 0: the heading's pulls and the pace; the turn, the look ahead and the pitch are the fine swim's)
 fn covAt(cc: u32, rk: f32) -> f32 {   // fish3 _drive's cover (S3 seek): the weeds' stands, the shallows beyond a large predator's reach, a rock dweller's stones (rk)
   let jb = sti(O_fColBedJ + cc); var pc = 0.0; if (U.plants != 0u && jb >= 0) { let li = sti(O_litIdx + u32(jb)); if (li >= 0) { pc = wd(W_pCov + u32(li)); } }
-  return max(max(F3_SHALLOW_REFUGE * clamp((0.8 - stf(O_wDepthMean + cc)) / 0.6, 0.0, 1.0), pc), rk * clamp((LIT3_CR_ROCK_Z - stf(O_wDepthMean + cc)) / 0.5, 0.0, 1.0));
+  return max(max(F3_SHALLOW_REFUGE * clamp((0.8 - stf(O_wDepthMean + cc)) / 0.6, 0.0, 1.0), pc), rk * select(clamp((LIT3_CR_ROCK_Z - stf(O_wDepthMean + cc)) / 0.5, 0.0, 1.0), min(1.0, stf(O_wColCrev + cc) / LIT3_CREV_FULL), LIT3_SUB_MAP > 0.5));
 }
 fn drive(i: u32, k: u32, id: u32, fl: u32, m: Mode, x: f32, y: f32, bed: f32, c: i32, dh: vec2f) -> DriveOut {
   var st = Steer(0.0, 0.0, 0.0, 3e38); var r: DriveOut; r.farSet = 0u; r.far = 0u;

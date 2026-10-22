@@ -17,7 +17,7 @@
 // sub-stepped for stability. Horizontal mixing at the grid scale; the night thermal siphon and its under-ice cousin as
 // closed exchange loops; vertical mixing in each column's wind/convection-mixed layer.
 import { GEO, LAND, UPPER, LOWER, BROOK, cellIndex } from './geometry.js';
-import { ENV, ICE, THERMAL, WIND, SEASON, seasonalTemp } from '../config.js';
+import { ENV, ICE, THERMAL, WIND, SEASON, WEATHER3, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
 import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
@@ -59,6 +59,7 @@ export const H3 = {
   // column's surface must be this many °C per m/s of wind colder than FORM_T before ice can start (× its exposure: the share of
   // the 8 directions with no land within the plants' SHELTER_R)
   ICE_WIND: 0.12,
+  ICE_GONE: 0.03,       // m: (E10a, WEATHER3.HYDRO) the lake-wide ice thickness below which its cover can melt
   // THE SKY'S LIGHT in lux, what the fish see by (research realtime_foraging.md §1.2, §9.1): LUX_NOON at a clear summer noon (the
   // light fields' 1); TWILIGHT after sunset and before sunrise — TWI_LUX at the sun's edge, falling TWI_DEC decades an hour
   // (civil twilight's end ~3.4 lx ~35 min after sunset, nautical ~0.008 lx at ~80 min, at Maine's latitude in summer) — to a
@@ -66,6 +67,14 @@ export const H3 = {
   LUX_NOON: 100000, TWI_LUX: 500, TWI_DEC: 3.7, NIGHT_LUX: 0.002,
 };
 const DAY = 86400;
+// (E9b) the share of the time the weather chain (_weather) spends in each sky state: its transitions' stationary distribution × each
+// state's mean dwell (ENV.WEATHER_DWELL: spells of 2–5 days, so a 1,752-s step's rounding is < 1 %) — each month's expected
+// precipitation its normal (a century's realised total within ~5 %: the spells' own variability)
+function weatherShares() {
+  const T = [[0.6, 0.4, 0, 0], [0.4, 0.15, 0.45, 0], [0, 0.45, 0.2, 0.35], [0, 0, 0.7, 0.3]];
+  let pi = [0.25, 0.25, 0.25, 0.25]; for (let it = 0; it < 500; it++) { const q = [0, 0, 0, 0]; for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) q[b] += pi[a] * T[a][b]; pi = q; }
+  const w = pi.map((v, k) => v * ENV.WEATHER_DWELL[k]), t = w.reduce((a, b) => a + b, 0); return w.map(v => v / t);
+}
 const expm = x => -Math.expm1(-x);   // 1 − e^(−x): the share a first-order process completes over a step (exact at any dt)
 
 const daylight = (t, dayFrac) => { const x = (t - (0.5 - dayFrac / 2)) / dayFrac; return x <= 0 || x >= 1 ? 0 : Math.sin(Math.PI * x); };
@@ -230,6 +239,15 @@ export class Env3 {
     // the spells — a change to how a fish chooses its spawning place gave seed 511 a stormier, colder spring and read as a
     // week's delay in the perch's spawning. Deterministic as before (the seed sets both streams)
     this._wx = ((rand() * 4294967296) >>> 0) || 1;
+    // (E9a, WEATHER3.AIR) the air's anomalies about the Maine calendar — synoptic and seasonal (°C) — on a stream of their own (from
+    // the weather's seed: the spells' draws are unchanged), and the surface water's share of them (°C, _heat's target and the ice)
+    this._wy = (this._wx ^ 0x9E3779B9) | 0 || 1; this.airSyn = 0; this.airSea = 0; this.wxT = 0;
+    // (E9b, WEATHER3.HYDRO) the catchment's water (mm): the snowpack's water, the soil, the quick and slow stores; the flow now (mm/day)
+    // and its ratio to the mean, which scales the lakes' through-flow — spun up from the year before on the normals
+    this.swe = 0; this.soil = 0; this.uz = 0; this.lz = 0; this.qMm = WEATHER3.Q_REF; this.qFac = 1; this.precip = 0; this._thQ = 0;
+    // (E10a) the lakes' ice (black and white, m) and the snow on it (mm of water); the daylight a full cover blocks (1 − its transmission)
+    this.iceB = 0; this.iceW = 0; this.iceSnow = 0; this.iceCut = ICE.LIGHT_CUT;
+    this._wxShares = weatherShares(); GEO.brookLevel = 1; if (WEATHER3.HYDRO) { this._hydroSpin(yf0); GEO.brookLevel = Math.min(WEATHER3.BROOK_LV[1], Math.max(WEATHER3.BROOK_LV[0], Math.pow(this.qFac, WEATHER3.BROOK_EXP))); }   // (E9c: the world's brook level is this lake's)
     this.windDir = Math.PI * 1.25; this.windSpeed = H3.WIND_MS[0];   // direction the wind blows FROM (radians, 0 = from the north, clockwise)
     this.light = 0; this.lightDay = 1; this.sun = 0; this.dayFrac = 0.5; this.lux = 0;
     this.temp = new Float32Array(G.NCELL);
@@ -312,7 +330,72 @@ export class Env3 {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
+  _wyrand() { this._wy = (this._wy + 0x6D2B79F5) | 0; let t = Math.imul(this._wy ^ (this._wy >>> 15), 1 | this._wy); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+  _gauss() { const u = Math.max(1e-12, this._wyrand()), v = this._wyrand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  // (E9a) the air's anomalies step as Ornstein–Uhlenbeck processes (exact over dt: x·e^(−dt/τ) + σ·√(1 − e^(−2dt/τ))·N)
+  _air(dt) {
+    const W = WEATHER3; if (!W.AIR) { this.wxT = 0; return; }
+    const yf = this.yearFrac(), m = Math.min(11, Math.floor(yf * 12)), sd = W.SYN_SD[m];
+    const aS = Math.exp(-dt / (W.SYN_TAU * DAY)), aL = Math.exp(-dt / (W.SEA_TAU * DAY));
+    this.airSyn = this.airSyn * aS + sd * Math.sqrt(1 - aS * aS) * this._gauss();
+    this.airSea = this.airSea * aL + W.SEA_SD * Math.sqrt(1 - aL * aL) * this._gauss();
+    this.wxT = W.K_WATER * (this.airSyn + this.airSea);
+  }
+  // (E9b) the air's temperature now (°C): its monthly normal (interpolated at mid-months) + the anomalies
+  airT(yf = this.yearFrac()) { const N = WEATHER3.AIR_N, x = yf * 12 - 0.5, i = Math.floor(x), f = x - i, a = N[(i + 12) % 12], b = N[(i + 13) % 12]; return a + (b - a) * f + this.airSyn + this.airSea; }
+  // the catchment over dt s at air temperature Ta with P mm of precipitation: snow below 0 °C, degree-day melt, ET from the soil,
+  // HBV's soil–quick–slow stores; the flow (mm/day) and its ratio to the mean
+  _catch(dt, Ta, P) {
+    const W = WEATHER3, d = dt / DAY;
+    let liq = 0; if (Ta < 0) this.swe += P; else liq = P;
+    const melt = Math.min(this.swe, W.DDF * Math.max(0, Ta) * d); this.swe -= melt; liq += melt;
+    const rch = liq * Math.min(1, Math.pow(Math.max(0, this.soil) / W.FC, W.BETA)); this.soil += liq - rch;
+    const es = 6.108 * Math.exp(17.26939 * Ta / (Ta + 237.3)), pet = Ta > 0 ? 0.1651 * 2 * seasonalSun(this._hyYf ?? this.yearFrac()).dayFrac * 216.7 * es / (Ta + 273.3) * W.KPEC : 0;
+    this.soil = Math.max(0, this.soil - pet * d * Math.min(1, this.soil / (W.LP * W.FC))); if (this.soil > W.FC) { this.uz += this.soil - W.FC; this.soil = W.FC; }
+    this.uz += rch; const pc = Math.min(this.uz, W.PERC * d); this.uz -= pc; this.lz += pc;
+    const q1 = this.uz * -Math.expm1(-W.K1 * d), q2 = this.lz * -Math.expm1(-W.K2 * d); this.uz -= q1; this.lz -= q2;
+    this.qMm = (q1 + q2) / Math.max(1e-9, d); this.qFac = Math.max(0.005, this.qMm / W.Q_REF);
+  }
+  _hydro(dt) {
+    const W = WEATHER3; if (!W.HYDRO) { this.qFac = 1; this.iceCut = ICE.LIGHT_CUT; GEO.brookLevel = 1; return; }
+    const yf = this.yearFrac(), m = Math.min(11, Math.floor(yf * 12)), sh = this._wxShares, perDay = W.PRCP_N[m] / (365 / 12) / (sh[2] + W.STORM_K * sh[3]);
+    const P = (this.weather === 2 ? perDay : this.weather === 3 ? W.STORM_K * perDay : 0) * dt / DAY; this.precip += P;
+    const Ta = this.airT(yf); this._catch(dt, Ta, P); this._iceSnow(dt, Ta, P);
+    GEO.brookLevel = Math.min(W.BROOK_LV[1], Math.max(W.BROOK_LV[0], Math.pow(this.qFac, W.BROOK_EXP)));   // (E9c: the brook's depth with its flow)
+  }
+  // (E10a) the ice's growth (Stefan), the snow on it, the slush that floods it to white ice, the spring's thinning; the light through it
+  _iceSnow(dt, Ta, P) {
+    const W = WEATHER3, d = dt / DAY;
+    if (this.iceMean < 0.05) { this.iceB = 0; this.iceW = 0; this.iceSnow = 0; }
+    else if (this.iceMean > 0.5) {
+      const hs = this.iceSnow / W.SNOW_RHO, a = W.STEFAN[1] + (W.STEFAN[0] - W.STEFAN[1]) * Math.exp(-hs / W.STEFAN_SNOW);   // (cm/(°C·d)^½)
+      if (Ta < 0) { const hcm = Math.max(1, 100 * this.iceB); this.iceB += a * a * -Ta * d / (2 * hcm) / 100; if (P > 0) this.iceSnow += P * W.LAKE_SNOW; }
+      else { const m = Math.min(this.iceSnow, W.DDF * Ta * d + (P > 0 ? P : 0)); this.iceSnow -= m; let th = W.MELT_ICE * Ta * d; const tw = Math.min(this.iceW, th); this.iceW -= tw; th -= tw; this.iceB = Math.max(0, this.iceB - th); }
+      const hi = this.iceB + this.iceW, ex = this.iceSnow - 83 * hi;   // (the snow's load past the ice's freeboard, kg/m²: (1000 − 917)·h_i)
+      if (ex > 0) { this.iceSnow -= ex; this.iceW += 2 * ex / 917; }   // (flooded: snow-ice ≈ half snow, half lake water [inf])
+    }
+    const hs = this.iceSnow / W.SNOW_RHO, hb = this.iceB, hw = this.iceW, h = hb + hw;
+    const top = hw > 0 ? W.WHITE_ALB : W.BLACK_ALB * Math.min(1, h / 0.05), alb = top + (W.SNOW_ALB - top) * Math.min(1, hs / 0.03);   // (a few cm of snow: an opaque top [inf])
+    const T = h > 0 || hs > 0 ? (1 - alb) * Math.exp(-W.SNOW_K * hs - W.WHITE_K * hw - W.BLACK_K * hb) : 1;
+    this.iceCut = 1 - T;
+  }
+  // a year of the catchment on the normals (each day its month's mean precipitation and air) before yf0: a climatological state
+  _hydroSpin(yf0) {
+    const W = WEATHER3; this.soil = 0.8 * W.FC; this.lz = 0.6 * W.Q_REF / W.K2;
+    for (let k = 0; k < 2 * 365; k++) { const yf = this._hyYf = ((yf0 - 2 + k / 365) % 1 + 1) % 1, m = Math.min(11, Math.floor(yf * 12)); const s0 = this.airSyn, s1 = this.airSea; this.airSyn = 0; this.airSea = 0; const Ta = this.airT(yf); this.airSyn = s0; this.airSea = s1; this._catch(DAY, Ta, W.PRCP_N[m] / (365 / 12)); }
+    this._hyYf = undefined;
+  }
+  // (E10a) a lake opened under ice: its ice and the snow on it from the normals since the air last went below 0 °C — Stefan's growth day by
+  // day, the season's snowfall × LAKE_SNOW, flooding — then the light through it
+  _iceSpin(yf) {
+    const W = WEATHER3, s0 = this.airSyn, s1 = this.airSea; this.airSyn = 0; this.airSea = 0;
+    let k0 = 0; while (k0 < 365 && this.airT(((yf - k0 / 365) % 1 + 1) % 1) < 0) k0++;   // (days back to the last thaw)
+    this.iceB = 0; this.iceW = 0; this.iceSnow = 0; this.iceMean = 1;
+    for (let k = k0; k > 0; k--) { const y = ((yf - k / 365) % 1 + 1) % 1, m = Math.min(11, Math.floor(y * 12)); this._iceSnow(DAY, this.airT(y), W.PRCP_N[m] / (365 / 12)); }
+    this.airSyn = s0; this.airSea = s1; this._iceSnow(0, -1, 0);
+  }
   _weather(dt) {
+    this._air(dt);
     if (!this.forced) {
       this.weatherTimer -= dt;
       if (this.weatherTimer <= 0) {
@@ -355,6 +438,7 @@ export class Env3 {
     }
     // the water's age: well mixed at its lake's residence (a steady through-flow)
     for (let j = 0; j < G.NCELL; j++) { const b = G.body[G.colOfCell[j]]; this.age[j] = (b === LOWER ? H3.RES_LOWER_D : H3.RES_UPPER_D) * DAY / REAL_S; }
+    if (frozen && WEATHER3.HYDRO) this._iceSpin(yf);   // (E10a: the season's ice and snow on it so far)
     if (this.chem) this.chem.prime();
     if (this.plants) this.plants.jump();   // (the weeds take the new season's shape, conserving their mass)
     if (this.lit) this.lit.jump();
@@ -374,7 +458,7 @@ export class Env3 {
     const G = this.G;
     this.time += dt; this.t = (this.t + dt / CLOCK3.DAY_LEN) % 1;
     const yf = this.yearFrac();
-    this._weather(dt);
+    this._weather(dt); this._hydro(dt);
     let iceMean = 0; for (let c = 0; c < G.NC; c++) iceMean += this.ice[c] * G.area[c]; iceMean /= this._area || (this._area = G.area.reduce((s, a) => s + a, 0));
     this.iceMean = iceMean;
     this._light();
@@ -393,7 +477,7 @@ export class Env3 {
   // DIEL_SKIN, is shared over the mixed depth) — so on calm nights the coves cool below the basin and their water siphons down.
   _heat(dt, yf) {
     const G = this.G, T = this.temp, seasonal = seasonalTemp(yf), mixM = this.mixDepth();
-    const diurnal = Math.sin((this.t - 0.30) * Math.PI * 2), wOff = ENV.TEMP_WEATHER[this.weather];
+    const diurnal = Math.sin((this.t - 0.30) * Math.PI * 2), wOff = ENV.TEMP_WEATHER[this.weather] + this.wxT;   // (E9a: the air's anomaly)
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], depth = G.depthMax[c], iceC = this.ice[c];
       if (iceC > 0.5) {
@@ -418,7 +502,9 @@ export class Env3 {
       // (the melt counts the day's warmth — spring sun on the ice by afternoons — as its DAILY MEAN on the real day: thin
       // November ice doesn't melt every afternoon; the shallows, colder on clear nights, freeze first and keep their ice)
       const surfT = T[j0], warm = seasonal + wOff + 0.6 * (1 - Math.min(1, depth / 3)) + ENV.TEMP_DIURNAL * 0.5 / Math.PI;
-      if (warm > ICE.MELT_T) { if (iceC > 0) this.ice[c] = Math.max(0, iceC - ICE.MELT * TS * dt); }
+      // (E10a: with the ice's thickness modelled, a winter thaw can't lift 40 cm of ice in a day — the cover goes once the ice is melted
+      // through, < ICE_GONE m, or wasn't there yet: thin first ice in a warm spell)
+      if (warm > ICE.MELT_T && (!WEATHER3.HYDRO || this.iceB + this.iceW < H3.ICE_GONE)) { if (iceC > 0) this.ice[c] = Math.max(0, iceC - ICE.MELT * TS * dt); }
       else if (iceC < 1 && (surfT < ICE.FORM_T - H3.ICE_WIND * this.windSpeed * (1 - this.shelter[c] / 8) || iceC > 0.5)) this.ice[c] = Math.min(1, iceC + ICE.GROW * TS * dt);
     }
   }
@@ -467,7 +553,8 @@ export class Env3 {
     this._pack();
     if (this._windOn) for (let s = 0; s < nSub; s++) this._advectAll(F, h);
     // the through-flow (residences of months) every THRU_EVERY-th update with that many steps' worth (implicit: stable)
-    if (++this._thN >= H3.THRU_EVERY) { this._throughFlowAll(dt * this._thN); this._thN = 0; }
+    this._thQ += dt * this.qFac;   // (E9b: the catchment's flow now against its mean)
+    if (++this._thN >= H3.THRU_EVERY) { this._throughFlowAll(this._thQ); this._thN = 0; this._thQ = 0; }
     this._mixHAll(dt);        // horizontal mixing between neighbouring columns (layer by layer)
     this._siphonAll(dt);      // the night siphon (calm nights) and the under-ice down-slope current
     this._mixVerticalAll(dt); // the mixed layer mixes fast; below it (and under ice) layers exchange slowly
@@ -562,7 +649,7 @@ export class Env3 {
   }
   _mixVerticalAll(dt) {
     const G = this.G, NF = this._bufNF, B = this._buf, mixM = this.mixDepth(), kMix = expm(H3.MIX_RATE * dt), kStrat = 0.5 * expm(2 * H3.K_STRAT * dt);
-    const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] < 4, tb = this.fields.findIndex(fd => fd.a === this.temp), mean = this._acc;
+    const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] + this.wxT < 4, tb = this.fields.findIndex(fd => fd.a === this.temp), mean = this._acc;
     for (let col = 0; col < G.NC; col++) {
       const j0 = G.cell0[col], n = G.nL[col]; if (n < 2) continue;
       let M = this.ice[col] > 0.5 ? 0 : Math.min(G.depthMax[col], mixM);
@@ -657,7 +744,7 @@ export class Env3 {
   // ---------- vertical mixing: the mixed layer mixes fast; below it (and under ice) layers exchange slowly ----------
   _mixVertical(dt) {
     const G = this.G, mixM = this.mixDepth(), kMix = expm(H3.MIX_RATE * dt), kStrat = 0.5 * expm(2 * H3.K_STRAT * dt);
-    const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] < 4;
+    const cold = seasonalTemp(this.yearFrac()) + ENV.TEMP_WEATHER[this.weather] + this.wxT < 4;
     for (const fd of this.fields) {
       const c = fd.a;
       for (let col = 0; col < G.NC; col++) {

@@ -192,7 +192,28 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~7 p.m. EDT — the newest; the human's weekly usage nearly out, context near full). NEW DIRECTION (the human):
+▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT — THE NEWEST). THE ECOSYSTEM BUILD (docs/review/ECOSYSTEM_BUILD.md; the human: build everything,
+weather explicitly; bears, deer and moose added → E13). COMMITTED: ccf7191 E4's GPU mirror (gate GREEN 42.9 min); b68b156 egg-stage note;
+8924d41 Daphnia-limits note (EPA NLA analogues) + FINDINGS. UNCOMMITTED, all in stageR5 and passing W3_ONLY=substrate (20/20) — COMMIT after
+the full w3 + the remote gate:
+  • E1a LIT3.SUB_MAP: tools/hotbrook/build_substrate3.py → src/w3/substrate3.js + true/substrate3.js; GEO.sub/crev (geometry.js); the
+    crayfish's stony shelter (littoral3) and the rock dwellers' cover (fish3 + GPU gCrev/wColCrev) from it.
+  • E2a ZOO3.MICRO: the rotifers' K. cochlearis rates + the microbial food pool chem3.bact (from the DOM decomposed); size-gated
+    interference; M2_R → copepods.  E2b ZOO3.DAPH_LIM + RESALG: the grazing-resistant algae chem3.resA (in the budgets, transport, Secchi)
+    + the invertebrate predators of the young Daphnia (INV_D 0.05/d); chem3.daphLoss diagnostics — PROBE RUNNING (scratchpad/probe/e2.mjs,
+    e2b_on/off.txt): does summer Daphnia fall toward the field's median 3 µg/L (< 100 in lakes < 4 m)?
+  • E9a WEATHER3.AIR (air anomalies → water target + ice); E9b WEATHER3.HYDRO (rain/snow/snowpack/HBV → through-flow × Q/Q_REF; KNOWN GAP the
+    summer's flow 0.5–0.9× vs 0.2–0.4×); E9c the brook's depth × (Q/Q_REF)^0.4 (GEO.brookLevel; GPU uniform brookD); E10a ice thickness +
+    snow + slush + layered light (env.iceCut, GPU uniform iceCut — replaces ICE.LIGHT_CUT in chem3/plants3/fish3/k_pre); thaws can't lift
+    thick ice (H3.ICE_GONE); winter starts spun up (_iceSpin).
+  • E4 ON in stageR5 with S3[k].mOther cut by the wildlife's measured share (arm AD r21AD_611.txt: ~2.9 t of fish a year).
+  • E13 PL3.MOOSE (15 moose, 868 g dry/day of the shallows' plants, N/P ashore).
+  g1_check ?r5=1 (the whole package): pre all agree, wildlife ρ to 4 digits; the xo/xt exposure mismatch (~25 fish) predates all this.
+NEXT: commit + gate; then an arm (3 seeds) of the whole package; E3 the egg stage (egg_stage.md design); E2c small cladocerans and E2d the
+fry's prey ladder by count; E6 herps; E7 emergence; E12 the missing plants; logs (E1b). The agent downloaded EPA NLA CSVs into the scratchpad
+without asking — told the human. Bash heredocs collapse '\' — write edit scripts with the Write tool; env3.js, littoral3.js, species3.js,
+bioenergetics.js are CRLF (scripts normalise and restore).
+▶▶▶ RESUME HERE (2026-10-21 ~7 p.m. EDT; the human's weekly usage nearly out, context near full). NEW DIRECTION (the human):
 "add everything that needs to be in the environment … any animals or plants or anything that isn't in there needs to be in there too" +
 "weather needs to be taken into account". STOP tuning/arm-chasing; BUILD the complete ecosystem first (memory realism-over-compensation).
 THE PLAN: docs/review/ECOSYSTEM_BUILD.md (E1 substrate+wood, E2 small zooplankton+microbial loop, E3 egg stage, E4 wildlife, E5 angling,

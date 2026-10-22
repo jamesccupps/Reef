@@ -88,6 +88,16 @@ export const PL3 = {
                         //   against 2–2.7 m in coloured water, Duarte's biomass peak at 1.1 + 0.4·Secchi ≈ 2.4 m — weed_bed_controls.md)
   Q10: 2.5,             // growth and respiration (2–3)
   SLOW: 3,              // growth runs every SLOW-th water update (with SLOW × dt)
+  // (E13) MOOSE IN THE SHALLOWS (docs/research_notes/Hot Brook populations and water/birds_mammals_people_evidence.md §Bears, deer and
+  // moose): an adult eats 868 g dry of aquatic plants a day (17.4 kg wet — Belovsky & Jordan 1978, Isle Royale), wading belly-deep and
+  // diving (16 s dives) on 108 of a summer's 124 days, mid-June to September [the window: June – mid-September, inf]; stoneworts 58 % of
+  // it, pondweeds 15.5, water horsetail 9.7, sedges 9.2, spikerush 5.8 %; in New Hampshire belly-deep on yellow pond-lily; sodium-rich
+  // plants and shallow lakes preferred (Fraser et al. 1984). MOOSE_N moose use the lakes' shallows [inf: WMD 11 ~0.9 /km² (a snippet);
+  // the research's 10–25 using the shores], × the world's share of the real lakes' area. They feed in proportion to what they can reach
+  // (MOOSE_Z: all to 1.2 m, none past 2.0 [inf: belly-deep wading]) × their preference by species, and take it ashore: their dung falls
+  // on land (none in 65 h of watching moose in ponds) — the plants' N and P leave the lakes (chem3's ledger, outP / outN)
+  MOOSE: 0, MOOSE_N: 15, MOOSE_KG: 0.868, MOOSE_YF: [0.26, 0.55], MOOSE_Z: [1.2, 2.0],
+  MOOSE_PREF: { nitella: 1, ribbonleaf: 1, largeleaf: 1, robbins: 1, yellowlily: 1, whitelily: 0.8, watershield: 0.6, bulrush: 0.4, pickerelweed: 0.4, bladderwort: 0.3, pipewort: 0.2, lobelia: 0.2 },
   SPROUT: 0.10,         // /day: storage feeds the new shoots in spring at up to this (CHARISMA ≤ 10 %)
   SEED: 0.5,            // g DW/m² a bare cell in a form's range is colonised to (spores, fragments, seeds: the bed is never sterile)
   YF_STORE: 0.53,       // year-fraction (~Sep 10) from which the shoots reallocate to storage (PCLake: day 259 + 15)
@@ -345,8 +355,21 @@ export class Plants3 {
 
   // ============================================================ step ===================================================
   step(dt) {
-    if (++this._n >= PL3.SLOW) { this._grow(dt * this._n); this._n = 0; this._outputs(); }
+    if (++this._n >= PL3.SLOW) { this._grow(dt * this._n); if (PL3.MOOSE) this._moose(dt * this._n); this._n = 0; this._outputs(); }
     this._o2(dt);
+  }
+  // (E13) the moose's grazing over ds (s): their day's need from the shoots they can reach × their preference, taken ashore
+  _moose(ds) {
+    const yf = this.env.yearFrac(), [y0, y1] = PL3.MOOSE_YF; if (!(yf >= y0 && yf < y1)) return;
+    const G = this.G, ch = this.chem, [z0, z1] = PL3.MOOSE_Z;
+    if (this._mooseFa === undefined) { let a = 0; for (let c = 0; c < G.NC; c++) a += G.area[c]; this._mooseFa = a / 6.436e6; this._moosePref = FORMS3.map(F => PL3.MOOSE_PREF[F.key] || 0); this.mooseAte = 0; }
+    const want = PL3.MOOSE_N * this._mooseFa * PL3.MOOSE_KG * 1000 * ds / DAY3, pr = this._moosePref;   // (g DW over ds)
+    let A = 0; for (let i = 0; i < this.cells.length; i++) { const z = this.zb[i], v = z <= z0 ? 1 : z >= z1 ? 0 : (z1 - z) / (z1 - z0); if (!(v > 0)) continue; const a = G.bedA[this.cells[i]] * v; for (let f = 0; f < NF3; f++) if (pr[f] > 0) A += this.Bs[f][i] * pr[f] * a; }
+    if (!(A > 0)) return; const phi = Math.min(0.2, want / A);   // (each reachable stand loses phi × its preference — at most a fifth a step)
+    let dP = 0, dN = 0, ate = 0;
+    for (let i = 0; i < this.cells.length; i++) { const z = this.zb[i], v = z <= z0 ? 1 : z >= z1 ? 0 : (z1 - z) / (z1 - z0); if (!(v > 0)) continue; const a = G.bedA[this.cells[i]];
+      for (let f = 0; f < NF3; f++) { if (!(pr[f] > 0)) continue; const B = this.Bs[f], t = B[i] * phi * pr[f] * v; if (!(t > 0)) continue; B[i] -= t; ate += t * a; dP += t * FORMS3[f].P * PL3.P_UNIT * a; dN += t * FORMS3[f].N * PL3.N_UNIT * a; } }
+    this.mooseAte += ate; ch.ledger.outP += dP; ch.ledger.outN += dN;   // (ashore: out of the lakes' budget)
   }
   // GROWTH, PHENOLOGY, DEATH over ds (s): per cell and form
   _grow(ds) {
@@ -356,7 +379,7 @@ export class Plants3 {
     let prod = 0, lit = 0;
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
-      const qT = qPl(Tj), iceCut = 1 - ICE.LIGHT_CUT * e.ice[c];
+      const qT = qPl(Tj), iceCut = 1 - e.iceCut * e.ice[c];
       if (this.dead[i] > 0) {   // last year's stems fall into the bed's organic layer (faster in the ice's and the waves' reach)
         const kF = PL3.DEAD_FALL * (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !this.brook[i] ? PL3.DEAD_ICE : 1) + (e.ice[c] < 0.5 && !this.brook[i] ? PL3.WAVE_M * PL3.WAVE_DEAD * this._wave(i) : 0);
         const d = this.dead[i] * Math.min(1, kF * dd); this.dead[i] -= d; ch.sedOM[j] += d * A / a;   // (kF·dd ≪ 1 a growth step)

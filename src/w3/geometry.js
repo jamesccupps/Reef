@@ -91,7 +91,10 @@ export function makeGeometry(HB3) {
     // the body at (x, y): 0 land, 1 Upper, 2 Lower, 3 brook (the cell's own, no interpolation)
     bodyAt(x, y) { const i = cellIndex(x, y); return i < 0 ? LAND : body[i]; },
     // the bed's depth below the local water surface at (x, y), smooth across cells (m; negative on land: the ground's height)
-    depthAt(x, y) { return bilinear(depth, x, y); },
+    // (E9c) the brook's water rises and falls with the catchment's flow: × GEO.brookLevel on its cells (env3 sets it from the flow,
+    // WEATHER3.HYDRO; 1 otherwise) — the fish feel its riffles go shallow in a dry August
+    brookLevel: 1,
+    depthAt(x, y) { const d = bilinear(depth, x, y); if (GEO.brookLevel === 1 || !(d > 0)) return d; const i = cellIndex(x, y); return i >= 0 && body[i] === BROOK ? d * GEO.brookLevel : d; },
     // metres to the nearest shore (water) or the nearest water (land, as a negative number)
     shoreDist(x, y) { const i = cellIndex(x, y); return i < 0 ? -1e3 : body[i] ? bilinear(shore, x, y) : -toWater[i]; },
     // is the point (x, y, z) in water: inside a water body and between its surface and its bed
@@ -129,6 +132,15 @@ export const GEO = W.GEO, BODIES = W.BODIES, cellIndex = W.cellIndex;
 // the 1/10 world, whose land is a re-cut placement — its banks keep NLCD's classes
 GEO.canopy = null;
 if (WORLD_TRUE) { const { SHORE3 } = await import('./true/shore3.js'); if (SHORE3.NX === GEO.NX && SHORE3.NY === GEO.NY) GEO.canopy = decode(SHORE3.canopy, Uint8Array); }
+// THE BED'S SUBSTRATE (docs/review/ECOSYSTEM_BUILD.md E1; tools/hotbrook/build_substrate3.py → substrate3.js, true/substrate3.js):
+// per cell the fractions × 255 of boulder–cobble, gravel, sand and organic muck (mud the rest) from each spot's wave exposure — the
+// critical wave base 0.77 × 1.66·√(fetch km) against the bed's depth, the wetland, beach and camp shores' overrides. GEO.sub(i)
+// → { rock, grav, sand, org, mud } (0–1); GEO.crev[i] the crevice share a small fish or crayfish can hide in (rock + ½ gravel)
+{ const { SUB3 } = WORLD_TRUE ? await import('./true/substrate3.js') : await import('./substrate3.js');
+  if (SUB3.NX !== GEO.NX || SUB3.NY !== GEO.NY) throw new Error('geometry: substrate3.js does not match the world (rebuild with tools/hotbrook/build_substrate3.py)');
+  const S = GEO.subData = { rock: decode(SUB3.rock, Uint8Array), grav: decode(SUB3.grav, Uint8Array), sand: decode(SUB3.sand, Uint8Array), org: decode(SUB3.org, Uint8Array) };
+  GEO.sub = i => { const r = S.rock[i] / 255, g = S.grav[i] / 255, s = S.sand[i] / 255, o = S.org[i] / 255; return { rock: r, grav: g, sand: s, org: o, mud: Math.max(0, 1 - r - g - s - o) }; };
+  GEO.crev = new Float32Array(GEO.N); for (let i = 0; i < GEO.N; i++) GEO.crev[i] = (S.rock[i] + 0.5 * S.grav[i]) / 255; }
 // a bank cell's trees (0–1): the photo's cover on it or the next cell inland, whichever is more — a 5-m cell at the water's edge
 // holds part of the water in its pixels and reads low, while the crowns of the trees along the bank lean out over it.
 // (i: the water cell; k: the land cell beside it, in the step dk)

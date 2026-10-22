@@ -24,10 +24,11 @@ import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js
 import { CLOCK3, TS, DAY3, OLD_S } from './clock3.js';
 import { A2 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
+import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -693,7 +694,20 @@ export function stageR5(on = true) {
   // recesses among stones near the nest, < 5 cm fish over sand and rock near shore (Forbes 1981's review; age-0 mean depth 0.34 m in
   // streams, Aadland 1993; most within 200 m of the nest, Ridgway 2002) — S3 yBed 1.0 m in the open-water season
   F3.YDEPTH = on ? 1 : 0; S3.bass.yBed = on ? 1.0 : 0;
-  // (E4) F3.WILD stays off in the package until the GPU mirrors it (the arms run on the GPU); F3.WILD = 1 turns it on for the CPU
+  // (E4) THE FISH-EATING WILDLIFE (WILD3: loons, herons, kingfishers, ospreys, the eagles, mergansers, otter, mink — the GPU mirrors it), and
+  // the adults' unsimulated M share CUT by what it now takes: BIOE.M_OTHER 0.5 stood in for "disease, parasites, birds and mammals besides
+  // the loon, angling". Arm AD (one GPU year, seed 611, the true lakes) counted each species' wildlife deaths against its 'other' deaths:
+  // perch 0.61, pumpkinseed 0.66, redbreast 0.43, bass 0.34, pickerel 0.21, fallfish 0.20, white perch 0.18, bullhead 0.16, sucker 0.09 —
+  // so mOther = the old share × (1 − that); the killifish's wildlife alone was 2.6× its old share (→ 0); dace unmeasured (the default)
+  F3.WILD = on ? 1 : 0;
+  { const MO = { sunfish: 0.17, perch: 0.19, sucker: 0.45, catfish: 0.42, whiteperch: 0.82, bass: 0.33, pike: 0.39, redbreast: 0.28, fallfish: 0.40, killifish: 0 };
+    for (const k in MO) S3[k].mOther = on ? MO[k] : undefined; }
+  // (E2a) the rotifers' microbial food and field rates, the size-gated interference, their predators feeding the copepods (config ZOO3.MICRO)
+  ZOO3.MICRO = on ? 1 : 0;
+  ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
+  // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
+  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
+  PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
   F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
@@ -765,7 +779,10 @@ export function stageR5(on = true) {
   // pumpkinseed, 387k young redbreast — so a young bass school takes fish only from 10 cm (yLpisc; its age-0 rarely gets there)
   S3.bass.sp.yLpisc = on ? 10 : undefined;
   F3.YCOLD = on ? 1 : 0;   // (item 6k: the young hunted at the predators' appetite in cold water — see _feed)
-  Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5 });
+  // (the crayfish's capacities ⅕ of the Michigan stock's by habitat: now read as the soft water's CALCIUM — Hot Brook-like lakes 2–4 mg/L, at
+  // the crayfish's limit (C. bartonii nearly gone below 2.0 mg/L, Hadley et al. 2015; 'generally rare in Maine', Cooper 1941; the human:
+  // not common) [inf: the ⅕ itself]; (E1) the stones by the bed's substrate map, LIT3.SUB_MAP — the rocky area ~⅓ of the old proxy's)
+  Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1, SUB_MAP: 1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5, SUB_MAP: 0 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
 // 1.4–5.8, smallmouth ~12 in half cover, perch-like a prior), its own speed hunting (m/s: the pickerel waits in ambush), its kind
@@ -1056,6 +1073,8 @@ export class Fish3 {
     // the bed cell for each column and layer: the nearest layer of that column whose cell holds some of its bed
     this.bedOf = new Int32Array(G.NC * G.ML).fill(-1);
     this.colBedJ = new Int32Array(G.NC);   // a column's representative bed cell (its mean depth's)
+    // (E1) each column's mean crevice share (GEO.crev over its world cells): the stones a rock dweller weighs where to go
+    this.colCrev = new Float32Array(G.NC); { const n = new Float64Array(G.NC); for (let i = 0; i < GEO.N; i++) { const c = G.colOfFine[i]; if (c >= 0 && GEO.body[i] !== LAND) { n[c]++; this.colCrev[c] += GEO.crev[i]; } } for (let c = 0; c < G.NC; c++) if (n[c] > 0) this.colCrev[c] /= n[c]; }
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c];
       for (let k = 0; k < G.ML; k++) {
@@ -1620,14 +1639,15 @@ export class Fish3 {
     { const was = a.ripe; a.ripe = this._ripe(a, yf, e.ice[c], e.temp[G.cell0[c]]); if (a.ripe && !was && i < this._hashN) this._ripeAdd(i); if (!a.ripe) a.inRun = false; }
     if (a.ripe && s.spawn.sub && !this.sites[s.key] && (a.spX !== a.spX || a.spYr !== this._yr)) { this._pickSpot(a); a.spYr = this._yr; }   // (a plant spawner's place: chosen once a season — ripeness flickers at its temperatures' edge)
     this._roam(a, yf, dtA);
-    const iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], fade = Math.exp(-att * a.z);
+    const iceCut = 1 - e.iceCut * e.ice[c], fade = Math.exp(-att * a.z);
     const kI = K_I[s.key] ?? 1, lf = iceCut * fade;
     a.vis = Math.max(s.nonVis, sight(lux0 * lf, kI)) * clar;
     const visDay = luxB ? Math.max(s.nonVis, (sight(luxB[0] * lf, kI) + 2 * sight(luxB[1] * lf, kI) + sight(luxB[2] * lf, kI)) / 4) * clar : a.vis;   // (its feeding's sight)
     a.visF = visDay;
     a.cover = Math.max(this._inWeeds(a, c, this._coarse && F3.BED_SHARE), this._riffle(a));   // (the weeds' stems — in them; the brook's riffles. The shallows: the predator's reach, _strike)
     if (s.bury && a.bed - a.z <= F3.BURY_H && !(s.buryL > 0 && a.L > s.buryL)) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter — S3 buryL: only the fish up to buryL cm)
-    if (s.rockC > 0 && a.L <= s.rockL && a.bed < LIT3.CR_ROCK_Z) a.cover = Math.max(a.cover, s.rockC * clamp((LIT3.CR_ROCK_Z - a.bed) / 0.5, 0, 1));   // (S3 rockC: among the rocky shallows' stones — no substrate map yet: the wave-washed shallows < CR_ROCK_Z, as the crayfish's shelter)
+    if (s.rockC > 0 && a.L <= s.rockL) { if (LIT3.SUB_MAP) { const gi = cellIndex(a.x, a.y); if (gi >= 0) a.cover = Math.max(a.cover, s.rockC * Math.min(1, GEO.crev[gi] / LIT3.CREV_FULL)); }   // (E1: the stones the bed's map puts there)
+      else if (a.bed < LIT3.CR_ROCK_Z) a.cover = Math.max(a.cover, s.rockC * clamp((LIT3.CR_ROCK_Z - a.bed) / 0.5, 0, 1)); }   // (S3 rockC: among the rocky shallows' stones — no substrate map yet: the wave-washed shallows < CR_ROCK_Z, as the crayfish's shelter)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -1838,7 +1858,7 @@ export class Fish3 {
       // ceases at ~7 cm"), redbreast at the stony and wooded margins (no substrate map yet: the shallows stand in); without it
       // they held a depth band and 77 % of the pumpkinseed founders were eaten in year 1
       const sk = s.seek; if (sk && this.env.sun > 0.02 && a.T > 9 && a.c >= 0) {
-        const G = this.G, pl = this.env.plants, rk = s.rockC > 0 && a.L <= s.rockL ? s.rockC : 0, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0, rk * clamp((LIT3.CR_ROCK_Z - G.depthMean[cc]) / 0.5, 0, 1));   // (and the rocky shallows for a rock dweller: S3 rockC)
+        const G = this.G, pl = this.env.plants, rk = s.rockC > 0 && a.L <= s.rockL ? s.rockC : 0, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0, rk * (LIT3.SUB_MAP ? Math.min(1, this.colCrev[cc] / LIT3.CREV_FULL) : clamp((LIT3.CR_ROCK_Z - G.depthMean[cc]) / 0.5, 0, 1)));   // (and the rocky shallows for a rock dweller: S3 rockC)
         const nb = this.nbr[a.c], v0 = cv(a.c); let best = v0, bc = -1; for (let q = 0; q < nb.length; q++) { const v = cv(nb[q]); if (v > best) { best = v; bc = nb[q]; } }
         if (bc >= 0 && best > v0 + 0.05) { const dx = G.cx[bc] - a.x, dy = G.cy[bc] - a.y; steer(dx, dy, sk.w * (a.L <= sk.L ? 1 : sk.big) * (1 - needy), Math.hypot(dx, dy)); }
       }

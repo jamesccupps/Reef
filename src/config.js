@@ -431,6 +431,55 @@ export function seasonalTemp(yf) {
   const h = X[i + 1] - X[i], t = (yf - X[i]) / h, t2 = t * t, t3 = t2 * t;
   return (2 * t3 - 3 * t2 + 1) * Y[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * Y[i + 1] + (t3 - t2) * h * m[i + 1];
 }
+// (E9a) THE WEATHER'S AIR TEMPERATURE (the 3-D lakes; docs/review/ECOSYSTEM_BUILD.md E9; research_notes/Maine lake shores and
+// catchment/weather_and_catchment_hydrology.md): the Maine calendar above is the climatological year; real years swing about it —
+// a synoptic anomaly (fronts, heat waves, cold snaps: days) and a seasonal one (a warm spring, a cold May: weeks), each an
+// Ornstein–Uhlenbeck process on the weather's own random stream (env3). The lake's surface target moves K_WATER °C per °C of air
+// (Livingstone & Lotter 1998: surface water tracks air ~0.6–1.0 on monthly scales [gk]); the ice forms and goes on it, so ice-out
+// varies year to year (Maine's records: SD 7–9 days — USGS OFR 2010-1214 via maine_limnology_streams.md: the check, not a target).
+// The SDs [gk]: northern Maine's daily mean temperature anomalies ~6–7 °C in mid-winter, ~2.5–3 in July; lag-1 autocorrelation ~0.7
+// (τ ≈ 3 days); monthly-mean anomalies ~1–1.5 °C beyond the synoptic — to be replaced by Houlton's GHCN-D statistics (USW00014609)
+export const WEATHER3 = {
+  AIR: 0,                  // on in fish3 stageR5
+  SYN_SD: [4.5, 3.5, 3.0, 2.8, 2.6, 2.6, 3.0, 3.5, 4.5, 5.5, 6.5, 6.0],   // °C by month from March (yf 0 = March 1)
+  SYN_TAU: 3,              // days
+  SEA_SD: 1.0, SEA_TAU: 30,   // °C, days
+  K_WATER: 0.75,
+  // (E9b) THE CATCHMENT'S WATER: rain and snow → the snowpack, the soil, the streams → the lakes' through-flow (× Q/Q_REF). Houlton's
+  // 1991–2020 normals (NOAA NCEI USW00014609, via weather_and_catchment_hydrology.md §1, §7) by month from March:
+  HYDRO: 0,                // on in fish3 stageR5
+  AIR_N: [-3.6, 3.7, 10.7, 15.7, 18.9, 18.0, 13.4, 6.8, 0.6, -6.2, -10.6, -9.6],   // °C, the air's monthly mean (annual 4.8)
+  PRCP_N: [68, 75, 88, 103, 92, 89, 86, 103, 92, 86, 67, 50],   // mm a month (annual 998): it falls while the sky rains (state 2)
+  STORM_K: 3,              //   or storms (3) — a storm this many times the rain's rate [inf]; each month's expected total its normal
+  DDF: 3.0,                // mm of melt a day per °C above 0 (degree-day factor: 2–3 under forest, 4–5 in the open [gk])
+  // evapotranspiration: Hamon's potential (1961; as Lu et al. 2005 — 0.1651 · day length (12-h units) · saturated vapour density ·
+  // KPEC mm/day; ~4 mm/day in a Houlton July), taken from the soil at min(1, soil/(LP·FC)) (HBV's LP)
+  KPEC: 1.0, LP: 0.4,
+  // the soil and two stores (HBV's structure; values inside its common ranges [gk]): field capacity FC mm, recharge ∝ (soil/FC)^BETA, ET
+  // at its potential above LP·FC (a forest's roots: the summer's AET ≈ PET), the quick store's recession K1 /day (small streams' storm
+  // recession 0.81–0.88 a day, half-life 3–5 days — §2), percolation PERC mm/day to the slow store, its recession K2 /day (thin till over
+  // bedrock: little groundwater). 180 years: precipitation 1,019 mm, runoff 575 (ratio 0.56; field 580–710), the snow's water ~225 mm at
+  // its peak (field ~230), gone ~19 April (late March – late April), April's flow ~3.5–4× the mean (3–4×). KNOWN GAP: the summer's flow
+  // stays ~0.5–0.9× the mean (field 0.2–0.4× in August) — the conifers' interception loss (20–30 % of summer rain) is not yet modelled
+  FC: 250, BETA: 5, K1: 0.15, PERC: 0.5, K2: 0.06,
+  Q_REF: 1.58,             // mm/day: the model's own mean runoff (above) — so the lakes' mean residence stays H3's 100 / 55 days
+  // (E10a, with HYDRO) THE ICE AND THE SNOW ON IT (weather_and_catchment_hydrology.md §5): the light under full ice is a layered
+  // Beer–Lambert transmission T = (1 − α_top)·e^(−k_s·h_s − k_w·h_w − k_b·h_b) — Donini et al.'s medians over 46 lakes: snow albedo 0.94,
+  // k 8.96 /m; white ice 0.60, 4.35; black ice 0.55, 0.79 (40 cm of black ice ≈ 33 %; 10 cm of snow on it ≈ 1.8 %; Maine's measured
+  // midwinter 1–12 %) — in place of ICE.LIGHT_CUT's fixed 40 %. Black ice grows by Stefan's law, h = α·√(freezing degree-days),
+  // α 2.7 cm/(°C·d)^½ snow-free to 1.3 under deep snow (→ ~40–80 cm at Houlton's ~900 °C·d; northern Maine 55–70 cm); the snow on it
+  // is the season's snowfall × LAKE_SNOW (wind drift: less than on land [inf]), compacted at SNOW_RHO; when its load passes the ice's
+  // freeboard (ρ_s·h_s > (ρ_w − ρ_i)·h_i, Archimedes) the excess floods to white ice; it melts by DDF; the ice thins by MELT_ICE m a day
+  // per °C above 0 [inf] and all of it goes at ice-out
+  SNOW_ALB: 0.94, SNOW_K: 8.96, WHITE_ALB: 0.60, WHITE_K: 4.35, BLACK_ALB: 0.55, BLACK_K: 0.79,
+  STEFAN: [2.7, 1.3], STEFAN_SNOW: 0.1,   // cm/(°C·d)^½ snow-free → under deep snow (e-folding snow depth, m) [inf: the range's ends]
+  LAKE_SNOW: 0.7, SNOW_RHO: 300,          // [inf]; kg/m³ (settled snow)
+  MELT_ICE: 0.01,                         // m/day per °C of air above 0 [inf: ~60 cm gone in ~3 weeks of April's 3–8 °C]
+  // (E9c, with HYDRO) THE BROOK'S DEPTH WITH ITS FLOW: depth ∝ Q^BROOK_EXP at a station (hydraulic geometry: f ≈ 0.4, Leopold & Maddock
+  // 1953) — × (Q/Q_REF)^0.4 on the brook's cells, within BROOK_LV (its pools keep water in a drought; a freshet's banks [inf]); the
+  // human: the dry 2025 nearly cut the lakes apart
+  BROOK_EXP: 0.4, BROOK_LV: [0.3, 1.6],
+};
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —
 // the compensatory brake (crowded or late cohorts end the summer small and die; sparse or early ones are large and live).
@@ -641,6 +690,18 @@ export const PHYTO = {
   INOC: 0.002,           // resting cells and the inflow's: the floor growth works on (as CYANO.INOC)
   DECAY_PC: 0.03,        // /s natural die-off (× Q10): 0.15/day at 20 °C (sinking and lysis ~0.1–0.2; with these the ungrazed season matches GROW's)
   DARK_DECAY: 1,         // share of DECAY kept in the dark (1: none spared)
+};
+
+// (E2b, ZOO3.DAPH_LIM — on in fish3 stageR5) THE GRAZING-RESISTANT ALGAE (docs/research_notes/Real lake ecology for calibration/
+// daphnia_summer_limits.md, mechanism 2): large dinoflagellates (Peridinium, Ceratium), colonial chrysophytes, desmids and filamentous
+// greens — too big or too gelatinous for Daphnia (rejected, or through the gut alive: DeMott & Van Donk 2012). They take the same N, P
+// and light as the edible greens but grow slower and are not grazed; in summer they hold a median 58 % of the phytoplankton (IQR
+// 28–85 %) in lakes like Hot Brook (EPA NLA 2012: 48 NE/Upper Midwest visits, 1.5–8 m, TP 5–25, Ca ≤ 8 — the check, not a target),
+// edible algae ~independent of TP (Watson et al. 1992), spring edible-dominated, late summer resistant (DeMott 1983)
+export const RESALG = {
+  GROW_MUL: 0.5,           // × PHYTO.GROW_PC: big cells' slower division (μmax ~0.3–0.8 /d against small flagellates' 1–2 — Reynolds 2006) [inf]
+  DECAY_MUL: 0.6,          // × PHYTO.DECAY_PC: ungrazed, lost by sinking, lysis and parasites alone; buoyant colonies and swimmers sink slowly [inf]
+  START: 0.04,             // at the lake's opening (mid-May: the edible spring algae dominate) [inf]
 };
 
 // ---------- cyanobacteria (the N-fixing phytoplankton strain — a 2nd producer field) ----------
@@ -1066,6 +1127,35 @@ export const ZOO3 = {
   // emergence over by ~9 weeks after ice-out) — the spring population is the overwintered one; the copepodites come up in
   // May–June once the bed passes ~10 °C
   HATCH_D: 0.0002, HATCH_C: 0.03, HATCH_T_C: 10,
+  // (E2a, ZOO3.MICRO — on in fish3 stageR5) THE ROTIFERS' MICROBIAL FOOD AND THEIR FIELD RATES (docs/research_notes/Real lake ecology
+  // for calibration/small_zooplankton_and_microbial_loop.md §3, §6). Real rotifers never vanish in summer (Gjerstadvann ~150/L, a
+  // trophic-index 50–140/L ≈ 1.3–3.8 µg DW/L for a lake like Hot Brook); the sim's did, because they ate algae only and broke even
+  // above Daphnia (0.05 vs 0.034 units) while every Daphnia killed them. Now:
+  MICRO: 0,
+  // the microbial food: bacteria (and the flagellates on them) grown from the DOM the bacteria decompose (MICROBE) — algae-equivalent
+  // units (the DOM's N+P per algae unit, PHYTO.P_USE + N_USE [inf: bacteria at the algae's stoichiometry]); ≈ 57–85 µg C/L at chl 3–5
+  // (Bird & Kalff 1984 × 33 fg C a cell, Tulonen 1993) ≈ 0.04–0.06 units on the sim's Daphnia threshold 0.034 ≙ C* 0.05 mg C/L [inf]
+  BACT_START: 0.04,
+  BACT_BGE: 0.26,          // bacterial growth efficiency on the DOM decomposed (Tranvik 1988, ten oligotrophic lakes)
+  BACT_LOSS: 0.15,         // /day at 20 °C (× MICROBE.Q10): the flagellates' grazing and lysis — bacterial turnover 0.03–0.2 /d (Tulonen
+                           //   1993), 1.5–16 d (Pace, McManus & Findlay 1990)
+  EPS_R: 0.5,              // the rotifers' clearance of bacteria-sized food against algae: Keratella, Kellicottia and Conochilus eat it, Polyarthra
+                           //   and Synchaeta don't (Bogdan & Gilbert 1982; Ooms-Wilms et al. 1995) — microbes 10–40 % of their food (Arndt 1993)
+  EPS_D: 0.5,              // Daphnia's: 26–92 % of their rate on algae (Kankaala 1988)
+  // K. cochlearis at 20 °C: rmax 0.28 /d, zero growth at 0.03 mg C/L (Stemberger & Gilbert 1985) — 0.020 units, 0.6 of Daphnia's; ~1 mg
+  // C/L saturates (Ramos-Rodríguez et al. 2020): G − (R + M) = 0.28, K·(R + M)/0.28 = 0.020; grazing in proportion to growth as before
+  ROT: { G: 0.39, R: 0.08, M: 0.03, K: 0.05, GR: 0.00234 },
+  INTERF_LARGE: 1,         // Daphnia kill rotifers only when > 1.2 mm (Gilbert 1988; Burns & Gilbert 1986): the interference by the large
+                           //   share — the share not answering the fish's kairomone, 1 − B/(B + DVM_B50) [inf: fish keep Daphnia small]
+  M2_TO_C: 0.35,           // the rotifers' predation loss (PLANKTON.M2_R) to the copepods' growth (cyclopoids; assimilation 0.3–0.5)
+  // (E2b, DAPH_LIM — on in fish3 stageR5) WHAT HOLDS SUMMER DAPHNIA DOWN (daphnia_summer_limits.md: lakes like Hot Brook hold a median
+  // 3 µg DW/L in July–August, < 100 in lakes under 4 m — the sim 200–370): the grazing-resistant algae (config RESALG) and the
+  // invertebrate predators of the young Daphnia — Mesocyclops (34 of 48 analogue lakes; ≤ 17 % a day of its preferred prey, Williamson
+  // 1984), Leptodora (all of D. mendotae's deaths for ~2 weeks, Lunte & Luecke 1990), Chaoborus (2–9 % of the standing crop, Fedorenko
+  // 1975): INV_D /day at 20 °C (× INV_Q10 per 10 °C; none below INV_T °C) [inf: the research's 0.02–0.1 /d midpoint]. PLANKTON.M_D (0.03)
+  // stays the non-predation mortality (field 0.002–0.18 /d)
+  DAPH_LIM: 0,
+  INV_D: 0.05, INV_Q10: 2.5, INV_T: 8,
 };
 
 export const DETRITUS = {

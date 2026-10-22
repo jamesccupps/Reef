@@ -9,7 +9,7 @@
 // of bed, as the 2-D formulas give it) changes the water's concentration by flux × (b/A2)/(v/V2) — the bed's area over the
 // water's volume, × the 2-D bed cell's thickness: thin water over a lot of bed changes fastest (the coves, under ice).
 // Rates: the 2-D sim's per-second rates × TS; its per-day rates on the calendar day DAY3.
-import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, MICROBE, NCYCLE, SED_P, SEDOM, BENTHOS, PLANKTON, ZOO3, TURBIDITY, ICE, SEASON, WORLD, GRID, seasonalTemp } from '../config.js';
+import { ENV, NUTRIENT, PHYTO, DIATOM, CYANO, RESALG, MICROBE, NCYCLE, SED_P, SEDOM, BENTHOS, PLANKTON, ZOO3, TURBIDITY, ICE, SEASON, WORLD, GRID, seasonalTemp } from '../config.js';
 import { photoRate } from '../environment.js';
 import { clamp } from '../core.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
@@ -104,7 +104,10 @@ export class Chem3 {
     const F = v => new Float32Array(n).fill(v);
     this.o2 = F(ENV.O2_START); this.nh4 = F(NCYCLE.NH4_START); this.no3 = F(NCYCLE.NO3_START); this.phos = F(NUTRIENT.P_START);
     this.phyto = F(PHYTO.START); this.diatom = F(DIATOM.START); this.cyano = F(CYANO.START); this.dom = F(MICROBE.START);
+    this.resA = F(ZOO3.DAPH_LIM ? RESALG.START : 0);   // (E2b: the grazing-resistant algae — config RESALG)
+    this.daphLoss = { fish: 0, inv: 0, other: 0, maint: 0, prod: 0 };   // (E2b diagnostics: Daphnia's production and losses, g wet × cells)
     this.zooD = F(PLANKTON.START_D); this.zooC = F(PLANKTON.START_C); this.zooR = F(PLANKTON.START_R);
+    this.bact = F(ZOO3.BACT_START);   // (E2a ZOO3.MICRO: the bacteria and flagellates as the small grazers' food, algae-equivalent units)
     // the bed's stores, per 2-D column of bed, on the cells whose bed lies in them (zero elsewhere)
     this.sedP = new Float32Array(n); this.sedOM = new Float32Array(n); this.benth = new Float32Array(n); this.eggD = new Float32Array(n); this.eggC = new Float32Array(n);
     this.bedCells = []; for (let j = 0; j < n; j++) if (G.bedA[j] > 0) this.bedCells.push(j);
@@ -137,9 +140,11 @@ export class Chem3 {
       { name: 'phyto', a: this.phyto, in: PHYTO.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'diatom', a: this.diatom, in: DIATOM.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'cyano', a: this.cyano, in: CYANO.START * CHEM3.IN_ALGAE, p: CYANO.P_USE, n: CYANO.N_USE },
+      { name: 'resA', a: this.resA, get in() { return ZOO3.DAPH_LIM ? RESALG.START * CHEM3.IN_ALGAE : 0; }, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'dom', a: this.dom, in: CHEM3.IN_DOM, p: NUTRIENT.ORGANIC_P, n: 1 - NUTRIENT.ORGANIC_P },
       { name: 'zooD', a: this.zooD, in: PLANKTON.START_D * CHEM3.IN_ZOO, p: 0, n: 0 }, { name: 'zooC', a: this.zooC, in: PLANKTON.START_C * CHEM3.IN_ZOO, p: 0, n: 0 },
       { name: 'zooR', a: this.zooR, in: PLANKTON.START_R * CHEM3.IN_ZOO, p: 0, n: 0 },
+      { name: 'bact', a: this.bact, in: ZOO3.BACT_START, p: 0, n: 0 },   // (no N or P of its own, as the zooplankton: the DOM's is remineralised)
     ];
     env.fields.push(...this.tf);
   }
@@ -150,7 +155,7 @@ export class Chem3 {
   _sight() {   // (zooVis per cell, its lake-wide terms hoisted; ln(I/VIS_I0) = ln(I0/VIS_I0) − kd·z: one log a column, no exp a cell)
     const G = this.G, P = PLANKTON, e = this.env, kd = this.attenuation(), cl = this.clarity(), iden = 1 / Math.log(P.VIS_I1 / P.VIS_I0), zv = this.zv;
     for (let c = 0; c < G.NC; c++) {
-      const I0 = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]), L0 = I0 > 0 ? Math.log(I0 / P.VIS_I0) : -Infinity;
+      const I0 = e.lightDay * (1 - e.iceCut * e.ice[c]), L0 = I0 > 0 ? Math.log(I0 / P.VIS_I0) : -Infinity;
       for (let k = 0, j = G.cell0[c]; k < G.nL[c]; k++, j++) { const x = L0 - kd * G.zMid[j]; zv[j] = x > 0 ? Math.min(1, x * iden) * cl : 0; }
     }
   }
@@ -160,13 +165,13 @@ export class Chem3 {
   attenuation() { return ENV.LIGHT_ATTEN * (1 + TURBIDITY.ATTEN * this.turbidity) / HREF_M + CHEM3.KD_COLOUR; }   // per metre
   secchi() { return 2.55 / this.attenuation(); }   // m (stained water: Kd·SD ≈ 2.55)
   // the light at depth z in column c (the surface's × the ice's cut × the water's attenuation)
-  lightAt(c, z) { const e = this.env; return e.light * (1 - ICE.LIGHT_CUT * e.ice[c]) * Math.exp(-this.attenuation() * z); }
+  lightAt(c, z) { const e = this.env; return e.light * (1 - e.iceCut * e.ice[c]) * Math.exp(-this.attenuation() * z); }
 
   // ============================================================ step ===================================================
   step(dt) {
     const e = this.env, G = this.G, yf = e.yearFrac(), T = e.temp, dd = dt / DAY3;
     // the lake's murk from its algae and the storms' stirred sediment (the 2-D sim's, lake-wide)
-    const algae = clamp((this.meanPhyto + this.meanDiatom) / PHYTO.CAP + CYANO.TURB * (this.meanCyano / CYANO.CAP), 0, 1);
+    const algae = clamp((this.meanPhyto + this.meanDiatom + (this.meanResA || 0)) / PHYTO.CAP + CYANO.TURB * (this.meanCyano / CYANO.CAP), 0, 1);
     const turbT = clamp(TURBIDITY.BASE + TURBIDITY.FROM_ALGAE * algae + TURBIDITY.FROM_STORM[e.weather] * (1 - e.iceMean), 0, 1);
     this.turbidity += (turbT - this.turbidity) * clamp(dt * TURBIDITY.RELAX * TS, 0, 1);
     for (const fd of this.tf) if (fd.name === 'o2') fd.in = this.sat(seasonalTemp(yf));   // stream water is well aerated
@@ -195,10 +200,11 @@ export class Chem3 {
     const pU = PHYTO.P_USE, nU = PHYTO.N_USE, R = PHYTO.RECYCLE, toDom = (1 - R) * (pU + nU);
     const cpU = CYANO.P_USE, cnU = CYANO.N_USE, cR = CYANO.RECYCLE, ctoDom = (1 - cR) * (cpU + cnU);
     const kd = this.attenuation(), s = sun(e.yearFrac()), mixM = e.mixDepth(), PC = PHYTO.PER_CAPITA;
-    let litSum = 0, litN = 0, diaSum = 0, diaN = 0, cySum = 0, cyN = 0, fixed = 0;
+    let litSum = 0, litN = 0, diaSum = 0, diaN = 0, cySum = 0, cyN = 0, fixed = 0, rsSum = 0;
+    const rsOn = !!ZOO3.DAPH_LIM, rs = this.resA;
     const colD = this.colDecay;
     for (let c = 0; c < G.NC; c++) {
-      const j0 = G.cell0[c], n = G.nL[c], iceCut = 1 - ICE.LIGHT_CUT * e.ice[c], Ls = e.light * iceCut, Ld = s.noon * iceCut;
+      const j0 = G.cell0[c], n = G.nL[c], iceCut = 1 - e.iceCut * e.ice[c], Ls = e.light * iceCut, Ld = s.noon * iceCut;
       for (let k = 0; k < n; k++) {
         const j = j0 + k, z = G.zMid[j], att = Math.exp(-kd * z), lit = Ls * att, Tj = T[j], w = this.w[j];
         const qP = qAt(Q.ph, Tj), dark = Math.min(1, Ld * att / PHYTO.RESP_IK), rA = PHYTO.DARK_RESP + (1 - PHYTO.DARK_RESP) * dark;
@@ -225,6 +231,16 @@ export class Chem3 {
         dom[j] += dc * toDom;
         o2[j] += (PHYTO.O2_PHOTO * b * pd - PHYTO.O2_RESP * rA * b * qP) * TS * dt;
         if (z / HREF_M < DIATOM.BAND) { diaSum += di[j] * w; diaN += w; }
+        // (E2b) THE GRAZING-RESISTANT ALGAE: as the greens — light × Liebig nutrient, per capita — slower, and no grazer takes them
+        if (rsOn) {
+          b = rs[j]; nTot = a + no3[j]; const nLr = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
+          g = PHYTO.GROW_PC * RESALG.GROW_MUL * (b + PHYTO.INOC) * TS * pl * nLr * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
+          dc = PHYTO.DECAY_PC * RESALG.DECAY_MUL * TS * qP * rD * b * dt;
+          rs[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
+          p = p - g * pU + dc * R * pU; need = g * nU; upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
+          dom[j] += dc * toDom; o2[j] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * TS * dt;
+          if (z / HREF_M < PHYTO.BAND) { rsSum += rs[j] * w; }
+        }
         // CYANOBACTERIA: P-limited only (they fix N₂ for the deficit, leaking a little), warm-water, logistic from a tiny inoculum
         b = cy[j];
         const pM = p / (p + NUTRIENT.KP), tc = clamp(1 - Math.abs(Tj - CYANO.TEMP_OPT) / CYANO.TEMP_TOL, 0, 1);
@@ -246,7 +262,7 @@ export class Chem3 {
       for (let k = n - 2; k >= 0; k--) { const j = j0 + k; if (G.zMid[j] < mixM || e.ice[c] > 0.5) continue; const m = di[j] * kS * this.w[j]; di[j] -= m / this.w[j]; di[j + 1] += m / this.w[j + 1]; }
     }
     this.ledger.fixN += fixed;
-    this.meanPhyto = litN ? litSum / litN : 0; this.meanDiatom = diaN ? diaSum / diaN : 0; this.meanCyano = cyN ? cySum / cyN : 0;
+    this.meanPhyto = litN ? litSum / litN : 0; this.meanDiatom = diaN ? diaSum / diaN : 0; this.meanCyano = cyN ? cySum / cyN : 0; this.meanResA = litN ? rsSum / litN : 0;
   }
 
   // ---------- zooplankton ----------
@@ -263,24 +279,34 @@ export class Chem3 {
     const shorten = (((yf - SEASON.SOLSTICE) % 1) + 1) % 1 < 0.5, dorm = shorten && sun(yf).dayFrac < P.DORM_DAY;
     const dmD = Z.DORM_D * dd, dmC = Z.DORM_C * dd, toxAt = CYANO.TOX_THRESH * CYANO.CAP;
     const kD = Math.exp(-CYANO.TOX_ZOO * P.DAPH_TOX * TS * dt), kC = Math.exp(-CYANO.TOX_ZOO * TS * dt), flr = -Math.expm1(-P.FLOOR_RATE * TS * dt);
-    const gR0 = P.G_R * dd, lR0 = (P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd, m2R = P.M2_R * dd;
+    const dlim = !!Z.DAPH_LIM, mic = !!Z.MICRO, RT = mic ? Z.ROT : null, Bq = this.bact, eR = mic ? Z.EPS_R : 0, eD = mic ? Z.EPS_D : 0, KR = mic ? RT.K : P.K_R, GRR = mic ? RT.GR : P.GR_R;
+    const gR0 = (mic ? RT.G : P.G_R) * dd, lR0 = (mic ? RT.R + RT.M : P.R_R + P.M_R) * dd, iR = P.DAPH_INTERF * dd * (mic && Z.INTERF_LARGE ? 1 - sB : 1), m2R = P.M2_R * dd, m2C = mic ? Z.M2_TO_C : 0;
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], rf = this.refAv[c];
       for (let k = 0; k < n; k++) {
         const j = j0 + k, Tj = T[j], qD = qAt(Q.zD, Tj), qC = qAt(Q.zC3, Tj), qL = qAt(Q.zL, Tj), qR = qAt(Q.zR, Tj), qLD = qAt(Q.zLD, Tj), qLC = qAt(Q.zLC, Tj);
         const wD = clamp((Tj - P.DAPH_T[0]) / (P.DAPH_T[1] - P.DAPH_T[0]), 0, 1) * clamp((P.DAPH_HOT[1] - Tj) / (P.DAPH_HOT[1] - P.DAPH_HOT[0]), 0, 1);
         const A = ph[j] + di[j], zd = D[j], zc = Cz[j], zr = Rz[j], lit = P.LIT_FOOD * Math.min(1, this.plantRef[j] / 0.8);   // (periphyton in the weeds)
+        const Bm = mic ? Bq[j] : 0, FD = A + eD * Bm, FR = A + eR * Bm;   // (E2a: Daphnia's and the rotifers' food — algae and the microbial food they clear)
         const cyn = Math.max(0, 1 - P.DAPH_CYANO * cyf[j] / CYANO.CAP);
-        const pd = zd * gD0 * A / (A + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + Z.K_C) * (1 - costC * rf) * qC;
+        const pd = zd * gD0 * FD / (FD + P.K_D) * cyn * wD * (1 - costD * rf) * qD, pc = zc * gC0 * (A + lit) / (A + lit + Z.K_C) * (1 - costC * rf) * qC;
         this.zooProd += (pd + pc) * this.w[j];
-        let nd = zd + pd - zd * lD0 * qLD, nc = zc + pc - zc * lC0 * qLC;
-        let nr = zr + zr * (gR0 * A / (A + P.K_R) * qR - (lR0 + iR * zd + m2R * zr) * qL);
+        const inv = dlim && Tj > Z.INV_T ? zd * Z.INV_D * dd * Math.pow(Z.INV_Q10, (Tj - 20) / 10) : 0;   // (E2b: Mesocyclops, Leptodora, Chaoborus on the young)
+        let nd = zd + pd - zd * lD0 * qLD - inv, nc = zc + pc - zc * lC0 * qLC;
+        if (dlim) { const wj = this.w[j], DL = this.daphLoss; DL.prod += pd * wj; DL.inv += inv * wj; DL.maint += zd * P.R_D * dd * qLD * wj; DL.other += zd * P.M_D * dd * qLD * wj; }
+        let nr = zr + zr * (gR0 * FR / (FR + KR) * qR - (lR0 + iR * zd + m2R * zr) * qL);
+        if (m2C > 0) nc += m2C * m2R * zr * zr * qL;   // (E2a: what the rotifers' predators eat feeds the copepods)
         const bedHere = G.bedA[j] > 0;
         if (dorm && Tj < P.DORM_T) {   // → the egg bank (on this column's bed: its bottom bed cell)
           const ed = zd * dmD, ec = zc * dmC; nd -= ed; nc -= ec;
           const jb = j0 + n - 1, s = this.w[j] / this.a[jb]; this.eggD[jb] += ed * P.EGG_EFF * s; this.eggC[jb] += ec * Z.EGG_EFF_C * s;
         }
-        let gr = zd * P.GR_D * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R);
+        let gr;
+        if (mic) {   // (E2a: each grazer's ingestion on its own food, taken from the algae and the microbial food in proportion)
+          const iD = zd * P.GR_D * qD * TS * dt / (FD + P.K_D), iRr = zr * GRR * qR * TS * dt / (FR + KR);
+          gr = iD * A + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + iRr * A;
+          const gb = (iD * eD + iRr * eR) * Bm; if (gb > 0) Bq[j] = Math.max(0, Bm - gb);
+        } else gr = zd * P.GR_D * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R);
         if (gr > 0) { if (gr > A) gr = A; const gp = Math.min(ph[j], gr), gd = gr - gp; ph[j] -= gp; di[j] -= gd; phos[j] += gr * ex * pU; nh4[j] += gr * ex * nU; dom[j] += gr * (1 - ex) * (pU + nU); }
         const ox = o2[j] >= P.O2_MIN;
         if (!ox) { nd -= zd * anox; nc -= zc * anox; nr -= zr * anox; }
@@ -338,13 +364,16 @@ export class Chem3 {
   _microbial(dt) {
     const G = this.G, T = this.env.temp, dom = this.dom, o2 = this.o2, nh4 = this.nh4, phos = this.phos, pF = NUTRIENT.ORGANIC_P;
     let sum = 0, vs = 0;
+    const mic = !!ZOO3.MICRO, bq = this.bact, bge = ZOO3.BACT_BGE / (PHYTO.P_USE + PHYTO.N_USE), bl = ZOO3.BACT_LOSS * dt / DAY3;
     for (let j = 0; j < G.NCELL; j++) {
       const m = dom[j];
       if (m > 1e-6) {
         const ox = o2[j] > 0 ? o2[j] : 0;
         let d = MICROBE.BACT * TS * qAt(Q.mic, T[j]) * (ox / (ox + MICROBE.O2_HALF)) * m * dt; if (d > m) d = m;
         dom[j] = m - d; phos[j] += d * pF; nh4[j] += d * (1 - pF); o2[j] = Math.max(0, ox - d * MICROBE.O2_COST);
+        if (mic) bq[j] += bge * d;   // (E2a: the bacteria grown on it — the DOM's N and P are remineralised as before)
       }
+      if (mic) bq[j] *= Math.exp(-bl * qAt(Q.mic, T[j]));
       sum += dom[j] * this.w[j]; vs += this.w[j];
     }
     this.meanDOM = sum / vs;
@@ -395,7 +424,7 @@ export class Chem3 {
   // ---------- the brook's filter feeders (CHEM3.BROOK_FILTER): the outflow's algae → the brook bed's organic layer ----------
   _brookFilter(dt) {
     const G = this.G, T = this.env.temp, som = this.sedOM, w = this.w, PP = SEDOM.PP_G;
-    const flds = [[this.phyto, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.diatom, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.cyano, CYANO.RECYCLE, CYANO.P_USE, CYANO.N_USE]];
+    const flds = [[this.phyto, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.diatom, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE], [this.cyano, CYANO.RECYCLE, CYANO.P_USE, CYANO.N_USE], [this.resA, PHYTO.RECYCLE, PHYTO.P_USE, PHYTO.N_USE]];
     const kF = 1 - Math.exp(-CHEM3.BROOK_FILTER * dt);
     for (const c of this.brookCols) {
       const A = this.colBedA[c]; if (!(A > 0)) continue;
@@ -464,13 +493,13 @@ export class Chem3 {
 
   // ---------- inventories (2-D units: what the budget audit tracks) ----------
   inventoryP() {
-    let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.phos[j] + (this.phyto[j] + this.diatom[j]) * PHYTO.P_USE + this.cyano[j] * CYANO.P_USE + this.dom[j] * NUTRIENT.ORGANIC_P) * this.w[j];
+    let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.phos[j] + (this.phyto[j] + this.diatom[j] + this.resA[j]) * PHYTO.P_USE + this.cyano[j] * CYANO.P_USE + this.dom[j] * NUTRIENT.ORGANIC_P) * this.w[j];
     for (const j of this.bedCells) s += this.sedP[j] * this.a[j];
     if (this.env.plants) s += this.env.plants.inventoryP();
     return s;
   }
   inventoryN() {
-    let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.nh4[j] + this.no3[j] + (this.phyto[j] + this.diatom[j]) * PHYTO.N_USE + this.cyano[j] * CYANO.N_USE + this.dom[j] * (1 - NUTRIENT.ORGANIC_P)) * this.w[j];
+    let s = 0; for (let j = 0; j < this.G.NCELL; j++) s += (this.nh4[j] + this.no3[j] + (this.phyto[j] + this.diatom[j] + this.resA[j]) * PHYTO.N_USE + this.cyano[j] * CYANO.N_USE + this.dom[j] * (1 - NUTRIENT.ORGANIC_P)) * this.w[j];
     if (this.env.plants) s += this.env.plants.inventoryN();
     return s;
   }
@@ -482,7 +511,7 @@ export class Chem3 {
   // VISUAL FEEDING at depth z in column c: the day's noon light there — a sim day stands for ~12 real days, so feeding follows
   // the day's light, not the hour's — from blind (VIS_I0) to full sight (VIS_I1) on a log scale, × the water's clarity
   zooVis(c, z) {
-    const P = PLANKTON, e = this.env, I = e.lightDay * (1 - ICE.LIGHT_CUT * e.ice[c]) * Math.exp(-this.attenuation() * z);
+    const P = PLANKTON, e = this.env, I = e.lightDay * (1 - e.iceCut * e.ice[c]) * Math.exp(-this.attenuation() * z);
     return I > P.VIS_I0 ? Math.min(1, Math.log(I / P.VIS_I0) / Math.log(P.VIS_I1 / P.VIS_I0)) * this.clarity() : 0;
   }
   // the share of a cell's zooplankton (kind 0 Daphnia, 1 copepods) a visual fish can get: the migrants of a column deep enough
@@ -525,7 +554,7 @@ export class Chem3 {
     const fD = sD > 0 ? tD / sD : 0, fC = sC > 0 ? tC / sC : 0, fR = sR > 0 ? tR / sR : 0;   // (each cell gives this share of its exposed, seen grams)
     for (let i = 0; i < nL; i++) {
       const q = L[i], v = vis >= 0 ? vis : this.zv[q]; if (v <= 0) continue;
-      if (fD > 0) this.zooD[q] *= 1 - fD * cD * this.zooExposed(q, 0, dvm) * v;
+      if (fD > 0) { const t = fD * cD * this.zooExposed(q, 0, dvm) * v; this.daphLoss.fish += this.zooD[q] * t * this.w[q]; this.zooD[q] *= 1 - t; }
       if (fC > 0) this.zooC[q] *= 1 - fC * cC * this.zooExposed(q, 1, dvm) * v;
       if (fR > 0) this.zooR[q] *= 1 - fR * cR * (1 - this.plantRef[q]) * v;
     }

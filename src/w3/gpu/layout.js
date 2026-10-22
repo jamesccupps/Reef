@@ -303,12 +303,12 @@ export function packStatics(F, env) {
   // geometry
   const N = GEO.N, bodyU = new Uint32Array(N); for (let i = 0; i < N; i++) bodyU[i] = GEO.body[i];
   add('gDepth', GEO.depth); add('gBody', bodyU, 'u'); add('gColF', G.colOfFine, 'i'); add('gSlX', F.slopeX); add('gSlY', F.slopeY);
-  add('gShore', GEO.shore); add('gToWater', GEO.toWater);
+  add('gShore', GEO.shore); add('gToWater', GEO.toWater); add('gCrev', GEO.crev);   // (E1: the bed's crevice share, substrate map)
   // water columns and cells
   add('wGridCol', G.gridCol, 'i'); add('wCell0', G.cell0, 'i'); add('wNL', Uint32Array.from(G.nL), 'u'); add('wCX', G.cx); add('wCY', G.cy);
   add('wDepthMean', G.depthMean); add('wDepthMax', G.depthMax); add('wCBody', Uint32Array.from(G.body), 'u'); add('wArea', G.area);
   add('wZMid', G.zMid); add('wColOfCell', G.colOfCell, 'i'); add('wBedA', G.bedA); add('wVol', G.vol); add('wW', env.chem.w); add('wA', env.chem.a);
-  add('wRefAv', env.chem.refAv);
+  add('wRefAv', env.chem.refAv); add('wColCrev', F.colCrev);
   // the fish's lookups
   add('fBedOf', F.bedOf, 'i'); add('fColBedJ', F.colBedJ, 'i');
   const csr = (lists, name) => { const s = new Int32Array(lists.length + 1); for (let c = 0; c < lists.length; c++) s[c + 1] = s[c] + lists[c].length; const l = new Int32Array(s[lists.length]); for (let c = 0; c < lists.length; c++) l.set(lists[c], s[c]); add(name + '0', s, 'i'); add(name + 'L', l, 'i'); };

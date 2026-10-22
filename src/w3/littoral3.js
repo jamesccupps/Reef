@@ -88,6 +88,10 @@ export const LIT3 = {
   // shores"), weed beds (up to CR_WEED at CR_WEED_B g DW/m² of plants), bare mud, the deep basin; whole-lake 5–20 g/m²
   // (Michigan 4.6–21, the shoals and weeds 3–10× the average); adults the shelter can't hold die faster (CR_EVICT)
   CR_ROCK: 25, CR_ROCK_Z: 1.5, CR_WEED: 15, CR_WEED_B: 100, CR_MUD: 2, CR_DEEP: 0.5, CR_DEEP_Z: 4, CR_EVICT: 0.01,
+  // (E1, SUB_MAP — on in fish3 stageR5) the shelter among stones from the bed's substrate map (GEO.crev: boulder–cobble + ½ gravel;
+  // tools/hotbrook/build_substrate3.py), not every bed shallower than CR_ROCK_Z: the stony lag of the swash band (0.6 rock + 0.3 gravel
+  // → CREV_FULL 0.75) holds CR_ROCK, as the old shallows did; the stony bed falls from ~20 % of the lakes to their measured-rule 6–8 %
+  SUB_MAP: 0, CREV_FULL: 0.75,
   CR_SNAIL: 0.002, CR_SNAIL_K: 0.5,   // g of snails a g of crayfish eats a day at 20 °C (type II in the snails within reach, g/m²) — they
   CR_SNAIL_REF: 0.5,       //   cut snail beds hard (Lodge et al. 1994), but the share on the upper leaves (this × the snails' capacity) is
                            //   out of their reach: snails persist in native-crayfish lakes
@@ -129,6 +133,12 @@ export class Littoral3 {
     this.S = new Float32Array(nb); this.L = new Float32Array(nb); this.sn = new Float32Array(nb);   // g wet/m² of bed
     this.K = new Float32Array(nb); this.Ksn = new Float32Array(nb);
     this.crA = new Float32Array(nb); this.crY = new Float32Array(nb); this.Kcr = new Float32Array(nb);   // crayfish, g wet/m²; shelter
+    // (E1) each bed cell's crevice share: the mean over the world's cells whose bed lies in it (each column's nearest layer holding bed)
+    this.crev = new Float32Array(nb); { const sw = new Float64Array(nb), sc = new Float64Array(nb);
+      for (let i = 0; i < GEO.N; i++) { const c = G.colOfFine[i]; if (c < 0 || GEO.body[i] === 0) continue; const j0 = G.cell0[c], n = G.nL[c], kk = Math.min(n - 1, Math.floor(GEO.depth[i] / G.DZ)); let best = -1, bd = 99;
+        for (let q = 0; q < n; q++) if (G.bedA[j0 + q] > 0 && Math.abs(q - kk) < bd) { bd = Math.abs(q - kk); best = j0 + q; }
+        const li = best >= 0 ? this.idx[best] : -1; if (li >= 0) { sw[li]++; sc[li] += GEO.crev[i]; } }
+      for (let i = 0; i < nb; i++) this.crev[i] = sw[i] > 0 ? sc[i] / sw[i] : 0; }
     this.mu = new Float32Array(nb); this.Kmu = new Float32Array(nb);   // mussels /m²; their capacity
     this.muCleared = 0; this.muWater = 0;   // L cleared since the last read (the gate); the water those cells hold (L)
     this.surfA = new Float32Array(G.NC); this.surfT = new Float32Array(G.NC);                       // g wet/m² of water
@@ -194,7 +204,8 @@ export class Littoral3 {
       // the crayfish's shelter: rock and gravel in the wave-washed shallows, the weeds' stems and roots, mud, the deep basin
       const z = P.zb[i], L3 = LIT3;
       let tot = 0; for (let f = 0; f < NF3; f++) tot += P.Bs[f][i] + P.Br[f][i];
-      this.Kcr[i] = z < L3.CR_ROCK_Z ? L3.CR_ROCK : Math.max(z > L3.CR_DEEP_Z ? L3.CR_DEEP : L3.CR_MUD, L3.CR_WEED * Math.min(1, tot / L3.CR_WEED_B));
+      const soft = Math.max(z > L3.CR_DEEP_Z ? L3.CR_DEEP : L3.CR_MUD, L3.CR_WEED * Math.min(1, tot / L3.CR_WEED_B));
+      this.Kcr[i] = L3.SUB_MAP ? Math.max(L3.CR_ROCK * Math.min(1, this.crev[i] / L3.CREV_FULL), soft) : z < L3.CR_ROCK_Z ? L3.CR_ROCK : soft;   // (E1: the stones the map puts there)
     }
   }
 

@@ -1107,6 +1107,87 @@ if (run('wild')) {
     nCase === fm.WILDK.length && src.includes(`const NWILD: u32 = ${fm.WILDK.length}u;`) && src.includes(`k == ${fm.KEYS3.indexOf('perch')}u`), `${nCase} cases`);
 }
 
+// ============================================================
+//  E1 — THE BED'S SUBSTRATE (tools/hotbrook/build_substrate3.py; LIT3.SUB_MAP) and E2a — THE ROTIFERS' MICROBIAL FOOD (ZOO3.MICRO)
+// ============================================================
+if (run('substrate')) {
+  console.log('\n— E1: the bed\'s substrate; E2a: the rotifers\' microbial food —');
+  const { GEO: Gq, UPPER: U1, LOWER: L1 } = await import('../src/w3/geometry.js'); const fm = await import('../src/w3/fish3.js');
+  const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js'); const { LIT3 } = await import('../src/w3/littoral3.js');
+  const C = await import('../src/config.js');
+  // (the map's shares by lake — the research note's rule: hard bed 6–8 %, the bed above the wave base 21–25 %, mud + organic the rest)
+  const shares = b => { let n = 0, hard = 0, worked = 0, org = 0; for (let i = 0; i < Gq.N; i++) { if (Gq.body[i] !== b) continue; const s = Gq.sub(i); n++; hard += s.rock + s.grav; if (s.mud < 0.99) worked++; org += s.org; } return { hard: hard / n, worked: worked / n, org: org / n }; };
+  const su = shares(U1), sl = shares(L1);
+  check('E1: the bed\'s substrate map — hard bed (boulder–cobble + gravel) 5–9 % of each lake, the wave-worked bed 20–27 %, the wetland shores\' organic muck 4–10 % (Håkanson; the critical wave base, Rowan 1992/Cooley 1997)',
+    [su, sl].every(s => s.hard > 0.05 && s.hard < 0.09 && s.worked > 0.2 && s.worked < 0.27 && s.org > 0.04 && s.org < 0.1),
+    `Upper hard ${(100 * su.hard).toFixed(1)} %, worked ${(100 * su.worked).toFixed(1)} %, organic ${(100 * su.org).toFixed(1)} %; Lower ${(100 * sl.hard).toFixed(1)} / ${(100 * sl.worked).toFixed(1)} / ${(100 * sl.org).toFixed(1)} %`);
+  // (the crayfish's stony shelter by the map against the depth proxy: the bed area holding ≥ half of CR_ROCK)
+  { seed(509); const e = new Env3({ yf0: 0.4 }), L = e.lit, ch = e.chem, area = i => ch.a[L.cells[i]];
+    const stony = () => { L._capacity(); let s = 0, t = 0; for (let i = 0; i < L.cells.length; i++) { t += area(i); if (L.Kcr[i] >= 0.5 * LIT3.CR_ROCK) s += area(i); } return s / t; };
+    const was = LIT3.SUB_MAP; LIT3.SUB_MAP = 0; const old = stony(); LIT3.SUB_MAP = 1; const map = stony(); LIT3.SUB_MAP = was; L._capacity();
+    check('E1 (LIT3.SUB_MAP): the crayfish\'s stony shelter where the map puts stones — 3–12 % of the bed against the depth proxy\'s every bed under 1.5 m',
+      map > 0.03 && map < 0.12 && old > 1.5 * map, `${(100 * map).toFixed(1)} % of the bed by the map, ${(100 * old).toFixed(1)} % by depth`); }
+  // (E2a: the rotifers' rates as K. cochlearis' — rmax 0.28 /d, their zero-growth food 0.5–0.75 of Daphnia's — and a fortnight's microbial food
+  // in the field's 35–85 µg C/L, the rotifers alive)
+  { const R = C.ZOO3.ROT, P = C.PLANKTON, L = R.R + R.M, thrR = R.K * L / (R.G - L), thrD = P.K_D * (P.R_D + P.M_D) / (P.G_D - P.R_D - P.M_D);
+    fm.stageR5(true); seed(509); const e = new Env3({ yf0: 0.22 }), F = new fm.Fish3(e, { young: true }), ch = e.chem, G = e.G;
+    const mean = a => { let s = 0, w = 0; for (let j = 0; j < G.NCELL; j++) { const v = ch.w[j]; if (v > 0) { s += a[j] * v; w += v; } } return s / w; };
+    for (let b = 0; b < 7 * 49; b++) { F.step(FB); e.step(FB); }
+    const bact = mean(ch.bact) * 0.05 / thrD * 1000, rot = mean(ch.zooR) * P.UGL; fm.stageR5(false);
+    check('E2a (ZOO3.MICRO): the rotifers at K. cochlearis\' rates (rmax 0.28 /d; zero growth 0.5–0.75 of Daphnia\'s food) and a microbial food grown from the DOM decomposed — a week from the opening, 30–90 µg C/L of it (field 57–85 at chl 3–5) and the rotifers alive',
+      Math.abs(R.G - L - 0.28) < 0.005 && thrR > 0.5 * thrD && thrR < 0.75 * thrD && bact > 30 && bact < 90 && rot > 1,
+      `rmax ${(R.G - L).toFixed(3)}; threshold ${thrR.toFixed(4)} vs Daphnia ${thrD.toFixed(4)} units; bacteria ${bact.toFixed(0)} µg C/L; rotifers ${rot.toFixed(1)} µg/L`); }
+  // (E9a: the air's anomalies — thirty years of the processes alone at the sim's step: the daily means' SD in January and July and
+  // their day-to-day memory as WEATHER3 sets them, the water's share K_WATER; off, nothing moves)
+  { const W = C.WEATHER3, was = W.AIR; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false }), B = FB, per = Math.round(86400 / B);
+    W.AIR = 1; const day = [], mon = []; let t = 0;
+    for (let d = 0; d < 30 * 365; d++) { let s = 0; for (let b = 0; b < per; b++) { e._air(B); e.time += B; s += e.airSyn + e.airSea; } day.push(s / per); mon.push(Math.min(11, Math.floor(e.yearFrac() * 12))); }
+    const sdM = m => { const v = day.filter((_, i) => mon[i] === m); const mu = v.reduce((a, b) => a + b, 0) / v.length; return Math.sqrt(v.reduce((a, b) => a + (b - mu) ** 2, 0) / v.length); };
+    const mu = day.reduce((a, b) => a + b, 0) / day.length; let c0 = 0, c1 = 0; for (let i = 1; i < day.length; i++) { c0 += (day[i] - mu) ** 2; c1 += (day[i] - mu) * (day[i - 1] - mu); }
+    const jan = sdM(10), jul = sdM(4), r1 = c1 / c0, wx = e.wxT / (e.airSyn + e.airSea); W.AIR = 0; e._air(B); const off = e.wxT; W.AIR = was;
+    check('E9a (WEATHER3.AIR): the air swings about the Maine calendar — daily means\' SD ~6 °C in January, ~3 in July, day-to-day memory ~0.7 (τ 3 days), the water\'s target K_WATER of it; off, none',
+      jan > 5 && jan < 8 && jul > 2.3 && jul < 4 && r1 > 0.6 && r1 < 0.85 && Math.abs(wx - W.K_WATER) < 1e-9 && off === 0, `January SD ${jan.toFixed(1)} °C, July ${jul.toFixed(1)}; lag-1 ${r1.toFixed(2)}`); }
+  // (E9b: the catchment — the weather chain and the catchment alone for 40 years: the precipitation its normals' 998 mm, the snow's water at its
+  // peak ~230 mm and gone in April, the April freshet 3–4× the mean flow, runoff ~60 % of the precipitation; the through-flow scaled by it)
+  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false }), B = FB, YRS = 40;
+    let P = 0, Q = 0, qA = 0, nA = 0; const pk = [], gone = [];
+    for (let y = 0; y < YRS; y++) { let p = 0, g = -1; for (let k = 0; k < Math.round(365 * 86400 / B); k++) { e.time += B; e._weather(B); const p0 = e.precip; e._hydro(B); P += e.precip - p0; Q += e.qMm * B / 86400; const yf = e.yearFrac();
+        if (yf < 0.3 || yf > 0.8) p = Math.max(p, e.swe); if (g < 0 && yf > 0.02 && yf < 0.4 && e.swe < 1) g = yf; if (yf >= 1 / 12 && yf < 2 / 12) { qA += e.qMm; nA++; } } pk.push(p); gone.push(g); }
+    const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1], q = Q / (YRS * 365), apr = qA / nA / q; W.AIR = a0; W.HYDRO = h0;
+    check("E9b (WEATHER3.HYDRO): the catchment on Houlton's normals — 40 years: precipitation 850–1,150 mm a year (998), the snow's water at its peak 150–320 mm (~230), gone between early April and mid-May (late March – late April), April's flow 2.5–5× the mean (3–4×), runoff 45–70 % of the precipitation (~60 %)",
+      P / YRS > 850 && P / YRS < 1150 && med(pk) > 150 && med(pk) < 320 && med(gone) > 0.09 && med(gone) < 0.21 && apr > 2.5 && apr < 5 && Q / P > 0.45 && Q / P < 0.7,
+      `${(P / YRS).toFixed(0)} mm/yr; snow water ${med(pk).toFixed(0)} mm, gone ${Math.round(med(gone) * 365)} days after 1 March; April ${apr.toFixed(2)}× the mean; runoff ${(100 * Q / P).toFixed(0)} %`); }
+  // (E10a: the light through the ice — Donini et al.'s layers: 40 cm of black ice ~33 %, with 10 cm of snow ~1.8 %; a lake opened on 1 March
+  // under the season's ice and snow; a two-day January thaw (+12 °C) leaves the cover — the ice must melt through first)
+  // (E9c: the brook's depth with its flow — its cells × (Q/Q_REF)^0.4 within BROOK_LV, the lakes' untouched; off, 1)
+  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; let ib = -1, il = -1; for (let i = 0; i < Gq.N && (ib < 0 || il < 0); i++) { if (Gq.body[i] === 3 && Gq.depth[i] > 0.2 && ib < 0) ib = i; if (Gq.body[i] === U1 && Gq.depth[i] > 1 && il < 0) il = i; }
+    Gq.brookLevel = 1; const xy = i => [Gq.X0 + (i % Gq.NX + 0.5) * Gq.CELL, Gq.Y0 + (Math.floor(i / Gq.NX) + 0.5) * Gq.CELL], [bx, by] = xy(ib), [lx, ly] = xy(il), b0 = Gq.depthAt(bx, by), l0 = Gq.depthAt(lx, ly);
+    W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.45, chem: false, plants: false }); e.qFac = 1; e.time += FB; e._weather(FB); e._hydro(FB);
+    const lv = Gq.brookLevel, want = Math.min(W.BROOK_LV[1], Math.max(W.BROOK_LV[0], Math.pow(e.qFac, W.BROOK_EXP))), b1 = Gq.depthAt(bx, by), l1 = Gq.depthAt(lx, ly);
+    W.HYDRO = 0; e._hydro(FB); const off = Gq.brookLevel; W.AIR = a0; W.HYDRO = h0;
+    check("E9c (WEATHER3.HYDRO): the brook's water with its flow — its depth × (Q/Q_REF)^0.4 (Leopold & Maddock), the lakes' untouched; off, as built",
+      Math.abs(lv - want) < 1e-12 && Math.abs(b1 - b0 * lv) < 1e-9 && l1 === l0 && off === 1, `flow ${e.qFac.toFixed(2)}× the mean → the brook ${lv.toFixed(2)}× (${b0.toFixed(2)} → ${b1.toFixed(2)} m)`); }
+  // (E13 + the weather's water: the N and P budgets still close with the catchment's flow scaling the through-flow and the moose taking
+  // the plants ashore — a July fortnight's steps, the moose's take against their need)
+  { const W = C.WEATHER3, { PL3 } = await import('../src/w3/plants3.js'), a0 = W.AIR, h0 = W.HYDRO, m0 = PL3.MOOSE; W.AIR = 1; W.HYDRO = 1; PL3.MOOSE = 1;
+    seed(401); const e = new Env3({ col: 10 * CS, yf0: 0.42 }), c = e.chem; for (let i = 0; i < 6; i++) e.step(FB);
+    const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger }, ate0 = e.plants.mooseAte || 0, days = 90 * FB / 86400;
+    for (let i = 0; i < 90; i++) e.step(FB);
+    const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
+    const rP = Math.abs(c.inventoryP() - P0 - eP) / P0, rN = Math.abs(c.inventoryN() - N0 - eN) / N0, ate = (e.plants.mooseAte - ate0) / e.plants._mooseFa / 1000, need = PL3.MOOSE_N * PL3.MOOSE_KG * days;
+    W.AIR = a0; W.HYDRO = h0; PL3.MOOSE = m0;
+    check("E9b + E13: the N and P budgets close with the catchment's flow scaling the through-flow and the moose taking the shallows' plants ashore; the moose eat 70–100 % of their need (868 g dry a moose-day)",
+      rP < 1e-5 && rN < 1e-5 && ate > 0.7 * need && ate <= need * 1.001, `P/N relative error ${rP.toExponential(0)}/${rN.toExponential(0)}; the moose ${ate.toFixed(1)} of ${need.toFixed(1)} kg dry`); }
+  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false });
+    const T = (hb, hs) => { e.iceMean = 1; e.iceB = hb; e.iceW = 0; e.iceSnow = hs * W.SNOW_RHO; e._iceSnow(0, -1, 0); return 1 - e.iceCut; };
+    const t40 = T(0.4, 0), t40s = T(0.4, 0.1);
+    seed(509); const f = new Env3({ yf0: 0.0, chem: false, plants: false }), h = f.iceB + f.iceW, tM = 1 - f.iceCut;
+    f.airSea = 12; for (let b = 0; b < 2 * 49; b++) { f.airSea = 12; f.step(FB); } const cover = f.iceMean; W.AIR = a0; W.HYDRO = h0;
+    check('E10a (WEATHER3.HYDRO): the light through the ice by its layers — 40 cm of black ice 28–38 % (~33), with 10 cm of snow on it 1–3 % (~1.8); a lake opened on 1 March under 50–90 cm of ice and its snow, < 5 % of the light through; a two-day January thaw of +12 °C leaves the cover',
+      t40 > 0.28 && t40 < 0.38 && t40s > 0.01 && t40s < 0.03 && h > 0.5 && h < 0.9 && f.iceSnow > 0 && tM < 0.05 && cover > 0.9,
+      `${(100 * t40).toFixed(1)} % / ${(100 * t40s).toFixed(1)} %; 1 March: ${(100 * h).toFixed(0)} cm of ice, ${(100 * f.iceSnow / W.SNOW_RHO).toFixed(0)} cm of snow, ${(100 * tM).toFixed(2)} % through; after the thaw the cover ${cover.toFixed(2)}`); }
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');
