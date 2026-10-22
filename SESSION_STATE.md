@@ -202,6 +202,24 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~10:15 EDT — THE NEWEST). COMMITTED (not pushed): c02674f Z1 (+ FINDINGS algae-crash diagnosis), 14b9d3b
+E4 check on the wildlife's EXPECTED take (stats.wildExp — the gate of 91f701d failed E4 at 114 %: one bass each to the eagles and ospreys on
+the 1/10 lakes; probe wildby), 269484e research note copepod_grazing_and_p_kinetics.md. GATE of 91f701d (E12b): 134 PASS, 2 FAIL (env-update
+timing 15.9 ms; E4 — now fixed in 14b9d3b), 1 GAP. GATE of 14b9d3b (Z1 + E4 fix) RUNNING on occ-server → scratchpad/gate_z1.txt (waiter
+b7lrsicqc) → when green: PUSH, back up to G:. IN THE TREE (uncommitted): Z1b + Z2 —
+- Z1b: Daphnia's growth from what they eat: PLANKTON.K_D 0.15 → ZOO3.Z1_K_D 0.48 (= Imax ~1 µgC/µgC/d ÷ the field clearance 1 mL/µg/d;
+  1 algae unit ≈ 1 mg C/L from P_USE at seston C:P ~290) — Z1 alone had them growing ~190 % of what they ate;
+- Z2 (ZOO3.Z2 in stageR5): the algae's P half-saturation Z2_KP 0.01 (1 µg/L; NUTRIENT.KP 0.10 = 10 µg/L), one sinking term per kind
+  (greens 0.1, diatoms 0.5, resistant 0.1 m/d; P to the bed store, overflow dissolved; N to the water; matter to sedOM) replacing the
+  greens-only SED_P.SETTLE (0.33 m/d), the die-off without sinking Z2_LYSIS 0.08/d, the copepods' clearance 0.4 mL/µg/d with their growth
+  from what they eat (ZOO3.K_C 0.36, G_C 0.18). The CHEM3.SETTLE_ALL stopgap of c02674f is removed.
+- PROBES (scratchpad/probe/z2year.mjs; FISH=1 the 1/10 lakes with fish): z2b_fish — edible algae dip 2.6–3.5× through the Daphnia
+  peak (was 180×), rotifers 290–770/L all summer, Daphnia peak ~100 µg/L, crustaceans 100–180 µg/L, resistant share 17 → 47 %, Secchi
+  3.3–3.5; z2b_nofish (a year, true scale): winter bottom O₂ ≥ 5.2 mg/L, the bed's organic input 20–40 % of production; OPEN: summer TP
+  falls to ~3.5–4 µg/L (pre-Z2 6–7; field 8–12?) — the P cycle's season next; Daphnia's post-peak fall ~0.06/d (field 0.1–0.2).
+  larvz_z2.txt running (the young under Z2). NEXT: the full gate of Z1b+Z2 after gate_z1, FINDINGS entry, commit; then FEED_CV 0.25 +
+  g1_check (GPU free when ARM AJ seed 611 ends — its 612/613 disabled by renaming snap_aj/tools/gpu/year_cdp.mjs), then an arm.
+- Scratch worktrees scratchpad/wt_pre (fdca130) and wt_e12b (91f701d): remove with git worktree remove when done.
 ▶▶▶ RESUME HERE (2026-10-22 08:30 EDT by the machine clock — THE NEWEST; the "a.m./p.m." stamps below were guesses). AFTER THE COMPACTION:
 - E12b MERGED as 91f701d (the weed beds' extent: stands 51 → 29 % of the bed; FINDINGS entry). R4·6 YENC check now ≥ 1.5× (was 3×: with the
   thinner beds the YENC run takes young near the predators' appetite, 3.1 → 1.9×). GATE of 91f701d running on occ-server →
