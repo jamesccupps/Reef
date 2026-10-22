@@ -202,6 +202,16 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~15:30 EDT — THE NEWEST). THE HUMAN NEEDS THE GPU FOR ANOTHER PROJECT — NO GPU RUNS (arms, g1_check, the preview's
+WebGPU) UNTIL THEY SAY IT'S FREE; CPU work on occ-server only ("keep going with remote cpu things"): node tools/remote/run.mjs occ-server --put
+<probe> -- node .remote/put/<probe>.mjs . <args> (the probes take '.' as the repo = the remote's cwd). Y4 so far (FINDINGS e92d02e): white perch
+pipeline per ha (1/10, eggpipe.mjs): 318 mature → 4.2 M eggs (420/m²; Oneida perch 111/m²) → swim-up 18 % (777k/ha; Oneida perch egg → 8 mm 1.6–18 %,
+~7.7 % typical) → 20 mm 8 % (field 2–15 %) → ~19k/ha late Aug (field 100–3,000). L2's own note warns its larval-predation rate holds at FIELD
+larval densities (0.1–5/m³); the sim's ~15–22/m³ saturate it — the low predation (0.03–0.05/d) is a symptom of the crowd. The excess starts at
+swim-up: EGG3 white perch hatch 0.45 [inf] is the weakest number. OPTIONS (decide with care; walk the seasons): (a) white perch egg → swim-up nearer
+Oneida perch's ~8 % (EGG3 whiteperch hatch ~0.2) — weakly sourced either way; (b) check the white perch fecundity (~13k eggs a mature fish, field
+20–150k/female — the eggs may be fine); (c) the alewives' young: sea-run, 2.5 M eggs/ha in 1/10 — check against Bride Lake (70,000 eggs/m² → 0.9
+emigrants/m²). Then re-probe ywp/larvz (occ-server), and an arm when the GPU is free again.
 ▶▶▶ RESUME HERE (2026-10-22 ~14:30 EDT — THE NEWEST). Y4 DIAGNOSED, NOT YET BUILT. Probes ywp/ywp2 (1/10 lakes): the young's slow growth is
 LOCAL CROWDING — their own cells hold 150–250 µg/L crustaceans in July, yet intake ÷ Cmax stays ~0.56 even at K_FRY 5 because the per-step
 crop (PLANKTON.CROP 0.3 of the catchable plankton in a school's patch) binds once the curve is loosened; young alewives are the biggest
