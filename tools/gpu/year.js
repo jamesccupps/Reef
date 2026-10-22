@@ -96,7 +96,7 @@ for (const sd of SEEDS) {
         if (tot > 0) say(`      diet ${(tot / 1000).toFixed(0)} kg: ` + FOODS.map((f, j) => [f, g[j] / 1e6 / tot]).filter(x => x[1] >= 0.005).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' · '));
         { const y = dietYr[k] || (dietYr[k] = FOODS.map(() => 0)); g.forEach((v, j) => { y[j] += v / 1e6; }); }   // (the year's, by food)
         // the young's losses since the last report, by fate (wgsl.js FRY_*), as a share of the young alive then
-        const fd = j => j === 8 ? (tl[1998 + q] - tlPrev[1998 + q]) / 1e6 : j === 7 ? (tl[910 + q] - tlPrev[910 + q]) / 1e6 : (tl[320 + q * 7 + j] - tlPrev[320 + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);   // (7: capped — T_YCAP, pairs 910 + k)
+        const fd = j => j === 8 ? (tl[TP.YWILD + q] - tlPrev[TP.YWILD + q]) / 1e6 : j === 7 ? (tl[TP.YCAP + q] - tlPrev[TP.YCAP + q]) / 1e6 : (tl[TP.FRY + q * 7 + j] - tlPrev[TP.FRY + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);   // (by the tally map: the old fixed pairs 320/910/1998 read other tallies once TP moved them)
         if (y0 > 1000) say(`      young's fates (of ${(y0 / 1e3).toFixed(0)}k): ` + [['natural', 0], ['starved', 1], ['heat', 2], ['hypoxia', 3], ['eaten', 4], ['wildlife', 8], ['recruited', 5], ['capped', 7]].map(([f, j]) => [f, fd(j) / y0]).filter(x => x[1] >= 0.001).map(([f, v]) => `${f} ${(100 * v).toFixed(1)}%`).join(' · '));
       }
     });
