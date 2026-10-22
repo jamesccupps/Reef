@@ -22,7 +22,9 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   - Past the rotifer stage the young feed on the crustaceans at the package's K_FRY 60 µg/L. At AL's 30–40 µg/L that is ~37 % of their
     appetite, about maintenance. In the field the young switch to the bed's prey at 2–3 cm. Next: the young's path from the
     plankton to the bed, and the field's crustacean densities for small Maine lakes.
-- **Where.** scratchpad r22AL_611.txt (yrsum.mjs), queue_al.sh (snap_al: the tree before the E14 merge and before Z2_BURY).
+- **Seed 613 agrees:** 79 → 56 → 40 kg/ha. Recruits: bullhead 79,000, fallfish 81,000, redbreast 540; no perch this seed. White perch again
+  12.5 → 3.2 kg/ha with 0 recruits (656 M and 332 M young hatched; 52–59 % natural, 13–23 % starved).
+- **Where.** scratchpad r22AL_611.txt, r22AL_613.txt (yrsum.mjs), queue_al.sh (snap_al: the tree before the E14 merge and before Z2_BURY).
 
 ## 2026-10-22 — A school of piscivores fed every fish on one kill: n fish's meals for one prey's death, in both engines (R7)
 - **What.** A followed-fish agent can be a school of up to 80 fish (perch ≥ 14 cm, white perch ≥ 15 cm hunt as schools). When it
