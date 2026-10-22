@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~12:15 a.m. EDT — THE NEWEST). GATE of 4413110: 128 PASS, 0 FAIL (E2c/E2d, E6a, the tally map). COMMITTED:
+▶▶▶ RESUME HERE (2026-10-22 ~2 a.m. EDT — THE NEWEST). 9229a90 = L2 COMMITTED (FRY.LARV2 + M_LARVA3 0.02 in stageR5, both engines;
+g1_check yf 0.3 young eaten CPU 4130 / GPU 4136): the fish's larva-picking at ρ 0.15 × Cmax 3.42e-7·L^2.94 m³/s × s(r) × detectability × colour
+× S3 larvO. Probe larvz: perch larvae eaten Z 0.003 → 0.015 — their potential 0.07–0.1 is SWAMPED by the predators' appetite at ~200
+larvae/m² of all species (larvdiag.mjs); bass fry after dispersal over-taken (0.13–0.18 vs field 0.02–0.05). THE UPSTREAM QUESTION: the
+sim's larval PRODUCTION (adult census × fecundity × egg survival — perch hatch 0.95) → research agent running → docs/research_notes/Real
+lake ecology for calibration/egg_survival_and_larval_production.md.
+ARM AG RUNNING (queue_ag.sh; snapshot ag :8146 = 9229a90 — the package + E2c + E6a + E8 + L1 + L2; 611/612/613 × 730 d → r22AG_<seed>.txt;
+read: yrsum.mjs, yz.mjs, grep "alewives|wildlife take|period's eggs"). GATE of 61f25c1 running remotely → gate_eco4.txt (then gate HEAD).
+▶▶▶ RESUME HERE (2026-10-22 ~12:15 a.m. EDT). GATE of 4413110: 128 PASS, 0 FAIL (E2c/E2d, E6a, the tally map). COMMITTED:
 b5ddf0c L1 (FRY.CYC in stageR5; M_LARVA3 0.02 HELD for L2); 61f25c1 E8 ON THE GPU VERIFIED (10-week 1/10 r5=1 run: 184 in, spent 51, out 60,
 P in 110 g; fixes: k_aleFinA after k_ale — encodeBook clears GS — and readCounts to GL slot 208). g1_check r5=1 at yf 0.27/0.4/0.75 all agree
 (E2c's young zooplankton within ~3 %) — run it as: node tools/gpu/year_cdp.mjs "r5=1&yf=0.4" out.txt 9361 g1_check (the preview pane has NO
