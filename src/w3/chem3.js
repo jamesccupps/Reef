@@ -93,12 +93,6 @@ export const CHEM3 = {
   // (0.0015: the summer's dissolved P holds up 2–4× — Søndergaard's shallow lakes; the retention it was also once judged by,
   // 'Larsen–Mercier 0.66–0.72', was the formula's complement: see BURY_MUL)
   REL_OXIC: 0.0015, REL_Q10: 2.5,
-  // Z2 — EVERY ALGA SETTLES: the bed's capture of settling algae (SED_P.SETTLE, the 2-D model's, when its greens were its only
-  // algae) took the greens alone — ~0.15/day of them, beside their own die-off — while the diatoms and the grazing-resistant algae
-  // added since settled not at all, so the ungrazed, unsettled resistant algae inherited the summer (probe algbud: the greens 0.28 →
-  // 0 by mid-June with the grazers taking ~1 %/day). With it each kind settles by its biomass × its sinking speed against the
-  // greens' (SINK_DIA, SINK_RES). (0: off — the greens alone)
-  SETTLE_ALL: 0, SINK_DIA: 1, SINK_RES: 1,
   // COLOURED WATER (step 4b): the dissolved colour of a spruce–fir and wetland catchment (30–60 SPU) sets most of the light's
   // attenuation (/m, added to the algae's and the stirred sediment's) — Secchi ~3 m, where the 2-D sim's water read 6–9 m
   // (Maine report: colour, not phytoplankton, dominates a Hot Brook basin's light; stained Kd·SD ≈ 2.4–2.7 — Koenings &
@@ -243,6 +237,7 @@ export class Chem3 {
     const pU = PHYTO.P_USE, nU = PHYTO.N_USE, R = PHYTO.RECYCLE, toDom = (1 - R) * (pU + nU);
     const cpU = CYANO.P_USE, cnU = CYANO.N_USE, cR = CYANO.RECYCLE, ctoDom = (1 - cR) * (cpU + cnU);
     const kd = this.attenuation(), s = sun(e.yearFrac()), mixM = e.mixDepth(), PC = PHYTO.PER_CAPITA;
+    const z2 = !!ZOO3.Z2, KPa = z2 ? ZOO3.Z2_KP : NUTRIENT.KP, lys = z2 ? ZOO3.Z2_LYSIS / (TS * DAY3) : 0;   // (Z2: the field's P half-saturation; the die-off without the sinking, /s)
     let litSum = 0, litN = 0, diaSum = 0, diaN = 0, cySum = 0, cyN = 0, fixed = 0, rsSum = 0;
     const rsOn = !!ZOO3.DAPH_LIM, rs = this.resA;
     const colD = this.colDecay;
@@ -255,9 +250,9 @@ export class Chem3 {
         // GREEN PHYTOPLANKTON: light × Liebig-co-limited nutrient, Redfield N+P taken (ammonium first); decay returns N+P
         // (RECYCLE at once, the rest via DOM); O₂ by day, respiration always
         let p = phos[j], a = nh4[j], nTot = a + no3[j], b = ph[j];
-        const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP)), pl = photoRate(lit, qP);
+        const nLim = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + KPa)), pl = photoRate(lit, qP);
         let g = (PC ? PHYTO.GROW_PC * (b + PHYTO.INOC) : PHYTO.GROW) * TS * pl * nLim * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
-        let dc = (PC ? PHYTO.DECAY_PC : PHYTO.DECAY) * TS * qP * rD * b * dt;
+        let dc = (z2 ? lys : PC ? PHYTO.DECAY_PC : PHYTO.DECAY) * TS * qP * rD * b * dt;
         ph[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
         p = p - g * pU + dc * R * pU; let need = g * nU, upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
         dom[j] += dc * toDom;
@@ -266,9 +261,9 @@ export class Chem3 {
         // DIATOMS: cold-centred (best ~7 °C) — the spring bloom; the window caps the light-saturated rate
         b = di[j]; nTot = a + no3[j];
         const tf = clamp(1 - Math.abs(Tj - DIATOM.TEMP_OPT) / DIATOM.TEMP_TOL, 0, 1), pd = Math.min(lit, tf);
-        const nLd = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
+        const nLd = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + KPa));
         g = (PC ? DIATOM.GROW_PC * (b + PHYTO.INOC) : DIATOM.GROW) * TS * pd * nLd * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
-        dc = (PC ? DIATOM.DECAY_PC : DIATOM.DECAY) * TS * qP * rD * b * dt;
+        dc = (z2 ? lys : PC ? DIATOM.DECAY_PC : DIATOM.DECAY) * TS * qP * rD * b * dt;
         di[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
         p = p - g * pU + dc * R * pU; need = g * nU; upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
         dom[j] += dc * toDom;
@@ -276,9 +271,9 @@ export class Chem3 {
         if (z / HREF_M < DIATOM.BAND) { diaSum += di[j] * w; diaN += w; }
         // (E2b) THE GRAZING-RESISTANT ALGAE: as the greens — light × Liebig nutrient, per capita — slower, and no grazer takes them
         if (rsOn) {
-          b = rs[j]; nTot = a + no3[j]; const nLr = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + NUTRIENT.KP));
+          b = rs[j]; nTot = a + no3[j]; const nLr = Math.min(nTot / (nTot + NUTRIENT.KN), p / (p + KPa));
           g = PHYTO.GROW_PC * RESALG.GROW_MUL * (b + PHYTO.INOC) * TS * pl * nLr * (1 - b / PHYTO.CAP) * dt; if (g * pU > p) g = p / pU; if (g * nU > nTot) g = nTot / nU; if (g < 0) g = 0;
-          dc = PHYTO.DECAY_PC * RESALG.DECAY_MUL * TS * qP * rD * b * dt;
+          dc = (z2 ? lys : PHYTO.DECAY_PC) * RESALG.DECAY_MUL * TS * qP * rD * b * dt;
           rs[j] = b + g - dc; colD[c] += dc * w; this.algProd += g * w; this.algDecay += dc * w;
           p = p - g * pU + dc * R * pU; need = g * nU; upA = need < a ? need : a; a = a - upA + dc * R * nU; if (need > upA) no3[j] -= need - upA;
           dom[j] += dc * toDom; o2[j] += (PHYTO.O2_PHOTO * b * pl - PHYTO.O2_RESP * rA * b * qP) * TS * dt;
@@ -327,6 +322,7 @@ export class Chem3 {
     const sm = !!Z.SMALL, Sz = this.zooS, gS0 = P.G_D * dd, lS0 = (P.R_D + P.M_D) * dd, KS = Z.K_S * P.K_D, eS = mic ? Z.EPS_S : 0;   // (E2c: the small cladocerans)
     // (Z1) the cladocerans' clearance at the field's per-µg rate (GR_D × gK: mL a µg a day at 20 °C ÷ the sim's), their starvation clock
     const z1 = !!Z.Z1, gK = z1 ? Z.Z1_CLEAR / (P.GR_D * TS * 86400 / P.K_D / P.UGL * 1000) : 1, stv0 = z1 ? dd / Z.Z1_STARVE_D : 0;
+    const gKc = Z.Z2 ? Z.Z2_CLEAR_C / (P.GR_C * TS * 86400 / Z.K_C / P.UGL * 1000) : 1;   // (Z2: the copepods' clearance of algae at the field's per-µg rate)
     for (let c = 0; c < G.NC; c++) {
       const j0 = G.cell0[c], n = G.nL[c], rf = this.refAv[c];
       for (let k = 0; k < n; k++) {
@@ -360,9 +356,9 @@ export class Chem3 {
         if (mic) {   // (E2a: each grazer's ingestion on its own food, taken from the algae and the microbial food in proportion)
           const iD = zd * P.GR_D * gK * qD * TS * dt / (FD + P.K_D), iRr = zr * GRR * qR * TS * dt / (FR + KR);
           const iS = zs * P.GR_D * gK * qS * TS * dt / (FS + KS);
-          gr = iD * A + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + iRr * A + iS * A;
+          gr = iD * A + zc * P.GR_C * gKc * qC * TS * dt * A / (A + Z.K_C) + iRr * A + iS * A;
           const gb = (iD * eD + iRr * eR + iS * eS) * Bm; if (gb > 0) Bq[j] = Math.max(0, Bm - gb);
-        } else gr = zd * P.GR_D * gK * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * qC * TS * dt * A / (A + Z.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R) + zs * P.GR_D * gK * qS * TS * dt * A / (A + KS);
+        } else gr = zd * P.GR_D * gK * qD * TS * dt * A / (A + P.K_D) + zc * P.GR_C * gKc * qC * TS * dt * A / (A + Z.K_C) + zr * P.GR_R * qR * TS * dt * A / (A + P.K_R) + zs * P.GR_D * gK * qS * TS * dt * A / (A + KS);
         if (gr > 0) { if (gr > A) gr = A; const gp = Math.min(ph[j], gr), gd = gr - gp; ph[j] -= gp; di[j] -= gd; phos[j] += gr * ex * pU; nh4[j] += gr * ex * nU; dom[j] += gr * (1 - ex) * (pU + nU); }
         const ox = o2[j] >= P.O2_MIN;
         if (!ox) { nd -= zd * anox; nc -= zc * anox; nr -= zr * anox; }
@@ -461,17 +457,20 @@ export class Chem3 {
   // while the bottom is oxic, release of legacy P when it goes anoxic, slow burial (out of the lake, tallied)
   _sedimentP(dt) {
     const ph = this.phyto, phos = this.phos, nh4 = this.nh4, sed = this.sedP, o2 = this.o2, pU = PHYTO.P_USE, nU = PHYTO.N_USE, T = this.env.temp;
-    const rel0 = CHEM3.REL_OXIC * TS * dt, all = !!CHEM3.SETTLE_ALL, di = this.diatom, rs = ZOO3.DAPH_LIM ? this.resA : null, kDi = CHEM3.SINK_DIA, kRs = CHEM3.SINK_RES;
+    const rel0 = CHEM3.REL_OXIC * TS * dt, z2 = !!ZOO3.Z2, di = this.diatom, rs = ZOO3.DAPH_LIM ? this.resA : null, sk = ZOO3.Z2_SINK, vk = dt / DAY3 * A2 / V2;
+    const som = this.sedOM, ice = this.env.ice, cOf = this.G.colOfCell;
     let buried = 0;
     for (const j of this.bedCells) {
       const r = this.r[j], W = 1 / r, ox = o2[j] > 0 ? o2[j] : 0;
       let room = SED_P.MAX - sed[j];
+      if (z2) {   // (Z2: each kind sinks onto the bed at its own speed — its P to the bound store (what will not fit, dissolved), N to the water, matter to the organic layer)
+        const tp = Math.min(ph[j] * W, sk[0] * vk * ph[j]), td = ice[cOf[j]] > 0.5 ? 0 : Math.min(di[j] * W, sk[1] * vk * di[j]), tr = rs ? Math.min(rs[j] * W, sk[2] * vk * rs[j]) : 0;
+        const bio = tp + td + tr, bp = Math.min(bio * pU, Math.max(0, room));
+        ph[j] -= tp * r; di[j] -= td * r; if (rs) rs[j] -= tr * r; sed[j] += bp; phos[j] += (bio * pU - bp) * r; nh4[j] += bio * nU * r; room -= bp;
+        som[j] += SEDOM.PP_G * bio;
+      }
       if (room > 0) {
-        if (all) {   // (Z2: every kind by its sinking speed — CHEM3.SETTLE_ALL)
-          const k = SED_P.SETTLE * TS * dt / pU, tp = Math.min(ph[j] * W, k * ph[j]), td = Math.min(di[j] * W, k * kDi * di[j]), tr = rs ? Math.min(rs[j] * W, k * kRs * rs[j]) : 0;
-          let bio = tp + td + tr; const sc = bio * pU > room ? room / (bio * pU) : 1; bio *= sc;
-          ph[j] -= tp * sc * r; di[j] -= td * sc * r; if (rs) rs[j] -= tr * sc * r; sed[j] += bio * pU; nh4[j] += bio * nU * r; room -= bio * pU;
-        } else {
+        if (!z2) {
           const bio = Math.min(ph[j] * W, SED_P.SETTLE * TS * ph[j] * dt / pU, room / pU);
           ph[j] -= bio * r; sed[j] += bio * pU; nh4[j] += bio * nU * r; room -= bio * pU;
         }
@@ -482,7 +481,7 @@ export class Chem3 {
       if (rel0 > 0) { const rel = Math.min(sed[j], rel0 * Math.pow(CHEM3.REL_Q10, (T[j] - 20) / 10) * sed[j]) * hold; sed[j] -= rel; phos[j] += rel * r; }   // (oxic, temperature-driven)
       if (ox < SED_P.O2_THRESH) { const rel = SED_P.RELEASE * TS * sed[j] * (1 - ox / SED_P.O2_THRESH) * dt * hold; sed[j] -= rel; phos[j] += rel * r; }
       else if (room > 0) { const bnd = Math.min(SED_P.BIND * CHEM3.BED_EXCH * TS * phos[j] * dt, room, phos[j] * W); phos[j] -= bnd * r; sed[j] += bnd; }
-      const bury = SED_P.BURY * CHEM3.BURY_MUL * TS * sed[j] * dt; sed[j] -= bury; buried += bury * this.a[j];
+      const bury = SED_P.BURY * (z2 ? ZOO3.Z2_BURY : CHEM3.BURY_MUL) * TS * sed[j] * dt; sed[j] -= bury; buried += bury * this.a[j];   // (Z2: the retention refitted with every alga settling)
     }
     this.ledger.buryP += buried;
   }

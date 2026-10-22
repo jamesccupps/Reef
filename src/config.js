@@ -1451,7 +1451,40 @@ export const ZOO3 = {
   //   vulnerable; Polyarthra and K. crassa 0.0002–0.0005, Asplanchna and Trichocerca none (Gilbert 1989) → ~0.0007 (Z1_INTERF);
   // - the 3-D lake's OPENING Daphnia stock: ice-out 0–2.5 Daphnia/L (≈ 0–10 µg/L), June in lakes like Hot Brook median ~1, p90 50–160 —
   //   the 2-D START_D (40 µg/L) opened mid-May at a p75–p90 June stock → Z1_START_D g/cell (~8 µg/L)
-  Z1: 0, Z1_CLEAR: 1.0, Z1_STARVE_D: 4.4, Z1_STARVE_Q10: 2, Z1_INTERF: 0.028, Z1_START_D: 0.2,
+  // - GROWTH FROM WHAT THEY EAT: the growth (G_D × F/(F + K_D)) and the grazing (GR_D × F/(F + K_D)) share K_D but nothing tied them, and
+  //   at Z1's clearance the Daphnia built biomass ~2× faster than they could eat it (a gross efficiency ~190 %, one algae unit ≈ 1 mg C/L:
+  //   its P_USE 9 µg P/L at the P-limited seston's C:P ~290 molar — Sterner et al. 2008, Hessen). A Holling II with the field's clearance
+  //   F at low food (Z1_CLEAR) and maximum ingestion Imax ~1 µg C/µg C/day at 20 °C (Lampert 1977: 0.8–1.5; the companion note 1–2)
+  //   has its half-saturation at Imax/F ≈ 0.48 mg C/L → Z1_K_D (both terms); G_D 0.6 is then ε·Imax at ε 0.6 (assimilation ~0.75 × the
+  //   growth's cost ~0.8 [inf]), and the food at which a Daphnia stops growing (ε·I = R_D) falls at ~0.07 mg C/L (field 0.03–0.1:
+  //   Lampert 1977, Boersma & Kreutzer 2002 — the 2-D K_D 0.15 had it at ~0.035)
+  Z1: 0, Z1_CLEAR: 1.0, Z1_STARVE_D: 4.4, Z1_STARVE_Q10: 2, Z1_INTERF: 0.028, Z1_START_D: 0.2, Z1_K_D: 0.48,
+  // (Z2, on in fish3 stageR5) THE ALGAE'S P UPTAKE AND LOSSES AT THE FIELD'S (research_notes/Real lake ecology for calibration/
+  // copepod_grazing_and_p_kinetics.md; FINDINGS 2026-10-22 "The late-spring algae crash was not Daphnia"): with Z1 the edible algae still
+  // fell ~180× by mid-June (eastern Maine 1.5–3×) —
+  // - the P HALF-SATURATION of the greens', diatoms' and resistant algae's growth on dissolved P: NUTRIENT.KP 0.10 is 10 µg/L (1 unit ≈
+  //   100 µg P/L at the lakes' reference TP), an uptake constant's size; Monod Ks for growth: median 1.08 µg/L (IQR 0.45–7.7, n 61 —
+  //   Edwards, Klausmeier & Litchman 2015's compilation; Tilman & Kilham 1976 0.62), lake models 3–5 with an internal P store (GLM-AED 4.6,
+  //   PROTECH < 3) → Z2_KP units (the cyanobacteria keep KP: Microcystis, Anabaena 6–40 µg/L);
+  // - ONE SINKING TERM PER KIND, m/day, onto the bed (its P to the bound store — what will not fit dissolved into the water — its N to
+  //   the water, its matter to the bed's organic layer at SEDOM.PP_G): SED_P.SETTLE sank the greens alone at 0.33 m/day beside a
+  //   0.15/day die-off said to be "sinking and lysis", the diatoms and resistant algae not at all. Small greens 0.02–0.3, diatoms 0.3–1
+  //   (P-starved ~4× faster: Titman & Kilham 1976; Lake Erken's fast fraction 0.5–1.9, slow 0.02–0.04), the large resistant forms mixed
+  //   (dinoflagellates and colonial chrysophytes swim, desmids sink) [inf] → Z2_SINK [greens, diatoms, resistant] (the diatoms, held up
+  //   by the convection under the ice, not then — as their sinking between cells in chem3 _algae);
+  // - the DIE-OFF without the sinking: healthy summer populations 0.05–0.1 /day (lysis, parasites; AED 0.035–0.08; stressed 0.2–0.8 —
+  //   Jassby & Goldman 1974) → Z2_LYSIS /day at 20 °C, × the algae's Q10 (the resistant algae × RESALG.DECAY_MUL);
+  // - the COPEPODS' clearance of algae: PLANKTON.GR_C over ZOO3.K_C cleared ~1.6 mL a µg a day, more than Z1's Daphnia (1.0); in situ
+  //   calanoids 0.3–1.5 (best ~0.6: L. minutus 0.35–1.5 — Chow-Fraser 1986; Eudiaptomus 0.3–0.65), cyclopoids omnivores ~0.1–0.3 [inf], a
+  //   community ~60:40 calanoid:cyclopoid near Hot Brook (LakePulse): 0.2–0.5× Daphnia → Z2_CLEAR_C mL/µg/d; and, as Z1's Daphnia, their
+  //   GROWTH FROM WHAT THEY EAT: maximum ingestion of algae ~0.3–0.5 µg C/µg C/day for calanoids at 20 °C (E. gracilis ~1.0, D. oregonensis
+  //   ~0.3 in the lab; field diaptomids ~0.07), cyclopoids omnivores [inf] → ~0.3: half-saturation Imax/F ≈ 0.36 mg C/L (Z2_K_C, both
+  //   terms) and growth ε·Imax ≈ 0.18 /day (Z2_G_C; ZOO3.G_C 0.27 grew them on ~0.12 of intake — summer copepods 200–340 µg/L where the
+  //   lakes like these hold ~20–30 µg/L: Mirror Lake ≈ 40 µg DW/L, the companion note)
+  // - and the BURIAL refitted to the field's retention (chem3 CHEM3.BURY_MUL's fit, probe bury.mjs, the true lakes' 50-m grid, seed 403):
+  //   with every alga settling the bed took more of the P, R 0.61–0.64 at BURY_MUL 0.10 (the field's 0.28–0.54) and July TP 3–5 µg/L;
+  //   0.05 → R 0.48 by the second year, the inventory steady (+1 %), July TP 5.6 (0.03: 0.39, still filling +6 %)
+  Z2: 0, Z2_KP: 0.01, Z2_SINK: [0.1, 0.5, 0.1], Z2_LYSIS: 0.08, Z2_CLEAR_C: 0.4, Z2_K_C: 0.36, Z2_G_C: 0.18, Z2_BURY: 0.05,
   // (E2c/E2d, SMALL — on in fish3 stageR5) THE SMALL CLADOCERANS, THE NAUPLII AND THE YOUNG'S PREY LADDER (small_zooplankton_and_microbial_loop.md
   // §3, §5). A larva of 4.5–8 mm (gape 0.2–0.32 mm) takes rotifers, nauplii and 0.25–0.4-mm cladocerans, not 1–2-mm Daphnia; the sim's one
   // cladoceran field held the small ones at a fixed 0.3 of Daphnia, where in the field they RISE when fish thin the Daphnia (PEG).
