@@ -317,9 +317,9 @@ if (run('core')) {
     // toward the brook's ends (fish of flowing water) — nearer them than the white perch, a fish of the open basin
     const BPt = GEO.BROOK_PATH, dEnd = a => Math.min(Math.hypot(a.x - BPt[0][0], a.y - BPt[0][1]), Math.hypot(a.x - BPt[BPt.length - 1][0], a.y - BPt[BPt.length - 1][1]));
     const mean = (k, f) => { let t = 0, n = 0; for (const a of F.fish) if (a.s.key === k) { t += f(a); n++; } return t / Math.max(1, n); };
-    const want = ['sunfish', 'perch', 'sucker', 'catfish', 'whiteperch', 'bass', 'pike', 'redbreast', 'fallfish', 'killifish', 'dace'];
+    const want = ['sunfish', 'perch', 'sucker', 'catfish', 'whiteperch', 'bass', 'pike', 'redbreast', 'fallfish', 'killifish', 'dace', 'alewife'];   // (E8: the sea-run alewife, MDIFW's 2024 Lower chart — none founded: they come on the run)
     const ps = F.fish.filter(a => a.s.key === 'sunfish'), bd = F.fish.filter(a => a.s.key === 'dace');
-    check("only the fish in the lakes: the eleven species of MDIFW's list and the human's catches (no golden shiner), pumpkinseed in both lakes, the dace in the brook, the fallfish toward the brook's ends (nearer them than the pickerel of the same shallows)",
+    check("only the fish in the lakes: the eleven resident species of MDIFW's list and the sea-run alewife and the human's catches (no golden shiner), pumpkinseed in both lakes, the dace in the brook, the fallfish toward the brook's ends (nearer them than the pickerel of the same shallows)",
       KEYS3.length === want.length && want.every(k => KEYS3.includes(k)) && ps.some(a => GEO.bodyAt(a.x, a.y) === UPPER) && ps.some(a => GEO.bodyAt(a.x, a.y) === LOWER) && bd.length > 50 && bd.every(a => GEO.bodyAt(a.x, a.y) === BROOK)
         && mean('fallfish', dEnd) < 0.7 * mean('pike', dEnd),
       `${KEYS3.join(', ')}; pumpkinseed ${ps.filter(a => GEO.bodyAt(a.x, a.y) === UPPER).length} in Upper, ${ps.filter(a => GEO.bodyAt(a.x, a.y) === LOWER).length} in Lower; dace ${bd.filter(a => GEO.bodyAt(a.x, a.y) === BROOK).length}/${bd.length} in the brook; mean distance to a brook end: fallfish ${mean('fallfish', dEnd).toFixed(0)} m, pickerel (the same shallow band) ${mean('pike', dEnd).toFixed(0)} m`); }
@@ -1224,6 +1224,20 @@ if (run('small')) {
   const S = s / w * P.UGL, share = s / (s + d + cz), weed = wW > 0 ? sW / wW * P.UGL : 0, ate = F.stats.food.yZooS || 0; fm.stageR5(false);
   check('E2c (ZOO3.SMALL): a month from late May — the small cladocerans 2–40 % of the crustaceans (LakePulse ~10 %), the weeds\' at least the open water\'s (the chydorids), the young eating them',
     share > 0.02 && share < 0.4 && weed >= 0.8 * S && ate > 0, `${S.toFixed(1)} µg/L, ${(100 * share).toFixed(0)} % of the crustaceans; in the weeds ${weed.toFixed(1)}; the young ate ${(ate / 1000).toFixed(1)} kg of them`);
+}
+// ============================================================
+//  E8 — THE SEA-RUN ALEWIFE (config ALEWIFE): 45 days from late May on the 1/10 lakes with the package — the run in at Lower's outlet as the
+//  lakes warm, the spent adults dying or leaving, their young swimming and never recruiting, their N and P an import
+// ============================================================
+if (run('alewife')) {
+  console.log('\n— E8: the sea-run alewife —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js');
+  fm.stageR5(true); seed(611); const e = new Env3({ yf0: 0.22 }), F = new fm.Fish3(e, { young: true }), [ox, oy] = F._outletXY(); let first = null;
+  for (let b = 0; b < 45 * 49; b++) { const n0 = F.stats.ale.arrived; F.step(FB); e.step(FB); if (first === null && F.stats.ale.arrived > n0) { const a = F.fish.find(a => a.alive && a.s.key === 'alewife'); if (a) first = Math.hypot(a.x - ox, a.y - oy); } }
+  const A = F.stats.ale, yA = F.yoy.filter(q => q.alive && q.s.key === 'alewife' && q.dev >= 2).reduce((t, q) => t + q.n, 0), rec = F.stats.recruits.alewife || 0; fm.stageR5(false);
+  check("E8 (ALEWIFE): 45 days from late May — the run in at Lower's outlet as the lakes warm (≥ 80 % of it), a third or more of it dead or gone by early July, their young swimming and none recruited, their N and P an import",
+    A.run > 0 && A.arrived >= 0.8 * A.run && A.left + A.spent >= 0.3 * A.arrived && yA > 0 && rec === 0 && A.pIn > 0 && first !== null && first < 2 * F.G.COL,
+    `run ${A.run.toFixed(0)}, in ${A.arrived.toFixed(0)}; spent ${A.spent.toFixed(0)}, out ${A.left.toFixed(0)}; young ${(yA / 1e3).toFixed(0)}k; P in ${A.pIn.toFixed(1)} g, N in ${A.nIn.toFixed(0)} g; the first ${first === null ? '-' : first.toFixed(1)} m from the outlet`);
 }
 // ============================================================
 //  E3 — THE EGG STAGE (config EGG3): clutches on the bed develop on its temperature and die by cause before they swim up

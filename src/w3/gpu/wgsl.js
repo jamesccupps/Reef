@@ -14,10 +14,11 @@ struct Uni {
   sun: f32, night: f32, migD: f32, migC: f32, timeD: f32, yr0D: f32, siteYr: i32, plants: u32,
   lit: u32, siCoord: u32, siGrid: u32, siNX: u32,
   wY: f32, iceCut: f32, brookD: f32, wx: f32,
+  aleP: f32, aleQ: f32, ale2: f32, ale3: f32,   // (E8: 0 the young alewives can't leave — the outflow too low or no run — 1 the base rate, 2 a pulse day)
 };`;
 // the uniform block's layout for the host (same order; 4 bytes each)
 export const UNI_FIELDS = ['n:u', 'cap:u', 'ny:u', 'ycap:u', 'blk:u', 'seed:u', 'dtU:u', 'yr:i', 'dt', 'yf', 'lux0', 'luxB0', 'luxB1', 'luxB2', 'att', 'clar',
-  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'iceCut', 'brookD', 'wx'];
+  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'iceCut', 'brookD', 'wx', 'aleP', 'aleQ', 'ale2', 'ale3'];
 
 export const CORE_BINDINGS = /* wgsl */`
 @group(0) @binding(0) var<uniform> U: Uni;
@@ -280,6 +281,10 @@ const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
 // GL[G_WD + w]; k_wildA/y_wildA sum the fish it can reach (Σ accessibility × mass) at the block's start, k_wildRho its hazard per unit
 // of accessibility ρ = D / (A + K), K a day's need, into GL[G_WRHO + w]
 const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const GS_WILDA: u32 = 128u;   // (GS: 2 words a wildlife)
+// (E8) THE SEA-RUN ALEWIFE's block sums (GS pairs from GS_ALE, read back as GL[G_ALE + r] by k_aleFin): 0 adults out by the outlet, 1 spent
+// (died), 2 their grams, 3 grams × hours excreting, 4 the young out, 5 their grams, 6 the young's cold deaths
+const GS_ALE: u32 = 192u; const G_ALE: u32 = 200u; const ASC: f32 = 100.0;
+fn aleAdd(r: u32, v: f32) { if (v > 0.0) { add64(&GS, GS_ALE + 2u * r, v, ASC); } }
 // T_WILD   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife (room for 16: layout wildWGSL)
 // T_WILDG  // + 2w: their grams
 // T_YWILD  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
@@ -664,6 +669,7 @@ fn siteNear(k: u32, lake: u32, x: f32, y: f32) -> vec3f {   // fish3 _siteNear: 
 }
 fn goalOf(i: u32, k: u32, id: u32, fl: u32, nt: f32, x: f32, y: f32) -> vec4f {   // fish3 _goal: (x, y, how near counts as there, has one)
   if (nt > 0.0) { return vec4f(ga(A_nx, i), ga(A_ny, i), 0.5, 1.0); }
+  if ((fl & FL_LEAVE) != 0u) { return vec4f(OUT_X, OUT_Y, 0.5 * WCOL, 1.0); }   // (E8: a spent alewife out by the outlet)
   let lake = gau(A_lake, i); let ripe = (fl & FL_RIPE) != 0u; let rn = runs(fl, i);
   if (ripe && rn) { let v = bp(select(6u, 3u, lake == UPPER)); return vec4f(v, 2.5, 1.0); }
   if (ripe && spv(k, S_sbFaith) > 0.0 && (fl & FL_NEST) != 0u) { return vec4f(ga(A_nestX, i), ga(A_nestY, i), spv(k, S_sbFaith), 1.0); }
@@ -1457,6 +1463,23 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
 }
 // its hazard per unit of accessibility, ρ = D / (A + D·day): Holling II on the reachable fish, K one day's need (one thread, after
 // k_wildA and y_wildA)
+// (E8) THE SEA-RUN ALEWIFE'S ADULTS (fish3 _alewife, at the block's start): their excretion, their freshwater deaths (ALE_HS: bodies to the bed),
+// leaving once their residence is up — home the outlet — and out there (no body: they go to sea)
+@compute @workgroup_size(128) fn k_ale(@builtin(global_invocation_id) g: vec3u) {
+  let i = g.x; if (i >= U.n) { return; }
+  var fl = gau(A_flags, i); if ((fl & FL_ALIVE) == 0u) { return; }
+  let k = gau(A_k, i); if (spv(k, S_aleRun) < 0.5) { return; }
+  let n = ga(A_n, i); let W = ga(A_W, i); let dt = U.dt;
+  if (gai(A_c, i) >= 0) { aleAdd(3u, n * W * dt / DAY * 24.0); }
+  let lost = n * expm(ALE_HS * dt);
+  if (lost > 0.0) { aleAdd(1u, lost); aleAdd(2u, lost * W); toBed(gai(A_jb, i), lost * W); }
+  let left = n - lost;
+  if (left < 1.0) { sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); return; }
+  sa(A_n, i, left);
+  if ((fl & FL_LEAVE) == 0u && U.timeD * 86400.0 - ga(A_aleT, i) > ga(A_aleRes, i)) { fl = fl | FL_LEAVE; sau(A_flags, i, fl); sau(A_lake, i, LOWER); sa(A_lhx, i, OUT_X); sa(A_lhy, i, OUT_Y); sa(A_hx, i, OUT_X); sa(A_hy, i, OUT_Y); }
+  if ((fl & FL_LEAVE) != 0u && length(vec2f(ga(A_x, i) - OUT_X, ga(A_y, i) - OUT_Y)) < OUT_R) { aleAdd(0u, left); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); }
+}
+@compute @workgroup_size(1) fn k_aleFin() { for (var r = 0u; r < 8u; r++) { GL[G_ALE + r] = (f32(atomicLoad(&GS[GS_ALE + 2u * r])) + f32(atomicLoad(&GS[GS_ALE + 2u * r + 1u])) * 4294967296.0) / ASC; } }
 @compute @workgroup_size(1) fn k_wildRho() {
   for (var w = 0u; w < NWILD; w++) {
     let D = GL[G_WD + w]; let A = (f32(atomicLoad(&GS[GS_WILDA + 2u * w])) + f32(atomicLoad(&GS[GS_WILDA + 2u * w + 1u])) * 4294967296.0) / BSCALE;
@@ -1800,7 +1823,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let base = want - got;
   // zooplankton of its size by class (E2c/E2d: chem3 zooFeedYoy — the multi-prey disc equation on X = Σ u·density), each cell seen by its
   // own light; its footprint its layer ± one and the ring at its layer
-  let yz = yZoo(L); let j0 = cell0(c); let k0 = j - j0;
+  let yz = yZoo(L * spv(k, S_zooK)); let j0 = cell0(c); let k0 = j - j0;
   var gZ = vec4f(0.0); var sw = 0.0;
   if (canZ) {
     let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
@@ -2003,15 +2026,21 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
   let jd = GL[G_JUVD + k];
   let hN = (FRY_M_LARVA3 / max(0.3, L) * lf + FRY_M_JUV3 * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
     + spv(k, S_M) * BIOE_M_OTHER * min(F3_YM_CAP, pow(L / spv(k, S_Lref), -0.87)) * select(1.0, min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)), F3_YM_COLD > 0.5) / YEAR;   // (F3.YM_COLD, YM_CAP)
-  let uilt = spv(k, S_uiltS); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
+  let uilt = spv(k, S_uiltY); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }
   var hS = gy(Y_hS, q); { let hW = wHaz(k, L, f32(gyu(Y_age, q)), st); if (hW >= 0.0) { hS = hW; } }   // (the first winter)
   let wc = gyi(Y_c, q); let wz = gy(Y_z, q); let wb = gy(Y_bed, q); let wcv = gy(Y_cover, q); let wi = select(0.0, wd(W_ice + u32(max(wc, 0))), wc >= 0);
   var hWd = 0.0; if (F3_WILD > 0.5 && wc >= 0) { hWd = wildH(k, L, wz, wb, wcv, wi); }   // (E4: the wildlife)
-  let h = hN + hS + hH + hO + hWd; let n = gy(Y_n, q); let lost = n * expm(h * st);
+  var hE = 0.0; var hC = 0.0;   // (E8: the young alewives' emigration and cold — fish3 _aleYoung)
+  if (spv(k, S_aleRun) > 0.5 && ALEWIFE_ON > 0.5) {
+    if (wi > 0.5) { hC = 50.0 / DAY; } else {
+      if (T < ALEWIFE_COLD_T) { hC = ALEWIFE_COLD_M / DAY; }
+      if (U.yf >= ALEWIFE_EMIG_YF && U.aleP > 0.5) { let fL = clamp((L - ALEWIFE_EMIG_L_0) / (ALEWIFE_EMIG_L_1 - ALEWIFE_EMIG_L_0), 0.0, 1.0); hE = fL * (ALEWIFE_EMIG_BASE + select(0.0, ALEWIFE_EMIG_PULSE, U.aleP > 1.5)) / DAY; } } }
+  let h = hN + hS + hH + hO + hWd + hE + hC; let n = gy(Y_n, q); let lost = n * expm(h * st);
+  if (h > 0.0 && (hE > 0.0 || hC > 0.0)) { aleAdd(4u, lost * hE / h); aleAdd(5u, lost * hE / h * W); aleAdd(6u, lost * hC / h); }
   if (h > 0.0) { let b = T_FRY + 2u * k * NFRY; add64(&TL, b + 2u * FRY_NATURAL, lost * hN / h, TSCALE); add64(&TL, b + 2u * FRY_STARVE, lost * hS / h, TSCALE); add64(&TL, b + 2u * FRY_HEAT, lost * hH / h, TSCALE); add64(&TL, b + 2u * FRY_HYPOXIA, lost * hO / h, TSCALE);
     if (hWd > 0.0) { add64(&TL, T_YWILD + 2u * k, lost * hWd / h, TSCALE); wildTally(k, L, wz, wb, wcv, wi, h, lost, W); } }
-  if (jb >= 0 && lost * W > 0.0) { acc64(AC_SEDADD + 2u * u32(jb), lost * W * select(1.0, 1.0 - hWd / h, h > 0.0), GW); }   // (the wildlife's take leaves the lake)
+  if (jb >= 0 && lost * W > 0.0) { acc64(AC_SEDADD + 2u * u32(jb), lost * W * select(1.0, 1.0 - (hWd + hE) / h, h > 0.0), GW); }   // (the wildlife's take and the emigrants leave the lake)
   var left = n - lost;
   if (left < 1.0) { if (yrnd(q, 61u, 0u) < left) { left = 1.0; } else { sy(Y_n, q, left); yDie(q); return; } }
   sy(Y_n, q, left);
@@ -2050,7 +2079,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     if (bc >= 0) { if (u32(bc) != c) { tx = colX(u32(bc)); ty = colY(u32(bc)); } tz = max(0.05, select(stf(O_wDepthMean + u32(bc)), bed, u32(bc) == c) - 0.05); done = true; }
   }
   if (!done) {
-    let yz = yZoo(L); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
+    let yz = yZoo(L * spv(k, S_zooK)); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
     var best = -1.0; var bj = -1; let k0 = min(nL(c) - 1u, u32(max(0, i32(z / WDZ))));
     let cv0 = yCov(k, c);
     for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; } let E = zooElY(jj, yz.u) * cv0; if (E > best) { best = E; bj = i32(jj); } }
@@ -2067,7 +2096,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
   if (spv(k, S_brookRes) > 0.5 && bodyAt(tx, ty) != BROOK) { let p = bp(u32(nearestBP(tx, ty))); tx = p.x; ty = p.y; }
   sy(Y_tx, q, tx); sy(Y_ty, q, ty); sy(Y_tz, q, tz); sy(Y_spotBed, q, max(0.12, depthAt(tx, ty)));
   // RECRUITMENT: at the species' L0, or an overwintered school in spring
-  if ((F3_RECRUIT_SPRING < 0.5 && L >= spv(k, S_L0)) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= select(FRY_SPRING_YF, WIN_YF1, F3_RECRUIT_WARM > 0.5) && U.yf < SPAWN_SEASON_END)) { sy(Y_recruit, q, 1.0); }   // (F3.RECRUIT_WARM: from the spring crossing)
+  if (spv(k, S_noRec) < 0.5 && ((F3_RECRUIT_SPRING < 0.5 && L >= spv(k, S_L0)) || (f32(gyu(Y_age, q)) > FRY_OVERWINTER * YEAR && U.yf >= select(FRY_SPRING_YF, WIN_YF1, F3_RECRUIT_WARM > 0.5) && U.yf < SPAWN_SEASON_END))) { sy(Y_recruit, q, 1.0); }   // (S3 noRecruit: E8)   // (F3.RECRUIT_WARM: from the spring crossing)
 }
 `;
 

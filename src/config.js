@@ -463,7 +463,10 @@ export const EGG3 = {
     redbreast:  { form: 'exp', a: 21.3, b: 0.0902, yolk: 2, hatch: 0.85, tl: [15, 32], pred: 0, o2: 2, guard: 1 },   // (Teletchea 1.5-mm egg ~3.5 d at 20 °C; 1–2 weeks in the nest) [inf]
     fallfish:   { form: 'kam', a: 100, t0: 0, yolk: 1, hatch: 0.85, tl: [12, 26], pred: 0, o2: 4 },   // (138–144 h at 17 °C ≈ 100 °C·d; buried in the mound) [hatch, tl: inf]
     dace:       { form: 'kam', a: 108, t0: 0, yolk: 1.5, hatch: 0.8, tl: [12, 26], pred: 0.05, o2: 4 },   // (≈ 100–115 °C·d; embryos in the gravel 7–10 d after hatch) [inf]
-    killifish:  { form: 'kam', a: 150, t0: 10, yolk: 0.3, hatch: 0.85, tl: [17, 32], pred: 0.05, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
+    killifish:  { form: 'kam', a: 150, t0: 10, yolk: 0.3, hatch: 0.85, tl: [17, 32], pred: 0.05, o2: 3 },
+    // (E8) sea-run alewife: demersal, briefly adhesive then drifting eggs, 25.1·e^(−0.089T) days (6.6 d at 15 °C); hatch at 3–5 mm, 2–5 d on yolk
+    // (sea_run_alewife.md §2) [hatch, tl, pred: inf — the note: calibrate survival to emigrants, not to eggs]
+    alewife:    { form: 'exp', a: 25.1, b: 0.089, yolk: 0.5, hatch: 0.6, tl: [10, 27], pred: 0.1, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
   },
   YOLK_HATCH: 0.95,        // the yolk-sac stage's survival at its optimum [inf]
   THERM_K: 0.1,            // /day per °C of the day's mean beyond the window [inf: the TL50s are constant-incubation limits; a spell kills less]
@@ -471,6 +474,34 @@ export const EGG3 = {
                            //   males are taken to keep it)
   O2_K: 1, STORM_Z: 1, STORM_D: 0.03,
   DESERT_T: 10.6, DESERT_DROP: 2,
+};
+// (E8, ALEWIFE.ON — on in fish3 stageR5) THE SEA-RUN ALEWIFE (docs/review/ECOSYSTEM_BUILD.md "E8"; research_notes/Hot Brook populations
+// and water/sea_run_alewife.md). Present in Lower (MDIFW 2024), natural strays since 2017, never counted here.
+export const ALEWIFE = {
+  ON: 0,
+  // THE RUN: adults per acre of the two lakes (DEP 890 + 684 ac): a colonising run, 200 km inland, at ~30 % of the basin's potential —
+  // 15 [inf; scenarios 6 restoration stocking, 35 DMR's floor, 120 restored, 235 DMR's potential]; each year lognormal with CV RUN_CV
+  RUN_PER_ACRE: 15, ACRES: 1574, RUN_CV: 0.5,
+  // arrivals by Lower's surface: none below ARRIVE_T[0] (10 °C ≈ May 12 + the trip up), peaking at ARRIVE_T[1] (13–16 °C), done by
+  // ARRIVE_T[2] (≈ 20 °C, June 18–25) — the cumulative of a triangle on the season's warmest surface so far [inf]
+  ARRIVE_T: [10, 14.5, 20],
+  SCHOOLS: 40, SCHOOL_MIN: 10, SCHOOL_MAX: 300,   // the run in ~SCHOOLS school agents (each SCHOOL_MIN–MAX fish)
+  L: [28.5, 1.2],          // cm: adults 26–32 (♂ 260–305 mm, ♀ 270–320; Libby 1982), ~230 g
+  UPPER: 0.57,             // the share bound for Upper (by area; all pass Lower and climb the brook)
+  RESID: 17, RESID_SD: 0.8, // days in the lakes after arriving: lognormal, median 17 (1–64, Lake George's outflow ~3–4 weeks after release)
+  SPENT: 0.5,              // the run's freshwater mortality (0.3–0.9; Long Pond 32–67 %, Love Lake 91 %) as a hazard ln2/RESID while resident
+  // NUTRIENTS (the fish's bodies are outside the budget — grazing returns its N and P at once — so their import enters the ledger): the
+  // adults' excretion while resident (2.17 µg P and 24.7 µg N per g per hour) and their carcasses' 0.42 % P, 2.49 % N of wet mass (to the
+  // bed's P store and the water's NH₄); the young emigrants carry 0.43 % P (~2.5 % N [inf]) out, debited from the water. Grams become
+  // the sim's (abstract) units at the lakes' reference concentrations: TP_UGL µg P/L and TN_UGL µg N/L of the sim's mean water [inf:
+  // Hot Brook-like lakes, no water-quality data for either — maine_dep_lakes_data_2025.md]
+  EXCR_P: 2.17e-6, EXCR_N: 24.7e-6, BODY_P: 0.0042, BODY_N: 0.0249, YOUNG_P: 0.0043, YOUNG_N: 0.025, TP_UGL: 12, TN_UGL: 300,
+  // THE YOUNG never recruit; they EMIGRATE from EMIG_YF (mid-July) to ice-on: a base daily rate and a pulse rate on a pulse day — the
+  // day after rain or a flow rise (qFac × PULSE_Q in a day), or the air cooling PULSE_DT °C — so that > 80 % leave in 2–3 pulses of 1–2
+  // days, the larger first (none below EMIG_L[0] cm, all eligible from EMIG_L[1]); none while the outflow is below Q_MIN of its mean
+  // [inf: the rates]. Below COLD_T °C they die at COLD_M /day; any left under the ice die
+  EMIG_YF: 0.37, EMIG_BASE: 0.004, EMIG_PULSE: 0.35, EMIG_L: [3, 6], PULSE_Q: 1.3, PULSE_DT: 2, Q_MIN: 0.15,
+  COLD_T: 5, COLD_M: 0.2,
 };
 // (E9a) THE WEATHER'S AIR TEMPERATURE (the 3-D lakes; docs/review/ECOSYSTEM_BUILD.md E9; research_notes/Maine lake shores and
 // catchment/weather_and_catchment_hydrology.md): the Maine calendar above is the climatological year; real years swing about it —

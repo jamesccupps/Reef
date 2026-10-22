@@ -95,6 +95,27 @@ export const NEW3 = {
     fec: { a: 0.82, b: 3.42 },   // through 166–1,116 eggs (Ontario LHD): 5 cm → ~200, 8 cm → ~1,000
     Lzoo: 3, Lpisc: Infinity, gapeR: 0.06, depthR: 0.2, uilt: 29.3, o2Lethal: 1.5, o2Ice: 1.0, vuln: 1.0,   // a small subterminal mouth; O₂ limits unmeasured (prior: a stream fish)
   },
+  // (E8) SEA-RUN ALEWIFE (Alosa pseudoharengus) — a seasonal visitor (config ALEWIFE; docs/research_notes/Hot Brook populations and water/
+  // sea_run_alewife.md): adults 26–32 cm, ~230 g, arrive ripe from the sea in late May – June, spawn at night in the shallows and leave or
+  // die within weeks; their young stay the summer and emigrate by autumn, never recruiting here. FB4: Stewart & Binkowski 1986 (Lake
+  // Michigan alewives, Thornton–Lessem consumption; Table 1 from the scan). Its swimming terms in this sim's convention (bioenergetics
+  // routineActivity: ACT·W^RK4·e^(BACT·T) at T ≤ RTL, RK1·W^RK4·e^(RK5·T) above): speed rises 5.78·e^(0.149T) to 22.08 cm/s at 9 °C and
+  // holds there (the note's table lists the two pairs the other way round); the young's set without the swimming multiplier (Klumb 2003:
+  // the adult function overstates a < 1-g fish's speed 130–4,270 %)
+  alewife: {
+    key: 'alewife', name: 'Alewife (sea-run)', tag: '#a9bcc8', ...BASE,
+    diet: { plankton: true, insect: true, larva: true },   // cladocerans, midges and yellow perch larvae (Lake George, Maine: 35 % of items in May)
+    tempOpt: 20, tempTol: 6, o2Crit: 0.36, spawnT: [10.5, 21],   // O₂ stress below 3.6 mg/L; spawning 10.5–21 °C, best 13–16
+    bio: { CEQ: 3, CA: 0.846, CB: -0.30, CQ: 3, CTO: 16, CTM: 18, CTL: 25, CK1: 0.17, CK4: 0.01, REQ: 1, RA: 0.00367, RB: -0.215, RQ: 0.0548,
+      RTO: 0.03, RTL: 9, ACT: 5.78, BACT: 0.149, RK1: 22.08, RK4: -0.045, RK5: 0, SDA: 0.175, EGEQ: 1, FA: 0.16, EXEQ: 1, UA: 0.10, PREDEDEQ: 1,
+      ED: 5400, src: 'Stewart & Binkowski 1986 (FB4 alewife, adults); ED ~5,400 J/g at the spawning low' },
+    bioJuv: { CQ: 5, CTO: 24, CTM: 26, CTL: 29, RTO: 0, ED: 4600 }, juvW: 20,   // (the YOY temperatures; ED 4,185 J/g in early summer → ~5,000 by October)
+    lw: { a: 0.00892, b: 2.96 }, vb: { Linf: 31, k: 0.45, t0: 0 },   // ln W = −4.72 + 2.96 ln L (cm, above 43 mm); growth at sea [inf: irrelevant here]
+    Lhatch: 0.4, sHatch: 0.6, L0: 25, Lref: 28, Lmat: 25, LmatM: 24, matMinAge: yrs(3), maxAge: yrs(9), matureAge: yrs(4), M: 0.9,   // ages 3–9, mostly 4–5
+    gut: 0.05, gerMul: 1.0, gsiF: 0.10, gsiM: 0.05,
+    fec: { a: 4.56, b: 3 },   // ~100,000 eggs a female at 28 cm (Maine 60,000–100,000)
+    Lzoo: Infinity, Lpisc: Infinity, gapeR: 0.09, depthR: 0.24, uilt: 23.5, o2Lethal: 0.25, o2Ice: 0.3, vuln: 1.0,   // adults' upper incipient lethal 23.5–24 °C (Otto 1976)
+  },
 };
 for (const k in NEW3) { const d = NEW3[k]; prepBio(d.bio); if (d.bioJuv) d.bioJuv = prepBio({ ...d.bio, ...d.bioJuv }); }
 

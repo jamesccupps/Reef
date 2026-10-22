@@ -180,7 +180,7 @@ export function makeFishView() {
   // as flat as a sunfish, 0.38, so the round-bodied ones were needles from above): flat-sided sunfish and white perch, perch and
   // bass between, the near-round suckers, pickerel, dace and minnows, the bullhead about as wide as deep (approximate body
   // sections — Scott & Crossman's descriptions: "laterally compressed", "terete", "round")
-  const WIDTH = { sunfish: 0.42, redbreast: 0.45, whiteperch: 0.48, perch: 0.6, bass: 0.6, fallfish: 0.65, killifish: 0.65, dace: 0.8, sucker: 0.85, pike: 0.85, catfish: 1.0 };
+  const WIDTH = { sunfish: 0.42, redbreast: 0.45, whiteperch: 0.48, perch: 0.6, bass: 0.6, fallfish: 0.65, killifish: 0.65, dace: 0.8, sucker: 0.85, pike: 0.85, catfish: 1.0, alewife: 0.4 };   // (E8: the alewife a thin, laterally compressed herring)
   const widthR = KEYS3.map(k => WIDTH[k] ?? 0.5);
   function update(snap, alpha, scale, night, t, cx = 0, cy = 0, sunDir = null, leapAt = null) {   // (leapAt(id, t): a fish in a leap — rises3view)
     n = 0; ns = 0; if (sunDir) sun = sunDir;

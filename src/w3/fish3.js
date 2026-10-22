@@ -26,9 +26,9 @@ import { A2, naupShare } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
-import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
+import { rand, gauss, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, EGG3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, EGG3, ALEWIFE, PHYTO, NUTRIENT, WORLD, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -462,6 +462,12 @@ export const S3 = {
   // ~430 of ~500 a season — bass in streams hold the pools > 50 cm and push small fish into the shallow riffles: brook_food_web.md)
   dace:       { school: 0, perM2: 0.8, brookRes: true, brookYoy: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 24 * GEO.BROOK_SCALE, tPref: 21,
     hab: { day: H([0.15, 0.5], 0, 0.1, 0.8), night: H([0.15, 0.5], 0, 0.05, 0.2), winter: H([0.8, 1.2], 0, 0.05, 0.2) } },
+  // (E8) sea-run alewife: pelagic schools — offshore and lower in the column by day, up and inshore at night (sea_run_alewife.md); none
+  // founded — they come in on the run (config ALEWIFE) — and their young never recruit (noRecruit); the young's zooplankton ladder at
+  // half their length (zooLadderK: no prey over 1 mm until 25–30 mm); the young's UILT is theirs (uiltY: CTO 24, CTM 26, CTL 29; the
+  // adults' 23.5 °C would kill them in July) [speeds, home: inf — a clupeid cruiser]
+  alewife:    { school: 300, perHa: 0, run: true, noRecruit: true, zooLadderK: 0.5, uiltY: 30, cruise: 1.2, sprint: 15, sustain: 3.0, turn: 2.6, sense: 3.0, nonVis: 0.3, strikeR: 0, cohere: 0, home: HOME(200, 600), tPref: 20,
+    hab: { day: H([2.0, 5.5], 0, 0.8, 0.6), night: H([0.5, 3.0], 1, 0.4, 0.6), winter: H([3.0, 5.5], 0, 0.5, 0.3) } },
 };
 // MOVING BETWEEN THE LAKES (F3.ROAM_L; movement_between_lakes.md's starting values, [inf]): settle — the chance a year that a
 // fish (a school) settles in the other lake, in its season yf [from, to] when given (perch: September–October); trip — the
@@ -491,6 +497,7 @@ const SPAWN3 = {
   // gravel shoals). Killifish: on plants (Potamogeton) at 0.2–1 m, ~3 clutches. Dace: en masse over riffle gravel < 0.25 m
   redbreast: { bot: [0.25, 0.6], h: 0.05, brook: 0.5, sites: 8 }, fallfish: { bot: [0.15, 0.5], h: 0.05, site: 'brook', sites: 4, runK: 150 / 1725 },
   killifish: { bot: [0.2, 1.0], h: 0.2, sub: 'plant', bare: 0.3 }, dace: { bot: [0.1, 0.3], h: 0.02, site: 'brook' },
+  alewife: { bot: [0.15, 1.0], h: 0.1 },   // (E8: at night along the shallows, 0.15–1 m, over sand, gravel, plants and detritus — a school spawns within itself)
 };
 // THE BROOK: its path from Upper's outlet (vertex 0) to Lower (the last) — the pool below the mouth (vertices 1–2, ~1 m), the
 // riffles (3 and 6, ~0.3 m), the run between (4–5, ~0.5 m). Fish go in and out along it (Fish3._route)
@@ -723,6 +730,7 @@ export function stageR5(on = true) {
   ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
   WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
+  ALEWIFE.ON = on ? 1 : 0;   // (E8: the sea-run alewives — config ALEWIFE)
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
@@ -819,7 +827,7 @@ export const WILD3 = {
   // common loon: ice-out to Oct–Nov; a pair per 40–280 ha (Belgrade 95–280) — 1 per 150 ha [inf]; an adult ~1.1 kg/day (Barr 1996's
   // 423 kg a family-season less two chicks); chicks July on, 160–380 g/day, ~0.6 a pair [inf: Belgrade hatch/fledge]; fish 10–70 g, up
   // to ~300 g, "often yellow perch", streamlined fish; pursuit dives < 10 m, by day
-  loon: { yf: [0.14, 0.75], perHa: 2 / 150, need: 1100, chick: { yf: 0.33, perPair: 0.6, need: 250 }, fish: [0.9, 0.9], L: [6, 10, 20, 30], z: [8, 10], b: [99, 99], act: [1, 0.2, 0], ice: 0, pref: { perch: 1.5, fallfish: 1.2, killifish: 1.2, dace: 1.2, sunfish: 0.6, redbreast: 0.6, catfish: 0.5 } },
+  loon: { yf: [0.14, 0.75], perHa: 2 / 150, need: 1100, chick: { yf: 0.33, perPair: 0.6, need: 250 }, fish: [0.9, 0.9], L: [6, 10, 20, 30], z: [8, 10], b: [99, 99], act: [1, 0.2, 0], ice: 0, pref: { perch: 1.5, fallfish: 1.2, killifish: 1.2, dace: 1.2, alewife: 1.2, sunfish: 0.6, redbreast: 0.6, catfish: 0.5 } },
   // great blue heron: mid-March to ~November; wades ≤ 50 cm (mostly 15–25 cm), fish ≤ 25 cm (mostly ≤ 20), ~300 g/day; dawn and dusk
   // peaks, some night; 1 per 4 km of shore [inf: Maine colonies forage widely]
   heron: { yf: [0.05, 0.70], perKm: 0.25, need: 300, fish: [0.8, 0.8], L: [3, 5, 20, 25], z: [0.5, 0.6], b: [0.3, 0.5], act: [0.6, 1, 0.3], ice: 0, pref: {} },
@@ -828,10 +836,10 @@ export const WILD3 = {
   kingfisher: { yf: [0.12, 0.70], perKm: 1 / 0.8, need: 65, fish: [0.7, 0.7], L: [3, 4, 10, 14], z: [0.15, 0.6], b: [0.4, 0.6], act: [1, 0.8, 0], ice: 0, pref: {} },
   // osprey: early April – early September; plunges ≤ ~1 m; fish 150–300 g (~25–35 cm), 50–1,200 g; an adult 300–400 g/day, a family
   // 850–1,250; 2 pairs [inf: lakes of 650 ha], their brood from July [inf]; pale, surface-oriented fish — suckers in the shallows
-  osprey: { yf: [0.10, 0.52], perLake: 4, need: 350, chick: { yf: 0.30, perPair: 1.5, need: 250 }, fish: [1, 1], L: [15, 25, 35, 45], z: [0.5, 1.0], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { sucker: 1.5, catfish: 0.7 } },
+  osprey: { yf: [0.10, 0.52], perLake: 4, need: 350, chick: { yf: 0.30, perPair: 1.5, need: 250 }, fish: [1, 1], L: [15, 25, 35, 45], z: [0.5, 1.0], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { sucker: 1.5, catfish: 0.7, alewife: 2 } },   // (E8: ospreys and eagles gather at alewife runs [inf: x2])
   // bald eagle: all year (a pair nests on Upper — the human); inland Maine remains 79 % fish, brown bullhead, white sucker and chain
   // pickerel favoured; ~500 g/day; takes fish at the surface; in winter it scavenges (no open water: none here)
-  eagle: { yf: [0, 1], perLake: 2, need: 500, chick: { yf: 0.25, perPair: 1.2, need: 400 }, fish: [0.8, 0.8], L: [18, 25, 50, 60], z: [0.3, 0.6], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { catfish: 2, sucker: 2, pike: 1.5 } },
+  eagle: { yf: [0, 1], perLake: 2, need: 500, chick: { yf: 0.25, perPair: 1.2, need: 400 }, fish: [0.8, 0.8], L: [18, 25, 50, 60], z: [0.3, 0.6], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: { catfish: 2, sucker: 2, pike: 1.5, alewife: 2 } },
   // common merganser: broods on lakes and streams; ~255–285 g/day captive (~30 % of body mass), 400 wild; prefers 10–13 cm fish, girth
   // limits; pursuit diver in shallow to mid water [inf: ≤ 3–5 m]; 10 on the lakes [inf: a brood or two]
   cmerganser: { yf: [0.14, 0.75], perLake: 10, need: 300, fish: [0.9, 0.9], L: [5, 8, 13, 18], z: [3, 5], b: [99, 99], act: [1, 0.3, 0], ice: 0, pref: {} },
@@ -868,7 +876,7 @@ export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, 
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
 // predators a prior); SPINY: the spiny-rayed and deep-bodied, whose success falls faster with relative size (Scharf et al. 1998)
-export const CS3 = { killifish: [0.7, 0.6, 0.5], dace: [0.7, 0.6, 0.5], fallfish: [0.7, 0.6, 0.5], sucker: [0.7, 0.6, 0.5], pike: [0.6, 0.55, 0.4],
+export const CS3 = { killifish: [0.7, 0.6, 0.5], dace: [0.7, 0.6, 0.5], alewife: [0.7, 0.6, 0.5], fallfish: [0.7, 0.6, 0.5], sucker: [0.7, 0.6, 0.5], pike: [0.6, 0.55, 0.4],
   perch: [0.35, 0.45, 0.3], whiteperch: [0.3, 0.4, 0.25], bass: [0.3, 0.4, 0.25], sunfish: [0.12, 0.55, 0.3], redbreast: [0.12, 0.55, 0.3], catfish: [0.1, 0.2, 0.1] };
 export const SPINY3 = { perch: 1, whiteperch: 1, bass: 1, sunfish: 1, redbreast: 1, catfish: 1 }, PPR0 = [0.88, 0.6];   // (soft, spiny)
 // (F3.SIZE_RENORM) the prey/predator length ratio each CS3 value was measured at, by the prey's fins [soft, spiny] and the predator's kind
@@ -980,7 +988,7 @@ const vbAge = (vb, L) => vb.t0 - Math.log(1 - Math.min(0.98, L / vb.Linf)) / vb.
 // smallmouth likewise; white perch feed at dusk and night (and the 2-D sim's golden shiners in the hour after sunset); the esocids by day and
 // twilight; bullheads and suckers mostly by taste and touch (their nonVis). The fish's sight then sets its senses' range and
 // its visual feeding: the day's feeding follows the hour's light (the old sight followed the day's noon light all day)
-const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (the four new: their nearest — sunfish, a visual drift-feeding minnow, a topminnow; prior)
+const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1, alewife: 0.5 };   // (the alewife: particulate by day, filtering in the dark [inf]; the four new: their nearest — sunfish, a visual drift-feeding minnow, a topminnow; prior)
 const sight = (lux, kI) => lux / (lux + kI);
 const WF = [0, 0];
 
@@ -1012,6 +1020,7 @@ class Fish {
     this.spX = NaN; this.spY = NaN; this.spYr = -1;   // a ripe plant spawner's chosen place (F3.SUB_*) and the year it chose it
     this.lake = 1; this.lhx = 0; this.lhy = 0; this.brookie = false; this.brookRun = false; this.runYr = -1; this.inRun = false;   // (runYr: the year a full brook turned it back; inRun: it holds one of the brook's nest sites)
     this.tripEnd = 0; this.tpx = 0; this.tpy = 0; this.inLake = 1;   // a trip into the other lake (until, where); the lake it was last in
+    this.aleT = 0; this.aleRes = 0; this.leave = false;   // (E8: an alewife's arrival time and residence, sim s; bound out by the outlet)
     // RENDER-ONLY (render3/fish3view.js interpolates between steps from these; the sim never reads them)
     this._px = 0; this._py = 0; this._pz = 0; this._pyaw = 0; this._ppitch = 0;
   }
@@ -1077,6 +1086,7 @@ export class Fish3 {
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
     this.stats = { wild: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {}, eggs3: {} };
+    this.stats.ale = { run: 0, arrived: 0, left: 0, spent: 0, yOut: 0, yCold: 0, pIn: 0, nIn: 0, pOut: 0, nOut: 0 };   // (E8: the alewives' run, deaths, emigrants; their N and P in and out, g)
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
     for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
@@ -1591,6 +1601,7 @@ export class Fish3 {
     if (full) this._yoyHash();
     if (FRY.DENSITY) this._yTable();   // (stage Y1: the young available, per column × species × length — before anyone feeds)
     if (F3.WILD) this._wildPrep(); else if (this._wRho) this._wRho.fill(0);   // (E4: the wildlife's demand and the fish it can reach now)
+    if (ALEWIFE.ON && S3.alewife) { this._aleDay(); this._alewife(dt); }   // (E8: the sea-run alewives' run, residence and leaving)
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
     { const yr = this._yr = Math.floor(e.time / YEAR); if (yf >= F3.SITE_YF && yf < 0.5 && this._siteYr !== yr) { this._siteYr = yr; this._siteSub(); } }   // (the plant spawners' grounds, each spring)
     // the surface's light now (lux), and for a coarse block its mean over the block (a block across dusk sees its fall)
@@ -2291,6 +2302,7 @@ export class Fish3 {
   _goal(a, out) {
     const s = a.s;
     if (a.nt > 0) { out[0] = a.nx; out[1] = a.ny; out[2] = 0.5; return out; }
+    if (a.leave) { const o = this._outletXY(); out[0] = o[0]; out[1] = o[1]; out[2] = 0.5 * this.G.COL; return out; }   // (E8: a spent alewife out by the outlet)
     if (a.ripe && this._runs(a)) {
       // (a runner reaching the brook's mouth — or in it — takes a nest site if one is free, counted at once so a block's arrivals
       // can't all crowd in; or, the brook full, turns back at the mouth and spawns on its lake's shoals this season. A site frees as
@@ -2685,12 +2697,15 @@ export class Fish3 {
     const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
     const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
       + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) / YEAR;
-    const hH = T > sp.uilt - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - sp.uilt) / BIOE.HEAT_STEEP) : 0;
+    const ul = s.uiltY ?? sp.uilt, hH = T > ul - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - ul) / BIOE.HEAT_STEEP) : 0;   // (S3 uiltY: a young of its own limit)
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;
     const HWy = this._wHy || (this._wHy = new Float64Array(WILDK.length)), hWd = F3.WILD ? this._wildH(s.key, q.L, q.z, q.bed, q.cover, this.env.ice[c], HWy) : 0;   // (E4: the wildlife)
-    const h = hN + hS + hH + hO + hWd, lost = q.n * (1 - Math.exp(-h * st));
-    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; if (hWd > 0) { fr.wild = (fr.wild || 0) + lost * hWd / h; this._wildTally(s.key, HWy, h, lost, q.W); } }
-    this.chem.addSedOM(q.jb, lost * q.W * (h > 0 ? 1 - hWd / h : 1));   // (the wildlife's take leaves the lake)
+    const hA = s.run && ALEWIFE.ON ? this._aleYoung(q, T, c, yf, this._aleH || (this._aleH = [0, 0])) : null, hE = hA ? hA[0] : 0, hC = hA ? hA[1] : 0;   // (E8: the young alewives' emigration and cold)
+    const h = hN + hS + hH + hO + hWd + hE + hC, lost = q.n * (1 - Math.exp(-h * st));
+    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; if (hWd > 0) { fr.wild = (fr.wild || 0) + lost * hWd / h; this._wildTally(s.key, HWy, h, lost, q.W); }
+      if (hE > 0) { const x = lost * hE / h; fr.emig = (fr.emig || 0) + x; this.stats.ale.yOut += x; this._aleNutr(j, q.jb, -x * q.W * ALEWIFE.YOUNG_P, -x * q.W * ALEWIFE.YOUNG_N, false); }   // (the emigrants' N and P leave with them)
+      if (hC > 0) { const x = lost * hC / h; fr.cold = (fr.cold || 0) + x; this.stats.ale.yCold += x; } }
+    this.chem.addSedOM(q.jb, lost * q.W * (h > 0 ? 1 - (hWd + hE) / h : 1));   // (the wildlife's take and the emigrants leave the lake)
     q.n -= lost;
     if (q.n < 1) { if (rand() < q.n) q.n = 1; else { q.alive = false; return; } }
     // NEXT TARGET: up out of low O₂, down out of heat; else the food these fish eat about them
@@ -2698,7 +2713,7 @@ export class Fish3 {
     if (q.s.brookRes && GEO.bodyAt(q.tx, q.ty) !== BROOK) { const p = BP[nearestBP(q.tx, q.ty)]; q.tx = p[0]; q.ty = p[1]; }   // (the brook's own young feed in the brook)
     q.spotBed = Math.max(0.12, GEO.depthAt(q.tx, q.ty));   // (its cruise keeps to water like its spot's)
     // RECRUITMENT: at the species' L0, or an overwintered school in spring (F3.RECRUIT_SPRING: only in spring — the year's young one rule all year)
-    if ((!F3.RECRUIT_SPRING && q.L >= sp.L0) || (q.age > FRY.OVERWINTER * YEAR && yf >= (F3.RECRUIT_WARM ? winterWindow[1] : FRY.SPRING_YF) && yf < SPAWN.SEASON_END)) this._recruit(q);
+    if (!s.noRecruit && ((!F3.RECRUIT_SPRING && q.L >= sp.L0) || (q.age > FRY.OVERWINTER * YEAR && yf >= (F3.RECRUIT_WARM ? winterWindow[1] : FRY.SPRING_YF) && yf < SPAWN.SEASON_END))) this._recruit(q);   // (S3 noRecruit: the alewives' young never do)
   }
   // THE YOUNG BY DISTANCE (as the fish, _stepMixed): the schools within the focus live this fine step; the rest are scheduled
   // FAR_BLOCK blocks (a block's cruise about their spot, their feeding tick over the block). Their density and the region about the
@@ -2760,7 +2775,7 @@ export class Fish3 {
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
     // zooplankton of a larva's size (rotifers and nauplii while small; the limnetic phase over open water for sunfish fry)
-    const zc = this._ytc || (this._ytc = new Float64Array(4)), zu = this._ytu || (this._ytu = new Float64Array(4)); yZoo(q.L, this.env.yearFrac(), zc, zu);
+    const zc = this._ytc || (this._ytc = new Float64Array(4)), zu = this._ytu || (this._ytu = new Float64Array(4)); yZoo(q.L * (q.s.zooLadderK ?? 1), this.env.yearFrac(), zc, zu);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
     const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc) || (F3.YO2_MARGIN > 0 && ch.o2[jj] < o2m)) return; const E = ch.zooElY(jj, zu) * cov(cc); if (E > best) { best = E; bj = jj; } };
@@ -2801,7 +2816,7 @@ export class Fish3 {
     const nbY = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0;
     if (canB) { if (q.jb >= 0) BL[nB++] = q.jb; for (let i = 0; i < nbY.length && nB < BL.length; i++) { const jb = this.colBedJ[nbY[i]]; if (jb >= 0) BL[nB++] = jb; } }
     let tZ = 1, tW = 1, tB = 1;
-    const zc = this._yfc || (this._yfc = new Float64Array(4)), zu = this._yfu || (this._yfu = new Float64Array(4)); if (canZ) yZoo(q.L, this.env.yearFrac(), zc, zu);   // (E2c/E2d: its zooplankton ladder)
+    const zc = this._yfc || (this._yfc = new Float64Array(4)), zu = this._yfu || (this._yfu = new Float64Array(4)); if (canZ) yZoo(q.L * (q.s.zooLadderK ?? 1), this.env.yearFrac(), zc, zu);   // (E2c/E2d: its zooplankton ladder)
     if (F3.YSHARE && base > 1e-12) {
       let fZ = 0, fW = 0, fB = 0;
       if (canZ) { const YL = this._ylyshare || (this._ylyshare = new Int32Array(64)); const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0; let nY = 0;
@@ -2918,6 +2933,96 @@ export class Fish3 {
   _die(a, cause, n) { a.alive = false; a.cause = cause; this._tallyDeath(a.s.key, cause, n); this.chem.addSedOM(a.jb, n * a.W); a.n = 0; }
   _tallyDeath(k, cause, n) { const d = this.stats.died; (d[k] || (d[k] = {}))[cause] = (d[k][cause] || 0) + n; }
 
+
+  // ---------- (E8) THE SEA-RUN ALEWIFE (config ALEWIFE; docs/review/ECOSYSTEM_BUILD.md "E8"): the run in at Lower's outlet as the spring
+  // warms, the adults' residence (spawning by the ripe-fish rules), their freshwater deaths and their leaving by the outlet, their
+  // excretion and carcasses' N and P (an import — the ledger's in); the young's emigration and cold deaths are in _yoyLive ----------
+  _outletXY() { if (!this._outXY) { const c = this.env.outCol; this._outXY = [this.G.cx[c], this.G.cy[c]]; } return this._outXY; }
+  // the sim's (abstract) units per gram of P and of N: the lakes' water at their reference concentrations (ALEWIFE.TP_UGL, TN_UGL)
+  _aleUnits() {
+    if (this._aleU) return this._aleU;
+    const ch = this.chem, G = this.G, Pu = PHYTO.P_USE, Nu = PHYTO.N_USE; let p = 0, n = 0, w = 0;
+    for (let j = 0; j < G.NCELL; j++) { const v = ch.w[j]; if (!(v > 0)) continue; const al = ch.phyto[j] + ch.diatom[j] + ch.resA[j];
+      p += (ch.phos[j] + al * Pu + ch.dom[j] * NUTRIENT.ORGANIC_P) * v; n += (ch.nh4[j] + ch.no3[j] + al * Nu + ch.dom[j] * (1 - NUTRIENT.ORGANIC_P)) * v; w += v; }
+    const L = WORLD.CELL_L;   // (litres per 2-D cell: units × cells / (g/L × L) = units per g)
+    return (this._aleU = { p: p / w / (ALEWIFE.TP_UGL * 1e-6 * L), n: n / w / (ALEWIFE.TN_UGL * 1e-6 * L) });
+  }
+  _aleNutr(j, jb, gP, gN, toBed) {   // grams in (+) or out (−) at water cell j (P to the bed's store at jb when toBed), in the ledger
+    const ch = this.chem, u = this._aleUnits(), st = this.stats.ale, w = ch.w[j];
+    if (gP > 0) { const x = gP * u.p; if (toBed && jb >= 0) ch.sedP[jb] += x / ch.a[jb]; else ch.phos[j] += x / w; ch.ledger.inP += x; st.pIn += gP; }
+    else if (gP < 0) { const x = Math.min(-gP * u.p, ch.phos[j] * w); ch.phos[j] -= x / w; ch.ledger.outP += x; st.pOut += x / u.p; }
+    if (gN > 0) { const x = gN * u.n; ch.nh4[j] += x / w; ch.ledger.inN += x; st.nIn += gN; }
+    else if (gN < 0) { const want = -gN * u.n, a = Math.min(want, ch.nh4[j] * w), b = Math.min(want - a, ch.no3[j] * w); ch.nh4[j] -= a / w; ch.no3[j] -= b / w; ch.ledger.outN += a + b; st.nOut += (a + b) / u.n; }
+  }
+  // the run's arrivals over dt (the CPU's step and the GPU host's block alike): the year's run, the spring's warmest Lower surface, the
+  // schools due by it — returned (the GPU host appends them to its arrays)
+  _aleArrivals(dt) {
+    const A = ALEWIFE, e = this.env, st = this.stats.ale, yr = Math.floor(e.time / YEAR), yf = e.yearFrac(), out = [];
+    // this year's run (lognormal about the preset) and the spring's warmest Lower surface so far (a 2-day mean: a cold snap doesn't call it back)
+    if (this._aleYr !== yr) { this._aleYr = yr; const sg = Math.sqrt(Math.log(1 + A.RUN_CV * A.RUN_CV)); this._aleRun = A.RUN_PER_ACRE * A.ACRES * (this.lakeHa / WILD_LAKE_HA) * Math.exp(sg * gauss() - sg * sg / 2); this._aleIn = 0; this._aleTmax = -1; st.run += this._aleRun; }
+    const T0 = e.temp[this.G.cell0[e.outCol]]; this._aleTs = this._aleTs === undefined ? T0 : this._aleTs + (T0 - this._aleTs) * Math.min(1, dt / (2 * DAY));
+    if (yf < 0.5) this._aleTmax = Math.max(this._aleTmax, this._aleTs);
+    const [t0, tp, t1] = A.ARRIVE_T, x = this._aleTmax;
+    const F = x <= t0 ? 0 : x >= t1 ? 1 : x <= tp ? (x - t0) ** 2 / ((t1 - t0) * (tp - t0)) : 1 - (t1 - x) ** 2 / ((t1 - t0) * (t1 - tp));
+    const nS = clamp(this._aleRun / A.SCHOOLS, A.SCHOOL_MIN, A.SCHOOL_MAX);
+    let due = this._aleRun * F - this._aleIn;
+    while (due >= nS || (F >= 1 && due >= 1)) { const n = Math.min(nS, due); out.push(this._aleArrive(n)); this._aleIn += n; due -= n; st.arrived += n; }
+    return out;
+  }
+  _alewife(dt) {
+    const A = ALEWIFE, e = this.env, s = S3.alewife, st = this.stats.ale;
+    this._aleArrivals(dt);
+    // the adults: their freshwater deaths (SPENT over the median residence), their excretion, leaving once their time is up, and out at the outlet
+    const hS = Math.log(1 / (1 - A.SPENT)) / (A.RESID * DAY), hrs = dt / DAY * 24, [ox, oy] = this._outletXY(), R = 1.5 * this.G.COL;
+    for (const a of this.fish) {
+      if (!a.alive || a.s !== s) continue;
+      if (a.c >= 0) { const j = a.j >= 0 ? a.j : this.G.cell0[a.c]; this._aleNutr(j, a.jb, a.n * a.W * A.EXCR_P * hrs, a.n * a.W * A.EXCR_N * hrs, false); }
+      const lost = a.n * -Math.expm1(-hS * dt);
+      if (lost > 0) { this._tallyDeath('alewife', 'spent', lost); st.spent += lost; this.chem.addSedOM(a.jb, lost * a.W); if (a.c >= 0) this._aleNutr(a.j >= 0 ? a.j : this.G.cell0[a.c], a.jb, lost * a.W * A.BODY_P, lost * a.W * A.BODY_N, true); a.n -= lost; }
+      if (a.n < 1) { a.alive = false; a.cause = 'spent'; continue; }
+      if (!a.leave && e.time - a.aleT > a.aleRes) { a.leave = true; a.lake = LOWER; a.lhx = a.hx = ox; a.lhy = a.hy = oy; }
+      if (a.leave && Math.hypot(a.x - ox, a.y - oy) < R) { a.alive = false; a.cause = 'emigrated'; st.left += a.n; }
+    }
+  }
+  // a school of the run at Lower's outlet: ripe, its residence drawn, bound for Upper (UPPER of them: across Lower and up the brook) or Lower
+  _aleArrive(n) {
+    const A = ALEWIFE, s = S3.alewife, sp = s.sp, [ox, oy] = this._outletXY(), r = 0.5 * this.G.COL;
+    const a = this.add('alewife', ox + (rand() - 0.5) * r, oy + (rand() - 0.5) * r, null, 4, n);
+    a.L = clamp(A.L[0] + A.L[1] * gauss(), 25, 33); a.W = rand(0.95, 1.05) * stdWeight(sp.lw, a.L); this._settle(a);
+    a.mature = true; a.gon = s.gsi(a.sex) * a.W; a.mateCd = 0; a.aleT = this.env.time; a.aleRes = A.RESID * Math.exp(A.RESID_SD * gauss()) * DAY; a.leave = false;
+    const lake = rand() < A.UPPER ? UPPER : LOWER, p = this._homeIn(s, lake);
+    if (p) { a.lake = lake; a.lhx = a.hx = p[0]; a.lhy = a.hy = p[1]; }
+    const c = this.env.colAt(a.x, a.y); if (c >= 0) { a.c = c; a.j = this.G.cell0[c] + Math.min(this.G.nL[c] - 1, Math.max(0, (a.z / this.G.DZ) | 0)); a.jb = this.bedCell(c, a.bed); }   // (its cells from the start)
+    return a;
+  }
+  // the GPU host's block sums (GL G_ALE: out n, spent n, spent g, excreted g·h, the young out n and g, the young's cold n): the stats, and the
+  // N and P spread over the lakes (the water by volume, the bed by area — the CPU puts them where the fish are)
+  _aleSums(v) {
+    const A = ALEWIFE, st = this.stats.ale, fr = this.stats.fry.alewife, d = this.stats.died.alewife || (this.stats.died.alewife = {});
+    st.left += v[0]; st.spent += v[1]; d.spent = (d.spent || 0) + v[1]; st.yOut += v[4]; st.yCold += v[6]; if (fr) { fr.emig = (fr.emig || 0) + v[4]; fr.cold = (fr.cold || 0) + v[6]; }
+    this._aleNutrAll(v[3] * A.EXCR_P, v[3] * A.EXCR_N + v[2] * A.BODY_N, false); this._aleNutrAll(v[2] * A.BODY_P, 0, true); this._aleNutrAll(-v[5] * A.YOUNG_P, -v[5] * A.YOUNG_N, false);
+  }
+  _aleNutrAll(gP, gN, toBed) {
+    const ch = this.chem, G = this.G, u = this._aleUnits(), st = this.stats.ale; let W = 0; for (let j = 0; j < G.NCELL; j++) W += ch.w[j];
+    if (gP > 0) { const x = gP * u.p; if (toBed) { let Ab = 0; for (const j of ch.bedCells) Ab += ch.a[j]; for (const j of ch.bedCells) ch.sedP[j] += x / Ab; } else for (let j = 0; j < G.NCELL; j++) if (ch.w[j] > 0) ch.phos[j] += x / W; ch.ledger.inP += x; st.pIn += gP; }
+    else if (gP < 0) { const c = -gP * u.p / W; let t = 0; for (let j = 0; j < G.NCELL; j++) { const w = ch.w[j]; if (!(w > 0)) continue; const y = Math.min(c, ch.phos[j]); ch.phos[j] -= y; t += y * w; } ch.ledger.outP += t; st.pOut += t / u.p; }
+    if (gN > 0) { const x = gN * u.n; for (let j = 0; j < G.NCELL; j++) if (ch.w[j] > 0) ch.nh4[j] += x / W; ch.ledger.inN += x; st.nIn += gN; }
+    else if (gN < 0) { const c = -gN * u.n / W; let t = 0; for (let j = 0; j < G.NCELL; j++) { const w = ch.w[j]; if (!(w > 0)) continue; const y = Math.min(c, ch.nh4[j]); ch.nh4[j] -= y; t += y * w; } ch.ledger.outN += t; st.nOut += t / u.n; }
+  }
+  // (E8) a young alewife's hazards this tick (/s): emigration [0] — from EMIG_YF, by its length, on the day's pulse — and cold [1]
+  _aleYoung(q, T, c, yf, out) {
+    const A = ALEWIFE, e = this.env; out[0] = out[1] = 0;
+    if (e.ice[c] > 0.5) { out[1] = 50 / DAY; return out; }   // (under the ice: none survive)
+    if (T < A.COLD_T) out[1] = A.COLD_M / DAY;
+    if (yf >= A.EMIG_YF && e.qFac >= A.Q_MIN) { const fL = clamp((q.L - A.EMIG_L[0]) / (A.EMIG_L[1] - A.EMIG_L[0]), 0, 1); out[0] = fL * (A.EMIG_BASE + (this._alePulse ? A.EMIG_PULSE : 0)) / DAY; }
+    return out;
+  }
+  // the day's pulse (once a day): rain or a flow rise (qFac × PULSE_Q in a day), or the air cooling PULSE_DT °C
+  _aleDay() {
+    const e = this.env, d = Math.floor(e.time / DAY); if (this._aleD === d) return; const q = e.qFac, t = e.airT ? e.airT() : seasonalTemp(e.yearFrac());
+    this._alePulse = this._aleD !== undefined && ((this._aleQ > 0 && q >= ALEWIFE.PULSE_Q * this._aleQ) || e.weather >= 2 || this._aleAir - t >= ALEWIFE.PULSE_DT) ? 1 : 0;
+    this._aleD = d; this._aleQ = q; this._aleAir = t;
+  }
   // ---------- THE LAKES' FISH-EATING WILDLIFE (F3.WILD; WILD3) ----------
   // the shore's length (km: every water cell's land edges, × 0.8 for a raster's stair-steps — as littoral3's bank)
   _shoreKm() {

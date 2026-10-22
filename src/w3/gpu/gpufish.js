@@ -5,7 +5,7 @@
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, NTALLY_PAIRS, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3, WILDK } from '../fish3.js';
-import { FRY, ICE, EGG3 } from '../../config.js';
+import { FRY, ICE, EGG3, ALEWIFE } from '../../config.js';
 import { GEO, BODIES } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
 
@@ -30,7 +30,7 @@ export class GpuFish {
     const n0 = F.fish.filter(a => a.alive).length; this.cap = cap || Math.max(1024, Math.ceil(n0 * 1.3));
     const y0 = F.yoy.filter(q => q.alive).length; this.ycap = ycap || Math.max(4096, Math.ceil(y0 * 3) + 16384, Math.ceil(0.4 * n0));   // (June's spawnings: the true lakes went from 18k to 57k schools in four weeks)
     this.STL = packStatics(F, env); this.WL = waterLayout(env);
-    this.consts0 = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst LAKE_Z1: f32 = ${BODIES[0].max};\nconst LAKE_Z2: f32 = ${BODIES[1].max};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
+    this.consts0 = wgslConstants(this.STL, this.WL, { G: env.G }) + `\nconst HHX: u32 = ${HHX}u;\nconst HHY: u32 = ${HHY}u;\nconst BROOK_A: f32 = ${F.brookA};\nconst LAKE_M2: f32 = ${F.lakeM2};\nconst LAKE_HA: f32 = ${F.lakeHa};\nconst LAKE_Z1: f32 = ${BODIES[0].max};\nconst LAKE_Z2: f32 = ${BODIES[1].max};\nconst OUT_X: f32 = ${env.G.cx[env.outCol]};\nconst OUT_Y: f32 = ${env.G.cy[env.outCol]};\nconst OUT_R: f32 = ${1.5 * env.G.COL};\nconst BROOK_AREA: f32 = ${F._target ? (F._brookArea || (F._target({ brookRes: true, perM2: 1 }), F._brookArea)) : 0};`;
     this._acc();
     // the footprint's CSR by radius class (fish3 forageR: a few distinct radii)
     this.fpSelect = Array.from({ length: this.STL.nFp }, (_, r) => r ? `if (r == ${r}u) { o0 = O_fFp${r}0; oL = O_fFp${r}L; }` : '').join(' ');
@@ -153,7 +153,7 @@ export class GpuFish {
     mk(moduleSource(this.consts, GRID_BINDINGS, GRID), [this.L0, this.LG], ['g_clear', 'g_count', 'g_scan', 'g_add', 'g_cursor', 'g_cursor2', 'g_scatter', 'g_sort']);
     mk(moduleSource(this.consts, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K.replace('FP_SELECT', this.fpSelect), HAZ), [this.L0, this.LS],
       ['k_pre', 'k_learn', 'k_sense', 'k_brain', 'k_snap', 'k_sums', 'k_glob', 'k_admit', 'k_move', 'k_body', 'k_feed0', 'k_strike', 'k_strikeWin', 'k_strikeApply',
-       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho']);
+       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho', 'k_ale', 'k_aleFin']);
     mk(moduleSource(this.consts, YOY_BINDINGS, TALLY, FB4, YOY), [this.L0, this.LY],
       ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target', 'y_wildA', 'y_egg']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
@@ -178,6 +178,17 @@ export class GpuFish {
     this.dev.queue.writeBuffer(this.B.Y, 0, P.Y); this.dev.queue.writeBuffer(this.B.YG, 0, P.YG); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
     return P;
   }
+  // (E8) NEW AGENTS FROM THE HOST between blocks (the alewives' run): packed at their own stride, each field's column written after the
+  // live n (the arrays grown first if need be); the id counter past theirs
+  async appendAgents(list) {
+    const m = list.length; if (!m) return;
+    if (this.n + m > this.cap) await this.grow(Math.max(1.25 * this.cap, 1.15 * (this.n + m)), this.ycap);
+    const P = packAgents(list, m), q = this.dev.queue, n = this.n, cap = this.cap;
+    for (let f = 0; f < NAF; f++) q.writeBuffer(this.B.A, 4 * (f * cap + n), P.A, f * m, m);
+    for (let f = 0; f < NBR; f++) q.writeBuffer(this.B.BR, 4 * (f * cap + n), P.BR, f * m, m);
+    for (let f = 0; f < NGN; f++) q.writeBuffer(this.B.GN, 4 * (f * cap + n), P.GN, f * m, m);
+    this.n += m; this.setGlobalsU({ 36: this.F.nextId });
+  }
   // a few of GL's words (u32 bit patterns) — the id counter
   setGlobalsU(map) { for (const [at, v] of Object.entries(map)) this.dev.queue.writeBuffer(this.B.GL, 4 * +at, Uint32Array.of(v)); }
   uploadWater() { this.W = packWater(this.F, this.env, this.WL, this.W); this.dev.queue.writeBuffer(this.B.WD, 0, this.W); }
@@ -187,7 +198,7 @@ export class GpuFish {
     const yf = e.yearFrac(), YEAR = CLOCK3.YEAR_LEN, l0 = lux0 ?? e.lux, lb = luxB || [l0, e.luxAhead(dt / 2), e.luxAhead(dt)];
     const V = { n: this.n, cap: this.cap, ny: this.ny, ycap: this.ycap, blk: this.blk, seed: this.seed, dtU: Math.round(dt), yr: Math.floor(e.time / YEAR), dt, yf, lux0: l0, luxB0: lb[0], luxB1: lb[1], luxB2: lb[2],
       att: ch.attenuation(), clar: ch.clarity(), sun: e.sun, night: e.isNight() ? 1 : 0, migD: ch._migD, migC: ch._migC, timeD: e.time / 86400, yr0D: Math.floor(e.time / YEAR) * YEAR / 86400,
-      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, iceCut: e.iceCut ?? ICE.LIGHT_CUT, brookD: GEO.brookLevel ?? 1, wx: e.weather };
+      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, iceCut: e.iceCut ?? ICE.LIGHT_CUT, brookD: GEO.brookLevel ?? 1, wx: e.weather , aleP: ALEWIFE.ON ? (e.qFac < ALEWIFE.Q_MIN ? 0 : this.F._alePulse ? 2 : 1) : 0, aleQ: 0, ale2: 0, ale3: 0 };
     UNI_FIELDS.forEach((s, q) => { const [n, t] = s.split(':'); if (t === 'u') u[q] = V[n] >>> 0; else if (t === 'i') i[q] = V[n] | 0; else f[q] = V[n]; });
     this.dev.queue.writeBuffer(this.B.U, 0, buf);
   }
@@ -320,21 +331,27 @@ export class GpuFish {
     this.stage = 'schools'; if (this.blk > 0 && this.blk % F3.MERGE_EVERY === 0) await this.schools();   // (fish3: at the end of every MERGE_EVERY-th step — here the next one's start)
     this.stage = 'compact'; if ((this.blk + 1) % (this.compactEvery || 10) === 0) await this.compact();
     this.stage = 'prepare';
+    if (ALEWIFE.ON) { F._aleDay(); const arr = F._aleArrivals(dt); if (arr.length) await this.appendAgents(arr); }   // (E8: the run in at the outlet)
     F._yr = yr; if (yf >= F3.SITE_YF && yf < 0.5 && F._siteYr !== yr) { F._siteYr = yr; F._siteSub(); this.uploadSites(); }
     this.uploadWater(); this._dt = dt; this._lux = { lux0: e.lux, luxB: [e.lux, e.luxAhead(dt / 2), e.luxAhead(dt)] }; this.setUniforms(dt, this._lux); this.wildDemand();
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
     const done = this.run(enc => {
-      this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeWild(enc); this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
+      this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeWild(enc);
+      if (ALEWIFE.ON) { enc.clearBuffer(this.B.GS, 4 * 192, 4 * 16); this.encodeKernel(enc, 'k_ale', 128); }   // (E8: the adults' block — fish3 _alewife at the step's start)
+      this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
       this.encodeKernel(enc, 'k_learn'); this.encodeKernel(enc, 'k_sense'); this.encodeKernel(enc, 'k_brain', 64); this.encodeKernel(enc, 'k_move', 64);
       // (fish3's coarse block in two passes, F3.FRESH_HASH: the grid and the snapshot rebuilt where every fish got to — strikes and mate
       // searches find the others there; PX then holds the moved places for all, so the kernels' list-order reads agree with fish3's)
       if (F3.FRESH_HASH) this.encodeRegrid(enc);
       this.encodeKernel(enc, 'k_body');
-      this.encodeFeed(enc); this.encodeSpawn(enc); this.encodeHaz(enc); this.encodeYoy(enc); this.encodeRecruit(enc);
+      this.encodeFeed(enc); this.encodeSpawn(enc); this.encodeHaz(enc); this.encodeYoy(enc);
+      if (ALEWIFE.ON) this._pass(enc, this.P.k_aleFin, [this.bg0, this.bgS], 1, 1);   // (E8: the block's sums to GL)
+      this.encodeRecruit(enc);
     });
     if (during) during();
     this.stage = 'kernels'; await done;
     this.stage = 'counts'; const c = await this.readCounts(); this.n = c.n; this.ny = c.ny; F.nextId = c.nextId;
+    if (ALEWIFE.ON && c.ale) F._aleSums(c.ale);   // (E8: the block's alewives — stats, their N and P)
     if (this.bio > 0) e.chem.fishKgHa = this.bio / 1000 / F.lakeHa;   // (the zooplankton's kairomone level and the mussels' hosts: the fish and young at the block's start, as fish3's hash sets it)
     this.stage = 'water'; await this.applyWater();
     this.stage = 'room'; await this.ensureRoom(c.needA, c.needY); this.stage = 'idle';
@@ -345,7 +362,7 @@ export class GpuFish {
   async readCounts() {
     const g = new Float32Array(await this.read(this.B.GL, 256)), u = new Uint32Array(g.buffer);
     this.cnt = Float64Array.from(g.subarray(0, KEYS3.length)); this.bio = g[32];
-    return { n: g[34] || this.n, ny: g[35] || this.ny, nextId: u[36], born: g[37], recruits: g[38], needA: g[43] || 0, needY: g[44] || 0 };
+    return { n: g[34] || this.n, ny: g[35] || this.ny, nextId: u[36], born: g[37], recruits: g[38], needA: g[43] || 0, needY: g[44] || 0, ale: ALEWIFE.ON ? Array.from(g.subarray(200, 208)) : null };
   }
   // what the fish did to the water, back into the env (the fields they eat from and breathe) — as DIFFERENCES from what was uploaded:
   // the water model may have stepped meanwhile (block's `during`), and a cell no fish touched keeps its exact (float64) value
