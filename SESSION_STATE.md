@@ -192,7 +192,17 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~1 a.m. EDT — THE NEWEST). COMMITTED since the restart: aec3490 E2c/E2d + E6a; f5dad76 the GPU tally map
+▶▶▶ RESUME HERE (2026-10-22 ~12:15 a.m. EDT — THE NEWEST). GATE of 4413110: 128 PASS, 0 FAIL (E2c/E2d, E6a, the tally map). COMMITTED:
+b5ddf0c L1 (FRY.CYC in stageR5; M_LARVA3 0.02 HELD for L2); 61f25c1 E8 ON THE GPU VERIFIED (10-week 1/10 r5=1 run: 184 in, spent 51, out 60,
+P in 110 g; fixes: k_aleFinA after k_ale — encodeBook clears GS — and readCounts to GL slot 208). g1_check r5=1 at yf 0.27/0.4/0.75 all agree
+(E2c's young zooplankton within ~3 %) — run it as: node tools/gpu/year_cdp.mjs "r5=1&yf=0.4" out.txt 9361 g1_check (the preview pane has NO
+WebGPU adapter; year_cdp opens real Chrome; the server: preview 'reef' on :8000). BACKUP G:synapse-reef-backupssynapse-reef_20261022_0011_eco_e2c_e8.zip.
+ARM AF: 611 + 612 done (year 2 54 kg/ha both; pumpkinseed/redbreast/killifish/dace → 0); 613 skipped. GATE of 61f25c1 RUNNING → gate_eco4.txt.
+RESEARCH RUNNING (agent): fish predation on larvae (reaction distances, clearance, overlap) → docs/research_notes/Real lake ecology for
+calibration/fish_predation_on_larvae.md — then L2: the fish's larva-picking by mechanism (FRY.LARV_A 0.1 × CLEAR_A is ~1000× below a visual
+planktivore's search; probe larvz: LARV_A 1 lifts perch larvae's eaten Z only 0.003 → 0.013 but pickerel fry to 0.14–0.23 — the detectability
+ramp DETECT_L and the predators' overlap matter) together with M_LARVA3 0.02.
+▶▶▶ RESUME HERE (2026-10-22 ~1 a.m. EDT). COMMITTED since the restart: aec3490 E2c/E2d + E6a; f5dad76 the GPU tally map
 (TP); c0712cf E8 design; 4413110 gate fix (E4 take ≤ 110 %: the reach summed at the block's start); 0f3c858 E8 THE ALEWIFE built (CPU gated
 'alewife' PASS; GPU twin written: k_ale/k_aleFin, GS_ALE→GL[200..207]→F._aleSums, appendAgents for the run, FL_LEAVE, aleT/aleRes, SPF
 aleRun/noRec/uiltY/zooK, y_mort emigration/cold, noRecruit); 807a290 the young alewives' adult-Daphnia rung only at half length.
