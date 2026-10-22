@@ -202,6 +202,22 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 08:30 EDT by the machine clock — THE NEWEST; the "a.m./p.m." stamps below were guesses). AFTER THE COMPACTION:
+- E12b MERGED as 91f701d (the weed beds' extent: stands 51 → 29 % of the bed; FINDINGS entry). R4·6 YENC check now ≥ 1.5× (was 3×: with the
+  thinner beds the YENC run takes young near the predators' appetite, 3.1 → 1.9×). GATE of 91f701d running on occ-server →
+  scratchpad/gate_e12b.txt (Z1 was stashed for the copy, then restored). → when green: push, back up to G:.
+- Z1 JUDGED (rotbud_z1*, larvz_z1): rotifers hold through the Daphnia peak (422/L, was 83), larvae grow faster (perch 15 mm by early July,
+  was 12; white perch 11 vs 8), BUT the edible algae still crash ~180×. Probe scratchpad/probe/algbud*.mjs (the edible algae's budget) found
+  the cause, and it is NOT Daphnia: (1) SED_P.SETTLE (the 2-D model's algae → bed P store) drains the GREENS alone, ~0.15/day, besides their
+  0.15/day die-off already described as "sinking and lysis"; the diatoms and the resistant algae (RESALG) never settle → the greens go
+  0.28 → 0 by mid-June while the grazers take ~1 %/day, and the ungrazed, unsettled resistant algae rise 0.13 → 0.43 (~95 % of the summer
+  algae, field median 58 %); (2) the P half-saturation NUTRIENT.KP 0.10 ≈ 10 µg/L SRP (1 unit ≈ 100 µg/L via ALEWIFE.TP_UGL) — P limit
+  0.08–0.2 all June; (3) under Z1 the COPEPODS become the main grazer: GR_C/K_C gives ~1.6 mL/µg/d, above Z1's Daphnia 1.0 (field
+  calanoids ~0.2–0.5?). KP 0.02 alone or GR_C × 0.25 alone does NOT stop the crash.
+  IN THE TREE (uncommitted, with Z1): Z2 — CHEM3.SETTLE_ALL (off) + SINK_DIA/SINK_RES in chem3.js _sedimentP: every alga settles by its
+  biomass × sinking speed. Probes algbud4_sa.txt, algbud4_sa_kp02.txt (Z1 + SETTLE_ALL, ± KP 0.02) running. RESEARCH AGENT running →
+  docs/research_notes/Real lake ecology for calibration/copepod_grazing_and_p_kinetics.md (copepod clearance per µg, P Ks + lake-model
+  values + Droop, the field depth of the late-spring algae minimum, sinking rates of greens/diatoms/large forms).
 BEFORE COMPACTION (~1:15 p.m.) — WHAT IS IN FLIGHT AND WHAT TO DO WHEN EACH REPORTS:
 - Z1 (uncommitted, in src/config.js ZOO3 Z1_*, src/w3/chem3.js _zooplankton gK/stvT, fish3 stageR5 Z1 line + DAPH_INTERF0/START_D0): judge
   by scratchpad/probe/rotbud_z1.txt + rotbud_z1_nofish.txt (vs rotbud_p75.txt: edible algae dip ≤ ~3–10×, rotifers ≥ ~100–250/L at the
