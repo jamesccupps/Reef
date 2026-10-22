@@ -431,6 +431,47 @@ export function seasonalTemp(yf) {
   const h = X[i + 1] - X[i], t = (yf - X[i]) / h, t2 = t * t, t3 = t2 * t;
   return (2 * t3 - 3 * t2 + 1) * Y[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * Y[i + 1] + (t3 - t2) * h * m[i + 1];
 }
+// (E3) THE EGG STAGE (the 3-D lakes; docs/research_notes/Whole lake 3D fish simulation/egg_stage.md — every number from its Table A
+// unless [inf]): a spawning lays EGGS on the bed (a young school that neither moves nor feeds and is no fish's prey table item) which
+// develop on the bed's temperature — dev 0 → 1 the egg, 1 → 2 the yolk-sac larva — and swim up at dev 2 as today's school at Lhatch.
+// Development: 'kam' D = a/(T − t0) days (Kamler; °C·days above t0), 'exp' D = a·e^(−b·T) days; the yolk-sac stage takes `yolk` × the
+// egg's duration at the same temperature (§2.5), or its own exp (white perch: Margulies 1989). Deaths, per day, tallied by cause:
+//  • baseline — the egg stage's survival at its optimum is `hatch` (−ln(hatch) per unit of dev) — sHatch is no longer a free number;
+//  • temperature — outside the embryo's window [tl0, tl1] (TL50s; a hazard THERM_K /day per °C beyond, [inf]);
+//  • guarding — a guarder's eggs left unguarded are emptied by sunfishes "in minutes" (Gravel & Cooke 2009: 60 % of nests within 1 min
+//    of the male's removal): UNGUARDED /day [inf: hours]; a bullhead's die in < 24 h unfanned (Breder 1935) — the same rate;
+//  • predation on unguarded scatterers — `pred` of the eggs over the egg stage (pickerel ~10 %, Kendall 1917; perch ribbons ~0,
+//    Newsome & Tompkins 1985; sucker none detected, Corbett & Powles 1986);
+//  • low O₂ on the bed — below `o2` mg/L (2.5 bass, 3.5 perch, ~33 % saturation pike), O2_K /day [inf];
+//  • storms — clutches shallower than STORM_Z m lose STORM_D a storm day (Oneida: one storm day stranded ~1 % of the lake's perch eggs —
+//    Clady & Hutchinson 1975 — the shallow third of them [inf]).
+// A guard deserts when the bed's water (the day's mean) falls to DESERT_T °C — or, a smallmouth (desertDrop), DESERT_DROP below its laying
+// temperature (the first day's mean) (Latta: a drop to 10–10.6 °C
+// emptied every nest within 2 days; Rawson's 15.7 °C) — its eggs then unguarded. Checks (not targets): smallmouth whole-nest success
+// 45–86 % (Maine 67–77 %, Neves 1975), egg → swim-up inside a successful nest ~25–35 %; perch viability > 90 % on structure
+export const EGG3 = {
+  ON: 0,                   // on in fish3 stageR5
+  sp: {
+    perch:      { form: 'kam', a: 116.4, t0: 4.9, yolk: 0.45, hatch: 0.95, tl: [6.8, 19.9], pred: 0, o2: 3.5 },   // (Guma'a 1978 97/(T−4.9) × 1.2: yellow perch ~20 % slower, Linkenheld 2019)
+    whiteperch: { form: 'exp', a: 28.62, b: 0.1402, yolkA: 72.72, yolkB: 0.1863, hatch: 0.8, tl: [10, 21], pred: 0.2, o2: 3 },   // (Margulies 1989: 686.99·e^(−0.1402T) h; yolk 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C; broadcast — eaten by perch [inf 0.2])
+    bass:       { form: 'kam', a: 32.2, t0: 9.6, yolk: 2.25, hatch: 0.85, tl: [12, 26], pred: 0, o2: 2.5, guard: 1, desertDrop: 1, yolkHatch: 0.33 },   // (yolkHatch: inside successful nests egg → black fry ~28 % — 2,054 of 7,437, Waugoshance; 26–33 %, Clady 1975 — over the 0.85 hatch)
+      // (fit to Webster 1948; 80–92 % in benign guarded nests; swim-up ~2–2.5 × the egg's time)
+    pike:       { form: 'exp', a: 86.7, b: 0.203, yolk: 0.8, hatch: 0.6, tl: [6.9, 19.2], pred: 0.1, o2: 3.5 },   // (chain pickerel: fit to Underhill/Jones; pike hatch 56–66 % at 6–10 °C; Hokanson's TL50s; ~10 % eaten, Kendall)
+    sucker:     { form: 'exp', a: 200, b: 0.232, yolk: 0.5, hatch: 0.9, tl: [6.2, 24], pred: 0, o2: 4 },   // (Stewart 1926: 21 d at 10.3 °C; > 90 % fertilised; no predation detected)
+    catfish:    { form: 'exp', a: 119.8, b: 0.127, yolk: 0.8, hatch: 0.85, tl: [15, 30], pred: 0, o2: 2, guard: 1 },   // (Breder 1939: 8 d at 21.3 °C; biparental — unfanned eggs die in < 24 h) [hatch, tl: inf]
+    sunfish:    { form: 'exp', a: 16.7, b: 0.0902, yolk: 1.7, hatch: 0.85, tl: [15, 32], pred: 0, o2: 2, guard: 1 },   // (pumpkinseed: Teletchea's 1-mm egg 3.3 d at 18 °C, 2.3 at 22; ~5 d on yolk) [hatch, tl: inf]
+    redbreast:  { form: 'exp', a: 21.3, b: 0.0902, yolk: 2, hatch: 0.85, tl: [15, 32], pred: 0, o2: 2, guard: 1 },   // (Teletchea 1.5-mm egg ~3.5 d at 20 °C; 1–2 weeks in the nest) [inf]
+    fallfish:   { form: 'kam', a: 100, t0: 0, yolk: 1, hatch: 0.85, tl: [12, 26], pred: 0, o2: 4 },   // (138–144 h at 17 °C ≈ 100 °C·d; buried in the mound) [hatch, tl: inf]
+    dace:       { form: 'kam', a: 108, t0: 0, yolk: 1.5, hatch: 0.8, tl: [12, 26], pred: 0.05, o2: 4 },   // (≈ 100–115 °C·d; embryos in the gravel 7–10 d after hatch) [inf]
+    killifish:  { form: 'kam', a: 150, t0: 10, yolk: 0.3, hatch: 0.85, tl: [17, 32], pred: 0.05, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
+  },
+  YOLK_HATCH: 0.95,        // the yolk-sac stage's survival at its optimum [inf]
+  THERM_K: 0.1,            // /day per °C of the day's mean beyond the window [inf: the TL50s are constant-incubation limits; a spell kills less]
+  UNGUARDED: 4,            // /day on a deserted guarder's clutch (one whose guard left — a school's spawning has no single guard modelled: its
+                           //   males are taken to keep it)
+  O2_K: 1, STORM_Z: 1, STORM_D: 0.03,
+  DESERT_T: 10.6, DESERT_DROP: 2,
+};
 // (E9a) THE WEATHER'S AIR TEMPERATURE (the 3-D lakes; docs/review/ECOSYSTEM_BUILD.md E9; research_notes/Maine lake shores and
 // catchment/weather_and_catchment_hydrology.md): the Maine calendar above is the climatological year; real years swing about it —
 // a synoptic anomaly (fronts, heat waves, cold snaps: days) and a seasonal one (a warm spring, a cold May: weeks), each an
@@ -700,7 +741,8 @@ export const PHYTO = {
 // edible algae ~independent of TP (Watson et al. 1992), spring edible-dominated, late summer resistant (DeMott 1983)
 export const RESALG = {
   GROW_MUL: 0.5,           // × PHYTO.GROW_PC: big cells' slower division (μmax ~0.3–0.8 /d against small flagellates' 1–2 — Reynolds 2006) [inf]
-  DECAY_MUL: 0.6,          // × PHYTO.DECAY_PC: ungrazed, lost by sinking, lysis and parasites alone; buoyant colonies and swimmers sink slowly [inf]
+  DECAY_MUL: 1.0,          // × PHYTO.DECAY_PC: ungrazed, lost by sinking, lysis and parasites (chytrids) — big cells at least as fast as the small
+                           //   (0.6 left them 92 % of the summer's algae in the 1/10 lakes; 1.0: 84–86 %, field IQR 28–85 %, median 58 % — a check) [inf]
   START: 0.04,             // at the lake's opening (mid-May: the edible spring algae dominate) [inf]
 };
 

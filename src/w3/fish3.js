@@ -28,7 +28,7 @@ import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, EGG3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -533,6 +533,9 @@ const BASS_JUVW0 = SP.bass.juvW;   // (stageR5 item 5 restores it)
 // (stageR5 item 24: each species' zooplankton diet before the package — restored when it is off)
 // (stageR5 items 23 and 26: the energy stand-ins' and the bullhead's spawning numbers before the package — restored when it is off)
 // (R2·4) the young pickerel's set (stageR5): the adult pike set's temperature curves; Cmax W^−0.24 continuous at 10 g; R Q10 2.5 equal at 22.5 °C
+// (E3) an egg's development a day at T °C (EGG3: 'kam' D = a/(T − t0), 'exp' D = a·e^(−bT)), and its yolk-sac larva's (its own exp, or yolk × the egg's time)
+function eggRate3(P, T) { return P.form === 'kam' ? (T > P.t0 ? (T - P.t0) / P.a : 0) : Math.exp(P.b * T) / P.a; }
+function yolkRate3(P, T) { return P.yolkA ? Math.exp(P.yolkB * T) / P.yolkA : eggRate3(P, T) / P.yolk; }
 const PIKE_JUV = (() => { const a = SP.pike.bio; return prepBio({ ...a, CA: a.CA * Math.pow(10, a.CB + 0.24), CB: -0.24, RQ: Math.log(2.5) / 10, RA: a.RA * Math.exp((a.RQ - Math.log(2.5) / 10) * 22.5), FA: 0.13, UA: 0.0805, SDA: 0.14, src: 'the young pickerel: Bevelhimer et al. 1985 below 10 g with the larval mass exponent (Wieser et al. 1992), Q10 (Woynárovich 1960) and losses (Schoenebeck et al. 2008)' }); })();
 const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER0.K.whiteperch, sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
@@ -994,6 +997,8 @@ class Yoy {
     this.L = 0; this.W = 0; this.bdep = 0; this.age = 0; this.g = null; this.genes = null; this.gen = 0; this.hue = 0;
     this.tk = 0; this.rO2 = 0; this.p = 0; this.cover = 0; this.guard = 0; this.gref = null; this.nx = 0; this.ny = 0;
     this.hd = 0; this.spotBed = 1;   // its cruise's heading, and the bed's depth at its feeding spot
+    this.dev = 2; this.eggT0 = 0; this.eggTm = 0; this.hadGuard = false;   // (E3, EGG3: its development on the bed — 0 → 1 the egg, 1 → 2 the yolk-sac larva, 2 swimming —, the water's
+    //   temperature it was laid in, its day's running mean there, and whether a guard ever kept it)
     this.bankG = 0; this.bankJ = 0; this._yb = -1; this._ya = 0;   // (stage Y1: young fish caught for its next tick, g and J; its prey-table bin and available n)
     this.near = false; this._t0 = 0; this._due = -1; this._out = false;   // (fidelity by distance, as the fish's; SHARDS: left its shard's water)
     this._px = 0; this._py = 0; this._pz = 0;   // RENDER-ONLY
@@ -1043,11 +1048,11 @@ export class Fish3 {
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { wild: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {} };
+    this.stats = { wild: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {}, eggs3: {} };
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
     for (const k of KEYS3) { this.stats.cross[k] = 0; this.stats.settle[k] = 0; this.stats.trips[k] = 0; this.stats.solo[k] = 0; }
-    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0, sub: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0, capped: 0 }; }   // (capped: past the census's room at recruitment, _recruit)
+    for (const k of KEYS3) { this.stats.eggs[k] = 0; this.stats.spawns[k] = 0; this.stats.recruits[k] = 0; this.stats.spawnAt[k] = { first: -1, bed: 0, brook: 0, sub: 0 }; this.stats.fry[k] = { hatched: 0, natural: 0, starve: 0, heat: 0, hypoxia: 0, eaten: 0, recruited: 0, capped: 0 }; this.stats.eggs3[k] = { laid: 0, swum: 0, base: 0, temp: 0, guard: 0, pred: 0, o2: 0, storm: 0 }; }   // (capped: past the census's room at recruitment, _recruit)
     this.yoy = [];      // the young-of-year schools (Yoy)
     this.soloL = Infinity; this._soloAt = budget ? 0 : Infinity;   // the length from which a schooling species' fish has a brain of its own (F3.AGENTS_HA); when last set (never: no budget)
     this.cnt = new Float64Array(KEYS3.length);   // fish per species this step (Σ n) — the recruitment cap
@@ -1403,11 +1408,11 @@ export class Fish3 {
       if (!(o1 > o0) || rand() > (sh(yf1) - sh(yf0)) / (1 - sh(yf0))) continue;
       const b = a.sex === 2 ? a : this._seedMate(a, used, spent, mates); if (!b) continue;
       const yfS = o0 + rand() * (o1 - o0), ago = (yf1 - yfS) * YEAR, [x, y] = this._seedGround(a), nz = Math.max(0.05, GEO.depthAt(x, y) - 0.03);
-      const females = a.sex === 2 ? a.n / 2 : 1, eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b), larvae = eggs * sp.sHatch * this._hatchMul(s, x, y);
-      this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
+      const females = a.sex === 2 ? a.n / 2 : 1, eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b), larvae = eggs * (EGG3.ON ? 1 : sp.sHatch) * this._hatchMul(s, x, y);
+      this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; if (EGG3.ON) this.stats.eggs3[s.key].laid += larvae; else this.stats.fry[s.key].hatched += larvae;
       const q = this._mkYoy(a.k, x, y, nz, larvae, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)), Math.max(a.gen, b.gen) + 1, (a.hue + b.hue) / 2);
       if (s.guard && b !== a && b.n === 1 && ago < s.guard) {   // (still on the nest: the male guards it — he is there)
-        b.nt = s.guard - ago; b.nx = x; b.ny = y; b.nz = nz; q.guard = b.id; q.gref = b; q.nx = x; q.ny = y;
+        b.nt = s.guard - ago; b.nx = x; b.ny = y; b.nz = nz; q.guard = b.id; q.gref = b; q.nx = x; q.ny = y; q.hadGuard = true;
         if (s.spawn.faith) { b.nestX = x; b.nestY = y; }
         b.x = b._px = x; b.y = b._py = y; b.bed = Math.max(0.05, GEO.depthAt(x, y)); b.z = b._pz = clamp(b.z, F3.ZTOP, Math.max(F3.ZTOP, b.bed - F3.ZBOT));
         if (this._mixOn) this._posAt(b, b._i);   // (a focus run's P outlives the step: kept current; otherwise the next step's hash rebuilds it)
@@ -1488,6 +1493,12 @@ export class Fish3 {
       juvD.fill(0); for (const [q, y0] of made) if (q.alive && y0 <= yf) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
       for (const [q, y0] of made) {
         if (!q.alive || y0 > yf) continue;
+        if (q.dev < 2) {   // (E3: a clutch laid before the lake opened — its development and its baseline and thermal deaths on the season's water)
+          const P = EGG3.sp[q.s.key], egg = q.dev < 1, r = egg ? eggRate3(P, T) : yolkRate3(P, T), hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? EGG3.YOLK_HATCH) * r, hT = EGG3.THERM_K * (Math.max(0, P.tl[0] - T) + Math.max(0, T - P.tl[1]));
+          const lost = q.n * -Math.expm1(-(hB + hT) * dd), t = this.stats.eggs3[q.s.key]; if (lost > 0) { t.base += lost * hB / (hB + hT); t.temp += lost * hT / (hB + hT); q.n -= lost; }
+          q.dev += r * dd; q.age += dd * DAY; if (q.dev >= 2) { q.dev = 2; this.stats.fry[q.s.key].hatched += q.n; t.swum += q.n; }
+          continue;
+        }
         const sp = q.s.sp, b = sp.bioJuv || sp.bio, d = sp.diet;
         const pS = F3.SEED_P[0] + (F3.SEED_P[1] - F3.SEED_P[0]) * clamp((yf - F3.SEED_P_YF[0]) / (F3.SEED_P_YF[1] - F3.SEED_P_YF[0]), 0, 1);
         const C = pS * coldCmax(sp.cold, b, sp.bio, q.W, T) * q.W * dd * (1 + ((q.s.cmaxL ?? FRY.CMAX_LARVA) - 1) * clamp((FRY.LARVA_CM[1] - q.L) / (FRY.LARVA_CM[1] - FRY.LARVA_CM[0]), 0, 1));
@@ -2404,13 +2415,13 @@ export class Fish3 {
     const E = SPAWN.EDGE, [lo, hi] = sp.spawnT, Tq = a.T, f = clamp((Tq - lo + E) / E, 0, 1) * clamp((hi + E - Tq) / E, 0, 1);
     if (!(f > 0) || rand() > 1 - Math.exp(-F3.SPAWN_RATE * f * dt)) return;
     const females = a.sex === 2 ? a.n / 2 : 1;
-    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / ((F3.EGG_SCHOOL ? s.gsi(a.sex) : sp.gsiF) * a.W), 0, 1), larvae = eggs * sp.sHatch * this._hatchMul(s, a.x, a.y);
-    this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; this.stats.fry[s.key].hatched += larvae;
+    const eggs = females * sp.fec.a * Math.pow(a.L, sp.fec.b) * clamp(a.gon / ((F3.EGG_SCHOOL ? s.gsi(a.sex) : sp.gsiF) * a.W), 0, 1), larvae = eggs * (EGG3.ON ? 1 : sp.sHatch) * this._hatchMul(s, a.x, a.y);
+    this.stats.eggs[s.key] += eggs; this.stats.spawns[s.key]++; if (EGG3.ON) this.stats.eggs3[s.key].laid += larvae; else this.stats.fry[s.key].hatched += larvae;
     const sa = this.stats.spawnAt[s.key]; if (sa.first < 0) sa.first = this.env.time; sa.bed += a.bed; if (GEO.bodyAt(a.x, a.y) === BROOK) sa.brook++;   // (when and over what water)
     const male = b === a ? null : b, nz = Math.max(0.05, a.bed - 0.03);
     const q = this._mkYoy(a.k, a.x, a.y, nz, larvae, mutate(crossover(a.g, b.g)), mutateGenes(crossoverGenes(a.genes, b.genes)), Math.max(a.gen, b.gen) + 1, (a.hue + b.hue) / 2);
     if (s.guard && male && male.n === 1) {   // the male keeps the nest; its fry stay by it while he does
-      male.nt = s.guard; male.nx = a.x; male.ny = a.y; male.nz = nz; q.guard = male.id; q.gref = male; q.nx = a.x; q.ny = a.y;
+      male.nt = s.guard; male.nx = a.x; male.ny = a.y; male.nz = nz; q.guard = male.id; q.gref = male; q.nx = a.x; q.ny = a.y; q.hadGuard = true;
       if (sb.faith) { male.nestX = a.x; male.nestY = a.y; }
     }
     a.gon = 0; a.mateCd = s.mateCd; a.ripe = false; a.lastSpawn = this.env.time;
@@ -2424,6 +2435,7 @@ export class Fish3 {
     q.hd = rand() * Math.PI * 2; q.spotBed = Math.max(0.12, GEO.depthAt(x, y));
     q.L = sp.Lhatch; q.W = stdWeight(sp.lw, q.L); q.g = g; q.genes = genes; q.gen = gen; q.hue = hue; q.tk = rand() * F3.YOY_TICK;
     q.bdep = q.L * sp.depthR; q.bed = Math.max(0.05, GEO.depthAt(x, y));
+    if (EGG3.ON && EGG3.sp[s.key]) { q.dev = 0; q.eggT0 = q.eggTm = this.env.tempAt(x, y, z); }   // (E3: laid as eggs)
     this.yoy.push(q);
     if (this._yMixOn) { q._t0 = this.time; this._ysched(q, this._ynb); }   // (with a focus: a far school until the region next finds it near)
     return q;
@@ -2451,7 +2463,7 @@ export class Fish3 {
     }
     T.av.fill(0); T.sB.fill(0); T.sL.fill(0); T.sW.fill(0); T.sD.fill(0); T.req.fill(0); T.reqY.fill(0); T.got.fill(0); T.rec.length = 0;
     for (const q of this.yoy) {
-      q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0)) continue;
+      q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0) || q.dev < 2) continue;   // (E3: the eggs are no strike's prey)
       const held = q.gref && q.gref.alive && q.gref.nt > 0, a = q.n * (1 - q.cover) * (held ? 1 - BROOD.PROTECT : 1); if (!(a > 0)) continue;
       const s = Math.min(NS - 1, Math.max(0, Math.floor(Math.log2(q.L / 0.5)))), b = ((q.c * NK + q.k) * NS + s) * ND + yDC(q.bed);   // (F3.YDEPTH: by its bed's depth too)
       T.av[b] += a; T.sB[b] += a * q.bed; T.sL[b] += a * q.L; T.sW[b] += a * q.W; T.sD[b] += a * q.bdep; q._yb = b; q._ya = a;
@@ -2582,15 +2594,37 @@ export class Fish3 {
     const juvD = this._juvDens();
     for (const q of Y) if (q.alive) this._yoyLive(q, dt, mv, yf, juvD);
   }
+  // (E3) THE EGGS AND THE YOLK-SAC LARVAE ON THE BED (config EGG3): they develop on the water's temperature at the bed — dev 0 → 1 the
+  // egg, 1 → 2 the yolk — and die by cause; a guard deserts in the cold; at dev 2 the school swims up (at Lhatch, as before)
+  _eggLive(q, dt) {
+    const e = this.env, E = EGG3, P = E.sp[q.s.key], k = q.s.key; if (!P) { q.dev = 2; return; }
+    const c = e.colAt(q.x, q.y); if (c < 0) { q.alive = false; return; }
+    const j = e.cellAt(q.x, q.y, q.z); q.c = c; q.j = j; q.jb = this.bedCell(c, q.bed); q.age += dt;
+    const T = e.temp[j], o2 = this.chem.o2[j] * ENV.O2_MGL, d = dt / DAY; q.eggTm += (T - q.eggTm) * -Math.expm1(-d);   // (the day's running mean: not the night's dip)
+    if (q.age < DAY) q.eggT0 = q.eggTm;   // (the laying temperature: the first day's mean, not the afternoon it was laid in)
+    const Tm = q.eggTm; if (P.guard && q.gref && q.gref.alive && q.gref.nt > 0 && (Tm <= E.DESERT_T || (P.desertDrop && Tm <= q.eggT0 - E.DESERT_DROP))) { q.gref.nt = 0; this.stats.eggs3[k].leftCold = (this.stats.eggs3[k].leftCold || 0) + 1; }   // (deserted in the cold)
+    const guarded = q.gref && q.gref.alive && q.gref.nt > 0; if (!guarded) { if (q.gref) { const t = this.stats.eggs3[k], w = q.gref.alive ? "leftThin" : "guardDied"; t[w] = (t[w] || 0) + 1; } q.gref = null; q.guard = 0; }
+    else if (q.gref.nt < 2 * dt) q.gref.nt = 2 * dt;   // (a guard keeps its brood through hatching and the yolk — to swim-up; its nestGuard time is the fry's after)
+    const egg = q.dev < 1, rate = egg ? eggRate3(P, T) : yolkRate3(P, T);   // (development a day)
+    const hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? E.YOLK_HATCH) * rate, hT = E.THERM_K * (Math.max(0, P.tl[0] - Tm) + Math.max(0, Tm - P.tl[1]));
+    const hG = P.guard && q.hadGuard && !guarded ? E.UNGUARDED : 0, hP = egg && P.pred > 0 ? -Math.log(1 - P.pred) * rate : 0;
+    const hO = o2 < P.o2 ? E.O2_K * (1 - o2 / P.o2) : 0, hS = e.weather === 3 && q.bed < E.STORM_Z ? E.STORM_D : 0, h = hB + hT + hG + hP + hO + hS;
+    const lost = q.n * -Math.expm1(-h * d);
+    if (lost > 0) { const t = this.stats.eggs3[k], f = lost / h; t.base += hB * f; t.temp += hT * f; t.guard += hG * f; t.pred += hP * f; t.o2 += hO * f; t.storm += hS * f; this.chem.addSedOM(q.jb, lost * q.W); q.n -= lost; }
+    q.dev += rate * d;
+    if (q.n < 1) { q.alive = false; return; }
+    if (q.dev >= 2) { q.dev = 2; this.stats.fry[k].hatched += q.n; this.stats.eggs3[k].swum += q.n; }   // (swim-up: the young's fates count from here)
+  }
   // the young's density per lake m² by species (their juvenile mortality's compensation)
   _juvDens() {
     const juvD = this._juvD || (this._juvD = new Float64Array(KEYS3.length)); juvD.fill(0);
-    for (const q of this.yoy) if (q.alive) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
+    for (const q of this.yoy) if (q.alive && q.dev >= 2) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
     if (this.shard) { this.juvOwn = Float64Array.from(juvD); if (this.juvOther) for (let k = 0; k < juvD.length; k++) juvD[k] += this.juvOther[k]; }   // (SHARDS: the lakes' young, the others' too)
     return juvD;
   }
   // ONE SCHOOL OF YOUNG'S STEP: dt s of its life (mv of its swimming: a coarse block's cruise when mv > FINE_MAX)
   _yoyLive(q, dt, mv, yf, juvD) {
+    if (q.dev < 2) return this._eggLive(q, dt);   // (E3: on the bed until swim-up)
     const e = this.env, ch = this.chem, G = this.G, s = q.s, sp = s.sp;
     q.age += dt; q.tk += dt;
     const held = q.gref && q.gref.alive && q.gref.nt > 0;
@@ -2818,10 +2852,10 @@ export class Fish3 {
     const Y = this._yoyList; if (!Y || Y.length < 2) return;
     const S = this.yStart, I = this.yItems, R2 = F3.YOY_MERGE_R ** 2;
     for (let i = 0; i < Y.length; i++) {
-      const a = Y[i]; if (!a.alive || a.gref) continue;
+      const a = Y[i]; if (!a.alive || a.gref || a.dev < 2) continue;
       const hc = this._hc(a.x, a.y);
       for (let k = S[hc]; k < S[hc + 1]; k++) {
-        const b = Y[I[k]]; if (b === a || !b.alive || b.gref || b.k !== a.k) continue;
+        const b = Y[I[k]]; if (b === a || !b.alive || b.gref || b.k !== a.k || b.dev < 2) continue;
         if ((b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2 > R2) continue;
         if ((a.L > b.L ? a.L / b.L : b.L / a.L) > 1.25) continue;
         const tot = a.n + b.n, wb = b.n / tot;
@@ -2906,7 +2940,7 @@ export class Fish3 {
     const D = this.wildDemand(); if (!D.some(v => v > 0)) return;
     for (const a of this.fish) { if (!a.alive || a.c < 0) continue; const ic = ice[a.c];
       for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], a.s.key, a.L, a.z, a.bed, a.cover, ic); if (v > 0) A[w] += v * a.W * a.n; } }
-    for (const q of this.yoy) { if (!q.alive || q.c < 0) continue; const ic = ice[q.c];
+    for (const q of this.yoy) { if (!q.alive || q.c < 0 || q.dev < 2) continue; const ic = ice[q.c];
       for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], q.s.key, q.L, q.z, q.bed, q.cover, ic); if (v > 0) A[w] += v * q.W * q.n; } }
     for (let w = 0; w < WILDK.length; w++) if (D[w] > 0 && A[w] > 0) R[w] = D[w] / (A[w] + D[w] * DAY);   // (K: a day's need)
   }
@@ -2966,8 +3000,8 @@ export class Fish3 {
   biomass(k) { let w = 0; for (const a of this.fish) if (a.alive && (k === undefined || a.s.key === k)) w += a.n * a.W; return w; }   // g
   census() {
     const out = {};
-    for (const k of KEYS3) out[k] = { n: 0, agents: 0, g: 0, L: 0, cons: 0, consMax: 0, mature: 0, yoyN: 0, yoySchools: 0, yoyG: 0, yoyL: 0 };
-    for (const q of this.yoy) { if (!q.alive) continue; const r = out[q.s.key]; r.yoyN += q.n; r.yoySchools++; r.yoyG += q.n * q.W; r.yoyL += q.n * q.L; }
+    for (const k of KEYS3) out[k] = { n: 0, agents: 0, g: 0, L: 0, cons: 0, consMax: 0, mature: 0, yoyN: 0, yoySchools: 0, yoyG: 0, yoyL: 0, eggN: 0 };
+    for (const q of this.yoy) { if (!q.alive) continue; const r = out[q.s.key]; if (q.dev < 2) { r.eggN += q.n; continue; } r.yoyN += q.n; r.yoySchools++; r.yoyG += q.n * q.W; r.yoyL += q.n * q.L; }
     for (const a of this.fish) {
       if (!a.alive) continue; const r = out[a.s.key];
       r.n += a.n; r.agents++; r.g += a.n * a.W; r.L += a.n * a.L; r.cons += a.n * a.cons; r.consMax += a.n * a.consMax; if (a.mature) r.mature += a.n;

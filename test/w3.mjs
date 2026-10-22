@@ -1188,6 +1188,24 @@ if (run('substrate')) {
       `${(100 * t40).toFixed(1)} % / ${(100 * t40s).toFixed(1)} %; 1 March: ${(100 * h).toFixed(0)} cm of ice, ${(100 * f.iceSnow / W.SNOW_RHO).toFixed(0)} cm of snow, ${(100 * tM).toFixed(2)} % through; after the thaw the cover ${cover.toFixed(2)}`); }
 }
 
+// ============================================================
+//  E3 — THE EGG STAGE (config EGG3): clutches on the bed develop on its temperature and die by cause before they swim up
+// ============================================================
+if (run('eggs')) {
+  console.log('\n— E3: the egg stage —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js'); const C = await import('../src/config.js');
+  const E = C.EGG3.sp, wp = E.whiteperch, pk = E.pike, bs = E.bass, Dwp = wp.a * Math.exp(-wp.b * 15), Dpk = pk.a * Math.exp(-pk.b * 14.4), Dbs = bs.a / (12.8 - bs.t0);
+  check('E3: the incubation equations as their sources — white perch 3.5 d at 15 °C (Margulies 1989), pickerel ~5 d at 14.4 °C, smallmouth ~10 d at 12.8 °C (Webster 1948)',
+    Math.abs(Dwp - 3.5) < 0.1 && Math.abs(Dpk - 4.7) < 0.8 && Math.abs(Dbs - 10) < 0.5, `${Dwp.toFixed(2)} / ${Dpk.toFixed(2)} / ${Dbs.toFixed(2)} days`);
+  // (a month from late April on the 1/10 lakes, the package and the eggs on: clutches laid and swum up, white perch's hatch in the field's range,
+  // the eggs no strike's prey while they lie on the bed)
+  { fm.stageR5(true); C.EGG3.ON = 1; seed(611); const e = new Env3({ yf0: 0.18 }), F = new fm.Fish3(e, { young: true }); let inTable = 0;
+    for (let b = 0; b < 30 * 49; b++) { F.step(FB); e.step(FB); if (b % 98 === 0) for (const q of F.yoy) if (q.alive && q.dev < 2 && q._yb >= 0) inTable++; }
+    const t = F.stats.eggs3, laid = Object.values(t).reduce((s, v) => s + v.laid, 0), swum = Object.values(t).reduce((s, v) => s + v.swum, 0), wph = t.whiteperch.swum / Math.max(1, t.whiteperch.laid);
+    C.EGG3.ON = 0; fm.stageR5(false);
+    check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 40–85 % to swim-up (hatch ~60–80 % at 13–17 °C, Margulies); no clutch in the strikes' prey table while on the bed",
+      laid > 0 && swum > 0 && wph > 0.4 && wph < 0.85 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
+}
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

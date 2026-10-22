@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT — THE NEWEST). THE ECOSYSTEM BUILD (docs/review/ECOSYSTEM_BUILD.md; the human: build everything,
+▶▶▶ RESUME HERE (2026-10-21 ~9:45 p.m. EDT — THE NEWEST; the clock is EDT 9 p.m., not 11). COMMITTED 9ed1d21 (the ecosystem build slice 1:
+E1a/E2a/E2b/E9a/E9b/E9c/E10a/E4-on/E13 — below); its REMOTE GATE RUNNING (scratchpad/gate_eco1.txt; 0 FAIL so far). SINCE 9ed1d21:
+  • RESALG.DECAY_MUL 0.6 → 1.0 (big cells lose at least as fast: the resistant share 92 % → 84–86 %, field IQR 28–85 %; Daphnia 27–48 µg/L
+    midsummer in the 1/10 probe, bacteria 38–51, rotifers 1.4–2.9 — scratchpad/probe/e2r_d10.txt).
+  • E3 THE EGG STAGE ON THE CPU (config EGG3, ON 0 — NOT in stageR5 until the GPU twin): Yoy.dev 0→1 egg → 2 yolk-sac → swim-up, on the
+    bed's temperature (Table A's equations); hazards base/temp(day-mean)/unguarded(deserted only)/pred/O₂/storm, stats.eggs3 by cause +
+    guard-loss reasons; guards kept to swim-up; desertion by the day's mean ≤ 10.6 °C (and bass ≥ 2 °C below the first day's mean); bass
+    sac-fry 0.33 (Clady/Waugoshance 28 % in-nest); founding clutches aged in _spinYoy; eggs excluded from the prey table, the wildlife's
+    reach, merging, juvenile density; census eggN. test/w3.mjs 'eggs' 2/2. Probe (scratchpad/probe/eggs.mjs, 40 d from yf 0.18): perch
+    53 % swum (cold spell), sucker 71, white perch 60, pickerel 23, fallfish 58, dace 33, bass 15 + on the bed (~60 % nest success), sunfish
+    26 + on the bed, killifish eggs die below 17 °C.
+  NEXT: the GPU twin of E3 (Y fields dev/eggT0/eggTm/hadGuard; packYoy/readYoy; b_spawnFill → eggs; y_* skip dev < 2; an egg kernel with
+  the hazards + guard keep/desert writing A_nt; tallies; year.js), then EGG3.ON in stageR5; an arm of the whole package (3 seeds).
+▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT). THE ECOSYSTEM BUILD (docs/review/ECOSYSTEM_BUILD.md; the human: build everything,
 weather explicitly; bears, deer and moose added → E13). COMMITTED: ccf7191 E4's GPU mirror (gate GREEN 42.9 min); b68b156 egg-stage note;
 8924d41 Daphnia-limits note (EPA NLA analogues) + FINDINGS. UNCOMMITTED, all in stageR5 and passing W3_ONLY=substrate (20/20) — COMMIT after
 the full w3 + the remote gate:
