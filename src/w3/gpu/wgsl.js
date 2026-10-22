@@ -1770,14 +1770,14 @@ fn fryR(L: f32) -> f32 { return PLANKTON_FRY_ROT_MIN + (1.0 - PLANKTON_FRY_ROT_M
 // weight in the count response — without ZOO3.SMALL the old ladder on one K_FRY
 struct YZ { c: vec4f, u: vec4f };
 fn yRamp(x: f32, a: f32, b: f32) -> f32 { return clamp((x - a) / (b - a), 0.0, 1.0); }
-fn yZoo(L: f32) -> YZ {
+fn yZoo(L: f32, dK: f32) -> YZ {   // (dK: the adult-Daphnia rung's length scale — S3 zooLadderK)
   let K = PLANKTON_K_FRY; let cR = fryR(L); var o: YZ;
   if (ZOO3_SMALL < 0.5) { o.c = vec4f(fryD(L), PLANKTON_FRY_COPE, cR, 0.0); o.u = o.c / K; return o; }
   let nS = naupShare(U.yf); let cN = ZOO3_NAUP_MIN + (ZOO3_NAUP_C - ZOO3_NAUP_MIN) * (1.0 - yRamp(L, ZOO3_NAUP_L_0, ZOO3_NAUP_L_1));
   let cCa = ZOO3_COP_MIN + (1.0 - ZOO3_COPE_ESCAPE - ZOO3_COP_MIN) * yRamp(L, ZOO3_COP_L_0, ZOO3_COP_L_1);
   let cS = ZOO3_S_MIN + (1.0 - ZOO3_S_MIN) * yRamp(L, ZOO3_S_L_0, ZOO3_S_L_1);
   let kR = ZOO3_K_ROT * pow(K / ZOO3_K_ROT, yRamp(L, PLANKTON_FRY_ROT_L_0, PLANKTON_FRY_ROT_L_1)); let kN = ZOO3_K_NAUP * pow(K / ZOO3_K_NAUP, yRamp(L, ZOO3_NAUP_L_0, ZOO3_NAUP_L_1));
-  o.c = vec4f(ZOO3_D_JUV * cS + (1.0 - ZOO3_D_JUV) * (ZOO3_D_MIN + (1.0 - ZOO3_D_MIN) * yRamp(L, ZOO3_D_L_0, ZOO3_D_L_1)), nS * cN + (1.0 - nS) * cCa, cR, cS);
+  o.c = vec4f(ZOO3_D_JUV * cS + (1.0 - ZOO3_D_JUV) * (ZOO3_D_MIN + (1.0 - ZOO3_D_MIN) * yRamp(L * dK, ZOO3_D_L_0, ZOO3_D_L_1)), nS * cN + (1.0 - nS) * cCa, cR, cS);
   o.u = vec4f(o.c.x / K, nS * cN / kN + (1.0 - nS) * cCa / K, cR / kR, cS / K);
   return o;
 }
@@ -1823,7 +1823,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let base = want - got;
   // zooplankton of its size by class (E2c/E2d: chem3 zooFeedYoy — the multi-prey disc equation on X = Σ u·density), each cell seen by its
   // own light; its footprint its layer ± one and the ring at its layer
-  let yz = yZoo(L * spv(k, S_zooK)); let j0 = cell0(c); let k0 = j - j0;
+  let yz = yZoo(L, spv(k, S_zooK)); let j0 = cell0(c); let k0 = j - j0;
   var gZ = vec4f(0.0); var sw = 0.0;
   if (canZ) {
     let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
@@ -2079,7 +2079,7 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     if (bc >= 0) { if (u32(bc) != c) { tx = colX(u32(bc)); ty = colY(u32(bc)); } tz = max(0.05, select(stf(O_wDepthMean + u32(bc)), bed, u32(bc) == c) - 0.05); done = true; }
   }
   if (!done) {
-    let yz = yZoo(L * spv(k, S_zooK)); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
+    let yz = yZoo(L, spv(k, S_zooK)); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
     var best = -1.0; var bj = -1; let k0 = min(nL(c) - 1u, u32(max(0, i32(z / WDZ))));
     let cv0 = yCov(k, c);
     for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; } let E = zooElY(jj, yz.u) * cv0; if (E > best) { best = E; bj = i32(jj); } }

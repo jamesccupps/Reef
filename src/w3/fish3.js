@@ -551,13 +551,13 @@ const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared 
 // (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
 // rotifers, small cladocerans), u its weight in the count response (catch / the class's half-saturation; the copepods' nauplii at K_NAUP, the
 // rest at K_FRY) — chem3 zooFeedYoy. Without SMALL the old ladder on one K_FRY (u = c / K_FRY: the old type II exactly)
-export function yZoo(L, yf, c, u) {
+export function yZoo(L, yf, c, u, dK = 1) {   // (dK: the length scale of its adult-Daphnia rung — S3 zooLadderK)
   const P = PLANKTON, Z = ZOO3, K = P.K_FRY, ramp = (x, a) => clamp((x - a[0]) / (a[1] - a[0]), 0, 1);
   const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
   if (!Z.SMALL) { c[0] = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1); c[1] = P.FRY_COPE; c[2] = cR; c[3] = 0; for (let i = 0; i < 4; i++) u[i] = c[i] / K; return; }
   const nS = naupShare(yf), cN = Z.NAUP_MIN + (Z.NAUP_C - Z.NAUP_MIN) * (1 - ramp(L, Z.NAUP_L)), cCa = Z.COP_MIN + (1 - Z.COPE_ESCAPE - Z.COP_MIN) * ramp(L, Z.COP_L);
   const cS = Z.S_MIN + (1 - Z.S_MIN) * ramp(L, Z.S_L), kR = Z.K_ROT * Math.pow(K / Z.K_ROT, ramp(L, P.FRY_ROT_L)), kN = Z.K_NAUP * Math.pow(K / Z.K_NAUP, ramp(L, Z.NAUP_L));
-  c[0] = Z.D_JUV * cS + (1 - Z.D_JUV) * (Z.D_MIN + (1 - Z.D_MIN) * ramp(L, Z.D_L)); c[1] = nS * cN + (1 - nS) * cCa; c[2] = cR; c[3] = cS;
+  c[0] = Z.D_JUV * cS + (1 - Z.D_JUV) * (Z.D_MIN + (1 - Z.D_MIN) * ramp(L * dK, Z.D_L)); c[1] = nS * cN + (1 - nS) * cCa; c[2] = cR; c[3] = cS;
   u[0] = c[0] / K; u[1] = nS * cN / kN + (1 - nS) * cCa / K; u[2] = cR / kR; u[3] = cS / K;
 }
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
@@ -2775,7 +2775,7 @@ export class Fish3 {
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
     // zooplankton of a larva's size (rotifers and nauplii while small; the limnetic phase over open water for sunfish fry)
-    const zc = this._ytc || (this._ytc = new Float64Array(4)), zu = this._ytu || (this._ytu = new Float64Array(4)); yZoo(q.L * (q.s.zooLadderK ?? 1), this.env.yearFrac(), zc, zu);
+    const zc = this._ytc || (this._ytc = new Float64Array(4)), zu = this._ytu || (this._ytu = new Float64Array(4)); yZoo(q.L, this.env.yearFrac(), zc, zu, q.s.zooLadderK ?? 1);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
     const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc) || (F3.YO2_MARGIN > 0 && ch.o2[jj] < o2m)) return; const E = ch.zooElY(jj, zu) * cov(cc); if (E > best) { best = E; bj = jj; } };
@@ -2816,7 +2816,7 @@ export class Fish3 {
     const nbY = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0;
     if (canB) { if (q.jb >= 0) BL[nB++] = q.jb; for (let i = 0; i < nbY.length && nB < BL.length; i++) { const jb = this.colBedJ[nbY[i]]; if (jb >= 0) BL[nB++] = jb; } }
     let tZ = 1, tW = 1, tB = 1;
-    const zc = this._yfc || (this._yfc = new Float64Array(4)), zu = this._yfu || (this._yfu = new Float64Array(4)); if (canZ) yZoo(q.L * (q.s.zooLadderK ?? 1), this.env.yearFrac(), zc, zu);   // (E2c/E2d: its zooplankton ladder)
+    const zc = this._yfc || (this._yfc = new Float64Array(4)), zu = this._yfu || (this._yfu = new Float64Array(4)); if (canZ) yZoo(q.L, this.env.yearFrac(), zc, zu, q.s.zooLadderK ?? 1);   // (E2c/E2d: its zooplankton ladder)
     if (F3.YSHARE && base > 1e-12) {
       let fZ = 0, fW = 0, fB = 0;
       if (canZ) { const YL = this._ylyshare || (this._ylyshare = new Int32Array(64)); const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0; let nY = 0;
