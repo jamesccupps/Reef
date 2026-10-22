@@ -307,6 +307,7 @@ fn matureAt(i: u32, k: u32) -> bool {
 fn ripeNow(i: u32, k: u32, fl: u32, ice: f32, Ts: f32, nt: f32) -> bool {   // fish3 _ripe
   if ((fl & FL_MATURE) == 0u || ga(A_mateCd, i) > 0.0 || nt > 0.0 || U.yf >= select(SPAWN_SEASON_END, spv(k, S_spawnEnd), spv(k, S_spawnEnd) > 0.0) || ice >= 0.5) { return false; }   // (S3 spawnEnd)
   if (ga(A_gon, i) < SPAWN_GON_READY * gsiOf(k, gau(A_sex, i)) * ga(A_W, i) || ga(A_K, i) < SPAWN_K_READY) { return false; }
+  if (spv(k, S_spawnP) > 0.0 && f32((gau(A_id, i) * 2654435761u) ^ (u32(U.yr + 7) * 40503u)) / 4294967296.0 >= spv(k, S_spawnP)) { return false; }   // (E3b S3 spawnP: fish3 _ripe's draw)
   return Ts >= spv(k, S_spawnT0) - F3_SPAWN_LEAD && Ts <= spv(k, S_spawnT1) + SPAWN_EDGE;
 }
 fn subAt(u: u32, x: f32, y: f32) -> f32 {   // fish3 _subAt: the spawning-structure index under (x, y)
@@ -1633,7 +1634,7 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
 @compute @workgroup_size(256) fn y_table(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
   syi(Y_yb, q, -1); sy(Y_ya, q, 0.0);
-  if (FRY_DENSITY < 0.5 || !yAlive(q) || gy(Y_dev, q) < 2.0) { return; }   // (E3: the eggs are no strike's prey)
+  if (FRY_DENSITY < 0.5 || !yAlive(q) || gy(Y_dev, q) < select(2.0, 1.0, EGG3_PROLARVA > 0.5)) { return; }   // (E3: the eggs are no strike's prey; E3b: the yolk-sac larvae are)
   let c = gyi(Y_c, q); let n = gy(Y_n, q); if (c < 0 || !(n > 0.0)) { return; }
   var held = false; let gr = gyi(Y_gref, q); if (gr >= 0) { let gi = u32(gr); held = (gau(A_flags, gi) & FL_ALIVE) != 0u && gau(A_id, gi) == gyu(Y_guard, q) && ga(A_nt, gi) > 0.0; }
   let a = n * (1.0 - gy(Y_cover, q)) * select(1.0, 1.0 - BROOD_PROTECT, held); if (!(a > 0.0)) { return; }
@@ -1715,7 +1716,7 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
   else { t = rdAcc(AC_YT + 2u * q, KW); }
   if (!(t > 0.0)) { return; }
   let n = gy(Y_n, q) - t; sy(Y_n, q, n); sy(Y_eaten, q, gy(Y_eaten, q) + t);
-  add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE);
+  if (gy(Y_dev, q) < 2.0) { add64(&TL, T_EGG3 + 2u * (gyu(Y_k, q) * 8u + 5u), t, TSCALE); } else { add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE); }   // (E3b: a prolarva eaten is the egg stage's)
   if (n < 1.0) { yDie(q); }
 }
 // ---- the young's density per lake m² by species (their juvenile mortality's compensation: fish3 _juvDens) ----
@@ -1989,7 +1990,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   if (FRY_DENSITY > 0.5) { let b = gyi(Y_yb, q); if (b < 0) { return; } let got = rdAcc(AC_BGOTY + 2u * u32(b), BSC); if (!(got > 0.0)) { return; } t = min(gy(Y_n, q), gy(Y_ya, q) / rdAcc(AC_BAV + 2u * u32(b), BSC) * got); }   // (stage Y1: its share of its bin's take by the young schools)
   else { t = rdAcc(AC_YPT + 2u * q, KW); }
   if (!(t > 0.0)) { return; }
-  let n = gy(Y_n, q) - t; sy(Y_n, q, n); add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE);
+  let n = gy(Y_n, q) - t; sy(Y_n, q, n); if (gy(Y_dev, q) < 2.0) { add64(&TL, T_EGG3 + 2u * (gyu(Y_k, q) * 8u + 5u), t, TSCALE); } else { add64(&TL, T_FRY + 2u * (gyu(Y_k, q) * NFRY + FRY_EATEN), t, TSCALE); }
   if (n < 1.0) { yDie(q); }
 }
 // ---- the tick's breath and deaths (fish3 _yoyLive): the larval critical period (∝ 1/length, fading by ~3 cm), the juveniles'
@@ -2018,7 +2019,7 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
     else { guarded = true; if (ga(A_nt, gi) < 2.0 * dt) { sa(A_nt, gi, 2.0 * dt); } } } }   // (kept to swim-up)
   if (!guarded) { syi(Y_gref, q, -1); syu(Y_guard, q, 0u); }
   let egg = gy(Y_dev, q) < 1.0; let rate = select(yolkRate(k, T), eggRate(k, T), egg);
-  let hB = -log(select(spv(k, S_eYH), spv(k, S_eHatch), egg)) * rate; let hT = EGG3_THERM_K * (max(0.0, spv(k, S_eTl0) - Tm) + max(0.0, Tm - spv(k, S_eTl1)));
+  let hB = -log(select(spv(k, S_eYH), spv(k, S_eHatch), egg)) * rate; let hT = EGG3_THERM_K * (max(0.0, select(spv(k, S_eYtl0), spv(k, S_eTl0), egg) - Tm) + max(0.0, Tm - spv(k, S_eTl1)));   // (E3b eYtl0: the yolk-sac's own cold limit)
   let hG = select(0.0, EGG3_UNGUARDED, spv(k, S_eGuard) > 0.5 && gy(Y_hadGuard, q) > 0.5 && !guarded); let hP = select(0.0, -log(1.0 - spv(k, S_ePred)) * rate, egg && spv(k, S_ePred) > 0.0);
   let hO = select(0.0, EGG3_O2_K * (1.0 - o2 / spv(k, S_eO2)), o2 < spv(k, S_eO2)); let hS = select(0.0, EGG3_STORM_D, U.wx > 2.5 && gy(Y_bed, q) < EGG3_STORM_Z);
   let h = hB + hT + hG + hP + hO + hS; let n = gy(Y_n, q); let lost = n * expm(h * d);

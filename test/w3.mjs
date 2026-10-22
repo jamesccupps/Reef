@@ -305,7 +305,8 @@ if (run('core')) {
   // the lakes' fish biomass inside Maine's range
   { seed(501); const e = new Env3({ col: 10 * CS }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
-    for (const k of KEYS3.filter(k => !S3[k].run)) { const r = c[k], d = Math.abs((S3[k].brookRes ?   // (S3 run: the sea-run alewife, founded by none — E8) r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
+    // (S3 run: the sea-run alewife, founded by none — E8)
+    for (const k of KEYS3.filter(k => !S3[k].run)) { const r = c[k], d = Math.abs((S3[k].brookRes ? r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
     const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
     // (the agents: within the budget — F3.AGENTS_HA a hectare of lake, the brook's dace aside — with the founders' solitary fish
     // all individuals; or, if the solitary fish alone exceed it, no schooling fish given its own brain)
@@ -1255,11 +1256,11 @@ if (run('eggs')) {
   // (a month from late April on the 1/10 lakes, the package and the eggs on: clutches laid and swum up, white perch's hatch in the field's range,
   // the eggs no strike's prey while they lie on the bed)
   { fm.stageR5(true); C.EGG3.ON = 1; seed(611); const e = new Env3({ yf0: 0.18 }), F = new fm.Fish3(e, { young: true }); let inTable = 0;
-    for (let b = 0; b < 30 * 49; b++) { F.step(FB); e.step(FB); if (b % 98 === 0) for (const q of F.yoy) if (q.alive && q.dev < 2 && q._yb >= 0) inTable++; }
+    for (let b = 0; b < 30 * 49; b++) { F.step(FB); e.step(FB); if (b % 98 === 0) for (const q of F.yoy) if (q.alive && q.dev < 1 && q._yb >= 0) inTable++; }
     const t = F.stats.eggs3, laid = Object.values(t).reduce((s, v) => s + v.laid, 0), swum = Object.values(t).reduce((s, v) => s + v.swum, 0), wph = t.whiteperch.swum / Math.max(1, t.whiteperch.laid);
     C.EGG3.ON = 0; fm.stageR5(false);
-    check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 40–85 % to swim-up (hatch ~60–80 % at 13–17 °C, Margulies); no clutch in the strikes' prey table while on the bed",
-      laid > 0 && swum > 0 && wph > 0.4 && wph < 0.85 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
+    check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 8–40 % to swim-up (the field's: unguarded demersal eggs 0.3–0.6 to hatch, 0.25–0.65 on to first feeding — egg_survival_and_larval_production.md §3.2; Margulies' lab hatch ~60–80 %); no egg in the strikes' prey table (the yolk-sac larvae are — E3b)",
+      laid > 0 && swum > 0 && wph > 0.08 && wph < 0.4 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
 }
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }

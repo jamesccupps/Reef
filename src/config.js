@@ -260,6 +260,7 @@ export const FRY = {
   // the note's §3.1 table) × its sight (visual — S3 larvNight: the alewife feeds on them at night too) and cold. Replaces CLEAR_A·L^0.6 ×
   // LARV_A — 3–60× too small, fitted down when '0.3 took 41 % of the suckers' hatch' (its §3.4 check: Z_fish 0.12–0.16 /d at the sim's
   // predators, the field's 0.035–0.27)
+  SPIN_SIGHT: 0.45,   // (the founding spin's mean sight × cold for the larva-pickers — probe larvdiag's 0.41–0.47 for perch and white perch)
   LARV2: 0, LARV_RHO: 0.15, LARV_CMAX: [3.42e-7, 2.94], LARV_R: [0.03, 0.08, 0.30], LARV_DET: [0.5, 0.8, 0.6], LARV_COLOUR: 0.8,
   LARV_A: 0.1,         // × a plankton or insect eater's clearance for the larvae it fits (≤ LARVA_L, ≤ ⅓ its length) — it meets
                        //   them while it feeds on the zooplankton, not searching for fish [inf; calibrated on the year's fates — at 0.3
@@ -474,12 +475,13 @@ export function seasonalTemp(yf) {
 export const EGG3 = {
   ON: 0,                   // on in fish3 stageR5
   sp: {
-    perch:      { form: 'kam', a: 116.4, t0: 4.9, yolk: 0.45, hatch: 0.95, tl: [6.8, 19.9], pred: 0, o2: 3.5 },   // (Guma'a 1978 97/(T−4.9) × 1.2: yellow perch ~20 % slower, Linkenheld 2019)
-    whiteperch: { form: 'exp', a: 28.62, b: 0.1402, yolkA: 72.72, yolkB: 0.1863, hatch: 0.8, tl: [10, 21], pred: 0.2, o2: 3 },   // (Margulies 1989: 686.99·e^(−0.1402T) h; yolk 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C; broadcast — eaten by perch [inf 0.2])
+    perch:      { form: 'kam', a: 116.4, t0: 4.9, yolk: 0.45, hatch: 0.95, tl: [6.8, 19.9], pred: 0, o2: 3.5, ytl0: 10 },   // (E3b ytl0: the yolk-sac larvae die below ~10 °C — Clady; Karås: egg_survival_and_larval_production.md §3.1; field egg → hatch 0.92–0.99 kept)   // (Guma'a 1978 97/(T−4.9) × 1.2: yellow perch ~20 % slower, Linkenheld 2019)
+    whiteperch: { form: 'exp', a: 28.62, b: 0.1402, yolkA: 72.72, yolkB: 0.1863, hatch: 0.45,   // (E3b: unguarded demersal eggs on a lake's bed ~0.3–0.6 — walleye 0.07 /d on gravel to 0.25 on muck, lakeshore smelt 1.1 % — not Margulies's lab 0.8 [inf]: §3.2)
+      tl: [10, 21], pred: 0.2, o2: 3 },   // (Margulies 1989: 686.99·e^(−0.1402T) h; yolk 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C; broadcast — eaten by perch [inf 0.2])
     bass:       { form: 'kam', a: 32.2, t0: 9.6, yolk: 2.25, hatch: 0.85, tl: [12, 26], pred: 0, o2: 2.5, guard: 1, desertDrop: 1, yolkHatch: 0.33 },   // (yolkHatch: inside successful nests egg → black fry ~28 % — 2,054 of 7,437, Waugoshance; 26–33 %, Clady 1975 — over the 0.85 hatch)
       // (fit to Webster 1948; 80–92 % in benign guarded nests; swim-up ~2–2.5 × the egg's time)
     pike:       { form: 'exp', a: 86.7, b: 0.203, yolk: 0.8, hatch: 0.6, tl: [6.9, 19.2], pred: 0.1, o2: 3.5 },   // (chain pickerel: fit to Underhill/Jones; pike hatch 56–66 % at 6–10 °C; Hokanson's TL50s; ~10 % eaten, Kendall)
-    sucker:     { form: 'exp', a: 200, b: 0.232, yolk: 0.5, hatch: 0.9, tl: [6.2, 24], pred: 0, o2: 4 },   // (Stewart 1926: 21 d at 10.3 °C; > 90 % fertilised; no predation detected)
+    sucker:     { form: 'exp', a: 200, b: 0.232, yolk: 0.5, hatch: 0.05, tl: [6.2, 24], pred: 0, o2: 4 },   // (E3b: 0.9 was Stewart's FERTILISATION; field egg → drifting larva 0.3–3 % (Dahlberg 3 %; Geen 0.3 %) — the brook's scour, silt and drift lumped on the egg [inf], its yolk-sac's predators after: §3.3)   // (Stewart 1926: 21 d at 10.3 °C; > 90 % fertilised; no predation detected)
     catfish:    { form: 'exp', a: 119.8, b: 0.127, yolk: 0.8, hatch: 0.85, tl: [15, 30], pred: 0, o2: 2, guard: 1 },   // (Breder 1939: 8 d at 21.3 °C; biparental — unfanned eggs die in < 24 h) [hatch, tl: inf]
     sunfish:    { form: 'exp', a: 16.7, b: 0.0902, yolk: 1.7, hatch: 0.85, tl: [15, 32], pred: 0, o2: 2, guard: 1 },   // (pumpkinseed: Teletchea's 1-mm egg 3.3 d at 18 °C, 2.3 at 22; ~5 d on yolk) [hatch, tl: inf]
     redbreast:  { form: 'exp', a: 21.3, b: 0.0902, yolk: 2, hatch: 0.85, tl: [15, 32], pred: 0, o2: 2, guard: 1 },   // (Teletchea 1.5-mm egg ~3.5 d at 20 °C; 1–2 weeks in the nest) [inf]
@@ -496,6 +498,10 @@ export const EGG3 = {
                            //   males are taken to keep it)
   O2_K: 1, STORM_Z: 1, STORM_D: 0.03,
   DESERT_T: 10.6, DESERT_DROP: 2,
+  // (E3b, PROLARVA — on in fish3 stageR5) the yolk-sac larvae are the fish's prey on the bed (the larva-pickers' L2 rule at the clutch's cell):
+  // field hatch → first feeding 0.12–0.73 for perch (Kinord), mostly to fish (egg_survival_and_larval_production.md §3.1) — the eggs stay
+  // out (perch ribbons are refused; EGG3 pred carries the eggs' own), a guarded brood keeps its protection (BROOD.PROTECT)
+  PROLARVA: 0,
 };
 // (E8, ALEWIFE.ON — on in fish3 stageR5) THE SEA-RUN ALEWIFE (docs/review/ECOSYSTEM_BUILD.md "E8"; research_notes/Hot Brook populations
 // and water/sea_run_alewife.md). Present in Lower (MDIFW 2024), natural strays since 2017, never counted here.

@@ -400,8 +400,8 @@ export const S3 = {
   // were the killifish and the young bass
   perch:      { larvO: 0.4, cycRob: 0.4, school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
     hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) }, habJ: { L: [15, 22], bot: [1.5, 4.0], wbot: [1.5, 3.5] } },
-  // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter
-  sucker:     { school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: HOME(80, 230), tPref: 18,
+  // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter (E3b spawnP: only 25–50 % of adults spawn in a year — Geen 1966)
+  sucker:     { spawnP: 0.4, school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: HOME(80, 230), tPref: 18,
     hab: { day: H([2.5, 5.5], 0, 0.2, 0.5), night: H([0.5, 2.5], 0, 0.2, 0.8), winter: H([3.5, 5.5], 0, 0.2, 0.3) } },
   // brown bullhead: on the bed in soft weedy coves by day; out over the open mud flats once the light falls below ~1 lux, foraging
   // by taste and smell (Eriksson 1978); BURIED IN THE MUD IN WINTER — "often buries in soft, leafy ooze or mud … with only mouth
@@ -747,6 +747,7 @@ export function stageR5(on = true) {
   // (L2) THE FISH'S PREDATION ON LARVAE AT ITS FIELD RATE (config FRY.LARV2 — fish_predation_on_larvae.md) and with it the field's background
   // M_LARVA3 0.02 (larval_mortality.md: predator-free enclosures 0.01–0.03 /d; its 0.04 was fitted before the egg stage)
   FRY.LARV2 = on ? 1 : 0; FRY.M_LARVA3 = on ? 0.02 : M_LARVA30;
+  EGG3.PROLARVA = on ? 1 : 0;   // (E3b: the yolk-sac larvae the fish's prey; the field's egg survival — config EGG3; S3 spawnP — egg_survival_and_larval_production.md)
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
@@ -1542,14 +1543,21 @@ export class Fish3 {
   _spinYoy(made, yf1) {
     if (!made.length) return;
     const juvD = new Float64Array(KEYS3.length), dY = DAY / YEAR;
+    // (L2/E3b) THE FISH'S PREDATION ON THE SEASON'S LARVAE IN THE SPIN, as _yReq's rule would take them from the founders: each larva-picker's
+    // clearance × its weight on larvae of the school's length, × FRY.SPIN_SIGHT (the day's mean sight × cold — probe larvdiag: 0.41–0.47 for
+    // perch and white perch), over the lakes' water — the prolarvae too (EGG3.PROLARVA); the predators' appetite not binding (it binds above
+    // ~160 larvae/m² — fish_predation_on_larvae.md §3.4). Without it the founding's young had no larva-eating fish (seed 612: 75 perch larvae/m²)
+    const preds = []; let Vw = 0; if (FRY.LARV2) { for (let j = 0; j < this.G.NCELL; j++) Vw += this.G.vol[j]; for (const a of this.fish) if (a.alive && (a.s.larvO ?? 0) > 0 && !(a.s.pisc && a.L >= a.s.sp.Lpisc && a.L >= 3 * a.s.sp.Lpisc)) preds.push(a); }
+    const zFish = L => { if (!preds.length || L > FRY.LARVA_L) return 0; let a0 = 0; for (const a of preds) a0 += a.n * larvVol(a.s, a.L) * larvW(a.s, a.L, L); return a0 * FRY.SPIN_SIGHT / Vw * DAY; };   // (/day)
     for (let yf = Math.min(...made.map(m => m[1])); yf < yf1 - 1e-9; yf += dY) {
       const dd = Math.min(1, (yf1 - yf) / dY), T = seasonalTemp(yf + dY * dd / 2);
       juvD.fill(0); for (const [q, y0] of made) if (q.alive && y0 <= yf) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
       for (const [q, y0] of made) {
         if (!q.alive || y0 > yf) continue;
         if (q.dev < 2) {   // (E3: a clutch laid before the lake opened — its development and its baseline and thermal deaths on the season's water)
-          const P = EGG3.sp[q.s.key], egg = q.dev < 1, r = egg ? eggRate3(P, T) : yolkRate3(P, T), hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? EGG3.YOLK_HATCH) * r, hT = EGG3.THERM_K * (Math.max(0, P.tl[0] - T) + Math.max(0, T - P.tl[1]));
-          const lost = q.n * -Math.expm1(-(hB + hT) * dd), t = this.stats.eggs3[q.s.key]; if (lost > 0) { t.base += lost * hB / (hB + hT); t.temp += lost * hT / (hB + hT); q.n -= lost; }
+          const P = EGG3.sp[q.s.key], egg = q.dev < 1, r = egg ? eggRate3(P, T) : yolkRate3(P, T), hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? EGG3.YOLK_HATCH) * r, hT = EGG3.THERM_K * (Math.max(0, (egg ? P.tl[0] : P.ytl0 ?? P.tl[0]) - T) + Math.max(0, T - P.tl[1]));
+          const hP = (egg && P.pred > 0 ? -Math.log(1 - P.pred) * r : 0) + (!egg && EGG3.PROLARVA && !q.gref ? zFish(q.L) : 0), hz = hB + hT + hP;   // (E3b: the eggs' own predators, the prolarvae the fish's — an unguarded brood's)
+          const lost = q.n * -Math.expm1(-hz * dd), t = this.stats.eggs3[q.s.key]; if (lost > 0) { t.base += lost * hB / hz; t.temp += lost * hT / hz; t.pred += lost * hP / hz; q.n -= lost; }
           q.dev += r * dd; q.age += dd * DAY; if (q.dev >= 2) { q.dev = 2; this.stats.fry[q.s.key].hatched += q.n; t.swum += q.n; }
           continue;
         }
@@ -1564,8 +1572,8 @@ export class Fish3 {
         const lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
         const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10))
           + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) * DAY / YEAR;   // (/day; F3.YM_COLD, YM_CAP as _yoyLive)
-        const lost = q.n * -Math.expm1(-hN * F3.SEED_M * dd);
-        this.stats.fry[q.s.key].natural += lost; q.n -= lost; q.age += dd * DAY; q.p = pS;
+        const hE = zFish(q.L), hz = hN * F3.SEED_M + hE, lost = q.n * -Math.expm1(-hz * dd);   // (L2: the larva-pickers' share — zFish)
+        this.stats.fry[q.s.key].natural += lost * (1 - hE / hz); this.stats.fry[q.s.key].eaten += lost * hE / hz; q.n -= lost; q.age += dd * DAY; q.p = pS;
         if (q.n < 1) q.alive = false;
       }
     }
@@ -2309,6 +2317,7 @@ export class Fish3 {
     const s = a.s, sp = s.sp;
     if (!a.mature || a.mateCd > 0 || a.nt > 0 || yf >= (s.spawnEnd || SPAWN.SEASON_END) || ice >= 0.5) return false;   // (S3 spawnEnd: its own season's end)
     if (a.gon < SPAWN.GON_READY * s.gsi(a.sex) * a.W || a.K < SPAWN.K_READY) return false;
+    if (s.spawnP && ((Math.imul(a.id >>> 0, 2654435761) ^ Math.imul((this._yr + 7) >>> 0, 40503)) >>> 0) / 4294967296 >= s.spawnP) return false;   // (E3b S3 spawnP: only this share spawn in a year — a fish's own draw a year)
     return Ts >= sp.spawnT[0] - F3.SPAWN_LEAD && Ts <= sp.spawnT[1] + SPAWN.EDGE;
   }
   // its goal now (x, y, how near counts as there), or null: its nest; a ripe brook spawner's riffle; a faithful nester's
@@ -2519,7 +2528,7 @@ export class Fish3 {
     }
     T.av.fill(0); T.sB.fill(0); T.sL.fill(0); T.sW.fill(0); T.sD.fill(0); T.req.fill(0); T.reqY.fill(0); T.got.fill(0); T.rec.length = 0;
     for (const q of this.yoy) {
-      q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0) || q.dev < 2) continue;   // (E3: the eggs are no strike's prey)
+      q._yb = -1; q._ya = 0; if (!q.alive || q.c < 0 || !(q.n > 0) || q.dev < (EGG3.PROLARVA ? 1 : 2)) continue;   // (E3: the eggs are no strike's prey; E3b: the yolk-sac larvae are)
       const held = q.gref && q.gref.alive && q.gref.nt > 0, a = q.n * (1 - q.cover) * (held ? 1 - BROOD.PROTECT : 1); if (!(a > 0)) continue;
       const s = Math.min(NS - 1, Math.max(0, Math.floor(Math.log2(q.L / 0.5)))), b = ((q.c * NK + q.k) * NS + s) * ND + yDC(q.bed);   // (F3.YDEPTH: by its bed's depth too)
       T.av[b] += a; T.sB[b] += a * q.bed; T.sL[b] += a * q.L; T.sW[b] += a * q.W; T.sD[b] += a * q.bdep; q._yb = b; q._ya = a;
@@ -2581,7 +2590,7 @@ export class Fish3 {
       for (let m = 0; m < r.bins.length; m++) T.got[r.bins[m]] += f[m] * s;
     }
     for (const q of this.yoy) {
-      if (q._ya > 0 && T.got[q._yb] > 0) { const d = Math.min(q.n, q._ya / T.av[q._yb] * T.got[q._yb]); q.n -= d; this.stats.fry[q.s.key].eaten += d; if (q.n < 1) q.alive = false; }
+      if (q._ya > 0 && T.got[q._yb] > 0) { const d = Math.min(q.n, q._ya / T.av[q._yb] * T.got[q._yb]); q.n -= d; if (q.dev < 2) this.stats.eggs3[q.s.key].pred += d; else this.stats.fry[q.s.key].eaten += d; if (q.n < 1) q.alive = false; }   // (E3b: a prolarva eaten is the egg stage's)
     }
     T.rec.length = 0; T.req.fill(0); T.reqY.fill(0); T.got.fill(0);
   }
@@ -2664,7 +2673,7 @@ export class Fish3 {
     const guarded = q.gref && q.gref.alive && q.gref.nt > 0; if (!guarded) { if (q.gref) { const t = this.stats.eggs3[k], w = q.gref.alive ? "leftThin" : "guardDied"; t[w] = (t[w] || 0) + 1; } q.gref = null; q.guard = 0; }
     else if (q.gref.nt < 2 * dt) q.gref.nt = 2 * dt;   // (a guard keeps its brood through hatching and the yolk — to swim-up; its nestGuard time is the fry's after)
     const egg = q.dev < 1, rate = egg ? eggRate3(P, T) : yolkRate3(P, T);   // (development a day)
-    const hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? E.YOLK_HATCH) * rate, hT = E.THERM_K * (Math.max(0, P.tl[0] - Tm) + Math.max(0, Tm - P.tl[1]));
+    const hB = -Math.log(egg ? P.hatch : P.yolkHatch ?? E.YOLK_HATCH) * rate, hT = E.THERM_K * (Math.max(0, (egg ? P.tl[0] : P.ytl0 ?? P.tl[0]) - Tm) + Math.max(0, Tm - P.tl[1]));   // (E3b ytl0: the yolk-sac's own cold limit)
     const hG = P.guard && q.hadGuard && !guarded ? E.UNGUARDED : 0, hP = egg && P.pred > 0 ? -Math.log(1 - P.pred) * rate : 0;
     const hO = o2 < P.o2 ? E.O2_K * (1 - o2 / P.o2) : 0, hS = e.weather === 3 && q.bed < E.STORM_Z ? E.STORM_D : 0, h = hB + hT + hG + hP + hO + hS;
     const lost = q.n * -Math.expm1(-h * d);
