@@ -296,6 +296,7 @@ export const FRY = {
   // exactly maintenance: it neither grew nor died, 5–9-mm larvae for weeks (probes sunlarva, larvz), where field larvae grow ≥ 0.2 mm/d
   // or are gone within days to two weeks (young_first_summer.md §4.5)
   FEED_CV: 0, STARVE_DD: 50, STARVE_DDB: 0.75, STARVE_TAU: 1.5, STARVE_L: 2.5,
+  FEED_CV_R5: 0.25,   // (the package's FEED_CV — fish3 stageR5: probe larvz_cv25 — the June cohorts thin, starve Z 0.08–0.11, and the survivors grow)
   DETECT_L: [0.6, 1.5], // cm: larvae this small are seen 0.2 → 1 (Folkvord & Hunter 1986: 6-mm larvae undetected; Margulies 1989)
   NS: 6,
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …

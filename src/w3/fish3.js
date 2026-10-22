@@ -775,6 +775,7 @@ export function stageR5(on = true) {
   // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
   // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:
   // perch Z 0.046 → 0.029) while the fish take 0.003/d of them against the field's 0.04–0.2 — one compensation would go, its gap stay
+  FRY.FEED_CV = on ? FRY.FEED_CV_R5 : 0;   // (Y3: the young's unequal shares — config FRY.FEED_CV)
   FRY.CYC = on ? 1 : 0;
   // (L2) THE FISH'S PREDATION ON LARVAE AT ITS FIELD RATE (config FRY.LARV2 — fish_predation_on_larvae.md) and with it the field's background
   // M_LARVA3 0.02 (larval_mortality.md: predator-free enclosures 0.01–0.03 /d; its 0.04 was fitted before the egg stage)
