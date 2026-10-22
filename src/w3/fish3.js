@@ -662,6 +662,12 @@ export function stageR5(on = true) {
   // perches (0.73–0.74 M), the small fish and the perches themselves took the rest, more young white perch grew and recruited —
   // white perch 41.5 / 51.4 / 59.6 kg/ha against arm T's 37.2 / 43.3 / 46.4, bass 0.6 against 1.5, pickerel 0.8 against 1.6
   S3.whiteperch.yBed = 0; S3.perch.yBed = 0;
+  // (Y1) THE SUNFISHES' AND THE PICKEREL'S YOUNG IN THE WEEDS (young_first_summer.md §7.2): pumpkinseed larvae leave the nest at 4.5 mm into
+  // sheltered weedy bays, ~7× denser there than offshore (Sobchak et al. 2026, Ashby Lake), juveniles in the weed beds 0.7–2.5 m (redbreast
+  // as pumpkinseed [inf]); pickerel young in the shore weeds ≤ 1 m. Without it the sunfishes' young followed the zooplankton offshore —
+  // 69–97 % over beds deeper than 2 m (probe sunlarva, af3723e) — where the small prey is thinner (inshore ≤ 2 m: rotifers 430–790/L
+  // against the open water's 270–470)
+  S3.sunfish.yBed = on ? 2.5 : undefined; S3.redbreast.yBed = on ? 2.5 : undefined; S3.pike.yBed = on ? 1.0 : undefined;
   // (item 13) the sunfishes seek cover by day — the small fully, the larger at 0.4 — and hold low in it (h 0.3 m above the bed:
   // within most canopies; the weeds protect only the fish within their height)
   S3.sunfish.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined; S3.redbreast.seek = on ? { w: 0.6, L: 8, big: 0.4 } : undefined;
@@ -814,6 +820,10 @@ export function stageR5(on = true) {
   // ~1.5–2 cm through the summer (1/10 CPU), against the field's 25.6 mm SL by 21 Sep (Burton's Pond, NL) and 32 mm TL in the fall
   // (Presque Isle) — research killifish population dynamics, 2026-10-20)
   S3.killifish.sp.benthL = on ? 1.0 : undefined;   // (yBed: below, phase 3 item 15 — 0.5 m; it was 1.2)
+  // (Y1) THE BED'S FOOD AT THE FIELD'S SWITCH (young_first_summer.md §7.2; FRY.BENTH_L 2.5 cm otherwise): smallmouth young take chironomids
+  // and copepods from ~9 mm, insects from ~15 mm; pumpkinseed juveniles at ~20 mm eat chironomids, chydorids, isopods (their tissue
+  // plankton-derived 91 % as larvae, 76 % by August); pickerel young insects from ~15 mm before fish (redbreast as pumpkinseed [inf])
+  S3.bass.sp.benthL = on ? 1.0 : undefined; S3.sunfish.sp.benthL = on ? 1.5 : undefined; S3.redbreast.sp.benthL = on ? 1.5 : undefined; S3.pike.sp.benthL = on ? 1.5 : undefined;
   // (item 6i: fallfish fish-eating only from 18 cm: adults are insect and drift feeders, fish a large share only in pulses of naive
   // fry, fish ≤ 10–20 % of their diet otherwise, fallfish < 10 cm ate none (research killifish_persistence_and_predators.md); from
   // 10 cm they struck at the perch-like rate and became the killifish's top predator once the bass were gated (arm K: 51k kills))

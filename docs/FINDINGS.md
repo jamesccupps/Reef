@@ -62,6 +62,13 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   in the weedy bays. The bed's food starts at 2.5 cm (FRY.BENTH_L); the field's switch is 9–20 mm.
 - **Reading.** Too many larvae survive their first days. They then deplete the small prey and stall at about maintenance instead of
   dying fast as field larvae do (the critical period), so nothing grows into the safety of size.
+- **The rotifers' budget** (probe rotbud.mjs, 1/10 world, seed 611, per capita a day):
+  - Fishless, mid-June: the Daphnia peak (268 µg/L) costs them 0.29 a day while the clear-water phase takes their edible algae
+    (0.52 → 0.002). They crash 480 → 8 per litre, then recover slowly from the floor (41/L by mid-August; field 270–470).
+  - With fish: the same crash, then 2–7 per litre all summer although their net growth is +0.12 a day. The larvae eat all that is
+    made. So the crash is a symptom of the larval excess as much as a cause.
+  - Y1 (the sunfishes' young on the weed shelf, the bed's food at 1–1.5 cm) moved the pumpkinseed young inshore (beds 1.5–2.3 m,
+    was 2.7–3.4), but they still stalled at 5 mm: at 5 mm their food is the rotifers and nauplii.
 - **Next.** The first days' mortality by mechanism (first-feeding failure, the invertebrates' predation — L1 cyclopoids — and the
   fish's — L2); the sunfish's weedy-bay habitat; the diet switch at 9–20 mm.
 

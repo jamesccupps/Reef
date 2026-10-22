@@ -192,7 +192,17 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~6:30 a.m. EDT — THE NEWEST). COMMITTED af3723e: CHEM3.N_FORM in stageR5 (the inflow's DIN 5 % ammonium —
+▶▶▶ RESUME HERE (2026-10-22 ~7:15 a.m. EDT — THE NEWEST). MEASURED (probe larvz on af3723e; FINDINGS 8e24d93): ~150 swimming larvae/m²
+(perch ~50, white perch 26–37, alewife 62) where the field keeps ≲ 10–40; newly hatched perch Z 0.009/d (field 0.1–0.4 the first
+days); larval growth 0.06–0.1 mm/d (field 0.2–0.5); pumpkinseed stalled at 5 mm at ~maintenance. larval_mortality.md §3.4 says CHECK
+THE INPUTS FIRST: the census has PERCH 500/ha — the human's field note says perch are "small and fewer than fallfish/bass" (85 and
+40/ha) → ASK THE HUMAN (field knowledge) whether perch could be ~50–100/ha; that alone would bring perch larvae to field densities.
+IN THE TREE (uncommitted): Y1 — the sunfishes' and pickerel's young on their shelves (S3 yBed: pumpkinseed/redbreast 2.5 m, pickerel
+1.0) and the bed's food at the field's switch (sp.benthL: bass 1.0 cm, sunfish/redbreast/pickerel 1.5), in stageR5; probes larvz
+(→ larvz_y1.txt) and sunlarva (→ sunlarva_y1.txt) running against larvz_head.txt / sunlarva_head.txt. GATE of af3723e → gate_eco8.txt.
+NEXT: judge Y1 by the probes; the larval inputs (the census question; the alewife young 62/m²); the fish's larval predation (L2:
+field ≥ 70–90 % of larval Z; the sim 0.003–0.05/d); then an arm.
+▶▶▶ RESUME HERE (2026-10-22 ~6:30 a.m. EDT). COMMITTED af3723e: CHEM3.N_FORM in stageR5 (the inflow's DIN 5 % ammonium —
 its nitrification had taken a third of the winter O₂; 3 seeds' winters now 2.8–4.7 mg/L lake mean, median 3.5); the gate's gap() KIND
 (KNOWN GAPs against the field: reported, counted, not failing) — E12b the weed stands' extent is one (field ~15–17 % of the beds,
 the sim ~50 %: macrophyte_area_cover.md); E8's check by placement; research notes macrophyte_area_cover.md and young_first_summer.md.
