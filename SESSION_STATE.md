@@ -192,6 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-22 ~6:50 a.m. EDT — THE NEWEST). GATE of 3a2df18 GREEN (all suites; w3 134 PASS 0 FAIL 1 GAP E12b) →
+backup G:/synapse-reef-backups/synapse-reef_20261022_0634_wildtau.zip. THE HUMAN (field knowledge): YELLOW PERCH SCARCE AT ANY SIZE (~50–100/ha) →
+IN THE TREE (uncommitted): stageR5 Y2 S3.perch.perHa 75 (+ mateCue), FISH_CENSUS.md row; A/B running: probe/larvz_p75.txt vs larvz_p500.txt
+(98 d, seed 611, 1/10). LEARNED: the CPU settles every requested larva (probe larvsettle.mjs: requested = removed, room-short ~0); larvdiag's
+"eaten Z" omitted prolarvae (tallied as eggs3.pred) — the fish's real Z on perch larvae 0.02–0.05/d, swamped by ~50/m² (requested/potential
+~0.2); perch larvae stall at 8.6 mm, p 0.2 (probe perchlarva_yfirst.txt). A "young first" CPU change (YFIRST) changed nothing → reverted.
+E12b DELEGATED to a background agent in a git worktree (mechanisms: the coloured water's canopy limit, substrate patchiness; regrow the
+start; turn the GAP into a check 0.08–0.30 + presence 0.25–0.60) — merge its diff when it reports. ARM AI: queue stopped after 611/613
+(waiter bmtd4cjwm). NEXT: judge the perch A/B → commit → remote gate → g1_check r5=1 (WILD_TAU) → arm AJ (perch 75) 3 seeds × 2 yrs.
 ▶▶▶ RESUME HERE (2026-10-22 ~5:15 a.m. EDT machine clock — THE NEWEST). COMMITTED 3a2df18 (pushed): F3.WILD_TAU 1 day — the
 wildlife's ρ from max(A, its running mean) on both engines (CPU fish3 _wAe; WGSL GL[G_WAE 160..]) — fixed E4's 128 % over-take (the
 gate of af3723e failed E4 at 4.4 of 3.6 kg; now 3.3 of 3.6); EGG3 alewife hatch 0.6 → 0.2 (Kellogg 1982 lab best 38 %; larvae 62 → 19/m²).
@@ -199,6 +208,10 @@ RUNNING: the remote GATE of 3a2df18 → scratchpad/gate_eco9.txt; ARM AI (19edb3
 was not dead): its parent killed, its seed-613 run continues (r22AI_613.txt); the relaunch (task byd7pmldu) is on 611, then 612, then
 613 AGAIN — keep the first 613 (copy to r22AI_613.first.txt before the relaunch reaches it). NEXT: g1_check r5=1 for WILD_TAU parity
 when the GPU frees; the larval inputs (the perch census question to the human); larval predation; E12b; back up after a green gate.
+ARM AI so far (613 yr 1, 611 to day 42): 85 kg/ha at yr 1; ZERO recruits again; the followed prey eaten fast from May — in 6 weeks killifish
+150k→29k (107k eaten, 14k wildlife), sunfish/redbreast −50 %, fallfish −32 %, catfish −27 % (bass/pickerel diets 83–95 % fish, ~0.3 fish a
+predator a day): with no young-of-year big enough to eat, the adults carry the piscivores. Young at day 14: perch 36/m², WHITE PERCH 74/m².
+RUNNING: probe/larvdiag.mjs on HEAD (→ probe/larvdiag_head.txt) — where the fish's predation on perch larvae is lost.
 ▶▶▶ RESUME HERE (2026-10-22 ~4:45 a.m. EDT by the machine clock — THE NEWEST; the earlier blocks' a.m. times ran ahead). COMMITTED:
 3dc49aa Y1 (the sunfishes'/pickerel's young on the weed shelf, the bed's food at 1–1.5 cm), 31573b3 FINDINGS arm AH (the year-2
 plankton starvation GONE with E9d + the retention fix: Daphnia 61/38 µg/L, TP 7–8, P inventory ~85 %; fish 97→43→27 kg/ha from the

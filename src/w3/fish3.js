@@ -666,6 +666,11 @@ export function stageR5(on = true) {
   // perches (0.73–0.74 M), the small fish and the perches themselves took the rest, more young white perch grew and recruited —
   // white perch 41.5 / 51.4 / 59.6 kg/ha against arm T's 37.2 / 43.3 / 46.4, bass 0.6 against 1.5, pickerel 0.8 against 1.6
   S3.whiteperch.yBed = 0; S3.perch.yBed = 0;
+  // (Y2) YELLOW PERCH SCARCE AT ANY SIZE (the human, 2026-10-22: "few perch even ice fishing or with small baits" — ~50–100/ha, like the
+  // bass's 40 and the fallfish's 85; FISH_CENSUS.md): the census's 500/ha ≥ 7.5 cm (above its own soft-water comparables, Crystal and
+  // Nebish 230–240) set ~50 perch larvae a m² (probe larvz, af3723e) where the field keeps ≲ 10–40 of every species together — the larvae
+  // swamped their predators (fish predation Z 0.02–0.05 /d, field 0.035–0.22) and ate the rotifers out (2–7 a litre, field 270–470)
+  S3.perch.perHa = on ? 75 : 500; S3.perch.mateCue = clamp(F3.MATE_CUE / Math.sqrt(S3.perch.perHa / 1e4), 6, 40);   // (as the species' set-up)
   // (Y1) THE SUNFISHES' AND THE PICKEREL'S YOUNG IN THE WEEDS (young_first_summer.md §7.2): pumpkinseed larvae leave the nest at 4.5 mm into
   // sheltered weedy bays, ~7× denser there than offshore (Sobchak et al. 2026, Ashby Lake), juveniles in the weed beds 0.7–2.5 m (redbreast
   // as pumpkinseed [inf]); pickerel young in the shore weeds ≤ 1 m. Without it the sunfishes' young followed the zooplankton offshore —
