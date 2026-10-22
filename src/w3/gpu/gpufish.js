@@ -103,12 +103,12 @@ export class GpuFish {
   _acc() {
     const env = this.env;
     { const NC = env.G.NCELL, NCo = env.G.NC; let o = 0; const ac = {}; for (const [k, len] of [['TB', NC], ['TL', NC], ['TS', NC], ['TSM', NC], ['RC', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['O2', NC], ['SEDADD', NC],
-        ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap],
-        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['TSMW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC],
+        ['YZD', NC], ['YZC', NC], ['YZR', NC], ['YZS', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC], ['YD', this.ycap], ['YT', this.ycap], ['YP', this.ycap], ['YPT', this.ycap],
+        ['TBW', NC], ['TLW', NC], ['TSW', NC], ['TSMW', NC], ['SURFW', NCo], ['ZDW', NC], ['ZCW', NC], ['YZDW', NC], ['YZCW', NC], ['YZRW', NC], ['YZSW', NC], ['YWSW', NC], ['YWLW', NC], ['YBW', NC],
         // (stage Y1) the prey table per column × species × length class: available n, Σ n·L, Σ n·W, Σ n·depth; the followed fish's
         // requests and takes; the young schools' requests and takes
         ...['BAV', 'BSB', 'BSL', 'BSW', 'BSD', 'BREQ', 'BGOT', 'BREQY', 'BGOTY'].map(k => [k, NCo * KEYS3.length * FRY.NS * (F3.YDEPTH ? 4 : 1)])]) { ac[k] = o; o += 2 * len; }   // (…W: the wants weighted by their appetite's elasticity — bShare)
-      this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['SM', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
+      this.accWords = o; let r = 0; const rc = {}; for (const [k, len] of [['B', NC], ['L', NC], ['S', NC], ['SM', NC], ['C', NC], ['SURF', NCo], ['ZD', NC], ['ZC', NC], ['SED', NC], ['YD', NC], ['YC', NC], ['YR', NC], ['YS', NC], ['YWS', NC], ['YWL', NC], ['YB', NC], ['YSED', NC]]) { rc[k] = r; r += len; } this.rcWords = r; this.acOff = ac;
       this.consts = this.consts0 + '\n' + Object.entries(ac).map(([k, v]) => `const AC_${k}: u32 = ${v}u;`).join('\n') + '\n' + Object.entries(rc).map(([k, v]) => `const R_${k}: u32 = ${v}u;`).join('\n'); }
   }
   _layouts() {
@@ -352,7 +352,7 @@ export class GpuFish {
   async applyWater() {
     const W = new Float32Array(await this.read(this.B.WD)), W0 = this.W, o = this.WL.offs, e = this.env, ch = e.chem, lit = e.lit;
     const put = (dst, sec) => { const a = o[sec]; for (let i = 0; i < dst.length; i++) { const d = W[a + i] - W0[a + i]; if (d !== 0) dst[i] = Math.max(0, dst[i] + d); } };
-    put(ch.o2, 'o2'); put(ch.zooD, 'zooD'); put(ch.zooC, 'zooC'); put(ch.zooR, 'zooR'); put(ch.benth, 'benth'); put(ch.sedOM, 'sedOM');
+    put(ch.o2, 'o2'); put(ch.zooD, 'zooD'); put(ch.zooC, 'zooC'); put(ch.zooR, 'zooR'); put(ch.zooS, 'zooS'); put(ch.benth, 'benth'); put(ch.sedOM, 'sedOM');
     if (lit) { put(lit.surfA, 'surfA'); put(lit.surfT, 'surfT'); put(lit.L, 'litL'); put(lit.sn, 'litSn'); put(lit.S, 'litS'); put(lit.crA, 'litCrA'); put(lit.crY, 'litCrY'); }
     return W;
   }

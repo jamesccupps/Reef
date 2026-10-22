@@ -279,8 +279,8 @@ const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
 // GL[G_WD + w]; k_wildA/y_wildA sum the fish it can reach (Σ accessibility × mass) at the block's start, k_wildRho its hazard per unit
 // of accessibility ρ = D / (A + K), K a day's need, into GL[G_WRHO + w]
 const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const GS_WILDA: u32 = 128u;   // (GS: 2 words a wildlife)
-const T_WILD: u32 = 3776u;   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife
-const T_WILDG: u32 = 3976u;  // + 2w: their grams
+const T_WILD: u32 = 4352u;   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife (room for 16: layout wildWGSL)
+const T_WILDG: u32 = 4704u;  // + 2w: their grams
 const T_YWILD: u32 = 3996u;  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
 const T_EGG3: u32 = 4096u;   // + 2·(k·8 + j): (E3) the egg stage — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm (fish3 stats.eggs3)
 fn wildH(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {
@@ -425,7 +425,7 @@ fn zooExposed(j: u32, kind: u32) -> f32 {
 }
 fn zooE(j: u32) -> f32 {
   let v = wd(W_zv + j); if (v <= 0.0) { return 0.0; }
-  return (wd(W_zooD + j) * zooExposed(j, 0u) + wd(W_zooC + j) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(j, 1u)) * v * PLANKTON_UGL;
+  return (wd(W_zooD + j) * zooExposed(j, 0u) + select(0.0, ZOO3_S_ADULT, ZOO3_SMALL > 0.5) * wd(W_zooS + j) * (1.0 - wd(W_plantRef + j)) + wd(W_zooC + j) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(j, 1u)) * v * PLANKTON_UGL;
 }
 @compute @workgroup_size(128) fn k_sense(@builtin(global_invocation_id) g: vec3u) {
   let i = g.x; if (i >= U.n) { return; }
@@ -1142,7 +1142,7 @@ fn crayE(li: u32, j: u32, c: u32, gape: f32, s: f32) -> f32 {
   return E * s;
 }
 fn benthE(j: u32) -> f32 { return max(0.0, wd(W_benth + j) / A2 - BENTHOS_REFUGE); }
-fn zooSeen(q: u32, kind: u32) -> f32 { if (kind == 0u) { return wd(W_zooD + q) * zooExposed(q, 0u); } return wd(W_zooC + q) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(q, 1u); }
+fn zooSeen(q: u32, kind: u32) -> f32 { if (kind == 0u) { return wd(W_zooD + q) * zooExposed(q, 0u) + select(0.0, ZOO3_S_ADULT, ZOO3_SMALL > 0.5) * wd(W_zooS + q) * (1.0 - wd(W_plantRef + q)); } return wd(W_zooC + q) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(q, 1u); }
 // the footprint (fish3 _feed): its columns (by forage radius), each column's bed cells within FP_DZ of its bed, and its layer of the
 // water (± one in its own column)
 struct Fp { s0: u32, s1: u32, base: u32, kz: u32 };
@@ -1347,7 +1347,7 @@ fn smallS(k: u32, L: f32) -> f32 {   // (fish3 F3.SMALL_S: a small fish's share 
   if (j < WNC) { let T = rdAcc(AC_SURF + 2u * j, PW); if (T > 0.0) { let keep = 1.0 - bTaken(T, rdAcc(AC_SURFW + 2u * j, PW)); WD[W_surfA + j] *= keep; WD[W_surfT + j] *= keep; } }
   if (j >= WNCELL) { return; }
   { let T = rdAcc(AC_TB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= bTaken(T, rdAcc(AC_TBW + 2u * j, PW)) * benthE(j) * A2; } }
-  { let T = rdAcc(AC_ZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - bTaken(T, rdAcc(AC_ZDW + 2u * j, PW)) * zooExposed(j, 0u); } }
+  { let T = rdAcc(AC_ZD + 2u * j, PW); if (T > 0.0) { let X = bTaken(T, rdAcc(AC_ZDW + 2u * j, PW)); WD[W_zooS + j] *= 1.0 - X * select(0.0, ZOO3_S_ADULT, ZOO3_SMALL > 0.5) * (1.0 - wd(W_plantRef + j)); WD[W_zooD + j] *= 1.0 - X * zooExposed(j, 0u); } }   // (E2c: the small cladocerans with the Daphnia)
   { let T = rdAcc(AC_ZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_ZCW + 2u * j, PW)) * (1.0 - ZOO3_COPE_ESCAPE) * zooExposed(j, 1u); } }
   let li = sti(O_litIdx + j); if (li < 0) { return; }
   let l = u32(li); let cc = u32(sti(O_wColOfCell + j));
@@ -1742,6 +1742,21 @@ fn yOkAt(q: u32, x: f32, y: f32, inB: bool) -> bool {
 // ---- its feeding this tick (fish3 _feedYoy): what it asks of each food (each from what the ones before would leave if granted) ----
 fn fryD(L: f32) -> f32 { return PLANKTON_FRY_DAPH_MIN + (1.0 - PLANKTON_FRY_DAPH_MIN) * clamp((L - PLANKTON_FRY_DAPH_L_0) / (PLANKTON_FRY_DAPH_L_1 - PLANKTON_FRY_DAPH_L_0), 0.0, 1.0); }
 fn fryR(L: f32) -> f32 { return PLANKTON_FRY_ROT_MIN + (1.0 - PLANKTON_FRY_ROT_MIN) * clamp((PLANKTON_FRY_ROT_L_1 - L) / (PLANKTON_FRY_ROT_L_1 - PLANKTON_FRY_ROT_L_0), 0.0, 1.0); }
+// (E2c/E2d) the young's zooplankton ladder (fish3 yZoo): c the catch of each field (Daphnia, copepods, rotifers, small cladocerans), u its
+// weight in the count response — without ZOO3.SMALL the old ladder on one K_FRY
+struct YZ { c: vec4f, u: vec4f };
+fn yRamp(x: f32, a: f32, b: f32) -> f32 { return clamp((x - a) / (b - a), 0.0, 1.0); }
+fn yZoo(L: f32) -> YZ {
+  let K = PLANKTON_K_FRY; let cR = fryR(L); var o: YZ;
+  if (ZOO3_SMALL < 0.5) { o.c = vec4f(fryD(L), PLANKTON_FRY_COPE, cR, 0.0); o.u = o.c / K; return o; }
+  let nS = naupShare(U.yf); let cN = ZOO3_NAUP_MIN + (ZOO3_NAUP_C - ZOO3_NAUP_MIN) * (1.0 - yRamp(L, ZOO3_NAUP_L_0, ZOO3_NAUP_L_1));
+  let cCa = ZOO3_COP_MIN + (1.0 - ZOO3_COPE_ESCAPE - ZOO3_COP_MIN) * yRamp(L, ZOO3_COP_L_0, ZOO3_COP_L_1);
+  let cS = ZOO3_S_MIN + (1.0 - ZOO3_S_MIN) * yRamp(L, ZOO3_S_L_0, ZOO3_S_L_1);
+  let kR = ZOO3_K_ROT * pow(K / ZOO3_K_ROT, yRamp(L, PLANKTON_FRY_ROT_L_0, PLANKTON_FRY_ROT_L_1)); let kN = ZOO3_K_NAUP * pow(K / ZOO3_K_NAUP, yRamp(L, ZOO3_NAUP_L_0, ZOO3_NAUP_L_1));
+  o.c = vec4f(ZOO3_D_JUV * cS + (1.0 - ZOO3_D_JUV) * (ZOO3_D_MIN + (1.0 - ZOO3_D_MIN) * yRamp(L, ZOO3_D_L_0, ZOO3_D_L_1)), nS * cN + (1.0 - nS) * cCa, cR, cS);
+  o.u = vec4f(o.c.x / K, nS * cN / kN + (1.0 - nS) * cCa / K, cR / kR, cS / K);
+  return o;
+}
 fn yBioSet(k: u32) -> u32 { if (spv(k, S_juvMode) > 0.0) { return 2u * k + 1u; } return 2u * k; }
 fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small fauna, the large reachable — past LARGE_L)
   if (jb < 0 || U.lit == 0u || L < LIT3_WEED_L) { return vec2f(0.0); }
@@ -1751,7 +1766,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 }
 @compute @workgroup_size(64) fn y_feedReq(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
-  syi(Y_qPrey, q, -1); sy(Y_qPk, q, 0.0); sy(Y_qD, q, 0.0); sy(Y_qC, q, 0.0); sy(Y_qR, q, 0.0); sy(Y_qWs, q, 0.0); sy(Y_qWl, q, 0.0); sy(Y_qB, q, 0.0); sy(Y_qSed, q, 0.0);
+  syi(Y_qPrey, q, -1); sy(Y_qPk, q, 0.0); sy(Y_qD, q, 0.0); sy(Y_qC, q, 0.0); sy(Y_qR, q, 0.0); sy(Y_qS, q, 0.0); sy(Y_qWs, q, 0.0); sy(Y_qWl, q, 0.0); sy(Y_qB, q, 0.0); sy(Y_qSed, q, 0.0);
   if (!yAlive(q) || gy(Y_feeds, q) < 0.5) { return; }
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let W = gy(Y_W, q); let n = gy(Y_n, q); let T = gy(Y_yT, q); let st = gy(Y_st, q);
   let bs = yBioSet(k); let dd = st / DAY;
@@ -1782,16 +1797,18 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let canW = U.lit != 0u && (dl || di) && L >= LIT3_WEED_L && bed - z <= F3_BENTH_REACH + wd(W_canopy + c);
   let canB = L >= benthL && (dl || spv(k, S_dSnail) > 0.5 || dD) && bed - z <= F3_BENTH_REACH;
   let base = want - got;
-  // zooplankton of its size (type II in K_FRY), each cell seen by its own light; its footprint its layer ± one and the ring at its layer
-  let gD = fryD(L); let cR = fryR(L); let j0 = cell0(c); let k0 = j - j0;
-  var sD = 0.0; var sC = 0.0; var sR = 0.0; var sw = 0.0;
+  // zooplankton of its size by class (E2c/E2d: chem3 zooFeedYoy — the multi-prey disc equation on X = Σ u·density), each cell seen by its
+  // own light; its footprint its layer ± one and the ring at its layer
+  let yz = yZoo(L); let j0 = cell0(c); let k0 = j - j0;
+  var gZ = vec4f(0.0); var sw = 0.0;
   if (canZ) {
     let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
-    for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; let w = stf(O_wW + jj); sw += w; let v = wd(W_zv + jj); if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; sD += wd(W_zooD + jj) * gD * pr; sC += wd(W_zooC + jj) * PLANKTON_FRY_COPE * pr; sR += wd(W_zooR + jj) * cR * pr; } }
+    for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; let w = stf(O_wW + jj); sw += w; let v = wd(W_zv + jj); if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; gZ += vec4f(wd(W_zooD + jj), wd(W_zooC + jj), wd(W_zooR + jj), wd(W_zooS + jj)) * pr; } }
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); let w = stf(O_wW + jj); sw += w; let v = wd(W_zv + jj);
-      if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; sD += wd(W_zooD + jj) * gD * pr; sC += wd(W_zooC + jj) * PLANKTON_FRY_COPE * pr; sR += wd(W_zooR + jj) * cR * pr; } }
+      if (v > 0.0) { let pr = (1.0 - wd(W_plantRef + jj)) * w * v; gZ += vec4f(wd(W_zooD + jj), wd(W_zooC + jj), wd(W_zooR + jj), wd(W_zooS + jj)) * pr; } }
   }
+  let S = dot(yz.c, gZ); let Sw = dot(yz.u, gZ);
   // the bed about it: its own bed cell and its neighbours' mean-depth bed cells
   let bs0 = u32(sti(O_fNbr0 + c)); let bs1 = min(u32(sti(O_fNbr0 + c + 1u)), bs0 + 63u);
   var bS = 0.0; var bA = 0.0;
@@ -1803,17 +1820,17 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   var tZ = 1.0; var tW = 1.0; var tB = 1.0;
   if (F3_YSHARE > 0.5 && base > 1e-12) {
     var fZ = 0.0; var fW = 0.0; var fB = 0.0;
-    if (canZ && sw > 0.0) { let E = (sD + sC + sR) / sw * PLANKTON_UGL; fZ = E / (E + PLANKTON_K_FRY); }
+    if (canZ && sw > 0.0) { let X = Sw / sw * PLANKTON_UGL; fZ = X / (1.0 + X); }
     if (canW) { let E = we.x + we.y; if (E > 0.0) { fW = E / (E + BENTHOS_K_FISH); } }
     if (canB && bA > 0.0) { let E = bS / bA; if (E > 0.0) { fB = E / (E + BENTHOS_K_FISH); } }
     let qZ = select(0.0, pow(fZ, F3_SHARE_Q), fZ > 0.0); let qW = select(0.0, pow(fW, F3_SHARE_Q), fW > 0.0); let qB = select(0.0, pow(fB, F3_SHARE_Q), fB > 0.0); let sq = qZ + qW + qB;
     if (sq > 0.0) { tZ = qZ / sq; tW = qW / sq; tB = qB / sq; }
   }
-  let S = sD + sC + sR; var aZ = want - got; if (F3_YSHARE > 0.5) { aZ = base * tZ; }
-  if (canZ && aZ > 1e-12 && S > 1e-12) {
-    let E = S / sw * PLANKTON_UGL; let ask = aZ * E / (E + PLANKTON_K_FRY); let take = min(ask, PLANKTON_CROP * S); sy(Y_wZ, q, select(PLANKTON_K_FRY / (E + PLANKTON_K_FRY), 1.0, ask >= PLANKTON_CROP * S));
-    let tD = take * sD / S; let tC = take * sC / S; let tR = take - tD - tC;
-    if (sD > 0.0) { sy(Y_qD, q, tD / sD * gD); } if (sC > 0.0) { sy(Y_qC, q, tC / sC * PLANKTON_FRY_COPE); } if (sR > 0.0) { sy(Y_qR, q, tR / sR * cR); }
+  var aZ = want - got; if (F3_YSHARE > 0.5) { aZ = base * tZ; }
+  if (canZ && aZ > 1e-12 && S > 1e-12 && Sw > 0.0) {
+    let X = Sw / sw * PLANKTON_UGL; let ask = aZ * X / (1.0 + X); let take = min(ask, PLANKTON_CROP * S); sy(Y_wZ, q, select(1.0 / (1.0 + X), 1.0, ask >= PLANKTON_CROP * S));
+    let r = take / Sw;   // (each field gives r·u of its seen, exposed grams)
+    if (gZ.x > 0.0) { sy(Y_qD, q, r * yz.u.x); } if (gZ.y > 0.0) { sy(Y_qC, q, r * yz.u.y); } if (gZ.z > 0.0) { sy(Y_qR, q, r * yz.u.z); } if (gZ.w > 0.0) { sy(Y_qS, q, r * yz.u.w); }
     got += take;
   }
   // the weeds' small fauna from WEED_L, their large from LARGE_L, for a school in the canopy or near the bed
@@ -1840,7 +1857,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 @compute @workgroup_size(256) fn y_fieldCell(@builtin(global_invocation_id) g: vec3u) {
   let j = g.x; if (j >= WNCELL) { return; }
   let pr = 1.0 - wd(W_plantRef + j); let v = wd(W_zv + j);
-  RC[R_YD + j] = bShare(rdAcc(AC_YZD + 2u * j, PW), rdAcc(AC_YZDW + 2u * j, PW)); RC[R_YC + j] = bShare(rdAcc(AC_YZC + 2u * j, PW), rdAcc(AC_YZCW + 2u * j, PW)); RC[R_YR + j] = bShare(rdAcc(AC_YZR + 2u * j, PW), rdAcc(AC_YZRW + 2u * j, PW));
+  RC[R_YD + j] = bShare(rdAcc(AC_YZD + 2u * j, PW), rdAcc(AC_YZDW + 2u * j, PW)); RC[R_YC + j] = bShare(rdAcc(AC_YZC + 2u * j, PW), rdAcc(AC_YZCW + 2u * j, PW)); RC[R_YR + j] = bShare(rdAcc(AC_YZR + 2u * j, PW), rdAcc(AC_YZRW + 2u * j, PW)); RC[R_YS + j] = bShare(rdAcc(AC_YZS + 2u * j, PW), rdAcc(AC_YZSW + 2u * j, PW));
   RC[R_YWS + j] = bShare(rdAcc(AC_YWS + 2u * j, PW), rdAcc(AC_YWSW + 2u * j, PW)); RC[R_YWL + j] = bShare(rdAcc(AC_YWL + 2u * j, PW), rdAcc(AC_YWLW + 2u * j, PW)); RC[R_YB + j] = bShare(rdAcc(AC_YB + 2u * j, PW), rdAcc(AC_YBW + 2u * j, PW));
   let D = rdAcc(AC_YSED + 2u * j, GW); var r = 1.0; if (D > 0.0) { let V = wd(W_sedOM + j) * stf(O_wA + j); r = select(0.0, min(D, V) / D, V > 0.0); }
   RC[R_YSED + j] = r;
@@ -1848,13 +1865,13 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 // (the zooplankton's wants go in after the request: the request needs the cells' sums first)
 @compute @workgroup_size(64) fn y_zooAcc(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q) || gy(Y_feeds, q) < 0.5) { return; }
-  let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q); if (qD <= 0.0 && qC <= 0.0 && qR <= 0.0) { return; }
+  let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q); let qS = gy(Y_qS, q); if (qD <= 0.0 && qC <= 0.0 && qR <= 0.0 && qS <= 0.0) { return; }
   let c = u32(gyi(Y_c, q)); let j = u32(gyi(Y_j, q)); let j0 = cell0(c); let k0 = j - j0;
   let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
   let wz = gy(Y_wZ, q);
-  for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); }
+  for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); if (qS > 0.0) { acc64(AC_YZS + 2u * jj, qS, PW); acc64(AC_YZSW + 2u * jj, qS * wz, PW); } }
   let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
-  for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); }
+  for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); acc64(AC_YZD + 2u * jj, qD, PW); acc64(AC_YZC + 2u * jj, qC, PW); acc64(AC_YZR + 2u * jj, qR, PW); acc64(AC_YZDW + 2u * jj, qD * wz, PW); acc64(AC_YZCW + 2u * jj, qC * wz, PW); acc64(AC_YZRW + 2u * jj, qR * wz, PW); if (qS > 0.0) { acc64(AC_YZS + 2u * jj, qS, PW); acc64(AC_YZSW + 2u * jj, qS * wz, PW); } }
 }
 // what it got, and one fish's energy budget on its share — SCRAMBLE: when it can't keep every fish at maintenance, the rest starve
 @compute @workgroup_size(64) fn y_feedTake(@builtin(global_invocation_id) g: vec3u) {
@@ -1875,16 +1892,16 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   }
   if (pr >= 0) { let r = u32(pr); let D = rdAcc(AC_YP + 2u * r, KW); let kk = gy(Y_qPk, q) * min(1.0, gy(Y_n, r) / max(D, 1e-12)); let rW = gy(Y_W, r);
     got += kk * rW; J += kk * rW * energyDensity(2u * gyu(Y_k, r), rW); acc64(AC_YPT + 2u * r, kk, KW); add64(&TL, T_YYKILLS + 2u * (gyu(Y_k, q) * NK + gyu(Y_k, r)), kk, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u), kk * rW, TSCALE); }
-  let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q);
-  if (qD > 0.0 || qC > 0.0 || qR > 0.0) {
-    let j0 = cell0(c); let k0 = j - j0; var gd = 0.0; var gc = 0.0; var gr = 0.0;
+  let qD = gy(Y_qD, q); let qC = gy(Y_qC, q); let qR = gy(Y_qR, q); let qSz = gy(Y_qS, q);
+  if (qD > 0.0 || qC > 0.0 || qR > 0.0 || qSz > 0.0) {
+    let j0 = cell0(c); let k0 = j - j0; var gd = 0.0; var gc = 0.0; var gr = 0.0; var gsz = 0.0;
     let ka = u32(max(0, i32(k0) - 1)); let kb = min(nL(c) - 1u, k0 + 1u);
     for (var kk = ka; kk <= kb; kk++) { let jj = j0 + kk; let pw = (1.0 - wd(W_plantRef + jj)) * stf(O_wW + jj) * wd(W_zv + jj);
-      gd += qD * wd(W_zooD + jj) * pw * RC[R_YD + jj]; gc += qC * wd(W_zooC + jj) * pw * RC[R_YC + jj]; gr += qR * wd(W_zooR + jj) * pw * RC[R_YR + jj]; }
+      gd += qD * wd(W_zooD + jj) * pw * RC[R_YD + jj]; gc += qC * wd(W_zooC + jj) * pw * RC[R_YC + jj]; gr += qR * wd(W_zooR + jj) * pw * RC[R_YR + jj]; gsz += qSz * wd(W_zooS + jj) * pw * RC[R_YS + jj]; }
     let s0 = u32(sti(O_fNbr0 + c)); let s1 = min(u32(sti(O_fNbr0 + c + 1u)), s0 + 61u);
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0); let pw = (1.0 - wd(W_plantRef + jj)) * stf(O_wW + jj) * wd(W_zv + jj);
-      gd += qD * wd(W_zooD + jj) * pw * RC[R_YD + jj]; gc += qC * wd(W_zooC + jj) * pw * RC[R_YC + jj]; gr += qR * wd(W_zooR + jj) * pw * RC[R_YR + jj]; }
-    got += gd + gc + gr; J += gd * PREY_DAPH_ED + gc * PREY_COPE_ED + gr * PREY_ROT_ED; add64(&TL, T_FOOD + 2u * FOOD_YZOO, gd + gc + gr, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 1u), gd + gc + gr, TSCALE);
+      gd += qD * wd(W_zooD + jj) * pw * RC[R_YD + jj]; gc += qC * wd(W_zooC + jj) * pw * RC[R_YC + jj]; gr += qR * wd(W_zooR + jj) * pw * RC[R_YR + jj]; gsz += qSz * wd(W_zooS + jj) * pw * RC[R_YS + jj]; }
+    got += gd + gc + gr + gsz; J += gd * PREY_DAPH_ED + gc * PREY_COPE_ED + gr * PREY_ROT_ED + gsz * PREY_DAPH_ED; add64(&TL, T_FOOD + 2u * FOOD_YZOO, gd + gc + gr + gsz, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 1u), gd + gc + gr + gsz, TSCALE);
   }
   let qWs = gy(Y_qWs, q);
   if (qWs > 0.0 && jb >= 0) { let e = weedEyoy(jb, L); let a = stf(O_wBedA + u32(jb)); let gw = qWs * a * (e.x * RC[R_YWS + u32(jb)] + e.y * RC[R_YWL + u32(jb)]); got += gw; J += gw * LIT3_ED_INS; add64(&TL, T_FOOD + 2u * FOOD_YWEED, gw, TSCALE); add64(&TL, T_YFOODK + 2u * (gyu(Y_k, q) * 5u + 2u), gw, TSCALE); }
@@ -1920,6 +1937,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   { let T = rdAcc(AC_YZD + 2u * j, PW); if (T > 0.0) { WD[W_zooD + j] *= 1.0 - bTaken(T, rdAcc(AC_YZDW + 2u * j, PW)) * pr * v; } }
   { let T = rdAcc(AC_YZC + 2u * j, PW); if (T > 0.0) { WD[W_zooC + j] *= 1.0 - bTaken(T, rdAcc(AC_YZCW + 2u * j, PW)) * pr * v; } }
   { let T = rdAcc(AC_YZR + 2u * j, PW); if (T > 0.0) { WD[W_zooR + j] *= 1.0 - bTaken(T, rdAcc(AC_YZRW + 2u * j, PW)) * pr * v; } }
+  { let T = rdAcc(AC_YZS + 2u * j, PW); if (T > 0.0) { WD[W_zooS + j] *= 1.0 - bTaken(T, rdAcc(AC_YZSW + 2u * j, PW)) * pr * v; } }
   { let T = rdAcc(AC_YB + 2u * j, PW); if (T > 0.0) { WD[W_benth + j] -= bTaken(T, rdAcc(AC_YBW + 2u * j, PW)) * benthE(j) * A2; } }
   { let D = rdAcc(AC_YSED + 2u * j, GW); if (D > 0.0) { let V = wd(W_sedOM + j) * stf(O_wA + j); if (V > 0.0) { WD[W_sedOM + j] -= min(D, V) / stf(O_wA + j); } } }
   let li = sti(O_litIdx + j); if (li < 0) { return; }
@@ -1999,7 +2017,7 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
 }
 // ---- its next spot (fish3 _yoyTarget): up out of low O₂, down out of heat; else the food of its stage about it — on the water as the
 // young's feeding left it ----
-fn zooEl(j: u32, cD: f32, cC: f32, cR: f32) -> f32 { let v = wd(W_zv + j); if (v <= 0.0) { return 0.0; } return (wd(W_zooD + j) * cD + wd(W_zooC + j) * cC + wd(W_zooR + j) * cR) * v * PLANKTON_UGL; }
+fn zooElY(j: u32, u: vec4f) -> f32 { let v = wd(W_zv + j); if (v <= 0.0) { return 0.0; } return dot(vec4f(wd(W_zooD + j), wd(W_zooC + j), wd(W_zooR + j), wd(W_zooS + j)), u) * v * PLANKTON_UGL; }   // (chem3 zooElY)
 fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1 − yCover + yCover · its cover)
   let yc = spv(k, S_yCover); if (yc <= 0.0) { return 1.0; }
   let jb = sti(O_fColBedJ + cc); var pc = 0.0; if (U.plants != 0u && jb >= 0) { let li = sti(O_litIdx + u32(jb)); if (li >= 0) { pc = wd(W_pCov + u32(li)); } }   // (the stands of the bed it would hold to)
@@ -2031,13 +2049,13 @@ fn yCov(k: u32, cc: u32) -> f32 {   // fish3 _yoyTarget cov: a spot's food × (1
     if (bc >= 0) { if (u32(bc) != c) { tx = colX(u32(bc)); ty = colY(u32(bc)); } tz = max(0.05, select(stf(O_wDepthMean + u32(bc)), bed, u32(bc) == c) - 0.05); done = true; }
   }
   if (!done) {
-    let gD = fryD(L); let cR = fryR(L); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
+    let yz = yZoo(L); let pel = spv(k, S_pelagicFry) > 0.0 && L < spv(k, S_pelagicFry) && gyi(Y_gref, q) < 0;
     var best = -1.0; var bj = -1; let k0 = min(nL(c) - 1u, u32(max(0, i32(z / WDZ))));
     let cv0 = yCov(k, c);
-    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; } let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * cv0; if (E > best) { best = E; bj = i32(jj); } }
+    for (var kk = 0u; kk < nL(c); kk++) { let jj = cell0(c) + kk; if ((pel && (stf(O_wDepthMax + c) < 2.0 || stf(O_wZMid + jj) > 1.5)) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + c) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; } let E = zooElY(jj, yz.u) * cv0; if (E > best) { best = E; bj = i32(jj); } }
     for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); let jj = cell0(cc) + min(nL(cc) - 1u, k0);
       if ((pel && (stf(O_wDepthMax + cc) < 2.0 || stf(O_wZMid + jj) > 1.5)) || !(byoy || free || stu(O_wCBody + cc) != BROOK) || (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T && stf(O_wDepthMean + cc) > spv(k, S_yBed)) || (F3_YO2_MARGIN > 0.0 && wd(W_o2 + jj) < o2m)) { continue; }
-      let E = zooEl(jj, gD, PLANKTON_FRY_COPE, cR) * yCov(k, cc); if (E > best) { best = E; bj = i32(jj); } }
+      let E = zooElY(jj, yz.u) * yCov(k, cc); if (E > best) { best = E; bj = i32(jj); } }
     if (bj >= 0) { let cc = u32(sti(O_wColOfCell + u32(bj))); if (cc != c) { tx = colX(cc) + (yrnd(q, 62u, 0u) - 0.5) * 30.0 * GSCALE; ty = colY(cc) + (yrnd(q, 62u, 1u) - 0.5) * 30.0 * GSCALE; } tz = stf(O_wZMid + u32(bj));  if (spv(k, S_yCover) > 0.0 && U.plants != 0u && wd(W_canopy + cc) > 0.1) { tz = max(0.05, max(tz, stf(O_wDepthMean + cc) - 0.5 * wd(W_canopy + cc))); } }   // (fish3: a cover keeper's young hold in the weeds)
     else if (spv(k, S_yBed) > 0.0 && T >= F3_YBED_T) {   // (fish3: S3 yBed — off its shelf with nothing about, to the shallowest column about it)
       var sc = c; for (var t = s0; t < s1; t++) { let cc = u32(sti(O_fNbrL + t)); if (stf(O_wDepthMean + cc) < stf(O_wDepthMean + sc)) { sc = cc; } }

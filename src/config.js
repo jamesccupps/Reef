@@ -1198,6 +1198,41 @@ export const ZOO3 = {
   // stays the non-predation mortality (field 0.002–0.18 /d)
   DAPH_LIM: 0,
   INV_D: 0.05, INV_Q10: 2.5, INV_T: 8,
+  // (E2c/E2d, SMALL — on in fish3 stageR5) THE SMALL CLADOCERANS, THE NAUPLII AND THE YOUNG'S PREY LADDER (small_zooplankton_and_microbial_loop.md
+  // §3, §5). A larva of 4.5–8 mm (gape 0.2–0.32 mm) takes rotifers, nauplii and 0.25–0.4-mm cladocerans, not 1–2-mm Daphnia; the sim's one
+  // cladoceran field held the small ones at a fixed 0.3 of Daphnia, where in the field they RISE when fish thin the Daphnia (PEG).
+  SMALL: 0,
+  // the small cladocerans (chem3.zooS: Bosmina, Ceriodaphnia, Chydorus, Diaphanosoma — 0.25–0.5 mm, 0.35–3 µg): ~10 % of a region's summer
+  // crustaceans (LakePulse ≤ 250 km: B. longirostris 5.0 %, Diaphanosoma 4.0 %, Holopedium 2.7 %), up to half the zooplankton of weedy shallows
+  // (the chydorids; Gyllström et al. 2005). Daphnia's growth and losses, with: a threshold K_S × Daphnia's (DeMott 1982: Bosmina's weight-specific
+  // ingestion at low food 1.6–4.8× Daphnia's; §5: ≈ 1.0–1.2×); Bosmina's egg development, 2.4 d at 20 °C and 15.5 at 4 (Q10_S 3.2), with no cold
+  // window (Bosmina 8 % of Simoncouche's under-ice biomass, breeding under the ice; Chydorus overwinters as adults) and no heat cut (Ceriodaphnia's
+  // optimum 20–22 °C; Diaphanosoma warm-water); bacteria at EPS_S of algae (Bosmina selects algae 2.8–13.7× over bacteria, DeMott 1982;
+  // cladoceran allochthony 0.31, Berggren et al. 2014); the weeds' periphyton (PLANKTON.LIT_FOOD: the chydorids); neither the filaments' cut nor
+  // Daphnia's toxin sensitivity (Gliwicz & Lampert 1990: the small species' order reverses with filaments); the invertebrate predators of young
+  // Daphnia on them too (INV_D: Bosmina's production rarely exceeded its loss to Chaoborus, Yan et al. 1991); no migration, no egg bank
+  START_S: 0.15, K_S: 1.1, EPS_S: 0.3, Q10_S: 3.2,
+  S_ADULT: 0.2,            // adult planktivores catch them at this share of Daphnia: a fish's reaction distance ∝ prey length, its search ∝ that²
+                           //   — (0.4/1.2 mm)² ≈ 0.1 to (0.5/1.0)² 0.25 [inf] (Brooks & Dodson's size-efficiency; Breck & Gitter 1983)
+  // THE NAUPLII: the copepod field's naupliar share of its biomass through the year (yf from March 1; linear between knots): 34 % at ice-melt
+  // (Simoncouche, Boulianne et al. 2025; L. minutus lays from February, its nauplii hatch in March), 0.1–0.2 in summer from the warm-water
+  // cyclopoids (Mesocyclops, Tropocyclops: nauplii in spring and summer above ~8–13 °C) [inf], least in autumn
+  NAUP_YF: [0, 0.15, 0.3, 0.6, 0.75, 0.95, 1], NAUP_V: [0.25, 0.34, 0.15, 0.15, 0.1, 0.2, 0.25],
+  // THE YOUNG'S PREY LADDER by length (cm). Rotifers as PLANKTON.FRY_ROT_*; nauplii at NAUP_C to NAUP_L[0], down to NAUP_MIN by NAUP_L[1];
+  // small cladocerans from S_MIN at first feeding (the 0.25-mm neonates) to all by S_L[1] (Bosmina and Chydorus from ~8 mm — Keast 1980;
+  // Siefert 1972; Hayford 1921's smallmouth on Chydorus); copepodites and adults from COP_MIN to 1 − COPE_ESCAPE over COP_L (smallmouth on
+  // copepods at ~9 mm, Easton 1992; pickerel on Cyclops at ~10 mm); Daphnia (> 1 mm) from D_MIN over D_L (a 13.5-mm bluegill takes a
+  // 1.2-mm cladoceran; first-feeding gapes 0.20–0.32 mm, Toetz 1966, NCRAC) — but the Daphnia field's neonates and juveniles (0.5–0.8 mm, as
+  // wide as a Bosmina) are D_JUV of its biomass [inf: a summer population under fish is juvenile-heavy] and go with the small cladocerans
+  NAUP_C: 0.9, NAUP_L: [1.2, 2.5], NAUP_MIN: 0.2, S_MIN: 0.3, S_L: [0.6, 0.9], COP_MIN: 0.1, COP_L: [0.8, 1.5], D_MIN: 0.05, D_L: [1.0, 1.5], D_JUV: 0.3,
+  // … each class by its own half-saturation: a larva's prey is counted, not weighed — ~100 micro-prey/L at half-saturation (Hart & Werner
+  // 1987: pumpkinseed 10 % survival at 160 plankters/L, growth only above 250/L; Margulies 1989: white perch ~0 growth at 50 rotifers/L,
+  // 0.14–0.20 /d at 800/L) × a rotifer's 0.05 µg (0.03–0.1) → K_ROT µg/L, a nauplius's 0.2 µg (0.06–0.58, Culver et al. 1985) → K_NAUP; the
+  // crustaceans at PLANKTON.K_FRY (Breck 1997: ~50/L). Intake = want × X/(1 + X), X = Σ catch × density / K over the classes (Holling's
+  // multi-prey disc equation). These are the FIRST-FEEDERS' counts: as the young outgrow the micro-prey (PLANKTON.FRY_ROT_L for the rotifers,
+  // NAUP_L for the nauplii) their half-saturation rises log-linearly to K_FRY's [inf: rotifers alone give perch larvae little or no growth,
+  // Graeb et al. 2004; > 10-mm perch larvae track the crustaceans' density, Martin, Wahl & Czesny 2012]
+  K_ROT: 5, K_NAUP: 20,
 };
 
 export const DETRITUS = {

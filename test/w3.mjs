@@ -1205,6 +1205,27 @@ if (run('hex')) {
     early === 0 && kg > 0.5 && kg < 50 && sHex > 0, `${kg.toFixed(1)} kg/ha emerged; the fish took ${(sHex / 1000 / F.lakeHa).toFixed(2)} kg/ha from the surface while it rose`);
 }
 // ============================================================
+//  E2c/E2d — THE SMALL CLADOCERANS, THE NAUPLII AND THE YOUNG'S PREY LADDER (config ZOO3.SMALL): the ladder by gape and count, and
+//  a month from late May on the 1/10 lakes with the package — the small cladocerans held in the field's share of the crustaceans, the
+//  weeds' at least the open water's, and the young eating them
+// ============================================================
+if (run('small')) {
+  console.log('\n— E2c/E2d: the small cladocerans and the young\'s prey ladder —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js'); const C = await import('../src/config.js'); const { naupShare } = await import('../src/w3/chem3.js');
+  const c = new Float64Array(4), u = new Float64Array(4), Z = C.ZOO3, P = C.PLANKTON;
+  Z.SMALL = 0; fm.yZoo(0.5, 0.3, c, u); const old = c[0] === P.FRY_DAPH_MIN && c[1] === P.FRY_COPE && c[3] === 0 && Math.abs(u[2] * P.K_FRY - c[2]) < 1e-12;
+  fm.stageR5(true); fm.yZoo(0.5, 0.3, c, u); const l5 = [...c], u5 = [...u]; fm.yZoo(1.6, 0.3, c, u); const l16 = [...c];
+  check("E2d: the young's prey ladder — a 5-mm larva takes rotifers and nauplii, a few neonate cladocerans and young Daphnia (≤ 0.15 of the field), a µg of rotifers counting ≥ 10× a µg of crustaceans; a 16-mm fry every cladoceran; off: the old ladder",
+    old && l5[0] <= 0.15 && l5[3] >= 0.25 && l5[3] <= 0.35 && l5[2] === 1 && u5[2] / u5[0] * l5[0] >= 10 && l16[0] === 1 && l16[3] === 1 && Math.abs(naupShare(0.15) - 0.34) < 1e-9,
+    `5 mm: Daphnia ${l5[0].toFixed(2)}, copepods ${l5[1].toFixed(2)}, rotifers ${l5[2].toFixed(2)}, small ${l5[3].toFixed(2)}; rotifers' weight per µg ${(u5[2] / (u5[0] / l5[0])).toFixed(0)}× Daphnia's; 16 mm: Daphnia ${l16[0].toFixed(2)}, small ${l16[3].toFixed(2)}`);
+  seed(611); const e = new Env3({ yf0: 0.25 }), F = new fm.Fish3(e, { young: true }), ch = e.chem, G = e.G;
+  for (let b = 0; b < 30 * 49; b++) { F.step(FB); e.step(FB); }
+  let s = 0, d = 0, cz = 0, w = 0, sW = 0, wW = 0; for (let j = 0; j < G.NCELL; j++) { const v = ch.w[j]; if (!(v > 0)) continue; s += ch.zooS[j] * v; d += ch.zooD[j] * v; cz += ch.zooC[j] * v; w += v; if (ch.plantRef[j] > 0.3) { sW += ch.zooS[j] * v; wW += v; } }
+  const S = s / w * P.UGL, share = s / (s + d + cz), weed = wW > 0 ? sW / wW * P.UGL : 0, ate = F.stats.food.yZooS || 0; fm.stageR5(false);
+  check('E2c (ZOO3.SMALL): a month from late May — the small cladocerans 2–40 % of the crustaceans (LakePulse ~10 %), the weeds\' at least the open water\'s (the chydorids), the young eating them',
+    share > 0.02 && share < 0.4 && weed >= 0.8 * S && ate > 0, `${S.toFixed(1)} µg/L, ${(100 * share).toFixed(0)} % of the crustaceans; in the weeds ${weed.toFixed(1)}; the young ate ${(ate / 1000).toFixed(1)} kg of them`);
+}
+// ============================================================
 //  E3 — THE EGG STAGE (config EGG3): clutches on the bed develop on its temperature and die by cause before they swim up
 // ============================================================
 if (run('eggs')) {

@@ -192,7 +192,32 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~9:55 p.m. EDT — THE NEWEST; the human may RESTART the computer soon). GATE of 9ed1d21: 121 PASS, 2 FAIL —
+▶▶▶ RESUME HERE (2026-10-22, after the restart — THE NEWEST). RUNNING: the remote GATE of 06a9b8c (scratchpad/gate_eco2.txt, ~45 min);
+ARM AF on the GPU (scratchpad/queue_af.sh; snapshot snap_af :8145 = 06a9b8c incl. the Hex hatch; 611/612/613 × 730 d → r22AF_<seed>.txt, ~1 h a seed;
+read with yrsum.mjs + yz.mjs + grep "wildlife take|period's eggs"). Arm AE 611 reached day 168 before the restart (r22AE_611.txt: recruits 0 at
+day 168 for pickerel/redbreast/fallfish/killifish — check at the year's turn in AF). UNCOMMITTED, CPU written + GPU written (GPU UNTESTED —
+the GPU is busy with AF; then g1_check ?r5=1 and ?r5=1&yf=0.75):
+  • E2c/E2d ZOO3.SMALL (in stageR5): chem3.zooS small cladocerans; nauplii a seasonal share of zooC (naupShare); the young's ladder by gape +
+    per-class half-saturations (fish3 yZoo, chem3 zooFeedYoy/zooXyoy/zooElY; WGSL yZoo/naupShare/zooElY, Y_qS, AC_YZS(W), R_YS, W_zooS);
+    adults take zooS with the Daphnia at S_ADULT 0.2 (zooE/zooEcells/zooFeedCells; WGSL zooE/zooSeen/k_fieldApply); bladderworts eat zooS.
+    test/w3.mjs 'small' (2 checks). Probe: scratchpad/probe/e2c.mjs <repo> on|off [days] [seed] [yf0] → e2c_on.txt / e2c_off.txt.
+  • E6a: WILD3 snapper + bullfrog rows (fish3); the GPU's T_WILD → 4352, T_WILDG → 4704 (room for 16; layout statsAdd pairs 2176/2352;
+    year.js reader updated). ~6.4 kg/day of fish on the true lakes by snappers.
+NEXT: commit these after W3_ONLY=small,wild pass; when AF is done: g1_check (?r5=1, ?r5=1&yf=0.75) for E2c + the wildlife rows; then E6b/E6c.
+FOUND (e2c probe, 1/10, seed 611, May→Aug): THE YOUNG ARE STUNTED WITH OR WITHOUT E2c (perch 15 mm by mid-August vs field 40–60; sunfish ~6 mm)
+and FAR TOO MANY: 3.4M perch + 7.1M white perch larvae at day 21 in the 6.5-ha world (~160/m²). Cause: FRY.M_LARVA3 0.04/d at 1 cm was
+calibrated on the GPU year BEFORE the egg stage, when sHatch 0.05–0.6 absorbed the early larval deaths; E3's field hatch rates lift
+first-feeders 3–10× (known issue (b)). E2c's first ladder (micro-prey at K_ROT/K_NAUP for every size; Daphnia's juveniles barred) let
+the hordes strip the rotifers (0.07 µg/L) → FIXED: Daphnia's juveniles (D_JUV 0.3) go with the small cladocerans; the count K's fade
+log-linearly to K_FRY as the young outgrow the micro-prey (FRY_ROT_L, NAUP_L). Probe rerun → probe/e2c_on2.txt.
+RESEARCH RUNNING (agent): field larval Z by species, the invertebrate-predation share, peak larval densities → docs/research_notes/Real
+lake ecology for calibration/larval_mortality.md — then set the unsimulated larval mortality from it (realism over compensation).
+PLAN AFTER: (1) commit E2c + E6a; (2) GPU parity when AF ends; (3) GENERATE THE GPU TALLY MAP from NK/NWILD (T_KILLS, T_FRY… are
+hand-placed for 11 species and overflow at 12) — prerequisite for (4) E8 THE ALEWIFE as the 12th species (sea_run_alewife.md
+"Implications for the sim": runs in via Lower's outlet mid/late May at 15/acre default, spawn at night in the shallows, 50 % die,
+survivors leave in 1–4 weeks; young schools never recruit — emigrate mid-July → ice-on in rain/flow/cold pulses, die at ice-on;
+FB4 Stewart & Binkowski 1986; P/N import–export).
+▶▶▶ RESUME HERE (2026-10-21 ~9:55 p.m. EDT; the human may RESTART the computer soon). GATE of 9ed1d21: 121 PASS, 2 FAIL —
 both checks updated for the new mechanisms (f4918b4: white perch's unsimulated + wildlife mortality; R2a's Daphnia floor 5 µg/L). GATE of
 f4918b4 (everything: eggs, Hex hatch…) STARTED ~9:55 (scratchpad/gate_eco2.txt, ~45 min) — rerun it if the restart cut it:
   node tools/remote/run.mjs occ-server -e W3_PERF_MUL=1.3 -- npm test

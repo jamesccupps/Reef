@@ -38,7 +38,7 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 { const C = await import('../../src/config.js');
   for (const [k, v] of qs) if (k.startsWith('cfg.')) { const [, blk, key] = k.split('.'), o = C[blk]; if (o && key in o) o[key] = v === 'true' ? true : v === 'false' ? false : +v; } }
 const NK = KEYS3.length, NCAUSE = 8, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded', 'wild'];
-const { WILDK } = await import('../../src/w3/fish3.js');   // (E4: the wildlife's tallies — T_WILD pairs 1888 + w·NK + k, T_WILDG 1988 + w, T_YWILD 1998 + k)
+const { WILDK } = await import('../../src/w3/fish3.js');   // (E4: the wildlife's tallies — T_WILD pairs 2176 + w·NK + k, T_WILDG 2352 + w, T_YWILD 1998 + k)
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
 const KBY = (qs.get('kby') || 'perch,whiteperch,sunfish,redbreast,fallfish,killifish,catfish,dace').split(','), YBY = (qs.get('yby') || 'pike,bass,killifish,sunfish,perch,whiteperch').split(',');   // (the review's defaults: docs/review/PLAN.md item 1)
@@ -62,10 +62,10 @@ for (const sd of SEEDS) {
   const Gw = env.G, chw = env.chem; let wA = 0; for (let c = 0; c < Gw.NC; c++) wA += Gw.area[c];
   let zp0 = chw.zooProd, tz0 = env.time;
   const plankton = () => {
-    let d = 0, cz = 0, r = 0, v = 0; for (let j = 0; j < Gw.NCELL; j++) { const q = Gw.vol[j]; d += chw.zooD[j] * q; cz += chw.zooC[j] * q; r += chw.zooR[j] * q; v += q; }
+    let d = 0, cz = 0, r = 0, s = 0, v = 0; for (let j = 0; j < Gw.NCELL; j++) { const q = Gw.vol[j]; d += chw.zooD[j] * q; cz += chw.zooC[j] * q; r += chw.zooR[j] * q; s += chw.zooS[j] * q; v += q; }
     const U = PLANKTON.UGL / v, days = Math.max(1e-9, (env.time - tz0) / 86400), prod = (chw.zooProd - zp0) * PLANKTON.DRY / wA / days;
     zp0 = chw.zooProd; tz0 = env.time;
-    return `D ${(d * U).toFixed(0)} C ${(cz * U).toFixed(0)} R ${(r * U).toFixed(0)} µg/L, production ${prod.toFixed(3)} g DW/m²/day`;
+    return `D ${(d * U).toFixed(0)} C ${(cz * U).toFixed(0)} R ${(r * U).toFixed(0)}${s > 0 ? ` S ${(s * U).toFixed(0)}` : ''} µg/L, production ${prod.toFixed(3)} g DW/m²/day`;
   };
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
@@ -161,7 +161,7 @@ for (const sd of SEEDS) {
       if (parts.length) say(`${tag}: ` + parts.join(' · '));
     }
     // THE WILDLIFE'S TAKE (E4, F3.WILD): each wildlife's kg of fish in the period, and the fish it took by species (followed and young)
-    { const parts = WILDK.map((w, r) => { const g = D(1988 + r) / 1e6; if (!(g > 0)) return null; const by = KEYS3.map((k, q) => [k, D(1888 + r * NK + q) / 1e6]).filter(x => x[1] >= 1).sort((a, b) => b[1] - a[1]);
+    { const parts = WILDK.map((w, r) => { const g = D(2352 + r) / 1e6; if (!(g > 0)) return null; const by = KEYS3.map((k, q) => [k, D(2176 + r * NK + q) / 1e6]).filter(x => x[1] >= 1).sort((a, b) => b[1] - a[1]);
         return `${w} ${(g / 1e3).toFixed(0)} kg (` + by.slice(0, 5).map(([k, n]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}`).join(' ') + ')'; }).filter(Boolean);
       if (parts.length) say("the period's wildlife take: " + parts.join(' · ')); }
     // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)

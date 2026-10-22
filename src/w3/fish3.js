@@ -22,7 +22,7 @@
 // days); R3 gives each rung its own mechanisms. BEHAVIOUR follows the hour: where a fish chooses to be by day and by night.
 import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js';
 import { CLOCK3, TS, DAY3, OLD_S } from './clock3.js';
-import { A2 } from './chem3.js';
+import { A2, naupShare } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
@@ -541,6 +541,18 @@ const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
 const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
+// (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
+// rotifers, small cladocerans), u its weight in the count response (catch / the class's half-saturation; the copepods' nauplii at K_NAUP, the
+// rest at K_FRY) — chem3 zooFeedYoy. Without SMALL the old ladder on one K_FRY (u = c / K_FRY: the old type II exactly)
+export function yZoo(L, yf, c, u) {
+  const P = PLANKTON, Z = ZOO3, K = P.K_FRY, ramp = (x, a) => clamp((x - a[0]) / (a[1] - a[0]), 0, 1);
+  const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
+  if (!Z.SMALL) { c[0] = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1); c[1] = P.FRY_COPE; c[2] = cR; c[3] = 0; for (let i = 0; i < 4; i++) u[i] = c[i] / K; return; }
+  const nS = naupShare(yf), cN = Z.NAUP_MIN + (Z.NAUP_C - Z.NAUP_MIN) * (1 - ramp(L, Z.NAUP_L)), cCa = Z.COP_MIN + (1 - Z.COPE_ESCAPE - Z.COP_MIN) * ramp(L, Z.COP_L);
+  const cS = Z.S_MIN + (1 - Z.S_MIN) * ramp(L, Z.S_L), kR = Z.K_ROT * Math.pow(K / Z.K_ROT, ramp(L, P.FRY_ROT_L)), kN = Z.K_NAUP * Math.pow(K / Z.K_NAUP, ramp(L, Z.NAUP_L));
+  c[0] = Z.D_JUV * cS + (1 - Z.D_JUV) * (Z.D_MIN + (1 - Z.D_MIN) * ramp(L, Z.D_L)); c[1] = nS * cN + (1 - nS) * cCa; c[2] = cR; c[3] = cS;
+  u[0] = c[0] / K; u[1] = nS * cN / kN + (1 - nS) * cCa / K; u[2] = cR / kR; u[3] = cS / K;
+}
 const DIET0 = Object.fromEntries(['whiteperch', 'sunfish', 'redbreast', 'fallfish', 'dace', 'perch'].map(k => [k, { plank: !!SP[k].diet.plankton, Lzoo: SP[k].Lzoo }]));
 export function stageR5(on = true) {
   F3.STRIKE2 = on ? 1 : 0;
@@ -708,6 +720,7 @@ export function stageR5(on = true) {
   // (E2a) the rotifers' microbial food and field rates, the size-gated interference, their predators feeding the copepods (config ZOO3.MICRO)
   ZOO3.MICRO = on ? 1 : 0;
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
+  ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
   WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
@@ -832,6 +845,20 @@ export const WILD3 = {
   // mink: all year, chiefly nocturnal; fish in winter and spring, crayfish in summer; small fish in the shore's shallows [inf: bed
   // ≤ 0.5–1 m]; ~175 g/day [inf: 15–20 % of ~1 kg]; 1.5 to > 3 a km of good shore — 0.5 a km of these lakes' [inf]
   mink: { yf: [0, 1], perKm: 0.5, need: 175, fish: [0.6, 0.2], L: [4, 6, 15, 20], z: [1, 1.5], b: [0.6, 1.0], act: [0.2, 0.6, 1], ice: 1, pref: {} },
+  // (E6, the herps — docs/research_notes/Maine lake shores and catchment/turtles_and_frogs.md §4, §6)
+  // snapping turtle: common and secure in every region of Maine; northern adults ~1.5 /ha overall (Obbard 1983), Algonquin 1.5–2.4, density
+  // falling with the water's size (Crescent Lake) — 1 /ha of these lakes [inf]; an adult eats about its own weight a year (Kiviat 1980): a
+  // ~6-kg northern adult [inf] over the ~120 days it feeds (only above 16 °C, Graves & Anderson 1987: late May – mid-September) ≈ 50 g/day;
+  // fish a third of Michigan's 173 stomachs (game fish, part scavenged), 'mainly slow, non-game fish' (Hammer 1972; Lagler & Applegate 1943)
+  // — 0.2 live [inf] — the rest plants (a third to two-thirds), crayfish, invertebrates, frogs; it ambushes and stalks on the bottom of the
+  // shallows [inf: a bed ≤ 2–4 m], rarely basking, day and night
+  snapper: { yf: [0.24, 0.56], perHa: 1, need: 50, fish: [0.2, 0.2], L: [4, 8, 30, 45], z: [99, 99], b: [2, 4], act: [0.7, 1, 0.8], ice: 0, pref: { sucker: 2, catfish: 2, sunfish: 1.2, redbreast: 1.2, bass: 0.5, pike: 0.5 } },
+  // bullfrog: statewide, common; shallow bays and the weedy edge, males on floating territories 2–5 m across, inactive until the water nears
+  // 15 °C (Harding 1997), in the mud from October; 8.8–45.8 /ha (an Illinois lake), 6.6–119 a km of shore — 10 a km of these lakes' [inf: the
+  // low end, a northern lake]; ~250-g adults eating ~4 % a day [inf] ≈ 10 g; insects (Hemiptera, Odonata), frogs 5–15 %, crayfish, and small
+  // fish ~5 % [inf: Werner, Wellborn & McPeek 1995's Michigan diet lists fish only within 'miscellaneous aquatic' 2–7 %], at the surface of
+  // shallow water, mostly at night [inf]. (Green and mink frogs take 'sometimes small minnows' — too few to enter here)
+  bullfrog: { yf: [0.22, 0.6], perKm: 10, need: 10, fish: [0.05, 0.05], L: [2, 3, 8, 12], z: [0.3, 0.6], b: [1, 1.5], act: [0.3, 1, 1], ice: 0, pref: {} },
 };
 export const WILDK = Object.keys(WILD3);
 // (the day's share of hours by light: day, twilight, night — the activities' daily mean [inf: a Maine summer's day])
@@ -2733,11 +2760,10 @@ export class Fish3 {
       if (bc >= 0) { if (bc !== c) { q.tx = G.cx[bc]; q.ty = G.cy[bc]; } q.tz = Math.max(0.05, (bc === c ? q.bed : G.depthMean[bc]) - 0.05); return; }
     }
     // zooplankton of a larva's size (rotifers and nauplii while small; the limnetic phase over open water for sunfish fry)
-    const P = PLANKTON, gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
-    const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
+    const zc = this._ytc || (this._ytc = new Float64Array(4)), zu = this._ytu || (this._ytu = new Float64Array(4)); yZoo(q.L, this.env.yearFrac(), zc, zu);
     const pel = sp.pelagicFry && q.L < sp.pelagicFry && !q.gref;
     let best = -1, bj = -1; const k0 = Math.min(G.nL[c] - 1, Math.max(0, (q.z / G.DZ) | 0));
-    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc) || (F3.YO2_MARGIN > 0 && ch.o2[jj] < o2m)) return; const E = ch.zooEl(jj, gD, P.FRY_COPE, cR) * cov(cc); if (E > best) { best = E; bj = jj; } };
+    const tryJ = jj => { const cc = G.colOfCell[jj]; if ((pel && (G.depthMax[cc] < 2 || G.zMid[jj] > 1.5)) || !ok(cc) || (F3.YO2_MARGIN > 0 && ch.o2[jj] < o2m)) return; const E = ch.zooElY(jj, zu) * cov(cc); if (E > best) { best = E; bj = jj; } };
     for (let k = 0; k < G.nL[c]; k++) tryJ(G.cell0[c] + k);
     for (let k = 0; k < nb.length; k++) { const cc = nb[k]; tryJ(G.cell0[cc] + Math.min(G.nL[cc] - 1, k0)); }
     if (bj >= 0) { const cc = G.colOfCell[bj]; if (cc !== c) { q.tx = G.cx[cc] + (rand() - 0.5) * 30 * GEO.SCALE; q.ty = G.cy[cc] + (rand() - 0.5) * 30 * GEO.SCALE; } q.tz = G.zMid[bj];
@@ -2775,12 +2801,13 @@ export class Fish3 {
     const nbY = this.nbr[q.c], BL = this._ybl || (this._ybl = new Int32Array(64)); let nB = 0;
     if (canB) { if (q.jb >= 0) BL[nB++] = q.jb; for (let i = 0; i < nbY.length && nB < BL.length; i++) { const jb = this.colBedJ[nbY[i]]; if (jb >= 0) BL[nB++] = jb; } }
     let tZ = 1, tW = 1, tB = 1;
+    const zc = this._yfc || (this._yfc = new Float64Array(4)), zu = this._yfu || (this._yfu = new Float64Array(4)); if (canZ) yZoo(q.L, this.env.yearFrac(), zc, zu);   // (E2c/E2d: its zooplankton ladder)
     if (F3.YSHARE && base > 1e-12) {
       let fZ = 0, fW = 0, fB = 0;
-      if (canZ) { const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1), cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1), YL = this._ylyshare || (this._ylyshare = new Int32Array(64)); const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0; let nY = 0;
+      if (canZ) { const YL = this._ylyshare || (this._ylyshare = new Int32Array(64)); const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0; let nY = 0;
         for (let k = Math.max(0, k0 - 1); k <= Math.min(G.nL[c] - 1, k0 + 1); k++) YL[nY++] = j0 + k;
         for (let i = 0; i < nbY.length && nY < YL.length; i++) { const cc = nbY[i]; YL[nY++] = G.cell0[cc] + Math.min(G.nL[cc] - 1, k0); }
-        const E = ch.zooEyoy(YL, nY, gD, P.FRY_COPE, cR); fZ = E / (E + P.K_FRY); }
+        const X = ch.zooXyoy(YL, nY, zu); fZ = X / (1 + X); }
       if (canW) { const E = lit.weedEyoy(q.jb, q.L); fW = E > 0 ? E / (E + BENTHOS.K_FISH) : 0; }
       if (canB && nB) { const E = ch.benthEcells(BL, nB); fB = E > 0 ? E / (E + BENTHOS.K_FISH) : 0; }
       const Q = F3.SHARE_Q, qZ = fZ ** Q, qW = fW ** Q, qB = fB ** Q, sq = qZ + qW + qB;
@@ -2788,15 +2815,13 @@ export class Fish3 {
     }
     const ask = t => F3.YSHARE ? base * t : want - got;
     if (canZ && ask(tZ) > 1e-12) {
-      const gD = P.FRY_DAPH_MIN + (1 - P.FRY_DAPH_MIN) * clamp((q.L - P.FRY_DAPH_L[0]) / (P.FRY_DAPH_L[1] - P.FRY_DAPH_L[0]), 0, 1);
-      const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - q.L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
       // (its FOOTPRINT: the water about it it ranges in a tick — its own column (its layer ± one) and the ring of columns round it at
       // its layer: a school of young can't strip one cell and starve beside plenty; the adults' have theirs, _footprint)
       const G = this.G, c = q.c, j0 = G.cell0[c], k0 = q.j - j0, YL = this._yl || (this._yl = new Int32Array(64)), nb = this.nbr[c]; let nY = 0;
       for (let k = Math.max(0, k0 - 1); k <= Math.min(G.nL[c] - 1, k0 + 1); k++) YL[nY++] = j0 + k;
       for (let i = 0; i < nb.length && nY < YL.length; i++) { const cc = nb[i]; YL[nY++] = G.cell0[cc] + Math.min(G.nL[cc] - 1, k0); }
-      const t = ch.zooFeedCells(YL, nY, gD, P.FRY_COPE, ask(tZ), P.K_FRY, this._zf || (this._zf = [0, 0, 0]), false, false, cR), g = t[0] + t[1] + t[2];
-      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED; this.stats.food.yZoo += g; }
+      const t = ch.zooFeedYoy(YL, nY, zc, zu, ask(tZ), this._zf || (this._zf = [0, 0, 0, 0])), g = t[0] + t[1] + t[2] + t[3];
+      if (g > 0) { got += g; J += t[0] * PREY.DAPH_ED + t[1] * PREY.COPE_ED + t[2] * PREY.ROT_ED + t[3] * PREY.DAPH_ED; this.stats.food.yZoo += g; if (t[3] > 0) this.stats.food.yZooS = (this.stats.food.yZooS || 0) + t[3]; }
     }
     // the weeds' small fauna from WEED_L, their large from LARGE_L (stage 7b), for a school in the canopy or near the bed
     if (canW && ask(tW) > 1e-12) {

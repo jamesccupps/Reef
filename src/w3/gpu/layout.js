@@ -48,7 +48,7 @@ export const YOY_FIELDS = [
   'dev', 'eggT0', 'eggTm', 'hadGuard',   // (E3: the egg stage — fish3 Yoy.dev, eggT0, eggTm, hadGuard)
   // SCRATCH: where it began the block; this tick's water, wants, its requests of each food, what it got, its starvation hazard
   ['sx', 's'], ['sy', 's'], ['sz', 's'], ['feeds', 's'], ['st', 's'], ['yT', 's'], ['yo2', 's'], ['want', 's'], ['got', 's'], ['J', 's'], ['hS', 's'],
-  ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'], ['wZ', 's'],
+  ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qS', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'], ['wZ', 's'],
   ['yb', 'si'], ['ya', 's'],   // (stage Y1: its prey-table bin and the n of it available — fish3 _yTable)
 ].map(f => Array.isArray(f) ? f : [f, 'f']);
 export const YF = Object.fromEntries(YOY_FIELDS.map(([n], i) => [n, i]));
@@ -212,12 +212,12 @@ export function statsAdd(st, tl, time = 0) {
     const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * T_CAUSES.length + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
     { const yw = tl[1998 + q] / M; if (yw > 0) st.fry[k].wild = (st.fry[k].wild || 0) + yw; }   // (E4: the young the wildlife took — T_YWILD)
     { const t = st.eggs3 && (st.eggs3[k] || (st.eggs3[k] = { laid: 0, swum: 0, base: 0, temp: 0, guard: 0, pred: 0, o2: 0, storm: 0 })); if (t) ['laid', 'swum', 'base', 'temp', 'guard', 'pred', 'o2', 'storm'].forEach((c, j) => { t[c] += tl[2048 + q * 8 + j] / M; }); }   // (E3: T_EGG3)
-    WILDK.forEach((w, r) => { const v = tl[1888 + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
+    WILDK.forEach((w, r) => { const v = tl[2176 + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
     T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[910 + q] / M;
     const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
     const at = st.spawnAt[k]; at.sub += tl[424 + q] / M; at.bed += tl[436 + q] / M; at.brook += tl[448 + q] / M; if (sp > 0 && at.first < 0) at.first = time;
   });
-  WILDK.forEach((w, r) => { const g = tl[1988 + r] / M; if (g > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.g += g; } });   // (T_WILDG)
+  WILDK.forEach((w, r) => { const g = tl[2352 + r] / M; if (g > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.g += g; } });   // (T_WILDG)
   return st;
 }
 
@@ -363,7 +363,7 @@ export function packSites(F) {
 // ---------- THE WATER the fish read each block (uploaded after the water model steps): a dynamic f32 buffer of sections ----------
 export function waterSections(env) {
   const G = env.G, ch = env.chem, lit = env.lit, pl = env.plants, NB = lit ? lit.cells.length : 1, NP = pl ? pl.spawnS.rigid.length : 1;
-  return [['temp', G.NCELL], ['o2', G.NCELL], ['zooD', G.NCELL], ['zooC', G.NCELL], ['zooR', G.NCELL], ['zv', G.NCELL], ['plantRef', G.NCELL],
+  return [['temp', G.NCELL], ['o2', G.NCELL], ['zooD', G.NCELL], ['zooC', G.NCELL], ['zooR', G.NCELL], ['zooS', G.NCELL], ['zv', G.NCELL], ['plantRef', G.NCELL],
     ['benth', G.NCELL], ['sedOM', G.NCELL], ['ice', G.NC], ['canopy', G.NC], ['coverC', G.NC], ['o2Best', G.NC], ['surfA', G.NC], ['surfT', G.NC],
     ['litL', NB], ['litSn', NB], ['litS', NB], ['litCrA', NB], ['litCrY', NB], ['litKcr', NB], ['spRigid', NP], ['spMat', NP], ['spPlant', NP], ['pCov', NP], ['pReach', NP]];   // (pCov, pReach: plants3 cov, reachB per bed cell)
 }
@@ -371,7 +371,7 @@ export function waterLayout(env) { let off = 0; const offs = {}, lens = {}; for 
 // fill the dynamic water buffer from the env (o2Best: each column's better-oxygenated neighbour, fish3 _o2Better, or −1)
 export function packWater(F, env, WL, out = null) {
   const W = out || new Float32Array(WL.size), I = new Int32Array(W.buffer), ch = env.chem, lit = env.lit, pl = env.plants, G = env.G, o = WL.offs;
-  W.set(env.temp, o.temp); W.set(ch.o2, o.o2); W.set(ch.zooD, o.zooD); W.set(ch.zooC, o.zooC); W.set(ch.zooR, o.zooR); W.set(ch.zv, o.zv); W.set(ch.plantRef, o.plantRef);
+  W.set(env.temp, o.temp); W.set(ch.o2, o.o2); W.set(ch.zooD, o.zooD); W.set(ch.zooC, o.zooC); W.set(ch.zooR, o.zooR); W.set(ch.zooS, o.zooS); W.set(ch.zv, o.zv); W.set(ch.plantRef, o.plantRef);
   W.set(ch.benth, o.benth); W.set(ch.sedOM, o.sedOM); W.set(env.ice, o.ice);
   if (pl) { W.set(pl.cov, o.pCov); W.set(pl.reachB, o.pReach); W.set(pl._canopy, o.canopy); for (let c = 0; c < G.NC; c++) W[o.coverC + c] = pl.coverAt(c); W.set(pl.spawnS.rigid, o.spRigid); W.set(pl.spawnS.mat, o.spMat); W.set(pl.spawnS.plant, o.spPlant); }
   F._o2cAt = -1; for (let c = 0; c < G.NC; c++) I[o.o2Best + c] = F._o2Better(c);
@@ -384,6 +384,7 @@ const wf = v => { if (v === Infinity || v >= 3e38) return '3e38'; if (v === -Inf
 // THE LAKES' FISH-EATING WILDLIFE (fish3 WILD3, _wildV) as WGSL: a fish's accessibility to wildlife w — its length, its depth below the
 // surface, the bed under it, its cover, the ice — × the wildlife's preference for its species (one case a wildlife, from WILD3 itself)
 export function wildWGSL() {
+  if (WILDK.length > 16) throw new Error('layout: more than 16 wildlife — GL G_WD/G_WRHO, GS_WILDA and TL T_WILD/T_WILDG hold 16');
   const cases = WILDK.map((w, r) => {
     const d = WILD3[w]; let pr = '1.0';
     for (const [sp, v] of Object.entries(d.pref)) { const q = KEYS3.indexOf(sp); if (q < 0) throw new Error(`layout: WILD3.${w} prefers an unknown species ${sp}`); pr = `select(${pr}, ${wf(v)}, k == ${q}u)`; }
@@ -414,6 +415,9 @@ export function wgslConstants(STL, WL, extra = {}) {
   for (const [k, v] of Object.entries(F3)) if (typeof v === 'number') C('F3_' + k, v);
   for (const [blk, o] of [['EGG3', EGG3], ['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3], ['WINTER0', WINTER0]])
     for (const [k, v] of Object.entries(o)) { if (typeof v === 'number') C(blk + '_' + k, v); else if (Array.isArray(v) && v.length <= 4 && v.every(x => typeof x === 'number')) v.forEach((x, q) => C(`${blk}_${k}_${q}`, x)); }
+  { const X = ZOO3.NAUP_YF, V = ZOO3.NAUP_V; let f = 'fn naupShare(yf0: f32) -> f32 { let yf = fract(yf0);';   // (E2c: chem3 naupShare, the copepods' naupliar share by the year)
+    for (let i = 1; i < X.length; i++) f += ` if (yf <= ${wf(X[i])}) { return ${wf(V[i - 1])} + (${wf(V[i])} - ${wf(V[i - 1])}) * (yf - ${wf(X[i - 1])}) / (${wf(X[i])} - ${wf(X[i - 1])}); }`;
+    L.push(f + ` return ${wf(V[V.length - 1])}; }`); }
   C('WINTER0_ON', WINTER0.ON ? 1 : 0); C('WIN_YF0', winterWindow[0]); C('WIN_YF1', winterWindow[1]); C('WINJE_YF0', winterWindowJE[0]); C('WINJE_YF1', winterWindowJE[1]);
   C('ENV_O2_MGL', ENV.O2_MGL); C('ENV_COLD_PERF_MIN', ENV.COLD_PERF_MIN); C('ENV_HYPOXIA', ENV.HYPOXIA);
   C('OXYCAL', OXYCAL); C('YEAR', YEAR); C('DAY', DAY); C('TS', TS); C('OLD_S', OLD_S);

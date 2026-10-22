@@ -139,7 +139,7 @@ export function waterOf(env) {
     for (let col = 0; col < Gc.NC; col++) {
       if (Gc.body[col] !== lake) continue; const a = Gc.area[col], j0 = Gc.cell0[col], jb = j0 + Gc.nL[col] - 1;
       A += a; ts += env.temp[j0] * a; tb += env.temp[jb] * a; os += ch.o2[j0] * a; ob += ch.o2[jb] * a; alg += (ch.phyto[j0] + ch.diatom[j0] + ch.cyano[j0]) * a; ice += env.ice[col] * a;
-      for (let j = j0; j <= jb; j++) { zoo += (ch.zooD[j] + ch.zooC[j]) * Gc.vol[j]; zv += Gc.vol[j]; }
+      for (let j = j0; j <= jb; j++) { zoo += (ch.zooD[j] + ch.zooC[j] + ch.zooS[j]) * Gc.vol[j]; zv += Gc.vol[j]; }
     }
     water[lake] = { ha: lakeArea(lake) / 1e4, tS: ts / A, tB: tb / A, oS: os / A * ENV.O2_MGL, oB: ob / A * ENV.O2_MGL, algae: alg / A, zoo: zoo / Math.max(1e-9, zv) * PLANKTON.UGL, ice: ice / A };
   }

@@ -177,7 +177,7 @@ function fieldOf(name) {
   if (name === 'temp') out.set(env.temp);
   else if (name === 'o2') out.set(c.o2);
   else if (name === 'algae') for (let j = 0; j < n; j++) out[j] = c.phyto[j] + c.diatom[j] + c.cyano[j];
-  else if (name === 'zoo') for (let j = 0; j < n; j++) out[j] = (c.zooD[j] + c.zooC[j]) * PLANKTON.UGL;
+  else if (name === 'zoo') for (let j = 0; j < n; j++) out[j] = (c.zooD[j] + c.zooC[j] + c.zooS[j]) * PLANKTON.UGL;
   return out;
 }
 function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed cells in chem3.bedCells order

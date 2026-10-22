@@ -165,7 +165,8 @@ export const PL3 = {
   // 1994, Adamec 2002) feed the plant: up to 75 % of a season's N in Wisconsin, 40–100 % in Australian isotope work. The sim's
   // zooplankton carry no N or P (their food's comes straight back to the water), so the prey's are drawn from the water about the
   // canopy, where they would be — held as the plant's credit (counted in its budget) until it grows on them
-  PREY_SEL: [0.3, 1, 0.2],   // Daphnia, copepods (the littoral crustaceans), rotifers
+  PREY_SEL: [0.3, 1, 0.2, 1],   // Daphnia, copepods (the littoral crustaceans), rotifers, the small cladocerans (chem3.zooS, E2c: the chydorids
+                             //   and Bosmina, the bladderworts' commonest prey)
   PREY_N: 9, PREY_P: 1.2, PREY_EFF_N: 0.8, PREY_EFF_P: 0.9, PREY_T: 8,   // (% of dry mass; absorbed; traps idle below PREY_T °C)
   PREY_DAYS: 3,              // the credit a stand holds: at most this many days of its full growth's needs (the rest of the catch is
                              //   only digested; its N and P stay in the water)
@@ -471,11 +472,11 @@ export class Plants3 {
     const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1)), j0 = G.cell0[c], kB = j - j0, k0 = Math.min(Math.max(0, Math.floor((z - h) / G.DZ)), kB);
     let V = 0; for (let k = k0; k <= kB; k++) V += G.vol[j0 + k];
     if (!(V > 0)) return;
-    const clr = F.prey * qT * b * A * (ds / DAY3) / (V * 1000), S = PL3.PREY_SEL, flds = [ch.zooD, ch.zooC, ch.zooR];   // (volumes the stand clears)
+    const clr = F.prey * qT * b * A * (ds / DAY3) / (V * 1000), S = PL3.PREY_SEL, flds = [ch.zooD, ch.zooC, ch.zooR, ch.zooS];   // (volumes the stand clears)
     let wet = 0;
     for (let k = k0; k <= kB; k++) {
       const q = j0 + k;
-      for (let t = 0; t < 3; t++) { const fld = flds[t], z0 = fld[q]; if (!(z0 > 0)) continue; const take = z0 * -Math.expm1(-clr * S[t]); fld[q] = z0 - take; wet += take * ch.w[q]; }
+      for (let t = 0; t < 4; t++) { const fld = flds[t], z0 = fld[q]; if (!(z0 > 0)) continue; const take = z0 * -Math.expm1(-clr * S[t]); fld[q] = z0 - take; wet += take * ch.w[q]; }
     }
     if (!(wet > 0)) return;
     this.caught += wet;
