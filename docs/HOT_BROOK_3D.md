@@ -1406,6 +1406,50 @@ have spawned (6–12 °C, just after ice-out) and while the suckers and white pe
   calendar calibration later.
 - test/w3.mjs +1 check (a May-20 lake vs the gate's spring run on that date: ×0.5–2 the numbers, ±30 % the sizes on the coarse grid).
 
+**Built (E14) — THE FOREST'S MAMMALS (2026-10-22; the human: "a whole environment simulator of the lakes and forest right around
+them", "there are bears and deer").** `src/w3/forest3.js` (pure), config `FOREST3` (on in fish3 `stageR5`); research
+`docs/research_notes/Maine lake shores and catchment/forest_mammals_bears_deer_moose.md`.
+- **Individuals at the field's densities** over the real land the grid holds (its land cells ÷ `GEO.SCALE²`):
+  - bears 0.4 /km² (Maine ~1 a mi² in occupied range);
+  - deer 1.5 /km² (WMD 11's 2–6 a mi²);
+  - moose 0.6 /km² (northern Maine 0.4–4.0, WMD 11 fewer);
+  - the true world's 9.3 km² → 4 / 14 / 6; the 1/10 world's 15.6 km² (real-equivalent) → 6 / 23 / 9.
+  - Home ranges (bear 20 / 100 km², deer 1.5, moose 3.5) have their radius × `GEO.SCALE`, as the lakes; walking speeds are real, as the
+    fish's.
+- **Legs.** Each animal walks legs: a straight line at its pace (no deeper water than it wades on the way, except a long walk home), or a
+  spell in place. A step of any length finishes the legs that ended within it and plans the next at their own end times, by the hour
+  (dawn and dusk 1.5 h either side of sunrise and sunset) and the season. It runs on its own stream, seeded from the weather's, so
+  `core.rand` is untouched and the forest never shifts the fish.
+- **Bears:**
+  - in their dens mid-October – late November to April – early May (mothers with new cubs last);
+  - cubs born in January, out with her in spring, leaving as yearlings in June — a litter every other year;
+  - by day and twilight; spring at the wetland edges, summer in the openings, fall in the hardwoods.
+- **Deer:**
+  - crepuscular, bedded by day;
+  - at dawn and dusk to the water's edge to drink, and from late May to early August to crop the edge's emergent and floating plants;
+  - to their yard (the densest evergreen and wooded-swamp block near home) once the snow passes 30 cm (MDIFW's wintering areas).
+- **Moose:** browse the wetland shrubs and hardwoods; in summer a bout in the shallows in the late afternoon and one at night on ~87 % of
+  days (Belovsky & Jordan).
+- **The lakes:**
+  - **WILD3.bear** (fish3; both engines). Its count is the bears fishing now (`env.forest.fishing()` × fa). It takes suckers and spawning
+    fallfish ≥ 20 cm, in a BROOK column only (the row's `brook` flag: `_wildV`'s column argument on the CPU, `wildV(…, c)` reading
+    `O_wCBody` on the GPU), within 0.4–0.8 m of water, at 600 g an hour of fishing, Holling II as every row.
+    - The run is on while the lakes' water at the brook's mouths is in the suckers' own ripeness window (fish3 `_ripe`). Bears whose
+      ranges hold the brook fish its riffles at dusk, in the night and at dawn.
+  - **The deer's crop**: 4 g dry a minute at the edge (× fa). The shoots' N and P go ashore with their dung (chem3's ledger, as E13's).
+  - **The moose** wade where E13's take falls: each bout's spot is drawn from `PL3.MOOSE`'s own weights within the moose's range. The take
+    stays plants3's.
+- **The view's interface:** `env.forest` is null when off.
+  - `env.forest.animals`: stable objects `{ id, kind, x, y, heading, act, young, len }`, plus `ylen`, `sex`, `tx`, `ty`, `spd`, `t1` (it goes
+    on toward (tx, ty) at spd m/s until sim time t1 — for carrying it between the water's steps).
+  - `env.forest.count(kind)`.
+- **Known gaps:**
+  - The grid's window holds fewer moose than E13's 15 lake users (they come from the catchment's wider band).
+  - The adults' census is fixed and the young are carried, not recruited.
+  - Bears' other foods and their take of fawns and calves are not modelled; the young die at flat rates.
+  - No browse on the bank's shrubs (the land's plants are not simulated).
+- test/w3.mjs section `forest` (W3_ONLY=forest).
+
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 
 three.js r186 (`WebGPURenderer`, which falls back to WebGL2 by itself; ES modules with an import map — self-hosted pinned

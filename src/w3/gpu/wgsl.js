@@ -292,11 +292,11 @@ fn aleAdd(r: u32, v: f32) { if (v > 0.0) { add64(&GS, GS_ALE + 2u * r, v, ASC); 
 // T_WILDG  // + 2w: their grams
 // T_YWILD  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
 // T_EGG3   // + 2·(k·8 + j): (E3) the egg stage — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm (fish3 stats.eggs3)
-fn wildH(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {
-  var h = 0.0; for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { h += r * wildV(w, k, L, z, bed, cover, ice); } } return h;
+fn wildH(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32, c: i32) -> f32 {   // (c: the fish's water column — E14's brook-only bears)
+  var h = 0.0; for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { h += r * wildV(w, k, L, z, bed, cover, ice, c); } } return h;
 }
-fn wildTally(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32, h: f32, n: f32, W: f32) {   // n fish of mass W, by the wildlife's shares of the hazard h
-  for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { let x = n * r * wildV(w, k, L, z, bed, cover, ice) / h; if (x > 0.0) { add64(&TL, T_WILD + 2u * (w * NK + k), x, TSCALE); add64(&TL, T_WILDG + 2u * w, x * W, TSCALE); } } }
+fn wildTally(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32, c: i32, h: f32, n: f32, W: f32) {   // n fish of mass W, by the wildlife's shares of the hazard h
+  for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { let x = n * r * wildV(w, k, L, z, bed, cover, ice, c) / h; if (x > 0.0) { add64(&TL, T_WILD + 2u * (w * NK + k), x, TSCALE); add64(&TL, T_WILDG + 2u * w, x * W, TSCALE); } } }
 }
 `;
 
@@ -1436,7 +1436,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   var hO = 0.0; if (xo < o2Lx) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2Lx - xo) / o2Lx); }
   let hM = spv(k, S_M) * spv(k, S_mOther) * select(clamp(pow(L / spv(k, S_Lref), -0.87), 0.5, 3.0), 1.0, F3_MOTHER_FLAT > 0.5) / YEAR;   // (S3 mOther, F3.MOTHER_FLAT)
   let wc = gai(A_c, i); let wz = ga(A_z, i); let wb = ga(A_bed, i); let wcv = ga(A_cover, i); let wi = select(0.0, wd(W_ice + u32(max(wc, 0))), wc >= 0);
-  var hWd = 0.0; if (F3_WILD > 0.5 && wc >= 0) { hWd = wildH(k, L, wz, wb, wcv, wi); }   // (E4: the wildlife)
+  var hWd = 0.0; if (F3_WILD > 0.5 && wc >= 0) { hWd = wildH(k, L, wz, wb, wcv, wi, wc); }   // (E4: the wildlife)
   let hz = hS + hH + hO + hM + hWd; let old = f32(gau(A_age, i)) > spv(k, S_maxAge);
   var cause = CAUSE_OTHER;
   if (old) { cause = CAUSE_OLD; } else if (hWd > hS && hWd > hH && hWd > hO && hWd > hM) { cause = CAUSE_WILD; } else if (hS >= hH && hS >= hO && hS >= hM) { cause = CAUSE_STARVE; } else if (hH >= hO && hH >= hM) { cause = CAUSE_HEAT; } else if (hO >= hM) { cause = CAUSE_HYPOXIA; }
@@ -1447,13 +1447,13 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
     if (lost > 0.0) {
       if (hS > 0.0) { tallyDeath(k, CAUSE_STARVE, lost * hS / hz); starveSz(k, L, lost * hS / hz); } if (hH > 0.0) { tallyDeath(k, CAUSE_HEAT, lost * hH / hz); }
       if (hO > 0.0) { tallyDeath(k, CAUSE_HYPOXIA, lost * hO / hz); } if (hM > 0.0) { tallyDeath(k, CAUSE_OTHER, lost * hM / hz); }
-      if (hWd > 0.0) { tallyDeath(k, CAUSE_WILD, lost * hWd / hz); wildTally(k, L, wz, wb, wcv, wi, hz, lost, W); }
+      if (hWd > 0.0) { tallyDeath(k, CAUSE_WILD, lost * hWd / hz); wildTally(k, L, wz, wb, wcv, wi, wc, hz, lost, W); }
       toBed(jb, lost * W * (1.0 - hWd / hz));   // (the wildlife's take leaves the lake)
     }
     let left = n - lost;
     if (left < 1.0) { toBed(jb, left * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); } else { sa(A_n, i, left); }
   } else if (hz > 0.0 && rnd(id, 40u, 0u) < expm(hz * dt)) {
-    if (cause == CAUSE_WILD) { wildTally(k, L, wz, wb, wcv, wi, hWd, 1.0, W); tallyDeath(k, CAUSE_WILD, 1.0); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); return; }   // (the wildlife's: no body left)
+    if (cause == CAUSE_WILD) { wildTally(k, L, wz, wb, wcv, wi, wc, hWd, 1.0, W); tallyDeath(k, CAUSE_WILD, 1.0); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); return; }   // (the wildlife's: no body left)
     tallyDeath(k, cause, 1.0); if (cause == CAUSE_STARVE) { starveSz(k, L, 1.0); } toBed(jb, n * W); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE);
   }
 }
@@ -1463,7 +1463,7 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   let i = g.x; if (F3_WILD < 0.5 || i >= U.n) { return; }
   if ((gau(A_flags, i) & FL_ALIVE) == 0u) { return; } let c = gai(A_c, i); if (c < 0) { return; }
   let k = gau(A_k, i); let L = ga(A_L, i); let z = ga(A_z, i); let bed = ga(A_bed, i); let cv = ga(A_cover, i); let ice = wd(W_ice + u32(c)); let m = ga(A_W, i) * ga(A_n, i);
-  for (var w = 0u; w < NWILD; w++) { if (GL[G_WD + w] > 0.0) { let v = wildV(w, k, L, z, bed, cv, ice); if (v > 0.0) { add64(&GS, GS_WILDA + 2u * w, v * m, BSCALE); } } }
+  for (var w = 0u; w < NWILD; w++) { if (GL[G_WD + w] > 0.0) { let v = wildV(w, k, L, z, bed, cv, ice, c); if (v > 0.0) { add64(&GS, GS_WILDA + 2u * w, v * m, BSCALE); } } }
 }
 // its hazard per unit of accessibility, ρ = D / (A + D·day): Holling II on the reachable fish, K one day's need (one thread, after
 // k_wildA and y_wildA)
@@ -2009,7 +2009,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 @compute @workgroup_size(128) fn y_wildA(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (F3_WILD < 0.5 || q >= U.ny || !yAlive(q) || gy(Y_dev, q) < 2.0) { return; } let c = gyi(Y_c, q); if (c < 0) { return; }
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let z = gy(Y_z, q); let bed = gy(Y_bed, q); let cv = gy(Y_cover, q); let ice = wd(W_ice + u32(c)); let m = gy(Y_W, q) * gy(Y_n, q);
-  for (var w = 0u; w < NWILD; w++) { if (GL[G_WD + w] > 0.0) { let v = wildV(w, k, L, z, bed, cv, ice); if (v > 0.0) { add64(&GS, GS_WILDA + 2u * w, v * m, BSCALE); } } }
+  for (var w = 0u; w < NWILD; w++) { if (GL[G_WD + w] > 0.0) { let v = wildV(w, k, L, z, bed, cv, ice, c); if (v > 0.0) { add64(&GS, GS_WILDA + 2u * w, v * m, BSCALE); } } }
 }
 // (E3) THE EGGS AND THE YOLK-SAC LARVAE ON THE BED (fish3 _eggLive): development on the bed's temperature, deaths by cause, the guard
 // kept to swim-up or deserting in the cold; at dev 2 the school swims up
@@ -2055,7 +2055,7 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }
   var hS = gy(Y_hS, q); { let hW = wHaz(k, L, f32(gyu(Y_age, q)), st); if (hW >= 0.0) { hS = hW; } }   // (the first winter)
   let wc = gyi(Y_c, q); let wz = gy(Y_z, q); let wb = gy(Y_bed, q); let wcv = gy(Y_cover, q); let wi = select(0.0, wd(W_ice + u32(max(wc, 0))), wc >= 0);
-  var hWd = 0.0; if (F3_WILD > 0.5 && wc >= 0) { hWd = wildH(k, L, wz, wb, wcv, wi); }   // (E4: the wildlife)
+  var hWd = 0.0; if (F3_WILD > 0.5 && wc >= 0) { hWd = wildH(k, L, wz, wb, wcv, wi, wc); }   // (E4: the wildlife)
   var hE = 0.0; var hC = 0.0;   // (E8: the young alewives' emigration and cold — fish3 _aleYoung)
   if (spv(k, S_aleRun) > 0.5 && ALEWIFE_ON > 0.5) {
     if (wi > 0.5) { hC = 50.0 / DAY; } else {
@@ -2064,7 +2064,7 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
   let h = hN + hS + hH + hO + hWd + hE + hC; let n = gy(Y_n, q); let lost = n * expm(h * st);
   if (h > 0.0 && (hE > 0.0 || hC > 0.0)) { aleAdd(4u, lost * hE / h); aleAdd(5u, lost * hE / h * W); aleAdd(6u, lost * hC / h); }
   if (h > 0.0) { let b = T_FRY + 2u * k * NFRY; add64(&TL, b + 2u * FRY_NATURAL, lost * hN / h, TSCALE); add64(&TL, b + 2u * FRY_STARVE, lost * hS / h, TSCALE); add64(&TL, b + 2u * FRY_HEAT, lost * hH / h, TSCALE); add64(&TL, b + 2u * FRY_HYPOXIA, lost * hO / h, TSCALE);
-    if (hWd > 0.0) { add64(&TL, T_YWILD + 2u * k, lost * hWd / h, TSCALE); wildTally(k, L, wz, wb, wcv, wi, h, lost, W); } }
+    if (hWd > 0.0) { add64(&TL, T_YWILD + 2u * k, lost * hWd / h, TSCALE); wildTally(k, L, wz, wb, wcv, wi, wc, h, lost, W); } }
   if (jb >= 0 && lost * W > 0.0) { acc64(AC_SEDADD + 2u * u32(jb), lost * W * select(1.0, 1.0 - (hWd + hE) / h, h > 0.0), GW); }   // (the wildlife's take and the emigrants leave the lake)
   var left = n - lost;
   if (left < 1.0) { if (yrnd(q, 61u, 0u) < left) { left = 1.0; } else { sy(Y_n, q, left); yDie(q); return; } }

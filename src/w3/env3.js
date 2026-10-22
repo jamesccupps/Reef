@@ -17,7 +17,7 @@
 // sub-stepped for stability. Horizontal mixing at the grid scale; the night thermal siphon and its under-ice cousin as
 // closed exchange loops; vertical mixing in each column's wind/convection-mixed layer.
 import { GEO, LAND, UPPER, LOWER, BROOK, cellIndex } from './geometry.js';
-import { ENV, ICE, THERMAL, WIND, SEASON, WEATHER3, seasonalTemp } from '../config.js';
+import { ENV, ICE, THERMAL, WIND, SEASON, WEATHER3, FOREST3, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
 import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
@@ -25,6 +25,7 @@ import { Chem3 } from './chem3.js';
 import { Plants3, PL3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
 import { Herps3 } from './herps3.js';
+import { Forest3 } from './forest3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
   COL: 50 * GEO.SCALE,  // m (world) column side — 50 m real (5 at 1/10)
@@ -262,6 +263,7 @@ export class Env3 {
     this.plants = this.chem && plants ? new Plants3(this, { init: plantInit }) : null;   // the weeds on the bed (plants3.js; plantInit false: the bare seeding, not the spun-up start)
     this.lit = this.plants ? new Littoral3(this) : null;              // the weeds' invertebrates, snails, the surface (littoral3.js)
     this.herps = this.lit ? new Herps3(this) : null;                  // (E6b/E6c1: the turtles, frogs and newts as consumers — herps3.js; HERP3.ON)
+    this.forest = FOREST3.ON ? new Forest3(this) : null;              // (E14: the bears, deer and moose on the land around the lakes — forest3.js; null when off)
   }
 
   // ---------- precomputed transport patterns ----------
@@ -458,6 +460,7 @@ export class Env3 {
     if (this.chem) this.chem.prime();
     if (this.plants) this.plants.jump();   // (the weeds take the new season's shape, conserving their mass)
     if (this.lit) this.lit.jump();
+    if (this.forest) this.forest.jump();   // (E14: the animals set down in the new date's places)
     this._light();   // (the sky at once: a lake opened at 7 a.m. is in daylight before its first step)
   }
   // the light now: the sun's height, the daylight under the cloud, the surface's lux (by the hour, the season, the weather)
@@ -483,6 +486,7 @@ export class Env3 {
     if (this.plants) this.plants.step(dt);
     if (this.lit) this.lit.step(dt);
     if (this.herps) this.herps.step(dt);
+    if (this.forest) this.forest.step(dt);   // (E14: after the plants and the herps — the deer crop the edge, the moose wade, the bears fish)
     this._transport(dt);
     if (this.chem) this.chem._ledgerFlows();   // (the through-flow's in and out, tallied after it moved them)
     for (let j = 0; j < G.NCELL; j++) this.age[j] += dt;

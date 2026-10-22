@@ -1390,6 +1390,80 @@ if (run('eggs')) {
     check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 8–40 % to swim-up (the field's: unguarded demersal eggs 0.3–0.6 to hatch, 0.25–0.65 on to first feeding — egg_survival_and_larval_production.md §3.2; Margulies' lab hatch ~60–80 %); no egg in the strikes' prey table (the yolk-sac larvae are — E3b)",
       laid > 0 && swum > 0 && wph > 0.08 && wph < 0.4 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
 }
+// ============================================================
+//  E14 — THE FOREST'S MAMMALS (config FOREST3; src/w3/forest3.js; research_notes/Maine lake shores and catchment/forest_mammals_bears_deer_moose.md):
+//  black bears, white-tailed deer and moose as individuals on the land around the lakes — their numbers, their seasons and days, and what they
+//  do to the lakes (the bears' suckers through WILD3.bear, the deer's crop of the edge, the moose where PL3.MOOSE's take falls)
+// ============================================================
+if (run('forest')) {
+  console.log('\n— E14: the forest\'s mammals (FOREST3) —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js'); const C = await import('../src/config.js');
+  const { PL3, FORMS3, NF3 } = await import('../src/w3/plants3.js'); const Lg = await import('../src/w3/gpu/layout.js');
+  const FO = C.FOREST3, on0 = FO.ON, W = C.WEATHER3;
+  // (the census: off, no forest; on, each kind at its density over the real land the grid holds, every animal a stable object of the view's
+  // interface — the same object after a step)
+  { FO.ON = 0; seed(401); const e0 = new Env3({ col: 10 * CS, yf0: 0.4, chem: false, plants: false }); FO.ON = 1;
+    seed(401); const e = new Env3({ col: 10 * CS, yf0: 0.4, chem: false, plants: false }), Fo = e.forest, km2 = Fo.landKm2, d = k => Fo.count(k) / km2;
+    const keys = ['id', 'kind', 'x', 'y', 'heading', 'act', 'young', 'len'], first = Fo.animals[0];
+    const iface = Fo.animals.every(a => keys.every(k => k in a) && Number.isFinite(a.x) && Number.isFinite(a.y) && ['bear', 'deer', 'moose'].includes(a.kind) && a.len > 1) && new Set(Fo.animals.map(a => a.id)).size === Fo.animals.length;
+    e.step(FB); const same = Fo.animals[0] === first && Fo.animals.every(a => GEO.bodyAt(a.x, a.y) === LAND || GEO.depthAt(a.x, a.y) < 2.5); FO.ON = on0;
+    check('E14 (FOREST3): off, no forest; on, bears, deer and moose at the field\'s densities over the real land the grid holds — bear 0.2–0.6 /km² (~1 a mi² in occupied range), deer 0.8–3.5 (WMD 11 2–6 a mi², WMD 18–19 3–9), moose 0.4–1.5 (northern Maine 0.4–4.0, WMD 11 fewer) — each a stable object of the view\'s interface, on the land or in the shallows',
+      e0.forest === null && d('bear') >= 0.2 && d('bear') <= 0.6 && d('deer') >= 0.8 && d('deer') <= 3.5 && d('moose') >= 0.4 && d('moose') <= 1.5 && iface && same,
+      `${km2.toFixed(1)} km² of land: ${Fo.count('bear')} bears (${d('bear').toFixed(2)} /km²), ${Fo.count('deer')} deer (${d('deer').toFixed(2)}), ${Fo.count('moose')} moose (${d('moose').toFixed(2)})`); }
+  // (the seasons: in late January every bear in its den and the deer in their yards — the calendar's snow past 30 cm; by late May every bear
+  // out, mothers with cubs; determinism — two forests from one seed walk the same paths)
+  { FO.ON = 1; seed(402); const e = new Env3({ col: 10 * CS, yf0: 0.88, chem: false, plants: false }), Fo = e.forest; for (let i = 0; i < 3 * 49; i++) e.step(FB);
+    const B = Fo.animals.filter(a => a.kind === 'bear'), den = B.filter(a => a.act === 'den').length, D = Fo.animals.filter(a => a.kind === 'deer'), yd = D.filter(a => a.yarded).length, snow = Fo.snowCm;
+    const inYard = D.filter(a => Math.hypot(a.x - a.yx, a.y - a.yy) <= 1.3 * a.yr).length;
+    seed(402); const e2 = new Env3({ col: 10 * CS, yf0: 0.22, chem: false, plants: false }), F2 = e2.forest; for (let i = 0; i < 4 * 49; i++) e2.step(FB);
+    const B2 = F2.animals.filter(a => a.kind === 'bear'), out = B2.filter(a => a.act !== 'den').length, cubs = B2.filter(a => a.young > 0).length;
+    const path = () => { seed(403); const e = new Env3({ col: 10 * CS, yf0: 0.3, chem: false, plants: false }); for (let i = 0; i < 2 * 49; i++) e.step(FB); return e.forest.animals.map(a => `${a.x},${a.y},${a.act},${a.young}`).join(';'); };
+    const det = path() === path(); FO.ON = on0;
+    check('E14: the bears den from mid-October and come out in April–early May (MDIFW) — all in their dens in late January, all out by late May, mothers with cubs; the deer yard in the softwood once the snow passes 30 cm (MDIFW\'s wintering areas); two forests from one seed walk the same paths',
+      den === B.length && B.length > 0 && snow >= 30 && yd === D.length && inYard >= 0.8 * D.length && out === B2.length && cubs > 0 && det,
+      `late January: ${den} of ${B.length} bears denned, snow ${snow.toFixed(0)} cm, ${yd} of ${D.length} deer yarded (${inYard} within their yard); late May: ${out} of ${B2.length} bears out, ${cubs} with cubs; deterministic ${det}`); }
+  // (the summer's days, ten days from early July on the 1/10-scale coarse grid, sampled every 10 minutes: the deer at the water's edge at dawn
+  // and dusk more than by day — crepuscular, crossing to drink and crop; the moose in the weedy shallows on the evenings (the late-afternoon
+  // aquatic peak), where PL3.MOOSE's take falls — over reachable shoots, belly-deep; the N and P budgets close with the deer's crop and the
+  // moose's take ashore)
+  { FO.ON = 1; const h0 = W.HYDRO, m0 = PL3.MOOSE; W.HYDRO = 1; PL3.MOOSE = 1; seed(404); const e = new Env3({ col: 10 * CS, yf0: 0.40 }), Fo = e.forest, c = e.chem, P = e.plants;
+    for (let i = 0; i < 6; i++) e.step(600);
+    const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger }, ate0 = Fo.stats.deerAte, mAte0 = P.mooseAte || 0;
+    const near = a => { const i = cellIndex(a.x, a.y); return i >= 0 && (GEO.body[i] !== LAND || GEO.toWater[i] <= Math.max(2 * GEO.CELL, 5 * GEO.SCALE)); };
+    const ph = [[0, 0], [0, 0], [0, 0], [0, 0]]; let eve = 0, wade = 0, onPl = 0, deepMed = [];
+    const pref = FORMS3.map(F => PL3.MOOSE_PREF[F.key] || 0);
+    const plantsAt = (x, y) => { const k = e.colAt(x, y); if (k < 0) return 0; let s = 0; for (let i = 0; i < P.cells.length; i++) if (P.col[i] === k && P.zb[i] <= PL3.MOOSE_Z[1]) for (let f = 0; f < NF3; f++) s += P.Bs[f][i] * pref[f]; return s; };
+    for (let t = 0; t < 10 * 86400; t += 600) { e.step(600); const q = Fo._phase(e.time), hr = q.tod * 24;
+      for (const a of Fo.animals) if (a.kind === 'deer') { ph[q.ph][0]++; if (near(a)) ph[q.ph][1]++; }
+      if (hr >= 17 && hr < 21) { eve += Fo.count('moose'); for (const a of Fo.animals) if (a.kind === 'moose' && a.act === 'wade') { wade++; if (plantsAt(a.x, a.y) > 0) onPl++; deepMed.push(GEO.depthAt(a.x, a.y)); } } }
+    const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
+    const rP = Math.abs(c.inventoryP() - P0 - eP) / P0, rN = Math.abs(c.inventoryN() - N0 - eN) / N0, deerKg = (Fo.stats.deerAte - ate0) / Fo.fa / 1000;
+    const sh = ph.map(([n, k]) => k / Math.max(1, n)), tw = (ph[0][1] + ph[2][1]) / Math.max(1, ph[0][0] + ph[2][0]), wadeSh = wade / Math.max(1, eve);
+    deepMed.sort((a, b) => a - b); const dMed = deepMed.length ? deepMed[deepMed.length >> 1] : 0;
+    W.HYDRO = h0; PL3.MOOSE = m0; FO.ON = on0;
+    check('E14: a July — the deer at the water\'s edge at dawn and dusk ≥ 2× as often as by day (crepuscular; drinking, cropping the edge\'s plants in early summer — Rogers et al. 1981); 3–30 % of the moose in the shallows on the evenings (the late-afternoon aquatic peak — Belovsky & Jordan 1978), ≥ 90 % of them over the shoots PL3.MOOSE takes, belly-deep (median 0.5–1.5 m); the N and P budgets close with the deer\'s crop and the moose\'s take ashore',
+      tw >= 2 * sh[1] && wadeSh >= 0.03 && wadeSh <= 0.3 && onPl >= 0.9 * wade && dMed >= 0.5 && dMed <= 1.5 && deerKg > 0 && rP < 1e-5 && rN < 1e-5,
+      `deer near the water: dawn ${(100 * sh[0]).toFixed(0)} %, day ${(100 * sh[1]).toFixed(0)} %, dusk ${(100 * sh[2]).toFixed(0)} %, night ${(100 * sh[3]).toFixed(0)} %; moose wading on the evenings ${(100 * wadeSh).toFixed(0)} % (${(100 * onPl / Math.max(1, wade)).toFixed(0)} % over the shoots, median ${dMed.toFixed(2)} m deep); the deer cropped ${deerKg.toFixed(1)} kg dry (the real lakes'), the moose ${((P.mooseAte - mAte0) / P._mooseFa / 1000).toFixed(0)} kg; P/N relative error ${rP.toExponential(0)}/${rN.toExponential(0)}`); }
+  // (THE BEARS AT THE SUCKER RUN — WILD3.bear: the 1/10 lakes with the package from late April through the run — the bears fishing the brook's
+  // riffles at dusk, in the dark and at dawn while it runs, taking suckers (and spawning fallfish) from the brook only; a bear's catch over the
+  // run 'a few to some tens' of suckers [inf: energetics ~2 a day; Haida Gwaii's black bears ~15 salmon a day from a superabundant run] —
+  // 3–60 a bear, the real lakes' equivalent; and the GPU's table holds the row's brook-only reach)
+  // (the take as its expectation — each block the bears' hazard on the fish within reach, ρ·A, the grams it takes in expectation: at 1/10 the
+  // world's run is a hundredth of the real one, a sucker or two in the draw, so the draw itself is noise — the tallies' species are the draw's)
+  { fm.stageR5(true); seed(611); const e = new Env3({ col: 10 * CS, yf0: 0.17 }), F = new fm.Fish3(e, { young: true }), Fo = e.forest, r = fm.WILDK.indexOf('bear');
+    const nb = Fo.animals.filter(a => a.kind === 'bear' && a.brook).length; let runDays = 0, exp = 0, wS = 0, nS = 0, other = 0;
+    for (let b = 0; b < 30 * 49; b++) { F.step(FB); if (F._wRho) exp += F._wRho[r] * F._wA[r] * FB; e.step(FB);
+      if (b % 49 === 48) { if (Fo.runOn) runDays++; for (const a of F.fish) if (a.alive && a.s.key === 'sucker' && a.c >= 0 && e.G.body[a.c] === BROOK) { wS += a.W * a.n; nS += a.n; } } }
+    const T = F.stats.wild.bear || { n: {}, g: 0 }; for (const [k, v] of Object.entries(T.n)) if (k !== 'sucker' && k !== 'fallfish') other += v;
+    const mW = wS / Math.max(1, nS), perBear = exp / Math.max(1, mW) / Fo.fa / Math.max(1, nb), fishH = Fo.stats.fishS / 3600 / Math.max(1, nb) / Math.max(1, runDays);
+    // (the reach: a sucker in a brook column within reach, the same in a lake column out of it; and the GPU's table holds the row's brook-only flag)
+    const cB = e.G.body.findIndex(b => b === BROOK), cL = e.G.body.findIndex(b => b === UPPER), vB = F._wildV('bear', 'sucker', 40, 0.2, 0.3, 0, 0, cB), vL = F._wildV('bear', 'sucker', 40, 0.2, 0.3, 0, 0, cL), vP = F._wildV('bear', 'perch', 25, 0.2, 0.3, 0, 0, cB);
+    const src = Lg.wildWGSL(), row = (src.match(new RegExp(`case ${r}u: \\{ p = array<f32, 10>\\(([^)]*)\\)`)) || [])[1] || '';
+    fm.stageR5(false); FO.ON = on0;
+    check('E14 (WILD3.bear): the bears at the sucker run — while it runs (the lakes\' water at the brook\'s mouths in the suckers\' ripeness window) the bears whose ranges hold the brook fish its riffles ~1–4 h a day, taking suckers (and spawning fallfish) in the brook only: 5–80 suckers a bear over the run, 0.5–4 a day (the real lakes\'; [inf] — no study: half a spring bear\'s energy, \'a few to some tens\'); the GPU\'s table holds the row\'s brook-only reach',
+      runDays >= 5 && perBear >= 5 && perBear <= 80 && perBear / runDays >= 0.5 && perBear / runDays <= 4 && other === 0 && fishH > 0.8 && fishH < 4 && vB > 0 && vL === 0 && vP === 0 && row.trim().endsWith('1.0') && src.includes('stu(O_wCBody'),
+      `the run ${runDays} days; ${nb} bears with the brook in their range fished ${fishH.toFixed(1)} h a day; in expectation ${(exp / Fo.fa / 1000).toFixed(0)} kg — ${perBear.toFixed(0)} suckers a bear (${(perBear / Math.max(1, runDays)).toFixed(1)} a day, ${mW.toFixed(0)} g each); drawn: ${((T.n.sucker || 0)).toFixed(0)} suckers and ${(T.n.fallfish || 0).toFixed(0)} fallfish in the world, other fish ${other}`); }
+}
 console.log(`\n${pass} PASS, ${fail} FAIL${gaps ? `, ${gaps} KNOWN GAP(S) against the field (the GAP lines above)` : ''}`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');
