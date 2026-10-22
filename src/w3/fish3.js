@@ -2218,7 +2218,7 @@ export class Fish3 {
     const actY = s.act[this.env.sun > 0.3 ? 0 : this.env.sun > 0.02 ? 1 : 2], rd0 = F3.YENC && s.pisc && a.L >= sp.Lpisc ? s.strikeR * Math.max(0.3, visDay) : 0;
     const encV = rd0 > 0 ? Math.PI * rd0 ** 2 * (F3.ENC_U + s.vHunt) * actY * yEff : 0, hS = F3.YWIN_CS && encV > 0 ? 1 / (actY * yEff * s.aMax) : 0;   // (hS: an attack's share of its hunting time, 1/aMax — F3.YWIN_CS)
     if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * (s.larvNight && !p0 ? 1 : visDay), s.preyLR, encV, rd0, hS) || 0; }   // (S3 larvNight: no sight needed — the alewife)
-    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
+    if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const gk = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt), g = gk / (n > 1 ? n : 1); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += gk; } }   // (R7: a school's kill is its n fish's — each a share; the strike's hazard is the n fish's)
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
       if (FRY.DENSITY) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * (s.larvNight && !p0 ? 1 : visDay), s.preyLR); }   // (settled at the step's end: _ySettle)
@@ -2299,7 +2299,7 @@ export class Fish3 {
   // term, a school's confusion for bass and perch-like predators); one kill a block at most, the fish struck ∝ encounters × success
   _strike2(a, i, room, visDay, perf, dt) {
     const s = a.s, f = this.fish, lunge = 1 + ACTION.STRIKE_REACH * (a.fk === 1 ? engaged(a.o[3]) : 0), cls = s.predCls;
-    const RD = s.strikeR * lunge * Math.max(0.3, visDay), Rs = F3.ENC_R, Rs2 = Rs * Rs, dmH = 0.5 * F3.SHALLOW_K * a.L;
+    const RD = s.strikeR * lunge * Math.max(0.3, visDay), Rs = F3.ENC_R, Rs2 = Rs * Rs, dmH = 0.5 * F3.SHALLOW_K * a.L, nP = a.n > 1 ? a.n : 1;
     let sE = 0, sW = 0, sWp = 0, best = null;   // (sWp: the choice's weights — sW × the size preference)
     const gx0 = clamp(((a.x - Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1), gx1 = clamp(((a.x + Rs - this.hX0) / F3.HC) | 0, 0, this.HX - 1);
     const gy0 = clamp(((a.y - Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1), gy1 = clamp(((a.y + Rs - this.hY0) / F3.HC) | 0, 0, this.HY - 1);
@@ -2309,7 +2309,7 @@ export class Fish3 {
       for (let q = S0[c]; q < S0[c + 1]; q++) {
         const b = f[I[q]]; if (!b.alive || I[q] === i) continue;
         const dx = b.x - a.x, dy = b.y - a.y; if (dx * dx + dy * dy > Rs2) continue;
-        if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
+        if (!this.canPrey(a, b) || (b.W + b.gon) / nP > room) continue;   // (R7: a school's members share the fish)
         // (an esocid meets a school of n as n^schoolExp fish — 0.65: it finds a school about as it finds one big fish and takes one fish
         // an attack, its success unreduced inside it (Turesson & Brönmark 2004) — the encounter dilution the old rule had and STRIKE2
         // first dropped: pickerel then took a 36-fish killifish school as 36 separate fish; bass keep their confusion term below)
@@ -2325,7 +2325,7 @@ export class Fish3 {
     const E = Math.PI * RD * RD * (F3.ENC_U + s.vHunt) * sE / (Math.PI * Rs2 * Math.max(1, a.bed)), S = s.aMax * E / (E + (F3.EH_AMAX ? s.aMax : F3.ENC_EH));   // (F3.EH_AMAX: Holling's E_h = aMax)
     const sun = this.env.sun, act = s.act[sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2];   // (the share of the time it hunts now)
     if (this._sdiag) this._sdiag(a, E, S, sW / sE, perf, act, sE, cand.length / 2, dt);   // (a probe's hook: the rule's terms — scratchpad prd.mjs; never set by the sim)
-    if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt)) return 0;
+    if (rand() >= -Math.expm1(-S * (sW / sE) * perf * act * dt * nP)) return 0;   // (R7: a school of nP hunts as nP fish — one kill a block at most, shared)
     let r = rand() * sWp; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
     best = best || cand[cand.length - 2];
     return this._killed(a, best);
@@ -2353,7 +2353,7 @@ export class Fish3 {
       for (let q = S[c]; q < S[c + 1]; q++) {
         const b = f[I[q]]; if (!b.alive || I[q] === i) continue;
         const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, d2 = dx * dx + dy * dy + dz * dz; if (d2 > R2) continue;
-        if (!this.canPrey(a, b) || b.W + b.gon > room) continue;
+        if (!this.canPrey(a, b) || (b.W + b.gon) / (a.n > 1 ? a.n : 1) > room) continue;   // (R7)
         const d = Math.sqrt(d2), hide = 1 - ACTION.HIDE_CONCEAL * engaged(b.o[5]);
         const sel = Math.max(0, 1 - Math.pow(b.bdep / a.gape, F3.SIZE_K));
         const w = (1 - d / R) * s.sp.capture * b.s.sp.vuln * sel * hide * (1 - b.cover) * clamp((b.bed - dmH) / dmH, 0, 1) * (b.n > 1 ? Math.pow(b.n, s.schoolExp ?? F3.SCHOOL_EXP) : 1);
@@ -2362,7 +2362,7 @@ export class Fish3 {
     }
     if (!(sK > 0)) return 0;
     const rate = F3.ATTACK * perf * dt;
-    if (rand() >= 1 - Math.exp(-rate * sK)) return 0;
+    if (rand() >= 1 - Math.exp(-rate * sK * (a.n > 1 ? a.n : 1))) return 0;   // (R7: a school hunts as its n fish)
     let r = rand() * sK; for (let q = 0; q < cand.length; q += 2) { r -= cand[q + 1]; if (r <= 0) { best = cand[q]; break; } }
     best = best || cand[cand.length - 2];
     const g = best.W + best.gon; this._preyED = energyDensity(best.s.sp.bio, best.W);

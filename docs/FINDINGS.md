@@ -4,6 +4,81 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — Arm AL (Z1 + Z1b + Z2 + FEED_CV + R7): the first year classes recruit, but the white perch's young stall at 13–15 mm and the community still shrinks (GPU, true scale, seed 611)
+- **What.** The re-based plankton, the young's unequal shares and the school-strike fix, against arm AJ (the same seed, without them):
+
+  | | Start | End of year 1 | End of year 2 |
+  |---|---|---|---|
+  | AJ fish biomass | 79 kg/ha | 49 | 31 |
+  | AL fish biomass | 79 kg/ha | 44 | 28 |
+
+  - AL had recruits for the first time: perch 72,000, bullhead 124,000, pumpkinseed 6,400, bass 2,200 over the two years. AJ had
+    almost none.
+  - The summer algae are 63–75 % edible (AJ 16–19 %), and the crustaceans run ~65 µg/L, inside the field's 50–150.
+- **The white perch collapse (10.7 → 2.2 kg/ha) is two things.**
+  - **The founding stock is eaten in the first summer:** 289,622 fish, mean 13.7 cm; 165,000 eaten by day 112 in AL (AJ 162,000).
+  - **No white perch year class:** 644 M hatched in year 1, 310 M in year 2, recruited 0. They died 54–60 % natural, 10–20 % starved,
+    19–36 % eaten, and stayed at 1.3–1.5 cm from July into October (field YOY white perch reach 5–8 cm by fall).
+  - Past the rotifer stage the young feed on the crustaceans at the package's K_FRY 60 µg/L. At AL's 30–40 µg/L that is ~37 % of their
+    appetite, about maintenance. In the field the young switch to the bed's prey at 2–3 cm. Next: the young's path from the
+    plankton to the bed, and the field's crustacean densities for small Maine lakes.
+- **Where.** scratchpad r22AL_611.txt (yrsum.mjs), queue_al.sh (snap_al: the tree before the E14 merge and before Z2_BURY).
+
+## 2026-10-22 — A school of piscivores fed every fish on one kill: n fish's meals for one prey's death, in both engines (R7)
+- **What.** A followed-fish agent can be a school of up to 80 fish (perch ≥ 14 cm, white perch ≥ 15 cm hunt as schools). When it
+  struck, both engines added the whole prey's mass to the gut of each fish it stands for (`gut += gr`, not `gr / n`), and the prey
+  school lost one fish. So one prey death fed n predators. The prey died n times more slowly than the predators ate them, and fish
+  mass was made from nothing.
+- **How found.** The CPU–GPU agreement check (g1_check, yf 0.27) showed white perch eating 0.59 kg on the CPU against 0.04 on the GPU
+  in one block. The food categories summed to 0.58 kg of the CPU's 1.1 kg of meals. It was not an engine mismatch: one white perch
+  school's single lucky kill on one engine (≈ 80 × a 7-g fish).
+- **Fix.** A school hunts as its n fish: the strike's hazard is × n (one kill a block at most), and a kill is shared, each fish
+  gaining gr / n. A prey fits when its share fits the gut room. Both engines, both strike rules. The tallies count the prey's mass
+  once. After the fix: white perch 0.05 · 0.05 kg, meals 0.6 · 0.5 kg, kills 34 · 32 (CPU · GPU).
+- **Approximation.** One kill a block caps a big school when n × the single fish's chance is ≳ 1: at n·λ = 1 the members get 63 % of
+  the linear rate. It is mass-conserving and errs on the predators' side.
+- **Consequence.** Prey deaths to school piscivores were up to n-fold too few before. Every arm before 2026-10-22's AL ran with it.
+- **Where.** fish3.js _strike2/_strike (nP), the feed caller (gk / n); wgsl.js k_strike (nP), k_strikeWin (gs); scratchpad
+  g1_feedcv.txt, g1_head.txt, g1_r7.txt.
+
+## 2026-10-22 — The plankton re-based on the field: the algae's P uptake and sinking by kind, the zooplankton growing from what they eat (Z1b, Z2)
+- **What.** Following the diagnosis below:
+  - the algae's P half-saturation is set to the field's 1 µg/L (was 10);
+  - each algal kind sinks onto the bed at its own speed (greens 0.1, diatoms 0.5, resistant 0.1 m/day), replacing the greens-only
+    0.33 m/day;
+  - the die-off without the sinking is 0.08/day;
+  - the copepods clear at 0.4 mL/µg/d;
+  - the zooplankton grow from what they eat. Z1 cut Daphnia's clearance 3.9× and left their growth alone, so they grew about 190 %
+    of what they ate. A Holling II with the field's clearance and maximum ingestion puts the half-saturation at Imax/F ≈ 0.48 mg C/L
+    for Daphnia (was 0.15) and 0.36 for copepods, whose growth falls to ε·Imax 0.18/day.
+- **How.** scratchpad probe z2year.mjs: the 1/10 lakes with fish for 98 days from yf 0.2; the true-scale lakes without fish for a year;
+  seed 611.
+- **Evidence.**
+
+  | | Before (Z1) | Z1b + Z2 | Field |
+  |---|---|---|---|
+  | Edible algae dip, through the Daphnia peak | ~180× | 2.6–3.5× (4.4× at the late-summer low) | 1.5–3×, rarely 5–10× |
+  | Rotifers at the Daphnia peak | 10–30/L | 370–480/L | ≥ 100–250/L |
+  | Daphnia peak | 115–595 µg/L (no-fish runs) | ~100 µg/L | — |
+  | Crustaceans, summer | up to ~1,100 µg/L | 100–180 µg/L | 50–150 µg/L |
+  | Resistant share, late summer | 90–98 % | 47 % | median 58 %, IQR 28–85 % |
+  | Summer dissolved P | 2.5 µg/L | ≲ 0.5 µg/L | ≲ 0.5 µg/L |
+
+  - Secchi is 3.3–3.5 m.
+  - The bed receives 20–40 % of production (field 20–50 %).
+  - Winter bottom O₂ ≥ 5.2 mg/L (was 4.5).
+  - The young grow faster (larvz_z2 against larvz_z1, mid-August): perch 25 against 20 mm, white perch 19 against 17, pumpkinseed 11
+    against 7, bass 48 against 43, with more of them alive.
+- **The burial refitted (Z2_BURY).** With every alga settling, the lakes kept 0.61–0.64 of their P at BURY_MUL 0.10 (field
+  0.28–0.54), and July TP was 3–5 µg/L. At 0.05: R 0.48 by year 2 with the inventory steady, July TP 5.6 µg/L (probe bury2, the true lakes'
+  50-m grid, seed 403).
+- **Open.**
+  - Summer TP: still ~5–6 µg/L against the reference 12 — the P cycle's seasons need a look.
+  - Daphnia fall after their peak at ~0.06/day (field 0.1–0.2).
+  - Copepods are still ~2× the region's ~20–30 µg/L.
+- **Where.** config ZOO3 Z1_K_D, Z2_*; chem3 _algae (KPa, lys), _sedimentP (Z2 sinking), _zooplankton (gKc); fish3 stageR5; research
+  note copepod_grazing_and_p_kinetics.md.
+
 ## 2026-10-22 — The late-spring algae crash was not Daphnia: a 2-D settling rule left on one algal group handed the summer to the ungrazed group (probe algbud, Z1 in the tree)
 - **What.** After Z1 cut the cladocerans' clearance to the field's ~1 mL/µg/d, the edible algae still fell ~180× (0.55 → 0.003
   units) between mid-May and mid-June. A budget of the edible algae shows the grazers were not the cause of the fall. Three things were:

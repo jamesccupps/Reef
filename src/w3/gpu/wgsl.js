@@ -1064,7 +1064,7 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   let k = gau(A_k, i); let L = ga(A_L, i);
   if (spv(k, S_pisc) < 0.5 || L < spv(k, S_Lpisc) || ga(A_missCd, i) > 0.0) { return; }
   let room = ga(A_fRoom, i); if (!(room > 0.0)) { return; }
-  let id = gau(A_id, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i);
+  let id = gau(A_id, i); let x = ga(A_x, i); let y = ga(A_y, i); let z = ga(A_z, i); let nP = max(1.0, ga(A_n, i));   // (R7: a school of nP hunts as nP fish)
   let lunge = 1.0 + ACTION_STRIKE_REACH * select(0.0, engaged(br(NW2 + HID + 3u, i)), gau(A_fk, i) == 1u);
   let R = spv(k, S_strikeR) * lunge * max(0.3, ga(A_visF, i)); let R2 = R * R;
   // (F3.STRIKE2 — fish3 _strike2: the encounter–strike–capture rule over the column's catchable fish within ENC_R; else the old rule)
@@ -1086,7 +1086,7 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
         let dx = pb.x - x; let dy = pb.y - y; let dz = pb.z - z; let d2 = dx * dx + dy * dy + dz * dz;
         if (s2) { if (dx * dx + dy * dy > Rs2) { continue; } } else if (d2 > R2) { continue; }
         let kb = gau(A_k, b); dM[kb] += ga(A_n, b);
-        if (!canPrey(i, b) || ga(A_W, b) + ga(A_gon, b) > room) { continue; }
+        if (!canPrey(i, b) || (ga(A_W, b) + ga(A_gon, b)) / nP > room) { continue; }   // (R7: fish3 — a school's members share the fish)
         dG[kb] += ga(A_n, b);
         let d = sqrt(d2); let hide = 1.0 - ACTION_HIDE_CONCEAL * engaged(br(NW2 + HID + 5u, b));
         let sel = max(0.0, 1.0 - pow(ga(A_bdep, b) / gape, F3_SIZE_K)); let nb = ga(A_n, b);   // (fish3 F3.SIZE_K)
@@ -1106,8 +1106,8 @@ fn gateHg(i: u32, k: u32, gut: f32) -> f32 {
   for (var q = 0u; q < NK; q++) { if (dM[q] > 0.0) { let o = 2u * (k * NK + q); add64(&TL, T_STRM + o, dM[q], 1.0); if (dG[q] > 0.0) { add64(&TL, T_STRG + o, dG[q], 1.0); add64(&TL, T_STRW + o, dW[q], TSCALE); } } }
   if (!(sK > 0.0)) { return; }
   var pK = 0.0;
-  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + select(F3_ENC_EH, spv(k, S_aMax), F3_EH_AMAX > 0.5)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
-  else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK); }
+  if (s2) { let E = R * R * (F3_ENC_U + spv(k, S_vHunt)) * sE / (Rs2 * max(1.0, ga(A_bed, i))); let S = spv(k, S_aMax) * E / (E + select(F3_ENC_EH, spv(k, S_aMax), F3_EH_AMAX > 0.5)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); let hg = gateHg(i, k, ga(A_gut0, i)); var pf = ga(A_fPerf, i); if (F3_SCOLD > 0.5) { pf = min(pf, consumptionTrel(bioSet(k, ga(A_W, i), f32(gau(A_age, i))), ga(A_T, i))); } pK = expm(S * (sK / sE) * pf * act * hg * U.dt * nP); }   // (F3.SCOLD: at its cold appetite)   // (× the hunger gate)   // (π cancels)
+  else { let rate = F3_ATTACK * ga(A_fPerf, i) * U.dt; pK = 1.0 - exp(-rate * sK * nP); }
   if (rnd(id, 31u, 0u) >= pK) { return; }
   let prio = ((hash32(id ^ hash32(U.blk ^ 0xA5A5u)) & 0x1FFFu) << 19u) | (i & 0x7FFFFu);
   sai(A_claim, i, best); sau(A_claimP, i, prio);
@@ -1121,10 +1121,10 @@ fn strikesFor(n: f32) -> u32 { return 1u + u32(max(0.0, ceil(n - 1.5))); }
   let pu = u32(p); let cnt = atomicLoad(&GS[GS_CLAIMP0 + U.cap + pu]); let top = atomicLoad(&GS[GS_CLAIMP0 + pu]);
   let won = cnt <= strikesFor(ga(A_n, pu)) || top == gau(A_claimP, i);
   if (!won) { sai(A_claim, i, -1); return; }
-  let kp = gau(A_k, pu); let gr = ga(A_W, pu) + ga(A_gon, pu);
-  sa(A_gut, i, ga(A_gut, i) + gr); sa(A_gutE, i, ga(A_gutE, i) + gr * energyDensity(2u * kp, ga(A_W, pu)));
-  sa(A_fRoom, i, ga(A_fRoom, i) - gr); sa(A_fGot, i, ga(A_fGot, i) + gr); sa(A_missCd, i, FEED_MISS_CD / TS);
-  add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE); foodK(gau(A_k, i), 0u, gr * ga(A_n, i));
+  let kp = gau(A_k, pu); let gr = ga(A_W, pu) + ga(A_gon, pu); let gs = gr / max(1.0, ga(A_n, i));   // (R7: fish3 — the kill shared by the school's fish)
+  sa(A_gut, i, ga(A_gut, i) + gs); sa(A_gutE, i, ga(A_gutE, i) + gs * energyDensity(2u * kp, ga(A_W, pu)));
+  sa(A_fRoom, i, ga(A_fRoom, i) - gs); sa(A_fGot, i, ga(A_fGot, i) + gs); sa(A_missCd, i, FEED_MISS_CD / TS);
+  add64(&TL, T_FOOD + 2u * FOOD_FISH, gr, TSCALE); add64(&TL, T_KILLS + 2u * (gau(A_k, i) * NK + kp), 1.0, TSCALE); foodK(gau(A_k, i), 0u, gr);
   let lc = lenClass(ga(A_L, pu)); add64(&TL, T_KILLSZ + 2u * (kp * 4u + lc), 1.0, TSCALE); add64(&TL, T_KILLPZ + 2u * (gau(A_k, i) * 4u + lc), 1.0, TSCALE);
   { let lt = select(select(2u, 1u, U.sun > 0.02), 0u, U.sun > 0.3); add64(&TL, T_KILLLT + 2u * (kp * 3u + lt), 1.0, TSCALE); add64(&TL, T_KILLLP + 2u * (gau(A_k, i) * 3u + lt), 1.0, TSCALE); }   // (T_KILLLT/LP)
   let bd = ga(A_bed, pu); let dc = select(select(select(select(4u, 3u, bd < 2.0), 2u, bd < 1.0), 1u, bd < 0.6), 0u, bd < 0.3);
