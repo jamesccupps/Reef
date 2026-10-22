@@ -390,7 +390,7 @@ export class Littoral3 {
     let s = 0, A = 0; const G = this.G, night = cs > 0 && this.env.isNight();
     for (let k = 0; k < nL; k++) {
       const j = L[k], a = G.bedA[j]; A += a; const i = this.idx[j]; if (i < 0) continue;
-      s += (ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i) + sm * this.S[i] + (moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0) + (cs > 0 ? LIT3.CR_PREF * this.crayE(i, cg, cs, night) : 0)) * a;
+      s += (ins * Math.max(0, this.L[i] + this._tad(i) - LIT3.REF) * this.reach(i) + sm * this.S[i] + (moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0) + (cs > 0 ? LIT3.CR_PREF * this.crayE(i, cg, cs, night) : 0)) * a;
     }
     return A > 0 ? s / A : 0;   // (crayfish weighted by CR_PREF: the food response's grams, not the grams there)
   }
