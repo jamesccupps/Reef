@@ -4,6 +4,18 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — A fertilisation rate entered as a hatch rate made 30–300× too many sucker larvae (E3b; probe eggsm2.mjs)
+- **The sucker's egg hatch (0.9) was Stewart's "> 90 % fertilised".** Field egg → drifting larva in a brook is 0.3–3 % (scour, silt, drift),
+  and only 25–50 % of adult suckers spawn in a given year. The sim made ~30 larvae/m² against the field's < 1. With the field's values,
+  3 % swim up.
+- **White perch's 0.8 was a lab hatch.** Unguarded demersal eggs on a lake bed do worse: an estimated 0.3–0.6. Its swim-up fell from 59 %
+  to 22–28 %, against the field estimate of 8–40 %.
+- **The yolk-sac stage had an unsourced 0.95 survival, and no predators.** Field perch go from hatch to first feeding at 0.12–0.73, mostly
+  to fish. The prolarvae are now prey on the bed.
+- **The founding's seeded young bypassed it all.** seedSeason's spin applied only the background and thermal losses: 75 perch eggs
+  and larvae per m² at a lake's opening.
+- **Lesson:** check what each "hatch" number in a parameter table measures (fertilisation, lab hatch, field survival) — they differ 10–100×.
+
 ## 2026-10-22 — Fish eat larvae at the rate they clear zooplankton — and at the sim's larval densities they are swamped (L2; probes larvz.mjs, larvdiag.mjs)
 - **The fish's larva-picking was 3–60× too small per predator** (fish_predation_on_larvae.md), worst for large predators:
   - the old rule was CLEAR_A·L^0.6 × LARV_A 0.1 × a detectability of 0.2 at 6 mm;

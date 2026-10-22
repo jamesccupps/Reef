@@ -192,7 +192,13 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~2 a.m. EDT — THE NEWEST). 9229a90 = L2 COMMITTED (FRY.LARV2 + M_LARVA3 0.02 in stageR5, both engines;
+▶▶▶ RESUME HERE (2026-10-22 ~4 a.m. EDT — THE NEWEST). COMMITTED: 55a53ca E12a (8 near-certain plants; plants 30/30, substrate 20/20); c6d06ec
+the gate's every-species checks skip the run species; 8063465 E3b (prolarvae the fish's prey — EGG3.PROLARVA; perch ytl0 10; sucker hatch
+0.05 + spawnP 0.4; white perch hatch 0.45; the founding spin's zFish; eggs 14/14). GATES: c6d06ec's stopped on a syntax error I made (a
+comment inserted mid-line — fixed in 8063465: ALWAYS node --check after an edit); GATE of 8063465 RUNNING → gate_eco6.txt. ARM AG (9229a90,
+before E12/E3b) RUNNING on the GPU. NEXT: g1_check for E3b when the GPU frees (r5=1 yf 0.2/0.27: the prolarvae in the table, the egg tallies);
+then an arm of 8063465 (3 seeds × 2 yr); then E6b/c (turtles' plants/snails, tadpoles, frogs, newts), E5 angling, the rest of E1 (logs).
+▶▶▶ RESUME HERE (2026-10-22 ~2 a.m. EDT). 9229a90 = L2 COMMITTED (FRY.LARV2 + M_LARVA3 0.02 in stageR5, both engines;
 g1_check yf 0.3 young eaten CPU 4130 / GPU 4136): the fish's larva-picking at ρ 0.15 × Cmax 3.42e-7·L^2.94 m³/s × s(r) × detectability × colour
 × S3 larvO. Probe larvz: perch larvae eaten Z 0.003 → 0.015 — their potential 0.07–0.1 is SWAMPED by the predators' appetite at ~200
 larvae/m² of all species (larvdiag.mjs); bass fry after dispersal over-taken (0.13–0.18 vs field 0.02–0.05). THE UPSTREAM QUESTION: the
