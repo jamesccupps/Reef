@@ -202,6 +202,18 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~14:30 EDT — THE NEWEST). Y4 DIAGNOSED, NOT YET BUILT. Probes ywp/ywp2 (1/10 lakes): the young's slow growth is
+LOCAL CROWDING — their own cells hold 150–250 µg/L crustaceans in July, yet intake ÷ Cmax stays ~0.56 even at K_FRY 5 because the per-step
+crop (PLANKTON.CROP 0.3 of the catchable plankton in a school's patch) binds once the curve is loosened; young alewives are the biggest
+planktivores (asked 478 kg vs white perch 156 kg in 3 July weeks, crop-bound 98 %). FINDINGS fa4f075. Research notes (committed):
+young_white_perch_growth_and_food.md (3879bc7), larval_mortality_and_density_in_lakes.md (bc5c755): field white perch larvae Z ~0.1–0.2/d
+first feeding → 10 mm, then 0.03–0.06; clear softwater late-summer YOY ~100–700/ha (Oneida; the 2,900–7,200 band was Erie + the Hudson);
+yolk-sac survival 0.2–0.6; FISH PREDATION is the main larval killer in lakes (adult alewife Z 1.58 on perch larvae in Lake Ontario ponds;
+white perch and perch eat larvae); young sea-run alewives strip the large zooplankton from mid-June (Post et al. 2008: crustaceans 44 → 6.5
+µg/L). The sim's chain (white perch): hatch 0.36 (ok), yolk-sac ~1 (field 0.2–0.6), first-feeding Z 0.05–0.10 (field 0.1–0.2), late summer
+~19,000/ha (field ~100–3,000). NEXT (design first, walk the seasons): (1) the planktivores' predation on larvae — how fish3's _yReq rates
+adult alewife / white perch / perch eating the larvae they're in, against the field (Mason & Brandt; Kircheis 2002 Lake George, Maine: perch
+larvae 35 % of alewife items in May); (2) a yolk-sac stage loss (EGG3) where the field gives one; (3) re-probe ywp + larvz, then an arm.
 ▶▶▶ RESUME HERE (2026-10-22 13:05 EDT — THE NEWEST). GATE GREEN (remote, gate_z2b.txt: 140 PASS, 0 FAIL, 1 known GAP; headless/smoke/ui/serve
 OK) → COMMITTED 4330b60 (Z1b + Z2 + Z2_BURY 0.05), 4b23329 (FEED_CV 0.25 on), 06ee21a (R7 + FINDINGS), PUSHED origin/zoo-field = 06ee21a, BACKUP
 G:/synapse-reef-backups/synapse-reef_20261022_1302_plankton-rebase-forest-render.zip. (A burial bug of mine — a comment swallowing
