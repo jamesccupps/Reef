@@ -192,6 +192,13 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-22 ~5:15 a.m. EDT machine clock — THE NEWEST). COMMITTED 3a2df18 (pushed): F3.WILD_TAU 1 day — the
+wildlife's ρ from max(A, its running mean) on both engines (CPU fish3 _wAe; WGSL GL[G_WAE 160..]) — fixed E4's 128 % over-take (the
+gate of af3723e failed E4 at 4.4 of 3.6 kg; now 3.3 of 3.6); EGG3 alewife hatch 0.6 → 0.2 (Kellogg 1982 lab best 38 %; larvae 62 → 19/m²).
+RUNNING: the remote GATE of 3a2df18 → scratchpad/gate_eco9.txt; ARM AI (19edb3a) — TWO queues ran at once by mistake (the first launch
+was not dead): its parent killed, its seed-613 run continues (r22AI_613.txt); the relaunch (task byd7pmldu) is on 611, then 612, then
+613 AGAIN — keep the first 613 (copy to r22AI_613.first.txt before the relaunch reaches it). NEXT: g1_check r5=1 for WILD_TAU parity
+when the GPU frees; the larval inputs (the perch census question to the human); larval predation; E12b; back up after a green gate.
 ▶▶▶ RESUME HERE (2026-10-22 ~4:45 a.m. EDT by the machine clock — THE NEWEST; the earlier blocks' a.m. times ran ahead). COMMITTED:
 3dc49aa Y1 (the sunfishes'/pickerel's young on the weed shelf, the bed's food at 1–1.5 cm), 31573b3 FINDINGS arm AH (the year-2
 plankton starvation GONE with E9d + the retention fix: Daphnia 61/38 µg/L, TP 7–8, P inventory ~85 %; fish 97→43→27 kg/ha from the

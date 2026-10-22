@@ -4,6 +4,24 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — A predator's rate set from a snapshot of its prey over-harvests; a lab hatch rate over-stocks the larvae (3a2df18)
+- **What (E4, the wildlife).** Ospreys, eagles, herons and the rest take fish at a per-fish hazard ρ = D / (A + K): D is the day's
+  need, A is the biomass they can reach, and K is a day's need. A was read at the start of each block. When a block began with few
+  fish near the surface, ρ came out high, and every fish that rose into reach during the block was taken at that rate.
+  - Over a late-July fortnight the birds took 128 % of their need.
+  - The gate of af3723e failed E4 at 4.4 of 3.6 kg; a local run gave 4.6.
+- **Fix.** ρ now uses the larger of A and A's running mean over F3.WILD_TAU = 1 day: the reach as a forager learns it, not as one
+  instant shows it. Both engines have it: the CPU in fish3 `_wAe`, the GPU in `k_wildRho` with the mean in GL[160..].
+  - After the fix: 3.3 of 3.6 kg (92 %); ospreys 0.4 kg, eagles 0.2.
+- **Lesson.** A type-II predator coupled to a stepped prey field needs the prey it *expects*, not the prey of one instant. Otherwise a
+  short dip in reach turns into a burst of over-harvest when the prey come back.
+- **What (EGG3, the alewife).** The sea-run alewives' eggs hatched at 0.6, and their larvae swam at 62/m² in Lower Hot Brook Lake.
+  - The best hatch the research reports is 38 %, in the lab near 17.8 °C (Kellogg 1982).
+  - On a lake bed it should be lower: white perch eggs hatch 0.8 in the lab and 0.45 on the bed.
+  - At hatch 0.2 the larvae peak at 19/m² and reach 7–10 mm by mid-July, against 5–7 mm before (probe larvz). The larvae competing
+    for the same rotifers had held each other back.
+- **Where.** fish3.js F3.WILD_TAU (comment); config EGG3; test/w3.mjs E4; docs/review/ECOSYSTEM_BUILD.md E4/E8.
+
 ## 2026-10-22 — The inflow's nitrogen as ammonium nitrified a third of the lakes' winter O₂ (probes o2budget.mjs, winter.mjs; arm AH)
 - **What.** Arm AH lost a third of its fish biomass (70 → 46 kg/ha) in February–March to late-winter hypoxia: the deep bottom at
   1.5 mg/L. A fishless package winter drew the lakes' mean O₂ to 1.6 mg/L by April, with 72–81 % of the water under 2 mg/L.
