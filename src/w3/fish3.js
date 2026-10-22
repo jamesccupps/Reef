@@ -215,6 +215,10 @@ export const F3 = {
   // mergansers, otters and mink take their field needs from the fish they can reach — by size, depth, cover, ice, light and preference —
   // the followed fish and the young alike. Before it, nothing but the census cap and M_OTHER stood for them
   WILD: 0,
+  // the wildlife's REACH as a forager knows it: its per-fish hazard ρ = D / (A + K) from the larger of the fish it can reach at the block's
+  // start and their running mean over WILD_TAU days — a block that began with few fish at the surface had set a rate the fish rising
+  // into reach within it were all taken at (ospreys and eagles took 128 % of their need over a July fortnight: the gate of af3723e)
+  WILD_TAU: 1,
   // R2·3 — YDEPTH: THE YOUNG'S DEPTH IN THE PREDATORS' REACH. The young's prey table held a column's schools by species and length
   // only, so a 40-cm bass reached young in 0.3 m of water as in 3 m, where a followed fish of the same size is out of its reach over
   // a bed shallower than half the water the predator needs (SHALLOW_K: none at ≤ 0.5·K·L, full at ≥ K·L). With it the table's bins
@@ -1655,7 +1659,7 @@ export class Fish3 {
     }
     if (full) this._yoyHash();
     if (FRY.DENSITY) this._yTable();   // (stage Y1: the young available, per column × species × length — before anyone feeds)
-    if (F3.WILD) this._wildPrep(); else if (this._wRho) this._wRho.fill(0);   // (E4: the wildlife's demand and the fish it can reach now)
+    if (F3.WILD) this._wildPrep(dt); else if (this._wRho) this._wRho.fill(0);   // (E4: the wildlife's demand and the fish it can reach now)
     if (ALEWIFE.ON && S3.alewife) { this._aleDay(); this._alewife(dt); }   // (E8: the sea-run alewives' run, residence and leaving)
     const yf = e.yearFrac(), att = ch.attenuation(), clar = ch.clarity();
     { const yr = this._yr = Math.floor(e.time / YEAR); if (yf >= F3.SITE_YF && yf < 0.5 && this._siteYr !== yr) { this._siteYr = yr; this._siteSub(); } }   // (the plant spawners' grounds, each spring)
@@ -3125,15 +3129,16 @@ export class Fish3 {
     }
     return D;
   }
-  _wildPrep() {
-    const e = this.env, R = this._wRho || (this._wRho = new Float64Array(WILDK.length));
+  _wildPrep(dt = 0) {
+    const e = this.env, R = this._wRho || (this._wRho = new Float64Array(WILDK.length)), Ae = this._wAe || (this._wAe = new Float64Array(WILDK.length));
     const ice = e.ice, A = this._wA || (this._wA = new Float64Array(WILDK.length)); A.fill(0); R.fill(0);
     const D = this.wildDemand(); if (!D.some(v => v > 0)) return;
     for (const a of this.fish) { if (!a.alive || a.c < 0) continue; const ic = ice[a.c];
       for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], a.s.key, a.L, a.z, a.bed, a.cover, ic); if (v > 0) A[w] += v * a.W * a.n; } }
     for (const q of this.yoy) { if (!q.alive || q.c < 0 || q.dev < 2) continue; const ic = ice[q.c];
       for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], q.s.key, q.L, q.z, q.bed, q.cover, ic); if (v > 0) A[w] += v * q.W * q.n; } }
-    for (let w = 0; w < WILDK.length; w++) if (D[w] > 0 && A[w] > 0) R[w] = D[w] / (A[w] + D[w] * DAY);   // (K: a day's need)
+    for (let w = 0; w < WILDK.length; w++) if (D[w] > 0 && A[w] > 0) R[w] = D[w] / (Math.max(A[w], Ae[w]) + D[w] * DAY);   // (K: a day's need; the reach as F3.WILD_TAU)
+    const ke = Math.min(1, dt / (F3.WILD_TAU * DAY)); for (let w = 0; w < WILDK.length; w++) Ae[w] += (A[w] - Ae[w]) * ke;
   }
   // a fish's wildlife hazard (/s), its parts by wildlife into H (for the tallies)
   _wildH(key, L, z, bed, cover, ic, H) {

@@ -280,7 +280,7 @@ const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
 // THE LAKES' FISH-EATING WILDLIFE (fish3 F3.WILD, _wildPrep/_wildH/_wildTally): the host writes each wildlife's demand now (g/s) to
 // GL[G_WD + w]; k_wildA/y_wildA sum the fish it can reach (Σ accessibility × mass) at the block's start, k_wildRho its hazard per unit
 // of accessibility ρ = D / (A + K), K a day's need, into GL[G_WRHO + w]
-const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const GS_WILDA: u32 = 128u;   // (GS: 2 words a wildlife)
+const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const G_WAE: u32 = 160u; const GS_WILDA: u32 = 128u;   // (GS: 2 words a wildlife; G_WAE: the reach's running mean — fish3 F3.WILD_TAU)
 // (E8) THE SEA-RUN ALEWIFE's block sums (GS pairs from GS_ALE, read back as GL[G_ALE + r] by k_aleFin): 0 adults out by the outlet, 1 spent
 // (died), 2 their grams, 3 grams × hours excreting, 4 the young out, 5 their grams, 6 the young's cold deaths
 const GS_ALE: u32 = 192u; const G_ALE: u32 = 200u; const ASC: f32 = 100.0;
@@ -1487,7 +1487,9 @@ fn aleFin(r0: u32, r1: u32) { for (var r = r0; r < r1; r++) { GL[G_ALE + r] = (f
 @compute @workgroup_size(1) fn k_wildRho() {
   for (var w = 0u; w < NWILD; w++) {
     let D = GL[G_WD + w]; let A = (f32(atomicLoad(&GS[GS_WILDA + 2u * w])) + f32(atomicLoad(&GS[GS_WILDA + 2u * w + 1u])) * 4294967296.0) / BSCALE;
-    GL[G_WRHO + w] = select(0.0, D / (A + D * DAY), F3_WILD > 0.5 && D > 0.0 && A > 0.0);
+    let Ae = GL[G_WAE + w];
+    GL[G_WRHO + w] = select(0.0, D / (max(A, Ae) + D * DAY), F3_WILD > 0.5 && D > 0.0 && A > 0.0);
+    GL[G_WAE + w] = Ae + (A - Ae) * min(1.0, U.dt / (F3_WILD_TAU * DAY));
   }
 }
 `;

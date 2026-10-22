@@ -490,7 +490,10 @@ export const EGG3 = {
     killifish:  { form: 'kam', a: 150, t0: 10, yolk: 0.3, hatch: 0.85, tl: [17, 32], pred: 0.05, o2: 3 },
     // (E8) sea-run alewife: demersal, briefly adhesive then drifting eggs, 25.1·e^(−0.089T) days (6.6 d at 15 °C); hatch at 3–5 mm, 2–5 d on yolk
     // (sea_run_alewife.md §2) [hatch, tl, pred: inf — the note: calibrate survival to emigrants, not to eggs]
-    alewife:    { form: 'exp', a: 25.1, b: 0.089, yolk: 0.5, hatch: 0.6, tl: [10, 27], pred: 0.1, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
+    // (hatch 0.6 → 0.2, 2026-10-22: the note's best hatch is 38 % in the lab near 17.8 °C — Kellogg 1982 via Fay; a lake bed's eggs fare worse,
+    // as white perch's lab 0.8 → the bed's 0.45 (E3b): 0.38 × 0.56 ≈ 0.2 [inf]. At 0.6 the alewives' young swam at 62 larvae/m², the lakes'
+    // larvae ~150/m² against the field's 10–40 — FINDINGS 2026-10-22)
+    alewife:    { form: 'exp', a: 25.1, b: 0.089, yolk: 0.5, hatch: 0.2, tl: [10, 27], pred: 0.1, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
   },
   YOLK_HATCH: 0.95,        // the yolk-sac stage's survival at its optimum [inf]
   THERM_K: 0.1,            // /day per °C of the day's mean beyond the window [inf: the TL50s are constant-incubation limits; a spell kills less]
