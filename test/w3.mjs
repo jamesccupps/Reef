@@ -940,8 +940,8 @@ if (run('gpu')) {
     const W1 = world(), W2 = world(), h1 = hand(W1.F, false), h2 = hand(W2.F, true), st = getRandState();
     const live = ({ e, F }) => { setRandState(st); for (let b = 0; b < 4; b++) { F.step(FB); e.step(FB); } return fp(F); };
     const f1 = live(W1), f2 = live(W2);
-    const st0 = W1.F.stats, stt = JSON.parse(JSON.stringify(st0)), tl = new Float64Array(512), NK = KEYS3.length;
-    tl[412 + 2] = 3e6; tl[400 + 2] = 5000; tl[224 + 1 * 8 + 5] = 2.5e6; tl[96 + 6 * NK + 1] = 4e6;
+    const st0 = W1.F.stats, stt = JSON.parse(JSON.stringify(st0)), tl = new Float64Array(Lg.NTALLY_PAIRS), NK = KEYS3.length, TP = Lg.TP;
+    tl[TP.SPAWNS + 2] = 3e6; tl[TP.EGGS + 2] = 5000; tl[TP.DIED + 1 * 8 + 5] = 2.5e6; tl[TP.KILLS + 6 * NK + 1] = 4e6;
     Lg.statsAdd(stt, tl, 99);
     const okS = stt.spawns.sucker === st0.spawns.sucker + 3 && stt.eggs.sucker === st0.eggs.sucker + 5000 && Math.abs((stt.died.perch.eaten || 0) - ((st0.died.perch || {}).eaten || 0) - 2.5) < 1e-9
       && stt.eatenBy['pike>perch'] - (st0.eatenBy['pike>perch'] || 0) === 4 && stt.kills === st0.kills + 4;

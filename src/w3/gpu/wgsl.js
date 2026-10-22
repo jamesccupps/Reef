@@ -238,39 +238,40 @@ const GS_CNT: u32 = 0u; const GS_RUNIN: u32 = 32u; const GS_BIO: u32 = 64u; cons
 const GS_CLAIMP0: u32 = 512u;   // + i: the highest priority claiming fish i (then + cap + i: how many claimed it)`;
 // tallies: [pairs] — cross by species, settle, trips, stranded deaths; more as the kernels come (index helpers)
 export const TALLY = /* wgsl */`
-const T_CROSS: u32 = 0u;      // + 2k: fish that reached the other lake
-const T_SETTLE: u32 = 32u;    // + 2k: settled there
-const T_TRIPS: u32 = 64u;     // + 2k: set off on a trip
-const T_FOOD: u32 = 128u;     // + 2·kind: grams eaten by the followed fish
-const T_FOODK: u32 = 1024u;   // + 2·(k·NFOODK + kind): the followed fish's grams by species and food (G3 diagnostics: fish, young, bed, weeds, crayfish, surface, zooplankton, organic layer)
+// (each block's T_ offset: layout.js TALLY_BLOCKS, laid out from the species' count — wgslConstants)
+// T_CROSS      // + 2k: fish that reached the other lake
+// T_SETTLE    // + 2k: settled there
+// T_TRIPS     // + 2k: set off on a trip
+// T_FOOD     // + 2·kind: grams eaten by the followed fish
+// T_FOODK   // + 2·(k·NFOODK + kind): the followed fish's grams by species and food (G3 diagnostics: fish, young, bed, weeds, crayfish, surface, zooplankton, organic layer)
 const NFOODK: u32 = 8u;
-const T_YKILLS: u32 = 1216u;  // + 2·(predator·NK + prey): young-of-year fish eaten by the followed fish (diagnostics)
-const T_YYKILLS: u32 = 1458u; // + 2·(predator·NK + prey): young eaten by other young (a young piscivore's school)
-const T_YFOODK: u32 = 1700u;  // + 2·(k·5 + kind): the young's grams by species and food (young fish, zooplankton, weeds' fauna, bed, organic layer)
-const T_YCAP: u32 = 1820u;    // + 2k: the young a recruiting school had no room for in the census (fish3 stats.fry.capped)
-const T_KILLSZ: u32 = 1850u;  // + 2·(prey·4 + class): followed fish eaten by the prey's length class (< 10, 10–20, 20–30, ≥ 30 cm)
-const T_KILLPZ: u32 = 1940u;  // + 2·(predator·4 + class): each predator species' kills by the PREY's length class
-const T_STRM: u32 = 2048u;    // + 2·(predator·NK + prey): THE STRIKES' ENCOUNTERS (diagnostics, stage P2) — fish within a strike's reach,
-const T_STRG: u32 = 2290u;    //   those it could take (gape, size, room),
-const T_STRW: u32 = 2532u;    //   and their strike weight (capture × vuln × size × hide × cover × school), summed over the strikes' scans
-const T_KILLD: u32 = 2780u;   // + 2·(prey·5 + class): followed fish eaten by the bed's depth under them (< 0.3, 0.3–0.6, 0.6–1, 1–2, ≥ 2 m)
-const T_KILLC: u32 = 2890u;   // + 2·(prey·3 + class): … by their cover then (< 0.1, 0.1–0.5, ≥ 0.5)
-const T_WHERE: u32 = 2960u;   // + 2·(k·5 + class): BY DAY, every 8th followed fish's n by the bed's depth under it (the KILLD classes) — where each kind spends the day (diagnostics, stage R item 6)
-const T_GUT: u32 = 3080u;     // + 2·(k·5 + class): BY DAY, every 8th piscivore's (L ≥ Lpisc) gut fullness (< 5 %, 5–25, 25–50, 50–75, ≥ 75 % of its capacity) — the field's 35–60 % empty stomachs (diagnostics, stage R item 6)
+// T_YKILLS  // + 2·(predator·NK + prey): young-of-year fish eaten by the followed fish (diagnostics)
+// T_YYKILLS // + 2·(predator·NK + prey): young eaten by other young (a young piscivore's school)
+// T_YFOODK  // + 2·(k·5 + kind): the young's grams by species and food (young fish, zooplankton, weeds' fauna, bed, organic layer)
+// T_YCAP    // + 2k: the young a recruiting school had no room for in the census (fish3 stats.fry.capped)
+// T_KILLSZ  // + 2·(prey·4 + class): followed fish eaten by the prey's length class (< 10, 10–20, 20–30, ≥ 30 cm)
+// T_KILLPZ  // + 2·(predator·4 + class): each predator species' kills by the PREY's length class
+// T_STRM    // + 2·(predator·NK + prey): THE STRIKES' ENCOUNTERS (diagnostics, stage P2) — fish within a strike's reach,
+// T_STRG    //   those it could take (gape, size, room),
+// T_STRW    //   and their strike weight (capture × vuln × size × hide × cover × school), summed over the strikes' scans
+// T_KILLD   // + 2·(prey·5 + class): followed fish eaten by the bed's depth under them (< 0.3, 0.3–0.6, 0.6–1, 1–2, ≥ 2 m)
+// T_KILLC   // + 2·(prey·3 + class): … by their cover then (< 0.1, 0.1–0.5, ≥ 0.5)
+// T_WHERE   // + 2·(k·5 + class): BY DAY, every 8th followed fish's n by the bed's depth under it (the KILLD classes) — where each kind spends the day (diagnostics, stage R item 6)
+// T_GUT     // + 2·(k·5 + class): BY DAY, every 8th piscivore's (L ≥ Lpisc) gut fullness (< 5 %, 5–25, 25–50, 50–75, ≥ 75 % of its capacity) — the field's 35–60 % empty stomachs (diagnostics, stage R item 6)
 // the review's tallies (docs/review/PLAN.md item 1): where each kind and size spends the day from the shore, when the kills happen, who starves
-const T_SHORE: u32 = 3200u;   // + 2·((k·3 + size)·5 + class): BY DAY, every 8th followed fish's n by its distance from the shore (< 10, 10–30, 30–60, 60–120, ≥ 120 m) and length (< 10, 10–20, ≥ 20 cm)
-const T_KILLLT: u32 = 3540u;  // + 2·(prey·3 + light): followed fish eaten by day (sun > 0.3), at twilight (> 0.02), at night — the strike's own light classes
-const T_KILLLP: u32 = 3610u;  // + 2·(predator·3 + light): each predator's kills by the light
-const T_STARVSZ: u32 = 3680u; // + 2·(k·4 + class): starvation deaths by length class (lenClass)
+// T_SHORE   // + 2·((k·3 + size)·5 + class): BY DAY, every 8th followed fish's n by its distance from the shore (< 10, 10–30, 30–60, 60–120, ≥ 120 m) and length (< 10, 10–20, ≥ 20 cm)
+// T_KILLLT  // + 2·(prey·3 + light): followed fish eaten by day (sun > 0.3), at twilight (> 0.02), at night — the strike's own light classes
+// T_KILLLP  // + 2·(predator·3 + light): each predator's kills by the light
+// T_STARVSZ // + 2·(k·4 + class): starvation deaths by length class (lenClass)
 fn lenClass(L: f32) -> u32 { return select(select(select(3u, 2u, L < 30.0), 1u, L < 20.0), 0u, L < 10.0); }
-const T_INTAKE: u32 = 160u;   // + 2k: grams eaten by species
-const T_KILLS: u32 = 192u;    // + 2·(predator·NK + prey): followed fish eaten
-const T_DIED: u32 = 448u;     // + 2·(k·NCAUSE + cause)
+// T_INTAKE   // + 2k: grams eaten by species
+// T_KILLS    // + 2·(predator·NK + prey): followed fish eaten
+// T_DIED     // + 2·(k·NCAUSE + cause)
 const FOOD_ZOO: u32 = 0u; const FOOD_BENTH: u32 = 1u; const FOOD_WEED: u32 = 2u; const FOOD_CRAY: u32 = 3u; const FOOD_SURF: u32 = 4u; const FOOD_FISH: u32 = 5u; const FOOD_SED: u32 = 6u; const FOOD_YOY: u32 = 7u;
 const FOOD_YZOO: u32 = 8u; const FOOD_YWEED: u32 = 9u; const FOOD_YBENTH: u32 = 10u; const FOOD_YSED: u32 = 11u;   // (the young's own eating)
-const T_FRY: u32 = 640u;     // + 2·(k·NFRY + cause): the young's fates
+// T_FRY     // + 2·(k·NFRY + cause): the young's fates
 const FRY_NATURAL: u32 = 0u; const FRY_STARVE: u32 = 1u; const FRY_HEAT: u32 = 2u; const FRY_HYPOXIA: u32 = 3u; const FRY_EATEN: u32 = 4u; const FRY_RECRUITED: u32 = 5u; const FRY_HATCHED: u32 = 6u; const NFRY: u32 = 7u;
-const T_EGGS: u32 = 800u; const T_SPAWNS: u32 = 824u; const T_SPAWNSUB: u32 = 848u; const T_SPAWNBED: u32 = 872u; const T_SPAWNBROOK: u32 = 896u; const T_RECRUITS: u32 = 920u; const T_SOLO: u32 = 944u;   // + 2k
+// T_EGGS // T_SPAWNS // T_SPAWNSUB // T_SPAWNBED // T_SPAWNBROOK // T_RECRUITS // T_SOLO   // + 2k
 const CAUSE_STARVE: u32 = 0u; const CAUSE_HEAT: u32 = 1u; const CAUSE_HYPOXIA: u32 = 2u; const CAUSE_OTHER: u32 = 3u; const CAUSE_OLD: u32 = 4u; const CAUSE_EATEN: u32 = 5u; const CAUSE_STRANDED: u32 = 6u; const CAUSE_WILD: u32 = 7u;
 const NCAUSE: u32 = 8u;
 fn foodK(k: u32, kind: u32, g: f32) { if (g > 0.0) { add64(&TL, T_FOODK + 2u * (k * NFOODK + kind), g, TSCALE); } }
@@ -279,10 +280,10 @@ const TSCALE: f32 = 1e6;      // tallies in millionths (of a fish, of a gram)
 // GL[G_WD + w]; k_wildA/y_wildA sum the fish it can reach (Σ accessibility × mass) at the block's start, k_wildRho its hazard per unit
 // of accessibility ρ = D / (A + K), K a day's need, into GL[G_WRHO + w]
 const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const GS_WILDA: u32 = 128u;   // (GS: 2 words a wildlife)
-const T_WILD: u32 = 4352u;   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife (room for 16: layout wildWGSL)
-const T_WILDG: u32 = 4704u;  // + 2w: their grams
-const T_YWILD: u32 = 3996u;  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
-const T_EGG3: u32 = 4096u;   // + 2·(k·8 + j): (E3) the egg stage — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm (fish3 stats.eggs3)
+// T_WILD   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife (room for 16: layout wildWGSL)
+// T_WILDG  // + 2w: their grams
+// T_YWILD  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
+// T_EGG3   // + 2·(k·8 + j): (E3) the egg stage — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm (fish3 stats.eggs3)
 fn wildH(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {
   var h = 0.0; for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { h += r * wildV(w, k, L, z, bed, cover, ice); } } return h;
 }

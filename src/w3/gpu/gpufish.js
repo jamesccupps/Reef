@@ -2,7 +2,7 @@
 // (navigator.gpu) — the gate's Node never loads it; tools/gpu/g1_check.html checks every kernel against fish3.js on the same fish.
 // It holds a Fish3's agents (and, as the kernels come, its young) on the GPU as struct-of-arrays buffers (layout.js), the lakes'
 // statics, the water each block, and runs the block's kernels (wgsl.js) in fish3's order.
-import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
+import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, NTALLY_PAIRS, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3, WILDK } from '../fish3.js';
 import { FRY, ICE, EGG3 } from '../../config.js';
@@ -11,7 +11,7 @@ import { CLOCK3 } from '../clock3.js';
 
 const ST_ = () => GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC;
 export const HHX = Math.ceil((GEO.XMAX - GEO.X0) / F3.HC), HHY = Math.ceil((GEO.YMAX - GEO.Y0) / F3.HC);
-const NTALLY = 6144;   // tally words (pairs; 1024+ the diagnostics: the diet by species; 2048+ the strikes' encounters)
+const NTALLY = 2 * NTALLY_PAIRS;   // tally words (pairs: layout.js TALLY_BLOCKS)
 
 export class GpuFish {
   static async device() {

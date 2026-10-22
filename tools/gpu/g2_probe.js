@@ -26,5 +26,5 @@ for (let day = 1; day <= DAYS; day++) {
   for (let b = 0; b < PD; b++) { if (G) await G.block(B); else F.step(B); env.step(B); }
   if (day % EVERY === 0) await show(day);
 }
-if (G) { const tl = await G.readTallies(); log(`recruits ${(tl[460 + k] / 1e6).toFixed(0)}`); } else log(`recruits ${F.stats.recruits[SP]}`);
+if (G) { const tl = await G.readTallies(); log(`recruits ${(tl[L.TP.RECRUITS + k] / 1e6).toFixed(0)}`); } else log(`recruits ${F.stats.recruits[SP]}`);
 document.title = 'done';

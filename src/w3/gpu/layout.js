@@ -199,25 +199,25 @@ export function materialize(F, P, cap, ycap, n, ny, nextId) {
   return { fish: fish.length, yoy: yoy.length };
 }
 // the engine's tallies (pairs, already summed to numbers: GpuFish.readTallies) into a Fish3's stats tree — what the GPU's blocks
-// counted since the tallies were last cleared (wgsl.js TALLY's layout: word offsets / 2)
+// counted since the tallies were last cleared (TP: the map's pair offsets)
 const T_FOODS = ['zoo', 'benth', 'weed', 'cray', 'surf', 'fish', 'sed', 'yoy', 'yZoo', 'yWeed', 'yBenth', 'ySed'];
 const T_CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded', 'wild'], T_FATES = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];
 export function statsAdd(st, tl, time = 0) {
   const NK = KEYS3.length, M = 1e6;
-  T_FOODS.forEach((f, q) => { st.food[f] = (st.food[f] || 0) + tl[64 + q] / M; });
+  T_FOODS.forEach((f, q) => { st.food[f] = (st.food[f] || 0) + tl[TP.FOOD + q] / M; });
   KEYS3.forEach((k, q) => {
-    st.cross[k] += tl[q] / M; st.settle[k] += tl[16 + q] / M; st.trips[k] += tl[32 + q] / M;
-    const g = tl[80 + q] / M; if (g > 0) st.intakeBy[k] = (st.intakeBy[k] || 0) + g;
-    KEYS3.forEach((kq, r) => { const v = tl[96 + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
-    const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * T_CAUSES.length + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
-    { const yw = tl[1998 + q] / M; if (yw > 0) st.fry[k].wild = (st.fry[k].wild || 0) + yw; }   // (E4: the young the wildlife took — T_YWILD)
-    { const t = st.eggs3 && (st.eggs3[k] || (st.eggs3[k] = { laid: 0, swum: 0, base: 0, temp: 0, guard: 0, pred: 0, o2: 0, storm: 0 })); if (t) ['laid', 'swum', 'base', 'temp', 'guard', 'pred', 'o2', 'storm'].forEach((c, j) => { t[c] += tl[2048 + q * 8 + j] / M; }); }   // (E3: T_EGG3)
-    WILDK.forEach((w, r) => { const v = tl[2176 + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
-    T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[910 + q] / M;
-    const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
-    const at = st.spawnAt[k]; at.sub += tl[424 + q] / M; at.bed += tl[436 + q] / M; at.brook += tl[448 + q] / M; if (sp > 0 && at.first < 0) at.first = time;
+    st.cross[k] += tl[TP.CROSS + q] / M; st.settle[k] += tl[TP.SETTLE + q] / M; st.trips[k] += tl[TP.TRIPS + q] / M;
+    const g = tl[TP.INTAKE + q] / M; if (g > 0) st.intakeBy[k] = (st.intakeBy[k] || 0) + g;
+    KEYS3.forEach((kq, r) => { const v = tl[TP.KILLS + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
+    const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[TP.DIED + q * T_CAUSES.length + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
+    { const yw = tl[TP.YWILD + q] / M; if (yw > 0) st.fry[k].wild = (st.fry[k].wild || 0) + yw; }   // (E4: the young the wildlife took — T_YWILD)
+    { const t = st.eggs3 && (st.eggs3[k] || (st.eggs3[k] = { laid: 0, swum: 0, base: 0, temp: 0, guard: 0, pred: 0, o2: 0, storm: 0 })); if (t) ['laid', 'swum', 'base', 'temp', 'guard', 'pred', 'o2', 'storm'].forEach((c, j) => { t[c] += tl[TP.EGG3 + q * 8 + j] / M; }); }   // (E3: T_EGG3)
+    WILDK.forEach((w, r) => { const v = tl[TP.WILD + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
+    T_FATES.forEach((c, j) => { st.fry[k][c] += tl[TP.FRY + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[TP.YCAP + q] / M;
+    const sp = tl[TP.SPAWNS + q] / M; st.eggs[k] += tl[TP.EGGS + q]; st.spawns[k] += sp; st.recruits[k] += tl[TP.RECRUITS + q] / M; st.solo[k] += tl[TP.SOLO + q] / M;
+    const at = st.spawnAt[k]; at.sub += tl[TP.SPAWNSUB + q] / M; at.bed += tl[TP.SPAWNBED + q] / M; at.brook += tl[TP.SPAWNBROOK + q] / M; if (sp > 0 && at.first < 0) at.first = time;
   });
-  WILDK.forEach((w, r) => { const g = tl[2352 + r] / M; if (g > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.g += g; } });   // (T_WILDG)
+  WILDK.forEach((w, r) => { const g = tl[TP.WILDG + r] / M; if (g > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.g += g; } });   // (T_WILDG)
   return st;
 }
 
@@ -379,12 +379,25 @@ export function packWater(F, env, WL, out = null) {
   return W;
 }
 
+// ---------- THE TALLIES' MAP (wgsl.js TALLY; GpuFish.readTallies): each block's PAIR offset by name (a pair: one 64-bit fixed-point count),
+// laid out from the species' count — a new species or wildlife moves every block after it, in the WGSL (T_ = 2 × the pair), statsAdd,
+// year.js and g1_check alike (they were hand-placed for 11 species: KILLS and FRY overflowed into their neighbours at 12) ----------
+export const NWILD_MAX = 16;
+export const TALLY_BLOCKS = NK => [['CROSS', NK], ['SETTLE', NK], ['TRIPS', NK], ['FOOD', 16], ['INTAKE', NK], ['KILLS', NK * NK], ['DIED', NK * 8], ['FRY', NK * 7],
+  ['EGGS', NK], ['SPAWNS', NK], ['SPAWNSUB', NK], ['SPAWNBED', NK], ['SPAWNBROOK', NK], ['RECRUITS', NK], ['SOLO', NK], ['FOODK', NK * 8], ['YKILLS', NK * NK],
+  ['YYKILLS', NK * NK], ['YFOODK', NK * 5], ['YCAP', NK], ['KILLSZ', NK * 4], ['KILLPZ', NK * 4], ['STRM', NK * NK], ['STRG', NK * NK], ['STRW', NK * NK], ['KILLD', NK * 5],
+  ['KILLC', NK * 3], ['WHERE', NK * 5], ['GUT', NK * 5], ['SHORE', NK * 15], ['KILLLT', NK * 3], ['KILLLP', NK * 3], ['STARVSZ', NK * 4], ['YWILD', NK], ['EGG3', NK * 8],
+  ['WILD', NWILD_MAX * NK], ['WILDG', NWILD_MAX]];   // (sizes: NCAUSE 8, NFRY 7, NFOODK 8, the young's 5 foods, …: wgsl.js TALLY's comments)
+export const TP = {}; export let NTALLY_PAIRS = 0;
+{ let o = 0; for (const [n, len] of TALLY_BLOCKS(KEYS3.length)) { TP[n] = o; o += len; } NTALLY_PAIRS = (o + 31) & ~31; }
+export const tallyWGSL = () => Object.entries(TP).map(([n, p]) => `const T_${n}: u32 = ${2 * p}u;`).join('\n');
+
 // ---------- THE WGSL CONSTANTS: every number the kernels share with the CPU sim, from its own config ----------
 const wf = v => { if (v === Infinity || v >= 3e38) return '3e38'; if (v === -Infinity) return '-3e38'; const s = String(+v); return /[.eE]/.test(s) ? s : s + '.0'; };
 // THE LAKES' FISH-EATING WILDLIFE (fish3 WILD3, _wildV) as WGSL: a fish's accessibility to wildlife w — its length, its depth below the
 // surface, the bed under it, its cover, the ice — × the wildlife's preference for its species (one case a wildlife, from WILD3 itself)
 export function wildWGSL() {
-  if (WILDK.length > 16) throw new Error('layout: more than 16 wildlife — GL G_WD/G_WRHO, GS_WILDA and TL T_WILD/T_WILDG hold 16');
+  if (WILDK.length > NWILD_MAX) throw new Error(`layout: more than ${NWILD_MAX} wildlife — GL G_WD/G_WRHO, GS_WILDA and the tallies' WILD/WILDG hold ${NWILD_MAX}`);
   const cases = WILDK.map((w, r) => {
     const d = WILD3[w]; let pr = '1.0';
     for (const [sp, v] of Object.entries(d.pref)) { const q = KEYS3.indexOf(sp); if (q < 0) throw new Error(`layout: WILD3.${w} prefers an unknown species ${sp}`); pr = `select(${pr}, ${wf(v)}, k == ${q}u)`; }
@@ -430,7 +443,7 @@ export function wgslConstants(STL, WL, extra = {}) {
   for (const [n, o] of Object.entries(STL.offs)) CU('O_' + n, o);
   for (const [n, o] of Object.entries(WL.offs)) CU('W_' + n, o);
   CU('NFP', STL.nFp);
-  L.push(wildWGSL());
+  L.push(wildWGSL()); L.push(tallyWGSL());
   for (const [k, v] of Object.entries(extra.consts || {})) typeof v === 'number' ? C(k, v) : null;
   return L.join('\n');
 }

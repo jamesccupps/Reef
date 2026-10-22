@@ -13,6 +13,7 @@ const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, KEYS3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
+const { TP } = await import('../../src/w3/gpu/layout.js');   // (the tallies' pair offsets by name)
 const KS = ['sunfish', 'perch', 'sucker', 'catfish', 'whiteperch', 'bass', 'pike', 'redbreast', 'fallfish', 'killifish', 'dace'];
 const fmt = (c, c0) => KS.map(k => { const r = c[k], r0 = c0[k]; return `${k.slice(0, 6).padEnd(6)} ${(r.n / Math.max(1, r0.n)).toFixed(3)}× ${r.kgHa.toFixed(1).padStart(5)} kg/ha ${r.L.toFixed(1).padStart(5)} cm · young ${(r.yoyN / 1e3).toFixed(0).padStart(6)}k @ ${r.yoyL.toFixed(2)} cm`; });
 const { dev, info } = MODE === 'cpu' ? {} : await GpuFish.device(); if (info) log(`GPU: ${info.vendor} ${info.architecture}`);
@@ -44,7 +45,7 @@ for (const sd of SEEDS) {
     else results[`${sd}-cpu`] = { rows, stats: JSON.parse(JSON.stringify(F.stats)) };
     // the tallies: spawnings, recruits, followed fish eaten, deaths
     const r = results[`${sd}-${eng}`];
-    if (eng === 'gpu') { const tl = r.tl; log('   spawnings ' + KS.map((k, q) => `${k.slice(0, 6)} ${(tl[412 + q] / 1e6).toFixed(0)}`).join(' ') + ' · recruits ' + KS.map((k, q) => (tl[460 + q] / 1e6).toFixed(0)).join('/') + ` · kills ${Array.from({ length: 121 }, (_, q) => tl[96 + q] / 1e6).reduce((a, b) => a + b, 0).toFixed(0)}`); }
+    if (eng === 'gpu') { const tl = r.tl; log('   spawnings ' + KS.map((k, q) => `${k.slice(0, 6)} ${(tl[TP.SPAWNS + q] / 1e6).toFixed(0)}`).join(' ') + ' · recruits ' + KS.map((k, q) => (tl[TP.RECRUITS + q] / 1e6).toFixed(0)).join('/') + ` · kills ${Array.from({ length: KS.length ** 2 }, (_, q) => tl[TP.KILLS + q] / 1e6).reduce((a, b) => a + b, 0).toFixed(0)}`); }
     else { const st = r.stats; log('   spawnings ' + KS.map(k => `${k.slice(0, 6)} ${st.spawns[k] - st0.spawns[k]}`).join(' ') + ' · recruits ' + KS.map(k => st.recruits[k] - st0.recruits[k]).join('/') + ` · kills ${st.kills - st0.kills}`); r.stats0 = st0; }
   }
 }
