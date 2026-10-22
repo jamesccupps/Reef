@@ -192,7 +192,14 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT — THE NEWEST). E7 THE HEX HATCH built (LIT3.HEX, in stageR5; littoral3 _hex): on soft-mud cells
+▶▶▶ RESUME HERE (2026-10-21 ~9:55 p.m. EDT — THE NEWEST; the human may RESTART the computer soon). GATE of 9ed1d21: 121 PASS, 2 FAIL —
+both checks updated for the new mechanisms (f4918b4: white perch's unsimulated + wildlife mortality; R2a's Daphnia floor 5 µg/L). GATE of
+f4918b4 (everything: eggs, Hex hatch…) STARTED ~9:55 (scratchpad/gate_eco2.txt, ~45 min) — rerun it if the restart cut it:
+  node tools/remote/run.mjs occ-server -e W3_PERF_MUL=1.3 -- npm test
+ARM AE (queue_ae.sh; snapshot snap_ae :8144 = 145659e — before the Hex hatch): seed 611 done ~10:55 p.m., all three ~1 a.m. If the
+restart cut it: re-snapshot HEAD (bash scratchpad/snap.sh af 8145) and run the three seeds there (r22AF_<seed>.txt) — the hatch included.
+The human (2026-10-21): "it can download anything it needs" (memory downloads-allowed).
+▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT). E7 THE HEX HATCH built (LIT3.HEX, in stageR5; littoral3 _hex): on soft-mud cells
 (substrate mud+org ≥ 0.5, bed O₂ ≥ 2 mg/L) once the surface passes 19 °C inside yf 0.315–0.45, 20 % of the mud fauna (chem3.benth) rises
 at dusk over 12 days to surfA (the surface feeders eat it; the rest fly off) — 1/10 test 13 kg/ha; test/w3.mjs 'hex'. g1_check now lists
 the piscivores' largest meal differences (for KNOWN ISSUE (a), June strikes CPU 184 vs GPU 369 g) — run it when the GPU is free (arm AE
