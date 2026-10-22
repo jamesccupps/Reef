@@ -380,6 +380,10 @@ export class Littoral3 {
   // the share of the weed fauna a searching fish can reach in bed cell index i (the stems foil it: 1/(1 + (S/S50)³) inside each
   // species' stand, weighted by the plants it lives on — plants3 reachB)
   reach(i) { return this.plants.reachB[i]; }
+  // (E6c2) the palatable tadpoles in bed cell i, offered with the large weed fauna (herps3 tadP), and a take of g/m² from the two in
+  // proportion to what each holds
+  _tad(i) { const h = this.env.herps; return h ? h.tadP(i) : 0; }
+  _takeL(i, g) { if (!(g > 0)) return; const tp = this._tad(i), Lc = this.L[i], tot = Lc + tp; if (tp > 0 && tot > 0) { this.env.herps.tadEat(i, g * tp / tot); this.L[i] = Math.max(0, Lc - g * Lc / tot); } else this.L[i] = Math.max(0, Lc - g); }
   // E (g wet/m²) of the weeds' large fauna (and snails for a molluscivore; crayfish for a crayfish eater on the bed, gape cg and
   // strike success cs — crayE) a fish can reach over bed cells L[0..nL); `ins` 0 leaves out the weeds' insects
   weedEcells(L, nL, moll, cg = 0, cs = 0, ins = 1, sm = 0) {   // (sm: a small fish's share of the small fauna — fish3 F3.SMALL_S)
@@ -397,7 +401,7 @@ export class Littoral3 {
     const G = this.G, night = cs > 0 && this.env.isNight(), E = this._E || (this._E = []); let s = 0;
     for (let k = 0; k < nL; k++) {
       const j = L[k], i = this.idx[j]; if (i < 0) { E[k * 4] = E[k * 4 + 1] = E[k * 4 + 2] = E[k * 4 + 3] = 0; continue; }
-      const eL = ins * Math.max(0, this.L[i] - LIT3.REF) * this.reach(i), eS = moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0, eC = cs > 0 ? this.crayE(i, cg, cs, night) : 0, eM = sm * this.S[i];
+      const eL = ins * Math.max(0, this.L[i] + this._tad(i) - LIT3.REF) * this.reach(i), eS = moll ? Math.max(0, this.sn[i] - LIT3.SN_REF) : 0, eC = cs > 0 ? this.crayE(i, cg, cs, night) : 0, eM = sm * this.S[i];
       E[k * 4] = eL; E[k * 4 + 1] = eS; E[k * 4 + 2] = eC; E[k * 4 + 3] = eM; s += (eL + eS + eM + LIT3.CR_PREF * eC) * G.bedA[j];
     }
     if (!(s > 0)) return 0;
@@ -406,7 +410,7 @@ export class Littoral3 {
     const crop = PLANKTON.CROP, f = Math.min(want, crop * s) / s; let got = 0;
     for (let k = 0; k < nL; k++) {
       const j = L[k], i = this.idx[j]; if (i < 0) continue; const a = G.bedA[j], eL = E[k * 4], eS = E[k * 4 + 1], eC = E[k * 4 + 2], eM = E[k * 4 + 3];
-      this.L[i] -= f * eL; this.sn[i] -= f * eS; this.S[i] -= f * eM;
+      this._takeL(i, f * eL); this.sn[i] -= f * eS; this.S[i] -= f * eM;
       let c = 0;
       if (eC > 0) {   // (the crayfish taken: from the adults and the young in proportion to what of each was catchable)
         c = Math.min(f * LIT3.CR_PREF, crop) * eC; const cA = this.crA[i], cY = this.crY[i], tot = cA + cY;
@@ -422,12 +426,12 @@ export class Littoral3 {
   // a school of young of length Lcm in bed cell jb: the small fauna from WEED_L, the large (stem-shielded) from LARGE_L
   weedEyoy(jb, Lcm) {
     const i = jb >= 0 ? this.idx[jb] : -1; if (i < 0 || Lcm < LIT3.WEED_L) return 0;
-    return this.S[i] + (Lcm >= LIT3.LARGE_L ? Math.max(0, this.L[i] - LIT3.REF) * this.reach(i) : 0);
+    return this.S[i] + (Lcm >= LIT3.LARGE_L ? Math.max(0, this.L[i] + this._tad(i) - LIT3.REF) * this.reach(i) : 0);
   }
   takeYoy(jb, want, Lcm, K) {
     this.J = 0; const E = this.weedEyoy(jb, Lcm); if (!(E > 0) || !(want > 0)) return 0;
     const i = this.idx[jb], a = this.G.bedA[jb], g = Math.min(want * E / (E + K), PLANKTON.CROP * E * a), f = g / (E * a);
-    const eL = E - this.S[i]; this.S[i] -= f * this.S[i]; if (eL > 0) this.L[i] -= f * eL;
+    const eL = E - this.S[i]; this.S[i] -= f * this.S[i]; if (eL > 0) this._takeL(i, f * eL);
     this.J = g * LIT3.ED_INS; return g;
   }
   // THE SURFACE over columns C[0..n): what an insect eater near it can get (g wet/m²) and take

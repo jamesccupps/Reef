@@ -370,7 +370,7 @@ export class GpuFish {
     const W = new Float32Array(await this.read(this.B.WD)), W0 = this.W, o = this.WL.offs, e = this.env, ch = e.chem, lit = e.lit;
     const put = (dst, sec) => { const a = o[sec]; for (let i = 0; i < dst.length; i++) { const d = W[a + i] - W0[a + i]; if (d !== 0) dst[i] = Math.max(0, dst[i] + d); } };
     put(ch.o2, 'o2'); put(ch.zooD, 'zooD'); put(ch.zooC, 'zooC'); put(ch.zooR, 'zooR'); put(ch.zooS, 'zooS'); put(ch.benth, 'benth'); put(ch.sedOM, 'sedOM');
-    if (lit) { put(lit.surfA, 'surfA'); put(lit.surfT, 'surfT'); put(lit.L, 'litL'); put(lit.sn, 'litSn'); put(lit.S, 'litS'); put(lit.crA, 'litCrA'); put(lit.crY, 'litCrY'); }
+    if (lit) { put(lit.surfA, 'surfA'); put(lit.surfT, 'surfT'); if (e.herps) { const a = o.litL; for (let i = 0; i < lit.L.length; i++) { const d = W[a + i] - W0[a + i]; if (d < 0) lit._takeL(i, -d); else if (d > 0) lit.L[i] += d; } } else put(lit.L, 'litL');   /* (E6c2: what was eaten, split between the fauna and the tadpoles) */ put(lit.sn, 'litSn'); put(lit.S, 'litS'); put(lit.crA, 'litCrA'); put(lit.crY, 'litCrY'); }
     return W;
   }
   async readGlobals() { return new Float32Array(await this.read(this.B.GL)); }

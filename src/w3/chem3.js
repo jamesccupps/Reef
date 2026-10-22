@@ -51,6 +51,21 @@ export const CHEM3 = {
   IN_NUT: 1.1,
   IN_NO3: NCYCLE.NO3_START, IN_DOM: 0.05, IN_ALGAE: 0.1,   // stream water: its nitrate, a little organic matter and algae (× START)
   IN_ZOO: 0.05,                                            // … and few zooplankton (× START)
+  // (E9e, LOADS — on in fish3 stageR5) THE CATCHMENT'S P LOADS BY FORM (research_notes/Maine lake shores and catchment/catchment_P_loads.md):
+  // the inflow's total P stays ~14 µg/L (field 13, 8–20), but a stream's phosphate is ~2 µg/L (≤ 3 at Bear Brook even in storms; 2.4–2.9
+  // at two monitored rivers) where IN_NUT's was ~13. The rest: dissolved organic P ~6 µg/L travelling with the colour, a quarter of it
+  // available to algae over weeks (IN_DOP_LAB, carried as DOM with its N — taken from the inflow's ammonium, the total N kept; the
+  // refractory rest passes the lakes unsimulated); and particulate P ~5 µg/L flow-weighted, its concentration ∝ (Q/Q̄)^PP_B (0.6; field
+  // 0.45–1.2) ÷ PP_NORM (E[q^1.6]/E[q] = 1.94 on E9d's hydrograph: the wettest tenth of days then carries ~71 % of it — field 60–66 % —
+  // and ~61 % of the total P — field 55–60 %); PP_RET of it settles (field PP retention 0.75–0.9), PP_INLET of that within PP_R m of
+  // its inlet (~50 % at ordinary flow), the rest lake-wide by bed area; PP_BIO of what settles joins the bed's mobile store (algal
+  // assays 0.1–0.3), the rest — aluminium-bound, mineral — buried at once. P_UGL: µg/L a P unit (the alewives' convention: the start's
+  // water 0.12 units = 12 µg/L)
+  LOADS: 0, P_UGL: 100, IN_SRP: 0.02, IN_DOP_LAB: 0.015, IN_PP: 0.05, PP_B: 0.6, PP_NORM: 1.94, PP_RET: 0.8, PP_INLET: 0.5, PP_R: 300, PP_BIO: 0.2,
+  // THE AIR'S P onto the water: bulk deposition ATM_P mg/m² a year (Maine DEP's 0.16 kg/ha, 0.11–0.21) and the spring's pine pollen
+  // POLLEN_P mg/m² over POLLEN_YF (15–35 over ~45 days in Ontario lakes) — ATM_DISS of each as phosphate into the surface water, the
+  // rest settling as particles (as the inflow's PP, lake-wide)
+  ATM_P: 16, POLLEN_P: 25, POLLEN_YF: [0.24, 0.36], ATM_DISS: 0.5,
   SLOW: 3,                                                 // the slow processes run every SLOW-th update (see step)
   // THE BED'S BOUNDARY LAYER for dissolved P: the 2-D sim's bed exchanged with its 0.3-m bed cell, a film the binding and the P
   // rain drew down locally (diffusion refilled it slowly) — that film is what throttled the bed. A 3-D bed cell's water is the
@@ -142,17 +157,19 @@ export class Chem3 {
     this.turbidity = TURBIDITY.BASE; this.fishKgHa = 0; this._migD = 0; this._migC = 0;
     this.meanPhyto = PHYTO.START; this.meanDiatom = DIATOM.START; this.meanCyano = CYANO.START; this.meanDOM = MICROBE.START;
     this.ledger = { inP: 0, inN: 0, outP: 0, outN: 0, buryP: 0, denitN: 0, fixN: 0 };
+    this.ppIn = 0; this.atmIn = 0;   // (E9e diagnostics: the particulate P settled and the air's P, units × cells)
     this.zooProd = 0; this.benthProd = 0; this._slowN = 0; this.algProd = 0; this.algDecay = 0;   // (the green algae's and diatoms' growth and die-off, units × 2-D cells — diagnostics)
     // transported with the water (the inflow brings `in`): the budget's P and N weights per field, for the ledger
     const nIn = CHEM3.IN_NUT * (1 - NUTRIENT.INFLOW_P), pIn = CHEM3.IN_NUT * NUTRIENT.INFLOW_P;
     this.tf = [
       { name: 'o2', a: this.o2, in: ENV.O2_START, p: 0, n: 0 },
-      { name: 'nh4', a: this.nh4, in: nIn, p: 0, n: 1 }, { name: 'no3', a: this.no3, in: CHEM3.IN_NO3, p: 0, n: 1 }, { name: 'phos', a: this.phos, in: pIn, p: 1, n: 0 },
+      { name: 'nh4', a: this.nh4, get in() { return CHEM3.LOADS ? nIn - CHEM3.IN_DOP_LAB / NUTRIENT.ORGANIC_P * (1 - NUTRIENT.ORGANIC_P) : nIn; }, p: 0, n: 1 }, { name: 'no3', a: this.no3, in: CHEM3.IN_NO3, p: 0, n: 1 },
+      { name: 'phos', a: this.phos, get in() { return CHEM3.LOADS ? CHEM3.IN_SRP : pIn; }, p: 1, n: 0 },   // (E9e: a stream's phosphate)
       { name: 'phyto', a: this.phyto, in: PHYTO.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'diatom', a: this.diatom, in: DIATOM.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'cyano', a: this.cyano, in: CYANO.START * CHEM3.IN_ALGAE, p: CYANO.P_USE, n: CYANO.N_USE },
       { name: 'resA', a: this.resA, get in() { return ZOO3.DAPH_LIM ? RESALG.START * CHEM3.IN_ALGAE : 0; }, get idle() { return !ZOO3.DAPH_LIM; }, p: PHYTO.P_USE, n: PHYTO.N_USE },
-      { name: 'dom', a: this.dom, in: CHEM3.IN_DOM, p: NUTRIENT.ORGANIC_P, n: 1 - NUTRIENT.ORGANIC_P },
+      { name: 'dom', a: this.dom, get in() { return CHEM3.IN_DOM + (CHEM3.LOADS ? CHEM3.IN_DOP_LAB / NUTRIENT.ORGANIC_P : 0); }, p: NUTRIENT.ORGANIC_P, n: 1 - NUTRIENT.ORGANIC_P },   // (E9e: + the labile DOP)
       { name: 'zooD', a: this.zooD, in: PLANKTON.START_D * CHEM3.IN_ZOO, p: 0, n: 0 }, { name: 'zooC', a: this.zooC, in: PLANKTON.START_C * CHEM3.IN_ZOO, p: 0, n: 0 },
       { name: 'zooR', a: this.zooR, in: PLANKTON.START_R * CHEM3.IN_ZOO, p: 0, n: 0 },
       { name: 'zooS', a: this.zooS, get in() { return ZOO3.SMALL ? ZOO3.START_S * CHEM3.IN_ZOO : 0; }, get idle() { return !ZOO3.SMALL; }, p: 0, n: 0 },   // (idle: off, all zero — not carried, env3 _pack)
@@ -187,6 +204,7 @@ export class Chem3 {
     const turbT = clamp(TURBIDITY.BASE + TURBIDITY.FROM_ALGAE * algae + TURBIDITY.FROM_STORM[e.weather] * (1 - e.iceMean), 0, 1);
     this.turbidity += (turbT - this.turbidity) * clamp(dt * TURBIDITY.RELAX * TS, 0, 1);
     for (const fd of this.tf) if (fd.name === 'o2') fd.in = this.sat(seasonalTemp(yf));   // stream water is well aerated
+    if (CHEM3.LOADS) this._loads(dt, yf);
     this._algae(dt);
     this._brookFilter(dt);
     this._o2Demand(dt);
@@ -398,6 +416,24 @@ export class Chem3 {
       sum += dom[j] * this.w[j]; vs += this.w[j];
     }
     this.meanDOM = sum / vs;
+  }
+
+  // ---------- (E9e) the particulate P of the inflows and the air: settled near its inlet and lake-wide; a share to the bed's mobile store ----------
+  _loads(dt, yf) {
+    const e = this.env, G = this.G, C3 = CHEM3, L = this.ledger;
+    if (!this._ppW) {   // (the bed cells by area: lake-wide, and within PP_R m (real) of each inlet's column)
+      const bc = this.bedCells, near = col => { const w = new Float64Array(bc.length); let s = 0; for (let k = 0; k < bc.length; k++) { const c = G.colOfCell[bc[k]]; if (Math.hypot(G.cx[c] - G.cx[col], G.cy[c] - G.cy[col]) <= C3.PP_R * GEO.SCALE) { w[k] = this.a[bc[k]]; s += w[k]; } } if (s > 0) for (let k = 0; k < w.length; k++) w[k] /= s; return w; };
+      const all = new Float64Array(bc.length); let s = 0; for (let k = 0; k < bc.length; k++) { all[k] = this.a[bc[k]]; s += all[k]; } for (let k = 0; k < bc.length; k++) all[k] /= s;
+      this._ppW = { all, up: near(e.inCol), low: near(e.lowerInCol) };
+    }
+    const settle = (x, w) => { if (!(x > 0)) return; const bc = this.bedCells, bio = C3.PP_BIO; for (let k = 0; k < bc.length; k++) if (w[k] > 0) this.sedP[bc[k]] += x * w[k] * bio / this.a[bc[k]]; L.inP += x; L.buryP += x * (1 - bio); this.ppIn += x; };
+    // the inflows: units (concentration) × m³ / V2 → units × 2-D cells
+    const q = e.qFac, cPP = C3.IN_PP * Math.pow(q, C3.PP_B) / C3.PP_NORM;
+    for (const [Q, w] of [[e.qIn, this._ppW.up], [e.qLocal, this._ppW.low]]) { const x = Q * q * dt / V2 * cPP * C3.PP_RET; settle(x * C3.PP_INLET, w); settle(x * (1 - C3.PP_INLET), this._ppW.all); }
+    // the air: mg over the lakes' surface → units × 2-D cells; the dissolved share into each column's surface cell
+    const pol = yf >= C3.POLLEN_YF[0] && yf < C3.POLLEN_YF[1] ? C3.POLLEN_P / ((C3.POLLEN_YF[1] - C3.POLLEN_YF[0]) * 365 * 86400) : 0, flux = C3.ATM_P / (365 * 86400) + pol;   // mg/m²/s
+    let part = 0; for (let c = 0; c < G.NC; c++) { const x = flux * G.area[c] * dt / (C3.P_UGL * V2), j = G.cell0[c]; this.phos[j] += x * C3.ATM_DISS / this.w[j]; L.inP += x * C3.ATM_DISS; this.atmIn += x; part += x * (1 - C3.ATM_DISS); }
+    settle(part, this._ppW.all);
   }
 
   // ---------- the bed's bound-P store (the Mortimer redox switch) ----------

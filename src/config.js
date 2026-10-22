@@ -641,6 +641,21 @@ export const HERP3 = {
   // RED-SPOTTED NEWTS in the weedy shallows (the one salamander of lakes with fish — tetrodotoxin: the fish reject them; §7): 300 per ha to
   // 1.5 m [inf], 0.06 g a day of the weeds' small fauna at 20 °C [inf: ~2.5 % of a 2.5-g newt], some active under the ice
   newt: { perHa: 300, z: 1.5, ration: 0.06, act: [4, 10], diet: { small: 0.8, weed: 0.2 } },
+  // (E6c2) THE TADPOLES (§6, §8): green and mink frogs breed late May/June–August once the shallows pass ~18 °C (BREED_T; their tadpoles
+  // overwinter once and metamorphose in late June–July of the next summer, META_G); bullfrogs mid-June–July (air > 20 °C), their
+  // tadpoles about two years (META_B in their third summer). Each female lays one clutch — green frog 1,000–5,000 eggs (CLUTCH_G 3,500
+  // [inf: the middle]), bullfrog 10,000–20,000 (12,000 [inf]) — HATCH_* of them reaching a feeding tadpole of W0_* g [inf]; they graze the
+  // bed's organic layer and periphyton (as the snails), the mean tadpole growing as dW/dt = A_*·W^B_EXP g a day at 20 °C × Q10 (allometric —
+  // [inf]: a green frog tadpole 0.01 → ~1 g over ~75 warm days, → ~5 g by metamorphosis ~65 days the next summer: A_G 0.032; a bullfrog 0.02
+  // → ~17 g over ~260: A_B 0.027), die at M_* a day of predators other than fish (insects, birds — × COLD_M under the ice)
+  // [inf]; the fish take the green and mink frogs' with the large weed fauna (herps3 tadP); the bullfrogs' they reject
+  TAD: { ROLL_YF: 0.15, BREED_T: 18, T_MIN: 8, COLD_M: 0.3,
+    B_EXP: 0.67,
+    BREED_G: [0.27, 0.45], CLUTCH_G: 3500, HATCH_G: 0.5, W0_G: 0.01, A_G: 0.032, M_G: 0.008, META_G: [0.30, 0.42],
+    BREED_B: [0.30, 0.42], CLUTCH_B: 12000, HATCH_B: 0.3, W0_B: 0.02, A_B: 0.027, M_B: 0.004, META_B: [0.33, 0.45],
+    // the overwintered cohorts at a lake's opening (g wet/m² of the breeders' cells; their mean tadpole, g): a fishless two-year spin's late
+    // May (scratchpad probe tad2) — the fish thin the green ones in a run
+    START_G: 4.4, START_B: [0.3, 0.8], START_WG: 2.0, START_WB: [1.5, 15.7] },
 };
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —

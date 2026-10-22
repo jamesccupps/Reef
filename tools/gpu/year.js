@@ -85,6 +85,7 @@ for (const sd of SEEDS) {
     say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · zooplankton ${w[1].zoo.toFixed(0)} / ${w[2].zoo.toFixed(0)} µg/L (Upper / Lower) · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
     say(`   plankton: ${plankton()} · surface algae ${w[1].algae.toFixed(3)} / ${w[2].algae.toFixed(3)} · Secchi ${chw.secchi().toFixed(2)} m`);
     say(`   water: ${water()}`);
+    if (env.herps && env.herps.n) { const h = env.herps, ts = h.tadStock(); say(`   herps: ${Object.entries(h.n).map(([k, v]) => `${k} ${v.toFixed(0)}`).join(" · ")} · tadpoles green ${(ts.g / 1000).toFixed(1)} kg, bullfrog ${(ts.b / 1000).toFixed(1)} kg · since the start: born ${(h.tad.born / 1000).toFixed(1)}, eaten by fish ${(h.tad.eaten / 1000).toFixed(1)}, froglets out ${(h.tad.out / 1000).toFixed(1)} kg`); }
     KEYS3.forEach((k, q) => {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });

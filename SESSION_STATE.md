@@ -192,7 +192,17 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~2:40 a.m. EDT — THE NEWEST). COMMITTED f99d216 (pushed): E9d — the sky's fronts (WEATHER3.SYN, in
+▶▶▶ RESUME HERE (2026-10-22 ~3:30 a.m. EDT — THE NEWEST). COMMITTED 859b9ec E6b/E6c1 (HERP3 — src/w3/herps3.js, in stageR5:
+painted turtles, the snappers' and bullfrogs' non-fish food, green/mink frogs, newts eating from the pools; grazed plants return
+their N/P as dead shoots; gate check in W3_ONLY=substrate). IN THE TREE (uncommitted): E6c2 THE TADPOLES (herps3 tg[0..1] green/mink,
+tb[0..2] bullfrog per littoral cell; HERP3.TAD; breed by the adults' counts; graze sedOM; natural M; metamorphosis out; the fish take
+the green ones WITH the large weed fauna — littoral3 _tad/_takeL in takeWeedCells/weedEyoy/takeYoy, the GPU host: layout packWater
+adds tadP to litL, gpufish applyWater splits the eaten difference; bullfrog tadpoles unpalatable); its gate check (substrate); year.js
+a "herps:" line. RUNNING: 2-yr fishless tadpole spin (task output b5buwwr8h) → set TAD.START_* from its late-May year-2 stock;
+remote GATE of f99d216 (gate_eco7.txt, 614 PASS 0 FAIL so far); ARM AH (r22AH_611…); research agents: E9e catchment P loads →
+catchment_P_loads.md, E5 angling → angling_effort_and_harvest.md. NEXT: finish E6c2 (START, gate section, commit; g1_check r5=1
+when the GPU frees — the litL split), then E5 angling as a WILD3 row (both engines), E9e, E1b logs; the herps in the 3-D view (E6v).
+▶▶▶ RESUME HERE (2026-10-22 ~2:40 a.m. EDT). COMMITTED f99d216 (pushed): E9d — the sky's fronts (WEATHER3.SYN, in
 stageR5: CHAIN/DWELL/P_K fitted to Houlton GHCN-D, research note houlton_daily_precipitation.md; WET_T the storms' warm air), HBV
 re-fit (FC 82 LP 0.39 BETA 2.72 K1 0.196 PERC 0.21 K2 0.0048 DDF 4.61 — the gauges' hydrograph; known gap Dec ~0.9× vs 1.1–1.4×),
 BURY_MUL 0.15 → 0.10 (the old target was the retention formula's complement; true-world R 0.35–0.45, year-2 inventory ~steady;

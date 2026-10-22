@@ -377,7 +377,7 @@ export function packWater(F, env, WL, out = null) {
   W.set(ch.benth, o.benth); W.set(ch.sedOM, o.sedOM); W.set(env.ice, o.ice);
   if (pl) { W.set(pl.cov, o.pCov); W.set(pl.reachB, o.pReach); W.set(pl._canopy, o.canopy); for (let c = 0; c < G.NC; c++) W[o.coverC + c] = pl.coverAt(c); W.set(pl.spawnS.rigid, o.spRigid); W.set(pl.spawnS.mat, o.spMat); W.set(pl.spawnS.plant, o.spPlant); }
   F._o2cAt = -1; for (let c = 0; c < G.NC; c++) I[o.o2Best + c] = F._o2Better(c);
-  if (lit) { W.set(lit.surfA, o.surfA); W.set(lit.surfT, o.surfT); W.set(lit.L, o.litL); W.set(lit.sn, o.litSn); W.set(lit.S, o.litS); W.set(lit.crA, o.litCrA); W.set(lit.crY, o.litCrY); W.set(lit.Kcr, o.litKcr); }
+  if (lit) { W.set(lit.surfA, o.surfA); W.set(lit.surfT, o.surfT); W.set(lit.L, o.litL); if (env.herps) for (let i = 0; i < lit.L.length; i++) W[o.litL + i] += env.herps.tadP(i);   /* (E6c2: the palatable tadpoles with the large fauna — gpufish applyWater splits) */ W.set(lit.sn, o.litSn); W.set(lit.S, o.litS); W.set(lit.crA, o.litCrA); W.set(lit.crY, o.litCrY); W.set(lit.Kcr, o.litKcr); }
   return W;
 }
 

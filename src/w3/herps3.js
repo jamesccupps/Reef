@@ -6,9 +6,9 @@
 // weed fauna, snails and crayfish, the surface's insects. The fauna are nutrient-neutral (as the fish); the plants they eat return
 // their N and P as a dead plant's do (plants3 _die: excretion and faeces — a grazer speeds the return and holds none of it), so the
 // budgets stay closed. Pure: no DOM; WILD3 read at call time.
-import { HERP3, seasonalTemp } from '../config.js';
+import { HERP3, BENTHOS, seasonalTemp } from '../config.js';
 import { GEO, BODIES, LAND } from './geometry.js';
-import { DAY3 } from './clock3.js';
+import { DAY3, CLOCK3 } from './clock3.js';
 import { FORMS3, NF3, PL3 } from './plants3.js';
 import { WILD3, WILD_LAKE_HA } from './fish3.js';
 
@@ -24,7 +24,27 @@ export class Herps3 {
     this.prefPT = FORMS3.map(F => HERP3.PLANT_PREF[F.key] ?? 0);
     this.ate = {}; this.n = {}; for (const k of HERP3.KINDS) { this.ate[k] = Object.fromEntries(POOLS.map(p => [p, 0])); this.n[k] = 0; }
     this.want = 0; this.got = 0; this._n = 0;
+    // (E6c2) THE TADPOLES, g wet/m² of bed per cell: the green and mink frogs' this year's and last year's (they overwinter once — §6),
+    // the bullfrogs' three cohorts (about two years); at the breeders' cells (the bank's shallows), a new lake opening with the cohorts
+    // that overwintered (HERP3.TAD.START_*)
+    const T6 = HERP3.TAD; this.tg = [new Float32Array(nb), new Float32Array(nb)]; this.tb = [new Float32Array(nb), new Float32Array(nb), new Float32Array(nb)];
+    this.wG = this._cellsW(HERP3.frog.z); this.wB = this._cellsW(WILD3.bullfrog.b[1]);
+    for (let i = 0; i < nb; i++) { if (this.wG[i] > 0) this.tg[1][i] = T6.START_G; if (this.wB[i] > 0) { this.tb[1][i] = T6.START_B[0]; this.tb[2][i] = T6.START_B[1]; } }
+    // each cohort's mean tadpole (g wet): it grows by its size (allometric), so last year's large tadpoles add less of their mass a day
+    // than this summer's hatchlings
+    this.mG = [T6.W0_G, T6.START_WG]; this.mB = [T6.W0_B, T6.START_WB[0], T6.START_WB[1]];
+    this.tad = { born: 0, grew: 0, died: 0, eaten: 0, out: 0 };
+    const yr = Math.floor(env.time / CLOCK3.YEAR_LEN); this._rollYr = env.yearFrac() >= T6.ROLL_YF ? yr : yr - 1;
   }
+  // the breeders' cells — the bank's columns with bed to z m — as weights summing to 1 by bed area
+  _cellsW(z) { const P = this.plants, L = this.lit, nb = P.cells.length, w = new Float64Array(nb); let s = 0;
+    for (let i = 0; i < nb; i++) if (P.zb[i] <= z && L.bank[P.col[i]] > 0) { w[i] = this.A[i]; s += w[i]; }
+    if (s > 0) for (let i = 0; i < nb; i++) w[i] /= s; return w; }
+  // (E6c2) the palatable tadpoles in bed cell i (g wet/m²) — the green and mink frogs'; the bullfrogs' the fish reject (§6). The fish's
+  // take from the large weed fauna (littoral3 takeWeedCells, takeYoy; the GPU's litL — gpufish) reaches these with it, and tadEat
+  // takes the tadpoles' share of what was eaten
+  tadP(i) { return HERP3.ON ? this.tg[0][i] + this.tg[1][i] : 0; }
+  tadEat(i, g) { const a = this.tg[0][i], b = this.tg[1][i], t = a + b; if (!(t > 0) || !(g > 0)) return; const k = Math.min(1, g / t); this.tg[0][i] = a * (1 - k); this.tg[1][i] = b * (1 - k); this.tad.eaten += k * t * this.A[i]; }
   // the vegetated shore (world m, littoral3's bank: each column's land edges × their cover) and its sum
   _shoreM() { if (this._sh === undefined) { let s = 0; for (const b of this.lit.bank) s += b; this._sh = s; } return this._sh; }
   // the whole shore (world km: the water cells' land edges × 0.8, as fish3 _shoreKm — WILD3's per-km counts)
@@ -34,10 +54,11 @@ export class Herps3 {
   _ration(r, T, act) { if (!(T > act[0])) return 0; return r * Math.pow(HERP3.Q10, (T - 20) / 10) * Math.min(1, (T - act[0]) / Math.max(1e-9, act[1] - act[0])); }
   _feed(ds) {
     const e = this.env, H = HERP3, P = this.plants, L = this.lit, G = this.G, T = e.temp, nb = P.cells.length, dd = ds / DAY3, yf = e.yearFrac();
-    if (e.iceMean > 0.9) { for (const k of H.KINDS) this.n[k] = 0; return; }   // (under full ice: all of them in the bed, torpid)
     // the shallows' mean temperature (the herps' water)
     let tS = 0, aS = 0; for (let i = 0; i < nb; i++) if (P.zb[i] < 2) { tS += T[P.cells[i]] * this.A[i]; aS += this.A[i]; }
     const Tl = aS > 0 ? tS / aS : seasonalTemp(yf);
+    this._tadpoles(dd, yf, Tl);   // (E6c2: the tadpoles live under the ice too)
+    if (e.iceMean > 0.9) { for (const k of H.KINDS) this.n[k] = 0; return; }   // (under full ice: all of them in the bed, torpid)
     for (const k of H.KINDS) {
       const d = H[k]; let n = 0, ration = 0, zMax = d.z ?? 2, edge = false, fish = 0;
       if (d.wild) {   // E6a's fish-eaters: their count and season as WILD3's, the food that is not fish
@@ -53,6 +74,42 @@ export class Herps3 {
       for (const pool of POOLS) { const s = d.diet[pool] || 0; if (s > 0) this.got += this._take(k, pool, total * s, zMax, edge); }
     }
   }
+  // (E6c2) THE TADPOLES over dd days: the cohorts roll on at ice-out; the frogs' clutches hatch over their breeding windows once the
+  // shallows pass the breeding temperature (the adults' counts this step — each female one clutch); every cohort grazes the bed's organic
+  // layer and its periphyton (as the snails: BENTHOS.YIELD) — its mean tadpole growing as dW/dt = A·W^B_EXP (allometric: a cohort adds
+  // A·W^(B_EXP−1) of its mass a day) × Q10 — dies at its natural rate (to the organic layer — the fish's take is theirs: tadEat), and
+  // the oldest leave the water as froglets over their metamorphosis window (exported: off the lakes)
+  _tadpoles(dd, yf, Tl) {
+    const T6 = HERP3.TAD, P = this.plants, ch = this.chem, T = this.env.temp, nb = P.cells.length, yr = Math.floor(this.env.time / CLOCK3.YEAR_LEN), tg = this.tg, tb = this.tb, mG = this.mG, mB = this.mB;
+    if (yf >= T6.ROLL_YF && this._rollYr !== yr) { this._rollYr = yr; for (let i = 0; i < nb; i++) { tg[1][i] += tg[0][i]; tg[0][i] = 0; tb[2][i] += tb[1][i]; tb[1][i] = tb[0][i]; tb[0][i] = 0; }
+      mG[1] = mG[0]; mG[0] = T6.W0_G; mB[2] = mB[1]; mB[1] = mB[0]; mB[0] = T6.W0_B; }
+    const born = (n, B, cl, h, w0) => n > 0 && yf >= B[0] && yf < B[1] && Tl >= T6.BREED_T ? n / 2 * cl * h * w0 * dd / ((B[1] - B[0]) * 365) : 0;
+    const bG = born(this.n.frog, T6.BREED_G, T6.CLUTCH_G, T6.HATCH_G, T6.W0_G), bB = born(this.n.bullfrog, T6.BREED_B, T6.CLUTCH_B, T6.HATCH_B, T6.W0_B);
+    // the hatchlings join this year's cohort: its mean tadpole the biomass-weighted harmonic mean (numbers add)
+    const mix = (arr, m, b, w0) => { if (!(b > 0)) return m; let B = 0; for (let i = 0; i < nb; i++) B += arr[i] * this.A[i]; return (B + b) / (B / m + b / w0); };
+    mG[0] = mix(tg[0], mG[0], bG, T6.W0_G); mB[0] = mix(tb[0], mB[0], bB, T6.W0_B);
+    const out = (W) => yf >= W[0] && yf < W[1] ? Math.min(1, dd / Math.max(dd, (W[1] - yf) * 365)) : 0, oG = out(T6.META_G), oB = out(T6.META_B);
+    // the cohorts: [biomass array, A, mortality, its mean tadpole's slot]; each cohort's specific growth by its mean tadpole now
+    const C = [[tg[0], T6.A_G, T6.M_G, mG, 0], [tg[1], T6.A_G, T6.M_G, mG, 1], [tb[0], T6.A_B, T6.M_B, mB, 0], [tb[1], T6.A_B, T6.M_B, mB, 1], [tb[2], T6.A_B, T6.M_B, mB, 2]];
+    const spec = C.map(([, a, , w, k]) => a * Math.pow(w[k], T6.B_EXP - 1));
+    const t = this.tad;
+    for (let i = 0; i < nb; i++) {
+      const j = P.cells[i], A = this.A[i], Tj = T[j], warm = Tj > T6.T_MIN, q = Math.pow(HERP3.Q10, (Tj - 20) / 10);
+      if (bG > 0 && this.wG[i] > 0) { const g = bG * this.wG[i]; tg[0][i] += g / A; t.born += g; }
+      if (bB > 0 && this.wB[i] > 0) { const g = bB * this.wB[i]; tb[0][i] += g / A; t.born += g; }
+      for (let k = 0; k < C.length; k++) {
+        const arr = C[k][0], m = C[k][2]; let c = arr[i]; if (!(c > 0)) continue;
+        if (warm) { let g = spec[k] * q * c * dd; const need = g * A / BENTHOS.YIELD, have = 0.5 * ch.sedOM[j] * ch.a[j]; if (need > have) g *= have / need; ch.sedOM[j] -= Math.min(need, have) / ch.a[j]; c += g; t.grew += g * A; }
+        const die = c * m * (warm ? q : T6.COLD_M) * dd; c -= die; ch.addSedOM(j, die * A); t.died += die * A; arr[i] = c;
+      }
+      if (oG > 0 && tg[1][i] > 0) { const x = tg[1][i] * oG; tg[1][i] -= x; t.out += x * A; }
+      if (oB > 0 && tb[2][i] > 0) { const x = tb[2][i] * oB; tb[2][i] -= x; t.out += x * A; }
+    }
+    // each cohort's mean tadpole grows at the shallows' temperature
+    if (Tl > T6.T_MIN) { const q = Math.pow(HERP3.Q10, (Tl - 20) / 10); for (const [, a, , w, k] of C) w[k] += a * Math.pow(w[k], T6.B_EXP) * q * dd; }
+  }
+  // the tadpoles' standing stock (g wet, the world's): green/mink (palatable) and bullfrog
+  tadStock() { let g = 0, b = 0; for (let i = 0; i < this.A.length; i++) { g += (this.tg[0][i] + this.tg[1][i]) * this.A[i]; b += (this.tb[0][i] + this.tb[1][i] + this.tb[2][i]) * this.A[i]; } return { g, b }; }
   // take g (wet) of a pool from the herps' cells — the shallows to zMax by bed area (edge: the shore's columns by their bank), each
   // cell giving in proportion to what it holds, at most TAKE_MAX of it a step; returns what was taken (the plants: what each float32
   // store actually lost, tt — the N and P budgets exact)

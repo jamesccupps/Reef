@@ -1228,6 +1228,21 @@ if (run('substrate')) {
     check('E6b/E6c1: the herps as consumers — painted turtles at 10 per ha of the shallows, snappers and bullfrogs as WILD3\'s, frogs on the vegetated shore and newts in the weeds eat ≥ 85 % of their July ration from the pools, the turtles about half plants; the N and P budgets close; under the January ice none feed',
       Math.abs(ptN / ptWant - 1) < 1e-6 && H.n.snapper > 0 && H.n.bullfrog > 0 && H.n.frog > 0 && H.n.newt > 0 && got >= 0.85 && Math.abs(pt.plant / ptT - HERP3.painted.diet.plant) < 0.1 && rP < 1e-5 && rN < 1e-5 && wJan === 0,
       `counts (the world's): painted ${ptN.toFixed(1)}, snapper ${H.n.snapper.toFixed(1)}, bullfrog ${H.n.bullfrog.toFixed(1)}, frog ${H.n.frog.toFixed(1)}, newt ${H.n.newt.toFixed(0)}; got ${(100 * got).toFixed(0)} % of the ration; painted turtles' plants ${(100 * pt.plant / ptT).toFixed(0)} %; P/N relative error ${rP.toExponential(0)}/${rN.toExponential(0)}; January ${wJan.toFixed(1)} g wanted`); }
+  // (E6c2: the tadpoles — a summer from late May on the coarse grid: the green frogs' clutches hatch once the shallows pass 18 °C, last
+  // year's overwintered tadpoles leave the water as froglets in late June–July (the bullfrogs' oldest too), their younger cohorts carry on; the fish eating the large
+  // weed fauna take the green frogs' tadpoles with it, never the bullfrogs')
+  { const { HERP3 } = C, h0 = HERP3.ON; HERP3.ON = 1;
+    seed(402); const e = new Env3({ col: 10 * CS, yf0: 0.26 }), H = e.herps, s0 = H.tadStock(), g10 = H.tg[1].reduce((a, b, i) => a + b * H.A[i], 0);
+    let bornJul = 0; for (let t = 0; t < 0.2 * 365 * 86400; t += FB) { e.step(FB); if (!bornJul && e.yearFrac() >= 0.38) bornJul = H.tad.born; }
+    const s1 = H.tadStock(), g11 = H.tg[1].reduce((a, b, i) => a + b * H.A[i], 0), b2 = H.tb[2].reduce((a, b, i) => a + b * H.A[i], 0);
+    // the fish's take: a cell with tadpoles of both kinds and little else — a large-fauna eater's want taken there
+    const lit = e.lit, i = H.tg[0].findIndex((v, k) => v > 0 && H.tb[0][k] > 0 && lit.reach(k) > 0), j = e.plants.cells[i];
+    lit.L[i] = 0; const tg0 = H.tadP(i), tb0 = H.tb[0][i] + H.tb[1][i] + H.tb[2][i], got = lit.takeWeedCells(Int32Array.of(j), 1, 1e9, 0, 0, 0, 1, 0);
+    const tg1 = H.tadP(i), tb1 = H.tb[0][i] + H.tb[1][i] + H.tb[2][i];
+    HERP3.ON = h0;
+    check('E6c2: the tadpoles — over a summer from late May the green frogs\' clutches hatch, last year\'s overwintered tadpoles leave as froglets by August (the bullfrogs\' oldest cohort too) while their younger cohorts carry on; a fish eating the large weed fauna takes the green frogs\' tadpoles with it and never the bullfrogs\'',
+      bornJul > 0 && H.tad.born > bornJul && g11 < 0.05 * g10 && H.tad.out > 0 && s1.b > 0 && b2 === 0 && got > 0 && tg1 < tg0 && Math.abs(tb1 - tb0) < 1e-6 * Math.max(1, tb0),
+      `born ${(H.tad.born / 1000).toFixed(2)} kg (${(bornJul / 1000).toFixed(2)} by mid-July); the overwintered green tadpoles ${(g10 / 1000).toFixed(2)} → ${(g11 / 1000).toFixed(3)} kg, ${(H.tad.out / 1000).toFixed(2)} kg left as froglets; bullfrogs ${(s0.b / 1000).toFixed(2)} → ${(s1.b / 1000).toFixed(2)} kg; a fish took ${(got).toFixed(1)} g: green ${tg0.toFixed(3)} → ${tg1.toFixed(3)} g/m², bullfrog ${tb0.toFixed(3)} → ${tb1.toFixed(3)}`); }
   { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false });
     const T = (hb, hs) => { e.iceMean = 1; e.iceB = hb; e.iceW = 0; e.iceSnow = hs * W.SNOW_RHO; e._iceSnow(0, -1, 0); return 1 - e.iceCut; };
     const t40 = T(0.4, 0), t40s = T(0.4, 0.1);

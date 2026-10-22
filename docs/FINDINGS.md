@@ -4,6 +4,31 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — With the literature's P forms the lakes turn ultra-oligotrophic: the mesotrophic analogue needs more available P (E9e trial; probe e9e.mjs)
+- **What.** A stream's total P matches the sim's inflow: field ~13 µg/L (8–20), sim ~14 (catchment_P_loads.md). Its forms do not. The
+  field has phosphate ~2 µg/L, dissolved organic P ~6 (about a quarter available to algae) and particulate P ~5 (about a fifth available
+  once settled). The sim's inflow was 94 % phosphate, about 3× the field's algae-available P.
+- **Trial.** CHEM3.LOADS ran the field's forms, with particulate P ∝ Q^0.6 (the wettest tenth of days carrying ~71 % of it), the air's P
+  and the spring pollen. A fishless year on the 1/10 world (seed 611), each quantity off → on:
+
+  | Quantity | Off | On |
+  |---|---|---|
+  | Summer TP | 8–9 µg/L | 3.9 µg/L by October, 2.3 by the next May |
+  | Summer algal P | 3.5–5 µg/L | ~1 µg/L |
+  | Daphnia | 35–113 µg/L | ~1 µg/L |
+  | P inventory | 83 % | 42 % |
+  | R | 0.32 | 0.73 (mostly the inert particles buried) |
+
+- **So.** Fed only what the literature's fractions make available, the lakes would sit near 2–4 µg/L of available P, far below the
+  coloured-mesotrophic analogue (TP 9–13, chlorophyll 3–8). One of these must hold, and only a Hot Brook measurement can say which:
+  - the catchment exports more (wetlands 0.10–0.20 kg/ha/yr against forest's 0.02–0.04);
+  - the bed's internal loading is larger (Webber Pond: internal = external);
+  - these lakes' available fractions are higher.
+- **For now** the all-available inflow stays: an effective calibration to the analogue, documented as one. E9e stays behind its flag
+  (CHEM3.LOADS 0), ready for when the trophic state is known.
+- **Lesson.** Matching a lake's total P inflow is not enough. The form decides what the algae can use, and here it changes the trophic
+  state.
+
 ## 2026-10-22 — The P-retention target was the formula's complement (probe bury.mjs; true-scale world, 2 seeds)
 - **What.** The bed's burial (CHEM3.BURY_MUL) was calibrated so the lakes kept 0.66–0.72 of their P load, citing "Larsen–Mercier
   R = 1/(1+√τ)". The formula is R = 1/(1+√ρ), with ρ the flushing rate (1/τ). 1/(1+√τ) is Vollenweider's P_lake/P_in, the share that
