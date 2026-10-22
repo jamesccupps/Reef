@@ -153,7 +153,7 @@ export class GpuFish {
     mk(moduleSource(this.consts, GRID_BINDINGS, GRID), [this.L0, this.LG], ['g_clear', 'g_count', 'g_scan', 'g_add', 'g_cursor', 'g_cursor2', 'g_scatter', 'g_sort']);
     mk(moduleSource(this.consts, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K.replace('FP_SELECT', this.fpSelect), HAZ), [this.L0, this.LS],
       ['k_pre', 'k_learn', 'k_sense', 'k_brain', 'k_snap', 'k_sums', 'k_glob', 'k_admit', 'k_move', 'k_body', 'k_feed0', 'k_strike', 'k_strikeWin', 'k_strikeApply',
-       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho', 'k_ale', 'k_aleFin']);
+       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho', 'k_ale', 'k_aleFinA', 'k_aleFin']);
     mk(moduleSource(this.consts, YOY_BINDINGS, TALLY, FB4, YOY), [this.L0, this.LY],
       ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target', 'y_wildA', 'y_egg']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
@@ -337,7 +337,7 @@ export class GpuFish {
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
     const done = this.run(enc => {
       this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeWild(enc);
-      if (ALEWIFE.ON) { enc.clearBuffer(this.B.GS, 4 * 192, 4 * 16); this.encodeKernel(enc, 'k_ale', 128); }   // (E8: the adults' block — fish3 _alewife at the step's start)
+      if (ALEWIFE.ON) { enc.clearBuffer(this.B.GS, 4 * 192, 4 * 16); this.encodeKernel(enc, 'k_ale', 128); this._pass(enc, this.P.k_aleFinA, [this.bg0, this.bgS], 1, 1); }   // (E8: the adults' block — fish3 _alewife at the step's start)
       this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
       this.encodeKernel(enc, 'k_learn'); this.encodeKernel(enc, 'k_sense'); this.encodeKernel(enc, 'k_brain', 64); this.encodeKernel(enc, 'k_move', 64);
       // (fish3's coarse block in two passes, F3.FRESH_HASH: the grid and the snapshot rebuilt where every fish got to — strikes and mate
@@ -360,7 +360,7 @@ export class GpuFish {
   }
   // the counts after a block (agents, young schools, the id counter, births): the host's next dispatches
   async readCounts() {
-    const g = new Float32Array(await this.read(this.B.GL, 256)), u = new Uint32Array(g.buffer);
+    const g = new Float32Array(await this.read(this.B.GL, ALEWIFE.ON ? 4 * 208 : 256)), u = new Uint32Array(g.buffer);   // (E8: GL[G_ALE 200..207], the alewives' block sums)
     this.cnt = Float64Array.from(g.subarray(0, KEYS3.length)); this.bio = g[32];
     return { n: g[34] || this.n, ny: g[35] || this.ny, nextId: u[36], born: g[37], recruits: g[38], needA: g[43] || 0, needY: g[44] || 0, ale: ALEWIFE.ON ? Array.from(g.subarray(200, 208)) : null };
   }

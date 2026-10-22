@@ -165,6 +165,8 @@ for (const sd of SEEDS) {
     { const parts = WILDK.map((w, r) => { const g = D(TP.WILDG + r) / 1e6; if (!(g > 0)) return null; const by = KEYS3.map((k, q) => [k, D(TP.WILD + r * NK + q) / 1e6]).filter(x => x[1] >= 1).sort((a, b) => b[1] - a[1]);
         return `${w} ${(g / 1e3).toFixed(0)} kg (` + by.slice(0, 5).map(([k, n]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}`).join(' ') + ')'; }).filter(Boolean);
       if (parts.length) say("the period's wildlife take: " + parts.join(' · ')); }
+    { const A = F.stats.ale; if (A && A.run > 0) {   // (E8: the sea-run alewives since the start — fish3 stats.ale, the GPU host's block sums)
+      say(`the alewives (since the start): run ${A.run.toFixed(0)}, in ${A.arrived.toFixed(0)}, spent ${A.spent.toFixed(0)}, out ${A.left.toFixed(0)}; the young out ${(A.yOut / 1e3).toFixed(1)}k, cold ${(A.yCold / 1e3).toFixed(1)}k; P in ${(A.pIn / 1e3).toFixed(2)} out ${(A.pOut / 1e3).toFixed(2)} kg, N in ${(A.nIn / 1e3).toFixed(1)} out ${(A.nOut / 1e3).toFixed(1)} kg`); } }
     // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)
     for (const [tag, at] of [['followed fish', 608], ['young schools', 729]]) {
       const yk = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = D(at + p * NK + q) / 1e6; if (v >= 1) yk.push([`${kp}>${kq}`, v]); }));

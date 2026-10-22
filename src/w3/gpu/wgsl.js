@@ -1479,7 +1479,10 @@ fn toBed(jb: i32, g: f32) { if (jb >= 0 && g > 0.0) { acc64(AC_SEDADD + 2u * u32
   if ((fl & FL_LEAVE) == 0u && U.timeD * 86400.0 - ga(A_aleT, i) > ga(A_aleRes, i)) { fl = fl | FL_LEAVE; sau(A_flags, i, fl); sau(A_lake, i, LOWER); sa(A_lhx, i, OUT_X); sa(A_lhy, i, OUT_Y); sa(A_hx, i, OUT_X); sa(A_hy, i, OUT_Y); }
   if ((fl & FL_LEAVE) != 0u && length(vec2f(ga(A_x, i) - OUT_X, ga(A_y, i) - OUT_Y)) < OUT_R) { aleAdd(0u, left); sa(A_n, i, 0.0); sau(A_flags, i, fl & ~FL_ALIVE); }
 }
-@compute @workgroup_size(1) fn k_aleFin() { for (var r = 0u; r < 8u; r++) { GL[G_ALE + r] = (f32(atomicLoad(&GS[GS_ALE + 2u * r])) + f32(atomicLoad(&GS[GS_ALE + 2u * r + 1u])) * 4294967296.0) / ASC; } }
+// (the adults' sums r 0–3 right after k_ale — encodeBook clears GS after k_pre — the young's r 4–7 at the block's end)
+fn aleFin(r0: u32, r1: u32) { for (var r = r0; r < r1; r++) { GL[G_ALE + r] = (f32(atomicLoad(&GS[GS_ALE + 2u * r])) + f32(atomicLoad(&GS[GS_ALE + 2u * r + 1u])) * 4294967296.0) / ASC; } }
+@compute @workgroup_size(1) fn k_aleFinA() { aleFin(0u, 4u); }
+@compute @workgroup_size(1) fn k_aleFin() { aleFin(4u, 8u); }
 @compute @workgroup_size(1) fn k_wildRho() {
   for (var w = 0u; w < NWILD; w++) {
     let D = GL[G_WD + w]; let A = (f32(atomicLoad(&GS[GS_WILDA + 2u * w])) + f32(atomicLoad(&GS[GS_WILDA + 2u * w + 1u])) * 4294967296.0) / BSCALE;
