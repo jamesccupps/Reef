@@ -15,9 +15,9 @@
 // fast-forward blocks run on the GPU engine (src/w3/gpu/gpufish.js, ~70 ms a true-size block against ~2.5 s on the CPU's cores)
 // and the fine speeds on one Fish3 here: the lakes are handed to the GPU when the speed goes past FINE_UP and back when it drops
 // (a few seconds each way), and while the GPU holds them the view gets only what it draws, gathered there.
-import './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
+import { R5 } from './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
 import { Env3 } from '../env3.js';
-import { Fish3 } from '../fish3.js';
+import { Fish3, stageR5 } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
 import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
@@ -213,6 +213,7 @@ onmessage = async ev => {
       const q = new URLSearchParams(self.location.search), cores = self.navigator?.hardwareConcurrency || 2;
       const shards = WORLD_TRUE && self.crossOriginIsolated && cores >= 4 && q.get('shards') !== '0';
       const gpu = !!self.navigator?.gpu && (WORLD_TRUE ? q.get('gpu') !== '0' : q.get('gpu') === '1');
+      stageR5(R5);   // (the whole model: world3sel R5 — before the water and the fish are built)
       say('the water'); const st0 = getRandState(); env = new Env3();
       if (gpu) { say("the fish and the season's young"); try { side = await gpuSide(say); blockMs = 100; } catch (e) { console.warn('no GPU engine:', e); side = null; } }
       if (!side && shards) side = await poolSide(2, say, st0);

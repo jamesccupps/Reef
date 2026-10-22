@@ -5,7 +5,7 @@
 // water's depth — and everything that lives in it — is true size in both. Looks (map colours, the real aerial photo, a depth
 // chart), seasons, a cut-away section, see-into-the-water, labels and the angler's field notes.
 // three.js r186 (vendor/, WebGPURenderer → WebGL2). Cosmetic randomness uses Math.random (never core.rand).
-import { WORLD_Q } from './world3sel.js';   // (first: it picks the world before geometry.js loads)
+import { WORLD_Q, R5 } from './world3sel.js';   // (first: it picks the world before geometry.js loads)
 import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, BODIES, LAND, BROOK, WORLD_TRUE, cellIndex } from '../geometry.js';
 import { CameraRig } from './controls3.js';
@@ -17,6 +17,8 @@ import { makeBedView } from './bed3view.js';
 import { makeData3 } from './data3.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
+import { stageR5 } from '../fish3.js';
+stageR5(R5);   // (the page's copy of the model's tables — the data page, the legends — as the sim's workers run it: world3sel R5)
 
 // the far land and the photo of the world shown (the true world's: tools/hotbrook/build_world3d.py at true size → src/w3/true/)
 const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('./far3d.js');

@@ -3,9 +3,9 @@
 // replica whose arrays are the water's own (shared memory: src/w3/envshare3.js), founds the lakes' fish as one worker would and
 // keeps those of its water (src/w3/shard3.js: 0 Upper; 1 Lower and the brook), then, on each 'step', lives them through it and
 // answers with the fish that left its water, its couplings (fish per species, young, biomass), and what the view draws.
-import './world3sel.js';   // (first: the world, from this worker's URL)
+import { R5 } from './world3sel.js';   // (first: the world, from this worker's URL)
 import { Env3 } from '../env3.js';
-import { Fish3 } from '../fish3.js';
+import { Fish3, stageR5 } from '../fish3.js';
 import { adoptArrays, setScalars } from '../envshare3.js';
 import { waterOwners, shardBudgetHa, shardSeed, ID_STRIDE } from '../shard3.js';
 import { getRandState, setRandState } from '../../core.js';
@@ -18,7 +18,7 @@ onmessage = ev => {
   const m = ev.data;
   try {
     if (m.type === 'init') {
-      me = m.me; setRandState(m.st0); env = new Env3(); const missed = adoptArrays(env, m.arrays); setScalars(env, m.scalars);
+      me = m.me; stageR5(R5); setRandState(m.st0); env = new Env3();   // (the whole model, as the sim's worker: world3sel R5) const missed = adoptArrays(env, m.arrays); setScalars(env, m.scalars);
       const stF = getRandState(); F = new Fish3(env, { young: true });   // (the founding as one worker's, the same draws)
       F.setShard(me, waterOwners(env.G), shardBudgetHa(me)); F.nextId += me * ID_STRIDE; setRandState(shardSeed(stF, me)); remember(F, true);
       reply({ type: 'ready', me, missed, ...couplings() });
