@@ -786,7 +786,7 @@ export function stageR5(on = true) {
   // (the crayfish's capacities ⅕ of the Michigan stock's by habitat: now read as the soft water's CALCIUM — Hot Brook-like lakes 2–4 mg/L, at
   // the crayfish's limit (C. bartonii nearly gone below 2.0 mg/L, Hadley et al. 2015; 'generally rare in Maine', Cooper 1941; the human:
   // not common) [inf: the ⅕ itself]; (E1) the stones by the bed's substrate map, LIT3.SUB_MAP — the rocky area ~⅓ of the old proxy's)
-  Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1, SUB_MAP: 1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5, SUB_MAP: 0 });
+  Object.assign(LIT3, on ? { CR_PREF: 1, CR_OUT: [0.15, 0.6], CR_ROCK: 5, CR_WEED: 3, CR_MUD: 0.4, CR_DEEP: 0.1, SUB_MAP: 1, HEX: 1 } : { CR_PREF: 5, CR_OUT: [0.3, 0.7], CR_ROCK: 25, CR_WEED: 15, CR_MUD: 2, CR_DEEP: 0.5, SUB_MAP: 0, HEX: 0 });
 }
 // THE PREDATORS' STRIKES (F3.STRIKE2; piscivore_encounter_attack.md): strikes an hour at most when hungry with prey about (esocids
 // 1.4–5.8, smallmouth ~12 in half cover, perch-like a prior), its own speed hunting (m/s: the pickerel waits in ambush), its kind

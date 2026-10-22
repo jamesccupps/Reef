@@ -1189,6 +1189,19 @@ if (run('substrate')) {
 }
 
 // ============================================================
+//  E7 — THE HEX HATCH (LIT3.HEX): a month from mid-June on the 1/10 lakes with the package — none before its window, then a pulse of
+//  mayflies from the soft mud to the surface at dusk, 0.5–50 kg/ha (Lake Erie's ~10 g wet/m² of nymphs, a cohort a year), eaten from
+// ============================================================
+if (run('hex')) {
+  console.log('\n— E7: the Hex hatch —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js'); const { LIT3 } = await import('../src/w3/littoral3.js');
+  fm.stageR5(true); seed(611); const e = new Env3({ yf0: 0.28 }), F = new fm.Fish3(e, { young: true }), L = e.lit; let early = 0, sHex = 0;
+  for (let b = 0; b < 30 * 49; b++) { const pre = L.hexEmerged, sf = F.stats.food.surf; F.step(FB); e.step(FB); if (e.yearFrac() < LIT3.HEX_YF[0] && L.hexEmerged > pre) early++; if (L.hexEmerged > pre) sHex += F.stats.food.surf - sf; }
+  const kg = L.hexEmerged / 1000 / F.lakeHa; fm.stageR5(false);
+  check("E7 (LIT3.HEX): the Hex hatch — none before late June, then the soft mud's mayflies rise at dusk, 0.5–50 kg/ha, and the surface feeders eat from it",
+    early === 0 && kg > 0.5 && kg < 50 && sHex > 0, `${kg.toFixed(1)} kg/ha emerged; the fish took ${(sHex / 1000 / F.lakeHa).toFixed(2)} kg/ha from the surface while it rose`);
+}
+// ============================================================
 //  E3 — THE EGG STAGE (config EGG3): clutches on the bed develop on its temperature and die by cause before they swim up
 // ============================================================
 if (run('eggs')) {

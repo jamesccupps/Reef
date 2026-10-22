@@ -200,6 +200,9 @@ const cmC = new Float64Array(n);
     if (dc > 0 || dg > 0) { fed++; if (Math.abs(dc - dg) <= 0.05 * Math.max(dc, dg) + 1e-9) within++; if (dc > 0 && dg > 0) both++; } }
   log(`   meals: ${fed} fish ate on one engine or both, ${both} on both, ${within} within 5 % of each other; total ${(sc / 1000).toFixed(1)} kg (CPU) · ${(sg / 1000).toFixed(1)} kg (GPU)`);
   log('   by species (kg, CPU · GPU): ' + Object.entries(bySp).map(([k, [c, g]]) => `${k} ${(c / 1000).toFixed(2)} · ${(g / 1000).toFixed(2)}`).join('; '));
+  // (the largest single meals' differences among the piscivores: who they are — size, guarding, ripeness, gut, where — to trace a mismatch)
+  { const rows = []; for (let i = 0; i < n; i++) { const a = fish[i], g = L.readAgent(A, cap, i); if (!(a.s.key === 'bass' || a.s.key === 'pike')) continue; const dc = (a.alive ? a.gut - gut0[i] : 0) * a.n, dg = (g.gut - gut0[i]) * g.n; if (Math.abs(dc - dg) > 1) rows.push([Math.abs(dc - dg), `#${i} ${a.s.key} ${a.L.toFixed(0)} cm nt ${(a.nt / 86400).toFixed(1)} d ripe ${a.ripe ? 1 : 0} gut0 ${(gut0[i] / (a.s.sp.gut * a.W)).toFixed(2)} bed ${a.bed.toFixed(2)} m · CPU ${dc.toFixed(1)} g GPU ${dg.toFixed(1)} g`]); }
+    rows.sort((x, y) => y[0] - x[0]); if (rows.length) log(`   the piscivores' largest meal differences (${rows.length} > 1 g): ` + rows.slice(0, 8).map(r => r[1]).join(' | ')); }
 }
 // ===== 8b. SPAWNING (fish3 _spawn: mates, the spawn, the newborn school, the nest) =====
 {

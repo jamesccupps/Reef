@@ -13,7 +13,8 @@
 import { clamp } from '../core.js';
 import { GEO, LAND } from './geometry.js';
 import { BENTHOS, PLANKTON, PREY, PHYTO, CYANO, SEDOM, ENV, seasonalTemp } from '../config.js';
-import { DAY3 } from './clock3.js';
+import { DAY3, CLOCK3 } from './clock3.js';
+import { A2 } from './chem3.js';
 import { FORMS3, NF3 } from './plants3.js';
 
 export const LIT3 = {
@@ -92,6 +93,14 @@ export const LIT3 = {
   // tools/hotbrook/build_substrate3.py), not every bed shallower than CR_ROCK_Z: the stony lag of the swash band (0.6 rock + 0.3 gravel
   // → CREV_FULL 0.75) holds CR_ROCK, as the old shallows did; the stony bed falls from ~20 % of the lakes to their measured-rule 6–8 %
   SUB_MAP: 0, CREV_FULL: 0.75,
+  // (E7, HEX — on in fish3 stageR5) THE HEX HATCH (research_notes/Hot Brook populations and water/invertebrates_plankton_plants.md §3;
+  // full_biota_and_processes.md): the burrowing mayfly Hexagenia limbata lives in soft, oxic mud at ~50–300 nymphs/m² (Lake Erie's
+  // ~350/m² ≈ 10 g wet/m²; production 1–9 g DW/m²/yr) on a 1–3-year cycle, and the Maine ponds' hatch runs late June – mid-July once
+  // the surface reaches 18–21 °C, at dusk, each pond's for ~10–14 days — a surface feast for bass, perch and fallfish (Oneida: "a major
+  // food source … during their emergence"). Here: on each bed cell of soft mud (the substrate map's mud + organic ≥ HEX_MUD, the bed's O₂
+  // ≥ HEX_O2 mg/L), once its surface water passes HEX_T inside HEX_YF, HEX_SHARE of its mud fauna (chem3.benth: Hexagenia's share of
+  // the macrobenthos × the cohort that emerges this year [inf]) rises to the surface over HEX_DAYS, at dusk
+  HEX: 0, HEX_MUD: 0.5, HEX_O2: 2, HEX_T: 19, HEX_YF: [0.315, 0.45], HEX_SHARE: 0.2, HEX_DAYS: 12, HEX_DUSK: [0.82, 0.9],
   CR_SNAIL: 0.002, CR_SNAIL_K: 0.5,   // g of snails a g of crayfish eats a day at 20 °C (type II in the snails within reach, g/m²) — they
   CR_SNAIL_REF: 0.5,       //   cut snail beds hard (Lodge et al. 1994), but the share on the upper leaves (this × the snails' capacity) is
                            //   out of their reach: snails persist in native-crayfish lakes
@@ -134,11 +143,12 @@ export class Littoral3 {
     this.K = new Float32Array(nb); this.Ksn = new Float32Array(nb);
     this.crA = new Float32Array(nb); this.crY = new Float32Array(nb); this.Kcr = new Float32Array(nb);   // crayfish, g wet/m²; shelter
     // (E1) each bed cell's crevice share: the mean over the world's cells whose bed lies in it (each column's nearest layer holding bed)
-    this.crev = new Float32Array(nb); { const sw = new Float64Array(nb), sc = new Float64Array(nb);
+    this.crev = new Float32Array(nb); this.mudF = new Float32Array(nb); this.hexLeft = new Float32Array(nb); this.hexCoh = new Float32Array(nb); this.hexYr = -1; this.hexEmerged = 0;
+    { const sw = new Float64Array(nb), sc = new Float64Array(nb), sm = new Float64Array(nb);
       for (let i = 0; i < GEO.N; i++) { const c = G.colOfFine[i]; if (c < 0 || GEO.body[i] === 0) continue; const j0 = G.cell0[c], n = G.nL[c], kk = Math.min(n - 1, Math.floor(GEO.depth[i] / G.DZ)); let best = -1, bd = 99;
         for (let q = 0; q < n; q++) if (G.bedA[j0 + q] > 0 && Math.abs(q - kk) < bd) { bd = Math.abs(q - kk); best = j0 + q; }
-        const li = best >= 0 ? this.idx[best] : -1; if (li >= 0) { sw[li]++; sc[li] += GEO.crev[i]; } }
-      for (let i = 0; i < nb; i++) this.crev[i] = sw[i] > 0 ? sc[i] / sw[i] : 0; }
+        const li = best >= 0 ? this.idx[best] : -1; if (li >= 0) { const u = GEO.sub(i); sw[li]++; sc[li] += GEO.crev[i]; sm[li] += u.mud + u.org; } }
+      for (let i = 0; i < nb; i++) { this.crev[i] = sw[i] > 0 ? sc[i] / sw[i] : 0; this.mudF[i] = sw[i] > 0 ? sm[i] / sw[i] : 1; } }
     this.mu = new Float32Array(nb); this.Kmu = new Float32Array(nb);   // mussels /m²; their capacity
     this.muCleared = 0; this.muWater = 0;   // L cleared since the last read (the gate); the water those cells hold (L)
     this.surfA = new Float32Array(G.NC); this.surfT = new Float32Array(G.NC);                       // g wet/m² of water
@@ -252,6 +262,7 @@ export class Littoral3 {
       const snD = sn * L3.SN_M * dd + (sn > Ks && Tj > L3.SN_T ? (sn - Ks) * 0.02 * dd : 0); sn -= snD; ch.addSedOM(j, snD * A);   // (crowding only while warm: in winter they wait in the bed)
       this.S[i] = Math.max(0, S); this.L[i] = Math.max(0, Lg); this.sn[i] = Math.max(0, sn);
     }
+    if (L3.HEX) this._hex(dd, yf);
     this._crayfish(dd, yf, Tlit);
     this._mussels(dd, yf);
     // THE SURFACE: the emerged fly off (exported), the land's insects fall in from the banks and drown to the bed
@@ -262,6 +273,21 @@ export class Littoral3 {
       if (fall > 0 && this.bank[c] > 0) { const g = fall * this.bank[c] * dd * (1 - e.ice[c]); this.surfT[c] += g / G.area[c]; this.fallen += g; }
       const pe = this.plants.padEaten; if (pe[c] > 0) { const g = pe[c] * LIT3.PAD_YIELD; pe[c] = 0; this.surfT[c] += g / G.area[c]; this.padFallen += g; }   // (the pads' insects)
       const dr = this.surfT[c] * drown; if (dr > 0) { this.surfT[c] -= dr; ch.addSedOM(this._colBed(c), dr * G.area[c]); }
+    }
+  }
+  // (E7) THE HEX HATCH over dd days: each soft-mud cell's cohort set once its surface water passes HEX_T in the window, rising at dusk
+  _hex(dd, yf) {
+    const L3 = LIT3, e = this.env, ch = this.chem, G = this.G, T = e.temp, yr = Math.floor(e.time / CLOCK3.YEAR_LEN);
+    if (this.hexYr !== yr) { this.hexYr = yr; this.hexLeft.fill(0); this._hexSet = new Uint8Array(this.cells.length); }
+    if (!(yf >= L3.HEX_YF[0] && yf < L3.HEX_YF[1])) return;
+    const dl = L3.HEX_DUSK[1] - L3.HEX_DUSK[0], dusk = e.t >= L3.HEX_DUSK[0] && e.t < L3.HEX_DUSK[1];   // (a day's share of the cohort, all at dusk)
+    for (let i = 0; i < this.cells.length; i++) {
+      if (this.mudF[i] < L3.HEX_MUD) continue; const j = this.cells[i], c = G.colOfCell[j];
+      if (!this._hexSet[i]) { if (T[G.cell0[c]] >= L3.HEX_T && ch.o2[j] * ENV.O2_MGL >= L3.HEX_O2) { this._hexSet[i] = 1; this.hexLeft[i] = this.hexCoh[i] = L3.HEX_SHARE * ch.benth[j]; } else continue; }
+      if (!dusk || !(this.hexLeft[i] > 0)) continue;
+      const out = Math.min(this.hexLeft[i], ch.benth[j], this.hexCoh[i] * dd / (L3.HEX_DAYS * dl));   // (benth units: g wet/m² × A2)
+      if (!(out > 0)) continue; ch.benth[j] -= out; this.hexLeft[i] -= out;
+      const g = out / A2 * G.bedA[j]; this.surfA[c] += g / G.area[c]; this.hexEmerged += g;
     }
   }
   // CRAYFISH over dd days: the July release (last year's young join the adults), growth above CR_T_GROW on the bed's organic

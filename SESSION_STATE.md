@@ -192,7 +192,12 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~10:35 p.m. EDT — THE NEWEST). 145659e: E3 IN stageR5 (GPU twin verified: g1_check ?r5=1&eggs=1&yf=0.25 —
+▶▶▶ RESUME HERE (2026-10-21 ~11 p.m. EDT — THE NEWEST). E7 THE HEX HATCH built (LIT3.HEX, in stageR5; littoral3 _hex): on soft-mud cells
+(substrate mud+org ≥ 0.5, bed O₂ ≥ 2 mg/L) once the surface passes 19 °C inside yf 0.315–0.45, 20 % of the mud fauna (chem3.benth) rises
+at dusk over 12 days to surfA (the surface feeders eat it; the rest fly off) — 1/10 test 13 kg/ha; test/w3.mjs 'hex'. g1_check now lists
+the piscivores' largest meal differences (for KNOWN ISSUE (a), June strikes CPU 184 vs GPU 369 g) — run it when the GPU is free (arm AE
+running). NOTE: arm AE's snapshot (145659e) predates the Hex hatch.
+▶▶▶ RESUME HERE (2026-10-21 ~10:35 p.m. EDT). 145659e: E3 IN stageR5 (GPU twin verified: g1_check ?r5=1&eggs=1&yf=0.25 —
 235/236 clutches' numbers within 1 %, development exact); year.js prints 'the period's eggs'. ARM AE RUNNING on the GPU (queue_ae.sh,
 snapshot ae :8144 = 145659e, r5=1, 611/612/613 × 730 days → scratchpad/r22AE_<seed>.txt; read with yrsum.mjs + yz.mjs + grep "wildlife
 take|period's eggs"). The remote gate of 9ed1d21 (gate_eco1.txt) still running (0 FAIL so far); then gate 145659e.
