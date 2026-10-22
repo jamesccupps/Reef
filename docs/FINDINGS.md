@@ -4,6 +4,27 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — A canopy that grows by the light at its top colonises below the field's limit; the weed beds' extent (E12b)
+- **What.** The second summer's weed stands covered 51 % of the bed against the research's ~15–17 % (macrophyte_area_cover.md), the
+  canopy to 3.4 m against 2.0–3.0 m in coloured water. Three model artifacts and one inferred value carried most of it:
+  - growth by the light at the canopy's TOP: a large-leaf stand seeded at 3.5 m, its top near the surface, paid its whole canopy —
+    while the field's limit (Chambers & Kalff's 21 %) is the light at the deepest rooted plants' BED;
+  - each canopy species self-shaded on its own leaves only, so four pondweeds in a cell carried ~four stands' worth;
+  - every cell of a species' range was all room (a sand/mud flag), so the rocky shallows held full stands, and a rosette lawn and a
+    canopy filled the same sand;
+  - Robbins' pondweed's light limit 0.11 (the charophytes' value; inferred) — its clear-water colonies sit at the angiosperms' ~21 %.
+- **Fix (plants3.js; no rate scaled).** PCLake's light integral over the canopy through the water and all the canopy's leaves; the
+  rooted canopy at 21 % of the light at its bed; each species' room per bed cell from the E1 substrate map; the canopy's shade on the
+  rosettes and meadow; the ice's reach into the bed (Duarte's 0.75–1.25 m). The generated starts regrown.
+- **Evidence (no fish; probe e12b/probe.mjs, gate plants seed 541).** The second summer from the uniform seeding 51 → 29 % of the lakes'
+  bed, canopy 3.4 → 2.5 m; from the bare seeding, August stands 24 / 22 / 22 % in years 3–5 (canopy edge 2.3 → 2.0 m); the regrown start
+  16 % in mid-July. By depth band the 2–4-m bed now matches the research; the 0.5–1.5-m band still fills (0.6–0.95 vs ~0.25–0.4).
+- **Lesson.** A depth limit measured at the bed must be applied at the bed: a light rule on a canopy's top turns the canopy's own
+  height into a positive feedback that carries it past the field's limit. And a logistic stand with a propagule in every cell fills
+  every cell its light and bed allow — the field's patchiness inside the reach (presence 84–88 % in the sim against 35–45 %) needs a
+  mechanism the model does not have (clonal spread; no rate researched).
+- **Where.** plants3.js (FORMS3 SC lightLim, PL3 ROOM_MIN, ICE_BED, the E12b comments in _grow); test/w3.mjs plants (E12b check and
+  the presence GAP); docs/HOT_BROOK_3D.md §5 "Built (E12b)"; docs/review/ECOSYSTEM_BUILD.md E12.
 ## 2026-10-22 — Arm AI: no winterkill, but no year class either; the community shrinks by a quarter a year (GPU, true scale, 19edb3a)
 - **What.** Arm AI ran the package at 19edb3a: N_FORM, the herps and tadpoles, the anglers and Y1. Two seeds (611, 613), two years
   each from mid-May. Fish biomass in kg/ha:

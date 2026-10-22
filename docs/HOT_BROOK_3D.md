@@ -910,7 +910,8 @@ wood (logs in < 2 m near shore), insects across the waterline, leaves, shade, wi
 coloured Maine lake — emergent (pickerelweed, bulrush), floating-leaved (lilies, watershield), the submerged canopy (pondweeds,
 bladderwort), isoetid rosettes and the deep low meadow (Nitella, moss): living shoots and the storage they overwinter in, in
 g DW/m². Submerged growth follows the light at the canopy's top (the season's day-mean surface light × ice × the water ×
-floating-leaf shade × self-shading, a Monod response with the form's K½) and the temperature (Q10 2.5) and P (bed and water) and
+floating-leaf shade × self-shading, a Monod response with the form's K½ — since E12b the Monod's mean over the canopy from its top
+to the bed, below) and the temperature (Q10 2.5) and P (bed and water) and
 N; each form's losses are set so that its growth just pays them at its light limit (share of the surface light), so its DEPTH
 LIMIT emerges from the water's clarity. The floating-leaved and emergent forms grow in their depth windows and only where the
 shore shelters them from the waves (land in ≥ 4–5 of 8 directions within 20 m: the coves). Spring sprouting from storage,
@@ -976,7 +977,7 @@ Lakes of Maine has no plant list for these lakes (the human checked, 2026-10-17)
 
 **Built (stage 7f).** As designed (plants3.js FORMS3 — now 13 species, each with its form; `_inRange`: depth, bed, brook; a
 form's species share its room in a cell; littoral3 invertebrates per species; plants3view per species: pad sizes and colours, blade
-widths). PL3.MINERAL_Z / MINERAL_SHELTER set the bed:
+widths). PL3.MINERAL_Z / MINERAL_SHELTER set the bed (until E12b, which reads the E1 substrate map instead — below):
 - sand and gravel in the wave-washed shallows under 1.6 m and the brook — 16 % of the bed;
 - mud elsewhere.
 
@@ -1124,6 +1125,46 @@ Results (true lakes, no fish, mid-August — % of each depth band's bed under st
 - Gate (test/w3.mjs plants): the vegetated share and the insects' emergence now by STAND AREA (the research's "bed covered"; emergence
   per m² of the weed beds — not the deep Nitella carpet); the canopy's depth band 1.3–3.2 m (colour lowers Duarte's Zmc ≈ 4 m); a new
   check: a lake opens on its generated beds, stands 15–50 % of the bed by July, the wave zone bare of canopy.
+
+**Built (E12b, 2026-10-22) — THE WEED BEDS' EXTENT** (research `Whole lake 3D fish simulation/macrophyte_area_cover.md`: stands as
+cover ~15 % of Upper's bed and ~17 % of Lower's, 8–27 %, the ~30 % ceiling with moderate confidence; the sim's second summer stood at
+51 %, its canopy to 3.4 m). Four mechanisms, no rate scaled (plants3.js, each with its source):
+- **The canopy's light limit at its bed.** The rooted canopy's `lightLim` is Chambers & Kalff's 21 % for angiosperms (Robbins' was 0.11,
+  large-leaf's 0.16 — inferred from compensation ranks; Robbins' 5–7-m colonies in clear Lake George are at ~16–35 % of the surface
+  light). And a submerged stand grows by the MEAN light over its canopy, from its top to the bed, through the water and the canopy's
+  leaves (PCLake's integral, SELF 0.01 m²/g over all the cell's canopy shoots), not the light at its top: a tall stand seeded at 3.5 m
+  had paid its whole canopy from a top near the surface. A sparse stand's mean is its bed's light, so `lightLim` reads as the field's.
+- **Each species' room on the substrate map** (E1): per bed cell the shares of boulder–cobble, gravel, sand, mud + organic muck over
+  the world cells whose bed lies in it; a species' stand holds at most the share of its kind of bed ('mineral' sand + gravel,
+  'organic' mud + muck, 'any' all but boulder–cobble, 'stone' for the brook's moss) — replacing the MINERAL_Z / shelter flag that made
+  every cell all room. No rooted plant on the boulder–cobble lag (NLA rock-dominated plots 0.15 cover against 0.39).
+- **The canopy's shade on the rosettes and the meadow below it** (e^(−SELF × the canopy's shoots)): a sand cell had held a full
+  rosette lawn and a full canopy on the same bed.
+- **The ice's reach into the bed** (Duarte's 25 northeastern lakes: no submerged plants above 0.75–1.25 m, unrelated to exposure):
+  as the ice forms, the canopy's and meadow's shoots and stores in the bed shallower than 0.75 m go with it, a ramp to none at 1.25 m;
+  the rosettes, lilies and emergents keep theirs. (Small effect: the bladderworts regrow from propagules each summer.)
+- Then the generated starts were regrown (5 years, both worlds; both now carry E12a's 21 species — the old ones held 13).
+
+Results (no fish; % of each depth band's bed under stands, Upper — Lower within a few points):
+
+| | 0–0.5 m | 0.5–1 | 1–1.5 | 1.5–2 | 2–2.5 | 2.5–3 | 3–4 | the lakes' bed | dense canopy's edge |
+|---|---|---|---|---|---|---|---|---|---|
+| before, second summer from the uniform seeding (coarse grid) | 45 | 98 | 99 | 87 | 75 | 56 | 17–39 | **51 %** | 3.4 m |
+| E12b, the same run | 22 | 86 | 97 | 71 | 51 | 21 | 1–3 | **29 %** | 2.5 m |
+| E12b, years 3 / 4 / 5 from the bare seeding, August (50-m grid; a run before the ice's reach, worth ~0.3 points) | 16–21 | 84–88 | 94–95 | 63–66 | 32–38 | 4–8 | 1 | **24 / 22 / 22 %** | 2.3 / 2.1 / 2.0 m |
+| E12b, the regrown start, mid-July (both worlds) | 12–13 | 60–61 | 79–80 | 41 | 16 | 3 | 1 | **16 %** (Upper 17, Lower 14) | 1.75 m |
+| research (stands as cover, mid; macrophyte_area_cover.md §3) | 25 (0–1 m) | | 40 (1–2 m) | | 18 (2–3 m) | | 3 | ~15–17 % (8–27) | 2.0–3.0 m |
+
+- The deep bands now match; the excess left is the 0.5–1.5-m band's fill (0.6–0.95 against ~0.25–0.4): in reach and on its kind of
+  bed every cell fills, as the logistic growth with a propagule everywhere (PL3.SEED) makes it. The field's patchiness inside the reach
+  (clonal spread, no rate researched — macrophytes.md §7.2) is not in the model.
+- PRESENCE (any species ≥ 5 % of its stand, the Nitella meadow included) stays ~84–88 % of the lakes' bed against the research's
+  35–45 % (25–65 %) — a KNOWN GAP in the gate: the meadow (6 % of the light, ~4 m) reaches nearly all of Lower's saucer and
+  three-quarters of Upper's bed, and in reach every cell of ~0.25–1 ha of bed holds some.
+- Gate: the E12b stands check (8–30 % of the lakes' bed, the second summer from the uniform seeding — at ~29 % it sits near the
+  ceiling, the uniform seeding's rosettes and canopy still relaxing), the presence GAP, the canopy's edge 1.5–3.0 m (was 1.3–3.5),
+  and the generated start's July stands 8–30 % (was 15–50). The N and P budgets close (2e-7). Knock-on, open: the strike section's
+  R4·6 YENC A/B (≥ 3×) reads 1.86× (HEAD 3.10×) — the young less hidden in the first six weeks, the percid clearance's take doubling.
 
 **Design (stage 7b) — the littoral's own food (`src/w3/littoral3.js`; research `docs/research_notes/Whole lake 3D fish
 simulation/littoral_invertebrates.md`, emergence and fall-in `docs/research_notes/Maine lake shores and catchment/

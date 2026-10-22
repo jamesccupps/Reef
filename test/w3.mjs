@@ -790,7 +790,16 @@ if (run('plants')) {
       // the floating-leaved and emergent forms' share of the vegetated bed (by the area their stands cover)
       let flem = 0, all = 0; for (let i = 0; i < P.cells.length; i++) { const A = G.bedA[P.cells[i]]; let any = 0, fe = 0; for (let f = 0; f < FORMS3.length; f++) { const cov = P.Bs[f][i] / FORMS3[f].Bmax; if (cov > 0.1) { any = 1; if (FORMS3[f].window) fe = 1; } } all += any * A; flem += fe * A; }
       let stand = 0; for (let i = 0; i < P.cells.length; i++) stand += Math.min(1, FORMS3.reduce((t, F, f) => t + Math.min(1, P.Bs[f][i] / F.Bmax), 0)) * G.bedA[P.cells[i]];   // (every form's stands: the beds' area)
-      return { shoots, store, veg: veg / bedA, vegC: vegC / bedA, vegP: vegP / bedA, stand, nitZ, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
+      // (E12b) PRESENCE, as a rake finds it (macrophyte_area_cover.md §4): the bed whose cell holds any species at ≥ 5 % of its stand —
+      // the Nitella meadow and the moss included
+      let pres = 0; const lk = { [UPPER]: [0, 0, 0], [LOWER]: [0, 0, 0] };   // (per lake: bed, stands, presence)
+      for (let i = 0; i < P.cells.length; i++) {
+        const A = G.bedA[P.cells[i]], on = FORMS3.some((F, f) => P.Bs[f][i] >= 0.05 * F.Bmax) ? 1 : 0; pres += on * A;
+        const l = lk[G.body[P.col[i]]]; if (l) { l[0] += A; l[1] += Math.min(1, FORMS3.reduce((t, F, f) => t + (f === iN ? 0 : Math.min(1, P.Bs[f][i] / F.Bmax)), 0)) * A; l[2] += on * A; }
+      }
+      return { shoots, store, veg: veg / bedA, vegC: vegC / bedA, vegP: vegP / bedA, pres: pres / bedA, vegU: lk[UPPER][1] / lk[UPPER][0], vegL: lk[LOWER][1] / lk[LOWER][0], presU: lk[UPPER][2] / lk[UPPER][0], presL: lk[LOWER][2] / lk[LOWER][0],
+        vegLk: (lk[UPPER][1] + lk[LOWER][1]) / (lk[UPPER][0] + lk[LOWER][0]), presLk: (lk[UPPER][2] + lk[LOWER][2]) / (lk[UPPER][0] + lk[LOWER][0]),   // (the two lakes' beds: the research's quantity is each lake's — the brook's riffles aside)
+        stand, nitZ, deep, flem: flem / Math.max(1, all), secchi: ch.secchi() };
     };
     // (stage 7b: the weeds' invertebrates, snails and the surface — littoral3.js — over the same run)
     const Lt = e.lit, litSnap = () => {
@@ -838,17 +847,32 @@ if (run('plants')) {
     }
     const bedAll = P.cells.reduce((s, j) => s + G.bedA[j], 0), vegA = aug.vegC * bedAll, emYr = (Lt.emerged - em0) / vegA / 6;   // (g DW: insects ~1/6 dry; per m² of the weed BEDS — the canopy's, lilies', emergents' and rosettes' stands' area, stage 7h — not the deep Nitella meadow's sparse carpet, which emergence studies of the vegetated littoral don't sample)
     const sum = a => a.reduce((s, v) => s + v, 0);
-    check("the second summer: the weeds present, the submerged canopy down to 1.3–3.5 m in coloured water (Secchi 3–4.6 m: the region's 3.5–4.5 — KD_COLOUR 0.4; research 2–2.7 m at Secchi ~3, ~0.5 m deeper at ~3.8 — colour lowers Duarte's Zmc = 1.9 + 0.63·Secchi ≈ 4.3 m), the stoneworts' meadow deeper (charophytes' Zc beyond the angiosperms')",
-      !!aug && aug.vegC > 0.05 && aug.deep >= 1.3 && aug.deep <= 3.5 && aug.secchi > 3 && aug.secchi < 4.6 && aug.nitZ > aug.deep,
+    // (E12b: the canopy's limit is now the light at its BED, Chambers & Kalff's 21 % for the angiosperms — the deepest rooted plants at
+    // 2.0–3.0 m in the coloured water at Secchi ~3.5–4, macrophyte_area_cover.md §1; the measure is the DENSE canopy's edge (> 30 g DW/m²),
+    // a little shallower than the sparse limit — 2.3 → 2.0 m over years 3–5 from the bare seeding. Was 1.3–3.5 m, the canopy reaching 3.4 m
+    // on its tall stands' top light)
+    check("the second summer: the weeds present, the submerged canopy down to 1.5–3.0 m in coloured water (Secchi 3–4.6 m: the region's 3.5–4.5 — KD_COLOUR 0.4; 21 % of the surface light at the deepest rooted plants' bed, Chambers & Kalff — colour lowers Duarte's Zmc = 1.9 + 0.63·Secchi ≈ 4.3 m), the stoneworts' meadow deeper (charophytes' Zc beyond the angiosperms')",
+      !!aug && aug.vegC > 0.05 && aug.deep >= 1.5 && aug.deep <= 3.0 && aug.secchi > 3 && aug.secchi < 4.6 && aug.nitZ > aug.deep,
       aug ? `in stands ${(aug.vegC * 100).toFixed(0)} % of the bed, canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m, Nitella to ${f2(aug.nitZ)} m` : 'no August');
-    // (KNOWN GAP — E12b, the weed beds' extent: research macrophyte_area_cover.md (2026-10-22) puts the stands as this measures them — the
-    // canopy, lilies, emergents and rosettes, no Nitella meadow — at ~15 % of Upper's bed and ~17 % of Lower's (8–27 %; the ~30 % ceiling
-    // with moderate confidence: EPA NLA Maine shallow lakes' median cover 0.19, the coloured soft analogues 0.23–0.39; the coloured water's
+    // (E12b, the weed beds' extent: research macrophyte_area_cover.md (2026-10-22) puts the stands as this measures them — the canopy,
+    // lilies, emergents and rosettes, no Nitella meadow — at ~15 % of Upper's bed and ~17 % of Lower's (8–27 %; the ~30 % ceiling with
+    // moderate confidence: EPA NLA Maine shallow lakes' median cover 0.19, the coloured soft analogues 0.23–0.39; the coloured water's
     // canopy limit 2.0–3.0 m; within reach the beds patchy — rocky plots 0.15). The old 'about a fifth to a half (research ~20–30 %)' read
-    // presence frequencies as cover. The sim's ~50 % is ~3× the field's)
-    gap("E12b: the second summer's weed stands (canopy, lilies, emergents, rosettes) over 8–30 % of the bed (research ~15–17 %)",
-      !!aug && aug.vegC >= 0.08 && aug.vegC <= 0.3,
-      aug ? `in stands ${(aug.vegC * 100).toFixed(0)} % of the bed (present on ${(aug.vegP * 100).toFixed(0)} %; ${(aug.veg * 100).toFixed(0)} % with Nitella's sparse meadow, to ${f2(aug.nitZ)} m), canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
+    // presence frequencies as cover; the sim stood at ~51 %. Built (plants3 E12b): the canopy's light limit at its bed (Chambers & Kalff's
+    // 21 %) through its canopy and the canopy's own shade (PCLake's integral), each species' room on the substrate map's share of its
+    // kind of bed (no rooted plant on boulder–cobble), the canopy's shade on the rosettes and meadow below, the ice's reach into the bed
+    // (Duarte's 0.75–1.25 m))
+    check("E12b: the second summer's weed stands (canopy, lilies, emergents, rosettes) over 8–30 % of the lakes' bed (research ~15–17 %; NLA Maine nearshore cover 0.19)",
+      !!aug && aug.vegLk >= 0.08 && aug.vegLk <= 0.3,
+      aug ? `in stands ${(aug.vegLk * 100).toFixed(1)} % of the lakes' bed (Upper ${(aug.vegU * 100).toFixed(1)} %, Lower ${(aug.vegL * 100).toFixed(1)} %; with the brook ${(aug.vegC * 100).toFixed(1)} %; > 0.1 of a stand on ${(aug.vegP * 100).toFixed(0)} %), canopy to ${f1(aug.deep)} m, Secchi ${f1(aug.secchi)} m; shoots ${aug.shoots.map(v => (v / 1000).toFixed(0)).join('/')} kg (${FORMS3.map(F => F.key).join('/')})` : 'no August');
+    // (E12b) ANY VEGETATION, the Nitella meadow included, as a rake finds it (≥ 5 % of a stand in the cell): research ~35–45 % (25–65 %;
+    // macrophyte_area_cover.md §3–§5 — rake presence 0.7 to 2 m, 0.5 at 2–3, 0.25 at 3–4: the meadow patchy within its reach). KNOWN GAP:
+    // the meadow (Nitella at 6 % of the light — macrophytes.md §2.3's "2.8–3.5 m, sparse to ~4.2" at Secchi 3) reaches ~4 m, all of
+    // Lower's saucer and three-quarters of Upper's bed, and a cell of the model is ~0.25–1 ha of bed: in reach, every cell holds some.
+    // The rake-scale patchiness inside the reach (clonal spread, no rate researched — macrophytes.md §7.2) is not in the model
+    gap('E12b: any vegetation (the Nitella meadow included, ≥ 5 % of a stand) on 25–60 % of the lakes\' bed (research ~35–45 %)',
+      !!aug && aug.presLk >= 0.25 && aug.presLk <= 0.6,
+      aug ? `present on ${(aug.presLk * 100).toFixed(0)} % of the lakes' bed (Upper ${(aug.presU * 100).toFixed(0)} %, Lower ${(aug.presL * 100).toFixed(0)} %); Nitella to ${f2(aug.nitZ)} m` : 'no August');
     check('lilies and emergent stands keep to the sheltered coves: a minority of the vegetated bed (the submerged canopy holds the open littoral)',
       !!aug && aug.flem < 0.4, aug ? `floating-leaved or emergent on ${(aug.flem * 100).toFixed(0)} % of the vegetated bed` : '');
     // (stage 7f: per gram of plant — Cyr & Downing's ~5 mg DW of animals per g, ~30 mg wet; a full single-form canopy of 150+ g
@@ -910,10 +934,10 @@ if (run('plants')) {
     check('dense weed beds\' water swings in O₂ by day and night more than bare water at their depth (production by day, respiration always)',
       pairs.length >= 4 && sb > 1.3 * so, `${pairs.length} beds (mean ${best.toFixed(0)} g DW/m²): ${f2(sb)} mg/L a day; matched bare: ${f2(so)} mg/L`); }
   // (stage 7h) THE LAKES' WEEDS AT THEIR START, AND THE WAVES: a lake opens on its generated beds (plants3init.js — the model's own
-  // after years grown from the bare seeding, tools/hotbrook/build_plants3.mjs), not the uniform lawn, and by July holds stands on a
-  // fifth to a half of its bed (the canopy, lilies, emergents, rosettes; research ~20–25 %, rake hits 4–56 % of littoral points —
-  // weed_bed_structure.md), the storm waves keeping the exposed shallows bare of the canopy (Chambers 1987: the submerged plants'
-  // upper limit is the wave-mixing depth — plants3 zWave from env3's fetch)
+  // after years grown from the bare seeding, tools/hotbrook/build_plants3.mjs), not the uniform lawn, and by July holds stands on
+  // 8–30 % of its bed (the canopy, lilies, emergents, rosettes; E12b: research ~15–17 %, macrophyte_area_cover.md — was "a fifth to a
+  // half", the presence frequencies read as cover), the storm waves keeping the exposed shallows bare of the canopy (Chambers 1987: the
+  // submerged plants' upper limit is the wave-mixing depth — plants3 zWave from env3's fetch)
   { const { SEASON } = await import('../src/config.js');
     seed(561); const e = new Env3({ yf0: SEASON.START_YF }), P = e.plants, G = e.G;
     for (let t = 0; t < 60 * CLOCK3.DAY_LEN; t += 1752) e.step(1752);   // (to mid-July)
@@ -925,8 +949,8 @@ if (run('plants')) {
       if (z < 0.5 * P.zWave[c]) { wA += A; wSC += Math.min(1, sc) * A; } else if (z > P.zWave[c] && z < 2.5) { dA += A; dSC += Math.min(1, sc) * A; }
     }
     const share = stA / bedA, wv = wSC / Math.max(1, wA), dp = dSC / Math.max(1, dA);
-    check("a lake opens on its generated weed beds (the model's own after years, not a uniform lawn): stands on a fifth to a half of the bed by July, the storm waves keeping the exposed shallows bare of the canopy",
-      P.fromInit && share > 0.15 && share < 0.5 && wv < 0.3 * dp, `generated start ${!!P.fromInit}; stands (no Nitella meadow) ${(100 * share).toFixed(0)} % of the bed; canopy stand share in the wave zone ${f2(wv)} vs ${f2(dp)} below it to 2.5 m`); }
+    check("a lake opens on its generated weed beds (the model's own after years, not a uniform lawn): stands on 8–30 % of the bed by July (E12b), the storm waves keeping the exposed shallows bare of the canopy",
+      P.fromInit && share >= 0.08 && share <= 0.3 && wv < 0.3 * dp, `generated start ${!!P.fromInit}; stands (no Nitella meadow) ${(100 * share).toFixed(0)} % of the bed; canopy stand share in the wave zone ${f2(wv)} vs ${f2(dp)} below it to 2.5 m`); }
 }
 
 // ============================================================
@@ -1016,14 +1040,17 @@ if (run('strike')) {
       return { D: zD / v * PLANKTON.UGL, zoo: yz / Math.max(1e-9, yz + yo) }; };
     const b = six(true), a = six(false);
     // (R4·6, F3.YENC: the followed piscivores meet the young through their strikes' encounter volume — the same six weeks with it and with
-    // the percid clearance (~1/1,700 of it): the young eaten by pickerel and bass; the 1/10 screen: ~8× in the first six weeks)
+    // the percid clearance (~1/1,700 of it): the young eaten by pickerel and bass; the 1/10 screen: ~8× in the first six weeks. Since
+    // E12b's thinner weed beds (stands 51 → 29 % of the bed) the clearance run meets more young in the open shallows and the YENC run
+    // takes near the predators' appetite, so the ratio is bounded by the gut, not the encounter: 3.1× before, 1.9× after — ≥ 1.5× asks
+    // only that the encounter volume clearly adds)
     { const yG = { on: 0, off: 0 }, s0 = fm.Fish3.prototype._ySettle;
       const run = key => { fm.stageR5(true); if (key === 'off') fm.F3.YENC = 0; seed(509); const e = new Env3({ col: 10 * CS, yf0: 0.22 }), F = new fm.Fish3(e, { young: true });
         F._ySettle = function () { const pr = this.fish.filter(x => x.alive && (x.s.key === 'pike' || x.s.key === 'bass')), g0 = pr.map(x => x.gut * x.n); const out = s0.call(this); pr.forEach((x, i) => { if (x.alive) yG[key] += x.gut * x.n - g0[i]; }); return out; };
         for (let bk = 0; bk < 42 * 49; bk++) { F.step(FB); e.step(FB); } };
       run('on'); run('off'); fm.stageR5(true);
-      check('R4·6 (F3.YENC): the followed piscivores meet the young-of-year through their own encounter volume — six weeks from the founding, pickerel and bass eat ≥ 3× the young they eat on the percid clearance',
-        yG.on >= 3 * yG.off && yG.on > 0, `${(yG.on / 1000).toFixed(2)} kg against ${(yG.off / 1000).toFixed(2)} kg`); }
+      check('R4·6 (F3.YENC): the followed piscivores meet the young-of-year through their own encounter volume — six weeks from the founding, pickerel and bass eat ≥ 1.5× the young they eat on the percid clearance',
+        yG.on >= 1.5 * yG.off && yG.on > 0, `${(yG.on / 1000).toFixed(2)} kg against ${(yG.off / 1000).toFixed(2)} kg`); }
     // (R4·6, F3.YWIN_CS: the young caught by the strike rule's capture success — a 40-cm pickerel's request on one bin of 4-cm young
     // perch, then one of 2.5-cm young pumpkinseed: each bin's weight is the followed fish's capture success at that size ratio, not the
     // perch cannibal's window × the 2-D vulnerability, ~0.12 and ~0.001; F3.RD_SIZE: with its reaction distance to 6-cm prey 1.2 m,
