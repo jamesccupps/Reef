@@ -1162,6 +1162,7 @@ export class Fish3 {
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
+    this.wildEv = [];   // this step's fish taken by the WILDLIFE and the anglers (for the renderer only — never read here): [x, y, z, WILDK index, length cm, species]
     this.stats = { wild: {}, wildExp: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {}, eggs3: {} };
     this.stats.ale = { run: 0, arrived: 0, left: 0, spent: 0, yOut: 0, yCold: 0, pIn: 0, nIn: 0, pOut: 0, nOut: 0 };   // (E8: the alewives' run, deaths, emigrants; their N and P in and out, g)
     this.stats.spawnAt = {};
@@ -1676,7 +1677,7 @@ export class Fish3 {
   step(dt, mv) {
     const coarse = this._coarse = mv === undefined && dt > F3.FINE_MAX; if (mv === undefined) mv = dt;   // (mv given: the R2 compat rung)
     const e = this.env, ch = this.chem, f = this.fish, fo = this.focus, mixed = !!fo && !coarse;
-    this.time += dt; this.stepNo++; this.events.length = 0; this.rises.length = 0;
+    this.time += dt; this.stepNo++; this.events.length = 0; this.rises.length = 0; this.wildEv.length = 0;
     // (with a focus the whole lakes' hash, counts and biomass come once a simulated second, HASH_EVERY steps — its far fish live in
     // blocks — and the focus has its own hash every step: _stepMixed)
     const full = !mixed || !this._mixOn || this._needHash || this.stepNo % F3.HASH_EVERY === 0;
@@ -2792,7 +2793,7 @@ export class Fish3 {
     const HWy = this._wHy || (this._wHy = new Float64Array(WILDK.length)), hWd = F3.WILD ? this._wildH(s.key, q.L, q.z, q.bed, q.cover, this.env.ice[c], HWy, c) : 0;   // (E4: the wildlife)
     const hA = s.run && ALEWIFE.ON ? this._aleYoung(q, T, c, yf, this._aleH || (this._aleH = [0, 0])) : null, hE = hA ? hA[0] : 0, hC = hA ? hA[1] : 0;   // (E8: the young alewives' emigration and cold)
     const h = hN + hS + hH + hO + hWd + hE + hC, lost = q.n * (1 - Math.exp(-h * st));
-    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; if (hWd > 0) { fr.wild = (fr.wild || 0) + lost * hWd / h; this._wildTally(s.key, HWy, h, lost, q.W); }
+    if (h > 0) { const fr = this.stats.fry[s.key]; fr.natural += lost * hN / h; fr.starve += lost * hS / h; fr.heat += lost * hH / h; fr.hypoxia += lost * hO / h; if (hWd > 0) { fr.wild = (fr.wild || 0) + lost * hWd / h; this._wildTally(s.key, HWy, h, lost, q.W); this._wildEvent(q.x, q.y, q.z, q.L, q.k, HWy, hWd, lost * hWd / h); }
       if (hE > 0) { const x = lost * hE / h; fr.emig = (fr.emig || 0) + x; this.stats.ale.yOut += x; this._aleNutr(j, q.jb, -x * q.W * ALEWIFE.YOUNG_P, -x * q.W * ALEWIFE.YOUNG_N, false); }   // (the emigrants' N and P leave with them)
       if (hC > 0) { const x = lost * hC / h; fr.cold = (fr.cold || 0) + x; this.stats.ale.yCold += x; } }
     this.chem.addSedOM(q.jb, lost * q.W * (h > 0 ? 1 - (hWd + hE) / h : 1));   // (the wildlife's take and the emigrants leave the lake)
@@ -3021,11 +3022,19 @@ export class Fish3 {
     if (old || !(a.W > 0)) return this._die(a, cause, a.n);
     if (a.n > 1) {   // a school loses a fraction; the shares by cause
       const lost = a.n * (1 - Math.exp(-hz * dt));
-      if (lost > 0) { for (const [c, h] of [['starve', hS], ['heat', hH], ['hypoxia', hO], ['other', hM], ['wild', hWd]]) if (h > 0) this._tallyDeath(s.key, c, lost * h / hz); if (hWd > 0) this._wildTally(s.key, HW, hz, lost, a.W); this.chem.addSedOM(a.jb, lost * a.W * (1 - hWd / hz)); a.n -= lost; }   // (the wildlife's take leaves the lake)
+      if (lost > 0) { for (const [c, h] of [['starve', hS], ['heat', hH], ['hypoxia', hO], ['other', hM], ['wild', hWd]]) if (h > 0) this._tallyDeath(s.key, c, lost * h / hz); if (hWd > 0) { this._wildTally(s.key, HW, hz, lost, a.W); this._wildEvent(a.x, a.y, a.z, a.L, a.k, HW, hWd, lost * hWd / hz); } this.chem.addSedOM(a.jb, lost * a.W * (1 - hWd / hz)); a.n -= lost; }   // (the wildlife's take leaves the lake)
       if (a.n < 1) { a.alive = false; a.cause = cause; this.chem.addSedOM(a.jb, a.n * a.W); a.n = 0; }
     } else if (hz > 0) {
       if (hWd > 0) this._wildExpect(HW, hz, dt, a.W);
-      if (rand() < 1 - Math.exp(-hz * dt)) { if (cause === 'wild') { this._wildTally(s.key, HW, hWd, 1, a.W, false); a.alive = false; a.cause = 'wild'; this._tallyDeath(s.key, 'wild', 1); a.n = 0; } else this._die(a, cause, 1); } }   // (the wildlife's: no body left)
+      if (rand() < 1 - Math.exp(-hz * dt)) { if (cause === 'wild') { this._wildTally(s.key, HW, hWd, 1, a.W, false); this._wildEvent(a.x, a.y, a.z, a.L, a.k, HW, hWd, 1); a.alive = false; a.cause = 'wild'; this._tallyDeath(s.key, 'wild', 1); a.n = 0; } else this._die(a, cause, 1); } }   // (the wildlife's: no body left)
+  }
+  // (render-only) a fish taken by the wildlife, for the view (render3/wild3view.js: the loon's dive, the osprey's plunge, the angler's
+  // fish on where it was really taken): n fish this step — a school's fraction is an event with that chance — the taker drawn by its
+  // share of the hazard. Cosmetic: Math.random, never core.rand, and the sim never reads wildEv
+  _wildEvent(x, y, z, L, k, H, h, n) {
+    if (this.wildEv.length >= 600 || !(Math.random() < n)) return;
+    let u = Math.random() * h, w = 0; for (; w < WILDK.length - 1; w++) { u -= H[w]; if (u <= 0) break; }
+    this.wildEv.push(x, y, z, w, L, k);
   }
   _die(a, cause, n) { a.alive = false; a.cause = cause; this._tallyDeath(a.s.key, cause, n); this.chem.addSedOM(a.jb, n * a.W); a.n = 0; }
   _tallyDeath(k, cause, n) { const d = this.stats.died; (d[k] || (d[k] = {}))[cause] = (d[k][cause] || 0) + n; }

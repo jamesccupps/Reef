@@ -50,9 +50,12 @@
       <label class="tog"><input id="t-trees" type="checkbox" checked> Trees</label>
       <label class="tog"><input id="t-fish" type="checkbox" checked> Fish</label>
       <label class="tog"><input id="t-plants" type="checkbox" checked> Weeds</label>
+      <label class="tog"><input id="t-wild" type="checkbox" checked> Wildlife</label>
       <label class="tog"><input id="t-labels" type="checkbox" checked> Labels</label>
       <label class="tog"><input id="t-notes" type="checkbox" checked> Field notes</label>
-    </div></div>
+    </div>
+      <div class="hint" id="wildout"></div>
+    </div>
     <div class="grp"><span class="gl">Fish size</span><div class="row" id="fishsize">
       <button data-scale="1" aria-pressed="true">True size</button><button data-scale="4">×4</button><button data-scale="12">×12 (see them from the air)</button>
     </div></div>
@@ -61,6 +64,7 @@
   </div>
 </section>
 <div id="north" title="North"><svg viewBox="-15 -15 30 30" aria-hidden="true"><g id="needle"><path d="M0 -12 L5 4 L0 1 L-5 4 Z" fill="#e7ece6"/><text x="0" y="13" text-anchor="middle" font-size="8" fill="#9db0a7">N</text></g></svg></div>
+<div id="findbox"><button id="findwild" class="card" title="Fly to the next animal out on the lakes and follow it (drag to turn about it, scroll to zoom; pan or W A S D to let it go)">Find an animal</button><span id="watching"></span></div>
 <div id="uw" class="card" hidden>Under water · drag to look around, scroll to move · pick a view to surface</div>
 <div id="status"></div>
 <script type="module" src="src/w3/render3/main3.js"></script>
