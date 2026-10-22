@@ -460,6 +460,7 @@ export class Plants3 {
     const seasonL = e.lightDay;   // (the season's noon height: the light's share of the summer's)
     let prod = 0, lit = 0;
     const iceNew = this._iceNew, iceWas = this._iceWas; for (let c = 0; c < G.NC; c++) { iceNew[c] = e.ice[c] > 0.5 && iceWas[c] <= 0.5 ? 1 : 0; iceWas[c] = e.ice[c]; }   // (the columns whose ice formed since the last growth step: PL3 ICE_BED)
+    const IR = this._ir || (this._ir = FORMS3.map((F, f) => Uint8Array.from({ length: this.cells.length }, (_, i) => this._inRange(F, i, f) ? 1 : 0)));   // (_inRange is the bed's depth, the brook and its substrate: fixed — once)
     for (let i = 0; i < this.cells.length; i++) {
       const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
       const qT = qPl(Tj), iceCut = 1 - e.iceCut * e.ice[c];
@@ -479,7 +480,7 @@ export class Plants3 {
       const lowShade = Math.exp(-PL3.SELF * bSC);
       for (let f = 0; f < NF3; f++) {
         const F = FORMS3[f], Bs = this.Bs[f], Br = this.Br[f];
-        if (!this._inRange(F, i, f)) { if (Bs[i] + Br[i] > 0) { lit += this._die(f, i, Bs[i] + Br[i], j, A, a, w); Bs[i] = 0; Br[i] = 0; } this.gnet[f][i] = 0; continue; }
+        if (!IR[f][i]) { if (Bs[i] + Br[i] > 0) { lit += this._die(f, i, Bs[i] + Br[i], j, A, a, w); Bs[i] = 0; Br[i] = 0; } this.gnet[f][i] = 0; continue; }
         let b = Bs[i];
         // COLONISATION: a bare cell in the form's range gets a propagule (spores, fragments, seeds) — paid for in nutrients
         if (b < PL3.SEED && Br[i] < PL3.SEED && Tj > F.tStart && !store) b += this._take(F, PL3.SEED - b, j, A, a, w);
@@ -491,10 +492,11 @@ export class Plants3 {
         // shading, sloughing, grazing, the cost of next year's stores — set so that its growth just pays them at its light limit
         // (lightLim of the day-mean surface light at a sparse stand's bed): its DEPTH LIMIT emerges there, while plants near the
         // surface grow light-saturated
-        let fL; const lossR = this._lossR[f];
-        if (F.window) fL = (z <= F.core[1] ? (z >= F.core[0] ? 1 : clamp((z - F.depth[0]) / Math.max(0.05, F.core[0] - F.depth[0]), 0, 1)) : clamp((F.depth[1] - z) / (F.depth[1] - F.core[1]), 0, 1))
+        const ever = F.carry > 0.8, growing = Tj > F.tStart && (!store || ever);   // (the evergreens — rosettes, Nitella, moss — keep their shoots and grow whenever it is warm and light enough: no autumn reallocation)
+        let fL = 0; const lossR = this._lossR[f];   // (the light: only while it grows — the dormant's rate does not use it)
+        if (growing && F.window) fL = (z <= F.core[1] ? (z >= F.core[0] ? 1 : clamp((z - F.depth[0]) / Math.max(0.05, F.core[0] - F.depth[0]), 0, 1)) : clamp((F.depth[1] - z) / (F.depth[1] - F.core[1]), 0, 1))
           * clamp(this.shelter[c] - F.shelter + 1, 0, 2) / 2;   // (and the waves: half growth at its shelter, full one direction more)
-        else {
+        else if (growing) {
           const h = Math.min(z, F.hFull * clamp(b / F.Bmax, 0.05, 1)), Itop = iceCut * flShade * (this._low[f] ? lowShade : 1) * seasonL * Math.exp(-kd * (z - h)), ext = kd * h + PL3.SELF * (this._sc[f] ? bSC - Bs[i] + b : b);   // (shares of the surface's: the top; the extinction down to the bed — a canopy species' through all the canopy's leaves)
           fL = ext > 1e-6 ? Math.log((F.KL + Itop) / (F.KL + Itop * Math.exp(-ext))) / ext : Itop / (Itop + F.KL);   // (PL3 SELF: the mean of the light limitation over the canopy)
         }
@@ -505,7 +507,6 @@ export class Plants3 {
           const day = Math.max(MIX, F.mu * qT * b * A);
           fP = Math.min(1, fP + this.preyP[i] / (day * F.P * PL3.P_UNIT)); fN = Math.min(1, fN + this.preyN[i] / (day * F.N * PL3.N_UNIT));
         }
-        const ever = F.carry > 0.8, growing = Tj > F.tStart && (!store || ever);   // (the evergreens — rosettes, Nitella, moss — keep their shoots and grow whenever it is warm and light enough: no autumn reallocation)
         const rate = growing ? (F.mu + lossR) * qT * fL * Math.min(fP, fN) - lossR * qT : -lossR * qT * 0.3;   // (/day; dormant: a third)
         let g = rate > 0 ? rate * Math.max(0, 1 - occ[this.formOf[f]] / this.room[f][i]) * b * dd : 0;   // (space limits the net growth: a good site fills its stand — shared by its form's species — on its share of the bed, E12b)
         if (g > 0) { g = this._take(F, g, j, A, a, w, i); b += g; prod += g * A; }
