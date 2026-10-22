@@ -4,7 +4,7 @@
 // statics, the water each block, and runs the block's kernels (wgsl.js) in fish3's order.
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
-import { F3, KEYS3, NW2_3, HID3, OUT3 } from '../fish3.js';
+import { F3, KEYS3, NW2_3, HID3, OUT3, WILDK } from '../fish3.js';
 import { FRY } from '../../config.js';
 import { GEO, BODIES } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
@@ -153,9 +153,9 @@ export class GpuFish {
     mk(moduleSource(this.consts, GRID_BINDINGS, GRID), [this.L0, this.LG], ['g_clear', 'g_count', 'g_scan', 'g_add', 'g_cursor', 'g_cursor2', 'g_scatter', 'g_sort']);
     mk(moduleSource(this.consts, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K.replace('FP_SELECT', this.fpSelect), HAZ), [this.L0, this.LS],
       ['k_pre', 'k_learn', 'k_sense', 'k_brain', 'k_snap', 'k_sums', 'k_glob', 'k_admit', 'k_move', 'k_body', 'k_feed0', 'k_strike', 'k_strikeWin', 'k_strikeApply',
-       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply']);
+       'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho']);
     mk(moduleSource(this.consts, YOY_BINDINGS, TALLY, FB4, YOY), [this.L0, this.LY],
-      ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target']);
+      ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target', 'y_wildA']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
     mk(moduleSource(this.consts, COMPACT_BINDINGS, COMPACT), [this.L0, this.LC], ['c_walk', 'c_gatherA', 'c_gatherY', 'c_census']);
     mk(moduleSource(this.consts, SCHOOL_BINDINGS, TALLY, FB4, SCHOOL), [this.L0, this.LSc], ['s_hist', 's_cut', 's_mark', 's_merge', 's_slots', 's_fill', 's_retire', 's_count', 's_yMark', 's_yMerge']);
@@ -233,6 +233,14 @@ export class GpuFish {
     this.encodeKernel(enc, 'k_fieldReq', 64); this._cells(enc, 'k_fieldCell'); this.encodeKernel(enc, 'k_fieldTake', 64); this._cells(enc, 'k_fieldApply');
     this.encodeKernel(enc, 'k_sedReq'); this._cells(enc, 'k_sedCell'); this.encodeKernel(enc, 'k_sedTake'); this.encodeKernel(enc, 'k_feedEnd');
   }
+  // THE WILDLIFE (fish3 _wildPrep, F3.WILD: at the step's start, before k_pre): the host's demands → GL (block), the fish and young it can
+  // reach summed, its hazard per unit of accessibility → GL for k_hazards and y_mort
+  encodeWild(enc) {
+    if (!F3.WILD) return;
+    enc.clearBuffer(this.B.GS, 4 * 128, 4 * 2 * WILDK.length); this.encodeKernel(enc, 'k_wildA', 128); if (this.yoyOn !== false) this.encodeY(enc, 'y_wildA', 128);
+    this._pass(enc, this.P.k_wildRho, [this.bg0, this.bgS], 1, 1);
+  }
+  wildDemand() { if (F3.WILD) this.dev.queue.writeBuffer(this.B.GL, 4 * 128, Float32Array.from(this.F.wildDemand())); }   // (GL[G_WD + w], g/s)
   // O₂ breathed and the hazards (fish3 _live's end, _hazards); the dead's bodies to the bed
   encodeHaz(enc) { this.encodeKernel(enc, 'k_o2'); this.encodeKernel(enc, 'k_hazards'); this._cells(enc, 'k_o2Apply'); }
   // THE YOUNG'S BLOCK (fish3 _stepYoy): their density, each school's move, its feeding tick (requests → the cells' shares → what each got,
@@ -312,10 +320,10 @@ export class GpuFish {
     this.stage = 'compact'; if ((this.blk + 1) % (this.compactEvery || 10) === 0) await this.compact();
     this.stage = 'prepare';
     F._yr = yr; if (yf >= F3.SITE_YF && yf < 0.5 && F._siteYr !== yr) { F._siteYr = yr; F._siteSub(); this.uploadSites(); }
-    this.uploadWater(); this._dt = dt; this._lux = { lux0: e.lux, luxB: [e.lux, e.luxAhead(dt / 2), e.luxAhead(dt)] }; this.setUniforms(dt, this._lux);
+    this.uploadWater(); this._dt = dt; this._lux = { lux0: e.lux, luxB: [e.lux, e.luxAhead(dt / 2), e.luxAhead(dt)] }; this.setUniforms(dt, this._lux); this.wildDemand();
     this.dev.queue.writeBuffer(this.gpItems, 0, Uint32Array.from([this.n, this.NH])); this.dev.queue.writeBuffer(this.gpYItems, 0, Uint32Array.from([this.ny, this.NH]));
     const done = this.run(enc => {
-      this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
+      this.encodeGrid(enc); this.encodeYGrid(enc); this.encodeWild(enc); this.encodeKernel(enc, 'k_pre'); this.encodeBook(enc);
       this.encodeKernel(enc, 'k_learn'); this.encodeKernel(enc, 'k_sense'); this.encodeKernel(enc, 'k_brain', 64); this.encodeKernel(enc, 'k_move', 64);
       // (fish3's coarse block in two passes, F3.FRESH_HASH: the grid and the snapshot rebuilt where every fish got to — strikes and mate
       // searches find the others there; PX then holds the moved places for all, so the kernels' list-order reads agree with fish3's)

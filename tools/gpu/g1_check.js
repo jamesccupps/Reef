@@ -9,6 +9,7 @@ const out = document.getElementById('out');
 const log = (...a) => { out.textContent += a.join(' ') + '\n'; console.log(...a); };
 const qs = new URLSearchParams(location.search), SEED = +(qs.get('seed') || 611);
 { const { stageR5 } = await import('../../src/w3/fish3.js'); if (qs.get('r5') === '1') stageR5(true); }   // (?r5=1: stage R item 5's package)
+{ const { F3 } = await import('../../src/w3/fish3.js'); if (qs.get('wild') === '1') F3.WILD = 1; }   // (?wild=1: the wildlife, E4)
 const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, F3, HID3, reinforce3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
@@ -25,6 +26,7 @@ log(`founded and one block lived in ${((performance.now() - t0) / 1000).toFixed(
 // ---------- the next block's start, as Fish3.step sets it up ----------
 F.time += B; F.stepNo++; F.events.length = 0; F.rises.length = 0; F._coarse = true;
 F._hashBuild(true); F._yoyHash();
+if (F3.WILD) F._wildPrep();   // (E4: the wildlife's demand and reach at the step's start — the GPU's encodeWild below)
 const yf = env.yearFrac(), att = env.chem.attenuation(), clar = env.chem.clarity(); F._yr = Math.floor(env.time / YEAR);
 const lux0 = env.lux, luxB = [lux0, env.luxAhead(B / 2), env.luxAhead(B)]; F._cx = { yf, att, clar, lux0 };
 const fish = F.fish, n = fish.length; for (const a of fish) if (!a.alive) throw new Error('a dead fish in the list');
@@ -35,6 +37,9 @@ const tau0 = F3.WANDER_TAU; F3.WANDER_TAU = 0;   // (the GPU built without the b
 const G = new GpuFish(dev, F, env, { seed: SEED }); F3.WANDER_TAU = tau0;
 G.uploadAgents(fish); G.uploadYoy(F.yoy); G.uploadWater(); G.setUniforms(B, { lux0, luxB }); G.clearTallies();
 await dev.queue.onSubmittedWorkDone();
+// ===== 0. THE WILDLIFE (fish3 _wildPrep: each wildlife's demand, the fish it can reach, its hazard per unit of accessibility ρ) =====
+if (F3.WILD) { G.wildDemand(); await G.run(enc => G.encodeWild(enc)); const gl = new Float32Array(await G.read(G.B.GL, 1024)), { WILDK } = await import('../../src/w3/fish3.js');
+  log('the wildlife’s ρ (/s per unit of accessibility), CPU · GPU: ' + WILDK.map((w, r) => `${w} ${F._wRho[r].toExponential(3)} · ${gl[144 + r].toExponential(3)}`).join('; ')); }
 const cap = G.cap;
 // ---------- comparing ----------
 const rel = (a, b) => Math.abs(a - b) / Math.max(1e-6, Math.abs(a), Math.abs(b));
@@ -220,9 +225,9 @@ const cmC = new Float64Array(n);
   compare(`hazards (CPU ${tc.toFixed(0)} ms): exposure`, ['xo', 'xt'], A, (a, f) => a[f], { tol: 1e-4, skip: i => !fish[i].alive });
   let schoolsBad = 0, schools = 0, deadC = 0, deadG = 0;
   for (let i = 0; i < n; i++) { const a = fish[i], g = L.readAgent(A, cap, i); if (n0[i] > 1) { schools++; if (Math.abs(a.n - g.n) > 1e-3 * n0[i] && a.alive && g.alive) schoolsBad++; } }
-  const tl = await G.readTallies(); const causes = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
+  const tl = await G.readTallies(); const causes = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded', 'wild'];
   const dC = {}, dG = {}; for (const k in F.stats.died) for (const c in F.stats.died[k]) dC[c] = (dC[c] || 0) + F.stats.died[k][c] - ((died0[k] || {})[c] || 0);
-  for (let k = 0; k < 11; k++) causes.forEach((c, q) => { dG[c] = (dG[c] || 0) + tl[224 + k * 7 + q] / 1e6; });
+  for (let k = 0; k < 11; k++) causes.forEach((c, q) => { dG[c] = (dG[c] || 0) + tl[224 + k * causes.length + q] / 1e6; });
   log(`   O₂ after breathing: ${o2bad} of ${Gg.NCELL} cells differ; schools' losses: ${schoolsBad} of ${schools} differ`);
   log('   deaths this block by cause, CPU · GPU (the GPU’s eaten: its strikes this block): ' + causes.map(c => `${c} ${(dC[c] || 0).toFixed(1)} · ${(dG[c] || 0).toFixed(1)}`).join('; '));
 }
@@ -246,8 +251,8 @@ const cmC = new Float64Array(n);
   log(`the young (CPU ${tc.toFixed(0)} ms): ${feeders} schools fed this block — ${nOk} with numbers within 2 %, ${LOk} lengths within 1 % of fish3's; ${aliveC} · ${aliveG} schools alive (${(nC / 1e3).toFixed(0)}k · ${(nG / 1e3).toFixed(0)}k fish); recruiting ${recC} · ${recG}`);
   log(`   zooplankton the young ate this block, CPU · GPU: Daphnia ${used(b0.zD, b1.zD)} · ${used(gz(Wb, 'zooD'), gz(Wa, 'zooD'))}; copepods ${used(b0.zC, b1.zC)} · ${used(gz(Wb, 'zooC'), gz(Wa, 'zooC'))}; rotifers ${used(b0.zR, b1.zR)} · ${used(gz(Wb, 'zooR'), gz(Wa, 'zooR'))}`);
   const FY = [['yZoo', 8], ['yWeed', 9], ['yBenth', 10], ['ySed', 11]]; log('   grams the young ate, CPU · GPU: ' + FY.map(([k, q]) => `${k} ${(F.stats.food[k] - yf0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
-  const C6 = ['natural', 'starve', 'heat', 'hypoxia', 'eaten'], KS = Object.keys(F.stats.fry);
-  log('   the young\u2019s deaths this block, CPU · GPU: ' + C6.map((cs, ci) => { let c = 0, g = 0; KS.forEach((k, q) => { c += F.stats.fry[k][cs] - fr0[k][cs]; g += tl[320 + q * 7 + ci] / 1e6; }); return `${cs} ${c.toFixed(0)} · ${g.toFixed(0)}`; }).join('; '));
+  const C6 = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'wild'], KS = Object.keys(F.stats.fry);
+  log('   the young\u2019s deaths this block, CPU · GPU: ' + C6.map((cs, ci) => { let c = 0, g = 0; KS.forEach((k, q) => { c += (F.stats.fry[k][cs] || 0) - (fr0[k][cs] || 0); g += (cs === 'wild' ? tl[1998 + q] : tl[320 + q * 7 + ci]) / 1e6; }); return `${cs} ${c.toFixed(0)} · ${g.toFixed(0)}`; }).join('; '));
   { const r0 = fr0, nA0 = G.n; await G.run(enc => G.encodeRecruit(enc)); const cnt = await G.readCounts(), tl2 = await G.readTallies(); let rc = 0, rg = 0; KS.forEach((k, q) => { rc += F.stats.fry[k].recruited - r0[k].recruited; rg += tl2[460 + q] / 1e6; });
     log(`   recruits (fish): CPU ${rc.toFixed(0)} · GPU ${rg.toFixed(0)}; agents ${nA0} → ${cnt.n} on the GPU (+${cnt.recruits})`); G.n = cnt.n; }
   { const ts = {}; for (const k of ['y_move', 'y_feedReq', 'y_feedTake', 'y_mort', 'y_target']) ts[k] = await timeIt(enc => G.encodeY(enc, k)); log(`   GPU per kernel (ms, ${ny} schools): ` + Object.entries(ts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')); }

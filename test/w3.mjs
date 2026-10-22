@@ -941,7 +941,7 @@ if (run('gpu')) {
     const live = ({ e, F }) => { setRandState(st); for (let b = 0; b < 4; b++) { F.step(FB); e.step(FB); } return fp(F); };
     const f1 = live(W1), f2 = live(W2);
     const st0 = W1.F.stats, stt = JSON.parse(JSON.stringify(st0)), tl = new Float64Array(512), NK = KEYS3.length;
-    tl[412 + 2] = 3e6; tl[400 + 2] = 5000; tl[224 + 1 * 7 + 5] = 2.5e6; tl[96 + 6 * NK + 1] = 4e6;
+    tl[412 + 2] = 3e6; tl[400 + 2] = 5000; tl[224 + 1 * 8 + 5] = 2.5e6; tl[96 + 6 * NK + 1] = 4e6;
     Lg.statsAdd(stt, tl, 99);
     const okS = stt.spawns.sucker === st0.spawns.sucker + 3 && stt.eggs.sucker === st0.eggs.sucker + 5000 && Math.abs((stt.died.perch.eaten || 0) - ((st0.died.perch || {}).eaten || 0) - 2.5) < 1e-9
       && stt.eatenBy['pike>perch'] - (st0.eatenBy['pike>perch'] || 0) === 4 && stt.kills === st0.kills + 4;
@@ -1075,6 +1075,36 @@ if (run('strike')) {
     // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it)
     check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 2× what is left with the zooplankton first',
       b.D >= 20 && b.D >= 2 * a.D, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
+}
+
+// ============================================================
+//  E4 — THE LAKES' FISH-EATING WILDLIFE (F3.WILD; fish3 WILD3; docs/review/ECOSYSTEM_BUILD.md): loons, herons, kingfishers,
+//  ospreys, the eagles, mergansers, otter and mink take their need from the fish they can reach (Holling II, K a day's need)
+// ============================================================
+if (run('wild')) {
+  console.log('\n— E4: the lakes\' fish-eating wildlife (F3.WILD) —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3 } = await import('../src/w3/env3.js'); const { seed } = await import('../src/core.js');
+  const Lg = await import('../src/w3/gpu/layout.js');
+  // (a fortnight in late July on the 1/10 lakes with the year's young, the package on and the wildlife: what it took against what it
+  // needed — each step's take is Σ n(1 − e^(−h·dt))·W ≤ D·dt, so ≤ 1, and near 1 where the reachable fish are many days' need)
+  fm.stageR5(true); fm.F3.WILD = 1; seed(509);
+  const e = new Env3({ col: 10 * CS, yf0: 0.4 }), F = new fm.Fish3(e, { young: true }), fa = F.lakeHa / 643.6;
+  const dayNeed = yf => fm.WILDK.reduce((t, w) => t + F._wildNeed(w, yf), 0) / fa;   // (g a day, the true lakes')
+  const sumN = dayNeed(0.4), winN = dayNeed(0.85), loonN = F._wildN('loon', 0.4) / fa;
+  let need = 0; const yW0 = Object.values(F.stats.fry).reduce((t, f) => t + (f.wild || 0), 0);
+  for (let b = 0; b < 14 * 49; b++) { need += F.wildDemand().reduce((t, v) => t + v, 0) * FB; F.step(FB); e.step(FB); }
+  const took = Object.values(F.stats.wild).reduce((t, o) => t + o.g, 0), byW = Object.entries(F.stats.wild).map(([w, o]) => `${w} ${(o.g / 1000).toFixed(1)}`).join(' ');
+  const dW = Object.values(F.stats.died).reduce((t, d) => t + (d.wild || 0), 0), yW = Object.values(F.stats.fry).reduce((t, f) => t + (f.wild || 0), 0) - yW0;
+  const loonTop = Object.entries((F.stats.wild.loon || { n: {} }).n).sort((a, b) => b[1] - a[1])[0];
+  fm.F3.WILD = 0; fm.stageR5(false);
+  check('E4 (F3.WILD): the wildlife at the true lakes\' numbers — ~8.6 loons, a summer\'s day 12–30 kg of fish, the winter\'s (eagles, otter, mink) under 8 kg',
+    loonN > 8 && loonN < 9.2 && sumN > 12000 && sumN < 30000 && winN > 0 && winN < 8000, `loons ${loonN.toFixed(1)}; summer ${(sumN / 1000).toFixed(1)} kg a day, winter ${(winN / 1000).toFixed(1)}`);
+  check('E4 (F3.WILD): a late-July fortnight — the wildlife takes 50–100 % of its need from the fish it can reach (never more), followed fish and the young both',
+    took > 0.5 * need && took <= need * 1.0001 && dW > 0 && yW > 0, `took ${(took / 1000).toFixed(1)} of ${(need / 1000).toFixed(1)} kg (${byW}); followed fish ${dW.toFixed(0)}, young ${yW.toFixed(0)}; the loons' most taken ${loonTop ? loonTop[0] : '-'}`);
+  // (the GPU's copy of the table, layout.js wildWGSL: one case a wildlife, every preference a species the lakes have)
+  const src = Lg.wildWGSL(), nCase = (src.match(/case \d+u:/g) || []).length;
+  check('E4 on the GPU: the wildlife\'s table is generated from WILD3 itself (one WGSL case a wildlife, the preferences by species index)',
+    nCase === fm.WILDK.length && src.includes(`const NWILD: u32 = ${fm.WILDK.length}u;`) && src.includes(`k == ${fm.KEYS3.indexOf('perch')}u`), `${nCase} cases`);
 }
 
 console.log(`\n${pass} PASS, ${fail} FAIL`);

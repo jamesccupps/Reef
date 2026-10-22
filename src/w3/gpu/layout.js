@@ -5,7 +5,7 @@
 // lakes' static tables (the bed's rasters, the water's columns and cells, the fish's species and FB4 sets, the brook's path…)
 // and writes the WGSL constants for all of it FROM THE CPU SIM'S OWN CONFIG — the two engines read one set of numbers.
 import { GEO, LAND, UPPER, LOWER, BROOK } from '../geometry.js';
-import { F3, S3, KEYS3, HID3, genomeLen3, W2OFF3, NW2_3, IN3, OUT3, PREY_LR0, GATE, LAKE_NEAR, leak3, newFish, newYoy } from '../fish3.js';
+import { F3, S3, KEYS3, HID3, genomeLen3, W2OFF3, NW2_3, IN3, OUT3, PREY_LR0, GATE, LAKE_NEAR, leak3, newFish, newYoy, WILD3, WILDK } from '../fish3.js';
 import { CLOCK3, TS, DAY3, OLD_S } from '../clock3.js';
 import { A2 } from '../chem3.js';
 import { OXYCAL } from '../../bioenergetics.js';
@@ -200,7 +200,7 @@ export function materialize(F, P, cap, ycap, n, ny, nextId) {
 // the engine's tallies (pairs, already summed to numbers: GpuFish.readTallies) into a Fish3's stats tree — what the GPU's blocks
 // counted since the tallies were last cleared (wgsl.js TALLY's layout: word offsets / 2)
 const T_FOODS = ['zoo', 'benth', 'weed', 'cray', 'surf', 'fish', 'sed', 'yoy', 'yZoo', 'yWeed', 'yBenth', 'ySed'];
-const T_CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'], T_FATES = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];
+const T_CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded', 'wild'], T_FATES = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched'];
 export function statsAdd(st, tl, time = 0) {
   const NK = KEYS3.length, M = 1e6;
   T_FOODS.forEach((f, q) => { st.food[f] = (st.food[f] || 0) + tl[64 + q] / M; });
@@ -208,11 +208,14 @@ export function statsAdd(st, tl, time = 0) {
     st.cross[k] += tl[q] / M; st.settle[k] += tl[16 + q] / M; st.trips[k] += tl[32 + q] / M;
     const g = tl[80 + q] / M; if (g > 0) st.intakeBy[k] = (st.intakeBy[k] || 0) + g;
     KEYS3.forEach((kq, r) => { const v = tl[96 + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
-    const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * 7 + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
+    const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * T_CAUSES.length + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
+    { const yw = tl[1998 + q] / M; if (yw > 0) st.fry[k].wild = (st.fry[k].wild || 0) + yw; }   // (E4: the young the wildlife took — T_YWILD)
+    WILDK.forEach((w, r) => { const v = tl[1888 + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
     T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[910 + q] / M;
     const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
     const at = st.spawnAt[k]; at.sub += tl[424 + q] / M; at.bed += tl[436 + q] / M; at.brook += tl[448 + q] / M; if (sp > 0 && at.first < 0) at.first = time;
   });
+  WILDK.forEach((w, r) => { const g = tl[1988 + r] / M; if (g > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.g += g; } });   // (T_WILDG)
   return st;
 }
 
@@ -373,6 +376,26 @@ export function packWater(F, env, WL, out = null) {
 
 // ---------- THE WGSL CONSTANTS: every number the kernels share with the CPU sim, from its own config ----------
 const wf = v => { if (v === Infinity || v >= 3e38) return '3e38'; if (v === -Infinity) return '-3e38'; const s = String(+v); return /[.eE]/.test(s) ? s : s + '.0'; };
+// THE LAKES' FISH-EATING WILDLIFE (fish3 WILD3, _wildV) as WGSL: a fish's accessibility to wildlife w — its length, its depth below the
+// surface, the bed under it, its cover, the ice — × the wildlife's preference for its species (one case a wildlife, from WILD3 itself)
+export function wildWGSL() {
+  const cases = WILDK.map((w, r) => {
+    const d = WILD3[w]; let pr = '1.0';
+    for (const [sp, v] of Object.entries(d.pref)) { const q = KEYS3.indexOf(sp); if (q < 0) throw new Error(`layout: WILD3.${w} prefers an unknown species ${sp}`); pr = `select(${pr}, ${wf(v)}, k == ${q}u)`; }
+    return `    case ${r}u: { p = array<f32, 9>(${[...d.L, ...d.z, ...d.b, d.ice ? 1 : 0].map(wf).join(', ')}); pr = ${pr}; }`;
+  });
+  return [`const NWILD: u32 = ${WILDK.length}u;`,
+    'fn wildV(w: u32, k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {',
+    '  var p = array<f32, 9>(); var pr = 1.0;',
+    '  switch w {', ...cases, '    default: { return 0.0; }', '  }',
+    '  if (L <= p[0] || L >= p[3]) { return 0.0; }',
+    '  var fL = 1.0; if (L < p[1]) { fL = (L - p[0]) / (p[1] - p[0]); } else if (L > p[2]) { fL = (p[3] - L) / (p[3] - p[2]); }',
+    '  var fz = 0.0; if (z <= p[4]) { fz = 1.0; } else if (z < p[5]) { fz = (p[5] - z) / (p[5] - p[4]); }',
+    '  var fb = 0.0; if (bed <= p[6]) { fb = 1.0; } else if (bed < p[7]) { fb = (p[7] - bed) / (p[7] - p[6]); }',
+    '  let fi = select(1.0 - clamp(ice, 0.0, 1.0), 1.0, p[8] > 0.5);',
+    '  return fL * fz * fb * fi * (1.0 - clamp(cover, 0.0, 1.0)) * pr;',
+    '}'].join('\n');
+}
 export function wgslConstants(STL, WL, extra = {}) {
   const L = [];
   const C = (n, v) => L.push(`const ${n}: f32 = ${wf(v)};`), CU = (n, v) => L.push(`const ${n}: u32 = ${v >>> 0}u;`), CI = (n, v) => L.push(`const ${n}: i32 = ${v | 0};`);
@@ -398,6 +421,7 @@ export function wgslConstants(STL, WL, extra = {}) {
   for (const [n, o] of Object.entries(STL.offs)) CU('O_' + n, o);
   for (const [n, o] of Object.entries(WL.offs)) CU('W_' + n, o);
   CU('NFP', STL.nFp);
+  L.push(wildWGSL());
   for (const [k, v] of Object.entries(extra.consts || {})) typeof v === 'number' ? C(k, v) : null;
   return L.join('\n');
 }

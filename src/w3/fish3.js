@@ -2871,15 +2871,19 @@ export class Fish3 {
   }
   // each step: each wildlife's demand now (g/s: its day's fish need × its activity by the light, its daily mean 1), the fish it can reach
   // (Σ accessibility × mass, followed fish and the young), and its per-fish hazard per unit of accessibility, ρ = D / (A + K)
-  _wildPrep() {
-    const e = this.env, yf = e.yearFrac(), sun = e.sun, li = sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2, R = this._wRho || (this._wRho = new Float64Array(WILDK.length));
-    const ice = e.ice, A = this._wA || (this._wA = new Float64Array(WILDK.length)); A.fill(0); R.fill(0);
-    const D = this._wD || (this._wD = new Float64Array(WILDK.length)); let any = false;
+  // each wildlife's demand now (g/s; the GPU host's too: gpufish block → GL)
+  wildDemand(D = this._wD || (this._wD = new Float64Array(WILDK.length))) {
+    const e = this.env, yf = e.yearFrac(), sun = e.sun, li = sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2;
     for (let w = 0; w < WILDK.length; w++) {
       const d = WILD3[WILDK[w]], mean = WILD_HOURS[0] * d.act[0] + WILD_HOURS[1] * d.act[1] + WILD_HOURS[2] * d.act[2];
-      D[w] = mean > 0 ? this._wildNeed(WILDK[w], yf) * d.act[li] / mean / DAY : 0; if (D[w] > 0) any = true;
+      D[w] = mean > 0 ? this._wildNeed(WILDK[w], yf) * d.act[li] / mean / DAY : 0;
     }
-    if (!any) return;
+    return D;
+  }
+  _wildPrep() {
+    const e = this.env, R = this._wRho || (this._wRho = new Float64Array(WILDK.length));
+    const ice = e.ice, A = this._wA || (this._wA = new Float64Array(WILDK.length)); A.fill(0); R.fill(0);
+    const D = this.wildDemand(); if (!D.some(v => v > 0)) return;
     for (const a of this.fish) { if (!a.alive || a.c < 0) continue; const ic = ice[a.c];
       for (let w = 0; w < WILDK.length; w++) if (D[w] > 0) { const v = this._wildV(WILDK[w], a.s.key, a.L, a.z, a.bed, a.cover, ic); if (v > 0) A[w] += v * a.W * a.n; } }
     for (const q of this.yoy) { if (!q.alive || q.c < 0) continue; const ic = ice[q.c];

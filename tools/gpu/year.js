@@ -37,7 +37,8 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 // ?cfg.BLOCK.KEY=v: any number or switch of config.js's blocks (e.g. cfg.PHYTO.PER_CAPITA=true), set before the lakes are built
 { const C = await import('../../src/config.js');
   for (const [k, v] of qs) if (k.startsWith('cfg.')) { const [, blk, key] = k.split('.'), o = C[blk]; if (o && key in o) o[key] = v === 'true' ? true : v === 'false' ? false : +v; } }
-const NK = KEYS3.length, NCAUSE = 7, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded'];
+const NK = KEYS3.length, NCAUSE = 8, CAUSES = ['starve', 'heat', 'hypoxia', 'other', 'old', 'eaten', 'stranded', 'wild'];
+const { WILDK } = await import('../../src/w3/fish3.js');   // (E4: the wildlife's tallies — T_WILD pairs 1888 + w·NK + k, T_WILDG 1988 + w, T_YWILD 1998 + k)
 const T_KILLS = 96, T_DIED = 224, T_SPAWNS = 412, T_RECRUITS = 460, T_FOODK = 512, NFOODK = 8;   // (tally pairs: wgsl.js's word offsets / 2)
 const FOODS = ['fish', 'young', 'bed', 'weeds', 'cray', 'surface', 'zoo', 'mud'], DIET = qs.get('diet') !== '0';
 const KBY = (qs.get('kby') || 'perch,whiteperch,sunfish,redbreast,fallfish,killifish,catfish,dace').split(','), YBY = (qs.get('yby') || 'pike,bass,killifish,sunfish,perch,whiteperch').split(',');   // (the review's defaults: docs/review/PLAN.md item 1)
@@ -75,14 +76,14 @@ for (const sd of SEEDS) {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });
       const sp = (st0.spawns[k] || 0) + tl[T_SPAWNS + q] / 1e6;
-      say(`   ${k.padEnd(10)} ${(r.n / Math.max(1, r0.n)).toFixed(3)}× ${String(Math.round(r.n)).padStart(7)} fish ${r.kgHa.toFixed(1).padStart(5)} kg/ha p ${r.p.toFixed(2)}${DIET ? ` K ${r.K.toFixed(2)}` : ''} ${r.L.toFixed(1)} cm · young ${(r.yoyN / 1000).toFixed(0)}k @ ${r.yoyL.toFixed(1)} cm · spawnings ${Math.round(sp)} · starved ${Math.round(died.starve)} eaten ${Math.round(died.eaten)} other ${Math.round(died.other + died.old + died.heat + died.hypoxia)} · recruits ${Math.round((st0.recruits[k] || 0) + tl[T_RECRUITS + q] / 1e6)}`);
+      say(`   ${k.padEnd(10)} ${(r.n / Math.max(1, r0.n)).toFixed(3)}× ${String(Math.round(r.n)).padStart(7)} fish ${r.kgHa.toFixed(1).padStart(5)} kg/ha p ${r.p.toFixed(2)}${DIET ? ` K ${r.K.toFixed(2)}` : ''} ${r.L.toFixed(1)} cm · young ${(r.yoyN / 1000).toFixed(0)}k @ ${r.yoyL.toFixed(1)} cm · spawnings ${Math.round(sp)} · starved ${Math.round(died.starve)} eaten ${Math.round(died.eaten)}${died.wild >= 0.5 ? ` wildlife ${Math.round(died.wild)}` : ''} other ${Math.round(died.other + died.old + died.heat + died.hypoxia)} · recruits ${Math.round((st0.recruits[k] || 0) + tl[T_RECRUITS + q] / 1e6)}`);
       if (DIET && tlPrev) {
         const g = FOODS.map((f, j) => tl[T_FOODK + q * NFOODK + j] - tlPrev[T_FOODK + q * NFOODK + j]), tot = g.reduce((a, b) => a + b, 0) / 1e6;
         if (tot > 0) say(`      diet ${(tot / 1000).toFixed(0)} kg: ` + FOODS.map((f, j) => [f, g[j] / 1e6 / tot]).filter(x => x[1] >= 0.005).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' · '));
         { const y = dietYr[k] || (dietYr[k] = FOODS.map(() => 0)); g.forEach((v, j) => { y[j] += v / 1e6; }); }   // (the year's, by food)
         // the young's losses since the last report, by fate (wgsl.js FRY_*), as a share of the young alive then
-        const fd = j => j === 7 ? (tl[910 + q] - tlPrev[910 + q]) / 1e6 : (tl[320 + q * 7 + j] - tlPrev[320 + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);   // (7: capped — T_YCAP, pairs 910 + k)
-        if (y0 > 1000) say(`      young's fates (of ${(y0 / 1e3).toFixed(0)}k): ` + [['natural', 0], ['starved', 1], ['heat', 2], ['hypoxia', 3], ['eaten', 4], ['recruited', 5], ['capped', 7]].map(([f, j]) => [f, fd(j) / y0]).filter(x => x[1] >= 0.001).map(([f, v]) => `${f} ${(100 * v).toFixed(1)}%`).join(' · '));
+        const fd = j => j === 8 ? (tl[1998 + q] - tlPrev[1998 + q]) / 1e6 : j === 7 ? (tl[910 + q] - tlPrev[910 + q]) / 1e6 : (tl[320 + q * 7 + j] - tlPrev[320 + q * 7 + j]) / 1e6, y0 = (lastYoy[k] || 0) + fd(6);   // (7: capped — T_YCAP, pairs 910 + k)
+        if (y0 > 1000) say(`      young's fates (of ${(y0 / 1e3).toFixed(0)}k): ` + [['natural', 0], ['starved', 1], ['heat', 2], ['hypoxia', 3], ['eaten', 4], ['wildlife', 8], ['recruited', 5], ['capped', 7]].map(([f, j]) => [f, fd(j) / y0]).filter(x => x[1] >= 0.001).map(([f, v]) => `${f} ${(100 * v).toFixed(1)}%`).join(' · '));
       }
     });
     tlPrev = tl; KEYS3.forEach(k => { lastYoy[k] = c[k].yoyN; }); if (DIET) await G.resetIntake();
@@ -159,6 +160,10 @@ for (const sd of SEEDS) {
       const parts = KEYS3.map((k, q) => { const v = [0, 1, 2, 3].map(c => D(at + q * 4 + c) / 1e6), t = v.reduce((a, b) => a + b, 0); return t >= 1 ? `${k} ${Math.round(t)} (` + ['<10', '10-20', '20-30', '30+'].map((c, j) => [c, v[j] / t]).filter(x => x[1] >= 0.01).map(([c, x]) => `${c} ${(100 * x).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean);
       if (parts.length) say(`${tag}: ` + parts.join(' · '));
     }
+    // THE WILDLIFE'S TAKE (E4, F3.WILD): each wildlife's kg of fish in the period, and the fish it took by species (followed and young)
+    { const parts = WILDK.map((w, r) => { const g = D(1988 + r) / 1e6; if (!(g > 0)) return null; const by = KEYS3.map((k, q) => [k, D(1888 + r * NK + q) / 1e6]).filter(x => x[1] >= 1).sort((a, b) => b[1] - a[1]);
+        return `${w} ${(g / 1e3).toFixed(0)} kg (` + by.slice(0, 5).map(([k, n]) => `${k} ${n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : Math.round(n)}`).join(' ') + ')'; }).filter(Boolean);
+      if (parts.length) say("the period's wildlife take: " + parts.join(' · ')); }
     // who ate the young: the followed fish (T_YKILLS: pairs 608 + pred·NK + prey) and the young piscivores' schools (729 + …)
     for (const [tag, at] of [['followed fish', 608], ['young schools', 729]]) {
       const yk = []; KEYS3.forEach((kp, p) => KEYS3.forEach((kq, q) => { const v = D(at + p * NK + q) / 1e6; if (v >= 1) yk.push([`${kp}>${kq}`, v]); }));
@@ -176,9 +181,9 @@ for (const sd of SEEDS) {
     // the young's diet over the period by species (T_YFOODK: pairs 850 + k·5 + kind)
     say("the period's young's diet: " + KEYS3.map((k, q) => { const g = [0, 1, 2, 3, 4].map(j => D(850 + q * 5 + j) / 1e6), t = g.reduce((a, b) => a + b, 0); return t > 1000 ? `${k} ${(t / 1e3).toFixed(0)} kg (` + ['young fish', 'zoo', 'weeds', 'bed', 'mud'].map((f, j) => [f, g[j] / t]).filter(x => x[1] >= 0.01).map(([f, v]) => `${f} ${(100 * v).toFixed(0)}%`).join(' ') + ')' : null; }).filter(Boolean).join(' · '));
     // the young by species: hatched in the period and the period's fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
-    const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited', , 'capped'], T_FRY = 320;
-    const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched', 'capped'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
-    say("the period's young (hatched → the period's fates): " + KEYS3.map((k, q) => { const f0 = base ? {} : (st0.fry[k] || {}), v = j => (j === 7 ? D(910 + q) : D(T_FRY + q * 7 + j)) / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
+    const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited', , 'capped', 'wildlife'], T_FRY = 320;
+    const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched', 'capped', 'wild'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
+    say("the period's young (hatched → the period's fates): " + KEYS3.map((k, q) => { const f0 = base ? {} : (st0.fry[k] || {}), v = j => (j === 8 ? D(1998 + q) : j === 7 ? D(910 + q) : D(T_FRY + q * 7 + j)) / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
   };
   for (let day = 1; day <= DAYS; day++) {
     for (let b = 0; b < PER_DAY; b++) {   // (the water model stepped while the GPU works — ?overlap=0: after, as fish3's runs do)
