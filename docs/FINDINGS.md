@@ -4,6 +4,23 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The young's slow growth is local crowding, not the lake's food or the feeding curve (probes ywp, ywp2; the 1/10 lakes)
+- **What.** The young fish grow at about a third of the field's rate (white perch 0.2–0.35 mm/d in July, 24 mm by late August; field
+  0.67–0.8 mm/d, 53–67 mm). Yet the water they sit in holds 150–250 µg/L of crustaceans in July, at or above Maine's median.
+- **Evidence.**
+  - Their consumption ratio (intake ÷ Cmax) is 0.4–0.68.
+  - Lowering the young's crustacean half-saturation from the package's 60 to the field's 25, or even to an extreme 5, left both intake
+    (~0.56) and growth unchanged.
+  - Instrumenting the take: at 60 the feeding curve allows 66–70 %. At 5 it allows 84–92 %, but then the per-step crop of the
+    catchable plankton in a school's patch (PLANKTON.CROP 0.3) binds in 35–84 % of the calls and the take stays at 53–60 %.
+  - The young are supply-limited where they are: too many schools share each patch for each to get its fill. Young alewives are the
+    biggest planktivores (asked 478 kg in three July weeks against white perch's 156; crop-bound in 98 % of the calls).
+- **Why it matters.** Lake-mean zooplankton can look like plenty while the young starve. The density of the young, not the curve,
+  sets their growth. Field late-summer white perch YOY run 2,900–7,200/ha against the sim's ~19,000 (the 1/10 lakes), and field
+  larval mortality may run well above the sim's ~0.04–0.05/day (Hudson cohorts ~0.27/day; no lake value).
+- **Where.** scratchpad probe ywp.mjs, ywp2.mjs (ywp_base/k25/k5.txt); research notes young_white_perch_growth_and_food.md,
+  larval_mortality_and_density_in_lakes.md (pending).
+
 ## 2026-10-22 — Arm AL (Z1 + Z1b + Z2 + FEED_CV + R7): the first year classes recruit, but the white perch's young stall at 13–15 mm and the community still shrinks (GPU, true scale, seed 611)
 - **What.** The re-based plankton, the young's unequal shares and the school-strike fix, against arm AJ (the same seed, without them):
 
