@@ -4,6 +4,31 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — A realistic egg stage exposed a larval mortality fitted to the wrong stage (E3, E2c; probes e2c.mjs, larvz.mjs; arm AF)
+- **The larval background rate had been fitted before the egg stage existed.** FRY.M_LARVA3 (0.04/d at 1 cm) was fitted when a low hatch
+  fraction (sHatch 0.05–0.6) quietly absorbed the early deaths. The egg stage put first-feeders at field hatch rates (3–10× more).
+- **The result was larval hordes:** ~70 perch and ~110 white perch larvae per m² in the 1/10 lakes (67/m² of perch in the true lakes), against field peaks of 0.3–15/m² (exceptional 64–125). They
+  strip the zooplankton, stall at 1–1.6 cm all summer and starve — one path to the year-2 collapse (arm AF: pumpkinseed, redbreast,
+  killifish and dace gone; summer Daphnia 1 µg/L).
+- **The field says the missing killer is fish, not the background** (larval_mortality.md):
+  - in lakes with fish, larvae die at 0.05–0.3/d, 70–90 % of it to fish;
+  - predator-free enclosures give 0.01–0.03/d.
+  - The sim's explicit fish predation on perch larvae ran 0.0003–0.01/d, held down by FRY.LARV_A 0.1 — itself fitted down from 0.3 when
+    "the panfish took 41 % of the suckers' hatch". A compensation calibrated on one outcome had disabled the main larval process.
+- **Count-based larval feeding needs a size limit.**
+  - Larval thresholds are counts (100–250 prey/L), so a µg of rotifers is worth ~12× a µg of crustaceans to a first-feeder.
+  - Applied at every size, it let 8–15-mm fry strip the rotifers to 0.07 µg/L.
+  - The half-saturations must fade to the crustaceans' as the young outgrow the micro-prey. The young Daphnia (0.5–0.8 mm) must stay within
+    a small larva's reach.
+
+## 2026-10-22 — A published parameter table read the wrong way round would have starved the alewives (E8)
+- **The table and the sim used opposite conventions.** Stewart & Binkowski's alewife respiration has swimming speed rising
+  5.78·e^(0.149T) to 22.08 cm/s at 9 °C, then holding. The research note's table put the two terms on the opposite sides of RTL from FB4's
+  convention, as the sim implements it.
+- **Read literally**, alewives would swim ~1 m/s at 20 °C. Their activity multiplier would be e^(0.03·97) ≈ 18, and their respiration
+  above their maximum intake.
+- **The check that caught it:** the two forms meet at RTL (5.78·e^(0.149·9) = 22.07). Continuity tells which side each pair belongs on.
+
 ## 2026-10-21 — The lakes' birds and mammals take ~6 % of the fish a year, and the old "other mortality" was counting them twice (E4; arm AD)
 - **What.** With the nine fish-eating wildlife populations at their Maine densities (loons, herons, kingfishers, ospreys, the eagle
   pair, both mergansers, otter, mink — ECOSYSTEM_BUILD.md E4) taking their daily need from the fish they can reach (Holling II, K a

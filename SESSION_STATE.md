@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22, after the restart — THE NEWEST). RUNNING: the remote GATE of 06a9b8c (scratchpad/gate_eco2.txt, ~45 min);
+▶▶▶ RESUME HERE (2026-10-22 ~1 a.m. EDT — THE NEWEST). COMMITTED since the restart: aec3490 E2c/E2d + E6a; f5dad76 the GPU tally map
+(TP); c0712cf E8 design; 4413110 gate fix (E4 take ≤ 110 %: the reach summed at the block's start); 0f3c858 E8 THE ALEWIFE built (CPU gated
+'alewife' PASS; GPU twin written: k_ale/k_aleFin, GS_ALE→GL[200..207]→F._aleSums, appendAgents for the run, FL_LEAVE, aleT/aleRes, SPF
+aleRun/noRec/uiltY/zooK, y_mort emigration/cold, noRecruit); 807a290 the young alewives' adult-Daphnia rung only at half length.
+GATE of 06a9b8c: 125 PASS 1 FAIL (fixed in 4413110). GATE of 4413110 RUNNING remotely → scratchpad/gate_eco3.txt.
+ARM AF (06a9b8c): 611 done — year 1 76 kg/ha, year 2 54: pumpkinseed/redbreast/killifish/dace → 0, summer Daphnia 1 µg/L (the year-2
+collapse again); the true lakes' perch larvae 434M at day 14 (67/m²), their Z 0.04/d 'natural', 0.0003–0.01 'eaten', stalled at 1–1.6 cm;
+612 running; 613 to be skipped (free the GPU for g1_check of E2c, E6a, the tally map, E8).
+LARVAL MORTALITY RESEARCH DONE (docs/research_notes/Real lake ecology for calibration/larval_mortality.md): field Z in fish lakes 0.05–0.3/d,
+fish 70–90 % of it; predator-free 0.01–0.03; cyclopoids only < 8 mm (k ≈ 0.003 L/d a copepod); typical peaks 0.3–15 larvae/m² (sim 70–160).
+UNCOMMITTED (L1): stageR5 FRY.M_LARVA3 0.04 → 0.02 and FRY.CYC (the cyclopoids on the smallest larvae, both engines; S3 cycRob). NEXT: the
+probe scratchpad/probe/larvz.mjs (Z by cause per species) — L1 vs old vs FRY.LARV_A=1 → lz_L1/lz_old/lz_A1.txt — then set the fish's
+larva-picking (FRY.LARV_A 0.1 is a compensation: '0.3 took 41 % of the suckers' hatch') from its field rate.
+▶▶▶ RESUME HERE (2026-10-22, after the restart). RUNNING: the remote GATE of 06a9b8c (scratchpad/gate_eco2.txt, ~45 min);
 ARM AF on the GPU (scratchpad/queue_af.sh; snapshot snap_af :8145 = 06a9b8c incl. the Hex hatch; 611/612/613 × 730 d → r22AF_<seed>.txt, ~1 h a seed;
 read with yrsum.mjs + yz.mjs + grep "wildlife take|period's eggs"). Arm AE 611 reached day 168 before the restart (r22AE_611.txt: recruits 0 at
 day 168 for pickerel/redbreast/fallfish/killifish — check at the year's turn in AF). UNCOMMITTED, CPU written + GPU written (GPU UNTESTED —

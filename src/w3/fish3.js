@@ -382,7 +382,7 @@ export const S3 = {
   // pumpkinseed (both lakes: MDIFW's 2007 list had it in Upper only and the founders lived there — `only: UPPER` — until MDIFW's 2024
   // chart for Lower listed it too): within ~25-30 m (real) of shore in the weeds, pairs and small groups; rests by the bed in cover at night;
   // near-still below 8 °C (Reeve 2022)
-  sunfish:    { school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
+  sunfish:    { cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
     hab: { day: H([0.3, 2.5], 0, 0.7, 0.7), night: H([0.3, 2.5], 0, 0.15, 0.35), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // yellow perch: schools of 50-200 over open mud and sand offshore by day; at dusk inshore along the bed, resting on it at night
   // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C.
@@ -398,7 +398,7 @@ export const S3 = {
   // the pickerel's winter water, where the field puts perch first in their winter diet (predator_diets_and_prey_mortality.md
   // §1.4); the large perch the deepest water. With every perch in the deepest hole all winter, the pickerel's only winter fish
   // were the killifish and the young bass
-  perch:      { school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
+  perch:      { cycRob: 0.4, school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
     hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) }, habJ: { L: [15, 22], bot: [1.5, 4.0], wbot: [1.5, 3.5] } },
   // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter
   sucker:     { school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: HOME(80, 230), tPref: 18,
@@ -414,12 +414,12 @@ export const S3 = {
   // 750/ha held only for stunted fish — ~47 g, none over 22 cm — while moderately rich water, abundant bass and pickerel and the
   // Washington County lakes' normal-sized white perch point to near-normal growth): founders at 0.85 of the growth curve
   // (~55/35/10 % at 7.5–15 / 15–22 / > 22 cm, ~71 g), was 0.72 at 750/ha
-  whiteperch: { school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
+  whiteperch: { cycRob: 1, school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
     hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) },
     habJ: { L: [8, 12], bot: [2.4, 3.6] } },   // (juveniles inshore: "in lakes at 2.4-3.6 m" — Stanley & Danie 1983; ♀ mature at 9-10 cm)
   // smallmouth bass: solitary, within ~50 m (real) of shore on rock, drop-offs and wood; shallower at night; a few deep wintering
   // sites, nearly still Dec-Mar (Sergio 2026; Suski & Ridgway 2009); ~1 BL/s around the clock in summer (Cooke 2001)
-  bass:       { school: 0, perHa: 40, cruise: 1.0, sprint: 7, sustain: 1.9, turn: 2.4, sense: 4.0, nonVis: 0.25, strikeR: 1.0, cohere: 0, home: HOME(50, 700), tPref: 25,
+  bass:       { cycRob: 0.4, school: 0, perHa: 40, cruise: 1.0, sprint: 7, sustain: 1.9, turn: 2.4, sense: 4.0, nonVis: 0.25, strikeR: 1.0, cohere: 0, home: HOME(50, 700), tPref: 25,
     hab: { day: H([1.5, 4.0], 0, 0.8, 0.8), night: H([1.0, 2.5], 0, 0.2, 0.3), winter: H([2.5, 5.5], 0, 0.0, 0.05) } },
   // chain pickerel: a solitary ambusher in the weeds and their edges, 0.3-1.5 m over the bed; low in cover at night; within ~30 m
   // (real) of shore under the ice, day-active (the ice-fishery's fish); the steepest speed curve (0.5 BL/s sustained, 7.5 burst)
@@ -439,7 +439,7 @@ export const S3 = {
   // killifish, the salmon–walleye group for the cyprinids). Redbreast sunfish: by rock and wood in slow current (≤ 35 cm/s) and
   // vegetated margins, sedentary (two-thirds moved < 100 m), into 15–46-cm shallows above ~17 °C, gathered in deep slow water
   // below 5 °C (COSEWIC); the human's brook fish — half the redbreast near the brook summer in its pools
-  redbreast:  { school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(20, 80), tPref: 27,
+  redbreast:  { cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(20, 80), tPref: 27,
     hab: { day: H([0.3, 2.0], 0, 0.4, 0.6), night: H([0.3, 2.0], 0, 0.15, 0.4), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // fallfish: gravel and cobble near the mouths and the brook's pools, solitary adults, loose juvenile shoals; densest near
   // flowing water (EMAP 9–23 % of adults in lakes with streams; Maine rivers 50–200 a km) — founders weighted to the brook's
@@ -463,10 +463,10 @@ export const S3 = {
   dace:       { school: 0, perM2: 0.8, brookRes: true, brookYoy: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 24 * GEO.BROOK_SCALE, tPref: 21,
     hab: { day: H([0.15, 0.5], 0, 0.1, 0.8), night: H([0.15, 0.5], 0, 0.05, 0.2), winter: H([0.8, 1.2], 0, 0.05, 0.2) } },
   // (E8) sea-run alewife: pelagic schools — offshore and lower in the column by day, up and inshore at night (sea_run_alewife.md); none
-  // founded — they come in on the run (config ALEWIFE) — and their young never recruit (noRecruit); the young's zooplankton ladder at
-  // half their length (zooLadderK: no prey over 1 mm until 25–30 mm); the young's UILT is theirs (uiltY: CTO 24, CTM 26, CTL 29; the
+  // founded — they come in on the run (config ALEWIFE) — and their young never recruit (noRecruit); the young's ladder's adult-Daphnia
+  // rung at half their length (zooLadderK: no prey over 1 mm until 25–30 mm); the young's UILT is theirs (uiltY: CTO 24, CTM 26, CTL 29; the
   // adults' 23.5 °C would kill them in July) [speeds, home: inf — a clupeid cruiser]
-  alewife:    { school: 300, perHa: 0, run: true, noRecruit: true, zooLadderK: 0.5, uiltY: 30, cruise: 1.2, sprint: 15, sustain: 3.0, turn: 2.6, sense: 3.0, nonVis: 0.3, strikeR: 0, cohere: 0, home: HOME(200, 600), tPref: 20,
+  alewife:    { cycRob: 1, school: 300, perHa: 0, run: true, noRecruit: true, zooLadderK: 0.5, uiltY: 30, cruise: 1.2, sprint: 15, sustain: 3.0, turn: 2.6, sense: 3.0, nonVis: 0.3, strikeR: 0, cohere: 0, home: HOME(200, 600), tPref: 20,
     hab: { day: H([2.0, 5.5], 0, 0.8, 0.6), night: H([0.5, 3.0], 1, 0.4, 0.6), winter: H([3.0, 5.5], 0, 0.5, 0.3) } },
 };
 // MOVING BETWEEN THE LAKES (F3.ROAM_L; movement_between_lakes.md's starting values, [inf]): settle — the chance a year that a
@@ -547,6 +547,7 @@ const PIKE_JUV = (() => { const a = SP.pike.bio; return prepBio({ ...a, CA: a.CA
 const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER0.K.whiteperch, sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
+const M_LARVA30 = FRY.M_LARVA3;   // (stageR5 L1 sets it — restored when off)
 const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
 // (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
 // rotifers, small cladocerans), u its weight in the count response (catch / the class's half-saturation; the copepods' nauplii at K_NAUP, the
@@ -731,6 +732,10 @@ export function stageR5(on = true) {
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
   WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
   ALEWIFE.ON = on ? 1 : 0;   // (E8: the sea-run alewives — config ALEWIFE)
+  // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
+  // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:
+  // perch Z 0.046 → 0.029) while the fish take 0.003/d of them against the field's 0.04–0.2 — one compensation would go, its gap stay
+  FRY.CYC = on ? 1 : 0; FRY.M_LARVA3 = M_LARVA30;
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
@@ -2695,7 +2700,9 @@ export class Fish3 {
     // MORTALITY (world.js): the larval critical period (∝ 1/length, fading by ~3 cm), then the juveniles' predation with
     // its density compensation (FRY.JUV_*), both slower in cold water; the species' size-scaled M; starvation; heat; hypoxia
     const o2L = lethalO2(sp.o2Lethal / ENV.O2_MGL, (sp.o2Ice ?? 0) / ENV.O2_MGL, T), lf = Math.exp(-((q.L / FRY.LARVA_L) ** 2));
-    const hN = (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
+    // (FRY.CYC) the cyclopoid copepods on the smallest larvae (natural deaths, by the copepod field where the school is)
+    const hCy = FRY.CYC && q.L < FRY.CYC_L[1] ? FRY.CYC_K * ch.zooC[j] * PLANKTON.UGL * (1 - naupShare(yf)) * FRY.CYC_SHARE / FRY.CYC_W * clamp((FRY.CYC_L[1] - q.L) / (FRY.CYC_L[1] - FRY.CYC_L[0]), 0, 1) * (s.cycRob ?? FRY.CYC_ROB) * Math.min(1, Math.pow(2, (T - 20) / 10)) / DAY : 0;
+    const hN = hCy + (FRY.M_LARVA3 / Math.max(0.3, q.L) * lf + FRY.M_JUV3 * (1 - lf) * (juvD[q.k] + FRY.JUV_D50) / (FRY.JUV_DREF + FRY.JUV_D50) * Math.min(FRY.M_JUV_CLAMP[1], Math.max(FRY.M_JUV_CLAMP[0], Math.pow(q.L / FRY.M_JUV_L, -FRY.M_JUV_B)))) * Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) / DAY
       + sp.M * BIOE.M_OTHER * Math.min(F3.YM_CAP, Math.pow(q.L / sp.Lref, -0.87)) * (F3.YM_COLD ? Math.min(1, Math.pow(FRY.M_JUV_Q10, (T - 20) / 10)) : 1) / YEAR;
     const ul = s.uiltY ?? sp.uilt, hH = T > ul - 2 ? LN2 / (BIOE.UILT_DAYS * DAY) * Math.exp((T - ul) / BIOE.HEAT_STEEP) : 0;   // (S3 uiltY: a young of its own limit)
     const hO = o2 < o2L ? LN2 / (BIOE.HYPOXIA_DAYS * DAY) * Math.exp(BIOE.HYPOXIA_STEEP * (o2L - o2) / o2L) : 0;

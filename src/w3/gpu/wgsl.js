@@ -2024,7 +2024,8 @@ fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k
   acc64(AC_O2 + 2u * j, gy(Y_rO2, q) * st, GW);
   let o2L = lethalO2(spv(k, S_o2LethalS) / ENV_O2_MGL, spv(k, S_o2IceS) / ENV_O2_MGL, T); let lf = exp(-(L / FRY_LARVA_L) * (L / FRY_LARVA_L));
   let jd = GL[G_JUVD + k];
-  let hN = (FRY_M_LARVA3 / max(0.3, L) * lf + FRY_M_JUV3 * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
+  var hCy = 0.0; if (FRY_CYC > 0.5 && L < FRY_CYC_L_1) { hCy = FRY_CYC_K * wd(W_zooC + j) * PLANKTON_UGL * (1.0 - naupShare(U.yf)) * FRY_CYC_SHARE / FRY_CYC_W * clamp((FRY_CYC_L_1 - L) / (FRY_CYC_L_1 - FRY_CYC_L_0), 0.0, 1.0) * spv(k, S_cycRob) * min(1.0, pow(2.0, (T - 20.0) / 10.0)) / DAY; }   // (FRY.CYC: the cyclopoids on the smallest larvae — fish3 _yoyLive)
+  let hN = hCy + (FRY_M_LARVA3 / max(0.3, L) * lf + FRY_M_JUV3 * (1.0 - lf) * (jd + FRY_JUV_D50) / (FRY_JUV_DREF + FRY_JUV_D50) * clamp(pow(L / FRY_M_JUV_L, -FRY_M_JUV_B), FRY_M_JUV_CLAMP_0, FRY_M_JUV_CLAMP_1)) * min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)) / DAY
     + spv(k, S_M) * BIOE_M_OTHER * min(F3_YM_CAP, pow(L / spv(k, S_Lref), -0.87)) * select(1.0, min(1.0, pow(FRY_M_JUV_Q10, (T - 20.0) / 10.0)), F3_YM_COLD > 0.5) / YEAR;   // (F3.YM_COLD, YM_CAP)
   let uilt = spv(k, S_uiltY); var hH = 0.0; if (T > uilt - 2.0) { hH = 0.6931471805599453 / (BIOE_UILT_DAYS * DAY) * exp((T - uilt) / BIOE_HEAT_STEEP); }
   var hO = 0.0; if (o2 < o2L) { hO = 0.6931471805599453 / (BIOE_HYPOXIA_DAYS * DAY) * exp(BIOE_HYPOXIA_STEEP * (o2L - o2) / o2L); }

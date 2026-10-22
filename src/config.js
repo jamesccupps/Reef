@@ -260,6 +260,17 @@ export const FRY = {
   // autumn 0.035/d); recruits of every prey species within ~15 % of the old rule's but for killifish (68k vs 126k) — the surplus the
   // census cap discarded on the old rule now eaten
   M_LARVA3: 0.04, M_JUV3: 0.015,
+  // (L1, CYC — on in fish3 stageR5 with M_LARVA3 0.02) THE FIELD'S LARVAL MORTALITY BY CAUSE (research_notes/Real lake ecology for calibration/
+  // larval_mortality.md §3.1): larvae in lakes with fish die at 0.05–0.3 /d, fish taking 70–90 % of it; predator-free enclosures and
+  // ponds, cyclopoids, dytiscids and odonates still in them, give 0.01–0.03 /d at 9–30 mm (Johnston's walleye 0.012–0.046; Lake St.
+  // George 0.016–0.028) — the background M_LARVA3 ≈ 0.02 at 1 cm (stageR5; its 0.04 was fitted before the egg stage, when sHatch took
+  // the early deaths). CYCLOPOID COPEPODS kill only the smallest larvae: Z = CYC_K L/d a copepod × the adult and C5 cyclopoids per litre
+  // (the copepod field's non-naupliar biomass × CYC_SHARE / CYC_W µg each) × 1 at ≤ CYC_L[0] cm falling to 0 at CYC_L[1] × the larva's
+  // robustness (S3 cycRob: robust yellow perch and centrarchid larvae 0.3–0.5×, thin white perch 1×; CYC_ROB otherwise) × the cold
+  // (2^((T − 20)/10) below 20 °C [inf]). CYC_K 0.003 (Fabian's lab 0.01 inflated by confinement; Frimpong: observed far below models);
+  // CYC_SHARE: the cyclopoids' share of the copepods' post-naupliar biomass [inf: M. edax ~19 % of the region's crustaceans]; CYC_W:
+  // M. edax 5.5 µg, Diacyclops 4.5, Tropocyclops 1.5 (Hébert et al. 2016)
+  CYC: 0, CYC_K: 0.003, CYC_SHARE: 0.5, CYC_W: 4, CYC_L: [0.4, 0.8], CYC_ROB: 0.7,
   DETECT_L: [0.6, 1.5], // cm: larvae this small are seen 0.2 → 1 (Folkvord & Hunter 1986: 6-mm larvae undetected; Margulies 1989)
   NS: 6,
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …
