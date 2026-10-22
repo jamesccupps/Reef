@@ -202,6 +202,20 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 13:05 EDT — THE NEWEST). GATE GREEN (remote, gate_z2b.txt: 140 PASS, 0 FAIL, 1 known GAP; headless/smoke/ui/serve
+OK) → COMMITTED 4330b60 (Z1b + Z2 + Z2_BURY 0.05), 4b23329 (FEED_CV 0.25 on), 06ee21a (R7 + FINDINGS), PUSHED origin/zoo-field = 06ee21a, BACKUP
+G:/synapse-reef-backups/synapse-reef_20261022_1302_plankton-rebase-forest-render.zip. (A burial bug of mine — a comment swallowing
+`sed[j] -= bury; buried += …` — failed gate_z2 with retention 0.00; fixed before commit; nothing pushed with it.) Also e9805b5: plants3
+_grow 8.6 → ~7.2 ms (in-range table, light only while growing; identical results) — the env-update timing passes again.
+ARM AL seed 611 DONE (FINDINGS): 79 → 44 → 28 kg/ha; FIRST RECRUITS (perch 72k, bullhead 124k, pumpkinseed 6k, bass 2k); edible algae 63–75 %;
+crustaceans ~65 µg/L; WHITE PERCH collapse 10.7 → 2.2 (founding stock eaten in the first summer, 165k by day 112; their young stall at 13–15 mm,
+0 recruits). Seed 613 still running (r22AL_613.txt).
+NEXT — Y4, THE YOUNG WHITE PERCH (research note young_white_perch_growth_and_food.md, 3879bc7): field YOY 25–40 mm on 1 Aug, 40–55 on 1 Sep;
+juvenile crustacean K ~25 µg/L (range 10–60; the package's K_FRY 60); Maine summer crustaceans median 147 µg/L (NE 110; the arms' 30–40 = the
+13th percentile); field late-summer YOY 2.9–7.2k/ha against the sim's ~19–23k/ha (1/10, larvz) and ~111k/ha (true scale, AL mid-July);
+larval Z field median ~0.27/d (Hudson; no lake value) against the sim's ~0.045. Probe larvz_k25 vs larvz_k60 (1/10): K 25 alone barely helps
+(white perch 25 vs 24 mm by early Sept). So the stall is CROWDING: too many young for the food. Find where the excess comes from — the
+founding white perch stock (289,622 fish, 25 kg/ha, mean 13.7 cm), the eggs/hatch, or too-low larval mortality — before changing anything.
 ▶▶▶ RESUME HERE (2026-10-22 ~11:30 EDT — THE NEWEST). ALL THREE AGENTS MERGED: E12b 91f701d, E14 forest 98d8bd3, RENDER 7925423 (every
 animal drawn: wild3view/shallows3view/wild3kit, Wildlife toggle, Find an animal, Out now; fish3 wildEv render-only) + 36976c5 (Find skips
 forest animals deep under the crowns; checked in the preview: a deer at the brook's bank, 36/38 hidden at 07:11, no console errors).
