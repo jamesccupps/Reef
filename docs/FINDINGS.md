@@ -4,6 +4,31 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The white perch's young: every stage at the generous end of the field, compounding (probes eggpipe, ypred, ypred2; the 1/10 lakes; occ-server)
+- **The pipeline (per ha).**
+
+  | Stage | Sim | Field |
+  |---|---|---|
+  | Mature adults | 318 | — |
+  | Eggs laid | 4.2 M (~13,000 per mature fish) | fecundity 20,000–150,000 per female |
+  | Egg stage | 50 % base loss, 23 % eaten, 7 % cold, 0.5 % storm | — |
+  | Eggs → swim-up | 18 % (777,000/ha) | ~6–48 % [inf] |
+  | Swim-up → 20 mm | 8 % | 0.02–0.15 |
+  | End of August | ~19,000/ha | ~100–700 (Oneida, clear water); ~3,000 (eutrophic Lake Erie) |
+
+- **No stage alone is out of range;** together they leave far too many young.
+  - Larval Z 0.055–0.09/d against the field's ~0.1–0.2.
+  - Fish take ~0.03–0.05/d, where L2 was designed to give 0.12–0.16 and the field says fish do 70–90 % of larval deaths.
+  - The young grow slowly in the crowd (local crop, above), so the larval stage lasts ~65 days instead of 30–45.
+- **Why fish take too few.** Every larval request is granted in full (ypred2), and the predators' handling is far from saturated. So
+  the encounter rate itself is low against L2's design. Suspects:
+  - the larvae's refuge in the shallows and weeds (F3.YDEPTH's reach; q.cover);
+  - the weeds' extent since E12b;
+  - the predators' sight and cold (SPIN_SIGHT).
+- **Next.** Rerun L2's own §3.4 check with today's model, term by term.
+- **Where.** scratchpad probe eggpipe.mjs, ypred.mjs, ypred2.mjs (remote --put); research notes larval_mortality_and_density_in_lakes.md,
+  fish_predation_on_larvae.md.
+
 ## 2026-10-22 — The young's slow growth is local crowding, not the lake's food or the feeding curve (probes ywp, ywp2; the 1/10 lakes)
 - **What.** The young fish grow at about a third of the field's rate (white perch 0.2–0.35 mm/d in July, 24 mm by late August; field
   0.67–0.8 mm/d, 53–67 mm). Yet the water they sit in holds 150–250 µg/L of crustaceans in July, at or above Maine's median.
