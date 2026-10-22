@@ -1152,7 +1152,7 @@ if (run('wild')) {
   const sumN = dayNeed(0.4), winN = dayNeed(0.85), loonN = F._wildN('loon', 0.4) / fa;
   let need = 0; const yW0 = Object.values(F.stats.fry).reduce((t, f) => t + (f.wild || 0), 0);
   for (let b = 0; b < 14 * 49; b++) { need += F.wildDemand().reduce((t, v) => t + v, 0) * FB; F.step(FB); e.step(FB); }
-  const took = Object.values(F.stats.wild).reduce((t, o) => t + o.g, 0), byW = Object.entries(F.stats.wild).map(([w, o]) => `${w} ${(o.g / 1000).toFixed(1)}`).join(' ');
+  const took = Object.values(F.stats.wild).reduce((t, o) => t + o.g, 0), tookE = Object.values(F.stats.wildExp).reduce((t, g) => t + g, 0), byW = Object.entries(F.stats.wild).map(([w, o]) => `${w} ${(o.g / 1000).toFixed(1)}`).join(' ');
   const dW = Object.values(F.stats.died).reduce((t, d) => t + (d.wild || 0), 0), yW = Object.values(F.stats.fry).reduce((t, f) => t + (f.wild || 0), 0) - yW0;
   const loonTop = Object.entries((F.stats.wild.loon || { n: {} }).n).sort((a, b) => b[1] - a[1])[0];
   // (E5: the anglers — their daily kill by season on the true lakes, and a July fortnight's kill by species)
@@ -1164,8 +1164,11 @@ if (run('wild')) {
     `${(aSum / 1000).toFixed(2)} kg a day in July, ${(aIce / 1000).toFixed(2)} in January, ${aApr} in April, ${aDec} in December; the fortnight's ${(ang.g / 1000).toFixed(2)} kg (the world's), most taken ${angTop.join(', ')}`);
   check('E4 (F3.WILD): the wildlife at the true lakes\' numbers — ~8.6 loons, a summer\'s day 12–30 kg of fish, the winter\'s (eagles, otter, mink) under 8 kg',
     loonN > 8 && loonN < 9.2 && sumN > 12000 && sumN < 30000 && winN > 0 && winN < 8000, `loons ${loonN.toFixed(1)}; summer ${(sumN / 1000).toFixed(1)} kg a day, winter ${(winN / 1000).toFixed(1)}`);
-  check('E4 (F3.WILD): a late-July fortnight — the wildlife takes 50–110 % of its need from the fish it can reach (its reach summed at the start of each block, both engines: fish moving into reach within a block add a few %; gate of 06a9b8c 2.6 of 2.5 kg), followed fish and the young both',
-    took > 0.5 * need && took <= need * 1.1 && dW > 0 && yW > 0, `took ${(took / 1000).toFixed(1)} of ${(need / 1000).toFixed(1)} kg (${byW}); followed fish ${dW.toFixed(0)}, young ${yW.toFixed(0)}; the loons' most taken ${loonTop ? loonTop[0] : '-'}`);
+  // (judged on the EXPECTED take — the followed fish die whole, and on the 1/10 lakes an eagle's fortnight is ~140 g, less than the one
+  // bass it may take: the realised take swung 97 → 114 % on E12b's weeds with the eagles and ospreys a bass each, 127 → 509 % and
+  // 193 → 305 % of their own need — stats.wildExp, each single fish's wildlife share of its chance of dying, by the competing hazards)
+  check('E4 (F3.WILD): a late-July fortnight — the wildlife\'s expected take is 50–110 % of its need from the fish it can reach (its reach summed at the start of each block, both engines: fish moving into reach within a block add a few %; gate of 06a9b8c 2.6 of 2.5 kg), followed fish and the young both taken',
+    tookE > 0.5 * need && tookE <= need * 1.1 && took > 0 && dW > 0 && yW > 0, `expected ${(tookE / 1000).toFixed(1)} of ${(need / 1000).toFixed(1)} kg, took ${(took / 1000).toFixed(1)} (${byW}); followed fish ${dW.toFixed(0)}, young ${yW.toFixed(0)}; the loons' most taken ${loonTop ? loonTop[0] : '-'}`);
   // (the GPU's copy of the table, layout.js wildWGSL: one case a wildlife, every preference a species the lakes have)
   const src = Lg.wildWGSL(), nCase = (src.match(/case \d+u:/g) || []).length;
   check('E4 on the GPU: the wildlife\'s table is generated from WILD3 itself (one WGSL case a wildlife, the preferences by species index)',

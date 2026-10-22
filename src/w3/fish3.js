@@ -1153,7 +1153,7 @@ export class Fish3 {
     this.fish = []; this.nextId = 1; this.stepNo = 0; this.time = 0;
     this.rises = [];    // this step's RISES — insects taken at the surface (for the renderer): [x, y, length cm, species, id, count]
     this.events = [];   // this step's strikes (for the renderer): [x, y, z, predator id]
-    this.stats = { wild: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {}, eggs3: {} };
+    this.stats = { wild: {}, wildExp: {}, died: {}, eatenBy: {}, food: { zoo: 0, benth: 0, weed: 0, cray: 0, surf: 0, fish: 0, sed: 0, yoy: 0, yZoo: 0, yBenth: 0, yWeed: 0, ySed: 0, yYoy: 0 }, crayBy: {}, intakeBy: {}, kills: 0, eggs: {}, spawns: {}, fry: {}, recruits: {}, eggs3: {} };
     this.stats.ale = { run: 0, arrived: 0, left: 0, spent: 0, yOut: 0, yCold: 0, pIn: 0, nIn: 0, pOut: 0, nOut: 0 };   // (E8: the alewives' run, deaths, emigrants; their N and P in and out, g)
     this.stats.spawnAt = {};
     this.stats.cross = {}; this.stats.settle = {}; this.stats.trips = {}; this.stats.solo = {};
@@ -3014,7 +3014,9 @@ export class Fish3 {
       const lost = a.n * (1 - Math.exp(-hz * dt));
       if (lost > 0) { for (const [c, h] of [['starve', hS], ['heat', hH], ['hypoxia', hO], ['other', hM], ['wild', hWd]]) if (h > 0) this._tallyDeath(s.key, c, lost * h / hz); if (hWd > 0) this._wildTally(s.key, HW, hz, lost, a.W); this.chem.addSedOM(a.jb, lost * a.W * (1 - hWd / hz)); a.n -= lost; }   // (the wildlife's take leaves the lake)
       if (a.n < 1) { a.alive = false; a.cause = cause; this.chem.addSedOM(a.jb, a.n * a.W); a.n = 0; }
-    } else if (hz > 0 && rand() < 1 - Math.exp(-hz * dt)) { if (cause === 'wild') { this._wildTally(s.key, HW, hWd, 1, a.W); a.alive = false; a.cause = 'wild'; this._tallyDeath(s.key, 'wild', 1); a.n = 0; } else this._die(a, cause, 1); }   // (the wildlife's: no body left)
+    } else if (hz > 0) {
+      if (hWd > 0) this._wildExpect(HW, hz, dt, a.W);
+      if (rand() < 1 - Math.exp(-hz * dt)) { if (cause === 'wild') { this._wildTally(s.key, HW, hWd, 1, a.W, false); a.alive = false; a.cause = 'wild'; this._tallyDeath(s.key, 'wild', 1); a.n = 0; } else this._die(a, cause, 1); } }   // (the wildlife's: no body left)
   }
   _die(a, cause, n) { a.alive = false; a.cause = cause; this._tallyDeath(a.s.key, cause, n); this.chem.addSedOM(a.jb, n * a.W); a.n = 0; }
   _tallyDeath(k, cause, n) { const d = this.stats.died; (d[k] || (d[k] = {}))[cause] = (d[k][cause] || 0) + n; }
@@ -3168,8 +3170,15 @@ export class Fish3 {
     for (let w = 0; w < WILDK.length; w++) { const r = R[w] > 0 ? R[w] * this._wildV(WILDK[w], key, L, z, bed, cover, ic) : 0; if (H) H[w] = r; h += r; }
     return h;
   }
-  _wildTally(key, H, h, n, W) {   // n fish of mass W taken by the wildlife, by their shares of the hazard h
-    const t = this.stats.wild; for (let w = 0; w < WILDK.length; w++) if (H[w] > 0) { const k = WILDK[w], o = t[k] || (t[k] = { n: {}, g: 0 }), x = n * H[w] / h; o.n[key] = (o.n[key] || 0) + x; o.g += x * W; }
+  _wildTally(key, H, h, n, W, exp = true) {   // n fish of mass W taken by the wildlife, by their shares of the hazard h (exp: also the expected take)
+    const t = this.stats.wild, te = this.stats.wildExp;
+    for (let w = 0; w < WILDK.length; w++) if (H[w] > 0) { const k = WILDK[w], o = t[k] || (t[k] = { n: {}, g: 0 }), x = n * H[w] / h; o.n[key] = (o.n[key] || 0) + x; o.g += x * W; if (exp) te[k] = (te[k] || 0) + x * W; }
+  }
+  // a single followed fish's EXPECTED take by the wildlife over dt (its death is drawn whole: one bass is several days of an eagle's
+  // need on the 1/10 lakes) — the wildlife's share of its chance of dying, by the competing hazards (stats.wildExp, the gate's E4)
+  _wildExpect(H, hz, dt, W) {
+    const te = this.stats.wildExp, p = (1 - Math.exp(-hz * dt)) * W / hz;
+    for (let w = 0; w < WILDK.length; w++) if (H[w] > 0) { const k = WILDK[w]; te[k] = (te[k] || 0) + p * H[w]; }
   }
   // ---------- schools meet and merge, and split when large ----------
   _schools() {
