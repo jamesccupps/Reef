@@ -49,8 +49,21 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
     with Daphnia keep rotifers through summer.
 - **Note.** The year runner's per-period "young's fates" line had been reading tally slots that the tally map had since moved (fixed).
   The year-end "period's young" line was right.
-- **Next.** A stage-survival audit of the first summer against the field (research: young_first_summer.md): prey densities by habitat,
-  the larvae's habitat by species, growth, survival.
+- **Measured on af3723e** (probe larvz.mjs, 1/10 world, seed 611, from early May):
+
+  | Quantity | Sim | Field (young_first_summer.md §7) |
+  |---|---|---|
+  | Swimming larvae per m² | yellow perch ~50, white perch 26–37, alewife 62 (~150 all, ~50 per m³) | ≲ 10–40 all, ≲ 0.1–5 per m³ a species |
+  | Newly hatched perch, Z | 0.009 a day | sunfish 0.1–0.4 a day in their first days |
+  | Larval Z | 0.04–0.11 a day | 0.05–0.3 a day |
+  | Larval growth | 0.06–0.1 mm a day, pumpkinseed stalled at 5 mm | 0.2–0.5 mm a day; a starving larva dies within days to two weeks, never stalls |
+
+  Pumpkinseed and redbreast young have no shelf limit (S3 yBed), so they follow the zooplankton offshore; the field puts them
+  in the weedy bays. The bed's food starts at 2.5 cm (FRY.BENTH_L); the field's switch is 9–20 mm.
+- **Reading.** Too many larvae survive their first days. They then deplete the small prey and stall at about maintenance instead of
+  dying fast as field larvae do (the critical period), so nothing grows into the safety of size.
+- **Next.** The first days' mortality by mechanism (first-feeding failure, the invertebrates' predation — L1 cyclopoids — and the
+  fish's — L2); the sunfish's weedy-bay habitat; the diet switch at 9–20 mm.
 
 ## 2026-10-22 — With the literature's P forms the lakes turn ultra-oligotrophic: the mesotrophic analogue needs more available P (E9e trial; probe e9e.mjs)
 - **What.** A stream's total P matches the sim's inflow: field ~13 µg/L (8–20), sim ~14 (catchment_P_loads.md). Its forms do not. The
