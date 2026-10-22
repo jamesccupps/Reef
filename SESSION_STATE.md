@@ -192,7 +192,16 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~9:45 p.m. EDT — THE NEWEST; the clock is EDT 9 p.m., not 11). COMMITTED 9ed1d21 (the ecosystem build slice 1:
+▶▶▶ RESUME HERE (2026-10-21 ~10:15 p.m. EDT — THE NEWEST). fbb0751 = the CPU egg stage (EGG3, off). THE GPU TWIN OF E3 IS WRITTEN,
+UNTESTED (this commit): layout.js YOY_FIELDS + dev/eggT0/eggTm/hadGuard, SPF + eForm…eDrop (SP_REC 200), EGG3 consts emitted,
+statsAdd eggs3 from T_EGG3 (word 4096 = pairs 2048 + k·8 + j: laid, swum, base, temp, guard, pred, o2, storm); wgsl.js b_spawnFill lays
+eggs (Y_dev 0, else 2 — NEW SCHOOLS DEFAULT dev 2), y_egg kernel (= fish3 _eggLive; desertion writes A_nt; storms via the uniform
+wx = env.weather, renamed from q3), skips dev < 2 in y_juv, y_move, y_table, y_wildA, s_yMark/yMergeable, c_census, v_drawn;
+gpufish NTALLY 6144, pipeline 'y_egg', encodeYoy runs it when EGG3.ON. With EGG3.ON = 0 nothing changes.
+NEXT (in order): (1) g1_check ?r5=1 with EGG3.ON — add a ?eggs=1 switch (as ?wild=1) and an egg comparison (dev, n, tallies) — fix WGSL
+compile errors if any; (2) year.js: print the period's eggs (T_EGG3); (3) EGG3.ON in stageR5; (4) the remote gate; (5) an arm of the
+whole package (snap.sh + year_cdp, 3 seeds × 2 years). The remote gate of 9ed1d21 (gate_eco1.txt) was green-so-far at w3 'young'.
+▶▶▶ RESUME HERE (2026-10-21 ~9:45 p.m. EDT; the clock is EDT 9 p.m., not 11). COMMITTED 9ed1d21 (the ecosystem build slice 1:
 E1a/E2a/E2b/E9a/E9b/E9c/E10a/E4-on/E13 — below); its REMOTE GATE RUNNING (scratchpad/gate_eco1.txt; 0 FAIL so far). SINCE 9ed1d21:
   • RESALG.DECAY_MUL 0.6 → 1.0 (big cells lose at least as fast: the resistant share 92 % → 84–86 %, field IQR 28–85 %; Daphnia 27–48 µg/L
     midsummer in the 1/10 probe, bacteria 38–51, rotifers 1.4–2.9 — scratchpad/probe/e2r_d10.txt).

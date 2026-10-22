@@ -5,13 +5,13 @@
 import { packAgents, packYoy, packStatics, packWater, packSites, waterLayout, wgslConstants, materialize, statsAdd, readAgent, readYoy, NAF, NYF, YF, NBR, NGN, NG, NGENES, AF, FL } from './layout.js';
 import { UNIFORMS, UNI_FIELDS, CORE_BINDINGS, COMMON, GRID_BINDINGS, GRID, SIM_BINDINGS, TALLY, PRE, LEARN_K, SENSE, BRAIN_K, BOOK, MOVE, FB4, BODY, FEED_K, HAZ, YOY_BINDINGS, YOY, BIRTH_BINDINGS, BIRTH, COMPACT_BINDINGS, COMPACT, SCHOOL_BINDINGS, SCHOOL, VIEW_BINDINGS, VIEW, moduleSource } from './wgsl.js';
 import { F3, KEYS3, NW2_3, HID3, OUT3, WILDK } from '../fish3.js';
-import { FRY, ICE } from '../../config.js';
+import { FRY, ICE, EGG3 } from '../../config.js';
 import { GEO, BODIES } from '../geometry.js';
 import { CLOCK3 } from '../clock3.js';
 
 const ST_ = () => GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC;
 export const HHX = Math.ceil((GEO.XMAX - GEO.X0) / F3.HC), HHY = Math.ceil((GEO.YMAX - GEO.Y0) / F3.HC);
-const NTALLY = 4096;   // tally words (pairs; 1024+ the diagnostics: the diet by species; 2048+ the strikes' encounters)
+const NTALLY = 6144;   // tally words (pairs; 1024+ the diagnostics: the diet by species; 2048+ the strikes' encounters)
 
 export class GpuFish {
   static async device() {
@@ -155,7 +155,7 @@ export class GpuFish {
       ['k_pre', 'k_learn', 'k_sense', 'k_brain', 'k_snap', 'k_sums', 'k_glob', 'k_admit', 'k_move', 'k_body', 'k_feed0', 'k_strike', 'k_strikeWin', 'k_strikeApply',
        'k_fieldReq', 'k_fieldCell', 'k_fieldTake', 'k_fieldApply', 'k_sedReq', 'k_sedCell', 'k_sedTake', 'k_feedEnd', 'k_o2', 'k_hazards', 'k_o2Apply', 'k_wildA', 'k_wildRho']);
     mk(moduleSource(this.consts, YOY_BINDINGS, TALLY, FB4, YOY), [this.L0, this.LY],
-      ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target', 'y_wildA']);
+      ['y_snap', 'y_table', 'k_eatYoyReq', 'k_eatYoyGet', 'k_eatYoyApply', 'y_juv', 'y_juvFin', 'y_move', 'y_feedReq', 'y_zooAcc', 'y_fieldCell', 'y_feedTake', 'y_fieldApply', 'y_preyApply', 'y_mort', 'y_target', 'y_wildA', 'y_egg']);
     mk(moduleSource(this.consts, BIRTH_BINDINGS, TALLY, FB4, BIRTH), [this.L0, this.LB], ['b_mate', 'b_spawn', 'b_spawnWin', 'b_slots', 'b_spawnFill', 'b_recruitWalk', 'b_recruitFill', 'b_count']);
     mk(moduleSource(this.consts, COMPACT_BINDINGS, COMPACT), [this.L0, this.LC], ['c_walk', 'c_gatherA', 'c_gatherY', 'c_census']);
     mk(moduleSource(this.consts, SCHOOL_BINDINGS, TALLY, FB4, SCHOOL), [this.L0, this.LSc], ['s_hist', 's_cut', 's_mark', 's_merge', 's_slots', 's_fill', 's_retire', 's_count', 's_yMark', 's_yMerge']);
@@ -187,7 +187,7 @@ export class GpuFish {
     const yf = e.yearFrac(), YEAR = CLOCK3.YEAR_LEN, l0 = lux0 ?? e.lux, lb = luxB || [l0, e.luxAhead(dt / 2), e.luxAhead(dt)];
     const V = { n: this.n, cap: this.cap, ny: this.ny, ycap: this.ycap, blk: this.blk, seed: this.seed, dtU: Math.round(dt), yr: Math.floor(e.time / YEAR), dt, yf, lux0: l0, luxB0: lb[0], luxB1: lb[1], luxB2: lb[2],
       att: ch.attenuation(), clar: ch.clarity(), sun: e.sun, night: e.isNight() ? 1 : 0, migD: ch._migD, migC: ch._migC, timeD: e.time / 86400, yr0D: Math.floor(e.time / YEAR) * YEAR / 86400,
-      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, iceCut: e.iceCut ?? ICE.LIGHT_CUT, brookD: GEO.brookLevel ?? 1, q3: 0 };
+      siteYr: this.F._siteYr ?? -1, plants: e.plants ? 1 : 0, lit: e.lit ? 1 : 0, siCoord: this.siCoord || 0, siGrid: this.siGrid || 0, siNX: this.siNX || 1, wY: e.lit ? e.lit.wY : 0, iceCut: e.iceCut ?? ICE.LIGHT_CUT, brookD: GEO.brookLevel ?? 1, wx: e.weather };
     UNI_FIELDS.forEach((s, q) => { const [n, t] = s.split(':'); if (t === 'u') u[q] = V[n] >>> 0; else if (t === 'i') i[q] = V[n] | 0; else f[q] = V[n]; });
     this.dev.queue.writeBuffer(this.B.U, 0, buf);
   }
@@ -249,6 +249,7 @@ export class GpuFish {
     const NC = this.env.G.NCELL, a = this.acOff;
     enc.clearBuffer(this.B.ACC, 4 * a.O2, 4 * 2 * NC); enc.clearBuffer(this.B.ACC, 4 * a.SEDADD, 4 * 2 * NC);
     this.encodeY(enc, 'y_juv', 256); this._pass(enc, this.P.y_juvFin, [this.bg0, this.bgY], 64, 64);
+    if (EGG3.ON) this.encodeY(enc, 'y_egg');   // (E3: the clutches on the bed)
     this.encodeY(enc, 'y_move'); this.encodeY(enc, 'y_feedReq'); this.encodeY(enc, 'y_zooAcc');
     this._pass(enc, this.P.y_fieldCell, [this.bg0, this.bgY], NC, 256); this.encodeY(enc, 'y_feedTake'); this._pass(enc, this.P.y_fieldApply, [this.bg0, this.bgY], NC, 256);
     this.encodeY(enc, 'y_preyApply', 256); this.encodeY(enc, 'y_mort'); this._cells(enc, 'k_o2Apply'); this.encodeY(enc, 'y_target');

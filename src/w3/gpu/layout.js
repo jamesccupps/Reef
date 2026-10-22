@@ -10,7 +10,7 @@ import { CLOCK3, TS, DAY3, OLD_S } from '../clock3.js';
 import { A2 } from '../chem3.js';
 import { OXYCAL } from '../../bioenergetics.js';
 import { LIT3 } from '../littoral3.js';
-import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD, WINTER0, winterWindow, winterWindowJE } from '../../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, ICE, FRY, BROOD, WINTER0, EGG3, winterWindow, winterWindowJE } from '../../config.js';
 
 export const NG = genomeLen3(HID3);   // 346 genome weights
 export const NBR = NW2_3 + HID3 + OUT3.length;   // the brain's state an agent: its plastic hidden→output block (60), h (10), o (6)
@@ -45,6 +45,7 @@ const FLAG_OF = [['alive', FL.ALIVE], ['school', FL.SCHOOL], ['mature', FL.MATUR
 export const YOY_FIELDS = [
   ['id', 'u'], ['k', 'u'], ['flags', 'u'], ['gen', 'u'], ['c', 'i'], ['j', 'i'], ['jb', 'i'], ['guard', 'u'], ['gref', 'i'], ['age', 'u'],
   'n', 'x', 'y', 'z', 'tx', 'ty', 'tz', 'bed', 'L', 'W', 'bdep', 'hue', 'tk', 'rO2', 'p', 'cover', 'nx', 'ny', 'hd', 'spotBed',
+  'dev', 'eggT0', 'eggTm', 'hadGuard',   // (E3: the egg stage — fish3 Yoy.dev, eggT0, eggTm, hadGuard)
   // SCRATCH: where it began the block; this tick's water, wants, its requests of each food, what it got, its starvation hazard
   ['sx', 's'], ['sy', 's'], ['sz', 's'], ['feeds', 's'], ['st', 's'], ['yT', 's'], ['yo2', 's'], ['want', 's'], ['got', 's'], ['J', 's'], ['hS', 's'],
   ['qPrey', 'si'], ['qPk', 's'], ['qD', 's'], ['qC', 's'], ['qR', 's'], ['qWs', 's'], ['qWl', 's'], ['qB', 's'], ['qSed', 's'], ['eaten', 's'], ['recruit', 's'], ['wZ', 's'],
@@ -210,6 +211,7 @@ export function statsAdd(st, tl, time = 0) {
     KEYS3.forEach((kq, r) => { const v = tl[96 + q * NK + r] / M; if (v > 0) { const key = `${k}>${kq}`; st.eatenBy[key] = (st.eatenBy[key] || 0) + v; st.kills += v; } });
     const d = st.died[k] || (st.died[k] = {}); T_CAUSES.forEach((c, j) => { const v = tl[224 + q * T_CAUSES.length + j] / M; if (v > 0) d[c] = (d[c] || 0) + v; });
     { const yw = tl[1998 + q] / M; if (yw > 0) st.fry[k].wild = (st.fry[k].wild || 0) + yw; }   // (E4: the young the wildlife took — T_YWILD)
+    { const t = st.eggs3 && (st.eggs3[k] || (st.eggs3[k] = { laid: 0, swum: 0, base: 0, temp: 0, guard: 0, pred: 0, o2: 0, storm: 0 })); if (t) ['laid', 'swum', 'base', 'temp', 'guard', 'pred', 'o2', 'storm'].forEach((c, j) => { t[c] += tl[2048 + q * 8 + j] / M; }); }   // (E3: T_EGG3)
     WILDK.forEach((w, r) => { const v = tl[1888 + r * NK + q] / M; if (v > 0) { const t = st.wild || (st.wild = {}), o = t[w] || (t[w] = { n: {}, g: 0 }); o.n[k] = (o.n[k] || 0) + v; } });   // (T_WILD)
     T_FATES.forEach((c, j) => { st.fry[k][c] += tl[320 + q * 7 + j] / M; }); st.fry[k].capped = (st.fry[k].capped || 0) + tl[910 + q] / M;
     const sp = tl[412 + q] / M; st.eggs[k] += tl[400 + q]; st.spawns[k] += sp; st.recruits[k] += tl[460 + q] / M; st.solo[k] += tl[472 + q] / M;
@@ -233,8 +235,9 @@ export const SPF = ['school', 'perHa', 'perM2', 'cruise', 'sprint', 'sustain', '
   'cMode', 'cT0', 'cT1', 'cR5', 'cWref', 'cB', 'cQ10', 'cMul', 'cQuiet', 'cQa', 'cQb', 'cAdC',
   'yCover', 'yLpisc',   // (the young's weight on cover, fish3 _yoyTarget; the length a young school starts eating other young, _feedYoy)
   'hJL0', 'hJL1', 'hJ0', 'hJ1', 'hJW0', 'hJW1', 'bury', 'schExp', 'wkMin', 'wkMax', 'wjA', 'wjB', 'wjC',
-  'aMax', 'vHunt', 'predCls', 'cs0', 'cs1', 'cs2', 'ppr0', 'act0', 'act1', 'act2', 'shD0', 'shD1', 'shN0', 'shN1', 'shT0', 'shT1', 'g0', 'yBed', 'pGate', 'spineW', 'buryL', 'skW', 'skL', 'skBig', 'spawnEnd', 'insR', 'rockC', 'rockL', 'pprm0', 'pprm1', 'pprm2', 'cmaxL', 'reproA', 'mOther'];   // (mOther: S3 mOther, its adults' unsimulated share of M — BIOE.M_OTHER unless set)   // (reproA: S3 reproA, its gonads' share of its surplus — BIOE.REPRO_ALLOC unless set)   // (cmaxL: S3 cmaxL, its larvae's Cmax multiplier — FRY.CMAX_LARVA unless set)   // (pprm0–2: S3 pprM — the size ratio its capture success was measured at, by predator kind: F3.SIZE_RENORM)   // (rockC/rockL: S3 rockC — the rocky shallows' cover for its fish up to rockL cm)   // (insR: S3 insR, its extra reach for the weeds' and the surface's insects)   // (spawnEnd: S3 spawnEnd, its own spawning season's end yf — 0: SPAWN.SEASON_END)   // (sk*: its cover drive, S3 seek — skW 0: none)   // (buryL: S3 buryL — only the fish up to it bury)   // (spineW: a bullhead's spines in the gape test, S3 spineW)   // (pGate: the hunger gate in proportion to its appetite, S3 pGate)   // (g0: the hunger gate's G0, S3 G0)   // (sh*: its shore band by day, night, twilight in the world's metres — S3 shore; 0: none)   // (F3.STRIKE2: strikes /s at most, its hunting speed, its kind; the prey's capture success by an esocid, a bass, a perch-like predator; its size term's PPR0)   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
-export const SP_REC = 180;   // (≥ SPF.length: room to add fields)
+  'aMax', 'vHunt', 'predCls', 'cs0', 'cs1', 'cs2', 'ppr0', 'act0', 'act1', 'act2', 'shD0', 'shD1', 'shN0', 'shN1', 'shT0', 'shT1', 'g0', 'yBed', 'pGate', 'spineW', 'buryL', 'skW', 'skL', 'skBig', 'spawnEnd', 'insR', 'rockC', 'rockL', 'pprm0', 'pprm1', 'pprm2', 'cmaxL', 'reproA', 'mOther',
+  'eForm', 'eA', 'eB', 'eYolk', 'eYA', 'eYB', 'eHatch', 'eYH', 'eTl0', 'eTl1', 'ePred', 'eO2', 'eGuard', 'eDrop'];   // (E3: the egg stage — config EGG3.sp; eHatch 0: none)   // (mOther: S3 mOther, its adults' unsimulated share of M — BIOE.M_OTHER unless set)   // (reproA: S3 reproA, its gonads' share of its surplus — BIOE.REPRO_ALLOC unless set)   // (cmaxL: S3 cmaxL, its larvae's Cmax multiplier — FRY.CMAX_LARVA unless set)   // (pprm0–2: S3 pprM — the size ratio its capture success was measured at, by predator kind: F3.SIZE_RENORM)   // (rockC/rockL: S3 rockC — the rocky shallows' cover for its fish up to rockL cm)   // (insR: S3 insR, its extra reach for the weeds' and the surface's insects)   // (spawnEnd: S3 spawnEnd, its own spawning season's end yf — 0: SPAWN.SEASON_END)   // (sk*: its cover drive, S3 seek — skW 0: none)   // (buryL: S3 buryL — only the fish up to it bury)   // (spineW: a bullhead's spines in the gape test, S3 spineW)   // (pGate: the hunger gate in proportion to its appetite, S3 pGate)   // (g0: the hunger gate's G0, S3 G0)   // (sh*: its shore band by day, night, twilight in the world's metres — S3 shore; 0: none)   // (F3.STRIKE2: strikes /s at most, its hunting speed, its kind; the prey's capture success by an esocid, a bass, a perch-like predator; its size term's PPR0)   // (hJW: the young's winter band — hJW1 0: the adults')   // (schExp: a predator's school exponent, S3 schoolExp)   // (the young's day band by size, S3 habJ — hJL1 0: none; a burrower's winter cover)
+export const SP_REC = 200;   // (≥ SPF.length: room to add fields)
 if (SPF.length > SP_REC) throw new Error(`layout: ${SPF.length} species fields overflow SP_REC ${SP_REC}`);   // (a silent overflow would write into the next species)
 export const SPO = Object.fromEntries(SPF.map((n, i) => [n, i]));
 const K_I = { sunfish: 5, perch: 1, sucker: 2, catfish: 5, whiteperch: 0.5, bass: 0.003, pike: 0.5, redbreast: 5, fallfish: 1, killifish: 0.5, dace: 1 };   // (fish3.js K_I)
@@ -279,6 +282,8 @@ export function packSpecies() {
       hJL0: s.habJ ? s.habJ.L[0] : 0, hJL1: s.habJ ? s.habJ.L[1] : 0, hJ0: s.habJ ? s.habJ.bot[0] : 0, hJ1: s.habJ ? s.habJ.bot[1] : 0,
       hJW0: s.habJ?.wbot ? s.habJ.wbot[0] : 0, hJW1: s.habJ?.wbot ? s.habJ.wbot[1] : 0, bury: s.bury || 0, schExp: s.schoolExp ?? F3.SCHOOL_EXP,
       wkMin: WINTER0.K[k] ? WINTER0.K[k][0] : 0, wkMax: WINTER0.K[k] ? WINTER0.K[k][1] : 0,
+      ...((E => E ? { eForm: E.form === 'exp' ? 1 : 0, eA: E.a, eB: E.form === 'exp' ? E.b : E.t0, eYolk: E.yolk || 0, eYA: E.yolkA || 0, eYB: E.yolkB || 0, eHatch: E.hatch, eYH: E.yolkHatch ?? EGG3.YOLK_HATCH,
+        eTl0: E.tl[0], eTl1: E.tl[1], ePred: E.pred || 0, eO2: E.o2, eGuard: E.guard ? 1 : 0, eDrop: E.desertDrop ? 1 : 0 } : { eHatch: 0 })(EGG3.sp[k])),   // (E3)
       wjA: F3.WIN_JE && WINTER0.JE[k] ? WINTER0.JE[k][0] : 0, wjB: F3.WIN_JE && WINTER0.JE[k] ? WINTER0.JE[k][1] : 0, wjC: F3.WIN_JE && WINTER0.JE[k] ? WINTER0.JE[k][2] : 0,   // (F3.WIN_JE: its own measured winter)
       aMax: s.aMax, vHunt: s.vHunt, predCls: s.predCls, cs0: s.cs[0], cs1: s.cs[1], cs2: s.cs[2], ppr0: s.ppr0, act0: s.act[0], act1: s.act[1], act2: s.act[2],
       shD0: s.shore ? GEO.SCALE * s.shore.day[0] : 0, shD1: s.shore ? GEO.SCALE * s.shore.day[1] : 0, shN0: s.shore ? GEO.SCALE * s.shore.night[0] : 0, shN1: s.shore ? GEO.SCALE * s.shore.night[1] : 0, shT0: s.shore ? GEO.SCALE * s.shore.tw[0] : 0, shT1: s.shore ? GEO.SCALE * s.shore.tw[1] : 0, g0: s.G0 || 0, yBed: s.yBed || 0, pGate: s.pGate || 0, spineW: s.spineW || 1, buryL: s.buryL || 0, skW: s.seek ? s.seek.w : 0, skL: s.seek ? s.seek.L : 0, skBig: s.seek ? s.seek.big : 0, spawnEnd: s.spawnEnd || 0, insR: s.insR || 0, rockC: s.rockC || 0, rockL: s.rockL || 0, pprm0: s.pprM ? s.pprM[0] : 0, pprm1: s.pprM ? s.pprM[1] : 0, pprm2: s.pprM ? s.pprM[2] : 0, cmaxL: s.cmaxL ?? FRY.CMAX_LARVA, reproA: s.reproA ?? BIOE.REPRO_ALLOC, mOther: s.mOther ?? BIOE.M_OTHER,   // (the first winter's ramp, config WINTER0: 0 none)
@@ -407,7 +412,7 @@ export function wgslConstants(STL, WL, extra = {}) {
   CU('OWN_BROOK', G.ownBrook ? 1 : 0); C('A2', A2);
   // the fish's tunables
   for (const [k, v] of Object.entries(F3)) if (typeof v === 'number') C('F3_' + k, v);
-  for (const [blk, o] of [['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3], ['WINTER0', WINTER0]])
+  for (const [blk, o] of [['EGG3', EGG3], ['BIOE', BIOE], ['PLANKTON', PLANKTON], ['ZOO3', ZOO3], ['BENTHOS', BENTHOS], ['PREY', PREY], ['FEED', FEED], ['LEARN', LEARN], ['BRAIN', BRAIN], ['ACTION', ACTION], ['SPAWN', SPAWN], ['ICE', ICE], ['FRY', FRY], ['BROOD', BROOD], ['LIT3', LIT3], ['WINTER0', WINTER0]])
     for (const [k, v] of Object.entries(o)) { if (typeof v === 'number') C(blk + '_' + k, v); else if (Array.isArray(v) && v.length <= 4 && v.every(x => typeof x === 'number')) v.forEach((x, q) => C(`${blk}_${k}_${q}`, x)); }
   C('WINTER0_ON', WINTER0.ON ? 1 : 0); C('WIN_YF0', winterWindow[0]); C('WIN_YF1', winterWindow[1]); C('WINJE_YF0', winterWindowJE[0]); C('WINJE_YF1', winterWindowJE[1]);
   C('ENV_O2_MGL', ENV.O2_MGL); C('ENV_COLD_PERF_MIN', ENV.COLD_PERF_MIN); C('ENV_HYPOXIA', ENV.HYPOXIA);

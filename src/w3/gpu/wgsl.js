@@ -13,11 +13,11 @@ struct Uni {
   dt: f32, yf: f32, lux0: f32, luxB0: f32, luxB1: f32, luxB2: f32, att: f32, clar: f32,
   sun: f32, night: f32, migD: f32, migC: f32, timeD: f32, yr0D: f32, siteYr: i32, plants: u32,
   lit: u32, siCoord: u32, siGrid: u32, siNX: u32,
-  wY: f32, iceCut: f32, brookD: f32, q3: f32,
+  wY: f32, iceCut: f32, brookD: f32, wx: f32,
 };`;
 // the uniform block's layout for the host (same order; 4 bytes each)
 export const UNI_FIELDS = ['n:u', 'cap:u', 'ny:u', 'ycap:u', 'blk:u', 'seed:u', 'dtU:u', 'yr:i', 'dt', 'yf', 'lux0', 'luxB0', 'luxB1', 'luxB2', 'att', 'clar',
-  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'iceCut', 'brookD', 'q3'];
+  'sun', 'night', 'migD', 'migC', 'timeD', 'yr0D', 'siteYr:i', 'plants:u', 'lit:u', 'siCoord:u', 'siGrid:u', 'siNX:u', 'wY', 'iceCut', 'brookD', 'wx'];
 
 export const CORE_BINDINGS = /* wgsl */`
 @group(0) @binding(0) var<uniform> U: Uni;
@@ -282,6 +282,7 @@ const G_WD: u32 = 128u; const G_WRHO: u32 = 144u; const GS_WILDA: u32 = 128u;   
 const T_WILD: u32 = 3776u;   // + 2·(w·NK + k): fish (followed and young) taken by each wildlife
 const T_WILDG: u32 = 3976u;  // + 2w: their grams
 const T_YWILD: u32 = 3996u;  // + 2k: the young taken by the wildlife (fish3 stats.fry[k].wild)
+const T_EGG3: u32 = 4096u;   // + 2·(k·8 + j): (E3) the egg stage — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm (fish3 stats.eggs3)
 fn wildH(k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {
   var h = 0.0; for (var w = 0u; w < NWILD; w++) { let r = GL[G_WRHO + w]; if (r > 0.0) { h += r * wildV(w, k, L, z, bed, cover, ice); } } return h;
 }
@@ -1595,7 +1596,7 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
 @compute @workgroup_size(256) fn y_table(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
   syi(Y_yb, q, -1); sy(Y_ya, q, 0.0);
-  if (FRY_DENSITY < 0.5 || !yAlive(q)) { return; }
+  if (FRY_DENSITY < 0.5 || !yAlive(q) || gy(Y_dev, q) < 2.0) { return; }   // (E3: the eggs are no strike's prey)
   let c = gyi(Y_c, q); let n = gy(Y_n, q); if (c < 0 || !(n > 0.0)) { return; }
   var held = false; let gr = gyi(Y_gref, q); if (gr >= 0) { let gi = u32(gr); held = (gau(A_flags, gi) & FL_ALIVE) != 0u && gau(A_id, gi) == gyu(Y_guard, q) && ga(A_nt, gi) > 0.0; }
   let a = n * (1.0 - gy(Y_cover, q)) * select(1.0, 1.0 - BROOD_PROTECT, held); if (!(a > 0.0)) { return; }
@@ -1683,6 +1684,7 @@ fn yReqKA(c: u32, n: f32, L: f32, gape: f32, imax: f32, dt: f32, gMax: f32, pisc
 // ---- the young's density per lake m² by species (their juvenile mortality's compensation: fish3 _juvDens) ----
 @compute @workgroup_size(256) fn y_juv(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q)) { return; }
+  if (gy(Y_dev, q) < 2.0) { return; }   // (E3: not yet swimming)
   let L = gy(Y_L, q); add64(&GS, GS_JUVD + 2u * gyu(Y_k, q), gy(Y_n, q) * (1.0 - exp(-(L / FRY_LARVA_L) * (L / FRY_LARVA_L))) / LAKE_M2, CSCALE);
 }
 @compute @workgroup_size(64) fn y_juvFin(@builtin(local_invocation_id) l: vec3u) {
@@ -1697,7 +1699,7 @@ fn yOkAt(q: u32, x: f32, y: f32, inB: bool) -> bool {
 @compute @workgroup_size(64) fn y_move(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
   sy(Y_feeds, q, 0.0); sy(Y_recruit, q, 0.0);
-  if (!yAlive(q)) { return; }
+  if (!yAlive(q) || gy(Y_dev, q) < 2.0) { return; }   // (E3: eggs lie still and don't feed)
   let k = gyu(Y_k, q); let dt = U.dt;
   syu(Y_age, q, gyu(Y_age, q) + U.dtU); let tk = gy(Y_tk, q) + dt; sy(Y_tk, q, tk);
   // held by its guardian on the nest
@@ -1939,9 +1941,39 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
 // predation with its density compensation, both slower in the cold; the species' size-scaled M; starvation; heat; hypoxia ----
 // THE WILDLIFE'S REACH among the young (fish3 _wildPrep's second loop; the sums → k_wildRho)
 @compute @workgroup_size(128) fn y_wildA(@builtin(global_invocation_id) g: vec3u) {
-  let q = g.x; if (F3_WILD < 0.5 || q >= U.ny || !yAlive(q)) { return; } let c = gyi(Y_c, q); if (c < 0) { return; }
+  let q = g.x; if (F3_WILD < 0.5 || q >= U.ny || !yAlive(q) || gy(Y_dev, q) < 2.0) { return; } let c = gyi(Y_c, q); if (c < 0) { return; }
   let k = gyu(Y_k, q); let L = gy(Y_L, q); let z = gy(Y_z, q); let bed = gy(Y_bed, q); let cv = gy(Y_cover, q); let ice = wd(W_ice + u32(c)); let m = gy(Y_W, q) * gy(Y_n, q);
   for (var w = 0u; w < NWILD; w++) { if (GL[G_WD + w] > 0.0) { let v = wildV(w, k, L, z, bed, cv, ice); if (v > 0.0) { add64(&GS, GS_WILDA + 2u * w, v * m, BSCALE); } } }
+}
+// (E3) THE EGGS AND THE YOLK-SAC LARVAE ON THE BED (fish3 _eggLive): development on the bed's temperature, deaths by cause, the guard
+// kept to swim-up or deserting in the cold; at dev 2 the school swims up
+fn eggRate(k: u32, T: f32) -> f32 { if (spv(k, S_eForm) > 0.5) { return exp(spv(k, S_eB) * T) / spv(k, S_eA); } return select(0.0, (T - spv(k, S_eB)) / spv(k, S_eA), T > spv(k, S_eB)); }
+fn yolkRate(k: u32, T: f32) -> f32 { if (spv(k, S_eYA) > 0.0) { return exp(spv(k, S_eYB) * T) / spv(k, S_eYA); } return eggRate(k, T) / spv(k, S_eYolk); }
+@compute @workgroup_size(64) fn y_egg(@builtin(global_invocation_id) g: vec3u) {
+  let q = g.x; if (q >= U.ny || !yAlive(q) || gy(Y_dev, q) >= 2.0) { return; }
+  let k = gyu(Y_k, q); if (!(spv(k, S_eHatch) > 0.0)) { sy(Y_dev, q, 2.0); return; }
+  let x = gy(Y_x, q); let y = gy(Y_y, q); let z = gy(Y_z, q); let c = colAt(x, y); if (c < 0) { yDie(q); return; }
+  let j = layerCell(u32(c), z); let jb = bedCell(c, gy(Y_bed, q)); syi(Y_c, q, c); syi(Y_j, q, i32(j)); syi(Y_jb, q, jb);
+  let dt = U.dt; let d = dt / DAY; syu(Y_age, q, gyu(Y_age, q) + U.dtU);
+  let T = wd(W_temp + j); let o2 = wd(W_o2 + j) * ENV_O2_MGL;
+  let Tm = gy(Y_eggTm, q) + (T - gy(Y_eggTm, q)) * expm(d); sy(Y_eggTm, q, Tm); if (f32(gyu(Y_age, q)) < DAY) { sy(Y_eggT0, q, Tm); }
+  var guarded = false; let gr = gyi(Y_gref, q);
+  if (gr >= 0) { let gi = u32(gr); if ((gau(A_flags, gi) & FL_ALIVE) != 0u && gau(A_id, gi) == gyu(Y_guard, q) && ga(A_nt, gi) > 0.0) {
+    if (spv(k, S_eGuard) > 0.5 && (Tm <= EGG3_DESERT_T || (spv(k, S_eDrop) > 0.5 && Tm <= gy(Y_eggT0, q) - EGG3_DESERT_DROP))) { sa(A_nt, gi, 0.0); }   // (deserted in the cold)
+    else { guarded = true; if (ga(A_nt, gi) < 2.0 * dt) { sa(A_nt, gi, 2.0 * dt); } } } }   // (kept to swim-up)
+  if (!guarded) { syi(Y_gref, q, -1); syu(Y_guard, q, 0u); }
+  let egg = gy(Y_dev, q) < 1.0; let rate = select(yolkRate(k, T), eggRate(k, T), egg);
+  let hB = -log(select(spv(k, S_eYH), spv(k, S_eHatch), egg)) * rate; let hT = EGG3_THERM_K * (max(0.0, spv(k, S_eTl0) - Tm) + max(0.0, Tm - spv(k, S_eTl1)));
+  let hG = select(0.0, EGG3_UNGUARDED, spv(k, S_eGuard) > 0.5 && gy(Y_hadGuard, q) > 0.5 && !guarded); let hP = select(0.0, -log(1.0 - spv(k, S_ePred)) * rate, egg && spv(k, S_ePred) > 0.0);
+  let hO = select(0.0, EGG3_O2_K * (1.0 - o2 / spv(k, S_eO2)), o2 < spv(k, S_eO2)); let hS = select(0.0, EGG3_STORM_D, U.wx > 2.5 && gy(Y_bed, q) < EGG3_STORM_Z);
+  let h = hB + hT + hG + hP + hO + hS; let n = gy(Y_n, q); let lost = n * expm(h * d);
+  if (lost > 0.0) { let f = lost / h; let b = T_EGG3 + 2u * (k * 8u);
+    add64(&TL, b + 4u, hB * f, TSCALE); add64(&TL, b + 6u, hT * f, TSCALE); add64(&TL, b + 8u, hG * f, TSCALE); add64(&TL, b + 10u, hP * f, TSCALE); add64(&TL, b + 12u, hO * f, TSCALE); add64(&TL, b + 14u, hS * f, TSCALE);
+    if (jb >= 0) { acc64(AC_SEDADD + 2u * u32(jb), lost * gy(Y_W, q), GW); } }
+  let left = n - lost; let dv = gy(Y_dev, q) + rate * d;
+  if (left < 1.0) { sy(Y_n, q, left); yDie(q); return; }
+  sy(Y_n, q, left);
+  if (dv >= 2.0) { sy(Y_dev, q, 2.0); add64(&TL, T_FRY + 2u * (k * NFRY + FRY_HATCHED), left, TSCALE); add64(&TL, T_EGG3 + 2u * (k * 8u) + 2u, left, TSCALE); } else { sy(Y_dev, q, dv); }   // (swim-up)
 }
 @compute @workgroup_size(64) fn y_mort(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny || !yAlive(q) || gy(Y_feeds, q) < 0.5) { return; }
@@ -2168,8 +2200,9 @@ fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
   let x = ga(A_x, i); let y = ga(A_y, i); let bed = ga(A_bed, i); let W = ga(A_W, i); let L = ga(A_L, i);
   var females = 1.0; if (sx == 2u) { females = ga(A_n, i) / 2.0; }
   let eggs = females * spv(k, S_fecA) * pow(L, spv(k, S_fecB)) * clamp(ga(A_gon, i) / (select(spv(k, S_gsiF), gsiOf(k, sx), F3_EGG_SCHOOL > 0.5) * W), 0.0, 1.0);   // (F3.EGG_SCHOOL: a school's own ripe GSI)
-  let larvae = eggs * spv(k, S_sHatch) * hatchMul(k, x, y);
-  add64(&TL, T_EGGS + 2u * k, eggs, 1.0); add64(&TL, T_SPAWNS + 2u * k, 1.0, TSCALE); add64(&TL, T_FRY + 2u * (k * NFRY + FRY_HATCHED), larvae, TSCALE);
+  let egg = EGG3_ON > 0.5 && spv(k, S_eHatch) > 0.0;   // (E3: laid as eggs — the egg stage's own deaths in place of sHatch)
+  let larvae = eggs * select(spv(k, S_sHatch), 1.0, egg) * hatchMul(k, x, y);
+  add64(&TL, T_EGGS + 2u * k, eggs, 1.0); add64(&TL, T_SPAWNS + 2u * k, 1.0, TSCALE); if (egg) { add64(&TL, T_EGG3 + 2u * (k * 8u), larvae, TSCALE); } else { add64(&TL, T_FRY + 2u * (k * NFRY + FRY_HATCHED), larvae, TSCALE); }
   add64(&TL, T_SPAWNBED + 2u * k, bed, TSCALE); if (bodyAt(x, y) == BROOK) { add64(&TL, T_SPAWNBROOK + 2u * k, 1.0, TSCALE); }
   let nz = max(0.05, bed - 0.03); let Lh = spv(k, S_Lhatch);
   for (var f = 0u; f < NYF; f++) { Y[f * U.ycap + q] = 0.0; }
@@ -2179,12 +2212,13 @@ fn hatchMul(k: u32, x: f32, y: f32) -> f32 {
   sy(Y_bed, q, max(0.05, depthAt(x, y))); sy(Y_L, q, Lh); sy(Y_W, q, stdWeight(k, Lh)); sy(Y_bdep, q, Lh * spv(k, S_depthR));
   sy(Y_hue, q, (ga(A_hue, i) + ga(A_hue, b)) / 2.0); sy(Y_tk, q, rnd(nid, 77u, 0u) * F3_YOY_TICK); sy(Y_hd, q, rnd(nid, 77u, 1u) * 6.283185307179586);
   sy(Y_spotBed, q, max(0.12, depthAt(x, y)));
+  sy(Y_dev, q, 2.0); if (egg) { let c0 = colAt(x, y); var T0 = 10.0; if (c0 >= 0) { T0 = wd(W_temp + layerCell(u32(c0), nz)); } sy(Y_dev, q, 0.0); sy(Y_eggT0, q, T0); sy(Y_eggTm, q, T0); }   // (E3)
   for (var e = 0u; e < NG; e++) { let w = select(gn(e, b), gn(e, i), rnd(nid, 78u, e) < 0.5); YG[e * U.ycap + q] = mutW(nid, e, w); }
   for (var e = 0u; e < NGENES; e++) { YG[(NG + e) * U.ycap + q] = mutGene(nid, e, (gn(NG + e, i) + gn(NG + e, b)) * 0.5); }
   // the male keeps the nest; its fry stay by it while he does
   let guard = spv(k, S_guard);
   if (guard > 0.0 && b != i && ga(A_n, b) <= 1.0) {
-    sa(A_nt, b, guard); sa(A_nx, b, x); sa(A_ny, b, y); sa(A_nz, b, nz); syu(Y_guard, q, gau(A_id, b)); syi(Y_gref, q, i32(b)); sy(Y_nx, q, x); sy(Y_ny, q, y);
+    sa(A_nt, b, guard); sa(A_nx, b, x); sa(A_ny, b, y); sa(A_nz, b, nz); syu(Y_guard, q, gau(A_id, b)); syi(Y_gref, q, i32(b)); sy(Y_nx, q, x); sy(Y_ny, q, y); sy(Y_hadGuard, q, 1.0);
     if (spv(k, S_sbFaith) > 0.0) { sa(A_nestX, b, x); sa(A_nestY, b, y); sau(A_flags, b, gau(A_flags, b) | FL_NEST); }
   }
   sa(A_gon, i, 0.0); sa(A_mateCd, i, spv(k, S_mateCdS)); sau(A_flags, i, gau(A_flags, i) & ~FL_RIPE); sa(A_lastSpawnD, i, U.timeD);
@@ -2382,7 +2416,7 @@ fn cadd(k: u32, f: u32, v: f32, scale: f32) {
     }
   }
   if (i < U.ny) {
-    if ((bitcast<u32>(Y[Y_flags * U.ycap + i]) & 1u) != 0u) {
+    if ((bitcast<u32>(Y[Y_flags * U.ycap + i]) & 1u) != 0u && Y[Y_dev * U.ycap + i] >= 2.0) {   // (E3: the eggs apart)
       let k = bitcast<u32>(Y[Y_k * U.ycap + i]); let n = Y[Y_n * U.ycap + i];
       cadd(k, 7u, n, 1e3); cadd(k, 8u, n * Y[Y_W * U.ycap + i], 1e3); cadd(k, 9u, n * Y[Y_L * U.ycap + i], 1e3); cadd(k, 10u, 1.0, 1.0);
     }
@@ -2610,7 +2644,7 @@ fn newAgentS(s: u32, k: u32, id: u32, x: f32, y: f32, age: u32) {
 @compute @workgroup_size(128) fn s_yMark(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
   syu(Y_qPrey, q, NONE);
-  if ((gyu(Y_flags, q) & 1u) == 0u || gyi(Y_gref, q) >= 0) { return; }
+  if ((gyu(Y_flags, q) & 1u) == 0u || gyi(Y_gref, q) >= 0 || Y[Y_dev * U.ycap + q] < 2.0) { return; }
   let x = gy(Y_x, q); let y = gy(Y_y, q); let z = gy(Y_z, q); let k = gyu(Y_k, q); let L = gy(Y_L, q);
   let gx = clamp(i32((x - GX0) / F3_HC), 0, i32(HHX) - 1); let gyy = clamp(i32((y - GY0) / F3_HC), 0, i32(HHY) - 1); let c = u32(gyy) * HHX + u32(gx);
   var rank = 0u; var t = YHS[c];
@@ -2623,7 +2657,7 @@ fn newAgentS(s: u32, k: u32, id: u32, x: f32, y: f32, age: u32) {
     return;
   }
 }
-fn yMergeable(b: u32, k: u32) -> bool { return (gyu(Y_flags, b) & 1u) != 0u && gyi(Y_gref, b) < 0 && gyu(Y_k, b) == k; }
+fn yMergeable(b: u32, k: u32) -> bool { return (gyu(Y_flags, b) & 1u) != 0u && gyi(Y_gref, b) < 0 && gyu(Y_k, b) == k && Y[Y_dev * U.ycap + b] >= 2.0; }
 @compute @workgroup_size(128) fn s_yMerge(@builtin(global_invocation_id) g: vec3u) {
   let q = g.x; if (q >= U.ny) { return; }
   let b = gyu(Y_qPrey, q); if (b == NONE) { return; }
@@ -2672,7 +2706,7 @@ fn gyv(f: u32, q: u32) -> f32 { return Y[f * U.ycap + q]; }
     }
   }
   if (i < U.ny) {
-    if ((bitcast<u32>(gyv(Y_flags, i)) & 1u) != 0u) {
+    if ((bitcast<u32>(gyv(Y_flags, i)) & 1u) != 0u && gyv(Y_dev, i) >= 2.0) {   // (E3: eggs on the bed are not drawn as fish)
       if (VP.selKind == 1u && bitcast<u32>(gyv(Y_id, i)) == VP.selId) { atomicMin(&VO[2], i); }
       let dx = gyv(Y_x, i) - VP.cx; let dy = gyv(Y_y, i) - VP.cy;
       if (dx * dx + dy * dy < VP.r2) {
