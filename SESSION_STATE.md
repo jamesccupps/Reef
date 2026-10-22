@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~4:30 a.m. EDT — THE NEWEST). COMMITTED since f99d216: 859b9ec E6b/E6c1 herps; 2dae305 E6c2 TADPOLES (allometric
+▶▶▶ RESUME HERE (2026-10-22 ~6:30 a.m. EDT — THE NEWEST). COMMITTED af3723e: CHEM3.N_FORM in stageR5 (the inflow's DIN 5 % ammonium —
+its nitrification had taken a third of the winter O₂; 3 seeds' winters now 2.8–4.7 mg/L lake mean, median 3.5); the gate's gap() KIND
+(KNOWN GAPs against the field: reported, counted, not failing) — E12b the weed stands' extent is one (field ~15–17 % of the beds,
+the sim ~50 %: macrophyte_area_cover.md); E8's check by placement; research notes macrophyte_area_cover.md and young_first_summer.md.
+Also committed: af3a584 E5 anglers; 2dae305 E6c2 tadpoles + E9e (off); FINDINGS (the winter's N; zero recruitment; E9e). RUNNING:
+remote GATE of af3723e → gate_eco8.txt; ARM AH (f99d216 — before N_FORM/herps/anglers) seed 611 year 2 (let it finish, then stop).
+NEXT — THE YOUNG'S FIRST SUMMER (zero recruitment; research young_first_summer.md §7 targets): (1) MEASURE the sim's larval standing
+density (field ≲ 0.1–5 /m³ a species, ≲ 10–40 /m² all; the sim ~50–160 /m²) and larval Z (field 0.05–0.3 /d, 70–90 % fish) — find
+where the excess comes from (eggs × hatch × early survival); (2) the young's count-based K (K_ROT 5 / K_NAUP 20 µg/L read ~200/300
+prey/L at the field's masses rotifer 0.025 µg, nauplius 0.067 — field thresholds ~100–250/L); (3) pumpkinseed/redbreast larvae in the
+weedy bays (~7× offshore); (4) the diet switch at 15–20 mm to chironomids/bed (sunfish, bass, pickerel); (5) the rotifers never ~0
+(field p10 ≥ 40/L; Daphnia halve them). Targets: fall lengths smallmouth 55–76 mm, perch 55–75, pumpkinseed 25–35; egg→autumn
+perch 0.01–0.1 %, smallmouth 0.1–5 %; failures per species, never all. Then E12b (weeds), a new arm of HEAD, g1_check for E6c2.
+▶▶▶ RESUME HERE (2026-10-22 ~4:30 a.m. EDT). COMMITTED since f99d216: 859b9ec E6b/E6c1 herps; 2dae305 E6c2 TADPOLES (allometric
 cohorts; the fish eat the green ones with the large weed fauna on both engines) + E9e TRIED and left OFF (CHEM3.LOADS: the field's P forms
 make the lakes ultra-oligotrophic — FINDINGS); af3a584 E5 ANGLERS (WILD3 angler/iceAngler; mOther cut [inf]); 0bd144c docs; and
 year.js's young's-fates line fixed (it read old fixed tally pairs). GATE of f99d216 (gate_eco7.txt): 706+ PASS, 1 FAIL so far —
