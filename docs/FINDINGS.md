@@ -4,6 +4,25 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — Fish eat larvae at the rate they clear zooplankton — and at the sim's larval densities they are swamped (L2; probes larvz.mjs, larvdiag.mjs)
+- **The fish's larva-picking was 3–60× too small per predator** (fish_predation_on_larvae.md), worst for large predators:
+  - the old rule was CLEAR_A·L^0.6 × LARV_A 0.1 × a detectability of 0.2 at 6 mm;
+  - the field's clearance on larvae is about the visual planktivore's clearance on zooplankton, 3.42×10⁻⁷·L(cm)^2.94 m³/s (~L³),
+    × 0.08–0.3 with natural zooplankton about;
+  - small larvae are as catchable as large ones.
+- **Rebuilt on that,** the fish's predation on larvae rose ~5× in a 1/10 June. Eaten Z, per day:
+  - perch 0.003 → 0.015;
+  - white perch about 0.03;
+  - sunfish 0.03–0.05;
+  - pickerel fry 0.07–0.12, against the field's ~0.08 total; the old rule gave 0.02–0.05.
+- **The perch's potential is 5× more than the fish can take.** Their potential Z from the encounter rule is 0.07–0.1, but the predators'
+  appetite takes only a fifth of it:
+  - ~200 larvae/m² of all species meet a 15-cm perch at ~270 a day, ~2 g — its whole Cmax;
+  - so predator swamping holds per-capita Z down while the larvae stay 5–20× the field's typical 0.3–15/m².
+  - The excess sits upstream, in the larvae produced: the adult census × fecundity × egg survival (perch eggs hatch at 0.95 here).
+- **Littoral fry are over-taken.** Bass fry after dispersal are now taken at 0.13–0.18/d against the field's 0.02–0.05. Overlap with
+  rock and nest cover needs the prey's habitat, not only the predator's species.
+
 ## 2026-10-22 — A realistic egg stage exposed a larval mortality fitted to the wrong stage (E3, E2c; probes e2c.mjs, larvz.mjs; arm AF)
 - **The larval background rate had been fitted before the egg stage existed.** FRY.M_LARVA3 (0.04/d at 1 cm) was fitted when a low hatch
   fraction (sHatch 0.05–0.6) quietly absorbed the early deaths. The egg stage put first-feeders at field hatch rates (3–10× more).

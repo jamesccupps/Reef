@@ -250,6 +250,17 @@ export const FRY = {
   DENSITY: 1,
   CLEAR_A: 0.4, CLEAR_B: 0.6,
   WIN_R: 5.3, WIN_E: 6.5, WIN_MIN: 0.04,
+  // (L2, LARV2 — on in fish3 stageR5, with M_LARVA3 0.02) THE FISH'S PREDATION ON LARVAE AT ITS FIELD RATE (research_notes/Real lake ecology
+  // for calibration/fish_predation_on_larvae.md §3): a larva-picker clears larvae at about the rate it clears zooplankton — the visual
+  // planktivore's Cmax = LARV_CMAX[0]·L(cm)^LARV_CMAX[1] m³/s (Sørnes & Aksnes 2004; ~L³: its search radius and speed both grow) × LARV_RHO
+  // with natural zooplankton about (0.08–0.3: anchovy ÷9, Margulies, a pond stickleback 0.74 vs 6.0 m³/d) × the larva's size against it
+  // s(r) (r = larva/predator length: rising to 1 at LARV_R[0], 1 to LARV_R[1], falling to 0 at the species' larvRmax — escape-limited,
+  // 0.30, the stalking sunfishes 0.22) × its detectability (LARV_DET[2] at ≤ LARV_DET[0] cm → 1 at LARV_DET[1]; was 0.2 at 6 mm, against
+  // Cowan & Houde's 3–4-mm larvae taken 100 %) × the colour's cut LARV_COLOUR × the species' foraging overlap with the larvae (S3 larvO —
+  // the note's §3.1 table) × its sight (visual — S3 larvNight: the alewife feeds on them at night too) and cold. Replaces CLEAR_A·L^0.6 ×
+  // LARV_A — 3–60× too small, fitted down when '0.3 took 41 % of the suckers' hatch' (its §3.4 check: Z_fish 0.12–0.16 /d at the sim's
+  // predators, the field's 0.035–0.27)
+  LARV2: 0, LARV_RHO: 0.15, LARV_CMAX: [3.42e-7, 2.94], LARV_R: [0.03, 0.08, 0.30], LARV_DET: [0.5, 0.8, 0.6], LARV_COLOUR: 0.8,
   LARV_A: 0.1,         // × a plankton or insect eater's clearance for the larvae it fits (≤ LARVA_L, ≤ ⅓ its length) — it meets
                        //   them while it feeds on the zooplankton, not searching for fish [inf; calibrated on the year's fates — at 0.3
                        //   the panfish took 41 % of the suckers' hatch and the killifish's, sucker's and redbreast's recruits fell 83–92 %]

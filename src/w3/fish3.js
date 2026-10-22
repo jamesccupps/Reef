@@ -382,7 +382,7 @@ export const S3 = {
   // pumpkinseed (both lakes: MDIFW's 2007 list had it in Upper only and the founders lived there — `only: UPPER` — until MDIFW's 2024
   // chart for Lower listed it too): within ~25-30 m (real) of shore in the weeds, pairs and small groups; rests by the bed in cover at night;
   // near-still below 8 °C (Reeve 2022)
-  sunfish:    { cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
+  sunfish:    { larvO: 0.3, larvRmax: 0.22, cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 9, sustain: 2.5, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(25, 45), tPref: 28,
     hab: { day: H([0.3, 2.5], 0, 0.7, 0.7), night: H([0.3, 2.5], 0, 0.15, 0.35), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // yellow perch: schools of 50-200 over open mud and sand offshore by day; at dusk inshore along the bed, resting on it at night
   // (Imbrock 1996; Hasler & Bardach 1949); the deepest basin in midwinter, active by day under the ice; prefers 18-22 °C.
@@ -398,7 +398,7 @@ export const S3 = {
   // the pickerel's winter water, where the field puts perch first in their winter diet (predator_diets_and_prey_mortality.md
   // §1.4); the large perch the deepest water. With every perch in the deepest hole all winter, the pickerel's only winter fish
   // were the killifish and the young bass
-  perch:      { cycRob: 0.4, school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
+  perch:      { larvO: 0.4, cycRob: 0.4, school: 80, solo: true, perHa: 500, found: 0.8, cruise: 0.75, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.2, strikeR: 0.6, cohere: 0, home: HOME(60, 300), tPref: 20,
     hab: { day: H([3.0, 5.5], 0, 0.7, 0.8), night: H([0.5, 2.5], 0, 0.1, 0.25), winter: H([3.9, 5.5], 0, 0.5, 0.4) }, habJ: { L: [15, 22], bot: [1.5, 4.0], wbot: [1.5, 3.5] } },
   // white sucker: loose groups on gentle flats, deep by day, inshore and active at night; the deep flats in winter
   sucker:     { school: 0, perHa: 70, cruise: 0.75, sprint: 10, sustain: 2.0, turn: 2.0, sense: 2.0, nonVis: 0.6, strikeR: 0, cohere: 0.2, home: HOME(80, 230), tPref: 18,
@@ -414,12 +414,12 @@ export const S3 = {
   // 750/ha held only for stunted fish — ~47 g, none over 22 cm — while moderately rich water, abundant bass and pickerel and the
   // Washington County lakes' normal-sized white perch point to near-normal growth): founders at 0.85 of the growth curve
   // (~55/35/10 % at 7.5–15 / 15–22 / > 22 cm, ~71 g), was 0.72 at 750/ha
-  whiteperch: { cycRob: 1, school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
+  whiteperch: { larvO: 0.5, cycRob: 1, school: 80, solo: true, perHa: 450, found: 0.85, cruise: 1.0, sprint: 13, sustain: 2.6, turn: 2.6, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0, home: HOME(80, 400), tPref: 28,
     hab: { day: H([3.5, 5.5], 0, 1.0, 0.7), night: H([0.5, 1.5], 1, 0.5, 0.6), winter: H([3.9, 5.5], 0, 1.0, 0.5) },
     habJ: { L: [8, 12], bot: [2.4, 3.6] } },   // (juveniles inshore: "in lakes at 2.4-3.6 m" — Stanley & Danie 1983; ♀ mature at 9-10 cm)
   // smallmouth bass: solitary, within ~50 m (real) of shore on rock, drop-offs and wood; shallower at night; a few deep wintering
   // sites, nearly still Dec-Mar (Sergio 2026; Suski & Ridgway 2009); ~1 BL/s around the clock in summer (Cooke 2001)
-  bass:       { cycRob: 0.4, school: 0, perHa: 40, cruise: 1.0, sprint: 7, sustain: 1.9, turn: 2.4, sense: 4.0, nonVis: 0.25, strikeR: 1.0, cohere: 0, home: HOME(50, 700), tPref: 25,
+  bass:       { larvO: 0.05, cycRob: 0.4, school: 0, perHa: 40, cruise: 1.0, sprint: 7, sustain: 1.9, turn: 2.4, sense: 4.0, nonVis: 0.25, strikeR: 1.0, cohere: 0, home: HOME(50, 700), tPref: 25,
     hab: { day: H([1.5, 4.0], 0, 0.8, 0.8), night: H([1.0, 2.5], 0, 0.2, 0.3), winter: H([2.5, 5.5], 0, 0.0, 0.05) } },
   // chain pickerel: a solitary ambusher in the weeds and their edges, 0.3-1.5 m over the bed; low in cover at night; within ~30 m
   // (real) of shore under the ice, day-active (the ice-fishery's fish); the steepest speed curve (0.5 BL/s sustained, 7.5 burst)
@@ -439,17 +439,17 @@ export const S3 = {
   // killifish, the salmon–walleye group for the cyprinids). Redbreast sunfish: by rock and wood in slow current (≤ 35 cm/s) and
   // vegetated margins, sedentary (two-thirds moved < 100 m), into 15–46-cm shallows above ~17 °C, gathered in deep slow water
   // below 5 °C (COSEWIC); the human's brook fish — half the redbreast near the brook summer in its pools
-  redbreast:  { cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(20, 80), tPref: 27,
+  redbreast:  { larvO: 0.3, larvRmax: 0.22, cycRob: 0.4, school: 0, group: [7, 25], perHa: 50, cruise: 0.75, sprint: 8.6, sustain: 2.4, turn: 3.0, sense: 2.5, nonVis: 0.2, strikeR: 0, cohere: 0.2, home: HOME(20, 80), tPref: 27,
     hab: { day: H([0.3, 2.0], 0, 0.4, 0.6), night: H([0.3, 2.0], 0, 0.15, 0.4), winter: H([1.5, 3.5], 0, 0.25, 0.05) } },
   // fallfish: gravel and cobble near the mouths and the brook's pools, solitary adults, loose juvenile shoals; densest near
   // flowing water (EMAP 9–23 % of adults in lakes with streams; Maine rivers 50–200 a km) — founders weighted to the brook's
   // ends (nearBrook m); a visual drift feeder with an evening feeding peak, partly piscivorous above 10 cm
-  fallfish:   { school: 0, group: [12, 20], perHa: 85, nearBrook: 400 * GEO.SCALE, brookYoy: true, cruise: 1.0, sprint: 12, sustain: 2.4, turn: 2.8, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0.15, home: HOME(50, 300), tPref: 22.3,
+  fallfish:   { larvO: 0.2, school: 0, group: [12, 20], perHa: 85, nearBrook: 400 * GEO.SCALE, brookYoy: true, cruise: 1.0, sprint: 12, sustain: 2.4, turn: 2.8, sense: 3.0, nonVis: 0.25, strikeR: 0.5, cohere: 0.15, home: HOME(50, 300), tPref: 22.3,
     hab: { day: H([0.5, 2.5], 0, 0.5, 0.6), night: H([0.5, 2.5], 0, 0.25, 0.4), winter: H([2.0, 4.0], 0, 0.3, 0.2) } },
   // banded killifish: size-sorted shoals of 25–40 near the surface over the plant-covered shelf by day (74–93 % of seine
   // catches ≤ 1.2 m); into deeper rocky water near the bed at night; deeper and quiescent below ~12 °C (COSEWIC 2014). Counted
   // whole from age 1 (minL: the yearlings' spring length)
-  killifish:  { school: 40, perHa: 233, minL: 4, cruise: 1.0, sprint: 12.5, sustain: 3.4, turn: 3.0, sense: 2.0, nonVis: 0.2, strikeR: 0, cohere: 0, home: HOME(30, 60), tPref: 21,
+  killifish:  { larvO: 0.2, school: 40, perHa: 233, minL: 4, cruise: 1.0, sprint: 12.5, sustain: 3.4, turn: 3.0, sense: 2.0, nonVis: 0.2, strikeR: 0, cohere: 0, home: HOME(30, 60), tPref: 21,
     // (stage P2: by day the shelf's shallowest water, 0.1-0.6 m — "often in water under 6 in" (CT DEEP), moving shallower where bass
     // are (Dunlop 1987; Gabora & Colgan 1990), below the pickerel's 0.6-3 m: the refuge that lets them live with pickerel, as Hot
     // Brook's have for a century (research predator_diets_and_prey_mortality.md §5.2). Over the whole shelf, 0.1-1.3 m, the true
@@ -460,13 +460,13 @@ export const S3 = {
   // in July–August, the year's young among them, and 2.2 fish of all kinds — 3–4-pass depletion, Baldigo et al. 2008; at 1.5 from
   // age 1, the summer's recruits took the brook to ~2.7 a m² and grazed its insects to their refuge — the dace starved). (The night in the pools was an inference; there the pickerel took
   // ~430 of ~500 a season — bass in streams hold the pools > 50 cm and push small fish into the shallow riffles: brook_food_web.md)
-  dace:       { school: 0, perM2: 0.8, brookRes: true, brookYoy: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 24 * GEO.BROOK_SCALE, tPref: 21,
+  dace:       { larvO: 0.2, school: 0, perM2: 0.8, brookRes: true, brookYoy: true, minL: 3.5, cruise: 1.0, sprint: 19.4, sustain: 3.9, turn: 3.0, sense: 2.0, nonVis: 0.4, strikeR: 0, cohere: 0.2, home: 24 * GEO.BROOK_SCALE, tPref: 21,
     hab: { day: H([0.15, 0.5], 0, 0.1, 0.8), night: H([0.15, 0.5], 0, 0.05, 0.2), winter: H([0.8, 1.2], 0, 0.05, 0.2) } },
   // (E8) sea-run alewife: pelagic schools — offshore and lower in the column by day, up and inshore at night (sea_run_alewife.md); none
   // founded — they come in on the run (config ALEWIFE) — and their young never recruit (noRecruit); the young's ladder's adult-Daphnia
   // rung at half their length (zooLadderK: no prey over 1 mm until 25–30 mm); the young's UILT is theirs (uiltY: CTO 24, CTM 26, CTL 29; the
   // adults' 23.5 °C would kill them in July) [speeds, home: inf — a clupeid cruiser]
-  alewife:    { cycRob: 1, school: 300, perHa: 0, run: true, noRecruit: true, zooLadderK: 0.5, uiltY: 30, cruise: 1.2, sprint: 15, sustain: 3.0, turn: 2.6, sense: 3.0, nonVis: 0.3, strikeR: 0, cohere: 0, home: HOME(200, 600), tPref: 20,
+  alewife:    { larvO: 0.5, larvNight: 1, cycRob: 1, school: 300, perHa: 0, run: true, noRecruit: true, zooLadderK: 0.5, uiltY: 30, cruise: 1.2, sprint: 15, sustain: 3.0, turn: 2.6, sense: 3.0, nonVis: 0.3, strikeR: 0, cohere: 0, home: HOME(200, 600), tPref: 20,
     hab: { day: H([2.0, 5.5], 0, 0.8, 0.6), night: H([0.5, 3.0], 1, 0.4, 0.6), winter: H([3.0, 5.5], 0, 0.5, 0.3) } },
 };
 // MOVING BETWEEN THE LAKES (F3.ROAM_L; movement_between_lakes.md's starting values, [inf]): settle — the chance a year that a
@@ -547,6 +547,14 @@ const PIKE_JUV = (() => { const a = SP.pike.bio; return prepBio({ ...a, CA: a.CA
 const BIO0 = { wpM: SP.whiteperch.M, wpMaxAge: SP.whiteperch.maxAge, wpK: WINTER0.K.whiteperch, sunfish: [SP.sunfish.bio.RA, SP.sunfish.bioJuv.RA], redbreast: [SP.redbreast.bio.RA, SP.redbreast.bioJuv.RA], fallfish: [SP.fallfish.bio.FA, SP.fallfish.bio.UA], catfishT: SP.catfish.spawnT, catfishJuvW: SP.catfish.juvW, catfishED: SP.catfish.bio.ED };
 // (stageR5 item 31: the settle rates before the package — restored when it is off)
 const SETTLE0 = Object.fromEntries(Object.entries(MOVE3).map(([k, m]) => [k, m.settle]));
+// (FRY.LARV2) a larva-picker of length L (cm), species s: its clearance on larvae, m³/s before its sight and cold (fish_predation_on_larvae.md)
+export const larvVol = (s, L) => FRY.LARV_RHO * FRY.LARV_CMAX[0] * Math.pow(L, FRY.LARV_CMAX[1]) * FRY.LARV_COLOUR * (s.larvO ?? 0);
+// … and its weight on larvae of length Lq: size against it × detectability
+export function larvW(s, L, Lq) {
+  const r = Lq / L, [r0, r1] = FRY.LARV_R, rm = s.larvRmax ?? FRY.LARV_R[2], [d0, d1, dm] = FRY.LARV_DET;
+  const sr = r < r0 ? r / r0 : r <= r1 ? 1 : r < rm ? (rm - r) / (rm - r1) : 0; if (!(sr > 0)) return 0;
+  return sr * (dm + (1 - dm) * clamp((Lq - d0) / (d1 - d0), 0, 1));
+}
 const M_LARVA30 = FRY.M_LARVA3;   // (stageR5 L1 sets it — restored when off)
 const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
 // (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
@@ -735,7 +743,10 @@ export function stageR5(on = true) {
   // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
   // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:
   // perch Z 0.046 → 0.029) while the fish take 0.003/d of them against the field's 0.04–0.2 — one compensation would go, its gap stay
-  FRY.CYC = on ? 1 : 0; FRY.M_LARVA3 = M_LARVA30;
+  FRY.CYC = on ? 1 : 0;
+  // (L2) THE FISH'S PREDATION ON LARVAE AT ITS FIELD RATE (config FRY.LARV2 — fish_predation_on_larvae.md) and with it the field's background
+  // M_LARVA3 0.02 (larval_mortality.md: predator-free enclosures 0.01–0.03 /d; its 0.04 was fitted before the egg stage)
+  FRY.LARV2 = on ? 1 : 0; FRY.M_LARVA3 = on ? 0.02 : M_LARVA30;
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
@@ -2134,11 +2145,11 @@ export class Fish3 {
     // (F3.YENC: the young met through its strikes' volume — RD the strike reach × its sight, as _strike2, × the share of the time it hunts)
     const actY = s.act[this.env.sun > 0.3 ? 0 : this.env.sun > 0.02 ? 1 : 2], rd0 = F3.YENC && s.pisc && a.L >= sp.Lpisc ? s.strikeR * Math.max(0.3, visDay) : 0;
     const encV = rd0 > 0 ? Math.PI * rd0 ** 2 * (F3.ENC_U + s.vHunt) * actY * yEff : 0, hS = F3.YWIN_CS && encV > 0 ? 1 / (actY * yEff * s.aMax) : 0;   // (hS: an attack's share of its hunting time, 1/aMax — F3.YWIN_CS)
-    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR, encV, rd0, hS) || 0; }
+    if (F3.STRIKE2 && FRY.DENSITY && room > 0 && want > got) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; yAsk = this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * (s.larvNight && !p0 ? 1 : visDay), s.preyLR, encV, rd0, hS) || 0; }   // (S3 larvNight: no sight needed — the alewife)
     if (s.pisc && a.L >= sp.Lpisc && a.missCd <= 0 && room - yAsk > 0) { const g = this._strike(a, i, room - yAsk, visDay, sEff * hg, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.fish += g; } }
     // young-of-year: a piscivore works a school of young fish, a plankton eater picks at the larvae it is in
     if (!(F3.STRIKE2 && FRY.DENSITY) && room > 0 && want > got) {
-      if (FRY.DENSITY) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * visDay, s.preyLR); }   // (settled at the step's end: _ySettle)
+      if (FRY.DENSITY) { const p0 = s.pisc && a.L >= sp.Lpisc, pisc = p0 && !rest; this._yReq(a, null, a.c, n, a.L, a.gape, cm * apt * a.W * hg / DAY, dt, Math.min(room, want - got), pisc, !p0 || a.L < 3 * sp.Lpisc, yEff * (s.larvNight && !p0 ? 1 : visDay), s.preyLR); }   // (settled at the step's end: _ySettle)
       else { const g = this._eatYoy(a, room, perf, dt); if (g > 0) { a.gut += g; a.gutE += g * this._preyED; room -= g; got += g; this.stats.food.yoy += g * n; } }
     }
     // THE BED OR THE OPEN WATER: a fish can't search the mud and the open water at once — it spends its foraging time where it
@@ -2522,6 +2533,7 @@ export class Fish3 {
     const T = this._yt; if (!T || c < 0 || !(gMax > 0) || !(imax > 0) || !(eff > 0)) return;
     const NK = KEYS3.length, NS = FRY.NS, ND = T.nd || 1, NB = NK * NS * ND, b0 = c * NB, V = T.vol[c], cls = (p || q).s.predCls, dmH = 0.5 * F3.SHALLOW_K * L; if (!(V > 0)) return;
     const a0 = FRY.CLEAR_A * Math.pow(L * 10, FRY.CLEAR_B) / DAY * eff, aP = encV > 0 ? encV : a0, A = this._yA && this._yA.length >= NB ? this._yA : (this._yA = new Float64Array(NB));   // (aP: the piscivore's volume, a0 the larva-picker's)
+    const ps = (p || q).s, aL = FRY.LARV2 ? larvVol(ps, L) * eff : a0;   // (FRY.LARV2: the larva-picker's own clearance)
     let sA = 0, sAH = 0;
     for (let j = 0; j < NB; j++) {
       A[j] = 0; const av = T.av[b0 + j]; if (!(av > 0)) continue;
@@ -2533,9 +2545,10 @@ export class Fish3 {
           w = att * csOf(ps, cls, r) * (nbY > 1 ? (cls === 1 ? Math.pow(nbY, F3.BASS_SCH) : cls === 2 ? 0.15 : 1) : 1); }   // (its attacks: as larvae by their detectability, at their reaction distance; × the strike rule's capture success)
         else { const R = 1 / r, u = R / FRY.WIN_R * Math.exp(1 - R / FRY.WIN_R); w = Math.pow(u, FRY.WIN_E) * S3[KEYS3[k]].sp.vuln; }
       }
-      if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) wL = FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1);
-      const aW = Math.max(aP * w, a0 * wL) * acc; if (!(aW > 0)) continue;   // (the piscivore's window on its volume, the larvae on the picker's clearance)
-      const aD = aW * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax + (hS > 0 && aP * w >= a0 * wL ? aP * att * acc * av / V * hS : 0);   // (F3.YWIN_CS: its attacks' time)
+      if (FRY.LARV2) { if (larv && Lq <= FRY.LARVA_L) wL = larvW(ps, L, Lq); }
+      else if (larv && w < FRY.LARV_A && Lq <= FRY.LARVA_L && Lq <= L / 3) wL = FRY.LARV_A * clamp(0.2 + 0.8 * (Lq - FRY.DETECT_L[0]) / (FRY.DETECT_L[1] - FRY.DETECT_L[0]), 0.2, 1);
+      const aW = Math.max(aP * w, aL * wL) * acc; if (!(aW > 0)) continue;   // (the piscivore's window on its volume, the larvae on the picker's clearance)
+      const aD = aW * av / V; A[j] = aD; sA += aD; sAH += aD * (T.sW[b0 + j] / av) / imax + (hS > 0 && aP * w >= aL * wL ? aP * att * acc * av / V * hS : 0);   // (F3.YWIN_CS: its attacks' time)
     }
     if (!(sA > 0)) return;
     let K = n * dt * sA / (1 + sAH), g = 0;

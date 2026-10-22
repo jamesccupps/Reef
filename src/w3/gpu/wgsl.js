@@ -1592,14 +1592,24 @@ fn yBin2(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, aP: f32
       w = att * csOf(kq, cls, r) * sch; }   // (F3.YWIN_CS: kp the predator's species; its attacks at their reaction distance)
     else { let R = 1.0 / r; let u = R / FRY_WIN_R * exp(1.0 - R / FRY_WIN_R); w = pow(u, FRY_WIN_E) * spv(kq, S_vuln); }
   }
-  if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { wL = FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); }
+  if (FRY_LARV2 > 0.5) { if (larv && Lq <= FRY_LARVA_L) { wL = larvW(kp, L, Lq); } }   // (FRY.LARV2: fish3 larvW)
+  else if (larv && w < FRY_LARV_A && Lq <= FRY_LARVA_L && Lq <= L / 3.0) { wL = FRY_LARV_A * clamp(0.2 + 0.8 * (Lq - FRY_DETECT_L_0) / (FRY_DETECT_L_1 - FRY_DETECT_L_0), 0.2, 1.0); }
   return vec2f(max(aP * w, aL * wL) * av * acc, select(0.0, aP * att * acc * av, aP * w >= aL * wL));
+}
+// (FRY.LARV2) fish3 larvVol / larvW: a larva-picker's clearance on larvae (m³/s before its sight and cold) and its weight on larvae of length Lq
+fn larvVol(k: u32, L: f32) -> f32 { return FRY_LARV_RHO * FRY_LARV_CMAX_0 * pow(L, FRY_LARV_CMAX_1) * FRY_LARV_COLOUR * spv(k, S_larvO); }
+fn larvW(k: u32, L: f32, Lq: f32) -> f32 {
+  let r = Lq / L; let rm = spv(k, S_larvRmax); var sr = 0.0;
+  if (r < FRY_LARV_R_0) { sr = r / FRY_LARV_R_0; } else if (r <= FRY_LARV_R_1) { sr = 1.0; } else if (r < rm) { sr = (rm - r) / (rm - FRY_LARV_R_1); }
+  if (!(sr > 0.0)) { return 0.0; }
+  return sr * (FRY_LARV_DET_2 + (1.0 - FRY_LARV_DET_2) * clamp((Lq - FRY_LARV_DET_0) / (FRY_LARV_DET_1 - FRY_LARV_DET_0), 0.0, 1.0));
 }
 fn yBinW(b: u32, L: f32, gape: f32, pisc: bool, larv: bool, preyLR: f32, kp: u32) -> f32 { return yBinA(b, L, gape, pisc, larv, preyLR, 1.0, 1.0, kp, 0.0); }
 // a followed fish's volumes for the young (per m³ of its column): (the piscivore's — its strikes' encounter volume under F3.YENC, else the
 // clearance —, the larva-picker's clearance); pf its cold performance, without its sight (the volume's RD carries it)
 fn yVolA(i: u32, k: u32, L: f32, pf: f32, pisc: bool, V: f32) -> vec4f {   // (aP, aL, rd0 — its reaction distance to RD_LREF-cm prey, hS — an attack's time: F3.YWIN_CS)
-  let aL = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * pf * ga(A_visF, i) / V; var aP = aL; var rd0 = 0.0; var hS = 0.0;
+  let a0 = FRY_CLEAR_A * pow(L * 10.0, FRY_CLEAR_B) / DAY * pf * ga(A_visF, i) / V; var aP = a0; var rd0 = 0.0; var hS = 0.0;
+  var aL = a0; if (FRY_LARV2 > 0.5) { aL = larvVol(k, L) * pf * select(ga(A_visF, i), 1.0, spv(k, S_larvNight) > 0.5 && !pisc) / V; }   // (FRY.LARV2: the larva-picker's own clearance; S3 larvNight)
   if (F3_YENC > 0.5 && pisc) { let RD = spv(k, S_strikeR) * max(0.3, ga(A_visF, i)); let act = spv(k, select(select(S_act2, S_act1, U.sun > 0.02), S_act0, U.sun > 0.3)); aP = 3.14159265 * RD * RD * (F3_ENC_U + spv(k, S_vHunt)) * act * pf / V;
     rd0 = RD; if (F3_YWIN_CS > 0.5 && act * pf > 0.0) { hS = 1.0 / (act * pf * spv(k, S_aMax)); } }
   return vec4f(aP, aL, rd0, hS);
