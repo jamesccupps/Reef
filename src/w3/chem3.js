@@ -59,14 +59,18 @@ export const CHEM3 = {
   BED_EXCH: 0.35,
   // BURIAL of the bed's bound P (× SED_P.BURY): the 2-D slice, flushed once a year with little outflow, buried nearly all its
   // load (its burial empties the bound store in ~20 days). Lakes flushed every 2–3 months keep only ~half their P load (the
-  // rest leaves by the outlet — Vollenweider/Kirchner–Dillon retention ~0.4–0.7 at these flushing rates); calibrated so a
-  // year without fish keeps its P inventory (Larsen–Mercier R = 1/(1+√τ): Upper 0.66, Lower 0.72; the model ~0.75)
-  BURY_MUL: 0.15,
+  // rest leaves by the outlet). RETENTION R (buried ÷ in) at these lakes' flushing (τ 0.27 / 0.15 yr, mean depth 3.0 / 2.55 m):
+  // Larsen–Mercier R = 1/(1+√ρ), ρ = 1/τ: 0.34 / 0.28; Kirchner–Dillon 0.54 / 0.49; Nürnberg 1984 0.52 / 0.43; Brett & Benjamin
+  // 2008 0.38 / 0.32 — ~0.3–0.55. (Was 0.15, set to 'Larsen–Mercier 0.66–0.72' — 1/(1+√τ), the formula's complement: the share
+  // that LEAVES; FINDINGS 2026-10-22.) Fitted on the true-scale world's 50-m grid under E9d's weather, no fish (probe bury.mjs, seeds
+  // 403/404): 0.10 → R 0.44 / 0.35 (0.15 → 0.56 / 0.45, 0.07 → 0.35 / 0.27). Grid-dependent: the coarse 100-m grid's bed-touching
+  // cells hold a third of the water (the 50-m grid's a fifth) and bury ~1.5× more at the same value
+  BURY_MUL: 0.10,
   // OXIC RELEASE of the bed's bound P (/s on the 2-D clock at 20 °C, × REL_Q10 per 10 °C): a shallow lake's internal loading is
   // driven by temperature, highest in summer, even over oxic sediment — the mineralisation of the bed's organic P (Søndergaard
   // et al. 2003; Jensen & Andersen 1992) — the redox switch (SED_P.RELEASE) adds to it when the bed goes anoxic. (0: off)
-  // (0.0015: the summer's dissolved P holds up 2–4×, and a year without fish keeps ~two-thirds of its P load: Larsen–Mercier
-  // 0.66–0.72 — the bed's release balancing its binding and burial)
+  // (0.0015: the summer's dissolved P holds up 2–4× — Søndergaard's shallow lakes; the retention it was also once judged by,
+  // 'Larsen–Mercier 0.66–0.72', was the formula's complement: see BURY_MUL)
   REL_OXIC: 0.0015, REL_Q10: 2.5,
   // COLOURED WATER (step 4b): the dissolved colour of a spruce–fir and wetland catchment (30–60 SPU) sets most of the light's
   // attenuation (/m, added to the algae's and the stirred sediment's) — Secchi ~3 m, where the 2-D sim's water read 6–9 m
@@ -147,11 +151,11 @@ export class Chem3 {
       { name: 'phyto', a: this.phyto, in: PHYTO.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'diatom', a: this.diatom, in: DIATOM.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'cyano', a: this.cyano, in: CYANO.START * CHEM3.IN_ALGAE, p: CYANO.P_USE, n: CYANO.N_USE },
-      { name: 'resA', a: this.resA, get in() { return ZOO3.DAPH_LIM ? RESALG.START * CHEM3.IN_ALGAE : 0; }, p: PHYTO.P_USE, n: PHYTO.N_USE },
+      { name: 'resA', a: this.resA, get in() { return ZOO3.DAPH_LIM ? RESALG.START * CHEM3.IN_ALGAE : 0; }, get idle() { return !ZOO3.DAPH_LIM; }, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'dom', a: this.dom, in: CHEM3.IN_DOM, p: NUTRIENT.ORGANIC_P, n: 1 - NUTRIENT.ORGANIC_P },
       { name: 'zooD', a: this.zooD, in: PLANKTON.START_D * CHEM3.IN_ZOO, p: 0, n: 0 }, { name: 'zooC', a: this.zooC, in: PLANKTON.START_C * CHEM3.IN_ZOO, p: 0, n: 0 },
       { name: 'zooR', a: this.zooR, in: PLANKTON.START_R * CHEM3.IN_ZOO, p: 0, n: 0 },
-      { name: 'zooS', a: this.zooS, get in() { return ZOO3.SMALL ? ZOO3.START_S * CHEM3.IN_ZOO : 0; }, p: 0, n: 0 },
+      { name: 'zooS', a: this.zooS, get in() { return ZOO3.SMALL ? ZOO3.START_S * CHEM3.IN_ZOO : 0; }, get idle() { return !ZOO3.SMALL; }, p: 0, n: 0 },   // (idle: off, all zero — not carried, env3 _pack)
       { name: 'bact', a: this.bact, in: ZOO3.BACT_START, p: 0, n: 0 },   // (no N or P of its own, as the zooplankton: the DOM's is remineralised)
     ];
     env.fields.push(...this.tf);

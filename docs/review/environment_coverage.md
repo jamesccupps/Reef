@@ -110,7 +110,7 @@ Every effort estimate includes the GPU port when the item affects fish. The CPU 
 
 | Item | Real | In the sim | Behaves? | Status | Pri |
 |---|---|---|---|---|---|
-| N and P budgets | Closed; P retention (Larsen–Mercier) 0.66–0.72 | `chem3`: ledger; `BED_EXCH` 0.35, `BURY_MUL` 0.15, `REL_OXIC`; retention 0.64–0.75 (gate, 3-seed median) | yes | OK | – |
+| N and P budgets | Closed; P retention ~0.3–0.55 (Larsen–Mercier 0.28–0.34, Kirchner–Dillon 0.49–0.54, Nürnberg 0.43–0.52; the old 0.66–0.72 was the formula's complement) | `chem3`: ledger; `BED_EXCH` 0.35, `BURY_MUL` 0.15, `REL_OXIC`; retention 0.64–0.75 (gate, 3-seed median) | yes | OK | – |
 | External loads | Maine DEP coefficients (kg TP/ha/yr): forest 0.02–0.04, wetland 0.1–0.2, shoreline residential 0.25–2.7, camp roads 2.0, atmosphere 0.16 onto water; pine pollen about 37 mg P/m²/yr after ice-out; 50–80 % of P on 10–15 % of days (storms); snowmelt P mostly particulate | `CHEM3.IN_NUT` and friends: constant concentrations × constant discharge ("to be re-judged with the catchment's real loads (stage D)") | No seasons or storms; no land-use sources (camps, roads, the inlet's swamps) | PARTIAL | P2 (with the hydrograph) |
 | Trophic state in field units | TP 9–12 µg/L, chl 3–5.5 µg/L (analogues); TSI about 37–42 | Abstract 2-D units; no µg/L readout of TP or chl | Can't be checked against field numbers | PARTIAL | P2 (S: diagnostics) |
 | Bed P, organic layer, burial | – | `sedP`, `sedOM`, `benth`, oxic and redox release | yes | OK | – |

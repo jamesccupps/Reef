@@ -192,7 +192,22 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~4 a.m. EDT — THE NEWEST). COMMITTED: 55a53ca E12a (8 near-certain plants; plants 30/30, substrate 20/20); c6d06ec
+▶▶▶ RESUME HERE (2026-10-22 ~2:15 a.m. EDT — THE NEWEST; the "4 a.m." below was ~1:30). ARM AF's YEAR-2 STARVATION FOUND: the lakes' P
+inventory fell to 45 % of the start in 9 months without fish — (1) the inherited 2-D sky chain cycled every ~27 days (10-day rains, 20-day
+droughts, months without rain), so the catchment ran at 0.01–0.08× its mean flow Jul–Feb and the P load fell ~90 %; (2) BURY_MUL was
+calibrated to an INVERTED retention (1/(1+√τ) is the share that leaves; R at these flushing rates 0.28–0.54, not 0.66–0.72). UNCOMMITTED
+IN THE TREE: E9d (WEATHER3.SYN, in stageR5: the front chain CHAIN/DWELL/P_K fitted to Houlton GHCN-D — research note
+houlton_daily_precipitation.md; WET_T the storms' warm air; HBV refit FC 82 LP 0.39 BETA 2.72 K1 0.196 PERC 0.21 K2 0.0048 DDF 4.61;
+gate E9d check + E9b now with SYN); env3 _fAct (idle fields — zooS, resA when off — not carried: the env-update perf check); the gate of
+8063465's 3 FAILs fixed (seedSeason applies spawnP — the founding made 268k sucker young vs 60k; the sucker brook check 0.15 for the
+smaller sample; perf via _fAct); year.js a "water:" line (TP µg/L, edible/resistant algae, P inventory, the period's ledger R, flow);
+FINDINGS E9d. RUNNING: true-world burial scan (probe bury.mjs, HB_WORLD=true, BURY_MUL 0.15/0.10/0.07 × seeds 403/404 × 2 yr →
+scratchpad/probe/buryT_*.txt; on the 1/10 full grid BURY 0.15 already gave R 0.42 — the gate's coarse 100-m grid gives 0.70: calibrate
+on the arms' grid); local W3_ONLY=substrate (w3_substrate.txt). NEXT: pick BURY_MUL (R 0.3–0.55, inventory steady in a normal year),
+fix the retention check's text and bounds, FINDINGS retention entry, commit, remote gate, then an arm of HEAD on the GPU (3 seeds × 2
+yr; arm AG's seeds 612/613 are moot — stop the queue). KNOWN GAPS: December flow ~0.9× vs 1.1–1.4×; inflow P 94 % phosphate (real
+streams mostly particulate/organic); no lake-level routing.
+▶▶▶ RESUME HERE (2026-10-22 ~1:30 a.m. EDT). COMMITTED: 55a53ca E12a (8 near-certain plants; plants 30/30, substrate 20/20); c6d06ec
 the gate's every-species checks skip the run species; 8063465 E3b (prolarvae the fish's prey — EGG3.PROLARVA; perch ytl0 10; sucker hatch
 0.05 + spawnP 0.4; white perch hatch 0.45; the founding spin's zFish; eggs 14/14). GATES: c6d06ec's stopped on a syntax error I made (a
 comment inserted mid-line — fixed in 8063465: ALWAYS node --check after an edit); GATE of 8063465 RUNNING → gate_eco6.txt. ARM AG (9229a90,

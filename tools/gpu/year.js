@@ -17,7 +17,7 @@ const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, KEYS3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
 const { waterOf } = await import('../../src/w3/render3/fishside3.js');
-const { PLANKTON } = await import('../../src/config.js');
+const { PLANKTON, PHYTO, CYANO, NUTRIENT, ALEWIFE } = await import('../../src/config.js');
 const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 // A/B switches on the model's numbers, set before anything is built (each documented where it's defined): ?mjuvb= FRY.M_JUV_B,
 // ?ycover= the young pickerel's weight on cover (fish3 S3.pike.yCover)
@@ -68,11 +68,23 @@ for (const sd of SEEDS) {
     zp0 = chw.zooProd; tz0 = env.time;
     return `D ${(d * U).toFixed(0)} C ${(cz * U).toFixed(0)} R ${(r * U).toFixed(0)}${s > 0 ? ` S ${(s * U).toFixed(0)}` : ''} µg/L, production ${prod.toFixed(3)} g DW/m²/day`;
   };
+  // the lakes' water and P (E9d: arm AF's year-2 starvation was the lakes losing P): the open water's TP (µg/L — the start's water read as
+  // ALEWIFE.TP_UGL), the top metre's edible (green + diatom) and grazing-resistant algae, the P inventory against the start, the period's
+  // ledger (in / out / buried; retention R = buried ÷ in — the field's 0.28–0.54 at these flushing rates), the catchment's flow now
+  const PU = PHYTO.P_USE, OP = NUTRIENT.ORGANIC_P;
+  const wTP = () => { let p = 0, v = 0; for (let j = 0; j < Gw.NCELL; j++) { const q = chw.w[j]; if (!(q > 0)) continue; p += (chw.phos[j] + (chw.phyto[j] + chw.diatom[j] + chw.resA[j]) * PU + chw.cyano[j] * CYANO.P_USE + chw.dom[j] * OP) * q; v += q; } return p / v; };
+  const tp0 = wTP(), inv0 = chw.inventoryP(); let led0 = { ...chw.ledger };
+  const water = () => {
+    let ed = 0, rs = 0, v = 0; for (let j = 0; j < Gw.NCELL; j++) { if (Gw.zMid[j] >= 1) continue; const q = Gw.vol[j]; ed += (chw.phyto[j] + chw.diatom[j]) * q; rs += chw.resA[j] * q; v += q; }
+    const L = chw.ledger, dIn = L.inP - led0.inP, dOut = L.outP - led0.outP, dB = L.buryP - led0.buryP; led0 = { ...L };
+    return `TP ${(ALEWIFE.TP_UGL * wTP() / tp0).toFixed(1)} µg/L · surface algae edible ${(ed / v).toFixed(3)}, resistant ${(rs / v).toFixed(3)} · P inventory ${(100 * chw.inventoryP() / inv0).toFixed(0)} % of the start · the period's P in ${dIn.toFixed(0)} out ${dOut.toFixed(0)} buried ${dB.toFixed(0)} (R ${(dB / Math.max(1e-9, dIn)).toFixed(2)}) · flow ${env.qFac.toFixed(2)}× the mean`;
+  };
   const report = async tag => {
     const c = await G.census(), tl = await G.readTallies(); first = first || c;
     const kg = KEYS3.reduce((t, k) => t + c[k].kgHa, 0), w = waterOf(env), gl = await G.gridLoad();
     say(`== ${tag} · yf ${env.yearFrac().toFixed(3)} · ${((performance.now() - t0) / 60000).toFixed(1)} min (${nB ? (tB / nB).toFixed(1) : '-'} ms a block, the water included) · ${kg.toFixed(0)} kg/ha · Upper surface ${w[1].tS.toFixed(1)} °C, bottom O₂ ${w[1].oB.toFixed(1)} mg/L · zooplankton ${w[1].zoo.toFixed(0)} / ${w[2].zoo.toFixed(0)} µg/L (Upper / Lower) · agents ${G.n} · young schools ${G.ny} · arrays ${G.cap}/${G.ycap}${G.grew ? ` (grown ${G.grew}×)` : ''} · the fullest grid cell ${gl.max} agents (${gl.big} cells > 256)`);
     say(`   plankton: ${plankton()} · surface algae ${w[1].algae.toFixed(3)} / ${w[2].algae.toFixed(3)} · Secchi ${chw.secchi().toFixed(2)} m`);
+    say(`   water: ${water()}`);
     KEYS3.forEach((k, q) => {
       const r = c[k], r0 = first[k], d0 = st0.died[k] || {}, died = {};
       CAUSES.forEach((cs, j) => { died[cs] = (d0[cs] || 0) + tl[T_DIED + q * NCAUSE + j] / 1e6; });

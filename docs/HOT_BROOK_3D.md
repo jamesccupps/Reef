@@ -142,7 +142,8 @@ water, "per 2-D column" for the bed), the bed's fluxes reaching the water as bed
 nutrient at the 2-D slice's per-volume load; closed N and P budgets (to ~1e-7). Two 3-D calibrations: the bed captures
 dissolved P through a diffusive boundary layer (`BED_EXCH` 0.35 — the 2-D bed exchanged with a stagnant 0.3-m film) and
 buries its bound P at 0.15× the 2-D rate, so the lakes retain ~75 % of their P load (Larsen–Mercier 0.66–0.72 for these
-flushing rates). Slow processes (zooplankton, bacteria, N cycle, the bed) run every 3rd update; all fields move together
+flushing rates — CORRECTED 2026-10-22: that was the formula's complement; R = 1/(1+√ρ) gives 0.28–0.34 and the other models up to
+0.54, so BURY_MUL is now 0.10 → R ~0.4 on the 50-m grid; FINDINGS 2026-10-22). Slow processes (zooplankton, bacteria, N cycle, the bed) run every 3rd update; all fields move together
 packed (one pass over the faces). ~9 ms per update on the 5-m grid, ~1.8 ms on a 10-m grid (tests and long runs). A year
 without fish: summer bottom O₂ ≥ 5.7 mg/L in the north basin; under ice it runs down to ~0.5 mg/L by late winter while the
 lake keeps ≥ 5 mg/L; ice-out ~Apr 26; spring diatoms. Known (no fish yet): zooplankton boom to ~2,000 µg/L (real ~50),
@@ -304,7 +305,7 @@ August, shiners 1–2 cm, smallmouth ~1 cm (real 3–10 cm).
 (1) the summer's PHOSPHORUS ran out — the bed buried ~95 % of the inflow's P (it only released P when anoxic), so the algae
 were P-starved in July–August. Added the shallow lake's temperature-driven OXIC RELEASE of the bed's bound P (CHEM3.REL_OXIC
 0.0015 × Q10 2.5; Søndergaard et al. 2003): summer P holds up 2–4×, a year without fish keeps 64 % of its P load (Larsen–
-Mercier 0.66–0.72). (2) Even fed, the zooplankton was held down by the ADULTS: at the 2-D sim's K_ADULT 25 µg/L an adult
+Mercier 0.66–0.72 — the formula's complement, corrected 2026-10-22: R ~0.3–0.55). (2) Even fed, the zooplankton was held down by the ADULTS: at the 2-D sim's K_ADULT 25 µg/L an adult
 planktivore fed near its ceiling on any zooplankton. With a bed to turn to, an adult's half-saturation of 60 µg/L (F3.K_ZOO;
 adult fish saturate at ~10–20 Daphnia/L) makes the zooplankton settle where it pays as well as the bed. Result (3 seeds, May
 → October): a June peak of 190–450 µg/L (the spring Daphnia peak) with the fish taking 31–47 % of its production; a strong

@@ -551,17 +551,25 @@ export const WEATHER3 = {
   AIR_N: [-3.6, 3.7, 10.7, 15.7, 18.9, 18.0, 13.4, 6.8, 0.6, -6.2, -10.6, -9.6],   // °C, the air's monthly mean (annual 4.8)
   PRCP_N: [68, 75, 88, 103, 92, 89, 86, 103, 92, 86, 67, 50],   // mm a month (annual 998): it falls while the sky rains (state 2)
   STORM_K: 3,              //   or storms (3) — a storm this many times the rain's rate [inf]; each month's expected total its normal
-  DDF: 3.0,                // mm of melt a day per °C above 0 (degree-day factor: 2–3 under forest, 4–5 in the open [gk])
+  DDF: 4.61,               // mm of melt a day per °C above 0 (degree-day factor: 2–3 under forest, 4–5 in the open [gk]; E9d's fit, below)
   // evapotranspiration: Hamon's potential (1961; as Lu et al. 2005 — 0.1651 · day length (12-h units) · saturated vapour density ·
   // KPEC mm/day; ~4 mm/day in a Houlton July), taken from the soil at min(1, soil/(LP·FC)) (HBV's LP)
-  KPEC: 1.0, LP: 0.4,
+  KPEC: 1.0, LP: 0.39,
   // the soil and two stores (HBV's structure; values inside its common ranges [gk]): field capacity FC mm, recharge ∝ (soil/FC)^BETA, ET
   // at its potential above LP·FC (a forest's roots: the summer's AET ≈ PET), the quick store's recession K1 /day (small streams' storm
   // recession 0.81–0.88 a day, half-life 3–5 days — §2), percolation PERC mm/day to the slow store, its recession K2 /day (thin till over
-  // bedrock: little groundwater). 180 years: precipitation 1,019 mm, runoff 575 (ratio 0.56; field 580–710), the snow's water ~225 mm at
-  // its peak (field ~230), gone ~19 April (late March – late April), April's flow ~3.5–4× the mean (3–4×). KNOWN GAP: the summer's flow
-  // stays ~0.5–0.9× the mean (field 0.2–0.4× in August) — the conifers' interception loss (20–30 % of summer rain) is not yet modelled
-  FC: 250, BETA: 5, K1: 0.15, PERC: 0.5, K2: 0.06,
+  // bedrock: little groundwater). (E9d) FITTED under the fronts (SYN, the storms' warm air) inside HBV's ranges (FC 80–400, LP 0.3–1,
+  // BETA 1–6, K1 0.05–0.5, PERC 0.2–4, K2 0.003–0.1, DDF 2–5; 1,000 random draws × 2 seeds × 30 years — scratchpad probe wxfit2.mjs) to
+  // the eastern Maine gauges (weather_and_catchment_hydrology.md §2: Wytopitlock Stream and the Mattawamkeag's monthly flow ÷ the mean,
+  // runoff ~640 mm, the median day 0.51×, the summer's storm recession 0.81–0.88 a day). 3 seeds × 60 years: Mar 1.43–1.48 (field
+  // 0.95–1.32), Apr 2.75–2.79 (3.3), May 1.10–1.28 (1.18–1.99), Jun 0.73–0.83 (0.61–0.75), Jul 0.49–0.62 (0.42–0.47), Aug 0.40–0.60
+  // (0.30–0.33), Sep 0.42–0.51 (0.32–0.39), Oct 0.84–1.16 (0.60–0.71), Nov 1.02–1.10 (1.10–1.13), Dec 0.86–1.01 (1.13–1.41), Jan
+  // 0.59–0.71 (0.61–0.69), Feb 0.62–0.77 (0.49–0.50); runoff 582–592 mm (580–710); the wettest 5 % of days 4.0× the mean (3.2–3.8),
+  // the median 0.37–0.41× (0.51–0.63), the driest 5 % 0.086× (0.018–0.10); recession 0.85–0.87; the annual runoff's CV 0.23–0.27; the
+  // snow's water 157–182 mm at its peak, gone ~7 April. (The old FC 250, BETA 5, K1 0.15, PERC 0.5, K2 0.06, DDF 3, LP 0.4 — set on the
+  // month-long sky, its 'summer too wet' an artifact of it — gave under the fronts a median day 0.37×, December 0.73×, January 0.50×, a
+  // recession 0.92.) KNOWN GAP: December's flow ~0.9× against the gauges' 1.1–1.4×, October's ~1.0 against 0.6–0.7
+  FC: 82, BETA: 2.72, K1: 0.196, PERC: 0.21, K2: 0.0048,
   Q_REF: 1.58,             // mm/day: the model's own mean runoff (above) — so the lakes' mean residence stays H3's 100 / 55 days
   // (E10a, with HYDRO) THE ICE AND THE SNOW ON IT (weather_and_catchment_hydrology.md §5): the light under full ice is a layered
   // Beer–Lambert transmission T = (1 − α_top)·e^(−k_s·h_s − k_w·h_w − k_b·h_b) — Donini et al.'s medians over 46 lakes: snow albedo 0.94,
@@ -579,6 +587,29 @@ export const WEATHER3 = {
   // 1953) — × (Q/Q_REF)^0.4 on the brook's cells, within BROOK_LV (its pools keep water in a drought; a freshet's banks [inf]); the
   // human: the dry 2025 nearly cut the lakes apart
   BROOK_EXP: 0.4, BROOK_LV: [0.3, 1.6],
+  // (E9d) THE SKY'S TIMING — fronts, not month-long cycles. The 2-D chain (ENV.WEATHER_DWELL's 2–5-day spells, self-loops, rain ⇄ cloud)
+  // gave a ~27-day cycle: a 10-day wet spell and a 20-day dry one (the longest 201 days), months without rain beside 270-mm months
+  // (monthly CV 0.99), no day above 22 mm. Houlton's daily record (NOAA GHCN-D USW00014609, 1991–2020, 10,958 days): wet (≥ 0.25 mm)
+  // 39 % of days, P(wet|wet) 0.50, P(wet|dry) 0.32, wet spells 2.0 days, dry 3.1 (longest 20); days ≥ 2.5 / 12.7 / 25.4 / 51 mm a year
+  // 84 / 25 / 6.9 / 0.87; the median year's wettest 1 / 2 / 7 days 56 / 69 / 95 mm; the monthly totals' CV 0.44, the wet days' 1.33, the
+  // annual 0.15. A front's cycle: clear → cloud → rain (→ storm) → clearing behind it (CHAIN, rows from clear, cloudy, rain, storm;
+  // DWELL the mean days in each, × U(0.6, 1.4)); each wet episode's rain × a gamma(P_K) draw of mean 1 (one system wetter than the next).
+  // Fitted (scratchpad probe wx2.mjs, 60 years × 2 seeds): wet 39–40 %, P(w|w) 0.52, P(w|d) 0.32, spells 2.1 / 3.1 days, days ≥ 25.4 mm
+  // 6.1–7.0, ≥ 51 0.7–1.1, wettest 1 / 2 / 7 days 52–58 / 72–81 / 98–107 mm, monthly CV 0.47–0.52, wet days' 1.26–1.33, annual 0.14–0.16.
+  // The sky's shares move to 30 % clear, 51 % cloudy, 15 % rain, 3 % storm (was 39 / 30 / 24 / 7 — rain 31 % of the time, where 20 % gives
+  // Houlton's wet days) at the same mean light (the cloud's cut 0.36 against 0.37) and a little less wind (4.1 m/s against 4.4); Maine's
+  // sky is mostly overcast (Caribou: ~16 % of days clear)
+  SYN: 0,                  // on in fish3 stageR5
+  CHAIN: [[0, 0.8, 0.2, 0], [0.45, 0, 0.55, 0], [0.5, 0.25, 0, 0.25], [0.5, 0.2, 0.3, 0]],
+  DWELL: [1.0, 1.6, 0.6, 0.5],   // days
+  P_K: 2,                  // the episodes' gamma shape (CV 1/√k)
+  // (E9d) THE STORMS' WARM AIR: Houlton's wet days (≥ 2.5 mm) are warmer than the month's mean and its dry days colder, in winter —
+  // Jan +5.1 / −2.1 °C, Feb +3.9 / −1.6, Dec +3.8 / −1.9, Nov +2.4 / −1.1, Mar +2.2 / −1.0; ~0 May–August (the warm sector ahead of a
+  // front, the cold clear high behind it; houlton_daily_precipitation.md) — so half of December's precipitation falls on days above
+  // 0 °C (81 % of November's, 44 % of March's), where independent anomalies gave ~15 %. The air relaxes (SKY_TAU days) toward WET_T
+  // while the sky rains or storms and toward −WET_T × wet/dry share while it is clear or cloudy (a zero mean): WET_T by month from
+  // March = Houlton's wet − dry difference ÷ (1 + wet/dry share)
+  WET_T: [2.6, 0.6, -0.8, 0.2, 0, 0.3, 1.1, 1.6, 2.9, 4.7, 5.9, 4.5], SKY_TAU: 0.5,
 };
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —

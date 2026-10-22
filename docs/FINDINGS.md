@@ -4,6 +4,54 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The P-retention target was the formula's complement (probe bury.mjs; true-scale world, 2 seeds)
+- **What.** The bed's burial (CHEM3.BURY_MUL) was calibrated so the lakes kept 0.66–0.72 of their P load, citing "Larsen–Mercier
+  R = 1/(1+√τ)". The formula is R = 1/(1+√ρ), with ρ the flushing rate (1/τ). 1/(1+√τ) is Vollenweider's P_lake/P_in, the share that
+  leaves.
+- **The field's retention for these lakes** (τ 0.27 and 0.15 years, mean depths 3.0 and 2.55 m): Larsen–Mercier 0.34 / 0.28,
+  Kirchner–Dillon 0.54 / 0.49, Nürnberg 0.52 / 0.43, Brett–Benjamin 0.38 / 0.32. So about 0.3–0.55, not 0.7.
+- **The bed's exchange is grid-dependent.** On the gate's coarse 100-m grid the bed-touching cells hold 32 % of the water, against 21 %
+  on the arms' 50-m grid. The same setting buried 0.70 of the load there and 0.42–0.56 on the 50-m grids. Calibrate on the grid the
+  runs use.
+- **Re-fit on the true world** (the new weather, no fish; first year):
+
+  | `BURY_MUL` | R (seeds 403 / 404) |
+  |---|---|
+  | 0.15 | 0.56 / 0.45 |
+  | 0.10 (adopted) | 0.44 / 0.35 |
+  | 0.07 | 0.35 / 0.27 |
+
+  The lakes start at 12 µg/L TP, above their own steady state (~8 µg/L in July for this inflow), so year 1 still loses P: 4 % in a
+  normal year, 13 % in a wet one, where the outlet carried 71 % of the load.
+- **Year 2 at 0.10.** R 0.45 / 0.39, and burial and net import balance ((in − out) ÷ in 0.41 / 0.42). The inventory moves −7.8 % and
+  +5.1 % with the year's weather, at 88–91 % of the start after two years. July TP is 6.8–7.5 µg/L, under the 9–13 µg/L of the
+  coloured-lake analogues. The inflow's TP and its form are E9e.
+- **Lesson.** Check which side of a retention formula a calibration targets, and whether the variable is the residence time or its
+  inverse.
+
+## 2026-10-22 — A month-long sky cycle starved the lakes of water and phosphorus (E9d; probes nutr.mjs, surf.mjs, wx.mjs, wx2.mjs, wxfit2.mjs)
+- **What.** Arm AF's lakes starved in their second year: summer Daphnia ~0, and edible surface algae 0.002–0.07, where year 1 had
+  0.1–0.47. A no-fish probe found the P inventory at 45 % of the start by late January. Over those 252 days the inflow had brought
+  3,163 units of P while the bed buried 9,862. The catchment's flow sat at 0.01–0.08× its mean from July through February
+  (gauges: 0.3–1.4×).
+- **Cause: the sky's timing, not its totals.** The 3-D world inherited the 2-D sim's 4-state chain (clear, cloudy, rain, storm). Its
+  shares were plausible, but self-loops and rain ⇄ cloud returns made a ~27-day cycle: a 10-day wet spell, then a 20-day dry one
+  (the longest 201 days). Months went without rain beside 270-mm months (monthly CV 0.99), and no day passed 22 mm. On HBV's soil
+  this gave a catchment whose median day ran at 0.16× the mean flow.
+- **E9b's "summer too wet" was the same artifact.** Rare 9-day rains inflated the monthly means while the typical day was near zero.
+  The diagnosis then (the conifers' interception) was wrong.
+- **Evidence and fix.** Houlton's daily record (NOAA GHCN-D, 1991–2020; houlton_daily_precipitation.md): wet 39 % of days, P(wet|wet)
+  0.50, spells 2.0 / 3.1 days, 6.9 days a year ≥ 25 mm, monthly CV 0.44.
+  - A front cycle (clear → cloud → rain → storm → clearing) with per-episode gamma(2) intensities reproduces it: 40 %, 0.52, 2.1 / 3.1
+    days, 6.5–6.8 days, monthly CV 0.49–0.51, the wettest 1 / 2 / 7 days 54–57 / 75–79 / 100–103 mm (56 / 69 / 95). It keeps the old
+    chain's mean light.
+  - **Storms bring warm air.** Houlton's winter wet days run +4–5 °C over the month's mean and its dry days −2. With independent air
+    anomalies only ~15 % of December's precipitation fell above 0 °C (field 50 %).
+  - Refitting HBV inside its ranges then gave the gauges' hydrograph: August 0.40–0.60×, January 0.59–0.71×, recession 0.85–0.87 a
+    day, runoff 582–592 mm.
+- **Lesson.** For a small lake's flushing and nutrient supply, the weather's sequence matters as much as its monthly totals. Calibrate
+  a weather generator on daily statistics (spell lengths, extremes, monthly variance), not on means.
+
 ## 2026-10-22 — A fertilisation rate entered as a hatch rate made 30–300× too many sucker larvae (E3b; probe eggsm2.mjs)
 - **The sucker's egg hatch (0.9) was Stewart's "> 90 % fertilised".** Field egg → drifting larva in a brook is 0.3–3 % (scour, silt, drift),
   and only 25–50 % of adult suckers spawn in a given year. The sim made ~30 larvae/m² against the field's < 1. With the field's values,

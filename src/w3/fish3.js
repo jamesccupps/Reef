@@ -738,7 +738,7 @@ export function stageR5(on = true) {
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
   ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
-  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
+  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0;   // (E9d: fronts — Houlton's rain days and storms)   // (E9b: rain and snow, the catchment's flow through the lakes)
   ALEWIFE.ON = on ? 1 : 0;   // (E8: the sea-run alewives — config ALEWIFE)
   // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
   // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:
@@ -1458,6 +1458,7 @@ export class Fish3 {
     for (let i = 0, n0 = this.fish.length; i < n0; i++) {
       const a = this.fish[i]; if (!a.alive || !a.mature || a.sex === 1 || spent(a)) continue;   // (the female, or the school, spawns)
       const s = a.s, sp = s.sp, w = win[a.k]; if (!w) continue;
+      if (s.spawnP && ((Math.imul(a.id >>> 0, 2654435761) ^ Math.imul((Math.floor(this.env.time / YEAR) + 7) >>> 0, 40503)) >>> 0) / 4294967296 >= s.spawnP) continue;   // (E3b spawnP: _ripe's own draw — the founding's skipping spawners too)
       const sp1 = w[0] + Math.min(w[1] - w[0], F3.SEED_SPREAD / YEAR), sh = y => clamp((y - w[0]) / (sp1 - w[0]), 0, 1);
       const o0 = Math.max(w[0], yf0), o1 = Math.min(sp1, yf1);
       if (!(o1 > o0) || rand() > (sh(yf1) - sh(yf0)) / (1 - sh(yf0))) continue;

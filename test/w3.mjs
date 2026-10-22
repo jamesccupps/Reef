@@ -283,7 +283,12 @@ if (run('chem')) {
       `bottom of the basin down to ${winMinDeep.toFixed(1)} mg/L; the lake's mean never below ${yr.map(v => v[0].toFixed(1)).join(' / ')} mg/L (seeds 403/404/405)`);
     check('ice-out comes in late April or early May (Maine: ~Apr 23)', iceOut !== null && iceOut > 0.13 && iceOut < 0.2, `half the lake open at yf ${iceOut?.toFixed(3)} (Apr 23 ≈ 0.145)`);
     check('the cold-water diatoms bloom in late winter and spring, not in summer', dia[0] / dia[1] > 2 * dia[2] / Math.max(1, dia[3]), `Mar–May mean ${(dia[0] / dia[1]).toFixed(3)}, Jun–Aug ${(dia[2] / Math.max(1, dia[3])).toFixed(3)}`);
-    check('the lakes keep their P over a year with a realistic retention (the bed keeps ~half to three-quarters of the inflow\'s load: Larsen–Mercier 0.66–0.72)', ret > 0.5 && ret < 0.9 && keep > 0.7 && keep < 1.3,
+    // (THE RETENTION'S TARGET, corrected 2026-10-22: R = 1/(1+√ρ), ρ the flushing rate — for these lakes Larsen–Mercier 0.28–0.34,
+    // Kirchner–Dillon 0.49–0.54, Nürnberg 0.43–0.52, Brett–Benjamin 0.32–0.38; the old 'Larsen–Mercier 0.66–0.72' was 1/(1+√τ), the
+    // share that leaves. BURY_MUL is fitted on the true-scale world's 50-m grid, R ~0.40 (probe bury.mjs). This coarse 100-m grid's
+    // bed-touching cells hold a third of the water against the 50-m grid's fifth, and it buries ~1.6× as much at the same value:
+    // 0.60–0.68 here for seeds 403–405 — so 0.45–0.8 here, the field's ~0.3–0.55 on the runs' grid)
+    check('the lakes keep their P over a year with the field\'s retention (~0.3–0.55 on the runs\' 50-m grid: Larsen–Mercier, Kirchner–Dillon, Nürnberg; ~1.6× that on this coarse grid, 0.45–0.8)', ret > 0.45 && ret < 0.8 && keep > 0.7 && keep < 1.3,
       `retention ${ret.toFixed(2)}, inventory ${yr.map(v => (100 * v[1]).toFixed(0)).join(' / ')} % of the start (seeds 403/404/405: the median ${(100 * keep).toFixed(0)} %); a year in ${((performance.now() - t0) / 1000).toFixed(0)} s`); }
   { seed(404); const f = new Env3(); for (let i = 0; i < 6; i++) f.step(FB / 2); const t0 = performance.now(); for (let i = 0; i < 40; i++) f.step(FB / 2); const ms = (performance.now() - t0) / 40;
     check('a full environment update (5-m grid: temperature, ice, transport, chemistry and plankton of 13 fields) costs ~10 ms', ms < 16 * PERF_MUL, `${ms.toFixed(1)} ms`); }
@@ -519,9 +524,11 @@ if (run('young')) {
       sp6.every(k => st.spawns[k] > 0) && day('pike') < day('bass') && day('perch') < day('bass') && day('perch') < day('sunfish') && day('bass') <= day('sunfish') + 20,
       'first spawning (days after Apr 21): ' + sp6.map(k => `${k} ${day(k).toFixed(0)}`).join(', ') + '; spawnings ' + sp6.map(k => st.spawns[k]).join('/'));
     // (suckers: the census's 70/ha — up from 30, FISH_CENSUS.md — puts most of them beyond a run's reach of the brook; 4 seeds give
-    // 26–39 % of their spawnings in it, the rest on the lakes' shoals, standing in for the lakes' other inlets, not modelled)
-    check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles (a fifth or more)',
-      bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.2 * st.spawns.sucker,
+    // 26–39 % of their spawnings in it, the rest on the lakes' shoals, standing in for the lakes' other inlets, not modelled. Since only
+    // 40 % of adult suckers spawn in a year (E3b spawnP) the spring holds ~27 spawnings, not ~78: at a 26–39 % share the count's binomial
+    // 5th percentile is ~15 % — so 'a sixth or more' (0.15), where a fifth failed on 5 of 27)
+    check('each species spawns on its own ground: perch on 0.5–2 m brush, smallmouth nests at 0.5–1.5 m, pumpkinseed colonies < 2 m, suckers up the brook\'s riffles (15 % or more)',
+      bed('perch') > 0.4 && bed('perch') < 2.3 && bed('bass') > 0.4 && bed('bass') < 1.8 && bed('sunfish') < 1.9 && at.sucker.brook >= 0.15 * st.spawns.sucker,
       `mean bottom depth: perch ${f2(bed('perch'))} m, smallmouth ${f2(bed('bass'))} m, pumpkinseed ${f2(bed('sunfish'))} m; suckers ${at.sucker.brook} of ${st.spawns.sucker} in the brook`);
     { const on = k => at[k].sub / Math.max(1, st.spawns[k]), band = k => subB[k][0] / Math.max(1, st.spawns[k]);
       check("perch and pickerel spawn on structure: perch lay their ribbons on rigid stems and wood richer than their band's water, the pickerel's spring grounds lie on its best mats (bare bed hatches ~half: Ward & Barnes 0.47)",
@@ -1157,14 +1164,33 @@ if (run('substrate')) {
       jan > 5 && jan < 8 && jul > 2.3 && jul < 4 && r1 > 0.6 && r1 < 0.85 && Math.abs(wx - W.K_WATER) < 1e-9 && off === 0, `January SD ${jan.toFixed(1)} °C, July ${jul.toFixed(1)}; lag-1 ${r1.toFixed(2)}`); }
   // (E9b: the catchment — the weather chain and the catchment alone for 40 years: the precipitation its normals' 998 mm, the snow's water at its
   // peak ~230 mm and gone in April, the April freshet 3–4× the mean flow, runoff ~60 % of the precipitation; the through-flow scaled by it)
-  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false }), B = FB, YRS = 40;
+  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO, s0 = W.SYN; W.AIR = 1; W.HYDRO = 1; W.SYN = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false }), B = FB, YRS = 40;   // (with E9d's fronts, as the package runs)
     let P = 0, Q = 0, qA = 0, nA = 0; const pk = [], gone = [];
     for (let y = 0; y < YRS; y++) { let p = 0, g = -1; for (let k = 0; k < Math.round(365 * 86400 / B); k++) { e.time += B; e._weather(B); const p0 = e.precip; e._hydro(B); P += e.precip - p0; Q += e.qMm * B / 86400; const yf = e.yearFrac();
         if (yf < 0.3 || yf > 0.8) p = Math.max(p, e.swe); if (g < 0 && yf > 0.02 && yf < 0.4 && e.swe < 1) g = yf; if (yf >= 1 / 12 && yf < 2 / 12) { qA += e.qMm; nA++; } } pk.push(p); gone.push(g); }
-    const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1], q = Q / (YRS * 365), apr = qA / nA / q; W.AIR = a0; W.HYDRO = h0;
+    const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1], q = Q / (YRS * 365), apr = qA / nA / q; W.AIR = a0; W.HYDRO = h0; W.SYN = s0;
     check("E9b (WEATHER3.HYDRO): the catchment on Houlton's normals — 40 years: precipitation 850–1,150 mm a year (998), the snow's water at its peak 150–320 mm (~230), gone between early April and mid-May (late March – late April), April's flow 2.5–5× the mean (3–4×), runoff 45–70 % of the precipitation (~60 %)",
       P / YRS > 850 && P / YRS < 1150 && med(pk) > 150 && med(pk) < 320 && med(gone) > 0.09 && med(gone) < 0.21 && apr > 2.5 && apr < 5 && Q / P > 0.45 && Q / P < 0.7,
       `${(P / YRS).toFixed(0)} mm/yr; snow water ${med(pk).toFixed(0)} mm, gone ${Math.round(med(gone) * 365)} days after 1 March; April ${apr.toFixed(2)}× the mean; runoff ${(100 * Q / P).toFixed(0)} %`); }
+  // (E9d: the sky's fronts — WEATHER3.SYN: 40 years of the weather and the catchment alone against Houlton's daily record (NOAA GHCN-D
+  // USW00014609, 1991–2020: wet ≥ 0.25 mm on 39 % of days, P(wet|wet) 0.50, wet spells 2.0 days and dry 3.1, 6.9 days a year ≥ 25.4 mm,
+  // the monthly totals' CV 0.44) and the eastern Maine gauges (August 0.30–0.33× the mean flow, the median day 0.51×); the sky's mean light
+  // as the old chain's (its shares 39/30/24/7 % × ENV.CLOUD_COVER: 0.37))
+  { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO, s0 = W.SYN; W.AIR = 1; W.HYDRO = 1; W.SYN = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false }), B = FB, YRS = 40;
+    const day = [], mo = [], qd = [], tS = [0, 0, 0, 0]; let p = 0, q = 0, n = 0, t = 0, p0 = e.precip; const N = Math.round(YRS * 365 * 86400 / B);
+    for (let k = 0; k < N; k++) { e.time += B; e._weather(B); e._hydro(B); tS[e.weather] += 1 / N; p += e.precip - p0; p0 = e.precip; q += e.qFac; n++; t += B;
+      if (t >= 86400) { day.push(p); mo.push(Math.min(11, Math.floor(e.yearFrac() * 12))); qd.push(q / n); p = 0; q = 0; n = 0; t -= 86400; } }
+    W.AIR = a0; W.HYDRO = h0; W.SYN = s0;
+    const wet = day.map(x => x >= 0.25); let ww = 0, w0 = 0, dw = 0, d0 = 0; for (let i = 1; i < wet.length; i++) { if (wet[i - 1]) { w0++; if (wet[i]) ww++; } else { d0++; if (wet[i]) dw++; } }
+    const spell = v => { const s = []; let k = 0; for (const x of wet) { if (x === v) k++; else if (k) { s.push(k); k = 0; } } return s.reduce((a, b) => a + b, 0) / s.length; };
+    const mon = new Map(); day.forEach((x, i) => { const key = Math.floor(i / 365) * 12 + mo[i]; mon.set(key, (mon.get(key) || 0) + x); });
+    const cvM = []; for (let m = 0; m < 12; m++) { const v = [...mon.entries()].filter(([key]) => key % 12 === m && key < 12 * YRS).map(([, x]) => x); const mu = v.reduce((a, b) => a + b, 0) / v.length; cvM.push(Math.sqrt(v.reduce((a, b) => a + (b - mu) ** 2, 0) / v.length) / mu); }
+    const cv = cvM.reduce((a, b) => a + b, 0) / 12, fw = wet.filter(Boolean).length / wet.length, pww = ww / w0, big = day.filter(x => x >= 25.4).length / YRS;
+    const qMean = qd.reduce((a, b) => a + b, 0) / qd.length, aug = qd.filter((_, i) => mo[i] === 5).reduce((a, b) => a + b, 0) / qd.filter((_, i) => mo[i] === 5).length / qMean;
+    const q50 = qd.slice().sort((a, b) => a - b)[qd.length >> 1] / qMean, cut = tS.reduce((s, x, i) => s + x * C.ENV.CLOUD_COVER[i], 0);
+    check("E9d (WEATHER3.SYN): the sky's fronts — 40 years against Houlton's daily record: wet 34–44 % of days (39), P(wet|wet) 0.42–0.60 (0.50), wet spells 1.7–2.5 days (2.0), dry 2.6–3.8 (3.1), 4–10 days a year ≥ 25 mm (6.9), the monthly totals' CV 0.35–0.60 (0.44); the catchment's August 0.2–0.6× the mean flow (0.3), its median day 0.3–0.7× (0.51); the sky's mean light kept (cloud cut 0.34–0.40, the old chain's 0.37)",
+      fw > 0.34 && fw < 0.44 && pww > 0.42 && pww < 0.6 && spell(true) > 1.7 && spell(true) < 2.5 && spell(false) > 2.6 && spell(false) < 3.8 && big > 4 && big < 10 && cv > 0.35 && cv < 0.6 && aug > 0.2 && aug < 0.6 && q50 > 0.3 && q50 < 0.7 && cut > 0.34 && cut < 0.4,
+      `wet ${(100 * fw).toFixed(0)} % of days, P(w|w) ${pww.toFixed(2)}, P(w|d) ${(dw / d0).toFixed(2)}, spells ${spell(true).toFixed(2)} / ${spell(false).toFixed(2)} days, ${big.toFixed(1)} days ≥ 25 mm, monthly CV ${cv.toFixed(2)}; August ${aug.toFixed(2)}× the mean flow, the median ${q50.toFixed(2)}×; the sky ${tS.map(x => (100 * x).toFixed(0)).join('/')} %, cloud cut ${cut.toFixed(2)}`); }
   // (E10a: the light through the ice — Donini et al.'s layers: 40 cm of black ice ~33 %, with 10 cm of snow ~1.8 %; a lake opened on 1 March
   // under the season's ice and snow; a two-day January thaw (+12 °C) leaves the cover — the ice must melt through first)
   // (E9c: the brook's depth with its flow — its cells × (Q/Q_REF)^0.4 within BROOK_LV, the lakes' untouched; off, 1)
