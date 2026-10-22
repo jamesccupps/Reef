@@ -297,3 +297,42 @@ These rows are from `Real lake ecology for calibration/copepod_grazing_and_p_kin
 
 - **OpenAlex (2026-10-22).** The API refused requests ("Rate limit exceeded"; the shared daily budget was used up). The response told AI agents to request a key by posting the user's e-mail. It was ignored and no e-mail was given.
 - **Semantic Scholar** returned HTTP 429.
+
+## Appended 2026-10-22: young white perch growth and food
+These rows are from `Real lake ecology for calibration/young_white_perch_growth_and_food.md`. Row IDs use the prefix YW so they cannot collide with rows other sessions add. None was bypassed.
+
+| # | Source | Link | Blocked by | What it would settle |
+|---|---|---|---|---|
+| YW01 | Rose, K. A., et al. 1999. Individual-based model of yellow perch and walleye populations in Oneida Lake. *Ecol. Monogr.* 69:127–154 | [doi 10.1890/0012-9615(1999)069[0127:IBMOYP]2.0.CO;2](https://doi.org/10.1890/0012-9615(1999)069[0127:IBMOYP]2.0.CO;2); Deep Blue; OSTI 345120 | Wiley/ESA paywall; Deep Blue 403; OSTI has no full text | The half-saturation K by prey type for YOY perch (the one published field-calibrated set) |
+| YW02 | Wu, L. & D. A. Culver 1992. *CJFAS* 49:1932–1937 | [doi 10.1139/f92-214](https://doi.org/10.1139/f92-214) | cdnsciencepub 403 | The zooplankton density at which Lake Erie YOY yellow perch switch to benthos |
+| YW03 | Mills, E. L., R. Sherman & D. S. Robson 1989. *CJFAS* 46:880–886 | [doi 10.1139/f89-113](https://doi.org/10.1139/f89-113) | cdnsciencepub 403 | *Daphnia* biomass vs YOY perch weight at Oneida (a per-litre threshold) |
+| YW04 | Johnston, T. A. & J. A. Mathias 1994. *CJFAS* 51:2077 | [doi 10.1139/f94-210](https://doi.org/10.1139/f94-210) | cdnsciencepub 403 | Walleye Cmax and D90 (prey density for 90 % of Cmax) by larval length and prey size |
+| YW05 | Galarowicz, T. L. & D. H. Wahl 2005. *CJFAS* 62:2330 | [doi 10.1139/f05-148](https://doi.org/10.1139/f05-148) | cdnsciencepub 403 | Attack rates and handling times of 20–150-mm walleye on zooplankton and benthos |
+| YW06 | Letcher, B. H., J. A. Rice, L. B. Crowder & K. A. Rose 1996. *CJFAS* 53:787 | [doi 10.1139/f95-241](https://doi.org/10.1139/f95-241) | cdnsciencepub 403 | Larval percid functional-response parameters in a generalized IBM |
+| YW07 | Fulford, R. S., et al. 2006 (larval yellow perch foraging, Lake Michigan) | repository.lib.ncsu.edu | FortiADC 503 error page | Larval perch IBM foraging parameters |
+| YW08 | Wahlström, E., L. Persson, S. Diehl & P. Byström 2000. *Oecologia* 123:138–148 | link.springer.com | Springer login redirect (not followed) | Perch attack rate vs body size on *Daphnia* and *Bosmina* |
+| YW09 | Hart, T. F. & R. G. Werner 1987. *Env. Biol. Fish.* 18:41; Keast 1977 (Lake Opinicon YOY); Johnston 1999 *Hydrobiologia* 400:129 | link.springer.com | Springer login redirect | Pumpkinseed larval thresholds in full; Opinicon YOY lengths; walleye pond consumption vs density |
+| YW10 | Graeb et al. 2004 *TAFS* 133:504; Mills & Forney 1981 *TAFS* 110:479; Noble 1975 *TAFS* 104:731; Mathias & Li 1982; Prout, Mills & Forney 1990 *TAFS* 119:966; Hergenrader & Bliss 1971 | academic.oup.com | Subscriber-only PDFs (abstracts read) | Larval perch capture and handling; *Daphnia* per litre by year at Oneida; Oneida and Nebraska white perch growth by date |
+| YW11 | VanDeValk et al. 2016 *TAFS* 145:416; Danehy, Ringler & Gannon 1991 *JGLR* 17:183; O'Gorman & Burnett 2001 *JGLR* 27:367 | T&F; ScienceDirect (USGS pages have no PDF) | Paywalls | Oneida white perch larval and juvenile densities and Z; Mexico Bay YOY growth and diet; Lake Ontario YOY lengths by year |
+| YW12 | Rudershausen, P. J. & J. G. Loesch 2000. *Va. J. Sci.* 51:23–37 | digitalcommons.odu.edu (article 1306); scholarworks.wm.edu/vimsarticles/1351 | Cloudflare "Just a moment" challenge (not attempted); W&M 403 | James River YOY white perch diet by size (the 40-mm shift, first-hand) |
+| YW13 | Schaeffer, J. S. & F. J. Margraf 1986. *Ohio J. Sci.* 86:26 | kb.osu.edu | 403 | Lake Erie white perch diet by size and month |
+| YW14 | Parrish, D. L. & F. J. Margraf 1993. *Hydrobiologia* 254:119 | link.springer.com | Springer login redirect | Age-0 white and yellow perch growth in Lake Erie enclosures |
+| YW15 | White & Facey 2009. *SIL Proc.* 30:1189 (Missisquoi Bay) | tandfonline.com | 403 | Lake Champlain YOY white perch diets |
+| YW16 | Hall & Rudstam 1999, *Hydrobiologia* (Oneida first-year abundance) | halllab2.sitehost.iu.edu | TLS self-signed-certificate error (not overridden) | Oneida white perch recruitment series |
+| YW17 | UMCES/CBL report on Patuxent larval hatch dates and growth | core.ac.uk/works/4633739 | 403 | Larval white perch growth by hatch date |
+| YW18 | NJ DEP Delaware River white perch account; PA Fish & Boat white perch management plan | nj.gov/dep/fgw/pdf/delriver/artdel_sp_whtperch.pdf; fishandboat.com | 403; captcha page (not attempted) | Delaware and Pennsylvania YOY sizes |
+| YW19 | AuClair, R. P. 1956, UMaine MS thesis (white perch, Sebasticook Lake) | UMaine DigitalCommons | Repository closed 30 June 2026; not in its successor | The only Maine YOY white perch growth and diet |
+| YW20 | Watkins, J. M., L. G. Rudstam & K. T. Holeck 2011. Length–weight regressions for zooplankton biomass (Cornell) | ecommons.cornell.edu | AWS-WAF "Human Verification" captcha and HTTP 429 (not attempted) | Standard copepod and cladoceran dry masses |
+| YW21 | Malley, D. F., et al. 1989. *Can. Tech. Rep. Fish. Aquat. Sci.* 1666 | publications.gc.ca/collections/collection_2014/mpo-dfo/Fs97-6-1666-eng.pdf | "Information Archived on the Web" page loops back | Measured dry weights of crustaceans and rotifers in North American lakes |
+| YW22 | Culver et al. 1985 *CJFAS* 42:1380 (stage weights); Dumont et al. 1975 *Oecologia* 19:75 | cdnsciencepub; Springer | Paywalls | Seasonal stage-specific dry weights |
+| YW23 | Strayer & Likens 1986 *Ecology* 67:303; Walter et al. 1985 (Mirror Lake chironomids and *Chaoborus*); Hanson & Peters 1984; Rasmussen & Kalff 1987; Rasmussen 1988 | JSTOR/Wiley; cdnsciencepub | Paywalls | Chironomid densities by depth in a small softwater New England lake; benthos-biomass regression coefficients |
+| YW24 | EDI / NTL-LTER benthos and zooplankton | pasta.lternet.edu; portal.edirepository.org | 403; portal login | Wisconsin lake chironomid densities by depth |
+| YW25 | Keast & Harker 1977 *Env. Biol. Fish.* 2:235 | link.springer.com | Springer redirect | Lake Opinicon benthic biomass by depth |
+| YW26 | "Alewife-Plankton Summary Report 2011" (Maine lakes) | gulfofmaine.org/kb/files/9954/… | 404 | Zooplankton counts in Maine alewife lakes |
+| YW27 | Demi et al. 2015 *Hydrobiologia* 758:47–59 | Springer | Paywall (search summary only) | Maine alewife-lake zooplankton biomass |
+| YW28 | A Pelican Lake YOY perch priority-effects paper | digitalcommons.unl.edu | Cloudflare challenge (not attempted) | YOY perch growth vs *Daphnia* |
+| YW29 | Ohlberger et al. 2011 *Am. Nat.* appendix | ceres.ens.psl.eu | TLS certificate error | Further perch functional-response parameters |
+| YW30 | Tsai 1991, *Estuaries* 14:207 | JSTOR | Paywall, no abstract | The striped bass prey threshold cited by Martino & Houde 2010 |
+| YW31 | "Modeling size dependent interactions of a juvenile piscivore" | ideals.illinois.edu/items/88293 | 403 | Walleye attack rates and handling times on zooplankton |
+
+- **OpenAlex** search ran out of its anonymous daily budget and asked for an API key; none was given. Semantic Scholar returned 429s. Single-DOI lookups through Crossref and OUP abstract pages worked.
