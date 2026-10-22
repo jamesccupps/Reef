@@ -14,6 +14,8 @@ import { makeFishView } from './fish3view.js';
 import { makePlantsView, LAYER as PLANT_LAYER } from './plants3view.js';
 import { makeRisesView } from './rises3view.js';
 import { makeBedView } from './bed3view.js';
+import { makeWildView } from './wild3view.js';
+import { makeShallowsView } from './shallows3view.js';
 import { makeData3 } from './data3.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
@@ -28,7 +30,7 @@ const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, 
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true };
+const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true, wild: true };
 const kLand = () => WORLD_TRUE ? S.exag : S.exag / 10;   // (the land's height × true: the 1/10 world's ×1 is in proportion to its lakes)
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -660,6 +662,12 @@ const fishView = makeFishView();   // the fish (src/w3/fish3.js), every one an i
 const plantsView = makePlantsView(W3);   // the weeds (src/w3/plants3.js): stems, fronds, pads and reeds by each patch's stand
 const risesView = makeRisesView(W3);   // the insects on the film, the rises, splashes and leaps of the fish that take them
 const bedView = makeBedView(plantsView);   // the crayfish out on the bed and the snails (littoral3), near the camera
+// THE ANIMALS OF THE LAKES AND THEIR SHORES (render3/wild3view.js: the sim's fish-eating wildlife, its anglers, the moose and the forest's
+// animals; shallows3view.js: the turtles, frogs, newts and tadpoles, the dragonflies, the logs and boulders they bask on)
+const shallowsView = makeShallowsView({ plants: plantsView, colAt: (x, y) => W3.colAt(x, y), ripple: risesView.ripple });
+const wildView = makeWildView({ TREES, treeY: (T, i) => landY(T.el[i], T.lv[i]) - 0.05 * kLand(), groundY: (x, y) => groundAt(x, -y), plants: plantsView, ripple: risesView.ripple,
+  colAt: (x, y) => W3.colAt(x, y), onHerpKill: (w, x, y, L, k) => shallowsView.onKill(w, x, y, L, k, LIVE.tNow) });
+risesView.setLeapHook((...a) => { if (S.wild) shallowsView.onLeap(...a); });
 // SPECKS in the water about the eye when under it (suspended detritus, plankton): a sense of depth and of the water moving —
 // 2,500 tiny motes in a 10-m box that follows the camera, drifting; the fog fades them with distance (cosmetic)
 const specks = (() => {
@@ -676,7 +684,7 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group);
+clipped.add(band, farMesh, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group, wildView.group, shallowsView.group);
 scene.add(clipped, sky);
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
@@ -794,7 +802,7 @@ function go(name) {
   const v = VIEWS[name]; rig.set(new THREE.Vector3(v.t[0], v.t[2], -v.t[1]), v.yaw, v.pitch, v.dist);
   for (const b of $('views').children) b.setAttribute('aria-pressed', String(b.textContent === name));
 }
-for (const name of Object.keys(VIEWS)) { const b = document.createElement('button'); b.textContent = name; b.addEventListener('click', () => go(name)); $('views').append(b); }
+for (const name of Object.keys(VIEWS)) { const b = document.createElement('button'); b.textContent = name; b.addEventListener('click', () => { go(name); FIND.follow = null; FIND.last = ''; $('watching').textContent = ''; }); $('views').append(b); }   // (a new view: Find starts again with what is near it)
 
 // ---------- controls ----------
 function applyLook() {
@@ -827,6 +835,37 @@ $('t-water').addEventListener('change', e => { S.water = e.target.checked; style
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; for (const m of treeMeshList()) m.visible = S.trees; shrubMesh.visible = S.trees; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
+$('t-wild').addEventListener('change', e => { S.wild = e.target.checked; wildView.group.visible = shallowsView.group.visible = S.wild; $('findwild').disabled = !S.wild; if (!S.wild) { FIND.follow = null; $('watching').textContent = ''; } });
+// FIND AN ANIMAL: the camera goes to the next of the animals out on the lakes (by kind, in turn) and follows it — turn about it and
+// zoom as you like — until you pan or move away; what is out now is listed in the Show group
+const FIND = { follow: null, last: '' };
+$('findwild').addEventListener('click', () => {
+  // (the small life near the view first — the turtles on a log, a bullfrog, a snapper — then the lakes' animals by kind; each click the
+  // next of another kind, round and round)
+  const L = [...shallowsView.list(), ...wildView.list().sort((a, b) => a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : a.key < b.key ? -1 : 1)];
+  if (!L.length) { FIND.follow = null; $('watching').textContent = 'none out on the lakes just now'; return; }
+  const i0 = L.findIndex(q => q.key === FIND.last), k0 = i0 >= 0 ? L[i0].kind : null; let a = L[0];
+  for (let j = 1; j <= L.length; j++) { const q = L[(Math.max(0, i0) + j) % L.length]; if (i0 < 0) { a = L[0]; break; } if (q.kind !== k0 || j === L.length) { a = q; break; } }
+  FIND.last = a.key; FIND.follow = a;
+  const p = a.at(); if (!p) return; const k = S.fishScale > 1 ? Math.min(S.fishScale, Math.max(1, 0.5 * S.fishScale / a.size)) : 1;
+  // (the camera over the open water if it can be — not inside the trees on the bank: the turn about the animal that puts it farthest from land)
+  // (a bird on a treetop seen from out on the water, a little above it; one flying from farther back and below, against the sky; the
+  // turtles from beyond the 6 m at which they slide off their log)
+  const tall = a.perched && a.kind !== 'kingfisher', d = tall ? 30 * Math.sqrt(k) : a.perched ? 6 * Math.sqrt(k) : a.flying ? 14 * Math.sqrt(k) : a.kind === 'turtles' ? 8 * Math.sqrt(k) : Math.max(3.5, a.size * k * (a.kind === 'iceAngler' || a.kind === 'angler' ? 3 : 5)), pitch = tall ? -0.12 : a.perched ? 0.05 : a.flying ? 0.2 : -0.22, cp = Math.cos(pitch); let yaw = rig.goal.yaw, best = -1e9;
+  for (let q = 0; q < 16; q++) { const y = rig.goal.yaw + (q % 2 ? 1 : -1) * Math.ceil(q / 2) * Math.PI / 8, cx = p[0] + Math.sin(y) * cp * d, cy = -(p[2] + Math.cos(y) * cp * d), s = GEO.shoreDist(cx, cy) - q * 0.05; if (s > best) { best = s; yaw = y; } }
+  rig.set(new THREE.Vector3(p[0], p[1], p[2]), yaw, pitch, d);
+  $('watching').textContent = 'watching ' + a.name;
+});
+// (turning about it and zooming keep following; panning — a right- or shift-drag — or moving with the keys lets it go)
+const unfollow = () => { if (FIND.follow) { FIND.follow = null; $('watching').textContent = ''; } };
+canvas.addEventListener('pointerdown', e => { if (e.button === 2 || e.shiftKey) unfollow(); });
+addEventListener('keydown', e => { if (!(e.target instanceof HTMLInputElement) && 'wasdrf'.includes(e.key.toLowerCase())) unfollow(); });
+function wildOut() {   // what is out on the lakes now (the Show group's line)
+  const c = wildView.stats(), sh = shallowsView.stats(), N = { loon: 'loons', heron: 'herons', kingfisher: 'kingfishers', osprey: 'ospreys', eagle: 'eagles', cmerganser: 'common mergansers', hmerganser: 'hooded mergansers', otter: 'otters', mink: 'mink', raccoon: 'raccoons', moose: 'moose', bear: 'bears', deer: 'deer', angler: 'boats', shore: 'a bank angler', iceAngler: 'ice camps' };
+  const out = Object.entries(c).filter(([k, n]) => n > 0 && N[k]).map(([k, n]) => k === 'shore' ? N[k] : n + ' ' + N[k]);
+  if (sh.basking) out.push(sh.basking + ' turtles basking (near)');
+  $('wildout').textContent = out.length ? 'Out now: ' + out.join(', ') : '';
+}
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
 $('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
 $('t-notes').addEventListener('change', e => document.body.classList.toggle('nonotes', !e.target.checked));
@@ -851,11 +890,12 @@ function onSnap(m) {
   if (m.type === 'history') { LIVE.data3?.onHistory(m.hist); return; }
   if (m.type === 'progress') { LIVE.progress = `${m.text} (${m.s.toFixed(1)} s)`; return; }
   if (m.type === 'error') { LIVE.failed = m.text; $('status').textContent = 'the simulation stopped: ' + m.text.split(String.fromCharCode(10))[0]; console.error(m.text); return; }
-  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); return; }
+  if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); shallowsView.setData(m.herp, m.tad, m.fauna, m.wood, m.yf); return; }
   if (m.type !== 'snap') return;
   LIVE.snap = m; LIVE.waiting = false; if (m.sel) LIVE.data3?.onSel(m.sel);
   if (m.rises && m.rises.length && S.fish) risesView.add(m.rises, LIVE.tNow, S.fishScale);   // (on the frame loop's clock)
   if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }
+  if (m.wild && m.wild.length && S.wild) wildView.onKill(m.wild);   // (the fish the sim's wildlife and anglers took: a dive, a plunge, a fish on)
 }
 function lightByDay() {   // the sun's height and the sky's brightness follow the water model's day
   const e = LIVE.snap; if (!e) return;
@@ -911,12 +951,17 @@ async function start() {
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     risesView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
     if (S.fish) bedView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
+    if (S.wild && LIVE.snap) {   // (LIVE.wildMs: the animals' CPU time a frame, smoothed)
+      const w0 = performance.now(); wildView.update(now / 1000, LIVE.snap, S.fishScale, camera.position); shallowsView.update(now / 1000, LIVE.snap, rig.target.x, -rig.target.z, rig.dist, camera.position, S.fishScale);
+      LIVE.wildMs = (LIVE.wildMs || 0) * 0.95 + (performance.now() - w0) * 0.05;
+    }
+    if (FIND.follow) { const p = FIND.follow.at(); if (p) rig.goal.target.set(p[0], p[1], p[2]); else { FIND.follow = null; $('watching').textContent = ''; } }
     if (LIVE.snap && S.fish) {   // (the sun's direction and strength for the fish's shadows on the bed)
       const sp = sun.position, sl = sp.length() || 1, open = 1;
       SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.season === 'winter' ? 0 : open);
       LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / (LIVE.snap.h || 0.1)), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z, SUN4, risesView.leapAt);
     }
-    if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); }
+    if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); if (S.wild && (LIVE.wildN = (LIVE.wildN || 0) + 1) % 8 === 0) wildOut(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
     const cx = camera.position.x, cy = -camera.position.z, ch = camera.position.y + BASE;
     const inBandXY = cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX;
@@ -934,4 +979,4 @@ async function start() {
   });
 }
 start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, wildView, shallowsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

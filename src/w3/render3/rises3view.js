@@ -36,7 +36,7 @@ export function makeRisesView(W3) {
   const bugs = new THREE.InstancedMesh(bugGeo, bugMat, BUG_MAX); bugs.count = 0; bugs.frustumCulled = false; bugs.layers.set(LAYER); group.add(bugs);
   const R = [], S = [], leaps = new Map();   // live rings, splashes ({x, y, z, t0, r0, a}); leaping fish by id
   const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), p = new THREE.Vector3();
-  let surf = null, bugAt = -1e9;
+  let surf = null, bugAt = -1e9, onLeap = null;   // (onLeap(x, y, t, dur, h, dir): a leap begins — the shallows' view puts a damselfly there)
 
   const ring = (x, y, t, r0, a) => { if (R.length >= RING_MAX) R.shift(); R.push({ x, z: -y, sy: surfY(x, y), t0: t, r0, a }); };
   const splash = (x, y, t, r0) => { if (S.length >= SPLASH_MAX) S.shift(); S.push({ x, z: -y, sy: surfY(x, y), t0: t, r0 }); };
@@ -47,8 +47,9 @@ export function makeRisesView(W3) {
       const lp = LEAP[kind];
       if (lp && n <= 1 && Lc >= 8 && !leaps.has(id) && Math.random() < lp[0]) {   // a leap: up, through the air, back in
         const h = lp[1] * (0.7 + 0.6 * Math.random()) * Math.min(1.5, Lc / 25), dur = lp[2] * (0.8 + 0.4 * Math.random());
-        leaps.set(id, { t0: t, dur, h, x, y, dir: Math.random() * Math.PI * 2 });
+        const dir = Math.random() * Math.PI * 2; leaps.set(id, { t0: t, dur, h, x, y, dir });
         ring(x, y, t, 0.05 + L * 0.4, 0.9); splash(x, y, t, 0.06 + L * 0.5);
+        if (onLeap) onLeap(x, y, t, dur, h, dir);
         continue;
       }
       const spread = n > 1 ? Math.max(0.3, Math.sqrt(n) * L * 2) : 0;
@@ -104,5 +105,8 @@ export function makeRisesView(W3) {
     }
     bugs.count = nb; if (nb) bugs.instanceMatrix.needsUpdate = true;
   }
-  return { group, add, update, leapAt, setSurf, stats: () => ({ rings: R.length, splashes: S.length, leaps: leaps.size, bugs: bugs.count, surfMax: surf ? Math.max(...surf) : -1, surfMean: surf ? surf.reduce((a, b) => a + b, 0) / surf.length : -1 }) };
+  // the wildlife's marks on the water (render3/wild3view.js, shallows3view.js): a ring spreading from r0 m (strength a) and, with
+  // sr > 0, a splash sr m across — a loon's dive, an osprey's plunge, a frog's plop
+  const ripple = (x, y, t, r0, a = 0.8, sr = 0) => { ring(x, y, t, r0, a); if (sr > 0) splash(x, y, t, sr); };
+  return { group, add, update, leapAt, setSurf, ripple, setLeapHook: fn => { onLeap = fn; }, stats: () => ({ rings: R.length, splashes: S.length, leaps: leaps.size, bugs: bugs.count, surfMax: surf ? Math.max(...surf) : -1, surfMean: surf ? surf.reduce((a, b) => a + b, 0) / surf.length : -1 }) };
 }

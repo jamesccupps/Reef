@@ -31,6 +31,12 @@ let cam = null, stepMs = 0;
 const FINE = 0.1, FINE_UP = 6, BLOCKS_S = 3, BLOCK_MAX = 1752, ENV_FINE = 60;   // s; ×; blocks a second; s; s of water step when fine
 let env = null, side = null, run = true, speed = 1, acc = 0, envAcc = 0, h = FINE, show = 'plain', ticks = 0, plantsAt = -1e9;
 const RISES_MAX = 300;   // rises a snapshot carries at most (the view's rings: the insects taken at the surface)
+// THE WILDLIFE'S KILLS (fish3 wildEv: [x, y, z, WILDK index, length cm, species] per fish taken — render-only): at the fine speeds a
+// snapshot carries up to WILD_MAX of them, so the view's loon dives and osprey plunges where a fish was really taken (render3/
+// wild3view.js); at the fast-forward blocks none (the view times its hunts itself)
+const WILD_MAX = 120;
+let wildEv = [];
+const takeWild = (src, dt) => { if (dt > FINE) return; for (let q = 0; q + 5 < src.length && wildEv.length < WILD_MAX * 6; q += 6) for (let k = 0; k < 6; k++) wildEv.push(src[q + k]); };
 const FOCUS_R = [40, 250], NEAR_MAX = 6000;   // m: the true-size lakes' focus radius, twice the camera's distance within these — and shrunk
 // while more than NEAR_MAX agents live in it (~50 ms a 0.1-s step: real time with room; a spawning colony packs 20,000 into 250 m)
 let focusR = 150, focus = null;
@@ -57,7 +63,7 @@ function soloSide() {
     F, memo,
     get nearN() { return F.nearN || 0; },
     setFocus(f) { if (f) F.setFocus(f[0], f[1], f[2]); else F.setFocus(null); },
-    step(dt) { remember(F, WORLD_TRUE); F.step(dt); for (let q = 0; q < F.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(F.rises[q]); },
+    step(dt) { remember(F, WORLD_TRUE); F.step(dt); for (let q = 0; q < F.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(F.rises[q]); takeWild(F.wildEv, dt); },
     envStepped() {},
     view() { return packDrawn(F, drawnOf(F, F.fish, F._region, cam, WORLD_TRUE), drawnOf(F, F.yoy, F._yRegion, cam, WORLD_TRUE)); },
     sel() { return selId < 0 ? null : selInfoOf(F, env, memo, selId, selKind, h <= FINE) || { id: selId, kind: selKind, gone: true, cause: 'gone' }; },
@@ -82,7 +88,7 @@ async function poolSide(n, say, st0) {   // (st0: the random state before the wa
     async step(dt) {
       const stats = statsOn && performance.now() - statsAt > STATS_MS;
       const reps = await P.step(dt, { focus, cam, sel: selId >= 0 ? [selId, selKind] : null, stats });
-      for (const r of reps) for (let q = 0; q < r.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(r.rises[q]);
+      for (const r of reps) { for (let q = 0; q < r.rises.length && rises.length < RISES_MAX * 6; q++) rises.push(r.rises[q]); if (r.wild) takeWild(r.wild, dt); }
       if (stats) { statsAt = performance.now(); postStats(statsMerge(reps.map(r => r.stats), env, P.lakeHa)); }
     },
     envStepped() { P.envStepped(); },
@@ -190,15 +196,32 @@ function sendPlants() {   // the shoots (g DW/m²) per form, each over the bed c
   // the young crayfish's mass (render3/bed3view.js)
   const bed = env.lit ? env.lit.shown(env.sun < 0.05) : new Float32Array(nb * 3), wY = env.lit ? env.lit.wY : 1;
   const dead = Float32Array.from(P.dead);   // (last year's standing stems, g DW/m², the same cells)
-  postMessage({ type: 'plants', shoots: out, mus, surf, bed, wY, dead, yf: env.yearFrac() }, [out.buffer, mus.buffer, surf.buffer, bed.buffer, dead.buffer]); plantsAt = performance.now();
+  // THE SHALLOWS' ANIMALS (render3/shallows3view.js): the herps' numbers now (herps3 n — none under full ice or out of their season),
+  // the tadpoles per bed cell by cohort (g wet/m², stride 5: the green and mink frogs' this year's and last year's, the bullfrogs'
+  // three) and each cohort's mean tadpole (g), the shallows' water (°C, < 2 m), the weeds' large fauna per bed cell (g wet/m²: the
+  // damselfly and dragonfly nymphs among it) and the shore's fallen wood per column (plants3 wood)
+  const H = env.herps, fauna = env.lit ? Float32Array.from(env.lit.L) : new Float32Array(nb), wood = Float32Array.from(P.wood || new Float32Array(env.G.NC));
+  const tad = new Float32Array(nb * 5); let tS = 0, aS = 0;
+  for (let i = 0; i < nb; i++) { if (P.zb[i] < 2) { const a = env.G.bedA[P.cells[i]]; tS += env.temp[P.cells[i]] * a; aS += a; } if (H) { tad[i * 5] = H.tg[0][i]; tad[i * 5 + 1] = H.tg[1][i]; tad[i * 5 + 2] = H.tb[0][i]; tad[i * 5 + 3] = H.tb[1][i]; tad[i * 5 + 4] = H.tb[2][i]; } }
+  const herp = { n: H ? { ...H.n } : null, tadW: H ? [...H.mG, ...H.mB] : null, tl: aS > 0 ? tS / aS : env.temp[0] };
+  postMessage({ type: 'plants', shoots: out, mus, surf, bed, wY, dead, yf: env.yearFrac(), herp, tad, fauna, wood }, [out.buffer, mus.buffer, surf.buffer, bed.buffer, dead.buffer, tad.buffer, fauna.buffer, wood.buffer]); plantsAt = performance.now();
+}
+// THE FOREST'S LARGE ANIMALS (src/w3/forest3.js: env.forest — null while it is off or not built): its bears, deer and moose packed for
+// the view (render3/wild3view.js reads the same two lists), 8 numbers each: id, kind, x, y (the sim's metres), heading, act, young, length m
+const FOREST_KIND = ['bear', 'deer', 'moose'], FOREST_ACT = ['walk', 'graze', 'browse', 'drink', 'wade', 'fish', 'bed', 'den'];
+function forestOf() {
+  const fo = env.forest, A = fo && fo.animals; if (!A || !A.length) return null;
+  const out = new Float32Array(A.length * 8);
+  for (let i = 0; i < A.length; i++) { const a = A[i], o = i * 8; out[o] = a.id; out[o + 1] = FOREST_KIND.indexOf(a.kind); out[o + 2] = a.x; out[o + 3] = a.y; out[o + 4] = a.heading || 0; out[o + 5] = Math.max(0, FOREST_ACT.indexOf(a.act)); out[o + 6] = a.young ? 1 : 0; out[o + 7] = a.len || 0; }
+  return out;
 }
 function snapshot() {
   const { fb, yb, nf, ny, count } = side.view();
-  const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises); rises = [];
+  const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises), wz = Float32Array.from(wildEv); rises = []; wildEv = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
-  const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun,
-    acc, h, nf, ny, simT: env.time, stepMs, shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, ...side.totals(count, nf, ny) };
-  const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer]; if (field) tr.push(field.buffer);
+  const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
+    acc, h, nf, ny, simT: env.time, stepMs, shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, forest: forestOf(), ...side.totals(count, nf, ny) };
+  const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer, wz.buffer]; if (field) tr.push(field.buffer); if (msg.forest) tr.push(msg.forest.buffer);
   postMessage(msg, tr);
 }
 

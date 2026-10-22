@@ -29,7 +29,7 @@ onmessage = ev => {
       remember(F, true); F.step(m.h, m.mv); const out = F.takeOut();
       const d = m.cam !== undefined ? packDrawn(F, drawnOf(F, F.fish, F._region, m.cam, true), drawnOf(F, F.yoy, F._yRegion, m.cam, true)) : null;
       const sel = m.sel ? selInfoOf(F, env, memo, m.sel[0], m.sel[1], m.h <= 0.1) : null;
-      reply({ type: 'stepped', me, out, rises: F.rises.slice(), drawn: d, sel, stats: m.stats ? statsPart(F) : null, ...couplings() }, d ? [d.fb.buffer, d.yb.buffer] : []);
+      reply({ type: 'stepped', me, out, rises: F.rises.slice(), wild: m.h <= 0.1 ? F.wildEv.slice() : [], drawn: d, sel, stats: m.stats ? statsPart(F) : null, ...couplings() }, d ? [d.fb.buffer, d.yb.buffer] : []);
     } else if (m.type === 'season') {   // (a jump forward in the year: the water primed by the sim's worker; the skipped spawnings here)
       setScalars(env, m.scalars); F.seedSeason(m.y0, m.y1, true); remember(F, true); reply({ type: 'seasoned', me, ...couplings() });
     }
