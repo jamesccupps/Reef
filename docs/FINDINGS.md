@@ -142,6 +142,16 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
     anomalies only ~15 % of December's precipitation fell above 0 °C (field 50 %).
   - Refitting HBV inside its ranges then gave the gauges' hydrograph: August 0.40–0.60×, January 0.59–0.71×, recession 0.85–0.87 a
     day, runoff 582–592 mm.
+- **Result** (arm AH, f99d216 = E9d + BURY_MUL 0.10, seed 611, two true-scale years), each year then the next:
+
+  | Quantity | Year 1 | Year 2 |
+  |---|---|---|
+  | Summer Daphnia | 61 µg/L | 38 µg/L (arm AG: 59, then 2) |
+  | Summer TP | 7.1 µg/L | 8.0 µg/L |
+  | P inventory at the year end | 84 % | 85 % |
+
+  The year-2 plankton starvation is gone. Its fish still fell (97 → 43 → 27 kg/ha), from the late-winter kill (N_FORM, next entry)
+  and zero recruitment.
 - **Lesson.** For a small lake's flushing and nutrient supply, the weather's sequence matters as much as its monthly totals. Calibrate
   a weather generator on daily statistics (spell lengths, extremes, monthly variance), not on means.
 
