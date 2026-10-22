@@ -192,6 +192,31 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-22 ~1 p.m. EDT — THE NEWEST). DONE + pushed: 2306d79 3-D PRINTS (tools/hotbrook/export_print.mjs → exports/print/
+<a1|a1mini>/ gitignored: onepiece, fourcolor (height bands), cover4 (forest/open/wetland/water from the NAIP canopy), terrain_basins +
+water_inserts (clear PETG, upside down); TREETOPS on the forest (the human: "just simulate the top of the forest"); every part closed
+and manifold; tools/hotbrook/print_view.html previews); 1aada9e ROADMAP #10 whole-environment simulator, #11 FIRST-PERSON SCREENSAVER
+view of the true-size lakes (the human's request: place yourself somewhere, watch everything), #12 prints; 20d8f83 Y3 FEED_CV rule (off)
++ clear_water_phase_and_rotifers.md. GATE of d2e735d GREEN (134/0/1 GAP). IN THE TREE (uncommitted): Z1 — the clear-water phase at
+the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d (GR_D × gK), starvation of the share below maintenance on
+t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
+rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
+ARM AJ on the GPU (perch 75).
+BEFORE COMPACTION (~1:15 p.m.) — WHAT IS IN FLIGHT AND WHAT TO DO WHEN EACH REPORTS:
+- Z1 (uncommitted, in src/config.js ZOO3 Z1_*, src/w3/chem3.js _zooplankton gK/stvT, fish3 stageR5 Z1 line + DAPH_INTERF0/START_D0): judge
+  by scratchpad/probe/rotbud_z1.txt + rotbud_z1_nofish.txt (vs rotbud_p75.txt: edible algae dip ≤ ~3–10×, rotifers ≥ ~100–250/L at the
+  Daphnia peak, Daphnia fall 0.1–0.2 /d after it) and larvz_z1.txt (vs larvz_p75.txt: larval growth). Then W3_ONLY=chem,young,foodweb
+  locally (or the remote gate), commit, and an arm (Z1 + FEED_CV 0.25). The chem is CPU-only (both engines step the water on the CPU).
+- FEED_CV 0.25 → stageR5 after a g1_check of the young (node tools/gpu/year_cdp.mjs "r5=1&yf=0.27" out.txt 9361 g1_check with the
+  preview reef on :8000; set fry FEED_CV via the page? g1_check has no fry.* param — add one or set it in stageR5 first) — GPU free
+  only after ARM AJ (queue_aj.sh → r22AJ_<seed>.txt; read with scratchpad/yrsum.mjs).
+- The clear-water note's other mechanisms, NEXT after Z1: algae recruited from the bed (10–50 %/d where the bed < 8 m — Hansson 1996),
+  check the bacteria pool isn't stripped with the algae (≥ 25–50 % of pre-CWP), the shallows' rotifers (430–790/L), two rotifer pools.
+- AGENTS (each commits on its own worktree branch, no push; MERGE when they report, run their gate sections, push): E12b weeds
+  (plants3, build_plants3, test plants section); FOREST (src/w3/forest3.js, FOREST3 in stageR5, bears on the sucker run, deer, moose
+  positions, env.forest.animals interface, gate section forest, research note forest_mammals_bears_deer_moose.md); RENDER (render3:
+  every animal drawn, a Wildlife toggle, sim3worker data; it builds against env.forest).
+- The 3-D prints are done; the human may report how they import in Bambu Studio (multi-part 3MF components).
 ▶▶▶ RESUME HERE (2026-10-22 ~11 a.m. EDT — THE NEWEST). THE HUMAN WIDENED THE PROJECT: "this is now a whole enviorment simulator of the lakes
 and forest right around them" — (1) the live view runs the full package: DONE abaa47b (world3sel R5; stageR5 in sim3worker, shard3worker,
 main3; ?r5=0 the base; checked: perch 75/ha + alewives on the data page, fps unchanged); (2) DRAW EVERY SIMULATED ANIMAL (wildlife, herps,
