@@ -192,7 +192,15 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-21 ~10:15 p.m. EDT — THE NEWEST). fbb0751 = the CPU egg stage (EGG3, off). THE GPU TWIN OF E3 IS WRITTEN,
+▶▶▶ RESUME HERE (2026-10-21 ~10:35 p.m. EDT — THE NEWEST). 145659e: E3 IN stageR5 (GPU twin verified: g1_check ?r5=1&eggs=1&yf=0.25 —
+235/236 clutches' numbers within 1 %, development exact); year.js prints 'the period's eggs'. ARM AE RUNNING on the GPU (queue_ae.sh,
+snapshot ae :8144 = 145659e, r5=1, 611/612/613 × 730 days → scratchpad/r22AE_<seed>.txt; read with yrsum.mjs + yz.mjs + grep "wildlife
+take|period's eggs"). The remote gate of 9ed1d21 (gate_eco1.txt) still running (0 FAIL so far); then gate 145659e.
+KNOWN ISSUES: (a) g1_check at yf 0.25 — the followed fish's fish-eating CPU 184 vs GPU 369 g (bass, pickerel ~2×), with eggs off too
+(at yf 0.4 they agree) — investigate June strikes (guarding? ripe runners?); (b) with eggs the young's starvation CPU 41 vs GPU 560 in
+a block (heavy competition: 24.5M young against 1.35M without — the egg stage's field hatch rates lift first-feeders 3–10× over the
+old sHatch 0.05–0.6); (c) the catchment's summer flow 0.5–0.9× vs 0.2–0.4×; (d) the xo/xt exposure mismatch (~25 fish), old.
+▶▶▶ RESUME HERE (2026-10-21 ~10:15 p.m. EDT). fbb0751 = the CPU egg stage (EGG3, off). THE GPU TWIN OF E3 IS WRITTEN,
 UNTESTED (this commit): layout.js YOY_FIELDS + dev/eggT0/eggTm/hadGuard, SPF + eForm…eDrop (SP_REC 200), EGG3 consts emitted,
 statsAdd eggs3 from T_EGG3 (word 4096 = pairs 2048 + k·8 + j: laid, swum, base, temp, guard, pred, o2, storm); wgsl.js b_spawnFill lays
 eggs (Y_dev 0, else 2 — NEW SCHOOLS DEFAULT dev 2), y_egg kernel (= fish3 _eggLive; desertion writes A_nt; storms via the uniform
