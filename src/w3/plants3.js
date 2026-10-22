@@ -71,6 +71,36 @@ export const FORMS3 = [
   // stones
   { key: 'nitella', name: 'Stoneworts (Nitella)', form: 'DM', sub: 'organic', noBrook: true, depth: [1.0, 4.2], lightLim: 0.06, KL: 0.08, Bmax: 30, mu: 0.02, resp: 0.010, tStart: 3, carry: 0.9,
     N: 2.0, P: 0.15, root: 0.3, hFull: 0.2, stem: 0.2, refuge: 0.15, cover: 0.2, invert: 1.0, look: { col: 0x2c4630 } },
+  // (E12) THE REST OF THE NEAR-CERTAIN AND LIKELY FLORA (research_notes/Hot Brook populations and water/plant_species_hot_brook.md §2: the
+  // region's 151 sites within ~50 km, the soft-water list ranked; Tier B 'near-certain', C 'likely'): each on its form's physiology, its
+  // numbers scaled from the form's ranges [inf: no per-species biomass for Sparganium, Isoetes, Eleocharis, Sagittaria — plant_species_traits.md
+  // §1 gaps]; each shares its form's room (the photographed fringe stays the fringe: the emergents and floaters keep the lilies' shelter).
+  // EMERGENT at the wetland edges (Upper's S end, Lower's N end): water horsetail (6 % of the region's sites; the moose's 9.7 %), bogbean
+  // (8.6 %, the fen margin), wiregrass sedge Carex lasiocarpa (5.3 %, the fen mats; sedges the moose's 9.2 %), broad-leaved arrowhead (4 %)
+  { key: 'horsetail', name: 'Water horsetail', form: 'EM', sub: 'organic', noBrook: true, depth: [0, 1.0], window: true, core: [0, 0.6], shelter: 6, Bmax: 300, mu: 0.03, tStart: 8, carry: 0.5, standDead: 0.3,
+    N: 2.0, P: 0.25, root: 1.0, hFull: 99, stem: 1, refuge: 0.3, cover: 0.4, invert: 0.3, look: { col: 0x4d6b38, w: 0.005, n: 12 } },
+  { key: 'bogbean', name: 'Bogbean', form: 'EM', sub: 'organic', noBrook: true, depth: [0, 0.5], window: true, core: [0, 0.3], shelter: 7, Bmax: 250, mu: 0.03, tStart: 6, carry: 0.6, standDead: 0.1,
+    N: 2.2, P: 0.16, root: 1.0, hFull: 99, stem: 4, refuge: 0.3, cover: 0.5, invert: 0.3, look: { col: 0x5a7d3a, w: 0.03, n: 3 } },
+  { key: 'sedge', name: 'Wiregrass sedge', form: 'EM', sub: 'organic', noBrook: true, depth: [0, 0.3], window: true, core: [0, 0.2], shelter: 7, Bmax: 400, mu: 0.025, tStart: 6, carry: 0.6, standDead: 0.5,
+    N: 1.6, P: 0.12, root: 1.0, hFull: 99, stem: 0.5, refuge: 0.3, cover: 0.5, invert: 0.3, look: { col: 0x7a8a42, w: 0.003, n: 16 } },
+  { key: 'arrowhead', name: 'Broad-leaved arrowhead', form: 'EM', sub: 'organic', noBrook: true, depth: [0, 0.6], window: true, core: [0, 0.4], shelter: 6, Bmax: 200, mu: 0.035, tStart: 10, carry: 0.4, standDead: 0.1,
+    N: 2.4, P: 0.20, root: 1.0, hFull: 99, stem: 3, refuge: 0.3, cover: 0.5, invert: 0.3, look: { col: 0x5f8f3a, w: 0.05, n: 4 } },
+  // FLOATING-LEAVED: narrow-leaved bur-reed (6 %; Lambert Lake's 'granitic gravel and silt' — the shallow shores and the brook's mouths:
+  // floating ribbons) and floating-leaf pondweed P. natans (Tier B; its elliptic pads at the lilies' outer edge)
+  { key: 'burreed', name: 'Narrow-leaved bur-reed', form: 'FL', sub: 'any', depth: [0.2, 1.5], window: true, core: [0.3, 1.0], shelter: 6, Bmax: 80, mu: 0.04, tStart: 8, carry: 0.4, padGraze: 0.03,
+    N: 2.5, P: 0.18, root: 0.85, hFull: 99, stem: 1, refuge: 0.3, cover: 0.6, invert: 0.4, look: { col: 0x5d7c36, r: [0.015, 0.04] } },
+  { key: 'floatpond', name: 'Floating-leaf pondweed', form: 'FL', sub: 'organic', noBrook: true, depth: [0.5, 2.0], window: true, core: [0.9, 1.7], shelter: 6, Bmax: 70, mu: 0.05, tStart: 8, carry: 0.3, padGraze: 0.05,
+    N: 2.2, P: 0.18, root: 0.85, hFull: 99, stem: 1, refuge: 0.4, cover: 0.7, invert: 0.5, look: { col: 0x56762e, r: [0.03, 0.06] } },
+  // (Tier C, not added: grassy pondweed P. gramineus and spiral pondweed P. spirillus — "likely" by the region's records, none here; on
+  // the recorded pondweeds' room with inferred numbers they reached bed those cannot and took the lakes' stands from 47 % to 51 % of the bed,
+  // against the research's 20–30 %)
+  // ROSETTES on the sand and gravel: spiny-spored quillwort (4.6 %; deeper than lobelia — a population at 1.8–2.3 m below one at 0.3–1.3 —
+  // and the first to go as humic colour rises: in the tea-coloured lakes its light limit is its kin's, ~0.42) and needle spikerush (Eleocharis acicularis
+  // turf, the very shallows)
+  { key: 'quillwort', name: 'Spiny-spored quillwort', form: 'IS', sub: 'mineral', noBrook: true, depth: [0.2, 1.8], lightLim: 0.42, KL: 0.15, Bmax: 60, mu: 0.006, resp: 0.006, tStart: 3, carry: 0.9, rootO2: 0.8,
+    N: 1.5, P: 0.10, root: 0.87, hFull: 0.1, stem: 0.3, refuge: 0.1, cover: 0.15, invert: 0.5, look: { col: 0x46663c } },
+  { key: 'spikerush', name: 'Needle spikerush', form: 'IS', sub: 'mineral', depth: [0, 1.0], lightLim: 0.40, KL: 0.15, Bmax: 70, mu: 0.012, resp: 0.008, tStart: 5, carry: 0.6, rootO2: 0.4,
+    N: 1.8, P: 0.12, root: 0.87, hFull: 0.08, stem: 0.2, refuge: 0.15, cover: 0.2, invert: 0.6, look: { col: 0x6a8a40 } },
   { key: 'moss', name: 'Water moss (Fontinalis)', form: 'DM', sub: 'mineral', brookOnly: true, depth: [0.05, 1.3], lightLim: 0.05, KL: 0.08, Bmax: 40, mu: 0.02, resp: 0.010, tStart: 2, carry: 0.9,
     N: 2.0, P: 0.15, root: 0, hFull: 0.15, stem: 0.2, refuge: 0.15, cover: 0.3, invert: 1.0, look: { col: 0x24402a } },
 ];
@@ -97,7 +127,8 @@ export const PL3 = {
   // (MOOSE_Z: all to 1.2 m, none past 2.0 [inf: belly-deep wading]) × their preference by species, and take it ashore: their dung falls
   // on land (none in 65 h of watching moose in ponds) — the plants' N and P leave the lakes (chem3's ledger, outP / outN)
   MOOSE: 0, MOOSE_N: 15, MOOSE_KG: 0.868, MOOSE_YF: [0.26, 0.55], MOOSE_Z: [1.2, 2.0],
-  MOOSE_PREF: { nitella: 1, ribbonleaf: 1, largeleaf: 1, robbins: 1, yellowlily: 1, whitelily: 0.8, watershield: 0.6, bulrush: 0.4, pickerelweed: 0.4, bladderwort: 0.3, pipewort: 0.2, lobelia: 0.2 },
+  MOOSE_PREF: { nitella: 1, ribbonleaf: 1, largeleaf: 1, robbins: 1, yellowlily: 1, whitelily: 0.8, watershield: 0.6, bulrush: 0.4, pickerelweed: 0.4, bladderwort: 0.3, pipewort: 0.2, lobelia: 0.2,
+    horsetail: 1, sedge: 1, spikerush: 1, floatpond: 1, burreed: 0.6, arrowhead: 0.5, bogbean: 0.3, quillwort: 0.2 },   // (E12: water horsetail 9.7 %, sedges 9.2 %, spikerush 5.8 % of Isle Royale's moose diet)
   SPROUT: 0.10,         // /day: storage feeds the new shoots in spring at up to this (CHARISMA ≤ 10 %)
   SEED: 0.5,            // g DW/m² a bare cell in a form's range is colonised to (spores, fragments, seeds: the bed is never sterile)
   YF_STORE: 0.53,       // year-fraction (~Sep 10) from which the shoots reallocate to storage (PCLake: day 259 + 15)
@@ -194,9 +225,9 @@ export const PL3 = {
   // column, within WOOD_Z m of water — Maine's forest lakes carry ~100–500 logs a km of shore; Little Rock Lake's perch fell from
   // 141/ha to ~5 after its wood was cut from 475 to 128 logs/km, Sass 2006 — predation confounded), `other` any other species
   SPAWN: {
-    rigid: { dead: 1, wood: 1, other: 0.15, sp: { pickerelweed: 1, bulrush: 1, nitella: 1, moss: 1, largeleaf: 0.5, robbins: 0.3 } },
-    mat: { dead: 0.6, wood: 0.2, other: 0.3, sp: { pipewort: 1, lobelia: 1, bladderwort: 1, moss: 1, robbins: 1, nitella: 0.5, pickerelweed: 0.5, bulrush: 0.5 } },
-    plant: { dead: 0.1, wood: 0, other: 0.2, sp: { ribbonleaf: 1, largeleaf: 1, robbins: 1, bladderwort: 1, pipewort: 1, lobelia: 1, nitella: 0.5 } },
+    rigid: { dead: 1, wood: 1, other: 0.15, sp: { pickerelweed: 1, bulrush: 1, nitella: 1, moss: 1, largeleaf: 0.5, robbins: 0.3, horsetail: 1, arrowhead: 0.5, bogbean: 0.3, burreed: 0.3 } },   // (E12's: [inf] by their stems)
+    mat: { dead: 0.6, wood: 0.2, other: 0.3, sp: { pipewort: 1, lobelia: 1, bladderwort: 1, moss: 1, robbins: 1, nitella: 0.5, pickerelweed: 0.5, bulrush: 0.5, sedge: 1, spikerush: 1, quillwort: 1, horsetail: 0.5, bogbean: 0.5 } },
+    plant: { dead: 0.1, wood: 0, other: 0.2, sp: { ribbonleaf: 1, largeleaf: 1, robbins: 1, bladderwort: 1, pipewort: 1, lobelia: 1, nitella: 0.5, floatpond: 1, quillwort: 0.5, spikerush: 0.5, burreed: 0.5 } },
   },
   SPAWN_HALF: 30,       // structure (stems/m² × cover) at which an index reaches 1 − 1/e: a moderate stand
   WOOD: 60,             // the structure a wooded shore's band of fallen trees and brush gives (as stems/m² × cover)

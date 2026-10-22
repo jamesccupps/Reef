@@ -783,8 +783,10 @@ if (run('plants')) {
       }
       // (the full canopy: the twenty densest pondweed beds — stage 7f: four species share the canopy's room and seldom fill it)
       let fb = 0; can.sort((p, q) => q[0] - p[0]); for (const [, i] of can.slice(0, 20)) { fu += Lt.S[i] + Lt.L[i]; nf++; for (let f = 0; f < FORMS3.length; f++) fb += P.Bs[f][i]; }
-      // (the barest tenth of the lit bed < 3 m: every shallow cell grows a little)
-      lit.sort((p, q) => p[0] - q[0]); const bare = lit.slice(0, Math.max(1, Math.round(lit.length / 10)));
+      // (the BARE lit bed < 3 m: ≤ 5 g DW of plants/m², or — too few such cells — its barest tenth: every shallow cell grows a little. E12's
+      // quillwort and spikerush turf on the sand shelf made the barest tenth a rosette lawn of up to ~46 g/m², no longer the bare bed the
+      // research's ratio is against)
+      lit.sort((p, q) => p[0] - q[0]); const nB = lit.filter(([b]) => b <= 5).length, bare = lit.slice(0, nB >= 10 ? nB : Math.max(1, Math.round(lit.length / 10)));
       const ba = bare.reduce((s, [, i]) => s + Lt.S[i] + Lt.L[i], 0) / bare.length, snB = bare.reduce((s, [, i]) => s + Lt.sn[i], 0) / bare.length;
       return { full: fu / Math.max(1, nf), perG: fu / Math.max(1e-9, fb) * 1000, fullB: fb / Math.max(1, nf), nf, bare: ba, bareB: bare[bare.length - 1][0], snBare: snB, ...Lt.stock() };
     };
@@ -1126,8 +1128,10 @@ if (run('substrate')) {
     `Upper hard ${(100 * su.hard).toFixed(1)} %, worked ${(100 * su.worked).toFixed(1)} %, organic ${(100 * su.org).toFixed(1)} %; Lower ${(100 * sl.hard).toFixed(1)} / ${(100 * sl.worked).toFixed(1)} / ${(100 * sl.org).toFixed(1)} %`);
   // (the crayfish's stony shelter by the map against the depth proxy: the bed area holding ≥ half of CR_ROCK)
   { seed(509); const e = new Env3({ yf0: 0.4 }), L = e.lit, ch = e.chem, area = i => ch.a[L.cells[i]];
-    const stony = () => { L._capacity(); let s = 0, t = 0; for (let i = 0; i < L.cells.length; i++) { t += area(i); if (L.Kcr[i] >= 0.5 * LIT3.CR_ROCK) s += area(i); } return s / t; };
-    const was = LIT3.SUB_MAP; LIT3.SUB_MAP = 0; const old = stony(); LIT3.SUB_MAP = 1; const map = stony(); LIT3.SUB_MAP = was; L._capacity();
+    // (the STONES' term alone — the crevices ≥ half of CREV_FULL by the map, the bed shallower than CR_ROCK_Z by depth: Kcr's max with the
+    // weeds' shelter let E12's dense new stands count as stones)
+    const stony = map => { let s = 0, t = 0; for (let i = 0; i < L.cells.length; i++) { t += area(i); if (map ? L.crev[i] >= 0.5 * LIT3.CREV_FULL : e.plants.zb[i] < LIT3.CR_ROCK_Z) s += area(i); } return s / t; };
+    const old = stony(false), map = stony(true);
     check('E1 (LIT3.SUB_MAP): the crayfish\'s stony shelter where the map puts stones — 3–12 % of the bed against the depth proxy\'s every bed under 1.5 m',
       map > 0.03 && map < 0.12 && old > 1.5 * map, `${(100 * map).toFixed(1)} % of the bed by the map, ${(100 * old).toFixed(1)} % by depth`); }
   // (E2a: the rotifers' rates as K. cochlearis' — rmax 0.28 /d, their zero-growth food 0.5–0.75 of Daphnia's — and a fortnight's microbial food
