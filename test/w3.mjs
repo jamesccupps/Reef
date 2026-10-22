@@ -305,7 +305,7 @@ if (run('core')) {
   // the lakes' fish biomass inside Maine's range
   { seed(501); const e = new Env3({ col: 10 * CS }), F = new Fish3(e), c = F.census(); let worst = 0; const txt = [];
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
-    for (const k of KEYS3) { const r = c[k], d = Math.abs((S3[k].brookRes ? r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
+    for (const k of KEYS3.filter(k => !S3[k].run)) { const r = c[k], d = Math.abs((S3[k].brookRes ?   // (S3 run: the sea-run alewife, founded by none — E8) r.n / brookA / S3[k].perM2 : r.perHa / S3[k].perHa) - 1); worst = Math.max(worst, d); txt.push(`${k} ${S3[k].brookRes ? (r.n / brookA).toFixed(2) + '/m²' : r.perHa.toFixed(0)}`); }
     const kg = F.biomass() / 1000 / F.lakeHa, wet = F.fish.every(inWater), schools = F.fish.every(a => a.school ? a.n > 1 : a.n === 1);
     // (the agents: within the budget — F3.AGENTS_HA a hectare of lake, the brook's dace aside — with the founders' solitary fish
     // all individuals; or, if the solitary fish alone exceed it, no schooling fish given its own brain)
@@ -428,7 +428,7 @@ if (run('core')) {
     let tf = 0, steps = 0; for (let i = 0; i < 296 * 5; i++) { const t0 = performance.now(); F.step(FB); tf += performance.now() - t0; steps++; e.step(EW); }
     const c = F.census(), kg = F.biomass() / 1000 / F.lakeHa; const lowP = [], gone = [], txt = [];
     const brookA = GEO.body.reduce((t, b) => t + (b === BROOK ? GEO.CELL * GEO.CELL : 0), 0);
-    for (const k of KEYS3) { const r = c[k]; txt.push(`${k} ${f2(r.p)}`); if (!(r.n > 0.5 * (S3[k].brookRes ? S3[k].perM2 * brookA : S3[k].perHa * F.lakeHa))) gone.push(k); if (!(r.p > 0.15)) lowP.push(k); }
+    for (const k of KEYS3.filter(k => !S3[k].run)) { const r = c[k]; txt.push(`${k} ${f2(r.p)}`); if (!(r.n > 0.5 * (S3[k].brookRes ? S3[k].perM2 * brookA : S3[k].perHa * F.lakeHa))) gone.push(k); if (!(r.p > 0.15)) lowP.push(k); }
     const st = F.stats.died; let starve = 0, all = 0; for (const k in st) for (const cs in st[k]) { all += st[k][cs]; if (cs === 'starve') starve += st[k][cs]; }
     // (how MUCH they eat — p, the share of the maximum ration — is the food web's calibration, stage 6: the water is still too
     // productive and the type III response too generous, p ~0.5–0.97 vs ~0.3–0.6 in real lakes; here every species must feed)
