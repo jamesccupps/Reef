@@ -710,6 +710,7 @@ export function stageR5(on = true) {
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
   WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0;   // (E9b: rain and snow, the catchment's flow through the lakes)
+  EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
   F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)

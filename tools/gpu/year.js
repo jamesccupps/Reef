@@ -183,6 +183,10 @@ for (const sd of SEEDS) {
     // the young by species: hatched in the period and the period's fates (wgsl.js FRY_*: natural, starve, heat, hypoxia, eaten, recruited)
     const FATES = ['natural', 'starved', 'heat', 'hypoxia', 'eaten', 'recruited', , 'capped', 'wildlife'], T_FRY = 320;
     const FK = ['natural', 'starve', 'heat', 'hypoxia', 'eaten', 'recruited', 'hatched', 'capped', 'wild'];   // (fish3 stats.fry's keys: the founding's season so far counted in)
+    // (E3) the period's eggs (T_EGG3: pairs 2048 + k·8 + j — laid, swum up; deaths: base, temp, unguarded, pred, O₂, storm)
+    { const EC = ['base', 'temp', 'unguarded', 'pred', 'O2', 'storm'], parts = KEYS3.map((k, q) => { const v = j => D(2048 + q * 8 + j) / 1e6, laid = v(0); if (!(laid > 0)) return null;
+        return `${k} ${(laid / 1e6).toFixed(1)}M → swum ${(100 * v(1) / laid).toFixed(0)}% (` + EC.map((c, i) => [c, v(2 + i) / laid]).filter(x => x[1] >= 0.01).map(([c, x]) => `${c} ${(100 * x).toFixed(0)}%`).join(' ') + ')'; }).filter(Boolean);
+      if (parts.length) say("the period's eggs (laid → swum up, deaths): " + parts.join(' · ')); }
     say("the period's young (hatched → the period's fates): " + KEYS3.map((k, q) => { const f0 = base ? {} : (st0.fry[k] || {}), v = j => (j === 8 ? D(1998 + q) : j === 7 ? D(910 + q) : D(T_FRY + q * 7 + j)) / 1e6 + (f0[FK[j]] || 0), h = v(6); return h > 0 ? `${k} ${(h / 1e6).toFixed(1)}M → ` + FATES.map((f, j) => [f, v(j) / h]).filter(x => x[1] >= 0.001).map(([f, x]) => `${f} ${(100 * x).toFixed(1)}%`).join(' ') : null; }).filter(Boolean).join(' · '));
   };
   for (let day = 1; day <= DAYS; day++) {

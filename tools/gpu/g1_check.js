@@ -10,6 +10,7 @@ const log = (...a) => { out.textContent += a.join(' ') + '\n'; console.log(...a)
 const qs = new URLSearchParams(location.search), SEED = +(qs.get('seed') || 611);
 { const { stageR5 } = await import('../../src/w3/fish3.js'); if (qs.get('r5') === '1') stageR5(true); }   // (?r5=1: stage R item 5's package)
 { const { F3 } = await import('../../src/w3/fish3.js'); if (qs.get('wild') === '1') F3.WILD = 1; }   // (?wild=1: the wildlife, E4)
+{ const { EGG3 } = await import('../../src/config.js'); if (qs.get('eggs') === '1') EGG3.ON = 1; }   // (?eggs=1: the egg stage, E3)
 const { Env3 } = await import('../../src/w3/env3.js');
 const { Fish3, F3, HID3, reinforce3 } = await import('../../src/w3/fish3.js');
 const { seed } = await import('../../src/core.js');
@@ -237,6 +238,7 @@ const cmC = new Float64Array(n);
   const zTot = f => { let t = 0; for (let j = 0; j < Gg.NCELL; j++) t += f[j] * ch.w[j]; return t; };
   const b0 = { zD: zTot(ch.zooD), zC: zTot(ch.zooC), zR: zTot(ch.zooR) };
   const n0 = yoy.map(q => q.n), L0 = yoy.map(q => q.L), tk0 = yoy.map(q => q.tk);
+  const dev0 = yoy.map(q => q.dev);   // (E3: the clutches on the bed at the block's start)
   tc = performance.now(); F._stepYoy(B, B, yf); tc = performance.now() - tc;
   const b1 = { zD: zTot(ch.zooD), zC: zTot(ch.zooC), zR: zTot(ch.zooR) };
   G.clearTallies();
@@ -248,6 +250,9 @@ const cmC = new Float64Array(n);
   for (let q = 0; q < ny; q++) { const c = yoy[q], g = L.readYoy(Yg, G.ycap, q);
     if (c.alive) { aliveC++; nC += c.n; } if (g.alive) { aliveG++; nG += g.n; } if (g.recruit > 0) recG++; if (!c.alive && c.L >= c.s.sp.L0) recC++;
     if (q < ny && tk0[q] + B >= F3.YOY_TICK) { feeders++; if (c.alive && g.alive) { if (Math.abs(c.n - g.n) <= 0.02 * Math.max(c.n, 1)) nOk++; if (Math.abs(c.L - g.L) <= 0.01 * c.L) LOk++; } } }
+  { let ne = 0, nOk = 0, dOk = 0, nC = 0, nG = 0; for (let q = 0; q < ny; q++) { if (!(dev0[q] < 2)) continue; ne++; const cq = yoy[q], g = L.readYoy(Yg, G.ycap, q); const cn = cq.alive ? cq.n : 0, gn = g.alive ? g.n : 0; nC += cn; nG += gn;
+      if (Math.abs(cn - gn) <= 0.01 * Math.max(1, n0[q])) nOk++; if (Math.abs((cq.dev ?? 2) - (g.dev ?? 2)) <= 1e-3) dOk++; }
+    if (ne) log(`the clutches on the bed (E3): ${ne} — numbers within 1 % in ${nOk}, development within 0.001 in ${dOk}; ${(nC / 1e3).toFixed(0)}k · ${(nG / 1e3).toFixed(0)}k eggs and yolk-sac larvae`); }
   log(`the young (CPU ${tc.toFixed(0)} ms): ${feeders} schools fed this block — ${nOk} with numbers within 2 %, ${LOk} lengths within 1 % of fish3's; ${aliveC} · ${aliveG} schools alive (${(nC / 1e3).toFixed(0)}k · ${(nG / 1e3).toFixed(0)}k fish); recruiting ${recC} · ${recG}`);
   log(`   zooplankton the young ate this block, CPU · GPU: Daphnia ${used(b0.zD, b1.zD)} · ${used(gz(Wb, 'zooD'), gz(Wa, 'zooD'))}; copepods ${used(b0.zC, b1.zC)} · ${used(gz(Wb, 'zooC'), gz(Wa, 'zooC'))}; rotifers ${used(b0.zR, b1.zR)} · ${used(gz(Wb, 'zooR'), gz(Wa, 'zooR'))}`);
   const FY = [['yZoo', 8], ['yWeed', 9], ['yBenth', 10], ['ySed', 11]]; log('   grams the young ate, CPU · GPU: ' + FY.map(([k, q]) => `${k} ${(F.stats.food[k] - yf0[k]).toFixed(0)} · ${(tl[64 + q] / 1e6).toFixed(0)}`).join('; '));
