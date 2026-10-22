@@ -91,3 +91,87 @@ retires as a regulator (R5).
 
 **The fish's side (E11).** Fish sense the risk through the fear input: the bigger-deeper rule (fish > 5–7 cm avoid < 20 cm of water by
 day).
+
+## E8 — the sea-run alewife (design, 2026-10-22)
+
+Every value is from docs/research_notes/Hot Brook populations and water/sea_run_alewife.md (its "Implications for the sim") unless [inf].
+MDIFW's 2024 chart lists sea-run alewife in Lower; they have reached Danforth naturally since 2017. No count exists for Hot Brook.
+
+**What it is.** The 12th species, `alewife`, a seasonal visitor that both engines carry like the others. The GPU's tally map is
+already laid out from the species' count (f5dad76).
+- **Adults** are school agents of a few hundred fish, with brains, as the other schooling species.
+  - **Size:** 26–32 cm, about 230 g.
+  - **Energetics:** FB4 Stewart & Binkowski 1986, Thornton–Lessem consumption. The swimming terms are entered in the sim's FB4
+    convention (VEL = ACT·W^RK4·e^(BACT·T) at or below RTL, RK1·W^RK4·e^(RK5·T) above it): ACT 5.78, BACT 0.149, RK1 22.08, RK5 0,
+    RK4 −0.045, RTL 9. The note's table lists the two the other way round; read literally, alewives would swim ~1 m/s at 20 °C and
+    respire more than they can eat.
+  - **Heat:** UILT 23.5 °C.
+- **Young** are young-of-year schools that never recruit.
+  - **Energetics:** the juvenile set (CQ 5, CTO 24, CTM 26, CTL 29), with no swimming multiplier.
+  - **Length–weight:** ln W = −4.72 + 2.96 ln L(cm). The < 43-mm curve, which is 3× lighter at 2 cm, is not used: the sim holds one
+    length–weight curve per species.
+  - **Gape:** no prey over 1 mm until 25–30 mm. Their zooplankton ladder is read at half their length (S3 `zooLadderK` 0.5 [inf]).
+
+**The run (spring).**
+- **Size:** RUN_PER_ACRE × the lakes' DEP acres (1,574). The default is 15 (≈ 23,600 adults); the presets are 6, 35, 120 and 235.
+  Each year's run is drawn lognormally with CV 0.5 from the seeded RNG.
+- **Timing:** arrivals start when Lower's surface reaches 10 °C (≈ May 12, plus a few days' travel) and stop at 20 °C (≈ June
+  18–25), peaking at 13–16 °C.
+- **Where they arrive:** as ripe school agents at Lower's outlet column (`env.outCol`).
+  - Sex 55 % male; gonads ♀ 10 %, ♂ 5 % of mass.
+  - L ~ N(28.5, 1.2) cm [inf from 26–32].
+  - The schools split between the lakes by area (57 : 43 Upper : Lower). Upper's share crosses Lower and climbs the brook by the
+    existing trip routes, gated by the brook's depth.
+
+**Spawning (late May – June).**
+- At night, in 0.15–1 m (to 3 m) over sand, gravel, plants or detritus, at 10.5–21 °C (best 13–16), using the existing ripe-fish
+  ground choice with a 'shore' site.
+- About 100,000 eggs a female (fec a 4.56, b 3).
+- The eggs go through the egg stage (EGG3.sp.alewife: 'exp', D = 25.1·e^(−0.089·T) days; yolk 2–5 d).
+
+**Leaving and dying (June – July).**
+- **Residence after spawning:** lognormal with a median of 17 d (range 1–64, Lake George). A leaving school swims to the outlet and is
+  removed there: the 'emigrated' tally, with its P and N export.
+- **Freshwater mortality:** 50 % of the run (0.3–0.9; Love Lake 0.91) as a hazard over the residence, cause 'spent'. Carcasses go to the
+  bed's organic layer.
+- **Heat:** any adult still in the lake at ≥ 23.5 °C dies by the existing heat hazard.
+- **Adult diet:** zooplankton, midges, and fish larvae ≤ ⅓ of their length — yellow perch larvae in May–June, by the existing LARV_A
+  rule.
+
+**The young (June – ice-on).**
+- **Diet:** pelagic schools on the zooplankton (the ladder at half length; filter-feeding at night [inf: the type II at night with the
+  same K]). Here they strip the large Daphnia from late June.
+- **No recruitment:** S3 `noRecruit`.
+- **Emigration:** a hazard from mid-July (yf ≥ 0.37) to ice-on.
+  - The base daily rate rises with length (≥ 4 cm) and through autumn [inf].
+  - It is multiplied ×5 [inf] on a pulse day: rain or a flow rise (env.qFac up by ≥ 30 % on the day), or the air cooling ≥ 2 °C, so that
+    > 80 % leave in 2–3 pulses.
+  - It is blocked when the outflow is near zero.
+  - Emigrants are removed, tallied with their P export. (First cut: a removal hazard in either lake, without the swim to the outlet;
+    the outlet-pool ambush comes later.)
+- **Cold:** below 5 °C a cold mortality [inf: 0.2 /d]; any left at ice-on die.
+
+**Nutrients (closed budgets).** Fish bodies are outside the sim's P/N budget, since grazing returns nutrients at once. So:
+- the adults' import enters the ledger (inP, inN): excretion while resident (2.17 µg P and 24.7 µg N per g per hour, to the cell's phos
+  and NH₄) and carcass P/N (0.42 % P, 2.49 % N of wet mass, to the bed: sedP and the water's NH₄);
+- the emigrants' export (0.43 % P, ~2.5 % N [inf] of their wet mass) is debited from the lake's dissolved pools (ledger outP, outN).
+
+**Who eats them.**
+- **Adults:** eagles and ospreys (WILD3 prefs ×2 [inf], the outlet), snappers.
+- **Young:** bass (< 30 cm), pickerel, white and yellow perch (the existing piscivory by gape), loons and mergansers.
+
+**Checks.**
+- The run's numbers and dates.
+- Adults gone by late July.
+- Zooplankton: zooD and the cladocerans' mean size fall from late June to October, then rebound from December.
+- Emigrants per adult 2–50, in 2–3 pulses.
+- Net P import positive at ≥ 15/acre.
+- White perch switch to the young alewives in late summer.
+- The young yellow perch's food squeezed (a possible cause of the human's "perch small and few").
+
+**Staging.**
+- **E8a CPU:** the species, the run, spawning, residence and exit, the young's emigration and cold death, nutrients, tallies, and a
+  gate check behind ALEWIFE.ON in stageR5.
+- **E8b GPU:** arrivals created by a kernel at the outlet (as recruitment creates agents), the exits and the young's emigration as
+  hazards, the tallies; then g1_check.
+- **E8c:** predators gathering at the outlet in pulses, the swim to the outlet, the size-structured exit.

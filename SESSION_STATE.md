@@ -212,6 +212,12 @@ the hordes strip the rotifers (0.07 µg/L) → FIXED: Daphnia's juveniles (D_JUV
 log-linearly to K_FRY as the young outgrow the micro-prey (FRY_ROT_L, NAUP_L). Probe rerun → probe/e2c_on2.txt.
 RESEARCH RUNNING (agent): field larval Z by species, the invertebrate-predation share, peak larval densities → docs/research_notes/Real
 lake ecology for calibration/larval_mortality.md — then set the unsimulated larval mortality from it (realism over compensation).
+DONE since: aec3490 = E2c/E2d + E6a COMMITTED (W3_ONLY=small,wild 17 PASS; GPU parity pending); f5dad76 = THE GPU TALLY MAP generated
+from the species' count (layout.js TALLY_BLOCKS/TP/tallyWGSL; statsAdd, year.js, g1_check, g2_run, g2_probe, the gate read TP by name;
+W3_ONLY=gpu 14 PASS; GPU runtime pending) — every other per-species GPU slot already holds 16. E8 DESIGN written (ECOSYSTEM_BUILD.md "E8 —
+the sea-run alewife"; NOTE the FB4 swimming terms: the note's table lists ACT/RK1 the other way round from the sim's convention — use
+ACT 5.78, BACT 0.149, RK1 22.08, RK5 0). Draft entries: scratchpad/alewife_draft.md. An Explore agent is mapping the hooks (founding,
+mid-run agent creation on CPU/GPU, removal, routes, spawning, per-species tables, flow cues).
 PLAN AFTER: (1) commit E2c + E6a; (2) GPU parity when AF ends; (3) GENERATE THE GPU TALLY MAP from NK/NWILD (T_KILLS, T_FRY… are
 hand-placed for 11 species and overflow at 12) — prerequisite for (4) E8 THE ALEWIFE as the 12th species (sea_run_alewife.md
 "Implications for the sim": runs in via Lower's outlet mid/late May at 15/acre default, spawn at night in the shallows, 50 % die,
