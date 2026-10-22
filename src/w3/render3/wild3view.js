@@ -1264,7 +1264,9 @@ export function makeWildView(ctx) {
     const out = [];
     for (const a of AG.values()) {
       if (a.parent) continue; const B = BEH[a.kind], p = B && B.pos ? B.pos(a) : a.forest ? [a.x, a.Y + 0.8 * a.k, a.y] : [a.x, a.Y, a.y]; if (!p) continue;
-      out.push({ kind: a.kind, name: NAMES[a.kind] || a.kind, key: a.key, perched: a.mode === 'perch', flying: !a.forest && !a.members && a.mode !== 'perch' && a.Y - surfY(a.x, a.y) > 2.5, at: () => { const q = AG.get(a.key); if (!q) return null; const r = BEH[q.kind] && BEH[q.kind].pos ? BEH[q.kind].pos(q) : q.forest ? [q.x, q.Y + 0.8 * q.k, q.y] : [q.x, q.Y, q.y]; return r ? [r[0], r[1], -r[2]] : null; }, size: a.forest ? BIG[a.kind].len : (B ? B.len : 1), x: p[0], y: p[2] });
+      // (hidden: a forest animal deep in the woods, under the crowns — Find skips it; at the water's edge, drinking, wading or fishing it is seen)
+      const hidden = !!a.forest && GEO.shoreDist(a.x, a.y) < -6 && a.act !== 'drink' && a.act !== 'wade' && a.act !== 'fish';
+      out.push({ kind: a.kind, name: NAMES[a.kind] || a.kind, key: a.key, hidden, perched: a.mode === 'perch', flying: !a.forest && !a.members && a.mode !== 'perch' && a.Y - surfY(a.x, a.y) > 2.5, at: () => { const q = AG.get(a.key); if (!q) return null; const r = BEH[q.kind] && BEH[q.kind].pos ? BEH[q.kind].pos(q) : q.forest ? [q.x, q.Y + 0.8 * q.k, q.y] : [q.x, q.Y, q.y]; return r ? [r[0], r[1], -r[2]] : null; }, size: a.forest ? BIG[a.kind].len : (B ? B.len : 1), x: p[0], y: p[2] });
     }
     return out;
   }

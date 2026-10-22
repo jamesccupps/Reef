@@ -842,7 +842,7 @@ const FIND = { follow: null, last: '' };
 $('findwild').addEventListener('click', () => {
   // (the small life near the view first — the turtles on a log, a bullfrog, a snapper — then the lakes' animals by kind; each click the
   // next of another kind, round and round)
-  const L = [...shallowsView.list(), ...wildView.list().sort((a, b) => a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : a.key < b.key ? -1 : 1)];
+  const L = [...shallowsView.list(), ...wildView.list().filter(q => !q.hidden).sort((a, b) => a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : a.key < b.key ? -1 : 1)];
   if (!L.length) { FIND.follow = null; $('watching').textContent = 'none out on the lakes just now'; return; }
   const i0 = L.findIndex(q => q.key === FIND.last), k0 = i0 >= 0 ? L[i0].kind : null; let a = L[0];
   for (let j = 1; j <= L.length; j++) { const q = L[(Math.max(0, i0) + j) % L.length]; if (i0 < 0) { a = L[0]; break; } if (q.kind !== k0 || j === L.length) { a = q; break; } }
