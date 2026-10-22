@@ -731,7 +731,10 @@ export function stageR5(on = true) {
   // perch 0.61, pumpkinseed 0.66, redbreast 0.43, bass 0.34, pickerel 0.21, fallfish 0.20, white perch 0.18, bullhead 0.16, sucker 0.09 —
   // so mOther = the old share × (1 − that); the killifish's wildlife alone was 2.6× its old share (→ 0); dace unmeasured (the default)
   F3.WILD = on ? 1 : 0;
-  { const MO = { sunfish: 0.17, perch: 0.19, sucker: 0.45, catfish: 0.42, whiteperch: 0.82, bass: 0.33, pike: 0.39, redbreast: 0.28, fallfish: 0.40, killifish: 0 };
+  // (E5) and cut again by the ANGLERS' share — their deaths a year over the species' 'other' (M × M_OTHER × mOther), from the research's
+  // kill [inf: to re-measure by an arm, as E4's]: white perch 0.019 of 0.185, pickerel 0.017 of 0.121, perch 0.006 of 0.048, pumpkinseed
+  // 0.008 of 0.046, redbreast 0.008 of 0.084, bullhead 0.005 of 0.113, bass 0.002 of 0.059 (fallfish, sucker < 0.001: unchanged)
+  { const MO = { sunfish: 0.14, perch: 0.165, sucker: 0.45, catfish: 0.40, whiteperch: 0.74, bass: 0.32, pike: 0.335, redbreast: 0.25, fallfish: 0.40, killifish: 0 };
     for (const k in MO) S3[k].mOther = on ? MO[k] : undefined; }
   // (E2a) the rotifers' microbial food and field rates, the size-gated interference, their predators feeding the copepods (config ZOO3.MICRO)
   ZOO3.MICRO = on ? 1 : 0;
@@ -884,6 +887,22 @@ export const WILD3 = {
   // fish ~5 % [inf: Werner, Wellborn & McPeek 1995's Michigan diet lists fish only within 'miscellaneous aquatic' 2–7 %], at the surface of
   // shallow water, mostly at night [inf]. (Green and mink frogs take 'sometimes small minnows' — too few to enter here)
   bullfrog: { yf: [0.22, 0.6], perKm: 10, need: 10, fish: [0.05, 0.05], L: [2, 3, 8, 12], z: [0.3, 0.6], b: [1, 1.5], act: [0.3, 1, 1], ice: 0, pref: {} },
+  // (E5) THE ANGLERS (research_notes/Hot Brook populations and water/angling_effort_and_harvest.md): Region F's 1.8 bass-water angler-days
+  // an acre a year (1998–99 surveys) → Upper ~12 h/ha, Lower ~4 [inf: a remote, little-developed pair] — ~5,500 angler-hours a year on the
+  // real lakes, a fifth through the ice. What dies a day (`need`, g for the lakes — perLake 1) = the season's hours × each species' catch
+  // an hour × (the share kept + the released × hooking mortality, ~3 % in open water — 1 % at ≤ 10 °C, 4 % at 20, 7 % at 24 — ~1 % through
+  // the ice) × its mean mass, over the season's days. Open water (May–November): white perch 0.5 an hour, 60 % kept (Region F 40 %; the
+  // plan's table 53/40 — 60 [inf: the bag of 25]); yellow perch 0.3, 35 % [inf: NY]; bullhead 0.05, 75 %; pumpkinseed and redbreast 0.2,
+  // 15 %; pickerel 0.12, 6 %; smallmouth 0.3, none kept (catch-and-release by law) — its hooking deaths only; fallfish 0.1, 5 %; sucker
+  // 0.02, 10 % [inf] → ~416 kg a year over 214 days. The ice (January–March; lures-only Oct–Dec, so the bait fishery opens Jan 1):
+  // pickerel 0.3 an hour, 21 % kept; white perch 0.3, 68 %; yellow perch 0.3, 50 % [inf]; bass almost never (Washington County) →
+  // ~95 kg over 90 days. The preferences: each species' share of that kill over its standing biomass at the founding (white perch 1);
+  // the sizes caught and kept 15–20 cm and up; anglers fish by day and at dusk, a few at night (bullhead). Exploitation then ~0–2 % a
+  // year (field: Murphy Flowage's heavy, unlimited fishery 2–12 % of its panfish)
+  angler: { yf: [0.17, 0.75], perLake: 1, need: 1944, fish: [1, 1], L: [15, 20, 70, 90], z: [99, 99], b: [99, 99], act: [1, 1, 0.1], ice: 0,
+    pref: { whiteperch: 1, pike: 0.45, sunfish: 0.38, redbreast: 0.38, catfish: 0.32, perch: 0.29, bass: 0.11, fallfish: 0.07, sucker: 0.04, killifish: 0, dace: 0, alewife: 0 } },
+  iceAngler: { yf: [0.836, 0.085], perLake: 1, need: 1055, fish: [1, 1], L: [15, 20, 70, 90], z: [99, 99], b: [99, 99], act: [1, 0.5, 0.1], ice: 1,
+    pref: { pike: 1, whiteperch: 0.19, perch: 0.11, sunfish: 0.02, redbreast: 0.02, bass: 0.005, catfish: 0, fallfish: 0, sucker: 0, killifish: 0, dace: 0, alewife: 0 } },
 };
 export const WILDK = Object.keys(WILD3);
 // (the day's share of hours by light: day, twilight, night — the activities' daily mean [inf: a Maine summer's day])
@@ -3065,7 +3084,7 @@ export class Fish3 {
   }
   // how many of wildlife w are on the lakes at yf, and its fish share then (otter, mink: winter → summer)
   _wildN(w, yf) {
-    const d = WILD3[w], [y0, y1] = d.yf; if (!(yf >= y0 && yf < y1)) return 0;
+    const d = WILD3[w], [y0, y1] = d.yf; if (!(y0 <= y1 ? yf >= y0 && yf < y1 : yf >= y0 || yf < y1)) return 0;   // (a window may wrap the year's end: the ice anglers')
     const fa = this.lakeHa / WILD_LAKE_HA;   // (the world's share of the real lakes: 1 at true scale, ~0.01 at 1/10 — every count scales with the fish)
     const n = d.perHa ? d.perHa * this.lakeHa : d.perKm ? d.perKm * this._shoreKm() / GEO.SCALE * fa : d.perLake * fa;
     return n;

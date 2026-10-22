@@ -1109,7 +1109,13 @@ if (run('wild')) {
   const took = Object.values(F.stats.wild).reduce((t, o) => t + o.g, 0), byW = Object.entries(F.stats.wild).map(([w, o]) => `${w} ${(o.g / 1000).toFixed(1)}`).join(' ');
   const dW = Object.values(F.stats.died).reduce((t, d) => t + (d.wild || 0), 0), yW = Object.values(F.stats.fry).reduce((t, f) => t + (f.wild || 0), 0) - yW0;
   const loonTop = Object.entries((F.stats.wild.loon || { n: {} }).n).sort((a, b) => b[1] - a[1])[0];
+  // (E5: the anglers — their daily kill by season on the true lakes, and a July fortnight's kill by species)
+  const aN = yf => (F._wildNeed('angler', yf) + F._wildNeed('iceAngler', yf)) / fa, ang = F.stats.wild.angler || { g: 0, n: {} };
+  const angTop = Object.entries(ang.n).sort((a, b) => b[1] - a[1]).slice(0, 2).map(v => v[0]), aSum = aN(0.4), aIce = aN(0.9), aApr = aN(0.12), aDec = aN(0.8);
   fm.F3.WILD = 0; fm.stageR5(false);
+  check('E5 (WILD3 angler, iceAngler): the anglers — ~1.9 kg of fish a day dying in open water (May–November) and ~1.1 kg through the ice (January–March) on the true lakes, none in April or December (the ice anglers\' window wraps the year); a July fortnight\'s kill led by white perch',
+    Math.abs(aSum - 1944) < 1 && Math.abs(aIce - 1055) < 1 && aApr === 0 && aDec === 0 && ang.g > 0 && angTop.includes('whiteperch'),
+    `${(aSum / 1000).toFixed(2)} kg a day in July, ${(aIce / 1000).toFixed(2)} in January, ${aApr} in April, ${aDec} in December; the fortnight's ${(ang.g / 1000).toFixed(2)} kg (the world's), most taken ${angTop.join(', ')}`);
   check('E4 (F3.WILD): the wildlife at the true lakes\' numbers — ~8.6 loons, a summer\'s day 12–30 kg of fish, the winter\'s (eagles, otter, mink) under 8 kg',
     loonN > 8 && loonN < 9.2 && sumN > 12000 && sumN < 30000 && winN > 0 && winN < 8000, `loons ${loonN.toFixed(1)}; summer ${(sumN / 1000).toFixed(1)} kg a day, winter ${(winN / 1000).toFixed(1)}`);
   check('E4 (F3.WILD): a late-July fortnight — the wildlife takes 50–110 % of its need from the fish it can reach (its reach summed at the start of each block, both engines: fish moving into reach within a block add a few %; gate of 06a9b8c 2.6 of 2.5 kg), followed fish and the young both',
