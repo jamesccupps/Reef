@@ -4,6 +4,41 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-21 — The lakes' birds and mammals take ~6 % of the fish a year, and the old "other mortality" was counting them twice (E4; arm AD)
+- **What.** With the nine fish-eating wildlife populations at their Maine densities (loons, herons, kingfishers, ospreys, the eagle
+  pair, both mergansers, otter, mink — ECOSYSTEM_BUILD.md E4) taking their daily need from the fish they can reach (Holling II, K a
+  day's need), one true-scale year took ~2.9 t of fish from the lakes' ~48 t: loons 1,061 kg (mostly yellow perch), common
+  mergansers 437, mink 388, herons 289, kingfishers 240, ospreys 213, eagles 166, otter 63, hooded mergansers 46.
+- **The double count.** The adults' unsimulated mortality BIOE.M_OTHER (0.5 of each species' M) was defined as "disease, parasites,
+  birds and mammals besides the loon, angling". The wildlife's kills against each species' remaining 'other' deaths: perch 0.61,
+  pumpkinseed 0.66, redbreast 0.43, bass 0.34, pickerel 0.21, fallfish 0.20, white perch 0.18, bullhead 0.16, sucker 0.09 — and the
+  banded killifish 2.6× its whole old allowance (small, shallow, schooling: every bird and the mink can reach them). The share is cut
+  by that ratio per species (stageR5): a mechanism replacing the stand-in, not stacked on it.
+- **How.** GPU year runner, f3.WILD=1, seed 611 (r21AD_611.txt); the tallies T_WILD/T_YWILD.
+
+## 2026-10-21 — Summer Daphnia at 3–5× the field starve the small zooplankton; the rotifers' own fix is not enough (E2a; probe e2.mjs)
+- **What.** Giving the rotifers their measured rates (K. cochlearis: rmax 0.28/d, zero growth 0.6 of Daphnia's food) and a microbial
+  food (bacteria grown from the DOM the model decomposes, BGE 0.26) raised their summer biomass 2–20× — but only to 0.1–3 µg/L against
+  the field's 2–10, because the Daphnia sat at 200–370 µg/L all summer (field summer crustaceans 45–100) and grazed the algae and the
+  new bacteria (to 6–24 µg C/L against the field's 35–85) to almost nothing. The diel-migration refuge is not the cause (it is ~0 in
+  lakes this shallow, as the research says it should be). Candidates the model lacks: calcium at 2–4 mg/L near Daphnia's limit, P-poor
+  food (seston C:P), inedible algae, invertebrate predators of Daphnia (research launched: daphnia_summer_limits.md).
+- **How.** 1/10 lakes from mid-May, 120 days, ZOO3.MICRO on and off, seed 611.
+
+## 2026-10-21 — A winter thaw lifted the whole lake's ice in a day (E10a, a bug the weather exposed)
+- **What.** With real air-temperature swings (E9a: January's daily SD ~6 °C), a +4 °C thaw pushed the water's target over the ice's
+  melt threshold and the cover vanished in mid-January. The ice rule had keyed melting to the water's seasonal target, which never
+  swung before. With the ice's thickness modelled (Stefan's growth, the snow on it, slush to white ice), the cover now goes only once
+  the ice has melted through; a two-day +12 °C thaw leaves it (gate check). A lake opened on 1 March starts under ~71 cm of ice and
+  its snow, ~0.25 % of the light through (Maine measured 1–12 %; the old fixed 40 %).
+
+## 2026-10-21 — A catchment on Houlton's normals gets the snow and the freshet right but the summer too wet (E9b)
+- **What.** HBV's structure on the weather chain's rain and snow (Houlton 1991–2020 normals): 180 years give precipitation 1,019 mm
+  (998), runoff 575 mm (field 580–710), the snowpack's water ~225 mm at its peak (~230), gone ~19 April (late March – late April),
+  April's flow 3.5–4× the mean (3–4×). But August's flow stays 0.5–0.9× the mean against the field's 0.2–0.4× under every soil and
+  groundwater setting in HBV's ranges — even with the summer's transpiration at its potential. The likely missing loss: the
+  conifers' interception (20–30 % of summer rain evaporates from the crowns). Known gap, not tuned away.
+
 ## 2026-10-21 — An adult bioenergetics set cannot grow a larva: the pickerel's missing year-classes (arm Y; scratchpad probe ypike.mjs)
 - **What.** In the true-scale arm Y (seed 613) chain pickerel fell from 16,090 fish to 1,258 in under two years with 18 recruits in
   the first year: every year-class died as larvae. The young pickerel stayed at 0.9 cm for six weeks after hatching in early May
