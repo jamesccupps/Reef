@@ -202,6 +202,13 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~11:00 EDT — THE NEWEST). MERGED E14 (forest agent: bears/deer/moose, forest3.js, WILD3.bear both engines;
+98d8bd3; W3_ONLY=forest,wild 20/0). ARM AJ done (seed 611 only: 79 → 49 → 31 kg/ha, no recruits — the pre-fix lake). IN THE TREE (uncommitted,
+on 98d8bd3): Z1b + Z2 (as below) + FEED_CV 0.25 in stageR5 (FRY.FEED_CV_R5; g1_check young parity ✓) + R7 (a school's strikes: hazard ×n,
+the kill shared gr/n, both engines — g1_r7 ✓; FINDINGS entries R7 and Z1b/Z2 written). W3_ONLY=strike,wild on the tree 27/0. ARM AL RUNNING
+(snap_al :8153 = the tree before the E14 merge; queue_al.sh → r22AL_611/613.txt; read with yrsum.mjs). Arm AK was stopped (pre-R7).
+NEXT: when the gate of 14b9d3b (gate_z1.txt) is green → push; then the full remote gate of the tree → commit Z1b+Z2+FEED_CV+R7 → push,
+back up. Probes bury_z2on/off.txt (P retention with Z2 on/off — the summer TP ~4 µg/L question). The RENDER agent still running.
 ▶▶▶ RESUME HERE (2026-10-22 ~10:15 EDT — THE NEWEST). COMMITTED (not pushed): c02674f Z1 (+ FINDINGS algae-crash diagnosis), 14b9d3b
 E4 check on the wildlife's EXPECTED take (stats.wildExp — the gate of 91f701d failed E4 at 114 %: one bass each to the eagles and ospreys on
 the 1/10 lakes; probe wildby), 269484e research note copepod_grazing_and_p_kinetics.md. GATE of 91f701d (E12b): 134 PASS, 2 FAIL (env-update
