@@ -667,6 +667,93 @@ export const HERP3 = {
     // May (scratchpad probe tad2) — the fish thin the green ones in a run
     START_G: 4.4, START_B: [0.3, 0.8], START_WG: 2.0, START_WB: [1.5, 15.7] },
 };
+// (E14) THE FOREST'S MAMMALS (src/w3/forest3.js; research_notes/Maine lake shores and catchment/forest_mammals_bears_deer_moose.md — every
+// value from it unless [inf]): individual black bears, white-tailed deer and moose on the land around the lakes, at the field's densities over the
+// REAL land the grid holds (its land cells ÷ GEO.SCALE²: the true world's 9.3 km², the 1/10 world's 15.6), each walking its home range (radius
+// × GEO.SCALE, as the lakes' widths; walking speeds real, as the fish's) by the season and the hour. Their lakes: the bears fish the sucker run in
+// the brook (fish3 WILD3.bear), the deer crop the water's edge, the moose wade where PL3.MOOSE's take falls — each × the world's share of the real
+// lakes (fa), as every consumer. Phases of the day: dawn and dusk TW h either side of sunrise and sunset, day between, night the rest
+export const FOREST3 = {
+  ON: 0,                   // on in fish3 stageR5
+  KINDS: ['bear', 'deer', 'moose'],
+  TW: 1.5,                 // h: dawn and dusk either side of the sun's rising and setting [inf: the crepuscular peaks' width]
+  JUMP: 2 * 86400,         // s: a gap past this (a date jump) re-places the animals at the new date rather than walking them through it
+  PATH_STEP: 25,           // m real (× GEO.SCALE, ≥ a cell): a walk's straight line checked for water this often
+  // THE SNOW ON THE LAND (cm): the catchment's (env3 swe, mm of water, with WEATHER3.HYDRO) ÷ SNOW_RHO kg/m³ [inf: a settled pack — ~170 mm
+  // of water ≈ 55 cm, the normals' 40–55 cm by 1 March]; without it the calendar: none to ~20 Nov, 30 cm by New Year, 50 by 1 March, bare by
+  // ~20 April (weather_and_catchment_hydrology.md §1: Caribou–Houlton) — [yf, cm], yf past 1 the next year's
+  SNOW_RHO: 300, SNOW_CAL: [[0.72, 0], [0.836, 30], [1.0, 50], [1.085, 25], [1.137, 0]],
+  // BLACK BEAR: 0.4 independent bears a km² (~1 a mi² in occupied range; 27,000 over 85 % of Maine → 0.40) — field 0.2–0.6; half males [inf];
+  // nose to tail ~1.45 m (female) and 1.7 (male) [gk]; ranges: females 6–9 mi² (20 km²), males to 100 mi² (100 km² [inf]) — Northern Woodlands;
+  // a walk ~1 m/s, foraging ~0.2 [gk]; through water to MAX_D m. ACT: the chance it is up by [dawn, day, dusk, night] in spring–summer and in
+  // the fall's long feeding days (from FALL_YF ≈ 14 Aug) [gk: by day and twilight, resting at night]. COVER: where it goes by the season —
+  // spring the wetland edges (skunk cabbage, sedges, grasses), summer the openings and shrubs (raspberries), fall the hardwoods (beech nuts,
+  // acorns, black cherry) [secondary: BDN 2025, bear.org, Northern Woodlands]; BED the forest
+  bear: { PER_KM2: 0.4, MALE: 0.5, LEN: [1.45, 1.7], HR: [20, 100], WALK: 1.0, FORAGE: 0.2, MAX_D: 0.8,
+    ACT: [[0.8, 0.6, 0.8, 0.15], [0.9, 0.8, 0.9, 0.45]], FALL_YF: 0.45, SUMMER_YF: 0.29,
+    // DENS mid-October – late November, out late April, active ~1 April – 1 November (MDIFW, via search): pregnant females first, males last;
+    // males out first, mothers with new cubs last [gk] — yf windows [females, males] in; [lone females, males, with new cubs] out; a den ≥
+    // DEN_WATER m real from water, in the forest [inf]
+    DEN_IN: [[0.625, 0.69], [0.67, 0.737]], DEN_OUT: [[0.11, 0.164], [0.085, 0.14], [0.151, 0.192]], DEN_WATER: 60,
+    // CUBS: born in the den in January (BIRTH_YF ≈ 21 Jan), 1–3 (LITTER: their shares, mean 2.4 [gk: 2–3]); with her 16 months — the yearlings
+    // leave in June (BREAK_YF) — so a breeding female (BREED of them [inf: the young females aside]) has cubs every other year; survival to age
+    // one 10–60 % (CUB_S 0.5 [inf]); their length m: at birth + per month, at most (YLEN [gk])
+    BREED: 0.8, LITTER: [0.1, 0.4, 0.5], CUB_S: 0.5, BIRTH_YF: 0.893, BREAK_YF: [0.27, 0.32], YLEN: [0.25, 0.065, 1.3],
+    // THE SUCKER RUN: a bear whose range holds the brook attends it while the run is on — the lakes' water at the brook's mouths in the suckers'
+    // own ripeness window (species3 sucker spawnT, fish3 _ripe's lead and edge) in spring (SPRING yf) — fishing its riffles (≤ RIFFLE m of water) at dusk, through the night and at dawn — a bout of BOUT
+    // min with chance P [twilight, night] a spell, GAP h apart from start to start (one a spell: ~2.4 bouts, ~2.6 h a day [inf: more successful in the dark — Reimchen]) —
+    // catching CATCH g an hour of fishing [inf: ~1.6 kg, 2 suckers a day — half a spring bear's 16–23 MJ from 5-kJ/g fish; Haida Gwaii's black
+    // bears ~15 salmon a day from a superabundant run; 'a few to some tens' a bear a run] (fish3 WILD3.bear: Holling II on the fish within
+    // reach, the brook's only)
+    FISH: { CATCH: 600, BOUT: [40, 90], P: [0.9, 0.6], GAP: 4, RIFFLE: 0.5, SPRING: [0.05, 0.40] },
+    DRINK: 0.06,           // the chance an active spell starts with a drink at the shore [inf]
+    COVER: [{ evergreen: 0.4, mixed: 0.6, deciduous: 0.6, woody_wet: 1, shrub_wet: 1, emergent_wet: 1, shrub: 0.8, grass: 0.8, pasture: 0.8, crops: 0.5, dev_open: 0.6, dev_low: 0.2, dev_med: 0.1, barren: 0.2, beach: 0.2, rock_shore: 0.3 },
+      { evergreen: 0.3, mixed: 0.5, deciduous: 0.6, woody_wet: 0.6, shrub_wet: 0.8, emergent_wet: 0.5, shrub: 1, grass: 1, pasture: 0.8, crops: 0.5, dev_open: 0.8, dev_low: 0.3, dev_med: 0.1, barren: 0.3, beach: 0.2, rock_shore: 0.3 },
+      { evergreen: 0.4, mixed: 1, deciduous: 1, woody_wet: 0.5, shrub_wet: 0.4, emergent_wet: 0.2, shrub: 0.6, grass: 0.4, pasture: 0.4, crops: 0.3, dev_open: 0.3, dev_low: 0.1, dev_med: 0.05, barren: 0.1, beach: 0.1, rock_shore: 0.2 }],
+    HOME: { evergreen: 0.8, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.8, emergent_wet: 0.4, shrub: 0.8, grass: 0.3, pasture: 0.3, crops: 0.3, dev_open: 0.2, dev_low: 0.1, dev_med: 0.05, barren: 0.1, beach: 0.1, rock_shore: 0.2 },
+    BED: { evergreen: 1, mixed: 1, deciduous: 0.8, woody_wet: 1, shrub_wet: 0.5, emergent_wet: 0.1, shrub: 0.5, grass: 0.1 } },
+  // WHITE-TAILED DEER: 1.5 adults a km² (4 a mi², the middle of WMD 11's post-hunt 2–6; WMD 18 4–9, WMD 19 3–8 — MDIFW's table) — field 0.8–3.5;
+  // a third bucks [gk: a hunted herd]; head and body ~1.7 m (doe), 1.9 (buck) [gk]; summer range 1.5 km², a yard's winter range 0.4 [gk]; a walk
+  // ~1.2 m/s, grazing ~0.1 [gk]; through water to MAX_D m. ACT: up by [dawn, day, dusk, night] — crepuscular, bedded by day [gk; Beier &
+  // McCullough 1990]; in the yard more by day (ACT_YARD [gk])
+  deer: { PER_KM2: 1.5, MALE: 0.33, LEN: [1.7, 1.9], HR: 1.5, YARD_HR: 0.4, WALK: 1.2, FORAGE: 0.1, MAX_D: 0.5,
+    ACT: [0.9, 0.25, 0.9, 0.45], ACT_YARD: [0.6, 0.6, 0.6, 0.25],
+    // THE YARD: MDIFW's deer wintering areas — used once the snow is > 12 in (30 cm) in the open; dense softwood (fir, spruce, cedar, hemlock)
+    // holds up to 40 % less snow; movement restricted at ~18 in (via search). In past YARD_IN cm, out below YARD_OUT [inf: the hysteresis]; the
+    // yard the block of YARD_BLOCK m real with the most evergreen and wooded-swamp cover near the deer's home [inf]
+    YARD_IN: 30, YARD_OUT: 15, YARD_BLOCK: 300,
+    // FAWNS late May – mid June (FAWN_YF), 1–2 for a breeding doe (BREED [gk]; TWIN the share of twins [gk: ~1.6 a doe]), with her till the next
+    // fawning; surviving 0.6 to November and 0.85 of the winter (FAWN_S [inf]: bears and coyotes take many in June — bear.org); length YLEN [gk]
+    BREED: 0.85, TWIN: 0.6, FAWN_YF: [0.235, 0.296], FAWN_S: [0.6, 0.85], YLEN: [0.7, 0.1, 1.5],
+    // AT THE WATER: a dawn or dusk feeding spell goes to the shore with P_SHORE [otherwise, late May – early August (AQ_YF): 'late spring and early
+    // summer', Rogers et al. 1981] [inf], or when it has not drunk for DRINK_H h (summer [gk]: once or twice a day). In the window it crops the
+    // edge's plants (water ≤ Z m, the columns beside it) at GRAZE g dry a minute for GRAZE_MIN [inf: a deer's forb intake; 'probably low' — a few
+    // % of its 1.5–2 kg a day], else drinks DRINK_MIN; its dung on land: the plants' N and P ashore (as the moose's). PREF: Hennings 1977's order
+    // of use (bur-reeds, ribbonleaf pondweed, water horsetail, arrowhead, sedges, the lilies, watershield) as weights [inf]
+    AQ_YF: [0.235, 0.43], P_SHORE: [0.12, 0.3], DRINK_H: 20, GRAZE: 4, GRAZE_MIN: [15, 40], DRINK_MIN: [3, 8], Z: 0.5, TAKE_MAX: 0.2,
+    PREF: { burreed: 1, ribbonleaf: 0.9, horsetail: 0.8, arrowhead: 0.7, sedge: 0.6, yellowlily: 0.5, whitelily: 0.5, watershield: 0.4, pickerelweed: 0.4, floatpond: 0.4, spikerush: 0.3, bulrush: 0.3, bogbean: 0.2 },
+    HOME: { evergreen: 0.7, mixed: 1, deciduous: 1, woody_wet: 0.6, shrub_wet: 0.6, emergent_wet: 0.2, shrub: 1, grass: 0.8, pasture: 0.8, crops: 0.8, dev_open: 0.5, dev_low: 0.3, dev_med: 0.1, barren: 0.1, beach: 0.1, rock_shore: 0.1 },
+    COVER: { evergreen: 0.3, mixed: 0.8, deciduous: 1, woody_wet: 0.5, shrub_wet: 0.7, emergent_wet: 0.4, shrub: 1, grass: 1, pasture: 1, crops: 1, dev_open: 0.7, dev_low: 0.4, dev_med: 0.1, barren: 0.1, beach: 0.1, rock_shore: 0.1 },
+    BED: { evergreen: 1, mixed: 1, deciduous: 0.7, woody_wet: 0.8, shrub_wet: 0.6, emergent_wet: 0.1, shrub: 0.6, grass: 0.2, pasture: 0.1, crops: 0.1, dev_open: 0.1 } },
+  // MOOSE: 0.6 a km² (northern Maine's surveys 0.4–4.0; WMD 11 a 'compromise zone' with fewer; a browse capacity ~0.9 — [inf]) — field 0.4–1.5;
+  // half bulls; head and body ~2.7 m (cow), 3.0 (bull) [gk]; ranges: summer 3.5 km² (2–5), winter 1.5 [gk]; a walk ~1.3 m/s, browsing ~0.06,
+  // wading 0.04 [gk]; through water to MAX_D m. ACT: up by [dawn, day, dusk, night] in summer (bedded in the midday heat [gk]) and winter
+  // NEAR: a home whose range holds no water × this [inf: summer moose centre on wetlands, ponds and riparian browse — Isle Royale's aquatic feeders]
+  moose: { PER_KM2: 0.6, MALE: 0.5, LEN: [2.7, 3.0], HR: [3.5, 1.5], WALK: 1.3, FORAGE: 0.06, WADE: 0.04, MAX_D: 1.2, NEAR: 0.3,
+    ACT: [[0.8, 0.3, 0.8, 0.6], [0.6, 0.5, 0.6, 0.3]], WINTER_YF: [0.68, 0.12],
+    // IN THE SHALLOWS through PL3.MOOSE_YF (June – mid-September): on AQ_P of the days (108 of 124 — Belovsky & Jordan 1978) a bout in the late
+    // afternoon and one at night (AQ_H, hours of the clock; the late-afternoon aquatic peak), AQ_MIN min each [inf: ~43 min of cropping at 20.3 g
+    // a minute under water, with the surface time between 16-s dives] — at a spot drawn from PL3.MOOSE's own weights (the shoots × MOOSE_PREF ×
+    // the MOOSE_Z reach) within its range: they wade where the take falls
+    AQ_P: 0.87, AQ_H: [[16, 20], [22, 26]], AQ_MIN: [60, 100], DRIFT: 8,   // (DRIFT m real: how far it moves over a bout — once at a site it crops unselectively, Belovsky & Jordan [inf])
+    // CALVES mid-May – early June (CALF_YF), mostly single (TWIN [gk]) for BREED of the cows [inf: calf:cow ratios]; with her to the next calving;
+    // half alive at a year (CALF_S [inf]: Maine's winter ticks); length YLEN [gk]
+    BREED: 0.75, TWIN: 0.05, CALF_YF: [0.208, 0.271], CALF_S: 0.5, YLEN: [1.0, 0.17, 2.3],
+    HOME: { evergreen: 0.5, mixed: 0.7, deciduous: 0.8, woody_wet: 1, shrub_wet: 1, emergent_wet: 0.6, shrub: 0.8, grass: 0.3, pasture: 0.2, crops: 0.2, dev_open: 0.2, dev_low: 0.05, barren: 0.1, rock_shore: 0.1 },
+    COVER: [{ evergreen: 0.3, mixed: 0.7, deciduous: 1, woody_wet: 0.9, shrub_wet: 1, emergent_wet: 0.5, shrub: 1, grass: 0.3, pasture: 0.2, crops: 0.1, dev_open: 0.3, dev_low: 0.05, barren: 0.1, rock_shore: 0.1 },
+      { evergreen: 0.8, mixed: 1, deciduous: 0.6, woody_wet: 0.8, shrub_wet: 0.6, emergent_wet: 0.1, shrub: 0.6, grass: 0.1, pasture: 0.1, crops: 0.1, dev_open: 0.1 }],
+    BED: { evergreen: 1, mixed: 1, deciduous: 0.7, woody_wet: 1, shrub_wet: 0.6, emergent_wet: 0.2, shrub: 0.5, grass: 0.1 } },
+};
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —
 // the compensatory brake (crowded or late cohorts end the summer small and die; sparse or early ones are large and live).

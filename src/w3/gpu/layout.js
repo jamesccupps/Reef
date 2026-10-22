@@ -397,18 +397,20 @@ export const tallyWGSL = () => Object.entries(TP).map(([n, p]) => `const T_${n}:
 // ---------- THE WGSL CONSTANTS: every number the kernels share with the CPU sim, from its own config ----------
 const wf = v => { if (v === Infinity || v >= 3e38) return '3e38'; if (v === -Infinity) return '-3e38'; const s = String(+v); return /[.eE]/.test(s) ? s : s + '.0'; };
 // THE LAKES' FISH-EATING WILDLIFE (fish3 WILD3, _wildV) as WGSL: a fish's accessibility to wildlife w — its length, its depth below the
-// surface, the bed under it, its cover, the ice — × the wildlife's preference for its species (one case a wildlife, from WILD3 itself)
+// surface, the bed under it, its cover, the ice; a brook-only wildlife (E14's bears: `brook`) none outside a brook column (c, the fish's water
+// column) — × the wildlife's preference for its species (one case a wildlife, from WILD3 itself)
 export function wildWGSL() {
   if (WILDK.length > NWILD_MAX) throw new Error(`layout: more than ${NWILD_MAX} wildlife — GL G_WD/G_WRHO, GS_WILDA and the tallies' WILD/WILDG hold ${NWILD_MAX}`);
   const cases = WILDK.map((w, r) => {
     const d = WILD3[w]; let pr = '1.0';
     for (const [sp, v] of Object.entries(d.pref)) { const q = KEYS3.indexOf(sp); if (q < 0) throw new Error(`layout: WILD3.${w} prefers an unknown species ${sp}`); pr = `select(${pr}, ${wf(v)}, k == ${q}u)`; }
-    return `    case ${r}u: { p = array<f32, 9>(${[...d.L, ...d.z, ...d.b, d.ice ? 1 : 0].map(wf).join(', ')}); pr = ${pr}; }`;
+    return `    case ${r}u: { p = array<f32, 10>(${[...d.L, ...d.z, ...d.b, d.ice ? 1 : 0, d.brook ? 1 : 0].map(wf).join(', ')}); pr = ${pr}; }`;
   });
   return [`const NWILD: u32 = ${WILDK.length}u;`,
-    'fn wildV(w: u32, k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32) -> f32 {',
-    '  var p = array<f32, 9>(); var pr = 1.0;',
+    'fn wildV(w: u32, k: u32, L: f32, z: f32, bed: f32, cover: f32, ice: f32, c: i32) -> f32 {',
+    '  var p = array<f32, 10>(); var pr = 1.0;',
     '  switch w {', ...cases, '    default: { return 0.0; }', '  }',
+    '  if (p[9] > 0.5 && (c < 0 || stu(O_wCBody + u32(max(c, 0))) != BROOK)) { return 0.0; }',
     '  if (L <= p[0] || L >= p[3]) { return 0.0; }',
     '  var fL = 1.0; if (L < p[1]) { fL = (L - p[0]) / (p[1] - p[0]); } else if (L > p[2]) { fL = (p[3] - L) / (p[3] - p[2]); }',
     '  var fz = 0.0; if (z <= p[4]) { fz = 1.0; } else if (z < p[5]) { fz = (p[5] - z) / (p[5] - p[4]); }',
