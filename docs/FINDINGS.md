@@ -4,6 +4,34 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — Arm AI: no winterkill, but no year class either; the community shrinks by a quarter a year (GPU, true scale, 19edb3a)
+- **What.** Arm AI ran the package at 19edb3a: N_FORM, the herps and tadpoles, the anglers and Y1. Two seeds (611, 613), two years
+  each from mid-May. Fish biomass in kg/ha:
+
+  | Seed | Start | End of year 1 | End of year 2 |
+  |---|---|---|---|
+  | 611 | ~97 | 69 | 44 |
+  | 613 | ~97 | 71 | 51 |
+
+  Arm AH, before N_FORM, had fallen to 43 by the end of year 1. The late-winter hypoxia is gone.
+- **Still no recruits.** Every species' young-of-year fail in both years. In year 2 (seed 613) the young hatched and died as follows:
+
+  | Species | Hatched | Natural deaths | Starved | Eaten |
+  |---|---|---|---|---|
+  | Yellow perch | 113 M | 34 % | 20 % | 45 % |
+  | White perch | 438 M | 51 % | 23 % | 25 % |
+  | Smallmouth bass | 5.5 M | 15 % | 57 % | 26 % |
+  | Brown bullhead | 14 M | 6 % | 57 % | 37 % |
+
+- **The prey carry the predators.** By year 2's end, pumpkinseed, redbreast, killifish and dace are gone, perch fell 12 → 3–4 kg/ha
+  and white perch 17 → 5–6. Bass rose 9 → 12–13 kg/ha and suckers held.
+  - From the first fortnight the followed prey were eaten fast: 70 % of the killifish in 14 days, half the sunfishes in six weeks.
+  - The bass's and pickerel's diets ran 83–95 % fish, ~0.3 fish a predator a day.
+  - With no young-of-year big enough to eat, the small adults are the predators' only fish.
+- **The plankton** (seed 611): year 1 opens with a spring Daphnia surge (210 µg/L) that grazes the edible algae to ~0 and crashes the
+  rotifers. In year 2 the rotifers peak at 9 µg/L in early June, then fall to 0–6 µg/L over the summer (field 2–24).
+- **Where.** scratchpad r22AI_611.txt / r22AI_613.txt (yrsum.mjs); the young's failure is diagnosed in the next entry.
+
 ## 2026-10-22 — The perch census set the larval excess; at field larval densities the young still grow 2–4× too slowly (probe larvz, d2e735d)
 - **What.** The census put yellow perch at 500/ha ≥ 7.5 cm, above its own soft-water comparables (Crystal and Nebish lakes,
   230–240/ha). The human, asked, says perch are "scarce at any size", ~50–100/ha. At 500/ha, ~50 perch larvae swam per m², and with the

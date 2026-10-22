@@ -192,6 +192,16 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-22 ~9:30 a.m. EDT — THE NEWEST). COMMITTED d2e735d (perch 75/ha in stageR5 — the human: scarce at any size)
+and d7ef7cb (Y3 FRY.FEED_CV, OFF: the young's unequal shares on both engines, a gate check; FINDINGS). g1_check r5=1&wild=1&yf=0.55:
+wildlife ρ identical, WGSL compiles. ARM AI DONE (FINDINGS entry): 97 → 69–71 → 44–51 kg/ha, no winterkill, ZERO recruits, the small
+species gone, bass up. RUNNING: ARM AJ (snapshot aj :8150 = d7ef7cb, queue_aj.sh → r22AJ_<seed>.txt, 611/612/613 × 730 d, ~7.5 h);
+GATE of d2e735d → gate_eco10.txt; E12b agent (worktree); research agent → docs/research_notes/Real lake ecology for calibration/
+larval_starvation_and_variability.md (values for FEED_CV). DIAGNOSIS: with the census fixed the larvae still grow 2–4× too slowly —
+the summer small prey (rotifers 0.1 µg/L vs field 2–24; small cladocerans 1–5) are held at a floor by the young's grazing, and year 1
+opens with a spring Daphnia surge (the start's zooplankton) that grazes the edible algae to ~0. Probes: zoodepth.mjs (no inshore
+contrast at all), rotbud_p75.txt, larvz_p75/p500/cv04.txt. NEXT: read AJ; the summer small-prey budget (edible algae 14–16 % of summer
+algae vs field median 42 %; the young's clearance on rotifers); FEED_CV values; merge E12b.
 ▶▶▶ RESUME HERE (2026-10-22 ~6:50 a.m. EDT — THE NEWEST). GATE of 3a2df18 GREEN (all suites; w3 134 PASS 0 FAIL 1 GAP E12b) →
 backup G:/synapse-reef-backups/synapse-reef_20261022_0634_wildtau.zip. THE HUMAN (field knowledge): YELLOW PERCH SCARCE AT ANY SIZE (~50–100/ha) →
 IN THE TREE (uncommitted): stageR5 Y2 S3.perch.perHa 75 (+ mateCue), FISH_CENSUS.md row; A/B running: probe/larvz_p75.txt vs larvz_p500.txt
