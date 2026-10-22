@@ -140,6 +140,23 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
 9. **A research paper when the build is done (human, 2026-10-18).** "When we are finished with all of this, we should write
    some sort of research paper, that puts together everything we have researched and found out by testing and making this
    environment." The capstone write-up — see "📄 The paper" below. Its running findings log starts now: `docs/FINDINGS.md`.
+10. **A whole-environment simulator of the lakes AND the forest right around them (human, 2026-10-22).** "This is now a whole
+   environment simulator of the lakes and forest right around them": the live view runs the full model (done, abaa47b); every
+   simulated animal drawn in 3-D, placed by the sim (in progress: birds, otters, mink, raccoons, turtles, frogs, newts, tadpoles,
+   dragonflies, anglers and ice anglers, moose); BEARS and DEER simulated on the land with seasons and their effects on the lakes
+   (in progress: src/w3/forest3.js). The forest band is simulated ground, not a backdrop.
+11. **A FIRST-PERSON VIEW of the true-size lakes — a screensaver (human, 2026-10-22).** "For the 3d view of the full size lake, a
+   first person view, you could just place yourself somewhere, that way it would make a good screensaver or something to have on
+   the monitor and see everything that is going on." Pick a spot on the map (a shore, the dock at the camp, the brook's upper pool,
+   a canoe on the water, out on the ice in winter) and stand there at eye height (~1.6 m), looking about with the mouse; the sim
+   runs live around you at real time — the light and weather by the hour, the water's surface, the rises, the loon and the
+   heron, the deer at dusk. A SCREENSAVER MODE: no controls on screen, the view turning slowly or easing between chosen spots,
+   drawn to where things happen (a rise, a diving loon, an osprey, a moose in the shallows); full screen at the human's ultrawide
+   (~21:9) aspect. Needs the near field drawn true-size and detailed from eye height (the shore's ground, rocks, trees and
+   reeds close up, the water's waves and reflections) and the frame time held at the monitor's rate.
+12. **3-D prints of the lakes and the land (human, 2026-10-22; done 2306d79).** tools/hotbrook/export_print.mjs → exports/print/
+   for the Bambu Lab A1 / A1 mini with the AMS: one piece (to paint), four colours by height, four by land cover, the terrain with
+   open basins + clear-PETG water inserts; the forest's treetops from the aerial photos.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*
