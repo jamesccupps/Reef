@@ -4,6 +4,33 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The perch census set the larval excess; at field larval densities the young still grow 2–4× too slowly (probe larvz, d2e735d)
+- **What.** The census put yellow perch at 500/ha ≥ 7.5 cm, above its own soft-water comparables (Crystal and Nebish lakes,
+  230–240/ha). The human, asked, says perch are "scarce at any size", ~50–100/ha. At 500/ha, ~50 perch larvae swam per m², and with the
+  white perch's ~30 the larvae swamped their predators and ate the rotifers out.
+- **A/B** (1/10 lakes, seed 611, from early May, the package; perch 500 → 75/ha):
+
+  | Quantity | perch 500/ha | perch 75/ha |
+  |---|---|---|
+  | Perch larvae at the peak | 48/m² | 2–6/m² |
+  | All larvae at the peak | ~77/m² | ~43/m² (white perch 30–37) |
+  | Fish predation on perch larvae, Z | 0.02–0.03/d | 0.006–0.03/d (fewer adult perch to eat them) |
+  | White perch young, mid-August | 0.2/m² at 8 mm (their early cohorts gone; a late one at 4 mm) | 0.9/m² at 11 mm |
+  | Perch young, mid-August | 3.5/m² at 15 mm | 0.9/m² at 16 mm |
+  | Pumpkinseed young | stalled at 5 mm | stalled at 5 mm |
+
+- **Settlement checked.** Every larva the fish request is removed (probe larvsettle.mjs: requested = removed each day; the gut's room
+  short ~0 times a day). The diagnostic larvdiag.mjs had read the fish's Z on perch larvae as 0.008/d because it counted only the
+  swimming larvae as eaten; the yolk-sac larvae eaten are tallied with the eggs. The real Z is 0.02–0.05/d.
+- **Reading.**
+  - The census was the larval excess's main input. Its correction leaves the larvae inside the field's ≲ 10–40/m² once the white
+    perch's early cohorts thin.
+  - Growth is the remaining failure. Perch ~0.12 mm a day (field 0.3–0.5) and white perch ~0.09 (field 0.2–0.3), so perch are 16 mm in
+    mid-August where Oneida's are 37–65 mm on 1 August. The feeding level is p ≈ 0.2–0.3 where field growth needs ~0.5.
+  - A cohort below maintenance shares its food equally, so it neither grows nor dies; field larvae grow or die within days.
+- **Next.** The young's unequal shares (FRY.FEED_CV, built and off, values being researched); what holds the 9–16-mm larvae's
+  feeding at p 0.2–0.3 (their prey ladder, K, the summer zooplankton with fish).
+
 ## 2026-10-22 — A predator's rate set from a snapshot of its prey over-harvests; a lab hatch rate over-stocks the larvae (3a2df18)
 - **What (E4, the wildlife).** Ospreys, eagles, herons and the rest take fish at a per-fish hazard ρ = D / (A + K): D is the day's
   need, A is the biomass they can reach, and K is a day's need. A was read at the start of each block. When a block began with few

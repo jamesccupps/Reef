@@ -503,6 +503,14 @@ if (run('young')) {
   const { Fish3, S3 } = await import('../src/w3/fish3.js');
   const { PLANKTON } = await import('../src/config.js');
   const { seed } = await import('../src/core.js');
+  // (Y3, FRY.FEED_CV) THE YOUNG'S UNEQUAL SHARES: the lognormal spread's shares against a seeded Monte Carlo, and equal shares as CV → 0
+  { const { feedShares } = await import('../src/w3/fish3.js'), { rand } = await import('../src/core.js'); seed(517);
+    const s = Math.sqrt(Math.log(1 + 0.36)), mu = Math.log(1.2) - s * s / 2, N = 200000; let F = 0, S = 0, D = 0;
+    for (let i = 0; i < N; i++) { const X = Math.exp(mu + s * Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(2 * Math.PI * rand())); if (X < 1) { F++; D += 1 - X; } else S += X - 1; }
+    const f = feedShares(1.2, 0.6), e0 = feedShares(0.7, 1e-4), e1 = feedShares(1.4, 1e-4), near = (a, b, t) => Math.abs(a - b) < t;
+    check('Y3: the young’s unequal shares — a lognormal spread of intake (CV 0.6, mean 1.2× maintenance) gives the share below maintenance, the mean surplus and deficit of a Monte Carlo; equal shares as CV → 0',
+      near(f[0], F / N, 0.006) && near(f[1], S / N, 0.006) && near(f[2], D / N, 0.004) && near(e0[0], 1, 1e-6) && near(e0[2], 0.3, 1e-4) && near(e0[1], 0, 1e-4) && near(e1[0], 0, 1e-6) && near(e1[1], 0.4, 1e-4) && near(e1[2], 0, 1e-4),
+      `below ${f[0].toFixed(3)} (MC ${(F / N).toFixed(3)}), surplus ${f[1].toFixed(3)} (${(S / N).toFixed(3)}), deficit ${f[2].toFixed(3)} (${(D / N).toFixed(3)}); CV→0: x 0.7 → deficit ${e0[2].toFixed(3)}, x 1.4 → surplus ${e1[1].toFixed(3)}`); }
   // A SPRING (Apr 21 → late June, the coarse grid): who spawns when and where, the nests, the brook
   { seed(511); const e = new Env3({ col: 10 * CS, yf0: 0.14 }), F = new Fish3(e); const gd = []; let may = null, mayYf = 0;
     // (stage 7g: the plant spawners — the structure index of their band's water as they spawn, against where they spawned)

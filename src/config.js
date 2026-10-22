@@ -283,6 +283,13 @@ export const FRY = {
   // CYC_SHARE: the cyclopoids' share of the copepods' post-naupliar biomass [inf: M. edax ~19 % of the region's crustaceans]; CYC_W:
   // M. edax 5.5 µg, Diacyclops 4.5, Tropocyclops 1.5 (Hébert et al. 2016)
   CYC: 0, CYC_K: 0.003, CYC_SHARE: 0.5, CYC_W: 4, CYC_L: [0.4, 0.8], CYC_ROB: 0.7,
+  // (Y3, FEED_CV — off: the values pending, research_notes/Real lake ecology for calibration/larval_starvation_and_variability.md) THE YOUNG'S
+  // UNEQUAL SHARES: a school's fish do not share its food equally — their intakes spread about the school's mean x (× maintenance) as a
+  // lognormal with this CV (persistent differences: size at hatch, skill, place). The share below maintenance starves at E[(1 − X)+] / its
+  // time to run down (the school's starvation hazard); the school's fish — its survivors — grow on the others' mean surplus, ≤ Cmax. Equal
+  // shares (0) left a crowded cohort at exactly maintenance: it neither grew nor died, 5–9-mm larvae for weeks (probes sunlarva, larvz),
+  // where field larvae grow ≥ 0.2 mm/d or are gone within days to two weeks (young_first_summer.md §4.5)
+  FEED_CV: 0,
   DETECT_L: [0.6, 1.5], // cm: larvae this small are seen 0.2 → 1 (Folkvord & Hunter 1986: 6-mm larvae undetected; Margulies 1989)
   NS: 6,
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …

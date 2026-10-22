@@ -564,6 +564,14 @@ const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared 
 // (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
 // rotifers, small cladocerans), u its weight in the count response (catch / the class's half-saturation; the copepods' nauplii at K_NAUP, the
 // rest at K_FRY) — chem3 zooFeedYoy. Without SMALL the old ladder on one K_FRY (u = c / K_FRY: the old type II exactly)
+// (Y3, FRY.FEED_CV) the young's shares of a school's food when their intakes spread lognormally (CV cv) about its mean x (× maintenance):
+// [the share below maintenance, E[(X − 1)+], E[(1 − X)+]] — the GPU's feedShares (Φ by Abramowitz & Stegun 7.1.26)
+const ncdf = z => { const t = 1 / (1 + 0.3275911 * Math.abs(z) * Math.SQRT1_2), e = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-z * z / 2); return z >= 0 ? 0.5 * (1 + e) : 0.5 * (1 - e); };
+export function feedShares(x, cv, o = [0, 0, 0]) {
+  if (!(x > 0)) { o[0] = 1; o[1] = 0; o[2] = 1; return o; }
+  const s = Math.sqrt(Math.log(1 + cv * cv)), d = (s * s / 2 - Math.log(x)) / s, F = ncdf(d), D = Math.max(0, F - x * ncdf(d - s));
+  o[0] = F; o[1] = Math.max(0, x - 1 + D); o[2] = D; return o;
+}
 export function yZoo(L, yf, c, u, dK = 1) {   // (dK: the length scale of its adult-Daphnia rung — S3 zooLadderK)
   const P = PLANKTON, Z = ZOO3, K = P.K_FRY, ramp = (x, a) => clamp((x - a[0]) / (a[1] - a[0]), 0, 1);
   const cR = P.FRY_ROT_MIN + (1 - P.FRY_ROT_MIN) * clamp((P.FRY_ROT_L[1] - L) / (P.FRY_ROT_L[1] - P.FRY_ROT_L[0]), 0, 1);
@@ -2926,7 +2934,12 @@ export class Fish3 {
     let hS = 0;
     q.rO2 = q.n * r / DAY;
     q.p += (p - q.p) * Math.min(1, dd);
-    if (got >= q.n * need) {
+    if (FRY.FEED_CV > 0) {   // (Y3: the unequal shares — those below maintenance starve, the rest grow on their surplus, ≤ Cmax)
+      const x = got / Math.max(1e-12, q.n * need), sh = feedShares(x, FRY.FEED_CV, this._fsh || (this._fsh = [0, 0, 0])), tStarve = 0.4 * ed / Math.max(1e-9, r * OXYCAL / q.W);
+      const xg = Math.min(1 + sh[1] / Math.max(1e-9, 1 - sh[0]), want / Math.max(1e-12, q.n * need));
+      if (xg > 1 && sh[0] < 1) { q.W = Math.max(1e-7, q.W + Rj * (xg - 1) / ed); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
+      hS = sh[2] / (tStarve * DAY);
+    } else if (got >= q.n * need) {
       const C = J / q.n, F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F);
       q.W = Math.max(1e-7, q.W + (C - F - U - S - Rj) / ed);
       if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; }

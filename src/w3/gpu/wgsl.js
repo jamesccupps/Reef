@@ -62,6 +62,9 @@ fn sight(lux: f32, kI: f32) -> f32 { return lux / (lux + kI); }
 // tanh to f32 accuracy (the built-in is the hardware's approximation on some GPUs: ~5e-4 on NVIDIA's — the brains then drifted from the CPU's)
 fn tanh_(x: f32) -> f32 { let a = abs(x); if (a < 0.0625) { let x2 = x * x; return x * (1.0 - x2 * (0.33333334 - x2 * 0.13333334)); } let e = exp(-2.0 * a); return sign(x) * (1.0 - e) / (1.0 + e); }
 fn sigm(x: f32) -> f32 { return 1.0 / (1.0 + exp(-x)); }
+// (Y3, FRY.FEED_CV: fish3 feedShares) Φ by Abramowitz & Stegun 7.1.26; the young's shares under a lognormal spread of intake about x
+fn ncdf(z: f32) -> f32 { let t = 1.0 / (1.0 + 0.3275911 * abs(z) * 0.70710678); let e = 1.0 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * exp(-z * z * 0.5); return select(0.5 * (1.0 - e), 0.5 * (1.0 + e), z >= 0.0); }
+fn feedShares(x: f32, cv: f32) -> vec3f { if (!(x > 0.0)) { return vec3f(1.0, 0.0, 1.0); } let s = sqrt(log(1.0 + cv * cv)); let d = (s * s * 0.5 - log(x)) / s; let F = ncdf(d); let D = max(0.0, F - x * ncdf(d - s)); return vec3f(F, max(0.0, x - 1.0 + D), D); }
 // THE FIRST WINTER (config WINTER0, winterDays/winterP/winterStep): the days of winter behind a fish, and the ramp's share of the
 // survivors over a step that brought it from w − dw to w days
 fn wDays(yf: f32) -> f32 { let d = fract(yf - WIN_YF0 + 2.0); let span = fract(WIN_YF1 - WIN_YF0 + 2.0); return select(0.0, d * 365.0, d < span); }
@@ -1962,7 +1965,12 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
   let need = Rj / max(1e-9, eff * edF); let ed = energyDensity(bs, W);
   sy(Y_rO2, q, n * r / DAY); sy(Y_p, q, gy(Y_p, q) + (p - gy(Y_p, q)) * min(1.0, dd));
   var hS = 0.0;
-  if (got >= n * need) {
+  if (FRY_FEED_CV > 0.0) {   // (Y3: fish3 _feedYoy — the unequal shares)
+    let sh = feedShares(got / max(1e-12, n * need), FRY_FEED_CV); let tStarve = 0.4 * ed / max(1e-9, r * OXYCAL / W);
+    let xg = min(1.0 + sh.y / max(1e-9, 1.0 - sh.x), want / max(1e-12, n * need));
+    if (xg > 1.0 && sh.x < 1.0) { let W2 = max(1e-7, W + Rj * (xg - 1.0) / ed); sy(Y_W, q, W2); if (W2 > stdWeight(k, L)) { let L2 = lengthFor(k, W2); sy(Y_L, q, L2); sy(Y_bdep, q, L2 * spv(k, S_depthR)); } }
+    hS = sh.z / (tStarve * DAY);
+  } else if (got >= n * need) {
     let C = J / n; let Fz = wf.x * C; let Ux = wf.y * (C - Fz); let Sd = bio(bs, BSDA) * (C - Fz);
     let W2 = max(1e-7, W + (C - Fz - Ux - Sd - Rj) / ed); sy(Y_W, q, W2);
     if (W2 > stdWeight(k, L)) { let L2 = lengthFor(k, W2); sy(Y_L, q, L2); sy(Y_bdep, q, L2 * spv(k, S_depthR)); }
