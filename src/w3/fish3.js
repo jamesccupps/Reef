@@ -28,7 +28,7 @@ import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, gauss, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, EGG3, ALEWIFE, PHYTO, NUTRIENT, WORLD, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, HERP3, EGG3, ALEWIFE, PHYTO, NUTRIENT, WORLD, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -738,7 +738,7 @@ export function stageR5(on = true) {
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
   ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
-  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0;   // (E9d: fronts — Houlton's rain days and storms)   // (E9b: rain and snow, the catchment's flow through the lakes)
+  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0; HERP3.ON = on ? 1 : 0;   // (E6b/E6c1: the herps as consumers)   // (E9d: fronts — Houlton's rain days and storms)   // (E9b: rain and snow, the catchment's flow through the lakes)
   ALEWIFE.ON = on ? 1 : 0;   // (E8: the sea-run alewives — config ALEWIFE)
   // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
   // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:
@@ -888,7 +888,7 @@ export const WILD3 = {
 export const WILDK = Object.keys(WILD3);
 // (the day's share of hours by light: day, twilight, night — the activities' daily mean [inf: a Maine summer's day])
 const WILD_HOURS = [0.55, 0.1, 0.35];
-const WILD_LAKE_HA = 643.6;   // (the real lakes' area, ha: Upper 369 + Lower 274)
+export const WILD_LAKE_HA = 643.6;   // (the real lakes' area, ha: Upper 369 + Lower 274)
 export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 2.5, v: 0.1, cls: 1, act: [0.2, 0.5, 0.05] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like

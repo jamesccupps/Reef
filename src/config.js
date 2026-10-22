@@ -611,6 +611,37 @@ export const WEATHER3 = {
   // March = Houlton's wet − dry difference ÷ (1 + wet/dry share)
   WET_T: [2.6, 0.6, -0.8, 0.2, 0, 0.3, 1.1, 1.6, 2.9, 4.7, 5.9, 4.5], SKY_TAU: 0.5,
 };
+// (E6b, E6c1) THE HERPS AS CONSUMERS (src/w3/herps3.js; research_notes/Maine lake shores and catchment/turtles_and_frogs.md §2, §4, §6, §7):
+// each kind a population by its habitat's measure eating a daily ration (g wet an animal at 20 °C, × Q10 per 10 °C, none below act[0],
+// ramped to full at act[1]; none under full ice) from the lakes' pools, its diet's shares of plant (plants3's stands, × PLANT_PREF; g dry =
+// wet × PLANT_DW), weed (littoral3's large weed fauna L), small (its small fauna S), snail, cray (adult crayfish), surf (the surface's
+// emerging and fallen insects). Each pool gives in proportion to what each of the herps' cells holds, at most TAKE_MAX of it a step
+export const HERP3 = {
+  ON: 0,                   // on in fish3 stageR5
+  SLOW: 3, Q10: 2.5, TAKE_MAX: 0.2, PLANT_DW: 0.1,   // (every 3rd water update, as the littoral; aquatic plants ~10 % dry matter)
+  KINDS: ['painted', 'snapper', 'bullfrog', 'frog', 'newt'],
+  // the turtles' plants: the soft submersed and floating-leaved forms, little of the emergents [inf: 'aquatic vegetation', MDIFW; pondweeds,
+  // algae and duckweed in the diet studies]
+  PLANT_PREF: { ribbonleaf: 1, largeleaf: 1, robbins: 0.8, bladderwort: 1, floatpond: 0.8, nitella: 1, watershield: 0.6, burreed: 0.3, moss: 0.3,
+    yellowlily: 0.2, whitelily: 0.2, pipewort: 0.2, lobelia: 0.2, quillwort: 0.2, spikerush: 0.1, pickerelweed: 0.1, sedge: 0.1, arrowhead: 0.1,
+    horsetail: 0.1, bogbean: 0.1, bulrush: 0.05 },
+  // PAINTED TURTLES: 10 per ha of the shallows to 2 m (New Brunswick 7.5–10, the Shield 2.6–15.7 — COSEWIC 2018); omnivores, the adults
+  // about half plants (New York 1941: 76 stomachs half and half; MDIFW: insects, snails, crayfish, vegetation, carrion); ration 6 g wet a
+  // day at 20 °C [inf: a 350-g turtle's field metabolism ~13 kJ/day at 1.5 kJ assimilated a gram — ~2× its mass a year]; torpid below
+  // 10 °C, feeding once basking lifts it past ~18 (§2: 'feeding lags until the water warms')
+  painted: { perHa: 10, z: 2, ration: 6, act: [10, 18], diet: { plant: 0.5, weed: 0.2, snail: 0.15, small: 0.05, surf: 0.1 } },
+  // SNAPPING TURTLES (E6a's WILD3 row: its count, season and 50 g a day; fish its 0.2): the rest — plants about a third of the whole,
+  // crayfish, the weeds' invertebrates and snails (§4) [inf: the shares of the non-fish 0.8]
+  snapper: { wild: 'snapper', act: [16, 16], diet: { plant: 0.41, cray: 0.25, weed: 0.21, snail: 0.13 } },
+  // BULLFROGS (E6a's WILD3 row: ~10 g a day, fish 0.05): mostly insects, crayfish, frogs and tadpoles (§6) [inf: the shares], at the edge
+  bullfrog: { wild: 'bullfrog', act: [12, 12], edge: true, diet: { surf: 0.6, cray: 0.15, weed: 0.25 } },
+  // GREEN AND MINK FROGS at the waterline: 0.3 per metre of the vegetated shore [inf: 0.2–1 in good cover, fewer on open shores — §6;
+  // littoral3's bank weights the shore by its cover], 0.4 g of insects a day at 20 °C [inf: ~1.5 % of a 30-g frog], May–September
+  frog: { perM: 0.3, z: 0.8, ration: 0.4, act: [12, 18], diet: { surf: 0.7, weed: 0.2, small: 0.1 } },
+  // RED-SPOTTED NEWTS in the weedy shallows (the one salamander of lakes with fish — tetrodotoxin: the fish reject them; §7): 300 per ha to
+  // 1.5 m [inf], 0.06 g a day of the weeds' small fauna at 20 °C [inf: ~2.5 % of a 2.5-g newt], some active under the ice
+  newt: { perHa: 300, z: 1.5, ration: 0.06, act: [4, 10], diet: { small: 0.8, weed: 0.2 } },
+};
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —
 // the compensatory brake (crowded or late cohorts end the summer small and die; sparse or early ones are large and live).

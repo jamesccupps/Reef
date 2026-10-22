@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~2:15 a.m. EDT — THE NEWEST; the "4 a.m." below was ~1:30). ARM AF's YEAR-2 STARVATION FOUND: the lakes' P
+▶▶▶ RESUME HERE (2026-10-22 ~2:40 a.m. EDT — THE NEWEST). COMMITTED f99d216 (pushed): E9d — the sky's fronts (WEATHER3.SYN, in
+stageR5: CHAIN/DWELL/P_K fitted to Houlton GHCN-D, research note houlton_daily_precipitation.md; WET_T the storms' warm air), HBV
+re-fit (FC 82 LP 0.39 BETA 2.72 K1 0.196 PERC 0.21 K2 0.0048 DDF 4.61 — the gauges' hydrograph; known gap Dec ~0.9× vs 1.1–1.4×),
+BURY_MUL 0.15 → 0.10 (the old target was the retention formula's complement; true-world R 0.35–0.45, year-2 inventory ~steady;
+probe bury.mjs), the gate of 8063465's 3 FAILs fixed (seedSeason spawnP, sucker brook 0.15, env3 _fAct idle fields), year.js
+"water:" line (yrsum.mjs reads it), FINDINGS ×2. Gate of 8063465: 708 PASS, 3 FAIL (those three). E3b's GPU parity verified
+(g1_check r5=1 yf 0.2/0.27: clutches 379/379, young eaten 10530 · 10532). Arm AG (9229a90) seed 611: year 2 54 kg/ha, summer
+Daphnia 2 µg/L — the same starvation as AF (before E12/E3b); 612/613 stopped as moot. RUNNING: remote GATE of f99d216 →
+scratchpad/gate_eco7.txt; ARM AH (snapshot ah :8147 = f99d216; queue_ah.sh, r22AH_<seed>.txt, 3 seeds × 730 days, ~1.75 h a seed);
+a research agent on E9e (the catchment's P loads: SRP/DOP/PP, C–Q, bioavailability, inlet settling) → docs/research_notes/Maine
+lake shores and catchment/catchment_P_loads.md. NEXT: read the gate; back up to G: after it passes; E6b (painted turtles: plants,
+snails, carrion — turtles_and_frogs.md §2) and E6c (tadpoles, frogs, newts); E9e when the research lands (then BURY_MUL re-fit);
+E5 angling; E1b logs. Judge arm AH with yrsum.mjs (now with TP, algae, P inventory) and yz.mjs.
+▶▶▶ RESUME HERE (2026-10-22 ~2:15 a.m. EDT; the "4 a.m." below was ~1:30). ARM AF's YEAR-2 STARVATION FOUND: the lakes' P
 inventory fell to 45 % of the start in 9 months without fish — (1) the inherited 2-D sky chain cycled every ~27 days (10-day rains, 20-day
 droughts, months without rain), so the catchment ran at 0.01–0.08× its mean flow Jul–Feb and the P load fell ~90 %; (2) BURY_MUL was
 calibrated to an INVERTED retention (1/(1+√τ) is the share that leaves; R at these flushing rates 0.28–0.54, not 0.66–0.72). UNCOMMITTED

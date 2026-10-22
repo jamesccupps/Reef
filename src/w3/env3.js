@@ -24,6 +24,7 @@ import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
 import { Chem3 } from './chem3.js';
 import { Plants3, PL3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
+import { Herps3 } from './herps3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
   COL: 50 * GEO.SCALE,  // m (world) column side — 50 m real (5 at 1/10)
@@ -260,6 +261,7 @@ export class Env3 {
     this.primeSeason(this.time);
     this.plants = this.chem && plants ? new Plants3(this, { init: plantInit }) : null;   // the weeds on the bed (plants3.js; plantInit false: the bare seeding, not the spun-up start)
     this.lit = this.plants ? new Littoral3(this) : null;              // the weeds' invertebrates, snails, the surface (littoral3.js)
+    this.herps = this.lit ? new Herps3(this) : null;                  // (E6b/E6c1: the turtles, frogs and newts as consumers — herps3.js; HERP3.ON)
   }
 
   // ---------- precomputed transport patterns ----------
@@ -480,6 +482,7 @@ export class Env3 {
     if (this.chem) this.chem.step(dt);
     if (this.plants) this.plants.step(dt);
     if (this.lit) this.lit.step(dt);
+    if (this.herps) this.herps.step(dt);
     this._transport(dt);
     if (this.chem) this.chem._ledgerFlows();   // (the through-flow's in and out, tallied after it moved them)
     for (let j = 0; j < G.NCELL; j++) this.age[j] += dt;

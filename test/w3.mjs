@@ -1212,6 +1212,22 @@ if (run('substrate')) {
     W.AIR = a0; W.HYDRO = h0; PL3.MOOSE = m0;
     check("E9b + E13: the N and P budgets close with the catchment's flow scaling the through-flow and the moose taking the shallows' plants ashore; the moose eat 70–100 % of their need (868 g dry a moose-day)",
       rP < 1e-5 && rN < 1e-5 && ate > 0.7 * need && ate <= need * 1.001, `P/N relative error ${rP.toExponential(0)}/${rN.toExponential(0)}; the moose ${ate.toFixed(1)} of ${need.toFixed(1)} kg dry`); }
+  // (E6b, E6c1: the herps as consumers — HERP3: a July fortnight on the coarse grid: each kind at its count (painted turtles 10 per ha of the
+  // shallows to 2 m, snappers and bullfrogs as WILD3's), eating ≥ 85 % of its ration from the pools, the painted turtles' diet in its
+  // shares (plants half), the N and P budgets still closed (the plants they eat return as dead shoots); under the January ice nothing feeds)
+  { const { HERP3 } = C, h0 = HERP3.ON; HERP3.ON = 1;
+    seed(401); const e = new Env3({ col: 10 * CS, yf0: 0.42 }), c = e.chem, H = e.herps; for (let i = 0; i < 6; i++) e.step(FB);
+    const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger }, w0 = H.want, g0 = H.got, pt0 = { ...H.ate.painted };
+    for (let i = 0; i < 90; i++) e.step(FB);
+    const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
+    const rP = Math.abs(c.inventoryP() - P0 - eP) / P0, rN = Math.abs(c.inventoryN() - N0 - eN) / N0, got = (H.got - g0) / Math.max(1e-9, H.want - w0);
+    let sh = 0; for (let i = 0; i < e.plants.cells.length; i++) if (e.plants.zb[i] <= 2) sh += e.G.bedA[e.plants.cells[i]];
+    const ptN = H.n.painted, ptWant = HERP3.painted.perHa * sh / 1e4, pt = Object.fromEntries(Object.keys(pt0).map(k => [k, H.ate.painted[k] - pt0[k]])), ptT = Object.values(pt).reduce((a, b) => a + b, 0);
+    const e2 = new Env3({ col: 10 * CS, yf0: 0.85 }); for (let i = 0; i < 6; i++) e2.step(FB); const wJan = e2.herps.want;
+    HERP3.ON = h0;
+    check('E6b/E6c1: the herps as consumers — painted turtles at 10 per ha of the shallows, snappers and bullfrogs as WILD3\'s, frogs on the vegetated shore and newts in the weeds eat ≥ 85 % of their July ration from the pools, the turtles about half plants; the N and P budgets close; under the January ice none feed',
+      Math.abs(ptN / ptWant - 1) < 1e-6 && H.n.snapper > 0 && H.n.bullfrog > 0 && H.n.frog > 0 && H.n.newt > 0 && got >= 0.85 && Math.abs(pt.plant / ptT - HERP3.painted.diet.plant) < 0.1 && rP < 1e-5 && rN < 1e-5 && wJan === 0,
+      `counts (the world's): painted ${ptN.toFixed(1)}, snapper ${H.n.snapper.toFixed(1)}, bullfrog ${H.n.bullfrog.toFixed(1)}, frog ${H.n.frog.toFixed(1)}, newt ${H.n.newt.toFixed(0)}; got ${(100 * got).toFixed(0)} % of the ration; painted turtles' plants ${(100 * pt.plant / ptT).toFixed(0)} %; P/N relative error ${rP.toExponential(0)}/${rN.toExponential(0)}; January ${wJan.toFixed(1)} g wanted`); }
   { const W = C.WEATHER3, a0 = W.AIR, h0 = W.HYDRO; W.AIR = 1; W.HYDRO = 1; seed(509); const e = new Env3({ yf0: 0.0, chem: false, plants: false });
     const T = (hb, hs) => { e.iceMean = 1; e.iceB = hb; e.iceW = 0; e.iceSnow = hs * W.SNOW_RHO; e._iceSnow(0, -1, 0); return 1 - e.iceCut; };
     const t40 = T(0.4, 0), t40s = T(0.4, 0.1);
