@@ -192,7 +192,20 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~3:30 a.m. EDT — THE NEWEST). COMMITTED 859b9ec E6b/E6c1 (HERP3 — src/w3/herps3.js, in stageR5:
+▶▶▶ RESUME HERE (2026-10-22 ~4:30 a.m. EDT — THE NEWEST). COMMITTED since f99d216: 859b9ec E6b/E6c1 herps; 2dae305 E6c2 TADPOLES (allometric
+cohorts; the fish eat the green ones with the large weed fauna on both engines) + E9e TRIED and left OFF (CHEM3.LOADS: the field's P forms
+make the lakes ultra-oligotrophic — FINDINGS); af3a584 E5 ANGLERS (WILD3 angler/iceAngler; mOther cut [inf]); 0bd144c docs; and
+year.js's young's-fates line fixed (it read old fixed tally pairs). GATE of f99d216 (gate_eco7.txt): 706+ PASS, 1 FAIL so far —
+the weed stands 51 % of the bed > the check's 0.5 (was 48 %; BURY_MUL 0.10 left more P in the bed). The check's "research ~20–30 %"
+has NO source (no Maine measurement; the lakes are largely littoral) → a research agent on macrophyte area cover is running (→
+docs/research_notes/Whole lake 3D fish simulation/macrophyte_area_cover.md); decide the bound on its evidence. ARM AH (f99d216, seed
+611): a WINTERKILL — 70 → 46 kg/ha Feb–March, the deep bottom O₂ 1.5 mg/L (AG ~3.6): probe winter.mjs (SYN 0/1) running →
+scratchpad/probe/winter_0.txt, winter_1.txt. THE BIG ONE: ZERO RECRUITMENT in year 1 of every arm (AG's "period's young": 0 %
+recruited for every species — bass 4.4 M hatched: starved 48 %, eaten 39 %; pumpkinseed starved 46 %; their diet ~100 % zooplankton:
+the young never reach the bed/weeds foods — sunlarva.mjs found pumpkinseed stalling at 5 mm). NEXT: (1) the winter O₂ cause; (2) the
+weeds bound; (3) gate HEAD; (4) THE YOUNG'S FIRST SUMMER — a stage-survival audit (memory: stage-survival-audit) of why they starve
+and why none recruit; g1_check r5=1 for E6c2 when the GPU frees (AH runs ~5 h).
+▶▶▶ RESUME HERE (2026-10-22 ~3:30 a.m. EDT). COMMITTED 859b9ec E6b/E6c1 (HERP3 — src/w3/herps3.js, in stageR5:
 painted turtles, the snappers' and bullfrogs' non-fish food, green/mink frogs, newts eating from the pools; grazed plants return
 their N/P as dead shoots; gate check in W3_ONLY=substrate). IN THE TREE (uncommitted): E6c2 THE TADPOLES (herps3 tg[0..1] green/mink,
 tb[0..2] bullfrog per littoral cell; HERP3.TAD; breed by the adults' counts; graze sedOM; natural M; metamorphosis out; the fish take

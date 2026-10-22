@@ -4,6 +4,54 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The inflow's nitrogen as ammonium nitrified a third of the lakes' winter O₂ (probes o2budget.mjs, winter.mjs; arm AH)
+- **What.** Arm AH lost a third of its fish biomass (70 → 46 kg/ha) in February–March to late-winter hypoxia: the deep bottom at
+  1.5 mg/L. A fishless package winter drew the lakes' mean O₂ to 1.6 mg/L by April, with 72–81 % of the water under 2 mg/L.
+- **The budget under the ice** (January–February, g O₂ per m² a day; probe o2budget.mjs):
+
+  | Process | g O₂/m² a day |
+  |---|---|
+  | The bed's demand | −0.255 |
+  | Nitrification | −0.152 |
+  | Bacteria on DOM | −0.043 |
+  | Algae | −0.031 |
+  | Plants | +0.014 |
+  | Total | −0.45 (field under-ice demand 0.2–0.39) |
+
+- **Cause.** The inflow carried ~3/4 of its dissolved inorganic N as ammonium (~400 µg/L). A forested northeastern stream's is
+  mostly nitrate, with ammonium ~5–20 µg/L. Nitrifying ammonium costs 4.6 g O₂ a g of N.
+- **Fix.** CHEM3.N_FORM, in the package: the same N in, 5 % of it ammonium. Three seeds' winters (coarse grid, fishless):
+  - the lakes' lowest mean O₂ 2.8–4.7 mg/L, median 3.5, against 1.1–3.0 with the ammonium inflow;
+  - a harsh winter (seed 611) still reaches ~2.
+  The base world hid this: its ice passed a fixed 40 % of the light, and under-ice photosynthesis offset the demand. E10a's
+  realistic light (0.2–3 %) exposed it.
+- **Lesson.** Inflow chemistry by form matters as much for oxygen as for nutrients: a stream's nitrogen form is a winter O₂ term.
+
+## 2026-10-22 — No year-class recruits: the young starve in their first summer (arms AF/AG/AH; probe sunlarva.mjs)
+- **What.** In every true-scale arm, year 1's "period's young" had 0 % recruited, for every species. So each year the populations can
+  only shrink, which is the deeper half of the "year-2 collapse". Arm AG (9229a90, seed 611):
+
+  | Species | Hatched | Starved | Eaten | Natural deaths |
+  |---|---|---|---|---|
+  | Smallmouth bass | 4.4 M | 48 % | 39 % | 13 % |
+  | Pumpkinseed | 99 M | 46 % | 20 % | 34 % |
+  | Redbreast | 34 M | 46 % | 22 % | — |
+  | White perch | 1.7 billion | 16 % | 31 % | 53 % |
+  | Yellow perch | 434 M | 8 % | 57 % | — |
+
+  The young's diet is ~100 % zooplankton. None reached the bed's or the weeds' fauna.
+- **Where it fails** (probe sunlarva.mjs on HEAD, 1/10 world, seed 611, from early June):
+  - Pumpkinseed young sit over water deeper than 2 m (69–97 % of them), get 12–57 % of their wanted ration, and stall at 5–6 mm for
+    two months.
+  - Smallmouth young reach 16–17 mm, eat at 25–46 % of their potential, and are gone by mid-July.
+  - The rotifers, the first feeders' food, crash to ~0 µg/L from late June and stay there. Summer's edible algae are grazed down,
+    the grazing-resistant algae dominate, and Daphnia's interference (~200 µg/L in early June) finishes them. Field mesotrophic lakes
+    with Daphnia keep rotifers through summer.
+- **Note.** The year runner's per-period "young's fates" line had been reading tally slots that the tally map had since moved (fixed).
+  The year-end "period's young" line was right.
+- **Next.** A stage-survival audit of the first summer against the field (research: young_first_summer.md): prey densities by habitat,
+  the larvae's habitat by species, growth, survival.
+
 ## 2026-10-22 — With the literature's P forms the lakes turn ultra-oligotrophic: the mesotrophic analogue needs more available P (E9e trial; probe e9e.mjs)
 - **What.** A stream's total P matches the sim's inflow: field ~13 µg/L (8–20), sim ~14 (catchment_P_loads.md). Its forms do not. The
   field has phosphate ~2 µg/L, dissolved organic P ~6 (about a quarter available to algae) and particulate P ~5 (about a fifth available

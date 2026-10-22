@@ -22,7 +22,7 @@
 // days); R3 gives each rung its own mechanisms. BEHAVIOUR follows the hour: where a fish chooses to be by day and by night.
 import { GEO, LAND, UPPER, LOWER, BROOK, BODIES, cellIndex } from './geometry.js';
 import { CLOCK3, TS, DAY3, OLD_S } from './clock3.js';
-import { A2, naupShare } from './chem3.js';
+import { A2, naupShare, CHEM3 } from './chem3.js';
 import { LIT3 } from './littoral3.js';
 import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
@@ -741,7 +741,8 @@ export function stageR5(on = true) {
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
   ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
-  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0; HERP3.ON = on ? 1 : 0;   // (E6b/E6c1: the herps as consumers)   // (E9d: fronts — Houlton's rain days and storms)   // (E9b: rain and snow, the catchment's flow through the lakes)
+  WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0; HERP3.ON = on ? 1 : 0;   // (E6b/E6c1: the herps as consumers)
+  CHEM3.N_FORM = on ? 1 : 0;   // (the inflow's inorganic N mostly nitrate: under the ice its nitrification had taken a third of the lakes' O₂ — chem3 N_FORM)   // (E9d: fronts — Houlton's rain days and storms)   // (E9b: rain and snow, the catchment's flow through the lakes)
   ALEWIFE.ON = on ? 1 : 0;   // (E8: the sea-run alewives — config ALEWIFE)
   // (L1) THE CYCLOPOIDS ON THE SMALLEST LARVAE (config FRY.CYC — larval_mortality.md). The field background M_LARVA3 0.02 (from 0.04, fitted
   // before the egg stage) waits for L2, the fish's predation on larvae at its field rate: lowered alone, it lets more larvae live (probe larvz:

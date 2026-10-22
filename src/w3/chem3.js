@@ -66,6 +66,12 @@ export const CHEM3 = {
   // POLLEN_P mg/m² over POLLEN_YF (15–35 over ~45 days in Ontario lakes) — ATM_DISS of each as phosphate into the surface water, the
   // rest settling as particles (as the inflow's PP, lake-wide)
   ATM_P: 16, POLLEN_P: 25, POLLEN_YF: [0.24, 0.36], ATM_DISS: 0.5,
+  // (N_FORM — on in fish3 stageR5) THE INFLOW'S INORGANIC N BY FORM: IN_NUT carried its N as ammonium (~3/4 of the inflow's dissolved
+  // inorganic N), where a forested northeastern stream's is mostly nitrate (ammonium ~5–20 µg/L, a few % of it) — and nitrifying
+  // ammonium costs O₂ (4.6 g a g of N): under the ice nitrification took 0.15 g O₂/m² a day of the lakes' 0.45 (probe o2budget.mjs),
+  // the bed's own demand 0.26 (field under-ice demand 0.2–0.39 in all), the lakes' mean O₂ down to 1.6 mg/L by April. The same N in,
+  // IN_NH4_SHARE of it ammonium, the rest nitrate
+  N_FORM: 0, IN_NH4_SHARE: 0.05,
   SLOW: 3,                                                 // the slow processes run every SLOW-th update (see step)
   // THE BED'S BOUNDARY LAYER for dissolved P: the 2-D sim's bed exchanged with its 0.3-m bed cell, a film the binding and the P
   // rain drew down locally (diffusion refilled it slowly) — that film is what throttled the bed. A 3-D bed cell's water is the
@@ -163,7 +169,8 @@ export class Chem3 {
     const nIn = CHEM3.IN_NUT * (1 - NUTRIENT.INFLOW_P), pIn = CHEM3.IN_NUT * NUTRIENT.INFLOW_P;
     this.tf = [
       { name: 'o2', a: this.o2, in: ENV.O2_START, p: 0, n: 0 },
-      { name: 'nh4', a: this.nh4, get in() { return CHEM3.LOADS ? nIn - CHEM3.IN_DOP_LAB / NUTRIENT.ORGANIC_P * (1 - NUTRIENT.ORGANIC_P) : nIn; }, p: 0, n: 1 }, { name: 'no3', a: this.no3, in: CHEM3.IN_NO3, p: 0, n: 1 },
+      { name: 'nh4', a: this.nh4, get in() { const a = CHEM3.LOADS ? nIn - CHEM3.IN_DOP_LAB / NUTRIENT.ORGANIC_P * (1 - NUTRIENT.ORGANIC_P) : nIn; return CHEM3.N_FORM ? (a + CHEM3.IN_NO3) * CHEM3.IN_NH4_SHARE : a; }, p: 0, n: 1 },
+      { name: 'no3', a: this.no3, get in() { const a = CHEM3.LOADS ? nIn - CHEM3.IN_DOP_LAB / NUTRIENT.ORGANIC_P * (1 - NUTRIENT.ORGANIC_P) : nIn; return CHEM3.N_FORM ? (a + CHEM3.IN_NO3) * (1 - CHEM3.IN_NH4_SHARE) : CHEM3.IN_NO3; }, p: 0, n: 1 },   // (N_FORM: a stream's DIN mostly nitrate)
       { name: 'phos', a: this.phos, get in() { return CHEM3.LOADS ? CHEM3.IN_SRP : pIn; }, p: 1, n: 0 },   // (E9e: a stream's phosphate)
       { name: 'phyto', a: this.phyto, in: PHYTO.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
       { name: 'diatom', a: this.diatom, in: DIATOM.START * CHEM3.IN_ALGAE, p: PHYTO.P_USE, n: PHYTO.N_USE },
