@@ -1044,9 +1044,10 @@ if (run('strike')) {
         `bed cell ${jb}: small fauna ${S0.toFixed(3)} g/m², seen ${eBig.toFixed(3)} → ${eSmall.toFixed(3)}; took ${got.toFixed(3)} g, small fauna → ${S1.toFixed(3)}`); }
     // (the cold rules on a relative appetite: FB4's Eq. 4 curve, the pickerel's, peaks at ~8.3 — not 1 — so the cold rules divide by
     // its peak; and R1b: white perch's unsimulated adult mortality at the field's non-predation 0.45–0.65 a year, maxAge 10, restored
-    // when the package is off)
+    // when the package is off — (E4) with the wildlife now simulated, its mOther share is cut by the 0.18 the birds and mammals took in
+    // arm AD (stageR5), so the unsimulated part + the wildlife's is the check)
     { const be = await import('../src/bioenergetics.js'), wp = fm.S3.whiteperch, pk = fm.S3.pike.sp.bio, bs = fm.S3.bass.sp.bio;
-      const relP2 = be.consumptionTrel(pk, 2), relB2 = be.consumptionTrel(bs, 2), wpOn = wp.sp.M * wp.mOther, ageOn = wp.maxAge / (365 * 86400);
+      const relP2 = be.consumptionTrel(pk, 2), relB2 = be.consumptionTrel(bs, 2), wpOn = wp.sp.M * wp.mOther / (fm.F3.WILD ? 1 - 0.18 : 1), ageOn = wp.maxAge / (365 * 86400);
       fm.stageR5(false); const wpOff = wp.sp.M * 0.5, ageOff = wp.maxAge / (365 * 86400), offOK = wp.mOther === undefined && Math.abs(ageOff - 12) < 0.01; fm.stageR5(true);
       check('the cold rules read a relative appetite (the pickerel\'s Eq. 4 curve divided by its peak: ~0.12 of it at 2 °C, not 1.0; the bass\'s Eq. 2 unchanged); R1b: white perch\'s adult background mortality 0.45–0.65 a year with maxAge 10 under the package, 0.23 and 12 off it',
         relP2 > 0.08 && relP2 < 0.2 && Math.abs(relB2 - be.consumptionT(bs, 2)) < 1e-9 && wpOn >= 0.45 && wpOn <= 0.65 && Math.abs(ageOn - 10) < 0.01 && offOK,
@@ -1072,9 +1073,11 @@ if (run('strike')) {
         `p(FL 62.5, 180 d) ${p180.toFixed(3)}; ${span} days < 4 °C: p(FL 49) ${pA.toFixed(2)}, p(FL 57) ${pS.toFixed(2)}`); }
     fm.stageR5(false);
     // (≥ 2×: with F3.YENC the predators take more of the young in both, and the zooplankton-first case keeps more than it did — 26 µg/L
-    // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it)
-    check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 20 µg/L and ≥ 2× what is left with the zooplankton first',
-      b.D >= 20 && b.D >= 2 * a.D, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
+    // against 3; the young's diet share is reported, not judged: with the zooplankton kept, they take it). (E2b: with the grazing-resistant
+    // algae and the invertebrate predators the package's summer Daphnia sit near the field's — lakes like Hot Brook hold a median 3 µg/L in
+    // July–August, typically 0–50 (EPA NLA 2012, daphnia_summer_limits.md) — so the floor is 5, not the 20 of the Daphnia-rich model)
+    check('R2a: the young\'s food by what it pays — six weeks from the founding, the Daphnia left in early July is ≥ 5 µg/L and ≥ 2× what is left with the zooplankton first',
+      b.D >= 5 && b.D >= 2 * a.D, `Daphnia ${b.D.toFixed(0)} against ${a.D.toFixed(0)} µg/L; the young's zooplankton share ${(100 * b.zoo).toFixed(0)} % against ${(100 * a.zoo).toFixed(0)} %`); }
 }
 
 // ============================================================
