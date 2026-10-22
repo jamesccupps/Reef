@@ -4,6 +4,33 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — The late-spring algae crash was not Daphnia: a 2-D settling rule left on one algal group handed the summer to the ungrazed group (probe algbud, Z1 in the tree)
+- **What.** After Z1 cut the cladocerans' clearance to the field's ~1 mL/µg/d, the edible algae still fell ~180× (0.55 → 0.003
+  units) between mid-May and mid-June. A budget of the edible algae shows the grazers were not the cause of the fall. Three things were:
+  1. **The bed's capture of settling algae (SED_P.SETTLE) drained the greens alone**, at a sinking speed of 0.33 m/day. That came
+     on top of their 0.15/day die-off, which the config already describes as "sinking and lysis". The rule is the 2-D model's, from
+     when the greens were its only algae; the diatoms and the grazing-resistant algae added since never settled.
+  2. **The P half-saturation, NUTRIENT.KP 0.10 units**, is ≈ 10 µg/L of dissolved P (1 unit ≈ 100 µg/L at the lakes' reference
+     TP). So the algae ran at 8–22 % of their P-saturated growth all of June.
+  3. **With Daphnia at field clearance, the copepods became the main grazer.** Their GR_C/K_C gives ~1.6 mL/µg/d, more than the
+     corrected Daphnia.
+- **How.** scratchpad probe algbud.mjs (true-scale lakes, no fish, seed 611, from yf 0.2). Each week it reports the edible algae's
+  per-capita rates: net growth (chem3 _algae), the grazing by each grazer (_zooplankton, measured and split by each grazer's
+  ingestion), the mussels (littoral3 _mussels), the settling (_sedimentP) and the residual.
+- **Evidence (/day, algae-weighted).**
+  - Weeks 1–3: settled 0.079 → 0.034 (≈ 0.15/day of the greens alone), mussels 0.025–0.032, all four zooplankton grazers 0.01–0.04.
+  - The greens went 0.28 → 0.15 → 0.04 → 0.000 by day 28. Over the same weeks the resistant algae, at half the greens' growth rate
+    but neither grazed nor settled, held and then rose 0.13 → 0.43: ~95 % of the summer algae, against the field median of 58 %.
+  - Lowering KP to 0.02 alone, or the copepods' clearance to ×0.25 alone, does not stop the crash.
+  - Letting every kind settle at the greens' rate (CHEM3.SETTLE_ALL) crashes them all: total algae fall ~13× by late June. The
+    0.33 m/day speed plus the 0.15/day die-off counts sinking twice.
+- **Lesson for the model.** When a group is added beside an old one, every loss rule written for "the algae" has to be re-read for
+  which arrays it touches. A loss left on one group is a competitive handicap, and the competition then shows its effect on that
+  group as something else: here, a "clear-water phase".
+- **Where.** chem3.js _sedimentP (the CHEM3.SETTLE_ALL option, off); config PHYTO.DECAY_PC, SED_P.SETTLE, NUTRIENT.KP, PLANKTON.GR_C;
+  research note copepod_grazing_and_p_kinetics.md (pending). The re-base (one sinking term per kind at its field speed, die-off
+  without sinking, the field P half-saturation, the copepods' field clearance) is next.
+
 ## 2026-10-22 — A canopy that grows by the light at its top colonises below the field's limit; the weed beds' extent (E12b)
 - **What.** The second summer's weed stands covered 51 % of the bed against the research's ~15–17 % (macrophyte_area_cover.md), the
   canopy to 3.4 m against 2.0–3.0 m in coloured water. Three model artifacts and one inferred value carried most of it:

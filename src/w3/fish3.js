@@ -560,7 +560,7 @@ export function larvW(s, L, Lq) {
   return sr * (dm + (1 - dm) * clamp((Lq - d0) / (d1 - d0), 0, 1));
 }
 const M_LARVA30 = FRY.M_LARVA3;   // (stageR5 L1 sets it — restored when off)
-const K_FRY0 = PLANKTON.K_FRY;   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
+const K_FRY0 = PLANKTON.K_FRY, DAPH_INTERF0 = PLANKTON.DAPH_INTERF, START_D0 = PLANKTON.START_D;   // (stageR5 Z1 sets these: restored when off)   // (stageR5 R2a sets PLANKTON.K_FRY — shared with the 2-D sim: restored when off)
 // (E2c/E2d) THE YOUNG'S ZOOPLANKTON LADDER at length L (cm) on year-fraction yf (config ZOO3.SMALL): c the catch of each field (Daphnia, copepods,
 // rotifers, small cladocerans), u its weight in the count response (catch / the class's half-saturation; the copepods' nauplii at K_NAUP, the
 // rest at K_FRY) — chem3 zooFeedYoy. Without SMALL the old ladder on one K_FRY (u = c / K_FRY: the old type II exactly)
@@ -765,6 +765,7 @@ export function stageR5(on = true) {
   // (E2a) the rotifers' microbial food and field rates, the size-gated interference, their predators feeding the copepods (config ZOO3.MICRO)
   ZOO3.MICRO = on ? 1 : 0;
   ZOO3.DAPH_LIM = on ? 1 : 0;   // (E2b: the grazing-resistant algae and the invertebrate predators of the young Daphnia — config RESALG, ZOO3)
+  ZOO3.Z1 = on ? 1 : 0; PLANKTON.DAPH_INTERF = on ? ZOO3.Z1_INTERF : DAPH_INTERF0; PLANKTON.START_D = on ? ZOO3.Z1_START_D : START_D0;   // (Z1: the clear-water phase at the field's depth — config ZOO3)
   ZOO3.SMALL = on ? 1 : 0;   // (E2c/E2d: the small cladocerans, the nauplii, the young's prey ladder by gape and by count — config ZOO3)
   // (E9a) the air's synoptic and seasonal anomalies about the Maine calendar: years differ (config WEATHER3)
   WEATHER3.AIR = on ? 1 : 0; WEATHER3.HYDRO = on ? 1 : 0; WEATHER3.SYN = on ? 1 : 0; HERP3.ON = on ? 1 : 0;   // (E6b/E6c1: the herps as consumers)

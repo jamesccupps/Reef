@@ -1350,6 +1350,21 @@ export const ZOO3 = {
   // stays the non-predation mortality (field 0.002–0.18 /d)
   DAPH_LIM: 0,
   INV_D: 0.05, INV_Q10: 2.5, INV_T: 8,
+  // (Z1, on in fish3 stageR5) THE CLEAR-WATER PHASE AT THE FIELD'S DEPTH (research_notes/Real lake ecology for calibration/
+  // clear_water_phase_and_rotifers.md): the sim's first spring grazed the edible algae down 260× and the rotifers 550 → 3 a litre, where
+  // eastern Maine's lakes dip 1.5× (median; p90 2.8×, no lake-year 30× in 450+) and the rotifers 2–3.5× at Daphnia peaks. Its mechanisms:
+  // - Daphnia's (and the small cladocerans') CLEARANCE at the field's per-µg rate: PLANKTON.GR_D cleared 3.9 mL a µg of Daphnia a day at
+  //   20 °C (at 250 µg/L: 98 % of the water a day); in situ CWP-peak communities 0.5–1.1 (Erie; D. g. mendotae 0.6–0.8), the lab's
+  //   allometric bound 2.0–2.3 → Z1_CLEAR mL/µg/d (type II to zero food, no threshold: Porter 1982; Muck & Lampert 1980);
+  // - STARVATION: below maintenance a Daphnia stops breeding within an egg's development time and dies on t_starv = 2.95·w^0.25 d at
+  //   20 °C (3–6 d for 1–20-µg animals; Z1_STARVE_D for a ~5-µg one), × Z1_STARVE_Q10 per 10 °C colder: the share below
+  //   maintenance (1 − intake / maintenance) dies at 1/t_starv — field populations fall 0.10–0.20 /d after the peak (Constance, Erie),
+  //   the sim's 0.06–0.11;
+  // - INTERFERENCE at the rotifer COMMUNITY's rate: PLANKTON.DAPH_INTERF 0.05 /(g/cell)/d ≈ 0.0012 L/µg/d is K. cochlearis's, the most
+  //   vulnerable; Polyarthra and K. crassa 0.0002–0.0005, Asplanchna and Trichocerca none (Gilbert 1989) → ~0.0007 (Z1_INTERF);
+  // - the 3-D lake's OPENING Daphnia stock: ice-out 0–2.5 Daphnia/L (≈ 0–10 µg/L), June in lakes like Hot Brook median ~1, p90 50–160 —
+  //   the 2-D START_D (40 µg/L) opened mid-May at a p75–p90 June stock → Z1_START_D g/cell (~8 µg/L)
+  Z1: 0, Z1_CLEAR: 1.0, Z1_STARVE_D: 4.4, Z1_STARVE_Q10: 2, Z1_INTERF: 0.028, Z1_START_D: 0.2,
   // (E2c/E2d, SMALL — on in fish3 stageR5) THE SMALL CLADOCERANS, THE NAUPLII AND THE YOUNG'S PREY LADDER (small_zooplankton_and_microbial_loop.md
   // §3, §5). A larva of 4.5–8 mm (gape 0.2–0.32 mm) takes rotifers, nauplii and 0.25–0.4-mm cladocerans, not 1–2-mm Daphnia; the sim's one
   // cladoceran field held the small ones at a fixed 0.3 of Daphnia, where in the field they RISE when fish thin the Daphnia (PEG).
