@@ -336,3 +336,41 @@ These rows are from `Real lake ecology for calibration/young_white_perch_growth_
 | YW31 | "Modeling size dependent interactions of a juvenile piscivore" | ideals.illinois.edu/items/88293 | 403 | Walleye attack rates and handling times on zooplankton |
 
 - **OpenAlex** search ran out of its anonymous daily budget and asked for an API key; none was given. Semantic Scholar returned 429s. Single-DOI lookups through Crossref and OUP abstract pages worked.
+
+## Appended 2026-10-22: larval mortality and density in lakes
+These rows are from `Real lake ecology for calibration/larval_mortality_and_density_in_lakes.md`. Row IDs use the prefix LMD so they cannot collide with rows other sessions add. None was bypassed.
+
+| # | Source | Link | Blocked by | What it would settle |
+|---|---|---|---|---|
+| LMD01 | VanDeValk, A. J., et al. 2016. *TAFS* 145:416–426 (Oneida white perch, 1968–2011) | [doi 10.1080/00028487.2015.1131743](https://doi.org/10.1080/00028487.2015.1131743) | OUP paywall (abstract read via Crossref) | The only lake larval white perch densities and first-year Z vs density |
+| LMD02 | Höök, T. O., et al. 2007. *TAFS* 136:1298 (age-0 alewife hatch dates, growth, survival; Muskegon L. vs Lake Michigan) | [doi 10.1577/T06-194.1](https://doi.org/10.1577/T06-194.1); deepblue.lib.umich.edu bitstream 2027.42/141621 | Cloudflare "Just a moment" challenge; WebFetch 403 | Larval and age-0 alewife daily Z and growth in a drowned-river-mouth lake |
+| LMD03 | Garvey, J. E., T. P. Herra & W. C. Leggett 2002. *Ecol. Appl.* 12:194 (Lake Opinicon sunfish) | opensiuc.lib.siu.edu (fiaq_pubs article 1023) | Cloudflare challenge; HTTP 403 | Limnetic sunfish larval densities by date, cohort survival, Z |
+| LMD04 | Kaemingk, M. A., et al. 2011. *J. Fish Biol.* 78:1132 (Pelican Lake, NE) | digitalcommons.unl.edu (article 1691) | Cloudflare challenge | Larval bluegill densities per m³ and survival |
+| LMD05 | Post, J. R., L. G. Rudstam & D. M. Schael 1995, *TAFS* 124:84; Post, Rudstam, Schael & Luecke 1992 and Luecke, Rudstam & Allen 1992 (chapters in Kitchell, *Food Web Management*, Springer) | doi 10.1577/1548-8659(1995)124<0084:TASDOP>2.3.CO;2; doi 10.1007/978-1-4612-4410-3_15; digitalcommons.usu.edu/wats_facpub/229 | OUP/Springer paywalls; USU page says "not available here" | Lake Mendota larval yellow perch densities, planktivory and Z |
+| LMD06 | Reichert, J. M. 2009 (U. Windsor thesis, etd/367) and U. Windsor etd/5588 (Lake Erie larval perch, plume vs non-plume) | scholar.uwindsor.ca/etd/367 | Redirects to the new repository's home page (item not found) | Lake Erie larval yellow perch survival and predation by white perch |
+| LMD07 | Margulies, D. 1990. *Env. Biol. Fish.* 27:187–200 (vulnerability of white perch larvae to fish predation) | doi 10.1007/BF00001672 | Springer login redirect (not followed) | Capture rates of white perch larvae by size; the *Daphnia* × predation interaction |
+| LMD08 | Schaeffer, J. S. & F. J. Margraf 1987. *Env. Biol. Fish.* 18:77–80 | doi 10.1007/BF00002331 | Springer login redirect | White perch eating white perch and white bass eggs (Lake Erie) |
+| LMD09 | Smith, R. E. & R. J. Kernehan 1981. *Estuaries* 4:81–83 | doi 10.2307/1351547 | JSTOR/Springer paywall | Cyclopoid kill rates on white perch and striped bass larvae |
+| LMD10 | Quist, M. C., et al. 2002. *NAJFM* 22:637–642 (larval white bass, Glen Elder Reservoir) | doi 10.1577/1548-8675(2002)022<0637:EOLWBI>2.0.CO;2 | OUP paywall | Confirms the mean larval Z of ~0.09/d (search snippet only) |
+| LMD11 | Chizinski, Pope & Wilde 2010, *FME* 17:262; Hodkin 2001 (Branched Oak white perch thesis) | digitalcommons.unl.edu (article 1011) | Cloudflare challenge | Age-0 white perch survival in Nebraska reservoirs |
+| LMD12 | NCSU thesis "White Perch Expansion and Life History Within a Southern Reservoir" | repository.lib.ncsu.edu bitstreams | FortiADC WAF error page | Reservoir larval and YOY white perch densities |
+| LMD13 | Maine IF&W white perch strategic management plan | maine.gov/ifw/docs/strategic-management-plans/whiteperch.pdf | CloudFront 403 "Request blocked" | Maine spawning, hatch and lake density values |
+| LMD14 | Rudstam et al. 2016, Oneida Lake chapter (AFS book) | fisheries.org/doi/9781934874431-ch16 | HTTP 403 | Oneida early-life series for walleye, yellow and white perch |
+| LMD15 | Gallagher, Piccoli & Secor 2018 (Hudson white perch stage transitions) | scholarworks.wm.edu/vimsarticles/1293 | HTTP 403 (the thesis version was used instead) | Egg → YSL → PYSL → YOY transitions |
+| LMD16 | DeBruyne et al. 2024. *Aquat. Ecosyst. Health Manage.* 27:97–114 | doi 10.14321/aehm.027.01.98 | BioOne full-text page returned empty | Western Lake Erie larval *Morone* densities per m³ |
+| LMD17 | Irwin, B. J. 2006, PhD thesis, Cornell (Oneida age-0 yellow perch) | ecommons.cornell.edu | Download returned an empty file | Interval definitions behind Oneida's Z of 0.042 (egg → 18 mm or 8 → 18 mm) |
+| LMD18 | Boel, M., et al. 2018. *Oikos* 127:1800–1811 (young largemouth bass in alewife lakes) | doi 10.1111/oik.05556; boris.unibe.ch/118324 | Anubis "not a bot" check; Wiley 403 | Young bass growth (mm/d) by alewife lake type |
+| LMD19 | Demi, L. M., et al. 2015, *Hydrobiologia* 758:47–59; Demi 2010 UMaine dissertation (ETD 1120) | doi 10.1007/s10750-015-2264-7 | Springer login redirect; UMaine DigitalCommons closed 30 June 2026 | Maine zooplankton biomass and size, spring vs summer, with and without alewife |
+| LMD20 | Cooper, R. A. 1961, MS thesis, U. Rhode Island | digitalcommons.uri.edu (theses article 2945) | Cloudflare challenge | Rhode Island pond juvenile alewife counts per adult and timing |
+| LMD21 | Wagner 1975, MS thesis, Northern Michigan U. | commons.nmu.edu (theses article 1322) | Cloudflare challenge | Larval alewife densities and growth in a Lake Michigan bay |
+| LMD22 | MSU thesis, ETD 6499 (Lake Michigan larval alewife 1978–79) | d.lib.msu.edu/etd/6499 | "Access limited" page | Verifies peaks of 2.6 and 0.62 larvae/m³ |
+| LMD23 | Barber, B. L., et al. 2018. *Mar. Coast. Fish.* 10:236–254 (open access) | doi 10.1002/mcf2.10021 | Wiley 403 | Recruits per spawner and lake carrying capacity for Maine alewife |
+| LMD24 | Chvala 2000; Edwards 2007 (SDSU MS theses) | openprairie.sdstate.edu | "University Access Only" login | Per-date larval bluegill densities in Sandhill lakes |
+| LMD25 | Rettig, J. E. 1999, MSU dissertation | d.lib.msu.edu/etd/28236 | "Access limited" page | Larval bluegill survival with and without adults |
+| LMD26 | Cargnelli & Gross 1996, *CJFAS* 53:360 (author copy) | labs.eeb.utoronto.ca/gross/ | File removed; Wayback snapshot is "Page not found" | Opinicon bluegill cohort survival by hatch date |
+| LMD27 | Annales Zoologici Fennici 33 (Finnish perch larvae, anzf33-397p) | sekj.org/PDF/anzf33/anzf33-397p.pdf | Connection refused (ECONNREFUSED) | Eurasian perch larval Z and density in small Finnish lakes |
+| LMD28 | AFS and ESA meeting abstracts (Tar-Pamlico larval alewife Z; Massachusetts 20-pond juvenile alewife growth and mortality; Stahr/Kaemingk Pelican Lake hatch dates) | afs.confex.com; eco.confex.com | DNS lookup failure (ENOTFOUND) | Larval alewife cohort Z; juvenile alewife Z across ponds |
+
+- **Not found online at all** (no block): Kissil 1974 (*TAFS* 103:312) full text; Havey 1973 (Love Lake, Maine); Walton 1987 (Damariscotta); AuClair 1956/1960 (Maine white perch); Klauda 1989 (white perch and acid); Mansueti 1964 (*Chesapeake Sci.* 5:3); Whiteside et al. 1985 (*EBF* 12:47; Springer, not attempted).
+- **Readable but no text layer:** Knotek 1995 (Virginia Tech MS thesis, scanned). Only its abstract was used.
+- **APIs:** OpenAlex's rate-limit response asked for the user's email to issue an API key. No email was given, and OpenAlex was not used again.
