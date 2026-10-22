@@ -192,7 +192,19 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
-▶▶▶ RESUME HERE (2026-10-22 ~7:15 a.m. EDT — THE NEWEST). MEASURED (probe larvz on af3723e; FINDINGS 8e24d93): ~150 swimming larvae/m²
+▶▶▶ RESUME HERE (2026-10-22 ~4:45 a.m. EDT by the machine clock — THE NEWEST; the earlier blocks' a.m. times ran ahead). COMMITTED:
+3dc49aa Y1 (the sunfishes'/pickerel's young on the weed shelf, the bed's food at 1–1.5 cm), 31573b3 FINDINGS arm AH (the year-2
+plankton starvation GONE with E9d + the retention fix: Daphnia 61/38 µg/L, TP 7–8, P inventory ~85 %; fish 97→43→27 kg/ha from the
+winterkill — fixed since by N_FORM — and zero recruitment), 19edb3a E6c2 parity fix (weedEcells counts the tadpoles; g1_check r5=1
+yf 0.27/0.35 now matches: weeds 95/90 g, zoo 46/46, bed 80/79, young 321/321, clutches 379/379). RUNNING: GATE of af3723e →
+gate_eco8.txt (655+ PASS, 0 FAIL so far — note it predates Y1 and 19edb3a: gate HEAD next); ARM AI (snapshot ai :8148 = 19edb3a,
+queue_ai.sh → r22AI_<seed>.txt, 3 seeds × 730 days; its first launch flaked on Chrome, relaunched). THE RECRUITMENT DIAGNOSIS
+(FINDINGS): ~150 larvae/m² (field 10–40); the rotifers crash in mid-June (Daphnia peak + clear water) then the larvae eat all they
+make (2–7/L at net +0.12/d, field 270–470/L); the young stall at 5 mm. NEXT: the larval inputs — ASK THE HUMAN about perch
+(census 500/ha vs their note "fewer than fallfish/bass"); white perch 26–37/m² and the alewife young 62/m² (Z 0.03 vs the field's
+~0.08 — Maine YOY alewife fall 100-fold June→August); the fish's larval predation (field 70–90 % of Z). E12b (weeds ~50 % vs 15–17 %:
+plants by E1a's substrate map, a regrown start). Back up to G: once a gate of HEAD is green.
+▶▶▶ RESUME HERE (2026-10-22 ~7:15 a.m. EDT). MEASURED (probe larvz on af3723e; FINDINGS 8e24d93): ~150 swimming larvae/m²
 (perch ~50, white perch 26–37, alewife 62) where the field keeps ≲ 10–40; newly hatched perch Z 0.009/d (field 0.1–0.4 the first
 days); larval growth 0.06–0.1 mm/d (field 0.2–0.5); pumpkinseed stalled at 5 mm at ~maintenance. larval_mortality.md §3.4 says CHECK
 THE INPUTS FIRST: the census has PERCH 500/ha — the human's field note says perch are "small and fewer than fallfish/bass" (85 and
