@@ -678,6 +678,9 @@ export function stageR5(on = true) {
   // bass's 40 and the fallfish's 85; FISH_CENSUS.md): the census's 500/ha ≥ 7.5 cm (above its own soft-water comparables, Crystal and
   // Nebish 230–240) set ~50 perch larvae a m² (probe larvz, af3723e) where the field keeps ≲ 10–40 of every species together — the larvae
   // swamped their predators (fish predation Z 0.02–0.05 /d, field 0.035–0.22) and ate the rotifers out (2–7 a litre, field 270–470)
+  // (Y3, FRY.FEED_CV) the species' starvation clocks against a 6-mm first feeder's (larval_starvation_and_variability.md §3.2): white perch's
+  // tiny first feeder ×0.7 (a 4-day feeding delay killed most — Margulies 1989); the big yolky sucker and pickerel larvae ×1.3 [inf]
+  S3.whiteperch.starveK = on ? 0.7 : undefined; S3.sucker.starveK = on ? 1.3 : undefined; S3.pike.starveK = on ? 1.3 : undefined;
   S3.perch.perHa = on ? 75 : 500; S3.perch.mateCue = clamp(F3.MATE_CUE / Math.sqrt(S3.perch.perHa / 1e4), 6, 40);   // (as the species' set-up)
   // (Y1) THE SUNFISHES' AND THE PICKEREL'S YOUNG IN THE WEEDS (young_first_summer.md §7.2): pumpkinseed larvae leave the nest at 4.5 mm into
   // sheltered weedy bays, ~7× denser there than offshore (Sobchak et al. 2026, Ashby Lake), juveniles in the weed beds 0.7–2.5 m (redbreast
@@ -2938,7 +2941,7 @@ export class Fish3 {
       const x = got / Math.max(1e-12, q.n * need), sh = feedShares(x, FRY.FEED_CV, this._fsh || (this._fsh = [0, 0, 0])), tStarve = 0.4 * ed / Math.max(1e-9, r * OXYCAL / q.W);
       const xg = Math.min(1 + sh[1] / Math.max(1e-9, 1 - sh[0]), want / Math.max(1e-12, q.n * need));
       if (xg > 1 && sh[0] < 1) { q.W = Math.max(1e-7, q.W + Rj * (xg - 1) / ed); if (q.W > stdWeight(sp.lw, q.L)) { q.L = lengthFor(sp.lw, q.W); q.bdep = q.L * sp.depthR; } }
-      hS = sh[2] / (tStarve * DAY);
+      hS = sh[0] / (FRY.STARVE_TAU * Math.max((s.starveK ?? 1) * FRY.STARVE_DD * Math.pow(q.L / 0.6, FRY.STARVE_DDB) / Math.max(1, T), q.L > FRY.STARVE_L ? tStarve : 0) * DAY);   // (the starving share on its clock: FRY.FEED_CV's note)
     } else if (got >= q.n * need) {
       const C = J / q.n, F = WF[0] * C, U = WF[1] * (C - F), S = b.SDA * (C - F);
       q.W = Math.max(1e-7, q.W + (C - F - U - S - Rj) / ed);

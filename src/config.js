@@ -283,13 +283,19 @@ export const FRY = {
   // CYC_SHARE: the cyclopoids' share of the copepods' post-naupliar biomass [inf: M. edax ~19 % of the region's crustaceans]; CYC_W:
   // M. edax 5.5 µg, Diacyclops 4.5, Tropocyclops 1.5 (Hébert et al. 2016)
   CYC: 0, CYC_K: 0.003, CYC_SHARE: 0.5, CYC_W: 4, CYC_L: [0.4, 0.8], CYC_ROB: 0.7,
-  // (Y3, FEED_CV — off: the values pending, research_notes/Real lake ecology for calibration/larval_starvation_and_variability.md) THE YOUNG'S
-  // UNEQUAL SHARES: a school's fish do not share its food equally — their intakes spread about the school's mean x (× maintenance) as a
-  // lognormal with this CV (persistent differences: size at hatch, skill, place). The share below maintenance starves at E[(1 − X)+] / its
-  // time to run down (the school's starvation hazard); the school's fish — its survivors — grow on the others' mean surplus, ≤ Cmax. Equal
-  // shares (0) left a crowded cohort at exactly maintenance: it neither grew nor died, 5–9-mm larvae for weeks (probes sunlarva, larvz),
-  // where field larvae grow ≥ 0.2 mm/d or are gone within days to two weeks (young_first_summer.md §4.5)
-  FEED_CV: 0,
+  // (Y3, FEED_CV — 0 off; research_notes/Real lake ecology for calibration/larval_starvation_and_variability.md §3) THE YOUNG'S UNEQUAL
+  // SHARES: a school's fish do not share its food equally — their intakes spread about the school's mean x (× maintenance) as a lognormal
+  // with this CV (persistent differences: size at hatch, skill, place; 0.25, 0.15–0.4: Taylor & Freeberg 1984's ration step fits 0.24,
+  // field growth CVs 16–53 % in white perch, 7–18 % in perch). The SHARE below maintenance, f = P(X < 1), dies at f / τ′ — near-maintenance
+  // larvae die almost as fast as unfed ones (their foraging collapses within ~5 d; the deficit-weighted E[(1 − X)+] under-predicted
+  // Buckley's and Margulies's near-maintenance larvae 3–4×) — with τ′ = STARVE_TAU × the full-starvation time to 50 % death, τ =
+  // STARVE_DD·(L / 6 mm)^STARVE_DDB °C·d ÷ the water's °C (first feeders 35–75 °C·d; walleye 8–24 mm 90–200; perch from hatch 2.7–6.3 d —
+  // Heyer 2000; Meyer: temperature, not dry weight, sets the time), × the species' S3 starveK (white perch's 19-µg first feeder ×0.7 —
+  // Margulies 1989; the big yolky sucker and pickerel larvae ×1.3); past STARVE_L the energy clock (40 % of its energy at maintenance) if
+  // longer. The school's fish — its survivors — grow on the others' mean surplus, ≤ Cmax. Equal shares (0) left a crowded cohort at
+  // exactly maintenance: it neither grew nor died, 5–9-mm larvae for weeks (probes sunlarva, larvz), where field larvae grow ≥ 0.2 mm/d
+  // or are gone within days to two weeks (young_first_summer.md §4.5)
+  FEED_CV: 0, STARVE_DD: 50, STARVE_DDB: 0.75, STARVE_TAU: 1.5, STARVE_L: 2.5,
   DETECT_L: [0.6, 1.5], // cm: larvae this small are seen 0.2 → 1 (Folkvord & Hunter 1986: 6-mm larvae undetected; Margulies 1989)
   NS: 6,
   SPRING_YF: 0.08,     // year-fraction (late March) from which an overwintered school recruits whatever it has become …

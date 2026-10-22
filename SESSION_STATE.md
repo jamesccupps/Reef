@@ -192,6 +192,22 @@ speed-ups (chem3 _sight, plants3 Q10 table). What it fixed: year 1's zooplankton
 rebound, copepod winter 10–15 µg/L); year-1 biomass 110 kg/ha (field 50–120). What it did NOT fix: YEAR 2 COLLAPSES — the
 second summer's zooplankton 12–20 µg/L (white perch 395k/38 kg/ha, perch 270k, 26 M young perch), pumpkinseed/redbreast/killifish
 → 0, fallfish 1.8, pickerel 2.6 (y613_zoo3_2y.txt).
+▶▶▶ RESUME HERE (2026-10-22 ~11 a.m. EDT — THE NEWEST). THE HUMAN WIDENED THE PROJECT: "this is now a whole enviorment simulator of the lakes
+and forest right around them" — (1) the live view runs the full package: DONE abaa47b (world3sel R5; stageR5 in sim3worker, shard3worker,
+main3; ?r5=0 the base; checked: perch 75/ha + alewives on the data page, fps unchanged); (2) DRAW EVERY SIMULATED ANIMAL (wildlife, herps,
+tadpoles, anglers + ice anglers, dragonflies, moose, bears, deer) — a RENDER AGENT in a worktree (render3 only + sim3worker data + at most a
+render-only event list in fish3); (3) BEARS AND DEER (+ moose positions) — a FOREST AGENT in a worktree: src/w3/forest3.js (FOREST3 in
+stageR5), interface env.forest.animals [{id, kind bear|deer|moose, x, y, heading, act, young, len}], bears on the brook's sucker run,
+deer at the shore, gate section 'forest', research note forest_mammals_bears_deer_moose.md. Both commit on their worktree branches (no
+push) → MERGE when they report. Also running: E12b weeds agent (worktree); clear-water-phase research agent (→ clear_water_phase_and_rotifers.md);
+ARM AJ (GPU, perch 75); larvz_cv25 (FRY.FEED_CV 0.25 with the researched rule: the starving SHARE f/τ′, τ′ = 1.5·50·(L/6 mm)^0.75 °C·d ÷ T,
+S3 starveK white perch 0.7, sucker/pickerel 1.3 — UNCOMMITTED in the tree, both engines + layout starveK). The human also asked about
+exporting the true-scale model for 3-D PRINTING: possible (5-m grid 455×1385 + the 20-m far land) — offered an STL/3MF exporter
+(vertical exaggeration, size, base, water as a separate part). THE HUMAN: Bambu Lab A1 mini (180 mm) + A1 (256 mm), both with AMS (4
+colours); nozzles 0.2/0.4/0.6/0.8, usually 0.4; WANTS: land around the lakes (a whole terrain print); a one-piece model (one colour,
+to paint) AND a 4-colour AMS version; a terrain WITHOUT water + separate WATER pieces to print in CLEAR PETG. → tools/hotbrook/export_print.mjs
+(→ exports/print/, gitignored). larvz_cv25 DONE: FEED_CV 0.25 + the researched rule thins the June cohorts (starve Z 0.08–0.11) and the
+survivors grow (perch 18 mm, white perch 13, bass young 70 mm by mid-Aug vs 16/11/22) → put it in stageR5 after a g1_check of the young.
 ▶▶▶ RESUME HERE (2026-10-22 ~9:30 a.m. EDT — THE NEWEST). COMMITTED d2e735d (perch 75/ha in stageR5 — the human: scarce at any size)
 and d7ef7cb (Y3 FRY.FEED_CV, OFF: the young's unequal shares on both engines, a gate check; FINDINGS). g1_check r5=1&wild=1&yf=0.55:
 wildlife ρ identical, WGSL compiles. ARM AI DONE (FINDINGS entry): 97 → 69–71 → 44–51 kg/ha, no winterkill, ZERO recruits, the small

@@ -1969,7 +1969,7 @@ fn weedEyoy(jb: i32, L: f32) -> vec2f {   // littoral3 weedEyoy: (the small faun
     let sh = feedShares(got / max(1e-12, n * need), FRY_FEED_CV); let tStarve = 0.4 * ed / max(1e-9, r * OXYCAL / W);
     let xg = min(1.0 + sh.y / max(1e-9, 1.0 - sh.x), want / max(1e-12, n * need));
     if (xg > 1.0 && sh.x < 1.0) { let W2 = max(1e-7, W + Rj * (xg - 1.0) / ed); sy(Y_W, q, W2); if (W2 > stdWeight(k, L)) { let L2 = lengthFor(k, W2); sy(Y_L, q, L2); sy(Y_bdep, q, L2 * spv(k, S_depthR)); } }
-    hS = sh.z / (tStarve * DAY);
+    hS = sh.x / (FRY_STARVE_TAU * max(spv(k, S_starveK) * FRY_STARVE_DD * pow(L / 0.6, FRY_STARVE_DDB) / max(1.0, T), select(0.0, tStarve, L > FRY_STARVE_L)) * DAY);   // (the starving share on its clock)
   } else if (got >= n * need) {
     let C = J / n; let Fz = wf.x * C; let Ux = wf.y * (C - Fz); let Sd = bio(bs, BSDA) * (C - Fz);
     let W2 = max(1e-7, W + (C - Fz - Ux - Sd - Rj) / ed); sy(Y_W, q, W2);
