@@ -1387,8 +1387,8 @@ if (run('eggs')) {
     for (let b = 0; b < 30 * 49; b++) { F.step(FB); e.step(FB); if (b % 98 === 0) for (const q of F.yoy) if (q.alive && q.dev < 1 && q._yb >= 0) inTable++; }
     const t = F.stats.eggs3, laid = Object.values(t).reduce((s, v) => s + v.laid, 0), swum = Object.values(t).reduce((s, v) => s + v.swum, 0), wph = t.whiteperch.swum / Math.max(1, t.whiteperch.laid);
     C.EGG3.ON = 0; fm.stageR5(false);
-    check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 8–40 % to swim-up (the field's: unguarded demersal eggs 0.3–0.6 to hatch, 0.25–0.65 on to first feeding — egg_survival_and_larval_production.md §3.2; Margulies' lab hatch ~60–80 %); no egg in the strikes' prey table (the yolk-sac larvae are — E3b)",
-      laid > 0 && swum > 0 && wph > 0.08 && wph < 0.4 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
+    check("E3 (EGG3): a month from late April — clutches laid and swum up; white perch 3–25 % to swim-up (the field's egg → first feeding ~0.03–0.25, central ~0.1, no measurement — egg_survival_and_larval_production.md §3.2; Y4's yolkHatch 0.2 puts it near the low end, where the late-summer young come to the field's numbers); no egg in the strikes' prey table (the yolk-sac larvae are — E3b)",
+      laid > 0 && swum > 0 && wph > 0.03 && wph < 0.25 && inTable === 0, `${(laid / 1e6).toFixed(1)}M laid, ${(swum / 1e6).toFixed(1)}M swum up; white perch ${(100 * wph).toFixed(0)} %; in the table ${inTable}`); }
 }
 // ============================================================
 //  E14 — THE FOREST'S MAMMALS (config FOREST3; src/w3/forest3.js; research_notes/Maine lake shores and catchment/forest_mammals_bears_deer_moose.md):

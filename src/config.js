@@ -489,9 +489,9 @@ export function seasonalTemp(yf) {
 export const EGG3 = {
   ON: 0,                   // on in fish3 stageR5
   sp: {
-    perch:      { form: 'kam', a: 116.4, t0: 4.9, yolk: 0.45, hatch: 0.95, tl: [6.8, 19.9], pred: 0, o2: 3.5, ytl0: 10 },   // (E3b ytl0: the yolk-sac larvae die below ~10 °C — Clady; Karås: egg_survival_and_larval_production.md §3.1; field egg → hatch 0.92–0.99 kept)   // (Guma'a 1978 97/(T−4.9) × 1.2: yellow perch ~20 % slower, Linkenheld 2019)
+    perch:      { form: 'kam', a: 116.4, t0: 4.9, yolk: 0.45, hatch: 0.95, yolkHatch: 0.2, tl: [6.8, 19.9], pred: 0, o2: 3.5, ytl0: 10 },   // (E3b ytl0: the yolk-sac larvae die below ~10 °C — Clady; Karås: egg_survival_and_larval_production.md §3.1; field egg → hatch 0.92–0.99 kept)   // (Guma'a 1978 97/(T−4.9) × 1.2: yellow perch ~20 % slower, Linkenheld 2019)
     whiteperch: { form: 'exp', a: 28.62, b: 0.1402, yolkA: 72.72, yolkB: 0.1863, hatch: 0.45,   // (E3b: unguarded demersal eggs on a lake's bed ~0.3–0.6 — walleye 0.07 /d on gravel to 0.25 on muck, lakeshore smelt 1.1 % — not Margulies's lab 0.8 [inf]: §3.2)
-      tl: [10, 21], pred: 0.2, o2: 3 },   // (Margulies 1989: 686.99·e^(−0.1402T) h; yolk 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C; broadcast — eaten by perch [inf 0.2])
+      yolkHatch: 0.2, tl: [10, 21], pred: 0.2, o2: 3 },   // (Margulies 1989: 686.99·e^(−0.1402T) h; yolk 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C; broadcast — eaten by perch [inf 0.2])
     bass:       { form: 'kam', a: 32.2, t0: 9.6, yolk: 2.25, hatch: 0.85, tl: [12, 26], pred: 0, o2: 2.5, guard: 1, desertDrop: 1, yolkHatch: 0.33 },   // (yolkHatch: inside successful nests egg → black fry ~28 % — 2,054 of 7,437, Waugoshance; 26–33 %, Clady 1975 — over the 0.85 hatch)
       // (fit to Webster 1948; 80–92 % in benign guarded nests; swim-up ~2–2.5 × the egg's time)
     pike:       { form: 'exp', a: 86.7, b: 0.203, yolk: 0.8, hatch: 0.6, tl: [6.9, 19.2], pred: 0.1, o2: 3.5 },   // (chain pickerel: fit to Underhill/Jones; pike hatch 56–66 % at 6–10 °C; Hokanson's TL50s; ~10 % eaten, Kendall)
@@ -510,6 +510,16 @@ export const EGG3 = {
     alewife:    { form: 'exp', a: 25.1, b: 0.089, yolk: 0.5, hatch: 0.2, tl: [10, 27], pred: 0.1, o2: 3 },   // (11–12 d at 22–27 °C ≈ 150 °C·d above 10; 0 % hatch at 10 °C, ≤ 10 % at 16) [inf]
   },
   YOLK_HATCH: 0.95,        // the yolk-sac stage's survival at its optimum [inf]
+  // (Y4, 2026-10-22) THE PERCH'S AND WHITE PERCH'S YOLK-SAC AND FIRST-FEEDING LOSSES (research_notes/Real lake ecology for calibration/
+  // egg_survival_and_larval_production.md §3.1–3.2, larval_mortality_and_density_in_lakes.md): the default's 0.95 is an unsourced prior. The
+  // perch swam up 83 % of their eggs (probe eggpipe) where the field's hatch → first feeding is 0.12–0.73 (Kinord, central ~0.3), egg → first
+  // feeding 0.08–0.4, Oneida's egg + yolk sac ~0.08; the white perch 18 % where egg → first feeding is ~0.03–0.25 (central ~0.1, no field
+  // measurement), hatch → first feeding ~0.25–0.65 — 'yolkHatch' 0.2 for both (perch egg → first feeding ~0.17; white perch ~0.04, the low
+  // end of its range [inf]). The crowd it thins was the young's stall (probes ywp, ywp2: intake ~0.55 of Cmax at the crop): with it (probe
+  // ywp3 D, the 1/10 lakes, seed 611) the young white perch are ~9,000/ha at 37 mm on 1 September (was ~15,900 at 26 mm; field 40–55 mm,
+  // ~100–700/ha in clear softwater Oneida, ~3,000 Erie, ~7,200 the Hudson), perch ~3,600/ha at 48 mm (was 9,200 at 35), eating ~0.6–0.8 of
+  // Cmax; the crustaceans 87–176 µg/L (Maine's median 147). (0.1 for white perch: 4,700/ha at 39 mm.) The alewife keeps the default: 0.1
+  // left 40/ha (field 1,000–11,000)
   THERM_K: 0.1,            // /day per °C of the day's mean beyond the window [inf: the TL50s are constant-incubation limits; a spell kills less]
   UNGUARDED: 4,            // /day on a deserted guarder's clutch (one whose guard left — a school's spawning has no single guard modelled: its
                            //   males are taken to keep it)

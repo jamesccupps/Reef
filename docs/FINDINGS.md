@@ -4,6 +4,28 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-22 — Y4: thinning the young at the yolk-sac stage lets the survivors grow at field rates (probe ywp3, occ-server)
+- **What.** EGG3.YOLK_HATCH 0.95, the yolk-sac stage's survival, is an unsourced prior. The field's hatch → first feeding for perch is 0.12–0.73
+  (Kinord, central ~0.3; Oneida egg + yolk sac ~0.08), and for white perch ~0.25–0.65 (egg → first feeding ~0.03–0.25, no field
+  measurement). With 'yolkHatch' 0.2 for both (perch egg → first feeding ~0.17, white perch ~0.04: inside the bounds, the white perch at the
+  low end):
+
+  | On 1 September (the 1/10 lakes, seed 611) | 0.95 (before) | 0.2 | Field |
+  |---|---|---|---|
+  | White perch young | 15,900/ha at 26 mm | 9,000/ha at 37 mm | 40–55 mm; ~100–700 (Oneida), ~3,000 (Erie), ~7,200 (Hudson)/ha |
+  | Perch young | 9,200/ha at 35 mm | 3,600/ha at 48 mm | 53 mm by 1 Aug (Oneida) |
+  | Crustaceans | 75 µg/L | 87–176 µg/L | Maine median 147 |
+  | Consumption ratio | ~0.55 | ~0.6–0.8 | field growth needs ~0.75–0.95 |
+
+  - White perch at 0.1 instead: 4,700/ha at 39 mm.
+  - Alewife at 0.1: 40/ha, against the field's 1,000–11,000, so the alewife keeps the default.
+- **Lesson.** The young's growth was not limited by the lake's food or the feeding curve but by how many shared it. A loose prior at the
+  stage where field larvae die most turned into a summer-long stall, and the field-like growth came back by thinning the cohort, not by
+  feeding it more.
+- **Gate.** The E3 check's white perch swim-up band is now the field's 3–25 % (was 8–40 %). W3_ONLY=eggs,young: 30 PASS, 0 FAIL.
+- **Next.** Arm AM (GPU): do the white perch recruit?
+- **Where.** config EGG3.sp.perch/whiteperch.yolkHatch; probes ywp3.mjs (ywp3_A–E.txt), eggpipe.mjs.
+
 ## 2026-10-22 — The white perch's young: every stage at the generous end of the field, compounding (probes eggpipe, ypred, ypred2; the 1/10 lakes; occ-server)
 - **The pipeline (per ha).**
 
