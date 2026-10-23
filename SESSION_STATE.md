@@ -202,6 +202,12 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~15:45 EDT — THE NEWEST). THE HUMAN: "do what you think is best and the gpu is available now" (+ "keep things updated
+in case you compact"). PLAN Y4 (in progress): calibrate the white perch's egg → swim-up (EGG3.sp.whiteperch.hatch 0.45 [inf]; the yolk-sac stage
+EGG3.YOLK_HATCH default) against the field's best-measured outcome — late-summer YOY ~1,000–3,000/ha (clear softwater ~100–700, Erie ~3,000) —
+documented as CALIBRATED, not measured. Probe: scratchpad/probe/ywp3.mjs (nested overrides, e.g. EGG3.sp.whiteperch.hatch=0.2; repo '.' on occ-server)
+→ ywp3_h45/h20/h10.txt. Then check growth recovers (less crowding), the alewife young (sim ~35k/ha mid-July vs CT field 1–11k/ha in Aug), then
+g1_check (GPU), the full remote gate, commit, and ARM AM (GPU) with everything.
 ▶▶▶ RESUME HERE (2026-10-22 ~15:30 EDT — THE NEWEST). THE HUMAN NEEDS THE GPU FOR ANOTHER PROJECT — NO GPU RUNS (arms, g1_check, the preview's
 WebGPU) UNTIL THEY SAY IT'S FREE; CPU work on occ-server only ("keep going with remote cpu things"): node tools/remote/run.mjs occ-server --put
 <probe> -- node .remote/put/<probe>.mjs . <args> (the probes take '.' as the repo = the remote's cwd). Y4 so far (FINDINGS e92d02e): white perch
