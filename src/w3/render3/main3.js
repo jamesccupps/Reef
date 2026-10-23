@@ -17,7 +17,12 @@ import { makeBedView } from './bed3view.js';
 import { makeWildView } from './wild3view.js';
 import { makeShallowsView } from './shallows3view.js';
 import { makeData3 } from './data3.js';
+import { makeCampsView, clearedAt } from './camps3view.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
+import { makeSky } from './sky3.js';
+import { ao } from '../../../vendor/three-0.186.1/addons/GTAONode.js';
+import { bloom } from '../../../vendor/three-0.186.1/addons/BloomNode.js';
+import { fxaa } from '../../../vendor/three-0.186.1/addons/FXAANode.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 import { stageR5 } from '../fish3.js';
 stageR5(R5);   // (the page's copy of the model's tables — the data page, the legends — as the sim's workers run it: world3sel R5)
@@ -38,7 +43,7 @@ const BASE = GEO.SURF.upper;                                   // three's y = 0 
 const { NX, NY, X0, Y0 } = GEO;
 // (season: the leaves' state — 'spring' fresh, 'summer', 'fall' colours, 'winter' bare — by the date; snow: the land under snow, by
 // the sim's ice)
-const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', snow: false, cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true, wild: true };
+const S = { post: true, exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', snow: false, cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true, wild: true, camps: true };
 const kLand = () => WORLD_TRUE ? S.exag : S.exag / 10;   // (the land's height × true: the 1/10 world's ×1 is in proportion to its lakes)
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -55,6 +60,7 @@ const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000 * KM);
 // day, and the human asked for less: "less haze would be good", 2026-10-23 — Maine's clear days see much farther)
 const airFog = new THREE.FogExp2(0xc7d6dc, 0.00045 / KM), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
 const AIR = { col: uniform(new THREE.Color(0xc7d6dc)), den: uniform(airFog.density) };   // (the haze for the water's surface, which draws its own: lightByDay)
+const WIND3 = { speed: uniform(3) };   // (the wind the trees and the water's ripples feel: the sim's, m/s — lightByDay)
 scene.fog = airFog; setClear(S.clear);
 
 // ---------- seasons: land cover and tree colours ----------
@@ -151,7 +157,12 @@ function groundMaterial() {
   const w2 = sin(P.z.mul(1.9).sub(tt.mul(0.8)).add(sin(P.x.mul(1.1).sub(tt.mul(0.5))).mul(1.4)));
   const caust = pow(float(1).sub(tabs(w1.add(w2)).mul(0.5)), 6).mul(exp(dep.mul(-0.8))).mul(smoothstep(0.03, 0.2, dep)).mul(WU.day).mul(float(1).sub(U.chart));
   const bedCol = mix(vc.mul(caust.mul(1.2).add(1)), mix(chartBed, vec3(0.05, 0.1, 0.18), line.mul(0.8)), U.chart.mul(smoothstep(0.02, 0.2, dep)));
-  m.colorNode = mix(bedCol, landCol, land);
+  // (the ground up close: grass, moss, litter and bare soil in patches of a metre or two and stands of tens — mottled, not the map's
+  // one colour; the bed's sand and silt too. Faded with the eye's distance before the grain can shimmer)
+  const dE = length(cameraPosition.sub(positionWorld)), nearG = float(1).sub(smoothstep(80, 600, dE));
+  const gMot = mx_fractal_noise_float(P.xz.div(2.2), 3, 2.0, 0.5).mul(0.22).mul(nearG).add(mx_noise_float(P.xz.div(28).add(3.3)).mul(0.1)).add(1);
+  const bMot = mx_noise_float(P.xz.div(1.6).add(7.7)).mul(0.12).mul(nearG).add(1);
+  m.colorNode = mix(bedCol.mul(bMot), landCol.mul(gMot), land);
   m.outputNode = waterOut(dep);   // (the water between the bed and the eye: render3/water3.js)
   return m;
 }
@@ -351,7 +362,10 @@ const water = (() => {
   // (its camera, a clone of the view's made now, sees layer 0 only: the weeds' stems, on their own layer, stay out of the mirror)
   refl.reflector.getVirtualCamera(camera); camera.layers.enable(PLANT_LAYER);
   const P = positionWorld, t = time;
-  const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(0.0035);
+  const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(WIND3.speed.mul(0.0011).add(0.0012))
+    // (the wind's ripples break the mirror more as it blows — a flat calm at dawn is glass, 3 m/s ruffles it — in patches: cat's paws
+    // drifting down the wind, where the surface is rougher)
+    .mul(sin(P.x.mul(0.031).add(P.z.mul(0.019)).sub(t.mul(0.16))).mul(sin(P.z.mul(0.027).sub(P.x.mul(0.011)).add(t.mul(0.09)))).mul(0.6).add(1));
   refl.uvNode = refl.uvNode.add(ripple);
   const view = normalize(cameraPosition.sub(P));
   const m = new THREE.MeshBasicNodeMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, fog: false });
@@ -466,6 +480,7 @@ const TREES = { conifer: treeStore(), broad: treeStore() };
     st[0] = s; st[1] = c; return st;
   };
   const add = (x, y, d, ns, elev, level, cChance) => {
+    if (clearedAt(x, y)) return;   // (none on the camps' footprints and yards, the roads, the paths to the water, the beaches, the launch: camps3view)
     const conifer = Math.random() < cChance, k = Math.random(), h = conifer ? 12 + Math.pow(k, 0.8) * 16 : 10 + k * 10;
     // (the trunk stands back from the water by ~40 % of its crown's half-width: crowns lean out over the bank, not across it)
     if (d < 0.4 * 0.5 * h * ns * (conifer ? 0.35 : 0.65)) return;
@@ -608,7 +623,13 @@ function tierMesh(geo, cap, { holes = [], side = THREE.FrontSide, bare = null, l
   // ragged band of mixed trees, not a circle on the forest)
   const rag = Wr.y.div(6.28).mul(0.5).add(0.75);
   let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R.mul(rag), length(vec2(P.x, P.z).sub(h.C))));
-  m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).mul(keep).add(vec3(P.x, P.y, P.z));
+  // (THE WIND: each tree sways from its foot, the bend growing as the square of the height up it — its top ~0.4 % of its height at
+  // rest plus ~0.25 % a m/s of wind, a 3–4 s swing, out of step with its neighbours, gusting; down the prevailing west wind, a little
+  // across it. Its shadow sways with it)
+  const hn = positionGeometry.y.max(0), ph = P.x.mul(0.13).add(P.z.mul(0.17)), gust = sin(time.mul(0.11).add(ph.mul(0.3))).mul(0.35).add(0.65);
+  const amp = P.w.mul(WIND3.speed.mul(0.0025).add(0.004)).mul(hn.mul(hn)).mul(gust);
+  const sway = vec3(sin(time.mul(1.75).add(ph)).mul(amp), 0, sin(time.mul(1.3).add(ph.mul(1.7))).mul(amp).mul(0.35));
+  m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).add(sway).mul(keep).add(vec3(P.x, P.y, P.z));
   // (the normals turn with the tree — each its own random turn about its trunk — or every tree was lit from a random side; the
   // model's own normals otherwise, as authored: lifted toward the sky)
   const nG = attribute('normal', 'vec3');
@@ -693,6 +714,7 @@ const SHRUBS = [];
     for (let k = 0; k < 2 * GEO.CELL / 1.5; k++) {   // (two to a 1.5-m cell's length of bank)
       if (Math.random() > p * 0.6) continue;
       const [cx, cy] = GEO.cellCentre(i), x = cx + rnd(-HC, HC), y = cy + rnd(-HC, HC);
+      if (clearedAt(x, y)) continue;   // (a dock's foot, a path, a beach, the launch: open to the water)
       SHRUBS.push({ x, y, elev: GEO.elevAt(x, y), level: GEO.levelAt(x, y), rot: rnd(0, 6.28), k: Math.random(), h: (1.2 + Math.random() * 2) * nearScaleAt(x, y, d) });
     }
   }
@@ -736,20 +758,14 @@ function colourTrees() { colourShrubs(); }   // (the trees take their colours wh
 
 // ---------- sky and light ----------
 let _skyDim = null; const skyDimNode = () => _skyDim || (_skyDim = uniform(1));
-const sky = (() => {
-  const g = new THREE.SphereGeometry(4500 * KM, 32, 16); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
-  const mat = new THREE.MeshBasicNodeMaterial({ side: THREE.BackSide, fog: false, depthWrite: false });
-  mat.colorNode = attribute('color', 'vec3').mul(skyDimNode());
-  const m = new THREE.Mesh(g, mat);
-  m.position.set((X0 + GEO.XMAX) / 2, 0, -(Y0 + GEO.YMAX) / 2); m.renderOrder = -1; return m;
-})();
+// (three's physical sky — render3/sky3.js: the sun where it really is for the date and hour at 45.6° N, its disc, the clouds by the
+// sim's weather — in place of a fixed blue gradient; it draws first, behind everything)
+const SKY = makeSky(KM), sky = SKY.mesh;
 // (the haze's colour in full day; lightByDay dims it with the sky each frame — set only here, distant fogged land stood as a pale
 // band against the night sky)
 const FOG_DAY = C(0xc7d6dc);
-function styleSky() {
-  const top = C(S.snow ? 0x8aa6c0 : 0x4f84c0), hor = C(S.snow ? 0xe2e8ec : 0xcfdde3), g = sky.geometry, col = g.attributes.color.array, c = C(0);
-  for (let k = 0; k < g.attributes.position.count; k++) { const t = Math.max(0, g.attributes.position.getY(k) / (4500 * KM)); c.copy(hor).lerp(top, Math.pow(t, 0.6)); col.set([c.r, c.g, c.b], k * 3); }
-  g.attributes.color.needsUpdate = true; FOG_DAY.copy(hor).lerp(C(0xc7d6dc), 0.5); airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value);
+function styleSky() {   // (the haze's colour follows the sky's horizon each frame — lightByDay, sky3.js)
+  airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value);
 }
 { // the sky as an environment map, so the water reflects it
   const W = 256, H = 128, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
@@ -761,6 +777,32 @@ function styleSky() {
 const hemi = new THREE.HemisphereLight(0xc9dcec, 0x4d4a34, 0.9); scene.add(hemi);
 const skyDim = skyDimNode();   // the sky dome's brightness (night → dark)
 const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-260, 420, 300); scene.add(sun, sun.target);
+// THE SUN'S SHADOWS: one map that follows where the view looks, sized to how far out it looks (the near and mid trees, the camps and
+// their docks, the animals, the rocks cast; the ground, the trees and the camps take them) — soft-edged (PCF)
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.shadow.camera.near = 1; sun.shadow.camera.far = 6000;
+const SHADOW = { R: 0, d: new THREE.Vector3() };
+// AFTER THE SCENE (post-processing): ambient occlusion — the crowns' undersides, where trunks meet the ground, a camp's eaves and the
+// gaps between its logs darken as the sky's light can't reach them (GTAO, half resolution, a few metres' reach) — and a soft bloom on
+// what is brighter than white: the sun on the water, its disc, the lit windows at night. Plain rendering if it can't be built.
+let POST = null;
+function makePost() {
+  try {
+    const { pass, mrt, output, normalView, vec4, renderOutput } = THREE.TSL;
+    // (the scene's pass single-sampled: the AO reads its depth, which a multisampled one can't give — FXAA smooths the edges after)
+    const sp = pass(scene, camera, { samples: 0 }); sp.setMRT(mrt({ output, normal: normalView }));
+    const col = sp.getTextureNode('output'), aoN = ao(sp.getTextureNode('depth'), sp.getTextureNode('normal'), camera);
+    aoN.resolutionScale = 0.5; aoN.radius.value = 2.5; aoN.thickness.value = 2.5; aoN.distanceFallOff.value = 1;
+    const lit = vec4(col.rgb.mul(aoN.getTextureNode().r.mul(0.85).add(0.15)), col.a);   // (never quite black: the sky's light scatters in)
+    // (the bloom only on what is much brighter than the sky — the sun, its glints, lamps: the physical sky is itself above white)
+    const pp = new THREE.RenderPipeline(renderer); pp.outputColorTransform = false; pp.outputNode = fxaa(renderOutput(lit.add(bloom(lit, 0.16, 0.35, 2.2)))); return pp;
+  } catch (e) { console.warn('no post-processing:', e); return null; }
+}
+function placeShadow(dir) {   // the shadow map's square about the view's target, R m each way; the light 2 km back along the sun
+  const R = Math.max(40, Math.min(900, rig.dist * 1.4)), c = sun.shadow.camera;
+  if (Math.abs(R - SHADOW.R) > SHADOW.R * 0.08) { SHADOW.R = R; c.left = c.bottom = -R; c.right = c.top = R; c.updateProjectionMatrix(); }
+  sun.target.position.copy(rig.target); sun.position.copy(rig.target).addScaledVector(SHADOW.d.copy(dir).normalize(), 2000);
+}
 
 // ---------- the cut-away: a north–south position; everything south of it is clipped and the section face drawn ----------
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
@@ -772,8 +814,12 @@ const bedView = makeBedView(plantsView);   // the crayfish out on the bed and th
 // THE ANIMALS OF THE LAKES AND THEIR SHORES (render3/wild3view.js: the sim's fish-eating wildlife, its anglers, the moose and the forest's
 // animals; shallows3view.js: the turtles, frogs, newts and tadpoles, the dragonflies, the logs and boulders they bask on)
 const shallowsView = makeShallowsView({ plants: plantsView, colAt: (x, y) => W3.colAt(x, y), ripple: risesView.ripple, groundY: (x, y) => groundAt(x, -y) });   // (groundY: the frogs on the bank)
+// THE CAMPS, THE DOCKS AND THEIR BOATS, THE ROADS, THE LAUNCH AND THE BEACHES (render3/camps3view.js, from src/w3/camps3.js's dataset): placed
+// on the land as drawn (place: at start and when its height changes), lit by night where lived in; the wildlife view's boats put in
+// at the launch and the docks (camps: its hooks)
+const campsView = makeCampsView({ groundAt: (x, y) => drawnY(x, y) });
 const wildView = makeWildView({ TREES, treeY: (T, i) => landY(T.el[i], T.lv[i]) - 0.05 * kLand(), groundY: (x, y) => groundAt(x, -y), plants: plantsView, ripple: risesView.ripple,
-  colAt: (x, y) => W3.colAt(x, y), onHerpKill: (w, x, y, L, k) => shallowsView.onKill(w, x, y, L, k, LIVE.tNow) });
+  colAt: (x, y) => W3.colAt(x, y), onHerpKill: (w, x, y, L, k) => shallowsView.onKill(w, x, y, L, k, LIVE.tNow), camps: campsView.hooks });
 risesView.setLeapHook((...a) => { if (S.wild) shallowsView.onLeap(...a); });
 // SPECKS in the water about the eye when under it (suspended detritus, plankton): a sense of depth and of the water moving —
 // 2,500 tiny motes in a 10-m box that follows the camera, drifting; the fog fades them with distance (cosmetic)
@@ -791,7 +837,7 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, skirt, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group, wildView.group, shallowsView.group);
+clipped.add(band, farMesh, skirt, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group, wildView.group, shallowsView.group, campsView.group);
 scene.add(clipped, sky);
 // (the fish and their shadows on the bed are always under the surface: on the weeds' layer, which the water's mirror camera leaves
 // out — they were drawn twice a frame, ~2 M triangles for nothing; a leaping fish loses its reflection for its half second)
@@ -929,6 +975,17 @@ function farY(x, y) {
   return fx + fy <= 1 ? fp[a] + (fp[b] - fp[a]) * fx + (fp[d] - fp[a]) * fy : fp[e] + (fp[d] - fp[e]) * (1 - fx) + (fp[b] - fp[e]) * (1 - fy);
 }
 const groundAt = (x, z) => { const y = -z; if (x > X0 && x < GEO.XMAX && y > Y0 && y < GEO.YMAX) { const b = GEO.bodyAt(x, y), lv = GEO.levelAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? lv - d - BASE : landY(lv - d, lv); } return farY(x, y); };
+// the ground AS DRAWN at the world's (x, y): the band's own triangles (split as gridMesh splits them, as farY reads the far land's) — the
+// lake bed under its water — else the far land's. What the camps' roads, lot and beaches are draped on (render3/camps3view.js): the
+// bilinear groundAt runs up to a few decimetres off the drawn triangles on a slope, and a strip laid on it sank into the ground there
+function drawnY(x, y) {
+  if (!(x > X0 && x < GEO.XMAX && y > Y0 && y < GEO.YMAX)) return farY(x, y);
+  const bp = band.geometry.attributes.position.array;
+  let u = (x - X0) / GEO.CELL - 0.5, v = (y - Y0) / GEO.CELL - 0.5;
+  u = u < 0 ? 0 : u > NX - 1.0001 ? NX - 1.0001 : u; v = v < 0 ? 0 : v > NY - 1.0001 ? NY - 1.0001 : v;
+  const q = u | 0, r = v | 0, fx = u - q, fy = v - r, a = (r * NX + q) * 3 + 1, b = a + 3, d = a + NX * 3, e = d + 3;
+  return fx + fy <= 1 ? bp[a] + (bp[b] - bp[a]) * fx + (bp[d] - bp[a]) * fy : bp[e] + (bp[d] - bp[e]) * (1 - fx) + (bp[b] - bp[e]) * (1 - fy);
+}
 // FOLLOWING: one owner at a time — Find's animal (FIND.follow) or the data page's picked fish (data3: its card's follow box). A named
 // view, the cut-away, a pan or the keys let go of both (they set the target the follow would drag straight back)
 function letGo() {
@@ -973,9 +1030,9 @@ function applyLook() {
 function applySeason() {   // (S.season: the leaves; S.snow: the land under snow)
   U.snow.value = S.snow ? 1 : 0; U.fallTint.value = S.season === 'fall' ? 1 : 0; U.springTint.value = S.season === 'spring' ? 1 : 0; U.bareTint.value = S.season === 'winter' ? 1 : 0;
   for (const b of $('seasons').children) b.setAttribute('aria-pressed', String(b.dataset.season === S.season && (S.season !== 'winter' || S.snow)));
-  colourGround(); colourTrees(); placeTrees(); styleWater(); styleSky(); legend();
+  colourGround(); colourTrees(); placeTrees(); styleWater(); styleSky(); legend(); campsView.setSeason(S.season, S.snow);
 }
-function applyHeight() { $('exv').textContent = `×${S.exag}`; placeGround(); placeTrees(); buildSection(); }
+function applyHeight() { $('exv').textContent = `×${S.exag}`; placeGround(); placeTrees(); buildSection(); campsView.place(); }
 for (const b of $('looks').children) b.addEventListener('click', () => { S.look = b.dataset.look; applyLook(); });
 // JUMP TO a date: the look changes at once, to the date asked for; the snapshots still on their way from before the jump are not
 // let undo it (they flipped the season back and then forward again — a flash and three heavy recolours) until one from near
@@ -1012,8 +1069,11 @@ $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; for (
 // camera doesn't see; on, they join layer 0 too and a calm lake mirrors the whole far treeline (≈ a third more of the GPU, true world)
 const applyMirror = () => { for (const m of [TIERS.farConifer, TIERS.farBroad]) if (m) { if ($('t-mirror').checked) m.layers.enable(0); else m.layers.disable(0); } };
 $('t-mirror').addEventListener('change', applyMirror); applyMirror();
+// (the sun's shadows, the AO and the bloom together: off, plain rendering — a slow machine's choice)
+$('t-post').addEventListener('change', e => { S.post = e.target.checked; renderer.shadowMap.enabled = S.post; });
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
+$('t-camps').addEventListener('change', e => { S.camps = e.target.checked; campsView.group.visible = S.camps; });
 $('t-wild').addEventListener('change', e => { S.wild = e.target.checked; wildView.group.visible = shallowsView.group.visible = S.wild; $('findwild').disabled = !S.wild; if (!S.wild) { FIND.follow = null; $('watching').textContent = ''; } });
 // FIND AN ANIMAL: the camera goes to the next of the animals out on the lakes (by kind, in turn) and follows it — turn about it and
 // zoom as you like — until you pan or move away; what is out now is listed in the Show group
@@ -1087,8 +1147,12 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
   const s = e.sun, cover = ENVC.CLOUD_COVER[e.weather], day = Math.min(1, s * 1.6);
   sun.intensity = 0.15 + 2.3 * day * (1 - 0.6 * cover); hemi.intensity = 0.18 + 0.75 * day * (1 - 0.3 * cover);
   if (LIVE.under && S.clear) hemi.intensity *= 2.2;   // (under water, seeing into it: a fill light for watching — tea water is dim)
-  const ang = (e.t - 0.25) * Math.PI * 2; sun.position.set(-300 * Math.cos(ang), 60 + 420 * Math.max(0.05, Math.sin(ang)), 260);
-  sky.material.color = sky.material.color || new THREE.Color(); scene.environmentIntensity = 0.12 + 0.45 * day;
+  // (the sun's light comes from where the sky draws it: sky3.js, for the date and hour; below the horizon it holds just above it — the
+  // light's intensity is the sim's own day, which dims it)
+  const d = SKY.update(e.yf, e.t, e.weather, camera); placeShadow(SHADOW.d.set(d.x, Math.max(0.03, d.y), d.z));
+  sun.castShadow = S.post && d.y > 0.02 && day > 0.05;   // (no shadows from a sun below the horizon)
+  FOG_DAY.copy(SKY.haze); scene.environmentIntensity = 0.12 + 0.45 * day;
+  WIND3.speed.value += ((e.windSpeed || 0) - WIND3.speed.value) * 0.02;
   skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover); airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value); AIR.col.value.copy(airFog.color);   // (the haze dims with the sky)
   WU.day.value = 0.1 + 0.9 * day * (1 - 0.3 * cover);   // (the water's light: render3/water3.js)
 }
@@ -1144,7 +1208,13 @@ async function start() {
   LIVE.data3 = makeData3({ LIVE, camera, canvas, rig });   // (the data page and click-a-fish: render3/data3.js)
   LIVE.worker.onerror = ev => { simFailed(ev.message || 'error'); console.error(ev); };
   LIVE.worker.onmessageerror = ev => { simFailed('a message from it could not be read'); console.error(ev); };
-  placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
+  placeGround(); campsView.place(); applyLook(); liveUI(); applySeason(); buildSection();
+  { // who casts the sun's shadows and who takes them (the far trees' tiers and the skirt neither: too many and too far)
+    const cast = [TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, shrubMesh, rockMesh], take = [band, farMesh, TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, shrubMesh, rockMesh];
+    for (const m of cast) if (m) m.castShadow = true; for (const m of take) if (m) m.receiveShadow = true;
+    for (const g of [campsView.group, wildView.group]) g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  }
+  POST = makePost();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
   renderer.setAnimationLoop(now => {
@@ -1163,9 +1233,10 @@ async function start() {
       const w0 = performance.now(); wildView.update(now / 1000, LIVE.snap, S.fishScale, camera.position, camera); shallowsView.update(now / 1000, LIVE.snap, rig.target.x, -rig.target.z, rig.dist, camera.position, S.fishScale);
       LIVE.wildMs = (LIVE.wildMs || 0) * 0.95 + (performance.now() - w0) * 0.05;
     }
+    if (S.camps) campsView.update(now / 1000, LIVE.snap, camera);   // (the boats at the docks rocking, the lights by night)
     if (FIND.follow) { const p = FIND.follow.at(); if (p) rig.goal.target.set(p[0], p[1], p[2]); else { FIND.follow = null; $('watching').textContent = ''; } }
     if (LIVE.snap && S.fish) {   // (the sun's direction and strength for the fish's shadows on the bed)
-      const sp = sun.position, sl = sp.length() || 1, open = 1;
+      const sp = SHADOW.d, sl = sp.length() || 1, open = 1;   // (the sun's direction: the light itself now stands 2 km back from the view's target)
       SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.snow ? 0 : open);   // (none under the snow-covered ice)
       // (the fish between the snapshot's last two steps: its leftover acc/h, advancing with the real time since it came at the rate
       // the sim is keeping — held at acc/h the fish stood still between snapshots and jumped at each)
@@ -1181,14 +1252,14 @@ async function start() {
     WU.under.value = under ? 1 : 0; WU.camDepth.value = under ? GEO.levelAt(cx, cy) - ch : 0; LIVE.under = under;
     if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; WU.fogCol.value.copy(waterFog.color); }   // (fogCol: the surface's underside fades into it)
     // (under water the tea-coloured water hides everything past ~20 m: the land's trees aren't drawn — the true world's million)
-    if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; for (const m of treeMeshList()) m.visible = tv; shrubMesh.visible = tv; }
+    if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; for (const m of treeMeshList()) m.visible = tv; shrubMesh.visible = tv; campsView.setUnder(under); }
     scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
     $('uw').hidden = !under;
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
-    renderer.render(scene, camera);
+    if (POST && S.post) POST.render(); else renderer.render(scene, camera);
     placeLabels(innerWidth, innerHeight);
     if ((nFrames++ & 15) === 0 && !LIVE.failed) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + (LIVE.snap.nyAll ?? LIVE.snap.ny).toLocaleString() + ' schools of young' + (WORLD_TRUE ? ` · ${LIVE.snap.nf.toLocaleString()} drawn near the view` : '') + (LIVE.snap.gpu ? ' · fast-forward on the GPU' : '') : 'starting the lakes…' + (LIVE.progress ? ' ' + LIVE.progress : '')}`;
   });
 }
 start().catch(e => { $('busy').classList.remove('done'); busyFail(e.message); console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, wildView, shallowsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, wildView, shallowsView, campsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

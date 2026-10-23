@@ -491,22 +491,27 @@ export function makeWildView(ctx) {
   // (standing on the ice — or on the bank: the ice's top, not the lake's bed under it)
   const iceTop = (x, y) => GEO.bodyAt(x, y) === LAND ? ctx.groundY(x, y) : surfY(x, y) + 0.02;
   // on the water toward (tx, ty) at v m/s turning ≤ tr rad/s; false (and no move) where the way ahead is land, ice, or shallower than minD
-  function swim(a, tx, ty, v, tr, dt, minD = 0.15, maxD = 1e9) {
+  // (or solid(x, y): a boat's way blocked by a dock)
+  function swim(a, tx, ty, v, tr, dt, minD = 0.15, maxD = 1e9, solid = null) {
     const want = Math.atan2(ty - a.y, tx - a.x), d = Math.hypot(tx - a.x, ty - a.y);
     a.yaw += clamp(angD(want, a.yaw), -tr * dt, tr * dt);
     const s = Math.min(v * dt, d), nx = a.x + Math.cos(a.yaw) * s, ny = a.y + Math.sin(a.yaw) * s, dd = GEO.depthAt(nx, ny);
-    if (GEO.bodyAt(nx, ny) === LAND || dd < minD || dd > maxD || icedAt(nx, ny)) { a.spd = 0; return false; }
+    if (GEO.bodyAt(nx, ny) === LAND || dd < minD || dd > maxD || icedAt(nx, ny) || (solid && solid(nx, ny))) { a.spd = 0; return false; }
     a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); return true;
   }
   // a boat's way round a point or over a bar: blocked ahead, it swings off to its side (one per boat) and runs on slowly where that is
   // clear — along the shore until the straight way opens (a.blk: how long it has been blocked)
+  // (the camps' docks are in the way too, while they are in: render3/camps3view.js — a hull's half-beam about each)
+  const onDock = (x, y) => !!ctx.camps && ctx.camps.deckAt(x, y, 0.7) !== null;
   function motor(a, tx, ty, v, dt) {
-    if (swim(a, tx, ty, v, 0.5, dt, 0.25)) { a.blk = 0; return true; }
+    if (swim(a, tx, ty, v, 0.5, dt, 0.25, 1e9, onDock)) { a.blk = 0; return true; }
     a.blk = (a.blk || 0) + dt; a.side = a.side || (Math.random() < 0.5 ? 1 : -1); a.yaw += a.side * dt;
     const s = v * 0.4 * dt, nx = a.x + Math.cos(a.yaw) * s, ny = a.y + Math.sin(a.yaw) * s;
-    if (GEO.bodyAt(nx, ny) !== LAND && GEO.depthAt(nx, ny) >= 0.25 && !icedAt(nx, ny)) { a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); }
+    if (GEO.bodyAt(nx, ny) !== LAND && GEO.depthAt(nx, ny) >= 0.25 && !icedAt(nx, ny) && !onDock(nx, ny)) { a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); }
     return false;
   }
+  // a person's footing: a dock's deck where one is under them, else the ground
+  const footY = (x, y) => { const d = ctx.camps ? ctx.camps.deckAt(x, y) : null; return d !== null ? d : ctx.groundY(x, y); };
   // A GAIT'S PHASE PER METRE: a leg l m long swinging ±amp rad sweeps 2·l·sin(amp) under the body in its half-cycle (π), so its foot,
   // planted, stays put (l: the leg as drawn — its animal's size and the "fish size" enlargement in)
   const strideK = (l, amp) => Math.PI / (2 * Math.max(0.01, l) * Math.max(0.05, Math.sin(amp)));
@@ -1168,11 +1173,17 @@ export function makeWildView(ctx) {
   const ANG = {
     len: 4.2,
     spawn(a, S) {
-      const L0 = LAND_AT[a.lake], sp = spotOf(a.lake); if (!L0 || !sp) return false;
-      const s = nearestShore(a.body, L0[0], L0[1]); const st = s ? [s[0] - s[2] * 2, s[1] - s[3] * 2] : L0;
+      // (out from a real place — the launch, or the dock of a camp lived in that day, its boat taken from beside it (render3/camps3view.js) —
+      // else, with the camps not shown, the old landing by NLCD's developed shore)
+      const sp = spotOf(a.lake); if (!sp) return false;
+      const P = ctx.camps ? ctx.camps.landing(a.body, S.yf, S.day, a.slot) : null;
+      let st, yaw = rnd(0, TAU);
+      if (P) { st = [P.x, P.y]; yaw = P.yaw; }
+      else { const L0 = LAND_AT[a.lake]; if (!L0) return false; const s = nearestShore(a.body, L0[0], L0[1]); st = s ? [s[0] - s[2] * 2, s[1] - s[3] * 2] : L0; }
       const two = hash(S.day, a.lake * 3 + a.slot) < 0.45;
       a.crew = [0, two ? 1 : -1].filter(v => v >= 0).map(i => ({ seat: i ? 1.0 : -1.3, face: i ? 0.6 : -0.9, C: [col(SHIRTS[(hash(S.day + i, a.slot) * SHIRTS.length) | 0]), col(PANTS[(hash(i, S.day) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, i + 7) * HATS.length) | 0])], cast: rnd(0, 20), phase: 'wait', end: null, fight: 0, ph: Math.random() * 9 }));
-      Object.assign(a, { x: st[0], y: st[1], yaw: rnd(0, TAU), mode: 'motor', goal: [sp[0], sp[1]], home: st, stay: rnd(600, 2000), trip: 0 });
+      Object.assign(a, { x: st[0], y: st[1], yaw, mode: 'motor', goal: [sp[0], sp[1]], home: st, stay: rnd(600, 2000), trip: 0, dock: P ? P.dock : null });
+      if (P) ctx.camps.take(P.dock);   // (handed back when the boat is taken off: update, clear)
       return true;
     },
     back(a) { const sp = spotOf(a.lake); if (!sp) return false; a.goal = [sp[0], sp[1]]; a.mode = 'motor'; a.trip = 0; return true; },
@@ -1231,10 +1242,16 @@ export function makeWildView(ctx) {
     },
     pos(a) { return [a.x, a.Y + 1, a.y]; },
   };
-  // ===== THE ANGLER ON THE BANK at the brook's upper mouth (the human's pool): standing, casting into the pool =====
+  // ===== THE ANGLER ON THE BANK at the brook's upper mouth (the human's pool): standing, casting into the pool — or, some days, at the end
+  // of the dock of a camp lived in that day (render3/camps3view.js) =====
   const SHORE = {
     len: 1.7,
     spawn(a, S) {
+      const D = ctx.camps && hash(S.day, 77) < 0.5 ? ctx.camps.dockSpot(a.body, S.yf, S.day) : null;
+      if (D) {
+        Object.assign(a, { x: D.x, y: D.y, Y: D.deckY, yaw: D.yaw, mode: 'fish', onDock: true, C: [col(SHIRTS[(hash(S.day, 43) * SHIRTS.length) | 0]), col(PANTS[(hash(S.day, 44) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, 45) * HATS.length) | 0])], crew: [{ seat: 0, cast: rnd(0, 10), phase: 'wait', end: null, ph: 0 }], toShore: D.yaw });
+        return true;
+      }
       const p = brookMouth, e = nearestShore(UPPER, p[0], p[1], 'edge'); if (!e) return false;
       Object.assign(a, { x: e[0] - e[2] * 0.6, y: e[1] - e[3] * 0.6, yaw: Math.atan2(e[3], e[2]), mode: 'fish', C: [col(SHIRTS[(hash(S.day, 41) * SHIRTS.length) | 0]), col(PANTS[0]), col(0xc89a7a), col(HATS[1])], crew: [{ seat: 0, cast: rnd(0, 10), phase: 'wait', end: null, ph: 0 }], toShore: Math.atan2(e[3], e[2]) });
       return true;
@@ -1242,14 +1259,15 @@ export function makeWildView(ctx) {
     back(a) { if (a.mode !== 'fish') { a.mode = 'home'; a.goal = a.spot || [a.x, a.y]; } return true; },
     step(a, S, dt) {
       if (!a.spot) { a.spot = [a.x, a.y]; a.strideOf = walkGait; }
+      if (a.onDock && a.mode !== 'walk' && (!ctx.camps || ctx.camps.deckAt(a.spot[0], a.spot[1]) === null)) { a.gone = true; return; }   // (the dock taken out, or the camps hidden)
       // (going home: rod in hand, up the bank into the woods — taken off once out of sight; back again to the pool if wanted)
       if (a.leaving && a.mode === 'fish') { a.mode = 'walk'; a.away = true; a.goal = [a.x - Math.cos(a.toShore) * 30, a.y - Math.sin(a.toShore) * 30]; for (const c of a.crew) { c.phase = 'wait'; c.end = null; } }
       if (a.mode === 'walk' || a.mode === 'home') {
-        walk(a, a.goal[0], a.goal[1], 1.1, 3, dt, null); a.Y = ctx.groundY(a.x, a.y);
+        walk(a, a.goal[0], a.goal[1], 1.1, 3, dt, null); a.Y = footY(a.x, a.y);   // (off a dock: along its deck, then up the bank)
         if (Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.4) { if (a.mode === 'home') { a.mode = 'fish'; a.spd = 0; a.yaw = a.toShore; } else if (walkOff(a, 1.7)) return; }
         return;
       }
-      a.Y = ctx.groundY(a.x, a.y); for (const c of a.crew) ANG.angler(a, c, S, dt);
+      a.Y = footY(a.x, a.y); for (const c of a.crew) ANG.angler(a, c, S, dt);
     },
     draw(a, S) {
       if (a.mode === 'walk' || a.mode === 'home') { frame(Mf, a.x, a.Y, -a.y, a.yaw, 0, 0, 1); walker(Mf, a, a.C); part(Mq, Mf, 0.32, 1.12, 0, 0, 0, 1.2); rod.put(Mq, ROD_C, -1e4); return; }
@@ -1269,8 +1287,9 @@ export function makeWildView(ctx) {
     spawn(a, S) {
       const d = deepest[a.lake], c = pickWater(a.body, a.slot ? 2 : 3, 99, 6 * KN, 1e9, 40, d, (a.slot ? 60 : 25) * KN, icedAt) || pickWater(a.body, 1.5, 99, 4, 1e9, 40, null, 1e9, icedAt); if (!c) return false;
       const tips = []; for (let k = 0; k < 5; k++) { const p = pickWater(a.body, 0.8, 3, 2, 1e9, 30, c, 30 * KN, icedAt); if (p) tips.push({ x: p[0], y: p[1], up: 0, flag: 0 }); }
-      const sh = nearestShore(a.body, c[0], c[1]) || [c[0], c[1]];
-      Object.assign(a, { x: sh[0], y: sh[1], yaw: Math.atan2(c[1] - sh[1], c[0] - sh[0]), cx: c[0], cy: c[1], tips, mode: 'walk', goal: [c[0] - 0.7, c[1] + 0.1], shack: hash(S.day >> 2, a.lake * 3 + a.slot) < 0.6 ? (hash(a.slot, 77) * SHACK_C.length) | 0 : -1,
+      // (walked out from the launch or a camp's shore — render3/camps3view.js — else from the shore nearest the hole)
+      const from = ctx.camps ? ctx.camps.iceStart(a.body, c[0], c[1], S.yf, S.day, a.slot) : null, sh = from ? [from.x, from.y] : nearestShore(a.body, c[0], c[1]) || [c[0], c[1]];
+      Object.assign(a, { x: sh[0], y: sh[1], yaw: Math.atan2(c[1] - sh[1], c[0] - sh[0]), cx: c[0], cy: c[1], tips, mode: 'walk', inland: from ? from.inland : null, goal: [c[0] - 0.7, c[1] + 0.1], shack: hash(S.day >> 2, a.lake * 3 + a.slot) < 0.6 ? (hash(a.slot, 77) * SHACK_C.length) | 0 : -1,
         C: [col(SHIRTS[(hash(S.day, a.slot + 51) * SHIRTS.length) | 0]), col(PANTS[(hash(S.day, 3) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, 13) * HATS.length) | 0])], bucketC: BUCKET_C[(hash(a.slot, 9) * 2) | 0], strideOf: walkGait, flagT: rnd(600, 2400), pack: 0 });
       camps.push(a); return true;
     },
@@ -1289,7 +1308,7 @@ export function makeWildView(ctx) {
         }
       } else if (a.mode === 'pack') {
         a.spd = 0; a.pack = Math.min(1, a.mt / 25);
-        if (a.pack >= 1) { const sh = nearestShore(a.body, a.x, a.y); a.goal = sh ? [sh[0] + sh[2] * 4, sh[1] + sh[3] * 4] : [a.x, a.y]; a.mode = 'walk'; }
+        if (a.pack >= 1) { if (a.inland) a.goal = [a.inland[0], a.inland[1]]; else { const sh = nearestShore(a.body, a.x, a.y); a.goal = sh ? [sh[0] + sh[2] * 4, sh[1] + sh[3] * 4] : [a.x, a.y]; } a.mode = 'walk'; }   // (home the way it came)
       } else if (a.mode === 'jig') { a.spd = 0; const t = a.tips.find(t => t.up > 0); if (t) { a.pull = t; a.goal = [t.x - 0.6, t.y]; a.mode = 'walk'; } }
       else if (a.mode === 'pull') { a.spd = 0; a.yaw = Math.atan2(a.pull.y - a.y, a.pull.x - a.x); if (a.mt > a.dur) { a.pull.up = 0; a.mode = 'walk'; a.pull = null; a.goal = [a.cx - 0.7, a.cy + 0.1]; a.fish = 4; } }
       if (a.fish > 0) a.fish -= dt;
@@ -1402,7 +1421,7 @@ export function makeWildView(ctx) {
     if (cam) { CAM.x = cam.x; CAM.y = cam.y; CAM.z = cam.z; } CAM.dir = camera && camera.getWorldDirection ? camera.getWorldDirection(CAMDIR) : camera;
     if (!snap) return;
     // (a jump through the year — the Jump-to buttons, a restored run: the lakes' animals are another season's; they are founded afresh)
-    if (S0.time !== undefined && Math.abs(snap.time - S0.time) > 2 * 86400) { AG.clear(); camps.length = 0; censusAt = -1e9; }
+    if (S0.time !== undefined && Math.abs(snap.time - S0.time) > 2 * 86400) { AG.clear(); camps.length = 0; censusAt = -1e9; if (ctx.camps) ctx.camps.releaseAll(); }
     S0.time = snap.time; S0.snap = snap; S0.scale = scale;
     const sun = snap.sun, li = sun > 0.3 ? 0 : sun > 0.02 ? 1 : 2;
     const S = { t, dt, snap, yf: snap.yf, tod: snap.t, li, time: snap.time, day: Math.floor(snap.time / 86400), ice: iceShare(snap), forest: snap.forest };
@@ -1411,7 +1430,7 @@ export function makeWildView(ctx) {
     for (const [key, a] of AG) {
       if (a.forest) continue;
       a.mt += dt; if (a.away) a.offT = (a.offT || 0) + dt; BEH[a.kind].step(a, S, dt);
-      if (a.gone) { AG.delete(key); const c = camps.indexOf(a); if (c >= 0) camps.splice(c, 1); continue; }
+      if (a.gone) { AG.delete(key); const c = camps.indexOf(a); if (c >= 0) camps.splice(c, 1); if (a.dock != null && ctx.camps) ctx.camps.release(a.dock); continue; }   // (its boat back at its dock)
       a.sy = syAt(a.x, a.y);
     }
     // draw
@@ -1444,6 +1463,6 @@ export function makeWildView(ctx) {
     }
     return out;
   }
-  function clear() { AG.clear(); camps.length = 0; for (const p of PARTS) { p.n = 0; p.end(); } wake.end(); }
+  function clear() { AG.clear(); camps.length = 0; if (ctx.camps) ctx.camps.releaseAll(); for (const p of PARTS) { p.n = 0; p.end(); } wake.end(); }
   return { group, update, onKill, list, clear, stats: () => { const c = {}; for (const a of AG.values()) c[a.kind] = (c[a.kind] || 0) + (a.members ? a.members.length : 1) + (a.pups ? a.pups.length : 0); return c; } };
 }
