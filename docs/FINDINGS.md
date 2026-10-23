@@ -4,6 +4,28 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-23 — Arm AM (AL + Y4 + the forest + the burial fix): broader recruitment, but the white perch still go (GPU, true scale, seeds 611/613)
+- **What.**
+
+  | | Start | Year 1 | Year 2 | AL year 2 |
+  |---|---|---|---|---|
+  | Seed 611 | 79 kg/ha | 43 | 24 | 28 |
+  | Seed 613 | 79 kg/ha | 56 | 38 | 40 |
+
+  - Recruits over the two years (per seed): bullhead ~166,000, perch 112,000–139,000, fallfish ~98,000, redbreast 37,000–49,000, bass
+    7,700–36,000, white perch 115–123 (AL: 0), killifish 16–39.
+  - Summer crustaceans 84–116 µg/L (D + C). P inventory 112–126 % at the year ends.
+- **The white perch (1.5–3.0 kg/ha by year 2) fail in two ways.**
+  - **The founding stock is eaten in the first summer:** 57 % in 112 days, a Z of ~2.7/yr, where a stable white perch stock's adults run
+    ~0.4–0.7/yr.
+  - **The young still stall on the true lakes in year 1** (1.5–1.6 cm from mid-July to September). On the 1/10 lakes with the same
+    settings they reach 37 mm. Year 2 is better (2.6 cm by early July), but they die 64–67 % "natural", 10–16 % starved and 19–22 %
+    eaten.
+- **Next.**
+  - Why the true lakes' young differ from the 1/10 (probe ywp3 on HB_WORLD=true, occ-server).
+  - The predation on the founding white perch: who takes them, at what rate, against field white perch adult and sub-adult Z.
+- **Where.** scratchpad r22AM_611/613.txt (yrsum.mjs), queue_am.sh.
+
 ## 2026-10-22 — Y4: thinning the young at the yolk-sac stage lets the survivors grow at field rates (probe ywp3, occ-server)
 - **What.** EGG3.YOLK_HATCH 0.95, the yolk-sac stage's survival, is an unsourced prior. The field's hatch → first feeding for perch is 0.12–0.73
   (Kinord, central ~0.3; Oneida egg + yolk sac ~0.08), and for white perch ~0.25–0.65 (egg → first feeding ~0.03–0.25, no field

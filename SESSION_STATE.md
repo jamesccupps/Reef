@@ -202,6 +202,11 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-23 — THE NEWEST). ARM AM DONE (FINDINGS): 79 → 43/56 → 24/38 kg/ha; recruits broad (bullhead, perch, fallfish, redbreast,
+bass) but WHITE PERCH ~120 recruits and 1.5–3.0 kg/ha by year 2 — the founding stock eaten (57 % in 112 days, Z ~2.7/yr vs a stable stock's adults
+~0.4–0.7) and the young stalling on the TRUE lakes in year 1 (1.6 cm in Sept) though the 1/10 reach 37 mm. The GPU is free (AM done). RUNNING:
+ywp3 on the true lakes (occ-server → scratchpad/probe/ywp3_true.txt). NEXT: (1) why the true lakes' young differ; (2) who eats the founding white
+perch and how fast, against the field's adult/sub-adult Z.
 ▶▶▶ RESUME HERE (2026-10-22 ~23:30 machine clock — THE NEWEST). ARM AM seed 611 year 1 (yrsum): 79 → 43 → 36 kg/ha (AL 44 → 28); the WHITE PERCH
 YOUNG STILL STALL AT TRUE SCALE in year 1 (1.5 cm mid-July, 1.6 early Sept; 0 recruits) though the 1/10 probe gave 37 mm; year 2 better (2.6 cm by
 early July). P inventory 123 → 151 % at the year ends (rising — Z2_BURY 0.05 refit was without fish; watch). PROBE ywp3 on the TRUE lakes running on
