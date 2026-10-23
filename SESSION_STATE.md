@@ -202,7 +202,32 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~17:00 EDT — THE NEWEST). DONE + PUSHED: 45854e6 THE TREES + GPU FOREST (render3/trees3.js: leaf-card
+▶▶▶ RESUME HERE (2026-10-23 ~16:50 EDT — THE NEWEST). UNREAL PROJECT STARTED (7ee9abe; ue/README.md). The project lives at
+G:\HotBrookUE (ue/setup.ps1: .uproject copied, Source/Config/Scripts are JUNCTIONS to repo ue/HotBrook/, Content/Import/caches on G:, the
+DDC on G: via DefaultEngine.ini). UE 5.6.1 at G:\Program Files\EpicGames\UE_5.6; UE 5.8 is INSTALLING (the human) — Quixel MEGAPLANTS
+need 5.8 + the Procedural Vegetation Editor plugin + Nanite Foliage: then set EngineAssociation 5.8, rebuild, re-run HotBrookBuild.
+VS 2026 (MSVC 14.51) builds UE 5.6 fine; always -MaxParallelActions=3 (the page file ran out of memory). BUILT AND WORKING:
+- HotBrook module: HotBrookCharacter (first person 1.65 m, walk/run/jump, wade/swim/dive by Import/water.bin, ice hook);
+  HotBrookGameMode (-hbshot="X,Y,Yaw,Pitch,Name;..." -hbwait=N writes Saved/Screenshots/<Name>.png then quits; run the game with
+  -game -RenderOffscreen); HotBrookWater subsystem (water surface; the heightmap's ground — the trace missed the landscape before its
+  collision was built, the first shots stood under the land).
+- HotBrookEditor module: UnrealEditor-Cmd ... -run=HotBrookBuild makes /Game/Maps/HotBrook — landscape 2541x4954 at 2 m from
+  heightmap.r16; Upper/Lower as WaterBodyLake on their shorelines (bAffectsLandscape off) + a WaterZone; Sun (atmosphere sun),
+  SkyAtmosphere, realtime SkyLight, VolumetricCloud, HeightFog, unbound PPV; PlayerStart at sim (334.8, -575.6).
+- Exporters: ue/export/export_world.mjs (heightmap, water.bin, lakes.json, camps.json); canopy_raw.py (canopy3.jpg → canopy.bin);
+  export_forest.mjs (trees.bin, 1.89 M trees stocked as Maine woods — canopy 420/ha, understory 350/ha in the band, emergent white
+  pines, cedar shores; the alder/willow SHORE BAND came out 0: fix its condition).
+- Coordinates: sim m (x east, y north, h a.s.l.) → UE cm (X east, Y south, Z = (h − 110 m)); Upper is the SOUTHERN lake.
+FAB (the human is signed in to Fab in Chrome now): free MEGAPLANTS to add (5.8 only): Norway Spruce, Baltic Pine (+saplings), Dead
+Pine, Silver Birch, European Aspen (+saplings), Norway Maple Forest (+saplings), European Beech (+saplings), Black Alder, Common Hazel,
+Goat Willow, Rowan Saplings, Elder, Japanese Cypress (cedar stand-in), Bilberry, Lingonberry, Common Bulrush, Dry Common Reed, Wood
+Anemone; free ANIMAL VARIETY PACK (deer, fox, crow). Fish, loons, herons, beaver etc. elsewhere (Sketchfab CC-BY — the human will log
+in to anything needed — or our own); the camps built procedurally from camps.json with Megascans wood/shingle materials.
+NEXT: add the Fab packs → get them into G:\HotBrookUE (Launcher "Add to project" or the editor's Fab panel) once 5.8 is in; a
+HotBrookForest actor (instanced meshes per species from trees.bin); a ground material (Megascans forest floor, moss, gravel, sand,
+cobbles by slope/canopy/shore); the live link (ue/link: sim3worker.js under a worker_threads shim + a hand-rolled localhost WebSocket;
+UE's WebSockets module). The human is driving home and will test on their desktop (not over RDP).
+▶▶▶ RESUME HERE (2026-10-23 ~17:00 EDT). DONE + PUSHED: 45854e6 THE TREES + GPU FOREST (render3/trees3.js: leaf-card
 trees — needle sprays, pine plumes, maple/birch clusters, winter twigs as alpha cards from a canvas-drawn atlas; hero ≤70 m, lite to
 250 m; render3/forest3.js: ALL ~830k trees in one storage buffer, ONE compute cull a frame (frustum + shadow box) sorting each into 12
 indirect draws in one buffer — near hero/lite, mid, far, mirror stand-ins; WebGL2/?forest=cpu keeps the CPU tiers); seasons from the
