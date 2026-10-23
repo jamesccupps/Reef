@@ -202,6 +202,12 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-23 ~08:10 machine clock — THE NEWEST). CLEANED UP: eight stale gate-waiting loops (the forest agent's, on w3full.txt) and the
+slow true-lakes probe (stopped at day 63 — on the CPU the young white perch grew normally to 18 mm by mid-July, as the GPU arm did). THE STALL'S
+CAUSE (arm AM, 14-day output): the crustaceans collapse from mid-July (Upper 255 → 36 µg/L, Lower 45 → 13 by August — the young alewives, as in
+real alewife lakes, Post et al. 2008) and the young white perch, 2.0–2.3 cm, can't reach the bed (FRY.BENTH_L 2.5 cm); the field's settle at 20–25
+mm on bed prey. Y4b IN THE TREE (uncommitted): fish3 stageR5 S3.whiteperch.sp.benthL 2.0 (both engines via the species table). RUNNING: ARM AN
+(GPU, snap_an :8155, queue_an.sh → r22AN_611/613.txt) and the full gate (occ-server → scratchpad/gate_y4b.txt). When green: commit, push, back up.
 ▶▶▶ RESUME HERE (2026-10-23, later — THE NEWEST). wpdeath (FINDINGS d86bc9a): the founding white perch eaten by bass (Z 2.4/yr by Sept), pickerel 0.9,
 fallfish 0.8 — the predators' demand (~15 kg/ha/yr of fish) met from the standing stock without recruitment; Y4's fewer young leave the bass more yearlings.
 WAITING: ywp3 on the TRUE lakes (occ-server, ~2.5 h more → scratchpad/probe/ywp3_true.txt) — why the true lakes' young stall (early alewife larvae
