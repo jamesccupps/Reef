@@ -1,0 +1,10 @@
+# the Unreal project lives at G:\HotBrookUE (ue/setup.ps1); only its code, config and scripts are versioned here
+HotBrook/Binaries/
+HotBrook/Intermediate/
+HotBrook/Saved/
+HotBrook/DerivedDataCache/
+HotBrook/Content/
+HotBrook/Import/
+*.sln
+*.VC.db
+.vs/
