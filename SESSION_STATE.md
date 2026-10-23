@@ -202,7 +202,20 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~16:50 EDT — THE NEWEST). UNREAL PROJECT STARTED (7ee9abe; ue/README.md). The project lives at
+▶▶▶ RESUME HERE (2026-10-23 ~21:30 machine clock — THE NEWEST). UNREAL ON 5.8.4 (be3adc5): the project's EngineAssociation is 5.8
+(G:\Program Files\EpicGames\UE_5.8; ue/retarget.ps1 did it — build, both materials, the level). Working, verified by -hbshot screenshots:
+the landscape (the scale bug fixed: a spawn-transform scale came out 25600), M_Ground (forest floor, rock slopes, mud low, the aerial
+canopy past ~900 m), sun shadows, the live sim's clock (HotBrookLink <-> ue/link/simhost.mjs on ws://127.0.0.1:8771 — 8765 is another
+of the human's node tools; tested 437 fish near the walker, 20 Hz), HotBrookForest streaming 1.9 M trees (cone stand-ins until the
+Megaplants meshes are in Import/forest_meshes.json). THE LAKES: the Water plugin bodies DROPPED (headless they crashed the build in
+WaterEditor -> LandscapeEditor and never drew in game); AHotBrookWaterSurface draws each shoreline polygon at its level with M_LakeWater
+(Single Layer Water, tea colour) — first 5.8 shots pending. FAB (signed in, Chrome "Browser 1"): ALL relevant free Megaplants + the
+Animal Variety Pack + 14 Megascans (forest floors, mossy floor, compost, rocky floor, gravel, soil mud, mossy rocks, small stones, lady
+and beech fern, 2 wild grasses, water lily) are in the human's library; skipped 8 "license + checkout" free-tier items. NEXT: the human
+adds the packs INTO the project (5.8 editor: Fab panel -> My Library -> Add to Project); then list the imported meshes with Python and
+write Import/forest_meshes.json (species codes in export_forest.mjs), Megascans ground layers in M_Ground, rocks/logs/ferns/grass
+scattering (PCG near the walker), camps from camps.json, real fish models, underwater fog.
+▶▶▶ RESUME HERE (2026-10-23 ~16:50 EDT). UNREAL PROJECT STARTED (7ee9abe; ue/README.md). The project lives at
 G:\HotBrookUE (ue/setup.ps1: .uproject copied, Source/Config/Scripts are JUNCTIONS to repo ue/HotBrook/, Content/Import/caches on G:, the
 DDC on G: via DefaultEngine.ini). UE 5.6.1 at G:\Program Files\EpicGames\UE_5.6; UE 5.8 is INSTALLING (the human) — Quixel MEGAPLANTS
 need 5.8 + the Procedural Vegetation Editor plugin + Nanite Foliage: then set EngineAssociation 5.8, rebuild, re-run HotBrookBuild.
