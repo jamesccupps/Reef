@@ -202,6 +202,14 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-23 ~08:20, BEFORE A COMPACTION — THE NEWEST). IN FLIGHT: (1) ARM AN on the GPU (task bpsw5kq1e; snap_an :8155,
+queue_an.sh → scratchpad/r22AN_611.txt then r22AN_613.txt; read with node scratchpad/yrsum.mjs <file> and the white perch young's lengths by
+period: awk on '^== day' + '^   whiteperch ' lines, as for AM) — the test of Y4b (white perch at the bed from 2.0 cm): do their young pass 2.5 cm
+past mid-July and recruit? (2) THE FULL GATE on occ-server (task bxogqufcr → scratchpad/gate_y4b.txt) — when green, commit fish3.js (Y4b), push,
+back up (git archive to G:/synapse-reef-backups/). The reef preview server is running on :8000 again (the human wants to open w3.html in Chrome);
+the old snapshot servers :8154 (snap_am) and :8155 (snap_an, in use by AN) — stop :8154 any time, :8155 after AN. The human asked why the
+preview was slow: the GPU arm shares the GPU with the 3-D view; the preview tab had run a stale page for ~22 h (server stopped). OFFER: stop
+the arm if they want a smooth view. Eight stale waiters (the forest agent's) were killed.
 ▶▶▶ RESUME HERE (2026-10-23 ~08:10 machine clock — THE NEWEST). CLEANED UP: eight stale gate-waiting loops (the forest agent's, on w3full.txt) and the
 slow true-lakes probe (stopped at day 63 — on the CPU the young white perch grew normally to 18 mm by mid-July, as the GPU arm did). THE STALL'S
 CAUSE (arm AM, 14-day output): the crustaceans collapse from mid-July (Upper 255 → 36 µg/L, Lower 45 → 13 by August — the young alewives, as in
