@@ -1618,8 +1618,15 @@ export class Fish3 {
     // perch and white perch), over the lakes' water — the prolarvae too (EGG3.PROLARVA); the predators' appetite not binding (it binds above
     // ~160 larvae/m² — fish_predation_on_larvae.md §3.4). Without it the founding's young had no larva-eating fish (seed 612: 75 perch larvae/m²)
     const preds = []; let Vw = 0; if (FRY.LARV2) { for (let j = 0; j < this.G.NCELL; j++) Vw += this.G.vol[j]; for (const a of this.fish) if (a.alive && (a.s.larvO ?? 0) > 0 && !(a.s.pisc && a.L >= a.s.sp.Lpisc && a.L >= 3 * a.s.sp.Lpisc)) preds.push(a); }
-    const zFish = L => { if (!preds.length || L > FRY.LARVA_L) return 0; let a0 = 0; for (const a of preds) a0 += a.n * larvVol(a.s, a.L) * larvW(a.s, a.L, L); return a0 * FRY.SPIN_SIGHT / Vw * DAY; };   // (/day)
-    for (let yf = Math.min(...made.map(m => m[1])); yf < yf1 - 1e-9; yf += dY) {
+    const zRaw = L => { let a0 = 0; for (const a of preds) a0 += a.n * larvVol(a.s, a.L) * larvW(a.s, a.L, L); return a0 * FRY.SPIN_SIGHT / Vw * DAY; };   // (/day)
+    // (tabulated over the larva's length once — the founders don't change in the spin — and read by interpolation: the sum over every
+    // larva-picker for each school each day took the true world's start-up from ~6 s to ~170 s; a sum of piecewise-linear terms, so exact
+    // but at its kinks, within 0.01 cm)
+    const ZN = 256; let zTab = null;
+    const zFish = L => { if (!preds.length || L > FRY.LARVA_L) return 0; if (!zTab) { zTab = new Float64Array(ZN + 1); for (let i = 0; i <= ZN; i++) zTab[i] = zRaw(FRY.LARVA_L * i / ZN); }
+      const u = Math.max(0, L) / FRY.LARVA_L * ZN, i = Math.min(ZN - 1, u | 0); return zTab[i] + (zTab[i + 1] - zTab[i]) * (u - i); };
+    let yS = Infinity; for (const m of made) if (m[1] < yS) yS = m[1];   // (not Math.min(...): the true lakes' jump to February makes more schools than a call's arguments can hold)
+    for (let yf = yS; yf < yf1 - 1e-9; yf += dY) {
       const dd = Math.min(1, (yf1 - yf) / dY), T = seasonalTemp(yf + dY * dd / 2);
       juvD.fill(0); for (const [q, y0] of made) if (q.alive && y0 <= yf) juvD[q.k] += q.n * (1 - Math.exp(-((q.L / FRY.LARVA_L) ** 2))) / this.lakeM2;
       for (const [q, y0] of made) {
@@ -1871,7 +1878,7 @@ export class Fish3 {
   takeOut() {
     const out = { fish: [], yoy: [] };
     for (const a of this.fish) if (a.alive && a._out) { a._out = false; out.fish.push(packFish(a)); a.alive = false; a.cause = 'handed'; }
-    for (const q of this.yoy) if (q.alive && q._out) { q._out = false; out.yoy.push(packYoy(q)); q.alive = false; }
+    for (const q of this.yoy) if (q.alive && q._out) { q._out = false; out.yoy.push(packYoy(q)); q.alive = false; q.cause = 'handed'; }   // (the view's card: handed, not recruited)
     return out;
   }
   adopt(pack) {
