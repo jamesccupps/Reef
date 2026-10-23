@@ -154,7 +154,26 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
    drawn to where things happen (a rise, a diving loon, an osprey, a moose in the shallows); full screen at the human's ultrawide
    (~21:9) aspect. Needs the near field drawn true-size and detailed from eye height (the shore's ground, rocks, trees and
    reeds close up, the water's waves and reflections) and the frame time held at the monitor's rate.
-12. **3-D prints of the lakes and the land (human, 2026-10-22; done 2306d79).** tools/hotbrook/export_print.mjs → exports/print/
+13. **Every other animal of the woods and shores up there (human, 2026-10-23).** "Add to the roadmap all the other animals that
+   are up there, squirrels, lots of different types of birds, foxes, turkeys, all of that." Research first which actually live
+   about the Hot Brook lakes (MDIFW, Maine Bird Atlas / eBird for the Danforth–Weston area, the human's own sightings) and when
+   (residents, summer breeders, migrants, winter visitors); then simulate each with its season, habitat and what it eats, and
+   draw it — the ones that touch the lakes first. Candidates to check:
+   - Small mammals: red squirrel, grey squirrel, eastern chipmunk, northern flying squirrel, snowshoe hare, porcupine,
+     woodchuck, mice, voles and shrews (the predators' food), bats over the water at dusk (they eat the lakes' emerging insects).
+   - Predators: red fox, eastern coyote, bobcat, fisher, American marten, ermine and long-tailed weasel, striped skunk.
+   - Ground birds: wild turkey, ruffed grouse, spruce grouse, American woodcock.
+   - Birds of the water and its edge: common and hooded mergansers, wood duck, black duck, mallard, ring-necked duck (fish and
+     invertebrate eaters — they join the loon, heron, kingfisher, osprey and eagle); tree swallows over the water taking the
+     hatch; spotted sandpiper; red-winged blackbirds in the marshes.
+   - Forest birds: woodpeckers (pileated, hairy, downy, flicker, sapsucker), black-capped chickadee, nuthatches, blue jay and
+     Canada jay, crow and raven, the warblers, thrushes, vireos and sparrows of a Maine mixed forest, finches and grosbeaks,
+     ruby-throated hummingbird; barred and great horned owls; broad-winged and red-tailed hawks, goshawk.
+   - Reptiles and amphibians of the land: garter, red-bellied and ring-necked snakes; red-backed and spotted salamanders; wood
+     frog, spring peeper, American toad (the frogs of the shallows are built).
+   Each animal true size and alive in the first-person walk (item 11): flocks, a fox crossing a camp road, a turkey hen and
+   poults in a clearing, a red squirrel scolding from a spruce.
+14. **3-D prints of the lakes and the land (human, 2026-10-22; done 2306d79).** tools/hotbrook/export_print.mjs → exports/print/
    for the Bambu Lab A1 / A1 mini with the AMS: one piece (to paint), four colours by height, four by land cover, the terrain with
    open basins + clear-PETG water inserts; the forest's treetops from the aerial photos.
 

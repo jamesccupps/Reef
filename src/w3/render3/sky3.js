@@ -21,7 +21,7 @@ export function sunDir(yf, t, out = new THREE.Vector3()) {
 export function makeSky(KM) {
   const sky = new SkyMesh();
   sky.scale.setScalar(5000 * KM); sky.renderOrder = -1; sky.frustumCulled = false;
-  sky.turbidity.value = 3.2; sky.rayleigh.value = 1.4; sky.mieCoefficient.value = 0.004; sky.mieDirectionalG.value = 0.82;
+  sky.turbidity.value = 2.6; sky.rayleigh.value = 1.4; sky.mieCoefficient.value = 0.0025; sky.mieDirectionalG.value = 0.78;   // (a clear Maine day: less of the white haze about a low sun — the human, 2026-10-23)
   sky.cloudScale.value = 0.00025; sky.cloudSpeed.value = 0.00003; sky.cloudElevation.value = 0.55;
   const dir = new THREE.Vector3(), haze = new THREE.Color(), _c = new THREE.Color();
   // the clouds' cover and density by the sim's weather (0 clear, 1 cloudy, 2 rain, 3 storm): fair-weather cumulus on a clear day
@@ -32,7 +32,7 @@ export function makeSky(KM) {
     update(yf, t, weather, camera) {
       sunDir(yf, t, dir); sky.sunPosition.value.copy(dir).multiplyScalar(450000);
       const w = Math.max(0, Math.min(3, weather | 0)); sky.cloudCoverage.value += (COVER[w] - sky.cloudCoverage.value) * 0.02; sky.cloudDensity.value += (DENS[w] - sky.cloudDensity.value) * 0.02;
-      sky.turbidity.value = 3.2 + 4 * (w >= 2 ? 1 : 0);   // (rain and storms: a heavier, greyer sky)
+      sky.turbidity.value = 2.6 + 4 * (w >= 2 ? 1 : 0);   // (rain and storms: a heavier, greyer sky)
       sky.position.copy(camera.position);
       // the haze's colour: a pale blue-white horizon by day, warmer as the sun gets low, grey under cloud
       const h = dir.y, warm = Math.max(0, Math.min(1, 1 - h / 0.25)) * (h > -0.1 ? 1 : 0);

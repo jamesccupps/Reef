@@ -421,7 +421,8 @@ class GTAONode extends TempNode {
 			// Sidestep the nearest-rounding during depth access for the unjittered center pixel to avoid banding
 
 			const g = this.depthNode.gather().sample( uv );
-			const depth = min( min( g.x, g.y ), min( g.z, g.w ) );
+			// (Hot Brook patch: with a reversed depth buffer the nearest of the four is the largest)
+			const depth = builder.renderer.reversedDepthBuffer === true ? max( max( g.x, g.y ), max( g.z, g.w ) ) : min( min( g.x, g.y ), min( g.z, g.w ) );
 
 			return linearizeDepth( depth );
 
@@ -434,7 +435,8 @@ class GTAONode extends TempNode {
 
 			const depth = this._resolutionScale.lessThan( 1 ).select( sampleCenterDepth( uvNode ), sampleDepth( uvNode ) ).toConst();
 
-			depth.greaterThanEqual( 1.0 ).discard();
+			// (Hot Brook patch: the sky — nothing drawn — is depth 1, or 0 with a reversed depth buffer)
+			( builder.renderer.reversedDepthBuffer === true ? depth.lessThanEqual( 0.0 ) : depth.greaterThanEqual( 1.0 ) ).discard();
 
 			const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toConst();
 			const viewNormal = sampleNormal( uvNode ).toConst();

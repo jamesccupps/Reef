@@ -20,6 +20,8 @@ import { makeData3 } from './data3.js';
 import { makeCampsView, clearedAt } from './camps3view.js';
 import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { makeSky } from './sky3.js';
+import { drawAtlas, drawBark, spireCards, pineCards, hardCards, ATLAS, TILE } from './trees3.js';
+import { makeGpuForest } from './forest3.js';
 import { ao } from '../../../vendor/three-0.186.1/addons/GTAONode.js';
 import { bloom } from '../../../vendor/three-0.186.1/addons/BloomNode.js';
 import { fxaa } from '../../../vendor/three-0.186.1/addons/FXAANode.js';
@@ -37,7 +39,7 @@ const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('.
 const PHOTO_URL = new URL(WORLD_TRUE ? '../true/naip3.jpg' : './naip3.jpg', import.meta.url).href;
 const KM = WORLD_TRUE ? 10 : 1;   // (the view's distances — camera reach, sky, fog, named views, label reach — at kilometres in the true world)
 const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, cos, exp, time, abs: tabs, step, length,
-  varying, transformNormalToView, negateOnBackSide, sRGBTransferEOTF, mx_noise_float, mx_fractal_noise_float } = THREE.TSL;
+  varying, transformNormalToView, negateOnBackSide, sRGBTransferEOTF, mx_noise_float, mx_fractal_noise_float, dFdx, dFdy, log2, max: tmax, uniformArray, int } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
@@ -49,8 +51,17 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 
 // ---------- renderer, scene, camera ----------
 const canvas = $('view');
-const renderer = new THREE.WebGPURenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+// (the depth: REVERSED-Z — a float depth buffer run from 1 at the near plane to 0 at the far, as games draw kilometres of land: the
+// 5-cm-to-60-km range stays sharp without the logarithmic buffer's depth written by every pixel's shader, which turned off the GPU's
+// early depth test — every hidden leaf behind a crown was shaded in full. `?depth=log` the old way, to compare)
+const LOGZ = new URLSearchParams(location.search).get('depth') === 'log';
+const renderer = new THREE.WebGPURenderer({ canvas, antialias: true, logarithmicDepthBuffer: LOGZ, reversedDepthBuffer: !LOGZ, trackTimestamp: true });
+// THE RESOLUTION, HELD TO THE FRAME RATE (games' dynamic resolution): the GPU's own time a frame (its timestamp queries) watched;
+// past ~14.5 ms — a 60-Hz screen's frame with room for the rest — for a second, the pixels drawn a step fewer (the device's ratio,
+// then ~5/6, 2/3, ~4/7 of it: FXAA smooths the edges); back up a step once the frame would fit again for 3 s. In the deep woods on
+// the human's 21:9 screen at 150 % the near trees' leaf cards held ~20 ms at full resolution (tools/w3_render_bench.mjs)
+const DYN = { steps: [1, 0.85, 0.7, 0.58].map(f => Math.max(0.75, Math.min(devicePixelRatio, 2) * f)).filter((v, i, a) => i === 0 || v < a[i - 1] - 0.01), i: 0, gpu: 0, hi: 0, lo: 0, busy: false, t: 0 };
+renderer.setPixelRatio(DYN.steps[0]);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000 * KM);
@@ -87,6 +98,13 @@ const TREE_COLS = {
   conifer: { spring: [0x24432a, 0x2a4a2c], summer: [0x1f3a24, 0x264529, 0x1b3320], fall: [0x1f3a24, 0x264529], winter: [0x50604f, 0x5a6a58] },
   broad: { spring: [0x7ea84c, 0x8db45a, 0x6c9a40], summer: [0x3d5e2c, 0x4a6b33, 0x56763a, 0x3a5a2a], fall: [0xc8642a, 0xd8a12e, 0xa8342a, 0x9a7a2e, 0xb8862c], winter: [0x6d6458, 0x7a7064, 0x5f584e] },
 };
+// THE LEAVES BY THE DATE, THE SNOW BY THE ICE (the seasons went by calendar quarter: from March 1 to ice-out the land lost its snow
+// and the hardwoods leafed out beside a frozen lake; fall colours from September 1; snow from December 1, frozen or not). A Maine
+// year (yf 0 = March 1): leaf-out about May 15, full summer green by June 10, the colours turning from about Sept 20 (peak early to
+// mid October), bare by November 1. The snow on the land comes and goes with the sim's ice (iceShare: the share of its water
+// columns frozen; on past half, off below a quarter)
+const LEAF = { out: 75 / 365, full: 101 / 365, turn: 203 / 365, off: 245 / 365 };
+const seasonOf = yf => yf < LEAF.out || yf >= LEAF.off ? 'winter' : yf < LEAF.full ? 'spring' : yf < LEAF.turn ? 'summer' : 'fall';
 // (a kind's colours now: the hardwoods' by their leaves; the conifers' snow-dusted under snow, else their summer green — bare
 // months without snow included)
 const treeCols = kind => TREE_COLS[kind][kind === 'conifer' ? (S.snow ? 'winter' : S.season === 'winter' ? 'summer' : S.season) : S.season];
@@ -345,6 +363,7 @@ function colourGround() {   // map colours by season (the bed by depth); a narro
 }
 
 // ---------- water: the lakes' and the brook's surfaces (ice in February) ----------
+let MIRROR_CAM = null;   // (the water's mirror's own camera: what it sees by layers — the near trees' stand-ins, not their leaf cards)
 const water = (() => {
   const n = NX * NY, pos = new Float32Array(n * 3), alpha = new Float32Array(n);
   for (let i = 0; i < n; i++) {
@@ -360,7 +379,7 @@ const water = (() => {
   // to see), more strongly at low angles (Fresnel), broken by a light ripple; under it the tea-coloured body of the water
   const refl = reflector({ resolutionScale: 0.5 }); refl.target.rotateX(-Math.PI / 2); refl.target.position.y = 0.01; scene.add(refl.target);
   // (its camera, a clone of the view's made now, sees layer 0 only: the weeds' stems, on their own layer, stay out of the mirror)
-  refl.reflector.getVirtualCamera(camera); camera.layers.enable(PLANT_LAYER);
+  MIRROR_CAM = refl.reflector.getVirtualCamera(camera); camera.layers.enable(PLANT_LAYER);
   const P = positionWorld, t = time;
   const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(WIND3.speed.mul(0.0011).add(0.0012))
     // (the wind's ripples break the mirror more as it blows — a flat calm at dawn is glass, 3 m/s ruffles it — in patches: cat's paws
@@ -529,128 +548,200 @@ for (const T of Object.values(TREES)) {
 // - MID, within TREE_R of where the view looks (the 1/10 world: every tree): the simple layered cones and lumpy crowns.
 // - FAR (the true world): every other tree a cone or a blob, out of the water's mirror (its camera sees layer 0 only).
 const DET_R = 250, DET_MOVE = 30;   // m: the near tier's reach about the camera; how far the camera moves before it is re-picked
-// geometry: triangles with a foliage flag (fol: 1 leaves, 0 bark) and a shade (ao: darker low and inside the crown)
-function treeBuilder() {
-  const P = [], F = [], A = [], N = [];
-  const nrm = v => { const l = Math.hypot(...v) || 1; return v.map(x => x / l); };
-  const faceN = (a, b, c) => nrm([(b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]), (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]), (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])]);
-  // (a triangle; its corners' normals given — or its face's, lifted toward the sky: a whorl of needles lit from above)
-  const tri = (a, b, c, fol, ao, na = null, nb = null, nc = null) => {
-    if (!na) { const f = faceN(a, b, c), u = nrm([f[0], Math.abs(f[1]) + 0.8, f[2]]); na = nb = nc = u; }
-    P.push(...a, ...b, ...c); N.push(...na, ...nb, ...nc); F.push(fol, fol, fol); A.push(ao, ao, ao);
-  };
-  const cyl = (x0, y0, z0, x1, y1, z1, r0, r1, seg, ao) => {   // a tapered stem from (x0,y0,z0) to (x1,y1,z1)
-    const d = [x1 - x0, y1 - y0, z1 - z0], L = Math.hypot(...d), u = d.map(v => v / L);
-    const t = Math.abs(u[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = [u[1] * t[2] - u[2] * t[1], u[2] * t[0] - u[0] * t[2], u[0] * t[1] - u[1] * t[0]], n1 = Math.hypot(...e1);
-    const a = e1.map(v => v / n1), b = [u[1] * a[2] - u[2] * a[1], u[2] * a[0] - u[0] * a[2], u[0] * a[1] - u[1] * a[0]];
-    const ring = (c, r, s) => { const g = s / seg * Math.PI * 2, co = Math.cos(g) * r, si = Math.sin(g) * r; return [c[0] + a[0] * co + b[0] * si, c[1] + a[1] * co + b[1] * si, c[2] + a[2] * co + b[2] * si]; };
-    const rn = s => { const g = s / seg * Math.PI * 2, co = Math.cos(g), si = Math.sin(g); return [a[0] * co + b[0] * si, a[1] * co + b[1] * si, a[2] * co + b[2] * si]; };
-    for (let s = 0; s < seg; s++) {
-      const p00 = ring([x0, y0, z0], r0, s), p01 = ring([x0, y0, z0], r0, s + 1), p10 = ring([x1, y1, z1], r1, s), p11 = ring([x1, y1, z1], r1, s + 1), n0 = rn(s), n1 = rn(s + 1);
-      tri(p00, p10, p01, 0, ao, n0, n0, n1); tri(p01, p10, p11, 0, ao, n1, n0, n1);
-    }
-  };
-  const blob = (cx, cy, cz, rx, ry, rz, ao, seed) => {   // a lump of leaves: an icosahedron, its corners pushed in and out a little
-    const g = new THREE.IcosahedronGeometry(1, 0), p = g.attributes.position.array;   // (a polyhedron is built non-indexed)
-    const jit = v => 0.82 + 0.36 * ((Math.sin(seed * 12.9898 + v * 78.233) * 43758.5453) % 1 + 1) % 1;
-    for (let q = 0; q < p.length; q += 9) {
-      const v = [0, 1, 2].map(k => { const o = q + k * 3, j = jit(Math.round(p[o] * 7 + p[o + 1] * 13 + p[o + 2] * 29)); return [cx + p[o] * rx * j, cy + p[o + 1] * ry * j, cz + p[o + 2] * rz * j]; });
-      const n = v.map(w => nrm([(w[0] - cx) / rx, (w[1] - cy) / ry + 0.35, (w[2] - cz) / rz]));   // (rounded: the clump's own normal, a little skyward)
-      tri(v[0], v[1], v[2], 1, ao * (0.85 + 0.15 * Math.max(0, (v[0][1] + v[1][1] + v[2][1]) / 3 - cy) / ry), n[0], n[1], n[2]);
-    }
-  };
-  const hsh = (i, k) => { const h = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return h - Math.floor(h); };
-  const done = () => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
-    g.setAttribute('fol', new THREE.Float32BufferAttribute(F, 1)); g.setAttribute('ao', new THREE.Float32BufferAttribute(A, 1)); return g;
-  };
-  return { tri, cyl, blob, hsh, done };
+const PINE_H = 21;   // m: conifers this tall drawn as white pines near the camera (the canopy's emergent pines; spruce and fir are 12–20 m)
+// THE FOREST GPU-DRIVEN (render3/forest3.js) wherever WebGPU runs: every tree in one storage buffer, culled to the view and sorted into
+// its tier by its distance from the camera each frame on the GPU — seven draws, nothing behind the camera drawn, no re-picking as the
+// view moves. Elsewhere (WebGL2, or `?forest=cpu`) the CPU tiers below: the mid tier re-picked about where the view looks, the near
+// about the camera, every far tree drawn
+const GPU_FOREST = !!navigator.gpu && !/[?&]forest=cpu\b/.test(location.search) && !!(await navigator.gpu.requestAdapter().catch(() => null));
+// (the bands: HERO_R the near trees in full — every whorl and leaf cluster — DET_R the rest of the near tier in their lighter models,
+// TREE_R the mid tier; each tree × its own 0.75–1.25. The near trees' leaf cards are drawn on NEAR_LAYER, out of the water's mirror,
+// which sees MIRROR_LAYER's stand-ins for them instead)
+const HERO_R = 70, NEAR_LAYER = 3, MIRROR_LAYER = 4;
+const FOREST = GPU_FOREST ? makeGpuForest({ nC: TREES.conifer.n, nB: TREES.broad.n, hero: HERO_R, near: DET_R, mid: Number.isFinite(TREE_R) ? TREE_R : 1e9, pineH: PINE_H,
+  caps: [6000, 3000, 6000, Math.min(TREES.conifer.n, 250000), Math.min(TREES.broad.n, 250000), TREES.conifer.n, TREES.broad.n, 20000, 8000, 20000, 30000, 25000] }) : null;
+// THE SEASON IN THE TREES (the GPU forest: worked out in its shaders from the date; the CPU tiers take a season's colours in putTree):
+// each hardwood leafs out over ~3 weeks from about May 15 (LEAF.out), a pale young green deepening through June; it turns from late
+// September — the red maples first, their reds and oranges, the birches and aspens ~2 weeks after, their yellows — its outer leaves
+// before its inner, and drops them through October, bare by about November 1 (LEAF.off); each tree within ±5 days of its
+// neighbours, each leaf cluster its own few days. The conifers keep their needles. Snow lies on the tops of boughs, twigs and crowns
+// while the land is under snow (SEASON3.snow)
+const SEASON3 = { yf: uniform(0.3), snow: uniform(0) };
+const palette = hs => { const a = uniformArray(hs.map(h => new THREE.Color(h)), 'color'); a.n = hs.length; return a; };
+const PAL = {
+  con: palette([0x1f3a24, 0x264529, 0x1b3320, 0x22402a]),
+  spring: palette([0x7ea84c, 0x8db45a, 0x6c9a40]), summer: palette([0x3d5e2c, 0x4a6b33, 0x56763a, 0x3a5a2a]),
+  maple: palette([0xc8642a, 0xa8342a, 0xb8462a, 0xd8802c, 0x9a3a28]), birch: palette([0xd8a12e, 0xc8962c, 0xe0b040, 0xb8862c]),
+  twig: palette([0x6d6458, 0x7a7064, 0x5f584e]),
+};
+const pick = (pal, k) => pal.element(int(fract(k.mul(997)).mul(pal.n)).min(pal.n - 1));
+const shadeOf = k => fract(k.mul(7919)).mul(0.36).add(0.82);   // (each tree its own brightness, as putTree's)
+function leafState(kk, k2, birch, dy = null) {   // a hardwood's leaves on the date (+ dy, a year fraction): their colour, how many (F 0–1)
+  const D = 1 / 365, yf = dy ? SEASON3.yf.add(dy) : SEASON3.yf, j = k2.sub(0.5).mul(10 * D), b = shadeOf(kk);
+  const out = float(LEAF.out).add(j), on = smoothstep(out, out.add(20 * D), yf);
+  const turn = float(LEAF.turn).add(mix(float(-5 * D), float(9 * D), birch)).add(j), fall = smoothstep(turn, turn.add(18 * D), yf);
+  const F = tmin(on, float(1).sub(smoothstep(turn.add(10 * D), float(LEAF.off).add(j).add(birch.mul(4 * D)), yf)));
+  const green = mix(pick(PAL.spring, kk), pick(PAL.summer, kk), smoothstep(out.add(8 * D), out.add(35 * D), yf));
+  return { col: mix(green, mix(pick(PAL.maple, kk), pick(PAL.birch, kk), birch), fall).mul(b), F, twig: pick(PAL.twig, kk).mul(b) };
 }
-function spireG() {   // spruce and balsam fir: a narrow spire of drooping, ragged whorls about a trunk; a spike on top
-  const B = treeBuilder(), N = 12, SEG = 9;
-  B.cyl(0, 0, 0, 0, 0.9, 0, 0.028, 0.008, 6, 0.75);
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1), y = 0.1 + t * 0.78, r = 0.5 * Math.pow(1 - t, 0.85) + 0.05, droop = 0.05 + 0.11 * (1 - t), rot = i * 0.71;
-    const apex = [0, y + 0.05 + 0.05 * (1 - t), 0], rim = [];
-    for (let s = 0; s < SEG; s++) { const a = rot + s / SEG * Math.PI * 2, rr = r * (0.78 + 0.44 * B.hsh(i, s)); rim.push([Math.cos(a) * rr, y - droop * (0.6 + 0.8 * B.hsh(i, s + 50)), Math.sin(a) * rr]); }
-    for (let s = 0; s < SEG; s++) B.tri(apex, rim[(s + 1) % SEG], rim[s], 1, 0.58 + 0.42 * t);
-  }
-  for (let s = 0; s < 6; s++) { const a = s / 6 * Math.PI * 2, b = (s + 1) / 6 * Math.PI * 2; B.tri([0, 1, 0], [Math.cos(b) * 0.04, 0.86, Math.sin(b) * 0.04], [Math.cos(a) * 0.04, 0.86, Math.sin(a) * 0.04], 1, 1); }
-  return B.done();
-}
-function pineG() {   // eastern white pine: a long trunk, then tiers of irregular plumes held out level, the top a plume too
-  const B = treeBuilder();
-  B.cyl(0, 0, 0, 0, 0.93, 0, 0.032, 0.01, 6, 0.75);
-  for (let i = 0; i < 6; i++) {
-    const y = 0.42 + i * 0.095, n = 3 + (i % 2), reach = (0.42 - i * 0.05) * (0.8 + 0.4 * B.hsh(i, 9));
-    for (let b = 0; b < n; b++) {
-      const a = i * 1.37 + b / n * Math.PI * 2 + (B.hsh(i, b) - 0.5) * 0.8, rr = reach * (0.75 + 0.5 * B.hsh(i, b + 20));
-      B.cyl(0, y - 0.02, 0, Math.cos(a) * rr * 0.75, y + 0.01, Math.sin(a) * rr * 0.75, 0.008, 0.004, 4, 0.7);   // (the limb)
-      B.blob(Math.cos(a) * rr * 0.62, y + 0.02, Math.sin(a) * rr * 0.62, rr * 0.48, 0.055 + 0.03 * B.hsh(i, b + 40), rr * 0.36, 0.62 + 0.38 * i / 5, i * 10 + b);
-    }
-  }
-  B.blob(0.02, 0.97, 0, 0.1, 0.05, 0.08, 1, 99);
-  return B.done();
-}
-function hardG() {   // red maple, aspen, birch: a trunk forking into limbs under a lumpy crown
-  const B = treeBuilder();
-  B.cyl(0, 0, 0, 0.01, 0.5, 0, 0.042, 0.028, 7, 0.8);
-  for (let l = 0; l < 3; l++) { const a = l * 2.1 + 0.4; B.cyl(0.01, 0.46, 0, Math.cos(a) * 0.17, 0.74, Math.sin(a) * 0.17, 0.022, 0.009, 5, 0.75); }
-  for (let q = 0; q < 24; q++) {
-    const a = q * 2.399, u = B.hsh(q, 3), rr = 0.32 * Math.sqrt(B.hsh(q, 5)), y = 0.5 + 0.44 * u;
-    const sz = 0.09 + 0.07 * B.hsh(q, 7);
-    B.blob(Math.cos(a) * rr * (1 - 0.35 * u), y, Math.sin(a) * rr * (1 - 0.35 * u), sz * 1.15, sz * 0.9, sz * 1.15, 0.62 + 0.38 * u, q);
-  }
-  return B.done();
-}
-// a tier: one instanced draw of geometry `geo` holding up to `cap` trees; `holes`: [{C (uniform vec2: x, −y), R}] its trees inside
-// are collapsed (another tier's ground); `bare`: a uniform that takes the leaves away (winter)
-function tierMesh(geo, cap, { holes = [], side = THREE.FrontSide, bare = null, layer = 0 } = {}) {
-  const g = new THREE.InstancedBufferGeometry(); if (geo.index) g.setIndex(geo.index);
-  for (const k in geo.attributes) g.setAttribute(k, geo.attributes[k]);
-  g.instanceCount = 0;
+// a tier's per-tree inputs, as shader nodes: P (x, the ground's y, z, height), W (crown width, m), rot, col (its colour, linear),
+// leafCol/twig/F (a hardwood's leaves, twigs and how leafy), leafAt(dy) (its leaves a few days on), barkW (0 dark … 1 white), birch,
+// fir, keep (0: in another tier's ground)
+function cpuInst(g, cap, holes, bare) {   // (from instance attributes: putTree writes them)
   const n = Math.max(1, cap);
   g.setAttribute('tp', new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4));
   g.setAttribute('tw', new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2));
   g.setAttribute('tc', new THREE.InstancedBufferAttribute(new Uint8Array(n * 4), 4, true));
-  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, side }), P = attribute('tp', 'vec4'), Wr = attribute('tw', 'vec2'), TC = attribute('tc', 'vec4');
-  const leafy = !!geo.attributes.fol, fol = leafy ? attribute('fol', 'float') : float(1), ao = leafy ? attribute('ao', 'float') : float(1);
-  let p = positionGeometry; if (bare && leafy) p = p.mul(float(1).sub(fol.mul(bare)));
-  p = p.mul(vec3(Wr.x, P.w, Wr.x));
-  const co = cos(Wr.y), si = sin(Wr.y);
+  g.instanceCount = 0;
+  const P = attribute('tp', 'vec4'), Wr = attribute('tw', 'vec2'), TC = attribute('tc', 'vec4');
   // (each tree leaves for the next tier at its own distance — RAG of the hole's radius, by its random turn — so a tier's edge is a
   // ragged band of mixed trees, not a circle on the forest)
   const rag = Wr.y.div(6.28).mul(0.5).add(0.75);
   let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R.mul(rag), length(vec2(P.x, P.z).sub(h.C))));
-  // (THE WIND: each tree sways from its foot, the bend growing as the square of the height up it — its top ~0.4 % of its height at
-  // rest plus ~0.25 % a m/s of wind, a 3–4 s swing, out of step with its neighbours, gusting; down the prevailing west wind, a little
-  // across it. Its shadow sways with it)
+  // (the colour's bytes are sRGB, decoded here: 8-bit LINEAR posterised the dark greens — a conifer's red ~3/255 — into steps)
+  const col = sRGBTransferEOTF(TC.xyz), F = bare ? float(1).sub(bare) : float(1);
+  return { P, W: Wr.x, rot: Wr.y, col, leafCol: col, twig: col, F, leafAt: null, barkW: TC.w, birch: step(0.5, TC.w), fir: step(0.1, TC.w).mul(step(TC.w, 0.5)), keep };
+}
+function gpuInst(k, wf, kind) {   // (from the GPU forest's culled list: forest3)
+  const { tp, tw } = FOREST.inst(k), kk = tw.y, k2 = tw.w, broad = kind === 'broad';
+  const birch = broad ? step(2.5, tw.z) : float(0), fir = broad ? float(0) : step(0.5, tw.z);
+  if (broad) {
+    const L = leafState(kk, k2, birch);
+    return { P: tp, W: tp.w.mul(wf).mul(kk.mul(0.3).add(0.85)).mul(L.F.mul(0.2).add(0.8)), rot: tw.x, col: mix(L.twig, L.col, L.F), leafCol: L.col, twig: L.twig, F: L.F,
+      leafAt: dy => leafState(kk, k2, birch, dy), barkW: mix(float(0.07), float(0.9), birch), birch, fir, keep: float(1) };
+  }
+  const col = pick(PAL.con, kk).mul(shadeOf(kk)).mul(mix(vec3(1), vec3(0.9, 0.97, 1.06), fir));   // (a balsam fir a little bluer)
+  return { P: tp, W: tp.w.mul(wf).mul(kk.mul(0.3).add(0.85)), rot: tw.x, col, leafCol: col, twig: col, F: float(1), leafAt: null, barkW: mix(float(0.03), float(0.16), fir), birch, fir, keep: float(1) };
+}
+// a tree's model into the world: its unit-height, crown-width model scaled, turned by its rot, swayed by the wind from its foot — the
+// bend growing as the square of the height up it, its top ~0.4 % of its height at rest plus ~0.25 % a m/s of wind, a 3–4 s swing, out
+// of step with its neighbours, gusting, down the prevailing west wind and a little across it (its shadow sways with it); `local` the
+// model's own position (the leaf cards add their flutter to it)
+function treePlace(I, local) {
+  const P = I.P, p = local.mul(vec3(I.W, P.w, I.W)), co = cos(I.rot), si = sin(I.rot);
   const hn = positionGeometry.y.max(0), ph = P.x.mul(0.13).add(P.z.mul(0.17)), gust = sin(time.mul(0.11).add(ph.mul(0.3))).mul(0.35).add(0.65);
   const amp = P.w.mul(WIND3.speed.mul(0.0025).add(0.004)).mul(hn.mul(hn)).mul(gust);
   const sway = vec3(sin(time.mul(1.75).add(ph)).mul(amp), 0, sin(time.mul(1.3).add(ph.mul(1.7))).mul(amp).mul(0.35));
-  m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).add(sway).mul(keep).add(vec3(P.x, P.y, P.z));
-  // (the normals turn with the tree — each its own random turn about its trunk — or every tree was lit from a random side; the
-  // model's own normals otherwise, as authored: lifted toward the sky)
-  const nG = attribute('normal', 'vec3');
-  m.normalNode = negateOnBackSide(varying(transformNormalToView(vec3(nG.x.mul(co).sub(nG.z.mul(si)), nG.y, nG.x.mul(si).add(nG.z.mul(co)))), 'v_treeN').normalize());
-  // (the colour's bytes are sRGB, decoded here: 8-bit LINEAR posterised the dark greens — a conifer's red ~3/255 — into steps)
-  m.colorNode = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), TC.w), sRGBTransferEOTF(TC.xyz), fol).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
-  const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(layer); mesh.userData.cap = cap; return mesh;
+  return vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).add(sway).mul(I.keep).add(vec3(P.x, P.y, P.z));
+}
+const turnN = (I, n) => { const co = cos(I.rot), si = sin(I.rot); return vec3(n.x.mul(co).sub(n.z.mul(si)), n.y, n.x.mul(si).add(n.z.mul(co))); };
+// (snow on what faces up: the surface's own facing — from the screen-space slope of its position, turned toward the eye — so a
+// spray's top whitens and its underside, seen from below, stays green)
+const snowOn = (amount) => {
+  const nf = dFdx(positionWorld).cross(dFdy(positionWorld)).normalize(), n = nf.mul(dot(nf, cameraPosition.sub(positionWorld)).sign());
+  return smoothstep(0.25, 0.75, n.y).mul(SEASON3.snow).mul(amount);
+};
+const SNOW_C = vec3(0.86, 0.89, 0.93);
+// a tier: one draw of geometry `geo` — instanced from attributes holding up to `cap` trees (the CPU tiers: `holes`, [{C (uniform vec2:
+// x, −y), R}], its trees inside are collapsed, another tier's ground; `bare`, a uniform that takes the leaves away), or (gpu: its draw
+// in the GPU forest, wf its crown width a height, kind) the GPU forest's indirect draw of its culled list
+function tierMesh(geo, cap, o = {}) {
+  const { holes = [], side = THREE.FrontSide, layer = 0, bare = null, gpu = null } = o;
+  if (gpu !== null && geo.index) geo = geo.toNonIndexed();   // (the indirect args are a non-indexed draw's)
+  const g = gpu !== null ? new THREE.BufferGeometry() : new THREE.InstancedBufferGeometry(); if (geo.index) g.setIndex(geo.index);
+  for (const k in geo.attributes) g.setAttribute(k, geo.attributes[k]);
+  const I = gpu !== null ? gpuInst(gpu, o.wf, o.kind) : cpuInst(g, cap, holes, bare);
+  if (gpu !== null) FOREST.bind(gpu, g);
+  const mesh = new THREE.Mesh(g, geo.attributes.tf ? cardMaterial(I, o) : plainMaterial(I, geo, side, bare));
+  mesh.frustumCulled = false; mesh.layers.set(layer); mesh.userData.cap = cap; return mesh;
+}
+function plainMaterial(I, geo, side, bare) {   // the mid and far tiers' simple crowns (and the CPU path's)
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, side });
+  const leafy = !!geo.attributes.fol, fol = leafy ? attribute('fol', 'float') : float(1), ao = leafy ? attribute('ao', 'float') : float(1);
+  let p = positionGeometry; if (bare && leafy) p = p.mul(float(1).sub(fol.mul(bare)));
+  m.positionNode = treePlace(I, p);
+  // (the normals turn with the tree — each its own random turn about its trunk — or every tree was lit from a random side)
+  m.normalNode = negateOnBackSide(varying(transformNormalToView(turnN(I, attribute('normal', 'vec3'))), 'v_treeN').normalize());
+  const c = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), I.barkW), I.col, fol);
+  m.colorNode = mix(c, SNOW_C, snowOn(0.55)).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
+  return m;
+}
+// THE NEAR TREES AS CARDS (render3/trees3.js): leaf clusters and needle sprays cut from the foliage atlas by its alpha (in the
+// shadow map too: the sun comes through the gaps), the bark from the bark texture, each tree's colour tinting both; normals bent
+// out of the crown; the light through backlit leaves (MeshSSSNodeMaterial's translucency, sss: how much — hardwood leaves more than
+// needles); the clusters flutter in the wind as the tree sways (not in the shadow map: steady shadows)
+const FOL = (() => {
+  const a = new THREE.CanvasTexture(drawAtlas()), b = new THREE.CanvasTexture(drawBark());
+  for (const t of [a, b]) { t.flipY = false; t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.generateMipmaps = true; t.needsUpdate = true; }
+  b.wrapS = b.wrapT = THREE.RepeatWrapping; return { atlas: a, bark: b };
+})();
+function cardGeo(d) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(d.position, 3)); g.setAttribute('normal', new THREE.BufferAttribute(d.normal, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(d.uv, 2)); g.setAttribute('tf', new THREE.BufferAttribute(d.tf, 4)); g.setAttribute('cr', new THREE.BufferAttribute(d.cr, 1)); return g;
+}
+function cardMaterial(I, { sss = 0, bare = null, kind }) {
+  const m = new THREE.MeshSSSNodeMaterial({ roughness: 0.85, side: THREE.DoubleSide });
+  const TF = attribute('tf', 'vec4'), UV = attribute('uv', 'vec2'), nG = attribute('normal', 'vec3'), cr = attribute('cr', 'float');
+  const fol = TF.x, aoA = TF.y, isCard = TF.z, hard = kind === 'broad';
+  // (the clusters' flutter: a few cm along their normal, faster than the tree's sway, more at a card's far end and in more wind)
+  const flut = sin(time.mul(6.3).add(dot(positionGeometry, vec3(41, 29, 53)))).mul(isCard.mul(UV.x).mul(WIND3.speed.mul(0.0007).add(0.0009)));
+  m.positionNode = treePlace(I, positionGeometry.add(nG.mul(flut)));
+  m.castShadowPositionNode = treePlace(I, positionGeometry);
+  m.normalNode = varying(transformNormalToView(turnN(I, nG)), 'v_cardN').normalize();
+  // a card's leaves on the date: each cluster its own few days — the outer ones (light: higher ao) ahead — in leaf or bare (its
+  // random against the tree's leafiness), its colour; per card, so worked out per vertex
+  let leafy = float(1), leafC = I.leafCol;
+  if (hard && I.leafAt) { const L = I.leafAt(aoA.sub(0.7).mul(8 / 365).add(cr.sub(0.5).mul(6 / 365))); leafy = varying(step(cr, L.F), 'v_leafy'); leafC = varying(L.col, 'v_leafC'); }
+  else if (hard && bare) leafy = float(1).sub(bare);
+  // the atlas tile: the model's; a fir's sprays for the firs; a birch's or aspen's leaves where its bark is white; bare twigs on a
+  // hardwood's card out of leaf
+  let tile = TF.w.add(I.fir.mul(step(TF.w, 0.5)).mul(TILE.FIR - TILE.SPRUCE));
+  if (hard) tile = mix(float(TILE.TWIGS), tile.add(I.birch), leafy);
+  const uvA = vec2(tile.mod(ATLAS.COLS).add(UV.x).div(ATLAS.COLS), tile.div(ATLAS.COLS).floor().add(UV.y).div(ATLAS.ROWS));
+  const tx = texture(FOL.atlas, uvA);
+  // (the alpha raised with the mip level — Ben Golus's fix: mipmapped alpha averages a cluster's gaps away, the crowns thinned to
+  // nothing with distance)
+  const px = uvA.mul(vec2(ATLAS.COLS * ATLAS.T, ATLAS.ROWS * ATLAS.T)), dx = dFdx(px), dy = dFdy(px);
+  const lod = log2(tmax(dot(dx, dx), dot(dy, dy)).max(1e-8)).mul(0.5).max(0);
+  m.maskNode = isCard.lessThan(0.5).or(tx.a.mul(lod.mul(0.25).add(1)).greaterThan(0.5));
+  const foliage = mix(I.twig, leafC, leafy);
+  const leaf = mix(foliage.mul(0.8), foliage.mul(tx.rgb).mul(1.4), isCard);   // (the solid heart of a spire: its colour, darker)
+  const bk = texture(FOL.bark, vec2(UV.x.mul(2), UV.y.mul(I.P.w).div(2.5))), barkL = mix(bk.r.mul(1.7), bk.g.mul(1.05), I.birch);
+  const barkC = mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), I.barkW).mul(barkL);
+  m.colorNode = mix(mix(barkC, leaf, fol), SNOW_C, snowOn(hard ? leafy.oneMinus().mul(0.25).add(0.35) : float(0.8))).mul(aoA.mul(0.5).add(0.5));
+  if (sss > 0) {   // (the light through the leaves: DICE's fast translucency, seen against the sun)
+    m.thicknessColorNode = leaf.mul(fol.mul(isCard).mul(leafy).mul(sss)); m.thicknessDistortionNode = float(0.2); m.thicknessAmbientNode = float(0);
+    m.thicknessAttenuationNode = float(0.2); m.thicknessPowerNode = float(3); m.thicknessScaleNode = float(4);
+  }
+  return m;
 }
 const camHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(DET_R) }, viewHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(TREE_R) }, bareU = uniform(0);
-const TIERS = {
+const TIERS = FOREST ? {
+  spire: tierMesh(cardGeo(spireCards()), 0, { gpu: 0, wf: 0.33, kind: 'conifer', sss: 0.3, layer: NEAR_LAYER }),
+  pine: tierMesh(cardGeo(pineCards()), 0, { gpu: 1, wf: 0.5, kind: 'conifer', sss: 0.35, layer: NEAR_LAYER }),
+  hard: tierMesh(cardGeo(hardCards()), 0, { gpu: 2, wf: 0.65, kind: 'broad', sss: 0.7, layer: NEAR_LAYER }),
+  spireLite: tierMesh(cardGeo(spireCards({ lite: true })), 0, { gpu: 7, wf: 0.33, kind: 'conifer', sss: 0.3, layer: NEAR_LAYER }),
+  pineLite: tierMesh(cardGeo(pineCards({ lite: true })), 0, { gpu: 8, wf: 0.5, kind: 'conifer', sss: 0.35, layer: NEAR_LAYER }),
+  hardLite: tierMesh(cardGeo(hardCards({ lite: true })), 0, { gpu: 9, wf: 0.65, kind: 'broad', sss: 0.7, layer: NEAR_LAYER }),
+  midConifer: tierMesh(coniferG, 0, { gpu: 3, wf: 0.35, kind: 'conifer' }),
+  midBroad: tierMesh(broadG, 0, { gpu: 4, wf: 0.65, kind: 'broad' }),
+  mirrorConifer: tierMesh(coniferG, 0, { gpu: 10, wf: 0.35, kind: 'conifer', layer: MIRROR_LAYER }),
+  mirrorBroad: tierMesh(broadG, 0, { gpu: 11, wf: 0.65, kind: 'broad', layer: MIRROR_LAYER }),
+} : {
   midConifer: tierMesh(coniferG, WORLD_TRUE ? Math.min(TREES.conifer.n, 200000) : TREES.conifer.n, { holes: [camHole] }),
   midBroad: tierMesh(broadG, WORLD_TRUE ? Math.min(TREES.broad.n, 200000) : TREES.broad.n, { holes: [camHole] }),
-  spire: tierMesh(spireG(), 20000, { side: THREE.DoubleSide }),
-  pine: tierMesh(pineG(), 8000, { side: THREE.DoubleSide }),
-  hard: tierMesh(hardG(), 20000, { side: THREE.DoubleSide, bare: bareU }),
+  spire: tierMesh(cardGeo(spireCards()), 20000, { sss: 0.3, kind: 'conifer' }),
+  pine: tierMesh(cardGeo(pineCards()), 8000, { sss: 0.35, kind: 'conifer' }),
+  hard: tierMesh(cardGeo(hardCards()), 20000, { bare: bareU, sss: 0.7, kind: 'broad' }),
 };
+if (FOREST) { camera.layers.enable(NEAR_LAYER); MIRROR_CAM.layers.enable(MIRROR_LAYER); }
 if (WORLD_TRUE) {
-  TIERS.farConifer = tierMesh(new THREE.ConeGeometry(0.4, 0.85, 6, 1, true).translate(0, 0.575, 0), TREES.conifer.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
-  TIERS.farBroad = tierMesh(new THREE.OctahedronGeometry(0.36, 0).scale(1, 0.8, 1).translate(0, 0.62, 0), TREES.broad.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
+  const farC = new THREE.ConeGeometry(0.4, 0.85, 6, 1, true).translate(0, 0.575, 0), farB = new THREE.OctahedronGeometry(0.36, 0).scale(1, 0.8, 1).translate(0, 0.62, 0);
+  TIERS.farConifer = FOREST ? tierMesh(farC, 0, { gpu: 5, wf: 0.35, kind: 'conifer', layer: PLANT_LAYER }) : tierMesh(farC, TREES.conifer.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
+  TIERS.farBroad = FOREST ? tierMesh(farB, 0, { gpu: 6, wf: 0.65, kind: 'broad', layer: PLANT_LAYER }) : tierMesh(farB, TREES.broad.n, { holes: [viewHole, camHole], layer: PLANT_LAYER });
 }
-const PINE_H = 21;   // m: conifers this tall drawn as white pines near the camera (the canopy's emergent pines; spruce and fir are 12–20 m)
+// the GPU forest's trees: each one's place, height, turn and kind (0 spruce, 1 balsam fir — one conifer in three, 2 maple, aspen and
+// the rest, 3 birch — one hardwood in six, as putTree's); again when the land's height changes (its ground)
+function fillForest() {
+  const kl = kLand(), c = TREES.conifer, b = TREES.broad;
+  FOREST.fill((i, tp, tw) => {
+    const T = i < c.n ? c : b, j = i < c.n ? i : i - c.n, k = T.k[j], o = i * 4;
+    tp[o] = T.x[j]; tp[o + 1] = landY(T.el[j], T.lv[j]) - 0.05 * kl; tp[o + 2] = -T.y[j]; tp[o + 3] = T.H[j];
+    tw[o] = T.rot[j]; tw[o + 1] = k; tw[o + 2] = T === c ? (((k * 7919 * 5) % 1) < 0.35 ? 1 : 0) : (((k * 7919 * 3) % 1) < 0.18 ? 3 : 2); tw[o + 3] = (k * 104729.17) % 1;
+  });
+  FOREST.kl = kl;
+}
 // one tree into a tier's slot j
 function putTree(mesh, j, T, i, kind, wf) {
   const g = mesh.geometry, tp = g.attributes.tp.array, tw = g.attributes.tw.array, tc = g.attributes.tc.array, c = putTree.c || (putTree.c = C(0));
@@ -659,7 +750,7 @@ function putTree(mesh, j, T, i, kind, wf) {
   tw[j * 2] = H * wf * (0.85 + k * 0.3) * (bare && wf === 0.65 ? 0.8 : 1); tw[j * 2 + 1] = T.rot[i];
   c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36).convertLinearToSRGB();   // (sRGB bytes: tierMesh decodes)
   tc[j * 4] = Math.min(255, Math.round(c.r * 255)); tc[j * 4 + 1] = Math.min(255, Math.round(c.g * 255)); tc[j * 4 + 2] = Math.min(255, Math.round(c.b * 255));
-  tc[j * 4 + 3] = kind === 'broad' && ((k * 7919 * 3) % 1) < 0.18 ? 230 : kind === 'broad' ? 18 : 8;   // (a birch in six: white bark; the rest dark)
+  tc[j * 4 + 3] = kind === 'broad' ? (((k * 7919 * 3) % 1) < 0.18 ? 230 : 18) : ((k * 7919 * 5) % 1) < 0.35 ? 40 : 8;   // (a birch in six: white bark, the rest dark; a balsam fir in three conifers — paler bark, its own sprays — the rest spruce)
 }
 function tierDone(mesh, n) { const g = mesh.geometry; g.instanceCount = n; g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true; }
 // the trees of a store within R of (x, y) by its tiles: fn(i) for each. ragged: each tree within its own RAG × R (0.75–1.25 by its
@@ -676,7 +767,7 @@ function treesNear(T, x, y, R, fn, ragged = false) {
   }
 }
 function placeFarForest() {   // every tree in the far tier (the true world): on a change of the land's height or the season
-  if (!TIERS.farConifer) return;
+  if (!TIERS.farConifer || FOREST) return;
   for (const [kind, mesh] of [['conifer', TIERS.farConifer], ['broad', TIERS.farBroad]]) { const T = TREES[kind], wf = kind === 'conifer' ? 0.35 : 0.65; for (let i = 0; i < T.n; i++) putTree(mesh, i, T, i, kind, wf); tierDone(mesh, T.n); }
 }
 let treeAt = null, detAt = null;   // (where the mid tier was picked about — the view's target — and the near tier — the camera)
@@ -688,6 +779,7 @@ function placeNearTrees() {   // the near tier about the camera, and the hole th
   tierDone(TIERS.spire, ns); tierDone(TIERS.pine, np); tierDone(TIERS.hard, nh);
 }
 function placeTrees(treesOnly = false) {   // the mid tier about where the view looks (each tree's place, size and colour), then the near
+  if (FOREST) { if (!treesOnly) { if (FOREST.kl !== kLand()) fillForest(); placeShrubs(); } return; }   // (the GPU forest: its trees' ground on a new land height; the rest is the shader's)
   const tx = rig.goal.target.x, ty = -rig.goal.target.z; treeAt = [tx, ty]; viewHole.C.value.set(tx, -ty); bareU.value = S.season === 'winter' ? 1 : 0;
   if (!treesOnly) placeFarForest();
   for (const [kind, mesh] of [['conifer', TIERS.midConifer], ['broad', TIERS.midBroad]]) {
@@ -777,11 +869,18 @@ function styleSky() {   // (the haze's colour follows the sky's horizon each fra
 const hemi = new THREE.HemisphereLight(0xc9dcec, 0x4d4a34, 0.9); scene.add(hemi);
 const skyDim = skyDimNode();   // the sky dome's brightness (night → dark)
 const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-260, 420, 300); scene.add(sun, sun.target);
+// (the shadow map sees layer 0 and the near trees' leaf cards — its own list: else it borrowed the layers of whichever camera drew first,
+// the mirror's some frames, and the near trees cast no shadow then; and it is drawn every other frame — the trees' sway in it at 30 Hz,
+// half its cost)
+if (FOREST) sun.shadow.camera.layers.enable(NEAR_LAYER);
+sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true;
 // THE SUN'S SHADOWS: one map that follows where the view looks, sized to how far out it looks (the near and mid trees, the camps and
 // their docks, the animals, the rocks cast; the ground, the trees and the camps take them) — soft-edged (PCF)
+// (2048 texels a side: 4–10 cm a texel close up, ~0.9 m from the highest view. 4096 cost ~9 ms more a frame among the near trees'
+// leaf cards — the map's fill is its texels × the crowns' overdraw, whatever its reach — for detail no one could see)
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.shadow.camera.near = 1; sun.shadow.camera.far = 6000;
-const SHADOW = { R: 0, d: new THREE.Vector3() };
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.shadow.camera.near = 1; sun.shadow.camera.far = 6000;
+const SHADOW = { R: 0, d: new THREE.Vector3(), on: true };
 // AFTER THE SCENE (post-processing): ambient occlusion — the crowns' undersides, where trunks meet the ground, a camp's eaves and the
 // gaps between its logs darken as the sky's light can't reach them (GTAO, half resolution, a few metres' reach) — and a soft bloom on
 // what is brighter than white: the sun on the water, its disc, the lit windows at night. Plain rendering if it can't be built.
@@ -795,7 +894,7 @@ function makePost() {
     aoN.resolutionScale = 0.5; aoN.radius.value = 2.5; aoN.thickness.value = 2.5; aoN.distanceFallOff.value = 1;
     const lit = vec4(col.rgb.mul(aoN.getTextureNode().r.mul(0.85).add(0.15)), col.a);   // (never quite black: the sky's light scatters in)
     // (the bloom only on what is much brighter than the sky — the sun, its glints, lamps: the physical sky is itself above white)
-    const pp = new THREE.RenderPipeline(renderer); pp.outputColorTransform = false; pp.outputNode = fxaa(renderOutput(lit.add(bloom(lit, 0.16, 0.35, 2.2)))); return pp;
+    const pp = new THREE.RenderPipeline(renderer); pp.outputColorTransform = false; pp.outputNode = fxaa(renderOutput(lit.add(bloom(lit, 0.08, 0.3, 6))));   // (the human, 2026-10-23: "the light glare is too much" — a bloom from 2.2 washed the low sun's side of the view white) return pp;
   } catch (e) { console.warn('no post-processing:', e); return null; }
 }
 function placeShadow(dir) {   // the shadow map's square about the view's target, R m each way; the light 2 km back along the sun
@@ -1028,7 +1127,7 @@ function applyLook() {
   styleWater(); legend();
 }
 function applySeason() {   // (S.season: the leaves; S.snow: the land under snow)
-  U.snow.value = S.snow ? 1 : 0; U.fallTint.value = S.season === 'fall' ? 1 : 0; U.springTint.value = S.season === 'spring' ? 1 : 0; U.bareTint.value = S.season === 'winter' ? 1 : 0;
+  U.snow.value = S.snow ? 1 : 0; SEASON3.snow.value = S.snow ? 1 : 0; U.fallTint.value = S.season === 'fall' ? 1 : 0; U.springTint.value = S.season === 'spring' ? 1 : 0; U.bareTint.value = S.season === 'winter' ? 1 : 0;
   for (const b of $('seasons').children) b.setAttribute('aria-pressed', String(b.dataset.season === S.season && (S.season !== 'winter' || S.snow)));
   colourGround(); colourTrees(); placeTrees(); styleWater(); styleSky(); legend(); campsView.setSeason(S.season, S.snow);
 }
@@ -1070,7 +1169,7 @@ $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; for (
 const applyMirror = () => { for (const m of [TIERS.farConifer, TIERS.farBroad]) if (m) { if ($('t-mirror').checked) m.layers.enable(0); else m.layers.disable(0); } };
 $('t-mirror').addEventListener('change', applyMirror); applyMirror();
 // (the sun's shadows, the AO and the bloom together: off, plain rendering — a slow machine's choice)
-$('t-post').addEventListener('change', e => { S.post = e.target.checked; renderer.shadowMap.enabled = S.post; });
+$('t-post').addEventListener('change', e => { S.post = e.target.checked; });   // (the shadows fade with it: lightByDay)
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 $('t-camps').addEventListener('change', e => { S.camps = e.target.checked; campsView.group.visible = S.camps; });
@@ -1112,15 +1211,8 @@ $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle(
 // ---------- the live water model and its clock ----------
 // THE SIM runs in a Worker (render3/sim3worker.js): each frame the view sends the time passed — only once the last reply is in —
 // and draws the latest snapshot meanwhile. W3: the water grid's geometry, for the cut-away's and the ice's lookups
-const LIVE = { tNow: 0, worker: null, snap: null, waiting: false, dtAcc: 0, rate: 1, lastT: 0, lastW: 0, run: true, speed: 1, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0, field: null, fieldShow: 'plain' };
+const LIVE = { frames: 0, tNow: 0, worker: null, snap: null, waiting: false, dtAcc: 0, rate: 1, lastT: 0, lastW: 0, run: true, speed: 1, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0, field: null, fieldShow: 'plain' };
 const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, late July, early Oct, Feb)
-// THE LEAVES BY THE DATE, THE SNOW BY THE ICE (the seasons went by calendar quarter: from March 1 to ice-out the land lost its snow
-// and the hardwoods leafed out beside a frozen lake; fall colours from September 1; snow from December 1, frozen or not). A Maine
-// year (yf 0 = March 1): leaf-out about May 15, full summer green by June 10, the colours turning from about Sept 20 (peak early to
-// mid October), bare by November 1. The snow on the land comes and goes with the sim's ice (iceShare: the share of its water
-// columns frozen; on past half, off below a quarter)
-const LEAF = { out: 75 / 365, full: 101 / 365, turn: 203 / 365, off: 245 / 365 };
-const seasonOf = yf => yf < LEAF.out || yf >= LEAF.off ? 'winter' : yf < LEAF.full ? 'spring' : yf < LEAF.turn ? 'summer' : 'fall';
 const iceShare = ice => { let n = 0; for (let i = 0; i < ice.length; i++) if (ice[i] > 0.5) n++; return n / Math.max(1, ice.length); };
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 const MDAYS = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28];
@@ -1149,8 +1241,11 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
   if (LIVE.under && S.clear) hemi.intensity *= 2.2;   // (under water, seeing into it: a fill light for watching — tea water is dim)
   // (the sun's light comes from where the sky draws it: sky3.js, for the date and hour; below the horizon it holds just above it — the
   // light's intensity is the sim's own day, which dims it)
+  SEASON3.yf.value = e.yf;   // (the GPU forest's leaves: the date)
   const d = SKY.update(e.yf, e.t, e.weather, camera); placeShadow(SHADOW.d.set(d.x, Math.max(0.03, d.y), d.z));
-  sun.castShadow = S.post && d.y > 0.02 && day > 0.05;   // (no shadows from a sun below the horizon)
+  // (no shadows from a sun below the horizon, or with "Shadows and soft light" off: faded out and not redrawn — never castShadow off:
+  // three disposed the map then, and the materials still sampling it broke their pipelines for good, a black view)
+  SHADOW.on = S.post && d.y > 0.02 && day > 0.05; sun.shadow.intensity = SHADOW.on ? 1 : 0;
   FOG_DAY.copy(SKY.haze); scene.environmentIntensity = 0.12 + 0.45 * day;
   WIND3.speed.value += ((e.windSpeed || 0) - WIND3.speed.value) * 0.02;
   skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover); airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value); AIR.col.value.copy(airFog.color);   // (the haze dims with the sky)
@@ -1187,7 +1282,7 @@ function worldLink() {   // (the page is written for the true-size lakes, the de
 // ---------- frame ----------
 // (the pixel ratio too: a browser zoom or another monitor changes it — the view was left blurry or oversampled; a move between
 // monitors fires no resize, so the ratio's own media query is watched as well)
-function resize() { const w = innerWidth, h = innerHeight; renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+function resize() { const w = innerWidth, h = innerHeight; renderer.setPixelRatio(DYN.steps[DYN.i]); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
 (function watchDpr() { matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener('change', () => { resize(); watchDpr(); }, { once: true }); })();
 let last = performance.now(), fps = 60, nFrames = 0; const UW_DIR = new THREE.Vector3(), SUN4 = [0, 1, 0, 0];
@@ -1210,7 +1305,7 @@ async function start() {
   LIVE.worker.onmessageerror = ev => { simFailed('a message from it could not be read'); console.error(ev); };
   placeGround(); campsView.place(); applyLook(); liveUI(); applySeason(); buildSection();
   { // who casts the sun's shadows and who takes them (the far trees' tiers and the skirt neither: too many and too far)
-    const cast = [TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, shrubMesh, rockMesh], take = [band, farMesh, TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, shrubMesh, rockMesh];
+    const cast = [TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, TIERS.spireLite, TIERS.pineLite, TIERS.hardLite, shrubMesh, rockMesh], take = [band, farMesh, TIERS.midConifer, TIERS.midBroad, TIERS.spire, TIERS.pine, TIERS.hard, TIERS.spireLite, TIERS.pineLite, TIERS.hardLite, shrubMesh, rockMesh];
     for (const m of cast) if (m) m.castShadow = true; for (const m of take) if (m) m.receiveShadow = true;
     for (const g of [campsView.group, wildView.group]) g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   }
@@ -1256,10 +1351,30 @@ async function start() {
     scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
     $('uw').hidden = !under;
     $('needle').setAttribute('transform', `rotate(${(rig.yaw * 180 / Math.PI).toFixed(1)})`);
+    // (the trees in view, by tier — from the third frame: a cull before the first frames' lights and shadow maps were built once
+    // left a shadow node without its map, its pipelines broken for good)
+    if (FOREST && TIERS.spire.visible && ++LIVE.frames > 2) FOREST.update(renderer, camera, SHADOW.on ? { x: sun.target.position.x, z: sun.target.position.z, R: SHADOW.R } : null);
+    sun.shadow.needsUpdate = SHADOW.on && (nFrames & 1) === 0;
     if (POST && S.post) POST.render(); else renderer.render(scene, camera);
+    dynRes(now);
     placeLabels(innerWidth, innerHeight);
-    if ((nFrames++ & 15) === 0 && !LIVE.failed) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + (LIVE.snap.nyAll ?? LIVE.snap.ny).toLocaleString() + ' schools of young' + (WORLD_TRUE ? ` · ${LIVE.snap.nf.toLocaleString()} drawn near the view` : '') + (LIVE.snap.gpu ? ' · fast-forward on the GPU' : '') : 'starting the lakes…' + (LIVE.progress ? ' ' + LIVE.progress : '')}`;
+    if ((nFrames++ & 15) === 0 && !LIVE.failed) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps${DYN.i ? ` (${Math.round(100 * DYN.steps[DYN.i] / DYN.steps[0])} % res)` : ''} · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + (LIVE.snap.nyAll ?? LIVE.snap.ny).toLocaleString() + ' schools of young' + (WORLD_TRUE ? ` · ${LIVE.snap.nf.toLocaleString()} drawn near the view` : '') + (LIVE.snap.gpu ? ' · fast-forward on the GPU' : '') : 'starting the lakes…' + (LIVE.progress ? ' ' + LIVE.progress : '')}`;
   });
 }
+function dynRes(now) {   // (every half second: the last frame's GPU time, smoothed; a step down after a second over, up after 3 s under)
+  if (DYN.busy || now - DYN.t < 500 || !renderer.backend?.trackTimestamp || /[?&]res=full/.test(location.search)) return;   // (?res=full: held at the device's)
+  DYN.t = now; DYN.busy = true;
+  renderer.resolveTimestampsAsync('render').then(g => {
+    DYN.busy = false; if (!(g > 0)) return;
+    DYN.gpu = DYN.gpu ? DYN.gpu * 0.6 + g * 0.4 : g;
+    const i = DYN.i, up = i > 0 ? DYN.gpu * (DYN.steps[i - 1] / DYN.steps[i]) ** 2 : Infinity;   // (the frame at the next step up)
+    // (only when the GPU is what holds the frame back: a screen or a remote desktop showing 30 frames a second clocks the GPU down and
+    // its frames take longer — dropping the pixels then bought nothing)
+    const frameMs = 1000 / Math.max(1, fps);
+    DYN.hi = DYN.gpu > 14.5 && DYN.gpu > 0.8 * frameMs ? DYN.hi + 1 : 0; DYN.lo = up < 12 || up < 0.6 * frameMs ? DYN.lo + 1 : 0;
+    let j = i; if (DYN.hi >= 2 && i < DYN.steps.length - 1) j = i + 1; else if (DYN.lo >= 6 && i > 0) j = i - 1;
+    if (j !== i) { DYN.i = j; DYN.hi = DYN.lo = 0; resize(); }
+  }).catch(() => { DYN.busy = false; });
+}
 start().catch(e => { $('busy').classList.remove('done'); busyFail(e.message); console.error(e); });
-window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, wildView, shallowsView, campsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
+window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, sun, DYN, post: { get: () => POST, set: p => { POST = p; } }, fishView, plantsView, risesView, bedView, wildView, shallowsView, campsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };
