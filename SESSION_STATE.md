@@ -202,6 +202,11 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-23 ~08:45, BEFORE A COMPACTION — THE NEWEST). ALSO DONE: e6f689c — the picked fish's card couldn't be closed (onSel rebuilt the
+× every snapshot, so clicks were lost); now built once. The human's "preview is slow": the Browser pane runs WebGL2 (no WebGPU adapter) and is
+throttled to ~1 fps when hidden; in their Chrome the view runs WebGPU at 65 fps — use Chrome (http://localhost:8000/w3.html, ?world=true for the
+true lakes; the reef server is running on :8000). In the hidden pane the picked fish's card never fills (the worker's sel doesn't come back there —
+the same before the fix; it works in Chrome). Everything else as below.
 ▶▶▶ RESUME HERE (2026-10-23 ~08:20, BEFORE A COMPACTION — THE NEWEST). IN FLIGHT: (1) ARM AN on the GPU (task bpsw5kq1e; snap_an :8155,
 queue_an.sh → scratchpad/r22AN_611.txt then r22AN_613.txt; read with node scratchpad/yrsum.mjs <file> and the white perch young's lengths by
 period: awk on '^== day' + '^   whiteperch ' lines, as for AM) — the test of Y4b (white perch at the bed from 2.0 cm): do their young pass 2.5 cm
