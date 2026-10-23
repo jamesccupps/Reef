@@ -202,6 +202,11 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-23, later — THE NEWEST). wpdeath (FINDINGS d86bc9a): the founding white perch eaten by bass (Z 2.4/yr by Sept), pickerel 0.9,
+fallfish 0.8 — the predators' demand (~15 kg/ha/yr of fish) met from the standing stock without recruitment; Y4's fewer young leave the bass more yearlings.
+WAITING: ywp3 on the TRUE lakes (occ-server, ~2.5 h more → scratchpad/probe/ywp3_true.txt) — why the true lakes' young stall (early alewife larvae
+150–500k/ha on both scales vs the field's sparse ~600–13,000/ha; late-summer alewife ~5,800/ha matches CT). Then decide: the alewife larvae's density
+(their egg → swim-up; their fecundity × the run), and what makes the true lakes differ.
 ▶▶▶ RESUME HERE (2026-10-23 — THE NEWEST). ARM AM DONE (FINDINGS): 79 → 43/56 → 24/38 kg/ha; recruits broad (bullhead, perch, fallfish, redbreast,
 bass) but WHITE PERCH ~120 recruits and 1.5–3.0 kg/ha by year 2 — the founding stock eaten (57 % in 112 days, Z ~2.7/yr vs a stable stock's adults
 ~0.4–0.7) and the young stalling on the TRUE lakes in year 1 (1.6 cm in Sept) though the 1/10 reach 37 mm. The GPU is free (AM done). RUNNING:
