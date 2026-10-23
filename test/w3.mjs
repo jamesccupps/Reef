@@ -491,7 +491,18 @@ if (run('core')) {
     const dN = Math.abs(tot(B.c1) - tot(A.c1)) / tot(A.c1), dKg = Math.abs(kgOf(B.c1) - kgOf(A.c1)) / kgOf(A.c1);
     check('shards: the fish split by water (Upper and the brook; Lower) found as one, keep the lakes as one run does (fish and biomass within 2 %), hand over the fish that cross, leave none in another\'s water, and repeat a run exactly',
       sameFound && dN < 0.02 && dKg < 0.02 && B.F.handed > 0 && !wrong && !dup && B.fp === B2.fp,
-      `founding ${sameFound ? 'the same' : 'DIFFERS'}; fish ${tot(A.c1).toFixed(0)} one / ${tot(B.c1).toFixed(0)} sharded, ${kgOf(A.c1).toFixed(1)} / ${kgOf(B.c1).toFixed(1)} kg/ha; handed over ${B.F.handed}; in another's water ${wrong}, duplicate ids ${dup}; repeats ${B.fp === B2.fp}`); }
+      `founding ${sameFound ? 'the same' : 'DIFFERS'}; fish ${tot(A.c1).toFixed(0)} one / ${tot(B.c1).toFixed(0)} sharded, ${kgOf(A.c1).toFixed(1)} / ${kgOf(B.c1).toFixed(1)} kg/ha; handed over ${B.F.handed}; in another's water ${wrong}, duplicate ids ${dup};repeats ${B.fp === B2.fp}`); }
+  // …and in their WORKERS (render3/shard3worker.js, the page's own code, on Node threads: tools/w3_shard_host.mjs): they start on the
+  // shared water and step it as one thread does (a stray comment once swallowed their start, and the true world without a GPU never opened)
+  { const { ShardPool } = await import('../src/w3/shardpool3.js'); const { nodeShardSpawner } = await import('../tools/w3_shard_host.mjs');
+    const { getRandState, setRandState } = await import('../src/core.js');
+    seed(611); const st0 = getRandState(), nOf = F => F.cnt.reduce((a, v) => a + v, 0);
+    setRandState(st0); const e1 = new Env3({ yf0: 0.4 }), F1 = new Fish3(e1, { young: true }); for (let b = 0; b < 3; b++) { F1.step(1752); e1.step(1752); }
+    setRandState(st0); const e2 = new Env3({ yf0: 0.4 }); let P = null, err = '', n2 = 0;
+    try { P = await ShardPool.start(e2, 2, st0, nodeShardSpawner('?r5=0')); for (let b = 0; b < 3; b++) { await P.step(1752); e2.step(1752); P.envStepped(); } n2 = P.count(); } catch (x) { err = String(x.message || x).split('\n')[0]; }
+    P?.stop(); const n1 = nOf(F1), d = Math.abs(n2 - n1) / n1;
+    check('shards in workers: the two shard workers start on the shared water and keep the lakes as one thread does (fish within 10 %)', !err && d < 0.1,
+      err ? `failed: ${err}` : `fish ${n1.toFixed(0)} one thread / ${n2.toFixed(0)} in 2 workers (${(100 * d).toFixed(1)} %), handed over ${P.handed}`); }
 }
 
 // ============================================================

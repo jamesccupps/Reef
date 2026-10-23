@@ -3,10 +3,11 @@
 // Each mode starts from the same random state, runs the founding (with the season's young), one warm-up block, then `blocks`
 // 29-min blocks with the water stepped after each; prints the seconds a block and the fish at the end.
 const R = new URL('../src/', import.meta.url).href;
-const { Env3 } = await import(R + 'w3/env3.js'); const { Fish3, KEYS3 } = await import(R + 'w3/fish3.js');
+const { Env3 } = await import(R + 'w3/env3.js'); const { Fish3, KEYS3, stageR5 } = await import(R + 'w3/fish3.js');
 const { ShardPool } = await import(R + 'w3/shardpool3.js'); const { seed, getRandState, setRandState } = await import(R + 'core.js');
 const { nodeShardSpawner } = await import('./w3_shard_host.mjs');
 const N = +(process.argv[2] || 4), yf0 = +(process.argv[3] || 0.4), B = 1752;
+stageR5(process.env.R5 !== '0');   // (the whole model, as the shards' workers apply it — render3/world3sel R5; R5=0 the base, with ?r5=0 for them)
 seed(611); const st0 = getRandState();
 { // one thread
   setRandState(st0); const e = new Env3({ yf0 }), F = new Fish3(e, { young: true });
@@ -16,7 +17,7 @@ seed(611); const st0 = getRandState();
 }
 { // shards
   setRandState(st0); const e = new Env3({ yf0 });
-  const P = await ShardPool.start(e, 2, st0, nodeShardSpawner(process.env.HB_WORLD === 'true' ? '?world=true' : ''));
+  const P = await ShardPool.start(e, 2, st0, nodeShardSpawner((process.env.HB_WORLD === 'true' ? '?world=true' : '?') + (process.env.R5 === '0' ? '&r5=0' : '')));
   await P.step(B); e.step(B); P.envStepped();
   const t = performance.now(); for (let i = 0; i < N; i++) { await P.step(B); e.step(B); P.envStepped(); }
   const s = (performance.now() - t) / 1000 / N;

@@ -50,6 +50,7 @@ export function scalarsOf(root) {
       for (let i = 0; i < o.length; i++) { const v = o[i]; if (v !== null && typeof v === 'object') walk(v, path + '/' + i); else if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') out.push([path + '/' + i, v]); } return; }
     for (const k of Object.keys(o)) {
       if (k === 'G') continue;   // (the columns' geometry, wherever it is held: static)
+      if (Object.getOwnPropertyDescriptor(o, k).get) continue;   // (a getter is derived — chem3's inflows' `in` — not state, and can't be set)
       const v = o[k], p = path + '/' + k;
       if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') out.push([p, v]);
       else if (v && typeof v === 'object') walk(v, p);

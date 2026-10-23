@@ -18,7 +18,8 @@ onmessage = ev => {
   const m = ev.data;
   try {
     if (m.type === 'init') {
-      me = m.me; stageR5(R5); setRandState(m.st0); env = new Env3();   // (the whole model, as the sim's worker: world3sel R5) const missed = adoptArrays(env, m.arrays); setScalars(env, m.scalars);
+      me = m.me; stageR5(R5); setRandState(m.st0); env = new Env3();   // (the whole model, as the sim's worker: world3sel R5)
+      const missed = adoptArrays(env, m.arrays); setScalars(env, m.scalars);
       const stF = getRandState(); F = new Fish3(env, { young: true });   // (the founding as one worker's, the same draws)
       F.setShard(me, waterOwners(env.G), shardBudgetHa(me)); F.nextId += me * ID_STRIDE; setRandState(shardSeed(stF, me)); remember(F, true);
       reply({ type: 'ready', me, missed, ...couplings() });
