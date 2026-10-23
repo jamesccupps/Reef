@@ -202,7 +202,55 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~08:45, BEFORE A COMPACTION — THE NEWEST). ALSO DONE: e6f689c — the picked fish's card couldn't be closed (onSel rebuilt the
+▶▶▶ RESUME HERE (2026-10-23 ~10:45 EDT — THE NEWEST). THE GRAPHICS/UI REVIEW IS COMMITTED AND PUSHED: f69d2ed (sim: the true lakes found
+in 10 s — zFish tabulated; the February jump's stack overflow; young 'handed'), 324125a (fish/data/weeds view), ef60e2e (wildlife/shallows; the
+9-vertex-buffer parts), 9d6d566 (main view: TRUE LAKES THE DEFAULT — w3.html; ?world=small the 1/10 world; the water's Fresnel + haze; the
+horizon skirt with a canopy; haze 0.0007 → 0.00045/m; "Mirror the far shore" toggle, off; the camera/UI fixes). Gate (gate_review.txt):
+140 PASS, 1 FAIL (the env update timing 15.79 ms vs 15.6 — re-run alone 15.49 PASS, env 22/0), 1 GAP. NOTE: that env-update timing has crept
+from 11.4 ms to ~15.5 ms (E12b weeds?) and now flips with occ-server's load — worth a look or a justified threshold. The human's choices made:
+true size default, mirror toggle default off, less haze. GPU testing PAUSED by the human (arm AN stopped at day 84) — ask before resuming.
+FOLLOW-UPS: the far land's edge still faint where the drawn trees end (trees on the skirt, or a canopy texture); the band mesh holds bed + near
+land, so the bed is still in the mirror pass (split its index); in the aerial-photo look the skirt uses map colours (soft seam); arrivals still
+pop in (boats, birds, mammals); loons/mergansers leaving vanish underwater; the crown grid's first-flight hitch; snow on land follows the lakes'
+ice (a land snowpack from the sim would be better).
+▶▶▶ UPDATE (2026-10-23 ~11:30): THE HUMAN: "why are you doing all this in the 1/10 scale? i thought we were working on the full scale" —
+plain w3.html still opens the 1/10 world; verify on ?world=true from now on (offered: make the true world the default). All three fix agents
+done; GATE gate_review.txt RUNNING on occ-server (task b5gbmv3q0; the tree as of ~11:00). Since its sync (not in it — main3/plants3view/
+wild3kit/fish3 edits): wild3kit packs 'sy' into iD.w (a WebGPU pipeline takes 8 vertex buffers: every water-dimmed animal part FAILED to draw
+in WebGPU since 744412c); fish3 _spinYoy `Math.min(...made)` → a loop (the true lakes' jump to February threw RangeError — old); 'Dive in'
+moved to the West cove's ~2 m margin looking up the slope (was over Upper's 5.5-m mud); "jumping to <date>…" while a jump runs (~20 s true);
+the skirt's winter colour/mottle matched; the mussels in their life position (on edge, 2/3 buried, tilted up, olive-brown). Verified in Chrome
+on the true world: May/February/night, Dive in, West cove, the brook, Find. KNOWN, for the human: the far land's rectangle still faint (most in
+winter: the drawn trees end there); the far shore isn't mirrored (far tree tiers off the reflection: +30 % GPU to add them); the air's haze.
+▶▶▶ UPDATE (2026-10-23 ~10:45): COMMITTED c472993 (the shard workers start again + gate check) and c7eb668 (Y4b alone; its gate 140/0/1 GAP).
+IN THE TREE (uncommitted, verified in Chrome, gate pending): the fish/data agent's fixes (tail phase on the CPU, Uint32 ids — also
+tools/gpu/g3_worker.js, per-member bed depth, the worker's message queue, picking only drawn fish, Graphs scroll kept, update ranges, the card
+at 4 Hz, broods' headings, leaps expire, the gone-card wording, nearest-first caps, a coarse fish LOD); the main-view agent's (ice and fog by
+daylight, camera bounds + far-land ground, seasons by leaf date and the sim's ice, Jump-to without flashes, touch, the short way round, one
+follow owner — data3 following/unfollow, labels cached + outlined, the underside fogged, rises over the water, the cut-away depth per column,
+worker errors kept, pixel ratio, tree normals rotated, sRGB tree colours, the fish card beside #ctl, real dt to the worker + 'running at' at
+every speed, the fish and their shadows off the mirror, a HORIZON SKIRT, the brook and West cove views clear of the trees, plurals); mine on
+top: fish3 _spinYoy's zFish TABULATED (the true world's founding 174 s → 10 s; young within 0.003 %), takeOut marks young 'handed'; the skirt
+coloured as the woods' crowns × 0.84 with the border colours smoothed outward (stripes/rays gone), up normals, mx_noise mottle; THE WATER'S
+SURFACE: Schlick F (2 % down) ADDED to the water below and the air's haze drawn on it (AIR uniforms) — the lakes had been olive-brown
+holes; snap.simT = the fish's clock (the 'running at' read 0× between the water's minute steps). The wildlife agent still running (wild3view,
+wild3kit, shallows3view). TO ASK THE HUMAN: the air's haze (FogExp2 0.0007/m in the 1/10 world: 21 % at 700 m — the lakes from straight above
+are mostly haze; the real air is clearer) and the remaining faint seam at the true world's far-land edge.
+▶▶▶ RESUME HERE (2026-10-23 ~09:40). THE HUMAN: "pause the gpu testing … do a thorough review of the graphics and ui … open it in
+chrome" (the Claude-in-Chrome extension). GPU PAUSED: arm AN stopped at day 84 of seed 611 (r22AN_611.txt, too early for the white perch
+question; :8155 stopped). The Y4b gate (bxogqufcr → gate_y4b.txt) still runs on occ-server — when green commit fish3.js Y4b alone.
+REVIEW DONE (3 read-only agents + Chrome): ~55 findings. FIXED BY ME (uncommitted): shard3worker.js — abaa47b's mid-line comment had swallowed
+`const missed = adoptArrays(...)` (the shard workers never started: the true world without a GPU never opened); envshare3.js scalarsOf skips
+getters (chem3's inflows' `in` — setScalars threw); tools/w3_bench_shards.mjs applies stageR5 like the workers; test/w3.mjs + 'shards in workers'
+check (core section: 31 PASS); main3 icosahedron toNonIndexed warning. IN FLIGHT: three FIX agents on disjoint files — (a) fish3view/fishside3/
+rises3view/data3/sim3worker/plants3view/gpufish ids; (b) wild3view/wild3kit/shallows3view; (c) main3/controls3/water3/w3.css/w3.html (incl. the
+dt cap that ran the sim at 0.1× below 10 fps, the reflection drawing the fish twice, the world's edge slab, the named views inside trees, labels on
+ice). NEXT (me): the lakes' colour from above — NAIP lake (38,45,64) vs forest (91,106,85) sRGB; the sim's lake is olive-brown (51,44,17) vs its
+forest (106,128,110): lake/forest linear ratio should be ~(0.18,0.18,0.57), is (0.23,0.12,0.04) — the sky's reflection is under-weighted
+(an additive Schlick F0 0.02) and the scatter too yellow; THE TRUE WORLD'S START-UP is 116 s in Chrome (132 s Node: Fish3 founding, 303,797
+agents) vs ~15 s documented — profiling (scratchpad/startup_*.txt, prof/). Chrome throttles rAF to ~1 Hz when its window isn't in front: fps
+readings there are artefacts; time GPU work with device.queue.onSubmittedWorkDone (Both lakes ~22–50 ms, 12.4 M triangles with the mirror).
+▶▶▶ RESUME HERE (2026-10-23 ~08:45, BEFORE A COMPACTION). ALSO DONE: e6f689c — the picked fish's card couldn't be closed (onSel rebuilt the
 × every snapshot, so clicks were lost); now built once. The human's "preview is slow": the Browser pane runs WebGL2 (no WebGPU adapter) and is
 throttled to ~1 fps when hidden; in their Chrome the view runs WebGPU at 65 fps — use Chrome (http://localhost:8000/w3.html, ?world=true for the
 true lakes; the reef server is running on :8000). In the hidden pane the picked fish's card never fills (the worker's sel doesn't come back there —
