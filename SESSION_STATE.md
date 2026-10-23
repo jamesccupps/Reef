@@ -202,7 +202,48 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~10:45 EDT — THE NEWEST). THE GRAPHICS/UI REVIEW IS COMMITTED AND PUSHED: f69d2ed (sim: the true lakes found
+▶▶▶ RESUME HERE (2026-10-23 ~15:15 EDT, BEFORE A COMPACTION — THE NEWEST). DONE + PUSHED 4c6ba08: the camps drawn (render3/camps3view.js:
+67 buildings, docks May 25–Oct 15 with boats, roads draped, the launch lot, beaches, lit windows by occupancy, trees cleared — clearedAt;
+wild3view boats from the launch/docks; "Camps" toggle; the lodge U20 1½ storeys) + THE GRAPHICS UPGRADE (the human: "make the graphics
+any better and more realistic"): render3/sky3.js (vendored SkyMesh — Preetham sky, sun disc, clouds by weather; the sun ASTRONOMICAL for
+the date/hour at 45.63° N; haze = the horizon colour), the sun's shadows (4096² PCF, follows rig.target, R = rig.dist×1.4 in 40–900 m;
+casters: mid/near tree tiers, shrubs, rocks, camps, wildlife), post (RenderPipeline: pass samples 0 + MRT normal → GTAO ½-res r 2.5 →
+×(0.15+0.85·ao) + bloom(0.16, 0.35, threshold 2.2) → renderOutput → FXAA; S.post + "Shadows and soft light" toggle), wind sway in the
+tree tiers (WIND3.speed uniform ← snap.windSpeed), ripples × wind in cat's-paw patches, ground/bed mottling (mx noise, near-faded).
+vendor/three-0.186.1/addons/ (SkyMesh, GTAO, Bloom, FXAA, CSM*; imports rewritten to the bundle — no import map under the CSP).
+RUNNING: the SIM agent for the camps' lake effects (CAMP3: src/w3/campfx3.js new + config/chem3/env3/fish3/littoral3/plants3/test w3.mjs
+'camps' section + docs) — when it reports: review, run the full gate on occ-server (node tools/remote/run.mjs occ-server -e
+W3_PERF_MUL=1.3 -- npm test), commit, back up to G:. THE HUMAN'S NEXT ASK: "when we come back you should do THE TREES" — replace the
+faceted low-poly crowns with realistic foliage (leafy branch cards / alpha-tested clusters: spiky boughs for spruce/fir/pine, leaf
+clusters for maple/birch/aspen), true size, LOD tiers kept (near detail tier: hard/pine/spire; mid; far cones/octahedra), the wind sway
+kept, shadows cast, seasonal colours (fall, bare, snow) kept; verify in Chrome (the true world, w3.html — now the default), GPU cost
+checked; tiers in main3.js (tierMesh ~600, TREE_COLS ~77, the geometries coniferG/broadG/… ~418–520, placeTrees/treesNear).
+▶▶▶ (2026-10-23 ~13:45 EDT). CAMPS: the data agent's dataset is done and checked (ffca5e6 the note; 8fefee5
+house numbers/parcel ids stripped — THE REPO IS PUBLIC; never commit the human's camp's identity: memory user-family-camp). The human's
+corrections: THE LAUNCH = the gravel landing at the head of Upper's EAST COVE (−67.92871, 45.60935; not Huff Rd — "huff road leads to camps");
+docks at most camps on the water/with a path (many small); Rt 169 paved, the rest gravel; the green-roofed U20 unknown. b3f114a: tools/
+hotbrook/build_camps3.py → src/w3/camps3d.js + true/camps3d.js (67 buildings, 58 lived in, 54 docks — 20 seen), src/w3/camps3.js (pure:
+CAMPS, docksIn May 25–Oct 15, occupied(i, yf, day) — a hash, never core.rand; ~72 d/yr per seasonal camp). RUNNING: the VIEW agent
+(render3/camps3view.js + main3 wiring + "Camps" toggle + trees cleared + wild3view boats from the launch/docks) and the SIM agent (CAMP3 in
+config, ON in stageR5: dock shade ×0.1, dock cover for small sunfish, no bass nests on docks, wood ×0.15 at frontage, swim areas pulled in
+June, septic/lot/road P+N through the ledger; a gate section 'camps'). Then: verify in Chrome (true world), the full gate on occ-server,
+commit in slices, backup.
+▶▶▶ (2026-10-23 ~12:00 EDT). CAMPS, DOCKS, ROADS (the human: "should we add in the camps and roads now too?" →
+"look and lake effects", "look closely at different years of aerial images to make sure they are accurate"; field notes: MOST CAMPS HAVE
+DOCKS, THERE IS A BOAT LAUNCH, MOSTLY SEASONAL CAMPS, GRAVEL CAMP ROADS; the human can supply Google Earth screenshots → tools/hotbrook/data/
+google/ (git-ignored; made)). DONE: research note shoreline_development_effects.md (913a234; §8 = the camp entity: frontage wood ×0.15,
+EM/FL ×0.35, SC ×0.8, litter ×0.43, fall-in ×0.05–0.2; dock late May→mid-Oct: light ×0.1, plants ×0.05 beneath, halo 8 m, small sunfish
+shade on bright days, bass transit only, no bass nests on docks; septic 0.1 kg SRP/yr + lot 0.15 + road 9 kg TP/ha·yr ×22 % avail; N
+1.5–2.3 kg/yr; occupancy ~75–95 d, Jul–Aug peak; headway within 61 m; loons 110–140 m). Explore map of the hooks (this session): wood =
+plants3.wood per column (static; only spawnS uses it); cover = fish3 _drive cv() ~2012 + a.cover ~1798 + standCover (GPU mirrors in
+gpu/layout.js 369–380); plants light = plants3 _grow 478–501 (fL for EM/FL); point nutrients = fish3 _aleNutr/_aleUnits 3063 (credit
+ledger.inP/inN); fall-in = littoral3.bank[c]; litter = chem3.leafW[c]; bass nests = _siteStatics 1234 / _spawn 2542; no 3-D save. RUNNING:
+the camps/roads DATA agent (→ tools/hotbrook/data/camps_roads.json + research note camps_roads_docks_hot_brook.md + year crops in
+scratchpad/camps/). PLAN after it: show the human the map; tools/hotbrook/build_camps3.py (both worlds via build_world3d's transform) →
+src/w3/{true/,render3/}camps3.js; render3/camps3view.js (cabins, decks, docks + boats in season, gravel roads draped, the launch); sim CAMP3
+in stageR5 (frontage/dock factors per column/bed cell; septic/lot/road P+N through the ledger; dock cover for small sunfish; no bass nests
+on docks); gate checks (budgets closed, the formula's ΔTP, dock shade/plants, nests avoid docks).
+▶▶▶ (2026-10-23 ~10:45 EDT). THE GRAPHICS/UI REVIEW IS COMMITTED AND PUSHED: f69d2ed (sim: the true lakes found
 in 10 s — zFish tabulated; the February jump's stack overflow; young 'handed'), 324125a (fish/data/weeds view), ef60e2e (wildlife/shallows; the
 9-vertex-buffer parts), 9d6d566 (main view: TRUE LAKES THE DEFAULT — w3.html; ?world=small the 1/10 world; the water's Fresnel + haze; the
 horizon skirt with a canopy; haze 0.0007 → 0.00045/m; "Mirror the far shore" toggle, off; the camera/UI fixes). Gate (gate_review.txt):
