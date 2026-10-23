@@ -18,8 +18,8 @@
     <button id="fold" aria-expanded="true" title="Hide or show the controls">–</button>
   </header>
   <div id="ctlbody">
-    <p class="sub" id="about">Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes' scale; the water's depth, and everything that lives in it, is true size. The water and its fish are simulated live: about 13,000 fish of the eleven species recorded in these lakes, at the real lakes' numbers, each fish (or each school of perch, white perch and killifish) with its own brain.</p>
-    <p class="sub"><a id="worldlink" class="worldlink" href="w3.html?world=true">Open the lakes at their real size</a></p>
+    <p class="sub" id="about">Upper and Lower Hot Brook Lake and the brook between them at their REAL size — 369 and 274 ha, the brook 154 m — with their real depths (the 1949 survey soundings) and the land at its true height. The water and its fish are simulated live: about 1.2 million fish of the eleven species recorded in these lakes, at the real lakes' numbers, each fish (or each school) with its own brain. The fish near where you look live second by second; the rest live their time in blocks.</p>
+    <p class="sub"><a id="worldlink" class="worldlink" href="w3.html?world=small">Open the 1/10-size lakes instead</a></p>
     <div class="grp"><span class="gl">The lakes now</span>
       <div id="clock">—</div>
       <div class="row"><button id="play">⏸ pause</button><span class="row" id="speeds"><button data-speed="0.5" title="slow motion: half real time">½×</button><button data-speed="1" aria-pressed="true" title="real time: a day takes a day">1×</button><button data-speed="4" title="four times real time">4×</button><button data-speed="60" title="fast-forward: a minute a second">1 min/s</button><button data-speed="600" title="fast-forward: ten minutes a second">10 min/s</button><button data-speed="3600" title="fast-forward: an hour a second">1 h/s</button><button data-speed="1000000" title="as fast as this computer can: about half a day a second">max</button></span></div>
@@ -36,8 +36,8 @@
       <button data-season="spring">May</button><button data-season="summer">July</button><button data-season="fall">Early Oct</button><button data-season="winter">February</button>
     </div></div>
     <div class="grp"><span class="gl">Land height</span>
-      <input id="exag" type="range" min="1" max="10" step="0.5" value="3" aria-label="Land height: 1 = in proportion to the lakes, 10 = true metres">
-      <div class="ex"><span>in proportion</span><span id="exv">×3</span><span>true metres</span></div>
+      <input id="exag" type="range" min="1" max="3" step="0.25" value="1" aria-label="Land height: 1 = true metres">
+      <div class="ex"><span>true</span><span id="exv">×1</span><span>×3</span></div>
     </div>
     <div class="grp">
       <label class="tog"><input id="t-cut" type="checkbox"> Cut the lakes open and look at the section</label>
@@ -53,6 +53,7 @@
       <label class="tog"><input id="t-wild" type="checkbox" checked> Wildlife</label>
       <label class="tog"><input id="t-labels" type="checkbox" checked> Labels</label>
       <label class="tog"><input id="t-notes" type="checkbox" checked> Field notes</label>
+      <label class="tog" title="The far woods in the water's mirror, as a calm lake shows them (costs about a third more of the GPU)"><input id="t-mirror" type="checkbox" autocomplete="off"> Mirror the far shore</label>
     </div>
       <div class="hint" id="wildout"></div>
     </div>
@@ -60,7 +61,7 @@
       <button data-scale="1" aria-pressed="true">True size</button><button data-scale="4">×4</button><button data-scale="12">×12 (see them from the air)</button>
     </div></div>
     <div class="grp"><span class="gl" id="legtitle">Ground cover</span><div class="legend" id="legend"></div></div>
-    <p class="help">Drag to look around · right-drag or shift-drag to pan · scroll to zoom · W A S D to move, R / F up and down</p>
+    <p class="help">Drag to look around · right-drag or shift-drag to pan · scroll to zoom · W A S D to move, R / F up and down · touch: pinch to zoom, two fingers to pan</p>
   </div>
 </section>
 <div id="north" title="North"><svg viewBox="-15 -15 30 30" aria-hidden="true"><g id="needle"><path d="M0 -12 L5 4 L0 1 L-5 4 Z" fill="#e7ece6"/><text x="0" y="13" text-anchor="middle" font-size="8" fill="#9db0a7">N</text></g></svg></div>

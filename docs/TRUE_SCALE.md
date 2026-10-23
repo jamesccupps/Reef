@@ -185,6 +185,7 @@ The cost of the narrowing is that anything real-sized on the land stands 10× to
   - **Plan (2026-10-17, from reading the view's code).** T6a is the first view of the real lakes; T6b–c follow.
     - **T6a — the true world in the browser.**
       - **The switch.** `w3.html?world=true` opens the true lakes. A first-import module sets `globalThis.HB_WORLD` from the URL in the page and in the worker (the worker's URL carries it), so geometry.js picks the world as Node does. The panel gets a link between the two.
+      - **The default, since 2026-10-23** (the human: "true size should be default"): plain `w3.html` opens the true lakes and `?world=small` the 1/10 world. world3sel.js decides by the page (`/w3.html`) and writes `world=true` into the query the worker gets; the GPU tools' pages keep the 1/10 world unless asked.
       - **The worker sends only the fish near the view.** Today every snapshot carries every fish (300,000 × 18 numbers ≈ 22 MB a frame) and each step's `remember()` walks them all. At true scale:
         - the snapshot takes the fish within the drawing radius of where the view looks, read from P;
         - `remember()` covers the focus's region only;

@@ -1,7 +1,7 @@
 // main3.js — the 3-D view of the whole Hot Brook lakes (browser layer), from the pure geometry module (src/w3/geometry.js).
-// Two worlds (render3/world3sel.js): by default the lakes at 1/10 of their real horizontal size with TRUE depths, the LAND
-// (hills, banks) drawn at the lakes' scale × the "land height" slider (×1: in proportion to the lakes; ×10: true metres);
-// with `?world=true` the lakes at their TRUE size (docs/TRUE_SCALE.md T6), the land at true height (the slider ×1). The
+// Two worlds (render3/world3sel.js): by default the lakes at their TRUE size (docs/TRUE_SCALE.md T6), the land at true height (the
+// slider ×1); with `?world=small` the lakes at 1/10 of their real horizontal size with TRUE depths, the LAND (hills, banks) drawn at
+// the lakes' scale × the "land height" slider (×1: in proportion to the lakes; ×10: true metres). The
 // water's depth — and everything that lives in it — is true size in both. Looks (map colours, the real aerial photo, a depth
 // chart), seasons, a cut-away section, see-into-the-water, labels and the angler's field notes.
 // three.js r186 (vendor/, WebGPURenderer → WebGL2). Cosmetic randomness uses Math.random (never core.rand).
@@ -21,16 +21,24 @@ import { WU, waterOut, underwaterFogColor, setClear } from './water3.js';
 import { ENV as ENVC, PLANKTON } from '../../config.js';
 import { stageR5 } from '../fish3.js';
 stageR5(R5);   // (the page's copy of the model's tables — the data page, the legends — as the sim's workers run it: world3sel R5)
+// (a failure while the lakes are built — a data module that won't load, an exception before start() — said where the page waits,
+// not left as "Building the lakes…" for ever; once the view runs, #busy is gone and these stay quiet)
+const busyFail = msg => { const b = document.getElementById('busy'); if (b && !b.classList.contains('done')) { b.textContent = 'Could not start the 3-D view: ' + msg; b.classList.add('failed'); } };
+addEventListener('error', e => busyFail(e.message || String(e.error)));
+addEventListener('unhandledrejection', e => busyFail(e.reason && e.reason.message || String(e.reason)));
 
 // the far land and the photo of the world shown (the true world's: tools/hotbrook/build_world3d.py at true size → src/w3/true/)
 const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('./far3d.js');
 const PHOTO_URL = new URL(WORLD_TRUE ? '../true/naip3.jpg' : './naip3.jpg', import.meta.url).href;
 const KM = WORLD_TRUE ? 10 : 1;   // (the view's distances — camera reach, sky, fog, named views, label reach — at kilometres in the true world)
-const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, cos, exp, time, abs: tabs, step, length } = THREE.TSL;
+const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, cos, exp, time, abs: tabs, step, length,
+  varying, transformNormalToView, negateOnBackSide, sRGBTransferEOTF, mx_noise_float, mx_fractal_noise_float } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
-const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true, wild: true };
+// (season: the leaves' state — 'spring' fresh, 'summer', 'fall' colours, 'winter' bare — by the date; snow: the land under snow, by
+// the sim's ice)
+const S = { exag: WORLD_TRUE ? 1 : 3, look: 'map', season: 'summer', snow: false, cut: false, cutPos: 0.61, clear: true, water: true, trees: true, show: 'plain', fish: true, fishScale: 1, plants: true, wild: true };
 const kLand = () => WORLD_TRUE ? S.exag : S.exag / 10;   // (the land's height × true: the 1/10 world's ×1 is in proportion to its lakes)
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -43,7 +51,10 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 6000 * KM);
 // the fog: the air's above the water; under it the tea-coloured water's, its colour following the gaze (render3/water3.js)
 // (the air's haze: the true world's as the 1/10 world's at ten times the distance)
-const airFog = new THREE.FogExp2(0xc7d6dc, 0.0007 / KM), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
+// (the air's haze: 0.00045/m in true-world terms — 5 % at 5 km, 18 % at 10 km, 56 % at 20 km; it had been 0.0007, a ~3-km-visibility
+// day, and the human asked for less: "less haze would be good", 2026-10-23 — Maine's clear days see much farther)
+const airFog = new THREE.FogExp2(0xc7d6dc, 0.00045 / KM), waterFog = new THREE.FogExp2(0x3b3b20, 0.12);
+const AIR = { col: uniform(new THREE.Color(0xc7d6dc)), den: uniform(airFog.density) };   // (the haze for the water's surface, which draws its own: lightByDay)
 scene.fog = airFog; setClear(S.clear);
 
 // ---------- seasons: land cover and tree colours ----------
@@ -61,13 +72,18 @@ function seasonal(cls, c) {   // a land cover's colour in the current season
   const s = S.season;
   if (s === 'spring' && DECID.has(cls)) c.lerp(C(0x7aa04a), cls === 'mixed' ? 0.35 : 0.55);
   if (s === 'fall' && DECID.has(cls)) c.lerp(C(cls === 'deciduous' ? 0xa0562a : cls === 'mixed' ? 0x7a5a2c : 0x8a7a44), cls === 'deciduous' ? 0.7 : 0.45);
-  if (s === 'winter') c.lerp(C(0xe6ebef), cls === 'evergreen' ? 0.35 : cls === 'woody_wet' || cls === 'mixed' ? 0.6 : 0.85);
+  // (leaves off — April's mud season after ice-out, November before the ice: grey-brown hardwoods, straw-coloured grass and fields)
+  if (s === 'winter' && DECID.has(cls)) c.lerp(C(cls === 'deciduous' ? 0x6a604f : cls === 'mixed' ? 0x52533f : 0x8a7d58), cls === 'deciduous' ? 0.6 : cls === 'mixed' ? 0.4 : 0.55);
+  if (S.snow) c.lerp(C(0xe6ebef), cls === 'evergreen' ? 0.35 : cls === 'woody_wet' || cls === 'mixed' ? 0.6 : 0.85);
   return c;
 }
 const TREE_COLS = {
   conifer: { spring: [0x24432a, 0x2a4a2c], summer: [0x1f3a24, 0x264529, 0x1b3320], fall: [0x1f3a24, 0x264529], winter: [0x50604f, 0x5a6a58] },
   broad: { spring: [0x7ea84c, 0x8db45a, 0x6c9a40], summer: [0x3d5e2c, 0x4a6b33, 0x56763a, 0x3a5a2a], fall: [0xc8642a, 0xd8a12e, 0xa8342a, 0x9a7a2e, 0xb8862c], winter: [0x6d6458, 0x7a7064, 0x5f584e] },
 };
+// (a kind's colours now: the hardwoods' by their leaves; the conifers' snow-dusted under snow, else their summer green — bare
+// months without snow included)
+const treeCols = kind => TREE_COLS[kind][kind === 'conifer' ? (S.snow ? 'winter' : S.season === 'winter' ? 'summer' : S.season) : S.season];
 
 // ---------- the ground: the sim's band (1.5 m) and the far land (6 m), one material ----------
 // land is raised by kLand about the level of the water around it; the lake bed keeps its true depth
@@ -110,7 +126,7 @@ const photoUV = (x, y) => [(x - FAR3.X0) / PW, (y - FAR3.Y0) / PH];
 
 const photoTex = new THREE.TextureLoader().load(PHOTO_URL);
 photoTex.colorSpace = THREE.SRGBColorSpace; photoTex.anisotropy = 8;
-const U = { photo: uniform(0), chart: uniform(0), snow: uniform(0), fallTint: uniform(0), springTint: uniform(0) };
+const U = { photo: uniform(0), chart: uniform(0), snow: uniform(0), fallTint: uniform(0), springTint: uniform(0), bareTint: uniform(0) };
 // depth-chart colours: lighter → darker blue every 2 ft (MDIFW charts are in feet), a contour line at every 2-ft step
 const FT2 = 0.6096;
 function groundMaterial() {
@@ -118,10 +134,12 @@ function groundMaterial() {
   const vc = attribute('color', 'vec3'), land = attribute('land', 'float'), dep = attribute('dep', 'float');
   let ph = texture(photoTex, attribute('puv', 'vec2')).rgb;
   { const l0 = dot(ph, vec3(0.299, 0.587, 0.114)); ph = mix(vec3(l0, l0, l0), ph, 1.3).mul(0.62); }   // (NAIP is bright and hazy)
-  // the photo is a summer one: warm the hardwoods in autumn (its brighter greens), freshen them in May, snow in February
+  // the photo is a summer one: warm the hardwoods in autumn (its brighter greens), freshen them in May, grey-brown when their
+  // leaves are off, snow when the lakes are frozen
   const lum = dot(ph, vec3(0.299, 0.587, 0.114)), green = tclamp(ph.g.sub(ph.r.add(ph.b).mul(0.5)).mul(6), 0, 1);
   ph = mix(ph, ph.mul(vec3(1.7, 1.1, 0.55)), U.fallTint.mul(green).mul(smoothstep(0.12, 0.3, lum)));
   ph = mix(ph, ph.mul(vec3(1.05, 1.25, 0.8)), U.springTint.mul(green));
+  ph = mix(ph, vec3(lum, lum, lum).mul(vec3(1.12, 1.0, 0.8)), U.bareTint.mul(green).mul(smoothstep(0.12, 0.3, lum)).mul(0.8));
   ph = mix(ph, vec3(0.86, 0.89, 0.92), U.snow.mul(smoothstep(0.06, 0.22, lum)).mul(0.85));
   const landCol = mix(vc, ph, U.photo);
   const bandIdx = dep.div(FT2).floor().mul(FT2).div(5.6);
@@ -227,6 +245,70 @@ const band = gridMesh(NX, NY, i => { const [x, y] = GEO.cellCentre(i); return [x
 // the far land, with a hole where the band draws its own ground (one far cell of overlap)
 const inBand = (q, r) => { const x = FAR3.X0 + (q + 1) * FAR3.CELL, y = FAR3.Y0 + (r + 1) * FAR3.CELL; return x > X0 + FAR3.CELL && x < GEO.XMAX - FAR3.CELL && y > Y0 + FAR3.CELL && y < GEO.YMAX - FAR3.CELL; };
 const farMesh = gridMesh(FAR3.NX, FAR3.NY, i => [FAR3.X0 + ((i % FAR3.NX) + 0.5) * FAR3.CELL, FAR3.Y0 + (Math.floor(i / FAR3.NX) + 0.5) * FAR3.CELL, 1, 0], (q, r) => !inBand(q, r));
+// THE LAND TO THE HORIZON: the far land ended in a slab over the grey void, plain from the default views. A skirt runs on from its
+// edge, sharing its border vertices (no overlap: nothing to z-fight) — rings out to SKIRT_D m, their heights the edge's own smoothed
+// outward to its mean, with low rolling hills, falling away with the earth's curve — in the colours of the distant woods; the air's
+// haze takes it long before its end (cosmetic: hashed noise, never core.rand)
+const SKIRT_D = [0, 25, 80, 220, 600, 1400, 3800].map(d => d * KM), SKIRT_W = [0, 0.2, 0.45, 0.75, 1, 1, 1], SKIRT_SM = [0, 2, 5, 12, 30, 0, 0], SKIRT_HILL = [0, 4, 9, 14, 10, 5, 0];
+const PER = [];   // the far grid's border vertices, round from its south-west corner (east along the south row, north up the east side…)
+for (let q = 0; q < FAR3.NX - 1; q++) PER.push(q);
+for (let r = 0; r < FAR3.NY - 1; r++) PER.push(r * FAR3.NX + FAR3.NX - 1);
+for (let q = FAR3.NX - 1; q > 0; q--) PER.push((FAR3.NY - 1) * FAR3.NX + q);
+for (let r = FAR3.NY - 1; r > 0; r--) PER.push(r * FAR3.NX);
+const SKY_CON = uniform(new THREE.Vector3(1, 1, 1)), SKY_BRD = uniform(new THREE.Vector3(1, 1, 1));   // (the skirt's canopy: colourSkirt)
+const skirt = (() => {
+  const M = PER.length, R = SKIRT_D.length, pos = new Float32Array(M * R * 3), idx = [];
+  for (let k = 0; k < M; k++) {   // (each border vertex's rings straight out from its side; a corner's along the diagonal)
+    const i = PER[k], q = i % FAR3.NX, r = (i / FAR3.NX) | 0, x = FAR3.X0 + (q + 0.5) * FAR3.CELL, y = FAR3.Y0 + (r + 0.5) * FAR3.CELL;
+    let nx = q === 0 ? -1 : q === FAR3.NX - 1 ? 1 : 0, ny = r === 0 ? -1 : r === FAR3.NY - 1 ? 1 : 0; const l = Math.hypot(nx, ny); nx /= l; ny /= l;
+    for (let j = 0; j < R; j++) { const o = (j * M + k) * 3; pos[o] = x + nx * SKIRT_D[j]; pos[o + 2] = -(y + ny * SKIRT_D[j]); }
+  }
+  for (let j = 0; j + 1 < R; j++) for (let k = 0; k < M; k++) { const a = j * M + k, b = j * M + (k + 1) % M; idx.push(a, a + M, b, b, a + M, b + M); }   // (facing up)
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(M * R * 3), 3)); g.setIndex(idx);
+  // (a canopy from the air, as the drawn woods are: dark conifer and lighter hardwood patches ~25–60 m across, crowns and gaps finer
+  // still, stands larger — the conifers' and hardwoods' colours as ratios to the woods' mean, SKY_CON / SKY_BRD, set by colourSkirt.
+  // The fine grain fades with the eye's distance before it can shimmer. Plain, it read as a lawn once the haze was thinned)
+  const m = new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }), P = positionWorld.xz, dE = length(cameraPosition.sub(positionWorld));
+  const near = float(1).sub(smoothstep(1200, 6000, dE)), mid = float(1).sub(smoothstep(6000, 22000, dE));
+  const patch = smoothstep(-0.55, 0.55, mx_fractal_noise_float(P.div(110), 4, 2.1, 0.55).add(mx_noise_float(P.div(14).add(5.1)).mul(0.35).mul(near))).mul(mid).add(float(0.5).mul(float(1).sub(mid)));
+  m.colorNode = mix(mix(vec3(1, 1, 1), SKY_CON, 0.7), mix(vec3(1, 1, 1), SKY_BRD, 0.7), patch).mul(float(1).add(mx_noise_float(P.div(7)).mul(0.25).mul(near)).add(mx_noise_float(P.div(320).add(17.3)).mul(0.07)));
+  return new THREE.Mesh(g, m);
+})();
+function placeSkirt() {   // its heights, from the far land's border as drawn (after placeGround's)
+  const fp = farMesh.geometry.attributes.position.array, sp = skirt.geometry.attributes.position.array, M = PER.length, e = new Float32Array(M);
+  let mean = 0; for (let k = 0; k < M; k++) { e[k] = fp[PER[k] * 3 + 1]; mean += e[k] / M; }
+  for (let j = 0; j < SKIRT_D.length; j++) {
+    const Dt = SKIRT_D[j] * (WORLD_TRUE ? 1 : 10), drop = kLand() * Dt * Dt / (2 * 6.371e6), w = SKIRT_SM[j];   // (the curve at the true distance)
+    for (let k = 0; k < M; k++) {
+      const o = (j * M + k) * 3; if (!j) { sp[o + 1] = e[k]; continue; }
+      let s = 0; for (let q = -w; q <= w; q++) s += e[(k + q + M) % M]; s /= 2 * w + 1;
+      const hill = (vnoise(sp[o] / (300 * KM) + 3.7, sp[o + 2] / (300 * KM) - 5.1) - 0.5) * 2 * SKIRT_HILL[j] * kLand();
+      sp[o + 1] = s + (mean - s) * SKIRT_W[j] + hill - drop;
+    }
+  }
+  // (its normals straight up: its rises are slight at its distances, and the long thin rings' computed normals lit it in bands and
+  // in streaks toward the horizon)
+  const g = skirt.geometry; if (!g.attributes.normal) { const nr = new Float32Array(sp.length); for (let i = 1; i < nr.length; i += 3) nr[i] = 1; g.setAttribute('normal', new THREE.BufferAttribute(nr, 3)); }
+  g.attributes.position.needsUpdate = true; g.computeBoundingSphere();
+}
+function colourSkirt() {   // the border's colours, going over to the distant woods' (mixed forest, a little conifer-dark) outward
+  const fc = farMesh.geometry.attributes.color.array, sp = skirt.geometry.attributes.position.array, sc = skirt.geometry.attributes.color.array, M = PER.length;
+  // (the woods' own colour — their crowns', as the drawn trees average from above, half conifer — not the ground's under them: the
+  // ground's pale green made the forest end at a plain)
+  const mean = cs => cs.reduce((c, h) => c.add(C(h)), C(0)).multiplyScalar(1 / cs.length);
+  const ground = seasonal('mixed', C(0)), gs = S.snow ? 0.35 : 0.15, con = mean(treeCols('conifer')).lerp(ground, gs).multiplyScalar(0.84), brd = mean(treeCols('broad')).lerp(ground, gs).multiplyScalar(0.84);
+  const far = con.clone().lerp(brd, 0.6);   // (a little more hardwood than conifer, as the drawn far woods read)
+  SKY_CON.value.set(con.r / far.r, con.g / far.g, con.b / far.b); SKY_BRD.value.set(brd.r / far.r, brd.g / far.g, brd.b / far.b);   // (the canopy's two tones about the mean)   // (× the crowns' shading; the snow's share: both matched to the drawn woods beside it in May and in February, Chrome readback)
+  // (the border's colours smoothed along it, wider ring by ring as its heights are: each border vertex's own colour carried straight out
+  // along its long ring triangles drew stripes — level ones off the east and west sides, rays to the north)
+  const SM = [0, 8, 16, 30, 40, 40, 40], CW = [0, 0.9, 1, 1, 1, 1, 1], b = [0, 0, 0];   // (CW: over to the woods' colour sooner than the heights go over to their mean — the border's ground colours are the open ground's under the drawn trees)
+  for (let j = 0; j < SKIRT_D.length; j++) for (let k = 0; k < M; k++) {
+    const o = (j * M + k) * 3, w = CW[j], v = j === 1 || j === 2 ? 0.95 + 0.1 * vnoise(sp[o] / (120 * KM), sp[o + 2] / (120 * KM)) : 1;   // (no mottling far out: its vertices are too sparse for it)
+    b[0] = b[1] = b[2] = 0; for (let q = -SM[j]; q <= SM[j]; q++) { const f = PER[(k + q + M) % M] * 3; b[0] += fc[f]; b[1] += fc[f + 1]; b[2] += fc[f + 2]; }
+    const n = 2 * SM[j] + 1; sc[o] = (b[0] / n * (1 - w) + far.r * w) * v; sc[o + 1] = (b[1] / n * (1 - w) + far.g * w) * v; sc[o + 2] = (b[2] / n * (1 - w) + far.b * w) * v;
+  }
+  skirt.geometry.attributes.color.needsUpdate = true;
+}
 function placeGround() {   // heights (the land-height slider)
   const bp = band.geometry.attributes.position.array;
   for (let i = 0; i < GEO.N; i++) bp[i * 3 + 1] = GEO.body[i] === LAND ? landY(GEO.elev[i], GEO.level[i]) : bedAbs(i) - BASE;
@@ -234,19 +316,21 @@ function placeGround() {   // heights (the land-height slider)
   const fp = farMesh.geometry.attributes.position.array;
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { const y = -fp[i * 3 + 2]; fp[i * 3 + 1] = landY(farElev(i), farLevel(y)) - 0.06; }
   farMesh.geometry.attributes.position.needsUpdate = true; farMesh.geometry.computeVertexNormals();
+  placeSkirt();
 }
 function colourGround() {   // map colours by season (the bed by depth); a narrow stony waterline (the banks are vegetated to the water — the human's photos)
   const c = C(0), bc = band.geometry.attributes.color.array;
   for (let i = 0; i < GEO.N; i++) {
     const [x, y] = GEO.cellCentre(i);
     if (GEO.body[i] !== LAND) weedBed(i, bedColour(GEO.depth[i], c, x, y));
-    else { seasonal(GEO.CLASSES[SHOWN[i]], c); const near = GEO.toWater[i]; if (near < 1.2) c.lerp(C(S.season === 'winter' ? 0xd8dde0 : 0x807a6c), (1 - near / 1.2) * 0.55); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
+    else { seasonal(GEO.CLASSES[SHOWN[i]], c); const near = GEO.toWater[i]; if (near < 1.2) c.lerp(C(S.snow ? 0xd8dde0 : 0x807a6c), (1 - near / 1.2) * 0.55); c.multiplyScalar(0.9 + hash2(x, y) * 0.2); }
     bc[i * 3] = c.r; bc[i * 3 + 1] = c.g; bc[i * 3 + 2] = c.b;
   }
   band.geometry.attributes.color.needsUpdate = true;
   const fc = farMesh.geometry.attributes.color.array;
   for (let i = 0; i < FAR3.NX * FAR3.NY; i++) { seasonal(GEO.CLASSES[FAR_SHOWN[i]], c).multiplyScalar(0.9 + hash2(i, 7) * 0.2); fc[i * 3] = c.r; fc[i * 3 + 1] = c.g; fc[i * 3 + 2] = c.b; }
   farMesh.geometry.attributes.color.needsUpdate = true;
+  colourSkirt();
 }
 
 // ---------- water: the lakes' and the brook's surfaces (ice in February) ----------
@@ -269,14 +353,23 @@ const water = (() => {
   const P = positionWorld, t = time;
   const ripple = vec2(sin(P.x.mul(2.1).add(t.mul(1.3))).add(sin(P.z.mul(1.7).sub(t.mul(0.9)))), sin(P.z.mul(2.3).add(t.mul(1.1))).add(sin(P.x.mul(1.3).add(P.z.mul(0.8)).sub(t.mul(0.7))))).mul(0.0035);
   refl.uvNode = refl.uvNode.add(ripple);
-  const view = normalize(cameraPosition.sub(P)), fres = pow(float(1).sub(tabs(view.y)), 4).mul(0.85).add(0.06);
+  const view = normalize(cameraPosition.sub(P));
   const m = new THREE.MeshBasicNodeMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, fog: false });
   m.userData = { base: uniform(0.04), body: uniform(new THREE.Color(0x2b2b17)), mirror: uniform(1) };
   const ice = attribute('ice', 'float');   // the live ice cover (white-grey, snow-dusted, opaque)
   // FROM ABOVE: the mirror of the shore and the sky (Fresnel: strong at low angles) over the water — looking down, the surface
   // is nearly clear and the bed, the weeds and the fish show through, dimmed and tinted by the water itself (water3.js)
-  const above = mix(m.userData.body.mul(WU.day), refl.rgb, fres.mul(m.userData.mirror));
-  const aboveA = m.userData.base.add(fres.mul(m.userData.mirror).mul(0.95));
+  // (the mirror ADDS the sky and shore it reflects, at Fresnel's share — Schlick, 2 % straight down, all of it at grazing — to the light
+  // coming up out of the water: blended at alpha a, colour c, the eye gets F·mirror + base·body + (1 − a)·the water below. The lakes
+  // from the air are dark slate-blue — the NAIP photo: (38, 45, 64) beside the forest's (91, 106, 85) — the sky's 2–4 % over a dark tea
+  // water; mixed in at Fresnel's share of a 6–10 % alpha they had been olive-brown, the sky's part a fifth of what it is)
+  const F = float(0.02).add(pow(float(1).sub(tabs(view.y)), 5).mul(0.98)).mul(m.userData.mirror), a0 = m.userData.base.add(F);
+  const c0 = refl.rgb.mul(F).add(m.userData.body.mul(WU.day).mul(m.userData.base)).div(a0);
+  // (and the air's haze, as on the land: the material draws its own — fog:false keeps three's off it under water — so the far water, and
+  // what shows through it, fades into the haze as the far shore does; FogExp2's)
+  const dA = length(cameraPosition.sub(P)).mul(AIR.den), ff = float(1).sub(exp(dA.mul(dA).negate()));
+  const aboveA = float(1).sub(float(1).sub(ff).mul(float(1).sub(a0)));
+  const above = c0.mul(a0).mul(float(1).sub(ff)).add(AIR.col.mul(ff)).div(aboveA);
   // FROM BELOW: Snell's window — within ~48.6° of straight up the sky, bright and rippling; beyond it the surface mirrors the
   // dark water below
   // (the sky through the window is tinted by the water between it and the eye — golden-green in tea water — and broken by the
@@ -285,8 +378,14 @@ const water = (() => {
   const glint = pow(float(1).sub(tabs(s1.add(s2)).mul(0.5)), 5);
   const tintUp = exp(WU.kd.mul(WU.camDepth).negate());
   const win = smoothstep(0.6, 0.7, tabs(view.y)), skyLit = vec3(0.5, 0.68, 0.82).mul(WU.day).mul(glint.mul(1.5).add(0.35)).mul(tintUp).mul(0.75);
-  const below = mix(WU.level.mul(WU.day).mul(glint.mul(0.6).add(1.1)), skyLit, win);
-  m.colorNode = mix(mix(above, below, WU.under), vec3(0.82, 0.86, 0.89).mul(mix(float(1), float(0.45), WU.under)), ice);
+  // (beyond the window the mirrored water is the fog's level colour at the eye's depth — water3's underwaterFogColor — and the
+  // whole underside fades into the fog with distance as everything else under water does: the material isn't fogged by three —
+  // fog:false, for the air's — and its bright ceiling ran on to the horizon, a seam against the fogged bed)
+  const below = mix(WU.level.mul(WU.day).mul(tintUp.y).mul(glint.mul(0.6).add(1.1)), skyLit, win);
+  const uwD = WU.density.mul(length(cameraPosition.sub(P))), uwFog = float(1).sub(exp(uwD.mul(uwD).negate()));   // (FogExp2's)
+  // the ice and its snow, lit by the day: a moonlit grey at night (unlit material: it glowed white all the winter night)
+  const iceC = vec3(0.82, 0.86, 0.89).mul(WU.day);
+  m.colorNode = mix(mix(above, mix(iceC, AIR.col, ff), ice), mix(mix(below, iceC.mul(0.45), ice), WU.fogCol, uwFog), WU.under);
   m.opacityNode = tclamp(mix(aboveA, float(1), WU.under).add(ice), 0, 1);
   const mesh = new THREE.Mesh(g, m); mesh.renderOrder = 2; return mesh;
 })();
@@ -437,7 +536,7 @@ function treeBuilder() {
     }
   };
   const blob = (cx, cy, cz, rx, ry, rz, ao, seed) => {   // a lump of leaves: an icosahedron, its corners pushed in and out a little
-    const g = new THREE.IcosahedronGeometry(1, 0).toNonIndexed(), p = g.attributes.position.array;
+    const g = new THREE.IcosahedronGeometry(1, 0), p = g.attributes.position.array;   // (a polyhedron is built non-indexed)
     const jit = v => 0.82 + 0.36 * ((Math.sin(seed * 12.9898 + v * 78.233) * 43758.5453) % 1 + 1) % 1;
     for (let q = 0; q < p.length; q += 9) {
       const v = [0, 1, 2].map(k => { const o = q + k * 3, j = jit(Math.round(p[o] * 7 + p[o + 1] * 13 + p[o + 2] * 29)); return [cx + p[o] * rx * j, cy + p[o + 1] * ry * j, cz + p[o + 2] * rz * j]; });
@@ -510,7 +609,12 @@ function tierMesh(geo, cap, { holes = [], side = THREE.FrontSide, bare = null, l
   const rag = Wr.y.div(6.28).mul(0.5).add(0.75);
   let keep = float(1); for (const h of holes) keep = keep.mul(step(h.R.mul(rag), length(vec2(P.x, P.z).sub(h.C))));
   m.positionNode = vec3(p.x.mul(co).sub(p.z.mul(si)), p.y, p.x.mul(si).add(p.z.mul(co))).mul(keep).add(vec3(P.x, P.y, P.z));
-  m.colorNode = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), TC.w), TC.xyz, fol).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
+  // (the normals turn with the tree — each its own random turn about its trunk — or every tree was lit from a random side; the
+  // model's own normals otherwise, as authored: lifted toward the sky)
+  const nG = attribute('normal', 'vec3');
+  m.normalNode = negateOnBackSide(varying(transformNormalToView(vec3(nG.x.mul(co).sub(nG.z.mul(si)), nG.y, nG.x.mul(si).add(nG.z.mul(co)))), 'v_treeN').normalize());
+  // (the colour's bytes are sRGB, decoded here: 8-bit LINEAR posterised the dark greens — a conifer's red ~3/255 — into steps)
+  m.colorNode = mix(mix(vec3(0.2, 0.17, 0.13), vec3(0.8, 0.8, 0.76), TC.w), sRGBTransferEOTF(TC.xyz), fol).mul(ao.mul(0.45).add(0.55));   // (the shade softened: crowns seen from below stay green)
   const mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.layers.set(layer); mesh.userData.cap = cap; return mesh;
 }
 const camHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(DET_R) }, viewHole = { C: uniform(new THREE.Vector2(1e9, 1e9)), R: uniform(TREE_R) }, bareU = uniform(0);
@@ -529,11 +633,11 @@ const PINE_H = 21;   // m: conifers this tall drawn as white pines near the came
 // one tree into a tier's slot j
 function putTree(mesh, j, T, i, kind, wf) {
   const g = mesh.geometry, tp = g.attributes.tp.array, tw = g.attributes.tw.array, tc = g.attributes.tc.array, c = putTree.c || (putTree.c = C(0));
-  const H = T.H[i], k = T.k[i], bare = kind === 'broad' && S.season === 'winter', cols = TREE_COLS[kind][S.season];
+  const H = T.H[i], k = T.k[i], bare = kind === 'broad' && S.season === 'winter', cols = treeCols(kind);
   tp[j * 4] = T.x[i]; tp[j * 4 + 1] = landY(T.el[i], T.lv[i]) - 0.05 * kLand(); tp[j * 4 + 2] = -T.y[i]; tp[j * 4 + 3] = H;
   tw[j * 2] = H * wf * (0.85 + k * 0.3) * (bare && wf === 0.65 ? 0.8 : 1); tw[j * 2 + 1] = T.rot[i];
-  c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36);
-  tc[j * 4] = Math.min(255, c.r * 255); tc[j * 4 + 1] = Math.min(255, c.g * 255); tc[j * 4 + 2] = Math.min(255, c.b * 255);
+  c.setHex(cols[Math.floor(k * 997) % cols.length]).multiplyScalar(0.82 + ((k * 7919) % 1) * 0.36).convertLinearToSRGB();   // (sRGB bytes: tierMesh decodes)
+  tc[j * 4] = Math.min(255, Math.round(c.r * 255)); tc[j * 4 + 1] = Math.min(255, Math.round(c.g * 255)); tc[j * 4 + 2] = Math.min(255, Math.round(c.b * 255));
   tc[j * 4 + 3] = kind === 'broad' && ((k * 7919 * 3) % 1) < 0.18 ? 230 : kind === 'broad' ? 18 : 8;   // (a birch in six: white bark; the rest dark)
 }
 function tierDone(mesh, n) { const g = mesh.geometry; g.instanceCount = n; g.attributes.tp.needsUpdate = g.attributes.tw.needsUpdate = g.attributes.tc.needsUpdate = true; }
@@ -639,10 +743,13 @@ const sky = (() => {
   const m = new THREE.Mesh(g, mat);
   m.position.set((X0 + GEO.XMAX) / 2, 0, -(Y0 + GEO.YMAX) / 2); m.renderOrder = -1; return m;
 })();
+// (the haze's colour in full day; lightByDay dims it with the sky each frame — set only here, distant fogged land stood as a pale
+// band against the night sky)
+const FOG_DAY = C(0xc7d6dc);
 function styleSky() {
-  const top = C(S.season === 'winter' ? 0x8aa6c0 : 0x4f84c0), hor = C(S.season === 'winter' ? 0xe2e8ec : 0xcfdde3), g = sky.geometry, col = g.attributes.color.array, c = C(0);
+  const top = C(S.snow ? 0x8aa6c0 : 0x4f84c0), hor = C(S.snow ? 0xe2e8ec : 0xcfdde3), g = sky.geometry, col = g.attributes.color.array, c = C(0);
   for (let k = 0; k < g.attributes.position.count; k++) { const t = Math.max(0, g.attributes.position.getY(k) / (4500 * KM)); c.copy(hor).lerp(top, Math.pow(t, 0.6)); col.set([c.r, c.g, c.b], k * 3); }
-  g.attributes.color.needsUpdate = true; airFog.color.copy(hor).lerp(C(0xc7d6dc), 0.5);
+  g.attributes.color.needsUpdate = true; FOG_DAY.copy(hor).lerp(C(0xc7d6dc), 0.5); airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value);
 }
 { // the sky as an environment map, so the water reflects it
   const W = 256, H = 128, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
@@ -664,7 +771,7 @@ const risesView = makeRisesView(W3);   // the insects on the film, the rises, sp
 const bedView = makeBedView(plantsView);   // the crayfish out on the bed and the snails (littoral3), near the camera
 // THE ANIMALS OF THE LAKES AND THEIR SHORES (render3/wild3view.js: the sim's fish-eating wildlife, its anglers, the moose and the forest's
 // animals; shallows3view.js: the turtles, frogs, newts and tadpoles, the dragonflies, the logs and boulders they bask on)
-const shallowsView = makeShallowsView({ plants: plantsView, colAt: (x, y) => W3.colAt(x, y), ripple: risesView.ripple });
+const shallowsView = makeShallowsView({ plants: plantsView, colAt: (x, y) => W3.colAt(x, y), ripple: risesView.ripple, groundY: (x, y) => groundAt(x, -y) });   // (groundY: the frogs on the bank)
 const wildView = makeWildView({ TREES, treeY: (T, i) => landY(T.el[i], T.lv[i]) - 0.05 * kLand(), groundY: (x, y) => groundAt(x, -y), plants: plantsView, ripple: risesView.ripple,
   colAt: (x, y) => W3.colAt(x, y), onHerpKill: (w, x, y, L, k) => shallowsView.onKill(w, x, y, L, k, LIVE.tNow) });
 risesView.setLeapHook((...a) => { if (S.wild) shallowsView.onLeap(...a); });
@@ -684,8 +791,15 @@ const specks = (() => {
   return m;
 })();
 scene.add(specks);
-clipped.add(band, farMesh, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group, wildView.group, shallowsView.group);
+clipped.add(band, farMesh, skirt, water, ...treeMeshList(), shrubMesh, rockMesh, fishView.mesh, fishView.shadow, plantsView.group, risesView.group, bedView.group, wildView.group, shallowsView.group);
 scene.add(clipped, sky);
+// (the fish and their shadows on the bed are always under the surface: on the weeds' layer, which the water's mirror camera leaves
+// out — they were drawn twice a frame, ~2 M triangles for nothing; a leaping fish loses its reflection for its half second)
+fishView.mesh.layers.set(PLANT_LAYER); fishView.shadow.layers.set(PLANT_LAYER);
+// (the rings, the splashes and the insects of the rises lie on the film, 2–6 mm above the level, the water's mesh 1 cm: drawn after
+// the water — its renderOrder 2 — not under it, where its layer washed them out; the insects, opaque, join the transparent pass —
+// at full opacity — to be drawn after it)
+risesView.group.traverse(o => { if (!o.isMesh || !o.material) return; o.material.transparent = true; o.renderOrder = 3; });
 const sectionSoil = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, side: THREE.DoubleSide }));
 const sectionWater = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicNodeMaterial({ vertexColors: true, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
 sectionWater.renderOrder = 3; scene.add(sectionSoil, sectionWater);
@@ -711,7 +825,7 @@ function buildSection() {
       const xm = (a[0] + b[0]) / 2, top0 = Math.min(wl[k], wl[k + 1]), bot0 = Math.max(a[1], b[1]);
       for (let zz = top0; zz > bot0 - 0.25; zz -= 0.25) {
         const z1 = zz, z0 = Math.max(bot0, zz - 0.25); if (z1 <= z0) break;
-        waterColour(xm, y, -(z1 + z0) / 2, c);
+        waterColour(xm, y, (wl[k] + wl[k + 1]) / 2 - (z1 + z0) / 2, c);   // (depth below this column's own surface: Lower's sits 0.6 m below Upper's)
         wp.push(a[0], z0, z, b[0], z0, z, a[0], z1, z, b[0], z0, z, b[0], z1, z, a[0], z1, z); for (let q = 0; q < 6; q++) wc.push(c.r, c.g, c.b);
       }
     }
@@ -741,8 +855,11 @@ function label(text, sub, x, y, h, cls, reach = 2500 * KM) {
   const el = document.createElement('div'); el.className = 'lbl ' + cls;
   const b = document.createElement('b'); b.textContent = text; el.append(b);
   if (sub) { const s = document.createElement('small'); s.textContent = sub; el.append(s); }
-  $('labels').append(el); labels.push({ el, x, y, h, reach });
+  $('labels').append(el); labels.push({ el, x, y, h, reach, note: cls === 'note', bw: 0, bh: 0, on: true, tr: '' });
 }
+// (the Labels and Field-notes boxes: a label they hide takes no room in the overlap test)
+const LBL = { names: $('t-labels').checked, notes: $('t-notes').checked, sized: false };
+document.body.classList.toggle('nolabels', !LBL.names); document.body.classList.toggle('nonotes', !LBL.notes);
 for (const B of BODIES) {
   if (B.id === BROOK) continue;
   let sx = 0, sy = 0, n = 0; for (let i = 0; i < GEO.N; i += 7) if (GEO.body[i] === B.id) { const [x, y] = GEO.cellCentre(i); sx += x; sy += y; n++; }
@@ -751,19 +868,33 @@ for (const B of BODIES) {
 { const p = GEO.BROOK_PATH[Math.floor(GEO.BROOK_PATH.length / 2)]; label('Hot Brook', WORLD_TRUE ? '154 m' : '154 m (shown at half length)', p[0], p[1], 4, 'name', 500 * Math.sqrt(KM)); }
 label('inflow', 'from the south', GEO.INFLOW[0], GEO.INFLOW[1], 3, 'name', 600 * KM); label('outlet', 'to Baskahegan Stream', GEO.OUTLET[0], GEO.OUTLET[1], 3, 'name', 600 * KM);
 for (const n of GEO.NOTES) label(n.t.replace('Sunfish: ', 'sunfish · '), n.s.replace(/ \(angler's note, 2026\)/, ''), n.xy[0], n.xy[1], 2, 'note', 220 * Math.sqrt(KM));
+// (each label's box is measured once — its text never changes: a label hidden by .off measured 0 and fell back to a 120×30 box,
+// so a wide one showed and hid on alternate frames; and every read after the last label's writes forced a layout per label per
+// frame. Now all the reads, then all the writes)
+function sizeLabels() {
+  for (const L of labels) L.el.classList.remove('off');
+  for (const L of labels) { const w = L.el.offsetWidth; if (w) { L.bw = w + 8; L.bh = L.el.offsetHeight + 4; } }   // (one layout; one hidden by a box measures on showing)
+  LBL.sized = true;
+}
 function placeLabels(w, h) {
+  if (!LBL.sized) sizeLabels();
   for (const L of labels) {
     lw.set(L.x, GEO.levelAt(L.x, L.y) - BASE + L.h, -L.y); lp.copy(lw).project(camera);
     L.d = camera.position.distanceTo(lw); L.sx = (lp.x + 1) / 2 * w; L.sy = (1 - lp.y) / 2 * h;
-    L.vis = lp.z < 1 && Math.abs(lp.x) < 1.05 && Math.abs(lp.y) < 1.05 && L.d < L.reach && !(S.cut && L.y < cutY());
+    L.vis = (L.note ? LBL.notes : LBL.names) && lp.z < 1 && Math.abs(lp.x) < 1.05 && Math.abs(lp.y) < 1.05 && L.d < L.reach && !(S.cut && L.y < cutY());
   }
   const placed = [];   // nearest first; a label that would overlap one already shown waits until the camera moves apart
   for (const L of [...labels].sort((a, b) => a.d - b.d)) {
-    if (L.vis) { const bw = (L.el.offsetWidth || 120) + 8, bh = (L.el.offsetHeight || 30) + 4, x0 = L.sx - bw / 2, y0 = L.sy - bh;
-      if (placed.some(r => x0 < r[2] && x0 + bw > r[0] && y0 < r[3] && y0 + bh > r[1])) L.vis = false; else placed.push([x0, y0, x0 + bw, y0 + bh]); }
-    L.el.classList.toggle('off', !L.vis);
-    if (L.vis) L.el.style.transform = `translate(${L.sx.toFixed(1)}px, ${L.sy.toFixed(1)}px) translate(-50%, -100%)`;
+    if (!L.vis) continue;
+    const bw = L.bw || 128, bh = L.bh || 34, x0 = L.sx - bw / 2, y0 = L.sy - bh;
+    if (placed.some(r => x0 < r[2] && x0 + bw > r[0] && y0 < r[3] && y0 + bh > r[1])) L.vis = false; else placed.push([x0, y0, x0 + bw, y0 + bh]);
   }
+  let unsized = false;
+  for (const L of labels) {   // the writes (only what changed)
+    if (L.on !== L.vis) { L.on = L.vis; L.el.classList.toggle('off', !L.vis); }
+    if (L.vis) { const tr = `translate(${L.sx.toFixed(1)}px, ${L.sy.toFixed(1)}px) translate(-50%, -100%)`; if (tr !== L.tr) { L.tr = tr; L.el.style.transform = tr; } if (!L.bw) unsized = true; }
+  }
+  if (unsized) for (const L of labels) if (L.vis && !L.bw) { const bw = L.el.offsetWidth; if (bw) { L.bw = bw + 8; L.bh = L.el.offsetHeight + 4; } }
 }
 
 // ---------- legend ----------
@@ -786,23 +917,52 @@ function legend() {
 }
 
 // ---------- camera: a free rig, named views, under water ----------
-const groundAt = (x, z) => { const y = -z; if (x > X0 && x < GEO.XMAX && y > Y0 && y < GEO.YMAX) { const b = GEO.bodyAt(x, y), lv = GEO.levelAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? lv - d - BASE : landY(lv - d, lv); } return -2; };
-const rig = new CameraRig(camera, canvas, { groundAt, maxDist: 2200 * KM });
-const [ux, uy] = BODIES[0].deepest, [lx, ly] = BODIES[1].deepest, BM = GEO.BROOK_PATH[Math.floor(GEO.BROOK_PATH.length / 2)], kN = Math.sqrt(KM);   // (kN: the near views' reach)
+// the ground's height (three's y) at (x, z): the band's own; beyond it the far land's, on the very triangles drawn (each quad split
+// a-b-d / b-e-d as gridMesh splits it); off the far land, its edge's. (It knew only the band, and said −2 m beyond it: the camera's
+// floor ignored hills tens of metres higher, and an orbit low or a Find on land put the eye inside them.) The camera's floor, the
+// target's, the forest animals' footing (wild3view groundY)
+function farY(x, y) {
+  const fp = farMesh.geometry.attributes.position.array, NXF = FAR3.NX;
+  let u = (x - FAR3.X0) / FAR3.CELL - 0.5, v = (y - FAR3.Y0) / FAR3.CELL - 0.5;
+  u = u < 0 ? 0 : u > NXF - 1.0001 ? NXF - 1.0001 : u; v = v < 0 ? 0 : v > FAR3.NY - 1.0001 ? FAR3.NY - 1.0001 : v;
+  const q = u | 0, r = v | 0, fx = u - q, fy = v - r, a = (r * NXF + q) * 3 + 1, b = a + 3, d = a + NXF * 3, e = d + 3;
+  return fx + fy <= 1 ? fp[a] + (fp[b] - fp[a]) * fx + (fp[d] - fp[a]) * fy : fp[e] + (fp[d] - fp[e]) * (1 - fx) + (fp[b] - fp[e]) * (1 - fy);
+}
+const groundAt = (x, z) => { const y = -z; if (x > X0 && x < GEO.XMAX && y > Y0 && y < GEO.YMAX) { const b = GEO.bodyAt(x, y), lv = GEO.levelAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? lv - d - BASE : landY(lv - d, lv); } return farY(x, y); };
+// FOLLOWING: one owner at a time — Find's animal (FIND.follow) or the data page's picked fish (data3: its card's follow box). A named
+// view, the cut-away, a pan or the keys let go of both (they set the target the follow would drag straight back)
+function letGo() {
+  if (FIND.follow) { FIND.follow = null; $('watching').textContent = ''; }
+  LIVE.data3?.unfollow?.();
+}
+const rig = new CameraRig(camera, canvas, { groundAt, maxDist: 2200 * KM, bounds: { x0: FAR3.X0, x1: FAR3.X0 + PW, z0: -(FAR3.Y0 + PH), z1: -FAR3.Y0 }, onPan: () => letGo() });
+const [ux, uy] = BODIES[0].deepest, [lx, ly] = BODIES[1].deepest, kN = Math.sqrt(KM);   // (kN: the near views' reach)
+// (the brook's view: over its middle — the length-weighted centre of its course — from high and steep, looking along it from Upper's
+// side: a narrow channel between true-size trees shows only from above; the cove's from out over the open water to its south-east.
+// The old angles put the eye in, or behind, the bank's crowns in both worlds)
+const BMID = (() => { let sx = 0, sy = 0, sl = 0; const P = GEO.BROOK_PATH; for (let k = 0; k + 1 < P.length; k++) { const l = Math.hypot(P[k + 1][0] - P[k][0], P[k + 1][1] - P[k][1]); sx += (P[k][0] + P[k + 1][0]) / 2 * l; sy += (P[k][1] + P[k + 1][1]) / 2 * l; sl += l; } return [sx / sl, sy / sl]; })();
+// (the dive: in the West cove's margin, a bed ~2 m down, looking up its slope toward the shallows the sunfish keep — the old one went down
+// over Upper's deepest mud, 5.5 m deep and 230 m from shore, where nothing shows in the tea-coloured water but the dark)
+const DIVE = (() => {
+  const [cx, cy] = GEO.NOTES[2].xy; let bi = -1, bd = 1e18;
+  for (let i = 0; i < GEO.N; i++) { const d = GEO.depth[i]; if (GEO.body[i] === LAND || GEO.body[i] === BROOK || !(d >= 1.8 && d <= 2.6)) continue; const [x, y] = GEO.cellCentre(i), q = (x - cx) ** 2 + (y - cy) ** 2; if (q < bd) { bd = q; bi = i; } }
+  if (bi < 0) return { t: [ux, uy - 8, -3.4], yaw: 0.9 };
+  const [x, y] = GEO.cellCentre(bi); return { t: [x, y, -0.5 * GEO.depth[bi]], yaw: Math.atan2(-(cx - x), cy - y) };   // (the rig looks along (−sin yaw, cos yaw))
+})();
 const VIEWS = {
   'Both lakes': { t: [-5 * KM, 10 * KM, 0], yaw: 0.25, pitch: -0.62, dist: 560 * KM },
   'Upper lake': { t: [-35 * KM, -150 * KM, 0], yaw: 0.1, pitch: -0.5, dist: 300 * KM },
-  'The brook': { t: [WORLD_TRUE ? BM[0] : 30, WORLD_TRUE ? BM[1] : 10, 0], yaw: -0.5, pitch: -0.6, dist: 80 * kN },
+  'The brook': { t: [BMID[0], BMID[1], 0], yaw: -1.2, pitch: -1.1, dist: 90 * kN },
   'Lower lake': { t: [lx, ly + 30 * KM, 0], yaw: 0.2, pitch: -0.5, dist: 260 * KM },
-  'West cove': { t: [GEO.NOTES[2].xy[0] + 10 * kN, GEO.NOTES[2].xy[1] - 5 * kN, 0], yaw: -0.9, pitch: -0.32, dist: 70 * kN },
+  'West cove': { t: [GEO.NOTES[2].xy[0] + 10 * kN, GEO.NOTES[2].xy[1] - 5 * kN, 0], yaw: 0.39, pitch: -0.55, dist: 100 * kN },
   'On the water': { t: [ux - 20, uy - 60, 0.2], yaw: 0.05, pitch: -0.04, dist: 28 },
-  'Dive in': { t: [ux, uy - 8, -3.4], yaw: 0.9, pitch: -0.25, dist: 5 },
+  'Dive in': { t: DIVE.t, yaw: DIVE.yaw, pitch: -0.12, dist: 4 },
 };
 function go(name) {
-  const v = VIEWS[name]; rig.set(new THREE.Vector3(v.t[0], v.t[2], -v.t[1]), v.yaw, v.pitch, v.dist);
+  const v = VIEWS[name]; letGo(); rig.set(new THREE.Vector3(v.t[0], v.t[2], -v.t[1]), v.yaw, v.pitch, v.dist);
   for (const b of $('views').children) b.setAttribute('aria-pressed', String(b.textContent === name));
 }
-for (const name of Object.keys(VIEWS)) { const b = document.createElement('button'); b.textContent = name; b.addEventListener('click', () => { go(name); FIND.follow = null; FIND.last = ''; $('watching').textContent = ''; }); $('views').append(b); }   // (a new view: Find starts again with what is near it)
+for (const name of Object.keys(VIEWS)) { const b = document.createElement('button'); b.textContent = name; b.addEventListener('click', () => { go(name); FIND.last = ''; }); $('views').append(b); }   // (a new view: Find starts again with what is near it)
 
 // ---------- controls ----------
 function applyLook() {
@@ -810,29 +970,48 @@ function applyLook() {
   for (const b of $('looks').children) b.setAttribute('aria-pressed', String(b.dataset.look === S.look));
   styleWater(); legend();
 }
-function applySeason() {
-  U.snow.value = S.season === 'winter' ? 1 : 0; U.fallTint.value = S.season === 'fall' ? 1 : 0; U.springTint.value = S.season === 'spring' ? 1 : 0;
-  for (const b of $('seasons').children) b.setAttribute('aria-pressed', String(b.dataset.season === S.season));
+function applySeason() {   // (S.season: the leaves; S.snow: the land under snow)
+  U.snow.value = S.snow ? 1 : 0; U.fallTint.value = S.season === 'fall' ? 1 : 0; U.springTint.value = S.season === 'spring' ? 1 : 0; U.bareTint.value = S.season === 'winter' ? 1 : 0;
+  for (const b of $('seasons').children) b.setAttribute('aria-pressed', String(b.dataset.season === S.season && (S.season !== 'winter' || S.snow)));
   colourGround(); colourTrees(); placeTrees(); styleWater(); styleSky(); legend();
 }
 function applyHeight() { $('exv').textContent = `×${S.exag}`; placeGround(); placeTrees(); buildSection(); }
 for (const b of $('looks').children) b.addEventListener('click', () => { S.look = b.dataset.look; applyLook(); });
-for (const b of $('seasons').children) b.addEventListener('click', () => { S.season = b.dataset.season; if (LIVE.worker) { LIVE.worker.postMessage({ type: 'season', yf: SEASON_YF[S.season] }); LIVE.lastSeason = null; } applySeason(); buildSection(); });
+// JUMP TO a date: the look changes at once, to the date asked for; the snapshots still on their way from before the jump are not
+// let undo it (they flipped the season back and then forward again — a flash and three heavy recolours) until one from near
+// that date arrives (LIVE.jump; a minute at most — the true lakes' jump to February takes ~20 s)
+for (const b of $('seasons').children) b.addEventListener('click', () => {
+  const yf = SEASON_YF[b.dataset.season];
+  S.season = seasonOf(yf); S.snow = b.dataset.season === 'winter';   // (February: the lakes frozen, the land under snow — the sim's ice confirms it)
+  if (LIVE.worker) { LIVE.worker.postMessage({ type: 'season', yf }); LIVE.jump = { yf, at: performance.now() }; }
+  LIVE.lastSeason = S.season + (S.snow ? '+snow' : ''); applySeason(); buildSection();
+});
 for (const b of $('shows').children) b.addEventListener('click', () => { S.show = b.dataset.show; if (LIVE.worker) LIVE.worker.postMessage({ type: 'show', show: S.show }); for (const x of $('shows').children) x.setAttribute('aria-pressed', String(x === b)); if (!S.cut && S.show !== 'plain') { const c = $('t-cut'); c.checked = true; c.dispatchEvent(new Event('change')); } buildSection(); });
-$('play').addEventListener('click', () => { LIVE.run = !LIVE.run; $('play').textContent = LIVE.run ? '⏸ pause' : '▶ play'; LIVE.worker?.postMessage({ type: 'run', run: LIVE.run }); });
-for (const b of $('speeds').children) b.addEventListener('click', () => { LIVE.speed = +b.dataset.speed; LIVE.worker?.postMessage({ type: 'speed', speed: LIVE.speed }); for (const x of $('speeds').children) x.setAttribute('aria-pressed', String(x === b)); });
-$('exag').addEventListener('input', e => { S.exag = +e.target.value; applyHeight(); });
+$('play').addEventListener('click', () => { LIVE.run = !LIVE.run; LIVE.lastW = 0; $('play').textContent = LIVE.run ? '⏸ pause' : '▶ play'; LIVE.worker?.postMessage({ type: 'run', run: LIVE.run }); });   // (lastW: the rate is measured afresh)
+for (const b of $('speeds').children) b.addEventListener('click', () => { LIVE.speed = +b.dataset.speed; LIVE.rate = LIVE.speed; LIVE.lastW = 0; LIVE.worker?.postMessage({ type: 'speed', speed: LIVE.speed }); for (const x of $('speeds').children) x.setAttribute('aria-pressed', String(x === b)); });
+// (the land-height slider: while it is dragged the ground — the true world's 630,000 normals — at most once a frame and the section;
+// the trees, a million in the true world, once it is let go)
+let heightQ = false;
+$('exag').addEventListener('input', e => {
+  S.exag = +e.target.value; $('exv').textContent = `×${S.exag}`;
+  if (!heightQ) { heightQ = true; requestAnimationFrame(() => { heightQ = false; placeGround(); buildSection(); }); }
+});
+$('exag').addEventListener('change', e => { S.exag = +e.target.value; applyHeight(); });
 // (the cut opens through Upper's 18-ft north basin, the camera facing the water column; the slider moves it)
 const cutAt = y => Math.min(1, Math.max(0, (y - Y0 - 8) / (GEO.YMAX - Y0 - 16)));
 $('t-cut').addEventListener('change', e => {
   S.cut = e.target.checked; $('cutpos').disabled = !S.cut;
   if (S.cut) { S.cutPos = cutAt(uy); $('cutpos').value = String(Math.round(S.cutPos * 1000)); }
-  buildSection(); if (S.cut) rig.set(new THREE.Vector3(ux, -2.2, -cutY()), 0, -0.12, 55);
+  buildSection(); if (S.cut) { letGo(); rig.set(new THREE.Vector3(ux, -2.2, -cutY()), 0, -0.12, 55); }
 });
-$('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; buildSection(); if (S.cut) rig.goal.target.z = -cutY(); });
+$('cutpos').addEventListener('input', e => { S.cutPos = +e.target.value / 1000; buildSection(); if (S.cut) { letGo(); rig.goal.target.z = -cutY(); } });
 $('t-clear').addEventListener('change', e => { S.clear = e.target.checked; styleWater(); });
 $('t-water').addEventListener('change', e => { S.water = e.target.checked; styleWater(); });
 $('t-trees').addEventListener('change', e => { S.trees = e.target.checked; for (const m of treeMeshList()) m.visible = S.trees; shrubMesh.visible = S.trees; });
+// THE FAR SHORE IN THE MIRROR (off by default — the human, 2026-10-23): the far tiers' woods live on PLANT_LAYER, which the reflection's
+// camera doesn't see; on, they join layer 0 too and a calm lake mirrors the whole far treeline (≈ a third more of the GPU, true world)
+const applyMirror = () => { for (const m of [TIERS.farConifer, TIERS.farBroad]) if (m) { if ($('t-mirror').checked) m.layers.enable(0); else m.layers.disable(0); } };
+$('t-mirror').addEventListener('change', applyMirror); applyMirror();
 $('t-fish').addEventListener('change', e => { S.fish = e.target.checked; fishView.mesh.visible = fishView.shadow.visible = bedView.group.visible = S.fish; });
 $('t-plants').addEventListener('change', e => { S.plants = e.target.checked; plantsView.group.visible = S.plants; tintBed(); });
 $('t-wild').addEventListener('change', e => { S.wild = e.target.checked; wildView.group.visible = shallowsView.group.visible = S.wild; $('findwild').disabled = !S.wild; if (!S.wild) { FIND.follow = null; $('watching').textContent = ''; } });
@@ -846,7 +1025,7 @@ $('findwild').addEventListener('click', () => {
   if (!L.length) { FIND.follow = null; $('watching').textContent = 'none out on the lakes just now'; return; }
   const i0 = L.findIndex(q => q.key === FIND.last), k0 = i0 >= 0 ? L[i0].kind : null; let a = L[0];
   for (let j = 1; j <= L.length; j++) { const q = L[(Math.max(0, i0) + j) % L.length]; if (i0 < 0) { a = L[0]; break; } if (q.kind !== k0 || j === L.length) { a = q; break; } }
-  FIND.last = a.key; FIND.follow = a;
+  letGo(); FIND.last = a.key; FIND.follow = a;   // (Find owns the camera now: the picked fish's follow lets go)
   const p = a.at(); if (!p) return; const k = S.fishScale > 1 ? Math.min(S.fishScale, Math.max(1, 0.5 * S.fishScale / a.size)) : 1;
   // (the camera over the open water if it can be — not inside the trees on the bank: the turn about the animal that puts it farthest from land)
   // (a bird on a treetop seen from out on the water, a little above it; one flying from farther back and below, against the sky; the
@@ -856,27 +1035,33 @@ $('findwild').addEventListener('click', () => {
   rig.set(new THREE.Vector3(p[0], p[1], p[2]), yaw, pitch, d);
   $('watching').textContent = 'watching ' + a.name;
 });
-// (turning about it and zooming keep following; panning — a right- or shift-drag — or moving with the keys lets it go)
-const unfollow = () => { if (FIND.follow) { FIND.follow = null; $('watching').textContent = ''; } };
-canvas.addEventListener('pointerdown', e => { if (e.button === 2 || e.shiftKey) unfollow(); });
-addEventListener('keydown', e => { if (!(e.target instanceof HTMLInputElement) && 'wasdrf'.includes(e.key.toLowerCase())) unfollow(); });
+// (turning about it and zooming keep following; panning — a right- or shift-drag, two fingers — or moving with the keys lets it
+// go: the rig's onPan → letGo)
 function wildOut() {   // what is out on the lakes now (the Show group's line)
-  const c = wildView.stats(), sh = shallowsView.stats(), N = { loon: 'loons', heron: 'herons', kingfisher: 'kingfishers', osprey: 'ospreys', eagle: 'eagles', cmerganser: 'common mergansers', hmerganser: 'hooded mergansers', otter: 'otters', mink: 'mink', raccoon: 'raccoons', moose: 'moose', bear: 'bears', deer: 'deer', angler: 'boats', shore: 'a bank angler', iceAngler: 'ice camps' };
-  const out = Object.entries(c).filter(([k, n]) => n > 0 && N[k]).map(([k, n]) => k === 'shore' ? N[k] : n + ' ' + N[k]);
-  if (sh.basking) out.push(sh.basking + ' turtles basking (near)');
+  const c = wildView.stats(), sh = shallowsView.stats();
+  const N = { loon: ['loon', 'loons'], heron: ['heron', 'herons'], kingfisher: ['kingfisher', 'kingfishers'], osprey: ['osprey', 'ospreys'], eagle: ['eagle', 'eagles'], cmerganser: ['common merganser', 'common mergansers'], hmerganser: ['hooded merganser', 'hooded mergansers'], otter: ['otter', 'otters'], mink: ['mink', 'mink'], raccoon: ['raccoon', 'raccoons'], moose: ['moose', 'moose'], bear: ['bear', 'bears'], deer: ['deer', 'deer'], angler: ['boat', 'boats'], iceAngler: ['ice camp', 'ice camps'] };
+  const out = Object.entries(c).filter(([k, n]) => n > 0 && (N[k] || k === 'shore')).map(([k, n]) => k === 'shore' ? (n > 1 ? n + ' bank anglers' : 'a bank angler') : n + ' ' + N[k][n === 1 ? 0 : 1]);
+  if (sh.basking) out.push(sh.basking + (sh.basking === 1 ? ' turtle' : ' turtles') + ' basking (near)');
   $('wildout').textContent = out.length ? 'Out now: ' + out.join(', ') : '';
 }
 for (const b of $('fishsize').children) b.addEventListener('click', () => { S.fishScale = +b.dataset.scale; for (const x of $('fishsize').children) x.setAttribute('aria-pressed', String(x === b)); });
-$('t-labels').addEventListener('change', e => document.body.classList.toggle('nolabels', !e.target.checked));
-$('t-notes').addEventListener('change', e => document.body.classList.toggle('nonotes', !e.target.checked));
+$('t-labels').addEventListener('change', e => { LBL.names = e.target.checked; document.body.classList.toggle('nolabels', !LBL.names); });
+$('t-notes').addEventListener('change', e => { LBL.notes = e.target.checked; document.body.classList.toggle('nonotes', !LBL.notes); });
 $('fold').addEventListener('click', () => { const f = $('ctl').classList.toggle('folded'); $('fold').textContent = f ? '+' : '–'; $('fold').setAttribute('aria-expanded', String(!f)); });
 
 // ---------- the live water model and its clock ----------
 // THE SIM runs in a Worker (render3/sim3worker.js): each frame the view sends the time passed — only once the last reply is in —
 // and draws the latest snapshot meanwhile. W3: the water grid's geometry, for the cut-away's and the ice's lookups
 const LIVE = { tNow: 0, worker: null, snap: null, waiting: false, dtAcc: 0, rate: 1, lastT: 0, lastW: 0, run: true, speed: 1, lastSeason: null, sinceUI: 0, sinceSection: 0, drawn: 0, field: null, fieldShow: 'plain' };
-const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, early July, early Oct, Feb)
-const seasonOf = yf => yf < 0.25 ? 'spring' : yf < 0.5 ? 'summer' : yf < 0.75 ? 'fall' : 'winter';
+const SEASON_YF = { spring: 0.24, summer: 0.39, fall: 0.59, winter: 0.95 };   // the season buttons' dates (late May, late July, early Oct, Feb)
+// THE LEAVES BY THE DATE, THE SNOW BY THE ICE (the seasons went by calendar quarter: from March 1 to ice-out the land lost its snow
+// and the hardwoods leafed out beside a frozen lake; fall colours from September 1; snow from December 1, frozen or not). A Maine
+// year (yf 0 = March 1): leaf-out about May 15, full summer green by June 10, the colours turning from about Sept 20 (peak early to
+// mid October), bare by November 1. The snow on the land comes and goes with the sim's ice (iceShare: the share of its water
+// columns frozen; on past half, off below a quarter)
+const LEAF = { out: 75 / 365, full: 101 / 365, turn: 203 / 365, off: 245 / 365 };
+const seasonOf = yf => yf < LEAF.out || yf >= LEAF.off ? 'winter' : yf < LEAF.full ? 'spring' : yf < LEAF.turn ? 'summer' : 'fall';
+const iceShare = ice => { let n = 0; for (let i = 0; i < ice.length; i++) if (ice[i] > 0.5) n++; return n / Math.max(1, ice.length); };
 const MONTHS = ['March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February'];
 const MDAYS = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28];
 function dateOf(yf) { let d = yf * 365; for (let m = 0; m < 12; m++) { if (d < MDAYS[m]) return `${MONTHS[m]} ${1 + Math.floor(d)}`; d -= MDAYS[m]; } return 'February 28'; }
@@ -889,10 +1074,10 @@ function onSnap(m) {
   if (m.type === 'stats') { LIVE.data3?.onStats(m); return; }
   if (m.type === 'history') { LIVE.data3?.onHistory(m.hist); return; }
   if (m.type === 'progress') { LIVE.progress = `${m.text} (${m.s.toFixed(1)} s)`; return; }
-  if (m.type === 'error') { LIVE.failed = m.text; $('status').textContent = 'the simulation stopped: ' + m.text.split(String.fromCharCode(10))[0]; console.error(m.text); return; }
+  if (m.type === 'error') { simFailed(m.text.split(String.fromCharCode(10))[0]); console.error(m.text); return; }
   if (m.type === 'plants') { if (plantsView.setData(m.shoots, m.yf, m.mus, m.dead)) tintBed(); if (m.surf) risesView.setSurf(m.surf); if (m.bed) bedView.setData(m.bed, m.wY); shallowsView.setData(m.herp, m.tad, m.fauna, m.wood, m.yf); return; }
   if (m.type !== 'snap') return;
-  LIVE.snap = m; LIVE.waiting = false; if (m.sel) LIVE.data3?.onSel(m.sel);
+  LIVE.snap = m; LIVE.snapAt = performance.now() / 1000; LIVE.waiting = false; if (m.sel) LIVE.data3?.onSel(m.sel);
   if (m.rises && m.rises.length && S.fish) risesView.add(m.rises, LIVE.tNow, S.fishScale);   // (on the frame loop's clock)
   if (m.field) { LIVE.field = m.field; LIVE.fieldShow = m.show; }
   if (m.wild && m.wild.length && S.wild) wildView.onKill(m.wild);   // (the fish the sim's wildlife and anglers took: a dive, a plunge, a fish on)
@@ -904,62 +1089,89 @@ function lightByDay() {   // the sun's height and the sky's brightness follow th
   if (LIVE.under && S.clear) hemi.intensity *= 2.2;   // (under water, seeing into it: a fill light for watching — tea water is dim)
   const ang = (e.t - 0.25) * Math.PI * 2; sun.position.set(-300 * Math.cos(ang), 60 + 420 * Math.max(0.05, Math.sin(ang)), 260);
   sky.material.color = sky.material.color || new THREE.Color(); scene.environmentIntensity = 0.12 + 0.45 * day;
-  skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover);
+  skyDim.value = 0.12 + 0.88 * day * (1 - 0.35 * cover); airFog.color.copy(FOG_DAY).multiplyScalar(skyDim.value); AIR.col.value.copy(airFog.color);   // (the haze dims with the sky)
   WU.day.value = 0.1 + 0.9 * day * (1 - 0.3 * cover);   // (the water's light: render3/water3.js)
 }
 function liveUI() {
   const e = LIVE.snap; if (!e) return;
-  // the speed the sim actually runs at (a busy machine can't keep up with the higher ones)
-  const now = performance.now(); if (LIVE.lastW) { const r = (e.time - LIVE.lastT) / Math.max(1e-3, (now - LIVE.lastW) / 1000); LIVE.rate += (r - LIVE.rate) * 0.3; } LIVE.lastT = e.time; LIVE.lastW = now;
+  // the speed the sim actually runs at (a busy machine — or a tab the browser throttles — can't keep up with the speed asked, 1×
+  // included); measured while it runs, a jump's leap in the sim's time skipped
+  const now = performance.now();
+  // (a jump in progress — the true lakes' spring-to-February spin takes ~20 s — is said, and is no measure of the speed)
+  if (LIVE.jump) { const d = Math.abs(e.yf - LIVE.jump.yf); if (Math.min(d, 1 - d) >= 0.03 && now - LIVE.jump.at < 60000) { $('clock').textContent = `jumping to ${dateOf(LIVE.jump.yf)}…`; LIVE.lastW = 0; return; } LIVE.jump = null; LIVE.rate = LIVE.speed; }
+  const st = e.simT ?? e.time;   // (the fish's clock: the water's, e.time, moves a simulated minute at a time at the fine speeds — the rate read 0 between)
+  if (LIVE.lastW && LIVE.run) { const r = (st - LIVE.lastT) / Math.max(1e-3, (now - LIVE.lastW) / 1000); if (r >= 0 && r < LIVE.speed * 50 + 10) LIVE.rate += (r - LIVE.rate) * 0.3; }
+  LIVE.lastT = st; LIVE.lastW = now;
   const yf = e.yf, hh = Math.floor(e.t * 24), mm = Math.floor((e.t * 24 - hh) * 60);
-  $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp0 ?? 0).toFixed(0)} °C${LIVE.run && LIVE.speed > 1 && LIVE.rate < LIVE.speed * 0.9 ? ` · running at ${LIVE.rate >= 100 ? Math.round(LIVE.rate).toLocaleString() : LIVE.rate.toFixed(1)}×` : ''}`;
-  const ss = seasonOf(yf); if (ss !== LIVE.lastSeason) { LIVE.lastSeason = ss; S.season = ss; applySeason(); }
+  $('clock').textContent = `${dateOf(yf)} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} · ${['clear', 'cloudy', 'rain', 'storm'][e.weather]}, wind ${e.windSpeed.toFixed(0)} m/s · ${(e.temp0 ?? 0).toFixed(0)} °C${LIVE.run && LIVE.rate < LIVE.speed * 0.9 ? ` · running at ${LIVE.rate >= 100 ? Math.round(LIVE.rate).toLocaleString() : LIVE.rate.toFixed(LIVE.rate < 1 ? 2 : 1)}×` : ''}`;
+  // (a jump asked for: the snapshots from before it don't undo the look it set — until one from near its date arrives)
+  const sh = iceShare(e.ice), snow = sh > 0.5 ? true : sh < 0.25 ? false : S.snow, ss = seasonOf(yf), key = ss + (snow ? '+snow' : '');
+  if (key !== LIVE.lastSeason) { LIVE.lastSeason = key; S.season = ss; S.snow = snow; applySeason(); }
   if (!WORLD_TRUE || (LIVE.iceN = (LIVE.iceN || 0) + 1) % 8 === 1) placeIce(e.ice);   // (the true world's 630,000 vertices: every 2 s)
 }
+function simFailed(text) {   // (the sim's worker stopped: said, and kept said — the status line's refresh overwrote it within 16 frames)
+  LIVE.failed = text || 'error'; $('status').textContent = 'the simulation stopped: ' + LIVE.failed;
+}
 // the link between the two worlds, and what the panel says of the one shown
-function worldLink() {
-  if (!WORLD_TRUE) return;
-  $('worldlink').href = 'w3.html'; $('worldlink').textContent = 'Open the 1/10-size lakes instead';
-  $('about').textContent = 'Upper and Lower Hot Brook Lake and the brook between them at their REAL size — 369 and 274 ha, the brook 154 m — with their real depths (the 1949 survey soundings) and the land at its true height. The water and its fish are simulated live: about 1.2 million fish of the eleven species recorded in these lakes, at the real lakes\' numbers, each fish (or each school) with its own brain. The fish near where you look live second by second; the rest live their time in blocks.';
-  $('exv').nextElementSibling.textContent = '×3'; $('exv').previousElementSibling.textContent = 'true';
+function worldLink() {   // (the page is written for the true-size lakes, the default; the 1/10 world says its own)
+  if (WORLD_TRUE) return;
+  $('worldlink').href = 'w3.html'; $('worldlink').textContent = 'Open the lakes at their real size';
+  $('about').textContent = 'Upper and Lower Hot Brook Lake and the brook between them, at 1/10 of their real size with their real depths (the 1949 survey soundings). The land is drawn at the lakes\' scale; the water\'s depth, and everything that lives in it, is true size. The water and its fish are simulated live: about 13,000 fish of the eleven species recorded in these lakes, at the real lakes\' numbers, each fish (or each school of perch, white perch and killifish) with its own brain.';
+  $('exv').nextElementSibling.textContent = 'true metres'; $('exv').previousElementSibling.textContent = 'in proportion';
 }
 
 // ---------- frame ----------
-function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+// (the pixel ratio too: a browser zoom or another monitor changes it — the view was left blurry or oversampled; a move between
+// monitors fires no resize, so the ratio's own media query is watched as well)
+function resize() { const w = innerWidth, h = innerHeight; renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
+(function watchDpr() { matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener('change', () => { resize(); watchDpr(); }, { once: true }); })();
 let last = performance.now(), fps = 60, nFrames = 0; const UW_DIR = new THREE.Vector3(), SUN4 = [0, 1, 0, 0];
 async function start() {
   await renderer.init();
-  if (WORLD_TRUE) { const ex = $('exag'); ex.min = '1'; ex.max = '3'; ex.step = '0.25'; ex.setAttribute('aria-label', 'Land height: 1 = true metres'); }
-  $('exag').value = String(S.exag); worldLink();
+  if (!WORLD_TRUE) { const ex = $('exag'); ex.min = '1'; ex.max = '10'; ex.step = '0.5'; ex.setAttribute('aria-label', 'Land height: 1 = in proportion to the lakes, 10 = true metres'); }
+  $('exag').value = String(S.exag); $('exv').textContent = `×${S.exag}`; worldLink();   // (the true world's ×1: the page's markup says ×3)
   // the 3-D water (src/w3/env3.js + chem3.js), opening in late May, and its fish at the real lakes' numbers — in the Worker
   LIVE.worker = new Worker(new URL('./sim3worker.js' + WORLD_Q, import.meta.url), { type: 'module' });
   // (the worker says when its modules have loaded — the true world's geometry awaits its 5-MB data module, and a message sent
-  // before its handler exists would be lost — and only then is told to found the lakes)
-  LIVE.worker.onmessage = ev => { if (ev.data.type === 'loaded') LIVE.worker.postMessage({ type: 'init', cam: [rig.goal.target.x, -rig.goal.target.z, rig.goal.dist] }); else onSnap(ev.data); };
+  // before its handler exists would be lost — and only then is told to found the lakes; with it, what was chosen meanwhile: a
+  // pause, a speed, the cut-away's field — those clicks went to a worker not listening yet)
+  LIVE.worker.onmessage = ev => {
+    if (ev.data.type !== 'loaded') { onSnap(ev.data); return; }
+    const w = LIVE.worker; w.postMessage({ type: 'init', cam: [rig.goal.target.x, -rig.goal.target.z, rig.goal.dist] });
+    w.postMessage({ type: 'run', run: LIVE.run }); w.postMessage({ type: 'speed', speed: LIVE.speed }); if (S.show !== 'plain') w.postMessage({ type: 'show', show: S.show });
+  };
   LIVE.data3 = makeData3({ LIVE, camera, canvas, rig });   // (the data page and click-a-fish: render3/data3.js)
-  LIVE.worker.onerror = ev => { $('status').textContent = 'the simulation stopped: ' + (ev.message || 'error'); console.error(ev); };
+  LIVE.worker.onerror = ev => { simFailed(ev.message || 'error'); console.error(ev); };
+  LIVE.worker.onmessageerror = ev => { simFailed('a message from it could not be read'); console.error(ev); };
   placeGround(); applyLook(); liveUI(); applySeason(); buildSection();
   resize(); go('Both lakes'); $('busy').classList.add('done');
   const backend = renderer.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
   renderer.setAnimationLoop(now => {
-    const dt = Math.min(0.1, (now - last) / 1000); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
+    // (dt, capped, for the animation; the sim is sent the real time passed — capped at 1 s, the worker limits its own catch-up — or
+    // below 10 fps it ran slower than real time at 1×: 0.1× in a throttled tab, the clock seeming frozen)
+    const raw = Math.max(0, (now - last) / 1000), dt = Math.min(0.1, raw); last = now; fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
+    if (FIND.follow && LIVE.data3?.following?.()) { FIND.follow = null; $('watching').textContent = ''; }   // (the picked fish's follow, ticked since: it owns the camera)
     LIVE.data3?.update(); rig.update(dt); LIVE.tNow = now / 1000;
     if (Number.isFinite(TREE_R) && S.trees && treeAt && Math.hypot(rig.goal.target.x - treeAt[0], -rig.goal.target.z - treeAt[1]) > TREE_R / 5) placeTrees(true);
     else if (S.trees && detAt && Math.hypot(camera.position.x - detAt[0], -camera.position.z - detAt[1]) > DET_MOVE) placeNearTrees();   // (the near tier follows the camera)
-    liveTick(dt); lightByDay();
+    liveTick(Math.min(1, raw)); lightByDay();
     if (S.plants) plantsView.update(rig.target.x, -rig.target.z, rig.dist);
     risesView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
     if (S.fish) bedView.update(now / 1000, rig.target.x, -rig.target.z, rig.dist);
     if (S.wild && LIVE.snap) {   // (LIVE.wildMs: the animals' CPU time a frame, smoothed)
-      const w0 = performance.now(); wildView.update(now / 1000, LIVE.snap, S.fishScale, camera.position); shallowsView.update(now / 1000, LIVE.snap, rig.target.x, -rig.target.z, rig.dist, camera.position, S.fishScale);
+      const w0 = performance.now(); wildView.update(now / 1000, LIVE.snap, S.fishScale, camera.position, camera); shallowsView.update(now / 1000, LIVE.snap, rig.target.x, -rig.target.z, rig.dist, camera.position, S.fishScale);
       LIVE.wildMs = (LIVE.wildMs || 0) * 0.95 + (performance.now() - w0) * 0.05;
     }
     if (FIND.follow) { const p = FIND.follow.at(); if (p) rig.goal.target.set(p[0], p[1], p[2]); else { FIND.follow = null; $('watching').textContent = ''; } }
     if (LIVE.snap && S.fish) {   // (the sun's direction and strength for the fish's shadows on the bed)
       const sp = sun.position, sl = sp.length() || 1, open = 1;
-      SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.season === 'winter' ? 0 : open);
-      LIVE.drawn = fishView.update(LIVE.snap, Math.min(1, LIVE.snap.acc / (LIVE.snap.h || 0.1)), S.fishScale, 1 - Math.min(1, LIVE.snap.sun * 4), now / 1000, camera.position.x, -camera.position.z, SUN4, risesView.leapAt);
+      SUN4[0] = sp.x / sl; SUN4[1] = sp.y / sl; SUN4[2] = sp.z / sl; SUN4[3] = Math.min(1, Math.max(0, LIVE.snap.sun * 1.6)) * (1 - 0.7 * ENVC.CLOUD_COVER[LIVE.snap.weather]) * (S.snow ? 0 : open);   // (none under the snow-covered ice)
+      // (the fish between the snapshot's last two steps: its leftover acc/h, advancing with the real time since it came at the rate
+      // the sim is keeping — held at acc/h the fish stood still between snapshots and jumped at each)
+      const sn = LIVE.snap, adv = LIVE.run ? Math.max(0, now / 1000 - LIVE.snapAt) * Math.min(LIVE.speed, Math.max(0, LIVE.rate)) : 0, alpha = Math.min(1, (sn.acc + adv) / (sn.h || 0.1));
+      LIVE.drawn = fishView.update(sn, alpha, S.fishScale, 1 - Math.min(1, sn.sun * 4), now / 1000, camera.position.x, -camera.position.z, SUN4, risesView.leapAt,
+        camera.position.y, renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360)));   // (its level of detail: the eye's height, the screen's pixels a radian)
     }
     if ((LIVE.sinceUI += dt) > 0.25) { LIVE.sinceUI = 0; liveUI(); if (S.wild && (LIVE.wildN = (LIVE.wildN || 0) + 1) % 8 === 0) wildOut(); }
     if (S.cut && S.show !== 'plain' && (LIVE.sinceSection += dt) > 0.5) { LIVE.sinceSection = 0; buildSection(); }
@@ -967,7 +1179,7 @@ async function start() {
     const inBandXY = cx > X0 && cx < GEO.XMAX && cy > Y0 && cy < GEO.YMAX;
     const under = inBandXY && GEO.bodyAt(cx, cy) !== LAND && ch < GEO.levelAt(cx, cy) && S.water;
     WU.under.value = under ? 1 : 0; WU.camDepth.value = under ? GEO.levelAt(cx, cy) - ch : 0; LIVE.under = under;
-    if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; }
+    if (under) { camera.getWorldDirection(UW_DIR); underwaterFogColor(waterFog.color, UW_DIR.y); waterFog.density = WU.density.value; WU.fogCol.value.copy(waterFog.color); }   // (fogCol: the surface's underside fades into it)
     // (under water the tea-coloured water hides everything past ~20 m: the land's trees aren't drawn — the true world's million)
     if (under !== LIVE.wasUnder) { LIVE.wasUnder = under; const tv = S.trees && !under; for (const m of treeMeshList()) m.visible = tv; shrubMesh.visible = tv; }
     scene.fog = under ? waterFog : airFog; sky.visible = !under; scene.background = under ? waterFog.color : null; specks.visible = under;
@@ -978,5 +1190,5 @@ async function start() {
     if ((nFrames++ & 15) === 0 && !LIVE.failed) $('status').textContent = `${backend} · ${fps.toFixed(0)} fps · land ×${S.exag} · water model ${W3.G.NCELL.toLocaleString()} cells · ${LIVE.snap ? Math.round(LIVE.snap.count).toLocaleString() + ' fish (' + LIVE.snap.agents.toLocaleString() + ' brains) · ' + (LIVE.snap.nyAll ?? LIVE.snap.ny).toLocaleString() + ' schools of young' + (WORLD_TRUE ? ` · ${LIVE.snap.nf.toLocaleString()} drawn near the view` : '') + (LIVE.snap.gpu ? ' · fast-forward on the GPU' : '') : 'starting the lakes…' + (LIVE.progress ? ' ' + LIVE.progress : '')}`;
   });
 }
-start().catch(e => { $('busy').textContent = 'Could not start the 3-D view: ' + e.message; console.error(e); });
+start().catch(e => { $('busy').classList.remove('done'); busyFail(e.message); console.error(e); });
 window.hb3 = { renderer, scene, camera, rig, GEO, go, S, LIVE, trees: TREES, tiers: TIERS, fishView, plantsView, risesView, bedView, wildView, shallowsView, apply: { look: applyLook, season: applySeason, height: applyHeight, section: buildSection } };

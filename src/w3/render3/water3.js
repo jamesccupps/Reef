@@ -23,6 +23,7 @@ export const WU = {
   // under water: the fog's colours (looking up toward the bright surface, level, down into the dark) and its density /m
   up: uniform(new THREE.Color(0x9fa96c)), level: uniform(new THREE.Color(0x4b4a2a)), down: uniform(new THREE.Color(0x1e1e12)),
   density: uniform(0.12),
+  fogCol: uniform(new THREE.Color(0x3b3b20)),    // the underwater fog's colour this frame (main3: underwaterFogColor's) — the surface's underside fades into it
   on: uniform(1),                                // 0 for the depth chart's look (its colours are the depths)
 };
 
