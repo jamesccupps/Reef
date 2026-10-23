@@ -443,17 +443,18 @@ export class GpuFish {
     await this.run(enc => this._pass(enc, this.P.v_drawn, [this.bg0, this.bgV], Math.max(this.n, this.ny, 1), 256));
     const V = new Float32Array(await this.read(this.B.VO)), Vu = new Uint32Array(V.buffer), H = this.VHEAD;
     const nf = Math.min(Vu[0], this.VMAXF), ny = Math.min(Vu[1], this.VMAXY), fb = new Float32Array(nf * 18), yb = new Float32Array(ny * 12), next = new Map(); let count = 0;
+    const fu = new Uint32Array(fb.buffer), yu = new Uint32Array(yb.buffer);   // (the ids as u32 bits, as packDrawn writes them: a float is exact only to 2^24)
     for (let q = 0; q < nf; q++) {
       const o = H + q * 14, b = q * 18, id = Vu[o + 10], p = prev && prev.get(id);
       if (p) { fb[b] = p[0]; fb[b + 1] = p[1]; fb[b + 2] = p[2]; fb[b + 3] = p[3]; fb[b + 4] = p[4]; } else for (let t = 0; t < 5; t++) fb[b + t] = V[o + t];
       for (let t = 0; t < 10; t++) fb[b + 5 + t] = V[o + t];
-      fb[b + 15] = id; fb[b + 16] = V[o + 11]; fb[b + 17] = V[o + 12]; count += V[o + 7];
+      fu[b + 15] = id; fb[b + 16] = V[o + 11]; fb[b + 17] = V[o + 12]; count += V[o + 7];
       next.set(id, [V[o], V[o + 1], V[o + 2], V[o + 3], V[o + 4]]);
     }
     for (let q = 0; q < ny; q++) {
       const o = H + this.VMAXF * 14 + q * 10, b = q * 12, id = Vu[o + 6], p = prev && prev.get('y' + id);
       if (p) { yb[b] = p[0]; yb[b + 1] = p[1]; yb[b + 2] = p[2]; } else { yb[b] = V[o]; yb[b + 1] = V[o + 1]; yb[b + 2] = V[o + 2]; }
-      yb[b + 3] = V[o]; yb[b + 4] = V[o + 1]; yb[b + 5] = V[o + 2]; yb[b + 6] = V[o + 3]; yb[b + 7] = V[o + 4]; yb[b + 8] = V[o + 5]; yb[b + 9] = id; yb[b + 10] = V[o + 7]; yb[b + 11] = V[o + 8];
+      yb[b + 3] = V[o]; yb[b + 4] = V[o + 1]; yb[b + 5] = V[o + 2]; yb[b + 6] = V[o + 3]; yb[b + 7] = V[o + 4]; yb[b + 8] = V[o + 5]; yu[b + 9] = id; yb[b + 10] = V[o + 7]; yb[b + 11] = V[o + 8];
       next.set('y' + id, [V[o], V[o + 1], V[o + 2]]);
     }
     return { fb, yb, nf, ny, count, poses: next, selSlot: Vu[2] === 0xFFFFFFFF ? -1 : Vu[2] };

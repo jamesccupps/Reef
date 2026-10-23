@@ -40,22 +40,25 @@ export function drawnOf(F, list, near, cam, trueWorld) {
   for (const a of list) if (a.alive && (a.x - cx) ** 2 + (a.y - cy) ** 2 < R2) out.push(a);
   return out;
 }
-// the drawn fish and young packed (a fish that has just come into the focus last remembered its pose long ago: drawn where it is)
+// the drawn fish and young packed (a fish that has just come into the focus last remembered its pose long ago: drawn where it is).
+// THE IDS AS 32-BIT INTEGERS, through a Uint32Array on the same buffer (a float holds an integer exactly only to 2^24, and the second
+// shard numbers its fish from 1e9 — shard3 ID_STRIDE — where floats are 64 apart: picked fish were lost, schools shared their
+// swimmers); every reader takes them back the same way (fish3view, data3, the GPU's gpufish drawn)
 export function packDrawn(F, fs, Y) {
   const fresh = a => !(F.focus && Math.abs(a._px - a.x) + Math.abs(a._py - a.y) > 5);
-  const fb = new Float32Array(fs.length * FISH_STRIDE), yb = new Float32Array(Y.length * YOY_STRIDE);
+  const fb = new Float32Array(fs.length * FISH_STRIDE), yb = new Float32Array(Y.length * YOY_STRIDE), fu = new Uint32Array(fb.buffer), yu = new Uint32Array(yb.buffer);
   let o = 0, count = 0;
   for (const a of fs) {
     if (fresh(a)) { fb[o++] = a._px; fb[o++] = a._py; fb[o++] = a._pz; fb[o++] = a._pyaw; fb[o++] = a._ppitch; }
     else { fb[o++] = a.x; fb[o++] = a.y; fb[o++] = a.z; fb[o++] = a.yaw; fb[o++] = a.pitch; }
     fb[o++] = a.x; fb[o++] = a.y; fb[o++] = a.z; fb[o++] = a.yaw; fb[o++] = a.pitch;
-    fb[o++] = a.L; fb[o++] = a.k; fb[o++] = a.n; fb[o++] = a.spd; fb[o++] = a.bed; fb[o++] = a.id; fb[o++] = a.school ? 1 : 0; fb[o++] = a.bodyMul;
+    fb[o++] = a.L; fb[o++] = a.k; fb[o++] = a.n; fb[o++] = a.spd; fb[o++] = a.bed; fu[o++] = a.id; fb[o++] = a.school ? 1 : 0; fb[o++] = a.bodyMul;
     count += a.n;
   }
   o = 0;
   for (const q of Y) {
     if (fresh(q)) { yb[o++] = q._px; yb[o++] = q._py; yb[o++] = q._pz; } else { yb[o++] = q.x; yb[o++] = q.y; yb[o++] = q.z; }
-    yb[o++] = q.x; yb[o++] = q.y; yb[o++] = q.z; yb[o++] = q.L; yb[o++] = q.k; yb[o++] = q.n; yb[o++] = q.id; yb[o++] = q.bed;
+    yb[o++] = q.x; yb[o++] = q.y; yb[o++] = q.z; yb[o++] = q.L; yb[o++] = q.k; yb[o++] = q.n; yu[o++] = q.id; yb[o++] = q.bed;
     yb[o++] = q.gref && q.gref.alive && q.gref.nt > 0 ? 1 : 0;   // (a brood its parent still guards)
   }
   return { fb, yb, nf: fs.length, ny: Y.length, count };
@@ -64,10 +67,13 @@ export function packDrawn(F, fs, Y) {
 // doesn't hold it (a shard: another one does)
 export function selInfoOf(F, env, memo, selId, selKind, fine) {
   if (selId < 0) return null;
-  if (!memo.sel || memo.sel.id !== selId) memo.sel = (selKind === 'yoy' ? F.yoy : F.fish).find(a => a.id === selId) || null;
+  // (found again when the one held left: a fish handed to the other shard and back is a new object here; a young school's going has no cause)
+  const lost = F.shard && memo.sel && memo.sel.id === selId && !memo.sel.alive && (memo.sel.cause === 'handed' || selKind === 'yoy' && !memo.sel.cause);
+  if (!memo.sel || memo.sel.id !== selId || lost) memo.sel = (selKind === 'yoy' ? F.yoy : F.fish).find(a => a.id === selId && a.alive) || (lost ? memo.sel : null);
   if (!memo.sel) return null;
   const a = memo.sel, S = a.s, base = { id: a.id, kind: selKind, key: S.key, name: S.name || S.key, n: a.n, L: a.L, W: a.W, age: a.age / CLOCK3.YEAR_LEN, x: a.x, y: a.y, z: a.z, bed: a.bed };
-  if (!a.alive) return a.cause === 'handed' ? null : { ...base, gone: true, cause: a.cause || 'died' };   // (handed to another shard: it reports it)
+  // (handed to another shard: it reports it; a young school gone with its fish still in it recruited — fish3 _recruit — one emptied died out)
+  if (!a.alive) return a.cause === 'handed' ? null : { ...base, gone: true, cause: a.cause || (selKind === 'yoy' ? (a.n >= 1 ? 'recruited' : 'died') : 'died') };
   if (selKind === 'yoy') return { ...base, guarded: !!(a.gref && a.gref.alive && a.gref.nt > 0), T: a.j >= 0 ? env.temp[a.j] : null, o2: a.j >= 0 ? env.chem.o2[a.j] * ENV.O2_MGL : null };
   const doing = a.nt > 0 ? 'guarding its nest' : a.esc ? 'escaping low oxygen' : a.threat && a.fear > 0.2 ? `wary of a ${a.threat.s.name || a.threat.s.key}` : a.fk === 1 && a.prey ? `hunting a ${a.prey.s.name || a.prey.s.key}`
     : a.ripe ? (a.mate && a.mate !== a ? 'ripe, with a mate in view' : 'ripe, heading for its spawning ground') : a.tripEnd > env.time ? 'on a trip to the other lake'

@@ -98,7 +98,11 @@ async function poolSide(n, say, st0) {   // (st0: the random state before the wa
       for (const p of parts) { fb.set(p.fb, of); of += p.fb.length; yb.set(p.yb, oy); oy += p.yb.length; count += p.count; }
       return { fb, yb, nf, ny, count };
     },
-    sel() { if (selId < 0) return null; for (const r of P.last) if (r.sel) return r.sel; return { id: selId, kind: selKind, gone: true, cause: 'gone' }; },
+    sel() {   // (the shard that holds it alive first: one it left — a young school handed on is marked with no cause — may still report it gone)
+      if (selId < 0) return null; let gone = null;
+      for (const r of P.last) if (r.sel) { if (!r.sel.gone) return r.sel; gone = gone || r.sel; }
+      return gone || { id: selId, kind: selKind, gone: true, cause: 'gone' };
+    },
     stats() { return null; },   // (they come with a step: see step)
     totals() { return { count: P.count(), agents: P.sum('agents'), nyAll: P.sum('nyAll') }; },
     seedSeason(y0, y1) { return P.seedSeason(y0, y1); },
@@ -217,17 +221,30 @@ function forestOf() {
 }
 function snapshot() {
   const { fb, yb, nf, ny, count } = side.view();
-  const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises), wz = Float32Array.from(wildEv); rises = []; wildEv = [];
+  const ice = Float32Array.from(env.ice), rz = Float32Array.from(rises), wz = Float32Array.from(wildEv);
+  const ru = new Uint32Array(rz.buffer); for (let o = 4; o < rz.length; o += 6) ru[o] = rises[o];   // (each rise's fish id as u32 bits — exact past 2^24: rises3view reads it so)
+  rises = []; wildEv = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
-    acc, h, nf, ny, simT: env.time, stepMs, shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, forest: forestOf(), ...side.totals(count, nf, ny) };
+    acc, h, nf, ny, simT: env.time + envAcc, stepMs,   // (simT: the fish's clock — the water's steps a simulated minute at a time at the fine speeds)
+    shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, forest: forestOf(), ...side.totals(count, nf, ny) };
   const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer, wz.buffer]; if (field) tr.push(field.buffer); if (msg.forest) tr.push(msg.forest.buffer);
   postMessage(msg, tr);
 }
 
-let busy = false;   // (a tick's steps are awaited: messages that arrive meanwhile are handled between them)
-onmessage = async ev => {
+// THE MESSAGES ONE AT A TIME: each handled after the one before has finished. (A tick's steps are awaited — the GPU's blocks, the
+// shards' replies — and messages once ran in between: a season jump in the middle of a GPU block, a shard call overwriting the step's
+// own reply so the step never ended and the lakes froze; and a tick that came while one still ran was dropped, which left the view
+// waiting for its snapshot.) A tick that arrives while another still waits its turn joins it — their seconds summed, the newer
+// camera — rather than queue behind it
+let queue = Promise.resolve(), tickQ = null;
+onmessage = ev => {
   const m = ev.data;
+  if (m.type === 'tick') { if (tickQ) { tickQ.dt += m.dt; if (m.cam) tickQ.cam = m.cam; return; } tickQ = { ...m }; }
+  const job = m.type === 'tick' ? tickQ : m;
+  queue = queue.then(() => { if (job === tickQ) tickQ = null; return handle(job); });
+};
+async function handle(m) {
   try {
     if (m.type === 'init') {
       if (m.cam) cam = m.cam;
@@ -244,7 +261,6 @@ onmessage = async ev => {
       say('the first look'); postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL, shards: side.pool ? 2 : 0, gpu: side.gpu || null });
       sendPlants(); snapshot();
     } else if (m.type === 'tick') {
-      if (busy) return; busy = true;
       // FIDELITY BY DISTANCE (TRUE_SCALE.md T3): on the true-size lakes, at the fine speeds, the fish within FOCUS_R of where the view
       // looks live second by second and the rest in banked blocks (the 1/10 world, every fish drawn, steps them all alike)
       if (m.cam) cam = m.cam;
@@ -256,7 +272,6 @@ onmessage = async ev => {
       } else side.setFocus(null);
       ticks++; await advance(m.dt); if (performance.now() - plantsAt > PLANTS_MS) sendPlants(); if (side.prep) await side.prep(); snapshot();
       if (statsOn && !side.pool && performance.now() - statsAt > STATS_MS) { statsAt = performance.now(); postStats(await side.stats()); }
-      busy = false;
     }
     else if (m.type === 'stats') { statsOn = !!m.on; if (statsOn) sendHistory(); if (statsOn && !side.pool) { statsAt = performance.now(); postStats(await side.stats()); } else statsAt = -1e9; }
     else if (m.type === 'select') { selId = m.id ?? -1; selKind = m.kind || 'fish'; }
@@ -268,6 +283,6 @@ onmessage = async ev => {
       if (env.yearFrac() > y0) await side.seedSeason(y0, env.yearFrac());
       side.envStepped(); sendPlants();
     }
-  } catch (e) { busy = false; postMessage({ type: 'error', text: String(e && e.stack || e) }); }
-};
+  } catch (e) { postMessage({ type: 'error', text: String(e && e.stack || e) }); }
+}
 postMessage({ type: 'loaded' });   // (the view waits for this before it sends init: see main3 start)

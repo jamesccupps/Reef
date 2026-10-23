@@ -122,6 +122,7 @@ export function makePlantsView(W3) {
   }
   const stand = new Float32Array(NF3 * nF);   // per form per fine cell: the stand drawn (g DW/m²), blended and clumped
   const cover = new Float32Array(GEO.N);   // per 1.5-m cell: the weeds' tint of the bed, 0–1
+  const D2 = new Float32Array(nF);   // (a rebuild's scratch: each fine cell's distance² from where the view looks)
   const meshes = FORMS3.map(F => {
     const max = Math.min(INST_MAX, fineI.length * PER[F.form]);
     const mat = new THREE.MeshStandardNodeMaterial({ roughness: F.form === 'FL' ? 0.45 : 0.85, metalness: 0, side: THREE.DoubleSide });
@@ -139,7 +140,8 @@ export function makePlantsView(W3) {
     group.add(m); return m;
   });
   const maxOf = meshes.map((m, f) => Math.min(INST_MAX, fineI.length * PER[FORMS3[f].form]));
-  // the mussels: a flattened ellipsoid ~8 × 4 × 2.5 cm (an elliptio's shell), dark brown, half in the bed
+  // the mussels: a flattened ellipsoid ~8 × 4 × 2.5 cm (an elliptio's shell), olive-brown, in its life position — the front two-thirds
+  // in the bed, standing on its edge, its back end tilted up out of the sand with the siphons (flat on the bed, black, they read as beans)
   const MU_MAX = 40000, muGeo = new THREE.SphereGeometry(0.5, 8, 5);
   muGeo.setAttribute('sy', new THREE.InstancedBufferAttribute(new Float32Array(MU_MAX), 1));
   const muMat = new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.1 });
@@ -147,9 +149,9 @@ export function makePlantsView(W3) {
   const musMesh = new THREE.InstancedMesh(muGeo, muMat, MU_MAX); musMesh.count = 0; musMesh.frustumCulled = false;
   musMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MU_MAX * 3), 3);
   group.add(musMesh);
-  const MU_COL = new THREE.Color(0x2e2618), MU_NEAR = 18;   // (m: shells drawn within this of where the camera looks)
+  const MU_COL = new THREE.Color(0x3b3322), MU_NEAR = 18;   // (m: shells drawn within this of where the camera looks)
   let mus = null;
-  const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
+  const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), eM = new THREE.Euler(0, 0, 0, 'YZX'), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
   let shoots = null, yf = 0, dirty = false, at = [1e9, 1e9, 1], dead = null;
   const fDead = FORMS3.findIndex(F => F.key === 'bulrush');   // (the dead stems borrow the bulrush's reed mesh)
   // new plant data: shoots (g DW/m²) per form per bed cell (NF3 × nb), at year-fraction yf; the bed's tint at once (every cell)
@@ -173,9 +175,12 @@ export function makePlantsView(W3) {
     // the season's colour: fresh in spring; from the autumn reallocation the shoots yellow and brown (evergreens stay green)
     const fresh = Math.max(0, 1 - Math.abs(yf - 0.22) / 0.08), brownT = Math.min(1, Math.max(0, (yf - PL3.YF_STORE) / 0.15)) * (yf < 0.97 ? 1 : 0);
     const cnt = new Int32Array(NF3);
-    for (let t = 0; t < fineI.length; t++) {
-      const i = fineI[t], [x0, y0] = GEO.cellCentre(i), r2 = (x0 - tx) ** 2 + (y0 - ty) ** 2;
-      if (r2 > R2f) continue;
+    // (the cells within reach, NEAREST FIRST: a form's mesh that fills — INST_MAX — leaves out the farthest cells, not the northern ones)
+    const near = [];
+    for (let t = 0; t < nF; t++) { const [x0, y0] = GEO.cellCentre(fineI[t]), r2 = (x0 - tx) ** 2 + (y0 - ty) ** 2; if (r2 <= R2f) { D2[t] = r2; near.push(t); } }
+    near.sort((a, b) => D2[a] - D2[b]);
+    for (const t of near) {
+      const i = fineI[t], [x0, y0] = GEO.cellCentre(i), r2 = D2[t];
       const sY = surfY(x0, y0);
       for (let f = 0; f < NF3; f++) {
         const F = FORMS3[f], b = stand[f * nF + t]; if (!(b > 0.3)) continue;
@@ -187,7 +192,9 @@ export function makePlantsView(W3) {
           const x = x0 + (hash(i, k * 7 + f) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 13 + f + 3) - 0.5) * GEO.CELL, rot = hash(i, k + 31 * f) * Math.PI * 2;
           const z = GEO.depthAt(x, y); if (!(z > 0.05)) continue;
           if (F.form === 'FL') {   // pads float on the surface, each species its size: water-lily 10–30 cm across, yellow pond-lily to ~40, watershield 5–13 (the sim keeps them out of the brook)
-            const R0 = F.look && F.look.r ? F.look.r : [0.05, 0.15], r = R0[0] + (R0[1] - R0[0]) * hash(i, k + 5); p.set(x, sY + 0.03 + 0.004 * k, -y); s.set(r, 1, r); e.set(0, rot, 0);
+            // (just above the drawn water — main3's surface sits 1 cm over the level — in 8 sheets half a millimetre apart so overlapping
+            // pads don't fight: they were stacked 4 mm a pad, up to 0.74 m above the water in a true-size 5-m cell's 178)
+            const R0 = F.look && F.look.r ? F.look.r : [0.05, 0.15], r = R0[0] + (R0[1] - R0[0]) * hash(i, k + 5); p.set(x, sY + 0.013 + 0.0005 * (k % 8), -y); s.set(r, 1, r); e.set(0, rot, 0);
           } else if (F.form === 'EM') {   // reeds from the bed through the surface (0.5–1.3 m above it)
             const above = 0.5 + 0.8 * hash(i, k + 9) * (0.4 + 0.6 * cov); p.set(x, sY - z - 0.05, -y); s.set(1, z + above, 1); e.set((hash(i, k + 17) - 0.5) * 0.12, rot, (hash(i, k + 19) - 0.5) * 0.12);
           } else {   // fronds and tufts on the bed: the canopy's height by its stand (never above the surface)
@@ -220,15 +227,18 @@ export function makePlantsView(W3) {
     // places and turns in it, half-buried, tilted a little
     let nm = 0;
     if (mus && dist < 60) {
-      const R2 = MU_NEAR * MU_NEAR, M = musMesh.instanceMatrix.array, SY = muGeo.attributes.sy.array;
-      for (let t = 0; t < fineI.length && nm < MU_MAX; t++) {
-        const i = fineI[t], [x0, y0] = GEO.cellCentre(i); if ((x0 - tx) ** 2 + (y0 - ty) ** 2 > R2) continue;
+      const R2 = MU_NEAR * MU_NEAR, SY = muGeo.attributes.sy.array;
+      for (let r = 0; r < near.length && nm < MU_MAX; r++) {   // (nearest first, as the stems)
+        const t = near[r]; if (D2[t] > R2) break;
+        const i = fineI[t], [x0, y0] = GEO.cellCentre(i);
         const n = Math.min(60 * PER_K, Math.floor(blend(mus, t) * GEO.CELL * GEO.CELL + hash(i, 99))), sY = surfY(x0, y0);
         for (let k = 0; k < n && nm < MU_MAX; k++) {
           const x = x0 + (hash(i, k * 5 + 101) - 0.5) * GEO.CELL, y = y0 + (hash(i, k * 9 + 103) - 0.5) * GEO.CELL, z = GEO.depthAt(x, y); if (!(z > 0.1)) continue;
           const sz = 0.75 + 0.5 * hash(i, k + 107);
-          p.set(x, sY - z + 0.004, -y); s.set(0.08 * sz, 0.025 * sz, 0.04 * sz); e.set((hash(i, k + 109) - 0.5) * 0.5, hash(i, k + 113) * Math.PI * 2, (hash(i, k + 127) - 0.5) * 0.9);
-          q.setFromEuler(e); mat.compose(p, q, s); musMesh.setMatrixAt(nm, mat); SY[nm] = sY;
+          // (YZX: on its edge — the flat sides upright — then its long axis tipped 50–80° into the bed, then its heading; its middle
+          // 1.2 cm down, so ~2.5 cm of its back end shows)
+          p.set(x, sY - z - 0.012 * sz, -y); s.set(0.08 * sz, 0.025 * sz, 0.04 * sz); eM.set(Math.PI / 2 + (hash(i, k + 109) - 0.5) * 0.4, hash(i, k + 113) * Math.PI * 2, -(0.87 + 0.53 * hash(i, k + 127)));
+          q.setFromEuler(eM); mat.compose(p, q, s); musMesh.setMatrixAt(nm, mat); SY[nm] = sY;
           c.copy(MU_COL).multiplyScalar(0.7 + 0.6 * hash(i, k + 131)); musMesh.setColorAt(nm, c); nm++;
         }
       }

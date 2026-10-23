@@ -10,9 +10,19 @@ import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, UPPER, LOWER } from '../geometry.js';
 import { OUT3, IN3 } from '../fish3.js';
 import { CENSUS_SIZE } from './fishside3.js';
+import { SHOWN } from './fish3view.js';
 import { GENE_KEYS } from '../../core.js';
 
-const FISH_STRIDE = 18, YOY_STRIDE = 12, PICK_PX = 22, HIST_MAX = 4000;
+const FISH_STRIDE = 18, YOY_STRIDE = 12, PICK_PX = 22, HIST_MAX = 4000, CARD_MS = 250;   // (CARD_MS: the card's numbers refreshed this often at most)
+// how a picked fish (or school) left the lakes, by its cause (fish3's; 'gone' the worker's when no side holds it any more) — only a
+// death is "It died"
+const GONE = {
+  eaten: 'It was eaten by a fish.', wild: 'It was taken from the water — by a bird, an otter or mink, a snapping turtle or bullfrog, a bear, or an angler.',
+  starve: 'It died: it starved.', heat: 'It died of the heat.', hypoxia: 'It died for want of oxygen.', old: 'It died of old age.', other: 'It died (disease, parasites, injury).',
+  spent: 'It died, spent after spawning.', stranded: 'It died, stranded.', died: 'It died.',
+  merged: 'It joined another school of its kind (merged into it).', dissolved: 'Its group broke up into fish of their own.', emigrated: 'It left the lakes by the outlet.',
+  recruited: 'They recruited: grown out of the school of young, they now swim as fish of their own.', gone: 'No longer in the lakes (merged into a school, recruited, or died).',
+};
 const fmt = (v, d = 0) => v === null || v === undefined || !Number.isFinite(v) ? '—' : v >= 1e6 ? (v / 1e6).toFixed(2) + ' M' : v >= 1e4 ? Math.round(v).toLocaleString() : v.toFixed(d);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 const MONTHS = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
@@ -25,10 +35,10 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
   const panel = el('section', 'card'); panel.id = 'data'; panel.hidden = true; panel.setAttribute('aria-label', 'The lakes in numbers');
   const head = el('header'); const h2 = el('h2', null, 'The lakes in numbers'); const close = el('button', 'x', '×'); close.title = 'Close';
   head.append(h2, close); const when = el('div', 'when', 'waiting for the lakes…');
-  const tabs = el('div', 'row tabs'), body = el('div', 'dbody');
+  const tabs = el('div', 'row tabs'), pageBody = el('div', 'dbody');
   const TABS = ['Fish', 'Young', 'Water & weeds', 'Brook', 'Graphs']; let tab = 'Fish';
   for (const t of TABS) { const b = el('button', null, t); b.dataset.tab = t; b.setAttribute('aria-pressed', String(t === tab)); b.addEventListener('click', () => { tab = t; for (const x of tabs.children) x.setAttribute('aria-pressed', String(x.dataset.tab === t)); render(); }); tabs.append(b); }
-  panel.append(head, when, tabs, body);
+  panel.append(head, when, tabs, pageBody);
   const card = el('section', 'card'); card.id = 'fishcard'; card.hidden = true; card.setAttribute('aria-label', 'The fish you picked');
   document.body.append(btn, panel, card);
   const open = on => { panel.hidden = !on; btn.setAttribute('aria-pressed', String(on)); LIVE.worker?.postMessage({ type: 'stats', on }); };
@@ -49,11 +59,14 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     return t;
   };
   const note = text => el('p', 'hint', text);
+  // (the page rebuilt off-screen and swapped in whole, the panel's width read first: emptied, then measured for the graphs, the panel
+  // was laid out empty and threw a reader scrolled down back to the top at every update)
+  let chartW = 520;
   function render() {
     if (panel.hidden || !last) return;
-    const m = last, sp = Object.entries(m.sp);
+    const st = panel.scrollTop; chartW = Math.max(280, (panel.clientWidth || 520) - 30);
+    const m = last, sp = Object.entries(m.sp), body = document.createDocumentFragment();
     when.textContent = `${dateOf(m.yf)} · ${fmt(m.agents)} agents, ${fmt(m.yoySchools)} schools of young · the lakes ${fmt(m.lakeHa)} ha · Secchi ${m.secchi.toFixed(1)} m`;
-    body.replaceChildren();
     if (tab === 'Fish') {
       const tot = sp.reduce((s, [, r]) => s + r.n, 0), kg = sp.reduce((s, [, r]) => s + r.kgHa, 0);
       body.append(note(`${fmt(tot)} fish (${fmt(tot / m.lakeHa)} a hectare, ${kg.toFixed(0)} kg/ha) in ${fmt(m.agents)} agents. The census column is docs/FISH_CENSUS.md's estimate for these lakes (fish ≥ 7.5 cm a hectare; the dace: the brook's).`));
@@ -105,10 +118,11 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
       body.append(chart(hist.map(h => h.t), [{ col: '#8fe3b5', v: hist.map(h => h.w[0][2]) }, { col: '#ff7070', v: hist.map(h => h.w[0][3]) }, { col: '#8fe3b5', v: hist.map(h => h.w[1][2]), dash: true }, { col: '#ff7070', v: hist.map(h => h.w[1][3]), dash: true }], {}));
       body.append(note(hist.length < 2 ? 'The graphs fill in as the lakes run (fast-forward to see seasons).' : 'Since the lake opened, whether this page was open or not: points every simulated half minute at first, farther apart as the run grows.'));
     }
+    pageBody.replaceChildren(body); panel.scrollTop = st;
   }
   // a line chart on a canvas: x the sim's time, series {col, v[], dash}
   function chart(t, series, { log = false }) {
-    const cv = el('canvas', 'chart'), W = Math.max(280, (panel.clientWidth || 520) - 30), H = 150, dpr = Math.min(2, devicePixelRatio || 1);
+    const cv = el('canvas', 'chart'), W = chartW, H = 150, dpr = Math.min(2, devicePixelRatio || 1);
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
     const g = cv.getContext('2d'); g.scale(dpr, dpr); g.fillStyle = 'rgba(255,255,255,0.03)'; g.fillRect(0, 0, W, H);
     if (t.length < 2) return cv;
@@ -131,27 +145,42 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     const hit = pick(e.clientX, e.clientY); if (hit) select(hit);
   });
   const v3 = new THREE.Vector3();
-  function pick(cx, cy) {   // the drawn fish or young school nearest the click on screen (its current place)
-    const s = LIVE.snap; if (!s) return null;
-    const r = canvas.getBoundingClientRect(); let best = null, bd = PICK_PX;
-    const test = (x, y, z, id, kind) => { v3.set(x, surfY(x, y) - z, -y).project(camera); if (v3.z > 1) return; const sx = (v3.x + 1) / 2 * r.width + r.left, sy = (1 - v3.y) / 2 * r.height + r.top, d = Math.hypot(sx - cx, sy - cy); if (d < bd) { bd = d; best = { id, kind }; } };
-    for (let i = 0; i < s.nf; i++) { const o = i * FISH_STRIDE; test(s.fish[o + 5], s.fish[o + 6], s.fish[o + 7], s.fish[o + 15], 'fish'); }
-    for (let i = 0; i < s.ny; i++) { const o = i * YOY_STRIDE; test(s.yoy[o + 3], s.yoy[o + 4], s.yoy[o + 5], s.yoy[o + 9], 'yoy'); }
+  // the drawn fish or school nearest the click on screen (its current place): a single fish within PICK_PX of it, a school (or school
+  // of young) anywhere over its drawn spread — nearest by the share of its reach; the young only those the view draws (render3/
+  // fish3view.js SHOWN: near the camera), and nothing while the fish are hidden. (The ids as u32 bits: fishside3 packDrawn.)
+  function pick(cx, cy) {
+    const s = LIVE.snap; if (!s || !SHOWN.mesh || !SHOWN.mesh.visible) return null;
+    const r = canvas.getBoundingClientRect(), pxM = r.height / (2 * Math.tan(camera.fov * Math.PI / 360)); let best = null, bd = 1;
+    const test = (x, y, z, id, kind, spread) => {
+      v3.set(x, surfY(x, y) - z, -y); const dist = Math.max(1e-3, v3.distanceTo(camera.position)); v3.project(camera); if (v3.z > 1) return;
+      const sx = (v3.x + 1) / 2 * r.width + r.left, sy = (1 - v3.y) / 2 * r.height + r.top, d = Math.hypot(sx - cx, sy - cy) / Math.max(PICK_PX, spread * pxM / dist);
+      if (d < bd) { bd = d; best = { id, kind }; }
+    };
+    const fu = new Uint32Array(s.fish.buffer, s.fish.byteOffset, s.fish.length), yu = new Uint32Array(s.yoy.buffer, s.yoy.byteOffset, s.yoy.length);
+    for (let i = 0; i < s.nf; i++) { const o = i * FISH_STRIDE, id = fu[o + 15]; test(s.fish[o + 5], s.fish[o + 6], s.fish[o + 7], id, 'fish', SHOWN.spread.get(id) || 0); }
+    for (let i = 0; i < s.ny; i++) { const o = i * YOY_STRIDE, id = yu[o + 9], sp = SHOWN.spread.get(id); if (sp !== undefined) test(s.yoy[o + 3], s.yoy[o + 4], s.yoy[o + 5], id, 'yoy', sp); }
     return best;
   }
-  function select(hit) { selected = hit; LIVE.worker?.postMessage({ type: 'select', id: hit ? hit.id : -1, kind: hit ? hit.kind : 'fish' }); card.hidden = !hit; if (!hit) follow = false; }
+  function select(hit) { selected = hit; cardId = -1; cardKey = ''; LIVE.worker?.postMessage({ type: 'select', id: hit ? hit.id : -1, kind: hit ? hit.kind : 'fish' }); card.hidden = !hit; if (!hit) follow = false; }
   // the card's fixed parts, built once: its × and its follow box would otherwise be replaced by every snapshot's rebuild, and a click
   // whose press and release land on different elements never fires (the card could not be closed)
   const cardTitle = el('h2'), cardX = el('button', 'x', '×'), cardTop = el('header'), cardBody = el('div');
   cardX.title = 'Let it go'; cardX.addEventListener('click', () => select(null)); cardTop.append(cardTitle, cardX);
   const followLab = el('label', 'tog'), followCb = el('input'); followCb.type = 'checkbox'; followCb.addEventListener('change', () => { follow = followCb.checked; });
   followLab.append(followCb, ' Follow it with the camera'); card.append(cardTop, cardBody, followLab);
-  // the card, from the snapshot's sel
+  // the card, from the snapshot's sel: its going at once; its numbers every CARD_MS at most (a snapshot comes up to 60 times a second),
+  // set in place — the rows are built again only when they change (another fish, a school of young, a fish's senses shown or not)
+  let cardId = -1, cardAt = 0, cardKey = '', cardDD = [], cardBars = [];
+  const setBar = (i, v, lo, hi) => { const c = Math.min(1, Math.max(-1, v));   // (a signed value — right/ahead/above — from the bar's middle; the rest from its left)
+    if (lo < 0) { i.style.setProperty('--l', `${(50 + 50 * Math.min(0, c)).toFixed(0)}%`); i.style.setProperty('--w', `${(50 * Math.abs(c)).toFixed(0)}%`); }
+    else i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); };
   function onSel(f) {
     if (!f || !selected || f.id !== selected.id) return;
-    cardBody.replaceChildren();
     cardTitle.textContent = f.kind === 'yoy' ? `${f.name} — a school of young` : f.n > 1 ? `${f.name} — a school` : f.name;
-    if (f.gone) { cardBody.append(el('p', 'hint', f.cause === 'gone' ? 'No longer in the lakes (merged into a school, recruited, or died).' : `It died (${f.cause}).`)); follow = false; followCb.checked = false; followLab.hidden = true; return; }
+    if (f.gone) { if (cardKey !== 'gone') { cardBody.replaceChildren(el('p', 'hint', GONE[f.cause] || `It is gone (${f.cause}).`)); cardKey = 'gone'; } cardId = -1; follow = false; followCb.checked = false; followLab.hidden = true; return; }
+    lastSel = f;   // (the camera follows it every snapshot)
+    const now = performance.now(); if (f.id === cardId && now - cardAt < CARD_MS) return;
+    cardId = f.id; cardAt = now;
     followLab.hidden = false; followCb.checked = follow;
     const kv = [];
     if (f.n > 1) kv.push(['fish in it', fmt(f.n)]);
@@ -161,23 +190,33 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
         ['doing', f.doing], ['depth', `${f.z.toFixed(1)} m (bed ${f.bed.toFixed(1)} m)`], ['water', `${f.T.toFixed(1)} °C · O₂ ${f.o2.toFixed(1)} mg/L`],
         ['home lake', f.lake === UPPER ? 'Upper' : f.lake === LOWER ? 'Lower' : '—'], ['lived', f.near ? 'second by second' : 'in blocks (away from the view)'], ['generation', String(f.gen)]);
     } else kv.push(['depth', `${f.z.toFixed(1)} m (bed ${f.bed.toFixed(1)} m)`], ['water', f.T !== null ? `${f.T.toFixed(1)} °C · O₂ ${f.o2.toFixed(1)} mg/L` : '—'], ['guarded', f.guarded ? 'yes, by a parent on its nest' : 'no']);
-    const dl = el('dl', 'kv'); for (const [k, v] of kv) dl.append(el('dt', null, k), el('dd', null, v)); cardBody.append(dl);
+    const groups = [];   // the bars: [title, [label, value, lo, hi]…]
     if (f.kind === 'fish') {
-      const bars = (title, items) => { cardBody.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); const c = Math.min(1, Math.max(-1, v));   // (a signed value — right/ahead/above — from the bar's middle; the rest from its left)
-        if (lo < 0) { i.style.setProperty('--l', `${(50 + 50 * Math.min(0, c)).toFixed(0)}%`); i.style.setProperty('--w', `${(50 * Math.abs(c)).toFixed(0)}%`); }
-        else i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } cardBody.append(box); };
-      bars('State', [['hunger', f.hunger, 0, 1], ['fear', f.fear, 0, 1], ['energy', f.energy, 0, 1], ['ration', f.p, 0, 1]]);
+      groups.push(['State', [['hunger', f.hunger, 0, 1], ['fear', f.fear, 0, 1], ['energy', f.energy, 0, 1], ['ration', f.p, 0, 1]]]);
       // (what it senses — its brain's inputs: directions as right/ahead/above in −1…1, the rest 0…1 — then what its brain does with them)
-      if (f.inp) { const SIGNED = new Set([0, 1, 2, 4, 5, 6, 8, 9, 15, 16, 18, 23, 24]); bars('What it senses (its brain’s inputs)', IN3.map((k, q) => [k, f.inp[q] ?? 0, SIGNED.has(q) ? -1 : 0, 1])); }
-      bars('Its brain now (outputs)', OUT3.map((k, q) => [k, f.out[q] ?? 0, q < 2 ? -1 : 0, 1]));   // (turn and pitch −1…1; the rest 0…1)
-      if (f.genes.length) bars('Its genes (1 = the species’ mean)', GENE_KEYS.map((k, q) => [k, f.genes[q] ?? 1, 0.7, 1.35]));
+      if (f.inp) { const SIGNED = new Set([0, 1, 2, 4, 5, 6, 8, 9, 15, 16, 18, 23, 24]); groups.push(['What it senses (its brain’s inputs)', IN3.map((k, q) => [k, f.inp[q] ?? 0, SIGNED.has(q) ? -1 : 0, 1])]); }
+      groups.push(['Its brain now (outputs)', OUT3.map((k, q) => [k, f.out[q] ?? 0, q < 2 ? -1 : 0, 1])]);   // (turn and pitch −1…1; the rest 0…1)
+      if (f.genes.length) groups.push(['Its genes (1 = the species’ mean)', GENE_KEYS.map((k, q) => [k, f.genes[q] ?? 1, 0.7, 1.35])]);
     }
-    lastSel = f;
+    const key = f.id + '|' + kv.map(r => r[0]).join('|') + '#' + groups.map(g => g[0] + ':' + g[1].length).join('|');
+    if (key !== cardKey) {   // (the rows, built again)
+      cardBody.replaceChildren(); cardDD = []; cardBars = []; cardKey = key;
+      const dl = el('dl', 'kv'); for (const [k] of kv) { const dd = el('dd'); dl.append(el('dt', null, k), dd); cardDD.push(dd); } cardBody.append(dl);
+      for (const [title, items] of groups) {
+        cardBody.append(el('h3', null, title)); const box = el('div', 'bars');
+        for (const [k] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'), bv = el('span', 'bv'); b.append(i); row.append(el('span', 'bl', k), b, bv); box.append(row); cardBars.push([i, bv]); }
+        cardBody.append(box);
+      }
+    }
+    kv.forEach(([, v], q) => { if (cardDD[q].textContent !== v) cardDD[q].textContent = v; });
+    let q = 0; for (const [, items] of groups) for (const [, v, lo, hi] of items) { const [i, bv] = cardBars[q++]; setBar(i, v, lo, hi); bv.textContent = v.toFixed(2); }
   }
   let lastSel = null;
   function update() {   // each frame: the camera follows the picked fish
     if (!follow || !lastSel || lastSel.gone) return;
     rig.goal.target.set(lastSel.x, surfY(lastSel.x, lastSel.y) - lastSel.z, -lastSel.y);
   }
-  return { onStats, onHistory, onSel, update, isOpen: () => !panel.hidden };
+  // (the view's one follow at a time — main3 letGo: a named view, a pan or Find lets the picked fish go)
+  return { onStats, onHistory, onSel, update, isOpen: () => !panel.hidden,
+    following: () => follow && !!lastSel && !lastSel.gone, unfollow: () => { follow = false; followCb.checked = false; } };
 }

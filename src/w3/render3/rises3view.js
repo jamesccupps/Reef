@@ -42,8 +42,9 @@ export function makeRisesView(W3) {
   const splash = (x, y, t, r0) => { if (S.length >= SPLASH_MAX) S.shift(); S.push({ x, z: -y, sy: surfY(x, y), t0: t, r0 }); };
   // a snapshot's rises: a ring each (a school's spread about it), a splash for the bigger fish, some leaps
   function add(rz, t, scale = 1) {
+    const ru = new Uint32Array(rz.buffer, rz.byteOffset, rz.length);   // (the fish's id as u32 bits: sim3worker snapshot)
     for (let o = 0; o + 5 < rz.length; o += 6) {
-      const x = rz[o], y = rz[o + 1], Lc = rz[o + 2], kind = KEYS3[rz[o + 3]], id = rz[o + 4], n = rz[o + 5], L = Lc / 100 * scale;
+      const x = rz[o], y = rz[o + 1], Lc = rz[o + 2], kind = KEYS3[rz[o + 3]], id = ru[o + 4], n = rz[o + 5], L = Lc / 100 * scale;
       const lp = LEAP[kind];
       if (lp && n <= 1 && Lc >= 8 && !leaps.has(id) && Math.random() < lp[0]) {   // a leap: up, through the air, back in
         const h = lp[1] * (0.7 + 0.6 * Math.random()) * Math.min(1.5, Lc / 25), dur = lp[2] * (0.8 + 0.4 * Math.random());
@@ -61,15 +62,19 @@ export function makeRisesView(W3) {
     }
   }
   // where a leaping fish is now: {h above the surface, pitch, x, y}, or null — fish3view draws it there instead
+  const land = (l, t) => { ring(l.x + Math.cos(l.dir) * 0.3, l.y + Math.sin(l.dir) * 0.3, t, 0.08, 1); splash(l.x + Math.cos(l.dir) * 0.3, l.y + Math.sin(l.dir) * 0.3, t, 0.15); };   // (back in)
   function leapAt(id, t) {
     const l = leaps.get(id); if (!l) return null;
     const ph = (t - l.t0) / l.dur; if (ph < 0) return null;
-    if (ph >= 1) { leaps.delete(id); ring(l.x + Math.cos(l.dir) * 0.3, l.y + Math.sin(l.dir) * 0.3, t, 0.08, 1); splash(l.x + Math.cos(l.dir) * 0.3, l.y + Math.sin(l.dir) * 0.3, t, 0.15); return null; }
+    if (ph >= 1) { leaps.delete(id); land(l, t); return null; }
     return { h: l.h * Math.sin(Math.PI * ph), pitch: (0.5 - ph) * 2.4, x: l.x + Math.cos(l.dir) * 0.3 * ph, y: l.y + Math.sin(l.dir) * 0.3 * ph };
   }
   function setSurf(arr) { surf = arr; bugAt = -1e9; }
   // each frame: the rings spread and fade, the splashes flash and fade; every BUG_SCAN s the insects about the camera's target
   function update(t, tx, ty, dist) {
+    // (a leap ends in leapAt, asked only for the fish drawn: one not drawn — out of the view's list, eaten, gone — ends here a moment
+    // after its time, back in with its splash, so its fish can leap again and the map doesn't grow)
+    for (const [id, l] of leaps) if (t - l.t0 > l.dur + 0.5) { leaps.delete(id); land(l, t); }
     let n = 0; const F = rings.geometry.attributes.fade.array;
     for (let i = R.length - 1; i >= 0; i--) {
       const r = R[i], age = t - r.t0; if (age > RING_LIFE) { R.splice(i, 1); continue; } if (age < 0) continue;

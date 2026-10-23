@@ -29,8 +29,9 @@ W.postMessage({ type: 'speed', speed: 3600 }); let ta = performance.now(); s = a
 const tm0 = s.time; ta = performance.now(); s = await tick(60); const wall = (performance.now() - ta) / 1000;
 show(`1 h/s, 60 ticks (${((s.time - tm0) / wall).toFixed(0)}× real time over ${wall.toFixed(1)} s)`, s);
 // follow a drawn fish
-let pick = -1; for (let q = 0; q < s.nf; q++) if (s.fish[q * 18 + 16] < 0.5) { pick = s.fish[q * 18 + 15]; break; }
-if (pick < 0 && s.nf) pick = s.fish[15];
+let pick = -1; const fu = new Uint32Array(s.fish.buffer, s.fish.byteOffset, s.fish.length);   // (the ids are written as Uint32: fishside3 packDrawn)
+for (let q = 0; q < s.nf; q++) if (s.fish[q * 18 + 16] < 0.5) { pick = fu[q * 18 + 15]; break; }
+if (pick < 0 && s.nf) pick = fu[15];
 W.postMessage({ type: 'select', id: pick, kind: 'fish' }); s = await tick(3); show(`followed fish ${pick}`, s);
 log('   card: ' + JSON.stringify(s.sel || {}).slice(0, 400));
 // the data page while the GPU holds the lakes
