@@ -21,9 +21,18 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   - **The young still stall on the true lakes in year 1** (1.5–1.6 cm from mid-July to September). On the 1/10 lakes with the same
     settings they reach 37 mm. Year 2 is better (2.6 cm by early July), but they die 64–67 % "natural", 10–16 % starved and 19–22 %
     eaten.
+- **Who eats the founding white perch** (probe wpdeath, the 1/10 lakes, occ-server):
+  - The 7.5–15 cm band falls 257 → 75/ha in 112 days, while the 15–22 cm band holds (150 → 130).
+  - Z by cause in mid-May: eaten 0.14, wildlife 0.24, other 0.39 /yr.
+  - Z by early September: eaten 4.1 /yr (bass 2.4, pickerel 0.9, fallfish 0.8), wildlife ~0.3, other ~0.3.
+  - Bass need ~15 kg/ha a year of fish, and white perch are the most numerous prey. In a real lake that is met by each year's young
+    growing into the predators' window; without recruitment the predators eat the standing stock down. Y4's fewer young leave the bass
+    more of the yearlings.
 - **Next.**
-  - Why the true lakes' young differ from the 1/10 (probe ywp3 on HB_WORLD=true, occ-server).
-  - The predation on the founding white perch: who takes them, at what rate, against field white perch adult and sub-adult Z.
+  - Why the true lakes' young differ from the 1/10 (probe ywp3 on HB_WORLD=true, occ-server). The early alewife larvae run
+    150,000–500,000/ha in June on both scales, against the field's sparse open-water larvae (~600–13,000/ha), while the late-summer
+    juveniles (~5,800/ha) match Connecticut's.
+  - Recruitment, the prey's production, remains the key.
 - **Where.** scratchpad r22AM_611/613.txt (yrsum.mjs), queue_am.sh.
 
 ## 2026-10-22 — Y4: thinning the young at the yolk-sac stage lets the survivors grow at field rates (probe ywp3, occ-server)
