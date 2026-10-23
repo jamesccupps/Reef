@@ -202,7 +202,28 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~15:15 EDT, BEFORE A COMPACTION — THE NEWEST). DONE + PUSHED 4c6ba08: the camps drawn (render3/camps3view.js:
+▶▶▶ RESUME HERE (2026-10-23 ~17:00 EDT — THE NEWEST). DONE + PUSHED: 45854e6 THE TREES + GPU FOREST (render3/trees3.js: leaf-card
+trees — needle sprays, pine plumes, maple/birch clusters, winter twigs as alpha cards from a canvas-drawn atlas; hero ≤70 m, lite to
+250 m; render3/forest3.js: ALL ~830k trees in one storage buffer, ONE compute cull a frame (frustum + shadow box) sorting each into 12
+indirect draws in one buffer — near hero/lite, mid, far, mirror stand-ins; WebGL2/?forest=cpu keeps the CPU tiers); seasons from the
+date in the shader (gradual leaf-out, maples turn first, leaf drop, snow on bough tops); REVERSED-Z (log depth disabled early-z;
+GTAONode patched for it); shadow map 2048, own layer mask, every other frame, NEVER castShadow=false (it disposed the map → black view;
+shadow.intensity instead); glare cut (bloom threshold 6, less mie). c3e0ad7: cards' normals turned to the eye (white pines fixed), auto
+resolution opt-in ?res=auto. cf70977 E15 camps' lake effects (sub-agent; gate GREEN on occ-server: w3 145/0/1 GAP, all else green).
+Backup …_20261023_1700_trees_camps.zip. Tools: tools/w3_render_bench.mjs (unthrottled Chrome: GPU ms per view, TOGGLES=1/2 per part),
+tools/w3_cpu_profile.mjs. Woods GPU 25 → 20 ms; the human sees it over REMOTE DESKTOP at 32 Hz (always ~30 fps there; Parsec better).
+THE HUMAN'S VERDICT on the browser trees (photos in scratchpad lakephotos/, from the lake): "lollipop", too sparse, wrong sizes — the
+real shore is a dense WALL of spruce/fir/CEDAR/birch/maple with emergent white pines, a shrub band, boulder shores — and they want
+the first-person view "videogame quality and realistic even if it has to run a completely different … engine". DECISION: UNREAL
+ENGINE 5 (memory unreal-first-person.md). The human is installing Epic Launcher + UE5 (D:\Epic Games) + VS 2022 C++. NEXT (mine):
+(1) ue/ — a Node live-link server that runs sim3worker.js under a worker_threads shim (globalThis.postMessage/onmessage/location
+?world=true) and streams snapshots over a hand-rolled localhost WebSocket; (2) a world exporter (16-bit heightmap + bathymetry, lake
+masks, the tree list with species/height — tree placement now lives in main3 with Math.random: port it to a pure seeded module —,
+camps/docks/roads); (3) once UE is in: the HotBrook C++ project (Landscape via editor Python, Water, Sky Atmosphere, Volumetric
+Clouds, Lumen; trees from Fab/Megascans or UE's procedural vegetation, kept OUT of the public repo; the first-person template with
+swimming; the live link actor). src/w3/render3/walk3.js (the browser walk controller) is written, UNCOMMITTED and not wired — park it
+or wire it later. CLAUDE.md's pure-file list should gain src/w3/campfx3.js (the agent asked; left for the human/next session).
+▶▶▶ RESUME HERE (2026-10-23 ~15:15 EDT, BEFORE A COMPACTION). DONE + PUSHED 4c6ba08: the camps drawn (render3/camps3view.js:
 67 buildings, docks May 25–Oct 15 with boats, roads draped, the launch lot, beaches, lit windows by occupancy, trees cleared — clearedAt;
 wild3view boats from the launch/docks; "Camps" toggle; the lodge U20 1½ storeys) + THE GRAPHICS UPGRADE (the human: "make the graphics
 any better and more realistic"): render3/sky3.js (vendored SkyMesh — Preetham sky, sun disc, clouds by weather; the sun ASTRONOMICAL for
