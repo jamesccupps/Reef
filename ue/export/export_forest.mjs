@@ -86,7 +86,7 @@ for (let j = 0; j < CAN.H; j++) for (let i = 0; i < CAN.W; i++) {
   let stock = t * cov * (1 - bare) * (CLS[cls] === 'shrub_wet' ? 0.3 : CLS[cls] === 'emergent_wet' ? 0.2 : 1) + (1 - t) * b0, share = t * con + (1 - t) * s0;
   const band = inBand(cx, cy), dw = toWaterAt(cx, cy), wet = /wet/.test(CLS[cls]);
   const nCan = pois(420 * A * stock), nUnd = band ? pois(350 * A * stock) : 0;
-  const nShore = band && dw < 5 && dw > 0.2 && (b0 > 0.1 || wet) ? pois(0.5 + 0.8 * (wet ? 1 : 0.5)) : 0;
+  const nShore = band && dw < 9 && (b0 > 0.1 || wet) ? pois(0.8 + 1.2 * (wet ? 1 : 0.5)) : 0;   // (the first row of land cells — their centres 5–9 m from the water: the 5-m model knows no nearer)
   for (let k = 0; k < nCan + nUnd + nShore; k++) {
     const x = cx + range(-2, 2), y = cy + range(-2, 2); if (clearedFast(x, y)) continue;
     const d = toWaterAt(x, y); if (d < 0.6) continue;   // (the trunks stand back of the waterline)

@@ -25,6 +25,8 @@
 #include "Serialization/JsonSerializer.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+#include "EngineUtils.h"
+#include "HAL/FileManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookBuild, Log, All);
 
@@ -50,8 +52,9 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 		return (Heights[r * NX + q] - 32768.0) / 128.0 + HotBrookCoords::Datum;
 	};
 
-	// a new world in a new map package
+	// a new world in a new map package (the old map's file deleted first: a new package can't be saved over an unloaded one)
 	const FString MapName = TEXT("/Game/Maps/HotBrook");
+	{ const FString Old = FPackageName::LongPackageNameToFilename(MapName, FPackageName::GetMapPackageExtension()); if (IFileManager::Get().FileExists(*Old)) IFileManager::Get().Delete(*Old, false, true); }
 	UPackage* Pkg = CreatePackage(*MapName);
 	UWorld* World = UWorld::CreateWorld(EWorldType::Editor, true, FName(TEXT("HotBrook")), Pkg, true);
 	World->SetFlags(RF_Public | RF_Standalone);
@@ -61,17 +64,32 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 
 	// THE GROUND: the landscape, 2 m a quad, 1 m a height step of 1/128 (Z scale 100), its north-west corner at the heightmap's
 	{
-		ALandscape* L = World->SpawnActor<ALandscape>(ALandscape::StaticClass(), FTransform(FRotator::ZeroRotator, HotBrookCoords::ToUE(X0, YN, HotBrookCoords::Datum), FVector(Cell * 100.0, Cell * 100.0, 100.0)), SP);
+		// (as the editor's importer does it: spawned at its corner, then scaled — a scale in the spawn transform came out 25600 on every
+		// axis, the land 128 times too wide)
+		ALandscape* L = World->SpawnActor<ALandscape>(ALandscape::StaticClass(), FTransform(HotBrookCoords::ToUE(X0, YN, HotBrookCoords::Datum)), SP);
+		L->SetActorRelativeScale3D(FVector(Cell * 100.0, Cell * 100.0, 100.0));
 		L->SetActorLabel(TEXT("Hot Brook land and lake beds"));
 		if (UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Materials/M_Ground.M_Ground"))) L->LandscapeMaterial = M;
 		TMap<FGuid, TArray<uint16>> HeightData; HeightData.Add(FGuid(), Heights);
 		TMap<FGuid, TArray<FLandscapeImportLayerInfo>> Layers; Layers.Add(FGuid(), TArray<FLandscapeImportLayerInfo>());
 		L->Import(FGuid::NewGuid(), 0, 0, NX - 1, NY - 1, 1, Q, HeightData, nullptr, Layers, ELandscapeImportAlphamapType::Additive, TArrayView<const FLandscapeLayer>());
-		UE_LOG(LogHotBrookBuild, Display, TEXT("landscape %dx%d (%d-quad components)"), NX, NY, Q);
+		L->SetActorRelativeScale3D(FVector(Cell * 100.0, Cell * 100.0, 100.0));
+		UE_LOG(LogHotBrookBuild, Display, TEXT("landscape %dx%d (%d-quad components), scale %s"), NX, NY, Q, *L->GetActorScale3D().ToString());
 	}
 
-	// THE LAKES: Unreal water bodies on the shorelines at their levels (the bed is the landscape's: they don't carve it), one water zone
+	// THE LAKES: Unreal water bodies on the shorelines at their levels (the bed is the landscape's: they don't carve it), in one water
+	// zone made first (else each lake made its own, about the landscape)
 	FBox Bounds(ForceInit);
+	for (const TSharedPtr<FJsonValue>& V : LJ->GetArrayField(TEXT("lakes"))) for (const TSharedPtr<FJsonValue>& P : V->AsObject()->GetArrayField(TEXT("pts"))) {
+		const TArray<TSharedPtr<FJsonValue>>& XY = P->AsArray(); Bounds += HotBrookCoords::ToUE(XY[0]->AsNumber(), XY[1]->AsNumber(), V->AsObject()->GetNumberField(TEXT("level")));
+	}
+	AWaterZone* Zone = nullptr;
+	{
+		const FVector C = Bounds.GetCenter(), E = Bounds.GetExtent();
+		Zone = World->SpawnActor<AWaterZone>(AWaterZone::StaticClass(), FTransform(C), SP);
+		Zone->SetActorLabel(TEXT("Hot Brook water zone"));
+		Zone->SetZoneExtent(FVector2D(E.X * 2.0 + 20000.0, E.Y * 2.0 + 20000.0));
+	}
 	TArray<AWaterBodyLake*> Lakes;
 	for (const TSharedPtr<FJsonValue>& V : LJ->GetArrayField(TEXT("lakes"))) {
 		const TSharedPtr<FJsonObject> O = V->AsObject(); const double Level = O->GetNumberField(TEXT("level"));
@@ -80,21 +98,16 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 		UWaterSplineComponent* S = Lake->GetWaterSpline(); S->ClearSplinePoints(false);
 		for (const TSharedPtr<FJsonValue>& P : O->GetArrayField(TEXT("pts"))) {
 			const TArray<TSharedPtr<FJsonValue>>& XY = P->AsArray(); const FVector W = HotBrookCoords::ToUE(XY[0]->AsNumber(), XY[1]->AsNumber(), Level);
-			S->AddSplinePoint(W, ESplineCoordinateSpace::World, false); Bounds += W;
+			S->AddSplinePoint(W, ESplineCoordinateSpace::World, false);
 		}
 		for (int32 i = 0; i < S->GetNumberOfSplinePoints(); i++) S->SetSplinePointType(i, ESplinePointType::Linear, false);
 		S->SetClosedLoop(true, false); S->UpdateSpline();
-		if (UWaterBodyComponent* C = Lake->GetWaterBodyComponent()) { C->bAffectsLandscape = false; C->UpdateAll(FOnWaterBodyChangedParams()); }
+		if (UWaterBodyComponent* C = Lake->GetWaterBodyComponent()) { C->bAffectsLandscape = false; C->SetWaterZoneOverride(Zone); C->UpdateAll(FOnWaterBodyChangedParams()); }
 		Lakes.Add(Lake);
 		UE_LOG(LogHotBrookBuild, Display, TEXT("lake %s: %d points at %.2f m"), *O->GetStringField(TEXT("name")), S->GetNumberOfSplinePoints(), Level);
 	}
-	{
-		const FVector C = Bounds.GetCenter(), E = Bounds.GetExtent();
-		AWaterZone* Z = World->SpawnActor<AWaterZone>(AWaterZone::StaticClass(), FTransform(FVector(C.X, C.Y, C.Z)), SP);
-		Z->SetActorLabel(TEXT("Hot Brook water zone"));
-		Z->SetZoneExtent(FVector2D(E.X * 2.0 + 20000.0, E.Y * 2.0 + 20000.0));
-		for (AWaterBodyLake* L : Lakes) if (UWaterBodyComponent* WC = L->GetWaterBodyComponent()) WC->UpdateAll(FOnWaterBodyChangedParams());
-	}
+	// (any other water zone the water bodies made for themselves goes)
+	for (TActorIterator<AWaterZone> It(World); It; ++It) if (*It != Zone) World->DestroyActor(*It);
 
 	// THE SKY: the physical atmosphere, the sun (its light through it), the sky's light captured live, volumetric clouds, a little haze
 	{
@@ -126,6 +139,6 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 	UE_LOG(LogHotBrookBuild, Display, TEXT("%s %s"), Saved ? TEXT("saved") : TEXT("FAILED to save"), *File);
 	// (the world taken down as the editor would: its subsystems deinitialised — else an ensure at exit)
 	if (GEditor) GEditor->GetEditorWorldContext().SetCurrentWorld(nullptr);
-	World->DestroyWorld(true); World->RemoveFromRoot(); GWorld = nullptr;
+	World->CleanupWorld(); World->DestroyWorld(true); World->RemoveFromRoot(); GWorld = nullptr;
 	return Saved ? 0 : 1;
 }

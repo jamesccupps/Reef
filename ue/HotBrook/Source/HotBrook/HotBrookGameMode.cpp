@@ -2,6 +2,9 @@
 #include "HotBrookCharacter.h"
 #include "HotBrookCoords.h"
 #include "HotBrookWater.h"
+#include "HotBrookForest.h"
+#include "HotBrookLink.h"
+#include "EngineUtils.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
@@ -18,6 +21,10 @@ AHotBrookGameMode::AHotBrookGameMode()
 void AHotBrookGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	// the forest (streamed about the walker from Import/trees.bin) if the level hasn't one
+	if (!TActorIterator<AHotBrookForest>(GetWorld())) GetWorld()->SpawnActor<AHotBrookForest>();
+	// the live simulation (ue/link/simhost.mjs) if the level hasn't its link
+	if (!TActorIterator<AHotBrookLink>(GetWorld())) GetWorld()->SpawnActor<AHotBrookLink>();
 	FString Arg;
 	if (!FParse::Value(FCommandLine::Get(), TEXT("hbshot="), Arg, false)) return;
 	TArray<FString> Items; Arg.TrimQuotes().ParseIntoArray(Items, TEXT(";"));
