@@ -202,6 +202,10 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~23:30 machine clock — THE NEWEST). ARM AM seed 611 year 1 (yrsum): 79 → 43 → 36 kg/ha (AL 44 → 28); the WHITE PERCH
+YOUNG STILL STALL AT TRUE SCALE in year 1 (1.5 cm mid-July, 1.6 early Sept; 0 recruits) though the 1/10 probe gave 37 mm; year 2 better (2.6 cm by
+early July). P inventory 123 → 151 % at the year ends (rising — Z2_BURY 0.05 refit was without fish; watch). PROBE ywp3 on the TRUE lakes running on
+occ-server (HB_WORLD=true → scratchpad/probe/ywp3_true.txt, slow) to see why the true scale differs from the 1/10.
 ▶▶▶ RESUME HERE (2026-10-22 23:20 by the machine clock — THE NEWEST). Y4 COMMITTED fe965f1 (gate green 140/0/1 GAP), PUSHED, BACKUP
 G:/synapse-reef-backups/synapse-reef_20261022_2318_y4-yolk-sac.zip. ARM AM still running (r22AM_611/613). Below: the block before the commit.
 ▶▶▶ RESUME HERE (2026-10-22 ~16:45 EDT — THE NEWEST). Y4 BUILT (uncommitted in the tree: config EGG3.sp.perch/whiteperch yolkHatch 0.2 + the Y4
