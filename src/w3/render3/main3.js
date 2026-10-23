@@ -39,7 +39,7 @@ const { FAR3 } = WORLD_TRUE ? await import('../true/far3d.js') : await import('.
 const PHOTO_URL = new URL(WORLD_TRUE ? '../true/naip3.jpg' : './naip3.jpg', import.meta.url).href;
 const KM = WORLD_TRUE ? 10 : 1;   // (the view's distances — camera reach, sky, fog, named views, label reach — at kilometres in the true world)
 const { attribute, uniform, texture, mix, vec2, vec3, float, fract, smoothstep, min: tmin, clamp: tclamp, dot, reflector, cameraPosition, positionWorld, positionGeometry, normalize, pow, sin, cos, exp, time, abs: tabs, step, length,
-  varying, transformNormalToView, negateOnBackSide, sRGBTransferEOTF, mx_noise_float, mx_fractal_noise_float, dFdx, dFdy, log2, max: tmax, uniformArray, int } = THREE.TSL;
+  varying, transformNormalToView, negateOnBackSide, sRGBTransferEOTF, mx_noise_float, mx_fractal_noise_float, dFdx, dFdy, log2, max: tmax, uniformArray, int, select, positionViewDirection } = THREE.TSL;
 const $ = id => document.getElementById(id);
 const BASE = GEO.SURF.upper;                                   // three's y = 0 at Upper's water surface
 const { NX, NY, X0, Y0 } = GEO;
@@ -671,14 +671,18 @@ function cardGeo(d) {
   g.setAttribute('uv', new THREE.BufferAttribute(d.uv, 2)); g.setAttribute('tf', new THREE.BufferAttribute(d.tf, 4)); g.setAttribute('cr', new THREE.BufferAttribute(d.cr, 1)); return g;
 }
 function cardMaterial(I, { sss = 0, bare = null, kind }) {
-  const m = new THREE.MeshSSSNodeMaterial({ roughness: 0.85, side: THREE.DoubleSide });
+  // (leaves are mostly diffuse: a low specular — at a grazing look the full Fresnel sheen of the sky turned the pines' plumes white)
+  const m = new THREE.MeshSSSNodeMaterial({ roughness: 0.9, side: THREE.DoubleSide, specularIntensity: 0.25 });
   const TF = attribute('tf', 'vec4'), UV = attribute('uv', 'vec2'), nG = attribute('normal', 'vec3'), cr = attribute('cr', 'float');
   const fol = TF.x, aoA = TF.y, isCard = TF.z, hard = kind === 'broad';
   // (the clusters' flutter: a few cm along their normal, faster than the tree's sway, more at a card's far end and in more wind)
   const flut = sin(time.mul(6.3).add(dot(positionGeometry, vec3(41, 29, 53)))).mul(isCard.mul(UV.x).mul(WIND3.speed.mul(0.0007).add(0.0009)));
   m.positionNode = treePlace(I, positionGeometry.add(nG.mul(flut)));
   m.castShadowPositionNode = treePlace(I, positionGeometry);
-  m.normalNode = varying(transformNormalToView(turnN(I, nG)), 'v_cardN').normalize();
+  // (the bent normal turned toward the eye: a card seen from its back — a pine's level plume from below — kept a normal facing away,
+  // and the lighting's grazing terms lit it white, "some of the trees white", the human, 2026-10-23)
+  const nV = varying(transformNormalToView(turnN(I, nG)), 'v_cardN').normalize();
+  m.normalNode = select(dot(nV, positionViewDirection).greaterThanEqual(0), nV, nV.negate());
   // a card's leaves on the date: each cluster its own few days — the outer ones (light: higher ao) ahead — in leaf or bare (its
   // random against the tree's leafiness), its colour; per card, so worked out per vertex
   let leafy = float(1), leafC = I.leafCol;
@@ -1362,7 +1366,9 @@ async function start() {
   });
 }
 function dynRes(now) {   // (every half second: the last frame's GPU time, smoothed; a step down after a second over, up after 3 s under)
-  if (DYN.busy || now - DYN.t < 500 || !renderer.backend?.trackTimestamp || /[?&]res=full/.test(location.search)) return;   // (?res=full: held at the device's)
+  // (opt-in, ?res=auto: through a remote desktop at 30 Hz — the human's usual view — or in a throttled window the GPU clocks down and its
+  // frames time long, and this dropped the view to half resolution for nothing)
+  if (DYN.busy || now - DYN.t < 500 || !renderer.backend?.trackTimestamp || !/[?&]res=auto/.test(location.search)) return;
   DYN.t = now; DYN.busy = true;
   renderer.resolveTimestampsAsync('render').then(g => {
     DYN.busy = false; if (!(g > 0)) return;

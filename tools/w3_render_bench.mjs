@@ -69,7 +69,7 @@ const TOGGLES = process.env.TOGGLES === '2' ? [['nothing', `[]`]] : process.env.
 ] : [];
 const rows = [];
 for (const q of queries) {
-  const qq = [q, process.env.DYNRES ? '' : 'res=full'].filter(Boolean).join('&');
+  const qq = [q, process.env.DYNRES ? 'res=auto' : ''].filter(Boolean).join('&');
   await send('Page.navigate', { url: base + (qq ? '?' + qq : '') });
   let ok = false; for (let t = 0; t < 120 && !ok; t++) { await sleep(1000); try { ok = await evaluate(`!!(window.hb3 && document.getElementById('busy').classList.contains('done') && !/starting/.test(document.body.textContent))`, 5000); } catch {} }
   if (!ok) { console.error(`${q || '(default)'}: the lakes never finished starting`); continue; }
