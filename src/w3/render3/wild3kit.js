@@ -103,29 +103,31 @@ const marks = (buf, n) => { buf.clearUpdateRanges(); buf.addUpdateRange(0, n); b
 // mirror (main3: the small animals of the shallows)
 export function partMesh(geo, cap, { water = true, rough = 0.85, metal = 0, side = THREE.FrontSide, layer = 0, opacity = 1 } = {}) {
   const dyn = (n, k) => new THREE.InstancedBufferAttribute(new Float32Array(n * k), k).setUsage(THREE.DynamicDrawUsage);
-  for (const k of ['iA', 'iB', 'iC', 'iD']) geo.setAttribute(k, dyn(cap, 3));
-  geo.setAttribute('sy', dyn(cap, 1));
+  // (the fourth colour carries the local surface's height in w: a WebGPU pipeline takes at most 8 vertex buffers — position, normal,
+  // pal, iA–iD and the instance matrix are 8 — and with 'sy' on its own every part dimmed by the water (water: true) failed to draw)
+  for (const k of ['iA', 'iB', 'iC']) geo.setAttribute(k, dyn(cap, 3));
+  geo.setAttribute('iD', dyn(cap, 4));
   const transparent = opacity < 1, mat = new THREE.MeshStandardNodeMaterial({ roughness: rough, metalness: metal, side, transparent, depthWrite: !transparent });
   const w = attribute('pal', 'vec4');
-  mat.colorNode = attribute('iA', 'vec3').mul(w.x).add(attribute('iB', 'vec3').mul(w.y)).add(attribute('iC', 'vec3').mul(w.z)).add(attribute('iD', 'vec3').mul(w.w));
+  mat.colorNode = attribute('iA', 'vec3').mul(w.x).add(attribute('iB', 'vec3').mul(w.y)).add(attribute('iC', 'vec3').mul(w.z)).add(attribute('iD', 'vec4').xyz.mul(w.w));
   if (transparent) mat.opacityNode = float(opacity);
-  if (water) mat.outputNode = waterOut(attribute('sy', 'float').sub(positionWorld.y));
+  if (water) mat.outputNode = waterOut(attribute('iD', 'vec4').w.sub(positionWorld.y));
   const mesh = new THREE.InstancedMesh(geo, mat, cap); mesh.count = 0; mesh.frustumCulled = false; mesh.visible = false; mesh.layers.set(layer);
   mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  const M = mesh.instanceMatrix.array, AT = geo.attributes, CA = AT.iA.array, CB = AT.iB.array, CC = AT.iC.array, CD = AT.iD.array, SY = AT.sy.array;
+  const M = mesh.instanceMatrix.array, AT = geo.attributes, CA = AT.iA.array, CB = AT.iB.array, CC = AT.iC.array, CD = AT.iD.array;
   const P = {
     mesh, n: 0, cap,
     // one copy: matrix m, colours [A, B, C, D] (THREE.Color each), the local water surface's height sy (three's y; far below: never wet)
     put(m, c, sy = -1e4) {
       if (P.n >= cap) return; const o = P.n++;
-      M.set(m.elements, o * 16); SY[o] = sy;
+      M.set(m.elements, o * 16); CD[o * 4 + 3] = sy;
       const a = c[0], b = c[1] || a, cc = c[2] || a, d = c[3] || a;
       CA[o * 3] = a.r; CA[o * 3 + 1] = a.g; CA[o * 3 + 2] = a.b; CB[o * 3] = b.r; CB[o * 3 + 1] = b.g; CB[o * 3 + 2] = b.b;
-      CC[o * 3] = cc.r; CC[o * 3 + 1] = cc.g; CC[o * 3 + 2] = cc.b; CD[o * 3] = d.r; CD[o * 3 + 1] = d.g; CD[o * 3 + 2] = d.b;
+      CC[o * 3] = cc.r; CC[o * 3 + 1] = cc.g; CC[o * 3 + 2] = cc.b; CD[o * 4] = d.r; CD[o * 4 + 1] = d.g; CD[o * 4 + 2] = d.b;
     },
     end() {
       const n = P.n; mesh.count = n; mesh.visible = n > 0; P.n = 0; if (!n) return;
-      marks(mesh.instanceMatrix, n * 16); for (const a of [AT.iA, AT.iB, AT.iC, AT.iD]) marks(a, n * 3); marks(AT.sy, n);
+      marks(mesh.instanceMatrix, n * 16); for (const a of [AT.iA, AT.iB, AT.iC]) marks(a, n * 3); marks(AT.iD, n * 4);
     },
   };
   return P;
@@ -178,13 +180,14 @@ export function places() {
   PL.line = {}; for (const b of [1, 2, 3]) { const S = PL.shore[b], L = new Float32Array(S.length); for (let o = 0; o < S.length; o += 4) { L[o] = S[o] + S[o + 2] * GEO.CELL * 0.45; L[o + 1] = S[o + 1] + S[o + 3] * GEO.CELL * 0.45; L[o + 2] = S[o + 2]; L[o + 3] = S[o + 3]; } PL.line[b] = L; }
   return PL;
 }
-// a random point in body b's water with its bed dmin–dmax m deep and smin–smax m from the shore (null after `tries` misses)
-export function pickWater(b, dmin, dmax, smin = 0, smax = 1e9, tries = 40, near = null, R = 1e9) {
+// a random point in body b's water with its bed dmin–dmax m deep and smin–smax m from the shore (null after `tries` misses); ok(x, y),
+// if given, must take it too (wild3view: open water, not the ice)
+export function pickWater(b, dmin, dmax, smin = 0, smax = 1e9, tries = 40, near = null, R = 1e9, ok = null) {
   const W = places().water[b]; if (!W || !W.length) return null;
   for (let k = 0; k < tries; k++) {
     const i = W[(Math.random() * W.length) | 0], [cx, cy] = GEO.cellCentre(i), x = cx + (Math.random() - 0.5) * GEO.CELL, y = cy + (Math.random() - 0.5) * GEO.CELL;
     if (near && (x - near[0]) ** 2 + (y - near[1]) ** 2 > R * R) continue;
-    if (GEO.bodyAt(x, y) !== b) continue;
+    if (GEO.bodyAt(x, y) !== b || (ok && !ok(x, y))) continue;
     const d = GEO.depthAt(x, y), s = GEO.shoreDist(x, y); if (d >= dmin && d <= dmax && s >= smin && s <= smax) return [x, y];
   }
   return null;

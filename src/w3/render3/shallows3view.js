@@ -17,7 +17,7 @@ import * as THREE from '../../../vendor/three-0.186.1/three.webgpu.min.js';
 import { GEO, LAND, cellIndex } from '../geometry.js';
 import { HERP3 } from '../../config.js';
 import { WILD3 } from '../fish3.js';
-import { shape, partMesh, frame, part, surfY, hash, rnd, clamp, col, places } from './wild3kit.js';
+import { shape, partMesh, frame, part, surfY, hash, rnd, clamp, angD, col, places } from './wild3kit.js';
 import { waterOut } from './water3.js';
 const { attribute, positionLocal, positionGeometry, positionWorld, sin, time, float, max: tmax } = THREE.TSL;
 
@@ -114,47 +114,81 @@ function tadpoleMesh(cap) {   // unit length (snout +0.5): a round body, a flat 
 }
 
 // plants: render3/plants3view.js (its fine cells' map onto the bed cells, the weed cover per 1.5-m cell); colAt: the water model's
-// column at (x, y); ripple: risesView's rings
-export function makeShallowsView({ plants, colAt, ripple }) {
-  const group = new THREE.Group(), PARTS = [];
-  const pm = (geo, cap, o = {}) => { const p = partMesh(geo, cap, { layer: LAYER, ...o }); PARTS.push(p); group.add(p.mesh); return p; };
-  const P = { painted: pm(paintedGeo(), 400), snapper: pm(snapperGeo(), 40), frog: pm(frogGeo(), 600), newt: pm(newtGeo(), 400), log: pm(logGeo(), 600, { layer: 0 }), rock: pm(rockGeo(), 800, { layer: 0 }),
-    darner: pm(flyGeo(0.075, true), 80), bluet: pm(flyGeo(0.036, false), 300), dWing: pm(wingsGeo(0.075, true), 80, { side: THREE.DoubleSide, opacity: 0.4, water: false }), bWing: pm(wingsGeo(0.036, false), 300, { side: THREE.DoubleSide, opacity: 0.4, water: false }) };
+// column at (x, y); ripple: risesView's rings; groundY(x, y) (optional): the ground or the lake's bed as main3 draws it (three's y) —
+// without it a frog on the bank sits at the water's level
+export function makeShallowsView({ plants, colAt, ripple, groundY = null }) {
+  const group = new THREE.Group(), PARTS = [], PL = places();
+  const pm = (geo, cap, o = {}, still = false) => { const p = partMesh(geo, cap, { layer: LAYER, ...o }); if (!still) PARTS.push(p); group.add(p.mesh); return p; };
+  // (the shore cells that may hold a fallen tree — placeLogs' test without the sim's wood, which only thins them: the logs' mesh holds
+  // every one — the true lakes' ~1,200 too — so none is dropped while its basking places stay)
+  const logCell = (S, o) => { const i = cellIndex(S[o], S[o + 1]), li = cellIndex(S[o] + S[o + 2] * GEO.CELL, S[o + 1] + S[o + 3] * GEO.CELL); if (i < 0 || li < 0) return -1; const f = FORESTED[GEO.cover[li]] || 0; return f > 0 && !(hash(i, 401) > f * GEO.CELL / 12) ? i : -1; };
+  let LOG_CAP = 0; for (const b of [1, 2]) for (let o = 0; o < PL.shore[b].length; o += 4) if (logCell(PL.shore[b], o) >= 0) LOG_CAP++;
+  // (the logs and the boulders are still: put once when placed, not sent again each frame)
+  const P = { painted: pm(paintedGeo(), 400), snapper: pm(snapperGeo(), 40), frog: pm(frogGeo(), 600), newt: pm(newtGeo(), 400), log: pm(logGeo(), Math.max(1, LOG_CAP), { layer: 0 }, true), rock: null,
+    // (the wings: thin sheets back to back, one-sided — one layer seen at a time; drawn after the water's surface when the eye is above it)
+    darner: pm(flyGeo(0.075, true), 80), bluet: pm(flyGeo(0.036, false), 300), dWing: pm(wingsGeo(0.075, true), 80, { opacity: 0.4, water: false }), bWing: pm(wingsGeo(0.036, false), 300, { opacity: 0.4, water: false }) };
   const TAD_MAX = 8000, tad = tadpoleMesh(TAD_MAX); group.add(tad);
   const fineI = plants.fine, nb = plants.nb, blend = plants.blend, nF = fineI.length;
   const FX = new Float32Array(nF), FY = new Float32Array(nF); for (let t = 0; t < nF; t++) { const c = GEO.cellCentre(fineI[t]); FX[t] = c[0]; FY[t] = c[1]; }   // (the cells' centres, once: the rebuilds scan them all)
-  const PL = places();
   // ---------- the static things: the fallen trees and the boulders (their places once; their heights with the water's) ----------
-  const LOGS = [], ROCKS = [];
+  const LOGS = [], ROCKS = [], Mf = new THREE.Matrix4(), Mp = new THREE.Matrix4(), V3 = new THREE.Vector3(), C1 = new THREE.Color();
   {   // boulders: in the rocky shallows (substrate rock ≥ 0.45, the bed 5–40 cm), about one in six such cells
     for (const b of [1, 2]) for (const i of PL.water[b]) {
       if (GEO.depth[i] < 0.05 || GEO.depth[i] > 0.4 || !GEO.subData || GEO.subData.rock[i] < 115 || hash(i, 301) > 0.17 * Math.min(1, A / 2.25)) continue;
       const [cx, cy] = GEO.cellCentre(i), x = cx + (hash(i, 303) - 0.5) * GEO.CELL, y = cy + (hash(i, 305) - 0.5) * GEO.CELL, r = 0.3 + 0.35 * hash(i, 307), d = GEO.depthAt(x, y); if (!(d > 0.03)) continue;
-      ROCKS.push({ x, y, r, d, rot: hash(i, 309) * TAU, top: Math.max(0.06, r * 0.8 - d) });
+      // (drawn: its centre 0.3 r over the bed, 0.462 r high (rockGeo's 0.42 × 1.1) — its top 0.762 r − d over the water; a third or so
+      // are awash or under, and give no basking place)
+      ROCKS.push({ x, y, r, d, rot: hash(i, 309) * TAU, top: 0.762 * r - d });
     }
+    P.rock = pm(rockGeo(), Math.max(1, ROCKS.length), { layer: 0 }, true);   // (room for every one: ~50 on the 1/10 lakes, ~560 on the true)
+    for (const R of ROCKS) { const sY = surfY(R.x, R.y); frame(Mf, R.x, sY - R.d + R.r * 0.3, -R.y, R.rot, 0, 0, 1); Mf.scale(V3.set(R.r * 2, R.r * 1.1, R.r * 1.7)); P.rock.put(Mf, ROCK_C, sY); }
+    P.rock.end();
   }
   function placeLogs(wood) {   // where the bank is wooded and the sim keeps fallen wood (plants3 wood per column): one per ~12 m of shore
     LOGS.length = 0;
     for (const b of [1, 2]) { const S = PL.shore[b];
       for (let o = 0; o < S.length; o += 4) {
-        const x0 = S[o], y0 = S[o + 1], nx = S[o + 2], ny = S[o + 3], i = cellIndex(x0, y0), li = cellIndex(x0 + nx * GEO.CELL, y0 + ny * GEO.CELL); if (i < 0 || li < 0) continue;
-        const c = colAt(x0, y0), w = c >= 0 && wood ? wood[c] : 0, f = FORESTED[GEO.cover[li]] || 0;
-        if (!(w > 0) || !(f > 0) || hash(i, 401) > f * GEO.CELL / 12) continue;
+        const x0 = S[o], y0 = S[o + 1], nx = S[o + 2], ny = S[o + 3], i = logCell(S, o); if (i < 0 || LOGS.length >= P.log.cap) continue;
+        const c = colAt(x0, y0), w = c >= 0 && wood ? wood[c] : 0;
+        if (!(w > 0)) continue;
         // from the bank (its root plate at the waterline) out into the water, a little across the shore's normal, its top end sunk
         const a = Math.atan2(-ny, -nx) + (hash(i, 403) - 0.5) * 1.2, L = 3 + 5 * hash(i, 405), r = 0.12 + 0.12 * hash(i, 407);
         const xs = x0 + nx * GEO.CELL * 0.4, ys = y0 + ny * GEO.CELL * 0.4, xe = xs + Math.cos(a) * L, ye = ys + Math.sin(a) * L, de = GEO.bodyAt(xe, ye) === LAND ? 0 : Math.max(0, GEO.depthAt(xe, ye));
         LOGS.push({ xs, ys, a, L, r, drop: Math.min(de, L * 0.25) + r * 0.3, rise: 0.12 + 0.15 * hash(i, 409), roll: hash(i, 411) * TAU, tint: 0.75 + 0.5 * hash(i, 413) });
       }
     }
+    for (const L of LOGS) {   // (put once: still)
+      const sY = surfY(L.xs, L.ys); C1.set(0).copy(LOG_C[0]).multiplyScalar(L.tint);
+      frame(Mf, L.xs, sY + L.rise, -L.ys, L.a, -Math.atan2(L.rise + L.drop, L.L), L.roll, 1); Mf.scale(V3.set(L.L, L.r, L.r));
+      P.log.put(Mf, [C1, LOG_C[1], LOG_C[2]], sY);
+    }
+    P.log.end();
   }
-  // a log's basking places: along its length where its top is a hand's height above the water
+  // THE TOP OF A BASKING PLACE over its water (spot.base), off m along it: a log's — its trunk tilted down from the bank (its axis
+  // rise − (rise + drop)·s at s of its length across the ground), tapering (radius 1 → 0.85 → 0.55 of r along it, logGeo), its 7-sided
+  // section's top ~0.95 r, seen upright through the tilt (1/cos); a boulder's — its ellipsoid's crown, lower off its middle
+  const logR = t => t < 0.5 ? 1 - 0.3 * t : 0.85 - 0.6 * (t - 0.5);
+  function spotTop(sp, off) {
+    if (sp.log) { const L = sp.L, k = (L.rise + L.drop) / L.L, c = 1 / Math.sqrt(1 + k * k), s = sp.s + off / L.L; return L.rise - (L.rise + L.drop) * s + L.r * 0.95 * logR(clamp(s / c, 0, 1)) / c; }
+    const R = sp.R, u = off / R.r; return -R.d + 0.3 * R.r + 0.462 * R.r * Math.sqrt(Math.max(0, 1 - u * u));
+  }
+  // basking places: along each log where its top is a hand's height above the water — 0.7 m apart, each with three turtles' room
+  // (slots at −0.22, 0, +0.22 m along it) — and atop each boulder clear of the water (two, at ±0.11 m)
   const baskSpots = [];
   function placeSpots() {
     baskSpots.length = 0;
-    for (const L of LOGS) for (let s = 0.15; s < 0.9; s += 0.08) { const x = L.xs + Math.cos(L.a) * L.L * s, y = L.ys + Math.sin(L.a) * L.L * s, top = L.rise - (L.rise + L.drop) * s + L.r; if (GEO.bodyAt(x, y) !== LAND && top > 0.03 && top < 0.45) baskSpots.push({ x, y, top, yaw: L.a, log: true, taken: 0 }); }
-    for (const R of ROCKS) baskSpots.push({ x: R.x, y: R.y, top: R.top, yaw: R.rot, log: false, taken: 0 });
+    for (const L of LOGS) for (let s = 0.15; s < 0.9; s += Math.max(0.08, 0.7 / L.L)) {
+      const x = L.xs + Math.cos(L.a) * L.L * s, y = L.ys + Math.sin(L.a) * L.L * s, sp = { x, y, base: surfY(L.xs, L.ys), yaw: L.a, log: true, L, s, occ: 0 }; sp.top = spotTop(sp, 0);
+      if (GEO.bodyAt(x, y) !== LAND && sp.top > 0.03 && sp.top < 0.45) baskSpots.push(sp);
+    }
+    for (const R of ROCKS) if (R.top > 0.03) { const sp = { x: R.x, y: R.y, base: surfY(R.x, R.y), yaw: R.rot, log: false, R, occ: 0 }; sp.top = spotTop(sp, 0); baskSpots.push(sp); }
   }
-  const Mf = new THREE.Matrix4(), Mp = new THREE.Matrix4(), V3 = new THREE.Vector3();
+  // (off a log or a rock into the water: a log's side — across it — toward the deeper water; a boulder's any way that is deeper)
+  function slideDir(sp, x, y) {
+    let best = sp.yaw + Math.PI / 2, bd = -1e9; const n = sp.log ? 2 : 8;
+    for (let k = 0; k < n; k++) { const e = sp.log ? sp.yaw + (k ? -1 : 1) * Math.PI / 2 : k * TAU / n, qx = x + Math.cos(e) * 0.5, qy = y + Math.sin(e) * 0.5, d = GEO.bodyAt(qx, qy) === LAND ? -1 : GEO.depthAt(qx, qy); if (d > bd) { bd = d; best = e; } }
+    return best;
+  }
   // ---------- the sim's state ----------
   let herp = null, tadA = null, fauna = null, wood = null, yf = 0, dirty = false, logsDirty = false, at = [1e9, 1e9, 1];
   function setData(h, tadArr, faunaArr, woodArr, yf0) {
@@ -180,7 +214,7 @@ export function makeShallowsView({ plants, colAt, ripple }) {
       // painted turtles: 10 /ha of the water under 2 m (each cell its expected share, drawn by its hash)
       if (n.painted > 0 && z <= HERP3.painted.z && hash(i, 501) < HERP3.painted.perHa / 1e4 * A) T.push(keep('p' + i, () => ({ hx: x0 + (hash(i, 503) - 0.5) * GEO.CELL, hy: y0 + (hash(i, 505) - 0.5) * GEO.CELL, id: i, k: 0.75 + 0.45 * hash(i, 507), mode: 'swim', mt: 5, ph: hash(i, 509) * 9, fresh: true })));
       // snapping turtles: 1 /ha of the water to 3 m (WILD3 snapper: its bed to 2–4 m), in its season
-      if (n.snapper > 0 && z <= 3 && hash(i, 521) < WILD3.snapper.perHa / 1e4 * A) SN.push(keep('s' + i, () => ({ x: x0, y: y0, yaw: hash(i, 523) * TAU, k: 0.8 + 0.4 * hash(i, 525), id: i, peri: hash(i, 527) < 0.15, ph: hash(i, 529) * 9 })));
+      if (n.snapper > 0 && z <= 3 && hash(i, 521) < WILD3.snapper.perHa / 1e4 * A) SN.push(keep('s' + i, () => ({ hx: x0, hy: y0, yaw: hash(i, 523) * TAU, k: 0.8 + 0.4 * hash(i, 525), id: i, peri: hash(i, 527) < 0.15, ph: hash(i, 529) * 9 })));
     }
     if (on && dist < 90) {   // the shore's frogs: green and mink frogs 0.3 a metre of vegetated shore, bullfrogs 10 a km
       for (const b of [1, 2]) { const Sh = PL.shore[b];
@@ -190,19 +224,18 @@ export function makeShallowsView({ plants, colAt, ripple }) {
           const nf = n.frog > 0 ? HERP3.frog.perM * m * w : 0, nbf = n.bullfrog > 0 ? WILD3.bullfrog.perKm / 1000 * m : 0;
           for (let k = 0; k < 3; k++) {
             if (hash(i, 541 + k) < nf - k) FR.push(keep('f' + i + ':' + k, () => {   // at the waterline: on the bank's edge, or in the shallows among the plants (a mink frog on the pads)
-              const mink = hash(i, 551 + k) < 0.35, out = mink ? 0.5 + 2 * hash(i, 553 + k) : -0.1 + 0.5 * hash(i, 555 + k), x = x0 - Sh[o + 2] * out + (hash(i, 561 + k) - 0.5) * GEO.CELL, y = y0 - Sh[o + 3] * out + (hash(i, 571 + k) - 0.5) * GEO.CELL;
-              return { x, y, yaw: Math.atan2(-Sh[o + 3], -Sh[o + 2]) + (hash(i, 557 + k) - 0.5) * 1.6, kind: mink ? 'mink' : 'green', k: mink ? 0.8 : 1, C: mink ? MINKF_C : GREEN_C, mode: 'sit', mt: 0, ph: hash(i, 559 + k) * 9 };
+              const mink = hash(i, 551 + k) < 0.35, out = mink ? 0.5 + 2 * hash(i, 553 + k) : -0.3 + 0.6 * hash(i, 555 + k), [x, y] = atEdge(x0, y0, Sh[o + 2], Sh[o + 3], (hash(i, 561 + k) - 0.5) * GEO.CELL, out), wd = Math.atan2(-Sh[o + 3], -Sh[o + 2]);
+              return { x, y, wd, yaw: wd + (hash(i, 557 + k) - 0.5) * 1.6, kind: mink ? 'mink' : 'green', k: mink ? 0.8 : 1, C: mink ? MINKF_C : GREEN_C, mode: 'sit', mt: 0, ph: hash(i, 559 + k) * 9 };
             }));
           }
-          if (hash(i, 581) < nbf) FR.push(keep('b' + i, () => { const out = 0.8 + 2.7 * hash(i, 583); return { x: x0 - Sh[o + 2] * out, y: y0 - Sh[o + 3] * out, yaw: hash(i, 585) * TAU, kind: 'bull', k: 1.9, C: BULL_C, mode: 'sit', mt: 0, ph: hash(i, 587) * 9 }; }));
+          if (hash(i, 581) < nbf) FR.push(keep('b' + i, () => { const [x, y] = atEdge(x0, y0, Sh[o + 2], Sh[o + 3], (hash(i, 589) - 0.5) * GEO.CELL, 0.8 + 2.7 * hash(i, 583)); return { x, y, wd: Math.atan2(-Sh[o + 3], -Sh[o + 2]), yaw: hash(i, 585) * TAU, kind: 'bull', k: 1.9, C: BULL_C, mode: 'sit', mt: 0, ph: hash(i, 587) * 9 }; }));
         }
       }
     }
     if (on && n.newt > 0 && dist < 40) for (let t = 0; t < nF; t++) {   // newts: 300 /ha of the water to 1.5 m
       const i = fineI[t], x0 = FX[t], y0 = FY[t]; if (!near(x0, y0, R_N) || GEO.depth[i] > HERP3.newt.z) continue;
-      const m = HERP3.newt.perHa / 1e4 * A; for (let k = 0; k < 3; k++) if (hash(i, 601 + k) < m - k) NW.push({ hx: x0 + (hash(i, 611 + k) - 0.5) * GEO.CELL, hy: y0 + (hash(i, 621 + k) - 0.5) * GEO.CELL, yaw: hash(i, 631 + k) * TAU, ph: hash(i, 641 + k) * 50, k: 0.8 + 0.4 * hash(i, 651 + k) });
+      const m = HERP3.newt.perHa / 1e4 * A; for (let k = 0; k < 3; k++) if (hash(i, 601 + k) < m - k) NW.push(keep('n' + i + ':' + k, () => ({ hx: x0 + (hash(i, 611 + k) - 0.5) * GEO.CELL, hy: y0 + (hash(i, 621 + k) - 0.5) * GEO.CELL, id: i, yaw: hash(i, 631 + k) * TAU, ph: hash(i, 641 + k) * 50, k: 0.8 + 0.4 * hash(i, 651 + k) })));
     }
-    for (const [key, o] of KEEP) if (o.gen !== gen) KEEP.delete(key);
     // THE TADPOLES: each cohort's tadpoles per m² (g wet/m² ÷ its mean mass), at their size (~4.6 cm × W^⅓ g), on the shallow bed
     let nt = 0;
     if (tadA && herp && herp.tadW && dist < 40) {
@@ -233,88 +266,128 @@ export function makeShallowsView({ plants, colAt, ripple }) {
       const cov = plants.cover[i] || 0; if (!(cov > 0.05)) continue;
       const fa = fauna ? clamp(blend(fauna, t) / 1.5, 0.2, 1.5) : 0.6, edge = Math.exp(-Math.max(0, GEO.shore[i] - 2) / 8);
       const nB = 0.3 * cov * fa * edge * A * S.flying, nD = 0.03 * cov * fa * A * S.flying;
-      for (let k = 0; k < 4; k++) if (hash(i, 801 + k) < nB - k) OD.push({ hx: x0 + (hash(i, 811 + k) - 0.5) * GEO.CELL, hy: y0 + (hash(i, 821 + k) - 0.5) * GEO.CELL, darner: false, ph: hash(i, 831 + k) * 50, r: 0.3 + 0.8 * hash(i, 841 + k), h: 0.12 + 0.35 * hash(i, 851 + k), perch: 0 });
-      if (hash(i, 861) < nD) OD.push({ hx: x0, hy: y0, darner: true, ph: hash(i, 871) * 50, r: 2 + 3 * hash(i, 881), h: 0.5 + 1.0 * hash(i, 891), perch: 0 });
+      for (let k = 0; k < 4; k++) if (hash(i, 801 + k) < nB - k) OD.push(keep('o' + i + ':' + k, () => ({ hx: x0 + (hash(i, 811 + k) - 0.5) * GEO.CELL, hy: y0 + (hash(i, 821 + k) - 0.5) * GEO.CELL, darner: false, ph: hash(i, 831 + k) * 50, r: 0.3 + 0.8 * hash(i, 841 + k), h: 0.12 + 0.35 * hash(i, 851 + k), perch: 0 })));
+      if (hash(i, 861) < nD) OD.push(keep('d' + i, () => ({ hx: x0, hy: y0, darner: true, ph: hash(i, 871) * 50, r: 2 + 3 * hash(i, 881), h: 0.5 + 1.0 * hash(i, 891), perch: 0 })));
     }
+    for (const [key, o] of KEEP) if (o.gen !== gen) KEEP.delete(key);   // (after all of them are kept: the odonates too)
   }
   // ---------- each frame ----------
-  const C1 = new THREE.Color(), cam = [0, 0, 0], WP = [0, 0];
-  const wet = (x, y, hx, hy) => { if (GEO.bodyAt(x, y) === LAND || !(GEO.depthAt(x, y) > 0.05)) { WP[0] = hx; WP[1] = hy; } else { WP[0] = x; WP[1] = y; } return WP; };   // (a wander that would leave the water stays home)
+  const cam = [0, 0, 0];
+  const wetAt = (x, y, dmin = 0.05) => GEO.bodyAt(x, y) !== LAND && GEO.depthAt(x, y) > dmin;
+  const ease = (v, to, step) => v + clamp(to - v, -step, step);
+  // (a wanderer toward its wander's point (tx, ty) at ≤ v m/s, keeping to the water — a point on the land, or too shallow, is not taken:
+  // it holds to the last wet one, no jump home — turning the way it goes; it starts at its home, or its cell's middle if that is dry)
+  function wander(u, tx, ty, v, dt) {
+    if (u.x === undefined) { const h = wetAt(u.hx, u.hy) ? [u.hx, u.hy] : GEO.cellCentre(u.id); u.x = u.gx = h[0]; u.y = u.gy = h[1]; }
+    if (wetAt(tx, ty)) { u.gx = tx; u.gy = ty; }
+    const dx = u.gx - u.x, dy = u.gy - u.y, d = Math.hypot(dx, dy);
+    if (d > 1e-3) { const s = Math.min(d, v * dt); u.x += dx / d * s; u.y += dy / d * s; if (s > 0.01 * dt) u.yaw += angD(Math.atan2(dy, dx), u.yaw) * Math.min(1, 3 * dt); }
+  }
+  // (a frog's place: dx along the shore cell's edge, then out m from the waterline as drawn — where the bed meets the water's level —
+  // into the water (−: up the bank); found by stepping from the cell's middle toward the land)
+  function atEdge(x0, y0, nx, ny, dx, out) {
+    const px = x0 - ny * dx, py = y0 + nx * dx; let w = 0.5 * GEO.CELL;
+    for (let s = 0; s <= 1.5 * GEO.CELL; s += GEO.CELL / 16) { const qx = px + nx * s, qy = py + ny * s; if (GEO.bodyAt(qx, qy) === LAND || !(GEO.depthAt(qx, qy) > 0)) { w = s; break; } }
+    return [px + nx * (w - out), py + ny * (w - out)];
+  }
+  // (the ground or the bed under (x, y) as drawn — main3's groundY; without it, the water's level on the bank and the bed in the water)
+  const gY = (x, y) => groundY ? groundY(x, y) : GEO.bodyAt(x, y) === LAND ? surfY(x, y) + 0.02 : surfY(x, y) - Math.max(0, GEO.depthAt(x, y));
+  // a frog at rest: a bullfrog — or any in over 6 cm of water — floating with its head out; else on the shallow bed or the bank
+  const frogY = (f, x, y) => { const d = GEO.depthAt(x, y); return GEO.bodyAt(x, y) !== LAND && d > 0 && (f.kind === 'bull' || d > 0.06) ? surfY(x, y) - 0.014 * f.k : gY(x, y); };
   let lastT = -1, lastFly = 0;
   function update(t, snap, tx, ty, dist, camPos, scale) {
     const dt = lastT < 0 ? 0 : Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
     if (logsDirty && wood) { logsDirty = false; placeLogs(wood); placeSpots(); }
     if (!snap) return;
     cam[0] = camPos.x; cam[1] = -camPos.z; cam[2] = camPos.y;
+    // (the wings are see-through: drawn after the water's surface (main3's, renderOrder 2) while the eye is above it — else the surface
+    // washes over them — and before it from under the water, where the surface hides them)
+    const ro = cam[2] > surfY(cam[0], cam[1]) || GEO.bodyAt(cam[0], cam[1]) === LAND ? 3 : 0; P.dWing.mesh.renderOrder = P.bWing.mesh.renderOrder = ro;
     const vis = len => scale <= 1 ? 1 : Math.min(scale, Math.max(1, 0.5 * scale / len));
     const sun = snap.sun, air = snap.air ?? (herp ? herp.tl : 15), yfN = snap.yf;
     const flying = sun > 0.15 && snap.weather < 2 && air > 14 && yfN > 0.24 && yfN < 0.6 ? Math.min(1, (air - 14) / 6) * Math.min(1, (sun - 0.15) * 4) : 0;
     if ((flying > 0) !== (lastFly > 0)) dirty = true; lastFly = flying;
     if (dirty || Math.hypot(tx - at[0], ty - at[1]) > 5 || Math.abs(Math.log(dist / at[2])) > 0.4) rebuild(tx, ty, dist, { flying });
-    for (const p of PARTS) p.n = 0;
-    // the logs and boulders (all of them: big enough to see from afar)
-    for (const L of LOGS) {
-      const sY = surfY(L.xs, L.ys); C1.set(0).copy(LOG_C[0]).multiplyScalar(L.tint);
-      frame(Mf, L.xs, sY + L.rise, -L.ys, L.a, -Math.atan2(L.rise + L.drop, L.L), L.roll, 1); Mf.scale(V3.set(L.L, L.r, L.r));
-      P.log.put(Mf, [C1, LOG_C[1], LOG_C[2]], sY);
-    }
-    for (const R of ROCKS) { const sY = surfY(R.x, R.y); frame(Mf, R.x, sY - R.d + R.r * 0.3, -R.y, R.rot, 0, 0, 1); Mf.scale(V3.set(R.r * 2, R.r * 1.1, R.r * 1.7)); P.rock.put(Mf, ROCK_C, sY); }
+    for (const p of PARTS) p.n = 0;   // (the logs and boulders — all of them, big enough to see from afar — are put once: placeLogs, the rocks')
     // THE PAINTED TURTLES: on a sunny warm day (sun up, no rain, the air ≥ 12 °C or spring's cold water under a strong sun) most bask on
     // the logs and rocks within ~25 m of their place, heads out; otherwise they swim at the surface or among the weeds
     const bask = sun > 0.3 && snap.weather < 2 && (air > 12 || sun > 0.6) ? (snap.weather === 0 ? 0.75 : 0.4) : 0;
-    for (const s of baskSpots) s.taken = 0;
+    // (who holds which place on a log or a rock, counted before any turtle chooses: two never take one; a.slot's bit in spot.occ)
+    for (const s of baskSpots) s.occ = 0;
+    for (const u of T) if (u.spot && u.mode !== 'swim') u.spot.occ |= 1 << u.slot;
     for (const u of T) {
       u.mt += dt;
-      const camD = Math.hypot(cam[0] - (u.x ?? u.hx), cam[1] - (u.y ?? u.hy)) + Math.max(0, cam[2] - (u.Y ?? 0));
+      if (u.x === undefined) { wander(u, u.hx, u.hy, 0, 0); u.Y = surfY(u.x, u.y) - 0.02; u.yaw = hash(u.id, 511) * TAU; }
+      const camD = Math.hypot(cam[0] - u.x, cam[1] - u.y) + Math.max(0, cam[2] - u.Y);
       if (u.mode === 'swim') {
-        if (bask > 0 && hash(u.id, 990) < bask && u.mt > 3) {   // to the nearest free basking place
-          let best = null, bd = 25 * 25; for (const s of baskSpots) { const d = (s.x - u.hx) ** 2 + (s.y - u.hy) ** 2; if (d < bd && s.taken < (s.log ? 3 : 2)) { bd = d; best = s; } }
-          if (best) { best.taken++; u.spot = best; u.slot = best.taken - 1; u.mode = u.fresh ? 'bask' : 'go'; u.mt = 0; u.x = best.x; u.y = best.y; }   // (one first seen on a basking day is already out on its log)
+        if (bask > 0 && hash(u.id, 990) < bask && u.mt > 3) {   // to the nearest free basking place within ~25 m of its home
+          let best = null, bs = -1, bd = 25 * 25;
+          for (const s of baskSpots) { const d = (s.x - u.hx) ** 2 + (s.y - u.hy) ** 2; if (d >= bd) continue; for (let k = 0, n = s.log ? 3 : 2; k < n; k++) if (!(s.occ & (1 << k))) { bd = d; best = s; bs = k; break; } }
+          if (best) { best.occ |= 1 << bs; u.spot = best; u.slot = bs; u.mt = 0; u.mode = u.fresh ? 'bask' : 'go'; u.cl = u.fresh ? 1 : 0; }   // (one first seen on a basking day is already out on its log)
+          else u.mt = -rnd(5, 20);   // (none free near: it looks again in a while, not every frame)
         }
         u.fresh = false;
-        const a = t * 0.05 + u.ph, [x, y] = wet(u.hx + Math.sin(a) * 2.5, u.hy + Math.sin(a * 1.31 + 1) * 2.5, u.hx, u.hy), z = Math.max(0.05, GEO.depthAt(x, y)), sY = surfY(x, y);
-        const yaw = Math.atan2(Math.cos(a * 1.31 + 1) * 1.31, Math.cos(a)), surf = Math.sin(t * 0.02 + u.ph) > 0;
-        u.x = x; u.y = y; u.Y = surf ? sY - 0.02 : sY - z + 0.05; frame(Mf, x, u.Y, -y, yaw, surf ? 0.15 : 0, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
-      } else if (u.mode === 'go') {   // swimming at the surface to its log or rock
-        const s = u.spot, dx = s.x - u.x, dy = s.y - u.y, d = Math.hypot(dx, dy); s.taken = Math.max(s.taken, u.slot + 1);
-        if (d < 0.25 || bask === 0) u.mode = bask === 0 ? 'swim' : 'bask'; else { const v = Math.min(0.3 * dt, d); u.x += dx / d * v; u.y += dy / d * v; }
-        const sY = surfY(u.x, u.y); u.Y = sY - 0.02; frame(Mf, u.x, u.Y, -u.y, Math.atan2(dy, dx), 0.15, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
+      }
+      if (u.mode === 'swim') {   // about its home at ≤ 0.3 m/s, keeping to the water; at the surface or down among the weeds — ~12 s between
+        const a = t * 0.05 + u.ph; wander(u, u.hx + Math.sin(a) * 2.5, u.hy + Math.sin(a * 1.31 + 1) * 2.5, 0.3, dt);
+        const sY = surfY(u.x, u.y), z = Math.max(0.05, GEO.depthAt(u.x, u.y)), f = clamp(Math.sin(t * 0.02 + u.ph) * 4 + 0.5, 0, 1);
+        u.Y = ease(u.Y, (sY - 0.02) * f + (sY - z + 0.05) * (1 - f), 0.25 * dt); frame(Mf, u.x, u.Y, -u.y, u.yaw, 0.15 * f, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
+      } else if (u.mode === 'go') {   // swimming at the surface to its log or rock (up from the weeds first, as it goes)
+        const s = u.spot, dx = s.x - u.x, dy = s.y - u.y, d = Math.hypot(dx, dy);
+        if (bask === 0) u.mode = 'swim';
+        else if (d < 0.25) { u.mode = 'bask'; u.mt = 0; u.cl = 0; u.cx0 = u.x; u.cy0 = u.y; u.cY0 = u.Y; }
+        else { const v = Math.min(0.3 * dt, d); u.x += dx / d * v; u.y += dy / d * v; u.yaw += angD(Math.atan2(dy, dx), u.yaw) * Math.min(1, 3 * dt); }
+        const sY = surfY(u.x, u.y); u.Y = ease(u.Y, sY - 0.02, 0.25 * dt); frame(Mf, u.x, u.Y, -u.y, u.yaw, 0.15, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
       } else if (u.mode === 'bask' || u.mode === 'slide') {
-        const s = u.spot; s.taken = Math.max(s.taken, u.slot + 1);
-        const off = (u.slot - 0.5) * 0.22, x = s.x + Math.cos(s.yaw) * off, y = s.y + Math.sin(s.yaw) * off, sY = surfY(x, y);
-        let X = x, Y = sY + s.top + 0.005, yaw = s.yaw + (u.slot % 2 ? Math.PI : 0) + 0.3 * Math.sin(u.ph), pitch = 0;
-        if (u.mode === 'bask' && camD < 6 * vis(0.15)) { u.mode = 'slide'; u.mt = 0; }   // (too close: off the log and into the water)
-        if (u.mode === 'slide') { const f = Math.min(1, u.mt / 0.8); X += Math.cos(yaw) * 0.3 * f; Y -= (s.top + 0.12) * f * f; pitch = -0.5 * f; if (f >= 1 && !u.plop) { u.plop = true; ripple(X, y + Math.sin(yaw) * 0.3, t, 0.04, 0.8, 0.05); } if (u.mt > 1) { u.mode = 'swim'; u.mt = -rnd(40, 120); u.plop = false; const a = t * 0.05 + u.ph; u.hx = X - Math.sin(a) * 2.5; u.hy = y - Math.sin(a * 1.31 + 1) * 2.5; } }   // (its wander picks up where it went in)
-        else if (bask === 0 && u.mt > 5) { u.mode = 'slide'; u.mt = 0; }
-        u.x = X; u.y = y; u.Y = Y; frame(Mf, X, Y, -(y + (u.mode === 'slide' ? Math.sin(yaw) * 0.3 * Math.min(1, u.mt / 0.8) : 0)), yaw, pitch, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
+        const s = u.spot, off = (u.slot - (s.log ? 1 : 0.5)) * 0.22, x = s.x + Math.cos(s.yaw) * off, y = s.y + Math.sin(s.yaw) * off, sY = surfY(x, y), top = spotTop(s, off);
+        let X = x, Yy = y, Y = s.base + top + 0.005, yaw = s.yaw + (u.slot % 2 ? Math.PI : 0) + 0.3 * Math.sin(u.ph), pitch = 0;
+        if (u.mode === 'bask' && u.cl < 1) {   // (hauling itself out, from where it reached the log to its place on it)
+          u.cl = Math.min(1, u.cl + dt / 1.5); const c = u.cl * u.cl * (3 - 2 * u.cl);
+          X = u.cx0 + (x - u.cx0) * c; Yy = u.cy0 + (y - u.cy0) * c; Y = u.cY0 + (Y - u.cY0) * c; yaw = u.yaw + angD(yaw, u.yaw) * c; pitch = 0.45 * Math.sin(Math.PI * u.cl);
+        }
+        if (u.mode === 'bask' && (camD < 6 * vis(0.15) || (bask === 0 && u.mt > 5))) { u.mode = 'slide'; u.mt = 0; u.sd = slideDir(s, x, y); u.sYaw = yaw; }   // (too close, or the sun gone: off into the water)
+        if (u.mode === 'slide') {   // (turning off its side, down into the deeper water nose first, a plop)
+          const f = Math.min(1, u.mt / 0.8); yaw = u.sYaw + angD(u.sd, u.sYaw) * Math.min(1, 2 * f); X += Math.cos(u.sd) * 0.35 * f; Yy += Math.sin(u.sd) * 0.35 * f; Y -= (top + 0.12) * f * f; pitch = -0.5 * f;
+          if (f >= 1 && !u.plop) { u.plop = true; ripple(X, Yy, t, 0.04, 0.8, 0.05); }
+          if (u.mt > 1) { u.mode = 'swim'; u.mt = -rnd(40, 120); u.plop = false; u.spot = null; u.gx = X; u.gy = Yy; }   // (in the water where it went in: its wander back home from there)
+        }
+        u.x = X; u.y = Yy; u.Y = Y; u.yaw = yaw; frame(Mf, X, Y, -Yy, yaw, pitch, 0, u.k * vis(0.15)); P.painted.put(Mf, PAINT_C, sY);
       }
     }
     // THE SNAPPERS: walking slowly on the bed, or at the surface with the eyes and the top of the shell out
-    for (const u of SN) {
-      const a = t * 0.004 + u.ph, [x, y] = wet(u.x + Math.sin(a) * 1.5, u.y + Math.sin(a * 1.3) * 1.5, u.x, u.y), z = Math.max(0.1, GEO.depthAt(x, y)), sY = surfY(x, y), yaw = Math.atan2(Math.cos(a * 1.3) * 1.3, Math.cos(a));
+    for (const u of SN) {   // (about its home at ≤ 0.1 m/s, keeping to the water)
+      const a = t * 0.004 + u.ph; wander(u, u.hx + Math.sin(a) * 1.5, u.hy + Math.sin(a * 1.3) * 1.5, 0.1, dt);
+      const x = u.x, y = u.y, z = Math.max(0.1, GEO.depthAt(x, y)), sY = surfY(x, y), yaw = u.yaw;
       const lunge = u.lunge && t - u.lunge < 0.6 ? Math.sin((t - u.lunge) / 0.6 * Math.PI) : 0;
       frame(Mf, x + Math.cos(yaw) * lunge * 0.1, u.peri ? sY - 0.11 * u.k : sY - z, -(y + Math.sin(yaw) * lunge * 0.1), yaw, u.peri ? 0.12 : 0, 0, u.k * vis(0.5)); P.snapper.put(Mf, SNAP_C, sY);
       u.cx = x; u.cy = y;
     }
     // THE FROGS: sitting at the edge (bullfrogs floating, heads out); the camera too close — a jump and a plop, gone a while
     for (const f of FR) {
-      f.mt += dt; const sY = surfY(f.x, f.y), d = GEO.depthAt(f.x, f.y), wet = GEO.bodyAt(f.x, f.y) !== LAND && d > 0.02, k = f.k * vis(0.08 * f.k);
-      const camD = Math.hypot(cam[0] - f.x, cam[1] - f.y) + Math.max(0, cam[2] - sY);
-      if (f.mode === 'sit' && camD < (f.kind === 'bull' ? 4 : 2.5) * vis(0.08)) { f.mode = 'jump'; f.mt = 0; f.jx = f.x; f.jy = f.y; f.yaw = Math.atan2(f.y - cam[1], f.x - cam[0]); }
+      f.mt += dt; const sY = surfY(f.x, f.y), k = f.k * vis(0.08 * f.k), Y0 = frogY(f, f.x, f.y);
+      const camD = Math.hypot(cam[0] - f.x, cam[1] - f.y) + Math.max(0, cam[2] - Y0);
+      if (f.mode === 'sit' && camD < (f.kind === 'bull' ? 4 : 2.5) * vis(0.08)) {
+        // (a jump INTO the water — the shore's way out, leaning away from the eye — far enough to land in it; a frog with none ahead
+        // within 2.5 m hops off into the grass)
+        const away = Math.atan2(f.y - cam[1], f.x - cam[0]); f.jyaw = f.wd + clamp(angD(away, f.wd), -0.6, 0.6); f.jL = 0.6 * f.k;
+        for (let s = 0.1; s <= 2.5; s += 0.1) if (wetAt(f.x + Math.cos(f.jyaw) * s, f.y + Math.sin(f.jyaw) * s, 0.04)) { f.jL = Math.max(f.jL, s + 0.15); break; }
+        f.mode = 'jump'; f.mt = 0; f.jY0 = Y0;
+      }
       if (f.mode === 'sit') {
-        const Y = wet ? sY - (f.kind === 'bull' || d > 0.06 ? 0.014 * f.k : 0) : (GEO.bodyAt(f.x, f.y) === LAND ? sY + 0.02 : sY - d);
-        frame(Mf, f.x, Y + (f.kind === 'bull' ? 0.003 * Math.sin(t + f.ph) : 0), -f.y, f.yaw, 0, 0, k); P.frog.put(Mf, f.C, sY);
-      } else if (f.mode === 'jump') {
-        const u = Math.min(1, f.mt / 0.45), L = 0.6 * f.k, x = f.jx + Math.cos(f.yaw) * L * u, y = f.jy + Math.sin(f.yaw) * L * u;
-        frame(Mf, x, sY + 0.02 + Math.sin(u * Math.PI) * 0.25 * f.k - u * u * 0.05, -y, f.yaw, 0.6 - 1.2 * u, 0, k); P.frog.put(Mf, f.C, sY);
-        if (u >= 1) { f.mode = 'gone'; f.mt = 0; f.back = rnd(30, 120); ripple(x, y, t, 0.03, 0.8, 0.05 * f.k); }
+        frame(Mf, f.x, Y0 + (f.kind === 'bull' ? 0.003 * Math.sin(t + f.ph) : 0), -f.y, f.yaw, 0, 0, k); P.frog.put(Mf, f.C, sY);
+      } else if (f.mode === 'jump') {   // (the arc from where it sat to where it lands: the water's surface, or the ground)
+        const u = Math.min(1, f.mt / (0.35 + 0.1 * f.jL)), x = f.x + Math.cos(f.jyaw) * f.jL * u, y = f.y + Math.sin(f.jyaw) * f.jL * u;
+        const ex = f.x + Math.cos(f.jyaw) * f.jL, ey = f.y + Math.sin(f.jyaw) * f.jL, inW = wetAt(ex, ey, 0.02), Y1 = inW ? surfY(ex, ey) - 0.03 : gY(ex, ey);
+        frame(Mf, x, f.jY0 + (Y1 - f.jY0) * u + Math.sin(u * Math.PI) * (0.12 + 0.12 * f.jL) * f.k, -y, f.jyaw, 0.6 - 1.2 * u, 0, k); P.frog.put(Mf, f.C, surfY(x, y));
+        if (u >= 1) { f.mode = 'gone'; f.mt = 0; f.back = rnd(30, 120); if (inW) ripple(ex, ey, t, 0.03, 0.8, 0.05 * f.k); }
       } else if (f.mode === 'gone' && f.mt > f.back && camD > 5 * vis(0.08)) { f.mode = 'sit'; f.mt = 0; }
     }
     // THE NEWTS: creeping through the weeds near the bed; every few minutes up to the surface for air
-    for (const u of NW) {
-      const a = t * 0.03 + u.ph, [x, y] = wet(u.hx + Math.sin(a) * 0.8, u.hy + Math.sin(a * 1.4 + 2) * 0.8, u.hx, u.hy), z = Math.max(0.05, GEO.depthAt(x, y)), sY = surfY(x, y);
-      const gulp = Math.max(0, Math.sin(t * 0.03 + u.ph * 3) - 0.92) / 0.08, Y = sY - z + 0.01 + (z - 0.03) * gulp, yaw = Math.atan2(Math.cos(a * 1.4 + 2) * 1.4, Math.cos(a));
-      frame(Mf, x, Y, -y, yaw, gulp > 0.05 ? 0.7 : 0, 0, u.k * vis(0.09)); P.newt.put(Mf, NEWT_C, sY);
+    for (const u of NW) {   // (about its home at ≤ 8 cm/s, keeping to the water)
+      const a = t * 0.03 + u.ph; wander(u, u.hx + Math.sin(a) * 0.8, u.hy + Math.sin(a * 1.4 + 2) * 0.8, 0.08, dt);
+      const x = u.x, y = u.y, z = Math.max(0.05, GEO.depthAt(x, y)), sY = surfY(x, y);
+      const gulp = Math.max(0, Math.sin(t * 0.03 + u.ph * 3) - 0.92) / 0.08, Y = sY - z + 0.01 + (z - 0.03) * gulp;
+      frame(Mf, x, Y, -y, u.yaw, gulp > 0.05 ? 0.7 : 0, 0, u.k * vis(0.09)); P.newt.put(Mf, NEWT_C, sY);
     }
     // THE DRAGONFLIES AND DAMSELFLIES
     for (const o of OD) {
@@ -322,9 +395,15 @@ export function makeShallowsView({ plants, colAt, ripple }) {
       if (o.darner) {   // a patrol loop over the bed with darts and short hovers
         const a = s * 0.9, hov = Math.max(0, Math.sin(s * 0.7)) > 0.85 ? 1 : 0; x = o.hx + Math.cos(a) * o.r + 0.3 * Math.sin(s * 3.1) * (1 - hov); y = o.hy + Math.sin(a * 1.6) * o.r * 0.6; h = o.h + 0.2 * Math.sin(s * 1.3);
         yaw = Math.atan2(Math.cos(a * 1.6) * 1.6 * 0.6 * o.r, -Math.sin(a) * o.r);
-      } else {   // a bluet: hovering and flitting low over the pads and reeds; perched a while, wings folded
+      } else {   // a bluet: hovering and flitting low over the pads and reeds; perched a while, wings folded — settling where it is, and
+        // flying (≤ 1.2 m/s) back into its round after: no jumps
         const p = Math.sin(s * 0.13) > 0.6 ? 1 : 0, a = s * 0.6;
-        x = o.hx + (p ? 0 : Math.sin(a) * o.r + 0.05 * Math.sin(s * 9)); y = o.hy + (p ? 0 : Math.sin(a * 0.77 + 1) * o.r); h = p ? 0.18 : o.h + 0.05 * Math.sin(s * 4); yaw = p ? o.ph : Math.atan2(Math.cos(a * 0.77 + 1) * 0.77, Math.cos(a)); o.perch = p;
+        if (o.x === undefined) { o.x = o.hx + Math.sin(a) * o.r; o.y = o.hy + Math.sin(a * 0.77 + 1) * o.r; o.z = o.h; o.yaw = o.ph; }
+        if (p && !o.perch) { o.px = o.x; o.py = o.y; }
+        const gx = p ? o.px : o.hx + Math.sin(a) * o.r + 0.05 * Math.sin(s * 9), gy = p ? o.py : o.hy + Math.sin(a * 0.77 + 1) * o.r, gz = p ? 0.18 : o.h + 0.05 * Math.sin(s * 4);
+        const dx = gx - o.x, dy = gy - o.y, dz = gz - o.z, d = Math.hypot(dx, dy, dz), st = Math.min(d, 1.2 * dt);
+        if (d > 1e-4) { o.x += dx / d * st; o.y += dy / d * st; o.z += dz / d * st; if (Math.hypot(dx, dy) > 0.02) o.yaw += angD(Math.atan2(dy, dx), o.yaw) * Math.min(1, 6 * dt); }
+        x = o.x; y = o.y; h = o.z; yaw = o.yaw; o.perch = p;
       }
       const sY = surfY(x, y), k = vis(o.darner ? 0.075 : 0.036);
       frame(Mf, x, sY + h, -y, yaw, 0, 0, k); (o.darner ? P.darner : P.bluet).put(Mf, o.darner ? DARNER_C : BLUET_C, -1e4);
@@ -350,7 +429,7 @@ export function makeShallowsView({ plants, colAt, ripple }) {
   function list() {
     const out = [], by = new Map(); for (const u of T) if (u.mode === 'bask' && u.spot) by.set(u.spot, (by.get(u.spot) || 0) + 1);
     let best = null, bn = 0; for (const [sp, n] of by) if (n > bn) { bn = n; best = sp; }
-    if (best) { const sp = best; out.push({ kind: 'turtles', name: bn > 1 ? bn + ' painted turtles basking' : 'a painted turtle basking', key: 'turtles', size: 0.3, at: () => [sp.x, surfY(sp.x, sp.y) + sp.top + 0.05, -sp.y] }); }
+    if (best) { const sp = best; out.push({ kind: 'turtles', name: bn > 1 ? bn + ' painted turtles basking' : 'a painted turtle basking', key: 'turtles', size: 0.3, at: () => [sp.x, sp.base + sp.top + 0.05, -sp.y] }); }
     const bf = FR.find(f => f.kind === 'bull' && f.mode === 'sit'); if (bf) out.push({ kind: 'bullfrog', name: 'a bullfrog', key: 'bullfrog', size: 0.3, at: () => [bf.x, surfY(bf.x, bf.y), -bf.y] });
     const sn = SN[0]; if (sn && sn.cx !== undefined) out.push({ kind: 'snapper', name: 'a snapping turtle', key: 'snapper', size: 0.6, at: () => [sn.cx, surfY(sn.cx, sn.cy) - Math.max(0.1, GEO.depthAt(sn.cx, sn.cy)) * (sn.peri ? 0 : 1), -sn.cy] });
     return out;

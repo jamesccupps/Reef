@@ -292,15 +292,17 @@ function sitterGeo() {   // seated on a thwart (origin at the seat), facing +x, 
   }
   return S.done();
 }
-function standerGeo() {   // standing (origin at the feet), facing +x, the hands out in front at (0.32, 1.12)
+function standerGeo(legs = true) {   // standing (origin at the feet), facing +x, the hands out in front at (0.32, 1.12); legs: false — the
+  // body of a walker, its legs the separate leg part (walkLegGeo) at the hips (0, 0.9, ±0.1)
   const S = shape();
-  for (const z of [-1, 1]) S.tube([[0, 0.02, z * 0.1], [0.02, 0.45, z * 0.1], [0, 0.9, z * 0.1]], [0.07, 0.065, 0.075], 'B', 6);
+  if (legs) for (const z of [-1, 1]) S.tube([[0, 0.02, z * 0.1], [0.02, 0.45, z * 0.1], [0, 0.9, z * 0.1]], [0.07, 0.065, 0.075], 'B', 6);
   S.tube([[0, 0.88, 0], [0.01, 1.15, 0], [0.02, 1.42, 0]], [[0.19, 0.12], [0.2, 0.12], [0.17, 0.11]], 'A', 8);
   S.ell([0.02, 1.58, 0], [0.095, 0.11, 0.09], 'C', { w: 8, h: 6 });
   S.ell([0.02, 1.65, 0], [0.11, 0.05, 0.1], 'D', { w: 8, h: 4 }); S.tube([[0.04, 1.65, 0], [0.16, 1.635, 0]], [[0.075, 0.008], [0.06, 0.008]], 'D', 6);
   for (const z of [-1, 1]) S.tube([[0.02, 1.36, z * 0.19], [0.14, 1.16, z * 0.14], [0.32, 1.12, z * 0.04]], [0.05, 0.045, 0.04], 'A', 5);
   return S.done();
 }
+function walkLegGeo() { const S = shape(); S.tube([[0, 0, 0], [0.02, -0.45, 0], [0, -0.88, 0]], [0.075, 0.065, 0.07], 'B', 6); return S.done(); }   // (a walker's leg from the hip)
 function rodGeo() {   // from the hands along +x, 2.1 m, the reel below
   const S = shape(); S.tube([[-0.25, 0, 0], [0.3, 0, 0], [2.1, 0, 0]], [0.016, 0.01, 0.0035], 'A', 5); S.ell([0.05, -0.04, 0], [0.03, 0.03, 0.025], 'B', { w: 5, h: 4 }); return S.done();
 }
@@ -348,9 +350,12 @@ export function makeWildView(ctx) {
   };
   const WINGS = { broad: wingGeos(0.86, 0.36, { wrist: 0.45, top: 'A', under: 'A', hand: 'D', handU: 'D', dih: 0.03 }), crook: wingGeos(0.7, 0.27, { wrist: 0.4, crook: 0.08, fingers: 4, top: 'A', under: 'B', hand: 'A', handU: 'D', dih: 0.1, droop: 0.12 }),
     plank: wingGeos(0.88, 0.34, { wrist: 0.45, fingers: 6, top: 'A', under: 'A', dih: 0.06 }), point: wingGeos(0.26, 0.12, { wrist: 0.35, top: 'A', under: 'B', dih: 0.02 }) };
-  const W = Object.fromEntries(Object.entries(WINGS).map(([k, [r, l]]) => [k, [pm(r, 16, { side: THREE.DoubleSide }), pm(l, 16, { side: THREE.DoubleSide })]]));
+  // (one-sided: each wing is already two sheets back to back — its top facing up, its underside down — so only the side toward the eye
+  // shows: an osprey's brown upperwing from above, its white underwing from below)
+  const W = Object.fromEntries(Object.entries(WINGS).map(([k, [r, l]]) => [k, [pm(r, 16), pm(l, 16)]]));
   const talons = pm(talonGeo(), 24), nest = pm(nestGeo(), 2), prey = pm(preyGeo(), 24), branch = pm(branchGeo(), 16), snag = pm(snagGeo(), 8);
   const boat = pm(boatGeo(), 6, { rough: 0.45, metal: 0.4 }), sitter = pm(sitterGeo(), 16), stander = pm(standerGeo(), 12), rod = pm(rodGeo(), 24), line = pm(lineGeo(), 24, { water: false });
+  const walkTop = pm(standerGeo(false), 6), walkLeg = pm(walkLegGeo(), 12);
   const shack = pm(shackGeo(), 4), bucket = pm(bucketGeo(), 6), hole = pm(holeGeo(), 32, { water: false }), tipup = pm(tipupGeo(), 24), flag = pm(flagGeo(), 24, { side: THREE.DoubleSide }), sled = pm(sledGeo(), 4);
   // WAKES: a pale V on the water behind a swimming animal or a boat (its strength per copy: 'fade')
   const wake = (() => {
@@ -362,8 +367,10 @@ export function makeWildView(ctx) {
     }
     g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('w', new THREE.Float32BufferAttribute(WT, 1));
     g.setAttribute('fade', new THREE.InstancedBufferAttribute(new Float32Array(64), 1).setUsage(THREE.DynamicDrawUsage));
-    const m = new THREE.MeshBasicNodeMaterial({ color: 0xe8f0ee, transparent: true, depthWrite: false, side: THREE.DoubleSide }); m.opacityNode = attribute('fade', 'float').mul(attribute('w', 'float').pow(1.5));
-    const mesh = new THREE.InstancedMesh(g, m, 64); mesh.count = 0; mesh.frustumCulled = false; mesh.visible = false; mesh.layers.set(2); mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); group.add(mesh);
+    // (drawn after the water's surface — main3's water is renderOrder 2, transparent — so the surface does not wash over it; facing up
+    // only, so from under the water it is not seen through the surface)
+    const m = new THREE.MeshBasicNodeMaterial({ color: 0xe8f0ee, transparent: true, depthWrite: false, side: THREE.FrontSide }); m.opacityNode = attribute('fade', 'float').mul(attribute('w', 'float').pow(1.5));
+    const mesh = new THREE.InstancedMesh(g, m, 64); mesh.count = 0; mesh.frustumCulled = false; mesh.visible = false; mesh.layers.set(2); mesh.renderOrder = 3; mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); group.add(mesh);
     let n = 0; const F = g.attributes.fade.array, M4 = new THREE.Matrix4(), V3 = new THREE.Vector3();
     return { put(x, y, yaw, L, s) { if (n >= 64 || !(s > 0.02)) return; frame(M4, x, surfY(x, y) + 0.012, -y, yaw, 0, 0, 1); M4.scale(V3.set(L, 1, L)); mesh.setMatrixAt(n, M4); F[n++] = Math.min(0.4, s * 0.5); },
       end() { mesh.count = n; mesh.visible = n > 0; if (n) { mesh.instanceMatrix.needsUpdate = true; g.attributes.fade.needsUpdate = true; } n = 0; } };
@@ -422,7 +429,9 @@ export function makeWildView(ctx) {
     }
     return out;
   });
-  const spotOf = lk => { const S = SPOTS[lk]; if (!S.length) return null; let tot = 0; for (const s of S) tot += s[2]; let u = Math.random() * tot; for (const s of S) { u -= s[2]; if (u <= 0) return s; } return S[0]; };
+  const spotOf = lk => {   // (open water only: at the freeze-up and the ice-out a spot under the ice is not one)
+    const S = SPOTS[lk]; if (!S.length) return null; let tot = 0; const w = S.map(s => openAt(s[0], s[1]) ? s[2] : 0); for (const v of w) tot += v; if (!(tot > 0)) return null;
+    let u = Math.random() * tot, last = null; for (let k = 0; k < S.length; k++) { if (!(w[k] > 0)) continue; last = S[k]; u -= w[k]; if (u <= 0) return last; } return last; };
   // the boats' landings: a shore cell beside camps or a road (NLCD's developed classes), else the shore nearest the outlet / the brook
   const DEV = new Set(['dev_open', 'dev_low', 'dev_med'].map(k => GEO.CLASSES.indexOf(k)));
   const LAND_AT = BODY.map((b, lk) => { const E = PLC.edge[b], c = []; for (let o = 0; o < E.length; o += 4) { const ci = cellIndex(E[o], E[o + 1]); if (ci >= 0 && DEV.has(GEO.cover[ci])) c.push(o); }
@@ -458,7 +467,10 @@ export function makeWildView(ctx) {
     if (w === 'kingfisher' || w === 'osprey') return S.li < 2;   // (roosting off the lake at night)
     if (w === 'mink' || w === 'otter') return hash(Math.floor(hr / 3) * 5 + KIDX[w], lk * 11 + s) < act * (w === 'otter' ? 0.8 : 1);
     if (w === 'raccoon') return S.li === 2 || (S.li === 1 && S.tod > 0.5);
-    if (w === 'angler' || w === 'iceAngler') return hash(day * 3 + hr, lk * 5 + s) < act || (S.li === 0 && s === 0);
+    // (an ice camp is out for the day: by day always, through the dusk, the night and the next dawn by one draw for that evening — so a
+    // camp stays or goes once, not hour by hour)
+    if (w === 'iceAngler') return S.li === 0 || hash(Math.floor((S.time - 43200) / 86400), lk * 5 + s + 61) < act;
+    if (w === 'angler') return hash(day * 3 + hr, lk * 5 + s) < act || (S.li === 0 && s === 0);
     if (w === 'shore') return S.li === 1 || (S.li === 0 && hash(day, 99) < 0.3);
     return true;
   }
@@ -471,22 +483,87 @@ export function makeWildView(ctx) {
   const bedY = (x, y) => surfY(x, y) - Math.max(0, GEO.depthAt(x, y));
   const inLake = (x, y, b) => GEO.bodyAt(x, y) === b;
   const rot2 = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
-  // on the water toward (tx, ty) at v m/s turning ≤ tr rad/s; false (and no move) where the way ahead is land or shallower than minD
+  // THE ICE WHERE AN ANIMAL IS (main3's snapshot carries the ice per column of the water model; > 0.5 is drawn as ice): at the freeze-up
+  // and the ice-out a lake is part ice, part open — a swimmer keeps to the open water, a heron stands only in it, an ice camp only on it
+  const icedAt = (x, y) => { const sn = S0.snap, c = sn && sn.ice && ctx.colAt && GEO.bodyAt(x, y) !== LAND ? ctx.colAt(x, y) : -1; return c >= 0 && sn.ice[c] > 0.5; };
+  const openAt = (x, y) => !icedAt(x, y);
+  const pickOpen = (b, dmin, dmax, smin = 0, smax = 1e9, tries = 40, near = null, R = 1e9) => pickWater(b, dmin, dmax, smin, smax, tries, near, R, openAt);
+  // (standing on the ice — or on the bank: the ice's top, not the lake's bed under it)
+  const iceTop = (x, y) => GEO.bodyAt(x, y) === LAND ? ctx.groundY(x, y) : surfY(x, y) + 0.02;
+  // on the water toward (tx, ty) at v m/s turning ≤ tr rad/s; false (and no move) where the way ahead is land, ice, or shallower than minD
   function swim(a, tx, ty, v, tr, dt, minD = 0.15, maxD = 1e9) {
     const want = Math.atan2(ty - a.y, tx - a.x), d = Math.hypot(tx - a.x, ty - a.y);
     a.yaw += clamp(angD(want, a.yaw), -tr * dt, tr * dt);
     const s = Math.min(v * dt, d), nx = a.x + Math.cos(a.yaw) * s, ny = a.y + Math.sin(a.yaw) * s, dd = GEO.depthAt(nx, ny);
-    if (GEO.bodyAt(nx, ny) === LAND || dd < minD || dd > maxD) { a.spd = 0; return false; }
+    if (GEO.bodyAt(nx, ny) === LAND || dd < minD || dd > maxD || icedAt(nx, ny)) { a.spd = 0; return false; }
     a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); return true;
   }
-  // on land (or wading) toward (tx, ty); ok(x, y) says where it may go
+  // a boat's way round a point or over a bar: blocked ahead, it swings off to its side (one per boat) and runs on slowly where that is
+  // clear — along the shore until the straight way opens (a.blk: how long it has been blocked)
+  function motor(a, tx, ty, v, dt) {
+    if (swim(a, tx, ty, v, 0.5, dt, 0.25)) { a.blk = 0; return true; }
+    a.blk = (a.blk || 0) + dt; a.side = a.side || (Math.random() < 0.5 ? 1 : -1); a.yaw += a.side * dt;
+    const s = v * 0.4 * dt, nx = a.x + Math.cos(a.yaw) * s, ny = a.y + Math.sin(a.yaw) * s;
+    if (GEO.bodyAt(nx, ny) !== LAND && GEO.depthAt(nx, ny) >= 0.25 && !icedAt(nx, ny)) { a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); }
+    return false;
+  }
+  // A GAIT'S PHASE PER METRE: a leg l m long swinging ±amp rad sweeps 2·l·sin(amp) under the body in its half-cycle (π), so its foot,
+  // planted, stays put (l: the leg as drawn — its animal's size and the "fish size" enlargement in)
+  const strideK = (l, amp) => Math.PI / (2 * Math.max(0.01, l) * Math.max(0.05, Math.sin(amp)));
+  // on land (or wading) toward (tx, ty); ok(x, y) says where it may go; the gait by the animal's own legs (a.strideOf) or a.stride
   function walk(a, tx, ty, v, tr, dt, ok) {
     const want = Math.atan2(ty - a.y, tx - a.x), d = Math.hypot(tx - a.x, ty - a.y);
     a.yaw += clamp(angD(want, a.yaw), -tr * dt, tr * dt);
     const s = Math.min(v * dt, d), nx = a.x + Math.cos(a.yaw) * s, ny = a.y + Math.sin(a.yaw) * s;
     if (ok && !ok(nx, ny)) { a.spd = 0; return false; }
-    a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); a.gait += s * (a.stride || 3); return true;
+    a.x = nx; a.y = ny; a.spd = s / Math.max(dt, 1e-4); a.gait += s * (a.strideOf ? a.strideOf(a) : a.stride || 3); return true;
   }
+  // THE CROWNS (the birds keep above them over the land): the tallest of main3's trees in each 6-m cell or its neighbours (heights only:
+  // the land's height as shown is added where asked), built on first use; beyond the lakes' grid, the woods' 30 m
+  let CAN = null; const CG = 6;
+  function crownH(x, y) {
+    if (!CAN) {
+      const nx = Math.ceil((GEO.XMAX - GEO.X0) / CG), ny = Math.ceil((GEO.YMAX - GEO.Y0) / CG), raw = new Uint8Array(nx * ny), h = new Uint8Array(nx * ny), t = new Uint8Array(nx * ny);
+      for (const T of [ctx.TREES.conifer, ctx.TREES.broad]) for (let i = 0; i < T.n; i++) {
+        const q = Math.floor((T.x[i] - GEO.X0) / CG), r = Math.floor((T.y[i] - GEO.Y0) / CG); if (q < 0 || r < 0 || q >= nx || r >= ny) continue;
+        const o = r * nx + q; raw[o] = Math.max(raw[o], Math.min(255, Math.ceil(T.H[i] * 1.02)));
+      }
+      for (let r = 0; r < ny; r++) for (let q = 0; q < nx; q++) { const o = r * nx + q; t[o] = Math.max(raw[o], q > 0 ? raw[o - 1] : 0, q + 1 < nx ? raw[o + 1] : 0); }   // (the neighbours: across, then along)
+      for (let r = 0; r < ny; r++) for (let q = 0; q < nx; q++) { const o = r * nx + q; h[o] = Math.max(t[o], r > 0 ? t[o - nx] : 0, r + 1 < ny ? t[o + nx] : 0); }
+      CAN = { nx, ny, h };
+    }
+    const q = Math.floor((x - GEO.X0) / CG), r = Math.floor((y - GEO.Y0) / CG);
+    return q < 0 || r < 0 || q >= CAN.nx || r >= CAN.ny ? 30 : CAN.h[r * CAN.nx + q];
+  }
+  // THE LOWEST A BIRD MAY FLY at (x, y) heading yaw: wc m over the water, lc m over the crowns (or the bare ground) on the land, looking
+  // `look` m ahead so it climbs before the bank (k: the height it can gain a metre); not within R m of the places in `skip` — its take-off
+  // and its goal: the approach and the departure are its own (a heron drops to the shallows, a kingfisher to its limb under the crowns)
+  function airFloor(x, y, yaw, wc, look = 48, k = 0.4, skip = null, R = 15, lc = 3) {
+    let f = -1e9;
+    for (let s = 0; s <= look; s += 8) {
+      const px = x + Math.cos(yaw) * s, py = y + Math.sin(yaw) * s; let near = false;
+      if (skip) for (const p of skip) if (p && (p[0] - px) ** 2 + (p[1] - py) ** 2 < R * R) { near = true; break; }
+      if (near) continue;
+      const sY = surfY(px, py), top = GEO.bodyAt(px, py) === LAND ? Math.max(sY, ctx.groundY(px, py)) + crownH(px, py) + lc : sY + wc;
+      f = Math.max(f, top - s * k);
+    }
+    return f;
+  }
+  // a way in from over the water: a bearing from (x, y) along which the point R m out (and the one halfway) is water, else any
+  function fromWater(x, y, R) {
+    for (let k = 0; k < 16; k++) { const e = rnd(0, TAU); if (GEO.bodyAt(x + Math.cos(e) * R, y + Math.sin(e) * R) !== LAND && GEO.bodyAt(x + Math.cos(e) * R * 0.5, y + Math.sin(e) * R * 0.5) !== LAND) return e; }
+    return rnd(0, TAU);
+  }
+  // LEAVING UNSEEN: an animal going off is taken away only where it is not seen go — behind the camera (when main3 gives its direction)
+  // or so far that it is a speck (len m under ~3 px); else it goes on its way. a.offT: how long it has been leaving
+  const CAM = { x: 0, y: 0, z: 0, dir: null };
+  const unseen = (x, Y, y, len) => { const dx = x - CAM.x, dy = Y - CAM.y, dz = -y - CAM.z, D = Math.hypot(dx, dy, dz) + 1e-6; return len * vis(len) / D < 0.003 || (!!CAM.dir && (dx * CAM.dir.x + dy * CAM.dir.y + dz * CAM.dir.z) / D < -0.3); };
+  // (a bird at the end of its way off: gone if unseen — or after five minutes of leaving — else on another 100 m the same way)
+  const offAt = (a, len) => { if (unseen(a.x, a.Y, a.y, len) || a.offT > 300) { a.gone = true; return true; } a.goal = [a.goal[0] + Math.cos(a.yaw) * 100, a.goal[1] + Math.sin(a.yaw) * 100, a.goal[2]]; return false; };
+  // (a walker at the end of its way into the woods: gone if unseen — or after two minutes — else on another 10 m the same way)
+  const walkOff = (a, len) => { if (unseen(a.x, a.Y, a.y, len) || a.offT > 120) { a.gone = true; return true; } a.goal = [a.x + Math.cos(a.yaw) * 10, a.y + Math.sin(a.yaw) * 10]; return false; };
+  // (a tree's top or a snag holds one big bird — an osprey with its fish, an eagle: not two on one point)
+  const perchTaken = (t, self) => { for (const b of AG.values()) if (b !== self && b.perch === t && (b.kind === 'eagle' || (b.kind === 'osprey' && (b.mode === 'carry' || b.mode === 'perch')))) return true; return false; };
   // through the air toward (tx, ty) at height tY (three's y), v m/s, turning ≤ tr rad/s (banking into the turn), climbing ≤ cl m/s
   function fly(a, tx, ty, tY, v, tr, cl, dt) {
     const want = Math.atan2(ty - a.y, tx - a.x), dy = clamp(angD(want, a.yaw), -tr * dt, tr * dt);
@@ -496,8 +573,18 @@ export function makeWildView(ctx) {
     a.pitch += (clamp(Math.atan2(dY / Math.max(dt, 1e-4), v), -0.9, 0.6) - a.pitch) * Math.min(1, 4 * dt); a.spd = v;
     return Math.hypot(tx - a.x, ty - a.y);
   }
+  // to a perch on a tree's top (t: its tree, top: three's y) at v m/s: over the crowns on the way, and — come in too low to climb to it
+  // in the distance left — round in a wide circle about it, gaining the height first; the distance left
+  // (come in high over it: slower, losing the height; the distance it gives is the perch's only once the bird is at its height — so it
+  // settles onto the top rather than dropping onto it from above)
+  function toPerch(a, t, top, v, dt) {
+    const d = Math.hypot(t.x - a.x, t.y - a.y), low = d < 45 && top - a.Y > 0.35 * d - 1.5, high = a.Y - (top + 1) > 0.35 * d + 0.5;
+    let tx = t.x, ty = t.y; if (low) { const ph = Math.atan2(a.y - t.y, a.x - t.x) + 0.7; tx = t.x + Math.cos(ph) * 30; ty = t.y + Math.sin(ph) * 30; }
+    fly(a, tx, ty, Math.max(top + 1, airFloor(a.x, a.y, a.yaw, 3, 48, 0.35, [[t.x, t.y]], 12)), high ? Math.min(v, 3) : v, low ? 0.8 : 1.2, 3, dt);
+    return Math.abs(a.Y - (top + 1)) < 1 ? d : Math.max(d, 2);
+  }
   // a hunter's prey near (x, y) on lake b: the sim's fish of w's lengths and depths (WILD3 L, z, b), weighed by its preferences
-  const preyOf = (w, b, x, y, R, extra = null) => { const d = WILD3[w]; return preyPick(S0.snap, (px, py, z, L, k, bed) => L > d.L[0] && L < d.L[3] && z <= d.z[1] && bed <= d.b[1] && GEO.bodyAt(px, py) === b && (!extra || extra(px, py, z, L, bed)) && Math.random() < Math.min(1, (d.pref[KEYS3[k]] ?? 1) / 2), x, y, R); };
+  const preyOf = (w, b, x, y, R, extra = null) => { const d = WILD3[w]; return preyPick(S0.snap, (px, py, z, L, k, bed) => L > d.L[0] && L < d.L[3] && z <= d.z[1] && bed <= d.b[1] && GEO.bodyAt(px, py) === b && openAt(px, py) && (!extra || extra(px, py, z, L, bed)) && Math.random() < Math.min(1, (d.pref[KEYS3[k]] ?? 1) / 2), x, y, R); };
   const S0 = { snap: null };
   const vis = len => S0.scale <= 1 ? 1 : Math.min(S0.scale, Math.max(1, 0.5 * S0.scale / len));   // (the "fish size" choice: the small ones larger)
   const FLIGHT = { t: 0 };
@@ -517,14 +604,14 @@ export function makeWildView(ctx) {
   const LOON = {
     len: 0.8,
     spawn(a, S) {
-      const b = a.body, p = pickWater(b, 1.2, 99, 6 * KN) || pickWater(b, 0.4, 99, 1); if (!p) return false;
+      const b = a.body, p = pickOpen(b, 1.2, 99, 6 * KN) || pickOpen(b, 0.4, 99, 1); if (!p) return false;
       Object.assign(a, { x: p[0], y: p[1], yaw: rnd(0, TAU), mode: 'under', mt: 0, dur: rnd(1, 4), next: rnd(10, 60), dz: 1, C: LOON_C });
       return true;
     },
     dive(a, S) {
       const b = a.body; let g = null;
       if (a.kill) { g = [a.kill[0], a.kill[1]]; a.carry = { L: a.kill[2], k: a.kill[3] }; a.kill = null; }
-      else { const f = preyOf('loon', b, a.x, a.y, 35 * KN); g = f ? [f[0], f[1]] : pickWater(b, 1.2, 99, 4, 1e9, 30, [a.x, a.y], 30 * KN); a.carry = f && Math.random() < 0.3 ? { L: f[3], k: 0 } : null; }
+      else { const f = preyOf('loon', b, a.x, a.y, 35 * KN); g = f ? [f[0], f[1]] : pickOpen(b, 1.2, 99, 4, 1e9, 30, [a.x, a.y], 30 * KN); a.carry = f && Math.random() < 0.3 ? { L: f[3], k: 0 } : null; }
       a.dgoal = g || [a.x, a.y]; a.mode = 'dive'; a.mt = 0; ctx.ripple(a.x, a.y, S.t, 0.12, 0.7);
       a.dur = clamp(Math.hypot(a.dgoal[0] - a.x, a.dgoal[1] - a.y) / 1.1, 20, 70);
     },
@@ -533,7 +620,7 @@ export function makeWildView(ctx) {
       if (a.parent) return this.chick(a, S, dt);
       if (a.mode === 'swim') {
         if (a.leaving) { this.dive(a, S); a.away = true; return; }
-        if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 2) a.goal = pickWater(b, 1.0, 99, 6 * KN, 1e9, 30, [a.x, a.y], 60 * KN) || [a.x + rnd(-5, 5), a.y + rnd(-5, 5)];
+        if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 2) a.goal = pickOpen(b, 1.0, 99, 6 * KN, 1e9, 30, [a.x, a.y], 60 * KN) || [a.x + rnd(-5, 5), a.y + rnd(-5, 5)];
         if (!swim(a, a.goal[0], a.goal[1], act > 0 ? 0.32 : 0.04, 0.5, dt, 0.5)) a.goal = null;
         a.Y = sY - 0.03 * a.k; a.pitch *= 0.95; a.head += ((act > 0 ? 0 : 1) - a.head) * Math.min(1, dt);
         a.next -= dt * act;
@@ -572,13 +659,15 @@ export function makeWildView(ctx) {
   const MERG = hooded => ({
     len: hooded ? 0.45 : 0.62,
     spawn(a, S) {
-      const b = a.body, p = pickWater(b, hooded ? 0.3 : 0.5, hooded ? 1.5 : 2.5, 1.5, 10 * KN); if (!p) return false;
+      const b = a.body, p = pickOpen(b, hooded ? 0.3 : 0.5, hooded ? 1.5 : 2.5, 1.5, 10 * KN); if (!p) return false;
       Object.assign(a, { x: p[0], y: p[1], yaw: rnd(0, TAU), mode: 'swim', mt: 0, members: [], era: mergEra(S.yf) });
       // the group by the season: a pair; a hen with her brood (June–July: 5–9 ducklings, growing); four or five in hen's plumage
       const brood = S.yf >= 0.27 && S.yf < 0.45, n = brood ? 1 + 5 + ((hash(S.day >> 4, a.slot) * 5) | 0) : S.yf < 0.27 ? 2 : (hooded ? 4 : 5);
+      // (each about the leader on the open water — none put on the bank or the ice, where it could not move: else at the leader's place)
+      const near = () => { for (let k = 0; k < 10; k++) { const x = p[0] + rnd(-2, 2), y = p[1] + rnd(-2, 2); if (GEO.bodyAt(x, y) === b && GEO.depthAt(x, y) > 0.15 && openAt(x, y)) return [x, y]; } return [p[0], p[1]]; };
       for (let m = 0; m < n; m++) {
-        const duck = brood && m > 0, C = duck ? (hooded ? HM_D : CM_D) : (!brood && S.yf < 0.27 && m === 0) ? (hooded ? HM_M : CM_M) : (hooded ? HM_F : CM_F);
-        a.members.push({ x: p[0] + rnd(-2, 2), y: p[1] + rnd(-2, 2), Y: 0, yaw: rnd(0, TAU), pitch: 0, mode: 'under', mt: 0, dur: rnd(0.5, 3), next: rnd(10, 40), dz: 0.5, duck,
+        const duck = brood && m > 0, C = duck ? (hooded ? HM_D : CM_D) : (!brood && S.yf < 0.27 && m === 0) ? (hooded ? HM_M : CM_M) : (hooded ? HM_F : CM_F), [mx, my] = m ? near() : p;
+        a.members.push({ x: mx, y: my, Y: 0, yaw: rnd(0, TAU), pitch: 0, mode: 'under', mt: 0, dur: rnd(0.5, 3), next: rnd(10, 40), dz: 0.5, duck,
           C, k: duck ? clamp(0.35 + (S.yf - 0.27) / 0.18 * 0.45, 0.35, 0.85) : 1, ox: m === 0 ? 0 : -0.8 - 0.55 * m + rnd(-0.3, 0.3), oy: m === 0 ? 0 : rnd(-1, 1) * (duck ? 0.6 : 1.5), ph: Math.random() * 10, head: 0, spd: 0, gait: 0 });
       }
       return true;
@@ -586,10 +675,15 @@ export function makeWildView(ctx) {
     step(a, S, dt) {
       const act = WILD3[hooded ? 'hmerganser' : 'cmerganser'].act[S.li], b = a.body, night = act < 0.1;
       if (a.era !== mergEra(S.yf) && !a.leaving) { a.leaving = true; a.regroup = true; }   // (the season has moved on: this group goes, the season's comes)
-      if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 2) a.goal = night ? pickWater(b, 0.2, 1.0, 0.5, 2.5 * KN, 30, [a.x, a.y], 25 * KN) : pickWater(b, hooded ? 0.3 : 0.5, hooded ? 1.5 : 2.5, 1.5, 9 * KN, 30, [a.x, a.y], 30 * KN);
+      if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 2) a.goal = night ? pickOpen(b, 0.2, 1.0, 0.5, 2.5 * KN, 30, [a.x, a.y], 25 * KN) : pickOpen(b, hooded ? 0.3 : 0.5, hooded ? 1.5 : 2.5, 1.5, 9 * KN, 30, [a.x, a.y], 30 * KN);
       if (!a.goal) a.goal = [a.x, a.y];
       if (a.leaving) { a.away = true; }
       if (!swim(a, a.goal[0], a.goal[1], night ? 0.08 : 0.3, 0.6, dt, 0.2)) a.goal = null;
+      if (a.kill) {   // (a fish the sim's mergansers took there: the nearest of the group on the surface dives for it, and comes up with it)
+        let best = null, bd = 1e18; for (const m of a.members) { if (m.mode !== 'swim') continue; const d = (m.x - a.kill[0]) ** 2 + (m.y - a.kill[1]) ** 2; if (d < bd) { bd = d; best = m; } }
+        if (best && !a.away) { best.dg = [a.kill[0], a.kill[1]]; best.fish = { L: a.kill[2], k: a.kill[3] }; best.mode = 'dive'; best.mt = 0; best.dur = rnd(8, 15); ctx.ripple(best.x, best.y, S.t, 0.08, 0.6); }
+        a.kill = null;
+      }
       let alive = 0;
       for (const m of a.members) {
         m.mt += dt; const sY = surfY(m.x, m.y);
@@ -599,12 +693,13 @@ export function makeWildView(ctx) {
           m.Y = sY - 0.02 * m.k; m.pitch *= 0.9; m.head += ((night ? 1 : 0) - m.head) * Math.min(1, dt);
           m.next -= dt * act * (m.duck ? (S.yf > 0.33 ? 0.5 : 0.15) : 1);
           if ((m.next <= 0 && act > 0) || a.away) { m.mode = 'dive'; m.mt = 0; m.dur = a.away ? 1e9 : rnd(10, 25); ctx.ripple(m.x, m.y, S.t, 0.08, 0.6); }
-        } else if (m.mode === 'dive') { const f = Math.min(1, m.mt / 0.5); m.pitch = -0.6 * f; m.Y = sY - 0.5 * f * f; swim(m, a.x, a.y, 0.5, 1, dt, 0.25); if (f >= 1) { m.mode = 'under'; m.mt = 0; } }
+          if (m.carry && (m.carryT -= dt) <= 0) m.carry = null;
+        } else if (m.mode === 'dive') { const f = Math.min(1, m.mt / 0.5), g = m.dg || [a.x, a.y]; m.pitch = -0.6 * f; m.Y = sY - 0.5 * f * f; swim(m, g[0], g[1], 0.5, 1, dt, 0.25); if (f >= 1) { m.mode = 'under'; m.mt = 0; } }
         else if (m.mode === 'under') {
           m.dz += (Math.min(hooded ? 1.4 : 2.5, Math.max(0.3, GEO.depthAt(m.x, m.y) - 0.25)) - m.dz) * Math.min(1, dt); m.Y = sY - m.dz; m.pitch += (-0.1 - m.pitch) * Math.min(1, 2 * dt);
-          swim(m, a.x + rnd(-3, 3), a.y + rnd(-3, 3), 0.8, 1.5, dt, 0.25);
+          if (m.dg) swim(m, m.dg[0], m.dg[1], 0.9, 2, dt, 0.25); else swim(m, a.x + rnd(-3, 3), a.y + rnd(-3, 3), 0.8, 1.5, dt, 0.25);
           if (m.mt > m.dur) { m.mode = 'rise'; m.mt = 0; }
-        } else if (m.mode === 'rise') { const f = Math.min(1, m.mt / 0.5); m.Y = sY - m.dz * (1 - f); if (f >= 1) { m.mode = 'swim'; m.next = rnd(15, 50); ctx.ripple(m.x, m.y, S.t, 0.1, 0.7, 0.06); } }
+        } else if (m.mode === 'rise') { const f = Math.min(1, m.mt / 0.5); m.Y = sY - m.dz * (1 - f); if (f >= 1) { m.mode = 'swim'; m.next = rnd(15, 50); ctx.ripple(m.x, m.y, S.t, 0.1, 0.7, 0.06); m.dg = null; if (m.fish) { m.carry = m.fish; m.carryT = 6; m.fish = null; } } }
         if (m.mode !== 'under' || m.mt < 30) alive++;
       }
       if (a.away && !alive) a.gone = true;
@@ -615,6 +710,7 @@ export function makeWildView(ctx) {
       for (const m of a.members) {
         const k = m.k * vis(this.len), sy = syAt(m.x, m.y); frame(Mf, m.x, m.Y, -m.y, m.yaw, m.pitch, 0, k);
         g.torso.put(Mf, m.C, sy); part(Mp, Mf, hooded ? 0.13 : 0.17, 0.04, 0, 0, 0, -m.head * 1.3, 1, 1 - 0.3 * m.head, 1); g.head.put(Mp, m.C, sy);
+        if (m.carry && m.mode === 'swim') holdPrey(Mp, hooded ? 0.17 : 0.2, 0.11, 0, m.carry, Math.max(0.05, m.carry.L / 100) / k, 1.57, sy);   // (crosswise in the bill)
         if (m.mode === 'swim' && m.spd > 0.1) wake.put(m.x, m.y, m.yaw, 0.6 * k, m.spd);
       }
     },
@@ -624,37 +720,47 @@ export function makeWildView(ctx) {
   function heronSpot(b, near = null) {
     const f = preyOf('heron', b, near ? near[0] : 0, near ? near[1] : 0, near ? 60 * KN : 1e9);
     for (let k = 0; k < 20; k++) {
-      const p = f ? pickWater(b, 0.1, 0.32, 0, 8, 20, [f[0], f[1]], 6) : pickWater(b, 0.1, 0.32, 0, 8 * KN, 20, near, near ? 80 * KN : 1e9); if (!p) continue;
+      const p = f ? pickOpen(b, 0.1, 0.32, 0, 8, 20, [f[0], f[1]], 6) : pickOpen(b, 0.1, 0.32, 0, 8 * KN, 20, near, near ? 80 * KN : 1e9); if (!p) continue;
       const ci = cellIndex(p[0], p[1]), cov = ctx.plants && ci >= 0 ? ctx.plants.cover[ci] : 0;
       if (Math.random() < 0.35 + cov) return p;   // (the weed edge preferred)
     }
-    return pickWater(b, 0.06, 0.4, 0, 10 * KN) || pickWater(b, 0.05, 1, 0);
+    return pickOpen(b, 0.06, 0.4, 0, 10 * KN) || pickOpen(b, 0.05, 1, 0);
   }
+  const hStride = a => strideK(0.77 * vis(1.2), 0.35) / 2;   // (its legs swing ±0.35 rad at twice the gait's phase)
   const HERON = {
     len: 1.2,
-    spawn(a, S) {
-      const sp = heronSpot(a.body); if (!sp) return false; const d = rnd(0, TAU);
-      Object.assign(a, { x: sp[0] + Math.cos(d) * 70, y: sp[1] + Math.sin(d) * 70, Y: surfY(sp[0], sp[1]) + 16, yaw: d + Math.PI, mode: 'fly', goal: sp, C: HERON_C, neck: 0, legs: 0, strikeT: rnd(10, 40), stay: rnd(400, 1200), stepT: rnd(4, 12) });
+    spawn(a, S) {   // (in over the water where it can, from ~70 m)
+      const sp = heronSpot(a.body); if (!sp) return false; const d = fromWater(sp[0], sp[1], 70), x = sp[0] + Math.cos(d) * 70, y = sp[1] + Math.sin(d) * 70;
+      Object.assign(a, { x, y, Y: Math.max(surfY(sp[0], sp[1]) + 16, airFloor(x, y, d + Math.PI, 3)), yaw: d + Math.PI, mode: 'fly', goal: sp, from: null, C: HERON_C, neck: 0, legs: 0, strikeT: rnd(10, 40), stay: rnd(400, 1200), stepT: rnd(4, 12), strideOf: hStride });
       return true;
     },
+    back(a) { if (a.mode !== 'fly') return !icedAt(a.x, a.y); const g = heronSpot(a.body, [a.x, a.y]); if (!g) return false; a.goal = g; return true; },   // (wanted again on its way off: to a spot)
     step(a, S, dt) {
       const act = WILD3.heron.act[S.li], b = a.body;
-      if (a.leaving && a.mode !== 'fly') { a.mode = 'fly'; a.Y = bedY(a.x, a.y) + 0.9; const d = rnd(0, TAU); a.goal = [a.x + Math.cos(d) * 90, a.y + Math.sin(d) * 90]; a.away = true; }
+      if (a.leaving && a.mode !== 'fly') { a.mode = 'fly'; a.Y = bedY(a.x, a.y) + 0.9; const d = fromWater(a.x, a.y, 60); a.goal = [a.x + Math.cos(d) * 90, a.y + Math.sin(d) * 90]; a.from = [a.x, a.y]; a.away = true; }
       if (a.mode === 'fly') {
         const gY = a.away ? surfY(a.x, a.y) + 25 : bedY(a.goal[0], a.goal[1]), d = Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y);
-        const cruise = a.away ? gY : d > 10 ? Math.max(gY + 6, surfY(a.x, a.y) + 5) : gY + 0.86 + d * 0.4;
-        fly(a, a.goal[0], a.goal[1], cruise, d > 6 ? 5 : Math.max(1.2, d), 1.2, 3, dt); a.flap = d > 12 ? 1 : 0;
-        if (a.away && d < 4) { a.gone = true; return; }
-        if (!a.away && d < 1) { a.mode = 'stand'; a.mt = 0; a.x = a.goal[0]; a.y = a.goal[1]; a.pitch = 0; a.roll = 0; }
+        // (low over the water, over the crowns on the land — climbing before the bank; the drop to its spot and the take-off its own)
+        const cruise = Math.max(a.away ? gY : d > 10 ? Math.max(gY + 6, surfY(a.x, a.y) + 5) : gY + 0.86 + d * 0.4, airFloor(a.x, a.y, a.yaw, 3, 48, 0.45, a.away ? [a.from] : [a.from, a.goal], 10));
+        const high = !a.away && a.Y - cruise > 1 + 0.6 * d;   // (come in high over its spot: slow and dropping steeply — a heron parachutes in)
+        fly(a, a.goal[0], a.goal[1], cruise, d > 6 ? (high ? 2.5 : 5) : Math.max(1.2, d), 1.2, high ? 4.5 : 3, dt); a.flap = d > 12 ? 1 : 0;
+        if (a.away) { if (d < 4) offAt(a, 1.8); if (a.gone) return; }
+        else if (d < 1 && a.Y - (gY + 0.86) < 1) { a.mode = 'stand'; a.mt = 0; a.x = a.goal[0]; a.y = a.goal[1]; a.pitch = 0; a.roll = 0; }
       } else if (a.mode === 'stand' || a.mode === 'walk') {
         a.Y = bedY(a.x, a.y); a.pitch = 0; a.roll = 0;
+        if (icedAt(a.x, a.y)) a.stay = 0;   // (the ice has come in about its feet: off to open water)
         if (a.kill && Math.hypot(a.kill[0] - a.x, a.kill[1] - a.y) < 12) { a.wgoal = [a.kill[0] - Math.cos(a.yaw) * 0.6, a.kill[1] - Math.sin(a.yaw) * 0.6]; a.mode = 'walk'; a.strikeT = 0; a.pend = { L: a.kill[2], k: a.kill[3] }; a.kill = null; }
         if (a.mode === 'walk') {
-          if (!walk(a, a.wgoal[0], a.wgoal[1], 0.15, 1, dt, (x, y) => GEO.bodyAt(x, y) === b && GEO.depthAt(x, y) < 0.42) || Math.hypot(a.wgoal[0] - a.x, a.wgoal[1] - a.y) < 0.05) { a.mode = 'stand'; a.mt = 0; }
+          if (!walk(a, a.wgoal[0], a.wgoal[1], 0.15, 1, dt, (x, y) => GEO.bodyAt(x, y) === b && GEO.depthAt(x, y) < 0.42 && openAt(x, y)) || Math.hypot(a.wgoal[0] - a.x, a.wgoal[1] - a.y) < 0.05) { a.mode = 'stand'; a.mt = 0; }
         } else {
           a.spd = 0;
-          if ((a.stepT -= dt) <= 0) { a.stepT = rnd(5, 18); const d = a.yaw + rnd(-0.8, 0.8), p = [a.x + Math.cos(d) * rnd(0.3, 1.2), a.y + Math.sin(d) * rnd(0.3, 1.2)]; if (inLake(p[0], p[1], b) && GEO.depthAt(p[0], p[1]) < 0.38) { a.wgoal = p; a.mode = 'walk'; } }
-          if ((a.stay -= dt) <= 0) { a.goal = heronSpot(b, [a.x, a.y]) || a.goal; a.mode = 'fly'; a.stay = rnd(400, 1200); a.Y = bedY(a.x, a.y) + 0.9; a.pitch = 0.3; }
+          if ((a.stepT -= dt) <= 0) { a.stepT = rnd(5, 18); const d = a.yaw + rnd(-0.8, 0.8), p = [a.x + Math.cos(d) * rnd(0.3, 1.2), a.y + Math.sin(d) * rnd(0.3, 1.2)]; if (inLake(p[0], p[1], b) && GEO.depthAt(p[0], p[1]) < 0.38 && openAt(p[0], p[1])) { a.wgoal = p; a.mode = 'walk'; } }
+          if ((a.stay -= dt) <= 0) {
+            const g = heronSpot(b, [a.x, a.y]);
+            if (g) { a.goal = g; a.from = [a.x, a.y]; a.mode = 'fly'; a.stay = rnd(400, 1200); a.Y = bedY(a.x, a.y) + 0.9; a.pitch = 0.3; }
+            else if (icedAt(a.x, a.y)) a.leaving = true;   // (no open shallows left on the lake: it goes)
+            else a.stay = rnd(200, 600);
+          }
         }
         if ((a.strikeT -= dt * Math.max(act, 0.05)) <= 0) { a.mode = 'strike'; a.mt = 0; a.strikeT = rnd(20, 70); a.hit = !!a.pend || Math.random() < 0.4; }
       } else if (a.mode === 'strike') {   // the neck shoots down and forward (0.25 s), holds, comes back up with or without a fish
@@ -687,31 +793,40 @@ export function makeWildView(ctx) {
   // ===== THE BELTED KINGFISHER: on a branch over the water, scanning; a rattling flight, a hover, a head-first plunge =====
   // (a hardwood by the water — its lower trunk bare: the perch a dead limb out over the water below the crown, 2.5–3.5 m up; a
   // conifer only where no hardwood is, the limb then past its lower whorls)
-  const perchOf = (lk, maxD = 5) => { const near = BANK[lk].filter(t => t.d <= maxD * KN), B = near.filter(t => !t.conifer), C = B.length ? B : near; return C.length ? C[(Math.random() * C.length) | 0] : null; };
+  // (a tree whose limb, ≤ 3.5 m, reaches out over the water: its trunk within that of the waterline — half a cell short of the nearest
+  // shore cell's middle, t.d — else, where none is, any within 5 m (the true lakes' ×√10) as before)
+  const perchOf = (lk, maxD = 5) => { let near = BANK[lk].filter(t => t.d <= 4 + 0.5 * GEO.CELL); if (!near.length) near = BANK[lk].filter(t => t.d <= maxD * KN); const B = near.filter(t => !t.conifer), C = B.length ? B : near; return C.length ? C[(Math.random() * C.length) | 0] : null; };
   const kPerch = t => { const out = t.conifer ? 0.2 * t.H + 0.4 : Math.min(t.d + 0.7, 3.5), x = t.x + t.wx * out, y = t.y + t.wy * out, base = ctx.treeY(t.T, t.i); return [x, y, Math.min(base + t.H * 0.42, Math.max(base + 1.4, surfY(x, y) + 2.4 + 0.9 * hash(t.i, 3))), base]; };
+  // (a perch is come to from over the water: first to a point 3 m out past the bank before its tree, at the perch's height — under the
+  // crowns, not through them; a.via: that point first)
+  const kWay = t => { const p = kPerch(t); return [t.x + t.wx * (t.d + 3), t.y + t.wy * (t.d + 3), p[2]]; };
   const KING = {
     len: 0.33,
     spawn(a, S) {
-      const t = perchOf(a.lake); if (!t) return false; a.perch = t; const p = kPerch(t), d = rnd(0, TAU);
-      Object.assign(a, { x: p[0] + Math.cos(d) * 35, y: p[1] + Math.sin(d) * 35, Y: p[2] + 2, yaw: d + Math.PI, mode: 'fly', goal: [p[0], p[1], p[2]], C: hash(a.slot, a.lake) < 0.5 ? KF_F : KF_M, huntT: rnd(5, 30), moveT: rnd(200, 600) });
+      const t = perchOf(a.lake); if (!t) return false; a.perch = t; const w = kWay(t), d = fromWater(w[0], w[1], 35);
+      Object.assign(a, { x: w[0] + Math.cos(d) * 35, y: w[1] + Math.sin(d) * 35, Y: w[2] + 2, yaw: d + Math.PI, mode: 'fly', goal: w, via: true, from: null, C: hash(a.slot, a.lake) < 0.5 ? KF_F : KF_M, huntT: rnd(5, 30), moveT: rnd(200, 600) });
       return true;
     },
+    back(a) { if (!a.away) return true; a.goal = kWay(a.perch); a.via = true; a.from = [a.x, a.y]; a.mode = 'fly'; return true; },
     step(a, S, dt) {
       const act = WILD3.kingfisher.act[S.li], b = a.body;
-      if (a.leaving && !a.away) { a.away = true; const d = rnd(0, TAU); a.goal = [a.x + Math.cos(d) * 60, a.y + Math.sin(d) * 60, surfY(a.x, a.y) + 4]; a.mode = 'fly'; }
+      if (a.leaving && !a.away) { a.away = true; const d = fromWater(a.x, a.y, 60); a.goal = [a.x + Math.cos(d) * 60, a.y + Math.sin(d) * 60, surfY(a.x, a.y) + 4]; a.via = false; a.from = [a.x, a.y]; a.mode = 'fly'; }
       if (a.mode === 'perch') {
         const p = kPerch(a.perch); a.x = p[0]; a.y = p[1]; a.Y = p[2]; a.pitch = 0; a.roll = 0; a.spd = 0; a.bob = Math.sin(S.t * 3 + a.ph) > 0.92 ? 1 : 0;
-        if (a.kill && Math.hypot(a.kill[0] - a.x, a.kill[1] - a.y) < 25 * KN) { a.dp = [a.kill[0], a.kill[1]]; a.hit = true; a.pend = { L: a.kill[2], k: a.kill[3] }; a.kill = null; a.mode = 'fly'; a.goal = [a.dp[0], a.dp[1], surfY(a.dp[0], a.dp[1]) + 5]; a.hover = true; }
+        if (a.kill && Math.hypot(a.kill[0] - a.x, a.kill[1] - a.y) < 25 * KN) { a.dp = [a.kill[0], a.kill[1]]; a.hit = true; a.pend = { L: a.kill[2], k: a.kill[3] }; a.kill = null; a.mode = 'fly'; a.goal = [a.dp[0], a.dp[1], surfY(a.dp[0], a.dp[1]) + 5]; a.via = false; a.from = [a.x, a.y]; a.hover = true; }
         else if ((a.huntT -= dt * act) <= 0) {
-          const f = preyOf('kingfisher', b, a.x, a.y, 18 * KN), p = f ? [f[0], f[1]] : pickWater(b, 0.08, 0.6, 0, 1e9, 30, [a.x, a.y], 15 * KN);
-          a.huntT = rnd(15, 60); if (p) { a.dp = p; a.hit = !!f && Math.random() < 0.6; a.mode = 'fly'; a.goal = [p[0], p[1], surfY(p[0], p[1]) + rnd(3, 6)]; a.hover = Math.random() < 0.5; }
-        } else if ((a.moveT -= dt) <= 0) { a.moveT = rnd(200, 700); const t = perchOf(a.lake); if (t) { a.perch = t; const p = kPerch(t); a.mode = 'fly'; a.goal = [p[0], p[1], p[2]]; a.home = true; } }
-      } else if (a.mode === 'fly') {
-        const d = fly(a, a.goal[0], a.goal[1], a.goal[2], d0(a) > 3 ? 7 : 2.5, 3, 4, dt); a.flap = 1;
-        if (a.away && d < 3) { a.gone = true; return; }
-        if (d < 0.4) {
+          const f = preyOf('kingfisher', b, a.x, a.y, 18 * KN), p = f ? [f[0], f[1]] : pickOpen(b, 0.08, 0.6, 0, 1e9, 30, [a.x, a.y], 15 * KN);
+          a.huntT = rnd(15, 60); if (p) { a.dp = p; a.hit = !!f && Math.random() < 0.6; a.mode = 'fly'; a.goal = [p[0], p[1], surfY(p[0], p[1]) + rnd(3, 6)]; a.via = false; a.from = [a.x, a.y]; a.hover = Math.random() < 0.5; }
+        } else if ((a.moveT -= dt) <= 0) { a.moveT = rnd(200, 700); const t = perchOf(a.lake); if (t) { a.perch = t; a.mode = 'fly'; a.goal = kWay(t); a.via = true; a.from = [a.x, a.y]; a.home = true; } }
+      } else if (a.mode === 'fly') {   // (low over the water — over the crowns where its way crosses the land)
+        // (come over the crowns high above its perch: slowly, dropping to it — it settles at the perch's height, not from above it)
+        const tY = Math.max(a.goal[2], airFloor(a.x, a.y, a.yaw, 1, 32, 0.5, [a.from, a.goal], 10)), dh = a.Y - a.goal[2], g = d0(a);
+        const d = fly(a, a.goal[0], a.goal[1], tY, g > 3 && dh < 0.4 * g + 1 ? 7 : 2.5, 3, 4, dt); a.flap = 1;
+        if (a.away) { if (d < 3) offAt(a, 0.5); if (a.gone) return; }
+        else if (a.via && d < 1 && Math.abs(dh) < 1.5) { a.via = false; const p = kPerch(a.perch); a.goal = [p[0], p[1], p[2]]; }
+        else if (d < 0.4) {
           if (a.dp && Math.hypot(a.dp[0] - a.x, a.dp[1] - a.y) < 1) { a.mode = a.hover ? 'hover' : 'plunge'; a.mt = 0; a.Y0 = a.Y; }
-          else { a.mode = 'perch'; a.home = false; a.mt = 0; }
+          else if (!a.via && Math.abs(dh) < 0.3) { a.mode = 'perch'; a.home = false; a.mt = 0; }
         }
       } else if (a.mode === 'hover') { a.pitch = 0.7; a.spd = 0; if (a.mt > 2) { a.mode = 'plunge'; a.mt = 0; a.Y0 = a.Y; } }
       else if (a.mode === 'plunge') {   // head first, wings swept back
@@ -719,7 +834,7 @@ export function makeWildView(ctx) {
         if (f >= 1) { a.mode = 'emerge'; a.mt = 0; ctx.ripple(a.x, a.y, S.t, 0.06, 0.9, 0.12); }
       } else if (a.mode === 'emerge') {
         const sY = surfY(a.x, a.y); a.pitch = 0.9; a.Y = sY - 0.12 + Math.max(0, a.mt - 0.35) * 3;
-        if (a.mt > 1.1) { if (a.hit) { a.carry = a.pend || { L: rnd(4, 9), k: 0 }; a.carryT = 8; } a.pend = null; a.dp = null; const p = kPerch(a.perch); a.mode = 'fly'; a.goal = [p[0], p[1], p[2]]; }
+        if (a.mt > 1.1) { if (a.hit) { a.carry = a.pend || { L: rnd(4, 9), k: 0 }; a.carryT = 8; } a.pend = null; a.dp = null; a.mode = 'fly'; a.goal = kWay(a.perch); a.via = true; a.from = [a.x, a.y]; }
       }
       if (a.carry && a.mode === 'perch' && (a.carryT -= dt) <= 0) a.carry = null;
     },
@@ -737,29 +852,35 @@ export function makeWildView(ctx) {
   };
   const d0 = a => a.goal ? Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) : 0;
   // ===== THE OSPREY: circling high over the water, a hover, a feet-first plunge, lifting off heavy with a fish to a tall pine =====
-  const tallOf = (lk, n = 30) => { if (SNAGS[lk].length && Math.random() < 0.9) return SNAGS[lk][(Math.random() * SNAGS[lk].length) | 0]; const B = PINES[lk]; if (!B.length) return null; return B[(Math.random() * Math.min(n, B.length)) | 0]; };
+  // (a snag most often, else one of the lake's tall pines — none another big bird holds)
+  const tallOf = (lk, self, n = 30) => {
+    const sn = SNAGS[lk].filter(t => !perchTaken(t, self)); if (sn.length && Math.random() < 0.9) return sn[(Math.random() * sn.length) | 0];
+    const B = PINES[lk].slice(0, n).filter(t => !perchTaken(t, self)); return B.length ? B[(Math.random() * B.length) | 0] : null; };
+  // (its circling's centre: open water far enough out that the circle keeps off the shore's crowns, where the lake allows)
+  const ospC = (b, r) => pickOpen(b, 1, 99, r + 8 * KN) || pickOpen(b, 1, 99, 5 * KN);
   const OSPREY = {
     len: 0.58,
     spawn(a, S) {
-      const p = pickWater(a.body, 1, 99, 5 * KN); if (!p) return false; const d = rnd(0, TAU);
-      Object.assign(a, { x: p[0] + Math.cos(d) * 120, y: p[1] + Math.sin(d) * 120, Y: surfY(p[0], p[1]) + 45, yaw: d + Math.PI, mode: 'soar', c: p, r: rnd(14, 24) * KN, C: OSP_C, alt: rnd(18, 30), huntT: rnd(30, 120) });
+      const r = rnd(14, 24) * KN, p = ospC(a.body, r); if (!p) return false; const d = rnd(0, TAU), x = p[0] + Math.cos(d) * 120, y = p[1] + Math.sin(d) * 120;
+      Object.assign(a, { x, y, Y: Math.max(surfY(p[0], p[1]) + 45, airFloor(x, y, d + Math.PI, 8)), yaw: d + Math.PI, mode: 'soar', c: p, r, C: OSP_C, alt: rnd(18, 30), huntT: rnd(30, 120) });
       return true;
     },
+    back(a) { if (a.mode === 'leave') a.mode = 'soar'; return true; },
     step(a, S, dt) {
       const b = a.body, act = WILD3.osprey.act[S.li];
       if (a.leaving && !a.away) { a.away = true; a.mode = 'leave'; const d = rnd(0, TAU); a.goal = [a.x + Math.cos(d) * 160, a.y + Math.sin(d) * 160]; }
-      if (a.mode === 'leave') { if (fly(a, a.goal[0], a.goal[1], surfY(a.x, a.y) + 50, 9, 0.8, 3, dt) < 6) a.gone = true; a.flap = (S.t + a.ph) % 4 < 1.5 ? 1 : 0; return; }
-      if (a.mode === 'soar') {
+      if (a.mode === 'leave') { const d = fly(a, a.goal[0], a.goal[1], Math.max(surfY(a.x, a.y) + 50, airFloor(a.x, a.y, a.yaw, 8, 48, 0.3, null, 15, 15)), 9, 0.8, 3, dt); a.flap = (S.t + a.ph) % 4 < 1.5 ? 1 : 0; if (d < 6) offAt(a, 1.6); return; }
+      if (a.mode === 'soar') {   // (high circles over the water: over the crowns wherever a circle crosses the shore)
         const ph = Math.atan2(a.y - a.c[1], a.x - a.c[0]) + 0.45, tx = a.c[0] + Math.cos(ph) * a.r, ty = a.c[1] + Math.sin(ph) * a.r;
-        fly(a, tx, ty, surfY(a.c[0], a.c[1]) + a.alt, 7, 0.9, 2.5, dt); a.flap = (S.t + a.ph) % 5 < 1.6 ? 1 : 0;
+        fly(a, tx, ty, Math.max(surfY(a.c[0], a.c[1]) + a.alt, airFloor(a.x, a.y, a.yaw, 8, 48, 0.3, null, 15, 15)), 7, 0.9, 2.5, dt); a.flap = (S.t + a.ph) % 5 < 1.6 ? 1 : 0;
         if (a.kill) { a.c = [a.kill[0], a.kill[1]]; a.tgt = a.c; a.carry0 = { L: a.kill[2], k: a.kill[3] }; a.kill = null; a.mode = 'approach'; }
         else if ((a.huntT -= dt * Math.max(0.05, act)) <= 0) {
           a.huntT = rnd(40, 140); const f = preyOf('osprey', b, a.c[0], a.c[1], 60 * KN);
           if (f) { a.tgt = [f[0], f[1]]; a.carry0 = Math.random() < 0.3 ? { L: f[3], k: 0 } : null; a.mode = 'approach'; }
-          else { const p = pickWater(b, 1, 99, 5 * KN); if (p) a.c = p; }
+          else { const p = ospC(b, a.r); if (p) a.c = p; }
         }
       } else if (a.mode === 'approach') {
-        const sY = surfY(a.tgt[0], a.tgt[1]); if (fly(a, a.tgt[0], a.tgt[1], sY + 14, 6, 1.5, 3, dt) < 1.5) { a.mode = 'hover'; a.mt = 0; a.hov = rnd(1.5, 3.5); }
+        const sY = surfY(a.tgt[0], a.tgt[1]); if (fly(a, a.tgt[0], a.tgt[1], Math.max(sY + 14, airFloor(a.x, a.y, a.yaw, 8, 48, 0.3, [a.tgt], 20)), 6, 1.5, 3, dt) < 1.5) { a.mode = 'hover'; a.mt = 0; a.hov = rnd(1.5, 3.5); }
         a.flap = 1;
       } else if (a.mode === 'hover') { a.pitch = 0.5; a.roll *= 0.9; a.spd = 0; a.flap = 1; if (a.mt > a.hov) { a.mode = 'stoop'; a.mt = 0; a.Y0 = a.Y; } }
       else if (a.mode === 'stoop') {   // the plunge: steep, wings half-folded, talons thrown forward at the end
@@ -767,14 +888,14 @@ export function makeWildView(ctx) {
         if (f >= 1) { a.mode = 'splash'; a.mt = 0; ctx.ripple(a.x, a.y, S.t, 0.2, 1, 0.7); }
       } else if (a.mode === 'splash') { a.Y = surfY(a.x, a.y) - 0.05; a.pitch = 0.3; if (a.mt > 1.4) { a.mode = 'lift'; a.mt = 0; a.carry = a.carry0 && Math.random() < 0.9 ? a.carry0 : null; ctx.ripple(a.x, a.y, S.t, 0.3, 0.9, 0.4); } }
       else if (a.mode === 'lift') {
-        a.flap = 1; fly(a, a.x + Math.cos(a.yaw) * 20, a.y + Math.sin(a.yaw) * 20, surfY(a.x, a.y) + 10, 4, 0.5, 2, dt);
-        if (a.mt > 3) { if (a.carry) { a.perch = tallOf(a.lake); a.mode = a.perch ? 'carry' : 'soar'; } else a.mode = 'soar'; }
+        a.flap = 1; fly(a, a.x + Math.cos(a.yaw) * 20, a.y + Math.sin(a.yaw) * 20, Math.max(surfY(a.x, a.y) + 10, airFloor(a.x, a.y, a.yaw, 3, 40, 0.25)), 4, 0.5, 2, dt);
+        if (a.mt > 3) { if (a.carry) { a.perch = tallOf(a.lake, a); a.mode = a.perch ? 'carry' : 'soar'; } else a.mode = 'soar'; }
       } else if (a.mode === 'carry') {
-        const t = a.perch, top = perchTop(t), d = fly(a, t.x, t.y, top + 1, 7, 1.2, 3, dt); a.flap = 1;
+        const t = a.perch, top = perchTop(t), d = toPerch(a, t, top, 7, dt); a.flap = 1;
         if (d < 0.8) { a.mode = 'perch'; a.mt = 0; a.dur = rnd(90, 400); }
       } else if (a.mode === 'perch') {
         const t = a.perch; a.x = t.x; a.y = t.y; a.Y = perchTop(t); a.pitch = 0; a.roll = 0; a.spd = 0; a.yaw = Math.atan2(t.wy, t.wx);
-        if (a.mt > a.dur) { a.carry = null; a.mode = 'soar'; a.c = pickWater(b, 1, 99, 5 * KN) || a.c; a.Y += 0.5; }
+        if (a.mt > a.dur) { a.carry = null; a.mode = 'soar'; a.c = ospC(b, a.r) || a.c; a.Y += 0.5; }
       }
     },
     draw(a, S) {
@@ -795,10 +916,11 @@ export function makeWildView(ctx) {
   };
   // ===== THE BALD EAGLES: the pair on Upper — long hours in a tall pine by their nest, soaring, a swoop to snatch a fish at the surface;
   // the eaglets in the nest from May, a dark young bird from late July; in winter on the ice by the ice-fishing camps =====
-  const ePerch = (a, near) => {   // (one of the tall pines by Upper within ~60 m of the nest — not the one its mate sits in)
-    const used = new Set(); for (const b of AG.values()) if (b.kind === 'eagle' && b !== a && b.perch) used.add(b.perch);
-    const sn = SNAGS[0].filter(t => !used.has(t)); if (sn.length && Math.random() < 0.75) return sn[(Math.random() * sn.length) | 0];   // (a snag by the water, often)
-    const B = PINES[0].slice(0, 60).filter(t => (!near || Math.hypot(t.x - near.x, t.y - near.y) < 60 * KN) && !used.has(t)); return B.length ? B[(Math.random() * B.length) | 0] : nestTree; };
+  const ePerch = (a, near) => {   // (one of the tall pines by Upper within ~60 m of the nest — not one its mate or an osprey holds)
+    const sn = SNAGS[0].filter(t => !perchTaken(t, a)); if (sn.length && Math.random() < 0.75) return sn[(Math.random() * sn.length) | 0];   // (a snag by the water, often)
+    const B = PINES[0].slice(0, 60).filter(t => (!near || Math.hypot(t.x - near.x, t.y - near.y) < 60 * KN) && !perchTaken(t, a)); return B.length ? B[(Math.random() * B.length) | 0] : nestTree; };
+  // (by an ice camp: a place on its ice — or on the bank — a few metres from its holes)
+  const iceNear = c => { for (let k = 0; k < 8; k++) { const x = c.cx + rnd(-8, 8), y = c.cy + rnd(-8, 8); if (GEO.bodyAt(x, y) === LAND || icedAt(x, y)) return [x, y]; } return [c.cx + 2.5, c.cy - 1.5]; };
   const EAGLE = {
     len: 0.85,
     spawn(a, S) {
@@ -806,10 +928,11 @@ export function makeWildView(ctx) {
       Object.assign(a, { x: t.x, y: t.y, Y: perchTop(t), yaw: Math.atan2(t.wy, t.wx), mode: 'perch', mt: 0, dur: rnd(60, 900), C: a.slot >= Math.ceil(want('eagle', a.lake, S)) ? EAGLE_J : EAGLE_C, huntT: rnd(200, 900) });
       return true;
     },
+    back(a) { if (a.mode === 'leave') { a.perch = ePerch(a, nestTree); a.mode = 'move'; } return true; },
     step(a, S, dt) {
       const act = WILD3.eagle.act[S.li], frozen = S.ice[0] > 0.5 && S.ice[1] > 0.5;
       if (a.leaving && a.mode !== 'leave') { a.mode = 'leave'; const d = rnd(0, TAU); a.goal = [a.x + Math.cos(d) * 200, a.y + Math.sin(d) * 200]; a.Y += 0.5; }   // (the young bird off to find its own lake)
-      if (a.mode === 'leave') { if (fly(a, a.goal[0], a.goal[1], surfY(a.x, a.y) + 60, 9, 0.8, 3, dt) < 8) a.gone = true; a.flap = (S.t + a.ph) % 4 < 1.5 ? 1 : 0; return; }
+      if (a.mode === 'leave') { const d = fly(a, a.goal[0], a.goal[1], Math.max(surfY(a.x, a.y) + 60, airFloor(a.x, a.y, a.yaw, 8, 48, 0.3, null, 15, 15)), 9, 0.8, 3, dt); a.flap = (S.t + a.ph) % 4 < 1.5 ? 1 : 0; if (d < 8) offAt(a, 2); return; }
       if (a.mode === 'perch') {
         const t = a.perch; a.x = t.x; a.y = t.y; a.Y = perchTop(t); a.pitch = 0; a.roll = 0; a.spd = 0; a.look = Math.sin(S.t * 0.3 + a.ph) * 0.8;
         if (a.kill) { a.tgt = [a.kill[0], a.kill[1]]; a.carry0 = { L: a.kill[2], k: a.kill[3] }; a.kill = null; a.mode = 'swoop'; a.mt = 0; return; }
@@ -817,29 +940,30 @@ export function makeWildView(ctx) {
         if (S.li === 2) return;   // (asleep in the pine)
         if (a.mt > a.dur) {
           a.mt = 0; a.dur = rnd(120, 900); const u = Math.random();
-          if (frozen && camps.length && u < 0.4) { const c = camps[(Math.random() * camps.length) | 0]; a.tgt = [c.x + rnd(-8, 8), c.y + rnd(-8, 8)]; a.mode = 'toIce'; }
-          else if (!frozen && u < 0.5 * act) { const lk = Math.random() < 0.7 ? 0 : 1, f = preyOf('eagle', BODY[lk], 0, 0, 1e9); if (f) { a.tgt = [f[0], f[1]]; a.carry0 = Math.random() < 0.4 ? { L: f[3], k: 0 } : null; a.mode = 'swoop'; } else a.mode = 'soar'; }
+          if (frozen && camps.length && u < 0.4) { a.tgt = iceNear(camps[(Math.random() * camps.length) | 0]); a.from = [a.x, a.y]; a.mode = 'toIce'; }
+          else if (!frozen && u < 0.5 * act) { const lk = Math.random() < 0.7 ? 0 : 1, f = preyOf('eagle', BODY[lk], 0, 0, 1e9); if (f) { a.tgt = [f[0], f[1]]; a.carry0 = Math.random() < 0.4 ? { L: f[3], k: 0 } : null; a.mode = 'swoop'; } else { a.mode = 'soar'; a.c = pickWater(BODY[lk], 0.5, 99, 0) || [a.x, a.y]; a.dur = rnd(60, 240); } }   // (no fish to be had: circling — about somewhere, not an unset centre)
           else if (u < 0.75) { a.mode = 'soar'; a.c = pickWater(BODY[Math.random() < 0.7 ? 0 : 1], 0.5, 99, 0) || [a.x, a.y]; a.dur = rnd(60, 240); }
           else { a.perch = ePerch(a, nestTree); a.mode = 'move'; }
           a.Y += 0.3;
         }
       } else if (a.mode === 'soar') {   // high circles, few beats
         const ph = Math.atan2(a.y - a.c[1], a.x - a.c[0]) + 0.35, R = 40 * KN;
-        fly(a, a.c[0] + Math.cos(ph) * R, a.c[1] + Math.sin(ph) * R, 55, 8, 0.6, 2, dt); a.flap = (S.t + a.ph) % 9 < 1.5 ? 1 : 0;
+        fly(a, a.c[0] + Math.cos(ph) * R, a.c[1] + Math.sin(ph) * R, Math.max(55, airFloor(a.x, a.y, a.yaw, 8, 48, 0.3, null, 15, 15)), 8, 0.6, 2, dt); a.flap = (S.t + a.ph) % 9 < 1.5 ? 1 : 0;
         if (a.mt > a.dur) { a.mode = 'move'; a.mt = 0; a.perch = ePerch(a, nestTree); }
       } else if (a.mode === 'swoop') {   // a long shallow glide down to the fish, talons forward, and up again with it
-        const sY = surfY(a.tgt[0], a.tgt[1]), d = Math.hypot(a.tgt[0] - a.x, a.tgt[1] - a.y), tY = d > 40 ? Math.max(sY + 12, a.Y - 0.5) : sY + 0.15 + d * 0.3;
+        const sY = surfY(a.tgt[0], a.tgt[1]), d = Math.hypot(a.tgt[0] - a.x, a.tgt[1] - a.y), tY = d > 40 ? Math.max(sY + 12, a.Y - 0.5, airFloor(a.x, a.y, a.yaw, 3, 48, 0.35, [a.tgt], 40)) : sY + 0.15 + d * 0.3;
         fly(a, a.tgt[0], a.tgt[1], tY, 10, 1.2, 4, dt); a.flap = d > 50 ? ((S.t + a.ph) % 3 < 1 ? 1 : 0) : 0;
         if (d < 1) { ctx.ripple(a.x, a.y, S.t, 0.25, 1, 0.45); a.carry = a.carry0; a.mode = 'move'; a.mt = 0; a.perch = ePerch(a, nestTree); a.Y += 0.3; }
       } else if (a.mode === 'move') {
-        const t = a.perch, d = fly(a, t.x, t.y, perchTop(t) + 1.5, 8, 1, 3, dt); a.flap = 1;
+        const t = a.perch, d = toPerch(a, t, perchTop(t) + 0.5, 8, dt); a.flap = 1;
         if (d < 1) { a.mode = 'perch'; a.mt = 0; a.dur = rnd(300, 1500); a.carryT = rnd(60, 240); }
       } else if (a.mode === 'toIce') {
-        const g = ctx.groundY(a.tgt[0], a.tgt[1]), d = fly(a, a.tgt[0], a.tgt[1], g + (d0t(a) > 15 ? 12 : 0.2), 8, 1, 3, dt); a.flap = d < 20 ? 1 : 0;
+        // (down to the ice's top — groundY over the water is the lake's bed, under the ice)
+        const g = iceTop(a.tgt[0], a.tgt[1]), d = fly(a, a.tgt[0], a.tgt[1], Math.max(g + (d0t(a) > 15 ? 12 : 0.2), airFloor(a.x, a.y, a.yaw, 3, 48, 0.35, [a.tgt, a.from], 20)), 8, 1, 3, dt); a.flap = d < 20 ? 1 : 0;
         if (d < 0.6) { a.mode = 'ice'; a.mt = 0; a.dur = rnd(120, 600); a.Y = g; a.pitch = 0; a.roll = 0; }
       } else if (a.mode === 'ice') {   // standing on the ice, scavenging by the camp
-        a.Y = ctx.groundY(a.x, a.y) + 0.02; a.spd = 0; a.look = Math.sin(S.t * 0.4 + a.ph) * 0.9;
-        if (a.mt > a.dur || !frozen) { a.perch = ePerch(a, nestTree); a.mode = 'move'; a.Y += 0.3; }
+        a.Y = iceTop(a.x, a.y); a.spd = 0; a.look = Math.sin(S.t * 0.4 + a.ph) * 0.9;
+        if (a.mt > a.dur || !frozen || (GEO.bodyAt(a.x, a.y) !== LAND && !icedAt(a.x, a.y))) { a.perch = ePerch(a, nestTree); a.mode = 'move'; a.Y += 0.3; }
       }
     },
     draw(a, S) {
@@ -860,33 +984,39 @@ export function makeWildView(ctx) {
   const d0t = a => a.tgt ? Math.hypot(a.tgt[0] - a.x, a.tgt[1] - a.y) : 0;
   // ===== THE RIVER OTTER: a family along the shore — porpoising, diving, hauling out on the bank to eat; on the ice in winter =====
   // ===== THE MINK: bounding along the water's edge at night, a short swim, a quick dive in the shallows =====
-  const OTTER = mink => ({
-    len: mink ? 0.55 : 1.1,
+  const OTTER = mink => {
+  const LEN = mink ? 0.55 : 1.1, gaitOf = p => strideK(0.095 * (mink ? 0.5 : 1) * (p.k || 1) * vis(LEN), 0.6 * Math.min(1, p.spd));   // (its legs ~9.5 cm, a mink's half)
+  return {
+    len: LEN,
     spawn(a, S) {
       const e = pickShore(a.body, null, 1e9, 40, 'edge'); if (!e) return false;
-      Object.assign(a, { x: e[0] - e[2] * 3, y: e[1] - e[3] * 3, yaw: Math.atan2(e[3], e[2]), mode: 'land', goal: [e[0] + e[2] * GEO.CELL, e[1] + e[3] * GEO.CELL], C: mink ? MINK_C : OTTER_C, stride: mink ? 9 : 5, next: rnd(8, 30), pups: [] });
-      if (!mink && S.yf > 0.3 && S.yf < 0.85 && hash(S.day >> 5, a.slot + 3) < 0.7) for (let k = 0; k < 1 + (hash(a.slot, 9) < 0.5 ? 1 : 0); k++) a.pups.push({ x: a.x - 0.8 * (k + 1), y: a.y, Y: 0, yaw: a.yaw, pitch: 0, roll: 0, spd: 0, gait: 0, stride: 5, mode: 'land', k: 0.7, ph: Math.random() * 9, sy: -1e4, swimY: 0 });
+      Object.assign(a, { x: e[0] - e[2] * 3, y: e[1] - e[3] * 3, yaw: Math.atan2(e[3], e[2]), mode: 'land', goal: [e[0] + e[2] * GEO.CELL, e[1] + e[3] * GEO.CELL], C: mink ? MINK_C : OTTER_C, strideOf: gaitOf, next: rnd(8, 30), pups: [] });
+      if (!mink && S.yf > 0.3 && S.yf < 0.85 && hash(S.day >> 5, a.slot + 3) < 0.7) for (let k = 0; k < 1 + (hash(a.slot, 9) < 0.5 ? 1 : 0); k++) a.pups.push({ x: a.x - 0.8 * (k + 1), y: a.y, Y: 0, yaw: a.yaw, pitch: 0, roll: 0, spd: 0, gait: 0, mode: 'land', k: 0.7, ph: Math.random() * 9, sy: -1e4, swimY: 0 });
       return true;
     },
     step(a, S, dt) {
       const b = a.body, act = WILD3[mink ? 'mink' : 'otter'].act[S.li], iced = S.ice[a.lake] > 0.5;
       const onIce = (x, y) => GEO.bodyAt(x, y) === b && GEO.shoreDist(x, y) < 20 * KN;
       if (a.leaving && !a.away) { a.away = true; const e = nearestShore(b, a.x, a.y, 'edge'); a.goal = e ? [e[0] - e[2] * 4, e[1] - e[3] * 4] : [a.x, a.y]; a.mode = 'land'; }
+      // (the ice where it is — at the freeze-up and the ice-out the lake is part ice: it swims the open water and runs on the ice)
+      if (icedAt(a.x, a.y) && (a.mode === 'swim' || a.mode === 'dive' || a.mode === 'under')) { a.mode = 'land'; a.goal = [a.x, a.y]; }
       const sY = surfY(a.x, a.y);
-      if (iced && (a.mode === 'swim' || a.mode === 'dive' || a.mode === 'under')) { a.mode = 'land'; a.goal = [a.x, a.y]; }
       if (a.mode === 'land') {   // on the bank (or the ice): running to its goal
         const ok = iced ? (x, y) => GEO.bodyAt(x, y) === LAND || onIce(x, y) : null;
         walk(a, a.goal[0], a.goal[1], mink ? 1.2 : 1.4, 3, dt, ok);
-        a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : iced ? sY + 0.02 : Math.max(bedY(a.x, a.y), sY - 0.04); a.pitch = 0;
+        const s1 = surfY(a.x, a.y); a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : icedAt(a.x, a.y) ? s1 + 0.02 : Math.max(bedY(a.x, a.y), s1 - 0.04); a.pitch = 0;
         if (Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.4) {
-          if (a.away) { a.gone = true; return; }
-          if (iced) { const p = pickWater(b, 0, 99, 0, 15 * KN, 30, [a.x, a.y], 25 * KN); a.goal = p || [a.x, a.y]; a.mode = 'land'; if (Math.random() < 0.3) { a.mode = 'pause'; a.mt = 0; a.dur = rnd(1.5, 5); } }
-          else if (GEO.bodyAt(a.x, a.y) !== LAND) { a.mode = 'swim'; a.goal = null; }
+          if (a.away) { if (walkOff(a, LEN)) return; }
+          else if (iced) { const p = pickWater(b, 0, 99, 0, 15 * KN, 30, [a.x, a.y], 25 * KN, icedAt); a.goal = p || [a.x, a.y]; a.mode = 'land'; if (Math.random() < 0.3) { a.mode = 'pause'; a.mt = 0; a.dur = rnd(1.5, 5); } }
+          else if (GEO.bodyAt(a.x, a.y) !== LAND) {
+            if (!icedAt(a.x, a.y)) { a.mode = 'swim'; a.goal = null; }
+            else { const p = pickOpen(b, 0.2, 99, 0, 1e9, 30, [a.x, a.y], 25 * KN), e = p ? null : nearestShore(b, a.x, a.y, 'line'); a.goal = p || (e ? [e[0], e[1]] : [a.x + rnd(-3, 3), a.y + rnd(-3, 3)]); }   // (out over the shore ice to the open water — or back to the bank)
+          }
           else { const e = mink ? pickShore(b, [a.x, a.y], 15, 30, 'line') : null; if (e && Math.random() < 0.6) a.goal = [e[0], e[1]]; else { const s = nearestShore(b, a.x, a.y); a.goal = s ? [s[0], s[1]] : [a.x, a.y]; } if (Math.random() < 0.3) { a.mode = 'pause'; a.mt = 0; a.dur = rnd(1.5, 5); } }
         }
       } else if (a.mode === 'pause') { a.spd = 0; if (a.mt > a.dur) a.mode = 'land'; }
       else if (a.mode === 'swim') {   // the head and back awash, porpoising now and then (an otter); a mink only its head
-        if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 1) a.goal = pickWater(b, 0.2, mink ? 1 : 4, 0.5, (mink ? 4 : 12) * KN, 30, [a.x, a.y], (mink ? 10 : 30) * KN) || [a.x, a.y];
+        if (!a.goal || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 1) a.goal = pickOpen(b, 0.2, mink ? 1 : 4, 0.5, (mink ? 4 : 12) * KN, 30, [a.x, a.y], (mink ? 10 : 30) * KN) || [a.x, a.y];
         if (!swim(a, a.goal[0], a.goal[1], mink ? 0.4 : 0.7, 1.2, dt, 0.08)) a.goal = null;
         a.Y = sY - (mink ? 0.05 : 0.06) + (mink ? 0 : 0.03 * Math.max(0, Math.sin(S.t * 1.3 + a.ph))); a.pitch = mink ? 0.1 : 0.05 * Math.sin(S.t * 1.3 + a.ph);
         if ((a.next -= dt * Math.max(0.1, act)) <= 0) { a.next = rnd(10, 40); if (Math.random() < 0.25 || a.kill) { const e = nearestShore(b, a.x, a.y, 'line'); if (!a.kill && e) { a.goal = [e[0], e[1]]; a.mode = 'land'; } else this.dive(a, S); } else this.dive(a, S); }
@@ -902,16 +1032,16 @@ export function makeWildView(ctx) {
       for (const [i, p] of a.pups.entries()) {
         const tx = a.x - Math.cos(a.yaw) * 0.9 * (i + 1) + (i ? 0.4 : -0.4) * Math.sin(a.yaw), ty = a.y - Math.sin(a.yaw) * 0.9 * (i + 1);
         const d = Math.hypot(tx - p.x, ty - p.y), v = Math.min(2, 0.2 + d * 1.5), want = Math.atan2(ty - p.y, tx - p.x);
-        if (d > 0.15) { p.yaw += clamp(angD(want, p.yaw), -4 * dt, 4 * dt); const s = Math.min(v * dt, d); p.x += Math.cos(p.yaw) * s; p.y += Math.sin(p.yaw) * s; p.spd = s / Math.max(dt, 1e-4); p.gait += s * p.stride; } else p.spd = 0;
-        const pl = GEO.bodyAt(p.x, p.y) === LAND, ps = surfY(p.x, p.y); p.mode = pl || iced ? 'land' : a.mode === 'under' || a.mode === 'dive' ? 'under' : 'swim';
-        p.Y = pl ? ctx.groundY(p.x, p.y) : iced ? ps + 0.02 : p.mode === 'under' ? ps - Math.min(1.5, Math.max(0.2, GEO.depthAt(p.x, p.y) - 0.15)) : Math.max(bedY(p.x, p.y), ps - 0.05); p.sy = syAt(p.x, p.y); p.pitch = a.pitch;
+        if (d > 0.15) { p.yaw += clamp(angD(want, p.yaw), -4 * dt, 4 * dt); const s = Math.min(v * dt, d); p.x += Math.cos(p.yaw) * s; p.y += Math.sin(p.yaw) * s; p.spd = s / Math.max(dt, 1e-4); p.gait += s * gaitOf(p); } else p.spd = 0;
+        const pl = GEO.bodyAt(p.x, p.y) === LAND, ps = surfY(p.x, p.y), pi = !pl && icedAt(p.x, p.y); p.mode = pl || pi ? 'land' : a.mode === 'under' || a.mode === 'dive' ? 'under' : 'swim';
+        p.Y = pl ? ctx.groundY(p.x, p.y) : pi ? ps + 0.02 : p.mode === 'under' ? ps - Math.min(1.5, Math.max(0.2, GEO.depthAt(p.x, p.y) - 0.15)) : Math.max(bedY(p.x, p.y), ps - 0.05); p.sy = syAt(p.x, p.y); p.pitch = a.pitch;
       }
       if (a.carry && a.mode === 'swim' && (a.carryT -= dt) <= 0) a.carry = null;
     },
     dive(a, S) {
       const b = a.body; let g = null;
       if (a.kill) { g = [a.kill[0], a.kill[1]]; a.carry = { L: a.kill[2], k: a.kill[3] }; a.hit = true; a.kill = null; }
-      else { const f = preyOf(mink ? 'mink' : 'otter', b, a.x, a.y, (mink ? 6 : 15) * KN); g = f ? [f[0], f[1]] : pickWater(b, 0.2, mink ? 0.8 : 4, 0, 1e9, 30, [a.x, a.y], (mink ? 5 : 15) * KN); a.hit = !!f && Math.random() < (mink ? 0.3 : 0.45); }
+      else { const f = preyOf(mink ? 'mink' : 'otter', b, a.x, a.y, (mink ? 6 : 15) * KN); g = f ? [f[0], f[1]] : pickOpen(b, 0.2, mink ? 0.8 : 4, 0, 1e9, 30, [a.x, a.y], (mink ? 5 : 15) * KN); a.hit = !!f && Math.random() < (mink ? 0.3 : 0.45); }
       a.dg = g || [a.x, a.y]; a.mode = 'dive'; a.mt = 0; a.dur = mink ? rnd(4, 10) : rnd(15, 40); ctx.ripple(a.x, a.y, S.t, 0.08, 0.7);
     },
     drawOne(p, S, C, k0) {
@@ -925,19 +1055,21 @@ export function makeWildView(ctx) {
       if (p.mode === 'swim' && p.spd > 0.1) wake.put(p.x, p.y, p.yaw, (mink ? 0.4 : 0.9) * k, p.spd);
     },
     draw(a, S) { this.drawOne(a, S, a.C, 1); for (const p of a.pups) this.drawOne(p, S, a.C, p.k); },
-  });
+  };
+  };
   // ===== THE RACCOON (not in the sim): at night wading the edge's shallows, feeling for crayfish and frogs with its hands =====
   const COON = {
     len: 0.85,
-    spawn(a, S) { const e = pickShore(a.body, null, 1e9, 40, 'edge'); if (!e) return false; Object.assign(a, { x: e[0] - e[2] * 4, y: e[1] - e[3] * 4, yaw: Math.atan2(e[3], e[2]), mode: 'walk', goal: [e[0] + e[2] * 1.2, e[1] + e[3] * 1.2], C: COON_C, stride: 7 }); return true; },
+    // (its legs ~18 cm, swinging ±0.5 rad at a walk)
+    spawn(a, S) { const e = pickShore(a.body, null, 1e9, 40, 'edge'); if (!e) return false; Object.assign(a, { x: e[0] - e[2] * 4, y: e[1] - e[3] * 4, yaw: Math.atan2(e[3], e[2]), mode: 'walk', goal: [e[0] + e[2] * 1.2, e[1] + e[3] * 1.2], C: COON_C, strideOf: q => strideK(0.18 * vis(0.85), 0.5 * Math.min(1, q.spd * 3)) }); return true; },
     step(a, S, dt) {
-      const b = a.body, ok = (x, y) => GEO.bodyAt(x, y) === LAND || GEO.depthAt(x, y) < 0.14;
+      const b = a.body, ok = (x, y) => GEO.bodyAt(x, y) === LAND || (GEO.depthAt(x, y) < 0.14 && openAt(x, y));
       if (a.leaving && !a.away) { a.away = true; const e = nearestShore(b, a.x, a.y, 'edge'); a.goal = e ? [e[0] - e[2] * 5, e[1] - e[3] * 5] : [a.x, a.y]; }
-      if (!walk(a, a.goal[0], a.goal[1], a.away ? 0.8 : 0.3, 2, dt, ok) || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.3) {
-        if (a.away) { a.gone = true; return; }
-        a.pause = rnd(2, 8); const p = pickWater(b, 0.01, 0.12, 0, 3, 30, [a.x, a.y], 10) || [a.x, a.y]; a.goal = p;
+      if (a.pause > 0 && !a.away) { a.pause -= dt; a.spd = 0; }   // (feeling about where it stands — not walking on with its legs still)
+      else if (!walk(a, a.goal[0], a.goal[1], a.away ? 0.8 : 0.3, 2, dt, ok) || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.3) {
+        if (a.away) { a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : bedY(a.x, a.y); if (walkOff(a, 0.85)) return; }
+        else { a.pause = rnd(2, 8); const p = pickOpen(b, 0.01, 0.12, 0, 3, 30, [a.x, a.y], 10) || [a.x, a.y]; a.goal = p; }
       }
-      if (a.pause > 0) { a.pause -= dt; a.spd = 0; }
       a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : bedY(a.x, a.y); a.dab = GEO.bodyAt(a.x, a.y) !== LAND;
     },
     draw(a, S) {
@@ -952,13 +1084,20 @@ export function makeWildView(ctx) {
     part(Mp, F, 0, -lie, 0); Q.torso.put(Mp, C, sy);
     part(Mp, F, hp[0], hp[1] - lie, 0, 0, 0, hz); Q.head.put(Mp, C, sy);
     if (antler > 0 && Q.antler) { const ah = Q === G.moose ? [0.62, 0.15] : [0.25, 0.5]; part(Mq, Mp, ah[0], ah[1], 0, 0, 0, Q === G.deer ? -0.35 : 0, antler, antler, antler); Q.antler.put(Mq, C, sy); }
-    for (let i = 0; i < 4; i++) { const [x, y, z] = legs[i], ph = gait + (i === 0 || i === 3 ? 0 : Math.PI); part(Mp, F, x, y - lie, z, 0, 0, lie ? (i < 2 ? -1.4 : 1.4) : Math.sin(ph) * sa, 1, lie ? 0.55 : legY, 1); Q.leg.put(Mp, C, sy); }
+    // (a leg on the ground reaches it through its swing — 1/cos of its angle — and one swinging forward is lifted clear: so the planted
+    // feet stay put and the moving ones do not drag)
+    for (let i = 0; i < 4; i++) {
+      const [x, y, z] = legs[i], ph = gait + (i === 0 || i === 3 ? 0 : Math.PI), th = Math.sin(ph) * sa, ly = lie ? 0.55 : legY * (1 / Math.cos(th) - 0.3 * sa * Math.max(0, Math.cos(ph)));
+      part(Mp, F, x, y - lie, z, 0, 0, lie ? (i < 2 ? -1.4 : 1.4) : th, 1, ly, 1); Q.leg.put(Mp, C, sy);
+    }
   }
+  // (legL: the leg from the hip to the sole, m — the gait's stride from it, strideK)
   const BIG = {
-    moose: { Q: () => G.moose, len: 2.8, legs: [[0.6, 1.22, -0.2], [0.6, 1.22, 0.2], [-0.62, 1.22, -0.2], [-0.62, 1.22, 0.2]], hp: [0.82, 1.6], stride: 0.9, v: 0.5 },
-    deer: { Q: () => G.deer, len: 1.8, legs: [[0.42, 0.82, -0.11], [0.42, 0.82, 0.11], [-0.42, 0.82, -0.11], [-0.42, 0.82, 0.11]], hp: [0.5, 1.05], stride: 1.6, v: 1.0 },
-    bear: { Q: () => G.bear, len: 1.6, legs: [[0.4, 0.62, -0.18], [0.4, 0.62, 0.18], [-0.45, 0.62, -0.18], [-0.45, 0.62, 0.18]], hp: [0.62, 0.95], stride: 1.3, v: 0.9 },
+    moose: { Q: () => G.moose, len: 2.8, legs: [[0.6, 1.22, -0.2], [0.6, 1.22, 0.2], [-0.62, 1.22, -0.2], [-0.62, 1.22, 0.2]], hp: [0.82, 1.6], legL: 1.24, v: 0.5 },
+    deer: { Q: () => G.deer, len: 1.8, legs: [[0.42, 0.82, -0.11], [0.42, 0.82, 0.11], [-0.42, 0.82, -0.11], [-0.42, 0.82, 0.11]], hp: [0.5, 1.05], legL: 0.83, v: 1.0 },
+    bear: { Q: () => G.bear, len: 1.6, legs: [[0.4, 0.62, -0.18], [0.4, 0.62, 0.18], [-0.45, 0.62, -0.18], [-0.45, 0.62, 0.18]], hp: [0.62, 0.95], legL: 0.63, v: 0.9 },
   };
+  const bigGait = a => { const B = BIG[a.kind]; return strideK(B.legL * a.k * vis(B.len), Math.min(0.5, a.spd * 0.6)); };   // (drawBig's swing: ±min(0.5, 0.6·speed))
   // a moose's antlers by the date (a bull's: growing in velvet from April, full from late August, cast in December–January), a deer's
   // (a buck's: September – December)
   const antlerOf = (kind, yf) => kind === 'moose' ? (yf > 0.07 && yf < 0.83 ? clamp((yf - 0.07) / 0.4, 0.15, 1) : 0) : kind === 'deer' ? (yf > 0.4 && yf < 0.8 ? clamp((yf - 0.35) / 0.2, 0.3, 1) : 0) : 0;
@@ -981,11 +1120,12 @@ export function makeWildView(ctx) {
     spawn(a, S) {
       const e = pickShore(a.body, null, 1e9, 40, 'edge'); if (!e) return false;
       a.bull = hash(S.day >> 3, a.lake + 1) < 0.35; a.young = false;
-      Object.assign(a, { kind: 'moose', x: e[0] - e[2] * 8, y: e[1] - e[3] * 8, yaw: Math.atan2(e[3], e[2]), mode: 'walk', k: 1, stride: 0.9, act: 'walk', calf: null, dip: 0, dipping: false });
+      Object.assign(a, { kind: 'moose', x: e[0] - e[2] * 8, y: e[1] - e[3] * 8, yaw: Math.atan2(e[3], e[2]), mode: 'walk', k: 1, strideOf: bigGait, act: 'walk', calf: null, dip: 0, dipping: false });
       a.goal = this.bed(a) || [e[0], e[1]];
-      if (!a.bull && S.yf > 0.27 && S.yf < 0.6 && hash(S.day >> 2, a.lake + 7) < 0.6) a.calf = { kind: 'moose', young: true, x: a.x - 3, y: a.y, Y: 0, yaw: a.yaw, spd: 0, gait: 0, stride: 1.4, k: 0.6, act: 'walk', sy: -1e4 };
+      if (!a.bull && S.yf > 0.27 && S.yf < 0.6 && hash(S.day >> 2, a.lake + 7) < 0.6) a.calf = { kind: 'moose', young: true, x: a.x - 3, y: a.y, Y: 0, yaw: a.yaw, spd: 0, gait: 0, strideOf: bigGait, k: 0.6, act: 'walk', sy: -1e4 };
       return true;
     },
+    back(a) { if (a.away) { a.goal = this.bed(a) || a.goal; a.mode = 'walk'; } return true; },
     bed(a) {   // a weedy bed 0.35–1.1 m deep (the moose's water, PL3.MOOSE_Z)
       for (let k = 0; k < 25; k++) { const p = pickWater(a.body, 0.35, Math.min(1.1, PL3.MOOSE_Z[0]), 1, 25 * KN, 10, [a.x, a.y], 60 * KN); if (!p) continue; const ci = cellIndex(p[0], p[1]); if (!ctx.plants || Math.random() < 0.2 + 2 * (ctx.plants.cover[ci] || 0)) return p; }
       return null;
@@ -996,8 +1136,8 @@ export function makeWildView(ctx) {
       if (a.mode === 'walk') {
         a.act = 'walk'; a.dip = 0;
         if (!walk(a, a.goal[0], a.goal[1], GEO.bodyAt(a.x, a.y) === LAND ? 0.9 : 0.45, 0.6, dt, ok) || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.5) {
-          if (a.away) { a.gone = true; return; }
-          a.mode = 'feed'; a.mt = 0; a.dur = rnd(240, 900); a.dipT = 0;
+          if (a.away) { a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : bedY(a.x, a.y); if (walkOff(a, 2.8)) return; }
+          else { a.mode = 'feed'; a.mt = 0; a.dur = rnd(240, 900); a.dipT = 0; }
         }
       } else if (a.mode === 'feed') {   // head under for 10–30 s, up for 8–20 (chewing)
         a.spd = 0; a.act = 'wade'; a.dipT -= dt;
@@ -1015,6 +1155,14 @@ export function makeWildView(ctx) {
     draw(a, S) { drawBig(a, S); if (a.calf) drawBig(a.calf, S); },
     pos(a) { return [a.x, a.Y + 1.4 * vis(2.8), a.y]; },
   };
+  // A PERSON WALKING (the ice angler, the bank angler going home) in frame F: the body over two legs swinging ±0.4 rad, the planted
+  // one reaching the ground through its swing and the other lifted clear (as drawQuad's), a little rise at each step
+  const walkGait = a => strideK(0.88, 0.4 * Math.min(1, a.spd / 0.9));
+  function walker(F, a, C) {
+    const sa = 0.4 * Math.min(1, a.spd / 0.9), bob = 0.015 * Math.cos(2 * a.gait) * sa / 0.4;
+    part(Mp, F, 0, bob, 0); walkTop.put(Mp, C, -1e4);
+    for (const z of [-1, 1]) { const ph = a.gait + (z > 0 ? Math.PI : 0), th = Math.sin(ph) * sa; part(Mp, F, 0, 0.9 + bob, z * 0.1, 0, 0, th, 1, 1 / Math.cos(th) - 0.3 * sa * Math.max(0, Math.cos(ph)), 1); walkLeg.put(Mp, C, -1e4); }
+  }
   // ===== THE ANGLERS IN A BOAT: out from the landing to a bass spot, casting toward the shore, a fish on now and then (the smallmouth let go
   // — catch-and-release by law — a white perch or a pickerel kept), on to another spot, home at dark =====
   const ANG = {
@@ -1024,19 +1172,23 @@ export function makeWildView(ctx) {
       const s = nearestShore(a.body, L0[0], L0[1]); const st = s ? [s[0] - s[2] * 2, s[1] - s[3] * 2] : L0;
       const two = hash(S.day, a.lake * 3 + a.slot) < 0.45;
       a.crew = [0, two ? 1 : -1].filter(v => v >= 0).map(i => ({ seat: i ? 1.0 : -1.3, face: i ? 0.6 : -0.9, C: [col(SHIRTS[(hash(S.day + i, a.slot) * SHIRTS.length) | 0]), col(PANTS[(hash(i, S.day) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, i + 7) * HATS.length) | 0])], cast: rnd(0, 20), phase: 'wait', end: null, fight: 0, ph: Math.random() * 9 }));
-      Object.assign(a, { x: st[0], y: st[1], yaw: rnd(0, TAU), mode: 'motor', goal: [sp[0], sp[1]], home: st, stay: rnd(600, 2000) });
+      Object.assign(a, { x: st[0], y: st[1], yaw: rnd(0, TAU), mode: 'motor', goal: [sp[0], sp[1]], home: st, stay: rnd(600, 2000), trip: 0 });
       return true;
     },
+    back(a) { const sp = spotOf(a.lake); if (!sp) return false; a.goal = [sp[0], sp[1]]; a.mode = 'motor'; a.trip = 0; return true; },
     step(a, S, dt) {
       const b = a.body;
-      if (a.leaving && !a.away) { a.away = true; a.mode = 'motor'; a.goal = a.home; }
-      if (a.mode === 'motor') {
-        if (!swim(a, a.goal[0], a.goal[1], 2.6, 0.5, dt, 0.25) || Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 1.5) {
-          if (a.away) { a.gone = true; return; }
-          a.mode = 'fish'; a.mt = 0; const s = nearestShore(b, a.x, a.y); a.toShore = s ? Math.atan2(s[1] - a.y, s[0] - a.x) : a.yaw;
+      if (a.leaving && !a.away) { a.away = true; a.mode = 'motor'; a.goal = a.home; a.trip = 0; }
+      if (a.mode === 'motor') {   // (round a point or a bar by motor(); out, it fishes where it got to if it cannot get on)
+        const ok = motor(a, a.goal[0], a.goal[1], 2.6, dt); a.trip += dt;
+        if (Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 1.5 || (!ok && a.blk > (a.away ? 20 : 4)) || (a.away && a.trip > 300)) {
+          // (home: pulled up at the landing — or, kept from it, where it got to — and taken off once out of sight, not before)
+          if (a.away) { a.mode = 'beach'; a.mt = 0; a.spd = 0; }
+          else { a.mode = 'fish'; a.mt = 0; const s = nearestShore(b, a.x, a.y); a.toShore = s ? Math.atan2(s[1] - a.y, s[0] - a.x) : a.yaw; }
         }
         for (const c of a.crew) { c.phase = 'wait'; c.end = null; }
-      } else if (a.mode === 'fish') {   // drifting a little; the boat swings side-on to the shore
+      } else if (a.mode === 'beach') { a.spd = 0; if (unseen(a.x, a.Y, a.y, 4.2) || a.offT > 600) { a.gone = true; return; } }
+      else if (a.mode === 'fish') {   // drifting a little; the boat swings side-on to the shore
         a.yaw += clamp(angD(a.toShore + Math.PI / 2, a.yaw), -0.05 * dt, 0.05 * dt); swim(a, a.x + Math.cos(a.toShore + Math.PI / 2) * 5, a.y + Math.sin(a.toShore + Math.PI / 2) * 5, 0.04, 0, dt, 0.5); a.spd = 0;
         for (const c of a.crew) this.angler(a, c, S, dt);
         if (a.mt > a.stay && a.crew.every(c => c.phase !== 'fight')) { const sp = spotOf(a.lake); if (sp) { a.goal = [sp[0], sp[1]]; a.mode = 'motor'; a.stay = rnd(600, 2400); } }
@@ -1087,8 +1239,20 @@ export function makeWildView(ctx) {
       Object.assign(a, { x: e[0] - e[2] * 0.6, y: e[1] - e[3] * 0.6, yaw: Math.atan2(e[3], e[2]), mode: 'fish', C: [col(SHIRTS[(hash(S.day, 41) * SHIRTS.length) | 0]), col(PANTS[0]), col(0xc89a7a), col(HATS[1])], crew: [{ seat: 0, cast: rnd(0, 10), phase: 'wait', end: null, ph: 0 }], toShore: Math.atan2(e[3], e[2]) });
       return true;
     },
-    step(a, S, dt) { if (a.leaving) { a.gone = true; return; } a.Y = ctx.groundY(a.x, a.y); for (const c of a.crew) ANG.angler(a, c, S, dt); },
+    back(a) { if (a.mode !== 'fish') { a.mode = 'home'; a.goal = a.spot || [a.x, a.y]; } return true; },
+    step(a, S, dt) {
+      if (!a.spot) { a.spot = [a.x, a.y]; a.strideOf = walkGait; }
+      // (going home: rod in hand, up the bank into the woods — taken off once out of sight; back again to the pool if wanted)
+      if (a.leaving && a.mode === 'fish') { a.mode = 'walk'; a.away = true; a.goal = [a.x - Math.cos(a.toShore) * 30, a.y - Math.sin(a.toShore) * 30]; for (const c of a.crew) { c.phase = 'wait'; c.end = null; } }
+      if (a.mode === 'walk' || a.mode === 'home') {
+        walk(a, a.goal[0], a.goal[1], 1.1, 3, dt, null); a.Y = ctx.groundY(a.x, a.y);
+        if (Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.4) { if (a.mode === 'home') { a.mode = 'fish'; a.spd = 0; a.yaw = a.toShore; } else if (walkOff(a, 1.7)) return; }
+        return;
+      }
+      a.Y = ctx.groundY(a.x, a.y); for (const c of a.crew) ANG.angler(a, c, S, dt);
+    },
     draw(a, S) {
+      if (a.mode === 'walk' || a.mode === 'home') { frame(Mf, a.x, a.Y, -a.y, a.yaw, 0, 0, 1); walker(Mf, a, a.C); part(Mq, Mf, 0.32, 1.12, 0, 0, 0, 1.2); rod.put(Mq, ROD_C, -1e4); return; }
       const c = a.crew[0], face = c.faceTo !== undefined ? c.faceTo : a.yaw; frame(Mf, a.x, a.Y, -a.y, face, 0, 0, 1); stander.put(Mf, a.C, -1e4);
       let rz = 0.5; if (c.phase === 'cast') rz = c.t < 0.6 ? 0.5 + c.t / 0.6 * 1.1 : 1.6 - (c.t - 0.6) / 0.5 * 1.3; else if (c.phase === 'fight') rz = 1.0 + 0.1 * Math.sin(S.t * 7);
       part(Mq, Mf, 0.32, 1.12, 0, 0, 0, rz); rod.put(Mq, ROD_C, -1e4);
@@ -1103,44 +1267,50 @@ export function makeWildView(ctx) {
   const ICE = {
     len: 2,
     spawn(a, S) {
-      const d = deepest[a.lake], c = pickWater(a.body, a.slot ? 2 : 3, 99, 6 * KN, 1e9, 40, d, (a.slot ? 60 : 25) * KN) || pickWater(a.body, 1.5, 99, 4); if (!c) return false;
-      const tips = []; for (let k = 0; k < 5; k++) { const p = pickWater(a.body, 0.8, 3, 2, 1e9, 30, c, 30 * KN); if (p) tips.push({ x: p[0], y: p[1], up: 0, flag: 0 }); }
+      const d = deepest[a.lake], c = pickWater(a.body, a.slot ? 2 : 3, 99, 6 * KN, 1e9, 40, d, (a.slot ? 60 : 25) * KN, icedAt) || pickWater(a.body, 1.5, 99, 4, 1e9, 40, null, 1e9, icedAt); if (!c) return false;
+      const tips = []; for (let k = 0; k < 5; k++) { const p = pickWater(a.body, 0.8, 3, 2, 1e9, 30, c, 30 * KN, icedAt); if (p) tips.push({ x: p[0], y: p[1], up: 0, flag: 0 }); }
       const sh = nearestShore(a.body, c[0], c[1]) || [c[0], c[1]];
       Object.assign(a, { x: sh[0], y: sh[1], yaw: Math.atan2(c[1] - sh[1], c[0] - sh[0]), cx: c[0], cy: c[1], tips, mode: 'walk', goal: [c[0] - 0.7, c[1] + 0.1], shack: hash(S.day >> 2, a.lake * 3 + a.slot) < 0.6 ? (hash(a.slot, 77) * SHACK_C.length) | 0 : -1,
-        C: [col(SHIRTS[(hash(S.day, a.slot + 51) * SHIRTS.length) | 0]), col(PANTS[(hash(S.day, 3) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, 13) * HATS.length) | 0])], bucketC: BUCKET_C[(hash(a.slot, 9) * 2) | 0], stride: 3, flagT: rnd(600, 2400) });
+        C: [col(SHIRTS[(hash(S.day, a.slot + 51) * SHIRTS.length) | 0]), col(PANTS[(hash(S.day, 3) * PANTS.length) | 0]), col(0xc89a7a), col(HATS[(hash(S.day, 13) * HATS.length) | 0])], bucketC: BUCKET_C[(hash(a.slot, 9) * 2) | 0], strideOf: walkGait, flagT: rnd(600, 2400), pack: 0 });
       camps.push(a); return true;
     },
     step(a, S, dt) {
-      if (a.leaving && !a.away) { a.away = true; const sh = nearestShore(a.body, a.x, a.y); a.goal = sh ? [sh[0] + sh[2] * 3, sh[1] + sh[3] * 3] : [a.x, a.y]; a.mode = 'walk'; }
+      // (going home: to the sled, the tip-ups pulled and the shelter folded onto it, then off over the ice towing it — not the camp
+      // vanishing; once going it does not turn back: a.regroup)
+      if (a.leaving && !a.away) { a.away = true; a.regroup = true; a.pull = null; a.mode = 'walk'; a.goal = [a.cx + 1.2, a.cy + 1.4]; }
       if (a.kill) { const t = a.tips.find(t => !t.up) || a.tips[0]; if (t) t.up = 1; a.kill = null; }
       if ((a.flagT -= dt * WILD3.iceAngler.act[S.li]) <= 0) { a.flagT = rnd(900, 3600); const t = a.tips[(Math.random() * a.tips.length) | 0]; if (t) t.up = 1; }
       for (const t of a.tips) t.flag += ((t.up ? 1 : 0) - t.flag) * Math.min(1, dt * 6);
-      if (a.mode === 'walk') {
-        walk(a, a.goal[0], a.goal[1], 1.1, 3, dt, null);
+      if (a.mode === 'walk') {   // (a walk on the ice — a hurry to a flag)
+        walk(a, a.goal[0], a.goal[1], a.pull ? 1.3 : 0.9, 3, dt, null);
         if (Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y) < 0.3) {
-          if (a.away) { a.gone = true; camps.splice(camps.indexOf(a), 1); return; }
-          if (a.pull) { a.mode = 'pull'; a.mt = 0; a.dur = rnd(10, 20); } else { a.mode = 'jig'; a.mt = 0; a.yaw = Math.atan2(a.cy - a.y, a.cx - a.x); }
+          if (a.away) { if (a.pack < 1) { a.mode = 'pack'; a.mt = 0; } else if (walkOff(a, 1.7)) return; }
+          else if (a.pull) { a.mode = 'pull'; a.mt = 0; a.dur = rnd(10, 20); } else { a.mode = 'jig'; a.mt = 0; a.yaw = Math.atan2(a.cy - a.y, a.cx - a.x); }
         }
+      } else if (a.mode === 'pack') {
+        a.spd = 0; a.pack = Math.min(1, a.mt / 25);
+        if (a.pack >= 1) { const sh = nearestShore(a.body, a.x, a.y); a.goal = sh ? [sh[0] + sh[2] * 4, sh[1] + sh[3] * 4] : [a.x, a.y]; a.mode = 'walk'; }
       } else if (a.mode === 'jig') { a.spd = 0; const t = a.tips.find(t => t.up > 0); if (t) { a.pull = t; a.goal = [t.x - 0.6, t.y]; a.mode = 'walk'; } }
       else if (a.mode === 'pull') { a.spd = 0; a.yaw = Math.atan2(a.pull.y - a.y, a.pull.x - a.x); if (a.mt > a.dur) { a.pull.up = 0; a.mode = 'walk'; a.pull = null; a.goal = [a.cx - 0.7, a.cy + 0.1]; a.fish = 4; } }
       if (a.fish > 0) a.fish -= dt;
-      a.Y = surfY(a.x, a.y) + 0.03;
+      a.Y = iceTop(a.x, a.y) + 0.01;
     },
     draw(a, S) {
-      const iceY = x => surfY(x[0], x[1]) + 0.02;
+      const iceY = x => surfY(x[0], x[1]) + 0.02, nT = a.tips.length, packed = a.pack * (nT + 2);   // (packing: the tip-ups one by one, then the shelter and the bucket)
       {   // (the camp: its holes, tip-ups, bucket, shelter and sled)
         for (const t of [{ x: a.cx, y: a.cy }, ...a.tips]) { frame(Mf, t.x, iceY([t.x, t.y]), -t.y, 0, 0, 0, 1); hole.put(Mf, HOLE_C, -1e4); }
-        for (const t of a.tips) { frame(Mf, t.x, iceY([t.x, t.y]), -t.y, 0.4, 0, 0, 1); tipup.put(Mf, TIP_C, -1e4); part(Mp, Mf, 0.12, 0.08, 0, 0, 0, -1.5 * (1 - t.flag)); flag.put(Mp, FLAG_C, -1e4); }
-        const cY = iceY([a.cx, a.cy]); frame(Mf, a.cx - 0.7, cY, -(a.cy + 0.1), 0, 0, 0, 1); bucket.put(Mf, a.bucketC, -1e4);
-        if (a.shack >= 0) { frame(Mf, a.cx - 2.6, cY, -(a.cy - 1.4), 0.3, 0, 0, 1); shack.put(Mf, SHACK_C[a.shack], -1e4); }
-        frame(Mf, a.cx + 1.6, cY, -(a.cy + 1.8), 1.2, 0, 0, 1); sled.put(Mf, SLED_C, -1e4);
+        for (const [k, t] of a.tips.entries()) { if (packed >= k + 1) continue; frame(Mf, t.x, iceY([t.x, t.y]), -t.y, 0.4, 0, 0, 1); tipup.put(Mf, TIP_C, -1e4); part(Mp, Mf, 0.12, 0.08, 0, 0, 0, -1.5 * (1 - t.flag)); flag.put(Mp, FLAG_C, -1e4); }
+        const cY = iceY([a.cx, a.cy]); if (packed < nT + 2) { frame(Mf, a.cx - 0.7, cY, -(a.cy + 0.1), 0, 0, 0, 1); bucket.put(Mf, a.bucketC, -1e4); }
+        if (a.shack >= 0 && packed < nT + 1) { frame(Mf, a.cx - 2.6, cY, -(a.cy - 1.4), 0.3, 0, 0, 1); shack.put(Mf, SHACK_C[a.shack], -1e4); }
+        if (a.pack >= 1) { const sx = a.x - Math.cos(a.yaw) * 1.8, sy = a.y - Math.sin(a.yaw) * 1.8; frame(Mf, sx, iceTop(sx, sy), -sy, a.yaw, 0, 0, 1); sled.put(Mf, SLED_C, -1e4); }   // (towed behind)
+        else { frame(Mf, a.cx + 1.6, cY, -(a.cy + 1.8), 1.2, 0, 0, 1); sled.put(Mf, SLED_C, -1e4); }
       }
       if (a.mode === 'jig') {   // on the bucket by the hole, the short rod jigging
         frame(Mf, a.cx - 0.7, iceY([a.cx, a.cy]) + 0.1, -(a.cy + 0.1), Math.atan2(-0.1, 0.7), 0, 0, 1); part(Mp, Mf, 0, 0.32, 0, 0, 0, 0); sitter.put(Mp, a.C, -1e4);
         part(Mq, Mp, 0.36, 0.32, 0, 0, 0, -0.15 + 0.15 * Math.max(0, Math.sin(S.t * 3 + a.ph)), 0.4, 1, 1); rod.put(Mq, ROD_C, -1e4);
       } else {
         frame(Mf, a.x, a.Y, -a.y, a.yaw, 0, 0, 1);
-        if (a.mode === 'pull') { part(Mp, Mf, 0, -0.45, 0, 0, 0, 0.35); stander.put(Mp, a.C, -1e4); } else { part(Mp, Mf, 0, 0.03 * Math.abs(Math.sin(a.gait * 0.5)), 0); stander.put(Mp, a.C, -1e4); }
+        if (a.mode === 'pull' || a.mode === 'pack') { part(Mp, Mf, 0, -0.45, 0, 0, 0, 0.35); stander.put(Mp, a.C, -1e4); } else walker(Mf, a, a.C);
         if (a.fish > 0) holdPrey(Mf, 0.4, 1.0, 0.1, { k: KEYS3.indexOf('pike') }, 0.45, 1.3);
       }
     },
@@ -1167,7 +1337,8 @@ export function makeWildView(ctx) {
           if (!ok) continue;
           const key = w + '|' + lk + '|' + s; keep.add(key);
           let a = AG.get(key);
-          if (a && a.leaving && !a.gone && !a.regroup) { a.leaving = false; a.away = false; if (a.members) for (const m of a.members) if (m.dur > 1e8) m.dur = m.mt + rnd(3, 10); }   // (wanted again: back it comes)
+          // (wanted again: back it comes — its kind's back() turning it round, where it has one; false: it cannot, and goes on leaving)
+          if (a && a.leaving && !a.gone && !a.regroup && (!BEH[w].back || BEH[w].back(a, S))) { a.leaving = false; a.away = false; a.offT = 0; if (a.members) for (const m of a.members) if (m.dur > 1e8) m.dur = m.mt + rnd(3, 10); }
           if (!a) {
             a = { key, kind: w, lake: lk, body: BODY[lk], slot: s, id: nextId++, x: 0, y: 0, Y: 0, yaw: 0, pitch: 0, roll: 0, spd: 0, gait: 0, stride: 3, mode: '', mt: 0, k: 1, head: 0, neck: 0, ph: Math.random() * 10, sy: -1e4 };
             if (!BEH[w].spawn(a, S)) continue;
@@ -1183,8 +1354,7 @@ export function makeWildView(ctx) {
     }
     for (const [key, a] of AG) if (!keep.has(key) && !a.forest) {
       if (a.parent && !AG.has(a.parent)) a.gone = true;
-      if (OPEN.has(a.kind) && S.ice[a.lake] > 0.5 && a.kind !== 'heron' && a.kind !== 'kingfisher' && a.kind !== 'osprey') { AG.delete(key); continue; }   // (the lake froze under it: no way off but gone)
-      a.leaving = true;
+      a.leaving = true;   // (each its own way off — the loon and the mergansers dive, the boat goes home — the ice now per place: none is cut off)
     }
     // the eaglets: in the nest from the hatch (WILD3 eagle chick yf, ~May) to fledging in mid-July (yf ~0.38); 1.2 a pair
     fNest = F3.WILD && inWin([WILD3.eagle.chick.yf, 0.38], S.yf) ? (hash(Math.floor(S.time / (365 * 86400)), 31) < 0.2 ? 2 : 1) : 0;
@@ -1195,7 +1365,7 @@ export function makeWildView(ctx) {
     if (F) for (let o = 0; o + 7 < F.length; o += 8) {
       const id = F[o], kind = FOREST_KIND[F[o + 1]], act = FOREST_ACT[F[o + 5]] || 'walk'; if (!kind || act === 'den') continue;
       const key = 'forest|' + id; seen.add(key); let a = AG.get(key);
-      if (!a) { a = { key, forest: true, kind, x: F[o + 2], y: F[o + 3], Y: 0, yaw: F[o + 4], pitch: 0, roll: 0, spd: 0, gait: 0, stride: BIG[kind].stride, k: 1, sy: -1e4, ph: Math.random() * 9, bull: hash(id, 3) < 0.5 }; AG.set(key, a); }
+      if (!a) { a = { key, forest: true, kind, x: F[o + 2], y: F[o + 3], Y: 0, yaw: F[o + 4], pitch: 0, roll: 0, spd: 0, gait: 0, k: 1, sy: -1e4, ph: Math.random() * 9, bull: hash(id, 3) < 0.5 }; AG.set(key, a); }
       a.tx = F[o + 2]; a.ty = F[o + 3]; a.th = F[o + 4]; a.act = act; a.young = F[o + 6] > 0; a.k = F[o + 7] > 0 ? F[o + 7] / BIG[kind].len : a.young ? 0.55 : 1;
     }
     for (const [key, a] of AG) {
@@ -1203,7 +1373,7 @@ export function makeWildView(ctx) {
       if (!seen.has(key)) { AG.delete(key); continue; }
       const d = Math.hypot(a.tx - a.x, a.ty - a.y);
       if (d > 50) { a.x = a.tx; a.y = a.ty; a.spd = 0; }
-      else if (d > 0.05) { const v = Math.min(BIG[a.kind].v * 4, d * 1.5 + 0.2), s = Math.min(v * dt, d); a.yaw += clamp(angD(Math.atan2(a.ty - a.y, a.tx - a.x), a.yaw), -2 * dt, 2 * dt); a.x += (a.tx - a.x) / d * s; a.y += (a.ty - a.y) / d * s; a.spd = s / Math.max(dt, 1e-4); a.gait += s * a.stride; }
+      else if (d > 0.05) { const v = Math.min(BIG[a.kind].v * 4, d * 1.5 + 0.2), s = Math.min(v * dt, d); a.yaw += clamp(angD(Math.atan2(a.ty - a.y, a.tx - a.x), a.yaw), -2 * dt, 2 * dt); a.x += (a.tx - a.x) / d * s; a.y += (a.ty - a.y) / d * s; a.spd = s / Math.max(dt, 1e-4); a.gait += s * bigGait(a); }
       else { a.spd = 0; a.yaw += clamp(angD(a.th, a.yaw), -dt, dt); }
       a.Y = GEO.bodyAt(a.x, a.y) === LAND ? ctx.groundY(a.x, a.y) : bedY(a.x, a.y); a.sy = syAt(a.x, a.y);
       if (a.kind === 'moose' && a.act === 'wade') a.dip = Math.max(0, Math.sin(S.t * 0.15 + a.ph)) > 0.5 ? 1 : 0;
@@ -1224,8 +1394,12 @@ export function makeWildView(ctx) {
 
   // ---------- each frame ----------
   let lastT = -1;
-  function update(t, snap, scale, cam) {
+  // cam: the camera's position (three-space); camera (optional): the camera itself, or its view direction — a leaving animal behind it
+  // may go at once (without it, only once it is a speck)
+  const CAMDIR = new THREE.Vector3();
+  function update(t, snap, scale, cam, camera = null) {
     const dt = lastT < 0 ? 0 : Math.min(0.1, Math.max(0, t - lastT)); lastT = t; FLIGHT.t = t;
+    if (cam) { CAM.x = cam.x; CAM.y = cam.y; CAM.z = cam.z; } CAM.dir = camera && camera.getWorldDirection ? camera.getWorldDirection(CAMDIR) : camera;
     if (!snap) return;
     // (a jump through the year — the Jump-to buttons, a restored run: the lakes' animals are another season's; they are founded afresh)
     if (S0.time !== undefined && Math.abs(snap.time - S0.time) > 2 * 86400) { AG.clear(); camps.length = 0; censusAt = -1e9; }
@@ -1236,8 +1410,8 @@ export function makeWildView(ctx) {
     forestStep(S, dt);
     for (const [key, a] of AG) {
       if (a.forest) continue;
-      a.mt += dt; BEH[a.kind].step(a, S, dt);
-      if (a.gone) { AG.delete(key); continue; }
+      a.mt += dt; if (a.away) a.offT = (a.offT || 0) + dt; BEH[a.kind].step(a, S, dt);
+      if (a.gone) { AG.delete(key); const c = camps.indexOf(a); if (c >= 0) camps.splice(c, 1); continue; }
       a.sy = syAt(a.x, a.y);
     }
     // draw
