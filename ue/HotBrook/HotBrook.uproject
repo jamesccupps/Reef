@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.6",
+	"EngineAssociation": "5.8",
 	"Category": "",
-	"Description": "Hot Brook Lakes — the first-person world, drawn in Unreal Engine 5 and fed live by the Synapse Reef simulation",
+	"Description": "Hot Brook Lakes - the first-person world, drawn in Unreal Engine 5 and fed live by the Synapse Reef simulation",
 	"Modules": [
 		{
 			"Name": "HotBrook",
@@ -44,6 +44,18 @@
 		},
 		{
 			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralVegetationEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "DynamicWind",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
 			"Enabled": true
 		}
 	]

@@ -77,37 +77,8 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 		UE_LOG(LogHotBrookBuild, Display, TEXT("landscape %dx%d (%d-quad components), scale %s"), NX, NY, Q, *L->GetActorScale3D().ToString());
 	}
 
-	// THE LAKES: Unreal water bodies on the shorelines at their levels (the bed is the landscape's: they don't carve it), in one water
-	// zone made first (else each lake made its own, about the landscape)
-	FBox Bounds(ForceInit);
-	for (const TSharedPtr<FJsonValue>& V : LJ->GetArrayField(TEXT("lakes"))) for (const TSharedPtr<FJsonValue>& P : V->AsObject()->GetArrayField(TEXT("pts"))) {
-		const TArray<TSharedPtr<FJsonValue>>& XY = P->AsArray(); Bounds += HotBrookCoords::ToUE(XY[0]->AsNumber(), XY[1]->AsNumber(), V->AsObject()->GetNumberField(TEXT("level")));
-	}
-	AWaterZone* Zone = nullptr;
-	{
-		const FVector C = Bounds.GetCenter(), E = Bounds.GetExtent();
-		Zone = World->SpawnActor<AWaterZone>(AWaterZone::StaticClass(), FTransform(C), SP);
-		Zone->SetActorLabel(TEXT("Hot Brook water zone"));
-		Zone->SetZoneExtent(FVector2D(E.X * 2.0 + 20000.0, E.Y * 2.0 + 20000.0));
-	}
-	TArray<AWaterBodyLake*> Lakes;
-	for (const TSharedPtr<FJsonValue>& V : LJ->GetArrayField(TEXT("lakes"))) {
-		const TSharedPtr<FJsonObject> O = V->AsObject(); const double Level = O->GetNumberField(TEXT("level"));
-		AWaterBodyLake* Lake = World->SpawnActor<AWaterBodyLake>(AWaterBodyLake::StaticClass(), FTransform::Identity, SP);
-		Lake->SetActorLabel(O->GetStringField(TEXT("name")));
-		UWaterSplineComponent* S = Lake->GetWaterSpline(); S->ClearSplinePoints(false);
-		for (const TSharedPtr<FJsonValue>& P : O->GetArrayField(TEXT("pts"))) {
-			const TArray<TSharedPtr<FJsonValue>>& XY = P->AsArray(); const FVector W = HotBrookCoords::ToUE(XY[0]->AsNumber(), XY[1]->AsNumber(), Level);
-			S->AddSplinePoint(W, ESplineCoordinateSpace::World, false);
-		}
-		for (int32 i = 0; i < S->GetNumberOfSplinePoints(); i++) S->SetSplinePointType(i, ESplinePointType::Linear, false);
-		S->SetClosedLoop(true, false); S->UpdateSpline();
-		if (UWaterBodyComponent* C = Lake->GetWaterBodyComponent()) { C->bAffectsLandscape = false; C->SetWaterZoneOverride(Zone); C->UpdateAll(FOnWaterBodyChangedParams()); }
-		Lakes.Add(Lake);
-		UE_LOG(LogHotBrookBuild, Display, TEXT("lake %s: %d points at %.2f m"), *O->GetStringField(TEXT("name")), S->GetNumberOfSplinePoints(), Level);
-	}
-	// (any other water zone the water bodies made for themselves goes)
-	for (TActorIterator<AWaterZone> It(World); It; ++It) if (*It != Zone) World->DestroyActor(*It);
+	// THE LAKES: drawn at play by AHotBrookWaterSurface from Import/lakes.json (Unreal's Water plugin bodies, made here headless, crashed
+	// the build in their editor hooks into the landscape and never drew in the game)
 
 	// THE SKY: the physical atmosphere, the sun (its light through it), the sky's light captured live, volumetric clouds, a little haze
 	{

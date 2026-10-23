@@ -4,6 +4,7 @@
 #include "HotBrookWater.h"
 #include "HotBrookForest.h"
 #include "HotBrookLink.h"
+#include "HotBrookWaterSurface.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -25,6 +26,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookForest>(GetWorld())) GetWorld()->SpawnActor<AHotBrookForest>();
 	// the live simulation (ue/link/simhost.mjs) if the level hasn't its link
 	if (!TActorIterator<AHotBrookLink>(GetWorld())) GetWorld()->SpawnActor<AHotBrookLink>();
+	// the lakes' surfaces (Import/lakes.json) if the level hasn't them
+	if (!TActorIterator<AHotBrookWaterSurface>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWaterSurface>();
 	FString Arg;
 	if (!FParse::Value(FCommandLine::Get(), TEXT("hbshot="), Arg, false)) return;
 	TArray<FString> Items; Arg.TrimQuotes().ParseIntoArray(Items, TEXT(";"));
