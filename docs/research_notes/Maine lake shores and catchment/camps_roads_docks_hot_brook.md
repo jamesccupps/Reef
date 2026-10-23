@@ -18,18 +18,18 @@ Docks run 6–16 m long, with a median of about 9 m. Most are straight or L-shap
 
 ### Upper Hot Brook Lake (33 dwellings)
 
-**South shore: 18 dwellings (U01–U18).** These sit on Hot Brook Lake Rd, Lydic Ln and Huff Rd, on small Danforth lots 016-004 to 016-028.
+**South shore: 18 dwellings (U01–U18).** These sit on Hot Brook Lake Rd, Lydic Ln and Huff Rd.
 - Most are 6–30 m from the water.
-- U12 (12 Lydic Ln) and U18 (15/18 Huff Rd) are back lots.
+- U12 (Lydic Ln) and U18 (Huff Rd) are back lots.
 - U09 is low-confidence.
 - U11 was seen up to 2021 but **not in 2023 or fall 2024**: it was removed, or the canopy now hides it.
 
-**East cove: 4 (U20–U23).** All are on one 99-ha lot, 006-029, reached by its own road from Rt 169.
+**East cove: 4 (U20–U23).** All are on one 99-ha lot, reached by its own road from Rt 169.
 - U20 is a large green-roofed building at a gravel lot with 8–12 vehicles in several years, with a dock.
 - U21 is a camp and U22 a house or garage built 2009–2011.
 - U23 is two trailers placed between spring 2020 and Aug 2021.
 
-**North-east row: 11 (U30–U42).** These are on N Haney Rd, lots 006-042 to 006-047 and 011-063 to 011-065, along the outlet basin and ending at the NE sand beach.
+**North-east row: 11 (U30–U42).** These are on N Haney Rd, along the outlet basin and ending at the NE sand beach.
 - U35 is the largest building on either lake (about 21×20 m).
 - U36 was built 2018–2021 and U42 2015–2018.
 - The west and north-west shores (timberland, WA026 01-1) have **no buildings**.
@@ -47,13 +47,13 @@ Docks run 6–16 m long, with a median of about 9 m. Most are straight or L-shap
 - 35 BPR (L20) has a camp with a seasonal dock.
 - 31/32 BPR (L21, L22) are trailer/RV camps.
 - 17 BPR (L23) is a small camp.
-- 425 Woodland Ridge Rd (L24) and lot 011-083 (L25) are at the head of the cove.
+- L24 and L25, on Woodland Ridge Rd, are at the head of the cove.
 - L26 is a camp with a trailer.
 
 **North-east, Lakeview Rd and Boat Landing Rd: 7.**
-- 55 Lakeview (L32, a large house) was already there in 2003–05.
-- 5 and 71 Lakeview and the 011-048 barn-like building (L30) were there by 2009.
-- New between Aug 2021 and Sep 2023: L30b next to L30, 43 Lakeview (L33), and a red-roofed camp about 46 m from the shore near lot 011-039 (L35). L35 is in no database.
+- Lakeview (L32, a large house) was already there in 2003–05.
+- Two Lakeview Rd camps and the barn-like building (L30) were there by 2009.
+- New between Aug 2021 and Sep 2023: L30b next to L30, a Lakeview Rd camp (L33), and a red-roofed camp about 46 m from the shore (L35). L35 is in no database.
 
 **West shore: 1.** A lone cabin (L40) about 80 m above the shore was built 2009–2015.
 
@@ -96,7 +96,7 @@ Most camp roads are already visible in the 2003–05 leaf-off photo. They were p
 - the cleared sandy bank at the brook camp (about 430 m² in 2018), which is the human's sunfish pool;
 - the Huff Rd point lawn edge.
 
-**Mown lawns to the water:** nine are listed in the JSON, for example U13, the NE row, L02, Black Point tip and 55 Lakeview.
+**Mown lawns to the water:** nine are listed in the JSON, for example U13, the NE row, L02, Black Point tip and Lakeview.
 
 ## Sources
 
@@ -148,7 +148,7 @@ All of these are under the scratchpad `camps\` folder named above.
 ## Disagreements and how they were resolved
 
 **MDIFW (2004) said Lower has "no camps"; there are now about 22 dwellings.**
-- 55 Lakeview Rd is already in the 2003–05 photo, and 5 and 71 Lakeview are in by 2009. So even in 2004 the statement was not quite right, unless it meant the main shoreline.
+- A Lakeview Rd camp is already in the 2003–05 photo, and two more are in by 2009. So even in 2004 the statement was not quite right, unless it meant the main shoreline.
 - Black Point's camps date from about 2015 on.
 - The Woodland Ridge subdivision dates from 2021–2024.
 - I trusted the imagery.
@@ -175,17 +175,17 @@ All of these are under the scratchpad `camps\` folder named above.
 ## What remains uncertain: questions for the human
 
 1. **The launch.** Is it the sand ramp at the end of Huff Rd? Can it take a trailer, or is it hand-carry only? Is there parking?
-2. **The east-cove lot (006-029).** What is the big green-roofed building with parking for 8–12 cars and a dock: a sporting camp, a club, or a private landing?
-3. **Docks on Lower.** Do the Lakeview Rd, Black Point and Woodland Ridge camps have docks? Summer images show only 35 Black Point Rd and 011-053 (L04). On Upper, which camps without a visible dock do have one?
+2. **The east-cove lot.** What is the big green-roofed building with parking for 8–12 cars and a dock: a sporting camp, a club, or a private landing?
+3. **Docks on Lower.** Do the Lakeview Rd, Black Point and Woodland Ridge camps have docks? Summer images show only one Black Point Rd camp's and L04's. On Upper, which camps without a visible dock do have one?
 4. **Year-round or seasonal.** Which are year-round homes? My candidates, from lawns, vehicles and gardens:
-   - U12 (12 Lydic Ln);
+   - U12 (Lydic Ln);
    - U13 (the Huff Rd point mobile home);
-   - U14 (24 Huff Rd);
+   - U14 (Huff Rd);
    - L02 (Lower's south shore);
-   - L32 (55 Lakeview);
+   - L32 (Lakeview);
    - I01 (Rt 169).
 
-   E911 types nearly all the new Lower points as "Residential". Only 403 Woodland Ridge is typed "Seasonal".
+   E911 types nearly all the new Lower points as "Residential". Only Woodland Ridge is typed "Seasonal".
 5. **U11.** Is the small camp right on the water by Lydic Ln still there? It is not seen in 2023 or 2024.
 6. **Boat Landing Rd on Lower.** Is there a landing at its end, by the L30 building? MDIFW says Lower has no road access.
 7. **Roads.** Is Rt 169 paved? Are the town roads (Haney, Toupin Mountain, Huff) all gravel?
