@@ -140,13 +140,19 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
     return best;
   }
   function select(hit) { selected = hit; LIVE.worker?.postMessage({ type: 'select', id: hit ? hit.id : -1, kind: hit ? hit.kind : 'fish' }); card.hidden = !hit; if (!hit) follow = false; }
+  // the card's fixed parts, built once: its × and its follow box would otherwise be replaced by every snapshot's rebuild, and a click
+  // whose press and release land on different elements never fires (the card could not be closed)
+  const cardTitle = el('h2'), cardX = el('button', 'x', '×'), cardTop = el('header'), cardBody = el('div');
+  cardX.title = 'Let it go'; cardX.addEventListener('click', () => select(null)); cardTop.append(cardTitle, cardX);
+  const followLab = el('label', 'tog'), followCb = el('input'); followCb.type = 'checkbox'; followCb.addEventListener('change', () => { follow = followCb.checked; });
+  followLab.append(followCb, ' Follow it with the camera'); card.append(cardTop, cardBody, followLab);
   // the card, from the snapshot's sel
   function onSel(f) {
     if (!f || !selected || f.id !== selected.id) return;
-    card.replaceChildren();
-    const top = el('header'); const t = el('h2', null, f.kind === 'yoy' ? `${f.name} — a school of young` : f.n > 1 ? `${f.name} — a school` : f.name);
-    const x = el('button', 'x', '×'); x.title = 'Let it go'; x.addEventListener('click', () => select(null)); top.append(t, x); card.append(top);
-    if (f.gone) { card.append(el('p', 'hint', f.cause === 'gone' ? 'No longer in the lakes (merged into a school, recruited, or died).' : `It died (${f.cause}).`)); follow = false; return; }
+    cardBody.replaceChildren();
+    cardTitle.textContent = f.kind === 'yoy' ? `${f.name} — a school of young` : f.n > 1 ? `${f.name} — a school` : f.name;
+    if (f.gone) { cardBody.append(el('p', 'hint', f.cause === 'gone' ? 'No longer in the lakes (merged into a school, recruited, or died).' : `It died (${f.cause}).`)); follow = false; followCb.checked = false; followLab.hidden = true; return; }
+    followLab.hidden = false; followCb.checked = follow;
     const kv = [];
     if (f.n > 1) kv.push(['fish in it', fmt(f.n)]);
     kv.push(['length', `${f.L.toFixed(1)} cm`], ['weight', f.W >= 1000 ? `${(f.W / 1000).toFixed(2)} kg` : `${f.W.toFixed(f.W < 10 ? 2 : 0)} g`], ['age', f.age < 1 ? `${Math.round(f.age * 365)} days` : `${f.age.toFixed(1)} years`]);
@@ -155,18 +161,17 @@ export function makeData3({ LIVE, camera, canvas, rig }) {
         ['doing', f.doing], ['depth', `${f.z.toFixed(1)} m (bed ${f.bed.toFixed(1)} m)`], ['water', `${f.T.toFixed(1)} °C · O₂ ${f.o2.toFixed(1)} mg/L`],
         ['home lake', f.lake === UPPER ? 'Upper' : f.lake === LOWER ? 'Lower' : '—'], ['lived', f.near ? 'second by second' : 'in blocks (away from the view)'], ['generation', String(f.gen)]);
     } else kv.push(['depth', `${f.z.toFixed(1)} m (bed ${f.bed.toFixed(1)} m)`], ['water', f.T !== null ? `${f.T.toFixed(1)} °C · O₂ ${f.o2.toFixed(1)} mg/L` : '—'], ['guarded', f.guarded ? 'yes, by a parent on its nest' : 'no']);
-    const dl = el('dl', 'kv'); for (const [k, v] of kv) dl.append(el('dt', null, k), el('dd', null, v)); card.append(dl);
+    const dl = el('dl', 'kv'); for (const [k, v] of kv) dl.append(el('dt', null, k), el('dd', null, v)); cardBody.append(dl);
     if (f.kind === 'fish') {
-      const bars = (title, items) => { card.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); const c = Math.min(1, Math.max(-1, v));   // (a signed value — right/ahead/above — from the bar's middle; the rest from its left)
+      const bars = (title, items) => { cardBody.append(el('h3', null, title)); const box = el('div', 'bars'); for (const [k, v, lo, hi] of items) { const row = el('div', 'brow'), b = el('span', 'bar'), i = el('i'); const c = Math.min(1, Math.max(-1, v));   // (a signed value — right/ahead/above — from the bar's middle; the rest from its left)
         if (lo < 0) { i.style.setProperty('--l', `${(50 + 50 * Math.min(0, c)).toFixed(0)}%`); i.style.setProperty('--w', `${(50 * Math.abs(c)).toFixed(0)}%`); }
-        else i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } card.append(box); };
+        else i.style.setProperty('--w', `${(100 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(0)}%`); b.append(i); row.append(el('span', 'bl', k), b, el('span', 'bv', v.toFixed(2))); box.append(row); } cardBody.append(box); };
       bars('State', [['hunger', f.hunger, 0, 1], ['fear', f.fear, 0, 1], ['energy', f.energy, 0, 1], ['ration', f.p, 0, 1]]);
       // (what it senses — its brain's inputs: directions as right/ahead/above in −1…1, the rest 0…1 — then what its brain does with them)
       if (f.inp) { const SIGNED = new Set([0, 1, 2, 4, 5, 6, 8, 9, 15, 16, 18, 23, 24]); bars('What it senses (its brain’s inputs)', IN3.map((k, q) => [k, f.inp[q] ?? 0, SIGNED.has(q) ? -1 : 0, 1])); }
       bars('Its brain now (outputs)', OUT3.map((k, q) => [k, f.out[q] ?? 0, q < 2 ? -1 : 0, 1]));   // (turn and pitch −1…1; the rest 0…1)
       if (f.genes.length) bars('Its genes (1 = the species’ mean)', GENE_KEYS.map((k, q) => [k, f.genes[q] ?? 1, 0.7, 1.35]));
     }
-    const lab = el('label', 'tog'), cb = el('input'); cb.type = 'checkbox'; cb.checked = follow; cb.addEventListener('change', () => { follow = cb.checked; }); lab.append(cb, ' Follow it with the camera'); card.append(lab);
     lastSel = f;
   }
   let lastSel = null;
