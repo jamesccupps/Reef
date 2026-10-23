@@ -848,6 +848,12 @@ export function stageR5(on = true) {
   // and copepods from ~9 mm, insects from ~15 mm; pumpkinseed juveniles at ~20 mm eat chironomids, chydorids, isopods (their tissue
   // plankton-derived 91 % as larvae, 76 % by August); pickerel young insects from ~15 mm before fish (redbreast as pumpkinseed [inf])
   S3.bass.sp.benthL = on ? 1.0 : undefined; S3.sunfish.sp.benthL = on ? 1.5 : undefined; S3.redbreast.sp.benthL = on ? 1.5 : undefined; S3.pike.sp.benthL = on ? 1.5 : undefined;
+  // (Y4b) THE YOUNG WHITE PERCH AT THE BED FROM 20 MM (research_notes/Real lake ecology for calibration/young_white_perch_growth_and_food.md
+  // §1): at 20–25 mm, ~45 days after hatch, they settle inshore and add harpacticoids, chydorids, ostracods and chironomids (Kraus & Secor
+  // 2004; TI 1979), the main switch to chironomids and amphipods at 40–50 mm, earlier where Daphnia is scarce (Saginaw Bay: benthos 46–98 %
+  // of the diet). At FRY.BENTH_L's 2.5 cm they stalled at 2.0–2.3 cm when the young alewives cropped the crustaceans from mid-July (arm
+  // AM, the true lakes: 255 → 36 µg/L in Upper by August, as alewife lakes do — Post et al. 2008), just short of the bed
+  S3.whiteperch.sp.benthL = on ? 2.0 : undefined;
   // (item 6i: fallfish fish-eating only from 18 cm: adults are insect and drift feeders, fish a large share only in pulses of naive
   // fry, fish ≤ 10–20 % of their diet otherwise, fallfish < 10 cm ate none (research killifish_persistence_and_predators.md); from
   // 10 cm they struck at the perch-like rate and became the killifish's top predator once the bass were gated (arm K: 51k kills))
