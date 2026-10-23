@@ -202,6 +202,8 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 23:20 by the machine clock — THE NEWEST). Y4 COMMITTED fe965f1 (gate green 140/0/1 GAP), PUSHED, BACKUP
+G:/synapse-reef-backups/synapse-reef_20261022_2318_y4-yolk-sac.zip. ARM AM still running (r22AM_611/613). Below: the block before the commit.
 ▶▶▶ RESUME HERE (2026-10-22 ~16:45 EDT — THE NEWEST). Y4 BUILT (uncommitted in the tree: config EGG3.sp.perch/whiteperch yolkHatch 0.2 + the Y4
 comment; test/w3.mjs E3 check band 3–25 %; FINDINGS entry): probe ywp3 D — white perch ~9,000/ha at 37 mm on 1 Sept (was 15,900 at 26), perch
 3,600 at 48 mm, crustaceans 87–176. eggs,young sections 30/0 on occ-server. RUNNING: the full gate (occ-server → scratchpad/gate_y4.txt) and ARM AM
