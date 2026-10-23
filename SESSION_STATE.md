@@ -202,6 +202,11 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
+▶▶▶ RESUME HERE (2026-10-22 ~16:45 EDT — THE NEWEST). Y4 BUILT (uncommitted in the tree: config EGG3.sp.perch/whiteperch yolkHatch 0.2 + the Y4
+comment; test/w3.mjs E3 check band 3–25 %; FINDINGS entry): probe ywp3 D — white perch ~9,000/ha at 37 mm on 1 Sept (was 15,900 at 26), perch
+3,600 at 48 mm, crustaceans 87–176. eggs,young sections 30/0 on occ-server. RUNNING: the full gate (occ-server → scratchpad/gate_y4.txt) and ARM AM
+(GPU, snap_am :8154, queue_am.sh → r22AM_611/613.txt). WHEN THE GATE IS GREEN: commit (config + test + FINDINGS), push, back up. Then read AM
+(yrsum.mjs): do the white perch recruit? If not: the adult stock (450/ha, the egg note's 'next suspect'); the pumpkinseed young (slow, 11 mm).
 ▶▶▶ RESUME HERE (2026-10-22 ~15:45 EDT — THE NEWEST). THE HUMAN: "do what you think is best and the gpu is available now" (+ "keep things updated
 in case you compact"). PLAN Y4 (in progress): calibrate the white perch's egg → swim-up (EGG3.sp.whiteperch.hatch 0.45 [inf]; the yolk-sac stage
 EGG3.YOLK_HATCH default) against the field's best-measured outcome — late-summer YOY ~1,000–3,000/ha (clear softwater ~100–700, Erie ~3,000) —
