@@ -154,7 +154,7 @@ export class Littoral3 {
     this.surfA = new Float32Array(G.NC); this.surfT = new Float32Array(G.NC);                       // g wet/m² of water
     // the forested bank along each column (world m × the bank's cover weight): every water cell's land edges
     this.bank = new Float32Array(G.NC);
-    const NX = GEO.NX, NY = GEO.NY;
+    const NX = GEO.NX, NY = GEO.NY, cf = env.camps;
     for (let i = 0; i < GEO.N; i++) {
       if (GEO.body[i] === LAND) continue;
       const r = Math.floor(i / NX), q = i % NX; let w = 0;
@@ -164,7 +164,8 @@ export class Littoral3 {
         // (the true world: the photo's crowns over the bank — 0.2 for its grass and shrubs, to 1 under full canopy; the wet shrubs and
         // marsh at least their own 0.5)
         const cls = GEO.CLASSES[GEO.cover[k]];
-        w += GEO.canopy ? Math.max(0.2 + 0.8 * GEO.bankTrees(k, k - i), SHRUBBY[cls] ?? 0) : FOREST[cls] ?? 0.2;
+        const we = GEO.canopy ? Math.max(0.2 + 0.8 * GEO.bankTrees(k, k - i), SHRUBBY[cls] ?? 0) : FOREST[cls] ?? 0.2;
+        w += cf ? cf.fallEdge(i, we) : we;   // (E15, CAMP3: a camp's cleared lot where the photos don't show the bank — campfx3 fallEdge)
       }
       if (!w) continue;
       const [x, y] = GEO.cellCentre(i), c = env.colAt(x, y); if (c >= 0) this.bank[c] += w * GEO.CELL * 0.8;   // (a raster shore's stair-steps overstate its length)

@@ -17,7 +17,7 @@
 // sub-stepped for stability. Horizontal mixing at the grid scale; the night thermal siphon and its under-ice cousin as
 // closed exchange loops; vertical mixing in each column's wind/convection-mixed layer.
 import { GEO, LAND, UPPER, LOWER, BROOK, cellIndex } from './geometry.js';
-import { ENV, ICE, THERMAL, WIND, SEASON, WEATHER3, FOREST3, seasonalTemp } from '../config.js';
+import { ENV, ICE, THERMAL, WIND, SEASON, WEATHER3, FOREST3, CAMP3, seasonalTemp } from '../config.js';
 import { rand, clamp } from '../core.js';
 
 import { CLOCK3, TS, REAL_S, DAY3, OLD_S } from './clock3.js';
@@ -26,6 +26,7 @@ import { Plants3, PL3 } from './plants3.js';
 import { Littoral3 } from './littoral3.js';
 import { Herps3 } from './herps3.js';
 import { Forest3 } from './forest3.js';
+import { Camps3 } from './campfx3.js';
 export { CLOCK3, TS, REAL_S, DAY3 };
 export const H3 = {
   COL: 50 * GEO.SCALE,  // m (world) column side — 50 m real (5 at 1/10)
@@ -258,6 +259,8 @@ export class Env3 {
     this.ice = new Float32Array(G.NC);
     this.fields = [{ name: 'temp', a: this.temp }, { name: 'age', a: this.age, in: 0 }];   // transported fields (the chemistry adds its own)
     this._statics();
+    this.camps = CAMP3.ON ? new Camps3(this) : null;   // (E15: the camps' frontage, docks, swim areas, septic systems, lots and roads — campfx3.js; null when off. Before the
+                                                       //  chemistry and the plants: their leaf fall, wood and insects' fall read its frontage, the plants its docks)
     this.chem = chem ? new Chem3(this) : null;   // O₂, N, P, algae, DOM, zooplankton, the bed (chem3.js)
     this.primeSeason(this.time);
     this.plants = this.chem && plants ? new Plants3(this, { init: plantInit }) : null;   // the weeds on the bed (plants3.js; plantInit false: the bare seeding, not the spun-up start)
@@ -461,6 +464,7 @@ export class Env3 {
     if (this.plants) this.plants.jump();   // (the weeds take the new season's shape, conserving their mass)
     if (this.lit) this.lit.jump();
     if (this.forest) this.forest.jump();   // (E14: the animals set down in the new date's places)
+    if (this.camps) this.camps.jump();     // (E15: the septic systems' groundwater at the new date's steady state)
     this._light();   // (the sky at once: a lake opened at 7 a.m. is in daylight before its first step)
   }
   // the light now: the sun's height, the daylight under the cloud, the surface's lux (by the hour, the season, the weather)
@@ -487,6 +491,7 @@ export class Env3 {
     if (this.lit) this.lit.step(dt);
     if (this.herps) this.herps.step(dt);
     if (this.forest) this.forest.step(dt);   // (E14: after the plants and the herps — the deer crop the edge, the moose wade, the bears fish)
+    if (this.camps) this.camps.step(dt);     // (E15: the camps' septic systems, lots and roads into the water before it moves; the swim areas pulled in June)
     this._transport(dt);
     if (this.chem) this.chem._ledgerFlows();   // (the through-flow's in and out, tallied after it moved them)
     for (let j = 0; j < G.NCELL; j++) this.age[j] += dt;

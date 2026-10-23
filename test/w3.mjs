@@ -1475,6 +1475,89 @@ if (run('forest')) {
       runDays >= 5 && perBear >= 5 && perBear <= 80 && perBear / runDays >= 0.5 && perBear / runDays <= 4 && other === 0 && fishH > 0.8 && fishH < 4 && vB > 0 && vL === 0 && vP === 0 && row.trim().endsWith('1.0') && src.includes('stu(O_wCBody'),
       `the run ${runDays} days; ${nb} bears with the brook in their range fished ${fishH.toFixed(1)} h a day; in expectation ${(exp / Fo.fa / 1000).toFixed(0)} kg — ${perBear.toFixed(0)} suckers a bear (${(perBear / Math.max(1, runDays)).toFixed(1)} a day, ${mW.toFixed(0)} g each); drawn: ${((T.n.sucker || 0)).toFixed(0)} suckers and ${(T.n.fallfish || 0).toFixed(0)} fallfish in the world, other fish ${other}`); }
 }
+// ============================================================
+//  E15 — THE CAMPS' LAKE EFFECTS (config CAMP3; src/w3/campfx3.js; research_notes/Maine lake shores and catchment/
+//  shoreline_development_effects.md): the frontage's wood and leaf fall, the docks' shade on the plants beneath, the swim areas pulled in
+//  June, the septic systems', lots' and roads' P and N through the ledger; the docks' fish (CAMP3.FISH: the CPU fish only)
+// ============================================================
+if (run('camps')) {
+  console.log('\n— E15: the camps\' lake effects (CAMP3) —');
+  const fm = await import('../src/w3/fish3.js'); const { Env3, H3 } = await import('../src/w3/env3.js'); const { seed, getRandState } = await import('../src/core.js');
+  const C = await import('../src/config.js'); const { CHEM3 } = await import('../src/w3/chem3.js'); const { CAMPS } = await import('../src/w3/camps3.js'); const { createHash } = await import('node:crypto');
+  const K3 = C.CAMP3, on0 = K3.ON, fish0 = K3.FISH, S2 = GEO.SCALE * GEO.SCALE;
+  const closes = (c, P0, N0, L0) => { const L = c.ledger, eP = (L.inP - L0.inP) - (L.outP - L0.outP) - (L.buryP - L0.buryP), eN = (L.inN - L0.inN) - (L.outN - L0.outN) - (L.denitN - L0.denitN) + (L.fixN - L0.fixN);
+    return [Math.abs(c.inventoryP() - P0 - eP) / P0, Math.abs(c.inventoryN() - N0 - eN) / N0]; };
+  const fpEnv = e => { const h = createHash('sha1'), ch = e.chem; for (const k of ['o2', 'phos', 'no3', 'nh4', 'phyto', 'zooD', 'sedP', 'sedOM']) h.update(Buffer.from(ch[k].buffer));
+    for (const B of e.plants.Bs) h.update(Buffer.from(B.buffer)); h.update(Buffer.from(e.plants.wood.buffer)); h.update(Buffer.from(e.lit.bank.buffer)); h.update(Buffer.from(ch.leafW.buffer)); h.update(JSON.stringify(ch.ledger)); return h.digest('hex'); };
+  // (OFF, AS BUILT, AND THE STATICS: with the package on and CAMP3.ON 0 no camps, no patches — and a lake run after a camps-on one the same
+  // as before it (no state left behind); on, the camps draw nothing from the sim's stream. Every lived-in camp finds its water, every dock
+  // its footprint; the frontage's wood WOOD_FRONT of the undeveloped (the 1/10 world's NLCD bank: exactly), its leaf fall × LEAF_FRONT on
+  // its share of each column's shore, the swim areas ≤ 230 m² real)
+  { const short = on => { fm.stageR5(true); K3.ON = on; seed(401); const e = new Env3({ col: 10 * CS, yf0: 0.3 }); for (let i = 0; i < 40; i++) e.step(FB); return { e, fp: fpEnv(e), rs: JSON.stringify(getRandState()) }; };
+    const a = short(0), b = short(1), a2 = short(0); fm.stageR5(false); K3.ON = on0;
+    const K = b.e.camps, P = b.e.plants, nHome = CAMPS.camps.filter(c => c.home).length, wet = [...K.hJ].filter(j => j >= 0).length, wf = P._woodFront[1] / P._woodFront[0];
+    let leafOK = true; for (let c = 0; c < a.e.G.NC; c++) { const want = a.e.chem.leafW[c] * (1 - (1 - K3.LEAF_FRONT) * K.frontShare[c]); if (Math.abs(b.e.chem.leafW[c] - want) > 1e-6 * Math.max(1, want)) leafOK = false; }
+    const swimMax = Math.max(...K.swimAreas) / S2, dockWet = K.docks.reduce((t, d) => t + d.area, 0) / K.docks.reduce((t, d) => t + 2 * d.hw * d.len, 0);
+    const bank = [a.e.lit.bank, b.e.lit.bank].map(B => B.reduce((t, v) => t + v, 0)), bankOK = WORLD_TRUE ? bank[1] === bank[0] : bank[1] < bank[0];   // (the insects' fall: the true world's photo has the lots)
+    check('E15 (CAMP3): off, as built — no camps, no patches, and a lake after a camps-on one the same as before it; on, nothing drawn from the sim\'s stream; every lived-in camp finds its water and the docks their bed; the frontage\'s wood × WOOD_FRONT (0.15) of the undeveloped, its leaf fall × LEAF_FRONT (0.43) on its share of the shore, its insects\' fall from a cleared bank where the trees aren\'t photographed; the swim areas ≤ 230 m² real',
+      a.e.camps === null && a.e.plants._pF === null && a.fp === a2.fp && a.rs === b.rs && wet === nHome && K.docks.length === CAMPS.docks.length && K.patches.some(p => p.kind === 0)
+        && (WORLD_TRUE ? wf < 0.5 : Math.abs(wf - K3.WOOD_FRONT) < 1e-6) && leafOK && bankOK && swimMax <= 230 * 1.0001 && K.nSwim > 0,
+      `${wet} of ${nHome} camps at their water, ${K.nFront} frontage cells; ${K.docks.length} docks (${(100 * dockWet).toFixed(0)} % of their footprint over this world's water) on ${K.patches.filter(p => p.kind === 0).length} bed cells; ${K.nSwim} swim areas (largest ${swimMax.toFixed(0)} m² real); the frontage's wood ×${wf.toFixed(3)}, the lakes' insect-fall bank ×${(bank[1] / bank[0]).toFixed(4)}; ${K.roadKm.toFixed(2)} km of gravel road within ${K3.ROAD_R} m of the water; off ${a.fp === a2.fp ? 'unchanged' : 'CHANGED'} by a camps-on run, the stream ${a.rs === b.rs ? 'untouched' : 'DRAWN'}`); }
+  // (THE BUDGETS with the camps on — the package's weather and catchment: across the swim areas' June pull (the plants and their N and P
+  // ashore), a summer storm (the lots' and roads' P washed in, its unavailable share buried) and under the ice (the year-round homes'
+  // septic systems): inventory change = in − out − buried (− denitrified + fixed))
+  { let worst = 0; const txt = []; fm.stageR5(true); K3.ON = 1;
+    for (const [yf, w, nm] of [[0.287, -1, 'June pull'], [0.42, 3, 'storm'], [0.85, -1, 'ice']]) {
+      seed(401); const e = new Env3({ col: 10 * CS, yf0: yf }), c = e.chem, T = e.camps.tally; if (w >= 0) e.setWeather(w); for (let i = 0; i < 6; i++) e.step(FB);
+      const P0 = c.inventoryP(), N0 = c.inventoryN(), L0 = { ...c.ledger }, s0 = T.septicP, r0 = T.lotP + T.roadP + T.launchP, p0 = T.pulled;
+      for (let i = 0; i < 90; i++) e.step(FB);
+      const [rP, rN] = closes(c, P0, N0, L0); worst = Math.max(worst, rP, rN);
+      txt.push(`${nm} ${rP.toExponential(0)}/${rN.toExponential(0)} (septic ${((T.septicP - s0) / S2).toFixed(0)} g, runoff ${((T.lotP + T.roadP + T.launchP - r0) / S2).toFixed(0)} g P real${T.pulled > p0 ? `, ${((T.pulled - p0) / S2 / 1000).toFixed(0)} kg DW pulled` : ''})`);
+    }
+    fm.stageR5(false); K3.ON = on0;
+    check('E15 (CAMP3): the N and P budgets close with the camps on — across the swim areas\' June pull (ashore), a summer storm (the lots\' and roads\' P, the unavailable share buried) and under the ice (the year-round homes)',
+      worst < 1e-5, `P/N relative error ${txt.join('; ')}`); }
+  // (A SUMMER AND THE NEXT, mid-May → late August a year later, the package on the coarse grid without fish, camps on and off (the same weather:
+  // the camps draw nothing): (1) Upper's water TP over the first summer against §3's whole-lake mass balance — the available P the camps put into
+  // Upper, step by step, into a well-mixed lake flushed at the sim's 100-day residence and retaining CPL's R ≈ 0.45 (dC/dt = L/V − C/((1 − R)τ):
+  // §3's ΔTP = L(1 − R)/Q at steady state) — within a factor 2; (2) the plants under the docks in the second late summer ≤ 0.2× the open bed's
+  // beside them at the same depth (Garrison 2005's long-standing piers: 0.05, 5 vs 107 g; the patches start the run as the open bed); (3) the swim
+  // areas pulled each June)
+  { const tpOf = (e, b) => { const G = e.G, c = e.chem; let p = 0, w = 0; for (let j = 0; j < G.NCELL; j++) { if (G.body[G.colOfCell[j]] !== b) continue; const al = c.phyto[j] + c.diatom[j] + c.resA[j]; p += (c.phos[j] + al * C.PHYTO.P_USE + c.cyano[j] * C.CYANO.P_USE + c.dom[j] * C.NUTRIENT.ORGANIC_P) * c.w[j]; w += c.w[j]; } return p / w * CHEM3.P_UGL; };
+    const R_UP = 0.45, yA = 0.22, yB = 0.5, yC = 1.5, nB = Math.round((yB - yA) * 365 * 86400 / FB), nC = Math.round((yC - yA) * 365 * 86400 / FB);
+    fm.stageR5(true); K3.ON = 0; seed(541); const eo = new Env3({ col: 10 * CS, yf0: yA }); for (let i = 0; i < nB; i++) eo.step(FB); const tpOff = tpOf(eo, UPPER);
+    K3.ON = 1; seed(541); const e = new Env3({ col: 10 * CS, yf0: yA }), K = e.camps, P = e.plants, G = e.G;
+    let V = 0; for (let j = 0; j < G.NCELL; j++) if (G.body[G.colOfCell[j]] === UPPER) V += G.vol[j];
+    const k = 1 / ((1 - R_UP) * H3.RES_UPPER_D * 86400); let box = 0, prev = 0, tpOn = 0, d1 = null, s1 = null, pulls = [];
+    for (let i = 0; i < nC; i++) {
+      const pu = K.tally.pulled; e.step(FB); if (K.tally.pulled > pu) pulls.push(e.yearFrac());
+      if (i < nB) { const L = K.tally.avail[UPPER] - prev; prev = K.tally.avail[UPPER]; box = box * Math.exp(-k * FB) + L / V * 1000 * -Math.expm1(-k * FB) / (k * FB); }
+      if (i === nB - 1) { tpOn = tpOf(e, UPPER); d1 = P.patchMass(0); s1 = P.patchMass(1); }
+    }
+    const d2 = P.patchMass(0), s2 = P.patchMass(1), dTP = tpOn - tpOff, ratio = dTP / box, ss = K.annualAvail(UPPER) * (1 - R_UP) / 4.04e7 * 1e6;
+    fm.stageR5(false); K3.ON = on0;
+    check('E15 (CAMP3): a summer\'s rise of Upper\'s TP from its camps within 2× of §3\'s whole-lake mass balance (flushing at the sim\'s 100 days, CPL\'s retention 0.45); the plants under the docks ≤ 0.2× the open bed\'s beside them by the second late summer (Garrison 2005: 0.05 under long-standing piers); the swim areas pulled each June',
+      ratio >= 0.5 && ratio <= 2 && d2[0] / d2[1] <= 0.2 && pulls.length === 2 && s1[0] / s1[1] < 0.5,
+      `Upper ${tpOff.toFixed(2)} → ${tpOn.toFixed(2)} µg/L: +${dTP.toFixed(3)} against the mass balance's +${box.toFixed(3)} (×${ratio.toFixed(2)}; §3's steady state for its ${K.annualAvail(UPPER).toFixed(1)} kg/yr available, Lower's ${K.annualAvail(LOWER).toFixed(1)}: +${ss.toFixed(3)} µg/L); under the docks ${(d1[0] / d1[1]).toFixed(2)}× the open bed by the first late August, ${(d2[0] / d2[1]).toFixed(2)}× by the second; the swim areas pulled at yf ${pulls.map(y => y.toFixed(3)).join(', ')} (${(K.tally.pulled / S2 / 1000).toFixed(0)} kg DW real), at ${(s1[0] / s1[1]).toFixed(2)}× and ${(s2[0] / s2[1]).toFixed(2)}× the open bed by late August`); }
+  // (THE DOCKS' FISH, CAMP3.FISH — the CPU fish only, off in the package: a 6-cm pumpkinseed under a dock on a clear midday in June takes its
+  // shade's cover (1 − 1/2.7²); not a 15-cm one, not a small bass, not at night, not with FISH off; a ripe bass pair on a dock's footprint does not
+  // nest there — beside it, or with FISH off, it does)
+  { fm.stageR5(true); K3.ON = 1; K3.FISH = 1; seed(611); const e = new Env3({ yf0: 0.3 }), F = new fm.Fish3(e, { young: true }), K = e.camps; F.step(FB); e.step(FB);
+    let pt = null, off = null;
+    for (const D of K.docks) { for (let s = 1; s < 10 && !pt; s++) { const u = s / 10 * D.len, x = D.bx + D.dx * u, y = D.by + D.dy * u, z = GEO.depthAt(x, y), ox = x - D.dy * 4 * D.hw, oy = y + D.dx * 4 * D.hw, oz = GEO.depthAt(ox, oy);
+      if (z > 0.55 && z < 1.4 && K.underDock(x, y) && oz > 0.55 && oz < 1.4 && !K.underDock(ox, oy) && e.colAt(ox, oy) >= 0) { pt = [x, y, z]; off = [ox, oy, oz]; } } if (pt) break; }
+    const coverAt = (key, L, sun, fish) => { const a = F.fish.find(q => q.alive && q.s.key === key && q.n === 1); if (!a) return NaN; K3.FISH = fish; e.sun = sun; e.weather = 0;
+      a.x = pt[0]; a.y = pt[1]; a.z = pt[2] / 2; a.L = L; F._livePre(a, F.fish.indexOf(a), 1, 1, true, null); return a.cover; };
+    const cS = coverAt('sunfish', 6, 1, 1), cS0 = coverAt('sunfish', 6, 1, 0), cBig = coverAt('sunfish', 15, 1, 1), cBass = coverAt('bass', 6, 1, 1), cBass0 = coverAt('bass', 6, 1, 0), cNight = coverAt('sunfish', 6, 0, 1);
+    const nest = (p, fish) => { K3.FISH = fish; const B = F.fish.filter(q => q.alive && q.s.key === 'bass' && q.n === 1).slice(0, 2); if (B.length < 2) return -1; const [a, b] = B;
+      for (const q of B) { q.x = p[0]; q.y = p[1]; q.z = Math.max(0.05, p[2] - 0.05); q.bed = p[2]; q.ripe = true; q.T = 18; q.nt = 0; q.brookRun = false; q.spX = NaN; } a.sex = 0; b.sex = 1; a.mate = b; F._coarse = true;
+      const n0 = F.stats.spawns.bass; F._spawn(a, F.fish.indexOf(a), 1e9); return F.stats.spawns.bass - n0; };
+    const nOn = pt ? nest(pt, 1) : 0, nOff = pt ? nest(off, 1) : 1, nOn0 = pt ? nest(pt, 0) : 1;
+    fm.stageR5(false); K3.ON = on0; K3.FISH = fish0;
+    check('E15 (CAMP3.FISH, the CPU only): a 6-cm pumpkinseed under a dock on a clear June midday takes the shade\'s cover (1 − 1/2.7² — Helfman 1981); a 15-cm one, a small bass, the night and FISH off don\'t; no bass nest on a dock\'s footprint (beside it, or with FISH off, the pair nests)',
+      pt && cS >= K3.DOCK_COVER - 1e-9 && cS0 < K3.DOCK_COVER && cBig < K3.DOCK_COVER && Math.abs(cBass - cBass0) < 1e-12 && cNight < K3.DOCK_COVER && nOn === 0 && nOff === 1 && nOn0 === 1,
+      pt ? `at a dock over ${pt[2].toFixed(2)} m: cover ${cS.toFixed(2)} (FISH off ${cS0.toFixed(2)}, 15 cm ${cBig.toFixed(2)}, bass ${cBass.toFixed(2)} vs ${cBass0.toFixed(2)}, night ${cNight.toFixed(2)}); bass nests on the dock ${nOn}, beside it ${nOff}, on it with FISH off ${nOn0}` : 'no dock over the bass\'s nesting depths'); }
+}
 console.log(`\n${pass} PASS, ${fail} FAIL${gaps ? `, ${gaps} KNOWN GAP(S) against the field (the GAP lines above)` : ''}`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

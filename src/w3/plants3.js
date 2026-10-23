@@ -8,7 +8,7 @@
 // suggested mechanisms; sources and their weaknesses there).
 import { clamp } from '../core.js';
 import { GEO, LAND, BROOK, WORLD_TRUE } from './geometry.js';
-import { ENV, ICE, SEASON, PLANKTON } from '../config.js';
+import { ENV, ICE, SEASON, PLANKTON, CAMP3 } from '../config.js';
 import { TS, DAY3, CLOCK3 } from './clock3.js';
 
 // THE PLANTS OF THE LAKES, AS SPECIES (stage 7f, 2026-10-16; the human: plants "provide places for the fish to be, food and
@@ -331,6 +331,11 @@ export class Plants3 {
     // (per BED CELL, not per column: a 10-m column on a slope holds its shallow structure and its bare deeper bed — averaged, a
     // perch at 1 m read the deep half's bareness; idxOf maps a chem cell to its bed-cell index here)
     this.idxOf = new Int32Array(G.NCELL).fill(-1); for (let i = 0; i < nb; i++) this.idxOf[cells[i]] = i;
+    // (E15, CAMP3) THE PATCHES: the bed under a dock or in a swim area (campfx3 patches) — a share phi of its bed cell whose stands grow by
+    // their own light (the dock's shade while it is in) and room: per patch and species its stands' mass over the open bed's beside it (u; the
+    // shoots and the stores alike). The cell's mass stays the cell's mean — every other reader unchanged — and its growth the area-weighted
+    // growth of the open bed and its patches: exact for the processes that scale with the mass (the waves, the autumn's stores, the ice)
+    this._pF = null; if (env.camps && env.camps.patches.length) this._patchInit(env.camps.patches);
     this.spawnS = {}; this._spW = {}; for (const u of Object.keys(PL3.SPAWN)) { this.spawnS[u] = new Float32Array(nb); this._spW[u] = FORMS3.map(F => PL3.SPAWN[u].sp[F.key] ?? PL3.SPAWN[u].other); }
     this.wood = new Float32Array(G.NC); this._spN = 0;
     // (per species, for the per-step O₂ loop: start temperatures, evergreen, the roots' O₂ share, window, canopy height, peak)
@@ -352,11 +357,13 @@ export class Plants3 {
     this.zWave = new Float32Array(G.NC); for (let c = 0; c < G.NC; c++) this.zWave[c] = env.fetch && G.body[c] !== BROOK ? Plants3.waveDepth(env.fetch[c]) : 0;
     this._wv = new Float32Array(nb); for (let i = 0; i < nb; i++) { const zw = this.zWave[this.col[i]], x = zw > 0 ? clamp(this.zb[i] / zw, 0, 1) : 1; const t = clamp((x - 0.5) * 2, 0, 1); this._wv[i] = 1 - t * t * (3 - 2 * t); }
     // (the wood falls from the trees on the bank: NLCD's wooded classes — or in the true world the aerial photos' crowns there, GEO.canopy)
-    { const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.3 }, SHRUBW = { shrub_wet: 0.5, shrub: 0.3 }, bank = new Float32Array(G.NC), NX = GEO.NX, NY = GEO.NY;
+    // (E15, CAMP3: a camp's frontage keeps WOOD_FRONT of its fallen wood — campfx3 woodEdge; _woodFront: the frontage's edges' wood before and after)
+    { const FOREST = { evergreen: 1, mixed: 1, deciduous: 1, woody_wet: 1, shrub_wet: 0.5, shrub: 0.3 }, SHRUBW = { shrub_wet: 0.5, shrub: 0.3 }, bank = new Float32Array(G.NC), NX = GEO.NX, NY = GEO.NY, cf = env.camps;
+      if (cf) this._woodFront = [0, 0];
       for (let i = 0; i < GEO.N; i++) {
         if (GEO.body[i] === LAND || GEO.body[i] === BROOK) continue;
         const r = Math.floor(i / NX), q = i % NX; let w = 0;
-        for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; const k = rr * NX + qq; if (GEO.body[k] === LAND) w += GEO.canopy ? Math.max(GEO.bankTrees(k, k - i), SHRUBW[GEO.CLASSES[GEO.cover[k]]] ?? 0) : FOREST[GEO.CLASSES[GEO.cover[k]]] ?? 0; }
+        for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; const k = rr * NX + qq; if (GEO.body[k] === LAND) { const we = GEO.canopy ? Math.max(GEO.bankTrees(k, k - i), SHRUBW[GEO.CLASSES[GEO.cover[k]]] ?? 0) : FOREST[GEO.CLASSES[GEO.cover[k]]] ?? 0; if (cf && cf.front[i]) { const wc = cf.woodEdge(i, we); this._woodFront[0] += we; this._woodFront[1] += wc; w += wc; } else w += we; } }
         if (!w) continue; const [x, y] = GEO.cellCentre(i), c = env.colAt(x, y); if (c >= 0) bank[c] += w * GEO.CELL * 0.8;
       }
       for (let c = 0; c < G.NC; c++) if (bank[c] > 0) this.wood[c] = PL3.WOOD * clamp(bank[c] * PL3.WOOD_W / G.area[c], 0, 1);   // (on the column's bed cells shallower than WOOD_Z)
@@ -461,8 +468,9 @@ export class Plants3 {
     let prod = 0, lit = 0;
     const iceNew = this._iceNew, iceWas = this._iceWas; for (let c = 0; c < G.NC; c++) { iceNew[c] = e.ice[c] > 0.5 && iceWas[c] <= 0.5 ? 1 : 0; iceWas[c] = e.ice[c]; }   // (the columns whose ice formed since the last growth step: PL3 ICE_BED)
     const IR = this._ir || (this._ir = FORMS3.map((F, f) => Uint8Array.from({ length: this.cells.length }, (_, i) => this._inRange(F, i, f) ? 1 : 0)));   // (_inRange is the bed's depth, the brook and its substrate: fixed — once)
+    if (this._pF) { const dL = this.env.camps ? this.env.camps.dockLight(yf) : 1; for (let k = 0; k < this._pLf.length; k++) this._pLf[k] = this._pKind[k] === 0 ? dL : 1; }   // (E15: the docks' shade while they are in)
     for (let i = 0; i < this.cells.length; i++) {
-      const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j];
+      const j = this.cells[i], c = this.col[i], A = G.bedA[j], a = ch.a[j], w = ch.w[j], z = this.zb[i], Tj = T[j], pk = this._pF ? this._pF[i] : -1;
       const qT = qPl(Tj), iceCut = 1 - e.iceCut * e.ice[c];
       if (this.dead[i] > 0) {   // last year's stems fall into the bed's organic layer (faster in the ice's and the waves' reach)
         const kF = PL3.DEAD_FALL * (e.ice[c] > 0.5 && z < PL3.ICE_SCOUR && !this.brook[i] ? PL3.DEAD_ICE : 1) + (e.ice[c] < 0.5 && !this.brook[i] ? PL3.WAVE_M * PL3.WAVE_DEAD * this._wave(i) : 0);
@@ -508,13 +516,16 @@ export class Plants3 {
           fP = Math.min(1, fP + this.preyP[i] / (day * F.P * PL3.P_UNIT)); fN = Math.min(1, fN + this.preyN[i] / (day * F.N * PL3.N_UNIT));
         }
         const rate = growing ? (F.mu + lossR) * qT * fL * Math.min(fP, fN) - lossR * qT : -lossR * qT * 0.3;   // (/day; dormant: a third)
-        let g = rate > 0 ? rate * Math.max(0, 1 - occ[this.formOf[f]] / this.room[f][i]) * b * dd : 0;   // (space limits the net growth: a good site fills its stand — shared by its form's species — on its share of the bed, E12b)
+        let nR = rate > 0 ? rate * Math.max(0, 1 - occ[this.formOf[f]] / this.room[f][i]) : rate;   // (/day, net: space limits the net growth — a good site fills its stand, shared by its form's species, on its share of the bed, E12b)
+        if (pk >= 0) nR = this._patchNet(pk, f, i, nR, growing, fL, b, z, kd, qT, Math.min(fP, fN), occ[this.formOf[f]] / this.room[f][i], dd,
+          growing && !F.window ? iceCut * flShade * (this._low[f] ? lowShade : 1) * seasonL : 0, this._sc[f] ? bSC - Bs[i] : 0);   // (E15: the bed under a dock or in a swim area)
+        let g = nR > 0 ? nR * b * dd : 0;
         if (g > 0) { g = this._take(F, g, j, A, a, w, i); b += g; prod += g * A; }
         this.gnet[f][i] = g / Math.max(MIX, dd);
         if (F.padGraze && g > 0) {   // the pads' grazers eat their share of the production (frass to the bed; bodies to littoral3's surface)
           const eat = Math.min(b, g * F.padGraze); b -= eat; lit += this._die(f, i, eat, j, A, a, w); this.padEaten[c] += eat * A; this.padAte += eat * A;
         }
-        let loss = rate < 0 ? -rate * b * dd : 0;
+        let loss = nR < 0 ? -nR * b * dd : 0;
         // and the shallowest beds' wave scour, autumn's reallocation, ice scour
         const br = this.brook[i];   // (the brook: running water, no waves; its moss holds to the stones under the ice)
         if (!br && e.ice[c] < 0.5) { const wv = this._wv[i]; if (wv > 0) loss += PL3.WAVE_M * wv * this._wvF[f] * b * dd; }   // (the storm waves above zWave; none under the ice)
@@ -540,6 +551,63 @@ export class Plants3 {
       }
     }
     this.prod += prod; this.litter += lit;
+  }
+  // ---------- (E15, CAMP3) THE PATCHES: the bed under the docks and in the swim areas (campfx3 patches) ----------
+  _patchInit(P) {
+    const nb = this.cells.length, n = P.length;
+    this._pF = new Int32Array(nb).fill(-1); this._pN = new Int32Array(n).fill(-1); this._pSum = new Float64Array(nb);
+    this._pPhi = new Float64Array(n); this._pKind = new Uint8Array(n); this._pCell = new Int32Array(n).fill(-1); this._pLf = new Float64Array(n).fill(1); this._pU = new Float64Array(n * NF3).fill(1);
+    P.forEach((p, k) => { const i = this.idxOf[p.j]; if (i < 0) return; this._pCell[k] = i; this._pPhi[k] = p.phi; this._pKind[k] = p.kind; this._pN[k] = this._pF[i]; this._pF[i] = k; this._pSum[i] += p.phi; });
+  }
+  // the cell's net growth (/day) with its patches: the open bed's nR and each patch's own — the dock's shade on its light (lf, a share of the
+  // open bed's: the submerged forms' mean over their own, sparser canopy; the window forms as light-limited plants) and its own room (a
+  // thinned patch has room to regrow) — weighted by area × mass; each patch's u moves by its rate over the open bed's (u ∈ [1e-6, 1])
+  _patchNet(pk, f, i, nR, growing, fL, b, z, kd, qT, nut, occR, dd, I0, bSCx) {
+    const F = FORMS3[f], lossR = this._lossR[f], U = this._pU, PH = this._pPhi, LF = this._pLf, open = 1 - this._pSum[i];
+    let num = open * nR, den = open;
+    for (let k = pk; k >= 0; k = this._pN[k]) {
+      const q = k * NF3 + f, u = U[q], lf = LF[k]; let nk = nR;
+      if (growing && (lf < 1 || u < 1)) {
+        let fk = fL;
+        if (lf < 1) {
+          if (F.window) fk = fL * lf * (1 + CAMP3.KL_WIN) / (lf + CAMP3.KL_WIN);
+          else { const h = Math.min(z, F.hFull * clamp(u * b / F.Bmax, 0.05, 1)), It = I0 * lf * Math.exp(-kd * (z - h)), ext = kd * h + PL3.SELF * u * (bSCx + b);
+            fk = ext > 1e-6 ? Math.log((F.KL + It) / (F.KL + It * Math.exp(-ext))) / ext : It / (It + F.KL); }
+        }
+        const rk = (F.mu + lossR) * qT * fk * nut - lossR * qT;
+        nk = rk > 0 ? rk * Math.max(0, 1 - u * occR) : rk;
+      }
+      num += PH[k] * u * nk; den += PH[k] * u;
+      U[q] = clamp(u * Math.exp((nk - nR) * dd), 1e-6, 1);
+    }
+    return den > 0 ? num / den : nR;
+  }
+  // the open bed's share of a cell's mass for species f: the cell's mean = the open bed's × (1 − Σφ + Σφu)
+  _patchDen(i, f) { let d = 1 - this._pSum[i]; for (let q = this._pF[i]; q >= 0; q = this._pN[q]) d += this._pPhi[q] * this._pU[q * NF3 + f]; return Math.max(1e-9, d); }
+  // PULL the plants of every patch of a kind (the swim areas, campfx3's June): each to `left` of its shoots and stores — taken ashore, their N
+  // and P out of the lakes (chem3's ledger, as the moose's); returns the g DW pulled
+  pullPatches(kind, left) {
+    if (!this._pF) return 0; const G = this.G, ch = this.chem; let rm = 0, dP = 0, dN = 0;
+    for (let k = 0; k < this._pPhi.length; k++) {
+      const i = this._pCell[k]; if (this._pKind[k] !== kind || i < 0) continue; const A = G.bedA[this.cells[i]];
+      for (let f = 0; f < NF3; f++) {
+        const q = k * NF3 + f, u = this._pU[q], sh = this._pPhi[k] * u * (1 - left) / this._patchDen(i, f);   // (the share of the cell's mass in the patch's pulled part)
+        const ms = this.Bs[f][i] * sh, mr = this.Br[f][i] * sh; this._pU[q] = u * left;
+        if (!(ms + mr > 0)) continue; this.Bs[f][i] -= ms; this.Br[f][i] -= mr;
+        const m = (ms + mr) * A; rm += m; dP += m * FORMS3[f].P * PL3.P_UNIT; dN += m * FORMS3[f].N * PL3.N_UNIT;
+      }
+    }
+    ch.ledger.outP += dP; ch.ledger.outN += dN; this.pulled = (this.pulled || 0) + rm;
+    return rm;
+  }
+  // the shoots under the patches of a kind and on the open bed beside them in the same cells (g DW over the patches' area): [under, open]
+  patchMass(kind) {
+    if (!this._pF) return [0, 0]; const G = this.G; let un = 0, op = 0;
+    for (let k = 0; k < this._pPhi.length; k++) {
+      const i = this._pCell[k]; if (this._pKind[k] !== kind || i < 0) continue; const a = this._pPhi[k] * G.bedA[this.cells[i]];
+      for (let f = 0; f < NF3; f++) { const bo = this.Bs[f][i] / this._patchDen(i, f); un += this._pU[k * NF3 + f] * bo * a; op += bo * a; }
+    }
+    return [un, op];
   }
   // build g (g DW/m²) of form F in bed cell j: its N and P (per m² of bed → the cell's units) from the bed's store (the roots'
   // share) and the water (the shoots'), at most half of what each holds a step; returns the g DW actually built

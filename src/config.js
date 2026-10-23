@@ -771,6 +771,81 @@ export const FOREST3 = {
       { evergreen: 0.8, mixed: 1, deciduous: 0.6, woody_wet: 0.8, shrub_wet: 0.6, emergent_wet: 0.1, shrub: 0.6, grass: 0.1, pasture: 0.1, crops: 0.1, dev_open: 0.1 }],
     BED: { evergreen: 1, mixed: 1, deciduous: 0.7, woody_wet: 1, shrub_wet: 0.6, emergent_wet: 0.2, shrub: 0.5, grass: 0.1 } },
 };
+// (E15) THE CAMPS' LAKE EFFECTS (src/w3/campfx3.js; research_notes/Maine lake shores and catchment/shoreline_development_effects.md — its §
+// cited at each value; the camps, docks, roads and the launch themselves: src/w3/camps3.js, camps_roads_docks_hot_brook.md): the lived-in
+// camps (CAMPS.camps' `home`, 58: Upper 36, Lower 22, 6 of them year-round) and their docks (54), lots, septic systems and gravel roads, each
+// effect by its mechanism from the published values — the frontage's wood, leaf litter and (where the bank's trees are not measured) the
+// insects' fall; the docks' shade on the plants beneath; the swim areas pulled each June; the septic systems' phosphate and nitrate through
+// the groundwater; the lots' and roads' P washed in with the storms and the snowmelt. Loads are the real lakes' × the world's share of
+// their area (fa, as the moose's and the wildlife's), so a camp raises the world's water as it does the real lakes'. Everything through
+// chem3's ledger (the budgets stay closed); the camps' daily presence is camps3's stable hash (no draw from the sim's stream)
+export const CAMP3 = {
+  ON: 0,                   // on in fish3 stageR5
+  // THE DOCKS' FISH (§1): the shade as cover for the small sunfishes on bright days, no bass nest on a dock's footprint. The CPU fish only —
+  // the GPU engine (src/w3/gpu) does not mirror it, so it stays OFF in the package (stageR5 leaves it) until wgsl.js's covAt, the fish's
+  // cover and the spawn kernel read the docks too; on, a CPU run and a GPU run of the same lakes would differ
+  FISH: 0,
+  LAKES_HA: 643.6,         // the real lakes' area (Upper 369 + Lower 274 ha — fish3 WILD_LAKE_HA): the world's share fa = its lakes' area ÷ this
+  // THE FRONTAGE (§8: 30–60 m a camp): the shore's water cells within FRONT/2 m (real, × GEO.SCALE) of a lived-in camp's shore point
+  FRONT: 40,
+  // its fallen wood × WOOD_FRONT of the undeveloped (§2: Christensen 1996 cabin sites 57 vs 555 logs/km, 0.1; Vermont's large wood 0.38 —
+  // Merrell 2009; 0.15 the note's value). The undeveloped is the bank's mapped value where the map cannot see a lot (the 1/10 world's NLCD
+  // classes); where the bank's trees are photographed (the true world's GEO.canopy) the photo shows the cleared lot already — there the
+  // wood is at most WOOD_FRONT of a forested bank's, min(mapped, WOOD_FRONT): the clearing is not counted twice
+  WOOD_FRONT: 0.15,
+  LEAF_FRONT: 0.43,        // the leaf fall in front of a camp × this (§4: leaf litter cover 2.3 vs 5.3 % at unbuffered developed sites — Merrell 2009)
+  // the insects falling in from the bank (littoral3): at a camp the cleared share CLEAR of its frontage (§4: 0.3–0.6 — grandfathered camps
+  // open to the water, new ones a path and ≤ 23 m² openings [inf: the middle]) reads as open bank (littoral3's open 0.2; §4 / LLS §1:
+  // developed shore ×0.05–0.2) — only where the bank's trees are not photographed (the 1/10 world): the true world's photo has the lots
+  CLEAR: 0.45, OPEN: 0.2,
+  // THE DOCKS (§1; §5 in mid-May → Memorial Day, out mid-September → mid-October — camps3 docksIn: May 25 – October 15): each dock DOCK_W m
+  // wide (real, × GEO.SCALE; Stiles 2016: Maine's average 5 sections ≈ 1.2 × 10–15 m) × its length (the data's, this world's metres) — the
+  // share of each bed cell its footprint covers. The light under a dock DOCK_LIGHT of the open water's (Garrison et al. 2005: 3.8 % vs 41 % of
+  // the surface's, "10×"; range 0.05–0.3): the plants beneath grow by it (plants3 patches: the bed under each dock its own share of the cell,
+  // its stands by their own light) — the 20× less plant mass beneath (5 vs 107 g) is the check, not an input. The lilies and emergents, in
+  // full light elsewhere (their growth set by their depth window), take it as a light-limited plant would: × lf·(1 + KL_WIN)/(lf + KL_WIN)
+  // [inf: the canopy pondweeds' half-saturation, macrophytes.md]. The halo beside a dock (Minnesota: biovolume ~2× from the edge to 8 m;
+  // emergents' odds ×1.38 a metre) is a plant outcome without its cause separated (the moving shadow, the boats, the owners' raking — the
+  // last is the swim areas below): not modelled as a light. The invertebrates beneath (×0.4) follow their plants (littoral3's capacity is the
+  // plants they live on): not set again
+  DOCK_W: 1.2, DOCK_LIGHT: 0.1, KL_WIN: 0.15,
+  // (FISH) the dock's shade for a sunfish or redbreast under DOCK_L cm (§1: Engel & Pederson 1998 — bluegill and pumpkinseed > 12 cm, perch,
+  // bass and suckers showed no attraction to floating boards; "shade and shelter by day, not feeding or nesting") while the sun is high
+  // (env.sun > SHADE_SUN) and the sky clear (weather 0: "weight 0 at night, under cloud"): a fish beneath hovers in its cover — DOCK_COVER =
+  // 1 − 1/2.7², Helfman 1981's 2.7× the distance at which a fish under floating shade sees a predator against the predator's seeing it, read
+  // through the sim's encounters ∝ the reaction distance² [inf] — and one within its senses steers to it (its S3 seek). Adult bass visit and
+  // do not linger (no pull); no bass nests on a dock's footprint (Weis & Sass 2011: 2 % of 652 nests near structure by human structure;
+  // Lawson 2011: "no nest was closer to a dock than to CWH")
+  DOCK_COVER: 1 - 1 / (2.7 * 2.7), DOCK_L: 12, SHADE_SUN: 0.3,
+  // THE SWIM AREAS (§4: Maine's permit-by-rule hand removal; Minnesota's ≤ 232 m² / ≤ 15 m of frontage; re-cleared each June in the same
+  // footprint, at about half of the occupied camps [inf]): SWIM_SHARE of the lived-in camps (a stable hash of the camp) pull the plants in
+  // front of them — SWIM_W m across × SWIM_OUT m out (real, × GEO.SCALE), on the bed at SWIM_Z m — to SWIM_LEFT of the patch's shoots and
+  // stores, on SWIM_YF (June 15 [inf: 'each June']); the plants and their N and P go ashore ("cut plants must be removed from the water")
+  SWIM_SHARE: 0.5, SWIM_W: 15, SWIM_OUT: 15, SWIM_Z: [0.3, 1.2], SWIM_LEFT: 0.1, SWIM_YF: 106 / 365,
+  // THE SEPTIC SYSTEMS (§3a): SEPTIC_P kg of P (phosphate) delivered a year by a seasonal camp at its SEPTIC_D days of use (NH DES 2019: 90
+  // days; the year-round homes' 0.4 kg at ~360 days is the same a day — Wilson Pond 0.135 / 0.41 kg; after 95 % retention in acid soils,
+  // Robertson 2019) — so SEPTIC_P / SEPTIC_D a day the camp is lived in (camps3 occupied: ~75 days a seasonal camp, ~310 a year-round home);
+  // and nitrate, which passes the soil: N_PERSON g N a person a day (§3f: 11.2 g, ~4.1 kg a year) × PERSONS (2.5–2.7 — TMDLs) × (1 − N_LOSS)
+  // (10–50 % lost in the soil: the middle) → ~1.5 kg N a seasonal camp, ~6.3 a year-round home (the note's 1.5–2.3 / 6–9). Through the
+  // groundwater (§3a: "arrival lags years to decades"): a camp's season's load enters its store and reaches the water in front of it at
+  // e^(−t/τ) — τ its distance to the water (camps3 toWater, real m) over the plume's speed: phosphate P_V m a year (EPA 2002: 52 cm/yr below
+  // drainfields in sands — decades: what arrives is the long-run mean), nitrate the groundwater's GW_V m a day [inf: sandy till and outwash
+  // seepage 0.1–1 m/day] (weeks to months). The stores start at their steady state for the date (the camps have stood for decades)
+  SEPTIC_P: 0.1, SEPTIC_D: 90, N_PERSON: 11.2, PERSONS: 2.6, N_LOSS: 0.3, P_V: 0.52, GW_V: 0.3,
+  // THE LOTS (§3b, §7 item 2: shoreline lots 0.15–0.2 kg of AVAILABLE P a lot a year — Dennis et al. 1992 via Maine's PCAPs; its total P about
+  // twice that, "about 50 % available", §3e's "lots about ×2" — so LOT_P 0.3 kg TP at LOT_AV 0.5) and THE GRAVEL ROADS
+  // (§3b: Dudley et al. 1997, a Maine gravel road serving cottages: 9.0 kg TP a hectare of road a year, 21.6 % available — Maine DEP's 2.0 kg/ha
+  // available; the road ROAD_W m wide [§3: 4.5–4.9 m]) within ROAD_R m (real) of the water [inf: Maine's 250-ft shoreland zone — the road
+  // that drains to the shore; farther road reaches the lakes by the streams, already the catchment's load], each segment into its nearest
+  // water; the launch's gravel lot LAUNCH_P kg TP a year (§3c: 0.2–0.45 [inf]) at the road's availability. Washed in with the storms and the
+  // snowmelt: × (Q/Q̄)^(1 + PP_B) / PP_NORM, the catchment's particulate P's own flow law (chem3 CHEM3.PP_B, PP_NORM: a year's mean 1). The
+  // available share as phosphate into the water at the shore; the rest mineral-bound particles settling there, buried at once (chem3's
+  // treatment of the inflows' unavailable PP: ledger in and buried). Paved Rt 169 (TP 22–33 lb/acre, 4 % available) and the woods tracks are
+  // not camps' and are left out
+  LOT_P: 0.3, LOT_AV: 0.5, ROAD_P: 9.0, ROAD_AV: 0.216, ROAD_W: 4.5, ROAD_R: 76, LAUNCH_P: 0.3,
+  // (P_UGL: grams → the sim's units — chem3 CHEM3.P_UGL µg/L a unit, for N as for P: the units are mass-consistent, the algae's N_USE/P_USE
+  // (1 − ORGANIC_P)/ORGANIC_P = 6.7 ≈ Redfield's 7.2 by mass)
+};
 // THE YOUNG'S FIRST WINTER (the 3-D lakes, stage R item 1; research_notes/Real lake ecology for calibration/first_winter_mortality.md):
 // a young-of-year fish enters its first winter with what it grew to, and the small ones run out of reserves before spring —
 // the compensatory brake (crowded or late cohorts end the summer small and die; sparse or early ones are large and live).

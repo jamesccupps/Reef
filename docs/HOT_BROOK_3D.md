@@ -1450,6 +1450,54 @@ them", "there are bears and deer").** `src/w3/forest3.js` (pure), config `FOREST
   - No browse on the bank's shrubs (the land's plants are not simulated).
 - test/w3.mjs section `forest` (W3_ONLY=forest).
 
+**Built (E15) — THE CAMPS' LAKE EFFECTS (2026-10-23).** `src/w3/campfx3.js` (pure; `env.camps`, null when off), config `CAMP3` (on in
+fish3 `stageR5`); the camps, docks, roads and launch themselves are `src/w3/camps3.js` (research `camps_roads_docks_hot_brook.md`); the
+values are `docs/research_notes/Maine lake shores and catchment/shoreline_development_effects.md`, its § cited at each in config.
+- **What there is:** 58 lived-in camps (`home`: Upper 36, Lower 22; 6 year-round), 54 docks, 1.1 km (1/10 world) – 1.4 km (true) of
+  gravel road within 76 m of the water (Maine's 250-ft shoreland zone [inf]), the launch's gravel lot. Loads are the real lakes' × the
+  world's share of their area (`fa`), as the moose's and the wildlife's.
+- **The frontage** (§8: the shore's water cells within 20 m real of a camp's shore point):
+  - its fallen wood (plants3's spawning wood) × 0.15 of the undeveloped (§2: Christensen 1996, Merrell 2009) — in the 1/10 world × its
+    NLCD bank (blind to the lots); in the true world, whose photographed trees show the cleared lots already, at most 0.15 of a forested
+    bank's (`min`): the clearing counted once;
+  - its leaf fall (chem3 `leafW`) × 0.43 on the column's share of shore in front of camps (§4: Merrell's leaf litter 2.3 vs 5.3 %);
+  - the insects' fall (littoral3 `bank`): in the 1/10 world the frontage's cleared 0.45 reads as open bank (0.2; §4, LLS §1); the true
+    world's photo has the lots — unchanged.
+- **The docks** (in May 25 – October 15, camps3 `docksIn`): each 1.2 m real wide × its data length; the bed it covers is a PATCH of its
+  bed cell (plants3 `_patchNet`): the stands there grow by their own light (× 0.1 while the dock is in — Garrison et al. 2005) and room,
+  the cell's mass the area- and mass-weighted mean (every reader unchanged; exact for the processes proportional to the mass). The
+  plants' 20× deficit beneath is the CHECK, not an input. The invertebrates beneath follow their plants (littoral3's capacity). Not
+  modelled: the Minnesota halo (a plant outcome whose causes — the moving shadow, boats, raking — are not separated).
+- **The swim areas** (§4): at half the camps' shore points (a stable hash), 15 × 15 m real at 0.3–1.2 m, pulled on June 15 each year to
+  0.1 of the patch's shoots and stores, taken ashore (ledger `outP`/`outN`, as the moose's). 29 areas (1/10 world; ~100 m² real wet each)
+  – 31 (true; ~175 m²).
+- **The nutrients** (§3; all through chem3's ledger):
+  - septic phosphate 0.1 kg per 90 days lived in (NH DES; the year-round 0.4 kg the same a day) and nitrate 11.2 g N a person-day × 2.6
+    × 0.7 (§3f), the days from camps3 `occupied` (a stable hash; ~75 a seasonal camp, ~310 a year-round home); through the groundwater:
+    a store per camp reaching the water in front of it at e^(−t/τ), τ = its distance ÷ the plume's speed (phosphate 0.52 m/yr — EPA 2002:
+    decades, a steady flow; nitrate 0.3 m/day [inf]: weeks to months), started at its steady state for the date;
+  - the lots 0.3 kg TP (0.15 available — Dennis 1992 via Maine's PCAPs), the gravel roads 9.0 kg TP/ha (21.6 % available — Dudley et al.
+    1997), the launch 0.3 kg — with the storms and the snowmelt (× (Q/Q̄)^1.6/1.94, the catchment PP's own law); the available share as
+    phosphate at the shore, the rest buried at once (chem3's treatment of the inflows' unavailable PP).
+  - Upper's camps send ~10 kg/yr of available P (septic ~4, lots ~5.4, roads ~0.5), Lower's ~6.2 — ~0.28 kg a camp, under §3's central
+    0.4 (75 days' use, little road near the water): §3's steady state +0.14 µg/L in Upper.
+- **The docks' fish (`CAMP3.FISH` — the CPU fish only, OFF in the package):** a pumpkinseed or redbreast under 12 cm under a dock on a
+  clear day with the sun high takes its shade's cover, 1 − 1/2.7² (Helfman 1981's 2.7× detection distance through the sim's encounters
+  ∝ RD² [inf]) and one within its senses steers to it; bass, perch and suckers no pull (Engel & Pederson 1998); no bass nest on a dock's
+  footprint while the docks are in (Weis & Sass 2011; Lawson 2011). The GPU engine does not mirror it (wgsl.js `covAt`, the fish's cover,
+  the spawn kernel would read the docks): on, a CPU and a GPU run of the same lakes would differ. Everything else reaches the GPU through
+  the water's arrays it already uploads (plants3 `cov`, the spawning indices, the littoral's fauna and surface, the chemistry).
+- **Not built:** the boats (propeller resuspension in < 2.4 m needs a local turbidity — chem3's is lake-wide; prop scour of the lanes'
+  plants: ~10–20 boat-hours a summer day, far under the ~2,000 passes a year that suppress them); the roads' sediment (41 t/ha); the
+  dock lights' insects; the frontage's odonates, sand and aufwuchs; lateral spread into a patch from the bed beside it (a pulled swim
+  area regrows only by its own growth and room — so it thins year on year; a dock patch decays toward the field's 0.05 over years).
+- **Measured** (test/w3.mjs section `camps`, W3_ONLY=camps): off, as built (a fingerprint unchanged by a camps-on run; the original
+  code's equal); on, nothing drawn from `core.rand`; the N and P budgets close to ≤ 2e-7 across the June pull, a storm and the ice;
+  Upper's TP over the first summer +0.039 µg/L against the mass balance's +0.049 (×0.79; seed 541 — seed 401 +0.053 vs +0.065); the
+  plants under the docks 0.40× the open bed's after one summer, 0.18× after two (seed 401: 0.45, 0.17; the field's long-standing piers
+  0.05); the swim areas 0.26× and 0.12× of the bed beside them by the first and second late August; the FISH unit checks (a 6-cm
+  pumpkinseed's cover 0.86 under a dock, 0.02 with FISH off; a bass pair nests beside a dock, not on it).
+
 ## 6. The renderer (`src/w3/render3/`, browser layer)
 
 three.js r186 (`WebGPURenderer`, which falls back to WebGL2 by itself; ES modules with an import map — self-hosted pinned

@@ -28,7 +28,7 @@ import { PL3 } from './plants3.js';
 import { SP3 as SP, SPECIES3 as SPECIES } from './species3.js';
 import { rand, gauss, clamp, angDiff, randomGenes, mutate, crossover, mutateGenes, crossoverGenes } from '../core.js';
 import { prepBio, cmax, consumptionT, consumptionTrel, respStd, routineActivity, wasteFractions, energyDensity, stdWeight, lengthFor, OXYCAL, coldResp, coldCmax, energyOf, massOf } from '../bioenergetics.js';
-import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, HERP3, FOREST3, EGG3, ALEWIFE, PHYTO, NUTRIENT, WORLD, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
+import { ENV, BIOE, PLANKTON, ZOO3, WEATHER3, HERP3, FOREST3, CAMP3, EGG3, ALEWIFE, PHYTO, NUTRIENT, WORLD, BENTHOS, PREY, FEED, LEARN, BRAIN, ACTION, SPAWN, TIME, ICE, FRY, BROOD, seasonalTemp, WINTER0, winterDays, winterStep, winterWindow, winterDaysJE, winterStepJE } from '../config.js';
 
 const YEAR = CLOCK3.YEAR_LEN, DAY = DAY3, Y2 = TIME.YEAR_LEN;   // (the 2-D sim's ages and times are on its 1800-s year)
 const LN2 = Math.LN2;
@@ -784,6 +784,7 @@ export function stageR5(on = true) {
   EGG3.ON = on ? 1 : 0;   // (E3: the egg stage — clutches on the bed, by cause; sHatch replaced — config EGG3)
   PL3.MOOSE = on ? 1 : 0;   // (E13: moose grazing the shallows' plants in summer, their N and P taken ashore — plants3 PL3.MOOSE)
   FOREST3.ON = on ? 1 : 0;   // (E14: the bears, deer and moose on the land — env3 forest3.js; the bears' fish through WILD3.bear)
+  CAMP3.ON = on ? 1 : 0;     // (E15: the camps' frontage, docks, swim areas, septic systems, lots and roads — env3 campfx3.js; CAMP3.FISH, the docks' fish, stays off: the GPU doesn't mirror it)
   F3.YSCHOOL = on ? 1 : 0;   // (R4·6: the young met in their schools by the followed fish's school terms — see F3)
   F3.WIN_JE = on ? 1 : 0;   // (white perch's first winter on Johnson & Evans 1990's measured model — see F3 and config WINTER0.JE)
   F3.YWIN_CS = on ? 1 : 0; F3.RD_SIZE = on ? 1 : 0;   // (R4·6: the young caught by the strike rule's capture success, every prey seen at its own reaction distance — see F3)
@@ -1799,6 +1800,7 @@ export class Fish3 {
     if (s.bury && a.bed - a.z <= F3.BURY_H && !(s.buryL > 0 && a.L > s.buryL)) a.cover = Math.max(a.cover, s.bury * clamp((9 - a.T) / 4, 0, 1));   // (dug into the mud in winter — S3 buryL: only the fish up to buryL cm)
     if (s.rockC > 0 && a.L <= s.rockL) { if (LIT3.SUB_MAP) { const gi = cellIndex(a.x, a.y); if (gi >= 0) a.cover = Math.max(a.cover, s.rockC * Math.min(1, GEO.crev[gi] / LIT3.CREV_FULL)); }   // (E1: the stones the bed's map puts there)
       else if (a.bed < LIT3.CR_ROCK_Z) a.cover = Math.max(a.cover, s.rockC * clamp((LIT3.CR_ROCK_Z - a.bed) / 0.5, 0, 1)); }   // (S3 rockC: among the rocky shallows' stones — no substrate map yet: the wave-washed shallows < CR_ROCK_Z, as the crayfish's shelter)
+    if (CAMP3.FISH && e.camps && a.L < CAMP3.DOCK_L && (s.key === 'sunfish' || s.key === 'redbreast') && e.camps.shadeOn() && e.camps.underDock(a.x, a.y)) a.cover = Math.max(a.cover, CAMP3.DOCK_COVER);   // (E15 CAMP3.FISH: a small sunfish in a dock's shade on a bright day — campfx3)
     a.fear *= Math.exp(-F3.FEAR_DECAY * mvA);
     return this._mode(a);
   }
@@ -2012,6 +2014,9 @@ export class Fish3 {
         const G = this.G, pl = this.env.plants, rk = s.rockC > 0 && a.L <= s.rockL ? s.rockC : 0, cv = cc => Math.max(F3.SHALLOW_REFUGE * clamp((0.8 - G.depthMean[cc]) / 0.6, 0, 1), pl ? pl.standCover(this.colBedJ[cc]) : 0, rk * (LIT3.SUB_MAP ? Math.min(1, this.colCrev[cc] / LIT3.CREV_FULL) : clamp((LIT3.CR_ROCK_Z - G.depthMean[cc]) / 0.5, 0, 1)));   // (and the rocky shallows for a rock dweller: S3 rockC)
         const nb = this.nbr[a.c], v0 = cv(a.c); let best = v0, bc = -1; for (let q = 0; q < nb.length; q++) { const v = cv(nb[q]); if (v > best) { best = v; bc = nb[q]; } }
         if (bc >= 0 && best > v0 + 0.05) { const dx = G.cx[bc] - a.x, dy = G.cy[bc] - a.y; steer(dx, dy, sk.w * (a.L <= sk.L ? 1 : sk.big) * (1 - needy), Math.hypot(dx, dy)); }
+        // (E15 CAMP3.FISH: a small sunfish or redbreast within its senses of a dock's shade on a bright day goes to it — not the bass, perch or suckers)
+        const cp = this.env.camps; if (CAMP3.FISH && cp && a.L < CAMP3.DOCK_L && (s.key === 'sunfish' || s.key === 'redbreast') && CAMP3.DOCK_COVER > best + 0.05 && cp.shadeOn() && !cp.underDock(a.x, a.y)) {
+          const o = this._dk || (this._dk = [0, 0, 0]); if (cp.dockNear(a.x, a.y, a.senseR, o)) steer(o[0] - a.x, o[1] - a.y, sk.w * (1 - needy), o[2]); }
       }
       // its shore band (S3 shore): back toward the nearest shore — down the gradient of the distance to it
       if (m.s1 > 0) { const d = GEO.shoreDist(a.x, a.y); if (d > m.s0) { const h = GEO.CELL, sX = GEO.shoreDist(a.x + h, a.y) - GEO.shoreDist(a.x - h, a.y), sY = GEO.shoreDist(a.x, a.y + h) - GEO.shoreDist(a.x, a.y - h); if (sX || sY) steer(-sX, -sY, hw * clamp((d - m.s0) / Math.max(1e-3, m.s1 - m.s0), 0.2, 1), d - 0.9 * m.s0); } }
@@ -2551,6 +2556,7 @@ export class Fish3 {
     // (a turned-back runner spawns on its lake's shoals, not on the brook's gravel, as shallow as theirs)
     const inB = GEO.bodyAt(a.x, a.y) === BROOK, onGround = this._runs(a) ? inB : !(inB && a.brookRun) && a.bed >= sb.bot[0] - 0.1 && a.bed <= sb.bot[1] + 0.2;
     if (!onGround || !a.mate || (a.sex === 1)) return;   // (the female, or the school, spawns)
+    if (CAMP3.FISH && s.key === 'bass' && this.env.camps && this.env.camps.docksInNow() && this.env.camps.underDock(a.x, a.y)) return;   // (E15 CAMP3.FISH: no bass nest on a dock's footprint — Weis & Sass 2011, Lawson 2011)
     if (a.spX === a.spX && Math.hypot(a.x - a.spX, a.y - a.spY) > 4 && this._subAt(sb.sub, a.x, a.y) < this._subAt(sb.sub, a.spX, a.spY)) return;   // (a plant spawner lays at its chosen structure, or on as good on its way)
     if (sb.sub && this.sites[s.key]) { const p = this._siteNear(s.key, a.lake, a.x, a.y); if (!p || Math.hypot(p[0] - a.x, p[1] - a.y) > 4) return; }   // (a plant spawner with grounds — chain pickerel — spawns on them: the spring's chosen mats)
     const b = a.mate; if (b !== a && Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) > (a.sex === 2 ? 3 : F3.MATE_R)) return;

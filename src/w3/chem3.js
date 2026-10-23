@@ -157,6 +157,7 @@ export class Chem3 {
     this.colDecay = new Float64Array(G.NC); this._w = new Float64Array(G.ML);
     // each column's share of the leaf fall: nearer the shore more (normalised to a bed-area mean of 1)
     this.leafW = new Float32Array(G.NC); { let s = 0, A = 0; for (let c = 0; c < G.NC; c++) { const w = Math.exp(-Math.max(0, GEO.shoreDist(G.cx[c], G.cy[c])) / CHEM3.LEAF_R); this.leafW[c] = w; s += w * this.colBedA[c]; A += this.colBedA[c]; } for (let c = 0; c < G.NC; c++) this.leafW[c] *= A / Math.max(1e-9, s); }
+    if (env.camps) env.camps.leafAdjust(this.leafW);   // (E15, CAMP3: less leaf fall in front of the camps' cleared lots — campfx3)
     this.plantMap = new Float32Array(n);   // (the 2-D sim's weed stems per cell — unused in 3-D: plantRef)
     this.plantRef = new Float32Array(n);   // the weeds' zooplankton refuge per cell, 0–0.8 (plants3.js: from the weed volume)
     this.zv = new Float32Array(n);         // a visual planktivore's sight in each cell by the day's light (zooVis; set each update)

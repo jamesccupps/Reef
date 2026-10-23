@@ -4,6 +4,18 @@ The running log for the paper (ROADMAP "📄 The paper"). One dated entry per fi
 tool), the **evidence** (numbers), and **where** it is documented in full. Model artifacts count as findings — what a whole-lake
 model gets wrong, and why, is as useful to the next modeller as what it gets right. Newest first.
 
+## 2026-10-23 — E15: the camps' phosphorus is small, their docks' shade is not (test/w3.mjs `camps`, the 1/10 lakes, seeds 541/401)
+- **What.** The 58 lived-in camps (54 docks) send ~0.28 kg of available P a camp a year — septic 0.08 (~75 days' use at NH DES's 0.1 kg
+  per 90), lot 0.15 (Maine's PCAP coefficient), road ~0.01 (only 1.1–1.4 km of gravel lies within 76 m of the water) — under the
+  research's central 0.4: Upper ~10 kg/yr, Lower ~6.1. Over the first summer Upper's TP rose +0.039–0.053 µg/L, 0.79–0.81× a one-box
+  mass balance of the same load (100-day flushing, R 0.45); §3's steady state is +0.14 µg/L, ~1.7 % of the external load. The plants
+  under the docks fell to 0.40–0.45× the bed beside them in the first summer and 0.17–0.18× in the second, on the way to the field's 0.05
+  under long-standing piers (Garrison 2005) — with no tuning: 10 % light alone puts a shallow pondweed just below its compensation
+  (−0.3 %/day) while the bed beside it fills its room. Docks cover < 0.01 % of the lakes' bed: local, as the field says.
+- **The model's limit:** a patch has no lateral spread from the bed beside it, so a hand-pulled swim area (0.1 of its plants each June)
+  thins year on year (0.26× → 0.12× by late August).
+- **Where.** docs/HOT_BROOK_3D.md §5 "Built (E15)"; config CAMP3; src/w3/campfx3.js.
+
 ## 2026-10-23 — Arm AM (AL + Y4 + the forest + the burial fix): broader recruitment, but the white perch still go (GPU, true scale, seeds 611/613)
 - **What.**
 
