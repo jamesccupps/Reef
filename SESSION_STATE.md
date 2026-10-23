@@ -218,6 +218,13 @@ faceted low-poly crowns with realistic foliage (leafy branch cards / alpha-teste
 clusters for maple/birch/aspen), true size, LOD tiers kept (near detail tier: hard/pine/spire; mid; far cones/octahedra), the wind sway
 kept, shadows cast, seasonal colours (fall, bare, snow) kept; verify in Chrome (the true world, w3.html — now the default), GPU cost
 checked; tiers in main3.js (tierMesh ~600, TREE_COLS ~77, the geometries coniferG/broadG/… ~418–520, placeTrees/treesNear).
+AND (the human, just before the compaction): "we should make a FIRST PERSON VIEW that you can actually control and WALK AROUND and
+everything, like in a videogame" (ROADMAP agreed plan #11's first-person view, now as a game-like walk): a "Walk" button → pointer-lock
+mouse look (CSP-safe), WASD/arrows, Shift run, Space jump, eye 1.7 m on the ground AS DRAWN (main3 groundAt/drawnY), collision with
+trees (TREES store, a grid) / buildings + docks (camps3view clearedAt-style index), step onto docks, wade the shallows → swim and dive
+(the underwater view exists), walk on the ice in winter, Esc to leave; the near tree tier must follow the walker (DET_R) and the
+shadows/post work at eye level. Suggested split: the trees (main3 tiers) and walk mode (new render3/walk3.js + controls3/main3 hooks)
+can run in parallel — different code.
 ▶▶▶ (2026-10-23 ~13:45 EDT). CAMPS: the data agent's dataset is done and checked (ffca5e6 the note; 8fefee5
 house numbers/parcel ids stripped — THE REPO IS PUBLIC; never commit the human's camp's identity: memory user-family-camp). The human's
 corrections: THE LAUNCH = the gravel landing at the head of Upper's EAST COVE (−67.92871, 45.60935; not Huff Rd — "huff road leads to camps");
