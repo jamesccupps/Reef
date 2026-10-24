@@ -35,5 +35,6 @@ private:
 	void DownOn() { bDown = true; }
 	void DownOff() { bDown = false; }
 	float FwdIn = 0, SideIn = 0; bool bRun = false, bUp = false, bDown = false;
+	float SwimT = 0, EyeBob = 0;   // (afloat: the head's ride on the water)
 	enum class EWater : uint8 { Dry, Wade, Swim, Dive, Ice } State = EWater::Dry;
 };

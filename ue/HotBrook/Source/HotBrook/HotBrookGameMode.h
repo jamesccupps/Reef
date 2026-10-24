@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float Dt) override;
 private:
 	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; FString Near; };
-	TArray<FShot> Shots; int32 NextShot = 0; FTimerHandle ShotTimer; bool bFramed = false;
+	TArray<FShot> Shots; int32 NextShot = 0; FTimerHandle ShotTimer; int32 Framed = 0;
 	UPROPERTY() TObjectPtr<class ACameraActor> ShotCam = nullptr;
 	void PlaceNext();
 	void TakeShot();

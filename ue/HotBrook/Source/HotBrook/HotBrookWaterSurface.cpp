@@ -1,5 +1,14 @@
 #include "HotBrookWaterSurface.h"
 #include "HotBrookCoords.h"
+#include "HotBrookWater.h"
+#include "Components/PostProcessComponent.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "ProceduralMeshComponent.h"
 #include "Algo/Reverse.h"
 #include "Materials/MaterialInterface.h"
@@ -13,10 +22,12 @@ DEFINE_LOG_CATEGORY_STATIC(LogHotBrookWater, Log, All);
 
 AHotBrookWaterSurface::AHotBrookWaterSurface()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Lakes"));
 	RootComponent = Mesh;
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); Mesh->SetCastShadow(false);
+	Under = CreateDefaultSubobject<UPostProcessComponent>(TEXT("Underwater"));
+	Under->SetupAttachment(Mesh); Under->bUnbound = true; Under->Priority = 10.f; Under->BlendWeight = 0.f;
 }
 
 // ear clipping of a simple polygon (counter-clockwise), triangles as index triples
@@ -47,6 +58,11 @@ void AHotBrookWaterSurface::BeginPlay()
 	if (!FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("lakes.json"))) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), J) || !J.IsValid()) {
 		UE_LOG(LogHotBrookWater, Warning, TEXT("Import/lakes.json not read: no lakes drawn")); return;
 	}
+	// (the view from under the surface: off until the camera goes under)
+	if (UMaterialInterface* UM = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Materials/M_HB_Underwater.M_HB_Underwater"))) {
+		UnderMat = UMaterialInstanceDynamic::Create(UM, this); Under->Settings.WeightedBlendables.Array.Add(FWeightedBlendable(1.f, UnderMat));
+	} else UE_LOG(LogHotBrookWater, Warning, TEXT("no M_HB_Underwater (Scripts/make_underwater_material.py): under the surface looks like air"));
+	for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It) { Sun = *It; break; }
 	UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Materials/M_LakeWater.M_LakeWater"));
 	int32 Section = 0;
 	for (const TSharedPtr<FJsonValue>& V : J->GetArrayField(TEXT("lakes"))) {
@@ -72,4 +88,27 @@ void AHotBrookWaterSurface::BeginPlay()
 		UE_LOG(LogHotBrookWater, Display, TEXT("%s: %d corners, %d triangles at %.2f m"), *O->GetStringField(TEXT("name")), P.Num(), Tri.Num() / 3, Level);
 		Section++;
 	}
+}
+
+void AHotBrookWaterSurface::Tick(float Dt)
+{
+	Super::Tick(Dt);
+	if (!UnderMat) return;
+	const APlayerController* PC = GetWorld()->GetFirstPlayerController(); const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
+	if (!PC || !PC->PlayerCameraManager || !W) return;
+	const FVector C = PC->PlayerCameraManager->GetCameraLocation();
+	float S = 0; const bool bUnder = W->SurfaceAt(C, S) && C.Z < S - 1.f;   // (under the ice too)
+	Under->BlendWeight = bUnder ? 1.f : 0.f;
+	if (!bUnder) return;
+	// the daylight on the water: the sun's on a level surface and the sky's (~a quarter of the sun's at noon, the light of dusk after
+	// the sun is down), in the scene's own units — the sun light's intensity and colour
+	FLinearColor E = FLinearColor::Black;
+	if (Sun) {
+		const UDirectionalLightComponent* L = Cast<UDirectionalLightComponent>(Sun->GetLightComponent());
+		const float SinAlt = -Sun->GetActorForwardVector().Z, I = L ? L->Intensity : 10.f;
+		const FLinearColor Col = L ? L->GetLightColor() : FLinearColor::White;
+		E = Col * (I * FMath::Max(0.f, SinAlt)) + FLinearColor(0.75f, 0.85f, 1.f) * (0.25f * I * FMath::SmoothStep(-0.12f, 0.15f, SinAlt));
+	}
+	UnderMat->SetScalarParameterValue(TEXT("SurfaceZ"), S);
+	UnderMat->SetVectorParameterValue(TEXT("SunLux"), E);
 }

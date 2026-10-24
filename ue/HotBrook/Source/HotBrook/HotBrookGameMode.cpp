@@ -148,35 +148,48 @@ void AHotBrookGameMode::TakeShot()
 	// (a look at a fish: the walker set beside the nearest, a few lengths off its flank, eye level with it, a moment before the shot)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController(); APawn* Pw = PC ? PC->GetPawn() : nullptr;
 	const FString& Near = Shots[NextShot].Near;
-	if (Near != TEXT("fish") && !Near.IsEmpty() && !bFramed && Pw) {
+	// (framed twice: once to let the exposure settle on the new view, a moment later again on where the animal has gone)
+	const FVector From = Framed && ShotCam ? ShotCam->GetActorLocation() : Pw ? Pw->GetActorLocation() : FVector::ZeroVector;
+	if (Near != TEXT("fish") && !Near.IsEmpty() && Framed < 2 && Pw) {
 		// (an animal: the camera off its flank at 1.7 lengths, a little above its back, on it)
-		bFramed = true; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
+		Framed++; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
-		if (An && An->Nearest(K, HotBrookCoords::ToSim(Pw->GetActorLocation()), AP, AY, AL)) {
+		if (An && An->Nearest(K, HotBrookCoords::ToSim(From), AP, AY, AL)) {
 			const FVector Side = FRotator(0, AY + 90.f, 0).Vector(), At = AP + FVector(0, 0, 45.f * AL);
 			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
-			const FVector From = At + Side * (170.f * AL) + FVector(0, 0, 40.f);
-			ShotCam->SetActorLocationAndRotation(From, (At - From).Rotation()); PC->SetViewTarget(ShotCam);
+			const FVector Eye = At + Side * (170.f * AL) + FVector(0, 0, 40.f);
+			ShotCam->SetActorLocationAndRotation(Eye, (At - Eye).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the %s, %.2f m long, at %s"), *Shots[NextShot].Name, *Near, AL, *AP.ToString());
 		}
-		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 0.4f, false);
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
 		return;
 	}
-	if (Near == TEXT("fish") && !bFramed && Pw) {
-		bFramed = true; FVector P; FRotator R; float L = 0;
+	if (Near == TEXT("fish") && Framed < 2 && Pw) {
+		Framed++; FVector P; FRotator R; float L = 0;
 		const AHotBrookFish* Fi = nullptr; for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) { Fi = *It; break; }
-		if (Fi && Fi->Nearest(Pw->GetActorLocation(), P, R, L)) {
-			// (a camera of its own there: the walker, in the water, would be lifted to swim at the surface)
-			const FVector Side = FRotator(0, R.Yaw + 90.f, 0).Vector();
-			const float D = FMath::Max(60.f, 400.f * L);
+		if (Fi && Fi->Nearest(From, P, R, L)) {
+			// (a camera of its own there: the walker, in the water, would be lifted to swim at the surface) — off the fish's flank, or
+			// another side, nearer, wherever the spot is open water: in the lake, off its bed, under its surface
+			const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
+			float D = FMath::Max(60.f, 400.f * L); FVector Side = FRotator(0, R.Yaw + 90.f, 0).Vector(), At = P + Side * D;
+			for (const float K : { 1.f, 0.6f, 0.35f }) {
+				bool bOk = false;
+				for (const float Turn : { 90.f, -90.f, 180.f, 0.f, 45.f, -45.f, 135.f, -135.f }) {
+					const FVector Sd = FRotator(0, R.Yaw + Turn, 0).Vector(); FVector Q = P + Sd * (D * K); float S = 0, G = 0;
+					if (!W || !W->SurfaceAt(Q, S) || !W->GroundAt(Q, G)) continue;
+					Q.Z = FMath::Min(P.Z + 0.4f * D * K, S - 10.f);   // (a little above it, looking down: a fish on the bed shows against it)
+					if (Q.Z > G + 15.f && Q.Z > P.Z - 5.f) { Side = Sd; At = Q; bOk = true; break; }
+				}
+				if (bOk) { D *= K; break; }
+			}
 			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
-			ShotCam->SetActorLocationAndRotation(P + Side * D, (-Side).Rotation()); PC->SetViewTarget(ShotCam);
+			ShotCam->SetActorLocationAndRotation(At, (P - At).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest fish, %.0f cm long, at %s, seen from %.0f cm"), *Shots[NextShot].Name, L * 100.f, *P.ToString(), D);
 		}
-		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 0.4f, false);
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
 		return;
 	}
-	bFramed = false;
+	Framed = 0;
 	if (NFrames) UE_LOG(LogTemp, Display, TEXT("hbshot %s: %.1f ms a frame (%.0f fps): game %.1f, draw %.1f, RHI %.1f, GPU %.1f ms, over %d frames"), *Shots[NextShot].Name, SumFrame / NFrames,
 		1000.0 * NFrames / FMath::Max(1.0, SumFrame), SumGame / NFrames, SumDraw / NFrames, SumRhi / NFrames, SumGpu / NFrames, NFrames);
 	const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), Shots[NextShot].Name + TEXT(".png"));

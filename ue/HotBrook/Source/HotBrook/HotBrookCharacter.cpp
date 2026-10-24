@@ -68,10 +68,18 @@ void AHotBrookCharacter::Tick(float Dt)
 		else if (State != EWater::Dive) State = EWater::Swim;
 		M->MaxFlySpeed = (bRun ? 1.6f : 1.f) * SwimSpeed * 100.f;
 		if (State == EWater::Swim) {   // (afloat: the head just out of the water)
-			const float Target = S + 12.f - Eye->GetRelativeLocation().Z;
+			const float Target = S + 12.f - 75.f;   // (the eye's own height, less its bob)
 			FVector V = M->Velocity; V.Z = FMath::Clamp((Target - P.Z) * 4.f, -60.f, 60.f); M->Velocity = V;
 		} else if (bUp) { FVector V = M->Velocity; V.Z = FMath::Max(V.Z, 90.f); M->Velocity = V; }   // (up toward the surface)
 	}
+
+	// afloat, the head rides the water: a slow swell's lift and fall, and a breaststroke's rhythm while swimming along (the eye stays
+	// above the surface — it was set 12 cm over it)
+	SwimT += Dt;
+	const bool bStroke = State == EWater::Swim && M->Velocity.Size2D() > 20.f;
+	const float Bob = State == EWater::Swim ? 2.5f * FMath::Sin(SwimT * 2.f * PI * 0.35f) + (bStroke ? 3.f * FMath::Sin(SwimT * 2.f * PI * 0.75f) : 0.f) : 0.f;
+	EyeBob = FMath::FInterpTo(EyeBob, Bob, Dt, 6.f);
+	Eye->SetRelativeLocation(FVector(0, 0, 75.f + EyeBob));
 
 	// the walk: along the ground's level on foot and at the surface; where the eye looks when diving
 	const FRotator Yaw(0, GetControlRotation().Yaw, 0);

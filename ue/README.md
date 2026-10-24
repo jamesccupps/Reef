@@ -53,7 +53,13 @@ project draws the world in the first person, fed live by it. The browser view, t
   check it by; `Scripts/import_models.py` brings them in (`/Game/HotBrook/Models`) and makes `M_HB_Fish`. The loon's Collada
   file went through trimesh + pycollada to a .glb first (Blender 5 reads no Collada).
 - **The walker** — `HotBrookCharacter`: first person at 1.65 m; W A S D / arrows, mouse, Shift to run, Space to jump; wading,
-  swimming past chest depth, diving with C / Ctrl; on the ice in winter.
+  swimming past chest depth (the head riding the water: a slow swell and a breaststroke's rhythm), diving with C / Ctrl; on the ice
+  in winter.
+- **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on
+  while the camera is under the surface: the light reaching each thing dimmed by the water above it (per colour, the browser's Kd:
+  tea water loses blue first), what the eye sees of it dimmed along the path (M_LakeWater's absorption + scattering), and the
+  water's own light filling in — bright toward the surface, dark below — in the scene's exposure. Visibility a few metres, as in
+  the lakes.
 - **Coordinates** — the sim's metres (x east, y north, heights above sea level) to Unreal's cm: X east, Y south, Z up, heights
   less 110 m (`HotBrookCoords.h`).
 - **Checking the view** — run the game with `-hbshot="X,Y,Yaw,Pitch,Name;…"` (sim metres, degrees) and `-hbwait=<s>`: it stands at
