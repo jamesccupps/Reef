@@ -109,7 +109,11 @@ project draws the world in the first person, fed live by it. The browser view, t
   and beaches; `Import/cleared.bin` (export_camps.mjs) keeps the ground cover off them too. The BOATS at the docks while they are in (44, as the
   browser's layout has them): 14-ft aluminium skiffs (plain or painted green) and the pontoon boat tied alongside, riding the water
   with a slow bob; canoes turned over and kayaks on the docks or the banks — the hulls lofted by build_camps.py, the canoe the
-  Sketchfab one. OUT OF SEASON each dock's sections lie stacked on its bank (up to four) with its skiff turned over beside them
+  Sketchfab one; the pontoon boat and, at one long dock (≥ 7 m) in five, a 20-ft bass boat in the skiff's place, are the BoatUS
+  Foundation's (`ue/export/convert_creatures.py` with `HB_SET=vehicles` → `Import/vehicles`, imported by `HB_SET=vehicles
+  Scripts/import_creatures.py`: their waterlines set from their hulls' draft; hauled out, not stored on the bank, out of season).
+  A side-by-side UTV is parked in a quarter of the camps' yards all year (beside the home, on its cleared ground, off every porch
+  and deck, laid on the ground under its wheels; its paint is in its model's vertex colours, baked into its materials). OUT OF SEASON each dock's sections lie stacked on its bank (up to four) with its skiff turned over beside them
   (camps3view's D.store, D.flip). The LIGHTS by night: a camp lived in that day (camps3.js occupied — the same draw as the browser's:
   a seasonal camp the month's share, weekends twice the weekdays; a year-round home most days) has its windows lit, each window by its
   own draw, from dusk to its bedtime, and its porch lamp (some all night). The nine mapped LAWNS mown grass (ambientCG Grass004, CC0),
@@ -191,6 +195,11 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 | yellow pond-lily | [Lake Lily Med](https://sketchfab.com/3d-models/e0a4bb88649d458793ec83aafcfe9915) | Valery.Li | CC BY 4.0 |
 | the pondweeds | [Pond Weed](https://sketchfab.com/3d-models/b34ed521c5bb45ca9191b6213e1830d6) | Valery.Li | CC BY 4.0 |
 | the sedges (a grass tuft) | [Grass](https://sketchfab.com/3d-models/f2f2bddb2728483a9105c5f5114eb15e) | Cosmic_dust | CC BY 4.0 |
+| the bass boat | [Bass Boat](https://sketchfab.com/3d-models/147d601e20514b2a877cbf99005c4000) | BoatUS Foundation | CC BY 4.0 |
+| the pontoon boat | [Pontoon](https://sketchfab.com/3d-models/dccff5eccf6943f8b14cd269710ae6ff) | BoatUS Foundation | CC BY 4.0 |
+
+The UTV is geyges' [Kawasaki Ridge Ranch](https://sketchfab.com/3d-models/83f1eba9951a44d8addc9e7342e4cb5d) under Sketchfab's
+Free Standard licence (used in the world, never redistributed).
 
 The camps' textures (`Import/textures`, CC0 — no attribution required, listed with thanks): from [Poly Haven](https://polyhaven.com) —
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour

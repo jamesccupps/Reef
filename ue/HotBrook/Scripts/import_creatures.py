@@ -20,7 +20,8 @@ SET = os.environ.get('HB_SET', 'creatures')
 SRC = os.path.join(unreal.Paths.project_dir(), 'Import', SET)
 DEST = '/Game/HotBrook/' + SET.capitalize()
 NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole', 'stones_grass',   # (and the plants: thousands of them, their leaves cut-outs)
-          'white_lily', 'lake_lily', 'lily_pads', 'pondweed', 'grass_lawn', 'grass_tuft_a', 'grass_tuft_b', 'fern_grass')
+          'white_lily', 'lake_lily', 'lily_pads', 'pondweed', 'grass_lawn', 'grass_tuft_a', 'grass_tuft_b', 'fern_grass',
+          'bass_boat', 'pontoon', 'utv')   # (HB_SET=vehicles: the camps' boats and machine)
 VERTEX_COLOUR = ('painted_turtle',)
 ONLY = [a for a in os.environ.get('HB_ONLY', '').split(',') if a]
 bad = []

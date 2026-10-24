@@ -9,23 +9,29 @@
 #     tadpole, the rod): joined, cut to a triangle budget (Nanite draws the rest), turned, sized to the animal's real length, set on
 #     its base, written as a .glb (the painted turtle's colour is in its vertices: kept as COLOR_0).
 # Each one's three views go beside it (…_side.png from its left, _top.png, _front.png from ahead) to check its turn by.
+# HB_SET=vehicles: the camps' boats and machines instead (the human's downloads of 2026-10-24: a pontoon boat and a bass boat - the
+# BoatUS Foundation's -, a side-by-side UTV) into Import/vehicles, as scans are: joined, dressed in their folders' texture sets (the
+# files name them by material), cut to a budget, bow to +X, real length, on their keels/wheels at z 0.
 #   "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --disable-autoexec -P ue/export/convert_creatures.py -- [name …]
 # The models stay out of the repository (their licences — ue/README.md credits them); this script is ours.
 import bpy, glob, math, os, sys
 import numpy as np
 from mathutils import Matrix, Vector
 SRC = 'G:/HotBrookUE/Import/sketchfab'
-OUT = 'G:/HotBrookUE/Import/creatures'
+SET = os.environ.get('HB_SET', 'creatures')
+OUT = 'G:/HotBrookUE/Import/' + SET
 DROP = ('Icosphere', 'Cube', 'Light', 'Camera')   # (the OSU files' bounding sphere; the scans' display stands, lamps and cameras)
 
-def C(folder, pattern, kind, size=None, turn=0, pre=None, tris=None, tex=None, drop=DROP, cutf=None, axis='long', recolor=None, pca=False, flip=False):
+def C(folder, pattern, kind, size=None, turn=0, pre=None, tris=None, tex=None, drop=DROP, cutf=None, axis='long', recolor=None, pca=False, flip=False, draft=None, vcol=False):
     # kind: 'skinned' (an armature and its clips; size None — scaled in the game) or 'static' (a scan: size m, its longest — or its
     # length along X when axis is 'x'); turn about Z (deg) after laid on its axes; pre: (axis, deg) first, for a file whose up is not
     # up; tris: the triangles kept; tex: {material name: (base colour, alpha or None)} under the folder, for a file whose own
     # textures are missing; cutf: the share of its height (after pre) from the bottom below which a scan's stand is dropped;
     # recolor: the sRGB colour its texture is repainted to (its shading kept: each pixel's lightness over the map's mean); pca: a scan
-    # left at a slant laid level by its principal axes (its length on X, its least spread up) before the turn; flip: then upside down
-    return dict(folder=folder, pattern=pattern, kind=kind, size=size, turn=turn, pre=pre, tris=tris, tex=tex or {}, drop=drop, cutf=cutf, axis=axis, recolor=recolor, pca=pca, flip=flip)
+    # left at a slant laid level by its principal axes (its length on X, its least spread up) before the turn; flip: then upside down;
+    # draft: a boat — z 0 its waterline, that far (m) above its hull's bottom (the lowest of its middle half: not the motors' legs);
+    # vcol: its colours are in its vertices (COLOR_0, which Unreal's glTF materials ignore): each material's mean taken as its colour
+    return dict(folder=folder, pattern=pattern, kind=kind, size=size, turn=turn, pre=pre, tris=tris, tex=tex or {}, drop=drop, cutf=cutf, axis=axis, recolor=recolor, pca=pca, flip=flip, draft=draft, vcol=vcol)
 
 CREATURES = {
     # the animated
@@ -66,7 +72,7 @@ def load(path):
 def dropped(o, s):
     return o.type in ('LIGHT', 'CAMERA') or any(o.name.split('.')[0] == d for d in s['drop'])
 
-def material(name, folder, base, alpha=None, normal=None, rough=None):
+def material(name, folder, base, alpha=None, normal=None, rough=None, metal=None):
     mat = bpy.data.materials.new(name); mat.use_nodes = True
     nt = mat.node_tree; bsdf = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
     def image(rel, colour):
@@ -80,6 +86,10 @@ def material(name, folder, base, alpha=None, normal=None, rough=None):
         nt.links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
     if rough: nt.links.new(image(rough, False).outputs['Color'], bsdf.inputs['Roughness'])
     else: bsdf.inputs['Roughness'].default_value = 0.8
+    if metal: nt.links.new(image(metal, False).outputs['Color'], bsdf.inputs['Metallic'])
+    if alpha:   # (a cut-out: glTF MASK — see convert_plants.py)
+        l = bsdf.inputs['Alpha'].links[0]; g = nt.nodes.new('ShaderNodeMath'); g.operation = 'GREATER_THAN'; g.inputs[1].default_value = 0.5
+        src = l.from_socket; nt.links.remove(l); nt.links.new(src, g.inputs[0]); nt.links.new(g.outputs[0], bsdf.inputs['Alpha'])
     return mat
 
 def vertex_colour_material(ob):
@@ -93,7 +103,33 @@ def retexture(ob, name, s):
     # (a file whose own textures are missing: its materials by name dressed in the folder's)
     for slot, t in s['tex'].items():
         for i, m in enumerate(ob.data.materials):
-            if m and m.name == slot: ob.data.materials[i] = material('M_' + name + '_' + str(i), s['folder'], *t)
+            if m and m.name.split('.')[0] == slot: ob.data.materials[i] = material('M_' + name + '_' + str(i), s['folder'], *t)   # (an FBX's .001 aside)
+
+def bake_vcol(ob):
+    # (each material's faces' mean vertex colour as its base colour — over a texture, as the texture's tint through a multiply — then
+    # the colours dropped: the paint of a machine modelled in one colour a part, its colour kept in its vertices)
+    me = ob.data; ca = me.color_attributes.active_color or (me.color_attributes[0] if me.color_attributes else None)
+    if not ca: return
+    n = len(me.materials); acc = np.zeros((max(1, n), 4)); cnt = np.zeros(max(1, n))
+    if ca.domain == 'CORNER':
+        col = np.empty(len(me.loops) * 4, np.float32); ca.data.foreach_get('color', col); col = col.reshape(-1, 4)
+        for poly in me.polygons: acc[poly.material_index] += col[poly.loop_start:poly.loop_start + poly.loop_total].sum(0); cnt[poly.material_index] += poly.loop_total
+    else:
+        col = np.empty(len(me.vertices) * 4, np.float32); ca.data.foreach_get('color', col); col = col.reshape(-1, 4)
+        for poly in me.polygons: acc[poly.material_index] += col[list(poly.vertices)].sum(0); cnt[poly.material_index] += len(poly.vertices)
+    for i, m in enumerate(me.materials):
+        if not m or not m.use_nodes or not cnt[i]: continue
+        c = acc[i] / cnt[i]; nt = m.node_tree; b = next((x for x in nt.nodes if x.type == 'BSDF_PRINCIPLED'), None)
+        if not b: continue
+        bc = b.inputs['Base Color']
+        if bc.is_linked:   # (a texture, or the importer's colour-attribute chain: the first image found tinted, else the colour alone)
+            src = bc.links[0].from_node; img = src if src.type == 'TEX_IMAGE' else next((x for x in nt.nodes if x.type == 'TEX_IMAGE' and x.image and x.image.colorspace_settings.name != 'Non-Color' and any(l.to_socket == bc for l in nt.links if l.from_node == x)), None)
+            for l in list(bc.links): nt.links.remove(l)
+            if img is not None and img.type == 'TEX_IMAGE':
+                mix = nt.nodes.new('ShaderNodeMix'); mix.data_type = 'RGBA'; mix.blend_type = 'MULTIPLY'; mix.inputs['Factor'].default_value = 1.0
+                nt.links.new(img.outputs['Color'], mix.inputs[6]); mix.inputs[7].default_value = (c[0], c[1], c[2], 1); nt.links.new(mix.outputs[2], bc); continue
+        bc.default_value = (c[0], c[1], c[2], 1)
+    while me.color_attributes: me.color_attributes.remove(me.color_attributes[0])
 
 def repaint(ob, name, rgb):
     # (its base-colour maps repainted: the target colour × each pixel's lightness over the map's mean — a ferret's masked face and pale
@@ -248,6 +284,7 @@ def static(name, s, path):
     ob = bpy.context.view_layer.objects.active
     ob.data.transform(ob.matrix_world); ob.matrix_world = Matrix.Identity(4); ob.animation_data_clear(); ob.constraints.clear()
     retexture(ob, name, s)
+    if s['vcol']: bake_vcol(ob)
     if ob.data.color_attributes and not any(m for m in ob.data.materials): vertex_colour_material(ob)
     if s['pre']: ob.data.transform(Matrix.Rotation(math.radians(s['pre'][1]), 4, s['pre'][0]))
     if s['cutf'] is not None:
@@ -263,6 +300,9 @@ def static(name, s, path):
     lo, hi = box([ob]); e = hi - lo; c = (lo + hi) / 2
     k = s['size'] / (e.x if s['axis'] == 'x' else max(e))
     ob.data.transform(Matrix.Scale(k, 4) @ Matrix.Translation(-Vector((c.x, c.y, lo.z)))); ob.data.update()
+    if s['draft'] is not None:
+        v = np.array([x.co for x in ob.data.vertices]); L = v[:, 0].max() - v[:, 0].min(); mid = np.abs(v[:, 0] - (v[:, 0].max() + v[:, 0].min()) / 2) < L / 4
+        ob.data.transform(Matrix.Translation(Vector((0, 0, -(float(v[mid, 2].min()) + s['draft']))))); ob.data.update()
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.object.select_all(action='DESELECT'); ob.select_set(True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, name + '.glb'), export_format='GLB', use_selection=True, export_apply=True,
@@ -271,8 +311,23 @@ def static(name, s, path):
     print('HB creature %s: %s -> %d verts %d tris, %.3f x %.3f x %.3f m' % (name, os.path.basename(path), len(ob.data.vertices),
           sum(len(p.vertices) - 2 for p in ob.data.polygons), e.x, e.y, e.z))
 
+def T(stem, alpha=False, normal=True):
+    # (a texture set in textures/: its colour, alpha, normal, roughness and metalness maps — <stem>_D, _A, _N, _R, _MT)
+    f = lambda k: 'textures/%s_%s.tga.png' % (stem, k)
+    return (f('D'), f('A') if alpha else None, f('N') if normal else None, f('R'), f('MT'))
+VEHICLES = {
+    'bass_boat': C('bass-boat', 'source/*.fbx', 'static', size=6.9, turn=90, tris=120000, draft=0.2,   # (6.9 m with its motors: a 20-ft hull, 2.45-m beam)
+                   tex={'Base': T('Base'), 'Engine': T('Engine'), 'Front_032Propeller': T('Front_Propeller'), 'Coushions_047Other': T('Cushion_Other'),
+                        'Passanger_032and_032Driver_032': T('Passangers_and_Driver'), 'Registration': T('Registration', alpha=True, normal=False), 'Other_03202': T('Other_02')}),
+    'pontoon': C('pontoon', 'source/x/*.obj', 'static', size=7.5, turn=90, tris=150000, draft=0.3,   # (a 22-ft pontoon, its 2.6-m beam, and the outboard)
+                 tex={'Base_Driver_Cushion_Registration': ('textures/Pontoon_Base_Driver_Cushion_Registration_D.png', None, 'textures/Pontoon_Base_Driver_Cushion_Registration_N.png',
+                                                           'textures/Pontoon_Base_Driver_Cushion_Registration_R.png', 'textures/Pontoon_Base_Driver_Cushion_Registration_M.png'),
+                      'Fire_032Exstinguisher': T('Fire_Exstinguisher'), 'Floor_Bar': T('Pontoon_Floor_Bar'), 'Other': T('Pontoon_Other'), 'Other_02': T('Pontoon_Other_02', normal=False)}),
+    'utv': C('kawasaki-ridge-ranch', 'source/*.glb', 'static', size=3.2, turn=180, tris=150000, vcol=True),   # (a side-by-side, 3.2 m)
+}
+
 names = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-for n, spec in CREATURES.items():
+for n, spec in (VEHICLES if SET == 'vehicles' else CREATURES).items():
     if names and n not in names: continue
     files = sorted(glob.glob(os.path.join(SRC, spec['folder'], spec['pattern']), recursive=True))
     if not files: print('HB creature %s: no %s in %s' % (n, spec['pattern'], spec['folder'])); continue

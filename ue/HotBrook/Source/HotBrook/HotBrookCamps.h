@@ -53,6 +53,6 @@ private:
 	double SeasonAt = -1;
 	int32 NBuild = 0, DocksIn = -1;
 	// (a mesh stood at a place and yaw — set before it is registered: a static one can't move after; bFlip turns it over onto its top)
-	UStaticMeshComponent* Stand(const FString& Name, FVector At, bool bMovable = false, const FString& Path = FString(), float Yaw = 0.f, bool bFlip = false);
+	UStaticMeshComponent* Stand(const FString& Name, FVector At, bool bMovable = false, const FString& Path = FString(), float Yaw = 0.f, bool bFlip = false, float Pitch = 0.f, float Roll = 0.f);
 	void LayRoads();
 };

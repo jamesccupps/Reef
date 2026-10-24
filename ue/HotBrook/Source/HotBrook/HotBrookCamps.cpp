@@ -38,7 +38,7 @@ AHotBrookCamps::AHotBrookCamps()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root")); RootComponent->SetMobility(EComponentMobility::Static);
 }
 
-UStaticMeshComponent* AHotBrookCamps::Stand(const FString& Name, FVector At, bool bMovable, const FString& Path, float Yaw, bool bFlip)
+UStaticMeshComponent* AHotBrookCamps::Stand(const FString& Name, FVector At, bool bMovable, const FString& Path, float Yaw, bool bFlip, float Pitch, float Roll)
 {
 	UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, Path.IsEmpty() ? *FString::Printf(TEXT("/Game/HotBrook/Camps/Meshes/SM_%s.SM_%s"), *Name, *Name) : *Path);
 	if (!M) return nullptr;
@@ -48,7 +48,7 @@ UStaticMeshComponent* AHotBrookCamps::Stand(const FString& Name, FVector At, boo
 	if (bMovable) { C->bAffectDistanceFieldLighting = false; C->bAffectDynamicIndirectLighting = false; }   // (moving: out of Lumen's scene)
 	C->SetCollisionProfileName(TEXT("BlockAll"));
 	if (bFlip) { const FBoxSphereBounds Bd = M->GetBounds(); At.Z += Bd.Origin.Z + Bd.BoxExtent.Z; }   // (upside down, resting on its gunwales)
-	C->SetWorldLocationAndRotation(At, FRotator(0.f, Yaw, bFlip ? 180.f : 0.f)); C->RegisterComponent();
+	C->SetWorldLocationAndRotation(At, FRotator(Pitch, Yaw, (bFlip ? 180.f : 0.f) + Roll)); C->RegisterComponent();
 	return C;
 }
 
@@ -70,6 +70,10 @@ void AHotBrookCamps::BeginPlay()
 		for (const TSharedPtr<FJsonValue>& V : CJ->GetArrayField(TEXT("docks"))) DockByJ.Add(FString::Printf(TEXT("dock_%d"), (int32)V->AsObject()->GetNumberField(TEXT("j"))), V->AsObject());
 	}
 	// the buildings: the floor over the highest corner, at most 2.6 m over the lowest (camps3view's place())
+	struct FFoot { FVector2D C, U, V; int32 Ci = -1; bool bHome = false; };   // (each box of a building — its centre and half-axes, the sim's metres; bHome a home's first)
+	const auto InFoot = [](const FFoot& F, const FVector2D& P, double M) { const FVector2D D = P - F.C; const double u = F.U.Size(), v = F.V.Size();
+		return FMath::Abs(FVector2D::DotProduct(D, F.U) / FMath::Max(u, 1e-3)) <= u + M && FMath::Abs(FVector2D::DotProduct(D, F.V) / FMath::Max(v, 1e-3)) <= v + M; };
+	TArray<FFoot> Feet;
 	for (const auto& KV : J->GetObjectField(TEXT("buildings"))->Values) {
 		const TSharedPtr<FJsonObject> B = KV.Value->AsObject(); const TArray<TSharedPtr<FJsonValue>>& A = B->GetArrayField(TEXT("anchor"));
 		float GMin = 1e9f, GMax = -1e9f;
@@ -84,6 +88,15 @@ void AHotBrookCamps::BeginPlay()
 		NBuild++;
 		// (a home — not a shed or a garage: its windows lit by night when it is lived in; its porch lamp)
 		const TSharedPtr<FJsonObject>* Bi = ById.Find(FString(KV.Key)); const FString Type = B->GetStringField(TEXT("type"));
+		{ const TArray<TSharedPtr<FJsonValue>>& Pr = B->GetArrayField(TEXT("probes"));   // (each box: its corners −u−v, −u+v, +u−v, +u+v, then its centre)
+			const auto Q = [&](int32 i) { const TArray<TSharedPtr<FJsonValue>>& XY = Pr[i]->AsArray(); return FVector2D(XY[0]->AsNumber(), XY[1]->AsNumber()); };
+			for (int32 b = 0; b + 4 < Pr.Num(); b += 5) {
+				FFoot Ft; Ft.C = Q(b + 4); Ft.U = (Q(b + 2) - Q(b)) / 2; Ft.V = (Q(b + 1) - Q(b)) / 2;
+				Ft.bHome = b == 0 && Bi && (*Bi)->GetBoolField(TEXT("home")) && Type != TEXT("shed") && Type != TEXT("garage");
+				if (Bi) Ft.Ci = (int32)(*Bi)->GetNumberField(TEXT("ci"));
+				Feet.Add(Ft);
+			}
+		}
 		if (Bi && (*Bi)->GetBoolField(TEXT("home")) && Type != TEXT("shed") && Type != TEXT("garage")) {
 			FHome H; H.Ci = (int32)(*Bi)->GetNumberField(TEXT("ci")); H.bYr = (*Bi)->GetBoolField(TEXT("yr")); H.bAll = (*Bi)->GetBoolField(TEXT("lampAll"));
 			H.K = 0.7f + 0.6f * (float)JsHash(H.Ci, 9);
@@ -100,7 +113,11 @@ void AHotBrookCamps::BeginPlay()
 		float S = 0; if (!W->SurfaceAt(Mid, S)) { Missing++; continue; }
 		if (UStaticMeshComponent* C = Stand(FString(KV.Key), FVector(A[0]->AsNumber() * 100.0, -A[1]->AsNumber() * 100.0, S + 35.f))) Docks.Add(C); else Missing++;
 	}
-	// the boats: alongside (afloat), on the dock's deck or on the bank — a canoe turned over, as one is stored
+	// the boats: alongside (afloat), on the dock's deck or on the bank — a canoe turned over, as one is stored. The pontoon boat is the
+	// BoatUS Foundation's (Import/vehicles: convert_creatures.py HB_SET=vehicles); at one long dock (7 m or more) in five the skiff is
+	// their 20-ft bass boat instead — hauled out, not turned over on the bank, in the off-season
+	const auto Vehicle = [](const TCHAR* N) { return FString::Printf(TEXT("/Game/HotBrook/Vehicles/%s/SM_%s.SM_%s"), N, N, N); };
+	TSet<FString> BassDocks;
 	if (const TArray<TSharedPtr<FJsonValue>>* BA; J->TryGetArrayField(TEXT("boats"), BA))
 		for (const TSharedPtr<FJsonValue>& V : *BA) {
 			const TSharedPtr<FJsonObject> B = V->AsObject(); const FString Mesh = B->GetStringField(TEXT("mesh")), On = B->GetStringField(TEXT("on"));
@@ -110,9 +127,13 @@ void AHotBrookCamps::BeginPlay()
 			float Z;
 			if (On == TEXT("bank")) { if (!W->GroundAt(P0, G)) { Missing++; continue; } Z = G; }
 			else { if (!W->SurfaceAt(P0, S)) { if (!W->GroundAt(P0, G)) { Missing++; continue; } S = G; } Z = bFloat ? S : S + 35.f; }
-			const FString Path = Mesh == TEXT("canoe") ? FString(TEXT("/Game/HotBrook/Models/canoe/SM_canoe.SM_canoe")) : FString();
+			const FString Dk = B->GetStringField(TEXT("dock")); const TSharedPtr<FJsonObject>* DkJ = DockByJ.Find(Dk);
+			const bool bBass = Mesh.StartsWith(TEXT("boat_skiff")) && DkJ && (*DkJ)->GetNumberField(TEXT("len")) >= 7.0 && JsHash(FCString::Atoi(*Dk.Mid(5)), 41) < 0.2;
+			const FString Path = Mesh == TEXT("canoe") ? FString(TEXT("/Game/HotBrook/Models/canoe/SM_canoe.SM_canoe")) : Mesh == TEXT("boat_pontoon") ? Vehicle(TEXT("pontoon")) : bBass ? Vehicle(TEXT("bass_boat")) : FString();
 			const float Yaw = -FMath::RadiansToDegrees(B->GetNumberField(TEXT("yaw")));
 			UStaticMeshComponent* C = Stand(Mesh, FVector(P0.X, P0.Y, Z), bFloat, Path, Yaw, bFlip);
+			if (C && bBass) BassDocks.Add(Dk);
+			if (!C && Path.StartsWith(TEXT("/Game/HotBrook/Vehicles/"))) C = Stand(Mesh, FVector(P0.X, P0.Y, Z), bFloat, FString(), Yaw, bFlip);   // (not imported: the procedural one)
 			if (!C) { Missing++; continue; }
 			Boats.Add(C); BoatAt.Add({ C->GetComponentLocation(), Yaw, FMath::FRand() * 6.28f, bFloat, On == TEXT("bank") });
 		}
@@ -122,7 +143,7 @@ void AHotBrookCamps::BeginPlay()
 	if (const TArray<TSharedPtr<FJsonValue>>* BA; J->TryGetArrayField(TEXT("boats"), BA))
 		for (const TSharedPtr<FJsonValue>& V : *BA) {
 			const TSharedPtr<FJsonObject> B = V->AsObject(); const FString Mesh = B->GetStringField(TEXT("mesh")), Dk = B->GetStringField(TEXT("dock"));
-			if (Mesh.StartsWith(TEXT("boat_skiff"))) SkiffOf.Add(Dk, Mesh);
+			if (Mesh.StartsWith(TEXT("boat_skiff")) && !BassDocks.Contains(Dk)) SkiffOf.Add(Dk, Mesh);
 			else if (B->GetStringField(TEXT("on")) == TEXT("deck")) DeckCanoe.Add(Dk, Mesh);
 		}
 	for (const auto& KV : DockByJ) {
@@ -147,6 +168,38 @@ void AHotBrookCamps::BeginPlay()
 		}
 	}
 	for (UStaticMeshComponent* C : Stored) C->SetVisibility(false);
+	// a side-by-side UTV (the human's download, Import/vehicles 'utv') parked in a quarter of the camps' yards, all year: beside the
+	// home's first box, 2.2 m off a wall and along it, where its footprint is the camp's cleared ground (no trees), dry, within 40 cm
+	// of level and its wheels and middle 0.6 m clear of every box of every building (a porch, a deck, a shed); laid on the ground
+	// under its wheels
+	int32 NUtv = 0; TSet<int32> UtvCamps;
+	for (const FFoot& Ft : Feet) {
+		if (!Ft.bHome || Ft.Ci < 0 || UtvCamps.Contains(Ft.Ci) || JsHash(Ft.Ci, 31) >= 0.25) continue;
+		const FVector2D Un = Ft.U.GetSafeNormal(), Vn = Ft.V.GetSafeNormal(); const double Hu = Ft.U.Size(), Hv = Ft.V.Size();
+		for (const auto& [Dir, Off] : { TPair<FVector2D, double>(Vn, Hv), TPair<FVector2D, double>(-Vn, Hv), TPair<FVector2D, double>(Un, Hu), TPair<FVector2D, double>(-Un, Hu) }) {
+			const FVector2D Along(-Dir.Y, Dir.X), P = Ft.C + Dir * (Off + 2.2) + Along * ((JsHash(Ft.Ci, 33) - 0.5) * 2.0);
+			bool bOk = true; float Gc[4]; FVector Wh[4];
+			for (int32 k = 0; k < 4 && bOk; k++) {   // (its wheels: ±1.4 m along, ±0.7 across)
+				const FVector2D Q = P + Along * ((k & 1) ? 1.4 : -1.4) + Dir * ((k & 2) ? 0.7 : -0.7); const FVector Qu(Q.X * 100.0, -Q.Y * 100.0, 0.0); float S;
+				bOk = W->ClearedAt(Qu) && !W->SurfaceAt(Qu, S) && W->GroundAt(Qu, Gc[k]); Wh[k] = FVector(Qu.X, Qu.Y, Gc[k]);
+			}
+			if (!bOk || FMath::Max(FMath::Max(Gc[0], Gc[1]), FMath::Max(Gc[2], Gc[3])) - FMath::Min(FMath::Min(Gc[0], Gc[1]), FMath::Min(Gc[2], Gc[3])) > 40.f) continue;
+			for (const FFoot& O : Feet) {
+				if (InFoot(O, P, 0.6)) { bOk = false; break; }
+				for (int32 k = 0; k < 4 && bOk; k++) if (InFoot(O, P + Along * ((k & 1) ? 1.4 : -1.4) + Dir * ((k & 2) ? 0.7 : -0.7), 0.6)) bOk = false;
+				if (!bOk) break;
+			}
+			if (!bOk) continue;
+			// (its front toward +Along, or turned round; laid on the plane of the ground under its wheels)
+			const FVector Fwd = ((Wh[1] + Wh[3]) - (Wh[0] + Wh[2])) * (JsHash(Ft.Ci, 35) < 0.5 ? 0.5 : -0.5), Side = (Wh[2] + Wh[3]) - (Wh[0] + Wh[1]);
+			FVector Up = FVector::CrossProduct(Fwd, Side).GetSafeNormal(); if (Up.Z < 0) Up = -Up;
+			const FRotator R = FRotationMatrix::MakeFromXZ(Fwd, Up).Rotator();
+			if (!Stand(TEXT("utv"), (Wh[0] + Wh[1] + Wh[2] + Wh[3]) / 4.0, false, Vehicle(TEXT("utv")), R.Yaw, false, R.Pitch, R.Roll)) break;
+			UE_LOG(LogHotBrookCamps, Display, TEXT("camps: a UTV at (%.1f, %.1f)"), P.X, P.Y);
+			UtvCamps.Add(Ft.Ci); NUtv++; break;
+		}
+	}
+	if (NUtv) UE_LOG(LogHotBrookCamps, Display, TEXT("camps: %d UTVs parked in the yards"), NUtv);
 	LayRoads();
 	if (CJ.IsValid()) LayLawns(CJ);
 	UE_LOG(LogHotBrookCamps, Display, TEXT("camps: %d buildings (%d homes), %d docks, %d boats standing; %d things stored on the banks out of season%s"), NBuild, Homes.Num(), Docks.Num(), Boats.Num(), Stored.Num(), Missing ? *FString::Printf(TEXT(" (%d not: no mesh or no ground)"), Missing) : TEXT(""));

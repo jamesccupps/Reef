@@ -275,6 +275,14 @@ plants, textures. Photos are private: never commit or publish them.
   drinking at the upper mouth, too). KNOWN: the brook's channel in the landscape shows the 5-m cells (square shallow steps) — needs
   export_world's heightmap with a smooth channel along BROOK_PATH/width and a landscape rebuild (CAREFUL: export_world.mjs also writes
   camps.json from CAMPS3D — it would overwrite export_camps.mjs's richer camps.json; run export_camps after it). NEXT: the downloads.
+  + 15:50 COMMITTED fb9502a (the brook). THE CAMPS' VEHICLES (this commit): convert_creatures.py HB_SET=vehicles (VEHICLES: bass_boat
+  6.9 m turn 90 draft 0.2, pontoon 7.5 m turn 90 draft 0.3, utv 3.2 m turn 180 vcol — its paint is COLOR_0, which UE's glTF materials
+  ignore: bake_vcol puts each material's mean in its base colour; material() gains metal + alpha MASK; retexture matches names without
+  .001) → Import/vehicles → HB_SET=vehicles import_creatures.py (Nanite) → /Game/HotBrook/Vehicles. AHotBrookCamps: the pontoon is the
+  BoatUS one; skiff → bass boat at docks len ≥ 7 with JsHash(j, 41) < 0.2 (1 dock; no turned-over skiff for it); 7 UTVs in yards
+  (JsHash(ci, 31) < 0.25; footprint cleared, dry, ≤ 40 cm slope, clear of every building box + 0.6 m; ground-plane rotation; Stand
+  gains Pitch/Roll). Checked in shots. Credits in ue/README.md. NEXT: grass_lawn on the lawns? stones_grass on rocky shores, the
+  brook channel's smoothing (heightmap), the listings search, the photo match (the human's photos not here yet).
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
