@@ -3,7 +3,8 @@
 # their meshes wear gets a twin under /Game/HotBrook/Seasons, <name>_Season: a child of it with the Megaplants master's 'Seasons' switch
 # on (MA_Foliage_Trees: the leaves coloured from its 'Season Color 1' and '2'). AHotBrookForest wears the twin, its colours set by the
 # date, from the leaves' turning to their fall (a static switch can't be set in the game: the twin carries its own shaders), and the
-# original in summer. Logs each twin it made.
+# original in summer. The conifers' foliage gets its twin too: in winter, while snow lies, its 'turned' needles whitened (the same
+# switch's colours set white: AHotBrookForest) — the snow on the boughs. Logs each twin it made.
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/make_season_foliage.py
 import json, os
 import unreal
@@ -12,9 +13,10 @@ EAL = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 DEST = '/Game/HotBrook/Seasons'
 DECIDUOUS = ('4', '5', '6', '7', '8', '9', '10', '13')
+CONIFERS = ('0', '1', '2', '3', '12')   # (the spruce, fir, pine, cedar and young conifers: their twins wear the snow — AHotBrookForest)
 fm = json.load(open(os.path.join(unreal.Paths.project_dir(), 'Import', 'forest_meshes.json')))
 done, made = set(), []
-for sp in DECIDUOUS:
+for sp in DECIDUOUS + CONIFERS:
     for path in fm.get(sp, []):
         mesh = unreal.load_asset(path.split('.')[0])
         if not mesh: continue

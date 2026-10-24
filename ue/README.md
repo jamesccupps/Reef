@@ -50,7 +50,9 @@ project draws the world in the first person, fed live by it. The browser view, t
   toward brown as they fall, with the Megaplants' global `MPC_GlobalFoliageActor` 'Season Strength' (the exponent of their turning
   mask: none below ~7) held at 40; from the fall (late October) to leaf-out (mid-May) bare (`M_HB_Bare`: the leaves masked away, its
   colour a twig grey-brown for the far voxels). Each 200-m tile a few days either side, so the hills turn and drop in patches.
-  `hb.LeafDate <0–1>` shows another date's leaves.
+  `hb.LeafDate <0–1>` shows another date's leaves. THE SNOW ON THE BOUGHS: while snow lies (`MPC_HB_Season` 'Snow') the conifers
+  wear their twin too, its colours whitening the needles the mask turns — at a Season Strength of 6.5 about half of them (their
+  needles are dark: a pixel turns once (red × noise)^S < 1e-9), dark green showing through.
 - **The forest's stocking** — `ue/export/export_forest.mjs` stocks the woods as the Forest Inventory measures Maine's
   (docs/research_notes/Maine forest structure/): ~3,000 stems a hectare over 2 m at full stocking (most of them young fir and maple
   under the canopy), by height class, ~55 snags; each tree drawn with the variant of its species nearest its height; the small

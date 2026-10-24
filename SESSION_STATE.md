@@ -342,6 +342,11 @@ plants, textures. Photos are private: never commit or publish them.
   Night = clamp((−sunZ − .035)/.2); moon light = spawned ADirectionalLight, atmosphere index 1, disc colour scale black, intensity
   sun × .004 × lit × smoothstep(alt) × Night, colour (.62,.72,1). Checked at 3440: stars, soft Milky Way, a waxing crescent setting
   in the west at 23:00 in late May, treeline + turbines in silhouette; dusk sunset with a beacon flashing; day untouched.
+  + 21:00 COMMITTED 6dde361 (night sky) + backup. THE SNOW ON THE BOUGHS (this commit): make_season_foliage.py also twins the
+  conifers' foliage (CONIFERS 0,1,2,3,12 → 13 twins); AHotBrookForest IsConifer → state 1 while MPC_HB_Season Snow > 0.3, colours
+  C1 (.75,.77,.80) C2 (14,7,18) (white), Season Strength 6.5 when snowy and not autumn (40 in autumn). Checked (hb.Snow 1, LeafDate .8).
+  KNOWN, next seasonal gaps: the GROUND COVER isn't seasonal (ferns/forbs green above the snow — hide or brown them out of season);
+  the weeds stay drawn in winter (the lakes' ice should cover them — the sim sends stands; hide floating/emergent under ice).
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

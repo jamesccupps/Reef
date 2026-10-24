@@ -10,6 +10,8 @@
 // its two colours set here by the species and the day — green to the autumn's scarlet, gold or bronze to brown); from the fall to the
 // leaf-out none (the leaves' slots masked away: bare branches) — each 200-m tile a few days either side of the date, so the hills turn
 // and the leaves come down in patches. The dates are the browser view's (main3.js LEAF), by species. hb.LeafDate shows another date's.
+// THE SNOW ON THE BOUGHS: while snow lies on the land the conifers (spruce, fir, pine, cedar, the young ones) wear their twin, its
+// colours set so the switch's turned needles go white — mottled, the snow caught on them.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -73,7 +75,7 @@ private:
 	TMap<UMaterialInterface*, FSeason> SeasonOf;   // (a hardwood's own foliage material → its twin's dynamic instance and its species)
 	UPROPERTY() TArray<TObjectPtr<UObject>> SeasonHeld;
 	UPROPERTY() TObjectPtr<UMaterialInterface> Bare = nullptr;
-	float LeafYf = 0.3f; double NextLeaf = 0;
+	float LeafYf = 0.3f, SnowK = 0.f; double NextLeaf = 0;   // (the date; the snow on the land, MPC_HB_Season's — the conifers' boughs carry it)
 	void LoadSeasons();
 	int32 LeafState(int32 Sp, int32 TileIx) const;   // (0 its own leaves, 1 the autumn's twin, 2 bare)
 	void ApplyLeaves(UInstancedSkinnedMeshComponent* C, int32 TileIx);

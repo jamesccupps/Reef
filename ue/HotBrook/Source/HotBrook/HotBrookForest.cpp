@@ -40,6 +40,7 @@ static const FLeafYear LEAF_YEAR[] = {
 	{ 13, 0.205f, 0.560f, 0.600f, 0.625f, 0.665f, FLinearColor(0.40f, 0.12f, 0.00f), FLinearColor(3.2f, 0.8f, 0.10f) },   // young hardwoods: red and orange
 };
 static const FLeafYear* LeafYearOf(int32 Sp) { for (const FLeafYear& L : LEAF_YEAR) if (L.Sp == Sp) return &L; return nullptr; }
+static bool IsConifer(int32 Sp) { return Sp <= 3 || Sp == 12; }   // (red spruce, balsam fir, white pine, cedar; the young conifers)
 
 AHotBrookForest::AHotBrookForest()
 {
@@ -107,7 +108,7 @@ void AHotBrookForest::LoadSeasons()
 	if (!Bare) Bare = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Animals/M_HB_Invisible.M_HB_Invisible"));
 	int32 N = 0;
 	for (const auto& KV : Meshes) {
-		if (!LeafYearOf(KV.Key)) continue;
+		if (!LeafYearOf(KV.Key) && !IsConifer(KV.Key)) continue;
 		for (const FMeshInfo& MI : KV.Value) {
 			if (!MI.Skel) continue;
 			for (const FSkeletalMaterial& SM : MI.Skel->GetMaterials()) {
@@ -118,11 +119,12 @@ void AHotBrookForest::LoadSeasons()
 			}
 		}
 	}
-	UE_LOG(LogHotBrookForest, Display, TEXT("the leaves by the date: %d hardwood foliage materials with their autumn twins%s"), N, Bare ? TEXT("") : TEXT(" (no M_HB_Bare: no bare trees)"));
+	UE_LOG(LogHotBrookForest, Display, TEXT("the leaves by the date: %d foliage materials with their twins (the hardwoods' autumn, the conifers' snow)%s"), N, Bare ? TEXT("") : TEXT(" (no M_HB_Bare: no bare trees)"));
 }
 
 int32 AHotBrookForest::LeafState(int32 Sp, int32 TileIx) const
 {
+	if (IsConifer(Sp)) return SnowK > 0.3f ? 1 : 0;   // (the snow on the boughs while it lies)
 	const FLeafYear* L = LeafYearOf(Sp); if (!L) return 0;
 	const uint32 H = (uint32)TileIx * 2654435761u ^ (uint32)Sp * 40503u; const float dT = (((H >> 8) & 1023) / 1023.f - 0.5f) * 0.02f;   // (±3.6 days a tile)
 	const float Y = LeafYf - dT;
@@ -153,8 +155,15 @@ void AHotBrookForest::UpdateLeaves()
 	// turning mask: saturate(1e9 · x^(strength + 0.01)), x a leaf pixel's red × noise ~0.05–0.3: none turn below ~7, most by ~40 — held
 	// at 40 while any hardwood is turning or falling; each species' timing is in its colours, neutral until its turning)
 	static UMaterialParameterCollection* Foliage = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/ProceduralVegetationEditor/SampleAssets/Materials/MaterialFunctions/MPC_GlobalFoliageActor.MPC_GlobalFoliageActor"));
-	if (Foliage) { bool bAutumn = false; for (const FLeafYear& L : LEAF_YEAR) bAutumn |= LeafYf >= L.Turn - 0.015f && LeafYf < L.Gone + 0.015f; UKismetMaterialLibrary::SetScalarParameterValue(this, Foliage, TEXT("Season Strength"), bAutumn ? 40.f : 0.f); }
+	static UMaterialParameterCollection* Season = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/HotBrook/Materials/MPC_HB_Season.MPC_HB_Season"));
+	SnowK = Season ? UKismetMaterialLibrary::GetScalarParameterValue(this, Season, TEXT("Snow")) : 0.f;
+	// (the snow's strength lower: a mottle of the needles turned white, not all — a needle pixel turns once its red × noise, x, has
+	// x^S < 1e-9: S = 9 / log10(1/x); the needles are dark, x ~0.03–0.08: 6.5 turns about half)
+	if (Foliage) { bool bAutumn = false; for (const FLeafYear& L : LEAF_YEAR) bAutumn |= LeafYf >= L.Turn - 0.015f && LeafYf < L.Gone + 0.015f; UKismetMaterialLibrary::SetScalarParameterValue(this, Foliage, TEXT("Season Strength"), bAutumn ? 40.f : SnowK > 0.3f ? 6.5f : 0.f); }
 	for (auto& KV : SeasonOf) {
+		if (IsConifer(KV.Value.Sp) && KV.Value.MID) {   // (snow: added white, and the overlay pushed past white — needles of any green come out snow)
+			KV.Value.MID->SetVectorParameterValue(TEXT("Season Color 1"), FLinearColor(0.75f, 0.77f, 0.80f)); KV.Value.MID->SetVectorParameterValue(TEXT("Season Color 2"), FLinearColor(14.f, 7.f, 18.f)); continue;
+		}
 		const FLeafYear* L = LeafYearOf(KV.Value.Sp); if (!L || !KV.Value.MID) continue;
 		const float t = FMath::SmoothStep(L->Turn, L->Peak, LeafYf), u = 0.7f * FMath::SmoothStep(L->Drop, L->Gone, LeafYf);
 		KV.Value.MID->SetVectorParameterValue(TEXT("Season Color 1"), FMath::Lerp(FMath::Lerp(Neutral1, L->A, t), Brown1, u));
