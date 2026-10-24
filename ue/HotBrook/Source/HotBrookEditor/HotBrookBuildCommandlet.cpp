@@ -94,6 +94,9 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 		Fog->GetComponent()->SetFogDensity(0.004f); Fog->GetComponent()->SetFogHeightFalloff(0.2f);
 		APostProcessVolume* PP = World->SpawnActor<APostProcessVolume>(APostProcessVolume::StaticClass(), FTransform::Identity, SP); PP->SetActorLabel(TEXT("Camera"));
 		PP->bUnbound = true;
+		// (the eye's adaptation a stop darker than the engine's default: under the canopy it lifted the shaded floor to a pale wash; the
+		// human's photos of the shore and woods sit about here — an A/B of 0, -1, -1.5 EV, 2026-10-23)
+		PP->Settings.bOverride_AutoExposureBias = true; PP->Settings.AutoExposureBias = -1.f;
 	}
 
 	// THE WALKER'S START: the east shore of Upper Hot Brook Lake, on the ground, facing the water

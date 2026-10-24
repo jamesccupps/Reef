@@ -23,6 +23,16 @@ project draws the world in the first person, fed live by it. The browser view, t
   cypress, paper birch the silver birch, aspen, red maple the Norway maple, beech, alder, hazel, willow, the snags the dead pine,
   the young hardwoods the maple, beech and rowan saplings. Megaplants are skinned meshes: their branches sway in the Dynamic Wind
   plugin's GPU wind, set from the sim's wind speed and direction. Each trunk has a hidden collider.
+- **The forest's stocking** — `ue/export/export_forest.mjs` stocks the woods as the Forest Inventory measures Maine's
+  (docs/research_notes/Maine forest structure/): ~3,000 stems a hectare over 2 m at full stocking (most of them young fir and maple
+  under the canopy), by height class, ~55 snags; each tree drawn with the variant of its species nearest its height; the small
+  ones drawn only near (under 6 m to 300 m, under 12 m to 600 m).
+- **The ground cover** — `AHotBrookGroundCover`: ferns, forbs (wood anemone), lowbush blueberry and lingonberry (bilberry), grasses
+  in the open and on the shore, the shore's low shrub band, mushrooms, stones, mossy boulders and outcrops, fallen logs — each at
+  the cover the Forest Inventory measures (ferns ~15 %, forbs ~22 %, low shrubs ~17 %; less under closed spruce–fir), in patches,
+  by the stand about it (the forest's own trees) and the water's nearness; streamed in 32-m cells in three rings (80/160/400 m).
+  Its meshes: the Megascans scans (`Scripts/import_megascans.py` → `Import/megascans_meshes.json`) and the Megaplants' small
+  plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`).
 - **The live link** — `node ue/link/simhost.mjs` runs the sim at real time and streams it to `AHotBrookLink`
   (ws://127.0.0.1:8771): the clock (the sun placed for the date and hour), the weather and wind, the fish near the walker
   (stand-in cones for now), the forest's large animals.
@@ -59,6 +69,8 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 - the world data: `HB_WORLD=true node ue/export/export_world.mjs`, `python -I ue/export/canopy_raw.py src/w3/true/canopy3.jpg G:/HotBrookUE/Import/canopy.bin`,
   `python -I ue/export/canopy_texture.py G:/HotBrookUE/Import/canopy.bin G:/HotBrookUE/Import/canopy_rgba.png`,
   `HB_WORLD=true node ue/export/export_forest.mjs`, `python -I ue/export/megascans_surfaces.py`
+- the scans: `import_megascans.py` (Nanite meshes and their materials from the launcher's downloads; HB_REIMPORT=1 to redo),
+  `check_megascans.py` (what each wears); `fix_megaplants.py` mends packs whose materials point outside them (Baltic Pine's bark)
 - the materials and the tree mapping (`UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/<name>.py`):
   `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py` (`inspect_megaplants.py` lists the plant meshes)
 - the level: `UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=HotBrookBuild`

@@ -1,12 +1,15 @@
 // export_forest.mjs — THE FOREST ABOUT THE HOT BROOK LAKES FOR UNREAL (Node): every tree as a record — place, ground, species, height,
 // turn — for HotBrookForest (ue/HotBrook/Source/HotBrook) to stand true-size Nanite trees on. Unlike the browser's forest (one
 // crown per ~45 m², ~220 trees a hectare — "the tree sizes and density don't seem realistic", the human, with photos of a shore
-// that is a wall of spruce, fir, cedar, birch and maple under towering white pines), this one is stocked as Maine's mixed woods:
-//   - a CANOPY of ~420 stems a hectare at full stocking (mature northern mixed forest carries ~400–900 stems ≥ 10 cm; the canopy
-//     layer ~350–500), spruce 14–22 m, balsam fir 10–18 m, red maple 13–21 m, birch and aspen 14–23 m, beech 14–20 m; white pines
-//     EMERGENT above it, 24–33 m — one conifer in twelve inland, one in four along the shores (the photos' skyline);
-//   - an UNDERSTORY of ~350 saplings a hectare, 1.5–9 m (balsam fir the commonest, then maple, spruce, beech, aspen), in the
-//     lakes' band where the walker goes;
+// that is a wall of spruce, fir, cedar, birch and maple under towering white pines), this one is stocked as Maine's mixed woods are
+// measured — the Forest Inventory's mature eastern-Maine mixedwood (docs/research_notes/Maine forest structure/forest_layers_and_
+// crowns.md: its plots of 2021–25):
+//   - STEMS BY HEIGHT a hectare at full stocking: 2–5 m 890, 5–10 m 1,220, 10–15 m 630, 15–20 m 200, 20–25 m 43, over 25 m 4 — ~3,000
+//     stems over 2 m, most of them young firs and maples under the canopy (the "wall"); the photos' tree cover over FIA's 90 % canopy
+//     cover sets the stocking; outside the lakes' band only the stems of 10 m and more (no one walks there);
+//   - the SPECIES by height: under 10 m balsam fir most (it fills the regeneration), spruce, red maple, birch, aspen, beech; the canopy
+//     spruce and fir, maple, birch, aspen; above 20 m white pine and aspen — more pine within 30 m of the water (the photos' skyline);
+//   - SNAGS ~55 a hectare (FIA: mixedwood 45, softwood 74);
 //   - the SHORE: northern white cedar thick within ~15 m of the water; a band of speckled alder and willow in the first 5 m on
 //     wooded and wet shores (none at the camps, their paths, the beaches and the launch);
 //   - where it grows and what: the aerial photos (src/w3/true/canopy3.jpg, 4-m cells: tree cover, conifer share, bare ground, how
@@ -73,11 +76,12 @@ for (let x = FAR3.X0; x < FAR3.X0 + FAR3.NX * FAR3.CELL; x += TILE) for (let y =
 const clearedFast = (x, y) => tiles.has(tk(x, y)) && cleared(x, y);
 
 // ---------- the trees ----------
-const N0 = 3_500_000; let n = 0; const buf = Buffer.alloc(8 + N0 * 16);
+const N0 = 14_000_000; let n = 0; const buf = Buffer.alloc(8 + N0 * 16);
 const put = (x, y, sp, h) => { if (n >= N0) return; const o = 8 + n * 16; buf.writeFloatLE(x, o); buf.writeFloatLE(y, o + 4); buf.writeFloatLE(groundAt(x, y), o + 8); buf.writeUInt8(sp, o + 12); buf.writeUInt8((rnd() * 256) | 0, o + 13); buf.writeUInt16LE(Math.round(h * 10), o + 14); n++; };
 const range = (a, b) => a + (b - a) * rnd(), skew = (a, b) => a + (b - a) * Math.pow(rnd(), 0.8);
 const count = new Array(14).fill(0);
 const A = 16 / 10000;   // (a 4-m cell's hectares)
+const HCLASS = [[2, 5, 890], [5, 10, 1220], [10, 15, 630], [15, 20, 200], [20, 25, 43], [25, 32, 4]];   // (m, m, stems a hectare: FIA's mature mixedwood)
 const H0 = FAR3.NY * FAR3.CELL;
 for (let j = 0; j < CAN.H; j++) for (let i = 0; i < CAN.W; i++) {
   const o = j * CAN.W + i, cx = FAR3.X0 + (i + 0.5) * 4, cy = FAR3.Y0 + H0 - (j + 0.5) * 4;
@@ -85,26 +89,33 @@ for (let j = 0; j < CAN.H; j++) for (let i = 0; i < CAN.W; i++) {
   const [b0, s0] = BASEI[cls], t = CAN.P[3][o] / 255, cov = CAN.P[0][o] / 255, con = CAN.P[1][o] / 255, bare = CAN.P[2][o] / 255;
   let stock = t * cov * (1 - bare) * (CLS[cls] === 'shrub_wet' ? 0.3 : CLS[cls] === 'emergent_wet' ? 0.2 : 1) + (1 - t) * b0, share = t * con + (1 - t) * s0;
   const band = inBand(cx, cy), dw = toWaterAt(cx, cy), wet = /wet/.test(CLS[cls]);
-  const nCan = pois(420 * A * stock), nUnd = band ? pois(350 * A * stock) : 0;
+  const full = Math.min(1, stock / 0.9);   // (the photos' cover over a closed stand's 90 %)
+  const per = HCLASS.map(([, , n], k) => band || k >= 2 ? pois(n * A * full) : 0), nCls = per.reduce((a, b) => a + b, 0);
+  const nSnag = pois(55 * A * full), nCan = nCls + nSnag;
   const nShore = band && dw < 9 && (b0 > 0.1 || wet) ? pois(0.8 + 1.2 * (wet ? 1 : 0.5)) : 0;   // (the first row of land cells — their centres 5–9 m from the water: the 5-m model knows no nearer)
-  for (let k = 0; k < nCan + nUnd + nShore; k++) {
+  let hc = 0, left = per[0];
+  for (let k = 0; k < nCan + nShore; k++) {
+    if (k < nCls) { while (left === 0) left = per[++hc]; left--; }
     const x = cx + range(-2, 2), y = cy + range(-2, 2); if (clearedFast(x, y)) continue;
     const d = toWaterAt(x, y); if (d < 0.6) continue;   // (the trunks stand back of the waterline)
     let sp, h;
-    if (k < nCan) {
-      if (rnd() < share) {
-        const pine = d < 30 ? 0.25 : 0.08, cedar = d < 15 ? 0.4 : wet ? 0.15 : 0.03, u = rnd();
-        if (u < pine) { if (rnd() < 0.04) { sp = 11; h = range(10, 22); } else { sp = 2; h = skew(24, 33); } }
-        else if (u < pine + cedar) { sp = 3; h = range(8, 15); }
-        else if (rnd() < 0.45) { sp = 1; h = range(10, 18); }
-        else { sp = 0; h = range(14, 22); }
+    if (k < nCls) {
+      const [h0, h1] = HCLASS[hc]; h = range(h0, h1);
+      const con = rnd() < share;
+      if (hc === 0) sp = con ? 12 : 13;   // (under 5 m: the sapling models)
+      else if (con) {
+        const cedar = d < 15 ? 0.4 : wet ? 0.15 : 0.03, pine = hc >= 4 ? (d < 30 ? 0.8 : 0.6) : hc === 3 ? (d < 30 ? 0.5 : 0.25) : hc === 2 ? 0.05 : 0, u = rnd();
+        if (hc <= 3 && rnd() < cedar) { sp = 3; h = Math.min(h, range(8, 15)); }
+        else if (u < pine) sp = 2;
+        else sp = rnd() < (hc >= 3 ? 0.7 : hc === 2 ? 0.45 : 0.35) ? 0 : 1;   // (spruce over fir as they grow tall: fir is short-lived and fills the lower layers)
       } else {
         const u = rnd();
-        if (u < 0.25) { sp = 4; h = range(14, 21); } else if (u < 0.4) { sp = 5; h = range(15, 23); } else if (u < (wet ? 0.95 : 0.85)) { sp = 6; h = range(13, 21); } else { sp = 7; h = range(14, 20); }
+        if (hc >= 4) sp = u < 0.6 ? 5 : u < 0.8 ? 4 : 6;
+        else if (hc === 3) sp = u < 0.4 ? 6 : u < 0.65 ? 4 : u < 0.95 ? 5 : 7;
+        else sp = u < (wet ? 0.75 : 0.5) ? 6 : u < 0.7 ? 4 : u < 0.82 ? 5 : 7;
       }
-    } else if (k < nCan + nUnd) {
-      const u = rnd(); sp = u < 0.6 ? 12 : 13; h = range(1.5, 9) * (u < 0.6 ? 1 : 0.9);
-    } else { const u = rnd(); sp = u < 0.6 ? 8 : u < 0.85 ? 10 : 9; h = range(2, 5); }
+    } else if (k < nCan) { sp = 11; h = range(6, 20); }   // (the snags)
+    else { const u = rnd(); sp = u < 0.6 ? 8 : u < 0.85 ? 10 : 9; h = range(2, 5); }
     put(x, y, sp, h); count[sp]++;
   }
 }

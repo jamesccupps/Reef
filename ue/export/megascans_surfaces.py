@@ -11,7 +11,8 @@ VAULT = sys.argv[1] if len(sys.argv) > 1 else next((d for d in (r'G:\EpicVaultCa
 OUT = sys.argv[2] if len(sys.argv) > 2 else r'G:\HotBrookUE\Import\surfaces'
 # (our name: the listing's folder prefix in the launcher cache)
 SURFACES = {'ForestFloorA': 'Forest_Floor-dae56d09', 'ForestFloorB': 'Forest_Floor-db8c5bda', 'Compost': 'Forest_Floor_Compost-',
-            'MossyFloor': 'Mossy_Forest_Floor-', 'RockyFloor': 'Rocky_Forest_Floor-', 'Mud': 'Soil_Mud-', 'Gravel': 'Gravel_Ground-'}
+            'MossyFloor': 'Mossy_Forest_Floor-', 'RockyFloor': 'Rocky_Forest_Floor-', 'Mud': 'Soil_Mud-', 'Gravel': 'Gravel_Ground-',
+            'DirtRoad': 'Fine_American_Road-', 'GrassySoil': 'Grassy_Soil-'}
 MAPS = ['BaseColor', 'Normal', 'Roughness', 'AO']
 os.makedirs(OUT, exist_ok=True)
 for name, prefix in SURFACES.items():

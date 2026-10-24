@@ -33,6 +33,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "HotBrook") EShadowCacheInvalidationBehavior TreeShadowCache = EShadowCacheInvalidationBehavior::Rigid;
 	// the wind in the branches: the sim's wind (m/s, and the bearing it blows FROM: 0 north, clockwise, radians) — AHotBrookLink sets it
 	void SetWind(float SpeedMs, float FromBearing);
+	// the stand about a place (the sim's metres): the canopy trees within R m and how many of them are conifers (the ground cover's
+	// sense of shade and of conifer or hardwood floor)
+	void CanopyAt(const FVector2D& Sim, float R, int32& NCanopy, int32& NConifer) const;
 private:
 	struct FTree { float X, Y, Z; uint8 Sp, Turn; uint16 HDm; };
 	struct FMeshInfo { TObjectPtr<UStaticMesh> Mesh = nullptr; TObjectPtr<USkeletalMesh> Skel = nullptr; float Height = 100.f; bool bStandIn = false; };

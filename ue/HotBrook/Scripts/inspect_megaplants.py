@@ -2,7 +2,7 @@
 # other foliage packs): each finished plant asset's class, height, Nanite and wind skeleton, written to Import/megaplants_inventory.json
 # so the forest's species can be matched to real models (ue/export/export_forest.mjs species codes -> Import/forest_meshes.json).
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/inspect_megaplants.py
-import json, os
+import json, os, re
 import unreal
 reg = unreal.AssetRegistryHelpers.get_asset_registry()
 out = []
@@ -11,6 +11,7 @@ for root in ['/Game/Megaplant_Library']:   # (other packs' meshes take a long wh
         cls = str(a.asset_class_path.asset_name)
         pkg = str(a.package_name)
         if cls not in ('StaticMesh', 'SkeletalMesh') or '/Instances/' in pkg: continue   # (the branch and leaf pieces a plant is built from)
+        if not re.search(r'_[A-Z]$', str(a.asset_name)): continue   # (the finished variants only)
         e = {'path': pkg + '.' + str(a.asset_name), 'class': cls}
         m = unreal.load_asset(pkg)
         if m:

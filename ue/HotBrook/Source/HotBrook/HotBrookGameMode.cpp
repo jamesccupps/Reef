@@ -5,6 +5,7 @@
 #include "HotBrookForest.h"
 #include "HotBrookLink.h"
 #include "HotBrookWaterSurface.h"
+#include "HotBrookGroundCover.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -38,6 +39,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookLink>(GetWorld())) GetWorld()->SpawnActor<AHotBrookLink>();
 	// the lakes' surfaces (Import/lakes.json) if the level hasn't them
 	if (!TActorIterator<AHotBrookWaterSurface>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWaterSurface>();
+	// the forest floor's and the shores' plants and stones near the walker (after the forest: it reads the trees)
+	if (!TActorIterator<AHotBrookGroundCover>(GetWorld())) GetWorld()->SpawnActor<AHotBrookGroundCover>();
 	FString Arg;
 	if (!FParse::Value(FCommandLine::Get(), TEXT("hbshot="), Arg, false)) return;
 	TArray<FString> Items; Arg.TrimQuotes().ParseIntoArray(Items, TEXT(";"));

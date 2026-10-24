@@ -89,7 +89,13 @@ void AHotBrookForest::MakeTile(int32 T)
 	TArray<TObjectPtr<UPrimitiveComponent>>& Out = Live.Add(T);
 	for (int32 o = TileStart[T]; o < TileStart[T + 1]; o++) {
 		const FTree& Tr = Trees[TileOrder[o]]; const TArray<FMeshInfo>* L = Meshes.Find(Tr.Sp); if (!L || !L->Num()) continue;
-		const int32 V = (int32)((TileOrder[o] * 2654435761u) >> 16) % L->Num(); const FMeshInfo& MI = (*L)[V];
+		// (the variant: among those within 1.6× of the tree's height, by the tree's hash; none, the nearest)
+		const float Hcm = Tr.HDm * 10.f; const uint32 Hash = (uint32)TileOrder[o] * 2654435761u >> 16;
+		int32 NFit = 0, Near = 0; float Best = 1e9f;
+		for (int32 v = 0; v < L->Num(); v++) { const float r = FMath::Abs(FMath::Loge((*L)[v].Height / Hcm)); NFit += r < 0.47f; if (r < Best) { Best = r; Near = v; } }
+		int32 V = Near;
+		if (NFit > 1) { int32 Pick = Hash % NFit; for (int32 v = 0; v < L->Num(); v++) if (FMath::Abs(FMath::Loge((*L)[v].Height / Hcm)) < 0.47f && Pick-- == 0) { V = v; break; } }
+		const FMeshInfo& MI = (*L)[V];
 		const int64 Key = (int64)Tr.Sp * 64 + V;
 		const float S = Tr.HDm * 10.f / MI.Height;   // (cm tall over the mesh's own height)
 		const FVector At = HotBrookCoords::ToUE(Tr.X, Tr.Y, Tr.Z); const FRotator Turn(0, Tr.Turn * 360.f / 256.f, 0);
@@ -97,6 +103,7 @@ void AHotBrookForest::MakeTile(int32 T)
 			UInstancedSkinnedMeshComponent*& C = BySkel.FindOrAdd(Key);
 			if (!C) {
 				C = NewObject<UInstancedSkinnedMeshComponent>(this); C->SetSkinnedAssetAndUpdate(MI.Skel); if (Wind) C->SetTransformProvider(Wind);
+				if (MI.Height < 1200.f) C->SetCullDistances(0, MI.Height < 600.f ? 30000 : 60000);   // (the variant's height: near the tree's own)
 				C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->bAffectDistanceFieldLighting = true; C->ShadowCacheInvalidationBehavior = TreeShadowCache;
 				C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);   // (the wind bends them on the GPU: no tick needed — thousands of ticking components cost the game thread tens of ms)
 			}
@@ -130,6 +137,22 @@ void AHotBrookForest::MakeTile(int32 T)
 void AHotBrookForest::FreeTile(int32 T)
 {
 	if (TArray<TObjectPtr<UPrimitiveComponent>>* L = Live.Find(T)) { for (UPrimitiveComponent* C : *L) if (C) C->DestroyComponent(); Live.Remove(T); }
+}
+
+void AHotBrookForest::CanopyAt(const FVector2D& S, float R, int32& NCanopy, int32& NConifer) const
+{
+	NCanopy = NConifer = 0; if (!TX) return;
+	const int32 q0 = FMath::Max(0, (int32)((S.X - R - TX0) / Tile)), q1 = FMath::Min(TX - 1, (int32)((S.X + R - TX0) / Tile));
+	const int32 r0 = FMath::Max(0, (int32)((S.Y - R - TY0) / Tile)), r1 = FMath::Min(TY - 1, (int32)((S.Y + R - TY0) / Tile));
+	for (int32 r = r0; r <= r1; r++) for (int32 q = q0; q <= q1; q++) {
+		const int32 T = r * TX + q;
+		for (int32 o = TileStart[T]; o < TileStart[T + 1]; o++) {
+			const FTree& Tr = Trees[TileOrder[o]];
+			if (Tr.Sp > 7 && Tr.Sp != 11) continue;   // (the canopy's species: not the shrubs, not the saplings)
+			if (FMath::Square(Tr.X - S.X) + FMath::Square(Tr.Y - S.Y) > R * R) continue;
+			NCanopy++; NConifer += Tr.Sp <= 3 || Tr.Sp == 11;
+		}
+	}
 }
 
 void AHotBrookForest::SetWind(float SpeedMs, float FromBearing)
