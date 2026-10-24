@@ -2,7 +2,8 @@
 // a file name) the walker is set down at each spot in turn and a screenshot written to Saved/Screenshots/<Name>.png once the light
 // has settled, then the game quits: how the view is checked without anyone at the keyboard. A sixth field runs console commands
 // before that shot — "r.Some.Setting:0|ShowFlag.Fog:0" (':' for the space, '|' between commands) — to compare settings in one run;
-// among them "nearfish" frames the shot on the fish nearest the spot, from its side a few lengths off, just before it is taken.
+// among them "nearfish" frames the shot on the fish nearest the spot, from its side a few lengths off, just before it is taken, and
+// "nearbear", "neardeer", "nearmoose" set the walker down by the nearest of those and frame it from its side.
 // With -hbwalk="X0,Y0,X1,Y1[,m/s]" the walker is instead walked along that line at a walking pace (1.45 m/s) once -hbwait is up,
 // the frame times logged every two seconds (the forest and the ground cover streaming in as they would), then the game quits.
 #pragma once
@@ -19,7 +20,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float Dt) override;
 private:
-	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; bool bNearFish = false; };
+	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; FString Near; };
 	TArray<FShot> Shots; int32 NextShot = 0; FTimerHandle ShotTimer; bool bFramed = false;
 	UPROPERTY() TObjectPtr<class ACameraActor> ShotCam = nullptr;
 	void PlaceNext();

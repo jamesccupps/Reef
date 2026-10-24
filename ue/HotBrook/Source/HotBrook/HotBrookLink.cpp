@@ -78,7 +78,7 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) It->Update(B.GetData() + 48, NF, Night);
 	if (FishEnd + (int64)NFo * 32 <= B.Num()) {
 		TArray<float> Rec; Rec.SetNumUninitialized(NFo * 8); FMemory::Memcpy(Rec.GetData(), B.GetData() + FishEnd, NFo * 32);
-		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo);
+		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo, YearFrac);
 	}
 }
 

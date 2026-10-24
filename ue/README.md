@@ -35,7 +35,14 @@ project draws the world in the first person, fed live by it. The browser view, t
   plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`).
 - **The live link** — `node ue/link/simhost.mjs` runs the sim at real time and streams it to `AHotBrookLink`
   (ws://127.0.0.1:8771; snapshot "HBS2"): the clock (the sun placed for the date and hour), the weather and wind, the fish near
-  the walker, the forest's large animals (`AHotBrookAnimals`: the deer so far).
+  the walker, the forest's large animals.
+- **The forest's animals** — `AHotBrookAnimals`: every deer, black bear and moose the sim has, at its place and heading, playing
+  the gait nearest its speed (the bear walks slow to sprints; its clips' own travel locked so the sim moves it) or the idle for what
+  it does (grazing, browsing, drinking, fishing, bedded; a denned bear isn't drawn), scaled to its length; her young at heel at their
+  age's length (forest3's); a bull moose's antlers from mid-May to about New Year. The deer are the Animal Variety Pack's; the bear
+  and moose are the human's own models (`Scripts/import_animals.py`; never committed or shared), recoloured for Maine by
+  `ue/export/recolor_animals.py` (the bear a black bear with a tan muzzle; the moose darker). `-hbshot` takes `nearbear`,
+  `neardeer`, `nearmoose` (and `nearfish`) to frame the nearest one.
 - **The fish** — `AHotBrookFish`: each fish the sim has near the walker drawn as its species' model, scaled to its length and
   deepened by its condition, at its place, heading and pitch, eased between the snapshots; its tail beating at the browser's rate
   for its speed (`M_HB_Fish`'s swim wave, its phase per fish in the instance's custom data); a school as up to 24 of its fish

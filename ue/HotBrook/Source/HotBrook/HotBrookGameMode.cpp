@@ -99,7 +99,9 @@ void AHotBrookGameMode::BeginPlay()
 		TArray<FString> F; It.ParseIntoArray(F, TEXT(","));
 		if (F.Num() < 4) continue;
 		FShot S{ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() };
-		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|")); S.bNearFish = Cs.Remove(TEXT("nearfish")) > 0; S.Cmds = FString::Join(Cs, TEXT("|"));
+		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|"));
+		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
+		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
 	float Wait = 6.f; FParse::Value(FCommandLine::Get(), TEXT("hbwait="), Wait);   // (the first after the world has loaded and its shaders compiled: longer on a first run)
@@ -116,9 +118,18 @@ void AHotBrookGameMode::PlaceNext()
 		TArray<FString> Cmds; S.Cmds.ParseIntoArray(Cmds, TEXT("|"));
 		for (FString C : Cmds) { C.ReplaceInline(TEXT(":"), TEXT(" ")); PC->ConsoleCommand(C); UE_LOG(LogTemp, Display, TEXT("hbshot %s: %s"), *S.Name, *C); }
 	}
+	// (a look at an animal: the walker set down 12 m from the nearest of its kind, so the woods about it stream in while it settles)
+	double SX = S.X, SY = S.Y;
+	const int32 Kind = S.Near == TEXT("bear") ? 0 : S.Near == TEXT("deer") ? 1 : S.Near == TEXT("moose") ? 2 : -1;
+	if (Kind >= 0) {
+		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
+		FVector AP; float AY = 0, AL = 0;
+		if (An && An->Nearest(Kind, FVector2D(S.X, S.Y), AP, AY, AL)) { const FVector2D M = HotBrookCoords::ToSim(AP); SX = M.X + 12.0; SY = M.Y; UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest %s at %.0f, %.0f"), *S.Name, *S.Near, M.X, M.Y); }
+		else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s to look at"), *S.Name, *S.Near);
+	}
 	if (P) {
 		// (the ground under the spot: a trace down from 1 km up — the landscape, a deck, a roof)
-		const FVector Top = HotBrookCoords::ToUE(S.X, S.Y, HotBrookCoords::Datum + 900.0), Bottom = HotBrookCoords::ToUE(S.X, S.Y, HotBrookCoords::Datum - 200.0);
+		const FVector Top = HotBrookCoords::ToUE(SX, SY, HotBrookCoords::Datum + 900.0), Bottom = HotBrookCoords::ToUE(SX, SY, HotBrookCoords::Datum - 200.0);
 		FHitResult Hit; FCollisionQueryParams Q; Q.AddIgnoredActor(P);
 		// (or, before the landscape's collision is built, the heightmap's ground)
 		float G = 0; const bool bHM = GetWorld()->GetSubsystem<UHotBrookWater>()->GroundAt(Top, G);
@@ -136,7 +147,22 @@ void AHotBrookGameMode::TakeShot()
 {
 	// (a look at a fish: the walker set beside the nearest, a few lengths off its flank, eye level with it, a moment before the shot)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController(); APawn* Pw = PC ? PC->GetPawn() : nullptr;
-	if (Shots[NextShot].bNearFish && !bFramed && Pw) {
+	const FString& Near = Shots[NextShot].Near;
+	if (Near != TEXT("fish") && !Near.IsEmpty() && !bFramed && Pw) {
+		// (an animal: the camera off its flank at 1.7 lengths, a little above its back, on it)
+		bFramed = true; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
+		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
+		if (An && An->Nearest(K, HotBrookCoords::ToSim(Pw->GetActorLocation()), AP, AY, AL)) {
+			const FVector Side = FRotator(0, AY + 90.f, 0).Vector(), At = AP + FVector(0, 0, 45.f * AL);
+			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+			const FVector From = At + Side * (170.f * AL) + FVector(0, 0, 40.f);
+			ShotCam->SetActorLocationAndRotation(From, (At - From).Rotation()); PC->SetViewTarget(ShotCam);
+			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the %s, %.2f m long, at %s"), *Shots[NextShot].Name, *Near, AL, *AP.ToString());
+		}
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 0.4f, false);
+		return;
+	}
+	if (Near == TEXT("fish") && !bFramed && Pw) {
 		bFramed = true; FVector P; FRotator R; float L = 0;
 		const AHotBrookFish* Fi = nullptr; for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) { Fi = *It; break; }
 		if (Fi && Fi->Nearest(Pw->GetActorLocation(), P, R, L)) {
