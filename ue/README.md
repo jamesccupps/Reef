@@ -62,7 +62,9 @@ project draws the world in the first person, fed live by it. The browser view, t
   the cover the Forest Inventory measures (ferns ~15 %, forbs ~22 %, low shrubs ~17 %; less under closed spruce–fir), in patches,
   by the stand about it (the forest's own trees) and the water's nearness; streamed in 32-m cells in three rings (80/160/400 m).
   Its meshes: the Megascans scans (`Scripts/import_megascans.py` → `Import/megascans_meshes.json`) and the Megaplants' small
-  plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`). THE STONES BY THE SIM'S SUBSTRATE (`Import/substrate.bin`,
+  plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`). By the season: under the snow while it lies (MPC_HB_Season
+  'Snow') only the shrubs, the fallen logs and the big rocks show — the herbs, ferns, grasses, low berries and small stones are under
+  it; the mushrooms only August to October. THE STONES BY THE SIM'S SUBSTRATE (`Import/substrate.bin`,
   below): on a bank as many as the water beside it is stony (a boulder shore strewn, a sandy cove or a muck shore bare), and in the
   water on a stony bed under 2.5 m — cobble, boulders (the small stones 3–8× too), some breaking the surface. The rocks' material
   (`M_MS_Rock`) knows the waterline: by the instance's nearness to the water (its custom data), below its lake's level grey under a

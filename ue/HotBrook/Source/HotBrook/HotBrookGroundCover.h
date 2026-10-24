@@ -48,4 +48,9 @@ private:
 	void MakeCell(int32 Ring, int32 CX, int32 CY);
 	void FreeCell(int64 Key);
 	float NearWater(const FVector2D& Sim, float Within) const;   // (0 far … 1 at the water: how near within the distance)
+	// THE SEASON on the ground: each component's kind (its index in the table, by component), what shows now — the herbs, ferns,
+	// grasses, low berries and small stones under the snow while it lies; the mushrooms only from August to October
+	TMap<TObjectPtr<UPrimitiveComponent>, int32> KindOfComp;
+	float SnowK = 0.f, Yf = 0.3f; double NextSeason = 0; uint32 ShownKey = 0xFFFFFFFF;
+	bool KindShown(int32 K) const;
 };

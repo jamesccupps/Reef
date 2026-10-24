@@ -347,6 +347,10 @@ plants, textures. Photos are private: never commit or publish them.
   C1 (.75,.77,.80) C2 (14,7,18) (white), Season Strength 6.5 when snowy and not autumn (40 in autumn). Checked (hb.Snow 1, LeafDate .8).
   KNOWN, next seasonal gaps: the GROUND COVER isn't seasonal (ferns/forbs green above the snow — hide or brown them out of season);
   the weeds stay drawn in winter (the lakes' ice should cover them — the sim sends stands; hide floating/emergent under ice).
+  + 21:20 COMMITTED 5bb5af9 (bough snow). THE GROUND COVER BY SEASON (this commit): KindOfComp (component → kind) + KindShown (under
+  snow ≥ 0.5 only ShoreShrub, logs, ring-2 rocks, water boulders; mushrooms yf .42–.67); Tick re-applies when the (snow, mushroom
+  season) key changes; new components born hidden if so. Checked: winter woods bare snow + logs; summer ferns/anemones. (The weeds in
+  winter: the sim's own stands fall to ~0 for the floating and emergent in its winter — the hb.Snow test in May isn't representative.)
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

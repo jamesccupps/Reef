@@ -2,6 +2,9 @@
 #include "HotBrookCoords.h"
 #include "HotBrookForest.h"
 #include "HotBrookWater.h"
+#include "HotBrookLink.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/InstancedSkinnedMeshComponent.h"
 #include "Animation/TransformProviderData.h"
@@ -203,6 +206,7 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 				C->SetCollisionProfileName(bBig ? TEXT("BlockAll") : TEXT("NoCollision")); C->SetCollisionEnabled(bBig ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 				C->SetCastShadow(K.Ring > 0); C->bAffectDistanceFieldLighting = bBig;
 				C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);
+				KindOfComp.Add(C, k); if (!KindShown(k)) C->SetVisibility(false);   // (the season's: under the snow, out of its months)
 			}
 			const FTransform T(Rot, At, FVector(S));
 			Instances++;
@@ -214,13 +218,30 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 
 void AHotBrookGroundCover::FreeCell(int64 Key)
 {
-	if (TArray<TObjectPtr<UPrimitiveComponent>>* L = Live.Find(Key)) { for (UPrimitiveComponent* C : *L) if (C) C->DestroyComponent(); Live.Remove(Key); }
+	if (TArray<TObjectPtr<UPrimitiveComponent>>* L = Live.Find(Key)) { for (UPrimitiveComponent* C : *L) if (C) { KindOfComp.Remove(C); C->DestroyComponent(); } Live.Remove(Key); }
+}
+
+bool AHotBrookGroundCover::KindShown(int32 K) const
+{
+	// (under the snow: all but the shrubs that stand out of it, the fallen logs and the big rocks; the mushrooms: their season)
+	const FKind& Kd = KINDS[K]; const bool bBig = (Kd.bRock && Kd.Ring == 2) || Kd.bWaterOnly || Kd.bLying || FCString::Strstr(Kd.Source, TEXT("ShoreShrub"));
+	if (FCString::Strstr(Kd.Source, TEXT("Mushroom")) && (Yf < 0.42f || Yf > 0.67f)) return false;   // (August – October)
+	return bBig || SnowK < 0.5f;
 }
 
 void AHotBrookGroundCover::Tick(float Dt)
 {
 	Super::Tick(Dt);
 	if (!bReady) return;
+	// the season (twice a second at most: the snow on the land, MPC_HB_Season's; the date) — what shows changes only with them
+	if (GetWorld()->GetTimeSeconds() > NextSeason) {
+		NextSeason = GetWorld()->GetTimeSeconds() + 2.0;
+		static UMaterialParameterCollection* Season = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/HotBrook/Materials/MPC_HB_Season.MPC_HB_Season"));
+		SnowK = Season ? UKismetMaterialLibrary::GetScalarParameterValue(this, Season, TEXT("Snow")) : 0.f;
+		for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { Yf = It->YearFrac; break; }
+		const uint32 Key = (SnowK >= 0.5f ? 1u : 0u) | (Yf >= 0.42f && Yf <= 0.67f ? 2u : 0u);
+		if (Key != ShownKey) { ShownKey = Key; for (auto& KV : KindOfComp) if (KV.Key) KV.Key->SetVisibility(KindShown(KV.Value)); }
+	}
 	const APlayerController* PC = GetWorld()->GetFirstPlayerController(); const APawn* P = PC ? PC->GetPawn() : nullptr; if (!P) return;
 	const FVector2D M = HotBrookCoords::ToSim(P->GetActorLocation());
 	// the cells to free: past their ring's reach
