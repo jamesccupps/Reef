@@ -202,7 +202,26 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~22:40 EDT — THE NEWEST; before a compaction; the PC hard-reset ~22:24, Kernel-Power 41, nothing lost).
+▶▶▶ RESUME HERE (2026-10-23 ~23:15 EDT — THE NEWEST). UNREAL: THE FISH, BEARS AND MOOSE ARE MODELS (pushed: 345c81f, b9ffe86).
+345c81f — ue/export/convert_models.py RAN (Blender 5.1, -b --disable-autoexec): 13 models -> G:\HotBrookUE\Import\models\*.glb + side/top/
+front views (fixes: posed meshes, delta transforms and keyed object turns baked — the pumpkinseed .blend had both; principal axes for
+the two MTSU scans; textures dressed onto the bare OBJs; ~12k tris a fish; the loon's .dae -> .glb with trimesh+pycollada (pip --target
+in the scratchpad), its scan stand cut). Scripts/import_models.py -> /Game/HotBrook/Models/<name>/SM_<name> + M_HB_Fish (swim wave in
+WPO: phase + strength per instance custom data). AHotBrookFish (new; GameMode spawns it): each fish its species' model scaled to L and
+bodyMul, eased between snapshots, tail beat = the browser's rate; schools as up to 24 members. simhost now sends "HBS2": 12 fields a fish
+(x y z yaw pitch Lcm k n spd id(u32) school bodyMul). -hbshot sixth field takes nearfish/nearbear/neardeer/nearmoose (a camera of its own
+framed on the nearest one). Credits for the 13 CC models in ue/README.md (Sketchfab API metadata).
+b9ffe86 — Scripts/import_animals.py (bear 81 takes, moose 2; root motion on; fur roughness 0.85; M_HB_Invisible), AHotBrookAnimals
+generalised (looks: stag, doe, bear, moose; gait by speed nearest each clip's own travel; idles by act; young at their age's length
+from forest3 YLEN; moose antlers on bulls yf 0.2–0.84; denned bears hidden), ue/export/recolor_animals.py (the RDR2 bear was coloured
+as a grizzly -> repainted a black bear with a tan muzzle; the moose darkened ×0.6) — checked in -hbshot views (side-on, ShowFlag.
+NaniteMeshes:0 hides the trees for a clear look). The bear/moose stay private (never committed or credited).
+UNDERWATER (seen in the nearfish shots): no water fog/attenuation under the surface (our own SLW mesh, no Water-plugin post process);
+the surface from below mirrors the bed. NEXT: swimming + the underwater view (post-process volume by camera depth: absorption/scatter
+from the lake's colour, Snell's window), then the birds (loon/heron/eagle — check what the 3-D sim's wildlife sends), the canoe as the
+first boat, dense-stand GPU, the shore's dark water band, conifer saplings. simhost: `node ue/link/simhost.mjs` (was running in the
+background this session).
+▶▶▶ RESUME HERE (2026-10-23 ~22:40 EDT; before a compaction; the PC hard-reset ~22:24, Kernel-Power 41, nothing lost).
 UNREAL, DONE + PUSHED since the last block: 3b872b0 the woods stocked by FIA (export_forest.mjs: stems by height class, ~3,000/ha over
 2 m, 5.47 M trees), AHotBrookGroundCover (ferns, forbs, blueberry, grasses, shore shrubs, mushrooms, stones, boulders, logs — FIA cover
 values, research in docs/research_notes/Maine forest structure/), Megascans scans imported (Scripts/import_megascans.py; the master
