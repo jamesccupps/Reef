@@ -6,7 +6,7 @@
 #include "HotBrookLink.h"
 #include "HotBrookWaterSurface.h"
 #include "HotBrookGroundCover.h"
-#include "HotBrookForest.h"
+#include "HotBrookAnimals.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -75,6 +75,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookWaterSurface>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWaterSurface>();
 	// the forest floor's and the shores' plants and stones near the walker (after the forest: it reads the trees)
 	if (!TActorIterator<AHotBrookGroundCover>(GetWorld())) GetWorld()->SpawnActor<AHotBrookGroundCover>();
+	// the forest's large animals the live link reports (the deer so far)
+	if (!TActorIterator<AHotBrookAnimals>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnimals>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
 	if (FParse::Value(FCommandLine::Get(), TEXT("hbwalk="), Arg, false)) {

@@ -176,6 +176,25 @@ split, keep `node test/headless.mjs` green, and update `SESSION_STATE.md` each s
 14. **3-D prints of the lakes and the land (human, 2026-10-22; done 2306d79).** tools/hotbrook/export_print.mjs → exports/print/
    for the Bambu Lab A1 / A1 mini with the AMS: one piece (to paint), four colours by height, four by land cover, the terrain with
    open basins + clear-PETG water inserts; the forest's treetops from the aerial photos.
+15. **The Unreal world shows the whole simulation, and plays like a game (human, 2026-10-23).** "Make sure this eventually
+   replicates the realistic simulation, we may need to find more models and textures, we should add eventually like a boat
+   options and other things a videogame would want." The first-person world (ue/, item 11's view, built in Unreal Engine 5) is
+   the simulation made visible: everything the sim holds is drawn where and as it is, live, and nothing is drawn that the sim
+   doesn't hold (or, for what it doesn't simulate one by one — the ground cover, the forest's stems — set out by measured field
+   rules). The human gets models and textures from Fab / Sketchfab when the free ones run out (Fab's licence: never in the repo).
+   - **Everything simulated, drawn:** every fish species with its own model and swimming (schools, the young), sized by the sim;
+     the wildlife (loon, heron, osprey, eagle, kingfisher, mergansers, otter, mink, snapping and painted turtles, frogs and
+     tadpoles, the insects' hatches and rises), the forest's deer, moose and black bears, then item 13's animals; the mussels,
+     crayfish and snails on the bed; the weeds and lily pads by season; the ice and snow; the water's colour, clarity and level;
+     the weather and the clouds; the camps, docks, roads and the brook.
+   - **The seasons:** leaf-out, autumn colour and leaf fall by species (the sim's calendar), snow on the ground and the boughs,
+     ice-on and ice-out, the light by the date.
+   - **Game things:** boats — a canoe, a kayak, a paddleboard, an aluminium boat with a small outboard — rowed or paddled on the
+     real water with its waves and wind; fishing with rod and line where the sim's fish actually take the bait (the angler's
+     catch in the sim's ledger), ice fishing in winter; better swimming and diving (the human: "swimming needs work") with an
+     underwater view (the water's tea colour, the bed, the weeds, the fish); a map and compass; time controls tied to the sim's
+     speeds; a photo mode; a field guide / look-at card for any fish, plant or animal (the data page's card); the screensaver
+     mode of item 11; graphics quality settings; the sounds — wind in the trees, water lapping, loons, birds by the hour.
 
 Guiding principles:
 - **Emergence over scripting.** Prefer mechanisms (energy, senses, selection) that *produce*

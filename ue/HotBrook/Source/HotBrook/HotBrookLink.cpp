@@ -2,6 +2,7 @@
 #include "HotBrookCoords.h"
 #include "HotBrookWater.h"
 #include "HotBrookForest.h"
+#include "HotBrookAnimals.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -78,8 +79,13 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
 	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0);
 	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
-	const uint32 NF = U(40); FishNear = NF;
+	const uint32 NF = U(40), NFo = U(44); FishNear = NF;
 	if ((int64)48 + NF * 32 > B.Num()) return;
+	// the forest's large animals after the fish: 8 floats each (AHotBrookAnimals reads them)
+	if ((int64)48 + NF * 32 + NFo * 32 <= B.Num()) {
+		TArray<float> Rec; Rec.SetNumUninitialized(NFo * 8); FMemory::Memcpy(Rec.GetData(), B.GetData() + 48 + NF * 32, NFo * 32);
+		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo);
+	}
 	PlaceSun();
 	// the fish: each one's place (the sim's metres; z is its depth below the surface), heading and pitch, length (cm), species
 	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
