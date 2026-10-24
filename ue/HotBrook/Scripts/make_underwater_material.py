@@ -3,7 +3,7 @@
 #   - the light that reaches a thing at depth d has crossed d of tea water: × exp(−Kd·d), per colour (blue lost first: the forest's
 #     dissolved organic matter — water3.js's KD_TRUE, Kd 0.55/0.75/1.9 per m red/green/blue);
 #   - what the eye sees of it has crossed the path L between: × exp(−c·L), c = a + b, M_LakeWater's absorption and scattering
-#     (per cm there: 0.0042/0.0062/0.0175 and 0.00035/0.0003/0.00015);
+#     (per cm there: 0.0042/0.0062/0.0175 and 0.00009/0.00008/0.00004);
 #   - the water's own light fills in what is lost: the daylight that reached the eye's depth (E·exp(−Kd·z), the sun's and the sky's,
 #     from the game), scattered toward the eye (× b/c × 1/2π: an isotropic share), brighter looking up toward the sunlit surface
 #     (×5) and darker looking down (×0.4) — water3.js's underwater fog colours by gaze — and kept in the scene's exposure.
@@ -53,8 +53,8 @@ def below(pz, x, y):   # m under the surface, ≥ 0
     mx = node(unreal.MaterialExpressionMax, x + 150, y); link(op(unreal.MaterialExpressionDivide, op(unreal.MaterialExpressionSubtract, surf, pz, x - 100, y), c1(100.0, x - 100, y + 70), x, y), '', mx, 'A'); mx.set_editor_property('const_b', 0.0); return mx
 dpix = below(mask(pix, 'b', -2000, 400), -1800, 400); dcam = below(mask(cam, 'b', -2000, 550), -1800, 550)
 kd = vparam('Kd', (0.55, 0.75, 1.9), -1600, 700)
-ext = vparam('Extinction', (0.455, 0.65, 1.765), -1600, 850)
-sca = vparam('Scatter', (0.035, 0.03, 0.015), -1600, 1000)
+ext = vparam('Extinction', (0.429, 0.628, 1.754), -1600, 850)
+sca = vparam('Scatter', (0.009, 0.008, 0.004), -1600, 1000)
 sun = vparam('SunLux', (10.0, 10.0, 10.0), -1600, 1150)
 down = expneg(op(unreal.MaterialExpressionMultiply, kd, dpix, -1400, 400), -1150, 400)       # (the light that reached the thing)
 T = expneg(op(unreal.MaterialExpressionMultiply, ext, Lm, -1400, 100), -1150, 100)           # (what of it crosses the path to the eye)
