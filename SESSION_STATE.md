@@ -298,6 +298,12 @@ plants, textures. Photos are private: never commit or publish them.
   photos to G:\HotBrookUE\Import\reference\listings\ — local only; rules: no bot bypass, no sign-in/email, no owner names). THE
   LAWNS' GRASS (this commit): LayLawns scatters grass_lawn (35-cm grid jittered, ~8/m², HISM cull 45 m) + grass_tuft_b along the
   ragged edge (cull 60 m) — 113,636 + 1,558 instances; hidden while MPC_HB_Season Snow ≥ 0.5 (Tick, once a second). Checked in shots.
+  + 17:40 COMMITTED af4b406 (lawn grass). THE BROOK'S CHANNEL SMOOTHED (this commit): export_world.mjs carves it along BROOK_PATH
+  (stations 1 m apart: level, the deepest depth within ±4 m smoothed over 5 m; bed lv − D·(1−(d/4)²)^0.7, banks smoothstep over 4 m to
+  max(ground, lv+0.1); lakes' cells untouched) and no longer overwrites an existing camps.json. Exported to scratch first: 647
+  heightmap samples changed (x −6…100, y −15…73, ≤ 1 m), water.bin and lakes.json identical. Backed up the old map + heightmap to
+  G:/synapse-reef-backups/*_before-brook-channel.*, installed heightmap.r16, rebuilt the level (-run=HotBrookBuild: saved, result 0;
+  the exit's WorldPartitionSubsystem ensure is the engine's teardown). Checked in shots.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

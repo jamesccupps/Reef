@@ -7,12 +7,16 @@
 //   - water.bin: the water's surface (m) per 1.5-m cell of the lakes' band, −1e9 on land (the walker wades and swims by it)
 //   - lakes.json: each lake's shoreline (the 0.25-m waterline the sim ends at), simplified to ~1.5 m, and its level; the brook's
 //     course, width and levels
-//   - camps.json: the camps, docks, roads, the launch and the beaches (src/w3/true/camps3d.js as published — no addresses)
+//   - camps.json: the camps, docks, roads, the launch and the beaches (src/w3/true/camps3d.js as published — no addresses) — only if
+//     there is none: export_camps.mjs writes the fuller one the game uses (the docks' storage, the lights, the lawns)
+// THE BROOK'S CHANNEL is carved smooth along its course (the sim's 5-m cells left square shallow steps in the ground): a rounded bed
+// to the depth the sim gives it at each metre of the way (its deepest within the channel), 4 m either side of the line, banks rising
+// over 4 m to the ground about — at its own level there; the lakes' beds as they were.
 //   HB_WORLD=true node ue/export/export_world.mjs [out dir, default G:/HotBrookUE/Import]
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 if (process.env.HB_WORLD !== 'true') { console.error('run with HB_WORLD=true (the true-size world)'); process.exit(1); }
-const { GEO, LAND } = await import('../../src/w3/geometry.js');
+const { GEO, LAND, BROOK } = await import('../../src/w3/geometry.js');
 const { FAR3 } = await import('../../src/w3/true/far3d.js');
 const { CAMPS3D } = await import('../../src/w3/true/camps3d.js');
 const OUT = process.argv[2] || 'G:/HotBrookUE/Import'; mkdirSync(OUT, { recursive: true });
@@ -26,7 +30,34 @@ const FE = dec(FAR3.elev_cm), farAt = (x, y) => {   // bilinear on the far grid'
   return e(o) * (1 - a) * (1 - b) + e(o + 1) * a * (1 - b) + e(o + FAR3.NX) * (1 - a) * b + e(o + FAR3.NX + 1) * a * b;
 };
 const inBand = (x, y) => x > GEO.X0 && x < GEO.XMAX && y > GEO.Y0 && y < GEO.YMAX;
-const bandAt = (x, y) => { const b = GEO.bodyAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? GEO.levelAt(x, y) - d : GEO.elevAt(x, y); };
+const bandAt0 = (x, y) => { const b = GEO.bodyAt(x, y), d = GEO.depthAt(x, y); return b !== LAND && d > 0 ? GEO.levelAt(x, y) - d : GEO.elevAt(x, y); };
+// (the brook's stations, a metre apart: place, its level, the channel's depth there — each the deepest within its half-width, then
+// smoothed over five metres)
+const BHW = GEO.BROOK_W / 2, BANK = 4, BST = [];
+{ const P = GEO.BROOK_PATH;
+  for (let k = 0; k + 1 < P.length; k++) {
+    const [ax, ay] = P[k], [bx, by] = P[k + 1], L = Math.hypot(bx - ax, by - ay);
+    for (let t = 0; t < L; t += 1) {
+      const x = ax + (bx - ax) * t / L, y = ay + (by - ay) * t / L; let D = 0;
+      for (let dy = -BHW; dy <= BHW; dy += 1) for (let dx = -BHW; dx <= BHW; dx += 1) if (GEO.bodyAt(x + dx, y + dy) !== LAND) D = Math.max(D, GEO.depthAt(x + dx, y + dy));
+      BST.push({ x, y, lv: GEO.levelAt(x, y), D });
+    }
+  }
+  const sm = BST.map((_, i) => { let a = 0, n = 0; for (let j = Math.max(0, i - 2); j <= Math.min(BST.length - 1, i + 2); j++) { a += BST[j].D; n++; } return a / n; });
+  BST.forEach((b, i) => { b.D = sm[i]; });
+}
+let BX0 = 1e9, BX1 = -1e9, BY0 = 1e9, BY1 = -1e9; for (const b of BST) { BX0 = Math.min(BX0, b.x); BX1 = Math.max(BX1, b.x); BY0 = Math.min(BY0, b.y); BY1 = Math.max(BY1, b.y); }
+const BR = BHW + BANK;
+const bandAt = (x, y) => {
+  const h0 = bandAt0(x, y);
+  if (x < BX0 - BR || x > BX1 + BR || y < BY0 - BR || y > BY1 + BR) return h0;
+  const b = GEO.bodyAt(x, y); if (b !== LAND && b !== BROOK) return h0;   // (the lakes' beds as they were)
+  let best = null, bd = 1e9; for (const st of BST) { const d = Math.hypot(x - st.x, y - st.y); if (d < bd) { bd = d; best = st; } }
+  if (!best || bd >= BR) return h0;
+  if (bd < BHW) return best.lv - best.D * Math.pow(1 - (bd / BHW) ** 2, 0.7);
+  const t = (bd - BHW) / BANK, k = t * t * (3 - 2 * t), land = b === LAND ? Math.max(h0, best.lv + 0.1) : best.lv + 0.3;
+  return best.lv + (land - best.lv) * k;
+};
 const EDGE = 30, groundAt = (x, y) => {
   if (!inBand(x, y)) return farAt(x, y);
   const e = Math.min(x - GEO.X0, GEO.XMAX - x, y - GEO.Y0, GEO.YMAX - y), h = bandAt(x, y);
@@ -89,5 +120,5 @@ const lakes = [1, 2].map(b => { const o = outline(b); return { name: b === 1 ? '
 const brook = { path: GEO.BROOK_PATH, width: GEO.BROOK_W, scale: GEO.BROOK_SCALE, levels: GEO.BROOK_PATH.map(([x, y]) => +GEO.levelAt(x, y).toFixed(3)) };
 writeFileSync(join(OUT, 'lakes.json'), JSON.stringify({ lakes, brook }, null, 1));
 console.log('lakes:', lakes.map(l => `${l.name} ${l.pts.length} pts, level ${l.level}`).join('; '), `; brook ${brook.path.length} pts`);
-writeFileSync(join(OUT, 'camps.json'), JSON.stringify(CAMPS3D));
-console.log(`camps ${CAMPS3D.camps.length}, docks ${(CAMPS3D.docks || []).length}, roads ${(CAMPS3D.roads || []).length} → ${OUT}`);
+if (!existsSync(join(OUT, 'camps.json'))) { writeFileSync(join(OUT, 'camps.json'), JSON.stringify(CAMPS3D)); console.log(`camps ${CAMPS3D.camps.length}, docks ${(CAMPS3D.docks || []).length}, roads ${(CAMPS3D.roads || []).length} → ${OUT}`); }
+else console.log(`camps.json kept (export_camps.mjs writes the game's: run it after a fresh export)`);

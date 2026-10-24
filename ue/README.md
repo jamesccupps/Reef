@@ -17,8 +17,9 @@ project draws the world in the first person, fed live by it. The browser view, t
   crashed the build and never drew in the game. The **brook** between them: the water grid's wet cells along its course (within
   20 m of lakes.json's brook path, outside the lakes) and a ring of cells under its banks, each corner at the brook's own level (it
   falls 0.7 m from Upper to Lower; the ring's corners 5 cm under the ground, so the waterline is where the bank rises), sunk 3 cm
-  under a lake's surface where that reaches over it at the mouths. (Its channel in the landscape still shows the sim's 5-m cells:
-  a smooth channel needs the heightmap re-exported and the landscape rebuilt.)
+  under a lake's surface where that reaches over it at the mouths. Its channel in the ground is carved smooth along its course by
+  export_world.mjs (a rounded bed to the sim's depth at each metre of the way, 4 m either side, banks over 4 m) — the sim's 5-m
+  cells had left square shallow steps.
 - **The ground** — `M_Ground`: Quixel Megascans forest floors (needles and moss, broadleaf litter, moss carpets), rocky floor on
   slopes, the lakes' edges and beds by the sim's substrate (below), and past ~900 m the aerial photos' canopy (the trees stream
   only within ~1.2 km).
@@ -230,7 +231,8 @@ published or shared.
 
 ## Rebuilding after a change
 - C++: `"G:\Program Files\EpicGames\UE_5.8\Engine\Build\BatchFiles\Build.bat" HotBrookEditor Win64 Development -Project=G:\HotBrookUE\HotBrook.uproject -MaxParallelActions=3`
-- the world data: `HB_WORLD=true node ue/export/export_world.mjs`, `python -I ue/export/canopy_raw.py src/w3/true/canopy3.jpg G:/HotBrookUE/Import/canopy.bin`,
+- the world data: `HB_WORLD=true node ue/export/export_world.mjs` (it leaves an existing `camps.json`: export_camps.mjs writes the
+  game's), `HB_WORLD=true node ue/export/export_substrate.mjs`, `python -I ue/export/canopy_raw.py src/w3/true/canopy3.jpg G:/HotBrookUE/Import/canopy.bin`,
   `python -I ue/export/canopy_texture.py G:/HotBrookUE/Import/canopy.bin G:/HotBrookUE/Import/canopy_rgba.png`,
   `HB_WORLD=true node ue/export/export_forest.mjs`, `python -I ue/export/megascans_surfaces.py`
 - the scans: `import_megascans.py` (Nanite meshes and their materials from the launcher's downloads; HB_REIMPORT=1 to redo),
