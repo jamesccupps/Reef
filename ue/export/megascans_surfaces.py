@@ -6,7 +6,8 @@
 import glob, os, sys
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
-VAULT = sys.argv[1] if len(sys.argv) > 1 else r'C:\ProgramData\Epic\EpicGamesLauncher\VaultCache\FabLibrary'
+# (the launcher's cache was moved to G:\EpicVaultCache, with a junction at its old place on C:)
+VAULT = sys.argv[1] if len(sys.argv) > 1 else next((d for d in (r'G:\EpicVaultCache\FabLibrary', r'C:\ProgramData\Epic\EpicGamesLauncher\VaultCache\FabLibrary') if os.path.isdir(d)), '')
 OUT = sys.argv[2] if len(sys.argv) > 2 else r'G:\HotBrookUE\Import\surfaces'
 # (our name: the listing's folder prefix in the launcher cache)
 SURFACES = {'ForestFloorA': 'Forest_Floor-dae56d09', 'ForestFloorB': 'Forest_Floor-db8c5bda', 'Compost': 'Forest_Floor_Compost-',

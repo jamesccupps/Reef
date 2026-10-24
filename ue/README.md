@@ -41,7 +41,8 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 ## The Fab content (in the human's library; never committed)
 - Added to the project from the Epic launcher (Fab → My Library → the pack's **+** → Add to Project → HotBrook): the Megaplants
   packs (5.8 only) into `Content/Megaplant_Library`, the Animal Variety Pack (its 5.5 version), a few rock and shrub packs.
-  If an add doesn't land, the launcher's copy is in `C:\ProgramData\Epic\EpicGamesLauncher\VaultCache\<pack>\data\Content`.
+  If an add doesn't land, the launcher's copy is in `VaultCache\<pack>\data\Content`. The launcher's cache lives on G:
+  (`G:\EpicVaultCache`; `C:\ProgramData\Epic\EpicGamesLauncher\VaultCache` is a junction to it — it had filled 32 GB of C:).
 - Megascans surfaces download as JPEGs to `VaultCache\FabLibrary\<listing>\texture-set\`: `python -I ue/export/megascans_surfaces.py`
   makes 2048² copies in `Import/surfaces`, and `make_ground_material.py` imports them.
 - The first load of new plant packs builds their Nanite data for a long while (tens of minutes); it is cached after.
