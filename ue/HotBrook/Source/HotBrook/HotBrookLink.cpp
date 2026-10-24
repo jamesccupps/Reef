@@ -13,8 +13,14 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/IConsoleManager.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookLink, Log, All);
+
+static TAutoConsoleVariable<float> CVarHour(TEXT("hb.Hour"), -1.f, TEXT("the hour the view shows (0-24: the sun, the camps' lights) - -1 the sim's own (a look at the night by day)"));
+static TAutoConsoleVariable<int32> CVarSnow(TEXT("hb.Snow"), -1, TEXT("the snow on the land: -1 with the sim's ice, 0 none, 1 snow"));
 
 AHotBrookLink::AHotBrookLink()
 {
@@ -26,6 +32,7 @@ void AHotBrookLink::BeginPlay()
 {
 	Super::BeginPlay();
 	for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It) { Sun = *It; break; }
+	Season = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/HotBrook/Materials/MPC_HB_Season.MPC_HB_Season"));
 	FModuleManager::LoadModuleChecked<FWebSocketsModule>(TEXT("WebSockets"));
 	Connect();
 }
@@ -56,6 +63,11 @@ void AHotBrookLink::Tick(float Dt)
 	const double Now = GetWorld()->GetTimeSeconds();
 	if (Socket.IsValid() && !Socket->IsConnected() && NextTry > 0 && Now > NextTry) { NextTry = 0; Connect(); }
 	if (bFresh) { bFresh = false; Apply(Latest); }
+	if (Season) {
+		const int32 Force = CVarSnow.GetValueOnGameThread(); const float Want = Force >= 0 ? (float)FMath::Min(Force, 1) : SnowWant;
+		const float Was = SnowNow; SnowNow = SnowNow < 0.f ? Want : FMath::FInterpConstantTo(SnowNow, Want, Dt, 0.1f);
+		if (SnowNow != Was) UKismetMaterialLibrary::SetScalarParameterValue(this, Season, TEXT("Snow"), SnowNow);
+	}
 	// the walker's place, twice a second (the sim's metres; the view's reach 30 m)
 	if (Socket.IsValid() && Socket->IsConnected() && Now > NextCam) {
 		NextCam = Now + 0.5;
@@ -69,7 +81,9 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	if (B.Num() < 48 || FMemory::Memcmp(B.GetData(), "HBS2", 4) != 0) return;
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
-	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
+	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36]; FMemory::Memcpy(&SimTime, B.GetData() + 4, 8);
+	if (const float Hr = CVarHour.GetValueOnGameThread(); Hr >= 0.f) TimeOfDay = FMath::Fmod(Hr, 24.f) / 24.f;   // (hb.Hour: the view at another hour)
+	{ const float Ice = F(32); if (Ice > 0.1f) SnowWant = 1.f; else if (Ice < 0.03f) SnowWant = 0.f; }   // (the lakes frozen: snow on the land)
 	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0); Daylight = F(24); Air = F(28);
 	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
 	for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) { It->WindSpeed = WindSpeed; It->WindFrom = WindFrom; }   // (and a canoe drifts)
@@ -109,5 +123,6 @@ void AHotBrookLink::PlaceSun()
 	const double Az = FMath::Atan2(-FMath::Sin(H) * FMath::Cos(Dec), FMath::Cos(Lat) * FMath::Sin(Dec) - FMath::Sin(Lat) * FMath::Cos(Dec) * FMath::Cos(H));
 	const FVector ToSun(FMath::Cos(Alt) * FMath::Sin(Az), -FMath::Cos(Alt) * FMath::Cos(Az), SinAlt);   // (UE: X east, Y south, Z up)
 	Night = FMath::Clamp((0.05f - (float)SinAlt) * 8.f, 0.f, 1.f);   // (dusk: the sun 3° up to 4° down)
+	if (CVarHour.GetValueOnGameThread() >= 0.f) Daylight = FMath::Clamp((float)SinAlt * 2.5f, 0.f, 1.f);   // (hb.Hour: its light from the sun placed for it)
 	if (SunDirSet.IsZero() || FVector::DotProduct(SunDirSet, ToSun) < FMath::Cos(FMath::DegreesToRadians(0.2))) { Sun->SetActorRotation((-ToSun).Rotation()); SunDirSet = ToSun; }
 }

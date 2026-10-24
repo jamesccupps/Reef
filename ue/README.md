@@ -105,7 +105,14 @@ project draws the world in the first person, fed live by it. The browser view, t
   and beaches; `Import/cleared.bin` (export_camps.mjs) keeps the ground cover off them too. The BOATS at the docks while they are in (44, as the
   browser's layout has them): 14-ft aluminium skiffs (plain or painted green) and the pontoon boat tied alongside, riding the water
   with a slow bob; canoes turned over and kayaks on the docks or the banks — the hulls lofted by build_camps.py, the canoe the
-  Sketchfab one.
+  Sketchfab one. OUT OF SEASON each dock's sections lie stacked on its bank (up to four) with its skiff turned over beside them
+  (camps3view's D.store, D.flip). The LIGHTS by night: a camp lived in that day (camps3.js occupied — the same draw as the browser's:
+  a seasonal camp the month's share, weekends twice the weekdays; a year-round home most days) has its windows lit, each window by its
+  own draw, from dusk to its bedtime, and its porch lamp (some all night). The nine mapped LAWNS mown grass (ambientCG Grass004, CC0),
+  their ground cleared of trees and ground cover. `hb.Hour <0–24>` shows the view at another hour (the sun, the lights) for a look.
+- **The snow** — the land under snow while the lakes are frozen (the browser's rule): `MPC_HB_Season` 'Snow', which AHotBrookLink
+  eases on when the sim's ice passes 10 cm and off when it is gone; the ground (M_Ground) and the camps (roofs, decks, the stacked
+  docks, the roads) whiten where they face up. `hb.Snow 1` / `0` forces it.
 - **The start** — `Import/start.json` `{"x", "y", "yaw"}` (sim metres, UE degrees; outside the repo) or `-hbstart=X,Y,Yaw`: where
   the walker starts (the nearest dry ground to it); the level's own start without either.
 - **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on
@@ -166,7 +173,7 @@ The camps' textures (`Import/textures`, CC0 — no attribution required, listed 
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour
 made neutral), plank_flooring_03 (decks and docks), concrete_block_wall, red_brick, rock_wall_15 (fieldstone), rocky_trail (the
 roads); from [ambientCG](https://ambientcg.com) — RoofingTiles003 (shingle roofs), PaintedWood009C (trim, doors), Metal050C
-(aluminium).
+(aluminium), Grass004 (the lawns).
 
 The bear and the moose the human downloaded are not listed: they are for the human's own use only and are never committed,
 published or shared.

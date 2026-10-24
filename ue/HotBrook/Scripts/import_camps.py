@@ -98,7 +98,20 @@ def building_master():
     natural = op(M, bc, 'RGB', vc, '', -450, -400)
     painted = op(M, shade, '', vc, '', -300, -250)
     base = lerp(natural, '', painted, '', scalar('Paint', 0.0, -300, -100), -150, -300)
-    out(op(M, base, '', tint, 'RGB', 0, -350), '', unreal.MaterialProperty.MP_BASE_COLOR)
+    # (snow on what faces up — the roofs, the decks and docks stacked on the bank, the roads — with the season's 'Snow': the ground's
+    # collection, MPC_HB_Season, made by make_ground_material.py)
+    coloured = op(M, base, '', tint, 'RGB', 0, -350)
+    mpc = unreal.load_asset('/Game/HotBrook/Materials/MPC_HB_Season')
+    if mpc:
+        cp = node(unreal.MaterialExpressionCollectionParameter, -300, -650); cp.set_editor_property('collection', mpc); cp.set_editor_property('parameter_name', 'Snow')
+        upn = node(unreal.MaterialExpressionVertexNormalWS, -500, -750)
+        upz = node(unreal.MaterialExpressionComponentMask, -350, -750); upz.set_editor_property('r', False); upz.set_editor_property('g', False); upz.set_editor_property('b', True); upz.set_editor_property('a', False); link(upn, '', upz, '')
+        sm = node(unreal.MaterialExpressionSmoothStep, -200, -750); link(upz, '', sm, 'Value'); sm.set_editor_property('const_min', 0.55); sm.set_editor_property('const_max', 0.8)
+        k = op(M, cp, '', sm, '', -50, -700)
+        sc = node(unreal.MaterialExpressionConstant3Vector, -50, -550); sc.set_editor_property('constant', unreal.LinearColor(0.82, 0.85, 0.9, 1))
+        coloured = lerp(coloured, '', sc, '', k, 120, -500)
+    else: bad.append('no MPC_HB_Season: run make_ground_material.py first')
+    out(coloured, '', unreal.MaterialProperty.MP_BASE_COLOR)
     nm = tex('Normal', -900, 50, uv, sampler=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, default='/Engine/EngineMaterials/DefaultNormal')
     flat = node(unreal.MaterialExpressionConstant3Vector, -650, 200); flat.set_editor_property('constant', unreal.LinearColor(0, 0, 1, 1))
     out(lerp(flat, '', nm, 'RGB', scalar('NormalStrength', 1.0, -650, 300), -450, 150), '', unreal.MaterialProperty.MP_NORMAL)
@@ -121,7 +134,18 @@ def glass_master():
     out(scalar('Roughness', 0.06, -400, 250), '', unreal.MaterialProperty.MP_ROUGHNESS)
     out(scalar('Specular', 0.5, -400, 350), '', unreal.MaterialProperty.MP_SPECULAR)
     # (a lit window by night: AHotBrookCamps sets the custom primitive data later; 0 by day)
-    out(op(unreal.MaterialExpressionMultiply, vec('Lamp', (1.0, 0.55, 0.25, 1), -400, 500), '', scalar('LampOn', 0.0, -400, 650), '', -150, 550), '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    # (a lit window by night: AHotBrookCamps sets LampOn per building; each window — a cell of the world 2.5 m wide, 3 m high — lit or
+    # dark by its own draw, LitShare of them lit, the rest dim)
+    cu = L.create_material_expression(m, unreal.MaterialExpressionCustom, -400, 800)
+    cu.set_editor_property('code', 'float3 c = floor(P / float3(250.0, 250.0, 300.0));\nfloat h = frac(sin(dot(c, float3(12.9898, 78.233, 37.719))) * 43758.5453);\nreturn h < Share ? 1.0 : 0.08;')
+    cu.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+    ins = []
+    for nm in ('P', 'Share'):
+        ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); ins.append(ci)
+    cu.set_editor_property('inputs', ins)
+    wp = node(unreal.MaterialExpressionWorldPosition, -650, 800); link(wp, '', cu, 'P'); link(scalar('LitShare', 0.7, -650, 900), '', cu, 'Share')
+    lamp = op(unreal.MaterialExpressionMultiply, vec('Lamp', (1.0, 0.55, 0.25, 1), -400, 500), '', scalar('LampOn', 0.0, -400, 650), '', -150, 550)
+    out(op(unreal.MaterialExpressionMultiply, lamp, '', cu, '', 0, 650), '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     L.recompile_material(m); EAL.save_asset(path); return m
 
 BM = building_master(); GM = glass_master()
@@ -145,6 +169,7 @@ KINDS = {
     'Alu':              ('metal_alu', False, {'metallic': 1.0}),
     'PipeMetal':        ('metal_alu', False, {'metallic': 0.6, 'tint': (0.06, 0.06, 0.065, 1), 'rough_add': 0.25}),
     'Road':             ('gravel_road', False, {}),
+    'Lawn':             ('lawn', False, {'rough_add': 0.35, 'tint': (0.62, 0.66, 0.5, 1)}),   # (the mapped lawns: AHotBrookCamps drapes them; a May lawn's dull green, no sheen)
     # (the boats' own: plain colours from the vertex colours, no texture — a kayak's plastic, the seats' vinyl, a bimini's canvas)
     'Plastic':          (None, False, {'rough_scale': 0.32}),
     'Vinyl':            (None, False, {'rough_scale': 0.55}),

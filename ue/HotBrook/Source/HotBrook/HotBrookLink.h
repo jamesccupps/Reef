@@ -10,6 +10,7 @@
 
 class IWebSocket;
 class ADirectionalLight;
+class UMaterialParameterCollection;
 
 UCLASS()
 class HOTBROOK_API AHotBrookLink : public AActor
@@ -31,6 +32,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float WindFrom = 3.93f;
 	// the air (°C) and the sun's light (0–1) as last heard
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float Air = 15.f;
+	// the sim's clock (s since it began — its day: the camps' who-is-in draw, camps3.js occupied)
+	double SimTime = 0.0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float Daylight = 0.6f;
 private:
 	TSharedPtr<IWebSocket> Socket;
@@ -39,6 +42,10 @@ private:
 	float Night = 0.f;   // (0 day … 1 night: the sun's height)
 	TObjectPtr<ADirectionalLight> Sun = nullptr;
 	FVector SunDirSet = FVector::ZeroVector;   // (where the sun was last turned to)
+	// the snow on the land (MPC_HB_Season 'Snow', which the ground's and the camps' materials read): on when the lakes have frozen, off
+	// when their ice has gone (the browser's rule: the land's snow comes and goes with the sim's ice), eased over ten seconds
+	UPROPERTY() TObjectPtr<UMaterialParameterCollection> Season;
+	float SnowNow = -1.f, SnowWant = 0.f;
 	void Connect();
 	void Apply(const TArray<uint8>& B);
 	void PlaceSun();

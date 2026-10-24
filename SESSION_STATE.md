@@ -252,6 +252,27 @@ lit windows at night, docks out of season. Credits → ue/README.md table (CC-BY
   slots from 2 m out where the top is 3–45 cm over the water; off at 6 m) and GREEN FROGS (0.3/m of shore within 25 m; the bullfrog
   look at 0.5; in at 2 m). The link keeps Daylight (F(24)) and Air (F(28)) — NOTE: AHotBrookLink already had a `Sun` (the light
   actor). Tadpoles NOT drawn: the sim's herps module is off (HERP3.ON 0) and there's no density to draw them at.
+  + 1cdb24a PUSHED (anglers + shallows). 13:00 THE CAMPS' NIGHTS, WINTERS, LAWNS (in progress, uncommitted): export_camps.mjs now
+  writes docks' store/flip (camps3view D.store, D.flip), buildings' yr + lamp [x, y, z over floor] + lampAll, and the nine LAWNS
+  (from the local tools/hotbrook/data/camps_roads.json — never versioned — lon/lat → sim m: discs of their area) into camps.json and
+  cleared.bin; export_forest.mjs clears trees off the lawns (re-run: 5,465,389 trees). build_camps.py: dock_section_wood/_alu.
+  import_camps.py: MI_HB_Lawn (ambientCG Grass004, CC0 — fetched to Import/textures/lawn, manifest slot 'lawn'), M_HB_Glass's
+  windows lit by a world-cell draw (Custom HLSL: 2.5×2.5×3 m cells, LitShare 0.7). AHotBrookCamps: Lights() (camps3.js occupied —
+  JsHash ported bit-exact, OCC_MONTH, weekends ×14/9; camps3view's bedtime rule; LampOn 9×N×K on a glass MID; porch UPointLight
+  450 lm, 9 m), Stored (out of season: n = min(4, ceil((len+1.2)/3)) sections stacked at store, the skiff flipped at flip, a deck
+  canoe turned over by them; bank canoes stay all year), LayLawns (ragged discs draped at ground + 4 cm, MI_HB_Lawn). The link keeps
+  SimTime (f64 at byte 4). SNOW: make_ground_material.py makes MPC_HB_Season ('Snow') and blends snow on up-facing ground; the
+  import_camps building master the same on roofs/decks/roads; AHotBrookLink sets Snow from the ice (on > 0.1 m mean, off < 0.03),
+  eased 10 s; cvar hb.Snow -1/0/1. ORDER TO RUN: import_camps (running, without snow) → make_ground_material.py → import_camps again
+  (now with snow) → build → shots (night lights: the sim at night or wait; docks out: hb.DocksIn 0; snow: hb.Snow 1).
+  + 13:15 DONE + CHECKED (committed next): night shots from the water at U07 (hb.Hour 22, hb.Occupied 1 — the eye needs ~10 s to
+  adapt from day: shoot a few after setting the hour) — windows lit warm (LampOn 6×N×K now) with reflections, a porch lamp; docks out
+  (stacks + flipped skiff on the beach) and in (hb.DocksIn 1); snow on the open ground; the lawns (ProceduralMesh faces need the
+  roads' winding {a, b, e, a, e, c}; rim points drawn in onto the edge and sunk 3 cm; MI_HB_Lawn Tint (0.62, 0.66, 0.5), RoughnessAdd
+  0.35 — set by a one-off script and in import_camps.py). NEW test aid: hbshot cmd `air=<m>` puts a camera that high over the ground or
+  water at X,Y with the shot's yaw/pitch (pitch -89 = straight down). hb.Hour, hb.Occupied, hb.Snow, hb.DocksIn, hb.AllLife (1/2).
+  KNOWN: the UE forest has no winter (leaves stay on, no snow on boughs); the merganser drakes; tadpoles/newts/crayfish/mussels/
+  dragonflies/raccoon need models (second download list for the human: the wanted list's §9–13, §20).
 ▶▶▶ RESUME HERE (2026-10-24 ~14:20 EDT). UNREAL: THE CAMPS, DOCKS AND ROADS + THE PLAYER'S START. The human asked
 (09:17, a Google Maps shot of Upper's east shore) to start there and "keep going, we need buildings, accurate textures, all the
 animals, eventually other boaters and everything". DONE: d520af5 the start (Import/start.json — kept OUTSIDE the repo, it is the

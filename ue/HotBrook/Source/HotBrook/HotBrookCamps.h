@@ -7,7 +7,11 @@
 // triangles are their collision: the walker climbs the steps and walks the decks and docks. And the ROADS (Import/camps.json): each a
 // strip draped on the ground every 2 m in the gravel's texture — the camp roads with their two wheel tracks and a grassy crown between,
 // the town's roads gravel all across, Route 169 paved — broken where the water is. The BOATS at the docks while they are in: a 14-ft aluminium skiff
-// (or the pontoon boat) tied alongside, riding the water with a slow bob; a canoe turned over or a kayak on the dock or the bank.
+// (or the pontoon boat) tied alongside, riding the water with a slow bob; a canoe turned over or a kayak on the dock or the bank. OUT OF
+// SEASON the docks' sections stacked on the bank and the skiffs turned over beside them (camps3view's D.store, D.flip). The LIGHTS by
+// night (camps3view lights(), camps3.js occupied): a camp lived in that day (a seasonal camp the month's share, weekends twice the
+// weekdays; a year-round home most days) has its windows lit — each window by its own draw, most of them — from dusk until its
+// bedtime (a few up again before dawn), its porch lamp too (some all night). The mapped LAWNS mown grass, draped on the ground.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -16,6 +20,9 @@
 class UStaticMesh;
 class UStaticMeshComponent;
 class UProceduralMeshComponent;
+class UMaterialInstanceDynamic;
+class UPointLightComponent;
+class AHotBrookLink;
 
 UCLASS()
 class HOTBROOK_API AHotBrookCamps : public AActor
@@ -32,7 +39,16 @@ private:
 	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Docks;
 	UPROPERTY() TObjectPtr<UProceduralMeshComponent> Roads;
 	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Boats;
-	struct FBoat { FVector At; float Yaw = 0, Phase = 0; bool bFloat = false; };
+	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Stored;   // (out of season: the sections stacked, the skiffs turned over)
+	UPROPERTY() TObjectPtr<UProceduralMeshComponent> Lawns;
+	// a building lived in: its camp's index (camps3.js), year-round or not, its glass (lit windows) and its porch lamp
+	struct FHome { int32 Ci = 0; bool bYr = false, bAll = false; float K = 1.f; TObjectPtr<UMaterialInstanceDynamic> Glass; FVector Lamp = FVector::ZeroVector; bool bLamp = false; TObjectPtr<UPointLightComponent> Light; };
+	TArray<FHome> Homes;
+	TObjectPtr<AHotBrookLink> Link;
+	int32 OccDay = -1; TArray<uint8> Occ; double LightsAt = 0;
+	void LayLawns(const TSharedPtr<class FJsonObject>& J);
+	void Lights();
+	struct FBoat { FVector At; float Yaw = 0, Phase = 0; bool bFloat = false, bBank = false; };
 	TArray<FBoat> BoatAt;   // (parallel to Boats)
 	double SeasonAt = -1;
 	int32 NBuild = 0, DocksIn = -1;

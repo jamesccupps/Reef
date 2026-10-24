@@ -178,6 +178,7 @@ void AHotBrookGameMode::BeginPlay()
 		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|"));
 		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle"), TEXT("kingfisher"), TEXT("osprey"),
 			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog"), TEXT("painted"), TEXT("frog"), TEXT("angler"), TEXT("iceangler") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
+		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("air="))) { S.Air = FCString::Atod(*Cs[c].Mid(4)); Cs.RemoveAt(c); }
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
@@ -316,6 +317,16 @@ void AHotBrookGameMode::TakeShot()
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest fish, %.0f cm long, at %s, seen from %.0f cm"), *Shots[NextShot].Name, L * 100.f, *P.ToString(), D);
 		}
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
+		return;
+	}
+	if (Shots[NextShot].Air > 0.0 && Framed == 0 && PC) {
+		// (a camera over the spot — Air metres over its ground or its water — looking as the shot says; a moment to settle first)
+		Framed = 1; const FShot& S = Shots[NextShot];
+		const FVector Q = HotBrookCoords::ToUE(S.X, S.Y, HotBrookCoords::Datum); float G = 0, Wz = -1e9f;
+		const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>(); if (W) { W->GroundAt(Q, G); W->SurfaceAt(Q, Wz); }
+		if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+		ShotCam->SetActorLocationAndRotation(FVector(Q.X, Q.Y, FMath::Max(G, Wz) + S.Air * 100.0), FRotator(S.Pitch, S.Yaw, 0)); PC->SetViewTarget(ShotCam);
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 2.0f, false);
 		return;
 	}
 	Framed = 0;

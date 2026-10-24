@@ -60,8 +60,11 @@ for (const r of CAMPS3D.roads || []) poly(r.pts || [], (r.width || 4.5) / 2 + 1.
 for (const d of CAMPS3D.docks || []) if (d.base && d.dir) poly([[d.base[0] - d.dir[0] * 25, d.base[1] - d.dir[1] * 25], [d.base[0], d.base[1]]], 1.5);   // (the path down to the dock)
 for (const b of CAMPS3D.beaches || []) poly(b.pts || [], 8);
 if (CAMPS3D.launch?.shore) { const [sx, sy] = CAMPS3D.launch.shore, [ox, oy] = CAMPS3D.launch.out || [0, 0]; poly([[sx - ox * 40, sy - oy * 40], [sx, sy]], 9); }
+// (the lawns the dataset maps — export_camps.mjs's discs in Import/camps.json — kept clear of trees too)
+const LAWNS = (() => { try { return JSON.parse(readFileSync(join(OUT, 'camps.json'), 'utf8')).lawns || []; } catch { return []; } })();
+for (const L of LAWNS) CLEAR.push({ x: L.x, y: L.y, hw: L.r, hl: L.r, c: 1, s: 0, r2: L.r * L.r });
 const cleared = (x, y) => {
-  for (const b of CLEAR) { const dx = x - b.x, dy = y - b.y; if (Math.abs(dx) > 40 || Math.abs(dy) > 40) continue; const u = dx * b.c + dy * b.s, v = -dx * b.s + dy * b.c; if (Math.abs(u) < b.hw && Math.abs(v) < b.hl) return true; }
+  for (const b of CLEAR) { const dx = x - b.x, dy = y - b.y; if (Math.abs(dx) > 40 || Math.abs(dy) > 40) continue; if (b.r2 !== undefined) { if (dx * dx + dy * dy < b.r2) return true; continue; } const u = dx * b.c + dy * b.s, v = -dx * b.s + dy * b.c; if (Math.abs(u) < b.hw && Math.abs(v) < b.hl) return true; }
   for (const [ax, ay, bx, by, w] of segs) { const vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / L2)); if (Math.hypot(x - ax - t * vx, y - ay - t * vy) < w) return true; }
   return false;
 };

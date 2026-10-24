@@ -531,6 +531,19 @@ def pontoon():
 
 BOATS = {'boat_skiff_alu': skiff(WHITE), 'boat_skiff_green': skiff(lin('#3e5a3a') * 1.6), 'boat_pontoon': pontoon()}
 BOATS['boat_skiff_running'] = skiff(WHITE, running=True)   # (the anglers' boats out on the water)
+def dock_section(alu):
+    # a dock's section out of the water for the winter (camps3view: stacked on the bank): its deck on two stringers, its legs off
+    M = Mesh()
+    if alu:
+        M.obox('Alu', (0, 0), (1, 0), 1.2, 0.5, 0.06, 0.14, WHITE * 0.85)
+        for y in (-0.47, 0.47): M.obox('Alu', (0, y), (1, 0), 1.2, 0.03, 0.0, 0.14, WHITE * 0.9)
+    else:
+        for k in range(16):
+            x = -1.2 + (k + 0.5) * 2.4 / 16
+            M.obox('Deck', (x, 0), (1, 0), 0.07, 0.5, 0.1, 0.14, tint('#8a7a64', '#8a7458') * (0.9 + 0.2 * hh(k, 3)))
+        for y in (-0.42, 0.42): M.obox('Deck', (0, y), (1, 0), 1.2, 0.04, 0.0, 0.1, tint('#6a5a48', '#8a7458'))
+    return M
+BOATS['dock_section_wood'] = dock_section(False); BOATS['dock_section_alu'] = dock_section(True)
 for nm, c in (('red', '#7a1e1e'), ('blue', '#1e3456'), ('black', '#202224')): BOATS['ice_shelter_' + nm] = ice_shelter(lin(c))
 BOATS.update({'ice_bucket_white': bucket(WHITE * 0.85), 'ice_bucket_orange': bucket(lin('#e0661e')), 'ice_tipup': tipup(False),
               'ice_tipup_flag': tipup(True), 'ice_hole': ice_hole(), 'ice_sled': sled()})

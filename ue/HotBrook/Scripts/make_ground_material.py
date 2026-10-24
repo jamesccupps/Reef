@@ -3,7 +3,9 @@
 #   - the floor under the trees: needle-and-moss floor and broadleaf litter, mixed in patches tens of metres across, with moss carpets;
 #   - rocky floor on slopes past ~30° (the till's stones and boulders where the soil thins);
 #   - mud at the lakes' edges: below ~0.6 m above Upper's level, and the beds under the water;
-#   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream.
+#   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream;
+#   - SNOW over what faces up when /Game/HotBrook/Materials/MPC_HB_Season's 'Snow' is up (AHotBrookLink: with the lakes' ice), thinner
+#     on steep ground, a little uneven.
 # World-space (each surface tiles at its scanned size: 2 m, the moss and mud 1 m), so it covers the 5 × 10 km landscape without UVs;
 # a broad brightness variation hides the repeats. Every link is checked: a wrong pin name fails silently in this API.
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/make_ground_material.py
@@ -100,6 +102,21 @@ ground = blend3(S['Mud'], ground, shallow, -500, -1600)
 # a broad brightness variation (0.8–1.15) over the colour so the repeats don't show
 var = node(unreal.MaterialExpressionLinearInterpolate, -1400, 1000); var.set_editor_property('const_a', 0.8); var.set_editor_property('const_b', 1.15); link(n_var, '', var, 'Alpha')
 color = op(unreal.MaterialExpressionMultiply, ground[0], var, -200, -1600)
+# THE SNOW (the season's collection, made here if it isn't yet: 'Snow' 0–1)
+MPC = '/Game/HotBrook/Materials/MPC_HB_Season'
+mpc = unreal.load_asset(MPC) if EAL.does_asset_exist(MPC) else None
+if not mpc:
+    mpc = tools.create_asset('MPC_HB_Season', path, unreal.MaterialParameterCollection, unreal.MaterialParameterCollectionFactoryNew())
+    sp = unreal.CollectionScalarParameter(); sp.set_editor_property('parameter_name', 'Snow'); sp.set_editor_property('default_value', 0.0)
+    mpc.set_editor_property('scalar_parameters', [sp]); EAL.save_asset(MPC)
+cp = node(unreal.MaterialExpressionCollectionParameter, -1700, 1700); cp.set_editor_property('collection', mpc); cp.set_editor_property('parameter_name', 'Snow')
+snow_k = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, cp, smooth(up, 0.55, 0.8, -1600, 1800), -1450, 1750),
+            smooth(op(unreal.MaterialExpressionAdd, n_mid, op(unreal.MaterialExpressionMultiply, cp, 0.6, -1600, 1900), -1450, 1900), 0.35, 0.75, -1300, 1900), -1200, 1800)
+snow_c = op(unreal.MaterialExpressionMultiply, const3(0.82, 0.85, 0.9, -1300, 2000), var, -1150, 2000)
+snow_r = node(unreal.MaterialExpressionConstant, -900, 2300); snow_r.set_editor_property('r', 0.8)   # (snow's roughness)
+color = lerp(color, snow_c, snow_k, -50, -1600)
+ground = [ground[0], lerp(ground[1], const3(0, 0, 1, -900, 2100), op(unreal.MaterialExpressionMultiply, snow_k, 0.8, -900, 2200), -700, -1500),
+          lerp(ground[2], snow_r, snow_k, -700, -1400)]
 
 # THE FOREST FROM AFAR (the trees stream only within ~1.2 km): the aerial photos' canopy (Import/canopy_rgba.png: RGB its colour, A the
 # cover) over the far grid's extent — x −2880…2440 m, y −4920…5040 m, row 0 north — blended in past ~900 m from the eye
