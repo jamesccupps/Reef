@@ -240,6 +240,18 @@ plants, textures. Photos are private: never commit or publish them.
   host was restarted (task bihaavlbd). Mid-May densest (stand/Bmax): yellowlily 0.25 at (-572,-1322), bulrush 0.19 (-182,-3242),
   whitelily 0.01 (333,1223) — the lilies barely up in May. NEXT: shots at those (air= or plant=), fix, commit; then lawn grass
   instances (grass_lawn on the lawns), stones_grass on rocky shores, the pontoon/bass boat/UTV, the listings search, the photo match.
+  + 14:15 FIRST WEEDS RUN (195f633 + this note): the link delivers (log: "weeds: 1544 cells about the walker, 10917 plants and
+  shells"); shots at the yellow-lily bed (-560,-1330, air=5) show small dark sprigs above the water (pondweed's spikes?) but no pads
+  readable — mid-May the stands are 0.01–0.25 of full; the bulrush's densest cell (-182,-3242) is LAND in UE (a grassy flat at
+  Upper's S end: the sim's water grid reaches past the UE outline there; weeds need SurfaceAt + 8 cm depth). TO CHECK NEXT: (a) pads
+  vs the drawn water surface (are they under it? try +3 cm); (b) a summer look — find whether sim3worker takes a date message
+  (world.setDate / a 'date' type) so the host can jump to July for a test; (c) `plant=<key>` framing picks the first-placed, not the
+  nearest — fine-tune; (d) hb.AllLife-like override for the weeds' stands (e.g. hb.Weeds 1 = full stands) for looks.
+  THE HUMAN'S OPEN ASKS (in order): accuracy of textures/plants/rocks/shoreline/grass against their photos (they'll put originals in
+  G:\HotBrookUE\Import\reference\ — a photo-match tool: EXIF GPS/heading/time → the same view in-game, side by side); the listings
+  search for the camps' photos (local only); use the new downloads (pontoon → replace the procedural one; bass boat → some anglers'
+  boats; Kawasaki Ridge UTV → parked at some camps; grass_lawn on the lawns; stones_grass on rocky shores; fern_grass in the woods);
+  the second download list (crayfish, mussel, newt, dragonflies, damselfly, snail, raccoon) not yet downloaded by them.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
