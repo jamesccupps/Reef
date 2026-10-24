@@ -54,8 +54,9 @@ project draws the world in the first person, fed live by it. The browser view, t
 - **The bed and the shores** — `ue/export/export_substrate.mjs` writes the sim's substrate map (src/w3/geometry.js `GEO.sub`: per
   5-m cell the shares of boulder–cobble, gravel, sand and organic muck from each spot's wave exposure) as `Import/substrate.png` (for
   `M_Ground`) and `substrate.bin` (for `UHotBrookWater::SubstrateAt`), the shore above the waterline given the water's beside it.
-  `M_Ground` draws the lakes' edges and beds by it — the rocky floor's cobble, gravel, sand (Poly Haven's gravelly_sand, greyed to
-  the lakes' granite sand) or mud — instead of one cobble band and mud below a metre.
+  `M_Ground` draws the lakes' edges and beds by it — cobble (Poly Haven's ganges_river_pebbles, greyed toward the flat grey slaty
+  stones of the camps' listing photos), gravel, sand (Poly Haven's gravelly_sand, greyed to the lakes' granite sand) or mud —
+  instead of one cobble band and mud below a metre.
 - **The live link** — `node ue/link/simhost.mjs` runs the sim at real time and streams it to `AHotBrookLink`
   (ws://127.0.0.1:8771; snapshot "HBS2"): the clock (the sun placed for the date and hour), the weather and wind, the fish near
   the walker, the forest's large animals.
@@ -225,7 +226,7 @@ The camps' textures (`Import/textures`, CC0 — no attribution required, listed 
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour
 made neutral), plank_flooring_03 (decks and docks), concrete_block_wall, red_brick, rock_wall_15 (fieldstone), rocky_trail (the
 roads); from [ambientCG](https://ambientcg.com) — RoofingTiles003 (shingle roofs), PaintedWood009C (trim, doors), Metal050C
-(aluminium), Grass004 (the lawns). The lakes' sand (`Import/surfaces/Sand_*`): Poly Haven's gravelly_sand, CC0.
+(aluminium), Grass004 (the lawns). The lakes' sand and cobble (`Import/surfaces/Sand_*`, `Cobble_*`): Poly Haven's gravelly_sand and ganges_river_pebbles, CC0.
 
 The bear and the moose the human downloaded are not listed: they are for the human's own use only and are never committed,
 published or shared.

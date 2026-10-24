@@ -4,7 +4,8 @@
 #   - rocky floor on slopes past ~30° (the till's stones and boulders where the soil thins);
 #   - THE LAKES' EDGES AND BEDS by the sim's substrate (Import/substrate.png: ue/export/export_substrate.mjs — per 5-m cell the shares of
 #     boulder–cobble, gravel, sand and organic muck from each spot's wave exposure, the shore above the waterline as the water beside
-#     it): the rocky floor's cobble, gravel, sand (Poly Haven's gravelly_sand, greyed to the lakes' granite sand) or mud, below ~1 m
+#     it): cobble (Poly Haven's ganges_river_pebbles, greyed toward the flat grey slaty stones the camps' listing photos show — the
+#     rocky forest floor's reddish soil read wrong), gravel, sand (Poly Haven's gravelly_sand, greyed to the lakes' granite sand) or mud, below ~1 m
 #     above Upper's level and under the water, broken up by noise so the cells' squares don't show;
 #   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream;
 #   - SNOW over what faces up when /Game/HotBrook/Materials/MPC_HB_Season's 'Snow' is up (AHotBrookLink: with the lakes' ice), thinner
@@ -34,7 +35,7 @@ def import_tex(file, dest_name, kind):
     tex.set_editor_property('lod_group', unreal.TextureGroup.TEXTUREGROUP_WORLD)
     EAL.save_asset(SURF + '/' + dest_name)
     return tex
-SURFACES = {'ForestFloorA': 2.0, 'ForestFloorB': 2.0, 'MossyFloor': 1.0, 'RockyFloor': 2.0, 'Mud': 1.0, 'Gravel': 2.0, 'Sand': 2.5}   # (metres a repeat: the scans' size)
+SURFACES = {'ForestFloorA': 2.0, 'ForestFloorB': 2.0, 'MossyFloor': 1.0, 'RockyFloor': 2.0, 'Mud': 1.0, 'Gravel': 2.0, 'Sand': 2.5, 'Cobble': 2.16}   # (metres a repeat: the scans' size)
 TEX = {}
 for s in SURFACES:
     TEX[s] = (import_tex(s + '_BaseColor.png', 'T_%s_BaseColor' % s, 'color'), import_tex(s + '_Normal.png', 'T_%s_Normal' % s, 'normal'),
@@ -122,7 +123,7 @@ if stex:
     def share(ch, x, y): return smooth(op(unreal.MaterialExpressionAdd, mask(st, ch, -1700, y), jit, -1550, y), 0.2, 0.45, -1400, y)
     edge = blend3(S['Mud'], S['Sand'], share('b', -1400, 2600), -1250, 2400)
     edge = blend3(edge, S['Gravel'], share('g', -1400, 2700), -1100, 2400)
-    edge = blend3(edge, S['RockyFloor'], share('r', -1400, 2800), -950, 2400)
+    edge = blend3(edge, S['Cobble'], share('r', -1400, 2800), -950, 2400)
 else:
     bad.append('no Import/substrate.png (ue/export/export_substrate.mjs): the edges cobbled, the beds mud')
     edge = blend3(S['Mud'], S['RockyFloor'], smooth(z, 1700.0, 1800.0, -1600, 1500), -650, 2400)

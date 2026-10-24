@@ -320,6 +320,10 @@ plants, textures. Photos are private: never commit or publish them.
   autumn, 0 otherwise); twins' MIDs ramped neutral (0 / 0.5 grey) → autumn → brown; ApplyLeaves per component (state 0 own, 1 twin,
   2 bare; ±3.6 days a tile); UpdateLeaves every 2 s; hb.LeafDate cvar. Checked in shots (summer, October scarlet/gold, late Oct,
   winter near bare and far grey-brown, late May green). inspect_foliage.py / inspect_seasons.py kept as tools.
+  + 19:00 COMMITTED 45e0612 (seasons). THE SHORES' COBBLE GREY (this commit): Poly Haven ganges_river_pebbles 2k, desaturated 45 %
+  → Import/surfaces/Cobble_* (scratchpad/dl_cobble); M_Ground's substrate rock layer uses Cobble (RockyFloor stays for steep slopes).
+  The camps' colours checked against the listings: roofs 64 % metal (teal/red/grey/dark) ≈ listings' ~70 % — left as the dataset has
+  them. NEXT: the wind turbines on the ridge (USWTDB public data → positions; a procedural turbine; blades turning with the wind).
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
