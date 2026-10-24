@@ -283,6 +283,17 @@ plants, textures. Photos are private: never commit or publish them.
   (JsHash(ci, 31) < 0.25; footprint cleared, dry, ≤ 40 cm slope, clear of every building box + 0.6 m; ground-plane rotation; Stand
   gains Pitch/Roll). Checked in shots. Credits in ue/README.md. NEXT: grass_lawn on the lawns? stones_grass on rocky shores, the
   brook channel's smoothing (heightmap), the listings search, the photo match (the human's photos not here yet).
+  + 16:40 COMMITTED fcec9a2 (vehicles) + backup. THE SHORES AND BED BY THE SIM'S SUBSTRATE (this commit): NEW ue/export/
+  export_substrate.mjs (HB_WORLD=true) → Import/substrate.png/.bin/.json (GEO.sub per 5-m cell RGBA rock/grav/sand/org, row 0 south;
+  land within 4 cells of water given the wet cells' mean). UHotBrookWater::SubstrateAt (bilinear). M_Ground (make_ground_material.py):
+  T_Substrate → mud/sand/gravel/RockyFloor by share (smoothstep .2–.45, ±0.15 mid-noise jitter) below the 'dry' line (Z 1960–2000),
+  replacing the uniform cobble band + mud below 1 m; NEW Sand surface = Poly Haven gravelly_sand 2k, desaturated 50 % (Import/
+  surfaces/Sand_*; downloaded to scratchpad/dl_sand). GroundCover: rock kinds' shore weight × (0.2 + 2.5·stony) on banks; in water
+  (≤ 2.5 m) W = Shore·2.5·smoothstep(.15,.6, rock+.4 grav) for all rock kinds but the embankments; NEW water-only kind SmallStones
+  ×3–8 (boulders, collision); rock ISMs carry custom data 0 = nearness to water (1 in it, NearWater(6 m) on land). M_MS_Rock
+  (import_megascans.py, re-run): lvl = 1893 (UE Y > 0, Upper) … 1823 (Y < −6000, Lower); below lvl−5…+10 cm a brown algae film
+  (desat ×(2.6,2.2,1.6)), up to 40–80 cm above bare granite (desat ×7, saturate), moss above — all × the instance's nearness. The
+  scans' colour is very dark (lum 0.037–0.047), hence the big factors. Checked in shots (rocky and sandy shores, the woods' stones).
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

@@ -25,13 +25,18 @@ DEFINE_LOG_CATEGORY_STATIC(LogHotBrookGround, Log, All);
 // Amount: for plants the share of the ground they cover at full weight (turned into plants a square metre by their meshes' size and
 // the share of the floor their patches take); for stones, rocks and logs the count a square metre. Patches: the colonies' size (m)
 // and the share of the floor in them. Weights: under a closed canopy, in the open, the lean to conifer (+1) or hardwood (−1)
-// stands, within the shore band (m) of the water.
+// stands, within the shore band (m) of the water. The STONES by the sim's substrate (UHotBrookWater::SubstrateAt — the bed's boulder–
+// cobble and gravel from each spot's wave exposure, the shore above the waterline as the water beside it): on a bank, a stone kind's
+// shore weight × (0.2 + 2.5 × how stony the water there is), so a boulder shore is strewn and a sandy cove or a muck shore bare; and
+// in the water, on a stony bed under 2.5 m, the stones and boulders (and the small stones 3–8 times their size), some breaking the
+// surface — their material (import_megascans.py's M_MS_Rock) bare, grey-brown with algae, below the lake's level, mossy above it.
 struct AHotBrookGroundCover::FKind
 {
 	const TCHAR* Source;   // ("MS:" a Megascans scan by its name in megascans_meshes.json, "MP:" a Megaplants plant in groundcover_meshes.json)
 	int32 Ring; float Amount; bool bCover; float Patch, PatchCover, Forest, Open, Conifer, Shore, ShoreBand, ScaleMin, ScaleMax, CullM;
 	bool bRock;            // (tilted to the ground, sunk a quarter into it, the walker can't pass the big ones)
 	bool bLying;           // (laid down along the ground: the fallen logs; no wind)
+	bool bWaterOnly = false;   // (only in the water: the shallows' boulders)
 };
 namespace { constexpr double RING_CELL[3] = { 32.0, 32.0, 128.0 }; constexpr float RING_M[3] = { 80.f, 160.f, 400.f }; }   // (the far ring's rocks are few: big cells, few components)
 
@@ -52,6 +57,7 @@ static const AHotBrookGroundCover::FKind KINDS[] = {
 	{ TEXT("MS:MossyForestRock"),2, 0.012f, false, 40.f, 0.60f, 1.f, 0.5f, 0.f, 3.f,   8.f,  0.6f, 3.0f, 450.f, true,  false },
 	{ TEXT("MS:MossyRocks"),     2, 0.0015f,false, 50.f, 0.50f, 1.f, 0.6f, 0.f, 4.f,   6.f,  0.6f, 1.5f, 350.f, true,  false },
 	{ TEXT("MS:MossyEmbankment"),2, 0.0008f,false, 60.f, 0.50f, 1.f, 0.3f, 0.f, 2.f,   6.f,  0.7f, 1.4f, 300.f, true,  false },
+	{ TEXT("MS:SmallStones"),    1, 0.0045f,false, 30.f, 0.55f, 0.f, 0.f,  0.f, 2.f,   0.f,  3.0f, 8.0f, 220.f, true,  false, true },   // (the shallows' boulders: ~3 a 100 m² on a stony bed)
 };
 static constexpr int32 NKINDS = UE_ARRAY_COUNT(KINDS);
 
@@ -143,7 +149,8 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 		const FKind& K = KINDS[k]; if (K.Ring != Ring || !KindMeshes[k].Num()) continue;
 		const float Lean = FMath::Max(0.f, 1.f + K.Conifer * (2.f * ConShare - 1.f));
 		const float Stand = (K.Forest * Closed + K.Open * (1.f - Closed)) * Lean;
-		const float WMax = Stand + (bNearAny ? K.Shore : 0.f); if (WMax <= 0.f) continue;
+		const bool bWet = K.bRock && !FCString::Strstr(K.Source, TEXT("Embankment"));   // (a kind that lies on the bed too: not the embankments' slabs)
+		const float WMax = Stand + (bNearAny ? K.Shore * (K.bRock ? 2.5f : 1.f) : 0.f); if (WMax <= 0.f) continue;
 		FRandomStream R((int32)(CX * 92837111 ^ CY * 689287499 ^ (k + 1) * 283923481));
 		const int32 N = FMath::FloorToInt(KindDensity[k] * DensityScale * CELL * CELL * WMax + R.FRand());
 		for (int32 n = 0; n < N; n++) {
@@ -153,9 +160,18 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 			if (R.FRand() > In) continue;
 			float W = Stand; float WaterZ;
 			const FVector At0 = HotBrookCoords::ToUE(X, Y, HotBrookCoords::Datum);
-			if (Water->SurfaceAt(At0, WaterZ)) continue;   // (nothing in the water)
-			if (Water->ClearedAt(At0)) continue;           // (nor on the camps' lots, paths and docks' feet, the roads, the beaches)
-			if (K.Shore > 0.f && bNearAny) W += K.Shore * NearWater(FVector2D(X, Y), K.ShoreBand);
+			FVector4f Sb(0.f); const bool bSub = K.bRock && Water->SubstrateAt(At0, Sb); const float Stony = Sb.X + 0.4f * Sb.Y;
+			float Near = 0.f;   // (a stone's nearness to the water, for its material: 1 in it and at its edge, 0 six metres in)
+			if (Water->SurfaceAt(At0, WaterZ)) {
+				Near = 1.f;   // (in the water: only stones, where the sim's bed is stony, under 2.5 m)
+				float Gw; if (!bWet || !bSub || !Water->GroundAt(At0, Gw) || WaterZ - Gw > 250.f) continue;
+				W = K.Shore * 2.5f * FMath::SmoothStep(0.15f, 0.6f, Stony);   // (a boulder bed strewn, a sandy cove's or a muck bed's almost bare)
+			} else {
+				if (K.bWaterOnly) continue;
+				if (Water->ClearedAt(At0)) continue;           // (nor on the camps' lots, paths and docks' feet, the roads, the beaches)
+				if (K.Shore > 0.f && bNearAny) W += K.Shore * NearWater(FVector2D(X, Y), K.ShoreBand) * (bSub ? FMath::Clamp(0.2f + 2.5f * Stony, 0.f, 2.5f) : 1.f);
+				if (K.bRock && bNearAny) Near = NearWater(FVector2D(X, Y), 6.f);
+			}
 			if (R.FRand() * WMax > W) continue;
 			float G; if (!Water->GroundAt(At0, G)) continue;
 			const FMesh& M = KindMeshes[k][R.RandHelper(KindMeshes[k].Num())];
@@ -175,12 +191,13 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 			const int64 MK = (int64)k * 64 + KindMeshes[k].IndexOfByPredicate([&](const FMesh& E) { return &E == &M; });
 			UPrimitiveComponent*& C = ByMesh.FindOrAdd(MK);
 			if (!C) {
-				const bool bBig = K.bRock && K.Ring == 2;
+				const bool bBig = K.bRock && (K.Ring == 2 || K.bWaterOnly);   // (the walker can't pass the big ones, in the water too)
 				if (M.Skel) {
 					UInstancedSkinnedMeshComponent* SC = NewObject<UInstancedSkinnedMeshComponent>(this); SC->SetSkinnedAssetAndUpdate(M.Skel); if (Wind && !K.bLying) SC->SetTransformProvider(Wind);
 					SC->SetCullDistances(0, (int32)(K.CullM * 100.f)); SC->ShadowCacheInvalidationBehavior = EShadowCacheInvalidationBehavior::Rigid; C = SC;
 				} else {
 					UInstancedStaticMeshComponent* IC = NewObject<UInstancedStaticMeshComponent>(this); IC->SetStaticMesh(M.Static); IC->SetMobility(EComponentMobility::Static);
+					if (K.bRock) IC->NumCustomDataFloats = 1;   // (its nearness to the water: M_MS_Rock's bare, wet band)
 					IC->SetCullDistances(0, (int32)(K.CullM * 100.f)); C = IC;
 				}
 				C->SetCollisionProfileName(bBig ? TEXT("BlockAll") : TEXT("NoCollision")); C->SetCollisionEnabled(bBig ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -190,7 +207,7 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 			const FTransform T(Rot, At, FVector(S));
 			Instances++;
 			if (UInstancedSkinnedMeshComponent* SC = Cast<UInstancedSkinnedMeshComponent>(C)) SC->AddInstance(T, 0, true);
-			else Cast<UInstancedStaticMeshComponent>(C)->AddInstance(T, true);
+			else { UInstancedStaticMeshComponent* IC = Cast<UInstancedStaticMeshComponent>(C); const int32 Ix = IC->AddInstance(T, true); if (K.bRock && Ix >= 0) IC->SetCustomDataValue(Ix, 0, Near, true); }
 		}
 	}
 }

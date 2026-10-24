@@ -43,6 +43,15 @@ void UHotBrookWater::Initialize(FSubsystemCollectionBase& Collection)
 			if ((int64)RowB * ny + 28 <= Bits.Num()) { CX = nx; CY = ny; CX0 = x0; CY0 = y0; CRow = RowB; Cleared.SetNumUninitialized(RowB * ny); FMemory::Memcpy(Cleared.GetData(), B + 28, RowB * ny); }
 		}
 	}
+	// the bed's substrate (Import/substrate.bin: "HBU1", int32 nx, ny, float x0, y0, cell, then rock, gravel, sand, muck bytes a cell)
+	{
+		TArray<uint8> SB;
+		if (FFileHelper::LoadFileToArray(SB, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("substrate.bin"))) && SB.Num() >= 24 && FMemory::Memcmp(SB.GetData(), "HBU1", 4) == 0) {
+			int32 nx, ny; float x0, y0, cell; const uint8* B = SB.GetData() + 4;
+			FMemory::Memcpy(&nx, B, 4); FMemory::Memcpy(&ny, B + 4, 4); FMemory::Memcpy(&x0, B + 8, 4); FMemory::Memcpy(&y0, B + 12, 4); FMemory::Memcpy(&cell, B + 16, 4);
+			if ((int64)nx * ny * 4 + 24 <= SB.Num()) { SX = nx; SY = ny; SX0 = x0; SY0 = y0; SCell = cell; Sub.SetNumUninitialized(nx * ny * 4); FMemory::Memcpy(Sub.GetData(), SB.GetData() + 24, nx * ny * 4); }
+		}
+	}
 	// Import/water.bin: "HBW1", int32 nx, ny, float x0, y0, cell (m), then nx*ny float32 surface heights (m; < -1e5 on land)
 	TArray<uint8> Bytes;
 	const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("water.bin"));
@@ -98,6 +107,18 @@ bool UHotBrookWater::InLake(const FVector& P) const
 		if (bIn) return true;
 	}
 	return false;
+}
+
+bool UHotBrookWater::SubstrateAt(const FVector& P, FVector4f& Out) const
+{
+	if (!SX) return false;
+	const FVector2D M = HotBrookCoords::ToSim(P);
+	const double u = (M.X - SX0) / SCell - 0.5, v = (M.Y - SY0) / SCell - 0.5;
+	if (u < 0 || v < 0 || u >= SX - 1 || v >= SY - 1) return false;
+	const int32 i = (int32)u, j = (int32)v; const float a = (float)(u - i), b = (float)(v - j);
+	const auto C = [&](int32 q, int32 r) { const uint8* p = Sub.GetData() + (r * SX + q) * 4; return FVector4f(p[0], p[1], p[2], p[3]) / 255.f; };
+	Out = C(i, j) * ((1 - a) * (1 - b)) + C(i + 1, j) * (a * (1 - b)) + C(i, j + 1) * ((1 - a) * b) + C(i + 1, j + 1) * (a * b);
+	return true;   // (all four 0: mud on the bed, or land past the shore — no stones either way)
 }
 
 bool UHotBrookWater::InBrook(const FVector& P) const

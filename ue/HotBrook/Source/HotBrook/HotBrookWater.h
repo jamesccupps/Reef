@@ -22,6 +22,10 @@ public:
 	// outlines — what AHotBrookWaterSurface draws as the brook; and either (the water drawn there at all)
 	bool InBrook(const FVector& P) const;
 	bool Drawn(const FVector& P) const { return InLake(P) || InBrook(P); }
+	// the bed's substrate there (Import/substrate.bin: ue/export/export_substrate.mjs — the sim's GEO.sub, the shore above the waterline
+	// given the water's beside it), bilinear between the cells: X boulder–cobble, Y gravel, Z sand, W organic muck (0–1; mud the rest);
+	// false away from the lakes (nothing there)
+	bool SubstrateAt(const FVector& P, FVector4f& Out) const;
 	// whether a place is the camps' cleared ground — a footprint or yard, a path to the water, a dock's foot, a road, a beach, the launch
 	// (Import/cleared.bin, export_camps.mjs: the browser view's clearedAt) — where nothing grows on the ground
 	bool ClearedAt(const FVector& P) const;
@@ -40,5 +44,6 @@ private:
 	int32 IndexAt(const FVector& P) const;
 	TArray<TArray<FVector2D>> LakePts; TArray<FBox2D> LakeBox;   // (the sim's metres)
 	TArray<FVector2D> BrookPath; FBox2D BrookBox = FBox2D(ForceInit);
+	int32 SX = 0, SY = 0; float SX0 = 0, SY0 = 0, SCell = 5; TArray<uint8> Sub;   // (the substrate grid: 4 bytes a cell, rows from the south)
 	int32 CX = 0, CY = 0, CRow = 0; double CX0 = 0, CY0 = 0; TArray<uint8> Cleared;   // (1-m bits, rows from the south)
 };

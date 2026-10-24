@@ -45,9 +45,48 @@ def master(name, plant):
         return t
     def out(a, ao, prop):
         if not L.connect_material_property(a, ao, prop): bad.append('%s %s.%s -> %s' % (name, a.get_name(), ao, prop))
-    out(tex('BaseColor', -300, 'color'), 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
+    if plant:
+        out(tex('BaseColor', -300, 'color'), 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
+        out(tex('Roughness', 100, 'gray'), 'R', unreal.MaterialProperty.MP_ROUGHNESS)
+    else:
+        # A ROCK AT THE WATER: below its lake's level (Upper 128.93 m, Z 1893 cm, south of the brook — Unreal's Y > 0; Lower 128.23 m,
+        # Z 1823, north of it — Y < −60 m) its moss gone — grey under a brown film of algae, darker and smoother wet; and up to ~0.6 m
+        # above it bare grey stone (the ice push and the spring's high water scour the shore's band); its moss and lichen above that
+        # (the scans are of forest rocks). Only as near the water as the instance says (its custom data 0: AHotBrookGroundCover's
+        # 1 in the water and at the edge, 0 six metres in) — the low woods by a lake stand within a metre of its level too
+        def node(cls, x, y): return L.create_material_expression(m, cls, x, y)
+        def link(a_, ao, b_, bi):
+            if not L.connect_material_expressions(a_, ao, b_, bi): bad.append('%s %s.%s -> %s.%s' % (name, a_.get_name(), ao, b_.get_name(), bi))
+        def mask(src, ch, x, y):
+            n = node(unreal.MaterialExpressionComponentMask, x, y)
+            for c in 'rgba': n.set_editor_property(c, c in ch)
+            link(src, '', n, ''); return n
+        bc, rt = tex('BaseColor', -300, 'color'), tex('Roughness', 100, 'gray')
+        wp = node(unreal.MaterialExpressionWorldPosition, -1400, -700)
+        north = node(unreal.MaterialExpressionSmoothStep, -1100, -650); link(mask(wp, 'g', -1250, -650), '', north, 'Value')
+        north.set_editor_property('const_min', -6000.0); north.set_editor_property('const_max', 0.0)
+        lvl = node(unreal.MaterialExpressionLinearInterpolate, -950, -650); lvl.set_editor_property('const_a', 1823.0); lvl.set_editor_property('const_b', 1893.0); link(north, '', lvl, 'Alpha')
+        dz = node(unreal.MaterialExpressionSubtract, -800, -700); link(mask(wp, 'b', -1250, -750), '', dz, 'A'); link(lvl, '', dz, 'B')
+        dry = node(unreal.MaterialExpressionSmoothStep, -650, -700); link(dz, '', dry, 'Value'); dry.set_editor_property('const_min', -5.0); dry.set_editor_property('const_max', 10.0)
+        moss = node(unreal.MaterialExpressionSmoothStep, -650, -800); link(dz, '', moss, 'Value'); moss.set_editor_property('const_min', 40.0); moss.set_editor_property('const_max', 80.0)
+        de = node(unreal.MaterialExpressionDesaturation, -450, -450); link(bc, 'RGB', de, '')
+        fr = node(unreal.MaterialExpressionConstant, -600, -400); fr.set_editor_property('r', 0.85); link(fr, '', de, 'Fraction')
+        film = node(unreal.MaterialExpressionMultiply, -300, -450); link(de, '', film, 'A')
+        tint = node(unreal.MaterialExpressionConstant3Vector, -450, -350); tint.set_editor_property('constant', unreal.LinearColor(2.6, 2.2, 1.6, 1))   # (a wet stone under its film ~0.1); link(tint, '', film, 'B')
+        grey = node(unreal.MaterialExpressionMultiply, -300, -550); link(de, '', grey, 'A')
+        gt = node(unreal.MaterialExpressionConstant3Vector, -450, -550); gt.set_editor_property('constant', unreal.LinearColor(7.0, 6.9, 6.6, 1))   # (the mossy scans are dark — luminance ~0.04: dry granite ~0.25–0.35); link(gt, '', grey, 'B')
+        gsat = node(unreal.MaterialExpressionSaturate, -250, -550); link(grey, '', gsat, '')
+        band = node(unreal.MaterialExpressionLinearInterpolate, -200, -450); link(film, '', band, 'A'); link(gsat, '', band, 'B'); link(dry, '', band, 'Alpha')
+        near = node(unreal.MaterialExpressionPerInstanceCustomData, -650, -900); near.set_editor_property('data_index', 0); near.set_editor_property('const_default_value', 0.0)
+        om = node(unreal.MaterialExpressionOneMinus, -500, -800); link(moss, '', om, '')
+        k = node(unreal.MaterialExpressionMultiply, -350, -850); link(near, '', k, 'A'); link(om, '', k, 'B')
+        base = node(unreal.MaterialExpressionLinearInterpolate, -150, -350); link(bc, 'RGB', base, 'A'); link(band, '', base, 'B'); link(k, '', base, 'Alpha')
+        out(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
+        wet = node(unreal.MaterialExpressionMultiply, -300, 100); link(rt, 'R', wet, 'A'); wet.set_editor_property('const_b', 0.55)
+        kw = node(unreal.MaterialExpressionMultiply, -300, 200); link(near, '', kw, 'A'); om2 = node(unreal.MaterialExpressionOneMinus, -450, 200); link(dry, '', om2, ''); link(om2, '', kw, 'B')
+        rough = node(unreal.MaterialExpressionLinearInterpolate, -150, 100); link(rt, 'R', rough, 'A'); link(wet, '', rough, 'B'); link(kw, '', rough, 'Alpha')
+        out(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
     out(tex('Normal', -100, 'normal'), 'RGB', unreal.MaterialProperty.MP_NORMAL)
-    out(tex('Roughness', 100, 'gray'), 'R', unreal.MaterialProperty.MP_ROUGHNESS)
     out(tex('AO', 300, 'gray'), 'R', unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
     if plant:
         out(tex('Opacity', 500, 'gray'), 'R', unreal.MaterialProperty.MP_OPACITY_MASK)

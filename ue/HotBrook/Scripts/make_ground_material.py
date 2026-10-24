@@ -2,7 +2,10 @@
 # forest floors (ue/export/megascans_surfaces.py puts them in Import/surfaces at 2048²; imported here to /Game/HotBrook/Surfaces):
 #   - the floor under the trees: needle-and-moss floor and broadleaf litter, mixed in patches tens of metres across, with moss carpets;
 #   - rocky floor on slopes past ~30° (the till's stones and boulders where the soil thins);
-#   - mud at the lakes' edges: below ~0.6 m above Upper's level, and the beds under the water;
+#   - THE LAKES' EDGES AND BEDS by the sim's substrate (Import/substrate.png: ue/export/export_substrate.mjs — per 5-m cell the shares of
+#     boulder–cobble, gravel, sand and organic muck from each spot's wave exposure, the shore above the waterline as the water beside
+#     it): the rocky floor's cobble, gravel, sand (Poly Haven's gravelly_sand, greyed to the lakes' granite sand) or mud, below ~1 m
+#     above Upper's level and under the water, broken up by noise so the cells' squares don't show;
 #   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream;
 #   - SNOW over what faces up when /Game/HotBrook/Materials/MPC_HB_Season's 'Snow' is up (AHotBrookLink: with the lakes' ice), thinner
 #     on steep ground, a little uneven.
@@ -31,7 +34,7 @@ def import_tex(file, dest_name, kind):
     tex.set_editor_property('lod_group', unreal.TextureGroup.TEXTUREGROUP_WORLD)
     EAL.save_asset(SURF + '/' + dest_name)
     return tex
-SURFACES = {'ForestFloorA': 2.0, 'ForestFloorB': 2.0, 'MossyFloor': 1.0, 'RockyFloor': 2.0, 'Mud': 1.0}   # (metres a repeat: the scans' size)
+SURFACES = {'ForestFloorA': 2.0, 'ForestFloorB': 2.0, 'MossyFloor': 1.0, 'RockyFloor': 2.0, 'Mud': 1.0, 'Gravel': 2.0, 'Sand': 2.5}   # (metres a repeat: the scans' size)
 TEX = {}
 for s in SURFACES:
     TEX[s] = (import_tex(s + '_BaseColor.png', 'T_%s_BaseColor' % s, 'color'), import_tex(s + '_Normal.png', 'T_%s_Normal' % s, 'normal'),
@@ -92,13 +95,38 @@ floor = blend3(floor, S['MossyFloor'], op(unreal.MaterialExpressionMultiply, smo
 up = mask(node(unreal.MaterialExpressionVertexNormalWS, -2000, 1200), 'b', -1800, 1200)
 flat = smooth(up, 0.78, 0.9, -1600, 1200)
 ground = blend3(S['RockyFloor'], floor, flat, -800, -1600)
-# the lakes' edges: cobbled (the rocky floor) from below the waterline to ~1 m above Upper's level (Z 1893 cm; Lower's 1823); mud
-# on the beds deeper than ~1 m
+# the lakes' edges and beds: below ~1 m above Upper's level (Z 1893 cm; Lower's 1823) the substrate's mix — mud, then sand, gravel
+# and the rocky floor's cobble over it where each is a fair share of the bed (each share nudged by the mid noise, ±0.15)
 z = mask(wp, 'b', -2000, 1400)
 dry = smooth(z, 1960.0, 2000.0, -1600, 1400)
-ground = blend3(S['RockyFloor'], ground, dry, -650, -1600)
-shallow = smooth(z, 1700.0, 1800.0, -1600, 1500)
-ground = blend3(S['Mud'], ground, shallow, -500, -1600)
+SUB = '/Game/HotBrook/Textures/T_Substrate'
+task = unreal.AssetImportTask(); task.filename = unreal.Paths.project_dir() + 'Import/substrate.png'; task.destination_path = '/Game/HotBrook/Textures'
+task.destination_name = 'T_Substrate'; task.automated = True; task.replace_existing = True; task.save = False
+tools.import_asset_tasks([task])
+stex = unreal.load_asset(SUB)
+if stex:
+    stex.set_editor_property('srgb', False); stex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
+    stex.set_editor_property('mip_gen_settings', unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+    stex.set_editor_property('address_x', unreal.TextureAddress.TA_CLAMP); stex.set_editor_property('address_y', unreal.TextureAddress.TA_CLAMP)
+    EAL.save_asset(SUB)
+    import json as _json
+    sj = _json.load(open(unreal.Paths.project_dir() + 'Import/substrate.json'))
+    sx = mask(wp, 'r', -2600, 2600); sy = mask(wp, 'g', -2600, 2700)
+    su = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionAdd, op(unreal.MaterialExpressionMultiply, sx, 0.01, -2450, 2600), -sj['x0'], -2300, 2600), 1.0 / (sj['nx'] * sj['cell']), -2150, 2600)
+    sv = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionAdd, op(unreal.MaterialExpressionMultiply, sy, -0.01, -2450, 2700), -sj['y0'], -2300, 2700), 1.0 / (sj['ny'] * sj['cell']), -2150, 2700)
+    suv = node(unreal.MaterialExpressionAppendVector, -2000, 2650); link(su, '', suv, 'A'); link(sv, '', suv, 'B')
+    st = node(unreal.MaterialExpressionTextureSample, -1850, 2650); st.set_editor_property('texture', stex)
+    st.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR); st.set_editor_property('sampler_source', unreal.SamplerSourceMode.SSM_CLAMP_WORLD_GROUP_SETTINGS)
+    link(suv, '', st, 'UVs')
+    jit = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionSubtract, n_mid, 0.5, -1850, 2850), 0.3, -1700, 2850)
+    def share(ch, x, y): return smooth(op(unreal.MaterialExpressionAdd, mask(st, ch, -1700, y), jit, -1550, y), 0.2, 0.45, -1400, y)
+    edge = blend3(S['Mud'], S['Sand'], share('b', -1400, 2600), -1250, 2400)
+    edge = blend3(edge, S['Gravel'], share('g', -1400, 2700), -1100, 2400)
+    edge = blend3(edge, S['RockyFloor'], share('r', -1400, 2800), -950, 2400)
+else:
+    bad.append('no Import/substrate.png (ue/export/export_substrate.mjs): the edges cobbled, the beds mud')
+    edge = blend3(S['Mud'], S['RockyFloor'], smooth(z, 1700.0, 1800.0, -1600, 1500), -650, 2400)
+ground = blend3(edge, ground, dry, -500, -1600)
 # a broad brightness variation (0.8–1.15) over the colour so the repeats don't show
 var = node(unreal.MaterialExpressionLinearInterpolate, -1400, 1000); var.set_editor_property('const_a', 0.8); var.set_editor_property('const_b', 1.15); link(n_var, '', var, 'Alpha')
 color = op(unreal.MaterialExpressionMultiply, ground[0], var, -200, -1600)

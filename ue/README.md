@@ -20,7 +20,8 @@ project draws the world in the first person, fed live by it. The browser view, t
   under a lake's surface where that reaches over it at the mouths. (Its channel in the landscape still shows the sim's 5-m cells:
   a smooth channel needs the heightmap re-exported and the landscape rebuilt.)
 - **The ground** — `M_Ground`: Quixel Megascans forest floors (needles and moss, broadleaf litter, moss carpets), rocky floor on
-  slopes, mud at the water's edge, and past ~900 m the aerial photos' canopy (the trees stream only within ~1.2 km).
+  slopes, the lakes' edges and beds by the sim's substrate (below), and past ~900 m the aerial photos' canopy (the trees stream
+  only within ~1.2 km).
 - **The forest** — `AHotBrookForest`: the ~1.9 M trees of `Import/trees.bin` (`ue/export/export_forest.mjs`), streamed in 200-m
   tiles about the walker, each species drawn with its Quixel Megaplants look-alike (`Import/forest_meshes.json`, written by
   `Scripts/make_forest_meshes.py`): red spruce and balsam fir the Norway spruce, white pine the Baltic pine, cedar the Japanese
@@ -36,7 +37,16 @@ project draws the world in the first person, fed live by it. The browser view, t
   the cover the Forest Inventory measures (ferns ~15 %, forbs ~22 %, low shrubs ~17 %; less under closed spruce–fir), in patches,
   by the stand about it (the forest's own trees) and the water's nearness; streamed in 32-m cells in three rings (80/160/400 m).
   Its meshes: the Megascans scans (`Scripts/import_megascans.py` → `Import/megascans_meshes.json`) and the Megaplants' small
-  plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`).
+  plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`). THE STONES BY THE SIM'S SUBSTRATE (`Import/substrate.bin`,
+  below): on a bank as many as the water beside it is stony (a boulder shore strewn, a sandy cove or a muck shore bare), and in the
+  water on a stony bed under 2.5 m — cobble, boulders (the small stones 3–8× too), some breaking the surface. The rocks' material
+  (`M_MS_Rock`) knows the waterline: by the instance's nearness to the water (its custom data), below its lake's level grey under a
+  brown film of algae, up to ~0.6 m above it bare granite (the ice push scours the band), its moss and lichen above.
+- **The bed and the shores** — `ue/export/export_substrate.mjs` writes the sim's substrate map (src/w3/geometry.js `GEO.sub`: per
+  5-m cell the shares of boulder–cobble, gravel, sand and organic muck from each spot's wave exposure) as `Import/substrate.png` (for
+  `M_Ground`) and `substrate.bin` (for `UHotBrookWater::SubstrateAt`), the shore above the waterline given the water's beside it.
+  `M_Ground` draws the lakes' edges and beds by it — the rocky floor's cobble, gravel, sand (Poly Haven's gravelly_sand, greyed to
+  the lakes' granite sand) or mud — instead of one cobble band and mud below a metre.
 - **The live link** — `node ue/link/simhost.mjs` runs the sim at real time and streams it to `AHotBrookLink`
   (ws://127.0.0.1:8771; snapshot "HBS2"): the clock (the sun placed for the date and hour), the weather and wind, the fish near
   the walker, the forest's large animals.
@@ -205,7 +215,7 @@ The camps' textures (`Import/textures`, CC0 — no attribution required, listed 
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour
 made neutral), plank_flooring_03 (decks and docks), concrete_block_wall, red_brick, rock_wall_15 (fieldstone), rocky_trail (the
 roads); from [ambientCG](https://ambientcg.com) — RoofingTiles003 (shingle roofs), PaintedWood009C (trim, doors), Metal050C
-(aluminium), Grass004 (the lawns).
+(aluminium), Grass004 (the lawns). The lakes' sand (`Import/surfaces/Sand_*`): Poly Haven's gravelly_sand, CC0.
 
 The bear and the moose the human downloaded are not listed: they are for the human's own use only and are never committed,
 published or shared.
