@@ -202,7 +202,23 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~21:30 machine clock — THE NEWEST). UNREAL ON 5.8.4 (be3adc5): the project's EngineAssociation is 5.8
+▶▶▶ RESUME HERE (2026-10-24 ~00:30 machine clock / 20:30 EDT — THE NEWEST). UNREAL: THE REAL TREES + WATER + GROUND (b09f97c, pushed).
+The human added the Fab packs to G:\HotBrookUE\Content (Megaplant_Library: 23 Megaplants packs incl. all 14 forest species; Animal
+Variety Pack 5.5; rock/shrub packs). The Norway Maple Forest "Add to Project" never copied: copied by hand from the launcher's
+VaultCache\<pack>\data\Content. Megascans surfaces/FBX sit raw in VaultCache\FabLibrary (ue/export/megascans_surfaces.py -> Import/
+surfaces 2048²). Verified by screenshots: Megaplants trees per species (skinned, Dynamic Wind from the sim's wind — HBS1 byte 37 the
+bearing), the lakes' SLW water (calm ripples, sky/shore reflections — r.Water.SingleLayer.Reflection=3: Lumen screen traces made the
+near water black), Megascans ground (cobble shore). Perf (RTX 3060, -hbshot logs game/draw/RHI/GPU): woods ~19 ms GPU steady (at the
+offscreen 1280x720 — -ResX isn't honoured with -RenderOffscreen; try r.setres in a shot's commands). -hbshot's 6th field = console
+commands ("cvar:value|cmd") for one-run A/Bs; "r.ProfileGPU.ShowUI:0|ProfileGPU" dumps a GPU profile to the log (parse it as UTF-8).
+NEXT: (1) THE HUMAN quits the launcher -> move C:\ProgramData\Epic\EpicGamesLauncher\VaultCache (32 GB, C: 44 GB free) to
+G:\EpicVaultCache + junction; (2) the woods are too open/pale: export_forest's stocking multiplies 420/ha by the photos' cover and
+saplings are only 350/ha — a research agent is writing docs/research_notes/Maine forest structure/forest_layers_and_crowns.md (stems
+by layer, crowns, shrubs/herbs, CWD, shore shrubs); then restock + an understory/ground-cover layer streamed nearer the walker
+(bilberry ~ lowbush blueberry, wood anemone, ferns from the Megascans FBX, saplings) — mind the GPU budget; (3) the human is adding:
+Baltic Pine + Aspen saplings, European Hornbeam, free Megascans boulders/granite/logs/fallen pine/beach pebbles (license $0 checkout:
+theirs to do), maybe the free Bluegill; (4) fish models, animals (Animal Variety Pack: deer, fox, wolf, crow), underwater fog, ice.
+▶▶▶ RESUME HERE (2026-10-23 ~21:30 machine clock). UNREAL ON 5.8.4 (be3adc5): the project's EngineAssociation is 5.8
 (G:\Program Files\EpicGames\UE_5.8; ue/retarget.ps1 did it — build, both materials, the level). Working, verified by -hbshot screenshots:
 the landscape (the scale bug fixed: a spawn-transform scale came out 25600), M_Ground (forest floor, rock slopes, mud low, the aerial
 canopy past ~900 m), sun shadows, the live sim's clock (HotBrookLink <-> ue/link/simhost.mjs on ws://127.0.0.1:8771 — 8765 is another
