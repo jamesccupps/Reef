@@ -202,7 +202,38 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-24 ~14:20 EDT — THE NEWEST). UNREAL: THE CAMPS, DOCKS AND ROADS + THE PLAYER'S START. The human asked
+▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock — THE NEWEST). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
+downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
+The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
+to G:\HotBrookUE\Import\sketchfab\<name>\ (inner zips → source\x\): osprey, osprey-in-flight, belted-kingfisher(-in-flight) (OSU
+glb, 1 anim each), hooded-merganser-duck-female (obj), model-96a-north-american-otter (fbx swim, CC-BY-NC), ferret (.blend → mink),
+snapping-turtle (1 M obj), midland-painted-turtle (2 M ply), bullfrog (144 MB gltf), bullfrog-tadpole (gltf), rigged-game-character-1
+(tony5_2.fbx, UE4 rig), nathan-animated-003-walking-3d-man (fbx walk), fishing-rod-rigged-and-animated (rod06.FBX), bald-eagle
+(UC Davis gltf, flight), common-loon-osu + common-loon-in-flight (OSU glb). (The OLD common-loon folder is the Innovation Studio scan —
+untouched.) PLAN: (1) inspect each in Blender (armature, clips, size, axes); (2) the animated ones as skeletal meshes + clips (a new
+convert path), the scans as static meshes via convert_models.py; (3) AHotBrookWildlife: osprey, kingfisher, mergansers, otter, mink
+from fish3 _wildN (check the link sends them); the animated loon/eagle; (4) herps (snapper, painted turtles basking, bullfrogs,
+frogs, tadpoles) — need the link to carry herps3; (5) anglers in boats (WILD3.angler → person + rod + skiff); (6) model-free: lawns,
+lit windows at night, docks out of season. Credits → ue/README.md table (CC-BY-NC marked; the bear/moose never listed).
+  + 12:05 CONVERTED (Blender, uncommitted): ue/export/convert_creatures.py → G:\HotBrookUE\Import\creatures\<name>.glb + views
+  (sheet_anim.png, sheet_static.png): SKINNED (real size in file units, faced +X — scaled in the game): osprey_perched/_flight,
+  kingfisher_perched/_flight, loon_swim/_flight (OSU, metres), eagle_flight (UC Davis, cm), otter_swim (1.06 m); STATIC (sized, on
+  base): hooded_merganser 0.45, mink 0.55 (ferret repainted dark brown), snapping_turtle 0.55, painted_turtle 0.19 (vertex colours!),
+  bullfrog 0.17 (mud mound cut), tadpole 0.12. ue/export/convert_people.py → angler_summer (Nathan: sit/cast/reel/walk), angler_winter
+  (Tony, UE4 rig: sit/jig) — poses authored bone by bone (seated, rod before the belly; checked in views), rod.glb (2.1 m, butt at 0,
+  tip +X). NEXT: Scripts/import_creatures.py (Interchange; manifest Import/creatures_meshes.json; textures capped 2048; painted turtle
+  a vertex-colour material) → C++.
+  + 12:25 THE WILDLIFE SLICE (committed next): import_creatures.py ran (17 assets: skeletal ones face +X in UE — Blender (x,y,z) →
+  UE (x,−y,z); the eagle's file is 237× real: scale 2.0/473; Nathan's armature sat under a 0.01 empty: convert_people now applies
+  the armature's scale and scales the clips' location keys). AHotBrookWildlife rewritten: looks from creatures_meshes.json (FLook:
+  static or skinned + clip, scale, offset = bounds origin, glide frame), kingfisher (a leaning dead pole of the engine cylinder +
+  MI_HB_Siding_log, perch over the water; fly/hover/plunge/return), osprey + eagle (circle, stoop, carry off over the woods → away
+  2–7 min), merganser groups (members follow the leader, dive), otter (swim clip, dive, haul out), mink (bounds along the 0.25-m line
+  at night), herps near the walker by hash cells (snapper 1/ha walking the bed, bullfrog 10/km afloat, plop when close). The link
+  passes the ice (F(32)); hb.AllLife 1 forces every kind; -hbshot near<kind> for all. Checked in shots (kingfisher on its pole, the
+  pair of mergansers, otter, mink, snapper, bullfrog, osprey and eagle from below) + a gc-every-second run.
+  KNOWN: mergansers all hen plumage (no drake model); the OSU perched osprey and the OSU loons unused yet.
+▶▶▶ RESUME HERE (2026-10-24 ~14:20 EDT). UNREAL: THE CAMPS, DOCKS AND ROADS + THE PLAYER'S START. The human asked
 (09:17, a Google Maps shot of Upper's east shore) to start there and "keep going, we need buildings, accurate textures, all the
 animals, eventually other boaters and everything". DONE: d520af5 the start (Import/start.json — kept OUTSIDE the repo, it is the
 player's own place; -hbstart=X,Y,Yaw; nearest dry ground; the canoe parks by it). THE CAMPS (this commit): export_camps.mjs (the

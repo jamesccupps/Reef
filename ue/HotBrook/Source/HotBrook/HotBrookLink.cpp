@@ -93,7 +93,7 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 				TArray<float> Cnt, Act, Tk; Cnt.SetNum(NK); Act.SetNum(NK); Tk.SetNumUninitialized(NW * 6);
 				for (int32 k = 0; k < NK; k++) { Cnt[k] = F(ForestEnd + 4 + k * 8); Act[k] = F(ForestEnd + 8 + k * 8); }
 				if (NW) FMemory::Memcpy(Tk.GetData(), B.GetData() + Ev + 4, NW * 24);
-				for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) It->Update(Cnt.GetData(), Act.GetData(), NK, Tk.GetData(), NW, YearFrac);
+				for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) It->Update(Cnt.GetData(), Act.GetData(), NK, Tk.GetData(), NW, YearFrac, F(32));
 			}
 		}
 	}

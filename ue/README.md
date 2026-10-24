@@ -47,11 +47,27 @@ project draws the world in the first person, fed live by it. The browser view, t
   deepened by its condition, at its place, heading and pitch, eased between the snapshots; its tail beating at the browser's rate
   for its speed (`M_HB_Fish`'s swim wave, its phase per fish in the instance's custom data); a school as up to 24 of its fish
   ~3 lengths apart by day, ~8 at night. Redbreast borrow the pumpkinseed, fallfish and alewife the dace.
-- **The birds** — `AHotBrookWildlife`: the loons, great blue herons and bald eagles the sim has on the lakes now (fish3 `_wildN`
-  through the link — none out of season), each lake its share; loons swim the open water and dive every minute or two (one dives
-  where the sim says a loon took a fish, and comes up there), resting on the water at night; herons stand in the shallows and step
-  slowly between spots; eagles circle high by day and stoop to the water where the sim's eagle took a fish. (No models yet for the
-  ospreys, kingfishers, mergansers, otters and mink the sim also keeps.) `-hbshot` takes `nearloon`, `nearheron`, `neareagle`.
+- **The lakes' wildlife** — `AHotBrookWildlife`: every fish-eater the sim has on the lakes now (fish3 `_wildN` through the link —
+  none out of season, the open-water birds gone from a frozen lake), each lake its share (by area, or by shore), each with the
+  browser's life for it (render3/wild3view.js): loons swim the open water and dive every minute or two (one dives where the sim says
+  a loon took a fish, and comes up there), resting on the water at night; herons stand in the shallows and step slowly between
+  spots; belted KINGFISHERS sit on a dead pole leaning from the wooded bank out over the edge, fly out, hover and plunge head first,
+  and come back; OSPREYS circle 18–30 m up, hover and plunge feet first and carry the fish off over the woods; the bald eagles soar
+  on few beats and glide down to snatch a fish, and carry it off; common and hooded MERGANSERS swim the shallows in a group (a pair in
+  spring, the hens and young after), each diving now and then; river OTTERS swim and porpoise along the shore, dive for half a minute
+  and haul out to eat; MINK bound along the water's edge at night and swim a little. Near the walker, at the sim's densities: the
+  SNAPPING TURTLES walking the shallows' bed (1 a hectare) and the BULLFROGS afloat at the edge (10 a km; in with a plop when the
+  walker comes close). The birds in flight beat their wings (their clips held level for a glide), the otter swims its clip.
+  `hb.AllLife 1` brings every kind out whatever the season or hour. `-hbshot` takes `near<kind>` for loon, heron, kingfisher, osprey,
+  eagle, cmerganser, hmerganser, otter, mink, snapper, bullfrog.
+- **The second batch of models** (the wanted list of 2026-10-24) — `ue/export/convert_creatures.py` (Blender 5.1): the animated ones
+  (OSU's ospreys, kingfishers and loon, UC Davis's eagle, the otter's swim) as one skinned mesh on one armature with its clip, every
+  loose part bound rigidly to the bone it hung from, turned to face +X (sized in the game); the scans (the merganser hen, the ferret
+  repainted as a mink, the snapping and painted turtles, the bullfrog and its tadpole) welded, cut to a triangle budget, levelled by
+  their principal axes, sized and set on their base. `ue/export/convert_people.py`: the two anglers seated (each limb bone turned
+  about its joint to point where the pose wants — a man on a thwart or a bucket, the rod before his belly) with clips sit / cast /
+  reel (summer) and sit / jig (the ice), the rod 2.1 m. `Scripts/import_creatures.py` brings them in (Interchange; textures ≤ 2048;
+  the turtles and frogs by Nanite; the painted turtle's colour from its vertices) and writes `Import/creatures_meshes.json`.
 - **The models** — downloaded from Sketchfab to `G:\HotBrookUE\Import\sketchfab` (never committed); `ue/export/convert_models.py`
   (Blender 5.1) lays each on its axes (a fish's length on +X, back up), cuts it to ~12,000 triangles (birds 24,000, the canoe
   30,000), sizes it (a fish 1 m long; a bird, a boat to its real size) and writes `Import/models/<name>.glb` with three views to
@@ -121,6 +137,19 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 | common loon | [Common Loon](https://sketchfab.com/models/24374cff63c345cba6fff9e80feb2c17) | Innovation Studio | CC BY 4.0 |
 | bald eagle | [Bald Eagle Flying Bird Model](https://sketchfab.com/models/30434fd1272f464a8540750a78a5087f) | Pigcraft | CC BY 4.0 |
 | canoe | [Cruising Canoe](https://sketchfab.com/models/982bd54e6278492484d3154d09dbe59d) | gogiart | CC BY 4.0 |
+| osprey | [Osprey](https://sketchfab.com/3d-models/osprey-3b36672f100746cea2196bff6af040e6), [Osprey - in Flight](https://sketchfab.com/3d-models/osprey-in-flight-909d68cc4f9249a2878a37c618467f31) | OSU.Multimedia | CC BY 4.0 |
+| belted kingfisher | [Belted Kingfisher](https://sketchfab.com/3d-models/belted-kingfisher-e0b0a20456b14a5b95743a0ba9971c84), [Belted Kingfisher - in Flight](https://sketchfab.com/3d-models/belted-kingfisher-in-flight-14286cc021d34a5798c9e46319717551) | OSU.Multimedia | CC BY 4.0 |
+| common loon (in flight) | [Common Loon](https://sketchfab.com/3d-models/common-loon-c9663fb0a6ed4cc7aa60045459d4fa54), [Common Loon - in Flight](https://sketchfab.com/3d-models/common-loon-in-flight-55f2f4b8d84e48a482167368cf6f83ca) | OSU.Multimedia | CC BY 4.0 |
+| bald eagle (in flight) | [Bald Eagle](https://sketchfab.com/3d-models/bald-eagle-8874cfcf83a54575ba8068376f8a63a8) | UC Davis TERC | CC BY 4.0 |
+| common and hooded mergansers | [Hooded Merganser Duck Female](https://sketchfab.com/3d-models/hooded-merganser-duck-female-a9c6a0916b2e4ba3a9c9fe49508acd46) | Grand Rapids Public Museum | CC BY 4.0 |
+| river otter | [Model 96A - North American Otter](https://sketchfab.com/3d-models/model-96a-north-american-otter-57b88c7e30c74b588f28102177849397) | DigitalLife3D | CC BY-NC 4.0 |
+| mink (repainted) | [Ferret](https://sketchfab.com/3d-models/ferret-a5c717c20b08461aa1d9ce462f3e019e) | sdpm | CC BY 4.0 |
+| snapping turtle | [Snapping Turtle](https://sketchfab.com/3d-models/snapping-turtle-794f3bd346d04b1ea13ea33ed1a02e16) | RISD Nature Lab | CC BY 4.0 |
+| painted turtle | [Midland Painted Turtle](https://sketchfab.com/3d-models/midland-painted-turtle-1c1b0558403d47d5bf0b387dc79b4783) | Grand Rapids Public Museum | CC BY 4.0 |
+| bullfrog, tadpole | [CC0 American Bullfrog](https://sketchfab.com/3d-models/cc0-american-bullfrog-l-catesbeianus-12244c1e4f3a4bfdbc217acba90e8baa), [its tadpole](https://sketchfab.com/3d-models/cc0-american-bullfrog-l-catesbeianus-8816b4762a3f4f2f865c4af32c3a6222) | ffish.asia | CC0 |
+| the ice angler | [Rigged Game Character 1](https://sketchfab.com/3d-models/rigged-game-character-1-0bbafaaffefe477eae9ec20f67cf4883) | evan4129 | CC BY 4.0 |
+| the summer angler | [Nathan Animated 003 - Walking 3D Man](https://sketchfab.com/3d-models/nathan-animated-003-walking-3d-man-143a2b1ea5eb4385ae90a73657aca3bc) | Renderpeople | CC BY 4.0 |
+| the anglers' rod | [Fishing Rod, Rigged and Animated](https://sketchfab.com/3d-models/fishing-rod-rigged-and-animated-78991bf44cf54acb8660bef317d72c7a) | ergin3d | CC BY 4.0 |
 
 The camps' textures (`Import/textures`, CC0 — no attribution required, listed with thanks): from [Poly Haven](https://polyhaven.com) —
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour
@@ -149,5 +178,8 @@ published or shared.
   `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py` (`inspect_megaplants.py` lists the plant meshes)
 - the camps: `HB_WORLD=true node ue/export/export_camps.mjs`, `python -I ue/export/build_camps.py` (needs numpy; Pillow to measure the
   textures), then `import_camps.py` (the textures in `Import/textures` with their `manifest.json`)
+- the wildlife and the people: `"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --disable-autoexec -P ue/export/convert_creatures.py`
+  and `… -P ue/export/convert_people.py` (from `Import/sketchfab/<name>/`, unzipped; `-- <name> …` for some), then `import_creatures.py`
+  (`HB_ONLY=a,b` for some)
 - the level: `UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=HotBrookBuild`
 - all of it on another engine version: `powershell -File ue\retarget.ps1 -Version 5.8`

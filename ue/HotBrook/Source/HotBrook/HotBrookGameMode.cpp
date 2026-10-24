@@ -174,7 +174,8 @@ void AHotBrookGameMode::BeginPlay()
 		if (F.Num() < 4) continue;
 		FShot S{ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() };
 		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|"));
-		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
+		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle"), TEXT("kingfisher"), TEXT("osprey"),
+			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
@@ -195,7 +196,7 @@ void AHotBrookGameMode::PlaceNext()
 	// (a look at an animal: the walker set down 12 m from the nearest of its kind, so the woods about it stream in while it settles)
 	double SX = S.X, SY = S.Y;
 	const int32 Kind = S.Near == TEXT("bear") ? 0 : S.Near == TEXT("deer") ? 1 : S.Near == TEXT("moose") ? 2 : -1;
-	const int32 Bird = S.Near == TEXT("loon") ? 0 : S.Near == TEXT("heron") ? 1 : S.Near == TEXT("eagle") ? 4 : -1;
+	const int32 Bird = AHotBrookWildlife::KindOf(S.Near);
 	if (Bird >= 0) {   // (a bird: the walker set down by the nearest of its kind — on the shore or swimming)
 		const AHotBrookWildlife* Wl = nullptr; for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) { Wl = *It; break; }
 		FVector BP; float BY = 0;
@@ -231,14 +232,17 @@ void AHotBrookGameMode::TakeShot()
 	const FString& Near = Shots[NextShot].Near;
 	// (framed twice: once to let the exposure settle on the new view, a moment later again on where the animal has gone)
 	const FVector From = Framed && ShotCam ? ShotCam->GetActorLocation() : Pw ? Pw->GetActorLocation() : FVector::ZeroVector;
-	const int32 BirdK = Near == TEXT("loon") ? 0 : Near == TEXT("heron") ? 1 : Near == TEXT("eagle") ? 4 : -1;
+	const int32 BirdK = AHotBrookWildlife::KindOf(Near);
 	if (BirdK >= 0 && Framed < 2 && Pw) {
-		// (a bird: the camera off its side — a loon or a heron from a few metres, low; an eagle from 30 m, level with it)
+		// (one of the lakes' animals: the camera off its side — a loon or a heron from a few metres, low; the small ones (a kingfisher,
+		// the mink, a turtle, a frog) from one or two; an eagle or an osprey in the air from 30 m, level with it)
 		Framed++; FVector BP; float BY = 0;
 		const AHotBrookWildlife* Wl = nullptr; for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) { Wl = *It; break; }
 		if (Wl && Wl->Nearest(BirdK, HotBrookCoords::ToSim(From), BP, BY)) {
-			const FVector Side = FRotator(0, BY + 90.f, 0).Vector(), At = BP + FVector(0, 0, BirdK == 1 ? 70.f : BirdK == 0 ? 15.f : 0.f);
-			const FVector Eye = At + Side * (BirdK == 4 ? 3000.f : 450.f) + FVector(0, 0, BirdK == 0 ? 40.f : BirdK == 1 ? 30.f : 0.f);
+			const bool bAir = BirdK == 3 || BirdK == 4, bSmall = BirdK == 2 || BirdK >= 8;
+			const FVector Side = FRotator(0, BY + 90.f, 0).Vector(), At = BP + FVector(0, 0, BirdK == 1 ? 70.f : BirdK == 0 ? 15.f : bSmall ? 5.f : 0.f);
+			FVector Eye = At + Side * (bAir ? 3000.f : bSmall ? 150.f : 450.f) + FVector(0, 0, BirdK == 0 ? 40.f : BirdK == 1 ? 30.f : bSmall ? 35.f : bAir ? 0.f : 40.f);
+			if (bAir) Eye = At - FRotator(0, BY, 0).Vector() * 900.f + Side * 400.f - FVector(0, 0, 700.f);   // (a bird in the air from behind and below: its wings)
 			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
 			ShotCam->SetActorLocationAndRotation(Eye, (At - Eye).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the %s at %s"), *Shots[NextShot].Name, *Near, *BP.ToString());
