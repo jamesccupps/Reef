@@ -123,6 +123,7 @@ USkeletalMeshComponent* AHotBrookAnimals::NewBody(USkeletalMesh* Mesh)
 {
 	USkeletalMeshComponent* C = NewObject<USkeletalMeshComponent>(this);
 	C->SetSkeletalMesh(Mesh); C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	C->bAffectDistanceFieldLighting = false; C->bAffectDynamicIndirectLighting = false;   // (moving: out of Lumen's scene)
 	C->SetupAttachment(RootComponent); C->RegisterComponent();
 	return C;
 }

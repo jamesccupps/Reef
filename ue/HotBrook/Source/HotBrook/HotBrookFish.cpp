@@ -31,6 +31,7 @@ void AHotBrookFish::BeginPlay()
 		UInstancedStaticMeshComponent* I = NewObject<UInstancedStaticMeshComponent>(this);
 		I->SetStaticMesh(M); I->SetMobility(EComponentMobility::Movable); I->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		I->SetCastShadow(true);   // (a fish's shadow on the sunlit bed, as the browser draws it)
+		I->bAffectDistanceFieldLighting = false; I->bAffectDynamicIndirectLighting = false;   // (too small and quick for Lumen's scene)
 		I->SetupAttachment(RootComponent); I->RegisterComponent(); I->SetNumCustomDataFloats(2); BySpecies.Add(I);
 	}
 	X.SetNum(NSPECIES); C.SetNum(NSPECIES);
@@ -104,8 +105,8 @@ void AHotBrookFish::Tick(float Dt)
 		UInstancedStaticMeshComponent* I = BySpecies[s]; const int32 N = X[s].Num();
 		if (I->GetInstanceCount() != N) { I->ClearInstances(); if (N) I->AddInstances(X[s], false, true); }
 		else if (N) I->BatchUpdateInstancesTransforms(0, X[s], true, false, true);
+		// (the instances' own updates refresh them on the GPU; rebuilding the whole component each frame made Lumen recapture it)
 		for (int32 k = 0; k < N; k++) I->SetCustomData(k, TArrayView<const float>(&C[s][k * 2], 2), false);
-		if (N || I->GetInstanceCount()) I->MarkRenderStateDirty();
 	}
 }
 

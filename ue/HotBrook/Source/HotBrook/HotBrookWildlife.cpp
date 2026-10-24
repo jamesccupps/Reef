@@ -110,6 +110,7 @@ void AHotBrookWildlife::Spawn(int32 Kind, int32 Lake)
 	else { B.Radius = FMath::FRandRange(60.f, 140.f); B.Ang = FMath::FRandRange(0.f, 2.f * PI); B.Alt = FMath::FRandRange(40.f, 90.f); B.Until = Now + FMath::FRandRange(40.f, 90.f); }
 	UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(this);
 	C->SetStaticMesh(Mesh[Kind]); C->SetMobility(EComponentMobility::Movable); C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	C->bAffectDistanceFieldLighting = false; C->bAffectDynamicIndirectLighting = false;   // (small and moving: out of Lumen's scene)
 	C->SetupAttachment(RootComponent); C->RegisterComponent(); B.C = C;
 	Birds.Add(B);
 }
