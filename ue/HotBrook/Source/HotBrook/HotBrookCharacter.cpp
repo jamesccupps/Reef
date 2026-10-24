@@ -1,5 +1,8 @@
 #include "HotBrookCharacter.h"
 #include "HotBrookWater.h"
+#include "HotBrookBoat.h"
+#include "EngineUtils.h"
+#include "Engine/Engine.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -36,17 +39,52 @@ void AHotBrookCharacter::SetupPlayerInputComponent(UInputComponent* In)
 	In->BindAction("Up", IE_Released, this, &AHotBrookCharacter::UpOff);
 	In->BindAction("Down", IE_Pressed, this, &AHotBrookCharacter::DownOn);
 	In->BindAction("Down", IE_Released, this, &AHotBrookCharacter::DownOff);
+	In->BindAction("Use", IE_Pressed, this, &AHotBrookCharacter::Use);
 }
 
 FString AHotBrookCharacter::WaterState() const
 {
-	switch (State) { case EWater::Wade: return TEXT("wading"); case EWater::Swim: return TEXT("swimming"); case EWater::Dive: return TEXT("diving"); case EWater::Ice: return TEXT("on the ice"); default: return TEXT("on land"); }
+	switch (State) { case EWater::Boat: return TEXT("in the canoe"); case EWater::Wade: return TEXT("wading"); case EWater::Swim: return TEXT("swimming"); case EWater::Dive: return TEXT("diving"); case EWater::Ice: return TEXT("on the ice"); default: return TEXT("on land"); }
+}
+
+void AHotBrookCharacter::Use()
+{
+	UCharacterMovementComponent* M = GetCharacterMovement();
+	if (Boat) {   // (out: onto the shore if it is near, else over the side)
+		FVector L; const bool bShore = Boat->LandingSpot(800.f, L);
+		if (!bShore) L = Boat->GetActorLocation() + FRotator(0, Boat->Yaw() + 90.f, 0).Vector() * 120.f + FVector(0, 0, 60.f);
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); Boat->SetOccupied(false); Boat = nullptr;
+		SetActorEnableCollision(true); SetActorLocation(L, false, nullptr, ETeleportType::TeleportPhysics); M->SetMovementMode(bShore ? MOVE_Walking : MOVE_Flying);
+		State = bShore ? EWater::Dry : EWater::Swim;
+		return;
+	}
+	for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) {
+		if (It->IsOccupied() || FVector::Dist2D(It->GetActorLocation(), GetActorLocation()) > 400.f) continue;
+		Boat = *It; Boat->SetOccupied(true); State = EWater::Boat;
+		M->StopMovementImmediately(); M->SetMovementMode(MOVE_None); SetActorEnableCollision(false);
+		AttachToActor(Boat, FAttachmentTransformRules::KeepWorldTransform);
+		SetActorLocation(Boat->SeatLocation() + FVector(0, 0, 5.f), false, nullptr, ETeleportType::TeleportPhysics);   // (sitting: the eye ~0.8 m over the seat)
+		BoatYaw = Boat->Yaw(); if (Controller) Controller->SetControlRotation(FRotator(0, BoatYaw, 0));
+		return;
+	}
 }
 
 void AHotBrookCharacter::Tick(float Dt)
 {
 	Super::Tick(Dt);
 	UCharacterMovementComponent* M = GetCharacterMovement();
+	// in the canoe: the strokes to it, the walker on its seat, the view turning with it
+	if (Boat) {
+		Boat->Paddle(FwdIn, SideIn, bRun);
+		SetActorLocation(Boat->SeatLocation() + FVector(0, 0, 5.f));
+		const float dY = FMath::FindDeltaAngleDegrees(BoatYaw, Boat->Yaw()); BoatYaw = Boat->Yaw();
+		if (Controller && dY != 0.f) { FRotator R = Controller->GetControlRotation(); R.Yaw += dY; Controller->SetControlRotation(R); }
+		Eye->SetRelativeLocation(FVector(0, 0, 75.f));
+		return;
+	}
+	// (a canoe at hand: say so)
+	if (GEngine) for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It)
+		if (!It->IsOccupied() && FVector::Dist2D(It->GetActorLocation(), GetActorLocation()) < 400.f) GEngine->AddOnScreenDebugMessage(7, 0.2f, FColor::White, TEXT("E: get in the canoe"));
 	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
 	const FVector P = GetActorLocation(); const float Feet = P.Z - GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	float S = 0; const bool Wet = W && W->SurfaceAt(P, S) && S > Feet;

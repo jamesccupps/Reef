@@ -6,6 +6,7 @@
 // "nearbear", "neardeer", "nearmoose" set the walker down by the nearest of those and frame it from its side.
 // With -hbwalk="X0,Y0,X1,Y1[,m/s]" the walker is instead walked along that line at a walking pace (1.45 m/s) once -hbwait is up,
 // the frame times logged every two seconds (the forest and the ground cover streaming in as they would), then the game quits.
+// With -hbpaddle=N the walker gets into the canoe and paddles it for N seconds (its speed and heading logged), then a picture, then quits.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -30,5 +31,7 @@ private:
 	// (the walk test)
 	bool bWalk = false, bWalking = false; FVector2D WalkA, WalkB; double WalkSpeed = 1.45, WalkT0 = 0, NextLog = 0, MaxFrame = 0;
 	void StartWalk();
+	// (the canoe test, -hbpaddle=seconds: aboard, steady strokes with a little turn, its speed logged each second, a picture at the end)
+	double PaddleFor = 0, PaddleT0 = -1, NextPaddleLog = 0; void StartPaddle();
 	bool bStats = false; double StatsT0 = -1, NextStats = 0, QuitAt = 0;
 };

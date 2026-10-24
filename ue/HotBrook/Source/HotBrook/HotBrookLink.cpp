@@ -5,6 +5,7 @@
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
+#include "HotBrookBoat.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
 #include "Components/DirectionalLightComponent.h"
@@ -71,6 +72,7 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
 	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0);
 	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
+	for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) { It->WindSpeed = WindSpeed; It->WindFrom = WindFrom; }   // (and a canoe drifts)
 	const uint32 NF = U(40), NFo = U(44); FishNear = NF;
 	const int64 FishEnd = 48 + (int64)NF * AHotBrookFish::Stride;
 	if (FishEnd > B.Num()) return;

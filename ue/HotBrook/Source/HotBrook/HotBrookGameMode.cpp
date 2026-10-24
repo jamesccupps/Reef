@@ -9,6 +9,7 @@
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
+#include "HotBrookBoat.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
 #include "Engine/World.h"
@@ -45,6 +46,19 @@ void AHotBrookGameMode::Tick(float Dt)
 		}
 		if (QuitAt > 0 && Now - StatsT0 > QuitAt) FPlatformMisc::RequestExit(false);
 	}
+	if (PaddleT0 >= 0) {
+		const double Now = GetWorld()->GetTimeSeconds();
+		AHotBrookBoat* Bt = nullptr; for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) { Bt = *It; break; }
+		if (Bt && Now >= NextPaddleLog) {
+			NextPaddleLog = Now + 1.0; const FVector2D M = HotBrookCoords::ToSim(Bt->GetActorLocation());
+			UE_LOG(LogTemp, Display, TEXT("hbpaddle %4.1f s: %.2f m/s, heading %.0f, at %.1f, %.1f"), Now - PaddleT0, Bt->Speed() / 100.f, Bt->Yaw(), M.X, M.Y);
+		}
+		if (Now - PaddleT0 > PaddleFor) {
+			if (Bt) Bt->Autopilot(0.f, 0.f);
+			FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("paddle.png")), false, false);
+			PaddleT0 = -1; FTimerHandle Q; GetWorldTimerManager().SetTimer(Q, [] { FPlatformMisc::RequestExit(false); }, 1.5f, false);
+		}
+	}
 	if (!bWalking) return;
 	// the walk: along the line at the pace, on the ground (the heightmap's), facing the way
 	const double Now = GetWorld()->GetTimeSeconds(), L = FVector2D::Distance(WalkA, WalkB), S = (Now - WalkT0) * WalkSpeed;
@@ -59,6 +73,16 @@ void AHotBrookGameMode::Tick(float Dt)
 			SumGame / NFrames, SumDraw / NFrames, SumGpu / NFrames);
 		SumFrame = SumGpu = SumGame = SumDraw = SumRhi = 0; NFrames = 0; MaxFrame = 0; NextLog = Now + 2.0;
 	}
+}
+
+void AHotBrookGameMode::StartPaddle()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController(); AHotBrookCharacter* C = PC ? Cast<AHotBrookCharacter>(PC->GetPawn()) : nullptr;
+	AHotBrookBoat* Bt = nullptr; for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) { Bt = *It; break; }
+	if (!C || !Bt) { UE_LOG(LogTemp, Display, TEXT("hbpaddle: no %s"), C ? TEXT("canoe") : TEXT("walker")); FPlatformMisc::RequestExit(false); return; }
+	C->SetActorLocation(Bt->GetActorLocation() + FVector(0, 0, 100.f), false, nullptr, ETeleportType::TeleportPhysics); C->Use();
+	Bt->Autopilot(1.f, 0.15f); PaddleT0 = NextPaddleLog = GetWorld()->GetTimeSeconds();
+	UE_LOG(LogTemp, Display, TEXT("hbpaddle: aboard (%s), paddling for %.0f s"), *C->WaterState(), PaddleFor);
 }
 
 void AHotBrookGameMode::StartWalk()
@@ -84,8 +108,14 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookFish>(GetWorld())) GetWorld()->SpawnActor<AHotBrookFish>();
 	// the lakes' fish-eating birds the sim counts (loons, herons, eagles), each with its own simple life
 	if (!TActorIterator<AHotBrookWildlife>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWildlife>();
+	// a canoe in the shallows nearest the start
+	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
+	if (FParse::Value(FCommandLine::Get(), TEXT("hbpaddle="), PaddleFor) && PaddleFor > 0) {
+		float W = 20.f; FParse::Value(FCommandLine::Get(), TEXT("hbwait="), W);
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::StartPaddle, W, false); return;
+	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("hbwalk="), Arg, false)) {
 		TArray<FString> F; Arg.TrimQuotes().ParseIntoArray(F, TEXT(","));
 		if (F.Num() >= 4) {

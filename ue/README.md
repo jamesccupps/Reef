@@ -60,6 +60,11 @@ project draws the world in the first person, fed live by it. The browser view, t
 - **The walker** — `HotBrookCharacter`: first person at 1.65 m; W A S D / arrows, mouse, Shift to run, Space to jump; wading,
   swimming past chest depth (the head riding the water: a slow swell and a breaststroke's rhythm), diving with C / Ctrl; on the ice
   in winter.
+- **The canoe** — `AHotBrookBoat`: a 5-m canoe waiting in the shallows nearest the start. **E** beside it gets in (the stern seat)
+  and out (onto the shore within ~8 m, else over the side); W / S paddle, A / D turn, Shift strokes harder. ~1.4 m/s at a steady
+  pace (~2 m/s hard), gliding and slowing on the hull's drag, the keel holding it straight, drifting with the sim's wind, running
+  aground where the water is shallower than it draws (kept within the lakes' drawn outlines). `-hbpaddle=N` paddles it N seconds
+  for a test (speed and heading logged, a picture from the seat).
 - **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on
   while the camera is under the surface: the light reaching each thing dimmed by the water above it (per colour, the browser's Kd:
   tea water loses blue first), what the eye sees of it dimmed along the path (M_LakeWater's absorption + scattering), and the

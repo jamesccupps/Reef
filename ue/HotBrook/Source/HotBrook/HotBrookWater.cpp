@@ -19,6 +19,16 @@ void UHotBrookWater::Initialize(FSubsystemCollectionBase& Collection)
 			if (Raw.Num() == HX * HY * 2) { Heights.SetNumUninitialized(HX * HY); FMemory::Memcpy(Heights.GetData(), Raw.GetData(), Raw.Num()); } else HX = HY = 0;
 		}
 	}
+	// the lakes' outlines (Import/lakes.json)
+	{
+		FString Text; TSharedPtr<FJsonObject> J;
+		if (FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("lakes.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), J) && J.IsValid())
+			for (const TSharedPtr<FJsonValue>& V : J->GetArrayField(TEXT("lakes"))) {
+				TArray<FVector2D> Pts; FBox2D Box; Box.Init();
+				for (const TSharedPtr<FJsonValue>& Q : V->AsObject()->GetArrayField(TEXT("pts"))) { const TArray<TSharedPtr<FJsonValue>>& XY = Q->AsArray(); Pts.Add(FVector2D(XY[0]->AsNumber(), XY[1]->AsNumber())); Box += Pts.Last(); }
+				if (Pts.Num() > 2) { LakePts.Add(Pts); LakeBox.Add(Box); }
+			}
+	}
 	// Import/water.bin: "HBW1", int32 nx, ny, float x0, y0, cell (m), then nx*ny float32 surface heights (m; < -1e5 on land)
 	TArray<uint8> Bytes;
 	const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("water.bin"));
@@ -61,4 +71,17 @@ bool UHotBrookWater::GroundAt(const FVector& P, float& OutZ) const
 	const auto H = [&](int32 q, int32 r) { return (Heights[r * HX + q] - 32768.0) / 128.0 + HotBrookCoords::Datum; };
 	const double h = H(i, j) * (1 - a) * (1 - b) + H(i + 1, j) * a * (1 - b) + H(i, j + 1) * (1 - a) * b + H(i + 1, j + 1) * a * b;
 	OutZ = HotBrookCoords::HeightToUE(h); return true;
+}
+
+bool UHotBrookWater::InLake(const FVector& P) const
+{
+	const FVector2D M = HotBrookCoords::ToSim(P);
+	for (int32 l = 0; l < LakePts.Num(); l++) {
+		if (!LakeBox[l].IsInside(M)) continue;
+		const TArray<FVector2D>& Pt = LakePts[l]; bool bIn = false;
+		for (int32 i = 0, j = Pt.Num() - 1; i < Pt.Num(); j = i++)
+			if ((Pt[i].Y > M.Y) != (Pt[j].Y > M.Y) && M.X < (Pt[j].X - Pt[i].X) * (M.Y - Pt[i].Y) / (Pt[j].Y - Pt[i].Y) + Pt[i].X) bIn = !bIn;
+		if (bIn) return true;
+	}
+	return false;
 }
