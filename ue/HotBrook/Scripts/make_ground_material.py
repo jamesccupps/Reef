@@ -1,36 +1,106 @@
-# make_ground_material.py — a first ground for the landscape (/Game/HotBrook/Materials/M_Ground), until the Megascans surfaces are
-# imported: the forest floor's browns and greens broken up by noise at two scales, grey rock on slopes past ~35°, wet dark mud and sand
-# low by the water. World-space, so it tiles over the 5 × 10 km landscape without UVs.
+# make_ground_material.py — the landscape's ground (/Game/HotBrook/Materials/M_Ground) from Quixel Megascans surfaces scanned from real
+# forest floors (ue/export/megascans_surfaces.py puts them in Import/surfaces at 2048²; imported here to /Game/HotBrook/Surfaces):
+#   - the floor under the trees: needle-and-moss floor and broadleaf litter, mixed in patches tens of metres across, with moss carpets;
+#   - rocky floor on slopes past ~30° (the till's stones and boulders where the soil thins);
+#   - mud at the lakes' edges: below ~0.6 m above Upper's level, and the beds under the water;
+#   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream.
+# World-space (each surface tiles at its scanned size: 2 m, the moss and mud 1 m), so it covers the 5 × 10 km landscape without UVs;
+# a broad brightness variation hides the repeats. Every link is checked: a wrong pin name fails silently in this API.
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/make_ground_material.py
 import unreal
 L = unreal.MaterialEditingLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
+EAL = unreal.EditorAssetLibrary
 path, name = '/Game/HotBrook/Materials', 'M_Ground'
-if unreal.EditorAssetLibrary.does_asset_exist(path + '/' + name): unreal.EditorAssetLibrary.delete_asset(path + '/' + name)
+SURF = '/Game/HotBrook/Surfaces'
+bad = []
+
+# ---------- the textures ----------
+def import_tex(file, dest_name, kind):
+    t = unreal.AssetImportTask(); t.filename = unreal.Paths.project_dir() + 'Import/surfaces/' + file; t.destination_path = SURF
+    t.destination_name = dest_name; t.automated = True; t.replace_existing = True; t.save = False
+    tools.import_asset_tasks([t])
+    tex = unreal.load_asset(SURF + '/' + dest_name)
+    if not tex: bad.append('import ' + file); return None
+    if kind == 'normal':
+        tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP); tex.set_editor_property('srgb', False)
+    elif kind == 'gray':
+        tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_GRAYSCALE); tex.set_editor_property('srgb', False)
+    tex.set_editor_property('lod_group', unreal.TextureGroup.TEXTUREGROUP_WORLD)
+    EAL.save_asset(SURF + '/' + dest_name)
+    return tex
+SURFACES = {'ForestFloorA': 2.0, 'ForestFloorB': 2.0, 'MossyFloor': 1.0, 'RockyFloor': 2.0, 'Mud': 1.0}   # (metres a repeat: the scans' size)
+TEX = {}
+for s in SURFACES:
+    TEX[s] = (import_tex(s + '_BaseColor.png', 'T_%s_BaseColor' % s, 'color'), import_tex(s + '_Normal.png', 'T_%s_Normal' % s, 'normal'),
+              import_tex(s + '_Roughness.png', 'T_%s_Roughness' % s, 'gray'))
+
+# ---------- the material ----------
+if EAL.does_asset_exist(path + '/' + name): EAL.delete_asset(path + '/' + name)
 m = tools.create_asset(name, path, unreal.Material, unreal.MaterialFactoryNew())
 def node(cls, x, y): return L.create_material_expression(m, cls, x, y)
+def link(a, ao, b, bi):
+    if not L.connect_material_expressions(a, ao, b, bi): bad.append('%s.%s -> %s.%s' % (a.get_name(), ao, b.get_name(), bi))
+def out(a, ao, prop):
+    if not L.connect_material_property(a, ao, prop): bad.append('%s.%s -> %s' % (a.get_name(), ao, prop))
 def const3(r, g, b, x, y):
     n = node(unreal.MaterialExpressionConstant3Vector, x, y); n.set_editor_property('constant', unreal.LinearColor(r, g, b, 1)); return n
-wp = node(unreal.MaterialExpressionWorldPosition, -1600, 0)
-def noise(scale, x, y):   # (gradient noise of the world position at a scale, 0–1)
+def mask(src, chans, x, y):
+    n = node(unreal.MaterialExpressionComponentMask, x, y)
+    for c in 'rgba': n.set_editor_property(c, c in chans)
+    link(src, '', n, ''); return n
+def op(cls, a, b, x, y):   # (a two-input node: b a node, or a constant)
+    n = node(cls, x, y); link(a, '', n, 'A')
+    if isinstance(b, (int, float)): n.set_editor_property('const_b', float(b))
+    else: link(b, '', n, 'B')
+    return n
+def lerp(a, b, alpha, x, y):
+    n = node(unreal.MaterialExpressionLinearInterpolate, x, y); link(a, '', n, 'A'); link(b, '', n, 'B'); link(alpha, '', n, 'Alpha'); return n
+def smooth(v, lo, hi, x, y):
+    n = node(unreal.MaterialExpressionSmoothStep, x, y); link(v, '', n, 'Value'); n.set_editor_property('const_min', lo); n.set_editor_property('const_max', hi); return n
+def noise(scale, x, y):   # (gradient noise of the world position — the node's own default when its position isn't wired — 0–1; scale per cm)
     n = node(unreal.MaterialExpressionNoise, x, y); n.set_editor_property('scale', scale); n.set_editor_property('output_min', 0.0); n.set_editor_property('output_max', 1.0)
-    n.set_editor_property('levels', 4); L.connect_material_expressions(wp, '', n, 'Position'); return n
-n1, n2 = noise(0.0015, -1300, -200), noise(0.02, -1300, 100)
-floorA, floorB, moss = const3(0.085, 0.07, 0.045, -1000, -400), const3(0.05, 0.06, 0.03, -1000, -300), const3(0.045, 0.075, 0.03, -1000, -200)
-l1 = node(unreal.MaterialExpressionLinearInterpolate, -700, -350); L.connect_material_expressions(floorA, '', l1, 'A'); L.connect_material_expressions(floorB, '', l1, 'B'); L.connect_material_expressions(n1, '', l1, 'Alpha')
-l2 = node(unreal.MaterialExpressionLinearInterpolate, -500, -300); L.connect_material_expressions(l1, '', l2, 'A'); L.connect_material_expressions(moss, '', l2, 'B'); L.connect_material_expressions(n2, '', l2, 'Alpha')
-# slope: the world normal's up component; rock where it is below ~0.82
-vn = node(unreal.MaterialExpressionVertexNormalWS, -1300, 400)
-mask = node(unreal.MaterialExpressionComponentMask, -1100, 400); mask.set_editor_property('r', False); mask.set_editor_property('g', False); mask.set_editor_property('b', True); L.connect_material_expressions(vn, '', mask, '')
-sm = node(unreal.MaterialExpressionSmoothStep, -900, 400); L.connect_material_expressions(mask, '', sm, 'Value')
-sm.set_editor_property('const_min', 0.72); sm.set_editor_property('const_max', 0.86)
-rock = const3(0.18, 0.17, 0.15, -700, 500)
-l3 = node(unreal.MaterialExpressionLinearInterpolate, -300, -100); L.connect_material_expressions(rock, '', l3, 'A'); L.connect_material_expressions(l2, '', l3, 'B'); L.connect_material_expressions(sm, '', l3, 'Alpha')
-# the water's edge: below the lakes' level (Z under ~1950 cm: Upper 1893, Lower 1823) dark wet mud, the rest as above
-z = node(unreal.MaterialExpressionComponentMask, -1300, 700); z.set_editor_property('r', False); z.set_editor_property('g', False); z.set_editor_property('b', True); L.connect_material_expressions(wp, '', z, '')
-wet = node(unreal.MaterialExpressionSmoothStep, -1100, 700); L.connect_material_expressions(z, '', wet, 'Value'); wet.set_editor_property('const_min', 1850.0); wet.set_editor_property('const_max', 2000.0)
-mud = const3(0.06, 0.05, 0.035, -700, 800)
-l4 = node(unreal.MaterialExpressionLinearInterpolate, -100, 0); L.connect_material_expressions(mud, '', l4, 'A'); L.connect_material_expressions(l3, '', l4, 'B'); L.connect_material_expressions(wet, '', l4, 'Alpha')
+    n.set_editor_property('levels', 3); return n
+
+wp = node(unreal.MaterialExpressionWorldPosition, -3000, 0)
+wxy = mask(wp, 'rg', -2800, 0)
+# each surface sampled at its own world scale: colour, normal, roughness (shared samplers — many textures in one material)
+S = {}
+y = -1600
+for s, metres in SURFACES.items():
+    uv = op(unreal.MaterialExpressionMultiply, wxy, 1.0 / (metres * 100.0), -2500, y)
+    out3 = []
+    for i, kind in enumerate(['color', 'normal', 'gray']):
+        t = node(unreal.MaterialExpressionTextureSample, -2200, y + i * 120)
+        tex = TEX[s][i]
+        if tex: t.set_editor_property('texture', tex)
+        t.set_editor_property('sampler_type', {'color': unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, 'normal': unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL,
+                                               'gray': unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE}[kind])
+        t.set_editor_property('sampler_source', unreal.SamplerSourceMode.SSM_WRAP_WORLD_GROUP_SETTINGS)
+        link(uv, '', t, 'UVs'); out3.append(mask(t, 'r' if kind == 'gray' else 'rgb', -2050, y + i * 120))   # (RGB; the roughness its R)
+    S[s] = out3; y += 420
+def blend3(a, b, alpha, x, y):   # (colour, normal and roughness of two surfaces blended by alpha)
+    return [lerp(a[i], b[i], alpha, x, y + 100 * i) for i in range(3)]
+
+n_big, n_mid, n_var = noise(1.0 / 4000.0, -2000, 600), noise(1.0 / 900.0, -2000, 800), noise(1.0 / 2500.0, -2000, 1000)
+# the floor: needles-and-moss vs broadleaf litter in patches ~40 m; moss carpets where the mid noise is high
+floor = blend3(S['ForestFloorA'], S['ForestFloorB'], smooth(n_big, 0.35, 0.65, -1700, 600), -1400, -1600)
+floor = blend3(floor, S['MossyFloor'], op(unreal.MaterialExpressionMultiply, smooth(n_mid, 0.68, 0.9, -1700, 800), 0.6, -1550, 800), -1100, -1600)
+# rocky floor on slopes: the up component of the surface normal under ~0.86 (≈ 30°)
+up = mask(node(unreal.MaterialExpressionVertexNormalWS, -2000, 1200), 'b', -1800, 1200)
+flat = smooth(up, 0.78, 0.9, -1600, 1200)
+ground = blend3(S['RockyFloor'], floor, flat, -800, -1600)
+# the lakes' edges: cobbled (the rocky floor) from below the waterline to ~1 m above Upper's level (Z 1893 cm; Lower's 1823); mud
+# on the beds deeper than ~1 m
+z = mask(wp, 'b', -2000, 1400)
+dry = smooth(z, 1960.0, 2000.0, -1600, 1400)
+ground = blend3(S['RockyFloor'], ground, dry, -650, -1600)
+shallow = smooth(z, 1700.0, 1800.0, -1600, 1500)
+ground = blend3(S['Mud'], ground, shallow, -500, -1600)
+# a broad brightness variation (0.8–1.15) over the colour so the repeats don't show
+var = node(unreal.MaterialExpressionLinearInterpolate, -1400, 1000); var.set_editor_property('const_a', 0.8); var.set_editor_property('const_b', 1.15); link(n_var, '', var, 'Alpha')
+color = op(unreal.MaterialExpressionMultiply, ground[0], var, -200, -1600)
+
 # THE FOREST FROM AFAR (the trees stream only within ~1.2 km): the aerial photos' canopy (Import/canopy_rgba.png: RGB its colour, A the
 # cover) over the far grid's extent — x −2880…2440 m, y −4920…5040 m, row 0 north — blended in past ~900 m from the eye
 task = unreal.AssetImportTask(); task.filename = unreal.Paths.project_dir() + 'Import/canopy_rgba.png'; task.destination_path = '/Game/HotBrook/Textures'
@@ -39,30 +109,23 @@ tools.import_asset_tasks([task])
 tex = unreal.load_asset('/Game/HotBrook/Textures/T_Canopy')
 if tex:
     tex.set_editor_property('address_x', unreal.TextureAddress.TA_CLAMP); tex.set_editor_property('address_y', unreal.TextureAddress.TA_CLAMP)
-    unreal.EditorAssetLibrary.save_asset('/Game/HotBrook/Textures/T_Canopy')
-    def mask(src, ch, x, y):
-        n = node(unreal.MaterialExpressionComponentMask, x, y)
-        for c in 'rgba': n.set_editor_property(c, c == ch)
-        L.connect_material_expressions(src, '', n, ''); return n
-    def scalar_op(cls, a_node, const, x, y):   # (a node of a_node with a constant B)
-        n = node(cls, x, y); L.connect_material_expressions(a_node, '', n, 'A'); n.set_editor_property('const_b', const); return n
-    wx, wy = mask(wp, 'r', -1700, 1000), mask(wp, 'g', -1700, 1100)
-    u = scalar_op(unreal.MaterialExpressionMultiply, scalar_op(unreal.MaterialExpressionAdd, scalar_op(unreal.MaterialExpressionMultiply, wx, 0.01, -1500, 1000), 2880.0, -1350, 1000), 1.0 / 5320.0, -1200, 1000)
-    v = scalar_op(unreal.MaterialExpressionMultiply, scalar_op(unreal.MaterialExpressionAdd, scalar_op(unreal.MaterialExpressionMultiply, wy, 0.01, -1500, 1100), 5040.0, -1350, 1100), 1.0 / 9960.0, -1200, 1100)
-    uv = node(unreal.MaterialExpressionAppendVector, -1050, 1050); L.connect_material_expressions(u, '', uv, 'A'); L.connect_material_expressions(v, '', uv, 'B')
-    ts = node(unreal.MaterialExpressionTextureSample, -900, 1050); ts.set_editor_property('texture', tex); L.connect_material_expressions(uv, '', ts, 'UVs')
-    shade = node(unreal.MaterialExpressionLinearInterpolate, -700, 1000); shade.set_editor_property('const_a', 0.8); shade.set_editor_property('const_b', 1.15); L.connect_material_expressions(n1, '', shade, 'Alpha')
-    can = node(unreal.MaterialExpressionMultiply, -550, 1000); L.connect_material_expressions(ts, 'RGB', can, 'A'); L.connect_material_expressions(shade, '', can, 'B')
-    cam = node(unreal.MaterialExpressionCameraPositionWS, -1100, 1300)
-    dist = node(unreal.MaterialExpressionDistance, -900, 1300); L.connect_material_expressions(cam, '', dist, 'A'); L.connect_material_expressions(wp, '', dist, 'B')
-    far = node(unreal.MaterialExpressionSmoothStep, -700, 1300); L.connect_material_expressions(dist, '', far, 'Value'); far.set_editor_property('const_min', 90000.0); far.set_editor_property('const_max', 140000.0)
-    k = node(unreal.MaterialExpressionMultiply, -500, 1250); L.connect_material_expressions(ts, 'A', k, 'A'); L.connect_material_expressions(far, '', k, 'B')
-    l5 = node(unreal.MaterialExpressionLinearInterpolate, 100, 100); L.connect_material_expressions(l4, '', l5, 'A'); L.connect_material_expressions(can, '', l5, 'B'); L.connect_material_expressions(k, '', l5, 'Alpha')
-    L.connect_material_property(l5, '', unreal.MaterialProperty.MP_BASE_COLOR)
+    EAL.save_asset('/Game/HotBrook/Textures/T_Canopy')
+    wx, wy = mask(wp, 'r', -1700, 2000), mask(wp, 'g', -1700, 2100)
+    u = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionAdd, op(unreal.MaterialExpressionMultiply, wx, 0.01, -1500, 2000), 2880.0, -1350, 2000), 1.0 / 5320.0, -1200, 2000)
+    v = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionAdd, op(unreal.MaterialExpressionMultiply, wy, 0.01, -1500, 2100), 5040.0, -1350, 2100), 1.0 / 9960.0, -1200, 2100)
+    uv = node(unreal.MaterialExpressionAppendVector, -1050, 2050); link(u, '', uv, 'A'); link(v, '', uv, 'B')
+    ts = node(unreal.MaterialExpressionTextureSample, -900, 2050); ts.set_editor_property('texture', tex); link(uv, '', ts, 'UVs')
+    can = op(unreal.MaterialExpressionMultiply, mask(ts, 'rgb', -700, 2000), var, -550, 2000)
+    cam = node(unreal.MaterialExpressionCameraPositionWS, -1100, 2300)
+    dist = node(unreal.MaterialExpressionDistance, -900, 2300); link(cam, '', dist, 'A'); link(wp, '', dist, 'B')
+    far = smooth(dist, 90000.0, 140000.0, -700, 2300)
+    k = node(unreal.MaterialExpressionMultiply, -500, 2250); link(ts, 'A', k, 'A'); link(far, '', k, 'B')   # (the cover: the texture's alpha)
+    color = lerp(color, can, k, 100, -1500)
 else:
-    unreal.log_warning('HB the canopy texture did not import: the ground without the far forest')
-    L.connect_material_property(l4, '', unreal.MaterialProperty.MP_BASE_COLOR)
-rough = node(unreal.MaterialExpressionConstant, -100, 200); rough.set_editor_property('r', 0.92); L.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
+    bad.append('canopy texture import')
+out(color, '', unreal.MaterialProperty.MP_BASE_COLOR)
+out(ground[1], '', unreal.MaterialProperty.MP_NORMAL)
+out(ground[2], '', unreal.MaterialProperty.MP_ROUGHNESS)
 L.recompile_material(m)
-unreal.EditorAssetLibrary.save_asset(path + '/' + name)
-unreal.log_warning('HB made ' + path + '/' + name)
+EAL.save_asset(path + '/' + name)
+unreal.log_warning('HB made %s/%s from %d surfaces; links/imports that failed: %s' % (path, name, len(SURFACES), bad or 'none'))

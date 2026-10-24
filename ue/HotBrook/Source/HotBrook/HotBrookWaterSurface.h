@@ -17,7 +17,7 @@ class HOTBROOK_API AHotBrookWaterSurface : public AActor
 public:
 	AHotBrookWaterSurface();
 	virtual void BeginPlay() override;
-	UPROPERTY(EditAnywhere, Category = "HotBrook") float BankOverlap = 4.f;   // m the surface runs under the banks
+	UPROPERTY(EditAnywhere, Category = "HotBrook") float BankOverlap = 12.f;   // m the surface runs under the banks (the shoreline is the 0.25-m depth line: on a gentle beach the water reaches metres past it)
 private:
 	UPROPERTY() TObjectPtr<UProceduralMeshComponent> Mesh;
 };

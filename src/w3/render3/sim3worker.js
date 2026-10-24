@@ -225,7 +225,7 @@ function snapshot() {
   const ru = new Uint32Array(rz.buffer); for (let o = 4; o < rz.length; o += 6) ru[o] = rises[o];   // (each rise's fish id as u32 bits — exact past 2^24: rises3view reads it so)
   rises = []; wildEv = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
-  const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
+  const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, windDir: env.windDir, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
     acc, h, nf, ny, simT: env.time + envAcc, stepMs,   // (simT: the fish's clock — the water's steps a simulated minute at a time at the fine speeds)
     shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, forest: forestOf(), ...side.totals(count, nf, ny) };
   const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer, wz.buffer]; if (field) tr.push(field.buffer); if (msg.forest) tr.push(msg.forest.buffer);

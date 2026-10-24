@@ -1,6 +1,7 @@
 #include "HotBrookLink.h"
 #include "HotBrookCoords.h"
 #include "HotBrookWater.h"
+#include "HotBrookForest.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -75,6 +76,8 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
+	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0);
+	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
 	const uint32 NF = U(40); FishNear = NF;
 	if ((int64)48 + NF * 32 > B.Num()) return;
 	PlaceSun();
@@ -107,5 +110,5 @@ void AHotBrookLink::PlaceSun()
 	const double SinAlt = FMath::Sin(Lat) * FMath::Sin(Dec) + FMath::Cos(Lat) * FMath::Cos(Dec) * FMath::Cos(H), Alt = FMath::Asin(SinAlt);
 	const double Az = FMath::Atan2(-FMath::Sin(H) * FMath::Cos(Dec), FMath::Cos(Lat) * FMath::Sin(Dec) - FMath::Sin(Lat) * FMath::Cos(Dec) * FMath::Cos(H));
 	const FVector ToSun(FMath::Cos(Alt) * FMath::Sin(Az), -FMath::Cos(Alt) * FMath::Cos(Az), SinAlt);   // (UE: X east, Y south, Z up)
-	Sun->SetActorRotation((-ToSun).Rotation());
+	if (SunDirSet.IsZero() || FVector::DotProduct(SunDirSet, ToSun) < FMath::Cos(FMath::DegreesToRadians(0.2))) { Sun->SetActorRotation((-ToSun).Rotation()); SunDirSet = ToSun; }
 }

@@ -5,7 +5,8 @@
 // keeps its fine, fish-by-fish detail about where the walker is, as the browser keeps it about where the view looks.
 //   node ue/link/simhost.mjs [port 8771]
 // The snapshot ("HBS1", little-endian): f64 simT; f32 t (0–1 of a day), yf (0 = March 1), windSpeed (m/s), sun (0–1), airT (°C),
-// iceMean (m); u8 weather (0 clear … 3 storm), u8×3 pad; u32 nFish, nForest; then nFish × 8 f32 (x, y, z, yaw, pitch, length cm,
+// iceMean (m); u8 weather (0 clear … 3 storm), u8 wind bearing (where it blows FROM, 0–255 a turn clockwise from north), u8×2 pad;
+// u32 nFish, nForest; then nFish × 8 f32 (x, y, z, yaw, pitch, length cm,
 // species, school size) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m).
 import { Worker } from 'node:worker_threads';
 import http from 'node:http';
@@ -37,7 +38,7 @@ function encode(m) {
   const head = 4 + 8 + 6 * 4 + 4 + 8, buf = Buffer.alloc(head + nf * 32 + nfo * 32);
   let o = 0; buf.write('HBS1', o, 'ascii'); o += 4; buf.writeDoubleLE(m.simT || m.time || 0, o); o += 8;
   for (const v of [m.t, m.yf, m.windSpeed || 0, m.sun || 0, m.air ?? 0, ice]) { buf.writeFloatLE(+v || 0, o); o += 4; }
-  buf.writeUInt8(m.weather | 0, o); o += 4;
+  buf.writeUInt8(m.weather | 0, o); buf.writeUInt8(Math.round((((m.windDir || 0) / (2 * Math.PI)) % 1 + 1) % 1 * 256) & 255, o + 1); o += 4;
   buf.writeUInt32LE(nf, o); o += 4; buf.writeUInt32LE(nfo, o); o += 4;
   for (let i = 0; i < nf; i++) {   // (the fish's current place and heading: fishside3's layout, FISH_STRIDE 18)
     const s = i * 18; for (const v of [fb[s + 5], fb[s + 6], fb[s + 7], fb[s + 8], fb[s + 9], fb[s + 10], fb[s + 11], fb[s + 12]]) { buf.writeFloatLE(v, o); o += 4; }

@@ -88,7 +88,7 @@ int32 UHotBrookBuildCommandlet::Main(const FString& Params)
 		SL->SetAtmosphereSunLight(true); SL->SetIntensity(10.f); SL->SetDynamicShadowDistanceMovableLight(20000.f);
 		ASkyAtmosphere* Atm = World->SpawnActor<ASkyAtmosphere>(ASkyAtmosphere::StaticClass(), FTransform::Identity, SP); Atm->SetActorLabel(TEXT("Sky atmosphere"));
 		ASkyLight* Sky = World->SpawnActor<ASkyLight>(ASkyLight::StaticClass(), FTransform::Identity, SP); Sky->SetActorLabel(TEXT("Sky light"));
-		Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable); Sky->GetLightComponent()->bRealTimeCapture = true; Sky->GetLightComponent()->bLowerHemisphereIsBlack = false;
+		Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable); Sky->GetLightComponent()->bRealTimeCapture = true; Sky->GetLightComponent()->bLowerHemisphereIsBlack = true;   // (the ground below, not more sky: Lumen bounces the ground's own light)
 		AVolumetricCloud* Cloud = World->SpawnActor<AVolumetricCloud>(AVolumetricCloud::StaticClass(), FTransform::Identity, SP); Cloud->SetActorLabel(TEXT("Clouds"));
 		AExponentialHeightFog* Fog = World->SpawnActor<AExponentialHeightFog>(AExponentialHeightFog::StaticClass(), FTransform(FVector(0, 0, 0)), SP); Fog->SetActorLabel(TEXT("Haze"));
 		Fog->GetComponent()->SetFogDensity(0.004f); Fog->GetComponent()->SetFogHeightFalloff(0.2f);

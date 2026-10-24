@@ -14,6 +14,11 @@ m.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_SINGLE_LA
 m.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
 m.set_editor_property('two_sided', True)
 def node(cls, x, y): return L.create_material_expression(m, cls, x, y)
+bad = []   # (connect_material_expressions reports a wrong pin name by returning False, not by raising: every link is checked)
+def link(a, ao, b, bi):
+    if not L.connect_material_expressions(a, ao, b, bi): bad.append('%s.%s -> %s.%s' % (a.get_class().get_name(), ao, b.get_class().get_name(), bi))
+def out(a, ao, prop):
+    if not L.connect_material_property(a, ao, prop): bad.append('%s.%s -> %s' % (a.get_class().get_name(), ao, prop))
 def const3(r, g, b, x, y):
     n = node(unreal.MaterialExpressionConstant3Vector, x, y); n.set_editor_property('constant', unreal.LinearColor(r, g, b, 1)); return n
 def const1(v, x, y):
@@ -21,28 +26,28 @@ def const1(v, x, y):
 # the ripples: world-space UVs at two scales, panning in two directions, the normals averaged and flattened
 nt = unreal.load_asset('/Water/Textures/Normals/T_Water_TilingNormal_Waves_02')
 wp = node(unreal.MaterialExpressionWorldPosition, -1600, 0)
-xy = node(unreal.MaterialExpressionComponentMask, -1400, 0); xy.set_editor_property('r', True); xy.set_editor_property('g', True); xy.set_editor_property('b', False); L.connect_material_expressions(wp, '', xy, '')
+xy = node(unreal.MaterialExpressionComponentMask, -1400, 0); xy.set_editor_property('r', True); xy.set_editor_property('g', True); xy.set_editor_property('b', False); link(wp, '', xy, '')
 def ripple(scale, sx, sy, yy):
-    d = node(unreal.MaterialExpressionMultiply, -1200, yy); L.connect_material_expressions(xy, '', d, 'A'); d.set_editor_property('const_b', 1.0 / scale)
-    p = node(unreal.MaterialExpressionPanner, -1000, yy); L.connect_material_expressions(d, '', p, 'Coordinate'); p.set_editor_property('speed_x', sx); p.set_editor_property('speed_y', sy)
+    d = node(unreal.MaterialExpressionMultiply, -1200, yy); link(xy, '', d, 'A'); d.set_editor_property('const_b', 1.0 / scale)
+    p = node(unreal.MaterialExpressionPanner, -1000, yy); link(d, '', p, 'Coordinate'); p.set_editor_property('speed_x', sx); p.set_editor_property('speed_y', sy)
     t = node(unreal.MaterialExpressionTextureSample, -800, yy); t.set_editor_property('texture', nt); t.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-    L.connect_material_expressions(p, '', t, 'UVs'); return t
-r1, r2 = ripple(900.0, 0.012, 0.007, -100), ripple(2600.0, -0.006, 0.009, 150)
-avg = node(unreal.MaterialExpressionAdd, -550, 0); L.connect_material_expressions(r1, 'RGB', avg, 'A'); L.connect_material_expressions(r2, 'RGB', avg, 'B')
+    link(p, '', t, 'UVs'); return t
+r1, r2 = ripple(260.0, 0.010, 0.006, -100), ripple(700.0, -0.005, 0.008, 150)   # (cm a repeat: ripples of a light breeze)
+avg = node(unreal.MaterialExpressionAdd, -550, 0); link(r1, 'RGB', avg, 'A'); link(r2, 'RGB', avg, 'B')
 flat = node(unreal.MaterialExpressionFlattenNormal, -350, 0) if hasattr(unreal, 'MaterialExpressionFlattenNormal') else None
 nrm = node(unreal.MaterialExpressionLinearInterpolate, -350, 0)
-L.connect_material_expressions(const3(0, 0, 1, -550, 200), '', nrm, 'A'); L.connect_material_expressions(avg, '', nrm, 'B'); nrm.set_editor_property('const_alpha', 0.22)
-L.connect_material_property(nrm, '', unreal.MaterialProperty.MP_NORMAL)
-L.connect_material_property(const3(0.0, 0.0, 0.0, -200, -300), '', unreal.MaterialProperty.MP_BASE_COLOR)
-L.connect_material_property(const1(0.03, -200, -200), '', unreal.MaterialProperty.MP_ROUGHNESS)
-L.connect_material_property(const1(0.5, -200, -150), '', unreal.MaterialProperty.MP_SPECULAR)
-# the water itself: absorption and scattering per metre (tea-coloured: blue absorbed fastest; Secchi ~3–4 m), forward scattering
-out = node(unreal.MaterialExpressionSingleLayerWaterMaterialOutput, 0, 300)
-pins = {}
-for nm, v in [('Scattering Coefficients', const3(0.035, 0.03, 0.015, -300, 300)), ('Absorption Coefficients', const3(0.42, 0.62, 1.75, -300, 400)),
-              ('Phase G', const1(0.15, -300, 500)), ('Color Scale Behind Water', const1(1.0, -300, 550))]:
-    try: L.connect_material_expressions(v, '', out, nm); pins[nm] = 'ok'
-    except Exception as e: pins[nm] = str(e)
+link(const3(0, 0, 1, -550, 200), '', nrm, 'A'); link(avg, '', nrm, 'B'); nrm.set_editor_property('const_alpha', 0.1)
+out(nrm, '', unreal.MaterialProperty.MP_NORMAL)
+out(const3(0.0, 0.0, 0.0, -200, -300), '', unreal.MaterialProperty.MP_BASE_COLOR)
+out(const1(0.03, -200, -200), '', unreal.MaterialProperty.MP_ROUGHNESS)
+out(const1(0.5, -200, -150), '', unreal.MaterialProperty.MP_SPECULAR)
+# the water itself: absorption and scattering (the node takes them per CENTIMETRE: per metre ÷ 100) — tea-coloured, blue absorbed
+# fastest (per metre: red 0.42, green 0.62, blue 1.75; Secchi ~3–4 m), a little forward scattering. Its pins go by their property
+# names (ScatteringCoefficients …), not the captions the editor shows.
+slw = node(unreal.MaterialExpressionSingleLayerWaterMaterialOutput, 0, 300)
+for nm, v in [('ScatteringCoefficients', const3(0.00035, 0.0003, 0.00015, -300, 300)), ('AbsorptionCoefficients', const3(0.0042, 0.0062, 0.0175, -300, 400)),
+              ('PhaseG', const1(0.15, -300, 500)), ('ColorScaleBehindWater', const1(1.0, -300, 550))]:
+    link(v, '', slw, nm)
 L.recompile_material(m)
 unreal.EditorAssetLibrary.save_asset(path + '/' + name)
-unreal.log_warning('HB made %s/%s; water pins %s; normal texture %s' % (path, name, pins, bool(nt)))
+unreal.log_warning('HB made %s/%s; links that failed: %s; normal texture %s' % (path, name, bad or 'none', bool(nt)))

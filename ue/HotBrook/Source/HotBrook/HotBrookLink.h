@@ -27,12 +27,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float YearFrac = 0.3f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") int32 Weather = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") int32 FishNear = 0;
+	// the wind: m/s, and the bearing it blows FROM (radians, 0 north, clockwise)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float WindSpeed = 3.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float WindFrom = 3.93f;
 private:
 	TSharedPtr<IWebSocket> Socket;
 	TArray<uint8> Pending, Latest; bool bFresh = false;
 	double NextTry = 0, NextCam = 0;
 	TArray<TObjectPtr<UInstancedStaticMeshComponent>> FishBySpecies;
 	TObjectPtr<ADirectionalLight> Sun = nullptr;
+	FVector SunDirSet = FVector::ZeroVector;   // (where the sun was last turned to)
 	void Connect();
 	void Apply(const TArray<uint8>& B);
 	void PlaceSun();

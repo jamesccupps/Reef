@@ -19,5 +19,6 @@ Copy-Item $up $Root -Force
 if ($LASTEXITCODE -ne 0) { throw "build failed ($LASTEXITCODE)" }
 & "$engine\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Root\HotBrook.uproject" -run=pythonscript "-script=$Root/Scripts/make_ground_material.py" -unattended -nopause -nosplash
 & "$engine\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Root\HotBrook.uproject" -run=pythonscript "-script=$Root/Scripts/make_water_material.py" -unattended -nopause -nosplash
+& "$engine\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Root\HotBrook.uproject" -run=pythonscript "-script=$Root/Scripts/make_forest_meshes.py" -unattended -nopause -nosplash
 & "$engine\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Root\HotBrook.uproject" -run=HotBrookBuild -unattended -nopause -nosplash
 "done: open $Root\HotBrook.uproject with UE $Version"
