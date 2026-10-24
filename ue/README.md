@@ -29,6 +29,12 @@ project draws the world in the first person, fed live by it. The browser view, t
   cypress, paper birch the silver birch, aspen, red maple the Norway maple, beech, alder, hazel, willow, the snags the dead pine,
   the young hardwoods the maple, beech and rowan saplings. Megaplants are skinned meshes: their branches sway in the Dynamic Wind
   plugin's GPU wind, set from the sim's wind speed and direction. Each trunk has a hidden collider.
+- **The night** — `AHotBrookNightSky`: a dark site's sky on a dome about the camera (`M_HB_NightSky`,
+  `Scripts/make_night_sky_material.py`): procedural stars in three bands of brightness and the Milky Way (smooth clouds, broken dark
+  rifts) on the celestial sphere, wheeling about the pole (45.63° up in the north) by the sidereal time; the airglow and skyglow the
+  treelines stand black against; the MOON where it is for the sim's date and hour, by this year's phase (its age from a known new
+  moon), its disc lit on the sun's side — and its light, a second atmosphere sun, silver-blue, the sun's ×0.004 at the full (as the
+  dark-adapted eye sees it), by its phase and height. All fading in as the sun sinks from 2° to 14° under the horizon.
 - **The wind farm** — `AHotBrookTurbines`: the Stetson wind farm (2009, 38) and its expansion (2010, 17) on the ridges south-west
   of the lakes — GE 1.5-77s (80-m hubs, 77-m rotors) where the USGS US Wind Turbine Database puts them, each on its ground (the USGS
   elevation service's beyond the landscape), from `ue/export/export_turbines.mjs` (`Import/turbines.json`; the fetched data kept in
@@ -255,7 +261,7 @@ published or shared.
 - the scans: `import_megascans.py` (Nanite meshes and their materials from the launcher's downloads; HB_REIMPORT=1 to redo),
   `check_megascans.py` (what each wears); `fix_megaplants.py` mends packs whose materials point outside them (Baltic Pine's bark)
 - the materials and the tree mapping (`UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/<name>.py`):
-  `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py`, `make_season_foliage.py` (`inspect_megaplants.py` lists the plant meshes)
+  `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py`, `make_season_foliage.py`, `make_beacon_material.py`, `make_night_sky_material.py` (`inspect_megaplants.py` lists the plant meshes)
 - the camps: `HB_WORLD=true node ue/export/export_camps.mjs`, `python -I ue/export/build_camps.py` (needs numpy; Pillow to measure the
   textures), then `import_camps.py` (the textures in `Import/textures` with their `manifest.json`)
 - the wildlife and the people: `"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --disable-autoexec -P ue/export/convert_creatures.py`

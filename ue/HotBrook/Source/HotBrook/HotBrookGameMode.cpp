@@ -12,6 +12,7 @@
 #include "HotBrookAnglers.h"
 #include "HotBrookWeeds.h"
 #include "HotBrookTurbines.h"
+#include "HotBrookNightSky.h"
 #include "HotBrookBoat.h"
 #include "HotBrookCamps.h"
 #include "EngineUtils.h"
@@ -155,6 +156,7 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookAnglers>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnglers>();
 	if (!TActorIterator<AHotBrookWeeds>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWeeds>();   // (after the wildlife: it reads the anglers' counts there)
 	if (!TActorIterator<AHotBrookTurbines>(GetWorld())) GetWorld()->SpawnActor<AHotBrookTurbines>();   // (the wind farm on the ridges)
+	if (!TActorIterator<AHotBrookNightSky>(GetWorld())) GetWorld()->SpawnActor<AHotBrookNightSky>();   // (the stars and the moon)
 	// a canoe in the shallows nearest the start
 	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;

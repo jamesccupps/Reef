@@ -333,6 +333,15 @@ plants, textures. Photos are private: never commit or publish them.
   for 0.6 s of every 2 s while Daylight < 0.15. Checked: day at 3440 px a row over the west treeline and Stetson on its hill to the
   south; a night beacon pixel flashing. KNOWN (next): THE NIGHT IS PITCH BLACK away from the camps (mean 0, no moon/stars/skyglow) —
   needs a night sky (stars, the moon by its phase, airglow) and a minimum exposure.
+  + 20:30 COMMITTED e52c2a2 (wind farm). THE NIGHT SKY (this commit): M_HB_NightSky (unlit additive two-sided, no vertex fog —
+  use_translucency_vertex_fog False; Custom HLSL: celestial frame P/Q/E at 45.63°, s = RA/Dec unit vector by LST; stars 3 bands (cells
+  90/180/360, lim .978/.966/.952, exp(−r²·900(1+o))); Milky Way = galactic plane (pole RA 192.86 Dec 27.13) × 2-octave value noise ×
+  broad patchy rift, gain .006; airglow 0.35+1.4(1−up)³ × GlowGain .004; moon disc R .00454 rad lit toward SunDir; × Night).
+  AHotBrookNightSky (GameMode spawns): dome = engine sphere ×100000 at the camera; LST = RA_sun + H_sun; moon age from FDateTime
+  2026-03-01 + yf·365 + tod (+5 h) vs 2000-01-06 18:14 UTC (29.530589 d), elongation on the ecliptic (no latitude/perturbations);
+  Night = clamp((−sunZ − .035)/.2); moon light = spawned ADirectionalLight, atmosphere index 1, disc colour scale black, intensity
+  sun × .004 × lit × smoothstep(alt) × Night, colour (.62,.72,1). Checked at 3440: stars, soft Milky Way, a waxing crescent setting
+  in the west at 23:00 in late May, treeline + turbines in silhouette; dusk sunset with a beacon flashing; day untouched.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
