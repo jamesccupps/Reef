@@ -1,9 +1,12 @@
 # build_reeds.py — the emergent plants of the lakes' edges for Unreal, made in Blender (5.1) from their parts (no model of them was to
 # be had): G:\HotBrookUE\Import\plants\reed_<name>.glb, each a clump on its base at z 0 and 1 m tall — AHotBrookWeeds stretches it to
 # the water's depth there and the 0.5–1.3 m the stems stand above it (plants3view's reeds):
-#   - 'bulrush'      — the soft-stem bulrush (Schoenoplectus): a tuft of round grey-green stems tapering to a point, a few carrying the
-#                      brown spikelet cluster a little below the tip;
-#   - 'pickerelweed' — Pontederia: leaf stalks with glossy heart-shaped blades held above the water, and a purple flower spike;
+#   - 'bulrush'      — the soft-stem bulrush (Schoenoplectus): a tuft of round grey-green stems tapering to a point, a third of them
+#                      carrying, a little below the tip and to one side, a loose cluster of small (5–10 mm) brown spikelets on short
+#                      rays (one fat blob, stretched with the stem in Unreal, read as a cattail's head);
+#   - 'pickerelweed' — Pontederia: leaf stalks with glossy heart-shaped blades held above the water, and a purple flower spike
+#                      (July–September); 'pickerelweed_leaf' the same without the spikes (before and after, and for bogbean and
+#                      arrowhead, whose flowers aren't its purple);
 #   - 'horsetail'    — water horsetail (Equisetum fluviatile): thin jointed stems, darker, ringed.
 #   "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --disable-autoexec -P ue/export/build_reeds.py
 import bpy, bmesh, math, os, random
@@ -66,15 +69,20 @@ def bulrush(bm):
         x, y = random.uniform(-0.09, 0.09), random.uniform(-0.09, 0.09); h = random.uniform(0.82, 1.0); lean = Vector((random.uniform(-0.06, 0.06), random.uniform(-0.06, 0.06), 0))
         a, b = Vector((x, y, 0)), Vector((x, y, h)) + lean
         tube(bm, a, b, 0.006, 0.0, 6, 0)
-        if k % 3 == 0: blob(bm, a + (b - a) * 0.86 + Vector((0.008, 0, 0)), 0.012, 0.01, 0.025, 1)
+        if k % 3 == 0:   # (the cluster: 4–7 spikelets on rays 1–4 cm from one point, drooping out to one side)
+            c = a + (b - a) * 0.84; side = random.uniform(0, 2 * math.pi)
+            for j in range(random.randint(4, 7)):
+                t = side + random.uniform(-0.9, 0.9); r = random.uniform(0.01, 0.04)
+                e = c + Vector((math.cos(t) * r, math.sin(t) * r, random.uniform(-0.025, 0.005)))
+                tube(bm, c, e, 0.0012, 0.001, 3, 0); blob(bm, e, 0.0035, 0.0035, 0.004, 1)
 
-def pickerelweed(bm):
+def pickerelweed(bm, flowers=True):
     for k in range(7):
         ang = 2 * math.pi * k / 7 + random.uniform(-0.3, 0.3); h = random.uniform(0.7, 0.9)
         base = Vector((random.uniform(-0.05, 0.05), random.uniform(-0.05, 0.05), 0)); top = base + Vector((math.cos(ang) * 0.06, math.sin(ang) * 0.06, h))
         tube(bm, base, top, 0.006, 0.004, 5, 0)
         leaf(bm, top, Vector((math.cos(ang), math.sin(ang), 1.6)), 0.2, 0.13, 0)
-    for k in range(2):   # (the flower spikes: violet-blue, standing above the leaves)
+    for k in range(2 if flowers else 0):   # (the flower spikes: violet-blue, standing above the leaves)
         base = Vector((random.uniform(-0.03, 0.03), random.uniform(-0.03, 0.03), 0)); top = base + Vector((0, 0, 1.0))
         tube(bm, base, top, 0.005, 0.004, 5, 0)
         for j in range(6): blob(bm, top + Vector((0, 0, 0.02 + 0.022 * j)), 0.016, 0.016, 0.014, 1)
@@ -91,4 +99,5 @@ def horsetail(bm):
 for o in list(bpy.data.objects): bpy.data.objects.remove(o, do_unlink=True)
 build('bulrush', bulrush, [mat('M_bulrush_stem', lin('#6f8a4a'), 0.55), mat('M_bulrush_spike', lin('#6a4a2a'), 0.8)])
 build('pickerelweed', pickerelweed, [mat('M_pickerel_leaf', lin('#4f7a2e'), 0.35), mat('M_pickerel_flower', lin('#6a58b8'), 0.6)])
+build('pickerelweed_leaf', lambda bm: pickerelweed(bm, False), [mat('M_pickerel_leaf', lin('#4f7a2e'), 0.35)])
 build('horsetail', horsetail, [mat('M_horsetail_stem', lin('#4d6b38'), 0.5), mat('M_horsetail_ring', lin('#1e2418'), 0.6)])

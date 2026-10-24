@@ -263,6 +263,11 @@ plants, textures. Photos are private: never commit or publish them.
   (3) Weeds: hb.Weeds cvar (stands × N for a look), Per counts for real cover (white 18, yellow 150, pads 80, pondweed 20), plant=
   framing fixed (the animal block caught it), Placed up to 4096. (4) THE BROOK ISN'T DRAWN IN UE (AHotBrookWaterSurface draws only
   lakes.json's two lakes; the heightmap carves its bed, dry, shrubs in it): weeds/mussels now need InLake. TODO slice: draw the brook.
+  + 15:10 COMMITTED e08cdf3 (the above). THEN: flowers by date (Weeds FLook Off/B0/B1: white lily Jun 15–Sep 15 → else lily_pads ×2.67,
+  pickerelweed Jul 1–Sep 30 → else NEW reed_pickerelweed_leaf; bogbean/arrowhead always the leaf look; ≤ half in flower; hb.WeedsDate
+  for a look) and the bulrush's head rebuilt as small spikelet clusters on rays (one stretched blob read as a cattail). Checked in shots
+  (May: leaves only; 0.38: spikes, lily flowers). NEXT: draw the brook's water in UE (AHotBrookWaterSurface: a ribbon on lakes.json's
+  brook path/width/levels — check its pools against the sim's GEO brook cells), then the new downloads.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

@@ -9,6 +9,7 @@
 #include "HAL/IConsoleManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookWeeds, Log, All);
+static TAutoConsoleVariable<float> CVarWeedsDate(TEXT("hb.WeedsDate"), -1.f, TEXT("the date the water plants flower by (0-1 of the year from March 1: 0.38 mid-July) - -1 the sim's own"));
 static TAutoConsoleVariable<float> CVarWeeds(TEXT("hb.Weeds"), 1.f, TEXT("the water plants' stands times this (a look at the full beds of August while the sim's lakes are in spring: e.g. 6); 1 the sim's own"));
 
 // (a hash of a cell and a draw to 0–1: the scatter, the same each rebuild)
@@ -47,12 +48,17 @@ void AHotBrookWeeds::BeginPlay()
 	const int32 White = AddLook(TEXT("white_lily"), 18, 1.f, 0, 300.f), Yellow = AddLook(TEXT("lake_lily"), 150, 1.f, 0, 200.f);
 	const int32 Shield = AddLook(TEXT("lily_pads"), 80, 1.f, 0, 200.f), Pond = AddLook(TEXT("pondweed"), 20, 1.f, 3, 120.f, 103.f);
 	const int32 Bulrush = AddLook(TEXT("reed_bulrush"), 40, 1.f, 1, 250.f), Pickerel = AddLook(TEXT("reed_pickerelweed"), 24, 1.f, 1, 250.f);
+	// (out of flower: the fragrant water-lily its pads alone — the small-pads look is its clump without flowers, 0.6 m: × 2.67 —,
+	// pickerelweed its leaves; bogbean and arrowhead, whose flowers aren't pickerelweed's purple, always its leaves)
+	const int32 WhiteLeaf = AddLook(TEXT("lily_pads"), 18, 1.6f / 0.6f, 0, 300.f), PickLeaf = AddLook(TEXT("reed_pickerelweed_leaf"), 24, 1.f, 1, 250.f);
+	if (White >= 0 && WhiteLeaf >= 0) { Looks[White].Off = WhiteLeaf; Looks[White].B0 = 0.29f; Looks[White].B1 = 0.54f; }   // (June 15 – September 15)
+	if (Pickerel >= 0 && PickLeaf >= 0) { Looks[Pickerel].Off = PickLeaf; Looks[Pickerel].B0 = 0.334f; Looks[Pickerel].B1 = 0.584f; }   // (July 1 – September 30)
 	const int32 Horse = AddLook(TEXT("reed_horsetail"), 30, 1.f, 1, 200.f), Sedge = AddLook(TEXT("grass_tuft_a"), 40, 1.6f, 1, 150.f, 35.f);   // (the sedge: the 35-cm grass tuft drawn to the reeds' height)
 	const int32 Mussel = AddLook(TEXT("mussel"), 0, 1.f, 2, 25.f);
 	for (const auto& [K, L] : { TPair<const TCHAR*, int32>(TEXT("whitelily"), White), TPair<const TCHAR*, int32>(TEXT("yellowlily"), Yellow),
 		TPair<const TCHAR*, int32>(TEXT("watershield"), Shield), TPair<const TCHAR*, int32>(TEXT("floatpond"), Shield), TPair<const TCHAR*, int32>(TEXT("burreed"), Shield),
 		TPair<const TCHAR*, int32>(TEXT("ribbonleaf"), Pond), TPair<const TCHAR*, int32>(TEXT("largeleaf"), Pond), TPair<const TCHAR*, int32>(TEXT("bulrush"), Bulrush),
-		TPair<const TCHAR*, int32>(TEXT("pickerelweed"), Pickerel), TPair<const TCHAR*, int32>(TEXT("bogbean"), Pickerel), TPair<const TCHAR*, int32>(TEXT("arrowhead"), Pickerel),
+		TPair<const TCHAR*, int32>(TEXT("pickerelweed"), Pickerel), TPair<const TCHAR*, int32>(TEXT("bogbean"), PickLeaf >= 0 ? PickLeaf : Pickerel), TPair<const TCHAR*, int32>(TEXT("arrowhead"), PickLeaf >= 0 ? PickLeaf : Pickerel),
 		TPair<const TCHAR*, int32>(TEXT("horsetail"), Horse), TPair<const TCHAR*, int32>(TEXT("sedge"), Sedge), TPair<const TCHAR*, int32>(TEXT("mussel"), Mussel) })
 		if (L >= 0) LookOfKey.Add(K, L);
 	UE_LOG(LogHotBrookWeeds, Display, TEXT("weeds: %d looks for %d species (and the mussels)"), Looks.Num(), LookOfKey.Num() - (LookOfKey.Contains(TEXT("mussel")) ? 1 : 0));
@@ -61,15 +67,18 @@ void AHotBrookWeeds::BeginPlay()
 void AHotBrookWeeds::Tick(float Dt)
 {
 	Super::Tick(Dt);
-	if (CVarWeeds.GetValueOnGameThread() != Boost && Last.Num()) { const TArray<uint8> B = Last; Update(B); }
+	if ((CVarWeeds.GetValueOnGameThread() != Boost || CVarWeedsDate.GetValueOnGameThread() != Date) && Last.Num()) { const TArray<uint8> B = Last; Update(B); }
 }
 
 void AHotBrookWeeds::Update(const TArray<uint8>& B)
 {
 	if (B.Num() < 20 || FMemory::Memcmp(B.GetData(), "HBP1", 4) != 0) return;
-	Last = B; Boost = CVarWeeds.GetValueOnGameThread();
+	Last = B; Boost = CVarWeeds.GetValueOnGameThread(); Date = CVarWeedsDate.GetValueOnGameThread();
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
+	const float Yf = Date >= 0.f ? Date : F(4);
+	// (a flowering look's share in flower at the date: up over two weeks at the start of its bloom, down over two at the end, half at most)
+	const auto Bloom = [&](const FLook& L) { return L.Off < 0 ? 1.f : 0.5f * FMath::SmoothStep(L.B0 - 0.02f, L.B0 + 0.02f, Yf) * (1.f - FMath::SmoothStep(L.B1 - 0.02f, L.B1 + 0.02f, Yf)); };
 	const int32 NF = (int32)U(8), N = (int32)U(12), KL = (int32)U(16);
 	if (NF <= 0 || NF > 64 || 20 + KL > B.Num()) return;
 	TArray<FString> Keys; FString(KL, (const ANSICHAR*)(B.GetData() + 20)).ParseIntoArray(Keys, TEXT(","));
@@ -89,9 +98,9 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 		for (int32 f = 0; f < NF; f++) {
 			const int32 Li = LookOf[f]; if (Li < 0) continue;
 			const float Cov = FMath::Min(1.f, B[o + 12 + f] / 255.f * FMath::Max(0.f, Boost)); if (Cov <= 0.004f) continue;
-			const FLook& L = Looks[Li];
-			const int32 Nn = FMath::Min(L.Per, FMath::FloorToInt(Cov * L.Per + H01(Ci, f)));
+			const int32 Nn = FMath::Min(Looks[Li].Per, FMath::FloorToInt(Cov * Looks[Li].Per + H01(Ci, f))); const float InFlower = Bloom(Looks[Li]);
 			for (int32 k = 0; k < Nn; k++) {
+				const int32 Lk = Looks[Li].Off >= 0 && H01(Ci, k * 3 + f + 77) >= InFlower ? Looks[Li].Off : Li; const FLook& L = Looks[Lk];   // (this one in flower, or its leaves)
 				const float Px = X + (H01(Ci, k * 7 + f * 131) - 0.5f) * Cell, Py = Y + (H01(Ci, k * 13 + f * 131 + 3) - 0.5f) * Cell;
 				const FVector Q = HotBrookCoords::ToUE(Px, Py, HotBrookCoords::Datum); float S = 0, G = 0;
 				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 8.f || !W->InLake(Q)) continue;   // (in the lakes' drawn water: the brook isn't drawn yet)
@@ -106,7 +115,7 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 					const float Above = (0.5f + 0.8f * H01(Ci, k + 9 + f)) * (0.4f + 0.6f * Cov) * 100.f, Hgt = (S - G) + Above;
 					T = FTransform(FRotator((H01(Ci, k + 17) - 0.5f) * 7.f, Yaw, (H01(Ci, k + 19) - 0.5f) * 7.f), FVector(Q.X, Q.Y, G - 3.f), FVector(Sc, Sc, Hgt / L.H));
 				}
-				Ts[Li].Add(T);
+				Ts[Lk].Add(T);
 				TArray<FVector>& Pl = Placed.FindOrAdd(Keys[f]); if (Pl.Num() < 4096) Pl.Add(T.GetLocation());
 			}
 		}

@@ -10,7 +10,9 @@
 //   - the MUSSELS (littoral3: eastern elliptio /m²): dark shells standing half-buried in the bed, within ~25 m.
 // The low rosettes, bladderworts, Robbins' pondweed and the stoneworts on the deep bed are not drawn (under the tea water they don't
 // show). Rebuilt on each message (the host sends one when the walker has moved 20 m, or every half minute). hb.Weeds multiplies the
-// stands for a look (e.g. 6: the beds near full, as in August, while the sim's lakes are in May).
+// stands for a look (e.g. 6: the beds near full, as in August, while the sim's lakes are in May). The flowers by the date (Maine): the
+// fragrant water-lily's mid-June to mid-September, pickerelweed's purple spikes July to September — about half the plants in flower
+// at the height of it, the rest (and all of them outside it) their leaves only; hb.WeedsDate <yf> shows another date's.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -35,12 +37,13 @@ public:
 private:
 	// a look: a mesh, how a stand of it is drawn (instances in a 5-m cell at a full stand; its scale), where (0 on the surface, 1 the
 	// reeds from the bed through it, 2 the bed, 3 from the bed up to just under the surface)
-	struct FLook { TObjectPtr<UStaticMesh> Mesh; int32 Per = 10; float Scale = 1.f, H = 100.f; int32 Where = 0; TObjectPtr<UHierarchicalInstancedStaticMeshComponent> C; };   // (H: a reed mesh's own height, cm)
+	struct FLook { TObjectPtr<UStaticMesh> Mesh; int32 Per = 10; float Scale = 1.f, H = 100.f; int32 Where = 0; TObjectPtr<UHierarchicalInstancedStaticMeshComponent> C;
+		int32 Off = -1; float B0 = 0.f, B1 = 0.f; };   // (H: a reed mesh's own height, cm; a flowering look's leaves-only look and its bloom, B0–B1 of the year)
 	TArray<FLook> Looks;
 	TMap<FString, int32> LookOfKey;   // (a species' key → its look)
 	UPROPERTY() TArray<TObjectPtr<UObject>> Held;
 	int32 NInst = 0;
-	TArray<uint8> Last; float Boost = 1.f;   // (the last message, rebuilt when hb.Weeds changes)
+	TArray<uint8> Last; float Boost = 1.f, Date = -1.f;   // (the last message, rebuilt when hb.Weeds or hb.WeedsDate changes)
 	TMap<FString, TArray<FVector>> Placed;   // (where each species' plants were put: for a look at one)
 	int32 AddLook(const TCHAR* Mesh, int32 Per, float Scale, int32 Where, float CullM, float H = 100.f);
 };

@@ -119,7 +119,9 @@ project draws the world in the first person, fed live by it. The browser view, t
   pads on the surface, watershield's, floating pondweed's and bur-reed's small leaves, the pondweeds from the bed up to just under the
   surface, the reeds (bulrush, pickerelweed — also for bogbean and arrowhead —, horsetail, the sedges) from the bed through it, and
   the mussels on the bed within ~25 m. Only in the lakes' drawn water (the brook isn't drawn yet). `hb.Weeds <n>` multiplies the
-  stands for a look (6: the beds near full, as in August, while the lakes are in spring). The plants come from
+  stands for a look (6: the beds near full, as in August, while the lakes are in spring). The flowers come by the date: the
+  fragrant water-lily's mid-June to mid-September, pickerelweed's purple spikes July to September (half the plants at the height of
+  it, the rest their leaves only); `hb.WeedsDate <0–1>` shows another date's. The plants come from
   `ue/export/convert_plants.py` (Valery.Li's lilies and pondweed — their FBX files are Y-down —, the grass tufts; every leaf a
   cut-out, glTF MASK) and `ue/export/build_reeds.py` (the reeds, procedural), imported by `HB_SET=plants Scripts/import_creatures.py`
   with Nanite.
