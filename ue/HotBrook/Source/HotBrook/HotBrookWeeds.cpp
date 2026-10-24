@@ -103,7 +103,7 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 				const int32 Lk = Looks[Li].Off >= 0 && H01(Ci, k * 3 + f + 77) >= InFlower ? Looks[Li].Off : Li; const FLook& L = Looks[Lk];   // (this one in flower, or its leaves)
 				const float Px = X + (H01(Ci, k * 7 + f * 131) - 0.5f) * Cell, Py = Y + (H01(Ci, k * 13 + f * 131 + 3) - 0.5f) * Cell;
 				const FVector Q = HotBrookCoords::ToUE(Px, Py, HotBrookCoords::Datum); float S = 0, G = 0;
-				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 8.f || !W->InLake(Q)) continue;   // (in the lakes' drawn water: the brook isn't drawn yet)
+				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 8.f || !W->Drawn(Q)) continue;   // (in the lakes' and the brook's drawn water)
 				const float Yaw = H01(Ci, k + 31 * f) * 360.f, Sc = L.Scale * (0.75f + 0.5f * H01(Ci, k + 5 + f));
 				FTransform T;
 				if (L.Where == 0) T = FTransform(FRotator(0.f, Yaw, 0.f), FVector(Q.X, Q.Y, S + 1.f + 0.2f * (k % 8)), FVector(Sc));   // (afloat: the pads at the surface, a few mm apart where they overlap)
@@ -125,7 +125,7 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 			for (int32 k = 0; k < Nm; k++) {
 				const float Px = X + (H01(Ci, k * 5 + 101) - 0.5f) * Cell, Py = Y + (H01(Ci, k * 9 + 103) - 0.5f) * Cell;
 				const FVector Q = HotBrookCoords::ToUE(Px, Py, HotBrookCoords::Datum); float S = 0, G = 0;
-				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 10.f || !W->InLake(Q)) continue;
+				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 10.f || !W->Drawn(Q)) continue;
 				const float Sz = 0.75f + 0.5f * H01(Ci, k + 107);
 				// (an elliptio ~8 × 2.5 × 4 cm: on its edge, its long axis tipped 50–80° into the bed, its back end out with the siphons)
 				const FRotator R(-(50.f + 30.f * H01(Ci, k + 127)), H01(Ci, k + 113) * 360.f, 90.f + (H01(Ci, k + 109) - 0.5f) * 20.f);

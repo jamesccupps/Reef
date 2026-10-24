@@ -4,7 +4,9 @@
 // so the shore you see is where the land meets the water — as games draw calm lakes. (Unreal's Water plugin bodies were tried first:
 // built headless, their editor hooks into the landscape crashed the build and never drew in the game.) Under the surface — the
 // camera's, the walker's diving or a shot's — the water is seen from inside: M_HB_Underwater (Scripts/make_underwater_material.py),
-// switched on while the camera is under, given the surface over it and the daylight on the water.
+// switched on while the camera is under, given the surface over it and the daylight on the water. The BROOK between the lakes: the
+// water grid's wet cells along its course and a ring of cells under its banks, each corner at the brook's own level there (it falls
+// ~0.7 m from Upper to Lower), sunk a few cm under a lake's surface where that reaches over it (the two would flicker).
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"

@@ -268,6 +268,13 @@ plants, textures. Photos are private: never commit or publish them.
   for a look) and the bulrush's head rebuilt as small spikelet clusters on rays (one stretched blob read as a cattail). Checked in shots
   (May: leaves only; 0.38: spikes, lily flowers). NEXT: draw the brook's water in UE (AHotBrookWaterSurface: a ribbon on lakes.json's
   brook path/width/levels — check its pools against the sim's GEO brook cells), then the new downloads.
+  + 15:25 COMMITTED 67719cb (flowers). THE BROOK DRAWN (this commit): AHotBrookWaterSurface builds a section from the water grid's wet
+  cells within 20 m of the brook path outside the lakes (66 cells) + a ring under the banks (99; ring corners 5 cm under the ground),
+  corners at the brook's own level, 3 cm under a lake's within BankOverlap+2 m of its shore (no flicker at the mouths). UHotBrookWater
+  gains InBrook/Drawn (+ Grid/CellSurface); the weeds use Drawn (bur-reed, floating leaves now in the brook). Checked in shots (a bear
+  drinking at the upper mouth, too). KNOWN: the brook's channel in the landscape shows the 5-m cells (square shallow steps) — needs
+  export_world's heightmap with a smooth channel along BROOK_PATH/width and a landscape rebuild (CAREFUL: export_world.mjs also writes
+  camps.json from CAMPS3D — it would overwrite export_camps.mjs's richer camps.json; run export_camps after it). NEXT: the downloads.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

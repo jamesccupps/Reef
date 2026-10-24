@@ -28,6 +28,10 @@ void UHotBrookWater::Initialize(FSubsystemCollectionBase& Collection)
 				for (const TSharedPtr<FJsonValue>& Q : V->AsObject()->GetArrayField(TEXT("pts"))) { const TArray<TSharedPtr<FJsonValue>>& XY = Q->AsArray(); Pts.Add(FVector2D(XY[0]->AsNumber(), XY[1]->AsNumber())); Box += Pts.Last(); }
 				if (Pts.Num() > 2) { LakePts.Add(Pts); LakeBox.Add(Box); }
 			}
+		const TSharedPtr<FJsonObject>* BO = nullptr; const TArray<TSharedPtr<FJsonValue>>* BP = nullptr;
+		if (J.IsValid() && J->TryGetObjectField(TEXT("brook"), BO) && (*BO)->TryGetArrayField(TEXT("path"), BP))
+			for (const TSharedPtr<FJsonValue>& Q : *BP) { const TArray<TSharedPtr<FJsonValue>>& XY = Q->AsArray(); BrookPath.Add(FVector2D(XY[0]->AsNumber(), XY[1]->AsNumber())); BrookBox += BrookPath.Last(); }
+		if (BrookPath.Num()) BrookBox = BrookBox.ExpandBy(20.0);
 	}
 	// the cleared ground (Import/cleared.bin: export_camps.mjs — "HBC1", int32 nx, ny, float64 x0, y0, then bits by rows from the south)
 	{
@@ -93,6 +97,14 @@ bool UHotBrookWater::InLake(const FVector& P) const
 			if ((Pt[i].Y > M.Y) != (Pt[j].Y > M.Y) && M.X < (Pt[j].X - Pt[i].X) * (M.Y - Pt[i].Y) / (Pt[j].Y - Pt[i].Y) + Pt[i].X) bIn = !bIn;
 		if (bIn) return true;
 	}
+	return false;
+}
+
+bool UHotBrookWater::InBrook(const FVector& P) const
+{
+	const FVector2D M = HotBrookCoords::ToSim(P); float S;
+	if (BrookPath.Num() < 2 || !BrookBox.IsInside(M) || !SurfaceAt(P, S) || InLake(P)) return false;
+	for (int32 i = 0; i + 1 < BrookPath.Num(); i++) if (FMath::PointDistToSegment(FVector(M, 0.0), FVector(BrookPath[i], 0.0), FVector(BrookPath[i + 1], 0.0)) < 20.0) return true;
 	return false;
 }
 
