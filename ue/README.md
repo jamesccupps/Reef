@@ -29,6 +29,14 @@ project draws the world in the first person, fed live by it. The browser view, t
   cypress, paper birch the silver birch, aspen, red maple the Norway maple, beech, alder, hazel, willow, the snags the dead pine,
   the young hardwoods the maple, beech and rowan saplings. Megaplants are skinned meshes: their branches sway in the Dynamic Wind
   plugin's GPU wind, set from the sim's wind speed and direction. Each trunk has a hidden collider.
+- **The wind farm** — `AHotBrookTurbines`: the Stetson wind farm (2009, 38) and its expansion (2010, 17) on the ridges south-west
+  of the lakes — GE 1.5-77s (80-m hubs, 77-m rotors) where the USGS US Wind Turbine Database puts them, each on its ground (the USGS
+  elevation service's beyond the landscape), from `ue/export/export_turbines.mjs` (`Import/turbines.json`; the fetched data kept in
+  the git-ignored `tools/hotbrook/data/turbines_uswtdb.json`). The turbine is procedural (`ue/export/build_turbine.py`: tower +
+  nacelle, and the rotor turning about its hub), imported by `HB_SET=landmarks Scripts/import_creatures.py`. Each yaws slowly into
+  the sim's wind; the rotors turn at a GE 1.5's speed for the wind at the hub (still below the 3.5-m/s cut-in, 10–20 rpm); a third
+  carry the red aviation beacon (`M_HB_Beacon`: `Scripts/make_beacon_material.py`), flashing together by night. From the lakes the
+  expansion's row stands over the western treeline, 2–4 km off — thin at 1280 px, as it should be at the human's 3440.
 - **The forest through the year** — the hardwoods (birch, aspen, red maple, beech, alder, hazel, willows, the young hardwoods) by the
   date, as the browser view's LEAF calendar by species: their own green in summer; from the turning (mid-September for the red maple,
   later for the beech) their twin material (`Scripts/make_season_foliage.py`: the Megaplants master's 'Seasons' switch on), its two

@@ -324,6 +324,15 @@ plants, textures. Photos are private: never commit or publish them.
   → Import/surfaces/Cobble_* (scratchpad/dl_cobble); M_Ground's substrate rock layer uses Cobble (RockyFloor stays for steep slopes).
   The camps' colours checked against the listings: roofs 64 % metal (teal/red/grey/dark) ≈ listings' ~70 % — left as the dataset has
   them. NEXT: the wind turbines on the ridge (USWTDB public data → positions; a procedural turbine; blades turning with the wind).
+  + 19:45 COMMITTED a2d4b1a (cobble). THE WIND FARM (this commit): USWTDB API is now https://energy.usgs.gov/api/uswtdb/v1/turbines
+  (PostgREST: xlong=gte.…&ylat=…); 87 turbines in ±0.4°: Stetson 38 + expansion 17 (GE1.5-77, hub 80, rotor 77), Rollins 32 (30 km
+  W, left out); ground per turbine from https://epqs.nationalmap.gov/v1/json (191–326 m) → tools/hotbrook/data/turbines_uswtdb.json
+  (ignored) → export_turbines.mjs → Import/turbines.json (sim x/y; lit = ends + every 3rd: 21). build_turbine.py → Import/landmarks/
+  turbine_tower/rotor.glb (hub (2.6, 0, 81.6) m) → HB_SET=landmarks import. AHotBrookTurbines (GameMode spawns it): 6 on the landscape,
+  49 beyond its edge at EPQS ground; yaw 0.5°/s into Link WindFrom (+±5°), rpm by hub wind (×1.338), beacons M_HB_Beacon MID 'Glow' 60
+  for 0.6 s of every 2 s while Daylight < 0.15. Checked: day at 3440 px a row over the west treeline and Stetson on its hill to the
+  south; a night beacon pixel flashing. KNOWN (next): THE NIGHT IS PITCH BLACK away from the camps (mean 0, no moon/stars/skyglow) —
+  needs a night sky (stars, the moon by its phase, airglow) and a minimum exposure.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
