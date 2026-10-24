@@ -7,7 +7,9 @@
 // The snapshot ("HBS2", little-endian): f64 simT; f32 t (0–1 of a day), yf (0 = March 1), windSpeed (m/s), sun (0–1), airT (°C),
 // iceMean (m); u8 weather (0 clear … 3 storm), u8 wind bearing (where it blows FROM, 0–255 a turn clockwise from north), u8×2 pad;
 // u32 nFish, nForest; then nFish × 12 fields (f32 x, y, z, yaw, pitch, length cm, species, n, speed m/s; u32 id; f32 school 0/1,
-// body depth's multiplier) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m).
+// body depth's multiplier) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m); then the lakes' wildlife: u32 nKinds,
+// nKinds × 2 f32 (how many on the lakes now — fish3 _wildN, in fish3 WILDK's order — and its activity by the light, 0–1), u32 nTaken,
+// nTaken × 6 f32 (the fish it took since the last snapshot: x, y, depth m, WILDK index, length cm, species).
 import { Worker } from 'node:worker_threads';
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -35,7 +37,8 @@ setInterval(() => {
 function encode(m) {
   const fb = m.fish || new Float32Array(0), nf = Math.floor(fb.length / 18), fo = m.forest || new Float32Array(0), nfo = Math.floor(fo.length / 8);
   let ice = 0; if (m.ice && m.ice.length) { for (let i = 0; i < m.ice.length; i++) ice += m.ice[i]; ice /= m.ice.length; }
-  const head = 4 + 8 + 6 * 4 + 4 + 8, buf = Buffer.alloc(head + nf * 48 + nfo * 32), fu = new Uint32Array(fb.buffer, fb.byteOffset, fb.length);
+  const wn = m.wildN || new Float32Array(0), wa = m.wildAct || new Float32Array(0), nk = Math.min(wn.length, wa.length), wv = m.wild || new Float32Array(0), nw = Math.floor(wv.length / 6);
+  const head = 4 + 8 + 6 * 4 + 4 + 8, buf = Buffer.alloc(head + nf * 48 + nfo * 32 + 4 + nk * 8 + 4 + nw * 24), fu = new Uint32Array(fb.buffer, fb.byteOffset, fb.length);
   let o = 0; buf.write('HBS2', o, 'ascii'); o += 4; buf.writeDoubleLE(m.simT || m.time || 0, o); o += 8;
   for (const v of [m.t, m.yf, m.windSpeed || 0, m.sun || 0, m.air ?? 0, ice]) { buf.writeFloatLE(+v || 0, o); o += 4; }
   buf.writeUInt8(m.weather | 0, o); buf.writeUInt8(Math.round((((m.windDir || 0) / (2 * Math.PI)) % 1 + 1) % 1 * 256) & 255, o + 1); o += 4;
@@ -45,6 +48,8 @@ function encode(m) {
     buf.writeUInt32LE(fu[s + 15], o); o += 4; buf.writeFloatLE(fb[s + 16], o); o += 4; buf.writeFloatLE(fb[s + 17] || 1, o); o += 4;
   }
   for (let i = 0; i < nfo * 8; i++) { buf.writeFloatLE(fo[i], o); o += 4; }
+  buf.writeUInt32LE(nk, o); o += 4; for (let k = 0; k < nk; k++) { buf.writeFloatLE(wn[k], o); buf.writeFloatLE(wa[k], o + 4); o += 8; }
+  buf.writeUInt32LE(nw, o); o += 4; for (let i = 0; i < nw * 6; i++) { buf.writeFloatLE(wv[i], o); o += 4; }
   return buf;
 }
 

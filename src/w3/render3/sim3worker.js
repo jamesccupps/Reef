@@ -17,7 +17,7 @@
 // (a few seconds each way), and while the GPU holds them the view gets only what it draws, gathered there.
 import { R5 } from './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
 import { Env3 } from '../env3.js';
-import { Fish3, stageR5 } from '../fish3.js';
+import { Fish3, stageR5, WILD3, WILDK } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
 import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
@@ -225,9 +225,13 @@ function snapshot() {
   const ru = new Uint32Array(rz.buffer); for (let o = 4; o < rz.length; o += 6) ru[o] = rises[o];   // (each rise's fish id as u32 bits — exact past 2^24: rises3view reads it so)
   rises = []; wildEv = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
+  // (the wildlife on the lakes now — fish3 _wildN, per WILDK — and how active each is by the light: WILD3 act [day, twilight, night];
+  // for views that place them — the Unreal world's — the browser's wild3view counts its own)
+  const FF = side.F || (side.solo && side.solo.F), yfNow = env.yearFrac(), li = env.sun > 0.3 ? 0 : env.sun > 0.02 ? 1 : 2;
+  const wildN = FF ? Float32Array.from(WILDK, w => FF._wildN(w, yfNow) || 0) : null, wildAct = Float32Array.from(WILDK, w => WILD3[w].act[li]);
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, windDir: env.windDir, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
     acc, h, nf, ny, simT: env.time + envAcc, stepMs,   // (simT: the fish's clock — the water's steps a simulated minute at a time at the fine speeds)
-    shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, forest: forestOf(), ...side.totals(count, nf, ny) };
+    shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, wildN, wildAct, forest: forestOf(), ...side.totals(count, nf, ny) };
   const tr = [fb.buffer, yb.buffer, ice.buffer, rz.buffer, wz.buffer]; if (field) tr.push(field.buffer); if (msg.forest) tr.push(msg.forest.buffer);
   postMessage(msg, tr);
 }

@@ -4,6 +4,7 @@
 #include "HotBrookForest.h"
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
+#include "HotBrookWildlife.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
 #include "Components/DirectionalLightComponent.h"
@@ -76,9 +77,23 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	PlaceSun();
 	// the fish (AHotBrookFish draws them), then the forest's large animals: 8 floats each (AHotBrookAnimals)
 	for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) It->Update(B.GetData() + 48, NF, Night);
-	if (FishEnd + (int64)NFo * 32 <= B.Num()) {
+	const int64 ForestEnd = FishEnd + (int64)NFo * 32;
+	if (ForestEnd <= B.Num()) {
 		TArray<float> Rec; Rec.SetNumUninitialized(NFo * 8); FMemory::Memcpy(Rec.GetData(), B.GetData() + FishEnd, NFo * 32);
 		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo, YearFrac);
+	}
+	// the lakes' wildlife: how many of each and how active (2 floats a kind), then the fish they took (6 floats each) — AHotBrookWildlife
+	if (ForestEnd + 4 <= B.Num()) {
+		const int32 NK = (int32)U(ForestEnd); const int64 Ev = ForestEnd + 4 + (int64)NK * 8;
+		if (NK <= 64 && Ev + 4 <= B.Num()) {
+			const int32 NW = (int32)U(Ev);
+			if (Ev + 4 + (int64)NW * 24 <= B.Num()) {
+				TArray<float> Cnt, Act, Tk; Cnt.SetNum(NK); Act.SetNum(NK); Tk.SetNumUninitialized(NW * 6);
+				for (int32 k = 0; k < NK; k++) { Cnt[k] = F(ForestEnd + 4 + k * 8); Act[k] = F(ForestEnd + 8 + k * 8); }
+				if (NW) FMemory::Memcpy(Tk.GetData(), B.GetData() + Ev + 4, NW * 24);
+				for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) It->Update(Cnt.GetData(), Act.GetData(), NK, Tk.GetData(), NW, YearFrac);
+			}
+		}
 	}
 }
 

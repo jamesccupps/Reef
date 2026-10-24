@@ -47,6 +47,11 @@ project draws the world in the first person, fed live by it. The browser view, t
   deepened by its condition, at its place, heading and pitch, eased between the snapshots; its tail beating at the browser's rate
   for its speed (`M_HB_Fish`'s swim wave, its phase per fish in the instance's custom data); a school as up to 24 of its fish
   ~3 lengths apart by day, ~8 at night. Redbreast borrow the pumpkinseed, fallfish and alewife the dace.
+- **The birds** — `AHotBrookWildlife`: the loons, great blue herons and bald eagles the sim has on the lakes now (fish3 `_wildN`
+  through the link — none out of season), each lake its share; loons swim the open water and dive every minute or two (one dives
+  where the sim says a loon took a fish, and comes up there), resting on the water at night; herons stand in the shallows and step
+  slowly between spots; eagles circle high by day and stoop to the water where the sim's eagle took a fish. (No models yet for the
+  ospreys, kingfishers, mergansers, otters and mink the sim also keeps.) `-hbshot` takes `nearloon`, `nearheron`, `neareagle`.
 - **The models** — downloaded from Sketchfab to `G:\HotBrookUE\Import\sketchfab` (never committed); `ue/export/convert_models.py`
   (Blender 5.1) lays each on its axes (a fish's length on +X, back up), cuts it to ~12,000 triangles (birds 24,000, the canoe
   30,000), sizes it (a fish 1 m long; a bird, a boat to its real size) and writes `Import/models/<name>.glb` with three views to

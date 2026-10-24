@@ -8,6 +8,7 @@
 #include "HotBrookGroundCover.h"
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
+#include "HotBrookWildlife.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
 #include "Engine/World.h"
@@ -81,6 +82,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookAnimals>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnimals>();
 	// the lakes' fish near the walker, each its species' model
 	if (!TActorIterator<AHotBrookFish>(GetWorld())) GetWorld()->SpawnActor<AHotBrookFish>();
+	// the lakes' fish-eating birds the sim counts (loons, herons, eagles), each with its own simple life
+	if (!TActorIterator<AHotBrookWildlife>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWildlife>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
 	if (FParse::Value(FCommandLine::Get(), TEXT("hbwalk="), Arg, false)) {
@@ -100,7 +103,7 @@ void AHotBrookGameMode::BeginPlay()
 		if (F.Num() < 4) continue;
 		FShot S{ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() };
 		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|"));
-		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
+		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
@@ -121,6 +124,13 @@ void AHotBrookGameMode::PlaceNext()
 	// (a look at an animal: the walker set down 12 m from the nearest of its kind, so the woods about it stream in while it settles)
 	double SX = S.X, SY = S.Y;
 	const int32 Kind = S.Near == TEXT("bear") ? 0 : S.Near == TEXT("deer") ? 1 : S.Near == TEXT("moose") ? 2 : -1;
+	const int32 Bird = S.Near == TEXT("loon") ? 0 : S.Near == TEXT("heron") ? 1 : S.Near == TEXT("eagle") ? 4 : -1;
+	if (Bird >= 0) {   // (a bird: the walker set down by the nearest of its kind — on the shore or swimming)
+		const AHotBrookWildlife* Wl = nullptr; for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) { Wl = *It; break; }
+		FVector BP; float BY = 0;
+		if (Wl && Wl->Nearest(Bird, FVector2D(S.X, S.Y), BP, BY)) { const FVector2D M = HotBrookCoords::ToSim(BP); SX = M.X + 15.0; SY = M.Y; UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest %s at %.0f, %.0f"), *S.Name, *S.Near, M.X, M.Y); }
+		else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s about"), *S.Name, *S.Near);
+	}
 	if (Kind >= 0) {
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
 		FVector AP; float AY = 0, AL = 0;
@@ -150,7 +160,22 @@ void AHotBrookGameMode::TakeShot()
 	const FString& Near = Shots[NextShot].Near;
 	// (framed twice: once to let the exposure settle on the new view, a moment later again on where the animal has gone)
 	const FVector From = Framed && ShotCam ? ShotCam->GetActorLocation() : Pw ? Pw->GetActorLocation() : FVector::ZeroVector;
-	if (Near != TEXT("fish") && !Near.IsEmpty() && Framed < 2 && Pw) {
+	const int32 BirdK = Near == TEXT("loon") ? 0 : Near == TEXT("heron") ? 1 : Near == TEXT("eagle") ? 4 : -1;
+	if (BirdK >= 0 && Framed < 2 && Pw) {
+		// (a bird: the camera off its side — a loon or a heron from a few metres, low; an eagle from 30 m, level with it)
+		Framed++; FVector BP; float BY = 0;
+		const AHotBrookWildlife* Wl = nullptr; for (TActorIterator<AHotBrookWildlife> It(GetWorld()); It; ++It) { Wl = *It; break; }
+		if (Wl && Wl->Nearest(BirdK, HotBrookCoords::ToSim(From), BP, BY)) {
+			const FVector Side = FRotator(0, BY + 90.f, 0).Vector(), At = BP + FVector(0, 0, BirdK == 1 ? 70.f : BirdK == 0 ? 15.f : 0.f);
+			const FVector Eye = At + Side * (BirdK == 4 ? 3000.f : 450.f) + FVector(0, 0, BirdK == 0 ? 40.f : BirdK == 1 ? 30.f : 0.f);
+			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+			ShotCam->SetActorLocationAndRotation(Eye, (At - Eye).Rotation()); PC->SetViewTarget(ShotCam);
+			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the %s at %s"), *Shots[NextShot].Name, *Near, *BP.ToString());
+		}
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
+		return;
+	}
+	if (Near != TEXT("fish") && BirdK < 0 && !Near.IsEmpty() && Framed < 2 && Pw) {
 		// (an animal: the camera off its flank at 1.7 lengths, a little above its back, on it)
 		Framed++; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
