@@ -202,7 +202,45 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock — THE NEWEST). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
+▶▶▶ RESUME HERE (2026-10-24 ~13:20 EDT — THE NEWEST). PUSHED today: 484c3a6 wildlife, 1cdb24a anglers + shallows, c0bbb47 camps'
+nights/out-of-season/lawns/snow (backup G:\synapse-reef-backups\synapse-reef_20261024_1315_ue_wildlife_anglers_camps.zip). THE HUMAN
+(13:15): "ive downloaded some more things, not those yet [the second list], but we will have to make sure all the textures and plants
+and everything are accurate too, i can upload more photos too that way you can reference the game to make sure it all looks right,
+like rocks, shorline, grass, everything". NEW DOWNLOADS (C:\Users\james\Downloads, 12:30–13:12): kawasaki-ridge-ranch.zip (a UTV),
+bass-boat.zip, pontoon.zip, grass.zip, stones-and-grass.zip, fern-grass-02.zip, pond-weed.zip, lake-lily-med.zip,
+water-lily-nymphaea-odorata.zip. PLAN: (1) unpack to G:\HotBrookUE\Import\sketchfab\<name>, check each licence (credits in
+ue/README.md; never commit the files); (2) the aquatic plants in UE from the sim's plant fields (plants3: whitelily = Nymphaea
+odorata, floatpond, …) — check what UE draws now; (3) a PHOTO-MATCH workflow: the human's photos (originals, with GPS/time) in a
+private folder → their place, heading, hour, lens → the same view rendered in the game → side by side → fix rocks, shoreline, grass,
+plants, textures. Photos are private: never commit or publish them.
+  + 13:35 LICENCES (Sketchfab public search API): lilies + pond weed Valery.Li CC-BY; fern grass 02 POLYSCAN CC-BY; grass Cosmic_dust
+  CC-BY (81,242 tris matched); bass boat BoatUS Foundation CC-BY (168,116 matched); pontoon BoatUS Foundation CC-BY (likely; 321,613);
+  stones and grass grewe.juergen CC-BY (likely); Kawasaki Ridge Ranch geyges "Free Standard" (use OK, no redistribution). Told the
+  human: photos (originals with GPS) into G:\HotBrookUE\Import\reference\. ue/export/convert_plants.py → Import/plants/*.glb:
+  white_lily (1.6 m clump, pads at z 0, stems to −0.57), lake_lily (1.4, rhizome to −1.74 — the yellow pond-lily's), pondweed (0.9),
+  grass_lawn/grass_tuft_a/grass_tuft_b (Cosmic_dust, textures mapped by material stem), fern_grass, stones_grass (200k). The
+  Valery.Li files are Y-up (pre X 90). PLAN (THE WEEDS): build_reeds.py (Blender procedural bulrush / pickerelweed reeds, normalised
+  1 m tall) → import (import_creatures.py generalised: HB_SET=plants) → ue/link/weeds.mjs (the host: plants3view's fine-cell blend +
+  clump field ported; on sim3worker's 'plants' message pack the cells within ~150 m of the walker as "HBP1": x, y, depth, per FORMS3
+  form its stand/Bmax ×255, mussels, dead stems) → AHotBrookLink routes HBP1 → NEW AHotBrookWeeds (HISM per mesh: lily clumps by
+  cover, pondweed, reeds scaled to depth + 0.5–1.3 m above, mussels as dark half-buried shells).
+  + THE HUMAN (13:50, "a note for later"): "maybe look or search for the properties that we have in this, like listings or other
+  things, might be able to get pictures to make them more realistic" — TODO after the weeds: search public real-estate listings /
+  assessor records for the mapped camps (the dataset's e911 addresses, local only) for photos of their siding, roofs, decks, docks;
+  keep them local as references (never commit, publish or label; never identify the family camp); no bot-check bypassing (Zillow
+  etc. may block automation: stop and ask the human to save pages instead).
+  + 14:00 THE WEEDS BUILT (committed "checks pending"; NOT yet seen in a shot): build_reeds.py → reed_bulrush/pickerelweed/horsetail
+  (procedural, 1 m tall); import_creatures.py generalised (HB_SET=plants → /Game/HotBrook/Plants, Import/plants_meshes.json; 11
+  imported OK); ue/link/weeds.mjs (plants3view's blend + clumps ported: 257,511 water cells over 4,067 bed cells, 21 forms; pack(m, x,
+  y, 150 m) "HBP1" ~46 KB in 7 ms; best(m) logs each form's densest cell once); simhost.mjs handles 'plants' (sends when the walker
+  moved 20 m or 30 s passed). AHotBrookLink keeps HBP1 apart (LatestPlants) → NEW AHotBrookWeeds (HISM per look: white_lily ×10/cell,
+  lake_lily = yellowlily ×8, watershield = lake_lily 0.3 ×24, pondweed for floatpond/burreed/ribbonleaf/largeleaf ×14, reeds bulrush
+  ×40, pickerelweed (+bogbean, arrowhead) ×24, horsetail ×30, sedge = grass_tuft_a (H 35 cm) ×40 — stretched to depth + 0.5–1.3 m;
+  mussels = engine sphere, MID of MI_HB_Plastic Tint dark olive, within 25 m). -hbshot cmd `plant=<key>` frames the nearest. The
+  host was restarted (task bihaavlbd). Mid-May densest (stand/Bmax): yellowlily 0.25 at (-572,-1322), bulrush 0.19 (-182,-3242),
+  whitelily 0.01 (333,1223) — the lilies barely up in May. NEXT: shots at those (air= or plant=), fix, commit; then lawn grass
+  instances (grass_lawn on the lawns), stones_grass on rocky shores, the pontoon/bass boat/UTV, the listings search, the photo match.
+▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
 to G:\HotBrookUE\Import\sketchfab\<name>\ (inner zips → source\x\): osprey, osprey-in-flight, belted-kingfisher(-in-flight) (OSU

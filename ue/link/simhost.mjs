@@ -10,10 +10,14 @@
 // body depth's multiplier) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m); then the lakes' wildlife: u32 nKinds,
 // nKinds × 2 f32 (how many on the lakes now — fish3 _wildN, in fish3 WILDK's order — and its activity by the light, 0–1), u32 nTaken,
 // nTaken × 6 f32 (the fish it took since the last snapshot: x, y, depth m, WILDK index, length cm, species).
+// And THE WATER PLANTS ("HBP1", ue/link/weeds.mjs): the sim's weed beds laid on the lake bed about the walker, sent when the sim's
+// plant data comes (every few seconds) and the walker has moved 20 m since the last, or half a minute has passed.
 import { Worker } from 'node:worker_threads';
 import http from 'node:http';
 import crypto from 'node:crypto';
 const PORT = +(process.argv[2] || 8771);
+const { makeWeeds } = await import('./weeds.mjs');
+const weeds = makeWeeds(); let weedsAt = 0, weedsCam = [1e9, 1e9];
 const clients = new Set();
 let cam = [0, -1000, 60], ready = false, last = performance.now(), waiting = false, nSnap = 0;
 
@@ -25,6 +29,13 @@ sim.on('message', m => {
   else if (m.type === 'progress') console.log(`  ${m.text} (${m.s.toFixed(1)} s)`);
   else if (m.type === 'ready') { ready = true; console.log(`ready: ${m.NC} columns, ${m.shards} shards — ws://127.0.0.1:${PORT}`); }
   else if (m.type === 'snap') { waiting = false; nSnap++; const b = encode(m); for (const c of clients) send(c, b); if (nSnap % 200 === 1) console.log(`t ${(m.t * 24).toFixed(2)} h, yf ${m.yf.toFixed(3)}, ${m.nf} fish near, ${clients.size} client(s)`); }
+  else if (m.type === 'plants') {
+    const now = performance.now();
+    if (!weedsAt) console.log("the weeds' densest cells (x, y, stand/Bmax):", JSON.stringify(weeds.best(m)));
+    if (Math.hypot(cam[0] - weedsCam[0], cam[1] - weedsCam[1]) > 20 || now - weedsAt > 30000) {
+      const b = weeds.pack(m, cam[0], cam[1]); if (b) { weedsAt = now; weedsCam = [cam[0], cam[1]]; for (const c of clients) send(c, b); }
+    }
+  }
   else if (m.type === 'error') console.error('sim:', m.text);
 });
 // (a tick each 50 ms with the real time passed — the sim limits its own catch-up; one at a time, as the page sends them)

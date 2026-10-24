@@ -5,6 +5,7 @@
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
+#include "HotBrookWeeds.h"
 #include "HotBrookBoat.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
@@ -52,7 +53,11 @@ void AHotBrookLink::Connect()
 	// (a snapshot may come in pieces: gathered until the last)
 	Socket->OnRawMessage().AddLambda([this](const void* Data, SIZE_T Size, SIZE_T Remaining) {
 		Pending.Append((const uint8*)Data, Size);
-		if (Remaining == 0) { Latest = MoveTemp(Pending); Pending.Reset(); bFresh = true; }
+		if (Remaining == 0) {
+			if (Pending.Num() >= 4 && FMemory::Memcmp(Pending.GetData(), "HBP1", 4) == 0) { LatestPlants = MoveTemp(Pending); bPlantsFresh = true; }   // (the water plants: their own)
+			else { Latest = MoveTemp(Pending); bFresh = true; }
+			Pending.Reset();
+		}
 	});
 	Socket->Connect();
 }
@@ -63,6 +68,7 @@ void AHotBrookLink::Tick(float Dt)
 	const double Now = GetWorld()->GetTimeSeconds();
 	if (Socket.IsValid() && !Socket->IsConnected() && NextTry > 0 && Now > NextTry) { NextTry = 0; Connect(); }
 	if (bFresh) { bFresh = false; Apply(Latest); }
+	if (bPlantsFresh) { bPlantsFresh = false; for (TActorIterator<AHotBrookWeeds> It(GetWorld()); It; ++It) It->Update(LatestPlants); }
 	if (Season) {
 		const int32 Force = CVarSnow.GetValueOnGameThread(); const float Want = Force >= 0 ? (float)FMath::Min(Force, 1) : SnowWant;
 		const float Was = SnowNow; SnowNow = SnowNow < 0.f ? Want : FMath::FInterpConstantTo(SnowNow, Want, Dt, 0.1f);

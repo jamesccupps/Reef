@@ -10,6 +10,7 @@
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
 #include "HotBrookAnglers.h"
+#include "HotBrookWeeds.h"
 #include "HotBrookBoat.h"
 #include "HotBrookCamps.h"
 #include "EngineUtils.h"
@@ -150,7 +151,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookWildlife>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWildlife>();
 	// the camps, houses, sheds and docks (Import/camps: ue/export/build_camps.py, Scripts/import_camps.py)
 	if (!TActorIterator<AHotBrookCamps>(GetWorld())) GetWorld()->SpawnActor<AHotBrookCamps>();
-	if (!TActorIterator<AHotBrookAnglers>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnglers>();   // (after the wildlife: it reads the anglers' counts there)
+	if (!TActorIterator<AHotBrookAnglers>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnglers>();
+	if (!TActorIterator<AHotBrookWeeds>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWeeds>();   // (after the wildlife: it reads the anglers' counts there)
 	// a canoe in the shallows nearest the start
 	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
@@ -179,6 +181,7 @@ void AHotBrookGameMode::BeginPlay()
 		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle"), TEXT("kingfisher"), TEXT("osprey"),
 			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog"), TEXT("painted"), TEXT("frog"), TEXT("angler"), TEXT("iceangler") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
 		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("air="))) { S.Air = FCString::Atod(*Cs[c].Mid(4)); Cs.RemoveAt(c); }
+		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("plant="))) { S.Near = TEXT("plant:") + Cs[c].Mid(6); Cs.RemoveAt(c); }
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
@@ -316,6 +319,18 @@ void AHotBrookGameMode::TakeShot()
 			ShotCam->SetActorLocationAndRotation(At, (P - At).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest fish, %.0f cm long, at %s, seen from %.0f cm"), *Shots[NextShot].Name, L * 100.f, *P.ToString(), D);
 		}
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
+		return;
+	}
+	if (Near.StartsWith(TEXT("plant:")) && Framed < 2 && Pw) {
+		// (a water plant of a species — plant=<plants3 key>: the camera 6 m off it, 2.5 m up, looking down at it)
+		Framed++; FVector P;
+		const AHotBrookWeeds* Wd = nullptr; for (TActorIterator<AHotBrookWeeds> It(GetWorld()); It; ++It) { Wd = *It; break; }
+		if (Wd && Wd->Nearest(Near.Mid(6), HotBrookCoords::ToSim(From), P)) {
+			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+			const FVector Eye = P + FVector(-450.f, 300.f, 250.f); ShotCam->SetActorLocationAndRotation(Eye, (P - Eye).Rotation()); PC->SetViewTarget(ShotCam);
+			UE_LOG(LogTemp, Display, TEXT("hbshot %s: a %s at %s"), *Shots[NextShot].Name, *Near.Mid(6), *P.ToString());
+		} else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s near"), *Shots[NextShot].Name, *Near.Mid(6));
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
 		return;
 	}

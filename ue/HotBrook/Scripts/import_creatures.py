@@ -13,9 +13,12 @@ import unreal
 L = unreal.MaterialEditingLibrary
 EAL = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
-SRC = os.path.join(unreal.Paths.project_dir(), 'Import', 'creatures')
-DEST = '/Game/HotBrook/Creatures'
-NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole')
+# (HB_SET=plants: the plants and the ground's pieces instead — convert_plants.py, build_reeds.py: Import/plants → /Game/HotBrook/Plants,
+# Import/plants_meshes.json)
+SET = os.environ.get('HB_SET', 'creatures')
+SRC = os.path.join(unreal.Paths.project_dir(), 'Import', SET)
+DEST = '/Game/HotBrook/' + SET.capitalize()
+NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole', 'stones_grass')
 VERTEX_COLOUR = ('painted_turtle',)
 ONLY = [a for a in os.environ.get('HB_ONLY', '').split(',') if a]
 bad = []
@@ -32,7 +35,7 @@ def vertex_colour_material():
     return m
 
 manifest = {}
-mpath = os.path.join(unreal.Paths.project_dir(), 'Import', 'creatures_meshes.json')
+mpath = os.path.join(unreal.Paths.project_dir(), 'Import', SET + '_meshes.json')
 if ONLY and os.path.exists(mpath):
     with open(mpath) as fh: manifest = json.load(fh)
 for f in sorted(glob.glob(os.path.join(SRC, '*.glb'))):
@@ -73,6 +76,6 @@ for f in sorted(glob.glob(os.path.join(SRC, '*.glb'))):
     manifest[name] = {'mesh': mesh.get_path_name(), 'skeletal': bool(sk), 'size_cm': [round(b.box_extent.x * 2, 1), round(b.box_extent.y * 2, 1), round(b.box_extent.z * 2, 1)],
                       'origin_cm': [round(b.origin.x, 1), round(b.origin.y, 1), round(b.origin.z, 1)], 'clips': clips,
                       'materials': len(mesh.get_editor_property('materials' if sk else 'static_materials'))}
-    unreal.log_warning('HB creature %s: %s, %s cm at %s, clips %s' % (name, mesh.get_path_name(), manifest[name]['size_cm'], manifest[name]['origin_cm'], sorted(clips)))
+    unreal.log_warning('HB ' + SET[:-1] + ' %s: %s, %s cm at %s, clips %s' % (name, mesh.get_path_name(), manifest[name]['size_cm'], manifest[name]['origin_cm'], sorted(clips)))
 with open(mpath, 'w') as fh: json.dump(manifest, fh, indent=1)
-unreal.log_warning('HB creatures imported: %d; problems: %s' % (len(manifest), bad or 'none'))
+unreal.log_warning('HB %s imported: %d; problems: %s' % (SET, len(manifest), bad or 'none'))

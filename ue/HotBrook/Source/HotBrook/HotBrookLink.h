@@ -37,7 +37,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float Daylight = 0.6f;
 private:
 	TSharedPtr<IWebSocket> Socket;
-	TArray<uint8> Pending, Latest; bool bFresh = false;
+	TArray<uint8> Pending, Latest, LatestPlants; bool bFresh = false, bPlantsFresh = false;   // (the snapshots; the water plants, HBP1)
 	double NextTry = 0, NextCam = 0;
 	float Night = 0.f;   // (0 day … 1 night: the sun's height)
 	TObjectPtr<ADirectionalLight> Sun = nullptr;
