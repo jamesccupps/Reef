@@ -202,7 +202,28 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-24 ~00:30 machine clock / 20:30 EDT — THE NEWEST). UNREAL: THE REAL TREES + WATER + GROUND (b09f97c, pushed).
+▶▶▶ RESUME HERE (2026-10-23 ~22:40 EDT — THE NEWEST; before a compaction; the PC hard-reset ~22:24, Kernel-Power 41, nothing lost).
+UNREAL, DONE + PUSHED since the last block: 3b872b0 the woods stocked by FIA (export_forest.mjs: stems by height class, ~3,000/ha over
+2 m, 5.47 M trees), AHotBrookGroundCover (ferns, forbs, blueberry, grasses, shore shrubs, mushrooms, stones, boulders, logs — FIA cover
+values, research in docs/research_notes/Maine forest structure/), Megascans scans imported (Scripts/import_megascans.py; the master
+materials need the Nanite + instanced usages), fix_megaplants.py (Baltic Pine bark), exposure -1 EV; 0fe2d74 THE START NO LONGER
+FREEZES (forest tiles batched: 1-3 s -> ~15 ms a tile; trunk colliders only within 150 m; -hbstats/-hbwalk/-hbquit) — on the human's
+screen 18-30 ms a frame ("way better, swimming needs work, but lets continue"); 8377ef7 the deer live (AHotBrookAnimals: the Animal
+Variety Pack's stag/doe by the sim's act and speed, fawn at heel) + ROADMAP #15 (the Unreal world draws the whole sim and plays like a
+game: boats, fishing, swimming/underwater, map, time, photo mode, sounds; the human fetches models when free ones run out).
+IN PROGRESS — SKETCHFAB MODELS: the human downloaded 15 (my links); they are unzipped in G:\HotBrookUE\Import\sketchfab\<name>\ (zips in
+…\zips): smallmouth bass, chain pickerel, channel catfish (-> brown bullhead), common dace (-> blacknose dace/fallfish), European perch
+(-> yellow perch; a Tripo AI model), hog sucker (-> white sucker), northern studfish (-> banded killifish), yellow bass (-> white
+perch), pumpkinseed (.blend), common loon (.dae), great blue heron (obj), bald eagle (fbx, flying), canoe (obj), the WildMesh moose
+(fbx, 2 anims) and bear (fbx, 81 anims — its textures are RDR2's "a_c_bear_01": a game rip; the human: "just use them, its for me, im
+not selling this" -> use, but NEVER commit or share them). NEXT: ue/export/convert_models.py (uncommitted until run; Blender 5.1 at
+C:\Program Files\Blender Foundation\Blender 5.1\blender.exe — 4.2's folder has no exe; 5.x has no Collada importer: the loon .dae needs
+another route) -> G:\HotBrookUE\Import\models\<name>.glb + side views; check head/back turns in MODELS; then import into UE (glTF via
+Interchange; the bear/moose FBX straight into UE with animations), fish into AHotBrookLink's per-species components (sized by L cm,
+a swim wave in the material), bear + moose into AHotBrookAnimals (kind 0, 2), loon/heron/eagle with the wildlife events later, the canoe
+as the first boat. Also queued: swimming + underwater view (the human flagged it), GPU in dense stands (~45 ms in the densest), the
+shore's water edge band, saplings for conifers. A CREDITS list for the CC-BY models (not the rips) goes in ue/README.md.
+▶▶▶ RESUME HERE (2026-10-24 ~00:30 machine clock / 20:30 EDT). UNREAL: THE REAL TREES + WATER + GROUND (b09f97c, pushed).
 The human added the Fab packs to G:\HotBrookUE\Content (Megaplant_Library: 23 Megaplants packs incl. all 14 forest species; Animal
 Variety Pack 5.5; rock/shrub packs). The Norway Maple Forest "Add to Project" never copied: copied by hand from the launcher's
 VaultCache\<pack>\data\Content. Megascans surfaces/FBX sit raw in VaultCache\FabLibrary (ue/export/megascans_surfaces.py -> Import/
