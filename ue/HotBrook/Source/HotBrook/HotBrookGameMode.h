@@ -20,7 +20,14 @@ public:
 	AHotBrookGameMode();
 	virtual void BeginPlay() override;
 	virtual void Tick(float Dt) override;
+	// the walker set down where the player chose to start — Import/start.json {"x", "y", "yaw"} (the sim's metres, UE degrees; kept
+	// out of the repo: a player's own place) or -hbstart=X,Y,Yaw — on the ground, or the nearest dry ground if that is water; the
+	// level's start without either
+	virtual APawn* SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot) override;
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 private:
+	bool bHaveStart = false; FVector StartAt = FVector::ZeroVector; float StartYaw = 0.f;
+	bool FindStart();
 	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; FString Near; };
 	TArray<FShot> Shots; int32 NextShot = 0; FTimerHandle ShotTimer; int32 Framed = 0;
 	UPROPERTY() TObjectPtr<class ACameraActor> ShotCam = nullptr;

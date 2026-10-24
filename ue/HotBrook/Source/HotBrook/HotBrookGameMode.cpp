@@ -14,6 +14,9 @@
 #include "Camera/CameraActor.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -26,6 +29,41 @@ AHotBrookGameMode::AHotBrookGameMode()
 {
 	DefaultPawnClass = AHotBrookCharacter::StaticClass();
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+bool AHotBrookGameMode::FindStart()
+{
+	double X = 0, Y = 0, Yaw = 0; bool bGot = false; FString Arg, Text; TSharedPtr<FJsonObject> J;
+	if (FParse::Value(FCommandLine::Get(), TEXT("hbstart="), Arg, false)) {
+		TArray<FString> F; Arg.TrimQuotes().ParseIntoArray(F, TEXT(","));
+		if (F.Num() >= 2) { X = FCString::Atod(*F[0]); Y = FCString::Atod(*F[1]); Yaw = F.Num() > 2 ? FCString::Atod(*F[2]) : 0.0; bGot = true; }
+	}
+	else if (FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("start.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), J) && J.IsValid()) {
+		bGot = J->TryGetNumberField(TEXT("x"), X) && J->TryGetNumberField(TEXT("y"), Y); J->TryGetNumberField(TEXT("yaw"), Yaw);
+	}
+	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
+	if (!bGot || !W || !W->IsLoaded()) return false;
+	// (on water: the nearest dry ground within 50 m — out from the spot in rings)
+	for (double R = 0; R <= 5000.0; R += 100.0)
+		for (int32 k = 0, n = FMath::Max(1, (int32)(R / 100.0) * 6); k < n; k++) {
+			const double A = 2.0 * PI * k / n; const FVector P(X * 100.0 + FMath::Cos(A) * R, -Y * 100.0 + FMath::Sin(A) * R, 0.0); float S = 0, G = 0;
+			if (!W->GroundAt(P, G) || (W->SurfaceAt(P, S) && S > G + 5.f)) continue;
+			StartAt = FVector(P.X, P.Y, G + 100.0); StartYaw = Yaw; bHaveStart = true;
+			UE_LOG(LogTemp, Display, TEXT("the walker starts at %.1f, %.1f (%.0f m from the chosen spot), facing %.0f"), P.X / 100.0, -P.Y / 100.0, R / 100.0, Yaw);
+			return true;
+		}
+	return false;
+}
+
+APawn* AHotBrookGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot)
+{
+	if (FindStart()) return SpawnDefaultPawnAtTransform(NewPlayer, FTransform(FRotator(0, StartYaw, 0), StartAt));
+	return Super::SpawnDefaultPawnFor_Implementation(NewPlayer, StartSpot);
+}
+
+void AHotBrookGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+	Super::FinishRestartPlayer(NewPlayer, bHaveStart ? FRotator(0, StartYaw, 0) : StartRotation);   // (the way the chosen start faces)
 }
 
 void AHotBrookGameMode::Tick(float Dt)
