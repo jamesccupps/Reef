@@ -252,6 +252,17 @@ plants, textures. Photos are private: never commit or publish them.
   search for the camps' photos (local only); use the new downloads (pontoon → replace the procedural one; bass boat → some anglers'
   boats; Kawasaki Ridge UTV → parked at some camps; grass_lawn on the lawns; stones_grass on rocky shores; fern_grass in the woods);
   the second download list (crayfish, mussel, newt, dragonflies, damselfly, snail, raccoon) not yet downloaded by them.
+  + 14:55 WEEDS FIXES (uncommitted until the check shot): (1) Valery.Li's lily/pondweed FBX were UPSIDE DOWN (pre X +90 → −90: the
+  pads had sat 0.6–1.7 m under the water, the stems arching out — the "dark sprigs"); lake_lily resized 1.4 → 0.32 m (Nuphar pads
+  25–30 cm), white_lily cut to 20k tris; NEW lily_pads (white lily minus its flowers, 0.6 m: watershield/floatpond/burreed); pondweed
+  now stands on the bed (kind 'ground'; Weeds look Where 3: bed → 5–40 cm under the surface). Every leaf alpha now glTF MASK (a Math
+  'greater than' node: was BLEND = translucent). (2) GREY DEFAULT MATERIAL IN -game: materials lacked bUsedWithNanite /
+  InstancedStaticMeshes — NEW Scripts/fix_usage.py (ran: 93 changes) sets them on our masters and copies the Interchange glTF parents
+  (/InterchangeAssets/gltf/M_Default + MI_Default_*) into /Game/HotBrook/Interchange with the flags, re-parenting our MICs (fish, birds,
+  canoe, camps' masters, bullfrog, plants — ALL had been grey in -game where Nanite/ISM). import_creatures.py calls it after imports.
+  (3) Weeds: hb.Weeds cvar (stands × N for a look), Per counts for real cover (white 18, yellow 150, pads 80, pondweed 20), plant=
+  framing fixed (the animal block caught it), Placed up to 4096. (4) THE BROOK ISN'T DRAWN IN UE (AHotBrookWaterSurface draws only
+  lakes.json's two lakes; the heightmap carves its bed, dry, shrubs in it): weeds/mussels now need InLake. TODO slice: draw the brook.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

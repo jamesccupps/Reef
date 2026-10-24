@@ -283,7 +283,7 @@ void AHotBrookGameMode::TakeShot()
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
 		return;
 	}
-	if (Near != TEXT("fish") && BirdK < 0 && AngK < 0 && !Near.IsEmpty() && Framed < 2 && Pw) {
+	if (Near != TEXT("fish") && BirdK < 0 && AngK < 0 && !Near.IsEmpty() && !Near.StartsWith(TEXT("plant:")) && Framed < 2 && Pw) {
 		// (an animal: the camera off its flank at 1.7 lengths, a little above its back, on it)
 		Framed++; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
@@ -323,12 +323,12 @@ void AHotBrookGameMode::TakeShot()
 		return;
 	}
 	if (Near.StartsWith(TEXT("plant:")) && Framed < 2 && Pw) {
-		// (a water plant of a species — plant=<plants3 key>: the camera 6 m off it, 2.5 m up, looking down at it)
+		// (a water plant of a species — plant=<plants3 key>: the camera 4.3 m off it, 1.8 m up, looking down at it)
 		Framed++; FVector P;
 		const AHotBrookWeeds* Wd = nullptr; for (TActorIterator<AHotBrookWeeds> It(GetWorld()); It; ++It) { Wd = *It; break; }
 		if (Wd && Wd->Nearest(Near.Mid(6), HotBrookCoords::ToSim(From), P)) {
 			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
-			const FVector Eye = P + FVector(-450.f, 300.f, 250.f); ShotCam->SetActorLocationAndRotation(Eye, (P - Eye).Rotation()); PC->SetViewTarget(ShotCam);
+			const FVector Eye = P + FVector(-350.f, 250.f, 180.f); ShotCam->SetActorLocationAndRotation(Eye, (P - Eye).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: a %s at %s"), *Shots[NextShot].Name, *Near.Mid(6), *P.ToString());
 		} else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s near"), *Shots[NextShot].Name, *Near.Mid(6));
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);

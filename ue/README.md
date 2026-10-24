@@ -113,6 +113,19 @@ project draws the world in the first person, fed live by it. The browser view, t
 - **The snow** — the land under snow while the lakes are frozen (the browser's rule): `MPC_HB_Season` 'Snow', which AHotBrookLink
   eases on when the sim's ice passes 10 cm and off when it is gone; the ground (M_Ground) and the camps (roofs, decks, the stacked
   docks, the roads) whiten where they face up. `hb.Snow 1` / `0` forces it.
+- **The water plants** — the sim's weed beds (src/w3/plants3.js: each species' shoots per bed cell) laid about the walker by
+  `ue/link/weeds.mjs` as the browser lays them (plants3view's blend between the water model's columns, its clumps) and sent as
+  "HBP1"; `AHotBrookWeeds` draws each 5-m cell's share of a full stand: the fragrant water-lily's clumps and the yellow pond-lily's
+  pads on the surface, watershield's, floating pondweed's and bur-reed's small leaves, the pondweeds from the bed up to just under the
+  surface, the reeds (bulrush, pickerelweed — also for bogbean and arrowhead —, horsetail, the sedges) from the bed through it, and
+  the mussels on the bed within ~25 m. Only in the lakes' drawn water (the brook isn't drawn yet). `hb.Weeds <n>` multiplies the
+  stands for a look (6: the beds near full, as in August, while the lakes are in spring). The plants come from
+  `ue/export/convert_plants.py` (Valery.Li's lilies and pondweed — their FBX files are Y-down —, the grass tufts; every leaf a
+  cut-out, glTF MASK) and `ue/export/build_reeds.py` (the reeds, procedural), imported by `HB_SET=plants Scripts/import_creatures.py`
+  with Nanite.
+- **Materials in the game** — a material not marked for Nanite or instanced meshes draws as Unreal's grey default in `-game` (the
+  editor marks it itself): `Scripts/fix_usage.py` marks ours and copies Interchange's glTF masters into `/Game/HotBrook/Interchange`
+  with the marks, re-parenting the imported models' materials to them (`import_creatures.py` runs it after each import).
 - **The start** — `Import/start.json` `{"x", "y", "yaw"}` (sim metres, UE degrees; outside the repo) or `-hbstart=X,Y,Yaw`: where
   the walker starts (the nearest dry ground to it); the level's own start without either.
 - **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on
@@ -168,6 +181,10 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 | the ice angler | [Rigged Game Character 1](https://sketchfab.com/3d-models/rigged-game-character-1-0bbafaaffefe477eae9ec20f67cf4883) | evan4129 | CC BY 4.0 |
 | the summer angler | [Nathan Animated 003 - Walking 3D Man](https://sketchfab.com/3d-models/nathan-animated-003-walking-3d-man-143a2b1ea5eb4385ae90a73657aca3bc) | Renderpeople | CC BY 4.0 |
 | the anglers' rod | [Fishing Rod, Rigged and Animated](https://sketchfab.com/3d-models/fishing-rod-rigged-and-animated-78991bf44cf54acb8660bef317d72c7a) | ergin3d | CC BY 4.0 |
+| fragrant water-lily, the small floating leaves | [Water Lily (Nymphaea Odorata)](https://sketchfab.com/3d-models/4c793ce129424a1aa8e05aef5838e269) | Valery.Li | CC BY 4.0 |
+| yellow pond-lily | [Lake Lily Med](https://sketchfab.com/3d-models/e0a4bb88649d458793ec83aafcfe9915) | Valery.Li | CC BY 4.0 |
+| the pondweeds | [Pond Weed](https://sketchfab.com/3d-models/b34ed521c5bb45ca9191b6213e1830d6) | Valery.Li | CC BY 4.0 |
+| the sedges (a grass tuft) | [Grass](https://sketchfab.com/3d-models/f2f2bddb2728483a9105c5f5114eb15e) | Cosmic_dust | CC BY 4.0 |
 
 The camps' textures (`Import/textures`, CC0 — no attribution required, listed with thanks): from [Poly Haven](https://polyhaven.com) —
 brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour

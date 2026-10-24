@@ -5,6 +5,7 @@
 #   - a scan as SM_<name> — the heavy ones (the turtles, the bullfrog, its tadpole) drawn by Nanite; the painted turtle wears its scan's
 #     colour from its vertices (M_HB_VertexColour);
 #   - every texture capped at 2048 (the bullfrog came with four 8k maps).
+#   - every material marked for Nanite and instanced meshes (fix_usage.py), else the game draws it grey.
 # Import/creatures_meshes.json lists each: its mesh, skeletal or not, its bounds (cm) and its clips by name — what the game loads.
 # The models stay out of the repository (their licences — credited in ue/README.md); this script is ours.
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/import_creatures.py
@@ -18,7 +19,8 @@ tools = unreal.AssetToolsHelpers.get_asset_tools()
 SET = os.environ.get('HB_SET', 'creatures')
 SRC = os.path.join(unreal.Paths.project_dir(), 'Import', SET)
 DEST = '/Game/HotBrook/' + SET.capitalize()
-NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole', 'stones_grass')
+NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole', 'stones_grass',   # (and the plants: thousands of them, their leaves cut-outs)
+          'white_lily', 'lake_lily', 'lily_pads', 'pondweed', 'grass_lawn', 'grass_tuft_a', 'grass_tuft_b', 'fern_grass')
 VERTEX_COLOUR = ('painted_turtle',)
 ONLY = [a for a in os.environ.get('HB_ONLY', '').split(',') if a]
 bad = []
@@ -79,3 +81,8 @@ for f in sorted(glob.glob(os.path.join(SRC, '*.glb'))):
     unreal.log_warning('HB ' + SET[:-1] + ' %s: %s, %s cm at %s, clips %s' % (name, mesh.get_path_name(), manifest[name]['size_cm'], manifest[name]['origin_cm'], sorted(clips)))
 with open(mpath, 'w') as fh: json.dump(manifest, fh, indent=1)
 unreal.log_warning('HB %s imported: %d; problems: %s' % (SET, len(manifest), bad or 'none'))
+# (their materials marked for Nanite and instanced meshes — in the game an unmarked one draws as Unreal's grey default: fix_usage.py)
+import importlib.util
+_spec = importlib.util.spec_from_file_location('fix_usage', os.path.join(unreal.Paths.project_dir(), 'Scripts', 'fix_usage.py'))
+_fu = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_fu); _fu.fix(DEST)
+for f in _fu.fixed: unreal.log_warning('HB usage: ' + f)

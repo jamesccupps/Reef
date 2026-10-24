@@ -6,15 +6,17 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "HAL/IConsoleManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookWeeds, Log, All);
+static TAutoConsoleVariable<float> CVarWeeds(TEXT("hb.Weeds"), 1.f, TEXT("the water plants' stands times this (a look at the full beds of August while the sim's lakes are in spring: e.g. 6); 1 the sim's own"));
 
 // (a hash of a cell and a draw to 0–1: the scatter, the same each rebuild)
 static float H01(uint32 A, uint32 B) { uint32 h = A * 374761393u + B * 668265263u; h = (h ^ (h >> 13)) * 1274126177u; return (h ^ (h >> 16)) / 4294967296.f; }
 
 AHotBrookWeeds::AHotBrookWeeds()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true; PrimaryActorTick.TickInterval = 0.5f;   // (only to see hb.Weeds change)
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 }
 
@@ -40,13 +42,15 @@ void AHotBrookWeeds::BeginPlay()
 {
 	Super::BeginPlay();
 	// each species' look (plants3 FORMS3 keys): instances a 5-m cell holds at a full stand, their scale, the surface / the reeds / the bed
-	const int32 White = AddLook(TEXT("white_lily"), 10, 1.f, 0, 250.f), Yellow = AddLook(TEXT("lake_lily"), 8, 1.f, 0, 250.f);
-	const int32 Shield = AddLook(TEXT("lake_lily"), 24, 0.3f, 0, 150.f), Pond = AddLook(TEXT("pondweed"), 14, 1.f, 0, 200.f);
+	// (a full stand covers ~60-70 % of the water: the 1.6-m fragrant water-lily clump ~1 m² of pads, the yellow pond-lily's 0.3-m pads
+	// 0.08 m², the small leaves' 0.6-m clump 0.15 m²; the pondweeds' 0.9-m plants from the bed)
+	const int32 White = AddLook(TEXT("white_lily"), 18, 1.f, 0, 300.f), Yellow = AddLook(TEXT("lake_lily"), 150, 1.f, 0, 200.f);
+	const int32 Shield = AddLook(TEXT("lily_pads"), 80, 1.f, 0, 200.f), Pond = AddLook(TEXT("pondweed"), 20, 1.f, 3, 120.f, 103.f);
 	const int32 Bulrush = AddLook(TEXT("reed_bulrush"), 40, 1.f, 1, 250.f), Pickerel = AddLook(TEXT("reed_pickerelweed"), 24, 1.f, 1, 250.f);
 	const int32 Horse = AddLook(TEXT("reed_horsetail"), 30, 1.f, 1, 200.f), Sedge = AddLook(TEXT("grass_tuft_a"), 40, 1.6f, 1, 150.f, 35.f);   // (the sedge: the 35-cm grass tuft drawn to the reeds' height)
 	const int32 Mussel = AddLook(TEXT("mussel"), 0, 1.f, 2, 25.f);
 	for (const auto& [K, L] : { TPair<const TCHAR*, int32>(TEXT("whitelily"), White), TPair<const TCHAR*, int32>(TEXT("yellowlily"), Yellow),
-		TPair<const TCHAR*, int32>(TEXT("watershield"), Shield), TPair<const TCHAR*, int32>(TEXT("floatpond"), Pond), TPair<const TCHAR*, int32>(TEXT("burreed"), Pond),
+		TPair<const TCHAR*, int32>(TEXT("watershield"), Shield), TPair<const TCHAR*, int32>(TEXT("floatpond"), Shield), TPair<const TCHAR*, int32>(TEXT("burreed"), Shield),
 		TPair<const TCHAR*, int32>(TEXT("ribbonleaf"), Pond), TPair<const TCHAR*, int32>(TEXT("largeleaf"), Pond), TPair<const TCHAR*, int32>(TEXT("bulrush"), Bulrush),
 		TPair<const TCHAR*, int32>(TEXT("pickerelweed"), Pickerel), TPair<const TCHAR*, int32>(TEXT("bogbean"), Pickerel), TPair<const TCHAR*, int32>(TEXT("arrowhead"), Pickerel),
 		TPair<const TCHAR*, int32>(TEXT("horsetail"), Horse), TPair<const TCHAR*, int32>(TEXT("sedge"), Sedge), TPair<const TCHAR*, int32>(TEXT("mussel"), Mussel) })
@@ -54,9 +58,16 @@ void AHotBrookWeeds::BeginPlay()
 	UE_LOG(LogHotBrookWeeds, Display, TEXT("weeds: %d looks for %d species (and the mussels)"), Looks.Num(), LookOfKey.Num() - (LookOfKey.Contains(TEXT("mussel")) ? 1 : 0));
 }
 
+void AHotBrookWeeds::Tick(float Dt)
+{
+	Super::Tick(Dt);
+	if (CVarWeeds.GetValueOnGameThread() != Boost && Last.Num()) { const TArray<uint8> B = Last; Update(B); }
+}
+
 void AHotBrookWeeds::Update(const TArray<uint8>& B)
 {
 	if (B.Num() < 20 || FMemory::Memcmp(B.GetData(), "HBP1", 4) != 0) return;
+	Last = B; Boost = CVarWeeds.GetValueOnGameThread();
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const int32 NF = (int32)U(8), N = (int32)U(12), KL = (int32)U(16);
@@ -77,22 +88,26 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 		const uint32 Ci = (uint32)HashCombine(GetTypeHash(FMath::FloorToInt(X * 2.f)), GetTypeHash(FMath::FloorToInt(Y * 2.f)));
 		for (int32 f = 0; f < NF; f++) {
 			const int32 Li = LookOf[f]; if (Li < 0) continue;
-			const float Cov = B[o + 12 + f] / 255.f; if (Cov <= 0.004f) continue;
+			const float Cov = FMath::Min(1.f, B[o + 12 + f] / 255.f * FMath::Max(0.f, Boost)); if (Cov <= 0.004f) continue;
 			const FLook& L = Looks[Li];
 			const int32 Nn = FMath::Min(L.Per, FMath::FloorToInt(Cov * L.Per + H01(Ci, f)));
 			for (int32 k = 0; k < Nn; k++) {
 				const float Px = X + (H01(Ci, k * 7 + f * 131) - 0.5f) * Cell, Py = Y + (H01(Ci, k * 13 + f * 131 + 3) - 0.5f) * Cell;
 				const FVector Q = HotBrookCoords::ToUE(Px, Py, HotBrookCoords::Datum); float S = 0, G = 0;
-				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 8.f) continue;
+				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 8.f || !W->InLake(Q)) continue;   // (in the lakes' drawn water: the brook isn't drawn yet)
 				const float Yaw = H01(Ci, k + 31 * f) * 360.f, Sc = L.Scale * (0.75f + 0.5f * H01(Ci, k + 5 + f));
 				FTransform T;
-				if (L.Where == 0) T = FTransform(FRotator(0.f, Yaw, 0.f), FVector(Q.X, Q.Y, S + 1.f + 0.05f * (k % 8)), FVector(Sc));   // (afloat: the pads at the surface)
+				if (L.Where == 0) T = FTransform(FRotator(0.f, Yaw, 0.f), FVector(Q.X, Q.Y, S + 1.f + 0.2f * (k % 8)), FVector(Sc));   // (afloat: the pads at the surface, a few mm apart where they overlap)
+				else if (L.Where == 3) {   // (a pondweed from the bed up to 5–40 cm under the surface, at most 3 m tall)
+					const float Hgt = FMath::Min(300.f, (S - G) - 5.f - 35.f * H01(Ci, k + 23 + f)); if (Hgt < 15.f) continue;
+					T = FTransform(FRotator((H01(Ci, k + 17) - 0.5f) * 10.f, Yaw, (H01(Ci, k + 19) - 0.5f) * 10.f), FVector(Q.X, Q.Y, G - 3.f), FVector(Sc, Sc, Hgt / L.H));
+				}
 				else {   // (a reed from the bed through the surface: the water's depth and 0.5–1.3 m above it)
 					const float Above = (0.5f + 0.8f * H01(Ci, k + 9 + f)) * (0.4f + 0.6f * Cov) * 100.f, Hgt = (S - G) + Above;
 					T = FTransform(FRotator((H01(Ci, k + 17) - 0.5f) * 7.f, Yaw, (H01(Ci, k + 19) - 0.5f) * 7.f), FVector(Q.X, Q.Y, G - 3.f), FVector(Sc, Sc, Hgt / L.H));
 				}
 				Ts[Li].Add(T);
-				TArray<FVector>& Pl = Placed.FindOrAdd(Keys[f]); if (Pl.Num() < 64) Pl.Add(T.GetLocation());
+				TArray<FVector>& Pl = Placed.FindOrAdd(Keys[f]); if (Pl.Num() < 4096) Pl.Add(T.GetLocation());
 			}
 		}
 		// the mussels: within ~25 m of the walker, each cell's own number (/m² × 25 m², at most 120), on edge, half in the bed
@@ -101,7 +116,7 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 			for (int32 k = 0; k < Nm; k++) {
 				const float Px = X + (H01(Ci, k * 5 + 101) - 0.5f) * Cell, Py = Y + (H01(Ci, k * 9 + 103) - 0.5f) * Cell;
 				const FVector Q = HotBrookCoords::ToUE(Px, Py, HotBrookCoords::Datum); float S = 0, G = 0;
-				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 10.f) continue;
+				if (!W->SurfaceAt(Q, S) || !W->GroundAt(Q, G) || S - G < 10.f || !W->InLake(Q)) continue;
 				const float Sz = 0.75f + 0.5f * H01(Ci, k + 107);
 				// (an elliptio ~8 × 2.5 × 4 cm: on its edge, its long axis tipped 50–80° into the bed, its back end out with the siphons)
 				const FRotator R(-(50.f + 30.f * H01(Ci, k + 127)), H01(Ci, k + 113) * 360.f, 90.f + (H01(Ci, k + 109) - 0.5f) * 20.f);
@@ -116,7 +131,7 @@ void AHotBrookWeeds::Update(const TArray<uint8>& B)
 		C->ClearInstances(); if (Ts[i].Num()) C->AddInstances(Ts[i], false, true);
 		NInst += Ts[i].Num();
 	}
-	UE_LOG(LogHotBrookWeeds, Display, TEXT("weeds: %d cells about the walker, %d plants and shells (yf %.3f)"), N, NInst, F(4));
+	UE_LOG(LogHotBrookWeeds, Display, TEXT("weeds: %d cells about the walker, %d plants and shells (yf %.3f, hb.Weeds %.1f)"), N, NInst, F(4), Boost);
 }
 
 bool AHotBrookWeeds::Nearest(const FString& Key, const FVector2D& From, FVector& OutP) const
