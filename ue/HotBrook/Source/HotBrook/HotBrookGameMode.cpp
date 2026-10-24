@@ -6,6 +6,7 @@
 #include "HotBrookLink.h"
 #include "HotBrookWaterSurface.h"
 #include "HotBrookGroundCover.h"
+#include "HotBrookForest.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -28,6 +29,39 @@ void AHotBrookGameMode::Tick(float Dt)
 	Super::Tick(Dt);
 	SumFrame += Dt * 1000.0; SumGpu += FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()); NFrames++;
 	SumGame += FPlatformTime::ToMilliseconds(GGameThreadTime); SumDraw += FPlatformTime::ToMilliseconds(GRenderThreadTime); SumRhi += FPlatformTime::ToMilliseconds(GRHIThreadTime);
+	MaxFrame = FMath::Max(MaxFrame, (double)Dt * 1000.0);
+	if (bStats && !bWalking) {
+		const double Now = FPlatformTime::Seconds(); if (StatsT0 < 0) { StatsT0 = Now; NextStats = Now + 2.0; }
+		if (Now >= NextStats && NFrames) {
+			int32 FT = 0, GC = 0, GI = 0; double FMs = 0, GMs = 0; int32 FLive = 0, GLive = 0;
+			for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) { It->TakeMakeStats(FT, FMs); FLive = It->LiveTiles(); }
+			for (TActorIterator<AHotBrookGroundCover> It(GetWorld()); It; ++It) { It->TakeMakeStats(GC, GMs, GI); GLive = It->LiveCells(); }
+			UE_LOG(LogTemp, Display, TEXT("hbstats %5.1f s: %3d frames, %.0f ms a frame (worst %.0f): game %.0f, draw %.0f, GPU %.0f | forest %d tiles (+%d, %.0f ms) | ground %d cells (+%d, %d plants, %.0f ms)"),
+				Now - StatsT0, NFrames, SumFrame / NFrames, MaxFrame, SumGame / NFrames, SumDraw / NFrames, SumGpu / NFrames, FLive, FT, FMs, GLive, GC, GI, GMs);
+			SumFrame = SumGpu = SumGame = SumDraw = SumRhi = 0; NFrames = 0; MaxFrame = 0; NextStats = Now + 2.0;
+		}
+		if (QuitAt > 0 && Now - StatsT0 > QuitAt) FPlatformMisc::RequestExit(false);
+	}
+	if (!bWalking) return;
+	// the walk: along the line at the pace, on the ground (the heightmap's), facing the way
+	const double Now = GetWorld()->GetTimeSeconds(), L = FVector2D::Distance(WalkA, WalkB), S = (Now - WalkT0) * WalkSpeed;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController(); APawn* P = PC ? PC->GetPawn() : nullptr;
+	if (S >= L || !P) { UE_LOG(LogTemp, Display, TEXT("hbwalk done: %.0f m"), L); FPlatformMisc::RequestExit(false); bWalking = false; return; }
+	const FVector2D M = WalkA + (WalkB - WalkA) * (S / L);
+	float G = 0; GetWorld()->GetSubsystem<UHotBrookWater>()->GroundAt(HotBrookCoords::ToUE(M.X, M.Y, HotBrookCoords::Datum), G);
+	P->SetActorLocation(FVector(M.X * 100.0, -M.Y * 100.0, G + 95.0), false, nullptr, ETeleportType::TeleportPhysics);
+	const FVector2D D = (WalkB - WalkA).GetSafeNormal(); PC->SetControlRotation(FRotator(-3.0, FMath::RadiansToDegrees(FMath::Atan2(-D.Y, D.X)), 0));
+	if (Now >= NextLog && NFrames) {
+		UE_LOG(LogTemp, Display, TEXT("hbwalk %4.0f m: %.1f ms a frame (%.0f fps, worst %.0f ms): game %.1f, draw %.1f, GPU %.1f"), S, SumFrame / NFrames, 1000.0 * NFrames / FMath::Max(1.0, SumFrame), MaxFrame,
+			SumGame / NFrames, SumDraw / NFrames, SumGpu / NFrames);
+		SumFrame = SumGpu = SumGame = SumDraw = SumRhi = 0; NFrames = 0; MaxFrame = 0; NextLog = Now + 2.0;
+	}
+}
+
+void AHotBrookGameMode::StartWalk()
+{
+	bWalking = true; WalkT0 = NextLog = GetWorld()->GetTimeSeconds(); SumFrame = SumGpu = SumGame = SumDraw = SumRhi = 0; NFrames = 0; MaxFrame = 0;
+	UE_LOG(LogTemp, Display, TEXT("hbwalk from (%.1f, %.1f) to (%.1f, %.1f) at %.2f m/s"), WalkA.X, WalkA.Y, WalkB.X, WalkB.Y, WalkSpeed);
 }
 
 void AHotBrookGameMode::BeginPlay()
@@ -41,7 +75,18 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookWaterSurface>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWaterSurface>();
 	// the forest floor's and the shores' plants and stones near the walker (after the forest: it reads the trees)
 	if (!TActorIterator<AHotBrookGroundCover>(GetWorld())) GetWorld()->SpawnActor<AHotBrookGroundCover>();
+	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
+	if (FParse::Value(FCommandLine::Get(), TEXT("hbwalk="), Arg, false)) {
+		TArray<FString> F; Arg.TrimQuotes().ParseIntoArray(F, TEXT(","));
+		if (F.Num() >= 4) {
+			WalkA = FVector2D(FCString::Atod(*F[0]), FCString::Atod(*F[1])); WalkB = FVector2D(FCString::Atod(*F[2]), FCString::Atod(*F[3]));
+			if (F.Num() > 4) WalkSpeed = FCString::Atod(*F[4]);
+			float W = 6.f; FParse::Value(FCommandLine::Get(), TEXT("hbwait="), W);
+			bWalk = true; GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::StartWalk, W, false);
+		}
+		return;
+	}
 	if (!FParse::Value(FCommandLine::Get(), TEXT("hbshot="), Arg, false)) return;
 	TArray<FString> Items; Arg.TrimQuotes().ParseIntoArray(Items, TEXT(";"));
 	for (const FString& It : Items) {

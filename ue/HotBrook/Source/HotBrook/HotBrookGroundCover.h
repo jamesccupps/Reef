@@ -4,7 +4,7 @@
 // where it grows, in patches (ferns and blueberry in colonies tens of metres across, not evenly), by where it is — under conifers or
 // hardwoods (the forest's own trees counted about each cell, AHotBrookForest), in the open (clearings, the camps' edges, the shore's
 // grass), within a few metres of the water (the shore's rocks and grass), never in the water. Every cell lays out the same way
-// every time (its own seeded stream). Streamed in 32-m cells in three rings — the small plants and stones near (~80 m), the ferns
+// every time (its own seeded stream). Streamed in cells (32 m; the far ring 128 m) in three rings — the small plants and stones near (~80 m), the ferns
 // and shrubs farther (~160 m), the boulders far (~400 m) — each kind faded out at its own distance.
 // Meshes: Import/megascans_meshes.json (Scripts/import_megascans.py — the scans: static Nanite meshes) and Import/groundcover_meshes.json
 // (Scripts/make_forest_meshes.py — the Megaplants' small plants: skinned, bent by Dynamic Wind like the trees).
@@ -31,6 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "HotBrook") int32 CellsPerTick = 3;
 	UPROPERTY(EditAnywhere, Category = "HotBrook") float DensityScale = 1.f;   // (all kinds at once: a quality knob)
 	struct FKind;   // (a kind of thing on the ground: its meshes, where and how thick it grows — the table in the .cpp)
+	int32 LiveCells() const { return Live.Num(); }
+	void TakeMakeStats(int32& OutMade, double& OutMs, int32& OutInstances) { OutMade = Made; OutMs = MakeMs; OutInstances = Instances; Made = 0; MakeMs = 0; }
 private:
 	struct FMesh { TObjectPtr<UStaticMesh> Static = nullptr; TObjectPtr<USkeletalMesh> Skel = nullptr; float Height = 100.f, Footprint = 1.f; };
 	TArray<TArray<FMesh>> KindMeshes;   // (per kind of the table)
@@ -40,6 +42,7 @@ private:
 	TObjectPtr<AHotBrookForest> Forest = nullptr;
 	TObjectPtr<UHotBrookWater> Water = nullptr;
 	bool bReady = false;
+	int32 Made = 0, Instances = 0; double MakeMs = 0;
 	void LoadMeshes();
 	void MakeCell(int32 Ring, int32 CX, int32 CY);
 	void FreeCell(int64 Key);

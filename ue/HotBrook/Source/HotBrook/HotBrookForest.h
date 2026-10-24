@@ -27,7 +27,8 @@ public:
 	virtual void Tick(float Dt) override;
 	UPROPERTY(EditAnywhere, Category = "HotBrook") float LoadRadius = 1200.f;     // m
 	UPROPERTY(EditAnywhere, Category = "HotBrook") float UnloadRadius = 1500.f;   // m
-	UPROPERTY(EditAnywhere, Category = "HotBrook") int32 TilesPerTick = 2;        // (tiles made a frame: no hitch as the walker moves)
+	UPROPERTY(EditAnywhere, Category = "HotBrook") float BudgetMs = 6.f;          // (the tiles made a tick: within this, one at least)
+	UPROPERTY(EditAnywhere, Category = "HotBrook") float TrunkRadius = 150.f;     // m: the trunks have collision within this of the walker
 	// the trees' shadows: Rigid lets the virtual shadow maps keep them cached while the wind bends the branches (Auto redraws every
 	// shadow page each frame — ~28 ms on the RTX 3060 in the woods); the sun's own moves still redraw them
 	UPROPERTY(EditAnywhere, Category = "HotBrook") EShadowCacheInvalidationBehavior TreeShadowCache = EShadowCacheInvalidationBehavior::Rigid;
@@ -36,6 +37,9 @@ public:
 	// the stand about a place (the sim's metres): the canopy trees within R m and how many of them are conifers (the ground cover's
 	// sense of shade and of conifer or hardwood floor)
 	void CanopyAt(const FVector2D& Sim, float R, int32& NCanopy, int32& NConifer) const;
+	// (the streaming's own measure, for -hbstats: tiles live, tiles made and the ms spent making them since last asked)
+	int32 LiveTiles() const { return Live.Num(); }
+	void TakeMakeStats(int32& OutMade, double& OutMs) { OutMade = Made; OutMs = MakeMs; Made = 0; MakeMs = 0; }
 private:
 	struct FTree { float X, Y, Z; uint8 Sp, Turn; uint16 HDm; };
 	struct FMeshInfo { TObjectPtr<UStaticMesh> Mesh = nullptr; TObjectPtr<USkeletalMesh> Skel = nullptr; float Height = 100.f; bool bStandIn = false; };
@@ -47,9 +51,14 @@ private:
 	UPROPERTY() TObjectPtr<UTransformProviderData> Wind = nullptr;   // (the Dynamic Wind provider every skinned tree uses)
 	UPROPERTY() TObjectPtr<UStaticMesh> TrunkShape = nullptr;
 	float WindMs = 3.f, WindFrom = 3.93f; double NextWind = 0;
+	int32 Made = 0; double MakeMs = 0;
 	bool LoadTrees();
 	void LoadMeshes();
 	void MakeTile(int32 T);
+	int32 VariantOf(const FTree& Tr, int32 Index, const TArray<FMeshInfo>& L) const;
+	void MakeTrunks(int32 Cell);
+	static constexpr double TrunkCell = 50.0;   // m (each cell inside one 200-m tile: 200 / 50)
+	TMap<int32, TObjectPtr<UInstancedStaticMeshComponent>> Trunks;   // (trunk cell → its colliders)
 	void FreeTile(int32 T);
 	void PushWind();
 };

@@ -33,7 +33,7 @@ struct AHotBrookGroundCover::FKind
 	bool bRock;            // (tilted to the ground, sunk a quarter into it, the walker can't pass the big ones)
 	bool bLying;           // (laid down along the ground: the fallen logs; no wind)
 };
-namespace { constexpr double CELL = 32.0; constexpr float RING_M[3] = { 80.f, 160.f, 400.f }; }
+namespace { constexpr double RING_CELL[3] = { 32.0, 32.0, 128.0 }; constexpr float RING_M[3] = { 80.f, 160.f, 400.f }; }   // (the far ring's rocks are few: big cells, few components)
 
 static const AHotBrookGroundCover::FKind KINDS[] = {
 	//  source                ring amount  cover? patch pcov  forest open conif shore band  scale       cull   rock   lying
@@ -132,12 +132,12 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 {
 	const int64 Key = ((int64)Ring << 48) | ((int64)(CY + 32768) << 24) | (int64)(CX + 32768);
 	TArray<TObjectPtr<UPrimitiveComponent>>& Out = Live.Add(Key);
-	const double X0 = CX * CELL, Y0 = CY * CELL;
+	const double CELL = RING_CELL[Ring], X0 = CX * CELL, Y0 = CY * CELL;
 	// the cell's stand: canopy trees and conifers within ~24 m of its middle (the forest's own trees)
 	int32 NCan = 0, NCon = 0; if (Forest) Forest->CanopyAt(FVector2D(X0 + CELL / 2, Y0 + CELL / 2), 24.f, NCan, NCon);
 	const float Closed = FMath::Clamp(NCan / (PI * 24.f * 24.f / 1e4f) / 350.f, 0.f, 1.f);   // (a closed canopy at ~350 stems a hectare)
 	const float ConShare = NCan ? (float)NCon / NCan : 0.5f;
-	float Zc; const bool bNearAny = NearWater(FVector2D(X0 + CELL / 2, Y0 + CELL / 2), 40.f) > 0.f || Water->SurfaceAt(HotBrookCoords::ToUE(X0 + CELL / 2, Y0 + CELL / 2, HotBrookCoords::Datum), Zc);
+	float Zc; const bool bNearAny = NearWater(FVector2D(X0 + CELL / 2, Y0 + CELL / 2), (float)CELL * 0.75f + 10.f) > 0.f || Water->SurfaceAt(HotBrookCoords::ToUE(X0 + CELL / 2, Y0 + CELL / 2, HotBrookCoords::Datum), Zc);
 	TMap<int64, UPrimitiveComponent*> ByMesh;
 	for (int32 k = 0; k < NKINDS; k++) {
 		const FKind& K = KINDS[k]; if (K.Ring != Ring || !KindMeshes[k].Num()) continue;
@@ -185,6 +185,7 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 				C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);
 			}
 			const FTransform T(Rot, At, FVector(S));
+			Instances++;
 			if (UInstancedSkinnedMeshComponent* SC = Cast<UInstancedSkinnedMeshComponent>(C)) SC->AddInstance(T, 0, true);
 			else Cast<UInstancedStaticMeshComponent>(C)->AddInstance(T, true);
 		}
@@ -206,13 +207,14 @@ void AHotBrookGroundCover::Tick(float Dt)
 	TArray<int64> Drop;
 	for (const auto& KV : Live) {
 		const int32 Ring = (int32)(KV.Key >> 48), CX = (int32)(KV.Key & 0xFFFFFF) - 32768, CY = (int32)((KV.Key >> 24) & 0xFFFFFF) - 32768;
+		const double CELL = RING_CELL[Ring];
 		if (FVector2D::Distance(M, FVector2D((CX + 0.5) * CELL, (CY + 0.5) * CELL)) > RING_M[Ring] + 2 * CELL) Drop.Add(KV.Key);
 	}
 	for (int64 K : Drop) FreeCell(K);
 	// the cells to make: within each ring's reach, the nearest first, a few a tick
 	TArray<TTuple<double, int32, int32, int32>> Want;
 	for (int32 Ring = 0; Ring < 3; Ring++) {
-		const float Rr = RING_M[Ring];
+		const float Rr = RING_M[Ring]; const double CELL = RING_CELL[Ring];
 		for (int32 cy = FMath::FloorToInt((M.Y - Rr) / CELL); cy <= FMath::FloorToInt((M.Y + Rr) / CELL); cy++)
 			for (int32 cx = FMath::FloorToInt((M.X - Rr) / CELL); cx <= FMath::FloorToInt((M.X + Rr) / CELL); cx++) {
 				const double d = FVector2D::Distance(M, FVector2D((cx + 0.5) * CELL, (cy + 0.5) * CELL)); if (d > Rr) continue;
@@ -221,5 +223,7 @@ void AHotBrookGroundCover::Tick(float Dt)
 			}
 	}
 	Want.Sort([](const auto& A, const auto& B) { return A.template Get<0>() < B.template Get<0>(); });
-	for (int32 k = 0; k < FMath::Min(CellsPerTick, Want.Num()); k++) MakeCell(Want[k].Get<1>(), Want[k].Get<2>(), Want[k].Get<3>());
+	const double T0 = FPlatformTime::Seconds();
+	for (int32 k = 0; k < FMath::Min(CellsPerTick, Want.Num()); k++) { MakeCell(Want[k].Get<1>(), Want[k].Get<2>(), Want[k].Get<3>()); Made++; }
+	MakeMs += (FPlatformTime::Seconds() - T0) * 1000.0;
 }

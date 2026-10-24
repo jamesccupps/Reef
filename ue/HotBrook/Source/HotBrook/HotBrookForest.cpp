@@ -81,57 +81,70 @@ void AHotBrookForest::BeginPlay()
 	LoadMeshes();
 }
 
+int32 AHotBrookForest::VariantOf(const FTree& Tr, int32 Index, const TArray<FMeshInfo>& L) const
+{
+	// (the variant: among those within 1.6× of the tree's height, by the tree's hash; none, the nearest)
+	const float Hcm = Tr.HDm * 10.f; const uint32 Hash = (uint32)Index * 2654435761u >> 16;
+	int32 NFit = 0, Near = 0; float Best = 1e9f;
+	for (int32 v = 0; v < L.Num(); v++) { const float r = FMath::Abs(FMath::Loge(L[v].Height / Hcm)); NFit += r < 0.47f; if (r < Best) { Best = r; Near = v; } }
+	if (NFit > 1) { int32 Pick = Hash % NFit; for (int32 v = 0; v < L.Num(); v++) if (FMath::Abs(FMath::Loge(L[v].Height / Hcm)) < 0.47f && Pick-- == 0) return v; }
+	return Near;
+}
+
 void AHotBrookForest::MakeTile(int32 T)
 {
-	TMap<int64, UInstancedStaticMeshComponent*> ByMesh;   // (species × variant → its component in this tile)
-	TMap<int64, UInstancedSkinnedMeshComponent*> BySkel;
-	UInstancedStaticMeshComponent* Trunks = nullptr;
-	TArray<TObjectPtr<UPrimitiveComponent>>& Out = Live.Add(T);
+	// the tile's trees gathered by species × variant first, then each group added to its component in one call before it is
+	// registered (one at a time, into a live component, ~10,000 a tile took 1–3 s of the game thread: the start froze for minutes)
+	struct FBatch { const FMeshInfo* MI = nullptr; int32 Sp = 0; TArray<FTransform> X; };
+	TMap<int64, FBatch> Batches;
 	for (int32 o = TileStart[T]; o < TileStart[T + 1]; o++) {
 		const FTree& Tr = Trees[TileOrder[o]]; const TArray<FMeshInfo>* L = Meshes.Find(Tr.Sp); if (!L || !L->Num()) continue;
-		// (the variant: among those within 1.6× of the tree's height, by the tree's hash; none, the nearest)
-		const float Hcm = Tr.HDm * 10.f; const uint32 Hash = (uint32)TileOrder[o] * 2654435761u >> 16;
-		int32 NFit = 0, Near = 0; float Best = 1e9f;
-		for (int32 v = 0; v < L->Num(); v++) { const float r = FMath::Abs(FMath::Loge((*L)[v].Height / Hcm)); NFit += r < 0.47f; if (r < Best) { Best = r; Near = v; } }
-		int32 V = Near;
-		if (NFit > 1) { int32 Pick = Hash % NFit; for (int32 v = 0; v < L->Num(); v++) if (FMath::Abs(FMath::Loge((*L)[v].Height / Hcm)) < 0.47f && Pick-- == 0) { V = v; break; } }
-		const FMeshInfo& MI = (*L)[V];
-		const int64 Key = (int64)Tr.Sp * 64 + V;
+		const int32 V = VariantOf(Tr, TileOrder[o], *L); const FMeshInfo& MI = (*L)[V];
+		FBatch& B = Batches.FindOrAdd((int64)Tr.Sp * 64 + V); B.MI = &MI; B.Sp = Tr.Sp;
 		const float S = Tr.HDm * 10.f / MI.Height;   // (cm tall over the mesh's own height)
-		const FVector At = HotBrookCoords::ToUE(Tr.X, Tr.Y, Tr.Z); const FRotator Turn(0, Tr.Turn * 360.f / 256.f, 0);
+		// (a real tree model keeps its own proportions; the engine's stand-in cone, as wide as it is tall, is narrowed to a crown's width:
+		// a conifer's ~0.35 of its height, a hardwood's ~0.6, a shrub's 1)
+		const float W = !MI.bStandIn ? 1.f : (Tr.Sp <= 3 || Tr.Sp == 11 || Tr.Sp == 12) ? 0.35f : (Tr.Sp >= 8 && Tr.Sp <= 10) ? 1.f : 0.6f;
+		B.X.Add(FTransform(FRotator(0, Tr.Turn * 360.f / 256.f, 0), HotBrookCoords::ToUE(Tr.X, Tr.Y, Tr.Z), FVector(S * W, S * W, S)));
+	}
+	TArray<TObjectPtr<UPrimitiveComponent>>& Out = Live.Add(T);
+	for (auto& KV : Batches) {
+		const FMeshInfo& MI = *KV.Value.MI;
 		if (MI.Skel) {
-			UInstancedSkinnedMeshComponent*& C = BySkel.FindOrAdd(Key);
-			if (!C) {
-				C = NewObject<UInstancedSkinnedMeshComponent>(this); C->SetSkinnedAssetAndUpdate(MI.Skel); if (Wind) C->SetTransformProvider(Wind);
-				if (MI.Height < 1200.f) C->SetCullDistances(0, MI.Height < 600.f ? 30000 : 60000);   // (the variant's height: near the tree's own)
-				C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->bAffectDistanceFieldLighting = true; C->ShadowCacheInvalidationBehavior = TreeShadowCache;
-				C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);   // (the wind bends them on the GPU: no tick needed — thousands of ticking components cost the game thread tens of ms)
-			}
-			C->AddInstance(FTransform(Turn, At, FVector(S)), 0, true);
+			UInstancedSkinnedMeshComponent* C = NewObject<UInstancedSkinnedMeshComponent>(this); C->SetSkinnedAssetAndUpdate(MI.Skel); if (Wind) C->SetTransformProvider(Wind);
+			if (MI.Height < 1200.f) C->SetCullDistances(0, MI.Height < 600.f ? 30000 : 60000);   // (the small trees drawn only near: the variant's height is near the tree's own)
+			C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->bAffectDistanceFieldLighting = true; C->ShadowCacheInvalidationBehavior = TreeShadowCache;
+			TArray<int32> Anim; Anim.SetNumZeroed(KV.Value.X.Num());
+			C->AddInstances(KV.Value.X, Anim, false, true);
+			C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);   // (the wind bends them on the GPU: no tick needed — thousands of ticking components cost the game thread tens of ms)
 		} else {
-			UInstancedStaticMeshComponent*& C = ByMesh.FindOrAdd(Key);
-			if (!C) {
-				C = NewObject<UInstancedStaticMeshComponent>(this); C->SetStaticMesh(MI.Mesh); C->SetMobility(EComponentMobility::Static);
-				C->SetCollisionProfileName(TEXT("BlockAll")); C->SetCullDistances(0, 0); C->bAffectDistanceFieldLighting = true;
-				C->SetupAttachment(RootComponent); C->RegisterComponent(); Out.Add(C);
-			}
-			// (a real tree model keeps its own proportions; the engine's stand-in cone, as wide as it is tall, is narrowed to a crown's width:
-			// a conifer's ~0.35 of its height, a hardwood's ~0.6, a shrub's 1)
-			const float W = !MI.bStandIn ? 1.f : (Tr.Sp <= 3 || Tr.Sp == 11 || Tr.Sp == 12) ? 0.35f : (Tr.Sp >= 8 && Tr.Sp <= 10) ? 1.f : 0.6f;
-			C->AddInstance(FTransform(Turn, At, FVector(S * W, S * W, S)), true);
-		}
-		// the trunk the walker can't pass, for the skinned trees (they have no collision of their own): a hidden cylinder 3 m tall, as thick
-		// as a tree of this height — about 1.5 cm across a metre of height (a 20-m spruce ~30 cm); shrubs and saplings under 3 m let him by
-		if (MI.Skel && TrunkShape && Tr.HDm >= 30) {
-			if (!Trunks) {
-				Trunks = NewObject<UInstancedStaticMeshComponent>(this); Trunks->SetStaticMesh(TrunkShape); Trunks->SetMobility(EComponentMobility::Static);
-				Trunks->SetCollisionProfileName(TEXT("BlockAll")); Trunks->SetHiddenInGame(true); Trunks->SetCastShadow(false); Trunks->bAffectDistanceFieldLighting = false;
-				Trunks->SetupAttachment(RootComponent); Trunks->RegisterComponent(); Out.Add(Trunks);
-			}
-			const float D = FMath::Clamp(Tr.HDm * 0.0015f, 0.08f, 0.9f);   // (the cylinder is 1 m across and 1 m tall: diameter in metres)
-			Trunks->AddInstance(FTransform(FRotator::ZeroRotator, At + FVector(0, 0, 150.f), FVector(D, D, 3.f)), true);
+			UInstancedStaticMeshComponent* C = NewObject<UInstancedStaticMeshComponent>(this); C->SetStaticMesh(MI.Mesh); C->SetMobility(EComponentMobility::Static);
+			C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCullDistances(0, 0); C->bAffectDistanceFieldLighting = true;
+			C->AddInstances(KV.Value.X, false, true, false);
+			C->SetupAttachment(RootComponent); C->RegisterComponent(); Out.Add(C);
 		}
 	}
+}
+
+void AHotBrookForest::MakeTrunks(int32 Cell)
+{
+	// the trunks the walker can't pass (the skinned trees have no collision of their own): a hidden cylinder 3 m tall per tree of 3 m
+	// and more, as thick as a tree of its height — about 1.5 cm across a metre of height (a 20-m spruce ~30 cm); saplings and shrubs
+	// under 3 m let him by. Only in the 50-m cells about the walker: physics bodies for every trunk out to a kilometre cost seconds.
+	const int32 NCX = FMath::CeilToInt(TX * Tile / TrunkCell), cx = Cell % NCX, cy = Cell / NCX;
+	const double X0 = TX0 + cx * TrunkCell, Y0 = TY0 + cy * TrunkCell;
+	const int32 T = FMath::Clamp((int32)((Y0 + 1 - TY0) / Tile), 0, TY - 1) * TX + FMath::Clamp((int32)((X0 + 1 - TX0) / Tile), 0, TX - 1);
+	TArray<FTransform> X;
+	for (int32 o = TileStart[T]; o < TileStart[T + 1]; o++) {
+		const FTree& Tr = Trees[TileOrder[o]]; if (Tr.HDm < 30 || Tr.X < X0 || Tr.X >= X0 + TrunkCell || Tr.Y < Y0 || Tr.Y >= Y0 + TrunkCell) continue;
+		const TArray<FMeshInfo>* L = Meshes.Find(Tr.Sp); if (!L || !L->Num() || !(*L)[VariantOf(Tr, TileOrder[o], *L)].Skel) continue;
+		const float D = FMath::Clamp(Tr.HDm * 0.0015f, 0.08f, 0.9f);   // (the cylinder is 1 m across and 1 m tall: diameter in metres)
+		X.Add(FTransform(FRotator::ZeroRotator, HotBrookCoords::ToUE(Tr.X, Tr.Y, Tr.Z) + FVector(0, 0, 150.f), FVector(D, D, 3.f)));
+	}
+	UInstancedStaticMeshComponent* C = NewObject<UInstancedStaticMeshComponent>(this); C->SetStaticMesh(TrunkShape); C->SetMobility(EComponentMobility::Static);
+	C->SetCollisionProfileName(TEXT("BlockAll")); C->SetHiddenInGame(true); C->SetCastShadow(false); C->bAffectDistanceFieldLighting = false;
+	C->AddInstances(X, false, true, false);
+	C->SetupAttachment(RootComponent); C->RegisterComponent(); Trunks.Add(Cell, C);
 }
 
 void AHotBrookForest::FreeTile(int32 T)
@@ -197,5 +210,21 @@ void AHotBrookForest::Tick(float Dt)
 		const double d = FVector2D::Distance(M, FVector2D(TX0 + (q + 0.5) * Tile, TY0 + (r + 0.5) * Tile)); if (d <= LoadRadius) Want.Add({ d, T });
 	}
 	Want.Sort([](const TPair<double, int32>& A, const TPair<double, int32>& B) { return A.Key < B.Key; });
-	for (int32 k = 0; k < FMath::Min(TilesPerTick, Want.Num()); k++) MakeTile(Want[k].Value);
+	const double T0 = FPlatformTime::Seconds();
+	for (int32 k = 0; k < Want.Num() && (k == 0 || (FPlatformTime::Seconds() - T0) * 1000.0 < BudgetMs); k++) { MakeTile(Want[k].Value); Made++; }   // (the nearest first, within the frame's budget)
+	// the trunks' collision in the cells within TrunkRadius, freed past twice it
+	if (TrunkShape) {
+		const int32 NCX = FMath::CeilToInt(TX * Tile / TrunkCell);
+		TArray<int32> Gone; for (const auto& KV : Trunks) { const double cx = TX0 + (KV.Key % NCX + 0.5) * TrunkCell, cy = TY0 + (KV.Key / NCX + 0.5) * TrunkCell; if (FVector2D::Distance(M, FVector2D(cx, cy)) > 2 * TrunkRadius) Gone.Add(KV.Key); }
+		for (int32 K : Gone) { if (UInstancedStaticMeshComponent* C = Trunks.FindRef(K)) C->DestroyComponent(); Trunks.Remove(K); }
+		const int32 a0 = FMath::Max(0, (int32)((M.X - TrunkRadius - TX0) / TrunkCell)), a1 = (int32)((M.X + TrunkRadius - TX0) / TrunkCell);
+		const int32 b0 = FMath::Max(0, (int32)((M.Y - TrunkRadius - TY0) / TrunkCell)), b1 = (int32)((M.Y + TrunkRadius - TY0) / TrunkCell);
+		int32 NMade = 0;
+		for (int32 b = b0; b <= b1 && NMade < 4; b++) for (int32 a = a0; a <= a1 && a < NCX && NMade < 4; a++) {
+			const int32 K = b * NCX + a; if (Trunks.Contains(K) || (TY0 + b * TrunkCell) >= TY0 + TY * Tile) continue;
+			if (FVector2D::Distance(M, FVector2D(TX0 + (a + 0.5) * TrunkCell, TY0 + (b + 0.5) * TrunkCell)) > TrunkRadius) continue;
+			MakeTrunks(K); NMade++;
+		}
+	}
+	MakeMs += (FPlatformTime::Seconds() - T0) * 1000.0;
 }
