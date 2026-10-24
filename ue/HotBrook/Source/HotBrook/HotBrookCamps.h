@@ -41,6 +41,8 @@ private:
 	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Boats;
 	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Stored;   // (out of season: the sections stacked, the skiffs turned over)
 	UPROPERTY() TObjectPtr<UProceduralMeshComponent> Lawns;
+	UPROPERTY() TArray<TObjectPtr<class UHierarchicalInstancedStaticMeshComponent>> LawnGrass;   // (the lawns' grass and their unmown edges' tufts)
+	bool bGrassShown = true;
 	// a building lived in: its camp's index (camps3.js), year-round or not, its glass (lit windows) and its porch lamp
 	struct FHome { int32 Ci = 0; bool bYr = false, bAll = false; float K = 1.f; TObjectPtr<UMaterialInstanceDynamic> Glass; FVector Lamp = FVector::ZeroVector; bool bLamp = false; TObjectPtr<UPointLightComponent> Light; };
 	TArray<FHome> Homes;

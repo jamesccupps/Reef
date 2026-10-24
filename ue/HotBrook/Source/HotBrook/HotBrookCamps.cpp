@@ -6,6 +6,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Dom/JsonObject.h"
@@ -218,6 +221,11 @@ void AHotBrookCamps::Tick(float Dt)
 	if (T > LightsAt) { LightsAt = T + 0.5; Lights(); }
 	if (T < SeasonAt) return;
 	SeasonAt = T + 1.0;   // (the season: once a second)
+	if (LawnGrass.Num()) {   // (the lawns' grass under the snow: hidden while it lies — MPC_HB_Season 'Snow', AHotBrookLink's)
+		static UMaterialParameterCollection* Season = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/HotBrook/Materials/MPC_HB_Season.MPC_HB_Season"));
+		const bool bShow = !Season || UKismetMaterialLibrary::GetScalarParameterValue(this, Season, TEXT("Snow")) < 0.5f;
+		if (bShow != bGrassShown) { bGrassShown = bShow; for (UHierarchicalInstancedStaticMeshComponent* C : LawnGrass) if (C) C->SetVisibility(bShow); }
+	}
 	float Yf = 0.3f; for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { Yf = It->YearFrac; break; }
 	const int32 Force = CVarDocksIn.GetValueOnGameThread(), In = Force >= 0 ? (Force ? 1 : 0) : (Yf >= DOCK_IN && Yf < DOCK_OUT ? 1 : 0);
 	if (In == DocksIn) return;
@@ -263,13 +271,21 @@ void AHotBrookCamps::Lights()
 void AHotBrookCamps::LayLawns(const TSharedPtr<FJsonObject>& J)
 {
 	// each mapped lawn a disc of its area (a ragged edge), mown grass draped on the ground — on the land only (export_camps.mjs's discs;
-	// their ground already cleared of trees and the ground cover)
+	// their ground already cleared of trees and the ground cover); and on it the grass itself (Cosmic_dust's lawn patch, 35 cm, ~8 a
+	// square metre, Nanite, drawn within 45 m) with a fringe of taller unmown tufts along its edge — hidden under the winter's snow
 	const TArray<TSharedPtr<FJsonValue>>* LA = nullptr; if (!J->TryGetArrayField(TEXT("lawns"), LA) || !LA->Num()) return;
 	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
 	Lawns = NewObject<UProceduralMeshComponent>(this); Lawns->SetupAttachment(RootComponent); Lawns->SetMobility(EComponentMobility::Static);
 	Lawns->bAffectDistanceFieldLighting = false; Lawns->SetCollisionEnabled(ECollisionEnabled::NoCollision); Lawns->RegisterComponent();
 	UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Camps/Materials/MI_HB_Lawn.MI_HB_Lawn"));
 	const double Step = 1.0; int32 Sec = 0; double Area = 0;   // (a metre: the landscape's own 2-m grid followed closely enough)
+	const auto Grass = [&](const TCHAR* N, float CullM) -> UHierarchicalInstancedStaticMeshComponent* {
+		UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/HotBrook/Plants/%s/SM_%s.SM_%s"), N, N, N)); if (!M) return nullptr; Held.AddUnique(M);
+		UHierarchicalInstancedStaticMeshComponent* C = NewObject<UHierarchicalInstancedStaticMeshComponent>(this); C->SetStaticMesh(M); C->SetMobility(EComponentMobility::Static);
+		C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCullDistances(0, (int32)(CullM * 100.f)); C->bAffectDistanceFieldLighting = false; C->SetCastShadow(false);
+		C->SetupAttachment(RootComponent); C->RegisterComponent(); LawnGrass.Add(C); return C; };
+	UHierarchicalInstancedStaticMeshComponent* Mown = Grass(TEXT("grass_lawn"), 45.f), *Tuft = Grass(TEXT("grass_tuft_b"), 60.f);
+	TArray<FTransform> MownT, TuftT;
 	for (const TSharedPtr<FJsonValue>& LV : *LA) {
 		const TSharedPtr<FJsonObject> L = LV->AsObject(); const double X0 = L->GetNumberField(TEXT("x")), Y0 = L->GetNumberField(TEXT("y")), R = L->GetNumberField(TEXT("r"));
 		const int32 Nh = FMath::CeilToInt(R * 1.2 / Step), Nd = 2 * Nh + 1; const double Ph = X0 * 0.37 + Y0 * 0.11;
@@ -294,8 +310,24 @@ void AHotBrookCamps::LayLawns(const TSharedPtr<FJsonObject>& J)
 		}
 		if (!I.Num()) continue;
 		Lawns->CreateMeshSection_LinearColor(Sec, V, I, Nr, UV, Col, Tn, false); if (Mat) Lawns->SetMaterial(Sec, Mat); Sec++;
+		// the grass: jittered on a 35-cm grid inside the ragged edge, its base in the lawn's sheet (8 cm over the ground); the tufts every
+		// ~0.8 m along the edge, a little either side of it
+		FRandomStream Rs((int32)(X0 * 131.0 + Y0 * 17.0));
+		for (double gy = -R; gy <= R; gy += 0.35) for (double gx = -R; gx <= R; gx += 0.35) {
+			const double X = X0 + gx + Rs.FRandRange(-0.15, 0.15), Y = Y0 + gy + Rs.FRandRange(-0.15, 0.15), A = FMath::Atan2(Y - Y0, X - X0), Dc = FMath::Sqrt(FMath::Square(X - X0) + FMath::Square(Y - Y0));
+			const double Edge = R * (0.92 + 0.08 * FMath::Sin(3.0 * A + Ph) + 0.06 * FMath::Sin(7.0 * A + 2.0 * Ph)); if (Dc > Edge - 0.2) continue;
+			const FVector P = HotBrookCoords::ToUE(X, Y, HotBrookCoords::Datum); float G = 0, S = 0; if (W->SurfaceAt(P, S) || !W->GroundAt(P, G)) continue;
+			MownT.Add(FTransform(FRotator(0.f, Rs.FRand() * 360.f, 0.f), FVector(P.X, P.Y, G + 5.f), FVector(Rs.FRandRange(0.9f, 1.3f), Rs.FRandRange(0.9f, 1.3f), Rs.FRandRange(0.8f, 1.2f))));
+		}
+		for (double a = 0; a < 2 * PI; a += 0.8 / FMath::Max(1.0, R)) {
+			const double Edge = R * (0.92 + 0.08 * FMath::Sin(3.0 * a + Ph) + 0.06 * FMath::Sin(7.0 * a + 2.0 * Ph)) + Rs.FRandRange(-0.4, 0.6);
+			const FVector P = HotBrookCoords::ToUE(X0 + Edge * FMath::Cos(a), Y0 + Edge * FMath::Sin(a), HotBrookCoords::Datum); float G = 0, S = 0; if (W->SurfaceAt(P, S) || !W->GroundAt(P, G)) continue;
+			TuftT.Add(FTransform(FRotator(0.f, Rs.FRand() * 360.f, 0.f), FVector(P.X, P.Y, G), FVector(Rs.FRandRange(0.7f, 1.2f))));
+		}
 	}
-	UE_LOG(LogHotBrookCamps, Display, TEXT("lawns: %d, %.0f m2"), Sec, Area);
+	if (Mown && MownT.Num()) Mown->AddInstances(MownT, false, true);
+	if (Tuft && TuftT.Num()) Tuft->AddInstances(TuftT, false, true);
+	UE_LOG(LogHotBrookCamps, Display, TEXT("lawns: %d, %.0f m2; %d grass patches, %d tufts at their edges"), Sec, Area, MownT.Num(), TuftT.Num());
 }
 
 void AHotBrookCamps::LayRoads()

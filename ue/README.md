@@ -127,7 +127,8 @@ project draws the world in the first person, fed live by it. The browser view, t
   (camps3view's D.store, D.flip). The LIGHTS by night: a camp lived in that day (camps3.js occupied — the same draw as the browser's:
   a seasonal camp the month's share, weekends twice the weekdays; a year-round home most days) has its windows lit, each window by its
   own draw, from dusk to its bedtime, and its porch lamp (some all night). The nine mapped LAWNS mown grass (ambientCG Grass004, CC0),
-  their ground cleared of trees and ground cover. `hb.Hour <0–24>` shows the view at another hour (the sun, the lights) for a look.
+  their ground cleared of trees and ground cover, with the grass itself on them (Cosmic_dust's lawn patch, ~8 a m², within 45 m)
+  and a fringe of taller unmown tufts along their ragged edges — hidden while snow lies. `hb.Hour <0–24>` shows the view at another hour (the sun, the lights) for a look.
 - **The snow** — the land under snow while the lakes are frozen (the browser's rule): `MPC_HB_Season` 'Snow', which AHotBrookLink
   eases on when the sim's ice passes 10 cm and off when it is gone; the ground (M_Ground) and the camps (roofs, decks, the stacked
   docks, the roads) whiten where they face up. `hb.Snow 1` / `0` forces it.
@@ -204,7 +205,7 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 | fragrant water-lily, the small floating leaves | [Water Lily (Nymphaea Odorata)](https://sketchfab.com/3d-models/4c793ce129424a1aa8e05aef5838e269) | Valery.Li | CC BY 4.0 |
 | yellow pond-lily | [Lake Lily Med](https://sketchfab.com/3d-models/e0a4bb88649d458793ec83aafcfe9915) | Valery.Li | CC BY 4.0 |
 | the pondweeds | [Pond Weed](https://sketchfab.com/3d-models/b34ed521c5bb45ca9191b6213e1830d6) | Valery.Li | CC BY 4.0 |
-| the sedges (a grass tuft) | [Grass](https://sketchfab.com/3d-models/f2f2bddb2728483a9105c5f5114eb15e) | Cosmic_dust | CC BY 4.0 |
+| the sedges, the lawns' grass and tufts | [Grass](https://sketchfab.com/3d-models/f2f2bddb2728483a9105c5f5114eb15e) | Cosmic_dust | CC BY 4.0 |
 | the bass boat | [Bass Boat](https://sketchfab.com/3d-models/147d601e20514b2a877cbf99005c4000) | BoatUS Foundation | CC BY 4.0 |
 | the pontoon boat | [Pontoon](https://sketchfab.com/3d-models/dccff5eccf6943f8b14cd269710ae6ff) | BoatUS Foundation | CC BY 4.0 |
 

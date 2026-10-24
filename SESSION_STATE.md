@@ -294,6 +294,10 @@ plants, textures. Photos are private: never commit or publish them.
   (import_megascans.py, re-run): lvl = 1893 (UE Y > 0, Upper) … 1823 (Y < −6000, Lower); below lvl−5…+10 cm a brown algae film
   (desat ×(2.6,2.2,1.6)), up to 40–80 cm above bare granite (desat ×7, saturate), moss above — all × the instance's nearness. The
   scans' colour is very dark (lum 0.037–0.047), hence the big factors. Checked in shots (rocky and sandy shores, the woods' stones).
+  + 17:05 COMMITTED 7788591 (substrate). LISTINGS SEARCH running as a background agent (writes tools/hotbrook/data/listings/notes.md,
+  photos to G:\HotBrookUE\Importeference\listings\ — local only; rules: no bot bypass, no sign-in/email, no owner names). THE
+  LAWNS' GRASS (this commit): LayLawns scatters grass_lawn (35-cm grid jittered, ~8/m², HISM cull 45 m) + grass_tuft_b along the
+  ragged edge (cull 60 m) — 113,636 + 1,558 instances; hidden while MPC_HB_Season Snow ≥ 0.5 (Tick, once a second). Checked in shots.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
