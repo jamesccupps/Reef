@@ -10,6 +10,7 @@
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
 #include "HotBrookBoat.h"
+#include "HotBrookCamps.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
 #include "Engine/World.h"
@@ -146,6 +147,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookFish>(GetWorld())) GetWorld()->SpawnActor<AHotBrookFish>();
 	// the lakes' fish-eating birds the sim counts (loons, herons, eagles), each with its own simple life
 	if (!TActorIterator<AHotBrookWildlife>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWildlife>();
+	// the camps, houses, sheds and docks (Import/camps: ue/export/build_camps.py, Scripts/import_camps.py)
+	if (!TActorIterator<AHotBrookCamps>(GetWorld())) GetWorld()->SpawnActor<AHotBrookCamps>();
 	// a canoe in the shallows nearest the start
 	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;

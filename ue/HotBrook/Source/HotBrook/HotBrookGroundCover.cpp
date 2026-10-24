@@ -154,14 +154,17 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 			float W = Stand; float WaterZ;
 			const FVector At0 = HotBrookCoords::ToUE(X, Y, HotBrookCoords::Datum);
 			if (Water->SurfaceAt(At0, WaterZ)) continue;   // (nothing in the water)
+			if (Water->ClearedAt(At0)) continue;           // (nor on the camps' lots, paths and docks' feet, the roads, the beaches)
 			if (K.Shore > 0.f && bNearAny) W += K.Shore * NearWater(FVector2D(X, Y), K.ShoreBand);
 			if (R.FRand() * WMax > W) continue;
 			float G; if (!Water->GroundAt(At0, G)) continue;
 			const FMesh& M = KindMeshes[k][R.RandHelper(KindMeshes[k].Num())];
 			const float S = R.FRandRange(K.ScaleMin, K.ScaleMax);
 			FRotator Rot(0.f, R.FRand() * 360.f, 0.f); FVector At(At0.X, At0.Y, G);
-			if (K.bLying) {   // (laid along the ground on a random bearing, sunk to half its girth)
+			if (K.bLying) {   // (laid along the ground on a random bearing, sunk to half its girth — and not across a road or a path)
 				Rot = FRotator(-90.f + R.FRandRange(-4.f, 4.f), R.FRand() * 360.f, R.FRand() * 360.f);
+				const FVector Half = FRotator(0.f, Rot.Yaw, 0.f).Vector() * (0.5f * M.Height * S);
+				if (Water->ClearedAt(At0 + Half) || Water->ClearedAt(At0 - Half)) continue;
 				At.Z -= 8.f * S;
 			} else if (K.bRock) {   // (tilted to the slope, sunk a quarter of its height)
 				float Gx, Gy; Water->GroundAt(At0 + FVector(100, 0, 0), Gx); Water->GroundAt(At0 + FVector(0, 100, 0), Gy);

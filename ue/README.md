@@ -65,6 +65,19 @@ project draws the world in the first person, fed live by it. The browser view, t
   pace (~2 m/s hard), gliding and slowing on the hull's drag, the keel holding it straight, drifting with the sim's wind, running
   aground where the water is shallower than it draws (kept within the lakes' drawn outlines). `-hbpaddle=N` paddles it N seconds
   for a test (speed and heading logged, a picture from the seat).
+- **The camps** — `AHotBrookCamps`: the dataset's 67 camps, houses, trailers, sheds and a garage and their 54 docks (src/w3/true/
+  camps3d.js, laid out as the browser's view does — `ue/export/export_camps.mjs` → `Import/camps.json`), each built true size by
+  `ue/export/build_camps.py` (block or fieldstone foundation, lap / board / log / trailer siding with corner boards, a gable roof of
+  painted steel or shingles with its overhangs, fascia and ridge cap, windows with frames, sills, muntins and some shutters — bigger
+  to the water, a slider onto the deck — the door with a landing and steps, porch roofs, decks with railings and stairs, brick or
+  stone chimneys and stove pipes; docks of boards on posts or aluminium on legs, an L or a T at some), imported with their
+  materials by `Scripts/import_camps.py` (Nanite; their triangles their collision — the walker climbs steps, walks decks and docks).
+  A building's floor stands over its highest corner (≤ 2.6 m over its lowest); a dock ~0.35 m over the lake, in from May 25 to
+  October 15 (`hb.DocksIn 1` / `0` forces them). The ROADS (75 km: camp roads with their wheel tracks and grassy crown, the town's
+  gravel, Route 169 paved) are strips draped on the ground. The forest's export already clears trees off the lots, roads, paths
+  and beaches; `Import/cleared.bin` (export_camps.mjs) keeps the ground cover off them too.
+- **The start** — `Import/start.json` `{"x", "y", "yaw"}` (sim metres, UE degrees; outside the repo) or `-hbstart=X,Y,Yaw`: where
+  the walker starts (the nearest dry ground to it); the level's own start without either.
 - **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on
   while the camera is under the surface: the light reaching each thing dimmed by the water above it (per colour, the browser's Kd:
   tea water loses blue first), what the eye sees of it dimmed along the path (M_LakeWater's absorption + scattering), and the
@@ -106,6 +119,12 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 | bald eagle | [Bald Eagle Flying Bird Model](https://sketchfab.com/models/30434fd1272f464a8540750a78a5087f) | Pigcraft | CC BY 4.0 |
 | canoe | [Cruising Canoe](https://sketchfab.com/models/982bd54e6278492484d3154d09dbe59d) | gogiart | CC BY 4.0 |
 
+The camps' textures (`Import/textures`, CC0 — no attribution required, listed with thanks): from [Poly Haven](https://polyhaven.com) —
+brown_planks_05 (lap siding), old_planks_02 (board siding), wood_trunk_wall (logs), box_profile_metal_sheet (steel roofs, its colour
+made neutral), plank_flooring_03 (decks and docks), concrete_block_wall, red_brick, rock_wall_15 (fieldstone), rocky_trail (the
+roads); from [ambientCG](https://ambientcg.com) — RoofingTiles003 (shingle roofs), PaintedWood009C (trim, doors), Metal050C
+(aluminium).
+
 The bear and the moose the human downloaded are not listed: they are for the human's own use only and are never committed,
 published or shared.
 
@@ -125,5 +144,7 @@ published or shared.
   `check_megascans.py` (what each wears); `fix_megaplants.py` mends packs whose materials point outside them (Baltic Pine's bark)
 - the materials and the tree mapping (`UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/<name>.py`):
   `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py` (`inspect_megaplants.py` lists the plant meshes)
+- the camps: `HB_WORLD=true node ue/export/export_camps.mjs`, `python -I ue/export/build_camps.py` (needs numpy; Pillow to measure the
+  textures), then `import_camps.py` (the textures in `Import/textures` with their `manifest.json`)
 - the level: `UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=HotBrookBuild`
 - all of it on another engine version: `powershell -File ue\retarget.ps1 -Version 5.8`

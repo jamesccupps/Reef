@@ -18,6 +18,9 @@ public:
 	// whether a place lies within a lake's drawn outline (Import/lakes.json: the 0.25-m depth line AHotBrookWaterSurface draws from) —
 	// the water grid's wet cells reach a little past it on low shores, where no surface is drawn
 	bool InLake(const FVector& P) const;
+	// whether a place is the camps' cleared ground — a footprint or yard, a path to the water, a dock's foot, a road, a beach, the launch
+	// (Import/cleared.bin, export_camps.mjs: the browser view's clearedAt) — where nothing grows on the ground
+	bool ClearedAt(const FVector& P) const;
 	// the ice's thickness there (m), from the live link (0 without one)
 	float IceAt(const FVector& P) const;
 	void SetIce(const TArray<float>& PerCell) { Ice = PerCell; }
@@ -29,4 +32,5 @@ private:
 	int32 HX = 0, HY = 0; double HX0 = 0, HYN = 0, HCell = 2; TArray<uint16> Heights;   // (the heightmap: row 0 north)
 	int32 IndexAt(const FVector& P) const;
 	TArray<TArray<FVector2D>> LakePts; TArray<FBox2D> LakeBox;   // (the sim's metres)
+	int32 CX = 0, CY = 0, CRow = 0; double CX0 = 0, CY0 = 0; TArray<uint8> Cleared;   // (1-m bits, rows from the south)
 };

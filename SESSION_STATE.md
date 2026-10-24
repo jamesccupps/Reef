@@ -202,7 +202,23 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-24 ~08:50 EDT — THE NEWEST). UNREAL CRASH FIXED: two of my overnight -game runs had crashed in
+▶▶▶ RESUME HERE (2026-10-24 ~14:20 EDT — THE NEWEST). UNREAL: THE CAMPS, DOCKS AND ROADS + THE PLAYER'S START. The human asked
+(09:17, a Google Maps shot of Upper's east shore) to start there and "keep going, we need buildings, accurate textures, all the
+animals, eventually other boaters and everything". DONE: d520af5 the start (Import/start.json — kept OUTSIDE the repo, it is the
+player's own place; -hbstart=X,Y,Yaw; nearest dry ground; the canoe parks by it). THE CAMPS (this commit): export_camps.mjs (the
+browser's camps3view LAYOUT — now exported — resolved to Import/camps.json + Import/cleared.bin, a 1-m raster of clearedAt) →
+build_camps.py (numpy; every building and dock as a .glb from parts, materials by name, paint/tint in vertex colours, UVs in metres;
+glTF written by hand; Blender previews via scratchpad preview_camps.py) → Scripts/import_camps.py (CC0 textures from Import/textures —
+fetched by an agent from Poly Haven/ambientCG, manifest.json + means.json; M_HB_Building: metres/TileSize UVs, Rotate90, natural =
+tex×vc, painted = (lum/TexMean)×vc; M_HB_Glass; MI_HB_<kind>; Nanite; complex collision) → AHotBrookCamps (floors on the heightmap
+min(gmax+0.3, gmin+2.6); docks at lake+0.35, in May 25–Oct 15, cvar hb.DocksIn; roads as ProceduralMesh strips, 75 km, crown tint).
+Ground cover now skips UHotBrookWater::ClearedAt (fallen logs test both ends). Checked in -hbshot views (camps U32/U13/U07/L26, the
+dock by the start, the camp road). An agent's Sketchfab search for the missing animals/people/boats: G:\HotBrookUE\Import\sketchfab\
+wanted_2026-10-24.md (the human downloads; AnimalMesh3D's mink/raccoon are likely game rips). NEXT: the nine mapped lawns
+(camps_roads.json lawns: points + areas — clear trees in export_forest + a lawn surface), boats at the docks (camps.json docks: boat
+skiff/pontoon at slot, canoe/kayak on deck — generate hulls like build_camps), the sim's anglers as boaters once person models
+come, lit windows at night (M_HB_Glass LampOn), docks stacked on the bank out of season; then the animals from the wanted list.
+▶▶▶ RESUME HERE (2026-10-24 ~08:50 EDT). UNREAL CRASH FIXED: two of my overnight -game runs had crashed in
 AHotBrookAnimals::Tick (the human found the dialogs in the morning): the looks' clips, meshes and materials sat in plain structs
 (FLook/FView), unseen by the garbage collector, which freed whatever no animal was playing at its first pass (~60 s in) — the next
 change of gait read freed memory. The same hole in AHotBrookWildlife (bird meshes), AHotBrookForest (FMeshInfo) and

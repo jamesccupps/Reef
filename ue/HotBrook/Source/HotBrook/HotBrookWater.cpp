@@ -29,6 +29,16 @@ void UHotBrookWater::Initialize(FSubsystemCollectionBase& Collection)
 				if (Pts.Num() > 2) { LakePts.Add(Pts); LakeBox.Add(Box); }
 			}
 	}
+	// the cleared ground (Import/cleared.bin: export_camps.mjs — "HBC1", int32 nx, ny, float64 x0, y0, then bits by rows from the south)
+	{
+		TArray<uint8> Bits;
+		if (FFileHelper::LoadFileToArray(Bits, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("cleared.bin"))) && Bits.Num() >= 28 && FMemory::Memcmp(Bits.GetData(), "HBC1", 4) == 0) {
+			int32 nx, ny; double x0, y0; const uint8* B = Bits.GetData();
+			FMemory::Memcpy(&nx, B + 4, 4); FMemory::Memcpy(&ny, B + 8, 4); FMemory::Memcpy(&x0, B + 12, 8); FMemory::Memcpy(&y0, B + 20, 8);
+			const int32 RowB = (nx + 7) / 8;
+			if ((int64)RowB * ny + 28 <= Bits.Num()) { CX = nx; CY = ny; CX0 = x0; CY0 = y0; CRow = RowB; Cleared.SetNumUninitialized(RowB * ny); FMemory::Memcpy(Cleared.GetData(), B + 28, RowB * ny); }
+		}
+	}
 	// Import/water.bin: "HBW1", int32 nx, ny, float x0, y0, cell (m), then nx*ny float32 surface heights (m; < -1e5 on land)
 	TArray<uint8> Bytes;
 	const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("water.bin"));
@@ -84,4 +94,12 @@ bool UHotBrookWater::InLake(const FVector& P) const
 		if (bIn) return true;
 	}
 	return false;
+}
+
+bool UHotBrookWater::ClearedAt(const FVector& P) const
+{
+	if (!CX) return false;
+	const FVector2D M = HotBrookCoords::ToSim(P);
+	const int32 q = FMath::FloorToInt(M.X - CX0), r = FMath::FloorToInt(M.Y - CY0);
+	return q >= 0 && q < CX && r >= 0 && r < CY && (Cleared[r * CRow + (q >> 3)] >> (q & 7) & 1);
 }

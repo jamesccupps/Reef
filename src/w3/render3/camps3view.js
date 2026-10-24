@@ -268,6 +268,8 @@ function buildClearing() {
 }
 // is (x, y) cleared ground (main3: no tree or shrub is placed there)
 export const clearedAt = buildClearing();
+// (the layout as resolved here, for the Unreal world's export: ue/export/export_camps.mjs)
+export const LAYOUT = { BUILD, DOCKS, ROADS, LAUNCH, BEACHES, walls, corners, boxesOf };
 
 // ---------- the parts' shapes (wild3kit shape(): palettes A–D, K black) ----------
 const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
