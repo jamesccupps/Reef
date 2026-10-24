@@ -212,7 +212,10 @@ stoop; hbshot nearloon/nearheron/neareagle); f05aa22 THE CANOE (AHotBrookBoat: i
 on E in DefaultInput.ini); W/S A/D Shift; ~1.4 m/s steady, ~2 hard; keel, drag, the sim's wind; aground by middle/bow/stern; kept inside
 the lakes' outlines — UHotBrookWater::InLake; -hbpaddle=N test); 1bae0e5 THE WATER SHOWS THROUGH: M_LakeWater's Opacity (SLW: the share
 covered by foam ON the water) defaulted to 1 — the lakes were a black skin with only reflections (the old "dark band at the shore");
-now 0 + Specular 0.255 + scattering /4 (humic: ~1 % back). NEXT: dense-stand GPU (~45 ms in the densest), conifer saplings, models for
+now 0 + Specular 0.255 + scattering /4 (humic: ~1 % back); 9625222 PERF: Config/DefaultScalability.ini [ShadowQuality@3] VSM
+ResolutionLodBiasDirectional +0.5 / Moving +1.5 (Epic's −1.5 spent 52 of 64 ms redrawing wind-swayed trees each frame) — densest stand
+64 -> 22 ms, lake 19.7, a 250-m woods walk 17–21 ms (worst 31) at 720p; fish ISMs no longer MarkRenderStateDirty each frame (Lumen had
+recaptured 45 cards a frame); fish/birds/animals out of Lumen's scene. NEXT: conifer saplings, models for
 ospreys/kingfishers/mergansers/otter/mink (the human can fetch), a fish-from-above check now the water is see-through, fishing (ROADMAP
 #15). simhost must be restarted after edits to ue/link or src/w3/render3/sim3worker.js.
 ▶▶▶ RESUME HERE (2026-10-23 ~23:15 EDT). UNREAL: THE FISH, BEARS AND MOOSE ARE MODELS (pushed: 345c81f, b9ffe86).
