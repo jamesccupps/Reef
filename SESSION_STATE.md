@@ -202,7 +202,20 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-23 ~23:15 EDT — THE NEWEST). UNREAL: THE FISH, BEARS AND MOOSE ARE MODELS (pushed: 345c81f, b9ffe86).
+▶▶▶ RESUME HERE (2026-10-24 ~00:45 EDT — THE NEWEST). UNREAL, DONE + PUSHED since the block below: 9f48010 THE VIEW UNDER THE
+WATER (M_HB_Underwater, Scripts/make_underwater_material.py: a post-process AHotBrookWaterSurface switches on while the camera is under
+the surface — light to each thing × exp(−Kd·depth) per colour, the eye's path × exp(−c·L), the water's own light by gaze, × EyeAdaptation;
+the swimmer's head bobs; hbshot nearfish finds open water and frames twice so exposure settles); 248bd9b THE BIRDS (AHotBrookWildlife:
+loons/herons/eagles as many as fish3 _wildN says — sim3worker's snapshot now carries wildN + wildAct, simhost appends them and the fish
+taken (wildEv) after the forest records; loons swim + dive (where the sim's loon took a fish), herons wade 5–35 cm, eagles circle and
+stoop; hbshot nearloon/nearheron/neareagle); f05aa22 THE CANOE (AHotBrookBoat: in the shallows nearest the start; E in/out (Use action
+on E in DefaultInput.ini); W/S A/D Shift; ~1.4 m/s steady, ~2 hard; keel, drag, the sim's wind; aground by middle/bow/stern; kept inside
+the lakes' outlines — UHotBrookWater::InLake; -hbpaddle=N test); 1bae0e5 THE WATER SHOWS THROUGH: M_LakeWater's Opacity (SLW: the share
+covered by foam ON the water) defaulted to 1 — the lakes were a black skin with only reflections (the old "dark band at the shore");
+now 0 + Specular 0.255 + scattering /4 (humic: ~1 % back). NEXT: dense-stand GPU (~45 ms in the densest), conifer saplings, models for
+ospreys/kingfishers/mergansers/otter/mink (the human can fetch), a fish-from-above check now the water is see-through, fishing (ROADMAP
+#15). simhost must be restarted after edits to ue/link or src/w3/render3/sim3worker.js.
+▶▶▶ RESUME HERE (2026-10-23 ~23:15 EDT). UNREAL: THE FISH, BEARS AND MOOSE ARE MODELS (pushed: 345c81f, b9ffe86).
 345c81f — ue/export/convert_models.py RAN (Blender 5.1, -b --disable-autoexec): 13 models -> G:\HotBrookUE\Import\models\*.glb + side/top/
 front views (fixes: posed meshes, delta transforms and keyed object turns baked — the pumpkinseed .blend had both; principal axes for
 the two MTSU scans; textures dressed onto the bare OBJs; ~12k tris a fish; the loon's .dae -> .glb with trimesh+pycollada (pip --target
