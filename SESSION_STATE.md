@@ -295,7 +295,7 @@ plants, textures. Photos are private: never commit or publish them.
   (desat ×(2.6,2.2,1.6)), up to 40–80 cm above bare granite (desat ×7, saturate), moss above — all × the instance's nearness. The
   scans' colour is very dark (lum 0.037–0.047), hence the big factors. Checked in shots (rocky and sandy shores, the woods' stones).
   + 17:05 COMMITTED 7788591 (substrate). LISTINGS SEARCH running as a background agent (writes tools/hotbrook/data/listings/notes.md,
-  photos to G:\HotBrookUE\Importeference\listings\ — local only; rules: no bot bypass, no sign-in/email, no owner names). THE
+  photos to G:\HotBrookUE\Import\reference\listings\ — local only; rules: no bot bypass, no sign-in/email, no owner names). THE
   LAWNS' GRASS (this commit): LayLawns scatters grass_lawn (35-cm grid jittered, ~8/m², HISM cull 45 m) + grass_tuft_b along the
   ragged edge (cull 60 m) — 113,636 + 1,558 instances; hidden while MPC_HB_Season Snow ≥ 0.5 (Tick, once a second). Checked in shots.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
