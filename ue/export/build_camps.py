@@ -380,6 +380,91 @@ def dock(D):
         h = D['head']; plat(L - 2 * h['hd'], L, h['across'] - h['hl'], h['across'] + h['hl'])
     return M
 
+# ---------- the boats at the docks (local metres: x forward, y to port, z up; the waterline at z 0) ----------
+def loft(M, mat_out, mat_in, X, rows, col_out, col_in):
+    # a hull from its sections: rows[k] = [(y, z), …] from the keel (y 0) up to the gunwale, one side (the other mirrored); its outside
+    # and its inside
+    for sg in (1, -1):
+        for k in range(len(X) - 1):
+            a, b = rows[k], rows[k + 1]
+            for j in range(len(a) - 1):
+                P = [v3(X[k], sg * a[j][0], a[j][1]), v3(X[k + 1], sg * b[j][0], b[j][1]), v3(X[k + 1], sg * b[j + 1][0], b[j + 1][1]), v3(X[k], sg * a[j + 1][0], a[j + 1][1])]
+                n = np.cross(P[1] - P[0], P[3] - P[0])
+                if np.linalg.norm(n) < 1e-9: n = np.cross(P[2] - P[1], P[3] - P[1])
+                n = unit(n)
+                if np.dot(n, v3(0, sg, -0.4)) < 0: n = -n   # (outward: away from the centreline, and down)
+                M.poly(mat_out, P, n, X_AX, unit(P[3] - P[0]), col_out)
+                M.poly(mat_in, P, -n, X_AX, unit(P[3] - P[0]), col_in)
+X_AX = v3(1, 0, 0)
+
+def skiff(col_hull):
+    # a 14-ft aluminium boat: its riveted hull lofted from eight sections, the transom, the gunwale's rail, the floor, three bench
+    # seats, a bow cap and the outboard tilted up on its bracket
+    M = Mesh(); A = WHITE
+    X = [-2.12, -1.6, -0.8, 0.2, 1.0, 1.6, 2.0, 2.18]
+    HW = [0.70, 0.75, 0.77, 0.76, 0.68, 0.50, 0.26, 0.04]   # (half-beam at the gunwale)
+    G = [0.36, 0.36, 0.37, 0.39, 0.42, 0.47, 0.53, 0.57]     # (the gunwale over the water)
+    KL = [-0.13, -0.15, -0.16, -0.16, -0.13, -0.05, 0.12, 0.32]   # (the keel)
+    rows = [[(0.0, KL[k]), (HW[k] * 0.45, KL[k] + 0.04), (HW[k] * 0.86, KL[k] + 0.09 + (0.1 if k > 4 else 0.0)), (HW[k], G[k])] for k in range(len(X))]
+    loft(M, 'Alu', 'Alu', X, rows, col_hull, A * 0.92)
+    tr = rows[0]; P = [v3(X[0], -y, z) for y, z in reversed(tr)] + [v3(X[0], y, z) for y, z in tr[1:]]
+    M.poly('Alu', P, -X_AX, Y, -Z, col_hull); M.poly('Alu', [p + X_AX * 0.003 for p in P], X_AX, Y, -Z, A * 0.92)
+    for sg in (1, -1):
+        for k in range(len(X) - 1):
+            M.seg('Alu', v3(X[k], sg * (HW[k] - 0.015), G[k] + 0.015), v3(X[k + 1], sg * (HW[k + 1] - 0.015), G[k + 1] + 0.015), 0.045, 0.035, A * 0.85)
+    M.obox('Alu', (-0.4, 0), (1, 0), 1.55, 0.45, -0.07, -0.05, A * 0.75, skip='b')
+    for x, w in ((-1.6, 0.68), (-0.15, 0.74), (1.15, 0.62)):
+        M.obox('Alu', (x, 0), (1, 0), 0.17, w, 0.2, 0.24, A * 0.9)
+    M.obox('Alu', (2.0, 0), (1, 0), 0.18, 0.22, 0.5, 0.53, A * 0.85)
+    t = math.radians(65); base = v3(X[0] - 0.05, 0, G[0] - 0.02)
+    M.obox('PipeMetal', (base[0], 0), (1, 0), 0.06, 0.12, G[0] - 0.12, G[0] + 0.06, A)
+    cow = base + v3(-0.25, 0, 0.18)
+    M.obox('PipeMetal', (cow[0], 0), (1, 0), 0.24, 0.17, cow[2] - 0.14, cow[2] + 0.18, A)
+    a = cow + v3(-0.05, 0, -0.14); b = a + v3(-0.55 * math.cos(t) - 0.3, 0, 0.55 * math.sin(t) * 0.25)
+    M.seg('PipeMetal', a, b, 0.1, 0.07, A); M.seg('PipeMetal', b, b + v3(-0.12, 0, 0.02), 0.08, 0.08, A)
+    return M
+
+def kayak(col):
+    # a 12-ft sit-in kayak: its hull and deck lofted round, the cockpit's coaming and its dark opening
+    M = Mesh(); L = 3.66; X = list(np.linspace(-L / 2, L / 2, 15)); rows = []
+    for x in X:
+        f = max(1 - (2 * x / L) ** 2, 0.0) ** 0.6
+        hw, deck, keel = 0.33 * f + 0.005, 0.2 + 0.04 * (1 - f), -0.11 * f + 0.06 * (1 - f)
+        rows.append([(0.0, keel), (hw * 0.7, keel + 0.03 * f), (hw, 0.07), (hw * 0.75, deck - 0.03), (0.0, deck)])
+    loft(M, 'Plastic', 'Plastic', X, rows, col, col * 0.7)
+    c = v3(0.05, 0, 0.22)
+    ring = [c + v3(0.45 * math.cos(2 * math.pi * k / 16), 0.24 * math.sin(2 * math.pi * k / 16), 0.03) for k in range(16)]
+    for k in range(16): M.seg('Plastic', ring[k], ring[(k + 1) % 16], 0.035, 0.03, col * 0.35)
+    M.poly('Vinyl', [p + Z * 0.005 for p in ring], Z, X_AX, Y, WHITE * 0.05)
+    return M
+
+def pontoon():
+    # a 23-ft pontoon boat: two aluminium tubes with their nose cones, the deck, the fence and its gates, the console and the
+    # benches, the bimini on its posts, the outboard
+    M = Mesh(); A = WHITE
+    for y in (-0.85, 0.85):
+        for k in range(14):
+            a0, a1 = 2 * math.pi * k / 14, 2 * math.pi * (k + 1) / 14
+            for x0, x1, r0, r1, z1 in ((-3.4, 2.9, 0.3, 0.3, 0.0), (2.9, 3.45, 0.3, 0.1, 0.12)):
+                P = [v3(x0, y + r0 * math.cos(a0), 0.05 + r0 * math.sin(a0)), v3(x1, y + r1 * math.cos(a0), 0.05 + z1 + r1 * math.sin(a0)),
+                     v3(x1, y + r1 * math.cos(a1), 0.05 + z1 + r1 * math.sin(a1)), v3(x0, y + r0 * math.cos(a1), 0.05 + r0 * math.sin(a1))]
+                M.poly('Alu', P, v3(0, math.cos((a0 + a1) / 2), math.sin((a0 + a1) / 2)), X_AX, Z, A)
+    M.obox('Deck', (0, 0), (1, 0), 3.5, 1.25, 0.38, 0.48, tint('#8a8070', '#8a7458'), top_tu=(0, 1))
+    for y in (-1.2, 1.2): M.obox('Alu', (-0.2, y), (1, 0), 3.1, 0.025, 0.48, 1.31, A * 0.9)
+    M.obox('Alu', (-3.3, 0), (1, 0), 0.025, 1.2, 0.48, 1.31, A * 0.9)
+    for y in (-0.8, 0.8): M.obox('Alu', (2.9, y), (1, 0), 0.025, 0.4, 0.48, 1.31, A * 0.9)
+    M.obox('Vinyl', (0.9, 0.65), (1, 0), 0.3, 0.28, 0.48, 1.38, lin('#d8d6d0'))
+    for x in (-2.4, 0.0, 1.9): M.obox('Vinyl', (x, -0.95), (1, 0), 0.45, 0.22, 0.48, 0.92, lin('#d8d6d0'))
+    for x in (-1.6, 0.6):
+        for y in (-1.15, 1.15): M.cyl('Alu', (x, y), 0.02, 1.31, 2.55, A, n=6)
+    M.obox('Canvas', (-0.5, 0), (1, 0), 1.3, 1.18, 2.55, 2.6, lin('#2e3a48'))
+    M.obox('PipeMetal', (-3.75, 0), (1, 0), 0.2, 0.15, 0.4, 1.1, A)
+    return M
+
+BOATS = {'boat_skiff_alu': skiff(WHITE), 'boat_skiff_green': skiff(lin('#3e5a3a') * 1.6), 'boat_pontoon': pontoon()}
+for nm, c in (('red', '#b8322a'), ('yellow', '#e0b020'), ('orange', '#e06a1e'), ('green', '#3f8a3a'), ('blue', '#2a5a9a')):
+    BOATS['boat_kayak_' + nm] = kayak(lin(c))
+
 parts = {'buildings': {}, 'docks': {}}
 tri = 0
 for B in J['buildings']:
@@ -393,6 +478,18 @@ for B in J['buildings']:
 for D in J['docks']:
     M = dock(D); name = f"dock_{D['j']}"; write_glb(os.path.join(OUT, name + '.glb'), name, M); tri += M.count()
     parts['docks'][name] = {'anchor': D['w'], 'dir': D['dir'], 'len': D['len'], 'camp': D['camp'], 'tris': M.count()}
+# the boats: their meshes, and where each dock's are (a skiff or the pontoon alongside, a canoe or a kayak on the deck or the bank)
+for nm, M in BOATS.items(): write_glb(os.path.join(OUT, nm + '.glb'), nm, M); tri += M.count()
+parts['boats'] = []
+for D in J['docks']:
+    name = f"dock_{D['j']}"
+    if D.get('boat') and D.get('slot'):
+        mesh = 'boat_pontoon' if D['boat'] == 'pontoon' else ('boat_skiff_green' if hh(D['j'], 20) < 0.35 else 'boat_skiff_alu')
+        parts['boats'].append({'mesh': mesh, 'xy': D['slot'][:2], 'yaw': D['slot'][2], 'on': 'water', 'dock': name})
+    if D.get('canoe'):
+        k = D['canoe']; mesh = 'canoe' if k['kind'] == 'canoe' else 'boat_kayak_' + ('red', 'yellow', 'orange', 'green', 'blue')[int(hh(D['j'], 21) * 5)]
+        parts['boats'].append({'mesh': mesh, 'xy': k['at'][:2], 'yaw': k['at'][2], 'on': 'deck' if k['onDeck'] else 'bank', 'dock': name, 'flip': k['kind'] == 'canoe'})
+print(f"boats: {len(parts['boats'])} at the docks")
 json.dump(parts, open(os.path.join(OUT, 'camps_parts.json'), 'w'), indent=0)
 print(f"{len(parts['buildings'])} buildings, {len(parts['docks'])} docks -> {OUT}: {tri} triangles")
 

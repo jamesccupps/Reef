@@ -144,7 +144,11 @@ KINDS = {
     'Deck':             ('deck_planks', False, {}),
     'Alu':              ('metal_alu', False, {'metallic': 1.0}),
     'PipeMetal':        ('metal_alu', False, {'metallic': 0.6, 'tint': (0.06, 0.06, 0.065, 1), 'rough_add': 0.25}),
-    'Road':             ('gravel_road', False, {}),   # (AHotBrookCamps' roads: the vertex colours tint the tracks, the crown, the verges)
+    'Road':             ('gravel_road', False, {}),
+    # (the boats' own: plain colours from the vertex colours, no texture — a kayak's plastic, the seats' vinyl, a bimini's canvas)
+    'Plastic':          (None, False, {'rough_scale': 0.32}),
+    'Vinyl':            (None, False, {'rough_scale': 0.55}),
+    'Canvas':           (None, False, {'rough_scale': 0.9}),   # (AHotBrookCamps' roads: the vertex colours tint the tracks, the crown, the verges)
 }
 MI = {}
 for kind, (slot, paint, x) in KINDS.items():
@@ -152,8 +156,8 @@ for kind, (slot, paint, x) in KINDS.items():
     if EAL.does_asset_exist(path): EAL.delete_asset(path)
     mi = tools.create_asset('MI_HB_' + kind, DEST + '/Materials', unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
     L.set_material_instance_parent(mi, BM)
-    t = TX.get(slot, {})
-    if not t: bad.append('no textures for %s (%s)' % (kind, slot))
+    t = TX.get(slot, {}) if slot else {}
+    if slot and not t: bad.append('no textures for %s (%s)' % (kind, slot))
     for k, v in t.items(): L.set_material_instance_texture_parameter_value(mi, k, v)
     mm = man.get(slot, {}); sz = x.get('size') or mm.get('size_m') or [2.0, 2.0]; s = x.get('scale', 1.0)
     L.set_material_instance_vector_parameter_value(mi, 'TileSize', unreal.LinearColor(sz[0] * s, sz[1] * s, 0, 0))
@@ -161,6 +165,7 @@ for kind, (slot, paint, x) in KINDS.items():
     L.set_material_instance_scalar_parameter_value(mi, 'Paint', 1.0 if paint else 0.0)
     L.set_material_instance_scalar_parameter_value(mi, 'TexMean', float(means.get(slot, 0.5)))
     L.set_material_instance_scalar_parameter_value(mi, 'RoughnessAdd', x.get('rough_add', 0.0))
+    L.set_material_instance_scalar_parameter_value(mi, 'RoughnessScale', x.get('rough_scale', 1.0))
     L.set_material_instance_scalar_parameter_value(mi, 'Metallic', x.get('metallic', 0.0) if 'Metalness' not in t else 1.0)
     if 'tint' in x: L.set_material_instance_vector_parameter_value(mi, 'Tint', unreal.LinearColor(*x['tint']))
     EAL.save_asset(path); MI[kind] = mi

@@ -75,7 +75,10 @@ project draws the world in the first person, fed live by it. The browser view, t
   A building's floor stands over its highest corner (≤ 2.6 m over its lowest); a dock ~0.35 m over the lake, in from May 25 to
   October 15 (`hb.DocksIn 1` / `0` forces them). The ROADS (75 km: camp roads with their wheel tracks and grassy crown, the town's
   gravel, Route 169 paved) are strips draped on the ground. The forest's export already clears trees off the lots, roads, paths
-  and beaches; `Import/cleared.bin` (export_camps.mjs) keeps the ground cover off them too.
+  and beaches; `Import/cleared.bin` (export_camps.mjs) keeps the ground cover off them too. The BOATS at the docks while they are in (44, as the
+  browser's layout has them): 14-ft aluminium skiffs (plain or painted green) and the pontoon boat tied alongside, riding the water
+  with a slow bob; canoes turned over and kayaks on the docks or the banks — the hulls lofted by build_camps.py, the canoe the
+  Sketchfab one.
 - **The start** — `Import/start.json` `{"x", "y", "yaw"}` (sim metres, UE degrees; outside the repo) or `-hbstart=X,Y,Yaw`: where
   the walker starts (the nearest dry ground to it); the level's own start without either.
 - **Under the water** — `M_HB_Underwater` (`Scripts/make_underwater_material.py`), a post-process `AHotBrookWaterSurface` turns on

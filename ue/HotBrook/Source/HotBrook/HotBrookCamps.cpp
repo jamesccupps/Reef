@@ -23,19 +23,21 @@ static constexpr float DOCK_IN = (31 + 30 + 24) / 365.f, DOCK_OUT = (31 + 30 + 3
 
 AHotBrookCamps::AHotBrookCamps()
 {
-	PrimaryActorTick.bCanEverTick = true; PrimaryActorTick.TickInterval = 1.f;   // (the date: a dock's season)
+	PrimaryActorTick.bCanEverTick = true;   // (the boats' bob; the date — a dock's season — once a second)
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root")); RootComponent->SetMobility(EComponentMobility::Static);
 }
 
-UStaticMeshComponent* AHotBrookCamps::Stand(const FString& Name, const FVector& At)
+UStaticMeshComponent* AHotBrookCamps::Stand(const FString& Name, FVector At, bool bMovable, const FString& Path, float Yaw, bool bFlip)
 {
-	UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/HotBrook/Camps/Meshes/SM_%s.SM_%s"), *Name, *Name));
+	UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, Path.IsEmpty() ? *FString::Printf(TEXT("/Game/HotBrook/Camps/Meshes/SM_%s.SM_%s"), *Name, *Name) : *Path);
 	if (!M) return nullptr;
-	Held.Add(M);
+	Held.AddUnique(M);
 	UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(this);
-	C->SetStaticMesh(M); C->SetMobility(EComponentMobility::Static); C->SetupAttachment(RootComponent);
+	C->SetStaticMesh(M); C->SetMobility(bMovable ? EComponentMobility::Movable : EComponentMobility::Static); C->SetupAttachment(RootComponent);
+	if (bMovable) { C->bAffectDistanceFieldLighting = false; C->bAffectDynamicIndirectLighting = false; }   // (moving: out of Lumen's scene)
 	C->SetCollisionProfileName(TEXT("BlockAll"));
-	C->SetWorldLocation(At); C->RegisterComponent();
+	if (bFlip) { const FBoxSphereBounds Bd = M->GetBounds(); At.Z += Bd.Origin.Z + Bd.BoxExtent.Z; }   // (upside down, resting on its gunwales)
+	C->SetWorldLocationAndRotation(At, FRotator(0.f, Yaw, bFlip ? 180.f : 0.f)); C->RegisterComponent();
 	return C;
 }
 
@@ -68,18 +70,44 @@ void AHotBrookCamps::BeginPlay()
 		float S = 0; if (!W->SurfaceAt(Mid, S)) { Missing++; continue; }
 		if (UStaticMeshComponent* C = Stand(FString(KV.Key), FVector(A[0]->AsNumber() * 100.0, -A[1]->AsNumber() * 100.0, S + 35.f))) Docks.Add(C); else Missing++;
 	}
+	// the boats: alongside (afloat), on the dock's deck or on the bank — a canoe turned over, as one is stored
+	if (const TArray<TSharedPtr<FJsonValue>>* BA; J->TryGetArrayField(TEXT("boats"), BA))
+		for (const TSharedPtr<FJsonValue>& V : *BA) {
+			const TSharedPtr<FJsonObject> B = V->AsObject(); const FString Mesh = B->GetStringField(TEXT("mesh")), On = B->GetStringField(TEXT("on"));
+			const TArray<TSharedPtr<FJsonValue>>& XY = B->GetArrayField(TEXT("xy")); const double X = XY[0]->AsNumber(), Yy = XY[1]->AsNumber();
+			const FVector P0(X * 100.0, -Yy * 100.0, 0.0); float S = 0, G = 0; bool bFlip = false; B->TryGetBoolField(TEXT("flip"), bFlip);
+			const bool bFloat = On == TEXT("water");
+			float Z;
+			if (On == TEXT("bank")) { if (!W->GroundAt(P0, G)) { Missing++; continue; } Z = G; }
+			else { if (!W->SurfaceAt(P0, S)) { if (!W->GroundAt(P0, G)) { Missing++; continue; } S = G; } Z = bFloat ? S : S + 35.f; }
+			const FString Path = Mesh == TEXT("canoe") ? FString(TEXT("/Game/HotBrook/Models/canoe/SM_canoe.SM_canoe")) : FString();
+			const float Yaw = -FMath::RadiansToDegrees(B->GetNumberField(TEXT("yaw")));
+			UStaticMeshComponent* C = Stand(Mesh, FVector(P0.X, P0.Y, Z), bFloat, Path, Yaw, bFlip);
+			if (!C) { Missing++; continue; }
+			Boats.Add(C); BoatAt.Add({ C->GetComponentLocation(), Yaw, FMath::FRand() * 6.28f, bFloat });
+		}
 	LayRoads();
-	UE_LOG(LogHotBrookCamps, Display, TEXT("camps: %d buildings, %d docks standing%s"), NBuild, Docks.Num(), Missing ? *FString::Printf(TEXT(" (%d not: no mesh or no ground)"), Missing) : TEXT(""));
+	UE_LOG(LogHotBrookCamps, Display, TEXT("camps: %d buildings, %d docks, %d boats standing%s"), NBuild, Docks.Num(), Boats.Num(), Missing ? *FString::Printf(TEXT(" (%d not: no mesh or no ground)"), Missing) : TEXT(""));
 }
 
 void AHotBrookCamps::Tick(float Dt)
 {
 	Super::Tick(Dt);
+	// the boats afloat ride the water: a slow heave, pitch and roll (each its own phase)
+	const double T = GetWorld()->GetTimeSeconds();
+	if (DocksIn == 1)
+		for (int32 i = 0; i < Boats.Num(); i++) if (BoatAt[i].bFloat) {
+			const FBoat& B = BoatAt[i]; const float p = B.Phase;
+			Boats[i]->SetWorldLocationAndRotation(B.At + FVector(0, 0, 1.6f * FMath::Sin(T * 1.05 + p)), FRotator(0.7f * FMath::Sin(T * 0.83 + p * 1.3), B.Yaw, 1.4f * FMath::Sin(T * 0.97 + p * 0.7)));
+		}
+	if (T < SeasonAt) return;
+	SeasonAt = T + 1.0;   // (the season: once a second)
 	float Yf = 0.3f; for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { Yf = It->YearFrac; break; }
 	const int32 Force = CVarDocksIn.GetValueOnGameThread(), In = Force >= 0 ? (Force ? 1 : 0) : (Yf >= DOCK_IN && Yf < DOCK_OUT ? 1 : 0);
 	if (In == DocksIn) return;
 	DocksIn = In;
 	for (UStaticMeshComponent* C : Docks) { C->SetVisibility(In == 1); C->SetCollisionEnabled(In ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision); }
+	for (UStaticMeshComponent* C : Boats) { C->SetVisibility(In == 1); C->SetCollisionEnabled(In ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision); }
 }
 
 void AHotBrookCamps::LayRoads()

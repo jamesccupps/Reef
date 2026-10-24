@@ -218,6 +218,9 @@ wanted_2026-10-24.md (the human downloads; AnimalMesh3D's mink/raccoon are likel
 (camps_roads.json lawns: points + areas — clear trees in export_forest + a lawn surface), boats at the docks (camps.json docks: boat
 skiff/pontoon at slot, canoe/kayak on deck — generate hulls like build_camps), the sim's anglers as boaters once person models
 come, lit windows at night (M_HB_Glass LampOn), docks stacked on the bank out of season; then the animals from the wanted list.
+  + BOATS AT THE DOCKS (next commit): build_camps.py lofts skiffs (alu/green), kayaks (5 colours), the pontoon; camps_parts.json boats[]
+  (water/deck/bank, canoes flipped = the Sketchfab canoe); AHotBrookCamps stands them (rotation set BEFORE registering — static), bobs
+  the floating ones each frame, hides them with the docks out of season. Plastic/Vinyl/Canvas MIs (no texture, RoughnessScale).
 ▶▶▶ RESUME HERE (2026-10-24 ~08:50 EDT). UNREAL CRASH FIXED: two of my overnight -game runs had crashed in
 AHotBrookAnimals::Tick (the human found the dialogs in the morning): the looks' clips, meshes and materials sat in plain structs
 (FLook/FView), unseen by the garbage collector, which freed whatever no animal was playing at its first pass (~60 s in) — the next
