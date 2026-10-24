@@ -38,7 +38,7 @@ private:
 	};
 	TArray<FLake> Lakes;
 	TArray<FBird> Birds;
-	TMap<int32, TObjectPtr<UStaticMesh>> Mesh;
+	UPROPERTY() TMap<int32, TObjectPtr<UStaticMesh>> Mesh;   // (a property: else a kind with none about is freed by the garbage collector)
 	float N[16] = { 0 }, ActNow[16] = { 0 }; float YearNow = 0.3f; double CensusAt = -1e9;
 	bool InLake(const FLake& L, const FVector2D& P) const;
 	bool Fits(int32 Kind, const FVector2D& P) const;   // (water of the right depth for it)

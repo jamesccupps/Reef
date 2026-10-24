@@ -67,7 +67,8 @@ void AHotBrookForest::LoadMeshes()
 	// (the stand-ins: the engine's cone for every species, scaled to the tree)
 	UStaticMesh* Cone = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone"));
 	for (int32 Sp = 0; Sp < 14; Sp++) if (!Meshes.Contains(Sp) && Cone) Meshes.Add(Sp, { { Cone, nullptr, (float)(Cone->GetBounds().BoxExtent.Z * 2.0), true } });
-	int32 NSkel = 0; for (const auto& KV : Meshes) for (const FMeshInfo& MI : KV.Value) NSkel += MI.Skel != nullptr;
+	int32 NSkel = 0; for (const auto& KV : Meshes) for (const FMeshInfo& MI : KV.Value) { NSkel += MI.Skel != nullptr; Held.AddUnique(MI.Mesh); Held.AddUnique(MI.Skel); }
+	Held.Remove(nullptr);
 	// the wind: Dynamic Wind's provider (looked up by name — the plugin may be off; the trees then stand still)
 	if (UClass* WC = FindObject<UClass>(nullptr, TEXT("/Script/DynamicWind.DynamicWindData"))) Wind = NewObject<UTransformProviderData>(this, WC);
 	TrunkShape = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));

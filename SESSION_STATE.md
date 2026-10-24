@@ -202,7 +202,15 @@ the field's depth (ZOO3.Z1 in stageR5: cladoceran clearance 3.9 → 1.0 mL/µg/d
 t_starv 4.4 d (×Q10 2, only above the cold window), interference 0.0012 → 0.0007 L/µg/d, the opening Daphnia 40 → 8 µg/L); probes
 rotbud_z1(_nofish).txt, larvz_z1.txt running. Agents still running: E12b weeds, FOREST (bears/deer/moose), RENDER (all animals).
 ARM AJ on the GPU (perch 75).
-▶▶▶ RESUME HERE (2026-10-24 ~00:45 EDT — THE NEWEST). UNREAL, DONE + PUSHED since the block below: 9f48010 THE VIEW UNDER THE
+▶▶▶ RESUME HERE (2026-10-24 ~08:50 EDT — THE NEWEST). UNREAL CRASH FIXED: two of my overnight -game runs had crashed in
+AHotBrookAnimals::Tick (the human found the dialogs in the morning): the looks' clips, meshes and materials sat in plain structs
+(FLook/FView), unseen by the garbage collector, which freed whatever no animal was playing at its first pass (~60 s in) — the next
+change of gait read freed memory. The same hole in AHotBrookWildlife (bird meshes), AHotBrookForest (FMeshInfo) and
+AHotBrookGroundCover (FMesh). Now each holds its assets in a UPROPERTY (Held / Mesh). Proved by -ExecCmds="gc.
+TimeBetweenPurgingPendingKillObjects 1" (a collection every second): the old build died 6 s in (in the ground cover); the fixed one
+ran the 276-m walk, six bird/animal shots and 90 s of paddling clean. RULE: a UObject kept anywhere but a UPROPERTY (or an owned
+component) is freed — use that -ExecCmds stress run after adding any loaded asset. The NEXT list below stands.
+▶▶▶ RESUME HERE (2026-10-24 ~00:45 EDT). UNREAL, DONE + PUSHED since the block below: 9f48010 THE VIEW UNDER THE
 WATER (M_HB_Underwater, Scripts/make_underwater_material.py: a post-process AHotBrookWaterSurface switches on while the camera is under
 the surface — light to each thing × exp(−Kd·depth) per colour, the eye's path × exp(−c·L), the water's own light by gaze, × EyeAdaptation;
 the swimmer's head bobs; hbshot nearfish finds open water and frames twice so exposure settles); 248bd9b THE BIRDS (AHotBrookWildlife:

@@ -47,6 +47,7 @@ private:
 	TArray<int32> TileStart, TileOrder;   // (the trees sorted by tile: a counting sort)
 	int32 TX = 0, TY = 0; double TX0 = 0, TY0 = 0; static constexpr double Tile = 200.0;
 	TMap<int32, TArray<FMeshInfo>> Meshes;   // species → its meshes (variants)
+	UPROPERTY() TArray<TObjectPtr<UObject>> Held;   // (those meshes, held against the garbage collector: Meshes is unseen by it)
 	TMap<int32, TArray<TObjectPtr<UPrimitiveComponent>>> Live;   // tile → its components
 	UPROPERTY() TObjectPtr<UTransformProviderData> Wind = nullptr;   // (the Dynamic Wind provider every skinned tree uses)
 	UPROPERTY() TObjectPtr<UStaticMesh> TrunkShape = nullptr;

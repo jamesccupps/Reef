@@ -48,6 +48,9 @@ private:
 	};
 	FLook Stag, Doe, Bear, Moose;
 	TObjectPtr<UMaterialInterface> Invisible, MooseAntler;
+	// (every mesh, clip and material the looks hold — the plain structs above are unseen by the garbage collector, which freed the
+	// clips no animal was playing about a minute in: the crash at the next change of gait)
+	UPROPERTY() TArray<TObjectPtr<UObject>> Held;
 	TMap<int32, FView> Views;
 	double LastSnap = 0, SnapDt = 0.05; float YearNow = 0.3f;
 	bool bLoaded = false;

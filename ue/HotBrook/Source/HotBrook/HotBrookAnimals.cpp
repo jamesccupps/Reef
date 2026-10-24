@@ -77,6 +77,11 @@ void AHotBrookAnimals::BeginPlay()
 		Invisible = LoadObject<UMaterialInterface>(nullptr, *(FString(TEXT("/Game/HotBrook/Animals")) + TEXT("/M_HB_Invisible.M_HB_Invisible")));
 		Have.Add(FString::Printf(TEXT("moose (%.0f cm)"), Moose.Length));
 	}
+	for (const FLook* L : { &Stag, &Doe, &Bear, &Moose }) {
+		Held.Append({ L->Mesh, L->Graze, L->Browse, L->Drink, L->Fish, L->Idle, L->Rest });
+		for (const FGait& G : L->Gaits) Held.Add(G.Anim);
+	}
+	Held.Append({ Invisible, MooseAntler }); Held.Remove(nullptr);
 	bLoaded = Have.Num() > 0;
 	UE_LOG(LogHotBrookAnimals, Display, TEXT("animals: %s"), Have.Num() ? *FString::Join(Have, TEXT(", ")) : TEXT("no models in the project: none drawn"));
 }

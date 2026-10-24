@@ -91,7 +91,7 @@ void AHotBrookGroundCover::LoadMeshes()
 			else continue;
 			M.Height = FMath::Max(1.0, B.Origin.Z + B.BoxExtent.Z);
 			M.Footprint = FMath::Max(0.005, 4.0 * B.BoxExtent.X * B.BoxExtent.Y / 1e4 * 0.5);   // (m² of ground under it: its box, half filled)
-			KindMeshes[k].Add(M);
+			KindMeshes[k].Add(M); Held.Add(A);
 		}
 		NOk += KindMeshes[k].Num() > 0;
 		// (plants a square metre inside the patches: the cover over the patches' share and the mean plant's footprint at its mean scale)

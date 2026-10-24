@@ -36,6 +36,7 @@ public:
 private:
 	struct FMesh { TObjectPtr<UStaticMesh> Static = nullptr; TObjectPtr<USkeletalMesh> Skel = nullptr; float Height = 100.f, Footprint = 1.f; };
 	TArray<TArray<FMesh>> KindMeshes;   // (per kind of the table)
+	UPROPERTY() TArray<TObjectPtr<UObject>> Held;   // (those meshes, held against the garbage collector: KindMeshes is unseen by it)
 	TArray<float> KindDensity;          // (each kind's plants a square metre inside its patches, from its cover and its meshes' size)
 	TMap<int64, TArray<TObjectPtr<UPrimitiveComponent>>> Live;   // (ring × cell → its components)
 	UPROPERTY() TObjectPtr<UTransformProviderData> Wind = nullptr;
