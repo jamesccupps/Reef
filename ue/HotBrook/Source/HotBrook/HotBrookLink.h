@@ -29,6 +29,9 @@ public:
 	// the wind: m/s, and the bearing it blows FROM (radians, 0 north, clockwise)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float WindSpeed = 3.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float WindFrom = 3.93f;
+	// the air (°C) and the sun's light (0–1) as last heard
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float Air = 15.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HotBrook") float Daylight = 0.6f;
 private:
 	TSharedPtr<IWebSocket> Socket;
 	TArray<uint8> Pending, Latest; bool bFresh = false;

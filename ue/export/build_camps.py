@@ -397,9 +397,10 @@ def loft(M, mat_out, mat_in, X, rows, col_out, col_in):
                 M.poly(mat_in, P, -n, X_AX, unit(P[3] - P[0]), col_in)
 X_AX = v3(1, 0, 0)
 
-def skiff(col_hull):
+def skiff(col_hull, running=False):
     # a 14-ft aluminium boat: its riveted hull lofted from eight sections, the transom, the gunwale's rail, the floor, three bench
-    # seats, a bow cap and the outboard tilted up on its bracket
+    # seats, a bow cap and the outboard tilted up on its bracket — or, running (an angler's), the outboard down in the water with its
+    # tiller forward and a red fuel tank on the floor
     M = Mesh(); A = WHITE
     X = [-2.12, -1.6, -0.8, 0.2, 1.0, 1.6, 2.0, 2.18]
     HW = [0.70, 0.75, 0.77, 0.76, 0.68, 0.50, 0.26, 0.04]   # (half-beam at the gunwale)
@@ -416,12 +417,79 @@ def skiff(col_hull):
     for x, w in ((-1.6, 0.68), (-0.15, 0.74), (1.15, 0.62)):
         M.obox('Alu', (x, 0), (1, 0), 0.17, w, 0.2, 0.24, A * 0.9)
     M.obox('Alu', (2.0, 0), (1, 0), 0.18, 0.22, 0.5, 0.53, A * 0.85)
-    t = math.radians(65); base = v3(X[0] - 0.05, 0, G[0] - 0.02)
+    base = v3(X[0] - 0.05, 0, G[0] - 0.02)
     M.obox('PipeMetal', (base[0], 0), (1, 0), 0.06, 0.12, G[0] - 0.12, G[0] + 0.06, A)
+    if running:   # (a 6-hp two-stroke: the powerhead over the transom, the leg down past the hull's bottom, the tiller forward)
+        DK = lin('#2a2c30')
+        cx = X[0] - 0.2
+        M.obox('PipeMetal', (cx, 0), (1, 0), 0.2, 0.16, G[0] - 0.02, G[0] + 0.34, DK)
+        M.obox('PipeMetal', (cx - 0.02, 0), (1, 0), 0.17, 0.14, G[0] + 0.34, G[0] + 0.38, DK * 1.3)
+        M.seg('PipeMetal', v3(cx, 0, G[0] - 0.02), v3(cx, 0, -0.42), 0.08, 0.06, DK)
+        M.obox('PipeMetal', (cx - 0.02, 0), (1, 0), 0.16, 0.05, -0.5, -0.4, DK)
+        M.obox('PipeMetal', (cx - 0.04, 0), (1, 0), 0.08, 0.012, -0.58, -0.5, DK)
+        M.seg('PipeMetal', v3(cx + 0.15, 0, G[0] + 0.22), v3(X[0] + 0.45, 0.04, G[0] + 0.2), 0.04, 0.04, DK)
+        M.obox('Plastic', (-1.85, 0.35), (1, 0), 0.22, 0.15, -0.05, 0.2, lin('#b8261e'))
+        return M
+    t = math.radians(65)
     cow = base + v3(-0.25, 0, 0.18)
     M.obox('PipeMetal', (cow[0], 0), (1, 0), 0.24, 0.17, cow[2] - 0.14, cow[2] + 0.18, A)
     a = cow + v3(-0.05, 0, -0.14); b = a + v3(-0.55 * math.cos(t) - 0.3, 0, 0.55 * math.sin(t) * 0.25)
     M.seg('PipeMetal', a, b, 0.1, 0.07, A); M.seg('PipeMetal', b, b + v3(-0.12, 0, 0.02), 0.08, 0.08, A)
+    return M
+
+# ---------- the ice-fishing camp's things (local metres: z 0 the ice's top) ----------
+def ice_shelter(col):
+    # a pop-up hub shelter (~1.8 m square, 1.8 m high): four panels leaning in to a squarer top, its peak, a darker door panel with a
+    # window, the skirt's flaps on the ice
+    M = Mesh(); b, t, h, pk = 0.9, 0.62, 1.72, 1.86
+    B = [v3(b, b), v3(-b, b), v3(-b, -b), v3(b, -b)]; T = [v3(t, t, h), v3(-t, t, h), v3(-t, -t, h), v3(t, -t, h)]
+    for k in range(4):
+        a0, a1, t0, t1 = B[k], B[(k + 1) % 4], T[k], T[(k + 1) % 4]
+        mid = (a0 + a1) / 2; out = unit(v3(mid[0], mid[1], 0))
+        n = unit(np.cross(a1 - a0, t0 - a0)); n = n if np.dot(n, out) > 0 else -n
+        c = col * (0.65 if k == 3 else 1.0)
+        M.poly('Canvas', [a0, a1, t1, t0], n, unit(a1 - a0), Z, c); M.poly('Canvas', [a0, t0, t1, a1], -n, unit(a1 - a0), Z, col * 0.5)
+        tn = unit(np.cross(t1 - t0, v3(0, 0, pk) - t0)); tn = tn if tn[2] > 0 else -tn
+        M.poly('Canvas', [t0, t1, v3(0, 0, pk)], tn, unit(t1 - t0), Z, col * 0.9)
+        M.poly('Canvas', [a0, a1, a1 + out * 0.22 + v3(0, 0, 0.01), a0 + out * 0.22 + v3(0, 0, 0.01)], Z, unit(a1 - a0), out, col * 0.55)
+    # (the door panel's window, on +X)
+    M.poly('Vinyl', [v3(0.7, 0.22, 1.0), v3(0.7, -0.22, 1.0), v3(0.66, -0.2, 1.3), v3(0.66, 0.2, 1.3)], unit(v3(1, 0, 0.27)), Y, Z, WHITE * 0.06)
+    return M
+
+def bucket(col):
+    M = Mesh(); M.cyl('Plastic', (0, 0), 0.15, 0.0, 0.37, col, n=14); M.cyl('Plastic', (0, 0), 0.16, 0.36, 0.39, col * 0.8, n=14); return M
+
+def tipup(flag):
+    # a tip-up over its hole: two crossed sticks on the ice, the upright, the spring and the orange flag — folded down over the hole, or
+    # up (a fish on)
+    M = Mesh(); W = lin('#c8b896')
+    M.poly('Vinyl', [v3(0.12 * math.cos(2 * math.pi * k / 12), 0.12 * math.sin(2 * math.pi * k / 12), 0.004) for k in range(12)], Z, X_AX, Y, WHITE * 0.03)
+    M.seg('Plastic', v3(-0.42, 0, 0.02), v3(0.42, 0, 0.02), 0.035, 0.02, W); M.seg('Plastic', v3(0, -0.42, 0.04), v3(0, 0.42, 0.04), 0.035, 0.02, W)
+    M.seg('Plastic', v3(0, 0, 0.05), v3(0, 0, 0.32), 0.03, 0.03, W)
+    O = lin('#ff5a0a')
+    if flag:
+        M.seg('PipeMetal', v3(0, 0, 0.3), v3(0.05, 0, 0.75), 0.01, 0.01, WHITE * 0.6)
+        q = [v3(0.05, 0, 0.75), v3(0.05, 0, 0.62), v3(0.05, 0.16, 0.66), v3(0.05, 0.16, 0.76)]
+        M.poly('Canvas', q, X_AX, Y, Z, O); M.poly('Canvas', q[::-1], -X_AX, Y, Z, O)
+    else:
+        M.seg('PipeMetal', v3(0, 0, 0.3), v3(0.4, 0, 0.06), 0.01, 0.01, WHITE * 0.6)
+        M.poly('Canvas', [v3(0.4, 0, 0.065), v3(0.27, 0, 0.065), v3(0.29, 0.16, 0.065), v3(0.41, 0.16, 0.065)], Z, X_AX, Y, O)
+    return M
+
+def ice_hole():
+    M = Mesh(); M.poly('Vinyl', [v3(0.1 * math.cos(2 * math.pi * k / 14), 0.1 * math.sin(2 * math.pi * k / 14), 0.004) for k in range(14)], Z, X_AX, Y, WHITE * 0.03)
+    for k in range(14):   # (the slush ringing it)
+        a0, a1 = 2 * math.pi * k / 14, 2 * math.pi * (k + 1) / 14
+        M.poly('Plastic', [v3(0.1 * math.cos(a0), 0.1 * math.sin(a0), 0.006), v3(0.24 * math.cos(a0), 0.24 * math.sin(a0), 0.003), v3(0.24 * math.cos(a1), 0.24 * math.sin(a1), 0.003), v3(0.1 * math.cos(a1), 0.1 * math.sin(a1), 0.006)], Z, X_AX, Y, lin('#a8b4b8'))
+    return M
+
+def sled():
+    # a black plastic jet sled, its low walls, a canvas bag of gear in it
+    M = Mesh(); K = WHITE * 0.05
+    M.obox('Plastic', (0, 0), (1, 0), 0.62, 0.28, 0.0, 0.03, K)
+    for y in (-0.28, 0.28): M.obox('Plastic', (0, y), (1, 0), 0.62, 0.015, 0.0, 0.2, K)
+    for x in (-0.62, 0.62): M.obox('Plastic', (x, 0), (1, 0), 0.015, 0.28, 0.0, 0.2, K)
+    M.obox('Canvas', (-0.1, 0), (1, 0), 0.35, 0.2, 0.03, 0.22, lin('#5a5a50'))
     return M
 
 def kayak(col):
@@ -462,6 +530,10 @@ def pontoon():
     return M
 
 BOATS = {'boat_skiff_alu': skiff(WHITE), 'boat_skiff_green': skiff(lin('#3e5a3a') * 1.6), 'boat_pontoon': pontoon()}
+BOATS['boat_skiff_running'] = skiff(WHITE, running=True)   # (the anglers' boats out on the water)
+for nm, c in (('red', '#7a1e1e'), ('blue', '#1e3456'), ('black', '#202224')): BOATS['ice_shelter_' + nm] = ice_shelter(lin(c))
+BOATS.update({'ice_bucket_white': bucket(WHITE * 0.85), 'ice_bucket_orange': bucket(lin('#e0661e')), 'ice_tipup': tipup(False),
+              'ice_tipup_flag': tipup(True), 'ice_hole': ice_hole(), 'ice_sled': sled()})
 for nm, c in (('red', '#b8322a'), ('yellow', '#e0b020'), ('orange', '#e06a1e'), ('green', '#3f8a3a'), ('blue', '#2a5a9a')):
     BOATS['boat_kayak_' + nm] = kayak(lin(c))
 

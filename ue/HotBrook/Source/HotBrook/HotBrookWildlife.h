@@ -17,7 +17,11 @@
 //   - the MINK at night: bounding along the water's edge, now and then a short swim and a dive in the shallows;
 //   - the SNAPPING TURTLES walking slowly on the bed of the shallows (WILD3 1 a hectare) and the BULLFROGS floating at the weedy edge
 //     (10 a km of shore) — drawn at those densities near the walker, where the sim has them out (late May – mid-September; mid-May –
-//     mid-October).
+//     mid-October);
+//   - the shore's FALLEN TREES (the ground cover's dead pine, lying from the wooded bank out into the water, one to ~70 m of it — as
+//     shallows3view's logs) and the PAINTED TURTLES basking on them on sunny warm days (sun up, no rain, the air over 12 °C or a strong
+//     sun; ice-out to mid-October), sliding off when the walker comes within a few metres; the GREEN and MINK FROGS at the water's edge
+//     (HERP3 frog 0.3 a metre of shore; late May – mid-October; the bullfrog scan made small), in with a plop at two metres.
 // The models: the loon and heron scans (Import/models), the rest from Import/creatures (Scripts/import_creatures.py; the birds in
 // flight and the otter's swim are animated). `hb.AllLife 1` shows every kind whatever the season (for a look at one).
 #pragma once
@@ -74,7 +78,12 @@ private:
 		TArray<FMember> Members;
 	};
 	// a herp of the shallows near the walker (its place's key, so it keeps its state while the walker moves)
-	struct FHerp { int32 Kind = 0; FVector2D P, Home, Goal; float Heading = 0, Scale = 1.f; double Until = 0; int32 State = 0; TObjectPtr<UStaticMeshComponent> C; bool bSeen = true; };
+	struct FHerp { int32 Kind = 0; FVector2D P, Home, Goal; float Heading = 0, Scale = 1.f, Z = 0; double Until = 0; int32 State = 0; TObjectPtr<UStaticMeshComponent> C; bool bSeen = true; };
+	// a fallen tree from the bank into the water: where its root end lies (sim m), its way, length, rise over the water at the bank,
+	// the depth its far end is sunk to, its radius (m) and the lake's surface there (UE cm)
+	struct FLog { FVector2D From, Dir; float Len = 5.f, Rise = 0.2f, Drop = 0.5f, R = 0.07f, Surf = 0.f; };
+	TArray<FLog> Logs;
+	enum EHerp : int32 { Painted = 20, Frog = 21 };
 	TArray<FLake> Lakes;
 	TArray<FBird> Birds;
 	TMap<int64, FHerp> Herps;
@@ -91,6 +100,8 @@ private:
 	void Despawn(FBird& B);
 	void Taken(int32 Kind, const FVector2D& P);
 	void Herpetology(const FVector2D& Me);
+	void LayLogs();
+	TObjectPtr<class AHotBrookLink> Link;
 	float Depth(const FVector2D& P, float* OutSurf = nullptr, float* OutGround = nullptr) const;
 	bool LoadLook(int32 Key, const FString& Name, float Scale, float Glide = -1.f, bool bBase = false);
 	UStaticMeshComponent* NewStatic(UStaticMesh* M);

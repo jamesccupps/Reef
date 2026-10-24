@@ -233,6 +233,25 @@ lit windows at night, docks out of season. Credits → ue/README.md table (CC-BY
   passes the ice (F(32)); hb.AllLife 1 forces every kind; -hbshot near<kind> for all. Checked in shots (kingfisher on its pole, the
   pair of mergansers, otter, mink, snapper, bullfrog, osprey and eagle from below) + a gc-every-second run.
   KNOWN: mergansers all hen plumage (no drake model); the OSU perched osprey and the OSU loons unused yet.
+  + 484c3a6 PUSHED (the wildlife). 12:35 THE ANGLERS (in progress, uncommitted): build_camps.py now also writes boat_skiff_running
+  (the outboard down, tiller, red tank) and the ice camp's things (ice_shelter_red/blue/black, ice_bucket_white/orange, ice_tipup,
+  ice_tipup_flag, ice_hole, ice_sled); import_camps.py re-run (background) to bring them in. NEW AHotBrookAnglers (HotBrookAnglers.h/
+  .cpp; spawned by the game mode after the wildlife; reads Wildlife->Count(11/12), Activity, Ice(), AnglerTakes): boats from a dock
+  (camps_parts docks, past the end) to a bass spot (1.2–3.5 m, 3–25 m off shore), motor 4.5 m/s, drift, the summer angler on the
+  stern thwart turned to the shore — sit / cast / reel clips, a fish on (the sim's take) reeling 12–30 s, new spot every 15–30 min,
+  home at dusk; ice camps over the deepest of 300 spots with 5 tip-ups on 1–3 m water (a flag up on the sim's take), the winter
+  angler on a bucket jigging a short rod. The rod is placed each frame at the hand bone (rp_..._hand_r / hand_r) pointing the way
+  he faces, pitched by the clip. Counts BOATS_OUT {1.2, 0.35}, CAMPS_OUT {1.2, 0.3} (wild3view ANGLERS). -hbshot nearangler /
+  neariceangler. NEXT: build, shots (hb.AllLife 1), fix, commit; then the shallows (painted turtles basking on shore logs, green
+  frogs, tadpoles) and the camps' lawns / lit windows / docks out of season / snow on roofs.
+  + 12:45 THE ANGLERS + THE SHALLOWS DONE (committed next): checked in shots — the skiff with its outboard and the seated summer
+  angler, fishing with his rod out at a spot; the ice camp (hb.AllLife 2 pitches it on open water for a look): shelter, sled, the
+  jigger on his bucket with the short rod. Wildlife now also lays the shore's FALLEN TREES (LayLogs: the ground cover's dead pine
+  "Log" from groundcover_meshes.json, one UInstancedSkinnedMeshComponent; 126 on the lakes; laid with FQuat(pitch −90−θ, yaw) ×
+  spin about its own axis) and draws PAINTED TURTLES on them (bask: sun > 0.3, weather < 2, air > 12 or sun > 0.6, yf 0.08–0.62;
+  slots from 2 m out where the top is 3–45 cm over the water; off at 6 m) and GREEN FROGS (0.3/m of shore within 25 m; the bullfrog
+  look at 0.5; in at 2 m). The link keeps Daylight (F(24)) and Air (F(28)) — NOTE: AHotBrookLink already had a `Sun` (the light
+  actor). Tadpoles NOT drawn: the sim's herps module is off (HERP3.ON 0) and there's no density to draw them at.
 ▶▶▶ RESUME HERE (2026-10-24 ~14:20 EDT). UNREAL: THE CAMPS, DOCKS AND ROADS + THE PLAYER'S START. The human asked
 (09:17, a Google Maps shot of Upper's east shore) to start there and "keep going, we need buildings, accurate textures, all the
 animals, eventually other boaters and everything". DONE: d520af5 the start (Import/start.json — kept OUTSIDE the repo, it is the

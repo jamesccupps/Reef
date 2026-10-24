@@ -58,8 +58,19 @@ project draws the world in the first person, fed live by it. The browser view, t
   and haul out to eat; MINK bound along the water's edge at night and swim a little. Near the walker, at the sim's densities: the
   SNAPPING TURTLES walking the shallows' bed (1 a hectare) and the BULLFROGS afloat at the edge (10 a km; in with a plop when the
   walker comes close). The birds in flight beat their wings (their clips held level for a glide), the otter swims its clip.
+  The shore's FALLEN TREES (the ground cover's dead pine laid from the wooded bank out into the water, ~1 to 70 m) and the PAINTED
+  TURTLES basking on them on sunny warm days (sliding off when the walker comes within 6 m); the GREEN FROGS at the water's edge
+  (HERP3's 0.3 a metre of shore; the bullfrog scan made small), in with a plop at 2 m.
   `hb.AllLife 1` brings every kind out whatever the season or hour. `-hbshot` takes `near<kind>` for loon, heron, kingfisher, osprey,
-  eagle, cmerganser, hmerganser, otter, mink, snapper, bullfrog.
+  eagle, cmerganser, hmerganser, otter, mink, snapper, bullfrog, painted, frog.
+- **The anglers** — `AHotBrookAnglers`: the sim's anglers (fish3 WILD3 'angler', 'iceAngler': their seasons and hours through the link)
+  at the browser's numbers (Upper ~1.2 boats out by day, Lower ~0.35; ~1.2 and ~0.3 ice camps). A 14-ft aluminium skiff with its
+  outboard down sets out from a camp's dock to a bass spot (1.2–3.5 m of water, 3–25 m off the shore), drifts there on the wind; the
+  angler (Nathan) on the stern seat turned to the shore casting every half minute and reeling in, a fish on when the sim's anglers
+  take one, a new spot every 15–30 min, home at dusk. On safe ice (≥ 20 cm): a pop-up shelter over the deep basin's perch holes, a
+  sled, the jigger on a bucket over his hole, five tip-ups on the 1–3-m water toward the shore — a flag up when the sim's ice anglers
+  take a fish. Their gear is built by build_camps.py (`boat_skiff_running`, `ice_*`). `hb.AllLife 2` pitches the ice camps even on
+  open water (a look in summer). `-hbshot` takes `nearangler`, `neariceangler`.
 - **The second batch of models** (the wanted list of 2026-10-24) — `ue/export/convert_creatures.py` (Blender 5.1): the animated ones
   (OSU's ospreys, kingfishers and loon, UC Davis's eagle, the otter's swim) as one skinned mesh on one armature with its clip, every
   loose part bound rigidly to the bone it hung from, turned to face +X (sized in the game); the scans (the merganser hen, the ferret

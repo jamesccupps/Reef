@@ -70,7 +70,7 @@ void AHotBrookLink::Apply(const TArray<uint8>& B)
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
-	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0);
+	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0); Daylight = F(24); Air = F(28);
 	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
 	for (TActorIterator<AHotBrookBoat> It(GetWorld()); It; ++It) { It->WindSpeed = WindSpeed; It->WindFrom = WindFrom; }   // (and a canoe drifts)
 	const uint32 NF = U(40), NFo = U(44); FishNear = NF;

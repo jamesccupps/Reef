@@ -9,6 +9,7 @@
 #include "HotBrookAnimals.h"
 #include "HotBrookFish.h"
 #include "HotBrookWildlife.h"
+#include "HotBrookAnglers.h"
 #include "HotBrookBoat.h"
 #include "HotBrookCamps.h"
 #include "EngineUtils.h"
@@ -149,6 +150,7 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookWildlife>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWildlife>();
 	// the camps, houses, sheds and docks (Import/camps: ue/export/build_camps.py, Scripts/import_camps.py)
 	if (!TActorIterator<AHotBrookCamps>(GetWorld())) GetWorld()->SpawnActor<AHotBrookCamps>();
+	if (!TActorIterator<AHotBrookAnglers>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnglers>();   // (after the wildlife: it reads the anglers' counts there)
 	// a canoe in the shallows nearest the start
 	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
@@ -175,7 +177,7 @@ void AHotBrookGameMode::BeginPlay()
 		FShot S{ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() };
 		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|"));
 		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle"), TEXT("kingfisher"), TEXT("osprey"),
-			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
+			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog"), TEXT("painted"), TEXT("frog"), TEXT("angler"), TEXT("iceangler") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
 	}
@@ -202,6 +204,13 @@ void AHotBrookGameMode::PlaceNext()
 		FVector BP; float BY = 0;
 		if (Wl && Wl->Nearest(Bird, FVector2D(S.X, S.Y), BP, BY)) { const FVector2D M = HotBrookCoords::ToSim(BP); SX = M.X + 15.0; SY = M.Y; UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest %s at %.0f, %.0f"), *S.Name, *S.Near, M.X, M.Y); }
 		else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s about"), *S.Name, *S.Near);
+	}
+	const int32 Ang = S.Near == TEXT("angler") ? 0 : S.Near == TEXT("iceangler") ? 1 : -1;
+	if (Ang >= 0) {
+		const AHotBrookAnglers* An = nullptr; for (TActorIterator<AHotBrookAnglers> It(GetWorld()); It; ++It) { An = *It; break; }
+		FVector AP; float AY = 0;
+		if (An && An->Nearest(Ang, FVector2D(S.X, S.Y), AP, AY)) { const FVector2D M = HotBrookCoords::ToSim(AP); SX = M.X + 15.0; SY = M.Y; UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest %s at %.0f, %.0f"), *S.Name, *S.Near, M.X, M.Y); }
+		else UE_LOG(LogTemp, Display, TEXT("hbshot %s: no %s out"), *S.Name, *S.Near);
 	}
 	if (Kind >= 0) {
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }
@@ -243,6 +252,13 @@ void AHotBrookGameMode::TakeShot()
 			const FVector Side = FRotator(0, BY + 90.f, 0).Vector(), At = BP + FVector(0, 0, BirdK == 1 ? 70.f : BirdK == 0 ? 15.f : bSmall ? 5.f : 0.f);
 			FVector Eye = At + Side * (bAir ? 3000.f : bSmall ? 150.f : 450.f) + FVector(0, 0, BirdK == 0 ? 40.f : BirdK == 1 ? 30.f : bSmall ? 35.f : bAir ? 0.f : 40.f);
 			if (bAir) Eye = At - FRotator(0, BY, 0).Vector() * 900.f + Side * 400.f - FVector(0, 0, 700.f);   // (a bird in the air from behind and below: its wings)
+			else if (bSmall) {   // (a small one at the edge: from over the water if either side is, else off its other side — not in a bush)
+				const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>(); float Sz = 0;
+				for (const float Turn : { 90.f, -90.f, 180.f, 0.f, 45.f, -45.f, 135.f, -135.f }) {
+					const FVector Sd = FRotator(0, BY + Turn, 0).Vector(), Q = At + Sd * 150.f;
+					if (W && W->SurfaceAt(Q, Sz)) { Eye = FVector(Q.X, Q.Y, FMath::Max(Sz + 25.f, At.Z + 35.f)); break; }
+				}
+			}
 			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
 			ShotCam->SetActorLocationAndRotation(Eye, (At - Eye).Rotation()); PC->SetViewTarget(ShotCam);
 			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the %s at %s"), *Shots[NextShot].Name, *Near, *BP.ToString());
@@ -250,7 +266,20 @@ void AHotBrookGameMode::TakeShot()
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
 		return;
 	}
-	if (Near != TEXT("fish") && BirdK < 0 && !Near.IsEmpty() && Framed < 2 && Pw) {
+	const int32 AngK = Near == TEXT("angler") ? 0 : Near == TEXT("iceangler") ? 1 : -1;
+	if (AngK >= 0 && Framed < 2 && Pw) {
+		// (an angler: the camera 9 m off his boat's or his camp's side, a little above)
+		Framed++; FVector AP; float AY = 0;
+		const AHotBrookAnglers* An = nullptr; for (TActorIterator<AHotBrookAnglers> It(GetWorld()); It; ++It) { An = *It; break; }
+		if (An && An->Nearest(AngK, HotBrookCoords::ToSim(From), AP, AY)) {
+			const FVector Side = FRotator(0, AY + 90.f, 0).Vector(), At = AP + FVector(0, 0, 80.f), Eye = At + Side * 900.f + FVector(0, 0, 120.f);
+			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+			ShotCam->SetActorLocationAndRotation(Eye, (At - Eye).Rotation()); PC->SetViewTarget(ShotCam);
+		}
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, Framed == 1 ? 1.5f : 0.15f, false);
+		return;
+	}
+	if (Near != TEXT("fish") && BirdK < 0 && AngK < 0 && !Near.IsEmpty() && Framed < 2 && Pw) {
 		// (an animal: the camera off its flank at 1.7 lengths, a little above its back, on it)
 		Framed++; FVector AP; float AY = 0, AL = 0; const int32 K = Near == TEXT("bear") ? 0 : Near == TEXT("deer") ? 1 : 2;
 		const AHotBrookAnimals* An = nullptr; for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) { An = *It; break; }

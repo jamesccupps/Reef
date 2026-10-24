@@ -1,6 +1,10 @@
 #include "HotBrookWildlife.h"
 #include "HotBrookCoords.h"
 #include "HotBrookWater.h"
+#include "HotBrookLink.h"
+#include "Components/InstancedSkinnedMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "EngineUtils.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimSequence.h"
@@ -35,7 +39,7 @@ int32 AHotBrookWildlife::KindOf(const FString& Name)
 {
 	static const TCHAR* K[] = { TEXT("loon"), TEXT("heron"), TEXT("kingfisher"), TEXT("osprey"), TEXT("eagle"), TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog") };
 	for (int32 i = 0; i < UE_ARRAY_COUNT(K); i++) if (Name == K[i]) return i;
-	return Name == TEXT("merganser") ? 6 : -1;
+	return Name == TEXT("merganser") ? 6 : Name == TEXT("painted") ? 20 : Name == TEXT("frog") ? 21 : -1;
 }
 
 bool AHotBrookWildlife::AllLife() const { return CVarAllLife.GetValueOnGameThread() != 0; }
@@ -103,6 +107,10 @@ void AHotBrookWildlife::BeginPlay()
 	LoadLook(Mink, TEXT("mink"), 1.f);
 	LoadLook(Snapper, TEXT("snapping_turtle"), 1.f);
 	LoadLook(Bullfrog, TEXT("bullfrog"), 1.f);
+	LoadLook(Painted, TEXT("painted_turtle"), 1.f);
+	LoadLook(Frog, TEXT("bullfrog"), 0.5f);   // (no green frog model: the bullfrog's scan at a green frog's 8–9 cm)
+	for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { Link = *It; break; }
+	LayLogs();
 	// (a kingfisher's limb: a leaning dead pole of the engine's cylinder in the log siding's grey wood)
 	Limb = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
 	LimbMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Camps/Materials/MI_HB_Siding_log.MI_HB_Siding_log"));
@@ -372,8 +380,87 @@ void AHotBrookWildlife::Herpetology(const FVector2D& Me)
 			}
 		}
 	}
+	// the painted turtles on the fallen trees near the walker: a sunny warm day, ice-out to mid-October; each tree's places where its top
+	// is a hand's height over the water, 0.4 m apart, the first three — each taken by the day's draw (most on a clear day)
+	const float Sun = Link ? Link->Daylight : 0.6f, Air = Link ? Link->Air : 15.f; const int32 Wx = Link ? Link->Weather : 0;
+	const bool bBask = (YearNow > 0.08f && YearNow < 0.62f && Sun > 0.3f && Wx < 2 && (Air > 12.f || Sun > 0.6f) && IceNow < 0.05f) || bAll;
+	if (bBask && Looks.Contains(Painted)) {
+		const int32 Day = FMath::FloorToInt(YearNow * 365.f);
+		for (int32 g = 0; g < Logs.Num(); g++) {
+			const FLog& Lg = Logs[g]; if (FVector2D::Distance(Lg.From, Me) > 90.f) continue;
+			int32 k = 0;
+			for (float dd = 2.0f; dd < Lg.Len - 0.3f && k < 3; dd += 0.4f) {   // (out past the bank's shrubs)
+				const float Top = (Lg.Rise - (Lg.Rise + Lg.Drop) * dd / Lg.Len + Lg.R) * 100.f; if (Top < 3.f || Top > 45.f) continue;
+				if (Hash01(g * 4 + k, Day, 961) < (bAll ? 0.8f : Wx == 0 ? 0.3f : 0.18f)) {
+					const FVector2D P = Lg.From + Lg.Dir * dd;
+					const int64 Key = ((int64)g << 8) ^ k ^ (3ll << 60);
+					Keep(Key, Painted, P, FMath::Atan2(Lg.Dir.Y, Lg.Dir.X) + (k % 2 ? PI : 0.f) + (Hash01(g, k, 963) - 0.5f), 0.75f + 0.45f * Hash01(g, k, 965));
+					if (FHerp* H = Herps.Find(Key)) H->Z = Lg.Surf + Top - 1.f;
+				}
+				k++;
+			}
+		}
+	}
+	// the green and mink frogs at the water's edge within ~25 m (0.3 a metre of shore; a fifth of that on a camp's cleared bank)
+	if ((YearNow > 0.2f && YearNow < 0.62f && IceNow < 0.05f) || bAll) {
+		const UHotBrookWater* Wt = GetWorld()->GetSubsystem<UHotBrookWater>(); const float RF = 25.f;
+		for (int32 l = 0; l < Lakes.Num(); l++) {
+			const FLake& L = Lakes[l]; if (!L.Box.ExpandBy(RF).IsInside(Me)) continue;
+			for (int32 i = 0; i < L.Pts.Num(); i++) {
+				const FVector2D& a = L.Pts[i], & b = L.Pts[(i + 1) % L.Pts.Num()];
+				if (FMath::PointDistToSegment(FVector(Me, 0), FVector(a, 0), FVector(b, 0)) > RF) continue;
+				const int32 M0 = FMath::FloorToInt(L.Arc[i]), M1 = FMath::FloorToInt(L.Arc[i] + FVector2D::Distance(a, b));
+				for (int32 m = M0; m <= M1; m++) {
+					if (Hash01(l, m, 971) >= 0.3f) continue;
+					FVector2D S, Out; ShoreAt(L, m + Hash01(l, m, 973), S, Out); if (FVector2D::Distance(S, Me) > RF) continue;
+					if (Wt && Wt->ClearedAt(HotBrookCoords::ToUE(S.X + Out.X, S.Y + Out.Y, HotBrookCoords::Datum)) && Hash01(l, m, 975) > 0.2f) continue;
+					Keep(((int64)l << 40) ^ m ^ (4ll << 60), Frog, S - Out * 0.1, FMath::Atan2(-Out.Y, -Out.X) + (Hash01(l, m, 977) - 0.5f) * 1.2f, 0.85f + 0.3f * Hash01(l, m, 979));
+				}
+			}
+		}
+	}
 	TArray<int64> Gone; for (const auto& KV : Herps) if (!KV.Value.bSeen) Gone.Add(KV.Key);
 	for (int64 K : Gone) { if (Herps[K].C) Herps[K].C->DestroyComponent(); Herps.Remove(K); }
+}
+
+void AHotBrookWildlife::LayLogs()
+{
+	// the shore's fallen trees, once: along each lake's wooded bank (not a camp's cleared ground), one to ~70 m (a 40-m stretch's draw),
+	// from its root at the bank a hand or two over the water out across the shore — 4–8 m — into water, its top end sunk (shallows3view's
+	// placeLogs); drawn as the ground cover's dead pine laid down (Import/groundcover_meshes.json "Log")
+	FString Text; TSharedPtr<FJsonObject> J; UObject* Tree = nullptr;
+	if (FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Import"), TEXT("groundcover_meshes.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), J) && J.IsValid()) {
+		const TArray<TSharedPtr<FJsonValue>>* A = nullptr; if (J->TryGetArrayField(TEXT("Log"), A) && A->Num()) Tree = LoadObject<UObject>(nullptr, *(*A)[0]->AsString());
+	}
+	USkeletalMesh* Sk = Cast<USkeletalMesh>(Tree); UStaticMesh* St = Cast<UStaticMesh>(Tree);
+	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
+	if ((!Sk && !St) || !W) { UE_LOG(LogHotBrookWildlife, Display, TEXT("no fallen trees: the dead pine isn't in the project")); return; }
+	Held.Add(Tree);
+	const FBoxSphereBounds B = Sk ? Sk->GetBounds() : St->GetBounds(); const float H = FMath::Max(100.f, (float)(B.Origin.Z + B.BoxExtent.Z));
+	UInstancedSkinnedMeshComponent* SC = nullptr; UInstancedStaticMeshComponent* IC = nullptr;
+	if (Sk) { SC = NewObject<UInstancedSkinnedMeshComponent>(this); SC->SetSkinnedAssetAndUpdate(Sk); SC->SetCullDistances(0, 40000); }
+	else { IC = NewObject<UInstancedStaticMeshComponent>(this); IC->SetStaticMesh(St); IC->SetMobility(EComponentMobility::Static); IC->SetCullDistances(0, 40000); }
+	UPrimitiveComponent* C = SC ? (UPrimitiveComponent*)SC : (UPrimitiveComponent*)IC;
+	C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetupAttachment(RootComponent); C->RegisterComponent();
+	for (int32 l = 0; l < Lakes.Num(); l++) {
+		const FLake& L = Lakes[l]; const float Surf = HotBrookCoords::HeightToUE(L.Level);
+		for (int32 s = 0; s * 40.0 < L.Shore; s++) {
+			if (Hash01(l, s, 951) > 0.55f) continue;
+			FVector2D S, Out; ShoreAt(L, (s + Hash01(l, s, 953)) * 40.0, S, Out);
+			const FVector2D Bank = S + Out * 0.6; const FVector BankU = HotBrookCoords::ToUE(Bank.X, Bank.Y, HotBrookCoords::Datum);
+			float G = 0; if (!W->GroundAt(BankU, G) || G < Surf + 10.f || W->ClearedAt(BankU) || W->ClearedAt(HotBrookCoords::ToUE(S.X, S.Y, HotBrookCoords::Datum))) continue;
+			const float A = FMath::Atan2(-Out.Y, -Out.X) + (Hash01(l, s, 955) - 0.5f) * 1.2f, Len = 4.f + 4.f * Hash01(l, s, 957);
+			const FVector2D Dir(FMath::Cos(A), FMath::Sin(A)), End = Bank + Dir * Len;
+			const float DE = Depth(End); if (DE < 0.1f) continue;   // (its far end in the water)
+			FLog Lg; Lg.From = Bank; Lg.Dir = Dir; Lg.Len = Len; Lg.Rise = 0.12f + 0.15f * Hash01(l, s, 959); Lg.Drop = FMath::Min(DE, 0.25f * Len) + 0.05f; Lg.R = 0.0125f * Len; Lg.Surf = Surf;
+			const float Th = FMath::RadiansToDegrees(FMath::Atan((Lg.Rise + Lg.Drop) / Len));
+			const FQuat Q = FQuat(FRotator(-90.f - Th, -FMath::RadiansToDegrees(A), 0.f)) * FQuat(FVector::UpVector, Hash01(l, s, 967) * 2.f * PI);   // (laid down, turned about its own axis)
+			const FTransform T(Q, FVector(Bank.X * 100.0, -Bank.Y * 100.0, Surf + Lg.Rise * 100.f), FVector(Len * 100.f / H));
+			if (SC) SC->AddInstance(T, 0, true); else IC->AddInstance(T, true);
+			Logs.Add(Lg);
+		}
+	}
+	UE_LOG(LogHotBrookWildlife, Display, TEXT("the shore's fallen trees: %d"), Logs.Num());
 }
 
 void AHotBrookWildlife::Tick(float Dt)
@@ -576,6 +663,11 @@ void AHotBrookWildlife::Tick(float Dt)
 			if (Now > H.Until) { H.Until = Now + FMath::FRandRange(20.f, 90.f); const FVector2D G = H.Home + FVector2D(FMath::FRandRange(-3.f, 3.f), FMath::FRandRange(-3.f, 3.f)); if (Fits(Snapper, G)) { H.State = 1; H.Goal = G; H.Heading = FMath::Atan2(G.Y - H.P.Y, G.X - H.P.X); } }
 			if (H.State == 1) { const FVector2D Dv = H.Goal - H.P; const double D = Dv.Size(); if (D < 0.05) H.State = 0; else H.P += Dv / D * FMath::Min(D, 0.08 * Dt); }
 			Zh = Ground(H.P);
+		} else if (H.Kind == Painted || H.Kind == Frog) {
+			const float Dme = FVector::Dist2D(MeU, FVector(H.P.X * 100.0, -H.P.Y * 100.0, 0)) / 100.f;
+			if (H.State == 0 && Dme < (H.Kind == Painted ? 6.f : 2.f)) { H.State = 1; H.Until = Now + (H.Kind == Painted ? 120.0 : 60.0); }
+			if (H.State == 1) { bShow = false; if (Now > H.Until && Dme > 8.f) H.State = 0; }
+			Zh = H.Kind == Painted ? H.Z : Surface(H.P, Ground(H.P)) - 1.f;
 		} else {
 			const float Dme = FVector::Dist2D(MeU, FVector(H.P.X * 100.0, -H.P.Y * 100.0, 0)) / 100.f;
 			if (H.State == 0 && Dme < 3.f) { H.State = 1; H.Until = Now + 60.0; }
