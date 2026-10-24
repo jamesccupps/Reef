@@ -29,6 +29,14 @@ project draws the world in the first person, fed live by it. The browser view, t
   cypress, paper birch the silver birch, aspen, red maple the Norway maple, beech, alder, hazel, willow, the snags the dead pine,
   the young hardwoods the maple, beech and rowan saplings. Megaplants are skinned meshes: their branches sway in the Dynamic Wind
   plugin's GPU wind, set from the sim's wind speed and direction. Each trunk has a hidden collider.
+- **The forest through the year** — the hardwoods (birch, aspen, red maple, beech, alder, hazel, willows, the young hardwoods) by the
+  date, as the browser view's LEAF calendar by species: their own green in summer; from the turning (mid-September for the red maple,
+  later for the beech) their twin material (`Scripts/make_season_foliage.py`: the Megaplants master's 'Seasons' switch on), its two
+  Season colours ramped from neutral to the species' autumn — the maples scarlet, the birches and aspens gold, the beech bronze — and
+  toward brown as they fall, with the Megaplants' global `MPC_GlobalFoliageActor` 'Season Strength' (the exponent of their turning
+  mask: none below ~7) held at 40; from the fall (late October) to leaf-out (mid-May) bare (`M_HB_Bare`: the leaves masked away, its
+  colour a twig grey-brown for the far voxels). Each 200-m tile a few days either side, so the hills turn and drop in patches.
+  `hb.LeafDate <0–1>` shows another date's leaves.
 - **The forest's stocking** — `ue/export/export_forest.mjs` stocks the woods as the Forest Inventory measures Maine's
   (docs/research_notes/Maine forest structure/): ~3,000 stems a hectare over 2 m at full stocking (most of them young fir and maple
   under the canopy), by height class, ~55 snags; each tree drawn with the variant of its species nearest its height; the small
@@ -238,7 +246,7 @@ published or shared.
 - the scans: `import_megascans.py` (Nanite meshes and their materials from the launcher's downloads; HB_REIMPORT=1 to redo),
   `check_megascans.py` (what each wears); `fix_megaplants.py` mends packs whose materials point outside them (Baltic Pine's bark)
 - the materials and the tree mapping (`UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/<name>.py`):
-  `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py` (`inspect_megaplants.py` lists the plant meshes)
+  `make_ground_material.py`, `make_water_material.py`, `make_forest_meshes.py`, `make_season_foliage.py` (`inspect_megaplants.py` lists the plant meshes)
 - the camps: `HB_WORLD=true node ue/export/export_camps.mjs`, `python -I ue/export/build_camps.py` (needs numpy; Pillow to measure the
   textures), then `import_camps.py` (the textures in `Import/textures` with their `manifest.json`)
 - the wildlife and the people: `"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --disable-autoexec -P ue/export/convert_creatures.py`

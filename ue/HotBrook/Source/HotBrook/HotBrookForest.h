@@ -5,7 +5,11 @@
 // by the sim's wind speed and direction from AHotBrookLink); its instances go in an instanced skinned component, a plain mesh's in an
 // instanced static one. The trunks block the walker through a hidden cylinder each. Streamed in 200-m tiles about the walker: a
 // tile's instanced meshes made when it comes within LoadRadius, freed past UnloadRadius — a few hundred thousand trees in the world
-// at a time, not two million.
+// at a time, not two million. THE LEAVES BY THE DATE (the hardwoods: birch, aspen, red maple, beech, alder, hazel, willows, the young
+// hardwoods): their own green in summer; from the turning their twin (Scripts/make_season_foliage.py: the Megaplants master's Seasons,
+// its two colours set here by the species and the day — green to the autumn's scarlet, gold or bronze to brown); from the fall to the
+// leaf-out none (the leaves' slots masked away: bare branches) — each 200-m tile a few days either side of the date, so the hills turn
+// and the leaves come down in patches. The dates are the browser view's (main3.js LEAF), by species. hb.LeafDate shows another date's.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -16,6 +20,9 @@ class UPrimitiveComponent;
 class UStaticMesh;
 class USkeletalMesh;
 class UTransformProviderData;
+class UInstancedSkinnedMeshComponent;
+class UMaterialInterface;
+class UMaterialInstanceDynamic;
 
 UCLASS()
 class HOTBROOK_API AHotBrookForest : public AActor
@@ -62,4 +69,13 @@ private:
 	TMap<int32, TObjectPtr<UInstancedStaticMeshComponent>> Trunks;   // (trunk cell → its colliders)
 	void FreeTile(int32 T);
 	void PushWind();
+	struct FSeason { TObjectPtr<UMaterialInstanceDynamic> MID; int32 Sp = 0; };
+	TMap<UMaterialInterface*, FSeason> SeasonOf;   // (a hardwood's own foliage material → its twin's dynamic instance and its species)
+	UPROPERTY() TArray<TObjectPtr<UObject>> SeasonHeld;
+	UPROPERTY() TObjectPtr<UMaterialInterface> Bare = nullptr;
+	float LeafYf = 0.3f; double NextLeaf = 0;
+	void LoadSeasons();
+	int32 LeafState(int32 Sp, int32 TileIx) const;   // (0 its own leaves, 1 the autumn's twin, 2 bare)
+	void ApplyLeaves(UInstancedSkinnedMeshComponent* C, int32 TileIx);
+	void UpdateLeaves();
 };

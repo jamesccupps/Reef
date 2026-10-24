@@ -304,6 +304,22 @@ plants, textures. Photos are private: never commit or publish them.
   heightmap samples changed (x −6…100, y −15…73, ≤ 1 m), water.bin and lakes.json identical. Backed up the old map + heightmap to
   G:/synapse-reef-backups/*_before-brook-channel.*, installed heightmap.r16, rebuilt the level (-run=HotBrookBuild: saved, result 0;
   the exit's WorldPartitionSubsystem ensure is the engine's teardown). Checked in shots.
+  + 18:30 COMMITTED 67a70ca (brook channel). LISTINGS SEARCH DONE (agent; local only, tools/hotbrook/data/listings/notes.md + 116 photos
+  in G:/HotBrookUE/Import/reference/listings/<slug>/; 403/429 sites listed there for the human to save by hand). Style findings to use
+  (general, never per-camp): small newish camps (13/17 built 2003–2017, median ~870 sq ft), 1.5-storey steep-gable camp capes/chalets
+  with lofts (~9/17), single-storey gables (~7), log/log-sided (5), no A-frames; siding tan/beige vinyl, grey, brown-stained boards/
+  logs, white trim, red doors; METAL ROOFS on ~12/17 (green/teal standing seam, barn red, galvalume), ~5 dark/brown asphalt; decks/
+  screened porches nearly everywhere; slab/block or posts with lattice skirting; few small wooden docks (one roll-in); SHORES mostly
+  rocky — FLAT GREY SLATY cobbles (our RockyFloor texture is reddish: retint/replace), boulders, riprap, sandy coves, bulrush/sedge,
+  birch/cedar/spruce edges; mown lawns to the shore, gravel drives, sheds, propane tanks, fire pits, travel trailers; A ROW OF WIND
+  TURBINES on a distant ridge (Stetson/Rollins? — add to the far landscape). THE FOREST THROUGH THE YEAR (this commit):
+  make_season_foliage.py → /Game/HotBrook/Seasons/<foliage MI>_Season (10 twins, Seasons switch on) + M_HB_Bare (masked, twig colour
+  for Nanite's far voxels — black voxels left dark masses; also needs used_with_voxels, as M_HB_Invisible now has: UE 5.8 'Voxels'
+  usage). AHotBrookForest: LEAF_YEAR per species (Out/Turn/Peak/Drop/Gone, colours in MF_HealthSeason's terms: C1 dodge, C2 overlay
+  — decoded from the T3D export: mask = saturate(1e9·x^(Season Strength+0.01)), so MPC_GlobalFoliageActor 'Season Strength' = 40 in
+  autumn, 0 otherwise); twins' MIDs ramped neutral (0 / 0.5 grey) → autumn → brown; ApplyLeaves per component (state 0 own, 1 twin,
+  2 bare; ±3.6 days a tile); UpdateLeaves every 2 s; hb.LeafDate cvar. Checked in shots (summer, October scarlet/gold, late Oct,
+  winter near bare and far grey-brown, late May green). inspect_foliage.py / inspect_seasons.py kept as tools.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

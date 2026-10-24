@@ -1,4 +1,10 @@
 #include "HotBrookForest.h"
+#include "HotBrookLink.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "HAL/IConsoleManager.h"
+#include "EngineUtils.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "HotBrookCoords.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/InstancedSkinnedMeshComponent.h"
@@ -16,6 +22,24 @@
 #include "Serialization/JsonSerializer.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookForest, Log, All);
+static TAutoConsoleVariable<float> CVarLeafDate(TEXT("hb.LeafDate"), -1.f, TEXT("the date the hardwoods' leaves show (0-1 of the year from March 1: 0.6 early October's colours, 0.75 bare) - -1 the sim's own"));
+
+// each hardwood's year (0–1 from March 1; Maine's): leaf-out, the turning's start, its height, the leaves beginning to fall, all down;
+// its two Season colours at the height of it — as the Megaplants master uses them (MF_HealthSeason): a turned leaf's colour the leaf's
+// own plus colour 1 (linear dodge), or its own overlaid by colour 2 (2 × leaf × colour where the leaf is dark: 0.5 leaves it as it
+// is) — so colour 2 carries the hue: a green leaf × (3.2, 0.35, 0.08) is a maple's red, × (3.4, 1.5, 0.15) a birch's yellow
+struct FLeafYear { int32 Sp; float Out, Turn, Peak, Drop, Gone; FLinearColor A, B; };
+static const FLeafYear LEAF_YEAR[] = {
+	{ 4,  0.200f, 0.560f, 0.605f, 0.625f, 0.665f, FLinearColor(0.35f, 0.25f, 0.00f), FLinearColor(3.4f, 1.5f, 0.15f) },   // paper birch: yellow
+	{ 5,  0.195f, 0.565f, 0.610f, 0.630f, 0.670f, FLinearColor(0.40f, 0.25f, 0.00f), FLinearColor(3.6f, 1.4f, 0.10f) },   // quaking aspen: gold
+	{ 6,  0.205f, 0.540f, 0.590f, 0.610f, 0.650f, FLinearColor(0.45f, 0.05f, 0.00f), FLinearColor(3.2f, 0.35f, 0.08f) },  // red maple: scarlet
+	{ 7,  0.215f, 0.580f, 0.625f, 0.650f, 0.690f, FLinearColor(0.30f, 0.15f, 0.00f), FLinearColor(2.8f, 1.0f, 0.15f) },   // American beech: bronze
+	{ 8,  0.205f, 0.600f, 0.640f, 0.650f, 0.680f, FLinearColor(0.15f, 0.12f, 0.00f), FLinearColor(1.6f, 1.0f, 0.30f) },   // speckled alder: dull yellow-green
+	{ 9,  0.205f, 0.570f, 0.615f, 0.635f, 0.670f, FLinearColor(0.30f, 0.22f, 0.00f), FLinearColor(3.2f, 1.4f, 0.20f) },   // beaked hazel: yellow
+	{ 10, 0.195f, 0.570f, 0.615f, 0.635f, 0.670f, FLinearColor(0.30f, 0.25f, 0.00f), FLinearColor(3.0f, 1.5f, 0.20f) },   // willows: yellow
+	{ 13, 0.205f, 0.560f, 0.600f, 0.625f, 0.665f, FLinearColor(0.40f, 0.12f, 0.00f), FLinearColor(3.2f, 0.8f, 0.10f) },   // young hardwoods: red and orange
+};
+static const FLeafYear* LeafYearOf(int32 Sp) { for (const FLeafYear& L : LEAF_YEAR) if (L.Sp == Sp) return &L; return nullptr; }
 
 AHotBrookForest::AHotBrookForest()
 {
@@ -72,7 +96,71 @@ void AHotBrookForest::LoadMeshes()
 	// the wind: Dynamic Wind's provider (looked up by name — the plugin may be off; the trees then stand still)
 	if (UClass* WC = FindObject<UClass>(nullptr, TEXT("/Script/DynamicWind.DynamicWindData"))) Wind = NewObject<UTransformProviderData>(this, WC);
 	TrunkShape = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	LoadSeasons();
 	UE_LOG(LogHotBrookForest, Display, TEXT("tree meshes: %d species, %d skinned meshes; Dynamic Wind %s"), Meshes.Num(), NSkel, Wind ? TEXT("on") : TEXT("missing"));
+}
+
+void AHotBrookForest::LoadSeasons()
+{
+	// each hardwood's foliage materials (by name) → their twins (/Game/HotBrook/Seasons/<name>_Season), one dynamic instance each
+	Bare = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Seasons/M_HB_Bare.M_HB_Bare"));   // (masked away; twig grey-brown where Nanite draws far foliage as voxels)
+	if (!Bare) Bare = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Animals/M_HB_Invisible.M_HB_Invisible"));
+	int32 N = 0;
+	for (const auto& KV : Meshes) {
+		if (!LeafYearOf(KV.Key)) continue;
+		for (const FMeshInfo& MI : KV.Value) {
+			if (!MI.Skel) continue;
+			for (const FSkeletalMaterial& SM : MI.Skel->GetMaterials()) {
+				UMaterialInterface* M = SM.MaterialInterface; if (!M || SeasonOf.Contains(M) || !M->GetName().Contains(TEXT("Foliage"))) continue;
+				UMaterialInterface* Tw = LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("/Game/HotBrook/Seasons/%s_Season.%s_Season"), *M->GetName(), *M->GetName()));
+				if (!Tw) continue;
+				UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Tw, this); SeasonHeld.Add(D); SeasonOf.Add(M, { D, KV.Key }); N++;
+			}
+		}
+	}
+	UE_LOG(LogHotBrookForest, Display, TEXT("the leaves by the date: %d hardwood foliage materials with their autumn twins%s"), N, Bare ? TEXT("") : TEXT(" (no M_HB_Bare: no bare trees)"));
+}
+
+int32 AHotBrookForest::LeafState(int32 Sp, int32 TileIx) const
+{
+	const FLeafYear* L = LeafYearOf(Sp); if (!L) return 0;
+	const uint32 H = (uint32)TileIx * 2654435761u ^ (uint32)Sp * 40503u; const float dT = (((H >> 8) & 1023) / 1023.f - 0.5f) * 0.02f;   // (±3.6 days a tile)
+	const float Y = LeafYf - dT;
+	if (Y < L->Out || Y >= L->Gone) return Bare ? 2 : 0;
+	return Y >= L->Turn ? 1 : 0;
+}
+
+void AHotBrookForest::ApplyLeaves(UInstancedSkinnedMeshComponent* C, int32 TileIx)
+{
+	const USkinnedAsset* A = C ? C->GetSkinnedAsset() : nullptr; if (!A) return;
+	const TArray<FSkeletalMaterial>& Mats = A->GetMaterials();
+	for (int32 i = 0; i < Mats.Num(); i++) {
+		const FSeason* S = SeasonOf.Find(Mats[i].MaterialInterface); if (!S) continue;
+		const int32 St = LeafState(S->Sp, TileIx);
+		UMaterialInterface* Want = St == 1 ? (UMaterialInterface*)S->MID : St == 2 ? Bare.Get() : Mats[i].MaterialInterface.Get();
+		if (C->GetMaterial(i) != Want) C->SetMaterial(i, Want);
+	}
+}
+
+void AHotBrookForest::UpdateLeaves()
+{
+	// the date (hb.LeafDate, or the sim's), each twin's colours (green → its autumn's → brown as they fall), each live tree's leaves
+	const float Force = CVarLeafDate.GetValueOnGameThread();
+	if (Force >= 0.f) LeafYf = Force; else for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { LeafYf = It->YearFrac; break; }
+	// (each colour from neutral — the leaf as it is: nothing added, overlaid by 0.5 — to its autumn's, then toward brown as they fall)
+	const FLinearColor Neutral1(0.f, 0.f, 0.f), Neutral2(0.5f, 0.5f, 0.5f), Brown1(0.10f, 0.03f, 0.f), Brown2(1.5f, 0.75f, 0.4f);
+	// (the Megaplants' own season control — MPC_GlobalFoliageActor 'Season Strength', 0 by default — is the exponent of the leaves'
+	// turning mask: saturate(1e9 · x^(strength + 0.01)), x a leaf pixel's red × noise ~0.05–0.3: none turn below ~7, most by ~40 — held
+	// at 40 while any hardwood is turning or falling; each species' timing is in its colours, neutral until its turning)
+	static UMaterialParameterCollection* Foliage = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/ProceduralVegetationEditor/SampleAssets/Materials/MaterialFunctions/MPC_GlobalFoliageActor.MPC_GlobalFoliageActor"));
+	if (Foliage) { bool bAutumn = false; for (const FLeafYear& L : LEAF_YEAR) bAutumn |= LeafYf >= L.Turn - 0.015f && LeafYf < L.Gone + 0.015f; UKismetMaterialLibrary::SetScalarParameterValue(this, Foliage, TEXT("Season Strength"), bAutumn ? 40.f : 0.f); }
+	for (auto& KV : SeasonOf) {
+		const FLeafYear* L = LeafYearOf(KV.Value.Sp); if (!L || !KV.Value.MID) continue;
+		const float t = FMath::SmoothStep(L->Turn, L->Peak, LeafYf), u = 0.7f * FMath::SmoothStep(L->Drop, L->Gone, LeafYf);
+		KV.Value.MID->SetVectorParameterValue(TEXT("Season Color 1"), FMath::Lerp(FMath::Lerp(Neutral1, L->A, t), Brown1, u));
+		KV.Value.MID->SetVectorParameterValue(TEXT("Season Color 2"), FMath::Lerp(FMath::Lerp(Neutral2, L->B, t), Brown2, u));
+	}
+	for (auto& KV : Live) for (UPrimitiveComponent* P : KV.Value) if (UInstancedSkinnedMeshComponent* C = Cast<UInstancedSkinnedMeshComponent>(P)) ApplyLeaves(C, KV.Key);
 }
 
 void AHotBrookForest::BeginPlay()
@@ -116,6 +204,7 @@ void AHotBrookForest::MakeTile(int32 T)
 			if (MI.Height < 1200.f) C->SetCullDistances(0, MI.Height < 600.f ? 30000 : 60000);   // (the small trees drawn only near: the variant's height is near the tree's own)
 			C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->bAffectDistanceFieldLighting = true; C->ShadowCacheInvalidationBehavior = TreeShadowCache;
 			TArray<int32> Anim; Anim.SetNumZeroed(KV.Value.X.Num());
+			ApplyLeaves(C, T);   // (its leaves by the date)
 			C->AddInstances(KV.Value.X, Anim, false, true);
 			C->SetupAttachment(RootComponent); C->RegisterComponent(); C->SetComponentTickEnabled(false); Out.Add(C);   // (the wind bends them on the GPU: no tick needed — thousands of ticking components cost the game thread tens of ms)
 		} else {
@@ -199,6 +288,7 @@ void AHotBrookForest::Tick(float Dt)
 	if (!P || !TX) return;
 	const FVector2D M = HotBrookCoords::ToSim(P->GetActorLocation());
 	if (Wind && GetWorld()->GetTimeSeconds() > NextWind) { NextWind = GetWorld()->GetTimeSeconds() + 0.5; PushWind(); }   // (the wind in the branches)
+	if (SeasonOf.Num() && GetWorld()->GetTimeSeconds() > NextLeaf) { NextLeaf = GetWorld()->GetTimeSeconds() + 2.0; UpdateLeaves(); }   // (the leaves by the date)
 	// the tiles to free: past UnloadRadius
 	TArray<int32> Drop; for (const auto& KV : Live) { const int32 q = KV.Key % TX, r = KV.Key / TX; const double cx = TX0 + (q + 0.5) * Tile, cy = TY0 + (r + 0.5) * Tile; if (FVector2D::Distance(M, FVector2D(cx, cy)) > UnloadRadius + Tile) Drop.Add(KV.Key); }
 	for (int32 T : Drop) FreeTile(T);

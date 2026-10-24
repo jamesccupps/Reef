@@ -22,6 +22,8 @@ def invisible():
     if EAL.does_asset_exist(path): return unreal.load_asset(path)
     m = tools.create_asset('M_HB_Invisible', DEST, unreal.Material, unreal.MaterialFactoryNew())
     m.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED); m.set_editor_property('used_with_skeletal_mesh', True)
+    # (also the forest's bare hardwoods' leaves — AHotBrookForest: Nanite skinned trees, their foliage drawn as voxels far off)
+    for f in ('used_with_nanite', 'used_with_instanced_static_meshes', 'used_with_voxels'): m.set_editor_property(f, True)
     c = L.create_material_expression(m, unreal.MaterialExpressionConstant, -300, 0); c.set_editor_property('r', 0.0)
     if not L.connect_material_property(c, '', unreal.MaterialProperty.MP_OPACITY_MASK): bad.append('M_HB_Invisible opacity')
     L.recompile_material(m); EAL.save_asset(path)
