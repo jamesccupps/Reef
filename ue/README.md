@@ -34,8 +34,17 @@ project draws the world in the first person, fed live by it. The browser view, t
   Its meshes: the Megascans scans (`Scripts/import_megascans.py` → `Import/megascans_meshes.json`) and the Megaplants' small
   plants (`make_forest_meshes.py` → `Import/groundcover_meshes.json`).
 - **The live link** — `node ue/link/simhost.mjs` runs the sim at real time and streams it to `AHotBrookLink`
-  (ws://127.0.0.1:8771): the clock (the sun placed for the date and hour), the weather and wind, the fish near the walker
-  (stand-in cones for now), the forest's large animals.
+  (ws://127.0.0.1:8771; snapshot "HBS2"): the clock (the sun placed for the date and hour), the weather and wind, the fish near
+  the walker, the forest's large animals (`AHotBrookAnimals`: the deer so far).
+- **The fish** — `AHotBrookFish`: each fish the sim has near the walker drawn as its species' model, scaled to its length and
+  deepened by its condition, at its place, heading and pitch, eased between the snapshots; its tail beating at the browser's rate
+  for its speed (`M_HB_Fish`'s swim wave, its phase per fish in the instance's custom data); a school as up to 24 of its fish
+  ~3 lengths apart by day, ~8 at night. Redbreast borrow the pumpkinseed, fallfish and alewife the dace.
+- **The models** — downloaded from Sketchfab to `G:\HotBrookUE\Import\sketchfab` (never committed); `ue/export/convert_models.py`
+  (Blender 5.1) lays each on its axes (a fish's length on +X, back up), cuts it to ~12,000 triangles (birds 24,000, the canoe
+  30,000), sizes it (a fish 1 m long; a bird, a boat to its real size) and writes `Import/models/<name>.glb` with three views to
+  check it by; `Scripts/import_models.py` brings them in (`/Game/HotBrook/Models`) and makes `M_HB_Fish`. The loon's Collada
+  file went through trimesh + pycollada to a .glb first (Blender 5 reads no Collada).
 - **The walker** — `HotBrookCharacter`: first person at 1.65 m; W A S D / arrows, mouse, Shift to run, Space to jump; wading,
   swimming past chest depth, diving with C / Ctrl; on the ice in winter.
 - **Coordinates** — the sim's metres (x east, y north, heights above sea level) to Unreal's cm: X east, Y south, Z up, heights
@@ -56,6 +65,26 @@ Build: `Engine\Build\BatchFiles\Build.bat HotBrookEditor Win64 Development -Proj
 - Megascans surfaces download as JPEGs to `VaultCache\FabLibrary\<listing>\texture-set\`: `python -I ue/export/megascans_surfaces.py`
   makes 2048² copies in `Import/surfaces`, and `make_ground_material.py` imports them.
 - The first load of new plant packs builds their Nanite data for a long while (tens of minutes); it is cached after.
+
+## The models' credits (Creative Commons; the files themselves are never committed)
+| In the world as | Model | By | Licence |
+|---|---|---|---|
+| smallmouth bass | [Smallmouth bass](https://sketchfab.com/models/015389aed3414793b3e9e4a0c25169d1) | faerbogdan99 | CC BY 4.0 |
+| chain pickerel | [Chain pickerel](https://sketchfab.com/models/dbffc5fa6b6f44d99692cb7c7719de4e) | faerbogdan99 | CC BY 4.0 |
+| brown bullhead | [Channel catfish](https://sketchfab.com/models/038752a9cd3445feb074a569671c27f1) | faerbogdan99 | CC BY 4.0 |
+| blacknose dace, fallfish, alewife | [Common dace](https://sketchfab.com/models/cdc4f59efaa04fe391a5cff9b89c4ca3) | faerbogdan99 | CC BY 4.0 |
+| great blue heron | [Great blue heron](https://sketchfab.com/models/52cffc22bf2441468739ac3ba6d599aa) | faerbogdan99 | CC BY 4.0 |
+| yellow perch | [European perch](https://sketchfab.com/models/fecae0f415b2400aadf298374797f8fc) | animalica | CC BY 4.0 |
+| white sucker | [Hog Sucker](https://sketchfab.com/models/1d67736a2fdd4151ac57d5082dd50514) | Grand Rapids Public Museum | CC BY 4.0 |
+| banded killifish | [Northern Studfish](https://sketchfab.com/models/536261fbba2b49de8e31fe0c625cf55b) | MTSUichthyology | CC BY 4.0 |
+| white perch | [Yellow Bass](https://sketchfab.com/models/908d991cc9da4441be7e9293be18a1f9) | MTSUichthyology | CC BY 4.0 |
+| pumpkinseed, redbreast | [Model 38 – Pumpkinseed Sunfish](https://sketchfab.com/models/e8cbd8d90e47463b831ceed70bc146cb) | DigitalLife3D | CC BY-NC 4.0 |
+| common loon | [Common Loon](https://sketchfab.com/models/24374cff63c345cba6fff9e80feb2c17) | Innovation Studio | CC BY 4.0 |
+| bald eagle | [Bald Eagle Flying Bird Model](https://sketchfab.com/models/30434fd1272f464a8540750a78a5087f) | Pigcraft | CC BY 4.0 |
+| canoe | [Cruising Canoe](https://sketchfab.com/models/982bd54e6278492484d3154d09dbe59d) | gogiart | CC BY 4.0 |
+
+The bear and the moose the human downloaded are not listed: they are for the human's own use only and are never committed,
+published or shared.
 
 ## Running it (at the PC — Remote Desktop caps everything at ~30 fps)
 1. The live simulation: from the repo folder, `node ue/link/simhost.mjs` (ws://127.0.0.1:8771). It starts the lakes in ~15 s and

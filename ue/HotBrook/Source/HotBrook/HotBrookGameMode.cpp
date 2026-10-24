@@ -7,7 +7,9 @@
 #include "HotBrookWaterSurface.h"
 #include "HotBrookGroundCover.h"
 #include "HotBrookAnimals.h"
+#include "HotBrookFish.h"
 #include "EngineUtils.h"
+#include "Camera/CameraActor.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
@@ -77,6 +79,8 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookGroundCover>(GetWorld())) GetWorld()->SpawnActor<AHotBrookGroundCover>();
 	// the forest's large animals the live link reports (the deer so far)
 	if (!TActorIterator<AHotBrookAnimals>(GetWorld())) GetWorld()->SpawnActor<AHotBrookAnimals>();
+	// the lakes' fish near the walker, each its species' model
+	if (!TActorIterator<AHotBrookFish>(GetWorld())) GetWorld()->SpawnActor<AHotBrookFish>();
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
 	if (FParse::Value(FCommandLine::Get(), TEXT("hbwalk="), Arg, false)) {
@@ -93,7 +97,10 @@ void AHotBrookGameMode::BeginPlay()
 	TArray<FString> Items; Arg.TrimQuotes().ParseIntoArray(Items, TEXT(";"));
 	for (const FString& It : Items) {
 		TArray<FString> F; It.ParseIntoArray(F, TEXT(","));
-		if (F.Num() >= 4) Shots.Add({ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() });
+		if (F.Num() < 4) continue;
+		FShot S{ FCString::Atod(*F[0]), FCString::Atod(*F[1]), FCString::Atod(*F[2]), FCString::Atod(*F[3]), F.Num() > 4 ? F[4] : FString::Printf(TEXT("shot%d"), Shots.Num()), F.Num() > 5 ? F[5] : FString() };
+		TArray<FString> Cs; S.Cmds.ParseIntoArray(Cs, TEXT("|")); S.bNearFish = Cs.Remove(TEXT("nearfish")) > 0; S.Cmds = FString::Join(Cs, TEXT("|"));
+		Shots.Add(S);
 	}
 	float Wait = 6.f; FParse::Value(FCommandLine::Get(), TEXT("hbwait="), Wait);   // (the first after the world has loaded and its shaders compiled: longer on a first run)
 	if (Shots.Num()) GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::PlaceNext, Wait, false);
@@ -104,6 +111,7 @@ void AHotBrookGameMode::PlaceNext()
 	if (NextShot >= Shots.Num()) { FPlatformMisc::RequestExit(false); return; }
 	const FShot& S = Shots[NextShot];
 	APlayerController* PC = GetWorld()->GetFirstPlayerController(); APawn* P = PC ? PC->GetPawn() : nullptr;
+	if (PC && P && PC->GetViewTarget() != P) PC->SetViewTarget(P);   // (back from a look at a fish)
 	if (!S.Cmds.IsEmpty() && PC) {
 		TArray<FString> Cmds; S.Cmds.ParseIntoArray(Cmds, TEXT("|"));
 		for (FString C : Cmds) { C.ReplaceInline(TEXT(":"), TEXT(" ")); PC->ConsoleCommand(C); UE_LOG(LogTemp, Display, TEXT("hbshot %s: %s"), *S.Name, *C); }
@@ -126,6 +134,23 @@ void AHotBrookGameMode::PlaceNext()
 
 void AHotBrookGameMode::TakeShot()
 {
+	// (a look at a fish: the walker set beside the nearest, a few lengths off its flank, eye level with it, a moment before the shot)
+	APlayerController* PC = GetWorld()->GetFirstPlayerController(); APawn* Pw = PC ? PC->GetPawn() : nullptr;
+	if (Shots[NextShot].bNearFish && !bFramed && Pw) {
+		bFramed = true; FVector P; FRotator R; float L = 0;
+		const AHotBrookFish* Fi = nullptr; for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) { Fi = *It; break; }
+		if (Fi && Fi->Nearest(Pw->GetActorLocation(), P, R, L)) {
+			// (a camera of its own there: the walker, in the water, would be lifted to swim at the surface)
+			const FVector Side = FRotator(0, R.Yaw + 90.f, 0).Vector();
+			const float D = FMath::Max(60.f, 400.f * L);
+			if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+			ShotCam->SetActorLocationAndRotation(P + Side * D, (-Side).Rotation()); PC->SetViewTarget(ShotCam);
+			UE_LOG(LogTemp, Display, TEXT("hbshot %s: the nearest fish, %.0f cm long, at %s, seen from %.0f cm"), *Shots[NextShot].Name, L * 100.f, *P.ToString(), D);
+		}
+		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 0.4f, false);
+		return;
+	}
+	bFramed = false;
 	if (NFrames) UE_LOG(LogTemp, Display, TEXT("hbshot %s: %.1f ms a frame (%.0f fps): game %.1f, draw %.1f, RHI %.1f, GPU %.1f ms, over %d frames"), *Shots[NextShot].Name, SumFrame / NFrames,
 		1000.0 * NFrames / FMath::Max(1.0, SumFrame), SumGame / NFrames, SumDraw / NFrames, SumRhi / NFrames, SumGpu / NFrames, NFrames);
 	const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), Shots[NextShot].Name + TEXT(".png"));

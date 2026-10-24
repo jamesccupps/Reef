@@ -3,18 +3,16 @@
 #include "HotBrookWater.h"
 #include "HotBrookForest.h"
 #include "HotBrookAnimals.h"
+#include "HotBrookFish.h"
 #include "WebSocketsModule.h"
 #include "IWebSocket.h"
-#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Engine/DirectionalLight.h"
-#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogHotBrookLink, Log, All);
-static constexpr int32 NSPECIES = 11;   // (the lakes' eleven fish: src/w3/species3.js)
 
 AHotBrookLink::AHotBrookLink()
 {
@@ -26,13 +24,6 @@ void AHotBrookLink::BeginPlay()
 {
 	Super::BeginPlay();
 	for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It) { Sun = *It; break; }
-	// the fish: one instanced component a species — the engine's cone as a stand-in until each species has its model
-	UStaticMesh* Body = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone"));
-	for (int32 s = 0; s < NSPECIES; s++) {
-		UInstancedStaticMeshComponent* C = NewObject<UInstancedStaticMeshComponent>(this);
-		C->SetStaticMesh(Body); C->SetMobility(EComponentMobility::Movable); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCastShadow(false);
-		C->SetupAttachment(RootComponent); C->RegisterComponent(); FishBySpecies.Add(C);
-	}
 	FModuleManager::LoadModuleChecked<FWebSocketsModule>(TEXT("WebSockets"));
 	Connect();
 }
@@ -73,37 +64,21 @@ void AHotBrookLink::Tick(float Dt)
 
 void AHotBrookLink::Apply(const TArray<uint8>& B)
 {
-	if (B.Num() < 48 || FMemory::Memcmp(B.GetData(), "HBS1", 4) != 0) return;
+	if (B.Num() < 48 || FMemory::Memcmp(B.GetData(), "HBS2", 4) != 0) return;
 	const auto F = [&](int32 o) { float v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	const auto U = [&](int32 o) { uint32 v; FMemory::Memcpy(&v, B.GetData() + o, 4); return v; };
 	TimeOfDay = F(12); YearFrac = F(16); Weather = B[36];
 	WindSpeed = F(20); WindFrom = B[37] * (2.0 * PI / 256.0);
 	for (TActorIterator<AHotBrookForest> It(GetWorld()); It; ++It) It->SetWind(WindSpeed, WindFrom);   // (the branches move with it)
 	const uint32 NF = U(40), NFo = U(44); FishNear = NF;
-	if ((int64)48 + NF * 32 > B.Num()) return;
-	// the forest's large animals after the fish: 8 floats each (AHotBrookAnimals reads them)
-	if ((int64)48 + NF * 32 + NFo * 32 <= B.Num()) {
-		TArray<float> Rec; Rec.SetNumUninitialized(NFo * 8); FMemory::Memcpy(Rec.GetData(), B.GetData() + 48 + NF * 32, NFo * 32);
-		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo);
-	}
+	const int64 FishEnd = 48 + (int64)NF * AHotBrookFish::Stride;
+	if (FishEnd > B.Num()) return;
 	PlaceSun();
-	// the fish: each one's place (the sim's metres; z is its depth below the surface), heading and pitch, length (cm), species
-	const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
-	TArray<TArray<FTransform>> Per; Per.SetNum(NSPECIES);
-	for (uint32 i = 0; i < NF; i++) {
-		const int32 o = 48 + i * 32; const float X = F(o), Y = F(o + 4), Z = F(o + 8), Yaw = F(o + 12), Pitch = F(o + 16), Lcm = F(o + 20); const int32 Sp = FMath::Clamp((int32)F(o + 24), 0, NSPECIES - 1);
-		float S = 0; FVector P = HotBrookCoords::ToUE(X, Y, HotBrookCoords::Datum);
-		if (W && W->SurfaceAt(P, S)) P.Z = S - Z * 100.f; else continue;
-		// (the cone points up its Z: laid along the fish — the sim's yaw is from east, counter-clockwise; UE's Y is south)
-		const FRotator R(FMath::RadiansToDegrees(Pitch) - 90.f, -FMath::RadiansToDegrees(Yaw), 0.f);
-		const float Len = FMath::Max(2.f, Lcm) / 100.f;   // (the cone is 1 m tall: this many metres)
-		Per[Sp].Add(FTransform(R, P, FVector(Len * 0.25f, Len * 0.12f, Len)));
-	}
-	for (int32 s = 0; s < NSPECIES; s++) {
-		UInstancedStaticMeshComponent* C = FishBySpecies[s]; const int32 N = Per[s].Num(), Have = C->GetInstanceCount();
-		if (Have > N) { for (int32 k = Have - 1; k >= N; k--) C->RemoveInstance(k); }
-		for (int32 k = 0; k < N; k++) { if (k < Have) C->UpdateInstanceTransform(k, Per[s][k], true, false, true); else C->AddInstance(Per[s][k], true); }
-		C->MarkRenderStateDirty();
+	// the fish (AHotBrookFish draws them), then the forest's large animals: 8 floats each (AHotBrookAnimals)
+	for (TActorIterator<AHotBrookFish> It(GetWorld()); It; ++It) It->Update(B.GetData() + 48, NF, Night);
+	if (FishEnd + (int64)NFo * 32 <= B.Num()) {
+		TArray<float> Rec; Rec.SetNumUninitialized(NFo * 8); FMemory::Memcpy(Rec.GetData(), B.GetData() + FishEnd, NFo * 32);
+		for (TActorIterator<AHotBrookAnimals> It(GetWorld()); It; ++It) It->Update(Rec.GetData(), NFo);
 	}
 }
 
@@ -116,5 +91,6 @@ void AHotBrookLink::PlaceSun()
 	const double SinAlt = FMath::Sin(Lat) * FMath::Sin(Dec) + FMath::Cos(Lat) * FMath::Cos(Dec) * FMath::Cos(H), Alt = FMath::Asin(SinAlt);
 	const double Az = FMath::Atan2(-FMath::Sin(H) * FMath::Cos(Dec), FMath::Cos(Lat) * FMath::Sin(Dec) - FMath::Sin(Lat) * FMath::Cos(Dec) * FMath::Cos(H));
 	const FVector ToSun(FMath::Cos(Alt) * FMath::Sin(Az), -FMath::Cos(Alt) * FMath::Cos(Az), SinAlt);   // (UE: X east, Y south, Z up)
+	Night = FMath::Clamp((0.05f - (float)SinAlt) * 8.f, 0.f, 1.f);   // (dusk: the sun 3° up to 4° down)
 	if (SunDirSet.IsZero() || FVector::DotProduct(SunDirSet, ToSun) < FMath::Cos(FMath::DegreesToRadians(0.2))) { Sun->SetActorRotation((-ToSun).Rotation()); SunDirSet = ToSun; }
 }

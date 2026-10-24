@@ -4,10 +4,10 @@
 // walker, the forest's large animals, the ice. Unreal sends the walker's place back ({"cam":[x, y, dist]}, the sim's metres): the sim
 // keeps its fine, fish-by-fish detail about where the walker is, as the browser keeps it about where the view looks.
 //   node ue/link/simhost.mjs [port 8771]
-// The snapshot ("HBS1", little-endian): f64 simT; f32 t (0–1 of a day), yf (0 = March 1), windSpeed (m/s), sun (0–1), airT (°C),
+// The snapshot ("HBS2", little-endian): f64 simT; f32 t (0–1 of a day), yf (0 = March 1), windSpeed (m/s), sun (0–1), airT (°C),
 // iceMean (m); u8 weather (0 clear … 3 storm), u8 wind bearing (where it blows FROM, 0–255 a turn clockwise from north), u8×2 pad;
-// u32 nFish, nForest; then nFish × 8 f32 (x, y, z, yaw, pitch, length cm,
-// species, school size) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m).
+// u32 nFish, nForest; then nFish × 12 fields (f32 x, y, z, yaw, pitch, length cm, species, n, speed m/s; u32 id; f32 school 0/1,
+// body depth's multiplier) and nForest × 8 f32 (id, kind, x, y, heading, act, young, length m).
 import { Worker } from 'node:worker_threads';
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -35,13 +35,14 @@ setInterval(() => {
 function encode(m) {
   const fb = m.fish || new Float32Array(0), nf = Math.floor(fb.length / 18), fo = m.forest || new Float32Array(0), nfo = Math.floor(fo.length / 8);
   let ice = 0; if (m.ice && m.ice.length) { for (let i = 0; i < m.ice.length; i++) ice += m.ice[i]; ice /= m.ice.length; }
-  const head = 4 + 8 + 6 * 4 + 4 + 8, buf = Buffer.alloc(head + nf * 32 + nfo * 32);
-  let o = 0; buf.write('HBS1', o, 'ascii'); o += 4; buf.writeDoubleLE(m.simT || m.time || 0, o); o += 8;
+  const head = 4 + 8 + 6 * 4 + 4 + 8, buf = Buffer.alloc(head + nf * 48 + nfo * 32), fu = new Uint32Array(fb.buffer, fb.byteOffset, fb.length);
+  let o = 0; buf.write('HBS2', o, 'ascii'); o += 4; buf.writeDoubleLE(m.simT || m.time || 0, o); o += 8;
   for (const v of [m.t, m.yf, m.windSpeed || 0, m.sun || 0, m.air ?? 0, ice]) { buf.writeFloatLE(+v || 0, o); o += 4; }
   buf.writeUInt8(m.weather | 0, o); buf.writeUInt8(Math.round((((m.windDir || 0) / (2 * Math.PI)) % 1 + 1) % 1 * 256) & 255, o + 1); o += 4;
   buf.writeUInt32LE(nf, o); o += 4; buf.writeUInt32LE(nfo, o); o += 4;
-  for (let i = 0; i < nf; i++) {   // (the fish's current place and heading: fishside3's layout, FISH_STRIDE 18)
-    const s = i * 18; for (const v of [fb[s + 5], fb[s + 6], fb[s + 7], fb[s + 8], fb[s + 9], fb[s + 10], fb[s + 11], fb[s + 12]]) { buf.writeFloatLE(v, o); o += 4; }
+  for (let i = 0; i < nf; i++) {   // (the fish's current place and heading, size, kind, number, speed, id: fishside3's layout, FISH_STRIDE 18)
+    const s = i * 18; for (let k = 5; k <= 13; k++) { buf.writeFloatLE(fb[s + k], o); o += 4; }
+    buf.writeUInt32LE(fu[s + 15], o); o += 4; buf.writeFloatLE(fb[s + 16], o); o += 4; buf.writeFloatLE(fb[s + 17] || 1, o); o += 4;
   }
   for (let i = 0; i < nfo * 8; i++) { buf.writeFloatLE(fo[i], o); o += 4; }
   return buf;

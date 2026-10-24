@@ -1,7 +1,7 @@
 // HotBrookLink — the live simulation in the first-person world: a WebSocket client of ue/link/simhost.mjs (ws://127.0.0.1:8771),
-// which runs the Synapse Reef sim of the lakes at real time. Each snapshot ("HBS1"): the clock (the sun placed for the date and the
-// hour at 45.63° N, as the browser's sky3.js), the weather and wind, the fish near the walker (drawn as instances, one component a
-// species, at their places and headings), the forest's large animals. The walker's place goes back twice a second, so the sim keeps its
+// which runs the Synapse Reef sim of the lakes at real time. Each snapshot ("HBS2"): the clock (the sun placed for the date and the
+// hour at 45.63° N, as the browser's sky3.js), the weather and wind, the fish near the walker (AHotBrookFish draws them), the forest's
+// large animals (AHotBrookAnimals). The walker's place goes back twice a second, so the sim keeps its
 // fish-by-fish detail about it. Without the host running the world stands still at its default noon; it keeps trying to connect.
 #pragma once
 #include "CoreMinimal.h"
@@ -9,7 +9,6 @@
 #include "HotBrookLink.generated.h"
 
 class IWebSocket;
-class UInstancedStaticMeshComponent;
 class ADirectionalLight;
 
 UCLASS()
@@ -34,7 +33,7 @@ private:
 	TSharedPtr<IWebSocket> Socket;
 	TArray<uint8> Pending, Latest; bool bFresh = false;
 	double NextTry = 0, NextCam = 0;
-	TArray<TObjectPtr<UInstancedStaticMeshComponent>> FishBySpecies;
+	float Night = 0.f;   // (0 day … 1 night: the sun's height)
 	TObjectPtr<ADirectionalLight> Sun = nullptr;
 	FVector SunDirSet = FVector::ZeroVector;   // (where the sun was last turned to)
 	void Connect();
