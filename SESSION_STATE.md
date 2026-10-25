@@ -351,6 +351,11 @@ plants, textures. Photos are private: never commit or publish them.
   snow ≥ 0.5 only ShoreShrub, logs, ring-2 rocks, water boulders; mushrooms yf .42–.67); Tick re-applies when the (snow, mushroom
   season) key changes; new components born hidden if so. Checked: winter woods bare snow + logs; summer ferns/anemones. (The weeds in
   winter: the sim's own stands fall to ~0 for the floating and emergent in its winter — the hb.Snow test in May isn't representative.)
+  + 21:30 COMMITTED 4cd66fe (ground cover by season), pushed; the human compacted here. NEXT (pick any): the merganser drakes; the
+  tadpoles (HERP3.ON 0, not drawn); the OSU perched osprey + the loons unused; fern_grass / stones_grass downloads unused; the far
+  landscape's void past the far grid; an autumn tint for the ferns and the Megaplants ground plants; the Rollins wind farm (30 km W).
+  The human was told: listing sites that blocked automation are in tools/hotbrook/data/listings/notes.md (save by hand); photos for
+  the photo match go to G:\HotBrookUE\Importeference\ (private: EXIF GPS/heading → reproduce the view → compare → fix).
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked
