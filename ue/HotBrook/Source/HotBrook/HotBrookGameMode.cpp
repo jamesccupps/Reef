@@ -13,10 +13,14 @@
 #include "HotBrookWeeds.h"
 #include "HotBrookTurbines.h"
 #include "HotBrookNightSky.h"
+#include "HotBrookFarLand.h"
 #include "HotBrookBoat.h"
 #include "HotBrookCamps.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
+#include "Engine/PostProcessVolume.h"
+#include "Curves/CurveFloat.h"
+#include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Dom/JsonObject.h"
@@ -157,8 +161,21 @@ void AHotBrookGameMode::BeginPlay()
 	if (!TActorIterator<AHotBrookWeeds>(GetWorld())) GetWorld()->SpawnActor<AHotBrookWeeds>();   // (after the wildlife: it reads the anglers' counts there)
 	if (!TActorIterator<AHotBrookTurbines>(GetWorld())) GetWorld()->SpawnActor<AHotBrookTurbines>();   // (the wind farm on the ridges)
 	if (!TActorIterator<AHotBrookNightSky>(GetWorld())) GetWorld()->SpawnActor<AHotBrookNightSky>();   // (the stars and the moon)
+	if (!TActorIterator<AHotBrookFarLand>(GetWorld())) GetWorld()->SpawnActor<AHotBrookFarLand>();   // (the hills beyond the landscape)
 	// a canoe in the shallows nearest the start
 	if (!TActorIterator<AHotBrookBoat>(GetWorld())) GetWorld()->SpawnActor<AHotBrookBoat>();
+	// THE EYE'S ADAPTATION by the scene's light (the level's camera keeps its −1 EV, set against the human's photos of the shore and the
+	// woods): added on top by the scene's average EV100 (in this world's units — its sun is 10 lux), matched to the human's photos of
+	// the lakes, 2026-10-25: the open water at noon (EV ~1.4) a stop brighter — the photos are bright, the −1 made noon look like a
+	// dull evening —, the woods (~−2.3) as they were, dusk on the water (~−5) brighter again as the eye opens to it, and the night
+	// (under ~−8) as it was
+	for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It) if (It->bUnbound) {
+		UCurveFloat* C = NewObject<UCurveFloat>(*It);
+		for (const FVector2f& K : { FVector2f(-9.f, 0.f), FVector2f(-7.f, 0.2f), FVector2f(-5.f, 0.7f), FVector2f(-3.5f, 0.3f), FVector2f(-2.3f, 0.f), FVector2f(-0.5f, 0.5f), FVector2f(1.4f, 1.f), FVector2f(4.f, 1.f) })
+			C->FloatCurve.AddKey(K.X, K.Y);
+		It->Settings.bOverride_AutoExposureBiasCurve = true; It->Settings.AutoExposureBiasCurve = C;
+		break;
+	}
 	bStats = FParse::Param(FCommandLine::Get(), TEXT("hbstats")); float Q = 0; if (FParse::Value(FCommandLine::Get(), TEXT("hbquit="), Q)) QuitAt = Q;
 	FString Arg;
 	if (FParse::Value(FCommandLine::Get(), TEXT("hbpaddle="), PaddleFor) && PaddleFor > 0) {
@@ -185,6 +202,7 @@ void AHotBrookGameMode::BeginPlay()
 		for (const TCHAR* N : { TEXT("fish"), TEXT("bear"), TEXT("deer"), TEXT("moose"), TEXT("loon"), TEXT("heron"), TEXT("eagle"), TEXT("kingfisher"), TEXT("osprey"),
 			TEXT("cmerganser"), TEXT("hmerganser"), TEXT("otter"), TEXT("mink"), TEXT("snapper"), TEXT("bullfrog"), TEXT("painted"), TEXT("frog"), TEXT("angler"), TEXT("iceangler") }) if (Cs.Remove(FString(TEXT("near")) + N) > 0) S.Near = N;
 		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("air="))) { S.Air = FCString::Atod(*Cs[c].Mid(4)); Cs.RemoveAt(c); }
+		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("fov="))) { S.Fov = FCString::Atod(*Cs[c].Mid(4)); Cs.RemoveAt(c); }   // (a photo's lens: 72 a phone's main camera across a 4:3 frame)
 		for (int32 c = Cs.Num() - 1; c >= 0; c--) if (Cs[c].StartsWith(TEXT("plant="))) { S.Near = TEXT("plant:") + Cs[c].Mid(6); Cs.RemoveAt(c); }
 		S.Cmds = FString::Join(Cs, TEXT("|"));
 		Shots.Add(S);
@@ -237,6 +255,7 @@ void AHotBrookGameMode::PlaceNext()
 		UE_LOG(LogTemp, Display, TEXT("hbshot %s: trace %s %.0f, heightmap %s %.0f -> Z %.0f cm"), *S.Name, bHit ? TEXT("hit") : TEXT("missed"), bHit ? Hit.Location.Z : 0.0, bHM ? TEXT("") : TEXT("none"), G, Z);
 		P->SetActorLocation(FVector(Top.X, Top.Y, Z + 95.0), false, nullptr, ETeleportType::TeleportPhysics);
 		PC->SetControlRotation(FRotator(S.Pitch, S.Yaw, 0));
+		if (AHotBrookCharacter* Ch = Cast<AHotBrookCharacter>(P)) if (Ch->Eye) Ch->Eye->SetFieldOfView(S.Fov > 0.0 ? (float)S.Fov : 80.f);
 	}
 	GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 5.f, false);   // (the light and the streaming settle)
 	SumFrame = SumGpu = SumGame = SumDraw = SumRhi = 0; NFrames = 0;
@@ -344,6 +363,7 @@ void AHotBrookGameMode::TakeShot()
 		const FVector Q = HotBrookCoords::ToUE(S.X, S.Y, HotBrookCoords::Datum); float G = 0, Wz = -1e9f;
 		const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>(); if (W) { W->GroundAt(Q, G); W->SurfaceAt(Q, Wz); }
 		if (!ShotCam) ShotCam = GetWorld()->SpawnActor<ACameraActor>();
+		ShotCam->GetCameraComponent()->SetFieldOfView(S.Fov > 0.0 ? (float)S.Fov : 90.f); ShotCam->GetCameraComponent()->SetConstraintAspectRatio(false);   // (the whole frame, not letterboxed)
 		ShotCam->SetActorLocationAndRotation(FVector(Q.X, Q.Y, FMath::Max(G, Wz) + S.Air * 100.0), FRotator(S.Pitch, S.Yaw, 0)); PC->SetViewTarget(ShotCam);
 		GetWorldTimerManager().SetTimer(ShotTimer, this, &AHotBrookGameMode::TakeShot, 2.0f, false);
 		return;

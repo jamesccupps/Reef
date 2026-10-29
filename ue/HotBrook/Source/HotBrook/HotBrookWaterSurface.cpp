@@ -1,6 +1,7 @@
 #include "HotBrookWaterSurface.h"
 #include "HotBrookCoords.h"
 #include "HotBrookWater.h"
+#include "HotBrookLink.h"
 #include "Components/PostProcessComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Engine/DirectionalLight.h"
@@ -64,6 +65,7 @@ void AHotBrookWaterSurface::BeginPlay()
 	} else UE_LOG(LogHotBrookWater, Warning, TEXT("no M_HB_Underwater (Scripts/make_underwater_material.py): under the surface looks like air"));
 	for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It) { Sun = *It; break; }
 	UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/HotBrook/Materials/M_LakeWater.M_LakeWater"));
+	if (Mat) { LakeMat = UMaterialInstanceDynamic::Create(Mat, this); BrookMat = UMaterialInstanceDynamic::Create(Mat, this); BrookMat->SetScalarParameterValue(TEXT("Flow"), 1.f); }
 	int32 Section = 0; TArray<TArray<FVector2D>> LakeP; TArray<double> LakeLv;   // (each lake's shoreline and level: for the brook's mouths)
 	for (const TSharedPtr<FJsonValue>& V : J->GetArrayField(TEXT("lakes"))) {
 		const TSharedPtr<FJsonObject> O = V->AsObject(); const double Level = O->GetNumberField(TEXT("level"));
@@ -85,7 +87,7 @@ void AHotBrookWaterSurface::BeginPlay()
 		TArray<FVector> Verts; TArray<FVector> Norms; TArray<FVector2D> UV; TArray<FProcMeshTangent> Tan; TArray<FLinearColor> Col;
 		for (const FVector2D& q : Q) { Verts.Add(HotBrookCoords::ToUE(q.X, q.Y, Level)); Norms.Add(FVector::UpVector); UV.Add(q / 10.0); Tan.Add(FProcMeshTangent(1, 0, 0)); Col.Add(FLinearColor::White); }
 		Mesh->CreateMeshSection_LinearColor(Section, Verts, Tri, Norms, UV, Col, Tan, false);
-		if (Mat) Mesh->SetMaterial(Section, Mat);
+		if (LakeMat) Mesh->SetMaterial(Section, LakeMat);
 		UE_LOG(LogHotBrookWater, Display, TEXT("%s: %d corners, %d triangles at %.2f m"), *O->GetStringField(TEXT("name")), P.Num(), Tri.Num() / 3, Level);
 		Section++;
 	}
@@ -134,7 +136,7 @@ void AHotBrookWaterSurface::BeginPlay()
 		}
 		if (Tri.Num()) {
 			Mesh->CreateMeshSection_LinearColor(Section, Verts, Tri, Norms, UV, Col, Tan, false);
-			if (Mat) Mesh->SetMaterial(Section, Mat);
+			if (BrookMat) Mesh->SetMaterial(Section, BrookMat);
 			UE_LOG(LogHotBrookWater, Display, TEXT("the brook: %d wet cells and %d under its banks, %d triangles"), Wet.Num(), Cells.Num() - Wet.Num(), Tri.Num() / 3);
 			Section++;
 		}
@@ -144,6 +146,11 @@ void AHotBrookWaterSurface::BeginPlay()
 void AHotBrookWaterSurface::Tick(float Dt)
 {
 	Super::Tick(Dt);
+	// the ripples by the wind (the sim's, ~10 m up): a mirror under ~0.5 m/s, cat's-paws, then a chop by ~6 m/s; the brook always broken
+	float Wind = 3.f; for (TActorIterator<AHotBrookLink> It(GetWorld()); It; ++It) { Wind = It->WindSpeed; break; }
+	const float Chop = FMath::Clamp((Wind - 0.5f) / 6.f, 0.f, 1.f);
+	if (LakeMat) LakeMat->SetScalarParameterValue(TEXT("Chop"), Chop);
+	if (BrookMat) BrookMat->SetScalarParameterValue(TEXT("Chop"), FMath::Max(0.6f, Chop));
 	if (!UnderMat) return;
 	const APlayerController* PC = GetWorld()->GetFirstPlayerController(); const UHotBrookWater* W = GetWorld()->GetSubsystem<UHotBrookWater>();
 	if (!PC || !PC->PlayerCameraManager || !W) return;

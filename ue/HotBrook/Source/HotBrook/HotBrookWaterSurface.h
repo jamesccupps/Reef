@@ -29,5 +29,7 @@ private:
 	UPROPERTY() TObjectPtr<UProceduralMeshComponent> Mesh;
 	UPROPERTY() TObjectPtr<UPostProcessComponent> Under;
 	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> UnderMat;
+	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> LakeMat;    // (M_LakeWater's: its ripples' 'Chop' by the sim's wind)
+	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> BrookMat;   // (the brook's: 'Flow' 1, its riffles quick and broken)
 	UPROPERTY() TObjectPtr<class ADirectionalLight> Sun;
 };

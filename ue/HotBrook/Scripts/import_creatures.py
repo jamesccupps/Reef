@@ -22,7 +22,8 @@ DEST = '/Game/HotBrook/' + SET.capitalize()
 NANITE = ('snapping_turtle', 'painted_turtle', 'bullfrog', 'tadpole', 'stones_grass',   # (and the plants: thousands of them, their leaves cut-outs)
           'white_lily', 'lake_lily', 'lily_pads', 'pondweed', 'grass_lawn', 'grass_tuft_a', 'grass_tuft_b', 'fern_grass',
           'bass_boat', 'pontoon', 'utv',   # (HB_SET=vehicles: the camps' boats and machine)
-          'turbine_tower', 'turbine_rotor')   # (HB_SET=landmarks: the wind farm's turbines)
+          'turbine_tower', 'turbine_rotor', 'farland')   # (HB_SET=landmarks: the wind farm's turbines, the land beyond the landscape)
+BIG_TEX = ('farland',)   # (its photo 4096 wide: the 48-km box at ~12 m a texel)
 VERTEX_COLOUR = ('painted_turtle',)
 ONLY = [a for a in os.environ.get('HB_ONLY', '').split(',') if a]
 bad = []
@@ -54,7 +55,7 @@ for f in sorted(glob.glob(os.path.join(SRC, '*.glb'))):
     anims = [a for a in assets if isinstance(a, unreal.AnimSequence)]
     for a in assets:
         if isinstance(a, unreal.Texture2D):
-            a.set_editor_property('max_texture_size', 2048); EAL.save_asset(a.get_path_name())
+            a.set_editor_property('max_texture_size', 4096 if name in BIG_TEX else 2048); EAL.save_asset(a.get_path_name())
     if sk:
         mesh = sk[0]; pre = 'SK_'
     elif sm:

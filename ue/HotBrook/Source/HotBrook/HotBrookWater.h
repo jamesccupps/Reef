@@ -22,6 +22,7 @@ public:
 	// outlines — what AHotBrookWaterSurface draws as the brook; and either (the water drawn there at all)
 	bool InBrook(const FVector& P) const;
 	bool Drawn(const FVector& P) const { return InLake(P) || InBrook(P); }
+	bool NearBrook(const FBox2D& Sim, double Pad) const { return BrookPath.Num() >= 2 && BrookBox.ExpandBy(Pad).Intersect(Sim); }   // (a box in the sim's metres near the brook's course)
 	// the bed's substrate there (Import/substrate.bin: ue/export/export_substrate.mjs — the sim's GEO.sub, the shore above the waterline
 	// given the water's beside it), bilinear between the cells: X boulder–cobble, Y gravel, Z sand, W organic muck (0–1; mud the rest);
 	// false away from the lakes (nothing there)

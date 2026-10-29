@@ -7,7 +7,8 @@
 #     it): cobble (Poly Haven's ganges_river_pebbles, greyed toward the flat grey slaty stones the camps' listing photos show — the
 #     rocky forest floor's reddish soil read wrong), gravel, sand (Poly Haven's gravelly_sand, greyed to the lakes' granite sand) or mud, below ~1 m
 #     above Upper's level and under the water, broken up by noise so the cells' squares don't show;
-#   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream;
+#   - past ~900 m from the eye, the aerial photos' canopy (Import/canopy_rgba.png) — the forest from afar, where the trees don't stream —
+#     as it looks from the side: saturated, darkened and crowned as the far land beyond the landscape is;
 #   - SNOW over what faces up when /Game/HotBrook/Materials/MPC_HB_Season's 'Snow' is up (AHotBrookLink: with the lakes' ice), thinner
 #     on steep ground, a little uneven.
 # World-space (each surface tiles at its scanned size: 2 m, the moss and mud 1 m), so it covers the 5 × 10 km landscape without UVs;
@@ -124,6 +125,24 @@ if stex:
     edge = blend3(S['Mud'], S['Sand'], share('b', -1400, 2600), -1250, 2400)
     edge = blend3(edge, S['Gravel'], share('g', -1400, 2700), -1100, 2400)
     edge = blend3(edge, S['Cobble'], share('r', -1400, 2800), -950, 2400)
+    # (the shore band only a hand's breadth or two over the water beside it — Import/waterlevel.png, each cell's own level, Upper's or
+    # Lower's or the brook's: a fixed height had the band ~1 m tall at Upper and ~1.7 at Lower, a beach ringing every shore where the
+    # human's photos show the forest and its sedges coming down to the water)
+    lt = unreal.AssetImportTask(); lt.filename = unreal.Paths.project_dir() + 'Import/waterlevel.png'; lt.destination_path = '/Game/HotBrook/Textures'
+    lt.destination_name = 'T_WaterLevel'; lt.automated = True; lt.replace_existing = True; lt.save = False
+    tools.import_asset_tasks([lt]); ltex = unreal.load_asset('/Game/HotBrook/Textures/T_WaterLevel')
+    if ltex:
+        ltex.set_editor_property('srgb', False); ltex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_GRAYSCALE)
+        ltex.set_editor_property('mip_gen_settings', unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+        ltex.set_editor_property('address_x', unreal.TextureAddress.TA_CLAMP); ltex.set_editor_property('address_y', unreal.TextureAddress.TA_CLAMP)
+        EAL.save_asset('/Game/HotBrook/Textures/T_WaterLevel')
+        ls = node(unreal.MaterialExpressionTextureSample, -1850, 3000); ls.set_editor_property('texture', ltex)
+        ls.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE); ls.set_editor_property('sampler_source', unreal.SamplerSourceMode.SSM_CLAMP_WORLD_GROUP_SETTINGS)
+        link(suv, '', ls, 'UVs')
+        lvl = op(unreal.MaterialExpressionAdd, op(unreal.MaterialExpressionMultiply, mask(ls, 'r', -1700, 3000), 255.0, -1550, 3000), 1750.0, -1400, 3000)   # (cm, Unreal's Z)
+        dry = smooth(op(unreal.MaterialExpressionSubtract, z, lvl, -1250, 3000), 25.0, 55.0, -1100, 3000)
+    else:
+        bad.append('no Import/waterlevel.png (ue/export/export_substrate.mjs): the shore band at a fixed height')
 else:
     bad.append('no Import/substrate.png (ue/export/export_substrate.mjs): the edges cobbled, the beds mud')
     edge = blend3(S['Mud'], S['RockyFloor'], smooth(z, 1700.0, 1800.0, -1600, 1500), -650, 2400)
@@ -162,6 +181,23 @@ if tex:
     uv = node(unreal.MaterialExpressionAppendVector, -1050, 2050); link(u, '', uv, 'A'); link(v, '', uv, 'B')
     ts = node(unreal.MaterialExpressionTextureSample, -900, 2050); ts.set_editor_property('texture', tex); link(uv, '', ts, 'UVs')
     can = op(unreal.MaterialExpressionMultiply, mask(ts, 'rgb', -700, 2000), var, -550, 2000)
+    # (the canopy as it looks from the side, as the far land beyond (make_farland_material.py): the photo's olive-grey saturated back to
+    # green, darkened to a canopy's ~0.03–0.06, and its crowns — the 64-m tile's lit tops and dark gaps; the photo alone read as lawn)
+    cpa = unreal.load_asset('/Game/HotBrook/Textures/T_FarCanopyA')
+    cc = node(unreal.MaterialExpressionCustom, -400, 2000); cc.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+    cc.set_editor_property('code', 'float lc = dot(C, float3(0.3, 0.59, 0.11)); float3 g = max(lc + (C - lc) * 1.8, 0.0); return g * 0.42 * lerp(0.7, 1.15, A);')
+    cins = []
+    for nm in ('C', 'A'):
+        ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); cins.append(ci)
+    cc.set_editor_property('inputs', cins); link(can, '', cc, 'C')
+    if cpa:
+        cxy = node(unreal.MaterialExpressionComponentMask, -1100, 2450); cxy.set_editor_property('r', True); cxy.set_editor_property('g', True); cxy.set_editor_property('b', False); link(wp, '', cxy, '')
+        cdv = node(unreal.MaterialExpressionDivide, -950, 2450); link(cxy, '', cdv, 'A'); cdv.set_editor_property('const_b', 6400.0)
+        cts = node(unreal.MaterialExpressionTextureSample, -800, 2450); cts.set_editor_property('texture', cpa); cts.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_GRAYSCALE); link(cdv, '', cts, 'UVs')
+        link(mask(cts, 'r', -650, 2450), '', cc, 'A')
+    else:
+        bad.append('no T_FarCanopyA (make_farland_material.py imports it): the far canopy without its crowns'); one = node(unreal.MaterialExpressionConstant, -650, 2450); one.set_editor_property('r', 0.6); link(one, '', cc, 'A')
+    can = cc
     cam = node(unreal.MaterialExpressionCameraPositionWS, -1100, 2300)
     dist = node(unreal.MaterialExpressionDistance, -900, 2300); link(cam, '', dist, 'A'); link(wp, '', dist, 'B')
     far = smooth(dist, 90000.0, 140000.0, -700, 2300)

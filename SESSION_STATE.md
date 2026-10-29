@@ -355,7 +355,34 @@ plants, textures. Photos are private: never commit or publish them.
   tadpoles (HERP3.ON 0, not drawn); the OSU perched osprey + the loons unused; fern_grass / stones_grass downloads unused; the far
   landscape's void past the far grid; an autumn tint for the ferns and the Megaplants ground plants; the Rollins wind farm (30 km W).
   The human was told: listing sites that blocked automation are in tools/hotbrook/data/listings/notes.md (save by hand); photos for
-  the photo match go to G:\HotBrookUE\Importeference\ (private: EXIF GPS/heading → reproduce the view → compare → fix).
+  the photo match go to G:\HotBrookUE\Import\reference\ (private: EXIF GPS/heading → reproduce the view → compare → fix).
+  + 2026-10-29 THE HUMAN: "hold off on all the graphics work ... the original full scale 3d model was better than unreal"; "put everything
+  together we have gathered and make a research paper about maine ecosystems"; "it should be on github and checked multiple times for
+  accuracy". IN PROGRESS: docs/paper/ (hot_brook_lakes.md + figures/fig1_bathymetry.py/.png, made). 14 digest agents read every research
+  note into the session scratchpad's paper/digests/ (brief: paper/DIGEST_BRIEF.md); section 5 (what building taught, from FINDINGS.md)
+  drafted in paper/draft_s5.md. NEXT: write sections 1-4 + 6 from the digests; then verification passes (claims vs notes, references vs
+  the real publications, model claims vs code, a skeptical review), fix, re-check; commit + push. The Unreal photo-match work (below)
+  waits on its gate (gate_brook2.txt on occ-server) - commit it separately.
+  + 2026-10-25 THE PHOTO MATCH (the human's Google Photos album, 30 photos 2023–2026: saved privately to G:\HotBrookUE\Import\reference\album\, exif.json
+  beside them; never commit or publish them, nor where they were taken). The photos have time + lens, NO GPS (the album
+  stripped it), 3 have a compass bearing. Matched views from the shore, the brook and the air (the spots not recorded here). DONE, NOT YET
+  COMMITTED (waiting on the remote gate, scratchpad gate_brook.txt — src/w3 substrate3.js changed): -hbshot fov=<deg> (and the shot
+  camera unletterboxed); THE FAR LAND (ue/export/build_farland.py → Import/landmarks/farland.glb + farland_photo.jpg + canopy maps;
+  HB_SET=landmarks HB_ONLY=farland import_creatures.py; Scripts/make_farland_material.py M_HB_FarLand; AHotBrookFarLand; data in
+  tools/hotbrook/data/tiles12 + far_naip, git-ignored) — 3DEP ±22 km + skirt to 60 km, Earth's curve (HotBrookCoords::EarthDrop, the
+  far turbines sunk by it), canopy height, seasons; M_Ground's far canopy drawn the same; the beacons held ~1.5 mrad, Glow 300; the
+  ripples (M_LakeWater 3 scales, 'Chop' by the sim's wind, the brook 'Flow' 1); the exposure-bias curve by scene EV (GameMode); the
+  shore band by each cell's own water level (export_substrate.mjs → waterlevel.png); the brook's boulders ×5 (GroundCover, NearBrook);
+  build_substrate3.py's NumPy-2 fix (byte-identical output). TRIED AND TAKEN BACK (2026-10-29): a rockier brook bed in the SIM (cobble
+  0.6 riffles / 0.3 runs and pool) moved the perch's spawning sites — gate check 'perch and pickerel spawn on structure' 0.55 vs band
+  0.48 (margin 0.07, needs > 0.07; HEAD 0.58/0.49). A follow-up: the brook's bed by reach from the photos, then that check.
+  NEXT: commit + push + backup when the gate passes; then THE BOULDERS (close shots of Upper's west shore, 2026-10-25: the shore and
+  shallows' boulders are the Mossy Forest Rock / Mossy Rocks scans, pitted like lava and near-black — the photos show rounded, pale
+  grey granite with lichen; M_MS_Rock's waterline greying (×7 in the band above the water) doesn't show on them: check the instances'
+  custom data 'near' reaches the material under Nanite; try the project's SimpleRocks / Rock_Collection_04 rounder meshes) and
+  the near-shore's light (the photos' tea-amber shallows over pale cobble). Models for the human: the wanted list's §9–13 (newt,
+  crayfish, mussel, snail, dragonfly/damselfly), §19 (redbreast = CC0 Bluegill, fallfish = CC0 Dark Chub, alewife = CC0 Pacific
+  Herring, Tahoe Sucker), §17 ice gear — G:\HotBrookUE\Import\sketchfab\wanted_2026-10-24.md.
 ▶▶▶ RESUME HERE (2026-10-24 ~11:50 EDT by the human's clock). UNREAL: THE WANTED-LIST MODELS ARE DOWNLOADED (the human: "all those are
 downloaded … keep going with the other things too"; and "make sure to keep everything updated" — update this block after EVERY step).
 The 17 zips (C:\Users\james\Downloads\*.zip, 2026-10-24 11:42–11:44) are copied to G:\HotBrookUE\Import\sketchfab\zips\ and unpacked

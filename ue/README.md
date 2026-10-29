@@ -20,9 +20,17 @@ project draws the world in the first person, fed live by it. The browser view, t
   under a lake's surface where that reaches over it at the mouths. Its channel in the ground is carved smooth along its course by
   export_world.mjs (a rounded bed to the sim's depth at each metre of the way, 4 m either side, banks over 4 m) — the sim's 5-m
   cells had left square shallow steps.
+- **The ripples** — `M_LakeWater`'s surface: three scales of the Water plugin's wave normals (35 cm, 1.1 m, 3.2 m) drifting different
+  ways, their strength 'Chop' set by `AHotBrookWaterSurface` from the sim's wind (a mirror under ~0.5 m/s, a chop by ~6 m/s); the
+  brook's own instance always broken and three times as quick ('Flow' 1). The two big repeats it had (2.6 and 7 m, at a tenth) read
+  close to as slow glassy swells carrying broad sheets of sky — the human's photos (2026-10-25) show centimetre ripples.
 - **The ground** — `M_Ground`: Quixel Megascans forest floors (needles and moss, broadleaf litter, moss carpets), rocky floor on
   slopes, the lakes' edges and beds by the sim's substrate (below), and past ~900 m the aerial photos' canopy (the trees stream
   only within ~1.2 km).
+- **The shore band** — the lakes' cobble, gravel and sand run up the bank only ~0.25–0.55 m above the water beside them, each spot's
+  own level (`Import/waterlevel.png`, the sim's GEO.level per 5-m cell, from `ue/export/export_substrate.mjs`): a fixed height had
+  stood the band ~1 m tall at Upper and ~1.7 m at Lower — a pale beach ringing every shore where the photos show the forest and its
+  sedges coming to the water's edge.
 - **The forest** — `AHotBrookForest`: the ~1.9 M trees of `Import/trees.bin` (`ue/export/export_forest.mjs`), streamed in 200-m
   tiles about the walker, each species drawn with its Quixel Megaplants look-alike (`Import/forest_meshes.json`, written by
   `Scripts/make_forest_meshes.py`): red spruce and balsam fir the Norway spruce, white pine the Baltic pine, cedar the Japanese
@@ -35,13 +43,30 @@ project draws the world in the first person, fed live by it. The browser view, t
   treelines stand black against; the MOON where it is for the sim's date and hour, by this year's phase (its age from a known new
   moon), its disc lit on the sun's side — and its light, a second atmosphere sun, silver-blue, the sun's ×0.004 at the full (as the
   dark-adapted eye sees it), by its phase and height. All fading in as the sun sinks from 2° to 14° under the horizon.
+- **The land beyond** — `AHotBrookFarLand`: the hills and ridges out to 22 km about the lakes, where the landscape stops (the turbines
+  had stood on nothing past its edge, the horizon a void from any height). `ue/export/build_farland.py` (Blender) builds it from public
+  data kept in the git-ignored `tools/hotbrook/data/` — USGS 3DEP ground as the AWS Terrain Tiles serve it (zoom 12, `tiles12/`), each
+  40-m vertex its sample; the forest's ~16-m height on it where the aerial photo (USDA NAIP, `far_naip/`, ~20 m) reads forest (not the
+  lakes, bogs, fields, cuts and roads), ramped in over 600 m from the landscape's edge; the Earth's curve (d²/2R, ×0.87 for the air's
+  refraction, from 3 km out: ~27 m at 20 km; `HotBrookCoords::EarthDrop`, which sinks the turbines past the landscape by the same); a
+  hole where the landscape is, its edge 120 m under it and 4 m below its ground; and a skirt of rings out to 60 km at the land's mean
+  height, curving away, so there is land to the horizon. Its colour (`M_HB_FarLand`, `Scripts/make_farland_material.py`): the photo,
+  its strips' tones matched to the whole's forest (they were flown in different years), Canada past the border filled with the forest's
+  average, the lakes one dark tone; read for the lakes, the open ground and the canopy — the canopy saturated back from NAIP's olive-grey
+  and darkened as a canopy looks from the side, a 64-m tile of crowns over it (`farland_canopy_a/_n.png`: their lit tops, their gaps'
+  shadow); by the date (the forest's leaf calendar, `hb.LeafDate`) the hardwoods' share turned scarlet, orange and gold by stands, then
+  bare grey-brown from late October to mid-May; snow on the open ground, the ice and the bare hardwoods while it lies. The landscape's
+  own far canopy (past ~900 m, `M_Ground`) is drawn the same way. Imported with `HB_SET=landmarks HB_ONLY=farland
+  Scripts/import_creatures.py` (Nanite, its photo at 4096).
 - **The wind farm** — `AHotBrookTurbines`: the Stetson wind farm (2009, 38) and its expansion (2010, 17) on the ridges south-west
   of the lakes — GE 1.5-77s (80-m hubs, 77-m rotors) where the USGS US Wind Turbine Database puts them, each on its ground (the USGS
   elevation service's beyond the landscape), from `ue/export/export_turbines.mjs` (`Import/turbines.json`; the fetched data kept in
   the git-ignored `tools/hotbrook/data/turbines_uswtdb.json`). The turbine is procedural (`ue/export/build_turbine.py`: tower +
   nacelle, and the rotor turning about its hub), imported by `HB_SET=landmarks Scripts/import_creatures.py`. Each yaws slowly into
   the sim's wind; the rotors turn at a GE 1.5's speed for the wind at the hub (still below the 3.5-m/s cut-in, 10–20 rpm); a third
-  carry the red aviation beacon (`M_HB_Beacon`: `Scripts/make_beacon_material.py`), flashing together by night. From the lakes the
+  carry the red aviation beacon (`M_HB_Beacon`: `Scripts/make_beacon_material.py`), flashing together by night — each lamp held at
+  ~1.5 mrad across however far (a 2,000-candela lamp is a bright point from miles off; at its true 0.6 m it vanished past ~1 km, where
+  the human's night photo shows three red lights and their long reflections on the lake). From the lakes the
   expansion's row stands over the western treeline, 2–4 km off — thin at 1280 px, as it should be at the human's 3440.
 - **The forest through the year** — the hardwoods (birch, aspen, red maple, beech, alder, hazel, willows, the young hardwoods) by the
   date, as the browser view's LEAF calendar by species: their own green in summer; from the turning (mid-September for the red maple,
@@ -66,7 +91,10 @@ project draws the world in the first person, fed live by it. The browser view, t
   'Snow') only the shrubs, the fallen logs and the big rocks show — the herbs, ferns, grasses, low berries and small stones are under
   it; the mushrooms only August to October. THE STONES BY THE SIM'S SUBSTRATE (`Import/substrate.bin`,
   below): on a bank as many as the water beside it is stony (a boulder shore strewn, a sandy cove or a muck shore bare), and in the
-  water on a stony bed under 2.5 m — cobble, boulders (the small stones 3–8× too), some breaking the surface. The rocks' material
+  water on a stony bed under 2.5 m — cobble, boulders (the small stones 3–8× too), some breaking the surface; in the brook five times
+  the lakes' (a dozen a 100 m²: the human's photos show them breaking its surface all across the reach below Upper's outlet, its
+  bed cobble where August's low water bares it — a rockier brook bed in the sim itself is a follow-up: it moved where the perch
+  lay, past a gate check's margin). The rocks' material
   (`M_MS_Rock`) knows the waterline: by the instance's nearness to the water (its custom data), below its lake's level grey under a
   brown film of algae, up to ~0.6 m above it bare granite (the ice push scours the band), its moss and lichen above.
 - **The bed and the shores** — `ue/export/export_substrate.mjs` writes the sim's substrate map (src/w3/geometry.js `GEO.sub`: per
@@ -185,7 +213,16 @@ project draws the world in the first person, fed live by it. The browser view, t
 - **Coordinates** — the sim's metres (x east, y north, heights above sea level) to Unreal's cm: X east, Y south, Z up, heights
   less 110 m (`HotBrookCoords.h`).
 - **Checking the view** — run the game with `-hbshot="X,Y,Yaw,Pitch,Name;…"` (sim metres, degrees) and `-hbwait=<s>`: it stands at
-  each spot and saves `Saved/Screenshots/<Name>.png`, then quits.
+  each spot and saves `Saved/Screenshots/<Name>.png`, then quits. A spot's sixth field takes console commands (`:` for a space, `|`
+  between them) and `air=<m>` (a camera that high over the ground or water), `fov=<deg>` (the horizontal angle: a photo's lens — a
+  phone's main camera ~72 across a 4:3 frame, its ultra-wide ~100–110, a 300-mm telephoto on an APS-C body ~5).
+- **Matching the human's photos** (`G:\HotBrookUE\Import\reference\`, private — never committed or published): each photo's time,
+  lens and (where the phone kept it) compass bearing from its EXIF; the view reproduced with `-hbshot` at that spot, hour, date
+  (`hb.LeafDate`, `hb.WeedsDate`) and lens; compared. What the first album changed (2026-10-25): the land beyond the landscape, the
+  beacons at a distance, the ripples, the shore band's height, the brook's boulders, and the eye's adaptation —
+  `AHotBrookGameMode` adds an exposure-bias curve over the level's −1 EV by the scene's average EV100 (this world's units: its sun is
+  10 lux): +1 on the open water at noon (EV ~1.4; the photos are bright, the −1 alone made noon a dull evening), 0 in the woods
+  (~−2.3, as it was matched), +0.7 at dusk on the water (~−5, the eye opening to it), 0 at night.
 
 Engine: **UE 5.8** (`G:\Program Files\EpicGames\UE_5.8`; Megaplants need 5.8's Procedural Vegetation Editor, Dynamic Wind and
 Nanite Foliage — `ue/retarget.ps1` moved the project), built with Visual Studio 2026's MSVC 14.51.

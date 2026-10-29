@@ -2,7 +2,7 @@
 # absorbed and scattered through the water's depth, the bed seen through the shallows, Lumen's reflections of the shore and the sky on
 # top) with the Hot Brook lakes' tea colour — water stained by the forest's dissolved organic matter absorbs blue most, then green, so
 # the shallows over the cobbles go amber and the deep water dark brown-black (the human's photos) — and a light breeze's ripples (the
-# Water plugin's tiling wave normals, two scales drifting across each other).
+# Water plugin's tiling wave normals, three scales drifting across each other, as strong as the sim's wind makes them).
 #   UnrealEditor-Cmd.exe G:\HotBrookUE\HotBrook.uproject -run=pythonscript -script=G:/HotBrookUE/Scripts/make_water_material.py
 import unreal
 L = unreal.MaterialEditingLibrary
@@ -23,20 +23,33 @@ def const3(r, g, b, x, y):
     n = node(unreal.MaterialExpressionConstant3Vector, x, y); n.set_editor_property('constant', unreal.LinearColor(r, g, b, 1)); return n
 def const1(v, x, y):
     n = node(unreal.MaterialExpressionConstant, x, y); n.set_editor_property('r', v); return n
-# the ripples: world-space UVs at two scales, panning in two directions, the normals averaged and flattened
+# the ripples: world-space UVs at three scales — the capillary ripples (35 cm a repeat), a chop (1.1 m) and the wind's longer waves
+# (3.2 m) — drifting different ways, together as one slope; their strength by 'Chop' (0 a mirror calm, 1 a 6-m/s chop: the actor sets
+# it from the sim's wind), 'Flow' (the brook: 1) driving them three times as fast. The two big repeats it had (2.6 and 7 m, at a tenth)
+# read close to as slow glassy swells carrying broad sheets of the sky; the lakes' own ripples are centimetres to a few tens
 nt = unreal.load_asset('/Water/Textures/Normals/T_Water_TilingNormal_Waves_02')
 wp = node(unreal.MaterialExpressionWorldPosition, -1600, 0)
 xy = node(unreal.MaterialExpressionComponentMask, -1400, 0); xy.set_editor_property('r', True); xy.set_editor_property('g', True); xy.set_editor_property('b', False); link(wp, '', xy, '')
+def scalar(name, v, x, y):
+    s = node(unreal.MaterialExpressionScalarParameter, x, y); s.set_editor_property('parameter_name', name); s.set_editor_property('default_value', v); return s
+chop, flow = scalar('Chop', 0.4, -1400, 500), scalar('Flow', 0.0, -1600, 400)
+tm = node(unreal.MaterialExpressionTime, -1600, 300)
+fl = node(unreal.MaterialExpressionMultiply, -1400, 400); link(flow, '', fl, 'A'); fl.set_editor_property('const_b', 2.0)
+fl1 = node(unreal.MaterialExpressionAdd, -1300, 400); link(fl, '', fl1, 'A'); fl1.set_editor_property('const_b', 1.0)
+ft = node(unreal.MaterialExpressionMultiply, -1200, 350); link(tm, '', ft, 'A'); link(fl1, '', ft, 'B')
 def ripple(scale, sx, sy, yy):
     d = node(unreal.MaterialExpressionMultiply, -1200, yy); link(xy, '', d, 'A'); d.set_editor_property('const_b', 1.0 / scale)
-    p = node(unreal.MaterialExpressionPanner, -1000, yy); link(d, '', p, 'Coordinate'); p.set_editor_property('speed_x', sx); p.set_editor_property('speed_y', sy)
+    p = node(unreal.MaterialExpressionPanner, -1000, yy); link(d, '', p, 'Coordinate'); link(ft, '', p, 'Time'); p.set_editor_property('speed_x', sx); p.set_editor_property('speed_y', sy)
     t = node(unreal.MaterialExpressionTextureSample, -800, yy); t.set_editor_property('texture', nt); t.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
     link(p, '', t, 'UVs'); return t
-r1, r2 = ripple(260.0, 0.010, 0.006, -100), ripple(700.0, -0.005, 0.008, 150)   # (cm a repeat: ripples of a light breeze)
-avg = node(unreal.MaterialExpressionAdd, -550, 0); link(r1, 'RGB', avg, 'A'); link(r2, 'RGB', avg, 'B')
-flat = node(unreal.MaterialExpressionFlattenNormal, -350, 0) if hasattr(unreal, 'MaterialExpressionFlattenNormal') else None
-nrm = node(unreal.MaterialExpressionLinearInterpolate, -350, 0)
-link(const3(0, 0, 1, -550, 200), '', nrm, 'A'); link(avg, '', nrm, 'B'); nrm.set_editor_property('const_alpha', 0.1)
+r1, r2, r3 = ripple(35.0, 0.22, 0.13, -200), ripple(110.0, -0.07, 0.10, 0), ripple(320.0, 0.035, -0.02, 200)
+nrm = node(unreal.MaterialExpressionCustom, -500, 0); nrm.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+nrm.set_editor_property('code', 'float2 d = N1.xy * (0.05 + 0.40 * Chop) + N2.xy * (0.03 + 0.32 * Chop) + N3.xy * (0.02 + 0.22 * Chop); return normalize(float3(d, 1.0));')
+ins = []
+for nm in ('N1', 'N2', 'N3', 'Chop'):
+    ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); ins.append(ci)
+nrm.set_editor_property('inputs', ins)
+link(r1, 'RGB', nrm, 'N1'); link(r2, 'RGB', nrm, 'N2'); link(r3, 'RGB', nrm, 'N3'); link(chop, '', nrm, 'Chop')
 out(nrm, '', unreal.MaterialProperty.MP_NORMAL)
 out(const3(0.0, 0.0, 0.0, -200, -300), '', unreal.MaterialProperty.MP_BASE_COLOR)
 out(const1(0.03, -200, -200), '', unreal.MaterialProperty.MP_ROUGHNESS)

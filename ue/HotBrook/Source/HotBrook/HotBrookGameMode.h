@@ -28,7 +28,7 @@ public:
 private:
 	bool bHaveStart = false; FVector StartAt = FVector::ZeroVector; float StartYaw = 0.f;
 	bool FindStart();
-	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; FString Near; double Air = 0; };   // (Air: a camera that many metres over the ground or the water there)
+	struct FShot { double X, Y, Yaw, Pitch; FString Name, Cmds; FString Near; double Air = 0, Fov = 0; };   // (Air: a camera that many metres over the ground or the water there; Fov: its horizontal angle, a photo's lens)
 	TArray<FShot> Shots; int32 NextShot = 0; FTimerHandle ShotTimer; int32 Framed = 0;
 	UPROPERTY() TObjectPtr<class ACameraActor> ShotCam = nullptr;
 	void PlaceNext();

@@ -59,7 +59,7 @@ def fetch(W, k):
             xc = np.clip(x, 0, NX - 1); yc = np.clip(y, 0, NY - 1)
             hit = alive & (out | ~lake[yc, xc])
             F[t, hit] = s * C
-            cls[t, hit] = np.where(out[hit], -1, W['cover'][yc[hit], xc[hit]])
+            cls[t, hit] = np.where(out[hit], -1, W['cover'][yc[hit], xc[hit]].astype(np.int16))   # (NumPy 2: the uint8 cover widened for the −1)
             alive &= ~hit
         F[t, alive] = s * C
     tmin = F.argmin(axis=0)

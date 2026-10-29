@@ -6,7 +6,10 @@
 //     A organic muck; the land cells within 4 cells of the water given the mean of the wet cells about them (the shore above the
 //     waterline as the bed below it: a beach's sand runs up it, a boulder shore's stones); farther land 0 (the forest floor's own);
 //   - substrate.bin: "HBU1", int32 nx, ny, float32 x0, y0, cell (m), then the same bytes (rock, gravel, sand, muck a cell, rows from
-//     the south) for the C++ side; plus substrate.json (its extent, for the material).
+//     the south) for the C++ side; plus substrate.json (its extent, for the material);
+//   - waterlevel.png: 8-bit grey over the same grid, each cell's local water level (GEO.level: a lake's or the brook's surface, on land
+//     the nearer water's) as cm above 127.5 m — Upper 143, Lower 73 —, so M_Ground's shore band stands its own height above the
+//     water beside it at either lake (a fixed height had it ~1 m tall at Upper and ~1.7 m at Lower).
 //   HB_WORLD=true node ue/export/export_substrate.mjs [out dir, default G:/HotBrookUE/Import]
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -37,6 +40,10 @@ for (let r = 0; r < NY; r++) { raw[r * (1 + NX * 4)] = 0; Buffer.from(px.buffer,
 const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type, 'ascii'), data]); const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(td) >>> 0); return Buffer.concat([len, td, crc]); };
 const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(NX, 0); ihdr.writeUInt32BE(NY, 4); ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
 writeFileSync(join(OUT, 'substrate.png'), Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]));
+const lraw = Buffer.alloc(NY * (1 + NX));
+for (let r = 0; r < NY; r++) { lraw[r * (1 + NX)] = 0; for (let q = 0; q < NX; q++) lraw[r * (1 + NX) + 1 + q] = Math.max(0, Math.min(255, Math.round((GEO.level[r * NX + q] - 127.5) * 100))); }
+const lhdr = Buffer.alloc(13); lhdr.writeUInt32BE(NX, 0); lhdr.writeUInt32BE(NY, 4); lhdr[8] = 8; lhdr[9] = 0;
+writeFileSync(join(OUT, 'waterlevel.png'), Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', lhdr), chunk('IDAT', zlib.deflateSync(lraw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]));
 const head = Buffer.alloc(24); head.write('HBU1', 0, 'ascii'); head.writeInt32LE(NX, 4); head.writeInt32LE(NY, 8); head.writeFloatLE(GEO.X0, 12); head.writeFloatLE(GEO.Y0, 16); head.writeFloatLE(GEO.CELL, 20);
 writeFileSync(join(OUT, 'substrate.bin'), Buffer.concat([head, Buffer.from(px.buffer)]));
 writeFileSync(join(OUT, 'substrate.json'), JSON.stringify({ nx: NX, ny: NY, x0: GEO.X0, y0: GEO.Y0, cell: GEO.CELL, note: 'RGBA = rock, gravel, sand, organic muck (0-255); row 0 the south; land within 4 cells of the water its neighbours\' mean' }, null, 1));

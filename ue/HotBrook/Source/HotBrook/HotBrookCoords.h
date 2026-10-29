@@ -12,4 +12,7 @@ namespace HotBrookCoords
 	inline FVector2D ToSim(const FVector& P) { return FVector2D(P.X / 100.0, -P.Y / 100.0); }
 	inline float HeightToUE(double H) { return (float)((H - Datum) * 100.0); }
 	inline double HeightToSim(double Z) { return Z / 100.0 + Datum; }
+	// (the Earth's curve beyond the landscape, m: what a thing that far off sinks below the lakes' level — d²/2R with the air's usual
+	// refraction, from 3 km out; ue/export/build_farland.py drops the far land by the same)
+	inline double EarthDrop(double X, double Y) { return FMath::Max(0.0, X * X + Y * Y - 9.0e6) / (2.0 * 6371000.0) * 0.87; }
 }

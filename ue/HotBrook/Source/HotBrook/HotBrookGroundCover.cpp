@@ -155,7 +155,10 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 		const bool bWet = K.bRock && !FCString::Strstr(K.Source, TEXT("Embankment"));   // (a kind that lies on the bed too: not the embankments' slabs)
 		const float WMax = Stand + (bNearAny ? K.Shore * (K.bRock ? 2.5f : 1.f) : 0.f); if (WMax <= 0.f) continue;
 		FRandomStream R((int32)(CX * 92837111 ^ CY * 689287499 ^ (k + 1) * 283923481));
-		const int32 N = FMath::FloorToInt(KindDensity[k] * DensityScale * CELL * CELL * WMax + R.FRand());
+		// (the brook's riffles: its boulders five times the lakes' stony shallows' — a dozen a 100 m², breaking its surface all across the
+		// reach below Upper's outlet, the human's photos — the extra ones kept only in the brook)
+		const int32 Boost = K.bWaterOnly && Water->NearBrook(FBox2D(FVector2D(X0, Y0), FVector2D(X0 + CELL, Y0 + CELL)), 20.0) ? 5 : 1;
+		const int32 N = FMath::FloorToInt(KindDensity[k] * DensityScale * CELL * CELL * WMax * Boost + R.FRand());
 		for (int32 n = 0; n < N; n++) {
 			const double X = X0 + R.FRand() * CELL, Y = Y0 + R.FRand() * CELL;
 			// in a patch? (the patch noise above 1 − cover, its edge softened)
@@ -168,6 +171,7 @@ void AHotBrookGroundCover::MakeCell(int32 Ring, int32 CX, int32 CY)
 			if (Water->SurfaceAt(At0, WaterZ)) {
 				Near = 1.f;   // (in the water: only stones, where the sim's bed is stony, under 2.5 m)
 				float Gw; if (!bWet || !bSub || !Water->GroundAt(At0, Gw) || WaterZ - Gw > 250.f) continue;
+				if (Boost > 1 && !Water->InBrook(At0) && R.FRand() * Boost > 1.f) continue;
 				W = K.Shore * 2.5f * FMath::SmoothStep(0.15f, 0.6f, Stony);   // (a boulder bed strewn, a sandy cove's or a muck bed's almost bare)
 			} else {
 				if (K.bWaterOnly) continue;
