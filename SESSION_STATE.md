@@ -361,7 +361,11 @@ plants, textures. Photos are private: never commit or publish them.
   7_back; refs_final.md when merged); sections_v0/ = before the checks; digests/ = 14 digests of every research note; verify/*_r1.md =
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
-  STILL RUNNING: the reference merger (→ sections/refs_final.md + verify/refs_crosscheck.md). NEXT: (1) reference checkers against the
+  DONE since: refs merged + harmonised (refs_final.md, 1,042 entries; 57 in-text fixes; 0 orphans; verify/refs_crosscheck_r2.md;
+  sections_v1/ = the state after round 1 + refs). RUNNING (2026-10-29 ~23:30): 8 reference checkers (refcheck/chunk_01..08.md →
+  chunk_NN_checked.md + chunk_NN_log.md; brief REFCHECK_BRIEF.md) and 10 round-2 checkers (VERIFY2_BRIEF.md; logs verify/*_r2.md;
+  they edit sections/*.md). THEN: merge the checked chunks into refs_final.md, apply in-text changes from the chunk logs, a
+  whole-paper consistency review, split for GitHub, commit + push. (Old plan below kept for reference.) (1) reference checkers against the
   real publications (web/Crossref, no email in requests; split refs_final into ~8 chunks; apply in-text citation fixes); (2) ROUND 2:
   per-section re-check of every round-1 change + a ≥30 % fresh sample, and a whole-paper consistency/skeptic review (abstract, intro,
   §6 vs body; repeated numbers; pronouns neutral; privacy); (3) split into parts for GitHub (README + ~5 part files + references.md +
