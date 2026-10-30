@@ -362,7 +362,13 @@ plants, textures. Photos are private: never commit or publish them.
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
   ▶▶▶ PAPER RESUME (2026-10-30 ~02:30, before a compaction). Folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/
-  ▶ UPDATE 2 (2026-10-30): item 4 DONE (refs merged, 0 orphans). Paper assembled and split by paper/publish.py into docs/paper/
+  ✅ PAPER RELEASED (2026-10-30): docs/paper/ committed a4b5c82, tag paper-v1.0 pushed; renders on GitHub (whole file: 50 tables +
+  Fig 1). Final reads A/B/C applied (verify/final_read_*.md in the scratchpad); refs 1,043, 0 orphans both ways. Camps note scrubbed
+  (3ac412c) — old text still in git history (ffca5e6..8fefee5): rewriting history = the human's call. To revise: edit
+  paper/sections/*.md, python -I paper/publish.py, re-run verify/merge_helpers/xcheck3.py + final_check.py, commit (v1.1 tag).
+  Open, minor: Begley 2017 identity; 'horn pout' vs 'hornpout' (check the 1949 sheet); sucker hatch 0.05 vs field 0.3–3 %;
+  white perch field growth 0.67–0.8 mm/d unsourced in §3.6; §3.1.3/§3.2.6 overlap; 'abstract' vs 'abstract only' tags.
+  (older) ▶ UPDATE 2 (2026-10-30): item 4 DONE (refs merged, 0 orphans). Paper assembled and split by paper/publish.py into docs/paper/
   (README + 5 parts + references.md; uncommitted until the final read). 3 final readers RUNNING → paper/verify/final_read_{A,B,C}.md
   (fix tables vs sections/). Then: apply fixes, python -I publish.py, commit docs/paper, push, report. If the readers are gone
   without their files, re-run them (briefs: summary-vs-body; numbers across sections; rendering/leftovers/privacy).
