@@ -361,6 +361,10 @@ plants, textures. Photos are private: never commit or publish them.
   7_back; refs_final.md when merged); sections_v0/ = before the checks; digests/ = 14 digests of every research note; verify/*_r1.md =
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
+  ~01:30 10-30: ROUND 2 DONE for 2, 3.1-3.5, 3.7, 3.8, 4, 5, 1+6 (logs verify/*_r2.md; editor items applied: abstract + back matter
+  match the corrected body; 'slightly turbid' cut after reading both 1949 scans; Hellquist, Hubbard Brook, storm share, bullfrog cue,
+  reaction distance, pumpkinseed snail shift). Waiting: round 2 of 3.6; 8 reference checkers. Repo-doc nits for later: FISH_CENSUS.md
+  (alewife 'left out'; mean 113 g vs 82-112 kg/ha).
   DONE since: refs merged + harmonised (refs_final.md, 1,042 entries; 57 in-text fixes; 0 orphans; verify/refs_crosscheck_r2.md;
   sections_v1/ = the state after round 1 + refs). RUNNING (2026-10-29 ~23:30): 8 reference checkers (refcheck/chunk_01..08.md →
   chunk_NN_checked.md + chunk_NN_log.md; brief REFCHECK_BRIEF.md) and 10 round-2 checkers (VERIFY2_BRIEF.md; logs verify/*_r2.md;
