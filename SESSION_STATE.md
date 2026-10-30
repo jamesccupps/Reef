@@ -356,6 +356,18 @@ plants, textures. Photos are private: never commit or publish them.
   landscape's void past the far grid; an autumn tint for the ferns and the Megaplants ground plants; the Rollins wind farm (30 km W).
   The human was told: listing sites that blocked automation are in tools/hotbrook/data/listings/notes.md (save by hand); photos for
   the photo match go to G:\HotBrookUE\Import\reference\ (private: EXIF GPS/heading → reproduce the view → compare → fix).
+  + 2026-10-29 ~22:30 PAPER — ▶ RESUME HERE. Working folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/ (all on disk):
+  sections/*.md = the paper's parts (0_front, 1_intro, 2_study_system, 3_0_head, 3_1..3_8, 4_model, 5_lessons, 6_discussion,
+  7_back; refs_final.md when merged); sections_v0/ = before the checks; digests/ = 14 digests of every research note; verify/*_r1.md =
+  ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
+  assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
+  STILL RUNNING: the reference merger (→ sections/refs_final.md + verify/refs_crosscheck.md). NEXT: (1) reference checkers against the
+  real publications (web/Crossref, no email in requests; split refs_final into ~8 chunks; apply in-text citation fixes); (2) ROUND 2:
+  per-section re-check of every round-1 change + a ≥30 % fresh sample, and a whole-paper consistency/skeptic review (abstract, intro,
+  §6 vs body; repeated numbers; pronouns neutral; privacy); (3) split into parts for GitHub (README + ~5 part files + references.md +
+  figures/), commit + push; tell the human the byline is 'James Cupps' (changeable). The human asked for the paper on GitHub and
+  'checked multiple times for accuracy'. DONE ALONGSIDE: FINDINGS.md + config.js comment: the alewife's 38 % hatch is Edsall 1970
+  (not Kellogg 1982).
   + 2026-10-29 ~20:00 PAPER STATUS: all sections drafted in the scratchpad's paper/sections/ (1_intro, 2_study_system, 3_0..3_8, 4_model,
   5_lessons, 6_discussion, 7_back; ~77k words); paper/assemble.py joins them into docs/paper/hot_brook_lakes.md (and splits off
   refs_all.md, gaps_conflicts.md). ROUND-1 CHECKS RUNNING: 9 claim checkers (2, 3.1-3.8; brief VERIFY_BRIEF.md; logs paper/verify/*_r1.md;
