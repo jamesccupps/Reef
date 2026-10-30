@@ -38,15 +38,15 @@ Docks run 6–16 m long, with a median of about 9 m. Most are straight or L-shap
 
 **South and south-east: 5.** L01 and L02 are on Lower's south shore at the brook end; L04–L06 are at the end of Lower Lake Rd.
 
-**East shore on Woodland Ridge Rd: a new subdivision.** The E911 address points 499–665 were all created 2023–2026, typed "Residential".
+**East shore on Woodland Ridge Rd: a new subdivision.** Its E911 address points were all created 2023–2026, typed "Residential".
 - Spring 2020 shows only forest.
-- By 2023–2024 there is a camp at 665 (L10), a camper and building site at 499–503 (L13), and only a driveway pad at 615/623 (L11).
-- Nothing is visible yet at 507–515 (L12).
+- By 2023–2024 there is a camp (L10), a camper and building site (L13), and only a driveway pad (L11).
+- Nothing is visible yet at L12.
 
 **Black Point (Black Point Rd loop, built by 2009): 6.**
-- 35 BPR (L20) has a camp with a seasonal dock.
-- 31/32 BPR (L21, L22) are trailer/RV camps.
-- 17 BPR (L23) is a small camp.
+- L20 has a camp with a seasonal dock.
+- L21 and L22 are trailer/RV camps.
+- L23 is a small camp.
 - L24 and L25, on Woodland Ridge Rd, are at the head of the cove.
 - L26 is a camp with a trailer.
 
@@ -59,9 +59,9 @@ Docks run 6–16 m long, with a median of about 9 m. Most are straight or L-shap
 
 ### Launch
 
-**Corrected by the human (2026-10-23), with two Google Earth 2024 screenshots:** "huff road leads to camps". The launch is the **gravel landing at the head of Upper's east cove** (about lon −67.92871, lat 45.60935): the gravel lot that runs to the shore beside U20/U21, reached by the east-cove road's switchbacks. Its 8–12 parked vehicles (2003–05, 2015, 2023) and the boats and canoes on the lawn, read below as U20's, are the launch's. The human: "i think this is it". The green-roofed U20's purpose is unknown to the human too. Rt 169 paved and the camp and town roads gravel: confirmed. Docks: "most camps on the lake or with a path to the lake have a removable dock, a lot are smaller".
+**Corrected by the human (2026-10-23), with two Google Earth 2024 screenshots:** "huff road leads to camps". The launch is the **gravel landing at the head of Upper's east cove**: the gravel lot that runs to the shore beside U20/U21, reached by the east-cove road's switchbacks. Its 8–12 parked vehicles (2003–05, 2015, 2023) and the boats and canoes on the lawn, read below as U20's, are the launch's. The human: "i think this is it". The green-roofed U20's purpose is unknown to the human too. Rt 169 paved and the camp and town roads gravel: confirmed. Docks: "most camps on the lake or with a path to the lake have a removable dock, a lot are smaller".
 
-*What the review first said (superseded):* an unimproved sand-and-gravel ramp at the end of Huff Rd, at about lon −67.92940, lat 45.60388. Huff Rd is a town road (E911 class "Local") that runs about 240 m from Rt 169 to Upper's south shore.
+*What the review first said (superseded):* an unimproved sand-and-gravel ramp at the end of Huff Rd. Huff Rd is a town road (E911 class "Local") that runs about 240 m from Rt 169 to Upper's south shore.
 - The "ramp" is a vehicle-worn strip into the water in every year from 2003–05 to 2024, with a small turnaround: a camp lot's lawn and path.
 - In some years there is a narrow dock or boats beside it (low confidence).
 - Confidence is medium.
@@ -86,7 +86,7 @@ Most camp roads are already visible in the 2003–05 leaf-off photo. They were p
 
 ### Beaches and lawns
 
-**The north-east sand beach on Upper** runs from (−67.9280, 45.6258) to (−67.9302, 45.6271), about 220 m.
+**The north-east sand beach on Upper** is about 220 m long.
 - This is MDIFW's "large sandy beach in the NE".
 - Its exposed area changes with the lake level: about 1,600 m² in Aug 2009 and about 1,300 m² in Sep 2023.
 - There are swim floats off it in 2021 and 2023.
@@ -156,7 +156,7 @@ All of these are under the scratchpad `camps\` folder named above.
 **MDIFW mentions camps only on Upper's south shore.** The imagery also shows the NE row (11) and the east cove (4).
 
 **The E911 database is incomplete and partly ahead of the buildings.**
-- Upper's NE row of 11 dwellings has only one E911 point, 3 N Haney Rd. That house was itself new between spring 2020 and Aug 2021; its point was created in 2024. OSM's tracing covers this row instead.
+- Upper's NE row of 11 dwellings has only one E911 point, for one house. That house was itself new between spring 2020 and Aug 2021; its point was created in 2024. OSM's tracing covers this row instead.
 - Five Woodland Ridge points (507, 511, 515, 615, 623) mark lots with no building visible.
 
 **MS footprints miss camps under canopy and include fragments.** About 15 dwellings have no footprint; these were placed by eye, with their size given in the notes. Fragments under 15 m² were ignored.
@@ -191,7 +191,7 @@ All of these are under the scratchpad `camps\` folder named above.
 7. **Roads.** Is Rt 169 paved? Are the town roads (Haney, Toupin Mountain, Huff) all gravel?
 
 **Where a high-resolution summer screenshot (Jul–Aug, docks in) would settle questions:**
-- Upper NE row (45.6265–45.6305, −67.934…−67.928): the dock count.
-- Upper south shore (45.6025–45.6045, −67.938…−67.927): the docks and the launch at 45.6039, −67.9294.
-- Lower NE and Black Point (45.647–45.659, −67.936…−67.925): docks, and the Boat Landing Rd end at 45.6540, −67.9256.
-- Woodland Ridge Rd (45.636–45.647, −67.933…−67.929): which lots have been built on.
+- Upper NE row: the dock count.
+- Upper south shore: the docks and the superseded launch site.
+- Lower NE and Black Point: docks, and the Boat Landing Rd end.
+- Woodland Ridge Rd: which lots have been built on.
