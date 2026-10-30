@@ -779,7 +779,7 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
 ## 2026-10-19 — Zero-order algal growth gave the zooplankton a free lunch (docs/HOT_BROOK_3D.md §4 "Item 4 found")
 - **What.** The algae's growth term, inherited from the 2-D sim, was `GROW·light·nutrient·(1 − b)`, with no factor of the
   biomass b. Grazed to almost nothing, the algae kept making ~90 % of their ungrazed production, so the zooplankton were fed
-  without limit and Daphnia held 900–1,500 µg/L all summer in a lake whose field level is ~50–150.
+  without limit and Daphnia held 900–1,500 µg/L all summer in a lake whose crustacean zooplankton is ~50–150 µg/L in the field (Daphnia alone is near 1 in the analogue lakes; corrected 2026-10-30).
 - **How.** The 3-D water run alone for a year without fish (true lakes, seed 611, CPU `Env3`), with tallies of the algae's
   growth and die-off (chem3 `algProd`, `algDecay`), their net production from their own O₂, and the zooplankton's production
   (`zooProd`); a zooplankton-free run to calibrate the replacement.
@@ -799,7 +799,7 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
   wrong, and the sim's year 1 overshoots the only Maine whole-lake counts.
 - **Total fish biomass.** Rupp & DeRoche 1965 (*TAFS* 94:9, rotenone plus SCUBA counts of sunken fish, three small Maine lakes)
   give 44.5, 70.1 and 117.1 kg/ha for ALL species (Table 12: 39.7 / 62.5 / 104.5 lb/acre — checked in the scan). The sim's lakes
-  grow to 140–165 kg/ha in year 1, and its white perch alone (55–63 kg/ha) exceed two of the three lakes' totals. Per species
+  grow to 140–165 kg/ha in year 1, and its white perch alone (55–63 kg/ha) exceed the lowest of the three lakes' totals (44.5; corrected 2026-10-30). Per species
   there: pickerel 4.1 and 8.4 kg/ha, white sucker 24–38, pumpkinseed 14.9 (mostly young-of-year, in a Washington County lake
   without perch or bass).
 - **Predator diets.** Cooper 1941 (MDIFW Fish Survey Report 4; Tables XVI–XVII, checked in the scan), summer, white-perch lakes:
