@@ -362,7 +362,11 @@ plants, textures. Photos are private: never commit or publish them.
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
   ▶▶▶ PAPER RESUME (2026-10-30 ~02:30, before a compaction). Folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/
-  ▶ UPDATE 2026-10-30 (after the compaction): EDITOR_TODO items 1-3 DONE (see its 'Progress' list). Item 4 RUNNING: a background
+  ▶ UPDATE 2 (2026-10-30): item 4 DONE (refs merged, 0 orphans). Paper assembled and split by paper/publish.py into docs/paper/
+  (README + 5 parts + references.md; uncommitted until the final read). 3 final readers RUNNING → paper/verify/final_read_{A,B,C}.md
+  (fix tables vs sections/). Then: apply fixes, python -I publish.py, commit docs/paper, push, report. If the readers are gone
+  without their files, re-run them (briefs: summary-vs-body; numbers across sections; rendering/leftovers/privacy).
+  ▶ UPDATE 1: EDITOR_TODO items 1-3 DONE (see its 'Progress' list). Item 4 was: a background
   agent merges refcheck/chunk_*_checked.md into sections/refs_final.md, applies the logs' in-text changes and re-runs the cross-check;
   its log will be verify/refs_merge_final.md (sections backed up to sections_v2/ first). If it is gone without that log, re-run the
   same task with a new agent from sections_v2/. Then items 5 (assemble, final read, split, commit, push, report).
