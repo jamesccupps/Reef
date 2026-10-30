@@ -362,7 +362,11 @@ plants, textures. Photos are private: never commit or publish them.
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
   ▶▶▶ PAPER RESUME (2026-10-30 ~02:30, before a compaction). Folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/
-  NOTHING RUNNING NOW: round 2 of §3.6 DONE too (Onondaga killifish catches cut: unsourced; its log §4 lists 12 small editor items — the white perch cold-drop figures may be °F carried as °C: CHECK; Blumer 1985/1986 → a/b).
+  ▶ UPDATE 2026-10-30 (after the compaction): EDITOR_TODO items 1-3 DONE (see its 'Progress' list). Item 4 RUNNING: a background
+  agent merges refcheck/chunk_*_checked.md into sections/refs_final.md, applies the logs' in-text changes and re-runs the cross-check;
+  its log will be verify/refs_merge_final.md (sections backed up to sections_v2/ first). If it is gone without that log, re-run the
+  same task with a new agent from sections_v2/. Then items 5 (assemble, final read, split, commit, push, report).
+  (older:) round 2 of §3.6 DONE too (Onondaga killifish catches cut: unsourced; its log §4 lists 12 small editor items — the white perch cold-drop figures may be °F carried as °C: CHECK; Blumer 1985/1986 → a/b).
   (verify/3_6_r2.md). ALL 8 REFERENCE CHUNKS DONE (refcheck/chunk_NN_checked.md + chunk_NN_log.md; 0 not found across 1,042);
   (chunk 06 log: Ridgway 2002 = Ridgway, Shuter, Middel & Gross 2002 — merge, cite "Ridgway et al. 2002"; check the Ontario handbook quote "may not model well"; chunk 07 log: CHECK the sentence citing Rudko et al. 2019 — its lakes are in northern Michigan, not the Belgrade Lakes; Sullivan 1986 editors came from an agent's memory — drop them; chunk 08 log: its in-text changes cite line numbers of the OLD assembled file — map them by text; Twining et al. 2018 vs Twining, Shipley & Winkler 2018 — check the note; chunk 03 log: check France et al. 1996 — it is about litter input, not leachate DOC — against its claim). If a checker's files are missing after it reports, re-run just that chunk with REFCHECK_BRIEF.md (note: the
   shared web-search budget ran out for some; Crossref API needs no search budget).
