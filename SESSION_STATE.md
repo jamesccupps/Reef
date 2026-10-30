@@ -365,7 +365,7 @@ plants, textures. Photos are private: never commit or publish them.
   ✅ PAPER RELEASED (2026-10-30): docs/paper/ committed a4b5c82, tag paper-v1.0 pushed; renders on GitHub (whole file: 50 tables +
   Fig 1). Final reads A/B/C applied (verify/final_read_*.md in the scratchpad); refs 1,043, 0 orphans both ways. Camps note scrubbed
   (3ac412c) — old text still in git history (ffca5e6..8fefee5): rewriting history = the human's call. To revise: edit
-  paper/sections/*.md, python -I paper/publish.py, re-run verify/merge_helpers/xcheck3.py + final_check.py, commit (v1.1 tag).
+  paper/sections/*.md (backup: G:/synapse-reef-backups/paper_sources_20261030.tgz), python -I paper/publish.py, re-run verify/merge_helpers/xcheck3.py + final_check.py, commit (v1.1 tag).
   Open, minor: Begley 2017 identity; 'horn pout' vs 'hornpout' (check the 1949 sheet); sucker hatch 0.05 vs field 0.3–3 %;
   white perch field growth 0.67–0.8 mm/d unsourced in §3.6; §3.1.3/§3.2.6 overlap; 'abstract' vs 'abstract only' tags.
   (older) ▶ UPDATE 2 (2026-10-30): item 4 DONE (refs merged, 0 orphans). Paper assembled and split by paper/publish.py into docs/paper/
