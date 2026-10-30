@@ -44,7 +44,8 @@ Left out:
 
   The human has never seen one, so it is left out until one is seen.
 - **Alewife.** Alewives reached Danforth in 2017 and swim past the mouth of Hot Brook. The state's restoration plan lists both
-  lakes as alewife habitat, but none are recorded in them. Left out; a restoration what-if later.
+  lakes as alewife habitat. Since recorded: MDIFW's 2024 list has sea-run alewife in Lower, and the 3-D sim now has them as a
+  seasonal visitor (`species3.js` `alewife`; docs/review/ECOSYSTEM_BUILD.md E8).
 - **Others found in nearby lakes** (golden shiner, common shiner, creek chub; 61 lakes of the drainage tabulated): not recorded
   here, so not added. They come in only if the human or a record confirms them.
 
@@ -87,7 +88,7 @@ anglers under-sample small fish (eastern Maine's EPA nets caught ~90 % adult suc
 - **White sucker:** 45 % < 30 cm needs suckers at 30 cm by ~age 2.2 or steady recruitment (thinned Big Bear Lake, Michigan; nothing
   northern found). Dense Big Bear gives 55–62 %, the sim's curve 66 %, subarctic Québec 84 %. **~60 %** (50–75; low confidence).
 - **White perch: the split and the density can't both hold.** The split above is what normal Maine growth gives (20–25 cm at age 4;
-  mean ~113 g): at 750/ha that is 82–112 kg/ha of white perch alone, against this census's own 20–35 kg/ha and the whole soft-water
+  mean ~113 g): at 750/ha that is about 85 kg/ha of white perch alone, against this census's own 20–35 kg/ha and the whole soft-water
   community's 50–90. Two consistent pairs: **stunted at ~750/ha** (the sim's founders, S3 `found` 0.72: 68/32/0 %, ~47 g) or **near-
   normal growth at ~450/ha** (~55/35/10 %, ~71 g: `found` ~0.85). For a lake like Hot Brook the evidence leans to the second —
   moderately rich water, abundant bass and pickerel (stunting goes with eutrophic water and few predators), Washington County lakes
