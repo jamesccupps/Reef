@@ -361,6 +361,23 @@ plants, textures. Photos are private: never commit or publish them.
   7_back; refs_final.md when merged); sections_v0/ = before the checks; digests/ = 14 digests of every research note; verify/*_r1.md =
   ROUND 1 DONE (10 claim checkers, ~4,500 claims, ~600 fixed/softened, every change logged); EDITOR_TODO.md = open items (most done);
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
+  ▶▶▶ PAPER RESUME (2026-10-30 ~02:30, before a compaction). Folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/
+  STILL RUNNING when compacted (their reports arrive as messages; outputs land on disk either way): round 2 of §3.6
+  (verify/3_6_r2.md) and reference checkers for chunks 01, 03, 04, 06, 07, 08 (refcheck/chunk_NN_checked.md + chunk_NN_log.md);
+  chunks 02 and 05 DONE. If a checker's files are missing after it reports, re-run just that chunk with REFCHECK_BRIEF.md (note: the
+  shared web-search budget ran out for some; Crossref API needs no search budget).
+  THEN, IN ORDER: (1) EDITOR_TODO.md's open items (the three 'see Conflicts' pointers in 3_6 tables → inline; re-grep all sections for
+  'Conflicts'/'Gaps' pointers; Møller & Sand-Jensen vs Sand-Jensen, Møller & Raun 2008 in 3.4). (2) References: resume the merger agent
+  (SendMessage to a7f3b36f237047554, or a new agent) to merge refcheck/chunk_*_checked.md into sections/refs_final.md (re-sort; [MOVE]
+  marks; Zdorovennova 2021a/b) and apply every in-text change in refcheck/chunk_*_log.md to sections/*.md; then re-run its cross-check
+  (0 orphans both ways). (3) python -I assemble.py → docs/paper/hot_brook_lakes.md; a final whole-paper consistency read (numbers repeated
+  across sections; abstract/intro/§6 vs body; no 'see Conflicts'; neutral pronouns; privacy: no camps/owners, no nest sites, the
+  photographed shore unnamed). (4) Split for GitHub (~0.6 MB is too big to render reliably): docs/paper/README.md (title, abstract,
+  contents, how to cite) + 01_introduction_and_study_system.md (§1-2), 02_synthesis_physical_to_plants.md (§3.0-3.4),
+  03_synthesis_fish_to_forest.md (§3.5-3.8), 04_model_and_lessons.md (§4-5), 05_discussion.md (§6 + back matter), references.md;
+  figures/ (fig1_bathymetry.py + .png made). Nav links between parts. (5) Commit + push; tell the human (byline 'James Cupps',
+  changeable; checks: round 1 ~4,500 claims/~600 fixes, round 2 ~3,000 claims + every r1 change, refs vs Crossref). Commit with the
+  noreply email + the Co-Authored-By line. Section 5 = sections/5_lessons.md (from FINDINGS.md). The human: graphics on hold.
   ~01:30 10-30: ROUND 2 DONE for 2, 3.1-3.5, 3.7, 3.8, 4, 5, 1+6 (logs verify/*_r2.md; editor items applied: abstract + back matter
   match the corrected body; 'slightly turbid' cut after reading both 1949 scans; Hellquist, Hubbard Brook, storm share, bullfrog cue,
   reaction distance, pumpkinseed snail shift). Waiting: round 2 of 3.6; 8 reference checkers. Repo-doc nits for later: FISH_CENSUS.md
