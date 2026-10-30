@@ -363,8 +363,8 @@ plants, textures. Photos are private: never commit or publish them.
   assemble.py joins sections → docs/paper/hot_brook_lakes.md (~77k words). Briefs: DIGEST_BRIEF, WRITER_GUIDE, VERIFY_BRIEF.
   ▶▶▶ PAPER RESUME (2026-10-30 ~02:30, before a compaction). Folder: C:/Users/james/AppData/Local/Temp/claude/C--Users-james-Downloads-synapse-reefclaudecode-synapse-reef/3fbb8b1d-0819-461b-9dac-5da076bd3f7a/scratchpad/paper/
   STILL RUNNING when compacted (their reports arrive as messages; outputs land on disk either way): round 2 of §3.6
-  (verify/3_6_r2.md) and reference checkers for chunks 06, 07 (refcheck/chunk_NN_checked.md + chunk_NN_log.md);
-  chunks 01, 02, 03, 04, 05, 08 DONE (chunk 08 log: its in-text changes cite line numbers of the OLD assembled file — map them by text; Twining et al. 2018 vs Twining, Shipley & Winkler 2018 — check the note; chunk 03 log: check France et al. 1996 — it is about litter input, not leachate DOC — against its claim). If a checker's files are missing after it reports, re-run just that chunk with REFCHECK_BRIEF.md (note: the
+  (verify/3_6_r2.md) and reference checker for chunk 06 (refcheck/chunk_NN_checked.md + chunk_NN_log.md);
+  chunks 01, 02, 03, 04, 05, 07, 08 DONE (chunk 07 log: CHECK the sentence citing Rudko et al. 2019 — its lakes are in northern Michigan, not the Belgrade Lakes; Sullivan 1986 editors came from an agent's memory — drop them; chunk 08 log: its in-text changes cite line numbers of the OLD assembled file — map them by text; Twining et al. 2018 vs Twining, Shipley & Winkler 2018 — check the note; chunk 03 log: check France et al. 1996 — it is about litter input, not leachate DOC — against its claim). If a checker's files are missing after it reports, re-run just that chunk with REFCHECK_BRIEF.md (note: the
   shared web-search budget ran out for some; Crossref API needs no search budget).
   THEN, IN ORDER: (1) EDITOR_TODO.md's open items (the three 'see Conflicts' pointers in 3_6 tables → inline; re-grep all sections for
   'Conflicts'/'Gaps' pointers; Møller & Sand-Jensen vs Sand-Jensen, Møller & Raun 2008 in 3.4). (2) References: resume the merger agent
