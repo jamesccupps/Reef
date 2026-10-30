@@ -356,6 +356,13 @@ plants, textures. Photos are private: never commit or publish them.
   landscape's void past the far grid; an autumn tint for the ferns and the Megaplants ground plants; the Rollins wind farm (30 km W).
   The human was told: listing sites that blocked automation are in tools/hotbrook/data/listings/notes.md (save by hand); photos for
   the photo match go to G:\HotBrookUE\Import\reference\ (private: EXIF GPS/heading → reproduce the view → compare → fix).
+  + 2026-10-29 ~20:00 PAPER STATUS: all sections drafted in the scratchpad's paper/sections/ (1_intro, 2_study_system, 3_0..3_8, 4_model,
+  5_lessons, 6_discussion, 7_back; ~77k words); paper/assemble.py joins them into docs/paper/hot_brook_lakes.md (and splits off
+  refs_all.md, gaps_conflicts.md). ROUND-1 CHECKS RUNNING: 9 claim checkers (2, 3.1-3.8; brief VERIFY_BRIEF.md; logs paper/verify/*_r1.md;
+  they edit the section files; the pre-check copy is paper/sections_v0/), 1 model checker (4, 5 vs code/FINDINGS), 1 reference merger
+  (paper/sections/refs_final.md + verify/refs_crosscheck.md). NEXT: reference checkers vs the real publications (web), front matter +
+  abstract (0_front.md), a skeptical whole-paper review, fixes, round 2; split into parts if GitHub won't render ~0.7 MB; commit + push.
+  The Unreal photo-match is COMMITTED 85d196e (the sim's rocky brook bed taken back: a gate margin).
   + 2026-10-29 THE HUMAN: "hold off on all the graphics work ... the original full scale 3d model was better than unreal"; "put everything
   together we have gathered and make a research paper about maine ecosystems"; "it should be on github and checked multiple times for
   accuracy". IN PROGRESS: docs/paper/ (hot_brook_lakes.md + figures/fig1_bathymetry.py/.png, made). 14 digest agents read every research

@@ -303,7 +303,8 @@ model gets wrong, and why, is as useful to the next modeller as what it gets rig
 - **Lesson.** A type-II predator coupled to a stepped prey field needs the prey it *expects*, not the prey of one instant. Otherwise a
   short dip in reach turns into a burst of over-harvest when the prey come back.
 - **What (EGG3, the alewife).** The sea-run alewives' eggs hatched at 0.6, and their larvae swam at 62/m² in Lower Hot Brook Lake.
-  - The best hatch the research reports is 38 %, in the lab near 17.8 °C (Kellogg 1982).
+  - The best hatch the research reports is 38 %, in the lab near 17.8 °C (Edsall 1970; corrected 2026-10-29 from "Kellogg 1982",
+    whose numbers in the note are the 36-h egg mortality and the incubation points).
   - On a lake bed it should be lower: white perch eggs hatch 0.8 in the lab and 0.45 on the bed.
   - At hatch 0.2 the larvae peak at 19/m² and reach 7–10 mm by mid-July, against 5–7 mm before (probe larvz). The larvae competing
     for the same rotifers had held each other back.
