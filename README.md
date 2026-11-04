@@ -2,9 +2,11 @@
 
 A browser-based **neuroevolution lake**. The lake is many times the size of the screen, and a camera zooms smoothly from the whole basin down to a single fish.
 
-Six species of fish each think with their own small **recurrent neural network**. They evolve over generations, and also learn within each lifetime, to forage, school, hunt, flee, hide and breed. Their world has seasons, weather, dissolved oxygen, a nitrogen and phosphorus cycle, plankton, evolving water plants, insects, snails and crayfish. Nothing is scripted: behaviour emerges from selection.
+Eight species of fish each think with their own small **recurrent neural network**. They evolve over generations, and also learn within each lifetime, to forage, school, hunt, flee, hide and breed. Their world has seasons, weather, dissolved oxygen, a nitrogen and phosphorus cycle, plankton, evolving water plants, insects, snails and crayfish. Nothing is scripted: behaviour emerges from selection.
 
 **Drag** to pan, **scroll** (or pinch) to zoom, and **click** any fish to follow it and watch its brain fire live. Press **T** for a hands-off cinematic tour.
+
+![The lake in its first spring: 670 fish of eight species, the water column, and the environment panel with temperature, oxygen, nutrients and plankton](docs/images/screenshot.png)
 
 ---
 
@@ -53,12 +55,14 @@ There is no build step and no runtime dependencies. Open the URL in a desktop br
 
 ## What you're watching
 
-**The fish.** Six species across a size gradient, each with its own body shape, brain size, senses and diet:
+**The fish.** Eight species across a size gradient, each with its own body shape, brain size, senses and diet:
 
 | Species | Role | Eats | Brain (inputs → hidden → outputs) |
 |---|---|---|---|
 | Minnow  | schooling planktivore | zooplankton, insects | 23 → 12 → 5 |
 | Sunfish | littoral omnivore | zooplankton, plants, larvae, insects, snails | 20 → 10 → 5 |
+| Perch   | schooling mesopredator | smaller fish, insects, larvae, small crayfish | 19 → 9 → 5 |
+| Trout   | mid-water mesopredator, rises to insect hatches | smaller fish, insects, larvae | 18 → 9 → 5 |
 | Catfish | nocturnal bottom feeder | detritus, plants, larvae, crayfish | 17 → 10 → 5 |
 | Carp    | benthic grazer | plants, detritus, larvae, snails | 17 → 9 → 5 |
 | Bass    | mid-water predator | smaller fish, insects, crayfish | 17 → 9 → 5 |
