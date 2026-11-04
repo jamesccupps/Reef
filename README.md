@@ -1,5 +1,7 @@
 # Synapse Reef
 
+[![tests](https://github.com/jamesccupps/Reef/actions/workflows/tests.yml/badge.svg)](https://github.com/jamesccupps/Reef/actions/workflows/tests.yml)
+
 A browser-based **neuroevolution lake**. The lake is many times the size of the screen, and a camera zooms smoothly from the whole basin down to a single fish.
 
 Eight species of fish each think with their own small **recurrent neural network**. They evolve over generations, and also learn within each lifetime, to forage, school, hunt, flee, hide and breed. Their world has seasons, weather, dissolved oxygen, a nitrogen and phosphorus cycle, plankton, evolving water plants, insects, snails and crayfish. Nothing is scripted: behaviour emerges from selection.
