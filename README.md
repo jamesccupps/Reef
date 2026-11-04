@@ -6,6 +6,8 @@ Eight species of fish each think with their own small **recurrent neural network
 
 **Drag** to pan, **scroll** (or pinch) to zoom, and **click** any fish to follow it and watch its brain fire live. Press **T** for a hands-off cinematic tour.
 
+**[▶ Watch it live in your browser](https://jamesccupps.github.io/Reef/)**: nothing to install. To run it locally, see below.
+
 ![The lake in its first spring: 670 fish of eight species, the water column, and the environment panel with temperature, oxygen, nutrients and plankton](docs/images/screenshot.png)
 
 ---
