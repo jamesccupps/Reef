@@ -1,0 +1,27 @@
+name: tests
+
+# The gate from CLAUDE.md: the headless core, the browser-layer smoke test, the
+# UI hardening checks and the dev-server lockdown. No dependencies to install.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      # The speed check's budget is 60 steps/s on a dev PC. GitHub's shared runners measured
+      # 55, so CI judges it at 30, the real-time minimum, and stays green on a slow runner.
+      - run: npm test
+        env:
+          REEF_PERF_MIN: 30

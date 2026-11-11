@@ -154,6 +154,7 @@ body{
 .chip:hover{background:#10303f; color:#fff}
 
 .foot{margin-top:22px; font-size:11px; color:var(--faint); text-align:center}
+.foot a{color:inherit; text-decoration:underline; text-underline-offset:2px}
 .foot b{color:var(--dim); font-weight:400}
 
 /* ---------- toast ---------- */

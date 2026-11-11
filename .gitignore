@@ -15,3 +15,7 @@ docs/research_notes/fetched/
 
 # tools/remote/run.mjs: the last copy to each remote host
 .remote/
+
+# Local working notes for Claude sessions (kept out of the public repo)
+SESSION_STATE.md
+docs/archive/SESSION_LOG_2026-06.md
