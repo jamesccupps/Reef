@@ -4,7 +4,7 @@ This is the working brief for Claude Code. It's deliberately short.
 
 **Every session:**
 1. Read this file.
-2. Read the **NOW** block of `SESSION_STATE.md`.
+2. Read the **NOW** block of `SESSION_STATE.md` (a local working file: git-ignored, never committed; its June history is in `docs/archive/SESSION_LOG_2026-06.md`, also local).
 
 **Only when relevant:**
 - `docs/FEATURES.md`: how each subsystem works and where it lives. Read the section for whatever you're touching.

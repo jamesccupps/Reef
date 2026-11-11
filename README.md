@@ -155,9 +155,11 @@ synapse-reef/
 │   ├── ui.js           HUD, panels, charts, controls                                                (browser)
 │   └── main.js         boot, guarded fixed-timestep loop, input                                     (browser)
 ├── test/               headless.mjs · smoke.mjs · ui-check.mjs · serve-check.mjs · balance.mjs
-└── docs/               GRAPHICS_RESEARCH.md (render roadmap) · archive/ (session history)
+└── docs/               GRAPHICS_RESEARCH.md (render roadmap) · archive/
 ```
 
-Working notes for contributors (and AI assistants) are in [`CLAUDE.md`](CLAUDE.md), [`SESSION_STATE.md`](SESSION_STATE.md), [`ROADMAP.md`](ROADMAP.md) and the [`AUDIT.md`](AUDIT.md) findings list.
+Working notes for contributors (and AI assistants) are in [`CLAUDE.md`](CLAUDE.md), [`ROADMAP.md`](ROADMAP.md) and the [`AUDIT.md`](AUDIT.md) findings list.
 
-MIT licensed. See [`LICENSE`](LICENSE).
+## License
+
+MIT. See [`LICENSE`](LICENSE).
