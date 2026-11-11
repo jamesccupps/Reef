@@ -5,7 +5,7 @@
 ## 1. Introduction
 
 Maine has thousands of small lakes and ponds, and most of them have little or no scientific record. A typical one in the eastern forest
-is a few hundred hectares of shallow, softwater, lightly to moderately coloured water, ringed by spruce–fir and northern hardwoods and a
+is a few hundred hectares of shallow, softwater, lightly to moderately colored water, ringed by spruce–fir and northern hardwoods and a
 scatter of camps. It holds a
 warmwater fish community that is partly native and partly introduced, and it carries perhaps one fisheries survey from the mid-twentieth
 century. Upper and Lower Hot Brook Lake, in the Penobscot headwaters on the Washington–Aroostook county line, are such a pair. Since a
@@ -22,10 +22,10 @@ lakes, every number tagged by how it was obtained (read in a primary source, tak
 summary, or inferred).
 Building and testing the model then became a second kind of inquiry. Each time the simulated lakes failed to behave like real ones, the
 failure had to be traced to a missing process, a mis-read parameter or an artifact of representation, and many of those traces taught
-something general about small-lake ecology or about modelling it.
+something general about small-lake ecology or about modeling it.
 
 The paper reports both. Section 2 sets out what is actually recorded for the Hot Brook lakes and their catchment, keeping measurements
-apart from estimates. Section 3 synthesises what is known of Maine lake ecosystems, from the physics of small shallow lakes through
+apart from estimates. Section 3 synthesizes what is known of Maine lake ecosystems, from the physics of small shallow lakes through
 nutrients, plankton, aquatic plants and the fish to the wildlife and forest around them, with the field values a reader would need to
 build or test a model of such a lake. Section 4 describes the simulation. Section 5 reports what building and testing it taught: the
 errors found and their causes, the mechanisms that turned out to matter, and where the model still fails. Section 6 draws the threads
@@ -34,23 +34,23 @@ together and lists the field measurements that would most reduce the uncertainty
 Three conventions run throughout. Where the evidence for a value is weaker than a primary reading — an abstract, a second-hand citation,
 the project's own arithmetic — the text says so. Values measured at Hot Brook are distinguished from values for comparable lakes and from
 values elsewhere. And observations by an angler who fishes the lakes, which on several points are the only information there is, are
-labelled as angler observations (project field notes).
+labeled as angler observations (project field notes).
 
 
 ## 2. The study system — the Hot Brook lakes and their catchment
 
-Upper and Lower Hot Brook Lake are two shallow, unstratified lakes (soft-water, to judge by their measured neighbours) in the
+Upper and Lower Hot Brook Lake are two shallow, unstratified lakes (soft-water, to judge by their measured neighbors) in the
 forested headwaters of the Penobscot basin in eastern Maine, joined by a short rocky stretch of Hot Brook. They are typical of the region's warmwater lakes, and they are poorly
 measured: one fisheries survey of August 1949, a handful of agency species lists and specimen records, and remote-sensing products are
 nearly all that is on record. This section sets out that record and keeps it apart from three other kinds of evidence: values estimated
-from nearby analogue lakes, the project's own calculations, and the observations of an angler who fishes the lakes. Section 3 gives the
-regional synthesis behind the analogue values.
+from nearby analog lakes, the project's own calculations, and the observations of an angler who fishes the lakes. Section 3 gives the
+regional synthesis behind the analog values.
 <!-- src: Hot Brook populations and water/hot_brook_lake_records.md; Maine lakes ponds and streams/maine_fish_community_hot_brook.md -->
 
 ### 2.1 Location, drainage, catchment and climate
 
 Upper Hot Brook Lake (Maine MIDAS 1076; centroid about 45.62° N, 67.94° W) and Lower Hot Brook Lake (MIDAS 1072; about 45.65° N,
-67.94° W) lie in the town of Danforth and the unorganised township T8 R4 NBPP, Washington County, at the Aroostook County line. The
+67.94° W) lie in the town of Danforth and the unorganized township T8 R4 NBPP, Washington County, at the Aroostook County line. The
 survey sheets also name Bancroft (Aroostook County), and the fishing law lists the waters under Bancroft, Danforth, T8 R3 NBPP and
 T8 R4 NBPP (MDIFW 1949; MDIFW 2026). They fall on the USGS Jimmey Mountain and Stetson Mountain quadrangles, in MDIFW fisheries Region F
 (Penobscot), the South fishing zone and Wildlife Management District 11. The Maine DEP lake layer gives water-surface elevations of
@@ -86,7 +86,7 @@ examined for this paper, and the groundwater share of inflow is unknown. The sho
 1949), and Maine DEP reports depleted calcium in "Down East" watersheds (Maine DEP 2024).
 <!-- src: Maine forest structure/forest_layers_and_crowns.md; Hot Brook populations and water/full_biota_and_processes.md; Hot Brook populations and water/recent_maine_research.md; Maine lake shores and catchment/weather_and_catchment_hydrology.md -->
 
-The Danforth cooperative station (USC00171833), a few kilometres east of the lakes, has 1991–2020 normals of 4.9 °C for the annual
+The Danforth cooperative station (USC00171833), a few kilometers east of the lakes, has 1991–2020 normals of 4.9 °C for the annual
 mean, −10.3 °C for January and 18.8 °C for July, with about 198 days a year whose minimum falls below freezing. Precipitation averages 1,157 mm (45.56 in),
 spread evenly at 84–118 mm a month, and snowfall 243 cm (95.7 in) (NOAA NCEI 2021). Houlton International Airport, about 55 km north-north-east of the lakes (project calculation from coordinates),
 is slightly drier (4.8 °C; 998 mm); its hourly wind normals average 3.2 m/s, from 3.7 m/s in March to 2.6 m/s in August. For the Hot
@@ -124,7 +124,7 @@ different sources are not combined.
 Upper, about 3.4 km north–south by 1.9 km across, has its deepest water, 5.5 m (18 ft), in a north basin beside the outlet. A narrows
 of 4–5 m (13–16 ft) leads south to a broad basin of 3.4–4.3 m (11–14 ft), edged along the south shore by a shelf 0.6–3 m (2–10 ft)
 deep. Lower, about 3.3 by 1.7 km, is a saucer: most soundings read 2.7–3.7 m (9–12 ft), the deepest, 4.0 m (13 ft), lies south of
-centre, a long central trough sits inside the 10-ft contour, and the large eastern bay is 1.2–3.4 m (4–11 ft) deep (MDIFW 1949; MDIFW
+center, a long central trough sits inside the 10-ft contour, and the large eastern bay is 1.2–3.4 m (4–11 ft) deep (MDIFW 1949; MDIFW
 2024). The 1949 map draws two islands in Upper; modern outlines show one, of about 4.2 ha.
 <!-- src: fetched_sources_digest.md §1 (sounding rows read from the sheets); Hot Brook populations and water/hot_brook_lake_records.md; Maine lakes ponds and streams/maine_fish_community_hot_brook.md -->
 
@@ -202,7 +202,7 @@ set record low flows in 2025, and on 7 October 2026 recorded its second-lowest f
 0.009 times the long-term mean (NWS Caribou 2026; USGS NWIS provisional data).
 <!-- src: Hot Brook populations and water/gemini_hydrology_checked.md (values re-read from USGS SIR 2004-5026, WDR ME-96-1 and NWIS); Maine lake shores and catchment/weather_and_catchment_hydrology.md -->
 
-### 2.4 Water quality: one reading in 1949, analogues since
+### 2.4 Water quality: one reading in 1949, analogs since
 
 No water-quality measurement of either lake since the August 1949 survey has been found. Neither appears in DEP's annual-means
 compilation of 1,072 lakes for 1940–2018 (Bacon & Vaux 2019), in the DEP/Volunteer Lake Monitoring Program data tables of 2025 (Maine DEP & VLMP 2025), in
@@ -210,25 +210,25 @@ DEP's lake sampling-station layer or in the Water Quality Portal; the 2025 combi
 of Maine pages were blocked to scripted access. The 1949 sheets print a surface temperature of 74 °F (23.3 °C) for both lakes, and both
 carry a second line, "75 feet – 71 °F" (21.7 °C). That depth is impossible in lakes of 18 and 13 ft, and the identical line on both
 sheets is probably a garbled near-bottom reading or a template error (project reading of MDIFW 1949).
-No Secchi depth, colour, total phosphorus (TP), chlorophyll a, pH, alkalinity, conductivity, dissolved
+No Secchi depth, color, total phosphorus (TP), chlorophyll a, pH, alkalinity, conductivity, dissolved
 organic carbon, calcium or oxygen profile, summer or under ice, has been found for either lake.
 <!-- src: Hot Brook populations and water/hot_brook_lake_records.md; Hot Brook populations and water/recent_maine_research.md; Hot Brook populations and water/maine_dep_lakes_data_2025.md; Maine lakes ponds and streams/maine_fish_community_hot_brook.md -->
 
 In DEP's 2024 Integrated Report both lakes are in EPA Category 2 (assessment units 0102000304_1076L and 0102000304_1072L), which the
 notes read as attainment presumed without data. Neither is on DEP's algal-bloom risk list; both are recorded as not infested by
 invasive plants, with invasion-risk scores of 26 (Upper) and 24 (Lower) on an 11–87 scale (Maine DEP 2024). No fish from either lake
-has been analysed for mercury; the statewide freshwater fish-consumption advisory applies.
+has been analyzed for mercury; the statewide freshwater fish-consumption advisory applies.
 <!-- src: Hot Brook populations and water/recent_maine_research.md; Hot Brook populations and water/plant_species_hot_brook.md; Hot Brook populations and water/hot_brook_lake_records.md; Hot Brook populations and water/full_biota_and_processes.md (statewide mercury advisory) -->
 
 The nearest measured lakes are listed in Table 2. Baskahegan Lake, in the same drainage about 13 km away and 6.7 m deep, is the closest
-analogue; it was fully mixed on 23 August 2004 (20.7 °C, 8.7 mg/L O₂ from the surface to 5 m), and shallow Faulkner Lake held 7.9–8.6
+analog; it was fully mixed on 23 August 2004 (20.7 °C, 8.7 mg/L O₂ from the surface to 5 m), and shallow Faulkner Lake held 7.9–8.6
 mg/L at the bottom in late summer 2004 and 2006 (Maine DEP & VLMP 2025). Calcium was 2.1–4.0 mg/L in National Lakes Assessment samples from
 Skitacook and Pleasant lakes.
 <!-- src: Hot Brook populations and water/maine_dep_lakes_data_2025.md; Hot Brook populations and water/recent_maine_research.md -->
 
 **Table 2.** Water quality in the nearest measured lakes (annual or single-visit means; none at Hot Brook).
 
-| Lake (MIDAS), relation to Hot Brook, max depth | Years | Secchi (m) | Colour (SPU/PCU) | TP (µg/L) | Chl a (µg/L) | pH | Alkalinity (mg/L CaCO₃) | Source |
+| Lake (MIDAS), relation to Hot Brook, max depth | Years | Secchi (m) | Color (SPU/PCU) | TP (µg/L) | Chl a (µg/L) | pH | Alkalinity (mg/L CaCO₃) | Source |
 |---|---|---|---|---|---|---|---|---|
 | Baskahegan Lake (1078), same drainage, ~13 km; 6.7 m | 2001–2011 | 3.7–4.7 | 46 (2004) | 9–10 | 3.1–3.3 | 6.6 | 5.5 | Bacon & Vaux 2019; Maine DEP & VLMP 2025 |
 | Faulkner Lake (1064), Weston; 3.7 m | 2003–2006 | 3.5–4.5 | 18 | 9–12 | 3.6–5.5 | 6.8–7.0 | 8.4 | Maine DEP & VLMP 2025 |
@@ -238,13 +238,13 @@ Skitacook and Pleasant lakes.
 
 <!-- src: Hot Brook populations and water/maine_dep_lakes_data_2025.md; Hot Brook populations and water/hot_brook_lake_records.md; Hot Brook populations and water/recent_maine_research.md -->
 
-From these analogues the project expects Secchi of about 3.5–4.5 m, colour about 20–50 SPU, TP about 8–12 µg/L, chlorophyll a 2.5–4
+From these analogs the project expects Secchi of about 3.5–4.5 m, color about 20–50 SPU, TP about 8–12 µg/L, chlorophyll a 2.5–4
 µg/L, pH 6.6–7.2, alkalinity 5–12 mg/L and conductivity 22–30 µS/cm at Hot Brook (project inference). The "TP 9–10 µg/L, alkalinity
 ~5 mg/L" in the project's fish census are estimates of this kind, not measurements. On Baskahegan's 2004 values the Carlson
 trophic-state index is 37–42, the oligotrophic–mesotrophic boundary (project calculation), and an export-coefficient budget for the
 catchment predicts in-lake TP of about 8 µg/L in Upper and 6 µg/L in Lower before any internal loading (project estimate). Earlier
-project notes inferred a browner, richer lake (colour 30–60 SPU, TP 10–20 µg/L, chlorophyll 3–8 µg/L) from general Maine
-coloured-lake patterns; they predate the DEP analogue data and are superseded. The angler judges the water "a bit clearer" than
+project notes inferred a browner, richer lake (color 30–60 SPU, TP 10–20 µg/L, chlorophyll 3–8 µg/L) from general Maine
+colored-lake patterns; they predate the DEP analog data and are superseded. The angler judges the water "a bit clearer" than
 the model's (project field notes). No under-ice oxygen profile has been found for any nearby lake; the notes read the persistence of
 a principal white perch fishery with no recorded winterkill as indirect evidence that winter oxygen stays adequate (inference).
 <!-- src: Hot Brook populations and water/hot_brook_lake_records.md; Hot Brook populations and water/plankton_microbes_plants_evidence.md; Hot Brook populations and water/species_numbers_northern_lakes.md; Maine lake shores and catchment/catchment_P_loads.md; Maine lakes ponds and streams/maine_limnology_streams.md; Hot Brook populations and water/maine_dep_lakes_data_2025.md; Hot Brook populations and water/invertebrates_plankton_plants.md §5 (the earlier 30–60 SPU inference); fetched_sources_digest.md (white perch plan) -->
@@ -311,7 +311,7 @@ disagree on whether banded killifish is native to Maine.
 
 The drainage shows what might be expected but is not recorded. Seventeen lakes in and around the Mattawamkeag drainage that hold
 smallmouth, white perch and chain pickerel average 13.9 species, and the seven of them ≤ 8 m deep average 10.7 (median 10), close to
-Hot Brook's 10 and 9 (MDIFW 2007; project tally). Species frequent in these analogues but absent from the Hot Brook lists are American
+Hot Brook's 10 and 9 (MDIFW 2007; project tally). Species frequent in these analogs but absent from the Hot Brook lists are American
 eel (14 of 17; 4 of the 7 shallow lakes), rainbow smelt (11), brook trout (10), landlocked salmon (9), golden shiner (9; 3 shallow),
 common shiner (7; 5 shallow) and creek chub (7). No lake of the wider 61-lake set records largemouth bass, black crappie, northern pike
 or slimy sculpin. Coldwater fish are unlikely, since the lakes have no cold water and the sheets find no coldwater habitat in any

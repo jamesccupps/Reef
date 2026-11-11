@@ -32,7 +32,7 @@ of 0.35–0.45 m (profile from angler observations). Water runs south to north.
 There are two worlds. The true-scale world, the viewer's default and the world of the year runs, is a band of 455 × 1,385 cells of 5 m covering the lakes and ~150 m of land
 around them. The older 1/10 world divides horizontal lengths by ten at true depths (1.5-m cells, 6.4 ha of water, the brook at half its
 length) and remains where most CPU checks and probes run. Distance-dependent physics uses real lengths in both worlds, and landscape
-distances (home ranges, search radii) are written as real metres × scale. Because the 1/10 world steepens slopes ten-fold and makes the
+distances (home ranges, search radii) are written as real meters × scale. Because the 1/10 world steepens slopes ten-fold and makes the
 brook ~25 times its real share of the shallows, habitat and predation are judged at true scale. The water is a graph of columns 50 m across (real), each with
 0.5-m layers to its bed — 2,622 columns and 15,072 cells at true scale — with the brook given its own 20-m stretches so its pool and
 riffles are not averaged into its banks. The bed keeps the geometry's cells, each holding an organic layer, bed animals, plants, mussels
@@ -107,7 +107,7 @@ conservative finite-volume: a wind-driven, depth-averaged circulation from two p
 a 3-mm/s density current under ice; damping of currents in shallow water by up to ~90 % (bottom friction and summer weed beds, as a
 function of depth); and the through-flow, solved implicitly. The
 free surface and Langmuir cells are not simulated. Each column's effective fetch (16 directions) gives the depth stirred by a 10-m/s
-storm's waves (Coastal Engineering Manual hindcast; 0.7–1.2 m here). A colour term of 0.4 m⁻¹ for the stained water gives a summer
+storm's waves (Coastal Engineering Manual hindcast; 0.7–1.2 m here). A color term of 0.4 m⁻¹ for the stained water gives a summer
 Secchi depth of ~3.3–3.5 m (§5.5).
 <!-- src: docs/HOT_BROOK_3D.md §3; src/config.js THERMAL (MIX_M, NIGHT_MIX_M); src/w3/env3.js H3 (CIRC_RMS, DRIFT, K_H, SIPHON_V, ICE_SLOPE_V, BED_HEAT), shallowDamp; docs/HOT_BROOK_3D.md §5 "Built 7h" (fetch); src/w3/chem3.js CHEM3.KD_COLOUR; docs/FINDINGS.md 2026-10-22 (Z1b + Z2: Secchi 3.3–3.5 m); Whole lake 3D fish simulation/shallow_lake_3d_physics.md -->
 
@@ -146,7 +146,7 @@ The invertebrates are energy pools (g wet m⁻²) on each bed cell. Worms and sc
 June a fifth of the fauna of soft, oxic mud rises at dusk over 12 days as the hatch of the mayfly *Hexagenia*. Weed fauna, in two sizes
 at ~30 mg wet per g of plant dry mass, produce 0.10 and 0.04 a day at 20 °C and emerge on degree-days from ice-out. Snails are capped by
 soft water (calcium unmeasured at Hot Brook). Surface insects are emergers plus land insects falling from forested banks (~50 mg dry
-mass per metre of bank a day at the July–August peak). Virile crayfish, adults and the year's young, are held at capacities by shelter
+mass per meter of bank a day at the July–August peak). Virile crayfish, adults and the year's young, are held at capacities by shelter
 that the package sets at a fifth of Michigan-based values (rocky shallows 5 g/m²) for the soft water (project estimate). Eastern elliptio
 mussels reach 15/m² on firm margins and 40 in sheltered coves, recruit at 0.25 a year × (1 − N/K) × the availability of host fish, and
 each clears 0.8 L/h at 20 °C, between laboratory (0.05–0.19) and field (2.6–3.1 L/h) values and the dominant uncertainty. In the brook,
@@ -185,7 +185,7 @@ the canopy's height), spawning structure, a zooplankton refuge and O₂; bladder
 ### 4.5 The fish
 
 Only fish recorded in the lakes are simulated: MDIFW's list plus redbreast sunfish from angler observations (project field notes).
-Golden shiner (no record), largemouth bass (probably mislabelled smallmouth) and American eel (probable, never recorded) are left out,
+Golden shiner (no record), largemouth bass (probably mislabeled smallmouth) and American eel (probable, never recorded) are left out,
 and the sea-run alewife, listed for Lower on MDIFW's 2024 chart, enters as a seasonal visitor (Table 4.3). No census has been taken in
 either lake, so each density is a reasoned estimate inside the range measured in similar northern lakes; yellow perch were lowered from
 500 to 75/ha after angler observations found them scarce at any size. The package's census sums to ~945 fish ≥ 7.5 cm per hectare
@@ -250,7 +250,7 @@ A ripe fish heads for its spawning ground as the water nears its spawning temper
 traditional grounds whose number scales with lake area. Eggs become a clutch on the bed and develop by degree-days on the bed's
 temperature from published incubation equations — for example 686.99·e^(−0.1402T) hours for white perch (Margulies 1989). Clutches lose
 eggs to temperatures outside the species' window, low O₂, storms and egg predators, and a guard deserts if the water cools to 10.6 °C
-(a smallmouth also if it falls 2 °C below its laying temperature). Hatch fractions are field survivals where these are known, not laboratory hatch or fertilisation rates
+(a smallmouth also if it falls 2 °C below its laying temperature). Hatch fractions are field survivals where these are known, not laboratory hatch or fertilization rates
 (white sucker 0.05, white perch 0.45 on a lake bed); yolk-sac survival is 0.2 for perch and white perch, 0.33 in successful bass nests
 and an unsourced prior of 0.95 for the rest, and yolk-sac larvae are already prey.
 <!-- src: src/config.js EGG3; src/w3/fish3.js eggRate3, yolkRate3, SPAWN3, SITES_MUL, stageR5 (EGG3.ON, PROLARVA); docs/review/ECOSYSTEM_BUILD.md E3; docs/FINDINGS.md 2026-10-22 "A fertilisation rate entered as a hatch rate", "Y4"; Whole lake 3D fish simulation/egg_stage.md; Real lake ecology for calibration/egg_survival_and_larval_production.md -->
@@ -275,7 +275,7 @@ reaction distance RD (pickerel 1.0–1.2 m and smallmouth 0.8–1.0 m to 6-cm pr
 a_max being 3 an hour for pickerel, 12 for smallmouth and 4 for perch-like predators. Capture success depends on prey and predator —
 an esocid lands 0.7 of strikes on soft-rayed prey, 0.12 on sunfish and 0.1 on bullheads (after Wahl & Stein 1988) — times a size
 term that falls linearly with the prey's length relative to the predator's (to nil at 0.88 for soft-rayed and 0.6 for spiny-rayed
-prey), renormalised to 1 at the ratio the successes were measured at (0.3–0.4 of the predator's length; 0.12 for a bass on spiny
+prey), renormalized to 1 at the ratio the successes were measured at (0.3–0.4 of the predator's length; 0.12 for a bass on spiny
 prey) and capped at 0.9; the prey must also fit the predator's gape. Cover cuts attacks, counted once (after Savino & Stein 1982). An esocid meets a school as n^0.65 fish
 at undiminished success (Turesson & Brönmark 2004), whereas a school confuses a bass (× n^−0.6) and cuts a perch-like predator's success
 to 0.15. No predator strikes over water shallower than 0.01 m per cm of its length (full effect from twice that); small fish hide in the
@@ -299,7 +299,7 @@ estimate).
 Painted turtles, green and mink frogs, red-spotted newts and tadpoles draw rations from the plants, weed fauna, snails, crayfish and
 surface insects. Bears (0.4/km²), deer (1.5/km²) and moose (0.6/km²) are individuals walking home ranges over the true world's 9.3 km²
 of land through their seasons; deer crop the water's edge and lake-using moose graze the shallows in summer, carrying the plants' N and P
-ashore. The alewife run is 15 adults per acre (project estimate for a colonising run, ~23,600 adults), varying lognormally (CV 0.5). The
+ashore. The alewife run is 15 adults per acre (project estimate for a colonizing run, ~23,600 adults), varying lognormally (CV 0.5). The
 adults arrive at Lower's outlet between 10 and 20 °C, spawn at night, stay a median of 17 days and half die in the lakes; their young
 emigrate from mid-July in pulses after rain, rising flow or cooling, and never recruit; the run's import and export of N and P pass
 through the ledger.
@@ -320,7 +320,7 @@ The CPU code (`fish3.js` with the water modules) is the model's definition: it r
 viewer. On the true lakes it can split the fish into two shards (Upper with the brook; Lower), each reading and writing only its own
 water in shared memory, with crossing fish handed over as plain data and each shard on its own random stream, so sharded runs are
 deterministic. A WebGPU engine (`src/w3/gpu/`) is a second implementation of the same model, built for speed, with its constants
-generated from the CPU configuration. Each agent has 102 fields plus its genome and brain state, and a block runs ten kernels (neighbour
+generated from the CPU configuration. Each agent has 102 fields plus its genome and brain state, and a block runs ten kernels (neighbor
 grid, senses, brain, drives and relocation, feeding, predation, body, death, births and the young, schools). Counter-based random numbers
 keyed by seed, agent, block and purpose, 64-bit fixed-point atomic sums and index-sorted grid cells make its results independent of
 thread order. The water stays on the CPU, running while the GPU works, and the fish's takes come back as differences.
@@ -377,7 +377,7 @@ a change on an A/B of at least three seeds and to audit survival at each life st
 
 The findings below come from the project's running log (`docs/FINDINGS.md`), where each is dated and points to the probe, the
 runs (seeds) and the full write-up; the dates and codes in parentheses (e.g. 2026-10-22, E9e) name its entries. Model artifacts are reported as findings: what a whole-lake model gets wrong, and why, is as
-useful to the next modeller as what it gets right. Unless stated otherwise, "true scale" runs are the GPU year runner on the
+useful to the next modeler as what it gets right. Unless stated otherwise, "true scale" runs are the GPU year runner on the
 real-size lakes, and "1/10" runs are the CPU reference on the lakes at a tenth of their width (true depths), which crowds the
 littoral zone ten-fold.
 
@@ -404,13 +404,13 @@ values that would settle what remains open.
 
 Several of the largest errors were not wrong numbers but right numbers that measured something else.
 
-- **"Hatch" rates.** The white sucker's egg hatch of 0.9 was a fertilisation rate (Stewart's "> 90 % fertilised"). Field survival
+- **"Hatch" rates.** The white sucker's egg hatch of 0.9 was a fertilization rate (Stewart's "> 90 % fertilised"). Field survival
   from egg to drifting larva in a brook is 0.3–3 % (scour, silt, drift), and only 25–50 % of adult suckers spawn in a given year;
   the model made ~30 sucker larvae per m² against the field's < 1. White perch's 0.8 was a laboratory hatch; unguarded demersal eggs
   on a lake bed are estimated at 0.3–0.6. The sea-run alewife's eggs hatched at 0.6 where the best the research reports is 38 %, in
   the laboratory near 17.8 °C (Edsall 1970, abstract only). The yolk-sac stage had an unsourced survival of 0.95 and no predators, where the field
   hatch-to-first-feeding survival of perch is 0.12–0.73. "Check what each 'hatch' number in a parameter table measures
-  (fertilisation, lab hatch, field survival) — they differ 10–100×" (`docs/FINDINGS.md`, 2026-10-22, E3b).
+  (fertilization, lab hatch, field survival) — they differ 10–100×" (`docs/FINDINGS.md`, 2026-10-22, E3b).
 - **A table read the wrong way round.** The alewife's respiration in Stewart & Binkowski's parameter set has swimming speed rising
   as 5.78·e^(0.149T) up to 22.08 cm/s at 9 °C, then holding. The research note had put the two terms on opposite sides of the
   threshold temperature from the Fish Bioenergetics 4.0 convention the model implements. Read literally, alewives would swim ~1 m/s
@@ -441,8 +441,8 @@ Several of the largest errors were not wrong numbers but right numbers that meas
   ultra-oligotrophic (summer TP 3.9 µg/L by October and 2.3 by the next May; Daphnia ~1 µg/L, low for a fishless year). One of three things must hold, and only a Hot Brook
   measurement can say which: the catchment exports more (wetlands 0.10–0.20 kg P/ha/yr against forest's 0.02–0.04), the bed's
   internal loading is larger, or these lakes' available fractions are higher. The model keeps an all-available inflow as a
-  documented calibration to the coloured, mesotrophic analogue lakes (TP 9–13 µg/L, chlorophyll 3–8) (2026-10-22, E9e), a target richer
-than the range of the Maine DEP analogue data (TP 8–12 µg/L, chlorophyll 2.5–4; §2.4).
+  documented calibration to the colored, mesotrophic analog lakes (TP 9–13 µg/L, chlorophyll 3–8) (2026-10-22, E9e), a target richer
+than the range of the Maine DEP analog data (TP 8–12 µg/L, chlorophyll 2.5–4; §2.4).
 
 **Table 5.1.** The lakes' oxygen budget under the ice with the ammonium-rich inflow (January–February, g O₂ m⁻² d⁻¹; probe
 o2budget, `docs/FINDINGS.md` 2026-10-22).
@@ -473,7 +473,7 @@ throughout (`docs/review/audit_*.md`; `docs/FINDINGS.md` 2026-10-21):
   ×0.7 on their borrowed bluegill set, which rests on measured routine metabolism, Roberts 1964, is kept — §4); and a census cap was regulating the white perch.
 
 Undoing each compensation to its research value and letting the mechanism the research named do the work — cover counted once,
-the size term renormalised, the handling rate equal to the strike ceiling, the bass's laboratory ceiling, a diel activity rhythm,
+the size term renormalized, the handling rate equal to the strike ceiling, the bass's laboratory ceiling, a diel activity rhythm,
 and a hunger gate with a post-meal rest (no fish hunted until ~90 % of a satiating meal is digested) as the only brake — gave a
 June pickerel 0.37 kills a day at a consumption ratio p of 0.40 with 34 % empty stomachs, against the pike-scaled targets (§3.7) of 0.4–0.8 kills, p
 0.39–0.42 and 35–60 % empty. The same pattern appeared at the larvae: the fish's predation on larvae had been fitted down
@@ -516,7 +516,7 @@ schools until they recruit. Every place the two representations met produced an 
 
 - **Zero-order growth gave the zooplankton a free lunch.** The algae's growth term inherited from the two-dimensional model had no
   factor of the algae's own biomass. Grazed to almost nothing (0.013 units), they still grew 381 units against 425 ungrazed, and
-  Daphnia held 900–1,500 µg/L all summer in lakes whose crustacean zooplankton is ~50–150 µg/L in the field (Daphnia alone near 1 in the analogues; §3.3). The zooplankton's production (0.34–0.67 g dry mass
+  Daphnia held 900–1,500 µg/L all summer in lakes whose crustacean zooplankton is ~50–150 µg/L in the field (Daphnia alone near 1 in the analogs; §3.3). The zooplankton's production (0.34–0.67 g dry mass
   m⁻² d⁻¹) exceeded the algae's own, which is impossible. The bug hid in plain sight because the oxygen budget computed
   photosynthesis per capita while biomass did not; a check of production against an independent measure of the same process caught
   it, where checks of standing stocks had not. With per-capita growth, fish-free Daphnia showed the seasonal succession the
@@ -548,7 +548,7 @@ schools until they recruit. Every place the two representations met produced an 
 | Summer dissolved P | 2.5 µg/L | ≲ 0.5 µg/L | ≲ 0.5 µg/L |
 
   Secchi depth was 3.3–3.5 m and the bed received 20–40 % of production (field 20–50 %). Still open: summer total P ~5–6 µg/L
-  against the model's reference of 12 (the analogue lakes read 8–13; §2.4), Daphnia declining after their peak at ~0.06 a day (field 0.1–0.2), and copepods ~2× the
+  against the model's reference of 12 (the analog lakes read 8–13; §2.4), Daphnia declining after their peak at ~0.06 a day (field 0.1–0.2), and copepods ~2× the
   ~20–30 µg/L of the nearest LakePulse lakes (other regional sets give 46–121 µg/L; §3.3).
 
 ### 5.6 Habitat: the plants, the waves and the starting state
@@ -561,7 +561,7 @@ schools until they recruit. Every place the two representations met produced an 
   transfers its error to the animals tuned on it — check the habitat first."
 - **A depth limit measured at the bed must be applied at the bed.** Growth by the light at a canopy's top let a large-leaf stand
   rooted at 3.5 m pay for its whole canopy near the surface; with two other model artifacts and an inferred light limit, the second
-  summer's stands covered 51 % of the bed against the research's ~15–17 % and reached 3.4 m against 2.0–3.0 m in coloured water. With the rooted canopy limited by 21 % of surface light at its bed (Chambers &
+  summer's stands covered 51 % of the bed against the research's ~15–17 % and reached 3.4 m against 2.0–3.0 m in colored water. With the rooted canopy limited by 21 % of surface light at its bed (Chambers &
   Kalff 1985), self-shading across all species in a cell, and each species' room set by the substrate, the second summer fell to
   29 % and later years to 22–24 % with the canopy edge at 2.0–2.3 m (2026-10-22, E12b). The patchiness of real beds within their
   depth range (presence on 35–45 % of the bed, the model's 84–88 %) needs a mechanism the model lacks — clonal spread — for which no
@@ -669,7 +669,7 @@ schools until they recruit. Every place the two representations met produced an 
   zooplankton, 3.42×10⁻⁷·L(cm)^2.94 m³/s, × 0.08–0.3 with natural zooplankton about, and small larvae are as catchable as large ones;
   the model's rule had been 3–60× too small per predator. Rebuilt, fish predation on larvae rose ~5×, yet predators were swamped:
   ~200 larvae per m² of all species meet a 15-cm perch ~270 times a day, ~2 g — its whole maximum consumption (2026-10-22, L2).
-- **Count-based feeding needs a size limit.** Larval feeding thresholds are counts (100–250 prey per litre), so a µg of rotifers is
+- **Count-based feeding needs a size limit.** Larval feeding thresholds are counts (100–250 prey per liter), so a µg of rotifers is
   worth ~12× a µg of crustaceans to a first-feeder; applied at every size, it let 8–15-mm fry strip the rotifers to 0.07 µg/L
   (2026-10-22).
 - **The young's slow growth was crowding, not food or the feeding curve.** Young white perch grew 0.2–0.35 mm/day in July (field
@@ -713,10 +713,10 @@ interception was the same artifact. For a small lake's flushing and nutrient sup
 monthly totals: calibrate a weather generator on daily statistics, not means (2026-10-22, E9d; 2026-10-21, E9b).
 
 Real weather also exposed an ice bug: the cover had melted when the water's seasonal target crossed a threshold, so a +4 °C January
-thaw lifted the whole lake's ice in a day. With the ice's thickness modelled (Stefan's growth, snow, slush to white ice) the cover
+thaw lifted the whole lake's ice in a day. With the ice's thickness modeled (Stefan's growth, snow, slush to white ice) the cover
 goes only once it has melted through; a lake opened on 1 March starts under ~71 cm of ice and snow passing ~0.25 % of the light
 (Maine measurements 1–12 %; the model had assumed 40 %, and its under-ice oxygen had depended on photosynthesis through that bright
-ice — two errors cancelling) (2026-10-21, 2026-10-19).
+ice — two errors canceling) (2026-10-21, 2026-10-19).
 
 ### 5.11 The engine
 
@@ -728,7 +728,7 @@ agreement check found the school-kill error of §5.4 (2026-10-18, 2026-10-22). T
 fish crowding into the deep basin's wintering cells (~1,400 agents a cell, from ~250–700) turned a per-cell insertion sort into
 quadratic work that passed the operating system's two-second watchdog and reset the GPU — deterministically, years into a run, with a
 symptom that read as hardware. An agent model's data structures carry assumptions about the ecology (that fish spread out) which the
-emergent behaviour (aggregation at wintering sites, as real fish do) can violate (2026-10-21).
+emergent behavior (aggregation at wintering sites, as real fish do) can violate (2026-10-21).
 
 ### 5.12 Diagnostics that catch what calibration does not
 

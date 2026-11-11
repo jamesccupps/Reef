@@ -2,7 +2,7 @@
 
 **James Cupps**
 
-Working paper, version 1.0 — 29 October 2026. Not peer reviewed. Prepared with AI assistance (see [Acknowledgements and the use of AI](05_discussion.md#acknowledgements-and-the-use-of-ai)).
+Working paper, version 1.1 — 11 November 2026 (version 1.0, 29 October 2026, in US spelling). Not peer reviewed. Prepared with AI assistance (see [Acknowledgments and the use of AI](05_discussion.md#acknowledgments-and-the-use-of-ai)).
 
 ## Abstract
 
@@ -15,7 +15,7 @@ whole-ecosystem simulation of the two lakes taught: a model whose fish, as indiv
 networks bend, and grow by Fish Bioenergetics 4.0, with the year's young followed as brainless schools. The literature's only whole-lake fish counts from Maine, in three small lakes deeper than these, give standing crops of 45–117 kg/ha
 (the lowest a minimum); its only Maine diet data for adult chain pickerel and smallmouth bass (one 1940 survey) show white perch, not crayfish, as their main summer food; and it locates the
 regulation of such lakes' fish communities largely in the first year of life. Building the model exposed errors that a parameter table hides:
-rates that measured something else (a fertilisation rate read as field egg survival, the complement of a retention formula), corrective
+rates that measured something else (a fertilization rate read as field egg survival, the complement of a retention formula), corrective
 adjustments that stacked until the pickerel killed prey at about a tenth of the rate expected from field data on pike, predation that shifted between two
 representations of the same fish, a weather generator plausible on average but wrong in its sequence, and an inflow right in
 total phosphorus but wrong in its chemical form. With its summer zooplankton, phosphorus retention and weed-bed depths near or inside
@@ -48,10 +48,10 @@ model; bioenergetics; ecosystem model; data gaps
 - **[Part 5: Discussion, data availability and the use of AI](05_discussion.md)** (§6 and back matter)
   - [6. Discussion: what is known, what is not, and what to measure](05_discussion.md#6-discussion-what-is-known-what-is-not-and-what-to-measure)
   - [Data and code availability](05_discussion.md#data-and-code-availability)
-  - [Acknowledgements and the use of AI](05_discussion.md#acknowledgements-and-the-use-of-ai)
+  - [Acknowledgments and the use of AI](05_discussion.md#acknowledgments-and-the-use-of-ai)
 - **[References](references.md#references)**
 - [The whole paper in one file](hot_brook_lakes.md) (large: it may be slow to render on GitHub)
 
 ## How to cite
 
-Cupps, J. 2026. *The Hot Brook lakes of eastern Maine: a synthesis of a small-lake ecosystem, and what building a whole-lake simulation of it taught.* Working paper, version 1.0. https://github.com/jamesccupps/Reef/tree/paper-v1.0/docs/paper
+Cupps, J. 2026. *The Hot Brook lakes of eastern Maine: a synthesis of a small-lake ecosystem, and what building a whole-lake simulation of it taught.* Working paper, version 1.1. https://github.com/jamesccupps/Reef/tree/paper-v1.1/docs/paper

@@ -8,7 +8,7 @@
 
 Read together, sections 2 and 3 describe the kind of lake the Hot Brook pair is, more confidently than they describe the pair itself.
 Lakes of this kind are shallow, broad and flat-bottomed, too shallow to stratify for long and mixed by wind and by cooling at night;
-softwater, poorly buffered and lightly to moderately coloured by the forest's dissolved organic matter; ice-covered for some 135–150
+softwater, poorly buffered and lightly to moderately colored by the forest's dissolved organic matter; ice-covered for some 135–150
 days a year (a project estimate for these lakes); and flushed several times a year by a forested catchment many times their own area,
 whose flow peaks with the snowmelt freshet and falls to about a third of its mean in late summer (§3.1). Their phosphorus comes mostly
 from the forest and its wetlands, in forms of which only part is available to algae, and their trophic state depends both on what the
@@ -27,8 +27,8 @@ survive a northern winter (§3.6).
 Many of section 5's findings should hold beyond this model. Five lessons stand out.
 
 1. **Know what each number measured.** Several of the largest errors were right numbers that measured something else: a
-   fertilisation rate used as field egg survival, a laboratory hatch as a bed hatch, a parameter table read the wrong way round, a
-   retention formula's complement, an unnormalised temperature curve read as an appetite, a nutrient's total concentration without its
+   fertilization rate used as field egg survival, a laboratory hatch as a bed hatch, a parameter table read the wrong way round, a
+   retention formula's complement, an unnormalized temperature curve read as an appetite, a nutrient's total concentration without its
    chemical form (§5.2). Each looked plausible in isolation. They were caught by comparisons — with field larval densities, with an
    oxygen budget, with continuity at a threshold — and other errors by an independent measure of the same process (§5.5) or a second
    engine (§5.4).
@@ -55,7 +55,7 @@ failures lie.
 ### 6.3 What is not known
 
 **At Hot Brook, almost everything.** No water-quality measurement of either lake since August 1949 has been found — no Secchi depth,
-colour, phosphorus, chlorophyll, oxygen profile or calcium — so their trophic state is presumed, not known. There is no ice record,
+color, phosphorus, chlorophyll, oxygen profile or calcium — so their trophic state is presumed, not known. There is no ice record,
 lake-level record or outlet survey; no fish sampling with recorded gear or effort (the 1949 sheets give none), age–growth sample,
 creel survey or density for any species; no plankton, benthic or plant
 survey beyond two stonewort specimens; no field survey of the connecting brook; and no count of alewives, loons or turtles. The redbreast
@@ -87,14 +87,14 @@ project has not yet looked for a rate of the clonal spread that makes real weed 
 The model's experiments (§5) and the gaps above point to a short list of measurements that would most reduce the uncertainty, at
 Hot Brook and in lakes like it. In order of value per effort:
 
-1. **A water-chemistry year.** Secchi depth, colour, total phosphorus and chlorophyll a monthly through one open-water season at the
+1. **A water-chemistry year.** Secchi depth, color, total phosphorus and chlorophyll a monthly through one open-water season at the
    deepest point of each lake, with temperature and oxygen profiles in July–August calm spells and in late February under the ice, and
-   calcium and dissolved organic carbon once. This would settle the lakes' trophic state, which the model now takes from analogue lakes,
+   calcium and dissolved organic carbon once. This would settle the lakes' trophic state, which the model now takes from analog lakes,
    and the winter oxygen minimum, which decides winterkill (§3.1, §5.2).
 2. **The inflow's phosphorus by form.** Total and soluble reactive phosphorus in Hot Brook above Upper at base flow and in two or three
    storms. Section 5.2 shows that the form, not the total, decides whether a model of these lakes is ultra-oligotrophic or mesotrophic,
    and that only a local measurement can choose between the catchment's export, the bed's internal loading and the available fractions.
-3. **A fish survey.** Summer trap- and gill-netting with night electrofishing of the shore, ageing of white perch, yellow perch,
+3. **A fish survey.** Summer trap- and gill-netting with night electrofishing of the shore, aging of white perch, yellow perch,
    smallmouth bass and chain pickerel from scales or otoliths, and summer stomach samples of the piscivores. Length at age is the
    sharpest target for the model's predators (§5.7), every density in the model is an estimate (§4.5), and the Maine diet data are 85
    years old (Cooper 1941).
@@ -108,7 +108,7 @@ Hot Brook and in lakes like it. In order of value per effort:
    logger, and annual counts of loon pairs and chicks.
 
 The first two need little more than a canoe (an auger in winter), a Secchi disk, sample bottles and a state laboratory, and Maine's
-volunteer lake monitoring programme exists to make measurements like the first.
+volunteer lake monitoring program exists to make measurements like the first.
 
 ### 6.5 Limitations
 
@@ -116,7 +116,7 @@ This synthesis has the limits of its sources and its method. Its notes were comp
 and opened: some primary sources were read in full, but many values are known only from abstracts, second-hand citations or search
 summaries, and several agency sites refused automated access. The text says which is which, and the manuscript was checked claim by
 claim against the notes (and, for the model, against the repository) and its reference list against the publications' bibliographic
-records, but the notes themselves can be wrong where their sources were misread. Analogue lakes stand in for Hot Brook throughout, and an analogue is only as good as its resemblance. The model is a
+records, but the notes themselves can be wrong where their sources were misread. Analog lakes stand in for Hot Brook throughout, and an analog is only as good as its resemblance. The model is a
 research tool, not a validated forecast: it does not yet sustain its fish community, its findings come mostly from one to three seeds per
 experiment, and the probe scripts and run outputs behind many findings, named in `docs/FINDINGS.md`, sit outside the repository. Finally, the angler observations that fill
 several gaps are one person's observations, valuable where nothing else exists but not a survey.
@@ -146,10 +146,10 @@ The public datasets used (USGS 3DEP lidar, NAIP imagery, NHDPlus, the National W
 streamflow, the MDIFW lake survey sheets and the Maine DEP lake data) are cited where they are used. The field-observation photographs
 behind the angler observations are private and are not part of the repository.
 
-## Acknowledgements and the use of AI
+## Acknowledgments and the use of AI
 
 The research notes, the simulation's code and this manuscript were prepared with Claude (Anthropic) AI agents working under the
-author's direction: the agents searched for, read and summarised the sources, wrote and tested the code, and drafted and checked the
+author's direction: the agents searched for, read and summarized the sources, wrote and tested the code, and drafted and checked the
 text. Every quantitative claim in the notes is tagged by its evidence (a primary source read in full, an abstract, a second-hand
 citation, a search summary, or the project's own arithmetic). Before release the manuscript was checked twice, claim by claim, against
 the notes and the project's code and documents, and its references were checked against bibliographic records (Crossref and
