@@ -8,7 +8,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node test/headless.mjs && node test/smoke.mjs && node test/ui-check.mjs && node test/serve-check.mjs && node test/w3.mjs",
+    "test": "npm run test:2d && npm run test:w3",
+    "test:2d": "node test/headless.mjs && node test/smoke.mjs && node test/ui-check.mjs && node test/serve-check.mjs",
+    "test:w3": "node test/w3.mjs",
     "test:headless": "node test/headless.mjs",
     "test:smoke": "node test/smoke.mjs",
     "test:ui": "node test/ui-check.mjs && node test/serve-check.mjs",

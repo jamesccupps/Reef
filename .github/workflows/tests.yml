@@ -1,7 +1,8 @@
 name: tests
 
-# The gate from CLAUDE.md: the headless core, the browser-layer smoke test, the
-# UI hardening checks, the dev-server lockdown and the 3-D lakes' own gate (test/w3.mjs).
+# The gate from CLAUDE.md (npm test), split into two jobs that run side by side:
+# the 2-D sim's gate (the headless core, the browser-layer smoke test, the UI hardening
+# checks and the dev-server lockdown) and the 3-D lakes' own gate (test/w3.mjs).
 # No dependencies to install.
 on:
   push:
@@ -14,9 +15,21 @@ permissions:
 
 jobs:
   test:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    # ~18 min on the dev PC; a shared runner is ~2.5x slower.
-    timeout-minutes: 90
+    # A shared runner took ~27 min for the 2-D gate and ran the 3-D gate past an hour
+    # (~8 and ~10 min on the dev PC).
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 2-D sim gate
+            script: test:2d
+            timeout: 60
+          - name: 3-D lakes gate
+            script: test:w3
+            timeout: 150
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,8 +38,9 @@ jobs:
       # The speed check's budget is 60 steps/s on a dev PC. GitHub's shared runners measured
       # 55, so CI judges it at 30, the real-time minimum, and stays green on a slow runner.
       # The 3-D gate's timing budgets are the dev PC's (W3_PERF_MUL 1); CI scales them by 3 for
-      # the same reason. The strict verdict on speed stays the dev PC's.
-      - run: npm test
+      # the same reason (a runner measured ~1.5x the dev PC's times). The strict verdict on
+      # speed stays the dev PC's.
+      - run: npm run ${{ matrix.script }}
         env:
           REEF_PERF_MIN: 30
           W3_PERF_MUL: 3
