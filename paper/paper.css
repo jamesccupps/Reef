@@ -1,0 +1,46 @@
+/* The working paper's pages (built by tools/paper-site.mjs; edit it there) */
+:root {
+  color-scheme: light dark;
+  --bg: #f7f5ef; --fg: #1d2126; --muted: #5b6470; --rule: #d9d4c7; --link: #0b5d8f; --code: #ece8de;
+  --head: #e9e4d6; --stripe: #efebe1;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14181d; --fg: #dfe3e8; --muted: #98a2ae; --rule: #2e353e; --link: #7cc4f0; --code: #222830;
+          --head: #232a33; --stripe: #1a1f25; }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 1.0625rem/1.65 Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif; }
+header.site, main, footer { max-width: 46rem; margin: 0 auto; padding: 0 1rem; }
+header.site { padding-top: 1.25rem; font: 0.9rem/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--muted); }
+header.site a { color: var(--muted); }
+h1, h2, h3, h4, h5, h6 { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.25; margin: 2em 0 0.6em; }
+h1 { font-size: 1.85rem; margin-top: 1em; }
+h2 { font-size: 1.45rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.25em; }
+h3 { font-size: 1.2rem; }
+h4 { font-size: 1.05rem; }
+a { color: var(--link); text-underline-offset: 0.15em; }
+p, ul, ol, figure, .table-wrap, details { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+code { font: 0.88em/1.4 ui-monospace, Consolas, "Cascadia Mono", monospace; background: var(--code); padding: 0.05em 0.3em; border-radius: 3px; }
+pre code { display: block; padding: 0.75em; overflow-x: auto; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
+.kicker { color: var(--muted); font-style: italic; margin-bottom: 0.3em; }
+.pager { font: 0.92rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; }
+table { border-collapse: collapse; width: 100%; font: 0.86rem/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+th, td { text-align: left; vertical-align: top; padding: 0.4em 0.6em; border-bottom: 1px solid var(--rule); }
+th { background: var(--head); }
+tbody tr:nth-child(even) { background: var(--stripe); }
+.al-r { text-align: right; } .al-c { text-align: center; } .al-l { text-align: left; }
+figure { text-align: center; }
+figure img { max-width: 100%; height: auto; max-height: 80vh; }
+details.toc { border: 1px solid var(--rule); border-radius: 4px; padding: 0.5em 0.9em; font: 0.92rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+details.toc summary { cursor: pointer; font-weight: 600; }
+details.toc ul { list-style: none; padding-left: 0; margin: 0.5em 0 0; }
+.toc-3 { padding-left: 1.2em; }
+footer { border-top: 1px solid var(--rule); margin-top: 3em; padding-top: 1em; padding-bottom: 2em; color: var(--muted);
+  font: 0.88rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+footer a { color: var(--muted); }
+@media print { header.site, details.toc, .pager, footer p:last-child { display: none; } body { background: #fff; color: #000; } }

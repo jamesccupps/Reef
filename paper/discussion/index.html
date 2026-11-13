@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Discussion, data availability and the use of AI | Hot Brook lakes paper</title>
+<meta name="description" content="What is known about small Maine lakes, what is not, and the measurements that would most reduce the uncertainty; data, code and the use of AI.">
+<meta name="author" content="James Cupps">
+<link rel="canonical" href="https://jamesccupps.github.io/Reef/paper/discussion/">
+<link rel="stylesheet" href="../paper.css">
+<meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14181d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Synapse Reef">
+<meta property="og:title" content="Part 5: Discussion, data availability and the use of AI — The Hot Brook lakes of eastern Maine">
+<meta property="og:description" content="What is known about small Maine lakes, what is not, and the measurements that would most reduce the uncertainty; data, code and the use of AI.">
+<meta property="og:url" content="https://jamesccupps.github.io/Reef/paper/discussion/">
+<meta property="og:image" content="https://jamesccupps.github.io/Reef/docs/images/social-card.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="The lake in its first spring: hundreds of fish of eight species, the water column, and the environment panel">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Part 5: Discussion, data availability and the use of AI",
+      "url": "https://jamesccupps.github.io/Reef/paper/discussion/",
+      "inLanguage": "en-US",
+      "author": {
+        "@type": "Person",
+        "name": "James Cupps",
+        "url": "https://jamesccupps.github.io/"
+      },
+      "dateModified": "2026-11-11",
+      "isPartOf": {
+        "@id": "https://jamesccupps.github.io/Reef/paper/#paper"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site">
+<a href="../../">Synapse Reef</a> <span aria-hidden="true">›</span> <a href="../">The Hot Brook lakes of eastern Maine</a>
+</header>
+<main>
+<article>
+<h1>Part 5: Discussion, data availability and the use of AI</h1>
+<details class="toc"><summary>On this page</summary>
+<ul>
+<li class="toc-2"><a href="#6-discussion-what-is-known-what-is-not-and-what-to-measure">6. Discussion: what is known, what is not, and what to measure</a></li>
+<li class="toc-3"><a href="#61-a-small-maine-lake-from-the-literature">6.1 A small Maine lake from the literature</a></li>
+<li class="toc-3"><a href="#62-what-building-the-model-taught">6.2 What building the model taught</a></li>
+<li class="toc-3"><a href="#63-what-is-not-known">6.3 What is not known</a></li>
+<li class="toc-3"><a href="#64-what-to-measure">6.4 What to measure</a></li>
+<li class="toc-3"><a href="#65-limitations">6.5 Limitations</a></li>
+<li class="toc-3"><a href="#66-conclusion">6.6 Conclusion</a></li>
+<li class="toc-2"><a href="#data-and-code-availability">Data and code availability</a></li>
+<li class="toc-2"><a href="#acknowledgments-and-the-use-of-ai">Acknowledgments and the use of AI</a></li>
+</ul></details>
+<p class="kicker"><em>The Hot Brook lakes of eastern Maine</em> — part 5 of 5</p>
+<p class="pager"><a href="../model-and-lessons/">← The model and what building it taught</a> · <a href="../#contents">Contents</a> · <a href="../references/">References →</a></p>
+<h2 id="6-discussion-what-is-known-what-is-not-and-what-to-measure">6. Discussion: what is known, what is not, and what to measure</h2>
+<h3 id="61-a-small-maine-lake-from-the-literature">6.1 A small Maine lake from the literature</h3>
+<p>Read together, sections 2 and 3 describe the kind of lake the Hot Brook pair is, more confidently than they describe the pair itself.
+Lakes of this kind are shallow, broad and flat-bottomed, too shallow to stratify for long and mixed by wind and by cooling at night;
+softwater, poorly buffered and lightly to moderately colored by the forest's dissolved organic matter; ice-covered for some 135–150
+days a year (a project estimate for these lakes); and flushed several times a year by a forested catchment many times their own area,
+whose flow peaks with the snowmelt freshet and falls to about a third of its mean in late summer (§3.1). Their phosphorus comes mostly
+from the forest and its wetlands, in forms of which only part is available to algae, and their trophic state depends both on what the
+streams deliver and on how much the bed retains and returns, neither of which has been measured for a lake like them (§3.2). They hold
+a warmwater fish community in which probably native species (yellow perch, pumpkinseed, brown bullhead, white sucker, fallfish, the
+small minnows and killifish) live with introduced ones, smallmouth bass above all, and in the eastern Maine lakes sampled by net white
+perch are the most numerous adult fish (§3.5). The only whole-lake counts of fish from Maine, in three small lakes, put the standing
+crop of all species at 44.5 (a minimum) to 117.1 kg/ha (Rupp &amp; DeRoche 1965), and the only Maine diet-composition data found for adult chain pickerel
+and smallmouth bass show white perch, not crayfish, as their main summer food (Cooper 1941; §3.7). The literature places much of the
+regulation of these communities in the young of the year:
+how many eggs survive, how fast larvae grow out of the sizes every fish eats, and whether they are large and fat enough by autumn to
+survive a northern winter (§3.6).</p>
+<h3 id="62-what-building-the-model-taught">6.2 What building the model taught</h3>
+<p>Many of section 5's findings should hold beyond this model. Five lessons stand out.</p>
+<ol>
+<li><strong>Know what each number measured.</strong> Several of the largest errors were right numbers that measured something else: a
+fertilization rate used as field egg survival, a laboratory hatch as a bed hatch, a parameter table read the wrong way round, a
+retention formula's complement, an unnormalized temperature curve read as an appetite, a nutrient's total concentration without its
+chemical form (§5.2). Each looked plausible in isolation. They were caught by comparisons — with field larval densities, with an
+oxygen budget, with continuity at a threshold — and other errors by an independent measure of the same process (§5.5) or a second
+engine (§5.4).</li>
+<li><strong>Compensations are debts.</strong> In a model built a piece at a time, every parameter moved to fix a symptom stays when the missing
+mechanism arrives, and the stack of such fixes can starve the top of a food web by an order of magnitude while each looks defensible
+alone. A periodic audit of every value against its source is part of building such a model (§5.3).</li>
+<li><strong>Representations must agree.</strong> Wherever a fish changes representation — from a super-individual school to an individual, from a
+school to the fish it stands for, from a point to a density — its hazards and its predators' physics must be continuous across the
+switch, or the predation moves to whichever representation is easier to find while the diets still look plausible (§5.4).</li>
+<li><strong>Check the habitat and the base of the web first.</strong> An unrealistic starting state for the plants, a zero-order growth term for the
+algae, a loss rule left on one algal group or a light limit applied at the wrong height each distorted what lay above it; the
+plants' uniform start, for one, had propped up the young pickerel that were tuned on it (§5.5–5.6).</li>
+<li><strong>Choose sharp targets and run long enough.</strong> Length at age pins a predator's feeding level more sharply than its diet or stomach
+counts; a weather generator must be calibrated on daily statistics, not monthly totals; a single year cannot show self-sustainment; and the diet matrix,
+the kills by place and time, and the discards of any cap reveal a wrong food web that aggregate biomass hides (§5.7, §5.10, §5.12).</li>
+</ol>
+<p>The model's present state is a finding too. With its summer zooplankton, its phosphorus retention and the depth of its weed beds near
+or inside their field ranges (§4.3, §5.1, §5.6), it still loses fish biomass each year: on the true-scale lakes its young white perch stall at 1.5–1.6 cm
+through their first summer — on the 1/10 lakes a similar stall was traced to too many larvae surviving their first days and crowding
+their food — and its white perch fail to recruit while the predators eat down the founding stock (§5.1, §5.9). The early-life
+processes that the field literature identifies as the regulators of these communities (§3.6) are also where the model's main remaining
+failures lie.</p>
+<h3 id="63-what-is-not-known">6.3 What is not known</h3>
+<p><strong>At Hot Brook, almost everything.</strong> No water-quality measurement of either lake since August 1949 has been found — no Secchi depth,
+color, phosphorus, chlorophyll, oxygen profile or calcium — so their trophic state is presumed, not known. There is no ice record,
+lake-level record or outlet survey; no fish sampling with recorded gear or effort (the 1949 sheets give none), age–growth sample,
+creel survey or density for any species; no plankton, benthic or plant
+survey beyond two stonewort specimens; no field survey of the connecting brook; and no count of alewives, loons or turtles. The redbreast
+sunfish, the sunfish in the brook's pools and the scarcity of yellow perch rest on angler observations alone (§2).</p>
+<p><strong>In Maine and the region</strong>, the gaps that most limited this synthesis were:</p>
+<ul>
+<li><strong>water and ice:</strong>
+<ul>
+<li>no ice-on trend for Maine lakes, no under-ice light measurement from northern Maine, and no under-ice oxygen
+profile for any shallow lake near Hot Brook;</li>
+<li>no lake-level record for an undammed Maine lake;</li>
+<li>no light-attenuation (Kd) measurement for any Maine lake (§3.1);</li>
+</ul></li>
+<li><strong>nutrients:</strong> no phosphorus measurement for any small forested brook in Washington or Aroostook County, and no measured phosphorus
+budget for a small, rapidly flushed Maine or Maritime lake (§3.2);</li>
+<li><strong>plankton:</strong> no zooplankton or rotifer time series for a small Maine lake; nearly every regional value is from a single summer visit (§3.3);</li>
+<li><strong>fish:</strong>
+<ul>
+<li>no measured density or biomass for any species in an eastern Maine lake with Hot Brook's bass, white perch and pickerel;</li>
+<li>no Maine length-at-age for most of the species;</li>
+<li>no field egg survival for white perch anywhere, and no larval mortality or larval density for white perch in any lake in an
+open source;</li>
+<li>no measured egg survival, larval growth rates or energetics, first-year survival or bioenergetics parameters for chain pickerel
+anywhere, and no adult mortality estimate obtained for any north-eastern lake (§3.5–3.7);</li>
+</ul></li>
+<li><strong>wildlife:</strong> no measured wild daily intake for adult loons, herons, mergansers or mink (§3.8).</li>
+</ul>
+<p><strong>In the wider literature</strong>, no measurement of isoetid dark respiration was found, which directly limited the model; and the
+project has not yet looked for a rate of the clonal spread that makes real weed beds patchy within their depth range (§5.6).</p>
+<h3 id="64-what-to-measure">6.4 What to measure</h3>
+<p>The model's experiments (§5) and the gaps above point to a short list of measurements that would most reduce the uncertainty, at
+Hot Brook and in lakes like it. In order of value per effort:</p>
+<ol>
+<li><strong>A water-chemistry year.</strong> Secchi depth, color, total phosphorus and chlorophyll a monthly through one open-water season at the
+deepest point of each lake, with temperature and oxygen profiles in July–August calm spells and in late February under the ice, and
+calcium and dissolved organic carbon once. This would settle the lakes' trophic state, which the model now takes from analog lakes,
+and the winter oxygen minimum, which decides winterkill (§3.1, §5.2).</li>
+<li><strong>The inflow's phosphorus by form.</strong> Total and soluble reactive phosphorus in Hot Brook above Upper at base flow and in two or three
+storms. Section 5.2 shows that the form, not the total, decides whether a model of these lakes is ultra-oligotrophic or mesotrophic,
+and that only a local measurement can choose between the catchment's export, the bed's internal loading and the available fractions.</li>
+<li><strong>A fish survey.</strong> Summer trap- and gill-netting with night electrofishing of the shore, aging of white perch, yellow perch,
+smallmouth bass and chain pickerel from scales or otoliths, and summer stomach samples of the piscivores. Length at age is the
+sharpest target for the model's predators (§5.7), every density in the model is an estimate (§4.5), and the Maine diet data are 85
+years old (Cooper 1941).</li>
+<li><strong>The young of the year.</strong> Night plankton tows for larvae in late May and June, and seining or small-mesh trawling for young-of-year
+in late August, measuring density and length. These are where the model fails (§5.9) and where the open literature has no lake
+values of larval density or mortality for white perch (§3.6).</li>
+<li><strong>A plant survey.</strong> One point-intercept survey of about 300 points per lake in August, recording species, presence and depth, would
+replace most of section 3.4's estimates and test the model's beds (§5.6).</li>
+<li><strong>Plankton.</strong> Monthly crustacean and rotifer samples from May to October and once under the ice (§3.3).</li>
+<li><strong>Simple loggers and counts.</strong> A temperature logger and stage gauge in the connecting brook, ice-on and ice-out dates, a lake-level
+logger, and annual counts of loon pairs and chicks.</li>
+</ol>
+<p>The first two need little more than a canoe (an auger in winter), a Secchi disk, sample bottles and a state laboratory, and Maine's
+volunteer lake monitoring program exists to make measurements like the first.</p>
+<h3 id="65-limitations">6.5 Limitations</h3>
+<p>This synthesis has the limits of its sources and its method. Its notes were compiled by AI research agents from what could be found
+and opened: some primary sources were read in full, but many values are known only from abstracts, second-hand citations or search
+summaries, and several agency sites refused automated access. The text says which is which, and the manuscript was checked claim by
+claim against the notes (and, for the model, against the repository) and its reference list against the publications' bibliographic
+records, but the notes themselves can be wrong where their sources were misread. Analog lakes stand in for Hot Brook throughout, and an analog is only as good as its resemblance. The model is a
+research tool, not a validated forecast: it does not yet sustain its fish community, its findings come mostly from one to three seeds per
+experiment, and the probe scripts and run outputs behind many findings, named in <code>docs/FINDINGS.md</code>, sit outside the repository. Finally, the angler observations that fill
+several gaps are one person's observations, valuable where nothing else exists but not a survey.</p>
+<h3 id="66-conclusion">6.6 Conclusion</h3>
+<p>The Hot Brook lakes are, in the scientific record, almost empty: one survey in 1949, a few species lists and a handful of specimens.
+Building a whole-ecosystem model of them required filling that emptiness from the literature of Maine and other northern lakes, and the
+attempt showed both how much is known about lakes like these and where knowledge runs out — at the water chemistry of the lakes
+themselves, and at the first year of their fishes' lives. A season of simple measurements at the lakes would settle much of the first.
+The second is a gap well beyond these lakes, and the model, with its failures documented, is one place where it can now be explored.</p>
+<h2 id="data-and-code-availability">Data and code availability</h2>
+<p>Everything the paper rests on is in the repository (<a href="https://github.com/jamesccupps/Reef">https://github.com/jamesccupps/Reef</a>, branch <code>zoo-field</code>):</p>
+<ul>
+<li>the research notes, each number tagged by how it was obtained: <code>docs/research_notes/</code>, with the syntheses in <code>docs/reports/</code> and
+<code>docs/ECOLOGY_RESEARCH.md</code>;</li>
+<li>the running log of findings from building and testing, naming the probe, seeds and runs behind each: <code>docs/FINDINGS.md</code> (most probe
+scripts and run outputs it cites were kept in a working directory outside the repository, so those runs are reproducible from the
+documented settings and seeds rather than from saved scripts), the model audits in <code>docs/review/</code>, and the design documents <code>docs/HOT_BROOK_3D.md</code>, <code>docs/GPU_SIM.md</code>, <code>docs/TRUE_SCALE.md</code> and <code>docs/FISH_CENSUS.md</code>;</li>
+<li>the simulation (<code>src/</code>, <code>src/w3/</code>) and its test suite (<code>npm test</code>), the GPU year runner (<code>tools/gpu/</code>), and the scripts that built
+the lakes' geometry from public data (<code>tools/hotbrook/</code>);</li>
+<li>Figure 1 and the script that draws it: <code>docs/paper/figures/</code>.</li>
+</ul>
+<p>The public datasets used (USGS 3DEP lidar, NAIP imagery, NHDPlus, the National Wetlands Inventory, NLCD, NOAA climate records, USGS
+streamflow, the MDIFW lake survey sheets and the Maine DEP lake data) are cited where they are used. The field-observation photographs
+behind the angler observations are private and are not part of the repository.</p>
+<h2 id="acknowledgments-and-the-use-of-ai">Acknowledgments and the use of AI</h2>
+<p>The research notes, the simulation's code and this manuscript were prepared with Claude (Anthropic) AI agents working under the
+author's direction: the agents searched for, read and summarized the sources, wrote and tested the code, and drafted and checked the
+text. Every quantitative claim in the notes is tagged by its evidence (a primary source read in full, an abstract, a second-hand
+citation, a search summary, or the project's own arithmetic). Before release the manuscript was checked twice, claim by claim, against
+the notes and the project's code and documents, and its references were checked against bibliographic records (Crossref and
+publishers' and agencies' pages). Errors that remain are the author's. Thanks are due to the Maine Department of Inland Fisheries and Wildlife, the Maine Department of Environmental
+Protection, Lake Stewards of Maine and the U.S. Geological Survey, whose public data made the work possible.</p>
+<hr>
+<p class="pager"><a href="../model-and-lessons/">← The model and what building it taught</a> · <a href="../#contents">Contents</a> · <a href="../references/">References →</a></p>
+</article>
+</main>
+<footer>
+<p>Cupps, J. 2026. <cite>The Hot Brook lakes of eastern Maine: a synthesis of a small-lake ecosystem, and what building a whole-lake simulation of it taught.</cite> Working paper, version 1.1, 11 November 2026. Not peer reviewed.</p>
+<p><a href="https://github.com/jamesccupps/Reef/tree/main/docs/paper">The paper's source on GitHub</a> · <a href="../../">The simulation: Synapse Reef</a> · <a href="https://jamesccupps.github.io/">James Cupps</a></p>
+</footer>
+</body>
+</html>

@@ -9,13 +9,14 @@
   },
   "scripts": {
     "test": "npm run test:2d && npm run test:w3",
-    "test:2d": "node test/headless.mjs && node test/smoke.mjs && node test/ui-check.mjs && node test/serve-check.mjs",
+    "test:2d": "node test/headless.mjs && node test/smoke.mjs && node test/ui-check.mjs && node test/serve-check.mjs && node tools/paper-site.mjs --check",
     "test:w3": "node test/w3.mjs",
     "test:headless": "node test/headless.mjs",
     "test:smoke": "node test/smoke.mjs",
     "test:ui": "node test/ui-check.mjs && node test/serve-check.mjs",
     "balance": "node test/balance.mjs",
-    "serve": "node serve.mjs"
+    "serve": "node serve.mjs",
+    "paper": "node tools/paper-site.mjs"
   },
   "license": "MIT"
 }

@@ -44,6 +44,7 @@ You may propose a different architecture, stack or runtime if it serves that goa
 
 ## Run, gate, verify
 - **Serve:** `npm run serve` (that is `node serve.mjs`, http://localhost:8000, localhost only), or `python serve.py`. The browser preview config is `reef` in `.claude/launch.json`.
+- **The paper on the web:** `docs/paper/*.md` is built into `paper/` (https://jamesccupps.github.io/Reef/paper/, one page per part, for search engines) by `npm run paper` (`node tools/paper-site.mjs`, no dependencies). Rebuild and commit `paper/` with any change to the paper; never edit `paper/` by hand. `npm run test:2d` runs it with `--check` and fails if `paper/` is out of date. The build stops on a link to a missing page or heading, so keep cross-links in GitHub's anchor form. Its text matched GitHub's own rendering of every part on 2026-11-13, except section 3.4's "~45 % … (±~8 points)": GitHub strikes that through (two single tildes); the web page doesn't.
 - **Gate:** `npm test` runs `test/headless.mjs`, `smoke.mjs`, `ui-check.mjs`, `serve-check.mjs` and `w3.mjs` (the 3-D sim's own gate). It takes about 18 minutes (w3 alone ~10). Keep it green after every change.
   - Add a check block for every new subsystem or fix **before the final summary line**. Both `headless.mjs` and `smoke.mjs` end with `process.exit`, so anything appended after it never runs.
   - Set `REEF_PERF_MIN=0` only while the CPU is shared. Otherwise the budget is strictly ≥60 steps/s; recent runs show about 120–135.

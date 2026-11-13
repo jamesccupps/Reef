@@ -10,6 +10,8 @@ Eight species of fish each think with their own small **recurrent neural network
 
 **[▶ Watch it live in your browser](https://jamesccupps.github.io/Reef/)**: nothing to install. To run it locally, see below.
 
+**[Read the working paper](https://jamesccupps.github.io/Reef/paper/)**: *The Hot Brook lakes of eastern Maine*, a synthesis of what is known about small Maine lakes and what building this simulation taught (source in [`docs/paper/`](docs/paper/)).
+
 ![The lake in its first spring: 670 fish of eight species, the water column, and the environment panel with temperature, oxygen, nutrients and plankton](docs/images/screenshot.png)
 
 ---
@@ -155,7 +157,8 @@ synapse-reef/
 │   ├── ui.js           HUD, panels, charts, controls                                                (browser)
 │   └── main.js         boot, guarded fixed-timestep loop, input                                     (browser)
 ├── test/               headless.mjs · smoke.mjs · ui-check.mjs · serve-check.mjs · balance.mjs
-└── docs/               GRAPHICS_RESEARCH.md (render roadmap) · archive/
+├── paper/              the working paper's web pages, built from docs/paper/ by tools/paper-site.mjs
+└── docs/               paper/ (the working paper) · GRAPHICS_RESEARCH.md (render roadmap) · archive/
 ```
 
 Working notes for contributors (and AI assistants) are in [`CLAUDE.md`](CLAUDE.md), [`ROADMAP.md`](ROADMAP.md) and the [`AUDIT.md`](AUDIT.md) findings list.
