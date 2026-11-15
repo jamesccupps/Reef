@@ -1262,6 +1262,7 @@ export class Renderer {
 
   // a recently-dead body: static sprite, sinking, rolling belly-up, fading out
   _corpse(ctx, c, env, cam) {
+    if (c.rHeading === undefined) c.rHeading = c.heading;   // render-only (never read by the sim, not saved): the body's drawn angle
     const Sworld = fishScale(c.sp, c.L), sPx = Sworld * cam.zoom;
     const p = cam.worldToScreen(c.x, c.y), alpha = clamp(c.t / (c.t0 || 1.4), 0, 1);
     if (sPx < DOT_PX) {

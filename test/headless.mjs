@@ -1587,6 +1587,34 @@ console.log('\n— save/load integrity (audit-fixes) —');
     const lw = new World(), rep = lw.load(f); for (let i = 0; i < 30; i++) lw.step(DTI); const c = lw.census();
     check('a save with retired species loads without its carp and trout; white perch and suckers arrive by the refuge', rep.skippedSpecies >= 2 && lw.agents.every(a => SP[a.species]) && c.whiteperch > 0 && c.sucker > 0 && finiteWorld(lw),
       `skipped ${rep.skippedSpecies}; white perch ${c.whiteperch}, suckers ${c.sucker}`); }
+  // (8c) the 2026-11-15 outside review: (a) a lake saved after the renderer has drawn it equals a headless save of it — the
+  // renderer's rHeading/facing on the fish never reach a body or the file; (b) the values the sim lets run free load bounded
+  { const rs8c = getRandState();
+    const run = drawn => { seed(9); const w = new World();
+      if (drawn) for (const a of w.agents) { a.rHeading = a.heading + 1.3; a.facing = -1; }   // (what the renderer leaves on a fish)
+      w.agents[0].W = NaN; w.agents[1].W = NaN;   // (two natural deaths: their bodies sink while the save is taken)
+      for (let i = 0; i < 3; i++) w.step(DTI); return w; };
+    const wh = run(false), wd = run(true), jh = JSON.stringify(wh.toJSON()), jd = JSON.stringify(wd.toJSON());
+    check('a lake saved after the renderer has drawn it equals a headless save of the same lake (no rHeading/facing on a body or in the file)',
+      wd.corpses.length >= 2 && jh === jd && wd.corpses.every(c => c.rHeading === undefined && c.facing === undefined) && !/"rh"|"fc"/.test(jd),
+      `${wd.corpses.length} bodies; files ${jh === jd ? 'identical' : 'DIFFER'} (${jd.length} chars)`);
+    const { INSECT: IN8, DETRITUS: DT8, ODONATA: OD8, BIRD: BD8 } = await import('../src/config.js');
+    const f = clone(), X = 1e300, a0 = f.agents[0]; a0.mc = X; a0.h = -X;
+    f.detritus = [{ x: 300, y: 50, l: X }]; f.insects = [{ x: 300, y: 5, l: X, vx: X, wb: X }];
+    f.snails = [{ x: 300, vx: -X, ph: X }]; f.cray = [{ x: 300, vx: X, ph: -X }]; f.larvae = [{ x: 300, d: X }];
+    f.corpses = [{ s: 'minnow', x: 300, y: 50, h: X, t: X, t0: X, sk: X, rh: 2, fc: -1 }];
+    f.birds = [{ x: 300, y: 0, t: X, stay: X }]; f.dflies = [{ x: 300, l: X, ph: X }]; f.herps = [{ k: 0, x: 300, t: X, c: X }];
+    const lw = new World(); lw.load(f);
+    const ag = lw.agents.find(a => a.id === a0.id) || lw.agents[0], cp = lw.corpses[0], I = lw.insects[0], b = lw.birds[0], h = lw.herps[0];
+    const ok = ag.mateCd <= SP[ag.species].matingCooldown && Math.abs(ag.heading) <= 1e6 && lw.detritus[0].life <= 2 * DT8.LIFE
+      && I.life <= 2 * IN8.ADULT_LIFE && Math.abs(I.vx) <= 10 * IN8.ADULT_DRIFT && Math.abs(I.wob) <= 1e3 && lw.larvae[0].dev <= 10
+      && [lw.snails[0], lw.cray[0]].every(s => Math.abs(s.vx) <= 50 && Math.abs(s.ph) <= 1e3)
+      && Math.abs(cp.heading) <= 1e6 && cp.t0 <= 60 && cp.t <= cp.t0 && cp.sink <= 100 && cp.rHeading === undefined && cp.facing === undefined
+      && b.t <= 60 && b.stay <= BD8.STAY[1] && lw.dflies[0].life <= 2 * OD8.ADULT_LIFE && Math.abs(lw.dflies[0].ph) <= 1e3 && h.t <= TIME.YEAR_LEN && h.cd <= TIME.YEAR_LEN;
+    for (let i = 0; i < 60; i++) lw.step(DTI);
+    check('a hand-edited save with 1e300 in the free-running values (cooldowns, lifetimes, timers, headings, phases, drifts) loads them bounded, and the lake runs',
+      ok && finiteWorld(lw), `mateCd ${ag.mateCd.toFixed(0)}, body t ${cp.t}/${cp.t0} sink ${cp.sink}, insect life ${I.life}, loon stay ${b.stay}`);
+    setRandState(rs8c); }
 
   // (9) champions / addAgent / makeFish respect GLOBAL_MAX and coerce untrusted fields
   { const hw = new World(); const champs = hw.champions(); champs.minnow.gen = '<script>'; champs.pike.w = [1, 2, 3];

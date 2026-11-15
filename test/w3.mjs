@@ -1558,6 +1558,35 @@ if (run('camps')) {
       pt && cS >= K3.DOCK_COVER - 1e-9 && cS0 < K3.DOCK_COVER && cBig < K3.DOCK_COVER && Math.abs(cBass - cBass0) < 1e-12 && cNight < K3.DOCK_COVER && nOn === 0 && nOff === 1 && nOn0 === 1,
       pt ? `at a dock over ${pt[2].toFixed(2)} m: cover ${cS.toFixed(2)} (FISH off ${cS0.toFixed(2)}, 15 cm ${cBig.toFixed(2)}, bass ${cBass.toFixed(2)} vs ${cBass0.toFixed(2)}, night ${cNight.toFixed(2)}); bass nests on the dock ${nOn}, beside it ${nOff}, on it with FISH off ${nOn0}` : 'no dock over the bass\'s nesting depths'); }
 }
+
+// THE SIM'S WORKER (render3/sim3worker.js, the page's own code, on a Node thread — the 1/10 world; the 2026-11-15 outside review):
+// a GPU that fails to start leaves the random stream where it found it, so the fallback founds the same lake as a start without the
+// GPU; and every snapshot carries the wildlife counts (fish3 wildCount, from the water — whichever side holds the fish)
+if (run('worker') && !WORLD_TRUE) {
+  console.log('\n— the sim worker: a GPU that fails to start; the wildlife counts —');
+  const { Worker } = await import('node:worker_threads');
+  const D0 = { url: new URL('../src/w3/render3/sim3worker.js', import.meta.url).href, core: new URL('../src/core.js', import.meta.url).href };
+  // (the worker's globals as a dedicated worker has them — ue/link/simworker.mjs's; with `gpu`, a WebGPU whose adapter never comes)
+  const BOOT = `const { parentPort, workerData: D } = require('node:worker_threads');
+globalThis.self = globalThis; globalThis.location = { search: D.search, pathname: '/w3.html', href: 'http://localhost/w3.html' + D.search };
+globalThis.onmessage = null; globalThis.postMessage = (m, tr) => parentPort.postMessage(m, tr);
+if (D.gpu) Object.defineProperty(globalThis, 'navigator', { value: { gpu: { requestAdapter: async () => null }, hardwareConcurrency: 2 }, configurable: true });
+parentPort.on('message', m => globalThis.onmessage && globalThis.onmessage({ data: m }));
+import(D.core).then(c => { c.seed(4242); return import(D.url); }).catch(e => parentPort.postMessage({ type: 'error', text: String(e && e.stack || e) }));`;
+  const first = (search, gpu) => new Promise((res, rej) => {
+    const w = new Worker(BOOT, { eval: true, workerData: { ...D0, search, gpu } }); let ready = null;
+    const end = (f, v) => { clearTimeout(to); w.terminate(); f(v); }, to = setTimeout(() => end(rej, new Error('no snapshot in 3 minutes')), 180000);
+    w.on('message', m => { if (m.type === 'loaded') w.postMessage({ type: 'init' }); else if (m.type === 'ready') ready = m;
+      else if (m.type === 'snap') end(res, { ready, snap: m }); else if (m.type === 'error') end(rej, new Error(m.text)); });
+    w.on('error', e => end(rej, e)); });
+  let A = null, B = null, err = '';
+  try { [A, B] = await Promise.all([first('?world=small', false), first('?world=small&gpu=1', true)]); } catch (e) { err = String(e && e.message || e); }
+  const same = (x, y) => x && y && x.length === y.length && Buffer.from(x.buffer, x.byteOffset, x.byteLength).equals(Buffer.from(y.buffer, y.byteOffset, y.byteLength));
+  const ok = !err && A.ready.gpu === null && B.ready.gpu === null && A.snap.count > 0 && same(A.snap.fish, B.snap.fish) && same(A.snap.yoy, B.snap.yoy)
+    && A.snap.wildN instanceof Float32Array && A.snap.wildN.length === A.snap.wildAct.length && same(A.snap.wildN, B.snap.wildN) && A.snap.wildN.some(v => v > 0);
+  check('the sim worker: a GPU that fails to start founds the same lake as a start without one (same seed: the same fish and young in the first snapshot), and the snapshot carries the wildlife counts',
+    ok, err ? `error: ${err.slice(0, 300)}` : `fish ${A.snap.count}: ${same(A.snap.fish, B.snap.fish) ? 'identical' : 'DIFFER'}, young ${same(A.snap.yoy, B.snap.yoy) ? 'identical' : 'DIFFER'}; wildlife ${A.snap.wildN ? Array.from(A.snap.wildN).filter(v => v > 0).length + ' kinds present of ' + A.snap.wildN.length : 'MISSING'}`);
+}
 console.log(`\n${pass} PASS, ${fail} FAIL${gaps ? `, ${gaps} KNOWN GAP(S) against the field (the GAP lines above)` : ''}`);
 if (fail) { console.log(`${fail} CHECK(S) FAILED`); process.exit(1); }
 console.log('W3 OK — the 3-D world\'s checks pass');

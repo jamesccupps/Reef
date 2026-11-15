@@ -11,6 +11,9 @@ import { brainEraOf } from './species.js';
 const W = WORLD.W, H = WORLD.H, FLOOR = WORLD.FLOOR, HREF = WORLD.DEPTH_REF;   // (HREF: the 14.6-m column the depth fractions were calibrated on)
 const WF = [0, 0];   // scratch for bioenergetics.wasteFractions (egested, excreted fractions) — no allocation per fish-step
 const DEATH_FADE = 1.4;   // seconds a natural-death body lingers & fades before becoming detritus
+// load bounds for values the sim lets run free: a heading turns without wrapping (a lifetime's turning stays far inside this);
+// the bed animals' and insects' phases are set once in [0, 2π] or advance over a short life
+const ANG_MAX = 1e6, PH_MAX = 1e3;
 
 // integer event count for a fractional per-step rate (so spawn rates scale to any world size
 // instead of saturating at one-per-step). Uses the seeded RNG → deterministic.
@@ -226,13 +229,13 @@ function parseSave(s) {
     if (isNum(a.ua)) ag.uAvg = clamp(a.ua, 0, 3);
     if (isNum(a.ft)) ag.foodT = clamp(a.ft, 0, 1e6);
     settleBody(ag);
-    ag.heading = num(a.h, ag.heading); ag.spd = clamp(num(a.sp, 0), 0, 1e4); ag.eaten = nonNegInt(a.ea); ag.vis = 1;
+    ag.heading = clamp(num(a.h, ag.heading), -ANG_MAX, ANG_MAX); ag.spd = clamp(num(a.sp, 0), 0, 1e4); ag.eaten = nonNegInt(a.ea); ag.vis = 1;
     const m = numArr(a.m, HID); if (m) for (let j = 0; j < HID; j++) ag.act.h[j] = clamp(m[j], -1, 1);   // recurrent working memory
     ag.tox = clamp(num(a.tx, 0), 0, 1e6);                                       // contaminant body burden
     ag.hunger = clamp(num(a.hg, 0), 0, 1); ag.fear = clamp(num(a.fe, 0), 0, 1);  // internal drives
     ag.homeX = clamp(num(a.hx, x), 0, W);                                       // natal-home anchor (older saves: home = here)
     // v24 resume state (older saves: makeAgent's fresh values / lazy step init, as before)
-    ag.mateCd = num(a.mc, ag.mateCd);
+    ag.mateCd = Math.min(num(a.mc, ag.mateCd), sp.matingCooldown);   // (counts down past 0 without a floor: only the top is bounded)
     ag.turnSmooth = clamp(num(a.ts, 0), -1, 1); ag.thrustSmooth = clamp(num(a.th, 0), 0, 1);
     if (isNum(a.vh)) ag.velHeading = a.vh;
     if (isNum(a.st) && a.st >= 0 && a.st < 1) ag.stroke = a.st;
@@ -283,20 +286,22 @@ function parseSave(s) {
   // (zooplankton: since v30 two biomass fields in the environment save — an older save's swarm particles are dropped and its
   // lake reopens with the starting zooplankton fields)
   // `n` = organic N+P (DOM units) the particle carries — 0 for fish-derived detritus; absent on pre-v24 saves → 0
-  const detritus = parts(s.detritus, scaleCount(DETRITUS.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x)), life: num(q.l, DETRITUS.LIFE), n: clamp(num(q.n, 0), 0, 1e3), m: pm(q, PREY.DETRITUS_G), dead: false }));
-  const larvae = parts(s.larvae, scaleCount(INSECT.LARVA_CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), dev: num(q.d, 0), m: pm(q, PREY.LARVA_G), dead: false }));
-  const insects = parts(s.insects, scaleCount(INSECT.ADULT_CAP), (q, x) => ({ x, y: yIn(q.y, 8), life: num(q.l, INSECT.ADULT_LIFE), vx: num(q.vx, 0), wob: num(q.wb, 0), m: pm(q, PREY.INSECT_G), dead: false }));
-  const snails = parts(s.snails, scaleCount(SNAIL.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: num(q.vx, 0), ph: num(q.ph, 0), dead: false }));
-  const cray = parts(s.cray, scaleCount(CRAYFISH.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: num(q.vx, 0), ph: num(q.ph, 0), dead: false }));
+  const detritus = parts(s.detritus, scaleCount(DETRITUS.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x)), life: Math.min(num(q.l, DETRITUS.LIFE), DETRITUS.LIFE * 2), n: clamp(num(q.n, 0), 0, 1e3), m: pm(q, PREY.DETRITUS_G), dead: false }));
+  const larvae = parts(s.larvae, scaleCount(INSECT.LARVA_CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), dev: clamp(num(q.d, 0), 0, 10), m: pm(q, PREY.LARVA_G), dead: false }));
+  const insects = parts(s.insects, scaleCount(INSECT.ADULT_CAP), (q, x) => ({ x, y: yIn(q.y, 8), life: Math.min(num(q.l, INSECT.ADULT_LIFE), INSECT.ADULT_LIFE * 2),
+    vx: clamp(num(q.vx, 0), -10 * INSECT.ADULT_DRIFT, 10 * INSECT.ADULT_DRIFT), wob: clamp(num(q.wb, 0), -PH_MAX, PH_MAX), m: pm(q, PREY.INSECT_G), dead: false }));
+  const snails = parts(s.snails, scaleCount(SNAIL.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: clamp(num(q.vx, 0), -50, 50), ph: clamp(num(q.ph, 0), -PH_MAX, PH_MAX), dead: false }));
+  const cray = parts(s.cray, scaleCount(CRAYFISH.CAP), (q, x) => ({ x, y: yIn(q.y, bedY(x) - 2), vx: clamp(num(q.vx, 0), -50, 50), ph: clamp(num(q.ph, 0), -PH_MAX, PH_MAX), dead: false }));
   // natural-death bodies still sinking/fading (they turn into detritus when they expire)
   const corpses = [];
   for (const c of s.corpses || []) {
     if (corpses.length >= WORLD.GLOBAL_MAX) { rep.truncated++; continue; }
     if (!isObj(c) || typeof c.s !== 'string' || !Object.hasOwn(SP, c.s) || !isNum(c.x) || !isNum(c.y)) { rep.skippedInvalid++; continue; }
-    const sp = SP[c.s], size = clamp(num(c.sz, sp.size), 0.05, 20), h = num(c.h, 0);
-    corpses.push({ sp, species: c.s, x: clamp(c.x, 0, W), y: clamp(c.y, 0, H), heading: h, rHeading: num(c.rh, h), size, grow: clamp(num(c.gr, 1), 0, 3), L: clamp(num(c.L, sp.Lref), 0.1, 400),
-      hue: hueOr(c.hu, 0), genes: fitGenes(Array.isArray(c.gn) ? c.gn : []), facing: clamp(num(c.fc, 1), -1, 1), spd: clamp(num(c.sp, 0), 0, 1e4),
-      t: num(c.t, 0), t0: Math.max(1e-3, num(c.t0, DEATH_FADE)), roll: clamp(num(c.r, 0), 0, 1), sink: num(c.sk, 5 + size * 2), dead: false });
+    // (no rHeading/facing: those are the renderer's, set when it first draws the body — an older save's rh/fc are ignored)
+    const sp = SP[c.s], size = clamp(num(c.sz, sp.size), 0.05, 20), h = clamp(num(c.h, 0), -ANG_MAX, ANG_MAX), t0 = clamp(num(c.t0, DEATH_FADE), 1e-3, 60);
+    corpses.push({ sp, species: c.s, x: clamp(c.x, 0, W), y: clamp(c.y, 0, H), heading: h, size, grow: clamp(num(c.gr, 1), 0, 3), L: clamp(num(c.L, sp.Lref), 0.1, 400),
+      hue: hueOr(c.hu, 0), genes: fitGenes(Array.isArray(c.gn) ? c.gn : []), spd: clamp(num(c.sp, 0), 0, 1e4),
+      t: Math.min(num(c.t, 0), t0), t0, roll: clamp(num(c.r, 0), 0, 1), sink: clamp(num(c.sk, 5 + size * 2), 0, 100), dead: false });
   }
   // static structure: validated element-by-element; a missing or non-array list is REGENERATED (old saves, `reeds: {}`)
   const structs = {}; let fresh = null;
@@ -324,14 +329,14 @@ function parseSave(s) {
   for (const b of Array.isArray(s.birds) ? s.birds : []) {
     if (birds.length >= BIRD.MAX || !isObj(b) || !isNum(b.x) || !isNum(b.y)) continue;
     const st = b.st === 1 || b.st === 2 ? b.st : 0;
-    birds.push({ x: clamp(b.x, 0, W), y: clamp(b.y, 0, H), h: num(b.h, Math.PI / 2), st, t: num(b.t, 5), stay: num(b.stay, BIRD.STAY[0]), m: nonNegInt(b.m), vx: clamp(num(b.vx, 0), -20, 20), gone: false });
+    birds.push({ x: clamp(b.x, 0, W), y: clamp(b.y, 0, H), h: num(b.h, Math.PI / 2), st, t: Math.min(num(b.t, 5), 60), stay: Math.min(num(b.stay, BIRD.STAY[0]), BIRD.STAY[1]), m: nonNegInt(b.m), vx: clamp(num(b.vx, 0), -20, 20), gone: false });
   }
   // v26 wildlife (older saves: none — a lake loaded from an older save simply has no frogs/turtles/dragonflies yet)
   const nymphs = parts(s.nymphs, scaleCount(ODONATA.CAP), (q, x) => { const h = clamp(num(q.h, 8), 0, 60); return { x, h, y: bedY(x) - h, dev: Math.max(0, num(q.d, 0)), vx: clamp(num(q.vx, 0), -20, 20), dead: false }; });
-  const dflies = parts(s.dflies, scaleCount(ODONATA.ADULT_CAP), (q, x) => ({ x, y: -12, vx: clamp(num(q.vx, 0), -200, 200), life: num(q.l, 0), ph: num(q.ph, 0), dead: false }));
+  const dflies = parts(s.dflies, scaleCount(ODONATA.ADULT_CAP), (q, x) => ({ x, y: -12, vx: clamp(num(q.vx, 0), -200, 200), life: Math.min(num(q.l, 0), ODONATA.ADULT_LIFE * 2), ph: clamp(num(q.ph, 0), -PH_MAX, PH_MAX), dead: false }));
   const herps = parts(s.herps, scaleCount(FROG.CAP + FROG.TAD_CAP + TURTLE.CAP), (q, x) => {
     const k = q.k === 0 || q.k === 2 ? q.k : 1, st = q.s === 1 || q.s === 2 ? q.s : 0;
-    return { k, x, y: clamp(num(q.y, 2), 0, bedY(x)), vx: clamp(num(q.vx, 0), -50, 50), age: Math.max(0, num(q.a, 0)), e: clamp(num(q.e, 0.5), 0, 1), st, t: num(q.t, 5), cd: num(q.c, 0), dev: Math.max(0, num(q.d, 0)), dead: false };
+    return { k, x, y: clamp(num(q.y, 2), 0, bedY(x)), vx: clamp(num(q.vx, 0), -50, 50), age: Math.max(0, num(q.a, 0)), e: clamp(num(q.e, 0.5), 0, 1), st, t: Math.min(num(q.t, 5), TIME.YEAR_LEN), cd: Math.min(num(q.c, 0), TIME.YEAR_LEN), dev: Math.max(0, num(q.d, 0)), dead: false };
   });
   // v27 fry schools (older saves: none) — each school's genome guarded like an agent's
   const fry = [];
@@ -2037,8 +2042,8 @@ export class World {
         const cause = old ? 'old' : !(a.W > 0) || hS >= Math.max(hH, hO, hX, hM) ? 'starve' : hH >= Math.max(hO, hX, hM) ? 'heat' : hO >= Math.max(hX, hM) ? 'hypoxia' : hX >= hM ? 'toxin' : 'other';
         const died = this.stats.died || (this.stats.died = {}); died[cause] = (died[cause] || 0) + 1; a.cause = cause;
         if (a.id === this.selectedId) this.selectedId = null;
-        this.corpses.push({ sp, species: a.species, x: a.x, y: a.y, heading: a.heading, rHeading: a.rHeading ?? a.heading,
-          size: a.size, grow: a.grow, L: a.L, hue: a.hue, genes: a.genes, facing: a.facing ?? 1, spd: a.spd, t: DEATH_FADE, t0: DEATH_FADE, roll: 0, sink: 5 + a.size * 2, dead: false });
+        this.corpses.push({ sp, species: a.species, x: a.x, y: a.y, heading: a.heading,   // (the renderer gives the body its rHeading)
+          size: a.size, grow: a.grow, L: a.L, hue: a.hue, genes: a.genes, spd: a.spd, t: DEATH_FADE, t0: DEATH_FADE, roll: 0, sink: 5 + a.size * 2, dead: false });
       }
     }
 
@@ -2317,8 +2322,8 @@ export class World {
       insects: this.insects.map(i => ({ x: i.x, y: i.y, l: i.life, vx: i.vx, wb: i.wob, m: i.m })),
       snails: this.snails.map(s => ({ x: s.x, y: s.y, vx: s.vx, ph: s.ph })),
       cray: this.cray.map(c => ({ x: c.x, y: c.y, vx: c.vx, ph: c.ph })),
-      corpses: this.corpses.map(c => ({ s: c.species, x: c.x, y: c.y, h: c.heading, rh: c.rHeading, sz: c.size, gr: c.grow, L: c.L, hu: c.hue, gn: Array.from(c.genes),
-        fc: c.facing, sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
+      corpses: this.corpses.map(c => ({ s: c.species, x: c.x, y: c.y, h: c.heading, sz: c.size, gr: c.grow, L: c.L, hu: c.hue, gn: Array.from(c.genes),
+        sp: c.spd, t: c.t, t0: c.t0, r: c.roll, sk: c.sink })),
       reeds: this.reeds, logs: this.logs, mussels: this.mussels, weedbeds: this.weedbeds,
       birds: this.birds.map(b => ({ x: b.x, y: b.y, h: b.h, st: b.st, t: b.t, stay: b.stay, m: b.m, vx: b.vx })),   // v25 visiting loon(s)
       // v26 wildlife: dragonfly nymphs + adults, frogs / tadpoles / turtles

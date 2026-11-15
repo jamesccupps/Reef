@@ -1,5 +1,17 @@
 # Synapse Reef — Project Audit (2026-10-11)
 
+## Outside review, 2026-11-15 (the plumbing between the parts; `main` at `6252b7c`)
+
+An outside review read the random stream, the save validators and loader, the frame loop, fast-forward, the 3-D sim's worker and the shards line by line, and searched the pure modules for the `CLAUDE.md` rules. It found nothing that affects results. Its findings and their status:
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | The 3-D worker's snapshot had no wildlife counts (`wildN`) while the GPU or the shards held the fish: it asked the solo side's `Fish3`. The browser counts its own; the Unreal link runs solo in Node, so nothing showed it yet. | **Fixed.** `fish3.js` `wildCount(env, w, yf)` gives the counts from the water alone (area, shore, date, the forest's animals); `Fish3._wildN` and the snapshot both use it. |
+| 2 | A dying fish's body copied the renderer's `rHeading` and `facing`, and the save wrote them, so a browser save differed from a headless one. | **Fixed.** The body gets no render fields from the sim; the renderer sets its `rHeading` when it first draws it; the save leaves out `rh`/`fc` (an older save's are ignored). Gate: headless (8c). |
+| 3 | A few loaded values were checked for being finite but not for range (cooldowns, lifetimes, timers, headings, phases, drifts). | **Fixed.** Bounded generously, so no value a run makes is changed (the resume test holds). Gate: headless (8c). |
+| 4 | If the GPU engine fails to start, the fallback founds a different lake from the same random state. | **Fixed.** The worker builds the water again from the state it began with. Gate: w3 "the sim worker" (the worker on a Node thread, with a GPU that never gives an adapter). |
+| 5 | Hygiene: no `SECURITY.md`; CI's actions pinned by tag; Google Fonts the only outside request. | `SECURITY.md` added. Pinning by commit and serving the fonts locally are left open. |
+
 ## Status of the fixes (updated during the 2026-10-11 overnight run, branch `audit-fixes`)
 
 **Fixed and covered by gate tests:**

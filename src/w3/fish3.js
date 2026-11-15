@@ -958,6 +958,24 @@ export const WILDK = Object.keys(WILD3);
 // (the day's share of hours by light: day, twilight, night — the activities' daily mean [inf: a Maine summer's day])
 const WILD_HOURS = [0.55, 0.1, 0.35];
 export const WILD_LAKE_HA = 643.6;   // (the real lakes' area, ha: Upper 369 + Lower 274)
+// THE WILDLIFE ON THE LAKES, from the water alone (its area, its shore, the date; the forest's animals at it now) — no fish needed,
+// so the sim worker's snapshot gives it whichever side holds the fish (one Fish3, the GPU, the shards); Fish3 _wildN is this
+let SHORE_KM = 0;
+export function shoreKm() {   // the world's km of shore: the water cells' land edges × 0.8
+  if (SHORE_KM) return SHORE_KM;
+  let m = 0; const NX = GEO.NX, NY = GEO.NY;
+  for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] === LAND) continue; const r = Math.floor(i / NX), q = i % NX;
+    for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; if (GEO.body[rr * NX + qq] === LAND) m += GEO.CELL * 0.8; } }
+  return (SHORE_KM = m / 1000);   // (the world's km: at 1/10 scale a tenth of the real shore, its fish a hundredth — densities per km
+  // are scaled by the world's area against the real lakes', wildCount)
+}
+// how many of wildlife w are on the lakes at yf (env: the water, for its forest; lakeHa: the lakes' hectares)
+export function wildCount(env, w, yf, lakeHa = (BODIES[0].area + BODIES[1].area) / 1e4) {
+  const d = WILD3[w], [y0, y1] = d.yf; if (!(y0 <= y1 ? yf >= y0 && yf < y1 : yf >= y0 || yf < y1)) return 0;   // (a window may wrap the year's end: the ice anglers')
+  const fa = lakeHa / WILD_LAKE_HA;   // (the world's share of the real lakes: 1 at true scale, ~0.01 at 1/10 — every count scales with the fish)
+  if (d.forest) { const fo = env.forest; return fo ? fo.fishing(d.forest) * fa : 0; }   // (E14: the forest's animals at it now)
+  return d.perHa ? d.perHa * lakeHa : d.perKm ? d.perKm * shoreKm() / GEO.SCALE * fa : d.perLake * fa;
+}
 export const PRED3 = { pike: { aMax: 3, v: 0, cls: 0, act: [0.15, 0.2, 0.02] }, bass: { aMax: 2.5, v: 0.1, cls: 1, act: [0.2, 0.5, 0.05] }, other: { aMax: 4, v: 0.1, cls: 2, act: [0.3, 0.3, 0.05] } };
 // capture success of a strike at each prey by [an esocid, a smallmouth, a perch-like predator] (Wahl & Stein 1988 esocids on
 // bluegill 0.10–0.14, fathead 0.67, shad 0.78; Mauck & Coble's vulnerability order — soft-rayed most, bullheads least; perch-like
@@ -3152,22 +3170,9 @@ export class Fish3 {
   }
   // ---------- THE LAKES' FISH-EATING WILDLIFE (F3.WILD; WILD3) ----------
   // the shore's length (km: every water cell's land edges, × 0.8 for a raster's stair-steps — as littoral3's bank)
-  _shoreKm() {
-    if (this._shoreKmV) return this._shoreKmV;
-    let m = 0; const NX = GEO.NX, NY = GEO.NY;
-    for (let i = 0; i < GEO.N; i++) { if (GEO.body[i] === LAND) continue; const r = Math.floor(i / NX), q = i % NX;
-      for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const qq = q + dq, rr = r + dr; if (qq < 0 || rr < 0 || qq >= NX || rr >= NY) continue; if (GEO.body[rr * NX + qq] === LAND) m += GEO.CELL * 0.8; } }
-    return (this._shoreKmV = m / 1000);   // (the world's km: at 1/10 scale a tenth of the real shore, its fish a hundredth — densities per km
-    // are scaled by the world's area against the real lakes', _wildN)
-  }
-  // how many of wildlife w are on the lakes at yf, and its fish share then (otter, mink: winter → summer)
-  _wildN(w, yf) {
-    const d = WILD3[w], [y0, y1] = d.yf; if (!(y0 <= y1 ? yf >= y0 && yf < y1 : yf >= y0 || yf < y1)) return 0;   // (a window may wrap the year's end: the ice anglers')
-    const fa = this.lakeHa / WILD_LAKE_HA;   // (the world's share of the real lakes: 1 at true scale, ~0.01 at 1/10 — every count scales with the fish)
-    if (d.forest) { const fo = this.env.forest; return fo ? fo.fishing(d.forest) * fa : 0; }   // (E14: the forest's animals at it now)
-    const n = d.perHa ? d.perHa * this.lakeHa : d.perKm ? d.perKm * this._shoreKm() / GEO.SCALE * fa : d.perLake * fa;
-    return n;
-  }
+  _shoreKm() { return shoreKm(); }
+  // how many of wildlife w are on the lakes at yf (wildCount: from the water alone)
+  _wildN(w, yf) { return wildCount(this.env, w, yf, this.lakeHa); }
   _wildNeed(w, yf) {   // g a day of fish for all of w on the lakes
     const d = WILD3[w], n = this._wildN(w, yf); if (!(n > 0)) return 0;
     const cold = clamp((15 - seasonalTemp(yf)) / 12, 0, 1), share = d.fish[1] + (d.fish[0] - d.fish[1]) * cold;

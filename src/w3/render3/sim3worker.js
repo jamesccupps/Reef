@@ -17,12 +17,12 @@
 // (a few seconds each way), and while the GPU holds them the view gets only what it draws, gathered there.
 import { R5 } from './world3sel.js';   // (first: the world the page asked for — its URL's ?world=true — before geometry.js loads)
 import { Env3 } from '../env3.js';
-import { Fish3, stageR5, WILD3, WILDK } from '../fish3.js';
+import { Fish3, stageR5, WILD3, WILDK, wildCount } from '../fish3.js';
 import { CLOCK3 } from '../clock3.js';
 import { WORLD_TRUE } from '../geometry.js';
 import { PLANKTON } from '../../config.js';
 import { ShardPool } from '../shardpool3.js';
-import { getRandState } from '../../core.js';
+import { getRandState, setRandState } from '../../core.js';
 import { remember, drawnOf, packDrawn, selInfoOf, statsPart, statsMerge, histPoint, gpuStatsPart, gpuCard, FISH_STRIDE, YOY_STRIDE, DRAW_CAM, DRAW_R } from './fishside3.js';
 
 const BUDGET = 40;   // ms of stepping per tick at most (the view never waits on it: it draws the last snapshot meanwhile)
@@ -225,10 +225,10 @@ function snapshot() {
   const ru = new Uint32Array(rz.buffer); for (let o = 4; o < rz.length; o += 6) ru[o] = rises[o];   // (each rise's fish id as u32 bits — exact past 2^24: rises3view reads it so)
   rises = []; wildEv = [];
   const field = show !== 'plain' && ticks % 10 === 0 ? fieldOf(show) : null;
-  // (the wildlife on the lakes now — fish3 _wildN, per WILDK — and how active each is by the light: WILD3 act [day, twilight, night];
+  // (the wildlife on the lakes now — fish3 wildCount, per WILDK — and how active each is by the light: WILD3 act [day, twilight, night];
   // for views that place them — the Unreal world's — the browser's wild3view counts its own)
-  const FF = side.F || (side.solo && side.solo.F), yfNow = env.yearFrac(), li = env.sun > 0.3 ? 0 : env.sun > 0.02 ? 1 : 2;
-  const wildN = FF ? Float32Array.from(WILDK, w => FF._wildN(w, yfNow) || 0) : null, wildAct = Float32Array.from(WILDK, w => WILD3[w].act[li]);
+  const yfNow = env.yearFrac(), li = env.sun > 0.3 ? 0 : env.sun > 0.02 ? 1 : 2;   // (the counts from the water: whichever side holds the fish)
+  const wildN = Float32Array.from(WILDK, w => wildCount(env, w, yfNow) || 0), wildAct = Float32Array.from(WILDK, w => WILD3[w].act[li]);
   const msg = { type: 'snap', time: env.time, t: env.t, yf: env.yearFrac(), weather: env.weather, windSpeed: env.windSpeed, windDir: env.windDir, temp0: env.temp[0], sun: env.sun, air: env.airT ? env.airT() : null,
     acc, h, nf, ny, simT: env.time + envAcc, stepMs,   // (simT: the fish's clock — the water's steps a simulated minute at a time at the fine speeds)
     shards: side.pool ? 2 : 0, gpu: side.onGpu ? side.gpu : null, sel: side.sel(), fish: fb, yoy: yb, ice, field, show, rises: rz, wild: wz, wildN, wildAct, forest: forestOf(), ...side.totals(count, nf, ny) };
@@ -259,7 +259,10 @@ async function handle(m) {
       const gpu = !!self.navigator?.gpu && (WORLD_TRUE ? q.get('gpu') !== '0' : q.get('gpu') === '1');
       stageR5(R5);   // (the whole model: world3sel R5 — before the water and the fish are built)
       say('the water'); const st0 = getRandState(); env = new Env3();
-      if (gpu) { say("the fish and the season's young"); try { side = await gpuSide(say); blockMs = 100; } catch (e) { console.warn('no GPU engine:', e); side = null; } }
+      // (a GPU that fails to start has already founded a lake on the CPU — gpuSide's Fish3, from the random stream and on this water:
+      // the water is built again from where it began, so the fallback is the lake a start without the GPU makes)
+      if (gpu) { say("the fish and the season's young");
+        try { side = await gpuSide(say); blockMs = 100; } catch (e) { console.warn('no GPU engine:', e); side = null; setRandState(st0); env = new Env3(); } }
       if (!side && shards) side = await poolSide(2, say, st0);
       else if (!side) { say("the fish and the season's young"); side = soloSide(); }
       say('the first look'); postMessage({ type: 'ready', NC: env.G.NC, NCELL: env.G.NCELL, shards: side.pool ? 2 : 0, gpu: side.gpu || null });
