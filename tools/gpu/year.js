@@ -8,6 +8,7 @@
 //   http://localhost:8000/tools/gpu/year.html?world=true&seeds=611,612,613&yf=0.22&days=365&every=14
 // The lines also go to window.YEAR (by seed) for a script to read; the page's title is 'done' at the end.
 import '../../src/w3/render3/world3sel.js';
+import { setPath } from './qspath.js';
 const out = document.getElementById('out');
 const log = (...a) => { out.textContent += a.join(' ') + '\n'; console.log(...a); };
 const qs = new URLSearchParams(location.search);
@@ -32,7 +33,7 @@ const { GpuFish } = await import('../../src/w3/gpu/gpufish.js');
 { const { F3, S3 } = await import('../../src/w3/fish3.js');
   for (const [k, v] of qs) {
     if (k.startsWith('f3.') && typeof F3[k.slice(3)] === 'number') F3[k.slice(3)] = +v;
-    else if (k.startsWith('s3.')) { const path = k.slice(3).split('.'), last = path.pop(); let o = S3; for (const q of path) o = o?.[q]; if (o) o[last] = v.includes(',') ? v.split(',').map(Number) : +v; }
+    else if (k.startsWith('s3.')) setPath(S3, k.slice(3), v.includes(',') ? v.split(',').map(Number) : +v);   // (qspath.js: own properties only)
   } }
 // ?cfg.BLOCK.KEY=v: any number or switch of config.js's blocks (e.g. cfg.PHYTO.PER_CAPITA=true), set before the lakes are built
 { const C = await import('../../src/config.js');

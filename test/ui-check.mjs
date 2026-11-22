@@ -231,5 +231,37 @@ check('sanitizeChampions keeps known species + plain finite numbers only', Objec
   check('index.html has no inline <script> and no style= attributes (both would be blocked by the CSP)', !/<script(?![^>]*\bsrc=)[^>]*>/i.test(html) && !/\sstyle=/i.test(html));
 }
 
+// 11. the pages GitHub Pages serves (one origin with all of jamesccupps.github.io): a script from another origin carries its
+// integrity hash and crossorigin="anonymous" (code scanning alert #1, tools/hotbrook/viewer.html's three.js), and the GPU year
+// runner's ?s3.<path>=v override can't reach Object.prototype (alert #2, tools/gpu/qspath.js)
+{
+  const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+  let pages;
+  try { pages = (await import('node:child_process')).execFileSync('git', ['ls-files', '*.html'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean); }
+  catch {   // (no git — an archive copy: walk the tree, leaving out what is never committed — dot-folders, node_modules, the fetched articles)
+    pages = []; const walk = d => { for (const e of fs.readdirSync(path.join(root, d), { withFileTypes: true })) { const r = d ? `${d}/${e.name}` : e.name;
+      if (e.isDirectory()) { if (!e.name.startsWith('.') && e.name !== 'node_modules' && r !== 'docs/research_notes') walk(r); } else if (r.endsWith('.html')) pages.push(r); } };
+    walk('');
+  }
+  const ext = [], bare = [];
+  for (const p of pages) for (const m of fs.readFileSync(path.join(root, p), 'utf8').matchAll(/<script\b[^>]*\bsrc="((?:https?:)?\/\/[^"]+)"[^>]*>/gi)) {
+    ext.push(`${p}: ${m[1]}`);
+    if (!/\bintegrity="sha(256|384|512)-[A-Za-z0-9+/=]+"/.test(m[0]) || !/\bcrossorigin="anonymous"/.test(m[0])) bare.push(`${p}: ${m[1]}`);
+  }
+  check('every published page\'s script from another origin carries an integrity hash and crossorigin="anonymous" (Subresource Integrity)', ext.length >= 2 && bare.length === 0,
+    `${pages.length} pages, ${ext.length} external scripts${bare.length ? '; without: ' + bare.join(', ') : ''}`);
+  const { setPath } = await import('../tools/gpu/qspath.js');
+  const S = { pike: { schoolExp: 1, hab: { day: { bot: [0, 0] } } } }, proto = Object.getPrototypeOf(S.pike);
+  const bad = ['__proto__.polluted', 'constructor.prototype.polluted', 'pike.__proto__.polluted', 'pike.constructor.prototype.polluted',
+    'toString.polluted', 'pike.hasOwnProperty.polluted', 'pike.hab.day.bot.constructor.prototype.polluted', '__proto__', 'pike.__proto__'];
+  const refused = bad.filter(p => !setPath(S, p, 1)).length;
+  const set = setPath(S, 'pike.schoolExp', 0.5) && setPath(S, 'pike.hab.day.bot', [0.1, 0.6]) && setPath(S, 'pike.hab.day.bot.1', 0.7) && setPath(S, 'pike.newKey', 2);
+  check('the year runner\'s ?s3.<path>=v refuses __proto__ / constructor / prototype and inherited properties, and still sets a species\' own entries',
+    refused === bad.length && ({}).polluted === undefined && Object.prototype.polluted === undefined && Array.prototype.polluted === undefined
+      && Object.getPrototypeOf(S.pike) === proto && Object.getPrototypeOf(S) === Object.prototype
+      && set && S.pike.schoolExp === 0.5 && S.pike.hab.day.bot.join() === '0.1,0.7' && S.pike.newKey === 2,
+    `${refused}/${bad.length} refused; pike.schoolExp ${S.pike.schoolExp}, hab.day.bot ${S.pike.hab.day.bot}`);
+}
+
 console.log(`\n${fail === 0 ? 'UI CHECKS OK' : fail + ' UI CHECK(S) FAILED'}`);
 process.exit(fail === 0 ? 0 : 1);

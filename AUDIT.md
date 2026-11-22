@@ -1,5 +1,16 @@
 # Synapse Reef — Project Audit (2026-10-11)
 
+## Code scanning (CodeQL default setup), 2026-11-22
+
+GitHub's CodeQL default setup, turned on 2026-11-21, raised five alerts on `main` at `6f71322`. GitHub Pages serves the tools' pages publicly, on the same origin as all of jamesccupps.github.io.
+
+| # | Alert | Status |
+|---|---|---|
+| 1 | Inclusion of functionality from an untrusted source: `tools/hotbrook/viewer.html` loaded three.js r128 and its OrbitControls from cdnjs and jsDelivr with no integrity hashes. | **Fixed.** Both tags carry `integrity` (sha384) and `crossorigin="anonymous"`. The hashes match the npm `three@0.128.0` package byte for byte, and cdnjs's own published SRI. A copy with one character of the hash changed is blocked in the browser. Gate: ui-check (11), which requires an integrity hash on every script from another origin in every tracked page. |
+| 2 | Prototype-polluting assignment: `tools/gpu/year.js`'s `?s3.<path>=v` override walked the URL's path, so `?s3.__proto__.x=1` wrote onto `Object.prototype`. | **Fixed.** `tools/gpu/qspath.js` `setPath` walks only into own properties and refuses `__proto__`, `constructor` and `prototype`. Gate: ui-check (11). The `f3.`, `fry.` and `cfg.` handlers already checked their keys. |
+| 3 | Insecure randomness, `src/world.js:221`: a loaded fish with no saved hue gets one from the sim's seeded generator. | Open. A false positive: it is a colour, and the determinism rules require the seeded generator there. |
+| 4, 5 | Incomplete multi-character sanitization, `tools/paper-site.mjs:46` and `:266`: regex removal of tags (`textOf`) and of `<!-- -->` notes (`stripNotes`). | Open. The script runs at build time on the repo's own `docs/paper/*.md`, not on outside input. |
+
 ## Outside review, 2026-11-15 (the plumbing between the parts; `main` at `6252b7c`)
 
 An outside review read the random stream, the save validators and loader, the frame loop, fast-forward, the 3-D sim's worker and the shards line by line, and searched the pure modules for the `CLAUDE.md` rules. It found nothing that affects results. Its findings and their status:
