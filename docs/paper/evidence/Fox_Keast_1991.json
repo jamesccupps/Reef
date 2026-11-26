@@ -1,0 +1,45 @@
+{
+  "key": "Fox_Keast_1991",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI (api.crossref.org, the publisher's abstract); the full text is subscriber-only at Canadian Science Publishing and no open copy was found",
+    "url": "https://api.crossref.org/works/10.1139/f91-211"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Fox, Michael G. & Keast, Allen. 1991. Can. J. Fish. Aquat. Sci. 48(9): 1792–1799."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, maturity)",
+      "claim": "pumpkinseed mature 1–2 yr earlier and > 20 mm smaller in winterkill ponds",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract says that pumpkinseed in two shallow winterkill ponds matured '1–2 yr earlier and at a smaller size (difference > 20 mm in length)' than fish in an adjacent lake without winterkill (near Lake Opinicon, Ontario, per the Queen's University Biological Station's project record). Whether the 20 mm is total or standard length, and the sample sizes, need the full text."
+    },
+    {
+      "paper": "Table 3.6-9 (pumpkinseed, northern inland lakes)",
+      "claim": "~35 mm TL size threshold for first-winter survival (via Sobchak et al. 2026)",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract is about age and size at maturity after winterkill; it gives no size threshold for overwinter survival. Sobchak et al. 2026 cite 'Fox and Keast 1991; Garvey et al. 2002' together for the 35-mm figure (see Sobchak_etal_2026.json), so which of the two gives it is unknown."
+    },
+    {
+      "paper": "src/species.js:278",
+      "claim": "1–2 years earlier and > 20 mm smaller in winterkill ponds",
+      "verdict": "unchecked",
+      "note": "As for Table 3.5-2."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f91-211", "status": 403, "note": "Canadian Science Publishing refuses scripts; subscriber content" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f91-211", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://research.qubs.ca/projects/effect-of-overwinter-mortality-in-reproductive-life-history-characteristics-of-pumpkinseed-lepomis-gibbosus-populations", "status": 200, "note": "Queen's University Biological Station project record: a one-line summary and the DOI, no PDF" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(overwinter mortality pumpkinseed)", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://doi.org/10.1139/f91-211", "status": 0, "note": "for the human: the publisher page a library login would open" }
+  ],
+  "notes": "The abstract also says pond females were more fecund for their weight and had about double the lake females' gonadosomatic index, and that maturity came earlier after each winterkill than in the year before or after. The paper may cite this source for Table 3.6-9's 35-mm threshold, but its abstract does not support that; check it in the full text, or cite Sobchak et al. 2026 alone for the threshold."
+}

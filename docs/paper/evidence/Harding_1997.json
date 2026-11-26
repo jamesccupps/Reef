@@ -1,0 +1,46 @@
+{
+  "key": "Harding_1997",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "secondary only: the Virginia Herpetological Society's American bullfrog account (the relay the paper names), read in full and saved as Harding_1997_viaVHS; the book is in print and the Internet Archive's copies are borrow-only (access-restricted), so it was not read",
+    "url": "https://www.virginiaherpetologicalsociety.com/amphibians/frogsandtoads/american-bullfrog/index.php",
+    "file": "docs/research_notes/fetched/v2/Harding_1997_viaVHS.html"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.3998/mpub.10265) and the Internet Archive's catalogue records",
+    "ok": true,
+    "corrections": "",
+    "note": "Harding, James. 1997. Amphibians and Reptiles of the Great Lakes Region. University of Michigan Press, Ann Arbor. ISBN 9780472066285. The middle initial 'H.' could not be checked on a title page (Crossref gives 'James' only). A revised edition (Harding & Mifsud 2017) exists."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrogs stay inactive until water nears 15 °C",
+      "verdict": "unchecked",
+      "note": "Secondary only. The VHS account relays it: adults generally remain inactive until water temperatures approach 15 °C (Harding, 1997)."
+    },
+    {
+      "paper": "Table 3.8-3 (bullfrog, spacing)",
+      "claim": "territories 2–5 m across",
+      "verdict": "unchecked",
+      "note": "Secondary only. The VHS account relays it: males defend roughly circular territories 2–5 m in diameter (Harding, 1997)."
+    },
+    {
+      "paper": "src/w3/fish3.js:927",
+      "claim": "males on floating territories 2–5 m across, inactive until the water nears 15 °C",
+      "verdict": "unchecked",
+      "note": "Secondary only, as above. The relay says 'roughly circular'; 'floating' is not in it."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.press.umich.edu/10265", "status": 404, "note": "the DOI's target at the University of Michigan Press is gone" },
+    { "url": "https://archive.org/metadata/amphibiansreptil0000hard", "status": 200, "note": "Internet Archive copy is access-restricted (borrow only, lending library); not used" },
+    { "url": "https://archive.org/metadata/amphibiansreptil0000hard_a8k3", "status": 200, "note": "access-restricted (borrow only); not used" },
+    { "url": "https://archive.org/metadata/amphibiansreptil0000hard_v1d9", "status": 200, "note": "the 2017 revised edition; access-restricted (borrow only); not used" },
+    { "url": "https://doi.org/10.3998/mpub.10265", "status": 302, "note": "for the human: redirects to press.umich.edu/10265 (now 404); a library copy of the 1997 book is needed" }
+  ],
+  "notes": "The paper's reference entry already says the book is 'Cited only via VHS (n.d.) and Tortoise Trust (n.d.)'. Both values are relayed accurately by VHS's bullfrog account. Rule 1 keeps them unchecked against the book; the rewrite could cite 'Harding 1997, via VHS n.d.' in the text, as it does for the other relayed sources."
+}

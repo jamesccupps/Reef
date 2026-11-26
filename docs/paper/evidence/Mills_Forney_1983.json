@@ -1,0 +1,46 @@
+{
+  "key": "Mills_Forney_1983",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: OpenAlex's record W2090628754 (abstract_inverted_index, the publisher's abstract; one request answered before the shared daily allowance ran out). Closed access, no repository copy",
+    "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1983)112%3C154:IODPOP%3E2.0.CO;2"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (the URL-encoded SICI DOI resolves) and OpenAlex",
+    "ok": true,
+    "corrections": "",
+    "note": "Mills, Edward L. & Forney, John L. 1983 (March). Impact on Daphnia pulex of predation by young yellow perch in Oneida Lake, New York. Trans. Am. Fish. Soc. 112(2A): 154–161. show.mjs's 'DOI NOT FOUND at Crossref' is an encoding artefact."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "D. pulex 'could tolerate predation by 10 kg of young fish·hectare⁻¹' but not once young-of-year (mostly yellow perch) exceeded 20–40 kg/ha; consumption exceeded production in 1975 and 1977, when daphnids disappeared; in 1976 it stayed below 27 % of production",
+      "verdict": "unchecked",
+      "note": "Abstract only (the paper says so). The abstract says each of these things. Its threshold comes from comparing yellow perch biomass with D. pulex abundance, Oneida Lake 1975–1979, so '(mostly yellow perch)' is the paper's gloss. The 27 % is 'maximum daily consumption', which fits 'stayed below'."
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "large D. pulex at Oneida withstood about 10 kg/ha of age-0 perch but collapsed above 20–40 kg/ha",
+      "verdict": "unchecked",
+      "note": "Abstract only; as for §3.3.9."
+    },
+    {
+      "paper": "src/config.js:1428",
+      "claim": "in real lakes fish take only ~10–30 % of the zooplankton's production and get ~50–65 % of their food from the bottom (Mills & Forney 1983; Vander Zanden & Vadeboncoeur 2002)",
+      "verdict": "unchecked",
+      "note": "Abstract only, but the abstract argues against the general 10–30 %. Young perch ate MORE than the D. pulex production in 1975 and 1977, and under 27 % only in 1976, the year Daphnia persisted. At most it supports 'under ~27 % in a year when Daphnia persists, over 100 % in strong year-class years', as zooplankton_dynamics.md puts it. The 50–65 % from the bottom is not in the abstract; presumably it is Vander Zanden & Vadeboncoeur's."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1983)112%3C154:IODPOP%3E2.0.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1983)112%3C154:IODPOP%3E2.0.CO%3B2", "status": 403, "note": "Taylor & Francis refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1983)112<154:IODPOP>2.0.CO;2", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://www.osti.gov/api/v1/records?title=Daphnia pulex young yellow perch Oneida", "status": 200, "note": "no OSTI record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(Daphnia pulex young yellow perch Oneida)", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://doi.org/10.1577/1548-8659(1983)112<154:IODPOP>2.0.CO;2", "status": 0, "note": "for the human: the publisher page a library login would open (OUP now hosts TAFS)" }
+  ],
+  "notes": "The code comment at src/config.js:1428 cites this paper for a general 'fish take only ~10–30 % of zooplankton production', which the abstract does not bear out (see the claim). The abstract also says that since 1968 D. pulex persisted through late summer in years when young perch were scarce and vanished when they were abundant."
+}

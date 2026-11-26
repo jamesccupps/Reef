@@ -61,3 +61,11 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-09 | `littoral3.js:71` | Credits Keast 1980 with "76–91 % of food from vegetation in sunfish < 75 mm", which the paper's Table 3.6-2 gives to Mittelbach 1984 | open |
 | t1-09 | `config.js:1591, 1489` | Boulianne et al. 2025: nauplii are 34 % of the whole zooplankton (not of the copepods); ephippia 27 % of the whole Daphnia population at autumn overturn, 13 % under early ice (not "13–27 % of females") | open |
 | t1-09 | §3.6.7 | Young bass "live singly or in small groups": Forbes says "solitary after dispersal" (and Ridgway p. 57 supports small groups — t1-10) | open |
+| w2-05 | Table 3.6-1, §5.2 | Edsall 1970's eggs were landlocked Lake Michigan alewives, presented as sea-run alewife values | open |
+| w2-05 | Table 3.6-9 | A ~35-mm first-winter threshold credited to Fox & Keast 1991 (via Sobchak et al. 2026) is not in its abstract | open |
+| w2-05 | §3.6.3 | "(Graeb et al. 2004, abstract)" for "rotifers gave little or no growth" — not in the abstract; it is in the IISG final report on the same experiments (newly hatched larvae fed *Brachionus* only): cite that | open |
+| w2-05 | `config.js:1447`; `PLANKTON.K_R` (1449) vs `ROT` (1513–14), §3.3.8 | Gilbert 1988 gives a lower Daphnia threshold only as a possibility; the comments disagree on where the rotifers' zero-growth food level sits (above Daphnia's vs 0.6 of it) | open |
+| w2-05 | `config.js:1428` | "Fish take only ~10–30 % of zooplankton production" contradicts Mills & Forney 1983: young perch ate more than the *D. pulex* production in 1975 and 1977, < 27 % only in 1976 | open |
+| w2-05 | §3.1.4; `ICE_SLOPE_V` | Malm et al. 1997 abstract: sediment heat flux 1–4.5 W m⁻² early winter, 0.5–3 late — the 0.6 lower bound is not Malm's; nothing supports the "few mm/s" down-slope current | open |
+| w2-05 | Table 3.8-3, `fish3.js:927` | Harding 1997 cited as if read; the entry admits it is "cited only via VHS" — say so in the text and code | open |
+| w2-05 | §5.2 | "Only 25–50 % of adult suckers spawn in a given year" uncited; it is Geen et al. 1966's abstract figure, possibly the two sucker species pooled | open |

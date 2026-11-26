@@ -1,0 +1,52 @@
+{
+  "key": "Edsall_1970",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the USGS Publications Warehouse record (pubs.usgs.gov publication 1000168, Great Lakes Science Center), read through its JSON service; no full text there or anywhere else found",
+    "url": "https://pubs.usgs.gov/pubs-services/publication/1000168"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (the SICI DOI resolves there when URL-encoded) and the USGS record",
+    "ok": true,
+    "corrections": "",
+    "note": "Edsall, Thomas A. 1970 (April). Trans. Am. Fish. Soc. 99(2): 376–380. show.mjs's 'DOI NOT FOUND at Crossref' is an encoding artefact: the encoded DOI resolves."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (sea-run alewife, incubation)",
+      "claim": "hatch spread over 13 d at 7.8 °C, 2–3 d at 20–21 °C",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract gives the 'time from start to finish of hatching' as 13 days at about 46 °F (7.8 °C) and 2–3 days at 68–70 °F (20.0–21.1 °C); the paper's conversions are right."
+    },
+    {
+      "paper": "Table 3.6-1 (sea-run alewife, hatch and first feeding)",
+      "claim": "unfed larvae live 3.8 d at 10.6 °C, 7.6 d at 14.4–15 °C, 2.4 d at 26.7–27.8 °C",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract gives survival of unfed larvae held at their incubation temperatures as 3.8 d at 51 °F, 7.6 d at 58–59 °F and 2.4 d at 80–82 °F; the conversions (10.6, 14.4–15.0, 26.7–27.8 °C) are right. Whether these are mean or maximum survival times needs the full text."
+    },
+    {
+      "paper": "§5.2",
+      "claim": "the best hatch in the research is 38 %, in the laboratory near 17.8 °C",
+      "verdict": "unchecked",
+      "note": "Abstract only (the paper already says 'abstract only'). The abstract gives the optimum as 38 % hatched at about 64 °F (17.8 °C), from eggs incubated at 79 constant temperatures between 42.1 and 87.0 °F; hatching happened at 44.4–84.9 °F."
+    },
+    {
+      "paper": "src/config.js:507",
+      "claim": "the best hatch is 38 % in the lab near 17.8 °C ('Edsall 1970 via Fay'), the basis for hatch 0.2",
+      "verdict": "unchecked",
+      "note": "As for §5.2. The comment says 'via Fay', while the research note (sea_run_alewife.md) took it from the USGS abstract; either way the full text was not read."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://academic.oup.com/tafs/article/99/2/376/7910876", "status": 403, "note": "OUP (TAFS's current host) refuses scripts; subscriber content" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1970)99%3C376:TEOTOT%3E2.0.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1970)99%3C376:TEOTOT%3E2.0.CO%3B2", "status": 403, "note": "Taylor & Francis refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1970)99<376:TEOTOT>2.0.CO;2", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(alewife eggs larvae temperature)", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://doi.org/10.1577/1548-8659(1970)99<376:TEOTOT>2.0.CO;2", "status": 0, "note": "for the human: the publisher page a library login would open" }
+  ],
+  "notes": "For the rewrite: Edsall's eggs came from LANDLOCKED Lake Michigan alewives, while Table 3.6-1's row and §5.2 are about the sea-run alewife. The table should say so (e.g. 'Lake Michigan alewife eggs, laboratory'). The 38 % is a laboratory optimum across a temperature gradient, not a field hatch rate; §5.2 already frames it that way. The abstract also gives incubation times (15 d at 45 °F, 3.7 d at 70 °F, 2.1 d at 84 °F) that the research note's incubation fit uses. All claims stay unchecked until the full text (TAFS 99:376–380) is fetched by hand."
+}

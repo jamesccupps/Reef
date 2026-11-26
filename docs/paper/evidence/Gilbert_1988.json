@@ -1,0 +1,71 @@
+{
+  "key": "Gilbert_1988",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_33/issue_6/1286.pdf), as captured by the Internet Archive's Wayback Machine on 22 Jun 2006 and openly downloadable; Wiley, today's host, refuses scripts (403). 18 pages, OCR text layer",
+    "url": "http://web.archive.org/web/20060622162143id_/http://aslo.org:80/lo/toc/vol_33/issue_6/1286.pdf",
+    "file": "docs/research_notes/fetched/v2/Gilbert_1988.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Limnol. Oceanogr. 33(6, part 1): 1286–1303 (1988). The ledger's 33(6) is fine; the issue is printed as '6, part 1'."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "rotifers 'cannot become abundant' beside Daphnia above about 1.2 mm",
+      "location": "p. 1286 (PDF p. 1), Abstract; restated p. 1287 (PDF p. 2)",
+      "quote": "rotifers cannot become abundant members of freshwater zooplankton communities in the presence of large",
+      "conditions": "a review of field observations, field and laboratory experiments; 'large (≥ 1.2 mm) Daphnia' in the abstract, '> 1.2 mm' on p. 1287",
+      "verdict": "confirmed",
+      "note": "The paper labels this 'Gilbert 1988; abstract only'; the full text has now been read and says the same, so the label can go."
+    },
+    {
+      "paper": "§3.3.8",
+      "claim": "smaller cladocerans 'often co-occur with them at high densities'",
+      "location": "p. 1286 (PDF p. 1), Abstract; p. 1297 (PDF p. 12), 'Coexistence of rotifers and small cladocerans'",
+      "quote": "often co-occur with them at high densities in natural communities",
+      "conditions": "small cladocerans are those ≤ 1.2 mm long as adults, in the absence of large Daphnia; Gilbert adds that small cladocerans may still suppress rotifers competitively (p. 1297)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1447",
+      "claim": "Daphnia kill rotifers by mechanical interference",
+      "location": "p. 1296 (PDF p. 11), 'Interference competition'",
+      "quote": "Daphnia may also mechanically interfere with rotifers",
+      "conditions": "rotifers swept into the branchial chamber of a feeding Daphnia are rejected, damaged or ingested; shown mainly for Keratella cochlearis (Gilbert & Stemberger 1985; Burns & Gilbert 1986a,b, as reviewed here)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1447",
+      "claim": "Daphnia out-compete rotifers because of a lower food threshold",
+      "source_value": "Daphnia are usually, not always, the better exploitative competitors. A lower threshold food level is given only as a possible reason, from experiments with the large rotifer Brachionus calyciflorus. Small rotifers may have thresholds 'perhaps similar to those of Daphnia', and no firm generalization is possible.",
+      "location": "p. 1296 (PDF p. 11), first column",
+      "quote": "Daphnia may usually be a superior exploitative competitor compared to most rotifers",
+      "conditions": "the threshold argument 'may not apply to rotifers much smaller than B. calyciflorus'",
+      "verdict": "corrected",
+      "note": "The code's own K. cochlearis threshold (config.js ROT: zero growth at 0.020 units, '0.6 of Daphnia's', from Stemberger & Gilbert 1985) puts the rotifer's threshold BELOW Daphnia's, which agrees with Gilbert's caveat and contradicts the comment's '(a lower food threshold)'. Reword it to 'Daphnia usually out-compete them'."
+    },
+    {
+      "paper": "src/config.js:1515",
+      "claim": "Daphnia kill rotifers only when longer than 1.2 mm (INTERF_LARGE)",
+      "location": "p. 1296 (PDF p. 11), second column",
+      "quote": "only those with body lengths (tail spine excluded) >1.2 mm interfered with K. cochlearis",
+      "conditions": "direct observations and experiments with five Daphnia species against Keratella cochlearis (Burns & Gilbert 1986a,b, as reviewed here); interference rose roughly linearly with Daphnia length from 1.2 to ~3.0 mm; body length without the tail spine",
+      "verdict": "confirmed",
+      "note": "The 1.2-mm cutoff is measured for K. cochlearis only. Of nine rotifers tested against D. pulex (p. 1297), Kellicottia bostoniensis, Asplanchna priodonta and Conochilus unicornis were not interfered with at all, and five others were less susceptible than K. cochlearis. The primary source for the cutoff is Burns & Gilbert 1986a,b; cite it as 'Burns & Gilbert 1986, reviewed by Gilbert 1988'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1988.33.6.1286", "status": 403, "note": "Wiley refuses scripts (OpenAlex lists it as bronze open access)" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1988.33.6.1286", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://aslo.org/lo/pdf/vol_33/issue_6/1286.pdf", "status": 404, "note": "old ASLO path no longer served" },
+    { "url": "http://www.aslo.org/lo/pdf/vol_33/issue_6/1286.pdf", "status": 404, "note": "old ASLO path no longer served" }
+  ],
+  "notes": "Only the code comment's 'lower food threshold' needs changing; the paper's two quotations are right, and its 'abstract only' label can go. Values the rewrite may want (all from this review): Daphnia 2.0 and 3.0 mm long at only 5.0 and 2.5 ind/L impose death rates of about 0.3 /d on K. cochlearis, about that rotifer's maximum growth rate at 20 °C (p. 1297, from Burns & Gilbert 1986a). Interference kills newborn K. cochlearis more readily than older ones, and kills more when algal food is absent (p. 1296). Kellicottia bostoniensis is immune to Daphnia interference (p. 1297), which fits §3.3.8's note that Kellicottia is prominent under the ice at Lake Simoncouche."
+}

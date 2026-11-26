@@ -1,0 +1,51 @@
+{
+  "key": "Geen_etal_1966",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI (api.crossref.org, the publisher's abstract); the full text is subscriber-only at Canadian Science Publishing",
+    "url": "https://api.crossref.org/works/10.1139/f66-161"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Geen, G. H., Northcote, T. G., Hartman, G. F. & Lindsey, C. C. 1966. J. Fish. Res. Board Can. 23(11): 1761–1788. FishBase lists 1762–1787 (probably the text pages); Crossref's 1761–1788 matches the ledger."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (white sucker, hatch and first feeding)",
+      "claim": "fry drift at night about a month after spawning",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract says the downstream movement of sucker fry (longnose and white together) was nocturnal and largest when the stream was high and turbid or the nights dark, and that peak fry migration came about 1 month after spawning."
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker, spawning)",
+      "claim": "spawning from ~10 °C",
+      "verdict": "unchecked",
+      "note": "Abstract only, and the row shares this with Stewart 1926 and Scott & Crossman 1973. In Geen et al.'s abstract, white sucker spawning MIGRATIONS into the inlet began when the inlet's DAILY MAXIMUM temperature reached 10 °C (longnose at 5 °C)."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "white sucker egg-to-larva survival of 0.3 % (attributed to Geen et al. 1966 by a search summary)",
+      "verdict": "unchecked",
+      "note": "Abstract only. The paper's own caveat holds: the abstract gives no egg-to-larva survival. Its figures are spawning mortality of 10–40 %, maximum ages of 12–16 years, adult growth of 10–20 mm a year and 'low annual recruitment'."
+    },
+    {
+      "paper": "src/w3/fish3.js:407",
+      "claim": "only 25–50 % of adult white suckers spawn in a year",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract reads 'Estimates of the adult population size were 2000 longnose and 800 white suckers of which 25–50% spawned each year'. The range seems to cover both species, so whether white suckers alone fall in it needs the full text. These were slow-growing populations in Sixteenmile Lake, British Columbia; the estimates come from latex-marked inlet spawners. §5.2 repeats the 25–50 % without a citation."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f66-161", "status": 403, "note": "Canadian Science Publishing refuses scripts; subscriber content" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f66-161", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://doi.library.ubc.ca/10.14288/1.0106095", "status": 200, "note": "UBC Open Collections (Geen's thesis 'Reproduction of three species of suckers (Catostomidae) in British Columbia', a possible stand-in) answered with a 'Browser Verification' bot check; not passed" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(catostomid Sixteenmile)", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://doi.org/10.1139/f66-161", "status": 0, "note": "for the human: the publisher page a library login would open" }
+  ],
+  "notes": "A possible stand-in for the human to fetch by hand: G. H. Geen's UBC thesis 'Reproduction of three species of suckers (Catostomidae) in British Columbia' (UBC Open Collections, doi:10.14288/1.0106095; DataCite gives 2012, the year it was digitized). It may hold the Sixteenmile Lake data, including any egg-to-fry survival, but UBC put it behind a browser check. The 0.3 % should stay flagged as unverified, or be dropped, until the article or the thesis is read."
+}

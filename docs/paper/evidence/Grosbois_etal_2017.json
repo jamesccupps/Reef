@@ -1,0 +1,75 @@
+{
+  "key": "Grosbois_etal_2017",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access full text (CC BY 4.0) from Europe PMC's REST service (PMC5599675, the publisher's JATS XML); the Nature PDF answered with a page the fetcher flagged as a wall, and Europe PMC's PDF render refused (403)",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5599675/fullTextXML",
+    "file": "docs/research_notes/fetched/v2/Grosbois_etal_2017.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's front matter (JATS XML) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Grosbois G., Mariash H., Schneider T. & Rautio M. 2017. Sci. Rep. 7: 11543 (published 14 Sep 2017), doi:10.1038/s41598-017-10956-0. The XML has no printed pages, so locations are given by section."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5",
+      "claim": "Lake Simoncouche, Québec, is shallow: 83 ha, mean depth 2.2 m",
+      "location": "web page, Methods, 'Study site and zooplankton community'",
+      "quote": "mean depth 2.2 m, maximum depth 8 m and surface area 83 ha",
+      "conditions": "48°23′N, 71°25′W; mesotrophic; ice from November to late April or early May, ice up to 50–90 cm thick; no hypolimnion forms",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "annual mean densities: L. minutus 12.9/L, Daphnia 4.9/L, Cyclops scutifer 3.3/L",
+      "location": "web page, Results, 'Seasonal abundances in zooplankton community'",
+      "quote": "average annual abundances of 12.9 ± 4.9, 3.3 ± 1.7 and 4.9 ± 2.8 ind",
+      "conditions": "listed in the order L. minutus, C. scutifer, Daphnia spp. (mean ± SD, ind/L); copepodites and adults together; weekly to monthly samples, 19 May 2011 – 23 May 2012; 58 %, 15 % and 22 % of total community abundance",
+      "verdict": "confirmed",
+      "note": "The paper's mapping is right: 4.9 is Daphnia's mean (and, by coincidence, L. minutus's SD). 'Daphnia' is Daphnia spp."
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "M. edax 1.0/L, absent from November to May",
+      "location": "web page, Results, 'Seasonal abundances in zooplankton community'",
+      "quote": "Mesocyclops edax was absent from the water column from November to May",
+      "conditions": "1.0 ± 1.1 ind/L, 5 % of the annual community; it spends that period in the sediments as C-V copepodites (Discussion)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "L. minutus lipid rose from 18 % of dry weight in September to 76 % in January",
+      "location": "web page, Results, 'Total lipids and fatty acid composition in zooplankton'",
+      "quote": "lipid content ranged from 18% (of dry weight) in mid-September to 76% in late January",
+      "conditions": "field samples 2011–12 (Supplementary Fig. S1)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "starved adults at 4 °C survived as well as fed ones for 66 days before collapsing",
+      "location": "web page, Results, 'Starvation experiment'; Methods, 'Survival experiment'",
+      "quote": "During the first 66 days of the experiment, the survival was not significantly different",
+      "conditions": "laboratory, 4 °C in the dark; adult L. minutus collected at freeze-up (20 Nov 2012); 6 beakers × 50 copepods per treatment; starved = GF/F-filtered lake water, fed = < 50-µm lake water, renewed weekly. From day 66 to day 73 the starved survivors fell from 32 ± 6 to 3 ± 2; on day 163, 0.2 ± 0.4 starved against 21 ± 7 fed were alive",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1477",
+      "claim": "copepod adults live months and overwinter on lipid (L. minutus)",
+      "location": "web page, Results ('Seasonal abundances'; 'Total lipids'); Discussion",
+      "quote": "minutus spent the winter as an adult",
+      "conditions": "L. minutus overwintered as adults and stored lipid to 76 % of dry weight; the stored lipid alone lasted about two months (66 d) in the laboratory, and phytoplankton fatty acids stayed available in the lake for about a month after ice-on",
+      "verdict": "confirmed",
+      "note": "The authors' point is that the copepod 'does not survive five months under the ice without food' (Abstract): it overwinters on lipid built from early-winter phytoplankton plus some winter feeding, not on lipid alone. The loss rate of ~0.0005/day in the comment is Cooley's (1973), not from this paper."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.nature.com/articles/s41598-017-10956-0.pdf", "status": 200, "note": "the fetcher flagged the response as a login, paywall or bot-check page and did not keep it" },
+    { "url": "https://europepmc.org/articles/PMC5599675?pdf=render", "status": 403, "note": "Europe PMC's PDF render refused the script" }
+  ],
+  "notes": "Every value checks. Also useful: Daphnia in Lake Simoncouche were mostly adults under the ice, fairly abundant until 12 December and then scarce until mid-May; C. scutifer overwintered entirely as C-IV copepodites; Bosmina was abundant in early winter. Under-ice chlorophyll a was 0.2–0.7 µg/L against 1.4–3.5 µg/L in the open season (Table 1). L. minutus can make up 93 % of the zooplankton biomass (Grosbois, unpublished, cited in Methods)."
+}

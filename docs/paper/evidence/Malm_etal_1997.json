@@ -1,0 +1,52 @@
+{
+  "key": "Malm_etal_1997",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI and the Lund University Publications record (lup.lub.lu.se/record/2595373, abstract only, no file). IWA's PDF, listed as bronze open access by OpenAlex, refused the script (403)",
+    "url": "https://api.crossref.org/works/10.2166/nh.1997.0008"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Lund University Publications record",
+    "ok": true,
+    "corrections": "",
+    "note": "Malm, J., Terzhevik, A., Bengtsson, L., Boyarinov, P., Glinsky, A., Palshin, N. & Petrov, M. 1997. Temperature and salt content regimes in three shallow ice-covered lakes: 2. Heat and mass fluxes. Nordic Hydrology 28(2): 129–152 (the journal is now Hydrology Research, the name Crossref shows; Crossref's title drops the '2. Heat and mass fluxes' part, which LUP gives)."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "early in winter heat from the sediment is the main heat source, 0.6–4.5 W m⁻² in small ice-covered lakes (with Bengtsson et al. 1996)",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract gives the sediment-to-water heat flux as the main heat source in early and mid-winter, depth-dependent, 1–4.5 W m⁻² in early winter and 0.5–3 W m⁻² in late winter, in three small shallow ice-covered lakes. The 0.6 lower bound is not Malm et al.'s (theirs is 1 early, 0.5 late); presumably it is Bengtsson et al. 1996's."
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "lateral transport from shallow to deep water can match the vertical fluxes",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract says heat moved from shallow regions to the deep parts during winter, 'of the same order as the vertical fluxes'."
+    },
+    {
+      "paper": "src/w3/env3.js:45",
+      "claim": "under ice the bed's heat drives a down-slope current of a few mm/s (ICE_SLOPE_V 0.003 m/s)",
+      "verdict": "unchecked",
+      "note": "Abstract only, and the abstract gives no current speed; check this in the full text (it may be in part 1, doi:10.2166/nh.1997.0007, or in Bengtsson et al. 1996)."
+    },
+    {
+      "paper": "src/w3/env3.js:511",
+      "claim": "the bed gives off the summer's stored heat at 1–4.5 W/m²",
+      "verdict": "unchecked",
+      "note": "Abstract only. 1–4.5 W m⁻² is the abstract's EARLY-winter range; late winter is 0.5–3 W m⁻², so a constant 1–4.5 would overstate late-winter heating."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://iwaponline.com/hr/article-pdf/28/2/129/4666/129.pdf", "status": 403, "note": "IWA refuses scripts (OpenAlex lists it as bronze open access, so the human can probably download it free in a browser)" },
+    { "url": "https://iwaponline.com/hr/article/28/2/129/692/Temperature-and-Salt-Content-Regimes-in-Three", "status": 403, "note": "IWA landing page refuses scripts" },
+    { "url": "https://doi.org/10.2166/nh.1997.0008", "status": 403, "note": "resolves to IWA, which refuses scripts" },
+    { "url": "https://lup.lub.lu.se/record/2595373", "status": 200, "note": "Lund University Publications: abstract only, no full-text file" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=iwaponline.com/hr/article-pdf/28/2/129/*", "status": 200, "note": "the Wayback Machine holds only 302 redirects for the PDF URL (2020, 2022). Fetching a capture was REFUSED by this session's permission system and was not retried another way" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2166/nh.1997.0008", "status": 404, "note": "not in Semantic Scholar" }
+  ],
+  "notes": "Probably free to a person in a browser (IWA bronze open access): the human should fetch https://iwaponline.com/hr/article-pdf/28/2/129/4666/129.pdf by hand. Two things to check then: (1) where the 'few mm/s' down-slope current in env3.js comes from; (2) whether the 0.6 lower bound in §3.1.4 belongs to Bengtsson et al. 1996. The abstract also gives an ice–water heat flux of about 0.5–1 W m⁻², mostly conduction from water to ice, and a sediment salt flux of 1–10 × 10⁻¹⁰ kg m⁻² s⁻¹."
+}

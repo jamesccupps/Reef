@@ -1,0 +1,47 @@
+{
+  "key": "Graeb_etal_2004",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI (api.crossref.org, the publisher's abstract); the article is subscriber-only. A stand-in, the Illinois-Indiana Sea Grant final report on the same experiments (Dettmers, PI), was read in full; see notes",
+    "url": "https://api.crossref.org/works/10.1577/T03-050.1"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Graeb, Brian D. S., Dettmers, John M., Wahl, David H. & Cáceres, Carla E. 2004 (May). Trans. Am. Fish. Soc. 133(3): 504–514."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.3",
+      "claim": "rotifers gave yellow perch larvae little or no growth (Graeb et al. 2004, abstract)",
+      "verdict": "unchecked",
+      "note": "Not in the abstract: the abstract never mentions rotifers, so the paper's '(abstract)' label is wrong. It says newly hatched (5–7 mm) to 12-mm larvae grew and survived best on adult copepods and copepod nauplii. The rotifer result is in the stand-in IISG report (p. 2): Brachionus were fed only to newly hatched larvae, because larvae always avoided rotifers in a pilot study, and those larvae had 'little or no growth and low survival' on them."
+    },
+    {
+      "paper": "Table 3.6-2 (yellow perch, later diet)",
+      "claim": "best growth on adult copepods and small cladocerans above 12 mm (laboratory)",
+      "verdict": "unchecked",
+      "note": "Abstract only. The abstract says the same: growth and survival of larvae longer than 12 mm were greatest on adult copepods and small cladocerans. The IISG report (p. 2) names the cladocerans as Ceriodaphnia and Bosmina, and says growth and survival on nauplii fell above 12 mm."
+    },
+    {
+      "paper": "src/config.js:1607",
+      "claim": "rotifers alone give perch larvae little or no growth",
+      "verdict": "unchecked",
+      "note": "As for §3.6.3: not in the abstract, but in the IISG stand-in, for newly hatched larvae on Brachionus."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/T03-050.1", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/T03-050.1", "status": 403, "note": "Taylor & Francis refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/T03-050.1", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://core.ac.uk/download/4819124.pdf", "status": 403, "note": "CORE refused the script (a candidate Illinois report found by web search; contents unknown)" },
+    { "url": "https://www.ideals.illinois.edu/items/16222", "status": 403, "note": "IDEALS (Illinois repository; an INHS 2002 yellow perch report with a larval experiment) refused the script" },
+    { "url": "https://19january2021snapshot.epa.gov/sites/static/files/2017-02/merrimack-station-ar.json", "status": 200, "note": "EPA Merrimack Station administrative-record index: holds Kaemingk, Graeb & Willis 2014, not this paper" },
+    { "url": "https://doi.org/10.1577/T03-050.1", "status": 0, "note": "for the human: the publisher page a library login would open (OUP now hosts TAFS)" }
+  ],
+  "notes": "STAND-IN, read in full: Illinois-Indiana Sea Grant, 'Exploring the Role of Food Availability to Yellow Perch Recruitment Success', final report, PI John Dettmers (Illinois Natural History Survey), a 6-page print of the web page dated 31 Oct 2018 (https://iiseagrant.org/wp-content/uploads/2019/01/Dettmers1999.pdf; saved as docs/research_notes/fetched/v2/Graeb_etal_2004_IISG.pdf). It describes the 2000–2001 Lake Michigan Biological Station experiments that became Graeb et al. 2004 ('We are currently writing a manuscript'; Graeb's presentations are listed). Its date fields say Feb–Jul 1999, which is the grant, not the experiments. What it supports, all on p. 2: four larval size classes (5–7, 7–12, 12–16, > 16 mm) in 38-L aquaria; rotifers (Brachionus) fed only to newly hatched larvae, giving 'little or no growth and low survival'; nauplii and adult copepods best below 12 mm; cladocerans and adult copepods best above 12 mm; prey selection followed growth. The lay summary (p. 3) adds that < 12-mm larvae fed only large zooplankton 'did not survive'. Recommendation: cite the rotifer result to this report (or to the full article once read), not to Graeb et al.'s abstract; it holds only for newly hatched larvae fed Brachionus."
+}

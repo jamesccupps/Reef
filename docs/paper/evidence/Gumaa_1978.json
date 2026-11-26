@@ -1,0 +1,45 @@
+{
+  "key": "Gumaa_1978",
+  "reader": "wave-2 batch w2-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI (api.crossref.org, the article's summary); the full text is subscriber-only at Wiley",
+    "url": "https://api.crossref.org/works/10.1111/j.1365-2427.1978.tb01443.x"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Guma'a, S. A. 1978 (June). Freshwater Biology 8(3): 221–227."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (yellow perch, incubation)",
+      "claim": "~97 degree-days above 4.9 °C to 50 % hatch (Eurasian perch)",
+      "verdict": "unchecked",
+      "note": "Abstract only (the paper says so). The abstract gives 97.0 (95 % CL 90.9–104.2) degree-days above 4.9 °C for 50 % hatched, constant across ten incubation temperatures; also 91.4 above 4.6 °C for 10 % and 101.0 above 5.0 °C for 90 %."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "Eurasian perch need about 97 degree-days above 4.9 °C to reach 50 % hatch",
+      "verdict": "unchecked",
+      "note": "As above."
+    },
+    {
+      "paper": "src/config.js:492",
+      "claim": "yellow perch incubation a = 116.4, t0 = 4.9: Guma'a's 97/(T − 4.9) × 1.2",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "The arithmetic holds: 97.0 × 1.2 = 116.4, and t0 = 4.9 °C is the base temperature in the abstract. But the inputs are from the abstract only, and the ×1.2 comes from Linkenheld 2019, not this source."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2427.1978.tb01443.x", "status": 403, "note": "Wiley refuses scripts; subscriber content" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1111/j.1365-2427.1978.tb01443.x", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(perch eggs temperature Perca fluviatilis)", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://doi.org/10.1111/j.1365-2427.1978.tb01443.x", "status": 0, "note": "for the human: the publisher page a library login would open" }
+  ],
+  "notes": "The abstract also says mortality rose with incubation temperature, was highest at the pre-hatching (eye-pigmented) stage at every temperature, and was high in the early stages below 8 °C and above 12 °C. The research note egg_stage.md uses that, though the paper does not. The ten temperatures tested and the range over which the degree-day sum holds are not in the abstract; check them before applying 97/(T − 4.9) near 5–7 °C, where it diverges."
+}
