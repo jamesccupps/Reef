@@ -1,0 +1,57 @@
+{
+  "key": "Easton_1992",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "VTechWorks (Virginia Tech's institutional repository, handle 10919/45017): the library's scan of the thesis, openly downloadable (112 PDF pages). It has no text layer (getsrc reports scanned: true; the repository's own TEXT bundle is an empty 112-byte file), so every value below was read on the page images (findin --image), not from OCR text",
+    "url": "https://vtechworks.lib.vt.edu/server/api/core/bitstreams/f5f35939-8810-4af0-ac02-79b6bb7db149/content",
+    "file": "docs/research_notes/fetched/v2/Easton_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 1) and the repository record",
+    "ok": true,
+    "corrections": "",
+    "note": "title page: 'Feeding Ecology of Age-0 Smallmouth Bass in the New River, West Virginia', Robert S. Easton, MS (Fisheries and Wildlife Sciences), Virginia Polytechnic Institute and State University, March 1992; xii + 99 leaves. Printed page = PDF page − 13 in the body (printed 19 = PDF p. 32)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-2 (smallmouth bass row, 'First food')",
+      "claim": "smallmouth bass first food: chironomids and copepods at ~9 mm",
+      "source_value": "",
+      "location": "Abstract (PDF p. 3); Discussion p. 41 (PDF p. 54); Results p. 24 (PDF p. 37) and Fig. I.3 p. 25 (PDF p. 38)",
+      "quote": "first foods of smallmouth bass (TL = 9 mm) were primarily Chironomidae and Copepoda",
+      "quote_from": "image",
+      "conditions": "New River, West Virginia — a RIVER (Bluestone Dam and Sandstone Falls sites), May–July 1990; 419 stomachs, fish 8.5–85 mm TL; feeding began at 8.5–9.0 mm TL, some fish still with yolk; by index of relative importance chironomids dominated first-feeding diets (IRI 54.8 at Bluestone Dam, 76.6 at Sandstone Falls), the rest being 'microcrustaceans' (Copepoda, Cladocera and Ostracoda pooled) at Bluestone Dam and a mix of prey at Sandstone Falls; no rotifers were found in larval stomachs although common in the river samples",
+      "verdict": "confirmed",
+      "note": "the Discussion (p. 41) says first-feeding diets 'were dominated by copepods and chironomids'; by IRI chironomids came first. The table cites 'Easton 1992 (abstract)': the full thesis was read here, so '(abstract)' can go — but the row should say these were river fish (the same row's Opeongo values are from a lake)"
+    },
+    {
+      "paper": "Table 3.6-2 (smallmouth bass row, 'Later shifts')",
+      "claim": "diet shift at ~15 mm",
+      "source_value": "",
+      "location": "Abstract (PDF p. 3); Discussion pp. 43–44 (PDF pp. 56–57); Results p. 24 (PDF p. 37)",
+      "quote": "shift in the proportions and types of prey consumed occurred at approximately 15 mm TL",
+      "quote_from": "image",
+      "conditions": "New River 1990; total length; at both sites; prey that rose after 15 mm were Ephemeroptera (mostly Baetidae), Trichoptera, Amphipoda/Isopoda and terrestrials, larger than the copepods and chironomids that dominated below 15 mm; attributed to mouth width (1.4 mm at 15 mm TL, ~50 % more than at first feeding) and fin development",
+      "verdict": "confirmed",
+      "note": "fish were not a dominant prey at any size in this river: 9 of 420 stomachs (2.1 %), in fish of 17.6–32.9 mm TL, four of them cannibals (p. 42), unlike earlier studies where fish became important after 15 mm"
+    },
+    {
+      "paper": "src/config.js:1597 (THE YOUNG'S PREY LADDER: copepodites and adults enter the diet over COP_L)",
+      "claim": "smallmouth on copepods at ~9 mm (Easton 1992)",
+      "source_value": "",
+      "location": "Discussion p. 41 (PDF p. 54); Table I.3 p. 21 (PDF p. 34)",
+      "quote": "Diets of first-feeding smallmouth bass larvae were dominated by copepods and chironomids",
+      "quote_from": "image",
+      "conditions": "river larvae, 8.5–9.0 mm TL at first feeding; Table I.3 pools copepods with cladocerans and ostracods as 'microcrustaceans' (all sizes: 45.5 % occurrence and 29.2 % by number at Bluestone Dam, 11.6 % and 4.2 % at Sandstone Falls)",
+      "verdict": "confirmed",
+      "note": "copepods are among the first foods, but chironomid larvae and pupae (a bed and drift prey) ranked first; the thesis does not split copepodites from adults"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://vtechworks.lib.vt.edu/server/api/core/bitstreams/8ce0f883-7987-40e9-87eb-31fa078d70ce/content", "status": 200, "note": "the repository's TEXT bundle (LD5655.V855_1992.E277.pdf.txt) is 112 bytes, no text: the scan was read on its page images instead" }
+  ],
+  "notes": "A scanned thesis without a text layer: quotes are from the page images (abstract PDF p. 3; pp. 19–25 = PDF pp. 32–38; pp. 41–44 = PDF pp. 54–57). Other values: 419 stomachs (169 Bluestone Dam, 250 Sandstone Falls), 13 empty, 8 of them yolk-sac fish 9.0–9.8 mm that had not begun feeding; 59 feeding fish (14.1 %) still had partial yolk sacs (8.7–11.0 mm TL); sample dates and mean TL by date in Table I.2 (9.6–9.9 mm on 14 May 1990 to 64.9–67.9 mm on 30 July 1990); all-sizes diet (Table I.3): Chironomidae 89.7 % / 68.0 % occurrence, Ephemeroptera 46.8 % / 33.0 % of volume at the two sites. Chapter Two (juveniles 27.8–105 mm, 1988–90) found diets dominated numerically by Ephemeroptera. The study is of a river, so its timing of diet shifts applies to Hot Brook's lake young only by analogy."
+}

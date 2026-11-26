@@ -1,0 +1,45 @@
+{
+  "key": "Fraser_etal_1984",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the WellBeing International Studies Repository's open copy (feebeh/6; the copy OpenAlex and Semantic Scholar list as green open access), a re-typeset text of the article (14 PDF pages, not the journal's page layout), as captured by the Internet Archive's Wayback Machine on 28 Mar 2023 (openly downloadable). The repository itself now answers scripts with 403. Page numbers below are the repository PDF's, not the journal's 80–87",
+    "url": "http://web.archive.org/web/20230328180538id_/https://www.wellbeingintlstudiesrepository.org/cgi/viewcontent.cgi?article=1005&context=feebeh",
+    "file": "docs/research_notes/fetched/v2/Fraser_etal_1984.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the repository copy's citation block",
+    "ok": true,
+    "corrections": "",
+    "note": "Can. J. Zool. 62(1): 80–87, doi:10.1139/z84-014, title as in the entry. The third author's name is misspelt in both records seen ('Palohelmo' in Crossref and the repository's citation, 'Paleheimo' on the repository's title block); the entry's 'Paloheimo' is presumably right but could not be checked against the printed article"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "In Ontario, the lakes moose used heavily were shallower, with mineral-rich sediment (Fraser et al. 1984, abstract only)",
+      "source_value": "",
+      "location": "Abstract (PDF p. 2); Results 'Characteristics of heavily and lightly used lakes' (PDF p. 9); Discussion (PDF p. 11)",
+      "quote": "heavily used sites had shallower water, a higher mineral content in the lake sediment",
+      "conditions": "Sibley Provincial Park, Ontario (north shore of Lake Superior), 24 lakes and ponds, 1976–80: 6 heavily used, 16 lightly used, 2 unclassified (use rated from trails and 3-h watches); mean depth 0.7 ± 0.4 m vs 1.8 ± 1.2 m (P < 0.01); 'mineral content' was measured as LESS ORGANIC MATTER (loss on ignition) in sediment under < 2 m of water: 28 ± 15 % vs 47 ± 16 % organic (P < 0.05); preferred plant species covered 11 ± 10 % vs 3 ± 10 % of the < 2-m bottom",
+      "verdict": "confirmed",
+      "note": "now read in full, so '(abstract only)' can go. 'Mineral-rich' should be read as 'inorganic (clay or silt, less organic) sediment', not sediment rich in sodium or other minerals; the authors attribute the preference to more productive, phosphorus-richer plants on inorganic beds, not to firmer footing"
+    },
+    {
+      "paper": "src/w3/plants3.js:134",
+      "claim": "sodium-rich plants and shallow lakes preferred (Fraser et al. 1984)",
+      "source_value": "",
+      "location": "Abstract (PDF p. 2); Results (PDF pp. 8–9); Table 1 (PDF p. 5)",
+      "quote": "Preferred species had significantly higher sodium content.",
+      "conditions": "a 'cafeteria' experiment beside a well-used lake, 19 aquatic species offered (Table 1), plants harvested 6 June–23 July 1979: 7 preferred (eaten completely every time), 7 intermediate (29–80 % eaten), 5 unpreferred (0–15 %); preferred species higher in sodium than intermediate or unpreferred (P < 0.05); heavily used lakes shallower (0.7 vs 1.8 m mean depth)",
+      "verdict": "confirmed",
+      "note": "the same comment line's 'in New Hampshire belly-deep on yellow pond-lily' is not from Fraser et al. (a Sibley, Ontario study; the research note credits the Forest Society) — keep it outside this citation"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://animalstudiesrepository.org/cgi/viewcontent.cgi?article=1005&context=feebeh", "status": 403, "note": "the repository refuses scripts today (the same file was served openly when the Wayback Machine captured it in 2019)" },
+    { "url": "https://www.wellbeingintlstudiesrepository.org/cgi/viewcontent.cgi?article=1005&context=feebeh", "status": 403, "note": "same repository, current domain: refuses scripts; the 2023 Wayback capture of this URL was used" }
+  ],
+  "notes": "Important for the sim's moose diet (plants3.js MOOSE preference by species): in this cafeteria test Characeae (stoneworts) were eaten 0 ± 0 % in 4 presentations and water horsetail (Equisetum fluviatile) 5 ± 9 %, both in the UNPREFERRED class, with Eleocharis acicularis (15 %), Potamogeton robbinsii (4 %) and Typha latifolia (0 %); Nuphar variegatum was intermediate (72 ± 37 %). The seven preferred (100 % eaten) were Myriophyllum verticillatum, Utricularia vulgaris, Potamogeton gramineus, P. epihydrus, P. filiformis, P. foliosus and Scirpus subterminalis (Table 1, PDF p. 5). This contrasts with Isle Royale's 58 % stonewort diet (Belovsky & Jordan 1978), and §3.8.4's closing remark that stoneworts are the only plants collected in the Hot Brook lakes should be read against it. Other values: aquatic plants far richer in sodium and iron than woody browse; plants from heavily used lakes higher in Na, P and Mn; three heavily used lakes had the fastest flushing (3, 11, 60 d); Sibley moose numbered 100–200 in the 243-km² park; aquatic feeding fell off after mid-July, and the authors judge Sibley moose not as sodium-short as Isle Royale's (summer browse ~50 ppm Na vs 5–30 ppm)."
+}

@@ -124,4 +124,13 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | w2-04 | `config.js:1546` | Boersma & Kreutzer 2002's part of the "field" 0.03–0.1 mg C/L is lab work (D. magna neonates, 20 °C) | open |
 | w2-04 | §5.8 (Woynarovich 1960) | Q10 2.37–2.57 from rates after only 1–2 h at the test temperature, unfed yolk-sac larvae — state it when comparing with an adapted-adult set | open |
 | w2-04 | `species.js:349` | Credits Couture & Watzin 2008 with large white perch eating small fish incl. their own young; the abstract (via a search summary) mentions only Daphnia and bottom prey — doubtful | open |
+| w2-10 | §3.8.4, `plants3.js` (moose diet) | Stoneworts are the only plants ever collected in Hot Brook, but Fraser et al. 1984's Ontario moose rejected stoneworts entirely (0 % in the choice trial) vs 58 % on Isle Royale — the model's moose preferences and nutrient transport rest on Isle Royale alone | open |
+| w2-10 | `plants3.js:134` | "In New Hampshire belly-deep on yellow pond-lily" sits inside the Fraser et al. citation but comes from the Forest Society | open |
+| w2-10 | `config.js:812–814` | Engel & Pederson 1998: the "quote" is not verbatim ("rarely" to feed/nest); "weight 0 under cloud" is wrong (densities under boards highest on sunny noons, moderate overcast, lowest at night); Helfman's 2.7× is "up to"; author "Jerry L. Pederson Jr.", report December 1998 | open |
+| w2-10 | `config.js:1386` | Lampert et al. 1986: 170 %/d is the upper 5 m's grazing (daily mean), not the whole lake's; the "14 %" low end is not in the source (lowest ~20 %/d) | open |
+| w2-10 | Table 3.6-2 | Easton 1992's fish were New River, WV (a river), beside Opeongo lake values — say so; drop "(abstract)" | open |
+| w2-10 | Table 3.3-x, code (Hart 1996) | Hart's 45.8 ± 135.1 and 78.5 ± 149.1 µg C/L (95 % CL): ratios 0.8–2.0× Daphnia's; the CLs are too wide to support "not lower" | open |
+| w2-10 | §3.3.3 | Clear-water phases "in late May or June", but the paragraph's own Schöhsee example came in mid-May (~80 % Daphnia) | open |
+| w2-10 | Table 3.6-1 (pickerel) | FishBase credits the incubation points to Underhill 1948 (2.5 d at 17.2 °C), Jones et al. 1978 (5 d at 14.4 °C) and Miller 1962 (11 d at 10 °C); the paper cites Underhill 1949 — same item? | open |
+| w2-10 | code (Houde 2008) | The code's Z values in the same line (0.04; 0.15–0.5/d) are not from Houde 2008; its evidence is marine/estuarine | open |
 | w2-06 | Hartman & Brandt 1995 (Phase 2 item 5) | FB4's rows credited to it (striped bass adult, age-0, -1, -2; bluefish 0–2; weakfish age-0) are in its evidence notes; Cmax for 100 g at 18.5 °C 0.093 g/g/d; the abstract: the model over-estimated striped bass consumption by 20–46 % at 6.9 °C | note |

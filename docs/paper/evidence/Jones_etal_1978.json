@@ -1,0 +1,46 @@
+{
+  "key": "Jones_etal_1978",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "secondary only: FishBase's egg-development and larvae pages for Esox niger (fishbase.se; fishbase.net.br refused with 403) and the Smithsonian NEMESIS species summary for golden shiner, which cite this atlas. The atlas itself (Volume I) has no open copy found: the Internet Archive scan is lending-only, HathiTrust and the NOAA repository refuse scripts with a bot check / 403, and the USGS Publications Warehouse record has no digital copy",
+    "url": "https://www.fishbase.se/Reproduction/FishEggDevList.php?ID=2712&GenusName=Esox&SpeciesName=niger&StockCode=2908",
+    "file": "docs/research_notes/fetched/v2/Jones_etal_1978.fishbase_eggdev.html"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "the USGS Publications Warehouse record (fwsobs78_12), FishBase's reference 4639 and the NEMESIS reference list — not the title page",
+    "ok": true,
+    "corrections": "",
+    "note": "title 'Development of fishes of the Mid-Atlantic Bight: an atlas of egg, larval, and juvenile stages', U.S. Fish and Wildlife Service, FWS/OBS-78/12, 1978 (USGS); Volume I 'Acipenseridae through Ictaluridae' by P. W. Jones, F. D. Martin and J. D. Hardy Jr. (FishBase, NEMESIS). Page count (366 pp.) not checked; some catalogues list the three as editors"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (chain pickerel row, incubation column)",
+      "claim": "11 d at 10.0 °C, 5 d at 14.4 °C, 2.5 d at 17.2 °C (Jones, Martin & Hardy 1978, via FishBase)",
+      "verdict": "unchecked",
+      "note": "FishBase lists exactly these three rows (locality 'Mid-Atlantic Bight') with Main Ref. 4639 = Jones et al. 1978, but its per-row data references differ: 2.5 d (range 2–3 d) at 17.20 °C → Underhill 1948 (ref. 39106); 5.00 d at 14.40 °C (range 12.2–16.6 °C) → Jones et al. 1978 (ref. 4639); 11.00 d at 10.00 °C → Miller 1962 (ref. 39118). So the atlas compiles them from Underhill and Miller; FishBase's 'Underhill 1948' may be a different item from the paper's Underhill 1949 (J. Wildl. Manage. 13: 377–391) — neither was read. Saved: Jones_etal_1978.fishbase_eggdev.html and _214/_215/_216.html"
+    },
+    {
+      "paper": "Table 3.6-1 (chain pickerel row, hatch column)",
+      "claim": "hatch length mode 7.2 mm 'in another series'",
+      "verdict": "unchecked",
+      "note": "FishBase's larvae page (Main Ref. Jones et al. 1978) gives yolk-sac larvae 'Length at birth' 5–7.9 mm, mode 7.2 mm (ref. 4639), Mid-Atlantic Bight; yolk-sac stage 6–8 days (Jones_etal_1978.fishbase_larvae.html)"
+    },
+    {
+      "paper": "src/species.js:265 (golden shiner Lmat 6.5, LmatM 6, matureAge 1.5 yr)",
+      "claim": "golden shiner matures at 5–7 cm, most in the second year (Jones et al. 1978)",
+      "verdict": "unchecked",
+      "note": "the NEMESIS summary (secondary) says golden shiners 'take between seven months and three years to mature, but most reach maturity in the second year at 50-70 mm (Jones et al. 1978)', and lists spawning at 20–27 °C from the same source; length type (TL/SL) not given there (Jones_etal_1978.nemesis_golden_shiner.html)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://archive.org/details/developmentoffis0001unse", "status": "lending-only", "note": "the Internet Archive's scan of Volume I (NOAA library copy) is access-restricted ('inlibrary'): not downloaded" },
+    { "url": "https://catalog.hathitrust.org/Search/Home?lookfor=Development%20of%20fishes%20of%20the%20Mid-Atlantic%20Bight&type=all", "status": 403, "note": "HathiTrust answers with a bot challenge: not passed (a US government report, likely full view there for a person)" },
+    { "url": "https://repository.library.noaa.gov/gsearch?terms=Development%20of%20fishes%20of%20the%20Mid-Atlantic%20Bight", "status": 403, "note": "NOAA Institutional Repository refuses scripts" },
+    { "url": "https://pubs.usgs.gov/publication/fwsobs78_12", "status": 200, "note": "USGS Publications Warehouse record: no digital copy linked" },
+    { "url": "https://fishbase.net.br/Reproduction/FishEggDevList.php?ID=2712&GenusName=Esox&SpeciesName=niger&StockCode=2908", "status": 403, "note": "the FishBase mirror the research note used refuses scripts; fishbase.se served the same page" }
+  ],
+  "notes": "For the human: Volume I (Acipenseridae through Ictaluridae) of FWS/OBS-78/12 is a US government report — a HathiTrust full-view copy or a library copy would settle all three claims (chain pickerel and golden shiner accounts). The incubation points should then be cited to their primaries as the atlas gives them (FishBase points to Underhill 1948 and Miller 1962), and FishBase's 'Underhill 1948' compared with the paper's Underhill 1949 (J. Wildl. Manage. 13: 377–391)."
+}

@@ -1,0 +1,41 @@
+{
+  "key": "Houde_1994",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the publisher's article page (Oxford Academic) as captured by the Wayback Machine on 17 Sep 2026, which shows the abstract and states the PDF 'is available to Subscribers Only'; OUP itself refuses scripts (403); no open copy known to Semantic Scholar, Europe PMC or the Internet Archive",
+    "url": "http://web.archive.org/web/20260917212628id_/https://academic.oup.com/icesjms/article/51/1/91/760310",
+    "file": "docs/research_notes/fetched/v2/Houde_1994.landing.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the publisher's article page",
+    "ok": true,
+    "corrections": "",
+    "note": "Houde, E. D. 1994, ICES J. Mar. Sci. 51(1): 91–97, doi:10.1006/jmsc.1994.1008, title as in the entry (received 7 April 1993, accepted 27 July 1993)"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5",
+      "claim": "survival to metamorphosis is predicted to average about 5.3 % in freshwater species against 0.12 % in marine ones (Houde 1994, abstract)",
+      "verdict": "unchecked",
+      "note": "the abstract does say 'Predicted mean survivorship to metamorphosis of a cohort of freshwater fish larvae is 5.30%, while that of marine larvae is only 0.12%' — the paper's wording matches it and already says '(abstract)'; how the prediction was made (from which mortality and stage-duration values, at what temperature) needs the full text"
+    },
+    {
+      "paper": "src/config.js:205",
+      "claim": "freshwater larvae reach metamorphosis at ~5 % (Houde 1994)",
+      "verdict": "unchecked",
+      "note": "as above: the abstract's 5.30 % is a model prediction for an average freshwater cohort, not a field measurement"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1006/jmsc.1994.1008", "status": 403, "note": "resolves to academic.oup.com, which refuses scripts (a library login would open the PDF)" },
+    { "url": "https://academic.oup.com/icesjms/article-pdf/51/1/91/6755887/51-1-91.pdf", "status": "subscribers only", "note": "the Wayback Machine's captures of the PDF link are HTML, not the PDF; the captured article page says the PDF is for subscribers only" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1006/jmsc.1994.1008?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1006/jmsc.1994.1008\"&format=json&resultType=core", "status": 200, "note": "no record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28marine+freshwater+fish+larvae+recruitment%29+AND+creator%3A%28Houde%29", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://scholar.archive.org/search?q=%22Differences+between+marine+and+freshwater+fish+larvae%22", "status": "bot check", "note": "redirected to a 'verify' puzzle page: not passed" }
+  ],
+  "notes": "From the abstract (not usable as confirmation): after correcting for temperature, marine larvae have higher mortality rates, higher metabolic requirements and longer larval stages than freshwater larvae, with similar growth rates; expected survivorship of freshwater larvae is 44 times that of marine larvae; 'Starvation mortality is more probable for marine larvae', mainly because of their small size; episodic larval mortality may matter more to recruitment in freshwater fish, and juvenile-stage dynamics more than larval ones. These bear directly on §3.6.5's starvation paragraph. (The OUP abstract has a typo: marine larvae 'can be shown to experience mortality rates' — a word such as 'higher' is missing.)"
+}

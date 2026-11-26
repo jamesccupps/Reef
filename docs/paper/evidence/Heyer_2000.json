@@ -1,0 +1,52 @@
+{
+  "key": "Heyer_2000",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the University of Maryland's institutional repository DRUM (handle 1903/20202): the thesis PDF (189 pages, text layer), fetched through the repository's own bitstream link",
+    "url": "https://api.drum.lib.umd.edu/server/api/core/bitstreams/f8f1053f-320a-4076-a122-4855fefc30b2/content",
+    "file": "docs/research_notes/fetched/v2/Heyer_2000.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 3) and abstract page",
+    "ok": true,
+    "corrections": "",
+    "note": "Christopher James Heyer, 'Understanding maternal effects as a recruitment mechanism in Lake Michigan yellow perch (Perca flavescens)', MS thesis, University of Maryland at College Park, 2000 (advisor T. J. Miller)"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5; src/config.js:293",
+      "claim": "yellow perch starved from hatch reached 50 % mortality 2.7–6.3 days after hatching",
+      "source_value": "",
+      "location": "p. 71 (PDF p. 84), Chapter 3 Results; Table 4 (Table 3.4), PDF p. 101 (raw text)",
+      "quote": "Line6 were the most resistant to starvation, reaching 50% mortality by 6.3 ± 0.58 days",
+      "conditions": "Lake Michigan yellow perch (adults caught off Milwaukee, 2 and 4 June 1998), ten maternal lines, larvae never fed from hatch, three tanks per line (n = 3), ~2,000 eggs per tank; means per line from 2.7 ± 0.58 (line 3) to 6.3 ± 0.58 dph (line 6); 10–54 % alive at 6 dph; larvae 5.7–6.3 mm TL at 50 % mortality",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "maternal lines differed twofold in resistance to starvation",
+      "source_value": "",
+      "location": "Abstract (PDF pp. 1–2); p. 71 (PDF p. 84)",
+      "quote": "Maternal effects resulted in a twofold difference in resistance to starvation among the maternal lines",
+      "conditions": "the ten lines above; resistance rose with yolk volume and fell with length at hatch",
+      "verdict": "confirmed",
+      "note": "the line means span 2.7 to 6.3 d (2.3-fold); the thesis calls it 'a factor of two'"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "at an inferred 14–16 °C (the thesis gives no temperature; the paper infers it)",
+      "kind": "inference",
+      "source_value": "",
+      "location": "pp. 26 and 67 (PDF pp. 39 and 80), Methods",
+      "quote": "Hatching began on 14 June 1998 in all tanks.",
+      "conditions": "eggs fertilised in the field on 2 and 4 June 1998 and incubated in 'flow-through, temperature-controlled' aquaria whose temperature was 'consistent with successful yellow perch rearing conditions' at the WATER Institute — no value is given anywhere in the thesis",
+      "verdict": "confirmed",
+      "note": "the source supports only the inputs of the inference: no rearing temperature is stated, and incubation lasted 10–12 days (fertilised 2/4 June, hatching from 14 June). The step from 10–12 days to 14–16 °C uses an incubation–temperature relation from elsewhere, not checked here; the paper rightly labels it 'inferred'"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: under high food (Chapter 4), maternal effects persisted to 32 dph with threefold differences in survival among lines; RNA:DNA at 50 % mortality varied little among lines (1.1–1.26); hatchlings differed among mothers in total length, yolk volume, dry weight and DNA; Letcher et al. 1996 (cited here, p. 65) give ~6 d to 50 % mortality after feeding stopped for perch fed to 10 mm. These are hatchery larvae starved from hatch; they show how fast unfed first feeders die, not field starvation rates."
+}

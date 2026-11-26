@@ -1,0 +1,48 @@
+{
+  "key": "Hart_1996",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (the L&O back issues ASLO served openly from aslo.org), as captured by the Internet Archive's Wayback Machine on 19 Sep 2015 (Wiley, today's host, refuses scripts with 403). Table 5 was read on the page image as well as in the raw text",
+    "url": "http://web.archive.org/web/20150919074756id_/http://aslo.org/lo/toc/vol_41/issue_4/0648.pdf",
+    "file": "docs/research_notes/fetched/v2/Hart_1996.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Hart, R. C. 1996, L&O 41(4): 648–658, title as in the entry; author's address at the time Max-Planck Institute of Limnology, Plön (permanent: University of Natal)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (Calanoids row)",
+      "claim": "two African calanoids: population-increase threshold 46 and 79 µg C/L, on Cryptomonas at 17 °C",
+      "source_value": "",
+      "location": "p. 656 (PDF p. 9), Table 5 (read on the page image); abstract p. 648 (PDF p. 1)",
+      "quote": "Threshold for population increase … M. meridianus 78.5 … T. spectabilis 45.8",
+      "quote_from": "table",
+      "conditions": "laboratory, 17 °C, seven Cryptomonas levels 0.05–2.5 mg C/L; Tropodiaptomus spectabilis 45.8 ± 135.1 and Metadiaptomus meridianus 78.5 ± 149.1 µg C/L (x̄ ± 95 % C.L.), the food level at which the regression of eggs ind.⁻¹ d⁻¹ (Rpi) on food reaches zero; animals from two South African reservoirs (Midmar, Albert Falls)",
+      "verdict": "confirmed",
+      "note": "now read in full, so '(abstract only)' can go. The 95 % confidence limits are far wider than the values themselves, and the author says the two species' thresholds 'did not differ'; the table could add '(95 % CL ±135–149)'. Breeding thresholds were 17.7 and 59.7, development thresholds 10.9 and 4.9 µg C/L"
+    },
+    {
+      "paper": "src/config.js:1478 (ZOO3)",
+      "claim": "calanoid thresholds are ~1.0–1.5× Daphnia's (Hart 1996; Kreutzer & Lampert 1999), not lower",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "p. 656 (PDF p. 9), Table 5",
+      "quote": "Threshold for population increase … 78.5 … 45.8",
+      "quote_from": "table",
+      "conditions": "Hart: 17 °C on Cryptomonas; the Daphnia values it is set against (40, 54 and 58 µg C/L in the paper's Table 3.3-3, Kreutzer & Lampert 1999) are at 20 °C on Scenedesmus and were not checked here",
+      "verdict": "confirmed",
+      "note": "Hart's inputs check (45.8, 78.5). Working: calanoid 46–79 vs Daphnia 40–58 gives pairwise ratios 46/58 = 0.79 to 79/40 = 1.98; means 62.2/50.7 = 1.23. So '~1.0–1.5×' is a fair central summary but the span is 0.8–2.0×, across different foods and temperatures, and Hart's 95 % limits (±135–149 µg C/L) cannot rule out a lower calanoid threshold: 'not lower' is a modelling choice the data allow, not a finding. Hart 1996 itself makes no comparison with Daphnia"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1996.41.4.0648", "status": 403, "note": "Wiley refuses scripts (the OpenAlex 'bronze' link)" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1996.41.4.0648", "status": 403, "note": "Wiley refuses scripts" }
+  ],
+  "notes": "Other values: maximal survival ~40 % in M. meridianus (high naupliar mortality, mostly fungal parasitism) vs ~90 % in T. spectabilis; survival asymptotes at 0.35–0.5 mg C/L; clutches 5-fold larger in M. meridianus; interspecific equivalence (breakpoint) food levels 82 µg C/L for egg production and 165 for population increase, T. spectabilis superior below them; development responses of M. meridianus saturate at ~0.35 mg C/L. The species are tropical/subtropical diaptomids, not the Leptodiaptomus of Maine lakes."
+}

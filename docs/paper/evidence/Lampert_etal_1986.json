@@ -1,0 +1,45 @@
+{
+  "key": "Lampert_etal_1986",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org's open L&O back issues), as captured by the Internet Archive's Wayback Machine on 22 Jun 2006 (Wiley, today's host, refuses scripts with 403). Fig. 8 was read on the page image",
+    "url": "http://web.archive.org/web/20060622210625id_/http://aslo.org:80/lo/toc/vol_31/issue_3/0478.pdf",
+    "file": "docs/research_notes/fetched/v2/Lampert_etal_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Lampert, W., Fleckner, W., Rai, H. & Taylor, B. E. 1986, L&O 31(3): 478–490, title as in the entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.3",
+      "claim": "Schöhsee grazing reached 170 % of the lake volume per day (Lampert et al. 1986; abstract only)",
+      "source_value": "170 % per day of the UPPER 5 m's water (community grazing rate, a daily average of day and night profiles of the top 5 m, measured with ¹⁴C-labelled Scenedesmus), at the zooplankton peak in mid-May 1983 — not of the whole lake's volume",
+      "location": "p. 478 (PDF p. 1), abstract; p. 483 (PDF p. 6), Results; p. 484 (PDF p. 7), Fig. 8 caption",
+      "quote": "Grazing rates and biomasses are daily averages for the upper 5 m of water",
+      "conditions": "Schöhsee, Holstein (80 ha, max depth 30 m, mean 10.7 m, moderately eutrophic), sampled in a 13-m bay, spring 1983; the 170 %/d coincided with peak zooplankton biomass (nearly 80 % Daphnia, mainly D. galeata) and the greatest transparency (Secchi > 8 m in mid-May); grazing on the 1-µm Synechococcus was lower; the 'extremely high grazing' period was short",
+      "verdict": "corrected",
+      "note": "the abstract's words are 'community grazing rates (170% of volume cleared per day)'; the body shows the volume is the upper 5 m. Write '170 % of the upper 5 m's water a day'. Now read in full, so 'abstract only' can go"
+    },
+    {
+      "paper": "src/config.js:1386",
+      "claim": "a spring Daphnia peak can clear the water: 14–170 % of the lake filtered a day (Lampert et al. 1986; Luecke et al. 1990)",
+      "source_value": "Lampert gives the 170 %/d maximum, of the upper 5 m (as above); its lowest stated value is the 'typical summer' ~20 %/d reached by mid-June. The 14 % is not in Lampert et al.",
+      "location": "p. 484 (PDF p. 7), Fig. 8 and text",
+      "quote": "By mid-June it had approached typical summer values of about 20%",
+      "conditions": "Schöhsee, spring 1983; daily averages for the upper 5 m, on Scenedesmus",
+      "verdict": "corrected",
+      "note": "the 170 % needs the same 'upper 5 m' qualifier; the 14 % lower end must come from Luecke et al. 1990 (not checked here) and should be credited to it alone"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1986.31.3.0478", "status": 403, "note": "Wiley refuses scripts (the OpenAlex 'bronze' link)" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1986.31.3.0478", "status": 403, "note": "Wiley refuses scripts" }
+  ],
+  "notes": "Context for §3.3.3: the Schöhsee clear-water phase came in MID-MAY (the paragraph's opening says 'late May or June' for the classic lakes); during it nearly 80 % of the zooplankton biomass was Daphnia, supporting 'the clear cases come from Daphnia-dominated lakes'; the algal decline was not tied to nutrient depletion or weather; night-time grazing in the top 5 m approached 10 % of the water an hour; small (< 35 µm) phytoplankton gave up to 88 % of primary production before the CWP, large particles more after; in enclosures without zooplankton, small particles always ended higher, while zooplankton stimulated large (> 35 µm) algae; during the CWP adult daphnids carried few or no eggs (food-limited). The paper also notes Lake Constance transparency rising from 1 to 10 m in a few days, and that a CWP is only apparent with weekly or more frequent sampling — relevant to why the eastern Maine medians show none."
+}

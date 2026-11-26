@@ -1,0 +1,40 @@
+{
+  "key": "Eriksson_1978",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the chapter is in a 1978 Academic Press symposium volume with no open copy found. The Internet Archive's two scans of the book are lending-only (not used). The secondary source the paper names (Reebs 2002, Springer) has no open copy known to Semantic Scholar or OpenAlex; a copy posted in a university course-readings folder (gambusia.bsp.ncsu.edu) is not an acceptable copy under the brief and was not opened",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Internet Archive catalogue metadata for the book (not the chapter's title page)",
+    "ok": true,
+    "corrections": "",
+    "note": "the book checks: Thorpe, J. E. (ed.), 'Rhythmic activity of fishes', Academic Press, London and New York, 1978, x + 312 p. (ISBN 0126906505; papers of a Fisheries Society of the British Isles symposium, Stirling, July 1977). The chapter's title and pages 69–89 could not be checked; the entry already says it is cited via Reebs 2002 (where it is '1978a')"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "four of six captive night-active brown bullheads became day-active when daytime light was cut to 1 lux (Eriksson 1978, via Reebs 2002)",
+      "verdict": "unchecked",
+      "note": "neither the chapter nor Reebs 2002 was read"
+    },
+    {
+      "paper": "src/w3/fish3.js:411",
+      "claim": "brown bullhead go out over the open mud flats once the light falls below ~1 lux, foraging by taste and smell (Eriksson 1978)",
+      "verdict": "unchecked",
+      "note": "the comment cites Eriksson directly, but the paper's own sentence says the finding is known only via Reebs 2002; the '~1 lux' threshold for leaving cover and the 'taste and smell' foraging are not confirmed by anything read here"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://archive.org/details/rhythmicactivity0000jeth", "status": "lending-only", "note": "Internet Archive scan of the book, access-restricted (lending library, 'inlibrary'): not downloaded" },
+    { "url": "https://archive.org/details/rhythmicactivity0000unse", "status": "lending-only", "note": "a second Internet Archive scan, also lending-only: not downloaded" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1023/A:1025371804611?fields=openAccessPdf,externalIds,title", "status": 200, "note": "Reebs 2002 (the secondary): openAccessPdf CLOSED; the version of record is Springer, doi:10.1023/A:1025371804611 (a library login would open it)" },
+    { "url": "https://www.umoncton.ca/sites/prof.prod.umoncton.ca/files/users/user109/Fish%20circadian%20rhythms%20book%20chapter.pdf", "status": 200, "note": "Reebs's own later book chapter on fish circadian rhythms (author's site): it lists Eriksson & Van Veen 1980 on brown bullhead but does not cite Eriksson 1978; not a stand-in (saved as Eriksson_1978.reebs_book_chapter.pdf)" },
+    { "url": "https://www.umoncton.ca/sites/prof.prod.umoncton.ca/files/users/user109/Fish%20circadian%20rhythms%20encyclopedia.pdf", "status": 200, "note": "Reebs's encyclopedia article on fish circadian rhythms (author's site): no bullhead or Eriksson mention (saved as Eriksson_1978.reebs_encyclopedia.pdf)" }
+  ],
+  "notes": "For the human: the chapter is Thorpe (ed.) 1978, Rhythmic Activity of Fishes, Academic Press, pp. 69–89 (a library copy of the book), and the secondary is Reebs 2002, Rev. Fish Biol. Fish. 12:349–371, doi:10.1023/A:1025371804611. A related primary on the same species, possibly a better citation for the bullhead's light-set activity, is Eriksson, L.-O. & Van Veen, T. 1980, 'Circadian rhythms in the brown bullhead, Ictalurus nebulosus (Teleostei): evidence for an endogenous rhythm in feeding, locomotor, and reaction time behaviour', Can. J. Zool. 58: 1899–1907 (seen only as a reference in Reebs's book chapter; not read)."
+}

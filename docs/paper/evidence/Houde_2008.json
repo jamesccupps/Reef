@@ -1,0 +1,42 @@
+{
+  "key": "Houde_2008",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (NAFO's Journal of Northwest Atlantic Fishery Science; the DOI resolves to it)",
+    "url": "https://journal.nafo.int/Portals/0/2008-2009/5-houde.pdf",
+    "file": "docs/research_notes/fetched/v2/Houde_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Houde, E. D. 2008. Emerging from Hjort's Shadow. J. Northw. Atl. Fish. Sci. 41: 53–70, doi:10.2960/J.v41.m634"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5",
+      "claim": "the evidence for Hjort's 'critical period' at first feeding is 'mixed and equivocal'",
+      "source_value": "",
+      "location": "p. 54 (PDF p. 2), continuing from p. 53; the abstract (p. 53) says 'inconsistent and equivocal'",
+      "quote": "has been mixed and equivocal support for the hypothesis, at least as presented by Hjort",
+      "conditions": "a review essay on recruitment research, about marine and estuarine fishes; the sentence begins 'Despite decades of research, there' (p. 53)",
+      "verdict": "confirmed",
+      "note": "Houde adds that the hypothesis 'has merit' in pointing to larval nutrition and starvation, but its focus on first-feeding larvae and starvation alone was misleading"
+    },
+    {
+      "paper": "src/config.js:204",
+      "claim": "field larvae die at Z ≈ 0.04 (Oneida perch) to 0.15–0.5/day, MOSTLY TO PREDATORS (Houde 2008)",
+      "source_value": "",
+      "location": "p. 63 (PDF p. 11), 'Predation is the chief agent of mortality'; p. 58 (PDF p. 6); p. 56 (PDF p. 4)",
+      "quote": "high and variable predation is the principal, proximal agent of mortality",
+      "conditions": "stated for early-life stages generally, on marine evidence (Bailey and Houde 1989, 'Predation on eggs and larvae of marine fishes'); nutrition modulates susceptibility to predation, and predation mortality is often size-specific and growth-rate dependent",
+      "verdict": "confirmed",
+      "note": "only the 'mostly to predators' part is Houde 2008's: the Z values in the same line (Oneida perch 0.04; 0.15–0.5/d) are not in it — its only mortality rates are a marine meta-analysis (Fig. 4, M vs temperature) and an illustrative M = 0.1 (Fig. 1). The essay's examples are marine or estuarine (its anadromous case, Chesapeake Bay striped bass — larval growth, stock–recruitment and juvenile density dependence, Figs 3, 6, 8 — is estuarine); it has no lake or freshwater-resident species, so applying it to lake larvae is an extrapolation; Houde 1994 (abstract) suggests starvation is less likely in freshwater larvae, which supports the code's direction"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Useful elsewhere in the essay: the decline in mortality rate with size in early life is read as reduced predation pressure with growth (p. 58); 'Growth-mortality' and stage-duration hypotheses (Fig. 2) and the M/G ratio as an index of cohort survival potential (p. 63); prey levels once thought necessary for first feeding (> 10⁶ m⁻³, from laboratory work) were probably over-estimated (p. 58). All examples are marine or estuarine (herring, cod and sprat, walleye pollock; bay anchovy and striped bass in Chesapeake Bay, Figs 3, 6, 8). For the Chesapeake striped bass it notes that recruitment VARIABILITY is largely generated, density-independently, in the first month of larval life, while density-dependent juvenile growth and survival damp the >30-fold interannual variation in young-of-the-year (p. 62)."
+}

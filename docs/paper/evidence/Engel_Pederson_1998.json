@@ -1,0 +1,72 @@
+{
+  "key": "Engel_Pederson_1998",
+  "reader": "wave-2 batch w2-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "University of Wisconsin–Madison Libraries' digital collection copy (digital.library.wisc.edu/1711.dl/FBRN3U2XBES5D9B), a public PDF scan of the whole report with a text layer (49 PDF pages). The top of printed p. 21 sits beside a photograph and is missing from the text layer, so it was read on the page image",
+    "url": "https://asset.library.wisc.edu/1711.dl/SFUN6YTR5QIRF8B/E/file-7a455.pdf",
+    "file": "docs/research_notes/fetched/v2/Engel_Pederson_1998.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover/title page (PDF p. 2) and the UW library record (PDF p. 1)",
+    "ok": false,
+    "corrections": "the second author is 'Jerry L. Pederson Jr.' on the title page (add 'Jr.'); Wisconsin DNR Research Report 177 is dated December 1998",
+    "note": "title, year, series and number match: 'The Construction, Aesthetics, and Effects of Lakeshore Development: A Literature Review', Research Report 177, Wisconsin Department of Natural Resources; Sandy Engel (Bureau of Integrated Science Services) and Jerry L. Pederson Jr. (UW–Stevens Point)"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.9",
+      "claim": "Fish use piers for shade but rarely to feed or nest",
+      "source_value": "",
+      "location": "p. 20 (PDF p. 23), 'Fish Use of Dockage'",
+      "quote": "used by nearshore fishes for shade and shelter but rarely for feeding and nesting",
+      "conditions": "a literature review (276 works, 1919–98), mostly Wisconsin and other Midwest lakes; the statement is the reviewers' synthesis, supported in the same paragraph by Colle et al. 1989 (Florida: piers preferred by 4 of 27 radio-tagged largemouth bass after grass carp removed the plant beds, but 'seldom lingered') and Helfman 1979/1981 (floating boards in a New York lake)",
+      "verdict": "confirmed",
+      "note": "the source's reason: these structures 'lack the structural complexity of plant beds, rocky substrates, and woody debris'"
+    },
+    {
+      "paper": "src/config.js:812 (DOCK_L = 12)",
+      "claim": "bluegill and pumpkinseed > 12 cm, perch, bass and suckers showed no attraction to floating boards",
+      "source_value": "",
+      "location": "p. 21 (PDF p. 24), first column (read on the page image)",
+      "quote": "Bluegills and pumpkinseed sunfish more than 4.7 inches in total length",
+      "quote_from": "image",
+      "conditions": "Helfman 1979, as reviewed here: floating boards in a New York lake; 4.7 in = 11.9 cm TOTAL length; the no-attraction group was bluegill and pumpkinseed > 4.7 in and 'all rock bass, largemouth bass, yellow perch, and white suckers'; the attracted sunfish were 3.1–4.7 in (7.9–11.9 cm) TL; black crappies and golden shiners were attracted but hovered just outside the boards",
+      "verdict": "confirmed",
+      "note": "the 'bass' are rock bass and largemouth bass (the sim applies it to smallmouth); smaller sunfish (< 3.1 in, 7.9 cm) were not reported on, so the sim's 'under DOCK_L' (all sizes below 12 cm) extends the finding downward. Cite as 'Helfman 1979, via Engel & Pederson 1998'"
+    },
+    {
+      "paper": "src/config.js:812–813 (quoted in the comment)",
+      "claim": "\"shade and shelter by day, not feeding or nesting\" (given in quotation marks)",
+      "source_value": "the source's words are 'used by nearshore fishes for shade and shelter but rarely for feeding and nesting'",
+      "location": "p. 20 (PDF p. 23)",
+      "quote": "shade and shelter but rarely for feeding and nesting",
+      "verdict": "corrected",
+      "note": "the comment's quotation is not verbatim: the source says 'rarely', not 'not', and does not say 'by day' (its time-of-day evidence is the separate Helfman board study, next claim). Paraphrase without quotation marks, or quote it exactly"
+    },
+    {
+      "paper": "src/config.js:812–814 (SHADE_SUN; weather 0)",
+      "claim": "small sunfish hover in the dock's shade only while the sun is high and the sky clear: 'weight 0 at night, under cloud'",
+      "source_value": "fish densities under the boards were highest around noon on sunny days, MODERATE on overcast days and lowest at night (range 1.1–7.7 fish/ft²) — not zero under cloud",
+      "location": "p. 21 (PDF p. 24), first column (read on the page image)",
+      "quote": "highest around noon on sunny days, moderate on overcast days, and lowest at night",
+      "quote_from": "image",
+      "conditions": "Helfman 1979, floating boards in a New York lake, as reviewed here; 3.1–4.7-in bluegill and pumpkinseed",
+      "verdict": "corrected",
+      "note": "the quoted rule 'weight 0 at night, under cloud' is the project's (research note 'Values for the sim'), not the source's; the source gives a graded response (overcast = moderate). It also notes that shade structures 'do not always attract fishes in full sunlight' (Lake Tahoe: no preference at any of 70 piers in a low-water year, Beauchamp et al. 1994) and that shade is weaker in turbid water"
+    },
+    {
+      "paper": "src/config.js:814 (DOCK_COVER = 1 − 1/2.7²)",
+      "claim": "a fish under floating shade sees a predator at 2.7× the distance at which the predator sees it (Helfman 1981)",
+      "source_value": "'can see predators UP TO 2.7 times the visual distance that predators can see the prey' — a maximum, not a typical ratio",
+      "location": "p. 20 (PDF p. 23), 'Fish Use of Dockage'",
+      "quote": "can see predators up to 2.7 times the visual distance that predators can see",
+      "verdict": "corrected",
+      "note": "the comment cites Helfman 1981 directly; the text read here is Engel & Pederson's summary of it, which gives 2.7 as an upper value. Unless Helfman 1981 is read and gives 2.7 as a mean, cite 'Helfman 1981, via Engel & Pederson 1998' and treat DOCK_COVER as an upper bound"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The paper's own sentence (§3.2.9) checks; the corrections are in the code comment's wording and in how the Helfman board data are read (graded with cloud, 'up to' 2.7×). Other dockage material on pp. 20–21: Colle et al. 1989 (Florida largemouth bass and piers after grass carp); 1.1–7.7 fish/ft² under the boards; crappies and golden shiners hovered just outside the boards; piers cast most shade close to the water and less when water is turbid or low; plant beds, rock outcrops, boulder spits and woody debris draw fish away from piers despite shade. The same pages cover woody-debris removal (pumpkinseed nesting on cleared areas, Colgan & Ealey 1973) and turbidity effects on young fish feeding."
+}
