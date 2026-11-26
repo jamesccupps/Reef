@@ -1,0 +1,91 @@
+{
+  "key": "Johnston_1995",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: University of Manitoba MSpace, open bitstream of the scanned thesis (274-page PDF with a rough OCR text layer; values read on the page images where the OCR is garbled)",
+    "url": "https://mspace.lib.umanitoba.ca/bitstreams/9b048a12-b503-45cf-a919-ac2f77a2d7d0/download",
+    "file": "docs/research_notes/fetched/v2/Johnston_1995.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 4) and the MSpace record",
+    "ok": true,
+    "corrections": "",
+    "note": "\"Food limitation during the early life history of walleye, Stizostedion vitreum\", by Thomas A. Johnston, PhD thesis, University of Manitoba, © 1995 (Department of Zoology per MSpace)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (walleye, lakes)",
+      "claim": "walleye larvae in Oneida and other New York lakes and Rathbun Lake, Iowa: Z = 0.067–0.35 /d, larvae up to ~18 mm or 8–30 d after stocking (compilation)",
+      "location": "p. 25–26 (PDF p. 43–44), Table 2.1",
+      "quote": "0.20-0.25 … 0.21-0.30 … 0.35 … Mitzner (1992) … 0.067-0.26",
+      "quote_from": "table",
+      "conditions": "Noble 1972, Oneida 1966–67, 10–18 mm over 15 d; Forney 1975, Oneida 1968–72, stocking to 9–10 mm over 7 d, and ten NY lakes 1969–73, 8–16 d post-stocking; Mitzner 1992, Rathbun Lake 1984–89, stocking to 20–30 d; larvae primarily of hatchery origin, initial densities 0.012–1 larvae/m³; read on the page images",
+      "verdict": "confirmed",
+      "note": "Z range right. The intervals run from 7 d (Forney's Oneida, stocking to 9–10 mm) to 20–30 d, so \"7–30 d\" is more exact than \"8–30 d\"; most are stocked hatchery larvae"
+    },
+    {
+      "paper": "Table 3.6-4 (walleye, without fish predators)",
+      "claim": "walleye in enclosures and ponds without fish predators: Z = 0.012–0.046 /d (0.0055–0.087 in one pond series), at ~9–100 mm",
+      "source_value": "the Z values hold (Te Brugge & McQueen 1991 enclosures 0.016–0.028; Johnston et al. 1992 ponds 0.022, 0.016, 0.046 without predators; this study 0.026 and 0.012; Fox 1989 ponds 0.0055–0.087), but the size span is ~9–130 mm: Johnston et al. 1992's ponds ran from stocking to 41–130 mm mean length",
+      "location": "p. 25–26 (PDF p. 43–44), Table 2.1",
+      "quote": "Stocking to 41-130 mm mean length; 88-107 d",
+      "quote_from": "image",
+      "conditions": "culture ponds and 1000-m³ enclosures in Ontario and Manitoba; total counts at harvest except this study (bongo trawls to 12 mm, 9–11 d); predators absent except 1987 (Johnston et al. 1992: 0.037; this study: 0.134)",
+      "verdict": "corrected",
+      "note": "write ~9–130 mm; 0.037 (1987, Johnston et al. 1992) had predators present but falls inside the range anyway"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "walleye larval mortality in lakes was \"an order of magnitude higher\" than in enclosures and ponds without fish",
+      "location": "p. 23 (PDF p. 41), Chapter 2 Discussion; Abstract p. iv (PDF p. 5)",
+      "quote": "Larval walleye in lakes often experience mortality rates which are an order of magnitude higher",
+      "quote_from": "image",
+      "conditions": "compared with his own predator-free culture pond (stocking to 12 mm, 1988–89), which he says matches other extensive culture studies; \"often\"",
+      "verdict": "confirmed",
+      "note": "the abstract puts it the other way round: with low predation, pond mortality was an order of magnitude lower than reported for natural lakes"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "in one pond series mortality rose to 0.134/d in the year piscine predators were present",
+      "location": "p. 26 (PDF p. 44), Table 2.1; p. 27 (PDF p. 45)",
+      "quote": "The mortality rate to the 12-mm stage in 1987, when piscine predators were present",
+      "quote_from": "image",
+      "conditions": "Dauphin Lake culture ponds, Manitoba, stocking to 12 mm (9–11 d); forage fish known to prey on walleye larvae shared the ponds in 1987; against 0.026 (1988) and 0.012 (1989)",
+      "verdict": "confirmed",
+      "note": "Johnston calls the evidence for predation in 1987 \"largely indirect\" (similar zooplankton to other years) plus ingested larvae as direct evidence of cannibalism"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "for walleye, cyclopoid copepods were judged \"a minor source\" of loss",
+      "location": "p. 156 (PDF p. 174), Chapter on predation",
+      "quote": "would be a minor source of larval walleye mortality in natural lakes and rivers",
+      "conditions": "Johnston's judgment (\"I feel that cyclopoid copepod predation…\"), from laboratory reports of cyclopoids attacking 8–10-mm walleye and the localized occurrence of dense cyclopoids",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "unfed yellow perch larvae survived up to 15 days at 19.8 °C and 65 days at about 6 °C (Hokanson & Kleiner 1974, via Johnston 1995)",
+      "source_value": "up to 65 d after hatching at 5.3 °C (not ~6 °C) and up to 15 d after hatching at 19.8 °C",
+      "location": "p. 119 (PDF p. 137)",
+      "quote": "65 d after hatching at 5.3 °C … 15 d after hatching at 19.8 °C",
+      "quote_from": "image",
+      "conditions": "yellow perch larvae deprived of food from hatching (Hokanson & Kleiner 1974); OCR garbles the 5.3, read on the page image",
+      "verdict": "corrected",
+      "note": "write \"65 days at 5.3 °C\""
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "Johnston (1995) judged starvation \"probably not a major source\" of walleye loss, acting mainly by prolonging vulnerability to predators",
+      "location": "p. 27 (PDF p. 45); Abstract p. v (PDF p. 6)",
+      "quote": "my results indicate that starvation was probably not a major source of mortality",
+      "conditions": "extensive culture ponds with zooplankton ≥ 49/L, where survival was high and unrelated to zooplankton density; he adds that natural spring zooplankton is frequently < 50/L, and the abstract concludes starvation would only occur in very oligotrophic systems and that food limitation acts mainly by \"prolonging the period of vulnerability to predation\" (read on the page image)",
+      "verdict": "confirmed",
+      "note": "the scope (fertilized ponds, ≥ 49 zooplankton/L) is worth stating, since the paper applies the judgment to a natural lake"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Two small corrections: the predator-free size span in Table 3.6-4 is ~9–130 mm (not 100), and Hokanson & Kleiner's cold value is 5.3 °C (not about 6). Table 2.1 (PDF p. 43–44) is a compilation of other studies (Noble 1972; Forney 1975; Fox 1989; Te Brugge & McQueen 1991; Mitzner 1992; Johnston et al. 1992) plus Johnston's own ponds; the rewrite could cite those or 'compiled by Johnston 1995'. Other values: first-feeding walleye need maintenance rations of 7–11 %/d; prey needed for maintenance fell from 10–27 prey/L (< 1 mg dry weight) to < 2 prey/L (≥ 1.5 mg; abstract, PDF p. 5); starvation would probably not occur above 50 zooplankton/L. The OCR layer is poor ('¡' for i, 'O' for 0), so quotes were read on the page images where marked."
+}

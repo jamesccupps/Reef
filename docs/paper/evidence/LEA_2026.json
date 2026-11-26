@@ -1,0 +1,81 @@
+{
+  "key": "LEA_2026",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy (Lakes Environmental Association website), 26-page PDF with a text layer",
+    "url": "https://mainelakes.org/wp-content/uploads/2026/06/LEAWinterMonitoringReport2026_final.pdf",
+    "file": "docs/research_notes/fetched/v2/LEA_2026.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover and introduction",
+    "ok": true,
+    "corrections": "",
+    "note": "cover: \"Winter Monitoring Report, Lakes Environmental Association, 2026\"; 31 trips to 16 lakes in the greater Bridgton area, January–March 2026"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4 (ice)",
+      "claim": "ice 31–50 cm at 16 lakes around Bridgton in 2026, with maxima of 35–75 cm in 2018–2025",
+      "location": "p. 4 (PDF p. 5), Overall Results",
+      "quote": "Measured ice thickness ranged from 31 to 50 cm (12.2–19.7 in; Fig. 1)",
+      "conditions": "deep-site holes, visits from mid-January to early March 2026 (Fig. 1); past maxima \"35–75 cm during 2018–2025\"; ice mostly clear (black) in 2026, with less white ice or slush than previous years",
+      "verdict": "confirmed",
+      "note": "the 2026 visits span mid-January to early March, so the range is mid- to late-winter rather than strictly late-winter"
+    },
+    {
+      "paper": "§3.1.4 (light); §3.3.1",
+      "claim": "light just under the ice was about 1–12 % of surface irradiance",
+      "location": "p. 5 (PDF p. 6)",
+      "quote": "levels just beneath the ice layer varied from about 1 to 12% of surface irradiance",
+      "conditions": "LI-COR LI-192 quantum sensor under ice, hole covered with screening; whole 2026 season",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.4 (light)",
+      "claim": "the under-ice light fell as snow deepened from none to about 20 cm",
+      "source_value": "Fig. 2: snow depths ran from 0 to about 28 cm; light fell from ~10–12 % with no snow to ~3 % by ~10–15 cm of snow and then levelled off, with scatter (two points near 9 % at ~21 and ~25 cm); the report says the relationship \"was not as clear as in other years\" because snow was present on almost every visit",
+      "location": "p. 6 (PDF p. 7), Fig. 2; p. 5 (PDF p. 6)",
+      "quote": "This relationship was not as clear as in other years, probably because snow",
+      "conditions": "per-visit points with a smoothed fit (read on the page image)",
+      "verdict": "corrected",
+      "note": "write \"falling from ~10 % without snow to ~3 % under 10–28 cm of snow\""
+    },
+    {
+      "paper": "§3.1.4 (light); §3.3.1",
+      "claim": "chlorophyll often peaked within a few meters of the ice",
+      "location": "p. 5 (PDF p. 6), Chlorophyll",
+      "quote": "often showed a peak in fluorescence within a few meters of the ice-water",
+      "conditions": "sonde chlorophyll fluorescence profiles (a relative measure), sometimes peaking directly under the ice when snow cut the light; declined as winter progressed",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "winter chlorophyll in 16 lakes near Bridgton was 0.4–7.2 µg/L",
+      "location": "p. 6 (PDF p. 7)",
+      "quote": "Winter 2026 lake chlorophyll-a measurements ranged from 0.4 to 7.2 ppb",
+      "conditions": "extracted chlorophyll-a on core-tube samples integrating ice to 10 m (or to 1 m above bottom); Holt Pond top 0.5 m; mostly near or below each lake's summer average",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.4 (temperature)",
+      "claim": "under the ice the column is inversely stratified, temperature rising quickly through the first meter and then slowly toward 4 °C at the bottom",
+      "location": "p. 4–5 (PDF p. 5–6), Temperature",
+      "quote": "increased rapidly with depth within the first meter or so (a stratified layer)",
+      "conditions": "sonde profiles at deep sites; sometimes a mixed layer with little change with depth; the report notes water is densest at 4 °C so the warmest water is at the bottom",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "surface water under the ice was near saturation, but 5 of 16 lakes had bottom water at or below 2 mg/L on at least one visit",
+      "location": "p. 5 (PDF p. 6), Dissolved Oxygen",
+      "quote": "Five lakes had hypoxic (DO of 2 mg/L or less) deep waters",
+      "conditions": "\"Surface (at the ice-water interface) DO concentrations were mostly near saturation\"; deep-site profiles in lakes mostly deeper than Hot Brook (e.g. Bear Pond to ~20 m); the five were Bear, Highland, Holt, Keoka and Middle",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Everything checks but the snow range in §3.1.4 (the snow went to ~28 cm, and the light levelled off at ~3 % beyond ~10–15 cm). Context for the rewrite: these are deep-site measurements in mostly deeper, clear lakes (winter Secchi 3.0–9.3 m; TP 4.1–13.9 ppb), so they bound rather than represent Hot Brook. Most lakes iced in early December 2025 (some only in early January 2026) and were ice free by early April; ice grew 2.7–11.3 cm between visits."
+}

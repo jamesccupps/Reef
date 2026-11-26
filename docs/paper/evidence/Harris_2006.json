@@ -1,0 +1,71 @@
+{
+  "key": "Harris_2006",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: VTechWorks (Virginia Tech) electronic thesis, open bitstream (147-page PDF with a text layer)",
+    "url": "https://vtechworks.lib.vt.edu/bitstreams/8e7bf951-84ae-4a7e-9efe-42cb0efa708e/download",
+    "file": "docs/research_notes/fetched/v2/Harris_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Author is Johnathan Lee Harris (\"Harris, J. L.\" would be fuller); MS in Fisheries and Wildlife Sciences, Virginia Polytechnic Institute and State University, Blacksburg, approved April 28, 2006; title agrees"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.8; §3.7.8",
+      "claim": "small (< 100 mm) white perch in the reservoir were collected (found) only in unvegetated littoral areas — used as evidence of habitat use relative to plant beds",
+      "source_value": "the words are there, but only unvegetated shorelines were sampled (age-0 fish by \"seining shallow, unvegetated shorelines\", then shoreline electrofishing), in a reservoir whose ~5-m annual water-level swing limits the establishment of significant aquatic vegetation. The sentence (in the crappie-diet discussion) contrasts the inshore small perch with offshore adult crappies; it says nothing about avoidance of plants",
+      "location": "p. 104 (PDF p. 116); sampling p. 26 (PDF p. 38) and p. 63 (PDF p. 75); vegetation p. 11 (PDF p. 23)",
+      "quote": "white perch were only collected in unvegetated, littoral areas where adult crappies were not present",
+      "conditions": "Kerr Reservoir (19,790 ha, VA–NC), upper end; June–November 2004–2005; seine and boat electrofishing along unvegetated shorelines; little aquatic vegetation in the reservoir",
+      "verdict": "corrected",
+      "note": "Drop it as evidence about plant beds (§3.4.8) and about habitat choice (§3.7.8), or state that only unvegetated shores were sampled in a nearly plant-free reservoir"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "young white perch moved shallow after dark (Harris 2006)",
+      "source_value": "a general, uncited sampling rationale for all age-0 fishes: \"all age-0 collection took place after dark, the period when most age-0 fish migrate to shallow areas\"; no day–night comparison or white perch observation",
+      "location": "p. 31 (PDF p. 43), Methods (Objective 2)",
+      "quote": "after dark, the period when most age-0 fish migrate to shallow areas",
+      "verdict": "corrected",
+      "note": "not evidence of a white perch diel movement"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "white perch growth slowed as numbers rose in an invaded reservoir",
+      "location": "p. 90 (PDF p. 102), Discussion",
+      "quote": "Mean length of age-1 white perch declined from 124 mm TL in 1995 to 101",
+      "conditions": "Kerr Reservoir; age-1 mean TL 124 mm (1995) → 101 mm (2005); age-2 159 mm (1995) → 142 mm (2004); Harris reads it as density-dependent growth \"in years after they became abundant\"",
+      "verdict": "confirmed",
+      "note": "Harris adds that the population had not become \"severely stunted\" (p. 91), reaching 230 mm TL by age 3"
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "in Kerr Reservoir, where shad were available, white perch were under 2 % by weight of every sportfish diet",
+      "source_value": "< 2 % by weight for every sportfish species in both years EXCEPT walleye in 2004, when a single white perch made up 17 % of walleye stomach contents by weight (7 walleye with food; Harris treats it with caution). White perch were found in only 4 of 1,172 adult piscivores collected (1 largemouth, 1 striped bass and 1 walleye in 2004; 1 striped bass in 2005)",
+      "location": "p. iii (PDF p. 3), Abstract; p. 85–86 (PDF p. 97–98), Results; p. 104 (PDF p. 116)",
+      "quote": "exceeded 2% of diet by weight for any sportfish species in either year, excluding walleye",
+      "conditions": "adult catfishes, crappies, largemouth, striped bass, walleye and white bass; 387 fish in 2004 and 785 in 2005, mostly from fall gill nets; clupeids (threadfin and gizzard shad) were the main fish prey of every species",
+      "verdict": "corrected",
+      "note": "the abstract's summary is \"low (< 2% of diets by weight)\"; write \"under 2 % by weight of every sportfish diet but one small walleye sample\""
+    },
+    {
+      "paper": "Table 3.6-2 (white perch row)",
+      "claim": "young white perch shift to amphipods and chironomids from ~40 mm (Prout, Mills & Forney 1990, via Harris 2006)",
+      "location": "p. 6 (PDF p. 18), Literature review",
+      "quote": "diet shift at 40 mm TL (from copepods and daphnids to amphipods and chironomids)",
+      "conditions": "age-0 white perch, Oneida Lake, New York (Prout et al. 1990); 40 mm TL",
+      "verdict": "confirmed",
+      "note": "Harris also cites a shift at 40 mm TL in the James River (copepods and Leptodora → mysids, insect larvae and pupae; Rudershausen & Loesch 2000) and at 50 mm TL in the Richibucto Estuary (St-Hilaire et al. 2002)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://vtechworks.lib.vt.edu/handle/10919/32914", "status": 200, "note": "repository landing page (kept as Harris_2006.landing.html); the PDF is its open bitstream" }
+  ],
+  "notes": "The main correction: Harris's \"only collected in unvegetated, littoral areas\" is a sampling artefact (only unvegetated shores were sampled, in a reservoir with little vegetation), so it should not appear as evidence about plant beds (§3.4.8) or about where young white perch live (§3.7.8). The \"moved shallow after dark\" is a methods rationale, not a finding. Other useful values: white perch were ovivorous in the Roanoke River in May (striped bass egg occurrence up to 100 % of perch at times) but modelled consumption was small; adult white perch overlapped strongly with adult crappie (> 0.6); white perch eaten by predators were 82–152 mm TL (mean 110); white bass declined after the white perch invasion."
+}

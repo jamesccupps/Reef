@@ -1,0 +1,113 @@
+{
+  "key": "Dahlberg_1979",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy (NOAA Scientific Publications Office, Marine Fisheries Review archive), 12-page PDF with a text layer",
+    "url": "https://spo.nmfs.noaa.gov/sites/default/files/pdf-content/MFR/mfr413/mfr4131.pdf",
+    "file": "docs/research_notes/fetched/v2/Dahlberg_1979.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's title page and running footers (\"March 1979\", \"Marine Fisheries Review\", pp. 1–12) and the NOAA SPO file path (mfr413 = vol. 41 no. 3)",
+    "ok": true,
+    "corrections": "",
+    "note": "author Michael D. Dahlberg (NUS Corporation, Pittsburgh); title, journal, 41(3) and pp. 1–12 agree"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1 (para. 1)",
+      "claim": "perch ribbons \"generally over 95 %\" viable at Oneida Lake (Clady, via Dahlberg 1979)",
+      "source_value": "Dahlberg prints \"Clady (1975) observed that viability was generally over 95 percent\" for yellow perch eggs; he names no lake. His reference list has only Clady 1975 (smallmouth bass, J. Wildl. Manage. 39: 194–200) and Clady 1976 (yellow perch, J. Fish. Res. Board Can. 33: 1887–1893), so his \"(1975)\" for a perch value is almost certainly a slip for Clady 1976",
+      "location": "p. 6 (PDF p. 6), text col. 3; references p. 10 (Clady entries)",
+      "quote": "Clady (1975) observed that viability was generally over 95 percent",
+      "conditions": "viability of yellow perch eggs; no place, year or sample size given by Dahlberg",
+      "verdict": "corrected",
+      "note": "The value and the word \"viability\" are right. The year: the paper gives no year (\"Clady, via Dahlberg 1979\"); Dahlberg's in-text year 1975 points at the bass paper, so the rewrite should cite \"Clady 1976, as cited by Dahlberg 1979 (who prints 1975)\" or read Clady 1976 itself. \"At Oneida Lake\" is not in Dahlberg; it comes from Clady 1976's subject (Oneida perch), which this pass has not read in full."
+    },
+    {
+      "paper": "§3.6.1 (para. 1)",
+      "claim": "rainbow smelt eggs hatched at a mean of 1.1 % (Rupp 1965, via Dahlberg 1979)",
+      "location": "p. 6 (PDF p. 6), text col. 1",
+      "quote": "Rupp (1965) reported a mean hatch of 1.1 percent in lakeshore spawners of this species",
+      "conditions": "lakeshore-spawning rainbow smelt; mean hatch; no place given by Dahlberg",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1 (para. 1)",
+      "claim": "the smelt eggs were on Maine lakeshores (Rupp 1965, via Dahlberg 1979)",
+      "verdict": "unsupported",
+      "note": "Dahlberg gives no place for Rupp's lakeshore spawners, and his reference to Rupp 1965 (\"Shore-spawning and survival of eggs of the American smelt\", Trans. Am. Fish. Soc. 94: 160–168) names none. The only Maine smelt work Dahlberg cites is Rothschild 1961 (\"…in Maine\"; 24 % to 1–15 d before hatch, 0.5 % to the drifting yolk-sac stage). Keep \"Maine\" only if Rupp 1965 itself is read."
+    },
+    {
+      "paper": "§3.6.1 (para. 1)",
+      "claim": "Dahlberg (1979) concluded that hatching success \"is often low in freshwater species which do not guard the demersal eggs\"",
+      "location": "p. 5 (PDF p. 5), \"Survival of Fish Eggs\"",
+      "quote": "Hatching success of eggs is often low in freshwater species which do not guard",
+      "conditions": "Dahlberg's general statement, followed by examples (white sucker, walleye, rainbow smelt)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1 (para. 1)",
+      "claim": "the perch ribbon's high survival is credited to its envelope (Clady, via Dahlberg 1979)",
+      "source_value": "the credit to the envelope is Dahlberg's own statement; he then cites Clady (1975) [sic] only for the >95 % viability",
+      "location": "p. 6 (PDF p. 6), text col. 3",
+      "quote": "afforded by the unique egg mass envelopes contributes to high survival of yellow perch eggs",
+      "verdict": "corrected",
+      "note": "write \"credited to its envelope (Dahlberg 1979)\" rather than to Clady"
+    },
+    {
+      "paper": "§3.6.1 (para. 2)",
+      "claim": "pike egg survival on vegetation 60–95 % (Franklin & Smith 1963, via Dahlberg 1979)",
+      "location": "p. 6 (PDF p. 6), text col. 2",
+      "quote": "vegetation: 60-95 percent for northern pike (Franklin and Smith, 1963)",
+      "conditions": "Dahlberg lists it among \"three freshwater species which spawn in vegetation\" with high egg survival; no place given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1 (para. 2)",
+      "claim": "the 60–95 % pike egg survival was in Minnesota",
+      "verdict": "unsupported",
+      "note": "Dahlberg names no place for Franklin & Smith 1963 and his reference title (\"Early life history of the northern pike…\", Trans. Am. Fish. Soc. 92: 91–110) has none; Minnesota must come from Franklin & Smith itself (its own ledger key)."
+    },
+    {
+      "paper": "§3.6.1 (para. 3)",
+      "claim": "white sucker egg-to-larva survival \"as little as 3 percent\" (Scott & Crossman 1973, via Dahlberg 1979)",
+      "location": "p. 5–6 (PDF p. 5–6)",
+      "quote": "As little as 3 percent survival from egg to migrant larvae has",
+      "conditions": "egg to MIGRANT larvae (larvae leaving the spawning stream), reported by Scott & Crossman 1973",
+      "verdict": "confirmed",
+      "note": "say \"egg to migrant larvae\" rather than \"egg-to-larva\""
+    },
+    {
+      "paper": "§3.6.3; §3.6.9",
+      "claim": "pike yolk-sac larvae survived 57.2 % over 8 days, post-larvae 29 % over 22 days, about 3 % from egg to day 43 (Forney 1968, via Dahlberg 1979)",
+      "location": "p. 6 (PDF p. 6), Table 1, Freshwater, Northern pike (footnote 11)",
+      "quote": "0.180 … 13 … 0.572 … 8 … 0.291262 … 22 … 0.030000 … 43",
+      "quote_from": "image",
+      "conditions": "Forney 1968, a regulated marsh; means of 2 years; transformation to juvenile ASSUMED at 35 mm and 43 days after spawning (from Franklin & Smith 1963); read on the page image",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "0.180 × 0.572 × 0.291 = 0.030, matching the table's total; the 43-day end point is an assumption, not an observation"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "pike eggs survived 18 % over 13 days (Forney 1968, via Dahlberg 1979)",
+      "source_value": "0.180 over 13 days is survival from eggs to PELAGIC YOLK-SAC LARVAE (trap-net recruitment); Dahlberg's footnote says actual egg survival lay between the observed 77 % viability and that 18 %, and his text gives the recruitment as 16–19 %",
+      "location": "p. 6 (PDF p. 6), Table 1 footnote 11 and text col. 3",
+      "quote": "Actual egg survival was between the observed 77 percent viability and 18 percent",
+      "conditions": "regulated marsh; means of 2 years",
+      "verdict": "corrected",
+      "note": "write \"18 % of eggs recruited as pelagic yolk-sac larvae (egg survival itself between 18 and 77 %)\""
+    },
+    {
+      "paper": "§3.6.3; §3.6.9",
+      "claim": "the pike survival series was measured in an Oneida Lake marsh",
+      "verdict": "unsupported",
+      "note": "Dahlberg says only \"a regulated marsh\" (text p. 6) and his reference is \"Production of young northern pike in a regulated marsh\", N. Y. Fish Game J. 15: 143–154 — no Oneida. The research note (egg_survival_and_larval_production.md) also has \"Regulated marsh, NY\"; \"Oneida Lake\" was added in the paper. Write \"a regulated New York marsh\" unless Forney 1968 is read."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Lead checked: Dahlberg cites the perch viability (>95 %) to \"Clady (1975)\" in the text (p. 6), and the yellow perch row of Table 1 (footnote 13) takes \"survival and duration of earlier stages from Glady [Clady] (1975)\"; his only perch paper by Clady is 1976 (JFRBC 33: 1887–1893), so both are almost certainly Clady 1976. Elsewhere he cites Clady 1976 correctly (wave stranding of 1 % of perch eggs, p. 5; error sources, p. 3) and Clady 1975 for smallmouth bass (26–33 % survival to emergence, p. 6; the smallmouth bass rows of Table 2). The paper's §3.6.1 should give Clady 1976 with \"(printed 1975 by Dahlberg)\". Places the paper adds to Dahlberg's values (Oneida for the perch viability and the pike marsh, Minnesota for Franklin & Smith, Maine for Rupp) are not in Dahlberg. Other values in the review that may help: walleye eggs 0.005 over 24 d and yolk-sac 13.2 % in Oneida (Forney 1976, Table 1); Rothschild 1961's Maine smelt 24 % to 1–15 d before hatch and 0.5 % to drifting yolk-sac; Forney 1968's 77 % pike egg viability."
+}

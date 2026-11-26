@@ -1,0 +1,55 @@
+{
+  "key": "Gautreau_Curry_2006",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "secondary only: the report itself is not online; read COSEWIC 2008 (the intermediary the paper names), chapters 1, 4–8 and 13 of the web edition on the Species at Risk Public Registry (canada.ca)",
+    "url": "https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/redbreast-sunfish/chapter-6.html",
+    "file": "docs/research_notes/fetched/v2/Gautreau_Curry_2006.cosewic-ch6.html"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "COSEWIC 2008's reference list (chapter 13) only",
+    "ok": true,
+    "corrections": "",
+    "note": "COSEWIC lists \"Gautreau, M. and R. A. Curry. 2006. Ecology of the redbreast sunfish, Lepomis auritus, in Yoho and Oromocto Lakes. New Brunswick Cooperative Fish and Wildlife Research Unit Report # 01 – 06. 17 p.\", matching the ledger."
+  },
+  "claims": [
+    {
+      "paper": "§3.6; Table 3.5-2; Table 3.6-1",
+      "claim": "redbreast spawn late June–early July as littoral water nears 20 °C (New Brunswick)",
+      "verdict": "unchecked",
+      "note": "COSEWIC ch. 6: \"Gautreau and Curry (2006) reported spawning in Yoho and Oromocto lakes from late June to early July when the water temperature approached 20°C\" — the paper reports COSEWIC correctly"
+    },
+    {
+      "paper": "Table 3.5-2; Table 3.6-1",
+      "claim": "nests 51 cm across in 43 cm of water",
+      "verdict": "unchecked",
+      "note": "COSEWIC ch. 6: nests in Yoho (n = 43) and Oromocto (n = 20) averaged 50.9 ± 10.1 cm across, were excavated 7.1 ± 2.5 cm deep and lay in 43.2 ± 8.4 cm of water — pooled over both lakes. The 2012 article's abstract gives Yoho-only values of 52.4 ± 10.1 cm and 43.9 ± 12.2 cm (2005–2007)."
+    },
+    {
+      "paper": "§3.4.10; Table 3.6-1",
+      "claim": "most nests were dug through a dense plant mat to coarse sand or fine gravel; in Oromocto 85 % lay within 1 m of a rock or log",
+      "verdict": "unchecked",
+      "note": "COSEWIC ch. 6 says exactly this, and adds that in Yoho 72 % of nests were in sparse vegetation without cover structures, and that 58 % of nests were > 5 m from another (the rest ~2 m apart)"
+    },
+    {
+      "paper": "Table 3.6-1 (redbreast row)",
+      "claim": "male care, larvae 1–2 weeks in the nest (row sourced to Gautreau & Curry 2006 via COSEWIC 2008 and Buynak & Mohr 1978)",
+      "verdict": "unchecked",
+      "note": "COSEWIC attributes the 1–2 weeks in the nest to DeWoody et al. (1998), not to Gautreau & Curry, and the 4.9-mm mean hatch length to Buynak & Mohr (1978, Susquehanna River). The row's source column should add DeWoody et al. 1998 (via COSEWIC 2008) for the nest period."
+    },
+    {
+      "paper": "Table 3.6-7 (redbreast row)",
+      "claim": "Yoho Lake first-year length 36.2 mm, back-calculated",
+      "verdict": "unchecked",
+      "note": "COSEWIC ch. 6: direct proportional back-calculation from scales of 27 Yoho fish (2005) gave 36.2, 64.4, 87.8, 110.6, 127.2 and 140.9 mm TL for 0+ through 5+ at the end of each growing season (Gautreau and Curry 2006)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "web search: \"Ecology of the redbreast sunfish\" \"Yoho and Oromocto\"; NBCFWRU report 01-06", "status": "none found", "note": "no online copy of the New Brunswick Cooperative Fish and Wildlife Research Unit report; it would have to come from the unit or the University of New Brunswick library (report # 01-06, 17 p.)" },
+    { "url": "https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/redbreast-sunfish/chapter-6.html", "status": "curl: no response (timeout); node fetch: 200", "note": "COSEWIC 2008 web chapters read as the secondary source (chapters 1, 4, 5, 6, 7, 8, 13 saved)" }
+  ],
+  "notes": "Every claim is attributed in the paper to \"Gautreau & Curry 2006, via COSEWIC 2008\", and COSEWIC 2008 (its own ledger key) says what the paper reports, with one exception: the larvae's 1–2 weeks in the nest is DeWoody et al. 1998 in COSEWIC. Other report data COSEWIC relays: Yoho Lake diet (September 2005, Table 4) of 229 items, amphipods 49.8 % and caddis larvae 19.7 % by number, chironomids 8.7 %, nematodes 10.9 %, two young-of-year centrarchids (COSEWIC's text says \"mostly caddisflies\", contradicting its own table); Yoho fish 126 ± 26 mm TL and 42.4 ± 24.8 g, Oromocto 143 ± 33 mm and 80.9 ± 52.5 g; 2005 Schnabel estimate 325 (CI 186–630) for ~8.9 ha of Yoho; length-frequency modes at 2+ (91 mm) and 3+ (117 mm); highest capture rates near large woody debris, beaver lodges and dense vegetation. COSEWIC is internally inconsistent on Yoho's area (131 ha in text, 123.4 ha in Table 2a) and its 2005 population (325 in ch. 7, 810 ± 115 in Table 2a). Where the 2012 article covers the same work, cite it once it is read."
+}

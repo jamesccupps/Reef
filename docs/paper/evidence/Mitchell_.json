@@ -1,0 +1,55 @@
+{
+  "key": "Mitchell_",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Nova Scotia government website (Fisheries and Aquaculture special-management-area reports), PDF with a text layer, 18 pages",
+    "url": "https://novascotia.ca/fish/documents/special-management-areas-reports/impact-chain-pickerel.pdf",
+    "file": "docs/research_notes/fetched/v2/Mitchell_.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page and Methods",
+    "ok": true,
+    "corrections": "",
+    "note": "Title, authors (S. C. Mitchell, J. E. LeBlanc, A. J. Heggelin) and the undated status agree; fieldwork 22 May–31 October 2010 confirmed (Methods, p. 4). The report names no publisher: Mitchell is at St. Francis Xavier University (later Waterways Environmental Services), LeBlanc and Heggelin at the Nova Scotia Department of Fisheries and Aquaculture, and the file is on novascotia.ca; funding from the Nova Scotia Freshwater Fisheries Research Cooperative. The ledger key lacks a year (\"Mitchell_\"); a key such as Mitchell_etal_2011 would parse."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3; §3.7.6",
+      "claim": "three Nova Scotia lakes with introduced chain pickerel held only pickerel and large white suckers, with no small-bodied species",
+      "source_value": "the text says the three pickerel lakes held \"a maximum of two fish species\" (pickerel and white sucker; suckers 32–47 cm), but its own Table 1 also lists one brook trout in West Branch Lake (species richness 2, 2 and 3). No small-bodied species was caught in any pickerel lake",
+      "location": "p. 5 (PDF p. 5), Results; p. 7 (sucker sizes); p. 15 (PDF p. 15), Table 1",
+      "quote": "populated by a maximum of two fish species (mean richness 2.0 species, SD=0.0 species)",
+      "conditions": "2010; one overnight set of gill net, fyke net and three baited minnow traps per lake visit (Black and West Branch lakes sampled three times); 1,572 trap-hours over 15 lakes",
+      "verdict": "corrected",
+      "note": "The \"no small-bodied species\" and \"large white suckers\" parts are right; the source's text and table disagree on the brook trout, so write \"only pickerel and large white suckers (and one brook trout)\". The paper's caveat that the pre-invasion communities are unknown is the paper's own and fair: the report gives estimated introduction dates (1998, 2002, 2007) but no pre-introduction surveys; the authors themselves call one-night sampling low intensity (p. 10)."
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "catches were 0.047 fish per trap-hour in the pickerel lakes against 1.04 in pickerel-free lakes",
+      "location": "p. 6 (PDF p. 6), Results",
+      "quote": "pickerel lakes (mean 0.047 fish/hour; SD = 0.032) than in non-pickerel lakes (mean 1.04",
+      "conditions": "mean CPUE of total fish, all gears; 3 pickerel lakes vs 12 non-pickerel lakes; p = 0.031 (t-test)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5; Table 3.7-2",
+      "claim": "of 17 pickerel stomachs from the three lakes, 17.6 % were empty, 10 held insects and 2 held fish; diet mostly insects",
+      "location": "p. 7 (PDF p. 7), Results",
+      "quote": "three (17.6%) had empty stomachs, two (11.7%) had evidence of fish as prey",
+      "conditions": "2010, May–October; 5 stomachs from Black, 5 from West Branch, 7 from Speicht's Lake; fish counted only from bones (vertebrae), not scales; insects were mayfly and odonate larvae; pickerel with insects were 14.5–38.5 cm",
+      "verdict": "confirmed",
+      "note": "\"10 (58.8%) contained insects\" and \"Insects dominated the diet of chain pickerel during the sampling period\" (p. 7)"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "the Nova Scotia stomach study recorded no cannibalism",
+      "verdict": "unsupported",
+      "note": "The report never mentions cannibalism: the two fish prey were identified only as \"vertebrae in stomach or intestine\", species unknown (p. 7). It cannot be counted as a study that found no cannibalism; say instead that its two fish prey were not identified."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Table 1 lists 5, 7 and 6 pickerel caught in Black, Speicht's and West Branch lakes (18), but 17 stomachs were analysed (5, 7, 5); the paper's n = 17 is right for the diet. Other values: lakes averaged 15.8 ha and 2.7 m deep, pH 6.55; species richness 0–8 in pickerel-free lakes (mean 5.11 in the 9 fully sampled); white suckers in pickerel-free lakes 12.2–35.0 cm (mean 21.8) against 32–47 cm (mean 39.1) in pickerel lakes; pickerel ages 2–6 by length; banded killifish, golden shiner, brown bullhead, yellow perch and white perch occurred only in pickerel-free lakes. The authors read the suckers' size as \"zero recruitment\" (p. 8). The blacknose dace identification is flagged as doubtful (Table 1 note b)."
+}

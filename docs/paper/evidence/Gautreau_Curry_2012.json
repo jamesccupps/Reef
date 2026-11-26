@@ -1,0 +1,66 @@
+{
+  "key": "Gautreau_Curry_2012",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the publisher's (Eagle Hill) open abstract page, which shows the article's first page (title, authors, abstract, start of the introduction) as an image; the full-text PDF is for subscribers",
+    "url": "https://www.eaglehill.us/NENAonline/articles/NENA-19-4/18-Gautreau.shtml",
+    "file": "docs/research_notes/fetched/v2/Gautreau_Curry_2012.abstractpage.jpg"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (show.mjs) and the first-page image",
+    "ok": true,
+    "corrections": "",
+    "note": "Mark D. Gautreau and R. Allen Curry, \"Ecology and Status of the Redbreast Sunfish, Lepomis auritus, in Yoho Lake, New Brunswick\", Northeastern Naturalist 19(4): 653–664 (2012), doi:10.1656/045.019.0409"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (redbreast row)",
+      "claim": "Yoho Lake back-calculated lengths 36, 64, 88, 111, 127, 141 mm at ages 1–6; mean 12.5 cm, 42.6 g",
+      "verdict": "unchecked",
+      "note": "The abstract gives average total length 12.5 ± 3.1 cm and weight 42.6 ± 27.3 g (agrees, unconfirmed under rule 1). The back-calculated series is not in the abstract; COSEWIC 2008 (ch. 6) gives 36.2, 64.4, 87.8, 110.6, 127.2 and 140.9 mm for 0+ through 5+ (end of each growing season, 27 scales, Yoho 2005) from Gautreau & Curry 2006."
+    },
+    {
+      "paper": "Table 3.5-2 (redbreast row); §3.5.4",
+      "claim": "New Brunswick redbreast males guard for 7–10 days",
+      "verdict": "unchecked",
+      "note": "not in the abstract; needs the full text"
+    },
+    {
+      "paper": "Table 3.5-3 (redbreast row)",
+      "claim": "Yoho Lake diet: amphipods ≈ 50 %, caddis ≈ 20 % by number (n = 10)",
+      "verdict": "unchecked",
+      "note": "not in the abstract. COSEWIC 2008 Table 4 (Yoho Lake, September 2005, from Gautreau & Curry 2006) gives amphipods 114 of 229 items (49.8 %) and caddis larvae 45 (19.7 %), with no count of fish; the number of stomachs (n = 10) needs the 2012 full text"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "Yoho Lake (131 ha, mean depth 3.7 m) held only 325–744 redbreast by Petersen estimate; the oldest age class (6+) averaged 16 cm",
+      "verdict": "unchecked",
+      "note": "The abstract says only \"Population estimates averaged 386 from 2005 to 2007\". COSEWIC 2008 reports 325 (Schnabel, September 2005), 447 (2006) and 743 (Petersen with 2006 marks, 2007) for a targeted 8.9 ha — their mean (505) does not match the abstract's 386, so the 2012 estimates may differ, and the 2005 figure was a Schnabel, not a Petersen, estimate. COSEWIC gives Yoho as 131 ha in its text but 123.4 ha (mean depth 3.66 m, max 11.3 m) in its Table 2a. All need the full text."
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "18–21-cm redbreast would weigh about 110–180 g by Yoho's length–weight relation and be at least 7–10 years old at Yoho growth (project estimate)",
+      "verdict": "unchecked",
+      "kind": "arithmetic",
+      "note": "the length–weight relation and growth curve are not in the abstract"
+    },
+    {
+      "paper": "Table 3.6-7 (redbreast row)",
+      "claim": "first-year length 36.2 mm, back-calculated, \"also Gautreau & Curry 2012\"",
+      "verdict": "unchecked",
+      "note": "not in the abstract; COSEWIC 2008 gives 36.2 mm (0+) from Gautreau & Curry 2006"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1656/045.019.0409", "status": "not tried directly", "note": "the DOI a library login would open (BioOne / Eagle Hill subscriber PDF)" },
+    { "url": "https://www.eaglehill.us/NENAonline/articles/NENA-19-4/18-Gautreau.shtml", "status": 200, "note": "open abstract page: first-page image only; \"Full-text pdf (Accessible only to subscribers.)\". The page source also carries the article's text in a block hidden from readers with CSS (class style99 {display: none}): that is the paywall, so it was not used and the copy was deleted" },
+    { "url": "https://bioone.org/journals/Northeastern-Naturalist/volume-19/issue-4/045.019.0409/Ecology-and-Status-of-the-Redbreast-Sunfish-Lepomis-auritus-in/10.1656/045.019.0409.full", "status": 200, "note": "1,157-byte HTML page, not the article (subscription title)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1656/045.019.0409%22&format=json&resultType=core", "status": 200, "note": "no record" },
+    { "url": "https://api.openalex.org/works/doi:10.1656/045.019.0409", "status": 200, "note": "no open-access copy known (show.mjs)" },
+    { "url": "web search: author repository / UNB copy", "status": "none found", "note": "no open copy turned up; Semantic Scholar skipped (rate-limited by the parallel readers)" }
+  ],
+  "notes": "Blocked: only the abstract (first-page image) is open. The abstract agrees with the paper's mean length and weight (12.5 cm, 42.6 g), and adds Yoho-only nest values from snorkel surveys in late June–early July 2005–2007: nests 52.4 ± 10.1 cm across, in water 43.9 ± 12.2 cm deep, on sand with small gravel, only 33 % associated with a physical structure; most adults and juveniles in dense vegetation and large woody debris. These differ slightly from the pooled Yoho + Oromocto values the paper takes from COSEWIC 2008 (50.9 cm, 43.2 cm; Oromocto 85 % within 1 m of rock or log). The abstract's population average (386, 2005–2007) does not match COSEWIC's 325/447/743, so the paper's \"325–744 … by Petersen estimate\" should be checked against the full text before use."
+}

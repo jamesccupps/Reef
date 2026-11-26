@@ -1,0 +1,121 @@
+{
+  "key": "Schneider_1973a",
+  "reader": "wave-3 batch w3-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division research report library (PDF with a text layer, 15 pages)",
+    "url": "https://www2.dnr.state.mi.us/Publications/PDFS/DNRFishLibrary/ResearchReports/RR1701-RR1800/RR1792.pdf",
+    "file": "docs/research_notes/fetched/v2/Schneider_1973a.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Michigan Department of Natural Resources, Fisheries Division, Fisheries Research Report No. 1792, May 16, 1973; \"The fish population of Cassidy Lake, Washtenaw County\" by James C. Schneider (Dingell-Johnson Project F-29-R). \"Ann Arbor\" is not on the title page."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "Cassidy Lake, Michigan: 18.6 ha, max 3.4 m, weedy, hard water",
+      "location": "p. 2 (PDF p. 2), Introduction",
+      "quote": "shallow (maximum depth of 11 feet), weedy, has hard water",
+      "conditions": "46 acres = 18.6 ha; 11 ft = 3.35 m; methyl orange alkalinity 134 ppm",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "\"Cassidy Lake is a 46-acre lake\" (p. 2); 46 × 0.4047 = 18.6 ha"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "method: mark–recapture checked by rotenone; fish ≥ 7.6 cm",
+      "source_value": "fish marked in trap nets (8–18 May 1964) and a seine (21–28 May) and recaptured by seining or in the sample of dead fish picked up 1–3 June after the rotenone treatment of 1 June: the rotenone pick-up was a RECAPTURE sample, not a total count; Schumacher-Eschmeyer or Bailey-Petersen estimates, stratified by inch group, with the minimum known number or \"a conservative approximation\" substituted where data were short. The ≥ 3.0-in (7.6-cm) limit applies to the bluegill, pumpkinseed, yellow perch and largemouth bass estimates only; no size limit is given for the other species' counts",
+      "location": "p. 2–4 (PDF p. 2–4), Methods and Results",
+      "quote": "Additional estimates were made when the lake was subsequently treated with rotenone",
+      "verdict": "corrected",
+      "note": "write \"mark–recapture, with recaptures at a rotenone treatment\"; the lake was poisoned, but the dead fish were sampled, not counted"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "≈ 163 kg/ha of fish",
+      "location": "p. 4 and p. 7 (PDF p. 4, 7)",
+      "quote": "The total standing crop of fish was about 145 pounds per acre.",
+      "conditions": "p. 7 calls it \"the total standing crop of fish of all sizes\"; May 1964",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "145 lb/acre × 1.1209 = 162.5 kg/ha. The biomass is for all sizes (p. 7), while the row's \"fish ≥ 7.6 cm\" fits only the four main species' numbers"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "≈ 5,470 fish/ha",
+      "location": "p. 4 (PDF p. 4) other species; p. 10 (PDF p. 10), Table 3",
+      "quote": "15,297 … 18,011 … 678 … 6 … 4",
+      "quote_from": "image",
+      "conditions": "sum of the Table 3 age-group estimates for bluegill, pumpkinseed, perch and largemouth (≥ 3.0 in) plus the p. 4 counts of nine other species (no size limit stated)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Table 3 sums (bluegill 52,054; pumpkinseed 7,875; perch 33,996; bass 713) + other species 7,072 (125 crappie, 30 rock bass, 3,400 green sunfish, 1,730 yellow bullhead, 900 brown/black bullhead, 450 lake chubsucker, 81 large bowfin, 356 grass pickerel) = 101,710 / 18.62 ha = 5,464/ha ≈ 5,470. Table 2 (inch-group strata, which the text calls the best estimates) gives perch 33,063 and bass 779, total 100,843 = 5,417/ha. Either rounds to ~5,400–5,500/ha; read on the page images"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row); §3.5.5",
+      "claim": "yellow perch ≈ 1,830/ha (≥ 7.6 cm), 26 kg/ha",
+      "location": "p. 4 (PDF p. 4); p. 10 (PDF p. 10), Table 3; p. 9, Table 2",
+      "quote": "14. 5 for the pumpkinseed, 23. 5 for the yellow perch",
+      "conditions": "May 1964; perch ≥ 3.0 in (7.6 cm)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Table 3 age groups I–V: 15,297 + 18,011 + 678 + 6 + 4 = 33,996 / 18.62 ha = 1,826/ha; Table 2 inch groups 3.0–10+ in: 33,063 = 1,776/ha. 23.5 lb/acre = 26.3 kg/ha"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row); §3.5.5",
+      "claim": "only ≈ 10 perch/ha > 17.8 cm, about a 180-fold drop from the ≥ 7.6-cm count",
+      "location": "p. 6 (PDF p. 6), Discussion",
+      "quote": "there were only about 4 perch per acre larger than 7. 0 inches",
+      "conditions": "\"In Cassidy and Mill lakes, for example\" — the figure is given for both lakes together",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "4/acre = 9.9/ha; Table 2 (7.0-in groups and up: 134 + 12 + 9 + 15 = 170) gives 9.1/ha. 1,830/10 = 183 (or 1,776/9.1 = 195): \"180-fold\" holds"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "pumpkinseed ≈ 420/ha (16 kg/ha)",
+      "location": "p. 9 (PDF p. 9), Table 2; p. 4",
+      "quote": "3,416 … 2, 115 … 1,648 … 489 … 175 … 32",
+      "quote_from": "image",
+      "conditions": "≥ 3.0 in",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "7,875 / 18.62 ha = 423/ha (Table 2 and Table 3 agree); 14.5 lb/acre = 16.3 kg/ha"
+    },
+    {
+      "paper": "Table 3.5-1 (Cassidy Lake row)",
+      "claim": "brown and black bullhead 48/ha (14 kg/ha); grass pickerel 19/ha",
+      "location": "p. 4 (PDF p. 4), Results",
+      "quote": "900 brown and black bullheads (Ictalurus nebulosus and I. melas) weighing 12. 5 pounds",
+      "conditions": "no size limit stated for these species' counts",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "900 / 18.62 = 48.3/ha; 12.5 lb/acre = 14.0 kg/ha; 356 grass pickerel / 18.62 = 19.1/ha"
+    },
+    {
+      "paper": "Table 3.5-3 (yellow perch row); §3.7.6",
+      "claim": "in unfished Mill Lake, Michigan, which held largemouth and pike, yellow perch lost 70 % a year, all from natural causes",
+      "location": "p. 6 (PDF p. 6), Discussion; p. 6–7 for the closure and predators",
+      "quote": "Total annual mortality was high in both lakes: 80-96% in Cassidy and 70% in Mill.",
+      "conditions": "Mill Lake closed to fishing (\"where angling was prohibited\"); northern pike 2–9 lb/acre in Sugarloaf and Mill, largemouth 12 lb/acre in Mill; total mortality from age-frequency (catch-curve) estimates under roughly constant recruitment; the Discussion compares Cassidy with Mill Lake as described by Schneider (1971), which is presumably where the Mill figures come from",
+      "verdict": "confirmed",
+      "note": "\"All from natural causes\" follows from the closure: Schneider states it outright for Mill Lake pumpkinseed (\"because the lake was closed to fishing\") and bluegill. No size threshold is given for the Mill perch rate in this report"
+    },
+    {
+      "paper": "Table 3.5-3 (pumpkinseed row)",
+      "claim": "pumpkinseed total annual mortality A in the 68–72 % range (Schneider 1973a; Snow 1978)",
+      "location": "p. 5 (PDF p. 5), Results",
+      "quote": "Total mortality for the pumpkinseed was about 68% per year",
+      "conditions": "Cassidy Lake, May 1964, catch curve over age groups II–VI; includes fishing (amount unknown)",
+      "verdict": "confirmed",
+      "note": "Schneider's 68 % is the Cassidy value. For large pumpkinseed he also gives 81 % at Sugarloaf (29 % fishing, 52 % natural) and 57 % at Mill (all natural, closed to fishing): the three Waterloo lakes span 57–81 %"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Only the method wording in Table 3.5-1 needs changing (rotenone was a recapture sample). The density figures use Table 3's age-group sums; Table 2's inch-group sums are ~1–3 % lower. Other values here: Cassidy yellow perch total mortality 80–96 % a year (angling likely), bluegill 63 %, largemouth 26 % (age II) to 73 % (age VIII); Mill bluegill ≥ 6 in 54 %, legal bass 41 % (all natural); Sugarloaf large bluegill 66 % (25 % fishing). Total standing crops: Sugarloaf 95, Mill 116, Cassidy 145 lb/acre."
+}
