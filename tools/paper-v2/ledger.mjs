@@ -1,0 +1,173 @@
+// tools/paper-v2/ledger.mjs: the source ledger's skeleton for the paper's v2.0 source pass (PAPER_REWRITE_BRIEF.md, Phase 1).
+// It reads docs/paper/references.md (one entry per "- " line under "## References") and, for each entry, gives:
+//   key, the full citation, its DOI/URL, the in-text label ("Lawrence et al. 1995"), its flags (cited via, citation incomplete,
+//   n.d., sources disagree, no DOI or URL), every section of the paper that cites it (the abstract, §1–6, Table x.y), every line
+//   of the model's code whose comment cites it, and the brief's priority tier:
+//     1 a model parameter's source (cited in §4, a Table 4.x or the code), 2 behind the abstract, §5.1 or §6,
+//     3 flagged (abstract only, search summary, via, second-hand, not re-read, unverified, incomplete, disagree), 4 the rest.
+// The columns the source pass fills (how obtained, status, values, locations, quotes, verdict, notes) are kept from an existing
+// ledger by key, so the script can be re-run as the paper changes. It also writes tools/paper-v2/out/refs.json: each entry with
+// the paper's sentences and the code lines that cite it, for the readers.
+// Run: node tools/paper-v2/ledger.mjs [--quiet]
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const P = (...a) => path.join(ROOT, ...a);
+const read = f => fs.readFileSync(P(f), 'utf8').replace(/\r\n?/g, '\n');
+const QUIET = process.argv.includes('--quiet');
+
+// ---------- the reference entries ----------
+const refText = read('docs/paper/references.md');
+const body = refText.slice(refText.indexOf('## References'));
+const lines = body.split('\n').filter(l => l.startsWith('- '));
+const YEAR = /\s(?:((?:1[5-9]|20)\d{2}[a-z]?)(?:\s\([^)]*\))?\.|(n\.d\.))(?=\s|$)/;
+const SURNAME = /(?:^|,\s|&\s)((?:(?:van|de|der|von|du|da|le|la|den|di|St\.)\s)*\p{Lu}[\p{L}'’\-]+(?:\s\p{Lu}[\p{L}'’\-]+)?),\s(?:\p{Lu}(?:\.|$)|\p{Lu}\p{Ll}+\.?)/gu;
+const refs = [];
+for (const raw of lines) {
+  const cit = raw.slice(2).trim();
+  const ym = YEAR.exec(cit);
+  const year = ym ? (ym[1] || ym[2]) : '';
+  const who = ym ? cit.slice(0, ym.index).trim().replace(/\.$/, '') : cit.split('.')[0];
+  const surnames = [...who.matchAll(SURNAME)].map(m => m[1]);
+  let label;
+  if (surnames.length === 0) {   // an agency or a work listed under its source: its abbreviation in brackets, else its name
+    const ab = /\(([A-Z][A-Za-z&.\- ]{1,24})\)\s*$/.exec(who);
+    label = (ab ? ab[1] : who.replace(/\s*\([^)]*\)\s*/g, ' ').trim());
+  } else label = surnames.length === 1 ? surnames[0] : surnames.length === 2 ? `${surnames[0]} & ${surnames[1]}` : `${surnames[0]} et al.`;
+  const doi = (/(?:doi:\s?|doi\.org\/)(10\.\d{4,9}\/[^\s;,)]+[^\s;,.)])/i.exec(cit) || [])[1] || '';
+  const url = (/(https?:\/\/[^\s;)]+[^\s;.,)])/.exec(cit) || [])[1] || '';
+  const flags = [];
+  if (/Cited via/i.test(cit)) flags.push('cited-via');
+  if (/citation incomplete/i.test(cit)) flags.push('incomplete');
+  if (year === 'n.d.') flags.push('nd');
+  if (/sources disagree/i.test(cit)) flags.push('disagree');
+  if (/abstract only|abstract read|abstract-level/i.test(cit)) flags.push('abstract-only');
+  if (/search summary/i.test(cit)) flags.push('search-summary');
+  if (/not re-read|second-hand|unverified/i.test(cit)) flags.push('second-hand');
+  if (!doi && !url) flags.push('no-doi-url');
+  refs.push({ cit, year, who, surnames, label, doi, url, flags, first: surnames[0] || label });
+}
+
+// keys: Surname[_Surname2|_etal]_Year, made unique in order
+const seen = new Map();
+for (const r of refs) {
+  const base = (r.surnames.length ? [r.surnames[0], r.surnames.length === 2 ? r.surnames[1] : r.surnames.length > 2 ? 'etal' : null] : [r.label])
+    .filter(Boolean).join('_').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9_]+/g, '') + '_' + (r.year === 'n.d.' ? 'nd' : r.year);
+  const n = (seen.get(base) || 0) + 1; seen.set(base, n);
+  r.key = n === 1 ? base : `${base}-${n}`;
+}
+
+// ---------- where the paper cites each entry ----------
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+for (const r of refs) {
+  const yr = r.year === 'n.d.' ? 'n\\.d\\.' : esc(r.year);
+  // the first author (or agency label) followed, within a short span and no sentence break, by the year
+  r.rx = new RegExp(`(?<![\\p{L}])${esc(r.first)}(?![\\p{L}])[^;)\\n]{0,60}?(?<![\\d])${yr}(?![\\d])`, 'u');
+}
+const PARTS = [['README.md', 'abstract'], ['01_introduction_and_study_system.md'], ['02_synthesis_physical_to_plants.md'],
+  ['03_synthesis_fish_to_forest.md'], ['04_model_and_lessons.md'], ['05_discussion.md']];
+const cites = new Map(refs.map(r => [r.key, { sections: new Set(), contexts: [] }]));
+// the parts are hard-wrapped, so citations are matched in whole paragraphs (and single table rows), and each context is the
+// sentence(s) around the citation within its paragraph
+const scan = (text, where) => {
+  text = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').trim();
+  if (!/(1[5-9]|20)\d{2}|n\.d\./.test(text)) return;
+  for (const r of refs) {
+    const m = r.rx.exec(text); if (!m) continue;
+    const c = cites.get(r.key); c.sections.add(where);
+    if (c.contexts.length >= 12) continue;
+    const i = m.index, a = Math.max(0, text.lastIndexOf('. ', Math.max(0, i - 450)) + 1), b0 = text.indexOf('. ', i + m[0].length + 120);
+    c.contexts.push({ where, text: text.slice(a, b0 < 0 ? text.length : Math.min(b0 + 1, i + 700)).trim() });
+  }
+};
+for (const [file, fixed] of PARTS) {
+  let sec = fixed || '', inAbstract = false, para = [], tableAt = null;
+  const flush = () => { if (para.length) scan(para.join(' '), tableAt || sec); para = []; };
+  for (const line of read(`docs/paper/${file}`).split('\n')) {
+    const h = /^#{1,4}\s+(\d+(?:\.\d+)*)\b/.exec(line);
+    if (file === 'README.md') { if (/^## Abstract/.test(line)) inAbstract = true; else if (/^## /.test(line)) { flush(); inAbstract = false; } if (!inAbstract) continue; sec = 'abstract'; }
+    if (/^#{1,4}\s/.test(line)) { flush(); tableAt = null; if (h) sec = '§' + h[1]; else if (/^#{1,2}\s+(Data and code|Acknowledg)/.test(line)) sec = 'back matter'; continue; }
+    if (!line.trim()) { flush(); continue; }
+    const tb = /^\*\*Table ([\d.\-]+)\.?\*\*/.exec(line);
+    if (tb) { flush(); tableAt = `Table ${tb[1]}`; }
+    if (/^\s*\|/.test(line)) { flush(); scan(line, tableAt || sec); continue; }   // a table row on its own
+    if (tableAt && !tb && !/^\s*\|/.test(line) && para.length === 0 && !/^\*\*Table/.test(line)) tableAt = null;   // prose after a table
+    para.push(line);
+  }
+  flush();
+}
+
+// ---------- where the model's code cites each entry ----------
+const CODE = [];
+const walk = d => { for (const e of fs.readdirSync(P(d), { withFileTypes: true })) { const f = `${d}/${e.name}`;
+  if (e.isDirectory()) { if (!/vendor|render3$|true$/.test(e.name)) walk(f); }
+  else if (/\.m?js$/.test(e.name) && !/hotbrook_profile|hotbrook3d|far3d|canopy3/.test(e.name)) CODE.push(f); } };
+walk('src');
+const code = new Map(refs.map(r => [r.key, []]));
+for (const f of CODE) {
+  const ls = read(f).split('\n');
+  ls.forEach((line, i) => {
+    if (!/(1[5-9]|20)\d{2}/.test(line) || !/\/\/|\/\*|\*/.test(line)) return;
+    for (const r of refs) if (r.surnames.length && r.rx.test(line)) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: line.trim().slice(0, 300) }); }
+  });
+}
+
+// ---------- tiers ----------
+for (const r of refs) {
+  const c = cites.get(r.key), s = [...c.sections];
+  r.sections = s; r.contexts = c.contexts; r.code = code.get(r.key);
+  const inModel = r.code.length > 0 || s.some(x => /^§4(\.|$)|^Table 4/.test(x));
+  const inHead = s.some(x => x === 'abstract' || /^§5\.1(\.|$)|^§6(\.|$)/.test(x));
+  const flagged = r.flags.some(f => f !== 'no-doi-url') || c.contexts.some(x => /abstract only|search summary|\bvia\b|second-hand|not re-read|unverified|citation incomplete|sources disagree/i.test(x.text));
+  r.tier = inModel ? 1 : inHead ? 2 : flagged ? 3 : 4;
+}
+
+// ---------- the ledger (keeping the source pass's columns) ----------
+const LEDGER = P('docs/paper/source_ledger.csv');
+const COLS = ['key', 'label', 'tier', 'citation', 'doi_url', 'flags', 'sections', 'code', 'obtained', 'status', 'values', 'locations', 'quotes', 'verdict', 'notes'];
+const KEEP = ['obtained', 'status', 'values', 'locations', 'quotes', 'verdict', 'notes'];
+const parseCSV = t => { const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) { const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true; else if (ch === ',') { row.push(f); f = ''; } else if (ch === '\n') { row.push(f); rows.push(row); row = []; f = ''; } else if (ch !== '\r') f += ch; }
+  if (f || row.length) { row.push(f); rows.push(row); } return rows; };
+const old = new Map();
+if (fs.existsSync(LEDGER)) { const [hd, ...rs] = parseCSV(fs.readFileSync(LEDGER, 'utf8')); for (const r of rs) { const o = Object.fromEntries(hd.map((h, i) => [h, r[i] ?? ''])); old.set(o.key, o); } }
+// the source pass's evidence files (docs/paper/evidence/<key>.json, tools/paper-v2/READER.md) fill those columns, over the old CSV
+const EVD = P('docs/paper/evidence'); let nEv = 0;
+if (fs.existsSync(EVD)) for (const f of fs.readdirSync(EVD).filter(f => f.endsWith('.json'))) {
+  let e; try { e = JSON.parse(fs.readFileSync(path.join(EVD, f), 'utf8')); } catch { continue; }
+  if (!e.key) continue; nEv++;
+  const cl = Array.isArray(e.claims) ? e.claims : [];
+  old.set(e.key, { ...(old.get(e.key) || {}),
+    obtained: [e.obtained?.how, e.obtained?.url].filter(Boolean).join(' — '), status: e.status || '',
+    values: cl.map(c => `[${c.paper}] ${c.claim}${c.source_value ? ' → source: ' + c.source_value : ''} (${c.verdict})`).join(' | '),
+    locations: cl.map(c => c.location || '—').join(' | '), quotes: cl.map(c => c.quote ? `“${c.quote}”` : '—').join(' | '),
+    verdict: e.verdict || '', notes: [e.bibliography && e.bibliography.ok === false ? 'BIB: ' + e.bibliography.corrections : '', e.notes || ''].filter(Boolean).join(' · ') });
+}
+const csvf = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+const out = [COLS.join(',')];
+for (const r of refs) {
+  const o = old.get(r.key) || {};
+  const row = { key: r.key, label: `${r.label} ${r.year}`, tier: r.tier, citation: r.cit, doi_url: r.doi ? `https://doi.org/${r.doi}` : r.url, flags: r.flags.join(' '),
+    sections: r.sections.join('; '), code: r.code.map(c => c.at).join('; ') };
+  for (const k of KEEP) row[k] = o[k] ?? '';
+  out.push(COLS.map(c => csvf(row[c])).join(','));
+}
+fs.writeFileSync(LEDGER, out.join('\n') + '\n');
+fs.mkdirSync(P('tools/paper-v2/out'), { recursive: true });
+fs.writeFileSync(P('tools/paper-v2/out/refs.json'), JSON.stringify(refs.map(r => ({ key: r.key, label: `${r.label} ${r.year}`, tier: r.tier, citation: r.cit,
+  doi: r.doi, url: r.url, flags: r.flags, sections: r.sections, contexts: r.contexts, code: r.code })), null, 1));
+
+if (!QUIET) {
+  const by = k => refs.reduce((m, r) => (m[r[k]] = (m[r[k]] || 0) + 1, m), {});
+  console.log(`${refs.length} entries → docs/paper/source_ledger.csv (${nEv} evidence files merged)`);
+  console.log('tiers:', JSON.stringify(by('tier')));
+  const fl = {}; for (const r of refs) for (const f of r.flags) fl[f] = (fl[f] || 0) + 1; console.log('flags:', JSON.stringify(fl));
+  const unc = refs.filter(r => !r.sections.length);
+  console.log(`cited in the code: ${refs.filter(r => r.code.length).length}; never matched in the text: ${unc.length}`);
+  if (unc.length) console.log('  e.g. ' + unc.slice(0, 12).map(r => `${r.label} ${r.year}`).join(' · '));
+  const dup = refs.filter(r => /-\d+$/.test(r.key)); if (dup.length) console.log(`same author-year keys: ${dup.length} (e.g. ${dup.slice(0, 6).map(r => r.key).join(', ')})`);
+}
