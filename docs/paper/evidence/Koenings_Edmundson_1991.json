@@ -1,0 +1,61 @@
+{
+  "key": "Koenings_Edmundson_1991",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (19 Sep 2015) of the free PDF the publisher (ASLO) served for L&O back issues at aslo.org; Tables 1–2 read on the page images",
+    "url": "https://web.archive.org/web/20150919035500id_/http://aslo.org/lo/toc/vol_36/issue_1/0091.pdf",
+    "file": "docs/research_notes/fetched/v2/Koenings_Edmundson_1991.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Koenings, J. P. & Edmundson, J. A. 1991. Limnology and Oceanography 36(1): 91–105. PDF p. 1 = printed p. 91."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.3",
+      "claim": "in Alaskan lakes Kd·SD has a median of 2.70 (1.81–3.83) in stained lakes against 1.86 in clear ones",
+      "location": "Abstract, p. 91 (PDF p. 1); Table 1, p. 94 (PDF p. 4); Table 2 and text, p. 95 (PDF p. 5)",
+      "quote": "is elevated by color to a median of 2.70 (range, 1.81-3.83)",
+      "conditions": "58 oligotrophic Alaskan lakes (88 lake-years), seasonal (May–October) medians; stained class n = 21 lake-years with colour median 20.2 Pt units (range 9.9–41.4), turbidity ~1 NTU, Secchi median 4.3 m (2.2–7.1), Kd 0.62 m⁻¹; clear class n = 44: colour 7.9 Pt (2.3–16.4), Secchi 6.9 m, Kd·SD median 1.86 (1.13–3.26); turbid median 0.93",
+      "verdict": "confirmed",
+      "note": "The stained class's colour (9.9–41.4 Pt, median 20.2) and Secchi (median 4.3 m) bracket the Hot Brook analogs (18–46 PCU, ~3.9 m), which strengthens the analogy and is worth one clause."
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "the notes use 1.44, 1.7 and 2.70 (the median for stained lakes; Koenings & Edmundson 1991), which at Secchi ~3.9 m give Kd of roughly 0.4 to 0.7 m⁻¹",
+      "kind": "arithmetic",
+      "location": "p. 95 (PDF p. 5), text and Table 2; p. 91 (PDF p. 1)",
+      "quote": "In stained lakes the median Kd x SD equaled 2.70",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "Working: 2.70/3.9 = 0.69 m⁻¹ and 1.44/3.9 = 0.37 m⁻¹, so 'roughly 0.4 to 0.7' holds. K&E name the older 'universal' factors: Kd × SD ≈ 1.7 (Poole and Atkins 1929), with 1.44 and 1.16 proposed later (Holmes 1970; French et al. 1982) (p. 91). So the 1.7 the paper calls 'from a low-quality source' has a classic primary source, Poole & Atkins (1929)."
+    },
+    {
+      "paper": "Table 3.4-2",
+      "claim": "depth of 21 % and 11 % surface light with Kd = 2.70/SD (Koenings & Edmundson 1991): 2.02 / 2.25 / 2.60 m and 2.86 / 3.19 / 3.68 m at SD 3.5 / 3.9 / 4.5 m",
+      "kind": "arithmetic",
+      "location": "Abstract, p. 91 (PDF p. 1); Table 1, p. 94 (PDF p. 4)",
+      "quote": "is elevated by color to a median of 2.70 (range, 1.81-3.83)",
+      "conditions": "only the 2.70 is from K&E (the 21 % and 11 % light levels come from other sources)",
+      "verdict": "confirmed",
+      "note": "Working: z = −ln(I/I₀)·SD/2.70; −ln 0.21 = 1.561 → 0.578·SD = 2.02, 2.25, 2.60; −ln 0.11 = 2.207 → 0.817·SD = 2.86, 3.19, 3.68. All match."
+    },
+    {
+      "paper": "src/w3/chem3.js:99",
+      "claim": "stained Kd·SD ≈ 2.4–2.7 (Koenings & Edmundson 1991)",
+      "source_value": "Alaskan stained lakes: median 2.70, mean 2.76, range 1.81–3.83 (Tables 1–2); stained classes in other data sets 2.30 (Davies-Colley & Vant, New Zealand) and 2.58 (Bowling, Australia) (Table 5), i.e. stained medians 2.30–2.70",
+      "location": "p. 98 (PDF p. 8), text and Table 5; Table 2, p. 95 (PDF p. 5)",
+      "quote": "stained lakes with high median Kd x SD values (2.30-2.70) had low Rf values",
+      "conditions": "medians by lake class across New Zealand, Australian and Alaskan data sets",
+      "verdict": "corrected",
+      "note": "The lower bound K&E print is 2.30, not 2.4; for Alaskan stained lakes alone the figure is 2.70 (2.76 mean). A minor comment fix: '≈ 2.3–2.7'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values: in stained lakes only 3.6 % (median) of surface PAR remains at the Secchi depth (7.4 % clear, 21.7 % turbid) and EZD:SD = 1.75 (2.42 clear); regression over all lakes Kd = 0.24 + 0.902/SD (r² = 0.89) (p. 95). For a stained Hot Brook-like lake the 3.6 % of PAR at the Secchi depth is a useful check on any light-at-depth rule."
+}

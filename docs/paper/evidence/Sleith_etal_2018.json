@@ -1,0 +1,120 @@
+{
+  "key": "Sleith_etal_2018",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access article (CC BY): Europe PMC's full-text XML of PMC5838067 (Wiley's PDF and the PMC page refused the script); plus the specimen records the citation names, from the GBIF occurrence API (NY, PH and MARY herbarium records of the Hot Brook and Wytopitlock collections, and the survey's 2015 Maine records)",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5838067/fullTextXML",
+    "file": "docs/research_notes/fetched/v2/Sleith_etal_2018.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article XML's front matter",
+    "ok": true,
+    "corrections": "",
+    "note": "Sleith, R. S., Wehr, J. D. & Karol, K. G. 2018. Ecology and Evolution 8(5): 2802–2811, doi:10.1002/ece3.3847 (published 10 Feb 2018). The specimen details in §2.8 and §3.4.1 are not in the article; they come from the GBIF records (machine dump in Sleith_etal_2018.gbif.txt; JSON in Sleith_etal_2018.gbif*.json)."
+  },
+  "claims": [
+    {
+      "paper": "§2.8; §3.4.1",
+      "claim": "the only in-lake plant specimens are two stoneworts, Nitella flexilis (aff.) and N. tenuissima (aff.), collected on 15 July 2015 at Upper Hot Brook Lake during the survey of Sleith et al. (2018)",
+      "location": "web page: GBIF occurrences 4075533874 (PH00780505), 4075533871 (PH00780504), 5070843568 (MARY1014389), 1928277843 (NY 02334374), 1928833655 (NY 02334373)",
+      "quote": "Nitella flexilis (L.) C.Agardh … aff. … 2015-07-15 … Upper Hot Brook Lake … PH00780505",
+      "quote_from": "table",
+      "conditions": "collectors R. S. Sleith & S. D. Gottschalk, numbers RSS2015.07.15-08a (tenuissima) and -08b (flexilis), identified by Sleith 2015-12-30; one shared point (coordinates in the GBIF records, withheld here); 'aff.' is on both PH duplicates and the MARY N. flexilis, not on the NY sheets or the MARY N. tenuissima",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.8",
+      "claim": "both were collected fertile",
+      "location": "web page: GBIF occurrences 5070843568 (MARY1014389) and 5070873354 (MARY1018852), occurrence remarks",
+      "quote": "Dioecious, male and female plants; KGK4461 male; KGK4462 female",
+      "conditions": "MARY duplicate labels; the N. tenuissima duplicate reads 'Monoecious, conjoined'",
+      "verdict": "confirmed",
+      "note": "The labels record sexual condition (male and female plants; conjoined gametangia), from which 'fertile' is a fair reading; the word itself is not on the records."
+    },
+    {
+      "paper": "§2.8; §3.4.1",
+      "claim": "collected about 10 m from Upper's south-east shore (§2.8) / about 10 m from shore at Upper's south end (§3.4.1)",
+      "verdict": "unsupported",
+      "note": "Neither the article nor the specimen records give a distance or shore: the records give only 'Upper Hot Brook Lake' and a single coordinate point (withheld here; in the fetched GBIF records). The '10 m from the south-east shore' is the project's reading of that point against the OSM lake outline (plant_species_hot_brook.md, marked inference). Label it '(project inference from the specimen coordinates)'."
+    },
+    {
+      "paper": "§2.8",
+      "claim": "the collection was made during a single visit with a 30-minute search target",
+      "location": "web page (Europe PMC full text): §2.2 Species occurrence data",
+      "quote": "water bodies nearest each point were sampled once at a single access point",
+      "conditions": "'with a target time of 30 min of searching per site'; wading and a tossed dredge; June–September",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.8; §3.4.2",
+      "claim": "the survey covered 740 New York and New England water bodies (2014–15)",
+      "location": "web page (Europe PMC full text): Abstract; §2.1 Study system; §2.2",
+      "quote": "June to September in 2015 (350 sites), for a total of 740 surveyed sites",
+      "conditions": "stratified design of 750 points over NY, CT, MA, ME, NH, RI and VT (~327,000 km²); 390 sites in 2014 (10 inaccessible), 350 in 2015",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "Nitella flexilis was the commonest charophyte (147 of 363 sites with charophytes)",
+      "location": "web page (Europe PMC full text): §3 Results; Table 2",
+      "quote": "Characeae species were collected from 363 of the 740 surveyed small wetlands",
+      "conditions": "27 species found; Table 2 gives N. flexilis 147 occurrences, the most of the ten species modelled (species with < 12 records were not modelled)",
+      "verdict": "confirmed",
+      "note": "Table 2 counts 'Nitella aff. flexilis' (49 sites) separately from N. flexilis (147)."
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "N. flexilis is 'a generalist'",
+      "location": "web page (Europe PMC full text): §4 Discussion",
+      "quote": "more generalist species such as N. flexilis were less well supported",
+      "conditions": "in the species distribution models (no single predictor with a high relative contribution)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "Chara contraria was 'not detected across thousands of square kilometers in interior portions of Maine, where softer water occurs'",
+      "location": "web page (Europe PMC full text): §4 Discussion",
+      "quote": "C. contraria was not detected across thousands of square kilometers in interior portions of Maine",
+      "conditions": "the sentence continues: it was detected in the far eastern portions of the state, where limestone deposits promote hard water",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.1",
+      "claim": "the 'aff.' marks both identifications as tentative",
+      "verdict": "unsupported",
+      "note": "The article never defines 'aff.', and it does not treat the 'aff.' plants as uncertain identifications: Table 2 models 'Nitella aff. flexilis' (49 sites) and 'Nitella aff. tenuissima' (39 sites) as taxa of their own, beside N. flexilis (147); plain N. tenuissima is not among the modelled taxa at all. The Hot Brook duplicates carrying 'aff.' therefore belong to these separately modelled entities (with their own predicted responses, e.g. N. aff. flexilis −100/−96/−47 % habitat under higher cations against −25/−19/−5 % for N. flexilis). 'aff.' should be described as 'akin to; treated by the survey as a distinct, unnamed entity', not as a tentative identification."
+    },
+    {
+      "paper": "§2.8",
+      "claim": "the survey's specimen records show Nitella at almost every eastern Maine lake visited that July",
+      "verdict": "unsupported",
+      "note": "Specimen records exist only where charophytes were found, so they cannot show which lakes were visited without them; the article publishes no site list. Among the records themselves (GBIF, 542 Maine 2015 Sleith records), Nitella was collected at 40 of the 44 July-2015 specimen sites east of 69° W and at every one of the 11 Washington County lakes sampled on 14–15 July. Reword as 'at almost every eastern Maine lake that yielded charophytes that July'."
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "the survey's eastern-Maine specimens show Chara at only four lakes, two of them in central Maine (GBIF records; project compilation)",
+      "verdict": "unsupported",
+      "note": "Not reproducible without the project's boundary for 'eastern Maine'. East of 69° W, Chara was collected at 19 of 44 July-2015 specimen sites, many in northern and eastern Aroostook County (e.g. Conroy, Durepo, Black, Long and Number Nine lakes, Presitle Stream; C. contraria at Conroy Lake), which fits the article's own remark that C. contraria occurs in the far east where limestone gives hard water; on the 14–15 July Washington County route only Duck Lake (Penobscot Co.) had Chara. State the region and dates used, or drop the count."
+    },
+    {
+      "paper": "§2.8",
+      "claim": "Wytopitlock Lake, 23 km away, yielded the same pair",
+      "location": "web page: GBIF occurrences 1931147095 (NY 02334468) and 1931115222 (NY 02334467)",
+      "quote": "2015-07-30 … Wytopitlock Lake … 02334468 … 02334467",
+      "quote_from": "table",
+      "conditions": "N. flexilis (RSS2015.07.30-12b) and N. tenuissima (-12a), collected 30 July 2015 by Sleith & Havens (coordinates in the GBIF records)",
+      "verdict": "confirmed",
+      "note": "The two specimen points are 26.2 km apart (great-circle, project arithmetic from the GBIF coordinates); '23 km' may be shore to shore — say which, or use ~26 km."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/ece3.3847", "status": 403, "note": "Wiley refused the script (the article is open access; Europe PMC's XML used instead)" },
+    { "url": "https://europepmc.org/articles/PMC5838067?pdf=render", "status": 403, "note": "refused" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5838067/", "status": 200, "note": "bot-check page, not kept" },
+    { "url": "https://sweetgum.nybg.org/science/vh/specimen-details/?irn=2921408", "status": 200, "note": "NYBG Steere Herbarium specimen page answered 'Human verification required' (bot check); not pursued, files deleted. Same for irn=2921409" }
+  ],
+  "notes": "The article is a species-distribution-model paper; Hot Brook is not mentioned in it. Its methods support the visit details, and its results support the regional statements (N. flexilis commonest, 'generalist'; C. contraria absent from soft-water interior Maine). Everything specific to Upper Hot Brook (date, taxa, 'aff.', fertility, the point) comes from the herbarium records via GBIF, which the paper should cite as such (e.g. 'NY 02334373–4, PH00780504–5, MARY1014389, MARY1018852; via GBIF'). Washington County July-2015 records also show N. microcarpa (Second Machias, Six Mile), N. transilis (Pocumcus) and N. greenii (Pocomoonshine) nearby."
+}

@@ -1,0 +1,54 @@
+{
+  "key": "Henderson_1977",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository: University of Manitoba MSpace (handle 1993/6294), the scanned thesis PDF via the DSpace bitstream API; its OCR text layer is poor, so every value and quote was read on the page images",
+    "url": "https://mspace.lib.umanitoba.ca/server/api/core/bitstreams/d20ff268-51da-4063-8b1f-dadbb677683d/content",
+    "file": "docs/research_notes/fetched/v2/Henderson_1977.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Henderson, Michael A. January 1977. Growth, mortality, production and feeding of yellow perch fry, Perca fluviatilis flavescens (Mitchill), and their effect on the Daphnia pulicaria Forbes of West Blue Lake. MSc thesis, Department of Zoology, University of Manitoba. Printed page = PDF page − 34 in the body (p. 62 = PDF p. 96)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-3",
+      "claim": "yellow perch fry in West Blue Lake, Manitoba: 24/m² in a crowded bay; 0.44/m² in the basin",
+      "source_value": "bay: 21.05 fry/m² at the start of the pelagic period (day 1; 95 % CI 18.74–23.64), falling to 1.30 by day 21, mean 10.56/m² over the pelagic phase (Table 9); basin 2: 0.44/m² at the start, 0.35 by day 15, mean 0.40",
+      "location": "p. 60 (PDF p. 94); Table 10, p. 61 (PDF p. 95); Table 9, p. 59 (PDF p. 93)",
+      "quote": "The catch of perch fry in the bay declined steadily from 21.05 fry m-2",
+      "quote_from": "image",
+      "conditions": "1975, Miller high-speed trawl catches during the pelagic phase (fry ~9–10 mm entering to 25–30 mm leaving, early June to mid-July); abundance estimates are minima (trawl avoidance)",
+      "verdict": "corrected",
+      "note": "The '24' is the fitted intercept of Table 10's regression for the bay, e^3.187 = 24.2 (the table prints '−3.187', evidently a sign slip, since abundance on day 1 is 21.05), not an observed density. The basin's 0.44 is the observed day-1 value (its fitted intercept e^−0.798 = 0.45). Use 21/m² (observed) or ~11/m² (mean) for the bay."
+    },
+    {
+      "paper": "Table 3.6-4",
+      "claim": "yellow perch, Oneida Lake 1965–67, pelagic fry: Z = 0.030–0.056/d (Noble 1968, via Henderson 1977)",
+      "location": "pp. 73–74 (PDF pp. 107–108)",
+      "quote": "Oneida Lake were .030 in 1965, .056 in 1966 and .051 in 1967",
+      "quote_from": "image",
+      "conditions": "Henderson relays Noble (1968, Cornell PhD thesis) in the paragraph comparing pelagic-stage rates; 'all lying between the two estimates for West Blue Lake'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-4; §3.6.5",
+      "claim": "yellow perch, West Blue Lake, pelagic fry ~9–30 mm: Z = 0.017/d (basin) and 0.140/d (crowded bay)",
+      "location": "p. 62 (PDF p. 96); Table 10, p. 61 (PDF p. 95); Abstract, p. i (PDF p. 3)",
+      "quote": "Instantaneous daily mortality rates were .017 and .140 for basin 2 and the bay respectively",
+      "quote_from": "image",
+      "conditions": "1975; slope of ln(trawl abundance) on day, constant-rate model, over 15 d (basin 2) and 21 d (bay) of the pelagic phase, trawling stopped before the inshore move; fry entered the pelagic zone at 9–10 mm and left at ~25–30 mm in mid-July (abstract); Henderson regards the rates as maxima ('the estimates of mortality as maximal values')",
+      "verdict": "confirmed",
+      "note": "Henderson attributes the bay's higher rate 'probably' to an inadequate food source (low Daphnia pulicaria per fry) and calls it density-dependent (p. 77)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "http://hdl.handle.net/1993/6294", "status": 200, "note": "resolves to the MSpace DSpace 7 item page (JavaScript app); the PDF came from the item's bitstream via the API" }
+  ],
+  "notes": "Other values: perch hatched in the littoral in early June and moved offshore 7–14 d later at 9–10 mm; from hatching to mid-August length rose 10-fold and dry weight 2,616-fold (abstract). Daily Daphnia pulicaria losses to fry were ≤ 0.09 % of numbers in basin 2 but up to 5.25 % of numbers (2.19 % of biomass) in the bay (p. 62). Mean perch fry abundance over the pelagic phase (Table 9): basins 1–3 0.22, 0.40, 0.42/m²; bay 10.56/m². The PDF's OCR layer is unreliable (e.g. '.0r7' for .017): do not take numbers from Henderson_1977.txt without the page image."
+}

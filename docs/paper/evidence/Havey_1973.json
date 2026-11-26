@@ -1,0 +1,47 @@
+{
+  "key": "Havey_1973",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the article is subscriber-only (Oxford University Press, formerly T&F); only the secondary relay in Fay, Neves & Pardue 1983 (USFWS species profile, already fetched for the ledger entry Fayetal_1983) was read",
+    "url": "",
+    "file": ""
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Havey, Keith A. 1973. Production of juvenile alewives, Alosa pseudoharengus, at Love Lake, Washington County, Maine. Transactions of the American Fisheries Society 102(2): 434–437 (Crossref's title has a stray comma, 'Love, Lake')."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3",
+      "claim": "alewife in-lake adult mortality 90.7 % at Love Lake, Washington Co. (Havey 1973, via Fay et al. 1983)",
+      "verdict": "unchecked",
+      "note": "Havey not read. Fay et al. 1983 (PDF p. 20, Fayetal_1983.txt) relay: 'Total adult freshwater mortality averaged 90.7% and ranged from 66% to 100% over the 11-year study period (Havey 1973)'. The relay matches the paper; the 41 % in the same cell is Fay's relay of Havey 1961 (Long Pond, 'freshwater post-spawning mortality for all age groups averaged 41%', range 32–67 % over six years)."
+    },
+    {
+      "paper": "Table 3.6-8",
+      "claim": "Love Lake (272 ha): 220–439,062 emigrants a year (up to ~1,600/ha; project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "Fay et al. relay 'The number of emigrants ranged from 220 to 439,062 fish over an 11-year study period' and 12–3,209 emigrants per female per year. Fay gives no lake area; the 272 ha comes from elsewhere. 439,062 / 272 = 1,614/ha, so '~1,600/ha' holds if the area is right."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "Love Lake's emigrants correlated with escapement over 11 years",
+      "verdict": "unchecked",
+      "note": "Fay et al. relay significant linear relationships 'between the log of female escapement and the log of juvenile emigrant abundance', and between emigrant abundance and spawning-run size four years later."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1973)102<434:POJAAP>2.0.CO;2", "status": 403, "note": "resolves to academic.oup.com/tafs/article/102/2/434/7895390, which refused the script (subscriber article); the DOI is the page a library login would open" },
+    { "url": "https://archive.org/wayback/available?url=academic.oup.com/tafs/article/102/2/434/7895390", "status": 200, "note": "no Wayback capture" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22juvenile+alewives%22+Love+Lake", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://api.unpaywall.org/v2/10.1577/1548-8659(1973)102<434:POJAAP>2.0.CO;2", "status": 422, "note": "requires an email address; skipped (brief rule 3)" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(1973)102%3C434:POJAAP%3E2.0.CO;2", "status": 200, "note": "metadata only, no abstract" }
+  ],
+  "notes": "The paper already cites this as 'via Fay et al. 1983', and Fay's relay (read on Fayetal_1983.txt, PDF p. 20) agrees with every Havey number the paper uses; keep the 'via' wording unless the article is obtained. A Maine agency copy (Atlantic Sea-Run Salmon Commission / MDIFW) may exist; none was found online. A DFO document (waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/90425.pdf, seen only in a search summary) also summarizes Havey's correlation."
+}

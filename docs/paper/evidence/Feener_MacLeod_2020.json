@@ -1,0 +1,58 @@
+{
+  "key": "Feener_MacLeod_2020",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Nova Scotia Department of Fisheries and Aquaculture's own PDF (novascotia.ca, NS Freshwater Fisheries Research Co-operative reports)",
+    "url": "https://novascotia.ca/fish/documents/2020-FFRC-Invasive-species-in-LaHave-River.pdf",
+    "file": "docs/research_notes/fetched/v2/Feener_MacLeod_2020.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and the PDF's metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'LaHave River Invasive Species Project 2019 Final Report. Prepared by: Shawn Feener and Kaylee MacLeod, Coastal Action.' No date is printed; the PDF was created 12 February 2020, so 2020 is right. Printed page = PDF page − 3."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.5",
+      "claim": "in Wentzells Lake, Nova Scotia, the adult chain pickerel diet was about 85 % fish by weight",
+      "location": "p. 11 (PDF p. 14), Fig. 7 and text",
+      "quote": "The sampled chain pickerel diet consisted of just under 85% fish.",
+      "conditions": "non-lethal gastric lavage of angled (and tournament-caught) fish, Wentzells Lake (LaHave River), 25 Apr–25 Aug 2019; percentages by weight of stomach contents; empty stomachs excluded; 200 pickerel caught (Table 2) but the number lavaged is not given; fish sizes not given for the diet sample",
+      "verdict": "confirmed",
+      "note": "Context the paper omits: migrating Atlantic salmon smolts were 59 % of the whole pickerel diet (p. 13), although present only about four weeks (May–early June). Most of the 'fish' is therefore a seasonal migrant absent from Hot Brook; worth saying beside the 85 %."
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "white perch were the second fish prey of Wentzells Lake pickerel",
+      "location": "p. 13 (PDF p. 16); Fig. 9, p. 12 (PDF p. 15)",
+      "quote": "White perch were the second most abundant fish sampled in the diet",
+      "conditions": "same sample; by weight; white perch noted as abundant in the lake during sampling",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "in 85 bass from Wentzells Lake, more than 99 % of the diet by weight was invertebrates",
+      "source_value": "> 99 % invertebrates by weight in the bass stomachs sampled; 85 is the number of smallmouth bass caught by angling in 2019 (Table 1), not the number of stomachs, which is not given (empty stomachs were excluded)",
+      "location": "p. 10 (PDF p. 13), Fig. 5 and text; Table 1, p. 6 (PDF p. 9)",
+      "quote": "Invertebrates made up over 99% of the sampled smallmouth bass diet based on weight",
+      "conditions": "gastric lavage, 25 Apr–25 Aug 2019; dragonfly nymphs 60 % of the invertebrate share, June beetle adults ~12 %",
+      "verdict": "corrected",
+      "note": "Write 'in bass from Wentzells Lake (85 caught; stomach count not reported)'."
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "odonate larvae are a principal food of smallmouth bass where crayfish are scarce (Feener & MacLeod 2020 among the sources)",
+      "location": "p. 11 (PDF p. 14), Fig. 6 and text",
+      "quote": "Of the 99% invertebrate diet, 60% was found to be dragonfly nymphs.",
+      "conditions": "Wentzells Lake bass, 2019; dragonfly nymphs 'the most abundant prey item for smallmouth bass'",
+      "verdict": "confirmed",
+      "note": "The report never mentions crayfish (none among the prey > 1 % by weight), so 'where crayfish are scarce' comes from elsewhere (Dunlop et al. 2005, or the notes' unsourced 'no native crayfish'). For pickerel, dragonfly nymphs were 89 % of the 15 % invertebrate share (p. 12)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "A two-year Coastal Action project (2018–19) on smolt predation by introduced bass and pickerel; grey literature. CPUE by angling 0.88 bass/h and 1.98 pickerel/h (2.82 and 1.43 in 2018). Gaspereau (alewife) were found in pickerel in earlier years but missed in 2019 because rain cut sampling during their run (p. 13). The research note's 'brown water' and 'no native crayfish' for Wentzells Lake are not in this report."
+}

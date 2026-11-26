@@ -1,0 +1,48 @@
+{
+  "key": "Garvey_etal_2002",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's institutional repository copy (Southern Illinois University Carbondale, OpenSIUC, Fisheries and Illinois Aquaculture Center Publications 26), via its Wayback Machine capture of 21 July 2024 because OpenSIUC refused the script (403); the publisher's typeset pages",
+    "url": "https://web.archive.org/web/20240721155045id_/https://opensiuc.lib.siu.edu/cgi/viewcontent.cgi?article=1023&context=fiaq_pubs",
+    "file": "docs/research_notes/fetched/v2/Garvey_etal_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "Garvey, J. E., Herra, T. P. & Leggett, W. C. 2002. Ecological Applications 12(1): 194–205. PDF p. 2 = printed p. 194."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.4",
+      "claim": "Lepomis larvae at Lake Opinicon were much denser in shallow open water near the colonies than offshore; at the deepest site density was 8 % of the inshore mean (Garvey et al. 2002, via Neuswanger et al. 2015)",
+      "location": "p. 198 (PDF p. 6), Fig. 2 caption; p. 199 (PDF p. 7); p. 201 (PDF p. 9)",
+      "quote": "Densities of larvae at the deep-water site were only ~8% of average inshore densities",
+      "conditions": "Lake Opinicon, Ontario (787 ha), 12 May–6 Aug 1998; paired 0.5-m, 500-µm surface tows twice weekly at four inshore sites (≤ 2.5 m) and one 'Deep' site in mid-lake near one of the deepest areas (8 m); bluegill and pumpkinseed larvae (< 15 mm SL) combined; deep densities 'only weakly related' to inshore (r² = 0.15)",
+      "verdict": "confirmed",
+      "note": "Now read at first hand, so 'via Neuswanger et al. 2015' can go. Garvey: 'most larvae occurring in shallow-water areas near the nesting sites' (p. 201)."
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "in 1998 a cooling from 70 to 64 °F (21 to 18 °C) right after the early larval peak was followed by poor survival of early cohorts",
+      "location": "p. 202 (PDF p. 10); results p. 199 (PDF p. 7), Fig. 4–5",
+      "quote": "Water temperatures sharply declined from 21°C to about 18°C immediately following the peak",
+      "conditions": "late May 1998 at Lake Opinicon (QUBS 1-m water temperature record); 40 % of larvae had appeared by 12 June but most fall juveniles came from larvae produced in late June or later; survival from swim-up to the juvenile stage was often low when the swim-up temperature was below 23.5 °C",
+      "verdict": "confirmed",
+      "note": "The source is in °C ('21°C to about 18°C'); the °F pair is a conversion. Garvey offers the cooling as a possible mechanism (slower growth and longer exposure to predators, from unpublished bioenergetics runs), not a demonstrated cause."
+    },
+    {
+      "paper": "Table 3.6-9",
+      "claim": "pumpkinseed in northern inland lakes: ~35 mm TL first-winter threshold (Fox & Keast 1991; Garvey, Herra & Leggett 2002, both via Sobchak et al. 2026)",
+      "verdict": "unsupported",
+      "note": "Garvey et al. give no size threshold. They report that the 1998 cohort's mean total length rose from 39.3 ± 3.3 mm (6 October) to 44.5 ± 3.5 mm (11 May 1999), which 'suggests the selective loss of small individuals during winter' (p. 200), with bluegill and pumpkinseed pooled (pumpkinseed 26 % of the catch); in Fig. 8 the autumn age-0 fish start at ~31 mm. The ~35 mm figure may be Fox & Keast's, or Sobchak et al.'s reading; it should not be credited to Garvey et al."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://opensiuc.lib.siu.edu/cgi/viewcontent.cgi?article=1023&context=fiaq_pubs", "status": 403, "note": "OpenSIUC (bepress) refused the script; its Wayback capture was used" }
+  ],
+  "notes": "Also useful: sunfish nesting began 22 May 1998 at 19 °C; golden-eye embryos per nest 1133 ± 553 (bluegill) and 576 ± 305 (pumpkinseed), n = 5 nests each; larvae spent 2–3 weeks in open water and returned to the littoral at ~20 mm TL (citing Werner & Hall 1988); juveniles were trawled in offshore vegetation at 1–3 m in autumn; larval survival was unrelated to edible zooplankton (and higher when small zooplankton were < 100/L)."
+}

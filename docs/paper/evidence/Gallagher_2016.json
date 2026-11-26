@@ -1,0 +1,53 @@
+{
+  "key": "Gallagher_2016",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository: University of Maryland DRUM (Digital Repository at the University of Maryland), the thesis PDF via the DSpace bitstream API (handle 1903/18959)",
+    "url": "https://api.drum.lib.umd.edu/server/api/core/bitstreams/c1815bbe-b366-4b74-b82e-21f74b71dcba/content",
+    "file": "docs/research_notes/fetched/v2/Gallagher_2016.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 2) and the abstract page",
+    "ok": true,
+    "corrections": "",
+    "note": "Brian Kenneth Gallagher, 2016, MS thesis, University of Maryland, College Park (advisor David H. Secor). Printed page = PDF page − 15."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-6",
+      "claim": "young white perch in the Hudson River grew 0.33–0.74 mm/d (field, juveniles)",
+      "location": "p. 55 (PDF p. 70), Table 1.7; Fig. 1.10, p. 68 (PDF p. 83); methods p. 23 (PDF p. 38)",
+      "quote": "2013 Resident … 0.33 … 2014 Migratory … 0.74",
+      "quote_from": "table",
+      "conditions": "slopes of ANCOVA length-on-age regressions (length mm, otolith age in days) for young-of-year aged ~70–155 d from the NYSDEC fall seine survey (Aug–early Oct); 2013 year class n = 67 (45 resident, 22 migratory), 2014 n = 57 (29/28); slopes 0.33 (2013 resident), 0.67 (2013 migratory), 0.68 (2014 resident), 0.74 (2014 migratory) — 'late-juvenile growth rates'",
+      "verdict": "confirmed",
+      "note": "Read on the page image of Table 1.7 and the axes of Fig. 1.10 (Length (mm) vs Age (days)). Two year classes only; the low 0.33 is the resident contingent in the high-flow 2013."
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "Hudson young white perch were larger in warm summers and smaller after dense larval years",
+      "location": "p. 90 (PDF p. 105); Table 2.5, p. 115 (PDF p. 130); Fig. 2.4",
+      "quote": "positively associated with mean summer water temperature (r = 0.70; p < 0.01)",
+      "conditions": "Pearson correlations over 1992–2013 of the annual mean October total length (river-wide utilities' beach seine survey) with mean summer temperature (r = 0.70), summer flow (r = −0.50) and the post-yolk-sac larval standing stock (r = −0.46, p < 0.05)",
+      "verdict": "confirmed",
+      "note": "Correlations, not experiments; 'dense larval years' = the PYSL standing stock of the same year."
+    },
+    {
+      "paper": "Table 3.6-7",
+      "claim": "Hudson River white perch, 1992–2013: 73.9 mm (62.8–82.3) in October",
+      "location": "p. 112 (PDF p. 127), Table 2.2; definition p. 82 (PDF p. 97)",
+      "quote": "Mean YOY length in October … mm … 73.9 … 62.8 … 82.3",
+      "quote_from": "table",
+      "conditions": "mean, minimum and maximum of the annual means 1992–2013; each annual mean = the mean river-wide total length in the first and third weeks of October (weeks 40 and 42) of the utilities' beach seine survey (data ASA 2014)",
+      "verdict": "confirmed",
+      "note": "The layout text puts 'Unitless' beside this row; the page image shows the unit is mm (the units column drifts by a row in the text layer)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://drum.lib.umd.edu/handle/1903/18959", "status": 301, "note": "redirects to the DSpace 7 item page (JavaScript app); the file came from the item's bitstream via the API" }
+  ],
+  "notes": "Chapter 1 also gives back-calculated size at 50 days post-hatch (mean 20.5 mm in 2013 vs 33.5 mm in 2014, p. 34) and von Bertalanffy parameters for adults (migratory k = 0.69, L∞ = 204 mm; resident k = 0.52, L∞ = 194 mm, p. 31). This is an estuary (tidal Hudson), not a lake; the growth and size values are analogs only."
+}

@@ -1,0 +1,53 @@
+{
+  "key": "TexasInstruments_1979",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: U.S. Nuclear Regulatory Commission ADAMS public document ML100250085 (www.nrc.gov/docs), 672-page scan with a text layer; Table IV-37 and the key passages read on the page images",
+    "url": "https://www.nrc.gov/docs/ML1002/ML100250085.pdf",
+    "file": "docs/research_notes/fetched/v2/TexasInstruments_1979.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "1976 Year-Class Report for the Multiplant Impact Study of the Hudson River Estuary. May 1979. Prepared by Texas Instruments Incorporated, Ecological Services (Dallas), under contract with Consolidated Edison Company of New York (jointly financed with Orange and Rockland Utilities, Central Hudson Gas and Electric and the Power Authority of the State of New York). The citation could add 'prepared for Consolidated Edison Company of New York'. Pages are section-numbered (e.g. IV-124 = PDF p. 188)."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.3",
+      "claim": "in May 1976 few white perch larvae longer than 5 mm were caught in the Hudson despite large egg catches, a loss attributed to 'the temperature drop to 12 °C', and the year class came from a second spawning",
+      "location": "pp. IV-124–IV-125 (PDF pp. 188–189), Figs. IV-34–IV-35; summary p. II-10 (PDF p. 42)",
+      "quote": "This suggests that the temperature drop to 12°C during this period was lethal",
+      "quote_from": "image",
+      "conditions": "weekly length-frequency of white perch larvae, 2–29 May 1976 (few > 5 mm 'even though large numbers of white perch eggs were collected'); egg and yolk-sac abundance bimodal; 'most of the individuals surviving to the post yolk-sac stage were from the second spawn'",
+      "verdict": "confirmed",
+      "note": "The source says 'most' (not all) survivors came from the second spawn. A parallel passage for striped bass (p. II-9, PDF p. 41: near-complete mortality 'when the temperatures dropped to 12 °C') must not be confused with the white perch one."
+    },
+    {
+      "paper": "Table 3.6-3",
+      "claim": "white perch post-yolk-sac larvae, Hudson River estuary 1976: ~7.1/m² at the late-June peak (a minimum; project arithmetic)",
+      "kind": "arithmetic",
+      "location": "Table IV-37, p. IV-123 (PDF p. 187); river area p. IV-118 (PDF p. 182)",
+      "quote": "6/20-26 … 17,723,000 … 2,080,263,000 … 2,097,986,000",
+      "quote_from": "image",
+      "conditions": "weekly standing crop from the Ichthyoplankton Survey, 'with catch efficiency of sampling gear assumed to be 100 percent'; divided by TI's surface area of the river, RM 12–152, ~29,200 ha",
+      "verdict": "confirmed",
+      "note": "Working: 2,080,263,000 / 2.92 × 10⁸ m² = 7.12/m². Read on the image: the text layer shifts the yolk-sac column by a row. A minimum because of gear efficiency; the larvae were not spread evenly over the whole river."
+    },
+    {
+      "paper": "Table 3.6-8",
+      "claim": "white perch, Hudson River, September 1976: ~7,160/ha (project estimate from the survey area)",
+      "kind": "arithmetic",
+      "location": "p. IV-118 (PDF p. 182); summary p. II-10 (PDF p. 42)",
+      "quote": "the surface area of the river (RM 12-152) in hectares",
+      "conditions": "mark–recapture estimate of 209.2 × 10⁶ juveniles in September 1976 (95 % CI 157.9–284.6 × 10⁶); TI itself converted it to 20 kg/ha at a mean 2.75 g over ~29,200 ha",
+      "verdict": "confirmed",
+      "note": "Working: 209.2 × 10⁶ / 29,200 ha = 7,164/ha (CI ≈ 5,400–9,750/ha). The combined standing-crop approach gave only 11 million (93 million after gear-efficiency adjustment) in mid-August (p. II-10), so the density depends on the estimator; the paper's choice of the mark–recapture figure should be stated."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other white perch values for 1976: standing crops fell from 2 billion (late June, PYSL peak) to 3.86 million on 1 December, 'an average of 3.6% per day' (p. II-10); juvenile-to-yearling mortality 89 % (0.6 %/d) and 66 %/yr for yearlings and older (p. II-11); post yolk-sac larvae came 'from a fraction of the normal spawn but the resultant number of juveniles was similar to that of previous year'. These are tidal-river, power-plant monitoring data, analogs only for a lake."
+}

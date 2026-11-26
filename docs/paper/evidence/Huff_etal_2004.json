@@ -1,0 +1,44 @@
+{
+  "key": "Huff_etal_2004",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record of the DOI (the publisher's abstract); the article is subscriber-only at Oxford University Press (formerly T&F), and no repository or author copy was found",
+    "url": "https://api.crossref.org/works/10.1577/T03-048.1",
+    "file": "docs/research_notes/fetched/v2/Huff_etal_2004.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Huff, David D.; Grad, Gabriella; Williamson, Craig E. 2004. Environmental constraints on spawning depth of yellow perch: the roles of low temperature and high solar ultraviolet radiation. Transactions of the American Fisheries Society 133(3): 718–726."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "in a low-DOC Pennsylvania lake ~92 % of perch eggs lay deeper than 3 m and UV at the surface killed all eggs, whereas in a higher-DOC lake 76 % lay shallower than 1 m (abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract states all three: 92 % of eggs in the low-DOC lake deeper than 3 m, 'UVR in the surface waters of the low-DOC lake killed 100% of the eggs before hatching', and 76 % of eggs in the higher-DOC lake in water less than 1 m deep. The paper correctly labels it 'abstract'."
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "yellow perch spawn in brown water mostly < 1 m (Huff, Grad & Williamson 2004, abstract)",
+      "verdict": "unchecked",
+      "note": "The abstract gives 76 % of eggs < 1 m in the 'higher-DOC' lake; it does not call that lake brown or give its DOC (the notes' 'DOC 4.7 mg/L, Lake Lacawac' needs the full text)."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "yellow perch eggs near the surface of a Pennsylvania lake hatched in 9 days at a mean 13.3 °C, while deeper eggs at 7.7–11 °C took 19–35 days (Huff et al. 2004, abstract)",
+      "verdict": "unchecked",
+      "note": "These numbers are NOT in the abstract, which says only that surface eggs in the higher-DOC lake hatched '10–26 d shorter' than surface eggs in the low-DOC lake or deeper eggs in the higher-DOC lake. The '(abstract)' label is therefore wrong; the 9 d, 13.3 °C, 7.7–11 °C and 19–35 d came from somewhere else (the note egg_stage.md marks them [abstract], probably a search summary). Hold them until the full text is read, or reduce the sentence to the abstract's '10–26 d shorter'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/T03-048.1", "status": 403, "note": "resolves to academic.oup.com/tafs/article/133/3/718/7888496, which refused the script (subscriber article); the DOI is the page a library login would open" },
+    { "url": "https://archive.org/wayback/available?url=academic.oup.com/tafs/article/133/3/718/7888496", "status": 200, "note": "no Wayback capture (none either for the Wiley or T&F article pages)" },
+    { "url": "https://api.unpaywall.org/v2/10.1577/T03-048.1", "status": 422, "note": "requires an email address; skipped (brief rule 3)" }
+  ],
+  "notes": "Web searches (2026-11-26) for an author, Lehigh University or Miami University copy, or a thesis on the same data, found none (only an In-Fisherman magazine summary, which is not a source). The abstract adds that UVR had little effect in the higher-DOC lake or in deeper water of the low-DOC lake, and that deep spawning is costly because development is slower in cold water."
+}

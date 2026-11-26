@@ -1,0 +1,47 @@
+{
+  "key": "Hall_Werner_1977",
+  "reader": "wave-3 batch w3-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: OpenAlex's record of the DOI (the publisher's abstract as an inverted index); the article is subscriber-only at Oxford University Press (formerly T&F), and no repository copy was found",
+    "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1977)106%3C545:SDAAOF%3E2.0.CO;2",
+    "file": "docs/research_notes/fetched/v2/Hall_Werner_1977.openalex.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Hall, Donald J. & Werner, Earl E. 1977. Seasonal distribution and abundance of fishes in the littoral zone of a Michigan lake. Transactions of the American Fisheries Society 106(6): 545–555. The abstract does not name the lake ('a small Michigan lake', 'this marl lake')."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "bluegill, the nearest surrogate for pumpkinseed, regroup in the deep littoral in autumn",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract says the overwintering aggregations dispersed around the lake as the water warmed to 20 C and 'this movement was reversed in autumn' — consistent, but not confirmable from an abstract."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "bluegill wintered in tall perennial weed stands of the deep littoral",
+      "verdict": "unchecked",
+      "note": "The abstract: the bluegill 'overwintered in two localized regions of tall perennial vegetation in the deep littoral apparently in response to predation and food availability'. Note the census ran May–October 1976 by divers; how winter positions were established needs the full text."
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "small bluegill stay in vegetation because open water is riskier (Werner & Hall 1988; Hall & Werner 1977; both abstracts)",
+      "verdict": "unchecked",
+      "note": "The abstract: small bluegills (< 80 mm TL) 'were confined throughout the year to the vegetation apparently to avoid predation'. The 12.5 mm SL return to the littoral and the 40–80-fold risk are not in this abstract (they would be Werner & Hall 1988)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1977)106<545:SDAAOF>2.0.CO;2", "status": 403, "note": "resolves to academic.oup.com/tafs/article/106/6/545/7895053, which refused the script (subscriber article); the DOI is the page a library login would open" },
+    { "url": "https://archive.org/wayback/available?url=academic.oup.com/tafs/article/106/6/545/7895053", "status": 200, "note": "no Wayback capture" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28littoral+zone+Michigan+lake%29+AND+creator%3A%28Hall%29", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://www.scilit.com/publications/5ab11fe7967d16121210b8941c6f9594", "status": 403, "note": "abstract record refused the script" },
+    { "url": "https://api.unpaywall.org/v2/10.1577/1548-8659(1977)106<545:SDAAOF>2.0.CO;2", "status": 422, "note": "requires an email address; skipped (brief rule 3)" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(1977)106%3C545:SDAAOF%3E2.0.CO;2", "status": 200, "note": "metadata only, no abstract" }
+  ],
+  "notes": "OpenAlex marks the work closed (no repository full text). Web searches (2026-11-26) found no author or institutional copy. The abstract also says 15 littoral species were censused seven times along transects covering nearly the whole littoral, that habitat segregation was least in spring and constant in summer, and that the patterns appear stable from year to year in this marl lake with perennial vegetation. Only the §3.6.7 sentence flags the source as an abstract; the two §3.5.6 sentences cite it plainly and should add '(abstract)' unless the full text is obtained. With only the abstract the claims stay unchecked."
+}
