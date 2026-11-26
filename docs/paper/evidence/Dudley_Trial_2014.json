@@ -1,0 +1,112 @@
+{
+  "key": "Dudley_Trial_2014",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "USGS report PDF the human had already fetched (public domain), indexed with getsrc --file",
+    "url": "https://pubs.usgs.gov/publication/sir20145164",
+    "file": "docs/research_notes/fetched/v2/Dudley_Trial_2014.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and the report's suggested citation",
+    "ok": false,
+    "corrections": "the title has no comma: \"Estimates of growth and mortality of under-yearling smallmouth bass in Spednic Lake from 1970 through 2008\"; add the DOI 10.3133/sir20145164; the suggested citation gives \"15 p.\""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2; Table 3.6-7; §3.6.8; Table 3.6-9; src/species.js:365",
+      "claim": "Spednic Lake young-of-year 70.7–76.3 mm on 3 Oct 1995 (71–76 mm in autumn)",
+      "source_value": "70.7–76.3 mm are the MEANS of four samples (n = 7, 13, 21, 8); individual fish 65–82 mm",
+      "location": "p. 9 (PDF p. 17), Table 4",
+      "quote": "1995 10/3/1995 7 76.3 0.7 74-80 80-91 Ardnt, 1996",
+      "conditions": "total length; collected at different locations in Spednic Lake on 3 Oct 1995 (Ardnt 1996); the model's estimated range for that year was 80–91 mm. A further 1988 sample (1 Sept, n = 24) averaged 73.0 mm (63–97)",
+      "verdict": "confirmed",
+      "note": "write \"sample means 71–76 mm\" where the paper implies a range of fish"
+    },
+    {
+      "paper": "Table 3.5-2; §3.6.2; src/config.js:445",
+      "claim": "modeled Spednic onset of smallmouth spawning 22 May–4 June, median 28 May",
+      "location": "p. 7 (PDF p. 15)",
+      "quote": "The median (and mean) date for the start of spawning ... was May 28",
+      "conditions": "modeled from regression-estimated daily mean lake-surface temperatures (from Vanceboro air temperatures), 1970–2008; earliest 22 May (1991, 1998), latest 4 June (2005); mean spawning period 12 days, median end 10 June",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4; §3.6.8; Table 3.6-9; §4.2; §4.5",
+      "claim": "about 208 (± 4) days below 10 °C at Spednic Lake",
+      "source_value": "the estimated starvation period, days from the autumn date of < 10 °C to the spring date of ≥ 10 °C, averaged 208 days (± 4 days, standard deviation), 1970–2008",
+      "location": "p. 8 (PDF p. 16)",
+      "quote": "estimated starvation period ... averaged 208 days (±4 days, standard deviation)",
+      "conditions": "daily mean lake-surface temperature estimated by regression on air temperature; the regression was applied only from 1 May to 31 October, so the count is the span between the two 10 °C crossings",
+      "verdict": "confirmed",
+      "note": "\"in Washington County\" (§3.5.4) and \"~30 km east\" (§4.2) are not in the source, which places the lake on the Maine–New Brunswick border in the St. Croix headwaters"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "spawning starts once daily water exceeds 15 °C (modeled median 28 May)",
+      "source_value": "spawning is triggered when 15 < Ti ≤ 27 °C and degree-days above 10 °C are < 150, and then delayed by SD = 8.0 − 0.055·DD days",
+      "location": "p. 4 (PDF p. 12), eqs. 1–2; Fig. 2 on p. 5",
+      "quote": "Spawning is triggered when Ti is greater than (>) 15 °C",
+      "conditions": "rules of Shuter et al. (1980) applied to modeled surface temperatures",
+      "verdict": "corrected",
+      "note": "the delay term (up to ~8 days) is why the median spawning date falls a few days after 15 °C"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "egg and fry mortality is 1 if the minimum temperature in the following 15 days falls below 10 °C and 3.0 − 0.2·Tmin between 10 and 15 °C",
+      "location": "p. 5 (PDF p. 13), Table 1",
+      "quote": "Tmin p <10 or >30 1 ≥10 and ≤15 3.0-0.2Tmin",
+      "conditions": "Tmin = minimum daily mean water temperature from spawning date to spawning date + 15 days (assumed fertilization to rise of fry); probability of mortality, from Shuter et al. (1980); also p = 0 for 15–27 °C, 0.33·Tmin − 9 for 27–30 °C, 1 above 30 °C",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "modeled early mortality exceeded 10 % in 17 of 39 years (1970–2008), reaching 56 %",
+      "location": "p. 7 (PDF p. 15); Table 3, p. 8 (PDF p. 16)",
+      "quote": "Mortality exceeded 10 percent for 17 of the years",
+      "conditions": "for fish spawned on the FIRST day of each year's spawning period; 56.2 % in 1994; no mortality for the last day's spawn in any year",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-6",
+      "claim": "smallmouth growth 0.12·T − 1.7 mm/d at 14.2–25.5 °C, zero below 14.2 °C (Shuter et al. 1980 via Dudley & Trial)",
+      "location": "p. 5 (PDF p. 13), Table 2",
+      "quote": "<14.2 or >35 0 ≥14.2 and <25.5 0.12T–1.7",
+      "conditions": "daily increment of total length (mm) against daily mean water temperature, from Shuter et al. (1980); temperature only: \"calculations do not account for lake productivity or food availability\"; 1.4 mm/d at 25.5–31.5 °C",
+      "verdict": "confirmed",
+      "note": "this rule over-predicted Spednic growth: every measured mean was below the modeled minimum (Table 4: 1995 measured 71–76 vs modeled 80–91 mm; 1988 73 vs 86–95 mm)"
+    },
+    {
+      "paper": "§3.6.8; Table 3.6-9; §4.5",
+      "claim": "at a 208-day winter the Shuter thresholds kill all young smallmouth under 48 mm and none over 92 mm",
+      "source_value": "Cmin = 0.1938·WD + 7.917 averaged 48.3 mm (± 0.8); Cmax = 0.3375·WD + 22.083 averaged 92.4 mm (± 1.4)",
+      "location": "p. 8 (PDF p. 16); eqs. 4–6, pp. 5–6 (PDF pp. 13–14)",
+      "quote": "this criterion averaged 92.4 mm (±1.4 mm)",
+      "conditions": "winter mortality p = 1 below Cmin, 0 above Cmax, (Cmax − L)/(Cmax − Cmin) between",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.8; Table 3.6-9",
+      "claim": "the measured autumn lengths of 71–76 mm imply a 36–49 % first-winter loss (project arithmetic from their thresholds)",
+      "source_value": "with eq. 6 and the mean criteria: (92.4 − 76.3)/44.1 = 37 %, (92.4 − 70.7)/44.1 = 49 %",
+      "location": "p. 6 (PDF p. 14), eq. 6",
+      "quote": "if L was less than Cmin, then p=1; otherwise, p was computed",
+      "conditions": "the source applies the rule only to its modeled lengths; its own winter mortality estimates (Table 5) are 1–20 % for early-spawned and 19–41 % for late-spawned fish, 4 % and 27 % in 1995",
+      "verdict": "confirmed",
+      "note": "the arithmetic checks, but it applies a temperature-only threshold to 3-October sample means; worth saying the authors did not make this calculation"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "Dudley & Trial record year-class failures after the cold, wet summers of 1986 and 1996",
+      "location": "p. 6 (PDF p. 14); discussion p. 10 (PDF p. 18)",
+      "quote": "known year-class failures ... caused by cold, wet summers evident in all lakes",
+      "conditions": "\"year-class failure\" = age-4 or age-5 bass under 15 % of a 100-fish sample, region-wide (St. Croix and nearby lakes), from Dill et al. (2010)",
+      "verdict": "confirmed",
+      "note": "second-hand in the source (Dill et al. 2010); the authors' own model flags 1986, 1994, 1996 and 2004"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The report's lake temperatures are modeled, not measured: a regression on daily min/max air temperature fitted at Big Lake (validated ± 0.6 °C at Big Lake and Grand Falls Flowage). Starting length at rise 9.1 mm. The authors stress the modeled lengths are maxima (food not limiting). Also useful: the 1994 year class was 13 % of the 1998 catch (weak)."
+}

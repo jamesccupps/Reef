@@ -19,7 +19,15 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
 6. **Check what the number measured** (the paper's own §5.2 lesson): units, the quantity (wet or dry mass, total or fork length, mean or
    maximum, per day or per year), the sample size, the place, the season, the conditions. A number taken out of its conditions is
    `corrected` (give what it really is) even if the digits match.
-7. Downloads are allowed, but only into `docs/research_notes/fetched/v2/` (git-ignored). Never run git, never commit.
+7. Downloads are allowed, but only into `docs/research_notes/fetched/v2/` (git-ignored). Never run git (not even read-only), never
+   commit.
+8. **Tables: never from the layout text alone.** `pdftotext -layout` can shift a table's rows against their labels (in the pilot it put
+   Lawrence et al.'s Twin West fit beside the wrong data set). Read every table value in the raw text (`findin --raw`) or on the page
+   image (`findin --image N`, then open the PNG with the Read tool). Scanned pages can drop whole columns: look at the image.
+9. **Acceptable copies:** the publisher's own free copy; an author's or institution's repository copy; an agency or library copy; an
+   Internet Archive item or a Wayback Machine capture that is openly downloadable (no "borrow", no login) — including a capture of a
+   file the publisher once served free. Say exactly which in `obtained.how`. Not acceptable: Sci-Hub, LibGen, Anna's Archive,
+   ResearchGate or Academia scraping, or anything behind a login.
 
 ## For each key
 
@@ -45,9 +53,11 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
    - files the human already fetched: `docs/research_notes/fetched/` (see `fetched_sources_digest.md` there) — use
      `getsrc.mjs <key> --file <path>` to index one.
    If `getsrc.mjs` reports `"scanned": true` (no text layer), say so; do not guess at the page images.
-3. **Read it.** `node tools/paper-v2/findin.mjs <key> "<regex>"` finds a value by page; `findin.mjs <key> --page N` prints a page.
-   Read the methods and the table or passage around each value, not just the line with the digits. "p. N" in `findin` is the PDF's
-   page index; give the printed page number too when the PDF shows it (e.g. `p. 1521 (PDF p. 3), Table 2`).
+3. **Read it.** `node tools/paper-v2/findin.mjs <key> "<regex>"` finds a value by page (add `--raw` for tables);
+   `findin.mjs <key> --page N` prints a page; `findin.mjs <key> --image N [--clip 0,0.5,1,1]` renders it. Read the methods and the
+   table or passage around each value, not just the line with the digits. `findin` prints "p. N" (the PDF's page index) or
+   "p. N (printed 1524)"; give both in `location` (e.g. `p. 1524 (PDF p. 6), Table 2`). For a whole journal issue, index just the
+   article: `getsrc.mjs <key> --file <issue.pdf> --pages 480-493`.
 4. **Check each claim** the paper (or a code comment) takes from the entry:
    - `confirmed`: the source says it, in those units and conditions;
    - `corrected`: the source gives a different value, or the same digits for something else — put the source's version in
@@ -96,6 +106,20 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
   publisher page that a library login would open.
 - When the entry is cited for nothing specific (background, "see also"), record one claim for what the sentence says it supports and
   check that.
+- **Quotes from tables or images:** a quote made of a table row's cells (with "…" between them) carries `"quote_from": "table"` (the
+  checker then requires only that its numbers are in the text); one read off a page image carries `"quote_from": "image"`.
+  `check_evidence.mjs` warns when a quote is not in the fetched text: look at every such warning.
+- **Project arithmetic** (the paper computes something from the source's numbers): check the inputs against the source and redo the
+  arithmetic; `confirmed` if both hold, with `"kind": "arithmetic"` and the working in `note`.
+- **A value converted by an intermediary** (e.g. FB4's tables converting an older paper's units): `confirmed` for the value if the
+  intermediary's conversion is right, but `corrected` for the attribution if the paper credits the original paper with a number it
+  does not print — say in `note` how to cite it ("Kitchell et al. 1977, as converted in FB4").
+- **A stand-in** (a thesis or report on the same data, when the article itself is blocked): the article stays `unobtainable`; read the
+  stand-in as its own source, record in `notes` which claims it supports and where, and recommend citing it instead. Do not confirm
+  the article's claims from it.
+- Extra fields are allowed (e.g. `bibliography.note`, `kind`, `quote_from`).
+- **Many claims:** `show.mjs` ends with a CHECKLIST count. Work through every citing paragraph, follow-on mention and code line; an
+  entry with 20–30 claims (a state survey report) takes most of a session — that is expected.
 
 ## When you finish
 

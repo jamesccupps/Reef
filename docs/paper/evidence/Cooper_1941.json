@@ -1,0 +1,311 @@
+{
+  "key": "Cooper_1941",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the human's PDF of the report (Digital Maine scan with an OCR text layer, 283 PDF pages), indexed with getsrc --file; two table pages were checked against the page image because the OCR misaligns table columns",
+    "url": "https://digitalmaine.com/ifw_docs/72/",
+    "file": "docs/research_notes/fetched/v2/Cooper_1941.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title pages (PDF pp. 1, 3) and the announcement (p. 3)",
+    "ok": true,
+    "corrections": "",
+    "note": "author, title, Fish Survey Report No. 4, Maine Department of Inland Fisheries and Game, published by The Augusta Press, December 10, 1941, all match; the plankton chapter is by Harry A. Goodwin and Appendix A (Anasagunticook Lake, 1937) by Joel W. Marsh. printed page = PDF page − 10 through printed p. 127, − 12 from p. 133 to at least p. 215, − 14 by p. 233 (fold-in table pages); every location gives both"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-2; §3.3.8",
+      "claim": "53 southern Maine lakes, August 1940, 0–4.6 m: copepods ≈ 22/L (Cyclops > Diaptomus), cladocerans ≈ 10/L (Bosmina and Daphnia commonest), rotifers ≈ 250/L (~7,000/ft³)",
+      "source_value": "15–0-ft stratum, 53-lake average: copepods 613/ft³ (21.6/L), cladocerans 271/ft³ (9.6/L), rotifers 7 thousand/ft³ (247/L)",
+      "location": "p. 81 (PDF p. 91), Table V; genera pp. 77–78 (PDF pp. 87–88)",
+      "quote": "15 to 0 0.73 613 271 7 50 3 27 128 4 221",
+      "conditions": "summer 1940: Table V averages every Table IV sample, mostly late summer (August) but eight lakes were also sampled early and mid-summer; daytime vertical hauls with a Birge closing net of No. 20 silk bolting cloth, mostly one station per lake; the rotifer and algae columns are in thousands per ft³",
+      "verdict": "confirmed",
+      "note": "say \"summer (mostly August) 1940\" and that these are net counts, which the paper sets beside EPA NLA counts made by another method. The ≈ 90 µg/L biomass is a project conversion, not checked"
+    },
+    {
+      "paper": "§3.3.9",
+      "claim": "plankton crustaceans were about 6 % of the food volume of white perch ≥ 15 cm, though over 100,000 water fleas were counted in their stomachs and the share ranged 0–98 % between lakes",
+      "location": "p. 150 (PDF p. 162), Table XV and its footnote; p. 125 (PDF p. 135)",
+      "quote": "37.136 c.c. or 6 % was plankton Crustacea",
+      "conditions": "1,242 stomachs from 20 lakes of the 1940 survey (Table XV); fish mostly > 6 in total length and ≥ 4 summers old, gill-netted June–September; the text puts water fleas at \"about 5 per cent\" of all 1,757 perch, \"over 100,000\" in number; per-lake shares in Table XV run from 0 (five lakes) to 98 % (Auburn Lake, 9 fish with food)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "in 53 southern Maine lakes vegetation was \"generally very scanty\", mostly emergent and around inlets and outlets",
+      "location": "p. 33 (PDF p. 43)",
+      "quote": "aquatic vegetation in the lakes as a whole was ... generally very scanty",
+      "conditions": "mostly bulrushes, pickerelweed, water lilies and some cattails, very little submergent; \"considerable aquatic vegetation\" in some sluggish waterways between ponds or around inlets and outlets; Cooper blames rocky shallows and wave action",
+      "verdict": "confirmed",
+      "note": "44 of the 53 lakes had \"white\" (greenish to bluish) water and 9 light brown (same page): Cooper's lakes were mostly clearer than Hot Brook's"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "the 1940 survey caught 1,627 white perch in 86 gill-net sets against 388 white suckers, 226 yellow perch and 117 pumpkinseed",
+      "location": "p. 103 (PDF p. 113); p. 119 (PDF p. 129)",
+      "quote": "86 gill net sets in 40 lakes took 2,748 fish ... (1,627) were White Perch",
+      "conditions": "40 of the 53 lakes, 15 June–11 September 1940, all but three sets overnight, mostly at 10–50 ft; 375-ft experimental nets of 2–6-in stretched mesh that missed fish under ~6 in; Cooper's \"Common Sucker\" is the white sucker",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "white perch \"more abundant in the shallow lakes\": 62–128 per 24-h set in four shallow unstratified lakes against 7–46 in most deep ones",
+      "source_value": "the quotation is right (p. 215), but Table XV lists seven of Cooper's eight shallow, warm-to-bottom lakes: Sabattus 128, Cochnewagan 105, East 80, North 62, Pocasset 45, Lovejoy 18, Androscoggin 16 white perch per 24 h; all 13 deep lakes 7–46",
+      "location": "p. 215 (PDF p. 227); p. 150 (PDF p. 162), Table XV; shallow-lake list pp. 66–67 (PDF pp. 76–77)",
+      "quote": "White Perch was generally more abundant in the shallow lakes than in the deep ones",
+      "conditions": "catch per 24 h of one 375-ft gill net, 54 overnight sets in 20 lakes, summer 1940",
+      "verdict": "corrected",
+      "note": "the four were selected; three other shallow lakes (16–45) sit inside the deep lakes' range. Cooper adds that white perch \"also predominated over other species in most of the deep lakes\""
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "southern Maine white perch, 1938–40: ≈ 12.4, 15.5, 18.6, 20.8 cm at ages 2–5 (SL→TL project conversion)",
+      "source_value": "measured unweighted mean body (standard) lengths for age groups III–VI were 5.7, 5.5, 6.5, 6.7 in; Cooper judged the III–V values too high (net selectivity) and suggested about 4, 5 and 6 in instead; 4, 5, 6 and 6.7 in × ~1.22 give the paper's values",
+      "location": "pp. 136–137 (PDF pp. 148–149)",
+      "quote": "III-, IV-, and V-fish ... approximately 4, 5, and 6 inches",
+      "conditions": "age groups are summers of life (III = age 2); Cooper's 4–6 in are a rough correction \"judging from scale diameters (not measured)\"; age 5 is the gill-net mean",
+      "verdict": "confirmed",
+      "note": "say the ages 2–4 values are Cooper's estimate, not measurements; the 1.22 SL→TL factor is the project's (Cooper's own figures imply ~1.21–1.27)"
+    },
+    {
+      "paper": "Table 3.5-2; §3.5.5",
+      "claim": "in slow lakes \"6 to 10 years for most fish to reach a length of 6 to 8 inches\"",
+      "location": "p. 215 (PDF p. 227)",
+      "quote": "from 6 to 10 years for most fish to reach ... 6 to 8 inches",
+      "conditions": "conclusions chapter; \"in other lakes the perch had grown to a length of over 9 inches in 6 to 8 years or less\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2; §3.5.7",
+      "claim": "white perch spawn in May–June, with \"large spawning runs\" into the inlet and outlet streams of some lakes",
+      "location": "p. 25 (PDF p. 35)",
+      "quote": "there are large spawning runs in the major inlet and outlet streams of some lakes",
+      "conditions": "a general account, not survey data: Cooper writes that the species' spawning habits \"are largely unknown to the writer\" and the season is May and June \"in some localities\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3; §3.7",
+      "claim": "yellow perch 16–35 cm ≈ 46 % fish by food volume, mostly white and yellow perch",
+      "location": "p. 155 (PDF p. 167); Table XVIII, p. 160 (PDF p. 172)",
+      "quote": "contained 147 c.c. of food of which 46 per cent was fish",
+      "conditions": "231 fish (160 with food) from 19 lakes, 6.3–13.7 in total length, gill nets, June 17–October 16 1940 (summer except Pushaw Pond in October); fish volume: white perch 24.6, yellow perch 16.4, one red-bellied (redbreast) sunfish 15.0, smelt 2.9, sucker 0.25, remains 8.0 cc",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch longevity)",
+      "claim": "white perch live to 17 summers",
+      "location": "p. 135 (PDF p. 147)",
+      "quote": "The oldest fish, in its 17th summer of life ... was from Webb Lake",
+      "conditions": "one fish (12.3 in, 14.6 oz) among 1,827 aged; 17th summer = age 16+",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (project catch curve); §3.7.6",
+      "claim": "Cooper's age data show many white perch surviving to 8–10 years, with mortality rising after about age 9",
+      "location": "p. 136 (PDF p. 148)",
+      "quote": "a considerable per cent live to be at least 8 to 10 years old",
+      "conditions": "of perch reaching at least 6 in; Cooper continues \"after which the rate of mortality increases greatly\"",
+      "verdict": "confirmed",
+      "note": "the project's catch curve itself was not recomputed"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch diet)",
+      "claim": "Maine white perch ≥ 15 cm: mayfly nymphs 44 %, all aquatic insects 60 %, fish 26 %, crustaceans 12 % by volume",
+      "location": "p. 126 (PDF p. 136)",
+      "quote": "Water fleas 5.75 ... All Crustaceans 12.00 ... Mayfly nymphs 44.21",
+      "conditions": "1,252 fish from 25 lakes of the 1940 survey (653 cc), June–September, gill nets; all aquatic insects 60.29 %, all fish 26.27 % (smelt 9.09, yellow perch 10.08, white perch 3.79)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch diet)",
+      "claim": "fast-growing lakes: 20–50 % fish in the diet",
+      "location": "p. 215 (PDF p. 227)",
+      "quote": "supplementing their diet of bottom food with from 20 to 50 per cent fish",
+      "verdict": "confirmed",
+      "note": "Table XV's per-lake values for the six fast lakes actually run 6–83 % fish; the 20–50 % is Cooper's own summary"
+    },
+    {
+      "paper": "Table 3.5-3 (pumpkinseed); §3.5.3",
+      "claim": "Maine pumpkinseed 12–25 cm: 63 % snails; larger fish crush snails",
+      "location": "p. 156 (PDF p. 168); Table XIX, p. 162 (PDF p. 174)",
+      "quote": "Snails were, by far, their most important food, making up 63 per cent",
+      "conditions": "66 sunfish (45 with food) from 9 lakes, 4.8–9.7 in total length, mostly summer 1940; 38 of them from Torsey Pond; Table XIX lumps snails with pill clams (22.2 of 34.5 cc); Cooper links it to the \"molar-like crushing teeth\" on the fifth pharyngeals",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3; Table 3.7-3; §5.7; §6.1; src/w3/fish3.js:105",
+      "claim": "Maine smallmouth (n = 66): white perch 61 %, crayfish 14 %, ~80 % fish by volume",
+      "location": "p. 155 (PDF p. 167); Table XVI, p. 157 (PDF p. 169)",
+      "quote": "this volume included 80 per cent fish of which 61 per cent was White Perch",
+      "conditions": "66 bass from 20 lakes, 36 with food, 238.61 cc; 8.5–21.3 in total length (22–54 cm); June 20–October 16, including 4 Pushaw Pond bass in October (one with food: 23.0 cc of white perch)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3; Table 3.7-3; §5.7; §6.1; src/w3/fish3.js:105",
+      "claim": "Maine chain pickerel (n = 110, 32–64 cm): white perch 55 %, golden shiner 14 %, yellow perch 8 %, crayfish 0.5 %; ≈ 95 % fish",
+      "location": "p. 155 (PDF p. 167); Table XVII, p. 158 (PDF p. 170)",
+      "quote": "397 c.c. of food of which 55 per cent was White Perch",
+      "conditions": "110 fish from 19 lakes, 51 with food; 12.6–25.0 in total length; June 17–October 16, 32 of them (13 with food, 115.3 cc) from Pushaw Pond in October; text: 40 % other fish, 0.2 % insects",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-3",
+      "claim": "the table's volumes and counts, with golden shiner \"14.0 (count illegible)\" and the title \"chain pickerel (with one October sample) and smallmouth bass\"",
+      "source_value": "every percentage checks against the totals rows of Tables XVI–XVII, but the golden shiner count is legible: 3 (55.5 cc), and only 3 makes the items add to 92; the bass also include the October Pushaw Pond sample (4 fish, 1 with food, 23.0 cc of white perch, 3 items)",
+      "location": "p. 158 (PDF p. 170), Table XVII totals; p. 157 (PDF p. 169), Table XVI",
+      "quote": "110(51) 12.6-25.0 397.334 (92) 2.1 (1) 0.874 (24) 12.0 (2) 55.5 (3)",
+      "conditions": "totals row order: crayfish, insects, smelt, golden shiner, horned pout, pickerel, yellow perch, white perch, fish remains, tadpoles",
+      "verdict": "corrected",
+      "note": "fill in \"14.0 (3)\" and move \"with one October sample\" so it covers both predators"
+    },
+    {
+      "paper": "Table 3.7-2",
+      "claim": "pickerel (n = 110; 32–64 cm) 54 % empty, 92 items in 51 fish; smallmouth (n = 66; 22–54 cm) 45 % empty, 48 items in 36 fish",
+      "location": "p. 157 (PDF p. 169), Table XVI; p. 158 (PDF p. 170), Table XVII",
+      "quote": "Totals June 20- Oct. 16 66(36) 8.5-21.3 238.61 (48)",
+      "conditions": "gill-netted fish, mostly summer 1940; 59/110 and 30/66 empty",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "the fish came from 86 sets of paired gill nets fished between 15 June and 11 September, almost all overnight and mostly at 3–15 m",
+      "source_value": "86 individual sets of a 375-ft experimental gill net (the survey had two nets of this type; pairing is not stated, and Table XV gives catch \"by the 375-foot gill net\"); 15 June–11 September; all but three overnight; most at 10–50 ft",
+      "location": "pp. 100–101 (PDF pp. 110–111); Table XV footnote p. 150 (PDF p. 162)",
+      "quote": "a total of 86 individual sets",
+      "conditions": "the predator food samples also include Pushaw Pond fish taken 14–16 October, outside the 86 sets",
+      "verdict": "corrected",
+      "note": "drop \"paired\""
+    },
+    {
+      "paper": "§3.7.5; §3.7.7",
+      "claim": "the pickerel sample includes 32 fish from Pushaw Pond (Penobscot County) in October, which supplied all the table's bullhead and its single cannibalized pickerel",
+      "location": "p. 158 (PDF p. 170), Table XVII",
+      "quote": "Pushaw Oct. 14-16 32(13) 12.6-21.9 115.3 (19)",
+      "conditions": "the Pushaw row (golden shiner 12.5, horned pout 18.0, pickerel 24.5, yellow perch 11.0, white perch 44.2, remains 5.1 cc) holds the table's only horned pout (18.0, 1) and pickerel (24.5, 1); Table XIV places Pushaw Pond in \"Hudson Twp.\"; the county is the paper's",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "the bass took no smelt although smelt were present",
+      "location": "p. 155 (PDF p. 167)",
+      "quote": "The absence of smelts in the diet of these bass is noteworthy",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "none of 1,757 white perch, 66 bass or 110 pickerel stomachs held a white sucker",
+      "location": "p. 102 (PDF p. 112); Tables XI, XVI, XVII",
+      "quote": "Common Sucker Sabattus (1).",
+      "conditions": "the only sucker found in any stomach was in a yellow perch from Sabattus Pond (list of fish in stomachs, 1940 survey)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2; §3.7.5; §3.7.9; §5.7; src/w3/fish3.js:870",
+      "claim": "crayfish are \"generally rare in Maine\"; one crayfish in 809 bottom samples; so the crayfish link is weak",
+      "location": "p. 25 (PDF p. 35); pp. 83 and 91 (PDF pp. 93, 101)",
+      "quote": "crayfish when available (crayfish are generally rare in Maine)",
+      "conditions": "an aside in the general account of smallmouth habits, not a survey measurement; the 809 bottom samples were daytime 9 × 9-in Ekman dredge grabs in 44 lakes, a gear that samples crayfish poorly",
+      "verdict": "confirmed",
+      "note": "\"soft-water\" (§3.7.9) is not Cooper's word: the report says nothing about hardness. The same report's Appendix A (Marsh; Anasagunticook Lake, 1937) found crayfish 27.7 of 62.2 cc (45 %) in 25 smallmouth stomachs (Table XXIV, p. 233): a Maine lake where bass did eat crayfish"
+    },
+    {
+      "paper": "§3.6.7; src/w3/fish3.js:645",
+      "claim": "the 36 smallmouth stomachs with food held no bass (and no brown bullhead)",
+      "location": "p. 157 (PDF p. 169), Table XVI; p. 155 (PDF p. 167)",
+      "quote": "All of the fish, so far as identified, were spiny-rayed forms",
+      "conditions": "fish in bass stomachs: white perch, yellow perch, one pumpkinseed, unidentified remains",
+      "verdict": "confirmed",
+      "note": "the code's \"Maine ~0\" for bullhead is exactly 0 of 66"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "one Snow Pond sample supplied 86.5 of the bass's 145.5 mL of white perch; Cooper's lakes have golden shiner and rainbow smelt",
+      "location": "p. 157 (PDF p. 169), Table XVI; pp. 109 and 113 (PDF pp. 119, 123)",
+      "quote": "Snow June 28-- July 2 11(7) 9.3-18.5 Heavy 90.3 (13) 3.2 (7) 86.5 (5)",
+      "conditions": "Snow Pond's 11 bass (7 with food); golden shiner \"the most abundant and widespread species of minnow\"; wardens reported smelt in the majority of the lakes",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "white perch outnumbered yellow perch about 7 to 1 in overnight gill nets but were outnumbered about 4 to 1 in daytime shore seines",
+      "location": "p. 103 (PDF p. 113); seining method p. 101 (PDF p. 111)",
+      "quote": "White Perch 1,627 281 ... Yellow Perch 226 1,181",
+      "conditions": "gill nets 1,627 vs 226 (7.2:1); 45 daytime seine hauls from shore to 4 ft deep in 37 lakes, 20 June–11 September: 281 vs 1,181 (1:4.2)",
+      "verdict": "confirmed",
+      "note": "the seines took mostly young fish and the nets only fish over ~6 in, so the contrast is of sizes as much as of places"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "banded killifish is \"typically a lake fish … on extensive lake shallows\"",
+      "location": "p. 119 (PDF p. 129)",
+      "quote": "It is typically a lake fish, being found mostly on extensive lake shallows",
+      "conditions": "seined from five lakes, \"mostly large lakes with extensive wave-swept shallows\"; maximum length about 3 in",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "blacknose dace is \"typically a stream fish\", rarely found in lakes",
+      "location": "p. 113 (PDF p. 123)",
+      "quote": "This is typically a stream fish. It was taken only from Embden Pond",
+      "conditions": "3 fish, by seine, in one pond; \"pools and gravel riffles in small streams\" in the paper's sentence is not from Cooper (presumably Trial et al. 1983b)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "fallfish was the second commonest minnow in Cooper's survey",
+      "location": "p. 113 (PDF p. 123); catch table p. 103 (PDF p. 113)",
+      "quote": "it is the second most abundant species of minnow in the lakes of this area",
+      "conditions": "7 by gill net, 344 by seine, from 14 lakes; golden shiner first (73 + 799)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "Cooper's 1,827 aged fish (1938–40): East Pond and Pushaw reached about 17–21 cm at ages 3–5; Sabattus stayed at 16–17 cm through ages 5–9; Cochnewagan plateaued near 25 cm from age 5 to 13 (TL converted from SL by the project)",
+      "source_value": "Table XIV gives measured total length, so no conversion is needed: East Pond IV–VI 6.6, 7.6, 7.9 in (16.8–20.1 cm; n = 43, 2, 6); Pushaw IV–VI 6.7, 8.0, 8.4 in (17.0–21.3 cm; n = 17, 1, 25); Sabattus VI–X 6.4–6.7 in (16.3–17.0 cm); Cochnewagan VI–XIII 9.1–9.9 in (23–25 cm). Cooper warns that the young age groups are represented only by their largest fish",
+      "location": "Table XIV: Sabattus p. 138 (PDF p. 150), Cochnewagan p. 141 (PDF p. 153), East Pond p. 144 (PDF p. 156), Pushaw p. 147 (PDF p. 159); selectivity p. 136 (PDF p. 148)",
+      "quote": "the selecting gill net caught only the largest individuals",
+      "conditions": "age groups are summers of life (IV = age 3); collections run June 1938–January 1941",
+      "verdict": "corrected",
+      "note": "the digits hold; drop \"converted from SL\" and add that ages 3–4 lengths are net-biased upward"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "fish lived longer where they grew slowly (mean age 7.6 in 17 slow lakes, 6.9 in 12 fast ones), and growth tracked the share of fish in the diet, not the density of bottom fauna",
+      "location": "p. 137 (PDF p. 149); p. 152 (PDF p. 164)",
+      "quote": "best correlation apparently existed between growth of perch and the amount of fish",
+      "conditions": "1,323 perch from slow lakes, 469 from fast; Cooper allows gill-net selectivity \"might account for part of this difference\"",
+      "verdict": "confirmed",
+      "note": "Cooper found growth equally tied to lake type: the fast growers were mostly from deep lakes with oxygenated deep water. The paper omits this"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "in February 1940 migrating white perch were found forced against the outlet screen of Great Pond by the current",
+      "location": "p. 122 (PDF p. 132)",
+      "quote": "where these migrating fish had been forced against the screen by the water current",
+      "conditions": "3 February 1940 collection",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "Maine pickerel spawn \"in shallow, weedy areas … or … quiet tributary streams\"",
+      "location": "p. 25 (PDF p. 35)",
+      "quote": "in shallow, weedy areas of lakes or in similar places in quiet tributary streams",
+      "conditions": "general account: \"early in the spring, mostly in May in Maine\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7; §6.4",
+      "claim": "the Maine diet evidence comes almost entirely from one survey made in 1940 (\"85 years old\")",
+      "location": "p. 3 (PDF p. 5)",
+      "quote": "The present survey and report deals with 53 lakes and ponds",
+      "conditions": "the predator diets are from the summer 1940 survey plus Pushaw Pond in October 1940; the white perch food and age data add 1938 collections from the Saco and Presumpscot drainages",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Things the rewrite may want: (1) Cooper's lakes were mostly clear (44 of 53 \"white\" water) and held smelt and golden shiner, so they differ from Hot Brook in the ways the paper notes. (2) Cooper's \"Red-bellied Sunfish (Lepomis auritus)\" is the redbreast sunfish: 19 by gill net and 177 by seine in these lakes, plus 13 hybrids with pumpkinseed (pp. 103, 121), relevant to §3.5.3's \"uncommon to rare in lakes\". (3) Appendix A's Anasagunticook bass ate 45 % crayfish (see the crayfish claim). (4) The white perch growing season began in the first or second week of July (scale annuli, p. 154). (5) The OCR text misaligns table columns under pdftotext -layout; the raw order (-raw) or the page image was used for every table value above."
+}

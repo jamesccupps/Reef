@@ -40,7 +40,29 @@ export function check(e, file = '') {
     if (c.verdict === 'unsupported' && !c.note) warn.push(`${at}: unsupported without a note saying what the source does say`);
   });
   if (/^read-/.test(e.status) && Array.isArray(e.claims) && e.claims.length === 0) warn.push('read but no claims recorded');
+  // each quote should be in the fetched text (a guard against a quote made up or remembered); one read off a page image says so
+  const T = textOf(e.key);
+  if (T && Array.isArray(e.claims)) e.claims.forEach((c, i) => {
+    if (!c.quote || c.quote_from === 'image' || !['confirmed', 'corrected'].includes(c.verdict)) return;
+    const q = norm(c.quote); if (!q) return;
+    if (T.includes(q)) return;
+    if (c.quote_from === 'table') {   // cells of a table row: every number in the quote must be in the text
+      const nums = (c.quote.match(/\d+(?:[.,]\d+)?/g) || []).map(x => x.replace(',', '.')), miss = nums.filter(x => !T.includes(x));
+      if (miss.length) warn.push(`claims[${i}].quote (table) has numbers not in the fetched text: ${miss.slice(0, 6).join(', ')}`); return;
+    }
+    const w = q.split(' '), sh = []; for (let k = 0; k + 2 < w.length; k++) sh.push(w.slice(k, k + 3).join(' '));
+    const hit = sh.length ? sh.filter(s => T.includes(s)).length / sh.length : 0;
+    if (hit < 0.6) warn.push(`claims[${i}].quote not found in the fetched text (${Math.round(hit * 100)} % of its word triples) — check it; mark a table row's cells "quote_from": "table", a page image's "image"`);
+  });
   return { err, warn };
+}
+const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/-\s*\n\s*/g, '').replace(/[^a-z0-9.%]+/g, ' ').replace(/\s+/g, ' ').trim();
+const TXT = new Map();
+function textOf(key) {
+  if (TXT.has(key)) return TXT.get(key);
+  const d = path.join(ROOT, 'docs/research_notes/fetched/v2'); let t = '';
+  for (const f of fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.startsWith(key) && f.endsWith('.txt')) : []) t += ' ' + fs.readFileSync(path.join(d, f), 'utf8');
+  const n = t ? norm(t.replace(/^=== p\..*$/gm, ' ')) : ''; TXT.set(key, n); return n;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

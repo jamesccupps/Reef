@@ -1,0 +1,30 @@
+{
+  "key": "Brett_Benjamin_2008",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref's year 2007 is the online date; volume 53(1): 194–211 is the January 2008 issue"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-3",
+      "claim": "retention model TP = TP_in/(1 + 1.12 τ^0.47), so R = 1 − TP/TP_in; R = 0.38 for Upper and 0.32 for Lower (the paper itself flags the form as \"recalled, unverified\")",
+      "verdict": "unchecked",
+      "note": "only the arithmetic could be checked: with τ = 0.274 and 0.151 yr the stated form gives R = 0.379 and 0.315, as the table says; the form itself is unverified"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1365-2427.2007.01862.x", "status": 403, "note": "OpenAlex and Semantic Scholar list this as a free (bronze) copy, but Wiley refuses scripts; a person in a browser can probably read it free" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2427.2007.01862.x", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/j.1365-2427.2007.01862.x\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28Freshwater+Biology%29+AND+year%3A2008", "status": 200, "note": "only the volume's index, not the issue" },
+    { "url": "web search for an author or repository copy", "status": "none", "note": "no copy found on university or repository sites" }
+  ],
+  "notes": "Highest-value manual fetch in this batch: the copy is free to read on Wiley in a browser (https://doi.org/10.1111/j.1365-2427.2007.01862.x), so the human can save the PDF and a reader can check the coefficients (1.12, 0.47) in minutes. Search-engine summaries say the paper's best fit made the loss rate σ an inverse function of hydraulic residence time, which matches the form's shape, but that is not evidence for the coefficients."
+}

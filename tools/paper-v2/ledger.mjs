@@ -68,35 +68,46 @@ for (const r of refs) {
 }
 const PARTS = [['README.md', 'abstract'], ['01_introduction_and_study_system.md'], ['02_synthesis_physical_to_plants.md'],
   ['03_synthesis_fish_to_forest.md'], ['04_model_and_lessons.md'], ['05_discussion.md']];
-const cites = new Map(refs.map(r => [r.key, { sections: new Set(), contexts: [] }]));
-// the parts are hard-wrapped, so citations are matched in whole paragraphs (and single table rows), and each context is the
-// sentence(s) around the citation within its paragraph
-const scan = (text, where) => {
+const cites = new Map(refs.map(r => [r.key, { sections: new Set(), contexts: [], mentions: [] }]));
+// the parts are hard-wrapped, so citations are matched in whole paragraphs (and single table rows); each context is the whole
+// paragraph or row (up to 3,000 characters), with its file and first line, so a reader sees every claim it makes
+const PARAS = [];   // every paragraph and row: { where, at, text } — for the follow-on mentions below
+const scan = (text, where, at) => {
   text = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').trim();
+  if (!text) return;
+  PARAS.push({ where, at, text });
   if (!/(1[5-9]|20)\d{2}|n\.d\./.test(text)) return;
   for (const r of refs) {
-    const m = r.rx.exec(text); if (!m) continue;
+    if (!r.rx.test(text)) continue;
     const c = cites.get(r.key); c.sections.add(where);
-    if (c.contexts.length >= 12) continue;
-    const i = m.index, a = Math.max(0, text.lastIndexOf('. ', Math.max(0, i - 450)) + 1), b0 = text.indexOf('. ', i + m[0].length + 120);
-    c.contexts.push({ where, text: text.slice(a, b0 < 0 ? text.length : Math.min(b0 + 1, i + 700)).trim() });
+    if (c.contexts.length < 16) c.contexts.push({ where, at, text: text.length > 3000 ? text.slice(0, 3000) + ' […]' : text });
   }
 };
 for (const [file, fixed] of PARTS) {
-  let sec = fixed || '', inAbstract = false, para = [], tableAt = null;
-  const flush = () => { if (para.length) scan(para.join(' '), tableAt || sec); para = []; };
+  let sec = fixed || '', inAbstract = false, para = [], paraAt = 0, tableAt = null, ln = 0;
+  const flush = () => { if (para.length) scan(para.join(' '), tableAt || sec, `docs/paper/${file}:${paraAt}`); para = []; };
   for (const line of read(`docs/paper/${file}`).split('\n')) {
+    ln++;
     const h = /^#{1,4}\s+(\d+(?:\.\d+)*)\b/.exec(line);
     if (file === 'README.md') { if (/^## Abstract/.test(line)) inAbstract = true; else if (/^## /.test(line)) { flush(); inAbstract = false; } if (!inAbstract) continue; sec = 'abstract'; }
     if (/^#{1,4}\s/.test(line)) { flush(); tableAt = null; if (h) sec = '§' + h[1]; else if (/^#{1,2}\s+(Data and code|Acknowledg)/.test(line)) sec = 'back matter'; continue; }
     if (!line.trim()) { flush(); continue; }
     const tb = /^\*\*Table ([\d.\-]+)\.?\*\*/.exec(line);
     if (tb) { flush(); tableAt = `Table ${tb[1]}`; }
-    if (/^\s*\|/.test(line)) { flush(); scan(line, tableAt || sec); continue; }   // a table row on its own
+    if (/^\s*\|/.test(line)) { flush(); scan(line, tableAt || sec, `docs/paper/${file}:${ln}`); continue; }   // a table row on its own
     if (tableAt && !tb && !/^\s*\|/.test(line) && para.length === 0 && !/^\*\*Table/.test(line)) tableAt = null;   // prose after a table
+    if (!para.length) paraAt = ln;
     para.push(line);
   }
   flush();
+}
+// follow-on mentions: paragraphs in a section that cites the entry which name its first author without the year ("Cooper's
+// tables", "in Dudley and Trial's model") — the paper often goes on using a source without citing it again
+for (const r of refs) {
+  const c = cites.get(r.key); if (!c.sections.size || !r.surnames.length) continue;
+  const nm = new RegExp(`(?<![\\p{L}])${esc(r.first)}(?:['’]s)?(?![\\p{L}])`, 'u'), seen = new Set(c.contexts.map(x => x.at));
+  for (const p of PARAS) if (c.sections.has(p.where) && !seen.has(p.at) && nm.test(p.text) && !r.rx.test(p.text) && c.mentions.length < 8)
+    c.mentions.push({ where: p.where, at: p.at, text: p.text.length > 1500 ? p.text.slice(0, 1500) + ' […]' : p.text });
 }
 
 // ---------- where the model's code cites each entry ----------
@@ -110,14 +121,14 @@ for (const f of CODE) {
   const ls = read(f).split('\n');
   ls.forEach((line, i) => {
     if (!/(1[5-9]|20)\d{2}/.test(line) || !/\/\/|\/\*|\*/.test(line)) return;
-    for (const r of refs) if (r.surnames.length && r.rx.test(line)) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: line.trim().slice(0, 300) }); }
+    for (const r of refs) if (r.surnames.length && r.rx.test(line)) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: (ls[i - 1] && /^\s*\/\//.test(ls[i - 1]) ? ls[i - 1].trim() + ' ⏎ ' : '') + line.trim().slice(0, 2000) }); }
   });
 }
 
 // ---------- tiers ----------
 for (const r of refs) {
   const c = cites.get(r.key), s = [...c.sections];
-  r.sections = s; r.contexts = c.contexts; r.code = code.get(r.key);
+  r.sections = s; r.contexts = c.contexts; r.mentions = c.mentions; r.code = code.get(r.key);
   const inModel = r.code.length > 0 || s.some(x => /^§4(\.|$)|^Table 4/.test(x));
   const inHead = s.some(x => x === 'abstract' || /^§5\.1(\.|$)|^§6(\.|$)/.test(x));
   const flagged = r.flags.some(f => f !== 'no-doi-url') || c.contexts.some(x => /abstract only|search summary|\bvia\b|second-hand|not re-read|unverified|citation incomplete|sources disagree/i.test(x.text));
@@ -159,7 +170,7 @@ for (const r of refs) {
 fs.writeFileSync(LEDGER, out.join('\n') + '\n');
 fs.mkdirSync(P('tools/paper-v2/out'), { recursive: true });
 fs.writeFileSync(P('tools/paper-v2/out/refs.json'), JSON.stringify(refs.map(r => ({ key: r.key, label: `${r.label} ${r.year}`, tier: r.tier, citation: r.cit,
-  doi: r.doi, url: r.url, flags: r.flags, sections: r.sections, contexts: r.contexts, code: r.code })), null, 1));
+  doi: r.doi, url: r.url, flags: r.flags, sections: r.sections, contexts: r.contexts, mentions: r.mentions, code: r.code })), null, 1));
 
 if (!QUIET) {
   const by = k => refs.reduce((m, r) => (m[r[k]] = (m[r[k]] || 0) + 1, m), {});

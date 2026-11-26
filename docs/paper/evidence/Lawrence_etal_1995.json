@@ -1,0 +1,40 @@
+{
+  "key": "Lawrence_etal_1995",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article, as captured from aslo.org by the Internet Archive's Wayback Machine on 22 Jun 2006 (Wiley, today's host, refuses scripts with 403)",
+    "url": "http://web.archive.org/web/20060622201438id_/http://aslo.org:80/lo/toc/vol_40/issue_8/1519.pdf",
+    "file": "docs/research_notes/fetched/v2/Lawrence_etal_1995.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"Limnol. Oceanogr., 40(8), 1995, 1519-1526\")",
+    "ok": true,
+    "corrections": "",
+    "note": "published in the journal's Notes section; authors, title, volume, issue and pages all match"
+  },
+  "claims": [
+    {
+      "paper": "§4.3; src/w3/env3.js:41",
+      "claim": "grid-scale horizontal diffusivity K = 3.6 × 10⁻⁴ L^1.07 m² s⁻¹ (code: 3.6e-4 × 50^1.07 ≈ 0.024 m²/s at the 50-m cell)",
+      "source_value": "3.6 × 10⁻⁴ ℓ^1.07 is the fit to the Twin West Lake central releases alone (N = 37); the authors' line for all three data sets (N = 105) is K = 3.2 × 10⁻⁴ ℓ^1.10 (eq. 8)",
+      "location": "p. 1524 (PDF p. 6), Table 2; eq. 8 on p. 1525 (PDF p. 7)",
+      "quote": "Twin West, central (TW) 37 3.6 x 10-4 1.07 0.06 0.95",
+      "conditions": "apparent diffusivity of dye patches against patch size ℓ = 3σ_rc (m), α in m^(2−β) s⁻¹; central dye releases in the epilimnion (~3 m) of Twin West Lake, a small sheltered oligotrophic lake in British Columbia, 2, 18 and 24 August 1988, wind ~1 m/s; Twin West patch sizes ~10–50 m (Table 1)",
+      "verdict": "confirmed",
+      "note": "the digits are the Twin West-only regression, not the paper's headline relation; at ℓ = 50 m the two give the same K (≈0.024 m²/s), and the authors put the 95 % band at a factor of ~2.5 either side. A grid cell is not a dye patch: using ℓ = cell size is the project's choice"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://doi.org/10.4319/lo.1995.40.8.1519", "status": "closed", "note": "OpenAlex: no open copy known (publisher page for a library login)" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1995.40.8.1519", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1995.40.8.1519", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://aslo.org/lo/toc/vol_40/issue_8/1519.pdf", "status": 404, "note": "ASLO's old free-PDF address, now gone" },
+    { "url": "http://www.aslo.org/lo/pdf/vol_40/issue_8/1519.pdf", "status": 404, "note": "older ASLO pattern, gone" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.4319/lo.1995.40.8.1519?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.4319/lo.1995.40.8.1519\"&format=json&resultType=core", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Table 2 rows (read from the raw text order; the -layout extraction misaligns them): Okubo N 57, 2.8e-4, β 1.10; Murthy N 11, 6.6e-5, 1.35; Twin West central N 37, 3.6e-4, 1.07; Okubo+Murthy N 68, 2.5e-4, 1.13; all three N 105, 3.2e-4, 1.10 (r 0.99), which the abstract calls valid from 10 m to more than 100 km. If the rewrite wants the authors' recommended relation, cite eq. 8 (3.2 × 10⁻⁴ ℓ^1.1); the model's value does not change at 50 m. Shore releases dispersed faster than central ones (Table 1, K up to ~0.02 m²/s)."
+}

@@ -1,0 +1,94 @@
+{
+  "key": "Kitchell_etal_1977",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive, public download without login: the whole October 1977 issue (vol. 34 no. 10, the PERCIS symposium issue) from its Serials in Microfilm collection; the article is PDF pp. 480–493. Table 1's values are missing from the scan's OCR layer, so they were read from the page image (rendered locally)",
+    "url": "https://archive.org/details/sim_canadian-journal-of-fisheries-and-aquatic-sciences_1977-10_34_10",
+    "file": "docs/research_notes/fetched/v2/Kitchell_etal_1977.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"J. Fish. Res. Board Can. 34: 1922-1935\")",
+    "ok": true,
+    "corrections": "",
+    "note": "issue 10 per the Internet Archive item and Crossref; part of the Proceedings of the Percid International Symposium (PERCIS)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (yellow perch, FB4 set)",
+      "claim": "adult and juvenile sets (Kitchell et al. 1977; CTO 23 and 29 °C)",
+      "source_value": "23 °C is the optimum for \"juveniles and adults\"; 29 °C is for \"young-of-year\" only (used for first-year growth)",
+      "location": "p. 1925 (PDF p. 483), Table 1; p. 1931 (PDF p. 489)",
+      "quote": "Optimum temperature for consumption young-of-year 29°C juveniles and adults 23°C",
+      "conditions": "parameters estimated from the literature, mostly Perca fluviatilis laboratory data (Solomon & Brafield 1972) assumed to apply to P. flavescens",
+      "verdict": "corrected",
+      "note": "label the 29 °C set young-of-year, not juvenile (FB4 calls it \"juvenile\"). The code applies it to fish under a year old (world.js:49), which matches the source"
+    },
+    {
+      "paper": "Table 4.3; src/species.js:288-290",
+      "claim": "FB4 yellow perch adult set: CA 0.25, CB −0.27, CQ 2.3, CTO 23, CTM 28; RB −0.2, RQ 2.1, RTO 28, RTM 33; SDA 0.15; ACT 1; FA 0.158, FB −0.222, FG 0.631; UA 0.0292, UB 0.58, UG −0.299",
+      "location": "p. 1925 (PDF p. 483), Table 1; A = 1.0 on p. 1927 (PDF p. 485)",
+      "quote": "Intercept for maximum consumption 0.25 Slope for maximum consumption −0.27",
+      "conditions": "per-day rates in biomass equivalents; Winberg I activity (\"all simulations presented herein assume a Winberg I model (A = 1.0)\"); egestion/excretion from Elliott's brown trout equations fitted to P. fluviatilis eating Gammarus at 14 °C; the 28 °C consumption maximum and respiration optimum were \"arbitrarily chosen\" as the midpoint of 23 and 33 °C",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:289 (RA)",
+      "claim": "RA 0.0108 (Kitchell et al. 1977, FB4 adult)",
+      "source_value": "a2 = 0.035, the maximum standard respiration of a 1-g fish as a proportion of body weight per day (biomass equivalents)",
+      "location": "p. 1925 (PDF p. 483), Table 1",
+      "quote": "Intercept for maximum standard respiration 0.035",
+      "conditions": "respiration at the optimum temperature for respiration, standard (Winberg I) level",
+      "verdict": "corrected",
+      "note": "0.0108 is not printed here: it equals 0.035 × 4,186 J/g ÷ 13,560 J/g O₂ (project arithmetic), i.e. FB4's conversion to g O₂ g⁻¹ d⁻¹. The model value is consistent; only the attribution should say \"as converted in FB4\""
+    },
+    {
+      "paper": "src/species.js:290 (ED 4186 in the set labelled Kitchell et al. 1977)",
+      "claim": "predator energy density 4,186 J/g",
+      "verdict": "unsupported",
+      "note": "the model is written in biomass equivalents and gives no energy density; 4,186 J/g (1 kcal/g) must come from FB4 or elsewhere"
+    },
+    {
+      "paper": "src/species.js:291, 305, 344 (bioJuv)",
+      "claim": "juvenile set CTO 29, CTM 32, RTO 32, RTM 35",
+      "location": "p. 1925 (PDF p. 483), Table 1",
+      "quote": "Maximum temperature for standard respiration young-of-year 35°C juveniles and adults 33°C",
+      "conditions": "young-of-year values; \"young-of-the-year fish were used for first-year growth\", all older fish physiologically adult (p. 1931)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/bioenergetics.js:20 (CEQ 2)",
+      "claim": "Kitchell consumption-temperature curve: warm-water, peaks at CTO, 0 at/above CTM",
+      "location": "p. 1923 (PDF p. 481), eq. 2",
+      "quote": "declines rapidly to zero at the maximum temperature",
+      "conditions": "r_c = V^X·e^(X(1−V)), V = (Tm − T)/(Tm − To), with W and Y from ln Q, (Tm − To); maximum 1.0 at To",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/bioenergetics.js:62 (REQ 2)",
+      "claim": "Kitchell respiration: the same curve peaking at RTO and falling to ~0 at RTM, times a constant activity multiplier ACT",
+      "location": "p. 1924 (PDF p. 482), eq. 3",
+      "quote": "adjustment of respiration similar to r of equation 2 but with different parameter values",
+      "conditions": "R = Rmax·A·r_r + S·C; A = activity multiple of standard respiration (A = 2.0 is Winberg II)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:300; Table 4.3 (white perch); src/species.js:333",
+      "claim": "the yellow perch set (23 °C optimum, 28 °C cutoff) stands in for white sucker and white perch",
+      "location": "p. 1925 (PDF p. 483), Table 1",
+      "quote": "Maximum temperature for consumption young-of-year juveniles and adults 32°C 28°C",
+      "conditions": "values for yellow perch; the stand-in use is the project's",
+      "verdict": "confirmed",
+      "note": "the source says nothing about suckers or white perch; the match to their thermal ranges is the project's argument"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f77-258", "status": "closed", "note": "OpenAlex: closed, no repository copy (publisher page for a library login)" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f77-258", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "http://www.nrcresearchpress.com/doi/pdf/10.1139/f77-258", "status": 403, "note": "old publisher address, refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f77-258?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" }
+  ],
+  "notes": "Kitchell et al. varied the egestion intercept with diet: 0.158 for invertebrate prey but 0.10 to 0.05 for fish prey in their Lake Erie runs (Table 3, p. 1931, from Kelso 1972); FB4's single FA 0.158 overstates egestion for piscivorous perch if the model uses it for all diets. Cmax was not measured for perch or walleye: a1 = 0.25 was extrapolated (Brett's method). The 23 °C optimum is from Schneider (1973) and equals the final preferendum (Neill & Magnuson 1974). The fetch came from the Internet Archive's Serials in Microfilm collection, an in-copyright journal it serves openly: the human may want to confirm that source is acceptable."
+}

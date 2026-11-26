@@ -1,0 +1,67 @@
+{
+  "key": "Doda_etal_2022",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Copernicus, CC BY 4.0)",
+    "url": "https://hess.copernicus.org/articles/26/331/2022/hess-26-331-2022.pdf",
+    "file": "docs/research_notes/fetched/v2/Doda_etal_2022.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "at Rotsee, Switzerland, thermal siphons ran on 37 % of days",
+      "source_value": "85 of the 227 days with continuous measurements (March 2019–February 2020)",
+      "location": "p. 339 (PDF p. 9), §3.3",
+      "quote": "over which 85 d (37 %) were reported as TS events",
+      "conditions": "days with mooring data at the 4.2-m TS mooring, not all 365 days; none before 28 July, ~50 % in August, 87 % in November, 38 % in December, none later that (warm) winter",
+      "verdict": "confirmed",
+      "note": "say \"37 % of the 227 days measured\"; the abstract's own summary is \"more than 50 % of the days from late summer to winter\""
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "the siphons flushed a 1-m-deep plateau in about 10 h",
+      "source_value": "flushing timescale τF ≈ 9.7 ± 2.7 h for the littoral region upslope of the 4.2-m mooring (length 295 m, mean depth 1.7 m), which contains the ~1-m-deep, 173-m plateau; ~7 h in summer, ~20 h in winter",
+      "location": "p. 340 (PDF p. 10), §3.4–3.5; Table 1 on p. 337 (PDF p. 7)",
+      "quote": "a flushing timescale of τF ≈ 9.7 ± 2.7 h",
+      "conditions": "Rotsee (small, wind-sheltered, elongated); unit-width volume V_lit ≈ 499 m²; τF = V_lit/q_avg",
+      "verdict": "corrected",
+      "note": "the region flushed is the 1.7-m-average littoral zone, not the 1-m plateau alone"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "the same scaling gives about 5.5 h for a Hot Brook cove (project estimate)",
+      "source_value": "the scaling is τF = Vlit/qavg ≈ 2.99·Llit/(B0·LML)^1/3 (R² = 0.18; 95 % CI of the coefficient 2.83–3.15)",
+      "location": "p. 340 (PDF p. 10), §3.4; p. 346 (PDF p. 16), conclusions",
+      "quote": "τF = 2.99·Llit/(B0LML)1/3 (R2 = 0.18)",
+      "conditions": "fitted to Rotsee's TS events; B0 the surface buoyancy flux, LML the length of the mixed region",
+      "verdict": "confirmed",
+      "note": "only the scaling is the source's; the 5.5-h Hot Brook figure is project arithmetic and was not rechecked here. The fit is weak (R² 0.18)"
+    },
+    {
+      "paper": "§4.3; src/w3/env3.js:42-44",
+      "claim": "a night thermal siphon down the slopes at 0.9 cm/s on calm nights (code: ~0.9 cm/s, peaks 2.6, with a surface return)",
+      "source_value": "daily average cross-shore velocity 0.9 ± 0.2 cm/s; daily maximum 2.6 ± 0.7 cm/s, in the morning; a surface reverse flow returns pelagic water to the littoral",
+      "location": "p. 340 (PDF p. 10), §3.4; return flow p. 332 (PDF p. 2)",
+      "quote": "The daily average velocity Uavg ≈ 0.9 ± 0.2 cm s−1",
+      "conditions": "TS days at Rotsee, depth-averaged over the bottom 3 m at the 4.2-m mooring; events counted only with weak wind (|L_MO|/h_ML < 0.5) and U > 0.5 cm/s for ≥ 2 h",
+      "verdict": "confirmed",
+      "note": "the flow peaks in the morning, after the night's cooling phase, so \"night\" is approximate"
+    },
+    {
+      "paper": "src/w3/env3.js:43-44 (SIPHON_WIND 5)",
+      "claim": "the wind stops the siphon above ~5 m/s",
+      "verdict": "unsupported",
+      "note": "Doda et al. give no wind-speed threshold; they classify days by a stability ratio (|L_MO|/h_ML < 0.5 = weak wind) and report that wind events from September to December either suppressed the offshore flow or replaced it with wind-driven circulation (p. 344). The 5 m/s is the project's"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Useful values for the rewrite: Rotsee plateau 173 m long, 1 m deep; littoral region 295 m, mean depth 1.7 m, mooring at 4.2 m (Table 1); TS thickness ~1.8 ± 0.2 m; unit-width discharge 0.015 ± 0.004 m²/s; TSs absent before late July because the mixed layer stayed shallower than the mooring depth (stratified flows instead). Rotsee is notably wind-sheltered (a rowing venue), so transfer to Hot Brook's more exposed basins is an assumption."
+}

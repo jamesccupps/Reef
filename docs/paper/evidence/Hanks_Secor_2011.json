@@ -1,0 +1,40 @@
+{
+  "key": "Hanks_Secor_2011",
+  "reader": "pilot batch (7 keys)",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref's year 2010 is the online date; the issue, Marine Biology 158(4): 805–815, is 2011"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white perch, oxygen)",
+      "claim": "≤ 40 % saturation raised juveniles' routine metabolism up to fourfold and cut growth threefold",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "5,724–6,331 J/g in laboratory-fed young white perch of 3–9 g",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/species.js:349",
+      "claim": "white perch are hypoxia-sensitive",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1007/s00227-010-1608-0", "status": "closed", "note": "OpenAlex: no open copy (publisher page for a library login)" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/s00227-010-1608-0.pdf", "status": 200, "note": "redirected to idp.springer.com: a JavaScript \"Client Challenge\" bot check; stopped" },
+    { "url": "https://link.springer.com/article/10.1007/s00227-010-1608-0", "status": 200, "note": "same bot check; stopped" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/s00227-010-1608-0?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/s00227-010-1608-0\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28Marine+Biology%29+AND+year%3A2011", "status": 200, "note": "no Marine Biology 2010–2011 issues" }
+  ],
+  "notes": "An open alternative exists: Hanks's University of Maryland MS thesis on the same experiments (2009, DRUM hdl 1903/9105), fetched to docs/research_notes/fetched/v2/Hanks_2009_thesis.pdf. Its abstract (PDF p. 1) says, in hypoxia (< 40 % saturation), \"metabolic rates increased as much as 4-fold while growth decreased 3-fold\"; the treatments were 20, 40 and ≥ 70 % saturation at 6–28 °C, and its Figs. 17–18 give energy densities. None of this confirms the article's own numbers (thesis values can differ from the paper), so the claims stay unchecked; the rewrite could cite the thesis instead, after a reader checks it. The human can open the article through a library via the DOI."
+}

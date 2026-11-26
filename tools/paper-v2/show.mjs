@@ -14,10 +14,16 @@ const meta = fs.existsSync(path.join(ROOT, 'tools/paper-v2/out/meta.json')) ? J(
 const NOTES = []; const walk = d => { for (const e of fs.readdirSync(path.join(ROOT, d), { withFileTypes: true })) { const f = `${d}/${e.name}`;
   if (e.isDirectory()) { if (e.name !== 'fetched') walk(f); } else if (/\.md$/.test(e.name)) NOTES.push(f); } };
 walk('docs/research_notes'); if (fs.existsSync(path.join(ROOT, 'docs/reports'))) walk('docs/reports');
-for (const key of process.argv.slice(2)) {
+for (const key of process.argv.slice(2)) {   // (top-level await: an ES module)
   const r = refs.get(key); if (!r) { console.log(`\n##### ${key}: NOT IN THE LEDGER`); continue; }
   const mc = path.join(ROOT, 'tools/paper-v2/out/meta', `${key}.json`);   // (the per-entry cache, while meta.mjs is still running)
   const m = meta[key] || (fs.existsSync(mc) ? JSON.parse(fs.readFileSync(mc, 'utf8')) : {});
+  if (!m.crossref && r.doi && m.crossref_status !== 404) {   // no cached record: ask Crossref now (the DOI only)
+    try { const x = await fetch(`https://api.crossref.org/works/${encodeURIComponent(r.doi)}`, { headers: { 'User-Agent': 'synapse-reef-paper-check/1.0' }, signal: AbortSignal.timeout(15000) });
+      if (x.ok) { const q = (await x.json()).message; m.crossref = { title: (q.title || [])[0] || '', authors: (q.author || []).map(a => [a.family, a.given].filter(Boolean).join(', ')), year: q.issued?.['date-parts']?.[0]?.[0] || '',
+        journal: (q['container-title'] || [])[0] || '', volume: q.volume || '', issue: q.issue || '', page: q.page || '', publisher: q.publisher || '' }; m.check = { live: true }; }
+      else m.crossref_status = x.status; } catch { }
+  }
   console.log(`\n##### ${key}  (tier ${r.tier}; flags: ${r.flags.join(' ') || 'none'})`);
   console.log(`CITATION: ${r.citation}`);
   if (r.doi) console.log(`DOI: https://doi.org/${r.doi}`); if (r.url) console.log(`URL in entry: ${r.url}`);
@@ -27,8 +33,13 @@ for (const key of process.argv.slice(2)) {
   if (oa) console.log(`OPEN ACCESS (OpenAlex): ${oa.is_oa ? oa.status : 'none known'}${oa.pdf?.length ? '\n  pdf: ' + oa.pdf.join('\n  pdf: ') : ''}${oa.pages?.length ? '\n  page: ' + oa.pages.join('\n  page: ') : ''}`);
   if (m.candidate) console.log(`CANDIDATE MATCH (no DOI in the entry; confirm it is the same work): "${m.candidate.title}" ${m.candidate.year} ${m.candidate.first_author} doi:${m.candidate.doi || '—'} (title-word score ${m.candidate.score})`);
   console.log(`CITED IN THE PAPER: ${r.sections.join('; ') || '(no in-text match found — search the parts by hand)'}`);
-  for (const c of r.contexts) console.log(`  [${c.where}] …${c.text.replace(/\s+/g, ' ')}…`);
-  if (r.code.length) { console.log('CITED IN THE CODE:'); for (const c of r.code) console.log(`  ${c.at}: ${c.text}`); }
+  console.log('(each block is the whole paragraph or table row that cites it; the claims to check are the parts attributed to this source)');
+  for (const c of r.contexts) console.log(`\n  [${c.where}] ${c.at || ''}\n  ${c.text.replace(/\s+/g, ' ')}`);
+  if (r.mentions?.length) { console.log('\nALSO NAMED WITHOUT THE YEAR, in the same sections (the paper may go on using the source — check these too):');
+    for (const c of r.mentions) console.log(`\n  [${c.where}] ${c.at}\n  ${c.text.replace(/\s+/g, ' ')}`); }
+  if (r.code.length) { console.log('\nCITED IN THE CODE (the whole comment line; ⏎ joins the comment line above):'); for (const c of r.code) console.log(`  ${c.at}: ${c.text}`); }
+  const n = r.contexts.length + (r.mentions?.length || 0) + r.code.length;
+  console.log(`\nCHECKLIST: ${r.contexts.length} citing paragraph(s), ${r.mentions?.length || 0} follow-on mention(s), ${r.code.length} code line(s) — every value in them attributed to this source is a claim.${n > 15 ? ' (A heavy entry: take it slowly.)' : ''}`);
   const first = (r.label.split(/ (?:&|et al\.)| \d/)[0] || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), yr = (/(\d{4}[a-z]?|n\.d\.)$/.exec(r.label) || [])[1] || '';
   if (first && yr) { const rx = new RegExp(`${first}[^\\n]{0,60}${yr.replace('.', '\\.')}`);
     const hits = NOTES.filter(f => rx.test(fs.readFileSync(path.join(ROOT, f), 'utf8'))); if (hits.length) console.log(`RESEARCH NOTES THAT CITE IT: ${hits.slice(0, 8).join(' · ')}${hits.length > 8 ? ` (+${hits.length - 8})` : ''}`); }
