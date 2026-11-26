@@ -1,0 +1,64 @@
+{
+  "key": "Diana_1979b",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article was not obtained. A stand-in on the same data was read: Diana's 1979 PhD thesis (University of Alberta; ledger key Diana_1979a), Internet Archive item Pike1979 (University of Alberta Libraries theses collection, openly downloadable), whose chapter 3, 'The feeding pattern and daily ration of northern pike in Lac Ste. Anne' (printed pp. 53–78), is the article's material",
+    "url": "https://archive.org/download/Pike1979/Pike1979.pdf",
+    "file": "docs/research_notes/fetched/v2/Diana_1979b.thesis.pdf (the stand-in)"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (the article's title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Diana, James S. (1979). The feeding pattern and daily ration of a top carnivore, the northern pike (Esox lucius). Canadian Journal of Zoology 57(11): 2121–2127 — matches the ledger"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "northern pike clear a meal in 48 h in summer but 12 days in winter and eat very little under ice, while females build most of their ovaries in winter (Diana 1979b, 1983, abstracts)",
+      "verdict": "unchecked",
+      "note": "article not read. Stand-in (thesis): gastric evacuation time B was 48 h in summer and 12 days in winter (ch. 3 Results, printed p. 62, PDF p. 149); the abstract specifies 48 h at 14 °C and 12 days at 2 °C (PDF p. 13); winter rations 'very low', mean rations ~20× higher in summer (p. 69); ovarian growth (436 kcal in 3-year-olds) 'continued over winter' (abstract, PDF p. 11) — whether 'most' of it is in winter needs the thesis's Fig. 3 (not checked). Lac Ste. Anne summers are cool: near 16 °C (14–20 °C), winters near 1 °C"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "pike rations peaked in June, and both sexes fasted at spawning",
+      "verdict": "unchecked",
+      "note": "article not read. Stand-in: 'Maximum rations were ingested in June', and rations of both sexes were ~0 from mid-April to May, 'a spawning fast' (thesis printed p. 69, PDF p. 163); Table 12 (p. 68): June ration 18.1 (males) and 30.9 (females) kcal/kg/d"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "with 12-day gastric evacuation, a pike can take only about 0.25–0.4 %BW/d (project estimate from Diana 1979b)",
+      "verdict": "unchecked",
+      "note": "article not read. Stand-in, Table 12 (printed p. 68, PDF p. 161, read on the page image): winter daily ration 0.4 (males) and 0.9 (females) kcal/kg/d, meal size 10.6–21.8 kcal/kg, time between meals 25 days (January 23–34 d, April 59 d). The project's figure appears to assume one meal per 12-day evacuation time; Diana's field fish ate about every 25 days, so the observed winter ration is lower than the estimate unless prey energy density is far below ~1 kcal/g (not computed here)"
+    },
+    {
+      "paper": "src/species.js:384 ('Diana 1979', year letter not given)",
+      "claim": "pike: 50 % of a meal in ~20 h, all in ~48–50 h in summer",
+      "verdict": "unchecked",
+      "note": "stand-in: B = 48 h in summer (at ~14 °C in the experiments); B′ (time until a prey item's ingested mass can no longer be estimated) 30 h summer, 8 d winter (printed p. 62); the 50 %-in-20 h point would have to be read from the evacuation curve (not checked)"
+    },
+    {
+      "paper": "src/w3/fish3.js:153 ('Diana 1979')",
+      "claim": "pike in summer eat a meal of ~3–4 %BW every 2.7 days and are 40–58 % empty",
+      "verdict": "unchecked",
+      "note": "stand-in: summer time between meals 2.8 (males) and 2.7 (females) days (Table 12); meal size is given in kcal/kg (summer 30.8–47.0), not %BW; empty stomachs were 29–62 % of fish each month (printed p. 62)"
+    },
+    {
+      "paper": "src/bioenergetics.js:163 ('Diana 1979')",
+      "claim": "pike in the field take a meal every ~25 days in winter",
+      "verdict": "unchecked",
+      "note": "stand-in: Table 12 'Winter' time between meals 25 days for both sexes"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/z79-279", "status": "n/a", "note": "the DOI; a library login would open it at Canadian Science Publishing" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/z79-279", "status": 403, "note": "publisher refused the script" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/z79-279", "status": 403, "note": "publisher landing page refused the script" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/z79-279\"", "status": 200, "note": "hitCount 0" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(daily ration northern pike)", "status": 200, "note": "no article; a broader search found Diana's thesis (item Pike1979), read as the stand-in" }
+  ],
+  "notes": "The article stays unobtainable and its claims unchecked. The stand-in, Diana's 1979 PhD thesis (= ledger key Diana_1979a; IA item Pike1979, saved here as docs/research_notes/fetched/v2/Diana_1979b.thesis.pdf for the Diana_1979a reader), supports the §3.5.4 evacuation times and the §3.7.4 June peak and spawning fast; recommend citing the thesis (Diana 1979a) for these, or the article once a library copy is read. Condition to carry into the model: the 48-h summer evacuation is at Lac Ste. Anne's ~14–16 °C, cooler than Hot Brook's 22–25 °C summers. The project's 0.25–0.4 %BW/d winter ration looks high against Diana's observed winter feeding (a meal every ~25 days). The code comments citing 'Diana 1979' without a letter mix the feeding paper and the thesis; give the letter."
+}

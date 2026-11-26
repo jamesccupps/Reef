@@ -1,0 +1,42 @@
+{
+  "key": "Adamec_2006",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's own PDF on his institute's site (Institute of Botany, Czech Academy of Sciences, Třeboň; the URL in the ledger entry), via a Wayback Machine capture of 25 Jan 2025 because the site itself timed out; the publisher's layout (Plant Biol. 8 (2006): 765–769), printed p. = PDF p. + 764",
+    "url": "https://web.archive.org/web/20250125061836id_/https://www.butbn.cas.cz/adamec/Utr_Resp.pdf",
+    "file": "docs/research_notes/fetched/v2/Adamec_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page and running heads (Plant Biol. 8 (2006): 765–769) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "L. Adamec; issue 6 from Crossref; received 28 Sep 2005, accepted 10 Aug 2006"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7",
+      "claim": "bladderwort traps are 1–4 mm long",
+      "location": "p. 765 (PDF p. 1), Introduction",
+      "quote": "usually 1 – 4 mm long (Sydenham and Findlay, 1975; Juniper et al.,",
+      "conditions": "background statement citing Sydenham & Findlay 1975 and Juniper et al. 1989; the bladder is 'a hollow utricle, mostly two cells thick, filled with water'",
+      "verdict": "confirmed",
+      "note": "Adamec relays it from earlier work"
+    },
+    {
+      "paper": "§3.4.7",
+      "claim": "traps make up 10–55 % of plant dry mass",
+      "location": "p. 765 (PDF p. 1), Introduction (the Abstract says 10–50 %)",
+      "quote": "about 10 – 55 % of the total plant biomass",
+      "conditions": "'In aquatic Utricularia species with homogeneous shoots, about 10–55 % of the total plant biomass (DW) is formed by bladders' (citing Friday 1992; Knight 1992; Richards 2001 and others); the Abstract rounds it to 'about 10 – 50%'",
+      "verdict": "confirmed",
+      "note": "a literature range Adamec cites, for species with undifferentiated (homogeneous) shoots such as U. vulgaris; '(reviewed by Adamec 2006)' would be exact"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.butbn.cas.cz/adamec/Utr_Resp.pdf", "status": "error", "note": "UND_ERR_CONNECT_TIMEOUT (also over http); the Wayback capture of the same file was used" }
+  ],
+  "notes": "Both values check as Adamec's literature summary. His own data (20 °C, 0.20 mM CO2, 400 µmol m⁻² s⁻¹ PAR, six species): dark respiration of bladders 5.1–8.6 mmol O2 kg⁻¹ FW h⁻¹, 75–200 % above that of leaves (1.7–6.1); net photosynthesis of leaves/shoots 40–117 vs bladders 5.2–14.7 mmol kg⁻¹ FW h⁻¹ (7–10× lower in bladders); bladders 4.1–6.0 % dry matter. These matter if the model charges a respiration cost for traps."
+}

@@ -1,0 +1,95 @@
+{
+  "key": "Snow_1978",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "UW–Madison Libraries Digital Collections (Wisconsin DNR Technical Bulletins collection), openly downloadable scan with OCR text, record https://digital.library.wisc.edu/1711.dl/KH4D4DMC2EZ3J9E. PDF p. 1 is the library's cover sheet; printed page = PDF page − 3 for the body (Table 7 is printed p. 16 = PDF p. 19)",
+    "url": "https://asset.library.wisc.edu/1711.dl/2B3XVRMR62PEK8V/E/file-11156.pdf?dl",
+    "file": "docs/research_notes/fetched/v2/Snow_1978.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 4) and the cover",
+    "ok": false,
+    "corrections": "Give the full citation: Snow, H. E. 1978. A 15-year study of the harvest, exploitation, and mortality of fishes in Murphy Flowage, Wisconsin. Technical Bulletin No. 103. Wisconsin Department of Natural Resources, Madison. 22 pp.",
+    "note": "author Howard E. Snow; the ledger's '(Murphy Flowage)' stands in for the title"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (yellow perch)",
+      "claim": "natural A ≈ 55–70 % in two Midwest lakes (Snow 1978; Schneider 1973a) — Snow's part: ~55 %",
+      "location": "p. 16 (PDF p. 19), Table 7",
+      "quote": "Yellow perch 61 (34-90) 5 (2- 6) 4 ( 2- 7) 55 (28-86)",
+      "quote_from": "table",
+      "conditions": "Murphy Flowage (180 acres, ~73 ha), 1955–69 averages; natural mortality v (Ricker's notation) 55 % (annual range 28–86), total mortality A 61 % (34–90), angling exploitation u 5 %; from Petersen estimates of fin-clipped fish, perch marked each spring at ≥ 5.0 in (12.7 cm) TL; largemouth bass and northern pike present, muskellunge stocked",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (pumpkinseed)",
+      "claim": "total A 68–72 % (Schneider 1973a; Snow 1978) — Snow's part: 72 %",
+      "location": "p. 16 (PDF p. 19), Table 7 and text",
+      "quote": "Pumpkinseed 72 (59-87) 8 (3-18) 31 (28-34) 60 (43-76)",
+      "quote_from": "table",
+      "conditions": "total mortality A 72 % (59–87), highest of the panfish; natural 60 %; angling 8 %; pumpkinseed marked at ≥ 4.0 in TL; 1955–69",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "a Wisconsin flowage drew 182 angler-hours per hectare per year",
+      "kind": "arithmetic",
+      "location": "Abstract (PDF p. 3); p. 4 (PDF p. 7), Hours Fished",
+      "quote": "On the average each year, anglers fished 73.6 hours per acre",
+      "conditions": "compulsory registration creel census, 30 Apr 1955 – 31 May 1970; 13,242 hours a year on 180 acres",
+      "verdict": "confirmed",
+      "note": "73.6 h/acre × 2.471 = 181.9 h/ha (the project's conversion is right)"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "the flowage was fished at about the average for north-central waters",
+      "location": "p. 5 (PDF p. 8), Pressure",
+      "quote": "about average as compared to",
+      "conditions": "'could be considered about average as compared to other north central waters but above average when compared to waters in sparsely populated areas'; far below the 567 h/acre of 12 intensively managed Alabama lakes (p. 4)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "a Wisconsin flowage open to unlimited harvest",
+      "location": "p. 4 (PDF p. 7), Methods",
+      "quote": "closed fishing season and neither a bag",
+      "conditions": "'There was no closed fishing season and neither a bag limit nor size limit was in effect on Murphy Flowage at any time'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "angling took only 5 % of yellow perch, 8 % of pumpkinseed and 2 % of brown bullhead a year against natural mortality of 48–60 %; only largemouth exploitation (27 %) exceeded natural mortality",
+      "location": "p. 16 (PDF p. 19), Table 7 and text",
+      "quote": "largemouth bass is the only species for",
+      "conditions": "Table 7: angling u — yellow perch 5, pumpkinseed 8, brown bullhead 2 (natural v 55, 60, 48); largemouth bass u 27 vs v 21 ('the only species for which the rate of exploitation exceeded the natural mortality rate'); northern pike u 26 vs v 40; bullhead marked at ≥ 8.0 in; 1955–69 means",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "in Wisconsin's Murphy Flowage natural losses of yellow perch were about 55 % (values decoded from poor optical character recognition)",
+      "location": "p. 16 (PDF p. 19), Table 7",
+      "quote": "Yellow perch 61 (34-90) 5 (2- 6) 4 ( 2- 7) 55 (28-86)",
+      "quote_from": "table",
+      "conditions": "as above: perch ≥ 5.0 in (12.7 cm) TL, not ≥ 7.5 cm (the paragraph's lead-in size); annual range 28–86 %",
+      "verdict": "confirmed",
+      "note": "the page image is clear and the OCR of Table 7 is right: drop 'values decoded from poor optical character recognition'. Note also that Murphy Flowage was not lightly fished (about average for north-central waters), though the paragraph groups it with 'lightly fished small lakes'"
+    },
+    {
+      "paper": "src/w3/fish3.js:943",
+      "claim": "field: Murphy Flowage's heavy, unlimited fishery took 2–12 % of its panfish a year",
+      "source_value": "panfish angling exploitation 2–18 % (bullhead 2, yellow perch 5, pumpkinseed 8, black crappie 11, bluegill 12, rock bass 18; mean 9 %); pressure was 'about average' for north-central waters, not heavy; 'unlimited' (no season, bag or size limits) is right",
+      "location": "p. 16 (PDF p. 19), Table 7",
+      "quote": "Rock bass 44 (24-62) 18 (6-28) 26 (26-26) 23 ( 5-46)",
+      "quote_from": "table",
+      "verdict": "corrected"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://search.library.wisc.edu/digital/AKH4D4DMC2EZ3J9E", "status": 200, "note": "record page (JavaScript viewer, no direct PDF link); the asset PDF was found by search" }
+  ],
+  "notes": "Every paper value checks; the citation needs completing, the OCR caveat in §3.7.6 can go, and the code's 'heavy … 2–12 %' should be 'about average … 2–18 %'. Other useful values: total annual mortality 57 % for all species, panfish and game fish alike; natural mortality averaged 46 % for panfish, 30 % for game fish; estimated natural mortality in the absence of fishing 49 % (all species); 1.88 fish an hour; winter (ice) catch 4.2 fish/h vs 1.6 in summer; the 10 % most successful anglers took 50 % of the fish; bass exploitation rose in 1968–69 with a crayfish decline and a winter drawdown that reduced vegetation (Snow 1971)."
+}

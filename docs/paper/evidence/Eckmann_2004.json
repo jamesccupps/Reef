@@ -1,0 +1,50 @@
+{
+  "key": "Eckmann_2004",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's institutional repository copy (KOPS, University of Konstanz; 'First publ. in: Journal of Fish Biology 65 (2004), pp. 1498–1511'), the publisher's layout. PDF p. N = printed 1497 + N (p. 9 = printed 1506). The text layer garbles · and ± (as 'Á' and 'Æ'), so the numbers were read on the page image",
+    "url": "https://kops.uni-konstanz.de/bitstreams/14e90056-fc51-4867-8d83-1fcc328a11c9/download",
+    "file": "docs/research_notes/fetched/v2/Eckmann_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "R. Eckmann, Journal of Fish Biology 65: 1498–1511 (2004); issue 6 from Crossref. The article prints doi:10.1111/j.1095-8649.2004.00553.x, while Crossref and the ledger have 10.1111/j.0022-1112.2004.00553.x (Crossref's record matches the title); keep the ledger's, but either form may be met"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-7 (yellow perch, Lake St. George)",
+      "claim": "autumn cohorts 61 ± 5 and 71 ± 4 mm (Post & Evans 1989 via Eckmann 2004)",
+      "location": "p. 1506 (PDF p. 9), Discussion",
+      "quote": "60·7 ± 4·7 and 71·4 ± 4·1 mm for two cohorts",
+      "quote_from": "image",
+      "conditions": "mean ± s.d. TOTAL length (LT) 'at the start of winter', two cohorts, Lake St George, Canada (mean depth 5.7 m); relayed from Post & Evans 1989 without a table or year",
+      "verdict": "confirmed",
+      "note": "rounded correctly; say 'TL at the start of winter, mean ± SD'"
+    },
+    {
+      "paper": "Table 3.6-9 (yellow perch, Lake St. George)",
+      "claim": "154 days < ~6 °C; cohort of 60.7 mm: 76 % mortality; 71.4 mm: 42 % (starvation-model values as reported by Eckmann; whether observed is unclear)",
+      "location": "p. 1506 (PDF p. 9), Discussion",
+      "quote": "mortality was 76 and 42% for the yellow perch cohorts in Lake St George",
+      "conditions": "winter duration '154 ± 8 days' = days with mean epilimnetic temperature ≤ 6 °C (read on the image); the sentence follows 'this model estimated a total cohort mortality of only 0·6% after 153 days' for Lake Constance, so it does not say whether 76 and 42 % are Post & Evans's observed or modelled values; the pairing with 60.7 and 71.4 mm is by order of mention",
+      "verdict": "confirmed",
+      "note": "the paper's caveat is exactly right. Only Post & Evans (1989, CJFAS) can settle observed vs modelled; until then keep 'as reported by Eckmann'"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "size-selective winter loss did not appear in central European Eurasian perch (Radke & Eckmann 1999, via Eckmann 2004)",
+      "location": "p. 1499 (PDF p. 2), Introduction; p. 1506 (PDF p. 9), Discussion",
+      "quote": "overwinter mortality is probably insignificant for perch in temperate central European lakes",
+      "conditions": "Radke & Eckmann (1999) inferred this from length distributions of age-0 perch in small, mainly shallow northern German lakes, attributing it to winter feeding (not verified by stomachs); Eckmann's own Lake Constance data (age-0 perch 91.0 ± 9.3 mm at the start of winter, wintering at 40–80 m) showed no size-selective mortality and no evidence of overwinter mortality",
+      "verdict": "confirmed",
+      "note": "Radke & Eckmann 'suggested' insignificant overwinter mortality (not a test of size selection); Eckmann 2004's own Lake Constance result is the direct evidence and can be cited in its own right"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Lead checked: Eckmann relays Post & Evans 1989 only in one Discussion paragraph (p. 1506): start-of-winter TL of two Lake St George cohorts (60.7 ± 4.7 and 71.4 ± 4.1 mm, mean ± s.d.), a winter of 154 ± 8 days with mean epilimnetic temperature ≤ 6 °C, the lake's mean depth (5.7 m), and cohort mortalities of 76 and 42 % given without saying whether observed or modelled; he then applies Post & Evans's starvation model to Lake Constance (0.6 % after 153 days in November fish; 1.2 % from the January length distribution). The latitude Eckmann prints for Lake St George is not plausible for Ontario; do not reuse it. Other useful values: Lake Constance perch lost fresh and dry mass and lipid over winter (16.4 % lipid at 90 mm LT in November, the highest of the samples), while ruffe gained; perch ate zooplankton 'almost exclusively' through winter even at 40–80 m."
+}

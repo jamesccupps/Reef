@@ -1,0 +1,118 @@
+{
+  "key": "Marburg_etal_2006",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Wisconsin DNR's openly posted copy of the published article (an agency copy on its own fishing-outreach pages; the article is also free to read at Wiley, 'bronze'); dnr.state.wi.us redirected to dnr.wisconsin.gov. Wiley's pdfdirect refused the script (403). Printed pages = PDF page + 557",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Outreach_NatVarCoarseWoodinLakes.pdf",
+    "file": "docs/research_notes/fetched/v2/Marburg_etal_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and running heads (Journal of Ecology 2006, 94, 558–568) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Anna E. Marburg, Monica G. Turner & Timothy K. Kratz; issue 3 is from Crossref (not printed on the pages)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-5 (and its caption)",
+      "claim": "45 Vilas County, WI lakes; pieces ≥ 150 cm long crossing the 0.5-m contour",
+      "location": "p. 560 (PDF p. 3), Methods",
+      "quote": "crossed the transect and at least 150 cm in length",
+      "conditions": "every piece ≥ 5 cm in diameter where it crossed a 50-m transect along the half-metre depth contour, and ≥ 150 cm long (line-intersect); eight sites per lake; 45 lakes in Vilas County, Wisconsin (35 chosen across the 1996 building-density range, plus low-development lakes)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-5",
+      "claim": "12 low-development lakes (0–1.7 buildings/km): 156.3/km ≥ 5 cm (27.5–375), 66.3/km ≥ 10 cm (15–280)",
+      "location": "p. 563 (PDF p. 6), Table 1b",
+      "quote": "coarse wood ≥ 5 cm km−1 156.3 27.5 375.0 … 66.3 15.0 280.0",
+      "quote_from": "table",
+      "conditions": "MEDIAN (minimum–maximum) across the 12 lakes; each lake's value the mean of eight sites; pieces per km of the 0.5-m contour",
+      "verdict": "confirmed",
+      "note": "Read on the page image: the values are right. The table should say 'median' in this column too (it does only for the 45-lake column), and the asterisk ('read from a misaligned table extraction; corroborated by Weis & Sass') can go"
+    },
+    {
+      "paper": "Table 3.2-5",
+      "claim": "all 45 lakes: median 57.5/km ≥ 5 cm (0–712.5), 22.5/km ≥ 10 cm (0–372.5)",
+      "location": "p. 563 (PDF p. 6), Table 1a",
+      "quote": "coarse wood ≥ 5 cm km−1 57.5 0 712.5 … 22.5 0 372.5",
+      "quote_from": "table",
+      "conditions": "median (minimum–maximum) across 45 lakes spanning the development gradient",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-5; §3.2.9",
+      "claim": "lakes with more than 9 buildings/km never had more than 200 pieces (logs) per km",
+      "location": "p. 562 (PDF p. 5), Results; restated p. 564 (PDF p. 7), Discussion",
+      "quote": "lakes with > 9 buildings km−1 never had more than 200 pieces",
+      "conditions": "'buildings' = all buildings within 100 m of the lake per km of shoreline, from 1996 county data (p. 560: 'computed the number of buildings within 100 m of each lake'); wood ≥ 5 cm (Fig. 2a) and ≥ 10 cm (Fig. 2b) both declined with building density",
+      "verdict": "confirmed",
+      "note": "§3.2.9 compares this with Hot Brook's ~2 dwellings/km counted within ~200 m of the water: Marburg's metric counts every building within 100 m, so the two densities are not the same measure (the comparison still holds by a wide margin)"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "even under one method, undeveloped lakes differed by up to 13-fold",
+      "location": "p. 565 (PDF p. 8), Discussion",
+      "quote": "why undeveloped lakes have up to a 13-fold difference in coarse wood abundance",
+      "conditions": "the 12 low-development lakes: 27.5–375 pieces/km ≥ 5 cm (13.6-fold); for wood ≥ 10 cm, 15–280 (18.7-fold; reader's arithmetic from Table 1b)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "wood occurred at 61 % of 50-m sites",
+      "location": "p. 564 (PDF p. 7), Results",
+      "quote": "littoral coarse wood occurred at 214 (61%)",
+      "conditions": "214 of the 352 sites with complete data, 45 lakes",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "at 20–4,200 pieces/km where present",
+      "location": "p. 564 (PDF p. 7), Results",
+      "quote": "ranging from 20 to 4200 logs km−1",
+      "conditions": "the 214 sites where wood was present",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "its best predictor was downed wood on the forest floor beside the lake (partial R² 0.48–0.54), not live-tree density",
+      "location": "p. 563 (PDF p. 6) and p. 564 (PDF p. 7), Results; Summary point 5, p. 558",
+      "quote": "density of riparian coarse wood (partial R2 = 0.54, P < 0.01)",
+      "conditions": "'riparian coarse wood' = logs (dead trees touching the ground at two or more points, ≥ 10 cm) per ha in riparian plots; partial R² 0.54 among all 45 lakes, 0.48 among the 12 low-development lakes; neither tree density nor stand basal area correlated with littoral wood",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "wetland-fringed shores held less",
+      "location": "p. 564 (PDF p. 7), Results; Fig. 4b",
+      "quote": "proportion of the lake surrounded by wetlands (partial R2 = 0.21",
+      "conditions": "a LAKE-level effect in the 12 low-development lakes (share of the shoreline in wetlands, negative); at the site level wetland presence entered only one of 22 candidate models",
+      "verdict": "confirmed",
+      "note": "say 'lakes with more wetland shoreline held less' rather than implying a site-level effect"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "wave-exposed shores held less",
+      "location": "p. 564 (PDF p. 7), Results; Fig. 5a",
+      "quote": "All of the final models included the relative exposure to wave action",
+      "conditions": "site level, the 214 sites with wood: every one of the 22 best models had a negative term for relative exposure (fetch-weighted wave height)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1365-2745.2006.01117.x",
+      "status": 403,
+      "note": "Wiley refused the script (the article is free to read there in a browser)"
+    },
+    {
+      "url": "https://besjournals.onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1365-2745.2006.01117.x",
+      "status": 403,
+      "note": "same"
+    }
+  ],
+  "notes": "Every value checks. Two presentation fixes for Table 3.2-5: label the low-development values as medians, and drop the asterisk about a misaligned extraction (the page image confirms the numbers). Other useful values: Table 1 gives riparian forest structure (e.g. riparian coarse wood median 225 logs/ha, 25–579, in all lakes; 431, 115–579, in low-development lakes); the lowest-AIC within-lake model was (−) exposure + riparian CW + beaver-chewed littoral CW; the maximum in undeveloped lakes was ~200 logs/km below earlier reports from very small (< 25 ha) protected lakes (p. 564–565)."
+}

@@ -1,0 +1,159 @@
+{
+  "key": "MNAP_nd-2",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine captures of MNAP's own maine.gov pages (maine.gov returns 403 to scripts), each openly downloadable: Lakeshore Ecosystem (eco_lakeshore.htm, captured 8 Aug 2026); Lakeshore Beach (lakeshorebeach.htm 28 Apr 2026; lakeshore_beach.pdf 5 Mar 2026); Open-water Marsh (openwatermarsh.htm 18 Apr 2026; open_water_marsh.pdf 10 Apr 2026); Pickerelweed Marsh (pickerelweedmarsh.htm 21 Apr 2026; pickerelweed_marsh.pdf 7 Nov 2025); Bulrush Marsh (bulrushbed.htm 8 May 2026; bulrush_marsh.pdf 5 Sep 2025); Sandy Lake-Bottom = Pipewort–Water Lobelia Aquatic Bed (sandylakebottom.htm 11 Aug 2026; sandy_lake_bottom.pdf 5 Sep 2025); Sweetgale Fen (sweetgalefen.htm 19 Jul 2026; sweetgale_fen.pdf 12 Aug 2026); Alder Thicket (aldershrub.htm 15 May 2026; alder_thicket.pdf 7 Dec 2025); Alder Floodplain (alderfloodplain.htm 11 Apr 2026; its PDF capture refused the connection). Read 2026-11-26. The HTML pages and the PDF fact sheets carry the same text",
+    "url": "https://web.archive.org/web/20260428021012id_/https://www.maine.gov/DACF/mnap/features/communities/lakeshorebeach.htm",
+    "file": "docs/research_notes/fetched/v2/MNAP_nd-2.<page>.html|pdf (ecosystem, beach, beachpdf, openwater, openwaterpdf, pickerelweed, pickerelweedpdf, bulrush, bulrushpdf, sandybottom, sandybottompdf, sweetgale, sweetgalepdf, alderthicket, alderthicketpdf, alderfloodplain)"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the pages themselves",
+    "ok": false,
+    "corrections": "Complete the page list with the real titles and URLs: Lakeshore Ecosystem https://www.maine.gov/dacf/mnap/features/eco_lakeshore.htm; the 'Pipewort–Water Lobelia Aquatic Bed' page is titled 'Sandy Lake - Bottom' (…/communities/sandylakebottom.htm, sandy_lake_bottom.pdf); Sweetgale Mixed Shrub Fen is 'Sweetgale Fen' (…/sweetgalefen.htm); Alder Thicket …/aldershrub.htm; Alder Floodplain …/alderfloodplain.htm. All the cited pages were read in full here, so '(some via search summaries)' can go for these; the cedar pages and the Maine River Wetland Complex focus area are not used by the claims checked here",
+    "note": "No date is shown on any page (the site footer says 'Copyright © 2021', a template line); the PDF fact sheets' file metadata is 2010-02-15 (not printed). Keep 'n.d.' with an accessed date; the paper must label this entry differently from MNAP ch. 3 (MNAP_nd), which is actually Vaux 2005"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.2",
+      "claim": "MNAP describes these beds as small, often linear patches",
+      "location": "web page: Open-water Marsh, 'Distribution'; Sandy Lake-Bottom, 'Distribution'",
+      "quote": "Landscape Pattern: Small Patch, often linear along lakeshores.",
+      "conditions": "Open-water Marsh 'Small Patch, often linear along lakeshores'; Sandy Lake-Bottom 'Small Patch, linear'; Pickerelweed Marsh and Bulrush Marsh 'Small Patch'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2; Table 3.2-4",
+      "claim": "pickerelweed marsh typically above 50 % cover (total cover 30–100 %)",
+      "location": "web page: Pickerelweed Marsh, 'Community Description'",
+      "quote": "Total cover ranges from 30-100% and is typically >50%.",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2; Table 3.2-4",
+      "claim": "bulrush beds often at inlets and outlets",
+      "location": "web page: Bulrush Marsh (Bulrush Bed, S4), 'Soil and Site Characteristics'",
+      "quote": "Bulrush beds are often near inlets and outlets of lakes",
+      "conditions": "'or along slow moving portions of larger streams and rivers'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-4",
+      "claim": "Bulrush bed (S4): standing water > 15 cm all year; hardstem and softstem bulrush, bayonet rush",
+      "location": "web page: Bulrush Marsh, 'Soil and Site Characteristics' and 'Community Description'",
+      "quote": "standing water over 15 cm deep all year",
+      "conditions": "'except during unusually prolonged low water levels'; dominants hardstem bulrush, softstem bulrush, chair-maker's rush and bayonet rush; State Rank S4",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-1 (emergent row); Table 3.2-4",
+      "claim": "MNAP pickerelweed marsh < 0.7 m, on muck (S5)",
+      "location": "web page: Pickerelweed Marsh, 'Soil and Site Characteristics'",
+      "quote": "The substrate is usually mucky, and the water is generally <0.7 m deep.",
+      "conditions": "quiet waters of lakes, ponds and streams; acidic to circumneutral; State Rank S5",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-1 (floating-leaved row); Table 3.2-4",
+      "claim": "Maine floating-leaved beds 0.5–2.5 m (MNAP); open-water marsh (S5) in quiet water over silty muck; white and yellow water-lily or watershield, bladderworts and pipewort beneath",
+      "location": "web page: Open-water Marsh (Water-lily – Macrophyte Aquatic Bed), 'Soil and Site Characteristics' and 'Community Description'",
+      "quote": "These aquatic beds occur in quiet waters at depths mostly between 0.5 and 2.5 m.",
+      "conditions": "substrate 'typically a mixture of silty organic muck'; the strict type has white water-lily, yellow water-lily or 'more rarely' water-shield most abundant; submerged bladderworts and pipewort common; State Rank S5",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-1 (isoetid row); src/w3/plants3.js:165",
+      "claim": "MNAP pipewort–lobelia lawns at 0.2–1.1 m on mineral soil",
+      "location": "web page: Sandy Lake - Bottom (Pipewort - Water Lobelia Aquatic Bed, S5), 'Soil and Site Characteristics'",
+      "quote": "sites are usually shallow (depths 0.2-1.1 m)",
+      "conditions": "'The lake bottom substrate almost always has a predominant mineral soil component rather than muck'; quiet waters of lakes, ponds, streams and rivers",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/plants3.js:204",
+      "claim": "pipewort–lobelia on mineral soils under ~1 m, water-lily beds on organic soils at 0.5–1.5 m — MNAP",
+      "source_value": "MNAP's fact sheets give the water-lily bed 0.5–2.5 m ('mostly'), on silty organic muck; 0.5–1.5 m is Cameron's (2000) figure as reported in MABP ch. 6, not MNAP's",
+      "location": "web page: Open-water Marsh, 'Soil and Site Characteristics'",
+      "quote": "depths mostly between 0.5 and 2.5 m",
+      "verdict": "corrected",
+      "note": "the mineral-soil and < ~1 m (0.2–1.1 m) half of the comment is right"
+    },
+    {
+      "paper": "§3.4.6; Table 3.2-4",
+      "claim": "in Maine pickerelweed beds die back below the surface at the end of the season (autumn)",
+      "location": "web page: Pickerelweed Marsh, 'Similar Types'",
+      "quote": "plants that die back below the surface at the end of the growing season",
+      "conditions": "said in passing, contrasting cattail marshes ('feature cattails and shrubs rather than plants that die back …')",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "MNAP treats the shoreline and near-shore vegetation as one Lakeshore/Pondshore ecosystem of 17 communities, comprising wetlands and shore areas disturbed by ice scour, flooding or waves",
+      "location": "web page: Lakeshore Ecosystem (S5)",
+      "quote": "which are disturbed by ice-scour, flooding, or waves",
+      "conditions": "'the group of communities on the shoreline or the near-shore vegetated waters surrounding the open-water portion of a lake or pond'; statewide except extreme southern Maine (Coastal Plain Pondshore there); bordering forests are classed under upland ecosystems; the page lists 17 communities (the reader counted them)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "on a sheltered peaty margin: alder thicket on the bank, sweetgale–leatherleaf fen at the waterline, pickerelweed and bulrush in the shallows, water-lilies beyond (project synthesis of the MNAP descriptions)",
+      "kind": "synthesis",
+      "location": "web pages: Sweetgale Fen, Alder Thicket, Pickerelweed Marsh, Bulrush Marsh, Open-water Marsh",
+      "quote": "Slow moving open water usually borders this vegetation.",
+      "conditions": "sweetgale fen borders open water on peat or muck; pickerelweed < 0.7 m; bulrush > 15 cm of standing water; water-lily beds 0.5–2.5 m; alder thickets in saturated basins on muck or peat",
+      "verdict": "confirmed",
+      "note": "MNAP never states the sequence; the depths and settings it gives are consistent with the project's ordering, which should stay labelled as synthesis"
+    },
+    {
+      "paper": "Table 3.2-4",
+      "claim": "Alder thicket (S5) †: bank; muck or peat, often old beaver meadows; speckled alder 1–3 m, > 20 % cover (usually > 40 %)",
+      "location": "web page: Alder Thicket (Alder Shrub Thicket, S5), 'Diagnostics', 'Community Description', 'Soil and Site Characteristics'",
+      "quote": "alders dominate and comprise >20% cover, usually >40%",
+      "conditions": "'tall (1-3 m) shrub dominated wetlands'; 'usually on muck or on peat'; 'very common as wet cleared areas revert to forest, such as old beaver meadows'; basin wetlands, often only temporarily flooded",
+      "verdict": "confirmed",
+      "note": "the page has now been read in full: drop the † ('seen only in a search summary'). MNAP places the type in basin wetlands; 'bank' is the project's placement"
+    },
+    {
+      "paper": "Table 3.2-4",
+      "claim": "Sweetgale mixed shrub fen (S4): waterline; peat or muck along slow water or beaver flowages; sweetgale, leatherleaf, meadowsweet about 1 m tall; graminoids ~20 % cover",
+      "location": "web page: Sweetgale Fen (Sweetgale Mixed Shrub Fen, S4), 'Community Description' and 'Soil and Site Characteristics'",
+      "quote": "A mixture of shrubs, typically about 1 m high",
+      "conditions": "dominated by sweetgale, leatherleaf, and hardhack or meadowsweet; graminoids 'averaging around 20% cover'; peatlands bordering open water or impounded areas with peat or muck (e.g. beaver flowages); 'Slow moving open water usually borders this vegetation'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-4; §3.8.8",
+      "claim": "Lakeshore beach (S4): sand or cobble at the waterline, berms with wrack lines, formed by ice push, waves and drawdown; the most frequent (commonest) lakeshore type on medium and large Maine lakes",
+      "location": "web page: Lakeshore Beach (Lakeshore Sand/Cobble Beach, S4), 'Conservation, Wildlife and Management Considerations' and 'Soil and Site Characteristics'",
+      "quote": "This is the most frequent lakeshore type for medium and large lakes in Maine.",
+      "conditions": "'ice-push, wave action, and natural or anthropogenic drawdown … have created broad open bands and berms'; berms of sand or gravel with wave-deposited wrack lines",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-4",
+      "claim": "Alder floodplain (S4), stream banks: seasonally flooded, ice-scoured mineral banks; alder > 30 % cover with red maple and red-osier dogwood; stems ice-scarred",
+      "source_value": "MNAP's type is for 'medium to large moderate to high energy riverbanks' (shrub-dominated floodplains along medium to large rivers), seasonally flooded and ice-scoured, usually on mineral soil; alders > 30 % cover; red maple, American elm and red-osier dogwood may be co-dominant; woody species 'may show signs of ice scour' early in the season",
+      "location": "web page: Alder Floodplain (S4), 'Soil and Site Characteristics' and 'Diagnostics'",
+      "quote": "This type occurs along medium to large moderate to high energy riverbanks",
+      "verdict": "corrected",
+      "note": "the cover and associates match, but MNAP defines it for medium to large rivers, not small stream banks such as Hot Brook's connecting brook; say so, or call it the nearest analog"
+    },
+    {
+      "paper": "§3.8.8",
+      "claim": "three shore forms (project synthesis of MNAP and Vermont descriptions, partly via search summaries): exposed mineral shores with a narrow sweetgale fringe and an ice-push berm; sheltered peaty coves with a ~1-m sweetgale–leatherleaf–meadowsweet fen, then alder 1–3 m, then cedar, spruce or red-maple swamp; rocky shores where the forest reaches the water",
+      "kind": "synthesis",
+      "location": "web pages: Lakeshore Beach ('Community Description'), Sweetgale Fen, Alder Thicket, Lakeshore Ecosystem",
+      "quote": "Typical assemblages on cobble or gravel include sweet gale",
+      "conditions": "Lakeshore Beach: on berms 'a sparse canopy of trees or shrubs may be present, including common juniper, speckled alder, red maple, white pine, and gray birch'; sweetgale fen ~1 m; alder thicket 1–3 m; the Lakeshore Ecosystem's list includes Northern White Cedar Swamp, Red Maple–Sensitive Fern Swamp and Red Maple Wooded Fen; forests bordering lakes are classed as upland",
+      "verdict": "confirmed",
+      "note": "the MNAP parts check; 'narrow' (fringe), spruce swamp and 'the forest reaches the water' are not in the MNAP pages read (they may be the Vermont source's). The MNAP pages are now read in full, so 'partly via search summaries' no longer applies to them"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/dacf/mnap/features/communities/lakeshorebeach.htm", "status": 403, "note": "maine.gov refuses scripts; Wayback captures used for every page" },
+    { "url": "https://web.archive.org/web/20250905035216id_/https://www.maine.gov/dacf/mnap/features/communities/alder_floodplain.pdf", "status": "error", "note": "ECONNREFUSED; the Alder Floodplain HTML page (same text) was read instead" }
+  ],
+  "notes": "Two corrections only: Table 3.2-4's alder floodplain is MNAP's medium-to-large-river type, and plants3.js:204 credits MNAP with Cameron's 0.5–1.5 m (MNAP: 0.5–2.5 m). Also: drop the † on Alder thicket, and the 'search summaries' caveat for the MNAP pages. Useful extras: Open-water Marsh diagnostics 'pickerelweed is basically absent'; Pickerelweed Marsh indicators water bulrush and Oakes' pondweed; Sandy Lake-Bottom: water-shield may be abundant in patches, cover 'sparse to extensive', threats include boat wakes; Lakeshore Beach berms may hold painted, snapping and musk turtle nests if water levels stay stable June–October."
+}

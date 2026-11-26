@@ -1,0 +1,79 @@
+{
+  "key": "Richter_etal_2024",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's open-access PDF (CC BY; 'Open access funding provided by Fisheries & Oceans Canada'). Springer's PDF link answers first with a 303 to its anonymous cookie handshake (idp.springer.com/authorize?response_type=cookie — no login), which getsrc does not follow; curl with the same honest user agent followed it and saved the PDF, then getsrc --file indexed it",
+    "url": "https://link.springer.com/content/pdf/10.1007/s10641-024-01581-8.pdf",
+    "file": "docs/research_notes/fetched/v2/Richter_etal_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (Environ Biol Fish (2024) 107:1529–1545) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "issue 12 is from Crossref; published online 16 August 2024"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white sucker); §3.5.6",
+      "claim": "white suckers in Turkey Lake, Ontario selected 10–16 °C",
+      "location": "p. 1529 (PDF p. 1), Abstract; p. 1536 (PDF p. 8), Results, Fig. 3",
+      "quote": "a strong temperature selection preference for thermal habitat between 10 and 16 °C",
+      "conditions": "pooled over the open-water seasons (spring, summer, fall); by season: spring 12–16 °C, summer only 14–16 °C, fall 10–14 °C; no thermal preference in winter; avoided < 6 °C in summer; nine acoustically tagged adults (610–1,700 g) in a 52-ha, 34-m-deep stratified Boreal Shield lake, Dec 2021–Dec 2022 (n = 9 winter, 6 spring, 5 summer and fall)",
+      "verdict": "confirmed",
+      "note": "the Discussion (p. 1539) gives a wider 'temperature preference range [10.0, 18.0°C]' for the open-water season"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "they spent 84–88 % of their time within 1 m of the bottom",
+      "location": "p. 1536 (PDF p. 8), Results",
+      "quote": "within 1 m of the lake bottom with a high affinity to benthic habitat",
+      "conditions": "share of telemetry positions within 1 m of the bottom in winter, summer and fall (84.4–87.8 %); spring 73.0 %",
+      "verdict": "confirmed",
+      "note": "'of their time' = of their telemetry positions; add 'except in spring (73 %)'"
+    },
+    {
+      "paper": "Table 3.5-3; §3.5.6",
+      "claim": "not selecting water above 18 °C in a lake whose surface reached 24.6 °C",
+      "location": "p. 1539 (PDF p. 11), Discussion; p. 1536 (PDF p. 8), Results",
+      "quote": "maximum of 24.6 °C; however, warm waters (> 18 °C) were not preferentially selected",
+      "conditions": "'Summer water temperatures in Turkey Lake reached a maximum of 24.6 °C' (the lake's temperature string; the paper says 'surface'); Results: 'no preference for warmer habitats (18.0 – 22.0°C)'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "white suckers in Turkey Lake wintered about 1.2 m deeper than in summer, with no thermal selection",
+      "kind": "arithmetic",
+      "location": "p. 1535–1536 (PDF pp. 7–8), Results",
+      "quote": "white suckers were at their deepest in the winter (mean: 6.10 m)",
+      "conditions": "mean depths: winter 6.10 m; spring 3.78, summer 4.85, fall 4.95 m; winter and fall depths did not differ significantly; winter selection index ŵ = 1 (no thermal preference)",
+      "verdict": "confirmed",
+      "note": "6.10 − 4.85 = 1.25 m (project arithmetic, right); against fall the difference is 1.15 m and not significant"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "white suckers in Turkey Lake used 14.6–18.4-ha ranges",
+      "source_value": "these are POOLED, species-level seasonal 95 % kernel utilization distributions of all tagged fish (n = 5–9) in a 52-ha lake, not individual home ranges: 14.6–18.8 ha in Table 2 (the text says 18.4 for spring; Table 2 says 18.8); individuals used 'a small portion of the total area' (individual–group core overlap 0.12–0.22); core areas (50 % KUD) 2.0–4.0 ha",
+      "location": "p. 1534 (PDF p. 6), Methods; p. 1537 (PDF p. 9), Results; p. 1538 (PDF p. 10), Table 2",
+      "quote": "We calculated the home range and core area at the species level for each season",
+      "verdict": "corrected",
+      "note": "the sentence sets them beside individual smallmouth home ranges (Opeongo) and bullhead ranges; say 'the tagged fish together used 15–19 ha of a 52-ha lake each season', or drop the comparison"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "they traveled 2.1–3.2 km a day",
+      "location": "p. 1537–1538 (PDF pp. 9–10), Results; Table 2",
+      "quote": "movement rates ranged from 2.10 km/day to 3.16 km/day",
+      "conditions": "seasonal means of daily horizontal movement; overall mean ± SD 2.6 ± 0.5 km/day; highest in spring and summer",
+      "verdict": "confirmed",
+      "note": "the text's 2.10–3.16 differs from Table 2's seasonal means (winter 1,859.7, spring 3,070.7, summer 2,801.3, fall 2,106.3 m/day, i.e. 1.9–3.1 km/d); the source is internally inconsistent — '≈ 2–3 km a day' covers both"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/s10641-024-01581-8.pdf", "status": 303, "note": "via getsrc: redirect to Springer's anonymous cookie handshake (not followed by getsrc); followed with curl, same user agent, no login" },
+    { "url": "https://link.springer.com/article/10.1007/s10641-024-01581-8", "status": 200, "note": "getsrc judged the landing page a wall (its 'access' text); not needed" }
+  ],
+  "notes": "One correction: the 14.6–18.4 ha are pooled seasonal ranges of all tagged fish, not individual home ranges (and Table 2 says 18.8). Other useful values: fish generally in the upper 10 m and over bottom < 10 m deep (home ranges 92–96 % habitat ≤ 10 m); in summer mean depth tracked the cool end (~14 °C) of the 14.1–21.2 °C 'optimal' range of Cincotta & Stauffer (1984); seasonal home ranges overlapped 0.74–0.82; vertical movement 25.0 m/day in winter vs a median 41.8 m/day in other seasons; the authors suggest habitat choice may be set by benthic food rather than temperature."
+}

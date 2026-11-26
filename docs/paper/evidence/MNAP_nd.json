@@ -1,0 +1,80 @@
+{
+  "key": "MNAP_nd",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (9 Sep 2025) of the chapter PDF that MNAP serves on maine.gov (maine.gov itself returns 403 to scripts); openly downloadable. The report's title page (contents.pdf, Wayback capture 9 Sep 2025) and MNAP's two index pages (aquatic/index.htm, captured 14 Jul 2026; aquatic/techrept.htm, captured 5 Sep 2025) were fetched to date it. Read 2026-11-26. Printed pages = PDF page + 27 (pp. 28–56)",
+    "url": "https://web.archive.org/web/20250909180040id_/https://www.maine.gov/dacf/mnap/publications/aquatic/chapter_3.pdf",
+    "file": "docs/research_notes/fetched/v2/MNAP_nd.pdf; docs/research_notes/fetched/v2/MNAP_nd.contents.pdf; docs/research_notes/fetched/v2/MNAP_nd.indexpage.html; docs/research_notes/fetched/v2/MNAP_nd.techrept.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the chapter's own heading and running footer, the technical report's title page (contents.pdf), and MNAP's report pages",
+    "ok": false,
+    "corrections": "Not an undated MNAP work: the chapter belongs to the Maine Aquatic Biodiversity Project technical report 'Freshwater Biodiversity in Maine' by Peter D. Vaux, with contributions from Arlene Olivero (The Nature Conservancy, Maine DEP, Maine IF&W), whose title page reads 'September 2005 (Pre-printing version; subject to revision)'; MNAP only hosts it and its index page calls the report 'Freshwater Biodiversity in Maine (2008)'. Suggested: Vaux, P. D. 2005 (with A. Olivero). Freshwater Biodiversity in Maine. Maine Aquatic Biodiversity Project technical report (pre-printing version). TNC, Maine DEP and MDIFW; chapter 3, 'Freshwater Species and Ecosystems in Maine: An Overview', pp. 28–56. Posted by MNAP, https://www.maine.gov/dacf/mnap/publications/aquatic/chapter_3.pdf. The same applies to the paper's 'MABP n.d.' and Cameron (2000) entries, which are chapters of the same report",
+    "note": "No date is printed in the chapter; its text says 'as of mid-2004' and cites works of 2005; the PDF's file metadata is 2009-03-16. The paper cites it as 'MNAP, ch. 3' (§3.5.1), while 'MNAP n.d.' elsewhere means the community fact sheets (MNAP_nd-2): give the two different labels"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "Maine has 69 freshwater fish species in 44 genera, 47 of them (about 70 %) native (Table 3.2)",
+      "location": "p. 30 (PDF p. 3), Table 3.2; p. 29 (PDF p. 2)",
+      "quote": "TOTALS 70 150 44 69 (47)",
+      "quote_from": "table",
+      "conditions": "Table 3.2 totals for Maine: 44 genera, 69 species, 47 Maine-native (footnote 2: numbers in parentheses are natives); 47/69 = 68 % (the text says 'Approximately 70%'); diadromous species included; the northeastern US column is from Halliwell et al.",
+      "verdict": "confirmed",
+      "note": "The chapter's own text (p. 29) says 'Of these 150 northeast species, 67 (45%) are known to occur in Maine' — an internal inconsistency with the table's 69; the reader summed the table's rows: 69 species, 47 native, 44 genera"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "the Downeast region holds 47 species, 41 of them native (Table 3.4)",
+      "location": "p. 34 (PDF p. 7), Table 3.4",
+      "quote": "Fish … Downeast 47 … Fish: ME natives … 41",
+      "quote_from": "table",
+      "conditions": "documented species by region (regions per the report's Figure 2.3); the text warns documented richness is a function of sampling effort, though fish sampling is extensive",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "most of the non-natives are minnows and centrarchids",
+      "location": "p. 29 (PDF p. 2)",
+      "quote": "A majority of Maine’s non-native fish species are minnows (Cyprinidae) and centrarchids",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "the state's review describes \"a relentless homogenization of fish assemblages\"",
+      "location": "p. 29 (PDF p. 2)",
+      "quote": "continued species introductions are leading to a relentless homogenization of fish assemblages",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "basses, black crappie, white perch and minnows still being moved",
+      "location": "p. 29 (PDF p. 2)",
+      "quote": "continue to be moved to waterbodies in which they were not originally present",
+      "conditions": "'Common examples include the largemouth bass … and smallmouth bass …, black crappie …, white perch … and a number of minnow species'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "links introduced littoral predators (both basses, chain pickerel, northern pike) to losses of minnow diversity (MNAP; Whittier et al. 1997)",
+      "location": "p. 40 (PDF p. 13)",
+      "quote": "have caused decreases in minnow diversity (Whittier et al. 1997,",
+      "conditions": "worded as likely: 'it is likely that introductions of littoral predators such as largemouth and smallmouth bass, chain pickerel … and northern pike … have caused decreases in minnow diversity (Whittier et al. 1997, Whittier and Kincaid 1999)'",
+      "verdict": "confirmed",
+      "note": "keep the hedge ('likely')"
+    },
+    {
+      "paper": "§3.4.2; §3.4.6; §3.8.8 (the ledger's sections for this key)",
+      "claim": "the 'MNAP n.d., community fact sheets' statements (bed shapes, pickerelweed cover and dieback, bulrush at inlets, depths, Lakeshore Beach)",
+      "verdict": "unsupported",
+      "note": "None of these is in chapter 3 (searched for each value); they are from the MNAP natural community fact sheets, ledger key MNAP_nd-2, where they check. Chapter 3 is used only in §3.5.1 (cited as 'MNAP, ch. 3'), which the ledger should list instead"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/dacf/mnap/publications/aquatic/chapter_3.pdf", "status": 403, "note": "maine.gov refuses scripts (CloudFront); the Wayback capture was used" }
+  ],
+  "notes": "Every §3.5.1 value checks against the chapter's tables (read on the page images). The bibliography needs the real author and date (Vaux 2005, pre-printing version; MNAP dates the report 2008). Other useful content: p. 35 says MNAP's classification has 'just under 100' natural communities, five of them aquatic (e.g. pickerelweed or water-lily macrophyte beds), and 24 ecosystems, seven aquatic; p. 39 lists 29 documented fishless ponds as of mid-2004; Table 3.4 also gives Downeast mussels 8, turtles 5, aquatic plants 93 species."
+}

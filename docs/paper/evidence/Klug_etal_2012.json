@@ -1,0 +1,56 @@
+{
+  "key": "Klug_etal_2012",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the copy posted on a SUNY New Paltz faculty web site (hawksites.newpaltz.edu, where co-author D. C. Richardson is based) — the URL in the ledger entry. It is the ACS 'articles ASAP' version: same text, but pages lettered A–I and 'Environ. Sci. Technol. XXXX, XXX, XXX−XXX' in place of the final 46(21): 11693–11701, so locations are PDF pages",
+    "url": "https://bpb-us-w2.wpmucdn.com/hawksites.newpaltz.edu/dist/1/8098/files/2012/10/Klug2012-EST-HurricaneIrenePaper.pdf",
+    "file": "docs/research_notes/fetched/v2/Klug_etal_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (authors, title) and Crossref (volume, issue, pages)",
+    "ok": true,
+    "corrections": "",
+    "note": "11 authors as in the ledger; the ledger's '(Tropical Storm Irene)' is a gloss, not part of the title"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "Tropical Storm Irene in August 2011 cut Schmidt stability within hours in nine north-eastern lakes",
+      "location": "PDF p. 1 (p. A), Abstract; PDF p. 5, Results",
+      "quote": "Thermal stability declined within hours in all systems",
+      "conditions": "nine lakes AND reservoirs across 312,000 km² of north-eastern North America (GLEON buoys, 10-min to 6-h data); all stratified before the storm; stability as daily Schmidt stability",
+      "verdict": "confirmed",
+      "note": "say 'nine lakes and reservoirs'"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "all but one recovered to at least 80 % of pre-storm stability within a week",
+      "location": "PDF p. 7, Results and Discussion",
+      "quote": "All but one system (Ashokan) recovered to within 80% of prestorm stability within one week",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "the terrestrial inflow turned them net-heterotrophic for longer",
+      "source_value": "metabolism was estimated for only seven of the nine lakes; respiration rose in some (Ashokan, Rondout, Sunapee) and fell in others (Lillinonah); 'in many of our study lakes' increased carbon loading 'likely' raised R, which 'created or magnified net heterotrophic conditions'; GPP and R, coupled before the storm, were decoupled in the 10 days after; the abstract: thermal disturbance was 'shorter-lived than disturbance from inflows of terrestrial materials'",
+      "location": "PDF p. 6, Results and Discussion; PDF p. 1, Abstract",
+      "quote": "In many of our study lakes, increases in carbon loading from",
+      "verdict": "corrected",
+      "note": "write 'and in many of them storm-borne carbon raised respiration, creating or deepening net heterotrophy, an effect that outlasted the thermal disturbance'"
+    },
+    {
+      "paper": "§3.1.7; §3.2.1",
+      "claim": "up to 86 % of annual DOC export from forested catchments occurs in storms and snowmelt (Raymond & Saiers 2010, as cited by Klug et al. 2012)",
+      "location": "PDF p. 7, Results and Discussion (ref. 24)",
+      "quote": "up to 86% of annual DOC export from forested catchments",
+      "conditions": "'… has been shown to occur during these events' — the preceding sentences name storm events and snowmelt; 'including sites from the Rondout and Ashokan catchments'; ref. 24 = Raymond, P. A. & Saiers, J. E. 2010. Event controlled DOC export from forested watersheds. Biogeochemistry 100(1–3): 197–209",
+      "verdict": "confirmed",
+      "note": "the relay is accurate; the figure belongs to Raymond & Saiers, so cite them once read"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "One correction (the net-heterotrophy sentence overgeneralizes). Other useful values: the size of the stability drop was predicted by potential volume replacement (water falling on lake + catchment ÷ lake volume): lakes split into low (≤ 26 %) and high (≥ 75 %) PVR; short-term retention time fell 50 % in Lacawac and 33 % in Croche; the change in GPP tracked the change in temperature (r² = 0.67); recovery of stability was related to the size of the initial effect (r² = 0.5)."
+}

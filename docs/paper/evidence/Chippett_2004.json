@@ -1,0 +1,65 @@
+{
+  "key": "Chippett_2004",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the thesis PDF (71 MB scan with OCR) from Memorial University's institutional repository (research.library.mun.ca/10301 → memorial.scholaris.ca item, bitstream Chippett_JamieD.pdf), openly downloadable. Printed page = PDF page − 13 (the front matter is unnumbered)",
+    "url": "https://memorial.scholaris.ca/server/api/core/bitstreams/737ae14a-cd04-4cc6-bcaa-81149e169be3/content",
+    "file": "docs/research_notes/fetched/v2/Chippett_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 4)",
+    "ok": true,
+    "corrections": "",
+    "note": "Jamie D. Chippett, MSc thesis, Department of Biology, Memorial University of Newfoundland, March 2004; title matches. The ledger's '(Cited via COSEWIC 2014)' can go: the thesis itself has now been read, and every use below can cite it directly"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.2",
+      "claim": "the only banded killifish count found is from the shallows of two Newfoundland ponds (about 20,600 fish in August; Chippett 2004, via COSEWIC 2014)",
+      "location": "p. 77 (PDF p. 90), ch. 5; p. 22 (PDF p. 35), ch. 2; methods p. 17 (PDF p. 30)",
+      "quote": "the August estimate was for 20,569 individuals (95% confidence limits 12,529-40,201)",
+      "conditions": "Schnabel mark–recapture with anal-fin clips over a week each in July and August 1999, Indian Bay watershed; July 1,209 (95 % CL 619–3,423) when the water was cooler; ch. 2 labels the estimate '(Third Pond)', while the population occupies the adjoining waters of Backup and Third Ponds (Fig. 2-5, p. 23; p. 27); the thesis gives no habitat area, so no density",
+      "verdict": "confirmed",
+      "note": "'two ponds' fits the population's range (Backup and Third Ponds); the thesis itself names Third Pond for the estimate. Cite Chippett 2004 directly"
+    },
+    {
+      "paper": "§3.6; Table 3.6-1 (banded killifish)",
+      "claim": "banded killifish spawn at 19–23 °C in Newfoundland",
+      "location": "p. 73 (PDF p. 86), ch. 5.4.2 Reproduction",
+      "quote": "late June through to the middle of August when water temperatures reached between 19-23°C",
+      "conditions": "spawning behaviour observed in the Indian Bay watershed, Newfoundland",
+      "verdict": "confirmed",
+      "note": "the next page (p. 74, ch. 5.4.3) says spawning 'was observed at water temperatures of 22-24°C in the shallows' — the thesis is not fully consistent; 19–23 °C is its main statement"
+    },
+    {
+      "paper": "Table 3.6-1 (banded killifish)",
+      "claim": "2.0–2.2-mm eggs",
+      "location": "p. 73 (PDF p. 86), ch. 5.4.2",
+      "quote": "2.2mm) than the 2.0mm reported by Cooper (1936)",
+      "conditions": "2.2 mm = mean diameter of eggs taken from Indian Bay females in late July (ovarian eggs); 2.0 mm is Cooper's (1936) mainland value, which Chippett relays; large females held up to 420 eggs (vs 250, Carlander 1969)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (banded killifish)",
+      "claim": "eggs on adhesive threads, mostly on Potamogeton",
+      "location": "p. 73 (PDF p. 86), ch. 5.4.2; p. 25 (PDF p. 38) and Fig. 2-8 (p. 27)",
+      "quote": "most often in association with pondweed species of the genus",
+      "conditions": "spawning behaviour 'most often in association with pondweed species of the genus Potamogeton' (near P. epihydrus, p. 25); the adhesive threads are from Richardson (1939), relayed: 'females release eggs with individual adhesive threads that adhere to aquatic vegetation'",
+      "verdict": "confirmed",
+      "note": "strictly, Chippett saw spawning at Potamogeton rather than eggs on it; 'spawns mostly at Potamogeton' is the exact reading"
+    },
+    {
+      "paper": "Table 3.6-1 (banded killifish, 'none' in the care column)",
+      "claim": "no parental care",
+      "verdict": "unsupported",
+      "note": "the thesis does not discuss parental care (searched 'parental', 'guard', 'care'); the research notes take 'no parental care' from COSEWIC 2014's summary — credit COSEWIC (or another source) for it, not Chippett"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://research.library.mun.ca/10301/", "status": 200, "note": "landing page (redirects to memorial.scholaris.ca); the PDF bitstream was then fetched" }
+  ],
+  "notes": "The thesis, earlier blocked for size, is now on disk. The paper's numbers check against it; drop 'via COSEWIC 2014' throughout and re-credit the 'no parental care' cell. Other useful values: fyke nets caught no killifish below 12 °C, with much larger catches at higher temperatures (Fig. 2-4, p. 21); occupied areas shallow, mud substrate, dense vegetation (Table 2-2, Fig. 2-5); quadrat plants at 4–16 per 0.25 m², dominated by Lobelia dortmanna (p. 70); Indian Bay fish ate a high share of chironomid larvae (p. 76); the Newfoundland area of occurrence is < 200 km² (p. 83)."
+}

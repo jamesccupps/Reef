@@ -1,0 +1,53 @@
+{
+  "key": "Engeletal_1999",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "UW–Madison Libraries Digital Collections (Wisconsin DNR Research Reports), openly downloadable scan with OCR, record https://digital.library.wisc.edu/1711.dl/UQ35Q6TNFLEC38Z. PDF p. 1 is the library cover sheet; printed page = PDF page − 3 (Table 13 is printed p. 21 = PDF p. 24)",
+    "url": "https://asset.library.wisc.edu/1711.dl/WIPJJCK45NC4Z83/E/file-36004.pdf?dl",
+    "file": "docs/research_notes/fetched/v2/Engeletal_1999.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover/title page (PDF p. 2) and back cover",
+    "ok": false,
+    "corrections": "Give the full citation: Engel, S., Hoff, M. H. & Newman, S. P. 1999. Evaluating a smallmouth bass slot length and daily bag limit on Nebish Lake, Wisconsin. Research Report 181. Wisconsin Department of Natural Resources, Madison (July 1999; PUBL-SS-581-99). 33 pp.",
+    "note": "the ledger key's missing underscore (Engeletal_1999) is cosmetic"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-8 (smallmouth bass, Nebish Lake, 1972–92)",
+      "claim": "31–327 young-of-year/ha (mean 112)",
+      "kind": "arithmetic",
+      "location": "p. 21 (PDF p. 24), Table 13; lake area p. 2 (PDF p. 5), Table 1",
+      "quote": "1974 2.7 — 1,174 … 1991 2.6 0.008 12,438 … All years 4,253",
+      "quote_from": "image",
+      "conditions": "whole-lake Schnabel estimates of FALL FINGERLING (age-0) smallmouth bass (fall AC electrofishing), mean TL 1.9–3.2 in (≈ 48–81 mm) by year; the 1972 value from a catch/effort regression; Nebish Lake 94 acres (38.0 ha), soft water, a two-species bass–perch lake after the 1966 rotenone treatment",
+      "verdict": "confirmed",
+      "note": "1,174 / 38.04 ha = 30.9; 12,438 / 38.04 = 327.0; 4,253 / 38.04 = 111.8 (project arithmetic right). Engel gives numbers per lake, not per ha"
+    },
+    {
+      "paper": "Table 3.6-8",
+      "claim": "36–226 young per nest (project arithmetic)",
+      "verdict": "unsupported",
+      "note": "Engel et al. report no nest counts (searched 'nest'); the per-nest figures need the nest numbers from Kempinger et al. 1982 or Forbes 1981 — credit those"
+    },
+    {
+      "paper": "Table 3.6-8 (Katherine Lake, Michigan)",
+      "claim": "89–215/ha 'as cited in the Nebish Lake reports' (Kempinger et al. 1982; Engel et al. 1999)",
+      "verdict": "unsupported",
+      "note": "Engel et al. never mention Katherine Lake (searched); if the value is in a Nebish report it is Kempinger et al. 1982 — drop Engel from this row"
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass, Nebish Lake)",
+      "claim": "egg potential to autumn young 0.1–0.5 % (1979–81); 0.27–1.4 % (1982–85) (Serns 1984; Raffetto et al. 1990; Engel et al. 1999)",
+      "verdict": "unsupported",
+      "note": "Engel et al. give no egg counts or egg-to-autumn survival (searched 'egg', 'survival'); the percentages are from Serns 1984 and Raffetto et al. 1990. Engel's Table 13 gives the autumn fingerling numbers for every year 1972–92 (e.g. 4,183 in 1979, 6,300 in 1983), which could be cited for the numerator only"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://search.library.wisc.edu/digital/AUQ35Q6TNFLEC38Z", "status": 200, "note": "record page (JavaScript viewer, no direct PDF link); the asset PDF was found by search" }
+  ],
+  "notes": "Engel supports only the Nebish fingerling densities (via project arithmetic on Table 13); remove it from Table 3.6-5 and from the Katherine Lake row, and source the per-nest figures elsewhere. Other useful values: under successive regulations spring abundance of ages 3–8 smallmouth rose from 13.6 to 20.6/acre while yellow perch fell from 751.8 to 91.3/acre (abstract); perch of ages 3–8 averaged 282/acre over 21 years; fall fingerling abundance unusually high in 1976 (1.8× the 21-year average) and 1991 (2.9×); fishing pressure 44.8 → 58.8 h/acre; Nebish Lake maximum depth 52 ft, mean 18.4 ft."
+}

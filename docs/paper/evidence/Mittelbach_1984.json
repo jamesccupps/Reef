@@ -1,0 +1,46 @@
+{
+  "key": "Mittelbach_1984",
+  "reader": "wave-3 batch w3-11",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained: no open copy found (publisher, JSTOR, Europe PMC, Internet Archive and a web search)", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Mittelbach, Gary G. (1984). Predation and Resource Partitioning in Two Sunfishes (Centrarchidae). Ecology 65(2): 499–513 — matches the ledger"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (pumpkinseed diet)",
+      "claim": "a shift to snails at about 50–80 mm SL in snail-rich lakes (with Osenberg, Mittelbach & Wainwright 1992)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "pumpkinseed is a lake fish of weedy margins whose larger individuals crush snails (with Cooper 1941)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "pumpkinseed ≤ 75 mm SL take 76–91 % of their food from vegetation-dwelling prey",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.6-2",
+      "claim": "below 75 mm SL mostly vegetation-dwelling non-snail prey (76–91 %); snails in larger fish",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1941412", "status": "n/a", "note": "the DOI; a library login would open it at Wiley (ESA backfile) or JSTOR" },
+    { "url": "https://www.jstor.org/stable/1941412", "status": 200, "note": "JSTOR served a 'Client Challenge' bot check — stopped there" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdfdirect/10.2307/1941412", "status": 403, "note": "Wiley refused the script" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/10.2307/1941412", "status": 403, "note": "Wiley landing page refused the script" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/1941412\"", "status": 200, "note": "hitCount 0" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(predation resource partitioning sunfishes)", "status": 200, "note": "no items" },
+    { "url": "web search (title + pdf; Mittelbach lab / KBS pages)", "status": "n/a", "note": "no author or institutional copy found; OpenAlex lists no open copy" }
+  ],
+  "notes": "All four uses stay unchecked. The 76–91 % and the ~75 mm SL break are the values to verify when the human fetches the article (Ecology 65: 499–513); check the lake, the length type (SL) and whether the percentages are by number, volume or dry mass.Semantic Scholar was not tried (rate-limited by the parallel readers, per the batch brief)."
+}
