@@ -1,0 +1,32 @@
+{
+  "key": "Bloomfield_etal_2022",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Frontiers; the article is marked OPEN ACCESS on its first page)",
+    "url": "https://www.frontiersin.org/articles/10.3389/fevo.2022.986459/pdf",
+    "file": "docs/research_notes/fetched/v2/Bloomfield_etal_2022.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Bloomfield, E. J., Guzzo, M. M., Middel, T. A., Ridgway, M. S. & McMeans, B. C. 2022. Seasonality can affect ecological interactions between fishes of different thermal guilds. Frontiers in Ecology and Evolution 10: 986459 (published 6 October 2022). The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.8",
+      "claim": "in Lake of Two Rivers, Ontario, summer smallmouth bass stayed shallow and nearshore",
+      "source_value": "summer smallmouth occupied shallow positions in nearshore areas, while lake trout were deeper and generally further from shore; on Fig. 3 the bass's summer 40 % habitat ellipse lies at about 0–2 m depth and within roughly 0–180 m of shore (read off the figure)",
+      "location": "p. 9, Results, 'Habitat divergence: Telemetry'; p. 10, Fig. 3; methods p. 3–5",
+      "quote": "smallmouth bass occupying shallow positions in the water column in nearshore areas",
+      "conditions": "Lake of Two Rivers ('Lake 2'), 306.4 ha, maximum depth 41.5 m, mean 14.5 m, a stratified lake-trout lake; fine-scale acoustic positioning array, spring 2017 to winter 2019 (two annual cycles); 17 smallmouth and 17 lake trout tagged with depth-sensing transmitters; positions with error < 6 m for most reference-tag detections; summer = surface water ≥ 15 °C; habitat niche = fish depth × minimum distance to shore, 40 % standard ellipses",
+      "verdict": "confirmed",
+      "note": "The text gives no numbers for the bass's summer depth or distance; the 0–2 m and ≈ 0–180 m are my reading of Fig. 3. The habitat overlap of a random lake trout with the bass's summer niche was 0.09 % (Table 2). The lake is large and deep, unlike Hot Brook."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values that may help: in winter the bass sat deeper (their winter ellipse ≈ 4.5–7.5 m deep and ≈ 90–230 m from shore on Fig. 3, my reading) over a narrower range of distance to shore, and were much less active than lake trout (mean movement 1.1–1.2 m/min against 3.0–5.8 m/min; summer rates were similar, 3.4–3.7 against 2.6–3.1 m/min; p. 10). Few smallmouth were caught in fall (n = 8) and winter (n = 2), and few of their stomachs held food. The study's second lake, Opeongo, had no telemetry. The source prints the two lakes' coordinates; they are not copied here."
+}

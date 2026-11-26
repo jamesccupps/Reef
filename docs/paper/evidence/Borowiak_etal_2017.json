@@ -1,0 +1,62 @@
+{
+  "key": "Borowiak_etal_2017",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (20 July 2018) of the publisher's free PDF on content.sciendo.com; the article is open access under CC BY-NC-ND 3.0 (Crossref licence record). The Sciendo and DOI links now return 404 (the journal moved to MDPI)",
+    "url": "https://web.archive.org/web/20180720130520id_/https://content.sciendo.com/downloadpdf/journals/limre/17/4/article-p171.pdf",
+    "file": "docs/research_notes/fetched/v2/Borowiak_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Borowiak, D., Bociąg, K., Nowiński, K. & Borowiak, M. 2017. Light requirements of water lobelia (Lobelia dortmanna L.). Limnological Review 17(4): 171–182, doi:10.1515/limre-2017-0016. The entry agrees. Crossref now lists the publisher as MDPI AG."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.3",
+      "claim": "water lobelia was studied in 25 Polish soft-water lakes",
+      "location": "p. 171 (PDF p. 1), Abstract; Table 1, p. 173",
+      "quote": "studied in 25 soft water lobelia lakes in north-western Poland",
+      "conditions": "Pomeranian lakes; light measured twice a year (mid-spring, mid-summer) in 2014–2015",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "water lobelia reached a median of only 0.8 m (range 0.1–2.2 m)",
+      "location": "p. 171 (PDF p. 1), Abstract; p. 175 (PDF p. 5), Results and Table 2",
+      "quote": "ranged from 0.1 to 2.2 m (median zC = 0.8 m",
+      "conditions": "zC = maximum depth of colonization of each lake's lobelia population; mean zC 1.0 m; 0.1 m in Lake Czarne by Borzytuchom, 2.2 m in Ostronek and Rekowskie",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "the maximum depth is about SD/3",
+      "location": "p. 171 (PDF p. 1), Abstract; p. 180 (PDF p. 10), Discussion",
+      "quote": "accounts for approximately a third of the Secchi disc depth",
+      "conditions": "a ratio of means across the lakes: mean zC 1 m against mean Secchi depth 2.8 m (and one fifth of the mean euphotic depth, 5 m); not a per-lake rule",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "at ~43 % of subsurface light",
+      "location": "p. 171 (PDF p. 1), Abstract; p. 179 (PDF p. 9), Discussion",
+      "quote": "irradiance of PAR at zC equal to about 43% of subsurface irradiance",
+      "conditions": "relative PAR at zC: mean 43.2 %, median 43.8 % across the 25 lakes; individual lakes ranged 10.2–87.7 %",
+      "verdict": "confirmed",
+      "note": "The authors stress the wide between-lake range and prefer a minimum light exposure to a single species limit."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://content.sciendo.com/downloadpdf/journals/limre/17/4/article-p171.pdf", "status": 404, "note": "the OpenAlex PDF link; Sciendo no longer hosts the journal" },
+    { "url": "https://sciendo.com/pdf/10.1515/limre-2017-0016", "status": 404, "note": "" },
+    { "url": "https://www.mdpi.com/2300-7575/17/4/171/pdf", "status": 200, "note": "not a PDF (0 chars; a guessed MDPI path)" },
+    { "url": "https://doi.org/10.1515/limre-2017-0016", "status": 404, "note": "the DOI resolves to a dead Sciendo page" },
+    { "url": "https://www.sciendo.com/article/10.1515/limre-2017-0016", "status": 404, "note": "Crossref's resource URL" },
+    { "url": "http://content.sciendo.com/view/journals/limre/17/4/article-p171.xml", "status": 404, "note": "Crossref's text-mining link" }
+  ],
+  "notes": "Other values: euphotic depth ≈ 1.8 × Secchi depth across the lakes (zEU = 1.8 SD, R² 0.84); theoretical maximum colonization depth zTC = 0.922 Kd,PAR^−0.791; the clearest Pomeranian lakes (Kd,PAR 0.35–0.42 m⁻¹) have lobelia to 1.8–2.2 m; lakes are soft-water (median conductivity 60 µS/cm, Ca 4.1 mg/L). The DOI is dead; cite with the Wayback or MDPI copy if a link is needed."
+}

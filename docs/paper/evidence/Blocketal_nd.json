@@ -1,0 +1,79 @@
+{
+  "key": "Blocketal_nd",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' draft manuscript ('Draft 4', Word file) posted openly on the University of Vermont's Vermont Monitoring Cooperative project page (project 1628, winter fish ecology); converted to text for searching (Blocketal_nd.html/.txt). The draft is public, not private",
+    "url": "https://vmc.w3.uvm.edu/vmcdevel/attachments/project/1628/Block_et_al__-_Draft_4.docx",
+    "file": "docs/research_notes/fetched/v2/Blocketal_nd.docx"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the draft's title page; Crossref for the published version",
+    "ok": false,
+    "corrections": "complete the entry: Block, B. D., Stockwell, J. D. & Marsden, J. E. n.d. Contributions of winter foraging to the annual growth of thermally dissimilar fish species. Draft manuscript (Draft 4), Rubenstein Ecosystem Science Laboratory, University of Vermont; posted on the Vermont Monitoring Cooperative site. It was published as Block, B. D., Stockwell, J. D. & Marsden, J. E. 2020. Hydrobiologia 847(20): 4325–4341, doi:10.1007/s10750-020-04428-2 (Crossref). The published version is subscription-only and was not read: cite it only after checking the numbers below against it, or cite the draft explicitly as a draft",
+    "note": "The paper's in-text 'Block et al., draft manuscript' (§3.5.4, the winter paragraph in 03_synthesis_fish_to_forest.md, line ~240) is where this entry is used; show.mjs found no match because the key has no year."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4 (the winter paragraph)",
+      "claim": "in Lake Champlain's Keeler Bay 34 % of perch stomachs were empty in winter against 8–10 % in spring and summer",
+      "location": "Results, first paragraph (web-text p. 1; the draft has no page numbers)",
+      "quote": "winter (34%, n = 122), and low in spring (8%, n = 99)",
+      "conditions": "yellow perch, Keeler Bay (470 ha, 12 m max depth, ice 4–5 months), September 2018–October 2019; summer 10 % (n = 77); autumn 2018 39 % (n = 44); winter fish were angled with jigs and maggots, open-water fish taken in 2-h gill-net and fyke-net sets",
+      "verdict": "confirmed",
+      "note": "The authors warn that angling may have targeted actively feeding fish, so winter empty-stomach rates may be biased low."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "the perch grew in winter",
+      "location": "Results, section 'Bioenergetics model simulations'; Discussion (draft unpaginated; web-text p. 1)",
+      "quote": "winter foraging provides sufficient energy for overwinter growth in yellow perch",
+      "conditions": "modeled (FB4, age-3 fish, fitted to observed annual growth); growth rates positive in winter except lowest in February; condition rose through winter, but PTLC (lipid) was lowest in March",
+      "verdict": "confirmed",
+      "note": "Growth is the bioenergetics model's output, not a measured winter mass gain."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "pumpkinseed ate rarely and lost lipid in winter",
+      "location": "Results, first paragraph and section on lipid; Discussion (draft unpaginated; web-text p. 1)",
+      "quote": "the sunfishes ate infrequently in winter",
+      "conditions": "76 % of pumpkinseed empty in winter (n = 34); PTLC lowest in winter",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "pumpkinseed lost condition in winter",
+      "source_value": "the draft contradicts itself: Results say pumpkinseed condition 'appeared to increase over the winter and summer and decrease in autumn'; the Discussion says PTLC and condition of both sunfishes were lowest in winter",
+      "location": "Results, section 'Percent total lipid content, condition, and gonadosomatic index'; Discussion (draft unpaginated; web-text p. 1)",
+      "quote": "In pumpkinseed, condition appeared to increase over the winter and summer",
+      "conditions": "Fulton's K from wet mass and total length",
+      "verdict": "corrected",
+      "note": "Say 'lost lipid' (supported) and drop 'and condition' for pumpkinseed, or check the published version's Fig. 5."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "modeled summer-peak consumption was 6.0 times February's in perch",
+      "source_value": "6.0 times higher in summer than in winter (the text does not say February for perch)",
+      "location": "Results, section 'Bioenergetics model simulations', first paragraph; Fig. 6 (web-text p. 1)",
+      "quote": "daily consumption rates were 6.0 times higher and metabolic rates were 5.3 times higher",
+      "conditions": "FB4 yellow perch parameters, age-3 fish; modeled fish assumed at 4.0 °C in winter, otherwise min(ambient ~3.5-m temperature, 25 °C)",
+      "verdict": "corrected",
+      "note": "Write 'summer against winter' for perch, or read Fig. 6 of the published version to confirm a February basis."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "and 10.6 times in pumpkinseed",
+      "location": "Results, section 'Bioenergetics model simulations', second paragraph (web-text p. 1)",
+      "quote": "10.6 times higher and metabolic rates were 5.7 times higher in August than in February",
+      "conditions": "pumpkinseed MODELED WITH THE FB4 BLUEGILL PARAMETERS (no pumpkinseed model exists); age-3 fish; August peak against February",
+      "verdict": "confirmed",
+      "note": "In a paragraph (§3.5.4) about how surrogate parameter sets diverge from field evidence, the rewrite should say that this pumpkinseed ratio itself comes from the bluegill surrogate. Bluegill: 17.8× (July against February)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://link.springer.com/article/10.1007/s10750-020-04428-2", "status": 303, "note": "the published version (Hydrobiologia 2020): subscription ('Buy article'); not read" }
+  ],
+  "notes": "The draft is public (UVM's Vermont Monitoring Cooperative), so it can be cited, but it is a pre-review draft whose numbers may have changed in the 2020 Hydrobiologia article; the human may want the published PDF through a library to confirm 34/8/10 %, 6.0× and 10.6×. Other values: winter diets were isopods and amphipods (perch, also fish) and isopods (sunfishes); average items per perch stomach 10.5 in winter against 528.4 in summer; pumpkinseed winter stomachs had the highest mean biomass (84.2 mg) though fewest items; perch gonads developed through winter, bluegill not until after ice-out. Caveat for §3.5.4's 'Yellow perch … roughly hold their lipid (Sullivan 1986)': in Keeler Bay perch lipid fell to its annual low in March."
+}

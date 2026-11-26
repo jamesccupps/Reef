@@ -1,0 +1,106 @@
+{
+  "key": "BlukaczRichards_Koops_2012",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article's Supplement 1 (the Bay of Quinte Ecopath input table and diet matrix), posted openly by the Aquatic Ecosystem Health & Management Society on aehms.org. The article itself is subscription-only and was not read; every claim below is from the supplement's tables",
+    "url": "https://aehms.org/wp-content/uploads/2018/08/Blukacz-Richards-and-Koops-Supplement.pdf",
+    "file": "docs/research_notes/fetched/v2/BlukaczRichards_Koops_2012.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "Crossref and the supplement's title block",
+    "ok": true,
+    "corrections": "",
+    "note": "Blukacz-Richards, E. A. & Koops, M. A. 2012. An integrated approach to identifying ecosystem recovery targets: application to the Bay of Quinte. Aquatic Ecosystem Health & Management 15(4): 464–472, doi:10.1080/14634988.2012.738997. The entry (with its supplement URL) agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9",
+      "claim": "Q/B is 4.07 for smallmouth in the Bay of Quinte food-web model",
+      "location": "Supplement 1, p. 3 (PDF p. 3), Table 1",
+      "quote": "Smallmouth Bass 0.06 0.35 4.07 0.2",
+      "quote_from": "table",
+      "conditions": "Bay of Quinte, Lake Ontario, 1994–2000 (post-dreissenid) Ecopath model; biomass 0.06 t/km², P/B 0.35/yr, Q/B 4.07/yr",
+      "verdict": "confirmed",
+      "note": "Not a measured consumption rate: for all fish except walleye and white perch, Q/B was computed from P/B with a modified Ney (1990) equation (Supplement p. 2). Other piscivore rows: 'Piscivores' 4.90, walleye 5+ 4.03."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "the model's fish standing stock is about 165 kg/ha and exceeds zooplankton biomass",
+      "location": "Supplement 1, pp. 2–4 (PDF pp. 2–4), Table 1, biomass column (t/km²)",
+      "quote": "Yellow Perch (1) 3.2 0.58 3.85 0.2",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "conditions": "sum of the 22 fish rows (piscivores to gizzard shad; cormorants excluded)",
+      "verdict": "confirmed",
+      "note": "Fish biomass sums to 16.475 t/km² = 164.75 kg/ha (1 t/km² = 10 kg/ha); zooplankton (Cercopagis, predatory cladocerans, copepods, rotifers, herbivorous zooplankton) 4.702 t/km² = 47 kg/ha. Inputs read on the page images."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "production is about 2,650 g m⁻² yr⁻¹ for phytoplankton",
+      "location": "Supplement 1, p. 4 (PDF p. 4), Table 1, the five phytoplankton rows",
+      "quote": "remaining edible* 7.01 257.17",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "conditions": "production = biomass × P/B; 1 t/km² = 1 g/m²",
+      "verdict": "confirmed",
+      "note": "0.15×219.99 + 1.20×370.28 + 1.25×226.23 + 0.35×245.38 + 7.01×257.17 = 2,648.8. Macrophytes (615.6), epiphytes (583.2) and periphyton (42.5) are not included."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "production is about 240 g m⁻² yr⁻¹ for zooplankton",
+      "location": "Supplement 1, p. 4 (PDF p. 4), Table 1",
+      "quote": "Herbivorous Zooplankton 3.68 51.98 189.07 0.6",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "verdict": "confirmed",
+      "note": "0.013×26.52 + 0.027×39.73 + 0.85×46.67 + 0.132×53.91 + 3.68×51.98 = 239.5."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "production is about 125 g m⁻² yr⁻¹ for bottom invertebrates other than dreissenid mussels",
+      "location": "Supplement 1, pp. 3–4 (PDF pp. 3–4), Table 1",
+      "quote": "Chironomids* 4.869 14.31 55.72 0.2",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "verdict": "confirmed",
+      "note": "Other benthos, insects, oligochaetes, chironomids, amphipods, isopods, gastropods, bivalves: 125.4. Dreissenids alone: 225 × 1.33 = 299.3, more than the zooplankton."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "production is about 19.6 g m⁻² yr⁻¹ for fish",
+      "source_value": "19.55 (19.548), i.e. about 19.5; 19.6 is reached only if the cormorant row (0.0026) is added",
+      "location": "Supplement 1, pp. 2–3 (PDF pp. 2–3), Table 1",
+      "quote": "Panfish YOY 0.476 8.91 25.84 0.2",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "verdict": "corrected",
+      "note": "Sum of biomass × P/B over the 22 fish rows = 19.548 g m⁻² yr⁻¹. A rounding matter only; the transfer efficiencies below do not change."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "transfer efficiencies of about 9 % phytoplankton→zooplankton, 5.4 % zooplankton and bottom invertebrates→fish, 0.74 % phytoplankton→fish (project calculations from the model's tables)",
+      "location": "Supplement 1, Table 1 (pp. 2–4)",
+      "quote": "Dreissinids 225 1.33 6.83 0.6",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "verdict": "confirmed",
+      "note": "239.5/2,648.8 = 9.04 %; 19.55/(239.5 + 125.4) = 5.36 %; 19.55/2,648.8 = 0.738 %. These ratios exclude dreissenid production (299/yr): with it, fish/(zooplankton + all benthos) = 2.9 %. They also count only phytoplankton as primary production. They are ratios of production between levels, not the model's own trophic transfer efficiencies (which the supplement does not print). The rewrite should say both exclusions."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "the units are g m⁻² yr⁻¹, probably wet weight; the model's supplement does not say",
+      "location": "Supplement 1, Table 1 header, p. 2 (PDF p. 2)",
+      "quote": "Group name Biomass (t/km²) P/B Q/ B",
+      "verdict": "confirmed",
+      "note": "The supplement gives biomass in t/km² and nowhere says wet or dry. Whether the article does is unknown (not read)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://doi.org/10.1080/14634988.2012.738997", "status": 403, "note": "the article (Taylor & Francis / now AEHM's publisher): refuses scripts; subscription. A library login would open it" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/14634988.2012.738997\"&format=json&resultType=lite", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "The base model is Koops et al. (2006); this paper modified it (benthos split into nine groups, phytoplankton into five). Biomass values are direct estimates averaged over years and stations. A puzzle in Table 1: the macrophyte row shows 96.30 in the Q/B column, the same as the cormorants' Q/B; it does not affect the paper's numbers. 'Piscivores eat about three to five times their own biomass a year' fits this table (piscivore Q/B 4.03–4.90)."
+}

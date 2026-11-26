@@ -1,0 +1,31 @@
+{
+  "key": "Borowiec_etal_2016",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from McMaster University's Experts page for the article (the publisher's abstract and bibliographic record); the article is Elsevier subscription content. A stand-in was also read in full: K. D. Crans's 2014 McMaster MSc thesis (MacSphere, open), whose Chapter 3 presents the same sunfish hypoxia-temperature experiments as 'preliminary data' (Crans is the article's second author)",
+    "url": "https://experts.mcmaster.ca/scholarly-works/761947",
+    "file": "docs/research_notes/fetched/v2/Borowiec_etal_2016.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and McMaster's record",
+    "ok": true,
+    "corrections": "",
+    "note": "Borowiec, B. G., Crans, K. D., Khajali, F., Pranckevicius, N. A., Young, A. & Scott, G. R. 2016. Interspecific and environment-induced variation in hypoxia tolerance in sunfish. Comparative Biochemistry and Physiology Part A 198: 59–71 (1 August 2016), doi:10.1016/j.cbpa.2016.04.010. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (pumpkinseed, O₂ column)",
+      "claim": "pumpkinseed take ≥ 2× bluegill's time to lose equilibrium at 2 kPa O₂",
+      "verdict": "unchecked",
+      "note": "Full text not read. The abstract (not usable to confirm) agrees but with a condition the table omits: time to LOE was measured in sustained hypoxia at PO2 2 kPa, and pumpkinseed had ≥ 2-fold longer time to LOE than bluegill and hybrids 'across this temperature range' (15–25 °C), while their greater tolerance 'collapsed at 28°C'. Add '(15–25 °C; not at 28 °C)'. STAND-IN: Crans 2014 MSc thesis (see notes) Fig. 3-1D shows the same pattern at a constant 1.0 mg O2/L: pumpkinseed ≈ 580 vs bluegill ≈ 250 min at 15 °C, ≈ 69 vs ≈ 31 min at 25 °C, ≈ 43 vs ≈ 29 min at 28 °C (my reading of the figure; ratios ≈ 2.3, 2.2, 1.5); its text: 'Pumpkinseed sunfish have a longer time to LOE across all experimental temperatures' (p. 49, PDF p. 59)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/j.cbpa.2016.04.010", "status": "not fetched", "note": "Elsevier; the page a library login would open. Europe PMC (PMID 27085372) lists it as 'Subscription required'" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1016/j.cbpa.2016.04.010\"&format=json&resultType=core", "status": 200, "note": "1 hit, PMID 27085372, no PMC copy" }
+  ],
+  "notes": "Stand-in, read in full: Crans, K. D. 2014. Mechanisms, evolution, and phenotypic plasticity of hypoxia tolerance among bass and sunfish (family Centrarchidae). MSc thesis, McMaster University (MacSphere handle 11375/16349; PDF https://prod-ms-be.lib.mcmaster.ca/server/api/core/bitstreams/ce9a90c8-6934-45bf-9092-b398377b1ad3/content; saved as Borowiec_etal_2016.standin-Crans2014MSc.pdf). Chapter 3 ('The effects of temperature on hypoxia tolerance', p. 45, PDF p. 55): lab-acclimated (12–15 °C) pumpkinseed, bluegill and hybrids tested at 15, 25 and 28 °C; time to LOE at a constant 1.0 mg O2/L; pumpkinseed most tolerant by time to LOE but most sensitive to warming, with a higher Pcrit than bluegill at 28 °C. It supports the direction and the ≈ 2× ratio at 15–25 °C, but at 1.0 mg O2/L, not 2 kPa, and as preliminary data. Cite the 2016 article for the 2-kPa figure once read, or cite the thesis with its own test condition. Chapter 2 compares exercise and hypoxia tolerance across largemouth bass, rock bass, pumpkinseed and bluegill."
+}

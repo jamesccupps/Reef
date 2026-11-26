@@ -1,0 +1,41 @@
+{
+  "key": "Boulfroy_etal_2012",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the USDA Forest Service Treesearch PDF",
+    "url": "https://research.fs.usda.gov/download/treesearch/41699.pdf",
+    "file": "docs/research_notes/fetched/v2/Boulfroy_etal_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (PDF p. 3)",
+    "ok": true,
+    "corrections": "",
+    "note": "Boulfroy, E., Forget, E., Hofmeyer, P. V., Kenefic, L. S., Larouche, C., Lessard, G., Lussier, J.-M., Pinto, F., Ruel, J.-C. & Weiskittel, A. 2012. Silvicultural Guide for Northern White-Cedar (Eastern White Cedar). General Technical Report NRS-98. USDA Forest Service, Northern Research Station, Newtown Square, PA (August 2012), in cooperation with Natural Resources Canada, Canadian Forest Service. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.8",
+      "claim": "northern white-cedar persists around lakes because shores shelter it from fire and it resists ice",
+      "source_value": "stated for the boreal forest in the guide's Quebec section: cedar is often present around lakes because of protection against forest fires and its capacity to resist the mechanical effect of ice (citing the guide's ref. 33)",
+      "location": "p. 18 (PDF p. 24), 'In Quebec'",
+      "quote": "In the boreal forest, cedar is often present around lakes because of the",
+      "conditions": "Quebec's boreal forest; 'ice' is the mechanical action of (lake) ice; a compiled statement, not a measurement",
+      "verdict": "corrected",
+      "note": "The substance holds, but the source gives it for Quebec's boreal forest, not Maine or lakeshores generally; say so in the rewrite. 'Resists ice' should be 'resists the mechanical effect of ice': the same guide rates cedar's resistance to ice rain, ice and snow (crown breakage) as low (Table 4, continued, p. 12, PDF p. 18) and calls its wood weak and susceptible to wind, ice and snow damage (p. 8)."
+    },
+    {
+      "paper": "§3.8.8",
+      "claim": "Maine holds 88 % of the Northeast's cedar type",
+      "location": "p. 19 (PDF p. 25), 'In the Northeastern United States'",
+      "quote": "more than 400,000 hectares (1 million acres, or 88 percent) are in Maine",
+      "conditions": "area of the northern white-cedar forest type (FIA data) in the northeastern United States, almost 0.5 million ha in all; the region's FIA states named are New York, Vermont, New Hampshire and Maine",
+      "verdict": "confirmed",
+      "note": "'Northeast' here means the northeastern United States (not adjacent Canada). The same page: 83 % of the region's cedar growing-stock trees are in Maine; 75 % of the cedar type is on lowlands (54 % flatwoods, 21 % swamps and bogs)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Nothing else in the paper cites this guide. The shore sentence's 'persists around lakes' is a fair gloss but should carry the boreal/Quebec context."
+}

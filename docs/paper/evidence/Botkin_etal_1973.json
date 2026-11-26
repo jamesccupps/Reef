@@ -1,0 +1,43 @@
+{
+  "key": "Botkin_etal_1973",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (23 July 2018) of the publisher's free PDF on pnas.org (PNAS back content is free to read); PMC's own PDF (PMC427100) returned a bot-check page and was not used",
+    "url": "https://web.archive.org/web/20180723184918id_/http://www.pnas.org/content/pnas/70/10/2745.full.pdf",
+    "file": "docs/research_notes/fetched/v2/Botkin_etal_1973.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": false,
+    "corrections": "drop '(abstract only.)' from the reference note and '(abstract only)' from §3.8.4: the full text is free and was read. Otherwise the entry agrees: Botkin, D. B., Jordan, P. A., Dominski, A. S., Lowendorf, H. S. & Hutchinson, G. E. 1973. Sodium dynamics in a northern ecosystem. PNAS 70(10): 2745–2748 (October 1973)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "aquatic plants supply sodium (to moose)",
+      "location": "p. 2745 (PDF p. 1), Abstract and text; p. 2746 (PDF p. 2), Table 1",
+      "quote": "submerged and floating leaved water-plants are relatively rich",
+      "conditions": "Isle Royale, Lake Superior; sodium in submerged and floating aquatics ≈ 500-fold, and in emergents and hygrophytes ≈ 50-fold, that of the island's terrestrial plants; browse averages 10 ppm Na; summer aquatic feeding 'would provide an adequate source, if the animal can store the element'",
+      "verdict": "confirmed",
+      "note": "An estimate, not a measured sodium budget: the herd's need is put at 243 kg/yr; browse eaten would supply only 7–14 % of it; aquatic production at ≥ 500 ppm might hold ~2,500 kg, about 10 times the need (p. 2747)."
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "leaves supply energy (Belovsky 1981; Botkin et al. 1973)",
+      "verdict": "unsupported",
+      "note": "Botkin et al. say nothing about energy. They state only that browse (current leaves and twigs, some bark) is about 90 % of the moose's annual intake and is very poor in sodium. The energy half of the sentence must rest on Belovsky 1981 alone."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://europepmc.org/articles/PMC427100?pdf=render", "status": 403, "note": "" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC427100/", "status": 200, "note": "PMC landing page only (a scanned-article record; kept briefly, replaced by the PDF)" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC427100/pdf/pnas00137-0035.pdf", "status": 200, "note": "bot-check page (not kept)" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/instance/427100/pdf/pnas00137-0035.pdf", "status": 200, "note": "70 chars, not the PDF" },
+    { "url": "https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC427100&blobtype=pdf", "status": 403, "note": "" },
+    { "url": "https://www.pnas.org/doi/pdf/10.1073/pnas.70.10.2745", "status": 403, "note": "pnas.org refuses scripts" }
+  ],
+  "notes": "Other values: moose on Isle Royale feed extensively on aquatic macrophytes for about 8 weeks in summer; sodium at the mud licks averages 24 ppm; aquatic plants' chloride exceeds their sodium, so they also supply NaCl. Table 1 gives sodium (ppm, dry) by species (e.g. Nuphar, Potamogeton, Chara) but its layout is jumbled in the text layer: read it on the page image before using any value."
+}

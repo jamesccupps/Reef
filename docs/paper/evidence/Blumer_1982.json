@@ -1,0 +1,33 @@
+{
+  "key": "Blumer_1982",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the thesis's University of Michigan Deep Blue record answered scripts with HTTP 403 (bot check), and a search summary says its file is restricted to current U-M users; the abstract itself was not read first-hand",
+    "url": "https://deepblue.lib.umich.edu/items/60e33db4-7a1e-41a3-9f57-1b5fc3ae605a",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Blumer's own reference list in Blumer 1986, Behav. Ecol. Sociobiol. 19: 97–104 (Springer article page, public citation metadata)",
+    "ok": false,
+    "corrections": "complete the entry: Blumer, L. S. 1982. Parental care and reproductive ecology of the North American catfish, Ictalurus nebulosus. PhD thesis, University of Michigan, Ann Arbor. 160 pp. (Blumer himself cites it as '1982b'; his 1982a is 'A bibliography and categorization of bony fishes exhibiting parental care')",
+    "note": "The research note forage_fish_early_life.md links the 'thesis abstract' to Deep Blue item 8a87c33f-8b48-4022-a2ea-78541cc47786, which a search result titles 'Parental care sex differences in the brown bullhead…' (the 1986 Behav. Ecol. Sociobiol. paper), not the thesis; the thesis record is item 60e33db4-7a1e-41a3-9f57-1b5fc3ae605a. So the note's 'thesis abstract' may have been read from the 1986b paper's record."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "brood attendance raised survival mainly against predation (Blumer 1982, thesis abstract)",
+      "verdict": "unchecked",
+      "note": "Neither the thesis nor its abstract could be read. A search-engine summary of the Deep Blue record (secondary; not usable) says adult-removal experiments showed attendance benefits offspring survival and that 'a major function' of care is to minimize predation. Caution for the rewrite: the abstract of Blumer 1986a (see Blumer_1986a) adds that broods failed even when predators were excluded (fungus, gas exchange), so 'mainly against predation' may overstate it; 'a major function is to minimize predation' is the safer wording."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://deepblue.lib.umich.edu/items/60e33db4-7a1e-41a3-9f57-1b5fc3ae605a/full", "status": 403, "note": "Deep Blue thesis record: bot check (Cloudflare); not worked around. Per a search summary the PDF is restricted to current U-M faculty, staff and students" },
+    { "url": "https://deepblue.lib.umich.edu/items/8a87c33f-8b48-4022-a2ea-78541cc47786", "status": 403, "note": "the record the research note links (apparently the 1986 Behav. Ecol. Sociobiol. paper); bot check" },
+    { "url": "https://archive.org/advancedsearch.php?q=Blumer Ictalurus nebulosus&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 items" },
+    { "url": "https://api.openalex.org/works?search=parental care reproductive ecology North American catfish Ictalurus nebulosus", "status": 429, "note": "OpenAlex daily budget exhausted (no key requested)" }
+  ],
+  "notes": "ProQuest Dissertations would hold it (a search summary names the file 8304444.pdf, i.e. probably UMI order no. 8304444; unverified). The thesis likely holds the data behind Blumer 1985 (Am. Midl. Nat.), 1985 (EBF), 1986a and 1986b, including the 56.2/39.3/4.5 % care split; a human with U-M or ProQuest access could settle which work prints which number."
+}

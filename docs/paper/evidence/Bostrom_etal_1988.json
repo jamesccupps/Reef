@@ -1,0 +1,42 @@
+{
+  "key": "Bostrom_etal_1988",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Springer subscription content (the PDF and article pages are paywall pages); no free copy known (Semantic Scholar: openAccessPdf CLOSED; Europe PMC: 0 hits)",
+    "url": "https://link.springer.com/article/10.1007/BF00024902",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Boström, B., Persson, G. & Broberg, B. 1988. Bioavailability of different phosphorus forms in freshwater systems. Hydrobiologia 170(1): 133–155, doi:10.1007/BF00024902. The entry agrees. (Hydrobiologia 170 was also issued as a book, Persson & Jansson (eds), Phosphorus in Freshwater Ecosystems, Developments in Hydrobiology; no open copy found on the Internet Archive.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.2",
+      "claim": "SRP is essentially all available to algae, but much high-molecular-weight dissolved P goes unused (Boström, Persson & Broberg 1988, abstract)",
+      "verdict": "unchecked",
+      "note": "Full text not read; the abstract was not read in this pass either (the Springer page is a paywall page to scripts; the attempt to read the abstract through Semantic Scholar was refused by the session's permission system). The research note catchment_P_loads.md quotes the abstract: 'Large fractions of dissolved P go unused and are mainly in the high molecular weight fraction', and says immediately available P is often less than DRP at low concentrations (< 10 µg DRP/L). If that is right, 'SRP is essentially all available' needs that qualification at low SRP."
+    },
+    {
+      "paper": "§3.2.2 (the project's working assumption, via catchment_P_loads.md)",
+      "claim": "about a fifth of forest particulate P is available (NaOH-extractable P ≈ algal-available PP, Boström)",
+      "verdict": "unchecked",
+      "note": "The paper credits the fractions to the project, but the note leans on Boström for 'NaOH-P ≈ available PP' and for the DOP fraction; unverified."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00024902.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00024902", "status": 200, "note": "paywall page to scripts (not kept)" },
+    { "url": "https://doi.org/10.1007/BF00024902", "status": "not fetched", "note": "the publisher's page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00024902\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00024902?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00024902?fields=title,abstract", "status": "refused", "note": "refused by the session's permission system; not retried" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(phosphorus in freshwater ecosystems)", "status": 200, "note": "0 items" }
+  ],
+  "notes": "A review; the paper cites it only for the general SRP/HMW-DOP point. If the full text is fetched, check whether it gives an algal-available fraction for particulate P from forest soils and for coloured-water DOP, which the project's 0.2 and 0.25 assumptions draw on."
+}

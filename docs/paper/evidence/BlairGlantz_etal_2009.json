@@ -1,0 +1,32 @@
+{
+  "key": "BlairGlantz_etal_2009",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the GSA meeting-abstract page (the abstract is the whole publication), served by GSA's Confex/m-anage program site",
+    "url": "https://gsa.confex.com/gsa/2009NE/webprogram/Paper155679.html",
+    "file": "docs/research_notes/fetched/v2/BlairGlantz_etal_2009.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the GSA abstract page",
+    "ok": true,
+    "corrections": "",
+    "note": "Blair-Glantz, S., Wilson, K. & Willis, T. V. 2009. Zooplankton population analysis and body length measurement in Damariscotta Lake, Maine in relation to alewife populations. GSA Abstracts with Programs 41(3): 111; Northeastern Section 44th Annual Meeting (22–24 March 2009), Session 55, Paper No. 3 (poster). University of Southern Maine. The entry agrees. It is a conference abstract, so the paper's '(abstract only)' is accurate as a description of the publication type."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "in Damariscotta Lake daphniids \"dropped sharply after juvenile alewives appeared\" (quoted)",
+      "source_value": "the abstract's words are 'their populations dropped dramatically soon after the appearance of alewife juveniles' (of Daphniidae, 'initially abundant')",
+      "location": "web page (the abstract), sentence 5",
+      "quote": "their populations dropped dramatically soon after the appearance of alewife juveniles",
+      "conditions": "Damariscotta Lake, Maine; 5 monthly samples June–October 2008; eight zooplankton groups counted and measured; two basins (zooplankton more abundant and larger in the main north basin than the Muscongus south basin)",
+      "verdict": "corrected",
+      "note": "The meaning is right but the words in quotation marks are not the source's: quote it exactly or paraphrase without quotation marks. The alewife link is the authors' interpretation: the abstract reports no alewife sampling and says the changes 'correspond to the time of the summer that juvenile alewives would be expected to' eat larger zooplankton; it also offers basin morphology or productivity as explanations for the basin difference."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other points in the abstract: average Daphniidae body length 'dropped somewhat' over the five months; copepod nauplii increased greatly in number and slightly in size. No numbers (densities or lengths) are given."
+}

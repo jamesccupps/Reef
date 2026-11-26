@@ -1,0 +1,55 @@
+{
+  "key": "Bilodeau_etal_2004",
+  "reader": "wave-3 batch w3-29",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the only copy found is a scanned document in BAnQ's digital collections, which redirects automated clients to a security page (bot check); no other copy found",
+    "url": "https://collections.banq.qc.ca/document/s/t/GZlyIYdwoR_TNdsc2_ypJg",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "not checked against the title page (no access); a search summary of BAnQ's record agrees with the entry",
+    "ok": true,
+    "corrections": "",
+    "note": "Per that summary (secondary): Rapport technique 16-23, November 2004, Ministère des Ressources naturelles, de la Faune et des Parcs, Direction de l'aménagement de la faune de Montréal, de Laval et de la Montérégie, Longueuil; authors Pierre Bilodeau, Bertrand Dumas and Huguette Massé. The research note gives 'xii + 43 p. + annexes'. Verify against the title page when the PDF is in hand."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.8",
+      "claim": "unstratified Missisquoi Bay, Lake Champlain, is 3–5 m deep",
+      "verdict": "unchecked",
+      "note": "The research note (white_perch_habitat_and_predation.md) says gill-net stations were 3.0–4.9 m deep, 24.6–25.4 °C at every station, Secchi 0.65–1.0 m, nets not set shallower than 2.5 m; not verified."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "white perch were 65.8 % of the fish in 24-h gill nets",
+      "verdict": "unchecked",
+      "note": "The note gives 1,338 of 2,033 fish (16 species), 14 stations, 18–22 August 2003, one 60.8-m multi-mesh net per station lifted after ~24–27 h; not verified."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "white perch were caught at all 14 open-bay stations",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "shore seines at 0.5–2.5 m took white perch at only 8 of 27 stations",
+      "verdict": "unchecked",
+      "note": "The note: September seines took 254 white perch averaging ~11 g; not verified."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "pike, smallmouth and largemouth were netted at 11, 10 and 5 of the 14 open-bay stations",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://collections.banq.qc.ca/document/s/t/GZlyIYdwoR_TNdsc2_ypJg", "status": 200, "note": "getsrc: 792 chars, a viewer shell, not the text. WebFetch showed a 303 redirect to indispo.banq.qc.ca/securitypage.html (a bot-check page); not followed. A human with a browser can open the BAnQ PDF here" },
+    { "url": "https://collections.banq.qc.ca/document/s/t/GZlyIYdwoR_TNdsc2_ypJg", "status": "refused", "note": "a first curl of this page was refused by the session's permission system (my command saved it outside the repository); the repeat was made with getsrc into the fetched folder" },
+    { "url": "https://web.archive.org/cdx/search/cdx?url=collections.banq.qc.ca/document/s/t/GZlyIYdwoR_TNdsc2_ypJg*", "status": 200, "note": "no Wayback captures" },
+    { "url": "https://mffp.gouv.qc.ca/documents/faune/RA_RSI_operation_BM_MELCCFP.pdf", "status": 200, "note": "a later MFFP/MELCCFP Réseau de suivi ichtyologique report for this sector that, per a search summary, reuses the 2003 data and cites Bilodeau et al. 2004 (a possible stand-in); the server returned 147 chars, not the PDF" }
+  ],
+  "notes": "Every number in the §3.7.8 sentence rests on the research note, which says the BAnQ PDF was read in an earlier pass; none has been verified in this pass. The human should open the BAnQ PDF in a browser (or ask BAnQ / the MELCCFP Montérégie office for the report) and check the station counts, 65.8 %, the 0.5–2.5-m seine depths and the 8-of-27 seine stations. The later RSI report for Baie Missisquoi (mffp.gouv.qc.ca, RA_RSI_operation_BM_MELCCFP.pdf) may reproduce the 2003 catches."
+}
