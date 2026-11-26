@@ -1,0 +1,32 @@
+{
+  "key": "Terpin_etal_1976",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the U.S. DOE ETDEWEB record (OSTI) — the full text is Elsevier-paywalled",
+    "url": "https://www.osti.gov/etdeweb/biblio/7227758",
+    "file": "docs/research_notes/fetched/v2/Terpin_etal_1976.etdeweb.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the ETDEWEB record (title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Terpin, K. M., Spotila, J. R. & Koons, R. R. (1976), Comp. Biochem. Physiol. A 53(3): 241–244 — matches the citation ('53A(3)')"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (blacknose dace row); src/w3/species3.js:85",
+      "claim": "blacknose dace UILT 28.8–29.9 °C",
+      "verdict": "unchecked",
+      "note": "Only the abstract was read, so no value is confirmed. What the abstract says: fish acclimated at 20 °C to long days (L:D 16:8) had an incipient upper lethal temperature of 29.9 °C, and to short days (8:16) 28.8 °C; long-day fish also resisted longer at all but one test temperature. If the full text agrees, the paper should give the condition: 'at 20 °C acclimation (28.8 °C on short days, 29.9 °C on long days)' — a UILT depends on the acclimation temperature, and Hot Brook's summer water is warmer than 20 °C. species3.js's 'the least heat-tolerant of the four' is a comparison the abstract does not make."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/S0300-9629(76)80028-X", "status": 200, "note": "Elsevier linking page, too short to be the text (not kept); ScienceDirect is paywalled" },
+    { "url": "https://researchdiscovery.drexel.edu/esploro/outputs/journalArticle/Effect-of-photoperiod-on-the-temperature/991021013060204721", "status": 200, "note": "Drexel repository record (a script-rendered page, no file offered)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/S0300-9629(76)80028-X", "status": 200, "note": "openAccessPdf CLOSED (PubMed 2428, abstract only)" }
+  ],
+  "notes": "For the human: ScienceDirect, doi:10.1016/S0300-9629(76)80028-X, with a library login. Check the UILT method (resistance-time series, test temperatures, n), the 20 °C acclimation, and whether any other acclimation temperature was tested. Hart 1952 (via Trial et al. 1983b) gives 29.3 °C per habitat3d_new_species.md — a second, independent value."
+}

@@ -1,0 +1,33 @@
+{
+  "key": "Stemberger_Gilbert_1985",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Secondary only: Ramos-Rodríguez et al. 2020 (J. Exp. Biol. 223: jeb209676), already fetched for its own ledger entry, which restates this source's values",
+    "file": "docs/research_notes/fetched/v2/RamosRodriguez_etal_2020.pdf"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref only (title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Stemberger, R. S. & Gilbert, J. J. (1985), Ecology 66(4): 1151–1159 — matches the citation"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (Keratella cochlearis row); src/config.js:1512",
+      "claim": "Keratella cochlearis at 20 °C: zero-growth food 0.03 mg C/L and r_max 0.28 /d",
+      "verdict": "unchecked",
+      "note": "Full text not read. The secondary source (Ramos-Rodríguez et al. 2020, p. 10 of its PDF, Discussion) says Stemberger & Gilbert (1985) reported rmax 0.28 d⁻¹ and a threshold food level of 0.03 mg C/L for K. cochlearis at 20 °C fed Rhodomonas minuta, the latter 'assuming 50% carbon content of food algae by dry mass'. So the mg C value is Ramos-Rodríguez's conversion (50 % C of dry mass), not a number Stemberger & Gilbert printed. The paper's table already says 'via Ramos-Rodríguez et al. 2020'; the code comment (config.js:1512) credits Stemberger & Gilbert directly and should add 'as converted by Ramos-Rodríguez et al. 2020'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1939167", "status": 403, "note": "Wiley (ESA) refuses scripts; paywalled" },
+    { "url": "https://www.jstor.org/stable/1939167", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://doi.org/10.2307/1939167", "status": 403, "note": "resolves to Wiley, refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1939167", "status": 429, "note": "rate-limited (twice)" },
+    { "url": "web search for an author or repository copy", "status": 0, "note": "none found; NIES rotifer bibliography lists it only as a reprint record" }
+  ],
+  "notes": "For the human: the JSTOR or Wiley page of doi:10.2307/1939167 opens with a library login. What to check there: the threshold food level and r (or rmax) for K. cochlearis at 20 °C on Rhodomonas minuta, and the units the threshold is printed in (dry mass or cells per mL), so the 0.03 mg C/L conversion can be redone. The secondary source also notes K. cochlearis has among the lowest threshold food levels of the eight species (Stemberger & Gilbert 1987, another paper)."
+}

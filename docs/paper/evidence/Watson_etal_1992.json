@@ -1,0 +1,52 @@
+{
+  "key": "Watson_etal_1992",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's copy: a Wayback Machine capture (2013-05-03) of the PDF on co-author J. A. Downing's Iowa State University site (public.iastate.edu/~downing/tier 2/jadpdfs/), openly downloadable; a scan with an OCR text layer",
+    "url": "https://web.archive.org/web/20130503205652id_/http://www.public.iastate.edu/~downing/tier%202/jadpdfs/1992%20Watson%20McCauley%20and%20Downing%20Sigmoid%20relationships.pdf",
+    "file": "docs/research_notes/fetched/v2/Watson_etal_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (citation line) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Can. J. Fish. Aquat. Sci. 49: 2605–2610, 1992 (issue 12 per Crossref); authors Susan Watson, Edward McCauley, John A. Downing"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.1 (edible algae paragraph)",
+      "claim": "small edible algae 'do not vary systematically with phosphorus' across north-temperate lakes, while the inedible fraction does",
+      "source_value": "true of the authors' compilation — 101 lake observations with size-fraction data, from published studies (67 sources, 362 lakes in all), mean summer epilimnetic values, TP 1–200 µg/L, edible = cells or colonies < 35–50 µm (Utermöhl biovolume as wet mass) — but the source never says 'north-temperate': the lakes' geography is not given. Inedible biomass rose > 40-fold and sigmoidally; edible 'appears to increase slightly and then levels off' between ~5 and 30 µg TP/L",
+      "location": "p. 2605 (PDF p. 1), abstract; p. 2606 (PDF p. 2), Data and Analyses; p. 2607 (PDF p. 3), Results; p. 2608 (PDF p. 4), Table 1",
+      "quote": "inedible algal biomass increases nonlinearly with TP by more than 40-fold",
+      "conditions": "Table 1: edible biomass n = 101, cubic regression on log TP r² = 0.22 (P < 0.0001); inedible n = 101, r² = 0.44, LOWESS sigmoidal; TP range 1–200 µg/L for both",
+      "verdict": "corrected",
+      "note": "The quoted phrase is the abstract's, and the Results repeat it ('Edible algae, on the other hand, do not vary systematically with TP'), so the quote stands; drop 'north-temperate' (or say 'across 101 lakes compiled from the literature') and the '(abstract only)' tag. Note that the authors' own parametric fit for edible algae is significant though weak (r² 0.22), so 'not systematically' is their reading of a flat-ish, noisy relation."
+    },
+    {
+      "paper": "src/config.js:1066 (edible-algae comment)",
+      "claim": "edible algae are ~independent of TP",
+      "location": "p. 2605 (PDF p. 1), abstract; p. 2607 (PDF p. 3)",
+      "quote": "do not vary systematically with phosphorus",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "As the authors conclude; the slight rise and levelling between ~5 and 30 µg TP/L and the weak significant cubic fit (r² 0.22) are the fine print."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f92-288",
+      "status": 200,
+      "note": "openAccessPdf CLOSED"
+    },
+    {
+      "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f92-288",
+      "status": 403,
+      "note": "Canadian Science Publishing refuses scripts; no Wayback capture of the publisher PDF"
+    }
+  ],
+  "notes": "Most useful for Hot Brook (TP 5–25 µg/L): the community-structure thresholds (p. 2608, Fig. 5): below ~8–10 µg TP/L total biomass is dominated by edible algae; above that is a transition zone where edible and inedible are similar in relative abundance but the inedible fraction changes faster; above ~30 µg/L inedible algae rapidly dominate, and above ~50 µg/L biomass is almost entirely the large fraction. Total algal biomass (biovolume) is sigmoid in TP: little change below 5 µg/L, a roughly constant rate of rise from ~6 to 60 µg/L, slowing above 65–75 µg/L (LOWESS). The project's NLA classification of 'edible' is taxonomic (flagellates, small diatoms, non-filamentous greens), Watson's is by size (< 35–50 µm), so the two are not strictly comparable."
+}

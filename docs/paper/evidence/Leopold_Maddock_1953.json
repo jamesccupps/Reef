@@ -1,0 +1,32 @@
+{
+  "key": "Leopold_Maddock_1953",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: USGS Publications Warehouse PDF (scanned report with an OCR text layer)",
+    "url": "https://pubs.usgs.gov/pp/0252/report.pdf",
+    "file": "docs/research_notes/fetched/v2/Leopold_Maddock_1953.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "title page: 'The Hydraulic Geometry of Stream Channels and Some Physiographic Implications', by Luna B. Leopold and Thomas Maddock, Jr., Geological Survey Professional Paper 252, Washington 1953. Crossref's low title match (0.64) is only its missing series fields."
+  },
+  "claims": [
+    {
+      "paper": "§4.2 (catchment paragraph); src/config.js:613–616 (BROOK_EXP 0.4)",
+      "claim": "the brook's depth scales as (Q/Q_ref)^0.4 at a station (hydraulic geometry, f ≈ 0.4)",
+      "location": "p. 9 (PDF p. 15) for the at-a-station averages b = 0.26, f = 0.40, m = 0.34; p. 16 (PDF p. 22) for the downstream f = 0.4",
+      "quote": "These averages are b=0.26 f=0.40 m=0.34",
+      "quote_from": "image",
+      "conditions": "d is MEAN depth (cross-sectional area ÷ water-surface width) from current-meter measurements; at-a-station exponents are the mean of 20 river cross sections 'representing a large variety of rivers in the Great Plains and the Southwest', which the authors say are 'biased toward semiarid conditions'; each station's line was drawn by eye on log paper, no statistical fit; the same f = 0.4 holds for the downstream (mean-annual-discharge) relation",
+      "verdict": "confirmed",
+      "note": "The exponent is the source's. Caveats for the rewrite: it is an average over large, mostly semiarid western rivers, and the authors stress the exponents vary among sections with channel shape (a pool-and-riffle Maine brook may differ); a small-stream or New England value would be better if one exists."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: at a station width ∝ Q^0.26 and velocity ∝ Q^0.34 (b + f + m = 1); downstream at mean annual discharge width ∝ Q^0.5, depth ∝ Q^0.4, velocity ∝ Q^0.1 (pp. 9, 16; m = 0.1 downstream and 0.34 at a station also restated p. 26, PDF p. 32). Mean annual discharge is equalled or exceeded about 1 day in 4."
+}

@@ -1,0 +1,44 @@
+{
+  "key": "Srnes_Aksnes_2004",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (2015-09-18) of the free PDF ASLO itself served for L&O back issues (aslo.org/lo/toc/vol_49/issue_1/0069.pdf); openly downloadable",
+    "url": "https://web.archive.org/web/20150918230645id_/http://aslo.org/lo/toc/vol_49/issue_1/0069.pdf",
+    "file": "docs/research_notes/fetched/v2/Srnes_Aksnes_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Limnol. Oceanogr. 49(1): 69–75, 2004; authors Tom A. Sørnes and Dag L. Aksnes; title as cited"
+  },
+  "claims": [
+    {
+      "paper": "§4.5 (young-of-year paragraph); src/config.js:255, :264 (LARV_CMAX [3.42e-7, 2.94]); src/w3/fish3.js:555 (larvVol)",
+      "claim": "fish clear larvae at a visual planktivore's rate, Cmax = 3.42 × 10⁻⁷ L^2.94 m³/s, L in cm",
+      "source_value": "Cmax = 3.42 × 10⁻⁷ L^2.94 (r² = 0.92), Cmax in m³ s⁻¹, L in cm: the maximum clearance rate of visual planktivores (fish) on crustacean prey",
+      "location": "p. 74 (PDF p. 6), Discussion; abstract p. 69 (PDF p. 1); units in Fig. 1 caption p. 70 (PDF p. 2) and Eq. 3 p. 71–72",
+      "quote": "Cmax = 3.42 × 10−7 L2.94 (r2 = 0.92) for fish",
+      "conditions": "log–log regression over n = 48 visual planktivores (adult and larval fish, 2–108 mm) from 22 published feeding studies plus the authors' own Gobiusculus flavescens (4 cm, 12 °C, Artemia nauplii); prey crustaceans 0.05–7.73 mm; only studies where feeding was not light-limited; L is the total or standard length as each study reported it; Cmax is the low-density (maximum) clearance rate, a in Holling's disc equation",
+      "verdict": "confirmed",
+      "note": "The formula, its units and its length scale are as cited. The source's prey are crustaceans (zooplankton, Artemia), not fish larvae: applying it to larvae is the project's step (the research note's §2 comparison with Pepin et al. 1992, Fuiman & Gamble 1988, Cowan & Houde 1993). The rewrite could say 'the maximum clearance rate of visual planktivores on crustacean zooplankton, in good light (Sørnes & Aksnes 2004)'."
+    },
+    {
+      "paper": "src/config.js:255",
+      "claim": "the clearance scales ~L³ because the planktivore's search radius and speed both grow",
+      "location": "p. 74 (PDF p. 6), Discussion",
+      "verdict": "unsupported",
+      "note": "The exponent 2.94 (≈ L³) is confirmed, but the source's explanation is different: the exponent 'may reflect a three-dimensional search image of visual predators' (against 1.77, a two-dimensional sensory area, for tactile predators). It says nothing about search radius and swimming speed both growing; that mechanism is the research note's gloss. Reword the comment or cite a source for it."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.2004.49.1.0069", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.2004.49.1.0069", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.aslo.org/lo/toc/vol_49/issue_1/0069.pdf", "status": 404, "note": "ASLO's old free back-issue URL is gone (the Wayback capture of it was used)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.4319/lo.2004.49.1.0069", "status": 429, "note": "rate-limited" }
+  ],
+  "notes": "Entry verdict 'corrected' only for the code comment's mechanism gloss (config.js:255); the paper's sentence in §4.5 is right. Other values in the source that may help: tactile (gelatinous) planktivores Cmax = 6.02 × 10⁻⁸ L^1.77 (r² 0.75); by dry mass, fish Cmax = 4.86 × 10⁻⁷ DW^0.95 (DW in mg, from DW = 5.62 × 10⁻⁴ L^3.09, Pepin 1995); G. flavescens's predation fell below 5–10 µmol photons m⁻² s⁻¹ and stopped in darkness. The code's LARV_RHO 0.15 (the × 0.15 for zooplankton about) is not from this source."
+}

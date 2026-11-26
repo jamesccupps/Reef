@@ -1,0 +1,44 @@
+{
+  "key": "Tedford_etal_2014",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Read instead, as an intermediary only: Erkkilä et al. 2018, Biogeosciences 15: 429–445 (open access), which restates the Tedford et al. 2014 dissipation and gas-transfer model",
+    "url": "https://bg.copernicus.org/articles/15/429/2018/bg-15-429-2018.pdf",
+    "file": "docs/research_notes/fetched/v2/Tedford_etal_2014.erkkila2018.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Tedford, MacIntyre, Miller, Czikowsky (2014), J. Geophys. Res. Oceans 119(8): 4689–4713 — matches the citation"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.6 (re-aeration paragraph)",
+      "claim": "night convection alone sustains about 0.55–0.93 m d⁻¹ (k600) for heat losses of 25–200 W m⁻² (project computation after Tedford et al. 2014)",
+      "verdict": "unchecked",
+      "note": "Tedford's own text not read. Through the intermediary (Erkkilä et al. 2018, Eq. 5 and 8: ε = c1·u*w³/(κz) + c2·|β| when cooling, c2 = 0.77; k = c4·(εν)^¼·Sc^−½, c4 = 0.5; β = g·αt·Heff/(ρw·Cp)), the project's arithmetic reproduces 0.55, 0.65, 0.78 and 0.93 m d⁻¹ at 25, 50, 100 and 200 W m⁻² for calm water with αt = 2.2 × 10⁻⁴ K⁻¹ and ν = 0.955 × 10⁻⁶ m² s⁻¹ (22 °C), ρw = 998, Cp = 4186 — so the formulation as Erkkilä states it gives the paper's numbers. Whether Tedford's paper prints these constants in this form is unchecked."
+    },
+    {
+      "paper": "src/w3/chem3.js:36–40 (K600_NIGHT 0.6 m/day)",
+      "claim": "a convective floor of 0.34–0.93 m/day at 25–200 W/m² of heat loss (Read et al. 2012, Tedford et al. 2014)",
+      "verdict": "unchecked",
+      "note": "The range spans two formulations (oxygen_metabolism.md §1): Read et al. 2012's constants give 0.34–0.57 m/d and Tedford's (via Erkkilä) 0.55–0.93 m/d over the same heat losses; the comment merges the low end of one with the high end of the other. The paper's §3.1.6 gives only the Tedford range."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1002/2014JC010135", "status": 403, "note": "Wiley refuses scripts (AGU makes its journals free to read 24 months after publication, so a browser should open it)" },
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdfdirect/10.1002/2014JC010135", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1002/2014JC010135", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/10.1002/2014JC010135", "status": 403, "note": "landing page, refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1002/2014JC010135", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1002/2014JC010135\"", "status": 200, "note": "0 hits" },
+    { "url": "https://web.archive.org/cdx/search/cdx?url=onlinelibrary.wiley.com/doi/10.1002/2014JC010135*", "status": 200, "note": "only a 301 capture of the old /pdf URL (2018); no PDF captured; the CDX service was intermittently offline" },
+    { "url": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2F2014JC010135", "status": 0, "note": "not used: Wiley's text-mining API needs a token" },
+    { "url": "https://doi.org/10.1002/2014JC010135", "status": 0, "note": "the DOI to open by hand (free on AGU/Wiley after 24 months)" }
+  ],
+  "notes": "Recommend the paper cite the formulation as 'Tedford et al. 2014, as applied by Erkkilä et al. 2018' unless the human fetches Tedford and confirms c2 = 0.77, c4 = 0.5 and z = 0.15 m there. Erkkilä et al. applied the model on humic Lake Kuivajärvi, Finland, in September 2014; they credit z = 0.15 m to Tedford et al. 2014 and Mammarella et al. 2015. The 22 °C water properties make the computation a summer-night value: in 10 °C autumn water (αt ≈ 0.9 × 10⁻⁴ K⁻¹, ν ≈ 1.31 × 10⁻⁶ m² s⁻¹; standard values, project arithmetic) the same heat loss gives ~14 % less."
+}

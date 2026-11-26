@@ -1,0 +1,64 @@
+{
+  "key": "Vadeboncoeur_etal_2003",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (2015-09-19) of the free PDF ASLO itself served for L&O back issues (aslo.org/lo/toc/vol_48/issue_4/1408.pdf); openly downloadable",
+    "url": "https://web.archive.org/web/20150919045023id_/http://aslo.org/lo/toc/vol_48/issue_4/1408.pdf",
+    "file": "docs/research_notes/fetched/v2/Vadeboncoeur_etal_2003.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Limnol. Oceanogr. 48(4): 1408–1418, 2003; six authors as cited (Crossref files the third as 'Zanden, M. Jake Vander'; the paper's 'Vander Zanden, M. J.' is right)"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.6 (re-aeration and metabolism paragraph)",
+      "claim": "across lakes of intermediate phosphorus the bed contributes 5–80 % of primary production, depending on morphometry",
+      "source_value": "benthic ALGAE (periphyton: epipelon, epilithon, epixylon, epiphytes where measured; macrophytes themselves not measured) made 5–80 % of MIDSUMMER whole-lake primary productivity in lakes of intermediate TP, depending on morphometry and littoral habitat composition",
+      "location": "p. 1408 (PDF p. 1), abstract; p. 1409 (PDF p. 2) for 'midsummer'; p. 1412 (PDF p. 5), Results, and Fig. 3a p. 1413",
+      "quote": "Benthic contributions ranged from 5 to 80% depending on morphometry and littoral habitat",
+      "conditions": "27 lakes (11 Greenland, 4 northeastern U.S. forest lakes of zavg 3.7–5.7 m, 12 Danish) over TP 2–430 mg m⁻³, each sampled in one summer; 2-h ¹⁴C incubations at midday on sunny days (approaching maximum photosynthesis) or laboratory P–I curves (Denmark), scaled to the lake through bathymetry and Kd; rates are mg C m⁻² h⁻¹",
+      "verdict": "corrected",
+      "note": "The digits and the abstract's wording match. The full text adds two qualifiers the paper drops: the share is of midsummer productivity scaled from short midday incubations (not annual production), and 'benthic' means attached algae, not the bed's plants. Suggested wording: 'benthic algae supplied 5–80 % of midsummer whole-lake primary production in lakes of intermediate phosphorus, depending on morphometry and littoral habitat (Vadeboncoeur et al. 2003)'. The '(abstract)' tag can go: the full text is now read."
+    },
+    {
+      "paper": "src/config.js:1305 (SEDOM.PERI_G comment)",
+      "claim": "benthic algae can make up to most of a clear lake's primary production",
+      "location": "p. 1408 (PDF p. 1), abstract; p. 1415 (PDF p. 8), Discussion",
+      "quote": "periphyton was responsible for 80–98% of primary production",
+      "conditions": "shallow (zavg 0.2–1.4 m), clear, oligotrophic Greenland lakes, completely illuminated beds; midsummer",
+      "verdict": "confirmed",
+      "note": "In the Discussion: in the shallow, clear Greenland lakes more than 80 % of primary production was on benthic surfaces."
+    },
+    {
+      "paper": "src/config.js:1305 (SEDOM.PERI_G comment)",
+      "claim": "the littoral's own (benthic algal) production is 10–100 g C/m²/yr in lakes",
+      "location": "whole article; Fig. 2b p. 1413 (PDF p. 6)",
+      "verdict": "unsupported",
+      "note": "If the comment means this range to come from Vadeboncoeur et al. 2003 (its placement inside the same parenthesis suggests so), the source does not give it: it reports only midsummer hourly rates (Fig. 2b, 'littoral zone benthic algal productivity', mg C m⁻² h⁻¹) and percentages, never an annual g C m⁻² yr⁻¹ figure. Give the annual range its own source."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.2003.48.4.1408",
+      "status": 403,
+      "note": "Wiley refuses scripts"
+    },
+    {
+      "url": "https://www.aslo.org/lo/toc/vol_48/issue_4/1408.pdf",
+      "status": 404,
+      "note": "ASLO's old free back-issue URL is gone (the Wayback capture of it was used)"
+    },
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.4319/lo.2003.48.4.1408",
+      "status": 429,
+      "note": "rate-limited"
+    }
+  ],
+  "notes": "Useful for Hot Brook: the U.S. lakes (four northeastern forest lakes of the Trophic Cascade Project, zavg 3.7–5.7 m; three were fertilized for three summers, so there are several lake-years) are the closest analogues to Hot Brook's depth; in Fig. 3a their benthic share runs from ~75 % at TP ~10 mg m⁻³ down to a few % at TP ~30 (read off the figure, approximate). Periphyton productivity per m² of littoral fell with TP mainly through light (log10 PP = −3.07 Kd + 1.7, R² 0.54); per m² of sediment it exceeded rock, wood and moss (Fig. 1; epipelon ~10× wood in the U.S. lakes). chem3.js's PERI_O2 comment ('benthic algae make 5–80 % of a shallow lake's production') rests on this same range via oxygen_metabolism.md §2; the intermediate-TP lakes behind it are not all shallow (the U.S. ones are 3.7–5.7 m deep and steep-sided)."
+}

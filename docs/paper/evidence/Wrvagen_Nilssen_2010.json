@@ -1,0 +1,50 @@
+{
+  "key": "Wrvagen_Nilssen_2010",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Journal of Limnology, PAGEPress)",
+    "url": "https://www.jlimnol.it/index.php/jlimnol/article/download/jlimnol.2010.311/104",
+    "file": "docs/research_notes/fetched/v2/Wrvagen_Nilssen_2010.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "title page: J. Limnol. 69(2): 311–332, 2010; the PDF prints the old DOI 10.3274/JL10-69-2-13, Crossref's current one is the cited 10.4081/jlimnol.2010.311"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5 (resting stages paragraph)",
+      "claim": "Mesocyclops leuckarti rests as late copepodites in the sediment for about seven months from early October",
+      "location": "p. 321 (PDF p. 11) for the start and stages; p. 322 (PDF p. 12) for the duration, Fig. 11",
+      "quote": "Diapause, initiated from early October, was represented mainly by individuals in cop V",
+      "conditions": "Lake Gjerstadvann, southern Norway: oligotrophic, oligo-mesohumic, acidified boreal lake (mean ANC −6.7 µekv/L), mean depth 15.3 m, max 27 m; plankton sampled Feb 1980–Mar 1981, sediment cores also 1982, 1983, 1985; diapause mainly cop V with a small cop IV fraction, predominantly in the LITTORAL sediments; 'diapause in T. oithonoides and M. leuckarti lasted for about 5 and 7 months, respectively'",
+      "verdict": "confirmed",
+      "note": "Both the start (early October) and the duration (~7 months) are in the text. M. leuckarti is a Palaearctic species; the Mesocyclops of Maine lakes is M. edax, so this is an analogue, not a measurement of the local species."
+    },
+    {
+      "paper": "§3.3.5 (resting stages paragraph)",
+      "claim": "cyclopoids rest as late copepodites in the sediment",
+      "source_value": "only some do: in the same lake M. leuckarti (littoral) and Thermocyclops oithonoides (profundal, ~5 months) diapaused as late copepodites in the sediment, while the cyclopoids Cyclops scutifer and C. abyssorum overwintered as late instars in the plankton ('active diapause'), with no sediment diapause registered for C. scutifer",
+      "location": "p. 311 (PDF p. 1), abstract; p. 326 (PDF p. 16)",
+      "quote": "No sediment diapause was registered for C. scutifer in Lake Gjerstadvann.",
+      "conditions": "Lake Gjerstadvann, 1980–1985",
+      "verdict": "corrected",
+      "note": "The generalisation needs 'some': write 'some cyclopoids rest as late copepodites in the sediment — Mesocyclops leuckarti for about seven months from early October in a Norwegian lake — while others overwinter active in the water'. The code (config.js:1490) already says 'some cyclopoids … the rest stay active'."
+    },
+    {
+      "paper": "src/config.js:1490 (resting-bank comment)",
+      "claim": "some cyclopoids (Mesocyclops) bury as copepodites for ~7 months; the rest stay active",
+      "location": "p. 322 (PDF p. 12)",
+      "quote": "Diapause in T. oithonoides and M. leuckarti lasted for about 5 and 7 months",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "'The rest stay active' fits the source's C. scutifer and C. abyssorum (overwintering in the plankton with delayed development)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values that may help the copepod model: M. leuckarti had three generations a year here, adults and egg-bearing females in the epilimnion in summer, clutches 12–54 eggs (mean 34.6); first emergence from diapause and development to adults in spring (Fig. 11C shows torpidity falling at both ends of the resting period); resting densities above 25 × 10³ ind m⁻² in the upper littoral in 1980/81, below 10 × 10³ in 1983–85. The calanoid Heterocope saliens rests as eggs in a sediment egg bank; Eudiaptomus gracilis overwinters as cop V and adults in the plankton."
+}

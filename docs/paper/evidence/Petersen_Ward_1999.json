@@ -1,0 +1,39 @@
+{
+  "key": "Petersen_Ward_1999",
+  "reader": "wave-2 batch 14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained (OUP/AFS paywall). Checked instead, as an intermediary only: FB4's official parameter table (Deslauriers et al. 2017, Parameters_official.csv, fetched for that entry)",
+    "file": "docs/research_notes/fetched/v2/Deslauriers_etal_2017.Parameters_official.csv"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS Publications Warehouse record (title page not seen)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Petersen, J. H. & Ward, D. L. (1999), Trans. Am. Fish. Soc. 128(5): 784–801 — matches the citation"
+  },
+  "claims": [
+    {
+      "paper": "Table 4.3 (fallfish row: 'adults with pikeminnow consumption'); src/w3/species3.js:50–57 (CA 0.278, CB −0.197)",
+      "claim": "the northern pikeminnow's consumption allometry is CA 0.278, CB −0.197",
+      "verdict": "unchecked",
+      "note": "Article not read. FB4's parameter table (row 'Northern pikeminnow', source 'Petersen & Ward 1999') lists CEQ 3, CA 0.278, CB −0.197, CQ 0, CTO 20.1, CTM 22.7, CTL 27, CK1 0.001, CK4 0.01 — the code's CA/CB match FB4's transcription."
+    },
+    {
+      "paper": "src/w3/fish3.js:701–706 (fallfish adults' FA 0.2, UA 0.07)",
+      "claim": "the pikeminnow set's own waste fractions are FA 0.2 (egestion) and UA 0.07 (excretion)",
+      "verdict": "unchecked",
+      "note": "Article not read. FB4's table lists EGEQ 1, FA 0.2 and EXEQ 1, UA 0.07 for the Petersen & Ward set, matching the code."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1999)128<0784:DACOAB>2.0.CO;2", "status": 403, "note": "resolves to academic.oup.com (AFS journals), refuses scripts; paywalled" },
+    { "url": "https://academic.oup.com/tafs/article/128/5/784/7887979", "status": 403, "note": "OUP refuses scripts" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70021241", "status": 200, "note": "USGS Publications Warehouse record (Petersen is USGS) — no PDF or link offered" },
+    { "url": "https://www.osti.gov/servlets/purl/797030", "status": 403, "note": "Petersen's BPA progress report 'Compensatory feeding following a predator removal program, 1982–1996' (a possible stand-in) redirects to a Columbia Basin Fish & Wildlife 'Authenticate to continue' bot check — not pursued" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1999)128<0784:DACOAB>2.0.CO;2", "status": 200, "note": "openAccessPdf CLOSED" }
+  ],
+  "notes": "Cite as 'Petersen & Ward 1999, as distributed in FB4 (Deslauriers et al. 2017)' — the code takes the values from FB4's table, not from the article. For the human (library login at doi above): check CA, CB, the CEQ-3 temperature parameters (fish_numbers_and_new_species.md flagged CQ 0 and CK1/CK4 0.001/0.01 as unusual), FA and UA, and the respiration set. FB4's note on the row: the authors used three swim speeds by reservoir (1.3, 9.2, 5.0 cm/s). Using a pikeminnow CA/CB on the dace set's temperature and respiration for adult fallfish is the project's stated construction, not something the source supports or tests."
+}
