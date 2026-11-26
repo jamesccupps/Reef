@@ -34,13 +34,13 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | done |
 | w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | running |
-| w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | running |
+| w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | done |
 | w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | running |
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | running |
 | w3-06 | MDIFW_nd-9, MDIFW_nd-10, MDIFW_nd-11, Rupp_DeRoche_1965 | running |
 | w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | running |
 | w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | running |
-| w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | queued |
+| w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | running |
 | w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | queued |
 | w3-11 | Marburg_etal_2006, Mittelbach_1984, MNAP_nd, MNAP_nd-2, Richter_etal_2024, Snow_1978, Chippett_2004, Diana_1979b, Eckmann_2004, Engeletal_1999, Klug_etal_2012, Adamec_2006 | queued |
 | w3-12 | Fago_1977, Feener_MacLeod_2020, Gallagher_2016, Garvey_etal_2002, Hall_Werner_1977, Havey_1973, Henderson_1977, Hodgkins_2010, Huff_etal_2004, Koenings_Edmundson_1991, Sleith_etal_2018, TexasInstruments_1979 | queued |

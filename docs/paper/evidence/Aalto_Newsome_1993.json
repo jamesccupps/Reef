@@ -1,0 +1,33 @@
+{
+  "key": "Aalto_Newsome_1993",
+  "reader": "wave-3 batch w3-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from Crossref's record (saved as docs/research_notes/fetched/v2/Aalto_Newsome_1993.crossref.json)",
+    "url": "https://api.crossref.org/works/10.1139/f93-058"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Aalto, S. K. & Newsome, G. E. 1993. Winds and the demic structure of a population of yellow perch (Perca flavescens). Can. J. Fish. Aquat. Sci. 50(3): 496–501, doi:10.1139/f93-058 — all as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "a wind-mortality term on the embryos explained 52–61 % of the year-to-year variation in perch egg masses in four of six demes at Lochaber Lake, Nova Scotia (Aalto & Newsome 1993, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. Even the abstract, which the paper says it relies on, reads differently: the models that explain '52–61%' of the variation in four of six demes use 'lagged egg-mass counts and winds' together (a model with an instantaneous wind mortality rate on the embryonic stage), so the 52–61 % belongs to the whole model, not to the wind term alone. The abstract does not name the lake ('our study lake'); Lochaber Lake, Nova Scotia comes from the authors' earlier papers (per the research note). Suggested wording until the article is read: 'models combining the previous egg-mass count with wind-driven embryo mortality explained 52–61 % of the year-to-year variation in egg-mass counts in four of six demes'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f93-058", "status": 403, "note": "Canadian Science Publishing; subscription journal — a library login would open it" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f93-058", "status": 403, "note": "publisher PDF, paywalled / refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f93-058\"&format=json&resultType=core", "status": 200, "note": "0 hits (CJFAS is not in Europe PMC)" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22demic+structure%22+yellow+perch&fl[]=identifier&rows=10&output=json", "status": 200, "note": "no Internet Archive item" },
+    { "url": "web search for the title with 'pdf'", "status": "none", "note": "no author or repository copy found; OpenAlex lists no open copy (show.mjs)" }
+  ],
+  "notes": "Needs the article (cdnsciencepub.com, doi:10.1139/f93-058, through a library login). The abstract also reports that water temperatures varied differently at different sites in the same year and at the same site in different years. Until it is read, the paper should keep '(abstract)' and fix the wording as in the claim note."
+}

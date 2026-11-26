@@ -1,0 +1,171 @@
+{
+  "key": "Smith_2002",
+  "reader": "wave-3 batch w3-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own PDF as the human fetched it (docs/research_notes/fetched/whiteperch.pdf, the maine.gov file whiteperch.pdf; 19 pages, text layer), indexed with getsrc.mjs --file; maine.gov refused the script (403)",
+    "url": "https://www.maine.gov/ifw/docs/strategic-management-plans/whiteperch.pdf",
+    "file": "docs/research_notes/fetched/v2/Smith_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "the publisher line: the title page reads 'Department of Inland Fisheries and Wildlife, Division of Fisheries and Hatcheries; prepared by Michael R. Smith, Regional Fisheries Biologist, Region F; May, 2002'. 'Region F' is the author's post, not the issuing office, and the plan is statewide (goals for 2001–2016). Suggested: Smith, M. R. 2002 (May). White Perch Management Plan. Maine Department of Inland Fisheries and Wildlife, Division of Fisheries and Hatcheries, Augusta.",
+    "note": "title, author and date as cited; the PDF's pages are numbered as printed (PDF p. N = p. N)"
+  },
+  "claims": [
+    {
+      "paper": "§2.5; §3.5.5",
+      "claim": "the 25-fish white perch limit was set on seven eastern Maine lakes 'as a result of a citizen petition and not for biological reasons'",
+      "location": "p. 11 (PDF p. 11)",
+      "quote": "implemented as a result of a citizen petition and not for biological reasons",
+      "conditions": "'a 25 fish per day bag limit for white perch being imposed on seven lakes in eastern Maine'; the seven lakes are not named",
+      "verdict": "confirmed",
+      "note": "both quotations in the paper are exact. That Hot Brook is one of the seven is the paper's inference (stated as such). The warmwater working group's meeting summary (p. 17) adds that the 'low' bag limits 'found on a few waters, mostly Downeast' were proposed by the public over concern that the populations were 'being over fished in certain waters for food, bear bait and sometimes just wasted'"
+    },
+    {
+      "paper": "§2.7; §3.5.8",
+      "claim": "Region F white perch waters received about 1.30 angler-days per acre a year (3.2/ha), 20 % on ice (Smith 2002; project arithmetic)",
+      "kind": "arithmetic",
+      "location": "p. 5 (PDF p. 5), Table 1; p. 9 (PDF p. 9), Table 2",
+      "quote": "F 7,702 38,404 49,628 33,980 68 1.29 0.88",
+      "conditions": "Table 1: ice-fishing questionnaire 1998–99, Region F 38,404 angler-days (all waters); open-water questionnaire 1999, Region F lakes 158,309 angler-days (all waters 167,508). Table 2: Region F, 94 waters, 150,834 acres of white perch water (total occurrence; principal fisheries 80 waters, 119,929 acres)",
+      "verdict": "confirmed",
+      "note": "inputs read on the page image and in the raw text. (38,404 + 158,309)/150,834 = 1.304 days/acre = 3.22/ha; ice share 38,404/196,713 = 19.5 %. Choices that shift it: with open-water 'ALL' waters instead of lakes, 1.37 days/acre (3.4/ha) and 18.7 % on ice; over principal-fishery acres only, 1.64 days/acre (lakes). The ice survey has no lake/stream split, so the 1.30 mixes all-water ice days with lake-only open-water days"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "Region F catch per angler-day: 1.90 white perch in open water and 1.29 through ice, of which 60 % and 68 % were kept",
+      "location": "p. 5 (PDF p. 5), Table 1",
+      "quote": "LAKES 17,668 158,309 300,748 180,470 60.0 1.90",
+      "conditions": "open water: 1999 questionnaire, Region F lakes, 'legal fish' caught (300,748) and kept (180,470), 60.0 % kept, 1.90 caught per angler-day (all waters 1.88, 60.2 %); ice: 1998–99 questionnaire, Region F all waters, 1.29 caught and 0.88 kept per angler-day, 68 % kept",
+      "verdict": "confirmed",
+      "note": "read on the page image. The open-water columns count 'legal' fish only"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "statewide harvest was 964,889 white perch a year",
+      "location": "p. 4 (PDF p. 4); p. 12 (PDF p. 12); Table 1, p. 5",
+      "quote": "Estimated annual harvest decreased from 1,015,323 to 964,889",
+      "conditions": "the sum of fish kept through the ice in 1998–99 (135,745) and in open water in 1999 (829,144), Table 1; questionnaire estimates for licensed anglers (p. 15 calls the use and harvest estimates 'not reliable' and lacking unlicensed juveniles)",
+      "verdict": "confirmed",
+      "note": "135,745 + 829,144 = 964,889. Statewide catch was 2,337,625 (258,382 + 2,079,243), so about 41 % of the catch was kept"
+    },
+    {
+      "paper": "§3.1.6; §3.5.6",
+      "claim": "white perch persist in Maine lakes of about 20 ha and 7.6 m (25 ft) or more 'if the deeper water is not depleted of oxygen during the winter months'",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "approximately 50 acres or more in size and about 25 feet or more in depth",
+      "conditions": "'Perch can survive and often thrive in most Maine lakes and ponds of approximately 50 acres or more in size and about 25 feet or more in depth if the deeper water is not depleted of oxygen during the winter months.' 50 acres = 20.2 ha; 25 ft = 7.62 m",
+      "verdict": "confirmed",
+      "note": "the plan states where perch 'can survive and often thrive', not a minimum, and says nothing of smaller or shallower waters; so Hot Brook's fishery is not at odds with it, and the winter-oxygen inference rests on the paper's reasoning, not on the plan"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "white perch's pre-settlement range in Maine 'is not known', although it was 'quite likely' present in all major drainages up to the first barrier",
+      "location": "p. 3 (PDF p. 3)",
+      "quote": "It is quite likely, however, that perch were present in all of the major river",
+      "conditions": "'... drainages as far upstream as the first barrier to further migration'; the plan adds that settlers introduced perch into many waters and that dams over falls let perch invade",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "white perch occur in 514 Maine waters",
+      "location": "p. 4 (PDF p. 4); p. 9 (PDF p. 9), Table 2",
+      "quote": "Maintain current distribution and abundance in about 514 lakes totaling 570,000 acres.",
+      "conditions": "Table 2: 514 waters, 571,236 acres in total (437 principal fisheries, 391,316 acres)",
+      "verdict": "confirmed",
+      "note": "the plan is not consistent with itself: p. 8 says 522 waters are known to contain white perch (445 principal fisheries), p. 10 '521 of 523 perch waters', Table 4 520 open in summer. 514 is the Table 2 figure"
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, growth)",
+      "claim": "Maine '8 to 10 inch perch' ≈ 0.45 lb (204 g) at ≈ 4 yr",
+      "location": "p. 11 (PDF p. 11)",
+      "quote": "The average 8 to 10 inch perch from most Maine waters weighs about 0.45 pound",
+      "conditions": "'... and is approximately four years old'; creel-survey context (anglers keep perch 9–10.5 in, 0.43–0.61 lb); length type not stated; no data or sample size given",
+      "verdict": "confirmed",
+      "note": "0.45 lb = 204 g"
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, maturity)",
+      "claim": "'Even small, slow-growing perch can mature and spawn'",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "Even small, slow-growing perch can mature and spawn successfully thus preserving a population.",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, fecundity)",
+      "claim": "fecundity 20,000–300,000, ≈ 22,000 at 15 cm",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "A 6-inch long perch would have approximately 22,000 eggs.",
+      "conditions": "same paragraph: 'The total number of eggs per female varies from 20,000 to 300,000 depending on the size of the fish'; no source or length type given",
+      "verdict": "confirmed",
+      "note": "6 in = 15.2 cm"
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, spawning); §3.6",
+      "claim": "spawning at ≈ 15–15.5 °C (§3.6: about 15 °C) in shallow water over almost any bottom; eggs hatch in 4–5 d",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "spawns mainly in the spring at water temperatures around 59-60 degrees F",
+      "conditions": "'Spawning takes place in shallow water over almost any bottom type.' 'The eggs hatch in 4-5 days at 59-60 degrees F.'",
+      "verdict": "confirmed",
+      "note": "59–60 °F = 15.0–15.6 °C; the table's '≈ 15–15.5' rounds the upper end down — write 15–15.6 °C or ≈ 15 °C"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch, longevity)",
+      "claim": "average life span 5–7 yr",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "The average life span is 5-7 years.",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch, temperature)",
+      "claim": "white perch 'do better' in lakes reaching 23.9 °C",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "White perch do better in waters that reach a temperature of 75 degrees F.",
+      "conditions": "'... or higher in the summer months'",
+      "verdict": "confirmed",
+      "note": "75 °F = 23.9 °C"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "MDIFW describes 'very large populations that occasionally dominate … Usually the problem is one of too many small perch', stunting 'so extreme that a 6-year-old perch may be only 4 inches long' (10 cm), and attributes some of it to pre-1950s protective rules",
+      "location": "p. 2 (PDF p. 2); p. 3 (PDF p. 3)",
+      "quote": "stunting so extreme that a 6-year-old perch may be only 4 inches long",
+      "conditions": "p. 3: 'Until the 1950's, many types of size, season and bag limit regulations were imposed ... In many instances protection resulted in over abundance and subsequent stunting'; the extreme stunting is put down to too many perch depleting the food supply",
+      "verdict": "confirmed",
+      "note": "both quotations exact; 4 in = 10.2 cm"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "Maine records white perch schools feeding at the surface with dorsal fins out (MDIFW survey sheets; Smith 2002)",
+      "location": "p. 13 (PDF p. 13)",
+      "quote": "feeding of white perch at the surface at which time dorsal fins may protrude",
+      "conditions": "mentioned as 'non-appropriative use' (people enjoying the sight); no place or season",
+      "verdict": "confirmed",
+      "note": "only this part of the sentence is Smith's; the open-water-at-dusk and Fifth Machias items are the survey sheets'"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "some stream white perch fisheries are 'migrants from nearby lakes and ponds'",
+      "location": "p. 3 (PDF p. 3)",
+      "quote": "the perch may not be resident populations, but rather migrants from nearby lakes and ponds",
+      "verdict": "confirmed",
+      "note": "p. 13 also mentions 'the heavy spawning runs of white perch in streams', which people travel to watch"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "MDIFW attributes white perch year-class failures only to weather at spawning time",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "only major mortalities induced by unfavorable weather at spawning time can cause failures",
+      "conditions": "'Their reproductive potential is so great that only major mortalities ... can cause failures in certain year classes'; no data given",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/strategic-management-plans/whiteperch.pdf", "status": 403, "note": "maine.gov refuses scripts; the human's copy of the same file was used" }
+  ],
+  "notes": "Every claim checks; only the bibliography's publisher line needs changing. Caveats for the rewrite: (1) the plan's text on p. 6 says that in 1999 'ice fishing anglers kept 41% and open water anglers kept 53%', but its own Table 1 gives 53 % kept on the ice (135,745 of 258,382) and 39.9 % in open water (829,144 of 2,079,243) — the text has them swapped; the paper uses the table (Region F rows), which is right. (2) The open-water catch columns count 'legal fish'. (3) The plan says its angler use and harvest estimates 'are not reliable' (p. 15) and that standing crop 'cannot be estimated' (p. 9). Other values that may help: statewide 1999 open-water catch 1.30 per angler-day on lakes; anglers keep perch 9–10.5 in (0.43–0.61 lb) and do not want to keep perch under 8–10 in (p. 11); '50% of the desirable-size white perch could be harvested without harm' (p. 12); a never-pursued goal of 0.75-lb perch on selected waters (p. 6); 'unexplained disappearances of white perch populations' listed as a management problem (p. 15)."
+}

@@ -1,0 +1,127 @@
+{
+  "key": "MaineDEP_2003",
+  "reader": "wave-3 batch w3-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "a Wayback Machine capture (raw id_ capture of 2025-09-08) of the free maine.gov PDF, openly downloadable; maine.gov itself refused the script (403). 44 pages, text layer; Table 4 read on the page image",
+    "url": "https://web.archive.org/web/20250908203319id_/https://www.maine.gov/dep/water/monitoring/tmdl/2003/tmdlwebberrep.pdf",
+    "file": "docs/research_notes/fetched/v2/MaineDEP_2003.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "incomplete: the report is by the Maine DEP and the Maine Association of Conservation Districts, titled 'Phosphorus Control Action Plan and Total Maximum Daily (Annual Phosphorus) Load Report: Webber Pond, Kennebec County' (Webber Pond PCAP-TMDL Report, Maine DEPLW 2002-0556), Final EPA Review Document, 3 July 2003 (revised 2 September 2003)",
+    "note": "the PDF's pages are numbered as printed (PDF p. N = p. N)"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.1; Table 3.2-1 (undeveloped forest)",
+      "claim": "undeveloped forest is assigned 0.04 kg TP ha⁻¹ yr⁻¹ (range 0.01–0.04), after 'a New England regional study' (Likens et al. 1977, via Maine DEP 2003)",
+      "location": "p. 33 (PDF p. 33); p. 31 (PDF p. 31), Table 4",
+      "quote": "export coefficient for forested land (0.04) is based on a New England regional study",
+      "conditions": "Table 4's class is 'Inactive/Passively Managed Forest' (non-developed land): range 0.01–0.04, value 0.04 kg TP/ha a year; the reference is Likens et al. 1977, Biogeochemistry of a Forested Ecosystem",
+      "verdict": "confirmed",
+      "note": "the 'undeveloped forest' row and the 'passively managed forest' class are the same row of Table 4 (see the next claim)"
+    },
+    {
+      "paper": "Table 3.2-1 (passively managed forest)",
+      "claim": "passively managed forest 0.02 (0.00–0.05) kg TP ha⁻¹ yr⁻¹",
+      "location": "p. 31 (PDF p. 31), Table 4",
+      "quote": "Wetlands 208 3.3% 0.00 - 0.05 0.02 84.2 1.7 0.3%",
+      "conditions": "Table 4, Webber Pond direct watershed, 'Non-Developed Land' block",
+      "verdict": "corrected",
+      "source_value": "0.02 (0.00–0.05) is the Wetlands row. 'Inactive/Passively Managed Forest' is the 0.04 (0.01–0.04) row (3,035 acres, 47.6 %), the same class as the table's 'undeveloped forest'",
+      "note": "read on the page image and in the raw text. The research note (land_lake_subsidies.md §7) took the pdftotext -layout text, which shifts the labels of this block one row down against the values. Drop the 'passively managed forest' row and give wetland 0.02 (0.00–0.05)"
+    },
+    {
+      "paper": "§3.2.1; Table 3.2-1 (wetland)",
+      "claim": "wetland is assigned 0.10 (0.10–0.20) kg TP ha⁻¹ yr⁻¹",
+      "location": "p. 31 (PDF p. 31), Table 4",
+      "quote": "Scrub Shrub 355 5.6% 0.10 - 0.20 0.10 143.7 14.4 2.7%",
+      "verdict": "corrected",
+      "source_value": "wetlands 0.02 (range 0.00–0.05); 0.10 (0.10–0.20) is scrub shrub, and reverting fields are 0.20 (0.10–0.20)",
+      "note": "the same one-row shift. Wetlands are 208 acres (3.3 %) and 1.7 kg (0.3 %) of Webber's load"
+    },
+    {
+      "paper": "§3.2.1; Table 3.2-1 (harvested forest)",
+      "claim": "harvested ('operated') forest 0.40 kg TP ha⁻¹ yr⁻¹, after Monagle 1995, ten times the undeveloped rate",
+      "kind": "arithmetic",
+      "location": "p. 32 (PDF p. 32); p. 31 (PDF p. 31), Table 4",
+      "quote": "forestlands (0.40 kg TP/ha) was derived (best estimate) from the original Cobbossee Lake TMDL",
+      "conditions": "Table 4: Operated Forest Land, range 0.20–0.60, value 0.40; '(Monagle 1995)', the Cobbossee Lake TMDL",
+      "verdict": "confirmed",
+      "note": "0.40/0.04 = 10"
+    },
+    {
+      "paper": "Table 3.2-1 (shoreline residential)",
+      "claim": "shoreline residential (algal-available P) 0.25–2.70 kg ha⁻¹ yr⁻¹, after Dennis et al. 1992",
+      "location": "p. 32 (PDF p. 32); p. 31 (PDF p. 31), Table 4",
+      "quote": "used (0.25 – 2.70 kg ha/yr) were developed using information on residential lot stormwater export",
+      "conditions": "'... of algal available phosphorus as derived from Dennis et al (1992)'; Table 4 ranges: low-impact 0.25–1.75, medium 0.40–2.20, high 0.56–2.70",
+      "verdict": "confirmed",
+      "note": "the coefficients actually applied at Webber were 0.25, 0.50 and 0.70; 0.25–2.70 spans the literature ranges"
+    },
+    {
+      "paper": "Table 3.2-1 (private camp roads)",
+      "claim": "private camp roads (algal-available P) 2.00 kg ha⁻¹ yr⁻¹",
+      "location": "p. 32 (PDF p. 32); p. 31 (PDF p. 31), Table 4",
+      "quote": "The total phosphorus loading coefficient for private camp roads (2.00 kg/ha)",
+      "conditions": "Table 4 range 0.60–10.0; chosen 'in part, from previous studies of rural Maine highways (Dudley et al. 1997), as well as best professional judgement'",
+      "verdict": "confirmed",
+      "note": "the value checks. The label is a judgement call: DEP calls 2.00 a 'total phosphorus loading coefficient', while saying on the same page that the coefficients for 'primarily roads and shoreline residential' were reduced for bioavailability to approach algal-available P. 'TP coefficient, reduced for bioavailability' is closer than 'algal-available P'"
+    },
+    {
+      "paper": "Table 3.2-1 (hay; row crops)",
+      "claim": "low-intensity hay 0.35; row crops 1.50 kg TP ha⁻¹ yr⁻¹",
+      "location": "p. 32 (PDF p. 32); p. 31 (PDF p. 31), Table 4",
+      "quote": "Dennis and Sage 1981: low-intensity hayland 0.35 kg TP/ha",
+      "conditions": "same sentence: 'row crops 1.50 kg TP/ha' from past Maine DEP 1982 studies and the county SWCD/NRCS; Table 4: Low Intensity Hayland 0.35 (0.35–1.35), Cropland 1.50 (0.26–18.6)",
+      "verdict": "confirmed",
+      "note": "could be cited as 'Dennis & Sage 1981 and Maine DEP 1982, via Maine DEP 2003'"
+    },
+    {
+      "paper": "Table 3.2-1 (atmospheric deposition); §3.2.3",
+      "claim": "Maine DEP uses 0.16 kg P ha⁻¹ yr⁻¹ (0.11–0.21), or 16 mg m⁻² yr⁻¹, for deposition onto open water",
+      "location": "p. 33 (PDF p. 33); p. 31 (PDF p. 31), Table 4",
+      "quote": "chosen for atmospheric deposition (0.16 kg TP/ha) is similar to that used",
+      "conditions": "Table 4: Surface Water (Atmospheric), range 0.11–0.21, value 0.16; Webber's 486 ha of water get 78 kg (15 % of the direct load)",
+      "verdict": "confirmed",
+      "note": "0.16 kg/ha = 16 mg/m². DEP says 0.16 is like the China Lake TMDL's value and that the upper 0.21 'generally reflects a watershed that is 50 percent forested, combined with agricultural areas interspersed with urban/suburban land uses' (Reckhow et al. 1980), so a forested landscape like Hot Brook's sits at or below 0.16"
+    },
+    {
+      "paper": "§3.2.3",
+      "claim": "at DEP's rate Upper receives about 59 kg yr⁻¹ and Lower about 46 kg yr⁻¹ (project estimates)",
+      "kind": "arithmetic",
+      "location": "p. 31 (PDF p. 31), Table 4",
+      "quote": "Total: Surface Water (Atmospheric) 1,201 19% 0.11 - 0.21 0.16 486 78 15%",
+      "conditions": "rate from this source; the lake areas (369 ha and 289 ha, MDIFW 1949 sheets) are from the paper's §2.2 table",
+      "verdict": "confirmed",
+      "note": "369 × 0.16 = 59.0 kg; 289 × 0.16 = 46.2 kg. The 'roughly 10 % of its external load' depends on the project's load estimate and was not checked here"
+    },
+    {
+      "paper": "§3.2.1",
+      "claim": "at eutrophic Webber Pond forest covered 47.6 % of the direct watershed but supplied only 9.3 % (49 kg) of a 526 kg yr⁻¹ external load",
+      "location": "p. 31 (PDF p. 31), Table 4; p. 20 (PDF p. 20)",
+      "quote": "Inactive/Passively Managed Forest 3,035 47.6% 0.01 - 0.04 0.04 1,228.2 49.1 9.3%",
+      "conditions": "per cent of the 6,373-acre (2,579-ha) direct watershed including the pond's 1,201 acres of water (forest is 59 % of the land); 526 kg/yr is the direct-watershed load. Operated forest adds 2.7 % of the area and 27.5 kg (5.2 %)",
+      "verdict": "confirmed",
+      "note": "read on the page image"
+    },
+    {
+      "paper": "§3.2.4",
+      "claim": "at Webber Pond sediment release (537 kg yr⁻¹) matched the whole external load (526 kg yr⁻¹)",
+      "location": "p. 34 (PDF p. 34); p. 33 (PDF p. 33); p. 5 (PDF p. 5)",
+      "quote": "ranged from 210 to 759 kg with an average annual value of 537 kg",
+      "conditions": "internal load estimated from lake volume-weighted TP mass differences between early and late summer, 1991–2001 (1995 missing); 536 kg for 1979–90; summer release",
+      "verdict": "corrected",
+      "source_value": "537 kg/yr (summer mean, 1991–2001) about equalled the direct-watershed load (526 kg/yr), which DEP calls 'external'; DEP lists a further 405 kg/yr 'indirect' load from upstream Threemile Pond (and 32 kg for future development), so total inflowing load was about 931 kg/yr and sediment release about 58 % of it",
+      "note": "write 'matched the direct-watershed load (526 kg yr⁻¹; a further 405 kg yr⁻¹ came from upstream Threemile Pond)'. The research note's 'whole external watershed load' is the source of 'whole'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/dep/water/monitoring/tmdl/2003/tmdlwebberrep.pdf", "status": 403, "note": "maine.gov refuses scripts; read through the Wayback capture" }
+  ],
+  "notes": "Main fix: Table 3.2-1's 'passively managed forest 0.02 (0.00–0.05)' and 'wetland 0.10 (0.10–0.20)' come from a one-row shift in the layout text; the source has inactive/passively managed forest 0.04 (0.01–0.04), wetlands 0.02 (0.00–0.05), scrub shrub 0.10 (0.10–0.20), reverting fields 0.20 (0.10–0.20). The research note land_lake_subsidies.md §7 carries the shifted rows into its Inferences ('TP_wetland = 0.10–0.20'); no code line cites this source. Other values: Webber Pond 1,201 acres, maximum depth 41 ft, mean 16 ft, flushing 1.5 per year; summer epilimnetic TP 18–25 ppb, spring about 15 ppb (1999–2002); TMDL target 15 ppb = 968 kg TP/yr; septic systems 12 kg (2.3 %); the 526 kg/yr equates to a modelled 8 ppb (p. 33)."
+}

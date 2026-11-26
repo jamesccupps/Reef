@@ -1,0 +1,176 @@
+{
+  "key": "Cowing_Scott_1980",
+  "reader": "wave-3 batch w3-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the USGS's own free PDF (scanned report with an OCR text layer, 144 PDF pages) from pubs.usgs.gov; tables read on the page images",
+    "url": "https://pubs.usgs.gov/wri/1980/0069/report.pdf",
+    "file": "docs/research_notes/fetched/v2/Cowing_Scott_1980.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and the report documentation page (PDF pp. 1–3)",
+    "ok": true,
+    "corrections": "",
+    "note": "Derrill J. Cowing (USGS hydrologist) and Matthew Scott (Chief, Maine DEP Division of Lakes and Biological Studies), A limnological study of 43 selected Maine lakes, USGS Water-Resources Investigations 80-69, August 1980, prepared in cooperation with the Maine DEP; 132 pages plus front matter numbered to VI. Printed page = PDF page − 8 for the body"
+  },
+  "claims": [
+    {
+      "paper": "§2.2",
+      "claim": "median mean-depth/maximum-depth ratio of 0.35 in 29 Maine lakes of the 1980 USGS study (project tally); Upper's 0.61 and Lower's 0.69 make the Hot Brook basins unusually flat",
+      "kind": "arithmetic",
+      "location": "p. 23 (PDF p. 31) and p. 24 (PDF p. 32), Table 2",
+      "quote": "Webb Lake 868 196.1 67.8 7.9 12.8 20.1 207.",
+      "conditions": "Table 2 gives mean and maximum depth for all 43 lakes (35 regular, 8 special study lakes), from IF&W survey maps",
+      "verdict": "corrected",
+      "source_value": "Table 2 has 43 lakes, not 29: the median ratio is 0.35 over the 35 regular lakes and 0.34 over all 43; '29' is only the regular lakes on the table's first page (median also 0.35). The highest ratio is Webb Lake's 0.62 (7.9/12.8 m), level with Upper's 0.61; Lower's 0.69 exceeds all 43",
+      "note": "my tally from the page images. The median holds; give the count as 35 (or 43, median 0.34), and note that one Maine study lake (Webb) is as flat as Upper"
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "meltwater forms a dilute surface layer under the ice (mean specific conductance 12 µS cm⁻¹ under the ice in 43 Maine lakes)",
+      "location": "p. 80 (PDF p. 88)",
+      "quote": "This layer was characterized by low specific conductance (mean of 12 micromhos)",
+      "conditions": "late-winter baseline sampling; 'the apparent occurrence of a significant layer of dilute melt water just under the ice' with mean alkalinity 3 mg/L; 'The data for Hopkins and Lower Shin Ponds, Eastern Grand and Saddleback Lakes show the effect'",
+      "verdict": "corrected",
+      "source_value": "12 micromhos is the mean conductance of the dilute melt-water layer just under the ice where it occurred (four lakes are named), in late winter — not a mean under the ice over 43 lakes. For scale, the study lakes' summer epilimnetic conductance averaged 37 micromhos (21–70; p. 70)",
+      "note": "write e.g. 'a dilute melt-water layer just under the ice in late winter (mean 12 µS cm⁻¹ where it occurred, against 37 in the summer epilimnion; Cowing & Scott 1980)'"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "of 35 lakes surveyed in late summer 1974–76 six were unstratified, among them Long Pond (5.5 m), Portage Lake (7.6 m), Pushaw Lake (8.5 m) and Molasses Pond (14.3 m deep but 5.2 m mean depth over 507 ha)",
+      "location": "p. 67 (PDF p. 75); p. 68 (PDF p. 76), Table 7; p. 23 (PDF p. 31), Table 2",
+      "quote": "Temperature profiles showed that six of the lakes were not stratified",
+      "conditions": "late-summer baseline survey of the 35 regular study lakes (one per lake within 1974–76); the six 'NS' lakes in Table 7 are Molasses, Spectacle, Portage, Lower Shin, Pushaw and Long; depths and area from Table 2 (Molasses 507 hm², mean 5.2 m, max 14.3 m)",
+      "verdict": "confirmed",
+      "note": "Table values read on the page images"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "four lakes 11.6–14.6 m deep stratified only 4–5 % of their volume",
+      "location": "p. 68 (PDF p. 76), Table 7; p. 23 (PDF p. 31), Table 2",
+      "quote": "Lead Mtn Pond (Upper) 4 X",
+      "conditions": "'percent stratification' = (total volume − epilimnion volume)/total volume × 100; late summer",
+      "verdict": "corrected",
+      "source_value": "five lakes were 4–5 % stratified: Madawaska (4 %, max 11.6 m), Upper Lead Mountain Pond (4 %, 17.4 m), Forest (4 %, 11.6 m), Raymond (4 %, 12.8 m) and Brewer (5 %, 14.6 m) — five lakes 11.6–17.4 m deep",
+      "note": "read on the page images of Tables 7 and 2. Worth adding: Forest, Raymond and Brewer, with only 4–5 % of their volume below the epilimnion, all had hypolimnetic DO < 0.5 mg/L in late summer (Table 7) — thin bottom layers go anoxic"
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "among the more productive stratified lakes of the 1974–76 survey only one had hypolimnetic oxygen above 2.0 mg/L and 67 % had less than 0.5 mg/L",
+      "location": "p. 69 (PDF p. 77); Tables 6 and 7, pp. 65 and 68 (PDF pp. 73, 76)",
+      "quote": "only one had hypolimnetic dissolved oxygen greater than 2.0 mg/L, while 67 percent",
+      "conditions": "'Of the lakes with TSI's below 65 ...'; the report's TSI runs the other way from Carlson's (TSI = 77.7 − 27.3 log10 mean chlorophyll a, µg/L; p. 63), so TSI < 65 means mean chlorophyll above about 2.9 µg/L; late-summer profiles",
+      "verdict": "confirmed",
+      "note": "re-tallied from Tables 6 and 7 (page images): nine stratified lakes have TSI < 65; Wilson Pond alone had 2–5 mg/L, and Forest, Raymond, Crystal, Brewer, Brettuns and Nubble had < 0.5 (6 of 9 = 67 %). 'More productive' is a fair gloss; the paper could give the threshold"
+    },
+    {
+      "paper": "§3.1.6; §3.2.4",
+      "claim": "unstratified, 8.5-m Pushaw Lake was well oxygenated in summer but had 'depressed oxygen levels during the winter'",
+      "location": "p. 66 (PDF p. 74)",
+      "quote": "showed depressed oxygen levels during the winter baseline sampling",
+      "conditions": "'The exceptions were lakes such as Pushaw Lake which were unstratified and well-oxygenated during summer, but showed depressed oxygen levels during the winter baseline sampling. Since the oxygen depressions during the winter were slight summer values were used for all the lakes.' No winter DO value is printed in this report (the profiles are in the 1975–77 data reports)",
+      "verdict": "corrected",
+      "source_value": "the same passage says the winter oxygen depressions were 'slight'",
+      "note": "the quotation is exact, but in §3.1.6 it sits among winterkill records, where leaving out 'slight' overstates it; add the word (e.g. 'showed slightly depressed oxygen in late winter')"
+    },
+    {
+      "paper": "§3.1.7; §3.2.2; §3.3.1",
+      "claim": "above 30 SPU (color units) phosphorus 'is tied up with the color producing compounds'",
+      "location": "p. 53 (PDF p. 61)",
+      "quote": "phosphorus is tied up with the color producing compounds, such as humic acids",
+      "conditions": "'It seems that in lakes where color is greater than 30 units, phosphorus is tied up ... and not available for biological uptake. Carlson (1977) reported similar results'; inferred from the chlorophyll–TP regressions of 35 lakes (1974–76 means); colour in platinum-cobalt units (abstract, p. 1)",
+      "verdict": "confirmed",
+      "note": "the authors hedge it ('It seems that'); the quotation is exact"
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "in colored lakes Secchi-based trophic indices overstate productivity",
+      "location": "p. 50 (PDF p. 58)",
+      "quote": "would result in significant overestimation of primary productivity",
+      "conditions": "'Using Secchi disk measurements to determine TSI in most highly colored lakes would result in ...'; removing the nine lakes with colour > 30 raised the Secchi–chlorophyll r² from 0.37 to 0.61",
+      "verdict": "confirmed",
+      "note": "p. 53 says the same of TP-based TSI"
+    },
+    {
+      "paper": "§3.2.2",
+      "claim": "dropping the lakes with color > 30 raised the TP–chlorophyll r² from 0.46 to 0.69",
+      "location": "p. 53 (PDF p. 61); Fig. 6, p. 52 (PDF p. 60)",
+      "quote": "for the regressions improved from 0.46 to 0.69, when lakes with color greater than 30",
+      "conditions": "log mean chlorophyll a on log mean TP, 1974–76 means; n = 35 lakes, then 26 without the nine colored lakes (Fig. 6: r = 0.68 and 0.83)",
+      "verdict": "confirmed",
+      "note": "r² read on the page image. The analysis has 35 lakes, not 43 (the paper's 'study of 43 Maine lakes' describes the study, which is fine). With colour as a second variable r² rose only to 0.60 (p. 54)"
+    },
+    {
+      "paper": "§3.2.4",
+      "claim": "in Brewer Lake hypolimnetic TP reached 116 µg/L; epilimnetic TP rose from 8 to 14 µg/L at autumn turnover and an Anabaena flos-aquae bloom followed, a pattern 'observed on other Maine lakes'",
+      "location": "p. 115 (PDF p. 123); p. 111 (PDF p. 119)",
+      "quote": "The concentration 1 m above the bottom was 0.116 mg/L.",
+      "conditions": "1975; anaerobic hypolimnion; TP rose 'from mid-September through November from 0.008 mg/L to 0.014 mg/L', which turnover 'could explain' and which 'parallels the rise in chlorophyll a' and the blue-green; 'This pattern of autumnal blue-green blooms following turnover of a highly enriched anaerobic hypolimnion has been observed on other Maine lakes'",
+      "verdict": "corrected",
+      "source_value": "the numbers and the quotation check, but the bloom taxon: the results (p. 111) and Fig. 14 name it Aphanizomenon flos-aquae (12 % of cell area in July, rising through August–October to a dense early-November bloom, 90 % of a total cell area of 7000 mm²/L); only the discussion (p. 115) writes 'Anabaena flos-aquae'",
+      "note": "the source contradicts itself; the results paragraph, which follows the bloom sample by sample, is the better identification. The bloom built from July and paralleled the TP rise rather than following turnover"
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "five Maine lakes in 1975 showed spring and autumn maxima of phytoplankton cell area with a midsummer minimum in three: Pleasant Pond fell 7.5-fold from June to July, Forest Lake 6-fold from late April to July (spring peak 90 % Ochromonas; diatoms 86 % of cell area in June, 14 % in July), Brewer Lake 5-fold",
+      "kind": "arithmetic",
+      "location": "pp. 103–115 (PDF pp. 111–123): p. 104, p. 109, p. 111, p. 113, p. 115",
+      "quote": "The classic pattern of vernal and autumnal maxima with a distinct midsummer minimum was observed",
+      "conditions": "1975 open-water season, six samples per lake; total cross-sectional cell area (TCA, mm²/L). Pleasant Pond 112 (June) → 15 (July); Forest 519 (late April–early May, 90 % Ochromonas) → 85 (July), diatoms 86 % of TCA (216 mm²/L) in June and 14 % (12 mm²/L) in July; Brewer 340 (early June) → 64 (July)",
+      "verdict": "confirmed",
+      "note": "112/15 = 7.5; 519/85 = 6.1; 340/64 = 5.3"
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "the authors ascribed the midsummer minima to silica depletion and diatom settling after stratification, not grazing",
+      "location": "pp. 113–115 (PDF pp. 121–123)",
+      "quote": "suggests silica depletion, especially considering the low epilimnetic dissolved silica",
+      "conditions": "Pleasant Pond: 'might be explained ... by nutrient depletion, especially silica', or, as 'another, purely hydrodynamic, hypothesis', settling of facultative periphytic plankton after stratification; Forest Lake 'might be the result of silica depletion'; Brewer 'Silica depletion may also have been the cause'",
+      "verdict": "corrected",
+      "source_value": "silica depletion was suggested (tentatively) for all three lakes and settling only for Pleasant Pond; grazing is never mentioned in the report (zooplankton were collected on four lakes but not analysed here), so 'not grazing' is the paper's inference, not the authors' finding",
+      "note": "write e.g. 'the authors suggested silica depletion and, for Pleasant Pond, settling after stratification; grazing was not examined'"
+    },
+    {
+      "paper": "§3.3.3",
+      "claim": "Cowing & Scott's 5–7.5-fold Maine summer minima are not clear-water phases, being ascribed to silica and settling",
+      "location": "pp. 104–115 (PDF pp. 112–123)",
+      "quote": "Silica depletion may also have been the cause for the midsummer minimum in Brewer Lake.",
+      "conditions": "as the previous two claims",
+      "verdict": "confirmed",
+      "note": "the 5.3–7.5-fold drops and the ascription check. 'Not CWPs' rests only on that ascription: grazing was not measured or discussed, so the source cannot rule a grazing phase out; the sentence would be safer as 'were ascribed by the authors to silica depletion and settling (grazing was not examined)'"
+    },
+    {
+      "paper": "§3.3.7",
+      "claim": "Chaoborus punctipennis was numerically abundant in all but the deepest (> 40 m) lakes of a 43-lake Maine survey",
+      "location": "p. 85 (PDF p. 93)",
+      "quote": "numerically abundant in all lakes except the deeper ones (>40m)",
+      "conditions": "profundal benthos: five dredge samples from the deep basin of each lake, taken on the late-winter baseline trip (pp. 14, 86); C. punctipennis treated as epibenthic; 'Its distribution was fairly universal'; lakes > 40 m: Eagle, Green, Floods",
+      "verdict": "confirmed",
+      "note": "these are larvae counted in bottom sediments, not plankton densities or predation rates; the report says their migrations 'restrict their distribution to the shallow portions of the hypolimnion'"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "across 43 Maine lakes, 'highly colored lakes had plant communities primarily composed of Scirpus and floating-leaved plants' and rocky, sandy littorals only sparse Eriocaulon",
+      "location": "p. 88 (PDF p. 96); Table 15, p. 89 (PDF p. 97); p. 90 (PDF p. 98)",
+      "quote": "Highly colored lakes had plant communities primarily composed of Scirpus and floating-leaved plants.",
+      "conditions": "late-summer surveys, abundance classes by frequency in stands; p. 90: rocky-gravelly-sandy littorals have sparse rooted plants, 'usually dominated by sparse populations of Eriocaulon'",
+      "verdict": "corrected",
+      "source_value": "the comparison (Table 15) covers 34 of the 35 regular study lakes, ranked by TSI, not 43",
+      "note": "both statements check; only the count: 'in a 43-lake Maine study (34 lakes compared)' or 'across 34 Maine lakes'"
+    },
+    {
+      "paper": "§3.3.1 (not attributed to this source)",
+      "claim": "no phytoplankton species list exists for Hot Brook or for any lake in Washington or Aroostook County",
+      "location": "p. 10 (PDF p. 18), Table 1; p. 97 (PDF p. 105); pp. 104–107 (PDF pp. 112–115); Table 16, p. 99 (PDF p. 107)",
+      "quote": "Cyanophytes were dominant in five lakes; Pleasant River Lake, Brettuns Pond, Upper Shin Pond",
+      "conditions": "every regular lake was sampled once for phytoplankton in late summer or early autumn 1974 (taxa summarized in Table 16, dominants named by lake), and five were sampled six times in 1975",
+      "verdict": "corrected",
+      "source_value": "this report names phytoplankton taxa for Washington County lakes (Pleasant River Lake, township of Beddington: the 1975 series and the 1974 sample; Mopang Lake, T29MD: 1974) and an Aroostook County lake (Pleasant Pond, T4R3: the 1975 series); the other Aroostook and Washington study lakes (Eagle, Madawaska, Portage; Beddington Lake) were also sampled in 1974, with per-lake results in the 1975–77 data reports (Cowing & Scott 1975, 1976, 1977)",
+      "note": "two of the 'five Maine lakes in 1975' the same paragraph cites are in Aroostook and Washington counties. Pleasant River Lake (Washington Co.) was dominated by Asterionella formosa (65 % of cell area in July 1975) and was cyanophyte-dominated in the 1974 sample"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The report's TSI is inverted relative to Carlson's (high TSI = clear, low = productive), which matters wherever the paper paraphrases 'TSI below 65'. Useful for Hot Brook: the unstratified study lakes (Long Pond 5.5 m, Portage 7.6, Lower Shin 7.6, Spectacle 9.1, Pushaw 8.5, Molasses 14.3/5.2 mean) are the closest analogs; in 1974 Long Pond and Pushaw Lake phytoplankton were 'strongly dominated by Cyclotella bodanica' (p. 97); unstratified lakes' profundal benthos was characterized by Hexagenia and Hyalella azteca and more diverse molluscs (p. 84). Summer epilimnetic ranges for the 35 lakes: TP 4–15 µg/L (mean 10), TN 0.05–1.1 mg/L, alkalinity 2–22 mg/L (mean 7.0), pH 5.9–7.6, conductance 21–70 micromhos (mean 37). Table values were read on the page images (pdftotext -layout drifts in Tables 2, 6, 7 and 8)."
+}
