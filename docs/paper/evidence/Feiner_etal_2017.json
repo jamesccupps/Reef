@@ -1,0 +1,69 @@
+{
+  "key": "Feiner_etal_2017",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the published article (journal pagination) from the NOAA Institutional Repository, openly downloadable; the accepted manuscript in the University of Toronto's TSpace (hdl 1807/78608) was also read and gives the same values",
+    "url": "https://repository.library.noaa.gov/view/noaa/62247/noaa_62247_DS1.pdf",
+    "file": "docs/research_notes/fetched/v2/Feiner_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the first page ('Can. J. Fish. Aquat. Sci. 74: 2059–2072 (2017)', nine authors as listed)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (yellow perch row)",
+      "claim": "Great Lakes females A50 1.9–5.2 yr",
+      "location": "p. 2062 (PDF p. 4), Results",
+      "quote": "5.2 years in southern Lake Michigan to as young as 1.9 years in Green Bay",
+      "conditions": "13 Great Lakes stocks, cohorts born after 2000; agency survey data; logistic maturity ogives (Bayesian)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch row)",
+      "claim": "Great Lakes females L50 144–233 mm",
+      "location": "p. 2062 (PDF p. 4), Results; lengths TL, p. 2060 (PDF p. 2), Methods",
+      "quote": "233 mm in Lake Michigan to 144 mm in Saginaw Bay",
+      "conditions": "total length (fork lengths converted to TL where needed); most stocks 160–200 mm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch row)",
+      "claim": "Great Lakes males A50 0.8–3.0 yr",
+      "location": "p. 2062 (PDF p. 4), Results",
+      "quote": "(central Erie, 1.4; western Erie, 0.8)",
+      "conditions": "oldest male A50 2.6–3.0 yr (Georgian Bay, North Channel, southern Lake Michigan); youngest western Lake Erie 0.8",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3; src/config.js:154",
+      "claim": "faster-growing perch stocks mature younger but at larger sizes",
+      "location": "p. 2059 (PDF p. 1), abstract; p. 2064 (PDF p. 6), Results",
+      "quote": "faster-growing stocks were mature at younger ages but larger sizes",
+      "conditions": "growth indexed by mean length at age 2; across 13 stocks; the female A50–growth relation was strongly driven by Lake Michigan and Georgian Bay, the L50–growth relation held without the influential stocks",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:293 (perch Lmat 14 / LmatM 10)",
+      "claim": "maturity at females 11–18 cm, males 8–13 cm (Feiner et al. 2017)",
+      "source_value": "female L50 144–233 mm TL (most stocks 160–200 mm); male L50 128–190 mm TL (most 160–200 mm); female PMRN midpoints (Lp50,a) ~144–205 mm (Fig. 3a)",
+      "location": "p. 2062–2063 (PDF pp. 4–5), Results",
+      "quote": "in Les Cheneaux to 128 mm in southern Lake Michigan",
+      "conditions": "Great Lakes stocks, total length",
+      "verdict": "corrected",
+      "note": "11–18 / 8–13 cm is not in Feiner et al.; it is below every Great Lakes stock (the smallest female L50 is 14.4 cm, the smallest male 12.8 cm). If the sim's sizes come from stunted northern perch (e.g. Munro & MacMillan 2012), cite that; Feiner et al. support only the direction (faster growth → younger, larger)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://utoronto.scholaris.ca/bitstreams/96775b9b-2646-42e2-9d51-4a156f50b678/download",
+      "status": 200,
+      "note": "accepted manuscript (TSpace), 45 pages; read first, then replaced by the published version — values identical; saved as docs/research_notes/fetched/v2/Feiner_etal_2017.accepted_manuscript.pdf"
+    }
+  ],
+  "notes": "Males reached 50 % maturity at younger ages than females in every stock, and within stocks males matured smaller. Male Lp50 rose with growth while female Lp50 fell (sex-specific trade-offs). The paper's use is right except the species.js comment, which credits Feiner et al. with sizes they do not give. The NOAA copy carries a 'downloaded ... For personal use only' stamp from the publisher; it is the agency repository's open copy."
+}

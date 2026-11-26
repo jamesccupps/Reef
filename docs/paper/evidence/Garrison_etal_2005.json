@@ -1,0 +1,84 @@
+{
+  "key": "Garrison_etal_2005",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (17 May 2024, openly downloadable) of the full report as served free by UW–Stevens Point's Extension Lakes program; the WDNR URL in the entry is a 2-page press release about the study, also read",
+    "url": "https://web.archive.org/web/20240517211444id_/https://www3.uwsp.edu/cnr-ap/UWEXLakes/Documents/ecology/shoreland/background/pier_shading_jefferson_cty_final_report_2005.pdf",
+    "file": "docs/research_notes/fetched/v2/Garrison_etal_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (authors, 'March 2005', 'PUB-SS-1006 2005', the three agencies)",
+    "ok": false,
+    "corrections": "authors, title, year and PUB-SS-1006 are right; the URL given (dnr.wisconsin.gov/.../effectsofpiershading.pdf) is a WDNR press release about the study, not the report — give the report's URL (www3.uwsp.edu/cnr-ap/UWEXLakes/Documents/ecology/shoreland/background/pier_shading_jefferson_cty_final_report_2005.pdf, or its Wayback capture)"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.9; §4.6; src/config.js:803 ('10×')",
+      "claim": "light under piers was a tenth of that in open water (docks pass 10 % of the light)",
+      "location": "p. 13, Discussion; p. 6, Results ('Light')",
+      "quote": "results of this study documented a nearly 10-fold reduction in light availability underneath piers",
+      "conditions": "PAR (400–700 nm) at the top of the plant bed or near the bottom, 1.5–5 ft deep, 10:00–16:00, two or three dates in June–July; under the pier centreline vs a paired unshaded control at similar depth; 26 piers on two calcareous mesotrophic Wisconsin lakes",
+      "verdict": "confirmed",
+      "note": "controls averaged 44 % (Rock) and 38 % (Ripley) of surface light; under perpendicular piers 5 %, laterals 3 %, decks 2 % — ratios 0.12, 0.07, 0.05"
+    },
+    {
+      "paper": "src/config.js:803 (DOCK_LIGHT comment)",
+      "claim": "3.8 % vs 41 % of the surface's light",
+      "source_value": "controls 44 % (Rock Lake) and 38 % (Lake Ripley); under piers 5 % (perpendicular sections), 3 % (laterals), 2 % (decks); no 3.8 % or 41 % is printed (3.8 is Rock Lake's mean pier width in feet)",
+      "location": "p. 6, Results ('Light')",
+      "quote": "control sites averaged 44% in Rock Lake and 38% in Lake Ripley",
+      "conditions": "as above",
+      "verdict": "corrected",
+      "note": "the ratio (~0.1) stands; replace the two numbers with the report's"
+    },
+    {
+      "paper": "§3.2.9; src/config.js:803 ('5 vs 107 g')",
+      "claim": "plant growth was 20 times greater away from piers (median 5 vs 107 g)",
+      "location": "p. 2, Abstract",
+      "quote": "The median biomass under the piers was 5 grams compared with 107 grams",
+      "conditions": "wet mass (spun) of shoots harvested from 0.1 m² quadrats, roots excluded; standing biomass, not a growth rate; by lake (Table 3): Ripley 6 vs 159 g, Rock 4 vs 75 g",
+      "verdict": "confirmed",
+      "note": "107/5 = 21; '20 times greater' is the press release's wording"
+    },
+    {
+      "paper": "§5.6 (camps and docks bullet)",
+      "claim": "plants under long-standing piers are 0.05× the bed beside them",
+      "location": "p. 2, Abstract; p. 9, Table 3",
+      "quote": "The median biomass under the piers was 5 grams compared with 107 grams",
+      "conditions": "as above; the report does not give the piers' ages",
+      "verdict": "confirmed",
+      "note": "5/107 = 0.047; 'long-standing' is the paper's inference — the piers' age and whether they are seasonal are not reported"
+    },
+    {
+      "paper": "§3.2.9; src/config.js:803 (invertebrates ×0.4)",
+      "claim": "invertebrates were three times fewer beneath piers",
+      "location": "p. 2, Abstract; pp. 11–12, Results",
+      "quote": "The median number of macroinvertebrates under the piers was 23 compared with 61",
+      "conditions": "six D-frame net sweeps per site, counts (organisms per sample), family level; Ripley 19 vs 43, Rock 30 vs 90; snails and Hyalella most common",
+      "verdict": "confirmed",
+      "note": "61/23 = 2.7 overall (2.3 Ripley, 3.0 Rock); 'three times' is the press release's rounding — 'about 2.5–3 times' is closer"
+    },
+    {
+      "paper": "§4.6",
+      "claim": "docks pass 10 % of the light beneath them from 25 May to 15 October",
+      "verdict": "unsupported",
+      "note": "the 10 % is supported (claim above); the season is not in the report (light measured in June–July only; nothing on when piers are installed or removed). The dates are the model's own (src/config.js 'camps3 docksIn: May 25 – October 15'); attribute them to the project"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Waterways/effectsofpiershading.pdf",
+      "status": 200,
+      "note": "the entry's URL: a 2-page WDNR press release, not the report (read; its '10 times', '20 times', 'three times lower' are the paper's phrasings); saved as docs/research_notes/fetched/v2/Garrison_etal_2005.pressrelease.pdf"
+    },
+    {
+      "url": "https://www3.uwsp.edu/cnr-ap/UWEXLakes/Documents/ecology/shoreland/background/pier_shading_jefferson_cty_final_report_2005.pdf",
+      "status": 200,
+      "note": "redirected to the uwsp.edu home page (file no longer served)"
+    }
+  ],
+  "notes": "Other useful values: pier widths averaged 4.3 ft (Ripley) and 3.8 ft (Rock), areas 546 and 370 ft² with decks; shading under decks 2–3× that under perpendicular piers; neither pier width, height nor orientation significantly affected plant growth; wild celery and muskgrass persisted under piers; minnow traps caught 11.2 fish per night under piers vs 38.7 in plant beds (abstract), juvenile centrarchids >90 % of the catch; under moored boats there were no plants. The study lakes are calcareous and mesotrophic (TP 20 and 34 µg/L, Secchi 6–8 ft), unlike Hot Brook. The research note (shoreline_development_effects.md) also lists 'mean 7.7 vs 157.2 g' plant biomass, 'mean 75.5 vs 140.8' invertebrates and '3.8 % vs 41 %' light from a search summary; none of these is printed in the report (its means: Ripley 6 vs 159 g; light 5/3/2 % vs 38–44 %)."
+}

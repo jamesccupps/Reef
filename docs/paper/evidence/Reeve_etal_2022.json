@@ -1,0 +1,68 @@
+{
+  "key": "Reeve_etal_2022",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access full text on PubMed Central (PMC9124485), the publisher's hybrid open-access article mirrored by NLM (HTML)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9124485/",
+    "file": "docs/research_notes/fetched/v2/Reeve_etal_2022.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC citation line ('J Exp Biol. 2022 Apr 21;225(8):jeb243407')",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (pumpkinseed row)",
+      "claim": "pumpkinseed minimally active at ≤ 7.9 °C and fasting at ≤ 4 °C",
+      "location": "web page, Results, 'Experiment 1: Behavioural responses to cooling to winter temperature', 3rd paragraph",
+      "quote": "Pumpkinseed, however, exhibited more dissimilar inactive and fasting steady states (≤7.9°C and ≤4.0°C",
+      "conditions": "laboratory, adults from Lily Lake, Saint John, New Brunswick (n = 12); cooled ~1 °C a day from 14 °C to ~2 °C; daytime cold steady states (temperatures at which a behaviour no longer differed from its value at the coldest temperature); ration ~0.5 % body mass a day",
+      "verdict": "confirmed",
+      "note": "both are 'steady states', not complete inactivity or fasting: 'pumpkinseed never reached inactivity' and some fed a little at the coldest temperature (Discussion, 'Pumpkinseed sunfish')"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "pumpkinseed cooled to about 2.5 °C were minimally active at ≤ 7.9 °C and stopped feeding at ≤ 4 °C",
+      "source_value": "in the behaviour experiment (cooling ~1 °C a day from 14 °C to ~2 °C) the minimally active steady state began at 7.9 °C and the fasting steady state at ≤ 4.0 °C; feeding fell steeply below 7.9 °C, 'by 2.2°C all but one pumpkinseed had ceased feeding', and certain individuals kept feeding at a low level at the coldest temperature; the ~2.5 °C is the respirometry experiment (4–6 weeks' acclimation), which measured activity and metabolism, not feeding",
+      "location": "web page, Results (Experiment 1, 2nd–3rd paragraphs); Discussion, 'Pumpkinseed sunfish'",
+      "quote": "certain individuals continued to feed at a low level even at the coldest temperature",
+      "conditions": "laboratory, n = 12, acute cooling at ~1 °C a day; 24 h at each temperature",
+      "verdict": "corrected",
+      "note": "suggested wording: 'cooled ~1 °C a day to ~2 °C, pumpkinseed reached a minimally active state at 7.9 °C and a near-fasting state at ≤ 4 °C, though some still fed a little'"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "no metabolic depression beyond the ordinary temperature effect",
+      "location": "web page, Results (Experiment 2: thermal sensitivity of SMR) and Discussion",
+      "quote": "in mummichog and pumpkinseed (though their average Q 10 were <3.5)",
+      "conditions": "respirometry with video-tracked activity; acute cooling ~3 °C a day from ~14 °C to ~2.5 °C, then 4–6 weeks at ~2.5 °C; SMR = metabolic rate extrapolated to zero activity; MRD defined as Q10 > 3.5 (n = 11 pumpkinseed)",
+      "verdict": "confirmed",
+      "note": "mean SMR Q10 < 3.5 in every interval, a few individuals above; routine (activity-uncontrolled) Q10 reached 5.6 in pumpkinseed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "pumpkinseed are lethargic but not dormant in winter",
+      "location": "web page, Discussion, 'The classification of overwintering strategies in fishes'",
+      "quote": "pumpkinseed and mummichog are examples of winter-lethargic species, rather than winter dormant as previously reported",
+      "conditions": "laboratory classification from the behaviour and respirometry experiments",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:388 (pumpkinseed: near-still below 8 °C)",
+      "claim": "pumpkinseed near-still below 8 °C",
+      "location": "web page, Results, 'Experiment 1', 2nd paragraph",
+      "quote": "zero or near zero activity was recorded at and below 7.1°C and 7.9°C, respectively",
+      "conditions": "daytime spontaneous activity in individual arenas with a shelter, laboratory (the 7.9 °C is pumpkinseed's; 7.1 °C cunner's)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://journals.biologists.com/jeb/article-pdf/225/8/jeb243407/2141945/jeb243407.pdf", "status": 403, "note": "publisher PDF refused the script (text/html)" },
+    { "url": "https://europepmc.org/articles/PMC9124485?pdf=render", "status": 403, "note": "Europe PMC PDF render refused" }
+  ],
+  "notes": "The fish were New Brunswick pumpkinseed (Lily Lake), a good regional match for Maine. Activity Q10 from 14 to 8 °C was 267 ± 122 by day in pumpkinseed (Discussion) — the behavioural shutdown is steep. Cold steady states were analysed by day only for this diurnal species. The paper's MRD verdict rests on SMR Q10 < 3.5; earlier reports of Q10 6.0 for cooled pumpkinseed (Roberts 1964) are attributed to uncontrolled activity. The only correction is wording: 'stopped feeding' should be a near-fasting steady state, and the 'cooled to about 2.5 °C' belongs to the metabolic experiment, not the feeding thresholds."
+}

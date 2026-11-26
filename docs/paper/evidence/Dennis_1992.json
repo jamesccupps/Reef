@@ -1,0 +1,57 @@
+{
+  "key": "Dennis_1992",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Read instead: the intermediary Maine DEP 2003 Webber Pond PCAP-TMDL (Wayback capture of the maine.gov PDF, openly downloadable) and, as a stand-in, the later edition of the same DEP guide (Volume II of the Maine Stormwater Best Practices Manual, c. 2008) from the Maine State Law and Legislative Reference Library's digital collection"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "the reference list of Maine DEP 2003 (Webber Pond PCAP-TMDL, PDF p. 42)",
+    "ok": false,
+    "corrections": "the ledger's citation is incomplete. Full reference as given by Maine DEP 2003: Dennis, J., J. Noel, D. Miller, C. Elliot, M.E. Dennis, and C. Kuhns. 1992. Phosphorus Control in Lake Watersheds: A Technical Guide to Evaluating New Development. Maine Department of Environmental Protection, Augusta, Maine."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-1 (shoreline residential row)",
+      "claim": "shoreline residential (algal-available P) 0.25–2.70 kg ha⁻¹ yr⁻¹ (Maine DEP 2003, after Dennis et al. 1992)",
+      "verdict": "unchecked",
+      "note": "Maine DEP 2003 (Webber Pond PCAP, PDF p. 32) has it: 'The range of phosphorus loading coefficients used (0.25 - 2.70 kg ha/yr) were developed using information on residential lot stormwater export of algal available phosphorus as derived from Dennis et al (1992)'. So the numbers are DEP's coefficients derived from the guide, and the paper's attribution 'Maine DEP 2003, after Dennis et al. 1992' is the right form; Dennis et al. itself not seen"
+    },
+    {
+      "paper": "§3.2.9; §4.6; src/config.js:835 (LOT_P, LOT_AV)",
+      "claim": "Maine phosphorus control plans assign shoreline lots about 0.15–0.2 kg P a year, read as available P (after Dennis et al. 1992); about 0.3 kg as total P",
+      "verdict": "unchecked",
+      "note": "per-lot values come from the PCAPs (the project notes: Long Pond 1.0 kg/ha on half an acre; Wilson Pond 0.34 lb per 10,000 ft² cleared), not from the 1992 guide, which was not seen. The stand-in (the guide's later edition, Volume II, Table 3.2, PDF p. 82 of the LLDC file) gives algal-available P export from new single-family lots of 0.09–0.34 lb per lot a year (0.04–0.15 kg) pre-treatment, by soil group and clearing restrictions (one cell printed as 1.08, apparently a misprint for 0.18) — so 0.15 kg is the top of that range and 0.2 kg lies above it. The 'about 0.3 kg as total P' (×2, 'about 50 % available') is a project assumption"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    {
+      "url": "https://www.maine.gov/dep/water/monitoring/tmdl/2003/tmdlwebberrep.pdf",
+      "status": 403,
+      "note": "maine.gov refuses scripts (the intermediary, read instead through the Wayback capture below)"
+    },
+    {
+      "url": "https://web.archive.org/web/20250908203319id_/https://www.maine.gov/dep/water/monitoring/tmdl/2003/tmdlwebberrep.pdf",
+      "status": 200,
+      "note": "Maine DEP 2003 Webber Pond PCAP-TMDL — the intermediary; read; saved as docs/research_notes/fetched/v2/Dennis_1992.via_MaineDEP2003_WebberPCAP.pdf"
+    },
+    {
+      "url": "https://archive.org/advancedsearch.php?q=title%3A%28phosphorus+control+lake+watersheds%29&fl%5B%5D=identifier&rows=20&output=json",
+      "status": 200,
+      "note": "no Internet Archive item"
+    },
+    {
+      "url": "https://lldc.mainelegislature.org/Open/Rpts/td428_r84m34.pdf",
+      "status": 200,
+      "note": "Maine Stormwater Best Practices Manual (DEP), whose Volume II is the later edition of the same guide (c. 2008; chapters revised to 2010–2014), not the 1992 text; used only as a stand-in; saved as docs/research_notes/fetched/v2/Dennis_1992.standin_MaineStormwaterManual_VolII.pdf (Table 3.2 on PDF p. 82)"
+    },
+    {
+      "url": "Maine DEP, Augusta (print, 1992)",
+      "status": "not online",
+      "note": "no digitised copy of the 1992 edition was found (maine.gov lakes publications page lists the title; the Maine State Library or DEP would hold it)"
+    }
+  ],
+  "notes": "Recommendation for the rewrite: cite the per-lot coefficient to the PCAPs that state it (Maine DEP 2003 Webber Pond; the Long Pond and Wilson Pond PCAPs) and, if a methods source is wanted, the current DEP guide (Maine Stormwater BMP Manual Vol. II, Table 3.2: 0.09–0.34 lb algal-available P per new single-family lot per year) rather than the unseen 1992 edition. Webber Pond's PCAP also notes that its road and shoreline coefficients were reduced to algal-available P 'as reflected in Dennis et al. (1992)', and that shoreline lots there (1.3 % of the land) gave ~14 kg TP a year, 2.7 % of the load."
+}

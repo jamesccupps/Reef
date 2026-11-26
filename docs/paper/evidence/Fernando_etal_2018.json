@@ -1,0 +1,82 @@
+{
+  "key": "Fernando_etal_2018",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own open article page (Eagle Hill Institute, Southeastern Naturalist online), which carries the article's full text and tables as HTML (the PDF is for subscribers and was not fetched). Indexed from a copy in which bare '<' signs (as in 'P < 0.001') were escaped, because the HTML-to-text step had swallowed the text between them",
+    "url": "https://eaglehill.us/SENAonline/articles/SENA-17-2/20-Fernando.shtml",
+    "file": "docs/research_notes/fetched/v2/Fernando_etal_2018.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the page's running heads ('Southeastern Naturalist, Volume 17, Issue 2 (2018): 309–326'; Anthony V. Fernando, Kyler B. Hecke, Michael A. Eggleton)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "src/species.js:286 (sunfish gapeR 0.083)",
+      "claim": "pumpkinseed gape 0.083·TL (Fernando et al. 2018)",
+      "location": "p. 314, Table 1 (horizontal gape vs TL)",
+      "quote": "Pumpkinseed (M) L. gibbosus L. 6 47 120 -1.249 + 0.083 TL",
+      "quote_from": "table",
+      "conditions": "horizontal gape (distance between the maxillae, mouth closed) of preserved Arkansas museum specimens; n = 6, TL 47–120 mm; r² 0.983",
+      "verdict": "confirmed",
+      "note": "0.083 is the slope; the intercept (−1.249 mm) is dropped in the code, which overstates gape by ~1.2 mm (e.g. 8.3 vs 7.1 mm at 100 mm TL). Pumpkinseed's mean gape:SL ratio is also 0.083 (p. 319), a different quantity"
+    },
+    {
+      "paper": "src/species.js:372 (bass gapeR 0.115)",
+      "claim": "smallmouth gape 0.120·TL − 1.8 mm (Fernando et al. 2018)",
+      "location": "p. 314, Table 1",
+      "quote": "Smallmouth Bass (H) Micropterus dolomieu Lacepède 33 55 316 -1.828 + 0.120 TL",
+      "quote_from": "table",
+      "conditions": "horizontal gape, mouth closed, preserved specimens; n = 33, TL 55–316 mm; r² 0.958",
+      "verdict": "confirmed",
+      "note": "the code's ratio 0.115 equals this line at ~300 mm TL (34.2/300 = 0.114)"
+    },
+    {
+      "paper": "§3.7.2",
+      "kind": "arithmetic",
+      "claim": "on published gape and body-depth regressions, a 300-mm smallmouth can swallow a pumpkinseed up to about 94 mm long",
+      "location": "p. 314, Table 1 (smallmouth gape); p. 315, Table 2 (pumpkinseed body depth)",
+      "quote": "Pumpkinseed L. gibbosus 6 47 120 -5.357 + 0.421 TL",
+      "quote_from": "table",
+      "conditions": "smallmouth horizontal gape (n = 33, 55–316 mm) against pumpkinseed maximum body depth (n = 6, 47–120 mm); preserved specimens, mouth closed",
+      "verdict": "confirmed",
+      "note": "gape at 300 mm = −1.828 + 0.120 × 300 = 34.2 mm; pumpkinseed depth = 34.2 mm at TL = (34.2 + 5.357)/0.421 = 93.9 mm. The comparison (horizontal gape vs body depth) is the project's, not the authors'; they measured gape with the mouth closed (p. 322), so a stretched gape would allow larger prey, and the pumpkinseed line rests on six fish"
+    },
+    {
+      "paper": "src/species.js:277 (pumpkinseed lengths at age: Copp et al. 2004 SL → TL)",
+      "claim": "SL converted to TL by Fernando et al. 2018's generalized centrarchid equation",
+      "location": "p. 321, Results (Objective 3)",
+      "quote": "TL = 2.761 + 1.202 SL",
+      "conditions": "all 20 centrarchid species pooled (t = 243.3, df = 703, r² 0.988); slopes parallel among species, intercepts −5.74 to 10.16 mm",
+      "verdict": "confirmed",
+      "note": "the equation is as stated (mm); the Copp et al. 2004 SL inputs are not in this source and were not checked"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://doi.org/10.1656/058.017.0214",
+      "status": 200,
+      "note": "BioOne landing page, too short to be the text (not kept); BioOne full text is subscriber-only"
+    },
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1656/058.017.0214?fields=openAccessPdf,externalIds",
+      "status": 200,
+      "note": "CLOSED, no open PDF"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1656/058.017.0214%22&format=json&resultType=lite",
+      "status": 200,
+      "note": "no record"
+    },
+    {
+      "url": "https://orc.library.atu.edu/faculty_pub_biol/91",
+      "status": 200,
+      "note": "Arkansas Tech repository: metadata and abstract only, no file"
+    }
+  ],
+  "notes": "The measurement data are on Dryad (doi:10.5061/dryad.17m23). Pumpkinseed is classed (M) moderate piscivore in Table 1 but called non-piscivorous in the Results text (p. 319) — an inconsistency in the source, irrelevant here. Bluegill body depth: −11.334 + 0.455 TL (n = 191). The specimens are Arkansas fish; northern body shapes may differ."
+}

@@ -1,0 +1,59 @@
+{
+  "key": "Gorny_1992",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Fisheries & Aquatic Life, formerly Archives of Polish Fisheries, OJS site); a scanned PDF with no text layer (getsrc 'scanned': true), so every value was read on the page images",
+    "url": "https://fal.infish.com.pl/index.php/FisheriesAndAquaticLife/article/download/553/553/553",
+    "file": "docs/research_notes/fetched/v2/Gorny_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page ('Archives of Polish Fisheries, Vol. 1, Fasc. 1, 27–31, 1992'; Wojciech Górny, Inland Fisheries Institute, Olsztyn)",
+    "ok": true,
+    "corrections": "",
+    "note": "the journal's web page misspells the title 'Esox lucins'; the PDF has 'Esox lucius'"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.9; Table 3.6-6 (northern pike row); src/w3/fish3.js:795",
+      "kind": "arithmetic",
+      "claim": "with live food in excess, pike larvae grew ~0.45 mm/d at 12 °C, 0.64–0.82 at 18 °C and 0.80–1.21 at 24 °C (project calculation); code adds 0.5–0.65 at 15 °C and 0.7–1.0 at 21 °C",
+      "location": "p. 27 (PDF p. 1), Material and methods; p. 28 (PDF p. 2), Table 1",
+      "quote": "12 80.0 28.5 … 15.76 … 18 81.5 50.7 … 18.67 … 24 … 22.25",
+      "quote_from": "image",
+      "conditions": "laboratory, one female's larvae, initial TL 12.5 mm after yolk resorption; 10 fish per dm³ in 13-dm³ flow-through tanks, no replicates; warmed from 11.5 °C at 0.1–0.5 °C per hour to 12, 15, 18, 21, 24 or 27 °C, then 7 days; fed live zooplankton ad libitum every hour of a 16-h day; final mean TL of survivors (N = 30 measured)",
+      "verdict": "confirmed",
+      "note": "(final TL − 12.5 mm) ÷ (7 d + warming time at 0.5 to 0.1 °C/h): 12 °C 0.45–0.46; 15 °C 0.56–0.65; 18 °C 0.64–0.82; 21 °C 0.68–0.96; 24 °C 0.80–1.21 mm/d (27 °C 0.68–1.11). Two caveats for the rewrite: these are survivors' mean lengths, raised where cannibalism removed the small (21–27 °C); and the code's 0.5 lower bound at 15 °C is a little below Górny's 0.56. The 0.25 mm/d at 10 °C is not Górny's (lowest group 12 °C)"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "cannibalism appeared at 18 °C and reached 26 % at 24 °C",
+      "location": "p. 29 (PDF p. 3), Results, below Fig. 1",
+      "quote": "The greatest losses caused by cannibalism ... were found in 24°C group - 26%",
+      "quote_from": "image",
+      "conditions": "per cent of the fish lost to cannibalism during the 7-day rearing; none at 12 and 15 °C; 0.7 % at 18 °C, 14.6 % at 21 °C, 12.3 % at 27 °C",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "pike larvae at full ration measured 0.25–1.21 mm/day from 10 to 24 °C (Górny 1992; Fey & Greszkiewicz 2021)",
+      "location": "p. 28 (PDF p. 2), Table 1 (with p. 27 methods)",
+      "quote": "24 53.1 93.9 55.8 a 22.25 3.14",
+      "quote_from": "image",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Górny supplies the upper end (1.21 mm/d at 24 °C, the fastest warming bracket) and 0.45 at 12 °C; the 0.25 at 10 °C must come from Fey & Greszkiewicz 2021 (not checked here)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://fal.infish.com.pl/index.php/FisheriesAndAquaticLife/article/view/553",
+      "status": 200,
+      "note": "article landing page (abstract only); the PDF link from it was used"
+    }
+  ],
+  "notes": "One-week experiment after warming; survival 80, 80, 81.5, 74.6, 53.1 and 68.5 % at 12–27 °C; final mean weights 28.5–93.9 mg; total biomass highest at 27 °C (7,334 mg). Górny suggests 24–27 °C as the rearing optimum. The growth rates are a project calculation (Górny gives final lengths, not rates): the paper labels them so. Scanned PDF — all quotes read off the page images (PDF pp. 1–3)."
+}

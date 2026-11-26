@@ -1,0 +1,60 @@
+{
+  "key": "Gyllstrom_2005",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the published article's PDF in the University of Konstanz's institutional repository (KOPS), open access",
+    "url": "https://kops.uni-konstanz.de/bitstreams/71e11eb5-d33d-4cae-99d6-aa0849aef545/download",
+    "file": "docs/research_notes/fetched/v2/Gyllstrom_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('Limnol. Oceanogr., 50(6), 2005, 2008–2021'; 15 authors, Gyllström first)",
+    "ok": true,
+    "corrections": "",
+    "note": "'Gyllström, M. et al.' is acceptable; the co-authors are Hansson, Jeppesen, García-Criado, Gross, Irvine, Kairesalo, Kornijow, Miracle, Nykänen, Nõges, Romo, Stephen, Van Donk and Moss"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.4",
+      "claim": "across 81 shallow European lakes zooplankton tracked TP",
+      "location": "p. 2009 (PDF p. 2), abstract; p. 2013 (PDF p. 6), Table 3",
+      "quote": "the most important predictor of zooplankton biomass and community structure",
+      "conditions": "81 lakes of mean depth < 4 m (0.4–3.9 m), 38–68° N; summer sampling 2000–2001; multiple regression of log total zooplankton dry biomass on log TP, climate, plant volume infested and area",
+      "verdict": "confirmed",
+      "note": "log10 ZOO = 0.71 + 0.88 log10 TP − 0.20 CLIM + 0.38 PVI (r² 0.49, n 65), read on the page image of Table 3"
+    },
+    {
+      "paper": "§3.3.4; src/config.js:1381",
+      "claim": "benthic and plant-associated taxa were 'typically almost half' of the zooplankton biomass in shallow lakes",
+      "location": "p. 2009 (PDF p. 2), abstract",
+      "quote": "Benthic and plant-associated taxa (typically almost half the total zooplankton biomass)",
+      "conditions": "biomass (dry weight) of whole-lake samples pooled from a shore-to-centre transect; the group includes littoral cladocerans and littoral rotifers (Table 2)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1361 (PLANKTON.START_C comment)",
+      "claim": "summer crustacean zooplankton 45–100 µg/L in mesotrophic lakes (Gyllström 2005)",
+      "source_value": "the paper gives no crustacean biomass for mesotrophic lakes; the digits match its regression for TOTAL zooplankton (rotifers included), log10 ZOO = 0.71 + 0.88 log10 TP, evaluated at TP ≈ 12–30 µg/L with the climate and plant terms set to zero (≈ 46–102 µg DW/L; project arithmetic). Measured total biomass across the 81 lakes: 4.7–5,161 µg DW/L, mean 477, median 289, at median TP 55 µg/L",
+      "location": "p. 2013 (PDF p. 6), Table 3 (ZOO row); p. 2010 (PDF p. 3), Table 1",
+      "quote": "ZOO 0.71** 0.88*** −0.20*** 0.38*",
+      "quote_from": "image",
+      "conditions": "dry weight; total zooplankton including rotifers; shallow (< 4 m mean depth) European lakes; CLIM is a PCA score (positive = warmer), PVI the arcsine-square-root plant volume",
+      "verdict": "corrected",
+      "note": "cite it as 'total zooplankton, rotifers included, from Gyllström et al.'s TP regression (project arithmetic)'; for a cold-climate lake the negative CLIM score raises the prediction a little"
+    },
+    {
+      "paper": "src/config.js:1580 (small cladocerans comment)",
+      "claim": "the chydorids are up to half the zooplankton of weedy shallows (Gyllström et al. 2005)",
+      "source_value": "benthic and plant-associated taxa as a group — littoral cladocerans (Eurycercus, Camptocercus, Acroperus, Alonopsis, Simocephalus, Chydorus spp., Graptoleberis, Pleuroxus, Rhynchotalona, Disparalona, Scapholeberis, Sida, Ophryoxus) plus littoral rotifers — were 'typically almost half' of whole-lake zooplankton biomass; Chydorus sphaericus itself is classed as pelagic",
+      "location": "p. 2009 (PDF p. 2), abstract; p. 2012 (PDF p. 5), Table 2; p. 2011 (PDF p. 4), Methods (sampling)",
+      "quote": "along a transect running from the shore to the center of the lake",
+      "conditions": "samples pooled from 5–10 points along a shore-to-centre transect, not from weed beds",
+      "verdict": "corrected",
+      "note": "three differences: 'typically almost half', not 'up to half'; the whole littoral group (crustaceans and rotifers), not chydorids alone; whole-lake pooled samples, not the weedy shallows. Their biomass was predicted mainly by plant cover (PVI)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Paper §3.3.4's use is right. The two code comments need rewording (config.js:1361 and :1580). Useful for the rewrite: Fig. 4 (p. 2016) shows large pelagic zooplankton medians of roughly 30 µg DW/L at TP 0–25 µg/L and ~100 at 25–50, and small pelagic roughly 20 and 100 (read from the boxplots; approximate); carbon converted to dry weight × 2.2; 'ice' lakes (≥ 4 months ice) responded differently to TP — Hot Brook would be an ice lake. Copy: KOPS repository PDF (the published article, journal pagination)."
+}

@@ -1,0 +1,54 @@
+{
+  "key": "Keast_Eadie_1984",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract and a methods summary only: the Queen's University Biological Station project page for the article (no full text); the intermediary COSEWIC 2014 status report was also read for the via-cited 49.5 mm",
+    "url": "https://research.qubs.ca/projects/growth-in-the-first-summer-of-life-a-comparison-of-nine-co-occurring-fish-species"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (Can. J. Zool. 62(7): 1242–1250, 1984; Allen Keast and J. Eadie); the title page was not seen",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref's title has a typo ('comparisson'); the entry's 'comparison' is right per the QUBS page"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-6 (banded killifish row); Table 3.6-7 (banded killifish row); src/w3/fish3.js:840",
+      "claim": "young banded killifish in Lake Opinicon grow linearly to 49.5 mm by mid-October (Keast & Eadie 1984 via COSEWIC 2014)",
+      "verdict": "unchecked",
+      "note": "COSEWIC 2014 (printed p. 10, PDF p. 20) says young-of-year 'reach a mean length of 49.5 mm by the middle of October', citing Keast and Eadie 1984 — so the via citation is faithful to COSEWIC. But the Keast & Eadie abstract says length gains were linear early in summer, 'reached a plateau by early September' and few species grew beyond September, and the methods summary lists the last collections as 'early September and early October' — 'linear to mid-October' may be COSEWIC's paraphrase. Needs the article's table for killifish"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "first-summer length grows roughly linearly through early summer and plateaus by early September, and spawning date is the strongest influence on autumn size (abstract, nine species in Lake Opinicon)",
+      "verdict": "unchecked",
+      "note": "the abstract says exactly this ('length increments were linear early in the summer and reached a plateau by early September'; 'Spawning date had the greatest influence on the amount of growth attained'); unchecked under rule 1 (abstract only). The paper already marks it 'abstract'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    {
+      "url": "https://doi.org/10.1139/z84-180",
+      "status": 403,
+      "note": "Canadian Science Publishing refused (the DOI a library login would open: Can. J. Zool. 62(7): 1242–1250)"
+    },
+    {
+      "url": "https://cdnsciencepub.com/doi/pdf/10.1139/z84-180",
+      "status": 403,
+      "note": "publisher PDF refused"
+    },
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/z84-180?fields=openAccessPdf,externalIds,title",
+      "status": 200,
+      "note": "CLOSED, no open PDF"
+    },
+    {
+      "url": "https://research.qubs.ca/projects/growth-in-the-first-summer-of-life-a-comparison-of-nine-co-occurring-fish-species",
+      "status": 200,
+      "note": "QUBS page: abstract and methods summary, no full text"
+    }
+  ],
+  "notes": "Study: Lake Opinicon, Ontario (2,200 ha, eutrophic), 1977; inshore shallows and weed beds seined weekly from late June to the third week of August, plus early September and early October; 7 × 2 m bag seine, 0.15-cm mesh; 60–80 fish per species per collection; total lengths. Abstract: species grew 6–10-fold in length; early spawners ended larger; small-bodied species had the longest spawning seasons and the widest size range by summer's end; no link between diet type and growth. The 49.5 mm rests on COSEWIC 2014 (wildlife-species.canada.ca, 'sr_Banded Killifish_2014_e.pdf'); if the article cannot be had, cite COSEWIC 2014 for it and say 'by October' rather than 'by mid-October'. COSEWIC copy saved as docs/research_notes/fetched/v2/Keast_Eadie_1984.via_COSEWIC2014.pdf."
+}

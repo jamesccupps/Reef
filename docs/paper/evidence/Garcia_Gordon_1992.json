@@ -1,0 +1,65 @@
+{
+  "key": "Garcia_Gordon_1992",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (22 Sep 2015, openly downloadable) of the PDF that ASLO served free on its own site (aslo.org/lo/toc/vol_37/issue_6/1307.pdf); text layer is OCR, so the equation and Table 1 were read on the page images",
+    "url": "https://web.archive.org/web/20150922002002id_/http://www.aslo.org:80/lo/toc/vol_37/issue_6/1307.pdf",
+    "file": "docs/research_notes/fetched/v2/Garcia_Gordon_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the first page ('Limnol. Oceanogr., 37(6), 1992, 1307–1312'; Hernán E. García and Louis I. Gordon, Oregon State University)",
+    "ok": true,
+    "corrections": "",
+    "note": "a Note, not an Article; Crossref's 'Herncin' is an OCR error for Hernán"
+  },
+  "claims": [
+    {
+      "paper": "§4.3; src/w3/chem3.js:41, :127",
+      "claim": "oxygen saturation follows Garcia & Gordon (1992), with the Benson & Krause coefficients, freshwater (S = 0)",
+      "location": "p. 1310 (PDF p. 4), Eq. 8; p. 1311 (PDF p. 5), Table 1 ('Benson and Krause', cm³ dm⁻³ column)",
+      "quote": "A0 2.00907 A1 3.22014 A2 4.05010 A3 4.94457 A4 −2.56847×10⁻¹ A5 3.88767",
+      "quote_from": "image",
+      "conditions": "ln C* = A0 + A1·Ts + … + A5·Ts⁵ + S(…) with Ts = ln[(298.15 − t)/(273.15 + t)]; C* in cm³ dm⁻³ (mL/L) at STP, real gas; water in equilibrium with water-saturated air at 1 atm total pressure; tF ≤ t ≤ 40 °C, 0 ≤ S ≤ 42 ‰",
+      "verdict": "confirmed",
+      "note": "chem3.js o2SatMgL uses exactly these six coefficients and this Ts; with the salinity terms it reproduces the table's check value (6.315 cm³ dm⁻³ at 10 °C, 35 ‰: computed 6.3148). The authors recommend the Benson & Krause-based coefficients for routine use (p. 1312). Eq. 8 as printed has a slip (a spurious 'A3·Ts²' term before A3·Ts³); the table's check value is reproduced only by the plain fifth-order polynomial, which is what chem3.js implements"
+    },
+    {
+      "paper": "src/w3/chem3.js:41",
+      "claim": "mL/L → mg/L × 1.42905",
+      "location": "p. 1308 (PDF p. 2), molar volume used for unit conversion",
+      "quote": "at a molar volume of O2 of 22,391.6 cm3 mol-1",
+      "quote_from": "image",
+      "conditions": "O2 at STP",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "31.9988 g mol⁻¹ / 22.3916 L mol⁻¹ = 1.42905 g L⁻¹; the factor itself is not printed (the ledger credits the USGS memo 2011.03 conversion), but it follows from the molar volume the paper uses"
+    },
+    {
+      "paper": "§3.1.6",
+      "kind": "arithmetic",
+      "claim": "oxygen solubility at the lakes' elevation (129 m) is 14.4 mg/L at 0 °C, 12.9 at 4 °C and 8.3 at 24 °C (Garcia & Gordon 1992; project computation)",
+      "location": "p. 1310 (PDF p. 4), Eq. 8; p. 1311 (PDF p. 5), Table 1",
+      "quote": "A0 2.00907 … A5 3.88767 … Check: 6.315",
+      "quote_from": "image",
+      "conditions": "freshwater; 1 atm values scaled by pressure at 129 m",
+      "verdict": "confirmed",
+      "note": "Eq. 8 at S = 0: 10.231, 9.172 and 5.890 mL/L at 0, 4 and 24 °C = 14.62, 13.11 and 8.42 mg/L at 1 atm; × 0.985 (barometric ratio at 129 m, exp(−129/8434) = 0.9848; the model's SAT_P) = 14.40, 12.91 and 8.29 mg/L. The pressure correction is the project's, not the paper's (which is for 1 atm); the water-vapour refinement changes it by < 0.1 %"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1992.37.6.1307",
+      "status": 403,
+      "note": "Wiley refused the script (OpenAlex lists it as bronze/free)"
+    },
+    {
+      "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1992.37.6.1307",
+      "status": 403,
+      "note": "Wiley refused the script"
+    }
+  ],
+  "notes": "The paper is a fit for seawater and pure water at 1 atm; its freshwater use (S = 0) is within the fitted range. The 'Benson and Krause' column is García & Gordon's Eq. 8 fitted to Benson & Krause's (1984) data, which the authors recommend; describing it as 'the Benson & Krause fit' is fine if read that way. The text layer is OCR and garbled for equations; every number above was read on page images. Printed Eq. 8 contains a typo (A3 appears twice, once on Ts²); anyone re-implementing it from the page should use A0…A5 on Ts⁰…Ts⁵ and test against the 6.315 check value."
+}

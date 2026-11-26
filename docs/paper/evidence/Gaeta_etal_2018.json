@@ -1,0 +1,70 @@
+{
+  "key": "Gaeta_etal_2018",
+  "reader": "wave-2 batch w2-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (PLOS ONE printable version)",
+    "url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0194092&type=printable",
+    "file": "docs/research_notes/fetched/v2/Gaeta_etal_2018.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (PLoS ONE 13(3): e0194092, published 15 March 2018; nine authors as listed)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.7.2; §5.4; src/world.js:84",
+      "claim": "across seven piscivores (bass, pike and five others) the median prey is 10–20 % and the largest 32–46 % of the predator's length",
+      "source_value": "abstract: 'generally ranged from 10–20% and 32–46%'; these are the interquartile ranges of the model estimates (relative IP50 = 50th-percentile regression; relative IPmax = 99th-percentile regression, 95th for rock bass) across taxa over the 5th–95th percentiles of predator length; the full ranges are 9–25 % and 32–57 %",
+      "location": "p. 1 (abstract); p. 6 (Results, 2nd paragraph)",
+      "quote": "generally ranged from 10–20% and 32–46% of predator total length, respectively",
+      "conditions": "field diets (lavage, tube, dissection) from lakes and reservoirs in Alberta, Illinois, Minnesota, New York and Wisconsin, 1976–2013; prey and predator total length; seven taxa (crappie grouped), with largemouth, smallmouth, rock bass, muskellunge, pike, walleye",
+      "verdict": "corrected",
+      "note": "the digits are the abstract's, but the abstract says 'generally', and p. 6 shows both are interquartile ranges ('interquartile range ... spanning from 32–46%'; relative IPmax 'ranged from 32–57%', relative IP50 '9–25%'). A light fix: 'generally (interquartile range) 10–20 % and 32–46 %, at most 25 % and 57 %'. Seven taxa is right (crappie grouped)"
+    },
+    {
+      "paper": "src/w3/fish3.js:535",
+      "claim": "field maxima across piscivores are 0.32–0.46 of the predator's length",
+      "source_value": "relative IPmax (99th-percentile regression) 32–57 % across taxa and predator lengths; 32–46 % is its interquartile range; for fusiform prey 33–49 % (IQR), laterally compressed 4–39 %",
+      "location": "p. 6 (Results, 2nd paragraph)",
+      "quote": "for the 5th to 95th percentile range of predator total lengths ranged from 32–57%",
+      "conditions": "99th-percentile quantile regressions; 5th–95th percentile of each predator's length",
+      "verdict": "corrected",
+      "note": "as 'the field's maxima' the range is 32–57 % (IQR 32–46 %); relative IPmax was fairly constant with length for muskellunge and pike and fell with length for walleye, largemouth and smallmouth (p. 6)"
+    },
+    {
+      "paper": "§3.7.2",
+      "claim": "the data include 784 pike and 201 smallmouth bass diets",
+      "location": "p. 4, Table 1",
+      "quote": "Northern Pike 784 … 7 2 … Smallmouth Bass 201 380 16 9",
+      "quote_from": "table",
+      "conditions": "'Predator sample size' (fish with fish in the diet); prey items 2,233 (pike) and 380 (smallmouth); pike from Alberta and Minnesota, smallmouth from Minnesota, New York and Wisconsin",
+      "verdict": "confirmed",
+      "note": "read in the raw text (the layout text shifts this table's rows: it puts 201 beside rock bass)"
+    },
+    {
+      "paper": "§3.7.2",
+      "kind": "arithmetic",
+      "claim": "on their smallmouth regressions, bass of 200, 300 and 400 mm take median prey of about 50, 54 and 62 mm (project calculation)",
+      "location": "p. 5, Table 2 (smallmouth: Prey TL = exp(α + β·predator TL²)); p. 8, Table 3 (50th: α 3.83, β 1.82e-06)",
+      "quote": "Smallmouth Bass All 50th 3.83e-00 1.82e-06",
+      "quote_from": "table",
+      "conditions": "50th-percentile quantile regression, all prey shapes; smallmouth predators ~200–460 mm (5th–95th percentile, Fig. 1 top axis), so 200–400 mm is inside the modelled range",
+      "verdict": "confirmed",
+      "note": "exp(3.83 + 1.82e-6 × L²) = 49.5, 54.3, 61.6 mm at L = 200, 300, 400 mm"
+    },
+    {
+      "paper": "§5.4",
+      "claim": "the smallest prey of field piscivores barely rise with their size",
+      "location": "p. 6 (Results, 1st paragraph)",
+      "quote": "this accounted for an increase of only 7–14 mm for all taxa",
+      "conditions": "IPmin (1st-percentile regression) from the 5th to the 95th percentile of predator length; muskellunge the exception (+26 mm)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Useful beyond the citing sentences: the median prey of pike, walleye and smallmouth rose only 40–53 % across their length range, while muskellunge and largemouth rose >200 % (p. 6); modal prey lengths fell within 16–73 mm for every taxon and length except large muskellunge (p. 6); median log10 predator:prey mass ratios 1.9–2.5. Pike data are from Alberta (Diana) and Minnesota; no chain pickerel. The corrections are one reading in two places: the 10–20 % and 32–46 % are interquartile ranges ('generally'), not the full ranges (9–25 % and 32–57 %); every number checks."
+}
