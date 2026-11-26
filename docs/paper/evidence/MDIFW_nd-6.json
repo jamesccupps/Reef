@@ -1,0 +1,191 @@
+{
+  "key": "MDIFW_nd-6",
+  "reader": "wave-3 batch 05 (w3-05)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copies: all eleven lake survey sheets served by www1.maine.gov under /ifw/docs/lake-survey-maps/ (www.maine.gov refuses scripts), read 2026-11-26. Six were fetched by getsrc.mjs; five (Passaconway, Great Pond, Sherman's Mill, Horseshoe, Long Lake) were refused by getsrc only as 'too short' (one-page sheets), so they were downloaded with curl under the same honest user agent into fetched/v2 and indexed with getsrc --file. Files: MDIFW_nd-6.pdf (Passaconway) and MDIFW_nd-6.<lake>.pdf for the rest.",
+    "url": "https://www1.maine.gov/ifw/docs/lake-survey-maps/york/passaconway_pond.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-6.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "each sheet's own heading and survey/revision block",
+    "ok": false,
+    "corrections": "The sheets are dated (survey and revision years printed on each), so 'n.d.' and 'various dates; several via search summaries' should give way to: Passaconway Pond, York Twp., York Co. (surveyed Aug 1960); Great Pond, Cape Elizabeth, Cumberland Co. (surveyed July 1955, rev. 1991); Sherman's Mill Pond, Appleton, Knox Co. (surveyed Aug 1971, rev. 2002); Horseshoe Lake, T35 MD, Hancock Co. (Aug 1960, rev. 1988 — as cited); Fifth Machias Lake, T36 MD, Washington Co. (Aug 1961, rev. 2001 — as cited); Northeast Pond, Lebanon, York Co., Maine, and Milton, Strafford Co., N.H. (Aug 1966, rev. 1990); Crawford Lake, Crawford and T21, Washington Co. (July 1953, rev. 1969, 1984); Meddybemps Lake, Washington Co. (July 1953, rev. 1969, 1982, 1999); Long Lake, T18 ED, T19 ED, Wesley and Northfield, Washington Co. (Aug 1962, rev. 1969, 1999); Southwest Pond, Beddington, Washington Co. (Aug 1960, resurveyed 1969, 1982, rev. 1988); Pleasant River Lake, Beddington, Washington Co. (July 1951, resurveyed 1967, rev. 1969, 1982, 1995). The missing URLs follow the same pattern: …/lake-survey-maps/york/northeast_pond.pdf, washington/crawford_lake.pdf, washington/meddybemps_lake.pdf, washington/long_lake.pdf, washington/southwest_pond.pdf, washington/pleasant_river_lake.pdf (all served at https://www1.maine.gov/ifw/docs/lake-survey-maps/…).",
+    "note": "Northeast Pond straddles the Maine–New Hampshire line; the paper's 'Maine surveys' is still fair (an MDIFW sheet)."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "MDIFW survey sheets show shallow ponds within 0.6–1.7 °C top to bottom",
+      "source_value": "Great Pond, Cape Elizabeth (max 5 ft): surface 78 °F, 5 ft 77 °F; Sherman's Mill Pond (max 6 ft): surface 77 °F, 6 ft 74 °F",
+      "location": "Great Pond sheet p. 1 (PDF p. 1); Sherman's Mill Pond sheet p. 2 (PDF p. 2)",
+      "quote": "Surface - 77°F … 6 feet - 74°F",
+      "quote_from": "table",
+      "conditions": "one summer reading per pond, undated on the sheet (Great Pond surveyed July 1955, Sherman's Mill August 1971); Passaconway gives a surface reading only",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Read on the page images. 78 − 77 °F = 0.56 °C; 77 − 74 °F = 1.67 °C, so 0.6–1.7 °C holds. Great Pond's reading is from a July survey, not late summer."
+    },
+    {
+      "paper": "§3.1.5; Table 3.1-3",
+      "claim": "Horseshoe Lake, Hancock Co. (6.1 m) was isothermal in August: 22.2 °C at the surface, 21.7 °C at 6.1 m",
+      "source_value": "maximum depth 20 ft; surface 72 °F, 20 ft 71 °F",
+      "location": "Horseshoe Lake sheet p. 1 (PDF p. 1), Physical Characteristics",
+      "quote": "Maximum depth - 20 feet … Surface - 72°F … 20 feet - 71°F",
+      "quote_from": "image",
+      "conditions": "surveyed August 1960 (rev. 1988); the sheet does not date the temperature reading itself",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "72 °F = 22.2 °C, 71 °F = 21.7 °C, 20 ft = 6.1 m. The text layer reads '72QF'; the page image shows 72°F. Area 202 acres (82 ha)."
+    },
+    {
+      "paper": "§3.1.5; Table 3.1-3",
+      "claim": "Fifth Machias Lake (8.2 m) was weakly stratified in August: 23.3 °C at the surface, 15 °C at 7 m",
+      "source_value": "maximum depth 27 ft; surface 74 °F, 23 ft 59 °F — a 15 °F (8.3 °C) drop over 7 m; the sheet says nothing about stratification",
+      "location": "Fifth Machias Lake sheet p. 2 (PDF p. 2), Physical Characteristics",
+      "quote": "Maximum depth - 27 feet … Surface - 74°F … 23 feet - 59°F",
+      "quote_from": "image",
+      "conditions": "surveyed August 1961 (rev. 2001); one reading, undated on the sheet",
+      "verdict": "corrected",
+      "note": "The digits are right (74 °F = 23.3 °C, 59 °F = 15.0 °C, 23 ft = 7.0 m, 27 ft = 8.2 m), but 'weakly stratified' is the project's label and understates an 8.3 °C top-to-7-m difference — larger than the Brackett Lake summers that the same table calls stratified (21.8–23.8 over 13.5–18.8 °C). Say 'stratified' (or give the two temperatures); it then supports §3.1.5's own 8–10-m threshold better."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "MDIFW records winterkill 'during the more severe winters' in Passaconway Pond (1.2 m deep)",
+      "source_value": "maximum depth 4 ft (1.2 m); winterkill occurs during the more severe winters",
+      "location": "Passaconway Pond sheet p. 1 (PDF p. 1)",
+      "quote": "Winterkill occurs in Passaconway Pond during the more severe winters",
+      "conditions": "York Co.; 26 acres; surveyed August 1960; the sheet blames oxygen used up by decaying vegetation on the bottom under the ice",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "oxygen in Passaconway Pond fell to 0.8 mg/L in February 1961",
+      "source_value": "0.8 parts of oxygen per million parts of water, tested February 1961",
+      "location": "Passaconway Pond sheet p. 1 (PDF p. 1)",
+      "quote": "tested during February 1961 and found to be 0.8 parts of oxygen per million",
+      "conditions": "one test, depth not stated, after the August 1960 survey",
+      "verdict": "confirmed",
+      "note": "ppm by mass in water = mg/L."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "winterkill in Great Pond, Cape Elizabeth (1.5 m) 'during years of heavy snowfall and thick ice cover'",
+      "source_value": "maximum depth 5 ft (1.5 m); susceptible to winter kill, most likely in years of heavy snowfall and thick ice cover",
+      "location": "Great Pond sheet p. 1 (PDF p. 1)",
+      "quote": "most likely to occur during years of heavy snowfall and thick ice cover",
+      "conditions": "131 acres; 'a shallow, weedy warmwater pond'; surveyed July 1955, rev. 1991; the sheet says the snow and ice cut light and so dissolved oxygen",
+      "verdict": "confirmed",
+      "note": "The sheet says 'susceptible to winter kill' (a risk the managers watch for after stocking largemouth in 1985), not that kills were recorded on given dates."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "winterkill in Sherman's Mill Pond (1.8 m) 'especially during years when water flows are low'",
+      "source_value": "maximum depth 6 ft (1.8 m); susceptible to winter fish kills especially during years when water flows are low",
+      "location": "Sherman's Mill Pond sheet p. 2 (PDF p. 2)",
+      "quote": "susceptible to winter fish kills especially during years when water flows are low",
+      "conditions": "Appleton, Knox Co.; 37 acres; a mill pond on Allen Brook; surveyed August 1971, rev. 2002",
+      "verdict": "confirmed",
+      "note": "Again 'susceptible', not a dated record."
+    },
+    {
+      "paper": "§3.5.6; also §3.1.6 ('very shallow, weedy ponds')",
+      "claim": "In Maine, winterkill is documented in weedy ponds 1.2–1.8 m deep in snowy winters",
+      "source_value": "depths 4–6 ft (1.2–1.8 m) are right, but only Great Pond is tied to snowy winters (and only Great Pond is called 'weedy'); Passaconway's kills come 'during the more severe winters' (decaying bottom vegetation), and Sherman's Mill's 'during years when water flows are low'",
+      "location": "Passaconway sheet p. 1; Great Pond sheet p. 1; Sherman's Mill Pond sheet p. 2 (PDF pages as given)",
+      "quote": "Great Pond is a shallow, weedy warmwater pond",
+      "verdict": "corrected",
+      "note": "Suggested: 'winterkill is documented or expected in ponds 1.2–1.8 m deep in severe or snowy winters and low-flow years'. Two of the three sheets say 'susceptible' rather than record a kill."
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-3 (chain pickerel, O₂ column); §3.5.6",
+      "claim": "a Maine pond population of pickerel persists through 0.8 ppm in February; in Passaconway Pond only pickerel and bullhead persist through February oxygen of 0.8 ppm",
+      "source_value": "the sheet lists only chain pickerel and hornpout (bullhead) — 'a small population of pickerel' — from the August 1960 survey; one test in February 1961 found 0.8 ppm, and the sheet says 'part of the fish population is lost when these conditions occur'; no later survey shows what survived",
+      "location": "Passaconway Pond sheet p. 1 (PDF p. 1)",
+      "quote": "Undoubtedly, part of the fish population is lost when these conditions occur.",
+      "conditions": "26-acre, 4-ft pond; fish list from summer 1960; oxygen from February 1961",
+      "verdict": "corrected",
+      "note": "The sheet shows that pickerel and bullhead are the only fish in a pond that winterkills and had 0.8 ppm one February — not that they survived 0.8 ppm. As a tolerance value (Table 3.5-3's O₂ column) it overstates the evidence. Suggested: 'Passaconway Pond, which winterkills in severe winters and had 0.8 ppm in February 1961, holds only pickerel and bullhead (MDIFW survey sheet 1960)'."
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "about 30 % of 60 Crawford Lake white perch exceeded 25 cm in 1973",
+      "source_value": "of 60 white perch netted in July 1973, 18 (30 %) exceeded 10 inches",
+      "location": "Crawford Lake sheet p. 1 (PDF p. 1)",
+      "quote": "18 (30%) exceeded 10 inches in length",
+      "conditions": "a net sample (gear not stated), July 1973; 10 in = 25.4 cm; the rest were 5–6.5 in (17 %), 6.5–8.5 (22 %), 8.5–10 (32 %)",
+      "verdict": "confirmed",
+      "note": "A netted sample, not angler catch and not a population census. The paper's 'relayed by search summaries' can be dropped: the sheet has now been read."
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "Meddybemps and Long lakes yield 25–33-cm white perch",
+      "source_value": "Meddybemps: 'a good proportion of a typical catch' is 10–12-in fish (25–30 cm); Long Lake: 'Some perch reach highly desirable sizes of 12-13in' (30–33 cm)",
+      "location": "Meddybemps Lake sheet p. 1 (PDF p. 1); Long Lake sheet p. 1 (PDF p. 1)",
+      "quote": "a good proportion of a typical catch comprised of attractively sized 10-12 in fish",
+      "conditions": "angler catches, as described by MDIFW; no sample sizes",
+      "verdict": "confirmed",
+      "note": "The combined 25–33 cm is fair, but Long Lake's 12–13 in is what 'some perch reach', i.e. the top of its range, not a typical size. Long Lake's '12-13in' reads '12-l3in' in the text layer; the page image shows 12-13in."
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "Southwest Pond and Pleasant River Lake hold dense, stunted white perch stocks",
+      "source_value": "Southwest Pond: white perch 'so numerous that they are stunted'; Pleasant River Lake: 'a dense population of stunted white perch'",
+      "location": "Southwest Pond sheet p. 1 (PDF p. 1); Pleasant River Lake sheet p. 1 (PDF p. 1)",
+      "quote": "The lake supports a dense population of stunted white perch",
+      "conditions": "Beddington, Washington Co.; Southwest Pond 138 acres, 34 ft; Pleasant River Lake 949 acres, 52 ft; both cool, deeper trout/salmon waters, unlike Hot Brook",
+      "verdict": "confirmed",
+      "note": "Southwest Pond's words: 'white perch are so numerous that they are stunted'. Pleasant River Lake anglers 'occasionally' get 9–10-in fish."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "Maine surveys record white perch taken in open water at dusk",
+      "source_value": "Northeast Pond: white perch 'are commonly caught in numbers out in the open lake at dusk with bait'",
+      "location": "Northeast Pond sheet p. 1 (PDF p. 1)",
+      "quote": "White perch are commonly caught in numbers out in the open lake at dusk",
+      "conditions": "778-acre, 49-ft pond on the Maine–New Hampshire line; surveyed August 1966, rev. 1990",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "a \"deep hole near the outlet\" of Fifth Machias Lake is a summer white perch spot (in quotation marks)",
+      "source_value": "'The deep hole is located a relatively short distance from the outlet, and is a great spot to fish for perch in the summer.'",
+      "location": "Fifth Machias Lake sheet p. 2 (PDF p. 2)",
+      "quote": "The deep hole is located a relatively short distance from the outlet",
+      "conditions": "8.2-m lake, stratified in August (see above); the sheet says 'perch', not 'white perch', though its principal fishery is white perch and pickerel",
+      "verdict": "corrected",
+      "note": "The quoted words 'deep hole near the outlet' are not the sheet's. Drop the quotation marks or quote the sheet's own words. The spot is a deep hole in a lake that stratifies; it is weak support for where perch go in a 5-m polymictic lake."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "Maine surveys record white perch schools feeding at the surface with dorsal fins out (MDIFW survey sheets; Smith 2002)",
+      "verdict": "unsupported",
+      "note": "None of the eleven sheets mentions surface schools or dorsal fins. The point is in Smith 2002 (MDIFW's white perch plan; its fetched text has 'dorsal fins may protrude'), so cite Smith 2002 alone for it."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "a 6.1-m Hancock County lake is \"quite popular\" with ice anglers for white perch",
+      "source_value": "Horseshoe Lake (max 20 ft): light open-water use, but 'quite popular with ice-fishermen who regard it as a good white perch lake'",
+      "location": "Horseshoe Lake sheet p. 1 (PDF p. 1)",
+      "quote": "quite popular with ice-fishermen who regard it as a good white perch lake",
+      "conditions": "remote lake, T35 MD; surveyed August 1960, rev. 1988",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6 (project inference 'from Maine survey sheets and limnology')",
+      "claim": "in a polymictic lake 4–5.5 m deep the whole column is about 22–25 °C in August",
+      "source_value": "the shallow, mixed sheets give summer temperatures of 72–78 °F (22.2–25.6 °C) top to bottom: Horseshoe 72/71 °F (August), Sherman's Mill 77/74 °F (August), Great Pond 78/77 °F (July), Passaconway 78 °F surface (August)",
+      "location": "Horseshoe sheet p. 1; Sherman's Mill sheet p. 2; Great Pond sheet p. 1; Passaconway sheet p. 1 (PDF pages as given)",
+      "quote": "Surface - 78° F.",
+      "quote_from": "image",
+      "conditions": "single undated readings from surveys of 1955–1971; none is from a 4–5.5-m lake except Horseshoe (6.1 m)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Holds as 'about 22–25 °C' (the warmest readings are 25.6 °C). The winter half of the sentence (0–1 °C under the ice, 3–4 °C at the bed) has no basis in these sheets: none gives a winter temperature."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "All eleven sheets were read on 2026-11-26 (www1.maine.gov). No sheet gives a date for its temperature readings; the survey dates are the best guide. Other values the rewrite may want: Passaconway's fishing is 'very poor', with small pickerel 'probably due to a lack of forage fish'; Sherman's Mill's perch and pickerel 'consist of many small fish'; Crawford Lake: smallmouth forage is crayfish, young-of-year alewife, yellow perch and sunfish, alewives pass a fishway at Pokey Dam, and bass fishing peaks 10–24 June; Meddybemps: smallmouth average only 10 in and 'routinely outstrip the available food supply'; Southwest Pond's cool deep water is too low in oxygen in midsummer for brook trout; Pleasant River Lake splake stomachs held juvenile white perch; Northeast Pond hornpout anglers fish 'sheltered muddy coves after dark'. Summer temperatures from the deeper sheets: Crawford (27 ft) 72/70 °F at 25 ft; Long Lake (28 ft) 70/67 °F at 28 ft; Southwest Pond (34 ft) 71/49 °F at 30 ft; Meddybemps (58 ft) 72/59 °F at 57 ft; Pleasant River Lake (52 ft) 73/52 °F at 52 ft; Northeast Pond (49 ft) 77 °F surface and 48 °F at 45 ft (read on the page image; garbled in the text layer). Crawford and Long Lake, 27–28 ft deep, were nearly isothermal (2–3 °F) while Fifth Machias at 27 ft was not, so depth alone does not decide it."
+}

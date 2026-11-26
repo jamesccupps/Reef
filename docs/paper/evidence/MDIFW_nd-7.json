@@ -1,0 +1,62 @@
+{
+  "key": "MDIFW_nd-7",
+  "reader": "wave-3 batch 05 (w3-05)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copies served by www1.maine.gov (www.maine.gov refuses scripts), read 2026-11-26: the HERON blog post (HTML, MDIFW_nd-7.html), the HERON fact sheet (PDF, MDIFW_nd-7.factsheet.pdf) and, to trace the 'Special Concern' statement, an earlier HERON blog post (MDIFW_nd-7.threeyears.html)",
+    "url": "https://www1.maine.gov/ifw/blogs/maine-heron-observation-network/HERON-enters-year-15",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-7.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the blog page's own byline and date, and the fact sheet",
+    "ok": false,
+    "corrections": "The blog post is dated and signed: D'Auria, D. (MDIFW Waterbird Specialist). 16 March 2023. 'Excitement is Building as the Heron Observation Network Enters Year 15!' MDIFW blog, Maine Heron Observation Network. Cite as D'Auria 2023 (or MDIFW 2023), not n.d. The fact sheet ('What is HERON?', 03-HERONFactSheetrev5.pdf; MDIFW, contact D. E. D'Auria) is undated; its text mentions a 2015 listing and the PDF was created 6 April 2023; it is now served at https://www1.maine.gov/ifw/docs/03-HERONFactSheetrev5.pdf. The 'Special Concern' statement is in neither: it is in D'Auria's HERON blog post of 27 January 2012, 'Monitoring Maine's Great Blue Herons - Three Years and Counting...', https://www1.maine.gov/ifw/blogs/maine-heron-observation-network/monitoring-maines-great-blue-herons-three-years-and-counting, which should be added (the project note already cites it for arrival dates).",
+    "note": "The paper's in-text 'MDIFW HERON n.d.' should become a dated citation."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2",
+      "claim": "Maine herons are noticed from mid-March and reach their colonies in early to mid-April",
+      "source_value": "herons are often noticed arriving in Maine around 15 March; GPS-tagged herons left their wintering grounds around 22 March in past years and took about two weeks, arriving at Maine colonies in the first or second week of April",
+      "location": "web page (blog post of 16 March 2023), paragraph 1",
+      "quote": "We often start to notice great blue herons arriving in Maine around March 15",
+      "conditions": "'their window of migration is quite wide'; the colony arrival dates are from MDIFW's GPS-tagged herons, number not given",
+      "verdict": "confirmed",
+      "note": "The colony arrival wording: 'arriving the first or second week of April'."
+    },
+    {
+      "paper": "src/w3/fish3.js:893–895 (code comment, not cited by key)",
+      "claim": "great blue heron present from mid-March (WILD3.heron yf from 0.05, about 19 March)",
+      "source_value": "noticed arriving around 15 March",
+      "location": "web page (blog post of 16 March 2023), paragraph 1",
+      "quote": "arriving in Maine around March 15",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "yf 0.05 × 365 d after 1 March ≈ 19 March. The '~November' departure in the same comment is not from this source (neither page gives a departure date)."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "In 2022, 55 of 105 surveyed colonies were active with at least 469 nesting pairs",
+      "source_value": "of 105 colonies surveyed in 2022, 55 were active with at least 469 nesting pairs; the other 50 showed no nesting",
+      "location": "web page (blog post of 16 March 2023), paragraph 3",
+      "quote": "Of those 105 colonies surveyed, 55 were active with at least 469 nesting pairs",
+      "conditions": "ground surveys by 67 volunteers (90 colonies) and staff (15 colonies), 2022; not every known colony was visited",
+      "verdict": "confirmed",
+      "note": "The same post gives the statewide 2022 total, with each unvisited colony filled in from its most recent count, as 660 nesting pairs (up 7 % on 2021), and a decline since 2009 of 38.4 % statewide (30 % inland, 50 % coastal). 469 is a minimum for the surveyed colonies only; the rewrite might add the 660 and the trend."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "the great blue heron is of Special Concern in Maine (cited to MDIFW HERON n.d.: the year-15 blog and the fact sheet)",
+      "source_value": "neither cited page says so; the 2012 HERON blog post says the heron has been listed in Maine as a Species of Special Concern since 2007",
+      "location": "web page (HERON blog post of 27 January 2012, MDIFW_nd-7.threeyears.html), Introduction",
+      "quote": "has been listed inMaine as a Species of Special Concern",
+      "conditions": "status as stated in January 2012; it adds that the status 'has no regulatory significance' but signals possible decline",
+      "verdict": "corrected",
+      "note": "Re-attribute to the 2012 post (D'Auria 2012). The current status was not checked: the rewrite should confirm against MDIFW's present list before stating it in the present tense. The fact sheet's only listing statement is about the black-crowned night-heron (Endangered, 2015)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Read 2026-11-26. Page dates: the year-15 post is 16 March 2023 (D'Auria); the fact sheet is undated (post-2015 text; PDF created 6 April 2023); the 2012 post is 27 January 2012. Other values: the fact sheet says volunteers visit colonies 1–5 times in May–August, and Maine's coastal breeding population fell from 1,208 pairs in 1983 to 430 in 2009; the 2012 post gives 1,071 pairs at 83 colonies in the 2009 near-statewide census, about 898 pairs at 60 active colonies in 2010 and about 783 at 54 in 2011, and a 26 % fall in occupation at 55 colonies watched all three years. None of this is about the Hot Brook lakes; the paper's 'no breeding code' for the heron at the lakes comes from elsewhere."
+}

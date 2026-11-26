@@ -50,8 +50,9 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
    - Semantic Scholar: `https://api.semanticscholar.org/graph/v1/paper/DOI:<doi>?fields=openAccessPdf,externalIds`;
    - the publisher's own page, when it is open access (Inter-Research, PLOS, Frontiers, MDPI, Copernicus, BioOne open titles, the ASLO
      back issues that are free, CSIRO, NRC open archives);
-   - agency and university repositories: USGS (pubs.usgs.gov), USFWS and EPA reports, state agencies (maine.gov refuses scripts; record
-     it), Minnesota/Wisconsin/Michigan DNR reports, NOAA, DFO (publications.gc.ca, waves-vagues.dfo-mpo.gc.ca), university
+   - agency and university repositories: USGS (pubs.usgs.gov), USFWS and EPA reports, state agencies (www.maine.gov refuses scripts,
+     but **www1.maine.gov serves the same files when the path is written in lower case**, e.g. `https://www1.maine.gov/ifw/docs/…`;
+     record any refusal), Minnesota/Wisconsin/Michigan DNR reports, NOAA, DFO (publications.gc.ca, waves-vagues.dfo-mpo.gc.ca), university
      digital commons (e.g. digitalcommons.library.umaine.edu) and thesis repositories;
    - Internet Archive (`https://archive.org/advancedsearch.php?q=<title words>&fl[]=identifier&rows=10&output=json`, then
      `https://archive.org/download/<identifier>/...`), the Biodiversity Heritage Library (biodiversitylibrary.org: old journals,

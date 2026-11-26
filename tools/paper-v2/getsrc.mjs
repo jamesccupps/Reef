@@ -62,7 +62,7 @@ const judge = (file, kind) => {
   const r = toText(file, kind);
   const scanned = kind === 'pdf' && r.pages > 0 && r.chars / r.pages < 200;
   const wall = kind === 'html' && WALL.test(r.text.slice(0, 30000)) && r.chars < 20000;
-  const short = r.chars < 1500 && !scanned;
+  const short = kind === 'html' && r.chars < 1500 && !scanned;   // (a one-page PDF — a lake survey sheet — is short but real: kept)
   return { ...r, scanned, wall, short, ok: !wall && !short && !scanned };
 };
 const keep = (tmp, kind, r, url, tried) => {

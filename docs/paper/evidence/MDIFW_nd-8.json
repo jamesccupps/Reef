@@ -1,0 +1,41 @@
+{
+  "key": "MDIFW_nd-8",
+  "reader": "wave-3 batch 05 (w3-05)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the PDF served by www1.maine.gov (www.maine.gov refuses scripts), fetched with getsrc.mjs on 2026-11-26; 29 pages, text layer on the prose pages, tables (PDF pp. 7, 10, 13, 16, 22) are page images",
+    "url": "https://www1.maine.gov/ifw/docs/muskrat-speciesassessment.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-8.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "Dated and authored, not n.d.: Hunt, J. H. 1986. Muskrat Assessment. Maine Department of Inland Fisheries and Wildlife, Bangor, ME. 22 May 1986. 29 pp. (with the 1985–1990 goal and objectives). Cite as Hunt 1986 (MDIFW). The file is served at https://www1.maine.gov/ifw/docs/muskrat-speciesassessment.pdf.",
+    "note": "Its Natural History section is 'an adaptation from Perry (1982)' (Perry, H. R., Jr. 1982. Muskrats. Ch. 15 in Chapman & Feldhamer, eds., Wild Mammals of North America)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.3",
+      "claim": "Muskrats need slow wetlands with emergent cover (cattail, bulrush, sweetflag, arrowhead, wild rice or sedge) over about three-quarters of their area",
+      "source_value": "'slow moving (lentic) wetlands with an abundance of cattails, bulrushes, sweetflag, arrowhead, spartina, wild rice or sedges covering three-quarters of the area'; water levels reasonably stable and deep enough not to freeze fully in winter",
+      "location": "p. 9 (PDF p. 9), Habitat Assessment, Statewide Status",
+      "quote": "cattails, bulrushes, sweetflag, arrowhead, spartina, wild rice or sedges covering three-quarters of the area",
+      "conditions": "a statement of 'principal life requirements' for Maine habitat assessment; no measurement behind it is given",
+      "verdict": "confirmed",
+      "note": "The paper drops spartina (a salt-marsh grass), reasonably for a freshwater lake. The water-level condition (stable, not freezing to the bottom) is relevant to Hot Brook's shallow margins and could be added."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "muskrats can eat out their own food",
+      "source_value": "muskrats 'have been known to alter their habitat by destroying their available food base during periods of high population densities', though the extent in Maine is unknown",
+      "location": "p. 3 (PDF p. 3), Natural History",
+      "quote": "destroying their available food base during periods of high population densities",
+      "conditions": "general natural history adapted from Perry (1982); the assessment adds that 'the extent of habitat destruction by high muskrat densities in Maine is unknown' (p. 4)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Read 2026-11-26; the document is dated 22 May 1986 (J. H. Hunt, MDIFW Bangor). The two claims hold; the verdict is 'corrected' only for the bibliography (author and date). Other values: adults about 20 in long and 3 lb; females breed at one year with 1–3 litters of 4–8 kits a year in the north (p. 2); mostly nocturnal; mink are the main predator, and den flooding, complete freezing of shallow water and food shortage are important indirect causes of death (p. 3); clams, mussels and other animal matter are eaten but not required (p. 9); northern Maine's acid, nutrient-poor waters, thick ice and short season 'probably detract from good muskrat habitat' (pp. 9–11); statewide carrying capacity about 370,000 (Table 3: 371,200), an average 1.5 per acre of habitat, from literature densities by habitat type, with a central-Maine house and den survey consistent with harvest (Rollins 1978) (p. 12); the preharvest population may differ from carrying capacity by one-third to two-thirds (p. 15). Table 3 (PDF p. 13, image) gives fall densities by Wildlife Management Unit of 73–203 per 100 acres (153 statewide); these 1986 WMUs are not today's WMDs. No muskrat is recorded at the lakes (§3.8.1)."
+}

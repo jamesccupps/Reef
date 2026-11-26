@@ -1,0 +1,58 @@
+{
+  "key": "MDIFW_nd-5",
+  "reader": "wave-3 batch 05 (w3-05)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the PDF served by www1.maine.gov under the lower-case /ifw/ path (the cited upper-case /IFW/ path answered 403), fetched with getsrc.mjs on 2026-11-26",
+    "url": "https://www1.maine.gov/ifw/docs/LD1569%20Sec%203%20goals.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-5.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "Dated, not n.d.: the title page reads 'January 25, 2012'. Full title: Report of the Department of Inland Fisheries and Wildlife before the Joint Standing Committee on Inland Fisheries & Wildlife. L.D. 1569 Sec. 3: An Act to Restore the White-tailed Deer Population and Improve Maine's Wildlife Economy and Heritage; Deer Population Goals and 5-Year Benchmark Report. Augusta, 25 January 2012. 11 pp. Cite as MDIFW 2012. The working URL is the lower-case path https://www1.maine.gov/ifw/docs/LD1569%20Sec%203%20goals.pdf (the cited /IFW/ path gives 403). Drop '(via search)': the report itself has now been read.",
+    "note": "No author is named; the report is the Department's."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "Deer in WMDs 1–11 numbered 2–6 per mi² (0.8–2.3 per km²) after the hunt, below the long-term goal of 10 per mi²",
+      "source_value": "Table 1, WMDs 1-11: short-term objective 2-8, long-term objective 10, current post-hunt density estimate 2-6 deer/mi²",
+      "location": "p. 4 (PDF p. 4), Table 1",
+      "quote": "1-11 … 2-8 … 10 … 2-6",
+      "quote_from": "table",
+      "conditions": "'best current estimates' of post-hunt density by group of WMDs, in a report dated 25 January 2012 (so the 2011 season); derived from the HARPOP population model (p. 3), not a count",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Read on the page image and in the raw text. 2/2.590 = 0.77 and 6/2.590 = 2.32 per km², so 0.8–2.3 holds. The estimate should be dated ('in 2011' or 'in MDIFW's 2012 report'); the paper's past tense leaves its year open. The table gives values by group of districts, so 'WMDs 1–11' is right; the paper places the lakes in WMD 11, which the report's map shows in that group."
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "the density is below the long-term goal because of poor habitat and hard winters",
+      "source_value": "the report says 'factors other than hunting continue to depress the deer population' in the north, east and west, and names five elements needed to rebuild the herd: deer wintering areas and winter severity, population management, predation, planning and outreach; illegal hunting, deer–vehicle collisions and supplemental feeding are called significant mortality factors, and loss of winter habitat is blamed on weak protection of deer wintering areas",
+      "location": "p. 4 (PDF p. 4); also pp. 2, 7–8",
+      "quote": "factors other than hunting continue to depress the deer population",
+      "conditions": "northern, eastern and western Maine (NEWME); a statement of causes, not a measured partition",
+      "verdict": "corrected",
+      "note": "Winter habitat loss and winter severity are two of the factors the report names, but it gives several more (predation, illegal kill, collisions, feeding). The 'poor habitat and hard winters' wording may come from the 'agency statements' the sentence also cites (a search summary in the notes, not read here). Suggested: '…below the long-term goal of 10 per mi², held down by factors other than hunting: loss of wintering habitat, severe winters, predation, illegal kill and road deaths (MDIFW 2012).'"
+    },
+    {
+      "paper": "src/config.js:732 (code comment, not cited by key)",
+      "claim": "white-tailed deer at 1.5 adults per km² (4 per mi², the middle of WMD 11's post-hunt 2–6); WMD 18 4–9, WMD 19 3–8 — MDIFW's table",
+      "source_value": "Table 1: WMDs 1-11 current post-hunt 2-6; WMDs 12-14,18 4-9; WMDs 19, 27, 28 3-8 (deer/mi²)",
+      "location": "p. 4 (PDF p. 4), Table 1",
+      "quote": "19, 27, 28 … 3-11 … 15 … 3-8",
+      "quote_from": "table",
+      "conditions": "values are for groups of districts, not single districts; 2011 post-hunt estimates",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "The row for 12-14 and 18 reads 7-14 short-term, 15 long-term, 4-9 current. 4 per mi² = 1.54 per km². The comment's 'WMD 11's', 'WMD 18' and 'WMD 19' are the values of the groups those districts sit in; a short note in the comment would make that plain."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www1.maine.gov/IFW/docs/LD1569%20Sec%203%20goals.pdf", "status": 403, "note": "the cited upper-case path; the same file is served at the lower-case /ifw/ path" }
+  ],
+  "notes": "Read 2026-11-26. The report is dated 25 January 2012 and responds to L.D. 1569 Sec. 3 (sponsored by President Raye of Washington). Other values in it the rewrite could use: Maine's winter mortality rate (WMR) averages about 9 % in a 'normal' winter statewide and was 17 % in the severe winter of 2008 (p. 8); WMD 1's 15-year mean WMR is about 17 % and WMD 20's about 7 % (p. 8); IFW monitors winter severity at 26 stations for 20 weeks, December–April (p. 7); bears account for 20–60 % of fawn mortality across North America (p. 7, no source given); the unreported illegal kill may be 10,000–15,000 deer a year (p. 7); 2,500–4,000 deer a year are killed on roads (p. 7). Page 5 is a sample WMD 5 worksheet (Harpop post-hunt 1.7–4.4 deer/mi² in 2003–2009), not WMD 11. The report is fourteen years old; a newer MDIFW deer plan (2016–2031 goals, per p. 3) would give current numbers."
+}
