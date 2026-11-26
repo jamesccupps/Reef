@@ -1,0 +1,67 @@
+{
+  "key": "HBV_nd",
+  "reader": "wave-2 batch w2-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the model's original descriptions, both from SMHI's own publication archive (smhi.se, openly downloadable): Bergström 1992, SMHI Reports Hydrology RH No. 4 (32 pp., read in full) = HBV_nd.pdf; and Bergström 1976, SMHI Reports RHO 7 (the model's first full description, 162 PDF pages; chapter 7 'The model structure', pp. 34–85, and the data chapter read) = HBV_nd.Bergstrom1976.pdf (from https://www.smhi.se/download/18.18f5a56618fc9f08e832bdc1/1717803410332/RHO_7%20Development%20and%20application%20of%20a%20conceptual%20runoff%20model%20for%20Scandinavian%20catchments.pdf). Printed pages: 1992 = PDF page − 6; 1976 = PDF page − 16",
+    "url": "https://www.smhi.se/download/18.18f5a56618fc9f08e832c5ef/1717804233132/RH_4%20The%20HBV%20model%20%E2%80%93%20its%20structure%20and%20applications..pdf",
+    "file": "docs/research_notes/fetched/v2/HBV_nd.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title pages and SMHI report-documentation page of both reports, and the 1992 report's own reference list (which cites the 1976 report)",
+    "ok": false,
+    "corrections": "replace 'HBV. n.d. The HBV conceptual rainfall–runoff model. [citation incomplete]' with: Bergström, S. 1992. The HBV model — its structure and applications. SMHI Reports Hydrology No. 4 (RH 4), April 1992. Swedish Meteorological and Hydrological Institute, Norrköping. 32 pp. ISSN 0283-1104. https://www.smhi.se/download/18.18f5a56618fc9f08e832c5ef/1717804233132/RH_4%20The%20HBV%20model%20%E2%80%93%20its%20structure%20and%20applications..pdf — and, for the model's original full description (the soil and response equations): Bergström, S. 1976. Development and application of a conceptual runoff model for Scandinavian catchments. SMHI Rapporter, Hydrologi och Oceanografi, Nr RHO 7. Sveriges Meteorologiska och Hydrologiska Institut, Norrköping. No DOI for either. The in-text label becomes 'Bergström 1976, 1992'",
+    "note": "the 1992 report cites the 1976 one as 'Bergström, S. (1976). Development and application of a conceptual runoff model for Scandinavian catchments. SMHI RHO 7, Norrköping.' (1992 p. 28, PDF p. 34). A library catalogue (CRL, seen only in a search result) also lists a Lund University Bulletin Series A no. 52 printing as Bergström's doctoral thesis; not verified here, so not put in the citation. For the parameter ranges cite Seibert & Vis 2012 (HESS 16: 3315–3325, doi:10.5194/hess-16-3315-2012), read by another reader"
+  },
+  "claims": [
+    {
+      "paper": "§4.2",
+      "claim": "the catchment model has the HBV structure: a degree-day snowpack",
+      "location": "Bergström 1992 p. 5 (PDF p. 11), eq. 1; Bergström 1976 p. 46 (PDF p. 62), eq. 7.4",
+      "quote": "according to a simple degree-day expression",
+      "conditions": "SMHI version, daily step: precipitation accumulates as snow below a threshold temperature TT; melt = CMELT·(T − TT) mm/day; the snow holds liquid water up to a capacity 'usually preset to 10 %' and refreezes it, and snowfall is scaled by a correction factor (free parameters TT, CSF, CMELT)",
+      "verdict": "confirmed",
+      "note": "the project's snowpack is a reduced form: threshold fixed at 0 °C, no snowfall correction, no liquid-water retention or refreezing (env3.js _catch). Bergström 1976 (p. 46) also gives the degree-day method's form and says its parameters 'have to be determined specifically for each catchment'"
+    },
+    {
+      "paper": "§4.2",
+      "claim": "a soil store",
+      "location": "Bergström 1992 p. 5 (PDF p. 11), Fig. 3; Bergström 1976 pp. 60–62 (PDF pp. 76–78), eqs 7.8–7.10, Table 7.9",
+      "quote": "It is controlled by three free parameters, FC, BETA and LP",
+      "conditions": "the soil-moisture routine: FC the maximum soil-moisture storage; the share of rain or melt passing to runoff = (Ssm/Fc)^β (1976 eq. 7.8); actual evaporation = potential × Ssm/Lp below Lp, potential above (1976 eq. 7.10)",
+      "verdict": "confirmed",
+      "note": "the project's recharge liq·(soil/FC)^BETA and its ET = PET·min(1, soil/(LP·FC)) are exactly Bergström's eqs 7.8 and 7.10 (with Lp expressed as a fraction of FC, as in his Table 7.9's Lp/Fc)"
+    },
+    {
+      "paper": "§4.2",
+      "claim": "quick and slow runoff stores",
+      "location": "Bergström 1992 p. 7 (PDF p. 13); Bergström 1976 p. 70 (PDF p. 86), Fig. 7.21; p. 75 (PDF p. 91), section 7.3.3",
+      "quote": "It leaves as runoff through its two outlets or percolates, at a constant rate",
+      "conditions": "the response routine: an upper zone drained by K1 (and, above a threshold UZL/Luz, by a faster K0) that percolates at a constant rate PERC (Cperc) to a lower zone drained by K2; then a triangular smoothing filter (MAXBAS). 1976 p. 75: 'one slow and at least one quick runoff component' in all catchments studied",
+      "verdict": "confirmed",
+      "note": "the project's response routine is Bergström's HBV-2 form (1976 Fig. 7.1; K0 absent): a quick store with K1 and constant percolation PERC to a slow store with K2. It has no K0/UZL third component and no MAXBAS filter (1992 p. 7) — fine for daily flows, but say 'a simplified HBV structure'"
+    },
+    {
+      "paper": "§4.2",
+      "claim": "Hamon's potential evapotranspiration is part of the HBV structure (listed with the snowpack, soil and runoff stores after 'the HBV structure (HBV n.d.)')",
+      "location": "Bergström 1992 p. 3 (PDF p. 9); Bergström 1976 pp. 30–31 (PDF pp. 46–47), section 6.3",
+      "quote": "Normally monthly mean standard values are sufficient",
+      "verdict": "unsupported",
+      "note": "HBV takes potential evapotranspiration as an INPUT and prescribes no method: 'calculations according to the Penman formula or similar, or measurements by evaporimeters' (1992 p. 3); the 1976 report used Penman values and Wallén's long-term means. Hamon's method is the project's choice of input; cite it separately (see the Hamon_1961 evidence: the formula used is Lu et al. 2005's 'Hamon (1963)'). Reword: 'a conceptual model with the HBV structure (Bergström 1976, 1992) — a degree-day snowpack, a soil store and quick and slow runoff stores — fed with Hamon's potential evapotranspiration (as given by Lu et al. 2005)'"
+    },
+    {
+      "paper": "§4.2; Table 4.1; src/config.js WEATHER3 (E9d) comment",
+      "claim": "its seven parameters were fitted inside HBV's usual ranges (FC 80–400, LP 0.3–1, BETA 1–6, K1 0.05–0.5, PERC 0.2–4, K2 0.003–0.1, DDF 2–5)",
+      "location": "Bergström 1992 p. 8–9 (PDF pp. 14–15); Bergström 1976 Table 7.5 p. 48 (PDF p. 64), Table 7.9 p. 62 (PDF p. 78), Table 7.13 p. 82 (PDF p. 98)",
+      "quote": "has altogether 12 free parameters",
+      "verdict": "unsupported",
+      "note": "neither Bergström report gives 'usual ranges': the 1992 report says the simplest form has 12 free parameters (p. 8) and points to a Swedish report of optimal values (Bergström 1990, p. 9). The ranges in config.js are Seibert & Vis 2012's (HBV-light); cite them for the ranges. For comparison, Bergström 1976's fitted values in ten Swedish and Norwegian catchments (read on the page images): degree-day factor 2.0–3.2 mm °C⁻¹ d⁻¹ (1.25 as a mean in a distributed routine), Fc 50–200 mm, Lp/Fc 0.7–1.0, β 1.0–8.0, K1 0.033–0.422 d⁻¹, K2 0.014–0.137 d⁻¹, Cperc 0.4–1.3 mm d⁻¹. The project's FC 82, β 2.72 and K1 0.196 sit inside those; its LP 0.39, PERC 0.21, K2 0.0048 and DDF 4.61 lie outside the Scandinavian fits (though inside Seibert & Vis's ranges). 'Seven parameters' is right for the project's reduced model (DDF, FC, BETA, LP, K1, PERC, K2)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.smhi.se/polopoly_fs/1.163091!/RHO_7%20Development%20and%20application%20of%20a%20conceptual%20runoff%20model%20for%20Scandinavian%20catchments.pdf", "status": 404, "note": "old SMHI link for RHO 7 (from a search result); the current link is in obtained.how" }
+  ],
+  "notes": "The entry can become a real citation: Bergström 1992 (SMHI RH 4) for the structure, plus Bergström 1976 (SMHI RHO 7) for the equations the project actually uses (recharge (Ssm/Fc)^β, eq. 7.8; linear ET reduction below Lp, eq. 7.10; constant percolation to a linear lower zone, eqs 7.18–7.21). Both are free on smhi.se. The project's model is a reduced HBV (HBV-2 response, no K0/UZL, no MAXBAS, a 0 °C threshold, no snow water retention, no snowfall correction); the paper should say 'simplified'. Hamon's PET is not part of HBV (HBV takes any PET input) — keep it in the sentence but give it its own citation. Bergström 1976 p. 49 (PDF p. 65) also gives degree-day factors for comparison with the project's DDF 4.61 (config comment: '2–3 under forest, 4–5 in the open [gk]'): U.S. Corps of Engineers (1960) 2.25 mm °C⁻¹ d⁻¹ in forest and 2.7 in open fields; WMO (1975) 1.4–1.5 in dense conifer forest, 1.7–1.8 at average density, 3–4 in low-density forest. Those put a forested Maine catchment's factor nearer 2–3 than 4.6; the fitted 4.61 may be compensating for something else (the threshold at 0 °C, no snow water retention) — worth a sentence in the paper's catchment caveats."
+}

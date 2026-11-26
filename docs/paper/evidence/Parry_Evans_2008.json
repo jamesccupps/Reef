@@ -1,0 +1,52 @@
+{
+  "key": "Parry_Evans_2008",
+  "reader": "wave-2 batch w2-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' accepted manuscript (Elsevier Editorial System draft ECOMOD1606R1, dated 31 October 2007) in White Rose Research Online, the Universities of Leeds/Sheffield/York repository; openly downloadable. Its pages are the manuscript's own (printed 1–43, with line numbers), not the journal's 141–152",
+    "url": "https://eprints.whiterose.ac.uk/id/eprint/4129/1/evansa1.pdf",
+    "file": "docs/research_notes/fetched/v2/Parry_Evans_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the repository cover page (which gives the published citation)",
+    "ok": true,
+    "corrections": "",
+    "note": "Parry, H. R. & Evans, A. J. 2008, Ecological Modelling 214(2–4): 141–152, doi:10.1016/j.ecolmodel.2008.02.002, all match; the author-version URL in the entry works (HTTP 200). Cite the journal's pages; the manuscript's page numbers below are for finding the passages in the repository copy"
+  },
+  "claims": [
+    {
+      "paper": "§4.5",
+      "claim": "the super-individual rules follow Parry & Evans (2008): losses take a fraction of n",
+      "location": "author manuscript p. 15 (PDF p. 17), section 4.1.3, lines 275–283; Fig. 3 caption, ms p. 38 (PDF p. 40); Discussion, ms p. 22 (PDF p. 24), lines 451–453",
+      "quote": "The number of super-individuals remains constant, and mortality reduces",
+      "conditions": "one of three super-individual mortality rules that Parry & Evans list 'after' Grimm & Railsback (2005: p. 267): (1) mortality reduces N; (2) N reduced, super-individuals recombined below N0/2; (3) the whole super-individual dies. Parry & Evans themselves used rule (3) (ms p. 15, lines 292–294), found it caused 'excessive discretization of mortality' and spatial clustering, and recommend trying the other rules as 'a first step' (ms p. 22)",
+      "verdict": "confirmed",
+      "note": "the rule is in the paper as an option, credited to Grimm & Railsback 2005; Parry & Evans did not use it. Their contribution to this rule is the evidence AGAINST whole-agent death (rule 3). Better wording: 'losses take a fraction of n (Scheffer et al. 1995; Parry & Evans 2008 show that killing whole super-individuals distorts a spatial model)'."
+    },
+    {
+      "paper": "§4.5",
+      "claim": "crowding comes from Σ n × mass rather than agent counts",
+      "location": "author manuscript p. 16 (PDF p. 18), section 4.1.4, lines 310–319, eq. 1",
+      "quote": "related to the real number of individuals in the simulation",
+      "conditions": "aphid IBM: density-dependent equations (the alate-morph proportion ALPROP = 0.002 + 0.991/(1 + exp(−0.076·(DENSITY − 67.416))), DENSITY = aphids per plant) were rewritten to use the real number of individuals represented, not the number of super-individuals",
+      "verdict": "confirmed",
+      "note": "the principle (density from Σ n, not agent counts) is Parry & Evans's; the weighting by mass is the project's extension (their density is a head count of aphids per plant)"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "a strike on a school takes one fish",
+      "verdict": "unsupported",
+      "note": "the paper's model is aphids moving cell to cell with density-dependent morph determination; there is no predation, and nothing on how a predator encounter with a super-individual should be resolved (predator–prey models are mentioned only as an example of demanding IBMs, ms p. 6, line 59). The rule is the project's own."
+    },
+    {
+      "paper": "§4.5",
+      "claim": "a merged school keeps one parent's genome",
+      "verdict": "unsupported",
+      "note": "there are no genomes in the model (aphids reproduce parthenogenetically). The only merging Parry & Evans mention is Grimm & Railsback's rule (2): super-individuals 'recombined when N falls below N0/2', which they rejected as problematic because individuals differ (particularly in age) and re-grouping introduces spatial errors (ms pp. 15–16); they say nothing about whose state a merged super-individual keeps. The rule is the project's own (Scheffer et al. 1995 fuse to the cluster centroid instead)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Of the four rules §4.5 credits jointly to Scheffer et al. (1995) and Parry & Evans (2008), Parry & Evans support two: density/crowding from Σ n rather than agent counts (their own rule) and the fraction-of-n loss rule (listed, after Grimm & Railsback 2005, but not used; their results argue for it over whole-agent death). The strike-takes-one-fish rule and the merge-keeps-one-parent's-genome rule are in neither paper: call them project rules. Suggested rewrite: 'Agents are super-individuals (Scheffer et al. 1995): losses take a fraction of n (ibid.; Parry & Evans 2008 show that killing whole super-individuals distorts a spatial model) and crowding comes from Σ n × mass rather than agent counts (after Parry & Evans 2008); a strike takes one fish and a merged school keeps one parent's genome (project rules).' A caveat the paper should carry if it cites Parry & Evans: their main finding is a warning. In a spatially explicit, density-dependent model, super-individuals clustered spatially and peaked early; only a scale factor of 10 (10,000 aphids as 1,000 super-individuals) stayed within the individual model's 95 % limits through time, and even that one did not reproduce the spatial pattern (ms pp. 18–19). The abstract cautions against the approach 'for a density-dependent spatially-explicit model, unless individual variability is better taken into account', and the Discussion concludes it 'is not suitable for the spatially-explicit simulation' of their model (ms p. 22). Hot Brook's perch schools of ~80 are a scale factor of ~80, in exactly that kind of model, so the paper should say this caveat applies and how the project addresses it (fraction-of-n losses, Σ n densities, schools splitting into individuals above a length cutoff)."
+}

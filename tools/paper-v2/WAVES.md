@@ -29,7 +29,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-12 | Massengill_1973, Mehner_etal_2005, NHDES_2019, Newsome_Tompkins_1985, Noble_1965, Obbard_1983, OomsWilms_etal_1995, Pace_etal_1990, Persson_Bronmark_2002, RamosRodriguez_etal_2020 | done |
 | w2-13 | Persson_etal_2006, Porter_etal_1982, Post_McQueen_1988, Post_Lee_1996, Priegel_Krohn_1975, Read_etal_2012, Rogers_etal_1981, Scharf_etal_2003, Titman_Kilham_1976, Tulonen_1993 | running |
 | w2-14 | Srnes_Aksnes_2004, Stemberger_Gilbert_1985, Tedford_etal_2014, Terpin_etal_1976, Vadeboncoeur_etal_2003, Wrvagen_Nilssen_2010, Watson_etal_1992, Webster_1948, Leopold_Maddock_1953, Petersen_Ward_1999 | running |
-| w2-15 | Werner_etal_1995, Hamon_1961, HBV_nd, Parry_Evans_2008, Sndergaard_etal_2003 | running |
+| w2-15 | Werner_etal_1995, Hamon_1961, HBV_nd, Parry_Evans_2008, Sndergaard_etal_2003 | done |
 | add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | running |
 | add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | done |
@@ -38,7 +38,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | running |
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | running |
 | w3-06 | MDIFW_nd-9, MDIFW_nd-10, MDIFW_nd-11, Rupp_DeRoche_1965 | running |
-| w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | queued |
+| w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | running |
 | w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | queued |
 | w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | queued |
 | w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | queued |

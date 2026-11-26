@@ -1,0 +1,54 @@
+{
+  "key": "Hamon_1961",
+  "reader": "wave-2 batch w2-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the 1961 article itself could not be obtained (ASCE paywall). Read instead: (1) the intermediary the entry names, Lu et al. 2005, the USDA Forest Service Treesearch copy (agency repository), in full = Hamon_1961.Lu2005.pdf; (2) a stand-in, Hamon's own 1960 MIT B.S. thesis of the same title (DSpace@MIT, openly downloadable; 'may be viewed from this source for any purpose', reproduction prohibited — kept only in the git-ignored folder), read for the method = Hamon_1961.MIT1960thesis.pdf",
+    "url": "https://research.fs.usda.gov/download/treesearch/21351.pdf",
+    "file": "docs/research_notes/fetched/v2/Hamon_1961.Lu2005.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (the article); the title page and reference list of Lu et al. 2005; Crossref for Lu et al. 2005",
+    "ok": false,
+    "corrections": "the 1961 details match Crossref (Journal of the Hydraulics Division 87(3) [HY3]: 107–120). But the parenthesis '(as applied in Lu et al. 2005)' is wrong: Lu et al. apply 'Hamon (1963)', which their references give as Hamon, W.R., 1963. Computation of Direct Runoff Amounts From Storm Rainfall. Int. Assoc. Sci. Hydrol. Pub. 63:52-62 (p. 632), with a calibration coefficient KPEC = 1.2. The formula the code uses should be cited as Lu, J., Sun, G., McNulty, S. G. & Amatya, D. M. 2005. A comparison of six potential evapotranspiration methods for regional use in the southeastern United States. Journal of the American Water Resources Association 41(3): 621–633. doi:10.1111/j.1752-1688.2005.tb03759.x — e.g. 'Hamon's potential evapotranspiration in the form given by Lu et al. (2005)'. Lu et al. 2005 is not in references.md; add it",
+    "note": "Hamon's 1961 method itself (per his 1960 thesis and the 1961 article's indexed abstract) is a different formula: day length SQUARED and a coefficient of 0.0055 inch (see notes)"
+  },
+  "claims": [
+    {
+      "paper": "§4.2 ('Hamon's potential evapotranspiration'); src/config.js:582–583; src/w3/env3.js:363",
+      "claim": "the code's potential evapotranspiration, PET = 0.1651 · day length (12-h units) · saturated vapour density · KPEC mm/day, is Hamon's (1961)",
+      "verdict": "unchecked",
+      "note": "the 1961 article could not be read. Evidence against the attribution (not a confirmation either way): Hamon's 1960 MIT thesis of the same title gives the method as Ep = C·D²·Pt (Eq. 4, thesis pp. 36–37, PDF pp. 42–43; read on the page image): Ep in inches a day, D the possible hours of daily sunshine in units of 12 h, Pt the saturated water-vapour concentration (g/m³) at the mean temperature, C = 0.0055 — day length SQUARED, coefficient 0.0055 in = 0.1397 mm. The 1961 article's indexed abstract (Compendex, via OpenAlex; abstract only) also says 'day-time hours squared'. The code's form is linear in day length with 0.1651 mm (= 0.0065 in), as Lu et al. give it under the name 'Hamon (1963)'. The two agree near D ≈ 1.18 (≈14 h days) and part elsewhere: at D = 0.8 the linear form is ~48 % higher. Cite the form actually used (Lu et al. 2005) or switch to the D² form and cite Hamon 1961 once read."
+    },
+    {
+      "paper": "src/config.js:582–583 ('as Lu et al. 2005 — 0.1651 · day length (12-h units) · saturated vapour density · KPEC mm/day'); src/w3/env3.js:363",
+      "claim": "the formula, as Lu et al. 2005 give it: 0.1651 × Ld × saturated vapour density × KPEC, with ρsat = 216.7·es/(T + 273.3) and es = 6.108·exp(17.26939·T/(T + 237.3)), zero below 0 °C",
+      "location": "Lu et al. 2005 p. 631 (PDF p. 11), Appendix A; p. 625 (PDF p. 5), methods",
+      "quote": "PET = 0.1651 x Ld x RHOSAT x KPEC",
+      "conditions": "daily PET (mm) at the daily mean air temperature T (°C); Ld 'the daytime length, which is time from sunrise to sunset in multiples of 12 hours'; RHOSAT g/m³; ESAT mb; 'PET = 0 when T < 0'; KPEC 'set to 1.2 in this study' (after Federer & Lash 1983; Sun et al. 2002); applied as monthly PET to 36 forested watersheds in the southeastern US",
+      "verdict": "confirmed",
+      "note": "env3.js reproduces Lu et al.'s constants exactly (0.1651, 216.7, 273.3, 6.108, 17.26939, 237.3) with Ld = 2 × the season's daylight fraction. Two differences to state: the code's KPEC is 1.0 where Lu et al. used 1.2, and Lu et al. call the method Hamon (1963), not 1961"
+    },
+    {
+      "paper": "src/config.js:583 ('~4 mm/day in a Houlton July')",
+      "claim": "the formula gives ~4 mm/day of PET in a Houlton July",
+      "kind": "arithmetic",
+      "source_value": "≈3.3 mm/day with the code's own inputs and KPEC 1.0; ≈3.9 mm/day only with Lu et al.'s KPEC 1.2",
+      "location": "Lu et al. 2005 p. 631 (PDF p. 11), Appendix A (the formula)",
+      "quote": "PET = 0.1651 x Ld x RHOSAT x KPEC",
+      "conditions": "project arithmetic: mid-July (yf ≈ 0.373), the code's day length Ld = 2 × dayFrac = 1.22 (SEASON.DAY_FRAC 0.38–0.62, solstice yf 0.307), Houlton's July normal 18.9 °C (WEATHER3.AIR_N): es = 21.8 mb, ρsat = 16.2 g/m³, PET = 0.1651 × 1.22 × 16.2 × 1.0 = 3.26 mm/day; averaging over the July air anomalies (SD ≈ 2.8 °C) raises it only to ≈3.30",
+      "verdict": "corrected",
+      "note": "a code-comment number only (not in the paper's text); '~4' holds only with KPEC 1.2. Not a claim about Hamon's paper — recorded because the comment sits on this citation"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://ascelibrary.org/doi/pdf/10.1061/JYCEAJ.0000599", "status": 403, "note": "ASCE Library, paywalled (doi:10.1061/JYCEAJ.0000599 — a library login opens it)" },
+    { "url": "https://doi.org/10.1061/JYCEAJ.0000599", "status": 403, "note": "resolves to the ASCE page; refused the script" },
+    { "url": "https://api.openalex.org/works/doi:10.1061/JYCEAJ.0000599", "status": 200, "note": "closed access, no repository copy; an indexed abstract only (says 'day-time hours squared')" },
+    { "url": "https://dspace.mit.edu/bitstream/1721.1/79479/2/32827649-MIT.pdf", "status": 429, "note": "DSpace 7's old bitstream link answers HTML/429; the thesis was fetched instead through DSpace's REST API (https://dspace.mit.edu/server/api/core/bitstreams/bc02a9b8-a480-4d72-b516-b6de9d38de91/content, 200) — a stand-in, not the article" },
+    { "url": "https://www.srs.fs.usda.gov/pubs/ja/ja_lu004.pdf", "status": "error", "note": "old Forest Service host gone (ENOTFOUND); Lu et al. 2005 fetched from research.fs.usda.gov instead" }
+  ],
+  "notes": "The code's 'Hamon' PET is not Hamon's 1961 formula as far as can be told without the article: Hamon's 1960 thesis (same title, the work the 1961 paper reports; stand-in, not the article) gives Ep = 0.0055·D²·Pt in/day (Eq. 4, pp. 36–37), with C = 0.0055 chosen so annual totals match Thornthwaite's at US stations (Table 1, p. 38); the 1961 article's indexed abstract says the same ('day-time hours squared'). The code uses Lu et al. 2005's Appendix A form, 0.1651·Ld·RHOSAT·KPEC, which Lu et al. attribute to Hamon (1963, IASH Publ. 63) and calibrate with KPEC 1.2 (Federer & Lash 1983's BROOK model; Sun et al. 2002); the code's KPEC is 1.0. 0.1651 mm is exactly 0.0065 in (my arithmetic, no source says so). Recommended: cite 'Hamon's PET as formulated by Lu et al. (2005)' (add Lu et al. 2005 to the references; it is free from the USDA Forest Service), and either drop Hamon 1961 or read it (ASCE; a library login) to say how the 1961 and 1963 forms differ. Lu et al. found Hamon among the three best PET methods for forested southeastern-US watersheds (abstract and p. 631), which supports the choice of method but is a warmer climate than Maine's."
+}

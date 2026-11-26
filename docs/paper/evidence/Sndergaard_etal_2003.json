@@ -1,0 +1,57 @@
+{
+  "key": "Sndergaard_etal_2003",
+  "reader": "wave-2 batch w2-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text. Springer's article is paywalled and no repository copy is known. A possible open stand-in by the same authors (Søndergaard, Jensen & Jeppesen 2001, The Scientific World Journal 1: 427–442, CC BY) could not be fetched either: PMC's PDF sits behind a proof-of-work bot check and the publisher refused the script; only its PMC abstract page was saved (Sndergaard_etal_2003.TSW2001.txt)",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Søndergaard, M., Jensen, J. P. & Jeppesen, E. 2003, Hydrobiologia 506–509: 135–145, doi:10.1023/B:HYDR.0000008611.12704.dd: matches Crossref (Crossref also gives issue 1–3)"
+  },
+  "claims": [
+    {
+      "paper": "§4.3",
+      "claim": "the bed releases P by a temperature-driven oxic flux (after Søndergaard et al. 2003), in addition to release under anoxia",
+      "verdict": "unchecked",
+      "note": "full text not obtained"
+    },
+    {
+      "paper": "§4.3; src/w3/chem3.js:95 (REL_Q10)",
+      "claim": "the oxic release has a Q₁₀ of 2.5, after Søndergaard et al. 2003",
+      "verdict": "unchecked",
+      "note": "full text not obtained. Check whether the paper gives a Q₁₀ or a temperature coefficient at all; 'after' may mean the project chose 2.5 on its own"
+    },
+    {
+      "paper": "src/w3/chem3.js:90–92",
+      "claim": "a shallow lake's internal loading is driven by temperature, highest in summer, even over oxic sediment — the mineralisation of the bed's organic P",
+      "verdict": "unchecked",
+      "note": "full text not obtained (the comment cites it with Jensen & Andersen 1992)"
+    },
+    {
+      "paper": "src/w3/chem3.js:93 (REL_OXIC 0.0015)",
+      "claim": "in Søndergaard's shallow lakes the summer's dissolved P holds up 2–4× (the target REL_OXIC was set against)",
+      "verdict": "unchecked",
+      "note": "full text not obtained; when read, check what the 2–4× is (total or dissolved P, summer vs winter or vs inflow concentration, which lakes)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1023/b:hydr.0000008611.12704.dd.pdf", "status": 200, "note": "Springer login/paywall page (not kept). doi:10.1023/B:HYDR.0000008611.12704.dd — a library login opens it" },
+    { "url": "https://link.springer.com/article/10.1023/B:HYDR.0000008611.12704.dd", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1023/B:HYDR.0000008611.12704.dd?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1023/B:HYDR.0000008611.12704.dd%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://api.openalex.org/works/doi:10.1023/B:HYDR.0000008611.12704.dd", "status": 200, "note": "closed; one repository record (Aarhus University Pure) without a file" },
+    { "url": "https://pure.au.dk/portal/en/publications/99835830-7e9d-11dd-a5a8-000ea68e967b", "status": 200, "note": "Aarhus University Pure record: metadata only, no file link" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6084181/pdf/TSWJ-2001-1-676350.pdf", "status": 200, "note": "stand-in (Søndergaard et al. 2001, TSW): 'Preparing to download' proof-of-work bot check — not attempted further" },
+    { "url": "https://downloads.hindawi.com/journals/tswj/2001/676350.pdf", "status": 403, "note": "stand-in: publisher refused the script" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1100/tsw.2001.72", "status": 403, "note": "stand-in: publisher refused the script" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6084181/fullTextXML", "status": 200, "note": "stand-in: front matter and abstract only (a scanned article)" }
+  ],
+  "notes": "Blocked. A free copy of the article exists only on scraping sites (typeset.io), which the brief rules out. Two routes for the human: (1) the article through a library login (Springer); (2) the authors' open-access 2001 review on the same subject (Søndergaard, M., Jensen, J. P. & Jeppesen, E. 2001. Retention and internal loading of phosphorus in shallow, eutrophic lakes. The Scientific World Journal 1: 427–442, doi:10.1100/tsw.2001.72, CC BY; PMC6084181) — its PDF opens in an ordinary browser. Its abstract (seen, not evidence) says summer concentrations rise and retention may be negative most of the summer, which is the phenomenon chem3.js models; whether either paper gives a Q₁₀ for oxic release (the 2.5 in §4.3) is the thing to check, as is the '2–4×' summer increase that REL_OXIC 0.0015 was tuned to."
+}

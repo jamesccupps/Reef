@@ -1,0 +1,59 @@
+{
+  "key": "Werner_etal_1995",
+  "reader": "wave-2 batch w2-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text. Seen only: the CalEcotox (California OEHHA) database record for the paper, which lists a diet datapoint table without its basis — a secondary summary",
+    "url": "https://ecotox.oehha.ca.gov/citation/diet-composition-postmetamorphic-bullfrogs-and-green-frogs-implications-interspecific",
+    "file": ""
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref (and the CalEcotox record for the last page)",
+    "ok": true,
+    "corrections": "",
+    "note": "Werner, E. E., Wellborn, G. A. & McPeek, M. A. 1995, 'Diet composition in postmetamorphic bullfrogs and green frogs: implications for interspecific predation and competition', Journal of Herpetology 29(4): 600–607, doi:10.2307/1564744: Crossref gives the authors, title, volume, issue and first page 600; CalEcotox gives 600–607"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrogs eat more aquatic prey (than green frogs), in Michigan",
+      "verdict": "unchecked",
+      "note": "full text not obtained. Search-engine summaries of the abstract (not acceptable as evidence) say the frogs were collected at two sites in southwest Michigan and that aquatic prey made up a larger share of bullfrog diets on three of four dates"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrog diet 19–23 % Hemiptera",
+      "verdict": "unchecked",
+      "note": "CalEcotox lists Hemiptera '19.2-23.2' (no % sign, basis not stated); the paper must say whether these are % by volume, number or occurrence, and whether the range spans dates, sites or size classes"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrog diet 12–18 % adult Odonata",
+      "verdict": "unchecked",
+      "note": "CalEcotox lists 'Odonata: 12.4-17.5%' separately from larval Odonata (3.4–5.0 %) and metamorphosing odonates (0–5.7 %), so 'adult' is a fair reading of the record but unverified"
+    },
+    {
+      "paper": "§3.8.6; src/w3/fish3.js:928",
+      "claim": "bullfrog diet 5–15 % frogs",
+      "verdict": "unchecked",
+      "note": "CalEcotox lists frogs 5.1–14.5 %"
+    },
+    {
+      "paper": "src/w3/fish3.js:929",
+      "claim": "the Michigan diet lists fish only within 'miscellaneous aquatic' 2–7 % (basis for the bullfrog's 'small fish ~5 %' [inf])",
+      "verdict": "unchecked",
+      "note": "CalEcotox lists miscellaneous aquatic 1.9–7.4 % and has no fish category at all; whether fish are inside 'miscellaneous aquatic' needs the paper's table"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1564744", "status": 200, "note": "JSTOR: login/paywall page (not kept). A library login to JSTOR opens it" },
+    { "url": "https://www.jstor.org/stable/pdf/1564744.pdf", "status": 200, "note": "JSTOR: login/paywall page (not kept)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1564744?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://api.openalex.org/works/doi:10.2307/1564744", "status": 200, "note": "closed access, no repository copy" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28diet+composition+postmetamorphic+bullfrogs%29&fl%5B%5D=identifier&rows=10&output=json", "status": 200, "note": "0 items" },
+    { "url": "https://www.enallagma.coexist.host.dartmouth.edu", "status": 200, "note": "McPeek's Dartmouth faculty page: no publications list or PDFs" }
+  ],
+  "notes": "Blocked: Journal of Herpetology 1995 is on JSTOR only (not in BHL or BioOne's open years). The paper's numbers came via the research note from the CalEcotox record (turtles_and_frogs.md), which gives, for bullfrogs at Turkey Marsh, Kellogg Biological Station (Kalamazoo County, Michigan), adults and juveniles, sample size '23-46': Hemiptera 19.2–23.2, Odonata 12.4–17.5 %, larval Odonata 3.4–5.0 %, metamorphosing odonates 0–5.7 %, frogs 5.1–14.5 %, Diptera 3.7–10.5 %, larval Diptera 4.4–7.2 %, Coleoptera 2.3–6.5 %, Homoptera 2.3–6.0 %, miscellaneous terrestrial 10.5–11.1 %, miscellaneous aquatic 1.9–7.4 %, miscellaneous 1.8–7.3 (no basis stated). The paper's rounded ranges match that record, so the digits are probably right, but the basis (volume, number or occurrence), which frogs (adult or all postmetamorphic) and what the ranges span are unknown until the article is read. The record is for Turkey Marsh only; the paper's abstract (as summarised) mentions two sites. The human can open it through JSTOR with a library login."
+}
