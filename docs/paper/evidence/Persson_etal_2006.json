@@ -1,0 +1,63 @@
+{
+  "key": "Persson_etal_2006",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's copy of the published article on co-author A. M. de Roos's staff site at the University of Amsterdam (staff.fnwi.uva.nl, 'pdf_pubs'); the journal's typeset PDF. UvA-DARE has the record but no file",
+    "url": "https://staff.fnwi.uva.nl/a.m.deroos/downloads/pdf_pubs/world/JFB06.pdf",
+    "file": "docs/research_notes/fetched/v2/Persson_etal_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('Journal of Fish Biology (2006) 69, 461–472')",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, year, title, volume and pages match; the issue (2) is from Crossref (the PDF does not print it)"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.7 (co-cited with Craig 2008)",
+      "claim": "among pike, cannibalism falls mainly on young-of-year (and yearlings) and can regulate density",
+      "location": "p. 468 (PDF p. 8), Discussion; p. 470 (PDF p. 10)",
+      "quote": "recruitment of YOY pike to 1 year-old pike is controlled by cannibalism",
+      "conditions": "a theoretical expectation (Claessen et al. 2002; Persson et al. 2004) that the authors take the stable length structure of three Italian stream pike populations (1985–1993) to support; p. 470 adds that cannibalism 'has been suggested to be an important regulating mechanism' (citing Persson et al. 2000, Soupir et al. 2000, Skov & Koed 2004)",
+      "verdict": "confirmed",
+      "note": "This source names young-of-year as the victims ('eaten at a very early stage'); it does not mention yearlings, which must come from Craig 2008 if anywhere. The regulation is inferred from population patterns, not measured."
+    },
+    {
+      "paper": "§3.7.7 (co-cited with Craig 2008)",
+      "claim": "conspecifics are a minor part of the cannibal pike's diet",
+      "location": "p. 470 (PDF p. 10); Table II, p. 469 (PDF p. 9)",
+      "quote": "their prey only make up a minor fraction of the cannibal's diet",
+      "conditions": "a general statement for 'systems where cannibals impose a high mortality on their prey' (citing Claessen et al. 2000; Persson et al. 2003). In the paper's own stream data pike occurred in 0–14 % of stomachs by length class (stream 1: 0 % <15 cm, 10 % 15–30 cm, 13 % 30–45 cm, n = 43/40/8; stream 3: 14 % at 30–45 cm, n = 14; none in stream 2)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "in Swedish lakes the fish prey of pike, conspecifics included, were 0.03–0.55 of the predator's length",
+      "location": "p. 465 (PDF p. 5), Results 'Piscivory windows of pike and perch'; methods p. 464 (PDF p. 4)",
+      "quote": "minimum size ratio was lower (0·03) for pike … upper size ratio was higher (0·55)",
+      "quote_from": "image",
+      "conditions": "Lakes Abborrtjärn 1 and 2, middle Sweden; ≥ 20 pike of 50–600 mm total length sampled weekly in each lake, end of May to end of August 2002; prey (perch and pike) lengths from measured prey and length–mass regressions; the 0.03 and 0.55 are the lower and upper boundaries of piscivory drawn on the diet data (Claessen et al. 2000), prey:predator total length; t-tests against perch's 0.05 and 0.45, n = 4, P = 0.01",
+      "verdict": "confirmed",
+      "note": "The boundaries are of the whole piscivory window (cannibalism plus predation on perch), drawn as limits rather than single observed extremes."
+    },
+    {
+      "paper": "src/w3/fish3.js:536",
+      "claim": "pike take conspecifics to 0.55 of their length",
+      "source_value": "0.55 is the upper boundary of pike's piscivory window as a whole — perch prey and cannibalism together — in Lakes Abborrtjärn 1 and 2 (2002); no separate limit is given for conspecific prey",
+      "location": "p. 465 (PDF p. 5), Results",
+      "quote": "Piscivory in pike involved both cannibalism and predation on perch",
+      "conditions": "as above: two small Swedish lakes, summer 2002, pike 50–600 mm",
+      "verdict": "corrected",
+      "note": "Reword the comment to 'pike take fish prey, conspecifics included, to 0.55 (Persson et al. 2006)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1111/j.1095-8649.2006.01113.x", "status": 200, "note": "closed; only a UvA-DARE record without a file" },
+    { "url": "https://dare.uva.nl/id/883829fb-03a0-4c3b-859e-ef8b784850bd", "status": 200, "note": "UvA-DARE record: abstract only, no file" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1111/j.1095-8649.2006.01113.x?fields=openAccessPdf,externalIds,title", "status": 200, "note": "CLOSED, no open copy listed" }
+  ],
+  "notes": "The paper's main study is of three small spring-fed streams in the Venetian plain, north-east Italy (Vicenza; 0.48–0.53 m mean depth, 2.5–5.7 m wide, 9–14 °C year-round), sampled each spawning season 1985–1993: pike length structure and cohort growth varied little between years, unlike Abborrtjärn 3's perch. Only the piscivory-window comparison comes from Swedish lakes, so §3.7.7's 'In Swedish lakes' is right. Other values: von Bertalanffy L∞ 321–353 mm in the closed stream 1, 1,004 mm (males) and 1,603 mm (females) in stream 3 (Fig. 2, p. 467); in stream 1, 84 % of pike < 15 cm had eaten only invertebrates, falling to 50 % at 30–45 cm (p. 467, Table II). Perch's own cannibal window is 0.05–0.45 (p. 465), which matches Persson et al. 2004's δ and ε."
+}

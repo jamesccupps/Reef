@@ -1,0 +1,42 @@
+{
+  "key": "Titman_Kilham_1976",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (2015-09-19, openly downloadable) of the PDF that ASLO served free from its Limnology & Oceanography back-issue archive (aslo.org/lo/toc/vol_21/issue_3/0409.pdf); the journal's own scan. OpenAlex's Wiley 'pdfdirect' link answered 403",
+    "url": "https://web.archive.org/web/20150919090359id_/http://aslo.org/lo/toc/vol_21/issue_3/0409.pdf",
+    "file": "docs/research_notes/fetched/v2/Titman_Kilham_1976.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('LIMNOLOGY AND OCEANOGRAPHY 409 MAY 1976, V. 21(3)'; pp. 409–417)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.3.2",
+      "claim": "nutrient-depleted cells sank about four times faster than growing ones (cited as abstract only)",
+      "location": "p. 410 (PDF p. 2), Results and Table 1; p. 409 (PDF p. 1), Abstract",
+      "quote": "the ratio of sinking rates of stationary phase to exponential phase cultures is 4.0",
+      "conditions": "laboratory batch cultures at 20 °C, 14:10 h light, WC medium; four species (Cyclotella meneghiniana, Scenedesmus quadricauda, Asterionella formosa, Melosira agassizii); 4.0 is the stationary/exponential ratio at the midrange size (10-µm radius) from a log–log regression; the species' own ratios are 3.0 (not significant), 3.3, 7.4 and 2.8 (Table 1); 'stationary phase' stands for nutrient-depleted cells",
+      "verdict": "confirmed",
+      "note": "The full text is now read, so '(abstract only)' can be dropped."
+    },
+    {
+      "paper": "src/config.js:1558",
+      "claim": "P-starved diatoms sink ~4× faster",
+      "source_value": "the ~4× is stationary-phase versus exponential cultures grown in complete medium (WC, 50 µM phosphate; the limiting nutrient is not identified), all four species (ratio 4.0 at a 10-µm radius). For P-limited cultures, P enrichment cut the sinking rate to 16 % of its value within 7 days in Melosira (from 2.8 m/d) and to 50 % within 48 h in Scenedesmus",
+      "location": "p. 410 (PDF p. 2), Methods and Table 1; p. 411 (PDF p. 3), Fig. 1 text; p. 412 (PDF p. 4)",
+      "quote": "from exponential and stationary phase cultures grown in complete medium",
+      "conditions": "laboratory, 20 °C",
+      "verdict": "corrected",
+      "note": "Say 'nutrient-depleted (stationary-phase) cells ~4× faster' rather than 'P-starved'; the P-limitation experiments give 2× (Scenedesmus, 48 h) to ~6× (Melosira, 7 days)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1976.21.3.0409", "status": 403, "note": "Wiley refuses scripts (OpenAlex's bronze link)" }
+  ],
+  "notes": "Table 1 sinking rates (m/d, exponential → stationary): Cyclotella 0.08 → 0.24; Scenedesmus 0.27 → 0.89; Asterionella 0.20 → 1.48; Melosira 0.67 → 1.87 — so 'small greens 0.02–0.3' in config.js:1557 fits growing Scenedesmus but stationary Scenedesmus sank 0.89, and the diatoms span 0.08–1.87. The authors also argue that the usual loss = sinking rate / mixed depth may greatly overestimate losses in Langmuir circulation (abstract; Fig. 6). The measuring method covers about 0.1 to 20 m/d (p. 410). config.js:1553's 'Tilman & Kilham 1976 0.62' (a Monod Ks) names Tilman, not Titman: a different paper, not checked here; this one gives no Ks."
+}

@@ -1,0 +1,42 @@
+{
+  "key": "Post_Lee_1996",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the French résumé in OpenAlex's abstract index (saved as a text file); the English abstract is elided by the publisher in Semantic Scholar; no full text found",
+    "url": "https://api.openalex.org/works/doi:10.1139/f95-278?select=abstract_inverted_index",
+    "file": "docs/research_notes/fetched/v2/Post_Lee_1996.openalex_abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Semantic Scholar (no title page)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref has 53(4): 910–923 but lists only 'Post, J R' as author (a deposit omission); Semantic Scholar lists J. Post and J. A. Lee, as the entry does"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.6",
+      "claim": "early-life mass-specific metabolic rates were independent or nearly independent of mass (slopes −0.45 to +0.14) (cited as abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The résumé gives the two parts separately: across the early-life literature, mass dependence 'varies strongly', with mass-specific slopes from −0.45 to 0.14; in the three species with whole-life data (carp, rainbow trout, red sea bream) early-life rates were independent or nearly independent of mass (a biphasic ontogeny). A mass-specific slope of −0.45 is far from independence, so the paper's sentence, which puts the range in brackets after 'independent', misreads it even on the abstract."
+    },
+    {
+      "paper": "src/config.js:198-199 (FRY.R_WMIN)",
+      "claim": "larval metabolism scales ~isometrically (co-cited with Oikawa et al. 1991)",
+      "verdict": "unchecked",
+      "note": "The résumé supports near-isometry for the early stages of the three species with whole-life data, not for larvae in general."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f95-278", "status": 403, "note": "Canadian Science Publishing refuses scripts (paywalled; a library login would open it)" },
+    { "url": "https://doi.org/10.1139/f95-278", "status": 403, "note": "publisher landing page refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f95-278?fields=openAccessPdf,externalIds,title,abstract", "status": 200, "note": "CLOSED; abstract elided by the publisher" },
+    { "url": "https://api.openalex.org/works/doi:10.1139/f95-278?select=open_access,locations", "status": 200, "note": "closed; only publisher locations (10.1139/f95-278 and 10.1139/cjfas-53-4-910)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f95-278%22&format=json&resultType=core", "status": 200, "note": "no Europe PMC full text" },
+    { "url": "https://archive.org/wayback/available?url=www.nrcresearchpress.com/doi/pdf/10.1139/f95-278", "status": 200, "note": "no Wayback capture of the old NRC Research Press PDF" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(%22metabolic ontogeny%22)", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "For the human to fetch: doi:10.1139/f95-278 (CJFAS 53(4): 910–923). Until it is read, §3.6.6 should at least separate the two statements: 'early-life mass-specific slopes ranged from −0.45 to +0.14 across studies; in carp, rainbow trout and red sea bream early-life rates were nearly independent of mass (Post & Lee 1996, abstract)'."
+}

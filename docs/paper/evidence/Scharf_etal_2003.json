@@ -1,0 +1,58 @@
+{
+  "key": "Scharf_etal_2003",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's copy of the published article on co-author J. A. Buckel's lab pages at NC State's Center for Marine Sciences and Technology (cmast.ncsu.edu); the journal's typeset PDF. The UMass ScholarWorks record has no file",
+    "url": "https://www.cmast.ncsu.edu/cmast-sites/buckel/scharf_JEMBE.pdf",
+    "file": "docs/research_notes/fetched/v2/Scharf_etal_2003.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('Journal of Experimental Marine Biology and Ecology 294 (2003) 41–59')",
+    "ok": true,
+    "corrections": "",
+    "note": "issue (1) from Crossref"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1",
+      "claim": "for juvenile bluefish, capture success fell linearly with r: about 1.01 − 0.98r for anchovy and 0.70 − 1.34r for age-0 striped bass ('equations matched to prey species by the notes' reading of the paper')",
+      "location": "p. 48 (PDF p. 8), Table 3; p. 49 (PDF p. 9), Results; methods pp. 43–46 (PDF pp. 3–6), Table 1",
+      "quote": "Bay anchovy … 1.01 − 0.98x … Age-0 striped bass … 0.70 − 1.34x",
+      "quote_from": "table",
+      "conditions": "laboratory: age-0 bluefish 70–180 mm TL (3 per trial) offered 10 size-matched prey of 25–65 mm TL in 475-L tanks for 15 min, 19–21 °C, 22–27 ppt; r = prey TL / predator TL, 0.20–0.65 for anchovy (prey 30–65 mm, bluefish 90–180 mm) and 0.20–0.50 for age-0 striped bass (prey 25–55 mm, bluefish 90–160 mm); 47 and 31 trials; r² 0.50 and 0.48",
+      "verdict": "confirmed",
+      "note": "The page image confirms the equation-to-species order (anchovy 1.01 − 0.98x, silverside 0.70 − 0.94x, menhaden 1.12 − 1.66x, age-0 striped bass 0.70 − 1.34x), so the hedge can be dropped. Age-0 striped bass was 'the only forage species with robust dorsal spines' (p. 54). Capture success was significantly higher in 215-L tanks than in 475- or 900-L tanks (p. 51): the levels are arena-dependent."
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "handling time rose from 3–7 s at r = 0.2 to 10–22 s at r = 0.4",
+      "kind": "arithmetic",
+      "source_value": "the regressions give 4.2–8.0 s at r = 0.2 (bluefish: silverside 4.2, anchovy 6.6, age-0 striped bass 7.1, menhaden 8.0; striped bass predators 5.0–5.4) and 10.5–22.4 s at r = 0.4 (bluefish; striped bass predators 22.6–22.8)",
+      "location": "p. 48 (PDF p. 8), Tables 3 and 4; p. 50 (PDF p. 10), Fig. 3 (units: s)",
+      "quote": "Bay anchovy … 2.81e4.23x … Atlantic silverside … 1.68e4.58x … Atlantic menhaden … 3.08e4.80x",
+      "quote_from": "table",
+      "conditions": "handling time from first contact to the end of rapid opercular movement, mean per trial; same laboratory set-up; striped bass predators were age-1, 120–190 mm TL",
+      "verdict": "corrected",
+      "note": "Bluefish: 2.81e^(4.23r), 1.68e^(4.58r), 3.08e^(4.80r), 2.26e^(5.73r); striped bass predators: 1.30e^(7.14r), 1.08e^(7.62r). At r = 0.2: 6.55, 4.20, 8.04, 7.11; 5.42, 4.96 s. At r = 0.4: 15.26, 10.49, 21.01, 22.36; 22.61, 22.76 s. The upper bound holds; the lower should read '4–8 s'."
+    },
+    {
+      "paper": "src/w3/fish3.js:91",
+      "claim": "FIELD capture success falls about linearly with relative size (soft-rayed prey 1 − r, spiny 0.70 − 1.34·r; Miller 1988, Scharf 2003)",
+      "source_value": "Scharf et al.'s regressions are from laboratory tanks (475 L), not the field; their level depends on the arena (215-L tanks gave significantly higher capture success). The equations themselves match (anchovy 1.01 − 0.98r ≈ 1 − r; age-0 striped bass 0.70 − 1.34r)",
+      "location": "p. 54 (PDF p. 14), Discussion; p. 51 (PDF p. 11), Results",
+      "quote": "Results of our laboratory experiments revealed clear differences",
+      "conditions": "laboratory, 19–21 °C, juvenile marine predators and prey",
+      "verdict": "corrected",
+      "note": "Change 'Field capture success' to 'Capture success in tank experiments'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1016/S0022-0981(03)00260-0", "status": 200, "note": "closed; lists a UMass ScholarWorks record" },
+    { "url": "https://scholarworks.umass.edu/nrc_faculty_pubs/211", "status": 200, "note": "UMass ScholarWorks record: metadata only, no file in the ORIGINAL bundle" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/S0022-0981(03)00260-0?fields=openAccessPdf,externalIds,title", "status": 200, "note": "CLOSED, no open copy listed" }
+  ],
+  "notes": "Other values: prey reaction distances to an approaching predator 30.8 mm (anchovy), 35.5 (menhaden), 77.4 (striped bass), 79.8 (silverside) (Table 5, p. 52); burst speeds ~100 cm/s at 30 mm TL and 150 cm/s at 50–55 mm (p. 53); over 18 % of menhaden escapes happened after being grasped (p. 54); bluefish capture success on anchovy reached 80 % at the smallest relative sizes (p. 49). Striped bass predators: capture 0.77 − 1.29r (anchovy) and 0.49 − 1.15r (silverside) (Table 4)."
+}

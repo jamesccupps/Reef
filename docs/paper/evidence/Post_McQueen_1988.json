@@ -1,0 +1,42 @@
+{
+  "key": "Post_McQueen_1988",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's deposited abstract (saved as a text file); no full text found",
+    "url": "https://api.crossref.org/works/10.1139/f88-214",
+    "file": "docs/research_notes/fetched/v2/Post_McQueen_1988.crossref_abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref only (no title page)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Post, John R.; McQueen, Donald J. 1988, CJFAS 45(10): 1820–1826 — matches the entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.7",
+      "claim": "yellow perch larvae stay offshore, then commute inshore by day as they grow, and are wholly nearshore by about 30 mm TL (cited as abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The Crossref abstract describes the same sequence in Lake St. George, Ontario: early larvae offshore day and night; larger larvae and juveniles nearshore by day, offshore at dusk; the migration weakening with growth; exclusively nearshore by about 30 mm total length."
+    },
+    {
+      "paper": "src/world.js:1118-1119",
+      "claim": "young perch move inshore onto the bed, where they feed on littoral invertebrates (co-cited with Werner & Hall 1988)",
+      "verdict": "unchecked",
+      "note": "The abstract supports the move inshore but says nothing of diet; it concludes the shifts are 'not in response to' prey abundance or predation risk, so it should not be cited for a food-driven move."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f88-214", "status": 403, "note": "Canadian Science Publishing refuses scripts (paywalled; a library login would open it)" },
+    { "url": "https://doi.org/10.1139/f88-214", "status": 403, "note": "publisher landing page refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f88-214?fields=openAccessPdf,externalIds,title", "status": 200, "note": "CLOSED, no open copy" },
+    { "url": "https://api.openalex.org/works/doi:10.1139/f88-214?select=open_access,locations", "status": 200, "note": "closed; only the publisher location" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f88-214%22&format=json&resultType=core", "status": 200, "note": "no Europe PMC full text" },
+    { "url": "https://archive.org/wayback/available?url=www.nrcresearchpress.com/doi/pdf/10.1139/f88-214", "status": 200, "note": "no Wayback capture of the old NRC Research Press PDF" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(%22larval and juvenile yellow perch%22)", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "For the human to fetch: doi:10.1139/f88-214 (CJFAS 45(10): 1820–1826). Until then §3.6.7 keeps the 'abstract' tag. The abstract's conclusion (the distribution shifts are typical of both Perca species and not responses to prey or predators) is worth stating if the paper or code implies a food-driven move."
+}

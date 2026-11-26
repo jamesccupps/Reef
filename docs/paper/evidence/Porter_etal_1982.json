@@ -1,0 +1,41 @@
+{
+  "key": "Porter_etal_1982",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (2015-09-18, openly downloadable) of the PDF that ASLO served free from its Limnology & Oceanography back-issue archive (aslo.org/lo/toc/vol_27/issue_5/0935.pdf); the journal's own scan",
+    "url": "https://web.archive.org/web/20150918225220id_/http://aslo.org/lo/toc/vol_27/issue_5/0935.pdf",
+    "file": "docs/research_notes/fetched/v2/Porter_etal_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('Limnol. Oceanogr., 27(5), 1982, 935-949')",
+    "ok": true,
+    "corrections": "",
+    "note": "the third author prints as 'John D. Orcutt, Jr.'"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.6",
+      "claim": "Daphnia 'has no feeding threshold or reduced filtering activity at low concentrations' (cited as abstract only)",
+      "location": "p. 935 (PDF p. 1), Abstract; p. 945 (PDF p. 11), Discussion",
+      "quote": "Daphnia has no feeding threshold or reduced filtering activity at low concentrations",
+      "conditions": "laboratory, adult Daphnia magna (feeding runs: ten 2.7 ± 0.2-mm animals per replicate; behaviour: 2.6 ± 0.3-mm animals) on Chlamydomonas reinhardi at 0–10⁶ cells cm⁻³ (0–20 mg C L⁻¹), about 20 °C. Radiotracer ingestion cannot be measured much below 10³ cells cm⁻³ (20 µg C L⁻¹); the no-threshold conclusion rests on observed behaviour: filtering appendages beat at high constant rates below the incipient limiting concentration and all feeding movements continue in particle-free water (p. 945)",
+      "verdict": "confirmed",
+      "note": "The quotation is exact; the full text is now read, so '(abstract only)' can be dropped. The authors note that 'just looking at the data might suggest that filtering rate declines at 10³ cells·cm⁻³' (p. 944); the behaviour, not the ingestion data, settles it."
+    },
+    {
+      "paper": "src/config.js:1531",
+      "claim": "Daphnia clearance is type II down to zero food, with no threshold",
+      "location": "p. 945 (PDF p. 11), Discussion; p. 944 (PDF p. 10)",
+      "quote": "the Ivlev model without a threshold, e.g. a Holling type 2 functional response curve",
+      "conditions": "as above; the Ivlev curve 'passes through the origin and plateaus at a maximum rate' (p. 944)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.4319/lo.1982.27.5.0935?fields=openAccessPdf,externalIds,title", "status": 200, "note": "CLOSED, no open copy listed (OpenAlex also lists none)" }
+  ],
+  "notes": "Useful for the rewrite: hyperbolic and logarithmic fits to the same ingestion data imply a threshold near 9 × 10² cells cm⁻³ (p. 944), which the authors reject on behavioural grounds; respiration rose most around the incipient limiting concentration while ingestion rose three orders of magnitude (p. 945); Daphnia did not orient to algal patches (abstract). The finding is for one large species on one high-quality alga at 20 °C."
+}

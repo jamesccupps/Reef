@@ -1,0 +1,40 @@
+{
+  "key": "Rogers_etal_1981",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: USDA Forest Service publication server (the URL in the ledger entry); a scan with a text layer",
+    "url": "https://www.fs.usda.gov/nrs/pubs/gtr/gtr_nc065.pdf",
+    "file": "docs/research_notes/fetched/v2/Rogers_etal_1981.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (title and authors) and the last page (GPO imprint '1981-767-167'); 24 pages",
+    "ok": true,
+    "corrections": "",
+    "note": "the scan has no cover, so the series number NC-65 is confirmed only by the Forest Service file name (gtr_nc065.pdf); the title prints 'Foods of white-tailed deer in the Upper Great Lakes Region--a review'"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "deer crop aquatic plants in late spring and early summer, most when water is low, but the aquatic share of their diet is 'unknown but probably low'",
+      "source_value": "the source reads 'The portion of the diet that aquatic vegetation comprises during periods of peak use is unknown but is probably low' — the paper's quotation drops the second 'is' and the qualifier 'during periods of peak use'",
+      "location": "p. 2 (PDF p. 2), 'Seasonal foods of deer in the Upper Great Lakes Region'",
+      "quote": "peak use is unknown but is probably low",
+      "conditions": "a review of Upper Great Lakes (Minnesota, Wisconsin, Michigan) studies; the aquatic-feeding statements come from cited studies (Hennings 1977 in north-eastern Minnesota; Joyal & Scherrer 1978; Townsend & Smith 1933 and others); deer 'are sometimes observed eating aquatic vegetation', and 'Aquatic feeding reaches its peak during periods of reduced water levels in early summer'",
+      "verdict": "corrected",
+      "note": "The facts check (late spring–early summer, peak at low water, share probably low); fix the quotation to 'unknown but is probably low', or paraphrase without quotation marks."
+    },
+    {
+      "paper": "src/config.js:746",
+      "claim": "deer feed at the water in 'late spring and early summer' (mapped to late May – early August, an inference)",
+      "location": "p. 2 (PDF p. 2)",
+      "quote": "In late spring and early summer, deer, like moose",
+      "conditions": "Upper Great Lakes review; the calendar mapping is the project's",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Hennings (1977, cited p. 2) saw deer in north-eastern Minnesota select, in decreasing order, burreeds, filamentous algae, ribbonleaf pondweed, water horsetail, arrowhead, sedges, marsh cinquefoil, white and yellow pond lilies, purple watershield and St. John's-wort; water milfoil and wild rice are also reported. Aquatic plants may supply sodium (p. 2). The review notes that the feeding-site examination method misses aquatic feeding entirely (p. 5), one reason the aquatic share is unknown."
+}

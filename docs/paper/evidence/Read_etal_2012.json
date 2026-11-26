@@ -1,0 +1,45 @@
+{
+  "key": "Read_etal_2012",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: University of Waikato Research Commons (co-author D. P. Hamilton's institution), the published GRL PDF, reached from the handle OpenAlex lists (hdl.handle.net/10289/7415). OpenAlex's Wiley 'pdfdirect' link answered 403",
+    "url": "https://researchcommons.waikato.ac.nz/server/api/core/bitstreams/8a800ae4-9dee-4eb1-be9a-ef6e463762af/content",
+    "file": "docs/research_notes/fetched/v2/Read_etal_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page ('GEOPHYSICAL RESEARCH LETTERS, VOL. 39, L09405, doi:10.1029/2012GL051886, 2012')",
+    "ok": true,
+    "corrections": "",
+    "note": "all 15 authors match in order; article number L09405 (5 pp.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "in 40 temperate lakes, convection exceeded wind shear in 18, including all 11 lakes smaller than 10 ha (cited as abstract)",
+      "location": "p. 1 (PDF p. 1), Abstract [1]; p. 4 (PDF p. 4), [13] and [19]",
+      "quote": "for 18 of the 40 lakes, including all 11 lakes <10 ha",
+      "conditions": "high-frequency buoy data from 40 temperate lakes (latitude 24.6–60°, 0.06 to > 64,000 ha); 'convection a larger source than wind shear' means the temporally averaged ratio u*/w* < 0.75 (Imberger 1985) over each lake's whole record; a sheltering coefficient was applied to the wind stress of the 14 smallest lakes",
+      "verdict": "confirmed",
+      "note": "The full text is now read, so '(abstract)' can be dropped."
+    },
+    {
+      "paper": "src/w3/chem3.js:37-38 (K600_NIGHT)",
+      "claim": "convective k600 on cooling nights of 0.34–0.93 m/day at 25–200 W/m² of heat loss (Read et al. 2012, Tedford et al. 2014)",
+      "kind": "arithmetic",
+      "location": "p. 2 (PDF p. 2), Methods [7] and [9]",
+      "quote": "εw = −β … k = η(εν)^¼Sc^−n … η = 0.29, n = 0.5",
+      "quote_from": "image",
+      "conditions": "Read et al.'s surface-renewal model; the heat-loss values, α = 2.2 × 10⁻⁴ K⁻¹ and ν = 0.955 × 10⁻⁶ m² s⁻¹ (22 °C water) are the project's (oxygen_metabolism.md §1); the paper itself gives no k for a stated heat loss",
+      "verdict": "confirmed",
+      "note": "With β = gαH/(ρc_p) (ρ 998, c_p 4,186): H = 25 W/m² gives β = 1.29 × 10⁻⁸ m² s⁻³, (βν)^¼ = 3.33 × 10⁻⁴ m/s, × 0.29 × 600^−½ = 3.94 × 10⁻⁶ m/s = 0.34 m/d; H = 200 gives 0.57 m/d. Read's constants therefore give 0.34–0.57 m/d; the upper 0.93 is Tedford et al.'s constants (0.5, 0.77·|β|) at 200 W/m², which this entry does not check. The comment should say the range spans the two parameterizations."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1029/2012GL051886", "status": 403, "note": "Wiley refuses scripts (OpenAlex's bronze link)" },
+    { "url": "https://hdl.handle.net/10289/7415", "status": 200, "note": "Waikato landing page (HTML), which led to the PDF bitstream" }
+  ],
+  "notes": "Other values for the rewrite: the mean surface-renewal k for the 11 lakes < 10 ha was 0.54 m/d (SD 0.12), 'a conservative mean value' because η = 0.29 is the lower bound of Zappa et al. 2007 (p. 4 [18]–[19]); convection drove > 60 % of k in the six smallest lakes and up to 79 % in the smallest, 12–21 % in lakes > 10 km² (p. 4 [15]); w* peaks in late summer–early fall, u* in spring (Fig. 2). Hot Brook's lakes (Upper ~3 km²) fall between the small-lake and large-lake groups."
+}

@@ -1,0 +1,49 @@
+{
+  "key": "Priegel_Krohn_1975",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "library copy: University of Wisconsin–Madison Libraries digital collection (the URL in the ledger entry); a scan with a text layer",
+    "url": "https://asset.library.wisc.edu/1711.dl/VTGW7JVEZOPJJ8N/E/file-32a6a.pdf",
+    "file": "docs/research_notes/fetched/v2/Priegel_Krohn_1975.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover and title page (PDF pp. 2 and 4: 'Technical Bulletin No. 86', Wisconsin Department of Natural Resources, Madison, 1975)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "for northern pike, egg densities in a Wisconsin lake were greatest in dense mats of sedge and wild-celery remains",
+      "location": "PDF p. 3, Abstract; p. 12 (PDF p. 15), Spawning conditions; p. 17 (PDF p. 20), Conclusions",
+      "quote": "Egg densities were greatest where dense sedge mats and wild celery remains were present",
+      "conditions": "Gilbert Lake, Washington County, Wisconsin (16.2 ha, mostly < 0.6 m deep, Nuphar-covered; a refuge), spawning season 1968; eggs collected with fine-mesh dip nets swept through the vegetation, 2 April–4 June 1968; densities described qualitatively (no counts are reported)",
+      "verdict": "confirmed",
+      "note": "Egg survival was poor that year: by 9–10 April very few eggs were found and few fry were caught (p. 13)."
+    },
+    {
+      "paper": "src/w3/plants3.js:250",
+      "claim": "fewer pike eggs among bulrush stems and lily debris",
+      "location": "p. 12 (PDF p. 15), Spawning conditions",
+      "quote": "Bottom vegetation in these other areas consisted of bulrush stems, fragments of lily pads",
+      "quote_from": "image",
+      "conditions": "areas of 'similar water depth and temperature but where a similar mat of vegetation was not present', where egg densities were lower; the list continues 'broken rushes, and small pieces of debris'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/plants3.js:249-250",
+      "claim": "most pike eggs in dead sedge and short plant mats",
+      "location": "p. 17 (PDF p. 20), Conclusions; p. 12 (PDF p. 15), Environmental influences",
+      "quote": "wild celery, grasses, and sedges that break down to form a dense mat",
+      "quote_from": "image",
+      "conditions": "Gilbert Lake 1968 (the mat of last year's sedge and wild celery); 'short' is not the authors' own observation: they cite Fabricius & Gustafson (1958), who 'showed that adults deposited eggs only over dense but relatively short vegetation such as Carex spp.' (p. 12)",
+      "verdict": "confirmed",
+      "note": "The 'short' attribute should be credited 'Fabricius & Gustafson 1958, via Priegel & Krohn 1975'. The report also cites Lake George (Franklin & Smith 1963): highest egg densities in dense mats of sterile clumps of Eleocharis, next in Carex shore vegetation."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: spawning 25 March to the first week of April 1968, peak on the afternoons of 28–29 March at 10–17.8 °C surface water; immigration began mid-March with ice breakup and peaked at 3.4–10.6 °C (pp. 12, 17); incubation 13–16 days at 2.2–16.6 °C (p. 13); fecundity log F = −7.227 + 3.161 log L (L total length, cm; 11 females 34.0–85.6 cm), about 10,300 eggs per pound (p. 12); spawning population 2,500–3,000 in Gilbert and Big Cedar lakes; sex ratio 1 female : 2.0–2.3 males. The report recommends protecting marshes whose wild celery, grasses and sedges break down into a dense mat (p. 17)."
+}

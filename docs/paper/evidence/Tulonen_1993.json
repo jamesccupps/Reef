@@ -1,0 +1,48 @@
+{
+  "key": "Tulonen_1993",
+  "reader": "wave-2 batch w2-13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the PubMed abstract (PMID 24190090, saved as a text file); no full text found",
+    "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=24190090&rettype=abstract&retmode=text",
+    "file": "docs/research_notes/fetched/v2/Tulonen_1993.pubmed_abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and PubMed (no title page)",
+    "ok": true,
+    "corrections": "",
+    "note": "PubMed: Microb Ecol. 1993 Nov; 26(3): 201–17 — matches the entry (Crossref lacks the pages)"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8; src/config.js:1504",
+      "claim": "bacteria hold 33.1 fg C per cell",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract gives 'the empirically measured factor converting bacterial biomass to carbon was 0.36 pg C µm⁻³ or 33.1 fg C cell⁻¹' (a growth experiment on Lake Pääjärvi bacteria; the per-cell figure implies a mean cell volume near 0.09 µm³)."
+    },
+    {
+      "paper": "§3.3.8",
+      "claim": "in mesohumic Lake Pääjärvi bacterial production was 1.8–13.2 µg C/L/d in the growing season and 0.2–2.9 in winter, 19–33 % of primary production (cited as abstract only)",
+      "verdict": "unchecked",
+      "note": "The abstract gives these numbers; the 19–33 % is 'in the epilimnion … on average'. Samples 1991–1992 from a bay of Lake Pääjärvi, southern Finland (per Tulonen's 2004 thesis summary)."
+    },
+    {
+      "paper": "§3.3.8; src/config.js:1504",
+      "claim": "Bird & Kalff's count at chlorophyll 3–5 µg/L × 33.1 fg C per cell ≈ 57–85 µg C/L (project estimate)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "The arithmetic holds: 10^(5.867 + 0.776·log10 3) = 1.73 × 10⁶ cells/mL × 33.1 fg = 57 µg C/L; at 5 µg/L, 2.57 × 10⁶ → 85 µg C/L. The Tulonen input is unchecked (abstract only); applying one lake's carbon-per-cell factor to other lakes' counts is the project's extrapolation."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00176953.pdf", "status": 200, "note": "Springer paywall page (not kept); a library login would open it" },
+    { "url": "https://link.springer.com/article/10.1007/BF00176953", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00176953?fields=openAccessPdf,externalIds,title", "status": 200, "note": "CLOSED, no open copy" },
+    { "url": "https://api.openalex.org/works/doi:10.1007/BF00176953?select=open_access,locations", "status": 200, "note": "closed; publisher and PubMed records only" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/BF00176953%22&format=json&resultType=core", "status": 200, "note": "in Europe PMC as an abstract only (not open access, no PDF)" },
+    { "url": "https://www.um.es/documents/4874468/18084291/tulonen-04.pdf/fe273e49-be18-45d5-a842-33b10d34f954", "status": 200, "note": "Tulonen's 2004 Helsinki dissertation (saved as Tulonen_1993.um_es.pdf): the 32-page summary only; this paper is its no. III but is not reproduced, and the summary does not give the 33.1 fg C, the production ranges or the 19–33 %" }
+  ],
+  "notes": "For the human to fetch: doi:10.1007/BF00176953 (Microbial Ecology 26(3): 201–217). A search result offered a copy on a university library proxy (springerlink.bibliotecabuap.elogim.com); not used — not an acceptable copy. The thesis summary adds, for Pääjärvi's euphotic zone in 1991–1992, a summer BP:PP ratio of 0.25 on average (its abstract) and BP:DOC ratios of 0.07 in winter to 0.59–1.11 in summer, citing papers III, IV and VI; it is a different text, not a stand-in for these claims."
+}
