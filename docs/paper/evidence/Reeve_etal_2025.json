@@ -1,0 +1,78 @@
+{
+  "key": "Reeve_etal_2025",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's version PDF (Canadian Science Publishing, marked 'for personal use only') posted on the senior author's lab website (Cooke lab, Carleton University, fecpl.ca)",
+    "url": "https://www.fecpl.ca/wp-content/uploads/2024/11/Winter-behaviour-and-energetics-of-free-swimming-largemouth-bass.pdf",
+    "file": "docs/research_notes/fetched/v2/Reeve_etal_2025.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Can. J. Fish. Aquat. Sci. 82: 1–16 (2025); the article calls the species Micropterus nigricans."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "Warner Lake, Ontario, holds yellow perch, pumpkinseed, brown bullhead, golden shiner and white sucker (with largemouth bass)",
+      "location": "p. 2 (Methods, study site)",
+      "quote": "LMB are the top predators of this system, with yellow perch (Perca flavescens), pumpkinseed",
+      "conditions": "Warner Lake, Elgin, Ontario (44°31′N), 18.2 ha, a closed private research lake (Queen's University Biological Station)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4; §3.7.4",
+      "claim": "largemouth bass lost 3.6 ± 1.4 % of mass between November and June",
+      "location": "p. 5 (Results, Growth)",
+      "quote": "On average, LMB lost 3.56 ± 1.35% body mass between release and recapture",
+      "conditions": "all recaptured tagged bass (mass 825 ± 174 g at release, 788 ± 146 g at recapture); released on average 11 November ± 73 days and recaptured 8 June ± 30 days, so the interval varies widely; individual change −18 % to +15 %",
+      "verdict": "confirmed",
+      "note": "'November to June' is right only as mean dates. For fish released mid-September–early November and recaptured early May–mid-June the loss was 5.3 ± 1.8 % (the figure the code uses), which is the cleaner fall-to-spring number for the paper too."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "fasting simulations predicted 12–28 % losses against 8.9 % observed in 11 fish",
+      "location": "p. 6 (Results, Bioenergetics modeling); p. 11 (Discussion); p. 5 (n = 10 Axy-5 + 1 HRT fish)",
+      "quote": "averaged predicted losses = 15.9%–27.9% average observed losses = 8.9 ± 1.9%",
+      "conditions": "winter = days averaging < 10 °C (~150 d); 11 fish recaptured within 30 days of their logger's last record; fasting losses 27.9 ± 2.8 % (original Rice et al. 1983 model), 18.8 ± 2.4 % (updated model), 15.9 ± 3.3 % (biologger-informed), 11.9 ± 2.5 % with a 30 % fasting cut in metabolic rate",
+      "verdict": "confirmed",
+      "note": "12 % is the run with the 30 % metabolic depression; without it the predictions are 16–28 %."
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "Overwintering largemouth needed p = 0.62 on the original model but 0.37 once heart-rate and accelerometer loggers had set their activity",
+      "source_value": "p = 0.62 ± 0.04 (original Rice et al. 1983 model), 0.53 ± 0.02 (updated model: respiration and activity coefficients refitted from the loggers and calibrations), 0.37 ± 0.04 (biologger-informed model: metabolic rate taken directly from the loggers instead of the model's respiration and activity equations)",
+      "location": "p. 6 (Results, Bioenergetics modeling); p. 4 (Methods)",
+      "quote": "The biologger-informed model estimated the lowest rates of overwinter consumption",
+      "conditions": "11 fish; overwinter consumption from observed mass change; prey energy density 4000 J/g",
+      "verdict": "corrected",
+      "note": "The loggers set metabolic rate, not only activity. Logger-derived activity coefficients alone (the updated model) gave 0.53. Suggested: 'p = 0.62 on the original model, 0.53 with logger-fitted respiration and activity terms, and 0.37 when metabolic rate came straight from heart-rate and acceleration loggers'."
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "most of them feeding a little all winter and some fasting",
+      "location": "p. 12 (Discussion); p. 1 (Abstract)",
+      "quote": "while most LMB engage in low levels of winter feeding, some LMB fast",
+      "conditions": "inferred from the bioenergetics runs: observed loss exceeded the fasting prediction for 1–4 of 11 fish depending on the model",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:363",
+      "claim": "Reeve 2025 Warner Lake largemouth −5.3 % fall to spring",
+      "location": "p. 5 (Results, Growth)",
+      "quote": "LMB lost 5.3 ± 1.8% body mass",
+      "conditions": "fish released mid-September to early November and recaptured early May to mid-June; range −18.3 % to +7.6 %",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/cjfas-2024-0254", "status": 403, "note": "publisher refused the script (paywalled)" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/cjfas-2024-0254", "status": 403, "note": "publisher" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/cjfas-2024-0254\"", "status": 200, "note": "no Europe PMC record" }
+  ],
+  "notes": "Updated FB4 coefficients for largemouth (Table 1, p. 5): RA 0.0035, RQ 0.0529, RTO 0.0217, ACT 1.4343, BACT 0.0690, RK4 0.3162, RK1 5.7058, RTL 20 °C (RB kept at Rice's −0.355); Rice's originals RA 0.008352, RB −0.355, RQ 0.0313, RTO 0.0196 (these match the code's bioJuv set). Bass were inactive only ~2 % of the day (peak in fall) and burst-swam ~0.1 % of the time; heart rate 4–26 bpm in winter. An earlier version of this study is chapter 5 of Connor Reeve's PhD thesis (Carleton 2024, on fecpl.ca, saved as docs/research_notes/fetched/v2/Reeve_thesis_standin.*): its numbers differ (p 0.62 / 0.45 / 0.67; fasting losses 16.3–27.9 %), so cite the article's, as the paper does."
+}

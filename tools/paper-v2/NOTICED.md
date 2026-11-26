@@ -69,3 +69,7 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | w2-05 | §3.1.4; `ICE_SLOPE_V` | Malm et al. 1997 abstract: sediment heat flux 1–4.5 W m⁻² early winter, 0.5–3 late — the 0.6 lower bound is not Malm's; nothing supports the "few mm/s" down-slope current | open |
 | w2-05 | Table 3.8-3, `fish3.js:927` | Harding 1997 cited as if read; the entry admits it is "cited only via VHS" — say so in the text and code | open |
 | w2-05 | §5.2 | "Only 25–50 % of adult suckers spawn in a given year" uncited; it is Geen et al. 1966's abstract figure, possibly the two sucker species pooled | open |
+| w2-03 | §3.6.1 | "Laid mainly on dead pondweed and reed": Čech 2012 names dead common reed and worm weed; "dead pondweed" can only be Čech et al. 2009 (abstract) | open |
+| w2-03 | §3.5.7 | "The only Maine telemetry found" (Cole & Moring 1997) is too broad: Rapid River smallmouth radio-tracking (2005, *J. Freshwater Ecology*) and a second Green Lake paper (*Fisheries Research* 31(3): 269–273) exist — narrow to "the only Maine lake telemetry" | open |
+| w2-03 | `species3`/model, Lorenzen 1996 | Lorenzen suggests non-predation mortality scales more steeply with size (b ≈ −0.43) — matters for the model's size-scaled "unsimulated M" | note |
+| w2-03 | Rice et al. 1983 (FB4) | FB4 labels the set "adult" and notes "corrected RA & RQ"; the model applies it to young bass only — cite "as corrected in FB4" and say how it is used | open |

@@ -1,0 +1,58 @@
+{
+  "key": "Lorenzen_1996",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF as posted in the SEDAR (SouthEast Data, Assessment and Review, NOAA Fisheries/fishery management councils) public document library, reference document SEDAR12-RD13",
+    "url": "https://sedarweb.org/documents/s12rd13-the-relationship-between-body-weight-and-natural-mortality-in-juvenile-and-adult-fish-a-comparison-of-natural-systems-and-aquaculture/",
+    "file": "docs/research_notes/fetched/v2/Lorenzen_1996.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "The article runs 627–647 (its last reference page is printed 647), as the paper has; Crossref's 627–642 is Crossref's error. PDF p. N = journal p. 626 + N."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.7",
+      "kind": "arithmetic",
+      "claim": "body size gives natural mortality of 1.9 yr⁻¹ at 10 cm, falling to 0.50 at 43 cm, for chain pickerel (Lorenzen 1996; project calculations)",
+      "location": "p. 627 (PDF p. 1), Abstract; p. 632 (PDF p. 6), Table I ('Natural' row)",
+      "quote": "a joint mortality– weight relationship for all natural ecosystems was estimated with parameters",
+      "conditions": "M = Mu·W^b with Mu = 3.00 yr⁻¹ (90 % CL 2.70–3.30) at 1 g wet weight and b = −0.288 (−0.315 to −0.261); 308 data from lakes, rivers and the ocean; juveniles and adults (data explicitly on eggs or larvae excluded); total natural mortality",
+      "verdict": "confirmed",
+      "note": "Working, with the project's chain pickerel Ws (W = 0.002624·L^3.243, from another source, not checked here): 10 cm → 4.59 g → 3.00 × 4.59^−0.288 = 1.93 yr⁻¹; 43 cm → 520 g → 0.495 yr⁻¹. Both round to the paper's figures. Lorenzen's own lake-only fit is Mu 3.37, b −0.291 (Table I), which would give ~2.2 and ~0.55."
+    },
+    {
+      "paper": "src/config.js:219",
+      "kind": "arithmetic",
+      "claim": "Lorenzen 1996: M ∝ W^−0.29, ~L^−0.87",
+      "location": "p. 632 (PDF p. 6), Table I",
+      "quote": "Natural 308 0·288 [ 0·315, 0·261] 3·00 [2·70, 3·30]",
+      "quote_from": "table",
+      "conditions": "natural ecosystems pooled; the minus signs are lost in the text layer (b = −0.288)",
+      "verdict": "confirmed",
+      "note": "W^−0.288 is the source's; L^−0.87 is the project's conversion assuming W ∝ L³ (−0.288 × 3 = −0.86). With a pickerel-like W ∝ L^3.24 it would be −0.93. Lorenzen himself weighted by isometric length (p. 629)."
+    },
+    {
+      "paper": "src/config.js:210; src/world.js:1884",
+      "claim": "the share of M the lake does not simulate (disease, parasites, birds, mammals, angling) is size-scaled, higher for smaller fish (Lorenzen 1996: M ∝ W^−0.29)",
+      "location": "p. 627 (PDF p. 1), Abstract",
+      "quote": "Mortality was modelled as a power function of weight",
+      "conditions": "total natural mortality in natural ecosystems, b = −0.288",
+      "verdict": "confirmed",
+      "note": "Caveat for the rewrite: Lorenzen hypothesises that NON-predation mortality scales more steeply with weight than total natural mortality, as in aquaculture (b ≈ −0.43, p. 627 Abstract), so the predation part must scale less steeply than −0.288. The model applies −0.288 (as −0.87 in length) to the non-simulated causes, which are a mix of predation by unsimulated animals (herons, ospreys, otters) and disease/parasites; the steeper exponent may fit the disease part better."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1095-8649.1996.tb00060.x", "status": 403, "note": "Wiley refused the script (paywalled)" },
+    { "url": "https://doi.org/10.1111/j.1095-8649.1996.tb00060.x", "status": 403, "note": "Wiley" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1111/j.1095-8649.1996.tb00060.x", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://assets.publishing.service.gov.uk/media/57a08d87ed915d3cfd001aa6/R7335b.pdf", "status": 200, "note": "a DFID research-output PDF, but it is Lorenzen 2000 (CJFAS 57:2374, allometry of mortality and release size), not this paper; set aside as Lorenzen2000_wrongfile.*" },
+    { "url": "https://scholar.archive.org/search?q=Lorenzen+body+weight+natural+mortality", "status": 302, "note": "redirected to a /verify bot check; not pursued" }
+  ],
+  "notes": "Also in the paper: within-population exponents for Long Pond (Ontario) pumpkinseed, bluegill, largemouth bass, golden shiner and yellow perch, and a second yellow perch lake (Fig. 3, p. 634), none systematically different from the ecosystem relationship. Lake-only fit: Mu 3.37, b −0.291 (n = 121). Lorenzen (2000, CJFAS 57:2374) later recommends a length exponent of −1, i.e. M ∝ 1/L, a little steeper than the model's −0.87."
+}

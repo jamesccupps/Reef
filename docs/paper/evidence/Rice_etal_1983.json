@@ -1,0 +1,34 @@
+{
+  "key": "Rice_etal_1983",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Rice, J. A., Breck, J. E., Bartell, S. M. & Kitchell, J. F. (1983), Environmental Biology of Fishes 9(3–4): 263–275 — matches the entry."
+  },
+  "claims": [
+    {
+      "paper": "Table 4.3 (brown bullhead row); src/species.js:318",
+      "claim": "young brown bullheads (below 30 g / in their first year) run on FB4's largemouth bass set (Rice et al. 1983), a warmwater fish whose young grow at the bullheads' observed pace",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The stand-in choice is the project's; what the source would settle is the size range of bass the set was fitted to."
+    },
+    {
+      "paper": "Table 4.3 (smallmouth bass row); src/species.js:354",
+      "claim": "smallmouth bass below 250 g (3-D package; 30 g in species.js) run on FB4's largemouth bass set (Rice et al. 1983)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00692375.pdf", "status": 200, "note": "Springer paywall page (not kept); a library login would open https://doi.org/10.1007/BF00692375" },
+    { "url": "https://doi.org/10.1007/BF00692375", "status": 200, "note": "Springer landing page, paywalled" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00692375", "status": 200, "note": "openAccessPdf CLOSED" }
+  ],
+  "notes": "The intermediary was checked: FB4's Parameters_official.csv (github.com/jim-breck/FB4, saved as docs/research_notes/fetched/v2/fb4/Parameters_official.csv) has a row 'Largemouth bass (adult), Rice et al. 1983' — CEQ 2, CA 0.33, CB −0.325, CQ 2.65, CTO 27.5, CTM 37, REQ 1, RA 0.008352, RB −0.355, RQ 0.0313, RTO 0.0196, RK1 1, ACT 1, BACT 0, SDA 0.15848, FA 0.104, UA 0.08817, ED 4184 — identical to the code's bioJuv for catfish and bass. Three things for the rewrite: (1) FB4's note on that row reads 'SDA & UA reflect use of (C − F) instead of C; corrected RA & RQ', so the distributed set is not exactly the 1983 paper's: cite it as 'Rice et al. 1983, as corrected and distributed in FB4 (Deslauriers et al. 2017)'; (2) FB4 labels the set LifeStage 'adult', while the model uses it only for young fish (< 30 g bullheads, < 30 g or < 250 g smallmouth), so the paper should say it is applied outside its labelled stage; (3) the paper's Table 4.3 gives 250 g for smallmouth but src/species.js has juvW 30 g (src/w3/fish3.js sets 250 under stageR5) — say which version the table describes. Reeve et al. 2025 (Table 1) independently lists RA 0.008352, RB −0.355, RQ 0.0313, RTO 0.0196 as 'the Rice et al. (1983) model' and found it predicts the highest winter consumption (p 0.62 against 0.37 from loggers)."
+}

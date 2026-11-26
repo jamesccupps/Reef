@@ -1,0 +1,74 @@
+{
+  "key": "Power_1987",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's copy (scan with a text layer) on the Power lab's university web page, UC Berkeley",
+    "url": "https://ib.berkeley.edu/labs/power/publications/Power_1987_PredatorAvoidance.pdf",
+    "file": "docs/research_notes/fetched/v2/Power_1987.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the chapter's first page (with the handwritten citation on the copy) and its running heads",
+    "ok": false,
+    "corrections": "Full title: 'Predator avoidance by grazing fishes in temperate and tropical streams: importance of stream depth and prey size'. It is chapter 22, pp. 333–351, in W. C. Kerfoot & A. Sih (eds), Predation: Direct and Indirect Impacts on Aquatic Communities, University Press of New England, Hanover, NH, 1987. The entry lacks the subtitle and the pages."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7; src/w3/fish3.js:252, 267",
+      "claim": "bass occupied stream pools deeper than 50 cm on 72 of 75 pool-dates",
+      "location": "p. 336 (PDF p. 4)",
+      "quote": "large bass occurred in pools > 50 cm deep on 72 pool-dates",
+      "conditions": "largemouth and spotted bass > 7 cm SL in a 1-km reach of Brier Creek, Oklahoma (14 pools), eight snorkelling censuses over 2½ years; pools > 50 cm made up 86 of the 111 pool-occurrences (χ² 10.6, p < 0.01)",
+      "verdict": "confirmed",
+      "note": "A prairie-margin stream with largemouth and spotted bass, not smallmouth."
+    },
+    {
+      "paper": "§3.5.7; src/w3/fish3.js:252, 267",
+      "claim": "fish longer than 3–4 cm avoided water shallower than 20 cm",
+      "location": "p. 333 (PDF p. 1), abstract paragraph; p. 341 (PDF p. 9)",
+      "quote": "Large (>3 cm long) grazing fishes avoid shallow (< 20 cm) water",
+      "conditions": "grazing fishes only: loricariid armored catfish in the Rio Frijoles, Panama, and stonerollers (Campostoma) in Brier Creek, Oklahoma; young loricariids stay in shallow nursery riffles 'until they are 3 to 4 cm long' (p. 341)",
+      "verdict": "confirmed",
+      "note": "The source's threshold is > 3 cm; 3–4 cm is the size at which young loricariids leave the shallows. It is about algae-grazing stream fishes, not lake fish in general."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "all six fish tethered in water under 18 cm were taken by herons or kingfishers within a day",
+      "source_value": "0 of 6 armored catfish (Ancistrus spinosus, 7–16 cm SL) tethered in < 18 cm remained after 24 h, against 10 of 14 in > 18 cm (p = 0.005); the predators were not observed — the fish were tethered where herons and kingfishers had been seen fishing",
+      "location": "p. 336 (PDF p. 4)",
+      "quote": "0/6 catfish that had been tethered in water < 18 cm deep remained",
+      "conditions": "Rio Frijoles, central Panama; tethers in water 11–25 cm deep",
+      "verdict": "corrected",
+      "note": "Write 'all six were gone within a day, at a site where herons and kingfishers fished' rather than 'taken by herons or kingfishers'. A follow-up pen experiment (unpublished data, same page) lost loricariids from pens at 10 and 20 cm while little blue herons foraged nearby, but most remained at 30 and 50 cm."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "In Oklahoma and Panama streams, fish over 3 cm avoided water < 20 cm deep",
+      "location": "p. 333 (PDF p. 1), abstract paragraph",
+      "quote": "Large (>3 cm long) grazing fishes avoid shallow (< 20 cm) water",
+      "conditions": "grazing fishes (loricariids, Campostoma)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "All six catfish tethered at < 18 cm were taken within 24 h, while 10 of 14 survived deeper",
+      "location": "p. 336 (PDF p. 4)",
+      "quote": "recovered 10/14 catfish tethered in water > 18 cm deep",
+      "conditions": "Ancistrus spinosus 7–16 cm SL, Rio Frijoles, Panama; 24 h",
+      "verdict": "confirmed",
+      "note": "'Taken' means missing after 24 h; the predator was not seen."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "adult stonerollers moved into < 20 cm shoals within hours once bass were added",
+      "location": "p. 337 (PDF p. 5)",
+      "quote": "After bass addition, these minnows were displaced within hours to shoals < 20 cm deep",
+      "conditions": "Brier Creek, Oklahoma; adult Campostoma 4–8 cm SL; two largemouth bass 18–28 cm SL added to a pool whose deepest part was 40–60 cm; young of the year (2–3 cm) did not change depth",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other useful points: in Brier Creek, 40 of 74 adult stonerollers left the pool through a shallow 'escape port' within 6 h of bass being added, and 19 adults and 13 juveniles were presumed eaten within a week (p. 337); Table 22.1 (p. 338) lists loricariid remains attributed to birds and mammals; algae in water > 20 cm deep were grazed bare in the Rio Frijoles. Brier Creek's bird and mammal predators named on p. 340 are raccoons, green herons, belted kingfishers and great blue herons."
+}

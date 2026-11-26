@@ -1,0 +1,75 @@
+{
+  "key": "Linkenheld_2019",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive Wayback Machine capture (27 Jul 2024) of the thesis PDF that UWM Digital Commons served free (open access); the landing page then linked it as the download",
+    "url": "http://web.archive.org/web/20240727055355id_/https://dc.uwm.edu/cgi/viewcontent.cgi?article=3220&context=etd",
+    "file": "docs/research_notes/fetched/v2/Linkenheld_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and the repository record",
+    "ok": true,
+    "corrections": "",
+    "note": "MS in Freshwater Sciences and Technology, University of Wisconsin–Milwaukee, May 2019; 'Theses and Dissertations 2215'. The cited URL dc.uwm.edu/etd/2215 now redirects to MINDS@UW (minds.wisc.edu), where the PDF refuses anonymous download (HTTP 401); the Wayback capture above is the open copy."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (yellow perch row)",
+      "claim": "hatch length 5.0–5.3 mm (hatchery)",
+      "location": "p. 26 (PDF p. 35), Table 3 (initial length)",
+      "quote": "Steady … 5.30 (±0.30) … Standard … 4.98 (±0.36) … Cold Shock … 4.96 (±0.27)",
+      "quote_from": "table",
+      "conditions": "hatchery: Northeast River (Chesapeake Bay) strain, F1 broodstock at UW–Milwaukee, spawned 9 Oct 2018 (out of season); mean length on the day of hatch, measured in ImageJ (length type not stated); incubation at 16 °C constant, 12 °C rising 1–2 °C every 3–4 d, or that regime with a 16-h 10 °C shock",
+      "verdict": "confirmed",
+      "note": "4.96–5.30 mm across treatments; the heat-shock treatment was not measured (too few larvae)."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "hatchery yellow perch ribbons yielded 19.9–49.6 % viable larvae",
+      "location": "p. 25 (PDF p. 34), Table 2; p. 17 (PDF p. 26)",
+      "quote": "Steady 27.9 … Standard 30.8 … Cold Shock 49.6 … Heat Shock 19.9",
+      "quote_from": "table",
+      "conditions": "percent of eggs that were viable larvae (alive formed larvae plus ruptured, hatched eggs) at the end of incubation, by ImageJ counts of 3 ribbon samples per segment; 5 females' ribbons split across 4 temperature treatments; dead eggs 49–65 %, failed (eyed but dead) larvae 0.8–22.9 %",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "perch embryos tolerated a 16-hour cold shock to 10 °C better than a warm spell to 20 °C (49.6 against 19.9 % viable)",
+      "location": "p. 13 (PDF p. 22), Methods; p. 17 (PDF p. 26), Results",
+      "quote": "The cold shock treatment average (49.6%) was significantly higher than the heat shock",
+      "conditions": "shock on day 6 of incubation, 16 h at 20 °C (heat) or 10 °C (cold); p = 0.0325 (Tukey); the heat shock left three ribbon segments with no viable larvae",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:492",
+      "kind": "arithmetic",
+      "claim": "Guma'a's 97/(T − 4.9) × 1.2: yellow perch develop ~20 % slower than Eurasian perch (Linkenheld 2019)",
+      "location": "p. 17 (PDF p. 26), Results; p. 26 (PDF p. 35), Table 3 (incubation period)",
+      "quote": "The steady treatment larvae started hatching after 10 days post-fertilization (dpf)",
+      "conditions": "16 °C constant ('steady'): hatch from 10 to 11 dpf, mean incubation 10.5 d (Table 3)",
+      "verdict": "confirmed",
+      "note": "Working: Guma'a's D50 = 97/(16 − 4.9) = 8.74 d; 10.5/8.74 = 1.20. The Linkenheld input is right; Guma'a's formula was not checked here (another entry). Caveat: Linkenheld writes that the steady and heat-shock larvae 'developed faster than normal for yellow perch' (p. 20, PDF p. 29) and the cold-shock larvae normally, so the ×1.2 drawn from the 16 °C treatment may understate the slowdown; the rising-temperature 'standard' treatment (12 °C up 1–2 °C every 3–4 d) took 12–13 d."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://dc.uwm.edu/cgi/viewcontent.cgi?article=3220&context=etd",
+      "status": 200,
+      "note": "redirect stub only (333 chars), the repository has moved"
+    },
+    {
+      "url": "https://minds.wisc.edu/server/api/core/bitstreams/b4f759ef-bd93-401f-8166-71343b2f7116/content",
+      "status": 401,
+      "note": "MINDS@UW: anonymous download not authorized (canDownload empty)"
+    },
+    {
+      "url": "https://minds.wisc.edu/bitstreams/b4f759ef-bd93-401f-8166-71343b2f7116/download",
+      "status": 200,
+      "note": "JavaScript shell page, no PDF"
+    }
+  ],
+  "notes": "Other values: ribbon sections of 72.5–90.9 g held 18,500–30,960 eggs (eggs = 280.2 × g + 607.6, r² 0.23); incubation 10.5 d at 16 °C, 12 d on the rising regime, 13 d after the cold shock; larval growth ~0.10–0.12 mm/d over 28 d, but larval survival was 0.3–2.3 % in the tanks, so the larval data are weak. Hatchery yields understate field viability (the paper says so already). The broodstock is a Chesapeake strain spawned in October, not a northern lake population."
+}

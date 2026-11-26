@@ -1,0 +1,76 @@
+{
+  "key": "Sass_etal_2006",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Wisconsin DNR outreach PDF of the published article (scan; its text layer drops many spaces, so quotes were read off the page images)",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Outreach_WholeLakeWoodRemovalSass.pdf",
+    "file": "docs/research_notes/fetched/v2/Sass_etal_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org) and the printed pages",
+    "ok": true,
+    "corrections": "",
+    "note": "Fisheries 31(7): 321–330, July 2006; the DOI resolves (Crossref record under OUP, which now publishes AFS journals) — show.mjs's 'DOI not found' is an encoding failure of the bracketed DOI. PDF p. N = journal p. 320 + N."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-5",
+      "claim": "Little Rock Lake, WI (18 ha); logs > 10 cm: 475/km (treatment basin), 344/km (reference basin); 128/km after experimental removal to 2 m depth",
+      "location": "p. 323 (PDF p. 3), Study Site; p. 324 (PDF p. 4)",
+      "quote": "We reduced large CWH abundance from 475 logs/km of shoreline to 128 logs/km",
+      "quote_from": "image",
+      "conditions": "large CWH = logs > 10 cm diameter; 18-ha oligotrophic seepage lake split by a curtain into a 10-ha treatment and 8-ha reference basin; wood to 2 m depth removed July–August 2002 (small sticks and logs < 10 cm and three abandoned beaver lodges removed too)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "about 73 % of littoral wood was removed, leaving 128 logs/km, comparable to lakes with 2–8 buildings/km",
+      "location": "p. 324 (PDF p. 4)",
+      "quote": "the treatment basin had CWH abundances commensurate with lakes having housing densities of 2–8 buildings/km",
+      "quote_from": "image",
+      "conditions": "comparison with northern Wisconsin and Upper Michigan lakes (Christensen et al. 1996; Marburg et al.)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Within two years yellow perch, the most abundant fish, fell to very low densities",
+      "location": "p. 321 (PDF p. 1), Abstract; p. 326 (PDF p. 6); p. 327 (PDF p. 7)",
+      "quote": "current densities of perch have been as low as five perch/ha in the treatment basin",
+      "quote_from": "image",
+      "conditions": "post-removal monitoring Aug–Sep 2002 and May–Sep 2003–2004; the post-removal density is from catch rates (no marked perch were recaptured, so no population estimate)",
+      "verdict": "confirmed",
+      "note": "The source calls perch 'the dominant prey population' and says the community 'is dominated by largemouth bass and yellow perch'; perch outnumbered bass (141 perch/ha against 60–82 adult bass/ha in the treatment basin), so 'most abundant' is fair."
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Largemouth bass shifted from a diet of 81–93 % perch to 51–55 % terrestrial prey by dry mass and grew more slowly",
+      "source_value": "Treatment-basin bass went from 81 % perch (9–12 % terrestrial) before the removal to 14 % perch and 51–55 % terrestrial prey by dry mass after it; 93 % was the REFERENCE basin's pre-removal perch share (its bass fell to 62 % perch but stayed at 17–19 % terrestrial). Treatment-basin bass growth declined relative to the reference basin.",
+      "location": "p. 326 (PDF p. 6), Results (Food Web Responses; Growth Responses)",
+      "quote": "Yellow perch averaged 93% and 81% of the total diet of bass",
+      "quote_from": "image",
+      "conditions": "gastric lavage of up to 15 fish per species biweekly, May–September 2001–2004; dry-mass proportions",
+      "verdict": "corrected",
+      "note": "Write 'from 81 % perch to 14 % perch and 51–55 % terrestrial prey'; the 81–93 % range mixes in the untouched basin."
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Benthic invertebrates did not change (Sass et al. 2006; Helmus & Sass 2008, abstract)",
+      "verdict": "unsupported",
+      "note": "Sass et al. 2006 did not sample benthic invertebrates. It reports only that perch diets (trichopterans, dipterans, odonate larvae) did not change (p. 326), and in the Discussion it suggests the opposite risk — CWH removal 'may result in decreased benthic invertebrate production' (p. 329). The 'did not change' must rest on Helmus & Sass 2008 alone; cite it alone."
+    },
+    {
+      "paper": "§3.6.1; src/w3/plants3.js:256",
+      "claim": "After 73 % of the large wood was cut, yellow perch fell from 141 to about 5 per hectare (wood 475 → 128 logs/km), though bass predation and the loss of spawning substrate cannot be separated",
+      "location": "p. 326 (PDF p. 6); p. 327 (PDF p. 7)",
+      "quote": "Estimated population density in the treatment basin was 141 perch/ha prior to CWH removal",
+      "quote_from": "image",
+      "conditions": "141/ha a pre-removal population estimate; ~5/ha from catch rates after removal; the authors list increased predation, decreased prey availability and lost spawning habitat together (p. 327)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Also: YOY perch after removal ~2/ha in the treatment basin against up to 16× more in the reference basin; reference-basin perch averaged 815/ha; adult bass 56–112/ha (reference) and 60–82/ha (treatment), increases not significant; bass in the treatment basin ate less (consumption rate fell). The lake had no development or fishing since 1984 and its treatment basin had been experimentally acidified in the late 1980s."
+}

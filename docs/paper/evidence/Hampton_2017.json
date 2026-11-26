@@ -1,0 +1,72 @@
+{
+  "key": "Hampton_2017",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's open-access version (CC BY-NC) from the Utrecht University repository (dspace.library.uu.nl, handle 1874/349337)",
+    "url": "https://dspace.library.uu.nl/bitstreams/2ba21e92-af2c-48e6-9fb4-b610662122f1/download",
+    "file": "docs/research_notes/fetched/v2/Hampton_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref dates it 2016 (online first); the volume is 2017, 20(1): 98–111, as the paper has. The PDF's first page is the repository's cover sheet, so journal page = PDF page + 96 (p. 98 = PDF p. 2; findin's 'printed' labels on this file are off and should be ignored)."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.1",
+      "claim": "Under ice, phytoplankton biovolume averaged 15.8 % and chlorophyll 43.2 % of summer values across 101 lakes",
+      "source_value": "43.2 % (chlorophyll a, 118 stations with paired winter–summer data) and 15.8 % (phytoplankton biovolume, only 17 stations) — means across the stations that had each variable, within a 101-lake data set",
+      "location": "p. 98 (PDF p. 2), Abstract; p. 101 (PDF p. 5), Methods (station counts); p. 102 (PDF p. 6) and p. 103 (PDF p. 7), Results",
+      "quote": "mean winter values were 43.2% of summer values for chlorophyll a, 15.8% of summer",
+      "conditions": "global synthesis, 42 research groups, data 1940–2015; ratio of mean winter to mean summer value (winter chl a 5.87 ± 0.88 against summer 13.6 ± 2.84 µg/L); 'phytoplankton biovolume averaged about 1/6th that of the summer average (n = 17)'",
+      "verdict": "corrected",
+      "note": "The digits are right, but '101 lakes' is the size of the whole data set, not of these means: the biovolume figure rests on 17 stations and the chlorophyll figure on 118. Suggested wording: 'phytoplankton biovolume averaged 15.8 % (17 stations) and chlorophyll 43.2 % (118 stations) of summer values in a 101-lake synthesis'."
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "Under ice, crustacean density averaged 27.8 ind/L against 110 ind/L in summer across 36 stations",
+      "location": "p. 103 (PDF p. 7), Results; p. 104 (PDF p. 8), Table 1 (crustacean zooplankton density, 36 winter observations)",
+      "quote": "significantly lower under ice (27.8 ± 11.2 individuals L-1) than during summer (110 ± 30.8",
+      "conditions": "mean ± SE across 36 stations; crustacean zooplankton only (rotifers and 'other' zooplankton excluded because methods differed); individuals per litre",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "copepods made up about 80 % of winter and 63 % of summer crustacean density (shares read from a figure)",
+      "location": "p. 104 (PDF p. 8), Fig. 3 (zooplankton panel)",
+      "quote": "Average community composition for major phytoplankton and crustacean zooplankton groups during the winter and summer",
+      "quote_from": "image",
+      "conditions": "Fig. 3, proportion of total crustacean density averaged across stations; read off the bars: winter calanoids 0–0.28 + cyclopoids 0.28–0.80 (≈ 80 % copepods), summer calanoids 0–0.21 + cyclopoids 0.21–0.64 (≈ 63–64 %)",
+      "verdict": "confirmed",
+      "note": "Read from the bar chart, as the paper says; Daphnia ≈ 14 % of winter and ≈ 19 % of summer density, other cladocerans the rest."
+    },
+    {
+      "paper": "src/config.js:1475",
+      "claim": "field: under ice ~25 % of summer density, ~80 % of it copepods (Hampton et al. 2017)",
+      "location": "p. 98 (PDF p. 2), Abstract; p. 104 (PDF p. 8), Fig. 3",
+      "quote": "15.8% of summer phytoplankton biovolume and 25.3% of summer zooplankton density",
+      "conditions": "crustacean zooplankton, individuals per litre, 36 stations; copepod share read from Fig. 3",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1402",
+      "claim": "Hampton et al. 2017: under ice ~25 % of the summer stock (of zooplankton)",
+      "source_value": "25.3 % of summer crustacean zooplankton DENSITY (individuals per litre); no winter/summer biomass ratio is given",
+      "location": "p. 98 (PDF p. 2), Abstract",
+      "quote": "25.3% of summer zooplankton density",
+      "conditions": "36 stations, individuals per litre",
+      "verdict": "corrected",
+      "note": "The sim's zooplankton are biomass fields; a share by number is not a share by mass when winter stock is mostly copepods (smaller per individual than Daphnia). Say 'density' in the comment."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://nottingham-repository.worktribe.com/preview/970966/Hampton_et_al-2017-Ecology_Letters.pdf", "status": 403, "note": "repository refused the script (text/html)" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/ele.12699", "status": 403, "note": "Wiley refused the script (the article itself is open access)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/ele.12699\"", "status": 500, "note": "Europe PMC error; EXT_ID search finds PMID 27889953 with no PMC copy" }
+  ],
+  "notes": "Useful beyond the cited values: winter TDN ≈ 2× summer (707 vs 375 µg/L), and in the shallowest lakes (< 2.10 m) winter TDN was 2,070 µg/L higher than summer; chl a disparity greatest in lakes < 2.93 m deep (summer higher by 52.3 µg/L). Zooplankton density was lower in winter at 10 of 11 long-term sites. These are cross-lake averages dominated by deeper, often northern lakes; latitude is shown in Fig. 2."
+}

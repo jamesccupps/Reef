@@ -1,0 +1,46 @@
+{
+  "key": "Cole_Moring_1997",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the USGS Publications Warehouse record (Maine Cooperative Fish and Wildlife Research Unit)",
+    "url": "https://pubs.usgs.gov/publication/70019479",
+    "file": "docs/research_notes/fetched/v2/Cole_Moring_1997.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org) and the USGS record",
+    "ok": true,
+    "corrections": "",
+    "note": "Cole, M. B. & Moring, J. R. 1997, Trans. Am. Fish. Soc. 126(5): 815–821 — matches. show.mjs's 'DOI not found' is an encoding failure; the DOI resolves to academic.oup.com (refused the script)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6; §3.7.8",
+      "claim": "In Green Lake, Maine (44 bass, summer 1993), large bass (> 406 mm) used water deeper than 8 m in late summer more than small and medium fish, which used cover more",
+      "verdict": "unchecked",
+      "note": "The paper already marks it 'abstract only'. The USGS abstract says the same: 44 smallmouth in three size classes radio-tracked 10 June–1 September 1993; large (> 406 mm) used > 8 m more often than small (248–279 mm) or medium (305–356 mm) fish in late summer (15 July–1 September), and middepths (4–8 m) more than small fish; small fish used cover more in early summer, small and medium more than large in late summer; small fish had smaller summer ranges."
+    },
+    {
+      "paper": "§3.5.6; §3.7.8",
+      "claim": "Green Lake is the only Maine telemetry found for any of these species",
+      "verdict": "unchecked",
+      "note": "Not a claim the source can settle, but a search turned up other Maine telemetry of smallmouth: the same tagged Green Lake fish in Cole & Moring 1997, Fisheries Research 31:269–273 (survey error), and radio-tracked smallmouth in the Rapid River, Maine, 2005 (USGS record 'Summer movements of sub-adult brook trout, landlocked Atlantic salmon, and smallmouth bass in the Rapid River, Maine', J. Freshwater Ecology). Narrow it to 'the only Maine LAKE telemetry found'."
+    },
+    {
+      "paper": "src/w3/fish3.js:600",
+      "claim": "25–28-cm Maine bass are still shallower than large adults (Ridgway 2002; Cole & Moring 1997)",
+      "verdict": "unchecked",
+      "note": "Consistent with the abstract's small class of 248–279 mm, which used deep water less than > 406-mm fish in late summer."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1997)126<0815:ROASTM>2.3.CO;2", "status": 403, "note": "resolves to https://academic.oup.com/tafs/article/126/5/815/7892526, which refused the script; a library login would open it" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1997)126<0815:ROASTM>2.3.CO;2", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70019479", "status": 200, "note": "abstract and bibliographic record only, no PDF" },
+    { "url": "https://digitalcommons.library.umaine.edu/do/search/?q=smallmouth bass Green Lake Cole", "status": 200, "note": "no thesis by M. B. Cole found (a UMaine MS thesis on the same data would be a stand-in)" },
+    { "url": "https://archive.org/advancedsearch.php?q=collection:pub_american-fisheries-society-transactions AND year:1997", "status": 200, "note": "no 1997 issues in Internet Archive" }
+  ],
+  "notes": "If the full text is fetched by hand, check: the depth distribution by size class and month (to place 25–35-cm bass in a 4–5.5-m lake), the cover types, and Green Lake's depth and size (it is far deeper than Hot Brook, so '> 8 m' has no counterpart there)."
+}

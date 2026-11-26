@@ -1,0 +1,40 @@
+{
+  "key": "Siefert_1972",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (api.crossref.org; the record is under OUP)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Siefert, Richard E. (1972), Transactions of the American Fisheries Society 101(2): 219–225 — matches. show.mjs's 'DOI not found' is an encoding failure of the angle-bracket DOI; the DOI resolves (to academic.oup.com, which refused the script)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-2 (yellow perch row)",
+      "claim": "yellow perch first food: nauplii and cyclopoids (eutrophic lake) or Polyarthra (oligotrophic lake); adult copepods by 7 mm (with Fisher & Willis 1997, Graeb et al. 2004, Mills et al. 1984, Wu & Culver 1992)",
+      "verdict": "unchecked",
+      "note": "The paper already marks it '(abstract)'; not even the abstract could be fetched in this pass."
+    },
+    {
+      "paper": "src/config.js:1444",
+      "claim": "the first food of fish larvae is nauplii, rotifers and small cyclopoids of 0.1–0.3 mm at 4.5–6 mm (Keast 1980; Siefert 1972)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:1442; src/config.js:1596",
+      "claim": "cladocerans (Bosmina, Chydorus) enter larval diets from ~8–10 mm (Keast 1980; Siefert 1972)",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1972)101<219:FFOLYP>2.0.CO;2", "status": 403, "note": "resolves to https://academic.oup.com/tafs/article/101/2/219/7895668, which refused the script; a library login would open it" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1972)101<219:FFOLYP>2.0.CO;2", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=collection:pub_american-fisheries-society-transactions AND year:1972", "status": 200, "note": "Internet Archive holds only the 1972 vol. 101 contents pages (american-fisheries-society-transactions_1972_101_contents), not the issue" },
+    { "url": "https://scholar.archive.org/search?q=...", "status": 302, "note": "bot check (/verify); not pursued" },
+    { "url": "web search (Siefert 1972 first food larval yellow perch pdf; EPA/NEPIS)", "status": 0, "note": "no free copy found; only citations" }
+  ],
+  "notes": "Siefert worked at the EPA National Water Quality Laboratory (Duluth); an EPA report version may exist but none was found. The values in the code comments are joint attributions with Keast 1980, which may carry them alone; check Keast's entry."
+}

@@ -1,0 +1,48 @@
+{
+  "key": "Cech_etal_2012",
+  "reader": "wave-2 batch w2-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Journal of Limnology, PAGEPress)",
+    "url": "https://www.jlimnol.it/index.php/jlimnol/article/download/jlimnol.2012.e18/468",
+    "file": "docs/research_notes/fetched/v2/Cech_etal_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "J. Limnol. 71(1): 170–179 (2012), doi:10.4081/jlimnol.2012.e18; Crossref's page '18' is the article number. Authors as in the entry."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "(a perch lays its clutch as one ribbon, so) a bad site 'may easily result in complete failure'",
+      "location": "p. 170 (PDF p. 1), Introduction",
+      "quote": "may easily result in complete failure of reproduction",
+      "conditions": "a general statement in the introduction: 'A mistake in the selection of an appropriate site, substrate or depth for spawning'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.10; §3.6.1",
+      "claim": "96 sunken trees took two-thirds of all perch strands",
+      "location": "p. 172 (PDF p. 3), Methods; p. 174 (PDF p. 5), Results; p. 177 (PDF p. 8), Discussion",
+      "quote": "two thirds of all the egg strands, which were found during the five weeks",
+      "conditions": "Eurasian perch, Chabařovice Lake (a flooded opencast mine, Czech Republic), 3 May–3 June 2010; the 96 trees (2-m green and dry Norway spruce and silver birch) were artificial spawning substrate the researchers anchored at 1–15 m on two shores; 80 of 124 strands were on them (50 + 30) and 44 elsewhere; the lake's natural substrates had largely degraded or lay too deep",
+      "verdict": "confirmed",
+      "note": "'Sunken trees' should say they were installed for the study, in a lake short of natural substrate; the authors also conclude that depth and site choice 'are not dependent on the presence of suitable spawning substrates' (p. 177)."
+    },
+    {
+      "paper": "src/w3/plants3.js:248",
+      "claim": "live soft plants are used only when rigid dead substrate is scarce (Čech 2012: 6–29 % of strands while dead reed beds stood, 77 % once they were gone)",
+      "location": "p. 177 (PDF p. 8), Discussion",
+      "quote": "only 6.0-28.9% of egg strands were found to be deposited on live submerged vegetation",
+      "conditions": "77.3 % = share of the 44 strands found OUTSIDE the artificial trees in 2010 that lay on live Eurasian water milfoil and stonewort; 6.0–28.9 % = 2007–2009, as reported in Čech et al. 2009–2011; the dead common reed and worm weed (Artemisia) beds had 'gradually disappeared' or lay too deep",
+      "verdict": "confirmed",
+      "note": "The 2007–2009 range is Čech 2012 quoting its own earlier papers."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: egg-strand depth rose from 4.9 m to 12.3 m over the season, tracking the 10–12 °C layer and then day length; 92.5–95.5 % of strands deeper than 3 m and none shallower than 1 m (wind and waves); perch preferred the calm shore 50:30 and 34:10; 84 % of strands came from females ≥ 200 mm SL; strands fell from 896 (2007) to 124 (2010) as large females declined under stocked pike and wels predation. This is a deep (≥ 15 m), wind-exposed mine lake, so its depths do not transfer to Hot Brook. For §3.6.1's 'laid mainly on dead pondweed and reed': Čech 2012 names beds of dead common reed and worm weed as the most important substrate; dead pondweed must come from Čech et al. 2009."
+}
