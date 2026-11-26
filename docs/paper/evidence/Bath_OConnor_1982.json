@@ -1,0 +1,32 @@
+{
+  "key": "Bath_OConnor_1982",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy (NOAA/NMFS Scientific Publications Office, Fishery Bulletin archive)",
+    "url": "https://spo.nmfs.noaa.gov/sites/default/files/pdf-content/1982/803/bath.pdf",
+    "file": "docs/research_notes/fetched/v2/Bath_OConnor_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's title page and running heads",
+    "ok": true,
+    "note": "Bath, D. W. & O'Connor, J. M. 1982, The biology of the white perch, Morone americana, in the Hudson River estuary, Fishery Bulletin 80(3): 599–610 — as in the reference. The reference's URL (fisherybulletin.nmfs.noaa.gov/…/bath.pdf) now redirects to the journal's index page; the working URL is the spo.nmfs.noaa.gov one above."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (white perch row, fecundity; 03_synthesis_fish_to_forest.md:119)",
+      "claim": "Hudson mean fecundity 50,678 eggs",
+      "location": "p. 599 (PDF p. 1), abstract; p. 606 (PDF p. 8), Reproduction; Fig. 10",
+      "quote": "The mean fecundity was 50,678 eggs per female, with a range of 15,726-161,449",
+      "conditions": "65 females collected May–June 1970 between Haverstraw and Bear Mountain, N.Y. (a 15-km reach of the Hudson estuary with limnetic–oligohaline transitions), 115.0–187.5 mm SL, age groups 2–7; gravimetric counts of ovaries preserved in Gilson's fluid; eggs = 1,697.08·e^(0.02·SL), r² = 0.39",
+      "verdict": "confirmed",
+      "note": "Mean per female, all ages pooled; an estuarine population."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://fisherybulletin.nmfs.noaa.gov/sites/default/files/pdf-content/1982/803/bath.pdf", "status": 200, "note": "the reference's URL: redirects to https://spo.nmfs.noaa.gov/fb.htm (an index page, not the PDF)" }
+  ],
+  "notes": "Useful for the Maine rows: the discussion (pp. 608–609) cites AuClair (1956, M.S. thesis, Univ. Maine) for white perch of Sebasticook Lake, Maine, at 164,000 eggs/female, and Taub (1969) for Quabbin Reservoir at 271,000 (age 3–4), lake fecundities 'at least double' riverine ones, which the authors relate to faster growth in lakes. Other values: maximum age 7; most fish mature by their second year; the first 3 years' growth was 78 % of the length reached by age 7; combined length–weight Log W = −4.743 + 3.093 Log L (SL); sex ratio 0.83 male : 1 female among 2,600 mature fish; spawning June, complete by July."
+}

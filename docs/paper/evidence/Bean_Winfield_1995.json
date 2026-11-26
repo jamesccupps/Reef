@@ -1,0 +1,33 @@
+{
+  "key": "Bean_Winfield_1995",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Only the abstract was read, on the University of Glasgow repository record (Enlighten), which says 'Full text not currently available'",
+    "url": "https://eprints.gla.ac.uk/187862/",
+    "file": "docs/research_notes/fetched/v2/Bean_Winfield_1995.glasgow_record.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Glasgow repository record",
+    "ok": true,
+    "note": "Bean, C. W. & Winfield, I. J. 1995, Ecology of Freshwater Fish 4(1): 37–46, doi:10.1111/j.1600-0633.1995.tb00025.x — as in the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.8 (02_synthesis_physical_to_plants.md:855)",
+      "claim": "pike entered artificial structure only below 600 stems m⁻²",
+      "verdict": "unchecked",
+      "note": "Full text not read (the paper already flags 'abstract'). The abstract: laboratory video trials with artificial stems at 200, 400 and 600 stems m⁻²; pike were 'only selecting structured habitats when stem densities were less than 600 stems m−2'. So 'below 600' means at the two lower densities tested (200 and 400), and the abstract speaks of habitat SELECTION (preference), not of whether pike could enter the 600-stem structure; 'entered … only below 600' overstates it. Suggested: 'pike selected structured habitat at 200 and 400 but not 600 artificial stems m⁻² (laboratory; abstract)'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1111/j.1600-0633.1995.tb00025.x", "status": 403, "note": "Wiley (publisher) bot wall / paywall; the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1600-0633.1995.tb00025.x", "status": 403, "note": "Wiley PDF, paywalled" },
+    { "url": "https://eprints.gla.ac.uk/187862/", "status": 200, "note": "University of Glasgow Enlighten record: abstract only, 'Full text not currently available from Enlighten'" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/j.1600-0633.1995.tb00025.x\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "web search for a NERC Open Research Archive (nora.nerc.ac.uk) copy", "status": 0, "note": "none found" }
+  ],
+  "notes": "Other abstract findings (unchecked): without a predator roach and rudd spent less time in structure than perch; with pike present roach and rudd used structure more (independent of stem density) while perch used it less at all densities; pike predation success ranked rudd > roach > perch."
+}

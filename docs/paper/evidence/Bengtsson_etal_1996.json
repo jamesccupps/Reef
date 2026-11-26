@@ -1,0 +1,49 @@
+{
+  "key": "Bengtsson_etal_1996",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own once-free copy: ASLO's L&O back-issue PDF (aslo.org/lo/toc/…), from a Wayback Machine capture of 19 September 2015",
+    "url": "https://web.archive.org/web/20150919003948id_/http://aslo.org/lo/toc/vol_41/issue_7/1502.pdf",
+    "file": "docs/research_notes/fetched/v2/Bengtsson_etal_1996.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and Crossref",
+    "ok": true,
+    "note": "Bengtsson, Malm, Terzhevik, Petrov, Boyarinov, Glinsky & Palshin 1996, Field investigation of winter thermo- and hydrodynamics in a small Karelian lake, Limnology and Oceanography 41(7): 1502–1513, doi:10.4319/lo.1996.41.7.1502 — as in the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4 (02_synthesis_physical_to_plants.md:194)",
+      "claim": "early in winter, heat from the sediment is the main heat source (under ice)",
+      "location": "p. 1502 (PDF p. 1), introduction 'Thermal regime'; p. 1505 (PDF p. 4), Fig. 4",
+      "quote": "the heat transfer from bottom sediments is the dominating heat flux",
+      "conditions": "stated for the main part of the ice-covered period, from the literature, in lakes without significant through-flow; Lake Vendyurskoe's heat gain in winter 1987–88 peaked just after ice formation (15 November, 21 W m⁻² expressed as a net vertical flux) and fell through the winter",
+      "verdict": "confirmed",
+      "note": "Background statement of the paper, with its own 1987–88 heat-content data; the paper pairs it with Malm et al. 1997, which (per the research note) states it for early and mid-winter."
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "sediment heat flux 0.6–4.5 W m⁻² in small ice-covered lakes, early in winter",
+      "source_value": "0.6–2.0 W m⁻², measured in LATE winter (18 March–7 April 1994) in one lake, Lake Vendyurskoe, inversely related to depth; literature values quoted as 1–4 W m⁻² for winter, and ~2–3.5 W m⁻² in early vs 1–2.5 W m⁻² in late winter at ~10 m depth (citing Bengtsson & Svensson 1995; Thanderz 1973). 4.5 W m⁻² is not in this paper.",
+      "location": "p. 1502 (PDF p. 1), abstract and introduction; p. 1505 (PDF p. 4); Conclusions p. 1513 (PDF p. 12)",
+      "quote": "The heat flux from sediments to water ranged from 0.6 to 2.0 W",
+      "conditions": "temperature gradients in the upper 10 cm of sediment at stations of different depth; snow-covered ice ~0.7 m; Lake Vendyurskoe, Karelia (10.5 km², mean depth 5.3 m, maximum 13.4 m)",
+      "verdict": "corrected",
+      "note": "The lower bound 0.6 is a late-winter value, so 'early in winter … 0.6–4.5' mixes seasons and sources. Split it: Vendyurskoe late winter 0.6–2.0 W m⁻² (Bengtsson et al. 1996); the early-winter 1–4.5 W m⁻² is Malm et al. 1997 (per the research note; not checked here)."
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "lateral transport from shallow to deep water can match the vertical fluxes",
+      "location": "p. 1511 (PDF p. 10), 'Lake water heat content'; p. 1505 (PDF p. 4)",
+      "quote": "increase at the stations is caused by horizontal heat advection, not by boundary fluxes",
+      "conditions": "late winter 1994: heat gain at the 11.4-m and 7.6-m stations equal to 2.9 and 1.3 W m⁻², against net boundary fluxes of about −0.5 and +0.5 W m⁻²; winter 1987–88: heat storage rose faster than boundary fluxes (~1–2.5 W m⁻² early, ~0–1.5 late) could supply",
+      "verdict": "confirmed",
+      "note": "Bengtsson et al. infer the lateral heat supply (it exceeded the net vertical flux at the deep stations) and attribute it most probably to bottom transport from the shallows, which they did not measure. Their conclusions also say conditions did not favour horizontal advection 'except perhaps in the vicinity of the bottom'. The 'same order as the vertical fluxes' wording is Malm et al. 1997's (per the research note)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values: water-to-ice heat flux 0.7–1.2 W m⁻² (mean 0.9) under 30 cm of snow, rising to 1.0–2.8 W m⁻² as solar radiation penetrated; first-stage solar heating gave a daytime net flux of 7.7 W m⁻² at the ice–water interface (5.5 % of net solar at the snow surface); during convection the net flux was 14–67 W m⁻²; thermal diffusivity in the 2 m below the ice only 2–3 (up to ~5) times molecular; under-ice currents oscillating with a ~28–30-min period, maxima 1.5–2.5 cm s⁻¹ in a narrow strait (mm s⁻¹ in the central lake), attributed to ice-cover seiches. Bottom layers stayed stably stratified above 4 °C because of higher salt content."
+}

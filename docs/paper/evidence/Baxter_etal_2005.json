@@ -1,0 +1,32 @@
+{
+  "key": "Baxter_etal_2005",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Only the abstract ('Summary', in Crossref's record for the DOI) was read; no open copy found",
+    "url": "https://api.crossref.org/works/10.1111/j.1365-2427.2004.01328.x",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "Baxter, C. V., Fausch, K. D. & Saunders, W. C. 2005, Tangled webs: reciprocal flows of invertebrate prey link streams and riparian zones, Freshwater Biology 50(2): 201–220, doi:10.1111/j.1365-2427.2004.01328.x — as in the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.7 (03_synthesis_fish_to_forest.md:1310)",
+      "claim": "emergent insects supply 25–100 % of the energy of riparian birds, bats and spiders",
+      "verdict": "unchecked",
+      "note": "Full text not read (the paper already flags 'abstract only'). The abstract says emergence of adult insects FROM STREAMS 'contributes 25–100% of the energy or carbon to such species' (birds, bats, lizards, spiders). Two differences from the paper's sentence: the figure is for stream emergence (the paper's paragraph is about lake emergence and gives no such caveat), and it is energy OR carbon. The abstract also notes the flux declines exponentially with distance from the stream edge."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1111/j.1365-2427.2004.01328.x", "status": 403, "note": "Wiley (publisher) bot wall / paywall; the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2427.2004.01328.x", "status": 403, "note": "Wiley PDF, paywalled" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/j.1365-2427.2004.01328.x\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "web search for an author/lab copy (Colorado State, Idaho State, USFS)", "status": 0, "note": "none found; only catalogue and abstract pages" }
+  ],
+  "notes": "OpenAlex knows no open copy. For a lake-specific figure, the same §3.8.7 paragraph already cites lake sources (Vander Zanden & Gratton 2011; Dreyer et al. 2015); the 25–100 % should be labelled as a stream-riparian figure if kept."
+}

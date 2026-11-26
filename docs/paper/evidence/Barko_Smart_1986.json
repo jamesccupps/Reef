@@ -1,0 +1,43 @@
+{
+  "key": "Barko_Smart_1986",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency report (US Army Engineer Waterways Experiment Station, approved for public release) from a Wayback Machine capture (1 May 2025) of the entry's own ERDC APCRP URL; the live URL now returns HTTP 500",
+    "url": "https://web.archive.org/web/20250501182802id_/https://apcrp.el.erdc.dren.mil/elpubs/pdf/tra86-1.pdf",
+    "file": "docs/research_notes/fetched/v2/Barko_Smart_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and report documentation page",
+    "ok": true,
+    "note": "Barko, J. W. & Smart, R. M., January 1986, Effects of sediment composition on growth of submersed aquatic vegetation, Technical Report A-86-1, Final report, US Army Engineer Waterways Experiment Station (Environmental Laboratory), Vicksburg, MS, Aquatic Plant Control Research Program — as in the reference. The reference's URL is dead (HTTP 500 on 2026-11-26); add the Wayback capture or the ERDC Knowledge Core record."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4 (02_synthesis_physical_to_plants.md:803)",
+      "claim": "Growth falls 10- to 20-fold as sediment organic matter rises to ~20 %",
+      "source_value": "In 5-week greenhouse trials of two species on 40 sediments from 17 North American lakes, total biomass (dry, shoots + roots, grown from 15-cm apical tips) fell with sediment organic matter (loss on ignition) up to ~20 % and stayed uniformly low above it: tenfold in Myriophyllum spicatum, twentyfold in Hydrilla verticillata. The authors conclude that sediment DENSITY, not organic matter itself, was most influential (centrifuging an organic sediment to raise its density, with organic content unchanged, increased Hydrilla growth), and that the cause was multiple-nutrient limitation (P + Fe additions raised growth).",
+      "location": "p. 9 (PDF p. 12), para. 13 and Fig. 1; abstract on the report documentation page (PDF pp. 2–3); methods p. 5–6 (PDF pp. 8–9), paras 4–6",
+      "quote": "reduced to the lower end of growth ranges, tenfold and twentyfold",
+      "conditions": "greenhouse culture tanks (1,200 L), 25 ± 1 °C, light cut to 50 % of daylight (about 1,000 µE m⁻² s⁻¹ in midsummer), nutrient solution without P or micronutrients (taken from the sediment), n = 4–6 replicates per sediment, 5-week growth periods, March–November over 3 years; sediments sieved (2 mm) and equilibrated in the dark at 25 °C; two canopy-forming species not native to Maine soft-water lakes",
+      "verdict": "corrected",
+      "note": "The digits are right but the conditions are missing: this is a short laboratory (greenhouse) growth assay of Eurasian watermilfoil and hydrilla, not a field biomass pattern, and the paper places it beside field results (Memphremagog slope, Duarte & Kalff) without saying so. It is therefore not in direct conflict with a field finding that maximum biomass rose with sediment organic matter in Memphremagog: the two measure different things (5-week growth on homogenised sediments at 25 °C vs standing crop in a lake). Suggested wording: 'In 5-week greenhouse trials, Eurasian watermilfoil and hydrilla grew 10- and 20-fold less on low-density sediments of ~20 % organic matter or more, and poorly on sands above 75 % sand (Barko & Smart 1986).' The authors also caution (para. 30) that nutrient limitation may partly be a product of the design (P and Fe excluded from the solution)."
+    },
+    {
+      "paper": "§3.4.4 (02_synthesis_physical_to_plants.md:803)",
+      "claim": "clean sands are also poor (for growth)",
+      "source_value": "at < 10 % organic matter, sediments with > 75 % sand gave poor growth (high density, ca. 0.9–1.3 g/mL)",
+      "location": "p. 9 (PDF p. 12), paras 13–14; abstract (PDF p. 2)",
+      "quote": "sediments with greater than 75 percent sand",
+      "conditions": "same greenhouse assay as above",
+      "verdict": "confirmed",
+      "note": "'Clean sands' = the report's inorganic 'sands', > 75 % sand by dry weight. Same laboratory caveat as the first claim; the report attributes the poor growth to low fertility and limited nutrient diffusion (para. 29)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://apcrp.el.erdc.dren.mil/elpubs/pdf/tra86-1.pdf", "status": 500, "note": "the reference's URL; server error on 2026-11-26" }
+  ],
+  "notes": "LEAD CHECKED: Barko & Smart measured growth in the greenhouse, not plant biomass in lakes. Other useful values: on fine-textured sediments of 0–20 % organic matter, growth correlated negatively with organic matter (r < −0.66) and positively with sediment density (r > 0.78) (para. 14); sediment density fell sharply from 0 to 20 % organic matter and was constant above (Fig. 2); root:shoot ratio 0.08–0.42 in Myriophyllum, 0.02–0.23 in Hydrilla, inversely related to growth (para. 13). Adding up to 40 % (by volume) of a fine inorganic sediment to a 53 %-organic sediment and to a 97 %-sand builders' sand raised Hydrilla growth threefold and sevenfold respectively (para. 16, p. 12, PDF p. 15). The authors speculate that species differ in coping with infertile sediments, which may shape community composition — relevant to isoetids on Hot Brook sands, but the report tests no isoetid."
+}

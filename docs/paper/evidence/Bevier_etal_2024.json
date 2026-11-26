@@ -1,0 +1,32 @@
+{
+  "key": "Bevier_etal_2024",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the preprint server's own free copy (bioRxiv full-text PDF, version 1 posted 7 August 2024; CC BY-NC-ND 4.0)",
+    "url": "https://www.biorxiv.org/content/10.1101/2024.08.06.606825v1.full.pdf",
+    "file": "docs/research_notes/fetched/v2/Bevier_etal_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the preprint's title page and Crossref",
+    "ok": true,
+    "note": "Bevier, C. R., Cole, F. R., Gimond, M. & Rueger, B. F. 2024, The influence of shoreline residential development on riparian and littoral habitats in the Belgrade Lakes of Maine, bioRxiv preprint doi:10.1101/2024.08.06.606825 (posted 7 August 2024; Colby College) — as in the reference. Crossref shows no published version linked to the preprint (checked 2026-11-26)."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.7 (02_synthesis_physical_to_plants.md:540)",
+      "claim": "In the Belgrade Lakes, sand made up about 20 % of the substrate at 0.5 m depth in front of undeveloped shores and 52 % in front of unbuffered developed ones",
+      "location": "p. 19 (PDF p. 19), Results 'Across Treatments'; Fig. 7; methods pp. 7–10",
+      "quote": "three times higher percentage of the substrate composed of sand (52%) than for REF (20%)",
+      "conditions": "visual estimates of percent cover of boulder, cobble, gravel, sand and silt along transects at 0.5 m and 1.0 m water depth in front of 8 properties per treatment on each of three lakes (East Pond, North Pond, Great Pond; 24 per treatment); REF = undeveloped reference shore with intact stratified vegetation and no structures; UD = developed, unbuffered (lawns to the shore); buffered developed (BD) sites had 17 %; Kruskal-Wallis H = 16.9, P = 0.006; no difference between treatments at 1.0 m",
+      "verdict": "confirmed",
+      "note": "The text does not say whether 52/20/17 % are means or medians (Fig. 7 plots medians and the tests are rank-based). The paper's 'preprint' label is right."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.biorxiv.org/content/biorxiv/early/2024/08/07/2024.08.06.606825.full.pdf", "status": 429, "note": "bioRxiv rate limit on the OpenAlex link; the v1 full-text URL then worked" }
+  ],
+  "notes": "Other results: percent cover of boulders, cobble, gravel and silt did not differ between treatments at either depth; embeddedness did not differ; sediment organic content was higher at REF sites but not significantly; substrate varied more between lakes than within (East Pond more boulders; East and North Pond more silt at 1.0 m; Great Pond more gravel at 0.5 m)."
+}

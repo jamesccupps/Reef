@@ -1,0 +1,31 @@
+{
+  "key": "Beyerle_Williams_1972",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division research report library PDF",
+    "url": "https://www2.dnr.state.mi.us/publications/pdfs/DNRFishLibrary/ResearchReports/RR1701-RR1800/RR1789.pdf",
+    "file": "docs/research_notes/fetched/v2/Beyerle_Williams_1972.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page; Crossref for the 1973 journal version",
+    "ok": true,
+    "note": "Beyerle, G. B. & Williams, J. E., 17 August 1972, Contribution of northern pike fingerlings raised in a managed marsh to the pike population of an adjacent lake, Michigan DNR Research and Development Report No. 274 (Institute for Fisheries Research Report No. 1789; Dingell-Johnson Project F-29-R) — as in the reference. Journal version: Progressive Fish-Culturist 35(2): 99–103 (1973), per Crossref."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-8 (northern pike, Long Lake, Michigan; 03_synthesis_fish_to_forest.md:738)",
+      "claim": "7.0 naturally produced 0+ pike per ha (late summer–autumn density)",
+      "location": "p. 10 (PDF p. 10); p. 11 (PDF p. 11) summary; area p. 3 (PDF p. 3); Table 5 (PDF p. 17)",
+      "quote": "an average of 821 other young pike per year (38%) also",
+      "conditions": "Long Lake, Barry County, Michigan: 289 acres, half < 15 ft deep, maximum 48 ft, alkalinity ~150 ppm, clear; mean of three year classes (1969–71); young-of-year surviving to fall of the first year; the 821 unmarked fish are not counted directly but inferred from the marked share (62 %) of the fall electrofishing catch of young pike and the Petersen estimates of marked survivors (1,339 per year), which assume all young pike live in water < 15 ft (145 acres)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "821 per year ÷ 289 acres (116.95 ha) = 7.02 per ha. The report prints no per-ha or per-acre figure for natural recruits (it gives 7.4 per acre ≈ 18.3 per ha for all young pike, stocked + natural, and 4.6 per acre for stocked survivors), so the table should mark 7.0/ha '(project arithmetic)', as other rows do. Relative to the < 15-ft littoral (145 acres) the natural density would be ~14 per ha."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: 4,827 marsh-raised fingerlings stocked per year (17 per acre, mean 2.9 in); survival of stocked fish to fall 28 % on average (6 % in 1969, 22 % in 1970, 63 % in 1971; Table 5); marked young averaged 3.2 in longer than unmarked in fall; Petersen estimates of marked survivors had wide limits (e.g. 1971: 3,231, limits 2,023–6,568). Unmarked pike were 2.1 in above the Michigan state average at age 2."
+}

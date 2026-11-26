@@ -1,0 +1,33 @@
+{
+  "key": "Barko_Smart_1980",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Only the abstract (the 'SUMMARY' in Crossref's record for the DOI) was read; no open copy found",
+    "url": "https://api.crossref.org/works/10.1111/j.1365-2427.1980.tb01198.x",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "Barko, J. W. & Smart, R. M. 1980, Freshwater Biology 10(3): 229–238, doi:10.1111/j.1365-2427.1980.tb01198.x — matches the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7 (02_synthesis_physical_to_plants.md:850)",
+      "claim": "rooted plants release sediment-derived phosphorus mainly as they decay",
+      "verdict": "unchecked",
+      "note": "Full text not read. The abstract (Crossref) is consistent: 'Phosphorus release ... appears to be primarily dependent upon tissue decay rather than excretory processes'. Conditions from the abstract: a controlled-environment laboratory study in lucite columns separating sediment and roots from a P-free nutrient solution; three species (Egeria densa, Hydrilla verticillata, Myriophyllum spicatum, none native to Maine soft-water lakes) on five sediments, about 3 months. The paper states it as a general property of rooted plants; the rewrite should say 'in laboratory columns with three canopy-forming species'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1111/j.1365-2427.1980.tb01198.x", "status": 403, "note": "Wiley (publisher) bot wall / paywall; the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2427.1980.tb01198.x", "status": 403, "note": "Wiley PDF, paywalled" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/j.1365-2427.1980.tb01198.x\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(mobilization sediment phosphorus macrophytes)", "status": 200, "note": "0 hits" },
+    { "url": "https://erdc-library.erdc.dren.mil/jspui/bitstream/11681/4493/1/TR-E-79-3.pdf", "status": 302, "note": "a possible stand-in, WES Technical Report E-79-3 (1979; Barko, Smart and others per a search summary; same experiments per the search summary): the ERDC library redirects to a 'verify-page' bot check, not passed; no Wayback capture" }
+  ],
+  "notes": "OpenAlex knows no open copy. A possible stand-in: US Army Engineer Waterways Experiment Station Technical Report E-79-3 (1979), said by a search summary to report the same three species on five reservoir sediments(its title and authors known only from a search summary, not verified on the report); a public-release government report the human could fetch from the ERDC Knowledge Core by hand and cite instead. Neither it nor the article was read."
+}

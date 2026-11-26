@@ -1,0 +1,64 @@
+{
+  "key": "BelgradeLakesAssociation201920202023_2024",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the lake association's own free PDFs (belgradelakesassociation.org), all four reports; the 2020, 2023 and 2024 texts are indexed as <key>.y2020 / .y2023 / .y2024",
+    "url": "https://www.belgradelakesassociation.org/Portals/belgrade-lakes/2019%20-%20BLA%20COLO%20Summary%20Report.pdf",
+    "file": "docs/research_notes/fetched/v2/BelgradeLakesAssociation201920202023_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover and title page of each report",
+    "ok": false,
+    "corrections": "All four reports (not only 2024) were prepared by Lee Attix, Loon Conservation Associates, and submitted to the Belgrade Lakes Association: 2019 report submitted 5 December 2019; 2020 report 2 December 2020; 2023 report 30 December 2023; 2024 report 2 January 2025. Each cover reads '<year> Belgrade Lakes Common Loon Monitoring Summary Report'. Suggested form: Attix, L. (Loon Conservation Associates) 2019, 2020, 2023, 2025. <Year> Belgrade Lakes Common Loon Monitoring Summary Report. Report to the Belgrade Lakes Association. The in-text citation '(Belgrade Lakes Association 2019–2024)' (§3.8.2) implies a run of years; only 2019, 2020, 2023 and 2024 are cited.",
+    "note": "show.mjs found no in-text match because the paper writes '(Belgrade Lakes Association 2019–2024)', split across lines 1056–1057 of 03_synthesis_fish_to_forest.md (§3.8.2)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2 (03_synthesis_fish_to_forest.md:1056)",
+      "claim": "At the Belgrade Lakes in 2019, 23 territorial pairs on two lakes fledged 0.35 young per pair",
+      "location": "2019 report, PDF p. 3 (report p. 2), Executive summary; PDF p. 7 (report p. 6), section 6.1 and Table 1",
+      "quote": "Overall productivity was 0.35 fledged young per territorial pair",
+      "conditions": "Great Pond and Long Pond, Kennebec County; surveys May–August by boat or shore, six professional visits plus volunteer surveys; 'fledged' = chick surviving > 6 weeks; 23 territorial pairs, 14 nested, 9 successful nests, 8 chicks fledged",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "the two lakes are about 1,000 and 3,300 ha",
+      "verdict": "unsupported",
+      "note": "None of the four reports gives lake areas. The areas come from elsewhere: the research note (shore_birds_and_mammals.md) gives Long Pond 2,557 acres (LakesOfMaine; ≈ 1,035 ha) and Great Pond 8,239 acres (IF&W survey map; ≈ 3,334 ha). Cite those for the areas."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "natural nests succeeded in up to 54 % of attempts (upper end of 22–54 %, four years 2019–2024)",
+      "location": "2019 report, PDF p. 3 (report p. 2), Executive summary",
+      "quote": "only seven of 13 natural nests (54%) were successful",
+      "conditions": "both lakes, 2019; rafts excluded (2 of 2 raft nests succeeded)",
+      "verdict": "confirmed",
+      "note": "The same report's section 6.2 (PDF p. 12) gives 4 of 7 natural nests (57 %) for Long Pond alone; the 54 % is the two-lake figure."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "natural nests succeeded in as few as 22 % of attempts (lower end of 22–54 %)",
+      "location": "2020 report, PDF p. 3 (Executive summary); 2023 report, PDF p. 3; 2024 report, PDF p. 3",
+      "quote": "nine natural nest attempts on the two lakes and only two nests were successful",
+      "conditions": "both lakes; 2020: 2/9 (22 %); 2023: 9/18 (50 %); 2024: 6/15 (40 %); raft nests counted separately",
+      "verdict": "confirmed",
+      "note": "Range over the four reported years 22–54 % holds. Productivity in the later years: 0.17 (2020), 0.26 (2023), 0.26 (2024) fledged young per territorial pair, with 23 territorial pairs every year."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "that spacing, one pair per 94–278 ha, implies roughly 1–4 pairs on Upper's 360–370 ha (project arithmetic)",
+      "location": "2019 report, PDF pp. 7–8 (report pp. 6–7), sections 6.1.1–6.1.2",
+      "quote": "Twelve territorial pairs were identified on Great Pond",
+      "conditions": "2019 counts: Great Pond 12 territorial pairs, Long Pond 11",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Long Pond ≈ 1,035 ha / 11 pairs = 94 ha per pair; Great Pond ≈ 3,334 ha / 12 = 278 ha per pair; 365 ha / 278 = 1.3 and 365 / 94 = 3.9, so 1–4 pairs. Pair counts checked here; the lake areas are not from these reports (see the area claim). In later years the split was Great 13 / Long 10 (2023, 2024), giving 256 and 104 ha per pair — the 1–4 conclusion is unchanged."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "PRIVACY: the reports name each loon territory and nest site (islands, coves); none is written here. Internal inconsistencies in the 2019 report: chicks hatched 13 (executive summary) vs 15 (section 6.1 and Table 1); nesting pairs 14 (summary, results) vs 15 (discussion); the paper's figures (0.35, 54 %) are unaffected. In the 2023 report the executive summary says 9 successful nests, the results 10 (9 natural + 1 raft). Recorded failure causes in 2019: two mammalian predation, four unknown; no flooding losses in 2019. The 2019 discussion calls 0.35 'well below the established sustainable population threshold of 0.48 CH/TP' — a figure the paper could use."
+}

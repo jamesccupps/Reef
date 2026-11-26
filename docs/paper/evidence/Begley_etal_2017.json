@@ -1,0 +1,38 @@
+{
+  "key": "Begley_etal_2017",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "article not obtained (publisher paywall); abstract read in the USGS Publications Warehouse record and Crossref. A stand-in was read in full: Begley's 2016 University of Maine M.S. thesis, the open-access PDF formerly on DigitalCommons@UMaine (closed 30 June 2026), from a Wayback Machine capture of 28 July 2024",
+    "url": "https://web.archive.org/web/20240728230909id_/https://digitalcommons.library.umaine.edu/cgi/viewcontent.cgi?article=3619&context=etd",
+    "file": "docs/research_notes/fetched/v2/Begley_etal_2017.thesis2016.pdf"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS Publications Warehouse record 70193609",
+    "ok": true,
+    "note": "Begley, M., Coghlan, S. M., Jr. & Zydlewski, J. D. 2017, A comparison of age, size, and fecundity of harvested and reference White Sucker populations, North American Journal of Fisheries Management 37(3): 510–523, doi:10.1080/02755947.2017.1290719 — as in the reference. Crossref and the thesis give the first author as 'Meg Begley'; the thesis's Digital Commons record as Megan A. Begley. DUPLICATE: the ledger entry 'Begley 2017' (Table 3.5-3, 'Maine fish to 26 yr (Begley 2017, via Begley, Coghlan & Zydlewski 2018)') is this same work (Begley, Coghlan & Zydlewski 2017, NAJFM 37(3): 510–523); merge the two entries."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3 (03_synthesis_fish_to_forest.md:168)",
+      "claim": "Maine reference lakes held larger, older suckers than harvested lakes, where annual mortality was at least twice as high",
+      "verdict": "unchecked",
+      "note": "Article not read (the paper already flags 'abstract'). The abstract says exactly this ('Estimated annual mortality rates were at least twofold higher in harvested lakes'). The STAND-IN (Begley 2016 thesis, Chapter 1, the same 976 spawning-run fish from six lakes in 2014) supports it: harvested lakes had more than two-fold higher annual mortality than their paired reference lakes (thesis p. 17, PDF p. 31; Table 1.5, PDF p. 33); reference lakes 18.3–25.2 %/yr, harvested 35.5–67.1 %/yr, 2 to 2.8-fold (p. 27, PDF p. 41); fish older and larger in reference lakes (pp. 13–17)."
+    },
+    {
+      "paper": "Table 3.5-3 (white sucker longevity), cited there as 'Begley 2017' — the same work",
+      "claim": "Maine white suckers to 26 yr",
+      "verdict": "unchecked",
+      "note": "Article not read. The stand-in thesis gives a maximum observed age of 26 in one reference lake (pair B: 16 in the harvested lake vs 26 in the reference lake; thesis p. 17, PDF p. 31), aged from transverse sections of lapillus otoliths read by two readers (p. 10–11, PDF pp. 24–25), spawning-run fish trapped in 2014."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1080/02755947.2017.1290719", "status": 403, "note": "publisher (Taylor & Francis; Crossref now lists OUP) bot wall / paywall; the page a library login would open" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/02755947.2017.1290719", "status": 403, "note": "T&F PDF, bot wall" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70193609", "status": 200, "note": "USGS Publications Warehouse record: abstract only, no PDF" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/02755947.2017.1290719\"&format=json", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "STAND-IN: Begley, M. A. 2016. Understanding the impact of commercial harvest on White Suckers (Catostomus commersonii) in Maine. M.S. thesis, University of Maine (Electronic Theses and Dissertations 2553; title page says 'By Meg Begley', December 2016; co-advisors Zydlewski and Coghlan). Its Chapter 1 is the work published as the 2017 article; recommend citing the thesis (with the Wayback URL) for the age-26 and twofold-mortality statements until the article is read. Lakes are anonymised in the thesis (Harvested-A…C, Reference-A…C). Other thesis values: maximum ages harvested vs reference 9 vs 15, 16 vs 26, 12 vs 22; the thesis's population model used M = 0.97 at age 1 and 0.25 from age 2 (Chapter 2, PDF p. 55), the values Table 3.5-3 credits to Begley, Coghlan & Zydlewski 2018; fecundity in the model ranged 3,910–26,060 eggs (PDF p. 51)."
+}

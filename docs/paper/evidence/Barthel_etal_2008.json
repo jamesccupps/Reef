@@ -1,0 +1,55 @@
+{
+  "key": "Barthel_etal_2008",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "a research group's own reprint page: the Fish Ecology and Conservation Physiology Laboratory (S. J. Cooke, a co-author), Carleton University, posts the published PDF openly",
+    "url": "https://www3.carleton.ca/fecpl/pdfs/JFB_Bartheletal%202008.pdf",
+    "file": "docs/research_notes/fetched/v2/Barthel_etal_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and Crossref",
+    "ok": true,
+    "note": "Barthel, Cooke, Svec, Suski, Bunt, Phelan & Philipp 2008, Journal of Fish Biology 73: 829–852 (issue 4 per Crossref), doi:10.1111/j.1095-8649.2008.01972.x — as in the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7 (03_synthesis_fish_to_forest.md:418)",
+      "claim": "Millers Lake, Ontario, is a 45-ha lake (on a river)",
+      "location": "p. 829 (PDF p. 1), abstract",
+      "quote": "Millers Lake, a 45 ha widening of the Mississippi River, Ontario",
+      "conditions": "the Mississippi River of eastern Ontario; study reach also includes a 1.5-km pool-and-riffle section directly upstream",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "some bass lived in the lake all year while others ran up the river in spring to spawn and returned before winter",
+      "location": "p. 835 (PDF p. 7), Telemetry study, and Table I (PDF p. 8); p. 838 (PDF p. 10)",
+      "quote": "a migratory pattern with potamodromous movements from the lake into the river in the spring",
+      "conditions": "3-year radio telemetry from May 2000, 29 adults: females 3 lake-resident and 10 potamodromous, males 8 and 8; each fish kept to one pattern; by late November all but one male were back in the lake",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "most males stayed faithful to river or lake for life",
+      "location": "p. 838 (PDF p. 10), Nest-site fidelity; abstract p. 829",
+      "quote": "The vast majority of the 128 males that spawned in multiple years (123 males, 96%)",
+      "conditions": "snorkel nest surveys 1997–2004; of 543 males that completed their reproductive lives in the system, most spawned in only one season; of the 128 that spawned in more than one year, 123 (96 %) used the same habitat every year (51 lake, 72 river), 5 used both",
+      "verdict": "confirmed",
+      "note": "Precisely: 96 % of males that spawned in more than one year; most males spawned only once."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "about half nested within 20 m of their previous nest",
+      "location": "p. 838 (PDF p. 10), Nest-site fidelity, and Fig. 2",
+      "quote": "nearly half of the nesting decisions in the river, and just more than half",
+      "conditions": "110 nesting decisions of 82 males nesting in successive years only in the river and 112 of 67 males only in the lake, 1997–2004; distance to the previous year's nest",
+      "verdict": "confirmed",
+      "note": "Unit is nesting decisions of males that nested in successive years, not all males. River males nested closer: 85 % within 100 m vs 65 % in the lake."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The paper marks this '(Barthel et al. 2008, abstract)': the full text is now read and confirms each part, so the 'abstract' tag can go. Other values: potamodromous males entered the river 8–13 days before the first spawn (median 11); 24 of 29 tracked fish wintered in a small area in the deepest part of the lake (Bunt et al. 2003); most frequent age at maturation for river males 4 years. A small internal inconsistency in the source (not the paper's): 128 multi-year spawners (123 single-habitat) vs 82 + 67 = 149 males in the nest-site analysis."
+}

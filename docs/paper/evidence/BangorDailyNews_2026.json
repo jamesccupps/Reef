@@ -1,0 +1,32 @@
+{
+  "key": "BangorDailyNews_2026",
+  "reader": "wave-3 batch w3-28",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the newspaper's own free web page (Bangor Daily News article page, no paywall met)",
+    "url": "https://www.bangordailynews.com/2026/05/01/outdoors/outdoors-environment/moosehead-lake-ice-out-2026/",
+    "file": "docs/research_notes/fetched/v2/BangorDailyNews_2026.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article page (headline, byline, date)",
+    "ok": true,
+    "note": "Headline 'The ice is out on Maine's largest lake'; HTML page title 'Moosehead Lake ice-out declared for 2026'; by Susan Bard (BDN outdoors editor); 1 May 2026; section Environment. All as in the reference."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4 (02_synthesis_physical_to_plants.md:171)",
+      "claim": "about 61 cm of ice on lower Moosehead Lake in spring 2026 (anglers' reports)",
+      "source_value": "24 inches (61 cm) in most areas of the lower lake, one hole close to 28 inches (71 cm), on 8 April 2026",
+      "location": "web page (single page), paragraph 6",
+      "quote": "anglers reported 24 inches of ice in most areas on the lower lake",
+      "conditions": "anglers' reports relayed by MDIFW fisheries resource biologist Jeff Bagley on 8 April 2026; lower Moosehead Lake; not a measured survey",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "24 in × 2.54 = 60.96 cm ≈ 61 cm. The paper's 'anglers' reports' attribution is right; it could add 'early April' (8 April) and the 71-cm maximum hole."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other content usable elsewhere: ice-out on Moosehead declared 8:30 a.m., Friday 1 May 2026, by Currier's Flying Service; record earliest 14 April 1945, latest 29 May 1878; recent ice-outs 4 May 2020, 16 Apr 2021, 28 Apr 2022, 25 Apr 2023, 20 Apr 2024, 29 Apr 2025; the call depends on whether the steamship Katahdin can travel Greenville to Northeast Carry (per Maine Public, as quoted). The article says a full list back to 1848 is 'included below', but no list was in the fetched page text."
+}
