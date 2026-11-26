@@ -1,0 +1,35 @@
+{
+  "key": "Duffy_1998",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (api.crossref.org); no full text found",
+    "url": "https://api.crossref.org/works/10.1139/f97-204",
+    "file": "docs/research_notes/fetched/v2/Duffy_1998.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Duffy, W. G. 1998, CJFAS 55(1): 15–27, title as cited — matches Crossref; not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "Table 4.3 (Banded killifish row); src/w3/species3.js:22, 68, 76",
+      "claim": "the banded killifish's bioenergetics use the fathead minnow's FB4 parameter set (Duffy 1998) as a stand-in: CEQ 2, CA 0.149, CB −0.242, CQ 2.4, CTO 24, CTM 30; REQ 2, RA 0.0096, RB −0.041, RQ 2.6, RTO 28, RTM 33, ACT 1; SDA 0.172; FA 0.1; UA 0.1; ED 4186",
+      "verdict": "unchecked",
+      "note": "No full text, and the abstract gives no parameters. Via the intermediary only: FB4's model list (Deslauriers et al. 2017, Table 1) names Duffy (1998) as the source of the fathead minnow model (juveniles and adults; new to FB4), and FB4's Parameters_official.csv (saved by the Deslauriers_etal_2017 reader in fetched/v2) holds exactly the code's values EXCEPT the predator energy density: FB4 has ED 4100 J/g, the code 4186. Whether Duffy printed these values (or FB4 converted them) needs the article. The stand-in choice itself (a fathead for a killifish) is the project's."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f97-204", "status": 403, "note": "Canadian Science Publishing refuses scripts; a library login would open it (doi:10.1139/f97-204)" },
+    { "url": "https://doi.org/10.1139/f97-204", "status": 403, "note": "publisher landing page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f97-204%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f97-204?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 200, "note": "CLOSED" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70020456", "status": 200, "note": "USGS Publications Warehouse record (USGS lists the article among its publications): abstract, no PDF link" },
+    { "url": "https://archive.org/advancedsearch.php?q=fathead+minnows+prairie+wetlands+bioenergetics&fl[]=identifier&fl[]=title&rows=8&output=json", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Abstract only. The abstract is about fathead minnows in four prairie wetlands (densities 52 000–356 000/ha in early June, net production 71.5–202.7 kg/ha over the season) — it does not state the model's parameters or how they were derived (from the literature or new experiments). For the rewrite: until the article is read, cite the parameters as 'FB4's fathead minnow set (Deslauriers et al. 2017, after Duffy 1998)'. Check the code's ED 4186 against FB4's 4100 (and against Duffy, if the article gives an energy density)."
+}

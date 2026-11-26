@@ -1,0 +1,80 @@
+{
+  "key": "ChowFraser_1986",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF (NRC Research Press download) posted on the author's lab website, greatlakeswetlands.ca (Chow-Fraser lab, McMaster University); the text layer is OCR, so table and figure values were read on the page images",
+    "url": "https://greatlakeswetlands.ca/wp-content/uploads/1986/07/Chow-Fraser-1986.pdf",
+    "file": "docs/research_notes/fetched/v2/ChowFraser_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1065) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Chow-Fraser, P. 1986, CJFAS 43: 1065–1070 (a Note); issue 5 from Crossref. Affiliation then: University of Toronto, Erindale Campus."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (L. minutus adults row)",
+      "claim": "in-situ clearance 1.32–1.47 mL/animal/d on 4–8-µm algae, in six Ontario lakes",
+      "source_value": "1.47 ± 0.31 (Scenedesmus, n = 9) and 1.32 ± 0.26 (Chlorella, n = 5) are from ONE lake, Three-Mile Lake — a test lake rich in blue-green filaments whose rates fell well below the model's prediction; across the six model lakes, lake means on the same 4–8-µm tracers ran from about 1.0 (Picard) to about 4.8 mL/animal/d (Head), rising with the share of small (< 10 µm) cells (Fig. 2)",
+      "location": "p. 1069 (PDF p. 5), Table 4; p. 1068 (PDF p. 4), Fig. 2 and text",
+      "quote": "Three-Mile Scenedesmus D. minutus 9 1.47±0.31 … Chlorella 5 1.32±0.26",
+      "quote_from": "table",
+      "conditions": "2-L Haney chambers, ¹⁴C-labelled tracers, 15-min incubations, 10:00–16:00, late June–August 1981 (model lakes) and 1982 (test lakes), south-central Ontario; tracers Scenedesmus ovalis 4–6 µm, Chlorella vulgaris 6–8 µm; adult D. minutus",
+      "verdict": "corrected",
+      "note": "Fig. 2 values read off the page image (approximate). The row's setting 'six Ontario lakes' belongs to the model (Fig. 2), not to the 1.32–1.47, 2.89 and 0.33, which are all Three-Mile Lake. Suggested row: 'lake means ~1–4.8 mL/animal/d on 4–8-µm algae across six lakes, rising with the share of small cells; in Three-Mile Lake 1.3–1.5 on 4–8-µm algae, 2.89 on Chlamydomonas, 0.33 on Anabaena'."
+    },
+    {
+      "paper": "Table 3.3-3 (L. minutus adults row)",
+      "claim": "2.89 mL/animal/d on Chlamydomonas",
+      "location": "p. 1069 (PDF p. 5), Table 4",
+      "quote": "Chlamydomonas 6 2.89±1.02",
+      "quote_from": "image",
+      "conditions": "Three-Mile Lake; Chlamydomonas sp. 10–12 µm; n = 6; SE 1.02",
+      "verdict": "confirmed",
+      "note": "One lake only (see the first claim); the tracer is larger (10–12 µm) than the 4–8-µm ones."
+    },
+    {
+      "paper": "Table 3.3-3 (L. minutus adults row)",
+      "claim": "0.33 mL/animal/d on Anabaena",
+      "location": "p. 1068 (PDF p. 4), Results",
+      "quote": "statistically lower grazing rate when labelled Anabaena was used (mean 0.33",
+      "quote_from": "image",
+      "conditions": "Three-Mile Lake grazing experiments; Anabaena filaments (~25 cells of 4 × 6–8 µm); against 1.47 on Scenedesmus, t-test P = 0.03 (a 4.5-fold reduction)",
+      "verdict": "confirmed",
+      "note": "The author calls it 'tentative support' for a blue-green effect; n not given."
+    },
+    {
+      "paper": "Table 3.3-3 (L. minutus adults row)",
+      "claim": "temperature explained 0 % of the variance in clearance at 5–20 °C",
+      "location": "p. 1067 (PDF p. 3), Table 2",
+      "quote": "Temperature 0 … Grazing chamber 23 … Unexplained variance 77",
+      "quote_from": "table",
+      "conditions": "Picard Lake only; adult D. minutus; three experiments at each of 5, 10, 17 and 20 °C (chamber lowered to those depths); two-level nested ANOVA, temperature P = 0.98",
+      "verdict": "confirmed",
+      "note": "One lake; the author suggests any real temperature effect was masked by individual and chamber variation."
+    },
+    {
+      "paper": "src/config.js:1564 (comment)",
+      "claim": "in situ calanoids 0.3–1.5 mL/µg/d (L. minutus 0.35–1.5 — Chow-Fraser 1986)",
+      "kind": "arithmetic",
+      "source_value": "the source gives clearance per animal only (mL/animal/d), no per-µg values; the inputs behind 0.35–1.5 (1.32–2.89 mL/animal/d, research note copepod_grazing_and_p_kinetics.md) are Three-Mile Lake's alone; the six model lakes' means run ~1.0–4.8 mL/animal/d (Fig. 2)",
+      "location": "p. 1068 (PDF p. 4), Fig. 2; p. 1069 (PDF p. 5), Table 4",
+      "quote": "Clearance rate of D. minutus versus the relative proportion of small cells",
+      "quote_from": "image",
+      "conditions": "per-animal rates; the per-µg conversion uses 2.0–3.8 µg DW per adult from another source (NOAA COPEPEDIA, per the note)",
+      "verdict": "corrected",
+      "note": "Redone: 1.32/3.8 = 0.35 and 2.89/2.0 = 1.45, so the arithmetic is right on its inputs; with the six lakes' ~1.0–4.8 mL/animal/d the same weights give ~0.26–2.4 mL/µg/d. Credit the per-µg range as project arithmetic ('after Chow-Fraser 1986'), and widen it or say it is one lake's."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f86-133", "status": 403, "note": "Canadian Science Publishing refuses scripts" },
+    { "url": "https://doi.org/10.1139/f86-133", "status": 403, "note": "publisher landing page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f86-133%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f86-133?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 200, "note": "CLOSED" }
+  ],
+  "notes": "The author-site copy was found from the URL in the research note. Other values: clearance vs prosome length explained only 4 % (both species, n = 118) or 9 % (D. minutus, n = 67) of the variance (Eqs. 1–2); Gull Lake D. minutus 1.76 ± 0.38 on Scenedesmus vs 4.81 ± 0.78 on Pediastrum (30–40 µm), D. oregonensis 2.86 vs 4.41 (Table 4); grazing correlated with the ratio of small (< 10 µm) to all nanoplankton (r = 0.99, n = 6) and with small-algal biomass (r = 0.81) (Table 3); Diaptomus up to 58 % of summer herbivore biomass in many south-central Ontario lakes (the author's unpublished data, p. 1065)."
+}

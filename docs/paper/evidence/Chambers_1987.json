@@ -1,0 +1,42 @@
+{
+  "key": "Chambers_1987",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (api.crossref.org); no full text found",
+    "url": "https://api.crossref.org/works/10.1139/f87-204",
+    "file": "docs/research_notes/fetched/v2/Chambers_1987.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Chambers, Patricia A. 1987, CJFAS 44(9): 1666–1669, title as cited — matches Crossref; not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4",
+      "claim": "Chambers (1987; abstract), also in southern Québec, found the minimum depth of submerged plants equal to the depth of wave mixing (r = 0.86)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract agrees: the minimum depth of occurrence (zmin) along undisturbed shores of four southern Quebec lakes correlated with the depth of surface wave mixing (zw, calculated from wind velocity and fetch), r = 0.86, P < 0.001, slope not different from 1.0 and intercept not different from 0 (t-tests, P > 0.10). The paper's '(abstract)' tag is accurate; 'equal to' is a fair reading of slope 1, intercept 0."
+    },
+    {
+      "paper": "src/w3/plants3.js:154 (comment)",
+      "claim": "the shallowest submerged plants sit at the depth the waves stir the bed to: minimum depth vs wave-mixing depth r 0.86, slope 1 and intercept 0",
+      "verdict": "unchecked",
+      "note": "The numbers agree with the abstract. What the full text must settle: how zw was computed (which wind — mean, maximum or a design storm — and which wave formula), since the model's zWave is the depth where the orbital velocity of fetch-limited waves at a 10 m/s 'storm' wind falls to 0.10 m/s at the bed (STORM_U, U_CRIT), which may not be Chambers' zw; and the lakes' fetch range and n."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f87-204", "status": 403, "note": "Canadian Science Publishing refuses scripts; subscription journal — a library login would open it (doi:10.1139/f87-204)" },
+    { "url": "https://doi.org/10.1139/f87-204", "status": 403, "note": "publisher landing page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f87-204%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f87-204?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 429, "note": "rate limit (shared by the parallel readers), three tries" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22nearshore+occurrence+of+submersed%22&fl[]=identifier&fl[]=title&rows=8&output=json", "status": 200, "note": "0 hits" },
+    { "url": "https://mcgill.scholaris.ca/server/api/discover/search/objects?query=Chambers%20macrophytes", "status": 200, "note": "McGill theses: no thesis by P. A. Chambers (Duarte 1987's is there)" },
+    { "url": "https://publications.gc.ca/site/eng/search/search.html?q=%22submersed+aquatic+macrophytes%22+wave&st=s", "status": 200, "note": "results need JavaScript; nothing readable" }
+  ],
+  "notes": "Abstract only (Crossref record saved in fetched/v2). Everything the paper and code take from it is in the abstract, so nothing looks wrong, but nothing can be confirmed until the 4-page note is read (for the human: doi:10.1139/f87-204, a library copy). In the full text check: the definition of zw and the wind used; the four lakes and the range of zmin and fetch (does it reach Hot Brook's ~1.5–2.8-km fetches?); whether ice scour is discussed (the paper contrasts it with Duarte's ice-scour reading)."
+}

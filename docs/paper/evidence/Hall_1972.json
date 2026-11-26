@@ -1,0 +1,43 @@
+{
+  "key": "Hall_1972",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (api.crossref.org); no full text found",
+    "url": "https://api.crossref.org/works/10.2307/1934773",
+    "file": "docs/research_notes/fetched/v2/Hall_1972.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Hall, Charles A. S. 1972, Ecology 53(4): 585–604, title as cited — matches Crossref; not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "across 27 species in another southern creek larger fish tended to move upstream and smaller ones downstream (Hall 1972, abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract agrees: New Hope Creek, North Carolina, April 1968–June 1970, weirs with traps; 'Most of the 27 species had a consistent pattern of larger fish moving upstream and smaller fish moving downstream', both movements greatest in spring. The '(abstract)' tag is accurate. Which species (any sunfish) and their sizes need the full text."
+    },
+    {
+      "paper": "src/w3/fish3.js:827 (comment)",
+      "claim": "the larger [fish] move upstream — Hall 1972 (supporting the review's estimate that abundance rises with depth in the brook's pools)",
+      "verdict": "unchecked",
+      "note": "Consistent with the abstract (larger fish upstream). The abstract does not speak to depth or pools, so Hall 1972 supports only the 'larger move upstream' part of that comment."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1934773", "status": 403, "note": "Wiley (ESA) refuses scripts" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1934773", "status": 403, "note": "Wiley PDF; subscription — a library login would open it" },
+    { "url": "https://www.jstor.org/stable/pdf/1934773.pdf", "status": 200, "note": "JSTOR login/bot-check page (not kept); JSTOR stable 1934773 opens with a library login" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.2307/1934773%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1934773?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 429, "note": "rate limit (shared by the parallel readers), three tries" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(migration+metabolism+stream)&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "0 hits (also 0 for 'New Hope Creek')" },
+    { "url": "https://repository.lib.ncsu.edu/server/api/discover/search/objects?query=Hall%20stream%20metabolism%20migration", "status": 200, "note": "NC State Libraries bot-detection page (Anubis), looking for an open report or thesis of the same study; stopped" },
+    { "url": "https://cdr.lib.unc.edu/catalog?q=%22New+Hope+Creek%22+migration+metabolism", "status": 200, "note": "UNC Carolina Digital Repository redirects to a bot challenge (looking for a thesis of the same study); stopped" }
+  ],
+  "notes": "Abstract only. The abstract also gives spring 1969 daily means of 7 fish (1,081 g) moving up against 17 fish (472 g) moving down, stream metabolism (GPP 0.21–~9, R 0.4–13 g O2 m⁻² d⁻¹), fish ~1 % of community respiration, and upstream migrants maintaining headwater phosphorus. For the human: doi:10.2307/1934773 (JSTOR stable 1934773); an open thesis or report of the same New Hope Creek study may exist in the North Carolina university repositories (unconfirmed: their search pages refused scripts)."
+}

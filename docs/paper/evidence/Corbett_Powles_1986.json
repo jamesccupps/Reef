@@ -1,0 +1,42 @@
+{
+  "key": "Corbett_Powles_1986",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the publisher refuses scripts and Crossref's record has no abstract",
+    "url": "https://api.crossref.org/works/10.1577/1548-8659(1986)115%3C41:SALDOS%3E2.0.CO;2",
+    "file": "docs/research_notes/fetched/v2/Corbett_Powles_1986.crossref.json"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Corbett, B. W. & Powles, P. M. 1986, Trans. Am. Fish. Soc. 115(1): 41–46, title as cited — matches Crossref (now an Oxford University Press record); not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "white sucker eggs gather in current: 710/m² in a riffle against 0.5/m² in quiet water (Corbett & Powles 1986, abstract)",
+      "verdict": "unchecked",
+      "note": "No full text and no abstract in hand (Crossref has none). The research note egg_stage.md places the study in Apsley Creek and records the values as from the abstract; neither could be seen here."
+    },
+    {
+      "paper": "src/config.js:481 (comment)",
+      "claim": "predation on unguarded scatterers' eggs: white sucker none detected (Corbett & Powles 1986)",
+      "verdict": "unchecked",
+      "note": "Not checkable. Per the research note (egg_stage.md, '[abstracts]'), spottail shiners and yellow perch fed heavily on walleye eggs at the same site while no predation on sucker eggs was detected — to be confirmed in the full text, with the sampling effort behind 'none detected'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1986)115%3C41:SALDOS%3E2.0.CO;2", "status": 403, "note": "publisher (Oxford University Press, per Crossref) refuses scripts; subscription — a library login would open it" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1986)115%3C41:SALDOS%3E2.0.CO;2", "status": 403, "note": "Taylor & Francis PDF path" },
+    { "url": "https://academic.oup.com/tafs/article/115/1/41/7843781", "status": 403, "note": "a guessed OUP article path (not a known address); refused" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(1986)115%3C41:SALDOS%3E2.0.CO;2%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577%2F1548-8659(1986)115%3C41%3ASALDOS%3E2.0.CO%3B2?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 429, "note": "rate limit (shared by the parallel readers), three tries" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22larva+drift%22+walleyes+suckers&fl[]=identifier&fl[]=title&rows=8&output=json", "status": 200, "note": "0 hits (also 0 for 'Corbett Powles walleye white sucker')" },
+    { "url": "https://digitalcollections.trentu.ca/search?query=Corbett%20walleye", "status": 200, "note": "Trent University digital collections: no thesis by B. W. Corbett found" }
+  ],
+  "notes": "Nothing read. Both the paper's sentence and the code comment rest on an abstract the project once saw (not in Crossref; perhaps ASFA or the publisher's page). For the human: doi:10.1577/1548-8659(1986)115<41:SALDOS>2.0.CO;2, a library copy. In the full text check: the egg densities (710 vs 0.5 per m²), how they were sampled, the stream (Apsley Creek?), water velocity and depth at the riffle, and the gut-content evidence that no fish ate sucker eggs. The sentence's last clause (the brook's riffles as the likely sucker spawning ground) is labelled project inference and is not this source's."
+}

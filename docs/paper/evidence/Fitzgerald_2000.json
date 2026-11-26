@@ -1,0 +1,45 @@
+{
+  "key": "Fitzgerald_2000",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the thesis PDF from the University of Windsor's institutional repository (Scholaris, DSpace; CC BY-NC-ND), found through the handle OpenAlex lists; a scanned copy (UMI microform scan) with no text layer, read on page images",
+    "url": "https://uwindsor.scholaris.ca/server/api/core/bitstreams/c913bc8b-bc41-4344-ba1b-b7fcb0056d88/content",
+    "file": "docs/research_notes/fetched/v2/Fitzgerald_2000.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 3) and the repository record (docs/research_notes/fetched/v2/Fitzgerald_2000.item.json)",
+    "ok": false,
+    "corrections": "the URL: https://scholar.uwindsor.ca/etd/1485 now redirects to the repository's home page, not the thesis; cite the handle https://hdl.handle.net/20.500.14776/1044 (the 'Electronic Theses and Dissertations 1485' number is not shown in the new record and could not be checked). Author (Dean G. Fitzgerald), year (2000), title and degree (Ph.D., Department of Biological Sciences, University of Windsor) match.",
+    "note": "Supervisor Peter Sale; 239 numbered pages plus front matter (267 PDF pages)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9 (Yellow perch row)",
+      "claim": "18 lake populations (Great Lakes-basin winters): 60 mm proposed minimum (for first-winter survival)",
+      "location": "p. iv (PDF p. 6), Abstract; p. 32 (PDF p. 60), Ch. III abstract; p. 98 (PDF p. 126), §3.5 Discussion",
+      "quote": "a threshold of 60 mm can be identified as the minimum body length required",
+      "quote_from": "image",
+      "conditions": "age-0 yellow perch, 18 lake populations (Ch. III: 17 lakes or basins in three lake-size classes), 1958–1998 cohorts; size-selective survival inferred from autumn-to-spring length-frequency changes and otolith back-calculated end-of-season lengths; TOTAL length; the 60 mm is drawn 'when these two studies are taken together' with Post & Evans (1989, 57 mm)",
+      "verdict": "confirmed",
+      "note": "Now verified in the full text: drop '(relayed by a search summary; unverified)'. It is a soft threshold, not a cliff: 'equal to or greater than about 60 mm ... in most lakes were observed to have a greater likelihood of survival' (p. 98), and Ch. III 'generally identified 60 mm as the minimum total body length' (p. 32). Add 'TL'."
+    },
+    {
+      "paper": "src/config.js:856 (comment)",
+      "claim": "perch first-winter threshold ~50–80 mm, Fitzgerald 2000: 60",
+      "location": "p. 32 (PDF p. 60), Ch. III abstract",
+      "quote": "generally identified 60 mm as the minimum total body length required for survival",
+      "quote_from": "image",
+      "conditions": "as above; total length",
+      "verdict": "confirmed",
+      "note": "The same page credits Post & Evans (1989) with 57 mm (p. 98)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://scholar.uwindsor.ca/etd/1485", "status": 200, "note": "redirects to https://uwindsor.scholaris.ca/ (the repository's home page), not the item" },
+    { "url": "https://uwindsor.scholaris.ca/server/api/core/bitstreams/762b52f6-a61b-4f1b-9267-482f4f6a0cea/content", "status": 200, "note": "the repository's TEXT bundle: 534 bytes, no usable text (the PDF is a scan)" }
+  ],
+  "notes": "Scanned thesis (no text layer); read on page images: the title page, the thesis abstract (pp. iii–iv), the contents (pp. x–xii), Ch. III's abstract (pp. 32–33) and its discussion of overwinter survival (pp. 90–99), and the start of the general discussion (pp. 207–210). The verdict is 'corrected' only for the URL; the claim checks. Other points: the thesis argues age-0 perch growth is similar across lakes of very different size (length-by-date overlap), and links strong year classes to adults' asynchronous spawning in the 1998 El Niño spring; it says distinguishing starvation from predation as the cause of winter loss 'requires further study' (p. iv)."
+}

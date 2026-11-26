@@ -1,0 +1,42 @@
+{
+  "key": "DeMott_1983",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (api.crossref.org); no full text found",
+    "url": "https://api.crossref.org/works/10.2307/1942534",
+    "file": "docs/research_notes/fetched/v2/DeMott_1983.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "DeMott, William R. 1983, Ecological Monographs 53(3): 321–340, title as cited — matches Crossref; not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.1",
+      "claim": "in a small Vermont lake spring food was 'mostly highly edible flagellates' while gelatinous greens dominated late summer (DeMott 1983; abstract only)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract says it in those words: in spring the grazers' food was 'composed mostly of highly edible flagellates', while 'resistant' algae (mostly gelatinous greens) were predominant during late summer AND autumn. The '(abstract only)' tag is accurate."
+    },
+    {
+      "paper": "src/config.js:1066 (comment)",
+      "claim": "spring edible-dominated, late summer resistant (DeMott 1983)",
+      "verdict": "unchecked",
+      "note": "Consistent with the abstract (late summer and autumn). The abstract does not give the shares of edible and resistant algae; the full text's phytoplankton data (by season, and which taxa were classed 'resistant') would let the model's edible fraction be checked against a real seasonal series."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1942534", "status": 403, "note": "Wiley (ESA) refuses scripts" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1942534", "status": 403, "note": "Wiley PDF; subscription — a library login would open it" },
+    { "url": "https://www.jstor.org/stable/pdf/1942534.pdf", "status": 200, "note": "JSTOR login/bot-check page (not kept); JSTOR stable 1942534 opens with a library login" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.2307/1942534%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1942534?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 429, "note": "rate limit (shared by the parallel readers), three tries" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22seasonal+succession%22+Daphnia+assemblage&fl[]=identifier&fl[]=title&rows=8&output=json", "status": 200, "note": "0 hits" },
+    { "url": "https://digitalcommons.dartmouth.edu/do/search/?q=DeMott%20Daphnia&start=0&context=1716225", "status": 403, "note": "Cloudflare bot check (looking for an open thesis of the same study); stopped" }
+  ],
+  "notes": "Abstract only (Crossref record saved in fetched/v2). The abstract also says: the lake held Daphnia rosea and D. pulicaria, both hatched from resting eggs in May; competition, not fish predation, limited growth; enclosure experiments (3.8 L and 12 000 L) showed D. rosea's late-summer demise came from competition with D. pulicaria, which used the 'resistant' algae better. For the human: doi:10.2307/1942534 (JSTOR stable 1942534)."
+}

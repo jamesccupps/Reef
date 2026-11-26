@@ -1,0 +1,44 @@
+{
+  "key": "Cooke_etal_2002",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF (NRC Research Press) posted on the first author's lab website (Fish Ecology and Conservation Physiology Lab, Carleton University, fecpl.ca)",
+    "url": "https://www.fecpl.ca/wp-content/uploads/2002/05/EMG-Parental-Care-MS.pdf",
+    "file": "docs/research_notes/fetched/v2/Cooke_etal_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 756) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Cooke, Philipp & Weatherhead, Can. J. Zool. 80: 756–770 (2002), title as cited; the issue (4) is from Crossref (the PDF does not print it)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "by model, a 354–926-g smallmouth guarding for 22 days at 18 °C without food would lose 11.8–16.2 % of its mass",
+      "location": "p. 764 (PDF p. 9), Table 2; methods p. 760 (PDF p. 5)",
+      "quote": "S1 926 816.4 109.6 11.8 … S2 354 296.8 57.2 16.2",
+      "quote_from": "table",
+      "conditions": "Fish Bioenergetics 3.0 with Rice (1981) smallmouth parameters; constant 18 °C; consumption set to 0; activity multiplier from each male's EMG-telemetry swimming speed by brood stage (egg 3 d, egg-sac fry 2, swim-up 2, free-swimming fry 15 = 22 d); six nesting males, Lake Opinicon, Ontario, 15 May–9 June 1998; wet mass",
+      "verdict": "confirmed",
+      "note": "The six smallmouth lost 11.8–16.2 % (larger fish proportionately less); the five largemouth 12.0–15.8 %. The no-food assumption is the authors' (from their unpublished video), which the paper rightly sets against Mackereth et al. 1999."
+    },
+    {
+      "paper": "src/config.js:350 (comment)",
+      "claim": "smallmouth nest guarding raises respiration +17.6 % averaged over the whole guard",
+      "location": "p. 763 (PDF p. 8), Results; p. 766 (PDF p. 11), Fig. 8",
+      "quote": "The specific respiration rate for a nesting 1000-g smallmouth bass was only 17.6% higher",
+      "conditions": "a modeled 1000-g fish at 18 °C over the 22-day simulation, nesting activity = the mean swimming speed over that period (Fig. 6); compared with non-nesting, fed Lake Erie smallmouth (0.317 m/s from the same transmitters)",
+      "verdict": "confirmed",
+      "note": "It is the specific respiration of a standard 1000-g fish, nesting vs non-nesting, over the monitored 22 days (not the whole ~28-day guard). Largemouth: 52.6 % higher. Activity of nesting fish was 'approximately double' that of non-nesting fish (abstract)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/z02-048", "status": 403, "note": "Canadian Science Publishing refuses scripts" },
+    { "url": "https://doi.org/10.1139/z02-048", "status": 403, "note": "publisher landing page" }
+  ],
+  "notes": "Other values: a 1000-g nesting smallmouth would lose 115 g in 22 days (largemouth 125 g); a non-nesting one without food 98 g, and with 10 g/day of fish (4000 J/g) would gain 42 g (pp. 761 and 763, Fig. 7). Every guarding male had a negative growth rate and a mean daily energy loss above 10 000 J (p. 761, Table 2)."
+}

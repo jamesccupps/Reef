@@ -1,0 +1,77 @@
+{
+  "key": "Donini_etal_2026",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's version of record (open access, CC BY), as deposited in the University of Trento's institutional repository (IRIS), found from the handle OpenAlex lists",
+    "url": "https://iris.unitn.it/retrieve/e1cbd853-6e61-47fd-aef3-676f756fb25f/Donini_etal_GRL2026.pdf",
+    "file": "docs/research_notes/fetched/v2/Donini_etal_2026.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1) and Crossref",
+    "ok": false,
+    "corrections": "the thirteenth author is 'Novikova, Iu. S.' (title page and Crossref), not 'Novikova, I. S.'. Everything else matches: 22 authors in the order given, 2026, the title, Geophysical Research Letters 53(8): e2025GL119595 (12 pp.), doi:10.1029/2025GL119595.",
+    "note": "Received 24 Sep 2025, accepted 30 Mar 2026; Crossref gives publication 18 Apr 2026."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "median optical properties from 46 Northern Hemisphere lakes: albedo 0.55 and attenuation 0.79 m⁻¹ for black ice, 0.60 and 4.35 m⁻¹ for white ice, 0.94 and 8.96 m⁻¹ for snow",
+      "source_value": "the six values are right, but they are the posterior medians (fixed component) of the ice-quality model, fitted to the 15 lakes that recorded black and white ice separately (626 daily observations), not to all 46 lakes; the 46-lake data set (722 observations, 31 lakes with total ice only) gives the single-layer total-ice model: αt 0.56, kt 1.75 m⁻¹, αs 0.90, ks 8.28 m⁻¹",
+      "location": "p. 1 (abstract); p. 5 of 12 (PDF p. 5), §2.2; p. 7 of 12 (PDF p. 7), §3; p. 4, Table 1 (model medians)",
+      "quote": "Ice quality data were recorded for 15 lakes (626 measurements)",
+      "conditions": "Bayesian mixed-effects Beer–Lambert fit (Stan); lakes 41–62° N; irradiance mostly PAR as photon flux (total shortwave in two Russian lakes); daily observations nearest noon; αs is the asymptotic snow albedo (thin snow corrected toward the ice's albedo with decay constant c = 0.019 m); k is the diffuse attenuation coefficient",
+      "verdict": "corrected",
+      "note": "Say '15 of the 46 lakes (those with ice-quality data)'. 90 % bounds are wide for some: kb 0.24–1.46, kw 2.94–7.35, ks 7.35–10.54 m⁻¹ (Table 1). The units (m⁻¹) are confirmed in the full text, so the paper's caveat 'units confirmed only in a secondary summary' can go."
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "values varying widely between studies (and the units are m⁻¹)",
+      "location": "p. 3 of 12 (PDF p. 3), §2.1; p. 4, Table 1 (literature ranges); p. 6, Eq. 1",
+      "quote": "substantial variability across studies exists, especially in α, and in k for snow",
+      "conditions": "literature compilation (Figure 1): e.g. black-ice albedo 0.08–0.35 (n = 5), snow k 5–33.4 m⁻¹ (n = 10)",
+      "verdict": "confirmed",
+      "note": "The model's own ks (8.96) is about half the literature median (15.5); its αb (0.55) is far above the literature's (0.15), which the authors read as an effective season-averaged value fitted jointly with kb (p. 7)."
+    },
+    {
+      "paper": "§3.1.4; §4.2; src/config.js:603",
+      "claim": "layered, these give ~33 % transmission through 40 cm of snow-free black ice, 1.8 % under 10 cm of snow and 0.3 % under 30 cm",
+      "kind": "arithmetic",
+      "location": "p. 6 of 12 (PDF p. 6), Eqs. 1–2; p. 4, Table 1",
+      "quote": "where Eui is the under‐ice irradiance, Eai is the irradiance above the ice‐snow cover",
+      "conditions": "Eq. 1: Eui = (1 − α)·Eai·exp(−kb·hb − kw·hw − ks·hs), α the albedo of the uppermost layer",
+      "verdict": "confirmed",
+      "note": "Redone with the medians: 40 cm black ice 0.45·e^(−0.316) = 32.8 %; + 10 cm snow 0.06·e^(−1.212) = 1.79 % (1.85 % with the thin-snow albedo correction, Eq. 2, c = 0.019 m); + 30 cm snow 0.06·e^(−3.004) = 0.30 %. The model (src/w3/env3.js:388) ramps the snow albedo in linearly over 3 cm instead of Eq. 2's exponential with c = 0.019 m — a close stand-in."
+    },
+    {
+      "paper": "§4.2",
+      "claim": "light under ice is a layered Beer–Lambert transmission with Donini et al.'s median albedos and extinction coefficients",
+      "location": "p. 6 of 12 (PDF p. 6), Eq. 1; p. 7, §3",
+      "quote": "ks = 8.96 m− 1 for diffuse attenuation coefficients when ice quality data were considered",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "The model's form (top-layer albedo, then each layer's exponential) is the paper's Eq. 1, and src/config.js:609 holds the six medians exactly (SNOW 0.94/8.96, WHITE 0.60/4.35, BLACK 0.55/0.79)."
+    },
+    {
+      "paper": "src/config.js:602 (comment)",
+      "claim": "Donini et al.'s medians over 46 lakes: snow albedo 0.94, k 8.96 /m; white ice 0.60, 4.35; black ice 0.55, 0.79",
+      "source_value": "medians over the 15 ice-quality lakes (626 observations), not 46",
+      "location": "p. 5 of 12 (PDF p. 5), §2.2; p. 7, §3",
+      "quote": "Ice quality data were recorded for 15 lakes (626 measurements)",
+      "conditions": "as in the first claim",
+      "verdict": "corrected",
+      "note": "Same slip as §3.1.4; the values themselves are right."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdfdirect/10.1029/2025GL119595", "status": 403, "note": "Wiley refuses scripts (the article is gold open access)" },
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2025GL119595", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://essopenarchive.org/doi/pdf/10.22541/essoar.175915612.23431423/v1", "status": 403, "note": "ESS Open Archive preprint refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1029/2025GL119595%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1029/2025GL119595?fields=openAccessPdf,externalIds,isOpenAccess", "status": 200, "note": "GOLD, CC BY; its PDF link is the DOI (Wiley, 403)" },
+    { "url": "http://urn.kb.se/resolve?urn=urn:nbn:se:uu:diva-585535", "status": 200, "note": "Uppsala DiVA record (not needed once the Trento copy was found)" }
+  ],
+  "notes": "Full text read (12 pp.). Other values the rewrite may want: total ice (single layer, 46 lakes) αt 0.56, kt 1.75 m⁻¹ (90 % 1.17–2.35); snow decay constant c = 0.019 m (literature 0.020); among-lake variation was small except for white ice (humic bog lakes Trout Bog and Crystal Bog had much higher kw, as cDOM is trapped in white ice), so a clear-water lake like Hot Brook may sit below the median kw. The authors stress snow and white ice dominate the attenuation and its uncertainty. Data and R scripts are public (Donini et al. 2025, cited in the Availability Statement)."
+}

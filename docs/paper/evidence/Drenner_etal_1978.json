@@ -1,0 +1,42 @@
+{
+  "key": "Drenner_etal_1978",
+  "reader": "wave-2 batch 09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article: abstract only, from the Crossref record; no full text found. A stand-in was read in full: Drenner's 1977 PhD thesis (University of Kansas), which holds the same capture experiments, from KU ScholarWorks (open)",
+    "url": "https://api.crossref.org/works/10.1139/f78-215",
+    "file": "docs/research_notes/fetched/v2/Drenner_etal_1978.crossref.json",
+    "standin_url": "https://kuscholarworks.ku.edu/server/api/core/bitstreams/4982f868-5b63-4f3f-8580-0959d436221b/content",
+    "standin_file": "docs/research_notes/fetched/v2/Drenner_etal_1978.thesis1977.pdf"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Drenner, Strickler & O'Brien 1978, J. Fish. Res. Board Can. 35(10): 1370–1373, title as cited — matches Crossref; not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.7",
+      "claim": "in simulated suction feeding fish caught 76–96 % of cladocerans but 7–28 % of copepods (Drenner, Strickler & O'Brien 1978; abstract only)",
+      "verdict": "unchecked",
+      "note": "No full text of the article. Its abstract gives conditional capture probabilities (P3) of 'a simulated fish-suction intake': 0.76–0.96 for cladocerans, 0.07–0.28 for copepods. So the numbers match the abstract, but 'fish caught' is not what was measured: a siphon simulating a fish's suction caught them (the stand-in thesis says the same). Suggested wording: 'a simulated fish suction intake captured 76–96 % of cladocerans but 7–28 % of copepods'."
+    },
+    {
+      "paper": "src/config.js:1476 (comment)",
+      "claim": "fish catch 0.07–0.28 of the copepods they strike against 0.76–0.96 of cladocerans",
+      "verdict": "unchecked",
+      "note": "Not checkable against the article. In the stand-in (Drenner 1977) these are capture probabilities of a siphon mimicking a GIZZARD SHAD's suction (10 mL into a 1.0-cm tube in 0.4 s), for prey within 2 mm of the tube's axis, at 19–21 °C, relative to the capture curve for nonmotile particles; the thesis applies them to nonvisual (pump/filter) feeding. They are not strike success of visual particulate feeders such as perch, sunfish or young bass, so 'fish catch … of the copepods they strike' over-reaches."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f78-215", "status": 403, "note": "Canadian Science Publishing refuses scripts; a library login would open it (doi:10.1139/f78-215)" },
+    { "url": "https://doi.org/10.1139/f78-215", "status": 403, "note": "publisher landing page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f78-215%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f78-215?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 200, "note": "CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22capture+probability%22+zooplankter+escape&fl[]=identifier&fl[]=title&rows=8&output=json", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "STAND-IN, read as its own source (it does not confirm the article): Drenner, R. W. 1977. The feeding mechanics of the gizzard shad (Dorosoma cepedianum). PhD dissertation, University of Kansas, 99 pp. (KU ScholarWorks, https://kuscholarworks.ku.edu/entities/publication/5e60163e-3a80-4ce4-925c-7bb2e471419d; text layer OK). Its abstract (p. iii, PDF p. 4) and results (p. 49, PDF p. 57) give the capture probabilities of the simulated suction: Ceriodaphnia reticulata 0.96, Daphnia galeata mendotae 0.92, D. pulex 0.76; cyclopoids (mostly Cyclops and Mesocyclops) 0.28, Cyclops scutifer 0.24; Diaptomus pallidus 0.07; Chaoborus 0.09. Methods (pp. 19–21, PDF pp. 28–30): 200 trials with nonmotile particles and heat-killed zooplankton set the 100 % curve; live animals swam freely and the siphon fired when one came within 2 mm of the axis; 19–21 °C; zooplankton from Kansas reservoirs/ponds and Fullers Pond, Connecticut. The thesis tests the probabilities against gizzard shad feeding in pools (rate constants lowest on Diaptomus, 0.67 L/h, highest on D. galeata mendotae 3.60 and nauplii 4.01; pp. iii–iv). Recommend citing the thesis alongside (or for) the article for these values, with the conditions above. For the human: doi:10.1139/f78-215, a library copy, to confirm the article's own wording."
+}
