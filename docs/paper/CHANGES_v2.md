@@ -1,0 +1,53 @@
+# Changes from v1.1 to v2.0
+
+This is the record the rewrite brief asks for (26 Nov 2026): every value that changes (the claim, the old value, the new one, and the
+source and page), every claim cut, and every claim downgraded. The source-by-source evidence is in `docs/paper/source_ledger.csv` and
+`docs/paper/evidence/<key>.json`; the tools are in `tools/paper-v2/`.
+
+Status: **in progress.** Rows are added as each item is settled; the v1.1 text is changed in the rewrite (Phase 6), so a row here
+records the decision and its evidence, and the section it applies to.
+
+## The audit's twelve corrections (brief, Phase 2)
+
+| # | Where (v1.1) | Finding | Evidence | Decision | State |
+|---|---|---|---|---|---|
+| 1 | §4.3; Lawrence et al. 1995 entry; `src/w3/env3.js:41` | The diffusivity formula credited to Lawrence et al. 1995 | Being read in the source pass (ledger key `Lawrence_etal_1995`) | — | open |
+| 2 | §5.11 vs Table 4.4 | CPU year "~15–20 hours" (§5.11) vs "~12–16 h" (Table 4.4) | A year is 365 × 86,400 s ÷ 1,752 s = 18,000 blocks; at 2.4–3.2 s a block (Table 4.4, `docs/GPU_SIM.md` "G2 — THE TRUE LAKES") that is 12.0–16.0 h. `docs/GPU_SIM.md` itself says "a year ~15 hours". Both figures are projections from block times, not a timed year. | §5.11 to "~12–16 hours", and both places to say the year is projected from block times (unless a timed true-scale CPU year is found in the log) | decided |
+| 3 | §2.6 | Milford river herring 2015: 589,503 vs Maine DMR's current 589,645 | Maine DMR, "Historical Trap Counts" (2015–2025; PDF linked from the Trap Count Statistics page, read 2026-11-26 in a browser, as maine.gov refuses scripts), p. 2, Penobscot River, Milford Dam, river herring: 2015 **589,645**; 2024 5,476,107; 2025 5,927,002; the sheet calls all returns provisional. The trap-count page's 2026 table: Milford fish lift 5,853,094 (updated 23 Nov 2026). v1.1's 589,503 came from the FOMB copy of DMR's 2008–2019 sheet (references, "Maine DMR n.d."). | 2015 → 589,645; cite DMR's 2015–2025 sheet with its date (read 26 Nov 2026), keep 2024 (5,476,107, no longer marked provisional in the text unless DMR's own word is kept: DMR calls every count provisional); add 2025 | decided |
+| 4 | §4 vs §5.1 | Methods describe commit cf70977; arm AM ran before two of its parts existed | Arm AM (`docs/FINDINGS.md` 2026-10-23): GPU, true scale, **two seeds (611, 613)**, two years; its outputs (`r22AM_611/613.txt`), summary script (`yrsum.mjs`) and queue (`queue_am.sh`) were in a session scratch folder and are lost. `git diff cf70977 HEAD` over the model (`src/w3/` without `render3/`, `config.js`, `species.js`, `bioenergetics.js`, `core.js`): one comment in `config.js` (a citation fixed) and `fish3.js`'s wildlife-count refactor of 15 Nov, which the gate shows gives identical counts — so today's model is cf70977's. | Re-run arm AM's configuration on a tagged commit with ≥ 3 seeds (and report the spread), with the run script and outputs committed; §4 names that tag | open: needs the run (Phase 3) |
+| 5 | §3.5 vs Table 4.3 | White perch run on the yellow perch FB4 set; the synthesis names striped bass (Hartman & Brandt 1995) | — | — | open |
+| 6 | §5.2 vs §2.4 | Inflow P kept fully available to reach a superseded target | — | — | open |
+| 7 | Table 5.1 | Terms sum to −0.47; the log says −0.45 | The listed terms sum to −0.467 (−0.255 − 0.152 − 0.043 − 0.031 + 0.014). The log's table (`docs/FINDINGS.md` 2026-10-22) lists the same five terms with a total of −0.45, so the missing ~+0.02 is a term the probe printed and neither table lists (inflow and outflow O₂, or exchange through the ice, are the likely ones). **The probe (`o2budget.mjs`) was never committed and its session folder is gone**, so the term cannot be read back. | Rewrite the probe, commit it, re-run the budget on ≥ 3 seeds, and report every term (Phase 3) | open: needs the re-run |
+| 8 | §1, abstract | "105 notes, ~740,000 words" | `git ls-files docs/research_notes` today: 111 `.md` files, 789,311 words (`docs/reports/`: 3 files, 32,562 words). Among the 111: three graphics notes (`Game rendering techniques/` ×2, `Whole lake 3D fish simulation/browser_3d_rendering.md`), the blocked-sources list and the fetched-sources digest. | Define "research notes" in the text, count by a committed script, and give the date of the count | open: the definition is the rewrite's |
+| 9 | §5.2; references | Vollenweider named with no entry; HBV "n.d., citation incomplete" | — | — | open |
+| 10 | §2.2 | Lower's 1949 area "4–5 % larger" than DEP, NWI and lidar | 713 ac = 288.5 ha against DEP 684 ac (276.8 ha): +4.2 %; NWI 681.7 ac: +4.6 %; lidar 274 ha: +5.3 %; NHDPlus 708 ac: +0.7 % (Table 1's own values) | "4–5 % larger than the DEP and NWI outlines and 5 % larger than the lidar's" | decided |
+| 11 | Table 3.2-3 | Brett & Benjamin 2008 "form recalled, unverified" | Being read in the source pass (`Brett_Benjamin_2008`) | — | open |
+| 12 | §2.2–2.4, §2.8 | "Lakes of Maine pages could not be reached" | Read 2026-11-26 in a browser (the site refuses scripts with 403). **Upper (MIDAS 1076):** 890 ac; perimeter 9 mi; mean depth 11 ft; max 18 ft; warmwater fishery; no known invasive plants; 500-m buffer 99 % natural, 0 % agricultural, 1 % developed, 0.0 % impervious; 0 dams on the lake; elevation 129 m; shoreline 14,071 m; shoreline development index 2.08. **Lower (1072):** 684 ac; 6.7 mi; mean 9 ft; max 13 ft; warmwater; none known; buffer 100 % natural, 0, 0, 0.0; 0 dams; 128 m; 10,374 m; 1.73. **Water quality, both lakes:** the "no data" icon on all seven indicators (transparency, chlorophyll, phosphorus, colour, alkalinity, pH, conductivity), no water-quality narrative and no lake report. No flushing rate or watershed area is shown. | Replace the "could not be reached" caveats in §2.2–2.4 and §2.8 with these values and the plain statement that the site holds no water-quality data for either lake; add the buffer land cover and "0 dams on the lake" to §2.3/§2.10 | decided |
+
+## The two framing fixes
+
+| Where | Fix | State |
+|---|---|---|
+| Abstract, §6.1 | The diet claim ("white perch, not crayfish") states its sample in the same sentence | open |
+| Abstract, §6.2 | Beside the three measures that fit, the ones that do not (summer TP about half its target; plants on 84–88 % of the bed against 35–45 %; copepods about twice the nearest lakes; P inventory rising 12–26 % a year) | open |
+
+## Found along the way
+
+| Where | Finding | State |
+|---|---|---|
+| `docs/FINDINGS.md`, whole | Of the 36 script names the log cites as the source of a result, 35 are not in the repository (only `test/w3.mjs` is): `yrsum`, `larvz`, `sunlarva`, `o2budget`, `larvdiag`, `eggpipe`, `z2year`, `ywp`/`ywp2`/`ywp3`, `ypred`/`ypred2`, `ypike`, `wx`/`wx2`/`wxfit2`, `winter`, `where`, `surf`, `rotbud`, `probe`, `plants_why`, `plants_audit`, `nutr`, `larvsettle`, `gatek`, `eggsm2`, `e9e`, `e2`/`e2c`, `diag_strike`, `bury`, `bassgrow`, `bassets`, `algbud`. They lived in session scratch folders that no longer exist. Every result the paper takes from one must be re-run with a committed script, or say it rests on a lost script (Phase 3). | open |
+
+## Values changed
+
+| Claim (v1.1 section) | Old | New | Source and page |
+|---|---|---|---|
+
+## Claims cut
+
+| Claim (v1.1 section) | Why |
+|---|---|
+
+## Claims downgraded
+
+| Claim (v1.1 section) | From | To | Why |
+|---|---|---|---|
