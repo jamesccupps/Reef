@@ -93,7 +93,7 @@ const scan = (text, where, at) => {
   for (const r of refs) {
     if (!r.rx.test(text)) continue;
     const c = cites.get(r.key); c.sections.add(where);
-    if (c.contexts.length < 16) c.contexts.push({ where, at, text: text.length > 3000 ? text.slice(0, 3000) + ' […]' : text });
+    if (c.contexts.length < 60) c.contexts.push({ where, at, text: text.length > 3000 ? text.slice(0, 3000) + ' […]' : text });
   }
 };
 for (const [file, fixed] of PARTS) {

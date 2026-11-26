@@ -1,0 +1,284 @@
+{
+  "key": "MDIFW_1949",
+  "reader": "wave-3 batch w3-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the human's own copies of both MDIFW survey sheets (docs/research_notes/fetched/hot_brook_lake_upper.pdf and hot_brook_lake_lower.pdf; maine.gov refuses scripted fetches), indexed with getsrc --file as MDIFW_1949 (Upper) and MDIFW_1949.lower (Lower). Each sheet is two scanned pages (a typed text page and a hand-lettered sounding map) with an OCR text layer; every value below was read on the rendered page images (MDIFW_1949.p1/p2.png, MDIFW_1949.lower.p1/p2.png), the soundings at 2-3x zoom",
+    "url": "https://www.maine.gov/ifw/docs/lake-survey-maps/washington/hot_brook_lake_upper.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_1949.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "both sheets (title lines, survey and revision lines, funding line)",
+    "ok": true,
+    "corrections": "",
+    "note": "The text pages are headed 'HOT BROOK LAKE, UPPER' and 'HOT BROOK LAKE, LOWER'; the maps 'UPPER HOT BROOK LAKE' (912 ACRES) and 'LOWER HOT BROOK LAKE' (713 ACRES). Both read 'Surveyed - August, 1949 (Revised - 1965,2004)', 'Maine Department of Inland Fisheries and Wildlife', 'Funded in part by the Federal Aid in Restoration Act under Federal Project F-28-P'. BOTH sheets carry the code 'L1072F' (Lower's MIDAS number is 1072), so the Upper sheet cannot be used to confirm Upper's MIDAS 1076. The Lower file is at .../washington/hot_brook_lake_lower.pdf (the entry gives both URLs correctly)."
+  },
+  "claims": [
+    {
+      "paper": "§2.1 (para. 1)",
+      "claim": "the lakes lie in Danforth and T8 R4 NBPP, Washington County; the survey sheets also name Bancroft (Aroostook County)",
+      "location": "Upper and Lower sheets, p. 1 (text page, heading); maps p. 2 (titles)",
+      "quote": "Danforth and T8 R4 NBPP, Washington Co. Bancroft, Aroostook Co.",
+      "quote_from": "image",
+      "conditions": "Lower text page heading; the Upper text page names only Danforth and T8 R4 NBPP, but the Upper map title reads '...O. AND BANCROFT TWP. AROOSTOOK CO, MAINE' and the Lower map 'T8 R4, DANFORTH, WASHINGTON CO., BANCROFT TWP., AROOSTOOK CO., MAINE'",
+      "verdict": "confirmed",
+      "note": "T8 R3 NBPP is from the law book (MDIFW 2026), not the sheets."
+    },
+    {
+      "paper": "§2.1 (para. 1)",
+      "claim": "the lakes fall on the USGS Jimmey Mountain and Stetson Mountain quadrangles",
+      "location": "Upper sheet, p. 1 (text page, heading)",
+      "quote": "U.S.G.S. Jimmey Mountain, and Stetson Mountain ME (7½')",
+      "quote_from": "image",
+      "conditions": "7.5-minute quadrangles; the Lower sheet names only 'U.S.G.S. Jimmy Mountain, ME (7½')' (spelt 'Jimmy')",
+      "verdict": "confirmed",
+      "note": "the sentence carries no citation; this is where the quadrangle names are printed."
+    },
+    {
+      "paper": "§2.1 (para. 'The survey sheets describe both lakes...'); §3.8.8; §3.2.6; §3.4.1",
+      "claim": "Upper is 'mostly surrounded by spruce fir forest' with wetlands on the south and west sides",
+      "location": "Upper sheet, p. 1 (text page, left column, bottom paragraph)",
+      "quote": "mostly surrounded by spruce fir forest with some wetlands on the south and west sides",
+      "conditions": "a verbal description; no date within 1949-2004 is given for it",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.1; §3.8.8; §3.2.6; §3.4.1",
+      "claim": "Lower is 'surrounded by spruce fir forest' with wetlands on the north and east sides",
+      "location": "Lower sheet, p. 1 (text page, left column, bottom paragraph)",
+      "quote": "surrounded by spruce fir forest with some wetlands on the north and east sides",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.1; §3.2.6; §3.4.1; §2.10 ('large sandy beach')",
+      "claim": "Upper's shoreline is 'mostly rocky with some areas of sand', with 'a large sandy beach in the northeast part' and some mud; its bottom 'mostly muddy'",
+      "location": "Upper sheet, p. 1 (text page, left column, bottom paragraph)",
+      "quote": "mostly rocky with some areas of sand, there is a large sandy beach",
+      "conditions": "the sentence continues 'in the northeast part of the lake, and mud but the lake bottom is mostly muddy'",
+      "verdict": "confirmed",
+      "note": "§3.4.1's quotation 'mostly rocky with some areas of sand … and mud' is a fair ellipsis of this sentence. The beach's ~220 m length (§2.10) is project imagery, not on the sheet."
+    },
+    {
+      "paper": "§2.1; §3.2.6; §3.4.1; §3.3 ('mostly muddy beds')",
+      "claim": "Lower's shoreline is mostly rocky with some sand and mud; both lake bottoms are 'mostly muddy'",
+      "location": "Lower sheet, p. 1 (text page, left column, bottom paragraph)",
+      "quote": "rocky with some areas of sand and mud but the lake bottom is mostly muddy",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.2 (para. 1 and Table 1, MDIFW row); §3.3 (none at Hot Brook)",
+      "claim": "MDIFW's areas: Upper 912 ac (369 ha), Lower 713 ac (289 ha), from 'planimetry ... Aug 1949'",
+      "source_value": "Upper 'Area - 912' (map: '912 ACRES'); Lower 'Area - 713' (map: '713 ACRES'); no method and no date are given for either figure",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Physical characteristics'); maps p. 2 (titles)",
+      "quote": "Area – 912 … 912 ACRES",
+      "quote_from": "image",
+      "conditions": "the sheets do not say how the area was measured or whether it dates from 1949 or from the 1965/2004 revisions",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "912 × 0.404686 = 369.1 ha; 713 × 0.404686 = 288.5 ha (both round as printed). The values are right; Table 1's row label 'planimetry ... Aug 1949' and §2.2's 'MDIFW's 1949 planimetry' add a method and a date the sheets do not state - write 'area as printed on the survey sheets (method and date not stated)'."
+    },
+    {
+      "paper": "§2.2 (Table 1; Upper para.); §2.4 ('lakes of 18 and 13 ft'); §3.1.5 and Table 3.1-3 ('5.5 and 4.0 m'); §3.3; §3.5.6 ('5.5 and 4.0 m deep at most'); README/abstract ('maximum depths 5.5 and 4.0 m in the 1949 survey')",
+      "claim": "maximum depth 18 ft (5.5 m) in Upper and 13 ft (4.0 m) in Lower",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Physical characteristics'); maps p. 2 (deepest soundings 18 and 13)",
+      "quote": "Maximum depth – 18 feet … Maximum depth – 13 feet",
+      "quote_from": "image",
+      "conditions": "the deepest spot soundings of transect lines (feet); 18 ft = 5.49 m, 13 ft = 3.96 m",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.2, Table 1 footnote a (unweighted means 3.25 m and 2.71 m of 83 and 63 soundings); §4.1 ('their 146 spot soundings')",
+      "claim": "the 1949 maps carry 83 (Upper) and 63 (Lower) transect soundings whose unweighted means are 3.25 m and 2.71 m; 146 in all",
+      "location": "Upper map p. 2 (10 sounding rows); Lower map p. 2 (10 sounding rows)",
+      "quote": "10 15 16 18 18 18 17 15",
+      "quote_from": "image",
+      "conditions": "spot soundings in feet along roughly east-west lines; transect points, not an area-weighted sample",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-read and re-tallied on the zoomed images. Upper rows (N to S): 3 4 5 4 | 9 16 17 16 15 | 10 15 16 18 18 18 17 15 | 8 10 16 16 15 13 | 13 16 14 5 | 7 11 12 8 12 11 13 14 | 8 11 11 12 12 [illegible] 13 13 12 13 12 | 6 10 11 12 12 12 9 12 12 14 13 13 | 3 4 10 12 12 12 4 12 13 13 12 | 4 5 9 4 3 2 8 8 2 10 10 9 9 8 4: 83 legible values, sum 885 ft, mean 10.66 ft = 3.250 m. One mark in row 7 is a bolder, different-hand '0b' (not a depth); with it the count would be 84. Lower rows: 7 8 8 | 7 9 11 11 12 12 | 5 11 11 12 12 12 11 6 | 6 11 12 12 12 11 11 9 4 | 5 7 8 9 10 12 10 | 6 9 11 12 13 12 6 | 7 9 11 11 11 6 | 6 9 8 11 11 5 | 6 8 9 8 8 7 | 5 6 6 5 4: 63 values, sum 560 ft, mean 8.89 ft = 2.709 m. 83 + 63 = 146. All three figures check."
+    },
+    {
+      "paper": "§2.2 (Upper para.)",
+      "claim": "Upper's deepest water, 5.5 m (18 ft), is in a north basin beside the outlet; a narrows of 13-16 ft leads south to a broad basin of 11-14 ft, edged along the south shore by a shelf 2-10 ft deep",
+      "location": "Upper map, p. 2",
+      "quote": "OUTLET … 10 15 16 18 18 18 17 15 … 13 16 14 5",
+      "quote_from": "image",
+      "conditions": "the outlet leaves the north tip; the 18-ft soundings are the third row of the north basin, about 0.7 km (225 px at 3.16 m/px) south of where the outlet leaves (the row nearest the outlet reads 3 4 5 4); the narrows rows read 8 10 16 16 15 13 and 13 16 14 5 (5 at the east shore); the four broad south-basin rows read mostly 11-14 ft (one 9, shore values 3-8); the southernmost row reads 4 5 9 4 3 2 8 8 2 10 10 9 9 8 4",
+      "verdict": "confirmed",
+      "note": "'beside the outlet' is loose (the deep row is in the outlet's basin, ~0.7 km from the outlet itself); 'in the north basin, the outlet's basin' is exact."
+    },
+    {
+      "paper": "§2.2 (Lower para.)",
+      "claim": "in Lower most soundings read 9-12 ft (2.7-3.7 m), the deepest, 13 ft (4.0 m), lies south of center, and the large eastern bay is 4-11 ft (1.2-3.4 m) deep",
+      "location": "Lower map, p. 2",
+      "quote": "6 9 11 12 13 12 6 … 12 11 11 9 4",
+      "quote_from": "image",
+      "conditions": "34 of the 63 soundings are 9-12 ft (54 %); the single 13 lies in the sixth of ten rows from the north end (the inlet is at the south tip, the outlet on the NE shore); the only soundings in the eastern bay are the row running into it, 11 11 9 4",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "'most' is a bare majority (54 %). The 'long central trough inside the 10-ft contour' is MDIFW 2024's (the 1949 map has no contours). MDIFW 2024 carries no soundings, so cite MDIFW 1949 alone for the sounding ranges (as the MDIFW_2024 evidence also says)."
+    },
+    {
+      "paper": "§2.2 (Upper para.)",
+      "claim": "Upper is about 3.4 km north-south by 1.9 km across",
+      "location": "Upper map, p. 2 (scale bar 'TENTHS OF MILE', 0-5)",
+      "quote": "0 1 2 3 4 5 TENTHS OF MILE",
+      "quote_from": "image",
+      "conditions": "project measurement on the rendered map: the 0.5-mile bar spans 255 px (3.16 m/px); north tip to the south shore ≈ 1,050-1,090 px (3.3-3.4 km); widest east-west ≈ 575 px (1.8 km)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "the hand-drawn 1949 outline gives about 3.3-3.4 × 1.8 km, consistent with 'about 3.4 by 1.9 km'; the paper's figure is probably from the lidar/GIS outline and is better cited to the project GIS."
+    },
+    {
+      "paper": "§2.2 (Upper para.)",
+      "claim": "the 1949 map draws two islands in Upper",
+      "location": "Upper map, p. 2",
+      "quote": "UPPER HOT BROOK LAKE … 912 ACRES",
+      "quote_from": "image",
+      "conditions": "an elongated island off the west shore at the narrows and a triangular one in the south basin, both drawn as closed outlines",
+      "verdict": "confirmed",
+      "note": "the islands are drawn, not labelled; the quote is the map's title."
+    },
+    {
+      "paper": "§2.2 (para. 'Shoreline length...'); §3.1.5; §3.3 ('do not stratify in summer (MDIFW)')",
+      "claim": "both sheets state that the lake 'is shallow and does not stratify during summer months'",
+      "location": "Upper sheet, p. 1 (text page, right column, para. 1); Lower sheet, p. 1 (left column foot, continuing in the right column)",
+      "quote": "The lake is shallow and does not stratify during summer months.",
+      "conditions": "a statement, with no profile behind it on the sheets",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.3 (para. 1)",
+      "claim": "Upper receives 'several small tributaries', none with 'any suitable habitat for coldwater fish' (and Hot Brook is the main inflow)",
+      "location": "Upper sheet, p. 1 (text page, right column, para. 2)",
+      "quote": "several small tributaries to the lake but none have any suitable habitat for coldwater fish",
+      "conditions": "the sheet names no inlet stream for Upper and does not call Hot Brook its main inflow; it says the outlet 'flows into Lower Hot Brook and then into Baskahegan Stream'",
+      "verdict": "confirmed",
+      "note": "the two quotations are exact; 'Hot Brook is the main inflow' is not from the sheet (it should carry its own source or be marked as the project's reading of the maps)."
+    },
+    {
+      "paper": "§2.3 (para. 'MDIFW describes the connecting brook...'); §3.5.x (para. 'The brook between Upper and Lower...', 03_synthesis line 394)",
+      "claim": "the connecting brook is 'a short (1/8 mile) non-navigable connecting stream', 'rocky and hard bottomed', without coldwater habitat",
+      "location": "Upper and Lower sheets, p. 1 (text page, left column); Lower sheet p. 1 (right column, para. 1)",
+      "quote": "although this stream is rocky and hard bottomed it does not contain any suitable habitat",
+      "conditions": "Lower sheet: 'The major tributary is the inlet from the upper lake and although this stream is rocky and hard bottomed it does not contain any suitable habitat for coldwater fish'; both sheets: 'separated ... by a short (1/8 mile) non-navigable connecting stream'",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1/8 mile = 201 m, so 'about 200 m by MDIFW's eighth of a mile' checks."
+    },
+    {
+      "paper": "§2.3 (para. 'MDIFW describes the connecting brook...')",
+      "claim": "a boater 'must be prepared to paddle, pole, or walk a boat' through the brook, so Lower has no motorboat access",
+      "location": "Lower sheet, p. 1 (text page, right column, para. 3)",
+      "quote": "It is not possible to operate a boat through this stream",
+      "conditions": "'The only access to Lower Hot Brook Lake is through the inlet stream from the upper lake. It is not possible to operate a boat through this stream and a boat operator must be prepared to paddle, pole, or walk a boat through parts of the waterway.'",
+      "verdict": "confirmed",
+      "note": "'no motorboat access' is a fair reading of 'not possible to operate a boat'; the sheet adds that the only launch is the unimproved site at Upper's south end, off Rt. 169."
+    },
+    {
+      "paper": "§2.4; §3.1.5; Table 3.1-3 (Hot Brook row); §3.3 ('surface 23.3 °C, 74 °F'); src/config.js:446",
+      "claim": "the 1949 sheets print a surface temperature of 74 °F (23.3 °C) for both lakes",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Physical characteristics', 'Temperatures')",
+      "quote": "Temperatures: Surface - 74°F.",
+      "quote_from": "image",
+      "conditions": "printed identically on both sheets; the reading is not separately dated (the sheet says only 'Surveyed - August, 1949', revised 1965 and 2004) and gives no time of day, station or depth",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "(74 − 32)/1.8 = 23.3 °C."
+    },
+    {
+      "paper": "§2.4; §3.1.5; Table 3.1-3 (Hot Brook row, 'depth label impossible')",
+      "claim": "both sheets carry a second line, '75 feet – 71 °F' (21.7 °C), a depth impossible in lakes of 18 and 13 ft; if near-bottom, the column was within 1.7 °C top to bottom",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Temperatures', second line)",
+      "quote": "75 feet - 71°F.",
+      "quote_from": "image",
+      "conditions": "typed, not an OCR artefact: the page images show '75 feet - 71°F.' on both sheets, beside 'Maximum depth - 18 feet' (Upper) and '13 feet' (Lower)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "(71 − 32)/1.8 = 21.7 °C; 74 − 71 = 3 °F = 1.67 °C. The 'garbled near-bottom reading or template error' is the paper's interpretation, correctly labelled as such. (hot_brook_lake_records.md's 'OCR error' hypothesis is ruled out by the images.)"
+    },
+    {
+      "paper": "src/config.js:932",
+      "claim": "'the 1949 August survey: 74 °F at the surface, ~71 °F at the bottom'",
+      "source_value": "the sheets print '75 feet - 71°F.'; that it was a bottom reading is the project's interpretation of an impossible depth label",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Temperatures')",
+      "quote": "Surface - 74°F. … 75 feet - 71°F.",
+      "quote_from": "image",
+      "verdict": "corrected",
+      "note": "say '~71 °F at a depth printed as 75 feet (probably near the bottom)' rather than attributing 'at the bottom' to the survey."
+    },
+    {
+      "paper": "§3.5.6 (para. 1: 'whole column about 22–25 °C in August ... project inference from Maine survey sheets')",
+      "claim": "in August the whole column is about 22-25 °C (inference partly from the survey sheets)",
+      "source_value": "the Hot Brook sheets' only readings: 23.3 °C (74 °F) at the surface and 21.7 °C (71 °F) under the impossible '75 feet' label, on one August 1949 visit",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Temperatures')",
+      "quote": "Surface - 74°F. … 75 feet - 71°F.",
+      "quote_from": "image",
+      "verdict": "corrected",
+      "note": "minor: the sheets' deeper reading (21.7 °C) lies just below the stated 22 °C floor, and nothing on them reaches 25 °C; write 'about 21-25 °C' or cite the 1949 pair explicitly."
+    },
+    {
+      "paper": "§3.1 (para. 1: 'one pair of temperature readings, taken by a MDIFW crew in August 1949; ... no lake-level, ice, temperature-profile, oxygen, Secchi or color record'); §3.1.7 ('The sheets do not describe the water's color or clarity'); §3.4.1 ('record no plants'); §2.5 ('None of these records gives gear, effort, abundance or the year each species was recorded ... the sheets do not say which species the 1965 and 2004 revisions added'); §6.3 ('no fish sampling with recorded gear or effort (the 1949 sheets give none)')",
+      "claim": "the sheets hold only the temperature pair and no other water, plant or fish-sampling data (no Secchi, color, oxygen, plants, gear, effort, abundance, species dates, or revision history of the list)",
+      "location": "Upper and Lower sheets, pp. 1-2 (whole sheets)",
+      "quote": "Surveyed – August, 1949 (Revised – 1965,2004)",
+      "quote_from": "image",
+      "conditions": "read in full: each sheet has a species list, area, maximum depth, the temperature pair, principal fisheries, a habitat/access/regulation paragraph and a sounding map; nothing else",
+      "verdict": "confirmed",
+      "note": "the research note maine_dep_lakes_data_2025.md says '1949: \"slightly turbid\", brown water' - neither sheet says this; the paper (§3.1.7) is right and the note is wrong."
+    },
+    {
+      "paper": "§2.5 (para. 1); Table 3 ('MDIFW sheets 1949' column, brown bullhead 'yes (\"horn pout\")')",
+      "claim": "the sheets name smallmouth bass, white perch, yellow perch, chain pickerel, bullhead ('horn pout') and banded killifish, and under 'Minnows' blacknose dace, fallfish and white sucker",
+      "source_value": "the sheets print 'Bullhead (hornpout)' - one word - and 'Bullhead', not 'brown bullhead'",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Fishes')",
+      "quote": "Bullhead (hornpout)",
+      "quote_from": "image",
+      "conditions": "two columns: Smallmouth bass, White perch, Yellow perch, Chain pickerel | Minnows: Blacknose dace, Fallfish, White sucker; then, centred below and left of the Minnows column, Bullhead (hornpout) and Banded killifish. The list is identical on both sheets",
+      "verdict": "corrected",
+      "note": "only the spelling of the quotation is wrong (§3.5.1 already has 'hornpout'); the species list and the reading of what falls under 'Minnows' check, though the layout leaves bullhead and killifish's place slightly ambiguous. Table 3's 'Brown bullhead' row is the project's identification of the sheets' 'Bullhead'."
+    },
+    {
+      "paper": "§3.5.1 (para. 'The 1949 MDIFW surveys of both lakes...'); §2.5; Table 3 ('principal'); §3.3.x (02_synthesis line 728: 'white perch are a principal fishery'); §3.5.6 ('supports a principal white perch fishery'); §2.5 ('they were at Hot Brook by the 1949 survey or its revisions')",
+      "claim": "both sheets list the same nine species, including smallmouth bass, and name smallmouth bass, white perch and chain pickerel as the principal fisheries",
+      "location": "Upper and Lower sheets, p. 1 (text page, 'Fishes' and 'Principal fisheries')",
+      "quote": "Principal fisheries: Smallmouth bass White perch Chain pickerel",
+      "quote_from": "image",
+      "conditions": "a list only: no numbers, sizes, gear or dates",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5 (para. 1)",
+      "claim": "each lake is called 'a typical warm water lake' with 'excellent spawning and adult habitat for bass, perch, and pickerel'",
+      "location": "Upper sheet, p. 1 (right column, para. 1); Lower sheet, p. 1 (left column foot)",
+      "quote": "typical warm water lake with excellent spawning and adult habitat for bass, perch, and pickerel",
+      "conditions": "the Lower sheet prints 'warm- water' (a hyphenation remnant)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5 (para. 'The lakes are managed as bass and white perch waters...'); §3.7.x (03_synthesis line 498: 'managed for a larger than average size bass fishery ... daily limit on white perch is 25 fish'); §3.3.x (02_synthesis line 728: 'a 25-fish daily bag (MDIFW lake survey sheets)')",
+      "claim": "the sheets as revised in 2004 call the lakes 'managed for a larger than average size bass fishery' and 'open to fishing until November 30', with a 25-fish white perch bag",
+      "location": "Upper and Lower sheets, p. 1 (text page, right column, 'The lake is being managed...')",
+      "quote": "managed for a larger than average size bass fishery and has special regulations",
+      "conditions": "the paragraph continues 'There is a special 25 fish bag limit on white perch and the lake remains open to fishing until November 30.'",
+      "verdict": "confirmed",
+      "note": "quotes exact. Three details are not on the sheets: 'daily' (the sheet says 'bag limit'), the catch-and-release of bass and the 1 Oct-31 Dec artificial-lure rule (both from the law books, which 03_synthesis line 498 also cites), and which revision wrote this paragraph ('as revised in 2004' is an inference - the sheets print 'Revised - 1965,2004' without saying what changed)."
+    },
+    {
+      "paper": "§2.10 (para. 1)",
+      "claim": "the sheets as revised in 2004 note 'an area of camp development along the south shore' of Upper and say of Lower 'There are no camps on this lake'",
+      "location": "Upper sheet, p. 1 (left column, last sentence); Lower sheet, p. 1 (left column, bottom paragraph)",
+      "quote": "There is an area of camp development along the south shore.",
+      "conditions": "Lower: 'There are no camps on this lake.' No date is attached to either sentence",
+      "verdict": "confirmed",
+      "note": "'as revised in 2004' is an inference (likely, but unstated)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/lake-survey-maps/washington/hot_brook_lake_upper.pdf", "status": 403, "note": "maine.gov refuses scripted fetches; the human's copy in docs/research_notes/fetched/ was used" },
+    { "url": "https://www.maine.gov/ifw/docs/lake-survey-maps/washington/hot_brook_lake_lower.pdf", "status": 403, "note": "maine.gov refuses scripted fetches; the human's copy in docs/research_notes/fetched/ was used" }
+  ],
+  "notes": "Both sheets read in full on the page images (the OCR layer is close but writes 'horn pout' and '71OF'). Nearly everything the paper takes from them checks, including the project tallies (83 + 63 = 146 soundings; means 3.25 and 2.71 m). Changes for the rewrite: (1) §2.5 and Table 3 quote 'horn pout'; the sheets print 'hornpout'. (2) Table 1's row label and §2.2's 'MDIFW's 1949 planimetry' give a method and a date the sheets do not state (area as printed; method and date not stated). (3) 'as revised in 2004' (§2.5, §2.10) and the temperatures' 'August 1949' date are inferences from 'Surveyed - August, 1949 (Revised - 1965,2004)': likely, but the sheets do not say which text belongs to which revision. (4) The sheets' bag limit is not called 'daily' (§3.3.x line 728). (5) src/config.js:932 calls the 71 °F reading 'at the bottom'; the sheet says '75 feet'. (6) §2.3's 'Hot Brook is the main inflow' is not on the sheets, which name no inlet for Upper. (7) §3.5.6's 22-25 °C floor sits just above the sheets' 21.7 °C. Also: both sheets carry the code 'L1072F', so they cannot confirm Upper's MIDAS 1076; the Upper map title is cut off at the left ('...O. AND BANCROFT TWP.'); one mark on the Upper map ('0b', row 7, a different hand) is not a depth. The research note maine_dep_lakes_data_2025.md attributes '\"slightly turbid\", brown water' to 1949; neither sheet says it. show.mjs lists §3.3, §3.4.1, §3.5.1, §3.5.6, §3.5.7, §3.5.8 without printing their paragraphs: they are covered above (02_synthesis lines 601, 728, 738; 03_synthesis lines 34, 314, 360, 394, 498, 1323) plus §4.1 (04_model line 22) and §6.3 (05_discussion line 59)."
+}

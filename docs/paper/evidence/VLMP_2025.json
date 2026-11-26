@@ -1,0 +1,97 @@
+{
+  "key": "VLMP_2025",
+  "reader": "wave-3 batch w3-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. The tables are the human's download (LakesDataTables2025.zip, 2026-10-16, per docs/research_notes/Hot Brook populations and water/maine_dep_lakes_data_2025.md), which is not in the repository; no public copy reachable by script was found (maine.gov and lakesofmaine.org refuse scripts, the DEP GIS service needs a token, and no Wayback capture of the zip exists)"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "nothing (the tables could not be seen)",
+    "ok": false,
+    "corrections": "the entry is marked '[citation incomplete in notes]' and cannot be completed without the file: it needs the issuing bodies as the file names them (Maine DEP and/or Lake Stewards of Maine - the VLMP's current name), the download URL, the date accessed (2026-10-16 per the research note), the data's coverage years, and the seven table names (OVERALL_SUMMARIES, ANNUAL_SUMMARIES, GENERAL, CHEM, CHLORO, PHOS, DO_TEMP_PROFILES, per the note)."
+  },
+  "claims": [
+    {
+      "paper": "§2.4 (para. 1); §3.1 (para. 1); §3.3 (para. 1)",
+      "claim": "neither Hot Brook lake (MIDAS 1076, 1072) appears in the 2025 DEP/VLMP data tables: no DEP or volunteer sampling station, no Secchi, chemistry or oxygen data",
+      "verdict": "unchecked",
+      "note": "a negative can only be checked in the tables themselves. Corroboration from a different source (not a check of this one): a Water Quality Portal station search within 25 miles of 45.63 N, 67.94 W (saved as docs/research_notes/fetched/v2/VLMP_2025.wqp_stations.csv) lists MEDEP lake stations for North (1063), Brackett (1068), East Grand (1070) and Baskahegan (1078) but none for 1072, 1076 or Faulkner (1064)."
+    },
+    {
+      "paper": "§2.4 (para. 'The nearest measured lakes...'); Table 3.1-3 (Baskahegan 23 Aug 2004); §3.1.6",
+      "claim": "Baskahegan Lake was fully mixed on 23 August 2004: 20.7 °C and 8.7 mg/L O₂ from the surface to 5 m",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§2.4; Table 3.1-3 (Faulkner 3 Sep 2004: 20.4 / 8.1 surface, 20.1 at 4 m / 7.9); §3.1.6",
+      "claim": "Faulkner Lake held 7.9-8.6 mg/L at the bottom in late summer 2004 and 2006 (3 Sep 2004: surface 20.4 °C, 8.1 mg/L; 4 m 20.1 °C, 7.9 mg/L)",
+      "verdict": "unchecked",
+      "note": "internal check: Table 3.1-3 gives Faulkner's maximum depth as 3.7 m but its deepest reading 'at 4 m'; one of the two needs checking in DO_TEMP_PROFILES (station depth vs mapped maximum). The 2006 profile (8.6 mg/L, per the research note: 24 Aug 2006, 4 m 19.3 °C) is cited in §2.4 but not shown in the table."
+    },
+    {
+      "paper": "Table 3.1-3 (Baskahegan 22 Aug 2011)",
+      "claim": "Baskahegan 22 Aug 2011: surface 23.4 °C / 7.7 mg/L; 22.5 °C / 7.6 mg/L at 7 m",
+      "verdict": "unchecked",
+      "note": "internal check: a reading 'at 7 m' in a lake given as 6.7 m deep (Table 2, Table 3.1-3, Table 3.1-4) - check the profile depth or the maximum depth."
+    },
+    {
+      "paper": "Table 3.1-3 (North Lake 24 Aug 2006); §3.1.6",
+      "claim": "North Lake (13.7 m) 24 Aug 2006: surface 20.5 °C / 8.6 mg/L; 19.4 °C / 7.8 mg/L at 7 m",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.1-3 (Brackett rows); §3.1.6 ('Brackett Lake's bottom water fell to 0.2–0.4 mg/L in stratified summers')",
+      "claim": "Brackett Lake (7.6-10 m): stratified on 20 Aug 1996 and 8 Aug 2005 (surface 21.8-23.8 °C, 8.5-9.0 mg/L; bottom 13.5-18.8 °C, 0.2-0.4 mg/L) and mixed on 22 Aug 2002 and 24 Aug 2011 (bottom 21.6-23.3 °C, 8.9-9.6 mg/L)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.1.6 ('Baskahegan, Faulkner and North lakes 7.6–8.7 mg/L at their deepest readings')",
+      "claim": "the three nearest monitored lakes held 7.6-8.7 mg/L O₂ at their deepest late-summer readings",
+      "verdict": "unchecked",
+      "note": "consistent with the profile values above (7.6 Baskahegan 2011 to 8.7 Baskahegan 2004; Faulkner 7.9 and 8.6; North 7.8), but none could be checked."
+    },
+    {
+      "paper": "Table 2 (Baskahegan row); Table 3.1-4 (Baskahegan row); §3.3.1; §3.4.1; §3.4.2 ('5.5 mg/L CaCO₃ (≈ 6.7 mg HCO₃⁻/L)')",
+      "claim": "Baskahegan Lake (1078): Secchi 4.1 m (yearly means 3.7-4.7, 2001-2011), color 46 SPU (2004), TP 9-10 µg/L, chlorophyll a 3.1-3.3 µg/L, pH 6.6, alkalinity 5.5 mg/L CaCO₃",
+      "verdict": "unchecked",
+      "note": "shared with Bacon & Vaux 2019 in Table 2 and Table 3.1-4; which value comes from which source is not said."
+    },
+    {
+      "paper": "Table 2 (Faulkner row); Table 3.1-4 (Faulkner row); §3.3.1; §3.4.1",
+      "claim": "Faulkner Lake (1064; 3.7 m): Secchi 4.0 m (3.5-4.5, 2003-2006), often to bottom; color 18 SPU (2006); TP 9-12 µg/L; chlorophyll a 3.6-5.5 µg/L; pH 6.8-7.0; alkalinity 8.4 mg/L",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 2 (North Lake row); Table 3.1-4 (North Lake row); §3.4.1",
+      "claim": "North Lake (1063; 13.7 m): Secchi 3.7-3.9 m (yearly means 3.3-4.6, 1992-2014)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.4.1 ('Secchi ≈ 3.5–4.5 m (mean ~3.9 m), color ~18–46 PCU and alkalinity 5.5–8.4 mg/L CaCO₃ in Faulkner, North and Baskahegan lakes')",
+      "claim": "across Faulkner, North and Baskahegan lakes: Secchi about 3.5-4.5 m (mean ~3.9), color ~18-46, alkalinity 5.5-8.4 mg/L",
+      "verdict": "unchecked",
+      "note": "a summary of the three rows above (project reading)."
+    },
+    {
+      "paper": "Table 3.1-4 (Mattawamkeag, Brackett and East Grand rows)",
+      "claim": "Mattawamkeag Lake (1686) Secchi 2.5-4.9 m (1977-2018), color 17-88, chl 1.3-7.1; Brackett Lake (1068) Secchi 7.2 (6.7-7.6), color 16-20, chl 1.7-2.6; East Grand Lake (1070) Secchi 6.1-8.3 by station, color 10, chl 1.3-2.1",
+      "verdict": "unchecked",
+      "note": "show.mjs does not list these three rows, but they cite this entry."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.maine.gov/dep/water/monitoring/lake/lakedata.htm", "status": 403, "note": "maine.gov refuses scripted fetches (DEP's lake data page)" },
+    { "url": "http://web.archive.org/web/20260521195051/https://www11.maine.gov/dep/water/monitoring/lake/lakedata.htm", "status": 200, "note": "Wayback capture of the DEP lake data page: no link to the data tables; it says most data are served through the Lakes of Maine website" },
+    { "url": "https://web.archive.org/cdx/search/cdx?url=maine.gov/dep/gis/datamaps/*", "status": 200, "note": "Wayback index of DEP's GIS data folders (also /dep/water/lakes/*, /dep/maps-data/*, /dep/water/monitoring/lake/*): no LakesDataTables zip or lake data table captured" },
+    { "url": "https://gis.maine.gov/arcgis/rest/services/dep/MaineDEP_Lakes_Data/MapServer?f=pjson", "status": 499, "note": "ArcGIS 'Token Required' - a login; not pursued" },
+    { "url": "https://lakestewardsofmaine.org/distribution-of-water-quality-data/", "status": 200, "note": "redirects to LSM 'Maine's Water Quality Data': statewide histograms only, no tables or download" },
+    { "url": "https://www.lakestewardsofmaine.org/resources/maine-lake-data/", "status": 200, "note": "LSM data page: points to the Lakes of Maine website and Survey123 portals; no table download" },
+    { "url": "https://www.lakesofmaine.org/lake-overview.html?m=1078", "status": 403, "note": "Lakes of Maine refuses scripted fetches" },
+    { "url": "https://lakesofmaine.org/data/2022_Lake_Reports/Lake-Water-Quality-Reports-20250131.pdf", "status": 403, "note": "Lakes of Maine refuses scripted fetches (a 2025 lake water-quality report PDF found by search; might be a stand-in for the analog lakes' values)" },
+    { "url": "https://www.gulfofmaine.org/kb/dand-lome.html?c=1078", "status": 404, "note": "Gulf of Maine KB 'Maine Lakes Transparency, Color & Chemistry' pages found by search are gone" },
+    { "url": "https://www.waterqualitydata.us/data/Result/search?siteid=MEDEP_WQX-85699&siteid=MEDEP-L-1063&siteid=MEDEP-L-1068&siteid=MEDEP_WQX-85698", "status": 200, "note": "Water Quality Portal: only DEP fish-mercury results (2011) for Baskahegan and Brackett; none of the lakes' water-quality or profile data, so not a stand-in" }
+  ],
+  "notes": "Blocked: the cited file is the human's own download and is not in the repository (the research note says the raw tables, 61 MB, were left out). The quickest fix is for the human to put LakesDataTables2025.zip (or the seven extracted tables) in docs/research_notes/fetched/ so the values can be checked in OVERALL_SUMMARIES, ANNUAL_SUMMARIES and DO_TEMP_PROFILES; maine.gov (DEP lake data page) and lakesofmaine.org (per-lake pages and the 2025 lake water-quality report PDF) would also serve, by hand. Two internal problems to check when the tables are in hand: Table 3.1-3 puts Faulkner's deepest reading at 4 m in a lake given as 3.7 m deep, and Baskahegan's 2011 reading at 7 m in a lake given as 6.7 m deep. The research note's 'Faulkner Lake (1064, Weston — Hot Brook's own town)' is wrong (the Hot Brook lakes are in Danforth and T8 R4 NBPP, per MDIFW 1949); the paper's Table 2 says only 'Weston', which is fine. The note's '1949: \"slightly turbid\", brown water' is not on the 1949 sheets (see MDIFW_1949). Files saved while searching: VLMP_2025.lsmdist.html, VLMP_2025.lsmdata.html, VLMP_2025.lakedata.html (LSM and archived DEP pages) and VLMP_2025.wqp_stations.csv / VLMP_2025.wqp_results.csv (Water Quality Portal), all in docs/research_notes/fetched/v2/."
+}

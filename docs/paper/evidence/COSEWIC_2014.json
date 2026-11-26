@@ -1,0 +1,162 @@
+{
+  "key": "COSEWIC_2014",
+  "reader": "wave-3 batch w3-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own free PDF from the Species at Risk Public Registry (Environment and Climate Change Canada), fetched with getsrc",
+    "url": "https://wildlife-species.canada.ca/species-risk-registry/virtual_sara/files/cosewic/sr_Banded%20Killifish_2014_e.pdf",
+    "file": "docs/research_notes/fetched/v2/COSEWIC_2014.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1), the citation page (PDF p. 2) and the page count",
+    "ok": true,
+    "corrections": "",
+    "note": "Cover: 'COSEWIC Assessment and Status Report on the Banded Killifish Fundulus diaphanus Newfoundland populations in Canada', 2014; the report's own suggested citation omits 'Newfoundland populations' but gives 'Committee on the Status of Endangered Wildlife in Canada. Ottawa. x + 22 pp.' (the PDF is 10 roman + 22 numbered pages). Report writer: Dr. Tim Birt (production note), not named in the citation. Catalogue No. CW69-14/327-2014E-PDF."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10 (para. on spawning substrates)",
+      "claim": "banded killifish in Newfoundland spawn 'from late June to mid-August'",
+      "source_value": "late June through August (not mid-August)",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction",
+      "quote": "spawning occurs in late June through August at temperatures of 19-23 °C",
+      "conditions": "Indian Bay watershed, Newfoundland (Chippett 2004); mainland populations spawn in April-May at about 21 °C or higher (Carlander 1969; McAllister and Coad 1974)",
+      "verdict": "corrected",
+      "note": "Table 3.5-2 already has 'late June-August'; only §3.4.10 says mid-August."
+    },
+    {
+      "paper": "§3.4.10; §3.6 (para. 1: '19–23 °C in Newfoundland; Chippett 2004, via COSEWIC 2014'); Table 3.5-2 (spawning cell); Table 3.6-1 (killifish row); src/w3/species3.js:66; src/w3/plants3.js:252",
+      "claim": "Newfoundland killifish spawn at 19-23 °C, with Potamogeton the substrate most used",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction",
+      "quote": "Potamogeton is the plant most often used as spawning substrate",
+      "conditions": "Indian Bay watershed, Newfoundland (Chippett 2004 thesis); summer-spawning island population - the report stresses that mainland fish spawn earlier, in spring",
+      "verdict": "confirmed",
+      "note": "the 19-23 °C is in the same sentence (quote in the claim above). The 'via' attribution to Chippett 2004 is right."
+    },
+    {
+      "paper": "§3.4.10 ('each egg hanging on an adhesive thread'); Table 3.6-1 ('eggs on adhesive threads'); src/w3/plants3.js:252",
+      "claim": "the eggs are fixed to plants by adhesive threads",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction",
+      "quote": "Externally fertilized eggs are bound to aquatic plants by an adhesive thread",
+      "conditions": "a general statement for the species, cited to Richardson (1939), not a Newfoundland observation",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.10; src/w3/plants3.js:253",
+      "claim": "the habitat's commonest plants were water lobelia, quillwort and pipewort, with purple bladderwort and ribbon-leaf pondweed",
+      "location": "p. 9 (PDF p. 19), Habitat Requirements",
+      "quote": "are Water Lobelia (Lobelia dortmana), Quillwort (Isoetes sp.) and Pipewort (Eriocaulon sp.)",
+      "conditions": "Indian Bay watershed, by quadrat sampling in areas containing the species; 'Other common aquatic macrophytes include Eastern Purple Bladderwort (Utricularia purpurea), Pondweed (Potamogeton epihydrus), and Water Milfoil (Myriophyllum tenellum)'",
+      "verdict": "confirmed",
+      "note": "the report says only 'Pondweed (Potamogeton epihydrus)': 'ribbon-leaf' is the paper's common name for that species. The list also has Myriophyllum tenellum, which the paper leaves out; plants3.js's list leaves out quillwort as well."
+    },
+    {
+      "paper": "§3.4.10 ('sedimentation smothering vegetation is the main threat named')",
+      "claim": "sedimentation smothering vegetation is the main threat named",
+      "location": "p. 14 (PDF p. 24), Threats",
+      "quote": "most significant threat to Newfoundland populations of Banded Killifish is habitat sedimentation",
+      "conditions": "sedimentation 'resulting from forest harvesting activity and road development'; the report gives three harms: invertebrates affected, 'aquatic vegetation can be smothered by increased suspended sediment', and gill damage/disease/predation",
+      "verdict": "confirmed",
+      "note": "accurate in substance; 'smothering vegetation' is one of the three harms listed, not the threat itself. Better: 'sedimentation from forestry and roads, which can smother plants, is the main threat named'."
+    },
+    {
+      "paper": "§3.5.2 (last sentence: 'about 20,600 fish in August; Chippett 2004, via COSEWIC 2014', 'the shallows of two Newfoundland ponds')",
+      "claim": "the only banded killifish count found is from the shallows of two Newfoundland ponds, about 20,600 fish in August",
+      "location": "p. 12 (PDF p. 22), Sampling Effort, Methods, and Abundance; p. 8 (PDF p. 18)",
+      "quote": "estimate of 20,569 individuals (95 % CI 12,529 – 40,201) was obtained during August",
+      "conditions": "Indian Bay watershed, 1999; Schnabel mark-recapture after snorkelling/fyke sampling at 22 sites; fish found in Third Pond and Backup Pond (one specimen in Indian Bay Big Pond), confined to the south end of Backup Pond and the east end of Third Pond; August, 'when water temperature was at the seasonal maximum'. An earlier July estimate at the same sites was 1,209 (95 % CI 619-3,423)",
+      "verdict": "confirmed",
+      "note": "worth adding the 95 % CI (12,529-40,201) and that the same sites gave 1,209 in July, i.e. the estimate tracks activity/catchability with temperature. The report gives no area, so no density can be computed from it."
+    },
+    {
+      "paper": "Table 3.5-2 (killifish growth cell: 'Lake Opinicon young 49.5 mm by mid-October'); Table 3.6-6 ('linear growth to 49.5 mm by mid-October'; Keast & Eadie 1984 via COSEWIC 2014); Table 3.6-7 ('49.5 mm mid-October'); src/w3/fish3.js:839-840",
+      "claim": "young-of-year in Lake Opinicon grow roughly linearly to 49.5 mm by mid-October (Keast & Eadie 1984, via COSEWIC 2014)",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction",
+      "quote": "They reach a mean length of 49.5 mm by the middle of October",
+      "conditions": "'approximately linear growth during their first summer in Lake Opinicon, Ontario'; mean length (type not stated); growth 'essentially ceases' then until spring; cited to Keast and Eadie (1984). The executive summary rounds it to 'approximately 40-50 mm by October'",
+      "verdict": "confirmed",
+      "note": "the via citation is faithful to COSEWIC; whether Keast & Eadie's own data reach mid-October is for that entry (the Keast_Eadie_1984 evidence notes the abstract's plateau 'by early September')."
+    },
+    {
+      "paper": "Table 3.5-2 (killifish growth cell: 'to ≈ 110 mm (Phillips, Ewert & Speares 2007; COSEWIC 2014)')",
+      "claim": "banded killifish grow to about 110 mm",
+      "location": "p. 4 (PDF p. 14), Morphological Description and Population Spatial Structure; p. iv (PDF p. 4), Executive Summary",
+      "quote": "The typical total length for the eastern F. d. diaphanus is approximately 110 mm",
+      "conditions": "total length; eastern subspecies (Hubbs and Lagler 1964); the same page gives 'maximum 110 mm versus 74 mm' for the eastern vs western subspecies, but the executive summary says 'a maximum size of approximately 120 –130 mm' and the largest Newfoundland fish measured 128 mm (Chippett 2003)",
+      "verdict": "confirmed",
+      "note": "the report contradicts itself: ~110 mm is 'typical'/subspecies maximum, 120-130 mm the stated maximum. 'to ≈ 110 mm (typical; largest 120-130 mm)' would be safer."
+    },
+    {
+      "paper": "Table 3.5-3 (killifish lifespan: 'maximum 4 yr (Newfoundland) (COSEWIC 2014)'); src/w3/species3.js:65 ('lives 3–4 years')",
+      "claim": "maximum age 4 years in Newfoundland",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction; p. vi (PDF p. 6), Technical Summary",
+      "quote": "The maximum age for Banded Killifish in Newfoundland is 4 years",
+      "conditions": "cited to Fisheries and Oceans Canada (2011); 'most probably die earlier'; in Minnesota few live as long as 3 years (Paulson and Hatch 2002); generation time 1-2 years",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (temperature cell: 'preferred 21.0 °C (Nova Scotia fish) vs 28.6 °C (Pennsylvania); UILT 34.5 °C'); src/w3/species3.js:66-67 and :72",
+      "claim": "preferred temperature 21.0 °C for Nova Scotia fish against 28.6 °C for Pennsylvania fish; upper incipient lethal temperature 34.5 °C",
+      "location": "p. 10 (PDF p. 20), Physiology and Adaptability",
+      "quote": "preferred temperature than fish from Nova Scotia (28.6 °C versus 21.0 °C)",
+      "conditions": "preferenda from Melinsky et al. (1980); 'Rombough and Garside (1977) reported an upper incipient temperature limit of 34.5 °C' (a study of hypoxial death at high temperature, by its title in the reference list); Carlander (1969) observed fish at 38.3 °C",
+      "verdict": "confirmed",
+      "note": "acclimation temperatures are not given in COSEWIC; cite the primary papers if the acclimation matters."
+    },
+    {
+      "paper": "Table 3.5-3 ('inactive below ≈ 12 °C'); src/w3/species3.js:66 ('inactive below ~12 °C'); src/w3/fish3.js:454 ('deeper and quiescent below ~12 °C (COSEWIC 2014)')",
+      "claim": "killifish are inactive below about 12 °C (and move deeper in the cold)",
+      "location": "p. v (PDF p. 5), Executive Summary; p. 10 (PDF p. 20), Physiology and Adaptability; p. 11 (PDF p. 21), Dispersal and Migration",
+      "quote": "does not appear to become active in Newfoundland until water temperature reaches 12°C",
+      "conditions": "inferred from fyke-net catchability in the Indian Bay watershed ('catchable with fyke nets ... only when water temperature reached 12°C', Chippett 2004); the move to deeper water is only 'likely ... in the autumn', by analogy with the blackstripe topminnow (Carranza and Winn 1954)",
+      "verdict": "confirmed",
+      "note": "the 12 °C is a catchability threshold in one Newfoundland watershed; fish3.js's 'deeper' is an inference the report draws from a congener, not an observation."
+    },
+    {
+      "paper": "Table 3.5-3 (O₂ cell: '\"broad tolerance\" (COSEWIC 2014)'); src/w3/species3.js:66 ('broad thermal and O₂ tolerance')",
+      "claim": "broad tolerance of temperature and oxygen",
+      "location": "p. 10 (PDF p. 20), Physiology and Adaptability",
+      "quote": "broad tolerance for variation in temperature, salinity, and dissolved oxygen",
+      "conditions": "qualitative: no oxygen threshold is given anywhere in the report",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (killifish row: '2.0–2.2-mm eggs ... | none' parental care; Chippett 2004 via COSEWIC 2014)",
+      "claim": "eggs 2.0-2.2 mm; no parental care",
+      "location": "p. 10 (PDF p. 20), Life Cycle and Reproduction; p. v (PDF p. 5), Executive Summary",
+      "quote": "mean egg diameter for Indian Bay watershed Banded Killifish to be 2.2 mm",
+      "conditions": "2.2 mm is the Newfoundland mean (Chippett 2004); 2.0 mm is Cooper's (1936) mean for mainland fish, quoted in the same passage; executive summary: 'there is no parental care provided to young'",
+      "verdict": "confirmed",
+      "note": "the '2.0-2.2 mm' range joins the means of two populations, not a within-population range; the table credits 2.0 mm to Cooper 1936 via Grant & Lee 2004, but COSEWIC gives it too. Incubation times and hatch lengths in that row are not in COSEWIC."
+    },
+    {
+      "paper": "src/w3/species3.js:63-65 (habitat, shoals, maturity); src/w3/fish3.js:453 ('size-sorted shoals of 25–40')",
+      "claim": "a topminnow of shallow, clear, low-current water over sand or mud with plants, in shoals of 25-40 sorted by size, maturing at age 1",
+      "location": "p. 9 (PDF p. 19), Habitat Requirements; p. 13 (PDF p. 23), Fluctuations and Trends; p. 12 (PDF p. 22), Interspecific Interactions; p. 10 (PDF p. 20)",
+      "quote": "shallow areas characterized by clear water, low current, sandy or muddy substrate, and aquatic vegetation",
+      "conditions": "shoal size: 'schools of approximately 25 – 40 fish could easily be observed in Loch Leven' (Chippett 2004); size sorting: shoals 'are size-selected' (Blakeslee et al. 2009, mixed killifish-mummichog shoals in brackish water); 'Banded Killifish mature at one year of age'",
+      "verdict": "confirmed",
+      "note": "'spawns repeatedly' and the maturity lengths (≥ 64 mm Lake Erie, 42 mm Quebec) in species3.js are not from COSEWIC (Phillips et al. 2007, cited alongside)."
+    },
+    {
+      "paper": "src/w3/fish3.js:595-596 ('an inference from fyke catches of \"some nocturnal movement\" (COSEWIC)')",
+      "claim": "fyke catches suggest some nocturnal movement into deeper water",
+      "location": "p. 11 (PDF p. 21), Dispersal and Migration",
+      "quote": "some nocturnal movement out of these areas into deeper rocky habitats may occur",
+      "conditions": "Backup and Third ponds, Indian Bay watershed (Chippett 2004); the occupied areas are 'typically shallow and have extensive vegetation'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:698 ('The killifish keep their cladocerans and copepods (Phillips; COSEWIC ...)')",
+      "claim": "killifish eat cladocerans and copepods",
+      "location": "p. 11 (PDF p. 21), Dispersal and Migration (diet paragraph at the top)",
+      "quote": "chironomid larvae, cladocerans, copepods, ostracods, and amphipods",
+      "conditions": "gut contents of Lake Opinicon fish (Keast and Webb 1966; Keast 1980); also 'benthos and flying insects'",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Read in full (32 PDF pages). Every value the paper and code take from it is there except §3.4.10's 'mid-August' (the report says late June through August). Caveats for the rewrite: (1) the Newfoundland timing is an island peculiarity - the report says mainland populations spawn in April-May at ≈ 21 °C or higher (Carlander 1969; McAllister and Coad 1974), so Hot Brook (mainland Maine) may differ; the paper's Maine source (Kramer 2002, 'throughout the summer') should lead. (2) The 20,569 estimate has a wide CI (12,529-40,201) and a July estimate at the same sites of 1,209: report both. (3) Size: 'typical' 110 mm vs a stated maximum of 120-130 mm and a 128-mm Newfoundland fish. (4) Other usable values: Newfoundland maximum fecundity 450 eggs (Chippett 2004) vs 250 for mainland fish (Carlander 1969) - Table 3.5-2's 'maximum 250 (Carlander 1969)' is the mainland figure and is quoted in COSEWIC (cite 'via COSEWIC 2014' unless Carlander was read); fyke CPUE 1999: Indian Bay 42, Loch Leven 29, Freshwater Pond 23 fish per ~24-h set (Table 1, p. 13); predators named: Atlantic salmon, brook trout, American eel, brown and rainbow trout, belted kingfisher, common merganser (p. 12); Valley et al. (2010, Minnesota) mean displacement 228 and 355 m between May and August. Code lines with a bare '(COSEWIC)' at src/w3/fish3.js:445 and :499 and species3.js:30/41 concern redbreast sunfish (COSEWIC 2008), and fish3.js:2893 cites COSEWIC 2003; none is this report."
+}
