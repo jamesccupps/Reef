@@ -41,6 +41,11 @@ export function check(e, file = '') {
     if (c.verdict === 'unsupported' && !c.note) warn.push(`${at}: unsupported without a note saying what the source does say`);
   });
   if (/^read-/.test(e.status) && Array.isArray(e.claims) && e.claims.length === 0) warn.push('read but no claims recorded');
+  // privacy (READER rule 11): no coordinates in the Hot Brook region (a nest or a listed species' record must not be locatable);
+  // coordinates elsewhere (another lake's study site) are only a warning to look at
+  const raw = JSON.stringify(e);
+  if (/\b45\.[5-7]\d{2,}\s*°?\s*N?[^"]{0,40}?\b6[78]\.\d{3,}\s*°?\s*W?/.test(raw)) err.push('coordinates near the Hot Brook lakes: withhold them (READER rule 11)');
+  else if (/\b\d{2}\.\d{3,}\s*°\s*[NS]\b|\b\d{2}\.\d{3,}\s*°?\s*N,\s*\d{2,3}\.\d{3,}\s*°?\s*W\b/.test(raw)) warn.push('coordinates in the file: check none locates a nest or a listed species (READER rule 11)');
   // each quote should be in the fetched text (a guard against a quote made up or remembered); one read off a page image says so
   const T = textOf(e.key);
   if (T && Array.isArray(e.claims)) e.claims.forEach((c, i) => {
