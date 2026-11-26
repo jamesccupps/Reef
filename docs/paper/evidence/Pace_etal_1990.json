@@ -1,0 +1,60 @@
+{
+  "key": "Pace_etal_1990",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_35/issue_4/0795.pdf), as captured by the Internet Archive's Wayback Machine on 22 Jun 2006 and openly downloadable; Wiley, today's host, refuses scripts (403). 14 pages, OCR text layer; Table 3 read in the raw text",
+    "url": "https://web.archive.org/web/20060622213253id_/http://aslo.org:80/lo/toc/vol_35/issue_4/0795.pdf",
+    "file": "docs/research_notes/fetched/v2/Pace_etal_1990.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (p. 795) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Michael L. Pace, George B. McManus & Stuart E. G. Findlay, Limnol. Oceanogr. 35(4): 795–808 (1990), title as cited. Printed page = PDF page + 794"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "in Upton Lake D. galeata \"consumed most of the bacterial production\" except in winter and autumn",
+      "location": "p. 795 (PDF p. 1), abstract; p. 801 (PDF p. 7), Results; p. 805 (PDF p. 11), Discussion",
+      "quote": "At other times, Daphnia galeata consumed most of the bacterial production.",
+      "conditions": "Upton Lake, Dutchess County, New York: 18 ha, eutrophic, ice ~3 months, anoxic or < 1 mg O₂/L bottom water; five paired day–night experiments in 1988 (March under ice, April, July, September, October) on 2-m water; grazing measured with E. coli minicells (fluorescent or radiolabelled), growth by thymidine incorporation",
+      "verdict": "confirmed",
+      "note": "the abstract's preceding sentence gives the exception: 'Flagellates were the primary consumers of bacteria in winter and fall'. In the body the fall shift is clearest in October (flagellate feeding above macrozooplankton feeding; Daphnia scarce, Dinobryon divergens abundant); in July 'the primary fate of bacterial production' was 'direct ingestion by Daphnia' (p. 801). The paper's '(… ; abstract only)' tag can go: the full text bears it out"
+    },
+    {
+      "paper": "§3.3.8",
+      "claim": "ciliates and rotifers \"were never important bacterial grazers\" (Upton Lake)",
+      "location": "p. 795 (PDF p. 1), abstract; p. 799 (PDF p. 5), Methods; p. 803 (PDF p. 9), Results",
+      "quote": "Ciliates and rotifers were never important bacterial grazers.",
+      "conditions": "the 35–200-µm fraction, dominated by Polyarthra and Keratella, took up little more radioactivity than killed controls, so the authors report only macrozooplankton (p. 799); ciliate grazing (1.2–96 × 10⁴ bacteria L⁻¹ h⁻¹) was typically < 10 % of flagellate grazing (p. 803)",
+      "verdict": "confirmed",
+      "note": "worth carrying into the text: the rotifers were mainly Polyarthra and Keratella and were judged 'not feeding on bacteria at significant rates' by a radiotracer test against killed controls (p. 799); the tracer minicells are small (0.6–0.7 µm), DNA-free cells of a mutant E. coli (p. 797)"
+    },
+    {
+      "paper": "src/config.js:1507–1508 (BACT_LOSS 0.15/d at 20 °C)",
+      "claim": "bacterial turnover 1.5–16 d (Pace, McManus & Findlay 1990)",
+      "location": "p. 795 (PDF p. 1), abstract; p. 804 (PDF p. 10), Table 3; p. 803 (PDF p. 9)",
+      "quote": "turnover times calculated from either growth or grazing rates ranged from 1.5 to 16 d",
+      "conditions": "Table 3 (raw text): spring–fall turnover 6.1–16.3 d from growth, 1.5–12.7 d from grazing, 2.5–9.1 d from total mortality; under ice on 3 March 55.9 d (growth) and 90.9 d (grazing) — 'Exceptionally slow turnover times of 50-100 d were observed under the ice in March'",
+      "verdict": "confirmed",
+      "note": "the 1.5–16 d range is the open-water season only; the abstract leaves out the winter values. BACT_LOSS 0.15/d (≈ 6.7 d at 20 °C, × MICROBE.Q10 in the cold) sits inside it. The authors also compiled 29 thymidine-based cases from the literature: mean turnover 4.5 d, median 3.7, range 0.5–14 (p. 805)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    {
+      "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1990.35.4.0795",
+      "status": 403,
+      "note": "Wiley refuses scripts (OpenAlex lists it as bronze free)"
+    },
+    {
+      "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1990.35.4.0795",
+      "status": 403,
+      "note": "Wiley refuses scripts"
+    }
+  ],
+  "notes": "Every claim checks; drop the 'abstract only' tag in §3.3.8. Useful elsewhere in §3.3.8: Pace et al. cite Cole et al. 1988 as 'bacterial production is ~30% of primary production on an areal basis' (p. 795), whereas §3.3.8 gives Cole et al.'s average as about 20 % — the two may be volumetric vs areal; worth checking against Cole et al. 1988 itself. Pace et al. also report Sanders et al. 1989's Lake Oglethorpe result as heterotrophic and mixotrophic flagellates taking 68–90 % of bacterial ingestion (p. 805), while §3.3.8 gives 49–81 % for heterotrophic nanoflagellates (Sanders et al., abstract only) — not a contradiction if the 49–81 % excludes mixotrophs, but the reader of that entry should check. Seasonal community loss rates of minicells were 0.1–0.2 d⁻¹, 0.3–0.4 d⁻¹ in July (p. 803)."
+}

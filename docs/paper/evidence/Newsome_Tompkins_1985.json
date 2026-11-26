@@ -1,0 +1,40 @@
+{
+  "key": "Newsome_Tompkins_1985",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the publisher's abstract deposited in Crossref's record (JSON saved); the article (3 pages) is behind Canadian Science Publishing's paywall, which also refuses scripts",
+    "url": "https://api.crossref.org/works/10.1139/z85-430",
+    "file": "docs/research_notes/fetched/v2/Newsome_Tompkins_1985.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "G. E. Newsome & Jean Tompkins, 'Yellow perch egg masses deter predators', Can. J. Zool. 63(12): 2882–2884 (1985) — matches; not checked against the title page"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "eel, white sucker, brown bullhead, yellow perch and sticklebacks all refused perch ribbons in feeding trials (Newsome & Tompkins 1985, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract (not used to confirm) says no egg masses were consumed when offered to eel, white sucker, brown bullhead, yellow perch, and three- and nine-spined sticklebacks, although alternative foods were often eaten; that eel and white sucker caught on perch spawning sites at the peak had none in their stomachs; and that hatchery brook trout ate egg masses without harm, suggesting an unpalatable rather than toxic substance. The paper's sentence matches the abstract; the numbers of fish and trials, and whether ribbons were offered whole, need the full text"
+    },
+    {
+      "paper": "src/config.js:481",
+      "claim": "predation on perch ribbons over the egg stage ~0 (Newsome & Tompkins 1985)",
+      "verdict": "unchecked",
+      "note": "as above. By the abstract, the evidence is refusal in trials and empty stomachs at spawning sites for two species; it does not measure field predation on ribbons by the lakes' other egg eaters (crayfish, snails, pumpkinseed, bass were not among the species the abstract lists). The brook trout result shows a nonselective fish will eat them, so '~0' is an inference beyond the abstract"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/10.1139/z85-430", "status": 403, "note": "Canadian Science Publishing refuses scripts; paywalled journal. doi:10.1139/z85-430 is the page a library login would open" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/z85-430", "status": 403, "note": "as above" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/z85-430?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf CLOSED; abstract elided by the publisher" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/z85-430\"&format=json&resultType=core", "status": 200, "note": "no hit" },
+    { "url": "https://archive.org/metadata/sim_canadian-journal-of-zoology_1985-12_63_12", "status": 200, "note": "Internet Archive scan of the issue exists but is access-restricted (printdisabled / borrow only): not acceptable" }
+  ],
+  "notes": "Blocked. The abstract supports the paper's sentence as written (and the paper marks it 'abstract'); a library copy would add the trial design and sample sizes. The abstract covers both Perca flavescens and P. fluviatilis egg masses."
+}

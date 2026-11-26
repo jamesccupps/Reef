@@ -1,0 +1,40 @@
+{
+  "key": "RamosRodriguez_etal_2020",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' institutional repository copy: DIGIBUG, University of Granada (hdl 10481/98883), the publisher's typeset PDF (16 pages) with its supplementary information (2 pages)",
+    "url": "https://digibug.ugr.es/bitstream/10481/98883/1/Ramos-Rodriguez%20et%20al%202020%20JEB.pdf",
+    "file": "docs/research_notes/fetched/v2/RamosRodriguez_etal_2020.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (PDF p. 1) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Eloísa Ramos-Rodríguez, Emilio Moreno & José María Conde-Porcuna, J. Exp. Biol. (2020) 223, jeb209676, title as cited; received 24 July 2019, accepted 23 February 2020. The issue number (7) is printed neither on the article nor in Crossref's record (which carries no volume or issue); not checked. The article's pages are numbered 1–16, the same as the PDF's"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (Keratella cochlearis); src/config.js:1513",
+      "claim": "zero-growth food 0.03 mg C/L and r_max 0.28/d at 20 °C (Stemberger & Gilbert 1985, via Ramos-Rodríguez et al. 2020)",
+      "location": "p. 10 (PDF p. 10), Discussion",
+      "quote": "who reported an rmax of 0.28 day−1 and TFL of 0.03 mg C l−1",
+      "conditions": "Stemberger & Gilbert 1985's values as reported here: K. cochlearis at 20 °C fed Rhodomonas minuta, 'assuming 50% carbon content of food algae by dry mass'",
+      "verdict": "confirmed",
+      "note": "the 'via' attribution is right: Ramos-Rodríguez et al. report S&G's numbers and do not measure at 20 °C. Their own clones (Ruidera lakes, Spain; Cryptomonas pyrenoidifera at 0.026–0.624 mg C/L; 9.7, 15.6 and 18.5 °C) gave TFLs from < 0.03 mg C/L (Tinaja clone, 15.6 °C) to 0.13 mg C/L (18.5 °C), < 0.1 at 9.7 °C, and the Cueva Morenilla clone's TFL was 4× the Tinaja clone's at 15.6 °C (p. 8); the Tinaja clone's rm rose from 0.020/d at 9.7 °C to 0.125/d at 15.6 °C. A Cryptomonas-fed clone's TFL of 0.018 ± 0.004 mg C/L at 20 °C is also cited (Ramos-Rodríguez 2003, p. 4). The threshold is clone- and temperature-dependent, by a factor of 4 or more"
+    },
+    {
+      "paper": "src/config.js:1513",
+      "claim": "~1 mg C/L saturates K. cochlearis growth (Ramos-Rodríguez et al. 2020)",
+      "location": "p. 4 (PDF p. 4), Materials and methods",
+      "quote": "concentration of 1 mg C l−1 is sufficient to support the maximal growth rate",
+      "conditions": "said of rotifers in general, citing Stemberger & Gilbert 1985, to justify feeding the stock cultures ~1 mg C/L of Cryptomonas once a week",
+      "verdict": "confirmed",
+      "note": "the value is in this source, but as Stemberger & Gilbert 1985's: cite it as '(Stemberger & Gilbert 1985, via Ramos-Rodríguez et al. 2020)'. It is a sufficient level, not a fitted half-saturation constant; the article's own Monod fits (Eq. 1, rm = rmax(C − TFL)/(C − TFL + Ks)) give no Ks at 20 °C"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Both values check, and the paper's 'via' attribution is right; in the code comment, the '~1 mg C/L saturates' should also carry 'Stemberger & Gilbert 1985, via'. For the rewrite: the source's own measurements show K. cochlearis's zero-growth food varying about fourfold between two neighbouring clones and between 15.6 and 18.5 °C (p. 8), so 0.03 mg C/L is one clone at 20 °C on Rhodomonas, not a species constant (the authors' introduction says TFLs 'are not species-specific constants'). The code's derived 0.020 'units, 0.6 of Daphnia's' is project arithmetic not checked here."
+}

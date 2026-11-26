@@ -1,0 +1,55 @@
+{
+  "key": "Persson_Bronmark_2002",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' institutional repository copy: Lund University Publications (LUP), the typeset Ecology article (pp. 3014–3022) behind LUP's two-page cover; Eq. 3 read on the page image (PDF p. 6) because the text layer garbles it",
+    "url": "https://lup.lub.lu.se/search/files/4398124/625096.pdf",
+    "file": "docs/research_notes/fetched/v2/Persson_Bronmark_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (PDF p. 3) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Anders Persson & Christer Brönmark, Ecology 83(11): 3014–3022 (2002), title as cited. Printed page = PDF page + 3011 (PDF pp. 1–2 are LUP's cover and download stamp)"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.5",
+      "claim": "Attack rate peaks at an intermediate prey size: 0.19 of predator length for pikeperch",
+      "kind": "arithmetic",
+      "location": "p. 3018 (PDF p. 7), Fig. 1b caption and Results text; Table 1, p. 3016 (PDF p. 5)",
+      "quote": "maximum attack rate (9.6 m3/d) was achieved at a predator: prey length ratio of 5.3",
+      "conditions": "piscivory experiments in outdoor ponds (100 and 28 m²; 16–20 °C) and an indoor pool (5 m²; 18 °C), 3-day trials, one or two pikeperch of 130–380 mm TL per unit, roach and bream prey 20–150 mm; predator:prey length ratios 2–14 tested; attack rates fitted to Eq. 3 by nonlinear least squares: l_FO (optimal predator:prey length ratio) = 5.3 ± 0.6, A_F = 9.6 ± 2 m³/d, α_F = 6.5 ± 3",
+      "verdict": "confirmed",
+      "note": "the source gives the optimum as a predator:prey LENGTH RATIO of 5.3 (the abstract rounds it to 5); prey = 1/5.3 = 0.189 ≈ 0.19 of predator length is the project's arithmetic and is right. The fit is in the ratio only (the authors assume the parameters are independent of predator size once corrected for prey size), so the peak holds at any predator size within 130–380 mm"
+    },
+    {
+      "paper": "§4.5; src/config.js:244–252 (WIN_R 5.3, WIN_E 6.5); src/w3/fish3.js:186",
+      "claim": "schools of young piscivores take prey within a size window peaking at prey 0.19 of their length; the window w(r) = [(R/5.3)·e^(1 − R/5.3)]^6.5, R = predator/prey length",
+      "location": "p. 3017 (PDF p. 6), Eq. 3; p. 3018 (PDF p. 7), Fig. 1 caption",
+      "quote": "5.3 ± 0.6 mm/mm, AF = 9.6 ± 2 m3/d",
+      "conditions": "Eq. 3 (read on the page image): a(l) = A[(l/l0)·exp(1 − l/l0)]^α, applied to fish prey with l the relative predator length lR; l0 = 5.3, α = 6.5; pikeperch 130–380 mm TL; 16–20 °C",
+      "verdict": "confirmed",
+      "note": "the code's window is exactly the source's Eq. 3 with its fitted l0 and α (A is replaced by the project's own clearance). Caveat for the text: the hump was measured on pikeperch of 130 mm and longer eating 20–150-mm roach and bream, not on young-of-year piscivores; applying it to 3–15-cm young pickerel and bass is an extrapolation (the research note says so). fish3.js:186 calls it 'a perch cannibal's attack-rate window' — it is the pikeperch's"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "schools of young piscivores clear 400·L(mm)^0.6 L a day (cited jointly to Persson et al. 2004 and Persson & Brönmark 2002)",
+      "verdict": "unsupported",
+      "note": "this source has no clearance law in predator length; its piscivory parameter is a maximum attack rate A_F = 9.6 ± 2 m³/d for 130–380-mm pikeperch at the optimal ratio (Fig. 1 caption; Table 1). The 400·L^0.6 L/d is Persson et al. 2004's perch-cannibal attack rate (the research note's line 27 and config.js:244 say so). Split the citation: 'clear 400·L(mm)^0.6 L a day (Persson et al. 2004) within a size window peaking at prey 0.19 of their length (Persson & Brönmark 2002)'"
+    },
+    {
+      "paper": "src/config.js:244",
+      "claim": "pikeperch 9.6 ± 2 m³/d (Persson & Brönmark 2002)",
+      "location": "p. 3018 (PDF p. 7), Fig. 1 caption; Table 1, p. 3016 (PDF p. 5)",
+      "quote": "5.3 ± 0.6 mm/mm, AF = 9.6 ± 2 m3/d",
+      "conditions": "maximum attack rate at the optimal predator:prey length ratio; pikeperch 130–380 mm in ponds and pools at 16–20 °C, 3-day trials, Holling type II or linear fits",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Everything the paper and code take from this source checks; the only fix is to split the §4.5 citation so the 400·L^0.6 clearance is credited to Persson et al. 2004 alone. Also in the source: for planktivory on 0.93-mm Daphnia (60-L tanks, 18 °C, 38–120-mm pikeperch) the attack rate peaks at a pikeperch length of 66 ± 10 mm with A_Z = 13 ± 3 m³/d assuming 12 h of feeding a day (Fig. 1a); the model's gape limit lets pikeperch eat fish only when lR > 2 (prey ≤ half the predator's length; Turesson et al. 2002, Popova & Sytina 1977), p. 3017; handling and metabolism are Claessen et al. 2000's perch allometries (Table 1). An internal inconsistency not used by the project: α_Z is 6.0 in Table 1 but 3.5 ± 3 in the Fig. 1 caption. The Results text cites 'Fig. 2b' for the piscivory optimum; it is Fig. 1b."
+}

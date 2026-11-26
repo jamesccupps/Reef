@@ -1,0 +1,54 @@
+{
+  "key": "Mehner_etal_2005",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_50/issue_6/2022.pdf), as captured by the Internet Archive's Wayback Machine on 19 Sep 2015 and openly downloadable; Wiley, today's host, refuses scripts (403). 10 pages with a text layer",
+    "url": "https://web.archive.org/web/20150919000016id_/http://aslo.org/lo/toc/vol_50/issue_6/2022.pdf",
+    "file": "docs/research_notes/fetched/v2/Mehner_etal_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (p. 2022) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Thomas Mehner, Jan Ihlau, Hendrik Dörner & Franz Hölker, Limnol. Oceanogr. 50(6): 2022–2031 (2005), title as cited (Crossref's 0.67 title score is a typography artefact). Printed page = PDF page + 2021"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.5",
+      "claim": "A German model concluded that a substantial fish-mediated subsidy of terrestrial P is likely only in lakes smaller than about 3 ha (Mehner et al. 2005, abstract)",
+      "location": "p. 2022 (PDF p. 1), abstract; p. 2026 (PDF p. 5), Results; p. 2029 (PDF p. 8), Discussion",
+      "quote": "insectivorous fish is more likely in lakes <0.03 km2 owing to the increasing perimeter-to-area ratio",
+      "source_value": "'more likely in lakes < 0.03 km²' (abstract), not 'likely only': the model's sensitivity to the insect flux and its offshore decay 'was strongly expressed only for very small lakes' under ~0.03 km² (p. 2026), and insects would support bleak at roach-like densities (> 230,000 km⁻²) only in lakes < 0.1 km² (p. 2029). The abstract's 'only' is attached to 'small oligotrophic lakes in forested areas'",
+      "conditions": "Lake Großer Vätersee, NE Germany: 0.121 km², max 11.5 m, mean 5.2 m, mesotrophic, no surface inflow or outflow, mixed and coniferous forest; bleak (Alburnus alburnus) at ~77,000 km⁻²; Wisconsin bioenergetics model; insect fall-in ASSUMED from stream studies (no lake data); 180-day season",
+      "verdict": "corrected",
+      "note": "a wording fix only: 'concluded that such a subsidy is more likely in lakes smaller than about 3 ha'. With the full text read, the '(… abstract …)' tag can go"
+    },
+    {
+      "paper": "src/w3/littoral3.js:52–55 (FALL 0.05 g DW per m of bank a day)",
+      "claim": "the land's insects fall in from forested banks at ~50 mg DW per m of bank a day at the July–August peak (20–120; Mehner et al. 2005)",
+      "location": "p. 2024 (PDF p. 3), Materials and methods; p. 2025 (PDF p. 4)",
+      "quote": "per meter of lake shoreline (coefficient a) was assumed to be 50.4 mg dry weight",
+      "source_value": "a = 50.4 mg DW m⁻² d⁻¹ — an AREAL rate at the shoreline (the value at D = 0 of BM = a·e^(−bD), BM in mg m⁻², b = 0.0853 m⁻¹ borrowed from a desert stream, Sanzone et al. 2003), assumed, as 'the median seasonal flux from the nine studies on streams in forested areas' summarized by Baxter et al. 2005 ('data for lakes were not available'), constant over a 180-d season. Per metre of shoreline the model sums BM along a transect to the lake centre, ≈ a/(1 − e^(−b)) ≈ 0.6 g DW m⁻¹ d⁻¹ (reader's arithmetic; the source's own 0.01-km² example — 111.74 kg fwt a year on 355 m of shore over 180 d at 65 % water — gives 0.61). High and low scenarios: 11,000 and 624 mg DW m⁻² yr⁻¹ (Baxter et al.'s maximum and minimum annual fluxes). No '20–120' and no July–August peak in the source",
+      "conditions": "a modelling assumption from forested-stream data (deciduous and coniferous; Alaska, Virginia, Scotland, Japan, New Zealand), not a measurement at any lake",
+      "verdict": "corrected",
+      "note": "the source's sentence does say 'per meter of lake shoreline', but gives the units as m⁻² d⁻¹ and uses a as an areal density that decays offshore, so 50 mg per m of bank a day is not its number. If the project keeps FALL = 0.05 g DW m⁻¹ d⁻¹, cite it as a project estimate (it is of the order of Vander Zanden & Gratton 2011's 1.88 g C per m of shoreline per year spread over the open season — reader's comparison, that figure not checked here), not as Mehner et al. Mehner's model, taken literally, implies ~12× more per metre of shore"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "the brook's 12–33 mg m⁻² d⁻¹ summer peak and Upper's 5–8 mg m⁻² yr⁻¹ scale 'a per-meter-of-bank rate attributed to Mehner et al. (2005) that was seen only in a search summary'",
+      "location": "p. 2024 (PDF p. 3), Materials and methods",
+      "quote": "the median seasonal flux from the nine studies on streams in forested areas",
+      "source_value": "the figure is in the source (50.4), but as mg DW m⁻² d⁻¹ of stream surface (the median of nine forested streams, via Baxter et al. 2005), placed at a lake's shoreline. For a forested brook it is itself the areal estimate (~50 mg m⁻² d⁻¹ as a seasonal median), not something to divide by channel width; for a lake, Mehner's model gives ~0.6 g DW per m of shoreline a day",
+      "conditions": "as above: an assumption borrowed from stream studies, 180-d season",
+      "verdict": "corrected",
+      "note": "the project estimates (12–33 mg m⁻² d⁻¹ in the brook; 5–8 mg m⁻² yr⁻¹ over Upper) rest on reading 50 as mg per metre of bank. Read as the source uses it, the brook's input would be about the stream median itself (~50 mg m⁻² d⁻¹, beside Erős et al. 2012's 39.5 already in the paragraph), and the 'seen only in a search summary' caveat can be replaced by the page reference. Whether the lake-shore figure should follow Mehner's model (≈ 0.6 g m⁻¹ d⁻¹) or the empirical lake values is a choice for the rewrite"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.2005.50.6.2022", "status": 403, "note": "Wiley refuses scripts" }
+  ],
+  "notes": "Two fixes: §3.2.5's 'likely only in lakes smaller than about 3 ha' should read 'more likely in lakes smaller than about 3 ha', and the insect fall-in figure is an areal stream flux (50.4 mg DW m⁻² d⁻¹) placed at the shore and decaying offshore, not 50 mg per metre of bank (the code's FALL and the brook and Upper estimates in §3.2.5 rest on the latter reading). Other values in the source: bleak diet 73.3 % terrestrial insects by biomass (n = 229 guts; the abstract says about 84 % of consumption), terrestrial P consumed 432 g a year (~2.1 % of the lake's internal P pool), terrestrial P excreted 210.6 g over the season = 0.335 µg/L, ~11 % of mean epilimnetic SRP (3.06 µg/L); terrestrial insects 0.30 % P of fresh weight (0.857 % of dry weight, 65 % water; Elser et al. 2000); insect energy density 3,180 J/g fwt; bleak total 77,200 km⁻² (95 % CI 34,500–111,700). Model output: a circular 0.01-km² lake would support 716,600 bleak km⁻², a 0.1-km² lake 228,600, a 1-km² lake 72,200 (p. 2026). The authors flag that the decay rate b came from a desert stream and that the flux to lakes has 'rarely been quantified' (p. 2029–2030)."
+}

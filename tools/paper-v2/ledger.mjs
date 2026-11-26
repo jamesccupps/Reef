@@ -136,14 +136,18 @@ for (const f of CODE) {
   const ls = read(f).split('\n');
   ls.forEach((line, i) => {
     if (!/(1[5-9]|20)\d{2}/.test(line) || !/\/\/|\/\*|\*/.test(line)) return;
-    const strict = refs.filter(r => r.surnames.length && r.rx.test(line));
+    // a citation can break across two comment lines ("Persson & ⏎ Brönmark 2002"): match on this line joined to the comment
+    // line above, but count it here only if the year is on this line
+    const prev = ls[i - 1] && /^\s*\/\//.test(ls[i - 1]) ? ls[i - 1].replace(/^\s*\/\/\s?/, '') : '';
+    const line0 = line; line = (prev.slice(-80) + ' ' + line.replace(/^\s*\/\/\s?/, '')).trim();
+    const strict = refs.filter(r => r.surnames.length && r.rx.test(line) && !r.rx.test(prev));
     // the abbreviated form: among the entries it could mean (same lead author and year), a strict match wins, then the
     // single-author entry; if it is still ambiguous it is not counted
     const loose = new Map();
-    for (const r of refs) if (r.rxLoose && !strict.includes(r) && r.rxLoose.test(line)) { const g = `${r.first}|${r.year}`; (loose.get(g) || loose.set(g, []).get(g)).push(r); }
+    for (const r of refs) if (r.rxLoose && !strict.includes(r) && r.rxLoose.test(line) && !r.rxLoose.test(prev)) { const g = `${r.first}|${r.year}`; (loose.get(g) || loose.set(g, []).get(g)).push(r); }
     const hits = [...strict];
     for (const [g, rs] of loose) { if (strict.some(r => `${r.first}|${r.year}` === g)) continue; const one = rs.length === 1 ? rs : rs.filter(r => r.surnames.length === 1); if (one.length === 1) hits.push(one[0]); }
-    for (const r of hits) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: (ls[i - 1] && /^\s*\/\//.test(ls[i - 1]) ? ls[i - 1].trim() + ' ⏎ ' : '') + line.trim().slice(0, 2000) }); }
+    for (const r of hits) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: (prev ? prev.trim() + ' ⏎ ' : '') + line0.trim().slice(0, 2000) }); }
   });
 }
 

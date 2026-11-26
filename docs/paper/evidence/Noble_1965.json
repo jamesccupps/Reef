@@ -1,0 +1,52 @@
+{
+  "key": "Noble_1965",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the open-access PDF on UNI ScholarWorks (the Iowa Academy of Science's own repository), as captured by the Wayback Machine on 16 Nov 2024 and openly downloadable; the live viewcontent link answers scripts with a Cloudflare 'Just a moment…' bot check (403), which was not worked around. 13 pages: the repository cover plus the article's pp. 282–293",
+    "url": "https://web.archive.org/web/20241116143812id_/https://scholarworks.uni.edu/cgi/viewcontent.cgi?article=2132&context=pias",
+    "file": "docs/research_notes/fetched/v2/Noble_1965.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (p. 282) and the repository's citation metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Richard L. Noble, 'Life History and Ecology of Western Blacknose Dace, Boone County, Iowa, 1963-1964', Proc. Iowa Acad. Sci. 72(1): 282–293 (1965). Journal page = PDF page + 280 (findin's 'printed' numbers are the repository's own footer, not the journal's). Now read directly, so the 'via Trial et al. 1983b' can be dropped"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (blacknose dace, Maturity)",
+      "claim": "maturity at age II (Iowa; Noble 1965, via Trial et al. 1983b)",
+      "location": "p. 282 (PDF p. 2), abstract; p. 284 (PDF p. 4), Reproduction",
+      "quote": "Dace reached maturity at age II.",
+      "conditions": "western blacknose dace, Rhinichthys atratulus meleagris, in Elkhorn and Pease creeks (cool, spring-fed headwaters < 60 °F most of the summer), Boone County, Iowa; collections June–November 1963 and March–August 1964; only 6 of 33 two-year-old fish examined were immature; one mature age-I male (45 mm SL); smallest mature female 38 mm SL",
+      "verdict": "confirmed",
+      "note": "'Female dace began to mature late in their second year' (p. 284); Noble's ages count annuli (age II = in the third summer). Lengths are standard length (TL = 1.23 SL)"
+    },
+    {
+      "paper": "Table 3.5-2 (blacknose dace, Maturity)",
+      "claim": "few reach age III (Iowa)",
+      "location": "p. 282 (PDF p. 2), abstract; p. 289 (PDF p. 9), Age and growth",
+      "quote": "The maximum age attained by blacknose dace in the two streams was three years.",
+      "conditions": "as above; 'few age II fish normally lived beyond July' (p. 289), the decline attributed to the stress of spawning",
+      "verdict": "confirmed",
+      "note": "the abstract says 'Few fish reach age III'; the fecundity regression (p. 284) had only one age-III fish"
+    },
+    {
+      "paper": "src/w3/species3.js:89 (dace diet: larva, insect, plankton)",
+      "claim": "midge larvae the only consistent food (Noble 1965)",
+      "location": "p. 282 (PDF p. 2), abstract; p. 290 (PDF p. 10), Food habits",
+      "quote": "Diptera larvae, primarily from the family Chironomidae, were the most important food items",
+      "conditions": "Diptera larvae in 58 % of stomachs and in every collection; desmids and diatoms important in late November and March; no change of diet with age or size",
+      "verdict": "confirmed",
+      "note": "the abstract's words are 'Diptera larvae were the only consistently utilized food item'; they were mostly chironomids, so 'midge larvae' is fair. Not in the code's diet: the desmids and diatoms of late autumn and early spring, and Noble's remark that 'dace may feed entirely on other food' when Diptera larvae are scarce (p. 292)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://scholarworks.uni.edu/cgi/viewcontent.cgi?article=2266&context=pias", "status": 403, "note": "Cloudflare bot check (a wrong article number in any case)" },
+    { "url": "https://scholarworks.uni.edu/cgi/viewcontent.cgi?article=2132&context=pias", "status": 403, "note": "Cloudflare 'Just a moment… Enable JavaScript and cookies' bot check; not worked around. The landing page https://scholarworks.uni.edu/pias/vol72/iss1/42/ answers 200 and names this PDF" }
+  ],
+  "notes": "Both claims and the code's diet check; cite Noble 1965 directly rather than via Trial et al. 1983b. Caveats for the text: the fish is the WESTERN blacknose dace (R. atratulus meleagris) of Iowa prairie creeks, while Maine's is the eastern form (reader's note, not from this source); and all of Noble's lengths are standard lengths. Growth (SL): age-0 fish reach 24–27 mm in their first year (22–34 mm on 27 November); age-I fish averaged 44 and 46 mm at the end of 1963 in the two creeks (37–54) and 48 and 54 mm by August 1964; most growth in May–July (pp. 286–289). If Trial et al.'s '29 mm at age I, 45 mm at II' (the Growth column, attributed to Trial) came from Noble, they would be standard lengths, against the table's 'total length unless stated' — worth checking in Trial et al. 1983b. Fecundity: 166–523 ripe eggs and 375–2,500 total eggs in 14 females of 38–61 mm SL; mature eggs = −238.65 + 9.86·SL (r = 0.767) (p. 284). Spawning early May through July over gravel. Dace concentrated in cool headwaters in summer and overwintered in pools, some moving to the Des Moines River."
+}

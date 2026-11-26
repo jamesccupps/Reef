@@ -1,0 +1,42 @@
+{
+  "key": "Massengill_1973",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Springer's article page (the publisher's preview: the abstract, cut off mid-sentence, the acknowledgments and the reference list); the article is subscription content",
+    "url": "https://link.springer.com/article/10.2307/1350881",
+    "file": "docs/research_notes/fetched/v2/Massengill_1973.springer-abstract.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Springer's article page",
+    "ok": false,
+    "corrections": "pages 138–141, not 138 (Springer's page: 'Volume 14, pages 138–141 (1973)', a 'Short Papers and Notes' item published June 1973; Crossref gives only the first page)",
+    "note": "author Ronald R. Massengill; title as cited; Chesapeake Science 14(2). The Internet Archive's scan of the issue (sim_chesapeake-science_1973-06_14_2, 'Vol 14 Iss 2', June 1973) confirms the issue but is access-restricted"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "Brown bullheads did not feed at all in a 2 °C Connecticut pond (Massengill 1973, via Ellman 2023)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract (not used to confirm) says bullheads overwintering in the heated discharge canal of the Connecticut Yankee Atomic Power Company plant fed, while those 'in water at 2 C' from Chapman Pond 'did not'; it calls Chapman Pond 'a cove of the Connecticut River unaffected by artificial heating' — so 'a Connecticut pond' should be 'a cove of the Connecticut River (Chapman Pond)'. The sample sizes, dates and the meaning of 'did not' (empty stomachs?) need the full text"
+    },
+    {
+      "paper": "src/species.js:323",
+      "claim": "all × 0.7, buried and fasting below ~8 °C (no feeding at 2 °C, Massengill 1973)",
+      "verdict": "unchecked",
+      "note": "as above. The abstract's last visible words are 'Bullheads began feeding before the temperature reached 4' (cut off), which suggests feeding resumed at about 4 °C in the canal or in spring — a lower threshold than the code's ~8 °C, if the full text bears it out. Nothing in the abstract on burying"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/article/10.2307/1350881", "status": 200, "note": "abstract and reference list only; 'This is a preview of subscription content, log in via an institution'. doi:10.2307/1350881 is the page a library login would open" },
+    { "url": "https://link.springer.com/content/pdf/10.2307/1350881.pdf", "status": 200, "note": "redirects to the same preview page (no PDF)" },
+    { "url": "https://www.jstor.org/stable/1350881", "status": 200, "note": "JSTOR 'Client Challenge' bot check; not worked around" },
+    { "url": "https://archive.org/metadata/sim_chesapeake-science_1973-06_14_2", "status": 200, "note": "Internet Archive scan of the issue exists but is access-restricted (printdisabled / borrow only): not acceptable" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1350881?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/1350881\"&format=json&resultType=core", "status": 200, "note": "no hit" },
+    { "url": "https://archive.org/advancedsearch.php?q=\"brown bullheads overwintering\"", "status": 200, "note": "no item" }
+  ],
+  "notes": "Blocked; a library copy (JSTOR or Springer, doi:10.2307/1350881) would settle it — the article is only four pages. Even from the abstract two things need changing: the place is a cove of the Connecticut River, not a pond, and the reference's page range is 138–141. The abstract also says fish were the most abundant food of the canal fish (with annelids, insects, molluscs and zooplankton). The study was part of the Connecticut River Ecological Study for the Connecticut Yankee plant."
+}

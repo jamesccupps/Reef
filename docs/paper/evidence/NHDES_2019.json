@@ -1,0 +1,75 @@
+{
+  "key": "NHDES_2019",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency report as posted by US EPA (the cited epa.gov URL, which now redirects from /sites/production/ to /sites/default/); 100 pages with a text layer; Table C-6 read in the raw text and on the page image (PDF p. 97)",
+    "url": "https://www.epa.gov/sites/production/files/2019-10/documents/haunted-lake-tmdl-report.pdf",
+    "file": "docs/research_notes/fetched/v2/NHDES_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "R-WD-19-25, 'Final Total Maximum Daily Load for Phosphorus for Haunted Lake, Francestown, NH', State of New Hampshire Department of Environmental Services, Concord; prepared by Margaret P. Foss, TMDL Coordinator, Watershed Management Bureau; September 2019. The report's pages are numbered by section (ES-1, 2-3, 3-2 …); locations below give both"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.9",
+      "claim": "Haunted Lake, New Hampshire: 69 ha",
+      "location": "p. 2-3 (PDF p. 10); Table 2-1, p. 2-5 (PDF p. 12)",
+      "quote": "Haunted Lake has a surface area of approximately 54.67 hectares (ha) (135.1 acres)",
+      "source_value": "54.67 ha (135.1 acres)",
+      "conditions": "Table 2-1 repeats 54.67 ha; watershed 1,512.91 ha excluding the pond",
+      "verdict": "corrected",
+      "note": "69 ha appears nowhere in the report (the research note shoreline_development_effects.md also has 69 ha). The report's volume, 8,198,963 m³, does not fit 54.67 ha × 2.4 m (≈ 1.31 million m³): an inconsistency inside the report; the paper does not use the volume"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "2.4 m mean depth",
+      "location": "p. 2-3 (PDF p. 10); Table 2-1, p. 2-5 (PDF p. 12)",
+      "quote": "the mean depth is 2.4 m (7.9 ft)",
+      "conditions": "2018 bathymetric survey; maximum depth 5.2 m",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "flushing 4.3 times a year",
+      "location": "p. 2-3 (PDF p. 10); Table 2-1, p. 2-5 (PDF p. 12)",
+      "quote": "with a flushing rate of approximately 4.3 times per year",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "the septic systems of 21 houses contributed 1.2 kg yr⁻¹, 0.6 % of a 195-kg load (NH DES 2019)",
+      "location": "p. 3-2 (PDF p. 23); Table 3-4, p. 3-4 (PDF p. 25); Table C-6 (PDF p. 97)",
+      "quote": "the TP loading from shoreline septic systems was estimated to be 1.2 kg/yr",
+      "conditions": "a model estimate (ENSR-LRM), not a measurement: only dwellings within 125 ft of the shore counted; Table C-6 has 2 year-round and 19 seasonal houses, 2.5 people each, 65 gal (≈ 0.25 m³) per person per day at 8 mg/L TP, 365 and 90 days of use, 90 % attenuation in the soil; total load 195.0 kg/yr, septic 0.6 % (Table 3-4)",
+      "verdict": "confirmed",
+      "note": "the loads are total phosphorus. The text (p. 3-2) says 'Five residences were estimated to be year-round' but Table C-6 uses 2: an inconsistency inside the report (21 houses either way if the 19 seasonal stand). The 1.2 kg is 0.36 + 0.855 rounded (reader's check of Table C-6)"
+    },
+    {
+      "paper": "§4.6; src/config.js:825–834 (SEPTIC_P 0.1, SEPTIC_D 90)",
+      "claim": "Septic systems deliver 0.1 kg of P per 90 days of occupancy (NH DES 2019)",
+      "location": "Table C-6 (PDF p. 97); p. 3-2 (PDF p. 23)",
+      "quote": "Seasonal Residential 19 2.5 0.1 8 0.18 0.8 65 90",
+      "quote_from": "table",
+      "source_value": "NH DES has 90 days of use for a seasonal house and 0.18 kg TP per PERSON per 90 days before attenuation; with 2.5 people and its 90 % attenuation a seasonal house delivers 0.045 kg TP per 90 days (0.8 kg for 19 houses), and a year-round house 0.18 kg a year (0.4 kg for 2). 0.1 kg per house per 90 days is not in the report",
+      "conditions": "8 mg/L TP in wastewater (Metcalf & Eddy 1991), 65 gal per person per day, attenuation factor 0.1 (90 % retained; Dudley & Stephenson 1973; Brown & Associates 1980); systems within 125 ft only; TP, not phosphate",
+      "verdict": "corrected",
+      "note": "the 90 days is NH DES's; the 0.1 kg is the project's value between NH DES's 0.045 and Wilson Pond's 0.135 kg per seasonal camp (the research note's table: 'NH DES; Wilson; Long Pond; Ontario'). Write it as 'about 0.1 kg of P a season of 90 days (project value between NH DES 2019's 0.045 kg TP for a seasonal house and Wilson Pond's 0.135 kg)'. config.js also gives 'the year-round homes' 0.4 kg' — that is Wilson Pond's 0.41, not NH DES's 0.18 kg per year-round house; and the code delivers it as phosphate while NH DES's loads are TP"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "the 195-kg total load",
+      "location": "p. ES-1 (PDF p. 5); Table 3-4, p. 3-4 (PDF p. 25)",
+      "quote": "annual load of TP to Haunted Lake is estimated to be approximately 195.0 kg/yr",
+      "conditions": "modelled: watershed 147.1 kg (75.4 %), direct drainage 29.0 (14.9 %), waterfowl 10.5 (5.4 %), atmospheric 6.0 (3.1 %), internal 1.2 (0.6 %), septic 1.2 (0.6 %)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Two fixes: Haunted Lake is 54.67 ha, not 69 ha (§3.2.9; also the research note), and §4.6's '0.1 kg of P per 90 days of occupancy (NH DES 2019)' is not NH DES's number (theirs is 0.045 kg TP per seasonal house per 90 days after 90 % attenuation; 0.18 kg per person before). The rest of §3.2.9 checks. Other values in the report the rewrite may want: the target in-lake TP 12 µg/L for mesotrophic lakes; the TMDL load 128.7 kg/yr; removing all septic loads lowers the total by about 2.1 % to 191.0 kg/yr (§6.2, p. 6-4); waterfowl 25 birds a day × 0.001526 kg TP per bird per day × 275 ice-free days = 10.5 kg/yr (Table C-7, Scherer et al. 1995); epilimnetic TP 9.2–33.2 µg/L, median 17.0 (2008–2018, Table 2-2). The report's internal-load sentence (p. 3-2) also reads '1.2 kg/yr … approximately 0.6 %', the same figures as the septic load."
+}

@@ -1,0 +1,37 @@
+{
+  "key": "Obbard_1983",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: no digitized copy of the 1983 Guelph PhD dissertation was found (the University of Guelph's Atrium repository holds Obbard's 1977 MSc thesis, not the PhD)"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "nothing: no title page, catalogue record or repository record of the dissertation was reached",
+    "ok": true,
+    "corrections": "",
+    "note": "unverified. The ledger already flags it as cited only via VHS n.d. and Kynast n.d. Atrium shows the same author as 'Obbard, Martyn' (MSc 1977, University of Guelph, advisor R. J. Brooks: 'A radio-telemetry and tagging study of activity in the common Snapping Turtle, Chelydra serpentina', Algonquin Park; hdl 10214/29967), which supports the author's initials but not the dissertation's title or year"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.5",
+      "claim": "Northern snapping turtle densities are about 1.5 adults per ha overall (Obbard 1983; via Kynast n.d.)",
+      "verdict": "unchecked",
+      "note": "dissertation not obtained; the paper already marks it 'via Kynast n.d.'. The density is second-hand until the dissertation, or a published paper on the same Algonquin data (e.g. Brooks et al.'s population papers), is read"
+    },
+    {
+      "paper": "src/w3/fish3.js:919",
+      "claim": "northern adults ~1.5 /ha overall (Obbard 1983), behind the model's snapping-turtle density",
+      "verdict": "unchecked",
+      "note": "as above"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://atrium.lib.uoguelph.ca/server/api/discover/search/objects?query=Obbard", "status": 200, "note": "University of Guelph Atrium: Obbard's 1977 MSc thesis (hdl 10214/29967) and other turtle theses, but not the 1983 PhD; Guelph is digitizing old theses (the MSc was added in Aug 2026), so the PhD may appear later" },
+    { "url": "https://atrium.lib.uoguelph.ca/server/api/discover/search/objects?query=population%20ecology%20common%20snapping%20turtle", "status": 200, "note": "no record of the dissertation" },
+    { "url": "https://archive.org/advancedsearch.php?q=\"Obbard\" AND \"snapping turtle\"", "status": 200, "note": "no item" },
+    { "url": "web search: Obbard 1983 'Population ecology of the common snapping turtle' Guelph", "status": 0, "note": "only later papers citing it (e.g. a Canadian Field-Naturalist paper); no copy or catalogue record. A library request (University of Guelph, or Library and Archives Canada's Canadian theses microfiche) would be the route" }
+  ],
+  "notes": "Blocked. A published stand-in on the same Algonquin Park population would be better than the dissertation for a density: the web search surfaced a 1991 study of Lake Sasajewun, Algonquin Park, with population estimates of 38 and 47 adults in 1978–79 and 1984–85 (seen only in a search summary; not read, and its area is unknown here) — Brooks et al. 1988, which the paper also cites for 1.5–2.4 per ha, is the obvious one to read."
+}

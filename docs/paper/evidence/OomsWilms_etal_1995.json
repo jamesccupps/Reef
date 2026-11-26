@@ -1,0 +1,70 @@
+{
+  "key": "OomsWilms_etal_1995",
+  "reader": "wave-2 batch w2-12",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the English abstract in the Flanders Marine Institute's bibliographic record (marineinfo.org, publication 99126; record saved); the article (21 pages) is behind Oxford University Press's paywall, and OUP refuses scripts",
+    "url": "https://marineinfo.org/id/publication/99126",
+    "file": "docs/research_notes/fetched/v2/OomsWilms_etal_1995.marineinfo-abstract.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the marineinfo record",
+    "ok": true,
+    "corrections": "",
+    "note": "A. L. Ooms-Wilms, G. Postema & R. D. Gulati, J. Plankton Res. 17(5): 1057–1077 (1995), title as cited — matches; not checked against the title page"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "rotifers in Keratella and Conochilus ingest particles down to 0.5 µm (Ooms-Wilms et al. 1995; abstract only)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract (not used to confirm) does not name Keratella: in eutrophic Lake Loosdrecht (April–September) the tracers were 0.51-µm microspheres and fluorescently labelled bacteria; by microspheres the highest bacterial uptake was by Filinia longiseta (May–July) and Anuraeopsis fissa (June–September), by labelled bacteria by Conochilus unicornis (June) and A. fissa (July); rotifers were much more important bacterivores than cladocerans. So this abstract supports Conochilus taking ~0.5-µm particles but says nothing of Keratella. The research note (small_zooplankton_and_microbial_loop.md, line ~547) quotes the abstract as 'K. cochlearis and Conochilus ingested only 0.5-µm particles' — not in the abstract read here (marineinfo's copy; OUP's own page could not be opened, so a human should compare). Until then the Keratella part has no source; Bogdan & Gilbert 1982, cited beside it in the code, may be the right one"
+    },
+    {
+      "paper": "src/config.js:1509–1510 (EPS_R 0.5)",
+      "claim": "Keratella, Kellicottia and Conochilus eat bacteria-sized food, Polyarthra and Synchaeta don't (Bogdan & Gilbert 1982; Ooms-Wilms et al. 1995)",
+      "verdict": "unchecked",
+      "note": "as above. The abstract names none of Keratella, Kellicottia, Polyarthra or Synchaeta; it adds Filinia and Anuraeopsis as the leading bacterivores in Lake Loosdrecht, which the code's list leaves out"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    {
+      "url": "https://academic.oup.com/plankt/article/17/5/1057/1544823",
+      "status": 403,
+      "note": "OUP refuses scripts; doi:10.1093/plankt/17.5.1057 is the page a library login would open"
+    },
+    {
+      "url": "https://academic.oup.com/plankt/article-pdf/17/5/1057/4413539/17-5-1057.pdf",
+      "status": 403,
+      "note": "OUP refuses scripts"
+    },
+    {
+      "url": "https://web.archive.org/web/20090210050905id_/http://plankt.oxfordjournals.org:80/cgi/reprint/17/5/1057",
+      "status": 200,
+      "note": "2009 capture of OUP's old site: a sign-in / pay-per-view page ('articles prior to 1996 … Oxford Journals digital archive'), no text"
+    },
+    {
+      "url": "https://pure.knaw.nl/portal/en/searchAll/index/?search=Ooms-Wilms",
+      "status": 403,
+      "note": "NIOO-KNAW repository answers scripts with a Cloudflare bot check; not worked around (an author copy may exist there for a human to look up)"
+    },
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1093/plankt/17.5.1057?fields=openAccessPdf,externalIds,title",
+      "status": 200,
+      "note": "openAccessPdf CLOSED"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1093/plankt/17.5.1057\"&format=json&resultType=core",
+      "status": 200,
+      "note": "no hit"
+    },
+    {
+      "url": "https://archive.org/advancedsearch.php?q=Ooms-Wilms",
+      "status": 200,
+      "note": "no item"
+    }
+  ],
+  "notes": "Blocked. Even from the abstract, the §3.3.8 sentence over-reaches: the abstract read here (marineinfo's copy) does not mention Keratella, so 'in Keratella and Conochilus … (Ooms-Wilms et al. 1995; abstract only)' cannot rest on it. The same group's companion papers may carry the Keratella result: Ooms-Wilms 1997 (J. Plankton Res. 19(8): 1125, 'Are bacteria an important food source for rotifers in eutrophic lakes?') and Ooms-Wilms et al. 1995, Freshwater Biology ('Use of fluorescently labelled algae to measure the clearance rate of the rotifer Keratella cochlearis', doi:10.1111/j.1365-2427.1995.tb00397.x) — titles from Crossref, not read."
+}
