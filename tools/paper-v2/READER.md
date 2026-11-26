@@ -29,7 +29,8 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
 9. **Acceptable copies:** the publisher's own free copy; an author's or institution's repository copy; an agency or library copy; an
    Internet Archive item or a Wayback Machine capture that is openly downloadable (no "borrow", no login) — including a capture of a
    file the publisher once served free. Say exactly which in `obtained.how`. Not acceptable: Sci-Hub, LibGen, Anna's Archive,
-   ResearchGate or Academia scraping, or anything behind a login.
+   ResearchGate or Academia scraping, anything behind a login, or text a paywalled page hides from non-subscribers (e.g. a block
+   hidden with CSS): that is the paywall, so the entry is blocked.
 
 ## For each key
 

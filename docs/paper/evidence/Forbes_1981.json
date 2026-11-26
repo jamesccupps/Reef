@@ -1,0 +1,101 @@
+{
+  "key": "Forbes_1981",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the UW-Madison Libraries Digital Collections' PDF of the report (its cover sheet carries the UWDC permalink https://digital.library.wisc.edu/1711.dl/ENXDPN6SNRO549A and rights statement), as posted in the Sites Reservoir Project's public EIR reference library (Appendix 12B references). The UWDC record itself shows the pages only through a script viewer",
+    "url": "https://sitesreservoirproject.riptideweb.com/references/REF17/Appx_12B_FisheriesImpactAssessment/Forbes_1981.pdf",
+    "file": "docs/research_notes/fetched/v2/Forbes_1981.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover (page image) and the UWDC catalogue record",
+    "ok": true,
+    "corrections": "",
+    "note": "Wisconsin DNR Research Report 111, September 1981, 12 pages; title as cited. Printed page = PDF page − 1 (PDF p. 1 is the library's cover sheet)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (smallmouth bass, spawning column)",
+      "claim": "nests 0.8 m deep in a Maine lake (Forbes 1981)",
+      "source_value": "",
+      "location": "p. 2 (PDF p. 3), Spawning site characteristics: Location and Depth",
+      "quote": "0.8 m deep in South Branch Lake, Maine (Neves 1975)",
+      "conditions": "a review: the value is Neves (1975), South Branch Lake",
+      "verdict": "confirmed",
+      "note": "cite as 'Neves 1975, via Forbes 1981' and name the lake"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "nests reach at least 71 per kilometer of suitable shore at Big Lake, Maine (Watson 1955, via Forbes 1981)",
+      "source_value": "",
+      "location": "p. 3 (PDF p. 4), Nest Size and Spacing of Nests (checked on the page image)",
+      "quote": "4,218 nests were built along 59.5 km of suitable shoreline in Big Lake, Maine",
+      "conditions": "'At least 4,218 nests' along 59.5 km of suitable (not total) shoreline; Watson 1955",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "4,218 / 59.5 km = 70.9 ≈ 71 nests/km; 'at least' is the source's"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "\"It is generally agreed that unguarded nests will fail\" (Forbes 1981)",
+      "source_value": "",
+      "location": "p. 4 (PDF p. 5), causes of nest failure: Nest Desertion",
+      "quote": "it is generally agreed that unguarded nests will fail",
+      "conditions": "Forbes cites Rawson 1945, Mraz 1960, Latta 1963 and Neves 1975 for it",
+      "verdict": "confirmed",
+      "note": "the same sentence opens with a qualification: nests without males have been observed to produce fry (Webster 1954)"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "named predators of unguarded nests include carp, suckers, white perch and crayfish (Forbes 1981)",
+      "source_value": "",
+      "location": "p. 4 (PDF p. 5), causes of nest failure: Predation",
+      "quote": "Carp, common suckers, white perch, and crayfish are known predators.",
+      "conditions": "summarized from Webster 1954, Latta 1963, Wiegert 1966 and Carlander 1977; the paragraph covers unguarded nests and predation 'in spite of male guardianship'",
+      "verdict": "confirmed",
+      "note": "Forbes names them as nest predators generally, not of unguarded nests only; carp, suckers and white perch also destroy nests mechanically (Bottom Disturbance)"
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass row)",
+      "claim": "Katherine Lake, Michigan (19.4 ha): deposited egg to autumn fingerling 1–4 % (Clady 1975, via Forbes 1981)",
+      "source_value": "",
+      "location": "p. 3 (PDF p. 4), First year survival: Nest Success; lake area in Nest Size and Spacing of Nests",
+      "quote": "from deposited egg to fall fingerling was 1-4%",
+      "conditions": "Clady 1975; Katherine Lake '19.4-ha', northern Michigan; 73–90 nests a year in 1967–69",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass row)",
+      "claim": "Katherine Lake is brown-stained",
+      "verdict": "unsupported",
+      "note": "Forbes gives the lake's area and nest counts but says nothing of its colour; the description must come from Clady 1975 or another source"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "after dispersal the fry live singly or in small groups, in shallow water among stones or sticks and avoiding weed beds (Hubbs & Bailey 1938, via Forbes 1981)",
+      "source_value": "solitary after dispersal (no small groups); prefer shallow water, seek recesses around stones or sticks, avoid weed beds or dense brush; cited to Hubbs & Bailey 1938 and Hubbs & Eschmeyer 1938",
+      "location": "p. 6 (PDF p. 7), Habitat of Young-of-Year",
+      "quote": "Smallmouth bass are solitary after dispersal.",
+      "conditions": "review of older literature; before dispersal they 'rise from the nest in schools'",
+      "verdict": "corrected",
+      "note": "'or in small groups' is not in Forbes; the 28-mm dispersal length in the same sentence is not Forbes's either (not attributed to it). Forbes has the male near the fry for 7–10 days after hatching"
+    },
+    {
+      "paper": "src/w3/fish3.js:751",
+      "claim": "young smallmouth solitary after dispersal, in recesses among stones near the nest; < 5 cm fish over sand and rock near shore (Forbes 1981's review)",
+      "source_value": "",
+      "location": "p. 6 (PDF p. 7), Habitat of Young-of-Year",
+      "quote": "less than 5 cm long were observed in shallow water over sandy and rocky bottoms",
+      "conditions": "the < 5 cm observation is Oneida Lake (Adams & Hankinson 1928), 'close to the shore or the margins of weedbeds'; 'slowly disperse and seek nearby cover'",
+      "verdict": "confirmed",
+      "note": "the same paragraph adds that Oneida young of the year, though densest inshore, occurred at 4.6–6.1 m (Forney 1972)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://search.library.wisc.edu/digital/AENXDPN6SNRO549A", "status": 200, "note": "UWDC record ('In copyright', public access); page and text views render only by script, no direct PDF link found" },
+    { "url": "https://search.library.wisc.edu/digital/AENXDPN6SNRO549A/text/AL6LQDLJ3ES7SN83", "status": 200, "note": "script-rendered shell, no text in the HTML" }
+  ],
+  "notes": "Useful values for the rewrite: nest-success estimates in lakes range 44–86 % (Table 1; the paper's §3.6.2 quotes Steinhart's 44–96 %); Clady 1975 at Katherine Lake: 15–34 % of potential eggs deposited, 26–33 % deposited egg to postlarva, 1–4 % to fall fingerling (the paper cites Clady 1975 directly for the first two; if Clady was not read, they are 'via Forbes 1981'); Forbes cites Latta (1963), not 1957, for 28 % deposited egg to postlarva; nest construction and spawning begin at about 15.0–15.7 °C; eggs and new fry suffer if water drops below 14–15 °C and males may desert below 15.7 °C (Rawson 1945, Latta 1963); nest depths in lakes usually < 2 m (0.4–1.2 m in several lakes; most 1.8–3.0 m, some to 6.1 m, in Lake Geneva, Wisconsin), suitable depth 'related to water clarity'; MacLean et al. (1980) model: young bass < 5 cm less likely to survive their first winter, confirmed by Opeongo length distributions (Aug 1976 vs May 1977). Table 1's layout text drops the Tadenac and South Branch values; read them on the page image (PDF p. 5) if needed."
+}

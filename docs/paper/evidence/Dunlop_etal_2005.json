@@ -1,0 +1,105 @@
+{
+  "key": "Dunlop_etal_2005",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' version as IIASA Interim Report IR-05-082 (December 2005), from IIASA's institutional repository (the copy OpenAlex and Semantic Scholar list as green open access); same title and authors as the CJFAS article. Page numbers below are the interim report's, not the journal's 1720–1732",
+    "url": "http://pure.iiasa.ac.at/id/eprint/7760/1/IR-05-082.pdf",
+    "file": "docs/research_notes/fetched/v2/Dunlop_etal_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (journal details) and the interim report's title page (authors, title)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, year, title, journal, 62(8): 1720–1732 match Crossref. The text read is the interim report; a reader with access to the CJFAS version could confirm that Tables 3–4 and the diet paragraph are unchanged in print"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-2 (smallmouth bass row)",
+      "claim": "at 5–10 cm, plankton 72 % and insects 28 % of the diet (four fish); fish from 10–15 cm (Opeongo)",
+      "source_value": "",
+      "location": "p. 31 (PDF p. 33), Table 4 (read on the page image and in the raw text)",
+      "quote": "% Insects 12 28 … % Plankton 25 72 … N 5 4 7 9",
+      "quote_from": "table",
+      "conditions": "Lake Opeongo, summer 2002; 'mean percent occurrence of prey items' (not mass or volume); Op 5–10 cm N = 4 (0 % empty); Op 10–15 cm: fish 43 % (SE 18), N = 9; fish 0 % in both lakes' 5–10-cm class",
+      "verdict": "confirmed",
+      "note": "the Provoking 5–10-cm fish (N = 5) differed: plankton 25 %, insects 12 %, 'other' 62 %"
+    },
+    {
+      "paper": "Table 3.7-2 (Lake Opeongo / Provoking Lake row), empty stomachs",
+      "claim": "adult smallmouth bass: 35 % (Opeongo) and 40 % (Provoking) empty stomachs",
+      "source_value": "",
+      "location": "pp. 18–19 (PDF pp. 20–21), Results: Diet",
+      "quote": "For adults, the percent of empty stomachs was 40% for Provoking and 35%",
+      "conditions": "summer 2002 samples (trap nets, minnow traps, angling; frozen fish); all sizes: 33 % Provoking, 29 % Opeongo empty",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-2 (Lake Opeongo / Provoking Lake row), column 'Contents of fed stomachs'",
+      "claim": "4.3 g / 1.9 g per stomach (Opeongo / Provoking), adults, fed stomachs",
+      "source_value": "mean stomach-content mass 4.3 g (SE 1.2, N = 43) at Opeongo and 1.9 g (SE 1.0, N = 25) at Provoking, summer 2002; the source does not say these are adults or fed stomachs only",
+      "location": "p. 19 (PDF p. 21), Results: Diet",
+      "quote": "Opeongo: mean = 4.3 g, SE = 1.2, N = 43",
+      "conditions": "summer 2002; masses ln-transformed for the ANOVA (F1,87 = 10.3); the sample behind the means is not defined",
+      "verdict": "corrected",
+      "note": "the digits are right but the row's labels 'adults' and 'fed stomachs' are the paper's. The Ns argue against 'adults': Opeongo's N = 43 is close to all its fed fish of every size (62 fish, 29 % empty ≈ 44 fed; Table 3), not its fed adults (35 fish ≥ 20 cm in Table 4, 35 % empty ≈ 23). Give the masses as 'mean stomach contents, summer 2002 (N = 43 / 25)'"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "crayfish made up 71 % of the diet of Opeongo bass over 25 cm",
+      "source_value": "",
+      "location": "p. 19 (PDF p. 21), Results: Diet; p. 31 (PDF p. 33), Table 4",
+      "quote": "percentage of crayfish in the diet increased until it made up 71% of the diet",
+      "conditions": "Lake Opeongo, summer 2002, bass > 25 cm, N = 19 (SE 11); mean percent occurrence of prey items",
+      "verdict": "confirmed",
+      "note": "the sentence sets it beside Tester's 72–79 % of food volume; Dunlop's measure is percent occurrence, not volume"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "where crayfish are scarce bass turn to insects rather than fish: insects 61–72 % of stomach contents (juveniles and adults pooled) in Provoking Lake, where growth fell behind at the size at which Opeongo bass switch to crayfish",
+      "source_value": "",
+      "location": "p. 30 (PDF p. 32), Table 3; p. 20 (PDF p. 22), Results: Diet",
+      "quote": "Provoking started to fall behind Opeongo at the size (15-20 cm) when crayfish first appeared",
+      "conditions": "Table 3, pooled juveniles and adults, mean percent occurrence: Provoking insects 61 % (1981, N = 138), 72 % (1982, N = 64), 62 % (2002, N = 60); crayfish 2–14 %, fish 3–16 % (fish not different from Opeongo's 14–16 %)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "young smallmouth in Lake Opeongo first took fish at 10–15 cm",
+      "source_value": "",
+      "location": "p. 31 (PDF p. 33), Table 4",
+      "quote": "% Fish 0 0 0 43",
+      "quote_from": "table",
+      "conditions": "Opeongo, summer 2002: fish 0 % at 5–10 cm (N = 4), 43 % at 10–15 cm (N = 9); the Discussion (p. 22) puts the first fish at 10–20 cm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:154",
+      "claim": "wild bass are 25–50 % empty (Dunlop 2005)",
+      "source_value": "",
+      "location": "p. 30 (PDF p. 32), Table 3 (% Empty column); pp. 18–19 (PDF pp. 20–21)",
+      "quote": "% Empty … 50 … 23 … 30 … 13 … 33 … 29",
+      "quote_from": "table",
+      "conditions": "pooled juveniles and adults: Provoking 50 % (1981), 30 % (1982), 33 % (2002); Opeongo 23 % (1981), 29 % (2002); Bridle 13 % (1982); adults 2002: 35–40 %; by size class (Table 4) 0–50 %",
+      "verdict": "confirmed",
+      "note": "a loose summary: most values lie in 25–50 %, but Opeongo 1981 (23 %) and low-density Bridle (13 %) fall below it"
+    },
+    {
+      "paper": "src/w3/fish3.js:864",
+      "claim": "young smallmouth eat plankton and insects to ~10 cm, fish appearing at 10–15 cm",
+      "source_value": "",
+      "location": "p. 19 (PDF p. 21), Results: Diet; p. 31 (PDF p. 33), Table 4",
+      "quote": "diet of 5-10 cm bass in both populations consisted of small-bodied prey",
+      "conditions": "body-length classes, summer 2002, small samples (N = 4–9 per class at Opeongo)",
+      "verdict": "confirmed",
+      "note": "the source gives length classes, not ages: it does not say its 5–10-cm summer fish are young of the year, as the code's 'the year's young' implies"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f05-089", "status": 403, "note": "Canadian Science Publishing refuses scripts (the version of record; a library login would open it)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f05-089?fields=openAccessPdf,externalIds", "status": 200, "note": "lists the same IIASA interim report as the open copy" }
+  ],
+  "notes": "Other useful values in the source: Provoking 3,741 vs Opeongo 82 adults/km² (Orendorff 1983); littoral (1–1.5 m) days above 15 °C 122 vs 111 and above 20 °C 66 vs 56 (2001); length at 50 % maturity Provoking 22 cm males / 21 cm females, Opeongo 24 / 26 cm (Table 2, fork length); first-time nesting male non-return ('mortality') 0.46–1.0 by age (Table 5); 24-h egg loss after male removal higher at Opeongo (Fig. 6); somatic energy density falls with size at Provoking from ~12–17 cm. Transplanted Provoking bass were 14 % empty against 30 % for residents (1982)."
+}

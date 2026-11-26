@@ -54,3 +54,10 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-03 | §2.2 | The sounding ranges (9–12 ft; eastern bay 4–11 ft) are from the 1949 sheet, not the 2024 chart (contours only); the 2024 chart's 684 ac and 6.7 mi equal DEP's, so it does not confirm the area independently | open |
 | t1-03 | Table 3.6-1 (pickerel) | Scott & Crossman give 8.3–11.1 °C as the spawning temperature (not a "peak") and 3–10 ft depth; "mostly very shallow" is not theirs | open |
 | t1-03 | `config.js:300` (DETECT_L) | Cites Margulies 1989 for how well predators detect small larvae; the paper has no such data | open |
+| t1-09 | §3.6.2 | Forbes 1981 credits the 28 % deposited-egg-to-postlarva figure to Latta (1963); the paper cites Latta 1957 — same data in two papers? | open |
+| t1-09 | §3.6.2 | Clady's 15–34 % and 26–33 % are cited straight to Clady 1975 (abstract-only): say "via Forbes 1981" or read Clady | open |
+| t1-09 | §3.6.2 | Forbes's nest-success range 44–86 % vs the paper's 44–96 % (Steinhart 2004): different compilations — say which | note |
+| t1-09 | §3.6.8, `fish3.js:746` | Johnson & Evans 1991's "3.3 times greater mortality" is a regression prediction, not an observed rate ("died at 3.3 times") | open |
+| t1-09 | `littoral3.js:71` | Credits Keast 1980 with "76–91 % of food from vegetation in sunfish < 75 mm", which the paper's Table 3.6-2 gives to Mittelbach 1984 | open |
+| t1-09 | `config.js:1591, 1489` | Boulianne et al. 2025: nauplii are 34 % of the whole zooplankton (not of the copepods); ephippia 27 % of the whole Daphnia population at autumn overturn, 13 % under early ice (not "13–27 % of females") | open |
+| t1-09 | §3.6.7 | Young bass "live singly or in small groups": Forbes says "solitary after dispersal" (and Ridgway p. 57 supports small groups — t1-10) | open |

@@ -1,0 +1,59 @@
+{
+  "key": "Keast_1980",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Springer's public article page (the PDF and full text are behind Springer's paywall)",
+    "url": "https://link.springer.com/article/10.1007/BF00005185"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Springer's page metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Keast, A. (sole author); Environmental Biology of Fishes 5(4): 305–314, December 1980; title matches"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5",
+      "claim": "in Lake Opinicon, cyclopoids, nauplii and Bosmina \"fell rapidly in May – early June, and did not increase again until August\" (abstract only)",
+      "verdict": "unchecked",
+      "note": "the abstract has these words (cyclopoids, their nauplii and Bosmina longirostris) and ties the fall to the rise and fall of young fish in the habitat"
+    },
+    {
+      "paper": "§3.6.3",
+      "claim": "young yellow perch, pumpkinseed, bluegill and three other species began feeding at 4.5–6.0 mm on nauplii and cyclopoids of 0.1–0.3 mm and took cladocerans from 8–10 mm (abstract)",
+      "verdict": "unchecked",
+      "note": "the abstract agrees: six species of an open-water community (Perca flavescens, Percina caprodes, Pomoxis nigromaculatus, Ambloplites rupestris, Lepomis gibbosus, L. macrochirus) first fed on nauplii and small cyclopoids 0.1–0.3 mm long (less tail); 4.5–6.0 mm first-feeding larvae; fish 10–14 days after hatching and 8–10 mm took larger prey including several genera of Cladocera"
+    },
+    {
+      "paper": "src/config.js:1442; src/config.js:1444",
+      "claim": "the first food of every fish larva: nauplii, rotifers and small cyclopoids of 0.1–0.3 mm at 4.5–6 mm; cladocerans from ~8–10 mm",
+      "verdict": "unchecked",
+      "note": "the abstract names nauplii and small cyclopoids, not rotifers"
+    },
+    {
+      "paper": "src/config.js:1595",
+      "claim": "Bosmina and Chydorus taken from ~8 mm",
+      "verdict": "unchecked",
+      "note": "the abstract says 'several genera of Cladocera' at 8–10 mm without naming them"
+    },
+    {
+      "paper": "src/w3/littoral3.js:71",
+      "claim": "pumpkinseed and bluegill < 75 mm take 76–91 % of their food from the vegetation, chydorids and small midges among it (Keast 1980 via the foodweb audit)",
+      "verdict": "unchecked",
+      "note": "probably misattributed: this paper covers the first weeks of feeding (larvae of 4.5–14 mm), and the paper's Table 3.6-2 credits 'below 75 mm SL mostly vegetation-dwelling non-snail prey (76–91 %)' to Mittelbach 1984"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00005185.pdf", "status": 200, "note": "Springer paywall page, not kept; a library login would open doi:10.1007/BF00005185" },
+    { "url": "https://doi.org/10.1007/BF00005185", "status": 200, "note": "Springer landing page with 'buy article'; abstract only" },
+    { "url": "https://research.qubs.ca/projects/food-and-feeding-relationships-of-young-fish-in-the-first-weeks-after-the-beginning-of-exogenous-feeding-in-lake-opinicon", "status": 200, "note": "Queen's University Biological Station project page: only a DOI link, no PDF" },
+    { "url": "https://api.openalex.org/works/doi:10.1007/BF00005185", "status": 200, "note": "closed" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00005185?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00005185\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(young fish exogenous feeding Opinicon)", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "The paper already marks both citing sentences 'abstract' / 'abstract only', and the abstract does say what they say. The code comments add details the abstract lacks (rotifers; Bosmina and Chydorus by name), and littoral3.js:71 credits this paper with a juvenile-sunfish value that the paper's own table gives to Mittelbach 1984."
+}

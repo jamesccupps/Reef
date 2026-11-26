@@ -1,0 +1,57 @@
+{
+  "key": "Phillips_etal_2007",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. The publisher's article page says the full-text PDF is for subscribers only; the page's HTML also carries the article text inside a block the site hides with CSS (display: none). That hidden text was not used as a source (it is not a copy the publisher offers readers), and the saved copy was deleted"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (full DOI 10.1656/1092-6194(2007)14[269:FAAGAD]2.0.CO;2) and the publisher's article page header",
+    "ok": true,
+    "corrections": "",
+    "note": "Phillips, E. C., Ewert, Y. & Speares, P. A.; Northeastern Naturalist 14(2): 269–278, June 2007; title matches. references.md writes the DOI correctly; show.mjs's DOI link stops at '(2007' (the ledger tool truncates DOIs with parentheses), hence its 'DOI NOT FOUND at Crossref'"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (banded killifish, growth column)",
+      "claim": "Lake Erie (Presque Isle Bay) 67, 79, 93 mm at ages 1–3 in summer; to ≈ 110 mm (with COSEWIC 2014)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.5-2 (banded killifish, maturity column)",
+      "claim": "mature at age 1; gravid females average 78 mm",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.5-2 (banded killifish, fecundity column)",
+      "claim": "694 ± 39 eggs (526–1,062 by age); ≈ 3 clutches a season",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.5-3 (banded killifish, diet column); src/w3/fish3.js:840; src/w3/littoral3.js:71",
+      "claim": "young eat cladocerans, older fish chironomids (midges) and amphipods",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.6-7 (banded killifish row)",
+      "claim": "young of the year 32 mm in autumn (Presque Isle Bay)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/w3/species3.js:68",
+      "claim": "spawns repeatedly at 19–23 °C on plants; inactive below ~12 °C; broad thermal and O₂ tolerance (COSEWIC 2014; Phillips et al. 2007)",
+      "verdict": "unchecked",
+      "note": "which part the code takes from Phillips (rather than COSEWIC) is not stated; probably the repeated spawning"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://bioone.org/journals/northeastern-naturalist/volume-14/issue-2/1092-6194(2007)14[269:FAAGAD]2.0.CO;2/Fecundity-Age-and-Growth-and-Diet-of-Fundulus-diaphanus-Banded/10.1656/1092-6194(2007)14[269:FAAGAD]2.0.CO;2.full", "status": 200, "note": "77 characters: a bot-check page, not kept (BioOne; a library login would open the article)" },
+    { "url": "https://eaglehill.us/NENAonline/articles/NENA-14-2/18-Phillips.shtml", "status": 200, "note": "publisher (Eagle Hill) page: 'Full-text pdf (Accessible only to subscribers)'; the article text in the HTML sits in a div of class style99, hidden by the site's CSS (.style99 {display: none}); not used" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1656/1092-6194(2007)14[269:FAAGAD]2.0.CO;2?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1656/1092-6194(2007)14[269:FAAGAD]2.0.CO;2\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(banded killifish Presque Isle)", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Human decision needed: the publisher's own page serves the article text in its HTML but hides it from readers while selling the PDF to subscribers. I judged that reading the hidden block would get around the paywall's intent (rule 3) and did not use it; if the human rules otherwise, re-fetch the Eagle Hill page with getsrc (whose HTML stripper currently truncates this page at the first 'P < 0.001', so extract the text with a proper parser) and check the six claims. Otherwise a library copy via BioOne or JSTOR is needed."
+}

@@ -1,0 +1,73 @@
+{
+  "key": "Irwin_etal_2009",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "article not obtained; its abstract only, as deposited with Crossref (api.crossref.org/works/10.1577/T07-256.1). Stand-in read: Irwin, B. J. 2006, PhD thesis, Cornell University, Chapter 1 'Factors affecting the success of early life stages of yellow perch in Oneida Lake, New York', from Cornell eCommons (hdl.handle.net/1813/3226)",
+    "url": "https://ecommons.cornell.edu/bitstreams/8f4bfb42-73c9-43b3-9f49-576b829867a9/download",
+    "file": "docs/research_notes/fetched/v2/Irwin_etal_2009_standin_Irwin2006thesis.pdf"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "authors (Irwin, Rudstam, Jackson, VanDeValk, Forney, Fitzgerald), year, title, TAFS 138(1): 99–110 match Crossref; not checked against a title page"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (yellow perch row)",
+      "claim": "Oneida Lake, to 18 mm (egg deposition in the abstract; 8–18 mm in the project notes): larval mortality 0.042 ± 0.005 (9 yr)",
+      "verdict": "unchecked",
+      "note": "stand-in (thesis ch. 1, p. 10 = PDF p. 35): instantaneous daily mortality 0.042 ± 0.005 (N = 9 years) from the 8-mm to the 18-mm Miller-sampler survey (subset of 1968–1977, 1998, 2001), used to standardize larval density to 18 mm. In the thesis it is an 8→18-mm rate, not the egg→18-mm interval"
+    },
+    {
+      "paper": "Table 3.6-6 (yellow perch row)",
+      "claim": "Oneida Lake, 8 to 18 mm, field, 11 yr: growth 0.48 ± 0.02 (mm/d)",
+      "verdict": "unchecked",
+      "note": "stand-in (thesis p. 10 = PDF p. 35): daily growth 0.48 mm/day ± 0.02 (N = 11 years), 8-mm to 18-mm survey"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "at Oneida the winter mortality index fell as October length rose (R² = 0.382, n = 38)",
+      "verdict": "unchecked",
+      "note": "not in the abstract or the thesis chapter (the thesis credits winter mortality to Fitzgerald et al., then in press). The abstract says only that a larger end-of-year size 'should reduce subsequent mortality during the winter period'"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "Irwin et al. attribute the 1959–68 depensatory mortality to walleye consumption saturating at high perch density",
+      "verdict": "unchecked",
+      "note": "the thesis (p. 35 = PDF p. 60) says depensatory mortality was evident when walleye predation was the primary regulator (Forney 1971, 1977, 1980); saturation wording not found there"
+    },
+    {
+      "paper": "§3.6.10; src/config.js:217",
+      "claim": "larval mortality was not density-dependent (R² = 0.024) but open-water growth was (R² = 0.507); larval mortality stays density-independent",
+      "verdict": "unchecked",
+      "note": "abstract: mortality 'no longer depensatory', growth 'become density dependent'. Thesis (p. 22 = PDF p. 47): mortality vs density R² = 0.023 egg–18 mm (N = 38), < 0.001 18 mm–1 Aug, 0.021 1 Aug–15 Oct; growth vs density R² = 0.506 (18 mm–1 Aug, N = 38), 0.137 (1 Aug–15 Oct, N = 43). Near but not equal to the paper's 0.024 / 0.507, so the article's figures differ from the thesis's"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "winter mortality fell with October length, so compensation now acts \"through the first winter and second spring\"",
+      "verdict": "unchecked",
+      "note": "the quoted phrase is not in the abstract (which speaks of 'delayed compensation that helps stabilize density at age 1') nor in the thesis chapter"
+    },
+    {
+      "paper": "src/w3/fish3.js:671",
+      "claim": "young yellow perch live on the littoral bottom from August",
+      "verdict": "unchecked",
+      "note": "the abstract calls 1 Aug–15 Oct 'the demersal stage'; 'littoral' is not in it. The thesis samples that stage by bottom trawl at 10 standard sites and calls the fish 'primarily demersal'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/T07-256.1", "status": 403, "note": "publisher (TAFS, now OUP) refuses scripts; a library login would open it" },
+    { "url": "https://academic.oup.com/tafs/article-pdf/138/1/99/50000000/tafs0099.pdf", "status": 403, "note": "OUP refuses scripts (guessed PDF path)" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/T07-256.1", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://api.openalex.org/works/doi:10.1577/T07-256.1", "status": 200, "note": "closed; lists a CiteSeerX record (10.1.1.524.3010)" },
+    { "url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.524.3010", "status": 429, "note": "CiteSeerX now redirects to the Wayback Machine, which rate-limited; no Wayback capture of the CiteSeerX PDF exists" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/T07-256.1?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1577/T07-256.1\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(depensatory mortality yellow perch)", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Recommendation: read the article itself (library login at doi:10.1577/T07-256.1) before keeping the R² values and the quoted phrase. If it stays blocked, the thesis chapter (Irwin 2006, Cornell PhD, ch. 1; eCommons hdl 1813/3226) supports, under its own citation: the 8→18-mm larval rates (mortality 0.042 ± 0.005 d⁻¹, N = 9 yr; growth 0.48 ± 0.02 mm/d, N = 11 yr; p. 10); mortality not density-dependent in any interval and growth density-dependent (R² 0.023 / 0.506; p. 22); depensatory mortality of the 1960s–early 1970s not seen in recent years (pp. 2, 35). It does not contain the winter-mortality regression (R² 0.382, n = 38) or the 'first winter and second spring' phrase. The first eCommons download was refused by its web firewall (429, 'service under heavy load'); one later retry succeeded."
+}

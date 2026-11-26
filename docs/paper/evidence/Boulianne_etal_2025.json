@@ -1,0 +1,92 @@
+{
+  "key": "Boulianne_etal_2025",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access (CC BY 4.0) full text as Europe PMC's JATS XML of PMC12358046 (the publisher's PDF and the PMC pages refuse scripts); the text is one 'web page', so locations give the section and paragraph",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12358046/fullTextXML",
+    "file": "docs/research_notes/fetched/v2/Boulianne_etal_2025.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's front matter in the XML",
+    "ok": true,
+    "corrections": "",
+    "note": "Journal of Plankton Research 47(5), article fbaf035 (Sep–Oct 2025; online 17 Aug 2025); authors and title match. Figures were not read (the XML carries captions only); every value checked here is in the text"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5",
+      "claim": "Lake Simoncouche's under-ice biomass in 2020–21 was 35 % L. minutus, 15 % C. scutifer, 12 % Kellicottia, 11 % Daphnia and 8 % Bosmina (values read from figures)",
+      "source_value": "",
+      "location": "web page, Results, paragraph on zooplankton taxa (after Fig. 2); repeated in the Discussion",
+      "quote": "Leptodiaptomus minutus (35%), Cyclops scutifer (15%), Kellicottia longispina (12%), Daphnia sp. (11%)",
+      "conditions": "shares of total zooplankton biomass (dry weight from length–DW regressions) over all six dates, autumn overturn (13 Nov 2020) to spring overturn (19 Apr 2021), five depths at the 8-m deep point; Bosmina sp. 8 %",
+      "verdict": "confirmed",
+      "note": "the values are stated in the text, not read from figures: drop 'values read from figures' for these. The shares include the two open-water overturn dates. The source says six taxa made 89 % but names only five (summing to 81 %)"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "M. edax, Diaphanosoma, Holopedium and Leptodora were absent",
+      "source_value": "",
+      "location": "web page, Discussion, paragraph 3",
+      "quote": "were entirely absent from the water column, including the autumn and spring shoulder seasons",
+      "conditions": "taxa that make > 15 % of the summer crustacean production in the lake; absent on all six dates (spelled 'Mecocyclops' and 'Diaphosoma' in the source)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "nauplii were about 34 % of biomass at melt",
+      "source_value": "",
+      "location": "web page, Results, paragraph on community structure (after Fig. 3)",
+      "quote": "contributing ~ 34% to total community biomass in the melting season",
+      "conditions": "copepod nauplii as a share of total zooplankton biomass (rotifers, cladocerans, copepods), melting-season sample of 12 Apr 2021; nauplii 'nearly absent' in early winter",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "egg-bearing Daphnia went from none in late winter to 21 % at overturn",
+      "source_value": "",
+      "location": "web page, Results, paragraph on reproduction (Fig. 5)",
+      "quote": "with ~21% of the active Daphnia sp. population bearing eggs",
+      "conditions": "percent of the Daphnia population; egg production 'completely stopping in late winter' (23 Mar), ~6 % just before ice-off, ~21 % at spring overturn (19 Apr)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.8",
+      "claim": "Kellicottia and K. cochlearis are prominent under the ice at Lake Simoncouche",
+      "source_value": "",
+      "location": "web page, Results, paragraphs on zooplankton taxa and community structure",
+      "quote": "K. cochlearis was the most abundant rotifer species accounting for 20% of total zooplankton biomass",
+      "conditions": "K. cochlearis 20 % of total biomass in early winter, ~9 % at ice-off; K. longispina 12 % of total biomass over the study, most present at 7 m",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1489",
+      "claim": "Daphnia make ephippia: 13–27 % of females carry them in autumn (Cáceres 1998; Boulianne et al. 2025)",
+      "source_value": "27 % of the Daphnia population at the autumn overturn (13 Nov 2020, open water) and 13 % in early winter (14 Dec, under ice); percentages of the population, not of females",
+      "location": "web page, Results, paragraph on reproduction (Fig. 5 caption: 'percentage of the respective population density')",
+      "quote": "27% and 13% of the Daphnia sp. population, respectively bearing ephippia",
+      "conditions": "Lake Simoncouche, Québec, 2020–21; whole water column",
+      "verdict": "corrected",
+      "note": "the 13 % is an under-ice value, and both are shares of all Daphnia (juveniles included), not of females; Cáceres 1998 not checked here"
+    },
+    {
+      "paper": "src/config.js:1591",
+      "claim": "the copepod field's naupliar share of its biomass is 34 % at ice-melt (Simoncouche, Boulianne et al. 2025; L. minutus lays from February, its nauplii hatch in March)",
+      "source_value": "nauplii were ~34 % of TOTAL zooplankton biomass (rotifers and cladocerans included) in the melting season; their share of copepod biomass alone would be higher. The source does not give February laying or March hatching for L. minutus",
+      "location": "web page, Results, paragraphs on community structure and on reproduction",
+      "quote": "contributing ~ 34% to total community biomass in the melting season",
+      "conditions": "melting-season sample, 12 Apr 2021; egg-bearing L. minutus 28 % in the melting season and 44 % at spring overturn",
+      "verdict": "corrected",
+      "note": "the code uses a share of the whole community as a share of the copepod field. The February/March timing is Cooley 1973's (credited to Cooley in §3.3.5), not Boulianne's"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://academic.oup.com/plankt/article-pdf/47/5/fbaf035/64068856/fbaf035.pdf", "status": 403, "note": "OUP refuses scripts (the article is open access)" },
+    { "url": "https://europepmc.org/articles/PMC12358046?pdf=render", "status": 403, "note": "refuses scripts" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12358046/", "status": 200, "note": "bot-check page, not kept" }
+  ],
+  "notes": "Other values: Lake Simoncouche 0.8 km², mean depth 2.2 m, max 8 m, TDP 7.2 µg/L, residence 50 d, ice 5–6 months (43 cm max in 2020–21); under ice the water was 1.3 °C at the surface in early winter rising to 4.8 °C, 4–5 °C at the bottom; bottom O₂ fell to 2.5 % saturation in mid-winter; chlorophyll-a 0.35–2.3 µg/L under ice, ~3.7 at the overturns; 18–22 zooplankton taxa per under-ice date (14–22 over all six dates; Table II); biomass at 7 m about three times that at 0–1.5 m; Bosmina egg-bearers ~8 % in late winter, 14 % at spring overturn; Kellicottia and Keratella > 20 % fecund in the melting season and spring overturn. Absolute biomass is in Fig. 3 only (mg DW m⁻³), not read."
+}

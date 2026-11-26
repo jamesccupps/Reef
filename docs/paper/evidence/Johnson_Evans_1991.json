@@ -1,0 +1,70 @@
+{
+  "key": "Johnson_Evans_1991",
+  "reader": "wave-1 batch t1-09",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, as deposited by the publisher with Crossref (api.crossref.org/works/10.1139/f91-084); no full text found",
+    "url": "https://api.crossref.org/works/10.1139/f91-084"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, year, title, CJFAS 48(4): 672–680 match Crossref; not checked against a title page"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9 (white perch, 2.5 °C row)",
+      "claim": "laboratory, 2.5 °C, 150 d: 68.4–71.2 % of white perch died; yellow perch 0.8 % (Johnson & Evans 1990, 1991, abstracts)",
+      "verdict": "unchecked",
+      "note": "the 1991 abstract gives 71.2 % (white perch) and 0.8 % (yellow perch) after 150 d at 2.5 °C; 68.4 % is not in it (presumably from the 1990 paper)"
+    },
+    {
+      "paper": "Table 3.6-9 (white perch, 4.0 °C starved row)",
+      "claim": "laboratory, 4.0 °C, starved 180 d: 40.6 % died (none when fed); mortality highest in the smallest",
+      "verdict": "unchecked",
+      "note": "credited to Johnson & Evans 1990, not this entry; nothing of it is in the 1991 abstract"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "after 150 days at 2.5 °C, 71.2 % of white perch died against 0.8 % of yellow perch; at 4.0 °C 11.1 % against 17.7 %",
+      "verdict": "unchecked",
+      "note": "the abstract gives these four figures"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "white perch \"remained active throughout the winter\" while yellow perch rested on the bottom and used 25.8 % less oxygen (at 4 °C)",
+      "verdict": "unchecked",
+      "note": "the abstract has the quoted words (laboratory tanks) and 'consumed 25.8% less oxygen than white perch' during the inactive wintering period at 4.0 °C"
+    },
+    {
+      "paper": "§3.6.8; src/w3/fish3.js:746",
+      "claim": "similar-sized white perch died at 3.3 times the yellow perch rate in Great Lakes-type winters; their young die 3.3× faster than yellow perch's over a first winter",
+      "verdict": "unchecked",
+      "note": "in the abstract this is a model prediction, not an observation: multiple regressions of overwinter mortality on fall length and winter duration 'predict 3.3 times greater mortality' for white perch than similar-sized yellow perch at Great Lakes winter regimes. '3.3 times greater mortality' is not the same as '3.3× faster' (a rate); the full text is needed to know which"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "field young perch stop growing below ~10–13.5 °C and live on their autumn lipid, so first-winter mortality is size-selective (Post & Evans 1989; Johnson & Evans 1990, 1991)",
+      "verdict": "unchecked",
+      "note": "the abstract says only that in the laboratory 'small fish died first' in both species; no growth threshold is in it"
+    },
+    {
+      "paper": "src/species.js:340",
+      "claim": "white perch's higher routine metabolism costs them more over winter than yellow perch",
+      "verdict": "unchecked",
+      "note": "the abstract: yellow perch had a lower routine metabolic rate and consumed body energy more gradually; at 2.5 °C they lost 24.6 % less dry weight than similar-sized white perch"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f91-084", "status": 403, "note": "Canadian Science Publishing refuses scripts; a library login would open it" },
+    { "url": "https://doi.org/10.1139/f91-084", "status": 403, "note": "publisher landing page refuses scripts" },
+    { "url": "https://api.openalex.org/works/doi:10.1139/f91-084", "status": 200, "note": "closed, no repository copy" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f91-084?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f91-084\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(young-of-the-year white perch simulated winter)", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Listed already as A06 in docs/research_notes/blocked_sources_to_fetch.md. Every number the paper uses from this entry appears in the publisher's abstract, and the paper says '(abstract)'; the one wording to fix even without the full text is §3.6.8's 'died at 3.3 times the yellow perch rate', which the abstract presents as a regression prediction of 3.3 times greater mortality."
+}
