@@ -1,0 +1,61 @@
+{
+  "key": "Bouffard_Wuest_2019",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: EPFL Infoscience (record 264776), the published Annual Reviews PDF (Annual Reviews' download stamp on every page)",
+    "url": "https://infoscience.epfl.ch/bitstreams/7fb53d11-7798-430e-8a47-4687369572fb/download",
+    "file": "docs/research_notes/fetched/v2/Bouffard_Wuest_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"Annu. Rev. Fluid Mech. 2019. 51:189–215\")",
+    "ok": true,
+    "corrections": "",
+    "note": "Bouffard, D. & Wüest, A. 2019. Convection in lakes. Annual Review of Fluid Mechanics 51: 189–215 (Crossref gives issue 1). Matches the entry."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "once the snow goes, sunlight through the ice drives radiative convection, deepening the mixed layer by about 0.5 m d⁻¹ and up to 3 m d⁻¹",
+      "location": "p. 198 (PDF p. 10), §2.3 Under-Ice Radiation",
+      "quote": "CML-deepening rates of ∼0.5 m day−1 reaching up to 3 m day−1",
+      "conditions": "late winter, once snow has left the ice; 'up to 3 m day−1' only 'for strong solar radiation and weak background stratification'. The review relays these rates from Kirillin et al. (2012) and the plume velocities (w∗ ≈ 1–7 mm s−1) from Bouffard et al. (2016, Lake Onego)",
+      "verdict": "confirmed",
+      "note": "The primary source of the rates is Kirillin et al. 2012; the rewrite could cite 'Kirillin et al. 2012, via Bouffard & Wüest 2019'."
+    },
+    {
+      "paper": "§3.1.4",
+      "claim": "in a 3–5-m lake such convection would mix the whole column within 1–10 days (project estimate)",
+      "location": "p. 198 (PDF p. 10), §2.3",
+      "quote": "CML-deepening rates of ∼0.5 m day−1 reaching up to 3 m day−1",
+      "kind": "arithmetic",
+      "conditions": "inputs from the review; the arithmetic is the project's",
+      "verdict": "confirmed",
+      "note": "3 m at 3 m/d = 1 d; 5 m at 0.5 m/d = 10 d. The span holds if the deepening rate stays constant to the bed; the review notes the layer deepens into background stratification, so the slow end is the more likely."
+    },
+    {
+      "paper": "src/w3/env3.js:50-52 (MIX_RATE)",
+      "claim": "convective velocities of 1–50 mm/s (Bouffard & Wüest 2019)",
+      "location": "p. 191 (PDF p. 3), Table 1, row w∗ (convective scale velocity)",
+      "quote": "w∗ (mm s−1) … Under ice: 1–7 … Free surface cooling: 1–50",
+      "quote_from": "table",
+      "conditions": "typical values; w∗ = (B∗ hCML)^1/3 (Deardorff 1970). 1–50 mm/s is for free-surface cooling; under ice 1–7 mm/s",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/env3.js:50-52 (MIX_RATE)",
+      "claim": "convective velocities of 1–50 mm/s turn a few metres over in ~15–90 min",
+      "source_value": "the review gives no turnover time. The convective time scale h/w∗ for 2–5 m at 1–50 mm/s is ~40 s to ~83 min (3 m: 1–50 min); ~15–90 min holds only for w∗ ≈ 1–5 mm/s (the under-ice or weak-cooling end)",
+      "location": "p. 191 (PDF p. 3), Table 1; p. 194 (PDF p. 6), w∗ = (B∗hCML)^1/3",
+      "quote": "Free surface cooling: 1–50",
+      "kind": "arithmetic",
+      "conditions": "project arithmetic on the review's w∗ range",
+      "verdict": "corrected",
+      "note": "The chosen MIX_RATE (an e-fold of 30 min) lies inside the h/w∗ range, so the parameter can stand; the comment's '~15–90 min' should either say w∗ of a few mm/s or give '~1–80 min'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Only a code comment's arithmetic needs changing; the paper's own claim (§3.1.4) is confirmed. Other values in the review that the rewrite may use: temperature of maximum density TMD = 3.984 °C at the surface, TMD(z) ≈ 3.984 + 0.0021z (Table 1, p. 191); compensation depth zC ~0.1 m in a turbid lake (kd 1 m⁻¹) and ~0.5 m in a clear one (kd 0.2 m⁻¹) on a cold sunny day (p. 194); a thin stable diffusive layer separates the under-ice convective layer from the ice (p. 198, Fig. 4, Lake Onego); under-ice convection 'has been found to trigger early growth of phytoplankton' (p. 199, Vehmaa & Salonen 2009); differential heating between littoral and pelagic under ice can drive lake-wide gyres (p. 198, Kirillin et al.)."
+}

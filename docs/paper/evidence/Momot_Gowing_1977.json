@@ -1,0 +1,50 @@
+{
+  "key": "Momot_Gowing_1977",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text of the article: closed at the publisher (NRC / Canadian Science Publishing), no repository copy (Semantic Scholar CLOSED, no Europe PMC record). Only its abstract, in the Crossref record, was seen. Two Michigan DNR reports by the same authors on the same lakes were read in full as stand-ins (see notes)",
+    "url": "https://doi.org/10.1139/f77-272",
+    "other_files": [
+      "docs/research_notes/fetched/v2/Momot_Gowing_1977.crossref.html (Crossref record with the abstract)",
+      "docs/research_notes/fetched/v2/Momot_Gowing_1977.RR1767.pdf (Momot & Gowing 1970, Michigan DNR Research and Development Report 196 / Institute for Fisheries Research Report 1767: https://www2.dnr.state.mi.us/Publications/PDFS/DNRFishLibrary/ResearchReports/RR1701-RR1800/RR1767.pdf)",
+      "docs/research_notes/fetched/v2/Momot_Gowing_1977.RR1832.pdf (Momot & Gowing 1976, Michigan DNR Fisheries Research Report 1832: https://www2.dnr.state.mi.us/publications/pdfs/DNRFishLibrary/ResearchReports/RR1801-RR1900/RR1832.pdf)"
+    ]
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref only (no full text)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Walter T. Momot, Howard Gowing (Nov 1977), Production and population dynamics of the crayfish Orconectes virilis in three Michigan lakes, J. Fish. Res. Board Can. 34(11): 2030–2040 — matches the entry; not checked against the title page"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9",
+      "claim": "in three Michigan lakes crayfish stood at 46–213 kg/ha and produced 60–142 kg/ha/yr",
+      "verdict": "unchecked",
+      "note": "The abstract (Crossref) gives these spans for O. virilis biomass and annual production; the article's tables, years and methods were not seen. The paper already flags it 'abstract via a search summary': it can now say 'abstract'."
+    },
+    {
+      "paper": "src/config.js:1775-1776",
+      "claim": "O. virilis 46–213 kg/ha, 60–142 kg/ha a year, P/B 0.94–1.53 (Momot & Gowing 1977)",
+      "verdict": "unchecked",
+      "note": "The abstract gives the turnover ratio 'only between 0.94 and 1.53'. Unchecked against the article. The stand-in RR1832 (Table 10, printed p. 27, PDF p. 28) gives two of the lakes year by year, 1966–73: West Lost B 51.7–142.9 kg/ha, P 56.6–133.8 kg/ha, P/B 0.94–1.38; North Twin B 33.0–82.4, P 33.6–84.6, P/B 0.85–1.39 (1970–73 under an experimental fishery). Its spans differ from the article's, so the article's 213 kg/ha must come from other years or the third lake."
+    },
+    {
+      "paper": "src/config.js:1795-1796",
+      "claim": "crayfish trapped out to ~9 m in Michigan lakes (Momot & Gowing 1977)",
+      "verdict": "unchecked",
+      "note": "Not checkable in the article. The stand-in Momot & Gowing 1970 (RR1767, p. 3) supports it: traps were set in five depth bands, the deepest 'six at 9.1 m (range: 8.4–9.9 m)'; adult females were 'negligible at 9.1 m' in early summer and moved deeper by midsummer (pp. 5–6). Cite RR1767 for the depth."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f77-272", "status": 403, "note": "publisher (Canadian Science Publishing) refuses scripts; the page a library login would open is https://doi.org/10.1139/f77-272" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f77-272?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f77-272%22&format=json&resultType=lite", "status": 200, "note": "hitCount 0" },
+    { "url": "https://api.crossref.org/works/10.1139/f77-272", "status": 200, "note": "bibliographic record and abstract only" },
+    { "url": "(web search for a Michigan DNR report of the 1977 article)", "status": 0, "note": "found only RR1767 (1970) and RR1832 (1976) by the same authors, read as stand-ins; the 1977 article's own data report was not found" }
+  ],
+  "notes": "STAND-INS (read in full, Michigan DNR's own copies). (1) Momot & Gowing 1970, RR1767, 'Differential seasonal migration of the crayfish Orconectes virilis (Hagen), in marl lakes' — the three lakes (North Twin, South Twin, West Lost; Pigeon River area, Otsego County) are 1.5–1.9 ha limestone sink lakes with mean depths of 7.3–8.5 m, sand shoals to 3 m, peat beyond, logs in the littoral and very little vegetation (p. 4); supports the ~9-m trapping depth. (2) Momot & Gowing 1976, RR1832, 'Ricker equilibrium yield for unexploited populations of crayfish' — West Lost and North Twin (1.4 and 1.9 ha; maximum depth 13.1 and 12.5 m; alkalinity 134 ppm in West Lost; Table 1, printed p. 5, PDF p. 6), mark-recapture population estimates and Ricker production 1966–73 (Table 10, printed p. 27, PDF p. 28, read on the page image); pre-exploitation (1966–70) production averaged 101.6 kg/ha in West Lost and 64.6 kg/ha in North Twin (printed p. 26, PDF p. 27). Both are hard-water marl lakes, far from Hot Brook's soft water: the paper's own caveat ('In Maine's soft-water lakes, however, the link appears weak') matters. The 1977 article remains the right citation for the three-lake spans once read; a library copy is needed."
+}

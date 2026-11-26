@@ -1,0 +1,80 @@
+{
+  "key": "Lippert_etal_2007",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institution's copy: the published PDF hosted by Laurentian University's Living With Lakes Centre (laurentienne.ca; Laurentian is the authors' institution, corresponding author J. M. Gunn)",
+    "url": "https://laurentienne.ca/assets/files/Living-With-Lakes/Restoration%20Ecology/Lippert-2007-CJFAS.pdf",
+    "file": "docs/research_notes/fetched/v2/Lippert_etal_2007.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"Can. J. Fish. Aquat. Sci. 64: 1413–1428 (2007) doi:10.1139/F07-097\")",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.7.6",
+      "claim": "in 18 Sudbury-area lakes recolonized by pike, walleye and smallmouth",
+      "source_value": "18 lakes: 6 with no predators, 4 recently invaded (≤ 3 yr) and 8 with established (≥ 15 yr) predators — northern pike, smallmouth bass, walleye, and also lake trout and splake; predators arrived by agency stocking, unrecorded introductions or natural movement",
+      "location": "p. 1413 (PDF p. 1), Abstract; p. 1414 (PDF p. 2), Study lakes; Table 2, p. 1417 (PDF p. 5)",
+      "quote": "six lakes with no predators, four lakes recently invaded (≤3 years) by predators",
+      "conditions": "Precambrian Shield lakes of 20–1079 ha (median 77), maximum depth 6.0–50.3 m, Secchi 2.4–14.0 m, recovering from acidification and metal deposition",
+      "verdict": "corrected",
+      "note": "say 'in 18 Sudbury-area lakes, 12 of them recolonized by predators (pike, walleye, smallmouth, some lake trout or splake)'"
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "perch biomass per gill net averaged 357 g where predators were established, 695 g where they had recently returned, against 1,497 g where they were absent",
+      "location": "p. 1419 (PDF p. 7), Results; Table 2, p. 1417 (PDF p. 5)",
+      "quote": "In the absence of predators, yellow perch biomass averaged 1497.4 g·net–1",
+      "conditions": "summer Nordic multimesh gill nets (5–55 mm meshes, depth-stratified), 2004–2005; means of lake means: 1497.4 ± 580.4 SD (n = 6 lakes), 694.7 ± 978.9 (n = 4), 357.2 ± 380.0 (n = 8)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Recomputed from Table 2's per-lake values (read on the page image): 8984.6/6 = 1497.4; 2778.8/4 = 694.7; 2857.8/8 = 357.2."
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "with predators, perch switched to bottom prey at 83 mm instead of 140 mm",
+      "location": "p. 1420 (PDF p. 8), Ontogenetic diet shift and Table 4",
+      "quote": "from zooplankton to benthos at a much smaller size (83 mm)",
+      "conditions": "total length at which benthos reaches 50 % probability in stomachs (logistic fits per lake; only lakes with significant fits). 83 mm is the mean of six predator lakes (recently invaded 95, 78, 22 mm; established 105, 101, 98 mm); 140 mm the mean of three predator-free lakes (130, 167, 123 mm); ANOVA F[1,7] = 7.48, p = 0.029",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Recomputed from Table 4: 499/6 = 83.2; 420/3 = 140. The effect is driven by the recently invaded lakes (mean 65 mm); the authors say established-predator lakes shifted 'at a similar size' to predator-free ones (p. 1424). The rewrite should say so."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "under predation, small perch shift toward littoral habits, turning to bottom prey earlier and taking a littoral body form",
+      "source_value": "habitat use was not measured. Diet: an earlier shift to benthos, strongest in recently invaded lakes (established-predator lakes shifted at a size similar to predator-free lakes). Body form: pelagic in predator-free lakes, littoral (deeper-bodied) in lakes with predators",
+      "location": "p. 1424 (PDF p. 12), Discussion; p. 1425 (PDF p. 13), Body shape changes",
+      "quote": "Perch from lakes with well-established predators made the shift onto benthos at a similar size",
+      "conditions": "18 Sudbury lakes; body shape from digitized landmarks on 90–130-mm perch, 30 per lake, 4 lakes per regime, fall samples",
+      "verdict": "corrected",
+      "note": "'shift toward littoral habits' is an inference the paper does not test; it cites Werner et al. (1983) for small perch moving to littoral refuges, and suggests (p. 1424) that 'confinement in refuge areas may not be the explanation' for the males' smaller testes. Rephrase to 'turning to bottom prey earlier where predators had recently arrived, and taking a littoral body form'."
+    },
+    {
+      "paper": "§3.7.8 (body form)",
+      "claim": "perch with predators take a littoral body form",
+      "location": "p. 1425 (PDF p. 13), Body shape changes in response to predation",
+      "quote": "perch had pelagic body forms in predator-free lakes and littoral body forms",
+      "conditions": "'… in lakes with recently invaded and established predators'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:395-396",
+      "claim": "perch with predators turn littoral and benthic at ~8 cm (Lippert et al. 2007)",
+      "source_value": "benthic diet at a mean 83 mm TL across six predator lakes (recently invaded 22–95 mm; established 98–105 mm, near the 123–167 mm of predator-free lakes); habitat (littoral) not measured, only body form",
+      "location": "p. 1420 (PDF p. 8), Table 4; p. 1424 (PDF p. 12)",
+      "quote": "from zooplankton to benthos at a much smaller size (83 mm)",
+      "verdict": "corrected",
+      "note": "The code uses this to justify perch habitat by size (habJ). The source supports the diet shift, not a habitat shift; with established predators (the Hot Brook case) the shift was at ~10 cm."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f07-097", "status": 403, "note": "publisher (Canadian Science Publishing) refuses scripts; closed access (Semantic Scholar: CLOSED)" }
+  ],
+  "notes": "Other results: perch biomass 69 % lower in predator lakes (abstract); perch were > 80 % of forage-fish biomass in every lake; total fish biomass rose with predator biomass (R = 0.79); YOY perch 13 % smaller at the end of their first season in recently invaded lakes; age-1 length did not differ among regimes; NDPK growth potential and condition highest in established-predator lakes; egg lipid 0.040, 0.027 and 0.034 mg/egg (none, recent, established); shift to fish at 200 and 217 mm TL (none, recent), and not reached (predicted 268 mm) with established predators (p. 1420). These are soft-water Shield lakes (Ca 1.4–16.6 mg/L, Secchi 2.4–14 m) of 6–50 m maximum depth, all deeper than Hot Brook's 4–5.5 m."
+}

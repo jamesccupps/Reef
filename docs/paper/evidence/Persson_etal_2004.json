@@ -1,0 +1,59 @@
+{
+  "key": "Persson_etal_2004",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: University of Amsterdam (UvA-DARE / pure.uva.nl; co-author De Roos's institution), marked 'Final published version'. The Wiley 'pdfdirect' link OpenAlex lists answered 403 to scripts",
+    "url": "https://pure.uva.nl/ws/files/1966841/27511_EcolMon04.pdf",
+    "file": "docs/research_notes/fetched/v2/Persson_etal_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"Ecological Monographs, 74(1), 2004, pp. 135–157\")",
+    "ok": true,
+    "corrections": "",
+    "note": "all eight authors and the title match (the UvA cover sheet misspells the title 'Enery'; the article itself reads 'Energy')"
+  },
+  "claims": [
+    {
+      "paper": "§4.5; §5.4; src/config.js:243-244",
+      "claim": "young piscivores clear 400·L(mm)^0.6 L of water a day at their best prey size (Holling type II, gut-limited) — the perch cannibals' rate",
+      "location": "p. 141 (PDF p. 8), Table 3 (Piscivory); p. 140 (PDF p. 7), Table 2 (cannibalistic attack rate, total food intake, digestion time); p. 142 (PDF p. 9)",
+      "quote": "σ 0.6 … allometric exponent … β 400 … L·d−1·mm−σ … cannibalistic voracity",
+      "quote_from": "table",
+      "conditions": "a model parameter for Eurasian perch (Perca fluviatilis) cannibals in Abborrtjärn 3, a 9.3-ha Swedish lake; β from L. Persson (unpublished) and Lundvall et al. (1999) experiments. The attack rate is β(v/φ)^σ × a tent function of victim length v; on the ridge v = φc it equals β·c^σ (c = cannibal length, mm). Intake I = η/(1 + Hη), H a digestion time that scales with the cannibal's mass, so 'Holling II, gut-limited' matches",
+      "verdict": "confirmed",
+      "note": "Applying the perch value to pickerel, bass and other piscivores is the project's extrapolation; the rewrite should say so."
+    },
+    {
+      "paper": "src/config.js:244; §5.4",
+      "claim": "400·L^0.6 L/d is 3.1 m³/d at 30 mm and 6.3 at 100 mm; ~15 m³ a day for a 45-cm pickerel",
+      "location": "p. 141 (PDF p. 8), Table 3",
+      "quote": "β 400 … L·d−1·mm−σ … σ 0.6",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "verdict": "confirmed",
+      "note": "400 × 30^0.6 = 3,078 L; 400 × 100^0.6 = 6,340 L; 400 × 450^0.6 = 15,600 L a day."
+    },
+    {
+      "paper": "§4.5 (co-cited with Persson & Brönmark 2002); §5.4 ('a cannibal's size window peaking at prey 19 % of its length')",
+      "claim": "the size window peaks at prey 0.19 of the predator's length",
+      "source_value": "Persson et al.'s perch cannibalism window runs from δ = 0.05 to ε = 0.45 of the cannibal's length and peaks at φ = 0.16",
+      "location": "p. 141 (PDF p. 8), Table 3 (δ, ε, φ) and 'Cannibalism window'; p. 142 (PDF p. 9)",
+      "quote": "δ 0.05 lower size limit … ε 0.45 upper … φ 0.16 optimum size ratio",
+      "quote_from": "table",
+      "conditions": "victim length / cannibal length; parameters from Lundvall et al. (1999), Fig. 2",
+      "verdict": "corrected",
+      "note": "The code (config.js:245-246, WIN_R 5.3 → peak r ≈ 0.19) credits the 0.19 to Persson & Brönmark 2002 (pikeperch), which this entry cannot check. If the window is P&B's, cite it alone for the 0.19; §5.4 should not call it 'a cannibal's' window, or should give Persson et al.'s 0.16. The layout text puts φ beside 0.6: read on the raw text and the page image."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1890/02-4092", "status": 403, "note": "Wiley (OpenAlex's bronze link) refuses scripts" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdfdirect/10.1890/02-4092", "status": 403, "note": "Wiley ESA journals refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1890/02-4092?fields=openAccessPdf,externalIds,title", "status": 404, "note": "not found by DOI" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1890/02-4092%22&format=json&resultType=core", "status": 503, "note": "service unavailable at the time" },
+    { "url": "http://urn.kb.se/resolve?urn=urn:nbn:se:uu:diva-72431", "status": 200, "note": "KB resolver: destination (uu.diva-portal.org) not reachable" }
+  ],
+  "notes": "Other parameters in Table 3 (p. 141) the rewrite may use for perch: zooplankton attack rate Â = 9 × 10³ L/d at the optimum consumer size Wopt = 4.7 g, exponent α = 0.62; macroinvertebrate attack b1 = 0.2 m² d⁻¹ g^−b2, b2 = 0.4; digestion time ξ1 = 5.0 d/g^(1+ξ2), ξ2 = −0.8; maintenance ρ1 = 0.033, ρ2 = 0.77; conversion efficiency ke = 0.61; background mortality μ0 = 0.005 d⁻¹; growing season 90 d; length–mass: YOY < 29.2 mm λ1' = 41.2, λ2' = 0.263; YOY ≥ 29.2 mm 48.0, 0.380; older perch 48.3, 0.317 (mm/g^λ2). Field: 1-yr-olds 46–61 mm; a stunted population with a maximum size of ~180 mm in 1991–1993 (p. 142)."
+}

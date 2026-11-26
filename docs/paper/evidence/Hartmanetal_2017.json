@@ -1,0 +1,80 @@
+{
+  "key": "Hartmanetal_2017",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the source FB4 credits is a peer-reviewed article — Hartman, K. J. 2017, Transactions of the American Fisheries Society 146(4): 634–644, doi:10.1080/00028487.2017.1293563 — found in FB4's reference list (Deslauriers et al. 2017, p. 595) and confirmed at Crossref. Its full text is closed (Wiley / OUP / Taylor & Francis all refuse scripts; Semantic Scholar CLOSED; no Europe PMC record); only its abstract (Crossref) was read. The two conference abstracts the entry names were read in full from openly downloadable Wayback captures (afs.confex.com no longer resolves)",
+    "url": "https://doi.org/10.1080/00028487.2017.1293563",
+    "other_files": [
+      "docs/research_notes/fetched/v2/Hartmanetal_2017.crossref.html (Crossref record of the article, with abstract)",
+      "docs/research_notes/fetched/v2/Hartmanetal_2017.FB4refs.pdf (Deslauriers et al. 2017, reference list page, PDF p. 10 = printed p. 595)",
+      "docs/research_notes/fetched/v2/Hartmanetal_2017.AFS2011.html (https://web.archive.org/web/20161103232507id_/https://afs.confex.com/afs/2011/webprogram/Paper7183.html)",
+      "docs/research_notes/fetched/v2/Hartmanetal_2017.AFS2015.html (https://web.archive.org/web/20151210105158id_/https://afs.confex.com/afs/2015/webprogram/Paper21784.html)"
+    ]
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref; FB4's reference list (Deslauriers et al. 2017, p. 595); the two AFS abstract pages",
+    "ok": false,
+    "corrections": "re-point the entry to the article: Hartman, K. J. 2017. Bioenergetics of Brown Bullhead in a changing climate. Transactions of the American Fisheries Society 146(4): 634–644. doi:10.1080/00028487.2017.1293563 (single author; received 27 Oct 2016, published online 1 May 2017). 'Hartman et al. 2017' is only FB4's parameter-file label. The 2011 poster is Porto, M., Anderson, A., McGinley, E. J., Hartman, K. & Merriam, E. R. 2011, 'Developing a bioenergetics model for brown bullhead', AFS 141st Annual Meeting, poster P-197 (5 Sept 2011, Washington State Convention Center); the 2015 talk is Hartman, K. 2015, 'Bioenergetics of brown bullheads in a changing climate', AFS annual meeting, Portland, Th-133-9 (20 Aug 2015)",
+    "note": "this resolves the ledger's 'sources disagree' flag: FB4 says 'et al.', the article (Crossref, FB4's own reference list) has one author"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4; Table 3.5-3 (brown bullhead)",
+      "claim": "the brown bullhead set is documented only in conference work (no peer-reviewed paper was found)",
+      "source_value": "a peer-reviewed article documents it: Hartman 2017, TAFS 146(4): 634–644, which 'developed and validated a bioenergetics model for Brown Bullhead in the laboratory' (abstract)",
+      "location": "FB4 reference list, Deslauriers et al. 2017, p. 595 (PDF p. 10); Crossref record (web page) of doi:10.1080/00028487.2017.1293563",
+      "quote": "Hartman, K. J. 2017. Bioenergetics of Brown Bullhead in a changing climate.",
+      "verdict": "corrected",
+      "note": "The abstract adds that the model 'performed very well in laboratory validations at two temperatures and two ration levels—within 4%', and was used to model a 4 °C warming. Whether the article prints exactly FB4's stored values is unchecked."
+    },
+    {
+      "paper": "§3.5.4; Table 3.5-3 (brown bullhead)",
+      "claim": "the set rests on fish of 2.5–131 g at 10–30 °C (Hartman et al. 2017; AFS 2011 poster)",
+      "location": "web page: AFS 2011 abstract P-197 (Porto et al.), Wayback capture of 3 Nov 2016",
+      "quote": "a variety of sizes of fish (2.5g – 130.7g)",
+      "conditions": "laboratory measurements of metabolism, growth and consumption at 10, 15, 20, 25 and 30 °C; growth and consumption trials one week, individual aquaria, ad libitum; maximum consumption and growth between 20 and 25 °C; built with Fish Bioenergetics 3.0 and 'previously published data'",
+      "verdict": "confirmed",
+      "note": "Confirmed in the poster abstract, which is the cited conference item in full. The 2017 article (unread) may have added fish or temperatures; credit the range to the poster (Porto et al. 2011), not to 'Hartman et al. 2017'."
+    },
+    {
+      "paper": "Table 3.5-3 (brown bullhead)",
+      "claim": "energy density 6,700 J/g",
+      "verdict": "unchecked",
+      "note": "FB4's stored Brown Bullhead row has ED 6700 (Deslauriers_etal_2017.json); whether the article gives it, and for what fish, is unchecked. The project already moved the model's value to 5,000 J/g (src/w3/fish3.js:710-715, 'fatty farmed catfish' → wild ictalurid muscle), so the table and the model may disagree."
+    },
+    {
+      "paper": "Table 4.3 (brown bullhead); src/species.js:313-315",
+      "claim": "the bullhead runs on the FB4 'Brown Bullhead' set (Hartman et al. 2017)",
+      "source_value": "the set's source is Hartman, K. J. 2017 (single author), TAFS 146(4): 634–644; 'Hartman et al. 2017' is FB4's label",
+      "location": "FB4 reference list, Deslauriers et al. 2017, p. 595 (PDF p. 10)",
+      "quote": "Hartman, K. J. 2017. Bioenergetics of Brown Bullhead in a changing climate.",
+      "verdict": "corrected",
+      "note": "Attribution only. The code's values match FB4's row (Deslauriers_etal_2017.json); whether the article prints the same values is unchecked."
+    },
+    {
+      "paper": "src/species.js:322",
+      "claim": "below 15 °C the young breathe on the bullhead's own set (Hartman: 41 mg O₂ kg⁻¹ h⁻¹ at 5 g, 4 °C, Q10 2.5)",
+      "verdict": "unchecked",
+      "note": "Unchecked against the article. Redone from FB4's row (REQ 1: RA 0.0007, RB −0.271, RQ 0.0915, RTO 0.4055 with a constant swimming speed of 1, so activity × e^0.4055 = 1.50): 0.0007 × 5^−0.271 × e^(0.0915·4) × 1.50 = 0.000979 g O₂ g⁻¹ d⁻¹ = 40.8 mg O₂ kg⁻¹ h⁻¹; Q10 = e^(10 × 0.0915) = 2.50. The arithmetic is right; it is FB4's model, not a measurement at 4 °C (the poster's lowest test temperature was 10 °C)."
+    },
+    {
+      "paper": "src/w3/fish3.js:710-712",
+      "claim": "on FB4's Hartman et al. 2017 set a bullhead needs 0.35–0.56 of its Cmax to hold weight at 18–24 °C (ration falls as W^−0.225, respiration as W^−0.271)",
+      "verdict": "unchecked",
+      "note": "The exponents are FB4's CB −0.225 and RB −0.271; the maintenance fractions are the project's arithmetic on FB4's row, not checked here."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://academic.oup.com/tafs/article-lookup/doi/10.1080/00028487.2017.1293563", "status": 403, "note": "OUP (current TAFS publisher) refuses scripts" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1080/00028487.2017.1293563", "status": 403, "note": "Wiley (the Crossref licence host) refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/00028487.2017.1293563", "status": 403, "note": "Taylor & Francis refuses scripts; https://doi.org/10.1080/00028487.2017.1293563 is the page a library login would open" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1080/00028487.2017.1293563?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1080/00028487.2017.1293563%22&format=json&resultType=lite", "status": 200, "note": "hitCount 0" },
+    { "url": "https://afs.confex.com/afs/2011/webprogram/Paper7183.html", "status": 0, "note": "ENOTFOUND (host no longer resolves); read via the Wayback capture instead" },
+    { "url": "https://afs.confex.com/afs/2015/webprogram/Paper21784.html", "status": 0, "note": "ENOTFOUND; read via the Wayback capture instead" }
+  ],
+  "notes": "The coordinator's lead checks out: Hartman (2017, TAFS 146(4): 634–644) is the peer-reviewed paper behind FB4's bullhead row, and §3.5.4's 'documented only in conference work (no peer-reviewed paper was found)' must go. The rewrite should cite the article for the model (and get a library copy to check the stored values and the fish sizes and temperatures behind them), and the 2011 poster (Porto et al.) only for the 2.5–131 g, 10–30 °C detail if the article is not read. The 2015 talk abstract: PAH-linked tumours in Great Lakes bullheads; warming expected to raise consumption and contaminant exposure; 'Independent laboratory experiments were used to validate model predictions'. The article's abstract: Brown Bullhead is a 'benthic‐oriented warmwater fish'; a 4 °C warming would raise growth in the north of the range and cause declines or extirpation in the south."
+}

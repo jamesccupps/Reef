@@ -1,0 +1,82 @@
+{
+  "key": "Krieger_etal_1983",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (17 Feb 2017, openly downloadable) of the USGS National Wetlands Research Center's free copy of the report (nwrc.usgs.gov/wdb/pub/hsi/hsi-055.pdf, the scanned report with a text layer). The USGS Publications Warehouse record has no digital copy",
+    "url": "https://web.archive.org/web/20170217125652id_/http://www.nwrc.usgs.gov/wdb/pub/hsi/hsi-055.pdf",
+    "file": "docs/research_notes/fetched/v2/Krieger_etal_1983.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 2), the report's own citation line (PDF p. 3) and the USGS Publications Warehouse record",
+    "ok": false,
+    "corrections": "the title on the title page is 'Habitat suitability information: yellow perch' (December 1983), not 'Habitat suitability index models: yellow perch' (that is the USGS warehouse's and the series' label). Series number FWS/OBS-82/10.55 is right (the report's own suggested citation misprints it '83/10.55'); viii + 37 pp. is consistent with the contents page",
+    "note": "authors Douglas A. Krieger, James W. Terrell, Patrick C. Nelson; U.S. Fish and Wildlife Service, Western Energy and Land Use Team"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (yellow perch, maturity)",
+      "claim": "males mature at 3, females at 4 yr (Scott & Crossman 1973; Krieger et al. 1983)",
+      "source_value": "females at 3–4 yr, one year later than males (so males 2–3 yr), in Canadian and northern US waters",
+      "location": "p. 1 (PDF p. 10), Age, Growth, and Food",
+      "quote": "female yellow perch mature at 3-4 years of age, one year later than males",
+      "conditions": "Canadian and northern United States waters; relayed from Herman et al. 1964 and Scott & Crossman 1973",
+      "verdict": "corrected",
+      "note": "3 (males) / 4 (females) is Scott & Crossman's point value; Krieger et al. give a range. Cite S&C alone for 3/4, or give Krieger's range."
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, spawning)",
+      "claim": "spawning at 7–13 °C",
+      "location": "p. 1 (PDF p. 10), Reproduction",
+      "quote": "from April to June when water temperatures reach 7-13 0 C",
+      "conditions": "spawning migrations from deep water to tributaries, lake shallows or slow river water, April–June (relayed from Harrington 1947, Wells 1968, Scott & Crossman 1973)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, spawning)",
+      "claim": "egg strands at 1.0–3.7 m",
+      "location": "p. 3 (PDF p. 12), Embryo",
+      "quote": "Yellow perch egg strands are broadcast in water depths of 1.0 to 3.7 m",
+      "conditions": "relayed from Harrington 1947, Herman et al. 1964, Benson 1973, Clady & Hutchinson 1975",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, spawning)",
+      "claim": "gonads need 145–175 d at 4–10 °C (Hokanson 1977, via Krieger et al. 1983)",
+      "location": "p. 3 (PDF p. 12), Embryo",
+      "quote": "Minimum winter water temperatures (4-10° C) should be maintained for 145-175 days",
+      "conditions": "'to allow for normal gonadal development of adults so that viable gametes will be produced'; credited to Hokanson 1977 and Jones et al. 1977. Also p. 2: a winter minimum of 10 °C is near the upper limit for gonad maturation (Hokanson 1977)",
+      "verdict": "confirmed",
+      "note": "'via Krieger et al. 1983' should name Jones et al. 1977 alongside Hokanson 1977"
+    },
+    {
+      "paper": "Table 3.5-3 (yellow perch, longevity)",
+      "claim": "usually 9–10 yr",
+      "location": "p. 1 (PDF p. 10), Age, Growth, and Food",
+      "quote": "Maximum age is usually 9-10 years.",
+      "conditions": "maximum age, not mean life span; few fish live past 5 yr in southern reservoirs (Clugston et al. 1978)",
+      "verdict": "confirmed",
+      "note": "the table should say 'maximum age usually 9–10 yr'"
+    },
+    {
+      "paper": "Table 3.5-3 (yellow perch, diet)",
+      "claim": "zooplankton → amphipods, chironomids → insects, fish and crayfish from ≈ 120 mm (via Krieger et al. 1983)",
+      "location": "p. 1 (PDF p. 10), Age, Growth, and Food",
+      "quote": "Larger yellow perch (> 120 mm) prey on aquatic insects, fish, and crayfish",
+      "conditions": "larvae (6 mm) eat copepod nauplii, cyclopoids and cladocerans; bottom-dwelling juveniles eat amphipods, ostracods and chironomid larvae; > 120 mm aquatic insects, fish, crayfish (relayed from Siefert 1972; Kelso & Ward 1977; Ward & Robinson 1974)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:396",
+      "claim": "perch schools sorted by size (Krieger & Terrell 1983)",
+      "verdict": "unsupported",
+      "note": "The report, read in full (49 PDF pages, text layer searched for 'school', 'shoal', 'group', 'aggregat'), never mentions schooling. The research note (perch_pickerel_smallmouth_pumpkinseed.md) took the statement from a New Jersey DFW fact sheet that cites 'Krieger & Terrell 1983'; the fact sheet's wording is not in this report. Find a primary source for size-sorted schools (e.g. Helfman 1979, which the report cites for cover use) or drop the citation."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://pubs.usgs.gov/publication/fwsobs82_10_55", "status": 200, "note": "USGS Publications Warehouse record only: 'does not have links to digital versions of this publication'" }
+  ],
+  "notes": "Other values in the report (p. 2–3) the rewrite may use: adults' preferred summer temperatures 17.6–25.0 °C, optimum 19–24 °C; growth starts at 6–10 °C; upper lethal summer temperature 32.3 °C (Ferguson 1958); ultimate upper incipient lethal 29.2–35 °C (Hokanson 1977); winter DO of 0.2–1.5 mg/L lethal, 3.1 mg/L lethal at 26 °C (Moore 1942), and the authors take 5 mg/L as the lower optimum; spawning in current < 5 cm/s, strands broken above 25 cm/s; embryos 7–20 °C, optimum 10 °C rising 1 °C/day to 20 °C; fry tolerate 3–28 °C, inactive below 5.3 °C; larvae < 9.5 mm cannot hold station above 2.5 cm/s; juveniles select 20–23 °C; reproductive success reduced at pH < 5.5. All are secondary (the report relays them). The lacustrine HSI model rates percent littoral area, cover, temperature, DO, pH, degree-days 4–10 °C and trophic status (pp. 6–7)."
+}

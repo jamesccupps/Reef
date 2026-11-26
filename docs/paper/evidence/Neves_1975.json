@@ -1,0 +1,76 @@
+{
+  "key": "Neves_1975",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: closed at the publisher (TAFS back issues, now Oxford University Press), no repository copy, no 1975 volume in the Internet Archive, no thesis version online",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (no full text)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Richard J. Neves (Jan 1975), Factors affecting fry production of smallmouth bass (Micropterus dolomieui) in South Branch Lake, Maine, Transactions of the American Fisheries Society 104(1): 83–87 — matches the entry. show.mjs's 'DOI NOT FOUND at Crossref' is only the ledger tool cutting the DOI at its first '('; the DOI resolves. Crossref holds no abstract"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "South Branch Lake (Penobscot County), 1971–72: nesting success 67 % and 77 %, an average of 3,943 fry rising from each nest; a fall in water level the main cause of the poorer 1971 season; egg mortality highest under males shorter than 400 mm with large egg deposits; fanning lowered sac-fry but not egg mortality (Neves 1975, abstract)",
+      "verdict": "unchecked",
+      "note": "No abstract was reachable either (Crossref has none; OpenAlex is out of allowance today), so not even the abstract-level statement was re-seen. Forbes 1981 (Table 1) relays 67–68 % for South Branch Lake (15–30 nests), not 67 and 77 %: see notes."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "for smallmouth, the percentage of young surviving fell as egg or fry abundance rose at South Branch Lake, Maine (Neves 1975, via Chu 2001)",
+      "verdict": "unchecked",
+      "note": "second-hand in the paper (via Chu 2001); the article itself not seen"
+    },
+    {
+      "paper": "src/config.js:487-488",
+      "claim": "smallmouth whole-nest success, Maine 67–77 % (Neves 1975) — a check, not a target",
+      "verdict": "unchecked",
+      "note": "Forbes 1981 relays 67–68 %; the code comment's 67–77 % may carry a transcription slip (see notes)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    {
+      "url": "https://doi.org/10.1577/1548-8659(1975)104%3C83:FAFPOS%3E2.0.CO;2",
+      "status": 403,
+      "note": "resolves to the publisher, which refuses scripts; the page a library login would open"
+    },
+    {
+      "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1975)104%3C83:FAFPOS%3E2.0.CO;2",
+      "status": 403,
+      "note": "Taylor & Francis PDF, refuses scripts"
+    },
+    {
+      "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1975)104%3C83:FAFPOS%3E2.0.CO;2",
+      "status": 403,
+      "note": "Wiley (AFS journals' former host), refuses scripts"
+    },
+    {
+      "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1975)104%3C83:FAFPOS%3E2.0.CO;2?fields=openAccessPdf,externalIds,title",
+      "status": 200,
+      "note": "openAccessPdf: CLOSED"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(1975)104%3C83:FAFPOS%3E2.0.CO;2%22&format=json&resultType=lite",
+      "status": 200,
+      "note": "hitCount 0"
+    },
+    {
+      "url": "https://archive.org/advancedsearch.php?q=identifier%3A%28*american-fisheries-society-transactions*%29+AND+date%3A%5B1975-01-01+TO+1975-12-31%5D",
+      "status": 200,
+      "note": "only 'american-fisheries-society-transactions_1975_104_contents' (a contents list), no vol. 104 article text; full-text search for 'South Branch Lake' smallmouth: 0 hits"
+    },
+    {
+      "url": "https://digitalcommons.library.umaine.edu/do/search/?q=Neves%20smallmouth",
+      "status": 200,
+      "note": "UMaine Digital Commons 'has sunset' (a closure notice); no thesis version found by web search either"
+    }
+  ],
+  "notes": "A Maine primary source the paper leans on for its only Maine smallmouth nest data; worth a library copy (TAFS 104(1): 83–87). A DISCREPANCY to settle when it is read: Forbes (1981, a Wisconsin DNR review; read on its page image, Table 1, printed p. 4, PDF p. 5 — indexed here as Neves_1975.Forbes1981) relays South Branch Lake as 67–68 % of nests producing fry, from 15–30 nests studied, whereas the paper (§3.6.2) and config.js:488 say 67 % and 77 % (from the abstract, seen second-hand). They cannot both be right. The project's note (Whole lake 3D fish simulation/egg_stage.md, line 166) quotes the abstract as '67% and 77%, respectively', so Forbes's 67–68 may be the slip, but the note's quote is unverified here; until the article is read, give \"67–68 % (Neves 1975, via Forbes 1981)\" or flag it. Forbes also relays from Neves: nests 0.8 m deep and 0.6 m in diameter, on coarse gravel with fist-sized rubble, and that unguarded nests fail (Forbes pp. 2–4). None of this confirms the article."
+}

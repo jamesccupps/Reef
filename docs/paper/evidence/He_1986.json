@@ -1,0 +1,44 @@
+{
+  "key": "He_1986",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: an unpublished M.S. thesis held only on paper (UW–Madison Libraries catalog: 'Available as Physical', typescript, xi + 109 leaves). Its full citation was read in FB4's reference list (Deslauriers et al. 2017, p. 595) and the UW–Madison catalog record",
+    "url": "https://search.library.wisc.edu/catalog/999580705602121",
+    "other_files": [
+      "docs/research_notes/fetched/v2/He_1986.catalog.html (UW–Madison catalog record)",
+      "docs/research_notes/fetched/v2/He_1986.FB4refs.pdf (Deslauriers et al. 2017, reference list page, PDF p. 10 = printed p. 595)"
+    ]
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "FB4's reference list (Deslauriers et al. 2017, p. 595) and the UW–Madison Libraries catalog (OCLC 15586994)",
+    "ok": false,
+    "corrections": "the entry ('He. 1986. Dace (Phoxinus) bioenergetics parameter set, in FB4') is incomplete. Full citation: He, X. 1986. Population dynamics of northern redbelly dace (Phoxinus eos), finescale dace (Phoxinus neogaeus), and central mudminnow (Umbra limi), in two manipulated lakes. M.S. thesis, University of Wisconsin–Madison. xi + 109 leaves",
+    "note": "author's full name in the catalog: He, Xi. The thesis title is about population dynamics, not bioenergetics: which of FB4's dace parameters (if any) it supplied is unknown until it is read"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (blacknose dace)",
+      "claim": "no blacknose dace model; the dace set (Phoxinus; He 1986; Trudel & Boisclair 1994) is the stand-in",
+      "verdict": "unchecked",
+      "note": "FB4's parameter file credits its 'Dace (adult & juvenile), Phoxinus spp.' row to 'He 1986; Trudel and Boisclair 1994' (see Deslauriers_etal_2017.json), so the attribution follows FB4; what the thesis contributed is unchecked"
+    },
+    {
+      "paper": "Table 4.3 (fallfish)",
+      "claim": "fallfish run on the dace set (He 1986; Trudel & Boisclair 1994), adults with pikeminnow consumption",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 4.3 (blacknose dace)",
+      "claim": "blacknose dace run on the dace set (He 1986; Trudel & Boisclair 1994)",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://search.library.wisc.edu/catalog/999580705602121", "status": 200, "note": "UW–Madison catalog: thesis held in print only (typescript, xi + 109 leaves; bibliography leaves 89–95); no digital copy. Interlibrary loan or a scan request would be needed" },
+    { "url": "(web searches: Center for Limnology, MINDS@UW, North Temperate Lakes LTER)", "status": 0, "note": "no digitized copy found; the thesis is cited in other papers' reference lists only" }
+  ],
+  "notes": "FB4's stored dace row, for reference (Parameters_official.csv, row 'Dace (adult & juvenile)', Phoxinus spp., source 'He 1986; Trudel and Boisclair 1994'): CEQ 2, CA 0.36, CB −0.31, CQ 2.3, CTO 26, CTM 29; REQ 2, RA 0.0148, RB −0.2, RQ 2.1, RTO 29, RTM 32, ACT 1; SDA 0.15; EGEQ 1, FA 0.4; EXEQ 1, UA 0.1; ED 5522 J/g. The fish behind it are northern redbelly and finescale dace (and their hybrid, in Trudel & Boisclair's Quebec lakes), not Rhinichthys or Semotilus. Trudel & Boisclair 1994 (CJFAS 51: 2558–2567) is the more likely home of the parameter values and of a field test of the dace model; it is also blocked (Trudel_Boisclair_1994.json)."
+}

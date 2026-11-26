@@ -1,0 +1,49 @@
+{
+  "key": "Randall_etal_2004",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Fisheries and Oceans Canada library (waves-vagues.dfo-mpo.gc.ca), the CSAS Research Document PDF",
+    "url": "https://waves-vagues.dfo-mpo.gc.ca/Library/315789.pdf",
+    "file": "docs/research_notes/fetched/v2/Randall_etal_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Randall, R. G., Minns, C. K. & Brousseau, C. M. 2004. Coastal exposure as a first-order predictor of the productive capacity of near shore habitat in the Great Lakes. DFO CSAS Research Document 2004/087 (ii + 31 pp. of text and figures). Matches. The cover carries 'Not to be cited without permission of the authors' (the CSAS series' standard notice) — worth a line in the rewrite."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4",
+      "claim": "in the Great Lakes, plant cover rose from 0 % to 30 % to 78 % from coarse, exposed sites to fine, sheltered ones",
+      "location": "p. 6 (PDF p. 10), Classification: Habitat; Fig. 7, p. 24 (PDF p. 28)",
+      "quote": "Average percent cover in each of the three terminal nodes was 0%, 30% and 78%",
+      "conditions": "a regression tree (PRE 0.62, n = 92 transects, 1994 survey of Lakes Ontario and Erie; validated on other years) on percent bottom cover (late summer–autumn, visual or echogram). Fig. 7: the first split is substrate — mean category < 2.7 ('mud, silt or fine sand') → the 78 % node, whatever the fetch; coarser beds split at a maximum effective fetch of 12.4 km (log 1.095) → 30 % below it, 0 % above. The text and abstract say 12.6 km; the figure's 10^1.095 = 12.4 km",
+      "verdict": "confirmed",
+      "note": "The rewrite should give the scale: 'exposed' here means a maximum effective fetch above ~12 km, Great Lakes coasts. Every site at Hot Brook (maximum fetches ~1.5–2.8 km, §3.4.4) would fall on the sheltered side of that cut, where coarse beds averaged 30 % cover, not 0 %. 'Coarse' is a mean substrate category of sand or coarser (2.7–7 on a mud-1 to bedrock-7 scale), not boulder–cobble specifically."
+    },
+    {
+      "paper": "src/w3/env3.js:305-307",
+      "claim": "each column's effective fetch: per 16 directions the distance to the shore, cosine-weighted over ±45° (Scheffer et al. 1992; Randall et al. 2004), its most exposed direction's",
+      "location": "p. 3 (PDF p. 7), Methods: Habitat",
+      "quote": "effective fetch was calculated for each of 16 compass directions",
+      "conditions": "(Sum(Cos(a)·Fetch(a))/Sum(Cos(a)) over angles within ±45° of each direction; Fetch(a) the distance from the transect to the shoreline; the maximum of the 16 values was used 'because single wind events from any direction can influence site conditions'",
+      "verdict": "confirmed",
+      "note": "The code (22.5° steps, weights cos(kπ/8), k = −2…2; maximum over 16 directions) matches. The report does not say at what angular step it sampled within ±45°."
+    },
+    {
+      "paper": "src/w3/plants3.js:204-207",
+      "claim": "Randall et al. 2004: coarse exposed beds 0 % cover (cited in support of no rooted plants on the boulder–cobble lag)",
+      "location": "p. 6 (PDF p. 10); Fig. 7, p. 24 (PDF p. 28)",
+      "quote": "Average percent cover in each of the three terminal nodes was 0%, 30% and 78%",
+      "conditions": "0 % is the node of mean substrate ≥ 2.7 (sand or coarser) AND maximum effective fetch ≥ 12.4 km; coarse beds at lower fetch averaged 30 %",
+      "verdict": "confirmed",
+      "note": "The value is right, but as support for zero cover on Hot Brook's boulder–cobble it is weak: at Hot Brook's fetches (< 3 km) Randall's tree puts coarse beds in the 30 % node. The EPA NLA figure the same comment cites (rock-dominated plots 0.15 cover) is the closer analogue."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values the rewrite may use: macrophyte cover, water temperature and substrate all tracked maximum fetch (PCA, p. 5); pumpkinseed biomass was highest where cover > 10.5 %, water > 19.7 °C and fetch < 1.7 km (PRE 0.76, Fig. 8, p. 6); perch biomass nodes at < 10.5, 11–70 and > 71 % cover (p. 6); fish were sampled by boat electrofishing on 100-m transects at 1.5 m depth, biomass density assuming a 10-m swath and capture efficiency 0.3, species P/B = 2.64 W^−0.35 (pp. 2–3). Substrate categories: mud 1, clay/silt 2, sand 3, gravel/pebble 4, cobble 5, boulder/armour stone 6, bedrock 7 (p. 3). A small inconsistency in the source: fetch cut 12.6 km in the abstract and text, 12.4 km (log 1.095) in the Fig. 7 caption."
+}

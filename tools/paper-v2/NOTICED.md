@@ -94,3 +94,11 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | w2-07 | Table 4.3 (alewife) | Stewart & Binkowski 1986: Lake Michigan fish ≤ 73 g (sea-run adults ~230 g); Cmax exponent −0.30 assumed; "landlocked" not in the source; a constant ED 5,400 J/g sits in a 5,000–9,500 J/g cycle (the authors report −45 % to +104 % errors within seasons with ED held constant) | open |
 | w2-07 | §4.5 | The f⁴ foraging-split rule credited near Wu & Culver 1992 looks like the project's own construction | open |
 | w2-07 | Table 3.6-9 (lead for Post_Evans_1989) | Boussion 2025 (p. 33) relays Post & Evans: young perch reaching 70 mm had low winter starvation mortality | note |
+| w2-06 | §5.4; §4.5 | Persson et al. 2004: the perch cannibal window peaks at φ 0.16 (range 0.05–0.45), not 0.19; the code credits 0.19 to Persson & Brönmark 2002 — cite that alone, fix §5.4's "19 %" | open |
+| w2-06 | `plants3.js:206` | Randall et al. 2004's 0 % cover on exposed coarse beds uses a 12.4-km maximum fetch; at Hot Brook's < 3-km fetches coarse beds fall in the 30 % node — weak support for no plants on boulder–cobble | open |
+| w2-06 | §3.7.8, `fish3.js:396` | Lippert et al. 2007: 83 mm is a six-lake mean, driven by recently invaded lakes; habitat use was never measured (body form only); 6 of the 18 lakes had no predators | open |
+| w2-06 | `config.js:488`, §3.6.2 (Neves 1975) | Forbes 1981 Table 1 relays South Branch Lake nest success 67–68 % (15–30 nests); the paper and code say 67 % and 77 % — needs the article | open |
+| w2-06 | Table 3.5-3 (bullhead) vs `fish3.js:710–715` | Energy density 6,700 J/g (FB4) in the table; the model switches to 5,000 J/g | open |
+| w2-06 | `config.js:488` | Smallmouth whole-nest success "45–86 %": Forbes 1981 Table 1 spans 44–86 % (Millen Bay 44 %) | open |
+| w2-06 | Krieger et al. 1983 entry; code | The title reads "Habitat suitability information: yellow perch"; maturity females 3–4 yr, males a year earlier; "schools sorted by size" is not in the report (a New Jersey fact sheet) | open |
+| w2-06 | Hartman & Brandt 1995 (Phase 2 item 5) | FB4's rows credited to it (striped bass adult, age-0, -1, -2; bluefish 0–2; weakfish age-0) are in its evidence notes; Cmax for 100 g at 18.5 °C 0.093 g/g/d; the abstract: the model over-estimated striped bass consumption by 20–46 % at 6.9 °C | note |

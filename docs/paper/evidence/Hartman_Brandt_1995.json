@@ -1,0 +1,44 @@
+{
+  "key": "Hartman_Brandt_1995",
+  "reader": "wave-2 batch w2-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text: closed at the publisher (NRC / Canadian Science Publishing), no repository copy (Semantic Scholar CLOSED, no Europe PMC record), and Hartman's 1993 University of Maryland dissertation on the same work is not in the UMD repository (DRUM). Only the abstract was seen, in the Crossref record",
+    "url": "https://doi.org/10.1139/f95-759",
+    "other_files": [
+      "docs/research_notes/fetched/v2/Hartman_Brandt_1995.crossref.html (Crossref record with the abstract)"
+    ]
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref only (no full text)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Kyle J. Hartman, Stephen B. Brandt (1 Aug 1995), Comparative energetics and the development of bioenergetics models for sympatric estuarine piscivores, CJFAS 52(8): 1647–1666 — matches the entry; not checked against the title page. FB4's reference list gives the same (Deslauriers et al. 2017, p. 595)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white perch, bioenergetics model)",
+      "claim": "no white perch model exists; striped bass (Hartman & Brandt 1995) as surrogate",
+      "verdict": "unchecked",
+      "note": "The article is unread. FB4's parameter file does hold four striped bass rows credited to 'Hartman and Brandt 1995' (adult, age-0, age-1, age-2; see notes), so the attribution follows FB4. NOTE FOR THE REWRITE: the model does not use this surrogate — src/species.js:333-341 runs white perch on FB4's yellow perch sets (Kitchell et al. 1977) after the striped bass rows starved white perch over winter. Table 3.5-3 should say which set the model uses, or say 'striped bass suggested; yellow perch used'."
+    },
+    {
+      "paper": "src/species.js:334-339",
+      "claim": "the striped bass rows (Hartman & Brandt 1995): their Thornton–Lessem curve all but stops consumption below ~6 °C; Cmax for a 100-g fish at 18.5 °C 0.093 g/g/d (the striper set) against the perch set's 0.061",
+      "verdict": "unchecked",
+      "note": "Unchecked against the article. Redone from FB4's stored rows (my arithmetic, CEQ 3 Thornton–Lessem): the temperature multiplier F(T) is 0.017/0.057/0.169 at 2/4/6 °C (adult row), 0.054/0.112/0.219 (age-1), 0.044/0.099/0.209 (age-2), 0.038/0.076/0.145 (age-0) — so 'all but stops' fits ≤ 4 °C better than 6 °C (15–22 % of the maximum remains at 6 °C). Cmax at 18.5 °C for 100 g: 0.094 (adult), 0.092 (age-1), 0.093 (age-2), 0.089 (age-0); FB4's yellow perch adult row 0.061. The code's 0.093 is the age-2 row. The abstract (Crossref) adds a caveat that bears on the winter failure: in laboratory validation 'at 6.9 °C consumption by striped bass was overestimated by 20–46%'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f95-759", "status": 403, "note": "publisher (Canadian Science Publishing) refuses scripts" },
+    { "url": "https://doi.org/10.1139/f95-759", "status": 403, "note": "resolves to the publisher; the page a library login would open" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f95-759?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f95-759%22&format=json&resultType=lite", "status": 200, "note": "hitCount 0" },
+    { "url": "https://api.drum.lib.umd.edu/server/api/discover/search/objects?query=Hartman%20weakfish%20bluefish%20striped%20bass%20energetic&dsoType=ITEM", "status": 200, "note": "UMD repository: Hartman's 1993 dissertation ('Energetic evaluation and trophic relationship of striped bass, bluefish, and weakfish in Chesapeake Bay', per other papers' reference lists) is not there" },
+    { "url": "https://scholar.archive.org/search?q=%22Comparative+energetics+and+the+development+of+bioenergetics+models%22", "status": 302, "note": "redirected away; no result" },
+    { "url": "(web search for a repository or author copy)", "status": 0, "note": "none found" }
+  ],
+  "notes": "REQUESTED: every consumption and respiration parameter the article prints, per species and life stage, with page and table. NOT POSSIBLE — the article is unread; its tables are unchecked. What follows is FB4's parameter file (Parameters_official.csv, last changed 2018-07-28; Deslauriers_etal_2017.Parameters_official.csv), whose rows credit this article — an intermediary, to be checked against the article's tables once a copy is in hand. Column order: CEQ, CA, CB, CQ, CTO, CTM, CTL, CK1, CK4 | REQ, RA, RB, RQ, RTO, RTM, RTL, RK1, RK4, RK5, ACT, BACT | SDA | EGEQ, FA | EXEQ, UA | ED (J/g). Striped bass (adult): 3, 0.3021, −0.2523, 7.4, 15, 28, 30, 0.323, 0.85 | 1, 0.0028, −0.218, 0.076, 0.5002, 0, 0, 1, 0, 0, 1, 0 | 0.172 | 1, 0.104 | 1, 0.068 | 6488. Striped bass (age-0): 3, 0.3021, −0.2523, 2.6, 21.6, 22.7, 28.3, 0.047, 0.713 | 1, 0.001456, −0.2702, 0.08339, 0.9014, 0, 0, 1, 0, 0, 1, 0 | 0.172 | 1, 0.104 | 1, 0.068 | 5023. Striped bass (age-1): 3, 0.3021, −0.2523, 6.6, 19, 28, 30, 0.262, 0.85 | respiration, SDA, FA, UA as adult | 6488. Striped bass (age-2): 3, 0.3021, −0.2523, 6.6, 18, 29, 32, 0.255, 0.9 | as adult | 6488. Bluefish (age 0–2): 3, 0.5197, −0.288, 10.2, 23, 28, 32, 0.156, 0.85 | 1, 0.00558, −0.264, 0.06925, 0.6315, 0, 0, 1, 0, 0, 1, 0 | 0.172 | 1, 0.104 | 1, 0.068 | 6279. Weakfish (age-0): 3, 0.492, −0.268, 14.87, 24.3, 24.3, 27.7, 0.0334, 0.561 | 1, 0.0009, −0.1254, 0.0912, 1.2326, 0, 0, 1, 0, 0, 1, 0 | 0.172 | 1, 0.104 | 1, 0.068 | 3558. FB4 credits its 'Weakfish (juvenile & adult)' row (CA 0.492, CB −0.268, CQ 14.8, CTO 25, CTM 25, CTL 29, CK1 0.195, CK4 0.97; RA 0.003, RB −0.155, RQ 0.0508, RTO 0.9022; ED 5860) to 'Hartman and Brandt 1996', not 1995 — check which paper prints it. Reading the REQ-1 rows (FB4 User's Guide p. 13): with RTL 0, RK1 1, RK4 0, RK5 0, swimming speed is a constant 1 cm/s, so RTO acts as a fixed activity multiplier, e^RTO (striped bass adult 1.65, age-0 2.46; bluefish 1.88; weakfish age-0 3.43). Every row shares one Cmax weight function (CA 0.3021, CB −0.2523 for all striped bass ages) and varies only the temperature curve with age, which matches the abstract's finding that 'Temperature effects on maximum consumption rate (Cmax) differed with fish size'. The abstract also says Cmax of young (30-g) fish rose with temperature then 'declined rapidly at higher temperatures', while larger fish (100–3000 g) levelled off at 25–30 °C."
+}
