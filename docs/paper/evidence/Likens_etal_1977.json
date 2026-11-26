@@ -1,0 +1,31 @@
+{
+  "key": "Likens_etal_1977",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Springer's e-book is paywalled and the Internet Archive scans of the 1977 book and its 1995 second edition are borrow-only (access-restricted). The intermediary, Maine DEP 2003 (Webber Pond PCAP–TMDL, fetched by another reader as docs/research_notes/fetched/v2/MaineDEP_2003.pdf), was read for what it attributes to the book"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref and Maine DEP 2003's reference list (p. 43)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Likens, Bormann, Pierce, Eaton & Johnson 1977, Biogeochemistry of a Forested Ecosystem, Springer-Verlag New York, doi:10.1007/978-1-4615-9993-7. Maine DEP 2003 lists it as 'Bio-Geochemistry of a Forested Ecosystem … 146 pages'."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.1; Table 3.2-1 (undeveloped forest row)",
+      "claim": "undeveloped forest is assigned 0.04 kg TP ha⁻¹ yr⁻¹, after 'a New England regional study' (Likens et al. 1977, via Maine DEP 2003)",
+      "verdict": "unchecked",
+      "note": "The book was not seen. The intermediary does say it: Maine DEP 2003, PDF p. 33, 'The phosphorus export coefficient for forested land (0.04) is based on a New England regional study (Likens et al 1977)', and its land-use table (PDF p. 31) gives non-developed land 0.01–0.04, used 0.04. So 'Maine DEP 2003, after Likens et al. 1977' reports DEP correctly. Caveat for the rewrite: Likens et al. 1977 is the Hubbard Brook Experimental Forest book (one set of small New Hampshire watersheds), not a regional study, and the paper's own Table 3.2-1 gives Hubbard Brook's measured stream export as ~0.02 (from another source) — so whether 0.04 is the book's number, or DEP's rounding up of it, is unknown until the book is read."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/978-1-4615-9993-7.pdf", "status": 200, "note": "Springer login/paywall page; a library login would open the e-book (doi:10.1007/978-1-4615-9993-7)" },
+    { "url": "https://link.springer.com/book/10.1007/978-1-4615-9993-7", "status": 200, "note": "Springer book page behind a paywall" },
+    { "url": "https://archive.org/details/biogeochemistryo0000like", "status": 200, "note": "Internet Archive scan of the 1977 book: access-restricted (borrow only); not used" },
+    { "url": "https://archive.org/details/biogeochemistryo0000like_p0z7", "status": 200, "note": "Internet Archive scan of the 1995 second edition: lending collection; not used" }
+  ],
+  "notes": "Keep the citation as 'Maine DEP 2003, after Likens et al. 1977' (as the paper does). To check the 0.04 against the book, the place to look is its phosphorus budget chapter (stream export of dissolved and particulate P from the Hubbard Brook watersheds); the human could open it through a library login."
+}

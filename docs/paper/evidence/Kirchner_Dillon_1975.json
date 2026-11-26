@@ -1,0 +1,39 @@
+{
+  "key": "Kirchner_Dillon_1975",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: AGU's Water Resources Research archive on Wiley refuses scripted access (403), there is no Wayback capture of the article, and scholar.archive.org stops at a bot check (not passed). For the model's form, the secondary source Nürnberg 1984 (L&O 29: 111–124, fetched by another reader as docs/research_notes/fetched/v2/Nurnberg_1984.pdf) was read"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Kirchner, W. B. & Dillon, P. J. (1975) An empirical method of estimating the retention of phosphorus in lakes. Water Resources Research 11(1): 182–183, doi:10.1029/WR011i001p00182 — matches the ledger. A web index gives the pages as 181–182; Crossref's 182–183 is the one to keep."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-3 (Kirchner & Dillon 1975 row)",
+      "claim": "the Kirchner–Dillon retention model is R = 0.426 e^(−0.271 qs) + 0.574 e^(−0.00949 qs), qs the areal water load (m/yr)",
+      "verdict": "unchecked",
+      "note": "Original not read. Nürnberg 1984 (secondary) prints the same form for Kirchner and Dillon 1975 (Table 3, printed p. 115, PDF p. 5): 'R5 = 0.426 exp(−0.271qs) +0.574 exp(−0.00949qs)', describing it as 'obtained by fitting measured retention as a double exponential function of areal water load', and so does a Wisconsin model report (via a search summary, attributing it to 'Dillon and Rigler'; not read). The coefficients are therefore at least consistently cited."
+    },
+    {
+      "paper": "Table 3.2-3 (Kirchner & Dillon 1975 row); §5.2 (04_model_and_lessons.md, 'A formula's complement'); §4 chemistry ('0.28–0.54 that four published retention models give')",
+      "claim": "for the Hot Brook lakes the model gives R = 0.54 (Upper, qs 11.0 m/yr) and 0.49 (Lower, qs 16.9 m/yr)",
+      "verdict": "unchecked",
+      "kind": "arithmetic",
+      "note": "Re-done with the form above: Upper 0.426·e^(−2.981) + 0.574·e^(−0.1044) = 0.0216 + 0.5171 = 0.539; Lower 0.426·e^(−4.580) + 0.574·e^(−0.1604) = 0.0044 + 0.4889 = 0.493. The arithmetic holds; the form itself stays unchecked against the original."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdfdirect/10.1029/WR011i001p00182", "status": 403, "note": "AGU/Wiley refuses scripted access; the human could open doi:10.1029/WR011i001p00182 in a browser or through a library login (2 pages)" },
+    { "url": "https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/WR011i001p00182", "status": 403, "note": "same" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1029/WR011i001p00182", "status": 403, "note": "same" },
+    { "url": "https://scholar.archive.org/search?q=doi:10.1029/WR011i001p00182", "status": 302, "note": "redirects to a 'verify' bot-check page; not passed" },
+    { "url": "https://web.archive.org/cdx/search/cdx?url=agupubs.onlinelibrary.wiley.com/doi/*/10.1029/WR011i001p00182*", "status": 200, "note": "no Wayback captures of the article (also none for onlinelibrary.wiley.com, the old www.agu.org journal paths, or the AGU crossref .shtml page)" }
+  ],
+  "notes": "The lead (whether these shallow, fast-flushing lakes fall inside the model's range) cannot be answered from the original, which was not read: its fitted lakes, their flushing rates and depths are unknown here. What can be said from read sources: (1) Nürnberg 1984 tested it on 54 oxic, stratified lakes (Table 2: mean ± SE depth 37 ± 7 m, residence 25 ± 14 yr, qs 16.8 ± 4.2 m/yr) and found that the Chapra, Dillon–Kirchner, Kirchner–Dillon and Larsen–Mercier models 'must be rejected' because they overestimated retention significantly (printed p. 116, PDF p. 6); her own oxic-lake fit is R = 15/(18 + qs). (2) The Hot Brook lakes are unstratified, 2.5–3 m deep, with qs 11–17 m/yr and residence 0.15–0.27 yr: their qs is typical of Nürnberg's oxic set, but they are far shallower and faster-flushed than those lakes, so none of these models is validated for them. (3) A search summary of a 1979 Canadian report says Kirchner and Dillon's relation was 'derived on 15 Ontario lakes' — unverified; if true, those are likely Precambrian Shield lakes. The rewrite should say the model was fitted to Ontario lakes (if the original confirms) and was rejected for oxic stratified lakes by Nürnberg 1984, and should treat 0.54/0.49 as an upper-end, unvalidated value for these lakes. Nürnberg's Table 1 (printed p. 112) lists oxic Ontario lakes from Dillon & Kirchner 1975 (Found, Brewer, Clarke, Costello, Kearney, Little McCauley), whose depths and water loads could be read off the page image to show the kind of lakes behind the Ontario retention fits."
+}

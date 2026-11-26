@@ -1,0 +1,63 @@
+{
+  "key": "Limburg_etal_1999",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "NOAA Fisheries' own free PDF of the Fishery Bulletin article (spo.nmfs.noaa.gov; the fisherybulletin.nmfs.noaa.gov link now redirects to the journal's home page)",
+    "url": "https://spo.nmfs.noaa.gov/sites/default/files/08limbur.pdf",
+    "file": "docs/research_notes/fetched/v2/Limburg_etal_1999.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 80) and the running head",
+    "ok": true,
+    "corrections": "",
+    "note": "Fish. Bull. 97:80–91 (1999); issue 1 in the running head ('Fishery Bulletin 97(1), 1999'). Authors K. E. Limburg, M. L. Pace, K. K. Arend."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (white perch row)",
+      "claim": "white perch larvae in the Hudson died at Z = 0.044–0.785/d (median ~0.27) across 6-day hatch cohorts",
+      "location": "p. 86 (PDF p. 7), Table 2 (read on the page image)",
+      "quote": "1–6 May A 16.653 0.785 … 6–11 June G 5.811 1.295 0.044",
+      "quote_from": "table",
+      "conditions": "New Hamburg site (river km 105) only, spring–early summer 1994; Z fitted as exponential decline of each 6-d hatch cohort's density (bongo tows, 500-µm mesh, otolith ages); white perch cohorts A–H: 0.785, 0.509, 0.328, 0.241, 0.304, 0.187, 0.044, 0.137",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Median of the eight = (0.241 + 0.304)/2 = 0.27. The extremes are weak: cohorts A (0.785) and H (0.137) rest on two samples each with no SE, and G's 0.044 is a non-significant fit (r² 0.21, P 0.70); the authors say earliest and latest cohorts 'were poorly estimated'. The five well-estimated cohorts (B–F) give 0.19–0.51/d. The rates are per day by the article's use of G/Z with G per day; Table 2 itself prints no unit."
+    },
+    {
+      "paper": "Table 3.6-4 (white perch row)",
+      "claim": "the white perch rates fell as water warmed from 12 to 21 °C",
+      "location": "p. 84 (PDF p. 5), Results (Recruitment potential at New Hamburg); temperatures from p. 86 (PDF p. 7), Table 3",
+      "quote": "For white perch, mortality rates declined more or less monotonically with time",
+      "conditions": "calculated cohort water temperatures 12.2 °C (cohort B, 5 May) to 20.8 °C (H, 11 June); the sentence continues 'and therefore also with increasing temperature'",
+      "verdict": "confirmed",
+      "note": "'Tidal fresh water' in the table's Water column: the article says white perch occur in the oligohaline and freshwater sections and does not give New Hamburg's salinity; 'tidal Hudson River at New Hamburg' is safer."
+    },
+    {
+      "paper": "Table 3.6-6 (white perch, Hudson River larvae)",
+      "claim": "larval growth 0.155–0.331 mm/d by date at New Hamburg",
+      "location": "p. 83 (PDF p. 4), Table 1 (read on the page image)",
+      "quote": "24 May 0.155 0.037 37 … 6 July 0.331 0.052 9",
+      "quote_from": "table",
+      "conditions": "mean somatic growth rate (mm/d) of the larvae caught on each date, from otolith ages; New Hamburg, 24 May–6 July 1994; n = 9–47 fish per date",
+      "verdict": "confirmed",
+      "note": "Growth rose from before to after the Bosmina bloom; GR = −0.050 + 0.013 × mean water temperature (r² 0.15, n = 774, both species)."
+    },
+    {
+      "paper": "Table 3.6-6 (white perch, Hudson River larvae)",
+      "claim": "overall mean larval growth 0.212 mm/d",
+      "location": "p. 88 (PDF p. 9), Discussion",
+      "quote": "Hudson white perch=0.212 mm/d ±0.101 SD",
+      "conditions": "all three sites pooled (Kingston, New Hamburg, Haverstraw Bay); site means 0.209, 0.215 and 0.245 mm/d (p. 84)",
+      "verdict": "confirmed",
+      "note": "The overall mean is for all sites, not New Hamburg alone; the row reads as if both refer to New Hamburg. New Hamburg's own mean is 0.215 mm/d."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://fisherybulletin.nmfs.noaa.gov/sites/default/files/08limbur.pdf", "status": 200, "note": "redirects to the journal's HTML home page (spo.nmfs.noaa.gov/fb.htm), not the article; the spo.nmfs.noaa.gov path works" }
+  ],
+  "notes": "Other values: white perch instantaneous growth G 0.125–0.378/d by cohort and G/Z 0.25–8.5 (Table 3); white perch G was correlated with zooplankton density (G = 0.136 + 4.64×10⁻⁴ × zooplankton/L, r² 0.96), the bloom peaking at 520 copepods + Bosmina per litre; mean G/Z 0.35 before, 1.27 during and 2.53 after the bloom (not significantly different). The companion paper, Limburg et al. 1997, is cited for the larvae's diet (see that entry)."
+}

@@ -1,0 +1,40 @@
+{
+  "key": "Mansueti_1961",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item sim_chesapeake-science_september-december-1961_2_3-4 (the whole issue, Chesapeake Science 2(3–4), scanned from microfilm), openly downloadable with no borrow or login; the article is PDF pp. 32–95, indexed alone",
+    "url": "https://archive.org/download/sim_chesapeake-science_september-december-1961_2_3-4/sim_chesapeake-science_september-december-1961_2_3-4.pdf",
+    "file": "docs/research_notes/fetched/v2/Mansueti_1961.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (p. 142), the issue's cover and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Chesapeake Science 2(3–4): 142–205, September–December 1961. Contribution No. 187, Natural Resources Institute of the University of Maryland; submitted in 1957 as a Johns Hopkins D.Sc. dissertation. The paper cited it via Stanley & Danie 1983; the original has now been read, so 'via' can go."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white perch, mortality)",
+      "claim": "adult annual mortality A 0.37–0.59 at ages IV+ in the Patuxent River, Maryland",
+      "location": "p. 184 (PDF p. 74), text and Table 26; abstract p. 142 (PDF p. 32)",
+      "quote": "Among males, the annual probability of dying ranged from 0.37 to 0.59",
+      "conditions": "catch curves (unweighted lag differences) by year of collection, 1948–55: males 0.37–0.59, females 0.38–0.59; pooled 1948–55 estimates 0.50 for males and 0.56 for females after age group IV; an exploited estuarine population (commercial nets and angling, 8-in legal minimum); 3,475 fish aged from scales",
+      "verdict": "confirmed",
+      "note": "The range spans the yearly estimates; the pooled values (0.50 males, 0.56 females) are the better single numbers. Mansueti notes that the unexploited fish under age V had a slightly lower probability of dying than exploited older fish. The life expectancy after age IV was 'slightly more than 1½ years'."
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "stunting in white perch has been tied to density (Mansueti 1961)",
+      "location": "p. 195 (PDF p. 85), Discussion; p. 190 (PDF p. 80); p. 169 (PDF p. 59); abstract p. 142",
+      "quote": "overcrowding produces stunting in growth, undercrowding or sparse populations demonstrate greater than average growth",
+      "conditions": "the evidence: back-calculated first-year growth of the 1942–50 year-classes was negatively correlated with an indirect index of abundance, the Patuxent commercial haul-seine catch of 1947–55, five years later when each year-class entered the fishery (r = −0.753, P < 0.01; Fig. 15, p. 169); Mansueti attributes it to intraspecific competition for food",
+      "verdict": "confirmed",
+      "note": "For the slow-growing ('stunted') fish of the upper Patuxent he says the cause, culling by size, food shortage or high density, 'is unknown' (p. 190). The density link rests on a correlation with a catch index, not on measured densities; 'tied to density' is fair, 'shown to be caused by density' would not be."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Useful for Hot Brook: Mansueti compares growth with Maine (Cooper 1941; Fuller & Cooper) and finds the Maryland curve overlaps Maine's, but 'the average life span of Maine white perch is about 7 years, while it is about 4 years in Maryland'; Maine fish reached 16 years, Maryland none over 10 (p. 189). Maturity: 50 % of males at 100.3 mm and females at 105.5 mm SL; all males from age II and all females above age IV mature. Spawning late March–May at 10–15 °C in tidal and non-tidal fresh and slightly brackish water. First-year growth was positively related to the number of spring days at 10–15 °C and to February–June solar radiation, negatively to February–May rainfall. The tagged population (3,024 tagged, 10.7 % recaptured) was essentially self-contained within the estuary."
+}

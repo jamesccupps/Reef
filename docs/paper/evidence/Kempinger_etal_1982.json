@@ -1,0 +1,56 @@
+{
+  "key": "Kempinger_etal_1982",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "University of Wisconsin–Madison Libraries' digital collections (UWDC) scan of the report, served openly as a PDF (OCR text layer is poor; tables and key sentences read on the page images)",
+    "url": "https://asset.library.wisc.edu/1711.dl/3OBBS4TGV4NM28E/E/file-a4f19.pdf",
+    "file": "docs/research_notes/fetched/v2/Kempinger_etal_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 2, dated June 1982) and the UWDC catalog record (https://digital.library.wisc.edu/1711.dl/IGW77ZFFIHLJF83: 'Report 119 [1982]')",
+    "ok": true,
+    "corrections": "",
+    "note": "J. J. Kempinger, A. M. Forbes, S. L. Serns and H. E. Snow, Bureau of Research, Wisconsin DNR, Madison. The study period is 1967–76."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-8 (smallmouth bass, Nebish Lake)",
+      "claim": "Nebish Lake, Wisconsin, 1972–92: fall young-of-year smallmouth 31–327/ha (mean 112) (Kempinger et al. 1982; Engel et al. 1999)",
+      "source_value": "this report covers 1967–76 only: Schnabel estimates of fall fingerlings in six years, 84.3 (1967), 111.5 (1970), 15.9 (1973), 12.5 (1974), 60.8 (1975) and 82.6 (1976) per acre, i.e. 31–276/ha with a mean of 61.2/acre = 151/ha; 1971–72 estimated from catch per effort at 25.3 and 26.4/acre (63 and 65/ha, 'use with caution'); 1968–69 too few to estimate",
+      "location": "p. 4 (PDF p. 5), Results (Fingerlings); p. 5 (PDF p. 6), Table 3 (both read on the page images)",
+      "quote": "a 9-fold range from a low of 12.5 to a high of 111.5 fingerlings/acre",
+      "quote_from": "image",
+      "conditions": "Nebish Lake, Vilas County, 94 acres (38 ha), infertile seepage lake, chemically reclaimed in 1966 and restocked in spring 1967 with 38 adult smallmouth; whole 3.2-mile shoreline electrofished on 3–5 nights between 9 September and 19 November, fingerlings fin-clipped, Schnabel estimates",
+      "verdict": "corrected",
+      "note": "Only the 31/ha minimum (1974) is in this report. The 1972–92 span, the 327/ha maximum and the 112/ha mean must come from Engel et al. 1999 (not read in this batch). Either cite the row to Engel et al. 1999 alone, or give this report's own 1967–76 values (31–276/ha, mean 151 in the six estimated years). The early post-reclamation years (1967, 1970) were exceptional, with reduced competition and, in 1970, one of the two warmest summers."
+    },
+    {
+      "paper": "Table 3.6-8 (smallmouth bass, Nebish Lake)",
+      "claim": "36–226 fall young-of-year per nest (project arithmetic)",
+      "location": "p. 4 (PDF p. 5), Results (Fingerlings), read on the page image; densities from Table 3",
+      "quote": "were 15 and 11 in 1971 and 1972, respectively",
+      "quote_from": "image",
+      "conditions": "nest counts: 62 (1970), 15 (1971), 11 (1972), between the shore and 13 ft; fall fingerlings 10,477 (1970) and 25.3 and 26.4/acre on 94 acres (1971–72, from the CPE regression)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "This report's inputs give 10,477/62 = 169 (1970), 25.3 × 94/15 = 159 (1971) and 26.4 × 94/11 = 226 (1972) per nest, so the 226 maximum is 1972 from this report, and rests on a CPE-regression density the authors say to use with caution. The 36 minimum is not derivable from this report (no other nest counts are given); it must come from Engel et al. 1999."
+    },
+    {
+      "paper": "Table 3.6-8 (smallmouth bass, Katherine Lake)",
+      "claim": "Katherine Lake, Michigan (as cited in the Nebish Lake reports): 89–215 young-of-year/ha",
+      "location": "p. 5 (PDF p. 6), Results (Fingerlings), last paragraph of the left column",
+      "quote": "(1975) reported a range of 36-87/acre over a",
+      "conditions": "48-acre Katherine Lake in upper Michigan, a 3-year period (Clady 1975, J. Wildl. Manage. 39: 194–200); the average, about 61/acre, was the same as Nebish's",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "36 and 87/acre × 2.471 = 89 and 215/ha. The primary source is Clady (1975); the paper's 'as cited in the Nebish Lake reports' is the right form."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://search.library.wisc.edu/digital/AIGW77ZFFIHLJF83", "status": 200, "note": "UWDC catalog page; the PDF link is loaded by script, so the asset URL was found from a web search and confirmed by its cover sheet ('Report 119 [1982]')" }
+  ],
+  "notes": "Other values: the 1970 year class was the strongest (111.5/acre), credited to many nesting adults and a warm first summer (June–August noon water 73.4 °F); Serns (1982) found 1974–81 fall fingerling numbers correlated with June and June–August water and air temperature, not with adult numbers. Fall fingerling biomass in 1967 was 2.0 lb/acre at 40 fingerlings/lb. Pre-treatment (October 1966) standing crop 210.4 lb/acre, smallmouth 6.1 lb/acre (Table 2, from Kempinger & Christenson 1978). Exploitation averaged 0.40 for bass and 0.14 for perch; natural and fishing mortality were about equal for bass. Water: alkalinity 8–16 mg/L, Secchi ~4 m in 1969 (Table 1)."
+}

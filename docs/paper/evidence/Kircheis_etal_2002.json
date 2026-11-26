@@ -1,0 +1,71 @@
+{
+  "key": "Kircheis_etal_2002",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the report's PDF (June 2002, revised October 2004) as posted on the Friends of Merrymeeting Bay 'Cybrary', the URL given in the ledger entry",
+    "url": "https://cybrary.friendsofmerrymeetingbay.org/pages/KirchiesAlewives%20LakeGeorge04.pdf",
+    "file": "docs/research_notes/fetched/v2/Kircheis_etal_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1)",
+    "ok": false,
+    "corrections": "The Lake George of this study is in the towns of Canaan and Skowhegan, southern Somerset County, draining to Carrabassett Stream and the Kennebec (p. 14), not Lake George in Liberty: drop '(Lake George, Liberty)' or replace it with '(Lake George, Canaan–Skowhegan)'. 'MDIFW Interagency Report Series 02-1' is not printed on this copy (the title page gives only the eight authors, their agencies, 'June 2002' and 'Revised October 2004'); keep it only if another copy shows it.",
+    "note": "Authors as in the ledger: F. W. Kircheis, J. G. Trial, D. P. Boucher (MDIFW), B. Mower (Maine DEP), T. Squiers, N. Gray, M. O'Donnell, J. Stahlnecker (Maine DMR). 53 pp. The report gives the lake's area as both 228 ha (p. 14, first sentence of Study Area) and 134 ha (same page, 'a surface area of 134 ha'); the stocking numbers (Appendix 2) match the stated six fish per acre only for 134 ha."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "alewives were stocked into Lake George at 6 adults per surface acre",
+      "location": "p. 4, Executive Summary; p. 52, Appendix 2 (numbers stocked, read on the page image); lake area p. 14",
+      "quote": "The introduction of alewives at six adults/surface acre resulted in a decrease",
+      "conditions": "Phase II, 1991–93: 2,030, 2,005 and 2,021 sexually mature anadromous (sea-run) alewives released each spring, generally near the end of May (p. 18), within DMR's Kennebec trap-and-truck restoration programme (p. 11); Phase I 1987–90 before, Phase III 1994–96 after",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "The report also states the rate as '2.4 sexually mature adults/surface hectare' (p. 14) and '2.4/ha' (p. 29). The stocking numbers settle it: about 2,000 fish on the 134-ha (331-acre) lake is 6.1 per acre = 15 per ha, so 'six per acre' is right and '2.4/ha' is a mis-conversion (6 ÷ 2.47 instead of × 2.47). The paper's '6 adults per surface acre' stands; if a metric rate is wanted it is ~15/ha, not 2.4/ha."
+    },
+    {
+      "paper": "§3.3.9",
+      "claim": "the alewives cut cladoceran density, which recovered by the third year after stocking stopped",
+      "location": "p. 4, Executive Summary; pp. 23–24 (Fig. 3 and text); p. 29, zooplankton summary",
+      "quote": "decrease in Cladocera, which recovered to densities similar to those before alewives",
+      "conditions": "mean summer densities from 80-µm Wisconsin net, five vertical tows bottom to surface at the deepest point, May/June–September/October; Before vs During significant (Mann–Whitney U); the After increase was significant only from 1994 to 1995; by 1996 Cladocera were back to a before-alewife level",
+      "verdict": "confirmed",
+      "note": "The decline is attributed to predation by juvenile alewives. Large and medium Daphnia (D. catawba, D. galeata mendotae, D. pulex, D. dubia, Holopedium) declined; Bosmina coregoni shrank (0.43 → 0.36 mm, Table 1) but did not change in density. The report also says Morisita's index showed the plankton community 'very similar across all three phases' (0.992–0.999, p. 46)."
+    },
+    {
+      "paper": "§3.3.9",
+      "claim": "the alewives raised rotifer density, which recovered by the third year after stocking stopped",
+      "source_value": "rotifers were not significantly changed during alewives (p. 24); they were slightly higher only if 1987 (the highest year) is left out (p. 25), 'appeared to increase' (p. 29), and were significantly lower after stocking stopped, with a sharp recovery by the third year after",
+      "location": "p. 24 (Fig. 5 and text); p. 25; p. 29, zooplankton summary",
+      "quote": "Copepoda and Rotatoria were not significantly changed during alewives",
+      "conditions": "same sampling; Copepoda and Rotatoria compared by t-test on log densities at p = 0.05",
+      "verdict": "corrected",
+      "note": "The executive summary (p. 4) says rotifers increased, but the report's own test found no significant change. Write 'and rotifers appeared to rise (not significantly)' or drop the rotifer clause."
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "at Lake George adult sea-run alewives ate larval yellow perch, 35 % of food items in May 1992",
+      "source_value": "yellow perch (life stage not stated in the Lake George results) were 35 % of the adult alewife diet in May 1992, with unidentified fish a further 20 % of food items",
+      "location": "p. 46, Stomach Analysis (Adult Alewife); background on p. 12",
+      "quote": "In 1992, yellow perch comprised 35% of the diet in May",
+      "conditions": "adult alewives gill-netted (65-mm stretch mesh) biweekly from about a week after stocking (late May) until most had left; diet by count of prey organisms per stomach",
+      "verdict": "corrected",
+      "note": "'Larval' is not stated for the Lake George samples; the only mention of larvae is the background sentence on p. 12 that earlier data (Mink 1989; Jordan 1989) identified larval yellow perch and larval alewives as prey of adult anadromous alewives. Larvae are likely in late May but should be written as an inference."
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "9 of 17 adults held 101 fish (mainly perch larvae) in May 1991",
+      "source_value": "101 fish eaten by nine of the 17 adults sampled in May 1991 (species and stage of these fish not given; across the three years the fish prey were 'primarily yellow perch'); five fish in 20 adults in June 1992; none in 1993",
+      "location": "p. 46, Stomach Analysis (Adult Alewife)",
+      "quote": "only 101 fish were eaten by nine of the 17 fish sampled in May",
+      "conditions": "same gill-net samples; the authors frame it as 'only 101 fish', i.e. limited predation",
+      "verdict": "corrected",
+      "note": "Drop 'mainly perch larvae' or write 'fish (yellow perch were the main fish prey over the study)'. Adding the June 1992 and 1993 results would show how brief the overlap was."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Useful for §3.3.9 and §3.6.5: Lake George (as reported) has mean depth 8 m, maximum 22.6 m, stratifies mid-June to mid-September, mean TP ≈ 7 µg/L, chlorophyll a ≈ 3.2 µg/L, alkalinity 12 mg/L, Secchi > 6 m (p. 29) — clearer and deeper than Hot Brook. Rotifers were numerically the most abundant zooplankters, then copepods, then cladocerans (p. 23). Mean crustacean length (spring–summer) was 0.90, 0.89 and 0.89 mm before, during and after alewives (p. 28). TP was significantly lower while alewives were present; Secchi and chlorophyll did not differ (p. 4). YOY alewives selected Cladocera most strongly; 66 % of adult alewife stomachs held food. The report notes two known errors in its diet data (rotifers not counted in smelt stomachs; macroinvertebrates not in the plankton samples, p. 21)."
+}

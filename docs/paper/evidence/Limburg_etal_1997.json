@@ -1,0 +1,39 @@
+{
+  "key": "Limburg_etal_1997",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "full text not obtained (publisher paywall; no open copy known to OpenAlex). The abstract only, from OpenAlex's record (abstract_inverted_index), saved and reconstructed as text",
+    "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1997)126%3C0607:CSAUOZ%3E2.3.CO;2",
+    "file": "docs/research_notes/fetched/v2/Limburg_etal_1997.abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (saved as docs/research_notes/fetched/v2/Limburg_etal_1997.crossref.json)",
+    "ok": true,
+    "corrections": "",
+    "note": "Transactions of the American Fisheries Society 126(4): 607–621, authors Limburg, Pace, Fischer, Arend, as in the ledger."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.3",
+      "claim": "white perch larvae did not select rotifers (Limburg et al. 1997, abstract)",
+      "verdict": "unchecked",
+      "note": "The abstract, which is what the paper cites, does not mention rotifers at all: it reports that Bosmina longirostris plus large copepodites and adult copepods made up 90.9 % of white perch larval diets (< 10 mm notochord length) and that selectivity for copepods was inversely related to selectivity for Bosmina. If the claim is from the full text it must be cited as such once read; as written ('abstract') it is not supported by the abstract."
+    },
+    {
+      "paper": "Table 3.6-2 (white perch row)",
+      "claim": "Bosmina and copepods ~91 % of the diet below 10 mm (Hudson)",
+      "verdict": "unchecked",
+      "note": "The abstract says 90.9 % for white perch larvae < 10 mm notochord length in the Hudson River (Bosmina longirostris and large copepodite and adult copepods together); the value matches, but it rests on the abstract only, which the paper already says."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1997)126%3C0607:CSAUOZ%3E2.3.CO;2", "status": 403, "note": "DOI resolver → publisher page refuses scripts; a library login would open it (now at academic.oup.com/tafs/article/126/4/607/7892705)" },
+    { "url": "https://academic.oup.com/tafs/article/126/4/607/7892705", "status": 403, "note": "Oxford University Press (current host of TAFS back issues) refuses scripted access; subscription" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1997)126%3C0607:CSAUOZ%3E2.3.CO;2", "status": 403, "note": "former host; refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1997)126%3C0607:CSAUOZ%3E2.3.CO;2", "status": 403, "note": "former host; refuses scripts" }
+  ],
+  "notes": "OpenAlex lists the article as closed with no repository copy. Abstract values that may serve: striped bass larvae ate 97.4 % Bosmina + large copepods; peak Bosmina consumption coincided with the bloom, copepod consumption kept rising; copepod selectivity was high except where Bosmina exceeded 14 animals/L; specific consumption during and after the bloom was similar (2.58 vs 2.63 for white perch, units garbled in the abstract record). The companion paper Limburg, Pace & Arend 1999 (Fishery Bulletin, read in full) gives the same larvae's growth and mortality. The rotifer sentence in §3.6.3 should be re-sourced (e.g. to a paper that actually tested rotifer selection) or dropped until the full text is read."
+}

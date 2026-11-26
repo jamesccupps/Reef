@@ -1,0 +1,38 @@
+{
+  "key": "Hunter_etal_1999",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained (a University of Maine Press book with no open copy found). Read instead, as a stand-in: the book's first edition, Hunter, Albright & Arbuckle (eds) 1992, The Amphibians and Reptiles of Maine, Maine Agricultural Experiment Station Bulletin 838, from a Wayback Machine capture (2020-05-13) of the University of Maine's DigitalCommons PDF (the DigitalCommons site has since been retired)",
+    "url": "https://web.archive.org/web/20200513135020id_/https://digitalcommons.library.umaine.edu/cgi/viewcontent.cgi?article=1028&context=aes_bulletin",
+    "file": "docs/research_notes/fetched/v2/Hunter_etal_1999.standin_B838_1992.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "not checkable from the book itself; the University of Maine Press product page and the 1992 edition's title page",
+    "ok": true,
+    "corrections": "",
+    "note": "The 1992 first edition is Hunter, M. L., Jr., Albright, J. & Arbuckle, J. (eds), Maine Agricultural Experiment Station Bulletin 838, Orono (July 1992). A third edition (2025) also exists, per MDIFW's herpetology pages (not read)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.6",
+      "claim": "green frog tadpoles overwinter once, and Maine adults hibernate from October to March (Hunter et al. 1999, via VHS n.d.)",
+      "verdict": "unchecked",
+      "note": "The 1999 book was not seen. The 1992 first edition says the same in the green frog account by Sarah S. Stockwell (pp. 70–73): green frogs 'hibernate either underwater or underground from October to March' and 'Tadpoles over-winter under silt and dead vegetation' (p. 71) and the larval stage 'lasts a little over one year' (p. 71). The VHS account (the paper's intermediary) attributes the October–March hibernation and the overwintering under silt to Hunter et al. 1999."
+    },
+    {
+      "paper": "Table 3.8-3 (green frog maturity)",
+      "claim": "green frogs mature ~1 yr after metamorphosis (Hunter et al. 1999)",
+      "verdict": "unchecked",
+      "note": "1992 edition, p. 71: adults 'usually reach sexual maturity the first summer season after metamorphosis', males at 6–6.5 cm and females at 6.5–7.5 cm, and 'some individuals may not breed until the second year after transformation'. VHS attributes female 65–75 mm / male 60–65 mm maturity sizes to Hunter et al. 1999."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://umaine.edu/umpress/maine-amphibians-and-reptiles/", "status": 200, "note": "University of Maine Press product page only (no text); the book is sold in print" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28maine+amphibians+reptiles%29", "status": 200, "note": "no Internet Archive item of the 1999 book" },
+    { "url": "https://digitalcommons.library.umaine.edu/aes_bulletin/28", "status": 200, "note": "UMaine DigitalCommons retired ('Digital Commons has sunset'); the 1992 Bulletin 838 was read from a Wayback capture instead" }
+  ],
+  "notes": "Recommendation for the rewrite: cite the 1992 first edition, which is openly available and says everything the paper takes: 'Stockwell, S. S. 1992. Green frog. Pp. 70–73 in Hunter, M. L., Jr., Albright, J. & Arbuckle, J. (eds), The Amphibians and Reptiles of Maine. Maine Agricultural Experiment Station Bulletin 838, Orono.' Or keep 'Hunter et al. 1999, via VHS n.d.' with the 'via'. The 1992 account adds Maine values the model could use: green frogs breed May–August; many females lay two clutches a season of 1,500–5,000 eggs in floating masses 15–30 cm across, hatching in 3–5 days; tadpoles grow to 6.4 cm and metamorphose at 2.8–3.8 cm; tadpoles eat mainly algae (diatoms) and feed through the winter; adults eat mainly terrestrial insects; frogs may wander up to 20 m from water around heavy rain (Martof 1953a)."
+}

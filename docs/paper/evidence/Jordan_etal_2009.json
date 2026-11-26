@@ -1,0 +1,58 @@
+{
+  "key": "Jordan_etal_2009",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Fisheries and Oceans Canada's own library copy (DFO Library, waves-vagues.dfo-mpo.gc.ca)",
+    "url": "https://waves-vagues.dfo-mpo.gc.ca/Library/337845.pdf",
+    "file": "docs/research_notes/fetched/v2/Jordan_etal_2009.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1) and the report's 'correct citation' (PDF p. 4)",
+    "ok": true,
+    "corrections": "",
+    "note": "Jordan, C., Backe, N., Wright, M.C. and Tovey, C.P. 2009. Biological synopsis of pumpkinseed (Lepomis gibbosus). Can. Manuscr. Rep. Fish. Aquat. Sci. 2886: iv + 16 p. (DFO Science Branch, Pacific Region, Nanaimo)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed fecundity)",
+      "claim": "fecundity 1,500–7,000 eggs (Holtan 1998, via Jordan et al. 2009)",
+      "location": "p. 5 (PDF p. 11), §3.3 Reproduction",
+      "quote": "The female releases between 1 500 and 7 000 eggs in an irregular pattern",
+      "conditions": "eggs released by a female in a nest (one spawning); females may spawn in more than one nest; general account, no place or sample size",
+      "verdict": "confirmed",
+      "note": "This is eggs per spawning act as Jordan et al. cite Holtan (1998), not total annual fecundity; the Ontario LHD figure beside it (2,451–10,633) is a different quantity. The same paragraph gives 1,500–15,000 fry per nest (mean 8,000), also from Holtan 1998."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed incubation)",
+      "claim": "eggs hatch in 3–5 d",
+      "location": "p. 5 (PDF p. 11), §3.3 Reproduction",
+      "quote": "Eggs hatch three to five days after fertilization, depending on water temperature",
+      "conditions": "no temperature given",
+      "verdict": "confirmed",
+      "note": "The sentence carries no citation of its own; the next sentence cites Holtan (1998), so 'Holtan 1998 via Jordan' is a fair reading."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed spawning site)",
+      "claim": "colonial nests < 1 m deep on sand or gravel",
+      "location": "p. 5 (PDF p. 11), §3.3 Reproduction",
+      "quote": "small, circular nests on sand or gravel in water less than 1 m deep",
+      "conditions": "colonies of up to 15 nests; nests 10–38 cm across (Holtan 1998)",
+      "verdict": "confirmed",
+      "note": "In Jordan et al. this is cited to McPhail (2007), not Holtan; the row also cites the Ontario LHD, which may be its real source here."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed care)",
+      "claim": "the guarding male may re-nest",
+      "location": "p. 5 (PDF p. 11), §3.3 Reproduction",
+      "quote": "Males then begin cleaning the nest for a second spawn",
+      "conditions": "after the young leave the nest; males may also spawn more than once with the same or different partners (Breder & Rosen 1966)",
+      "verdict": "confirmed",
+      "note": "Jordan et al. cite Scott & Crossman (1973) for this."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Two values in the same Table 3.6-1 row, attributed there to other sources, differ from this synopsis: Jordan et al. put spawning at 15–25 °C (McPhail 2007), continuing into August up to 27.8 °C (Scott & Crossman 1973), against the row's 17–26 °C; and they say the larvae leave the nest 'around 10 to 11 days after hatching' (Scott & Crossman 1973; Rios-Cardenas 2005), i.e. about 13–16 d after spawning with 3–5 d incubation, against the row's '8–11 d after spawning'. Other values: maximum age 8–10 yr; up to 5 cm in the first year; maturity in the 2nd–3rd year (Scott & Crossman 1973); mature fish 13–20 cm, 0.23–0.34 kg (Holtan 1998); optimum temperature 24–32 °C; affected at pH 5.2–5.3 (Sun & Harvey 1986); young 3.5–14 mm TL school in littoral and limnetic zones. Holtan (1998) is a 6-page Wisconsin DNR Bureau of Fisheries Management species leaflet (reference list, p. 13), so the egg and fry numbers are a state agency's general figures, with no study site or sample size."
+}

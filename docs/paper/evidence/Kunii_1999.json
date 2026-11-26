@@ -1,0 +1,40 @@
+{
+  "key": "Kunii_1999",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free (diamond open access) PDF on J-STAGE, the Japanese Society of Limnology's journal platform",
+    "url": "https://www.jstage.jst.go.jp/article/rikusui1931/60/3/60_3_281/_pdf",
+    "file": "docs/research_notes/fetched/v2/Kunii_1999.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 281) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Jpn. J. Limnol. 60: 281–289, 1999 on the title page; issue 3 from Crossref. Single author, Hidenobu Kunii."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.6",
+      "claim": "floating leaves of watershield (Brasenia schreberi) live 25–28 days on average",
+      "location": "p. 281 (PDF p. 1), abstract; p. 283 (PDF p. 3); p. 285 (PDF p. 5), Table 2",
+      "quote": "relatively constant around the values of 25-28 d",
+      "conditions": "annual mean leaf life span 25.5, 28.3 and c. 24.8 d in 1986, 1987 and 1988 (Table 2); leaves individually marked at about weekly intervals in one 50 × 50 cm permanent quadrat in a dense pure stand; Engi-ike, a small shallow irrigation pond in Matsue, Shimane Prefecture, Japan; vegetation periods 154–177 d",
+      "verdict": "confirmed",
+      "note": "The abstract's '25–28 d' rounds the three annual means; strictly the range is 24.8–28.3 d. Life span rose through the season to a September peak (Fig. 2), so the annual mean hides a spring–autumn range."
+    },
+    {
+      "paper": "§3.4.2, Table 3.4-1 (floating-leaved row)",
+      "claim": "watershield leaves 52.5–80.5 g DW m⁻² (Japan)",
+      "location": "p. 281 (PDF p. 1), abstract; p. 285 (PDF p. 5), Table 2 (maximum leaf mass 80.5, 72.6, 52.5 g dry weight m⁻² in 1986–88, read on the page image)",
+      "quote": "0.90-1.36, 52.5-80.5g dry weight m-2 and 154.9-243.5 g dry weight",
+      "conditions": "seasonal maximum mass of floating leaf blades only (no petioles, stems, rhizomes or roots), late August–early September; estimated from leaf length × width regressions (n = 233 leaves, Table 1); the same single dense-stand quadrat; annual net leaf production 154.9–243.5 g DW m⁻² yr⁻¹, P/Bmax 2.95–3.25 yr⁻¹",
+      "verdict": "confirmed",
+      "note": "It is a dense pure stand's leaf-blade peak, not a bed-average or whole-plant standing crop; the table row's label 'watershield leaves' is right. Grazing by the leaf beetle Galerucella nipponensis damaged 10–30 % of leaf area in early summer and < 10 % by August (p. 284)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Both values the paper takes are in the paper as stated. Other values that may serve the model: annual net production of floating leaves 154.9–243.5 g DW m⁻² yr⁻¹; leaf turnover (vegetation period / mean life span) 6.0–6.3 per season; maximum LAI 0.90–1.36; new leaves appear at the surface from late May to late October with birth-rate peaks in May–June and August–September (Fig. 2); net production and leaf mass rose with cumulative sunshine duration from 1 May to late September (P < 0.05 and P < 0.005), not with cumulative temperature. The site is a Japanese irrigation pond (warm-temperate), so the season is longer than at Hot Brook."
+}

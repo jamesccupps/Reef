@@ -1,0 +1,62 @@
+{
+  "key": "Makarewicz_Likens_1979",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the copy in SUNY Open Access Repository (SOAR), the State University of New York's institutional repository (the first author was at SUNY College at Brockport); it is a JSTOR scan of the published article with JSTOR's cover sheet",
+    "url": "https://soar.suny.edu/server/api/core/bitstreams/df65abd1-ede2-4a5f-9329-3f0b937fc16a/content",
+    "file": "docs/research_notes/fetched/v2/Makarewicz_Likens_1979.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (p. 109) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Ecological Monographs 49(1): 109–127, March 1979. Joseph C. Makarewicz (SUNY Brockport) and Gene E. Likens (Cornell)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-2 (Mirror Lake row)",
+      "claim": "Mirror Lake, NH, 3-year annual mean zooplankton biomass 1.4–2.6 kg C/ha",
+      "location": "p. 109 (PDF p. 2), abstract; p. 123 (PDF p. 16), text and Table 14",
+      "quote": "The annual zooplankton biomass ranged from 1.4 to 2.6 kg C/ha",
+      "conditions": "whole-lake annual mean biomass for October–September years 1968–69, 1969–70, 1970–71: 2.03, 2.58 and 1.37 kg C/ha (3-yr mean 2.0); water-bottle samples at 0, 3, 6 and 9 m (11.88 L, after May 1970 2.97 L) weekly in the open season and monthly otherwise; oligotrophic, usually dimictic, mean depth 5.75 m, residence 1.0 yr",
+      "verdict": "confirmed",
+      "note": "The '1.4–2.6' is the range of the three annual means, not a seasonal range."
+    },
+    {
+      "paper": "Table 3.3-2 (Mirror Lake row); §3.3.8",
+      "claim": "copepods 55.4 %, cladocerans 28.3 % and rotifers 16.3 % (§3.3.8: 16 %) of zooplankton biomass",
+      "location": "p. 123 (PDF p. 16), Table 14 (read on the page image)",
+      "quote": "Mean percent 16.3 28.3 55.4",
+      "quote_from": "table",
+      "conditions": "3-yr mean of each year's percentage, carbon basis, whole lake; columns Rotifera, Cladocera, Copepoda",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.3-2 (Mirror Lake row); §3.3.8",
+      "claim": "copepods 19.3 % and rotifers 39.8 % of zooplankton production",
+      "location": "p. 109 (PDF p. 2), abstract; p. 123 (PDF p. 16), Table 14",
+      "quote": "represent only 19.3% of the zooplankton production, while rotifers account for 39.8%",
+      "conditions": "3-yr mean percentages of annual production (carbon); total production 22.3–29.3 kg C ha⁻¹ yr⁻¹; cladocerans 40.9 %",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.3-2 (Mirror Lake row, Crustaceans column)",
+      "claim": "≈ 60 µg DW/L (project conversion)",
+      "location": "mean depth p. 109 (PDF p. 2); biomass and shares p. 123 (PDF p. 16), Table 14; carbon content p. 119 (PDF p. 12), Table 9",
+      "quote": "a mean depth of 5.75 m",
+      "conditions": "annual (all-season) whole-lake mean, not a summer value",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "2.0 kg C/ha = 0.20 g C/m² ÷ 5.75 m = 34.8 µg C/L of all zooplankton; crustaceans (28.3 + 55.4 = 83.7 %) = 29.1 µg C/L; at 48 % C of dry weight = 60.6 µg DW/L, so ≈ 60 holds for crustaceans at that assumed carbon fraction. The article's own measured crustacean carbon contents (Table 9: Holopedium 38.0, Cyclops 41.8, Daphnia catawba 47.1, Diaptomus 51.7 % of DW) give 56–77 µg DW/L (≈ 65 at their mean, 44.7 %). All zooplankton at 48 % C would be ≈ 73 µg DW/L. The table's caption calls the rows 'Summer zooplankton'; this row is an annual mean, which its label does say."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.2307/1942575", "status": 403, "note": "publisher refuses scripted access (the OpenAlex 'bronze' link)" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdfdirect/10.2307/1942575", "status": 403, "note": "publisher refuses scripted access" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1942575", "status": 403, "note": "publisher refuses scripted access" }
+  ],
+  "notes": "Other values: rotifer generation time ~8–10 d at 17 °C (cultured); respiration 79.9 % of assimilation; the 0–4.5-m stratum held 46.5 % of biomass and 68.5 % of production; daily P/B in May–September 0.04 for crustaceans and 0.11 for rotifers; annual P/B of the community 10.1 (Table 16); rotifers took 33.5 % of the P incorporated by zooplankton with an annual P turnover of 30.9 (crustaceans 10.1). Mirror Lake's five fishes are yellow perch, chain pickerel, brown bullhead, white sucker and smallmouth bass — the Hot Brook set, which makes it a good analog. Routine samples were water-bottle samples (11.88 L, later 2.97 L, at 0, 3, 6 and 9 m) filtered on the lake; a comparison of devices used 158-µm nets and a plankton funnel with 35-µm mesh, and the water bottle caught more of the larger cladocerans and copepods (p. 110)."
+}

@@ -1,0 +1,82 @@
+{
+  "key": "Kuehne_etal_2018",
+  "reader": "wave-3 batch 19",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the report's PDF as posted on the Forest Ecosystem Monitoring Cooperative's project page (University of Vermont), the URL in the ledger entry",
+    "url": "https://www.uvm.edu/femc/attachments/project/1383/1383-Initial_Long-Term_Monitoring_Results_.pdf",
+    "file": "docs/research_notes/fetched/v2/Kuehne_etal_2018.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1) and the report's own suggested citation (p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "Suggested citation: 'Kuehne C, Puhlick JJ, and Weiskittel AR 2018. Ecological reserves in Maine: Initial results of long-term monitoring. General Technical Report. 62 p.' No publisher is named; funded by The Nature Conservancy."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.8",
+      "claim": "ecological reserves carry 28.5 m²/ha of basal area in trees ≥ 12.7 cm (28.0 on non-harvested plots), against 17.4 on managed FIA plots",
+      "location": "p. 16, Results (live tree basal area); trees ≥ 5.0 in dbh, p. 7 and p. 9",
+      "quote": "Average live tree basal area was significantly lower for FIA subplots (76 ft2 ac-1)",
+      "conditions": "plot means (not medians): Ecological Reserve plots of inventory round 2 (2011–17; 547 remeasured plots in 20 reserves) 124 ft² ac⁻¹, non-harvested round-2 plots 122, FIA subplots on managed (non-reserve) Maine forest land 76 (10,503 subplots, most recent of the inventories spanning 2000–15); trees ≥ 5.0 in (12.7 cm) dbh on 24-ft-radius plots",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1 ft² ac⁻¹ = 0.22957 m² ha⁻¹: 124 → 28.47, 122 → 28.01, 76 → 17.45 (17.4 rounds down from 17.447). 'Statewide' fits the FIA comparison; the reserves are 20 sites, not a statewide sample."
+    },
+    {
+      "paper": "Table 3.8-9 (snags ≥ 12.7 cm)",
+      "claim": "snags ≥ 12.7 cm: 54/ha on managed FIA plots, 99 in ecological reserves, 104 on non-harvested reserve plots",
+      "location": "p. 16, Results (standing dead TPA)",
+      "quote": "lower on FIA subplots (22 ac-1) compared to ERM2 plots (40 ac-1",
+      "conditions": "mean standing dead trees ≥ 5.0 in dbh and ≥ 4.5 ft tall per acre: FIA 22, round-2 reserves 40, non-harvested round-2 42",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "× 2.471: 54.4, 98.8, 103.8 per ha."
+    },
+    {
+      "paper": "Table 3.8-9 (large snags ≥ 40 cm)",
+      "claim": "large snags ≥ 40 cm: 1.7/ha managed, 3.3 reserves, 12.3 Big Reed old growth",
+      "location": "p. 20, Results (large standing dead TPA); Big Reed, p. 28",
+      "quote": "standing dead TPA was significantly lower on FIA subplots (0.70 ac-1)",
+      "conditions": "large = dbh ≥ 15.8 in (40.1 cm): FIA 0.70, round-2 reserves 1.33, non-harvested round-2 0.99 per acre; Big Reed Forest Reserve 4.97 per acre from 25 plots measured once (not in the statistical analyses because not yet remeasured)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "× 2.471: 1.73, 3.29, 12.28 per ha. The non-harvested reserve value the table leaves blank is 0.99/acre = 2.4/ha (lower than all reserve plots)."
+    },
+    {
+      "paper": "Table 3.8-9 (downed CWD)",
+      "claim": "downed coarse woody debris 39 m³/ha managed, 45 reserves, 49.5 non-harvested reserve plots, 82 Big Reed old growth",
+      "location": "p. 20, Results (total downed woody debris); Big Reed, p. 28",
+      "quote": "Total downed woody debris volume on FIA subplots (557 ft3 ac-1) was significantly lower",
+      "conditions": "pieces ≥ 3 in (7.6 cm) diameter at the transect intersection (decay class 5 ≥ 5 in), line-intersect transects, volume by Woodall & Monleon 2008 eq. 2: FIA 557, round-2 reserves 644, non-harvested 708 ft³ ac⁻¹; Big Reed 1166 ft³ ac⁻¹",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "× 0.069973: 38.97, 45.06, 49.54, 81.59 m³/ha."
+    },
+    {
+      "paper": "Table 3.8-9 (large CWD ≥ 40 cm)",
+      "claim": "large CWD ≥ 40 cm: 1.8 m³/ha managed, 4.9 reserves",
+      "location": "p. 20, Results (large downed woody debris)",
+      "quote": "Large (diameter ≥ 15.75 in) downed woody debris volume on FIA subplots (26 ft3 ac-1)",
+      "conditions": "diameter at transect intersect ≥ 15.75 in (40.0 cm): FIA 26, round-2 reserves 70, non-harvested 75 ft³ ac⁻¹",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "× 0.069973: 1.82 and 4.90 m³/ha (non-harvested 5.2, left blank in the table)."
+    },
+    {
+      "paper": "§3.8.8 (text before Table 3.8-9)",
+      "claim": "managed forest carries about half the snags of the ecological reserves and about half the downed wood of old growth",
+      "location": "p. 16 and p. 20 (FIA vs reserves); p. 28 (Big Reed)",
+      "quote": "total downed woody debris volume (1166 ft3 ac-1) were all considerably higher on Big Reed",
+      "conditions": "snags 22 vs 40 per acre (0.55); downed wood 557 vs 1166 ft³ ac⁻¹ (0.48)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Both ratios hold. Against the reserves (not old growth) managed forest has 87 % of the downed wood (557/644)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Every number the paper takes is a metric conversion of the report's imperial means, and all convert correctly. Other values: very large live trees (dbh ≥ 20.1 in) 1.43/acre on FIA vs 2.69 on round-2 reserves and 4.48 at Big Reed; large live trees (≥ 15.8 in) 5.7 vs 14.7/acre; gross growth 69 vs 75 ft³ ac⁻¹ yr⁻¹; mortality 18 vs 32 ft³ ac⁻¹ yr⁻¹ (pp. 16–20). Spruce–fir plots had more basal area and snags than maple–beech–birch; maple–beech–birch had about twice the very large trees. The reserves were partly logged before designation and are still gaining volume."
+}
