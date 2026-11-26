@@ -1,0 +1,48 @@
+{
+  "key": "Carter_etal_2010",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset article (TAFS 139: 353–361) as once posted openly on the Illinois Natural History Survey stream-ecology lab website (INHS is the authors' institution); the live link now returns 404, so it was read from the Wayback Machine's capture of 28 May 2024 (openly downloadable, no login). The INHS file carries a ResearchGate cover page (saying co-author D. E. Shoup uploaded it there in May 2014); nothing was fetched from ResearchGate itself",
+    "url": "https://web.archive.org/web/20240528035957id_/https://stream-ecology.inhs.illinois.edu/files/2021/04/Carter_etal_2010_effectsofturbidityandcoveronpreyselectionbySMBT08-159.pdf",
+    "file": "docs/research_notes/fetched/v2/Carter_etal_2010.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (Transactions of the American Fisheries Society 139:353–361, 2010; DOI 10.1577/T08-159.1; published online 31 December 2009)",
+    "ok": true,
+    "note": "issue 2 is Crossref's; the title page gives volume and pages only"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.5",
+      "claim": "adult smallmouth offered crayfish, golden shiner and round goby avoided crayfish or showed no preference for them in every treatment (Carter et al. 2010; abstract only)",
+      "location": "p. 353 (PDF p. 2), abstract; p. 356 (PDF p. 5), results and Fig. 1",
+      "quote": "crayfish were negatively or neutrally selected in all trials across both turbidity and cover",
+      "conditions": "laboratory: 15 smallmouth 230–355 mm TL (mean 290), each tested once in each of 10 treatments (0, 5, 10, 20, 40 NTU × cover or none; 148 trials) in 1,600-L tanks at 18–19 °C after 24 h without food; five each of northern crayfish (44 mm TL), golden shiner (70 mm) and round goby (68 mm), sizes chosen as each prey's 'optimal' size; a trial ended once 1–4 prey were eaten; selection by Chesson's alpha against 1/3",
+      "verdict": "confirmed",
+      "note": "full text read: drop '(abstract only)'. In clear water without cover the bass selected round goby; with cover, golden shiners"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "bass do not prefer crayfish when fish are available",
+      "location": "p. 358 (PDF p. 7), discussion",
+      "quote": "smallmouth bass do not prefer crayfish more than other prey types",
+      "conditions": "the authors' reading of their trials together with Kim (2007; round goby, emerald shiner and crayfish offered: crayfish eaten least); they add that crayfish may be the commonest prey where smallmouth live, which explains the field diets",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/littoral3.js:129",
+      "claim": "given fish, smallmouth avoid crayfish or take them at chance (Carter et al. 2010)",
+      "location": "p. 353 (PDF p. 2), abstract",
+      "quote": "Northern crayfish were negatively or neutrally selected in all trials",
+      "conditions": "as in the first claim ('neutral' = the 95 % CI of Chesson's alpha overlaps random feeding, 1/3)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://stream-ecology.inhs.illinois.edu/files/2021/04/Carter_etal_2010_effectsofturbidityandcoveronpreyselectionbySMBT08-159.pdf", "status": 404, "note": "the live INHS copy is gone; its Wayback capture was used" }
+  ],
+  "notes": "Useful beyond the cited sentence (pp. 356–358): prey eaten per hour fell with turbidity (highest at 0 NTU; r = −0.3) and did not differ with cover; Secchi depth 62.5, 45.8, 33.5 and 24.5 cm at 5, 10, 20 and 40 NTU; energy densities quoted: crayfish 3.12 kJ/g wet (Kelso 1973), round goby 3.65 (Kim 2007), emerald shiner 5.14 (Bryan et al. 1996). The authors call smallmouth 'generalist predators' whose field diets reflect encounter rates rather than preference — a direct support for the code's CR_PREF reasoning. Caveat for the rewrite: short laboratory trials with 'optimal'-sized prey at a fixed density (5.9 fish/m²), with bass that had been fed all three prey beforehand."
+}

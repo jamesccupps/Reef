@@ -1,0 +1,38 @@
+{
+  "key": "Bernard_Fox_1997",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: every publisher copy (OUP, Taylor & Francis, Wiley/AFS) refused the script, and no repository or thesis copy was found"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (Gerry Bernard; Michael G. Fox; North American Journal of Fisheries Management 17(2): 581–590, May 1997)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9 (pumpkinseed)",
+      "claim": "laboratory, 4 °C, unfed: 20–24-mm age-0 pumpkinseed died sooner than 30–37-mm fish (Bernard & Fox 1997, abstract)",
+      "verdict": "unchecked",
+      "note": "nothing read in this pass (no abstract either: OUP and its mirrors refused the script; Crossref holds no abstract). The project note first_winter_mortality.md records these size classes and conditions from an earlier reading of the OUP abstract"
+    },
+    {
+      "paper": "src/config.js:858",
+      "claim": "pumpkinseed and redbreast starve over winter below ~25–42 mm (low confidence — Bernard & Fox 1997; Shoup & Wahl)",
+      "verdict": "unchecked",
+      "note": "the 25–42 mm threshold is the project's inference ([inf] in first_winter_mortality.md, 'No published pumpkinseed threshold'); by that note the paper gives only the direction (larger fish outlived smaller, crowding shortened survival). The code should not read as if Bernard & Fox give the numbers"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8675(1997)017%3C0581:EOBSAP%3E2.3.CO;2", "status": 403, "note": "the DOI resolver's target refused the script; this is the page a library login would open" },
+    { "url": "https://academic.oup.com/najfm/article/17/2/581/7882375", "status": 403, "note": "Oxford University Press (current AFS publisher) refused the script" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8675(1997)017%3C0581:EOBSAP%3E2.3.CO;2", "status": 403, "note": "Taylor & Francis refused the script" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/10.1577/1548-8675(1997)017%3C0581:EOBSAP%3E2.3.CO;2", "status": 403, "note": "Wiley refused the script" },
+    { "url": "https://informahealthcare.com/doi/abs/10.1577/1548-8675%281997%29017%3C0581%3AEOBSAP%3E2.3.CO%3B2", "status": 403, "note": "Taylor & Francis abstract mirror refused the fetch" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8675(1997)017%3C0581:EOBSAP%3E2.3.CO;2", "status": 200, "note": "metadata only, no abstract deposited" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8675(1997)017%3C0581:EOBSAP%3E2.3.CO;2", "status": 429, "note": "rate-limited (twice)" }
+  ],
+  "notes": "Blocked row B04 of blocked_sources_to_fetch.md. A library copy is needed for the survival-by-size curves (days to death by size class and density, % lipid at death); a web search found no thesis by the first author (Trent University's repository, batadora.trentu.ca, was not searched directly)."
+}

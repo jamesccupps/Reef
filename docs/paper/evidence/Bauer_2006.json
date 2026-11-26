@@ -1,0 +1,37 @@
+{
+  "key": "Bauer_2006",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the thesis's own abstract on South Dakota State University's Open PRAIRIE record page; the PDF is 'Thesis - University Access Only' (SDSU login)",
+    "url": "https://openprairie.sdstate.edu/etd/285/",
+    "file": "docs/research_notes/fetched/v2/Bauer_2006.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "the Open PRAIRIE record (author William F. Bauer; MS, Wildlife and Fisheries Science, South Dakota State University; award date 2006; 79 pp.)",
+    "ok": true,
+    "note": "title as in the reference: 'Movement, Distribution, and Habitat Use of Yellow Perch in a Complex Lake Basin'"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "in Lake Sinai adult yellow perch were never located in vegetation (Bauer 2006, abstract)",
+      "verdict": "unchecked",
+      "note": "thesis not readable. The abstract (not used to confirm) says that through the three open-water seasons tracked (Oct–Dec 2004, Apr–Sep 2005) 'no yellow perch were found within vegetated areas'; 57 adults carried transmitters (28 large, mean 268.3 mm TL; 29 small, mean 230.1 mm TL). No winter (under-ice) data"
+    },
+    {
+      "paper": "src/w3/fish3.js:395",
+      "claim": "perch > 22 cm offshore over open bottom, never in the weeds (Lake Sinai, SD: Bauer 2006)",
+      "verdict": "unchecked",
+      "note": "as above. By the abstract, '> 22 cm' is the size of the fish that were tagged (both groups were adults ≥ ~23 cm TL on average), not a size threshold the study found: no smaller perch were tracked. Located a mean 270.7 m from shore over a mean 6.09 m of water; the SMALLER tagged group lay farther out and deeper (297.7 m, 6.4 m) than the larger (213.2 m, 4.7 m); no substrate selection in summer. Summer high-probability cells: 2.5–6.5 m deep, 150–350 m from shore"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://openprairie.sdstate.edu/cgi/viewcontent.cgi?article=1285&context=etd", "status": 403, "note": "University Access Only (SDSU login); non-SDSU readers are told to use interlibrary loan" },
+    { "url": "https://doi.org/10.1577/M07-087.1", "status": "not fetched", "note": "Semantic Scholar: openAccessPdf CLOSED. Bauer, Radabaugh & Brown 2009, Diel movement patterns of yellow perch in a simple and a complex lake basin, NAJFM 29(1): 64–71 — the thesis's diel chapter as a journal article (Crossref)" },
+    { "url": "https://doi.org/10.1577/M08-243.1", "status": "not fetched", "note": "Semantic Scholar: openAccessPdf CLOSED. Radabaugh, Bauer & Brown 2010, A comparison of seasonal movement patterns of yellow perch in simple and complex lake basins, NAJFM 30(1): 179–190 (Crossref)" }
+  ],
+  "notes": "The two NAJFM papers (Crossref metadata above) publish the Lake Sinai telemetry and are better citations than the thesis if a library copy can be had; both compare a simple with a complex basin, and the simple one may be the Lake Madison of Radabaugh's 2006 thesis that §3.5.6 also cites (not verified — check when read). Until one is read, the paper's '(Bauer 2006, abstract)' is accurate as to what was read, and the code comment's '> 22 cm' should be reworded ('tagged adults 23–27 cm')."
+}

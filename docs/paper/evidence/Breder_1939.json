@@ -1,0 +1,65 @@
+{
+  "key": "Breder_1939",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Internet Archive item biostor-194387 (BioStor's scan of the article from the Biodiversity Heritage Library's Zoologica volume, with a text layer), openly downloadable; BHL's own part-PDF link refused the script",
+    "url": "https://archive.org/download/biostor-194387/biostor-194387.pdf",
+    "file": "docs/research_notes/fetched/v2/Breder_1939.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and running heads (Zoologica XXIV:25, pp. 367–378, plates I–II) and the BHL part record (doi:10.5962/p.203644)",
+    "ok": true,
+    "note": "the author is 'C. M. Breder, Jr.' (New York Aquarium); '25' is the article's number within volume 24, not an issue number. Adding doi:10.5962/p.203644 (BHL) would give the entry a link"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (brown bullhead, Incubation); src/config.js:499",
+      "claim": "incubation 6–10 d (mean 8) at 21.3 °C; the code's '8 d at 21.3 °C'",
+      "location": "p. 374 (PDF p. 8), Table II (read on the page image)",
+      "quote": "Mean … 8— … 21.3— Maximum … 10 … 23.3 Minimum … 6 … 20.8",
+      "quote_from": "table",
+      "conditions": "Table II pools seven nests: four aquarium nests of 1931–1934 (data from Breder 1935, 6–10 d at 21.1–23.3 °C) and the three 1939 outdoor-pool nests (Mahwah, N.J.; 7, 7 and 9 (corrected 7) d at 20.8 °C). 21.3 °C is the mean of the nests' mean temperatures, not one rearing temperature; the mean is printed '8—', just under 8",
+      "verdict": "confirmed",
+      "note": "the digits are the table's summary row. Better wording: '6–10 d (mean 8) at nest means of 20.8–23.3 °C (mean 21.3)'"
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead, Spawning)",
+      "claim": "nests in an excavation or burrow at 0.2–1.2 m (with Armstrong 1962)",
+      "location": "p. 374 (PDF p. 8), Table II; p. 368 (PDF p. 2)",
+      "quote": "Water depth in inches … 48 … 28 … 16 … 7",
+      "quote_from": "table",
+      "conditions": "7–48 in. = 0.18–1.22 m. The 48-in. depth is that of the four aquarium nests (Breder 1935); the 1939 pool nests lay at 28, 16 and 7 in. (0.7, 0.4 and 0.2 m)",
+      "verdict": "confirmed",
+      "note": "the 1.2-m upper end is an aquarium depth, so the field range in this source is 0.2–0.7 m; the 1939 nests were a flower pot and two open saucer-shaped excavations 'not unlike those of centrarchids', the species usually nesting in cavities"
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead, Spawning) — cited jointly 'Breder 1935, 1939'",
+      "claim": "spawning after a slow rise to ~21 °C; ~3-mm eggs",
+      "verdict": "unsupported",
+      "note": "not in Breder 1939, which gives no spawning trigger or egg size (its fish were stocked 26 April and laid eggs 22/24, 27 and 29 June, Table I). By egg_stage.md both come from Breder 1935; cite that alone for them"
+    },
+    {
+      "paper": "src/config.js:499",
+      "claim": "brown bullhead care is biparental (Breder 1939)",
+      "location": "p. 371 (PDF p. 5); p. 376 (PDF p. 10)",
+      "quote": "only one parent incubated where a nest was built in the open",
+      "conditions": "three first-time spawning pairs in a 1939 outdoor pool; in each nest one parent, thought to be the female, did all the incubating; both parents attended nest 1's young after hatching; in Breder's earlier aquarium fish both parents incubated, and in the field broods are seen with two attendants or one",
+      "source_value": "single-parent incubation in all three 1939 nests; biparental incubation only in the earlier aquarium pairs (Breder 1935) and some field broods",
+      "verdict": "corrected",
+      "note": "'biparental' may stand as a general description (Breder 1935; Blumer via ADW: both parents in 56 % of broods), but not on Breder 1939's authority"
+    },
+    {
+      "paper": "src/config.js:499",
+      "claim": "unfanned eggs die in < 24 h (Breder 1939)",
+      "verdict": "unsupported",
+      "note": "Breder 1939 says only that eggs 'could not be hatched artificially without considerable agitation', citing Eycleshymer (1901) and Breder (1935) (p. 375, PDF p. 9), and finds that tail-fanning alone was enough in nest 1 (Summary 2, p. 376). The < 24 h is Breder 1935 ('All eggs died in less than twenty-four hours in standing water', that paper's p. 8 of the PDF): cite 1935"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.biodiversitylibrary.org/partpdf/203644", "status": 403, "note": "BHL refused the script (the Internet Archive copy was used)" }
+  ],
+  "notes": "Other values in the paper: days to swim-up 1–16 (mean 7+, corrected 8) and 10–26 d in the nest (mean 15) — Table II; nests spaced as far apart as the pool allowed, out of sight of each other; broods of neighbouring nests mixed from swim-up; Table I (p. 373, read on the page image): eggs 24 (probably 22), 27 and 29 June, hatched 3 (probably 29 June), 4 and 6 July, young off the nests 4–11 July, family schools broke up from 14 July, pair 1 still gave slight attention on 20 August and care had fully ceased by 26 August. The paper's Table 3.6-1 credits the incubation timing to 'Breder 1935, 1939' — fine, since Table II pools both, but the pool nests alone ran 7–9 d at 20.8 °C."
+}

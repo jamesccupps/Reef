@@ -1,0 +1,45 @@
+{
+  "key": "Armstrong_Schindler_2011",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF of the letter (pp. 84–87 plus the online Methods page), as once posted openly by the University of Minnesota Duluth biology department (d.umn.edu/biology/documents/SchindlerPaper2.pdf, now 404); read from the Wayback Machine's capture of 11 July 2024 (openly downloadable, no login). The Supplementary Information (Table 1 of the 66 populations, Fig. 1) was not read",
+    "url": "https://web.archive.org/web/20240711052852id_/https://www.d.umn.edu/biology/documents/SchindlerPaper2.pdf",
+    "file": "docs/research_notes/fetched/v2/Armstrong_Schindler_2011.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article pages (p. 84 footer: NATURE | VOL 476 | 4 AUGUST 2011; doi:10.1038/nature10240 on p. 84)",
+    "ok": true,
+    "note": "authors, year, title, journal, volume 476, pages 84–87 match; issue 7358 is Crossref's (not printed on the pages)"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.3",
+      "claim": "Field intake stays far below gut capacity: across 38 wild species, predators carried two to three times the digestive capacity their mean intake needed (Armstrong & Schindler 2011; abstract only)",
+      "location": "p. 84 (PDF p. 1), abstract; p. 85 (PDF p. 2), results",
+      "quote": "capacity to feed at daily rates 2–3 times higher than what they experience on average",
+      "conditions": "639 field estimates of p (= C/Cmax, the proportion of maximum consumption solved from observed growth with the Wisconsin bioenergetics model) from 66 populations of 38 fish species (49 lake, 11 marine, 6 stream populations), from 42 articles and 4 theses; median p 0.43 (s.d. 0.16) by population; mean estimation interval 208 d (s.d. 143); 'capacity' is laboratory ad libitum Cmax, not a measured gut; 'predators' are all fish guilds (planktivores and benthivores as well as piscivores)",
+      "verdict": "confirmed",
+      "note": "full text read: drop '(abstract only)'. The 2–3× is an inference from bioenergetics fits (capacity/load = 1/p; median 2.3), not a direct measurement of gut volume or evacuation"
+    },
+    {
+      "paper": "src/config.js:1435",
+      "claim": "fish carry 2–3× the digestive capacity they use (Armstrong & Schindler 2011)",
+      "location": "p. 86 (PDF p. 3)",
+      "quote": "median capacity is 2.3 times expected load",
+      "conditions": "as above: bioenergetics-model p across 66 wild fish populations; fewer than 5 % of populations had p > 0.8",
+      "verdict": "confirmed",
+      "note": "the code uses it to justify letting adults refill at up to Q × Cmax; the source supports only that mean field intake is ~0.43 of Cmax, not any particular refill rate"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.nature.com/articles/nature10240.pdf", "status": 200, "note": "Nature paywall page (not kept); the publisher's page a library login would open: https://doi.org/10.1038/nature10240" },
+    { "url": "https://www.d.umn.edu/biology/documents/SchindlerPaper2.pdf", "status": 404, "note": "the live university copy is gone; its Wayback capture was used" },
+    { "url": "https://fw.oregonstate.edu/biblio/excess-digestive-capacity-predators-reflects-life-feast-and-famine", "status": 401, "note": "Oregon State Fisheries & Wildlife bibliography page refused the script" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/nature10240%22", "status": 200, "note": "PMID 21734659, subscription only, no PMC copy" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1038/nature10240", "status": 429, "note": "rate-limited" }
+  ],
+  "notes": "Other values the rewrite could use (pp. 85–86): the median population spends 18–53 % of days feeding below a maintenance ration (< 20 % of Cmax); < 5 % of populations had load:capacity > 0.8; lake, marine and stream populations did not differ (Kruskal–Wallis P = 0.10). A numerical model says excess capacity of this size pays only when daily foraging opportunity is very right-skewed (c.v. ~70–150 %). The paper also argues against reading 'few empty stomachs' (Arrington et al. 2002) as evidence of positive daily energy balance — relevant to the same §3.7.3 paragraph, which cites Arrington's 35 % vs 16 % empty stomachs."
+}

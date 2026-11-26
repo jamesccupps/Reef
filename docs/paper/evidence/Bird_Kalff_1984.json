@@ -1,0 +1,39 @@
+{
+  "key": "Bird_Kalff_1984",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: the publisher's abstract as deposited with Crossref; Canadian Science Publishing refused the script",
+    "url": "https://api.crossref.org/works/10.1139/f84-118"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (D. F. Bird; J. Kalff; Canadian Journal of Fisheries and Aquatic Sciences 41(7): 1015–1023, July 1984)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "bacterial abundance follows log₁₀ cells/mL = 5.867 + 0.776·log₁₀ chl (Bird & Kalff 1984; abstract only)",
+      "verdict": "unchecked",
+      "source_value": "the abstract: log AODC = 5.867 + 0.776 log chl a, r² = 0.88; AODC = bacteria per mL (acridine orange direct counts), chl a in µg/L; fresh and marine waters pooled (their regressions were statistically indistinguishable)",
+      "note": "full text not read: the digits match the abstract, but the log base (presumably 10), the data's range of chlorophyll, n, and whether the chlorophyll is epilimnetic or seasonal means need the paper"
+    },
+    {
+      "paper": "§3.3.8; src/config.js:1504",
+      "claim": "which at 33.1 fg C per cell (Tulonen 1993) and 3–5 µg/L chlorophyll gives about 57–85 µg C/L (project estimate)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "the arithmetic is right on the abstract's equation taken as base 10: chl 3 → 10^(5.867 + 0.776 × 0.477) = 1.73 × 10⁶ cells/mL × 33.1 fg = 57 µg C/L; chl 5 → 2.57 × 10⁶ cells/mL → 85 µg C/L. The input stays unconfirmed until the full text is read (and the 33.1 fg C/cell is Tulonen's, checked under that key)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f84-118", "status": 403, "note": "Canadian Science Publishing refused the script; the page a library login would open: https://doi.org/10.1139/f84-118" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f84-118", "status": 403, "note": "as above" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f84-118%22", "status": 200, "note": "no record" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f84-118", "status": 429, "note": "rate-limited (three tries)" },
+    { "url": "https://escholarship.mcgill.ca/downloads/c821gk537", "status": 200, "note": "a web search offered this McGill record; by the search summary it is Bird's 1987 PhD thesis on algal phagotrophy, not a stand-in for this paper (the page is a script-rendered app; not read)" }
+  ],
+  "notes": "Needs a library copy of CJFAS 41(7). The paper is cited as 'abstract only' in §3.3.8, which is accurate for what has been read."
+}

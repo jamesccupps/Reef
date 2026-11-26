@@ -1,0 +1,39 @@
+{
+  "key": "Arndt_1993",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Springer's article page (its dc.description metadata, read with curl); the PDF and the book-chapter PDF are behind Springer's paywall",
+    "url": "https://link.springer.com/article/10.1007/BF00025844"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Springer's citation metadata (Hydrobiologia vol. 255, issue 1, pp. 231–246, April 1993, Kluwer)",
+    "ok": true,
+    "note": "Crossref gives volume '255-256', issue 1; the reference's '255/256: 231–246' matches. The same paper is also a chapter of the Rotifer Symposium VI book (Developments in Hydrobiology), doi:10.1007/978-94-011-1606-0_31"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "Rotifers take 10–40 % of their food as heterotrophic microbes (Arndt 1993; abstract only)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract (not used to confirm) says about 10–40 per cent of rotifers' food 'can consist of heterotrophic organisms of the microbial web' (bacteria, heterotrophic flagellates, ciliates), from feeding experiments and the rotifers' food-size spectrum — a review's estimate of a possible share, not a measured field mean. 'Can' should survive into the text"
+    },
+    {
+      "paper": "src/config.js:1510",
+      "claim": "microbes 10–40 % of the rotifers' food (Arndt 1993), behind EPS_R 0.5",
+      "verdict": "unchecked",
+      "note": "as above. The abstract also says field rotifer grazing plays 'a minor role in bacteria consumption' next to protozoans, filter-feeding brachionids take the smaller microbes and grasping synchaetids/asplanchnids the ciliates"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00025844.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00025844", "status": 200, "note": "paywall; the abstract is in the page metadata. A library login would open https://doi.org/10.1007/BF00025844" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/978-94-011-1606-0_31.pdf", "status": 200, "note": "the Rotifer Symposium VI book chapter: paywall page (not kept)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00025844", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/BF00025844%22", "status": 200, "note": "returned an HTML page, no record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(rotifer symposium)", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "Needs a library copy (Hydrobiologia 255/256 or the Rotifer Symposium VI volume). When read, check whether 10–40 % is a range across species, a calculation from clearance rates, or an upper bound, and what share applies to Keratella, Kellicottia and Conochilus (the taxa the code's EPS_R lets eat bacteria-sized food)."
+}

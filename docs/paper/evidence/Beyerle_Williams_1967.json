@@ -1,0 +1,37 @@
+{
+  "key": "Beyerle_Williams_1967",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article was not obtained. Stand-in read in full: the Michigan DNR's own PDF of the same study as a state report — Michigan Department of Conservation Research and Development Report No. 51 (Institute for Fisheries Research Report No. 1711), 7 February 1966, same authors and title",
+    "url": "https://www2.dnr.state.mi.us/Publications/PDFS/DNRFishLibrary/ResearchReports/RR1701-RR1800/RR1711.pdf",
+    "file": "docs/research_notes/fetched/v2/Beyerle_Williams_1967.IFR1711.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (George B. Beyerle; John E. Williams; The Progressive Fish-Culturist 29(3): 150–155, 1967); the article's title page was not seen",
+    "ok": true,
+    "note": "the report spells it 'Copper Sulphate'"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.10",
+      "claim": "poisoning bluegill nests with copper sulfate from 18 May to 9 August in four Michigan lakes of 80–200 acres (32–81 ha) left the autumn age-0 catch only marginally below that of control lakes (Beyerle & Williams 1967, via Neuswanger et al. 2015) — offered as evidence that centrarchids compensate strongly after the egg stage",
+      "verdict": "unchecked",
+      "note": "article not read. The stand-in report (pp. 4–9, Tables 1–2) supports the facts: in 1962 every bluegill nest found on 4 of 8 southern Michigan lakes (the eight were 80–200 acres = 32–81 ha; the four were drawn at random) was dosed every 3–4 days from 18 May to 9 August; autumn seining gave 31 young-of-year a haul in the treated lakes against 38 in the controls (F = 0.60, not significant), the treated lakes up from 25 the year before while the controls fell from 84; treated lakes' young were larger (1.29 → 1.42 in.). But the report does not read it as compensation: the authors think they 'did not kill many (if any) more bluegills than would have died normally', because bluegills re-spawned in treated nests and new colonies kept forming, and the seining varied too much to show any effect. So it fits 'nest poisoning did not cut autumn young', not 'strong compensation after the egg stage'"
+    },
+    {
+      "paper": "src/config.js:216",
+      "claim": "bluegill nest poisoning didn't cut autumn young (Beyerle & Williams 1967)",
+      "verdict": "unchecked",
+      "note": "article not read; the stand-in supports it (report p. 7 and Table 2: 'no significant reduction in the fingerling bluegill populations could be demonstrated'), with the caveat above that the kill was probably incomplete, so it is weak evidence for the code's juvenile density compensation"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8640(1967)29[150:ACOBRI]2.0.CO;2", "status": 403, "note": "the article's publisher page refused the script; the page a library login would open" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8640(1967)29[150:ACOBRI]2.0.CO;2", "status": 403, "note": "Taylor & Francis refused the script" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8640(1967)29[150:ACOBRI]2.0.CO;2", "status": 429, "note": "rate-limited (twice)" }
+  ],
+  "notes": "Recommend citing the stand-in, which is free and is the authors' own full account: Beyerle, G. B. & Williams, J. E. 1966. Attempted control of bluegill reproduction in lakes by the application of copper sulphate crystals to spawning nests. Michigan Department of Conservation, Institute for Fisheries Research Report No. 1711 (Research and Development Report No. 51), 14 p. Its Table 1 (p. 12, read on the page image): treated lakes Middle, Mill, Pleasant, Podunk — 87, 25, (31) young a haul in 1960, 1961, (1962); controls Big, Duck, Head, Selkirk — 64, 84, 38. Methods: ten 1,600-ft² hauls of a 40-ft bobbinet seine per lake each autumn. No nests were found deeper than 6 ft although divers searched to 15 ft. An earlier trial by the junior author (a 66-acre lake, nests treated weekly in 1958–59) gave half as many autumn young as two years later. The paper should say the study could not separate no effect from incomplete treatment."
+}

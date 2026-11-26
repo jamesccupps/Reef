@@ -1,0 +1,40 @@
+{
+  "key": "Berggren_etal_2014",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Lund University's publication record (LUP; no full-text file attached); the article itself is behind Wiley/ESA's paywall",
+    "url": "https://lup.lub.lu.se/record/4590725",
+    "file": "docs/research_notes/fetched/v2/Berggren_etal_2014.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the LUP record",
+    "ok": true,
+    "note": "authors, year, title, Ecology 95(7): 1947–1959 match"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "mean allochthony in 18 Québec lakes was 0.31 in cladocerans, 0.18 in cyclopoids and 0.16 in calanoids (Berggren et al. 2014; abstract only)",
+      "verdict": "unchecked",
+      "source_value": "the abstract: Cladocera had 'the highest mean allochthony (0.31; compared to 0.18 in Cyclopoida and 0.16 in Calanoida)', 18 lakes in Quebec",
+      "note": "full text not read. Per the abstract, allochthony is the share of body carbon from terrestrial sources, from a δ2H + δ13C three-source mixing model (terrestrial, phytoplanktonic, benthic) across lakes spanning DOM and trophic gradients; the routes differ (calanoids' allochthony linked to detrital food chains based on particulate organic matter, cyclopoids' to DOM-based ones, cladocerans' to both; the abstract stresses the microbial food web's role). The digits match the abstract; whether 0.31 is a mean of lake means and its spread need the paper"
+    },
+    {
+      "paper": "src/config.js:1584",
+      "claim": "cladoceran allochthony 0.31 (Berggren et al. 2014), supporting bacteria in the small cladocerans' food",
+      "verdict": "unchecked",
+      "note": "as above; note that allochthony is terrestrial carbon by any route (detrital particles as well as bacteria), so it is not a direct measure of a bacterial diet share"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/13-0615.1", "status": 403, "note": "Wiley refuses the script; the publisher's page a library login would open: https://doi.org/10.1890/13-0615.1" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/full/10.1890/13-0615.1", "status": 403, "note": "as above" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1890/13-0615.1", "status": 200, "note": "openAccessPdf: CLOSED (PubMed 25163126)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1890/13-0615.1%22", "status": 200, "note": "PMID 25163126, subscription required, no PMC copy" },
+    { "url": "https://www.lunduniversity.lu.se/lup/publication/3c179ebb-7916-44fe-a2f8-634842cdfedd", "status": 200, "note": "Lund research-portal page: no file" }
+  ],
+  "notes": "Needs a library copy (Ecology 95(7), 2014). When read, take the lake-to-lake range of each group's allochthony and the DOC/colour of the 18 lakes, so the rewrite can say how the most colored lakes compare with Hot Brook's."
+}

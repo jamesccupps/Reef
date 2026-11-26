@@ -1,0 +1,37 @@
+{
+  "key": "Behr_1993",
+  "reader": "wave-2 batch w2-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Maryland Sea Grant REU student page, the whole public record of the project: title, mentor, location and a one-paragraph abstract. No report, methods or data are posted, and the program's list of student publications has no Behr entry",
+    "url": "https://www.mdsg.umd.edu/reu/students/peter-behr-university-miami",
+    "file": "docs/research_notes/fetched/v2/Behr_1993.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "the REU student page (Peter Behr, University of Miami; class year 1993; mentor Stephen Brandt, Ph.D.; location Chesapeake Biological Laboratory)",
+    "ok": true,
+    "note": "title matches ('Size and Temperature Dependence on the Maximum Consumption Rate of White Perch, Morone americana'). It is an unpublished undergraduate summer project, known only from this abstract; say so where it is cited"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white perch, Bioenergetics)",
+      "claim": "young-of-year Cmax ≈ 0.42 g/g/d at 25.1 °C (Behr 1993)",
+      "verdict": "unchecked",
+      "source_value": "the abstract: highest maximum consumption rate 0.42 g/g/day, 'for the young of year fish at 25.1°C'",
+      "note": "only an abstract exists, so the conditions cannot be checked: which young-of-year size group (the eight groups had mean weights 0.92, 1.36, 1.78, 15, 25, 43, 80 and 152 g), wet or dry mass, ration and food are not given. The digits are on the page; cite as 'an unpublished REU project abstract'"
+    },
+    {
+      "paper": "src/species.js:338",
+      "claim": "the perch set's Cmax for a 100-g fish at 18.5 °C (0.061 g/g/d) is near the 0.04 measured for adult white perch (Behr 1993)",
+      "verdict": "unchecked",
+      "source_value": "the abstract: 'the lowest peak rate (0.04 g/g/day) was for the adult white perch at 18.5°C'",
+      "note": "the abstract does not say which adult group (80 or 152 g mean) gave 0.04, so the comparison with a 100-g fish is approximate. Odd but as printed: the lowest peak is at 18.5 °C although 15.4 °C was also run"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.mdsg.umd.edu/reu/pubs", "status": 200, "note": "Maryland Sea Grant REU 'Student Research Papers and Presentations' list, all pages searched: no Behr paper or presentation" }
+  ],
+  "notes": "Nothing further is likely to be found in a library: the project was a 1993 summer REU at Chesapeake Biological Laboratory. If a fuller account is wanted, the mentor's lab (S. Brandt) is the only lead; Hartman & Brandt 1995 (striped bass) is the published Morone set the paper already names as surrogate."
+}
