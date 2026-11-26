@@ -1,0 +1,62 @@
+{
+  "key": "Smith_1939",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Dalhousie University's institutional repository (DalSpace, now dal.scholaris.ca), item hdl:10222/13475, bitstream v19_p4_a3_Smith_fish_population_Lake_Jesse_Nova_Scotia.pdf; a scanned PDF with no text layer (39 pages), read on the page images",
+    "url": "https://dal.scholaris.ca/server/api/core/bitstreams/5941f0a2-c167-4e0a-8caa-d4b76c8e11b1/content",
+    "file": "docs/research_notes/fetched/v2/Smith_1939.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first and last pages of the article (page images) and the repository record",
+    "ok": true,
+    "note": "M. W. Smith, Atlantic Biological Station, St. Andrews, N.B.; 'The fish population of Lake Jesse, Nova Scotia'; Proc. Nova Scotian Inst. Sci. Vol. XIX, Pt. 4, pp. 389-427 (received May 9, 1938). The issue (part) number 4 could be added. The repository's author authority ('Smith, Michael W., 1944-') is wrong, but the article itself is clear."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5",
+      "claim": "Lake Jesse, Nova Scotia, an 18-ha soft-water lake of 2.4 m mean depth",
+      "location": "p. 390 (PDF p. 2), 'Characteristics of Lake Jesse'",
+      "quote": "forty-five acres, a maximum depth of 6.6 metres, and an average depth of 2.4 metres",
+      "quote_from": "image",
+      "conditions": "depths as of 30 May 1929; the same page says 'The waters are soft' (pH 6.5 at the surface, 6.3 at 6.5 m, 1 August 1934); unstratified in summer",
+      "verdict": "confirmed",
+      "note": "45 acres = 18.2 ha"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "Lake Jesse held no young white perch at all in 1934",
+      "location": "p. 418 (PDF p. 30), white perch section",
+      "quote": "White perch fry, however, appeared to be completely absent.",
+      "quote_from": "image",
+      "conditions": "whole-lake copper sulphate kill on 3 August 1934, fish counted along one-eleventh of the shoreline; killifish and yellow perch fry were found, though scarce",
+      "verdict": "confirmed",
+      "note": "Smith offers two explanations: a complete failure of the 1934 spawning, or no spawning at all, the white perch being immigrants (the same was apparently true of neighbouring Tedford Lake). The paper's use as a year-class 'failure' should mention the second possibility."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "Lake Jesse, a shallow soft-water lake in Nova Scotia without bass or pickerel",
+      "location": "abstract, p. 389 (PDF p. 1); Table 1, p. 394 (PDF p. 6)",
+      "quote": "Predator species, Perca and Morone, constituted 57 per cent of the population.",
+      "quote_from": "image",
+      "conditions": "species present: brook trout, golden shiner, creek chub, white sucker, brown bullhead, American eel, banded killifish, yellow perch, white perch, ninespine stickleback",
+      "verdict": "confirmed",
+      "note": "no bass or pickerel in the species list or Table 1"
+    },
+    {
+      "paper": "§3.7.9",
+      "kind": "arithmetic",
+      "claim": "held 22.3 kg/ha",
+      "location": "Table 1, p. 394 (PDF p. 6); abstract p. 389 (PDF p. 1)",
+      "quote": "The estimated population was 36,035 fish, or a production of 19.9 pounds per acre.",
+      "quote_from": "image",
+      "conditions": "standing crop estimated from fish killed by copper sulphate (3 August 1934) and counted on shore sections making up one-eleventh of the shoreline, weighed after 5-6 months in formalin (perciform fish gain weight in formalin, killifish and eels lose it); some eels survived, so eels are under-counted",
+      "verdict": "confirmed",
+      "note": "19.9 lb/acre × 0.4536 kg/lb ÷ 0.4047 ha/acre = 22.3 kg/ha. Table 1 totals 35,025 fish (the abstract says 36,035), 405,066 g = 893.0 lb, 776 fish and 19.9 lb per acre; yellow perch were 40.5 % of numbers, bullhead 5.1 and white perch 5.5 lb/acre."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The repository's TEXT bundle is empty (39 bytes), so the article was read on the page images rendered by findin --image (pages 1-8, 30, 39). Other useful points: the population was dominated by fish in their second to fourth years; white perch in the 2nd, 3rd and 4th years were 32.7, 35.4 and 21.4 % of the white perch; the abstract notes a scarcity of fry in certain years suggesting cycles of dominant year classes. A companion 'survey of Lake Jesse' (Smith 1938, Proc. N.S. Inst. Sci. 19: 253-263) has the hydrology."
+}

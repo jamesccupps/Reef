@@ -1,0 +1,51 @@
+{
+  "key": "Schneider_Breck_1997",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Michigan DNR's own copy of the report (Fisheries Research Report 1992, 33-page scanned PDF with a text layer) on the DNR fisheries library server",
+    "url": "https://www.dnr.state.mi.us/PUBLICATIONS/PDFS/DNRFishLibrary/ResearchReports/RR1901-RR2000/RR1992.pdf",
+    "file": "docs/research_notes/fetched/v2/Schneider_Breck_1997.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover and title page (PDF pp. 1-3)",
+    "ok": false,
+    "corrections": "cover and title page read 'Overwinter Consumption of Bluegills by Walleye and Yellow Perch' (the abstract page has 'Bluegill'); Fisheries Research Report 1992, dated April 20, 1997 (the abstract page's header reads 'No. 1992, 1996'); Michigan Department of Natural Resources, Fisheries Division (Institute for Fisheries Research, Ann Arbor). The paper cites it 'via Neuswanger et al. 2015': it has now been read directly, so the 'via' can go."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.8",
+      "claim": "Predators raised the overwinter loss of 28-mm age-0 bluegill in Michigan ponds from 10 % to 39 %",
+      "source_value": "survival of age-0 bluegill 90 ± 6 % in control ponds (N = 7) vs 61 ± 16 % in ponds with predators (N = 9) over the four winters 1989-90 to 1992-93, i.e. losses of 10 % and 39 %; bluegill averaged 28 mm TL and 0.24 g at stocking in most years",
+      "location": "p. 7 (PDF p. 9), Results; abstract p. 1 (PDF p. 3); p. 5 (PDF p. 7) for the 28 mm",
+      "quote": "overwinter survival of age-0 bluegill in the ponds with predators was 61±16% compared to 90±6%",
+      "conditions": "0.2-ha experimental ponds at the Saline Fisheries Research Station, Michigan; ice-covered, ~4 °C, December-March; predators were juvenile walleye or adult yellow perch; 1988-89 excluded (poor-condition bluegill: 19.5 % control survival, 3.1 % with predators)",
+      "verdict": "confirmed",
+      "note": "the 28 mm: 'average total length of age-0 bluegill at stocking was 28 mm' (p. 5); in 1992-93 the age-0 bluegill were 34.9 mm (Table 2 footnote)"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "and to 55 % [overwinter loss] with walleye alone",
+      "source_value": "55 % is not a loss of bluegill: it is the share of total bluegill mortality attributed to predation in the walleye ponds (N = 8, range 25-89 %; 63 % for yellow perch ponds, 58 % overall). Age-0 bluegill survival in the 1991-93 walleye ponds was 47-79 % (loss 21-53 %, mean about 42 %); in 1988-89 it was 0.2-5.8 % against 12.5-24 % in the controls",
+      "location": "p. 8 (PDF p. 10), Results; Table 2, p. 22 (PDF p. 24); Table 4, p. 24 (PDF p. 26)",
+      "quote": "This percentage was similar for walleye (55%, N = 8, range: 25-89%)",
+      "conditions": "same ponds; partition of total mortality into predatory and non-predatory parts by the report's second method (Appendix 1)",
+      "verdict": "corrected",
+      "note": "the preceding sentence reads 'We calculated that predators were responsible for 58% of the bluegill mortality in ponds containing predators'. A correct rewrite: 'predators accounted for 55 % of the bluegill deaths in walleye ponds'. Table 2 values read in the raw text."
+    },
+    {
+      "paper": "§3.7.2",
+      "claim": "bluegill become relatively invulnerable to pike and largemouth beyond 100-125 mm",
+      "source_value": "bluegill are 'relatively invulnerable to even large piscivores such as northern pike ... and largemouth bass ... after reaching a length of 100-125 mm total length'",
+      "location": "p. 2 (PDF p. 4), introduction",
+      "quote": "relatively invulnerable to even large piscivores such as northern pike",
+      "conditions": "total length; an introductory statement citing Beyerle and Williams 1968 and Wahl and Stein 1988, not a result of this report",
+      "verdict": "confirmed",
+      "note": "the report adds that bluegill 'are usually not a preferred prey even at smaller sizes'. The primary sources for the threshold are Beyerle & Williams (1968) and Wahl & Stein (1988)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other useful values in the report: pond consumption of age-0 bluegill 0.38 ± 0.10 %BW/d by walleye and 0.27 ± 0.08 %BW/d by yellow perch at ~4 °C; laboratory maintenance rations at 4.4 °C of 0.075 %BW/d (adult yellow perch) and 0.32 %BW/d (small walleye); complete gastric evacuation of a 1 % bluegill meal 41 h (perch) and 77 h (walleye); December-March consumption of 3,500 and 8,600 bluegill/ha in Blueberry Pond and Cassidy Lake; age-0 bluegill can be ingested by yellow perch > 158 mm TL. Bluegill size changed little overwinter in the ponds (no size-selective loss) except where 8 of 3,400 survived."
+}

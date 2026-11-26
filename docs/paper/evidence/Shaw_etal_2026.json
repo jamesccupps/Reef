@@ -1,0 +1,37 @@
+{
+  "key": "Shaw_etal_2026",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record (no abstract text) and the structured abstract shown on CiteDrive's discovery page; no free full text found",
+    "url": "https://www.citedrive.com/en/discovery/vulnerability-to-angling-and-survival-of-smallmouth-bass-in-a-northern-wisconsin-lake/"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.1093/najfmt/vqag038)",
+    "ok": true,
+    "note": "Crossref: Shaw, Stephanie L; Preul-Stimetz, Taylor N; Sass, Greg G (2026). Vulnerability to angling and survival of Smallmouth Bass in a northern Wisconsin lake. North American Journal of Fisheries Management (advance article; license date 25 June 2026; no volume or pages yet). Publisher's standard reuse terms, not open access."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (smallmouth bass row)",
+      "claim": "survival 80-83 %/yr under catch-and-release (Pallette Lake)",
+      "verdict": "unchecked",
+      "note": "the abstract (seen only as CiteDrive's display) gives survival of about 80 % for males and 83 % for females, Pallette Lake, Wisconsin, 2015-2025; whether it is annual adult survival, and its estimator, need the full text"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "angler catch divided by abundance implied that each smallmouth in a Wisconsin lake could be caught 3-7 times a year, and adult survival was 80-83 %",
+      "verdict": "unchecked",
+      "note": "the abstract says estimated catch per fish implied that all bass could have been caught and released 'three to seven times in any given year'; it also reports that 42 % of tagged fish were never reported caught and that less than half the population appeared highly vulnerable to angling, which the paper's 'each smallmouth could be caught 3-7 times' should not obscure"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://academic.oup.com/najfm/advance-article-pdf/doi/10.1093/najfmt/vqag038", "status": 403, "note": "Oxford Academic refused the script (subscription journal)" },
+    { "url": "https://doi.org/10.1093/najfmt/vqag038", "status": 403, "note": "resolves to Oxford Academic; refused; the article page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1093/najfmt/vqag038%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://api.crossref.org/works/10.1093/najfmt/vqag038", "status": 200, "note": "license = OUP standard publication reuse rights (not open access); funders USFWS (Sport Fish Restoration) and Wisconsin DNR, so a WDNR or author copy may appear later" }
+  ],
+  "notes": "Semantic Scholar not tried (rate-limited by parallel readers). CiteDrive offers a 'viewer' link; it was not used, since it is a third-party viewer and not the publisher's or an author's copy. The paper already marks both uses '(abstract)'; per the brief they stay unchecked until the human fetches the article (doi:10.1093/najfmt/vqag038). The abstract also reports a mean refractory period of about 31 days between recaptures and higher capture probability for males."
+}

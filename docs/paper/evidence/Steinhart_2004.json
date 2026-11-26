@@ -1,0 +1,52 @@
+{
+  "key": "Steinhart_2004",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "a complete copy of the dissertation (247 pages) posted in the reference library of the Sites Reservoir Project's environmental documents (Sites Project Authority, a California public water agency; Appendix 12B, Fisheries Impact Assessment, references); OhioLINK ETD was not reachable by script",
+    "url": "https://sitesreservoirproject.riptideweb.com/references/REF17/Appx_12B_FisheriesImpactAssessment/Steinhart_2004.pdf",
+    "file": "docs/research_notes/fetched/v2/Steinhart_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the dissertation's title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "entry is incomplete; it should read: Steinhart, G. B. 2004. Exploring factors affecting smallmouth bass nest success and reproductive behavior. PhD dissertation, The Ohio State University, Columbus."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "Smallmouth nest success (the share of nests producing swim-up fry) is 44-96 % in lakes with a median near 75 % across 26 studies",
+      "source_value": "Table 4 lists 27 site-years from 10 published sources plus Steinhart's own Lake Erie and unpublished Opeongo data, 21-96 % of nests reaching the free-swimming larval stage. Lakes alone (23 rows) also span 21-96 % (Lake Erie, Ohio, 21-41 %; Lake Erie, Ontario, 1982 and Lake Huron 1974, 33 %), median 55-63 % (depending on how Lake Opinicon's 44-63 % range is counted); all 27 rows, median 58-63 %. The source states no '44-96 %', no median and no '26 studies'",
+      "location": "Table 4, p. 89 (PDF p. 111)",
+      "quote": "Nebish Lake, Wisconsin 1985 49 96% … Lake Erie, Ohio 2000 47 21%",
+      "quote_from": "table",
+      "conditions": "endpoint: % of nests reaching the free-swimming, larval stage; N = 13-1,864 nests per row; lakes and rivers in Ontario, Wisconsin, Michigan, Ohio, Maine and Virginia",
+      "verdict": "corrected",
+      "note": "Table read on the page image. The research note behind the sentence says the table's layout was 'garbled in extraction'. Medians are the reader's count from the table (lakes: 21, 23, 33, 33, 41, 44-63, 45, 47, 50, 54, 54, 55, 67, 75, 77, 79, 82, 85, 87, 87, 88, 93, 96; rivers: 43, 58, 64, 84). Leaving out Steinhart's own Lake Erie, Ohio values, lakes run 33-96 % with a median of about 71 %. Suggested wording: 'from 21 to 96 % of nests reached the free-swimming stage in 27 site-years compiled by Steinhart (2004), half of them below about 60 %'."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "Storms destroyed nests at 0.015 per day at Opeongo and 0.065 per day in Lake Erie",
+      "location": "p. 118 (PDF p. 140), chapter 6 methods; Table 7, p. 132 (PDF p. 154)",
+      "quote": "Base pS values were 0.065 in Lake Erie and 0.015 in Lake Opeongo",
+      "conditions": "daily probability that a nest was destroyed by a storm, estimated by the Mayfield method from nests monitored in situ in Lakes Erie and Opeongo (G. B. Steinhart, unpublished data); used as base values in a dynamic programming model",
+      "verdict": "confirmed",
+      "note": "the same values are Table 2 of Steinhart et al. 2008 (Evol. Ecol. Res. 10: 351-371), which could be cited instead of the dissertation"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://etd.ohiolink.edu/acprod/odb_etd/r/etd/search/10?p10_search=Steinhart+smallmouth&p10_etd_subtype=Dissertation",
+      "status": 200,
+      "note": "OhioLINK's search page needs its own form (ERR-1002); the record was not found by script"
+    },
+    {
+      "url": "https://core.ac.uk/outputs/159581135",
+      "status": 403,
+      "note": "CORE returned a bot check ('Just a moment...'); not pursued"
+    }
+  ],
+  "notes": "Table 4 also lists South Branch Lake, Maine, at 88 % (1972, N = 26) and 67 % (1971, N = 15) from Neves (1975), whereas the paper (§3.6.2, from Neves's abstract) gives 67 % and 77 %: check Neves_1975. Within Steinhart's own Lake Erie study, control nests succeeded at 29.8 % against 11.4 % (angled, no predators) and 14.0 % (angled, with predators) (p. 81). The model's base daily survival for guarded offspring is 0.90 (embryos) and 0.92 (larvae) (Table 7), the values the paper credits to Steinhart et al. 2008."
+}

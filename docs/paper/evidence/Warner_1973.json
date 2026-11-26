@@ -1,0 +1,83 @@
+{
+  "key": "Warner_1973",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the human's fetch of the publisher's first-page preview image (p. 149 only, a 644 × 951 GIF), converted to a one-page PDF for indexing; no text layer, read on the image. Pages 150-151 (the data) were not obtainable",
+    "url": "https://academic.oup.com/tafs/article/102/1/149/7895478",
+    "file": "docs/research_notes/fetched/v2/Warner_1973.p149.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page (p. 149)",
+    "ok": true,
+    "note": "Kendall Warner, Maine Department of Inland Fisheries and Game, Bangor; 'Spring Food of Chain Pickerel (Esox niger) in Maine Lakes'; Transactions of the American Fisheries Society 102(1): 149-151 (1973), a Short Paper and Note; matches the entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.4; §3.7.5",
+      "claim": "Warner (1973) is a Maine study of spring chain pickerel food, seen only in its introduction (data pages not seen)",
+      "location": "p. 149 (the only page seen), right column",
+      "quote": "document food habits of chain pickerel collected from Maine lakes in the spring",
+      "quote_from": "image",
+      "conditions": "fish collected over about 1 month from ice-out, in conjunction with a study of pickerel predation on stocked salmonids (Warner et al. 1968)",
+      "verdict": "confirmed",
+      "note": "pp. 150-151 are still unseen, so no diet value can be taken from it; the paper's statement that only the introduction has been seen remains true"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "the one Maine study of spring pickerel food",
+      "verdict": "unchecked",
+      "note": "p. 149 names no other spring study, but cites three Maine pickerel food-habits studies of unstated season (Cooper 1941; Fuller & Cooper 1946; Barr 1962); 'the one' is the project's claim and cannot be checked from this page"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "Apart from Warner (1973), the only Maine diet-composition data for adults of either piscivore are Cooper's (1941)",
+      "source_value": "Warner's introduction names two more Maine pickerel food-habits studies besides Cooper (1941): Fuller and Cooper (1946) and Barr (1962); and Warner et al. (1968) on pickerel predation on newly stocked salmonids in Maine",
+      "location": "p. 149, right column",
+      "quote": "studied by Cooper (1941), Fuller and Cooper (1946), and Barr (1962)",
+      "quote_from": "image",
+      "verdict": "corrected",
+      "note": "the full sentence begins 'Food habits of pickerel in Maine waters have been'. Whether Fuller & Cooper 1946 and Barr 1962 report adult diet composition is not known from this page; the rewrite should either find them or say 'the only one found'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://doi.org/10.1577/1548-8659(1973)102%3C149:SFOCPE%3E2.0.CO;2",
+      "status": 403,
+      "note": "resolves to Oxford Academic (https://academic.oup.com/tafs/article/102/1/149/7895478); refused; subscription — the page a library login would open"
+    },
+    {
+      "url": "https://academic.oup.com/tafs/article/102/1/149/7835693",
+      "status": 403,
+      "note": "Oxford Academic, refused"
+    },
+    {
+      "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1973)102%3C149:SFOCPE%3E2.0.CO;2",
+      "status": 403,
+      "note": "former host (Taylor & Francis), refused"
+    },
+    {
+      "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1973)102%3C149:SFOCPE%3E2.0.CO;2",
+      "status": 403,
+      "note": "former host (Wiley) listed by Crossref, refused"
+    },
+    {
+      "url": "https://archive.org/metadata/american-fisheries-society-transactions_1973-01_102_1",
+      "status": 200,
+      "note": "Internet Archive has TAFS 102(1) (282 images) but as an access-restricted lending item (printdisabled); not used. The open item american-fisheries-society-transactions_1973_102_contents is front matter only (12 images)"
+    },
+    {
+      "url": "https://babel.hathitrust.org/cgi/ls?q1=%22spring%20food%20of%20chain%20pickerel%22;anyall1=phrase;lmt=all",
+      "status": 403,
+      "note": "HathiTrust full-text search answered with a bot check; stopped"
+    },
+    {
+      "url": "https://archive.org/advancedsearch.php?q=%22chain+pickerel%22+AND+%28Warner%29",
+      "status": 200,
+      "note": "no hits"
+    }
+  ],
+  "notes": "The p. 149 GIF (docs/research_notes/fetched/tafs_102_1_tafs0149.pdf.gif) is OUP's first-page preview; its upper part ends a cui-ui paper. Warner's introduction also cites Kendall 1917, Hunter & Rankin 1939, Foote & Blake 1945 and Wich 1958 (fish the major food except for very young pickerel, which eat insects and crustaceans; large pickerel take frogs, snakes and almost any moving object of proper size). Pages 150-151 need a library copy of TAFS 102(1) or OUP access (doi:10.1577/1548-8659(1973)102<149:SFOCPE>2.0.CO;2)."
+}

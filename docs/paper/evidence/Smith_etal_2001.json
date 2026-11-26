@@ -1,0 +1,37 @@
+{
+  "key": "Smith_etal_2001",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Crossref's record (the full text is on Wiley Online Library, subscription)",
+    "url": "https://api.crossref.org/works/10.1111/j.1095-8649.2001.tb00538.x"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "Smith, C.; Douglas, A.; Jurajda, P. (2001). Oviposition site selection and embryo mortality in perch. Journal of Fish Biology 58(3): 880-882. Matches the entry."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "in the field dead Eurasian perch embryos were significantly commoner on the lake bottom than on vegetation",
+      "verdict": "unchecked",
+      "note": "Crossref's abstract: egg strands around the margins of a lake were associated significantly with submerged vegetation, and the proportion of dead embryos was significantly higher in strands laid directly on the lake bottom than on submerged vegetation. The paper already marks it '(abstract)'; the size of the difference, the lake and the sample need the full text."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "dead embryos were commoner in Eurasian perch strands lying on the bottom than on vegetation",
+      "verdict": "unchecked",
+      "note": "as above; same abstract"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1095-8649.2001.tb00538.x", "status": 403, "note": "Wiley refused the script; subscription article" },
+    { "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1095-8649.2001.tb00538.x", "status": 403, "note": "article landing page; the page a library login would open (doi:10.1111/j.1095-8649.2001.tb00538.x)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1111/j.1095-8649.2001.tb00538.x%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://api.crossref.org/works/10.1111/j.1095-8649.2001.tb00538.x", "status": 200, "note": "license = Wiley terms and conditions (not open access); abstract only" }
+  ],
+  "notes": "A web search found no author or repository copy. Semantic Scholar not tried (rate-limited by the parallel readers). A three-page short communication: the human could fetch it by library login from the DOI above."
+}

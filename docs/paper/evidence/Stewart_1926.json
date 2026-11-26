@@ -1,0 +1,89 @@
+{
+  "key": "Stewart_1926",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "NOAA Scientific Publications Office's own PDF of the article (Fishery Bulletin archive, fb42.8)",
+    "url": "https://spo.nmfs.noaa.gov/sites/default/files/pdf-content/fish-bull/fb42.8.pdf",
+    "file": "docs/research_notes/fetched/v2/Stewart_1926.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and running heads",
+    "ok": false,
+    "corrections": "entry is incomplete; it should read: Stewart, N. H. 1926. Development, growth, and food habits of the white sucker, Catostomus commersonii Lesueur. Bulletin of the U.S. Bureau of Fisheries 42: 147-184. (Author on the title page: Norman Hamilton Stewart; volume and pages match.)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (white sucker row)",
+      "claim": "spawning from ~10 °C (inlet 12.2 °C at Beebee Lake)",
+      "source_value": "54 °F (12.2 °C) is the water temperature at which, from 22 April, suckers were seen surfacing and leaping on the spawning ground; it is not given as an inlet reading or as the start of spawning. Ripe fish of both sexes were first trapped on 27 April in about 3 ft of water; the height of spawning was about 5 May and the season lasted about 29 days (to ~25 May, assumed). Stewart gives no 10 °C onset",
+      "location": "p. 150 (PDF p. 4), Breeding habits",
+      "quote": "Beginning April 22, whenever the water temperature reached 54° F. suckers were seen",
+      "conditions": "upper end of Beebee Lake, Ithaca, NY (a shallow artificial lake of about 6 acres), on the submerged gravel delta of the inflowing creek (a cool spring: air 5.6 °F below normal, 9 April-18 May)",
+      "verdict": "corrected",
+      "note": "the surfacing habit's 'significance is uncertain' (Stewart). Write e.g. 'ripe fish from 27 April, spawning peak ~5 May at Beebee Lake; suckers active at the surface when the water reached 12.2 °C'. The '~10 °C' onset must come from another source in the row."
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row)",
+      "claim": "gravel of inlets and shoals",
+      "location": "p. 150 (PDF p. 4)",
+      "quote": "the inflowing creek spreads out over a delta of gravel and stones",
+      "conditions": "Beebee Lake's inlet delta, in water as shallow as about 1.5 ft; Stewart also saw a group spawn in a short stony rapid of Little Buffalo Creek, Union County, Pa., on 26 April 1925",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row)",
+      "claim": "2-mm eggs",
+      "location": "p. 153 (PDF p. 7), Water hardening",
+      "quote": "The egg when laid measures 2 millimeters in diameter.",
+      "conditions": "swells to 3 mm total diameter within 30 minutes of water hardening",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row); §3.6.1",
+      "claim": "white sucker eggs are more than 90 % fertilized",
+      "location": "p. 153 (PDF p. 7), Fertilization",
+      "quote": "Fertilization of well over 90 per cent of the eggs took place.",
+      "conditions": "artificial fertilization: eggs and sperm of one ripe pair (trapped 28 April) stripped into a dish at the Cornell University Fish-Cultural Experiment Station, stirred, water added after 3 minutes; not a field measurement",
+      "verdict": "confirmed",
+      "note": "§3.6.1 lists it beside field viability of perch ribbons; it should say 'in artificial (stripped) fertilization' so it is not read as a field rate (the research note egg_survival_and_larval_production.md already warns that the model once used it as hatch success)"
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row); src/config.js:498",
+      "claim": "incubation 18-20 d 'normal', 21 d at 10.3 °C",
+      "location": "p. 154 (PDF p. 8), Period of incubation",
+      "quote": "probably 18 to 20 days is the normal period",
+      "conditions": "eggs in Meehan hatching jars supplied with the station's creek water; about 5 % hatched at 12 days, then a cold spell delayed hatching about a week, and all hatched in 2-3 days at 21 days; mean water temperature over the whole period 50.5 °F",
+      "verdict": "confirmed",
+      "note": "50.5 °F = 10.3 °C (project conversion); 'The eggs in the Meehan jars hatched in 21 days' (same page)"
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row)",
+      "claim": "hatch ~8 mm",
+      "location": "p. 154 (PDF p. 8)",
+      "quote": "Reighard (1915) gives 8 millimeters as the length of the newly hatched fry",
+      "conditions": "Stewart's own fry 'exceeded this by a millimeter or two, due, perhaps, to delayed hatching'",
+      "verdict": "confirmed",
+      "note": "the 8 mm is Reighard's (1915), as quoted by Stewart; Stewart's fry were about 9-10 mm"
+    },
+    {
+      "paper": "Table 3.6-1 (white sucker row)",
+      "claim": "yolk 6-8 d, to 11 mm",
+      "location": "p. 158 (PDF p. 14), Development of the larva (OCR garbled; read on the page image)",
+      "quote": "present for but six to eight days, when the larva is 11 millimeters",
+      "conditions": "hatchery larvae; the mouth opens at about 9 mm and food may be taken from 9 mm, though rarely",
+      "verdict": "confirmed",
+      "quote_from": "image"
+    },
+    {
+      "paper": "src/config.js:498 (EGG3 sucker comment)",
+      "claim": "(Stewart 1926: ... no predation detected) [on white sucker eggs]",
+      "verdict": "unsupported",
+      "note": "Stewart says nothing about predation on sucker eggs. 'No predation on sucker eggs was detected' is Corbett & Powles 1986 (TAFS 115: 41, abstract), per the research note egg_stage.md; the comment should cite them."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "show.mjs listed no code lines for this key, but src/config.js:498 cites 'Stewart 1926: 21 d at 10.3 °C; > 90 % fertilised; no predation detected' (two of the three confirmed above). The 'fry drift at night ~1 month after spawning' and '16 d in a Jack Lake tributary' in the same table cell are Corbett & Powles 1983, not Stewart. Other values: spawners at Beebee Lake were 10-13 in long, though the species spawns at 6-7 in; 1-5 males pursue each female; Stewart estimated a 5-in sucker held 1,200 chironomids at once."
+}

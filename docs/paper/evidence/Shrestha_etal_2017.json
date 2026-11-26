@@ -1,0 +1,57 @@
+{
+  "key": "Shrestha_etal_2017",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Plymouth State University's own copy on its web site (the URL in the reference entry): a 23-slide PDF",
+    "url": "https://www.plymouth.edu/sites/default/files/media/2023-12/phosphorus-transport-to-squam-lake-during-storm-events.pdf",
+    "file": "docs/research_notes/fetched/v2/Shrestha_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title slide",
+    "ok": false,
+    "corrections": "the document is a 23-slide presentation (slide deck), not a poster; title slide: 'Temporal Variability of Phosphorus Concentration in the stream to Squam Lake, New Hampshire during Storm Events', Anju Shrestha, Mark B. Green & Joseph N. Boyer, Plymouth State University (Environmental Science and Policy; Center for the Environment), NH Water and Watershed Conference, 3/24/2017. Authors, title and date otherwise match."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-1; Table 3.2-2",
+      "claim": "Livermore Cove Brook, NH: 1.77 km², 92 % forest",
+      "location": "slide 5 (PDF p. 5)",
+      "quote": "Drainage area = 1.77 Km2 • Forested land = 91.7 %",
+      "conditions": "land cover of the watershed (deciduous 60.9 %, evergreen 29.6 %, mixed 1.2 %; wetland 3.4 %)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-1",
+      "kind": "arithmetic",
+      "claim": "Livermore Cove Brook TP yield ~0.09-0.18 kg TP ha⁻¹ yr⁻¹ (project arithmetic from storm shares)",
+      "location": "slide 22 (PDF p. 22), TP yield table",
+      "quote": "The 3 events had made 5-10% annual TP yield.",
+      "conditions": "three summer storm events (5 June, 9 July, 12 August 2016), hourly ISCO samples; event yields 0.0075, 0.0003 and 0.0012 kg/ha, total 0.009 kg/ha",
+      "verdict": "confirmed",
+      "note": "0.009 kg/ha ÷ 0.10 = 0.09 and ÷ 0.05 = 0.18 kg ha⁻¹ yr⁻¹: the arithmetic holds. The annual yield is not measured in the source; it is implied by the authors' '5-10 %' statement on a back-up slide, and rests on three summer events in one year."
+    },
+    {
+      "paper": "Table 3.2-2",
+      "claim": "DOP 95 % of TP at baseflow, 50 % in events; TPP to 46 %",
+      "location": "slide 15 (PDF p. 15), 'Ratio of P'",
+      "quote": "fluctuating between 95% (baseflow) to 50% (event flow)",
+      "conditions": "DOP = TDP − SRP; TPP = TP − TDP; the three 2016 events",
+      "verdict": "confirmed",
+      "note": "same slide: 'TPP becomes a significant component (up to 46%) during high event flows'; SRP is ~15-20 % of TP at baseflow and falls in events"
+    },
+    {
+      "paper": "Table 3.2-2",
+      "claim": "clockwise hysteresis for TP, PP, DOP; counterclockwise for SRP",
+      "location": "slide 16 (PDF p. 16); conclusions slide 19 (PDF p. 19)",
+      "quote": "TP, TDP, TPP and DOP had made clockwise hysteresis",
+      "conditions": "the slide shows Event One (5 June 2016); the conclusions state it without restriction to that event",
+      "verdict": "confirmed",
+      "note": "slide 16: 'SRP had made anticlockwise hysteresis indicating that it was from different source'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Only the bibliography needs changing (poster → presentation slides). The slides give no TP concentrations in numbers (only plots), so the Table 3.2-2 'TP' cell's dash is right. Storm events 'contribute a disproportionate amount of P' (conclusions); SRP lagged discharge, suggesting a groundwater source."
+}

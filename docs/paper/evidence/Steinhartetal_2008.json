@@ -1,0 +1,43 @@
+{
+  "key": "Steinhartetal_2008",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "reprint posted on the Harkness Laboratory of Fisheries Research's own contributions page (the Lake Opeongo research station of a co-author)",
+    "url": "https://www.harkness.ca/PDFs/Contributions%202000s/SMB%20Optimal%20Parental%20Decisions.pdf",
+    "file": "docs/research_notes/fetched/v2/Steinhartetal_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page",
+    "ok": false,
+    "corrections": "entry is incomplete; it should read: Steinhart, G. B., Dunlop, E. S., Ridgway, M. S. & Marschall, E. A. 2008. Should I stay or should I go? Optimal parental care decisions of a nest-guarding fish. Evolutionary Ecology Research 10: 351-371. (Journal and pages match.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "Daily survival within guarded broods is about 0.90 for embryos and 0.92 for larvae",
+      "location": "p. 358 (PDF p. 8); Table 2, p. 356 (PDF p. 6)",
+      "quote": "Base offspring daily survival rate (DSR) was 0.9 for embryos",
+      "conditions": "base inputs of a stochastic dynamic programming model, embryos on days 1-13 and larvae on days 14-20 of care, the same in Lake Erie and Lake Opeongo, 'based on values from Lake Opeongo and elsewhere (Friesen, 1998; Knotek and Orth, 1998)'; varied by ± 0.05 in the sensitivity runs",
+      "verdict": "confirmed",
+      "note": "the sentence continues 'and 0.92 for larvae (d = 14-20)'. These are model parameters taken from field studies, not new measurements: the primary sources are Friesen 1998 and Knotek & Orth 1998."
+    },
+    {
+      "paper": "Table 3.6-4",
+      "kind": "arithmetic",
+      "claim": "Smallmouth bass, Opeongo and other waters: Z 0.105 (guarded embryos), 0.083 (guarded larvae)",
+      "location": "Table 2, p. 356 (PDF p. 6)",
+      "quote": "DSR (embryos, larvae) … 0.90, 0.92 … 0.90, 0.92",
+      "quote_from": "table",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "Z = −ln(0.90) = 0.1054 and −ln(0.92) = 0.0834 per day: the conversion is right (project arithmetic)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://evolutionary-ecology.com/abstracts/v10/2262.html", "status": 525, "note": "the journal's site returned a Cloudflare SSL error (525); the Harkness reprint was used" }
+  ],
+  "notes": "Only the bibliography needs completing. Table 2 also gives the daily probability that a nest is destroyed by a storm (0.065 Lake Erie, 0.015 Lake Opeongo), the values the paper cites to Steinhart 2004. Result useful for the egg stage: adult annual survival was the strongest factor in males' abandonment thresholds; storms, angling and nest predators raised the brood size below which males abandon."
+}

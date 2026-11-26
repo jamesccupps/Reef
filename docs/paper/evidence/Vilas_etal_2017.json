@@ -1,0 +1,66 @@
+{
+  "key": "Vilas_etal_2017",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Frontiers in Plant Science)",
+    "url": "https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2017.02097/pdf",
+    "file": "docs/research_notes/fetched/v2/Vilas_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "note": "Vilas, M. P., Marti, C. L., Adams, M. P., Oldham, C. E. & Hipsey, M. R. 2017. Front. Plant Sci. 8: 2097, published 08 December 2017, doi:10.3389/fpls.2017.02097; matches"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "Lake Monger is 0.3-1.2 m deep",
+      "location": "p. 2, Methods (study site)",
+      "quote": "varies seasonally from 1.2 m in spring to 0.3 m in autumn",
+      "conditions": "the lake's mean water depth; a eutrophic urban lake in Perth, Western Australia, 68.2 ha",
+      "verdict": "confirmed",
+      "note": "it is the mean depth that varies 0.3-1.2 m with season"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "beds filling more than half the water column stratified for about 8-12 h a day (modeled)",
+      "location": "p. 6, Modeling results (Figure 5B)",
+      "quote": "increased with canopy relative height, from 7.7 ± 2.9 h per day",
+      "conditions": "3-D hydrodynamic model (ELCOM) fitted to the lake, canopy relative height 0.5 (7.7 ± 2.9 h/d) to 1 (12.3 ± 5.9 h/d), mean stratification duration; invasive Potamogeton crispus bed; no stratification below a relative height of 0.5",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "with gradients of up to 10 °C over 0.8 m",
+      "location": "p. 5, Field results",
+      "quote": "of 10°C between the water surface and sediment bed (0.8 m depth)",
+      "conditions": "measured (not modeled): maximum vertical temperature difference at the centre of the P. crispus bed, daytime, after 21 December 2014",
+      "verdict": "confirmed",
+      "note": "a field measurement; the sentence's '(modeled)' applies only to the hours of stratification"
+    },
+    {
+      "paper": "§3.1.5",
+      "kind": "arithmetic",
+      "claim": "in the model a full canopy cut depth-averaged flow by about 90 %",
+      "location": "p. 6, Modeling results (Figure 8)",
+      "quote": "depth-averaged water velocities within the macrophyte bed were only 0.001 m s−1",
+      "conditions": "ELCOM tracer runs for 28 January 2015, 10:00-20:00 h: 0.01 m/s (CV 25 %) with canopy relative height 0.1 against 0.001 m/s when the canopy reached the surface",
+      "verdict": "confirmed",
+      "note": "1 − 0.001/0.01 = 90 % (project arithmetic). The comparison is with a 10 %-height canopy, not bare sediment."
+    },
+    {
+      "paper": "§3.1.5; §3.4.7",
+      "claim": "canopy stratification needs plants filling at least half the water depth",
+      "location": "p. 6, Modeling results; abstract p. 1; field result p. 5",
+      "quote": "they occupied at least 50% of the water depth",
+      "conditions": "both field (stratification began once plants occupied more than 50 % of the depth) and model (threshold canopy relative height 0.5)",
+      "verdict": "confirmed",
+      "note": "the authors add that the threshold 'depends on other plant attributes such as the canopy density and biomass', on water transparency and on water depth, 'and so this threshold height may differ in other ecosystems' (p. 8); a fragmented bed (25 % cover) or a canopy without drag or light attenuation did not stratify in the model (p. 6). §3.4.7's application to low soft-water canopies is the project's inference."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other useful values: bottom DO at the bed centre ~18 mg/L by day and ~6 at night with short plants (November 2014); with stratification, anoxia at night (December) and before sunset (January 2015, 9 °C over 0.6 m); bottom redox to −450 mV during night anoxia. The paper proposes a plant-stratification-dieback feedback for the central die-off of the bed."
+}

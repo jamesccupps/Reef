@@ -1,0 +1,41 @@
+{
+  "key": "Simonin_2010",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "University of Vermont Sea Grant's own copy of the thesis, via the Wayback Machine capture of 30 June 2024 (the live UVM page refused the script, 504 then 403)",
+    "url": "http://web.archive.org/web/20240630040750id_/https://www.uvm.edu/seagrant/sites/default/files/files/publication/simonin_p_uvm_2010_ms_thesis.pdf",
+    "file": "docs/research_notes/fetched/v2/Simonin_2010.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "entry is incomplete; it should read: Simonin, P. W. 2010. Distribution and abundance of native rainbow smelt and nonnative alewife in Lake Champlain. M.S. thesis, The University of Vermont, Burlington (May 2010)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-3",
+      "claim": "Alewife (landlocked), age 0, Lake Champlain: 0-0.38/m³",
+      "location": "p. 72 (PDF p. 79), chapter 4 results",
+      "quote": "Density ranged from 0 to 0.38 fish/m3",
+      "conditions": "hydroacoustic densities per analysis cell (depth layers along transects), main lake of Lake Champlain, 16 day and night surveys June-October 2007 and 2008; age-0 alewife in shallow epilimnetic water, about 15-23 °C",
+      "verdict": "confirmed",
+      "note": "these are age-0 fish counted by hydroacoustics through summer and autumn (alewife hatch late June-August), so mostly post-larval juveniles rather than larvae; Table 3.6-3 is titled 'Larval densities', so the row should say so. Age-0 rainbow smelt reached about 1.47/m³ in the same surveys (p. 73)."
+    },
+    {
+      "paper": "Table 3.6-4",
+      "claim": "Alewife (landlocked), Lake Champlain, age 15-100 d: Z 0.10-0.12 /d",
+      "location": "p. 42 (PDF p. 49), chapter 3 results; Fig. 5, p. 60 (PDF p. 67); ages p. 41 (PDF p. 48)",
+      "quote": "In 2007 alewife had a mean rate of 0.12, and in 2008, 0.10.",
+      "conditions": "seasonal mean of hatch-cohort mortality rates (slope of ln abundance against time, abundance from acoustics apportioned by otolith hatch dates), main lake, summer-autumn 2007 and 2008; individual cohorts ranged from about 0.01 to 0.19 /d (Fig. 5); the 15-100 d is the age range of the otolith-aged alewife (n = 234)",
+      "verdict": "confirmed",
+      "note": "Fig. 5's axis calls the rates 'Daily mortality rate (proportion / day)', but the method (regression of ln abundance) gives instantaneous rates, so Z is the right reading. The difference between years was not significant for alewife (it was for smelt). Mortality was higher for earlier-hatched cohorts in 2007."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.uvm.edu/seagrant/sites/default/files/files/publication/simonin_p_uvm_2010_ms_thesis.pdf", "status": 504, "note": "first try timed out; second try 403 (the site refused the script); the Wayback capture of the same file was used" }
+  ],
+  "notes": "Only the bibliography needs completing. The rate cited as 'in the published version: 5.5 %/d over the first 45 d' belongs to Simonin et al. 2016 (a separate entry, not checked here). The thesis also gives rainbow smelt mean rates of 0.15 (2007) and 0.03 (2008), with early-hatched smelt at 0.41 /d; cannibalism is argued to drive selection for later hatching."
+}

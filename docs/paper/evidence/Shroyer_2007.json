@@ -1,0 +1,39 @@
+{
+  "key": "Shroyer_2007",
+  "reader": "wave-3 batch w3-23",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Minnesota Legislative Reference Library's copy of the DNR report (the URL in the reference entry)",
+    "url": "https://www.lrl.mn.gov/docs/2007/other/070599.pdf",
+    "file": "docs/research_notes/fetched/v2/Shroyer_2007.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": true,
+    "note": "Steven M. Shroyer, 'Induced winterkill as a management tool for reclaiming Minnesota walleye rearing ponds', Minnesota Department of Natural Resources Investigational Report 547, July 2007 (Completion Report, Study 603, D-J Project F-26-R)"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6; Table 3.5-3 (white sucker row)",
+      "claim": "White suckers died when maximum dissolved oxygen stayed below 1 mg/L for 12 days (killed when maximum dissolved O₂ stayed < 1 mg/L for ≥ 12 d)",
+      "location": "p. 14 (PDF p. 14), Mortenson Pond",
+      "quote": "remained < 1 mg/L for at least 12 days",
+      "conditions": "one treated rearing pond (Mortenson Pond, Kandiyohi County, Minnesota), winter 2004, after 'reverse aeration' on 5-6 Feb; 'maximum DO' is the highest DO measured anywhere in the pond (several stations and depths), used because fish seek the best water available; no white suckers were caught in April and the landowner reported many dead white suckers after ice-out",
+      "verdict": "confirmed",
+      "note": "the source says 'at least 12 days': ≥ 12 d is the right form. One pond, so it is an observed lethal exposure, not a threshold. Across all ponds the report says winterkill of most species except bullheads and fathead minnows always occurred when maximum DO stayed below 1.0 mg/L for at least six days (p. 30)."
+    },
+    {
+      "paper": "Table 3.5-3 (white sucker row)",
+      "claim": "white suckers survived ≈ 4 mg/L",
+      "location": "p. 14 (PDF p. 14), Tatlie Pond",
+      "quote": "Maximum DO in Tatlie Pond only declined to slightly below 4 mg/L",
+      "conditions": "untreated reference pond, winter 2003-04; adult walleyes and white suckers were caught in April 2004, 'indicating little or no winterkill'",
+      "verdict": "confirmed",
+      "note": "again maximum DO (the best water in the pond), one pond"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Useful companion values: across the six effective treatments, walleyes, sunfish and white suckers were reduced or eliminated, but black bullhead and fathead minnow populations were never significantly reduced (abstract; p. 30); winterkill of carryover walleyes once occurred with maximum DO of 1.0-2.0 mg/L for at least 14 days (p. 30). The report's ranking (bullheads most tolerant, white sucker among the intolerant) supports the paper's §3.5.6 ordering. The ponds are shallow eutrophic-hypereutrophic Minnesota rearing lakes under snow and ice."
+}
