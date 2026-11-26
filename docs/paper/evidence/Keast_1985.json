@@ -1,0 +1,40 @@
+{
+  "key": "Keast_1985",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Crossref's record (no full text found)",
+    "url": "https://api.crossref.org/works/10.1139/z85-224"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Canadian Journal of Zoology 63(6): 1510–1515, as cited (the species is now Ameiurus nebulosus)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3",
+      "claim": "brown bullhead growth best at 20–30 °C (Keast 1985, abstract)",
+      "verdict": "unchecked",
+      "note": "Crossref's abstract matches: year-0 and year-2 bullheads that had finished the summer's growth, held 8 weeks at six temperatures from 5 to 30 °C; instantaneous growth (% body weight per day) best at 20–30 °C, and in the small fish higher at 30 °C than at 20–25 °C; ration rose with temperature; Lake Opinicon field growth matched the laboratory's. Not confirmable from an abstract"
+    },
+    {
+      "paper": "src/world.js:125",
+      "claim": "YOY pike and bass eat aquatic insects alongside fish until ~3× their piscivory length (Frost 1954, Keast 1985)",
+      "verdict": "unchecked",
+      "note": "almost certainly the wrong Keast 1985: this paper is about brown bullhead growth against temperature (title and abstract) and its abstract says nothing of pike, bass or diets. The project's notes cite two other Keast 1985 papers in Environmental Biology of Fishes — 12:119 (the Lake Opinicon piscivore guild; killifish_persistence_and_predators.md) and 13:211 (juvenile dietary specializations; young_first_summer.md, fish_zooplankton_coupling.md) — neither of which is in references.md. The code comment should name the right one, and the reference list should carry it if the claim stays"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/z85-224", "status": "closed", "note": "OpenAlex: no open copy known; Canadian Science Publishing page for a library login" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/z85-224", "status": 403, "note": "publisher refuses the script (subscription)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/z85-224?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/z85-224\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(brown bullhead) AND title:(temperature) AND creator:(Keast)", "status": 200, "note": "0 hits" },
+    { "url": "https://research.qubs.ca/projects/growth-responses-of-the-brown-bullhead-ictalurus-nebulosus-to-temperature", "status": 200, "note": "Queen's University Biological Station project page: a one-sentence summary, no PDF" }
+  ],
+  "notes": "Manual fetch: the article via a library login at https://doi.org/10.1139/z85-224 (6 pages). Worth reading for the ration and growth by temperature (the bullhead notes want its ration at 10–15 °C)."
+}

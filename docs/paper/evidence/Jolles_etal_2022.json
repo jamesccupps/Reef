@@ -1,0 +1,70 @@
+{
+  "key": "Jolles_etal_2022",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: the University of Konstanz repository (KOPS) PDF of the published eLife version of record (26 pages, eLife's own layout; CC BY). Europe PMC's PDF render refused the script (403)",
+    "url": "https://kops.uni-konstanz.de/server/api/core/bitstreams/7d32637a-e3be-4378-b266-5c864e715bbe/content",
+    "file": "docs/research_notes/fetched/v2/Jolles_etal_2022.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's own pages (running footer 'Jolles et al. eLife 2022;11:e76344') and Crossref",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.7-1",
+      "claim": "predator: northern pike, 22.4 cm",
+      "source_value": "",
+      "location": "p. 3 of 26 (PDF p. 3), Results",
+      "quote": "individual pike (n=13; 22.4 cm ±1.1 cm) in a large open arena",
+      "conditions": "the 13 pike that attacked (20 were tested; 7 never attacked and were dropped)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-1",
+      "claim": "prey: golden shiner in schools of 40 (8.5 cm)",
+      "source_value": "",
+      "location": "p. 3 of 26 (PDF p. 3); p. 15 of 26 (PDF p. 15), Methods",
+      "quote": "juvenile shiners (8.5 cm, 95% CI: 6.4–11.5 cm) to individual pike",
+      "conditions": "groups of 40 juvenile shiners, mixed at random for each trial; mean school size at attack 36.5 (some stragglers)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-1",
+      "claim": "captures per strike 0.70 (88 of 125)",
+      "source_value": "",
+      "location": "p. 3 of 26 (PDF p. 3): 125 attacks; p. 5 of 26 (PDF p. 5), Fig. 2A: n = 88 successful; p. 9 and p. 12 (PDF pp. 9, 12): 70 %",
+      "quote": "with 70% of attacks resulting in prey being eaten",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "88/125 = 0.704"
+    },
+    {
+      "paper": "Table 3.7-1",
+      "claim": "conditions: tank",
+      "source_value": "",
+      "location": "p. 3 of 26 (PDF p. 3); p. 15 of 26 (PDF p. 15), Methods",
+      "quote": "in a large open arena (1.05 m x 1.98 m; 6 cm depth)",
+      "conditions": "water 6 cm deep (a near two-dimensional arena), lit for 120-fps video, 10-min trials after 5 min acclimation, each pike tested after ≥ 3 rest days; shiners and pike tested repeatedly (up to 6 exposures)",
+      "verdict": "confirmed",
+      "note": "'tank' is right but thin; the table should give the 6-cm depth: the authors expect success to differ in deeper water (prey could escape vertically) and to rise in dim light"
+    },
+    {
+      "paper": "src/w3/fish3.js:88",
+      "claim": "esocids attack from inside a school at ~70 % success (Jolles et al. 2022)",
+      "source_value": "northern pike only (no other esocid was tested), in a 6-cm-deep arena: in 63.2 % of the attacks the pike's head was already partly inside the school's boundary; 70 % is the success over ALL 125 attacks, not of those launched from inside. Pike approached slowly (69 % of attacks at < 0.5 BL/s), mostly head-on, and struck from ~5.3 cm; success fell with the target's distance and its acceleration",
+      "location": "p. 6 of 26 (PDF p. 6); p. 1 (PDF p. 1), abstract; p. 5 (PDF p. 5)",
+      "quote": "for more than half the attacks (63.2%), the pike was already partly inside",
+      "verdict": "corrected",
+      "note": "applying a pike-in-a-shallow-tank value to chain pickerel in a lake is the project's extrapolation; say 'pike struck from inside the school in ~63 % of attacks and caught prey on 70 % of all attacks'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://europepmc.org/articles/PMC9348852?pdf=render", "status": 403, "note": "Europe PMC refused the script" }
+  ],
+  "notes": "Targeted shiners were in relatively central positions (front–back rank 0.45) and far from and less aligned with neighbours; pike targeted the largest groups. The shiners learned to avoid the area in front of the pike's head over repeated exposures, so pike attacked from further away."
+}

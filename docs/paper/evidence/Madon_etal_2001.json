@@ -1,0 +1,38 @@
+{
+  "key": "Madon_etal_2001",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Ecological Modelling 136(2–3): 149–165, as cited (Crossref holds no abstract)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3",
+      "claim": "banded killifish has no bioenergetics model of its own; the congener's is the California killifish's (Madon et al. 2001)",
+      "verdict": "unchecked",
+      "note": "FB4's parameter file (read for Deslauriers_etal_2017: docs/research_notes/fetched/v2/Deslauriers_etal_2017.Parameters_official.csv) lists 'California Killifish (juvenile & adult), Fundulus parvipinnis', source 'Madon et al. 2001', and no Fundulus diaphanus set — an intermediary record that the parameter set exists under this citation; the article itself is unread"
+    },
+    {
+      "paper": "src/w3/species3.js:69",
+      "claim": "the California killifish set (Madon et al. 2001): CTM 34 °C, ACT 1.25 — respiration outruns intake below ~75 % of Cmax on 3,300-J/g prey; fit to a salt-marsh fish",
+      "verdict": "unchecked",
+      "note": "FB4's row for Madon et al. 2001 gives CEQ 2, CA 0.2, CB −0.25, CQ 2.22, CTO 27, CTM 34; REQ 2, RA 0.02, RB −0.17, RQ 2, RTO 29, RTM 36; ACT 1.25, SDA 0.1; FA 0.1, UA 0.06; ED 5,021 J/g — consistent with the code's CTM 34 and ACT 1.25. Until the article is read, cite these as 'Madon et al. 2001, as tabulated in FB4 (Deslauriers et al. 2017)'. The 75 % / starvation result is the project's own simulation"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/S0304-3800(00)00416-6", "status": "closed", "note": "OpenAlex: no open copy known; ScienceDirect page for a library login" },
+    { "url": "https://www.sciencedirect.com/science/article/pii/S0304380000004166/pdf", "status": 403, "note": "Elsevier refuses the script (subscription)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/S0304-3800(00)00416-6?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1016/S0304-3800(00)00416-6\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://www.osti.gov/api/v1/records?q=Fundulus parvipinnis marsh bioenergetics", "status": 200, "note": "OSTI record 15001143 (PNNL), no full text" },
+    { "url": "https://www.pnnl.gov/publications/importance-marsh-access-growth-california-killifish-fundulus-parvipinnis-evaluated", "status": 200, "note": "PNNL record (PNWD-SA-5441): citation and a one-line abstract, no PDF" },
+    { "url": "https://archive.org/advancedsearch.php?q=Madon killifish bioenergetics", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Manual fetch: https://doi.org/10.1016/S0304-3800(00)00416-6 with a library login (17 pages). Low priority: the model no longer uses this set (species3.js uses the fathead minnow's for banded killifish); the paper's only use is to say the congener's set exists."
+}

@@ -1,0 +1,60 @@
+{
+  "key": "Jassby_Goldman_1974",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_19/issue_4/0618.pdf), as captured by the Internet Archive's Wayback Machine on 8 Oct 2006 and openly downloadable; Wiley, today's host, refuses scripts (403). 10 pages, OCR text layer",
+    "url": "http://web.archive.org/web/20061008050832id_/http://www.aslo.org/lo/toc/vol_19/issue_4/0618.pdf",
+    "file": "docs/research_notes/fetched/v2/Jassby_Goldman_1974.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Limnology and Oceanography 19(4): 618–627, July 1974, as cited (Crossref's title carries a footnote mark, 'community1')"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.2",
+      "claim": "in Castle Lake, specific phytoplankton losses exceeded 0.80/d in May",
+      "source_value": "",
+      "location": "p. 618 (PDF p. 1), abstract; p. 621 (PDF p. 4), Results and Fig. 2; p. 624 (PDF p. 7): 0.87/d on 20–25 May",
+      "quote": "Specific loss rates range from more than 0.80 day-1 in May",
+      "conditions": "Castle Lake, California (cirque lake at 1,760 m, < 20 ha, dimictic), 44 sampling dates 5 May–22 Dec 1968 at the deepest point, 0–30 m; loss = 14C primary productivity minus the rate of change of phytoplankton carbon, integrated over the whole water column under 1 m²; specific loss = loss ÷ mean phytoplankton carbon; all causes of loss together",
+      "verdict": "confirmed",
+      "note": "the results add that more than 60 % of the phytoplankton carbon was lost per day through May and early June. The paper labels this source 'abstract only'; it has now been read in full"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "the losses 'cannot be attributed to water transport, sinking, or grazing'",
+      "source_value": "",
+      "location": "p. 618 (PDF p. 1), abstract; the argument on pp. 622–625 (PDF pp. 5–8)",
+      "quote": "cannot be attributed to water transport, sinking, or grazing",
+      "conditions": "said of the SPRING losses ('Loss rates in the spring …'); sinking losses averaged only 0.004/d (max 0.033 on 13 July; Stokes' law, excess density 0.03 g/cm³) and community grazing on 20–25 May was ~0.005/d against a loss of 0.87/d",
+      "verdict": "confirmed",
+      "note": "the paper puts the quote beside the May value, which is where the source puts it. The authors favour cell death from physiological extremes (light, temperature, nutrients); no fungus–alga associations were ever recorded in Castle Lake's water"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "Castle Lake is oligotrophic",
+      "verdict": "unsupported",
+      "note": "the source never classifies the lake's trophic state; it describes a dimictic cirque lake at 1,760 m, < 20 ha, with a shallow (~5 m) summer thermocline, productivity 0.6–599.4 mg C m⁻² d⁻¹ and phytoplankton carbon 64.8–1,488.6 mg C/m². Cite another source for 'oligotrophic' or drop the word"
+    },
+    {
+      "paper": "src/config.js:1562",
+      "claim": "algal die-off without sinking: healthy summer populations 0.05–0.1/day; STRESSED populations 0.2–0.8/day (lysis, parasites) — Jassby & Goldman 1974",
+      "source_value": "0.2–0.8 is the season's range of TOTAL specific loss (all causes), not a lysis rate of stressed algae: > 0.80/d in May (0.87 on 20–25 May; > 0.60/d through May–early June), about 0.20/d by early September and < 0.20/d in midsummer and December. Only the spring losses (~0.6–0.87/d) are shown to exceed advection, sinking and grazing and are attributed to cell death under physiological stress; the ~0.2/d of midsummer came at the biomass peak, and grazing could then take up to 0.20/d (27 August)",
+      "location": "p. 621 (PDF p. 4), Results and Fig. 2; p. 624 (PDF p. 7), Fig. 3 and grazing estimate; p. 625 (PDF p. 8)",
+      "quote": "Values then drop to about 0.20 day-1 by early September",
+      "conditions": "as claim 1; whole-column budget, 1968, one oligo-productive mountain lake (trophic state not stated)",
+      "verdict": "corrected",
+      "note": "the source supports a stressed-population loss of ~0.6–0.9/d (spring, after overturn), not 0.2–0.8; its low end (~0.2/d) is a healthy midsummer total loss that may include grazing. The model's parameter (Z2_LYSIS) is not tied to this number, but the comment's range should read 'spring losses 0.6–0.9/d unexplained by grazing or sinking; midsummer total losses ~0.2/d'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1974.19.4.0618", "status": 403, "note": "Wiley refuses scripts (OpenAlex lists it as bronze/free)" }
+  ],
+  "notes": "Useful for the sinking terms beside the cited comment (config.js Z2_SINK): in this deep, sheltered lake whole-column sinking losses averaged only 0.004/d (max 0.033/d), computed from Stokes' law with an upper-limit excess density — sinking out of the column was negligible for the community as a whole, though not for some species. Advection was negligible only because Castle Lake is small and wind-sheltered; the authors say it cannot be ignored in larger lakes."
+}

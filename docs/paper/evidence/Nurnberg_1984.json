@@ -1,0 +1,44 @@
+{
+  "key": "Nurnberg_1984",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_29/issue_1/0111.pdf), as captured by the Internet Archive's Wayback Machine on 19 Sep 2015 and openly downloadable; Wiley, today's host, refuses scripts (403). 14 pages, OCR text layer; Eq. 2 and Tables 2–4 read on the page images",
+    "url": "http://web.archive.org/web/20150919092240id_/http://aslo.org/lo/toc/vol_29/issue_1/0111.pdf",
+    "file": "docs/research_notes/fetched/v2/Nurnberg_1984.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Limnology and Oceanography 29(1): 111–124, as cited; the ledger's 'not re-read' flag can go"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-3; src/w3/chem3.js:84",
+      "claim": "Nürnberg 1984 retention model for oxic lakes: R = 15/(18 + qs), qs the areal water load (m/yr)",
+      "source_value": "",
+      "location": "p. 116 (PDF p. 6), Eq. 2; p. 117 (PDF p. 7), Table 4",
+      "quote": "The best fit yielded the model R7 = 15/(18 + qs)",
+      "conditions": "fitted (DUD nonlinear least squares) to 54 natural OXIC lakes that were thermally STRATIFIED at least in summer, North America and Europe; their mean depth 37.15 ± 6.98 m (SE), τ 25.3 ± 13.6 yr, qs 16.8 ± 4.2 m/yr, observed R 0.57 ± 0.03 (Table 2). In the subset with z ≤ 13 m (n = 18) observed R averaged 0.47 and R7 predicted 0.51 (not rejected, P = 0.145)",
+      "verdict": "confirmed",
+      "note": "the table's label '(oxic lakes)' should read 'oxic, stratified lakes'; Hot Brook's lakes are unstratified and ~3 m deep, shallower than any subset Nürnberg tested, so the model is applied outside its fitting range"
+    },
+    {
+      "paper": "Table 3.2-3; src/w3/chem3.js:84",
+      "claim": "R = 0.52 for Upper (qs = 11.0 m/yr) and 0.43 for Lower (qs = 16.9 m/yr)",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "p. 116 (PDF p. 6), Eq. 2",
+      "quote": "describes retention in oxic stratified lakes",
+      "verdict": "confirmed",
+      "note": "15/(18 + 11.0) = 0.517 and 15/(18 + 16.9) = 0.430. The code's inputs (τ 0.27 / 0.15 yr, mean depth 3.0 / 2.55 m → qs 11.1 / 17.0) give 0.518 / 0.429, the same to two places"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1984.29.1.0111", "status": 403, "note": "Wiley refuses scripts (OpenAlex lists it as bronze/free)" }
+  ],
+  "notes": "Nürnberg's Table 3 (p. 115, read on the page image) prints the other retention forms in the paper's Table 3.2-3, which the paper says were not re-read: R6 Larsen & Mercier 1976 = 1/(1 + 1/√τ) (the paper's 1/(1 + √ρ), the same), R5 Kirchner & Dillon 1975 = 0.426 exp(−0.271 qs) + 0.574 exp(−0.00949 qs) (same), R3 Chapra 1975 = 16/(16 + qs) (same), but R2 Dillon & Kirchner 1975 = 13.2/(13.2 + qs) — the paper's table uses v = 12.4 m/yr for Dillon & Kirchner 1975 (with 13.2: R = 0.55 / 0.44 instead of 0.53 / 0.42); check against the original. Nürnberg also tested them: on the 54 oxic lakes 'the prediction of all models except those of Vollenweider (1975) and Ostrofsky (1978a) differed significantly from observations', and the Chapra, Dillon–Kirchner, Kirchner–Dillon and Larsen–Mercier models 'must be rejected' (p. 116; Table 4). The paper's table presents them as equally usable; the rewrite should say which ones Nürnberg's test rejected. Anoxic lakes retained much less (mean R 0.33 at steady state)."
+}

@@ -1,0 +1,40 @@
+{
+  "key": "Keddy_1983",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's own copy of part of the article: Paul Keddy's web site hosts his archived 1979 Axe Lake zonation data (prepared 2018), which includes three scanned pages of the article (pp. 332–334: end of the introduction, the study area, the methods). Scanned, no text layer for those pages; read on the page images. The results pages (pp. 335–343) are not there; the rest of the article is behind JSTOR/Wiley",
+    "url": "https://drpaulkeddy.com/wp-content/uploads/2019/12/axe-lake-zonation-data-from-1979-archived-in-2018..pdf",
+    "file": "docs/research_notes/fetched/v2/Keddy_1983.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "Crossref and the page headers of pp. 332–334 ('Ecology, Vol. 64, No. 2', 'April 1983')",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4",
+      "claim": "isoetids are the exception, increasing with exposure (Keddy 1983, 1985; abstract)",
+      "verdict": "unchecked",
+      "note": "the results are not in the pages at hand. Methods (pp. 333–334, page images): 25 belt transects 0.5 m wide on a 600-m section of Axe Lake's NE shore, ranked by exposure to waves; each surveyed only from 0.5 m ABOVE to 0.5 m BELOW the waterline in 5-cm height steps, presence/absence, 13–21 July 1979 (snorkel below ~−20 cm); frequencies of Eriocaulon septangulare, Lobelia dortmanna and Nymphoides cordata counted on 18 July and 22 September. Crossref's abstract says the realized niche width (range of water depths occupied) of Lobelia dortmanna and Utricularia cornuta reached its maximum on exposed shores — a depth range, not cover or abundance; whether the paper shows isoetids 'increasing' with exposure needs the results pages"
+    },
+    {
+      "paper": "src/w3/plants3.js:165",
+      "claim": "the pipewort–lobelia rosettes, THE plants of wave-washed sand (lawns at 0.2–1.1 m; isoetids increase with exposure, Keddy 1983)",
+      "verdict": "unchecked",
+      "note": "as above; and whatever the paper shows applies to the top half-metre of water (its transects stop 0.5 m below the July waterline, on a lake with falling summer levels), not to lawns down to 1.1 m"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1937080", "status": "closed", "note": "OpenAlex: no open copy known; JSTOR/Wiley page for a library login" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1937080", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.jstor.org/stable/pdf/1937080.pdf", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1937080?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/1937080\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://drpaulkeddy.com/conservation/shorelines/", "status": 200, "note": "author's site lists the paper and hosts other PDFs, not this one" }
+  ],
+  "notes": "Manual fetch: the article (14 pages) via JSTOR or Wiley with a library login, https://doi.org/10.2307/1937080. Axe Lake is described (p. 332) as 'an extremely shallow lake with a sandy bottom and very gently sloping shorelines' — the study is of shoreline (wet-meadow to shallow-water) zonation, upper shores dominated by ericaceous shrubs. Keddy's companion papers on the same gradient (Aquatic Botany 14:41, 1982; Can. J. Bot. 63:656, 1985 — the paper's 'Keddy 1985') are listed on the same site."
+}

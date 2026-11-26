@@ -1,0 +1,80 @@
+{
+  "key": "Katopodis_Gervais_2016",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: DFO's own PDF of CSAS Research Document 2016/002 (vi + 550 p.), as captured by the Internet Archive's Wayback Machine on 5 Aug 2016 and openly downloadable. DFO's current address for the report redirects to a CSAS page that needs JavaScript (not run by the script)",
+    "url": "http://web.archive.org/web/20160805193851id_/http://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2016/2016_002-eng.pdf",
+    "file": "docs/research_notes/fetched/v2/Katopodis_Gervais_2016.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's citation page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "the report's own form: 'Katopodis, C. and Gervais, R. 2016. Fish swimming performance database and analyses. DFO Can. Sci. Advis. Sec. Res. Doc. 2016/002. vi + 550 p.' The entry's URL now redirects to a JavaScript-only CSAS page; the Wayback capture of the PDF is a stable copy"
+  },
+  "claims": [
+    {
+      "paper": "§4.5",
+      "claim": "fish sprint at 7–19 body lengths a second (3-s bursts on the DFO fatigue curves)",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "pp. 20–21 (PDF pp. 20–21), Eqs. 2, 5, 8; p. 26 (PDF p. 26), Table 3a",
+      "quote": "Catfish and Sunfish Group 2.176 -0.202 0.64 59.5 1282",
+      "quote_from": "table",
+      "conditions": "dimensionless group fatigue curves U* = K·t*^b with U* = U/√(gl), t* = t·√(g/l): mean regression lines through forced and volitional swim tests of many species, fitted over 3 s to 30 min; temperature not a variable",
+      "verdict": "confirmed",
+      "note": "U/l = K·(g/l)^((1+b)/2)·t^b. Table 3a: Catfish & Sunfish K 2.176, b −0.202; Salmon & Walleye 4.004, −0.250; Pike (derived) 3.811, −0.329. At t = 3 s the slowest of the project's fish is smallmouth at 30 cm (C&S) 7.01 BL/s and the fastest blacknose dace at 7 cm (S&W) 19.42 BL/s. The range is the project's computation at its chosen lengths, not a range the report states"
+    },
+    {
+      "paper": "src/w3/fish3.js:383 (S3 sprint/sustain)",
+      "claim": "Catfish & Sunfish group: pumpkinseed (15 cm) 9 / 2.5, brown bullhead (25 cm) 7.5 / 2.1, smallmouth (30 cm) 7 / 1.9, redbreast (18 cm) 8.6 / 2.4 BL/s at 3 s / 30 min",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "p. 25 (PDF p. 25), group membership; p. 26 (PDF p. 26), Table 3a; p. 530 (PDF p. 530), Table A2a (Centrarchidae and Ictaluridae in the group)",
+      "quote": "Smallmouth Bass and Largemouth Bass were placed in the Catfish and Sunfish Group",
+      "conditions": "the group's own comment: 'Limited data on burst range' (Table 3a), so its 3-s speeds are extrapolated; its 95 % prediction band spans K 1.424–3.326 (Table 3b)",
+      "verdict": "confirmed",
+      "note": "recomputed: 9.24 / 2.54, 7.54 / 2.07, 7.01 / 1.92, 8.59 / 2.36. Ictaluridae data are channel and blue catfish; brown bullhead and pumpkinseed themselves are not in the database"
+    },
+    {
+      "paper": "src/w3/fish3.js:383 (S3 sprint/sustain)",
+      "claim": "Salmon & Walleye group: yellow perch and white perch (20 cm) 13 / 2.6, white sucker (40 cm) 10 / 2.0, fallfish (25 cm) 12 / 2.4, blacknose dace (7 cm) 19.4 / 3.9 BL/s at 3 s / 30 min",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "p. 25 (PDF p. 25); p. 26 (PDF p. 26), Table 3a; pp. 531–533 (PDF pp. 531–533), Table A2a (Cypriniformes — Catostomidae, Cyprinidae incl. Rhinichthys and Semotilus — Moronidae and Percidae under the Salmon and Walleye Group)",
+      "quote": "Percidae (Walleye, White Perch and Yellow Perch) were placed in the Salmon and Walleye Group",
+      "verdict": "confirmed",
+      "note": "recomputed: 13.10 / 2.65, 10.10 / 2.04, 12.05 / 2.43, 19.42 / 3.92. (The report's sentence lists White Perch under Percidae by a slip; Table A2a puts Morone americana under Moronidae, in the same group.) The notes call the cyprinids' assignment an inference, but Table A2a places Cyprinidae in this group explicitly"
+    },
+    {
+      "paper": "src/w3/fish3.js:383 (S3 pike = chain pickerel)",
+      "claim": "chain pickerel (45 cm) 7.5 / 0.9 BL/s at 3 s / 30 min on the DFO pike curve",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "pp. 25–26 (PDF pp. 25–26); Table 3a; p. 531 (PDF p. 531), Table A2a",
+      "quote": "Pike Group (Derived) - curve derived by assuming burst performance similar",
+      "verdict": "confirmed",
+      "note": "recomputed 7.47 / 0.91. The pike curve's burst end is ASSUMED (from the Salmon & Walleye and Eel groups): the pike data (northern pike, tiger muskellunge) are all in the low prolonged range, and there are no chain pickerel data — so the pickerel's 3-s speed is an assumption twice over"
+    },
+    {
+      "paper": "src/w3/fish3.js:383, :442 (S3 killifish)",
+      "claim": "banded killifish (7 cm) 12.5 / 3.4 BL/s on the catfish–sunfish curve",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "p. 495 (PDF p. 495), Figure F7-a: Cyprinodontidae among the Unclassified Species",
+      "quote": "Processed data for the Unclassified Species",
+      "verdict": "confirmed",
+      "note": "recomputed 12.52 / 3.44. The report puts killifish and topminnows (Cyprinodontidae: Fundulus notatus, F. zebrinus) in NO group; using the catfish–sunfish curve is the project's choice (the code says so), not the report's"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2016/2016_002-eng.pdf", "status": 200, "note": "now an HTML error page ('too short to be the text')" },
+    { "url": "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2016/2016_002-eng.html", "status": 302, "note": "redirects to csas-scas.dfo-mpo.gc.ca/publications-publications/c8cd0e31-…, a page that needs JavaScript" },
+    { "url": "https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/362251.pdf", "status": 404, "note": "guessed library address; not there" },
+    { "url": "https://publications.gc.ca/collections/collection_2016/mpo-dfo/Fs70-5-2016-002-eng.pdf", "status": 307, "note": "guessed address; redirect, not followed" }
+  ],
+  "notes": "Definitions (p. 7): burst < 20 s, prolonged 20 s–30 min ending in fatigue, sustained = held indefinitely; so the code's 'sustain' (the 30-min speed) is the slow end of the prolonged range, as its comment says. Species-level curves exist for some of the lakes' fish and differ from the group means: white sucker's own regression (Table A2a: K 7.9895, b −0.3776, n 287, burst and prolonged) gives ~14.3 BL/s at 3 s and ~1.3 at 30 min for a 40-cm fish, against the group's 10.1 / 2.0. The alewife's speeds in the code (15 / 3.0, marked [inf]) are not from this report; its Herring Group curve (K 10.119, b −0.402; Alosa including alewife) would give ~23 BL/s at 3 s and ~1.8 at 30 min at 14 cm, if a sourced value is wanted."
+}

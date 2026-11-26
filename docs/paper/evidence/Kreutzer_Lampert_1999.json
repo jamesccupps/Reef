@@ -1,0 +1,37 @@
+{
+  "key": "Kreutzer_Lampert_1999",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {},
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Ecology 80(7): 2348–2357, as cited (Crossref holds no abstract)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3",
+      "claim": "food at zero population growth: D. pulicaria 40, D. galeata 54, D. ambigua 58 µg C/L (Scenedesmus, 20 °C, flow-through)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:1478",
+      "claim": "calanoid thresholds are ~1.0–1.5× Daphnia's (Hart 1996; Kreutzer & Lampert 1999)",
+      "verdict": "unchecked",
+      "note": "by its title the paper compares three Daphnia species only, so any calanoid comparison is presumably Hart 1996's; this source can at most supply the Daphnia side"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1890/0012-9658(1999)080[2348:ECIDSD]2.0.CO;2", "status": "closed", "note": "OpenAlex: no open copy known; ESA/Wiley (and JSTOR) page for a library login" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/0012-9658(1999)080[2348:ECIDSD]2.0.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1890%2F0012-9658(1999)080%5B2348%3AECIDSD%5D2.0.CO%3B2?fields=openAccessPdf,externalIds,title", "status": 429, "note": "rate-limited (twice); the title search was rate-limited too" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1890/0012-9658(1999)080[2348:ECIDSD]2.0.CO;2\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "https://pure.mpg.de/rest/items/search?q=metadata.title:\"Exploitative competition in differently sized\"", "status": 403, "note": "Max Planck PuRe refuses scripted searches; a person could search pure.mpg.de by title for a deposited copy (the authors were at the MPI for Limnology, Plön)" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(Daphnia) AND title:(exploitative competition)", "status": 200, "note": "0 hits" },
+    { "url": "web search for an author, institutional or thesis copy", "status": "none", "note": "none found (a Kiel dissertation that turned up, d970.pdf, is Kessler 2003 on Daphnia vertical distribution, not a stand-in)" }
+  ],
+  "notes": "Manual fetch: https://doi.org/10.1890/0012-9658(1999)080[2348:ECIDSD]2.0.CO;2 (JSTOR stable 176915 per a search result) with a library login, or a PuRe deposit if one exists. Check that 40/54/58 µg C/L are the flow-through equilibrium food levels (C*) and not the separately measured thresholds (C0) — a search-engine summary (not evidence) says the paper reports both, and that D. pulicaria's C* was slightly above its C0."
+}

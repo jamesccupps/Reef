@@ -25,7 +25,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-08 | Armstrong_Schindler_2011, Arndt_1993, Bauer_2006, Behr_1993, Berggren_etal_2014, Bernard_Fox_1997, Beyerle_Williams_1967, Bird_Kalff_1984, Breder_1939, Carter_etal_2010 | done |
 | w2-09 | Chambers_1987, ChowFraser_1986, Cooke_etal_2002, Corbett_Powles_1986, DeMott_1983, Donini_etal_2026, Drenner_etal_1978, Duffy_1998, Fitzgerald_2000, Hall_1972 | done |
 | w2-10 | Easton_1992, Engel_Pederson_1998, Eriksson_1978, Fraser_etal_1984, Hart_1996, Heyer_2000, Houde_1994, Houde_2008, Jones_etal_1978, Lampert_etal_1986 | done |
-| w2-11 | Jassby_Goldman_1974, Jolles_etal_2022, Katopodis_Gervais_2016, Keast_1985, Keddy_1983, Kreutzer_Lampert_1999, Lievense_1947, Lunte_Luecke_1990, Madon_etal_2001, Nurnberg_1984 | running |
+| w2-11 | Jassby_Goldman_1974, Jolles_etal_2022, Katopodis_Gervais_2016, Keast_1985, Keddy_1983, Kreutzer_Lampert_1999, Lievense_1947, Lunte_Luecke_1990, Madon_etal_2001, Nurnberg_1984 | done |
 | w2-12 | Massengill_1973, Mehner_etal_2005, NHDES_2019, Newsome_Tompkins_1985, Noble_1965, Obbard_1983, OomsWilms_etal_1995, Pace_etal_1990, Persson_Bronmark_2002, RamosRodriguez_etal_2020 | running |
 | w2-13 | Persson_etal_2006, Porter_etal_1982, Post_McQueen_1988, Post_Lee_1996, Priegel_Krohn_1975, Read_etal_2012, Rogers_etal_1981, Scharf_etal_2003, Titman_Kilham_1976, Tulonen_1993 | running |
 | w2-14 | Srnes_Aksnes_2004, Stemberger_Gilbert_1985, Tedford_etal_2014, Terpin_etal_1976, Vadeboncoeur_etal_2003, Wrvagen_Nilssen_2010, Watson_etal_1992, Webster_1948, Leopold_Maddock_1953, Petersen_Ward_1999 | running |
@@ -35,7 +35,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | running |
 | w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | running |
 | w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | running |
-| w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | queued |
+| w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | running |
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | queued |
 | w3-06 | MDIFW_nd-9, MDIFW_nd-10, MDIFW_nd-11, Rupp_DeRoche_1965 | queued |
 | w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | queued |

@@ -1,0 +1,43 @@
+{
+  "key": "Lunte_Luecke_1990",
+  "reader": "wave-2 batch w2-11",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "ASLO's own free PDF of the article (aslo.org/lo/toc/vol_35/issue_5/1091.pdf), as captured by the Internet Archive's Wayback Machine on 19 Sep 2015 and openly downloadable; Wiley, today's host, refuses scripts (403). 10 pages, OCR text layer; Fig. 5 read on the page image",
+    "url": "http://web.archive.org/web/20150919033050id_/http://aslo.org/lo/toc/vol_35/issue_5/1091.pdf",
+    "file": "docs/research_notes/fetched/v2/Lunte_Luecke_1990.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.3.7",
+      "claim": "Leptodora could account for all late-June–early-July Daphnia galeata mendotae mortality in Lake Mendota",
+      "source_value": "",
+      "location": "p. 1091 (PDF p. 1), abstract; p. 1098 (PDF p. 8), Fig. 5 and text",
+      "quote": "Leptodora could account for all of the mortality calculated for Daphnia galeata mendotae",
+      "conditions": "Lake Mendota, Wisconsin, 1987: Leptodora field densities × feeding rates from four 40-h in situ enclosure experiments (4 Aug–18 Sep 1987; 0.39–2.3, mean 1.6 Daphnia per Leptodora per day) against D. galeata mortality from Paloheimo's egg-ratio analysis",
+      "verdict": "confirmed",
+      "note": "the abstract says 'all'; the body is more guarded ('sufficient to explain a large fraction', Fig. 5: the field mortality points fall inside the predation band between the lowest and highest feeding rates). Leptodora were too few to cause the large spring decline of D. galeata. The paper labels this source 'abstract only'; it has now been read in full"
+    },
+    {
+      "paper": "src/config.js:1521",
+      "claim": "Leptodora took all of D. mendotae's deaths for ~2 weeks (Lunte & Luecke 1990)",
+      "source_value": "",
+      "location": "p. 1098 (PDF p. 8), Fig. 5 (read on the page image) and text",
+      "quote": "In early summer, however, Leptodora densities were sufficient to explain a large fraction",
+      "conditions": "as claim 1; Fig. 5 shows the field mortality inside the Leptodora predation band from about mid/late June to early July, ~2–3 weeks; from mid-July Leptodora declined and could not account for the rising August–September mortality",
+      "verdict": "confirmed",
+      "note": "'all' holds within the band of measured feeding rates (not at the lowest rate, 0.39/d)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1990.35.5.1091", "status": 403, "note": "Wiley refuses scripts (OpenAlex lists it as bronze/free)" }
+  ],
+  "notes": "Other values: Leptodora (5–18 mm) took small and large daphnids without preference, also Diaphanosoma, copepod nauplii and Conochilus colonies (~0.7 colonies per Leptodora per day), but not copepodites; yellow perch and cisco selected Leptodora over Daphnia (Table 2), and the food-web model showed Daphnia biomass greatest at intermediate planktivore biomass because fewer fish let Leptodora increase (Fig. 4)."
+}
