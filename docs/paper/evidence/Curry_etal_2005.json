@@ -1,0 +1,51 @@
+{
+  "key": "Curry_etal_2005",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Springer subscription article; no open copy found. Only a truncated abstract was seen, through a summary of the University of Melbourne 'Find an Expert' record (not the abstract's own text)"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Curry, R. A., Currie, S. L., Arndt, S. K. & Bielak, A. T., Environmental Biology of Fishes 72(2): 111–122 (February 2005), title as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.7",
+      "claim": "at New Brunswick's northern range limit, age-0 fish sheltered in gaps in the substrate below about 10 °C and were mostly in water under 3 m by autumn (cited 'via a secondary source')",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.6.8; src/config.js:855",
+      "claim": "under ice in northern New Brunswick, young smallmouth under 50 mm died",
+      "verdict": "unchecked",
+      "note": "the abstract summary seen agrees that fish under 50 mm TL appeared to die under the ice; it also reports that in lake enclosures smaller fish survived better as exposure temperature rose and the largest fish worse"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "survivors lost 22–54 % of their ash-free dry weight",
+      "verdict": "unchecked",
+      "note": "the abstract summary seen gives 22–54 % of pre-winter energy reserves as ash-free dry weight, similar to wild fish caught in spring"
+    },
+    {
+      "paper": "src/bioenergetics.js:93",
+      "claim": "the cold-respiration curve's juvenile end is set from 'Curry 2005's YOY depletion' (field depletion of 30–55 mg O₂ kg⁻¹ h⁻¹ for YOY at 2–6 °C, species.js:362–363)",
+      "kind": "arithmetic",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "http://link.springer.com/content/pdf/10.1007/s10641-004-6582-2.pdf", "status": 200, "note": "Springer login/paywall page, not kept" },
+    { "url": "https://link.springer.com/article/10.1007/s10641-004-6582-2", "status": 303, "note": "redirects to Springer's identity provider (idp.springer.com/authorize); not followed" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007%2Fs10641-004-6582-2", "status": 429, "note": "rate-limited" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/s10641-004-6582-2%22", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php (title words)", "status": 200, "note": "no item" },
+    { "url": "https://hdl.handle.net/1882/414", "status": 500, "note": "a possible stand-in: the 2006 University of New Brunswick thesis 'Winter habitats and survival of young-of-the-year smallmouth bass (Micropterus dolomieu) at the species' northern limit' (author not shown in the listing); the handle server could not resolve it — try UNB Scholar or Library and Archives Canada (Theses Canada)" },
+    { "url": "https://openaccess.library.uitm.edu.my/Record/ndltd-LACETR-oai-collectionscanada.gc.ca-UNB.1882-414", "status": 404, "note": "aggregator record of that thesis" }
+  ],
+  "notes": "For the human to fetch: doi:10.1007/s10641-004-6582-2 (Springer). The paper already labels its uses '(abstract)' and 'via a secondary source'. The 2006 UNB thesis above, if it is the same group's work (S. L. Currie or S. K. Arndt), may hold the same winter data and the habitat observations (gaps in the substrate below ~10 °C; depth < 3 m by autumn) that §3.6.7 takes from a secondary source."
+}

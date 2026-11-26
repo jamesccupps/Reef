@@ -1,0 +1,99 @@
+{
+  "key": "Duarte_1987",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the thesis PDF in McGill University's own repository (McGill eScholarship, mcgill.scholaris.ca; handle 20.500.14905/86054), 175 pages. A typewritten thesis whose OCR text layer is badly garbled: every value and quote below was read on the page image",
+    "url": "https://mcgill.scholaris.ca/bitstreams/fbe2e1a6-2d4d-4843-8413-240aef4b932e/download",
+    "file": "docs/research_notes/fetched/v2/Duarte_1987.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and the abstract page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "Carlos M. Duarte, 'Biomass and distribution of submerged macrophytes in lakes', PhD thesis, Department of Biology, McGill University, Montreal, May 1987 — all match. The DOI 10.82308/9029 is not a Crossref DOI (show.mjs: not found); it resolves through McGill's repository, as does the handle"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.3",
+      "claim": "Duarte's thesis covers 25 southern Québec and north-eastern US lakes",
+      "location": "p. 69 (PDF p. 82), ch. III Materials and methods; Table 3.1, p. 72 (PDF p. 85)",
+      "quote": "The study involved 25 lakes in Québec, New York, and Vermont",
+      "quote_from": "image",
+      "conditions": "August 1985; recording echosounder, six transects per site from c. 0.7 m depth to the vegetation limit, 187 sites (4–38 per lake), > 8,000 estimates averaged into 1,400 observations by 0.5-m depth class; Table 3.1's lakes lie at about 43.5–46° N (most in southern Québec, plus Lake George and Missisquoi Bay)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "Zmc = 1.9 + 0.63·SD (r² 0.76)",
+      "location": "p. 81 (PDF p. 94), eq. 2; Fig. 3.3, p. 83 (PDF p. 96)",
+      "quote": "Zmc (m) = 1.9 + 0.63 Secchi (m) (r2= 0.76, P< 0.0001)",
+      "quote_from": "image",
+      "conditions": "depth of maximum colonization of submerged macrophytes against Secchi depth across the 25 lakes (one point per lake), m",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "depth of maximum biomass Zmb = 1.1 + 0.4·SD (r² 0.79)",
+      "location": "p. 81 (PDF p. 94), eq. 3",
+      "quote": "Zmb (m) = 1.1 + 0.4 Secchi (m) (r2= 0.79, P< 0.0001)",
+      "quote_from": "image",
+      "conditions": "as eq. 2; the biomass–depth profile was dome-shaped in every lake",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-2",
+      "claim": "Zmc (Duarte 1987) at SD 3.5 / 3.9 / 4.5 m = 4.11 / 4.36 / 4.74 m",
+      "location": "p. 81 (PDF p. 94), eq. 2",
+      "quote": "Zmc (m) = 1.9 + 0.63 Secchi (m)",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "project arithmetic from eq. 2",
+      "verdict": "confirmed",
+      "note": "1.9 + 0.63 × 3.5 = 4.105; × 3.9 → 4.357; × 4.5 → 4.735 — the table's 4.11 / 4.36 / 4.74. The bed shares (~83 % / 100 %) come from the model's bed and are not in the source"
+    },
+    {
+      "paper": "§3.4.4; src/w3/plants3.js:173–176 (ICE_BED [0.75, 1.25])",
+      "claim": "in Duarte's 25 lakes the shallowest submerged plants grew at 0.75–1.25 m regardless of slope, exposure or transparency, which Duarte attributed to ice scour",
+      "location": "p. 81 (PDF p. 94) – p. 82 (PDF p. 95)",
+      "quote": "this minimum depth is not related to slope, exposure or transparency",
+      "quote_from": "image",
+      "conditions": "the shallowest depth with submerged vegetation was 0.75–1.25 m; Duarte: the shallow limit 'is probably set by ice scouring'. CAVEAT: the echosounder transects began at c. 0.7 m (p. 69), so the survey could not see plants shallower than that; the 0.75-m end of the range sits at the survey's own start and the data were averaged by 0.5-m depth class",
+      "verdict": "confirmed",
+      "note": "the ice-scour reading is Duarte's inference ('probably'), not a measurement"
+    },
+    {
+      "paper": "§3.4.4",
+      "claim": "in Lake Memphremagog biomass fell with slope as slope^−0.81",
+      "location": "ch. II, p. 46 (PDF p. 59), eq. 1",
+      "quote": "MSMB =122 + 986 slope-0.81 R2=0.72; N=44",
+      "quote_from": "image",
+      "conditions": "MSMB = maximum submerged macrophyte biomass (g fresh wt m⁻²; pp. 39, 41 = PDF pp. 52, 54), 44 stations in Lake Memphremagog; slope in m per m; −0.81 was the power transformation that best linearized the relation. The residuals split the data at 2.2 % slope (p. 46), and a separate pair of equations split at 5.3 % (p. 39)",
+      "verdict": "confirmed",
+      "note": "strictly an intercept plus a power term (122 + 986·slope^−0.81), not a pure power law"
+    },
+    {
+      "paper": "§3.4.4",
+      "claim": "in 25 lakes no plants grew on slopes steeper than ~14.8 %",
+      "location": "p. 84 (PDF p. 97); Fig. 3.5",
+      "quote": "This critical slope was found to be about 14.8% (Fig. 5)",
+      "quote_from": "image",
+      "conditions": "submerged biomass was zero beyond the critical slope (302 of the 1,400 site-depth observations); split found by the Breiman et al. (1984) technique; it reduced the overall variance by 13 %",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/plants3.js:175",
+      "claim": "Memphremagog's upper limit 0.9 m",
+      "location": "ch. IV, p. 105 (PDF p. 118)",
+      "quote": "the upper rooting depth in the lake (0.9 m) where wave action is most severe",
+      "quote_from": "image",
+      "conditions": "Lake Memphremagog fertilization experiment; the plots were set 0.5 m deeper at the start to allow for the normal 0.5-m summer fall in water level",
+      "verdict": "confirmed",
+      "note": "here Duarte ties Memphremagog's upper limit to wave action, not ice; the code comment groups it with the ice-scour limit"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Not checkable from the thesis: §3.4.4's 'published as Duarte & Kalff 1990' — the thesis cites only 'Duarte and Kalff submitted' (p. 69, for the exposure measure); the published paper would have to be checked separately. The thesis chapter III also gives the deep and shallow multiple regressions (eq. 4, p. 87: below Zmb, biomass^0.33 = −13.0 − 1.6 ln slope − 0.45 ln exposure + 2.3 ln alkalinity + 1.2 ln Si, r² 0.31), with Si from k = 1.47/Secchi (Walker 1982; p. 70). Chapter IV's Memphremagog depth of maximum submerged biomass is 2.6 m (p. 105)."
+}

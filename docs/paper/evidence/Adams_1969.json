@@ -1,0 +1,67 @@
+{
+  "key": "Adams_1969",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item biostor-180721 (BioStor's scan of Rhodora 71: 417–433, CC BY-NC), the PDF with its OCR text layer; openly downloadable, no login. Printed pages = PDF page + 416 (PDF p. 4 is printed 420, checked on the page image); findin's 'printed' guesses for this file are wrong",
+    "url": "https://archive.org/download/biostor-180721/biostor-180721.pdf",
+    "file": "docs/research_notes/fetched/v2/Adams_1969.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and running heads (PDF pp. 1–17), the Internet Archive item metadata and the Zenodo record 10.5281/zenodo.16321268",
+    "ok": true,
+    "corrections": "",
+    "note": "Franklin S. Adams, 'Winterbud production and function in Brasenia schreberi', Rhodora 71: 417–433 (1969) all match. The issue number 787 is not printed on the article's pages nor in the IA or Zenodo metadata, and the BHL part page (biodiversitylibrary.org/part/186771) refused the script (403): the issue number is unverified, not known to be wrong"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.6",
+      "claim": "watershield in a New Hampshire pond began growing on 24–25 April",
+      "location": "p. 422 (PDF p. 6)",
+      "quote": "the remaining nine plants germinated within a two day period, April 24 and 25",
+      "conditions": "Wheelwright Pond, Lee, NH (43°08′N; 100+ acres, 1–30 ft deep), 1966; 10 tagged plants observed daily 11–30 April, one failed to grow; 'germination' = the first winterbud meristem elongated one inch; confirmed at the pond's three other stations and at the Nottingham beaver pond",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.6",
+      "claim": "formed winter buds from 30 July",
+      "location": "p. 425 (PDF p. 9); p. 422 (PDF p. 6)",
+      "quote": "clearly destined to become overwintering structures were collected on July 30, 1966",
+      "conditions": "1966; the date the first buds clearly destined to overwinter were collected. Adams notes the start of winterbud formation is hard to date because every growing apex looks like a one-segment winterbud all season; the winterbud-development curve counts buds on 20 random plants weekly from 23 July to 28 September (p. 422)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.6",
+      "claim": "about 35 % of the buds overwintered",
+      "location": "p. 428 (PDF p. 12); Fig. 5, p. 431 (PDF p. 15)",
+      "quote": "Thirty-five percent of the total production overwintered and in the attached condition",
+      "conditions": "1966 season, > 6,000 winterbuds counted 1966–67; the 60 % that matured and floated free before 1 October all died; of the 40 % still attached on 1 October, 35 % of total production overwintered attached, 4 % floated free and died at icing-in, 1 % survived entangled; fewer than 0.25 % of production had any potential to survive once freed",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.6",
+      "claim": "\"no individual plant lasts more than one season\" (given as a quotation of Adams)",
+      "source_value": "Adams's words are \"no single individual will be more than one season old\" (the colonies are perennial; no rhizome segment is more than two seasons old)",
+      "location": "p. 425 (PDF p. 9)",
+      "quote": "no single individual will be more than one season old",
+      "conditions": "Wheelwright Pond, 1965–1967 observations",
+      "verdict": "corrected",
+      "note": "the meaning is right, but the paper puts a paraphrase in quotation marks; quote Adams's own words or drop the quotation marks"
+    },
+    {
+      "paper": "src/w3/plants3.js:46",
+      "claim": "watershield: ramets living one season, the clone carried by its winter buds (Adams 1969)",
+      "location": "p. 425 (PDF p. 9); Summary, p. 432 (PDF p. 16)",
+      "quote": "attached overwintering winterbud structure is, in fact, absolutely essential for the annual survival",
+      "conditions": "the clone is carried by the buds that stay ATTACHED to the parent rhizome over winter; buds that float free are 'an ineffective agent of vegetative reproduction' in these ponds",
+      "verdict": "confirmed",
+      "note": "'small oval pads' in the same comment is not from Adams (the paper does not describe the leaves)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.biodiversitylibrary.org/part/186771", "status": 403, "note": "BHL part page refused the script (only wanted for the issue number)" }
+  ],
+  "notes": "An earlier fetch had indexed the IA djvu.txt (HTML); this pass re-indexed the IA PDF so pages can be cited and figures seen. Other values useful to the model: winterbud germination fails below a 'compensation depth' between six and seven feet (p. 425, Fig. 4 experiment); 'Winterbuds can not withstand freezing' — any freezing of the meristem prevented germination (p. 425); freed buds sank once their mucilage halved, and those germinating precociously in autumn did so at the same day length as the spring germination (p. 426). Fig. 2 (p. 420) plots water temperature, day length, the leaf growth curve (peaking around early July), flowering and the winterbud and decay curves for 1966."
+}

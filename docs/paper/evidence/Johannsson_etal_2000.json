@@ -1,0 +1,55 @@
+{
+  "key": "Johannsson_etal_2000",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Elsevier subscription article; no open copy found"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org)",
+    "ok": true,
+    "corrections": "",
+    "note": "Journal of Great Lakes Research 26(1): 31–54 (January 2000), title and seven authors as cited. Crossref parses one author as family 'Scott Millard', given 'E.' — the ledger's 'Millard, E. S.' is the usual form; check on the title page. show.mjs's 'DOI NOT FOUND at Crossref' is wrong: the API returns the record"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3",
+      "claim": "herbivorous cladocerans: daily P/B 0.162/d above 10 °C, 0.042/d below (Stockwell & Johannsson 1997, as applied by Johannsson et al. 2000)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.3-3",
+      "claim": "cyclopoids / calanoids / rotifers: daily P/B 0.105 / 0.037 / 0.172 at 20 °C and 0.021 / 0.008 / 0.035 at 4 °C (Shuter & Ing 1997, daily form of Johannsson et al. 2000)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.3-3",
+      "claim": "egg development time of Daphnia / L. minutus / M. edax: 20.4 / 22.5 / 55 d at 4 °C and 2.7 / 2.8 / 3.6 d at 20 °C (Bělehrádek fits)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:1359",
+      "claim": "dry : wet mass of crustacean zooplankton is 0.1",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:1363–1366",
+      "claim": "field P/B ~0.13–0.16/day above 10 °C and ~0.04 below for herbivorous cladocerans, ~0.10 for cyclopoids and ~0.04 for calanoids at 20 °C",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.sciencedirect.com/science/article/pii/S038013300070671X/pdf", "status": 403, "note": "ScienceDirect (subscription)" },
+    { "url": "https://www.sciencedirect.com/science/article/pii/S038013300070671X", "status": 403, "note": "ScienceDirect landing page" },
+    { "url": "https://doi.org/10.1016/S0380-1330(00)70671-X", "status": 200, "note": "15-character redirect body, not the text" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016%2FS0380-1330(00)70671-X", "status": 429, "note": "rate-limited" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1016/S0380-1330(00)70671-X%22", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php (title words)", "status": 200, "note": "no item" },
+    { "url": "https://soar.suny.edu/server/api/core/bitstreams/fe14f12e-7af7-407e-86d2-e82af7a1a5e4/content", "status": 200, "note": "considered as a stand-in: Dahl et al. 1995, Can. Tech. Rep. Fish. Aquat. Sci. 2070 (the same 1993 Lake Erie survey, SUNY Brockport repository). Read: it uses literature P/B ratios for the benthos and holds none of the zooplankton P/B, egg-development or dry:wet values above — no use as a stand-in; file not kept" },
+    { "url": "https://publications.gc.ca/collections/collection_2014/mpo-dfo/Fs97-6-2070-eng.pdf", "status": 200, "note": "Government of Canada 'archived content' interstitial (needs a browser cookie), not the PDF" },
+    { "url": "https://core.ac.uk/download/233573354.pdf", "status": 403, "note": "CORE refused" }
+  ],
+  "notes": "For the human to fetch: doi:10.1016/S0380-1330(00)70671-X (ScienceDirect, JGLR). The Table 3.3-3 rows attribute values to Stockwell & Johannsson (1997) and Shuter & Ing (1997) 'as applied by' / 'daily form of' this paper — when read, check whether the numbers printed here are those (e.g., per-day P/B at 20 and 4 °C) or are converted by the project, and where the Bělehrádek egg-development fits for Daphnia, Leptodiaptomus minutus and Mesocyclops edax are printed."
+}

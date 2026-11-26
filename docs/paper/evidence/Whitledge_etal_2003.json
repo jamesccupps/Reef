@@ -1,0 +1,57 @@
+{
+  "key": "Whitledge_etal_2003",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Transactions of the American Fisheries Society (now OUP / Taylor & Francis), subscription; no open copy found"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Whitledge, G. W., Hayward, R. S., Zweifel, R. D. & Rabeni, C. F., Transactions of the American Fisheries Society 132(2): 316–325 (March 2003), title as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "the set's respiration was measured only at 18–30 °C, on Missouri fish (via Brownscombe, Smith & Bzonek 2024)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.5.4; src/species.js:351–356",
+      "claim": "its weight exponent is RB −0.756, about three times the usual slope",
+      "verdict": "unchecked",
+      "note": "the value as stored in FB4's parameter file was checked under Deslauriers_etal_2017 (Parameters_official.csv, Whitledge rows: RA 0.244, RB −0.756); not checked against Whitledge et al.'s own table"
+    },
+    {
+      "paper": "§3.5.4; Table 3.5-3; src/species.js:351–356",
+      "claim": "negative energy budget at maximum ration for a 5-g fish at every temperature; break-even ~10 g at 20 °C and 20–25 g at 15 and 25 °C; usable only above ~30 g (project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "project arithmetic on the FB4-stored set; see Deslauriers_etal_2017's evidence for the FB4 inputs"
+    },
+    {
+      "paper": "src/bioenergetics.js:23; src/species.js:356–357",
+      "claim": "the set is published as two rows by temperature: CQ 4.2 at ≤ 26 °C, 1.95 above (with CA 0.339, CB −0.31, CTO 22, CTM 37, RA 0.244, RQ 1.8, RTO 30, RTM 37, SDA 0.15848, FA 0.104, UA 0.0882)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 4.3",
+      "claim": "smallmouth bass run on the Whitledge et al. 2003 set (with the Rice et al. 1983 largemouth set below 250 g)",
+      "verdict": "unchecked",
+      "note": "the 250-g switch is stageR5's (src/w3/fish3.js:632); species.js's default juvW is 30 g — the table describes the package run, which is fine if the text says so"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://academic.oup.com/tafs/article-pdf/132/2/316/", "status": 403, "note": "OUP" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(2003)132%3C0316:DALEOA%3E2.0.CO;2", "status": 403, "note": "Wiley (Crossref link)" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(2003)132%3C0316:DALEOA%3E2.0.CO;2", "status": 403, "note": "Taylor & Francis" },
+    { "url": "https://doi.org/10.1577/1548-8659(2003)132%3C0316:DALEOA%3E2.0.CO;2", "status": 403, "note": "resolves to the publisher" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577%2F1548-8659(2003)132%3C0316%3ADALEOA%3E2.0.CO%3B2", "status": 429, "note": "rate-limited" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search (DOI)", "status": 200, "note": "0 hits" },
+    { "url": "web search (exact title + pdf)", "status": 0, "note": "only a university-proxy copy (webvpn) — behind a login, not used" }
+  ],
+  "notes": "For the human to fetch: doi:10.1577/1548-8659(2003)132<0316:DALEOA>2.0.CO;2. When read, check the temperature range of the respiration trials (18–30 °C is quoted via Brownscombe et al. 2024), the fish's origin and size range (the abstract, per a search snippet, evaluated fish of 100–270 g), and whether the two-row CQ (≤ 26 °C / > 26 °C) is Whitledge's or FB4's arrangement."
+}

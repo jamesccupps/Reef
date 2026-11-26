@@ -101,4 +101,12 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | w2-06 | Table 3.5-3 (bullhead) vs `fish3.js:710–715` | Energy density 6,700 J/g (FB4) in the table; the model switches to 5,000 J/g | open |
 | w2-06 | `config.js:488` | Smallmouth whole-nest success "45–86 %": Forbes 1981 Table 1 spans 44–86 % (Millen Bay 44 %) | open |
 | w2-06 | Krieger et al. 1983 entry; code | The title reads "Habitat suitability information: yellow perch"; maturity females 3–4 yr, males a year earlier; "schools sorted by size" is not in the report (a New Jersey fact sheet) | open |
+| w2-01 | §3.5.4 | Mackereth et al. 1999: "about half of autumn lipid spent by May" — the Fig. 3 energy index gives ~63–64 % gone (fall 0.36/0.48/0.60 vs spring 0.13/0.17/0.22) | open |
+| w2-01 | §3.5.4 | "Fed little in winter" is not an Opeongo finding (Suski & Ridgway cite Keast 1968); "largest energy gain in autumn" is Suski citing Mackereth 1999 — cite Mackereth | open |
+| w2-01 | `config.js:1489, 1493` | Cáceres 1998: ephippia typically < 15 % even at peak (late June–July), autumn ~1 % or less — not "13–27 % of females in autumn"; emergence "< 1 %" of the bank (~0.01–0.3 % by her numbers), not "~1 % a year" | open |
+| w2-01 | §4.6, `config.js:791` | Christensen et al. 1996: 57/555 (developed cabin sites vs undeveloped lakes) = 0.10; within developed lakes 57/379 = 0.15 (the model's value) — say which comparison | open |
+| w2-01 | §3.5.4 | "Lost little (585 to 571 g)" is mass only; Mackereth's lipid index fell 17–46 % embryo → juvenile stage in Opeongo guarding males | note |
+| w2-01 | §3.5.6 | Night depth "1.5–2.5 m" is a 6-day hourly window; over the 92-day summer 1–3 m | open |
+| w2-01 | §3.4 (Duarte 1987) | The 0.75-m minimum depth is the echosounder survey's own start (~0.7 m); ice scour only "probably"; Memphremagog's 0.9 m tied to waves, not ice | note |
+| w2-01 | §3.4.x (Adams 1969) | "No individual plant lasts more than one season" is not Adams's wording ("no single individual will be more than one season old") — quote exactly | open |
 | w2-06 | Hartman & Brandt 1995 (Phase 2 item 5) | FB4's rows credited to it (striped bass adult, age-0, -1, -2; bluefish 0–2; weakfish age-0) are in its evidence notes; Cmax for 100 g at 18.5 °C 0.093 g/g/d; the abstract: the model over-estimated striped bass consumption by 20–46 % at 6.9 °C | note |

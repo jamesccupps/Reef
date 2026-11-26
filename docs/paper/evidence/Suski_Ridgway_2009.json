@@ -1,0 +1,90 @@
+{
+  "key": "Suski_Ridgway_2009",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF as posted by the Harkness Laboratory of Fisheries Research (Ontario MNR) in its list of contributions (harkness.ca/publications/journal-articles/), 10 pages",
+    "url": "https://www.harkness.ca/PDFs/Contributions%202000s/Suski%20and%20Ridgway%20J%20Zoology%202009.pdf",
+    "file": "docs/research_notes/fetched/v2/Suski_Ridgway_2009.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1), the running footers and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Suski, C. D. & Ridgway, M. S., 'Seasonal pattern of depth selection in smallmouth bass', Journal of Zoology 279: 119–128 (2009), doi:10.1111/j.1469-7998.2009.00595.x — all match; the issue (2) is Crossref's, not printed on the pages"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "smallmouth bass are quiescent rather than dormant in winter",
+      "location": "p. 126 (PDF p. 8), Discussion",
+      "quote": "not truly dormant under ice but are quiescent with small movements occurring",
+      "conditions": "28 adult smallmouth (317–451 mm FL) with pressure-sensing acoustic tags, Lake Opeongo, Ontario (5,860 ha, mean depth 14.8 m, stratified), 7 Aug 2004 – 1 May 2006; under ice the fish stayed at c. 14 m in water below 2 °C, with daily depth ranges over 1.5 m in early December shrinking to under 0.5 m by February",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4; §3.7.4",
+      "claim": "in Lake Opeongo they made the year's largest energy gain in autumn",
+      "location": "p. 126 (PDF p. 8), Discussion",
+      "quote": "the rate of energy gain is highest on annual basis for smallmouth bass",
+      "conditions": "stated by citing Mackereth, Noakes & Ridgway (1999); this study measured depth only, no energetics",
+      "verdict": "confirmed",
+      "note": "cite Mackereth, Noakes & Ridgway 1999 (the measured lipid stores, highest in fall) as the primary source for this; Suski & Ridgway repeat it"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "in Lake Opeongo they ... fed little in winter",
+      "source_value": "the study has no feeding data; it describes bass leaving winter 'after a winter of relatively little feeding', citing Keast (1968), and adds that bass under ice 'may need to feed if energy requirements are high' (p. 127)",
+      "location": "p. 124 (PDF p. 6), Discussion; p. 127 (PDF p. 9)",
+      "quote": "after a winter of relatively little feeding (Keast, 1968)",
+      "conditions": "a citation of Keast 1968 ('Feeding of some Great Lake fishes at low temperatures'), not an Opeongo observation",
+      "verdict": "corrected",
+      "note": "drop 'fed little in winter' from the Opeongo finding or cite it as Keast 1968 (via Suski & Ridgway 2009); what this paper shows for winter is reduced activity at a nearly constant depth"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "smallmouth in stratified Lake Opeongo held weekly mean depths of 2–4 m in summer",
+      "location": "p. 121 (PDF p. 3), Results; Fig. 1a",
+      "quote": "smallmouth bass remained at a mean depth of 2–4 m",
+      "conditions": "weekly means, summers 2004–2006 (all 3 years); weekly depth range 6–8 m (2004) and 4–6 m (2005, 2006); the fish stayed above the thermocline; larger fish deeper",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "rising to 1.5–2.5 m at night",
+      "location": "p. 122 (PDF p. 4), Results; Figs 2–3",
+      "quote": "the shallowest depths inhabited (c. 1.5–2.5 m) between c. 23:00 and 03:00 h",
+      "conditions": "hourly depths over 6 days, 7–12 August 2005; over the whole 92-day summer, depths 'averaged 2–5 m during the day and varied between 1 and 3 m at night'; the abstract: '<2 m at night'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "in Opeongo mean depth went from 4 m in late September to 14 m by mid-November",
+      "location": "p. 123 (PDF p. 5), Results (Fall Cooling); Fig. 4",
+      "quote": "depths inhabited decreased from c. 4 m in late September to 14 m by mid-November",
+      "conditions": "56-day fall period in 2005 as the lake lost its stratification ('decreased' = moved deeper); smaller fish deeper than larger; deeper by day than at night",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "moving deeper may have let the bass keep foraging at 10–15 °C",
+      "location": "p. 126 (PDF p. 8), Discussion",
+      "quote": "may allow fish to efficiently forage at depths with temperatures between 10 and 15",
+      "conditions": "the authors' suggestion (foraging was not observed), for the fall cooling period: depths of 6 m in early October to a mean of 12 m in November, daily ranges 5–7 m",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:425",
+      "claim": "a few deep wintering sites, nearly still Dec–Mar (Sergio 2026; Suski & Ridgway 2009)",
+      "location": "p. 123 (PDF p. 5), Results (Winter); p. 121 (PDF p. 3)",
+      "quote": "smallmouth bass remained at c. 14 m depth across the entire 90 days examined",
+      "conditions": "90 days under ice, December–February 2005–06, no significant change in depth; in 2004 and 2005 the bass stayed at the maximum depth for 24 weeks under isothermal conditions; the ascent began near the spring equinox (p. 121)",
+      "verdict": "confirmed",
+      "note": "'nearly still' at depth is supported; 'a few ... sites' is not from this study's data (depth only) — the paper cites Webster (1954) for bass 'congregating in few, traditional overwintering areas' (p. 126)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Opeongo is stratified, 14.8 m mean depth: the winter depth of c. 14 m and the summer pattern relative to the thermocline do not transfer directly to 4–5.5 m polymictic Hot Brook (the paper's §3.5.6 already says the pattern 'must be compressed'). During winter larger fish were c. 0.5 m SHALLOWER than smaller ones and fish were shallower by day (p. 123)."
+}

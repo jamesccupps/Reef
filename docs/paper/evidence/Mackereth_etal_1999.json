@@ -1,0 +1,66 @@
+{
+  "key": "Mackereth_etal_1999",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF as posted by the Harkness Laboratory of Fisheries Research (Ontario MNR) in its list of contributions — the URL in the ledger entry; 13 pages. Table 2 and Fig. 3 read on the page images",
+    "url": "https://www.harkness.ca/PDFs/Contributions%201990s/makereth%20et%20al%201999.pdf",
+    "file": "docs/research_notes/fetched/v2/Mackereth_etal_1999.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Mackereth, R. W., Noakes, D. L. G. & Ridgway, M. S., Environmental Biology of Fishes 56: 263–275 (1999), title as cited. The issue (1–2) is Crossref's; the title page prints volume and pages only. The host's file name misspells 'makereth' — that is the real URL"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4; §3.7.4",
+      "claim": "males' muscle lipid in autumn was about 1.5 times that of spring",
+      "location": "p. 266 (PDF p. 4), Results; Fig. 1, p. 267 (PDF p. 5)",
+      "quote": "Fish sampled in the fall had the highest muscle lipid levels, approximately 1.5 times higher",
+      "conditions": "lipid as a percentage of muscle DRY weight (Fig. 1) — a concentration, not an amount; male smallmouth bass in three classes (21–25, 28–32, 35–39 cm FL), Lake Opeongo, Ontario; spring = 7–19 May 1991 and 19–25 May 1992 (after ice-out), fall = 21–23 Sep 1991 and 25 Sep–1 Oct 1992; years pooled; 153 fish analysed for lipid",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "and visceral lipid more than twice",
+      "location": "p. 266 (PDF p. 4), Results; Fig. 2, p. 268 (PDF p. 6)",
+      "quote": "visceral lipid levels were more than double levels in the spring",
+      "conditions": "lipid as a percentage of visceral dry weight; same samples. In the fall about half of total lipid energy was in the viscera, against 25–30 % from spring to the end of care (p. 267)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4 ('implying that about half of autumn lipid is spent between October and May (project arithmetic)'); §3.7.4 ('the notes infer that adults spend about half of their autumn lipid by May (project estimate)')",
+      "claim": "about half of autumn lipid is spent between October and May",
+      "source_value": "the paper measures the amount directly: its energy index (total lipid energy, kcal per FL³; Fig. 3) is about 0.36 / 0.48 / 0.60 in fall against about 0.13 / 0.17 / 0.22 the next spring (small / medium / large males, read from the figure) — spring is ~36–37 % of fall, so about 63–64 % (roughly two-thirds) of autumn lipid energy is gone by spring",
+      "location": "p. 269 (PDF p. 7), Fig. 3 (page image); p. 267 (PDF p. 5), Results; p. 269 Discussion",
+      "quote": "increased to a maximum in the fall",
+      "kind": "arithmetic",
+      "conditions": "late-September fall samples against mid/late-May spring samples (different fish, same size classes); lipid energy at 9.3 kcal/g; the authors report winter depletion as 'the large drop in lipid levels from the fall to the spring samples' (p. 269)",
+      "verdict": "corrected",
+      "note": "'about half' follows from combining the CONCENTRATION ratios (muscle 1/1.5 → ⅓ lost; viscera > ½ lost; ~50:50 split in fall → ~42 %+), which understate the loss because lipid % of dry tissue is not lipid amount. The source's own energy index gives ~⅔. Also, the interval is late September to mid/late May, not October to May"
+    },
+    {
+      "paper": "§3.5.4; src/config.js:351",
+      "claim": "guarding males do feed — 60–100 % had gut contents at each brood stage in Lake Opeongo",
+      "location": "p. 270 (PDF p. 8), Table 2 (page image); p. 267 (PDF p. 5)",
+      "quote": "67% 78% 100% 83% 80% 75% 83% 70% 60%",
+      "quote_from": "table",
+      "conditions": "nesting males angled from the nest by a diver (trap-netted males excluded because they regurgitated), 1991–1992 pooled, n = 88; cells of ~4–7 fish per size class × brood stage (embryo, larva, juvenile); proportion independent of size and stage (χ² p = 0.99); mean dry gut contents 0.47–1.33 g; contents generally crayfish, aquatic insects and fish (not identified)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "at Opeongo only 34 % (1991) and 52 % (1992) of nesting males still had broods at the juvenile stage",
+      "location": "p. 270 (PDF p. 8), Discussion",
+      "quote": "fraction of the original nesting stock remains (34% in 1991 and 52% in 1992)",
+      "conditions": "'by the juvenile period' (larva-to-juvenile transformation); many 1991 nests failed before the juvenile period, 'possibly due to high winds and rough water late in the parental care period' (p. 266)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values for the rewrite: the energy index fell 45.5 % (large), 30.4 % (medium) and 17.0 % (small males) from the embryo to the juvenile period (p. 267); small males showed no defence by the juvenile period (p. 269); GSI peaked at the embryo stage and rose again in fall in larger males (Fig. 4). The paper's description of the winter: bass 'gather in large groups and remain inactive' (p. 264, citing Webster 1954 and Kolok 1991). Suski & Ridgway (2009) cite this paper for autumn being the season of highest energy gain."
+}

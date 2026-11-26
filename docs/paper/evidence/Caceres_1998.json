@@ -1,0 +1,95 @@
+{
+  "key": "Caceres_1998",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's own copy (the published Ecology pages, a scan) once posted on the Cáceres lab site at the University of Illinois, retrieved from the Wayback Machine's openly downloadable capture of 12 May 2019 (the live URL now returns 404). The PDF has no text layer (getsrc: scanned); all 12 pages were rendered and the 10 text pages read on the page images, so every quote is quote_from image",
+    "url": "https://web.archive.org/web/20190512135915id_/http://www.life.illinois.edu/caceres/papers/Caceres1998Ecology.pdf",
+    "file": "docs/research_notes/fetched/v2/Caceres_1998.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1699) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Carla E. Cáceres, 'Interspecific variation in the abundance, production, and emergence of Daphnia diapausing eggs', Ecology 79(5): 1699–1710, 1998 — all match (show.mjs's 'DOI NOT FOUND' is wrong: api.crossref.org returns the record)"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5",
+      "claim": "Oneida Lake's sediments held more than 2.5 × 10⁴ (D. galeata mendotae) and 8 × 10⁴ (D. pulicaria) eggs/m²",
+      "location": "p. 1699 (PDF p. 1), Abstract; p. 1702 (PDF p. 4), Results",
+      "quote": "densities of over 2.5 × 10⁴ eggs/m² for D. galeata mendotae and 8.0 × 10⁴",
+      "quote_from": "image",
+      "conditions": "viable diapausing eggs in a whole sediment core (eggs found to 24 cm) at the deepest station, 12 m, June 1992: 26.0 × 10³ and 83.0 × 10³ eggs/m²; far fewer near shore (3 m: 3.1 × 10³ and 2.9 × 10³); ~70 % of the bank D. pulicaria. Oneida Lake, NY: 206.7 km², mean depth 6.8 m, rarely stratifies",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5; src/config.js:1493",
+      "claim": "only 0–25 animals/m² emerged a year",
+      "location": "p. 1699 (PDF p. 1), Abstract; p. 1704 (PDF p. 6), Results",
+      "quote": "Annual emergence rates ... only range between 0 and 25 Daphnia/m²",
+      "quote_from": "image",
+      "conditions": "in-situ emergence traps (0.05 m² each, 2 per depth) at 5, 8 and 12 m on two transects, 1993–1995; 1994: 3.5 D. g. mendotae + 4.5 D. pulicaria per m² (three depths averaged); 1995: 15.6 D. pulicaria per m², no D. g. mendotae",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5 ('about 1 % of the bank'); src/config.js:1493 ('hatch ~1 % of the bank a YEAR')",
+      "claim": "emergence is about 1 % of the egg bank a year",
+      "source_value": "'<1 % of the total egg bank' (1994). By the paper's own numbers it is far less: 8 Daphnia/m² in 1994 against ~1 × 10⁵ eggs/m² in the 12-m core is ~0.01 %, and 15.6 D. pulicaria/m² in 1995 against ~5 × 10³ D. pulicaria eggs/m² in the top 2 cm (Fig. 5) is ~0.3 %",
+      "location": "p. 1704 (PDF p. 6), Results (Emergence); Fig. 5; p. 1702 (PDF p. 4)",
+      "quote": "Although this represents <1% of the total egg bank",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "1994–1995 trap data; 1994 lake-wide emergence > 6 × 10⁸ of each species",
+      "verdict": "corrected",
+      "note": "'about 1 %' overstates the source's '<1 %'; its numbers give ~0.01–0.3 %. The code's intended ~1 % a year (its comment; HATCH_D 0.0002/day over a ~9-week window would give ~1.3 %, if applied daily to the whole bank — not traced) is roughly 3 to 100 times the source's rate, worth checking in the rewrite"
+    },
+    {
+      "paper": "§3.3.5; src/config.js:1493",
+      "claim": "emergence comes in early spring and ends nine weeks after ice-out",
+      "location": "p. 1705 (PDF p. 7), Results; p. 1704 (PDF p. 6); Fig. 7",
+      "quote": "By 9 wk after ice-out, emergence had ceased in 1994 and 1995",
+      "quote_from": "image",
+      "conditions": "traps installed right after ice-out (19 April 1994, 28 March 1995 in the methods; Table 2 gives ice-out as 16 April and 23 March); no emergence late June – mid-November 1993 nor in October – early November 1992; 'Daphnia hatch from diapausing eggs in Oneida Lake only in early spring' (p. 1704); emergence before ice-out could not be sampled",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5; src/config.js:1402",
+      "claim": "0–2.5 Daphnia/L overwintered in the water",
+      "location": "p. 1699 (PDF p. 1), Abstract; p. 1708 (PDF p. 10)",
+      "quote": "the overwintering water-column population ranges between 0 and 2.5 individuals/L",
+      "quote_from": "image",
+      "conditions": "annual variation, Oneida Lake 1964–1995 (largest overwintering population 2.5 Daphnia/L, p. 1708); D. pulicaria failed to overwinter in 6 of those years and D. g. mendotae in 12, when emergence mattered most (p. 1708)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1402",
+      "claim": "the egg bank holds thousands to millions per m², viable for decades",
+      "location": "p. 1699 (PDF p. 1), Introduction and Abstract; p. 1703 (PDF p. 5)",
+      "quote": "diapausing eggs can accumulate in densities ranging from 10³ to 10⁶ eggs/m² of sediment",
+      "quote_from": "image",
+      "conditions": "the 10³–10⁶ range is Cáceres citing Hairston's (1996) review of fresh and marine systems; for Oneida Lake, ²¹⁰Pb dating suggests eggs 'can remain viable for >125 yr' (up to half of the eggs from 18–19 cm hatched)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1489",
+      "claim": "Daphnia make ephippia: 13–27 % of females carry them in autumn (Cáceres 1998; Boulianne et al. 2025)",
+      "source_value": "at most ~15 %, and not in autumn: 'typically <15%' of adult females carried ephippia even at peak; D. pulicaria's peak (~14 % in 1994) came in late June – early July, and the autumn peaks were about 1 % or less in both species (Fig. 6, weekly samples 1992–1995)",
+      "location": "p. 1704 (PDF p. 6), Results and Fig. 6; p. 1703 (PDF p. 5); p. 1707 (PDF p. 9)",
+      "quote": "Even during times of peak sexual reproduction, typically <15% of adult female daphnids produced ephippia",
+      "quote_from": "image",
+      "conditions": "Oneida Lake, weekly samples 1992–1995 at the 12-m station; two sexual periods, late May – early June and November – December (p. 1703); D. g. mendotae makes most of its eggs in the fall, D. pulicaria in the spring (p. 1707)",
+      "verdict": "corrected",
+      "note": "the 13–27 % must come from Boulianne et al. 2025, not Cáceres; Cáceres's autumn share is ≤ ~1 %"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/0012-9658(1998)079%5B1699:IVITAP%5D2.0.CO;2", "status": 403, "note": "Wiley" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1890/0012-9658(1998)079%5B1699:IVITAP%5D2.0.CO;2", "status": 403, "note": "Wiley" },
+    { "url": "https://doi.org/10.1890/0012-9658(1998)079%5B1699:IVITAP%5D2.0.CO;2", "status": 403, "note": "resolves to Wiley" },
+    { "url": "http://www.life.illinois.edu/caceres/papers/Caceres1998Ecology.pdf", "status": 404, "note": "the lab's live URL is gone; the Wayback capture of it was used" }
+  ],
+  "notes": "The getsrc result was 'scanned: true' (no text layer); I read the page images (crisp, typeset) rather than any OCR, and every quote is marked quote_from image. Fig. 6 values (peak percentages) are read off the graph; the '<15 %' is the text. Also useful: emergence contributed little to the offshore spring population in 1994–1995 (Table 2: direct estimates 0–8 × 10⁻⁴ Daphnia/L at 12 m); more Daphnia emerged from shallow (5 m) sediments (Fig. 7); diapausing eggs need to be near the sediment surface to hatch (bioturbation 2–5 cm typical, p. 1706); amphipods destroy ephippia (p. 1707)."
+}

@@ -1,0 +1,52 @@
+{
+  "key": "Christensen_etal_1996",
+  "reader": "wave-2 batch w2-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: Crossref's record carries the publisher's abstract (saved as Christensen_etal_1996.crossref.json); no full text found",
+    "url": "https://api.crossref.org/works/10.2307/2269598",
+    "file": "docs/research_notes/fetched/v2/Christensen_etal_1996.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Christensen, D. L., Herwig, B. R., Schindler, D. E. & Carpenter, S. R., Ecological Applications 6(4): 1143–1149 (November 1996), title as cited"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-5",
+      "claim": "16 WI/MI lakes; logs counted; 555 logs/km; 379/km at forested sites, 57/km at cabin sites",
+      "verdict": "unchecked",
+      "note": "the abstract agrees on 16 'north temperate lakes' and on means of 555 logs/km of shoreline in UNDEVELOPED lakes, and, within DEVELOPED lakes, 379 at forested sites and 57 at cabin-occupied sites; it does not name Wisconsin/Michigan"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "development's losses \"will affect littoral communities … for about two centuries\"",
+      "verdict": "unchecked",
+      "note": "the abstract reads 'will affect littoral communities in developed north temperate lakes for about two centuries' — the paper's quotation with its ellipsis matches it"
+    },
+    {
+      "paper": "§4.6; src/config.js:791",
+      "claim": "fallen wood in front of camps at 0.1 of an undeveloped shore's (Christensen et al. 1996: cabin sites 57 vs 555 logs/km)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "57/555 = 0.103 compares cabin sites in developed lakes with the mean of undeveloped lakes. Within developed lakes, cabin sites against forested sites is 57/379 = 0.150 — exactly the 0.15 the model uses ('a project estimate between Christensen's 0.1 and Merrell's 0.38'), so the 0.15 could be cited to Christensen's within-lake contrast if the full text bears it out"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/2269598", "status": 403, "note": "Wiley PDF (subscription)" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/10.2307/2269598", "status": 403, "note": "Wiley landing page" },
+    { "url": "https://www.jstor.org/stable/2269598", "status": 200, "note": "JSTOR login/paywall/bot-check page, not kept" },
+    { "url": "https://doi.org/10.2307/2269598", "status": 403, "note": "resolves to Wiley" },
+    { "url": "https://scholar.archive.org/search?q=%22lakeshore+residential+development%22+coarse+woody", "status": 200, "note": "redirected to a /verify bot-check page; not pursued" },
+    { "url": "https://archive.org/advancedsearch.php (title words)", "status": 200, "note": "no item" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307%2F2269598", "status": 429, "note": "rate-limited (other readers running)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.2307/2269598%22", "status": 200, "note": "0 hits" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=limnology.wisc.edu/*", "status": 200, "note": "Internet Archive 'Temporarily Offline' page; lter.limnology.wisc.edu and cfl.wisc.edu captures: no matching PDF" },
+    { "url": "web search (exact title + pdf; NTL-LTER)", "status": 0, "note": "only citing works found (Francis & Schindler 2006, Marburg et al. 2006, Wolter 2012 review)" }
+  ],
+  "notes": "The paper already labels this source '(abstract)'. A library login would open it at doi:10.2307/2269598 (Wiley/ESA, or JSTOR). The NTL-LTER publication list may hold a reprint. Note for §3.2.8 and Table 3.2-5: the abstract gives r² 0.78 (CWD vs riparian tree density) and r² 0.71 (negative, vs cabin density) at the whole-lake scale."
+}

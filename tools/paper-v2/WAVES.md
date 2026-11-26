@@ -15,7 +15,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | t1-08 | Kitchell_etal_1974, Sergio_2026, Werner_etal_1983, Werner_Hall_1988, Canfield_etal_1985, Deslauriers_etal_2017 | done |
 | t1-09 | Dunlop_etal_2005, Forbes_1981, Irwin_etal_2009, Johnson_Evans_1991, Keast_1980, Phillips_etal_2007, Boulianne_etal_2025 | done |
 | t1-10 | Ridgway_etal_2002, Roberts_1964, Steinhart_etal_2005, Trudel_Boisclair_1994, VanderZanden_Gratton_2011, VanderZanden_etal_2011, Breder_1935 | done |
-| w2-01 | Christensen_etal_1996, Duarte_1987, Johannsson_etal_2000, Mackereth_etal_1999, Suski_Ridgway_2009, Whitledge_etal_2003, Caceres_1998, Curry_etal_2005, Adams_1969 | running |
+| w2-01 | Christensen_etal_1996, Duarte_1987, Johannsson_etal_2000, Mackereth_etal_1999, Suski_Ridgway_2009, Whitledge_etal_2003, Caceres_1998, Curry_etal_2005, Adams_1969 | done |
 | w2-02 | Dennis_1992, Feiner_etal_2017, Fernando_etal_2018, Gaeta_etal_2018, Garcia_Gordon_1992, Garrison_etal_2005, Gorny_1992, Gyllstrom_2005, Keast_Eadie_1984, Reeve_etal_2022 | done |
 | w2-03 | Hampton_2017, Linkenheld_2019, Lorenzen_1996, Power_1987, Reeve_etal_2025, Rice_etal_1983, Sass_etal_2006, Siefert_1972, Cech_etal_2012, Cole_Moring_1997 | done |
 | w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | running |
@@ -31,7 +31,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-14 | Srnes_Aksnes_2004, Stemberger_Gilbert_1985, Tedford_etal_2014, Terpin_etal_1976, Vadeboncoeur_etal_2003, Wrvagen_Nilssen_2010, Watson_etal_1992, Webster_1948, Leopold_Maddock_1953, Petersen_Ward_1999 | running |
 | w2-15 | Werner_etal_1995, Hamon_1961, HBV_nd, Parry_Evans_2008, Sndergaard_etal_2003 | running |
 | add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | running |
-| add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | queued |
+| add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | queued |
 | w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | queued |
 | w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | queued |
