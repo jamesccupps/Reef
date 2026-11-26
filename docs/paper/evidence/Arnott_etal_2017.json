@@ -1,0 +1,75 @@
+{
+  "key": "Arnott_etal_2017",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: University of Toronto TSpace (hdl 1807/77005), the authors' accepted manuscript (cjz-2016-0105.R1, the journal's 'Draft' PDF); page numbers below are the manuscript's ('Page N of 36' = PDF page − 1), not the journal's 323–333",
+    "url": "https://utoronto.scholaris.ca/bitstreams/5e9226a0-5135-4ab6-9898-a92a586823e9/download",
+    "file": "docs/research_notes/fetched/v2/Arnott_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the manuscript title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Arnott, S.E.; Azan, S.S.E.; Ross, A.J. (2017) Can. J. Zool. 95(5): 323–333, matches the entry. The copy read is the accepted manuscript, not the version of record"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.6",
+      "claim": "in three Shield-lake mesocosm experiments mean per-capita growth across 18–20 taxa was 0.009–0.034/d",
+      "location": "ms pp. 12–13 (PDF pp. 13–14), Results",
+      "quote": "with an average of 0.034 ind/ind/day compared to an average of 0.012",
+      "conditions": "six-week experiments, summer 2013 (Havelock, 10-m bags; Lumsden, 3.2-m bags) and 2014 (Dorset, 800-L tanks on land filled with lake water); growth = ln(final/initial abundance)/days. Havelock 20 taxa, mean 0.012 (all treatments, 1.2–2.5 mg Ca/L); Lumsden 19 taxa, 0.025 at high Ca vs 0.009 at low Ca (0.9 mg/L); Dorset 18 taxa, 0.034 at ~2.4 mg/L vs 0.012 at ~0.6 mg/L",
+      "verdict": "confirmed",
+      "note": "the 0.009 end is the low-calcium (0.9 mg/L) Lumsden treatment; at ambient or high calcium the means were 0.012–0.034/d. Strictly two of the three were in-lake mesocosms; Dorset used land-based tanks"
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "chlorophyll in the mesocosms 1.4–4.3 µg/L",
+      "location": "ms p. 15 (PDF p. 16), Discussion",
+      "quote": "concentrations in our mesocosms were low (Havelock: Chl a =4.32",
+      "conditions": "means ± SD: Havelock 4.32 ± 7.3, Dorset 2.19 ± 1.22, Lumsden 1.40 ± 0.75 µg/L; the authors think food limited growth in all three",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "D. pulex/pulicaria declined at −0.32/d (in these mesocosms)",
+      "source_value": "−0.32/d only in the Dorset tank experiment at ~2.4 mg Ca/L (with Holopedium −0.41); in the Lumsden bags D. pulex/pulicaria was among the taxa with the HIGHEST per-capita growth rates",
+      "location": "ms p. 13 (PDF p. 14), Dorset results; ms p. 12 (PDF p. 13), Lumsden results",
+      "quote": "0.41 and -0.32 ind/ind/day, respectively",
+      "conditions": "Dorset: 800-L tanks, 2014, high-calcium (~2.4 mg/L) treatment, D. pulex and D. pulicaria pooled",
+      "verdict": "corrected",
+      "note": "the sentence reads as if D. pulex/pulicaria declined across the experiments; say 'declined at −0.32/d in one of the three (Dorset tanks) but grew among the fastest in another (Lumsden)'"
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "laboratory rates of 0.14–0.58/d at about 20 °C (Lynch 1980, via Arnott et al.)",
+      "location": "ms p. 15 (PDF p. 16), Discussion",
+      "quote": "which ranged from 0.14 to 0.58 /day at temperatures ~20°C (Lynch 1980)",
+      "conditions": "published laboratory values 'for a diversity of cladoceran taxa (including Bosmina sp. and daphniids)'",
+      "verdict": "confirmed",
+      "note": "correctly credited 'via that paper'; the range is for several cladocerans, not D. pulex alone"
+    },
+    {
+      "paper": "§3.3.7",
+      "claim": "field mesocosms gave a community threshold of 0.9–1.2 mg Ca/L",
+      "location": "ms p. 15 (PDF p. 16), Discussion",
+      "quote": "a lower threshold, between 0.9 and 1.2 mg Ca/L, exists for crustacean",
+      "conditions": "the authors' inference from the contrast between Havelock (no effect at 1.2–2.5 mg/L) and Lumsden/Dorset (effects at 0.9 and 0.6 mg/L); not a fitted threshold",
+      "verdict": "confirmed",
+      "note": "it is an inferred bracket ('we believe'), for crustacean community growth performance"
+    },
+    {
+      "paper": "§3.3.7",
+      "claim": "no effect between 1.2 and 2.5 mg Ca/L",
+      "location": "ms p. 2 (PDF p. 3), Abstract; ms p. 12 (PDF p. 13), Havelock results",
+      "quote": "detected in the experiment where Ca ranged from 1.2 to 2.5 mg",
+      "conditions": "Havelock Lake, 14 bags on a gradient 1.2–2.5 mg Ca/L, 2013; community growth not related to Ca (P = 0.985), PC1/PC2 vs Ca P = 0.68/0.92",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "One correction: the −0.32/d decline of D. pulex/pulicaria is the Dorset tanks only; in the Lumsden bags the same taxon grew among the fastest. Other useful values: Muskoka–Haliburton lake calcium has fallen ~30 % since the 1980s, with 28 % and 5 % of lakes below 1.5 and 1.0 mg/L (Reid & Watmough 2016, via the paper); field survival thresholds for Ca-rich daphniids 1.26–1.69 mg/L (Cairns 2010, via the paper); laboratory Ca < 0.5 mg/L lethal to Daphnia (Cairns & Yan 2009, via the paper); copepods and small cladocerans (Bosmina) also grew less at low Ca; Holopedium declined in all Lumsden and Havelock bags regardless of Ca. Daphniid Ca content 1–7 % DW vs 0.04–2.32 % in other taxa (Azan et al. 2015, via the paper)."
+}

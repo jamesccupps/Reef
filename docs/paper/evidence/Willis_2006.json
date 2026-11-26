@@ -1,0 +1,51 @@
+{
+  "key": "Willis_2006",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "grey-literature report, not paywalled: the Maine Rivers publication 'Two Reports on Alewives in the St. Croix River' (© Maine Rivers 2006), as posted openly in the Friends of Merrymeeting Bay online library ('cybrary'); Willis's report is pp. 1–42 of it",
+    "url": "https://www.cybrary.friendsofmerrymeetingbay.org/Alewife/MaineRiversStCroixReportFinal.pdf",
+    "file": "docs/research_notes/fetched/v2/Willis_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (PDF p. 3, printed 1) and the volume cover (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "'November 2006. St. Croix River Alewife – Smallmouth Bass Interaction Study. Final Report. Dr. T.V. Willis. FINAL REPORT to Maine Rivers, 9 Union Street, Hallowell' — matches. It is bound with Bentzen & Paterson's genetics report in 'Two Reports on Alewives in the St. Croix River' (Maine Rivers 2006); the rewrite may add that"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (smallmouth bass, length at age)",
+      "claim": "eastern Maine spring lengths ≈ 6.7, 12.6, 18.1, 23.2, 27.7 cm at ages 1–5 (read from a figure in Willis 2006; project reading)",
+      "kind": "arithmetic",
+      "location": "p. 25 (PDF p. 27), Fig. 6; methods p. 14 (PDF p. 16) and p. 17 (PDF p. 19)",
+      "quote": "Bar graph depicting smallmouth bass growth by year in millimeters for Big Lake",
+      "conditions": "MDIFW scale data, ~100 adults angled each spring before growth began at Big Lake, Grand Falls Flowage and Woodland Flowage (Washington Co.), back-calculated growth years from 1984 on; scale back-calculation (Fraser–Lee with a 21-mm intercept), read to age 5; Fig. 6 plots mean annual GROWTH increments (mm/yr) at ages 1–5 per lake, alewife vs no-alewife years, not lengths",
+      "verdict": "confirmed",
+      "note": "Re-read off the page image: bar means weighted by the number of years in the caption give ~66.7, 59.2, 55.0, 50.7, 45.3 mm at ages 1–5; cumulated, 6.7, 12.6, 18.1, 23.2, 27.7 cm — the paper's values. But (1) these are back-calculated lengths at annuli, a cumulation of bar heights, not printed values; reading error per bar is ~±1–2 mm, so '± 0.5 mm' overstates the precision (say ± ~0.5 cm at age 5); (2) the report's eq. (7) defines growth at annulus i as L(i+1) − L(i), which taken literally would make the 'Age 1' bar the growth between annuli 1 and 2 — with bars for ages 1–5 and scales read only to age 5, the bars are more probably each year's growth (Age 1 = length at the first annulus), but the report does not say so plainly; (3) alewife and no-alewife years are pooled (growth was equal or better with alewives)"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "adult sea-run alewives in Downeast lakes ate mostly zooplankton, with fish under 0.15 % of the diet by an importance index",
+      "source_value": "zooplankton the majority in Meddybemps Lake and Woodland Flowage, but mayfly larvae the most important item in Gardner Lake; fish < 0.15 % by %IRI (Fig. 8: at most < 0.16 %), 7 of 70 adults with fish, mostly larval rainbow smelt or alewife; fish netted 25 June–22 July 2005",
+      "location": "p. 25 (PDF p. 27), §2a; p. 26 (PDF p. 28), Figs 7–8; dates p. 18 (PDF p. 20)",
+      "quote": "fish prey made up less than 0.15% of the diet by %IRI",
+      "conditions": "trammel nets at night in < 10 ft, coves near the outlets; Gardner n = 38, Meddybemps n = 21, Woodland n = 11; no adults caught in Cathance Lake; fishing 25 June–22 July 2005",
+      "verdict": "corrected",
+      "note": "minor: 'mostly zooplankton' holds for two of three lakes. The larger caveat for the paper's contrast with Kircheis et al.'s May perch-larva diets: Willis's adults were caught from late June to late July, after the perch-larva period, so they do not show that Downeast adults ignore perch larvae in May"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "snapping turtles ate netted adult alewives in Downeast lakes",
+      "location": "p. 25 (PDF p. 27), §2a",
+      "quote": "The majority of mortality was caused by snapping turtles consuming parts of alewives",
+      "conditions": "alewives caught in trammel nets soaking ~30 min at night, Gardner and Meddybemps lakes and Woodland Flowage, June–July 2005",
+      "verdict": "confirmed",
+      "note": "turtles scavenged fish held in the nets; it is not evidence of turtles catching free-swimming alewives"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Uses hold, with two caveats for the rewrite: the length series is a cumulation of growth bars read off Fig. 6 (state the method and a realistic ± ~0.5 cm at age 5, and the eq. (7) indexing question), and the alewife diets were sampled after the perch-larva season. Other useful values: YOY smallmouth and YOY alewife caught in mixed schools in < 4 ft; diet overlap > 60 % only in Meddybemps (Sididae); YOY smallmouth condition and growth not depressed by alewives (Figs 4–6); the seven diet lakes are 5–40 km² with mean summer chlorophyll 0.99–2.76 µg/L; alewives stocked into Woodland Flowage at up to 6 per acre by DFO. The volume's second report (Bentzen & Paterson, genetics) is pp. 43 ff."
+}

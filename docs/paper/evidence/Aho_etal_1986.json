@@ -1,0 +1,56 @@
+{
+  "key": "Aho_etal_1986",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the U.S. EPA Region 1 administrative-record copy (Merrimack Station NPDES record, AR-783) of the USFWS report, served from EPA's 19 January 2017 web snapshot; the scan carries the National Wetlands Research Center library stamp",
+    "url": "https://19january2017snapshot.epa.gov/www3/region1/npdes/merrimackstation/pdfs/ar/AR-783.pdf",
+    "file": "docs/research_notes/fetched/v2/Aho_etal_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 4) and the report's own 'should be cited as' line (PDF p. 5)",
+    "ok": true,
+    "corrections": "",
+    "note": "'Aho, J. M., C. S. Anderson, and J. W. Terrell. 1986. Habitat suitability index models and instream flow suitability curves: redbreast sunfish. U.S. Fish Wildl. Serv. Biol. Rep. 82(10.119). 23 pp.' (November 1986) — matches"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (redbreast sunfish, maturity)",
+      "claim": "mature at age II, most fish beyond age III spawn (southern studies, via Aho, Anderson & Terrell 1986)",
+      "location": "p. 1 (PDF p. 10), Age, Growth, and Food",
+      "quote": "first observed at age II; most individuals older than age III are reproductively active",
+      "conditions": "a literature statement citing Davis 1972, Bass & Hitt 1974, Sandow et al. 1974 and Carlander 1977",
+      "verdict": "confirmed",
+      "note": "'most individuals older than age III' — i.e. age IV and older. The passage does not give the studies' localities; elsewhere the report cites Bass & Hitt 1974 for 'southeastern coastal plain habitats', so 'southern studies' is a fair gloss but not stated here"
+    },
+    {
+      "paper": "Table 3.5-3 (redbreast sunfish, longevity)",
+      "claim": "maximum 8 yr, average 4–5",
+      "location": "p. 1 (PDF p. 10), Age, Growth, and Food",
+      "quote": "as 8 years, but the average life span appears to be between 4 to 5",
+      "conditions": "literature statement, no population or locality given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (redbreast sunfish, temperature)",
+      "claim": "not measured; CTmax inferred ≈ 36 °C",
+      "location": "p. 3 (PDF p. 12), Adult",
+      "quote": "anticipated to be closer to the approximate value of 36°C reported for largemouth bass",
+      "conditions": "an inference from largemouth bass, not a redbreast measurement; the report says redbreast temperature preference and CTmax 'are not well known for any life history stage'; redbreast have been observed at 33–35 °C in thermally impacted Savannah River Plant reservoirs",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (redbreast sunfish, temperature)",
+      "claim": "best growth 25–30 °C (inferred)",
+      "location": "p. 3 (PDF p. 12), Adult",
+      "quote": "temperatures of 25-30 °C should result in maximum growth, survival, and reproduction",
+      "conditions": "inferred from preferenda of largemouth bass (27–29 °C) and green sunfish (28 °C), not measured on redbreast; reduced growth and survival expected below 15 °C or above 33 °C",
+      "verdict": "confirmed",
+      "note": "the report's own caveat is worth keeping: preferenda are assumed to approximate largemouth bass rather than bluegill (29–31 °C)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "All four uses hold; all are literature statements or inferences in an HSI model, mostly from southeastern populations. Other useful values (p. 1–3, PDF pp. 10–12): redbreast are generalist invertivores, adults ≥ 101 mm take more terrestrial insects; spawning peaks at 20–25 °C (21.0–25.0 °C in Davis 1972), apparently once a summer; colonial nests 30–60 cm apart in < 1.5 m of water near hard structure on sand/gravel; deep water used for overwintering (Breder & Nigrelli 1935); DO below 1.0 mg/L lethal on prolonged exposure (assumed as for bluegill, Moore 1942); found at pH near 4.0."
+}

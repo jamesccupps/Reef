@@ -1,0 +1,46 @@
+{
+  "key": "ASF_2021",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "publisher's own open web page: Atlantic Salmon Federation, 'ASF Rivernotes 3 Sept. 2021' (the ?p=36632 link redirects to it)",
+    "url": "https://www.asf.ca/asf-rivernotes-3-sept-2021/",
+    "file": "docs/research_notes/fetched/v2/ASF_2021.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the web page (title, date and byline)",
+    "ok": true,
+    "corrections": "",
+    "note": "'ASF Rivernotes 3 Sept. 2021', 'September 3, 2021', 'Compiled by Tom Moffatt'; the Maine item is headed 'New focus on Maine rivers east of Mt. Katahdin' — matches the entry"
+  },
+  "claims": [
+    {
+      "paper": "§2.1",
+      "claim": "the Atlantic Salmon Federation places Danforth about 130 mi (≈ 209 km) above tidewater",
+      "location": "web page, Maine headwaters item ('New focus on Maine rivers east of Mt. Katahdin')",
+      "quote": "Veazie Dam that the Penobscot Project removed, and 130 miles above tidewater",
+      "conditions": "said of 'this part of the Penobscot watershed' — the Crooked Brook / Baskahegan Lake fishway site, 'adjacent to Danforth'; a round figure in a newsletter, method not given; 130 mi × 1.609 = 209 km",
+      "verdict": "confirmed",
+      "note": "the item also puts the site 100 miles above the former Veazie Dam. It is the fishway site at the Baskahegan Lake outlet, not Hot Brook's mouth; the paper's own NHDPlus 203.5 km is the better number and is consistent"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "sea-run alewives reached Danforth by natural straying, confirmed by Maine DMR in 2017, 'the farthest inland known to recolonize naturally on the East Coast' (cited 'ASF 2021, 2024')",
+      "verdict": "unsupported",
+      "note": "not in ASF 2021: the item never says alewives had already reached Danforth, names no DMR confirmation, and has no such quotation (searched 'inland', 'natural', 'DMR', 'recoloni', 'East Coast'). Its only 2017 is a local committee working on the project 'since 2017'. The straying, the DMR 2017 confirmation and the quotation belong to ASF 2024 (per the project's notes, ASF 31 Jul 2024) — cite that alone"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "a fishway for river herring on Baskahegan Stream at Danforth",
+      "location": "web page, Maine headwaters item",
+      "quote": "a new $198,000 project to install a fishway for river herring at Baskahegan Lake",
+      "conditions": "September 2021: a planned project, 'at Baskahegan Lake and Crooked Brook' ('The dam on Crooked Brook will be reworked to provide fish passage upstream to Baskahegan'); the photo caption names it the 'Crooked Brook and Baskahegan Stream Fish Passage Project'",
+      "verdict": "confirmed",
+      "note": "ASF 2021 supports only the project's existence and purpose; 'built in 2023' needs ASF 2024"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Cite ASF 2021 for the 130-mi figure and the planned fishway only; move the natural-straying, DMR-2017 and 'farthest inland' statements to ASF 2024. Other content: the item frames river herring as prey cover for outmigrating salmon smolts and says headwater passage is 'imperative because that is where spawning takes place'; the Mattawamkeag branch is 'the extensive easternmost branch of the Penobscot River watershed'; the site is 'just a few miles from the adjacent St. Croix watershed and East Grand Lake'."
+}

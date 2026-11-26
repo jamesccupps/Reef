@@ -1,0 +1,47 @@
+{
+  "key": "Wahl_Stein_1991",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy, via the Wayback Machine: the Ohio State University Knowledge Bank deposit (hdl 1811/45394, Aquatic Ecology Laboratory), the publisher's article PDF with an AFS cover page, captured 22 July 2018 (kb.osu.edu itself timed out from here)",
+    "url": "https://web.archive.org/web/20180722184405id_/https://kb.osu.edu/bitstream/handle/1811/45394/AEL_WahlD_TransacationsAmericanFisheriesSociety_1991_v120_n2_p230-246.pdf",
+    "file": "docs/research_notes/fetched/v2/Wahl_Stein_1991.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref, the cover page and the title page ('Transactions of the American Fisheries Society 120:230-246, 1991')",
+    "ok": true,
+    "corrections": "",
+    "note": "Wahl, D. H. & Stein, R. A. 1991. Food consumption and growth of three esocids: field tests of a bioenergetic model. TAFS 120(2): 230–246 — matches"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (chain pickerel); §3.5.4; §3.6.9",
+      "claim": "the esocid (northern pike, Bevelhimer et al. 1985) bioenergetics model overestimated consumption by stocked young-of-year esocids in Ohio reservoirs by 39–52 % (Wahl & Stein 1991, abstract)",
+      "source_value": "observed consumption was 'as much as 39–52 % below model predictions' — a Leggett–Williams reliability index k = 1.63 (tiger muskellunge), 2.09 (northern pike), 2.00 (muskellunge), i.e. predictions within a factor 1.6–2.1 of observed; measured against the observed values the model needed up to 1.6–2.1 times the food actually eaten (an overestimate of up to ~60–110 %). The abstract's 'overestimated observed values by 39-52%' is the loose form",
+      "location": "p. 237 (PDF p. 9), Results; abstract p. 230 (PDF p. 2); index defined p. 234 (PDF p. 6)",
+      "quote": "indicating that food consumption was as much as 39-52% below model predictions",
+      "conditions": "young-of-year muskellunge, northern pike and tiger muskellunge (stocked at 145, 180 or 205 mm TL) in three shallow Ohio reservoirs < 90 ha (North, Madison, Kokosing), 1983–85, five stocking events; field rations from 24-h gastric-lavage series at monthly intervals; model = Bevelhimer et al. 1985's taxon-specific young-of-year esocid sets (fish 125–210 mm) with egestion changed to 13 % (Diana 1982) and activity to 4 %; 'predicted' consumption = the food the model needs to produce the observed growth",
+      "verdict": "corrected",
+      "note": "say 'the model needed up to 1.6–2.1 times the food the young esocids were observed to eat (observed consumption up to 39–52 % below predicted)', and drop 'abstract' (now read in full). The pike-specific value is k = 2.09 (observed up to 52 % below). Each taxon used its own Bevelhimer et al. set, so the 39–52 % spans the pike, muskellunge and tiger muskellunge sets, not the pike set alone"
+    },
+    {
+      "paper": "src/species.js:376 (pickerel comment)",
+      "claim": "the pike model overestimates juvenile esocids' consumption by 39–52 % (cited 'TAFS 137(6), 2008'); hence a trial of Cmax × 0.65–0.75",
+      "source_value": "the 39–52 % is Wahl & Stein 1991, TAFS 120(2): 230–246 (not a 2008 TAFS 137 paper; Chipps & Wahl 2008 is TAFS 137(1): 298–313 per Crossref); the matching scaling of the model's food requirement is 1/k = 0.48–0.61, not 0.65–0.75",
+      "location": "p. 237 (PDF p. 9), Results",
+      "quote": "lowest for tiger muskellunge (1.63) and highest for northern pike (2.09)",
+      "conditions": "as above; the comment describes a trial that the code dropped",
+      "verdict": "corrected",
+      "note": "lead resolved: Wahl & Stein 1991 holds the 39–52 %. 0.65–0.75 looks like 1/1.39–1/1.52, i.e. the abstract's loose wording read as 'predictions 1.39–1.52 × observed'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1991)120%3C0230:FCAGOT%3E2.3.CO;2", "status": 403, "note": "publisher (OUP/AFS) refuses scripts" },
+    { "url": "https://core.ac.uk/download/206194333.pdf", "status": 403, "note": "CORE served a Cloudflare challenge (not bypassed)" },
+    { "url": "https://kb.osu.edu/", "status": "timeout", "note": "the Knowledge Bank did not accept connections from here (TCP connect timed out repeatedly); the 2018 Wayback capture of its bitstream was used" },
+    { "url": "https://www.ideals.illinois.edu/search?q=%22three+esocids%22", "status": 403, "note": "Illinois IDEALS refuses scripts" }
+  ],
+  "notes": "Uses hold in substance, but the 39–52 % is the observed shortfall against predictions (k = 1.63–2.09), not a 39–52 % overestimate relative to observed; and the code cites the wrong paper for it. The bigger finding of the study, which the paper does not mention: the model UNDER-estimated growth at the observed rations by a factor of 2–3 (final mass in spring 52–71 % low; k for mass 2.10, 2.99, 3.41 for tiger muskellunge, pike, muskellunge), even with metabolism cut 50 % for pike and muskellunge; conversion efficiencies 39–63 %; the authors suspect metabolic experiments run in the wrong season (15 °C trials in summer, some 5 °C trials in autumn) overestimated metabolism, and recommend testing variables across ration levels. Diets: gizzard shad 77–97 % by weight through autumn, absent by spring, then sunfishes and brook silversides; empty stomachs 30–82 %; rations and growth lowest in December and spring. The abstract says 'five Ohio reservoirs', but the methods describe three reservoirs and five stocking events."
+}

@@ -1,0 +1,45 @@
+{
+  "key": "Serns_1984",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: no open copy found (publisher refuses scripts; no repository, agency or Internet Archive copy)",
+    "url": "https://doi.org/10.1577/1548-8659(1984)113<304:FSETJO>2.0.CO;2"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Serns, Steven L. (1984). First-Summer Survival, Eggs to Juveniles, of Smallmouth Bass in Nebish Lake, Wisconsin. Trans. Am. Fish. Soc. 113(3): 304–307 — matches. Crossref holds no abstract"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (smallmouth bass, Nebish Lake)",
+      "claim": "survival from pre-dispersal (fry) to autumn 0.023–0.047 (Nebish Lake, 38 ha; Serns 1984; Raffetto et al. 1990)",
+      "verdict": "unchecked",
+      "note": "full text not obtained"
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass, Nebish Lake)",
+      "claim": "egg potential to autumn young 0.1–0.5 % in 1979–81 (Serns 1984, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained; the paper itself labels this 'abstract', and no abstract was found in Crossref or OpenAlex in this pass, so the source of that abstract reading is unknown"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "the percentage of young smallmouth surviving fell as egg or fry abundance rose at Nebish Lake (Serns 1984, via Chu 2001)",
+      "verdict": "unchecked",
+      "note": "full text not obtained; cited via Chu 2001, which should then be named as the source actually read"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1984)113%3C304:FSETJO%3E2.0.CO;2", "status": 403, "note": "publisher (Oxford University Press / AFS) refuses scripts; paywalled — the human can open it through a library's AFS journal access" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(1984)113%3C304:FSETJO%3E2.0.CO;2", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(transactions of the american fisheries society) AND year:1984", "status": 200, "note": "only a 'Vol 113 Contents' item; no full-text issue" },
+    { "url": "https://search.library.wisc.edu/ (web search for the title)", "status": 200, "note": "the UW–Madison digital collections hold other Serns/Nebish WDNR bulletins (Tech. Bull. 148, 149) but not this TAFS note" },
+    { "url": "https://sitesreservoirproject.riptideweb.com/references/REF17/Appx_12B_FisheriesImpactAssessment/Raffetto_etal_1990).pdf", "status": 200, "note": "a copy of Raffetto, Baylis & Serns 1990 (which reports Serns's 1979–81 egg-to-fall survival) posted in a reservoir project's EIR reference library; it is a JSTOR download redistributed by a third party, so it was not used and the fetched copy was deleted" }
+  ],
+  "notes": "Blocked. For the human: doi:10.1577/1548-8659(1984)113<304:FSETJO>2.0.CO;2 (TAFS 113(3): 304–307). When read, check: egg numbers (egg potential vs eggs deposited), fry at dispersal and autumn age-0 counts for 1979–81; whether 0.1–0.5 % is egg potential → autumn and 0.023–0.047 is fry → autumn; the density-dependence statement Chu 2001 relays; lake area (Engel et al. 1999 give Nebish Lake 94 acres = 38.0 ha). Raffetto, Baylis & Serns 1990 (Ecology 71: 1523–1535) covers 1982–85; a search-engine snippet of it says 'Serns (1984a, b)' studied 1979–81 fecundity and egg-to-fall survival — so there may be two Serns 1984 items (a, b), and the citation should say which (a lead, not checked)."
+}

@@ -1,0 +1,47 @@
+{
+  "key": "Shuter_Post_1990",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: no open copy found (publisher refuses scripts; no repository copy at Toronto, Alberta or Calgary; an unidentified CORE item sits behind a bot check)",
+    "url": "https://doi.org/10.1577/1548-8659(1990)119<0314:CPVATZ>2.3.CO;2"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Shuter, B. J.; Post, J. R. (1990). Climate, Population Viability, and the Zoogeography of Temperate Fishes. Trans. Am. Fish. Soc. 119(2): 314–336 — matches. Crossref holds no abstract"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.8",
+      "claim": "Shuter and colleagues argued that size-dependent winter starvation alone can explain the northern range limits of smallmouth bass, yellow perch and Eurasian perch (Shuter et al. 1980; Shuter & Post 1990; both abstracts)",
+      "verdict": "unchecked",
+      "note": "full text not obtained, and no abstract found in Crossref. Lead from another reader: the Shuter et al. 1980 abstract covers smallmouth only, so the perch part of this sentence rests on Shuter & Post 1990 alone and is unverified"
+    },
+    {
+      "paper": "§3.5.4; Table 3.5-3 (smallmouth bass)",
+      "claim": "Shuter & Post's smallmouth respiration RA: FB4 stores 0.03, Mille Lacs used 0.009, suggesting a unit error",
+      "verdict": "unchecked",
+      "note": "the published value could not be read. Ahrenstorff & Holbrook 2016 (Table 1, read in this batch) do apply RA 0.009 with RB −0.21, RQ 3.3, RTO 30, RTM 37, ACT 2, SDA 0.16, CA 0.25, CB −0.31, CQ 3.8, CTO 29, CTM 36, FA 0.104, UA 0.068 and credit them to Shuter & Post 1990 — the comparison the rewrite needs is FB4's stored row against Shuter & Post's own table"
+    },
+    {
+      "paper": "src/config.js:121",
+      "claim": "fish die after losing roughly 35–45 % of their mass; the basis of size-selective overwinter mortality (Shuter & Post 1990)",
+      "verdict": "unchecked",
+      "note": "full text not obtained"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1990)119%3C0314:CPVATZ%3E2.3.CO;2", "status": 403, "note": "publisher (Oxford University Press / AFS) refuses scripts; paywalled — the human can open it through a library's AFS journal access" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(1990)119%3C0314:CPVATZ%3E2.3.CO;2", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://core.ac.uk/download/76488918.pdf", "status": 403, "note": "a web search returned this CORE item for the title; CORE served a Cloudflare 'Just a moment' challenge (not bypassed), so its identity is unknown" },
+    { "url": "https://utoronto.scholaris.ca/server/api/discover/search/objects?query=\"zoogeography of temperate fishes\"", "status": 200, "note": "no copy in Toronto's TSpace" },
+    { "url": "https://ualberta.scholaris.ca/server/api/discover/search/objects?query=\"zoogeography of temperate fishes\"", "status": 200, "note": "no copy in Alberta's ERA (it holds the same issue's p. 337 paper, not this one)" },
+    { "url": "https://prism.ucalgary.ca/server/api/discover/search/objects?query=\"zoogeography of temperate fishes\"", "status": 200, "note": "no copy in Calgary's PRISM" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(transactions of the american fisheries society) AND year:1990", "status": 200, "note": "no TAFS 1990 issue on the Internet Archive" }
+  ],
+  "notes": "Blocked; tier 1, so worth the human's library fetch: doi:10.1577/1548-8659(1990)119<0314:CPVATZ>2.3.CO;2 (TAFS 119(2): 314–336). When read, check: (1) which species the range-limit argument covers (smallmouth bass, yellow perch, Eurasian perch?) and whether it claims winter starvation 'alone' explains the limits; (2) the smallmouth bioenergetics parameters as printed, especially RA and its units (FB4 stores 0.03; Mille Lacs used 0.009) and whether consumption/respiration are in g g⁻¹ d⁻¹ or J; (3) any starvation-endurance figure (the config's 35–45 % mass loss) and the size thresholds for first-winter survival that §3.6.8 and Table 3.6-9 use via Dudley & Trial 2014."
+}

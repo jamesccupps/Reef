@@ -1,0 +1,65 @@
+{
+  "key": "Underhill_1949",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item sim_journal-of-wildlife-management_1949-10_13_4 (the October 1949 issue, Serials in Microfilm collection), openly downloadable, not a lending item; saved as Underhill_1949.issue.pdf and the article's PDF pages 45–61 indexed (Table 1 and Raney's table read on the page images)",
+    "url": "https://archive.org/download/sim_journal-of-wildlife-management_1949-10_13_4/sim_journal-of-wildlife-management_1949-10_13_4.pdf",
+    "file": "docs/research_notes/fetched/v2/Underhill_1949.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page and running heads",
+    "ok": true,
+    "corrections": "",
+    "note": "Underhill, A. H. 1949. Studies on the development, growth and maturity of the chain pickerel, Esox niger LeSueur. J. Wildl. Manage. 13(4): 377–391 (October 1949) — matches; drop '(via secondary sources)'. NOT the same item as FishBase's 'Underhill 1948': that is the Cornell Ph.D. thesis, 'Studies on the life history of the chain pickerel, Esox niger Lesueur', 177 p. (FishBase ref. 39106); the 1949 article says its material 'is incorporated in a thesis submitted to that university'"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (chain pickerel, incubation)",
+      "claim": "incubation 11 d at 10.0 °C, 5 d at 14.4 °C, 2.5 d at 17.2 °C (row sources include Underhill 1949)",
+      "verdict": "unsupported",
+      "note": "the 1949 article gives only 'six to twelve days', 'largely governed by the water temperature' (p. 379), with no temperature-specific points. FishBase's egg-development table credits 2.5 d at 17.2 °C to Underhill 1948 (the Cornell thesis, ref. 39106), 5 d at 14.4 °C to Jones, Martin & Hardy 1978 (ref. 4639) and 11 d at 10.0 °C to Miller 1962 (Trans. Am. Fish. Soc. 91(3): 323, ref. 39118), all under main ref. Jones et al. 1978. Cite those, not the 1949 article"
+    },
+    {
+      "paper": "Table 3.6-1; §3.6.9",
+      "claim": "chain pickerel hatch at 4.2–7.0 mm",
+      "verdict": "unsupported",
+      "note": "Underhill gives one value, not this range: 18 newly hatched fry from 4 lots of artificially fertilized eggs averaged 6.1 mm TL (SD 0.19 mm) (p. 380). It lies inside 4.2–7.0 mm; the range itself must come from the Ontario database. The rewrite can cite '6.1 mm (Underhill 1949)'"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "fry hang on plants by a snout gland for ~1 week",
+      "source_value": "sac fry (yolk absorbed in 6–8 days) attach by 'the most anterior portion of the head', probably by a gummy secretion like the pike's (not studied); in aquaria most were attached at night and on the bottom by day; wild sac fry were never seen attached by day — they lay on their sides among roots, debris and silt — but many were attached to vegetation at night",
+      "location": "p. 379 (PDF p. 47); Plate 14A caption, p. 380 (PDF p. 48)",
+      "quote": "No detailed study was made of the mechanics of this attaching",
+      "conditions": "aquarium observations of six lots of fry and field observations of wild sac fry, central New York, 1930s",
+      "verdict": "corrected",
+      "note": "the 'gland' is Underhill's inference, and the hanging is mostly a night behaviour; by day wild sac fry lie on the bottom. The model's larval habitat could follow that"
+    },
+    {
+      "paper": "Table 3.6-1; §3.6.9",
+      "claim": "first food at about 10 mm (Underhill 1949 via secondary sources)",
+      "location": "p. 380 (PDF p. 48); summary p. 390 (PDF p. 60)",
+      "quote": "fry measured as the yolk was absorbed and feeding commenced was 10.2",
+      "conditions": "mean TL 10.2 ± 0.32 mm of 14 fry (6 wild, 8 from artificially fertilized lots), measured when the yolk was absorbed and feeding began, 6–8 days after hatching",
+      "verdict": "confirmed",
+      "note": "now read in full; drop 'via secondary sources'"
+    },
+    {
+      "paper": "Table 3.6-1 (spawning)",
+      "claim": "spawning at 6–11 °C on vegetation in shallow water; 2–3-mm adhesive eggs (row sources include Underhill 1949)",
+      "verdict": "unsupported",
+      "note": "Underhill gives no spawning temperature or egg size: in central New York pickerel 'usually spawns during the month of April', 'in swampy, marshy, or flooded areas' (pp. 379–380). Those values come from the row's other sources"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "the field's 25–38 mm at the end of June and 100–130 mm at the end of September (Underhill 1949 via Scott & Crossman)",
+      "verdict": "unsupported",
+      "note": "neither figure is in Underhill 1949. His Table 1 (p. 380, read on the page image), young-of-year mean TL: 27 mm (7 June 1939) and 19 mm (30 May 1940) at Willseyville Creek, 34 mm at Papish Pond (June 1939), 28.5 mm at Skaneateles Lake (9 June 1940); 53–60 mm in early–mid July (Willseyville 6 July 1940; Myosotis and Lincoln ponds 1937); 60–64 mm on 12 August 1940; 72–79 mm on 24–25 August 1940; 149 mm on 30 October 1939 (n = 3); 171 mm on 30 November 1939. Raney's 1939 pond series that he quotes (p. 378): 39 mm (30–50) on 30 June, 91 mm (81–119) on 22 September. Cite Scott & Crossman for 25–38 / 100–130 mm, or use Underhill's own series; either way the model's 4.4 cm by late September is far behind (Underhill: ~7.5 cm by late August)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Lead resolved: FishBase's 'Underhill 1948' (the 2.5 d at 17.2 °C point) is the Cornell Ph.D. thesis, a different item; the 1949 article prints only 6–12 days. The article's usable values: hatch length 6.1 mm (n = 18); first feeding at 10.2 mm, 6–8 days after hatch; young-of-year growth series in Table 1 (above); maturity (pp. 386–388): at Willseyville Creek 3 of 15 one-year-old females and 12 of 24 one-year-old males mature, 12 of 14 and 15 of 18 two-year-olds; at Papish Pond most first spawn at age 4 (some males at 3); at Skaneateles 3 of 4 two-year-olds of each sex mature. Age-I lengths 17–19.5 cm TL in spring at Willseyville (Table 2); oldest fish 7 years, largest 1,389 g; weight–length exponents 3.04–3.54 (Table 7). Adult tag returns: 12 of 34 tagged Papish fish recaptured within a year (no population estimate)."
+}

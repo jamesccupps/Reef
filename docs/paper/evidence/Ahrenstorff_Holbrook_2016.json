@@ -1,0 +1,42 @@
+{
+  "key": "Ahrenstorff_Holbrook_2016",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Minnesota DNR's own PDF of Investigational Report 576 (already in fetched/v2 from an earlier pass; re-indexed here to add the raw text for the table)",
+    "url": "https://files.dnr.state.mn.us/publications/fisheries/investigational_reports/576.pdf",
+    "file": "docs/research_notes/fetched/v2/Ahrenstorff_Holbrook_2016.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'Minnesota Department of Natural Resources, Investigational Report 576, June 2016. Mille Lacs Lake Bioenergetics. Tyler D. Ahrenstorff and Beth V. Holbrook' — matches the entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "Minnesota's Mille Lacs model used RA 0.009 for smallmouth bass (Shuter & Post 1990 parameters), rather than FB4's stored 0.03",
+      "location": "p. 14 (PDF p. 14), Table 1",
+      "quote": "RA 0.0108 0.0153 0.009",
+      "quote_from": "table",
+      "conditions": "Table 1 'Bioenergetic parameters used for Walleye (Kitchell et al. 1977), Northern Pike (Bean 2010), and Smallmouth Bass (Shuter and Post 1990)'; the smallmouth column is RA 0.009, RB −0.21, RQ 3.3, RTO 30, RTM 37, ACT 2, SDA 0.16 (respiration equation 2); consumption CA 0.25, CB −0.31, CQ 3.8, CTO 29, CTM 36 (equation 2); egestion FA 0.104, excretion UA 0.068 (equation 1)",
+      "verdict": "confirmed",
+      "note": "The report gives only 0.009; the 'stored 0.03' is FB4's value and the 'unit error' is the project's hypothesis, neither from this report. The report does not comment on the RA value or its units. The full smallmouth column above is the set the rewrite can compare with FB4's stored Shuter & Post row"
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "Mille Lacs smallmouth ate about 0.87 kg of food per bass a year and pike 2.1–2.3 kg each (per-fish values a project calculation)",
+      "kind": "arithmetic",
+      "location": "p. 16 (PDF p. 16), Results, 'Total consumption by Walleye, Northern Pike, and Smallmouth Bass'",
+      "quote": "about 75,000 Northern Pike in 2013 and 2014, and 32,000 Smallmouth Bass",
+      "conditions": "bioenergetics estimates of annual population consumption, 1 Oct–30 Sep, 2012–13 and 2013–14: pike 159.9 and 170.0 million g/yr, smallmouth 28.2 and 27.8 million g/yr (wet mass of food); pike and bass numbers are mark–recapture estimates for 2013 and 2014, given only as 'about 75,000' and '32,000'",
+      "verdict": "confirmed",
+      "note": "28.2e6/32,000 = 881 g and 27.8e6/32,000 = 869 g (≈ 0.87–0.88 kg per bass); 159.9e6/75,000 = 2,132 g and 170.0e6/75,000 = 2,267 g (2.1–2.3 kg per pike). The per-fish figures inherit the rounding of the population estimates and the 2012–13 consumption is divided by a 2013–14 population count"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Both uses hold. Other useful values: pike diets mostly yellow perch, larger pike (> 635 mm) some cisco; smallmouth diets dominated by crayfish and cisco (Figs 15–16, n = 1,029 pike and 514 bass stomachs, May–Oct 2013–14); juvenile walleye eaten by smallmouth 1.2 and 0.3 million g/yr vs pike 8.2 and 13.2 million g/yr. The smallmouth parameter column (Table 1) is a published, applied version of the Shuter & Post 1990 set with RA 0.009, useful when the human can read Shuter & Post itself (that paper is blocked in this pass)."
+}

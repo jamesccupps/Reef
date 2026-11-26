@@ -1,0 +1,46 @@
+{
+  "key": "Saila_1956",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (11 July 2016) of the free PDF the publisher (ASLO) once served at aslo.org/lo/toc/vol_1/issue_3/0195.pdf; openly downloadable, no login",
+    "url": "https://web.archive.org/web/20160711073020id_/http://aslo.org/lo/toc/vol_1/issue_3/0195.pdf",
+    "file": "docs/research_notes/fetched/v2/Saila_1956.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Saila, S. B. 1956. Estimates of the minimum size-limit for maximum yield and production of chain pickerel, Esox niger LeSueur, in Rhode Island. Limnology and Oceanography 1(3): 195–201 — matches. Drop '(not obtained)' from the entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3; §3.7.7",
+      "claim": "an estimate from age frequencies in two Rhode Island ponds, an exploited and an unexploited one",
+      "location": "p. 195 (PDF p. 1), Mortality components; p. 196 (PDF p. 2), Table 1 and text",
+      "quote": "chain pickerel killed during the chemical reclamation of a 320-acre pond",
+      "conditions": "unexploited: Larkin Pond, 44 acres, South Kingston RI, fyke net fished 20 days, no fishing for several years; exploited: Wallum Lake, 320 acres, 'partly in Rhode Island and partly in Massachusetts', fish killed in a chemical reclamation; total mortality from the weighted geometric mean of age frequencies (Rounsefell & Everhart 1953)",
+      "verdict": "confirmed",
+      "note": "the exploited water straddles the RI–MA line"
+    },
+    {
+      "paper": "Table 3.5-3 (chain pickerel); §3.5.3; §3.7.7",
+      "claim": "no catch-curve, tagging or mark–recapture survival estimate for chain pickerel in a northeastern lake exists or was obtained; Saila 1956 could not be read",
+      "source_value": "Saila 1956 is such an estimate and is now read: weighted annual survival 0.54 (annual mortality 0.46, instantaneous 0.61 = natural mortality) in unexploited Larkin Pond, ages IV–VIII; 0.45 (mortality 0.55, instantaneous 0.79) in exploited Wallum Lake, ages II–VI; fishing mortality p = 0.18 (annual 0.16)",
+      "location": "p. 196 (PDF p. 2), Table 1",
+      "quote": "survival (s) 0.50 0.54",
+      "quote_from": "image",
+      "conditions": "age-frequency (catch-curve) method; Larkin n = 41 aged fish (8 younger fish dropped), Wallum n = 52 (24 age-I fish dropped); samples were 15 and 28 % of the estimated population ≥ 10 in TL; scale ages, uncertainty rising with age ('tends to overestimate survival rate'); dominant year classes assumed absent. Unweighted values: Larkin s 0.50, Wallum s 0.30",
+      "verdict": "corrected",
+      "note": "The sentences saying no such estimate was found should now cite Saila: natural mortality (instantaneous) 0.61 yr⁻¹, adult survival without fishing 0.54. That sits at the top of the paper's life-history M range (0.24–0.66) and just below the notes' adult survival of 0.55–0.70 for a lightly fished Maine population"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1956.1.3.0195", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1956.1.3.0195", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "http://www.aslo.org/lo/toc/vol_1/issue_3/0195.pdf", "status": 404, "note": "ASLO no longer serves its old free back-issue PDFs" }
+  ],
+  "notes": "The paper repeatedly says this study 'could not be read'; it is now read and gives the only northeastern pickerel survival estimate found: annual survival 0.54 unfished (Larkin Pond, 44 ac) and 0.45 fished (Wallum Lake, 320 ac), natural mortality 0.61 yr⁻¹ (instantaneous). Other useful values: Rhode Island growth from 257 fish in 32 ponds, mean fork length (back-calculated, Lee's method, 37.7-mm intercept; Table 4, p. 200, read on the page image) at age I 167 mm (28 g), II 267 (120 g), III 316 (200 g), IV 358 (284 g), V 405 (430 g), VI 436 (554 g), VII 472 (715 g), VIII 515 mm (953 g); Table 4 also uses natural mortality q = 0.6 yr⁻¹ throughout; length–weight log W = −5.5101 + 3.1304 log FL (W g, FL mm), p. 198; best minimum size limit ~11–12 in TL; yield < 39 % of production; Lee's phenomenon detected in back-calculated age-I lengths."
+}

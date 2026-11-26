@@ -1,0 +1,69 @@
+{
+  "key": "AWI_2013",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "publisher's own open pages: the Adirondack Watershed Institute (Paul Smith's College) publication page 'Aquatic Plant Surveys: 2013' and its per-lake PDFs; the eight lakes in the entry fetched as AWI_2013.<lake>.pdf (little_tupper_lake, hoel_pond, white_lake, limekiln_lake, horseshoe_lake, eldon_lake, tupper_lake, stillwater_reservoir)",
+    "url": "https://www.adkwatershed.org/all-publications/aquatic-plant-surveys-2013",
+    "file": "docs/research_notes/fetched/v2/AWI_2013.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the publication page (byline and date) and each lake report's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Page: 'Aquatic Plant Surveys: 2013 … Daniel Kelting & Corey Laxson', posted 5 March 2014 (schema datePublished 2014-03-05); the individual reports carry no author names. 27 lakes are posted; the entry's eight are among them. The paper's '7 lakes' leaves out Stillwater Reservoir (0.5 %), which the entry still lists"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.5; Table 3.4-3",
+      "claim": "whole-lake surveys mapped beds on 3–39 % of lake area (seven Adirondack lakes)",
+      "location": "Eldon Lake report p. 1; the other lakes each on their report's p. 1",
+      "quote": "2 plant beds that covered 45.6 acres or 38.6 % of the lakes",
+      "conditions": "surface-visible bed surveys, June–July 2013: Little Tupper 3 % (63 of 2,290 ac, 18–22 Jul), Hoel 9 % (40 of 455 ac, 17 Jul), White 19 % (44 of 224 ac, 30 Jul), Limekiln 15.5 of 457 ac (3.4 %, project arithmetic; 25 Jun), Horseshoe 18.1 of 426 ac (4.2 %, project arithmetic; 13 Jun), Eldon 38.6 % (45.6 of 118 ac, 29 Jul; high water joined it to Raquette Lake), Tupper 16 % (606 of 3,853 ac, 11–15 Jul)",
+      "verdict": "confirmed",
+      "note": "five percentages are printed, two are project arithmetic from printed acreages. Stillwater Reservoir (0.5 %, 29 of 6,195 ac) is excluded from the seven; the reports do not say it was drawn down (the project note's reason). Invasive variable-leaf milfoil grew in Horseshoe (in 6 of 9 beds, ~17 ac), Eldon and Tupper, which may inflate their bed area"
+    },
+    {
+      "paper": "§3.4.5; Table 3.4-3",
+      "claim": "the surveyed lakes are 'soft, colored'",
+      "verdict": "unsupported",
+      "note": "none of the eight reports gives water chemistry, colour, alkalinity or calcium (searched); the descriptor must come from another source (e.g. ALSC or NYS data) or be dropped"
+    },
+    {
+      "paper": "Table 3.4-3",
+      "claim": "rake hits 4–56 % of littoral points (median ~13) in the seven lakes",
+      "kind": "arithmetic",
+      "location": "each report p. 1–2 (rake-toss paragraph)",
+      "quote": "Of the 27 rake tosses deployed through the littoral zone of this lake, 15 had",
+      "conditions": "single rake tosses on a grid through the littoral zone: Little Tupper 3/71, Hoel 6/50, White 4/31, Limekiln 9/59, Horseshoe 23/54, Eldon 15/27, Tupper 9/73",
+      "verdict": "confirmed",
+      "note": "4.2, 12.0, 12.9, 15.3, 42.6, 55.6, 12.3 % — range 4–56 %, median 12.9 %. Stillwater (10/172 = 5.8 %) excluded, as above"
+    },
+    {
+      "paper": "§3.4.5",
+      "claim": "Little Tupper Lake's 27 beds ranged from 40 m² to 5.8 ha",
+      "location": "Little Tupper Lake report p. 3, Table 1",
+      "quote": "25 4 0.01 … 11 1 3 2 2 3 3 14.37",
+      "quote_from": "table",
+      "conditions": "bed areas in acres, surface survey 18–22 July 2013; 27 beds summing to 62.86 ac (report: 63 ac)",
+      "verdict": "confirmed",
+      "note": "0.01 ac = 40.5 m²; 14.37 ac = 5.82 ha"
+    },
+    {
+      "paper": "§3.4.5",
+      "claim": "across lakes the one or two largest beds held 42–74 % of the mapped bed area (project tabulation)",
+      "kind": "arithmetic",
+      "source_value": "42–85 % across the seven lakes: Tupper Lake's single largest bed (no. 23, 503.57 ac) is 83 % of its 606 ac (two largest 85 %); Horseshoe's two largest 68 %",
+      "location": "Tupper Lake report p. 3, Table 1 (bed 23); the other lakes' Table 1",
+      "quote": "23 … 503.57 … 55 4 3 3.13",
+      "quote_from": "table",
+      "conditions": "shares from the bed-area columns summed per lake: Little Tupper two largest 41.7 %; Hoel largest 53.5 % (two 69.4 %); White two 74.3 %; Limekiln two 51.5 %; Horseshoe two 68.4 %; Eldon largest 74.1 % (it has only two beds); Tupper largest 83.1 %",
+      "verdict": "corrected",
+      "note": "the project tabulation left out Horseshoe and Tupper; with Tupper the range is 42–85 %. Tupper's Table 1 lists 55 beds though its text says 53"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Numbers hold except the largest-bed share (42–85 %, not 42–74 %, once Tupper is included) and the 'soft, colored' label, which the AWI reports do not support. Other useful values: abundance key per species in a bed 1 = rare < 5 %, 2 = occasional 6–15 %, 3 = present 16–25 %, 4 = common 26–50 %, 5 = abundant > 50 %, most entries 1–3; rakes found taxa the surface survey missed (Nitella, purple bladderwort, Robbins' pondweed, low milfoils); rake depths with plants mostly 3–14 ft (Hoel 3–9 ft, Limekiln 5–14 ft, Little Tupper 4–8 ft); median bed size 0.52–1.11 ac in the lakes with many beds (project arithmetic)."
+}

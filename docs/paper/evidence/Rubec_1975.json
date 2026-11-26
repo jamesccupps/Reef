@@ -1,0 +1,55 @@
+{
+  "key": "Rubec_1975",
+  "reader": "wave-3 batch w3-14",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: University of Ottawa uO Research (hdl 10393/8211, doi 10.20381/ruor-7184), the scanned thesis (MK25438.PDF, 199 pages); the scan has no text layer (getsrc 'scanned': true), so the pages that matter were read as rendered images: TOC pp. ii–iii, abstract p. x, pp. 1–4 (study area), p. 84, p. 94, Tables 17 and 19 (pp. 97, 99), pp. 119–120",
+    "url": "https://ruor.uottawa.ca/server/api/core/bitstreams/2c46f00c-9350-48e1-b655-1f950b486a7a/content",
+    "file": "docs/research_notes/fetched/v2/Rubec_1975.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the repository record (dc.title, dc.date.issued 1975, dc.degree.name M.Sc., dc.publisher University of Ottawa); the scan has no title page",
+    "ok": true,
+    "corrections": "",
+    "note": "author Rubec, Peter James; title as in the entry. A DOI exists: 10.20381/ruor-7184"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (brown bullhead, growth)",
+      "claim": "Ottawa River ≈ 126, 161, 195, 222 mm at ages 1–4",
+      "source_value": "Governor's Bay (lower river, below Ottawa) 1971, back-calculated TL at annuli 1–4: females 126, 160, 195, 222 mm; males 127, 162, 196, 222. The upper river (Shirleys and Britannia bays, Lac Deschênes) grew much faster: males 142, 199, 253, 284; females 131, 177, 223, 271 (Table 17)",
+      "location": "p. 99 (PDF p. 130), Table 19; p. 97 (PDF p. 128), Table 17",
+      "quote": "Weighted mean length 126 160 195 222 241 254 260 281",
+      "quote_from": "image",
+      "conditions": "pectoral-spine back-calculation (Lee–Lea formula, 13-mm intercept); Governor's Bay sample mostly ages III–VI (males: II 1, III 16, IV 36, V 46, VI 13, VII 2); 'total length at the end of each year of life'",
+      "verdict": "corrected",
+      "note": "the paper's 161 at age 2 mixes the sexes (160 F, 162 M); name the station, or give the sexes separately. More important: this is the slow lower-river station (see the next claim)"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "brown bullheads pass 20 cm only at about the third annulus even in a fast-growing Ottawa River population",
+      "source_value": "the third-annulus figure (195–196 mm) is from Governor's Bay in the lower river, where growth was 'much less' than upstream and which Rubec read as overpopulated; in the fast-growing upper river males reached 199 mm at the 2nd annulus and females 223 mm at the 3rd (177 at the 2nd)",
+      "location": "p. 94 (PDF p. 123); p. 120 (PDF p. 153); Tables 17 and 19 (PDF pp. 128, 130); study area p. 4 (PDF p. 18)",
+      "quote": "The lower river data would tend to indicate that the species has overpopulated",
+      "quote_from": "image",
+      "conditions": "Governor's Bay is one of the lower-river bays (Brewery Creek, Hay Bay, Governor's Bay, Kettle Is. Bay) below the Chaudière Falls; p. 94: growth greatest in the upper river at Shirleys and Britannia bays, lower-river growth 'much less'",
+      "verdict": "corrected",
+      "note": "'even in a fast-growing population' is backwards for the numbers used. With upper-river growth (20 cm at about the 2nd annulus) the share of a stock surviving ~50 %/yr that is under 20 cm would be nearer 50–75 % than 70–80 % (project arithmetic to be redone in the rewrite); Rubec's first annulus (~127 mm at Governor's Bay) also looks large for age 1, as the project notes say"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "most published bullhead studies concern 'overcrowded and stunted populations' (Rubec 1975, citing Carlander 1969)",
+      "location": "p. 120 (PDF p. 153), Age and Growth, Discussion",
+      "quote": "Most studies of bullhead have been on overcrowded and stunted populations (Carlander, 1969)",
+      "quote_from": "image",
+      "verdict": "confirmed",
+      "note": "Rubec continues that the upper-river and Hawkesbury fish had not exceeded carrying capacity while 'the lower river data would tend to indicate that the species has overpopulated that section of river'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://ruor.uottawa.ca/server/api/core/bitstreams/a2c243cd-c9c2-4761-9ddd-9e943322657f/content", "status": 200, "note": "the repository's extracted-text file is empty (199 bytes): the scan has no text layer" }
+  ],
+  "notes": "The growth numbers the paper uses are the slow lower-river station (Governor's Bay), not a fast-growing population; the upper-river fish (Table 17) passed 20 cm about a year earlier. Other useful values (abstract, p. x): densities of 2,500–7,800 bullhead/ha in Kettle Island Bay; bullhead 41.6 % of all fish above Ottawa and 85.9 % below; tagged fish mostly stayed in a home bay; dominance fights wound 5–17 % of fish in the spawning season; muscle mercury generally < 0.5 ppm. p. 72: most bullhead over age three were sexually mature; only 17 pairs spawned successfully at Brewery Creek in 1971, and ~30 % of mature females at Governor's Bay were resorbing eggs. p. 119: Ottawa River growth usually better than US and Czechoslovak populations; density and food mattered more than latitude. Length–weight (lower river, 1973, p. 119): Hay Bay 'log W = −5.210 + 3.121 TL' as printed (presumably log TL), r = 0.963, n = 100. Condition factors by month and section in Table 35 (p. 117)."
+}
