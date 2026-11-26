@@ -1,0 +1,33 @@
+{
+  "key": "VanderZanden_etal_2011",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF posted on the first author's lab website (Vander Zanden lab, Center for Limnology, University of Wisconsin–Madison), 10 pages",
+    "url": "https://jvzlab.limnology.wisc.edu/wp-content/uploads/sites/104/2022/10/Vander-Zanden_11_Ecosystems_benthic-reliance.pdf",
+    "file": "docs/research_notes/fetched/v2/VanderZanden_etal_2011.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the first page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors (M. Jake Vander Zanden, Yvonne Vadeboncoeur, Sudeep Chandra), year, title, Ecosystems 14: 894–903 (issue 6 per Crossref), doi:10.1007/s10021-011-9454-6 all match. printed page = PDF page + 893"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9",
+      "claim": "across 546 fish populations in 75 lakes, reliance on littoral carbon averaged 57 % (lake means, each species weighted equally)",
+      "location": "p. 894 (PDF p. 1), abstract; p. 897 (PDF p. 4), Results",
+      "quote": "fish species not weighted according to production or biomass) averaged 57%",
+      "conditions": "δ13C two-end-member mixing model (littoral–benthic against pelagic + terrestrial end-members, from the most 13C-enriched littoral primary consumers and pelagic consumers), no trophic fractionation; per-species values outside 0–1 (< 10 %) set to 0 or 1; lakes with end-members < 5 ‰ apart excluded; 75 lakes of 0.02 to > 82,000 km² on five continents. Lake means (BRL) 0.57 ± 0.20 SD; the mean over all 546 populations was 0.50 ± 0.28",
+      "verdict": "confirmed",
+      "note": "the source stresses that it \"cannot be extrapolated to whole-lake fish production\" (abstract, p. 894): it is an average over species, not over fish biomass. BRL did not vary with mean depth, area, TP, Secchi, chlorophyll or latitude"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://corescholar.libraries.wright.edu/biology/587/", "status": 200, "note": "repository record without a full-text file" }
+  ],
+  "notes": "Only §3.7.9 cites this paper. show.mjs also lists §3.2.5, §3.8.7 and src/w3/littoral3.js:39 under this key, but those cite Vander Zanden & Gratton 2011 (CJFAS), a different paper (see its evidence file); the ledger's matching should be fixed. Other values: benthic algae made up 36 % of whole-lake primary production on average (BPf 0.36 ± 0.24, range 0.01–0.87; the model's benthic maximum rate fixed at 30 mg C m⁻² h⁻¹, macrophytes left out, so a minimum estimate), and BPf fell with mean depth (BPf = −0.21·log(mean depth) + 0.57), so shallow lakes like Hot Brook's sit at the high end; littoral reliance exceeded BPf in 60 of 75 lakes."
+}

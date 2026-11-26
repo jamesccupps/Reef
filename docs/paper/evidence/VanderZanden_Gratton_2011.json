@@ -1,0 +1,87 @@
+{
+  "key": "VanderZanden_Gratton_2011",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF posted on the first author's lab website (Vander Zanden lab, Center for Limnology, University of Wisconsin–Madison), 13 pages; Fig. 3 read on the page image",
+    "url": "https://jvzlab.limnology.wisc.edu/wp-content/uploads/sites/104/2022/10/Vander-ZandenGratton_11_CJFAS_blowin.pdf",
+    "file": "docs/research_notes/fetched/v2/VanderZanden_Gratton_2011.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the first page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, year, title, Canadian Journal of Fisheries and Aquatic Sciences 68(1): 170–182, doi:10.1139/F10-157 all match (a Perspective based on the 2009 J.C. Stevenson Memorial Lecture). printed page = PDF page + 169"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.5",
+      "claim": "airborne terrestrial particulate carbon averaged 1.88 g C per meter of shoreline per year across seven estimates, declining exponentially away from the shore",
+      "source_value": "1.88 g C m⁻¹ yr⁻¹ is the parameter (s) of a negative exponential DISTRIBUTION fitted to the frequency histogram of seven per-shoreline deposition estimates (Fig. 3d, values about 0.5–5.5), from which deposition values were drawn for 5,000 simulated lakes; the exponential describes the spread among lakes, not a decline with distance from shore",
+      "location": "p. 177 (PDF p. 8), Modeling land-to-lake flux; p. 176 (PDF p. 7), Fig. 3d",
+      "quote": "we fit a negative exponential model to the Dshore estimates",
+      "conditions": "the seven estimates (from Preston et al. 2008) were \"collected using diverse sampling methods (mesh size, seasonality, and sampling intensity)\"",
+      "verdict": "corrected",
+      "note": "what the source says about distance from shore is separate: leaf litter falls mostly within 10 m of shore, and fine POC is elevated near shore \"though there is notable deposition extending substantial distances out into the lake\" (p. 172). Say \"seven estimates, fitted with a negative exponential distribution of mean ~1.9 g C per m of shore per year\""
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "terrestrial insects are \"rarely dominant in lentic fish diets\"",
+      "location": "p. 172 (PDF p. 3)",
+      "quote": "terrestrial insects are rarely dominant in lentic fish diets, they are commonly present",
+      "conditions": "review statement (Hunt 1975; Weidel et al. 2008); the same paragraph gives exceptions (bleak ~84 % terrestrial insects, Mehner et al. 2005; Castle Lake trout > 30 %)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "lakes receive leaves mainly within about 10 m of a forested shore",
+      "location": "p. 172 (PDF p. 3)",
+      "quote": "with most leaf litter inputs to lakes occurring within 10 m of shore",
+      "conditions": "the source cites Gasith & Hasler 1976 and France & Peters 1995; a rapid decline with distance from shore",
+      "verdict": "confirmed",
+      "note": "\"forested\" is the paper's word, not the source's"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "across 49 whole-lake estimates, median benthic secondary production was 2.3 g C m⁻² yr⁻¹, insects made up about 70 % of it, and 30 ± 4 % of insect production emerged",
+      "source_value": "only the production figure rests on 49 whole-lake estimates (median 2.3 g C m⁻² yr⁻¹, right-skewed); the insect share is 0.70 ± 0.33 from 28 estimates and the emerging fraction 0.30 ± 0.04 from 18 (both given as mean ± 1 SD)",
+      "location": "p. 176 (PDF p. 7), Results: lake-to-land and Fig. 3a–c",
+      "quote": "approximately 30% of insect production leaves lakes in the form of insect emergence",
+      "conditions": "literature compilation, most production estimates from the 1960s–70s International Biological Programme (only 14 of 49 after 1980); n = 49, 28 and 18 (p. 176)",
+      "verdict": "corrected",
+      "note": "the ± 0.04 is labelled an SD, but Fig. 3c's 18 values run from about 0.1 to 0.7 (my reading of the histogram: SD ≈ 0.19, so ± 0.04 matches a standard error). Say \"about 30 % (18 estimates, ~10–70 %)\""
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "across 49 whole-lake estimates, 0.30 ± 0.04 of insect production emerged",
+      "source_value": "the emerging fraction comes from 18 estimates, not 49 (0.30 ± 0.04, labelled mean ± 1 SD; the values span about 0.1–0.7 in Fig. 3c)",
+      "location": "p. 176 (PDF p. 7), Fig. 3c and text",
+      "quote": "fe = 0.30 ± 0.04, mean ± 1 SD; Fig. 3c",
+      "verdict": "corrected"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "applied to Upper, these figures give an emergence export of roughly 7–11 mg P and 70–110 mg N m⁻² yr⁻¹ (project estimate)",
+      "location": "p. 176 (PDF p. 7); p. 179 (PDF p. 10), Discussion",
+      "quote": "Nitrogen and phosphorus content in insects is high, roughly 10% and 1%",
+      "kind": "arithmetic",
+      "conditions": "inputs from this source: median production 2.3 g C m⁻² yr⁻¹ × insect share 0.70 × emerging fraction 0.30 = 0.48 g C m⁻² yr⁻¹; insects ~10 % N and ~1 % P (also given by Dreyer et al. 2015)",
+      "verdict": "confirmed",
+      "note": "working: 0.48 g C at ~45 % C (the note's C:dry ratio, not from this source) ≈ 1.07 g dry → ~11 mg P and ~107 mg N; the note's lower end (0.3 g C → 0.7 g dry → 7 mg P) is a rounding down, not derived. It mixes a median with means, and the emerging fraction alone spans ~0.1–0.7, so the true uncertainty is several-fold wider than 7–11"
+    },
+    {
+      "paper": "src/w3/littoral3.js:39",
+      "claim": "~30 % of insect production emerges",
+      "location": "p. 176 (PDF p. 7)",
+      "quote": "approximately 30% of insect production leaves lakes in the form of insect emergence",
+      "conditions": "mean of 18 literature estimates, spread about 0.1–0.7 (Fig. 3c); independent of lake area",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/F10-157", "status": 403, "note": "publisher refuses scripts (OpenAlex lists it as bronze open access)" }
+  ],
+  "notes": "Other values: with typical emergence and deposition, airborne terrestrial carbon into a lake exceeds the insect carbon leaving it in lakes smaller than about 2,000 ha (p. 178), so for both Hot Brook lakes the land-to-lake airborne CARBON flux should exceed emergence, while in nutrient terms the insects weigh more (insects ~10 % N, 1 % P against nutrient-poor plant litter, p. 179); fine POC deposition can extend far into a lake (Preston et al. 2008); in Wisconsin, shoreline deposition rose with lake area across 16 lakes of 0.1–184 ha (Preston 2009, p. 179); insect deposition on land declines as a negative exponential with distance from shore (Gratton & Vander Zanden 2009, p. 173). show.mjs also lists these citing sentences under VanderZanden_etal_2011 (a different 2011 paper); they belong here."
+}

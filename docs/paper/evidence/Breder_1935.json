@@ -1,0 +1,77 @@
+{
+  "key": "Breder_1935",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item biostor-194454 (BioStor scan of Zoologica, openly downloadable, CC BY-NC), a 43-page PDF with an OCR text layer; Tables I and II read on the page images",
+    "url": "https://archive.org/download/biostor-194454/biostor-194454.pdf",
+    "file": "docs/research_notes/fetched/v2/Breder_1935.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and the running heads; Internet Archive metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "C. M. Breder, Jr., New York Aquarium; title, Zoologica 19, pp. 143–185 (PDF pp. 1–43) match. The title page says \"Vol. XIX, No. 3\" but every running head reads \"[XIX; 4\"; the citation's 19(3) follows the title page. The PDF's own page labels are wrong from PDF p. 11: printed page = PDF page + 142 throughout"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1; src/config.js:479",
+      "claim": "brown bullhead eggs die within about a day in still water; the code: a bullhead's eggs die in < 24 h unfanned",
+      "location": "p. 150 (PDF p. 8)",
+      "quote": "All eggs died in less than twenty-four hours in standing water",
+      "conditions": "one batch removed from an aquarium nest to the laboratory, kept at the nest's temperature (about 21 °C); in a flow equal to trout culture all but the few outermost eggs died; eggs lived and hatched only in a flask whose bottom inflow kept them \"in a constant state of violent tumbling\"",
+      "verdict": "confirmed",
+      "note": "\"unfanned\" in the code = removed from the parents; the parents' care is mostly physical working of the eggs (ventral fins beating the mass, mouthing and spitting it out), \"directed more toward an actual manipulation of the eggs than the circulation of water\" (p. 149)"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "so they depend on the parents' fanning (project inference)",
+      "location": "p. 150 (PDF p. 8); Summary item 7, p. 173 (PDF p. 31)",
+      "quote": "It does, however, supply an adequate explanation of the violent activity of the parents.",
+      "conditions": "Breder's own inference: the eggs \"will not hatch away from their parents unless continually agitated\" (Summary 7)",
+      "verdict": "confirmed",
+      "note": "the inference is Breder's, not only the project's; \"agitation\" or \"working the eggs\" describes it better than \"fanning\""
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "brown bullhead spawn after a slow rise to ~21 °C",
+      "location": "p. 152 (PDF p. 10); Summary item 1, p. 173 (PDF p. 31)",
+      "quote": "A slow rise to about 21° evidently permits spawning",
+      "conditions": "New York Aquarium tanks on city tap water, 1931–34 (two pairs; temperatures at spawning 20.7–23.3 °C, Table I); Breder contrasts other authors' ~25 °C after a rapid rise; Summary: \"may spawn at least twice a season after a temperature of 21° C. has been reached\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "eggs about 3 mm",
+      "location": "p. 148 (PDF p. 6); Summary item 6, p. 173",
+      "quote": "They are of a pale cream color, and average about 3 mm. in diameter.",
+      "conditions": "aquarium spawnings; adhesive, with a soft gelatinous covering",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "hatch in 6–10 d at about 21 °C",
+      "location": "p. 146 (PDF p. 4), Table I (page image)",
+      "quote": "Aug. 18, 1931 Aug. 24 Sept. 3 21.1 6 10",
+      "quote_from": "table",
+      "conditions": "Table I: days to hatch 6, 10 and 9 for spawnings at 21.1 °C and 6 at 23.3 °C (temperature read at egg laying); the 10-day value is the batch incubated in the laboratory; days to swim-up 10, 16 and 7; aquarium",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "hatch 6–10 d with a mean of 8 at 21.3 °C",
+      "verdict": "unsupported",
+      "note": "Breder 1935 gives no mean and no 21.3 °C: Table I has four hatch times (6, 10, 9 d at 21.1 °C; 6 d at 23.3 °C). The mean 8 d at 21.3 °C is from Breder 1939's outdoor-pool data according to the egg-stage note (not checked here): cite 1939 for it"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "several hundred to > 1,000 eggs in an excavation or burrow at 0.2–1.2 m",
+      "verdict": "unsupported",
+      "note": "not in Breder 1935: \"No actual counts were made of the eggs\" (p. 151); Table II (p. 153) compiles others' counts (e.g. 2,000 ±, 50–500 +) and 500–2,000 ± for Breder's own row (which also holds a New Jersey record), and water depths from \"few in.\" or 4 in to 5 ft (Breder's aquarium: 4 ft). Nests are sheltered hollows cleaned out by both sexes, or holes dug in gravel (Summary 2). The count range and the 0.2–1.2 m are from Armstrong & Child 1962 and Breder 1939 according to the egg-stage note: cite them for these"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Table 3.6-1's brown bullhead row cites \"Breder 1935, 1939; New Hampshire Fish & Game; Armstrong 1962; Eycleshymer 1901; Blumer 1985, 1986b\" for the whole row; split the attribution so each value names its own source (1935 gives the slow rise to ~21 °C, the ~3-mm eggs and 6–10 d to hatch; not the count, the depth or the mean of 8 d at 21.3 °C; hatch length 7–8 mm and both parents in 56 % of broods are not in it either). Breder also reports: both parents incubate and defend, the female doing most of the incubating and the male most of the guarding (p. 149); young swim up after about 12 days, heavily pigmented, and school by sight (Summary 8–9); the eggs are as sensitive to daylight as trout eggs (p. 150); parents ate a dozen eggs laid on the day before the main spawning (p. 149). The Table 3.5-3 redbreast cell \"aggregates in deeper water below 5 °C (Breder & Nigrelli 1935, via COSEWIC 2008)\" is a different paper (Breder & Nigrelli 1935, Ecology 16: 33–47, its own ledger entry); show.mjs lists it under this key by mistake."
+}

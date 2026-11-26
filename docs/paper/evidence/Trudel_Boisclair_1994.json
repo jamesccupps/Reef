@@ -1,0 +1,50 @@
+{
+  "key": "Trudel_Boisclair_1994",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (no full text)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Trudel, Marc; Boisclair, Daniel (1994), Seasonal Consumption by Dace (Phoxinus eos × P. neogaeus): A Comparison between Field and Bioenergetic Model Estimates, CJFAS 51(11): 2558–2567, doi:10.1139/f94-255 — matches; not checked against the title page"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3",
+      "claim": "blacknose dace: no bioenergetics model; the dace set (Phoxinus; He 1986; Trudel & Boisclair 1994) is the stand-in",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 4.3",
+      "claim": "fallfish run on the dace set (He 1986; Trudel & Boisclair 1994), adults with pikeminnow consumption",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 4.3",
+      "claim": "blacknose dace run on the dace set (He 1986; Trudel & Boisclair 1994)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/species.js:259",
+      "claim": "golden shiner (2-D sim) on FB4 \"Dace\" (He 1986; Trudel & Boisclair 1994)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/w3/species3.js:50; src/w3/species3.js:58",
+      "claim": "young fallfish on the Phoxinus \"dace\" set (He 1986; Trudel & Boisclair 1994)",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f94-255", "status": 403, "note": "NRC/Canadian Science Publishing refuses scripts; closed access (OpenAlex and Semantic Scholar: closed, no repository copy)" },
+    { "url": "https://doi.org/10.1139/f94-255", "status": 403, "note": "resolves to the publisher; same refusal — a library login would open it" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f94-255%22&format=json&resultType=core", "status": 200, "note": "no Europe PMC record" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f94-255?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf: CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28seasonal+consumption+dace%29", "status": 200, "note": "no Internet Archive item" },
+    { "url": "(web search: Trudel's thesis at Université de Montréal / McGill)", "status": 0, "note": "no thesis or repository copy found" }
+  ],
+  "notes": "Every use is an attribution of FB4's dace parameter set. The intermediary agrees: FB4 (Deslauriers et al. 2017, p. 4, Table 1, and its parameter file Deslauriers_etal_2017_Parameters_official.csv, row \"Dace (adult & juvenile), Phoxinus spp.\") gives the source as \"He 1986; Trudel and Boisclair 1994\", and the code's minnow set (CA 0.36, CB −0.31, CQ 2.3, CTO 26, CTM 29, RA 0.0148, RB −0.2, RQ 2.1, RTO 29, RTM 32) matches that row. Which parameters each paper supplied, and the fish and conditions behind them (the hybrid Phoxinus eos × P. neogaeus of Quebec lakes), stay unchecked until the article is read; the title says it compared field consumption with the model's estimates, so it may also report the dace model's bias, which the paper's surrogate notes would want."
+}

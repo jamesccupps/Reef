@@ -1,0 +1,57 @@
+{
+  "key": "Roberts_1964",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (no full text)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Roberts, John L. (1964), Metabolic responses of fresh-water sunfish to seasonal photoperiods and temperatures, Helgoländer Wissenschaftliche Meeresuntersuchungen 9(1–4): 459–473, doi:10.1007/BF01610057 — matches the citation; not checked against the title page"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "the bluegill set predicts 20–70 % more respiration than was measured in 30-g pumpkinseed at 5–25 °C (Roberts 1964, via Altman & Dittmer 1971 and FishBase; project arithmetic, one study of unknown acclimation)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 4.3",
+      "claim": "pumpkinseed: bluegill set with adult respiration × 0.7 (Roberts 1964)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§5.3",
+      "claim": "the sunfishes' own × 0.7 on their borrowed bluegill set rests on measured routine metabolism (Roberts 1964)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/species.js:272",
+      "claim": "bluegill respiration runs 1.2–1.7× the routine O₂ uptake measured on 30-g pumpkinseed (Roberts 1964)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/w3/fish3.js:700",
+      "claim": "the bluegill set's respiration is 1.2–1.7× the routine O₂ uptake measured on 30-g pumpkinseed (Roberts 1964); × 0.7 lowers the sunfishes' maintenance from p ~0.40 to ~0.28",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/w3/fish3.js:703",
+      "claim": "the × 0.7 is Roberts 1964's 30-g ADULT pumpkinseed, not applied to the juvenile set",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007%2FBF01610057.pdf", "status": 200, "note": "the OpenAlex/Semantic Scholar 'bronze' link: Springer serves a login/bot-check page to the script (not kept)" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF01610057.pdf", "status": 200, "note": "same login/bot-check page" },
+    { "url": "https://link.springer.com/article/10.1007/BF01610057", "status": 200, "note": "same login/bot-check page" },
+    { "url": "https://hmr.biomedcentral.com/articles/10.1007/BF01610057", "status": 200, "note": "Helgoland Marine Research (BMC, the journal's open-access successor): login/bot-check page to the script" },
+    { "url": "https://hmr.biomedcentral.com/track/pdf/10.1007/BF01610057", "status": 200, "note": "same" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/BF01610057%22&format=json", "status": 200, "note": "no Europe PMC record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28metabolic+responses+fresh-water+sunfish%29", "status": 200, "note": "no Internet Archive item" },
+    { "url": "http://web.archive.org/web/20180725091516/https://link.springer.com/content/pdf/10.1007%2FBF01610057.pdf", "status": 0, "note": "a 2018 Wayback capture of the publisher's free PDF exists (availability API: status 200); this session's permission check refused the fetch, so it was not read — the human can open it in a browser, or open the Springer PDF link above (free to read in a browser)" }
+  ],
+  "notes": "The paper's own sentence already says it took Roberts's values via Altman & Dittmer 1971 and FishBase; nothing here confirms them. The article appears to be free to read on Springer in a browser (OpenAlex: bronze), so the human can fetch it by hand and index it with getsrc --file. What to check when it is in hand: the fish's mass (30 g?), species (Lepomis gibbosus), whether the uptake is routine or standard, the temperatures (5–25 °C) and acclimation/photoperiod (the title says seasonal photoperiods and temperatures, so the rates may depend on season as well as temperature), the units (mg or ml O₂ per kg per h), and then redo the 1.2–1.7× (20–70 %) comparison against FB4's bluegill respiration at 30 g."
+}

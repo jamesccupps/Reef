@@ -1,0 +1,77 @@
+{
+  "key": "Steinhart_etal_2005",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF as posted by the Harkness Laboratory of Fisheries Research (Ontario MNR / University of Toronto; its list of contributions), 8 pages; Table 1 read on the page image",
+    "url": "https://www.harkness.ca/PDFs/Contributions%202000s/steinhart2005.pdf",
+    "file": "docs/research_notes/fetched/v2/Steinhart_etal_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, title, Behavioral Ecology 16(2): 427–434, doi:10.1093/beheco/ari006 all match. Crossref dates it 2004 (Advance Access 3 November 2004); the issue is 2005, as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4; §3.6.2",
+      "claim": "at Opeongo guarding males lost little (585 to 571 g in 19 days; average-length males 2.4 % lighter, different fish at the start and end, not significant)",
+      "location": "p. 429 (PDF p. 3), Table 1 (page image); p. 431 (PDF p. 5), Results",
+      "quote": "Simulation length (day) 17 19 ... 852 585 ... 754 571",
+      "quote_from": "table",
+      "conditions": "2001; wet weights of an average-length male predicted from population-specific WW–TL regressions at the observed mean TL, from 12 males killed early in care (guarding unhatched embryos, 11 June) and 13 late (guarding free-swimming juveniles, 30 June); residual WW did not fall during care (F1,59 = 1.12, p = .29); (585 − 571)/585 = 2.4 %",
+      "kind": "arithmetic",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "against 11.5 % in Lake Erie",
+      "location": "p. 429 (PDF p. 3), Table 1 (page image); p. 431 (PDF p. 5)",
+      "quote": "Smallmouth bass starting WW (g) 852 ... ending WW (g) 754",
+      "quote_from": "table",
+      "conditions": "Bass Islands, western Lake Erie, 1999–2000; 17 days of care (13–30 June); regression-predicted weights of an average-length male (19 early, 20 late males); (852 − 754)/852 = 11.5 % of wet weight; whole-body energy content fell 11 % (p. 431)",
+      "kind": "arithmetic",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "hyperabundant invasive round gobies raised the males' chase rate ninefold",
+      "location": "p. 430 (PDF p. 4), Results; abstract p. 427",
+      "quote": "chased predators nine times more frequently than smallmouth bass in Lake Opeongo",
+      "conditions": "15 min of video per nest between 09:00 and 16:00, nests holding unhatched or hatched embryos: Erie 40 males (284 chases), Opeongo 27 males (51 chases); > 99 % of predators confirmed on Erie videotapes were round gobies (Steinhart et al. 2004); the authors note different predator communities make the comparison imperfect",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2; §3.7.4",
+      "claim": "64 % of guarding Opeongo males had prey in their stomachs",
+      "location": "p. 431 (PDF p. 5), Diet of guarding males",
+      "quote": "had prey in their stomach in Lake Opeongo (64%) than in Lake Erie (21%)",
+      "conditions": "males angled from their nests (Opeongo, 2001) or taken by divers (Erie); prey > 5 mm identified; 50 % of males guarding embryos and 77 % guarding juveniles had eaten (Erie 5 % and 30 %)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "guarding males eat little but rarely nothing",
+      "source_value": "eating nothing was common: 36 % of guarding Opeongo males and 79 % of Lake Erie males had empty stomachs; early in care (guarding embryos) 50 % of Opeongo and 95 % of Erie males had eaten nothing",
+      "location": "p. 431 (PDF p. 5), Diet of guarding males",
+      "quote": "males guarding embryos (Lake Erie: 5%; Lake Opeongo: 50%)",
+      "conditions": "stomach contents at capture, a snapshot; daily ration (Eggers model) rose from early to late care in both lakes",
+      "verdict": "corrected",
+      "note": "\"eat little\" is the authors' own reading (\"consumed few prey\", abstract); \"rarely nothing\" is not: say \"about two-thirds of Opeongo guards held prey (half early in care, three-quarters late)\""
+    },
+    {
+      "paper": "src/config.js:350",
+      "claim": "guarding raises respiration ×1.2–1.28 (Steinhart et al. 2005)",
+      "location": "p. 432 (PDF p. 6), Bioenergetic simulations; abstract p. 427",
+      "quote": "in Lake Opeongo, males had an ACT of 1.2",
+      "conditions": "ACT is a multiplier on standard metabolism in Fish Bioenergetics 3.0 with the Whitledge et al. (2003) adult smallmouth parameters, fitted so the model reproduced the measured end-of-care weight over the whole care period (embryos to free-swimming juveniles, 17–19 d); Opeongo, without round gobies. The abstract gives the Opeongo rise as 28 % and the Erie rise (ACT 3.1) as 210 %",
+      "verdict": "confirmed",
+      "note": "the source's own 1.2 and \"28 %\" disagree slightly (hence the code's 1.2–1.28). It is a whole-guard average for a low-predator lake; the code's staging (×1.4 early, ×1.12 late) is not from this source"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Internal slip in the source: p. 432 says a 350-mm Erie male spends 381 kJ \"over 19 days\" and an Opeongo male 53 kJ \"over 17 days\", but Table 1 and the methods give Erie 17 days (13–30 June) and Opeongo 19 days (11–30 June); the day counts in that sentence are swapped. Other values: Erie males lost about 20 kJ per day of care and spent more than six times the energy per day of Opeongo males; with Erie's ACT, Opeongo's cost would be nearly the same as Erie's; nests at 2–4 m over cobble (Erie) and 1–2 m on cobble (Opeongo); care lasts up to 6 weeks (Coble 1975, cited); chases at Opeongo were mostly horizontal (68 %), at predators in the water column (smallmouth, yellow perch, pumpkinseed); in Erie, round gobies can eat 400–2,000 offspring within 5 min of a male's removal and a whole brood in ~15 min (Steinhart et al. 2004, cited)."
+}

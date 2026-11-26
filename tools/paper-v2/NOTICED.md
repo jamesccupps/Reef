@@ -27,3 +27,8 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-07 | §3.6.1 (`03_…md:538`) | "Clady, via Dahlberg 1979" twice with no year; the research note says it is almost certainly Clady 1976 (JFRBC 33: 1887–1893), not the 1975 bass paper | open |
 | t1-07 | Table 3.5-3, `03_…md:234` vs `src/species.js:376` | The 39–52 % overestimate of juvenile esocid consumption: Wahl & Stein 1991 (TAFS 120(2)) in the paper, "TAFS 137(6), 2008" in the code — one is wrong | open |
 | t1-07 | Barr 1996 | The notes say Wisconsin; a (unverified) search summary gives the author at Guelph, Ontario — check the study site when it is read | open |
+| t1-10 | §3.6.7 | "The fry disperse at about 28 mm (Opeongo)" has no source of its own and is not in Ridgway 2002; Ridgway (p. 57) does support young bass "as single fish or in small groups" (credited only to Hubbs & Bailey via Forbes) | open |
+| t1-10 | §3.5.7 | "Homed from a mean 6.7 km": cite Ridgway & Shuter 1996 alone (not with Ridgway 2002) | open |
+| t1-10 | `src/config.js:350` | Guards "lose 3–8 % of their mass over ~4 weeks": Steinhart et al.'s Lake Erie males (round gobies present) lost 11.5 % in 17 d — the range holds only where nest predators are scarce | open |
+| t1-10 | Table 3.6-7, Opeongo | Ridgway's 48–53 mm is total length (1992 only); the same cell's 55–85 mm (Shuter & Ridgway 2002) is fork length — say so | open |
+| t1-10 | (Steinhart et al. 2005 itself) | Its p. 432 swaps the day counts (Erie 17, Opeongo 19 per its Table 1): anyone quoting the kJ figures should use the table | note |

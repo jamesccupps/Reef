@@ -1,0 +1,124 @@
+{
+  "key": "Ridgway_etal_2002",
+  "reader": "wave-1 batch t1-10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Harkness Laboratory of Fisheries Research's own PDF (the authors' institution's list of contributions; the AFS typeset pages); 13 PDF pages for printed pp. 47–60, so printed p. 54 is missing from this copy (PDF p. 7 is printed 53, PDF p. 8 is printed 55; checked on the page images)",
+    "url": "https://www.harkness.ca/PDFs/Contributions%202000s/Ridgway%202002%20Smallmouth%20Bass%20the%20Jouvenile%20Transition%20Hypothesis.pdf",
+    "file": "docs/research_notes/fetched/v2/Ridgway_etal_2002.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1); no DOI found in Crossref (title search)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors (Mark S. Ridgway, Brian J. Shuter, Trevor A. Middel, Mark L. Gross), year, title and American Fisheries Society Symposium 31: 47–60 all match. The volume is Philipp & Ridgway (eds), Black Bass: Ecology, Conservation, and Management (not printed on the chapter's title page). printed page = PDF page + 46 through p. 53, + 47 from p. 55"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "smallmouth bass leave their summer ranges after mid-August",
+      "location": "p. 51 (PDF p. 5), Analysis",
+      "quote": "smallmouth bass begin to leave their summer home range and undertake fall movements",
+      "conditions": "Lake Opeongo; given as the reason home-range fixes stop at mid-August (day of year 218), \"after mid-August, water temperatures begin to decline\"; the statement itself cites Ridgway & Shuter 1996",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "they move to a few wintering sites from about a week after the autumn equinox, at 10–15 °C",
+      "verdict": "unsupported",
+      "note": "not in the pages read: the article gives no date or temperature for the fall move. It describes only the classic three-area model (nest sites, summer ranges, fall movement \"to one common location for the winter\", Webster 1954; Fig. 1, p. 48) and overwinter sites separate from summer ranges. The equinox timing and 10–15 °C are from Ridgway as quoted by Pyzer 2014 (research note), so cite only Pyzer for them. The missing p. 54 holds the home-range results, not the fall move"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "smallmouth in Opeongo held 200–400-ha home ranges (95 % kernel)",
+      "location": "p. 47 (PDF p. 1), abstract; p. 52 (PDF p. 6), Analysis (the 95 % contour)",
+      "quote": "adult home ranges are large (200-400 ha), traveled extensively each day (1-9 km)",
+      "conditions": "31 adults with surgically implanted ultrasonic tags (all ≥ 38 cm FL), 79–123 fixes each, 1989–1993, daylight fixes (09:00–17:00) from leaving the nest to mid-August; fixed-kernel ranges (LSCV bandwidth), the total range = the smallest area holding 95 % of the utilization distribution; females' 95 % ranges larger than males'",
+      "verdict": "confirmed",
+      "note": "the 200–400 ha is the article's own summary in its abstract: the results page with the per-fish areas (printed p. 54) is missing from this copy, so the figure could not be read against the table. Table 4 (p. 55) gives the maximum extent of a home range as 4.47 km mean (1.67–11.43). The earlier \"100-300 ha\" (p. 48) is Ridgway & Shuter 1996's"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "they traveled 1–9 km a day",
+      "location": "p. 55 (PDF p. 8), text and Table 4",
+      "quote": "mean total distance traveled in tracks was 4.80 km with one fish traveling 9.01 km",
+      "conditions": "15 fish tracked for 6–16 h (mean 11.4 h) by day at 15-min fixes, early July to September; total track distance 1.25–9.01 km (mean 4.80), mean rate 482.7 m/h (110–1,120), net displacement 1.23 km; two fish followed for 24 h moved little or not at all in the evening",
+      "verdict": "confirmed",
+      "note": "\"a day\" is a daytime track of 6–16 h, not 24 h"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "they rarely included their nest site in their summer range",
+      "location": "pp. 55–56 (PDF pp. 8–9)",
+      "quote": "Only two fish, both males, incorporated their spawning site within their summer home range",
+      "conditions": "of the 31 tagged adults; both cases toward the end of summer",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "they reused the same range from year to year (74 % overlap)",
+      "location": "p. 55 (PDF p. 8)",
+      "quote": "74 percent (95% CI, ±13.5%) from one year to the next",
+      "conditions": "fish tracked in two years; males 81 % (± 10.2 %), females 46 % (\"too few females returned\"); core (50 %) areas overlapped less, 54 %",
+      "verdict": "confirmed",
+      "note": "the start of the sentence (what overlapped, and the number of fish) is on the missing p. 54; the next sentence (core areas overlapped less than the total ranges) shows the 74 % is the 95 % range"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "they homed from a mean 6.7 km when displaced",
+      "verdict": "unsupported",
+      "note": "no displacement experiment in this article: it says only that displaced adults \"will return within a few days to a few weeks\" and \"in a relatively short period of time\", citing Ridgway & Shuter 1996 (pp. 48, 56). The 6.7 km is Ridgway & Shuter 1996's (via Rupnik 2018, per the research note): cite it alone for this"
+    },
+    {
+      "paper": "§3.5.7; §3.6.7; src/w3/fish3.js:752",
+      "claim": "young smallmouth stayed within about 200 m of the nest (almost all < 200 m); the code: most within 200 m of the nest",
+      "location": "p. 52 (PDF p. 6), Results; Fig. 2",
+      "quote": "Almost all age-0 fish were found within 200 m of their nest of origin",
+      "conditions": "Jones Bay, Lake Opeongo, 1992: 139 age-0 fish electrofished in one week of September, matched by DNA fingerprints to 116 nests whose broods reached swim-up (data of Gross 1995); straight-line distances along the shore; the distribution did not differ from normal",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "their young stayed within 5 m of shore and in less than 1 m of water through September",
+      "source_value": "that is the sampling frame, not a finding: the September electrofishing survey \"did not extend beyond 5 m from shore and was restricted to depths less than 1 m\" (the zone where the gear caught efficiently), sampled over one week; the article says nothing about young outside that strip",
+      "location": "p. 49 (PDF p. 3), Methods: Age-0 Diffusive Movements",
+      "quote": "The survey did not extend beyond 5 m from shore",
+      "conditions": "one week of electrofishing in September 1992 along Jones Bay and ~1 km beyond each end",
+      "verdict": "corrected",
+      "note": "keep only the < 200-m dispersal; the research note juvenile_refuges_and_bass_young.md already records this correction, but §3.5.7 still carries the old wording"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "two to three weeks with the male (Scott et al. 1997 and Friesen & Ridgway 2000, via Ridgway et al. 2002)",
+      "location": "p. 52 (PDF p. 6)",
+      "quote": "guarding male and brood remain close to the nest site for two to three weeks",
+      "conditions": "after swim-up: in Opeongo swim-up is late June and care ends in mid-July; the article cites Scott et al. 1997 and Friesen & Ridgway 2000",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "DNA-fingerprinted young at Lake Opeongo had moved a mean of 87.6 m from their nests by September",
+      "location": "p. 52 (PDF p. 6), Results",
+      "quote": "limited (Mean, 87.63 m; SD, 60.67 m)",
+      "conditions": "from the nest in June to the fall location; n = 139 (Gross 1995's data, 1992); over the 70 days from swim-up, diffusion 26.3 m²/d and drift 1.3 m/d (35.4 m²/d and 1.7 m/d over the 52 days after care)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-7",
+      "claim": "Lake Opeongo young-of-year 48–53 mm in early September",
+      "location": "p. 53 (PDF p. 7), Table 1 (read on the page image)",
+      "quote": "1 53.4 51.7-55.1 20 ... 10 47.7 47.5-47.9 65 ... Combined 49.8 48.8-50.8 137",
+      "quote_from": "table",
+      "conditions": "mean TOTAL length by June spawning date (1, 4, 7, 10, 13 June: 53.4, 49.8, 51.5, 47.7, 51.8 mm), combined 49.8 mm (n = 137); Jones Bay, 1992 only, fish caught in one week of September (the first week, per the diffusion time); data from Gross 1995",
+      "verdict": "confirmed",
+      "note": "say TL and one year (1992); the same table row's \"55–85 mm FL\" is Shuter & Ridgway 2002's, a different length measure"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://api.crossref.org/works?query.bibliographic=Spatial+ecology+and+density-dependent+processes+in+smallmouth+bass+juvenile+transition+hypothesis", "status": 200, "note": "no DOI for the chapter" },
+    { "url": "(printed p. 54)", "status": 0, "note": "missing from the Harkness PDF; needs the printed volume: Philipp & Ridgway (eds) 2002, Black Bass: Ecology, Conservation, and Management, AFS Symposium 31 (fisheries.org bookstore; libraries)" }
+  ],
+  "notes": "Two of the paper's statements are not in this article: the fall move's timing and temperature (Pyzer 2014) and the 6.7-km homing (Ridgway & Shuter 1996); one is a misreading: \"within 5 m of shore and < 1 m deep\" is the survey's frame. §3.6.7's \"disperse at about 28 mm (Opeongo)\" carries no source and is not in this article (only dispersal distance and September lengths are). The article also says late in the first year age-0 bass are \"observed as single fish or in small groups composed of a few fish\" near their nest (p. 57), Ridgway's own note (the paper credits this to Hubbs & Bailey via Forbes); \"there are no natural predators capable of capturing mid- to late juveniles in Lake Opeongo\" (p. 57); mid- to late juveniles (ages 2–4) occur in small groups in the shallow littoral (pers. obs.); juveniles of ages 1–4 numbered ~5,000–48,000 in 1937–1990 (Fig. 3); growth is density-dependent at ages 1–4 (r = −0.24 to −0.69, Table 2); early (1 June) spawnings swam up ~17 June and late (10–13 June) ~25 June, giving a 4–5-mm September length advantage; Opeongo bass begin breeding at ages 5–6. Readers of p. 54 (missing) should confirm the 200–400-ha areas against its table."
+}
