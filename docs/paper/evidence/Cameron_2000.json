@@ -1,0 +1,67 @@
+{
+  "key": "Cameron_2000",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Maine Natural Areas Program (DACF) PDF of the Maine Aquatic Biodiversity Project technical report, chapter 6 sections 6.1–6.4, fetched from www1.maine.gov (the lower-case path of the www.maine.gov URL in the entry); the report's reference chapter (chapter_8_9.pdf) and title/contents pages (contents.pdf) fetched from the same directory for the bibliography",
+    "url": "https://www1.maine.gov/dacf/mnap/publications/aquatic/chapter_6_6.1to6.4.pdf",
+    "file": "docs/research_notes/fetched/v2/Cameron_2000.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the MABP report's title page (contents.pdf) and its reference list (chapter_8_9.pdf, saved as Cameron_2000.refs.pdf)",
+    "ok": false,
+    "corrections": "the entry is incomplete and mixes two works. Cameron's study is: Cameron, D. 2000. Aquatic vegetation survey for selected Maine lakes. Maine Natural Areas Program, Department of Conservation, Augusta. 134 pp. (not read: no copy found). What was read, and what the paper's claims rest on, is the summary in Vaux, P. D. (with contributions from A. Olivero) 2005. Freshwater Biodiversity in Maine. Maine Aquatic Biodiversity Project technical report (The Nature Conservancy, Maine DEP, Maine DIFW), September 2005 pre-printing version; chapter 6, pp. 117–118. Suggested citation: 'Cameron 2000, as summarized by Vaux 2005'. (MNAP's web page calls it the 2008 technical report; the title page says September 2005.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.2",
+      "claim": "In 30 relatively undisturbed Maine lakes Cameron (2000) found …",
+      "location": "p. 117 (PDF p. 3), Community Structure and Ecology",
+      "quote": "surveyed 30 lakes and ponds that were relatively undisturbed by human-associated development",
+      "conditions": "transects not random; they targeted different habitats; communities found by detrended correspondence analysis with relative abundance (p. 118)",
+      "verdict": "confirmed",
+      "note": "'lakes and ponds' in the source"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "a pipewort–water lobelia bed on mineral soil shallower than 1 m",
+      "location": "p. 117 (PDF p. 3)",
+      "quote": "found consistently on mineral soils in relatively shallow water (<1.0 m)",
+      "conditions": "dominated by pipewort (Eriocaulon aquaticum); composition consistent from exposed shores to sheltered coves",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "a water-lily bed on organic soil at 0.5–1.5 m (Nymphaea odorata with Utricularia purpurea, Nuphar variegata and Eleocharis robbinsii)",
+      "location": "p. 117 (PDF p. 3)",
+      "quote": "found on organic soils in depths of 0.5 – 1.5 m",
+      "conditions": "dominant typically white water lily, with co-dominants purple bladderwort, yellow water-lily and Robbins' spike-rush",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "a pickerelweed bed; and a circumneutral suite of Vallisneria, Elodea and pondweeds",
+      "location": "p. 117 (PDF p. 3)",
+      "quote": "found in higher conductivity waters and possibly consisting of a number of species associations",
+      "conditions": "the pickerelweed bed is on organic soils, usually in shallow water; the 'circumneutral-alkaline waters macrophyte suite' lists Vallisneria americana, Elodea canadensis, Zosterella dubia, Ranunculus aquatilis and five pondweeds (P. perfoliatus, P. robbinsii, P. alpinus, P. vaseyi, P. strictifolius)",
+      "verdict": "confirmed",
+      "note": "Cameron also suggested a possible fifth type on organic soils, dominated by watershield (Brasenia schreberi) with few white water-lilies (p. 117); the paper could mention it, since watershield matters elsewhere in §3.4."
+    },
+    {
+      "paper": "§3.4.2",
+      "claim": "with 3–26 species per lake",
+      "location": "p. 118 (PDF p. 4)",
+      "quote": "the species richness (per lake) ranged from 3 to 26",
+      "conditions": "all transects/plots of a lake combined; 2–17 species per transect or plot; richness not significantly related to lake area, alkalinity or elevation in Cameron's data (p. 118)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/dacf/mnap/publications/aquatic/chapter_6_6.1to6.4.pdf", "status": "not needed", "note": "www1.maine.gov served the file" },
+    { "url": "https://digitalmaine.com/do/search/?q=%22aquatic%20vegetation%20survey%22%20Cameron", "status": 403, "note": "Cloudflare bot check (not pursued); looking for Cameron's 2000 MNAP report itself" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22aquatic+vegetation+survey%22+maine&fl[]=identifier&rows=10&output=json", "status": 200, "note": "no Internet Archive item for Cameron 2000" }
+  ],
+  "notes": "Only the second citing paragraph (§3.4.2's 'Sources:' line) names Cameron 2000 as a source for Table 3.4-1; the Table's MNAP depths (0.2–1.1 m etc.) come from the MNAP fact sheets, not from this chapter. The Highland Lake values in the same §3.4.2 paragraph (85 plots, 2001; P. epihydrus 81 % …) are attributed to 'MABP Table 6.2.2', i.e. this same chapter (pp. 119 ff.), the ledger's separate key MABP_nd; they were not part of this check. MABP_nd's 'n.d.' can be dated from the title page: Vaux 2005 (September 2005 pre-printing version). The ideal fix is to obtain Cameron's 134-page MNAP report (Augusta, 2000) for the community depths."
+}

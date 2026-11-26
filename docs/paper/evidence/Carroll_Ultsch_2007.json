@@ -1,0 +1,37 @@
+{
+  "key": "Carroll_Ultsch_2007",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; Crossref's record has no abstract",
+    "url": "https://doi.org/10.1656/1092-6194(2007)14[307:ESASIT]2.0.CO;2"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Carroll, D. M. & Ultsch, G. R. 2007. Emergence season and survival in the nest of hatchling turtles in southcentral New Hampshire. Northeastern Naturalist 14(2): 307–310 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.5 (painted turtle)",
+      "claim": "in south-central New Hampshire only 7 of 42 hatchling observations were autumn emergences, and winter in the nest killed 26–100 % of hatchlings in three winters studied (Carroll & Ultsch 2007)",
+      "verdict": "unchecked",
+      "note": "full text not obtained; whether the 7 of 42 and 26–100 % refer to painted turtles alone or to all species in the note cannot be checked"
+    },
+    {
+      "paper": "§3.8.5 (snapping turtle)",
+      "claim": "In New Hampshire, all 14 known hatchling emergences fell on 5–24 September (Carroll & Ultsch 2007)",
+      "verdict": "unchecked",
+      "note": "full text not obtained"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1656/1092-6194%282007%2914%5B307%3AESASIT%5D2.0.CO%3B2", "status": 200, "note": "redirects to bioone.org, which answers with an Incapsula bot-check page (not pursued); Northeastern Naturalist is a subscription title — a library login (BioOne or JSTOR) would open it" },
+    { "url": "https://api.crossref.org/works/10.1656/1092-6194(2007)14%5B307:ESASIT%5D2.0.CO;2", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=%22Emergence%20season%20and%20survival%20in%20the%20nest%22&format=json", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Needs the 4-page note through a library login (BioOne: doi:10.1656/1092-6194(2007)14[307:ESASIT]2.0.CO;2). The research notes (Maine lake shores and catchment/turtles_and_frogs.md) are the only source of the numbers so far."
+}

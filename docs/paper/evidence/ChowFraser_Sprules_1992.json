@@ -1,0 +1,60 @@
+{
+  "key": "ChowFraser_Sprules_1992",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's institutional repository: McMaster University's MacSphere (the first author's institution), open PDF of the published article (the DOI 10.71548/4659 that OpenAlex lists resolves to this record, handle 11375/30821)",
+    "url": "https://prod-ms-be.lib.mcmaster.ca/server/api/core/bitstreams/2d24a086-08b5-4765-800a-5cbab9742fac/content",
+    "file": "docs/research_notes/fetched/v2/ChowFraser_Sprules_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Chow-Fraser, P. & Sprules, W. G. 1992. Type-3 functional response in limnetic suspension-feeders, as demonstrated by in situ grazing rates. Hydrobiologia 232(3): 175–191, doi:10.1007/BF00013703 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (1-mm cladocerans row)",
+      "claim": "1-mm cladocerans: field maximum clearance 15.35 mL/animal/d; maximum ingestion 40.65 µg fresh wt/d; incipient limiting level ≈ 2,650 µg fresh wt/L",
+      "location": "p. 184 (PDF p. 10), Results, Field investigations",
+      "quote": "We divided this value by the maximum filtering rate (MFR) of 15.35 ml/animal/d",
+      "conditions": "composite of published in-situ (Haney-chamber) grazing rates interpolated to a 1-mm animal from filtering-rate–length regressions (Chow-Fraser & Knoechel 1985; Knoechel & Holtby 1986; Haney 1985); mostly daphniids (Daphnia galeata, D. dubia, D. rosea; also Diaphanosoma, Holopedium, Ceriodaphnia); 'edible' algae < 30–31 µm; fresh weight from a f.w.:d.w. ratio of 3.44; MIR from a Lineweaver–Burk (type-2) fit; ILC = MIR/MFR = 2.65 × 10³ µg/L",
+      "verdict": "confirmed",
+      "note": "The authors say the MIR/MFR/ILC exercise was 'solely for the purpose of comparing laboratory and field data, and was not intended to provide definitive parameters' (p. 183). The paper's '≈ 0.35 mg C/L†' is a project conversion: 2,650 ÷ 3.44 = 770 µg DW/L, × ~0.45 C = ~0.35 mg C/L; the 3.44 ratio is the source's, the carbon fraction is not."
+    },
+    {
+      "paper": "Table 3.3-3 (diaptomid adults)",
+      "claim": "diaptomid adults: field maximum clearance 4.9 mL/animal/d; maximum ingestion 0.94 µg fresh wt/d; incipient limiting level ≈ 190 µg fresh wt/L",
+      "location": "p. 184 (PDF p. 10), Results",
+      "quote": "We divided this value by MFR of 4.9 ml/animal/d to obtain an ILC",
+      "conditions": "adult Diaptomus minutus (0.70–0.85 mm prosome) and D. oregonensis (0.9–1.4 mm), not standardized to 1 mm; tracer algae 4–8 µm and an 'edible' limit of < 10 µm, so the response 'will only apply to their feeding on small algal particles (< 10 µm)' (p. 181); the MIR fit includes Richman's (1964) bottle-and-isotope data, which the authors say are 'not directly comparable to the in situ data'; ILC 0.19 × 10³ µg/L",
+      "verdict": "confirmed",
+      "note": "'≈ 25 µg C/L†' is the same project conversion (190 ÷ 3.44 × ~0.45)"
+    },
+    {
+      "paper": "Table 3.3-3 (Conditions column)",
+      "claim": "Ontario in-situ chambers, 17–23 °C",
+      "source_value": "lakes and ponds of Ontario and Michigan; experiments at 16–23 °C (cladoceran studies 16–22 and 22 °C; diaptomid studies 17–23 °C); the diaptomid high-food points (Richman 1964, 22–23 °C) came from bottles with isotope-labelled natural nanoplankton, not chambers",
+      "location": "p. 179 (PDF p. 5), Description of field studies and Table 1; p. 180 (PDF p. 6), Table 2",
+      "quote": "The study sites in this paper include lakes and ponds of Ontario and Michigan",
+      "conditions": "daytime (10:00–17:00) incubations of 5–20 min with labelled tracer algae or yeast",
+      "verdict": "corrected",
+      "note": "suggested: 'compiled in-situ grazing studies, Ontario and Michigan lakes, 16–23 °C; diaptomids on < 10-µm algae'"
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "Calanoids saturate at about one-fourteenth of the cladocerans' food level with a type-3 response in the field (Chow-Fraser & Sprules 1992)",
+      "location": "p. 184 (PDF p. 10), Results",
+      "quote": "The overall shape of this curve is therefore most consistent with a Type 3",
+      "conditions": "diaptomid filtering rates rose with algal concentration up to about 2 × 10² µg/L (n = 8, r = 0.99) and then declined; for cladocerans, rates below 10³ µg/L rose with log food (n = 10) and above it fell (n = 5)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "ILC 2.65 × 10³ ÷ 0.19 × 10³ = 13.9, i.e. about one-fourteenth. 'Calanoids' rests on two Diaptomus species feeding on small algae (< 10 µm). The '0.4 times (0.3–1 times)' per-biomass clearance is a project estimate; its body-mass inputs are not in this paper."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Laboratory comparisons in the same paper: Daphnia ILCs 1–8.5 × 10³ µg/L (more than half 1–3 × 10³); laboratory copepod ILCs 0.5–2.8 × 10³ µg/L, higher than the field D. minutus value; Daphnia filtering after 2 h acclimation to low food rose 4–5-fold over unacclimated animals and fell again after > 70 h (emaciation). The authors explain the field type-3 response in cladocerans by low body carbon at chronically low food, but say this cannot explain it in diaptomids."
+}

@@ -1,0 +1,55 @@
+{
+  "key": "Cech_etal_2009",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF as posted by the first author on his staff page at the Biology Centre, Academy of Sciences of the Czech Republic, Institute of Hydrobiology (www.hbu.cas.cz/fishecu/staffmembers/cech/CechEtAl09H.pdf), via its Wayback Machine capture of 13 July 2012 (the live page is gone, 404); Table 1 and Fig. 6 read on the page image",
+    "url": "http://web.archive.org/web/20120713235009id_/http://www.hbu.cas.cz/fishecu/staffmembers/cech/CechEtAl09H.pdf",
+    "file": "docs/research_notes/fetched/v2/Cech_etal_2009.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Čech, M., Peterka, J., Říha, M., Jůza, T. & Kubečka, J. 2009. Distribution of egg strands of perch (Perca fluviatilis L.) with respect to depth and spawning substrate. Hydrobiologia 630: 105–114 (issue 1 per Crossref), doi:10.1007/s10750-009-9783-z — as cited. Published online 3 May 2009."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "Perch prefer rigid, dead structure: in a Czech lake live submerged plants were mostly avoided in favor of dead pondweed, wormwood and reed (Čech et al. 2009; abstract)",
+      "source_value": "pondweed was LIVE and among the avoided plants: live curly pondweed, Eurasian water milfoil and common stonewort (74.3 % of the submerged vegetation) were generally avoided; the preferred dead substrates were worm weed (Artemisia sp.) and common reed, plus in May trees and branches including black elder",
+      "location": "p. 111 (PDF p. 7), Results and Table 1 (footnote b marks the dead substrates); p. 113 (PDF p. 9), Discussion and Conclusion",
+      "quote": "While live submerged vegetation (curly pondweed, Eurasian water milfoil and common stonewort) was generally avoided",
+      "conditions": "Chabařovice Lake, Czech Republic: a restored opencast-mine lake (~200 ha, max 20 m, Secchi > 7 m) flooded from 2001; the dead plants are terrestrial and shore vegetation (reed, worm weed, rush, elder bushes, young trees) drowned when the pit was filled; SCUBA transects 24–26 April (266 strands) and 2–3 May 2007 (630 strands); Ivlev electivity for curly pondweed −0.28 (April, not significant) and −0.47 (May), worm weed 0.75/0.54, common reed 0.42/0.69, trees and branches −0.67/0.58",
+      "verdict": "corrected",
+      "note": "'Perch prefer rigid, dead structure' and 'live submerged plants were mostly avoided' are right; 'dead pondweed' is not. Suggested: '… live submerged plants, including curly pondweed, were avoided relative to their abundance in favor of dead worm weed (Artemisia) and common reed drowned when the lake was filled (Čech et al. 2009)'. Drop 'abstract': the full text is now read. The abstract's list of the three most important substrates ('curly pondweed …, worm weed … and common reed') mixes one live and two dead plants, which is probably where 'dead pondweed' came from."
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "Perch prefer rigid, dead structure",
+      "location": "p. 113 (PDF p. 9), Discussion",
+      "quote": "are more appropriate substrates for egg strand deposition by perch than the soft stems",
+      "conditions": "the hard structures named are 'stems of dead common reed, worm weed, dislodged trees, bushes and their branches'; the authors explain the preference by the eggs staying well oxygenated day and night over sparse dead structure, whereas dense live vegetation depletes O₂ at night (pp. 112–113)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "in a Czech lake Eurasian perch laid mainly on dead pondweed and reed while it lasted (Čech et al. 2009, abstract; Čech et al. 2012)",
+      "source_value": "the three most used substrates were curly pondweed (live; about 37 % of strands in late April and 24 % in early May, read off Fig. 6), worm weed and common reed (both dead): together 85.7 % and 71.0 % of strands; the authors name 'beds of dead common reed and worm weed' as the most important substrates, and in 2009 only predicted that they would disappear within several years",
+      "location": "p. 110 (PDF p. 6), Results; p. 111 (PDF p. 7), Fig. 6; p. 113 (PDF p. 9), Conclusion",
+      "quote": "the most important substrates for perch spawning—beds of dead common reed and worm weed",
+      "conditions": "as above; Fig. 6 shares read from the bar chart on the page image (approximate)",
+      "verdict": "corrected",
+      "note": "Suggested: 'in a Czech mine lake Eurasian perch laid mainly on the drowned dead stems of reed and worm weed (Artemisia), avoiding live pondweed relative to its abundance, and once those dead beds decayed they laid on live plants and installed trees (Čech et al. 2009; Čech et al. 2012)'. 'While it lasted' belongs to Čech et al. 2012; the 2009 paper only forecasts the loss."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://link.springer.com/article/10.1007/s10750-009-9783-z", "status": 200, "note": "Springer page offers 'Buy article' (paywalled); abstract readable" },
+    { "url": "https://www.fishecu.cz/publications/", "status": 200, "note": "the group's publication list (citation only, no PDF)" },
+    { "url": "https://theses.cz/vyhledavani/?search=perch+egg+strands&lang=en", "status": 200, "note": "proof-of-work bot check page (not pursued)" },
+    { "url": "http://www.hbu.cas.cz/fishecu/staffmembers/cech/CechEtAl09H.pdf", "status": 404, "note": "live author page gone; Wayback capture used instead" }
+  ],
+  "notes": "The lead was right: 'dead pondweed' is not in Čech et al. 2009 either. The dead substrates were drowned terrestrial and emergent plants from the filling of a mine pit, not last year's aquatic plants, so this study does not show that perch use overwintered aquatic stems; §3.4.10's inference ('their substrate is last year's standing dead stems, wood and overwintering plants') rests on the timing argument, not on this lake. Other values: egg strands lay at a mean depth of 5.3 m (late April) and 6.3 m (early May), up to 16.6 m; none shallower than 1 m; 87.2 % and 96.7 % deeper than 3 m; the authors attribute the avoidance of the shallows to warm water (> 14 °C) and wave damage in a wind-exposed, deforested landscape; surface temperature was logged from 15 March to catch the start of spawning expected at 8–10 °C (Kubečka 1992), and the first strands appeared on 23 April 2007 after the warmest winter since 1922. Strands averaged 133.8 cm long and 7.7 cm wide; spawning females were a unimodal cohort of large fish (standard length 240–340 mm in the population). The Discussion also cites Huff et al. 2004 for the 92 % deeper than 3 m (low-DOC) vs 76 % shallower than 1 m (higher-DOC) split that §3.4.10 uses."
+}

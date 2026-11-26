@@ -1,0 +1,37 @@
+{
+  "key": "Carlander_1969",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the book was not obtained (the Internet Archive copies are borrow-only). Only the intermediaries the paper names were read: COSEWIC 2014 (banded killifish; already fetched, docs/research_notes/fetched/v2/COSEWIC_2014.pdf) and Rubec 1975 (scanned thesis, docs/research_notes/fetched/v2/Rubec_1975.pdf)",
+    "url": "https://archive.org/details/handbookoffreshw0000carl"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "COSEWIC 2014's reference list (p. 17 printed) and the Internet Archive catalogue record",
+    "ok": true,
+    "corrections": "",
+    "note": "Carlander, K. D. 1969. Handbook of Freshwater Fishery Biology, Vol. 1. Iowa State University Press, Ames. vi + 752 pp. (COSEWIC 2014) — as cited"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (banded killifish row, fecundity)",
+      "claim": "maximum 250 (Carlander 1969)",
+      "verdict": "unchecked",
+      "note": "not read in Carlander. COSEWIC 2014 p. 10 (printed; PDF p. 20) does attribute it: 'Carlander (1969) reported maximum fecundity of 250 eggs for mainland killifish', set against a Newfoundland maximum of 450 eggs (Chippett 2004). Until the book is read, cite it as 'Carlander 1969, via COSEWIC 2014' and say 'mainland'."
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "most published bullhead studies concern 'overcrowded and stunted populations' (Rubec 1975, citing Carlander 1969)",
+      "verdict": "unchecked",
+      "note": "not read in Carlander; the quoted words are Rubec's. Rubec 1975 is a scanned thesis (no text layer); the research note says the sentence was read on its page images (printed pp. 117–121). Not re-read here: it belongs to the Rubec_1975 check."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://archive.org/details/handbookoffreshw0000carl", "status": 200, "note": "Internet Archive item is access-restricted (borrow only) — not usable under the rules" },
+    { "url": "https://archive.org/details/handbookoffreshw0000carl_v3d6", "status": 200, "note": "second Internet Archive copy, also access-restricted (borrow only)" },
+    { "url": "HathiTrust", "status": "not tried", "note": "a 1969 book in copyright would be search-only; HathiTrust also shows other readers a bot check" }
+  ],
+  "notes": "A library copy of the Handbook (Vol. 1, 1969) is needed to check either claim. COSEWIC 2014 also cites Carlander 1969 for mainland killifish spawning 'considerably earlier during the spring months' (April–May at about 21 °C or higher, with McAllister & Coad 1974) and for fish observed at 38.3 °C (p. 10 printed); the paper does not use those."
+}

@@ -1,0 +1,48 @@
+{
+  "key": "Chappuis_etal_2016",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Limnetica, Asociación Ibérica de Limnología; the DOI resolves to it)",
+    "url": "https://limnetica.net/documentos/limnetica/limnetica-35-2-p-373.pdf",
+    "file": "docs/research_notes/fetched/v2/Chappuis_etal_2016.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": false,
+    "corrections": "add the issue: Limnetica 35(2): 373–384 (2016), doi:10.23818/limn.35.30",
+    "note": "Authors Eglantine Chappuis, Enric Ballesteros, Esperança Gacia; title as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.6",
+      "claim": "Isoetids produce only 5–425 g DW m⁻² yr⁻¹ (Chappuis et al. 2016, citing a review)",
+      "location": "p. 381 (PDF p. 9), Discussion",
+      "quote": "Their annual productivity has been described to range from 5 to 425 g DW/m2",
+      "conditions": "annual productivity of isoetids, from the review of Madsen, Olesen & Bagger 2002 (Aquatic Botany 73: 351–371); attributed to low biomass and low leaf turnover",
+      "verdict": "confirmed",
+      "note": "the review is Madsen et al. 2002; cite as 'Madsen et al. 2002, via Chappuis et al. 2016'"
+    },
+    {
+      "paper": "§3.4.6",
+      "claim": "against 300–1,500 for other submerged plants (Chappuis et al. 2016, citing a review)",
+      "location": "p. 382 (PDF p. 10), Discussion",
+      "quote": "similar to the range described for other submerged species of 300-1500 g",
+      "conditions": "g DW m⁻² yr⁻¹, 'Madsen et al., 2002 and references therein'; Fig. 4 compares NPP across macrophyte groups",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-1 (isoetid rosette row); §3.4.2 'Sources' line",
+      "claim": "I. echinospora 1,242–2,663 plants m⁻² (Pyrenees)",
+      "location": "p. 378 (PDF p. 6), Results",
+      "quote": "Plant density started as low as 1242 plants/m2, ended up with 2663 plants/m2",
+      "conditions": "Baciver pool, a ~20 m² semipermanent pond beside Lake Baciver at 2,120 m in the Spanish Pyrenees, frozen half the year; density over the growing seasons of 1988–1989 (mean 1,948.9 plants/m²); water about 50 cm deep through summer and autumn 1988, the pool dried in late July 1989",
+      "verdict": "confirmed",
+      "note": "a tiny alpine pool, not a lake littoral; the pool no longer exists (Lake Baciver was dammed after the fieldwork)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values: I. echinospora leaf production 38.7 g DW m⁻² yr⁻¹ submerged (1988) and 49.3 with two months' emersion (1989), mean 44.0 (17.6 g C); I. delilei in a Mediterranean temporary pool 676.7 g DW m⁻² yr⁻¹; neighbouring Lake Baciver's I. lacustris 75 g DW m⁻² yr⁻¹ at −0.8 m (Gacia & Ballesteros 1994); underground production adds 30–50 % of the total for I. lacustris (Gacia & Ballesteros 1994). Only the bibliography's missing issue number makes this 'corrected'; every claim checks."
+}

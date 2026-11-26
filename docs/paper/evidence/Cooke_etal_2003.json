@@ -1,0 +1,33 @@
+{
+  "key": "Cooke_etal_2003",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's lab copy: the accepted proof ('ARTICLE IN PRESS', with the journal's pagination 445–456) posted on the Fish Ecology and Conservation Physiology Lab's pages at Carleton University (Cooke's lab), www3.carleton.ca/fecpl/pdfs/SMB_Thermal_Biology_MS.pdf (live; also Wayback-captured 2012–2024); Table 3 and the mean read on the page images",
+    "url": "https://www3.carleton.ca/fecpl/pdfs/SMB_Thermal_Biology_MS.pdf",
+    "file": "docs/research_notes/fetched/v2/Cooke_etal_2003.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Cooke, S. J., Schreer, J. F., Philipp, D. P. & Weatherhead, P. J. 2003. Nesting activity, parental care behavior, and reproductive success of smallmouth bass, Micropterus dolomieu, in an unstable thermal environment. Journal of Thermal Biology 28(6–7): 445–456, doi:10.1016/S0306-4565(03)00038-X — as cited (the proof does not print the issue; Crossref gives 6–7)"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "a mean of 50.6 ± 4.7 % across 30 values in another compilation (Cooke et al. 2003)",
+      "location": "p. 451 (PDF p. 7), section 3.4 Reproductive success; p. 453 (PDF p. 9), Table 3",
+      "quote": "summary of 30 published values indicates that the mean rate of reproductive success",
+      "conditions": "success = 'the percentage of nesting males that successfully produced free-swimming fry'; Table 3 lists studies from central North America, lakes AND streams (Ontario lakes, regulated Virginia streams, Missouri, Tennessee and Ohio streams, a New York creek) and one other thermal-effluent study (McKinley et al. 2000)",
+      "verdict": "confirmed",
+      "note": "The stated '50.6 ± 4.7 %' (read on the page image) is quoted correctly, but it does not reproduce from Table 3 as printed: the 30 non-'This Study' values average 53.9 % (SD 25, SE 4.6), and 50.6 % comes out only if both 100 % values from telemetered or effluent fish (Cooke et al. 2002; McKinley et al. 2000) are dropped (n = 28, SE 4.3). The ± is not defined (by size, an SE). Values range 0–100 %. Since the compilation mixes streams with lakes, it is not a lake-only parallel to Steinhart's '44–96 % in lakes'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.fecpl.ca/publication/", "status": 200, "note": "the lab's current publication list cites the paper without a PDF link; the older lab pages on www3.carleton.ca hold the copy used" }
+  ],
+  "notes": "The study itself (Nanticoke Generating Station effluent canal, Lake Erie, 1999): canal water 5–10 °C warmer than the lake with daily swings of ~5–10 °C; first spawning on 29 April at 15 °C, about a month earlier than outside; success 95.3 % (early), 71.5 % (intermediate) and 64.7 % (late nesting interval), 80 % for telemetered males — all significantly above the published mean; 97 % of the variation in success explained by mean water temperature (96 %) and fish size (1 %). No nest abandonment after upwelling events. The follow-on in §3.6.2, 'Males guarded for 28.4 ± 2.2 days at Lake Opinicon, Ontario (Cooke et al. 2006)', cites Cooke et al. 2006, a different entry; 28.4 does not appear in this paper."
+}

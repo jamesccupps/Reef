@@ -1,0 +1,43 @@
+{
+  "key": "Burdicketal_1954",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item 'New York Fish and Game Journal 1954-01: Vol 1 Iss 1' (pub_new-york-fish-and-game-journal / democracys-library collections; open download, not access-restricted, no borrow or login); the whole issue was fetched and only the article's pages 84–97 indexed (PDF page index = printed page); Table 4 read on the page image",
+    "url": "https://archive.org/download/new-york-fish-and-game-journal_1954-01_1_1/new-york-fish-and-game-journal_1954-01_1_1.pdf",
+    "file": "docs/research_notes/fetched/v2/Burdicketal_1954.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's title page (p. 84, read on the page image), running heads, and Doudoroff & Shumway 1970's reference list",
+    "ok": false,
+    "corrections": "the entry is incomplete ('Burdick et al. 1954. Cited via Doudoroff & Shumway 1970'). Full citation: Burdick, G. E., Lipschuetz, M., Dean, H. J. & Harris, E. J. 1954. Lethal oxygen concentrations for trout and smallmouth bass. New York Fish and Game Journal 1(1): 84–97 (January 1954). Now that the article itself is read, drop 'via Doudoroff & Shumway 1970' in Table 3.5-3 and §3.5.6.",
+    "note": "Authors as printed: G. E. Burdick, Morris Lipschuetz, Howard J. Dean, Earl J. Harris (New York State Conservation Department). No DOI."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (smallmouth bass row, O₂ column)",
+      "claim": "lethal at 0.5–1.6 mg/L in declining-oxygen tests (4-g fish; Burdick et al. 1954, via Doudoroff & Shumway 1970)",
+      "source_value": "individual 'turnover' (complete loss of equilibrium) concentrations of 0.48–1.56 ppm across both stocks and 52.5–80 °F (11.4–26.7 °C); means rose with temperature from 0.74 to 1.15 ppm (Deer River) and 0.63 to 1.08 ppm (Beebe Lake)",
+      "location": "p. 95, Table 4; p. 84 (end-point definition); pp. 95–96 (fish sizes)",
+      "quote": "Beebe Lake 20 52.5 0.85 0.48 … 20 80.0 1.56 0.72",
+      "quote_from": "image",
+      "conditions": "wild young smallmouth from the Deer River (n = 72; mean 70 mm TL, 4.04 g) and Beebe Lake (n = 75; 69 mm, 3.98 g), New York; tested at Rome, 1952–53; each fish sealed alone in a jar and left to lower the O₂ by its own respiration until it lost equilibrium (mean turnover time about 8 h); unfed ≥ 48 h; ~24 h acclimation per temperature step; Rome hatchery spring water (pH 7.2–7.9, alkalinity ~100 ppm)",
+      "verdict": "confirmed",
+      "note": "The digits and 'lethal' are the authors' own: they define turnover as the end-point and say 'these are considered as lethal concentrations throughout this paper' (p. 84). The range spans 11–27 °C and two stocks, and the authors warn the values are not levels fish can live at indefinitely and are short-exposure results. Suggested table text: 'lost equilibrium (the authors' lethal end-point) at 0.5–1.6 mg/L in sealed-jar declining-O₂ tests, 11–27 °C (4-g fish; Burdick et al. 1954)'."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "smallmouth in declining-oxygen tests died at 0.5–1.6 mg/L (Burdick et al. 1954, via Doudoroff & Shumway 1970)",
+      "source_value": "the fish lost equilibrium ('turnover') at 0.48–1.56 ppm; they were then moved to aerated water and some recovered — death was not the measured end-point",
+      "location": "p. 84 (end-point); p. 86 (procedure); p. 95, Table 4",
+      "quote": "it was often found impossible to revive the fish even though removed immediately",
+      "conditions": "as above: 4-g wild fish, sealed jars, 11–27 °C",
+      "verdict": "corrected",
+      "note": "'Often' impossible to revive, not always; the procedure says 'Recovery or death of the fish was noted' (p. 86). Suggested: 'smallmouth (4 g) in sealed, declining-oxygen tests lost equilibrium — the authors' lethal end-point — at 0.5–1.6 mg/L between 11 and 27 °C (Burdick et al. 1954)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The stream (Deer River) fish were more sensitive than the lake (Beebe Lake) fish at every temperature; the authors suggest lake fish may be acclimated to lower O₂ or be a different population (p. 95). Fitted lines: Deer River log Y = 0.00723X − 0.51936, Beebe Lake log Y = 0.00842X − 0.64366 (Y ppm, X °F; p. 96). They cite Wiebe et al. (1934) for 0.4–0.5 ppm at 25 °C as the lowest level smallmouth can extract O₂ (pp. 93–94). Doudoroff & Shumway's Table 1 (first / 50 % / 100 % at 0.9–1.6 / 0.6–1.2 / 0.5–1.0 mg/L) is a faithful rounding of this Table 4's maximum, median and minimum columns. The same article gives brook, brown and rainbow trout values (Tables 1–3)."
+}

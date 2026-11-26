@@ -1,0 +1,37 @@
+{
+  "key": "Diana_1983",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from Crossref's record (saved as docs/research_notes/fetched/v2/Diana_1983.crossref.json)",
+    "url": "https://api.crossref.org/works/10.1139/z83-259"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Diana, J. S. 1983. An energy budget for northern pike (Esox lucius). Canadian Journal of Zoology 61(9): 1968–1975, doi:10.1139/z83-259 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "Northern pike clear a meal in 48 h in summer but 12 days in winter and eat very little under ice, while females build most of their ovaries in winter (Diana 1979b, 1983, abstracts)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The 1983 abstract supports only the ovary part ('ovarian growth occurred mainly during the winter'); it says nothing about gastric evacuation or winter feeding, which must come from Diana 1979b (a separate entry). The abstract adds that males gained body energy over summer and winter with all testicular growth in August, females gained body energy in summer only, and both sexes lost energy over spawning (March–May)."
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "Diana (1983; abstract only) later judged these field rations probably inaccurate",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract does say a bioenergetics model fitted poorly to the field ration and growth estimates and that 'field ration data were probably inaccurate', after which budgets were computed without them; the paper's wording matches the abstract and already says 'abstract only'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/z83-259", "status": 403, "note": "resolves to nrcresearchpress.com / cdnsciencepub.com, which refuse scripted access; subscription article — a library login would open it" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/z83-259", "status": 403, "note": "publisher page refuses scripts" },
+    { "url": "https://deepblue.lib.umich.edu/server/api/discover/search/objects?query=Diana%20pike", "status": 403, "note": "University of Michigan Deep Blue repository, tried for an author copy: Cloudflare challenge, not pursued" }
+  ],
+  "notes": "Possible stand-in (another reader's key, not re-read here beyond its abstract page): Diana's PhD thesis 'An energy budget for northern pike (Esox lucius) in Lac Ste. Anne, Alberta' (University of Alberta, 1979; Diana_1979a, scanned). Its abstract (PDF p. 5, read on the existing page image) reports the same pattern: 3-year-old males grew 335 kcal in body energy a year, 35 % in winter; female body growth was similar but all in summer; testes grew in August (17 kcal) while ovarian growth (436 kcal) continued over winter; Lac Ste. Anne ~16 °C May–October and ~1 °C November–April. While making that check I re-rendered Diana_1979a.p4.png (the thesis's approval page), which overwrote an identical earlier render of the same page."
+}

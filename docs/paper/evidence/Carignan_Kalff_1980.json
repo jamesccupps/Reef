@@ -1,0 +1,37 @@
+{
+  "key": "Carignan_Kalff_1980",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article was not obtained; its abstract from Crossref's record (saved as docs/research_notes/fetched/v2/Carignan_Kalff_1980.crossref.json). A stand-in was read: Carignan's McGill PhD thesis (February 1980), whose Part II is this Science paper in manuscript, open PDF from McGill's repository (saved as Carignan_Kalff_1980.thesis.pdf)",
+    "url": "https://api.crossref.org/works/10.1126/science.207.4434.987"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref; the thesis's reference to the paper ('Phosphorus sources for aquatic weeds: water or sediments? Science 207: 987-989')",
+    "ok": true,
+    "corrections": "",
+    "note": "Carignan, R. & Kalff, J. 1980. Phosphorus sources for aquatic weeds: water or sediments? Science 207(4434): 987–989, doi:10.1126/science.207.4434.987 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.4",
+      "claim": "In mesotrophic water, sediment supplied all of the P that rooted plants took up (Carignan & Kalff 1980)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract (Crossref): nine common species 'took all their phosphorus from the sediments when grown in situ in both a mesotrophic and a mildly eutrophic bay'; under hypertrophic conditions sediments gave an average 72 %. The stand-in thesis agrees (see notes)."
+    },
+    {
+      "paper": "§3.4.7",
+      "claim": "Rooted plants draw P from the sediment, all of it in mesotrophic water (Carignan & Kalff 1980)",
+      "verdict": "unchecked",
+      "note": "as above; the abstract says the same held in a mildly eutrophic bay too, so 'in mesotrophic and mildly eutrophic water' would be the fuller statement"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1126/science.207.4434.987", "status": 403, "note": "resolves to www.science.org, which refuses scripted access; subscription article — a library login would open it" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1126/science.207.4434.987\"&format=json&resultType=core", "status": 200, "note": "PMID 17830461 only; not open access, not in PMC" },
+    { "url": "https://mcgill.scholaris.ca/server/api/core/bitstreams/d5e41f73-237e-4ac1-bb05-eb2cdec051aa/content", "status": 200, "note": "stand-in obtained: R. Carignan, The role of submersed macrophytes in phosphorus cycling, PhD thesis, McGill University, Feb. 1980 (handle 20.500.14905/85838)" }
+  ],
+  "notes": "STAND-IN (read as its own source; it does not confirm the article): Carignan, R. 1980. The role of submersed macrophytes in phosphorus cycling. PhD thesis, Department of Biology, McGill University, Montréal (February 1980). Its introduction says Part II 'is being published in Science'. Part II's abstract (thesis PDF p. 31) is the Science abstract almost word for word. Its results (PDF pp. 38–41): macrophytes grown in the mesotrophic part of Lake Memphremagog (Québec–Vermont) 'obtained all their P from the sediments' — per-species estimates of 94–107 % from the sediments (Tables 3–4, so 'all' means within error of 100 %); plants in the eutrophic part showed 91.6 %, which the author says underestimates the sediment share because of unremovable periphyton; at hypertrophic Rivière du Sud (summer SRP 167 µg/L) sediments supplied at least 71.5 % (whole plants about 70 %). The thesis abstract summarizes: more than 95 % from the sediments at mesotrophic and eutrophic sites, 70 % at the hypertrophic one. It also reports that Myriophyllum released 0.32 µg g⁻¹ h⁻¹ P and periphyton took only 6.5 % of its P from the macrophytes. Recommend citing the Science paper once read (doi above, via a library login), or the thesis alongside it."
+}

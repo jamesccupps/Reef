@@ -1,0 +1,55 @@
+{
+  "key": "Deeds_etal_2023",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the NIH/PMC author manuscript (NIHMS1919738, PMC10642257; US EPA co-author, public-access deposit) as a Wayback Machine capture of the PMC article page of 23 February 2025 (the live PMC and Europe PMC pages show bot checks to scripts); the online supplement (Figures S1–S3) was not obtained",
+    "url": "http://web.archive.org/web/20250223170923id_/https://pmc.ncbi.nlm.nih.gov/articles/PMC10642257/",
+    "file": "docs/research_notes/fetched/v2/Deeds_etal_2023.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the PMC header and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Deeds, J., Amirbahman, A., Hugger, K., Kaufmann, P. R., Matthews, L. J., Merrell, K. & Norton, S. A. 2023. Assessment indices of littoral habitat condition for lakes in Maine and New England, United States. Lake and Reservoir Management 39(2): 141–155, doi:10.1080/10402381.2023.2207490 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.7",
+      "claim": "Maine surveyed the littoral substrate of 102 lakes in 2007–2019 (Deeds et al. 2023)",
+      "location": "web page (single HTML page), Methods: 'Study lakes' and 'Habitat condition models'",
+      "quote": "The Maine-only analysis included 102 lakes",
+      "conditions": "'Lakes included in this analysis were surveyed between 2007 and 2019'; the Maine set combines the EPA's National Lakes Assessment surveys of Maine lakes (2007, 2012, 2017; randomly drawn plus EPA reference lakes) with Maine state-level surveys of hand-picked larger and more developed lakes; NLA physical-habitat protocol: 10 shore stations per lake, each a 10 × 15 m littoral plot with cover classes (Maine split the 10–40 % class into 10–25 and 25–40 %)",
+      "verdict": "confirmed",
+      "note": "strictly, not all 102 were surveyed by Maine: part are NLA (US EPA) surveys of Maine lakes"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "The published analysis gives model coefficients rather than cover values; in it, sand cover rises with shoreland disturbance",
+      "location": "web page, Results (Tables 3–4) and Discussion",
+      "quote": "percent sand cover (SUB_SAND), which increased with shoreland disturbance",
+      "conditions": "SUB_SAND was in all six linear-discriminant models; the article tabulates metric definitions, model performance and LDA coefficients and plots lake scores; no table of substrate cover values; the metric-versus-disturbance plots are in supplementary Figure S3 (not seen)",
+      "verdict": "confirmed",
+      "note": "The authors say sandy littorals may be natural (preferred for houses), eroded from development, or added for beaches. The check covers the article only; the supplement may show sand-cover values against the disturbance score."
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Maine's 102-lake survey scored woody habitat but did not publish values (Deeds et al. 2023)",
+      "location": "web page, Table 1 (metrics) and Tables 3–4",
+      "quote": "Large woody habitat (>30 cm diameter) cover",
+      "conditions": "woody-habitat metrics (FC_LWH, FC_SWH, total woody habitat, littoral woody habitat, the Habitat Complexity Index) enter the models as cover classes; no woody-habitat values per lake or per station are given in the article",
+      "verdict": "confirmed",
+      "note": "as above, the supplement was not seen"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10642257/pdf/nihms-1919738.pdf", "status": 200, "note": "bot-check page, not the PDF (not pursued)" },
+    { "url": "https://europepmc.org/articles/PMC10642257?pdf=render", "status": 403, "note": "Cloudflare challenge (not pursued)" },
+    { "url": "https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC10642257&blobtype=pdf", "status": 403, "note": "Cloudflare challenge (not pursued)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10642257/fullTextXML", "status": 500, "note": "Europe PMC full-text API error for this author manuscript" },
+    { "url": "https://cfpub.epa.gov/si/si_public_search_results.cfm?simpleSearch=1&searchAll=littoral+habitat+condition+Maine+New+England", "status": 200, "note": "EPA Science Inventory: no record found" }
+  ],
+  "notes": "Context for §3.2.7–3.2.8: 70 % of Maine lakes are ≤ 10 ha; in the NLA the northeastern lakes showed poor lakeshore and littoral habitat linked to reduced riparian vegetation; 24 % of the study's lakeshore stations had buildings or lawns in or beside the riparian plot. Lakes were grouped Deep/Shallow at 10 m maximum depth. The supplement (Figures S1–S3) would be the place to look for any sand or wood cover values."
+}

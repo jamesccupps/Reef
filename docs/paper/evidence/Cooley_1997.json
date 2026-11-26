@@ -1,0 +1,86 @@
+{
+  "key": "Cooley_1997",
+  "reader": "wave-3 batch w3-16",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "university repository: University of Manitoba MSpace, open PDF of the thesis (the handle in the entry, 1993/832; file mq23264.pdf); equations, which have no text layer, read on the page images. Printed page = PDF page − 11",
+    "url": "https://mspace.lib.umanitoba.ca/server/api/core/bitstreams/a0aa278d-9c4c-428f-a7ba-cf05b2a48813/content",
+    "file": "docs/research_notes/fetched/v2/Cooley_1997.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1)",
+    "ok": false,
+    "corrections": "it is a Master of Arts thesis (Department of Geography / Centre for Earth Observation Science), not an MSc: Cooley, P. M. 1997. Mapping the nearshore substrates and hydrodynamics in lakes. MA thesis, University of Manitoba, Winnipeg (August 1997). http://hdl.handle.net/1993/832",
+    "note": "author Paul M. Cooley"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.7",
+      "claim": "A relation cited from Rowan, h ≈ 1.66·√F (h in m; F, the maximum fetch, in km) … That relation was seen only via a search summary of a DFO report",
+      "source_value": "Cooley prints the relation himself as his eq. 5, h > 1.660·F^0.5 (h in m, F maximum fetch in km), derived from Rowan et al.'s (1992) deep-water criterion h > L/4 with L = 20H and H_max = 0.332·F^0.5 (Wetzel 1983)",
+      "location": "pp. 19–20 (PDF pp. 30–31), section 6.3.3, eqs. 1–5; p. 84 (PDF p. 95), eq. 5 applied to Lake 226",
+      "quote": "(5) h > 1.660F0.5",
+      "quote_from": "image",
+      "conditions": "the limit of Airy deep-water wave theory, read as the depth to the wave base under maximal waves",
+      "verdict": "corrected",
+      "note": "the relation is in the full text of this thesis, so the paper's caveat that it 'was seen only via a search summary' can go; cite 'Rowan et al. 1992, as derived in Cooley 1997, eq. 5'"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "(h ≈ 1.66·√F) reproduces the 1.68-m maximum wave base reported for Experimental Lakes Area Lake 226 (Cooley 1997) … the check against Lake 226 is the project's",
+      "source_value": "the 1.68 m is Cooley's own model output: he mapped maximum fetch over Lake 226 (360 axes) and converted it to wave-base depth with that same eq. 5, so agreement with the relation is circular, not an independent check; the observed counterpart was the mud deposition boundary, which lay at or below the predicted boundary",
+      "location": "p. 84 (PDF p. 95), section 7.8; p. 135 (PDF p. 146)",
+      "quote": "maximum depth to the wave base for Lake 226 was estimated to be 1.68",
+      "conditions": "Lake 226, ELA, northwest Ontario; two substrate surveys at water levels about 2 m apart; predicted mud energy boundary and observed mud deposition boundary nearly coincide where slopes are < 10°, while gravity carries mud deeper on steeper slopes",
+      "verdict": "corrected",
+      "note": "Cooley's own test was against the observed mud deposition boundary, and it supported the maximal-wave model in this small lake ('maximal wave conditions are the formative conditions on Lake 226', p. 136)"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "Cooley mapped 15.9 km of shore in six Experimental Lakes Area lakes",
+      "location": "p. 108 (PDF p. 119), section 8.2.7",
+      "quote": "with a total shore length of 15.9 km",
+      "conditions": "Lakes 164, 165, 226, 373, 377 and 442 (each ≤ 3 km of shore); 27 ha of nearshore area; mapped to 3 m depth or 30 m offshore, Lake 226 to 7 m in two surveys (and its basin to 16 m)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "Boulder and cobble lined several kilometers of shore but covered only about 11 % of the nearshore area to 3 m depth",
+      "location": "p. 110 (PDF p. 121), section 8.2.8.1",
+      "quote": "covered several kilometers of shoreline combined, had only about 11%",
+      "conditions": "the tri-typic boulder–cobble class 61/52/51, found in all six lakes; small share because boulder–cobble shores are moderately to highly sloped and form narrow nearshore margins; the nearshore area ends at 3 m or 30 m offshore",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "while detritus–sand mixtures covered about 40 %",
+      "location": "pp. 109–110 (PDF pp. 120–121), section 8.2.8.1",
+      "quote": "about 40% of the area surveyed were",
+      "conditions": "continues on the next page: 'bi-typic detritus/sand mixtures'; pure detritus covered more than 10 %, pure bedrock and pure sand about 5 % each",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "Mixed substrate rarely extended below 2 m, 'below the wave base in most areas' (Cooley 1997)",
+      "location": "p. 115 (PDF p. 126), section 8.2.9.1",
+      "quote": "because the 2m depth is below the wave base in most areas of these lakes",
+      "conditions": "said of the number of substrate classes falling at 2 m; 'the gradational classes in these lakes rarely exceed 2m depth'",
+      "verdict": "confirmed",
+      "note": "Cooley's term is 'gradational' classes (wave-sorted material gradients, e.g. a boulder–cobble berm grading to a sand platform), which the paper renders as 'mixed substrate'; 'gradational (wave-sorted) substrate' would be closer"
+    },
+    {
+      "paper": "§3.2.7 (follow-on paragraph)",
+      "claim": "Critical (annual-storm) waves were taken as 77 % of the maximum, after Rowan via Cooley",
+      "location": "p. 49 (PDF p. 60), section 6.8.1.1",
+      "quote": "determined the critical wave height to be approximately 77% of the",
+      "quote_from": "image",
+      "conditions": "77 % of the maximum wave HEIGHT, determined by Rowan et al. (1992) from observed sediment distributions; 'controlled not by the large magnitude (infrequent) storm events, but by the less intense storms which occur several times each year'",
+      "verdict": "confirmed",
+      "note": "'several times a year' rather than 'annual'. Cooley's own Lake 226 result points the other way for a small Shield lake (maximal waves fitted), so the project's choice of 77 % for Hot Brook's 2-km fetches is an assumption worth stating; with L = 20H, 77 % of H gives 77 % of the wave-base depth"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The six ELA lakes are small Precambrian Shield lakes; three substrate classes (detritus, boulder/cobble, bedrock) were common to all six and covered 25 % of the combined nearshore area; 20 of 221 possible substrate combinations covered more than 80 % of it (abstract, PDF p. 6). Substrate diversity fell with depth; composition was homogeneous only on low (≤ 6°) or high (> 40°) slopes. Lake 164 was 63 % detritus, sand and their mixtures with 12 % boulder–cobble; Lake 165 nearly 80 % sand/detritus with 8 % boulder–cobble (pp. 91–94)."
+}
