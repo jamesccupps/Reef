@@ -1,0 +1,109 @@
+{
+  "key": "COSEWIC_2008",
+  "reader": "wave-3 batch 08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own PDF of the report from the Species at Risk Public Registry (the canada.ca page cited in the entry serves the same report as HTML chapters)",
+    "url": "https://sararegistry.gc.ca/virtual_sara/files/cosewic/sr_redbreast_sunfish_0808_e.pdf",
+    "file": "docs/research_notes/fetched/v2/COSEWIC_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's own 'may be cited as' line (PDF p. 2)",
+    "ok": true,
+    "note": "'COSEWIC 2008. COSEWIC assessment and update status report on the redbreast sunfish Lepomis auritus in Canada. Committee on the Status of Endangered Wildlife in Canada. Ottawa. vi + 33 pp.' As cited. The update report was written by Allen Curry and Mark Gautreau (production note), so 'Gautreau & Curry 2006, via COSEWIC 2008' relays the same authors' work. Catalogue No. CW69-14/521-2008E-PDF."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10; Table 3.6-1",
+      "claim": "In Yoho and Oromocto lakes, most redbreast nests were dug through a dense plant mat to coarse sand or fine gravel (Gautreau & Curry 2006, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 16 (PDF p. 22)",
+      "quote": "The majority of the nests were excavated through a dense vegetative mat to spawning substrate",
+      "conditions": "'of coarse sand to fine gravel'; nests: Yoho n = 43, Oromocto n = 20",
+      "verdict": "confirmed",
+      "note": "The same paragraph says 72 % of Yoho nests 'were associated with sparse vegetation and lacked cover structures', which sits oddly beside 'dense vegetative mat'; the paper reports only the latter."
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "In Oromocto, 85 % of nests lay within 1 m of a rock or log",
+      "source_value": "",
+      "location": "p. 17 (PDF p. 23)",
+      "quote": "Oromocto Lake had 85% of the nests within 1 m of a rock or log",
+      "conditions": "Oromocto Lake, New Brunswick, n = 20 nests; 13 cover structures at nest edges",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2; Table 3.6-1",
+      "claim": "Nests 51 cm across in 43 cm of water (Gautreau & Curry 2006, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 16 (PDF p. 22)",
+      "quote": "average nest diameters of 50.9 ± 10.1 cm",
+      "conditions": "means ± SD over Yoho (n = 43) and Oromocto (n = 20) nests; 'were in water depths of 43.2 ± 8.4 cm'; excavated 7.1 ± 2.5 cm deep",
+      "verdict": "confirmed",
+      "note": "Range-wide (Scott & Crossman 1998, same page): nests 61–102 cm across in 15–40 cm of water."
+    },
+    {
+      "paper": "Table 3.5-2; §3.6; Table 3.6-1",
+      "claim": "Spawning late June–early July as water nears 20 °C in New Brunswick (Gautreau & Curry 2006, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 16 (PDF p. 22)",
+      "quote": "from late June to early July when the water temperature approached 20oC",
+      "conditions": "Yoho and Oromocto lakes; range-wide peak at 16.7–27.8 °C (Scott & Crossman 1998)",
+      "verdict": "confirmed",
+      "note": "The source says 'water temperature', not 'littoral' water (Table 3.5-2's wording)."
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Fecundity 963–8,250 at 139–235 mm (North Carolina); 1,396–4,138 at 100–175 mm (Florida) (southern, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 17 (PDF p. 23)",
+      "quote": "963 – 8250 eggs for fish 139 – 235 mm in total length",
+      "conditions": "two south-eastern North Carolina rivers (Davis 1972); Santa Fe River, Florida: '1396 – 4138 eggs for redbreast sunfish having total lengths of 100 – 175 mm' (Bass & Hitt 1974); total length",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "Male care; larvae 1–2 weeks in the nest",
+      "source_value": "Values right, attribution not: in COSEWIC the male care is from Lukas & Orth 1993 and Scott & Crossman 1998, and the 1–2 weeks in the nest from DeWoody et al. 1998, not from Gautreau & Curry 2006, whom the row credits for everything (via COSEWIC).",
+      "location": "p. 17 (PDF p. 23)",
+      "quote": "Larval redbreast sunfish remain in the nest for one to two weeks before dispersing",
+      "conditions": "the male 'begins to defend and aerate the eggs' (Lukas & Orth 1993; Scott & Crossman 1998); the 1–2 weeks is DeWoody et al. 1998",
+      "verdict": "corrected",
+      "note": "Cite as 'DeWoody et al. 1998, via COSEWIC 2008'. Hatch length: COSEWIC gives a mean of 4.9 mm TL (Buynak & Mohr 1978), within the row's 4.6–5.1 mm."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Redbreast aggregate in deeper water below 5 °C (Breder & Nigrelli 1935, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 20 (PDF p. 26)",
+      "quote": "aggregate in deeper waters to overwinter when water temperature falls below 5ºC",
+      "conditions": "credited to Breder & Nigrelli 1935 and Scott & Crossman 1998; the summary (PDF p. 4) adds they 'remain inactive under the ice until spring'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "Two-thirds of tagged redbreast in a Tennessee stream moved less than 100 m, a few 4–9 km (Gatz & Adams 1994, via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 20 (PDF p. 26)",
+      "quote": "two thirds of all fish moving less than 100 metres",
+      "conditions": "individually tagged fish over three years; 'The greatest movement (4 – 9 km) was by a few individuals', later recaptured near their tagging sites; Gatz & Adams's title: 'two warmwater streams in eastern Tennessee'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-7",
+      "claim": "Yoho Lake young-of-year 36.2 mm at the end of the first season (back-calculated; Gautreau & Curry 2006 via COSEWIC 2008)",
+      "source_value": "",
+      "location": "p. 18 (PDF p. 24); Figure 5 (PDF p. 25)",
+      "quote": "36.2, 64.4, 87.8, 110.6, 127.2, and 140.9 mm, respectively",
+      "conditions": "direct proportional back-calculation from scales of 27 Yoho Lake fish, 2005; 'average total lengths for 0+ through 5+ fish' at the end of the growing season",
+      "verdict": "confirmed",
+      "note": "These are also the 36, 64, 88, 111, 127, 141 mm that Table 3.5-2 credits to Gautreau & Curry 2012."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.sararegistry.gc.ca/virtual_sara/files/cosewic/sr_redbreast_sunfish_0808_e.pdf", "status": "error", "note": "ECONNRESET (the same file was served from sararegistry.gc.ca without www)" }
+  ],
+  "notes": "Other values here the paper uses under other citations: Carlander (1977) 'reach maturity at a weight of 23 g or in their second year' (PDF p. 23; the paper's Table 3.5-2 credits Carlander 1977 directly, the references say via COSEWIC); individuals to age 8 (Carlander 1977); Yoho fish 126 ± 26 mm TL and 42.4 ± 24.8 g, Oromocto 143 ± 33 mm and 80.9 ± 52.5 g (Gautreau & Curry 2006; Table 3.5-2's 12.5 cm and 42.6 g are credited to Gautreau & Curry 2012 and differ slightly); guarding males 16.6 and 15.7 cm fork length (2005, 2006); Yoho population estimate 810 ± 115 (2005). Full citation of the relayed report: Gautreau, M. & Curry, R. A. 2006. Ecology of the redbreast sunfish, Lepomis auritus, in Yoho and Oromocto Lakes. NB Cooperative Fish and Wildlife Research Unit Report 01-06, 17 p."
+}

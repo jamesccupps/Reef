@@ -39,7 +39,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | done |
 | w3-06 | MDIFW_nd-9, MDIFW_nd-10, MDIFW_nd-11, Rupp_DeRoche_1965 | done |
 | w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | done |
-| w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | running |
+| w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | done |
 | w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | running |
 | w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | running |
 | w3-11 | Marburg_etal_2006, Mittelbach_1984, MNAP_nd, MNAP_nd-2, Richter_etal_2024, Snow_1978, Chippett_2004, Diana_1979b, Eckmann_2004, Engeletal_1999, Klug_etal_2012, Adamec_2006 | running |
@@ -49,7 +49,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-15 | Allen_1982, Armstrong_1962, ASF_2024, Ator_2019, AuClair_1956, Begley_2017, Blumer_1986b, Bremigan_etal_2008, Brown_Bozek_2010, Brownscombe_etal_2024, Bry_etal_1992, Carmignani_etal_2021 | running |
 | w3-16 | Burdicketal_1954, Cameron_2000, Carignan_Kalff_1980, Carlander_1969, Carroll_Ultsch_2007, Cech_etal_2009, Chappuis_etal_2016, ChowFraser_Sprules_1992, Cooke_etal_2003, Cooley_1997, Deeds_etal_2023, Diana_1983 | running |
 | w3-17 | COSEWIC_2018, Dreyer_etal_2015, Duarte_Kalff_1986, Duarte_etal_1986, Duarte_Kalff_1990, Dudley_2004a, FalckRasmussen_2005, Fitzgerald_etal_2006, Forney_1968, Friesen_Ridgway_2000, Kaemingk_etal_2014, Kappel_etal_2001 | running |
-| w3-18 | Gatto_1982, Gatto_etal_2001, Gerking_1953, Gosz_etal_1972, Greene_etal_2009, Hafs_2007, Hansen_Santer_1995, Hartig_Jude_1984, Hodgkins_2013, Holtan_1998, Klok_vanderVelde_2017, Kortelainen_etal_2006 | queued |
+| w3-18 | Gatto_1982, Gatto_etal_2001, Gerking_1953, Gosz_etal_1972, Greene_etal_2009, Hafs_2007, Hansen_Santer_1995, Hartig_Jude_1984, Hodgkins_2013, Holtan_1998, Klok_vanderVelde_2017, Kortelainen_etal_2006 | running |
 | w3-19 | Hunter_etal_1999, Jordan_etal_2009, Kempinger_etal_1982, Kircheis_etal_2002, Kirchner_Dillon_1975, Kuehne_etal_2018, Kunii_1999, Likens_etal_1977, Limburg_etal_1997, Limburg_etal_1999, Makarewicz_Likens_1979, Mansueti_1961 | queued |
 | w3-20 | MacRae_Jackson_2001, MaineBirdAtlas_, MaineLegislature_1949, Mason_Brandt_1996, McCoy_etal_2001, MDIFW_2019, Mehner_etal_2022, Meldrimetal_1974, Mensinger_etal_2025, Michels_2020, Moore_etal_2004, NilssonOrtman_etal_2026 | queued |
 | w3-21 | NWSCaribou_2026, OGorman_Burnett_2001, Paquette_etal_2021, Penney_etal_2019, Pessl_1969, Post_1982, Post_etal_1995, Post_etal_1998, Raffetto_etal_1990, Rand_Lauder_1981, Rose_etal_1999, Rose_etal_2001 | queued |

@@ -1,0 +1,63 @@
+{
+  "key": "Hasnain_etal_2013",
+  "reader": "wave-3 batch 08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the article and its supplement are behind Canadian Science Publishing's paywall (HTTP 403 to every route); no open copy found in Europe PMC or the University of Toronto repository. Two stand-ins were read (see notes): ORNL's thermal-metrics compilation, which reproduces the article's species table as its 'nagr' sheet, and Hasnain's 2012 MSc thesis on the same data."
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (via show.mjs)",
+    "ok": true,
+    "note": "Hasnain, S. S., Shuter, B. J. & Minns, C. K. 2013. Phylogeny influences the relationships linking key ecological thermal metrics for North American freshwater fish species. Canadian Journal of Fisheries and Aquatic Sciences 70(7): 964–972. doi:10.1139/cjfas-2012-0217 — matches Crossref (title, year, first author)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Yellow perch final temperature preferendum 17.6 °C",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' sheet 'Yellow Perch … 17.6+/-6.0'; thesis Appendix Table A.1 (printed p. 53, PDF p. 60) FTP 17.6. The SD of 6.0 shows it averages very scattered estimates."
+    },
+    {
+      "paper": "Table 3.5-3; §3.5.7",
+      "claim": "Pumpkinseed final temperature preferendum 27.7 °C",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' 27.7 ± 2.6; thesis Table A.1 (printed p. 50, PDF p. 57) 27.7."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Smallmouth bass final preferendum 25.0 °C, UILT 36.0 °C",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' FTP 25.0 ± 6.0, UILT 36.0 ± 1.4; thesis Table A.1 (printed p. 51, PDF p. 58) 25.0 and 36.0."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Chain pickerel final preferendum 25.5 °C (with Coutant 1977's 24 °C)",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' FTP 25.5 (no SD); thesis Table A.1 (printed p. 52, PDF p. 59; read on the page image) FTP 25.5."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Chain pickerel UILT 36.7 °C (untraced; with the Ontario LHD)",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' UILT 36.7 (no SD); thesis Table A.1 (printed p. 52, PDF p. 59; page image) 36.7. Neither names the study behind it, so 'untraced' stands."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "White sucker final preferendum 23.4 °C",
+      "verdict": "unchecked",
+      "note": "Stand-ins agree: ORNL 'nagr' FTP 23.4; thesis Table A.1 (printed p. 50, PDF p. 57) 23.4."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/cjfas-2012-0217", "status": 403, "note": "Canadian Science Publishing; the DOI a library login would open" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/cjfas-2012-0217", "status": 403, "note": "publisher PDF, paywalled" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/cjfas-2012-0217", "status": 403, "note": "publisher landing page" },
+    { "url": "https://cdnsciencepub.com/doi/suppl/10.1139/cjfas-2012-0217", "status": 403, "note": "supplementary material (the species table the paper's values come from)" },
+    { "url": "http://nrcresearchpress.com/doi/suppl/10.1139/cjfas-2012-0217", "status": 403, "note": "old supplement URL (named by ORNL); redirects to the paywall; no Wayback capture" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/cjfas-2012-0217%22&format=json&resultType=core", "status": 200, "note": "Europe PMC: 0 hits" },
+    { "url": "https://utoronto.scholaris.ca/server/api/discover/search/objects?query=%22Phylogeny%20influences%22", "status": 200, "note": "UofT repository: the 2013 article is not deposited (the 2012 thesis and the 2018 follow-up are)" }
+  ],
+  "notes": "Stand-ins, read as their own sources (they do not confirm the article): (1) ORNL HydroSource 'thermal tolerance metrics for freshwater fish' v1 (https://hydrosource.s3.us-east-2.amazonaws.com/files/data/datasets/GMLC_Thermal_Metrics/thermal_tolerance_metrics_freshwater_fish_v1.xlsx; file docs/research_notes/fetched/v2/Hasnain_etal_2013.ORNL.xlsx, text Hasnain_etal_2013.ORNL.txt): its 'datasets' sheet names the 'phylogeny influences' dataset, 'Key ecological thermal metrics for North American freshwater fish species', with the article's supplement URL, and its 'nagr' sheet (p. 16 of the converted text) gives species means ± SD for 173 species — every value the paper cites is there. (2) Hasnain, S. 2012. Factors influencing ecological metrics of thermal response in North American freshwater fish. MSc thesis, University of Toronto (https://utoronto.scholaris.ca/server/api/core/bitstreams/3067fdaf-d9fc-4b4e-879c-e00ac48a8431/content; handle 1807/32574; file Hasnain_etal_2013.thesis2012.pdf): Appendix Table A.1 (printed pp. 50–53) 'Mean optimum growth temperature (OGT), final temperature preferendum (FTP), upper incipient lethal temperature (UILT)…' for the same 173 species, with identical values; methods (printed p. 3) compiled from Scott & Crossman 1973, Coker et al. 2001, Wismer & Christie 1987, Spotila et al. 1979, Jobling 1981, Danzman et al. 1991 (as printed), Beitinger et al. 2000 and primary literature. Recommendation: cite the thesis (open) or the ORNL compilation beside the article, or have the human fetch the article's supplement with a library login to confirm. The values are means of compiled literature estimates (secondary), not the article's own measurements."
+}

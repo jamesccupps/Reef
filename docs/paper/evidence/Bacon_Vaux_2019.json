@@ -1,0 +1,95 @@
+{
+  "key": "Bacon_Vaux_2019",
+  "reader": "wave-3 batch 08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the dataset itself (xlsx workbook) from the Gulf of Maine Knowledge Base file server, record 9679; converted to tab-separated text with a standard-library script (sheet 1 'About the Data' = p. 1, sheet 2 'DATA' = p. 2 of the text)",
+    "url": "https://ww3.gulfofmaine.org/kb/files/9679/MaineLakes_Secchi_Color_Chemistry_AnnualMeans.xlsx",
+    "file": "docs/research_notes/fetched/v2/Bacon_Vaux_2019.xlsx"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the workbook's 'About the Data' sheet",
+    "ok": true,
+    "note": "Title 'Maine Lakes Transparency, Color & Chemistry: Annual Mean Values'; data provider Maine DEP (contact Linda Bacon); 'Data Compiler for KB: L. Bacon (DEP) and P. Vaux (LSM)'; uploaded to the KB on Excel date 43704 = 27 August 2019; data current through 2018. All as cited."
+  },
+  "claims": [
+    {
+      "paper": "§2.4",
+      "claim": "DEP's annual-means compilation covers 1,072 lakes for 1940–2018",
+      "source_value": "",
+      "location": "sheet 'About the Data' (p. 1 of the converted text)",
+      "quote": "First Year in Data Set 1940 Most Recent Year in Data Set 2018",
+      "conditions": "metadata; '# Sites Sampled 1072 lakes'; annual means are means of monthly means; DEP, VLMP and other organizations' data",
+      "verdict": "confirmed",
+      "note": "The DATA sheet holds 1,072 distinct lake codes in 16,470 rows, but 3 of them are New Brunswick lakes with negative codes (e.g. Skiff Lake, NB), so Maine lakes are 1,069; and its earliest rows are 1938 (Highland Lake, Bridgton), not 1940. Both are trivial; the paper's figures repeat the metadata."
+    },
+    {
+      "paper": "§2.4; §3.3",
+      "claim": "Neither Hot Brook lake appears in the compilation (no Secchi, color, chlorophyll, TP or chemistry for either lake)",
+      "source_value": "",
+      "location": "sheet 'DATA' (p. 2 of the converted text): no rows for MIDAS 1072 (Lower) or 1076 (Upper), no lake name containing 'Hot Brook'",
+      "quote": "LAKE CODE (MIDAS) LAKE NAME TOWN(S) STATION YEAR MIN_SEC",
+      "quote_from": "table",
+      "conditions": "searched by MIDAS code (1072, 1076, taken from MDIFW's Lake Fish of Maine) and by name; nearest listed lakes in the towns: North (1063), Faulkner (1064), Brackett (1068), East Grand (1070), Deering (0507)",
+      "verdict": "confirmed",
+      "note": "An absence: the quote is the DATA sheet's header row. The dataset does not speak to the Water Quality Portal or to oxygen profiles, which the same sentences also cover from other sources."
+    },
+    {
+      "paper": "Table 2; Table 3.1-4; §3.3.1",
+      "claim": "Baskahegan Lake (1078), 2001–2011: Secchi 3.7–4.7 m (mean 4.1), color 46 SPU (2004), TP 9–10 µg/L, chlorophyll a 3.1–3.3 µg/L, pH 6.6, alkalinity 5.5 mg/L",
+      "source_value": "",
+      "location": "sheet 'DATA' (p. 2 of the converted text), MIDAS 1078 rows, station 1: 2001, 2003, 2004, 2011",
+      "quote": "1078 Baskahegan Lake … 2004 … 46 … 3.1 … 6.61 5.5 26 10",
+      "quote_from": "table",
+      "conditions": "annual mean Secchi 4.3 (2001, 3 months), 3.7 (2003, 3 months), 3.8 (2004, 1 month), 4.7 (2011, 1 month); color 46, chl 3.1, pH 6.61, alkalinity 5.5, conductivity 26, TP (epilimnetic core) 10 in 2004; chl 3.3 and TP 9 in 2011",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Mean of the four annual Secchi means = (4.3 + 3.7 + 3.8 + 4.7)/4 = 4.125 → 4.1 m. Two of the four years rest on a single month. The dataset has no depth field: the 6.7-m maximum depth and the ~13-km distance come from elsewhere."
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "Faulkner Lake chlorophyll 3.6–5.5 µg/L, TP 9–12 µg/L, color 18 SPU",
+      "source_value": "",
+      "location": "sheet 'DATA' (p. 2 of the converted text), MIDAS 1064 rows, 2004 and 2006",
+      "quote": "1064 Faulkner Lake … 2006 … 18 … 5.5 … 6.98 8.4 30 9",
+      "quote_from": "table",
+      "conditions": "2004: chl 3.6, pH 6.83, TP 12; 2006: color 18, chl 5.5, pH 6.98, alkalinity 8.4, conductivity 30, TP 9; Secchi 3.5–4.5 m in 2003–2006, every year flagged '*' (disk on the bottom)",
+      "verdict": "confirmed",
+      "note": "Table 2 and Table 3.1-4 cite only Maine DEP & VLMP 2025 for Faulkner; this dataset gives the same values (Secchi 3.5–4.5 with the bottom flag, color 18, pH 6.8–7.0, alkalinity 8.4)."
+    },
+    {
+      "paper": "Table 3.1-4",
+      "claim": "Skitacook Lake (1730): Secchi 4.4 m and color 13 SPU in 2018; chlorophyll a up to 3 µg/L",
+      "source_value": "",
+      "location": "sheet 'DATA' (p. 2 of the converted text), MIDAS 1730 rows",
+      "quote": "1730 Skitacook Lake … 2018 4.3 … 4.4 … 4.5 … 13 … 3",
+      "quote_from": "table",
+      "conditions": "2018: two months of Secchi, mean 4.4 (range 4.3–4.5); color 13; chl 3; pH 7.27; alkalinity 12; TP 9 (core), 11 (bottom grab). Also 2012: Secchi 3.4 (one month), pH 6.75, conductivity 28; no 2017 row",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.1-4",
+      "claim": "Mattawamkeag Lake (1686): Secchi 2.5–4.9 m (1977–2018), color 17–88 SPU, chlorophyll a 1.3–7.1 µg/L",
+      "source_value": "Station 1 alone: Secchi annual means 2.5–4.9 m (1977–2018), chl 1.3–7.1, color 17–74. All four stations: Secchi 2.0–5.0 m (2.0 at station 4 in 1989; 5.0 at station 4 in 2007 and station 2 in 1981), chl 1.1–7.1 (1.1 at station 2 in 1977), color 17–88 (88 at station 4 in 2008). The row mixes stations: its Secchi and chlorophyll ranges are station 1's, its color range all stations'.",
+      "location": "sheet 'DATA' (p. 2 of the converted text), MIDAS 1686 rows (stations 1–4, 1972–2018)",
+      "quote": "1686 Mattawamkeag Lake … 4 2008 … 3.2 … 88 … 1.7 7.23",
+      "quote_from": "table",
+      "conditions": "annual means; 72 station-years with Secchi, 21 with chlorophyll, 6 with color",
+      "verdict": "corrected",
+      "note": "Either state 'station 1' and give color 17–74, or give the lake-wide ranges 2.0–5.0 m, 17–88 SPU and 1.1–7.1 µg/L. Maine DEP & VLMP 2025, also cited, was not checked here."
+    },
+    {
+      "paper": "§3.3",
+      "claim": "Neither lake has a DEP or Lake Stewards (VLMP) sampling record in DEP's annual-means data",
+      "source_value": "",
+      "location": "sheet 'About the Data' (p. 1) and sheet 'DATA' (p. 2) of the converted text",
+      "quote": "Data were collected by Maine Department of Environmental Protection (MDEP), the Volunteer Lake Monitoring Program",
+      "conditions": "the compilation pools DEP, VLMP and other organizations' data through 2018; no Hot Brook rows",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The dataset's color field is 'Mean color for the year (SPU)' without saying true or apparent color; Table 3.1-4's caption calls it true color. TSI columns are empty for Baskahegan; the inputs of the paper's 2004 Carlson estimate (Secchi 3.8 m, chl 3.1, TP 10) are in the 2004 row (the formula was not checked here). The same workbook also confirms the Faulkner values Table 2 credits only to Maine DEP & VLMP 2025."
+}

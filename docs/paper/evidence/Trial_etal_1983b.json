@@ -1,0 +1,121 @@
+{
+  "key": "Trial_etal_1983b",
+  "reader": "wave-3 batch 08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (17 Feb 2017, openly downloadable) of the PDF the USGS National Wetlands Research Center served free; the old nwrc.usgs.gov link now redirects to a USGS center home page and the USGS Publications Warehouse record has no PDF. Noble (1965), the source of the growth figures, was read to check their length type: Wayback capture (16 Nov 2024) of the open-access UNI ScholarWorks PDF, whose live link sits behind a Cloudflare check (not attempted).",
+    "url": "https://web.archive.org/web/20170217093935id_/http://www.nwrc.usgs.gov/wdb/pub/hsi/hsi-041.pdf",
+    "file": "docs/research_notes/fetched/v2/Trial_etal_1983b.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and the report's own 'should be cited as' line (PDF pp. 3–4); USGS Publications Warehouse record fwsobs82_10_41",
+    "ok": true,
+    "note": "Trial, J. G., Stanley, J. G., Batcheller, M., Gebhart, G., Maughan, O. E. & Nelson, P. C. 1983. Habitat suitability information: blacknose dace. U.S. Fish Wildl. Serv. FWS/OBS-82/10.41, September 1983, vi + 28 pp. As cited. The entry has no URL: the Wayback capture above (or USGS record https://pubs.usgs.gov/publication/fwsobs82_10_41) could be added."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Blacknose dace 5 mm at hatch",
+      "source_value": "",
+      "location": "p. 1 (PDF p. 9)",
+      "quote": "Fry, 5 mm long at hatching (Traver 1929)",
+      "conditions": "Traver 1929 (North Carolina), relayed",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "29 mm at age I, 45 mm at age II (under the table's 'total length unless stated')",
+      "source_value": "Trial et al. give 29 and 45 mm without saying which length; they are Noble's (1965) standard lengths — end-of-year means of young-of-year (28 and 29 mm SL in the two creeks) and age-I fish (44 and 46 mm SL). With Noble's TL = 1.23 SL they are about 36 and 55 mm TL. Noble's abstract itself gives 24–27 mm for age 0 and 49–50 mm for age I.",
+      "location": "p. 1 (PDF p. 9); Noble 1965 pp. 282–283, 286, 289 (PDF pp. 2–3, 6, 9)",
+      "quote": "are 29 mm long by age I and 45 mm long by age II",
+      "conditions": "Elkhorn and Pease creeks, Boone County, Iowa, 1963–64; Noble measured standard length (snout to hypural plate) on 3,787 fish",
+      "verdict": "corrected",
+      "note": "The lead from another reader holds. Mark the cell 'SL' (or convert to ≈ 36 and 55 mm TL) and say Iowa. Noble: 'Total length equals 1.23 standard length'; 'the age I fish averaged 44 and 46 mm' by the end of 1963."
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Adults seldom exceed 102 mm",
+      "source_value": "",
+      "location": "p. 1 (PDF p. 9)",
+      "quote": "The species seldom reaches 102 mm (Trautman 1957)",
+      "conditions": "Trautman 1957 (Ohio), relayed; length type not stated",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Maturity at age II; few reach III (Iowa; Noble 1965, via Trial et al. 1983b)",
+      "source_value": "",
+      "location": "p. 1 (PDF p. 9)",
+      "quote": "Noble (1965) reported that few fish reach age III",
+      "conditions": "'usually mature at age II' (Schwartz 1958; Noble 1965; Bartnik 1970a; Bragg & Stasiak 1978); in Manitoba not until age III (Gibbons 1971)",
+      "verdict": "confirmed",
+      "note": "'Iowa' is not in Trial et al.; it is Noble's study area (confirmed in Noble's title and abstract)."
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Fecundity 428–1,116 eggs (Traver 1929, via Trial et al. 1983b)",
+      "source_value": "",
+      "location": "p. 2 (PDF p. 10)",
+      "quote": "Females lay from 428 to 1,116 eggs, averaging 746 (Traver 1929)",
+      "conditions": "relayed from Traver 1929; fecundity rises with female length (Noble 1965)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2",
+      "claim": "Spawning from 21 °C in the north (Raney 1940), 15.6–22 °C, May–July, on riffle gravel < 25 cm deep at 20–45 cm/s",
+      "source_value": "",
+      "location": "pp. 1–2 (PDF pp. 9–10)",
+      "quote": "Water depths of less than 25 cm (Schwartz 1958), velocities of 20 to 45 cm/sec",
+      "conditions": "'breed in May, June, and July'; 'temperatures ranging from 15.6 (Schwartz 1958) to 22° C (Traver 1929)'; northern spawning begins at 21 °C (Raney 1940; Scott & Crossman 1973); uniform gravel preferred; riffles the commonest sites",
+      "verdict": "confirmed",
+      "note": "Raney 1940 is relayed here; the references already mark it 'cited via Trial et al. 1983b', but the table cell does not."
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Diet: chironomids and other aquatic larvae",
+      "source_value": "",
+      "location": "p. 1 (PDF p. 9)",
+      "quote": "eat primarily aquatic invertebrates, such as chironomids and other nymphs and larvae",
+      "conditions": "also terrestrial insects and plants; fry forage in quiet, silty shallows, larger fish in riffles and eddying pools",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3",
+      "claim": "Diet includes drift",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unsupported",
+      "note": "Drift feeding is not mentioned anywhere in Trial et al. (searched the whole report); the nearest is foraging 'on invertebrates associated with riffles and deep eddying pools'. Source 'drift' elsewhere or drop it."
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "A stream fish of pools and gravel riffles in small streams, rarely found in lakes",
+      "source_value": "",
+      "location": "p. 2 (PDF p. 10); p. 5 (PDF p. 13)",
+      "quote": "typically are found in the pools of small streams",
+      "conditions": "'rarely in lakes (Fish 1932; Scarola 1973)'; 'Adult blacknose dace typically occur in rocky and gravelly streams'; the lacustrine model has only a water-quality component because the species is rare in lakes",
+      "verdict": "confirmed",
+      "note": "The quoted phrase 'typically a stream fish' in §3.5.3 is Cooper 1941's, not Trial et al.'s."
+    },
+    {
+      "paper": "Table 3.6-1",
+      "claim": "Incubation at 15–22 °C; riffle sand to cobble at 20–45 cm/s; hatch ~5 mm",
+      "source_value": "",
+      "location": "pp. 2–3 (PDF pp. 10–11)",
+      "quote": "Water temperature ranges from 15 to 22° C during embryo incubation",
+      "conditions": "embryos at 7–60 cm/s, 'the majority are found at velocities between 20 and 45' cm/s (Bartnik 1970b); substrates sand (Raney 1940), gravel and cobble; nests in particles ≤ 2.5 cm",
+      "verdict": "confirmed",
+      "note": "The row's 'care: none' is not stated by Trial et al. (they describe a poorly made nest and, in R. a. meleagris, territorial males); the 5–8-d aquarium incubation is credited to Scharpf 2006, not checked here."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.nwrc.usgs.gov/wdb/pub/hsi/hsi-041.pdf", "status": 200, "note": "redirects to the USGS Wetland and Aquatic Research Center home page (no report)" },
+    { "url": "https://pubs.usgs.gov/publication/fwsobs82_10_41", "status": 200, "note": "catalog record only; its links list a thumbnail, no PDF" },
+    { "url": "https://scholarworks.uni.edu/cgi/viewcontent.cgi?article=2132&context=pias", "status": 403, "note": "Noble 1965: Cloudflare 'Just a moment' bot check (not attempted); read from the Wayback capture instead" }
+  ],
+  "notes": "Trial et al. give an upper incipient lethal temperature of 29.3 °C (Hart 1952), consistent with the 28.8–29.9 °C the paper takes from Terpin et al. 1976. The paper's 'Traver. 1929 … citation incomplete' entry can be completed from Trial et al.'s references: Traver, J. R. 1929. The habits of the blacknosed dace, Rhinichthys atronasus (Mitchell). J. Elisha Mitchell Sci. Soc. 45(1): 101–129. The follow-on fallfish mentions in the same tables cite Trial et al. 1983a (a different report) and were not checked here. Noble 1965 file: docs/research_notes/fetched/v2/Trial_etal_1983b.Noble1965.pdf."
+}

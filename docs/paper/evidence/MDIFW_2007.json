@@ -1,0 +1,138 @@
+{
+  "key": "MDIFW_2007",
+  "reader": "wave-3 batch 08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the dataset itself (xls workbook) from the Gulf of Maine Knowledge Base file server, record 9008; read with a standard-library BIFF8 reader into tab-separated text (sheet 1 'About the Data' = p. 1, 'Current Species' = p. 2, 'Extirpated' = p. 3). The 2009 CSV beside it (LakeFish_Maine.csv, current and extirpated rows in one table) was also fetched as a cross-check.",
+    "url": "https://ww3.gulfofmaine.org/kb/files/9008/LakeFish_Maine.xls",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2007.xls"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the workbook's 'About the Data' sheet and the KB file listing",
+    "ok": true,
+    "note": "Title 'Lake Fish of Maine'; data provider MDIFW (contact Joe Dembeck); 'Data Compiler for KB: P. Vaux'; uploaded on Excel date 40050 = 25 August 2009; abstract: lists 'derived from MDIFW's lake survey database (2007 update)'. All as cited. The xls on the server is dated 15 December 2010 (file listing; internal last-saved 13 December 2010) but holds the same records as the 2009 CSV (17,367 current + 756 extirpated rows = the CSV's 18,123; one Hale Pond pearl dace row differs). The About sheet's '2,214 lakes' counts lakes in either sheet; 'Current Species' has 2,207, the paper's denominator."
+  },
+  "claims": [
+    {
+      "paper": "§2.5",
+      "claim": "The database is compiled from MDIFW lake surveys, older surveys and informal records",
+      "source_value": "",
+      "location": "sheet 'About the Data' (p. 1 of the converted text), Abstract",
+      "quote": "based primarily on lake fish surveys, but also containing records obtained from other studies",
+      "conditions": "abstract continues '(e.g. Cooper surveys of the 1940s) and informal observations'; no survey year, gear or abundance is given for any record",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5; §3.5.1",
+      "claim": "Ten species listed for Upper Hot Brook Lake (the 1949 nine plus pumpkinseed) and nine for Lower (no pumpkinseed), with no extirpations",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text), MIDAS 1076 (Upper) and 1072 (Lower); sheet 'Extirpated' (p. 3): no rows for either",
+      "quote": "1076 Upper Hot Brook Lake Danforth, T8 R4 NBPP Lepomis gibbosus Pumpkinseed",
+      "conditions": "Upper: banded killifish, blacknose dace, brown bullhead, chain pickerel, fallfish, pumpkinseed, smallmouth bass, white perch, white sucker, yellow perch; Lower: the same without pumpkinseed",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "Golden shiner, common shiner and American eel appear in neither lake's list",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text), MIDAS 1072 and 1076",
+      "quote": "1072 Lower Hot Brook Lake Bancroft, Danforth, T8 R4 NBPP Perca flavescens Yellow perch",
+      "conditions": "an absence within the two lists",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "American eel is listed in 761 of 2,207 Maine lakes (34 %)",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text): 17,367 rows, 2,207 distinct MIDAS codes",
+      "quote": "Anguilla rostrata American eel",
+      "quote_from": "table",
+      "conditions": "current records only (the Extirpated sheet is separate); the 2009 CSV, which mixes in extirpated rows, gives 764 of 2,214",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Tally by script: 761 distinct MIDAS codes with 'American eel' among 2,207 → 34.5 %, which the paper rounds to 34 %."
+    },
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "Eel is listed for Baskahegan Lake and Crooked Brook Flowage in the Baskahegan system, but for neither Hot Brook lake",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text), MIDAS 1078 and 1082",
+      "quote": "1082 Crooked Brook Flowage Danforth Anguilla rostrata American eel",
+      "conditions": "Baskahegan Lake (1078) row: 'Topsfield, Brookton Twp, T8 R3 NBPP Anguilla rostrata American eel'",
+      "verdict": "confirmed",
+      "note": "'Both above the Danforth dam' (§2.6) and 'upstream on the same stream' (§3.5.3) are geography, not in the workbook."
+    },
+    {
+      "paper": "§2.6",
+      "claim": "Eel is listed in 27 of the 61 lakes of the study set in and around the Mattawamkeag drainage",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text), the 61 MIDAS codes of the study set (research note drainage_species_and_eel.md, groups A–C)",
+      "quote": "1078 Baskahegan Lake Topsfield, Brookton Twp, T8 R3 NBPP Anguilla rostrata American eel",
+      "conditions": "study set = the Mattawamkeag HUC-8 lakes with fish lists (47) plus the 14 further lakes of the surrounding towns",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-tallied by script: all 61 codes are in the workbook; 27 list American eel. The set's membership by drainage comes from DEP lake GIS HUC-12 codes, not this workbook."
+    },
+    {
+      "paper": "§2.5; §3.5.1",
+      "claim": "17 lakes of the set hold smallmouth, white perch and chain pickerel and average 13.9 species; the seven of them ≤ 8 m deep average 10.7 (median 10), against 10 (Upper) and 9 (Lower)",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text)",
+      "quote": "Micropterus dolomieu Smallmouth bass",
+      "quote_from": "table",
+      "conditions": "Hot Brook lakes excluded; richness = distinct common names listed, including unidentified groups (e.g. 'Minnows-carps'); without those the mean is 13.88",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-tallied: the 17 lakes with all three species are exactly those of the research note; richness 13, 9, 10, 10, 15, 13, 17, 14, 6, 16, 10, 19, 20, 14, 14, 22, 15 → mean 13.94, median 14. Shallow seven (Brackett, Baskahegan, Crooked Brook Flowage, Jackson Brook, Drake, Wytopitlock, Long): 14, 13, 9, 10, 10, 13, 6 → mean 10.71, median 10. The ≤ 8-m selection rests on DEP's sounding layer, which the workbook does not hold; the citation should add it."
+    },
+    {
+      "paper": "§2.5; §3.5.1",
+      "claim": "In the 17 analogs: American eel 14 (4 of the 7 shallow), rainbow smelt 11, brook trout 10, landlocked salmon 9, golden shiner 9 (3 shallow), common shiner 7 (5 shallow), creek chub 7",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text)",
+      "quote": "Osmerus mordax Rainbow smelt",
+      "quote_from": "table",
+      "conditions": "counts of lakes listing each species",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-tallied by script: eel 14 / shallow 4; smelt 11; brook trout 10; landlocked salmon 9; golden shiner 9 / shallow 3; common shiner 7 / shallow 5; creek chub 7. (Pumpkinseed 14, shallow 6.)"
+    },
+    {
+      "paper": "§2.5",
+      "claim": "No lake of the 61-lake set records largemouth bass, black crappie, northern pike or slimy sculpin",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text)",
+      "quote": "Micropterus salmoides Largemouth bass",
+      "quote_from": "table",
+      "conditions": "an absence within the 61 study-set lakes (sea-run alewife is also absent from all 61)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-tallied by script: none of the 61 codes lists any of the four."
+    },
+    {
+      "paper": "§2.1",
+      "claim": "East Grand Lake is listed for Danforth, and 22 lakes are listed for the surrounding towns",
+      "source_value": "",
+      "location": "sheet 'Current Species' (p. 2 of the converted text), TOWN(S) column",
+      "quote": "1070 East Grand Lake (Schoodic Lake) Orient, Weston, Danforth, Forest City Twp",
+      "conditions": "towns as in the research note: Danforth, Weston, Bancroft, Orient, Amity, Haynesville, Brookton, Forest City, Reed, Topsfield, Springfield, Kingman, Codyville and T7–T9 R3–R4 NBPP",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Re-tallied by script: 22 lakes (the two Hot Brook lakes among them); 14 of them are outside the Mattawamkeag set."
+    },
+    {
+      "paper": "§2.1",
+      "claim": "14 of the 22 lakes listed for the surrounding towns drain to the St. Croix",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unsupported",
+      "note": "The workbook has no drainage field; the St. Croix assignment comes from DEP lake GIS HUC-12 codes (research note drainage_species_and_eel.md). The 14 non-Mattawamkeag lakes of the town list are the note's group C. Cite the DEP Lakes Data GIS / USGS WBD for the drainage, with MDIFW 2007 only for the lake list."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Every tally the paper takes from the workbook reproduces exactly (scripted on the xls). The one attribution fix: drainage (St. Croix vs Penobscot) and maximum depth (the ≤ 8-m shallow subset) come from DEP's lake GIS, which should be cited beside MDIFW 2007. The workbook gives no survey years, gear or abundances, so absences are not true zeros (as the paper says)."
+}
