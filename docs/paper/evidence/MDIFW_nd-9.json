@@ -1,0 +1,62 @@
+{
+  "key": "MDIFW_nd-9",
+  "reader": "wave-3 batch 06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own web page, served by MDIFW's www1.maine.gov host (www.maine.gov refuses scripts); read 2026-11-26. The page shows no date of its own (footer: 'Copyright © 2026')",
+    "url": "https://www1.maine.gov/ifw/programs-resources/environmental-review/significant.html",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-9.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the page itself",
+    "ok": false,
+    "corrections": "The page's title is 'Significant Wildlife Habitats' (MDIFW, Programs & Resources → Environmental Review); it has no date (read 2026-11-26). Drop 'via search': it has now been read in full. The habitats are defined under the Natural Resources Protection Act, administered by Maine DEP, as the page says."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4; src/config.js:738 (deer YARD_IN 30)",
+      "claim": "deer yard when snow exceeds about 30 cm (config.js: '> 12 in (30 cm) in the open')",
+      "location": "web page, 'Deer Wintering Areas (DWA)' item",
+      "quote": "used by deer when snow gets more than 12 inches deep in the open",
+      "conditions": "snow depth in the open and in hardwood stands; a third condition the paper omits: the depth deer sink into the snow exceeds 8 inches (20 cm) in the open and in hardwood stands; mean daily temperature 'below 32 degrees' (°F, = 0 °C)",
+      "verdict": "confirmed",
+      "note": "The page's DWA definition joins all three conditions with 'and': snow > 12 in, sinking depth > 8 in, mean daily temperature < 32 °F."
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "the mean daily temperature is below 0 °C",
+      "location": "web page, 'Deer Wintering Areas (DWA)' item",
+      "quote": "and when mean daily temperature is below 32 degrees",
+      "conditions": "°F implied (32 °F = 0 °C)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "deer yard in dense softwood",
+      "verdict": "unsupported",
+      "note": "This page says only 'forested areas'. The softwood detail is in MDIFW's blog post 'Katahdin Forest Management Helps Out Wintering Deer in Rockabema Deer Winter Area' (16 Feb 2017; fetched as MDIFW_nd-9.rockabema-blog): deer seek 'mature, coniferous forests' of trees at least 35 ft tall with 50–100 % crown closure, 'primarily of cedar, hemlock, spruce, and/or fir'."
+    },
+    {
+      "paper": "§3.8.4; src/config.js:738–739",
+      "claim": "dense conifer (fir, spruce, cedar, hemlock) holds up to 40 % less snow",
+      "verdict": "unsupported",
+      "note": "Not on this page. The same MDIFW blog post (16 Feb 2017) says: 'Snow depths under dense coniferous cover can be up to 40% less than open areas or hardwoods.' Cite that post instead (or MDIFW's deer-yards brochure, https://www.maine.gov/ifw/docs/deer_yards.pdf, which a search summary says gives 40 % less under mature softwood than hardwood; it refused the fetch, 403/404, so it is unread)."
+    },
+    {
+      "paper": "src/config.js:739",
+      "claim": "deer movement restricted at ~18 in of snow (via search)",
+      "verdict": "unsupported",
+      "note": "Not on this page, nor in the 2017 Rockabema blog post. The page's only figures are 12 in of snow, 8 in of sinking depth and 32 °F. The 18-in figure needs its own source."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www1.maine.gov/IFW/programs-resources/environmental-review/significant.html", "status": 403, "note": "upper-case 'IFW' path refused; the lower-case 'ifw' path on www1 served the page" },
+    { "url": "https://www1.maine.gov/IFW/docs/deer_yards.pdf", "status": 403, "note": "MDIFW deer-yards brochure (would support the 40 % figure, per a search summary); a candidate for the human to fetch" },
+    { "url": "https://www1.maine.gov/ifw/docs/deer_yards.pdf", "status": 404, "note": "" },
+    { "url": "https://www.maine.gov/ifw/docs/deer_yards.pdf", "status": 403, "note": "maine.gov refuses scripted fetches" },
+    { "url": "https://www11.maine.gov/ifw/docs/deer_yards.pdf", "status": 404, "note": "" }
+  ],
+  "notes": "Only the 12-in (30 cm) snow and 32 °F (0 °C) thresholds come from this page; the paper's 'dense softwood' and 'up to 40 % less snow' come from elsewhere. Suggested §3.8.4 wording: 'Deer move to wintering areas when snow in the open and in hardwoods exceeds about 30 cm, deer sink more than about 20 cm, and the mean daily temperature is below 0 °C (MDIFW n.d., significant wildlife habitats); they use mature conifer stands of cedar, hemlock, spruce and fir, under which snow can be up to 40 % shallower than in the open or in hardwoods (MDIFW 2017, Rockabema blog).' The blog post is at https://www1.maine.gov/ifw/blogs/mdifw-blog/katahdin-forest-management-helps-out-wintering-deer-rockabema-deer-winter-area (it would need its own ledger entry). config.js:738–739's '(via search)' should cite the page and the blog, and its '~18 in' needs a source or should be marked [inf]/[gk]. Fetched files: MDIFW_nd-9.html/.txt (the page) and MDIFW_nd-9.rockabema-blog.html/.txt (the blog post)."
+}

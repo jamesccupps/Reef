@@ -1,0 +1,191 @@
+{
+  "key": "MDIFW_nd-11",
+  "reader": "wave-3 batch 06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own web pages, served by MDIFW's www1.maine.gov host; all eleven species pages and the index read 2026-11-26 (files MDIFW_nd-11.<species>.html/.txt). None shows a date of its own (footer: 'Copyright © 2026')",
+    "url": "https://www1.maine.gov/ifw/fish-wildlife/wildlife/species-information/",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-11.painted-turtle.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the pages themselves",
+    "ok": true,
+    "note": "Undated pages, read 2026-11-26. Paths under …/species-information/: birds/bald-eagles.html, mammals/river-otter.html, reptiles-amphibians/{painted-turtle, snapping-turtle, spotted-turtle, blandings-turtle, green-frog, american-bullfrog, mink-frog, eastern-newt, common-watersnake}.html. The common watersnake page supports nothing in the paper as written (see notes)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2",
+      "claim": "many inland eagles stay through winter and scavenge more when the lakes are frozen (bald eagle page)",
+      "location": "web page (bald-eagles), 'Natural history briefs'",
+      "quote": "Scavenging carrion becomes more prevalent as ice cover greatly limits food availability",
+      "conditions": "statewide statement: 'Although some leave the state, many bald eagles remain through the winter in Maine'",
+      "verdict": "confirmed",
+      "note": "The page says 'many bald eagles remain through the winter in Maine', not specifically inland ones; the paper's 'inland' is a reading of the ice-cover sentence. 'Many Maine eagles stay through winter' would match the page exactly."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "Maine river otters eat mostly slow fish such as suckers and minnows, plus crayfish (river otter page)",
+      "location": "web page (river-otter), first paragraphs",
+      "quote": "primarily eats fish, particularly slower-swimming fish like suckers and minnow, but will also eat crayfish",
+      "conditions": "general account; also 'other shellfish, and occasionally turtles, snakes, muskrats, and young beavers'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "the painted turtle is common across Maine except the north-west (painted turtle page)",
+      "location": "web page (painted-turtle), 'Status and Distribution in Maine'",
+      "quote": "Common and secure Statewide, except absent from northwestern Maine",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "living in permanent water with submerged plants and basking sites",
+      "location": "web page (painted-turtle), 'Habitat'",
+      "quote": "Permanent water with submerged vegetation and plentiful basking areas",
+      "conditions": "also 'Shallow ponds, marshes, bogs, or slow streams'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:655–656 (HERP3 painted)",
+      "claim": "painted turtle diet (MDIFW): insects, snails, crayfish, vegetation, carrion",
+      "location": "web page (painted-turtle), 'Diet'",
+      "quote": "Omnivorous. Eats aquatic insects, snails, crayfish, vegetation, and carrion",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:650 (HERP3 PLANT_PREF)",
+      "claim": "the turtles' plants: 'aquatic vegetation', MDIFW [inf]",
+      "source_value": "the painted turtle page says 'vegetation'; the snapping turtle page says 'plants'; neither uses the words 'aquatic vegetation'",
+      "location": "web pages (painted-turtle, snapping-turtle), 'Diet'",
+      "quote": "Omnivorous. Eats aquatic insects, snails, crayfish, vegetation, and carrion",
+      "verdict": "corrected",
+      "note": "A misquotation in a code comment: the inference (soft submersed and floating-leaved plants) is the project's; the quoted words are not MDIFW's."
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "the snapping turtle is common in Maine (snapping turtle page)",
+      "location": "web page (snapping-turtle), 'Status and Distribution in Maine'",
+      "quote": "Common and secure Southern, central, eastern, and northern regions",
+      "conditions": "not listed for the western region",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "it lays in June in sandy soil, including gravel road shoulders",
+      "location": "web page (snapping-turtle), 'Habitat'",
+      "quote": "Lays eggs in June in sandy soil, including gravel road shoulders",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "nests up to 3 km from water",
+      "location": "web page (snapping-turtle), 'Habitat'",
+      "quote": "nests can be up to 1.9 miles from their home ponds",
+      "conditions": "1.9 mi = 3.06 km; measured from 'their home ponds'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "the spotted turtle (state Threatened) occurs only in southern and central Maine (species pages)",
+      "location": "web page (spotted-turtle), 'Status and Distribution in Maine'",
+      "quote": "State Threatened; Species of Greatest Conservation Need Rare Southern and central regions",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "Blanding's turtle (Endangered) occurs only in York and Cumberland counties (species pages)",
+      "source_value": "the species page says 'Southern region only' and names no counties",
+      "location": "web page (blandings-turtle), 'Status and Distribution in Maine'",
+      "quote": "State Endangered; Species of Greatest Conservation Need Rare Southern region only",
+      "verdict": "corrected",
+      "note": "The counties are not on the page. MDIFW's Blanding's Turtle Assessment (26 March 1991; fetched as MDIFW_nd-11.blandings-assessment, PDF p. 5) says 'Blanding's turtles have only been documented in York County', and PDF p. 15: verified at 19 sites in 13 towns, all in York County, with unconfirmed reports from Cumberland County. Either write 'only in southern Maine' (species page) or 'confirmed only in York County as of 1991, with unconfirmed reports from Cumberland' (citing the 1991 assessment)."
+    },
+    {
+      "paper": "§3.8.6; Table 3.8-3",
+      "claim": "in Maine bullfrogs breed when air exceeds 20 °C, mid-June–July (bullfrog page)",
+      "location": "web page (american-bullfrog), 'Natural History Notes'",
+      "quote": "Breeds later than most other frogs in Maine, when air temperatures are above 68",
+      "conditions": "'above 68°F' (20 °C), 'typically mid-June to July'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrogs hibernate in bottom mud (bullfrog page)",
+      "location": "web page (american-bullfrog), 'Seasonal Changes'",
+      "quote": "Hibernates in mud at the bottom of ponds or streams",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3",
+      "claim": "bullfrog adult size (Maine) to ~20 cm (8 in)",
+      "location": "web page (american-bullfrog), 'Distinguishing Characteristics'",
+      "quote": "The largest North American frog, up to approximately 8 inches in length",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3",
+      "claim": "bullfrog larval period usually 2 yr in Maine",
+      "location": "web page (american-bullfrog), 'Natural History Notes'",
+      "quote": "Requires permanent water for tadpoles, which typically take two years to develop",
+      "conditions": "MDIFW's page; it does not say 'in Maine' in so many words",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3",
+      "claim": "green frog adult size (Maine) 5–10 cm (2–4 in)",
+      "location": "web page (green-frog), 'Distinguishing Characteristics'",
+      "quote": "Medium-sized, approximately 2 to 4 inches in length",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3",
+      "claim": "mink frog adult size 3.8–7.6 cm (1.5–3 in)",
+      "location": "web page (mink-frog), 'Distinguishing Characteristics'",
+      "quote": "Medium-sized, approximately 1.5 to 3 inches in length",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3",
+      "claim": "mink frog breeding (Maine) late June–early August",
+      "location": "web page (mink-frog), 'Natural History Notes'",
+      "quote": "Breeds later than most frogs, from late June through early August",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "the mink frog is at the southern edge of its range in Maine (mink frog page)",
+      "location": "web page (mink-frog), 'Status and Distribution in Maine' and 'Natural History Notes'",
+      "quote": "Highest-latitude southern range edge of any frog",
+      "conditions": "in Maine: 'Western, central, eastern, and northern regions' (absent from the southern region); the page suggests warmer, lower-oxygen water may limit its southern extent",
+      "verdict": "confirmed",
+      "note": "The page does not say 'in Maine' outright; its distribution (absent from southern Maine) together with the range-edge note places the edge in Maine."
+    },
+    {
+      "paper": "§3.8.6; Table 3.8-3",
+      "claim": "the mink frog lives in shallow, dense emergents",
+      "location": "web page (mink-frog), 'Habitat'",
+      "quote": "Ponds, lakes, bogs, and streams with shallow areas of dense emergent vegetation",
+      "conditions": "'Highly aquatic, rarely found on land'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "the red-spotted newt lives in lakes as an adult, some active all winter",
+      "location": "web page (eastern-newt), 'Habitat' and 'Seasonal Changes'",
+      "quote": "Adults overwinter in ponds and may be active year-round",
+      "conditions": "adult habitat 'streams, lakes, and relatively permanent ponds'; some adults instead 'leave ponds to hibernate underground on land'",
+      "verdict": "confirmed",
+      "note": "This sentence carries no citation in the paper; the MDIFW page is cited after the next sentence. Move '(MDIFW n.d., eastern newt page)' here."
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "fish largely avoid the newt for its skin toxin, probably tetrodotoxin (MDIFW n.d., eastern newt page; Marion & Hay 2011)",
+      "verdict": "unsupported",
+      "note": "The MDIFW eastern newt page says nothing about toxins or fish predators (its notes cover habitat, diet, overwintering, breeding and skipped eft stages). The toxin claim rests on Marion & Hay 2011 alone."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Nineteen of the paper's and code's uses check. Corrections: (1) §3.8.5 Blanding's turtle 'only in York and Cumberland counties' is not on the species page ('Southern region only'); MDIFW's 1991 assessment says confirmed only in York County, unconfirmed reports from Cumberland. (2) §3.8.6 the MDIFW newt citation belongs on the habitat/winter sentence, not on the tetrodotoxin sentence. (3) config.js:650 quotes 'aquatic vegetation' as MDIFW's words; the pages say 'vegetation' and 'plants'. (4) §3.8.2 'inland' eagles: the page says Maine's eagles generally. Table 3.8-3: only the sizes, the bullfrog's and mink frog's breeding seasons, the bullfrog's two-year larval period and the mink frog's habitat are on the MDIFW pages; the green frog's May–August breeding and clutch sizes, the bullfrog's clutch, 1–3-yr maturity and 3-yr larval period are not (VHS's, for its reader to check). The green frog page's diet line ('including other bullfrogs') and its note that eggs and tadpoles are 'toxic and unpalatable' to fish look carried over from bullfrog text, as the project note suspected; don't rely on them. The common watersnake page supports nothing in the paper: §3.8.6 calls the snake probably absent from a project query, while MDIFW lists it as 'Common and secure' in the 'Southern, central, and eastern regions'. Whether MDIFW's 'eastern region' includes the Hot Brook area is a point the rewrite should address, or else drop the watersnake page from this entry. Uncited code that matches these pages: config.js:669–672 (bullfrogs breed mid-June–July at air > 20 °C, tadpoles about two years) and fish3.js:902–903 (eagles scavenge in winter) could cite them."
+}

@@ -1,0 +1,38 @@
+{
+  "key": "MDIFW_nd-10",
+  "reader": "wave-3 batch 06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own web page, served by MDIFW's www1.maine.gov host; read 2026-11-26. The page shows no date of its own (footer: 'Copyright © 2026')",
+    "url": "https://www1.maine.gov/ifw/fish-wildlife/fisheries/species-information/smallmouth-bass.html",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-10.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the page itself",
+    "ok": true,
+    "note": "Title 'Smallmouth Bass' (MDIFW, Fish & Wildlife → Fisheries → Species Information); undated (read 2026-11-26). The paper cites it in the text as '(MDIFW species page)', without 'n.d.', in §3.5.3 and §3.5.6, so show.mjs and the ledger did not link it: the ledger's sections for this key (§3.8.2–§3.8.6) are those of the generic 'MDIFW n.d.' label, not this page's. The in-text form should be '(MDIFW n.d., smallmouth bass page)'."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3",
+      "claim": "Smallmouth bass \"grow slowly in Maine\"",
+      "location": "web page, 'Interesting Facts'",
+      "quote": "Bass grow slowly in Maine, but they can live for many years",
+      "conditions": "general statement; the page adds that a trophy bass of about 20 in 'could be around 20 years old'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "MDIFW places Maine bass over rocky areas and drop-offs at 1.5–4.6 m",
+      "location": "web page, 'Fishing tips'",
+      "quote": "found in shallow rocky areas or off rocky drop offs in 5 to 15 feet",
+      "conditions": "'In the spring and summer months'; angling advice, not a survey or telemetry result; 5–15 ft = 1.52–4.57 m",
+      "verdict": "confirmed",
+      "note": "The page limits it to spring and summer and gives it as a fishing tip; the rewrite could say 'in spring and summer, MDIFW's angling advice places bass…'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Both quotations are on the page. Other content: adults of 2–3 lb in most bass waters, few over 4 lb and rare over 5 lb in Maine, state record 8 lb; juveniles eat insects, adults fish, crayfish, frogs, newts and dragonflies; males guard eggs and young for weeks; introduced in the late 1800s, now throughout southern, central and eastern Maine; managed as a sport fishery in the southern half, with harvest of smaller bass encouraged. The code's smallmouth comments that cite 'MDIFW' (src/species.js:626–629 and :634, e.g. crayfish '60–90 %' of the adult diet, nests at 1–3 m once the water passes ~15 °C, guarding 25–35 days, feeding stops below ~10 °C, crayfish 'the adult's staple') do not come from this page, which gives none of those values; they must rest on another MDIFW document (probably Jordan 2001's assessment) and should name it."
+}

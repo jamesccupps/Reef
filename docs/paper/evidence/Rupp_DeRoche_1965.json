@@ -1,0 +1,158 @@
+{
+  "key": "Rupp_DeRoche_1965",
+  "reader": "wave-3 batch 06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "library digital-collection copy: the TAFS reprint (pp. 9–25) bound into a course reader in the Robert Behnke archive, Montana State University Library; fetched earlier by the human (docs/research_notes/fetched/2491-36-10.pdf) and indexed here as PDF pp. 1–19. Scan with an OCR text layer; every table value was read on the page images",
+    "url": "https://arc.lib.montana.edu/robert-behnke/objects/2491-36-10.pdf",
+    "file": "docs/research_notes/fetched/v2/Rupp_DeRoche_1965.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the reprint's title page (PDF p. 1: 'Reprinted from Transactions of the American Fisheries Society Vol. 94, No. 1, January 1965, pp. 9-25')",
+    "ok": true,
+    "note": "Authors Robert S. Rupp and Stuart E. DeRoche, Maine Department of Inland Fisheries and Game. Printed page = PDF page + 6."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.2; §3.7.7",
+      "claim": "rotenone censuses of three small, soft-water Maine lakes being reclaimed for trout (\"potential trout water\")",
+      "location": "p. 9 (PDF p. 3), Introduction; p. 23 (PDF p. 17)",
+      "quote": "the numbers, weights, and species compositions of the fish populations of three potential trout lakes",
+      "conditions": "MDIFG's potential-trout-lake reclamation program (rotenone, 1.0 ppm at Shagg and Hills, 0.75 ppm at Coleback); methyl orange alkalinity 1–4, 7 and 3–5 ppm (Table 1); the authors call Maine's waters 'generally soft, infertile'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "snorkel and SCUBA pickup showed how much ordinary rotenone counts miss",
+      "location": "p. 9 (PDF p. 3), Introduction; pp. 10–11 (PDF pp. 4–5), Methods",
+      "quote": "may be as great as the number which float at the surface",
+      "conditions": "snorkel pickup of all fish on the bottom in ≤ 10 ft at Shagg; SCUBA transects of the bottom in deeper water at all three lakes",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "at Shagg 40 % of the fish by weight and 52 % by number sank in water deeper than 3 m",
+      "location": "p. 15 (PDF p. 9), text on Table 2",
+      "quote": "40 per cent by weight of the total standing crop and 52 per cent",
+      "conditions": "Shagg Lake, 9 Sept. 1957; the deep zone is water deeper than 10 ft (3.05 m), 32 of the lake's 55 acres; Table 2: 37,465 fish and 876 lb of 71,960 fish and 2,183 lb",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "smelts mostly sank, suckers and pickerel mostly floated",
+      "location": "p. 18 (PDF p. 12); Table 4, p. 16 (PDF p. 10); Table 7, p. 19 (PDF p. 13)",
+      "quote": "more than half of the suckers and pickerel were located ultimately in the surface waters",
+      "conditions": "the 'floated' share is the share 'recovered ashore or in shallow zone' (≤ 10 ft at Shagg, ≤ 2 ft at Coleback), which includes fish that sank in shallow water",
+      "verdict": "confirmed",
+      "note": "The authors' own summary for Shagg and Coleback together. At Shagg the pickerel split almost evenly: 50.2 % by number (60.2 % by weight) ashore or shallow, 49.8 % (39.8 %) deep; at Coleback 86.8 % ashore or shallow. Suckers 56.2 % (Shagg) and 50.9 % (Coleback) ashore or shallow; smelts 55.6 % and 60.7 % deep. 'Mostly floated' is fair for the two lakes taken together, thin for Shagg's pickerel alone."
+    },
+    {
+      "paper": "§3.5.2; §3.7.7; §3.7.9; §6.1; Table 3.5-1",
+      "claim": "Shagg's crop of 44.5 kg/ha is a minimum",
+      "location": "p. 21 (PDF p. 15), Critique of methods; Table 12, p. 23 (PDF p. 17)",
+      "quote": "Their results are regarded as minimal estimates of the number and weight of fish",
+      "conditions": "Table 12: 39.7 lb/acre = 44.5 kg/ha; the authors judged Shagg's exhaustive shoreline and shallow-water collection 'clearly inadequate' (fish decomposing, no objective check)",
+      "verdict": "confirmed",
+      "note": "The 'minimal' remark is about the shore and shallow-zone collection, which is most of the total; the total is therefore a minimum too. Bullheads were also undercounted (burrowed into the silt)."
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "the 90 % confidence limits at the other two lakes (Coleback, Hills) were about ± 24 %",
+      "location": "p. 21 (PDF p. 15); Table 5, p. 16 (PDF p. 10); Table 8, p. 19 (PDF p. 13)",
+      "quote": "whose 90 per cent confidence limits were ±24.3 per cent",
+      "conditions": "p = 0.1 limits",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "The text's ±23.9 % (Coleback) and ±24.3 % (Hills) are the limits on the shore and shallow-zone sampling estimates only (Table 5: 48,520 fish, 36,980–60,170; Table 8: 11,440, 8,650–14,220). The totals' limits, from Tables 5 and 8 (read on the images), come to nearly the same: Coleback 113,430 fish (85,400–141,460, ±24.7 %) and 2,090 lb (1,670–2,565, −20 %/+23 %); Hills 54,400 fish (42,580–66,240, ±21.7 %) and 1,188 lb (908–1,466, ±23.5 %). So 'about ±20–25 %' holds for the totals. The deep-zone estimates alone were ±35–49 % (Table 11)."
+    },
+    {
+      "paper": "§3.5.2; Table 3.5-1",
+      "claim": "Coleback lacked white and yellow perch and bass",
+      "location": "Table 1, p. 10 (PDF p. 4)",
+      "quote": "Osmerus mordax Lepomis gibbosus Anguilla rostrata Esox niger Catostomus commersoni",
+      "quote_from": "image",
+      "conditions": "fishes present before the 3 Sept. 1958 treatment, in order of numerical abundance",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2; §3.7.7; Table 3.5-1",
+      "claim": "chain pickerel at 83 and 175 fish/ha (4.1 and 8.4 kg/ha); fish averaging under 50 g in both lakes (per-hectare values a project conversion)",
+      "location": "Table 4, p. 16 (PDF p. 10); Table 7, p. 19 (PDF p. 13); Table 1, p. 10 (PDF p. 4)",
+      "quote": "Chain pickerel 1,854 201 … Chain pickerel 1,420 150",
+      "quote_from": "image",
+      "conditions": "whole-lake totals including young of the year; Shagg 55 acres (22.26 ha), 9 Sept. 1957; Coleback 20 acres (8.09 ha), 3 Sept. 1958",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1,854 / 22.26 ha = 83.3/ha; 201 lb = 91.2 kg → 4.10 kg/ha; mean 49.2 g. 1,420 / 8.09 ha = 175.4/ha; 150 lb = 68.0 kg → 8.41 kg/ha; mean 47.9 g."
+    },
+    {
+      "paper": "§3.5.2; Table 3.5-1",
+      "claim": "white sucker at 236–275/ha (24.5–38.4 kg/ha)",
+      "location": "Table 4, p. 16 (PDF p. 10); Table 7, p. 19 (PDF p. 13)",
+      "quote": "White sucker 6,122 1,200 … White sucker 1,909 685",
+      "quote_from": "image",
+      "conditions": "Shagg (275/ha, 24.5 kg/ha) and Coleback (236/ha, 38.4 kg/ha); Hills had no suckers",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "6,122 / 22.26 = 275.0/ha; 1,200 lb = 544.3 kg → 24.45 kg/ha. 1,909 / 8.09 = 235.9/ha; 685 lb = 310.7 kg → 38.4 kg/ha."
+    },
+    {
+      "paper": "§3.5.2; §3.5.3; §3.7.9; Table 3.5-1",
+      "claim": "American eel made up 41 % of fish weight at Coleback (Washington County), 204/ha and 47.6 kg/ha",
+      "location": "Table 7, p. 19 (PDF p. 13)",
+      "quote": "American eel 1,655 850 1.4 40.7",
+      "quote_from": "image",
+      "conditions": "Coleback Lake, 3 Sept. 1958; some eels may have escaped down the outlet the first night (p. 18), though the authors doubt many did",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "40.7 % by weight; 1,655 / 8.09 ha = 204.5/ha; 850 lb = 385.6 kg → 47.6 kg/ha."
+    },
+    {
+      "paper": "Table 3.5-1 (Shagg row)",
+      "claim": "Shagg, Oxford Co. (22 ha; mean 5.8 m, max 12.2 m; clear; alkalinity 1–4); rotenone 9 Sep 1957; 3,232/ha, 44.5 kg/ha (minimum); white sucker 275 (24.5); brown bullhead 149 (5.1, underestimate: burrowed fish); chain pickerel 83 (4.1); white perch 8 (1.2; recent illegal introduction); smelt 2,725 (9.9)",
+      "location": "Table 1, p. 10 (PDF p. 4); Table 4, p. 16 (PDF p. 10); Table 12, p. 23 (PDF p. 17); pp. 16–17 (PDF pp. 10–11)",
+      "quote": "Shagg 55 19 1,308 39.7 3.370",
+      "quote_from": "image",
+      "conditions": "Table 12: surface area 55 acres, average depth 19 ft, 1,308 fish and 39.7 lb per acre; Table 1: max depth 40 ft, clear, alkalinity 1–4 ppm",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "55 ac = 22.26 ha; 19 ft = 5.79 m; 40 ft = 12.19 m; 1,308 × 2.471 = 3,232/ha; 39.7 lb/ac × 1.1209 = 44.5 kg/ha. Table 4: smelt 60,659 and 484 lb → 2,725/ha, 9.9 kg/ha; bullhead 3,314 and 252 lb → 149/ha, 5.1 kg/ha; white perch 171 and 61 lb → 7.7/ha, 1.24 kg/ha. The text says bullheads burrowed into the silt, 'making the bullhead estimate significantly low', and that 'an unauthorized introduction' of adult white perch took place after 1954. One smallmouth bass was also recovered."
+    },
+    {
+      "paper": "Table 3.5-1 (Coleback row)",
+      "claim": "Coleback, Washington Co. (8 ha; 5.2/8.5 m; light brown; alkalinity 7); rotenone 3 Sep 1958; 14,011/ha, 117.1 kg/ha; pumpkinseed 6,385 (14.9; mostly young of the year, none > 18 cm); eel 204 (47.6); pickerel 175 (8.4); white sucker 236 (38.4); no perches or bass",
+      "location": "Table 1, p. 10 (PDF p. 4); Table 7, p. 19 (PDF p. 13); Table 12, p. 23 (PDF p. 17); p. 18 (PDF p. 12)",
+      "quote": "Coleback 20 17 5,670 104.5 6.958",
+      "quote_from": "image",
+      "conditions": "Table 12: 20 acres, average depth 17 ft, 5,670 fish and 104.5 lb per acre; Table 1: max 28 ft, 'Lt. brown', alkalinity 7 ppm",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "20 ac = 8.09 ha; 17 ft = 5.18 m; 28 ft = 8.53 m; 5,670 × 2.471 = 14,011/ha; 104.5 × 1.1209 = 117.1 kg/ha. Pumpkinseed 51,680 and 265 lb → 6,385/ha, 14.9 kg/ha. p. 18: 'No pumpkinseeds longer than 7 inches were found' (7 in = 17.8 cm) and the length distribution 'shows the huge number of young-of-the-year'. Coleback also held 57,530 smelt (7,108/ha, 7.8 kg/ha)."
+    },
+    {
+      "paper": "Table 3.5-1 (Hills row)",
+      "claim": "Hills, Franklin Co. (8 ha; 5.2/9.4 m; clear); rotenone 3 Oct 1961; 7,075/ha, 70.1 kg/ha; brown bullhead 709 (24.3); blacknose dace 131 (0.24); northern redbelly dace 2,836 (5.0); smelt 3,398 (40.5)",
+      "location": "Table 1, p. 10 (PDF p. 4); Table 10, p. 20 (PDF p. 14); Table 12, p. 23 (PDF p. 17)",
+      "quote": "Hills 19 17 2,863 62.5 1.886",
+      "quote_from": "image",
+      "conditions": "Table 12: 19 acres, average depth 17 ft, 2,863 fish and 62.5 lb per acre; Table 1: max 31 ft, clear; the two daces were split by sampling (4.43 % blacknose)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "19 ac = 7.69 ha; 31 ft = 9.45 m; 2,863 × 2.471 = 7,075/ha; 62.5 × 1.1209 = 70.1 kg/ha. Table 10: smelt 26,128 and 686 lb → 3,398/ha, 40.5 kg/ha; bullhead 5,450 and 412 lb → 709/ha, 24.3 kg/ha; redbelly dace (Chrosomus eos) 21,804 and 85 lb → 2,836/ha, 5.0 kg/ha; blacknose dace 1,010 and 4 lb → 131/ha, 0.24 kg/ha. Also 5 brook trout."
+    },
+    {
+      "paper": "§3.7.9; §5.1; §6.1",
+      "claim": "Maine's only rotenone (and SCUBA) counts found 44.5 (a minimum), 70.1 and 117.1 kg/ha of all species in three small lakes with mean depths of 5–6 m",
+      "location": "Table 12, p. 23 (PDF p. 17)",
+      "quote": "Summary at standing crop and productivity data from three potential trout lakes in Maine",
+      "conditions": "average depths 17–19 ft (5.2–5.8 m); 39.7, 62.5 and 104.5 lb/acre; late-summer and autumn kills (Sept. 1957, Sept. 1958, Oct. 1961), young of the year included",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Conversions as in the table rows above. That these are Maine's only whole-lake counts is the project's literature finding, not something the paper says."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Every value the paper takes checks against the tables (read on the page images; the OCR text layer garbles all of them) and the per-hectare conversions are right. Points for the rewrite: (1) the ±24 % in §3.5.2 is, in the source's words, the limit on the shore-sampling estimates; the totals' limits in Tables 5 and 8 are ±20–25 %, so either say 'about ±20–25 % on the totals' or cite Tables 5 and 8. (2) Shagg's 'pickerel mostly floated' is 50.2 % vs 49.8 % by number. (3) The counts include young of the year (Coleback's 6,385 pumpkinseeds/ha averaged 2.3 g); pickerel means were 48–49 g. (4) The Shagg and Hills totals rest on smelt-dominated communities (smelt 84 % and 48 % of numbers); Coleback's 117 kg/ha is 41 % eel. Other values in the source: C-14 net primary productivity 3.370, 6.958 and 1.886 mg C/m²/h (Table 12), which the authors call too crude for Maine's soft waters (an alkalinity error of 2.5 ppm nearly doubles the estimate, pp. 22–23); trout restocked at 236–253/acre reached 7.0–8.6 in after one year (p. 24)."
+}
