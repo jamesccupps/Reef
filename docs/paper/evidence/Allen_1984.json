@@ -1,0 +1,62 @@
+{
+  "key": "Allen_1984",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Alaska Resources Library & Information Services (ARLIS) scan of the USFWS report, with a text layer",
+    "url": "https://www.arlis.org/docs/vol1/AK_Heritage/FWS/OBS/82/FWS-OBS-82-10-61.pdf",
+    "file": "docs/research_notes/fetched/v2/Allen_1984.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page and its 'should be cited as' line",
+    "ok": true,
+    "corrections": "",
+    "note": "'Allen, A. W. 1984. Habitat suitability index models: Mink. U.S. Fish Wildl. Serv. FWS/OBS-82/10.61 Revised. 19 pp.'; title page 'FWS/OBS-82/10.61 Revised, May 1984'. Matches. The entry's 'first issued 1983' is not stated in this copy (only that this is a revision)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.3",
+      "claim": "Mink are chiefly nocturnal",
+      "source_value": "chiefly nocturnal and active throughout the year (Marshall 1936; Gerell 1969; Burgess 1978)",
+      "location": "p. 1 (PDF p. 9), Habitat use information, General",
+      "quote": "Mink are chiefly nocturnal and remain active throughout the year",
+      "conditions": "literature review",
+      "verdict": "confirmed",
+      "note": ""
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "They eat fish in winter and spring, crayfish in summer and small mammals in autumn",
+      "source_value": "fish are preferentially eaten in winter and spring (Sweden, Gerell 1969); crayfish commonest in summer (Sweden, Gerell 1967; Quebec, Burgess 1978); small terrestrial mammals increasingly important with the approach of fall (Gerell 1967, 1969; Burgess 1978)",
+      "location": "p. 2 (PDF p. 10), Food",
+      "quote": "Fish are preferentially consumed in winter and spring due to their increased vulnerability",
+      "conditions": "literature review; the seasonal pattern is from Swedish and Quebec studies; Allen stresses that diet varies with season, prey availability and habitat (birds dominated in North Dakota prairie marshes, muskrats in Ontario)",
+      "verdict": "confirmed",
+      "note": "Allen gives the fish season's reason as low water levels and low temperatures making fish vulnerable."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "they typically work no more than about 300 m of shore a day",
+      "source_value": "during daily activity periods mink move back and forth in a core area that typically does not exceed 300 m of shoreline (Gerell 1970), later shifting to another den and core area",
+      "location": "p. 5 (PDF p. 13), Interspersion",
+      "quote": "typically does not exceed 300 m (984 ft) in shoreline length",
+      "conditions": "Sweden (Gerell 1970), via Allen's review",
+      "verdict": "confirmed",
+      "note": "It is the length of the daily core area, not a measured daily travel distance; the home range is larger (several core areas)."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "and reached densities of 1.5 to over 3 per km of shore on the Vancouver Island coast (Allen 1984)",
+      "source_value": "1.5 to more than 3 animals per km of shoreline along the coast of Vancouver Island (Hatler 1976)",
+      "location": "p. 6 (PDF p. 14), Interspersion",
+      "quote": "Vancouver Island ranged from 1.5 to more than 3 animals/km",
+      "conditions": "marine coast, British Columbia (Hatler 1976), via Allen's review",
+      "verdict": "confirmed",
+      "note": "A marine-shore density; Allen also notes that coastal food supply year-round gives higher mink densities, so it may overstate a lake shore."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values in the review: in Idaho mink were believed able to sustain themselves in a 1–2 km section of stream; female home ranges 7.7 ha in dense cover against 20.1 ha on grazed shore (Montana), under 8 ha in Michigan; most Quebec activity within 3 m of stream edges; dens 5–100 m from water in Idaho. All secondary to the studies Allen cites."
+}

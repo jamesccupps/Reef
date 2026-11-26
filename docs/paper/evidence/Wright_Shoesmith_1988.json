@@ -1,0 +1,57 @@
+{
+  "key": "Wright_Shoesmith_1988",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, on the Game & Wildlife Conservation Trust's publication record (the author's organisation); no full text found",
+    "url": "https://gwct.org.uk/research/scientific-publications/1980-89/1988/wright1988a/",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the GWCT publication record",
+    "ok": true,
+    "corrections": "",
+    "note": "Journal of Fish Biology 33(4): 623–636 (1988), Wright R. M. & Shoesmith E. A. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "in an English gravel pit pike eggs hatched better on sand and silt (11 %) than on plants (2.5 %) in 1986",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The GWCT abstract gives egg-survival experiments with overall hatching success of 11 % on sand/silt against 2.5 % on aquatic plants (1986), and 18.9 % on undisturbed against 7.9 % on disturbed sand/silt (1987), in Main Lake, a gravel pit in Buckinghamshire."
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "even though age-0 survival was higher in a densely vegetated lake (Wright & Shoesmith 1988; abstract)",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unchecked",
+      "note": "Full text not obtained, and the abstract the paper cites does NOT say this: it covers fecundity, egg size, egg density, stage-1-to-fry survival (3–6 %), egg loss (9–10 % per day) and the hatching experiments. The age-0 comparison is in the abstract of Wright 1990 (J. Fish Biol. 36: 215–229, GWCT record wright1990a): 0-group survival to November 1987 was 0.00315 % of potential eggs in St Peter's Lake against 0.00175 % in Main Lake, recruitment differing mainly with the abundance of aquatic vegetation. The rewrite should cite Wright 1990 (abstract) for this part."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "hatching in an English gravel pit was 11 % on sand and silt against 2.5 % on plants (Wright & Shoesmith 1988, abstract)",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unchecked",
+      "note": "As the first claim: the abstract gives these numbers (1986 experiment); the full text, needed for the design (how eggs were placed, n, which plants), was not obtained."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1095-8649.1988.tb05505.x", "status": 403, "note": "Wiley refused the script (subscription article); doi:10.1111/j.1095-8649.1988.tb05505.x needs a library login" },
+    { "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1095-8649.1988.tb05505.x", "status": 403, "note": "Wiley landing page refused the script" },
+    { "url": "https://api.openalex.org/works/doi:10.1111/j.1095-8649.1988.tb05505.x", "status": 200, "note": "OpenAlex: closed access, no repository copy; a later command saving its abstract to the session scratchpad (outside the repository) was refused by the session's permission system and not retried" },
+    { "url": "https://gwct.org.uk/research/scientific-publications/1980-89/1988/wright1988a/", "status": 200, "note": "GWCT record: abstract only, no PDF link" }
+  ],
+  "notes": "Other abstract values the paper or code may use: relative fecundity 17.6 (Main Lake) and 19.4 eggs per g (St Peter's Lake); population fecundity 10.6 and 6.4 million eggs in 1986 and 1987; egg densities 14–671 per m² on sand and silt, maximum 729 per m² on flooded grass. Wright's 1988 PhD thesis (Univ. Buckingham; GWCT record wright1988) covers the same work. All abstract-only."
+}

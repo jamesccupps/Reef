@@ -1,0 +1,35 @@
+{
+  "key": "Adamec_2015",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's personal copy (journal cover and article) posted on his institute's site (Institute of Botany CAS, Třeboň), as captured by the Wayback Machine on 25 Jan 2025 (the live site timed out)",
+    "url": "https://web.archive.org/web/20250125064725/https://www.butbn.cas.cz/adamec/Phyton2015.pdf",
+    "file": "docs/research_notes/fetched/v2/Adamec_2015.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's title page (Crossref has no record of the DOI)",
+    "ok": true,
+    "corrections": "",
+    "note": "Phyton (Horn, Austria) 55(1): 131–148, 30 June 2015; DOI printed on the article: 10.12905/0380.phyton55(1)2015-0131 (not registered at Crossref). Single author, Lubomír Adamec. Matches. Note: the PDF's page labels are wrong by two; printed page = PDF page + 128."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7",
+      "claim": "bladderwort trap investment stops in deep shade (Adamec 2015)",
+      "source_value": "Adamec concludes that at very low CO₂ and in deep shade the low photosynthetic rate and apical growth, with very high shoot N and P, prevent trap production; the shade evidence he cites is U. foliosa producing no traps at 10 % of open irradiance (Bern 1997) and strongly shaded U. vulgaris (Englund & Harms 2003)",
+      "location": "p. 145 (PDF p. 17), Discussion and conclusion; p. 144 (PDF p. 16), Discussion",
+      "quote": "deep shade conditions, the resulting low photosynthetic rate … prevent trap production",
+      "conditions": "his own experiment did not vary light: a 12–14-day experiment in a naturally lit greenhouse (from 14 June 2012) with U. vulgaris, U. australis and U. reflexa at 26–42 % of open irradiance, crossing high (0.30–0.58 mM) or low (0.024–0.062 mM) free CO₂ with prey or no prey",
+      "verdict": "confirmed",
+      "note": "The statement is Adamec's synthesis resting on Bern 1997 and Englund & Harms 2003; the rewrite could cite 'Adamec 2015, reviewing Bern 1997 and Englund & Harms 2003'. His own result is about CO₂: CO₂ addition raised mean trap dry weight 2.7–249 times and the investment in carnivory in all three species, while prey addition had a much smaller effect."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.butbn.cas.cz/adamec/Phyton2015.pdf", "status": "timeout", "note": "the institute's server did not answer (connect timeout, twice); the Wayback capture of the same file was used" },
+    { "url": "https://www.zobodat.at/publikation_series.php?q=Phyton", "status": 200, "note": "ZOBODAT lists Phyton volume 55 articles as references only, without PDFs" }
+  ],
+  "notes": "Also useful for §3.4.7: in most studies, more mineral nutrient (prey capture, higher NH4, NO3, PO4 in the water) lowered the investment in carnivory by negative feedback, with shoot N or P content the regulator (Bern 1997; Kibriya & Jones 2007), p. 144. Aquatic Utricularia biomass doubles in 5–20 days, apical growth 1–4.2 nodes per day (p. 133)."
+}

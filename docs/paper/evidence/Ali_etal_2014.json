@@ -1,0 +1,32 @@
+{
+  "key": "Ali_etal_2014",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (PLOS ONE, CC BY)",
+    "url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0091878&type=printable",
+    "file": "docs/research_notes/fetched/v2/Ali_etal_2014.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Ali SE, Thoen E, Evensen Ø, Skaar I (2014) PLoS ONE 9(4): e91878, published 3 April 2014. Matches the entry."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "Saprolegnia spreads from dead to live eggs within about three days even at 4–7 °C",
+      "source_value": "in the untreated controls, 3 days after infected dead eggs were introduced, hyphae grew out of them and colonized the surrounding live eggs; by day 5 the eggs had coalesced into one mould-covered mass; water 4–7 °C",
+      "location": "p. 4 (PDF p. 4), Results, 'Continuous treatment with BA prevents infection'; temperature p. 3, Methods, 'Effect of continuous exposure to BA'",
+      "quote": "3 days after introduction of the infected, dead egg, the hyphae started growing out",
+      "conditions": "laboratory; eyed Atlantic salmon eggs in a single layer in close contact with three dead eggs per replicate of 27 ± 2 eggs; the dead eggs had been killed at 60 °C and pre-infected with Saprolegnia spores at 15 °C for 48 h; water 4–7 °C, pH 6.8–7.0",
+      "verdict": "confirmed",
+      "note": "The paper does not name the species: the rewrite should say 'in Atlantic salmon eggs in the laboratory'. The source dead eggs already carried hyphae (pre-infected at 15 °C), so the 3 days is the time for growth from an established focus to touching live eggs, not from spore arrival."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The article is about boric acid as a treatment; the untreated controls give the spread rate. Day 5: 'eggs in the non-treated groups started to coalesce and formed a one-unit appearance of dead eggs, completely covered with Saprolegnia mycelium' (p. 4). No lake-fish species or field data."
+}

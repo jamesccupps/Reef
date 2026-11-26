@@ -1,0 +1,42 @@
+{
+  "key": "Wu_Culver_1994",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "copy posted openly by REABIC (Regional Euro-Asian Biological Invasions Centre) in its publications folder: a re-typeset text with the original figures and tables as images (the reference list is not included)",
+    "url": "https://www.reabic.net/publ/Wu_Culver_1994.pdf",
+    "file": "docs/research_notes/fetched/v2/Wu_Culver_1994.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the copy's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "J. Great Lakes Res. 20(3): 537–545, 1994; Lin Wu and David A. Culver. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.7",
+      "claim": "in western Lake Erie edible algae below about 4 g/m³ fresh weight suppressed Daphnia births and began the midsummer decline",
+      "source_value": "edible phytoplankton < 4 g m⁻³ wet weight suppressed birth rates (< 1 d⁻¹) and, with rising young-of-year yellow perch consumption, caused the midsummer decline; low edible algae 'thus initiated the midsummer decline'",
+      "location": "p. 1 (PDF p. 1), Abstract; pp. 8–9 (PDF pp. 8–9), Discussion; Fig. 4 (PDF p. 6)",
+      "quote": "birth rates (<1 individual d-1) by low edible phytoplankton resources (<4 g·m-3 wet wt)",
+      "conditions": "western basin of Lake Erie (eutrophic, > 50 µg/L TP), June–August 1989, nearshore (6 m) and offshore (10 m) pooled; biomass from biovolume at specific gravity 1; D. galeata mendotae and D. retrocurva",
+      "verdict": "confirmed",
+      "note": "The authors pair the food limit with predation: the decline began when low food suppressed births and young perch consumption rose."
+    },
+    {
+      "paper": "§3.3.9",
+      "claim": "in western Lake Erie young yellow perch accounted for all D. galeata mendotae mortality from 4 to 11 July",
+      "source_value": "a bioenergetics estimate: young-of-year yellow perch alone accounted for the total D. g. mendotae mortality between 4 and 11 July, at the start of the decline; over the decline as a whole, 50 %",
+      "location": "p. 9 (PDF p. 9), Discussion; p. 7 (PDF p. 7), Results; Fig. 5 (PDF p. 8)",
+      "quote": "YOY yellow perch alone accounted for the total D. g. mendotae mortality",
+      "conditions": "1989; consumption from a yellow perch bioenergetics model (Hewett & Johnson 1992, adjusted after Post 1990) using trawl densities (25-mm cod end), diet by dry weight, mean depth 8 m",
+      "verdict": "confirmed",
+      "note": "The rewrite could add 'by a bioenergetics estimate' and that over the whole decline the share was 50 % (p. 7)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: young perch fed only on copepods in early June and selected D. g. mendotae from 6 July (> 30 mm TL; Table 2); D. retrocurva was rarely eaten yet declined the same way, earlier; the egg development time used is D = 1/(0.00041T² + 0.0108T − 0.0163) d (Luecke et al. 1990). Extrapolating the perch model to all young-of-year fish (mostly white perch) gave far more than 100 % of mortality, which the authors judge unreasonable."
+}

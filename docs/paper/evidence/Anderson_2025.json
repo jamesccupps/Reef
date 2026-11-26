@@ -1,0 +1,44 @@
+{
+  "key": "Anderson_2025",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the blog post on the Vermont Center for Ecostudies' own web site",
+    "url": "https://vtecostudies.org/blog/wakeboats-risks-loon-nests",
+    "file": "docs/research_notes/fetched/v2/Anderson_2025.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the web page",
+    "ok": true,
+    "corrections": "",
+    "note": "'The Ripple Effect: Wakeboats Pose Risks to Loon Nests', August 6, 2025, by Emily Anderson, Vermont Center for Ecostudies blog. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2",
+      "claim": "Loon nests are typically 5–20 cm above the water",
+      "source_value": "two to eight inches (5.1–20.3 cm) above the water level, on shorelines or nesting rafts",
+      "location": "web page, paragraph beginning 'The challenges of enforcing these buffer zones'",
+      "quote": "usually located two to eight inches above the water level",
+      "conditions": "Vermont; a conservation organisation's blog post, no source given for the figure",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "2 in = 5.1 cm, 8 in = 20.3 cm."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "a motorboat passing at 15 m raises a wave of about 13–15 cm",
+      "source_value": "a standard motorboat 50 ft (15.2 m) away produces a wave five to six inches (12.7–15.2 cm) tall, given as the equivalent of a wakeboat at 500 ft",
+      "location": "web page, paragraph beginning 'Despite the new rule’s stricter guidelines'",
+      "quote": "motorboat would from just 50 feet away, producing a wave five to six inches tall",
+      "conditions": "blog post; no measurement or source cited; wave height not defined (crest to trough or above still water)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "50 ft = 15.2 m; 5–6 in = 12.7–15.2 cm. The rewrite might say it is an unsourced statement in an advocacy blog."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Also: wakeboats closer than 500 ft 'could produce waves in excess of eight to ten inches'; Vermont's 2024 wakesport zones were at least 50 contiguous acres, 500 ft from shore, 20 ft deep and 200 ft wide, a proposed rule raising the minimum to 100 acres with a 500-ft buffer around loon nests. No nest locations are given."
+}

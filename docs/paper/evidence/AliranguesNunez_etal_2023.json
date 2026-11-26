@@ -1,0 +1,39 @@
+{
+  "key": "AliranguesNunez_etal_2023",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (the article is open access under CC BY, but Wiley's site served a Cloudflare bot check and no other deposit was found)",
+    "url": "https://api.crossref.org/works/10.1111/fwb.14026",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Freshwater Biology 68(2): 312–324; published online 24 Nov 2022, issue February 2023; first authors Alirangues Nuñez, Hussner, Mauersberger, Brämick, Hühn, He (Crossref truncates the list). Title matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.2, Table 3.4-1 (deep low meadow) and its source line",
+      "claim": "charophytes 0.1–21 g DW m⁻² in low-P lakes (abstract)",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. But the abstract the paper relies on gives 0.1–21 g dry weight per m² as PERIPHYTON biomass ('Periphyton biomass in the tested lakes reached 0.1–21 g dry weight/m²', grown on artificial substrates for four weeks in July and August), not charophyte biomass. Charophyte abundance was mapped in five cover classes. The 11 lakes were oligo-mesotrophic hardwater lakes with TP 9–22 µg/L. The table's value is almost certainly misattributed and should be removed or relabelled as periphyton."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/fwb.14026", "status": 403, "note": "Cloudflare 'Just a moment' bot check (not passed); open-access CC BY article, so the human can open it in a browser" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1111/fwb.14026", "status": 403, "note": "same bot check" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=onlinelibrary.wiley.com/doi/pdfdirect/10.1111/fwb.14026", "status": 200, "note": "no Wayback capture (also none of /doi/full/, /doi/pdf/ or the landing page)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/fwb.14026\"", "status": 200, "note": "no record" },
+    { "url": "https://api.openaire.eu/search/publications?doi=10.1111/fwb.14026&format=json", "status": 200, "note": "only the Crossref record; no repository deposit" },
+    { "url": "https://api.openalex.org/works/doi:10.1111/fwb.14026", "status": 200, "note": "hybrid OA, CC BY; only location is Wiley's pdfdirect" }
+  ],
+  "notes": "Abstract (Crossref): charophyte abundance was predicted by periphyton biomass and benthivorous bream biomass, not herbivorous rudd; bream biomass rose linearly with lake TP; periphyton was mainly controlled bottom-up by P, top-down in only three lakes. These German hardwater lakes are a weak analog for Hot Brook's soft, coloured water."
+}

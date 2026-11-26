@@ -1,0 +1,42 @@
+{
+  "key": "AGCMaine_2024",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the news item on the Associated General Contractors of Maine's own web site",
+    "url": "https://www.agcmaine.org/news/ns-giles-wins-specialtysubcontractor-award-for-its-danforth-fishway-project",
+    "file": "docs/research_notes/fetched/v2/AGCMaine_2024.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the web page",
+    "ok": true,
+    "corrections": "",
+    "note": "Title 'N.S. Giles Wins Specialty/Subcontractor Award for its Danforth Fishway Project', date posted April 16, 2024. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§2.6",
+      "claim": "alewives gathered below the Danforth dam in the years before the fishway was built",
+      "source_value": "over the past four years (to April 2024) alewives were seen at the base of the Baskahegan Dam for the first time in two centuries",
+      "location": "web page, paragraph beginning 'The Danforth Fishway Project, by helping to establish a self-sustaining alewife run'",
+      "quote": "alewives have been spotted at the base of the Baskahegan Dam",
+      "conditions": "a contractors' association news item; no counts or dates",
+      "verdict": "confirmed",
+      "note": "AGC names it the Baskahegan Dam (project title 'Danforth Fishway-Baskahegan Lake and Crooked Dam')."
+    },
+    {
+      "paper": "§2.6",
+      "claim": "a pool-and-weir fishway was built there in 2023 and dedicated in August 2024 (AGC Maine 2024; ASF 2024)",
+      "source_value": "a pool and weir fishway at the Baskahegan Dam, led by the Atlantic Salmon Federation, an over-$1 million project that N.S. Giles completed in four months; Hurricane Lee flooded the site two weeks after work began",
+      "location": "web page, first and fifth paragraphs",
+      "quote": "constructing a pool and weir fishway at the Baskahegan Dam",
+      "conditions": "posted 16 April 2024",
+      "verdict": "confirmed",
+      "note": "AGC confirms the pool-and-weir fishway; it gives no year (only Hurricane Lee's arrival during construction, and a post date of April 2024) and, being earlier, nothing about the August 2024 dedication. The year 2023 and the dedication come from ASF 2024 ('constructed in 2023'; dedication Saturday, August 10)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The project 'aims to reopen access to nearly 8,960 acres and 137 miles of stream habitat for alewives and other migratory fish species' (first paragraph). Owner Atlantic Salmon Federation; general contractor Sargent Corporation; engineer Acadia Civil Works."
+}

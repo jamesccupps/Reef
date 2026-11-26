@@ -1,0 +1,35 @@
+{
+  "key": "Alexander_etal_2015",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' accepted manuscript ('peer reviewed version') in Queen's University Belfast's Research Portal, as captured by the Wayback Machine on 19 Jul 2018 (the live repository file now sits behind a Cloudflare bot check, which was not passed)",
+    "url": "https://web.archive.org/web/20180719220141/https://pure.qub.ac.uk/portal/files/10068904/Habitat_simplification_increases_the_impact_of_a_freshwater_invasive_fish.pdf",
+    "file": "docs/research_notes/fetched/v2/Alexander_etal_2015.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the repository cover sheet",
+    "ok": true,
+    "corrections": "",
+    "note": "Environmental Biology of Fishes 98(2): 477–486, issue year 2015 (Crossref's 2014 is the online date; copyright 2014). Authors M. E. Alexander, H. Kaiser, O. L. F. Weyl, J. T. A. Dick. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.5",
+      "claim": "the kill-rate response is usually type II, rising to a plateau, in experiments with juvenile largemouth (Alexander et al. 2015; abstract only)",
+      "source_value": "juvenile largemouth bass showed a Type II functional response at every habitat complexity tested (zero to 2,700 artificial blades m⁻²), with no Type III; more complex habitat raised handling time and lowered maximum feeding rate",
+      "location": "manuscript p. 2 (PDF p. 3), Abstract, line 44; manuscript pp. 7–8 (PDF pp. 8–9), Results, lines 209–218",
+      "quote": "bass exhibited potentially population de-stabilising Type II functional responses",
+      "conditions": "laboratory, South Africa; 18 bass of 86.9 ± 2.5 mm TL (gape 14 mm) reused across treatments; female guppies 15–20 mm TL at 2–64 per 300-L tank; 4-h trials at 23 °C after 24 h without food; artificial vegetation at 0, 900, 1,800 and 2,700 blades m⁻²",
+      "verdict": "confirmed",
+      "note": "Full text now read: the '(abstracts only)' can be dropped for Alexander et al. Odd detail: the text reports attack rate falling as habitat became less complex while consumption rose (handling time fell more), so 'attack rate' here is not a simple search-efficiency measure."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://pure.qub.ac.uk/files/10068904/Habitat_simplification_increases_the_impact_of_a_freshwater_invasive_fish.pdf", "status": 403, "note": "Cloudflare 'Just a moment' bot check: not passed; the Wayback capture of the repository file was used" },
+    { "url": "http://hdl.handle.net/10019.1/112607", "status": 200, "note": "Stellenbosch SUNScholar (DSpace 7 app shell); its search API did not find the item" }
+  ],
+  "notes": "Consumption did not differ among zero, low and intermediate complexity and fell only at high complexity (2,700 blades m⁻²), suggesting a threshold. Prey survival without predators was > 98 %."
+}

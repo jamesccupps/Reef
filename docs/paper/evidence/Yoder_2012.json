@@ -1,0 +1,46 @@
+{
+  "key": "Yoder_2012",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the report as filed in the Vermont Yankee case and posted openly by Vermont Law School's Environmental & Natural Resources Law Clinic (the case files page); the old /sites/default/files/… URL redirects to the current one",
+    "url": "https://www.vermontlaw.edu/wp-content/uploads/2024/07/2012-05-25-MBI-Report-Appendix.pdf",
+    "file": "docs/research_notes/fetched/v2/Yoder_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover and title page",
+    "ok": false,
+    "corrections": "Yoder, C. O. 2012. Development of a database for upper thermal tolerances for New England freshwater fish species. MBI Technical Report MBI/2012-4-6, 25 May 2012. Midwest Biodiversity Institute, Center for Applied Bioassessment & Biocriteria, Columbus, Ohio (submitted to the Environmental & Natural Resources Law Clinic, Vermont Law School). The table cited is Appendix Table A-1. Give the URL https://www.vermontlaw.edu/wp-content/uploads/2024/07/2012-05-25-MBI-Report-Appendix.pdf",
+    "note": "The entry has only 'Yoder. 2012. MBI New England thermal tolerance database, Appendix A-1.'"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (chain pickerel)",
+      "claim": "only traced lethal value 28.4 °C at 17.7 °C acclimation (Cvancara et al. 1977, via Yoder 2012; doubtful: it equals Hokanson's value for pike yolk-sac larvae, and no Cvancara et al. 1977 paper on adult pickerel could be found)",
+      "source_value": "Yoder's database gives chain pickerel NO lethal value. Its one chain pickerel row (? – Pennsylvania, 1977, Lab D shuttle box, adults) gives only a behavioural optimum of 24 °C (selection of mean modal temperature; Reynolds & Casterlin 1977). The '(17.7) 28.4' values (24-h, 96-h and >96-h TL50 of 28.4, 27.1 and 25 °C, and a second row of 28.4, 28.4, 28.4) belong to northern pike eggs and larvae, Hokanson et al. 1973a (Cow Horn Lake, Minnesota). Cvancara et al. 1977 in the table is northern pike young-of-year from the Mississippi River, Minnesota: 30.8 °C 48-h TL50 at 26 °C acclimation.",
+      "location": "p. A-11 (PDF p. 29), Appendix Table A-1 (Esocidae); footnote key pp. A-1–A-2 (PDF pp. 19–20)",
+      "quote": "Chain pickerel (Esox niger) ? - Pennsylvania 1977 Lab D Ad. 24s",
+      "quote_from": "table",
+      "conditions": "table rows read on the page image and in the raw text: the layout text puts the pike block's last line '(17 7) 28 4o 28 4q 28 4r' beside the pickerel row and 'Cvancara et al. 1977', which is how the misreading arose",
+      "verdict": "corrected",
+      "note": "The paper's doubt is right and goes further: the value is not a pickerel value at all. The rewrite should drop the 28.4 °C lethal value for chain pickerel and say that Yoder's New England database has no lethal value for the species, only a 24 °C mean modal selected temperature in a shuttle box (Reynolds & Casterlin 1977, adults). The research note centrarchid_percid_esocid_parameters.md (Chain pickerel, 'Lethal') carries the same misreading."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "Pumpkinseed chose 27–32 °C in Lake Monona (Neill & Magnuson 1974, via Yoder 2012)",
+      "source_value": "behavioural optimum 27–29.1 °C by day and 28.5–32 °C at night, as body temperatures, endpoint estimated by the compiler from the data; upper avoidance 30.4 (day) and 32.2 °C (night) as body temperatures, 30.5 and 33 °C otherwise",
+      "location": "p. A-34 (PDF p. 52), Appendix Table A-1 (pumpkinseed sunfish)",
+      "quote": "L. Monona - Wisconsin 1970 Field A Ad. … 27 - 29.1i,k,m 28.5 - 32i,l,m",
+      "quote_from": "table",
+      "conditions": "Lake Monona, Wisconsin, 1970, adults, 'Field A' (field study including artificially induced temperatures beyond ambient: the heated effluent of a power plant); footnotes i = body temperature, k = day, l = night, m = endpoint estimated from the data presented",
+      "verdict": "confirmed",
+      "note": "'27–32 °C' merges the day and night ranges; the rewrite could say '27–29 °C by day and 28.5–32 °C at night (body temperatures, near a power-plant outfall)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.vermontlaw.edu/sites/default/files/Assets/enrlc/cases/vermont-yankee/2012-05-25%20MBI%20Report%20Appendix.pdf", "status": 200, "note": "redirected to the wp-content/uploads URL; fetched" }
+  ],
+  "notes": "Other rows that bear on the paper: the pumpkinseed UUILT of 37.5 °C in the table is Reutter & Herdendorf 1976 (western Lake Erie, 23.1 °C acclimation), not Lake Monona (the research note centrarchid_percid_esocid_parameters.md lists it under Monona; the paper does not use it). Northern pike: Hokanson et al. 1973a egg physiological optimum 11.7 °C, observed range 6–17.7 °C; Scott 1964 hatchery juveniles 32.2–33.2 °C 24-h TL50 at 25–30 °C acclimation; Cvancara et al. 1977 yoy 30.8 °C 48-h TL50 at 26 °C. Redfin pickerel: physiological optimum 26 °C in summer (Ferguson 1958). Pumpkinseed: final preferendum 27.7 °C in summer and 24.2 °C in spring in western Lake Erie (Reutter & Herdendorf 1974); 26 °C mean modal selection (Reynolds & Casterlin 1977). The paper's 'final preferendum 24–25.5 °C' for chain pickerel (Coutant 1977; Hasnain et al. 2013) may rest on the same Reynolds & Casterlin shuttle-box value, which Yoder lists as a mean modal temperature, not a final preferendum."
+}

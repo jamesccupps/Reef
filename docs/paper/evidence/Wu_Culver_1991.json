@@ -1,0 +1,47 @@
+{
+  "key": "Wu_Culver_1991",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "copy posted openly by REABIC (Regional Euro-Asian Biological Invasions Centre) in its publications folder: a re-typeset text with the original figures and Table 1 as images; Table 2 and the reference list are NOT included",
+    "url": "https://www.reabic.net/publ/Wu_Culver_1991.pdf",
+    "file": "docs/research_notes/fetched/v2/Wu_Culver_1991.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "Crossref and the copy's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "J. Great Lakes Res. 17(4): 425–436, 1991; Lin Wu and David A. Culver. Matches."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3",
+      "claim": "Daphnia clearance per animal F = 11.695·L^2.48 mL/d (11.7 at 1.0 mm, 32 at 1.5 mm), an allometry that reads 20–50 % above in-situ rates (Knoechel & Holtby 1986, via Wu & Culver 1991)",
+      "source_value": "Knoechel & Holtby's (1986) filtering rate–body length regression F = 11.695L^2.48 gives individual Daphnia filtering rates 20–50 % higher for western Lake Erie than Wu & Culver's own models; the authors attribute this to its pooling 'a broad range of cladoceran taxa'",
+      "location": "p. 8 (PDF p. 8), Discussion, 'Zooplankton Grazing'",
+      "quote": "Their model yields a 20-50% higher individual Daphnia filtering rate for the western basin",
+      "conditions": "comparison made with Wu & Culver's Daphnia size measurements from western Lake Erie; rates in mL ind⁻¹ d⁻¹, length in mm (head to base of spine)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Arithmetic checked: 11.695 × 1.0^2.48 = 11.7; 11.695 × 1.5^2.48 = 11.695 × 2.733 = 32.0 mL/d. The regression is a multi-taxon cladoceran allometry, so the row's group would be better 'cladocerans (applied to Daphnia)'. The 20–50 % is relative to the authors' 32P in-situ models for the western basin, not to in-situ rates in general."
+    },
+    {
+      "paper": "Table 3.3-3",
+      "claim": "D. galeata mendotae in-situ clearance F = 3.837·L^1.343 mL/d; mean 4.3 at 0.95 mm; western Lake Erie, August",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unchecked",
+      "note": "The coefficients are in the article's Table 2, which the REABIC copy omits. The text confirms only that a significant western-basin regression of filtering rate (mL ind⁻¹ d⁻¹) on body length existed (F = 9.99, P < 0.0047; Fig. 2A, r = 0.57, N = 23), from 32P-yeast grazing chambers on 11–13 August 1987, and that its coefficients a and b were then applied to 1988–89 samples (p. 5). Fig. 2A's W line passes near 4 mL ind⁻¹ d⁻¹ at 1 mm, consistent with 3.837 at 1 mm, but a figure cannot confirm the digits."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://doi.org/10.1016/S0380-1330(91)71378-6", "status": 200, "note": "redirects to Elsevier linkinghub / ScienceDirect: subscription; the full article with Table 2 needs a library login" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1016/S0380-1330(91)71378-6\"", "status": 200, "note": "no record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(zooplankton grazing phytoplankton Dreissena)", "status": 200, "note": "no item" }
+  ],
+  "notes": "The Table 2 claim (in-situ F = 3.837·L^1.343, mean 4.3 at 0.95 mm) stays unchecked until the human opens the ScienceDirect PDF. Other values in the copy: community grazing in August 1987 was roughly 130, 50 and 75 mL L⁻¹ d⁻¹ in the western, central and eastern basins (read from Fig. 1); large cladocerans did > 85 % of the grazing (Table 1); peak Daphnia grazing in 1988–89 was > 200 mL L⁻¹ d⁻¹ (the text: filtering the water every 1.2–7 days) and held edible algae below 5 mL m⁻³ (Figs 4–5). This REABIC copy is the one the research note (clear_water_phase_and_rotifers.md) links, and the note cites 'table 2' for the coefficients, but the copy has no Table 2: the note's coefficients were not read from this copy."
+}

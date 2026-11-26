@@ -1,0 +1,44 @@
+{
+  "key": "Andersen_etal_2017",
+  "reader": "w3-25",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "PubMed Central full text (publisher-deposited copy, PMC5597838)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5597838/",
+    "file": "docs/research_notes/fetched/v2/Andersen_etal_2017.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC article header",
+    "ok": true,
+    "corrections": "",
+    "note": "Proc Biol Sci 2017 Sep 13; 284(1862): 20171427, doi:10.1098/rspb.2017.1427; authors Mikkel R. Andersen, Theis Kragh, Kaj Sand-Jensen. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.6",
+      "claim": "in shallow, densely vegetated Chara ponds surface water swung from 12–25 % O₂ saturation at sunrise to 205–235 % in the afternoon",
+      "source_value": "surface-water minimum at sunrise 12–25 % saturation; maximum in the early afternoon 205–235 % after about 10 h of photosynthesis",
+      "location": "web page (PMC full text), §3(b) 'Diel dissolved oxygen variations'; Figs 1–2",
+      "quote": "Minimum oxygen concentrations in surface waters occurred at sunrise (12–25% saturation)",
+      "conditions": "four small charophyte lakes on the Öland alvar, Sweden (75–2,500 m², 0.24–0.41 m deep, 319–813 g DW m⁻² charophytes); the intensively studied lake 1, 0.30–0.46 m deep; warm days in May and all days in August; surface sensor at 0.08 m",
+      "verdict": "confirmed",
+      "note": "The source calls them lakes ('shallow vegetated lakes (less than 0.6 m)'); 'ponds' is fair, but the rewrite should give the depth (under half a metre), since the paper sets this beside 3–5 m lakes."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "while the bottom went anoxic at midday",
+      "source_value": "bottom water turned anoxic around midday and stayed so until 20:00–00:00, when convective mixing re-oxygenated it; in early June 2016 lakes 1, 2 and 4 were anoxic at the bottom from about 10:00 to 20:00",
+      "location": "web page (PMC full text), §3(b) 'Diel dissolved oxygen variations'; Fig. 3, Table 1",
+      "quote": "oxygen simultaneously declined by respiration thus turning anoxic around midday",
+      "conditions": "as above; bottom sensor at 0.34 m in lake 1",
+      "verdict": "confirmed",
+      "note": "Lake 3 had almost permanently anoxic bottom water."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://europepmc.org/articles/PMC5597838?pdf=render", "status": 403, "note": "Europe PMC refused the script; the PMC HTML was used" }
+  ],
+  "notes": "Mechanism: dense charophytes reaching 5–10 cm below the surface absorb 90 % of short-wave radiation in the top 9–13 cm and damp wind mixing, giving daytime stratification (0.3–1.9 °C per cm) and nightly convective mixing. Surface pH 8.0 at sunrise to 9.4–9.6 in the afternoon. Charophytes survived 24 h of dark anoxia with a 16 % loss of photosynthetic capacity, 72 h with a two-thirds loss."
+}
