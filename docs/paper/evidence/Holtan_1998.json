@@ -1,0 +1,70 @@
+{
+  "key": "Holtan_1998",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wisconsin DNR's own copy of the species leaflet (dnr.wisconsin.gov)",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Species_pumpkinseed.pdf",
+    "file": "docs/research_notes/fetched/v2/Holtan_1998.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the leaflet's first page (text and page image)",
+    "ok": true,
+    "corrections": "",
+    "note": "By Paul Holtan; Wisconsin Department of Natural Resources, Bureau of Fisheries Management; PUB-FH-714 98Rev., October 1998; 6 pp. Add the publication number and URL; it can now be cited directly instead of 'via Jordan et al. 2009'. It is a popular angler leaflet with no data, sample sizes or citations (only an 'Additional reading' list)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed row, fecundity)",
+      "claim": "fecundity 1,500–7,000 eggs (Holtan 1998, via Jordan et al. 2009)",
+      "source_value": "a female may produce between 1,500 and 7,000 eggs, depending on size and age",
+      "location": "p. 5 (PDF p. 5), 'Life cycle'",
+      "quote": "a female may produce between 1,500 and 7,000 eggs",
+      "conditions": "Wisconsin; general statement without data; reads as eggs released per female (Jordan et al. relay it as eggs released), not ovarian counts",
+      "verdict": "confirmed",
+      "note": "The Ontario LHD range beside it (2,451–10,633) may be ovarian fecundity; the two are not the same quantity. Holtan also gives 1,500 to almost 15,000 fry per nest, average about 8,000."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed row)",
+      "claim": "colonial nests",
+      "source_value": "nests built in colonies of a few to as many as 10–15 nests",
+      "location": "p. 5 (PDF p. 5), 'Life cycle'",
+      "quote": "The nests are built in colonies that may range from just a few",
+      "conditions": "general statement",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed row)",
+      "claim": "nests < 1 m deep on sand or gravel",
+      "source_value": "sand or gravel bottoms, in water 'anywhere from 6 inches to several feet deep' (0.15 m to more than 1 m)",
+      "location": "p. 5 (PDF p. 5), 'Life cycle'",
+      "quote": "anywhere from 6 inches to several feet deep, on sand or gravel bottoms",
+      "conditions": "general statement; nest building starts at 55–63 °F (12.8–17.2 °C)",
+      "verdict": "corrected",
+      "note": "Sand or gravel is Holtan's; '< 1 m' is not — it is McPhail 2007 as relayed by Jordan et al. 2009 (Jordan's p. 5). Holtan's nest-building temperature, 12.8–17.2 °C, is lower than the row's 17–26 °C (Ontario LHD)."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed row)",
+      "claim": "egg incubation 3–5 d (row sources include Holtan 1998 via Jordan et al. 2009)",
+      "source_value": "eggs hatch in two to three days, or longer depending on conditions",
+      "location": "p. 5 (PDF p. 5), 'Life cycle'",
+      "quote": "The eggs hatch in two to three days, or longer depending on conditions",
+      "conditions": "general statement",
+      "verdict": "corrected",
+      "note": "Jordan et al. 2009 write 'three to five days after fertilization' without attributing it to Holtan; Holtan says 2–3 d. Cite the 3–5 d to Jordan et al. (or its source) and give Holtan's 2–3 d separately, or drop Holtan from this cell."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed row)",
+      "claim": "the male guards the nest",
+      "source_value": "females leave after spawning; males stay and protect the eggs, sometimes the fry, returning strays in the mouth",
+      "location": "p. 5 (PDF p. 5), 'Life cycle'",
+      "quote": "males stay and are highly protective of the eggs",
+      "conditions": "general statement; no duration given (the row's 6.0 ± 0.4 d is Cooke et al. 2006)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other content: first-year length about 2 in (age 1: 2.1 in); most mature in the second or third year; maximum age 8–10 years; mature fish average 5–8 in and 8–12 oz; thrives at 75–89 °F; more tolerant of low O₂ than bluegill but less of warm water; adults rarely school (pairs or groups of 3–4), young form large inshore schools; homing after displacement within a lake. The weight '8-12 ounces' for 5–8-in fish looks high for a pumpkinseed; treat the leaflet's numbers as popular, not measured."
+}

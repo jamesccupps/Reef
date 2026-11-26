@@ -1,0 +1,35 @@
+{
+  "key": "Gosz_etal_1972",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Gosz, Likens & Bormann 1972, Ecology 53(5): 769–784, doi:10.2307/1934293. Matches the entry. Not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.2",
+      "claim": "Hubbard Brook litterfall cycles 140.4 kg ha⁻¹ yr⁻¹ of eleven elements, with N the largest share (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "the Hubbard Brook forest drops about 570 g dry m⁻² yr⁻¹ of litter, about 49 % of it leaves and about half of it in autumn (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text. A search engine's summary of the abstract (not evidence) gave total litterfall 5,702 kg ha⁻¹ yr⁻¹, leaves 'about half', and autumn 49.7 % of the litter and 56.0 % of the nutrients — so check whether the paper's '49 % leaves' is really the autumn share when the full text is in hand."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1934293", "status": 403, "note": "Wiley (ESA journals) refused; paywalled" },
+    { "url": "https://www.jstor.org/stable/1934293", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://archive.org/advancedsearch.php?q=nutrient content of litter fall hubbard brook", "status": 200, "note": "Internet Archive: no copy" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/1934293\"", "status": 200, "note": "Europe PMC: no record" }
+  ],
+  "notes": "For the human: DOI 10.2307/1934293 (JSTOR or Wiley with a library login). No free copy found on the Hubbard Brook, LTER or USFS sites."
+}

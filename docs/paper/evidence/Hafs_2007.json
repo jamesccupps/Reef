@@ -1,0 +1,44 @@
+{
+  "key": "Hafs_2007",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's own copy on his Bemidji State University faculty web page (the host timed out on the first two tries, then served it)",
+    "url": "https://faculty.bemidjistate.edu/ahafs/wp-content/uploads/sites/2/2024/05/2007.-Hafs-A.W.-Smallmouth-bass-survival-movement-and-habitat-use-in-response-to-seasonally-discontinuous-surface-flow.-Ma.pdf",
+    "file": "docs/research_notes/fetched/v2/Hafs_2007.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Andrew W. Hafs, 'Smallmouth bass survival, movement, and habitat use in response to seasonally discontinuous surface flow' (title page misspells 'DISCONTINOUS'), Master of Science thesis, Arkansas Tech University, September 2007. Add the URL. Chapter 2 was published as Hafs, Gagen & Whalen 2010, North American Journal of Fisheries Management 30: 604–612 (doi:10.1577/M08-183.1)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "76 % of Snake River smallmouth recaptures were in the same pool (Munther 1970, via Hafs 2007)",
+      "source_value": "99 (76 %) of recaptured fish in the same pool; 22 of the 31 found elsewhere had moved < 1.2 km, 3 had moved 1.6–2.8 km and 6 > 2.8 km",
+      "location": "p. 7 (PDF p. 24), literature review",
+      "quote": "Ninety-nine (76%) of the recaptured fish were found in the same pool",
+      "conditions": "Munther 1970: mark–recapture of smallmouth 122–480 mm in the Snake River (Idaho–Oregon border), June 1965–November 1966",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "in an Arkansas stream that dried into pools, smallmouth survived May–September at 67 % in the most-dried and most-fished fork against 79–84 % elsewhere",
+      "source_value": "summer survival 67.1 % (North Fork), 78.9 % (Middle Fork) and 84.2 % (East Fork) of the Illinois Bayou, 2006. The North Fork was the most accessible to anglers and the only fork with deaths directly from drying, but not clearly the most dried: its upstream section lost the most wetted area of the upstream sections (47 %), midstream losses were similar (26–32 %), and the East Fork's downstream section lost the most of any section (over 56 %).",
+      "location": "p. 71 (PDF p. 88), Results; p. 21 (PDF p. 38), wetted area; p. 63 (PDF p. 80), chapter abstract",
+      "quote": "In the North Fork, summer survival was estimated to be 67.1%",
+      "conditions": "Boston Mountains, Ozark National Forest; 60 adult smallmouth radio-tagged in May (20 per fork), tracked to October 2006; a below-average-discharge summer; 'least conservative' alternatives 27.3 % vs 50.0 and 43.7 %, 'most conservative' 78.9–89.4 %",
+      "verdict": "corrected",
+      "note": "Change 'most-dried and most-fished' to 'most accessible to anglers, and the only one where bass died from drying'. The chapter abstract: 'Although all streams experienced significant loss in wetted areas, the North Fork, which was more accessible to anglers, had the lowest survival rate.' The May–September period is the thesis's own ('growing season ... for the period of May-September', p. 72)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://faculty.bemidjistate.edu/ahafs/wp-content/uploads/sites/2/2024/05/2007.-Hafs-A.W.-Smallmouth-bass-survival-movement-and-habitat-use-in-response-to-seasonally-discontinuous-surface-flow.-Ma.pdf", "status": "error", "note": "connect timeout twice (and refused through WebFetch); succeeded on a later try" },
+    { "url": "https://orc.library.atu.edu/faculty_pub_biol/1", "status": 200, "note": "Arkansas Tech record of the 2010 NAJFM article: no full text there" }
+  ],
+  "notes": "Also usable: 12 % of tagged bass (7 of 58) had cumulative movements > 1 km; mean net movements 458, 212 and 429 m in the North, Middle and East Forks; fish moved away from drying reaches; annual survival estimated at 56 % for the North Fork and 66–71 % for the others by combining with Bare's (2005) dormant-season survival; two North Fork bass died when their pools dried completely (transmitters found 9 August). Reviewed: Reed & Rabeni (1989), annual survival 84–89 % in lightly fished streams, 44–58 % under heavy fishing. Hafs hypothesizes that sub-adults, not yet settled in home pools, suffer most from drying."
+}

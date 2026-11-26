@@ -1,0 +1,42 @@
+{
+  "key": "Hansen_Santer_1995",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Hansen, A.-M. & Santer, B. 1995, Journal of Plankton Research 17(3): 631–646, doi:10.1093/plankt/17.3.631. Matches. Not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3",
+      "claim": "cyclopoid nauplii (Cyclops vicinus, Mesocyclops leuckarti) have a development threshold on algae of 0.2–0.5 mg C/L (with Santer & van den Bosch 1994; abstracts only)",
+      "verdict": "unchecked",
+      "note": "no full text. A search engine's summary of the abstract (not evidence) gave 0.3 mg C/L for M. leuckarti and 0.5 for C. vicinus on Chlamydomonas reinhardtii, similar thresholds on Cryptomonas; the 0.2 may come from Santer & van den Bosch 1994."
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "M. leuckarti needed rotifers to complete copepodite development (abstract only)",
+      "verdict": "unchecked",
+      "note": "no full text"
+    },
+    {
+      "paper": "§3.3.6",
+      "claim": "cyclopoid nauplii need four to ten times Daphnia's threshold food (project comparison drawing on this entry's thresholds)",
+      "verdict": "unchecked",
+      "note": "no full text; project arithmetic cannot be checked without the thresholds"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1093/plankt/17.3.631", "status": 403, "note": "Oxford Academic refused the script" },
+    { "url": "https://academic.oup.com/plankt/article-pdf/17/3/631/9803226/17-3-631.pdf", "status": 403, "note": "Oxford Academic refused (guessed PDF path)" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=plankt.oxfordjournals.org/content/17/3/631*", "status": 200, "note": "Wayback holds only the 2016 abstract page (.short), no full-text PDF capture; fetching that abstract capture was refused by this session's permission system, so it was not retried" },
+    { "url": "https://openpolar.no/Record/fthighwire:oai:open-archive.highwire.org:plankt:17%2F3%2F631", "status": "error", "note": "certificate error; the fallback fetch was refused by this session's permission system and not retried. The record says the article was in HighWire's 'open archive', so OUP may serve it free to a browser" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1093/plankt/17.3.631\"", "status": 200, "note": "Europe PMC: no record" }
+  ],
+  "notes": "For the human: https://academic.oup.com/plankt/article/17/3/631 (doi:10.1093/plankt/17.3.631). JPR back issues may be free to read in a browser (the HighWire open-archive record suggests so); a person can try it directly. The Max Planck PuRe record (pure.mpg.de item_1508525) lists the full text as restricted."
+}

@@ -1,0 +1,45 @@
+{
+  "key": "Gatto_1982",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Alaska Resources Library & Information Services (ARLIS) copy of the CRREL report (a Susitna Joint Venture document-control copy, scanned with a text layer)",
+    "url": "https://www.arlis.org/docs/vol1/Susitna/10/APA1085.pdf",
+    "file": "docs/research_notes/fetched/v2/Gatto_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover and report documentation page",
+    "ok": true,
+    "corrections": "",
+    "note": "Cover: Special Report 82-31, December 1982, US Army Corps of Engineers, Cold Regions Research & Engineering Laboratory (Hanover, New Hampshire 03755), 'Reservoir bank erosion caused and influenced by ice cover', Lawrence W. Gatto, prepared for the Office of the Chief of Engineers. Matches the entry. The paper now cites it 'via Gatto, Ferrick & Calkins 2001'; it can be cited directly."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.3; §3.2.6",
+      "claim": "on lakes under about 4 km across, thermal expansion of the ice rather than wind is the main cause of ice push (Gatto 1982, cited via Gatto, Ferrick & Calkins 2001)",
+      "source_value": "ice push by expansion dominates on lakes with diameters less than 3–4 km (Worsley 1975), on small lakes of about 5 km² (Dionne 1979) and on narrow, shallow bays of large lakes (Pessl 1969) — given as what 'some investigators (Laskar and Strenzke 1941, Jennings 1958) feel', one side of an unresolved debate that Gatto says he will only summarize",
+      "location": "p. 16 (PDF p. 23), 'Ice-push features'",
+      "quote": "ice push due to ice expansion dominates on lakes with diameters less than 3—4 km",
+      "conditions": "literature review; secondary to Worsley 1975 and Dionne 1979",
+      "verdict": "corrected",
+      "note": "The threshold is 3–4 km (not 'about 4 km'), it is Worsley's (1975), and Gatto presents it as a debated view. The Hot Brook lakes (3.3–3.4 km long, 1.7–1.9 km wide) are inside the range by width but sit within the 3–4 km band by length, so 'fall in the size range' should be hedged. Gatto, Ferrick & Calkins (2001) restate this as 'generally agreed' at 2.5 miles."
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "wind push predominates on lakes wider than about 4 km (Gatto 1982, as cited by Gatto, Ferrick & Calkins 2001)",
+      "source_value": "wind-generated ice push occurs more often on wide lakes (Dionne 1979, Varjo 1960) or large lakes with fetches greater than 4 km (Worsley 1975)",
+      "location": "p. 16 (PDF p. 23), 'Ice-push features'",
+      "quote": "with fetches greater than 4 km (Worsley 1975)",
+      "conditions": "literature review",
+      "verdict": "confirmed",
+      "note": "Given in terms of fetch, not width; secondary to Worsley 1975."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://erdc-library.erdc.dren.mil/jspui/bitstream/11681/12255/1/SR-82-31.pdf", "status": 200, "note": "ERDC Library: too short to be the text (not kept); the ERDC record is https://erdc-library.erdc.dren.mil/jspui/handle/11681/12255" },
+    { "url": "https://apps.dtic.mil/sti/pdfs/ADA124508.pdf", "status": 403, "note": "DTIC refused the script" }
+  ],
+  "notes": "The report is about reservoirs; lake ice push is one section. Other usable passage: field observations at Whitefish Bay, Lake Superior, show wind-driven ice riding up and over banks 25–30 ft high (p. 13, Fig. 11); and ice-push features (ramparts, push ridges, thrust ridges; reviewed by Dionne 1974a) are 'the most frequently reported features along lakes' (p. 16)."
+}

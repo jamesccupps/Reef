@@ -1,0 +1,39 @@
+{
+  "key": "Hodgkins_2013",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the USGS Publications Warehouse record (its JSON service); the record links only the DOI, no PDF",
+    "url": "https://pubs.usgs.gov/pubs-services/publication/70048258",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS Publications Warehouse record",
+    "ok": true,
+    "corrections": "",
+    "note": "Hodgkins, G. A. 2013, Climatic Change 119(3–4): 705–718, doi:10.1007/s10584-013-0766-8. Matches both."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "ice-out advanced 1.8 days per decade over the 50 years to 2008 but 0.4–0.6 over 75–125 years (abstract)",
+      "verdict": "unchecked",
+      "note": "abstract only. The abstract (USGS record) gives 1.8 days/decade for the last 50 years (median of lakes with adequate data), 0.6 for 75 years, 0.4 for 100 and 0.6 for 125 years, periods ending in 2008, 28 New England lakes — consistent with the paper's sentence, which already says 'abstract'."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "at three New England lakes earlier ice-out brought lower late-summer bottom oxygen, explaining 32–46 % of its variation (abstract)",
+      "verdict": "unchecked",
+      "note": "abstract only. The abstract: 'Based on historical data available at three lakes, 32 to 46 % of the interannual variability of late summer hypolimnion DO levels was related to ice-out dates; earlier ice-outs were associated with lower DO levels.' Consistent with the paper."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/s10584-013-0766-8.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://doi.org/10.1007/s10584-013-0766-8", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://pubs.usgs.gov/publication/70048258", "status": 403, "note": "USGS landing page refused WebFetch; its JSON service (above) answered, with the abstract and only a DOI link" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/s10584-013-0766-8\"", "status": 200, "note": "Europe PMC: no record" }
+  ],
+  "notes": "For the human: doi:10.1007/s10584-013-0766-8 (Springer, library login). Hodgkins is a USGS author, so a USGS accepted manuscript may exist but none is linked from the Publications Warehouse."
+}

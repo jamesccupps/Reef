@@ -1,0 +1,48 @@
+{
+  "key": "Klok_vanderVelde_2017",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access full text (CC BY) from Europe PMC's REST service (full-text XML of PMC5410161); peerj.com and the Europe PMC PDF render refused the script, and the PMC page returned a bot check",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5410161/fullTextXML",
+    "file": "docs/research_notes/fetched/v2/Klok_vanderVelde_2017.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's front matter",
+    "ok": true,
+    "corrections": "",
+    "note": "Klok, P. F. & van der Velde, G. 2017. PeerJ 5: e3212, doi:10.7717/peerj.3212, published 27 April 2017. Matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.6",
+      "claim": "floating leaves are short-lived, 38–48 days on average in European lilies",
+      "source_value": "mean leaf life span 37.93–47.73 d across six plots (Nuphar lutea 42.75, 37.93, 47.73; Nymphaea alba 40.46, 46.46; Nymphaea candida 46.28); SD 13–20 d; maxima 73–92 d, minima 7–12 d",
+      "location": "web page (PeerJ article), Table 2 'Leaf characteristics', row 'Leaf life span — Mean'",
+      "quote": "Mean … 42.75 … 37.93 … 47.73 … 40.46 … 46.46 … 46.28",
+      "quote_from": "table",
+      "conditions": "three Dutch water bodies (eutrophic Haarsteegse Wiel and Oude Waal, 1977; oligotrophic acid Voorste Goorven, 1988); one 1-m² plot per species and site in dense mono-specific stands; every floating leaf tagged and followed weekly; life span = time a leaf was at the surface (until its lamina detached, or sank at VG)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.4-1 (floating-leaved row); sources line under §3.4.2",
+      "claim": "lily blades 51–215 (Nuphar) and 139–183 (Nymphaea) g AFDW m⁻² (Europe)",
+      "source_value": "maximum POTENTIAL floating-leaf-blade biomass: Nuphar lutea 215 (HW), 118 (OW), 51 (VG); Nymphaea alba 183 (OW), 139 (VG); Nymphaea candida 71 g AFDW m⁻²",
+      "location": "web page (PeerJ article), Table 2, row 'Leaf biomass — Max. pot.'",
+      "quote": "Max. pot. … 215 … 118 … 51 … 183 … 139 … 71",
+      "quote_from": "table",
+      "conditions": "seasonal maximum of floating blades only (no petioles or rhizomes), computed from leaf lengths with length–biomass regressions as the intact-leaf ('potential') biomass; same plots and years as above",
+      "verdict": "confirmed",
+      "note": "These are potential (intact) maxima; the actual maxima after leaf loss are 178/95/49 (Nuphar) and 153/136 (N. alba), and the green 'photosynthetic' maxima 155/74/43 and 135/133. The species are the European N. lutea and N. alba, not N. variegata or N. odorata; the table's '(Europe)' says so but the cell should say 'maximum potential blade biomass'. N. candida (71) is left out of the cell."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://peerj.com/articles/3212.pdf", "status": 403, "note": "publisher refused the script" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5410161/pdf/", "status": 200, "note": "too short to be the text (not kept)" },
+    { "url": "https://europepmc.org/articles/PMC5410161?pdf=render", "status": 403, "note": "refused" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5410161/", "status": 200, "note": "bot-check page (not kept)" }
+  ],
+  "notes": "Also usable: annual production of potential blade biomass 96–447 g AFDW m⁻² yr⁻¹; leaves produced 22–108 m⁻² yr⁻¹, at most 10–50 at once; vegetation period 135–199 d (late April–June to October–November); P/Bmax 1.35–2.25; vegetation period/mean leaf life span 2.94–4.63."
+}

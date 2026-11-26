@@ -1,0 +1,72 @@
+{
+  "key": "Gatto_etal_2001",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Vermont Agency of Natural Resources' own copy of the final report (the URL in the entry)",
+    "url": "https://anrweb.vt.gov/PubDocs/DEC/WSMD/lakes/docs/lp_bomoicepush.pdf",
+    "file": "docs/research_notes/fetched/v2/Gatto_etal_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover page (p. i)",
+    "ok": true,
+    "corrections": "",
+    "note": "Cover: 'Ice-Push Damage on Lake Bomoseen, Vermont', Final Report, May 2001, Gatto, Ferrick and Calkins, USACE ERDC CRREL, submitted to the State of Vermont ANR, DEC, Water Quality Division, and USACE New England District, Planning Division. 24 pp. + appendix. Matches the entry."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.3; §3.2.6",
+      "claim": "thermal-expansion ice push predominates on lakes and bays less than about 4 km across, wind push on wider ones (Gatto 1982, as cited by Gatto, Ferrick & Calkins 2001)",
+      "source_value": "less than 2.5 miles (4.0 km) across; wind-driven push on lakes and bays wider than 2.5 miles; attributed to Gatto 1982 and called 'generally agreed'",
+      "location": "p. 2 (PDF p. 6), 'Causes and Effects'",
+      "quote": "expansion predominates on lakes and bays less than 2.5 miles across",
+      "conditions": "literature review statement; no data of the report's own",
+      "verdict": "confirmed",
+      "note": "2.5 mi = 4.02 km. Gatto 1982 itself (read in full, see its evidence file) gives 3–4 km diameter from Worsley 1975 and calls it one side of a debate, so the 2001 restatement rounds it up and hardens it. The same paragraph relays Wagner (1970) that ice on lakes larger than 1.5 miles (2.4 km) across 'generally have weak zones that absorb the expansion' — an upper limit the paper does not mention; the Hot Brook lakes' widths (1.7–1.9 km) are under it, their lengths (3.3–3.4 km) over it."
+    },
+    {
+      "paper": "§3.1.3",
+      "claim": "lakes under about 0.8 km across may be too small for appreciable push (Wagner 1970, via Gatto, Ferrick & Calkins 2001)",
+      "source_value": "less than about 0.5 mile (0.80 km) in diameter: too small for appreciable expansion (Wagner 1970)",
+      "location": "p. 2 (PDF p. 6), 'Causes and Effects'",
+      "quote": "lakes less than about 0.5 mile in diameter are too small for appreciable expansion",
+      "conditions": "relayed from Wagner (1970); a suggestion, not a measurement",
+      "verdict": "confirmed",
+      "note": "0.5 mi = 0.80 km."
+    },
+    {
+      "paper": "§3.1.3; §3.2.6",
+      "claim": "at Lake Bomoseen ice moved 0.5–2.1 m inland in two events, 1990 and 1998",
+      "source_value": "March 1990: 2–7 ft (0.61–2.13 m), measured by Gatto and Sodhi four days after the push; February 1998: 1.5–6.5 ft (0.46–1.98 m) at five places, measured by Root Engineering (letter report of 23 May 1998); together 0.46–2.13 m",
+      "location": "p. 9 (PDF p. 13), 'Shore and Structure Damage'",
+      "quote": "varied from 2 feet near the fishing access on the west shore to 7 feet",
+      "conditions": "Lake Bomoseen, Vermont (2360 acres, 3.5 mi long, 0.5–0.7 mi wide); 1990 push attributed to thermal expansion under complete ice cover; the cause of the 1998 push was disputed (Root later implied wind; the authors doubt it). The 1990 figures may be low: the ice edge may have melted at 40–60 °F before measurement.",
+      "verdict": "confirmed",
+      "note": "1998 range: 'varied from 1.5 feet at Point of Pines and Eagle Bay to 6.5 feet' (same page). The 1998 numbers are Root Engineering's, relayed by Gatto et al.; the citation is fine as 'reported by'."
+    },
+    {
+      "paper": "§3.1.3; §3.2.6",
+      "claim": "at Lake Bomoseen the ice rode up gentle shores while vertical banks resisted it (stated as what happened in the 1990 and 1998 events)",
+      "source_value": "a general expectation in the report's setback advice, not an observation of those events: inland movement 'will likely be reduced' at vertical banks and greater on gentle slopes. The report's own analysis found that shore shape and lake-bed slope did NOT correlate with ice-damage location or severity on Bomoseen (conclusion 5), and its literature review notes that steep, rigid shores that resist the ice receive the highest forces.",
+      "location": "p. 21 (PDF p. 25), 'Mitigating or living with ice damage'; p. 20 (PDF p. 24), conclusion 5",
+      "quote": "Where the shoreline has a gentle slope, the ice can move over it more readily",
+      "conditions": "engineering guidance from literature and judgement (Figs. 14, 18 are schematics)",
+      "verdict": "corrected",
+      "note": "Rewrite as a general expectation ('ice tends to ride up gentle shores; vertical banks resist its advance but take larger forces'), and add that Bomoseen damage did not correlate with shore slope. Conclusion 5 reads 'Shoreline shape, slope of the lake bed, air temperature and snow depth patterns, and post-1983 lake levels during the ice season do not correlate with ice damage locations or severity.'"
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "at Gardner Lake, Connecticut, an ice-push ridge formed 0.6–1.2 m high and 1.2–3.1 m wide (Pessl 1969, as restated by Gatto, Ferrick & Calkins 2001)",
+      "source_value": "a rampart 2–4 ft (0.61–1.22 m) high and 4–10 ft (1.22–3.05 m) wide, related by Pessl to thermal expansion; net shoreward movement about 3 ft over 30 days",
+      "location": "p. 3 (PDF p. 7), 'Ice Expansion'",
+      "quote": "part 2–4 feet high and 4–10 feet wide on Gardner Lake, Connecticut",
+      "conditions": "relayed from Pessl (1969); Gardner Lake 1.7 (mi) long and 0.75 mi across",
+      "verdict": "confirmed",
+      "note": "The same passage also gives what the paper relays from 'a search summary': Pessl related the rampart to thermal expansion and 'concluded that wind stress on the ice was generally insufficient to push ice into the shore', so §3.1.3's 'known from a search summary' and §3.2.6's 'relayed by a search summary' can both cite Gatto, Ferrick & Calkins 2001 instead."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other usable values: thermal push needs ice temperature rises (about 1 °F per hour for half a day at Wamplers Lake, Zumberge & Wilson 1953; about 2 °F per hour for 6 h at Gardner Lake, Pessl 1969); most Bomoseen push reports come in late winter or early spring while ice still covers the lake completely, so the usual cause is thermal expansion plus refreezing of water-filled cracks (conclusion 2); wind push needs open water at least 3–6 ft wide nearshore and a sustained wind (Tsang 1975); shoreline forces during expansion vary about tenfold (Table 1, Michel 1970); expansion on a 4000-ft-wide lake is estimated at 1–2 ft per 10 °F ice warming (Fig. 13). Conclusion 6: ice damage was not reported on Bomoseen before 1983, while winter drawdown was allowed."
+}

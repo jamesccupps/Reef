@@ -1,0 +1,34 @@
+{
+  "key": "Hartig_Jude_1984",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Hartig, J. H. & Jude, D. J. 1984, 'Opportunistic Cyclopoid Predation on Fish Larvae', Canadian Journal of Fisheries and Aquatic Sciences 41(3): 526–532, doi:10.1139/f84-064 (Crossref's title shows a stray accent, 'Prédation'). Matches."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-3",
+      "claim": "newly hatched yellow perch at 41.9/m³ in Pigeon Lake, Michigan, after an exceptional spawning (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text. A search engine's summary of the abstract (not evidence) described 'an inland coastal lake' with larval densities 'up to 41,900 per 1000 m³' — a maximum, not a mean — and did not name the lake; check the lake's name and whether 41.9/m³ is a peak value."
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "Diacyclops thomasi attacked newly hatched perch where the larvae reached 41.9/m³ (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f84-064", "status": 403, "note": "Canadian Science Publishing refused; paywalled" },
+    { "url": "https://archive.org/advancedsearch.php?q=opportunistic cyclopoid predation fish larvae", "status": 200, "note": "Internet Archive: no copy" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f84-064\"", "status": 200, "note": "Europe PMC: no record" }
+  ],
+  "notes": "For the human: doi:10.1139/f84-064 (cdnsciencepub.com, library login). No author or University of Michigan repository copy found."
+}

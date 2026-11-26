@@ -1,0 +1,84 @@
+{
+  "key": "Greene_etal_2009",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "chapter 4 (alewife, printed pp. 73–108) of the ASMFC report as posted by Friends of Merrymeeting Bay's online library (the URL in the entry); the cover and title page from the same report's front-matter file posted by Penobscot Bay Watch (penbay.org). The report is a free ASMFC publication; the ASMFC's archived PDF URL now returns 404.",
+    "url": "https://www.cybrary.friendsofmerrymeetingbay.org/pages/hms9_diadro_habitat_2009_5.pdf",
+    "file": "docs/research_notes/fetched/v2/Greene_etal_2009.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "the report's cover and title page (Greene_etal_2009.front0.pdf, from https://penbay.org/hapc/asmfc09/hms9_diadro_habitat_2009_0.pdf)",
+    "ok": true,
+    "corrections": "",
+    "note": "ASMFC Habitat Management Series #9, January 2009; prepared by Karen E. Greene, Jennifer L. Zimmerman, R. Wilson Laney and Jessie C. Thomas-Blate. Matches. The alewife chapter is ch. 4, pp. 73–108. ASMFC's landing page: https://asmfc.org/resources/habitat-special-report/atlantic-coast-diadromous-fish-habitat-a-review-of-utilization-threats-recommendations-for-conservation-and-research-needs/"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (alewife row)",
+      "claim": "adult upper incipient lethal temperature 23.5–24 °C at 10–20 °C acclimation (via Greene et al. 2009)",
+      "source_value": "23.5–24.0 °C for adults acclimated at 10, 15 and 20 °C (Otto et al. 1976); UILT defined as the temperature at which 50 % survive",
+      "location": "p. 79 (PDF p. 7), 'Spawning water temperature'",
+      "quote": "ranged from 23.5°C to 24.0°C for adults that were acclimated at temperatures of 10°C",
+      "conditions": "laboratory; Otto et al. 1976 (Lake Michigan alewife, i.e. landlocked; the review warns that most tolerance data come from landlocked populations)",
+      "verdict": "confirmed",
+      "note": "Name the primary: Otto et al. 1976, via Greene et al. 2009. The same paragraph gives much higher adult UILTs from other studies: 29.8 and 32.8 °C at 16.9 and 24.5 °C acclimation (Stanley & Holzer 1971) and 31–34 °C after acclimation at 27 °C (McCauley & Binkowski 1982); the table gives only the lowest set."
+    },
+    {
+      "paper": "Table 3.5-3 (alewife row)",
+      "claim": "no alewife survive below 3 °C (via Greene et al. 2009)",
+      "source_value": "in Otto et al. (1976) no fish survived below 3 °C regardless of acclimation temperature; lower incipient lethal range 6–8 °C for adults acclimated at 15 and 21 °C; juveniles 'cannot survive water temperatures of 3°C or below' (p. 86)",
+      "location": "p. 79 (PDF p. 7), 'Spawning water temperature'",
+      "quote": "no fish survived below 3°C, regardless of acclimation temperature",
+      "conditions": "laboratory, adults (Otto et al. 1976)",
+      "verdict": "confirmed",
+      "note": "Primary: Otto et al. 1976."
+    },
+    {
+      "paper": "Table 3.5-3 (alewife row)",
+      "claim": "juveniles need ≥ 3.6 mg/L O₂ (Jones et al. 1988, via Greene et al. 2009)",
+      "source_value": "minimum dissolved oxygen for juveniles 3.6 mg/L (Jones et al. 1988)",
+      "location": "p. 87 (PDF p. 15), 'Juvenile dissolved oxygen associations'",
+      "quote": "minimum dissolved oxygen concentration for juveniles is 3.6 mg/L",
+      "conditions": "review value",
+      "verdict": "confirmed",
+      "note": "Jones et al. (1988) give 5.0 mg/L for adults (p. 80) and for eggs and larvae (p. 83); juveniles were stressed below 2.0 mg/L (Dorfman & Westman 1970, p. 88)."
+    },
+    {
+      "paper": "Table 3.6-1 (sea-run alewife row)",
+      "claim": "alewife spawn mostly at night (Graham 1956, via Greene et al. 2009)",
+      "source_value": "may spawn throughout the day, but most spawning occurs at night (Graham 1956)",
+      "location": "p. 77 (PDF p. 5), 'Spawning' section",
+      "quote": "Alewife may spawn throughout the day, however, most spawning occurs at night",
+      "conditions": "review",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (sea-run alewife row)",
+      "claim": "spawning at 0.15–3 m (row sources: Graham 1956 and Murdy et al. 1997, via Greene et al. 2009)",
+      "source_value": "as shallow as 15 cm (Bigelow & Schroeder 1953; Rothschild 1962) or as deep as 3 m (Edsall 1964); typically less than 1 m (Murdy et al. 1997)",
+      "location": "p. 78 (PDF p. 6), 'Spawning depth associations'",
+      "quote": "Water depth in spawning habitat may be a mere 15 cm deep",
+      "conditions": "review",
+      "verdict": "confirmed",
+      "note": "The range is right but its limits come from Bigelow & Schroeder 1953, Rothschild 1962 and Edsall 1964 (via Greene); Murdy et al. 1997 supplies 'typically less than 1 m', which the row could add."
+    },
+    {
+      "paper": "Table 3.6-1 (sea-run alewife row)",
+      "claim": "spawning over sand, gravel, stone, plants or detritus",
+      "source_value": "sand, gravel or coarse stone, to submerged vegetation or organic detritus (Edsall 1964; Mansueti & Hardy 1967; Jones et al. 1978)",
+      "location": "p. 78 (PDF p. 6), 'Spawning substrate associations'",
+      "quote": "can range from sand, gravel, or coarse stone substrates, to submerged vegetation or organic detritus",
+      "conditions": "review",
+      "verdict": "confirmed",
+      "note": "Primaries are Edsall 1964, Mansueti & Hardy 1967 and Jones et al. 1978, not Graham or Murdy."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://www.asmfc.org/uploads/file/hms9diadromoushabitat2009.pdf", "status": 404, "note": "old ASMFC path" },
+    { "url": "https://archive.asmfc.org/files/Habitat/HMS9_Diadromous_Habitat_2009.pdf", "status": 404, "note": "ASMFC archive path (from a search result) no longer served" }
+  ],
+  "notes": "status read-part: only the alewife chapter (whole, pp. 73–108) and the front matter were fetched; nothing the paper uses lies outside them. The row's hatch-time and unfed-larva values (13 d at 7.8 °C, 2–3 d at 20–21 °C; 3.8/7.6/2.4 d) are NOT in Greene: they are from Edsall 1970's abstract, cited separately in the row. Greene relays Edsall 1970's median hatch times instead: 2.1 d at 28.9 °C, 3.9 d at 20.6 °C and 15 d at 7.2 °C (p. 82), hatching 2–15 days depending on temperature (Fay et al. 1983) and most often in 3–5 days (Edsall 1970); spawning ceases at 27.8 °C (Edsall 1970, p. 79). Other usable values: yolk absorbed and first feeding 2–5 d after hatch (p. 82); juvenile UILT slightly under 26.5, 30.3 and 32.1 °C at 10, 20 and 25 °C acclimation (Otto et al. 1976, p. 87)."
+}

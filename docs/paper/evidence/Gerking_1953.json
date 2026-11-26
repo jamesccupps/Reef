@@ -1,0 +1,71 @@
+{
+  "key": "Gerking_1953",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "USDA Forest Service FishXing project's open reference library (agency web page), scan with a text layer",
+    "url": "https://www.fs.usda.gov/biology/nsaec/fishxing/fplibrary/Gerking-1953.pdf",
+    "file": "docs/research_notes/fetched/v2/Gerking_1953.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's title page and running heads",
+    "ok": true,
+    "corrections": "",
+    "note": "Ecology 34(2): 347–365, April 1953 (printed page = PDF page + 346). Shelby D. Gerking, Department of Zoology, Indiana University."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "the riffle is 74 m long",
+      "source_value": "242 ft = 73.8 m",
+      "location": "p. 348 (PDF p. 2)",
+      "quote": "two main pool areas separated by a shallow riffle, 242 feet long",
+      "conditions": "Richland Creek, a bedrock stream in Greene County, Indiana; the riffle (section D) was chosen in the expectation that it would be a mechanical barrier",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "242 × 0.3048 = 73.76 m."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "in Indiana only 2 of 19 smallmouth bass crossed a 74-m riffle in four years",
+      "source_value": "2 of 19 recaptures of fin-clipped smallmouth bass crossed the long riffle (Table VI, recaptures during four years)",
+      "location": "p. 355 (PDF p. 9), text and Table VI",
+      "quote": "only 2 of 19 recaptures crossed the long riffle",
+      "conditions": "Richland Creek, Indiana, 1948–1951; marked smallmouth 106–305 mm fork length (mean 179 mm); electric-shocker mark–recapture",
+      "verdict": "confirmed",
+      "note": "Context the paper's 'sedentary' gloss leaves out: Gerking concluded the smallmouth 'has a home range about twice as great as the other sunfishes' (6 of 11 recaptures in the downstream pool had strayed between its sections), and in the 1951 sample 3 of 4 bass recaptured after several years had crossed the riffle to the upstream pool (p. 358). In Stott's Creek all 7 recaptures (of 21 marked) were where they were marked."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "over four years only 5 of 191 recaptured longear sunfish crossed the 74-m riffle",
+      "source_value": "5 of 191 recoveries crossed the long riffle during the four years",
+      "location": "p. 352 (PDF p. 6), text and Table III",
+      "quote": "Only 5 of the 191 recoveries moved across the long intervening riffle",
+      "conditions": "Richland Creek, Indiana, 1948–1951; longears of ages II–V(VI); most found within 100–200 ft of where marked",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "26 of 35 transplanted longears went back across the riffle within two weeks",
+      "source_value": "26 of 35 RECAPTURED transplanted longears were back in their home section B two weeks after transplanting (18 of 29 at six weeks); 55 newly marked longears plus 6 marked in an earlier year were transplanted (Table X)",
+      "location": "p. 359 (PDF p. 13), text and Table XI; p. 358 (PDF p. 12), Table X",
+      "quote": "Twenty-six of 35 RP recaptures were taken in section B two weeks after",
+      "conditions": "Experiment III, Richland Creek, 1951: section B (downstream pool) emptied of fish and its fish moved upstream across the riffle into section E",
+      "verdict": "corrected",
+      "note": "The 35 are recaptures, not the number transplanted (about 61). Say '26 of 35 recaptured transplanted longears'."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "a riffle can act as 'a behavioral rather than a mechanical barrier' (quotation)",
+      "source_value": "the transplant result 'indicated that the riffle was a behavioral rather than a mechanical barrier'",
+      "location": "p. 359 (PDF p. 13), 'Results of Experiment III'",
+      "quote": "the riffle was a behavioral rather than a mechanical barrier",
+      "conditions": "longear sunfish, Richland Creek",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Also usable: Gerking estimated that marked-fish loss from the study area was no more than about 5 % of recaptures (17 of 80 strays crossed the long riffle, p. 351); rock bass and golden redhorse were also restricted (golden redhorse: 4 of 28 recaptures crossed the riffle); spotted bass, like smallmouth, had about twice the sunfishes' range (1 of 16 crossed). Home range here is the 100–200 ft scale for sunfishes."
+}

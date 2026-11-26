@@ -1,0 +1,35 @@
+{
+  "key": "Kortelainen_etal_2006",
+  "reader": "w3-18",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Kortelainen, Mattsson, Finér, Ahtiainen, Saukkonen & Sallantaus 2006, Aquatic Sciences 68(4): 453–468, doi:10.1007/s00027-006-0833-6. Matches."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-1",
+      "claim": "21 undisturbed boreal catchments, Finland (mean peatland cover 34 %): TP export 0.05 (mean) (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text"
+    },
+    {
+      "paper": "§3.2.1",
+      "claim": "in 21 Finnish boreal catchments 79 % of TP was dissolved, P was exported 'mainly in organic form', and TOC export explained 61–73 % of the variance in TP export (abstract)",
+      "verdict": "unchecked",
+      "note": "no full text"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/s00027-006-0833-6.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://doi.org/10.1007/s00027-006-0833-6", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://jukuri.luke.fi/items/d5a5110c-684e-4706-8961-89613910ad9d/full", "status": 200, "note": "Natural Resources Institute Finland repository record: an 'Anubis' bot-check page; not worked around. A person may find a full-text file there" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/s00027-006-0833-6\"", "status": 200, "note": "Europe PMC: no record" }
+  ],
+  "notes": "For the human: first try the LUKE Jukuri record above in a browser (institutional repository; may hold a self-archived copy); otherwise doi:10.1007/s00027-006-0833-6 with a library login."
+}
