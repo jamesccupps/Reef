@@ -17,7 +17,8 @@ const words = s => String(s || '').trim().split(/\s+/).filter(Boolean).length;
 export function check(e, file = '') {
   const err = [], warn = [];
   if (!e || typeof e !== 'object') return { err: ['not a JSON object'], warn };
-  if (!keys.has(e.key)) err.push(`key "${e.key}" is not in the ledger`);
+  // a work to be ADDED to the references (brief Phase 5; Phase 2 item 9) has a key "NEW_Author_Year" until it enters references.md
+  if (!keys.has(e.key) && !/^NEW_[A-Za-z0-9_]+_\d{4}[a-z]?$/.test(e.key)) err.push(`key "${e.key}" is not in the ledger (an addition's key is NEW_Author_Year)`);
   if (file && path.basename(file, '.json') !== e.key) err.push(`file name ≠ key "${e.key}"`);
   if (!STATUS.includes(e.status)) err.push(`status "${e.status}" not one of ${STATUS.join('/')}`);
   if (!VERDICT.includes(e.verdict)) err.push(`verdict "${e.verdict}" not one of ${VERDICT.join('/')}`);

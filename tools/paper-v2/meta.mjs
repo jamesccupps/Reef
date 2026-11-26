@@ -4,7 +4,7 @@
 // kept as a CANDIDATE (a reader confirms it). Neither service is sent anything but the DOI or title words — no email, no login.
 // Responses are cached one file per entry in tools/paper-v2/out/meta/ (git-ignored), so a run resumes where it stopped.
 // Writes tools/paper-v2/out/meta.json (key → record + comparison with the entry) and prints a summary.
-// Run: node tools/paper-v2/meta.mjs [--refresh]
+// Run: node tools/paper-v2/meta.mjs [--refresh | --retry-oa]   (--retry-oa: redo the entries whose OpenAlex lookup failed)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const OUT = path.join(ROOT, 'tools/paper-v2/out'), CACHE = path.join(OUT, 'meta');
 fs.mkdirSync(CACHE, { recursive: true });
 const refs = JSON.parse(fs.readFileSync(path.join(OUT, 'refs.json'), 'utf8'));
-const REFRESH = process.argv.includes('--refresh');
+const REFRESH = process.argv.includes('--refresh'), RETRY_OA = process.argv.includes('--retry-oa');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const UA = { 'User-Agent': 'synapse-reef-paper-check/1.0 (source verification script)' };
 
@@ -44,7 +44,11 @@ let n = 0;
 for (const r of refs) {
   n++;
   const cf = path.join(CACHE, `${r.key}.json`);
-  if (!REFRESH && fs.existsSync(cf)) { results[r.key] = JSON.parse(fs.readFileSync(cf, 'utf8')); continue; }
+  if (!REFRESH && fs.existsSync(cf)) {
+    const c = JSON.parse(fs.readFileSync(cf, 'utf8'));
+    // --retry-oa: redo the entries whose OpenAlex lookup failed (its free daily budget, shared by the network, ran out on 2026-11-26)
+    if (!(RETRY_OA && c.openalex_status !== undefined && c.openalex_status !== 200 && c.openalex_status !== 404)) { results[r.key] = c; continue; }
+  }
   const rec = { key: r.key, doi: r.doi || '', entry_title: titleOf(r.citation), entry_year: (/_(\d{4})/.exec(r.key) || [])[1] || '' };
   if (r.doi) {
     const c = await get(`https://api.crossref.org/works/${encodeURIComponent(r.doi)}`);
