@@ -1,0 +1,46 @@
+{
+  "key": "AuClair_1956",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Only the secondary account in Stanley & Danie 1983 (USFWS species profile, already fetched for that entry) was read for what it attributes to the thesis",
+    "url": "",
+    "file": "docs/research_notes/fetched/v2/Stanley_Danie_1983.raw.txt"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "the University of Maine library catalogue (Primo/Alma record, searched through the public Primo interface of the 'Specto' digital collection view; OCLC 28922697) and Stanley & Danie 1983's literature cited (PDF p. 15)",
+    "ok": false,
+    "corrections": "84 pp., not 60: the catalogue gives '2, v, 84 pages : illustrations, map ; 29 cm', 'Bibliography: leaves [66]-72', 'Thesis (M.S.) in Zoology--University of Maine, 1956', and Stanley & Danie's literature cited also gives '84 pp'. Author Roger P. AuClair. Catalogued title: 'The white perch Morone americana (Gmelin) Sebasticook Lake, Maine'.",
+    "note": "the catalogue lists it as a print thesis only (no digital link)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "white perch prefer level bottoms of silt, mud, sand or clay — in Sebasticook Lake, Maine they used soft muck, gravel and rock less (AuClair 1956, via Stanley & Danie 1983)",
+      "verdict": "unchecked",
+      "note": "Thesis not readable. Stanley & Danie (PDF p. 14 of the fetched profile) write: 'Soft muck, decomposing organic substrate, or gravel and rocks were found by AuClair (1956) to be less utilized by white perch.' The paper's wording matches the secondary account (it drops 'decomposing organic substrate'); Stanley & Danie do not name Sebasticook Lake in that sentence (the thesis title does)."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "white perch winter at 12–18 m in deep lakes (AuClair 1956; Sheri & Power 1969; both via Stanley & Danie 1983)",
+      "verdict": "unchecked",
+      "note": "Thesis not readable. Stanley & Danie (PDF p. 14): 'White perch overwinter at depths to 40 m (131 ft), but usually at 12.2 to 18.3 m or 40 to 60 ft (AuClair 1956; Sheri and Power 1969).' Which part (if any) is from the Sebasticook thesis and which from Sheri & Power's Ontario work cannot be told from the secondary account."
+    },
+    {
+      "paper": "Table 3.6-1 (white perch, spawning: 'an unpublished thesis via Stanley & Danie 1983 gives 18–21 °C \"for several days\"')",
+      "claim": "the temperature must hold at 18–21 °C for several days before white perch spawn in Maine lakes",
+      "verdict": "unchecked",
+      "note": "THE LEAD. The thesis itself could not be read, so what AuClair wrote in 1956 is still unknown. The only account is Stanley & Danie 1983 (PDF p. 13 of the fetched profile): 'The temperature must remain at 18° to 21°C (64° to 70°F) in Maine lakes for several days prior to spawning (AuClair 1956).' AuClair's popular account two years later (AuClair 1958, read for that entry) says Maine white perch spawn 'when the temperature of the water is up to 60° F' (15.6 °C), usually in June. The two cannot be reconciled without the thesis. The table should name it (AuClair 1956, M.S. thesis, via Stanley & Danie 1983) rather than 'an unpublished thesis'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://digitalcommons.library.umaine.edu/etd/", "status": 200, "note": "UMaine Digital Commons has sunset: the page says it closed June 30, 2026 and points to the new repository, Specto" },
+    { "url": "https://digitalcommons.library.umaine.edu/do/search/?q=AuClair%20white%20perch&start=0&context=1286", "status": 200, "note": "the sunset page; no search" },
+    { "url": "https://maine.primo.exlibrisgroup.com/primaws/rest/pub/pnxs?q=any,contains,AuClair%20white%20perch&vid=01MAINE_INST:DigCol&scope=MyInst_and_CI&tab=Everything&inst=01MAINE_INST", "status": 200, "note": "UMaine library search (public Primo view of the Specto collection; also 'Sebasticook white perch' and 'AuClair Sebasticook'): the thesis appears only as a print record (Alma, OCLC 28922697, 2, v, 84 pages), with no digital copy; also lists AuClair 1960 'White perch in Maine' (print)" },
+    { "url": "https://catalog.hathitrust.org/api/volumes/brief/oclc/28922697.json", "status": 200, "note": "no HathiTrust volume" },
+    { "url": "https://archive.org/advancedsearch.php?q=(AuClair) AND (perch OR Sebasticook)", "status": 200, "note": "0 items (also 'Sebasticook white perch': 0)" }
+  ],
+  "notes": "Blocked: the thesis exists only in print at the University of Maine's Fogler Library (Special Collections), call record OCLC 28922697; a human could request a scan from Fogler (the Digital Commons sunset page gives the Special Collections contact) or ask through interlibrary loan. Until then every claim stays 'via Stanley & Danie 1983'. Other things Stanley & Danie attribute to the thesis: 'AuClair (1956) estimated the release of 56,200 eggs/kg of fish during one spawning' (PDF p. 9 of the fetched profile). The thesis would also give the only Maine young-of-year white perch growth and diet and catch curves (per the project's blocked-sources list)."
+}

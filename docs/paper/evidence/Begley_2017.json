@@ -1,0 +1,34 @@
+{
+  "key": "Begley_2017",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Read only the citing paper, Begley, Coghlan & Zydlewski 2018 (Journal of Freshwater Ecology, open access), from the copy the human had fetched (docs/research_notes/fetched/, the T&F full-text HTML), indexed here as Begley_2017.via2018, to resolve which work 'Begley 2017' is",
+    "url": "",
+    "file": "docs/research_notes/fetched/v2/Begley_2017.via2018.html"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "the 2018 paper's text and reference list; Crossref for doi:10.1080/02755947.2017.1290719",
+    "ok": false,
+    "corrections": "IDENTITY RESOLVED: 'Begley 2017' is Begley, Coghlan & Zydlewski 2017, the paper already in the references (Begley, M., Coghlan, S. M., Jr. & Zydlewski, J. D. 2017. A comparison of age, size, and fecundity of harvested and reference white sucker populations. North American Journal of Fisheries Management 37(3): 510–523, doi:10.1080/02755947.2017.1290719). The 2018 paper's sentence is 'In Maine, Begley et al. (2017) observed fish as old as twenty-six', and its reference list holds only that one Begley 2017. Merge this entry into Begley, Coghlan & Zydlewski 2017 and cite it as such (not as 'Begley 2017', and not Begley's 2016 M.S. thesis).",
+    "note": "Crossref gives the first author as 'Meg Begley'; the 2018 paper's byline as Megan Begley. The 2016 UMaine M.S. thesis (Megan A. Begley, 'Understanding the Impact of Commercial Harvest on White Suckers (Catostomus commersonii) in Maine') exists in the UMaine catalogue as a print record only."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (white sucker, longevity)",
+      "claim": "Maine white suckers to 26 yr (Begley 2017, via Begley, Coghlan & Zydlewski 2018)",
+      "verdict": "unchecked",
+      "note": "The primary (NAJFM 2017) is paywalled. The 2018 paper (secondary) says: 'In Maine, Begley et al. (2017) observed fish as old as twenty-six', in the context of maximum observed ages of 21 (Trippel & Harvey 1989) and 23 (Smith et al. 2008); the 2018 model capped age at 21. Its ages are from transverse sections of lapillus otoliths of spawning-run fish in six Maine lakes (three harvested, three reference). The paper's wording matches the secondary account; confirm in the 2017 paper (which lake, which sex, otolith-based)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1080/02755947.2017.1290719", "status": 403, "note": "publisher (T&F, now OUP-hosted per Crossref) bot wall / paywall; the page a library login would open" },
+    { "url": "https://www.tandfonline.com/doi/full/10.1080/02755947.2017.1290719", "status": 403, "note": "T&F bot wall" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70193609", "status": 200, "note": "USGS Publications Warehouse record (found by search): links only to the publisher, no PDF" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/02755947.2017.1290719\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://maine.primo.exlibrisgroup.com/primaws/rest/pub/pnxs?q=any,contains,Begley%20white%20sucker&vid=01MAINE_INST:DigCol", "status": 200, "note": "UMaine catalogue: the 2016 M.S. thesis is a print record only (Digital Commons, which held UMaine theses, closed 30 June 2026); the 2017 article listed with subscription links" }
+  ],
+  "notes": "This entry duplicates Begley, Coghlan & Zydlewski 2017 (references line 75), which §3.5.3 also cites (as 'abstract'). Recommended: delete 'Begley 2017' and write 'Maine fish to 26 yr (Begley, Coghlan & Zydlewski 2017, via Begley, Coghlan & Zydlewski 2018)' until the 2017 paper is read. The quote used for the identity: 'In Maine, Begley et al. ( Citation 2017 ) observed fish as old as twenty-six.' (Begley_2017.via2018.txt, the 'Age-classes and maturation' section). The same 2018 paragraph also reports, from the 2017 paper, mature males as young as age 2 (< 2 % of the run) and females first mature at age 3 (3 % of the run)."
+}

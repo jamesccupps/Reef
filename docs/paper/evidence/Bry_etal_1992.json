@@ -1,0 +1,40 @@
+{
+  "key": "Bry_etal_1992",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Springer's article page (the full text is subscription content); the INRAE HAL record has no file",
+    "url": "https://link.springer.com/article/10.1007/BF00001160",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the HAL record hal-02709062",
+    "ok": true,
+    "corrections": "",
+    "note": "Bry, C., Basset, E., Rognon, X. & Bonamy, F. 1992. Analysis of sibling cannibalism among pike, Esox lucius, juveniles reared under semi-natural conditions. Environmental Biology of Fishes 35(1): 75–84, doi:10.1007/BF00001160. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.9",
+      "claim": "in ponds, cannibals were 7.8 % of ~100-mm juveniles at low density but 41.3 % at high density (Bry et al. 1992, abstract)",
+      "verdict": "unchecked",
+      "note": "Abstract only (not usable to confirm). It says that 'At a mean total length of 100 mm' and initial stocking of 6 and 18 larvae m⁻² (12 and 36 larvae m⁻³) in outdoor rearing ponds, 'the average proportions of cannibals in the populations of juveniles were 7.8% and 41.3%', and that the cannibals made up 15.5 % and 65.9 % of total pike biomass. Matches the paper."
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "the share of pond juveniles that became cannibals rose from 7.8 % to 41.3 % as larval density tripled (Bry et al. 1992; abstract only)",
+      "verdict": "unchecked",
+      "note": "Abstract only. 6 → 18 larvae m⁻² is a tripling, so the wording matches the abstract; the shares are at a mean total length of 100 mm, which the §3.7.7 sentence omits."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00001160.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00001160", "status": 200, "note": "paywall; abstract read on the page (used only in notes)" },
+    { "url": "https://hal.inrae.fr/hal-02709062v1/document", "status": 404, "note": "the INRAE HAL record (found through the HAL API) has metadata only, no file" },
+    { "url": "https://doi.org/10.1007/BF00001160", "status": "not fetched", "note": "the publisher's page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00001160\"&format=json&resultType=core", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "OpenAlex knows no free copy. Useful abstract values beyond the paper's: no cannibalism during the larval period (13–35 mm TL), only in juveniles; at 18 larvae m⁻² cannibalism began 21 days after first feeding (mean TL 60 mm); prey were swallowed whole, head first; 'The overall mean ratio of pike prey length to pike cannibal length was 66.2%', and prey head depth averaged 87.6 % of the cannibal's mouth width. The 66 % mean prey:cannibal length ratio in juvenile pike is larger than the 0.03–0.55 range §3.7.7 takes from Persson, Bertolo & De Roos 2006 for Swedish lake pike and bears on the project's '20-cm pickerel at risk only from pickerel of 36–40 cm or more' estimate (a 0.66 ratio would put a 20-cm pickerel at risk from a ~30-cm one) — worth a look when the full text is read."
+}

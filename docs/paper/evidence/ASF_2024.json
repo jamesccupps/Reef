@@ -1,0 +1,62 @@
+{
+  "key": "ASF_2024",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Atlantic Salmon Federation's own news page (open web page), the URL in the entry",
+    "url": "https://www.asf.ca/danforth-celebrates-fishway-and-park-project-completion/",
+    "file": "docs/research_notes/fetched/v2/ASF_2024.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the page itself (title, byline 'asf', date)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title 'Danforth Celebrates Fishway and Park Project Completion', posted by 'asf', July 31, 2024, a news release with contacts at ASF and the Town of Danforth. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "Maine DMR confirmed alewives at Danforth in 2017, arrived without stocking (by natural straying)",
+      "location": "web page, paragraph beginning 'In 2017, Maine DMR confirmed'",
+      "quote": "In 2017, Maine DMR confirmed alewives in Danforth",
+      "conditions": "'… a remarkable event as these fish returned naturally after over 200 years without any stocking efforts nearby'",
+      "verdict": "confirmed",
+      "note": "'Natural straying' (§3.5.3) is a fair gloss of 'returned naturally … without any stocking efforts nearby'."
+    },
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "described as 'the farthest inland known to recolonize naturally on the East Coast'",
+      "location": "web page, same paragraph",
+      "quote": "returning to Danforth are the farthest inland known to recolonize naturally on the East Coast",
+      "conditions": "ASF's own characterization in a news release; no source or comparison given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "a fishway on Baskahegan Stream at Danforth was built in 2023",
+      "location": "web page, second paragraph",
+      "quote": "The new fishway was constructed in 2023 alongside the dam",
+      "conditions": "'… and has a custom façade resembling stacked stones'; the fishway and park lie 'along Baskahegan Stream'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.6",
+      "claim": "the fishway was dedicated in August 2024",
+      "location": "web page, first and last paragraphs",
+      "quote": "On August 10, local residents along with federal and state project partners will gather",
+      "conditions": "a release dated 31 July 2024 announcing a dedication for Saturday 10 August 2024 at 11:00 AM at the new park off Depot Street; it does not report the event itself",
+      "verdict": "confirmed",
+      "note": "ASF supports 'a dedication planned for 10 August 2024'; that it took place rests on AGC Maine 2024 or another post-event source."
+    },
+    {
+      "paper": "§2.6",
+      "claim": "alewives gathered below the Danforth dam in the years before the fishway; the fishway is a pool-and-weir type (AGC Maine 2024; ASF 2024)",
+      "verdict": "unsupported",
+      "note": "Not in ASF 2024: the release says nothing about alewives gathering below the dam and does not name the fishway type (only 'a custom façade resembling stacked stones'). If these come from AGC Maine 2024, cite that alone for them."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The only correction is attribution: the 'gathered below the dam' and 'pool-and-weir' details are not in ASF 2024. Other figures in the release, all for 2024: the Penobscot river herring run had grown 'from nearly zero to more than 6 million returning this year to date' (as of 31 July 2024), which differs from §2.6's 'provisional 5,476,107' at Milford in 2024 (Maine DMR counts) — different count or date, worth reconciling or explaining if both are kept; the fishway restores access to '135 miles of river habitat and nearly 9,000 acres of pond habitat in the Penobscot River headwaters'; the fishway and park cost $2.5 million; partners include the Baskahegan Dam Company (landowner), ASF, NRCS, USFWS, NOAA, Maine DMR, Maine DEP and MDIFW; the contractor N.S. Giles won a 2024 Build Maine Award from the 'Association of General Contractors of Maine' (the release's wording; this ties in with AGC Maine 2024)."
+}

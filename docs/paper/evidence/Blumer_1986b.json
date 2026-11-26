@@ -1,0 +1,39 @@
+{
+  "key": "Blumer_1986b",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Springer's article page (the full text is subscription content); the numbers the paper uses come through the Animal Diversity Web account already fetched for Blumer_1985",
+    "url": "https://link.springer.com/article/10.1007/BF00299944",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Springer's article metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Blumer, Lawrence S. 1986. Parental care sex differences in the brown bullhead, Ictalurus nebulosus (Pisces, Ictaluridae). Behavioral Ecology and Sociobiology 19(2): 97–104 (July 1986), doi:10.1007/BF00299944; author at the University of Michigan. The entry agrees. Its reference list (Springer metadata) cites Blumer 1985 (Am. Midl. Nat. 114: 318–330) and 'The function of parental care in the brown bullhead … Am Midl Nat (in press)'."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (brown bullhead, care)",
+      "claim": "both parents in 56 % of broods (Blumer 1985, 1986b; numbers via Animal Diversity Web)",
+      "verdict": "unchecked",
+      "note": "Full text not readable. The abstract gives no percentages: males were the principal care-givers, attended broods at closer distances and were the most frequent lone care-givers; females often took part, sometimes in the male's role; observations on individually tagged adults in nature."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "brown bullhead broods were attended by both parents in 56.2 % of cases and by the male alone in 39.3 % (Blumer 1985, 1986b, via Animal Diversity Web)",
+      "verdict": "unchecked",
+      "note": "ATTRIBUTION: Animal Diversity Web (fetched as Blumer_1985_viaADW.txt) says 'Blumer (1985 and 1986a) found males to be primary caregivers: 56.2% of broods were cared for by both sexes, 39.3% by males only, and 4.5% by females' — '1986a', not '1986b'. The paper's own reference list letters the American Midland Naturalist paper ('The function of parental care…', 115(2)) as 1986a and this Behav. Ecol. Sociobiol. paper as 1986b, so by the paper's own lettering ADW points to the other 1986 paper. ADW does not letter its references, so which 1986 paper holds the split is open until either is read. Until then cite 'Animal Diversity Web (Guth 2011), citing Blumer 1985 and 1986a'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00299944.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00299944", "status": 200, "note": "paywall; abstract and reference list read on the page (used only in notes)" },
+    { "url": "https://doi.org/10.1007/BF00299944", "status": "not fetched", "note": "the publisher's page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00299944\"&format=json&resultType=core", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "OpenAlex knows no free copy. Other points in the abstract (not usable to confirm): females attended at a distance and chased other fishes more; males stayed directly over the brood; initial costs of reproduction (weight, condition, GSI change) were greater in females; males fed little or not at all while caring and lost little weight; 'offspring had little chance of survival in the absence of a care-giving adult'. Blumer's 1982 University of Michigan PhD thesis ('Parental care and reproductive ecology of the North American catfish, Ictalurus nebulosus', 160 pp., cited in this paper) probably holds the same data and may be on Deep Blue."
+}

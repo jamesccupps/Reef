@@ -1,0 +1,40 @@
+{
+  "key": "Brown_Bozek_2010",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Crossref's record (the publisher deposits the abstract); the article is subscription content (AFS/Wiley, now OUP)",
+    "url": "https://api.crossref.org/works/10.1577/T09-049.1",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Brown, Peter James & Bozek, Michael Anthony. 2010 (July). Habitat selection and abundance of young-of-year smallmouth bass in north temperate lakes. Transactions of the American Fisheries Society 139(4): 1247–1260, doi:10.1577/T09-049.1. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.8",
+      "claim": "young smallmouth bass in Wisconsin left complex wood by August (Brown & Bozek 2010, abstract)",
+      "verdict": "unchecked",
+      "note": "Abstract only (not usable to confirm). It says young smallmouth 'used woody structure after swimming from their nests but disassociated themselves from habitats with more complex woody structure by August', in two northern Wisconsin lakes; the paper's wording matches the abstract."
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "in Wisconsin cobble gave protection 'without attracting predators' (Brown & Bozek 2010, abstract)",
+      "verdict": "unchecked",
+      "note": "Abstract only. It says 'Nonwoody cobble areas offer protection for young-of-year smallmouth bass without attracting predators, as woody habitats do'; the quoted words are in the abstract. Whether predators were measured or inferred needs the full text."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/T09-049.1", "status": 403, "note": "Wiley bot wall / paywall (the Crossref full-text link)" },
+    { "url": "https://doi.org/10.1577/T09-049.1", "status": 403, "note": "publisher page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=\"Habitat selection and abundance of young-of-year smallmouth bass\"", "status": 200, "note": "0 hits (also 0 by DOI)" },
+    { "url": "https://api.archives-ouvertes.fr/search/?q=doiId_s:\"10.1577/T09-049.1\"", "status": 200, "note": "HAL: 0" },
+    { "url": "https://minds.wisc.edu/server/api/discover/search/objects?query=smallmouth%20bass%20Bozek", "status": 200, "note": "MINDS@UW (University of Wisconsin theses, where a UW–Stevens Point M.S. thesis on the same data might be): nothing by Brown found" }
+  ],
+  "notes": "OpenAlex knows no free copy. Other points in the abstract: coarse substrates were consistently important to both nest sites and young-of-year; young-of-year abundance declined exponentially in woody habitats but linearly in rock habitats; woody habitats help at first but later give predators ambush opportunities. Both of the paper's uses are already marked 'abstract' and match the abstract's words; they stay unchecked until the full text is read."
+}

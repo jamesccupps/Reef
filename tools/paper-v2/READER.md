@@ -33,8 +33,9 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
 9. **Acceptable copies:** the publisher's own free copy; an author's or institution's repository copy; an agency or library copy; a
    copy a university, agency or research group posts openly on its own web pages (a lab's reprint page, a course or reading-list
    page), found directly or as a Wayback capture; an Internet Archive item or a Wayback Machine capture that is openly downloadable
-   (no "borrow", no login) — including a capture of a file the publisher once served free. Say exactly which in `obtained.how`
-   (whose page, which URL). Not acceptable: Sci-Hub, LibGen, Anna's Archive, Z-Library, bulk "mirror" or "archival" collections of
+   (no "borrow", no login) — including a capture of a file the publisher once served free; and any copy of an article published
+   under an open licence (CC BY, CC BY-NC and the like), wherever it is deposited (e.g. a Plazi deposit on Zenodo). Say exactly
+   which in `obtained.how` (whose page, which URL, which licence). Not acceptable: Sci-Hub, LibGen, Anna's Archive, Z-Library, bulk "mirror" or "archival" collections of
    paywalled papers deposited by third parties (e.g. on Zenodo, Figshare, Scribd), ResearchGate or Academia scraping, anything
    behind a login, or text a paywalled page hides from non-subscribers (e.g. a block hidden with CSS): that is the paywall, so the
    entry is blocked.

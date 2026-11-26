@@ -1,0 +1,42 @@
+{
+  "key": "Carmignani_etal_2021",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. The article is open access (CC BY-NC-ND 4.0 from publication, per Crossref), but Taylor & Francis refused the script (403), the author's dissertation PDF at UMass ScholarWorks would not download (the stream stopped after one byte), and a Wayback capture of the publisher's full-text page was refused by this session's permission system",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Carmignani, Jason R., Roy, Allison H., Stolarski, Jason T. & Richards, Todd. 2021. Hydrology of annual winter water level drawdown regimes in recreational lakes of Massachusetts, United States. Lake and Reservoir Management 37(4): 339–359, doi:10.1080/10402381.2021.1927268 (published online 22 June 2021). The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.3",
+      "claim": "three Massachusetts lakes without drawdown, logged every 2 h for 3–4 years, ranged in summer from 30 cm below to 102 cm above the summer pool (median +0.5 cm)",
+      "verdict": "unchecked",
+      "note": "Not readable."
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "three Massachusetts lakes without drawdown ranged from −30 to +102 cm about their reference pools in summer, with a median of +0.5 cm",
+      "verdict": "unchecked",
+      "note": "Not readable. Note for the checker: §3.1.3 says 'summer pool' and §3.2.6 'reference pools' for the same numbers; the full text should say which datum the −30/+102 cm are measured from, and whether +102 cm (a 1-m rise in a non-drawdown lake) is a storm peak."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/10402381.2021.1927268?needAccess=true", "status": 403, "note": "T&F bot wall (the OpenAlex PDF link; the article itself is CC BY-NC-ND open access, so a browser should open it)" },
+    { "url": "https://www.tandfonline.com/doi/full/10.1080/10402381.2021.1927268", "status": 403, "note": "T&F bot wall" },
+    { "url": "https://scholarworks.umass.edu/server/api/core/bitstreams/c7603507-91cc-487c-b5b8-f7dc03b0b498/content", "status": 200, "note": "UMass Amherst ScholarWorks: Carmignani's PhD dissertation 'Investigating the effects of winter drawdowns on the ecological character of littoral zones in Massachusetts lakes' (February 2020, CC BY 4.0; hdl 20.500.14394/18076; doi:10.7275/j5k1-fz29), whose Chapter 3 is the drawdown-hydrology study; the server sent one byte and stopped (also with a Range header and via /bitstreams/…/download). Would be a stand-in only" },
+    { "url": "https://scholarworks.umass.edu/server/api/core/bitstreams/c95defe0-f9bb-419f-b530-72f7598e28da/content", "status": 200, "note": "the repository's extracted text of the dissertation (100,128 characters): it is cut off inside Chapter 2, before the hydrology chapter; nothing usable (not kept)" },
+    { "url": "https://web.archive.org/web/20250109103902id_/https://www.tandfonline.com/doi/full/10.1080/10402381.2021.1927268", "status": "refused", "note": "Wayback capture of the publisher's open full-text page (also 20241101041341): the fetch was refused by this session's permission system, so it was not retried another way" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70228607", "status": 200, "note": "USGS Publications Warehouse record: links only to the publisher" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/10402381.2021.1927268\"&format=json&resultType=core", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Easy for a human: the article is open access, so https://doi.org/10.1080/10402381.2021.1927268 should open in a browser; failing that, the dissertation PDF (CC BY) at https://hdl.handle.net/20.500.14394/18076, Chapter 3. The dissertation's own overview (read in the repository's extracted text) says Chapter 3 quantifies the drawdown regimes and that its hydrological metrics (magnitude, recession rate) feed Chapters 4–6, with 21 lakes (18 drawdown, 3 non-drawdown) in the ecological chapters."
+}

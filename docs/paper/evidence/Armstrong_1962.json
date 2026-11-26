@@ -1,0 +1,56 @@
+{
+  "key": "Armstrong_1962",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item stagesindev00arms (University of Connecticut Libraries scan, LYRASIS/Sloan; openly downloadable, 'Copyright either not claimed or not renewed; item is in the public domain'); the Text PDF (52 pages; the text pages appear twice in the scan, PDF pp. 5–10 and 15–20)",
+    "url": "https://archive.org/download/stagesindev00arms/stagesindev00arms.pdf",
+    "file": "docs/research_notes/fetched/v2/Armstrong_1962.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 3) and copyright page (PDF p. 4)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'Stages in the Development of Ictalurus nebulosus', by Philip B. Armstrong, M.D., College of Medicine at Syracuse, State University of New York, and Marine Biological Laboratory, Woods Hole; illustrated by Julia Swope Child; Syracuse University Press 1962 (LC card 63-11037). The entry agrees. The text proper is printed pp. [3]–8 plus plates."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (brown bullhead, eggs; row sources include Armstrong 1962)",
+      "claim": "several hundred to > 1,000 eggs",
+      "location": "p. [3] (PDF p. 5), right column",
+      "quote": "from several hundred up to a thousand and more eggs in a single egg mass",
+      "conditions": "general description of egg masses collected in nature (central New York and Cape Cod); no counts given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead, eggs)",
+      "claim": "~3-mm eggs",
+      "location": "p. 4 (PDF p. 6), right column",
+      "quote": "The eggs measure about 3 mm. in diameter.",
+      "conditions": "'Those from the same egg mass are remarkably uniform in size but there are differences in size from one egg mass to another'; the subchorionic space is about one-third of the egg's diameter",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead, nest)",
+      "claim": "eggs laid in an excavation or burrow",
+      "location": "p. [3] (PDF p. 5), left column",
+      "quote": "an open shallow excavation among weeds, or a burrow excavated by the adults",
+      "conditions": "'… under the roots of a water plant'; burrows run 'horizontally for as much as three feet into the bank'; also pails, stovepipes, tires, cinder blocks, under boards or stones; nest floor firm (coarse sand, gravel or stone)",
+      "verdict": "confirmed",
+      "note": "The excavation-or-burrow part is in Armstrong. The 0.2–1.2 m depth is not: Armstrong only advises setting drainage tiles 'in two or three feet of water' (0.6–0.9 m) for collectors. The depth range comes from Breder 1939 (see that entry)."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "brown bullhead eggs die within about a day in still water (Breder 1935; Armstrong 1962)",
+      "location": "p. 4 (PDF p. 6), left column",
+      "quote": "eggs removed to still water usually will die within a day or so",
+      "conditions": "'Apparently almost constant agitation is required to assure normal development of the eggs, since eggs removed to still water usually will die within a day or so'; a laboratory husbandry observation, no counts or temperatures; the adults fan the eggs and take them into their mouths (citing Breder 1935)",
+      "verdict": "confirmed",
+      "note": "Supports the project inference that the eggs depend on the parents' fanning; Armstrong also notes dead eggs 'quickly develop mold which extends to the adjacent eggs and kills them'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Armstrong gives no spawning temperature, depth range, care split or hatch length (the row's 'after a slow rise to ~21 °C', '0.2–1.2 m', 'both parents in 56 %' and 'hatch 7–8 mm' come from its other sources). Other values: the laying season starts about the middle of May in central New York and on Cape Cod; the latest newly laid eggs on Cape Cod were found on 28 July (p. 4, PDF p. 6); after yolk absorption the young swim 'as a compact school in shallow water guarded by the adults' for a few days, then disperse to deeper water (p. 5, PDF p. 7); development to Stage 53 (yolk absorbed, adult pattern) takes 17 days at 20–21 °C (p. 7, PDF p. 9). INCUBATION: the row's '6–10 d (mean 8) at 21.3 °C' is Breder 1939's (not checked here as Armstrong's), but Armstrong independently gives hatching (Stage 43) at 8 days at 20–21 °C in running tap water in the laboratory, most embryos of a mass emerging within three to four hours ('At 20 to 21° C. the development described above through Stage 53 is completed in seventeen days', with the time table: Stage 43, 8 days; p. 7, PDF p. 9). That agrees with the mean of 8 d and can be cited beside Breder."
+}

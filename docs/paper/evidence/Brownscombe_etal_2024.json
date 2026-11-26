@@ -1,0 +1,46 @@
+{
+  "key": "Brownscombe_etal_2024",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's version of record, open access under CC BY 4.0 from publication (Crossref licence record; the PDF's first-page notice), downloaded from Zenodo record 17004619 (Biodiversity Literature Repository / Plazi deposit of the CC-BY article, licence shown as CC BY-NC-ND 4.0 there). Wiley's own PDF and HTML pages refused the script (403). The copy is a lawful redistribution of an open-access article, not of a paywalled one; flagged here so the human can confirm it is acceptable under READER rule 9",
+    "url": "https://zenodo.org/api/records/17004619/files/source.pdf/content",
+    "file": "docs/research_notes/fetched/v2/Brownscombe_etal_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (PDF p. 1, printed 254) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Brownscombe, J. W., Smith, K. & Bzonek, P. A. 2024. Accelerometer-based swimming metabolism of smallmouth bass (Micropterus dolomieu). Journal of Fish Biology 105(1): 254–264, doi:10.1111/jfb.15774 (received 5 January, accepted 11 April 2024). The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "the Whitledge et al. (2003) smallmouth set's respiration was measured only at 18–30 °C, on Missouri fish (via Brownscombe, Smith & Bzonek 2024)",
+      "location": "p. 259 (PDF p. 6), Discussion; p. 258 (PDF p. 5)",
+      "quote": "from Missouri, United States, including metabolic rate and growth scope from 18 to 30",
+      "conditions": "'Whitledge et al. (2002, 2003) examined smallmouth bass from Missouri, United States, including metabolic rate and growth scope from 18 to 30 °C'; elsewhere: the FB4 smallmouth metabolism component 'is parameterized from lab-based estimates of their RMR from smaller-bodied individuals (Deslauriers et al., 2017; Whitledge et al., 2002)'",
+      "verdict": "confirmed",
+      "note": "Brownscombe credits the respirometry to Whitledge et al. 2002 (subadult, 'smaller-bodied' fish) and the model to 2003; say 'the set's respiration (Whitledge et al. 2002) was measured on smaller-bodied Missouri fish at 18–30 °C'. 'Only' is the paper's gloss, consistent with the source."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "swim-tunnel resting metabolism of a 1-kg smallmouth extrapolates to 61–78 mg O₂ kg⁻¹ h⁻¹ at 2–8 °C (Brownscombe, Smith & Bzonek 2024; extrapolation by the project)",
+      "location": "p. 257 (PDF p. 4), Table 2, model 'ln (MO2) = speed + ln (mass) + temperature + speed × temperature + sex' (page image checked); method p. 256 (PDF p. 3)",
+      "quote": "Intercept … 4.04 … Temperature … 0.04",
+      "quote_from": "table",
+      "conditions": "RMR is the speed–MO2 model evaluated at zero swimming speed ('The swimming speed–MO2 model was used to predict smallmouth bass resting metabolic rate (RMR), when swimming speed was zero'), not a measured resting rate. Fish 0.67–2.05 kg from the lower Otonabee River, Ontario, tested at 6, 12, 18 and 24 °C after ≥ 5 d acclimation; 2 °C is below the measured range (the authors extrapolated to 1–35 °C themselves). Females add 0.01 to ln MO2",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone for a 1-kg male (ln mass = 0, speed 0): exp(4.04 + 0.04 × 2) = 61.6 and exp(4.04 + 0.04 × 8) = 78.3 mg O₂ kg⁻¹ h⁻¹ (female 62.2–79.0). The coefficients are printed to two decimals only (temperature 0.04, SE 0.002), so 0.035–0.045 °C⁻¹ would give 61–75 to 62–82; the range is good to about ±5 %. The table's model heading names a 'speed × temperature' term but its row reads 'Speed × ln (mass)' (−0.002, p = 0.53); neither matters at zero speed."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jfb.15774", "status": 403, "note": "Wiley bot wall (article itself is CC BY open access)" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1111/jfb.15774", "status": 403, "note": "Wiley bot wall" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/jfb.15774", "status": 403, "note": "Wiley bot wall (the Crossref full-text link)" }
+  ],
+  "notes": "Both uses check. Relevant context the paper may want: the authors themselves expect smallmouth bass 'become largely dormant in winter months in the north-temperate regions', with very limited aerobic scope below 5 °C, and expect small fish to be most constrained in winter (pp. 259–260, PDF pp. 6–7) — note beside §3.5.4's 'quiescent rather than dormant' (Suski & Ridgway 2009). Other values: all measured MO2 197 ± 58 (61–332) mg O₂ kg⁻¹ h⁻¹; mean measured MO2 at 6 °C 85 ± 14 (61–102), all while swimming (Table 1); MMR peaks at an estimated 22 °C; aerobic scope peaks at 20 °C, > 90 % at 17–24 °C, > 50 % at 11–28 °C, falling to zero at 3 and 32 °C; Ucrit 58 cm/s at 6 °C to 93 cm/s at 24 °C (pp. 257–258). The project's 'about 60 % of body energy in 150 days' is not from this source and was not checked here."
+}

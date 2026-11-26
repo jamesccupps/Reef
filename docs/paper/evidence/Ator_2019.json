@@ -1,0 +1,58 @@
+{
+  "key": "Ator_2019",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the USGS's own open PDF (pubs.usgs.gov), the URL in the entry",
+    "url": "https://pubs.usgs.gov/sir/2019/5118/sir20195118.pdf",
+    "file": "docs/research_notes/fetched/v2/Ator_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1), the suggested citation (front matter) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Suggested citation: 'Ator, S.W., 2019, Spatially referenced models of streamflow and nitrogen, phosphorus, and suspended-sediment loads in streams of the Northeastern United States: U.S. Geological Survey Scientific Investigations Report 2019–5118, 57 p., https://doi.org/10.3133/sir20195118.' The entry's '(Northeast SPARROW)' is a gloss, not part of the title; fine if kept as a gloss. Model base year 2012 (associated data release doi:10.5066/P9NKNVQO)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-1",
+      "claim": "Northeast natural mineral sources (SPARROW): 0.110 kg TP ha⁻¹ yr⁻¹ (90 % CI 0.080–0.141)",
+      "location": "p. 32 (PDF p. 44), Table 4 (page image checked); text p. 31 (PDF p. 43)",
+      "quote": "rocks contribute on average 11 kg km-2, annually, of phosphorus to northeastern streams",
+      "conditions": "Table 4, source term 'Area underlain by unconsolidated sediments or igneous, metamorphic or clastic sedimentary rocks', coefficient 11.0 kg km⁻² yr⁻¹, 90 % CI 8.02–14.1, SE 1.83. It is the phosphorus DELIVERED TO STREAMS (before in-stream and reservoir losses) per km² of all land not underlain by carbonate rock, whatever its cover (urban land adds 48.1 kg km⁻² yr⁻¹ on top); it interacts with soil P and soil erodibility, which were log-transformed and mean-adjusted, so 11.0 holds at mean soil conditions; calibrated to mean-annual loads at monitoring stations (2012 base year)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "11.0 kg km⁻² = 0.110 kg ha⁻¹; 8.02 → 0.080, 14.1 → 0.141. The label 'natural mineral sources' matches Ator's text ('natural mineral erosion', 'mineral sources in igneous, metamorphic, and clastic sedimentary rocks'). Worth saying in the table that it is a stream-delivered yield at mean soil P and erodibility, not a land-use export coefficient."
+    },
+    {
+      "paper": "Table 3.2-3",
+      "claim": "Northeast SPARROW reservoir settling velocity v = 9.84 m/yr (90 % CI 2.2–17.5)",
+      "location": "p. 32 (PDF p. 44), Table 4, Aquatic loss row (page image checked)",
+      "quote": "Reservoir inverse hydraulic load … m yr–1 … 9.84 … 2.21 … 17.5",
+      "quote_from": "table",
+      "conditions": "TP model; variable unit yr m⁻¹ (inverse areal hydraulic load), coefficient unit m yr⁻¹; SE 4.62, p = 0.0171, t = 2.1. The low bound is 2.21 (the paper rounds to 2.2)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-3",
+      "claim": "the Northeast SPARROW retention form is R = v/(v + qs) (row marked 'Ator 2019; read')",
+      "verdict": "unsupported",
+      "note": "Ator prints no attenuation formula. Its only description (p. 14, PDF p. 26) is 'a hypothetical settling velocity that, when multiplied by reciprocal areal hydraulic load, represents the fraction of incoming load that either settles … or is taken up', citing Schwarz et al. 2006 (USGS Techniques and Methods 6-B3) for the method. Read literally that wording would give R = v/qs (0.89 for Upper, 0.58 for Lower), not v/(v + qs). The form v/(v + qs) must be checked in, and cited to, Schwarz et al. 2006; 'read' in the row is true only of the coefficient."
+    },
+    {
+      "paper": "Table 3.2-3",
+      "claim": "R = 0.47 (0.17–0.61) for Upper (qs 11.0 m/yr) and 0.37 (0.12–0.51) for Lower (qs 16.9 m/yr)",
+      "location": "p. 32 (PDF p. 44), Table 4 (inputs); arithmetic by the reader",
+      "quote": "Reservoir inverse hydraulic load (year/m) … 9.84 … 2.21 … 17.5",
+      "quote_from": "table",
+      "conditions": "project arithmetic with the form R = v/(v + qs); the qs values are the project's",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone: Upper 9.84/20.84 = 0.472, 2.21/13.21 = 0.167, 17.5/28.5 = 0.614; Lower 9.84/26.74 = 0.368, 2.21/19.11 = 0.116, 17.5/34.4 = 0.509. All match, given the form (see the claim above)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Both numbers the paper takes from Ator are right; the correction is that Ator does not print the retention form the table credits to it ('read'), and his wording describes v × (1/qs) as the fraction lost — cite Schwarz et al. 2006 for v/(v + qs). Other Table 4 values (TP model): wastewater point-source coefficient 0.786 (fraction delivered), fertilizer 0.122, manure 0.0884 (≈ 12 % and 9 % of applications reach streams, text p. 31), urban land 48.1 kg km⁻² yr⁻¹ (31.5–64.6); land-to-water terms ln(soil erodibility) 1.49 and ln(soil P) 0.484. The suspended-sediment model's reservoir settling velocity is 17.9 m/yr (5.45–30.6; p. 40, PDF p. 52). Ator compares the 11 kg km⁻² yr⁻¹ geologic yield with Chesapeake estimates of 8.5 (siliciclastic) and 6.8 (crystalline) kg km⁻² yr⁻¹ (Ator et al. 2011) and with natural forested catchments (Dillon & Kirchner 1975; Likens et al. 1977) (p. 31, PDF p. 43)."
+}

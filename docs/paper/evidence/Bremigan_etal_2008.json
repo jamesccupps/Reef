@@ -1,0 +1,41 @@
+{
+  "key": "Bremigan_etal_2008",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Michigan DNR's own open PDF (Fisheries Division library), the URL in the entry",
+    "url": "https://www2.dnr.state.mi.us/publications/pdfs/DNRFishLibrary/Special-ManagementReports/SR44.pdf",
+    "file": "docs/research_notes/fetched/v2/Bremigan_etal_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1) and title page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "Michigan Department of Natural Resources, Fisheries Division, Fisheries Special Report 44, February 2008; 'Black Bass Fishing Seasons in Michigan: Background, Research Review, and Recommendations'; authors Mary T. Bremigan, Gary L. Towns, James E. Breck, Neal A. Godby, Scott K. Hanshue, Robert C. Moody, Thomas J. Rozich, Michael V. Thomas. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "removing the male before about 10 days after swim-up lost the whole brood (Ridgway 1988, via Bremigan et al. 2008)",
+      "source_value": "a MODEL ASSUMPTION, not an observation: 'Ridgway and Shuter (1997) judged that, if the guarding male was removed and did not return, the brood would not survive if the removal occurred during the period from spawning to 10 days after swim-up (Ridgway 1988)', with brood survival then assumed to rise linearly from 0 to 1.0 as removal moves from day 10 to day 21 after swim-up. The observation reported from Ridgway 1988 is that at Lake Opeongo, Ontario, removing the males from 10 smallmouth nests holding hatched embryos (wrigglers) lost all offspring within 24 h",
+      "location": "p. 18 (PDF p. 23), 'Nest predation'",
+      "quote": "from spawning to 10 days after swim-up (Ridgway 1988)",
+      "conditions": "smallmouth bass; Ridgway & Shuter's (1997) model judgement based on Ridgway 1988; day 10 after swim-up is taken as metamorphosis from larva to juvenile",
+      "verdict": "corrected",
+      "note": "Suggested wording: 'a model judged that a brood would not survive if its guarding male was removed for good at any time before about 10 days after swim-up (Ridgway & Shuter 1997, from Ridgway 1988, via Bremigan et al. 2008); at Lake Opeongo, removing the males from 10 nests with wrigglers lost every offspring within 24 h (Ridgway 1988, via Bremigan et al. 2008)'."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "for black bass a Michigan review found 'no strong relationship between stock size and number of recruits, except at very low levels'",
+      "location": "p. 11 (PDF p. 16)",
+      "quote": "there appears to be no strong relationship between stock size and number of recruits",
+      "conditions": "'For both largemouth and smallmouth bass, there appears to be no strong relationship between stock size and number of recruits, except at very low levels of stock size'; the review's own summary, followed by Kubacki et al.'s (2002) three reasons and pond experiments (Reynolds & Babb 1978; Laarman & Merna 1980) showing no consistent adult–recruit relationship",
+      "verdict": "confirmed",
+      "note": "The quotation is exact apart from the dropped closing words 'of stock size'; the original has 'there appears to be', a hedge worth keeping."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values on the same pages that §3.6.2 could use: in a Maine lake, nests whose smallmouth males were permanently removed had all eggs and fry eaten by other fishes (Neves 1975, p. 18, PDF p. 23); in Charleston Lake, Ontario, nest predators (juvenile sunfish and yellow perch) entered half the nests of exhaustively played males and 35 % of briefly played ones (Kieffer et al. 1995); nest abandonment may exceed 50 % when a released male takes > 5 min to return, and rises from 16 to 75 % as a male is angled one to three times (Philipp et al. 1997); males guard broods for 2–3 weeks after the fry leave the nest, 3–6 weeks in all after spawning (Ridgway 1988; Kubacki et al. 2002; p. 19, PDF p. 24); swim-up fry are about 6 mm and broods are guarded to about 15–20 mm (Brown 1984; p. 19, PDF p. 24). Age-0 growth and survival are often density-dependent (Parkos & Wahl 2002; Ridgway et al. 2002; p. 14, PDF p. 19)."
+}

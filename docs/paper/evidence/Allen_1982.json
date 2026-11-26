@@ -1,0 +1,51 @@
+{
+  "key": "Allen_1982",
+  "reader": "wave-3 batch w3-15",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency/library copy: the Alaska Resources Library & Information Services (ARLIS) scan of the U.S. Fish and Wildlife Service report, the URL in the entry (text layer present)",
+    "url": "https://www.arlis.org/docs/vol1/AK_Heritage/FWS/OBS/82/FWS-OBS-82-10-30.pdf",
+    "file": "docs/research_notes/fetched/v2/Allen_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1, image checked), the title page (PDF p. 3, image checked), the 'should be cited as' note (PDF p. 4) and the USGS Publications Warehouse record fwsobs82_10_30",
+    "ok": false,
+    "corrections": "the copy at the entry's URL is the ORIGINAL September 1982 edition (cover and title page: 'FWS/OBS-82/10.30, September 1982'; its own citation note: 'Allen, A. W. 1982 … FWS/OBS-82/10.30. 20 pp.'), not the April 1983 revision the entry names. The USGS Publications Warehouse lists the edition as 'Revised April 1983' and says 'This revised model updates the original publication dated September 1982'. The values below were read in the 1982 original; either drop '(revised April 1983)' or cite the revision from a copy of it.",
+    "note": "the only '1983' on this copy is the ARLIS call-number label (QH540 .U56 no.82/10.30 1983). Author, title, series and 20 pp. otherwise agree."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.3",
+      "claim": "favorable habitat holds 0.4–0.8 beaver colonies per km²",
+      "location": "p. 4 (PDF p. 11), Interspersion",
+      "quote": "The density of colonies in favorable habitat ranges from 0.4 to 0.8/km2",
+      "conditions": "'(1 to 2/mi2)'; a literature range compiled from Lawrence 1954, Aleksiuk 1968, Voigt et al. 1976 and Bergerud & Miller 1977 'cited by Jenkins and Busher 1979'; not Allen's own data and not specific to Maine or the Northeast",
+      "verdict": "confirmed",
+      "note": "Allen relays it from Jenkins & Busher 1979; 'Allen 1982, after Jenkins & Busher 1979' would be the honest form."
+    },
+    {
+      "paper": "§3.8.3; §3.1.2",
+      "claim": "colonies are mostly on (favor) stream gradients under (below) 6 %",
+      "location": "p. 3 (PDF p. 10), Water; model text p. 9 (PDF p. 16)",
+      "quote": "colonies recorded in Colorado were in valleys with a stream gradient of less than 6%",
+      "conditions": "68 % of the colonies recorded in Colorado (Retzer et al. 1956) were in valleys with stream gradient < 6 %, 28 % at 7–12 %, 4 % at 13–14 %, none at ≥ 15 %; the HSI model then gives 'Stream channel gradients of 6% or less' optimum value (p. 9, PDF p. 16). Riverine habitat only; marshes, ponds and lakes 'were nearly always occupied' when food was adequate",
+      "verdict": "confirmed",
+      "note": "'Mostly' rests on one Colorado survey (68 %) relayed by Allen; the 6 % threshold is also the model's optimum. Fine as written; 'about two-thirds of colonies in a Colorado survey' would be more exact."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "most beaver cutting is within 30 m of water",
+      "location": "p. 2 (PDF p. 9), Food",
+      "quote": "In a California study, 90% of all cutting of woody material was within 30 m",
+      "conditions": "'… (98.4 ft) of the water's edge (Hall 1970)'; also Jenkins (1980), Massachusetts: 'most of the trees utilized by beaver … were within 30 m', with some foraging to 100 m and reports to 200 m (Bradt 1938). The model (p. 9, PDF p. 16) treats woody food within 100 m as full value and beyond 200 m as none",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.nwrc.usgs.gov/wdb/pub/hsi/hsi-030.pdf", "status": 200, "note": "an HTML page, not the PDF (looked for the April 1983 revision; not kept)" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/fwsobs82_10_30", "status": 200, "note": "USGS Publications Warehouse record: edition 'Revised April 1983', no PDF link; used only for the bibliographic note" }
+  ],
+  "notes": "All three values hold in the September 1982 original; the only correction is the edition (the URL serves the 1982 original, not the 1983 revision). Other values in the report that may be useful for the beaver/wetland text: woody stems cut are usually < 7.6–10.1 cm dbh (p. 2, PDF p. 9); colonies need stable water and a channel gradient < 15 % (p. 4, PDF p. 11); mean distance between colonies 1.59 km in an Alaskan riverine habitat (Boyce 1981); subadults disperse in their second spring, on average 8–16 stream km (p. 4, PDF p. 11); minimum habitat assumed 0.8 km of stream channel or 1.3 km² of lake or marsh (p. 5, PDF p. 12); water-lily rhizomes can replace woody winter food (p. 2, PDF p. 9). The HSI model is explicitly 'a hypothesis of species-habitat relationships' (Preface, PDF p. 5)."
+}
