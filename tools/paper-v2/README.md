@@ -27,7 +27,7 @@ The brief is the human's `PAPER_REWRITE_BRIEF.md` (26 Nov 2026, the audit of `ma
 | Phase | State |
 |---|---|
 | 1. Source pass: ledger skeleton, Crossref/OpenAlex check | done 2026-11-26 |
-| 1. Source pass: reading (tier 1 → 4) | started 2026-11-26: a pilot batch first |
+| 1. Source pass: reading (tier 1 → 4) | pilot (7 entries) done 2026-11-26; wave 1 (batches t1-01…t1-10, 54 entries) launched 2026-11-26 — `node tools/paper-v2/batches.mjs --tier 1` lists what is left |
 | 1. Re-tally EMAP (§3.5.2) and CT DEEP electrofishing by script | — |
 | 1. §3 read line by line against the ledger | — |
 | 2. The twelve corrections and two framing fixes | — |
