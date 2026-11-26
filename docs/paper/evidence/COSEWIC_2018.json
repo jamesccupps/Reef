@@ -1,0 +1,202 @@
+{
+  "key": "COSEWIC_2018",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the full status report as published in HTML on the Government of Canada's Species at Risk Public Registry page (canada.ca), fetched with getsrc; no PDF link is offered there, so locations are by section and table; tables read cell by cell from the HTML",
+    "url": "https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/midland-eastern-painted-turtle-2018.html",
+    "file": "docs/research_notes/fetched/v2/COSEWIC_2018.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's own 'Document information' citation on the web page",
+    "ok": true,
+    "corrections": "",
+    "note": "'COSEWIC. 2018. COSEWIC assessment and status report on the Midland Painted Turtle Chrysemys picta marginata and the Eastern Painted Turtle Chrysemys picta picta in Canada. Committee on the Status of Endangered Wildlife in Canada. Ottawa. xvi + 107 pp.' — matches. Report writer Patrick Moldowan (production note)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.5",
+      "claim": "the painted turtle feeds and breeds once body temperature exceeds 15–20 °C",
+      "location": "web page, section 'Biology > Life cycle and reproduction > Activity patterns'",
+      "quote": "turtles are able to raise body temperatures above 15-20°C",
+      "conditions": "spring onset of feeding and breeding, cited to Sexton 1959a and Ernst 1971b",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "the young are mainly carnivorous and adults mainly herbivorous",
+      "location": "web page, section 'Biology > Interspecific interactions'",
+      "quote": "young turtles are primarily carnivorous and adults herbivorous",
+      "conditions": "'Their diet appears to shift with age'; the plant/animal proportions vary regionally and seasonally (Ernst and Lovich 2009)",
+      "verdict": "confirmed",
+      "note": "the same sentence of the paper's adds that Algonquin adults foraged on land for odonate larvae: COSEWIC does not say that (it cites Moldowan et al. 2015 only for juveniles' insect larvae in ephemeral ponds and for seed dispersal); that part belongs to Moldowan et al. 2015 alone — put the citations after their own clauses"
+    },
+    {
+      "paper": "Table 3.8-2 (New Brunswick row); §3.8.5 ('6.5–10 per ha in the closest analog to eastern Maine')",
+      "claim": "New Brunswick, Rockwood Park (eastern painted turtle): 6.5–10 turtles/ha",
+      "location": "web page, section 'Population sizes and trends > Abundance'",
+      "quote": "Rockwood Park, NB in the Appalachian/Atlantic Coast faunal province ranged from 6.5-10 turtles/ha",
+      "conditions": "Browne and Sullivan 2017; Table 1 gives the same site as 7.5–7.8/ha over 7.4–7.7 ha (Browne pers. comm. 2016); an urban park subpopulation that 'may represent an isolated relict subpopulation or a site of (re)introduction' (Distribution, New Brunswick)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-2 (Canadian Shield row)",
+      "claim": "Canadian Shield lakes, Ontario and Québec: 2.6–15.7 turtles/ha",
+      "location": "web page, section 'Population sizes and trends > Abundance'; Table 1",
+      "quote": "Midland Painted Turtle densities are much lower, typically ranging from 2.6-15.7",
+      "conditions": "Canadian Shield faunal provinces of Ontario and Québec (M. Keevil and Algonquin Park Turtle Project, unpublished); Table 1's Shield rows are all Algonquin (Mew Lake 2.6, Whitefish 10.3, West Rose 9.77–11.5, Wolf Howl Pond East 15.7)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-2 (Great Lakes–St Lawrence row); §3.8.5 ('Densities span two orders of magnitude')",
+      "claim": "Great Lakes–St Lawrence, typical 20–40 turtles/ha (range 9.9–289)",
+      "location": "web page, section 'Population sizes and trends > Abundance'",
+      "quote": "Densities of approximately 20-40 turtles/ha appear most typical",
+      "conditions": "Carolinian and Great Lakes/St. Lawrence faunal provinces of southern Ontario and Québec, 'densities range from 9.9-289 turtles/ha' (same paragraph)",
+      "verdict": "confirmed",
+      "note": "the paragraph goes on: 'although there are exceptionally large estimates of nearly 500 turtle/ha (based on waterbody surface) from Point Pelee' (498.5 at North DeLaurier, a narrow canal; Table 1). Table 1 also lists Michigan marshes at 575.7–827.7/ha. The row could note these outliers."
+    },
+    {
+      "paper": "Table 3.8-2 (Wolf Howl Pond row)",
+      "claim": "Wolf Howl Pond, Algonquin (1.9 ha): 97–109 turtles/ha",
+      "location": "web page, section 'Population sizes and trends > Fluctuations and trends'; Table 1",
+      "quote": "Wolf Howl Pond range from 103-109 turtles/ha in 1990-2002 (Samson 2003) and 97 turtle/ha",
+      "conditions": "Table 1: 109.0 (1990–2002, Samson 2003), 103.2 (1998–2002), 96.8 (2008–2011, Keevil unpublished; the text says 2013), all over 1.9 ha; Table 1's footnote: the high density is 'likely due to the small size of the water body' and access to nearby high-quality nesting habitat, and 'experimental manipulation (e.g., nest protection) may also account' for it. A 1995 estimate of 64.7/ha (Koper and Brooks 1998) is called anomalous",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-2 (StoneyCroft Pond row)",
+      "claim": "StoneyCroft Pond, Québec (0.41 ha): 276–289 turtles/ha",
+      "location": "web page, Table 1",
+      "quote": "289 … 0.41 … StoneyCroft Pond, McGill University … 1966-1975 … 276 … 0.41",
+      "quote_from": "table",
+      "conditions": "Sainte-Anne-de-Bellevue; 289 (1966–1975, Mallet 1975) and 276 (1966–1970, Bider and Hoek 1971)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "adults survive 97–98 % a year",
+      "location": "web page, executive summary (Biology); section 'Biology > Survivorship and longevity'",
+      "quote": "adult males and females demonstrate exceptionally high annual survivorship (97-98%)",
+      "conditions": "the best data are Algonquin's 25-year study, 'conservatively estimated to be 98%'; elsewhere adult survival is far more variable: Michigan females 29–84 % and males 64–86 %, New York females 86–100 % and males 54–98 % (Survivorship and longevity)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "they mature at 9–11 years",
+      "source_value": "age at maturity differs strongly by sex: Algonquin males 8.3 (7–10) years, females 14.1 (12–15) years (Samson 2003; Table 2); Midwood et al. 2015's multi-population review 9 (males) : 12 (females). The 11.2 and 9 years are the sex-averaged values COSEWIC uses only to compute generation time",
+      "location": "web page, section 'Biology > Survivorship and longevity' and Table 2",
+      "quote": "11.2 years at maturity + 1/(0.03 annual adult mortality) = 44.5 years generation time",
+      "conditions": "'Age at maturity can be at least 50% higher in northern subpopulations (e.g., Algonquin Provincial Park) compared to southern conspecifics' (Growth); 'Body size is more important than age in reaching sexual maturity'",
+      "verdict": "corrected",
+      "note": "for eastern Maine (northern), females maturing at ~12–15 years is the relevant figure; write 'males mature at about 8 and females at about 14 years in Algonquin'"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "they live more than 60 years",
+      "location": "web page, executive summary (Biology); 'Biology > Survivorship and longevity'",
+      "quote": "The lifespan of Painted Turtles exceeds 60 years in the wild",
+      "conditions": "maximum age unknown; the 61-year longevity records are 'likely an underestimate'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "they hibernate on or in the bottom mud, under about 0.3 m of water at southern Ontario sites",
+      "location": "web page, section 'Habitat > Habitat requirements'",
+      "quote": "such as shallow water (average = 0.32 m ± 0.08 m), deep sediment",
+      "conditions": "Midland painted turtles in southern Ontario (Taylor and Nol 1989): water 0.32 ± 0.08 m, sediment 0.79 ± 0.15 m deep, sediment temperature 4.1 ± 0.75 °C; adults 'overwinter in shallow water on the substrate surface or buried'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "they stayed submerged for at least 143 days in central Ontario",
+      "location": "web page, section 'Biology > Physiology and adaptability'",
+      "quote": "at least 143 days in central Ontario (Rollinson et al. 2008)",
+      "conditions": "continuous overwinter submergence; 56–117 days (mean 92) in southern Michigan (Crawford 1991); turtles select temperatures approaching 0–1 °C",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "nesting runs from late May to early July",
+      "location": "web page, section 'Biology > Life cycle and reproduction > Activity patterns' (and Reproduction)",
+      "quote": "The nesting season for Painted Turtles in eastern Canada spans late May to early July",
+      "conditions": "eastern Canada; peak activity in mid-June (Reproduction)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "Ontario nests lie a median 11 m from water",
+      "location": "web page, section 'Habitat > Habitat requirements'",
+      "quote": "minimum = 1.0 m; median = 11.0 m; maximum = 1233.0 m",
+      "conditions": "one Ontario study site (Steen et al. 2012): mean 78 ± 243 m to the nearest water",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "Nova Scotia clutches averaged 8.6 eggs",
+      "location": "web page, Table 2",
+      "quote": "8.6 (5-11) … Nova Scotia … Powell 1967",
+      "quote_from": "table",
+      "conditions": "eastern painted turtle, Nova Scotia; range 5–11 (Powell 1967); a second Nova Scotia source gives 6–11 (NSM 2015)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "incubation takes 65–97 days",
+      "location": "web page, section 'Biology > Life cycle and reproduction > Reproduction'",
+      "quote": "approximately 65-80 days (Ernst 1971b) with durations ranging up to 83-97 days in Algonquin",
+      "conditions": "83–97 days in Algonquin Provincial Park (Riley and Litzgus 2013)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "incubation temperatures ≤ 26 °C give males and ≥ 29 °C females",
+      "location": "web page, section 'Biology > Life cycle and reproduction > Reproduction'",
+      "quote": "incubation temperatures ≤26°C producing males, temperatures ≥29°C producing females",
+      "conditions": "a mix of sexes at intermediate temperatures (Bull and Vogt 1981; Schwarzkopf and Brooks 1987)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "nest predation is mainly by raccoons and foxes",
+      "location": "web page, section 'Biology > Interspecific interactions'",
+      "quote": "Mammalian mesopredators, such as Raccoons and Red Foxes, are major nest predators",
+      "conditions": "cited to Ernst and Lovich 2009; the threats section also lists striped skunk, coyote, American crow and common raven as predators of turtles and their eggs",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "nest predation runs from about 17 % to over 90 %",
+      "source_value": "COSEWIC's nest-predation figures run from 33 % to 80–100 %: Point Pelee 80–100 %, 87 %, 73 % and 33 % in different studies; Rondeau 87 % and 98 %; Mont-Orford 75 %; a gravel pit on the North Missisquoi 94 %; overall nest survival 'generally low' at ~2–30 %. No 17 % figure is in the report",
+      "location": "web page, section 'Biology > Survivorship and longevity'; 'Threats and limiting factors > Problematic native species (8.2)'",
+      "quote": "(80-100%, Kraus 1991; 87%, Whitehead 1997; 73%, Browne 2003; 33%, Phillips and Murray 2005)",
+      "conditions": "Midland painted turtle nests at Point Pelee National Park, Ontario (a park with raccoon densities of 24.6–28.2 per km², 2–5 times southern Ontario averages); nests are 'frequently destroyed within the first 48 hours'",
+      "verdict": "corrected",
+      "note": "the 17 % lower bound came from the research note's '17.4 % predation' at Beaver Island, Michigan (Rowe et al. 2005), which the note took from a search summary, not from COSEWIC. Either cite Rowe et al. 2005 for it after reading it, or write 'about 33 % to over 90 % (via COSEWIC 2018)'."
+    },
+    {
+      "paper": "§3.8.5",
+      "claim": "one population tolerated 70 % nest predation, but 90 % would cause decline",
+      "location": "web page, section 'Biology > Survivorship and longevity'",
+      "quote": "demonstrate tolerance to nest predation rates of 70%, but predation (alone) at 90%",
+      "conditions": "population models for Point Pelee (Browne 2003): 90 % predation alone 'would result in population declines and extirpation within an estimated 800 years'",
+      "verdict": "confirmed",
+      "note": "it is a model result, not an observed population; say 'a population model for Point Pelee'"
+    },
+    {
+      "paper": "src/config.js:655",
+      "claim": "painted turtles 10 per ha of the shallows: New Brunswick 7.5–10, the Shield 2.6–15.7 (COSEWIC 2018)",
+      "source_value": "New Brunswick (Rockwood Park) 6.5–10/ha in the text (Browne and Sullivan 2017) or 7.5–7.8/ha in Table 1 (Browne pers. comm. 2016); '7.5–10' joins the two. The Shield 2.6–15.7 is right",
+      "location": "web page, Table 1 and section 'Population sizes and trends > Abundance'",
+      "quote": "7.5-7.8 … 7.4-7.7 … Rockwood Park, New Brunswick … Browne, pers. comm. 2016",
+      "quote_from": "table",
+      "conditions": "densities per ha of water body (waterbody surface), not per ha of shallows to 2 m",
+      "verdict": "corrected",
+      "note": "COSEWIC's densities are per ha of the whole water body (Table 1 gives the water body's area), whereas the code applies 10/ha to the shallows to 2 m only — a different denominator; the code comment should say which it intends"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Two of §3.8.5's values are not COSEWIC's own: the nest-predation lower bound (17 %, from a search summary of Rowe et al. 2005) and the odonate-foraging clause (Moldowan et al. 2015). Maturity should be given by sex. Most density data in Table 1 are Midland painted turtles; only Rockwood Park (and Nova Scotia for clutches) is the eastern subspecies found in Maine. Other values the rewrite may use: survival from year 1 to maturity 30.3 % in Algonquin (Samson 2003); hatch rate without predation 92 % in Québec, 69–79 % in Algonquin; active season 4 months in the north (early May–early September); females often nest 16 m to over 600 m from their home pond in Québec; second clutches 5–32 % in Québec."
+}

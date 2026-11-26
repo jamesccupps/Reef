@@ -1,0 +1,52 @@
+{
+  "key": "FalckRasmussen_2005",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the thesis PDF posted openly by DTU Aqua's Danish fisheries-management site fiskepleje.dk (news item, February 2006), fetched with getsrc; figures read on page images",
+    "url": "https://www.fiskepleje.dk/-/media/sites/fiskepleje/nyheder/2006/februar/gedderhestholmsoe.pdf",
+    "file": "docs/research_notes/fetched/v2/FalckRasmussen_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1), the preface (PDF p. 2) and the contents (PDF pp. 4–5)",
+    "ok": false,
+    "corrections": "the entry is incomplete. Full citation: Falck-Rasmussen, K. 2005. 2 års rekruttering af gedder (Esox lucius L.) i en nydannet sø: Bestandsdynamik og interaktioner med tilhørende vandsystemer. Specialerapport (MSc thesis), Afd. for Marin Økologi, Biologisk Institut, Aarhus Universitet, and Danmarks Fiskeriundersøgelser (DFU), Silkeborg. June 2005. 89 pp. (PDF). https://www.fiskepleje.dk/-/media/sites/fiskepleje/nyheder/2006/februar/gedderhestholmsoe.pdf",
+    "note": "in Danish with an English summary; supervisors Peter Grønkjær (Aarhus) and Christian Skov (DFU)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-8 (northern pike row)",
+      "claim": "Lake Hestholm, Denmark (253 ha, shallow), September: ~21 young-of-year pike/ha lake-wide (~117/ha of vegetated littoral)",
+      "location": "p. 30–31 (PDF pp. 31–32), section 2.3.2.1 PASE; Fig. 9, p. 31 (PDF p. 32)",
+      "quote": "Gedder i vegetationen : 465000 m2 x 0,0117 gedder/ m2 = 5423 gedder",
+      "kind": "arithmetic",
+      "conditions": "point-abundance electrofishing (PASE) on 18 and 27 September 2002: 490 points in the vegetation and 386 in open water caught five pike, four 0+ (all in the vegetation) and one 1+ (open water), so Fig. 9 assigns the vegetation estimate (5,423) to the 2002 year class; lake area 253 ha measured 14 May 2002 (206.5 ha open water, 46.5 ha shore vegetation); a lake created in winter 2000 in the Skjern Å restoration",
+      "verdict": "confirmed",
+      "note": "5,423 / 253 ha = 21.4/ha; 5,423 / 46.5 ha = 116.6/ha. The estimate rests on four fish. The lake-wide September total of all ages was 13,065 pike = 51.6/ha (p. 45); the summary gives the lake as 242 ha (open water in 2002, Koed 2002)."
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "0+ pike survived 17.5 % from May to September",
+      "location": "p. 30–31 (PDF pp. 31–32), section 2.3.2.1 PASE (catches and estimates); Fig. 9 (read on the page image)",
+      "quote": "Fangsten bestod i alt af 53 gedder fordelt på 24 0+ gedder, 28 1+ gedder",
+      "kind": "arithmetic",
+      "conditions": "May PASE (15 and 24 May 2002) estimated 68,363 pike, of which 24 of the 53 caught were 0+ → ~30,957 0+ (Fig. 9 ~31,000); June (24 June) ~20,300 0+ (Fig. 9); September 5,423 0+. Apparent survival: the counts fell through bird predation (grey herons, cormorants; the author's main explanation) and probably emigration of small 0+ to Skjern Å, which the author suspected; the May run fell while the 2002 fry were still hatching",
+      "verdict": "confirmed",
+      "note": "5,423 / 30,957 = 0.175 (May→June ≈ 0.66, June→September ≈ 0.27, read off Fig. 9). Say 'apparent survival (losses include emigration)'; the estimates rest on 24, ~10 and 4 young pike caught."
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "0+ pike survived about 46 % from December to March",
+      "source_value": "the thesis gives no winter survival. The 46 % is a ratio of two electrofishing catch rates (CPUE) for the 2002 year class: ~0.35 pike/min in December 2002 (read off Fig. 7c) and 0.16 pike/min on 26 March 2003 (text). The same index had risen from ~0.11 in November to ~0.35 in December, so the ratio is not a survival estimate",
+      "location": "p. 27 (PDF p. 28), section 2.3.1.1 CPUE Hestholm Sø; Fig. 7c, p. 28 (PDF p. 29)",
+      "quote": "i slutningen af marts (d. 26.03.03) var faldet til 0,16 gedder/minut",
+      "conditions": "boat electrofishing catch per minute, monthly rounds March 2002–March 2003 (no rounds January–February); CPUE for the 2002 year class peaked at 0.52 on 5 June 2002",
+      "verdict": "corrected",
+      "note": "drop '~46 % from December to March' or present it as 'the catch rate of young pike fell by about half between December and late March'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The research note's values (esocid_first_year_survival.md) are project readings of Fig. 9 and Fig. 7c, not numbers the thesis states; the September density is right only for the 0+ caught in the vegetation. Other values: total pike density 270.2/ha in May, 145.6/ha in June and 51.6/ha in September 2002 (p. 45); 0+ density 122.4/ha in June (p. 45, compared with ~190 0+/ha in stocked Udbyover Sø); the PIT-tagged 2001-cohort pike with the lowest growth all bore fresh bird-beak wounds (Fig. 16, p. 40); growth started and stopped near 10 °C, a little higher for the 2002 0+ (p. 36). Delrapport 2 (pp. 58–74) covers migration between the lake and Skjern Å."
+}

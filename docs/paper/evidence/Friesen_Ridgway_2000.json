@@ -1,0 +1,61 @@
+{
+  "key": "Friesen_Ridgway_2000",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the reprint posted openly by the Harkness Laboratory of Fisheries Research (Ontario Ministry of Natural Resources; the authors' lab) on its own publications page, fetched with getsrc; Fig. 7 read on a 400-dpi page image",
+    "url": "https://www.harkness.ca/PDFs/Contributions%202000s/Friesen%20Ridgway%202000.pdf",
+    "file": "docs/research_notes/fetched/v2/Friesen_Ridgway_2000.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (PDF p. 1: 'Behaviour 137, 61-74', © Koninklijke Brill NV 2000) and Crossref (issue 1)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-3 (smallmouth brood row)",
+      "claim": "a smallmouth brood at Lake Opeongo holds ~380 larvae/m² at first feeding (project arithmetic)",
+      "source_value": "measured mean density within broods at first feeding (9.5 mm TL) ≈ 475–540 fish/m² (Fig. 7b: ~480 small, ~540 medium broods, large overlapping small); the project's ~380 is an assumed 1,000-fish brood over the medium broods' mean area (1,000 / 2.6 m² = 385)",
+      "location": "p. 69 (PDF p. 9), Results 'Brood dispersion'; Fig. 7, p. 70 (PDF p. 10)",
+      "quote": "brood dispersion averaged 0.8, 2.6 and 5.8",
+      "kind": "arithmetic",
+      "conditions": "Jones Bay, Lake Opeongo, Ontario (58.6 km², oligotrophic), 1991–1993; area = minimum convex polygon of 10–15 stones laid around the brood by snorkellers, 10:00–16:00; density = brood size estimate / area; brood categories < 500, 501–1,500, > 1,500; mean areas 0.8, 2.6, 5.8 m² at first feeding",
+      "verdict": "corrected",
+      "note": "the inputs are right but the arithmetic answers a different question: the ratio of a guessed brood size to a mean area is not the mean density, which the paper reports directly in Fig. 7b. Use '~500/m² at first feeding' (read off Fig. 7b). Density did not differ among brood-size categories at any phase (F2,81 = 2.31, p = 0.29)."
+    },
+    {
+      "paper": "Table 3.6-3 (smallmouth brood row)",
+      "claim": "~27 young/m² at metamorphosis (project arithmetic)",
+      "source_value": "measured mean density at the early juvenile phase (18.5 mm TL, just after metamorphosis) ≈ 30–45 fish/m² (Fig. 7b), and ~80–115/m² in late larvae (14 mm); the project's ~27 is 1,000 fish / 36.7 m²",
+      "location": "p. 69 (PDF p. 9), Results 'Brood dispersion'; Fig. 7, p. 70 (PDF p. 10)",
+      "quote": "Upon reaching metamorphosis, dispersion averaged 14.8, 36.7 and 64.1",
+      "kind": "arithmetic",
+      "conditions": "the 14.8, 36.7, 64.1 m² areas are the early-juvenile (18.5 mm) points of Fig. 7a for small, medium and large broods",
+      "verdict": "corrected",
+      "note": "use '~30–45/m² just after metamorphosis' from Fig. 7b; the authors stress that density 'declined sharply before metamorphosis' (Summary)"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "young smallmouth disperse from the nest at about 28 mm (Opeongo)",
+      "location": "p. 63 (PDF p. 3), Methods",
+      "quote": "juveniles at pre-dispersal (28.0 mm TL)",
+      "conditions": "mean total length of the fourth developmental phase observed (after swim-up 9.5, pre-metamorphosis 14.0, post-metamorphosis 18.5 mm); lengths at age differed slightly among years with temperature",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "after two to three weeks with the male the fry disperse (Scott et al. 1997 and Friesen & Ridgway 2000, via Ridgway et al. 2002)",
+      "source_value": "Friesen & Ridgway give no two-to-three-week figure: males 'provide sole parental care that can range from 19 to 45 days' (citing Ridgway 1988; Ridgway & Friesen 1992), and broods 'remain in limited areas in the nearshore environment for many weeks'",
+      "location": "p. 62 (PDF p. 2), Introduction; p. 70 (PDF p. 10), Discussion",
+      "quote": "provide sole parental care that can range from 19 to 45 days",
+      "conditions": "the 19–45 days is the whole care period; the paper does not split it into egg/embryo and free-swimming phases",
+      "verdict": "corrected",
+      "note": "the 'two to three weeks' must come from Ridgway et al. 2002 or Scott et al. 1997 (check those entries); citing Friesen & Ridgway 2000 for it is wrong, or say '19–45 days of care (Friesen & Ridgway 2000, citing Ridgway 1988)'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other useful values: 72, 92 and 76 nests in South Jones Bay in 1991–93, of which 47 %, 77 % and 86 % reached first feeding; mean brood size at first feeding 495, 1,910 and 1,570, distributions skewed to small broods (Fig. 3); first exogenous feeding from 2, 16 and 18 June; broods disperse from the nest at dawn and regroup at dusk (Fig. 2); nest density 0–6 per 100 m of shore. Brood size had no effect on foraging, agonistic behaviour, nearest-neighbour distance or density — the authors infer food is not limiting under parental care."
+}

@@ -1,0 +1,42 @@
+{
+  "key": "Kappel_etal_2001",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the USGS's own free PDF (pubs.usgs.gov), fetched with getsrc",
+    "url": "https://pubs.usgs.gov/wri/2001/4166/wri014166.pdf",
+    "file": "docs/research_notes/fetched/v2/Kappel_etal_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1) and the references page (PDF p. 16)",
+    "ok": true,
+    "corrections": "",
+    "note": "William M. Kappel, Todd S. Miller and Kari K. Hetcher, 'Hydrogeology of the Tully Lakes Area in Southern Onondaga and Northern Cortland Counties, New York', USGS WRIR 01-4166, December 2001 (in cooperation with Onondaga Lake Cleanup Corporation) — all match. A 16-page poster-style report; its printed page numbers are not in reading order, so the locations give the PDF page."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.3; §3.2.6",
+      "claim": "two New York kettle lakes with natural outlets fluctuated about 0.45 m a year (cited in §3.2.6 among 'natural water-level regimes')",
+      "source_value": "about 1.5 ft (0.46 m) average annual fluctuation, October 1998–November 2000, in Green and Tully Lakes — which do have natural outlets, but whose level 'outlet structures (dams or culverts) usually control', with beaver dams affecting it periodically; Tully Lake also lies on the West Branch Tioughnioga River, which flows through it",
+      "location": "abstract, PDF p. 2 (printed 9); 'Lake-Level Fluctuations', PDF p. 5 (printed 4); 'Eastern Lakes', PDF p. 6 (printed 13)",
+      "quote": "two eastern lakes were only about 1.5 feet because these lakes have natural outlets",
+      "conditions": "continuous level records, October 1998–November 2000 (two years); the eastern lakes' spring rise in 2000 was about 1.5 ft, mostly from ground-water seepage (Tully also from river inflow); summer decline from evaporation and wetland transpiration",
+      "verdict": "corrected",
+      "note": "the digits and 'natural outlets' are the report's own, but PDF p. 6 adds: 'Outlet structures (dams or culverts) usually control the water level of the two eastern lakes, but beaver dams can affect lake levels periodically.' So these are not unregulated natural regimes; §3.2.6's framing should say the outlets are controlled by small structures (and beaver), and §3.1.3 that the record is two years."
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "against 0.8–1.8 m a year in landlocked kettle lakes",
+      "source_value": "2.5 ft (Gatehouse Pond) to 6 ft (Crooked Lake), i.e. 0.76–1.83 m, in the three western lakes (Gatehouse Pond, Crooked and Song Lakes), which were 'naturally landlocked … until European settlement' but have had outlet pipes or channels since the mid-1800s (Gatehouse Pond and Crooked Lake among them); their discharge includes 'outflow through the constructed channels'",
+      "location": "abstract, PDF p. 2 (printed 9); PDF p. 5 (printed 4); 'Western Lakes and Ponds', PDF p. 6 (printed 13); history, PDF p. 14 (printed 15)",
+      "quote": "fluctuations in the three western lakes ranged from 2.5 to 6 feet",
+      "conditions": "October 1998–November 2000; the western lakes rise as much as 2 ft within 4–5 days after snowmelt or spring rain (surface runoff from the western hillsides); Gatehouse Pond is impounded (its dam raised 6 ft in the early 1900s; the overflow pipe lowered 1 ft after 1993) and a culvert was put at Crooked Lake's outlet in 1996",
+      "verdict": "corrected",
+      "note": "digits right (2.5–6 ft = 0.76–1.83 m); 'landlocked' is true of their natural state only — today two of the three measured western lakes drain through constructed outlets. Say 'naturally landlocked kettle lakes, now partly drained by constructed outlets'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The report's lake-level record is short (two years, 1998–2000) and its lakes are regulated to some degree on both sides of the comparison, so it is weak support for a 'natural' Northeast regime; the Massachusetts no-drawdown lakes (Carmignani et al. 2021) are the better analogue if they hold up. Historic records (1924–36, Fig. 3, PDF p. 7) show similar fluctuations in Crooked, Green and Tully Lakes during the 1930–32 drought and in 1998–2000 (text, PDF p. 7)."
+}

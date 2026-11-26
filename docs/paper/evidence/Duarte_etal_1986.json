@@ -1,0 +1,44 @@
+{
+  "key": "Duarte_etal_1986",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the article is paywalled at Canadian Science Publishing; no free copy found (OpenAlex none, Europe PMC none). A stand-in was read: chapter I of Duarte's 1987 McGill thesis, which the thesis preface says was published as this article",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (show.mjs) and the thesis preface (Duarte 1987, PDF p. 11: 'Chapter I: Can. J. Fish. Aquat. Sci. 43: 1900-1908')",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.4.5; Table 3.4-3",
+      "claim": "in a compilation of 139 mapped lakes, mostly in Europe and North America, macrophytes covered on average 44.1 % of lake area (n = 104), submerged plants 35.0 % (n = 82) and emergents 12.3 % (n = 77)",
+      "verdict": "unchecked",
+      "note": "article not read; the thesis chapter gives the same numbers (see notes)"
+    },
+    {
+      "paper": "§3.4.5",
+      "claim": "underwater light is 'the best descriptor of the cover and biomass of submerged plants'",
+      "verdict": "unchecked",
+      "note": "article not read; the thesis chapter's abstract has these words (see notes)"
+    },
+    {
+      "paper": "§3.4.5",
+      "claim": "applied to Hot Brook the equations give about 20 % of each lake from lake area alone but 60–75 % from mean irradiance (project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "the article's equations not read; the thesis chapter's eq. 1 reproduces the ~20 % (see notes)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f86-235", "status": 403, "note": "publisher (Canadian Science Publishing) refuses scripts / paywall; a library login would open https://doi.org/10.1139/f86-235" },
+    { "url": "https://doi.org/10.1139/f86-235", "status": 403, "note": "resolves to the same publisher page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f86-235\"", "status": 200, "note": "no record (hitCount 0)" }
+  ],
+  "notes": "STAND-IN (read as its own source, not used to confirm the article): Duarte, C. M. 1987, PhD thesis, McGill University (docs/research_notes/fetched/v2/Duarte_1987.pdf), chapter I 'Patterns in biomass and cover of aquatic macrophytes in lakes'. Read on page images (docs/research_notes/fetched/v2/Duarte_etal_1986.thesis1987-p20.png, -p27.png, -p29.png, -p33.png): Table 1.1 (printed p. 16, PDF p. 29) gives mean %Am 44.1 (n 104), %As 35.0 (n 82), %Ae 12.3 (n 77), each ranging 0–100 % — the percent of lake area covered by all macrophytes, submerged and emergent plants. The data set (printed p. 14, PDF p. 27) 'included 139 lakes': Europe 58, North America 62, Africa 6, South Africa 4, Asia 6, Australia 1 (Table 1.1's lake-area row has N = 141). The chapter abstract (printed p. 7, PDF p. 20) says underwater light 'was found to be the best descriptor of the cover and biomass of submerged plants'. Table 1.3 (printed p. 20, PDF p. 33): eq. (1) ln As = 0.91 ln A − 1.1 (R² 0.80, N 76); eq. (3) ln As = 0.94 ln A + 0.85 ln Iz − 3.7 (R² 0.89, N 51); eq. (7) %As = 1.4 Iz + 0.07 Lic − 24 Sal − 0.90 (R² 0.60, N 55), with A in ha, Iz the annual irradiance at the mean depth and Lic the days of ice cover. Check of the paper's ~20 %: eq. 1 gives %As = 100·e^−1.1·A^−0.09 = 22.0 % at 100 ha, 20.7 % at 200 ha and 19.9 % at 300 ha — consistent. Recommendation: the thesis supports all three claims; cite it alongside, or read the article (doi:10.1139/f86-235) before confirming. The same chapter also notes that submerged cover is proportionally smaller in larger lakes, partly because larger lakes are deeper (R² 0.41 between lake size and mean depth)."
+}

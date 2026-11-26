@@ -1,0 +1,32 @@
+{
+  "key": "Duarte_Kalff_1986",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the free PDF ASLO once served on its own site (aslo.org/lo/toc/…), taken from the Internet Archive's Wayback capture of 2015-09-19; equations and tables read on the page images",
+    "url": "https://web.archive.org/web/20150919054112id_/http://aslo.org/lo/toc/vol_31/issue_5/1072.pdf",
+    "file": "docs/research_notes/fetched/v2/Duarte_Kalff_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (PDF p. 1: 'Limnol. Oceanogr., 31(5), 1986, 1072-1080') and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Carlos M. Duarte and Jacob Kalff, McGill University. Crossref's title carries footnote marks ('…communities1,1'). Chapter II of Duarte's 1987 thesis (its preface says so)."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4",
+      "claim": "in Lake Memphremagog submerged plant biomass fell with littoral slope as slope^−0.81",
+      "location": "p. 1074 (PDF p. 3), Results, eq. 1 (read on the page image); Fig. 1, p. 1075",
+      "quote": "MSMB = 124.47 + 990 slope^−0.81 (1)",
+      "quote_from": "image",
+      "conditions": "44 stations in Lake Memphremagog (Québec–Vermont), August–mid-September 1984; MSMB = maximum submerged macrophyte biomass, g fresh wt m⁻², harvested by SCUBA (0.78-m² quadrats) at each site's depth of maximum biomass; slope (%) measured by echosounder along a transect perpendicular to shore, range 0.3–30.3 % (Table 1); R² = 0.725",
+      "verdict": "confirmed",
+      "note": "an intercept plus a power term, not a pure power law. The relation breaks at 2.24 % slope (echosounder) and at 5.33 % with map slopes (eqs. 2–3, 5–6). Adding sediment organic matter raised R² to 0.87 (eq. 4), biomass rising with organic matter (1.0–45.4 %)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The same §3.4.4 sentence's second half — 'in 25 lakes no plants grew on slopes steeper than ~14.8 %' — belongs to Duarte 1987 (thesis ch. III; see that entry), not to this paper, which studies one lake plus a literature test. Split the citation: '…slope^−0.81 (Duarte & Kalff 1986); … ~14.8 % (Duarte 1987)'. Worth knowing for that claim: this paper's own data show some plants beyond 14.8 %: in Fig. 1 two Memphremagog stations at ~17 % slope carry ~0.15 and ~0.4 kg fresh wt m⁻² (the steeper stations, to 30.3 %, sit at or near zero; the axis labels '0.4, 0.8' appear misprinted for 4, 8), and Table 4 lists Lake Orford at 23.0 % (map slope) with 41 g fresh wt m⁻² — so 14.8 % is a statistical split in the 25-lake data, not an absolute limit. The paragraph at §3.4.4 line 800 ('In Duarte's 25 lakes the shallowest submerged plants grew at 0.75–1.25 m …') also concerns Duarte 1987 / Duarte & Kalff 1990, not this paper. Also relevant to §3.4.4's sediment sentence: here MSMB increased with sediment organic matter over 1.0–45.4 % (eq. 4), the opposite sign to the 'growth falls … as organic matter rises to ~20 %' attributed to Barko & Smart 1986 (a laboratory result) — the authors note the direction depends on the nature and concentration of the organic matter. The model under-predicts dredge-sampled literature biomass and fails for turbid lakes (Secchi < 2 m) and tropical lakes."
+}

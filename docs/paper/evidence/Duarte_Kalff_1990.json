@@ -1,0 +1,44 @@
+{
+  "key": "Duarte_Kalff_1990",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the article is paywalled at Canadian Science Publishing; no free copy found (OpenAlex none, Europe PMC none). A stand-in was read: Duarte's 1987 McGill thesis (already fetched for the Duarte_1987 entry), whose chapter III reports the same 25-lake study",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (show.mjs)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Duarte, Carlos M.; Kalff, Jacob (1990). Patterns in the Submerged Macrophyte Biomass of Lakes and the Importance of the Scale of Analysis in the Interpretation. CJFAS 47(2): 357–363 — matches the entry. The entry's gloss 'chapter III of Duarte 1987' is not confirmed by the thesis, whose chapter III has another title and is described as 'submitted for publication' (see notes)."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.4",
+      "claim": "in Duarte's 25 lakes the shallowest submerged plants grew at 0.75–1.25 m regardless of slope, exposure or transparency, which Duarte (1987; published as Duarte & Kalff 1990) attributed to ice scour",
+      "verdict": "unchecked",
+      "note": "article not read; the thesis stand-in says it (see notes)"
+    },
+    {
+      "paper": "§3.4.4",
+      "claim": "Duarte 1987's chapter was published as Duarte & Kalff 1990",
+      "verdict": "unchecked",
+      "note": "plausible (same 25 lakes, same lake-vs-site scale question) but not verifiable without the article; the thesis chapter's title differs"
+    },
+    {
+      "paper": "§5.6",
+      "claim": "the 0.75–1.25-m minimum depth of submerged plants in 25 north-eastern lakes (Duarte & Kalff 1990), which those authors found unrelated to exposure and attributed to ice scour",
+      "verdict": "unchecked",
+      "note": "article not read; cite Duarte 1987 (thesis) for it unless the article is checked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f90-037", "status": 403, "note": "publisher (Canadian Science Publishing) refuses scripts / paywall; a library login would open https://doi.org/10.1139/f90-037" },
+    { "url": "https://doi.org/10.1139/f90-037", "status": 403, "note": "resolves to the same publisher page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f90-037\"", "status": 200, "note": "no record (hitCount 0)" }
+  ],
+  "notes": "STAND-IN (read as its own source, not used to confirm the article): Duarte, C. M. 1987. Biomass and distribution of submerged macrophytes in lakes. PhD thesis, McGill University (docs/research_notes/fetched/v2/Duarte_1987.pdf; its own evidence file is Duarte_1987.json). Chapter III, 'The distribution of submerged macrophyte biomass in lakes: the contribution of littoral morphometry and water characteristics' (PDF p. 78), studies 25 north-eastern American lakes (Québec, New York, Vermont; August 1985; 187 sites). On p. 81 (PDF p. 94, read on the page image) it gives the shallowest depth with submerged vegetation as 0.75–1.25 m and says 'this minimum depth is not related to slope, exposure or transparency (P > 0.05)', 'suggesting that the shallow limit is probably set by ice scouring' — an inference, not a measurement. Caveat for both §3.4.4 and §5.6: the echosounder transects started at 'a depth of c. 0.7 m' (p. 69, PDF p. 82), so the survey could not see plants shallower than about that depth. The thesis preface (PDF p. 11) says chapters I and II were published (CJFAS 43: 1900–1908; L&O 31: 1072–1080) and chapters III and IV were 'submitted for publication'. Recommendation: cite 'Duarte 1987' for the 0.75–1.25-m minimum and the ice-scour inference, and cite Duarte & Kalff 1990 only after its text is read."
+}

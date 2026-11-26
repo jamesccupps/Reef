@@ -1,0 +1,39 @@
+{
+  "key": "Fitzgerald_etal_2006",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from PubMed (NCBI E-utilities, PMID 16937813), saved as docs/research_notes/fetched/v2/Fitzgerald_etal_2006.abstract.txt; the article itself is paywalled at Wiley/ESA and no free copy was found",
+    "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=16937813&rettype=abstract&retmode=text",
+    "file": "docs/research_notes/fetched/v2/Fitzgerald_etal_2006.abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (show.mjs) and the PubMed record",
+    "ok": true,
+    "corrections": "",
+    "note": "Fitzgerald DG, Forney JL, Rudstam LG, Irwin BJ, VanDeValk AJ. Ecol Appl 2006 Aug; 16(4): 1487–1501 — matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.8",
+      "claim": "in Oneida Lake, age-0 white perch winter mortality rose with total predator biomass and with autumn white perch abundance and also correlated with a starvation model, while predation dominated for yellow perch (cited as 'abstract')",
+      "verdict": "unchecked",
+      "note": "full text not read; the abstract says all of this (see notes), so the paper's use matches the abstract it cites"
+    },
+    {
+      "paper": "§3.7.6",
+      "claim": "in Oneida Lake, the winter mortality of age-0 white perch tracked total predator biomass (cited as 'abstract only')",
+      "verdict": "unchecked",
+      "note": "full text not read; the abstract says white perch mortality 'was directly associated with total predator biomass'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/1051-0761(2006)016%5B1487:GSPAFO%5D2.0.CO;2", "status": 403, "note": "Wiley refuses scripts / paywall; a library login would open https://doi.org/10.1890/1051-0761(2006)016[1487:GSPAFO]2.0.CO;2" },
+    { "url": "https://doi.org/10.1890/1051-0761(2006)016[1487:GSPAFO]2.0.CO;2", "status": 403, "note": "resolves to the same Wiley page" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1890/1051-0761(2006)016[1487:GSPAFO]2.0.CO;2\"", "status": 200, "note": "PMID 16937813, no PMC full text" },
+    { "url": "https://ecommons.cornell.edu/entities/publication/0d19a40d-0289-4a56-a4ba-b75e7cc50fe4", "status": 200, "note": "a search hit at Cornell eCommons, but it is a different work (a thesis on gizzard shad over-winter mortality in Oneida Lake), not this article" }
+  ],
+  "notes": "The abstract (data, not checked claims): four decades of Oneida Lake data; multiple regression — age-0 yellow perch winter mortality inversely related to autumn length and to the abundance of alternative prey (gizzard shad and white perch), with no length-selective predation by adult walleye detected; white perch mortality 'directly associated with total predator biomass and abundance of white perch in autumn, and inversely related to yellow perch abundance', not to gizzard shad; winter severity not significant for either; predicted starvation mortality 'much lower than observed' for yellow perch, while similar models for white perch 'were correlated with observed mortality'; conclusion — predation the main mechanism for yellow perch, predation and starvation both possibly important for white perch. The paper's two sentences match this. Not a stand-in: Fitzgerald's 2000 University of Windsor thesis (fetched for Fitzgerald_2000) is on size-selective winter survival of age-0 yellow perch in 18 Great Lakes-basin lake populations (1958–1998); it has no white perch and not this paper's predator/alternative-prey regressions."
+}

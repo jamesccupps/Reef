@@ -1,0 +1,55 @@
+{
+  "key": "Dudley_2004a",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the USGS's own free PDF (pubs.usgs.gov), fetched with getsrc; table values read on the page images",
+    "url": "https://pubs.usgs.gov/sir/2004/5026/pdf/sir2004-5026.pdf",
+    "file": "docs/research_notes/fetched/v2/Dudley_2004a.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1), the title page (PDF p. 2) and the imprint page (PDF p. 3)",
+    "ok": true,
+    "corrections": "",
+    "note": "Robert W. Dudley, 'Estimating Monthly, Annual, and Low 7-Day, 10-Year Streamflows for Ungaged Rivers in Maine', USGS Scientific Investigations Report 2004-5026, Augusta, Maine, 2004 — all match. Crossref's low title score (0.58) is only its formatting; the DOI 10.3133/sir20045026 is right."
+  },
+  "claims": [
+    {
+      "paper": "§2.3",
+      "claim": "Mattawamkeag River near Mattawamkeag, USGS 01030500, drains 1,418 mi² (3,670 km²)",
+      "location": "p. 5 (PDF p. 10), Table 1; also Table 3, p. 7 (PDF p. 12)",
+      "quote": "01030500 … Mattawamkeag River near Mattawamkeag … 1,418",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "drainage area in square miles; the text (p. 8, PDF p. 13) calls it the largest basin in the study (9.79 to 1,418 mi²)",
+      "verdict": "confirmed",
+      "note": "1,418 mi² × 2.590 = 3,673 km² → '3,670 km²'"
+    },
+    {
+      "paper": "§2.3",
+      "claim": "over 1934–2001 the April mean flow was 3.4 times the annual mean and the August mean 0.29 times",
+      "location": "p. 5 (PDF p. 10), Table 1 (read on the page image)",
+      "quote": "01030500 … 1,418 … 8,470 … 720 … 2,520 … 1934-2001",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "computed mean monthly flows (the mean of all monthly means over the record, from NWIS) and the mean annual flow (the mean of calendar-year means), ft³/s; period of record 1934–2001 (calendar years); method p. 4 (PDF p. 9)",
+      "verdict": "confirmed",
+      "note": "April 8,470 / 2,520 = 3.36 → 3.4; August 720 / 2,520 = 0.286 → 0.29. For reference the same row gives Jan 1,420, Feb 1,280, Mar 2,220, May 5,500, Jun 1,980, Jul 1,030, Sep 811, Oct 1,400, Nov 2,710, Dec 2,600 ft³/s."
+    },
+    {
+      "paper": "§3.1.2",
+      "claim": "the Mattawamkeag's 7-day, 10-year low flow is 0.026 times its mean (ratio computed by the project)",
+      "location": "p. 7 (PDF p. 12), Table 3 (read on the page image); mean annual flow from Table 1, p. 5 (PDF p. 10)",
+      "quote": "01030500 … 1,418 … 65.8 … 1934-2001",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "7Q10 = the lowest 7-day mean flow with a 10-year recurrence, from a log-Pearson Type III fit to each climatic year's (1 April–31 March) 7-day minimum (p. 4, PDF p. 9); record 1934–2001",
+      "verdict": "confirmed",
+      "note": "65.8 / 2,520 = 0.0261 → 0.026"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Every value checks. Not from this source but consistent with it: §2.3's and §3.1.2's 2026 minimum of 23 cfs ≈ 0.009 × mean (23 / 2,520 = 0.0091), if 'the long-term mean' is Dudley's 1934–2001 mean annual flow. The report also gives the median monthly flows (Table 2, p. 6, PDF p. 11; Mattawamkeag median annual 1,180 ft³/s) if the rewrite wants medians rather than means."
+}

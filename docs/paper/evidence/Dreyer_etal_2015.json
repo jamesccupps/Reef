@@ -1,0 +1,51 @@
+{
+  "key": "Dreyer_etal_2015",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the article is paywalled at Wiley/ESA; no free copy found (OpenAlex none, Europe PMC record without full text). A stand-in was read: Jamin Dreyer's 2013 PhD dissertation, posted openly by the University of Wisconsin–Madison Libraries (asset.library.wisc.edu), whose chapter 1 is the precursor of this article",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (show.mjs) and ESA's Ecological Archives page for the appendices (E096-051)",
+    "ok": true,
+    "corrections": "",
+    "note": "Dreyer, Townsend, Hook III, Hoekman, Vander Zanden & Gratton 2015, Ecology 96(2): 499–509, doi:10.1890/14-0704.1 — matches (Crossref lists 'III, James C. Hook', a parsing artifact)."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.5",
+      "claim": "at Mývatn, midges were about 10 % N and 1 % P by dry mass",
+      "verdict": "unchecked",
+      "note": "article not read; in the stand-in these are literature values (Fagan et al. 2002; Gratton et al. 2008), not Mývatn measurements (see notes)"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "at Mývatn, 70–99 % of emerging insects never returned to the water",
+      "verdict": "unchecked",
+      "note": "article not read; the stand-in has no such Mývatn result — its introduction cites stream studies for 75–99 % and 97 % (see notes)"
+    },
+    {
+      "paper": "§3.2.5",
+      "claim": "applied to Upper, these figures give an emergence export of roughly 7–11 mg P and 70–110 mg N m⁻² yr⁻¹ (project estimate, using the 10 % N and 1 % P)",
+      "kind": "arithmetic",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "at Mývatn, 70 % of midge deposition fell within 100 m of shore",
+      "verdict": "unchecked",
+      "note": "article not read; in the stand-in 70 % is the share of midge ABUNDANCE on land in the first 100 m, while modelled DEPOSITION in the first 100 m is '>60%' (see notes)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/14-0704.1", "status": 403, "note": "Wiley refuses scripts / paywall; a library login would open https://doi.org/10.1890/14-0704.1" },
+    { "url": "https://doi.org/10.1890/14-0704.1", "status": 403, "note": "resolves to the same Wiley page" },
+    { "url": "https://esapubs.org/archive/ecol/E096/051/default.php", "status": 200, "note": "ESA Ecological Archives: only the appendices (A site map, B sampling scheme, C emergence 2008–2011, D infall, E model coefficients), not the article text" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1890/14-0704.1\"", "status": 200, "note": "PMID 26240871, no PMC full text" }
+  ],
+  "notes": "STAND-IN (read as its own source, not used to confirm the article): Dreyer, J. 2013. The effects of lake-derived midges on terrestrial ecosystems and arthropod communities. PhD dissertation (Zoology), University of Wisconsin–Madison; https://asset.library.wisc.edu/1711.dl/UZG4CXUJJTCRR8U/R/file-25983.pdf (saved as docs/research_notes/fetched/v2/Dreyer_etal_2015.thesis2013.pdf). Chapter 1, 'Transfer of biomass and nutrients to a lake shoreline via aquatic insects' (printed p. 1, PDF p. 14), is the Mývatn emergence–deposition study of 2008–2011. What it says on the paper's points: (1) N and P: 'Since midges are approximately 10% N and 1% P by mass (Fagan et al. 2002, Gratton et al. 2008)' (printed p. 14, PDF p. 27) — literature values, by mass (dry mass implied by the deposition units), not measured at Mývatn. (2) No Mývatn figure for insects 'never returning': the introduction says 'as much as 97% of aquatic insects (~10% N by mass) remaining on land (Jackson and Fisher 1986)' (printed p. 2, PDF p. 15) and '75-99% of stream secondary productivity may be exported to land as insect biomass' (Jackson and Fisher 1986, Gray 1989, Petersen et al. 1999; printed p. 3, PDF p. 16) — stream studies. If the article's text is the same, §3.2.5's '70–99 % … (Dreyer et al. 2015)' misattributes stream literature to a Mývatn result. (3) Distance: 'Midge abundance on land peaked 20-25 meters from the lake with 70% occurring in the first 100 meters' (abstract, printed p. 1) — abundance in aerial traps; the deposition model puts ~35 % within 50 m and '>60% of midge deposition' within 100 m (printed p. 14, PDF p. 27). Traps overestimated deposition 20–30-fold. Other values: emergence 75 t dry mass yr⁻¹ (3 g dw m⁻² yr⁻¹) in 2008 down to 3.3 t in 2011; deposition within 50 m slightly above 100 kg dw ha⁻¹ yr⁻¹ in 2008 and ~50, 30 and 4 in 2009–2011, i.e. 0.4–10 kg N and 0.04–1 kg P ha⁻¹ yr⁻¹ (lake area 3,800 ha). The published article must be read before any of the four claims is confirmed; the human's library copy is the route."
+}

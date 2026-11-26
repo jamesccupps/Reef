@@ -1,0 +1,51 @@
+{
+  "key": "Kaemingk_etal_2014",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' accepted manuscript as posted open access in the University of Nebraska–Lincoln's institutional repository (DigitalCommons@UNL, Papers in Natural Resources 688), taken from the Internet Archive's Wayback capture of that repository file (2024-05-04), because the repository itself now answers scripts with a Cloudflare check",
+    "url": "https://web.archive.org/web/20240504003517id_/https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1703&context=natrespapers",
+    "file": "docs/research_notes/fetched/v2/Kaemingk_etal_2014.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the repository cover (PDF p. 1), the article's first page (PDF p. 2: 'Published in Transactions of the American Fisheries Society 143 (2014), pp 845–855', DOI 10.1080/00028487.2014.886622) and Crossref (issue 4)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (yellow perch, Pelican Lake row)",
+      "claim": "instantaneous daily mortality Z of 0.15–0.52 for 5–24-day larvae (cited as 'abstract')",
+      "source_value": "Z 0.15 (2007) to 0.52 (2006) per day, one catch curve per year for larvae pooled across ages 8–21 d (not 5–24 d); 2005 omitted (too few larvae)",
+      "location": "p. 12 (PDF p. 13), Results 'Mortality Rate'; methods p. 7 (PDF p. 8); Fig. 4, p. 13 (PDF p. 14)",
+      "quote": "Mortality ranged from 0.15 (2007) to 0.52 (2006) across all years except 2005",
+      "conditions": "Pelican Lake, Nebraska (332 ha, mean depth 1.3 m, Sandhills); larval (< 13 mm TL) perch caught by surface trawl (1-mm mesh) in daylight every 10 d, April–June 2004–2012; 'young and old larvae (across ages 8–21 d) were pooled to estimate mortality'; the descending limb of ln(abundance) on 1-d age classes, from a single sampling date near peak hatch each year, so losses include any gear avoidance or move to the littoral; Z fell with total zooplankton biomass and water temperature",
+      "verdict": "corrected",
+      "note": "the values are not in the abstract — the '(abstract)' tag should go now that the full text is read; change the stage to 'larvae 8–21 d old (pooled)'"
+    },
+    {
+      "paper": "Table 3.6-6 (yellow perch, Pelican Lake row)",
+      "claim": "growth of 5–14-day larvae 0.09–0.50 mm/d",
+      "location": "p. 9 (PDF p. 10), Results 'Growth Rate'; Fig. 1",
+      "quote": "ranged from 0.09 (cohort 1 of 2008) to 0.50 mm/d (cohort 4 of 2011",
+      "conditions": "'young larvae' 5–14 d old; mean daily growth per 10-d hatching cohort, computed as (TL − 4.7 mm at hatch)/age from otolith daily ages (methods p. 6, PDF p. 7); 2004–2012",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-6 (yellow perch, Pelican Lake row)",
+      "claim": "growth of 15–24-day larvae ≤ 0.39 mm/d",
+      "location": "p. 10 (PDF p. 11), Results 'Growth Rate'; Fig. 1",
+      "quote": "growth rates ranged from 0.09 (cohort 1 of 2008)",
+      "conditions": "'old larvae' 15–24 d old (still < 13 mm TL): 0.09 (cohort 1 of 2008) to 0.39 mm/d (cohort 3 of 2012); no old larvae caught in 2005; same method as above",
+      "verdict": "confirmed",
+      "note": "'≤ 0.39' is right; the table could give the full range, 0.09–0.39"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://digitalcommons.unl.edu/context/natrespapers/article/1703/viewcontent/Kaemingk_TAFS_2014_Temperature_Hatch_Date__MS_FINAL.pdf", "status": 403, "note": "Cloudflare bot check ('Just a moment… Enable JavaScript and cookies'); not worked around" },
+    { "url": "https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1703&context=natrespapers", "status": 403, "note": "same Cloudflare check; the Wayback capture of this URL was used instead" }
+  ],
+  "notes": "Table 3.6-4's text (§3.6.5) puts Pelican Lake among 'crowded or food-short larvae' (0.14–0.5/d): consistent — the authors found mortality inversely related to total available zooplankton biomass (and temperature). The study also proposes two recruitment bottlenecks: just after hatch (hatch date and temperature) and in older larvae (temperature and zooplankton). Lake vegetation in July 2009: emergents 31 % (reeds 8.5, bulrushes 15.5, cattails 7.0 %), submersed 9.9 %, open water 59.1 %."
+}

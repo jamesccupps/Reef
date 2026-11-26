@@ -1,0 +1,63 @@
+{
+  "key": "Forney_1968",
+  "reader": "wave-3 batch w3-17",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Internet Archive's openly downloadable scan of the whole issue (item new-york-fish-and-game-journal_1968-07_15_2, 'New York Fish and Game Journal 1968-07: Vol 15 Iss 2', plain Text PDF, no borrowing or login), fetched with getsrc and indexed for the article's pages only (PDF pp. 23–34 = printed 143–154); tables read on the page image",
+    "url": "https://archive.org/download/new-york-fish-and-game-journal_1968-07_15_2/new-york-fish-and-game-journal_1968-07_15_2.pdf",
+    "file": "docs/research_notes/fetched/v2/Forney_1968.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (printed 143) and running heads ('New York Fish and Game Journal, Vol. 15, No. 2, July 1968')",
+    "ok": false,
+    "corrections": "add the issue: New York Fish and Game Journal 15(2): 143–154 (July 1968). Author: John L. Forney, Department of Conservation, Cornell University. The entry's 'Cited via Dahlberg 1979' can go: the article itself is now read.",
+    "note": "a contribution of Federal Aid in Fish Restoration Project F-17-R (footnote, p. 143)"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.3; §3.6.9",
+      "claim": "the pike survival series comes from an Oneida Lake marsh",
+      "location": "p. 143 (PDF p. 23), abstract and introduction; p. 144 (PDF p. 24)",
+      "quote": "studied in an experimental marsh at Shackelton Point on Oneida Lake",
+      "conditions": "a 7.3-acre marsh made in 1963 by impounding a temporary stream about ¾ mile from the lake, behind a water-control structure; ~70 % of it under 2 ft deep (maximum 3½ ft); filled in March, drained to lake level in July; adults netted below the spillway (and from Chittenango Creek) and stocked in the marsh; 1964–1967",
+      "verdict": "confirmed",
+      "note": "the Dahlberg_1979 evidence marked 'Oneida' unsupported because Dahlberg does not name the lake; Forney does. Better still: 'an experimental (regulated) marsh on Oneida Lake'"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "pike eggs survived 18 % over 13 days (Forney 1968, via Dahlberg 1979)",
+      "source_value": "Forney gives apparent egg mortality between spawning and hatching of 81 % (1965) and 84 % (1966) — survival 19 % and 16 % (mean ~18 %) — from potential egg deposition (a fecundity regression) against the estimated number of fry hatched; he adds that 77 % of 321 eggs collected during incubation were viable, 'a much lower mortality rate'. No 13-day period is given: fry appeared 8–14 days after stocking and most eggs hatched within the following 4–5 days",
+      "location": "p. 143 (PDF p. 23), abstract; pp. 146–147 (PDF pp. 26–27), text and Table 2",
+      "quote": "Mortality between spawning and hatching was 81 and 84 per cent in 1965 and 1966",
+      "conditions": "fry counted in 4-sq-ft screen cages at 60 (1965) and 80 (1966) random sites, raised 10 % for incomplete recovery: 239,000 (Table 2; 238,000 in the text) and 107,000 fry from 1,281,000 and 668,000 potential eggs",
+      "verdict": "corrected",
+      "note": "write '16–19 % of the potential egg deposition hatched (1965–66), though 77 % of eggs sampled during incubation were alive'; the 13-day duration is Dahlberg's"
+    },
+    {
+      "paper": "§3.6.3; §3.6.9",
+      "claim": "pike yolk-sac larvae survived 57.2 % over 8 days and post-larvae 29 % over 22 days (Forney 1968, via Dahlberg 1979)",
+      "source_value": "Forney reports only the survival from hatching to lakeward emigration: 17 % in both 1965 and 1966 (young stayed in the marsh an average of 19 days in 1965 and 35 days in 1966). The split into yolk-sac (57.2 %, 8 d) and post-larval (29 %, 22 d) stages is Dahlberg's: 0.572 × 0.291 = 0.166 ≈ Forney's 17 %",
+      "location": "p. 154 (PDF p. 34), Discussion; p. 143 (PDF p. 23), abstract ('the loss of young between hatching and emigration was 83 per cent in both years')",
+      "quote": "Survival of young was 17 per cent in both 1965 and 1966",
+      "conditions": "estimated fry at hatching vs. the total of lakeward migrants trapped at the outlet (18-mesh screen); daily mortality was higher in 1965, possibly from adult pike left in the marsh in a drought spring or from cannibalism at higher density",
+      "verdict": "corrected",
+      "note": "cite the stage values as 'Dahlberg 1979, from Forney's 1968 data' (Dahlberg's footnote assumes transformation at 35 mm and 43 days after spawning, from Franklin & Smith 1963), or give Forney's own '17 % from hatching to emigration'"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "about 3 % survived from egg to day 43 (Forney 1968, via Dahlberg 1979)",
+      "source_value": "~3 % is egg (potential deposition) to lakeward emigrant: 40,543 / 1,281,000 = 3.2 % (1965), 18,666 / 668,000 = 2.8 % (1966), and 45,121 / 1,100,000 = 4.1 % (1964); emigration ran from late April to July, so 'day 43' is Dahlberg's assumed end point, not Forney's",
+      "location": "p. 147 (PDF p. 27), Table 2 (read on the page image)",
+      "quote": "1965 … 40 … 1,281,000 … 239,000 … 40,543",
+      "quote_from": "image",
+      "kind": "arithmetic",
+      "conditions": "females stocked 19, 40, 16 in 1964–66 (stocking cut in 1966 on purpose); emigrants 15–19 mm when the run began (27 April–7 May), most < 30 mm in 1964–65 and > 30 mm in 1966",
+      "verdict": "corrected",
+      "note": "the 3 % holds as egg-to-emigrant survival for 1965–66; write that rather than 'to day 43'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Forney's own headline results, which the rewrite may prefer to Dahlberg's restatement: egg-to-hatch mortality 81–84 % (apparent), hatch-to-emigration mortality 83 % (both years), and egg-to-emigrant survival ~3–4 %. Also useful: growth about 2.4 mm/day in May–June once young passed 20 mm (p. 149); 82, 99 and 37 % of young left within 20 days of the first emigration in 1964–66 (p. 151); fin-clip returns suggest few emigrants under 65 mm survived to spawn (pp. 143, 153); yield of young 49.4, 23.5 and 44.2 lb in 1964–66 (p. 152). Egg distribution was not tied to vegetation type (winter wheat vs. natural sedge/grass in 1965–66, Table 3)."
+}
