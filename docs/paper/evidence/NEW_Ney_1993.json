@@ -1,0 +1,37 @@
+{
+  "key": "NEW_Ney_1993",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the Crossref record (saved as NEW_Ney_1993.crossref.json; it has no abstract)",
+    "url": "https://api.crossref.org/works/10.1577/1548-8659(1993)122%3C0736:BMTGPO%3E2.3.CO;2",
+    "file": "docs/research_notes/fetched/v2/NEW_Ney_1993.crossref.json"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (search and the DOI record)",
+    "ok": true,
+    "corrections": "Verified citation (the work exists as the brief recalled it): Ney, J. J. 1993. Bioenergetics modeling today: growing pains on the cutting edge. Transactions of the American Fisheries Society 122(5): 736-748. doi:10.1577/1548-8659(1993)122<0736:BMTGPO>2.3.CO;2. (Issue dated September 1993.)"
+  },
+  "claims": [
+    {
+      "paper": "§5.8 Energetics outside the fitted range (proposed addition, brief Phase 5)",
+      "claim": "the sources and size of error in fish bioenergetics models: sensitivity to the consumption and respiration parameters, and the extrapolation of parameters between species and body sizes",
+      "verdict": "unchecked",
+      "note": "full text not obtained; nothing about its content can be confirmed (no abstract either)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1993)122<0736:bmtgpo>2.3.co;2", "status": 200, "note": "closed; no repository copy" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1993)122%3C0736:BMTGPO%3E2.3.CO;2", "status": 403, "note": "Wiley (AFS journals) refuses scripts; paywalled" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1993)122%3C0736:BMTGPO%3E2.3.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1993)122%3C0736:BMTGPO%3E2.3.CO;2", "status": 403, "note": "former host (Taylor & Francis) refuses" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1993)122<0736:bmtgpo>2.3.co;2", "status": 429, "note": "rate-limited on five attempts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1577/1548-8659(1993)122<0736:BMTGPO>2.3.CO;2\"", "status": 200, "note": "0 hits" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=www.tandfonline.com/doi/pdf/10.1577/1548-8659(1993)122*", "status": 200, "note": "no capture of this article's PDF" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_transactions-of-the-american-fisheries-society*", "status": 200, "note": "no TAFS volumes in the Internet Archive" },
+    { "url": "https://api.fatcat.wiki/v0/release/lookup?doi=10.1577/1548-8659(1993)122<0736:bmtgpo>2.3.co;2", "status": "error", "note": "Internet Archive scholar index unreachable (timeout)" }
+  ],
+  "notes": "For the human: doi:10.1577/1548-8659(1993)122<0736:BMTGPO>2.3.CO;2 (TAFS 122(5): 736-748), through a library's AFS/Wiley access. When read, check what it says (with page) about: which parameters the predictions are most sensitive to (the consumption and respiration terms) and the sensitivity studies it cites; errors from 'borrowing' parameters from related species and from extrapolating outside the fitted size or temperature range; and any field tests with their percent errors. Already read in the pass and relevant to §5.8: Chipps et al. 2000 (over-predicted consumption of age-0 tiger muskellunge, 113 % at 10 °C, 328 % at 7.5 °C) and Deslauriers et al. 2017 (FB4)."
+}

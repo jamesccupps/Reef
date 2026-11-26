@@ -31,7 +31,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-14 | Srnes_Aksnes_2004, Stemberger_Gilbert_1985, Tedford_etal_2014, Terpin_etal_1976, Vadeboncoeur_etal_2003, Wrvagen_Nilssen_2010, Watson_etal_1992, Webster_1948, Leopold_Maddock_1953, Petersen_Ward_1999 | done |
 | w2-15 | Werner_etal_1995, Hamon_1961, HBV_nd, Parry_Evans_2008, Sndergaard_etal_2003 | done |
 | add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | done |
-| add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
+| add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | done |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | done |
 | w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | done |
 | w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | done |
@@ -47,7 +47,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-13 | McCall_etal_1996, MDIFW_2021, MDIFW_2026, Osenberg_etal_1992, Prout_etal_1990, Radabaugh_2006, RangePonds_2024, Reed_1971, Reinhardt_etal_2004, Rowan_etal_1992, Sommer_etal_2012, Todd_etal_1982 | running |
 | w3-14 | Rubec_1975, Saila_1956, Serns_1984, Shuter_Post_1990, Underhill_1949, Wahl_Stein_1991, Willis_2006, AWI_2013, Aho_etal_1986, Ahrenstorff_Holbrook_2016, Arnott_etal_2017, ASF_2021 | running |
 | w3-15 | Allen_1982, Armstrong_1962, ASF_2024, Ator_2019, AuClair_1956, Begley_2017, Blumer_1986b, Bremigan_etal_2008, Brown_Bozek_2010, Brownscombe_etal_2024, Bry_etal_1992, Carmignani_etal_2021 | running |
-| w3-16 | Burdicketal_1954, Cameron_2000, Carignan_Kalff_1980, Carlander_1969, Carroll_Ultsch_2007, Cech_etal_2009, Chappuis_etal_2016, ChowFraser_Sprules_1992, Cooke_etal_2003, Cooley_1997, Deeds_etal_2023, Diana_1983 | queued |
+| w3-16 | Burdicketal_1954, Cameron_2000, Carignan_Kalff_1980, Carlander_1969, Carroll_Ultsch_2007, Cech_etal_2009, Chappuis_etal_2016, ChowFraser_Sprules_1992, Cooke_etal_2003, Cooley_1997, Deeds_etal_2023, Diana_1983 | running |
 | w3-17 | COSEWIC_2018, Dreyer_etal_2015, Duarte_Kalff_1986, Duarte_etal_1986, Duarte_Kalff_1990, Dudley_2004a, FalckRasmussen_2005, Fitzgerald_etal_2006, Forney_1968, Friesen_Ridgway_2000, Kaemingk_etal_2014, Kappel_etal_2001 | queued |
 | w3-18 | Gatto_1982, Gatto_etal_2001, Gerking_1953, Gosz_etal_1972, Greene_etal_2009, Hafs_2007, Hansen_Santer_1995, Hartig_Jude_1984, Hodgkins_2013, Holtan_1998, Klok_vanderVelde_2017, Kortelainen_etal_2006 | queued |
 | w3-19 | Hunter_etal_1999, Jordan_etal_2009, Kempinger_etal_1982, Kircheis_etal_2002, Kirchner_Dillon_1975, Kuehne_etal_2018, Kunii_1999, Likens_etal_1977, Limburg_etal_1997, Limburg_etal_1999, Makarewicz_Likens_1979, Mansueti_1961 | queued |

@@ -1,0 +1,38 @@
+{
+  "key": "NEW_Scheffer_etal_1993",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the PubMed record via Europe PMC (PMID 21236168; saved as NEW_Scheffer_etal_1993.epmc.json); the full text was not obtained",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:21236168&format=json&resultType=core",
+    "file": "docs/research_notes/fetched/v2/NEW_Scheffer_etal_1993.epmc.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.1016/0169-5347(93)90254-M), PubMed via Europe PMC, and Aarhus University's research record",
+    "ok": true,
+    "corrections": "Verified citation (the work exists as the brief recalled it): Scheffer, M., Hosper, S. H., Meijer, M.-L., Moss, B. & Jeppesen, E. 1993. Alternative equilibria in shallow lakes. Trends in Ecology & Evolution 8(8): 275-279. doi:10.1016/0169-5347(93)90254-M. (Issue dated August 1993.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.4 / §5.6 (shallow lakes' plants and water clarity; proposed addition, brief Phase 5)",
+      "claim": "over a range of nutrient levels shallow lakes can sit in either of two alternative states, clear and vegetated or turbid and algal",
+      "verdict": "unchecked",
+      "note": "abstract only. The abstract says 'shallow lakes can have two alternative equilibria: a clear state dominated by aquatic vegetation, and a turbid state characterized by high algal biomass', that nutrient reduction alone may do little for clarity while a disturbance such as food-web manipulation can return a lake to a stable clear state. Not confirmable from the abstract (rule 1); nothing quantitative (the nutrient range, the depths) can be taken from it"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1016/0169-5347(93)90254-m", "status": 200, "note": "closed; locations only PubMed and Aarhus University's record" },
+    { "url": "https://pure.au.dk/portal/en/publications/alternative-equilibria-in-shallow-lakes/", "status": 200, "note": "bibliographic record only; no file" },
+    { "url": "https://research.wur.nl/en/publications/alternative-equilibria-in-shallow-lakes", "status": 404, "note": "not at this address; the portal's search refuses scripts (403)" },
+    { "url": "https://www.cell.com/trends/ecology-evolution/pdf/0169-5347(93)90254-M.pdf", "status": 403, "note": "publisher refuses scripts; paywalled" },
+    { "url": "https://www.sciencedirect.com/science/article/pii/016953479390254M/pdf", "status": 403, "note": "publisher refuses scripts; paywalled" },
+    { "url": "https://www.sciencedirect.com/science/article/pii/016953479390254M", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1016/0169-5347(93)90254-M\"", "status": 200, "note": "MED record only (abstract); no PMC copy" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_trends-in-ecology*", "status": 200, "note": "only the volume 8 index, not the August 1993 issue" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/0169-5347(93)90254-m", "status": 429, "note": "rate-limited on five attempts" },
+    { "url": "https://www.gwern.net/doc/biology/1993-scheffer.pdf", "status": "not fetched", "note": "a web search found a copy on a personal website; a third-party mirror of a paywalled article is not an acceptable copy (brief rule 9)" }
+  ],
+  "notes": "For the human: doi:10.1016/0169-5347(93)90254-M (TREE 8(8): 275-279), through a library's Elsevier/Cell Press access. Open alternatives by the same first author (found, NOT read by this reader): Scheffer & van Nes 2007, 'Shallow lakes theory revisited: various alternative regimes driven by climate, nutrients, depth and lake size', Hydrobiologia, doi:10.1007/s10750-007-0616-7 (open access at Springer; especially apt for small, shallow lakes like Hot Brook's, as it treats depth and lake size); Scheffer 2001, 'Alternative attractors of shallow lakes', The Scientific World Journal, doi:10.1100/tsw.2001.62 (gold open access). Either could be read and cited for the clear/turbid states if the 1993 article stays out of reach."
+}

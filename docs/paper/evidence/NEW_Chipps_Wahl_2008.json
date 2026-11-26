@@ -1,0 +1,37 @@
+{
+  "key": "NEW_Chipps_Wahl_2008",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (saved as NEW_Chipps_Wahl_2008.crossref.json); the full text was not obtained",
+    "url": "https://api.crossref.org/works/10.1577/t05-236.1",
+    "file": "docs/research_notes/fetched/v2/NEW_Chipps_Wahl_2008.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (search and the DOI record)",
+    "ok": true,
+    "corrections": "Verified citation (the work exists as the brief recalled it): Chipps, S. R. & Wahl, D. H. 2008. Bioenergetics modeling in the 21st century: reviewing new insights and revisiting old constraints. Transactions of the American Fisheries Society 137(1): 298-313. doi:10.1577/T05-236.1. (Issue dated January 2008.)"
+  },
+  "claims": [
+    {
+      "paper": "§5.8 Energetics outside the fitted range (proposed addition, brief Phase 5)",
+      "claim": "the sources and size of error in fish bioenergetics models: sensitivity to the consumption and respiration parameters, the extrapolation of parameters between species and sizes, and how far predictions miss independent data",
+      "verdict": "unchecked",
+      "note": "abstract only. The abstract says a literature review 'showed that field and laboratory tests of bioenergetics models often result in poor agreement between model predictions and independent data', that parameter uncertainty 'is influenced by factors such as feeding rate, physiological adaptations, and prey composition and abundance', and proposes model evaluation, hypothesis-based parameter testing and developer-user communication. It gives no error sizes; none of this is confirmed until the full text is read"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1577/t05-236.1", "status": 200, "note": "closed; no repository copy" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/T05-236.1", "status": 403, "note": "Wiley (AFS journals) refuses scripts; paywalled" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1577/T05-236.1", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/T05-236.1", "status": 403, "note": "former host (Taylor & Francis) refuses" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/t05-236.1", "status": 429, "note": "rate-limited on five attempts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1577/T05-236.1\"", "status": 200, "note": "0 hits" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/?q=Bioenergetics modeling in the 21st century", "status": 200, "note": "not in the USGS Publications Warehouse (Chipps is with the USGS cooperative unit)" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/T05-236.1*", "status": 200, "note": "one capture, a 301 redirect; no PDF" },
+    { "url": "https://api.fatcat.wiki/v0/release/lookup?doi=10.1577/t05-236.1", "status": "error", "note": "Internet Archive scholar index unreachable (timeout)" }
+  ],
+  "notes": "For the human: doi:10.1577/T05-236.1 (TAFS 137(1): 298-313), through a library's AFS/Wiley access. When read, look for: any summary of published model evaluations (field and laboratory tests with percent error in predicted consumption or growth; check whether Chipps et al. 2000's age-0 tiger muskellunge over-prediction, 113-328 %, already read in this pass, is among them); the discussion of sensitivity to the consumption and respiration parameters; 'borrowed' parameters (from related species or other sizes) and allometric extrapolation; how error depends on feeding rate (the abstract names feeding rate as a factor). Those are what §5.8 would cite it for."
+}

@@ -1,0 +1,60 @@
+{
+  "key": "NEW_Vollenweider_1976",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Environment Canada's digitized copy of the paper's typescript, same title and author ('Advances in defining critical loading levels for phosphorus in lake eutrophication / by Richard A. Vollenweider', Government of Canada Publications catalogue En37-475/1979E-PDF, 'digitized edition from print'); undated, references to 1975, footnote 'part of the OECD Cooperative Programme on Eutrophication'; typescript pages 1-29 plus references, tables, appendices and figures. Retrieved from the Wayback Machine's 2021-11-08 capture of the publications.gc.ca PDF (the live address now opens an 'archived content' notice that needs a browser cookie). This is NOT the typeset Memorie article: its pagination and equation numbers may differ from the published pp. 53-83",
+    "url": "http://web.archive.org/web/20211108004843id_/https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-475-1979-eng.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Vollenweider_1976.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the Memorie's own list of papers 1942-1998 (Vol. 1-57), served by the Journal of Limnology (the Memorie's successor) at jlimnol.it, saved as NEW_Vollenweider_1976.memorie_index.pdf; no DOI exists; Crossref has no record",
+    "ok": true,
+    "corrections": "Verified citation: Vollenweider, R. A. 1976. Advances in defining critical loading levels for phosphorus in lake eutrophication. Memorie dell'Istituto Italiano di Idrobiologia 33: 53-83 (no DOI). Pages are from the Memorie's list, not from the article itself (not seen). The text read is the typescript; cite the Memorie for the work, but give equation numbers only with the caveat that they are the typescript's.",
+    "note": "the Memorie list's raw text reads '1976 Vollenweider, R.A. Advances in defining critical loading levels for phosphorus in lake eutrophication. Mem. Ist. ital. Idrobiol., 33: 53-83.' (its -layout text misaligns the rows; read the raw order)"
+  },
+  "claims": [
+    {
+      "paper": "§5.2 ('A formula's complement')",
+      "claim": "1/(1+√τ) (τ the water residence time, years) is Vollenweider's ratio of lake to inflow phosphorus concentration",
+      "source_value": "",
+      "location": "typescript p. 21 (PDF p. 22), eq. 14; defined at typescript p. 10 (PDF p. 11), eq. 6; derived at typescript p. 14 (PDF p. 15), eq. 10",
+      "quote": "πr = [P]λ / [P]j ~ 1/(1 + √(z̄/qs)) = 1/(1 + √τw)",
+      "quote_from": "image",
+      "conditions": "eq. 6 defines πr = τp/τw (residence time of P relative to that of water) as 'the ratio between average lake concentration, [P]λ, and the average inflow concentration [P]j'; eq. 10 approximates τp/τw = 1/(1+√τw) = 1/(1+√(z̄/qs)), chosen so that τp/τw → 1 as τw → 0; eq. 14 states the expected statistical relation πr = [P]λ/[P]j ≈ 1/(1+√τw); eq. 13 (typescript p. 17) gives lake P = (Lp/qs)·1/(1+√(z̄/qs)), Lp/qs being the average inflow concentration. τw is the filling time V/Qy in years; qs = z̄/τw the hydraulic load (m/y)",
+      "verdict": "confirmed",
+      "note": "equation numbers and pages are the typescript's; the Memorie article's numbering was not seen"
+    },
+    {
+      "paper": "§5.2 ('A formula's complement'); §3.2 Table (Larsen & Mercier)",
+      "claim": "the Larsen–Mercier retention is R = 1/(1+√ρ) with ρ = 1/τ the flushing rate, so 1/(1+√τ) is its complement, the share of the load that leaves",
+      "source_value": "",
+      "location": "typescript p. 26 (PDF p. 27), eqs. 15-16a",
+      "quote": "This, indeed, is identical to what one would derive from Eq. (6)",
+      "quote_from": "image",
+      "conditions": "Vollenweider quotes Larsen & Mercier (1975, EPA working paper) for Rc = 1/(1+√ρw) and shows it follows from his ratio: Rc = ([P]j·Q − [P]λ·Q)/([P]j·Q) = 1 − πr (eq. 15), hence Rc = √τw/(1+√τw) = √(z̄/qs)/(1+√(z̄/qs)) = 1/(1+√ρw) (eq. 16), or √z̄/(√qs+√z̄) (eq. 16a)",
+      "verdict": "confirmed",
+      "note": "at steady state the outflow concentration is the lake's, so 1 − Rc = [P]λ/[P]j = 1/(1+√τw) is the fraction of the inflowing P that leaves: the paper's reading is right"
+    },
+    {
+      "paper": "§5.2 ('the lakes kept 0.66–0.72 of their P load'; Larsen–Mercier 0.34 / 0.28 for water residence 0.27 and 0.15 years)",
+      "claim": "for τ = 0.27 and 0.15 yr, 1/(1+√τ) = 0.66 and 0.72 (the old calibration's 'retention') while R = √τ/(1+√τ) = 0.34 and 0.28",
+      "kind": "arithmetic",
+      "source_value": "",
+      "location": "typescript p. 14 (PDF p. 15), eq. 10; p. 26 (PDF p. 27), eq. 16",
+      "quote": "Rc = √τw/(1 + √τw) = √(z̄/qs)/(1 + √(z̄/qs)) = 1/(1 + √ρw)",
+      "quote_from": "image",
+      "conditions": "project arithmetic on the source's formulas",
+      "verdict": "confirmed",
+      "note": "√0.27 = 0.520: 1/(1.520) = 0.658, 0.520/1.520 = 0.342; √0.15 = 0.387: 1/(1.387) = 0.721, 0.387/1.387 = 0.279. Both pairs match §5.2"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://api.crossref.org/works?query.bibliographic=Vollenweider advances in defining critical loading levels phosphorus", "status": 200, "note": "no record (the Memorie has no DOIs); nearest hit Vollenweider & Kerekes 1980 (OECD programme, Eutrophication of Deep Lakes)" },
+    { "url": "https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-475-1979-eng.pdf", "status": 307, "note": "redirects to an 'Information Archived on the Web' notice whose 'Continue' link needs a browser cookie; not worked around (another reader recorded the same)" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(memorie istituto italiano di idrobiologia)", "status": 200, "note": "no items; no scanned Memorie volume 33 found online" }
+  ],
+  "notes": "Caveats for the rewrite. (1) Eq. 10 was fitted to 21 lakes with τw ≥ 1 yr: 'Lakes having τw < 1 have been excluded' (typescript p. 11, Fig. 3), and Vollenweider warns the dependency 'cannot be linearly extrapolated below τw < 1' (p. 14); Hot Brook's τ of 0.15-0.27 yr lies outside the fitted range (eq. 10 was built to tend to 1 as τw → 0). (2) He notes the statistical fit gives 0.6-0.7 at τw = 1 against the formula's 0.5, so eq. 10 may slightly underestimate τp/τw below τw = 1 (p. 14), and that Rc may be slightly underestimated for qs < 10 m/y (p. 27); Hot Brook's qs ≈ z̄/τ ≈ 3.0/0.27 ≈ 11 and 2.55/0.15 ≈ 17 m/y (project arithmetic), where he finds 'fair agreement' with Kirchner & Dillon. Other values: critical spring-overturn total P 10 mg/m3 (lower limit, oligotrophic) to 20 (upper, eutrophic side); apparent settling velocity ≈ 10 m/y (typescript p. 6); Lc = 10·qs·(1+√(z̄/qs)) mg P m-2 y-1 (eq. 11a, p. 14); chlorophyll against (Lp/qs)/(1+√τw) for ~60 lakes, r = 0.868 (p. 18); periphyton (Cladophora) problems expected above average inflow concentrations of 30-40 mg P/m3 (p. 23). Vollenweider's Larsen & Mercier source is the 1975 EPA working paper (No. 174); the paper's references list the 1976 J. Fish. Res. Board Can. article."
+}

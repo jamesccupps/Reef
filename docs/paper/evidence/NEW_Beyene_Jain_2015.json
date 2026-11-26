@@ -1,0 +1,76 @@
+{
+  "key": "NEW_Beyene_Jain_2015",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's version deposited in DigitalCommons@UMaine (Mitchell Center publications no. 45; 'publisher's version of the published document'), retrieved from the Wayback Machine's capture of 2024-04-21 because UMaine retired Digital Commons on 30 June 2026",
+    "url": "http://web.archive.org/web/20240421235346id_/https://digitalcommons.library.umaine.edu/cgi/viewcontent.cgi?article=1060&context=mitchellcenter_pubs",
+    "file": "docs/research_notes/fetched/v2/NEW_Beyene_Jain_2015.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.1002/lno.10148) and the article's first page",
+    "ok": true,
+    "corrections": "Verified citation (the work exists as the brief recalled it): Beyene, M. T. & Jain, S. 2015. Wintertime weather-climate variability and its links to early spring ice-out in Maine lakes. Limnology and Oceanography 60(6): 1890-1905. doi:10.1002/lno.10148. (Online 4 September 2015; issue dated November 2015. The UMaine repository record gives the issue's page range 1855-2235 by mistake; the article is 1890-1905.)",
+    "note": "the brief's 'Maine lake ice-out and climate' is right in substance, but the paper is about interannual drivers (winter degree-days, TNH and NAO teleconnections) of early ice-out, not chiefly about the long-term trend"
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4 Ice (proposed addition, brief Phase 5)",
+      "claim": "Maine lakes have recently had their earliest ice-out dates on record (in over a century)",
+      "source_value": "",
+      "location": "p. 1890 (PDF p. 2), abstract and introduction",
+      "quote": "Maine lakes have recorded their earliest ice-out dates in over a century",
+      "conditions": "the spring of 2010 (citing a Bangor Daily News report, Bayly 2010); the study's own record is eight lakes, 1950-2010",
+      "verdict": "confirmed",
+      "note": ""
+    },
+    {
+      "paper": "§3.1.4 Ice (proposed addition, brief Phase 5)",
+      "claim": "the trend in Maine ice-out dates is toward earlier ice-out",
+      "source_value": "",
+      "location": "p. 1890 (PDF p. 2), introduction; p. 1895 (PDF p. 7), Results",
+      "quote": "only modest monotonic trends towards early ice-out are observed",
+      "conditions": "qualitative; the authors attribute the trend analysis to Hodgkins et al. (2002), noting that 'recent decades show appreciable change' in decadal smoothing, with spring ice-out changes corresponding to a 1.4-1.5 °C rise in March-April temperature over 150 years in New England",
+      "verdict": "confirmed",
+      "note": "direction only; see the next two claims for what the paper's own data show"
+    },
+    {
+      "paper": "§3.1.4 Ice (proposed addition, brief Phase 5)",
+      "claim": "a rate of change of Maine ice-out (days per decade)",
+      "source_value": "",
+      "location": "",
+      "quote": "",
+      "conditions": "",
+      "verdict": "unsupported",
+      "note": "the paper gives no rate. Its own principal-component series for the eight lakes (1950-2010) has no secular trend ('no secular trend for PC1 time series was found', p. 1895, Supporting Information Table B6); it describes instead a run of late ice-outs in the 1960s-70s overtaken by early ones since the early 1980s. For a rate cite Hodgkins et al. 2002 (Int. J. Climatol. 22: 1819-1827, doi:10.1002/joc.857, per this paper's references) or Hodgkins 2013, which §3.1.4 already uses"
+    },
+    {
+      "paper": "§3.1.4 Ice (proposed addition, brief Phase 5)",
+      "claim": "early ice-outs cluster in recent decades",
+      "source_value": "",
+      "location": "p. 1895 (PDF p. 7), 'Statistics of early/late ice-out events in Maine' and Fig. 1",
+      "quote": "approximately 75% of the earliest ice-out years occurred after the 1970s",
+      "conditions": "the ten earliest ice-out years of each of eight lakes (China, Damariscotta, Maranacook, Moosehead, Mooselookmeguntic, Rangeley, Sebec, West Grand), 1950-2010; also 39 of the 80 earliest-ten events fell in the last 15 years (1996-2010), the 97th percentile of random 15-year windows, and only 10 of the 80 latest-ten events",
+      "verdict": "confirmed",
+      "note": ""
+    },
+    {
+      "paper": "§3.1.4 Ice (proposed addition, brief Phase 5)",
+      "claim": "spring air temperature explains most of the year-to-year variation in Maine ice-out, winter temperature a smaller part",
+      "source_value": "",
+      "location": "p. 1900 (PDF p. 12), Discussion item 1; p. 1897 (PDF p. 9), Results",
+      "quote": "temperatures accounts for more than half",
+      "conditions": "spring = March-April air temperature at USHCN stations, > 50 % of the variance of ice-out (p < 0.05); winter (January-February) accumulated freezing degree-days explain 15-20 % and melting degree-days 10-28 %; ice-out is more sensitive to warm winters (low AFDD, high AMDD) than to cold ones",
+      "verdict": "confirmed",
+      "note": "matches §3.1.4's 'March-April air temperature explaining about half its year-to-year variance' (there credited to Hodgkins, James & Huntington 2005)"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/lno.10148", "status": 403, "note": "OpenAlex lists this bronze open-access PDF, but Wiley refuses scripts" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.1002/lno.10148", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://digitalcommons.library.umaine.edu/mitchellcenter_pubs/45", "status": 200, "note": "now a 'Digital Commons has sunset' notice (UMaine moved to Specto on 30 June 2026); the archived 2024 landing page gave the PDF link used" }
+  ],
+  "notes": "Useful for §3.1.4: West Grand Lake (the paper's nearest long ice record) is one of the eight lakes. Data: ice-out from Hodgkins 2010 (USGS OFR 2010-1214) and the Maine Department of Conservation; temperatures from six USHCN stations. Other findings: strongly negative winter TNH phases, and to a lesser extent positive NAO phases, go with early ice-out; in 1983 (strong El Nino) Sebec Lake's winter was 2.5 °C warm and ice-out 9 days early (p. 1891). Ice cover usually disappears in April-May. The peer-reviewed form of the Hodgkins, James & Huntington work that §3.1.4 cites as a 2005 USGS Fact Sheet is, per this paper's references, Int. J. Climatol. 22: 1819-1827 (2002)."
+}

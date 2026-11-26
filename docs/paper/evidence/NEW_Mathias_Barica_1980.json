@@ -1,0 +1,68 @@
+{
+  "key": "NEW_Mathias_Barica_1980",
+  "reader": "additions batch add-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item sim_canadian-journal-of-fisheries-and-aquatic-sciences_1980-02_37_2 (the whole CJFAS issue 37(2) from microfilm; collections noaa, democracys-library, sim_microfilm; not access-restricted, downloaded without login); only the article's pages (PDF pp. 45-54 = printed 185-194) are indexed",
+    "url": "https://archive.org/download/sim_canadian-journal-of-fisheries-and-aquatic-sciences_1980-02_37_2/sim_canadian-journal-of-fisheries-and-aquatic-sciences_1980-02_37_2.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Mathias_Barica_1980.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.1139/f80-024) and the article's title page (printed p. 185)",
+    "ok": true,
+    "corrections": "Verified citation (the brief's description is right): Mathias, J. A. & Barica, J. 1980. Factors controlling oxygen depletion in ice-covered lakes. Canadian Journal of Fisheries and Aquatic Sciences 37(2): 185-194. doi:10.1139/f80-024. (Crossref and the title page give the first author as Jack A. Mathias; Department of Fisheries and Oceans, Freshwater Institute, Winnipeg.)"
+  },
+  "claims": [
+    {
+      "paper": "§3.1 (winter oxygen paragraph; proposed addition, brief Phase 5)",
+      "claim": "winter (under-ice) oxygen depletion rate per unit volume falls with mean depth",
+      "source_value": "",
+      "location": "p. 185 (PDF p. 45), abstract; p. 187 (PDF p. 47), Results; p. 188 (PDF p. 48), Fig. 1",
+      "quote": "Volume-based oxygen consumption in ice-covered lakes shows a strong inverse correlation with mean depth",
+      "conditions": "four sets of Canadian lakes (10 prairie pothole lakes in Manitoba, 16 southeastern Ontario lakes, Arctic lakes from Welch 1974, Experimental Lakes Area lakes); rates in g O2 per m3 of whole-lake volume at freeze-up per day, against mean depth under ice (m); the relation has the form Y = 1/X, i.e. a constant areal rate, and lines for 0.40 and 0.08 g O2 m-2 d-1 'encompass almost the entire range of data points' (p. 187); at small mean depth rates differ 5-fold between productive and unproductive lakes",
+      "verdict": "confirmed",
+      "note": "the authors stress that mean depth alone is 'strictly empirical' and cannot separate productive from unproductive lakes (p. 187); they replace it with the sediment area : volume ratio (next claim)"
+    },
+    {
+      "paper": "§3.1 (winter oxygen paragraph; proposed addition, brief Phase 5)",
+      "claim": "winter oxygen depletion rate is a linear function of the ratio of sediment area to lake volume, with a steeper slope in eutrophic than in oligotrophic lakes",
+      "source_value": "",
+      "location": "p. 189 (PDF p. 49), Fig. 2 and its regression equations; p. 190 (PDF p. 50), 'The sediment area: lake volume ratio'",
+      "quote": "sediment area:lake volume ratio accounts for 72 and 78% of the variation",
+      "conditions": "Fig. 2 regressions (read on the page image): eutrophic lakes y = 0.226x + 0.010, oligotrophic lakes y = 0.075x + 0.012, y = winter O2 depletion rate (g m-3 d-1), x = sediment area / lake volume (m2 m-3), both ice-corrected; r2 = 0.72 (eutrophic) and 0.78 (oligotrophic); slopes differ (P < 0.01); x spans about 0.02-0.86 m2 m-3; eutrophic = the prairie lakes (summer chlorophyll a 13.6-102), fertilized ELA lakes 227 and 261, ELA 304, Meretta, Water and Severson lakes; oligotrophic = Ontario, most ELA and Arctic lakes",
+      "verdict": "confirmed",
+      "note": "since A/V is the inverse of mean depth, the slopes are the sediments' areal O2 uptake; the intercepts (~0.01 g m-3 d-1) are water-column respiration, not significantly different from 0 (p. 191)"
+    },
+    {
+      "paper": "§3.1 (winter oxygen paragraph; proposed addition, brief Phase 5)",
+      "claim": "under ice, eutrophic lake sediments consume about 0.23 g O2 m-2 d-1 and oligotrophic sediments about 0.08 (0.075), while water-column respiration is about 0.01 g O2 m-3 d-1 in both",
+      "source_value": "",
+      "location": "p. 185 (PDF p. 45), abstract; p. 188 (PDF p. 48), Results; p. 191 (PDF p. 51), 'Water column respiration'",
+      "quote": "oligotrophic lakes consume oxygen at a mean rate of 0.075",
+      "conditions": "the slopes of the Fig. 2 regressions; winter (ice-covered) rates over the linear part of the depletion curve (mean D.O. above ~3 mg/L); the abstract rounds 0.075 to 0.08 g m-2 d-1",
+      "verdict": "confirmed",
+      "note": ""
+    },
+    {
+      "paper": "§3.1 (winter oxygen paragraph, 'falling to 20-50 % of the initial rate by late winter'; proposed addition)",
+      "claim": "the depletion rate slows once oxygen runs low: below a whole-lake mean of about 3.8 mg/L consumption is limited by oxygen supply to the sediments",
+      "source_value": "",
+      "location": "p. 185 (PDF p. 45), abstract; p. 191 (PDF p. 51), 'Limiting oxygen concentration'; p. 192 (PDF p. 52)",
+      "quote": "limited by oxygen supply below an average whole-lake oxygen concentration of 3.8",
+      "conditions": "prairie lakes only (shallow, eutrophic); the depletion curves become curvilinear below about 3.0 mg/L mean D.O.; above a near-sediment D.O. of 3-4 g m-3 sediment respiration is roughly constant; 2.1 g m-3 at 30 cm above the sediment corresponds to a whole-lake mean of 3.8 g m-3; computed eddy diffusion near the sediments 3.72 +/- 1.41 x 10-3 cm2 s-1 (minimum values)",
+      "verdict": "confirmed",
+      "note": "management implication stated on p. 192: below ~3.8 mg/L, mixing under intact ice 'should effectively hasten the onset of anoxia'"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://api.openalex.org/works/doi:10.1139/f80-024", "status": 200, "note": "closed; no repository copy" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f80-024", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f80-024\"", "status": 200, "note": "0 hits" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f80-024", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f80-024", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/search-recherche-eng.html?q=...", "status": 404, "note": "DFO library search address not found" }
+  ],
+  "notes": "Project arithmetic for the rewrite (not in the source): with A/V = 1/mean depth, Upper's published mean depth 3.35 m gives A/V 0.30 m-1 and, from the Fig. 2 lines, 0.034 mg/L/d (oligotrophic line) to 0.078 mg/L/d (eutrophic line); with ~0.5 m of ice (2.85 m under ice) 0.038-0.089 mg/L/d; over 145 days of ice 5.0-5.6 mg/L (oligotrophic) and 11-13 mg/L (eutrophic) removed from the mean column. Lower (2.55 m) gives 0.041-0.099 mg/L/d. The paper's current estimate from Schwefel et al. 2023 (abstract only) is 0.06-0.12 mg/L/d; Mathias & Barica's areal envelope (0.08-0.40 g m-2 d-1, Fig. 1) contains Schwefel's 0.2-0.39. Caveats: the rates are per m3 of volume at freeze-up (not corrected for ice; p. 186) while A/V is ice-corrected; their 'oligotrophic' lakes are Shield and Arctic lakes, and Hot Brook's trophic state lies between the two lines; the oxygen-limitation threshold (3.8 mg/L) is from shallow prairie lakes only. Also on p. 186: in Barica & Mathias (1979), the prairie lakes' areal winter depletion correlated with mean depth (r = 0.92) but not with chlorophyll or nutrients; Welch et al. (1976) found mean depth the strongest correlate for 16 Ontario lakes. The issue PDF (49 MB) is kept whole; getsrc indexed only pp. 45-54."
+}
