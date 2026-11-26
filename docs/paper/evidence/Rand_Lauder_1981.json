@@ -1,0 +1,49 @@
+{
+  "key": "Rand_Lauder_1981",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "reprint PDF on George Lauder's lab website at Harvard (sites.harvard.edu/glauder), served from the Harvard sites file host",
+    "url": "https://sites.harvard.edu/glauder/files/2022/03/RandLauder1981CJZ.pdf",
+    "file": "docs/research_notes/fetched/v2/Rand_Lauder_1981.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1072) and Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:803)",
+      "claim": "in the laboratory a pickerel opened its strike from about 0.37 body lengths with a fast S-start and reached the prey in about 0.09 s",
+      "location": "p. 1074 (PDF p. 3), Table 2, row 'Pattern A catch' (page image read; the text layer drops most columns)",
+      "quote": "Pattern A catch 0.367 (16,0.208) … 0.092 (16,0.044)",
+      "quote_from": "image",
+      "conditions": "means of 16 successful pattern A strikes lumped over 3 fish. The distance is to the prey at first forward movement, in body lengths of the pickerel; the time runs from first movement to reaching the prey. Midwater strikes in 40–90-L tanks at 21 °C. Pattern A is the classic S-start from a straight body",
+      "verdict": "confirmed",
+      "note": "The other strike type differs: pattern B strikes (the fish first bends slowly into an S, then strikes) began at 0.138 body lengths and reached the prey in 0.051 s (n = 7). Pattern A misses began at 0.370 and took 0.114 s; mouth opening came earlier in misses, which the authors suggest is 'a major cause of failure'."
+    },
+    {
+      "paper": "Table 3.7-1, chain pickerel row (03_synthesis_fish_to_forest.md:825)",
+      "claim": "chain pickerel 216–273 mm FL, fed goldfish and golden shiner, in 40–90-L tanks at 21 °C",
+      "location": "p. 1072–1073 (PDF pp. 1–2), Materials and methods",
+      "quote": "227 mrn, and 273 mm fork length), were seined from Pope's",
+      "conditions": "three fish (216, 227 and 273 mm FL) from Pope's Pond, Milton, Massachusetts. Kept in 60-, 40- and 90-L tanks and acclimated to 21 °C for over a month. Fed goldfish and shiners (Notemigonus crysoleucas); food withheld up to 1 week before a trial; single prey dropped in by hand",
+      "verdict": "confirmed",
+      "note": "The quote keeps the scan's OCR spelling ('mrn'). The paper does not say which prey species was used in each filmed strike."
+    },
+    {
+      "paper": "Table 3.7-1, chain pickerel row",
+      "claim": "captures per strike: 23 of 30 filmed strikes",
+      "source_value": "23 captures in the 30 MIDWATER strikes analysed in Tables 1–3 (16 pattern A catches, 7 pattern A misses, 7 pattern B catches; no pattern B miss listed). More than 40 strikes were filmed and analysed in all; the outcome of the corner strikes is not reported",
+      "location": "p. 1073 (PDF p. 2), Cinematography; p. 1074 (PDF p. 3), Tables 2–3",
+      "quote": "More than 40 strikes were analyzed frame by frame",
+      "conditions": "laboratory; prey introduced singly, often fled to the tank corners; not designed to measure capture success",
+      "verdict": "corrected",
+      "note": "Write '23 of 30 midwater strikes analysed'. The 23/30 = 0.77 is a count of filmed strikes that happened to be measurable, not a capture rate."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values (midwater strikes): peak velocity 9.05 body lengths/s in pattern A catches vs 6.95 in pattern B (Table 3). Average acceleration in the first 50 ms was 81.0 vs 121.0 body lengths/s². Time to peak mouth opening was 0.067 s in pattern A and 0.055 s in pattern B (Table 4). Suction speed: 1.26 vs 1.60 body lengths/s (n.s.), and higher in corner strikes, where the pickerel opened its mouth less (p. 1075)."
+}

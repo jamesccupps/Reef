@@ -1,0 +1,30 @@
+{
+  "key": "Post_1982",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: an unpublished 1982 MSc thesis (University of Toronto), not in U of T's repository. Read only as relayed by Chu 2001 (PhD thesis, University of Toronto; already fetched for its own entry)",
+    "url": "",
+    "file": "docs/research_notes/fetched/v2/Chu_2001.pdf (the relay)"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Chu 2001's reference list (PDF p. 124) only; the thesis's title page not seen",
+    "ok": true,
+    "note": "Chu 2001 lists it exactly as cited: Post, E.E. 1982. Some factors influencing the reproductive effort of smallmouth bass in two Ontario lakes. M.Sc. Thesis, University of Toronto, Toronto, Ontario."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2, smallmouth bass row (03_synthesis_fish_to_forest.md:122); §3.6.2 (03_synthesis_fish_to_forest.md:549)",
+      "claim": "only 12–47 % of mature males spawned in a given year (Lake Opeongo; Post 1982, via Chu 2001)",
+      "verdict": "unchecked",
+      "note": "Thesis not read. The relay is faithful: Chu 2001, PDF p. 16, 'The percentage of the mature male population spawning in Lake Opeongo, Ontario in any given year was estimated to be between 12 and 47% (Post 1982)'. Chu gives no years, n or method. Chu also relays (PDF p. 112) that in Opeongo 'only fish 4 and older nest (Post 1982' and a personal communication)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://utoronto.scholaris.ca/server/api/discover/search/objects?query=Post smallmouth 1982", "status": 200, "note": "University of Toronto repository (TSpace): no record of the thesis (84 hits, none by Post; a phrase search of the title gave 0)" },
+    { "url": "", "status": "none", "note": "no DOI or URL exists; a 1982 U of T MSc thesis may survive only in print or on Theses Canada microfiche (Library and Archives Canada), not searched online here" }
+  ],
+  "notes": "Keep the citation as 'Post 1982, via Chu 2001' (as the paper does), or cite Chu 2001 for it. A checked figure of the same kind exists: Raffetto, Baylis & Serns 1990 (Nebish Lake, Wisconsin, read in full in this batch) found 11, 33, 31 and 31 % of the estimated mature males bred in 1982–85 (their Table 2, p. 1528). It could stand beside or replace the Opeongo range."
+}

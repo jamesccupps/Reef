@@ -1,0 +1,36 @@
+{
+  "key": "Post_etal_1995",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, rebuilt from OpenAlex's abstract index (the article is paywalled at Oxford Academic / TAFS); the paper's §3.6.4 use relies on Neuswanger et al. 2015's relay, which is in the fetched folder under its own key",
+    "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1995)124%3C0084:TASDOP%3E2.3.CO;2",
+    "file": "docs/research_notes/fetched/v2/Post_etal_1995.openalex_abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.6.4 (03_synthesis_fish_to_forest.md:585)",
+      "claim": "Lepomis larvae at Lake Mendota were much denser in shallow open water near the colonies than far offshore (Post, Rudstam & Schael 1995; via Neuswanger et al. 2015)",
+      "verdict": "unchecked",
+      "note": "Article not read. Neuswanger et al. 2015 (p. 18, PDF p. 19) relay it for Mendota and Opinicon together; the '8 % at the deepest site' figure belongs to Opinicon (Garvey et al. 2002), as the paper says. The abstract says most species spread across the lake surface early in the pelagic phase, then became relatively more abundant near shore. For age-0 yellow perch it found significant differences among years 'but not among depth strata'. The fish were purse-seined 'age-0' fish, a gear chosen to catch larger sizes, not larvae in the strict sense."
+    },
+    {
+      "paper": "§3.6.7 (03_synthesis_fish_to_forest.md:695)",
+      "claim": "larval Lepomis and other species spent three to seven weeks in open water in Lake Mendota (abstract)",
+      "verdict": "unchecked",
+      "note": "Article not read. The abstract says 'The duration of the pelagic phase varied from 3 to 7 weeks and differed between species'. The species are yellow perch, Lepomis, black crappie and freshwater drum, sampled in 1988–90. The paper's wording fits, but 'age-0' would be truer than 'larval'. The abstract gives no duration for Lepomis alone."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1995)124%3C0084:TASDOP%3E2.3.CO;2", "status": 403, "note": "publisher (Oxford Academic, TAFS) refuses; paywalled" },
+    { "url": "https://academic.oup.com/tafs/article-pdf/124/1/84/", "status": 403, "note": "same" },
+    { "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1995)124<0084:TASDOP>2.3.CO;2", "status": 200, "note": "no open-access copy known (OpenAlex); abstract only" }
+  ],
+  "notes": "For the human: Trans. Am. Fish. Soc. 124(1): 84–93, doi:10.1577/1548-8659(1995)124<0084:TASDOP>2.3.CO;2 (needs a library login). When read, check: the inshore vs offshore densities of Lepomis by depth stratum and date, the pelagic duration of each species, and the purse-seine size range. Also in the abstract: yellow perch dominated the pelagic age-0 catch through most of June, followed in turn by black crappies, freshwater drums and, by August, Lepomis. Among-site CVs of age-0 perch density were 48–154 % (aggregated)."
+}

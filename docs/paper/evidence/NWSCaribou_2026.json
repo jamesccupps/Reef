@@ -1,0 +1,46 @@
+{
+  "key": "NWSCaribou_2026",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the four Drought Information Statements as PDFs from NWS Caribou's own server (weather.gov/media/car/DGT/), plus, to trace the 2025 claim, NWS Caribou's Fall 2025 seasonal narrative web page (weather.gov/car/)",
+    "url": "https://www.weather.gov/media/car/DGT/DGT_CAR_10152026.pdf",
+    "file": "docs/research_notes/fetched/v2/NWSCaribou_2026.DGT_10152026.pdf; also NWSCaribou_2026.DGT_09172026.pdf, NWSCaribou_2026.DGT_10012026.pdf, NWSCaribou_2026.DGT_10082026.pdf, NWSCaribou_2026.Fall2025narrative.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title pages of the four PDFs",
+    "ok": true,
+    "note": "each is titled 'Drought Information Statement for Northern and Eastern Maine', issued by WFO Caribou, ME, valid 17 September, 1 October, 8 October and 15 October 2026 (25, 25, 25 and 29 slides). The citation's wording is fine; the full title could be given."
+  },
+  "claims": [
+    {
+      "paper": "§2.3 (docs/paper/01_introduction_and_study_system.md:198)",
+      "claim": "the Mattawamkeag set record low flows in 2025 (cited to NWS Caribou 2026 and USGS NWIS)",
+      "source_value": "not in the 2026 drought statements; it is in NWS Caribou's Fall 2025 seasonal narrative: multiple record low river streamflows across northern and central Maine, the Mattawamkeag among them",
+      "location": "Fall 2025 Seasonal Narrative for Northern and Eastern Maine, web page (weather.gov/car/Fall2025SeasonalNarrativeforNorthernandEasternMaine), drought paragraph",
+      "quote": "MULTIPLE RECORD LOW RIVER STREAMFLOWS ACROSS NORTHERN AND CENTRAL MAINE, INCLUDING THE ST.",
+      "conditions": "autumn 2025 (the narrative covers September–November 2025); the list goes on 'JOHN, FISH RIVER, ST. CROIX, AND MATTAWAMKEAG'. It does not say whether these were all-time records or records for the date, nor give a flow",
+      "verdict": "corrected",
+      "note": "The 2026 statements mention only 'the 2025 drought' and its compounding deficits, never a 2025 flow record. Cite the Fall 2025 narrative (NWS Caribou 2025) for this part. Lead, not checked by me: the project's hydrology note says the approved all-time daily low is 21.5 cfs (28 Sep 2020). If so, 2025's 'record low' flows were records for the date, and the 2026 low was 'second lowest'."
+    },
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:198); §3.1.2 (02_synthesis_physical_to_plants.md:100)",
+      "claim": "on 7 October 2026 the Mattawamkeag recorded its second-lowest flow since 1934 (NWS Caribou reported the second-lowest flow since 1934)",
+      "location": "DGT 15 Oct 2026, p. 13 (slide 'River Gage Low Flow Records Set')",
+      "quote": "2nd lowest ﬂow since 1934 was set on 10/7/2026",
+      "conditions": "Mattawamkeag River at Mattawamkeag; the slide credits observations to the USGS; no flow value or metric (daily mean or instantaneous) is given",
+      "verdict": "confirmed",
+      "note": "The 1 Oct (p. 12) and 8 Oct (p. 13) statements gave the same record as 'set on 9/27/2026'; the 15 Oct one moved it to 10/7. A check against NWIS provisional daily means (fetched, not saved): 24.7 cfs on 27 Sep, 23.5 on 7 Oct, 23.2 on 10 Oct, 23.1 on 11 Oct, 23.2 on 12 Oct. So the provisional minimum fell on 11 Oct, after the date NWS named. §3.1.2 puts '23 cfs on 11–12 October' beside the NWS 'second-lowest' record, which reads as if they are the same event; say that NWS dated it 7 October."
+    },
+    {
+      "paper": "§2.3; §3.1.2",
+      "claim": "a 2026 minimum of 23 cfs (0.65 m³/s, on 11–12 October), about 0.009 times the long-term mean (cited jointly to NWS Caribou 2026 and USGS NWIS)",
+      "verdict": "unsupported",
+      "note": "None of the four statements gives a flow value (searched 'cfs', 'Mattawamkeag'). The number is NWIS's: provisional daily means of 23.1 cfs on 11 Oct and 23.2 cfs on 12 Oct 2026 (checked in passing at waterservices.usgs.gov). Cite NWIS alone for the value and the ratio."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other content of the statements: on 1 Oct 2026 Houlton had its 6th-driest water year on record (records from 1948) and Bangor its 12th-driest. Every statement says 'Lakes/ponds running below normal exposing rocks posing threats to recreational activities'. The 15 Oct statement adds 'Below-normal streamﬂows & groundwater in Eastern and Northern Maine' and 'Drought expected to continue through fall, with potential winter relief'. The Fall 2025 narrative also says that by the end of October 2025 the drought was 'THE WORST DROUGHT IN MAINE HISTORY SINCE 2002', and that Houlton's fall precipitation was 7.47 in, 3.58 in below normal."
+}

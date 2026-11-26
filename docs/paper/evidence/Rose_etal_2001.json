@@ -1,0 +1,52 @@
+{
+  "key": "Rose_etal_2001",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "PDF on Texas A&M's aquatic ecology lab website (aquaticecology.tamu.edu; co-author K. O. Winemiller's institution), the URL in the ledger entry",
+    "url": "https://aquaticecology.tamu.edu/wp-content/uploads/sites/3/2012/07/Rose_etal_FishFisheries.pdf",
+    "file": "docs/research_notes/fetched/v2/Rose_etal_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 293) and Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-5, yellow perch Oneida row (03_synthesis_fish_to_forest.md:649)",
+      "claim": "egg production from the Rose et al. 1999 model, via Rose et al. 2001",
+      "location": "p. 308 (PDF p. 16), Table 1 (page image read)",
+      "quote": "Higher egg production × 106 eggs ha–1 0.80 1.11 1.35",
+      "quote_from": "table",
+      "conditions": "simulated (individual-based model of Oneida Lake), means over the last 35 of 50 years; 0.80, 1.11 and 1.35 million eggs/ha for decreased, baseline and increased yellow perch egg mortality. The table is 'from Rose et al. 1999'",
+      "verdict": "confirmed",
+      "note": "Same values as Rose et al. 1999 Table 9; cite the 1999 original (read in full in this batch). See Rose_etal_1999.json for the arithmetic caveat on the 0.04–0.09 %."
+    },
+    {
+      "paper": "§3.6.10 (03_synthesis_fish_to_forest.md:785)",
+      "claim": "halving or raising egg mortality changed first feeders 4.4-fold but age-2 recruits by only about 8 % (205, 210 and 221 per hectare), and the share mature at age 4 rose from 24 % to 54 % (Rose et al. 1999, via Rose et al. 2001)",
+      "location": "p. 308 (PDF p. 16), Table 1 and text; p. 309 (PDF p. 17)",
+      "quote": "Lower number of ﬁrst feeders No. ha–1 178 325 85 036 40 894",
+      "quote_from": "table",
+      "conditions": "model predictions. Baseline egg mortality 0.11/d, raised to 0.15/d and lowered to 0.06/d. Recruitment = abundance at age 2; 'percentage mature (age-4)' 24, 41, 54",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "178,325/40,894 = 4.36; (221 − 205)/205 = 7.8 %. The 2001 text gives the chain: faster growth of young perch, faster adult growth, younger maturation. With adult numbers 'near or slightly above baseline' (103–112/ha), the extra spawners and fecundity raise egg production enough to compensate."
+    },
+    {
+      "paper": "src/config.js:214–216 (FRY juvenile-compensation comment)",
+      "claim": "Real lakes: survival 18 mm → age 2 doubles each time density halves, so recruits stay within ~8 % across a fourfold range (Oneida perch: 0.41, 0.85, 1.56 %, Rose et al. 2001)",
+      "source_value": "the numbers hold (18-mm abundance 60,594 / 30,329 / 15,325 per ha, a 3.95-fold range; survival 18 mm → recruitment 0.41 / 0.85 / 1.56 %; recruitment 205 / 210 / 221 per ha), but they are SIMULATED, an individual-based model's 35-year means, not observations in a real lake",
+      "location": "p. 308 (PDF p. 16), Table 1 (page image read)",
+      "quote": "Increased 18 mm to recruitment survival Percentage 0.41 0.85 1.56",
+      "quote_from": "table",
+      "conditions": "Oneida Lake yellow perch–walleye IBM (Rose et al. 1999), egg mortality varied 0.06 / 0.11 / 0.15 per day",
+      "verdict": "corrected",
+      "note": "Change 'Real lakes:' to 'In the Oneida Lake IBM (Rose et al. 1999, Table 9; via Rose et al. 2001, Table 1):'. 'Doubles each time density halves' holds roughly (0.85/0.41 = 2.07; 1.56/0.85 = 1.84). In the model the survival rise comes mainly from lighter walleye predation as walleye declined (20.2 → 16.1 adults/ha), not only from the perch's own density."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Rose et al. 2001 is a review. Its Oneida example is a secondary presentation of Rose et al. 1999 (both read). Point the paper's Oneida model numbers at the 1999 original, and keep 2001 for the review's general statements."
+}

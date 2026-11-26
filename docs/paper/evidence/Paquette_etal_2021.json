@@ -1,0 +1,60 @@
+{
+  "key": "Paquette_etal_2021",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' accepted manuscript in UQAM's institutional repository Archipel (OpenAlex green copy), plus the open LakePulse dataset the paper's numbers are computed from (Zenodo record 4701262: Zooplanktonbiomass.csv and lake_location.xlsx, and the record's description)",
+    "url": "https://archipel.uqam.ca/14255/1/Paquette%20etal%202021%20JBiogeogr.pdf",
+    "file": "docs/research_notes/fetched/v2/Paquette_etal_2021.pdf; Paquette_etal_2021.Zooplanktonbiomass.csv; Paquette_etal_2021.lake_location.xlsx; Paquette_etal_2021.zenodo_record.txt"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (the repository copy is the accepted manuscript, without journal pagination)",
+    "ok": true,
+    "note": "the accepted manuscript carries a working title ('Zooplankton biogeography across temperate to subarctic regions: taxonomic and functional perspectives'); the published title, journal, volume and pages in the citation match Crossref. The Zenodo record asks for this article to be cited for the data."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-2 caption and LakePulse rows (02_synthesis_physical_to_plants.md:646–657)",
+      "claim": "LakePulse: one 100-µm tow per lake, summer 2017–19",
+      "location": "accepted manuscript PDF p. 5 (lines 140–142) and p. 6 (lines 157–158)",
+      "quote": "Over three summers (2017-2019), 664 lakes were sampled in 12 different ecozones",
+      "conditions": "integrated water-column tow at the deepest point; 'collected using a 100μm mesh Wisconsin net' (p. 6); each lake sampled once; species biomasses by BSA Environmental Services from lengths of up to 10 animals per taxon and length–weight equations; µg dry weight/L (Zenodo description)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.4 (02_synthesis_physical_to_plants.md:644)",
+      "claim": "in LakePulse lakes within 250 km of Danforth the leading taxa by pooled biomass were Leptodiaptomus minutus 28.3 %, Mesocyclops edax 18.9 %, Daphnia catawba 11.5 %, D. galeata mendotae 9.1 %, Bosmina longirostris 5.0 %, Diaphanosoma brachyurum 4.0 %, Epischura lacustris 3.5 %, Holopedium glacialis 2.7 % (project analysis)",
+      "kind": "arithmetic",
+      "location": "Zenodo record 4701262 (web page description; data files Zooplanktonbiomass.csv and lake_location.xlsx)",
+      "quote": "contains the biomasses (µg d.w./L) of 102 crustacean zooplankton taxa from 624 lakes",
+      "conditions": "37 lakes (NB, NS and QC; ecozones Atlantic Highlands 22, Atlantic Maritime 15), one summer sample each, 2017–19",
+      "verdict": "confirmed",
+      "note": "Redone from the data. I took lakes whose centre is within 250 km (haversine) of Danforth village, the point the project uses for NOAA Atlas 14 (coordinates withheld here by the checker's rule). 41 lakes in the location file qualify; 37 of them have biomass records (07-026, 07-051, 07-057 and 17-034 have none). Pooled shares of summed biomass: L. minutus 28.3 %, M. edax 18.9 %, D. catawba 11.5 %, D. galeata mendotae 9.1 %, B. longirostris 5.0 %, D. brachyurum 4.0 %, E. lacustris 3.5 %, H. glacialis 2.7 %. All match. (Next: Skistodiaptomus pygmaeus 2.5 %, Cyclops scutifer 2.3 %, D. pulicaria 2.2 %.) Moving the centre about 10 km changes n by one lake, so the shares are robust but n is not exact."
+    },
+    {
+      "paper": "Table 3.3-2, row 'LakePulse, lakes ≤ 250 km of Danforth (NB, NS, QC; n = 37), summer 2017–19'",
+      "claim": "n = 37; crustaceans 51.6 µg/L (17.2–89.0); calanoids 38 %, cyclopoids 24 % of biomass; Daphnia 23 % of biomass, present in 70 % of lakes",
+      "kind": "arithmetic",
+      "location": "Zenodo record 4701262 (web page description; data files)",
+      "quote": "The file \"zooplankton biomass\" contains the biomasses (µg d.w./L) of 102 crustacean zooplankton taxa",
+      "conditions": "medians and quartiles of per-lake total crustacean biomass; the group shares are pooled (sum over lakes), not medians",
+      "verdict": "confirmed",
+      "note": "Redone: n = 37, median 51.6, quartiles 17.2–89.0 (every quartile method agrees at n = 37), range 0.7–284.2 µg DW/L. Calanoid taxa (all diaptomids, Epischura, Limnocalanus, Senecella, calanoid copepodids) 37.8 % → 38 %. Cyclopoid taxa (incl. cyclopoid copepodids) 23.7 % → 24 %. All Daphnia 23.1 % → 23 %, Daphnia present in 26 of 37 lakes = 70 %. All match. The table caption's 'medians unless stated' covers the crustacean column; the shares are pooled, as the cells' 'of biomass' implies."
+    },
+    {
+      "paper": "Table 3.3-2, row 'LakePulse, lakes ≤ 150 km (n = 10)'",
+      "claim": "n = 10; crustaceans 30.7 µg/L (5.8–51.6); calanoids 49 %, cyclopoids 25 %; Daphnia 5 %, present in 40 %",
+      "kind": "arithmetic",
+      "source_value": "n = 10, median 30.7 µg/L, shares 49 % / 25 %, Daphnia 5 % (present in 4 of 10) all hold; but the interquartile range is 7.4–60.5 µg/L (linear interpolation, the R/numpy default) or 5.8–63.5 (Tukey hinges / nearest rank), not 5.8–51.6",
+      "location": "Zenodo record 4701262 (web page description; data files)",
+      "quote": "contains the location (longitude and latitude coordinates) and respective Ecozone and Continental Basin allocations",
+      "conditions": "per-lake totals of the 10 lakes, sorted: 1.8, 3.5, 5.8, 12.2, 18.7, 42.8, 51.6, 63.5, 146.1, 252.8 µg DW/L",
+      "verdict": "corrected",
+      "note": "51.6 is the 7th of the 10 sorted values, which is what numpy's 'lower' method returns as the 75th percentile; no usual convention gives it. (It is also, by coincidence, the ≤ 250-km median.) Use 5.8–63.5 (hinges) or 7.4–60.5 (linear). 12 lakes in the location file are within 150 km, but 07-051 and 07-057 have no biomass record."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The article itself (biogeography of 624 lakes) prints none of these regional numbers; all are project analyses of its open dataset, so cite the dataset with the article (Paquette, Gregory-Eaves & Beisner 2021, data: Zenodo doi:10.5281/zenodo.4701262), as the paper does. Small inconsistency in the dataset: lake_location.xlsx has 664 rows, but the biomass file and the description say 624 lakes (the 664 sampled lakes are cut to 624 in the final dataset, ms p. 6). Script logic for re-running: haversine distance from Danforth village; pooled shares = sum of each taxon's biomass over the selected lakes ÷ the sum of all taxa."
+}

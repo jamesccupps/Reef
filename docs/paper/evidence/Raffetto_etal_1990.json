@@ -1,0 +1,42 @@
+{
+  "key": "Raffetto_etal_1990",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "a copy of the published article (JSTOR download, dated 10 Aug 2023 on its cover sheet) posted openly as reference REF17 (Appendix 12B, Fisheries Impact Assessment) on the Sites Reservoir Project's public reference site, hosted at sitesreservoirproject.riptideweb.com. That is a California water project's environmental-review reference library, so I treated it as an agency's openly posted copy (READER rule 9). The human should confirm that reading; the article itself is paywalled (JSTOR, Wiley)",
+    "url": "https://sitesreservoirproject.riptideweb.com/references/REF17/Appx_12B_FisheriesImpactAssessment/Raffetto_etal_1990).pdf",
+    "file": "docs/research_notes/fetched/v2/Raffetto_etal_1990.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1523) and Crossref",
+    "ok": true,
+    "note": "Ecology 71(4): 1523–1535, August 1990; authors Nancy S. Raffetto, Jeffrey R. Baylis and Steven L. Serns. Crossref's and JSTOR's title has the typo 'Repreductive'; the printed title reads 'Reproductive', as cited."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4, smallmouth bass row (03_synthesis_fish_to_forest.md:627)",
+      "claim": "Nebish Lake, Wisconsin (38 ha): Z 0.023–0.047 /d from pre-dispersal to autumn (Serns 1984; Raffetto et al. 1990)",
+      "verdict": "unsupported",
+      "note": "Read in full: Raffetto et al. give no mortality rate, no survival to autumn, no autumn young-of-year numbers, and no dates for dispersal or the autumn census. They give larvae per sampled nest just before dispersal (Table 4, RS sampled nests: means 482, 397, 1,242 and 1,699 in 1982–85) and the number of spawned nests (56, 252, 157 and 193; Table 2, p. 1528). If these are combined with Engel et al. 1999's autumn fingerlings (Table 13: 2,810, 6,300, 1,694, 2,874), larvae ≈ 27,000, 100,000, 195,000 and 328,000 give survival of ≈ 10 %, 6 %, 0.9 % and 0.9 % (my arithmetic). That matches Z 0.023–0.047 only if the interval is ~100 d, a figure neither source gives. So the Z range is Serns 1984's (unread; 1979–81) or a project computation; drop Raffetto from this row, or show the working. Raffetto calls Nebish 'a 40-ha, clear, seepage lake' (p. 1524); Engel et al. give 94 acres (38 ha)."
+    },
+    {
+      "paper": "Table 3.6-5, smallmouth bass row (03_synthesis_fish_to_forest.md:652)",
+      "claim": "egg potential to autumn young 0.27–1.4 % (1982–85) (Serns 1984; Raffetto et al. 1990; Engel et al. 1999)",
+      "kind": "arithmetic",
+      "source_value": "the 0.27–1.4 % is autumn fingerlings (Engel et al. 1999, Table 13) ÷ Raffetto's TOTAL EGG DEPOSITION (eggs actually spawned in nests), not egg potential. Against egg potential (the fecundity of all mature females, Raffetto's Table 3 age-group totals) the 1982–85 survival is 0.18–0.44 %",
+      "location": "p. 1528 (PDF p. 7), Table 3 (page image read)",
+      "quote": "Total egg deposition* = 200 000",
+      "conditions": "Nebish Lake 1982–85. Egg deposition is the mean in-situ count of eggs per sampled nest × all spawned nests (Appendix A2): 200,000 (1982), 1,100,000 (1983), 635,000 (1984), 893,000 (1985). Egg potential (sum of mature females' fecundity): 1,120,590, 1,439,912, 928,600 and 1,591,967",
+      "verdict": "corrected",
+      "note": "Working: 2,810/200,000 = 1.41 %; 6,300/1,100,000 = 0.57 %; 1,694/635,000 = 0.27 %; 2,874/893,000 = 0.32 % → 0.27–1.4 %, so the paper's digits come from deposition. Against potential: 2,810/1,120,590 = 0.25 %; 6,300/1,439,912 = 0.44 %; 1,694/928,600 = 0.18 %; 2,874/1,591,967 = 0.18 %. Raffetto prints neither percentage nor the fall numbers: credit it as 'project arithmetic from Raffetto et al. 1990 (egg deposition) and Engel et al. 1999 (autumn fingerlings)', and relabel the interval 'eggs deposited to autumn young'. The 1979–81 figure (Serns 1984) may use egg potential; check before the two are set side by side."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1938289", "status": 403, "note": "publisher refuses; paywalled" },
+    { "url": "https://doi.org/10.2307/1938289", "status": 403, "note": "same" },
+    { "url": "https://api.openalex.org/works/doi:10.2307/1938289", "status": 200, "note": "closed access; no repository copy known" }
+  ],
+  "notes": "Useful values for the model, all Nebish Lake 1982–85. Only 11, 33, 31 and 31 % of the estimated mature males bred (Table 2: breeding males 56/525, 252/755, 157/503, 193/629). Most males spawned once in their lifetime (p. 1532). Of sampled breeding males, 35 % were caught by anglers in the year they bred. Few nests failed (Table 6: 0 of 6, 3 of 45, 6 of 47, 2 of 49 sampled nests), about half of failures through capture of the guarding male; over half the nesting males were under the legal size. The breeding season lasts 3–4 weeks. Eggs per sampled nest averaged 3,477–4,627 (Table 4; validation 6,205 vs 6,203 eggs/nest by diver and photo counts). Larvae per nest just before dispersal: 1,351 estimated vs 1,291 counted in the validation (p. 1525). Males that bred at age 3 had been the fastest growers in their cohort (Fig. 3). Fecundity = −12,251.5 + 593.9 × TL (cm), r² = 0.39, range 1,181–28,570 eggs; females mature from 22.0 cm TL, males from 20.0 cm (p. 1524). Fall YOY were estimated by WDNR (Schnabel), but Raffetto et al. do not print them."
+}

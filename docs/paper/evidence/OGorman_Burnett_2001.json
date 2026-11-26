@@ -1,0 +1,38 @@
+{
+  "key": "OGorman_Burnett_2001",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the USGS publications page (the article is Elsevier, paywalled; USGS hosts no PDF)",
+    "url": "https://www.usgs.gov/publications/fish-community-dynamics-northeastern-lake-ontario-emphasis-growth-and-reproductive",
+    "file": "docs/research_notes/fetched/v2/OGorman_Burnett_2001.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS record",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5 (03_synthesis_fish_to_forest.md:642)",
+      "claim": "autumn white perch abundance in north-eastern Lake Ontario varied about 200-fold over 1978–97 (O'Gorman & Burnett 2001, abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract says 'Abundance of white perch (Morone americana) YOY varied nearly 200 fold' and was not related to water warming or spring alewife abundance. That figure is for YOUNG-OF-YEAR caught in a 7.9-m bottom trawl in late September and early October in Guffin, Chaumont and Black River bays. The paper's 'autumn white perch abundance' should read 'autumn abundance of young-of-year white perch (three bays)'."
+    },
+    {
+      "paper": "§3.6.6 (03_synthesis_fish_to_forest.md:690)",
+      "claim": "the mean autumn length of young white perch tracked degree-days above 15 °C (r = 0.69; abstract)",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract matches: 'mean length of white perch YOY was related to cumulative degree days > 15°C', with P < 0.01 and r = 0.69. It gives no n for this test and no lengths."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/S0380-1330(01)70652-1", "status": 200, "note": "Elsevier redirect stub (15 characters of text); the article page is ScienceDirect, paywalled" },
+    { "url": "https://www.sciencedirect.com/science/article/pii/S0380133001706521/pdf", "status": 403, "note": "refused (publisher; paywalled)" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/?q=O'Gorman Burnett Lake Ontario yellow perch white perch", "status": 200, "note": "USGS Pubs Warehouse record 1001023: no PDF link, only a thumbnail" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=www.glsc.usgs.gov/_files/*", "status": 200, "note": "no Wayback capture of a USGS Great Lakes Science Center reprint of this article found" },
+    { "url": "https://api.elsevier.com/content/article/PII:S0380133001706521", "status": "skipped", "note": "Elsevier's text-mining API needs a registered key; not used" }
+  ],
+  "notes": "For the human: J. Great Lakes Res. 27(3): 367–383, doi:10.1016/S0380-1330(01)70652-1 (ScienceDirect, needs a library login). When read, check: the YOY white perch abundance series by year (the ~200-fold range, and whether it is catch per trawl or density), the mean autumn YOY length by year, the degree-day regression (n, slope), and the sampling dates and bays. Other findings in the abstract: YOY yellow perch abundance varied 40-fold and was negatively related to spring adult alewife abundance (r = −0.49, n = 18). 85 % of the variation in mean YOY yellow perch length was explained by YOY abundance, mean TP and degree-days > 13.5 °C (n = 15). Annual mortality of yellow perch aged 2–5 rose from 33 % (1980–83) to 65 % (1992–95) with piscivore numbers (walleye, double-crested cormorant)."
+}

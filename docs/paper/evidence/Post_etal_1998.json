@@ -1,0 +1,37 @@
+{
+  "key": "Post_etal_1998",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: from OpenAlex's abstract index and from the University of Notre Dame's CurateND record (figshare API), whose only 'file' is a link to the paywalled DOI",
+    "url": "https://api.figshare.com/v2/articles/24723597",
+    "file": "docs/research_notes/fetched/v2/Post_etal_1998.curatend_abstract.txt"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "the CurateND record lists different authors (Herwig, Schindler, Post, Kitchell, Taylor, Olson) and the year '1900'; that record is wrong, Crossref and the citation agree (Post, Kitchell & Hodgson 1998, CJFAS 55(12): 2588–2600)"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9, largemouth bass row (03_synthesis_fish_to_forest.md:765)",
+      "claim": "Paul Lake, Michigan, 12 years: strong loss of fish entering winter < 50–60 mm (abstract)",
+      "verdict": "unchecked",
+      "note": "Article not read. The abstract has 12 years of data and size-dependent overwinter mortality 'strongly affecting bass entering the winter at <50-60 mm in length'. It names the lake only as 'a lake near the northern extent of the largemouth bass range'. 'Paul Lake, Michigan' must come from the full text or the notes."
+    },
+    {
+      "paper": "§3.6.8 (03_synthesis_fish_to_forest.md:772)",
+      "claim": "in a northern Michigan lake the size-dependent winter loss was 'likely the result of starvation' (abstract)",
+      "verdict": "unchecked",
+      "note": "Article not read. The abstract matches word for word: overwinter mortality was size dependent '… and likely the result of starvation'. It also says predation, controlled by adult and juvenile bass numbers, regulated first-year survival at high densities."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f98-139", "status": 403, "note": "publisher refuses; paywalled" },
+    { "url": "https://doi.org/10.1139/f98-139", "status": 403, "note": "same" },
+    { "url": "https://curate.nd.edu/articles/journal_contribution/Interactions_among_adult_demography_spawning_date_growth_rate_predation_over_winter_mortality_and_recruitment_in_largemouth_bass_in_a_northern_lake/24723597", "status": 200, "note": "via api.figshare.com/v2/articles/24723597: abstract only; the file entry is a link to doi:10.1139/f98-139" }
+  ],
+  "notes": "For the human: Can. J. Fish. Aquat. Sci. 55(12): 2588–2600, doi:10.1139/f98-139 (needs a library login). When read, check: the lake's name and location (the paper says Paul Lake, Michigan), the threshold length and how sharp it is, the years and n, the winter length, and the evidence for starvation (condition, lipid) rather than predation."
+}

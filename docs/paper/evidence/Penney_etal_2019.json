@@ -1,0 +1,45 @@
+{
+  "key": "Penney_etal_2019",
+  "reader": "batch w3-21",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article (gold open access, CC BY) could not be fetched: Taylor & Francis refuses scripts. Read instead as a stand-in: H. D. Penney's PhD thesis (Memorial University of Newfoundland, April 2019), Chapter 2 (Penney, Litt & Purchase; 'Journal under consideration'), from MUN's repository memorial.scholaris.ca",
+    "url": "https://memorial.scholaris.ca/server/api/core/bitstreams/6edd8633-14fc-429c-b1d3-35528b2a3988/content",
+    "file": "docs/research_notes/fetched/v2/Penney_etal_2019.thesis.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref only (article not seen)",
+    "ok": true,
+    "note": "Crossref: J. Freshwater Ecology 34(1): 771–782, doi:10.1080/02705060.2019.1687109; title as cited. The stand-in is Penney, H. D. 2019. Environmental and maternal effects on hatch characteristics and early growth of fishes in Newfoundland and Labrador. PhD thesis, Memorial University of Newfoundland, St. John's (Chapter 2: 'Abiotic factors at a range edge constrains reproduction in an ectotherm')."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1, banded killifish row (03_synthesis_fish_to_forest.md:529)",
+      "claim": "incubation 12.5 d at 22 °C",
+      "verdict": "unchecked",
+      "note": "Article not read. The thesis supports it: p. 31 (PDF p. 48), 22 °C 'mean: 274.4 ATU, sd: 12.9; days mean: 12.5 sd:0.6'; 8.3 d at 28 °C, 21.0 d at 16 °C (n = 34 hatched in all). Conditions: laboratory, single embryos in Petri dishes, collected 24 June–11 July 2014 on spawning mops in Burton's Pond, St. John's, NL (an introduced population)."
+    },
+    {
+      "paper": "Table 3.6-1, banded killifish row",
+      "claim": "hatch size 7.1 mm SL",
+      "verdict": "unchecked",
+      "note": "Article not read. The thesis supports it with a condition: p. 32 (PDF p. 49), standard length on hatch day 'mean 7.1 mm, sd:0.2' in four of the five treatment combinations that hatched. At 28 °C and 0.6 mS/cm hatchlings were 6.4 mm SL (sd 0.2), significantly smaller."
+    },
+    {
+      "paper": "§3.6.1 (03_synthesis_fish_to_forest.md:544)",
+      "claim": "banded killifish eggs need warmth: none hatched at 10 °C, at most 10 % at 16 °C and more than 74 % at 22–28 °C (via a thesis)",
+      "verdict": "unchecked",
+      "note": "Article not read. The thesis supports it: pp. 30–31 (PDF pp. 47–48). No embryos hatched in either 10 °C treatment, 22 and 28 °C gave 'reasonable hatch success (>74%)', and the two 16 °C treatments gave 'very low hatch success (0 and 10%)'. Conditions: 107 embryos, 4 temperatures × 2 conductivities (0.6, 1.2 mS/cm), only 2 embryos hatched at 16 °C. The authors infer a threshold between 16 and 22 °C (p. 33)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/02705060.2019.1687109?needAccess=true", "status": 403, "note": "Taylor & Francis refuses the script (article is gold OA, CC BY; a person can open it)" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/02705060.2019.1687109", "status": 403, "note": "same" },
+    { "url": "https://www.tandfonline.com/doi/full/10.1080/02705060.2019.1687109", "status": 403, "note": "same" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/02705060.2019.1687109\"", "status": 200, "note": "no hits" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=www.tandfonline.com/doi/pdf/10.1080/02705060.2019.1687109", "status": 200, "note": "only two captures (10 Mar 2020), both 302 redirects (cookie step). Reading the redirect target was refused by this session's permission system; not retried another way" }
+  ],
+  "notes": "Stand-in: Penney 2019 PhD thesis (MUN), Chapter 2. It supports all three uses, with the conditions above. The paper already says 'via a thesis', so cite the thesis itself (Penney 2019, PhD thesis, Memorial University of Newfoundland, ch. 2), or have the human open the OA article (doi:10.1080/02705060.2019.1687109) and check that the published numbers did not change from the thesis chapter, which was then 'under consideration'. Also in the thesis: the documented spawning range is given as '19-24°C (Chippett, 2004)' (p. 27, PDF p. 44) and the optimal development range as 'between 19 and 24°C (Chippett 2004)' (p. 33). The paper's Table 3.6-1 gives 19–23 °C for Chippett (via COSEWIC 2014); check that against Chippett. Newfoundland vs Maritimes: about 1,000 vs over 1,700 °C thermal units above 15 °C by the end of October (air temperature, 2010–17)."
+}
