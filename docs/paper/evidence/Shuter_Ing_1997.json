@@ -1,0 +1,37 @@
+{
+  "key": "Shuter_Ing_1997",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained: no open copy found and no abstract in Crossref", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Canadian Journal of Fisheries and Aquatic Sciences 54(2): 359–377, 1997; Shuter, B. J. & Ing, K. K. — matches"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.3-3 (cyclopoids / calanoids / rotifers row)",
+      "claim": "daily production/biomass 0.105 / 0.037 / 0.172 at 20 °C and 0.021 / 0.008 / 0.035 at 4 °C (computed, †), from 108 populations; 'Shuter & Ing 1997, daily form of Johannsson et al. 2000'",
+      "verdict": "unchecked",
+      "note": "the values follow exactly from the equation the project note quotes from Johannsson et al. 2000: log10(daily P/B) = A + 0.04336·T, A = −1.844 (cyclopoids), −2.294 (calanoids), −1.631 (rotifers) — reader's arithmetic gives 0.106/0.021, 0.037/0.0076, 0.172/0.035. Whether Shuter & Ing print that daily form or only the growing-season form (log10 P/B_gs = α + β·T_gs + Φ·log10 gs, per the note) needs the article; the '108 populations' is in the abstract as relayed by search summaries, not read here. The table's attribution already credits the daily form to Johannsson et al. 2000, which is the right way round if the article has only the growing-season model."
+    },
+    {
+      "paper": "src/config.js:1365; src/config.js:1372 (ZOO Q10_C comment)",
+      "claim": "copepods' field P/B rises 0.043 log units per °C, Q10 ≈ 2.7",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "10^(0.043·10) = 2.69, so Q10 2.7 follows from the slope (reader's arithmetic); the slope itself (0.04336) is from the note's reading of Johannsson et al. 2000, unconfirmed against Shuter & Ing."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/cjfas-54-2-359", "status": 403, "note": "the DOI resolves to cdnsciencepub.com, which refuses scripts: the page a library login would open" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/cjfas-54-2-359?fields=openAccessPdf,externalIds,title", "status": 404, "note": "not in Semantic Scholar" },
+    { "url": "https://api.crossref.org/works/10.1139/cjfas-54-2-359", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(production of zooplankton in lakes) AND creator:(Shuter)", "status": 200, "note": "0 items" },
+    { "url": "web search: \"Factors affecting the production of zooplankton in lakes\" pdf", "status": "no copy", "note": "only index and citation records" }
+  ],
+  "notes": "Johannsson et al. 2000 (Johannsson_etal_2000) is its own ledger entry; its reader can confirm the daily equation and how it is credited. If Shuter & Ing's article turns out to give only the growing-season model, Table 3.3-3 should cite 'Johannsson et al. 2000, after Shuter & Ing 1997' and the config comments the same."
+}

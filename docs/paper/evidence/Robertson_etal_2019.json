@@ -1,0 +1,66 @@
+{
+  "key": "Robertson_etal_2019",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "an agency copy: the publisher's PDF posted by the New York State Lake George Park Commission as material for its septic-system review committee (July 2021); found through the Wayback Machine's index of lgpc.ny.gov, fetched live",
+    "url": "https://lgpc.ny.gov/system/files/documents/2021/07/study-ontario-review-of-phosphorus-attenuation-in-groundwater-plumes-from-24-septic-systems.pdf",
+    "file": "docs/research_notes/fetched/v2/Robertson_etal_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Science of the Total Environment 692 (2019) 640–652; Robertson, W. D., Van Stempvoort, D. R. & Schiff, S. L. — matches"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.2",
+      "claim": "plumes from 24 Ontario septic systems carried 0.1–76 mg/L nitrate-N even where most P was retained",
+      "source_value": "0.1–76 mg/L is the range of mean nitrate-N in the proximal plumes at the NON-CALCAREOUS sites (13 with data), where P removal averaged 97 %; across all the sites with data it is 0.1–107 mg/L (LA School, a calcareous site, 107)",
+      "location": "p. 645 (PDF p. 6), Table 3 (NO3-N column)",
+      "quote": "8) NO Motel 3.5 76 … 23) LA School 6.5 107",
+      "quote_from": "table",
+      "conditions": "site means in the proximal plume zone (within 10 m of the drainfield); Ontario, 1988–2018; nitrate exceeded ammonium in 21 of the 24 plumes and was > 90 % of inorganic N in 15 (p. 645)",
+      "verdict": "corrected",
+      "note": "the sentence reads as if 0.1–76 spans all 24 plumes. Either say 'Plumes from 24 Ontario septic systems carried up to 107 mg/L nitrate-N' or keep 0.1–76 and say 'at the 13 non-calcareous sites, where most P was retained'. The 0.1 values are plumes that stayed reduced (ammonium 15–29 mg/L at JL and SM), so 'carried nitrate' needs that qualifier at the low end."
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "septic systems on non-calcareous soils retain most phosphorus; removal averaged 97 % at 13 non-calcareous Ontario sites",
+      "location": "p. 640 (PDF p. 1), Abstract; p. 649 (PDF p. 10), Discussion; p. 645 (PDF p. 6), Table 3",
+      "quote": "Removal considering both the drainfields and proximal plume zones, averaged 97% at the non-calcareous sites",
+      "conditions": "SRP removal relative to septic-tank effluent through the drainfield and the first 10 m of plume, dilution-corrected with chloride; non-calcareous = sediment Ca < 2 wt %",
+      "verdict": "confirmed",
+      "note": "drainfield removal alone averaged 90 % (n = 13); the 97 % plume figure is a mean over n = 8 sites in Table 3 (footnote b fills sites without plume samples with the drainfield value), though the abstract and text give it for 'the non-calcareous sites' generally. Calcareous sites: 66 % (drainfield) and 69 % (with plume)."
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "plumes reached only 1–4 m",
+      "location": "p. 645 (PDF p. 6), Table 3 (P plume length column, non-calcareous sites) and footnote e",
+      "quote": "1 1 3 2 4 1 1 1.5 2 1.5 2 1 2",
+      "quote_from": "table",
+      "conditions": "plume length is where P exceeds 0.1 mg/L (footnote e); the 13 non-calcareous sites with data; at the calcareous sites plumes ran 1.5 to 100 m (30+ at the reduced HH resort)",
+      "verdict": "confirmed",
+      "note": "values read on the page image; say 'plumes above 0.1 mg/L P reached only 1–4 m'."
+    },
+    {
+      "paper": "src/config.js:827 (camps3 SEPTIC comment)",
+      "claim": "after 95 % retention in acid soils (Robertson 2019)",
+      "source_value": "97 % removal through the drainfield and proximal plume, 90 % in the drainfield alone, at the non-calcareous sites; the source classes the sites by sediment calcium (< 2 wt % Ca), not acidity, though most non-calcareous plumes were acidic (pH 3.5–7.0)",
+      "location": "p. 640 (PDF p. 1), Abstract; p. 645 (PDF p. 6), Table 3",
+      "quote": "Phosphorus removal in the drainfields averaged 90% at sites where sediments were non calcareous",
+      "conditions": "Ontario, 13 non-calcareous sites (cottages, houses, campgrounds, a resort, a motel)",
+      "verdict": "corrected",
+      "note": "95 % is the project's pick between the source's 90 and 97 % (the research note's table lists 0.95 as the value with range 0.69–0.99); say so in the comment: 'after ~95 % retention (Robertson 2019: 90 % in the drainfield, 97 % within 10 m, on non-calcareous sediments)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.sciencedirect.com/science/article/pii/S0048969719333121", "status": 403, "note": "Elsevier refuses scripts (the DOI resolves to this PII)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1016/j.scitotenv.2019.07.198%22&format=json&resultType=core", "status": 200, "note": "PubMed record and abstract only; full text 'Subscription required'" },
+    { "url": "https://gw-project.org/download/septic-system-impacts-on-groundwater-quality/", "status": 403, "note": "Robertson's 2021 Groundwater Project book (a possible stand-in) refuses scripts; not needed" }
+  ],
+  "notes": "The research note (shoreline_development_effects.md) already read this same agency copy and its numbers hold: 24 systems, 97 % vs 69 %, plumes 1–4 m, nitrate 0.1–76 (that last is the non-calcareous range only). Other useful values: septic-tank effluent SRP averaged 8.4 mg/L (1.8–13.8 by site; median 7.4 over 123 samples, Table 2); at 17 of 24 sites the proximal plume SRP was ≤ 1 mg/L; P retention showed no relation to site age (r² = 0.001); P was held mainly as secondary mineral coatings on the drainfield sand grains (seen at 23 of 24 sites; 1–15 wt % P; Al the dominant cation at 13 sites, Fe at 5, Ca + Fe at 3; p. 650). Cottage sites (HA, DY, JL) removed 96–99 % in the drainfield."
+}

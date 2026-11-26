@@ -1,0 +1,42 @@
+{
+  "key": "Wu_Culver_1992",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": { "how": "abstract only, from Crossref's record (the publisher deposits the abstract)", "url": "https://api.crossref.org/works/10.1139/f92-214", "file": "" },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Canadian Journal of Fisheries and Aquatic Sciences 49(9): 1932–1937, 1992; Wu, L. & Culver, D. A. — matches"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-2 (yellow perch row)",
+      "claim": "young yellow perch take no benthos below 30 mm, and benthos above 50 mm when zooplankton is scarce",
+      "verdict": "unchecked",
+      "note": "the abstract says exactly this: perch < 30 mm total length 'did not consume benthic prey' in the laboratory experiments or the field, while fish > 50 mm did 'at low zooplankton densities' (western Lake Erie, June–August). Confirmation of the conditions (prey densities, sample sizes) needs the full text; the paper already marks it '(abstract)'."
+    },
+    {
+      "paper": "src/w3/fish3.js:2266",
+      "claim": "perch > 5 cm switch to the bed when the zooplankton runs low (Wu & Culver 1992)",
+      "verdict": "unchecked",
+      "note": "consistent with the abstract (age-0 yellow perch, > 50 mm TL, at low zooplankton density); the abstract is about young-of-year perch, so applying it to all perch over 5 cm, adults included, is the project's extension."
+    },
+    {
+      "paper": "§4.5",
+      "claim": "adults split their foraging time among their foods in proportion to f⁴, f being each food's own functional response (after Werner et al. 1983 and Wu & Culver 1992)",
+      "verdict": "unchecked",
+      "note": "nothing in the abstract resembles an f⁴ allocation rule or a functional response: it reports a size- and zooplankton-density-dependent diet shift in AGE-0 perch. The rule looks like the project's own construction, motivated by both papers; unless the full text has it, say 'a project rule, motivated by …'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f92-214", "status": "not fetched", "note": "the DOI (Canadian Science Publishing): the page a library login would open" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f92-214", "status": 403, "note": "the publisher refuses scripts (also recorded in blocked_sources_to_fetch.md, row YW02)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f92-214?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=Wu Culver yellow perch 1992", "status": 200, "note": "0 items" },
+    { "url": "web search for the title and for a related Ohio State thesis", "status": "no copy", "note": "only index records" }
+  ],
+  "notes": "Abstract (Crossref) in brief: field studies in western Lake Erie showed age-0 yellow perch shifting from exclusively zooplankton to mainly benthic prey during June–August, coinciding with a zooplankton decline; laboratory feeding experiments tied the shift to fish size; growth declined after the zooplankton decline. The density at which the switch happens (what the project's note wanted, YW02) is not in the abstract."
+}

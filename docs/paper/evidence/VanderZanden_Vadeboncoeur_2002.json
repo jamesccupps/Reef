@@ -1,0 +1,52 @@
+{
+  "key": "VanderZanden_Vadeboncoeur_2002",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF on the first author's lab website (Vander Zanden lab, Center for Limnology, University of Wisconsin–Madison)",
+    "url": "https://jvzlab.limnology.wisc.edu/wp-content/uploads/sites/104/2022/11/2002_Ecology_VZVDB.pdf",
+    "file": "docs/research_notes/fetched/v2/VanderZanden_Vadeboncoeur_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref (the DOI resolves when its brackets are percent-encoded; show.mjs's 'DOI NOT FOUND' is an encoding artefact)",
+    "ok": true,
+    "corrections": "",
+    "note": "Ecology 83(8): 2152–2161, 2002; Vander Zanden, M. J. & Vadeboncoeur, Y. — matches"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9",
+      "claim": "bottom invertebrates made up about 50 % of the prey of 470 fish populations",
+      "location": "p. 2152 (PDF p. 1), Abstract; p. 2155 (PDF p. 4), Results and Table 1 (means row)",
+      "quote": "Across all species considered, zoobenthos averaged 50% of total prey consumption.",
+      "conditions": "diet data (percentage of gut volume or mass) for adults of 13 species, 470 populations (146,895 fish) in north-temperate North American lakes; the mean is the mean of species means (Table 1: zooplankton 20 %, zoobenthos 48 %, fish 32 %); 'zoobenthos' includes littoral and profundal invertebrates, aquatic insects and detritus (< 1.5 %)",
+      "verdict": "confirmed",
+      "note": "the Results give 48 % (Table 1), the abstract rounds to 50 %. It is a species average, not a population-weighted one: species ranged from 99 % (pumpkinseed) to 14–15 % (walleye, cisco). The paper's '(abstract only)' can now be dropped."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "or about 65 % counting the bottom-feeding fish that piscivores eat",
+      "location": "p. 2152 (PDF p. 1), Abstract; p. 2155 (PDF p. 4), Results",
+      "quote": "for a total of 65% reliance on benthic secondary production",
+      "conditions": "direct zoobenthivory plus 'indirect' (prey fish supported by zoobenthos, eq. 1); a conservative 50 % benthivory was assumed for the fish eaten by smallmouth, rock and largemouth bass, whose prey fish were not resolved",
+      "verdict": "confirmed",
+      "note": "the Results give 64 % (Table 1: direct and indirect); the abstract says 65 %. Stable isotopes gave 43–59 % littoral reliance (90 populations, 11 species, 18 Ontario and Quebec lakes)."
+    },
+    {
+      "paper": "src/config.js:1307 (BENTHOS PERI_G comment); src/config.js:1320 (BENTHOS block comment)",
+      "claim": "fish get ~50–65 % of their food from the bottom (the bed's ~50–65 % share of their food)",
+      "source_value": "about 50 % (48 % in the Results) of the prey eaten is zoobenthos; 65 % (64 %) is the total reliance on benthic secondary production, which adds the prey fish that were themselves fed by zoobenthos",
+      "location": "p. 2152 (PDF p. 1), Abstract; p. 2155 (PDF p. 4), Results",
+      "quote": "Indirect consumption of zoobenthos (i.e., feeding on zoobenthos-supported fishes) contributed another 15%",
+      "conditions": "species means, adults, north-temperate lakes",
+      "verdict": "corrected",
+      "note": "the share of food taken from the bottom is ~50 %; the upper 65 % is not food from the bottom but energy that passed through bottom invertebrates before reaching the fish. The comments should read '~50 % of their food from the bottom (65 % counting bottom-fed prey fish)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://corescholar.libraries.wright.edu/biology/585", "status": 200, "note": "Wright State CoreScholar record: metadata only, no file" }
+  ],
+  "notes": "The paper's two numbers are right and correctly described; only the code comments blur direct and indirect benthic support. The source does not say the benthic share is higher in small lakes (the §3.7.9 lead-in 'In small lakes much of this production rests on the bottom'), but it does report that lake trout in lakes > 10 km² ate no zoobenthos while those in lakes < 10 km² often ate much (Fig. 2, p. 2157) and that lake size and basin morphometry set the littoral's importance (Discussion, p. 2158) — usable support for the small-lake framing if cited that way. Species values of interest for Hot Brook (Table 1, direct zoobenthos % of diet): pumpkinseed 99, yellow perch 68, rock bass 86, smallmouth bass 57, largemouth 36, northern pike 14; isotope littoral reliance (Table 2, 0‰ fractionation): pumpkinseed 98, yellow perch 72, smallmouth 100, pike 74 (one population). The abstract says '470 fish populations (15 species)' while Table 1 lists 13 species rows (its 'whitefishes' row includes Prosopium and its 'sculpins' row is Cottus sp.); say '13 species groups' or quote the abstract's 15. Table 1 values above were read on the page image."
+}

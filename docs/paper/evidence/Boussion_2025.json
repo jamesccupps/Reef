@@ -1,0 +1,31 @@
+{
+  "key": "Boussion_2025",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the thesis PDF in the university's open repository (Constellation, Université du Québec à Chicoutimi)",
+    "url": "https://constellation.uqac.ca/id/eprint/10286/1/Boussion_Imanol_2025_m%C3%A9moire.pdf",
+    "file": "docs/research_notes/fetched/v2/Boussion_2025.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 2)",
+    "ok": true,
+    "corrections": "",
+    "note": "title page: 'La mortalité sélective en fonction de la taille des jeunes perchaudes (Perca flavescens) de l'année dans un lac fluvial du fleuve Saint-Laurent: Effets de l'hiver et de la prédation aviaire', par Imanol Boussion, mémoire, Université du Québec à Chicoutimi, M. Sc. en ressources renouvelables, © 2025. Matches the entry (the chapter itself is in English)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9 (§3.6.8); src/config.js:856",
+      "claim": "yellow perch in Lake Saint-Pierre, Quebec: first-winter survival high above a pre-winter length of 66–73 mm",
+      "location": "PDF p. 4, Abstract; p. 30 (PDF p. 44), Table 3; p. 33 (PDF p. 47), Discussion",
+      "quote": "a pre-winter size threshold between 66 mm and 73 mm",
+      "conditions": "Lake Saint-Pierre (a fluvial lake of the St. Lawrence); 2020 and 2021 year classes; total length; back-calculated from lapillus daily increments (size at 100 days, converted by a fitted model to size on the mean capture date, 9 October); survival ratio = relative frequency of survivors caught the next spring (n = 39 and 38) over that of the autumn young (n = 42 and 40) per 5-mm class",
+      "verdict": "confirmed",
+      "note": "the 66–73-mm class (index 69.5 mm) is where the survival ratio first reaches ~1 (1.47 in 2020, 0.96 in 2021; Table 3, read on the text and raw layer); the 63-mm class had 0.53–0.57 and the 56.5-mm class 0.13. It is a size class of a small two-year sample, not a fitted threshold; 'survival high above 66–73 mm' is the author's own wording (p. 33)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Also useful: the thesis says Lake Saint-Pierre yellow perch need ≥ 13.5 °C to grow, not reached from October to mid-May, so their otoliths show almost no winter growth (p. 32–33); first-year length there fell from ~85 mm (1980s) to ~75 (early 2000s) to ~65 mm (2019–2020) (p. 9, French chapter, citing Magnan et al. 2022); and it relays Post & Evans (1989) as finding that yellow perch 'reaching 70 mm exhibited low winter mortality rates due to starvation' (p. 33) — a lead for the Post_Evans_1989 entry, not a confirmation of it. In 2020 cormorants took young perch larger than the lake average (not in 2019)."
+}

@@ -1,0 +1,38 @@
+{
+  "key": "Brooks_Dodson_1965",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained: no acceptable open copy (the copies on the web are third-party course postings of a JSTOR download)", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref and the PubMed record (via Europe PMC)",
+    "ok": true,
+    "corrections": "",
+    "note": "Science 150(3692): 28–35, 1 October 1965; Brooks, J. L. & Dodson, S. I. — matches"
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "after blueback herring entered Crystal Lake, Connecticut, the modal crustacean length fell from 0.785 to 0.285 mm",
+      "verdict": "unchecked",
+      "note": "no abstract exists (a 1965 Science article). The project note (larval_mortality_and_density_in_lakes.md) gives the same numbers and 'landlocked Alosa', so which Alosa species, the years compared and whether 0.785/0.285 are modal size classes of the whole crustacean plankton all need the article."
+    },
+    {
+      "paper": "src/config.js:1379 (ZOO K_D comment)",
+      "claim": "big Daphnia win the competition for algae unless fish strip them out (the size-efficiency hypothesis, Brooks & Dodson 1965)",
+      "verdict": "unchecked",
+      "note": "the attribution of the size-efficiency hypothesis to this paper is standard, but it has not been read here."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1126/science.150.3692.28", "status": "not fetched", "note": "the DOI (Science/AAAS): the page a library login would open" },
+    { "url": "https://www.science.org/doi/pdf/10.1126/science.150.3692.28", "status": 403, "note": "AAAS refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1126/science.150.3692.28%22&format=json&resultType=lite", "status": 200, "note": "PubMed record 17829740; not open access, no abstract" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1126/science.150.3692.28?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://archive.org/metadata/sim_science_1965-10-01_150_3692", "status": 200, "note": "Internet Archive's scan of the issue is access-restricted (borrow / print-disabled only): not usable" },
+    { "url": "https://archive.org/metadata/foundationsofeco00real", "status": 200, "note": "the reprint in 'Foundations of ecology: classic papers with commentaries' (1991) is access-restricted: not usable" },
+    { "url": "https://facultyweb.kennesaw.edu/jdirnber/docs/Brooks%20and%20Dodson.pdf", "status": "not fetched", "note": "a course posting of a JSTOR download on a third-party faculty page (neither the publisher, the authors, nor a repository or agency): not an acceptable copy under the brief, so not used" }
+  ],
+  "notes": "A library login (Science or JSTOR) would open it. The Crossref record gives no abstract; the paper's claim and the code comment both stay unchecked."
+}

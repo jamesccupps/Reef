@@ -1,0 +1,60 @@
+{
+  "key": "Scheffer_etal_1995",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF in the University of Amsterdam's repository (UvA-DARE; the second author's institution), with a UvA cover page",
+    "url": "https://pure.uva.nl/ws/files/2866149/761_6900y.pdf",
+    "file": "docs/research_notes/fetched/v2/Scheffer_etal_1995.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref (the DOI resolves; show.mjs's 'DOI NOT FOUND' is an encoding artefact of the parentheses)",
+    "ok": false,
+    "corrections": "the printed title has no colon: 'Super-individuals a simple solution for modelling large populations on an individual basis' (Crossref the same). Everything else matches: Ecological Modelling 80(2–3): 161–170, 1995; authors Scheffer, Baveco, DeAngelis, Rose & van Nes",
+    "note": "the colon is a harmless editorial addition; keep it or drop it, but the rest of the entry is right"
+  },
+  "claims": [
+    {
+      "paper": "§4.5; src/config.js:167; src/w3/fish3.js:8",
+      "claim": "a school agent (or a young-of-year school) is a super-individual: one record carrying n identical fish (one genome and one body record)",
+      "source_value": "",
+      "location": "p. 161 (PDF p. 2), Abstract; p. 163 (PDF p. 4), section 3",
+      "quote": "the number of real individuals it actually represents",
+      "conditions": "a modelling method paper; the super-individual is a class of individuals ('generalized individuals') whose internal amount n is the number of population individuals it stands for",
+      "verdict": "confirmed",
+      "note": "Scheffer et al. also state the assumption the project relies on: killing a whole super-individual 'assumes all population individuals represented by the super-individual to be equal' (p. 164). The genome is the project's addition (the paper's examples have no genetics)."
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:8",
+      "claim": "losses (natural, heat, hypoxia, starvation) take a fraction of n, n being real-valued",
+      "source_value": "",
+      "location": "p. 164 (PDF p. 5), section 3; p. 168 (PDF p. 9), section 5.1",
+      "quote": "computing the mortality fraction simply by multiplying its value with the probability of mortality",
+      "conditions": "the deterministic option (n real); the paper's own examples use a hybrid that switches to binomial draws below some n; in the consumer-cohort example a starving super-individual loses 10 % of n a day",
+      "verdict": "confirmed",
+      "note": "fish3.js adds 'a school below one fish is gone'; Scheffer et al.'s rule is different: once S_i falls below 1, extinction is decided each day by a Bernoulli draw with mean 0.1 (p. 168). Worth saying the project's below-one rule is its own simplification."
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:8",
+      "claim": "a strike on a school takes one fish",
+      "verdict": "unsupported",
+      "note": "Scheffer et al. never model predation on super-individuals (the striped-bass example has length-dependent mortality applied as a probability; the consumer cohort eats a food field). The rule may come from Parry & Evans 2008 (not read here) or the project; attribute it there."
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:8",
+      "claim": "crowding and competition come from Σ n × mass rather than agent counts",
+      "verdict": "unsupported",
+      "note": "the paper does not discuss crowding or density computed from agent counts. Its consumer-cohort food equation subtracts ΣC_i from the food (p. 166), which for super-individuals implies summing n_i·C_i, but it does not say so. The explicit rule ('compute densities from Σn, never from agent counts') is in the project note, attributed to Parry & Evans 2008; cite that."
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:8",
+      "claim": "a merged school keeps one parent's genome (chosen ∝ n; never averaged weights)",
+      "verdict": "unsupported",
+      "note": "Scheffer et al.'s fusing rule is the opposite: clusters of similar individuals become a super-individual 'with an internal amount set by the cluster size and an individual state set by the cluster centroid' (p. 163). The keep-one-parent rule is the project note's own inference (super_individuals.md, Inferences); say so."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The §4.5 sentence credits four rules jointly to Scheffer et al. (1995) and Parry & Evans (2008). Only the super-individual idea itself and 'losses take a fraction of n' are in Scheffer et al.; the strike, the Σn crowding and the merge rule are not (the merge rule contradicts Scheffer's centroid fusion). Suggested rewrite: 'Agents are super-individuals (Scheffer et al. 1995): losses take a fraction of n (ibid.) and crowding comes from Σ n × mass (Parry & Evans 2008); a strike takes one fish and a merged school keeps one parent's genome (project rules).' — check the Parry & Evans attributions with that entry's reader. Other useful content: the accuracy test (Tables 1–2, p. 169): 20 super-individuals reproduced a ~200,000-larva striped-bass run's growth and mortality within about 2 % (abstract-level wording 'only about 2%', p. 170), in a single well-mixed 700 m × 700 m × 4 m compartment with a daily step and prey as fixed density fields — so the paper says nothing about spatial or predator–prey super-individuals, which is where the Hot Brook model uses them."
+}

@@ -1,0 +1,54 @@
+{
+  "key": "Wieser_etal_1992",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (2017-08-14) of the PDF the publisher served free on jeb.biologists.org (J. Exp. Biol.'s back file is free to read); the live journals.biologists.com refuses scripts (403)",
+    "url": "http://web.archive.org/web/20170814004652/http://jeb.biologists.org/content/jexbio/169/1/165.full.pdf",
+    "file": "docs/research_notes/fetched/v2/Wieser_etal_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "J. Exp. Biol. 169: 165–179 (1992), issue 1 in Crossref (the entry omits the issue; optional to add). Title and authors match."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.6",
+      "claim": "pike larvae's mass-specific routine oxygen uptake is independent of mass below about 10 mg",
+      "location": "p. 165 (PDF p. 1), Summary; p. 170 (PDF p. 6), 'Scaling of physiological rates'",
+      "quote": "until the larvae had reached a wet body mass of about 10 mg",
+      "conditions": "laboratory, 15 °C, feeding respirometer, 4-day experiments; wet mass; pike and whitefish (Coregonus lavaretus) alike, from a hatching mass of 1.5–2 mg; above 10 mg pike R_rout = 38.0·m^−0.154 µmol O2 g⁻¹ h⁻¹ (m in mg wet; N = 22, r = 0.93)",
+      "verdict": "confirmed",
+      "note": "read in full: the paper's '(…, abstract)' can be dropped."
+    },
+    {
+      "paper": "§5.8",
+      "claim": "below 10 g, with Cmax ∝ W^−0.24 (Wieser et al. 1992), … an unfitted 1.25-cm larva at full ration grows 0.23–0.98 mm/day",
+      "source_value": "−0.24 is the mass exponent of the mass-specific GROWTH rate of pike fed ad libitum, g = 12.0·m^−0.24 (g in mg g⁻¹ h⁻¹, m in mg wet mass; N = 22, r = 0.90), at 15 °C over about 8–1,600 mg wet mass; the paper gives no exponent for consumption or Cmax",
+      "location": "p. 170 (PDF p. 6), eq. 5; p. 169 (PDF p. 5), Table 1 (mass ranges)",
+      "quote": "The specific rates of growth also scaled negatively with body mass",
+      "conditions": "laboratory, 15 °C; pike fed Artemia nauplii (8–50 mg wet, 11 experiments) or roach larvae (200–1,600 mg, 11 experiments); 4-day feeding-respirometer runs",
+      "verdict": "corrected",
+      "note": "using the growth exponent as the Cmax exponent is the project's inference (esocid_larval_energetics.md says 'Wieser's larval growth exponent is −0.24'), and the data stop at 1.6 g (3.6 g counting Wieser & Medgyesy 1991's group E, which is not in eq. 5), not 10 g. Suggested wording: 'with a Cmax mass exponent of −0.24, taken from the mass scaling of the specific growth rate of ad-lib-fed young pike (8–1,600 mg, 15 °C; Wieser et al. 1992)'. Table 1's own ad-lib consumption rates (66.7 J g⁻¹ h⁻¹ at 8–50 mg and 22.1 at 200–1,600 mg per g wet mass; 521 and 143 per g dry mass in Table 2; prey types differ) would imply a steeper consumption slope, about −0.33 wet or −0.39 dry (reader's arithmetic on the ranges' geometric midpoints, ~20 and ~570 mg; rough)."
+    },
+    {
+      "paper": "src/w3/fish3.js:550 (PIKE_JUV)",
+      "claim": "the young pickerel's set: CB −0.24 below 10 g, 'the larval mass exponent (Wieser et al. 1992)'",
+      "source_value": "−0.24 is the specific growth-rate exponent of ad-lib-fed pike of 8–1,600 mg wet mass at 15 °C, not a consumption exponent",
+      "location": "p. 170 (PDF p. 6), eq. 5",
+      "quote": "The specific rates of growth also scaled negatively with body mass",
+      "conditions": "as above",
+      "verdict": "corrected",
+      "note": "the src string should say 'growth-rate mass exponent of young pike (Wieser et al. 1992) used as the Cmax exponent'; the 10-g pivot (CA scaled by 10^(CB + 0.24)) extends it beyond the data."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://journals.biologists.com/jeb/article-pdf/169/1/165/1251993/165.pdf", "status": 403, "note": "the publisher's site refuses scripts" },
+    { "url": "https://doi.org/10.1242/jeb.169.1.165", "status": 403, "note": "resolves to journals.biologists.com, which refuses scripts" }
+  ],
+  "notes": "Other values the rewrite may want (all 15 °C, laboratory, wet mass unless stated): growth took 62 ± 3.7 % of metabolizable energy and metabolism 38 % across five groups (Table 2; pike 62–67 %); the yield ratio was ~0.043 mg dry mass per µmol O2; the two smallest pike larvae (8.7 mg wet; 1.01 mg dry) grew 22–24 % a day, and pike routine O2 may reach an aerobic maximum near 200–220 µmol O2 g⁻¹ dry mass h⁻¹ (based on two 4-day experiments only); pike R_max/R_min was 2.4–3.1 versus 1.9–2.1 in whitefish; the Q10 values of whitefish larvae (10 vs 15 °C) were 1.6–2.7. Pike body water was 87.2 % at 8–50 mg and 84.5 % at 200–1,600 mg (Table 1, read on the page image). The esocid_larval_energetics.md note marks this source '[abstract; full text blocked]'; the full text is now in hand and supports its numbers (−0.154 above 10 mg; −0.24 growth; 62 %; 200–220 µmol)."
+}

@@ -1,0 +1,49 @@
+{
+  "key": "Vachon_Prairie_2013",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only (Crossref record and the University of Geneva archive record, whose PDF is 'Restricted'); a stand-in read in full: the first author's 2010 M.Sc. thesis (UQAM Archipel), whose chapter 2 is an earlier version of the model",
+    "url": "https://api.crossref.org/works/10.1139/cjfas-2013-0241",
+    "file": "docs/research_notes/fetched/v2/Vachon_Prairie_2013.memoire2010.pdf"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the UNIGE archive record",
+    "ok": true,
+    "corrections": "",
+    "note": "Canadian Journal of Fisheries and Aquatic Sciences 70(12): 1757–1764, 2013; Vachon, D. & Prairie, Y. T. — matches"
+  },
+  "claims": [
+    {
+      "paper": "§4.3; src/w3/chem3.js:36",
+      "claim": "re-aeration follows the lake-size wind model k600 = 2.51 + 1.48U + 0.39U·log10A cm/h (A in km², U the wind at 10 m)",
+      "verdict": "unchecked",
+      "note": "the equation is not in the abstract. The abstract's two worked values fit it exactly (reader's arithmetic: U = 5 m/s gives 6.0 cm/h at 1 ha and 13.8 cm/h at 100 km², against the abstract's '6 cm·h−1 in a small 1 ha lake to over 13 cm·h−1 in a 100 km2 system'), and it explains '68%' of the variance. The stand-in thesis (2010) has the same form with different coefficients: k600 = 2.48 (±1.05) + 1.45 (±0.30) U10 + 0.35 (±0.06) U10·log10 LA, r² = 0.67, n = 64 (PDF p. 70, printed 59, eq. 2.7, read on the page image) — so the published 2.51/1.48/0.39 must come from the article itself and cannot be confirmed from the thesis."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "a cross-lake model gives about 1.6 m d⁻¹ for the 2.8–3.6-km² Hot Brook lakes at a 2.5 m s⁻¹ wind and 3.2 m d⁻¹ at 6.5 m s⁻¹ (project computation)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "the arithmetic holds on the equation as the paper gives it: U 2.5 → 6.65–6.75 cm/h = 1.60–1.62 m/d; U 6.5 → 13.3–13.5 cm/h = 3.18–3.25 m/d for A 2.8–3.6 km² (reader's arithmetic). The thesis's 2010 coefficients give almost the same (1.56 and 3.10 m/d at 2.8 km²). The input equation is unconfirmed until the article is read."
+    },
+    {
+      "paper": "src/w3/chem3.js:36",
+      "claim": "1.6–4.7 m/day at 2.5–10 m/s for the real lakes' areas",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "U 10 m/s, A 3.6 km²: 2.51 + 14.8 + 0.39·10·0.556 = 19.5 cm/h = 4.67 m/d (reader's arithmetic on the quoted equation); unconfirmed input."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/cjfas-2013-0241", "status": "not fetched", "note": "the DOI (Canadian Science Publishing): the page a library login would open" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/cjfas-2013-0241", "status": 403, "note": "the publisher refuses scripts" },
+    { "url": "https://archive-ouverte.unige.ch/unige:78472", "status": 200, "note": "UNIGE record (OpenAlex's 'green' copy): abstract and metadata; the PDF's access level is 'Restricted'" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/cjfas-2013-0241?fields=openAccessPdf,externalIds,title", "status": 200, "note": "points only to the restricted UNIGE record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(gas transfer velocity wind speed lakes) AND creator:(Vachon)", "status": 200, "note": "0 items" },
+    { "url": "https://archipel.uqam.ca/3549/1/M11553.pdf", "status": 200, "note": "the first author's 2010 UQAM M.Sc. thesis (open): an earlier version of the model, kept as a stand-in (Vachon_Prairie_2013.memoire2010.pdf/.txt)" }
+  ],
+  "notes": "Stand-in: Vachon, D. 2010. 'Vitesse d'échange gazeux à l'interface air-eau : étude méthodologique et facteurs influents'. M.Sc. thesis, Université du Québec à Montréal (directed by Y. Prairie); https://archipel.uqam.ca/3549. Its chapter 2 (in English) fits k600 to wind and lake area on 64 floating-chamber measurements from the Eastmain-1 reservoir (602 km², James Bay) and 8 temperate lakes near Montreal (0.19–4.0 km², mean 1.36) — the same size range as the Hot Brook lakes — and gives model C (eq. 2.7, PDF p. 70): k600 = 2.48 + 1.45·U10 + 0.35·U10·log10(LA), r² = 0.67. It supports the model's form and its size range but not the 2013 coefficients; cite the article for those once read. The thesis's lake data are Quebec lakes much like Hot Brook, which helps the paper's caution (Klaus & Vachon 2020) about small lakes in light wind. The thesis is a scan with an OCR layer (its figure caption repeats the model with 0.34 for the interaction term; the equation itself reads 0.35 on the image)."
+}

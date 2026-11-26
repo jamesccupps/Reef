@@ -1,0 +1,69 @@
+{
+  "key": "Stewart_Binkowski_1986",
+  "reader": "wave-2 batch w2-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF (Taylor & Francis download, 2011) posted on the first author's faculty documents page at SUNY College of Environmental Science and Forestry",
+    "url": "https://www.esf.edu/biology/faculty/documents/29.Stewart-Binkowski1986Alewifeenergeticsmodelingsynthesis.pdf",
+    "file": "docs/research_notes/fetched/v2/Stewart_Binkowski_1986.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref (the DOI resolves when its < > are percent-encoded; show.mjs's 'DOI NOT FOUND' is an encoding artefact)",
+    "ok": true,
+    "corrections": "",
+    "note": "Transactions of the American Fisheries Society 115(5): 643–661, September 1986; Stewart, D. J. & Binkowski, F. P. — matches"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (alewife row, FB4 column); Table 4.3 (sea-run alewife, FB4 parameter set)",
+      "claim": "the alewife's bioenergetics set is the Lake Michigan (landlocked) alewife set of Stewart & Binkowski 1986",
+      "location": "p. 643 (PDF p. 2), title and Abstract; p. 645 (PDF p. 4), Table 1",
+      "quote": "Parameters are for equations in Stewart et al. (1983) and Thornton and Lessem (1978).",
+      "conditions": "Lake Michigan alewives; metabolism measured in their own respirometry; Cmax from eight 24-h feeding experiments at 20 °C on 11.7–16.1-g fish (brine shrimp); growth simulated for fish of 0.25 g (31–35 mm) to ~73 g (Table 4)",
+      "verdict": "confirmed",
+      "note": "the source says 'Lake Michigan alewives' and never uses the word 'landlocked' (true of the Great Lakes population, but not from this source). Caveat for the paper's use on sea-run adults of ~230 g: the set was built on fish up to ~73 g, and its Cmax mass exponent (−0.30) was postulated, not measured, because the test fish spanned only 11.7–16.1 g (p. 646)."
+    },
+    {
+      "paper": "src/w3/species3.js:100, 109–112 (alewife bio, bioJuv)",
+      "claim": "FB4 alewife parameters from Table 1: CA 0.846, CB −0.30, Thornton–Lessem temperatures (adults 3/16/18/25 °C; young of the year 5/24/26/29), CK1 0.17, CK4 0.01, RA 0.00367, RB −0.215, RQ 0.0548, swimming-cost coefficient 0.03, SDA 0.175, FA 0.16, UA 0.10",
+      "location": "p. 645 (PDF p. 4), Table 1",
+      "quote": "0.846 … −0.30 … 29, 27, 25 … 0.17 … 0.00367 … 0.0548",
+      "quote_from": "table",
+      "conditions": "the three temperature values in each Thornton–Lessem row are for young of the year, yearlings and adults (Table 1 footnote a); 0.98 is the proportion of Cmax at θ2 and θ3 (FB4 builds it in)",
+      "verdict": "confirmed",
+      "note": "every value in the code matches Table 1, read on the page image: RA 0.00367 g O2·g⁻¹·d⁻¹ (from 0.0073 g food·g⁻¹·d⁻¹ at 6,826 J/g and 13,560 J/g O2, p. 645), RB −0.215, RQ 0.0548, RTO 0.03, SDA 0.175, egestion 0.16 of consumption, excretion 0.10 of assimilated food. The code uses the adult temperatures for adults and the young-of-year ones (5/24/26/29) for bioJuv; the yearling set (4/20/22/27) is not used."
+    },
+    {
+      "paper": "src/w3/species3.js:100 (alewife swimming terms)",
+      "claim": "speed rises as 5.78·e^(0.149T) to 22.08 cm/s at 9 °C and holds there (weight exponent −0.045)",
+      "location": "p. 646 (PDF p. 5), 'Swimming Speed' equations; p. 645 (PDF p. 4), Table 1",
+      "quote": "U (cm·s⁻¹; T ≥ 9°C) = 22.08 W^−0.045",
+      "quote_from": "image",
+      "conditions": "after Colby (1973): ~7-g alewives in a laboratory pool; speed rose steeply between 3 and 9 °C and levelled off at 9–13 °C",
+      "verdict": "confirmed",
+      "note": "below 9 °C the second equation reads U = 5.78·W^−0.045·e^0.149T (same page); 5.78·e^(0.149·9) = 22.1, so the two branches meet at 9 °C (reader's arithmetic)."
+    },
+    {
+      "paper": "src/w3/species3.js:113 (alewife lw)",
+      "claim": "length–weight ln W = −4.72 + 2.96 ln L (cm), above 43 mm (lw a 0.00892, b 2.96)",
+      "location": "p. 648 (PDF p. 7), 'Growth and length-weight relationship'",
+      "quote": "This intersects the generalized adult relationship at 43.4 mm and 0.68 g.",
+      "conditions": "Lake Michigan alewives at the end of each year of life (1 July), males and females combined (after Brown 1972); larvae and small juveniles follow a steeper relation (ln W = −6.7091 + 4.3157 ln L, 5–43 mm)",
+      "verdict": "confirmed",
+      "note": "e^−4.72 = 0.00892 (reader's arithmetic). The code comment does not name its source; this is where it comes from."
+    },
+    {
+      "paper": "src/w3/species3.js:111 (alewife bio src); species3.js:112 (bioJuv ED)",
+      "claim": "energy density ~5,400 J/g at the spawning low (adults); 4,185 J/g for young in early summer rising to ~5,000 by October",
+      "location": "p. 646 (PDF p. 5), Fig. 3; p. 650 (PDF p. 9), 'Energy density of alewives'",
+      "quote": "A value of 4,185 J.g-1 was assumed for young-of-the-year alewives on the first day",
+      "conditions": "Lake Michigan; Fig. 3 is based largely on Flath & Diana (1985); the 4,185 J/g is an assumption ('energy densities of such small alewives have never been measured'), and Flath & Diana's only young-of-year value was 5,020 J/g in October",
+      "verdict": "confirmed",
+      "note": "read off Fig. 3 (page image): the annual lows near 1 July of years 2 and 3 are about 5,000–5,300 J/g wet, against peaks of ~9,500 in autumn; '~5,400' is at the top of that range. The source stresses that energy density swings widely through the year (errors of −45 % to +104 % within seasons if held constant, Abstract), which matters for a constant ED of 5,400."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "All the alewife parameters in the code match the source. Things the rewrite may want: Cmax for a 15-g alewife at 20 °C was 37.6 % (33.2–42.7 %) of body weight a day on brine shrimp (p. 646); over a year adults converted only 1.3–2.8 % of food (wet weight) to body mass and young of the year 5 % (Abstract; Table 2); almost half of an adult's yearly consumption falls in September–October in Lake Michigan (Abstract). The energy-density relation J/g wet = −4,102 + 387 × % dry matter (R² = 0.99, N = 22) is on p. 650. The set describes a freshwater (Great Lakes) population; nothing in it is fitted to sea-run fish."
+}
