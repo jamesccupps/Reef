@@ -1,0 +1,51 @@
+{
+  "key": "MDIFW_nd-4",
+  "reader": "wave-3 batch w3-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own PDF, fetched from www1.maine.gov on 2026-11-26 (the lower-case 'ifw' path; the upper-case 'IFW' path on www1 returned 403)",
+    "url": "https://www1.maine.gov/ifw/docs/bear-species.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-4.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and contents (PDF p. 2)",
+    "ok": false,
+    "corrections": "The file is not a species sheet, and it is dated. It is McLaughlin, C. R. 1999 (December). Black Bear Assessment and Strategic Plan 1999. Maine Department of Inland Fisheries and Wildlife, 650 State Street, Bangor, ME. A 136-page PDF: the assessment text, pp. 3–48, then literature cited, tables, figures and appendices. https://www.maine.gov/ifw/docs/bear-species.pdf (also served at https://www1.maine.gov/ifw/docs/bear-species.pdf). In-text 'McLaughlin 1999', not 'MDIFW species sheet, via a search summary'.",
+    "quote": "BLACK BEAR ASSESSMENT AND STRATEGIC PLAN 1999 BY CRAIG R. MCLAUGHLIN"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1142–1143)",
+      "claim": "Bears enter their dens from mid-October to late November and emerge in late April (MDIFW species sheet, via a search summary)",
+      "source_value": "in Maine bears usually enter dens from mid-October to late November and emerge in late April",
+      "location": "p. 5 (PDF p. 5), Natural History: Description",
+      "quote": "bears usually enter dens from mid October - late November, and emerge in late April",
+      "conditions": "Maine, statewide general statement. p. 13: bears enter dens by mid–late October when nut crops fail, but forage until late November–early December when fall food is abundant; up to 6 months a year in dens, 'emerging during April'",
+      "verdict": "confirmed",
+      "note": "Confirmed from the full text. Cite McLaughlin 1999 and drop 'via a search summary'."
+    },
+    {
+      "paper": "src/config.js:710 (FOREST3.bear DEN_IN / DEN_OUT comment)",
+      "claim": "dens mid-October – late November, out late April (MDIFW, via search)",
+      "source_value": "enter dens mid-October to late November, emerge in late April (p. 5); 'emerging during April' (p. 13)",
+      "location": "p. 5 (PDF p. 5); p. 13 (PDF p. 13), Behavior",
+      "quote": "bears usually enter dens from mid October - late November, and emerge in late April",
+      "conditions": "Maine, statewide",
+      "verdict": "confirmed",
+      "note": "The code's windows are entry 15 Oct–25 Nov and emergence 1 Apr–10 May (males from 1 Apr). That fits p. 5's den entry. The male emergence window opens earlier than p. 5's 'late April' but sits inside p. 13's 'emerging during April'. p. 13 also has entry running into early December in good mast years, which the code's latest entry (25 Nov) leaves out."
+    },
+    {
+      "paper": "src/config.js:710 (FOREST3.bear comment)",
+      "claim": "bears are active ~1 April – 1 November (MDIFW, via search)",
+      "verdict": "unsupported",
+      "note": "The assessment gives no 1 April – 1 November active season. It says bears enter dens mid-October to late November (p. 5), or by mid–late October in poor mast years and into early December in good ones (p. 13), and spend up to 6 months in dens, emerging in (late) April (pp. 5, 13). p. 18 calls May–November 'the period that they were not in dens'. The 'April 1 to November 1' wording must come from another page (not found here)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www1.maine.gov/IFW/docs/bear-species.pdf", "status": 403, "note": "upper-case path refused; the lower-case path on www1 served the PDF (200, 15.6 MB, 136 pages)" },
+    { "url": "https://www1.maine.gov/ifw/fish-wildlife/wildlife/species-information/mammals/black-bear.html", "status": 404, "note": "probed for the source of the code's 'active 1 April – 1 November' wording; no such page on www1" }
+  ],
+  "notes": "The 'bear-species.pdf' is MDIFW's 1999 Black Bear Assessment and Strategic Plan (C. R. McLaughlin), not a species sheet. PDF pp. 1–57 and some later pages have a text layer. Many appendix and figure pages are image-only (e.g. pp. 58–59, 64–71, 73–74, 80–136, including a 1987 HSI model by McLaughlin); I sampled them (pp. 80, 110) but did not read them, and they hold no denning dates. The natural history (pp. 4–15) was read in full. Other values the rewrite may want, all from this document: in Maine, ranges of females are 6–9 mi² and males use up to 100 mi² or more (p. 12, citing Hugie 1982, Lamb 1983, MDIFW file data). These are the figures §3.8.4 credits to Mackowski 2011 as 15.5–23 km² and 'young males up to 260 km²'; this document says males, not young males. About 86 % of Maine was occupied by bears by 1985 (p. 31, citing McLaughlin 1986), a primary figure for §3.8.4's 'about 85 % of the state (secondary sources)'. Other items: family groups stay together 14–18 months (p. 11); bears are most active in early morning and late afternoon–evening (p. 13); spring foods are new herbaceous growth in moist openings and wetlands, aspen, birch and maple buds and leaves, and last fall's nuts (p. 7); black bears are 'important predators of juvenile deer, moose, caribou, and elk' (p. 7, citing Ballard 1994); the spring 1985 population estimate was 21,000 (p. 32). show.mjs matched every 'MDIFW n.d.' in §3.8 to this key. Only the §3.8.4 sentence 'MDIFW species sheet, via a search summary' (03_synthesis_fish_to_forest.md:1142–1143) and the code comment at src/config.js:710 (which show.mjs did not list) take anything from it."
+}

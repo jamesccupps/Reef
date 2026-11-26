@@ -1,0 +1,72 @@
+{
+  "key": "MDIFW_nd-3",
+  "reader": "wave-3 batch w3-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own public ArcGIS feature services on MDIFW's ArcGIS Online organization ('MDIFW Black Bear Harvest by Town Feature', 'MDIFW Moose Harvest by Town Feature'), queried through the ArcGIS REST API on 2026-11-26 for Danforth, T8 R4 NBPP, Bancroft Twp and Weston. The responses were saved as JSON (MDIFW_nd-3.bear.json, MDIFW_nd-3.moose.json) and their attribute tables dumped to MDIFW_nd-3.harvest.txt. The service and item metadata are in MDIFW_nd-3.meta.txt",
+    "url": "https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/Black_Bear_Harvest_by_Town/FeatureServer/0",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-3.harvest.txt"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the feature services' own metadata (service description, copyright, ArcGIS Online item title and dates), read 2026-11-26",
+    "ok": false,
+    "corrections": "Complete the entry from the services. Suggested: MDIFW. 2026. MDIFW Black Bear Harvest by Town Feature (black bear harvest totals by town, 2005–2025; data updated 5 June 2026) and MDIFW Moose Harvest by Town Feature (moose harvest by town, 2006–2025; data updated 11 March 2026). ArcGIS feature services, Maine Department of Inland Fisheries and Wildlife. https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/Black_Bear_Harvest_by_Town/FeatureServer and https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/Moose_Harvest_by_Town/FeatureServer (accessed 26 November 2026). Drop 'as compiled in the project notes' and '[citation incomplete]'. The services name the towns 'Danforth', 'T8 R4 NBPP' and 'Bancroft Twp'.",
+    "quote": "MDIFW Black Bear Harvest by Town from 2005-present"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1140–1141); §2.9 (01_introduction_and_study_system.md:402–403)",
+      "claim": "the 2019–25 black bear harvest ran 5–14 a year in Danforth",
+      "source_value": "Danforth 2019–2025: 5, 12, 14, 9, 13, 13, 9",
+      "location": "web page (ArcGIS REST query), layer 0 BlackBearHistoricbyTown, attribute table, row TOWN 'Danforth', fields F2019–F2025",
+      "quote": "Danforth F2019: 5 F2020: 12 F2021: 14 F2022: 9 F2023: 13 F2024: 13 F2025: 9",
+      "quote_from": "table",
+      "conditions": "annual harvest totals by town (bears registered as killed in the town; the service does not define the town further)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1141)",
+      "claim": "the 2019–25 black bear harvest ran 2–9 a year in T8 R4 NBPP",
+      "source_value": "T8 R4 NBPP 2019–2025: 7, 6, 9, 7, 8, 7, 2",
+      "location": "web page (ArcGIS REST query), layer 0 BlackBearHistoricbyTown, attribute table, row TOWN 'T8 R4 NBPP', fields F2019–F2025",
+      "quote": "NBPP F2019: 7 F2020: 6 F2021: 9 F2022: 7 F2023: 8 F2024: 7 F2025: 2",
+      "quote_from": "table",
+      "conditions": "annual harvest totals by town",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1141)",
+      "claim": "the 2019–25 black bear harvest ran 0–15 a year in Bancroft",
+      "source_value": "Bancroft Twp 2019–2025: 3, 5, 15, 9, 0, 6, 3",
+      "location": "web page (ArcGIS REST query), layer 0 BlackBearHistoricbyTown, attribute table, row TOWN 'Bancroft Twp', fields F2019–F2025",
+      "quote": "Bancroft F2019: 3 F2020: 5 F2021: 15 F2022: 9 F2023: 0 F2024: 6 F2025: 3",
+      "quote_from": "table",
+      "conditions": "annual harvest totals by town; the service's name for it is 'Bancroft Twp'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1159–1160); §2.9 (01_introduction_and_study_system.md:401–402)",
+      "claim": "Danforth's moose harvest fell from 9 a year (2009–10) to 0–1 a year (2019–25)",
+      "source_value": "Danforth 2009: 9, 2010: 9; 2019–2025: 1, 1, 0, 0, 1, 0, 0. The rest of the series: 2006–08: 8, 3, 4; 2011–18: 1, 1, 0, 0, 2, 0, 1, 1",
+      "location": "web page (ArcGIS REST query), layer 1 MooseHistoricbyTown2022, attribute table, row TOWN 'Danforth', fields F2006–F2025",
+      "quote": "Danforth F2009: 9 F2010: 9 F2019: 1 F2020: 1 F2021: 0 F2022: 0",
+      "quote_from": "table",
+      "conditions": "annual moose harvest totals by town",
+      "verdict": "confirmed",
+      "note": "The numbers hold. The fall came at once, from 9 in 2010 to 1 in 2011, and 2009–10 were the series' peak (2006–08 were 8, 3, 4). Bancroft Twp shows the same pattern: 12 in 2009 and 2010, then 0–2 in 2019–25."
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1160); §2.9 (01_introduction_and_study_system.md:401)",
+      "claim": "the fall in Danforth's moose harvest was 'driven by permits rather than density' (§3.8.4) / happened 'as permits were cut' (§2.9) (MDIFW harvest records)",
+      "verdict": "unsupported",
+      "note": "The services hold harvest counts only: no permits, effort or density. The permit explanation must rest on other sources (§3.8.4 cites Latti 2012: permits cut after the 2012 census). Note too that Danforth's drop came in 2011 (9 → 1), a year before that census."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www1.maine.gov/ifw/hunting-trapping/harvest-information.html", "status": 403, "note": "MDIFW's harvest-information page (it links the annual harvest reports) refused the scripted fetch" },
+    { "url": "http://web.archive.org/web/2025id_/https://www.maine.gov/ifw/hunting-trapping/harvest-information.html", "status": "refused", "note": "the session's permission system refused this Wayback fetch; not retried. The ArcGIS services above made it unnecessary" }
+  ],
+  "notes": "The 'project notes' compilation came from these two MDIFW services: every 2019–25 figure in the notes and the paper matches them. Both services are public (copyright and credits 'Maine Department of Inland Fisheries and Wildlife'). Their licence text says the data may not be redistributed without the Commissioner's permission, so quoting a few town totals is fine but the tables should not be republished whole. Created 25 March 2020; data updated 5 June 2026 (bear) and 11 March 2026 (moose); the bear layer covers 2005–2025 and the moose layer 2006–2025 (its item description says 2005). For context, Danforth's bear harvest in 2005–2018 was 9, 15, 7, 9, 7, 9, 11, 16, 6, 9, 2, 2, 6, 12, so 2019–25 is typical. Harvest totals by town count registrations; they are not a density and depend on hunter effort and access. Weston was also queried but is not used in the paper: bears 3, 4, 1, 2, 0, 3, 3 in 2019–25; moose 0–1. show.mjs matched every 'MDIFW n.d.' in §3.8 to this key. The paper cites these data as 'MDIFW harvest records' in §3.8.4 (lines 1141 and 1160); §2.9's sentence (01_…:401–403) repeats them without a citation."
+}

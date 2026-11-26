@@ -1,0 +1,63 @@
+{
+  "key": "MDIFW_nd",
+  "reader": "wave-3 batch w3-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own web page (MDIFW Blog), fetched from www1.maine.gov on 2026-11-26 (www.maine.gov refuses scripted fetches; www1 served it at once)",
+    "url": "https://www1.maine.gov/ifw/blogs/mdifw-blog/why-did-amphibian-cross-road",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the post's own header (title, date, byline), read 2026-11-26",
+    "ok": false,
+    "corrections": "Not undated, and not anonymous: the post is dated 8 April 2022 (12:54 pm) and signed 'by Social Media Coordinator Laura Kintz'. Title: 'Why did the Amphibian Cross the Road?' (MDIFW Blog). Suggested: Kintz, L. 2022 (8 April). Why did the Amphibian Cross the Road? MDIFW Blog, Maine Department of Inland Fisheries and Wildlife. https://www.maine.gov/ifw/blogs/mdifw-blog/why-did-amphibian-cross-road (read 26 November 2026). In-text 'Kintz 2022' (or 'MDIFW 2022'), not 'MDIFW n.d., amphibian blog'.",
+    "quote": "April 8, 2022 at 12:54 pm by Social Media Coordinator Laura Kintz"
+  },
+  "claims": [
+    {
+      "paper": "§3.8.6 (03_synthesis_fish_to_forest.md:1240)",
+      "claim": "the vernal-pool breeders are the wood frog and the spotted and blue-spotted salamanders",
+      "source_value": "blue-spotted salamanders, spotted salamanders and wood frogs breed almost exclusively in vernal pools",
+      "location": "web page (one page), 2nd paragraph of the post",
+      "quote": "blue-spotted salamanders, spotted salamanders, and wood frogs breed almost exclusively in vernal pools",
+      "conditions": "Maine, general statement in a popular agency blog post",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6 (03_synthesis_fish_to_forest.md:1240)",
+      "claim": "they migrate on warm rainy nights, above about 4–7 °C",
+      "source_value": "mass migrations are often triggered on rainy nights once the ground is thawed and night temperatures stay above 40 degrees (°F implied: 4.4 °C); no upper figure, and 'warm' is not the post's word",
+      "location": "web page (one page), 3rd paragraph of the post",
+      "quote": "rainy nights once the ground is thawed, and nighttime temperatures remain above 40 degrees",
+      "conditions": "Maine; night temperature; rain and thawed ground are both part of the trigger",
+      "verdict": "corrected",
+      "note": "From this post the paper can say 'on rainy nights with thawed ground, when night temperatures stay above about 4 °C (40 °F)'. The '4–7 °C' range is the project note's widening of 40 °F with other sources it cites beside the blog (Portland Press Herald 2026; Maine Coast Heritage Trust), not checked here."
+    },
+    {
+      "paper": "§3.8.6 (03_synthesis_fish_to_forest.md:1240–1241)",
+      "claim": "migration begins in mid-March in southern Maine",
+      "source_value": "in some years southern and central Maine have 'big night' conditions as early as March (no day of the month)",
+      "location": "web page (one page), 3rd paragraph of the post",
+      "quote": "Southern and Central Maine experience these “big night” conditions as early as March",
+      "conditions": "'Some years'; southern and central Maine together",
+      "verdict": "corrected",
+      "note": "The post supports a March start only loosely ('as early as March', some years, southern and central Maine). The 'mid-March' wording is Calhoun & deMaynadier 2001's (cited beside the blog; not checked here)."
+    },
+    {
+      "paper": "§3.8.6 (03_synthesis_fish_to_forest.md:1241)",
+      "claim": "migration runs to mid-May in the north of Maine",
+      "verdict": "unsupported",
+      "note": "The post gives no end date and nothing on northern Maine's timing. The mid-March (south) to mid-May (north) range belongs to Calhoun & deMaynadier 2001, the other source in the citation."
+    },
+    {
+      "paper": "§3.8.6 (03_synthesis_fish_to_forest.md:1241)",
+      "claim": "fish make lakeshores 'biological sinks' for spotted salamanders",
+      "verdict": "unsupported",
+      "note": "The post says vernal pools draw amphibians because they cannot hold fish ('a nearly predator-free oasis') but says nothing of lakeshores or sinks. The quoted phrase is Calhoun & deMaynadier 2001's."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "A short popular post (8 April 2022). It supports three things in §3.8.6: the three obligate vernal-pool breeders, the trigger (rainy nights, thawed ground, nights above 40 °F) and a start 'as early as March' in southern and central Maine in some years. The mid-March to mid-May range and 'biological sinks' belong to Calhoun & deMaynadier 2001, so the citation should split: '(Kintz 2022)' after the trigger sentence, '(Calhoun & deMaynadier 2001)' after the timing and sinks. The '4–7 °C' should become 'about 4 °C (40 °F)' unless another source gives 7 °C. Other content: more than half of Maine's amphibians and reptiles visit vernal pools at some point; MARAP counts 36 species of reptiles and amphibians in Maine; breeding adults are often faithful to the pools where they were born; Maine Big Night volunteers help amphibians across roads. The post gives no eastern-Maine dates. No code cites it. show.mjs matched every 'MDIFW n.d.' in §3.8 to this key; only the §3.8.6 sentence (03_synthesis_fish_to_forest.md:1240–1242, 'MDIFW n.d., amphibian blog') cites this post. The other 'MDIFW n.d.' citations there are the other MDIFW_nd-* entries."
+}

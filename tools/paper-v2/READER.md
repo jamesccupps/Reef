@@ -23,6 +23,10 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
    commit. Stay inside the repository: the files the human fetched for the project are in `docs/research_notes/fetched/`; do not
    search the human's other folders. If the session's permission system refuses a command or a fetch, do not retry it another way:
    record it in `tried` and say so in your reply.
+11. **Privacy.** Never write into an evidence file the coordinates, polygon bounds, or the named island, cove or point of a bird's nest
+   (eagles, loons, herons, ospreys) or of a listed (threatened, endangered, special-concern) species' record, nor anything that
+   identifies a camp, a building or its owner. Say "a nest on Upper", "an element in Upper", "[location withheld]". GIS query output
+   with coordinates may sit in the git-ignored fetched folder, never in the evidence.
 8. **Tables: never from the layout text alone.** `pdftotext -layout` can shift a table's rows against their labels (in the pilot it put
    Lawrence et al.'s Twin West fit beside the wrong data set). Read every table value in the raw text (`findin --raw`) or on the page
    image (`findin --image N`, then open the PNG with the Read tool). Scanned pages can drop whole columns: look at the image.

@@ -1,0 +1,224 @@
+{
+  "key": "MDIFW_nd-2",
+  "reader": "wave-3 batch w3-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agencies' own public map services, queried through the ArcGIS REST API on 2026-11-26. MDIFW's Wildlife Habitat Data MapServer on gis.maine.gov: layers 4 Deer Wintering Areas, 7 Inland Waterfowl and Wading Bird Habitat, 9 Significant Vernal Pools, 11 Endangered Threatened and Special Concern Wildlife. MDIFW's ArcGIS Online organization (services1.arcgis.com/RbMX0mRVOFNTdLzd): ConservationLands_EagleNests, EagleNestDistribution_5yearIntervals, BirdAtlas_BAEA_BlockCodes, BirdAtlas_GBHE_BlockCodes, MEIFW_BirdAtlasBlockCompletion, WinterAtlasResults, and the Maine Stream Habitat Viewer base layers (0 Crossings, 1 Dams, 9 Documented Habitat, 16 Non-Native Fish). Each response is saved as MDIFW_nd-2.<layer>.json; their attribute tables are dumped to MDIFW_nd-2.gis.txt and the service and layer definitions (copyright, renderer labels, field units) to MDIFW_nd-2.layers.txt",
+    "url": "https://gis.maine.gov/mapservices/rest/services/ifw/Wildlife_Habitat_Data/MapServer",
+    "file": "docs/research_notes/fetched/v2/MDIFW_nd-2.gis.txt"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the services' own descriptions, copyright lines and ArcGIS Online item records, read 2026-11-26",
+    "ok": false,
+    "corrections": "The entry bundles separate, undated, continuously updated services, and most are not at the one URL it gives. For the rewrite, list each layer with its URL and the access date (26 November 2026). (1) MDIFW Wildlife Habitat Data MapServer, https://gis.maine.gov/mapservices/rest/services/ifw/Wildlife_Habitat_Data/MapServer: layers 4 (Deer Wintering Areas), 7 (Inland Waterfowl and Wading Bird Habitat), 9 (Significant Vernal Pools) and 11 (Endangered Threatened and Special Concern Wildlife, 'updated daily'). (2) MDIFW eagle-nest services ConservationLands_EagleNests and EagleNestDistribution_5yearIntervals (data last edited 8 August 2019). (3) The 2nd Maine Bird Atlas (2018–2022) services BirdAtlas_BAEA_BlockCodes, BirdAtlas_GBHE_BlockCodes, MEIFW_BirdAtlasBlockCompletion and WinterAtlasResults. Groups 2 and 3 are at https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/, all copyright MDIFW. (4) The Maine Stream Habitat Viewer base layers, https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/Maine_Stream_Habitat_Viewer/FeatureServer (layers 0 Crossings, 1 Dams, 9 Documented Habitat, 16 Non-Native Fish; data last edited 16 November 2022). The Viewer is credited to 'Maine Department of Inland Fisheries & Wildife, US Fish and Wildlife Service', so cite it as MDIFW & USFWS. In the text, 'MDIFW GIS map services' should name the layer.",
+    "quote": "Base layers for the Maine Stream Habitat Viewer."
+  },
+  "claims": [
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:161–163)",
+      "claim": "Route 169 crosses Hot Brook on a metal pipe-arch culvert 17 ft wide, 10 ft high and 86 ft long (5.2 × 3.0 × 26 m)",
+      "source_value": "Site 6796, Hot Brook at Route 169 ([coordinates withheld]): 'Pipe Arch/Elliptical Culvert', metal; inlet 17 ft wide and 10 ft high; outlet 17 ft wide and 9.9 ft high; 86 ft long",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 0 Crossings, attribute table, Site_ID 6796",
+      "quote": "Inlet_Width: 17 | Inlet_Water_Depth: 1.5 | Inlet_Height: 10 | Crossing_Length: 86",
+      "conditions": "units ft (the layer's field aliases: 'Inlet Width (ft)', 'Crossing Length (ft)'); one culvert",
+      "verdict": "confirmed",
+      "note": "The metric conversions are right. The paper's 'about 2.5 km above the lake' is the project's NHD measurement, not the Viewer's."
+    },
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:162–163)",
+      "claim": "the Route 169 culvert was rated a 'Potential Barrier' in a 2009 survey (Maine Stream Habitat Viewer)",
+      "source_value": "Crossing_Class 'Potential Barrier', Survey_Date 2009-08-04",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 0 Crossings, attribute table, Site_ID 6796",
+      "quote": "Crossing_Class: Potential Barrier | Stream: Hot Brook | Road: Route 169",
+      "conditions": "surveyed 4 August 2009",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:184–185)",
+      "claim": "a railroad crosses Hot Brook about 2.2 km below Lower, its passability rated unknown (Maine Stream Habitat Viewer, 2009)",
+      "source_value": "Site 6622, Hot Brook at a railroad, Bancroft Twp ([coordinates withheld]): crossing type and class 'Unknown', no structure data; Survey_Date 2009-07-01",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 0 Crossings, attribute table, Site_ID 6622",
+      "quote": "Crossing_Type: Unknown | Crossing_Class: Unknown | Stream: Hot Brook | Road: Railroad",
+      "conditions": "2009 survey; the only crossing in the layer on Hot Brook below Lower",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "2.2 km is the straight-line distance from Lower's outlet (≈[coordinates withheld], where MDIFW's own Hot Brook polygon leaves the lake) to the crossing: 0.020° of latitude ≈ 2.22 km. The distance along the channel is a little longer."
+    },
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:184); §3.1.2 (02_synthesis_physical_to_plants.md:115); §3.2.6 (02_synthesis_physical_to_plants.md:535)",
+      "claim": "neither lake has a dam in the state dam layer",
+      "source_value": "the Viewer's dam layer holds one dam within 45.55–45.75 N, 68.00–67.84 W: Crooked Brook Dam on Baskahegan Stream, Danforth ([coordinates withheld]), surveyed 2009, fishway 'None'",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 1 Dams, attribute table, Site_ID D0097",
+      "quote": "Dam_Name: Crooked Brook Dam | Barrier_Class: Barrier | Survey_Date: 2009-06-03 | Stream: Baskahegan Stream",
+      "conditions": "project query of the box 45.55–45.75 N, 68.00–67.84 W (the box the project notes used)",
+      "verdict": "confirmed",
+      "note": "The 'state dam layer' in the notes is this Viewer layer. Name it as such."
+    },
+    {
+      "paper": "§2.5 (01_introduction_and_study_system.md:305); §3.5.1 (03_synthesis_fish_to_forest.md:45)",
+      "claim": "the state's non-native-fish layer marks both lakes as holding a confirmed non-native species, without naming it",
+      "source_value": "Upper Hot Brook Lake and Lower Hot Brook Lake polygons 'Confirmed: Y' (Region F); Hot Brook's three segments 'Confirmed: N'; the layer's only fields are name, region and Confirmed",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 16 Non-Native Fish, attribute table",
+      "quote": "GNIS_Name: Upper Hot Brook Lake | Region: F | Confirmed: Y",
+      "conditions": "undated layer (data last edited 16 November 2022)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.6 (01_introduction_and_study_system.md:327–328); §3.5.3 (03_synthesis_fish_to_forest.md:197–198)",
+      "claim": "the state's alewife-habitat layer, of unstated date, still marks both lakes 'Inaccessible – not stocked'",
+      "source_value": "Upper (890.3 ac) and Lower (683.9 ac) both 'Inaccessible - not stocked' and 'No Commercial Harvest'; Hot Brook and the connecting brook mapped as 'Stream'",
+      "location": "web page (ArcGIS REST query), Maine Stream Habitat Viewer layer 9 Documented Habitat, attribute table",
+      "quote": "LAKENAME: Upper Hot Brook Lake | Status_new: Inaccessible - not stocked",
+      "conditions": "no compilation date in the service; its data were last edited 16 November 2022",
+      "verdict": "confirmed",
+      "note": "The layer is named 'Documented Habitat' and does not name its species. Its stocking and commercial-harvest statuses mark it as the river-herring (alewife) lake layer, so 'alewife-habitat layer' is a fair label. 'Of unstated date' is right; the rewrite could add 'as served since November 2022'."
+    },
+    {
+      "paper": "§2.8 (01_introduction_and_study_system.md:378–379)",
+      "claim": "MDIFW's listed-species layer holds a yellow lampmussel (Lampsilis cariosa, state Threatened) element in Upper, date not public, and none in Lower",
+      "source_value": "Lampsilis cariosa, Yellow Lampmussel, G3G4/S3, Threatened, survey site 'T8 R4 NBPP'; polygon [coordinates withheld: listed-species site], overlapping Upper's south-west shore; first, last and survey dates blank; no lampmussel feature at Lower",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 11 Endangered Threatened and Special Concern Wildlife, attribute table, FEATURE_ID 987",
+      "quote": "Lampmussel | GRANK: G3G4 | SRANK: S3 | SPROT: Threatened | SURVEY_SIT: T8 R4 NBPP",
+      "conditions": "the layer is 'updated daily' (its description); queried 26 November 2026",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.8 (01_introduction_and_study_system.md:380)",
+      "claim": "the Threatened brook floater (Alasmidonta varicosa) is recorded downstream in the Baskahegan Stream–Mattawamkeag system",
+      "source_value": "Brook Floater, G3/S3, Threatened: Baskahegan Stream, Bancroft (1994-7-26, 1994-8-3) and Mattawamkeag River, Bancroft (1996-8-30)",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 11, attribute table, FEATURE_IDs 140, 141, 181",
+      "quote": "Floater | GRANK: G3 | SRANK: S3 | SPROT: Threatened | SURVEY_SIT: Baskahegan Stream, Bancroft",
+      "conditions": "observations of 1994 and 1996; the shared polygon lies 2.0 km from Lower at its nearest",
+      "verdict": "confirmed",
+      "note": "The records are 30 years old; the rewrite could give the years."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:392–393); §3.8.1 (03_synthesis_fish_to_forest.md:1015)",
+      "claim": "MDIFW's records show a bald eagle nest on Upper, with a pair there in 2008",
+      "source_value": "nest 476A, 'Upper Hot Brook Lake, [island withheld: nest site] -- T8 R4 N.B.P.P.', in an eastern white pine; 2008: 'Nesting Pair', with the remark 'There was no production survey here this year'",
+      "location": "web page (ArcGIS REST query), EagleNestDistribution_5yearIntervals layer 0, attribute table, NestSiteYe 476A-2008; ConservationLands_EagleNests layer 0, PK_NestSit 476A",
+      "quote": "NestSiteYe: 476A-2008 | NestSite: 476A | Year: 2008-01-01 | Occupancy: Nesting Pair",
+      "conditions": "MDIFW's 5-year-interval nest series (1963–2018)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:392–393); §3.8.1 (03_synthesis_fish_to_forest.md:1015)",
+      "claim": "one young fledged from the Upper nest in 2013",
+      "source_value": "476A in 2013: 'Nesting Pair', 1 fledgling; 'year last nested' 2013",
+      "location": "web page (ArcGIS REST query), EagleNestDistribution_5yearIntervals layer 0, attribute table, NestSiteYe 476A-2013",
+      "quote": "NestSiteYe: 476A-2013 | NestSite: 476A | Year: 2013-01-01 | Occupancy: Nesting Pair | Fledglings: 1",
+      "conditions": "MDIFW's 5-year-interval nest series",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:393); §3.8.1 (03_synthesis_fish_to_forest.md:1015–1016)",
+      "claim": "MDIFW's records show eagles at the Upper nest in July 2018",
+      "verdict": "unsupported",
+      "note": "No MDIFW layer holds a 2018 record for nest 476A. The 5-year series includes 2018 (other nests have 2018 records) but has only 476A-2008 and 476A-2013, and both nest layers give 476A's 'year last nested' as 2013. The ETSC layers hold no eagle record. The project note's date, 2018-07-20, is presumably the Maine Bird Atlas breeding confirmation (via GBIF). Cite that record (MaineBirdAtlas_, checked by its own reader), not 'MDIFW's records'."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:393–394); §3.8.1 (03_synthesis_fish_to_forest.md:1016)",
+      "claim": "the Maine Bird Atlas (2018–22) confirmed eagle breeding in the atlas block covering (part of) Upper",
+      "source_value": "block Stetson Mtn_NW, Bald_Eagle code 4 = 'Confirmed'. The block ([block bounds withheld]) holds the west half of Upper, including the [island withheld: nest site] nest. The other three lake blocks are 'NA' (No data)",
+      "location": "web page (ArcGIS REST query), BirdAtlas_BAEA_BlockCodes layer 0, attribute table, BlockCode Stetson Mtn_NW; code labels from the layer's renderer",
+      "quote": "BlockCode_1: Stetson Mtn_NW | Yellow_Warbler: 2 | Blue_headed_Vireo: 3 | Bald_Eagle: 4",
+      "conditions": "2nd Maine Bird Atlas 2018–2022",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1016–1017)",
+      "claim": "at least four other eagle territories lie within about 20 km of the lakes (MDIFW GIS map services; Maine Bird Atlas)",
+      "source_value": "nest sites within 20 km of nest 476A: Crooked Brook Flowage, Danforth (085A–G and one unnumbered site, 6.5–9.3 km); Baskahegan Lake (729A at 12.8 km; 084A–D at 15.5–16.5 km); Mattawamkeag River / Mud Pond, Drew Plt (350A, 15.0 km); East Grand Lake, Five Islands (137A, C, D, 18.2 km); Jackson Brook Lake / Drake Lake (18.5 km); Mattawamkeag River, Haynesville (384A, 18.7 km); Spednik Lake (086A–C, 19.4–19.8 km)",
+      "location": "web page (ArcGIS REST query), ConservationLands_EagleNests layer 0, attribute table, nests within 45.42–45.80 N, 68.21–67.67 W",
+      "quote": "PK_NestSit: 729A | NestSiteNa: Baskahegan Lake, Whitehouse Point shoreline -- Brookton Township | YearLastNe: 2013",
+      "conditions": "historical nest sites (several last nested decades ago); distances by project arithmetic from the layer's coordinates",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Distances are straight-line from 476A ([coordinates withheld]), planar approximation. Sites last nested in 2013 or 2018 lie at Crooked Brook Flowage, Baskahegan Lake, Drew Plt, East Grand, Jackson Brook Lake, Haynesville and Spednik, so 'at least four' holds even counting only recent sites. The atlas also confirmed eagle breeding in block Brookton_NW, just east of the lake blocks."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:394)",
+      "claim": "only one of the four atlas blocks covering the lakes had substantial summer effort",
+      "source_value": "final block status: Stetson Mtn NW (a priority block) 'Complete'; Stetson Mtn NE, Jimmey Mtn SW and Jimmey Mtn SE 'Incomplete'",
+      "location": "web page (ArcGIS REST query), MEIFW_BirdAtlasBlockCompletion layer 0, attribute table, the four lake blocks",
+      "quote": "Atlas_Block_Name: Stetson Mtn NW | Block_Completion: Complete",
+      "conditions": "2nd Maine Bird Atlas, breeding season, final status",
+      "verdict": "confirmed",
+      "note": "The services give completion status, not summer hours. 'Substantial summer effort' rests on Stetson Mtn NW being the only completed block, and the rewrite could say that instead."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:394); §3.8.1 (03_synthesis_fish_to_forest.md:1018)",
+      "claim": "winter atlas effort was 0–0.03 h in each of the four blocks over the lakes",
+      "source_value": "total winter effort: Stetson Mtn NE 0.03 h (period 2), Stetson Mtn NW 0, Jimmey Mtn SE 0, Jimmey Mtn SW 0",
+      "location": "web page (ArcGIS REST query), WinterAtlasResults layer 0, attribute table, row Stetson Mtn_NE (the other three rows 0)",
+      "quote": "Period_1_Effort: 0 | Period_2_Effort: 0.03 | TOTAL_EFFORT: 0.03",
+      "conditions": "Maine winter atlas; the service calls it 'total hours of effort'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1021–1022)",
+      "claim": "the great blue heron has no breeding code in the six surrounding atlas blocks (project queries)",
+      "source_value": "Great_Blue is 'NA' ('No Data' in the layer's renderer) or blank in the four lake blocks and all twelve blocks around them; the nearest code is Potter Hill_CW, '1' (Observed), about 10 km west",
+      "location": "web page (ArcGIS REST query), BirdAtlas_GBHE_BlockCodes layer 0, attribute table, blocks within 45.55–45.70 N, 68.06–67.82 W",
+      "quote": "BlockCode: Stetson Mtn_NW | Great_Blue: NA",
+      "conditions": "2nd Maine Bird Atlas 2018–2022",
+      "verdict": "confirmed",
+      "note": "In this layer 'NA' means no data, not absence, as the paper's next sentences say of atlas effort."
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1022–1023)",
+      "claim": "MDIFW maps eight Inland Waterfowl and Wading Bird Habitat polygons around the lakes",
+      "source_value": "eight polygons intersect the box 45.60–45.67 N, 67.975–67.90 W: Iwwh203654, 203682, 110664, 203684, 110140, 204089, UMO-6416, UMO-6514",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 7, attribute table and geometry",
+      "quote": "IWWH_ID: Iwwh203682 | RATING: M | NOTES: 2008 (IFW) Clipped upland buffer on lake shores",
+      "conditions": "polygons rated High (203684, UMO-6416) or Moderate (the rest), mapped 2002–2008 (IFW) and 2003 (UMO; UMO-6514 updated 2011)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "The count is the project's box query and depends on the box. Only Iwwh203682 touches a lake (Upper's south end). Within 1 km of either shore lie six polygons: 203682, UMO-6514, 110664, 203654, 204089, and 203679 on the inlet, which falls outside the box. Two of the box's eight lie 1.8–1.9 km off (203684 east of Upper, UMO-6416 west of Lower). Distances are measured to MDIFW's own lake polygons (Viewer layer 16)."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:397–398)",
+      "claim": "the mapped waterfowl and wading-bird habitat around the lakes includes Upper's south end, Lower's north end and Hot Brook below Lower",
+      "source_value": "At Upper's south end, yes: Iwwh203682 touches it, and UMO-6514 and Iwwh203679 lie on the inlet. No polygon touches Lower or its outlet brook. Iwwh203654 lies 0.41 km east of Lower's north-east shore (0.70 km from the brook). Iwwh204089 lies 0.27 km east of Hot Brook below Lower and 0.89 km from the lake",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 7, attribute table and geometry (Iwwh203654, Iwwh204089, Iwwh203682)",
+      "quote": "IWWH_ID: Iwwh204089 | RATING: M | NOTES: 2008 (IFW)",
+      "conditions": "distances by project arithmetic from the IWWH polygons to MDIFW's own polygons of Lower and Hot Brook (Viewer layer 16)",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "Suggested wording: 'at Upper's south end and inlet, and near Lower's north end and beside Hot Brook below it (0.3–0.4 km off)'."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:398)",
+      "claim": "a significant vernal pool lies nearby",
+      "source_value": "Significant Vernal Pool 512, T8 R4 NBPP, surveyed 29 May 2008, 8.8 acres with its 250-ft habitat zone; about 0.6 km south-west of Upper's south end",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 9, attribute table, POOLID 512",
+      "quote": "POOLID: 512 | SVPSTATUS: Significant | SURVEYDATE: 2008-05-29",
+      "conditions": "the survey date is the layer's epoch value 1212019200000 converted; the distance is project arithmetic",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1152–1153); §2.9 (01_introduction_and_study_system.md:398)",
+      "claim": "two mapped deer wintering areas, of about 1,640 and 143 ha, lie near the lakes",
+      "source_value": "DWA 040087: 16,375,312 m² (1,637.5 ha; geodesic ≈1,635 ha) [bounds withheld]. DWA 100235: 1,430,284 m² (143.0 ha) [bounds withheld]",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 4 Deer Wintering Areas, attribute table, IDENTIFIER 040087 and 100235",
+      "quote": "IDENTIFIER: 040087 | SHAPE.area: 16375311.979484905",
+      "conditions": "SHAPE.area in the layer's projected units (m²)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4 (03_synthesis_fish_to_forest.md:1152)",
+      "claim": "the two deer wintering areas lie within about 3 km of the lakes",
+      "source_value": "040087 lies 1.5 km east of Upper's shore; 100235 lies 3.4 km north-east of Lower's outlet (5.9 km from Upper)",
+      "location": "web page (ArcGIS REST query), Wildlife Habitat Data layer 4, geometry of IDENTIFIER 040087 and 100235",
+      "quote": "IDENTIFIER: 100235 | SHAPE.area: 1430283.536221785",
+      "conditions": "nearest-point distances by project arithmetic, from the DWA polygons to the lakes' outlines (OSM, as in tools/hotbrook/data)",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "'Within about 3.5 km', or '1.5 and 3.4 km from the lakes'. The project note's '~2–3 km NE of Lower's outlet' is short."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Every service answered openly (HTTP 200, public ArcGIS REST); nothing was refused. Most of the paper's site facts from 'MDIFW's records' and the state layers check against the live layers. Three corrections: (1) the 'eagles at the nest in July 2018' is not in any MDIFW layer and should be credited to the Maine Bird Atlas record; (2) the waterfowl and wading-bird polygons near Lower lie 0.3–0.4 km off its north end and outlet brook, not on them; (3) the second deer wintering area is 3.4 km away, not 'within about 3 km'. The listed-species layer (layer 11) says it is updated daily and that static copies should not be kept more than a year, so cite it with the access date. Its other records near the lakes: Black Tern (Endangered) at Crooked Brook Flowage, Danforth, 2010–2012, about 3.8 km east of Upper; and two generalised Special Concern 'RARE ANIMAL' polygons (ELCODE ARAAD02020, Danforth 2013-6-14 and Bancroft 2013-5-10) that overlap the lakes (the Danforth one both lakes, the Bancroft one Lower). These match the project note. The paper's §3.8.5 'wood turtle occurrence in the drainage is unconfirmed' is consistent with them, since the species is hidden. The Viewer's crossing records also flag 'Inland_Waterfowl_Wading_Bird_Ha: Yes' at the Route 169 culvert. The bear and moose harvest-by-town layers (MDIFW_nd-3) sit on the same MDIFW server. show.mjs matched every 'MDIFW n.d.' in §3.8 to this key. The claims above are the ones these services support, wherever they appear in the paper (§2.3, §2.5, §2.6, §2.8, §2.9, §3.1.2, §3.2.6, §3.5.1, §3.5.3, §3.8.1, §3.8.4). The §3.8 'MDIFW n.d., … page' citations belong to the other MDIFW_nd-* entries."
+}
