@@ -1,0 +1,31 @@
+{
+  "key": "Ashforth_Yan_2008",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the free PDF ASLO once served on its own site (aslo.org/lo/toc/…), taken from the Internet Archive's Wayback capture of 2015-09-19",
+    "url": "https://web.archive.org/web/20150919015323id_/http://aslo.org/lo/toc/vol_53/issue_2/0420.pdf",
+    "file": "docs/research_notes/fetched/v2/Ashforth_Yan_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (PDF p. 1: 'Limnol. Oceanogr., 53(2), 2008, 420–432') and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Dawn Ashforth and Norman D. Yan, York University (Yan also Dorset Environmental Science Centre)."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.7",
+      "claim": "D. pulex's growth rate 'decreased dramatically between 1.5 and 1 mg Ca L⁻¹', warm water and low food raising the threshold to 1.5 mg/L (Ashforth & Yan 2008; abstract only)",
+      "location": "p. 420 (PDF p. 1), Abstract (read on the page image); Results, p. 425 (PDF p. 6), r and the second reproductive threshold",
+      "quote": "the intrinsic rate of natural increase, r, decreased dramatically between 1.5 and 1 mg",
+      "conditions": "laboratory, one clone of D. pulex in a fully defined medium; Ca 0.1, 0.5, 1, 1.5, 2, 5, 10 mg/L × high food (30 µg Chl a/L) and low food (3 µg Chl a/L) × 20, 24, 28, 32 °C; 15-day experiment. Survival threshold 0.1–0.5 mg Ca/L regardless of temperature or food; at 32 °C no reproduction",
+      "verdict": "confirmed",
+      "note": "Confirmed, with two wording points: (1) the 'growth rate' is the population's intrinsic rate of increase r, not body growth — say 'population growth rate (r)'; (2) the paper now has the full text, so '(abstract only)' can go. 'Higher temperatures and reduced algal biomass … raising the reproductive threshold to 1.5 mg Ca L-1' is in the abstract; the results describe it as a second reproductive threshold between 1 and 1.5 mg/L at warmer temperatures and low algal density (delayed maturity, fewer and smaller broods below 1.5 mg/L). At high food r fell significantly at all temperatures from 1.5 to 1 mg/L."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The authors' conclusion: fresh waters need at least 0.5 mg Ca/L to sustain D. pulex, and as much as 1.5 mg/L under concurrent lower algal biomass and warmer water. Against Hot Brook's analog median of ~2.0 mg Ca/L (paper §3.3.7) this supports the paper's 'probably not controlling'. The warm treatments (24–28 °C) are near Hot Brook's summer surface maximum."
+}

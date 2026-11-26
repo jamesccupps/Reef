@@ -1,0 +1,31 @@
+{
+  "key": "Bendell_McNicol_1995",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "only the abstract, shown on the publisher's (Springer) article page above the paywall",
+    "url": "https://link.springer.com/article/10.1007/BF00027038"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Springer page's citation metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Bendell, Barry E. & McNicol, Donald K. 1995. Hydrobiologia 302(2): 133–145 (April 1995) — matches."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.7",
+      "claim": "fish reduce odonate numbers (Bendell & McNicol 1995, relayed by search summaries)",
+      "verdict": "unchecked",
+      "note": "Full text paywalled. The Springer abstract is more qualified than the sentence: in small lakes near Sudbury, Ontario (acid-stressed area), Anisoptera larvae only 'tended to be more numerous' in benthic samples from fishless lakes, while their exuviae, and Zygoptera exuviae, were significantly more abundant around fishless lakes; Corixidae were significantly more abundant without fish. In fishless lakes Anisoptera larvae and exuviae were negatively correlated with pH. If kept on the abstract: 'dragonfly and damselfly emergence (exuviae) was higher at fishless lakes (Bendell & McNicol 1995, abstract)'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00027038.pdf", "status": 200, "note": "paywall page (not kept); doi:10.1007/BF00027038 is what a library login would open" },
+    { "url": "https://link.springer.com/article/10.1007/BF00027038", "status": 200, "note": "subscription content: abstract only" },
+    { "url": "https://publications.gc.ca/collections/collection_2018/eccc/CW69-1-62-eng.pdf", "status": 200, "note": "possible stand-in (McNicol, Bendell & Ross 1987, CWS Occasional Paper 62, same study area and team): the PDF has no usable text layer (scanned; getsrc did not keep it) — not read" }
+  ],
+  "notes": "The CWS Occasional Paper 62 (McNicol, Bendell & Ross 1987, 'Studies of the effects of acidification on aquatic wildlife in Canada: waterfowl and trophic relationships in small lakes in northern Ontario', publications.gc.ca catalogue CW69-1/62E-PDF) is a free government copy from the same programme; it is scanned, so a reader with OCR or the page images could check whether it reports the fish vs fishless odonate comparison."
+}

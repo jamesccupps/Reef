@@ -1,0 +1,95 @@
+{
+  "key": "ADW_nd",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the six Animal Diversity Web species accounts, read on 2026-11-26 from animaldiversity.org (University of Michigan Museum of Zoology; page footer '© 2025, Regents of the University of Michigan'); each page's 'To cite this page' line dates the account: Shelburne 2017 (Esox niger), Hernandez 2014 (Catostomus commersonii), Guth 2011 (Ameiurus nebulosus), Martens 2006 (Morone americana), McCoy 2018 (Semotilus corporalis), Bullock 2006 (Lepomis gibbosus). Saved as docs/research_notes/fetched/v2/ADW_nd.<Genus_species>.html/.txt",
+    "url": "https://animaldiversity.org/accounts/Ameiurus_nebulosus/",
+    "file": "docs/research_notes/fetched/v2/ADW_nd.Ameiurus_nebulosus.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "each account's byline, contributors list and 'To cite this page' line",
+    "ok": true,
+    "corrections": "",
+    "note": "Authors and years match the entry (Shelburne, J. 2017; Hernandez, A. 2014; Guth, R. 2011; Martens, A. 2006; McCoy, J. 2018 — printed 'McCoy, j.'; Bullock, D. 2006). The pages carry no other date. Accessed 2026-11-26. The white sucker (Hernandez 2014) and fallfish (McCoy 2018) accounts are not cited anywhere in the paper's text or the code; only in the research notes."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (brown bullhead row)",
+      "claim": "brown bullhead maturity at 3 yr (Animal Diversity Web, citing Blumer)",
+      "source_value": "ADW says 3 years but does not attribute it: the sentence carries no citation and follows one on New Zealand spawning; the key-features list gives 3 years for both sexes",
+      "location": "web page, Ameiurus nebulosus (Guth 2011), Reproduction",
+      "quote": "They reach sexual maturity at 3 years of age.",
+      "conditions": "no population, method or source given",
+      "verdict": "corrected",
+      "note": "Drop 'citing Blumer': cite as 'Animal Diversity Web (unsourced)'."
+    },
+    {
+      "paper": "Table 3.5-2 (brown bullhead row)",
+      "claim": "both parents in 56 % of broods, care up to 29 d (Blumer 1985, via ADW)",
+      "location": "web page, Ameiurus nebulosus (Guth 2011), Reproduction (parental care)",
+      "quote": "56.2% of broods were cared for by both sexes, 39.3% by males only",
+      "conditions": "ADW attributes the percentages to 'Blumer (1985 and 1986a)' (Michigan); the 29-day maximum follows in the next sentence without its own citation",
+      "verdict": "confirmed",
+      "note": "4.5 % of broods were cared for by females only. 'Maximum length of parental care is 29 days' is ADW's own sentence directly after the Blumer one, so 'via ADW' is right but the attribution of 29 d to Blumer 1985 specifically is ADW's implication, not a citation. ADW also gives average time to independence 9.4 d and 'the average length of the juvenile stage to the end of parental care is 5 days'."
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "parental care lasts up to 29 days in brown bullhead (Blumer 1985, via Animal Diversity Web)",
+      "location": "web page, Ameiurus nebulosus (Guth 2011), Reproduction",
+      "quote": "Maximum length of parental care is 29 days.",
+      "conditions": "uncited sentence following ADW's citation of Blumer (1985 and 1986a)",
+      "verdict": "confirmed",
+      "note": "See the previous claim on the attribution."
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead row); §3.6.2",
+      "claim": "brown bullhead broods were attended by both parents in 56.2 % of cases and by the male alone in 39.3 % (Blumer 1985, 1986b, via Animal Diversity Web); Table 3.6-1: 'both parents in 56 % of broods … Blumer 1985, 1986b (numbers via Animal Diversity Web)'",
+      "location": "web page, Ameiurus nebulosus (Guth 2011), Reproduction (parental care)",
+      "quote": "56.2% of broods were cared for by both sexes, 39.3% by males only",
+      "conditions": "ADW citing 'Blumer (1985 and 1986a)'",
+      "verdict": "confirmed",
+      "note": "ADW cites 'Blumer (1985 and 1986a)', not '1985, 1986b'; ADW's reference list has two 1986 papers without a/b letters (Behavioral Ecology and Sociobiology 19: 97–104; American Midland Naturalist 115: 234–238), so which one it meant cannot be told. Of the Table 3.6-1 row, only '56 %' comes from ADW (the incubation, egg and hatch values are from Breder, Armstrong & Child and Eycleshymer per the notes); ADW itself gives hatching in up to 13 d, mean 5.6 d (Blumer 1985), eggs 2.2–2.7 mm and hatchlings 4–8 mm, which differ from the row's '6–10 d (mean 8) at 21.3 °C', '~3-mm eggs' and '7–8 mm'. IMPORTANT for the reference list: ADW's 'Blumer 1985' is 'Reproductive natural history of the brown bullhead Ictalurus nebulosus in Michigan', American Midland Naturalist, pp. 318–330 (ADW prints the volume as '1985'); the paper's references give a different Blumer 1985 (Environmental Biology of Fishes 12(3): 231–236). Since the paper cites Blumer 1985 'via ADW', the reference should be the one ADW cites."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "pumpkinseed ranges are about 0.2–1.1 ha (ADW, unsourced)",
+      "location": "web page, Lepomis gibbosus (Bullock 2006), Home Range",
+      "quote": "Pumpkinseeds have a home range around 0.23 to 1.12 hectares.",
+      "conditions": "no study, place or method given in the sentence",
+      "verdict": "confirmed",
+      "note": "Uncited in the sentence, but the account's reference list includes Fish, P. & Savitz, J. 1983, 'Variations in home ranges of largemouth bass, yellow perch, bluegills, and pumpkinseeds in an Illinois lake', TAFS '112/2a': 147–153 — probably the source. Better: cite Fish & Savitz (1983) after checking it, or say '(ADW, probably from Fish & Savitz 1983, an Illinois lake)'."
+    },
+    {
+      "paper": "Table 3.6-1 (chain pickerel row)",
+      "claim": "chain pickerel eggs 2–3 mm (Animal Diversity Web for egg size)",
+      "location": "web page, Esox niger (Shelburne 2017), Reproduction",
+      "quote": "Fertilized eggs average 2-3 mm in diameter, and take between 6-12 days to hatch.",
+      "conditions": "no source given for the sizes; the Development section says 'about 2 mm'",
+      "verdict": "confirmed",
+      "note": "The same account gives spawning peak 8.3–11.1 °C (range 2–22 °C), 6–12 d to hatch, yolk absorbed 6–8 d after hatch, fry ~10 mm (10.2 mm) at first feeding, 6,000–7,000 eggs commonly (to 50,000) — consistent with the row's other values, though the row credits those to other sources."
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "wild pickerel typically live 3–4 years, at most about 9 (Animal Diversity Web; FishBase; New Jersey Division of Fish & Wildlife)",
+      "location": "web page, Esox niger (Shelburne 2017), Lifespan/Longevity",
+      "quote": "The average lifespan for male and female chain pickerel is 3-4 years in the wild.",
+      "conditions": "wild fish; no source given; 'known to live up to nine years in the wild'",
+      "verdict": "confirmed",
+      "note": "ADW's part of the claim checks (typical 3–4 yr, range to 9 yr, wild). The account cites no source for it. It also says pickerel mature 'by age four' in one place and 'between one and four years' in another."
+    },
+    {
+      "paper": "src/species.js:346 (white perch, Lmat 9.5 cm / LmatM 7.6 cm)",
+      "claim": "white perch mature at ♂ 72–80 mm, ♀ 90–98 mm at 2–4 yr (ADW)",
+      "location": "web page, Morone americana (Martens 2006), Development",
+      "quote": "until 2 to 4 years of age, when males are 72 to 80 mm long",
+      "conditions": "the full sentence: juveniles 'remain reproductively immature until 2 to 4 years of age, when males are 72 to 80 mm long and females 90 to 98 mm'; no population, length type (TL/FL) or source given",
+      "verdict": "confirmed",
+      "note": "The code's LmatM 7.6 cm and Lmat 9.5 cm sit inside ADW's ranges. ADW's key-features list gives maturity at 2–4 yr (female; average 2) and 2–3 yr (male). The account's references are Etnier & Starnes 1993, FishBase (Heemstra 2002), Jackson & Sullivan 1995 and Stanley & Danie 1983 (the USFWS species profile) — the last is the likely primary for the lengths (not checked here) and would be the better citation."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "ADW is a student-written encyclopedia; most of the values above carry no in-sentence source. Other values in the accounts the paper might use: brown bullhead lifespan 6–8 yr, max 9 (unsourced); egg clusters 50–10,000 (unsourced); reproduction at mean daily water temperature 14–29 °C (unsourced). The pumpkinseed, pickerel and white perch accounts' reference lists point to primary sources worth citing instead (Fish & Savitz 1983; Stanley & Danie 1983)."
+}

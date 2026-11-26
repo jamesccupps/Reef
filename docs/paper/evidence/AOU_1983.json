@@ -1,0 +1,31 @@
+{
+  "key": "AOU_1983",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item 'checklistofnorth1983amer', contributed by the American Museum of Natural History Library to the Biodiversity Heritage Library collection; openly downloadable (not access-restricted)",
+    "url": "https://archive.org/download/checklistofnorth1983amer/checklistofnorth1983amer.pdf",
+    "file": "docs/research_notes/fetched/v2/AOU_1983.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 5: 'Check-list of North American Birds … Sixth Edition 1983 … published by the American Ornithologists' Union') and its verso (PDF p. 6: 'Printed by Allen Press, Inc. Lawrence, Kansas'; preferred citation)",
+    "ok": true,
+    "corrections": "",
+    "note": "Last printed page is 877 (PDF p. 911). The title page gives no place for the AOU itself; Lawrence, Kansas is the printer's address, as the entry already says."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2",
+      "claim": "great blue herons' winter range begins at the southern New England coast (AOU 1983, via Short & Cooper 1985)",
+      "location": "p. 46 (PDF p. 80), Ardea herodias account, 'Winters'",
+      "quote": "southern Ontario and the southern New England coast south throughout the southern United States",
+      "conditions": "the herodias group's winter range; its northern edge runs from south-coastal Alaska and the Pacific coast across southern Idaho, Nebraska, Missouri, the Ohio Valley and southern Ontario to the southern New England coast",
+      "verdict": "confirmed",
+      "note": "The AOU text is now read directly, so the rewrite can cite 'AOU 1983, p. 46' without 'via Short & Cooper 1985'. Maine lies north of this winter limit, consistent with the paper's arrival dates; the same account says the species breeds north to New Brunswick, Prince Edward Island and Nova Scotia (p. 45)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The Check-list gives ranges only (no abundance or dates). Another, borrow-only Internet Archive copy (checklistofnorth0000unse) was not used."
+}

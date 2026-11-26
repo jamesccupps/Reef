@@ -1,0 +1,31 @@
+{
+  "key": "Andersen_Olsen_1994",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "only the abstract, shown on the publisher's (Springer) article page above the paywall",
+    "url": "https://link.springer.com/article/10.1007/BF00026717"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Springer page's citation metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref and Springer give the title only as 'Nutrient cycling in shallow, oligotrophic Lake Kvie, Denmark' (Hydrobiologia 275(1): 267–276, February 1994, Kluwer); the entry's subtitle 'II. Effects of isoetids on the exchange of phosphorus between sediment and water' could not be checked against the title page. Volume is printed as 275/276 (a double volume); Springer lists 275, issue 1."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7",
+      "claim": "in Lake Kvie, Denmark, where isoetid lawns cover 55 % of the lake, annual P release from vegetated sediment was only 5 % of the plants' P requirement, and the authors judged isoetids 'important for keeping lakes in an oligotrophic state' (Andersen & Olsen 1994; abstract via a search summary)",
+      "verdict": "unchecked",
+      "note": "Full text paywalled. The Springer abstract carries all three items: vegetated sediments 'from the littoral zone (55% of lake area)'; 'annual P release from vegetated sediments were only 5% of the P requirements of the macrophytes'; and the closing phrase quoted. Caveat for the wording: the abstract says the littoral zone is 55 % of the lake and that its sediments were vegetated; whether isoetid lawns cover all of it is not stated. The abstract also gives SRP release < 40 µmol m⁻² d⁻¹ at all stations, release below the diffusive flux on the vegetated station (P uptake by isoetids and binding to oxidized Fe; high rhizosphere redox from root O2 release), and porewater SRP turnover 500–900 times a year. If kept, cite as '(abstract)'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00026717.pdf", "status": 200, "note": "paywall page (not kept); doi:10.1007/BF00026717 is what a library login would open" },
+    { "url": "https://link.springer.com/article/10.1007/BF00026717", "status": 200, "note": "subscription content: abstract only ('Buy article', 'log in via an institution')" },
+    { "url": "https://archive.org/advancedsearch.php?q=\"Lake Kvie\"", "status": 200, "note": "no item" }
+  ],
+  "notes": "Hydrobiologia 275/276 was also issued as a book (Developments in Hydrobiology); no open copy found. Andersen & Olsen is one of a Lake Kvie series (this is part II per the ledger)."
+}

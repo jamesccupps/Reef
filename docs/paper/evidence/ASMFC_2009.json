@@ -1,0 +1,34 @@
+{
+  "key": "ASMFC_2009",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the complete report as a single PDF from ASMFC's own website (linked from its 'habitat special report' page)",
+    "url": "https://asmfc.org/wp-content/uploads/2024/12/HMS9_Diadromous_Habitat_2009.pdf",
+    "file": "docs/research_notes/fetched/v2/ASMFC_2009.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1: 'Habitat Management Series #9, January 2009') and the title page (PDF p. 2: prepared by Karen E. Greene, Jennifer L. Zimmerman, R. Wilson Laney and Jessie C. Thomas-Blate)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title, series, date and preparers match. The ledger's URL (penbay.org, 'Penobscot Bay Watch') is a third party's chapter-by-chapter copy; prefer ASMFC's own PDF above. Walton 1987 is listed in the report's references as 'Parent-progeny relationship for an established population of anadromous alewife in a Maine lake. American Fisheries Society Symposium 1: 451-454' (p. 107, PDF p. 126), as the entry says."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.10",
+      "claim": "in Damariscotta Lake juvenile (alewife) numbers were 'controlled by competition for zooplankton' rather than by parental stock (Walton 1987, via ASMFC 2009)",
+      "location": "pp. 88–89 (PDF pp. 107–108), Chapter 4 Alewife, juvenile feeding",
+      "quote": "Damariscotta Lake, Maine, was controlled by competition for zooplankton, rather than parental",
+      "conditions": "ASMFC's summary of Walton (1987): juvenile alewife abundance in Damariscotta Lake, Maine",
+      "verdict": "confirmed",
+      "note": "The report's full sentence: Walton (1987) found that juvenile alewife abundance in Damariscotta Lake 'was controlled by competition for zooplankton, rather than parental stock abundance and recruitment'. But the same chapter also says (p. 81, PDF p. 100, 'Factors affecting stock size'): 'At low stock levels, Havey (1973) and Walton (1987) demonstrated a weak relationship between spawning stock and abundance of juvenile migrant alewife', and that most studies found no strong adult–juvenile relationship in clupeids. So ASMFC groups Walton with Havey rather than contrasting them; the paper's 'whereas' (Havey's Love Lake correlation vs Walton's competition) overstates the contrast. Suggest: 'at low stock both studies found a weak stock–juvenile relationship (Havey 1973; Walton 1987), and in Damariscotta Lake juvenile numbers were judged to be controlled by competition for zooplankton (Walton 1987, via ASMFC 2009)'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://penbay.org/hapc/asmfc09/asmfc_diadro09.html", "status": 200, "note": "an index page of chapter PDFs on a third-party site (Penobscot Bay Watch); not used" },
+    { "url": "https://archive.asmfc.org/files/Habitat/HMS9_Diadromous_Habitat_2009.pdf", "status": 404, "note": "old ASMFC archive path, gone" }
+  ],
+  "notes": "Same chapter, p. 88: juvenile alewife food is mainly zooplankton; Pardue (1983) suggested ≥ 100 zooplankton per litre as optimal habitat. Juvenile river herring cannot survive water at or below 3 °C (Otto et al. 1976), p. 86. Jessop (1990) found a stock–recruitment relationship for river herring year-class abundance at age 3 (p. 81)."
+}

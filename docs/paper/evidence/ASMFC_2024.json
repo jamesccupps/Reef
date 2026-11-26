@@ -1,0 +1,42 @@
+{
+  "key": "ASMFC_2024",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the report PDF from ASMFC's own website (the ledger URL)",
+    "url": "https://asmfc.org/wp-content/uploads/2025/01/RiverHerringAssessment_PeerReviewReport_2024.pdf",
+    "file": "docs/research_notes/fetched/v2/ASMFC_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover (PDF p. 1: 'River Herring Benchmark Stock Assessment and Peer Review Report — Accepted for Management Use by the Shad and River Herring Management Board, August 7, 2024')",
+    "ok": true,
+    "corrections": "",
+    "note": "499 PDF pages: Section A peer review (PDF pp. 4–24), Section B assessment (PDF pp. 25–499, its own page numbers), Section C appendices. Section B page numbers are used below."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (alewife row)",
+      "claim": "northern New England females L∞ 300 mm, K 0.66 (ASMFC 2024)",
+      "location": "Section B p. 170 (PDF p. 214), Table 13",
+      "quote": "NNE Otolith K 0.66 (0.47—0.78) … 300.24 (287.62—324.06)",
+      "quote_from": "table",
+      "conditions": "sex-specific von Bertalanffy fits, NNE alewife stock-region (St. Croix River to the Merrimack River), ages from otoliths; L∞ is mean asymptotic total length in mm; posterior means with 95 % credible intervals; t0 −0.39",
+      "verdict": "confirmed",
+      "note": "Total length and otolith ages, as the notes say. Scale-based ages give lower values (female K 0.68, L∞ 291.78 mm); males (otolith) K 0.70, L∞ 286.55 mm. Individual NNE rivers ranged from L∞ 275 to 345 mm for females (p. 96)."
+    },
+    {
+      "paper": "Table 3.5-2 (alewife row)",
+      "claim": "(alewife) none mature before 3, all by 6 (ASMFC 2024)",
+      "source_value": "an assumption of the maturity model, not a finding: 'All fish were assumed immature below age 3 and mature by age 6' (Maki et al. 2001 method on scale spawning marks), chosen because in first-time-spawner (virgin) collections 'Few age 2 examples were observed', ages 3–5 were common and age-6 virgins 'generally rare'; the proportion mature at ages 3–5 was then estimated by region and sex. The report's background says 'Most river herring reach sexual maturity between 3 and 6 years of age' (p. 13)",
+      "location": "Section B p. 80 (PDF p. 124), §4.1.2 Maturity Curves; Section A p. 12 (peer review summary); Section B p. 13 (PDF p. 57)",
+      "quote": "All fish were assumed immature below age 3 and mature by age 6",
+      "conditions": "coastwide method, applied per stock-region and sex; immature fish are scarce in the in-river samples",
+      "verdict": "corrected",
+      "note": "The digits match but the conditions do not: it is a modelling cut-off (with a few age-2 first spawners observed), so the table should say 'maturity mostly at 3–5 (ASMFC 2024; the assessment assumes none before 3 and all by 6)' or use the background sentence 'most mature at 3–6'. The peer-review section (Section A p. 12) restates it as 'all fish younger than 3 were immature, and all fish older than 5 were mature'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other NNE values that could serve the model: Z40%SPR median 0.96 (95 % CI 0.75–1.62) for NNE alewife (p. 96); maximum age in Maine commercial runs mostly 5–7, range 4–9 (p. 96). The report's background says alewives 'further north' typically spawn from June through August (p. 13) — a coastwide generalisation that sits later than the Maine run timing (early May–early June) the table takes from Kircheis et al. 2002; worth a look by whoever checks that entry."
+}

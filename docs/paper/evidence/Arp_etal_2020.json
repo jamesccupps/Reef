@@ -1,0 +1,33 @@
+{
+  "key": "Arp_etal_2020",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (Copernicus, The Cryosphere; CC BY 4.0 per the first page); Table 1 and eq. 1 read on the page images",
+    "url": "https://tc.copernicus.org/articles/14/3595/2020/tc-14-3595-2020.pdf",
+    "file": "docs/research_notes/fetched/v2/Arp_etal_2020.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (PDF p. 1: 'The Cryosphere, 14, 3595–3609, 2020', doi:10.5194/tc-14-3595-2020) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Authors, year, title, journal, volume, issue (11) and pages all match. The ledger's URL is the authors' response (AR1) to the discussion paper tc-2020-125; every value the paper uses is in the final article, so cite the final article (https://doi.org/10.5194/tc-14-3595-2020) as the location; the discussion paper and AR1 can stay as extras."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "Stefan's law with Houlton's ≈ 900 °C·d of frost and coefficients from Alaskan lakes gives 40–80 cm of ice (project estimate; Arp et al. 2020)",
+      "kind": "arithmetic",
+      "source_value": "Stefan equation Z_ice = α·√AFDD (eq. 1; α in cm °C^−1/2 d^−1/2, AFDD in °C·d). Average α for the Alaskan lake records: 1.3 Smith Lake (Fairbanks), 2.0 Lake Minchumina, 2.6 the Utqiaġvik lakes and 2.6 Lake Hood (Anchorage) (Table 1); in the literature α runs from 0.4 for snow-covered rivers to as high as 2.7 for snow-free lakes (p. 3604)",
+      "location": "p. 3599 (PDF p. 5), eq. 1; p. 3597 (PDF p. 3), Table 1 (read on the page image); pp. 3604–3605 (PDF pp. 10–11), Section 3.3",
+      "quote": "interior lakes studied had average α values of 1.3 in Fairbanks and 2.0",
+      "conditions": "α fitted per water body from late-winter maximum ice thickness (MIT) observations and air-temperature AFDD at the time of MIT; Alaskan lakes and rivers, 1962–2019; low α = deep, consistent snowpack (interior), ~2.6 = windy coastal lakes",
+      "verdict": "confirmed",
+      "note": "Arithmetic: √900 = 30, so α 1.3 → 39 cm, 2.0 → 60 cm, 2.6 → 78 cm (the lake averages), 2.7 → 81 cm (the snow-free literature value): '40–80 cm' holds. The 2.7 is a literature value Arp et al. quote, not one of their Alaskan lake fits; the Alaskan lake averages alone give 39–78 cm. The ≈ 900 °C·d for Houlton is not from this paper (the notes sum Houlton normals: Dec −6.2, Jan −10.6, Feb −9.6, Mar −3.6 °C → 192 + 329 + 269 + 112 = 901 °C·d; the normals themselves were not checked here). Arp et al.'s AFDD is accumulated up to the date of maximum thickness, so a Dec–Mar sum is only an approximation of it."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "A close analogue for Houlton: Lake Hood, Anchorage, had an average AFDD of only 921 °C·d (Table 1) with α 2.6, and its average MIT for 1997–2019 was 67 cm (p. 3603, PDF p. 9), within the paper's 40–80 cm (the product of the two averages, 2.6·√921 ≈ 79 cm, is higher than the mean of the yearly values). Lake Hood's earlier observations (from 1967) were anomalously thick (α averaging 4.8), which the authors suspect came from snow compacted by ski planes or grooming. River α values (1.9–3.3) were higher than the literature suggests, possibly from snow-ice and overflow. Snow explained most interannual MIT variation at most sites (at Barrow Peninsula lakes 68 % by α vs 32 % by AFDD, p. 3604), which supports the paper's emphasis on snow and white ice in the next sentence."
+}

@@ -1,0 +1,31 @@
+{
+  "key": "Arrington_etal_2002",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "PDF posted openly on the Texas A&M aquatic ecology lab's own site (Winemiller lab; the authors' department), a lab reprint copy",
+    "url": "https://aquaticecology.tamu.edu/wp-content/uploads/sites/3/2012/07/Arrington-etal_2002_Ecology.pdf",
+    "file": "docs/research_notes/fetched/v2/Arrington_etal_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page (PDF p. 1: 'Ecology, 83(8), 2002, pp. 2145–2151') and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "D. Albrey Arrington, Kirk O. Winemiller, William F. Loftus, Senol Akin. Title printed 'How often do fishes \"run on empty\"?'."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.3",
+      "claim": "across studies, 35 % of diurnal piscivores had empty stomachs, against 16 % of fishes as a whole",
+      "location": "p. 2149 (PDF p. 5), Results and discussion (Trophic classification); p. 2145 (PDF p. 1), Abstract; Table 2, p. 2148",
+      "quote": "was similar to that of our diurnal piscivores (35.2 Ϯ 3.5%; Table 2)",
+      "conditions": "species-level percentages of individuals with empty stomachs, averaged across species (mean ± 1 SE): diurnal piscivores 35.2 ± 3.5 % (50 species, Table 2) vs all fishes 16.2 ± 1.2 % (254 species, 36,875 individuals; species with ≥ 10 fish from one location, mean 145 per species); the authors' own diet collections from the Zambezi (Africa), Río Tortuguero and Orinoco basins (Central/South America) and Matagorda Bay, the Kissimmee River and the Everglades (Texas, Florida); all seasons, juveniles and adults pooled",
+      "verdict": "confirmed",
+      "note": "The digits and comparison hold. Precise wording: 'on average 35 % of a diurnal piscivore species' individuals had empty stomachs, against 16 % across 254 species'. 'Across studies' means across the authors' own pooled field collections (tropical and subtropical rivers, an estuary and Florida wetlands), not a literature review; no temperate lake is included. Engulfers (prey swallowed whole, e.g. largemouth bass) were empty significantly more often than biters, and species with extended parental care were over-represented among those empty > 50 % — both relevant to pickerel and smallmouth."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Nocturnal fishes were empty more often (18.9 ± 2.2 %) than diurnal (15.4 ± 1.1 %); nocturnal piscivores less often than diurnal piscivores (Table 2). The authors note including juveniles probably understates piscivores' empty-stomach rate (ontogenetic diet shifts)."
+}

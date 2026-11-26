@@ -1,0 +1,33 @@
+{
+  "key": "Allen_etal_2011",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "only the abstract, on the USGS Publications Warehouse record (which links to the publisher, no PDF)",
+    "url": "https://pubs.usgs.gov/publication/70005855",
+    "file": "docs/research_notes/fetched/v2/Allen_etal_2011.usgs.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (and the USGS record)",
+    "ok": true,
+    "corrections": "",
+    "note": "Allen, Micheal S.; Rogers, Mark W.; Catalano, Matthew J.; Gwinn, Daniel G.; Walsh, Stephen J. 2011. TAFS 140(4): 1093–1100 — matches. Crossref now names Oxford University Press as the publisher (AFS journals moved there); the DOI resolves to academic.oup.com. Not checked against the title page."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.10",
+      "claim": "in six 0.4-ha ponds adult (black bass) numbers did not predict October age-0 numbers (Allen et al. 2011)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The abstract (USGS record) agrees: largemouth bass, six 0.4-ha hatchery ponds stocked with 6–40 adults over 2 years, drained in October; 'no relationship between stock abundance and recruitment', recruit abundance highly variable within and among density groups, prey abundance and age-0 growth fell with age-0 density. If the rewrite keeps it on the abstract, say '(abstract)' and name the species (largemouth bass)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1080/00028487.2011.599259", "status": 403, "note": "resolves to https://academic.oup.com/tafs/article/140/4/1093/7877742; refused (OUP); a library login would open it" },
+    { "url": "https://pubs.usgs.gov/publication/70005855", "status": 200, "note": "abstract only; links to the DOI, no PDF" },
+    { "url": "https://scholar.archive.org/search?q=doi:\"10.1080/00028487.2011.599259\"", "status": 200, "note": "no archived copy" },
+    { "url": "web search (title; authors + ponds)", "status": 0, "note": "no author or institutional free copy found" }
+  ],
+  "notes": "The DOI page at OUP (TAFS 140(4): 1093–1100) is what a library login would open. The paper is a pond experiment on largemouth bass, not smallmouth, and at hatchery-pond scale; the §3.6.10 sentence groups it under 'black bass', which is fine if the species is named."
+}

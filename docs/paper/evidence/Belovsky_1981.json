@@ -1,0 +1,33 @@
+{
+  "key": "Belovsky_1981",
+  "reader": "wave-3 batch w3-26",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "PDF posted openly on the author's own lab website (Belovsky lab, University of Notre Dame, publications page; a JSTOR download of the article); the article is also free (bronze) at Wiley, which refused the script",
+    "url": "https://belovskylab.nd.edu/assets/193220/belovsky_g.e._1981b..pdf",
+    "file": "docs/research_notes/fetched/v2/Belovsky_1981.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the first page of the article (PDF p. 2: 'Ecology, 62(4), 1981, pp. 1020-1030') and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Gary E. Belovsky (Society of Fellows, Harvard; Dept. of Zoology, University of Washington). PDF p. 1 is a JSTOR cover sheet, so PDF page = printed page − 1018."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "(for moose) aquatic plants supply sodium and leaves supply energy (Belovsky 1981; Botkin et al. 1973, abstract only)",
+      "location": "p. 1020 (PDF p. 2), Introduction; p. 1027 (PDF p. 9), minimum digestibility computation",
+      "quote": "consumed aquatic plants for sodium and deciduous leaves and forbs for energy during summer",
+      "conditions": "Isle Royale National Park, Michigan, summer; the result of Belovsky's (1978) linear-programming optimal-foraging model, restated here as background; moose preference for aquatic species correlated with plant sodium (r² = .98, N = 6; Belovsky & Jordan, in press)",
+      "verdict": "confirmed",
+      "note": "The 1981 paper states it but does not test it: it restates Belovsky (1978) and Belovsky & Jordan (1981, 'Sodium dynamics and adaptations of a moose population'), and its own analysis is restricted to plants eaten for energy (deciduous leaves and forbs in summer, twigs in winter). It also notes 'a certain quantity of aquatics must be consumed to satisfy sodium requirements' (p. 1027) and that deciduous leaves were 'the main energy source' (p. 1020). For the primary evidence cite Belovsky (1978, Theor. Popul. Biol.) and Belovsky & Jordan (1981) alongside or instead."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.2307/1937001", "status": 403, "note": "Wiley refused the script (the article is listed as free/bronze)" }
+  ],
+  "notes": "The paper's model predicts diet composition from a minimum nutrient (protein plus ash) threshold and leaf/twig size limits; moose appeared to use risk aversion rather than perfect knowledge. Nothing in it bears on aquatic feeding rates."
+}
