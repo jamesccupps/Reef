@@ -1,0 +1,32 @@
+{
+  "key": "Auffray_etal_2023",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "article not obtained (Elsevier, not open access: Crossref lists only Elsevier's TDM licence and Europe PMC marks it not open access). The abstract was read on the INRS institutional repository record (EspaceINRS eprint 15420), which says the full text is not hosted there. Stand-in read in full: Mathieu Auffray's M.Sc. thesis (mémoire), 'Influence des petits barrages sur la température des cours d'eau dans une aire protégée du Québec méridional', Université du Québec en Outaouais, December 2021, posted openly in UQO's institutional repository (https://di.uqo.ca/id/eprint/1356/1/Auffray_Mathieu_2021_memoire.pdf, saved as docs/research_notes/fetched/v2/Auffray_etal_2023.memoire2021.pdf); its Chapter II is the article's French draft, with the same five authors",
+    "url": "https://espace.inrs.ca/id/eprint/15420/",
+    "file": "docs/research_notes/fetched/v2/Auffray_etal_2023.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the EspaceINRS record",
+    "ok": true,
+    "corrections": "",
+    "note": "Auffray, M., Senécal, J.-F., Turgeon, K., St-Hilaire, A. & Maheu, A. 2023. Science of The Total Environment 869: 161445 (April 2023 issue). The title's 'similar warming effect than lakes' is as published."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "lake outlets run warm: natural lakes raised outlet streams by 3.4 °C in southern Quebec (Auffray et al. 2023, abstract)",
+      "verdict": "unchecked",
+      "note": "Article not read (the paper itself marks it 'abstract'). The abstract (EspaceINRS record): 'In August 2020, we observed an average warming of 3.7 °C downstream of reservoirs … the warming effect of reservoirs was not significantly different from the warming effect of natural lakes (3.4 °C)'. The stand-in thesis (read in full; Chapter II, printed pp. 18–28, PDF pp. 26–36) gives the conditions, which the rewrite should carry: the 3.4 °C is the mean difference in AUGUST-MEAN water temperature (Mmo8) between the main inflowing tributary and the outlet stream, with the outlet sensor 'le plus proche possible de l'exutoire', in August 2020 only, for FOUR small natural lakes in Gatineau Park (Kelly 27.4 ha, Lusk 33.4, Kidder 5.8, Meunier 1.9; Table 1, printed p. 19); SD 2.9 °C, range 0.4 °C (Lusk) to 6.7 °C (Kelly) (printed pp. 27–28: 'un réchauffement moyen de 3,4 °C (écart-type = 2,9 °C)'). Five lakes were instrumented; sensor failures left four. Below the lakes the mean daily range fell by 2.2 °C. The thesis supports the paper's wording if it adds 'in August, below four small lakes (2–33 ha)'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/j.scitotenv.2023.161445", "status": 302, "note": "to linkinghub.elsevier.com → ScienceDirect (PII S0048969723000608); the script was refused (400, ATN error page); subscription article — the page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1016/j.scitotenv.2023.161445%22&format=json&resultType=core", "status": 200, "note": "1 hit, isOpenAccess N, no PMC copy" },
+    { "url": "https://espace.inrs.ca/id/eprint/15420/", "status": 200, "note": "repository record with abstract only: 'Ce document n'est pas hébergé sur EspaceINRS'" }
+  ],
+  "notes": "Recommend citing the thesis for the numbers (Auffray, M. 2021. M.Sc. thesis, Université du Québec en Outaouais, di.uqo.ca eprint 1356), or keep 'Auffray et al. 2023' and add the conditions above. Other values in the thesis that bear on the brook below Upper: reservoirs (surface-release dams under 4 m) warmed their outlets by 3.7 °C (SD 2.2) in August 2020; distance to an upstream water body, drainage area and the share of the watershed in water bodies were the main predictors of August stream temperature in a GAM; the 25 °C threshold used is brook trout's critical maximum (Hasnain et al. 2010). The lakes are small lakes in Gatineau Park, a 361-km² protected area of mostly deciduous forest on the Canadian Shield (printed p. 16); their depths and whether they stratify are not given in Table 1, and the warming depended strongly on the lake (0.4 to 6.7 °C), so 3.4 °C is not a transferable constant for Upper Hot Brook Lake's outlet."
+}

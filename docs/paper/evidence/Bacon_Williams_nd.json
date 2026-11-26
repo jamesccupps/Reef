@@ -1,0 +1,41 @@
+{
+  "key": "Bacon_Williams_nd",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the analysis is unpublished; the only form found is Figure 2 and its paragraph in the Range Ponds 2024 Water Quality Assessment, as posted on the Range Ponds association's own site (rangeponds.org, served from its Squarespace file store), the report being written by Scott Williams (LWRMA), the 'Williams, LSM' of the analysis. The figure was read on the page image (PDF p. 4)",
+    "url": "https://www.rangeponds.org/s/Range-Ponds-2024-Water-Quality-Assessment-1.pdf",
+    "file": "docs/research_notes/fetched/v2/Bacon_Williams_nd.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's Figure 2 caption and text (p. 4) and its signature (p. 18)",
+    "ok": true,
+    "corrections": "",
+    "note": "Figure 2: 'Maine Lake Clarity Compared to January - July Precipitation', 'Source: Bacon, MDEP; Williams, LSM'; text: 'An observational analysis of the Secchi transparency (water clarity) of Maine lakes from 2001 through 2017 (Linda Bacon/MEP; and Scott Williams/LSM)'. The entry's description matches. The paper's in-text form 'Bacon & Williams, via Range Ponds 2024' should name the report as Williams (LWRMA) 2024 to match the RangePonds_2024 evidence."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.7 (02_synthesis_physical_to_plants.md:372)",
+      "claim": "Maine lakes are clearer in droughts (Bacon & Williams, via Range Ponds 2024)",
+      "location": "p. 4, text beside Figure 2; p. 5, first paragraphs",
+      "quote": "a significant number of Maine lakes tend to be clearer during drier years",
+      "conditions": "observational, Maine lakes' Secchi transparency 2001–2017; Figure 2 plots, for each year, the share of lakes 'More Clear', 'Same' and 'Less Clear' (bars) against January–July rainfall in inches (line); the report adds 'While a majority of Maine's lakes appear to be clearer during drier years, smaller groups of lakes are either unchanged, or in some cases, are less clear' (p. 5). The number of lakes, the baseline ('clearer' than what) and any statistics are not given",
+      "verdict": "confirmed",
+      "note": "Confirmed in substance; 'a majority of Maine lakes are clearer in dry years' would be closer than 'Maine lakes are clearer in droughts'. The figure shows dry/wet years within 2001–2017, not drought as such."
+    },
+    {
+      "paper": "§3.1.7 (02_synthesis_physical_to_plants.md:372)",
+      "claim": "summer Secchi falls with color and with January–June precipitation (Bacon & Williams, via Range Ponds 2024)",
+      "source_value": "the precipitation window is January–July (Figure 2's title and right axis 'January - July Rainfall (inches)'; the text says 'January through mid- summer'); the analysis as reported says nothing about color, and does not say 'summer' Secchi",
+      "location": "p. 4, text and Figure 2 (page image)",
+      "quote": "more precipitation during the period from January through mid- summer",
+      "conditions": "'A significant number of Maine lakes have been less clear during years when there is more precipitation during the period from January through mid- summer' (p. 4)",
+      "verdict": "corrected",
+      "note": "Write 'January–July' (or 'January to mid-summer') and drop 'with color' from this attribution. Color appears in the report only in its discussion of the Range Ponds themselves (p. 1: high color after the wet 2023 reduced clarity; p. 9: natural color above about 25 units 'can significantly influence water clarity'), not as a finding of the statewide analysis."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "show.mjs found no in-text citation because the paper writes 'Bacon & Williams, via Range Ponds 2024' (no year); the one citing sentence is §3.1.7, 02_synthesis_physical_to_plants.md:366–372 (and the same text in hot_brook_lakes.md:883). The analysis exists only as this figure and paragraph; no DEP or Lake Stewards publication of it was looked for beyond the report. Agrees with the RangePonds_2024 reader's findings on the same page."
+}

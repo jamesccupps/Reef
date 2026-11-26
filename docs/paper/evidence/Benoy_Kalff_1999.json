@@ -1,0 +1,35 @@
+{
+  "key": "Benoy_Kalff_1999",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Wayback Machine capture (24 July 2008) of the PDF the publisher, the American Society of Limnology and Oceanography, then served free on its own site (aslo.org/lo/toc/vol_44/issue_4/1081.pdf); the article is also free ('bronze') on Wiley, but Wiley refused the script with a bot check",
+    "url": "http://web.archive.org/web/20080724022001id_/http://aslo.org/lo/toc/vol_44/issue_4/1081.pdf",
+    "file": "docs/research_notes/fetched/v2/Benoy_Kalff_1999.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "corrections": "",
+    "note": "Glenn A. Benoy and Jacob Kalff, 'Sediment accumulation and Pb burdens in submerged macrophyte beds', Limnol. Oceanogr. 44(4), 1999, 1081–1090. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7",
+      "claim": "plant beds accumulate 2–20 times more sediment than open bottom (Benoy & Kalff 1999)",
+      "source_value": "2 to 20 times more per m² than the PROFUNDAL (deep-water) zone, not than open (unvegetated) littoral bottom: macrophyte-bed bulk sediment accumulation rates (Pb-dated, ~110 yr) against published inorganic rates of 15–78 g m⁻² yr⁻¹ for profundal Lake Memphremagog (Rowan et al. 1992)",
+      "location": "p. 1081 (PDF p. 1), abstract; p. 1089 (PDF p. 9), Discussion; Table 2, p. 1085 (PDF p. 5)",
+      "quote": "rates 2 to 20 times greater (per m2) than in the profundal zone",
+      "conditions": "30 macrophyte-bed sites in Lake Memphremagog (Quebec–Vermont), three cores taken per site and the longest analysed (all three at 5 sites), sediment dated by the stable-Pb horizon (~110 yr); bulk SAR (dry weight, mostly inorganic) mean 743.8 g m⁻² yr⁻¹, range 38.8–1,669.8 over 29 sites (Table 2, read on the page image); total SAR mean 1.7 mm yr⁻¹; 4 of the 30 sites had no appreciable accumulation, and littoral sites steeper than about 10 % or more exposed than about 10 km² cannot accumulate sediment at all",
+      "verdict": "corrected",
+      "note": "The digits are right but the comparison is beds versus deep-water bottom. Unvegetated littoral bottom was not measured; on steep or exposed shores it accumulates nothing, so 'than the deep-water (profundal) bottom' is the faithful wording. The rates scale with plant biomass density (best predictor of total and organic SAR)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1999.44.4.1081", "status": 403, "note": "Wiley bot check (OpenAlex lists this free 'bronze' PDF)" },
+    { "url": "https://aslopubs.onlinelibrary.wiley.com/doi/pdf/10.4319/lo.1999.44.4.1081", "status": 403, "note": "Wiley bot check" }
+  ],
+  "notes": "Other values: anthropogenic Pb burdens in the littoral beds averaged almost 4.5 times the profundal burdens of nine Eastern Townships lakes (p. 1089); peak Pb 115 vs background 31 µg/g; organic SAR mean 83.1 g m⁻² yr⁻¹; biomass density, then mean biomass, best predicted total and organic SAR, while slope and exposure mattered mainly at the extremes. The study sites had exposures up to 25.4 km² (Table 2), so the exposure thresholds do not transfer to the small Hot Brook lakes, but the plant-density effect may."
+}

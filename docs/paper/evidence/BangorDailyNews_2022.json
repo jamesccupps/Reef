@@ -1,0 +1,39 @@
+{
+  "key": "BangorDailyNews_2022",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article page on the newspaper's own site, as served in full in the page's HTML to an anonymous, honestly identified client (no login, no script run, nothing hidden by CSS); the BDN runs a metered paywall script that may cover articles after a reader's free allowance — noted so the human can judge",
+    "url": "https://www.bangordailynews.com/2022/07/06/outdoors/fishing-fly-hatch-joam40zk0w/",
+    "file": "docs/research_notes/fetched/v2/BangorDailyNews_2022.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article page (headline, byline and dates)",
+    "ok": true,
+    "corrections": "",
+    "note": "'Go fishing now for the fly hatch that brings out super-sized trout', by Leighton Wass, Outdoors contributor, July 6, 2022 (updated July 15, 2022), posted in Outdoors. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.7",
+      "claim": "the Hexagenia limbata pond hatch begins once surface water reaches 18–21 °C (Bangor Daily News 2022, popular source)",
+      "location": "web page (one page), paragraph on hatch onset",
+      "quote": "I have found that most Hex hatches begin when surface temperatures are between 65-70 degrees.",
+      "conditions": "the author's own angling experience in Maine ('I have found'), in °F (65–70 °F = 18.3–21.1 °C); 'most' hatches; not limited to ponds — the article says hatches on small, shallow ponds come first and deep lakes and high-elevation waters later; onset is earlier after several days of 80–90 °F air; a hatch typically lasts 10 days to two weeks",
+      "verdict": "confirmed",
+      "note": "The conversion is right. Better worded as 'most hatches begin at surface temperatures of about 18–21 °C (65–70 °F) in one Maine angler's experience', which the paper's 'popular source' tag already half says."
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "Hexagenia emergence is near dusk (Bangor Daily News 2022, popular source)",
+      "location": "web page (one page), paragraph on the downside of fishing the hatch",
+      "quote": "The majority of Hex mayflies come off the water near dark",
+      "conditions": "'… and the amount of time to land fish when they are rising is short, maybe 15 to 30 minutes'",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "The 'late June to late July in Maine records' in the same sentence is the project's iNaturalist query, not this article; the article says that near Greenville the 2022 hatch began the week of June 20, that the last week of June and first week of July 'were always good bets', and that hatches have lately begun earlier. Other content: nymphs live two years in the bottom sediment of lakes and ponds; adult duns are about 2 inches long including tails and live about two days; the hatch is widely called the Green Drake hatch in Maine though the true Eastern Green Drake (Ephemera guttulata) is a different, rare species there. The author's byline note says he taught high-school biology for 33 years and is a freelance writer; he is not a researcher."
+}

@@ -1,0 +1,38 @@
+{
+  "key": "Bain_Helfrich_1983",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: no open copy found, and Crossref holds no abstract for it",
+    "url": "",
+    "file": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Bain, Mark B.; Helfrich, Louis A. (1983). Role of Male Parental Care in Survival of Larval Bluegills. Transactions of the American Fisheries Society 112(1): 47–52. The entry agrees. The entry's own note says only the abstract was read 'by a helper'."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "in bluegill colonies, median predation loss was 68 % from unguarded and 14 % from guarded nests (Bain & Helfrich 1983, abstract)",
+      "verdict": "unchecked",
+      "note": "Neither the article nor its abstract could be read here. Questions for whoever reads it: whether 68 % and 14 % are medians (as the paper says) or means, whether 'predation loss' is of eggs, larvae or both, the number of nests, how males were removed, and the lake and year."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1983)112<47:ROMPCI>2.0.CO;2", "status": 302, "note": "resolves to https://academic.oup.com/tafs/article/112/1/47/7892453 (Oxford University Press now hosts TAFS) — the page a library login would open" },
+    { "url": "https://academic.oup.com/tafs/article/112/1/47/7892453", "status": 403, "note": "Cloudflare bot check ('Just a moment...'); not attempted further" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1983)112%3C47:ROMPCI%3E2.0.CO;2", "status": 403, "note": "Taylor & Francis (former host) refused the script" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659%281983%29112%3C47%3AROMPCI%3E2.0.CO%3B2", "status": 403, "note": "Wiley (former host) refused the script" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(1983)112%3C47:ROMPCI%3E2.0.CO;2", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(1983)112<47:ROMPCI>2.0.CO;2%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://vtechworks.lib.vt.edu/server/api/discover/search/objects?query=bluegill%20parental%20care%20Bain", "status": 200, "note": "Virginia Tech repository (the authors' institution then): no copy of the article or a thesis on it" },
+    { "url": "http://archive.org/wayback/available?url=www.tandfonline.com/doi/abs/10.1577/1548-8659(1983)112%3C47:ROMPCI%3E2.0.CO;2", "status": 200, "note": "no Wayback capture of the abstract page (also none of the Wiley abstract page)" },
+    { "url": "https://scholar.archive.org/search?q=%22Role+of+male+parental+care+in+survival+of+larval+bluegills%22", "status": 302, "note": "redirects to a /verify bot check" }
+  ],
+  "notes": "Blocked. The paper already flags it 'abstract'; under the source-pass rules the 68 %/14 % stay unchecked until the article is read (DOI 10.1577/1548-8659(1983)112<47:ROMPCI>2.0.CO;2; 6 pages). The project notes that cite it are Maine lakes ponds and streams/recruitment_compensation_maturity.md and Real lake ecology for calibration/larval_mortality.md."
+}

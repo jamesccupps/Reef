@@ -1,0 +1,43 @@
+{
+  "key": "AuClair_1960",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. The booklet exists only in print as far as could be found (University of Maine, Fogler Library, Special Collections, call number St.Docs. I 54/2.10:W58/960; no digital copy in the catalogue, Internet Archive, or the open routes tried). Only the secondary accounts were read, for what they attribute to it: Stanley & Danie 1983 (USFWS species profile, DTIC copy already fetched for that entry, docs/research_notes/fetched/v2/Stanley_Danie_1983.txt, PDF p. 10) and Fischer, Hall & Sullivan 1989b (govinfo CZIC copy, docs/research_notes/fetched/v2/Fischer_etal_1989b.txt)",
+    "url": "",
+    "file": ""
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "the University of Maine library catalogue record (public Primo view, record alma991037808209708681) and the literature cited of Stanley & Danie 1983 (PDF p. 15 of the fetched copy)",
+    "ok": true,
+    "corrections": "",
+    "note": "Catalogue: AuClair, Roger P., 'White perch in Maine', Augusta, Maine: Maine Department of Inland Fisheries and Game, 1960; '16 pages : illustrations ; 23 cm'. Stanley & Danie list it as 'AuClair, R.P. 1960. White perch in Maine. Maine Department of Inland Fisheries and Game, Augusta. 16 pp'. The entry agrees, and rightly says 'Cited via Fischer, Hall & Sullivan 1989b'."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "drops of 4–5 °C are lethal to white perch eggs (AuClair 1960 and Hardy 1978, via Fischer, Hall & Sullivan 1989b)",
+      "verdict": "unchecked",
+      "note": "AuClair 1960 not read, so what it says and in which unit is still unknown. The two secondary accounts: Stanley & Danie 1983 (PDF p. 10): 'AuClair (1960) stated that temperature drops of 4° to 5°C (7° to 9°F) were lethal. Hardy (1978) found that sudden drops of 2° to 3°C (4° to 5°F) induced mortality'; Fischer, Hall & Sullivan 1989b (Temperature section and Table 1, citing 'Auclair, 1960' and Hardy 1978 together): 'temperature drops of 4 - 5 C were lethal to developing eggs, while sudden drops of 2 - 3 C were sufficient to cause egg mortality'. Fischer et al. look like a condensation of Stanley & Danie. See notes for why the °C may be a misreading of °F."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "sudden drops of 2–3 °C kill white perch eggs (attributed jointly to AuClair 1960 and Hardy 1978, via Fischer, Hall & Sullivan 1989b)",
+      "verdict": "unchecked",
+      "note": "AuClair 1960 not read. In Stanley & Danie 1983 (PDF p. 10) the 2–3 °C (4–5 °F) figure is Hardy's, not AuClair's, and it 'induced mortality' (some eggs), not 'kill' all. Fischer et al. write 'sufficient to cause egg mortality'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://maine.primo.exlibrisgroup.com/primaws/rest/pub/pnxs?q=any,contains,AuClair%20white%20perch&vid=01MAINE_INST:DigCol&scope=MyInst_and_CI&tab=Everything&inst=01MAINE_INST", "status": 200, "note": "University of Maine catalogue: print only, UM Orono Special Collections, St.Docs. I 54/2.10:W58/960, available; no digital link. A human could ask Fogler Library Special Collections for a scan (16 pages)" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(white perch maine)", "status": 200, "note": "0 items; also 'AuClair perch' 0, '\"Inland Fisheries and Game\" AND perch' 0; '\"white perch\" AND maine AND mediatype:texts' found only the DTIC copy of Stanley & Danie 1983" },
+    { "url": "https://catalog.hathitrust.org/Search/Home?lookfor=%22white+perch+in+maine%22&type=all", "status": 403, "note": "Cloudflare bot check ('Just a moment...'); not attempted further" },
+    { "url": "https://digitalmaine.com/do/search/?q=%22white%20perch%20in%20maine%22", "status": 403, "note": "Maine State Library's Digital Maine repository: Cloudflare bot check; a human could search it there" },
+    { "url": "https://www.biodiversitylibrary.org/search?searchTerm=%22white+perch+in+maine%22", "status": 403, "note": "Cloudflare bot check" },
+    { "url": "https://scholar.archive.org/search?q=%22White+perch+in+Maine%22", "status": 302, "note": "redirects to a /verify bot check" },
+    { "url": "https://www.googleapis.com/books/v1/volumes?q=intitle:%22white+perch+in+maine%22", "status": 429, "note": "Google Books API daily quota exhausted" },
+    { "url": "http://web.archive.org/cdx/search/cdx?url=maine.gov/ifw/&matchType=prefix&filter=original:.*[Pp]erch.*", "status": 200, "note": "no captured MDIFW file with 'perch' in its path" }
+  ],
+  "notes": "THE LEAD (is the 4–5 °C a °F misread as °C?) cannot be settled without the booklet, but the circumstantial case is strong. (1) The same author's popular account two years earlier (AuClair 1958, in Everhart's Fishes of Maine, read for that entry, printed p. 73) says 'A sudden drop of 4 or 5 degrees in water temperature can wipe out all the eggs deposited', with no unit printed, in an account whose only other temperature is '60° F'; 4–5 °F = 2.2–2.8 °C. (2) Stanley & Danie 1983 (PDF p. 10) give AuClair 1960 as '4° to 5°C (7° to 9°F)' — the °F there is their own conversion, so they read the number as °C — and in the next sentence give Hardy 1978 as 'sudden drops of 2° to 3°C (4° to 5°F) induced mortality'. Hardy's 4–5 °F is exactly AuClair's 1958 number, so Hardy probably repeats AuClair in °F. (3) Fischer, Hall & Sullivan 1989b then merged the two sentences under both names. If AuClair 1960 repeats the 1958 wording, the paper's two clauses ('drops of 2–3 °C kill … drops of 4–5 °C are lethal') are one observation, AuClair's '4 or 5 degrees' (°F), counted twice in two units. Until the booklet is read, the safe sentence is AuClair 1958's own: a sudden drop of '4 or 5 degrees' (°F by the context, about 2–3 °C) 'can wipe out all the eggs deposited', with his caveat that spawning spreads over ten days to two weeks so a complete failure in any year is very unlikely; and drop the separate 4–5 °C claim, or mark it 'reported as °C by Stanley & Danie 1983; probably °F'. Neither secondary account gives data, a method or a source behind the figure; it reads as a field biologist's remark. The UMaine catalogue also holds AuClair's 1956 M.S. thesis (see AuClair_1956.json), which may be the origin of the remark."
+}

@@ -1,0 +1,32 @@
+{
+  "key": "Bacon_2019",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the presentation's PDF (39 slides) as posted by Lake Stewards of Maine on its own site (lakestewardsofmaine.org, wp-content uploads, August 2019). getsrc flagged it 'scanned' because the text layer is thin (slides are mostly images), but each slide's text is in the layer; the slide that matters (PDF p. 6) was also read on the page image",
+    "url": "https://www.lakestewardsofmaine.org/wp-content/uploads/2019/08/ClimateChangeCaseStudies.pdf",
+    "file": "docs/research_notes/fetched/v2/Bacon_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title slide (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "'The Influences of Climate Change on Lake Water Quality, Including Recent Case Histories', Lake Stewards of Maine Annual Meeting, July 27, 2019; Linda Bacon, Limnologist, Lake Assessment Section Leader, Maine Department of Environmental Protection. The entry is right."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.4",
+      "claim": "of 29 lakes in a Maine DEP analysis, 17 have significantly earlier ice-out and none later (Bacon 2019)",
+      "source_value": "the analysis is not DEP's: the slide credits a USGS compilation, 'USGS (Hodgkins, James & others, 2002+) compiled ice-out dates from 29 lakes having 64 to 163 years of data', and its map places the 29 lakes across New England (most in Maine, but some in New Hampshire and Massachusetts); 17 significantly earlier, 12 no trend, 0 significantly later",
+      "location": "slide 6 (PDF p. 6), 'Effects on Lakes: Earlier Ice Out & Decreased Ice Duration' (text layer and page image)",
+      "quote": "USGS (Hodgkins, James & others, 2002+) compiled ice-out dates from 29 lakes",
+      "conditions": "'17 Significantly Earlier / 12 No trend / 0 Significantly Later' printed on a plot of smoothed ice-out day against year, 1800–2000; records of 64 to 163 years; no test, period or significance level stated on the slide",
+      "verdict": "corrected",
+      "note": "The counts are right but the attribution and the scope are not: write 'of 29 New England lakes with 64–163-year records, 17 show significantly earlier ice-out and none later (USGS compilation by Hodgkins, James and others, as presented by Bacon 2019)', or better cite the USGS study directly — the same sentence already cites Hodgkins, James & Huntington 2005, which may be the same data set (not checked here)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Slide 7 (image only) plots annual ice-out day with a smoothed line for Damariscotta Lake, Lake Auburn and Cobbosseecontee Lake, Maine, from the 1840s to about 2005 (no numbers stated). The rest of the deck is qualitative (slides 8–17: what shorter ice cover promotes; the 'Jenga lake' analogy) followed by case studies of seven southern and central Maine lakes (Lake Auburn, Long Pond, Georges Pond, Highland Lake, Basin Pond, Togus Pond, North Pond); none is near Hot Brook and no other slide gives a number the paper uses."
+}

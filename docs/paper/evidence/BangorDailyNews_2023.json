@@ -1,0 +1,49 @@
+{
+  "key": "BangorDailyNews_2023",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article page on the newspaper's own site, as served in full in the page's HTML to an anonymous, honestly identified client (no login, no script run, nothing hidden by CSS); the BDN runs a metered paywall script that may cover articles after a reader's free allowance — noted so the human can judge",
+    "url": "https://www.bangordailynews.com/2023/04/24/aroostook/maine-endangered-bats-rebound-joam40zk0w/",
+    "file": "docs/research_notes/fetched/v2/BangorDailyNews_2023.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article page (headline, byline and dates)",
+    "ok": true,
+    "corrections": "",
+    "note": "'Endangered bats may be rebounding in Maine', by Kathleen Phalen Tomaselli, posted in Aroostook, dated April 24, 2023 (the page also shows April 23, 2023). The MDIFW source quoted is Cory Stearns, small mammal biologist. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.7",
+      "claim": "the regular bats of Aroostook County are the little brown, big brown, hoary, silver-haired and eastern red (Bangor Daily News 2023, quoting MDIFW)",
+      "location": "web page (one page), paragraph on Aroostook species",
+      "quote": "large brown, hoary, silver-haired and eastern red — occur regularly in Aroostook County",
+      "conditions": "'Only five of Maine’s bats — the little brown, large brown, hoary, silver-haired and eastern red — occur regularly in Aroostook County, Stearns said'; the eastern small-footed bat has never been found that far north, and the northern long-eared and tricolored bats only a few times",
+      "verdict": "confirmed",
+      "note": "The article says 'large brown' for the big brown bat; same species."
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "white-nose syndrome has been present since 2011",
+      "location": "web page (one page), paragraph on white-nose syndrome",
+      "quote": "First found in New York bats in 2006 and in Maine bats in 2011",
+      "conditions": "first found in Maine bats in 2011 (statewide, not an Aroostook record)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "white-nose syndrome has caused declines of about 95 % (stated right after the list of Aroostook's five regular bats)",
+      "source_value": "a 95 % drop in the STATE's bat population, and only in the species the fungus attacks: little brown, northern long-eared, eastern small-footed and tricolored; the migratory hoary, silver-haired and eastern red bats and the big ('large') brown bat are 'not affected by the fungus'. The article also says Aroostook's numbers are hard to know because no hibernation caves have been found there",
+      "location": "web page (one page), paragraphs on white-nose syndrome",
+      "quote": "leading to a dramatic 95 percent drop in the state’s bat population",
+      "conditions": "the reporter's sentence; the quoted MDIFW figure behind it is cave counts: 'We went from 300 to 400 bats among the three sites to the single digits in a couple years' (Stearns). Early signs of recovery: the Piscataquis cave's little brown bats rose from two in 2020 to 21 in 2023",
+      "verdict": "corrected",
+      "note": "As written the 95 % reads as applying to all five Aroostook bats; four of those five are unaffected. Write 'white-nose syndrome, in Maine since 2011, cut the state's cave-hibernating bats (chiefly little brown) by about 95 %; the three migratory species and the big brown bat are not affected (Bangor Daily News 2023, quoting MDIFW)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other content: Maine's eight bat species are all of special concern and three are state-endangered (little brown, northern long-eared, tricolored); summer acoustic monitoring also suggests the little brown bat is starting to increase; 'A pregnant female can eat her whole body weight in insects on a near nightly basis' (Stearns) — a popular figure beside the paper's Kurta et al. 1989 grams; big brown bats live mainly in attics and barns."
+}

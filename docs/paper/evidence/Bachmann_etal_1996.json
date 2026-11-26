@@ -1,0 +1,44 @@
+{
+  "key": "Bachmann_etal_1996",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the published article PDF (NRC typesetting, '© 1996 NRC Canada') posted openly by the University of South Florida's Water Atlas program on its own site (lake.wateratlas.usf.edu, upload/documents/f95-236.pdf); a university-hosted copy (READER rule 9). The URL was found in the project's research note (whole_lake_energy_flow.md)",
+    "url": "https://lake.wateratlas.usf.edu/upload/documents/f95-236.pdf",
+    "file": "docs/research_notes/fetched/v2/Bachmann_etal_1996.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page (printed p. 842)",
+    "ok": true,
+    "corrections": "",
+    "note": "Roger W. Bachmann, Bradley L. Jones, Donald D. Fox, Mark Hoyer, Lawrence A. Bull, and Daniel E. Canfield, Jr. 'Relations between trophic state indicators and fish in Florida (U.S.A.) lakes'. Can. J. Fish. Aquat. Sci. 53: 842–855 (1996); issue 4 per Crossref. The entry is right."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9",
+      "claim": "richer Michigan and Florida lakes average roughly 100–130 kg/ha of fish (Schneider 1973b; Bachmann et al. 1996) — the Florida part",
+      "location": "p. 849 (PDF p. 8), Results; Table 1 summary rows, p. 845 (PDF p. 4, read on the page image)",
+      "quote": "catches in both littoral and open-water blocknets averaged 131 kg⋅ha–1 (range 7–683 kg⋅ha–1)",
+      "conditions": "65 Florida lakes chosen to span oligotrophic to hypereutrophic (Table 1: TP mean 60, median 21 µg/L; chlorophyll mean 32, median 10 µg/L; mean depths 0.6–5.9 m, so no cold hypolimnia); whole-lake standing crop of all fish from rotenone in 0.08-ha blocknets, littoral and open-water nets weighted by habitat area, sampled once in the warm season (May–November), 1986–1992 (pp. 843–845). Table 1: mean 131, MEDIAN 92, range 7–683 kg/ha; littoral-zone crops average 200 kg/ha. Fish crop rose with TP, TN and chlorophyll but r² was only 0.24–0.28",
+      "verdict": "confirmed",
+      "note": "The Florida mean is 131 kg/ha (median 92). 'Roughly 100–130' holds for the mean; adding the median and the range (7–683) would show how wide it is. These are subtropical lakes without ice, which the authors give as a reason they differ from northern lakes (abstract, p. 842)."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "piscivores make up about 22 % (range 0–73 %) of fish biomass in Florida lakes (Bachmann et al. 1996)",
+      "location": "p. 851 (PDF p. 10), Results; methods p. 846 (PDF p. 5)",
+      "quote": "The piscivorous species as a group averaged about 22% of the total fish biomass",
+      "conditions": "'… in our lakes and ranged from 0 to 73%'; the 60 lakes with both littoral and open-water samples; piscivores = species piscivorous as adults: Florida and longnose gar, bowfin, chain and redfin pickerel, Atlantic needlefish, black crappie, largemouth bass (p. 846). The authors warn that 'absolute values would be overestimates because these species also feed on other food items'. Largemouth bass alone averaged 15 % (0–69 %) of biomass (p. 852). The piscivore share fell slightly with trophic state (r² 0.03–0.12) while their absolute biomass did not change (Table 4)",
+      "verdict": "confirmed",
+      "note": "Confirmed as stated. Worth adding that the share counts the whole biomass of species that also eat invertebrates (an upper bound by the authors' own caveat). By trophic class the piscivore share was 25, 28, 21 and 11 % (oligotrophic → hypereutrophic, p. 852), and with gizzard and threadfin shad removed from the total the piscivore share no longer correlated with trophic state (p. 852)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f95-236", "status": 403, "note": "publisher refused the script (the page a library login would open)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f95-236%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://lakewatch.ifas.ufl.edu/resources/bibliography/", "status": 200, "note": "Florida LAKEWATCH bibliography: no PDF of this article" }
+  ],
+  "notes": "Other values useful for the rewrite: on average 18 fish species per lake (4–44), with lake area explaining 70 % of the variance in species number and trophic state none (p. 849); 65 species in all; chain pickerel occurred in 13 of the lakes at 4.2 kg/ha where present, brown bullhead in 34 and redbreast sunfish in 7 (Table 3, p. 848, read on the page image — the layout text shifts this table's rows); Kautz (1980), quoted in the Discussion (p. 854), found sport-fish crops of 52, 89 and 65 kg/ha in oligotrophic, mesotrophic–eutrophic and hypereutrophic Florida lakes, not significantly different; Persson et al. (1988), cited on p. 843, found a major decrease in the proportion of piscivorous fish as Swedish lakes became more productive. Locations: PDF page n = printed page 841 + n."
+}

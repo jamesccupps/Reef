@@ -1,0 +1,34 @@
+{
+  "key": "BangorDailyNews_2025",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article page on the newspaper's own site, as served in full in the page's HTML to an anonymous, honestly identified client (no login, no script run, nothing hidden by CSS; the page's own wordCount, about 350, matches the text received); the BDN runs a metered paywall script that may cover articles after a reader's free allowance — noted so the human can judge",
+    "url": "https://www.bangordailynews.com/2025/03/26/outdoors/wildlife/maine-black-bears-hibernation-hungry-bird-feeders-trash-tips/",
+    "file": "docs/research_notes/fetched/v2/BangorDailyNews_2025.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article page (headline, byline and date)",
+    "ok": true,
+    "corrections": "",
+    "note": "'Maine’s bears are waking up. And they’re hungry.', by Christopher Burns, March 26, 2025, posted in Wildlife (URL under /outdoors/wildlife/). It relays MDIFW statements. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4",
+      "claim": "animal matter is under 10 % of the black bear's annual diet (Bangor Daily News 2025; North American Bear Center n.d.)",
+      "verdict": "unsupported",
+      "note": "The article gives no diet proportions at all. The project note (birds_mammals_people_evidence.md, line 281) attributes the '< 10 %' to the North American Bear Center only; cite that alone."
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "bear spring foods include fawns in late May–June (Bangor Daily News 2025; North American Bear Center n.d.)",
+      "verdict": "unsupported",
+      "note": "The article does not mention fawns or any animal prey. What it says about spring food, from MDIFW: 'Spring has only begun to sprung, leaving the bears with limited options, such as insects, grasses, sedges and leftover hard mast, the wildlife department said Tuesday' — so the paper could cite it for 'early-spring foods are insects, grasses, sedges and leftover hard mast (MDIFW, via Bangor Daily News 2025)' and keep the fawns on the Bear Center alone."
+    }
+  ],
+  "verdict": "unsupported",
+  "tried": [],
+  "notes": "Other content, attributed to MDIFW: in winter a denned black bear may take one breath every 15 to 45 seconds with a heart rate of eight to 21 beats a minute, and does not eat, drink or excrete; bears lose much weight over winter. The article's own tips (not attributed) say to take bird feeders in between April 1 and Nov. 1 (an indirect sign of the active season, not a den-emergence date). Nothing on den entry or emergence dates, bear density, or fish."
+}

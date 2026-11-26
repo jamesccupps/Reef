@@ -1,0 +1,34 @@
+{
+  "key": "Bajer_etal_2003",
+  "reader": "wave-3 batch w3-27",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Crossref's record (the publisher-deposited abstract); the article was not obtained",
+    "url": "https://api.crossref.org/works/10.1046/j.1095-8649.2003.00040.x",
+    "file": ""
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Bajer, P. G.; Whitledge, G. W.; Hayward, R. S.; Zweifel, R. D. (2003). Laboratory evaluation of two bioenergetics models applied to yellow perch: identification of a major source of systematic error. Journal of Fish Biology 62(2): 436–454. The entry agrees."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "the yellow perch models mis-estimated resting metabolism in a laboratory test, with growth errors tracking feeding rate (Bajer, Whitledge, Hayward & Zweifel 2003, abstract)",
+      "verdict": "unchecked",
+      "note": "Article not read. The Crossref abstract says it in substance: 'Results indicated deficiencies in estimates of resting routine metabolism by both models' and the growth-rate errors 'were strongly correlated with food consumption rate'. Its conditions, from the abstract: two size classes of age-2 yellow perch, each on two feeding schedules, at 21 °C; the two models were the Wisconsin (WI) and the Karas–Thoresson (KT) models. The abstract attributes the consumption-dependent errors to the costs of specific dynamic action, feeding activity metabolism or egestion and excretion, and the differences BETWEEN the models mainly to egestion and excretion. 'The yellow perch models' in the paper should read 'two yellow perch bioenergetics models (Wisconsin and Karas–Thoresson)', and the test was at one temperature (21 °C)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1046/j.1095-8649.2003.00040.x", "status": 302, "note": "resolves to https://onlinelibrary.wiley.com/doi/10.1046/j.1095-8649.2003.00040.x — the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/10.1046/j.1095-8649.2003.00040.x", "status": 403, "note": "Cloudflare bot check ('Just a moment...'); not attempted further" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1046/j.1095-8649.2003.00040.x%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://mospace.umsystem.edu/server/api/discover/search/objects?query=Bajer", "status": 200, "note": "University of Missouri repository (Hayward's lab): no copy of the article or of a thesis on these data" },
+    { "url": "https://scholar.archive.org/search?q=%22Laboratory+evaluation+of+two+bioenergetics+models+applied+to+yellow+perch%22", "status": 302, "note": "redirects to a /verify bot check" }
+  ],
+  "notes": "Blocked; the paper already marks it 'abstract'. If the article is read, check whether the resting-metabolism error is an over- or under-estimate and its size, since the paper uses it to say the FB4 yellow perch set is weak for these lakes."
+}
