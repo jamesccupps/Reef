@@ -1,0 +1,72 @@
+{
+  "key": "Chambers_Kalff_1985",
+  "reader": "t1-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (api.crossref.org); no full text found",
+    "url": "https://api.crossref.org/works/10.1139/f85-090",
+    "file": "docs/research_notes/fetched/v2/Chambers_Kalff_1985.crossref.json"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Title, journal, 42(4): 701–709 and 1985 (April issue) match Crossref. Crossref spells the second author 'Kaiff'; the paper's 'Kalff' was not checked against the title page (no full text)."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.3",
+      "claim": "Chambers & Kalff (1985; abstract) put the angiosperm limit at ~21 % of surface light and the charophyte limit at ~11 %",
+      "verdict": "unchecked",
+      "note": "No full text. The abstract says growing-season irradiance at the maximum depth of colonization was about 1800 J/cm² for angiosperms AND bryophytes and 1200 J/cm² for charophytes, 'on average, 21 and 11%' of the PAR incident on the water surface. So the paper's '(abstract)' tag is accurate; the 21 % also applies to bryophytes, and it is a mean across lakes (eight southern Québec lakes plus literature lakes), not a threshold."
+    },
+    {
+      "paper": "Table 3.4-2 (Angiosperms row; within §3.4.3's clear-water range '3.9–5.8 m')",
+      "claim": "angiosperm maximum colonization depth 4.51 / 4.78 / 5.15 m at Secchi 3.5 / 3.9 / 4.5 m",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "The inputs are from the abstract only: (zc)^0.5 = 1.33 log D + 1.40, D = mean summer Secchi depth (m). Redone: 4.51, 4.78, 5.15 — the arithmetic is right; the equation is unverified against the full text."
+    },
+    {
+      "paper": "Table 3.4-2 (Bryophytes row)",
+      "claim": "bryophyte maximum colonization depth 3.3 / 3.6 / 4.1 m at Secchi 3.5 / 3.9 / 4.5 m",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "From the abstract's (zc)^-0.5 = -0.48 log D + 0.81. Redone: 3.32, 3.61, 4.06 — the arithmetic is right; the equation is unverified against the full text."
+    },
+    {
+      "paper": "Table 3.4-2 (Charophytes row)",
+      "claim": "charophyte maximum colonization depth 6.1 / 6.7 / 7.6 m at Secchi 3.5 / 3.9 / 4.5 m",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "From the abstract's log zc = 0.87 log D + 0.31. Redone: 6.07, 6.67, 7.55 — the arithmetic is right; the equation is unverified against the full text."
+    },
+    {
+      "paper": "Table 3.4-2 (21 % and 11 % surface-light rows); §3.4.3 '2.0–2.6 m'",
+      "claim": "the depth of 21 % (and 11 %) of surface light with Kd = 2.70/SD: 2.02 / 2.25 / 2.60 m (2.86 / 3.19 / 3.68 m)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "The percentages are this entry's (abstract only); Kd = 2.70/SD is Koenings & Edmundson's. Redone z = ln(1/f)/Kd: 2.02, 2.25, 2.60 and 2.86, 3.19, 3.68 — right. The abstract's shares are of PAR incident on the water surface, while Kd attenuates light below the surface, so these depths ignore the loss at the surface itself (they are slightly too deep) — a small bias to state if the full text confirms 'incident'."
+    },
+    {
+      "paper": "§4.4; §5.6; src/w3/plants3.js:57 (lightLim 0.21 for ribbon-leaf, large-leaf and Robbins' pondweeds)",
+      "claim": "the rooted canopy's limit is 21 % of the surface's growing-season light at its bed (11 % is the charophytes')",
+      "verdict": "unchecked",
+      "note": "Consistent with the abstract (growing-season irradiance at zc, 21 % of incident surface PAR for angiosperms, 11 % for charophytes), but not checked against the full text. §4.4 and §5.6 cite it without the '(abstract)' tag that §3.4.3 carries; the project note macrophytes.md §2.1–2.2 marks it '[read]' while macrophyte_area_cover.md marks it '[abstract]'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f85-090", "status": 403, "note": "publisher (Canadian Science Publishing); subscription journal — a library login would open it" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f85-090", "status": 403, "note": "publisher PDF" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f85-090", "status": 403, "note": "publisher landing page" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f85-090?fields=title,openAccessPdf,externalIds,isOpenAccess", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1139/f85-090%22&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://api.openalex.org/works/doi:10.1139/f85-090", "status": 200, "note": "oa_status closed; no repository full text" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22depth+distribution+and+biomass+of+submersed%22&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 hits (also 0 for title words 'submersed macrophyte Secchi')" },
+    { "url": "https://mcgill.scholaris.ca/server/api/discover/search/objects?query=Chambers%20Kalff%20Secchi", "status": 200, "note": "McGill repository: no thesis by P. A. Chambers found (Duarte 1987's thesis is there, already cited)" },
+    { "url": "https://publications.gc.ca/site/eng/search/search.html?q=submersed+aquatic+macrophyte+communities+Secchi+depth", "status": 200, "note": "no hits" }
+  ],
+  "notes": "Abstract only (Crossref record saved in fetched/v2). Everything the paper and code take from this entry — the 21 %/11 % light shares and the three Secchi equations behind Table 3.4-2 — is in the abstract, so nothing looks wrong, but none of it can be confirmed until the full text is read (for the human: doi:10.1139/f85-090, a library copy). Things to check in the full text: whether 21 % is of PAR incident on the surface or just below it; the regressions' r², n and Secchi range (Hot Brook's analog 3.5–4.5 m should lie inside it); whether the 21 % is a mean with a spread. The abstract's parenthesis '1 cal/cm² = 0.239 J/cm²' has the conversion inverted (1 J = 0.239 cal), probably a typesetting slip in the abstract. The 'ALSO NAMED WITHOUT THE YEAR' sentence in §3.4.3 is Chambers & Prepas 1988, a different entry."
+}

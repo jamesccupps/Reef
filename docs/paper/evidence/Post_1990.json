@@ -1,0 +1,38 @@
+{
+  "key": "Post_1990",
+  "reader": "wave-1 batch t1-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the abstract only, from OpenAlex's record of the DOI (no open full text anywhere found)",
+    "url": "https://api.openalex.org/works/doi:10.1139/f90-063"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Post, John R. (1990), CJFAS 47(3): 554–560 — matches the reference"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (yellow perch, bioenergetics)",
+      "claim": "a larval yellow perch bioenergetics parameter set comes from Post 1990",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "young-of-year yellow perch had the adult slope of active metabolism on mass but at 4.4 times standard metabolism (adults 1–2 times), and ate more than adult allometry predicts (Post 1990, abstract)",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f90-063", "status": "closed", "note": "OpenAlex: closed, no repository copy (publisher page for a library login)" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f90-063", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f90-063", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f90-063?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f90-063\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(metabolic allometry yellow perch)", "status": 200, "note": "0 hits" }
+  ],
+  "notes": "Per the abstract (OpenAlex; not enough to confirm): YOY active metabolism had the adults' weight slope but was \"4.4 times adult standard respiration\", and \"adult active respiration is typically 1–2 times standard\"; YOY consumption exceeded adult allometry; measurements were in situ (consumption and growth). The paper's \"4.4 times standard metabolism\" drops the word adult: the abstract's multiple is relative to the ADULT standard-respiration allometry (the FB4 ACT term), not the young fish's own standard rate — reword when the full text is read. The abstract names no parameter set, so Table 3.5-3's \"larvae (Post 1990)\" needs the full text (or the FB4 parameter file, cited as the intermediary). show.mjs also lists hits on \"Shuter & Post 1990\" (Table 3.5-3 smallmouth row, §3.5.4, §3.6.8, src/config.js:121): those cite a different ledger entry (Shuter_Post_1990), not this one. The human can open the article through a library via the DOI."
+}

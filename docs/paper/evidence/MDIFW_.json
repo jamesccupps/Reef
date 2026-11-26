@@ -1,0 +1,63 @@
+{
+  "key": "MDIFW_",
+  "reader": "t1-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the human's own download of MDIFW's 2025 report (maine.gov refuses scripted fetches), indexed with getsrc.mjs --file; the 2015–2024 reports were not obtained",
+    "url": "https://www.maine.gov/ifw/docs/2025%20stocking%20report.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "the 2025 report's page header and footer; the Wayback Machine's index of maine.gov/ifw/docs/ for the other years' file names",
+    "ok": false,
+    "corrections": "The single URL is the 2025 report only, whose pages are headed '2025 Year to Date STOCKING REPORT' (footer 'Annual Stocking Receipt Data', 12/30/2025; 44 pages). The other years are separate files: 2015fishstockingreport.pdf and 2016fishstockingreport.pdf, then '<year> Annual Fish Stocking Report.pdf' for 2017–2024 (all under https://www.maine.gov/ifw/docs/). Cite the series by MDIFW's stocking-report page (https://www.maine.gov/ifw/fishing-boating/fishing/fish-stocking-report.html) or list the eleven files; separate brood-stock reports exist too ('<year> Brood (Fish) Stocking Report.pdf').",
+    "note": "Author (MDIFW) and the 2015–2025 span are fine as a series citation."
+  },
+  "claims": [
+    {
+      "paper": "§2.5; §3.5.2",
+      "claim": "Neither Hot Brook lake appears in the 2025 MDIFW stocking report (part of 'any MDIFW stocking report for 2015–2025'; 'no record of … stocking … (MDIFW stocking reports 2015–2025)')",
+      "source_value": "no entry for either lake: a search of the whole 44-page report finds no 'Hot' anywhere; Danforth's only waters are East Grand Lake and Little Greenland Pond",
+      "location": "whole report, pp. 1–44 (PDF pp. 1–44); Washington County table pp. 38–39",
+      "quote": "2025 Year to Date STOCKING REPORT",
+      "conditions": "MDIFW stocking receipts by county, water, town, species, number and size, through early December 2025 (report dated 12/30/2025); hatchery stockings only — the separate brood-stock report was not read",
+      "verdict": "confirmed",
+      "note": "An absence, checked by full-text search of the text layer (complete: ~1,270 brook trout rows) and by reading the Washington County page image (p. 38)."
+    },
+    {
+      "paper": "§2.5",
+      "claim": "Danforth's stockings went to East Grand Lake and Little Greenland Pond (2025)",
+      "source_value": "2025, Danforth rows: East Grand Lake — 1,650 brook trout (9 in) on 5/1, 2,250 landlocked salmon (7 in) on 5/16, 500 brook trout (13 in) on 10/16; Little Greenland Pond — 150 brook trout (10 in) on 5/13",
+      "location": "p. 38 of 44 (PDF p. 38), Washington County table",
+      "quote": "5/13/2025 GREENLAND P (LITTLE) DANFORTH BROOK TROUT 150 10",
+      "quote_from": "table",
+      "conditions": "Washington County listing; East Grand Lake is also stocked under Weston and Orient in the Aroostook County table (p. 3)",
+      "verdict": "confirmed",
+      "note": "Read on the page image as well as the raw text. The paper gives no numbers, so only the two waters are checked; the project note's 2025 numbers (recent_maine_research.md) match the rows above."
+    },
+    {
+      "paper": "§2.5; §3.5.2",
+      "claim": "Neither lake appears in the 2015–2024 stocking reports, and Danforth's stockings in those years went to East Grand Lake and Little Greenland Pond",
+      "verdict": "unchecked",
+      "note": "maine.gov answers 403 to scripted fetches; the Wayback Machine holds captures of all ten annual reports (listed in tried[]), but fetching them was refused by this session's permission system, so they were not read. The project note (recent_maine_research.md) says all eleven PDFs were decoded in the built-in browser; that is a secondary record, not checked here."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/2025%20stocking%20report.pdf", "status": 403, "note": "maine.gov refuses scripted fetches; the human's own copy of this file was used instead" },
+    { "url": "https://www.maine.gov/ifw/fishing-boating/fishing/fish-stocking-report.html", "status": 403, "note": "the series page; maine.gov refuses scripted fetches" },
+    { "url": "https://web.archive.org/web/20200724132954/https://www.maine.gov/ifw/docs/2015fishstockingreport.pdf", "status": "not fetched", "note": "2015 annual report: Wayback capture (200 at capture); a scripted Wayback fetch of maine.gov files was refused by this session's permission system — for the human" },
+    { "url": "https://web.archive.org/web/20200724134048/https://www.maine.gov/ifw/docs/2016fishstockingreport.pdf", "status": "not fetched", "note": "2016 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20180202012458/http://www.maine.gov/ifw/docs/2017%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2017 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20200724134531/https://www.maine.gov/ifw/docs/2018%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2018 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20200724135026/https://www.maine.gov/ifw/docs/2019%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2019 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20220817040455/https://www.maine.gov/ifw/docs/2020%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2020 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20220811085638/https://www.maine.gov/ifw/docs/2021%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2021 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20230401212200/https://www.maine.gov/ifw/docs/2022%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2022 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20240214051241/https://www.maine.gov/ifw/docs/2023%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2023 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20250208195132/https://www.maine.gov/ifw/docs/2024%20Annual%20Fish%20Stocking%20Report.pdf", "status": "not fetched", "note": "2024 annual report; Wayback capture — for the human" },
+    { "url": "https://web.archive.org/web/20260808031016/https://www.maine.gov/ifw/docs/2025%20Brood%20Stocking%20Report.pdf", "status": "not fetched", "note": "2025 brood-stock report (separate from the annual report); captures also exist for the 2015–2020 and 2024 brood reports — for the human, if 'any stocking report' is to cover them" }
+  ],
+  "notes": "Only the 2025 report was read (in full). It supports both halves of §2.5's sentence for 2025: no Hot Brook entry, and Danforth's stockings at East Grand Lake (brook trout, landlocked salmon) and Little Greenland Pond (brook trout). The 2015–2024 half rests on the project note until the ten captures in tried[] are read; until then the rewrite could say 'in the 2025 report (and, by a project search, 2015–2024)'. The paper's citation should give the series page rather than the 2025 file (see bibliography). The report covers hatchery stockings only; MDIFW's separate brood-stock reports were not checked, so 'any MDIFW stocking report' is strictly the annual reports."
+}

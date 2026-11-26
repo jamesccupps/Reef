@@ -1,0 +1,136 @@
+{
+  "key": "Neuswanger_etal_2015",
+  "reader": "wave-1 batch t1-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own free PDF (Wisconsin DNR web site), fetched with getsrc",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Pubs_BluegillLiteratureReviewFinal.pdf",
+    "file": "docs/research_notes/fetched/v2/Neuswanger_etal_2015.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 1) and the foreword",
+    "ok": true,
+    "corrections": "",
+    "note": "the title page reads \"Wisconsin Department of Natural Resources, November, 2015\"; no place is printed, so \"Madison\" in the reference is not from the document (harmless). The foreword calls the authoring group the \"Panfish Standing Team\"; the title page says \"Panfish Management Team\", as the reference does."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "Saprolegnia infected 38 % of eggs in solitary nests against 19 % in colonies (Côté & Gross 1993, via Neuswanger et al. 2015)",
+      "location": "p. 5 (PDF p. 6)",
+      "quote": "nests of solitary males (38%) than of colonial nesters (19%)",
+      "conditions": "bluegill, Lake Opinicon context (solitary nesters ≥ 3 ft from neighbours); the review gives the share of eggs infected, \"significantly more\" in solitary nests, possibly because colonial males fanned more",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "at Lake Opinicon 94 % of water-column brood predation was by bluegill themselves (Gross & MacMillan 1981, via Neuswanger et al. 2015)",
+      "location": "p. 7 (PDF p. 8)",
+      "quote": "Predation on bluegill nests from the water column was primarily by conspecifics (94%)",
+      "conditions": "Lake Opinicon, Ontario; pumpkinseed also ate bluegill eggs and larvae",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "snails and fishes (mostly bullheads) took 11 % and 7 % from the substrate (Gross & MacMillan 1981, via Neuswanger et al. 2015)",
+      "location": "p. 7 (PDF p. 8)",
+      "quote": "snails (11%, mostly Viviparous georgianus) and fishes (7%, mostly Ictalurus spp.)",
+      "conditions": "Lake Opinicon; \"substrate-level predation\"; the review does not say of what total the percentages are",
+      "verdict": "confirmed",
+      "note": "the review says \"Ictalurus spp.\", not \"bullheads\": \"mostly bullheads\" is the paper's gloss (check Gross & MacMillan before keeping it)"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "edge nests lost at least three times more than interior ones (Gross & MacMillan 1981, via Neuswanger et al. 2015)",
+      "location": "p. 7 (PDF p. 8)",
+      "quote": "brood losses from peripheral nests were at least three times greater than from interior nests",
+      "conditions": "Lake Opinicon bluegill colonies",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "crayfish at 1.4/m² destroyed every nest in small colonies within four weeks in Michigan ponds (Dorn & Mittelbach 2004, via Neuswanger et al. 2015)",
+      "location": "p. 7 (PDF p. 8)",
+      "quote": "1.2 crayfish per square yard destroyed all bluegill nests in small colonies",
+      "conditions": "Michigan ponds stocked with Orconectes virilis and O. rusticus; small colonies = ≤ 15 males; over a four-week period; bluegill then nested only inside crayfish exclosures",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "the review gives 1.2 per square yard (it converted metric to English units, foreword p. 1): 1.2 / 0.8361 m² = 1.44/m², so 1.4/m² holds"
+    },
+    {
+      "paper": "§3.6.4",
+      "claim": "Lepomis larvae at Lake Mendota and Lake Opinicon were much denser in shallow open water near the colonies than far offshore, and at the deepest Opinicon site density was 8 % of the inshore mean (Post, Rudstam & Schael 1995; Garvey, Herra & Leggett 2002; both via Neuswanger et al. 2015)",
+      "location": "p. 18 (PDF p. 19)",
+      "quote": "larval density at the deepest offshore site was only 8% of average inshore limnetic density",
+      "conditions": "Lake Mendota (9,831 acres) and Lake Opinicon (1,927 acres); larval sunfish densities \"throughout the summer\" higher in shallow limnetic areas near nesting colonies than in deep areas far from shore",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "young largemouth ate 58–93 % of littoral bluegill fry at Ridge Lake, Illinois (Santucci & Wahl 2003, via Neuswanger et al. 2015)",
+      "location": "p. 9 (PDF p. 10); also p. 13 (PDF p. 14)",
+      "quote": "high consumption (58-93% of littoral zone bluegill fry) by abundant young largemouth bass",
+      "conditions": "14-acre Ridge Lake, east-central Illinois; young largemouth (≤ age 3) averaged 179/acre in 1987–1989; early-season fry suffered most",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "at Lake Opinicon in 1998 a cooling from 70 to 64 °F (21 to 18 °C) right after the early larval peak was followed by poor survival of early cohorts (Garvey, Herra & Leggett 2002, via Neuswanger et al. 2015)",
+      "location": "p. 9 (PDF p. 10)",
+      "quote": "water temperatures declined sharply from 70˚F to 64˚F immediately following the peak of larval abundance",
+      "conditions": "Lake Opinicon, 1998; the peak of larval abundance was in late May; the review says \"disproportionately low survival of early-season sunfish fry to the fall juvenile stage\"",
+      "verdict": "confirmed",
+      "note": "the review says the peak \"of larval abundance in late May\" (not an \"early\" peak) and \"sunfish\" fry; 70 °F = 21.1 °C and 64 °F = 17.8 °C, so the conversion holds"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "predators raised the overwinter loss of 28-mm age-0 bluegill in Michigan ponds from 10 % to 39 %, and to 55 % with walleye alone (Schneider & Breck 1997, via Neuswanger et al. 2015)",
+      "location": "p. 11 (PDF p. 12)",
+      "quote": "10% in seven control ponds without predators, 39% in ponds with some type of predator",
+      "conditions": "unstructured 0.5-acre experimental ponds stocked each fall for four years with 1.1-inch (27.9 mm) bluegill at 4,348–8,502/acre and juvenile walleye (19–45/acre) or adult yellow perch; 55 % (range 25–89 %) where walleye were the sole predator",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "poisoning bluegill nests with copper sulfate from 18 May to 9 August in four Michigan lakes of 80–200 acres (32–81 ha) left the autumn age-0 catch only marginally below that of control lakes (Beyerle & Williams 1967, via Neuswanger et al. 2015)",
+      "location": "p. 8 (PDF p. 9)",
+      "quote": "mean age-0 CPE was only marginally lower in treatment lakes than in control lakes",
+      "conditions": "enough copper sulfate to theoretically kill all eggs and fry at nest sites, from the onset of spawning (May 18) to its end (August 9); fall catch per effort of age-0 bluegill, highly variable; it was slightly higher in treated lakes the year after than the year before treatment",
+      "verdict": "confirmed",
+      "note": "80 and 200 acres = 32.4 and 80.9 ha"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "in 38 Midwestern ponds bluegill stocks of 112–168 kg/ha produced the most age-0 fish, with fewer at lower and higher stocks (Novinger & Legler 1978, via Neuswanger et al. 2015)",
+      "location": "p. 6 (PDF p. 7)",
+      "quote": "standing stocks of 100-150 pounds/acre produced the maximum densities of offspring by fall",
+      "conditions": "38 Midwestern bass–bluegill ponds of 0.5–6.0 acres; age-0 densities from fall rotenone samples were \"considerably lower\" at lower and higher stocks",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1 lb/acre = 1.121 kg/ha: 100–150 lb/acre = 112–168 kg/ha"
+    },
+    {
+      "paper": "src/config.js:225",
+      "claim": "~0.005/day under the ice, so ~40–50 % die over a first winter, as with predators present (Neuswanger et al. 2015)",
+      "location": "p. 11 (PDF p. 12)",
+      "quote": "55% (range 25-89%) in ponds where walleye were the sole predator",
+      "conditions": "Schneider & Breck (1997) as summarized: age-0 bluegill in 0.5-acre experimental ponds with stocked walleye or adult yellow perch; 39 % with any predator, 55 % with walleye alone, 10 % without predators",
+      "verdict": "confirmed",
+      "note": "~40–50 % sits within 39–55 %; the review gives no winter length, so the daily rate is the project's (0.005/d over ~120–145 days of ice gives 45–52 %). Cite it as Schneider & Breck 1997 (via Neuswanger et al. 2015), experimental ponds, not lakes."
+    },
+    {
+      "paper": "src/w3/fish3.js:2247",
+      "claim": "the field's first winters lose ~40–50 % in all (Neuswanger et al. 2015) and winter predation is low",
+      "source_value": "the only first-winter loss in the review is from experimental ponds: 10 % without predators, 39 % with any predator, 55 % (25–89 %) with walleye alone; the loss was predation by overwinter-feeding walleye and yellow perch",
+      "location": "p. 11 (PDF p. 12)",
+      "quote": "Overwinter mortality of age-0 bluegills averaged 10% in seven control ponds without predators",
+      "conditions": "0.5-acre unstructured ponds, 1.1-inch age-0 bluegill, stocked predators, four winters (Schneider & Breck 1997)",
+      "verdict": "corrected",
+      "note": "not \"the field\" and not low predation: in this source winter predation is what lifts the loss from 10 % to 39–55 % (\"Walleyes tend to feed over winter\")"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "A WDNR literature review (55 pp., November 2015) that converts metric to English units (foreword): every metric value the paper takes from it (1.4/m², 28 mm, 32–81 ha, 112–168 kg/ha) is a back-conversion, and all check. Every paper claim attributed to it (all 'via') is confirmed. The one correction is a code comment (fish3.js:2247), which calls Schneider & Breck's predator-pond result \"the field's first winters\" with \"winter predation low\": the source says the opposite. Also in the review: Cargnelli & Gross (1996) — early-season fry (first trimester) were 17 % of fry production but 40 % of recruits in spring 1994 (p. 9, PDF p. 10), which bears on the paper's \"rose 231 %\" (§3.6.5); Bain & Helfrich (1983) — 83 % of fish near Lake Caroline colonies with bluegill larvae in their guts were 1.5–5.0-inch bluegill (p. 7); Kelso (1972) walleye maintenance ration 0.40 %/d at 39 °F and 1.17 %/d at 68 °F (p. 11)."
+}

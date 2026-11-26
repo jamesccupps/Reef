@@ -36,7 +36,10 @@ for (const raw of lines) {
     const ab = /\(([A-Z][A-Za-z&.\- ]{1,24})\)\s*$/.exec(who);
     label = (ab ? ab[1] : who.replace(/\s*\([^)]*\)\s*/g, ' ').trim());
   } else label = surnames.length === 1 ? surnames[0] : surnames.length === 2 ? `${surnames[0]} & ${surnames[1]}` : `${surnames[0]} et al.`;
-  const doi = (/(?:doi:\s?|doi\.org\/)(10\.\d{4,9}\/[^\s;,)]+[^\s;,.)])/i.exec(cit) || [])[1] || '';
+  // a DOI runs to the next space (old SICI DOIs hold brackets and semicolons: 10.1577/1548-8659(1946)76[23:…]2.0.CO;2); a trailing
+  // full stop, comma or unbalanced bracket is the citation's, not the DOI's
+  let doi = ((/(?:doi:\s?|doi\.org\/)(10\.\d{4,9}\/\S+)/i.exec(cit) || [])[1] || '').replace(/[.,;]+$/, '');
+  while (/\)$/.test(doi) && (doi.match(/\(/g) || []).length < (doi.match(/\)/g) || []).length) doi = doi.slice(0, -1).replace(/[.,;]+$/, '');
   const url = (/(https?:\/\/[^\s;)]+[^\s;.,)])/.exec(cit) || [])[1] || '';
   const flags = [];
   if (/Cited via/i.test(cit)) flags.push('cited-via');
@@ -63,8 +66,17 @@ for (const r of refs) {
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 for (const r of refs) {
   const yr = r.year === 'n.d.' ? 'n\\.d\\.' : esc(r.year);
-  // the first author (or agency label) followed, within a short span and no sentence break, by the year
-  r.rx = new RegExp(`(?<![\\p{L}])${esc(r.first)}(?![\\p{L}])[^;)\\n]{0,60}?(?<![\\d])${yr}(?![\\d])`, 'u');
+  // the citation as written: "Smith 1990" / "Smith (1990)" (not "Jones & Smith 1990"), "Smith & Jones 1990", "Smith et al. 1990"
+  // (or all the names), an agency's label; a possessive and earlier years in a list may come between ("Keast 1980, 1985")
+  const S = r.surnames.map(esc), L = `(?<![\\p{L}])`, R = `(?![\\p{L}])`;
+  const who = !S.length ? `${L}${esc(r.first)}${R}[^;)\\n]{0,40}?`
+    : S.length === 1 ? `(?<!(?:&|and)\\s)${L}${S[0]}${R}(?:\\s+et\\s+al\\.?)?`   // (an entry listing one author may be cited "et al.")
+    : S.length === 2 ? `${L}${S[0]}${R}\\s*(?:&|and)\\s*${S[1]}${R}`
+    : `${L}${S[0]}${R}(?:\\s+et\\s+al\\.?|,[^;)\\n]{0,90}?(?:&|and)\\s*${S[S.length - 1]}${R})`;
+  r.rx = new RegExp(`${who}(?:['’]s)?[\\s,]*\\(?(?:(?:1[5-9]|20)\\d{2}[a-z]?\\s*[,;]\\s*)*(?<![\\d])${yr}(?![\\d])`, 'u');
+  // code comments abbreviate ("Christensen 1996" for Christensen et al., "Hamon's potential (1961"): the lead author, a short gap
+  // without digits or a full stop, the year — counted only where it points to one entry (see the code loop)
+  if (S.length) r.rxLoose = new RegExp(`(?<!(?:&|and)\\s)${L}${S[0]}${R}(?:\\s+et\\s+al\\.?)?[^;.\\n\\d]{0,30}?(?<![\\d])${yr}(?![\\d])`, 'u');
 }
 const PARTS = [['README.md', 'abstract'], ['01_introduction_and_study_system.md'], ['02_synthesis_physical_to_plants.md'],
   ['03_synthesis_fish_to_forest.md'], ['04_model_and_lessons.md'], ['05_discussion.md']];
@@ -105,7 +117,9 @@ for (const [file, fixed] of PARTS) {
 // tables", "in Dudley and Trial's model") — the paper often goes on using a source without citing it again
 for (const r of refs) {
   const c = cites.get(r.key); if (!c.sections.size || !r.surnames.length) continue;
-  const nm = new RegExp(`(?<![\\p{L}])${esc(r.first)}(?:['’]s)?(?![\\p{L}])`, 'u'), seen = new Set(c.contexts.map(x => x.at));
+  // (the author named as the lead, not as someone's co-author, and not starting a citation of another year: "Sørnes & Aksnes 2004"
+  // is not Aksnes & Utne)
+  const nm = new RegExp(`(?<!(?:&|and|,)\\s)(?<![\\p{L}])${esc(r.first)}(?:['’]s)?(?![\\p{L}])(?![^;.)\\n]{0,25}(?:1[5-9]|20)\\d{2})`, 'u'), seen = new Set(c.contexts.map(x => x.at));
   for (const p of PARAS) if (c.sections.has(p.where) && !seen.has(p.at) && nm.test(p.text) && !r.rx.test(p.text) && c.mentions.length < 8)
     c.mentions.push({ where: p.where, at: p.at, text: p.text.length > 1500 ? p.text.slice(0, 1500) + ' […]' : p.text });
 }
@@ -121,7 +135,14 @@ for (const f of CODE) {
   const ls = read(f).split('\n');
   ls.forEach((line, i) => {
     if (!/(1[5-9]|20)\d{2}/.test(line) || !/\/\/|\/\*|\*/.test(line)) return;
-    for (const r of refs) if (r.surnames.length && r.rx.test(line)) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: (ls[i - 1] && /^\s*\/\//.test(ls[i - 1]) ? ls[i - 1].trim() + ' ⏎ ' : '') + line.trim().slice(0, 2000) }); }
+    const strict = refs.filter(r => r.surnames.length && r.rx.test(line));
+    // the abbreviated form: among the entries it could mean (same lead author and year), a strict match wins, then the
+    // single-author entry; if it is still ambiguous it is not counted
+    const loose = new Map();
+    for (const r of refs) if (r.rxLoose && !strict.includes(r) && r.rxLoose.test(line)) { const g = `${r.first}|${r.year}`; (loose.get(g) || loose.set(g, []).get(g)).push(r); }
+    const hits = [...strict];
+    for (const [g, rs] of loose) { if (strict.some(r => `${r.first}|${r.year}` === g)) continue; const one = rs.length === 1 ? rs : rs.filter(r => r.surnames.length === 1); if (one.length === 1) hits.push(one[0]); }
+    for (const r of hits) { const c = code.get(r.key); if (c.length < 10) c.push({ at: `${f}:${i + 1}`, text: (ls[i - 1] && /^\s*\/\//.test(ls[i - 1]) ? ls[i - 1].trim() + ' ⏎ ' : '') + line.trim().slice(0, 2000) }); }
   });
 }
 

@@ -20,7 +20,9 @@ the page. You write one evidence file per entry. You do **not** edit the paper, 
    maximum, per day or per year), the sample size, the place, the season, the conditions. A number taken out of its conditions is
    `corrected` (give what it really is) even if the digits match.
 7. Downloads are allowed, but only into `docs/research_notes/fetched/v2/` (git-ignored). Never run git (not even read-only), never
-   commit.
+   commit. Stay inside the repository: the files the human fetched for the project are in `docs/research_notes/fetched/`; do not
+   search the human's other folders. If the session's permission system refuses a command or a fetch, do not retry it another way:
+   record it in `tried` and say so in your reply.
 8. **Tables: never from the layout text alone.** `pdftotext -layout` can shift a table's rows against their labels (in the pilot it put
    Lawrence et al.'s Twin West fit beside the wrong data set). Read every table value in the raw text (`findin --raw`) or on the page
    image (`findin --image N`, then open the PNG with the Read tool). Scanned pages can drop whole columns: look at the image.

@@ -1,0 +1,113 @@
+{
+  "key": "Sobchak_etal_2026",
+  "reader": "wave-1 batch t1-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access full text (CC BY 4.0) on PubMed Central, the HTML article page; Fig. 2 and Fig. 5 images from PMC's CDN for the figure-read values",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13033004/",
+    "file": "docs/research_notes/fetched/v2/Sobchak_etal_2026.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC article header",
+    "ok": true,
+    "corrections": "",
+    "note": "Environ. Biol. Fishes 109(2): article 65, published 28 March 2026 (received 10 May 2024); PMID 41913934. The HTML has no page numbers, so locations are by section, table and figure."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (pumpkinseed); src/w3/fish3.js:686",
+      "claim": "larvae of 4.5 mm leave the nest 8–11 d after spawning",
+      "location": "web page, Materials and methods, section \"Reproduction and early life history\"",
+      "quote": "At 8–11 days post-spawn, translucent larvae (4.5 mm Total Length or ‘TL’)",
+      "conditions": "total length; background from the literature in the methods (hatch 5–8 d post-spawn, earlier in warmer water, Cargnelli & Neff 2006; up to 3 more days in the nest until the yolk is absorbed), not measured at Ashby Lake",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-2 (pumpkinseed, first food)",
+      "claim": "first food: small copepod nauplii at 4.5 mm",
+      "source_value": "exogenous feeding starts in the nest on small protists; larvae feed on small copepod nauplii in the water column when they leave the nest at 4.5 mm TL",
+      "location": "web page, Materials and methods, section \"Reproduction and early life history\"",
+      "quote": "coincident with onset of exogenous feeding starting with small protists",
+      "conditions": "literature background, not Ashby data",
+      "verdict": "corrected",
+      "note": "keep \"nauplii at 4.5 mm\" but add that the very first food, in the nest, is small protists"
+    },
+    {
+      "paper": "Table 3.6-2 (pumpkinseed)",
+      "claim": "plankton 90.6 % of June larval tissue, ~76 % by September",
+      "location": "web page, Results, section \"Larval diet\"; Fig. 4",
+      "quote": "declined in larvae sampled between June (90.6%) and July (80.3%)",
+      "conditions": "Ashby Lake 2014; % of tissue derived from planktonic sources by a two-end-member δ13C mixing model (pelagic mussels vs littoral snails as baselines), all habitats combined; June larvae pooled for analysis; 80.3 % July, 75.5 % August, 76.6 % September; pelagic juveniles' median still 90 % in September",
+      "verdict": "confirmed",
+      "note": "an isotope estimate of the tissue's origin, not a gut-content diet share — the table should say so"
+    },
+    {
+      "paper": "Table 3.6-2 (pumpkinseed, later shifts)",
+      "claim": "below 75 mm SL mostly vegetation-dwelling non-snail prey (76–91 %); snails in larger fish",
+      "verdict": "unsupported",
+      "note": "not in Sobchak et al.; it is presumably Mittelbach (1984), the cell's other source. Sobchak et al. say only that the littoral ecotype eats insect larvae and snails and that juveniles shift toward benthic resources over the summer (isotopes). Attribute the cell's second half to Mittelbach 1984 alone."
+    },
+    {
+      "paper": "§3.6.4; src/w3/fish3.js:686",
+      "claim": "pumpkinseed larvae at Ashby Lake were seven times denser in sheltered littoral bays (code: ~7× denser there than offshore)",
+      "location": "web page, Results, section \"Spawning and larval phenology\"; Fig. 2c",
+      "quote": "density was seven times higher at littoral compared to shoreline or pelagic sites",
+      "conditions": "Ashby Lake 2014; the late-June peak; 'littoral' = sheltered bays with soft sediments and macrophytes; horizontal surface tows (< 2 m deep, 500-µm mesh), 3–5 tows per habitat",
+      "verdict": "confirmed",
+      "note": "the authors' text says seven times both shoreline and pelagic, but their Fig. 2c peaks read ~23, ~3 and ~1 larvae/m³ (littoral, shoreline, pelagic): ~7–8× the exposed shoreline and ~20× the offshore shoals. The code's \"~7× than offshore\" follows the text; the figure says more."
+    },
+    {
+      "paper": "Table 3.6-3",
+      "claim": "Ashby Lake, Ontario (259 ha): pumpkinseed larvae ~23/m³ littoral peak; ~3 shoreline; ~1 offshore (figure-read)",
+      "location": "web page, Fig. 2c and its caption",
+      "quote": "Mean number of larvae per m 3 of water volume (averaged over 3–5 plankton tows",
+      "conditions": "values read off Fig. 2c (saved as docs/research_notes/fetched/v2/Sobchak_etal_2026.fig2.jpg): littoral (light grey) peak ~23 near day 175 (late June), a second littoral pulse ~7 in early July; shoreline (dark grey) ~3; pelagic (black) ~1; zero by the third week of July. Surface tows < 2 m deep, 500-µm mesh",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-3",
+      "claim": "Ashby Lake's area is 259 ha",
+      "location": "web page, section \"Study site—Ashby Lake\"",
+      "quote": "a small (surface area 2.59 km 2 , maximum depth 36.6 m)",
+      "conditions": "oligotrophic Shield lake: TP 7.14 µg/L (16 years), mean summer Secchi 5.43 m (31 years)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-6",
+      "claim": "pumpkinseed growth at Ashby Lake, mid-August to mid-September, ~0.17 mm/d (SL; project calculation)",
+      "location": "web page, Table 1; sampling dates in Methods (\"August 16\", \"September 16\")",
+      "quote": "18.87 ± 0.487 … 23.86 ± 0.254 … 18.03 … 23.99 … 22.23 … 27.48",
+      "quote_from": "table",
+      "conditions": "mean standard length of different fish sampled on 16 August and 16 September 2014 (31 days), by habitat",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "littoral (23.86 − 18.87)/31 = 0.161; shoreline (23.99 − 18.03)/31 = 0.192; pelagic (27.48 − 22.23)/31 = 0.169 mm SL/d; mean 0.174. A difference of sample means, not tracked growth (selective loss could bias it, as the authors note)."
+    },
+    {
+      "paper": "Table 3.6-7",
+      "claim": "pumpkinseed at Ashby Lake 23.9–27.5 mm SL in mid-September",
+      "location": "web page, Table 1 (September column)",
+      "quote": "September (juvenile) … 23.86 ± 0.254 … 23.99 ± 0.376 … 27.48 ± 0.355",
+      "quote_from": "table",
+      "conditions": "habitat MEANS (littoral, shoreline, pelagic) of standard length, sampled 16 September 2014; Table 1 gives n = 46, 29, 58, while the methods list 52, 32 and 110 fish collected that day",
+      "verdict": "confirmed",
+      "note": "write \"habitat means 23.9–27.5 mm SL\"; the pelagic fish were 15 % longer and 35 % heavier than littoral and shoreline fish by summer's end"
+    },
+    {
+      "paper": "Table 3.6-9",
+      "claim": "pumpkinseed in northern inland lakes: ~35 mm TL first-winter threshold (Fox & Keast 1991; Garvey, Herra & Leggett 2002, both via Sobchak et al. 2026)",
+      "location": "web page, Discussion (paragraph on overwinter mortality)",
+      "quote": "to 35 mm in more northerly inland lake populations like Ashby Lake",
+      "conditions": "the threshold rises with latitude: 26 mm TL in Lake Ontario (Murphy et al. 2012) to 35 mm in northerly inland lakes; the authors caution that such thresholds ignore habitat effects and annual variation",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://europepmc.org/articles/PMC13033004?pdf=render", "status": 403, "note": "Europe PMC refused the script" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/s10641-026-01836-6.pdf", "status": 200, "note": "a login/bot-check page; not kept" },
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13033004/pdf/10641_2026_Article_1836.pdf", "status": 200, "note": "70 characters (a challenge page, not the PDF); the PMC HTML was read instead" }
+  ],
+  "notes": "Every claim's numbers check; the corrections are wording: the first food is protists in the nest (nauplii at 4.5 mm); the plankton shares are isotope estimates; Table 3.6-2's 75-mm/76–91 % cell is Mittelbach's, not this paper's; the 23.9–27.5 mm are habitat means. Values in the paper that differ from what this source says about pumpkinseed (Table 3.6-1 credits them to other sources, but the rewrite should know): males guard eggs 11–21 days, mean 15 (Danylchuk & Fox 1996), against the table's \"6.0 ± 0.4 d at 21.3 °C\" (Cooke et al. 2006); embryos hatch 5–8 days after spawning (Cargnelli & Neff 2006), against the table's 3–5 d incubation; nests are \"typically in shallow bays and shorelines with soft substrates\", against the table's \"sand or gravel\"; spawning begins as surface water reaches 20 °C (19.5 °C at Ashby's littoral at the end of May, the pelagic shoals 10 days later). Also useful: larvae first appeared 3 June (littoral) and 17 June (shoreline, pelagic); the juvenile form at 5 weeks (~20 mm TL); large zooplankton fell 4× from June to July (4.73 → 1.13 mg/m³; the methods call the unit both dry mass and dry mg carbon per m³) and was ~3× denser at pelagic sites; predators of young pumpkinseed are smallmouth bass and lake trout; no other centrarchid sunfish in the lake."
+}

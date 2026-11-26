@@ -62,7 +62,7 @@ const TXT = new Map();
 function textOf(key) {
   if (TXT.has(key)) return TXT.get(key);
   const d = path.join(ROOT, 'docs/research_notes/fetched/v2'); let t = '';
-  for (const f of fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.startsWith(key) && f.endsWith('.txt')) : []) t += ' ' + fs.readFileSync(path.join(d, f), 'utf8');
+  for (const f of fs.existsSync(d) ? fs.readdirSync(d).filter(f => (f === `${key}.txt` || f.startsWith(`${key}.`)) && f.endsWith('.txt') /* this key's only: MDIFW_ is not MDIFW_-2 */) : []) t += ' ' + fs.readFileSync(path.join(d, f), 'utf8');
   const n = t ? norm(t.replace(/^=== p\..*$/gm, ' ')) : ''; TXT.set(key, n); return n;
 }
 

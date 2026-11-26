@@ -1,0 +1,55 @@
+{
+  "key": "Post_Evans_1989",
+  "reader": "wave-1 batch t1-06",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the abstract only, from OpenAlex's record of the DOI (no open full text anywhere found)",
+    "url": "https://api.openalex.org/works/doi:10.1139/f89-246"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Post, John R.; Evans, David O. (1989), CJFAS 46(11): 1958–1968 — matches the reference"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-7",
+      "claim": "Lake St. George, Ontario: autumn yellow perch cohorts 61 ± 5 and 71 ± 4 mm (via Eckmann 2004)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.6-9",
+      "claim": "Lake St. George (154 days < ~6 °C): a 60.7-mm cohort 76 % mortality, a 71.4-mm cohort 42 % (starvation-model values as reported by Eckmann)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "in simulated winters 1 % of fed but 46 % of starved age-0 perch died; small fish lost proportionally more mass; size-selective loss was confirmed in enclosures and five natural cohorts; winter length drove both total and size-selective mortality; simulations suggested winter starvation can cause substantial year-class variability independent of adult stock (abstract)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "field young perch stop growing below ~10–13.5 °C and live on their autumn lipid, so first-winter mortality is size-selective — the main regulator of perch recruitment in northern lakes (Post & Evans 1989; Johnson & Evans 1990, 1991)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:856",
+      "claim": "yellow perch first-winter size thresholds ~50–80 mm (Post & Evans 1989, with Boussion 2025 and Fitzgerald 2000)",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f89-246", "status": "closed", "note": "OpenAlex: closed, no repository copy (publisher page for a library login)" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f89-246", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f89-246", "status": 403, "note": "publisher refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f89-246?fields=openAccessPdf,externalIds,title", "status": 429, "note": "rate-limited, twice" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f89-246\"&format=json", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(overwinter mortality yellow perch) AND creator:(Post)", "status": 200, "note": "0 hits" },
+    { "url": "https://scholar.archive.org/search?q=\"overwinter mortality\" \"yellow perch\" Post Evans", "status": 302, "note": "redirects to a /verify bot check; stopped" },
+    { "url": "https://api.fatcat.wiki/v0/release/lookup?doi=10.1139/f89-246", "status": "no response", "note": "host unreachable" }
+  ],
+  "notes": "The abstract (OpenAlex) matches the §3.6.8 summary point by point: fed and starved fish both lost weight under simulated winter temperature and photoperiod, small fish a larger share of their mass; 1 % and 46 % mortality (fed, starved), higher among smaller fish; winter duration set both total mortality and the intensity of size selection; size-selective mortality in an in situ enclosure with natural food, in fall and spring estimates of two Lake St. George cohorts, and in five natural cohorts by a length-frequency technique; a stochastic model suggests starvation can cause year-class variability independent of adult stock. The abstract gives no lengths, no 154-day winter and no 10–13.5 °C growth threshold, so the two table rows (via Eckmann 2004), the §5.8 sentence and the config's 50–80 mm need the full text (or Eckmann 2004, if the rewrite cites the numbers 'via Eckmann'). The human can open the article through a library via the DOI. The other names show.mjs lists beside this entry (Shuter et al. 1980; Shuter & Post 1990; Post, Kitchell & Hodgson 1998) are other ledger entries."
+}

@@ -1,0 +1,84 @@
+{
+  "key": "Crossman_Lewis_1973",
+  "reader": "wave-1 batch t1-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item scanned by the University of Toronto from the Royal Ontario Museum's copy (rompublications collection), openly downloadable text PDF, 92 PDF pages; table-free, read in the text layer with the cited entries checked on the page images",
+    "url": "https://archive.org/download/annotatedbiblio00cros/annotatedbiblio00cros.pdf",
+    "file": "docs/research_notes/fetched/v2/Crossman_Lewis_1973.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 3) and its verso (PDF p. 4)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, year (© The Royal Ontario Museum, 1973), title and publisher (Toronto) match. It could add the series and ISBN: Royal Ontario Museum Life Sciences Miscellaneous Publication (the book's suggested citation is \"Misc. Pubn., R. Ont. Mus.\"), ISBN 0-88854-146-5; printed pages 1–81 (bibliography pp. 7–68, subject index pp. 69–81). printed page = PDF page − 6"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1",
+      "claim": "In West Virginia [chain pickerel] fed at all hours (Lewis 1971, via Crossman & Lewis 1973)",
+      "location": "p. 41 (PDF p. 47), entry Lewis, G. E. 1971a",
+      "quote": "Some feeding occurs throughout the 24-hour period.",
+      "conditions": "Crossman & Lewis's annotation of Lewis 1971a, a 22-page West Virginia Department of Natural Resources report: 117 chain pickerel stomachs from Patterson Creek, a West Virginia stream (Lewis 1971b, the companion M.Sc. thesis, studied an 18-mile section of it, March–November 1969); no numbers by hour are given",
+      "verdict": "confirmed",
+      "note": "\"some feeding … throughout the 24-hour period\" is softer than \"fed at all hours\"; say \"some feeding at every hour of the day (117 stomachs from Patterson Creek, a stream)\" and cite Lewis 1971a. The annotation adds that pickerel under 140 mm standard length fed mainly on insects and larger ones largely on fish"
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "No pickerel ration or evacuation rate had been published by 1973 either (Crossman & Lewis 1973)",
+      "verdict": "unsupported",
+      "location": "pp. 1–2 (PDF pp. 7–8), introduction; Food and Food Habits index pp. 76–77 (PDF pp. 82–83)",
+      "note": "the book never says so. Nearest: \"Very little is available on the physiology, … ecology, and on the true role of the chain pickerel as a predator\" (p. 2), and no annotation among its 630 references mentions a ration, daily intake, meal frequency or gastric evacuation (searched ration|evacuat|digest|consum|intake|daily|meal and read the Food and Food Habits entries). But the authors say the list is not \"in any way a complete one\" (p. 1), many entries carry no annotation (e.g. Raney 1942, Warner 1973) and many papers \"were never seen\". Reword as an absence the paper owns: \"none of the 630 works annotated by Crossman & Lewis (1973) reports a ration or evacuation rate\" — or drop the citation"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "Age-0 pickerel may coexist better with smallmouth (Buck & Thoits 1967, via Crossman & Lewis 1973)",
+      "location": "pp. 14–15 (PDF pp. 20–21), entry Buck, D. H. and C. F. Thoits III 1967",
+      "quote": "age 0 and age 1 pickerel compete poorly with largemouth of the same age",
+      "quote_from": "image",
+      "conditions": "\"Experimental stockings\" in Illinois (Dingell–Johnson project report); the sentence continues \"and may be more compatible with smallmouth\". The 1966 report on the same project stocked ~20,000 advanced sac fry in four farm ponds, one combination being lake chubsucker–smallmouth bass",
+      "verdict": "confirmed",
+      "note": "the source says age 0 AND age 1 pickerel, and frames it against largemouth (\"compete poorly with largemouth of the same age\"); say \"young (age 0–1) pickerel stocked in Illinois ponds fared better with smallmouth than with largemouth\". The same annotation says pickerel fry and fingerlings \"are highly vulnerable to predation by largemouth bass\", which also supports the sentence before it (credited to Brokaw 2001), and that \"the pickerel is an inefficient predator of bluegill\""
+    },
+    {
+      "paper": "references.md, entry Lewis 1971 (\"(West Virginia chain pickerel.) Cited via Crossman & Lewis 1973. [citation incomplete in notes]\")",
+      "claim": "Lewis 1971, a West Virginia chain pickerel study, is known only through Crossman & Lewis 1973; full citation not recorded",
+      "source_value": "Lewis, G. E. 1971a. A food habits study of chain pickerel, Esox niger LeSueur, in Patterson Creek, West Virginia. West Virginia Department of Natural Resources, 22 p. (the diel-feeding statement). A second item, Lewis, G. E. 1971b, Life history of the chain pickerel, Esox niger LeSueur, in West Virginia with emphasis on age and growth, West Virginia University, M.Sc. dissertation, 93 p., is the companion thesis",
+      "location": "p. 41 (PDF p. 47)",
+      "quote": "A food habits study of chain pickerel, Esox niger LeSueur in Patterson Creek",
+      "verdict": "corrected",
+      "note": "G. E. Lewis is the bibliography's own co-author (p. 4: District Fisheries Biologist, West Virginia Department of Natural Resources)"
+    },
+    {
+      "paper": "references.md, entry Buck & Thoits 1967",
+      "claim": "Life history and growth of the chain pickerel in Illinois. Illinois Department of Conservation, Dingell–Johnson Project F-16-R-5, Work Plan 3, Job B. 2 pp. Cited via Crossman & Lewis 1973",
+      "location": "p. 14 (PDF p. 20)",
+      "quote": "Illinois Dep. Conserv., D-J Proj. F-16-R-5, wk. pl. 3, Job B, 2 p.",
+      "quote_from": "image",
+      "conditions": "the entry ends \"wk. pl. 3, Job B, 2 p.\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "references.md, entry Buntz 1966 (\"Crossman & Lewis 1973 date the volume 1967.\")",
+      "claim": "Crossman & Lewis 1973 date Buntz's paper (Proc. 20th Annu. Conf. SE Assoc. Game & Fish Commissioners 20: 315–318) 1967",
+      "location": "p. 15 (PDF p. 21)",
+      "quote": "Buntz, J. 1967 Stomach analysis of chain pickerel (Esox niger) of south central Florida.",
+      "conditions": "listed as \"Proc. 20th Annu. Conf. Southeast Ass. Game Fish Commrs. 20:315-318\"",
+      "verdict": "confirmed",
+      "note": "their annotation: 115 adult pickerel from 6 lakes, 38.3 % (44) with food; 49.9 % of recognizable fish eaten were spiny-rayed although soft-rayed fish were abundant; pickerel of 381–584 mm took prey of 51–127 mm. It says nothing of seasons (the paper's January/July contrast is Buntz's own, another key)"
+    },
+    {
+      "paper": "references.md, entry Raney 1942 (\"via Crossman & Lewis 1973 and other secondary sources\")",
+      "claim": "Raney, E. C. 1942. The summer food and habits of the chain pickerel (Esox niger) of a small New York pond. Journal of Wildlife Management 6(1): 58–66",
+      "location": "p. 51 (PDF p. 57)",
+      "quote": "The summer food and habits of the chain pickerel (Esox niger) of a small",
+      "conditions": "listed as \"J. Wildlife Manage. 6(1):58-66\" with no annotation",
+      "verdict": "confirmed",
+      "note": "Crossman & Lewis give the citation only (no annotation), so nothing about Raney's findings can come \"via\" them"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Only three sentences of the paper cite this source (§3.7.1, §3.7.3, §3.7.7), plus four reference-list entries that lean on it. show.mjs also matched 13 other citing blocks (Tables 3.5-2, 3.5-3, 3.6-1, 3.6-2, 3.6-7; §3.6, §3.6.1, §3.7.5) and src/species.js:331 and :570 only through the string \"Scott & Crossman 1973\" — those claims belong to Scott_Crossman_1973 and were not checked here. The book is an annotated bibliography (630 references to 1973, 175 of them Dingell–Johnson reports) and \"does not attempt to evaluate the information\"; its annotations are summaries, so every value taken from it is second-hand and should stay marked \"via Crossman & Lewis 1973\". Useful for the rewrite: Lewis 1971a (pickerel < 140 mm SL mainly insects, larger mainly fish) bears on the §3.7.5 / Table 3.6-2 diet shift; Buck & Thoits 1967 (fry and fingerlings highly vulnerable to largemouth; pickerel do better in clear than muddy water; inefficient predators of bluegill); Buck & Thoits 1970 (a large crayfish population destroyed pickerel eggs and larvae in a 4-acre pond, Illinois Nat. Hist. Surv. Bull. 30(2): 69–165, pp. 13, 82); Warner et al. 1968 (chain pickerel \"the most common predators of stocked landlocked salmon\") and Warner 1972 (fish predation, pickerel included, on salmon stocked in Maine lakes); Warner 1973, Spring food of chain pickerel in Maine lakes, TAFS 102(1): 149–151 (listed, not annotated)."
+}

@@ -1,0 +1,140 @@
+{
+  "key": "Cooper_Washburn_1946",
+  "reader": "wave-1 batch t1-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the agency's own free copy: Michigan DNR Fisheries Division library scan of Institute for Fisheries Research Report No. 1078 (typescript, 17 pages); its OCR layer drops whole lines and garbles digits, so every value below was read on the page images (findin --image, all 17 pages)",
+    "url": "https://www2.dnr.state.mi.us/publications/pdfs/DNRFishLibrary/ResearchReports/RR1001-RR1100/RR1078.pdf",
+    "file": "docs/research_notes/fetched/v2/Cooper_Washburn_1946.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (PDF p. 1) and Crossref's record for the journal version (doi:10.1577/1548-8659(1946)76[23:RODOTW]2.0.CO;2)",
+    "ok": false,
+    "corrections": "the report (IFR Report No. 1078) is dated January 6, 1947, not 1946: its header reads \"For presentation to Am. Fish. Soc., Sept., 1946. Partial summary of I.F.R. Rept. No. 1014\". The journal version is Transactions of the American Fisheries Society 76(1): 23–33, the volume for 1946, printed January 1949 (Crossref). Keep \"Cooper & Washburn 1946\" for the TAFS paper and give the report as \"IFR Report 1078, 6 January 1947\" (the free copy); authors Gerald P. Cooper and George N. Washburn, Michigan Department of Conservation, Ann Arbor",
+    "note": "title and authors match. show.mjs cut the DOI at its \"(\", so it reported \"DOI NOT FOUND at Crossref\"; the full DOI resolves. Only the report was read; the printed TAFS text may differ in detail"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (yellow perch row); src/species.js:297 (perch o2Ice 0.35)",
+      "claim": "yellow perch survived to ≈ 0.3–0.4 ppm O₂ under ice; under-ice lethal 0.3–0.4 mg/L",
+      "location": "p. 16 (PDF p. 16); Table 2, p. 15 (PDF p. 15)",
+      "quote": "toleration level, in the vicinity of 0.4 to 0.3 p.p.m., was definitely lower",
+      "quote_from": "image",
+      "conditions": "11 lakes in Washtenaw and Jackson Counties, southeastern Michigan, winter 1944–45 (snow-covered 11 Dec–15 Feb; O₂ lows about 14 Feb 1945); near-freezing water; unmodified Winkler on surface samples (6 in–1 ft below the ice; Table 2: \"approximate minimum concentration … in upper 1 to 4 feet\"), mostly one station per lake; mortality judged from fish windrowed at ice-out (16 March) and 1945–46 netting. The level is shared by \"perch, mud pickerel, pumpkinseeds, northern pike, and chubsuckers\"",
+      "verdict": "confirmed",
+      "note": "a field toleration level (the best water in the column was this low and many survived), not a laboratory lethal concentration. In Green Lake (0.3–0.1) perch had a \"very heavy kill\" yet \"good survival\"; in Merkle Lake (0.2–0.0) a very heavy kill and no perch survival listed (Table 2). Cooper & Washburn note Moore's (1942) laboratory threshold for yellow perch, 1.5 ppm, was \"notably\" higher"
+    },
+    {
+      "paper": "Table 3.5-3 (pumpkinseed row); src/species.js:286 (pumpkinseed o2Ice 0.35)",
+      "claim": "pumpkinseed survived to ≈ 0.3–0.4 ppm; under-ice lethal 0.3–0.4 mg/L",
+      "location": "p. 16 (PDF p. 16); Table 2, p. 15 (PDF p. 15)",
+      "quote": "For perch, mud pickerel, pumpkinseeds, northern pike, and chubsuckers the toleration level",
+      "quote_from": "image",
+      "conditions": "as for perch: southeastern Michigan winterkill season 1944–45, surface-stratum O₂ under ice, near-freezing water; the level read with the next words \"in the vicinity of 0.4 to 0.3 p.p.m.\"",
+      "verdict": "confirmed",
+      "note": "Table 2: good pumpkinseed survival at Batteese (0.6–0.5); \"very heavy kill\" with \"some survival\" at Green (0.3–0.1); a very heavy kill at Merkle (0.2–0.0)"
+    },
+    {
+      "paper": "Table 3.5-3 (chain pickerel row); src/species.js:390 (pickerel o2Ice 0.35, \"the mud pickerel's\")",
+      "claim": "mud pickerel ≈ 0.3–0.4 ppm under ice (as the chain pickerel's stand-in)",
+      "location": "p. 16 (PDF p. 16); species list p. 6 (PDF p. 6)",
+      "quote": "For perch, mud pickerel, pumpkinseeds, northern pike, and chubsuckers the toleration level",
+      "quote_from": "image",
+      "conditions": "as above; the mud pickerel is Esox vermiculatus in the report's species list (today the grass pickerel, E. americanus vermiculatus), not the chain pickerel",
+      "verdict": "confirmed",
+      "note": "the paper labels it correctly as the mud pickerel's value; no chain pickerel were in these lakes. Several adult mud pickerel were alive at an air hole at 0.2 ppm on 5 Feb (p. 11)"
+    },
+    {
+      "paper": "Table 3.5-3 (brown bullhead row); src/species.js:329 (bullhead o2Ice 0.2)",
+      "claim": "bullheads were among the last alive in Michigan winterkills; bullheads survive 0.2–0.3 ppm under ice",
+      "location": "p. 13 (PDF p. 13); p. 16 (PDF p. 16); Table 2, p. 15 (PDF p. 15)",
+      "quote": "Bullheads and golden shiners had the best survival.",
+      "conditions": "the four lakes with heavy kills (Batteese, Goose, Green, Merkle; ~330,000 dead fish windrowed); p. 16 puts the bullheads' and shiners' level at \"less than 0.3 or 0.2 p.p.m.\"; \"bullheads\" pools brown, yellow (and in the species list black) bullheads; Table 2 names brown and yellow bullheads",
+      "verdict": "confirmed",
+      "note": "0.2–0.3 is a level bullheads SURVIVED, not one that killed them: some brown and yellow bullheads survived even in Merkle Lake (0.2 to 0.0), though with a \"very heavy kill\" (Table 2). As o2Ice (a lethal floor) 0.2 is therefore an upper bound on the field lethal level"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "Bullheads, with golden shiners, survived the lowest oxygen in Michigan winterkills",
+      "location": "p. 13 (PDF p. 13); p. 16 (PDF p. 16)",
+      "quote": "Bullheads and golden shiners had the best survival.",
+      "conditions": "southeastern Michigan, winter 1944–45; see the claims above",
+      "verdict": "confirmed",
+      "note": "true of the game and pan fishes; p. 16 adds that small forage fishes (\"blacknose and blackchin shiners and Iowa darters\") also survived in one lake with < 0.2 ppm (Merkle, with tadpole madtom and bowfin: Table 2)"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "in southern Michigan winterkill lakes in 1944–45, largemouth bass and bluegill died at about 0.6 ppm",
+      "location": "p. 16 (PDF p. 16); abstract p. 1 (PDF p. 1); Table 2, p. 15 (PDF p. 15)",
+      "quote": "toleration threshold of dissolved oxygen for largemouth bass and bluegills was about 0.6 p.p.m.",
+      "quote_from": "image",
+      "conditions": "abstract: heavy winterkills \"only in those lakes in which the dissolved oxygen was depleted to approximately 0.6 p.p.m. or less\"; Table 2: Grass (0.7–0.6) a very light kill of bass and bluegills, Batteese (0.6–0.5) a heavy bluegill kill with fair survival, Green and Merkle (≤ 0.3) apparently none survived",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "yellow perch, mud pickerel, pike and pumpkinseed survived to about 0.3–0.4 ppm",
+      "location": "p. 16 (PDF p. 16)",
+      "quote": "toleration level, in the vicinity of 0.4 to 0.3 p.p.m., was definitely lower",
+      "quote_from": "image",
+      "conditions": "as above; the source's group also includes the lake chubsucker",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "bullheads and golden shiners survived below 0.3–0.2 ppm",
+      "location": "p. 16 (PDF p. 16); abstract pp. 1–2 (PDF pp. 1–2)",
+      "quote": "survived in still lower oxygen concentrations--at less than 0.3 or 0.2 p.p.m.",
+      "quote_from": "image",
+      "conditions": "as above; the abstract: a large rate of survival among pumpkinseeds, mud pickerel, northern pike, chub suckers, bullheads and golden shiners \"even in lakes where the oxygen was reduced to 0.3 or 0.2 p.p.m.\"",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "thousands of them [bullheads and golden shiners] lived at least a week below 0.5 ppm",
+      "location": "p. 11 (PDF p. 11); p. 10 (PDF p. 10)",
+      "quote": "many thousands of fish, mostly golden shiners and bullheads, lived for at least a week",
+      "quote_from": "image",
+      "conditions": "Third Sister Lake (no inlet or outlet): surface O₂ 0.4 and 0.2 ppm on 5 Feb, 0.2 and 0.07 on 14 Feb; an estimated 10–20 thousand fish milled at an aerator's air hole where the surface film held 0.3 ppm; about a dozen dead shiners and bullheads",
+      "verdict": "confirmed",
+      "note": "the sentence continues \"at oxygen concentrations of less than 0.5 p.p.m.\". This lake was NOT a winterkill lake: no dead fish were seen there at ice-out and heavy mortality was thought unlikely (p. 13), so \"in winterkill lakes\" fits this clause loosely. (The text calls it Third Sister Lake; Tables 1–2 list a \"First Sister\" at 0.3–0.2 ppm with good survival of golden shiners and bullheads, evidently the same lake.)"
+    },
+    {
+      "paper": "§3.5.6; src/w3/fish3.js:2066 (O2_SEEK comment)",
+      "claim": "about 15,000 fish packed a 137-m inlet of Green Lake, Michigan, with 7.1 ppm at its head and 0.05 ppm at its mouth; 15,000 fish crowded an oxygenated inlet in a Michigan winterkill",
+      "location": "p. 9 (PDF p. 9); p. 14 (PDF p. 14)",
+      "quote": "At the head of the inlet, above the 15,000 fish, the dissolved oxygen was 7.1",
+      "quote_from": "image",
+      "conditions": "31 January 1945; Green Lake (90 acres, max. 11 ft) has a single inlet \"about 150 yards in length\" with ~50 gal/min and a sluggish current; the sentence ends \"while at the mouth of the inlet it was 0.05 p.p.m.\"; on 29 Jan it held 2–4 thousand fish 3–8 in long (mud pickerel, bullheads, chubsuckers, golden shiners, pumpkinseeds, yellow perch, mudminnows; no bluegills, crappies or bass among hundreds identified)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "150 yd × 0.9144 = 137.2 m. Green Lake was the only one of the lakes where fish were seen or reported to concentrate in an inlet or outlet (p. 14)"
+    },
+    {
+      "paper": "src/species.js:269 (golden shiner o2Ice 0.2)",
+      "claim": "golden shiner survives 0.2–0.3 mg/L under ice — with bullheads the best survivors of Michigan winterkills",
+      "location": "p. 16 (PDF p. 16); p. 13 (PDF p. 13)",
+      "quote": "survived in still lower oxygen concentrations--at less than 0.3 or 0.2 p.p.m.",
+      "quote_from": "image",
+      "conditions": "as above; several hundred golden shiners were alive at the Third Sister air hole at 0.2 ppm (p. 11), and some survived in Merkle Lake (0.2–0.0; Table 2)",
+      "verdict": "confirmed",
+      "note": "as with the bullhead, 0.2 is a level the shiners survived, so as a lethal floor it is an upper bound. (Golden shiner is not one of the Hot Brook lakes' species; the line is in the 2-D species set)"
+    },
+    {
+      "paper": "src/species.js:250 (o2Ice definition); src/world.js:44 (lethalO2 floor)",
+      "claim": "o2Ice is the lethal O₂ found in NATURAL winterkills under the ice; the floor is the levels that killed fish in natural winterkills",
+      "location": "p. 1 (PDF p. 1), abstract; p. 14 (PDF p. 14)",
+      "quote": "heavy mortality among the warm-water lake fishes, at near-freezing water temperatures, occurred",
+      "quote_from": "image",
+      "conditions": "natural winterkills in 11 lakes, winter 1944–45; the sentence goes on \"only in lakes where the dissolved oxygen was depleted to considerably less than 1 p.p.m.\"; \"the critical point for some species seemed to be in the range of 0.5 to 0.7 p.p.m. Among other species it was near 0.3 p.p.m. or even less\"",
+      "verdict": "confirmed",
+      "note": "the values are natural, under-ice, near-freezing field values, as the comments say. But for bullheads and golden shiners the source gives only a level they survived (< 0.3 or 0.2 ppm), not one that killed them, and its validity rests on single-station surface samples standing for the whole lake (p. 14). \"Accepted by Doudoroff & Shumway 1970 over caged-fish values\" (species.js:250) is not from this source"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1946)76[23:RODOTW]2.0.CO;2", "status": "not fetched", "note": "the journal version (TAFS 76(1): 23–33, OUP/Wiley; not open access); the agency's report was read instead" }
+  ],
+  "notes": "Every value the paper and the code take from this source checks against the report; the only correction is the bibliography's date (the report is dated 6 January 1947; TAFS 76 is the volume for 1946). The O₂ values are the best water in the column (surface stratum under the ice), not means, and they are the authors' judgement from survival and dead-fish counts across lakes, not measured lethal concentrations. Other useful values: the 1944–45 kill hit 51 tabulated Michigan lakes (\"probably exceeded 75\"), at least two million fish (p. 2); ~330,000 dead fish windrowed on four lakes, \"several hundred fish per acre\", mostly half-grown and adult (p. 13); kill lakes 4–425 acres, max. depth mostly < 20 ft, mean 3–7 ft, rooted plants abundant, inlets small or none (pp. 6–8); ice ~12 in and snow ~3 in by mid-February (p. 8). Moore's (1942) laboratory thresholds quoted on p. 16 (largemouth bass and pike ~2.3, yellow perch 1.5, black crappie 1.4, pumpkinseed 0.9, bluegill 0.8, black bullhead 0.3, golden shiner 0.0 ppm) are much higher than the field levels, \"especially for largemouth bass, northern pike, yellow perch, and black crappie\". No winterkill fish here were smallmouth bass, white perch, white sucker or chain pickerel."
+}

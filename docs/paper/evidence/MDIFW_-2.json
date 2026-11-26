@@ -1,0 +1,72 @@
+{
+  "key": "MDIFW_-2",
+  "reader": "t1-02",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copies: the human's own downloads of MDIFW's 2024 and 2016 Maine Fishing Guide PDFs (maine.gov refuses scripted fetches), indexed with getsrc.mjs --file (2024 as MDIFW_-2, 2016 as MDIFW_-2.2016); the 2021 edition was not obtained",
+    "url": "https://www.maine.gov/ifw/docs/23-MDIFW-33-Maine-Fishing-Guide-2024-spreads.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_-2.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "the covers and contents pages of the 2016 and 2024 editions",
+    "ok": true,
+    "corrections": "",
+    "note": "Both covers read 'Maine Fishing Guide' (MDIFW); neither prints its year. The years rest on the file names (fishingguide2016.pdf; 23-MDIFW-33-Maine-Fishing-Guide-2024-spreads.pdf) and the PDFs' creation dates (4 Feb 2016; 9 Oct 2024). The cited URL is the 2021 edition, which could not be opened (403); the rewrite could add https://www.maine.gov/ifw/docs/fishingguide2016.pdf and https://www.maine.gov/ifw/docs/23-MDIFW-33-Maine-Fishing-Guide-2024-spreads.pdf."
+  },
+  "claims": [
+    {
+      "paper": "§2.2",
+      "claim": "MDIFW's 713 ac for Lower is still the figure printed in the state fishing guides",
+      "source_value": "2024: 'Area: 912 acres & 713 acres' (max depth 18 and 13 ft); 2016: 'Area: 912 ac & 713 ac.'",
+      "location": "2024 ed., printed p. 35 (PDF p. 19, a two-page spread), Region F, Bass Fishing; 2016 ed., printed p. 27 (PDF p. 29), Region F, Bass Fishing",
+      "quote": "Max Depth: 18 feet, & 13 feet, Area: 912 acres & 713 acres",
+      "conditions": "one joint entry for 'Hot Brook Lakes (Upper & Lower)'; the guide does not say where its areas come from (they match the 1949 sheets)",
+      "verdict": "confirmed",
+      "note": "2016 wording: 'Max Depth: 18 ft & 13 ft Area: 912 ac & 713 ac.' (PDF p. 29)."
+    },
+    {
+      "paper": "§2.5",
+      "claim": "The fishing guides list the primary fishery as smallmouth, white perch and pickerel",
+      "source_value": "'Primary Fishery: SMB, WHP, PKL' in both editions",
+      "location": "2024 ed., printed p. 35 (PDF p. 19); 2016 ed., printed p. 27 (PDF p. 29)",
+      "quote": "Primary Fishery: SMB, WHP, PKL",
+      "conditions": "listed under 'Bass Fishing' in Region F (Penobscot Region) in both editions",
+      "verdict": "confirmed",
+      "note": "Neither guide's species key defines WHP or PKL (the 2016 key, PDF p. 7, and the 2024 key, printed p. 35 (PDF p. 19), list only trout, salmon, charr, whitefish and the two basses); reading them as white perch and chain pickerel is an obvious inference that matches the 1949 sheets' principal fisheries."
+    },
+    {
+      "paper": "§2.5",
+      "claim": "reached from a \"Town landing off Rte 169\" (quoted, attributed to MDIFW fishing guides 2016–2024)",
+      "source_value": "2024: 'Access: Town landing off Rte 169'; 2016: 'Access: Town landing off SR 169' — the quoted words are the 2024 edition's only",
+      "location": "2024 ed., printed p. 35 (PDF p. 19); 2016 ed., printed p. 27 (PDF p. 29)",
+      "quote": "Access: Town landing off SR 169",
+      "conditions": "same entry in both editions apart from this wording",
+      "verdict": "corrected",
+      "note": "Attribute the quotation to the 2024 guide, or drop the quotation marks ('a town landing off Route 169'). The project note says the 2021 edition also reads 'SR 169' (not checked here)."
+    },
+    {
+      "paper": "§2.1 (not cited to the guides; its src note names gemini_hot_brook_checked.md)",
+      "claim": "the lakes are in MDIFW fisheries Region F (Penobscot)",
+      "source_value": "both editions list Hot Brook Lakes under Region F: Penobscot Region",
+      "location": "2024 ed., printed pp. 34–35 running head (PDF p. 19); 2016 ed., contents (printed p. 2, PDF p. 4) 'Region F (Penobscot Region) … 25' and the entry on printed p. 27",
+      "quote": "REGION F PENOBSCOT REGION",
+      "quote_from": "image",
+      "conditions": "management region of the listing",
+      "verdict": "confirmed",
+      "note": "The guides are a citable primary source for this sentence of §2.1, which now carries no citation for the region."
+    },
+    {
+      "paper": "§2.2; §2.5",
+      "claim": "the 2021 edition carries the same entry (areas 912/713 ac, primary fishery SMB, WHP, PKL, town landing off Route 169)",
+      "verdict": "unchecked",
+      "note": "maine.gov answered 403; a Wayback capture exists (tried[]) but a scripted Wayback fetch of maine.gov files was refused by this session's permission system."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/21-MDIFW-Fishing-Guide-2021.pdf", "status": 403, "note": "the cited 2021 edition; maine.gov refuses scripted fetches" },
+    { "url": "https://web.archive.org/web/20210417180228/https://www.maine.gov/ifw/docs/21-MDIFW-Fishing-Guide-2021.pdf", "status": "not fetched", "note": "Wayback capture of the 2021 edition (200 at capture); a scripted Wayback fetch of maine.gov files was refused by this session's permission system — for the human" }
+  ],
+  "notes": "Two of the three cited editions (2016, 2024) were read; the Hot Brook entry is identical in substance in both: 'Hot Brook Lakes (Upper & Lower)', Danforth, Washington County; max depth 18 and 13 ft; 912 and 713 acres; primary fishery SMB, WHP, PKL; access a town landing off Route 169 ('SR 169' in 2016, 'Rte 169' in 2024); DeLorme atlas map 45, section B-2. Both put it under Bass Fishing in Region F (Penobscot Region). The one change needed is the quotation's attribution (2024 only). The guides name only Danforth for the lakes' town; the guide gives no source for its areas, so §2.2's 'still the figure printed' is right but the guides are not an independent area measurement."
+}

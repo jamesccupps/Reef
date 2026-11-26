@@ -1,0 +1,53 @@
+{
+  "key": "Aksnes_Utne_1997",
+  "reader": "wave-1 batch t1-01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' institutional copy: the University of Bergen theoretical-ecology group's papers directory (Aksnes's group), the typeset Sarsia article, 11 printed pages (pp. 137–147); equations read on the page image (PDF p. 3) because the text layer garbles them",
+    "url": "https://bio.uib.no/te/papers/Aksnes_1997_A_revised_model.pdf",
+    "file": "docs/research_notes/fetched/v2/Aksnes_Utne_1997.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (PDF p. 1) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "authors (Dag L. Aksnes & Anne Christine W. Utne), year, title, Sarsia 82: 137–147 all match; the issue number (2) is Crossref's, not printed on the article, which is dated 1997 08 15 (ISSN 0036-4827, Bergen). printed page = PDF page + 136"
+  },
+  "claims": [
+    {
+      "paper": "§4.5; src/w3/fish3.js:199 (RD_SIZE comment; implemented at fish3.js:995)",
+      "claim": "the reaction distance RD is scaled by prey size through R²e^(cR) ∝ prey area (the visual model R²·e^(cR) ∝ the prey's area)",
+      "location": "p. 139 (PDF p. 3), eq. 8 (from eqs. 3, 6–7); Table 1, p. 138 (PDF p. 2)",
+      "quote": "predicts the visual range (r) for a given target (C0,Ap) and given environmental conditions (Eb,c)",
+      "conditions": "eq. 8 reads r²·exp(cr) = |C0|·Ap·E′·Eb/(Ke + Eb), r the visual range (m), c the beam attenuation coefficient (m⁻¹), Ap the prey's area (m²), C0 its inherent contrast, E′ and Ke the eye's sensitivity and saturation parameters, Eb the background irradiance; so r²e^(cr) ∝ Ap only with contrast, eye and light held fixed. Fitted to a marine planktivorous goby, Gobiusculus flavescens, reacting to two copepods in the laboratory (Utne 1997: a light series, and turbidity series from diatomaceous earth at 12 and 120 µE m⁻² s⁻¹; Ke 4–5 µE m⁻² s⁻¹) and checked on goldfish and cod contrast thresholds",
+      "verdict": "confirmed",
+      "note": "two caveats for the text: (1) the model gives the VISUAL RANGE, which the authors take to exceed the reactive distance (they set the observed visual range r0 = mean reactive distance + 2 s.d., p. 139); scaling a piscivore's reaction distance by it assumes the two are proportional; (2) it was built and tested for planktivores and contrast-threshold data, not piscivores. The code (fish3.js:995) solves R²e^(cR) = R0²e^(cR0)·(L/6 cm)², i.e. eq. 8 with C0, E′ and light fixed"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "c = 1.7 m⁻¹ in the stained water (given inside the Aksnes & Utne citation)",
+      "verdict": "unsupported",
+      "note": "not in the source: Aksnes & Utne define c as the beam attenuation coefficient but give no value for any lake (their c values come from the transmission of diatomaceous-earth suspensions, pp. 139–140). 1.7 m⁻¹ is the project's estimate (fish3.js RD_C: Kd ≈ 0.85 m⁻¹ with c taken between K and 3K for humic water; realtime_foraging.md §5.3, after Fiksen et al. 2002 and Kirk 1980). Write it as \"(Aksnes & Utne 1997), with c = 1.7 m⁻¹ for the stained water (project estimate)\""
+    },
+    {
+      "paper": "§5.4",
+      "claim": "a visual reaction distance for every prey (R²·e^(cR) ∝ L²; Aksnes & Utne 1997)",
+      "location": "p. 139 (PDF p. 3), eq. 8; p. 145 (PDF p. 9)",
+      "quote": "linear response to increase in prey size (measured as length rather than area)",
+      "quote_from": "image",
+      "conditions": "p. 145 compares the model with the empirical reaction-distance models for bluegill, white crappie and alewife: \"Our model behave in many respect similarly to their models\", including this linear response to prey length; eq. 8 itself is in prey AREA",
+      "verdict": "confirmed",
+      "note": "∝ L² is the project's step from area to length (prey of similar shape, area ∝ L²); the source's own variable is area. With c·R ≪ 1 the model reduces to R ∝ L, the empirical linear relation; the exp(cR) term flattens it at long range in turbid or stained water"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.tandfonline.com/doi/abs/10.1080/00364827.1997.10413647", "status": 403, "note": "publisher (Taylor & Francis) refuses scripts; doi:10.1080/00364827.1997.10413647 is the page a library login would open" },
+    { "url": "https://hdl.handle.net/11250/3702701", "status": 200, "note": "NVA (Norwegian research archive) record, no file attached (API: associatedArtifacts empty)" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1080/00364827.1997.10413647?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/00364827.1997.10413647\"&format=json&resultType=core", "status": 200, "note": "no hit" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(revised model visual range fish)", "status": 200, "note": "no item" }
+  ],
+  "notes": "The model is cited correctly: R²e^(cR) ∝ prey area is the paper's eq. 8 with everything else fixed. The one fix is to mark c = 1.7 m⁻¹ as the project's estimate, and it is worth saying that the relation is for visual range and was fitted to a planktivorous goby. The §4.5 \"follow-on mention\" that show.mjs lists (the young-of-year paragraph) names Sørnes & Aksnes 2004, a different source; nothing there comes from Aksnes & Utne. Also in the source: eq. 9 fits T1 = Ap|C0|E′ = 7.5 × 10⁻² (Calanus) and 11.6 × 10⁻² (Acartia) with Ke = 5 µE m⁻² s⁻¹ (p. 141); with the light term Eb/(Ke + Eb), visual range rises fast at low light and is then \"practically constant\" as light increases further (p. 141, Fig. 2) — a ready mechanism if the model's light scaling of RD should follow the same equation; the formula in the project note (quoted there from Fiksen et al. 2002, eq. 2) has the same form as eq. 8."
+}
