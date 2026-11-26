@@ -73,7 +73,8 @@ for (const r of refs) {
     : S.length === 1 ? `(?<!(?:&|and)\\s)${L}${S[0]}${R}(?:\\s+et\\s+al\\.?)?`   // (an entry listing one author may be cited "et al.")
     : S.length === 2 ? `${L}${S[0]}${R}\\s*(?:&|and)\\s*${S[1]}${R}`
     : `${L}${S[0]}${R}(?:\\s+et\\s+al\\.?|,[^;)\\n]{0,90}?(?:&|and)\\s*${S[S.length - 1]}${R})`;
-  r.rx = new RegExp(`${who}(?:['’]s)?[\\s,]*\\(?(?:(?:1[5-9]|20)\\d{2}[a-z]?\\s*[,;]\\s*)*(?<![\\d])${yr}(?![\\d])`, 'u');
+  // (the year not the end of a range: "fishing guides 2016–2024" is not the 2024 chart)
+  r.rx = new RegExp(`${who}(?:['’]s)?[\\s,]*\\(?(?:(?:1[5-9]|20)\\d{2}[a-z]?\\s*[,;]\\s*)*(?<![\\d–\\-])${yr}(?![\\d–])`, 'u');
   // code comments abbreviate ("Christensen 1996" for Christensen et al., "Hamon's potential (1961"): the lead author, a short gap
   // without digits or a full stop, the year — counted only where it points to one entry (see the code loop)
   if (S.length) r.rxLoose = new RegExp(`(?<!(?:&|and)\\s)${L}${S[0]}${R}(?:\\s+et\\s+al\\.?)?[^;.\\n\\d]{0,30}?(?<![\\d])${yr}(?![\\d])`, 'u');

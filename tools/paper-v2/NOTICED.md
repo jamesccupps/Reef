@@ -50,3 +50,7 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-05 | Blumer 1985 entry | Probably the wrong 1985 Blumer paper: ADW credits its numbers to "Reproductive natural history of the brown bullhead", *Am. Midl. Nat.* 114(2): 318–330, doi:10.2307/2425607 | open |
 | t1-05 | §4.5, §5.8 | Chipps et al. 2000 measured over-predicted consumption in age-0 tiger muskellunge in the lab (113 % at 10 °C, 328 % at 7.5 °C); "winter costs 2–5×" and the ×0.5 pickerel respiration cut are project inference | open |
 | t1-05 | §3.8.7 | "No exuviae on seawalls, beaches or lawns" rests only on the Burnham, Howe & Merrell slides; Merrell et al. 2009 does not split developed sites by shore type | open |
+| t1-03 | §4.5 vs §3.6.1 | §4.5 calls hatch fractions "field survivals where these are known" with "white perch 0.45 on a lake bed"; §3.6.1 says no field white perch egg survival was found and `config.js` EGG3 marks 0.45 [inf] (walleye, smelt analogs) — §4.5 must say inference | open |
+| t1-03 | §2.2 | The sounding ranges (9–12 ft; eastern bay 4–11 ft) are from the 1949 sheet, not the 2024 chart (contours only); the 2024 chart's 684 ac and 6.7 mi equal DEP's, so it does not confirm the area independently | open |
+| t1-03 | Table 3.6-1 (pickerel) | Scott & Crossman give 8.3–11.1 °C as the spawning temperature (not a "peak") and 3–10 ft depth; "mostly very shallow" is not theirs | open |
+| t1-03 | `config.js:300` (DETECT_L) | Cites Margulies 1989 for how well predators detect small larvae; the paper has no such data | open |

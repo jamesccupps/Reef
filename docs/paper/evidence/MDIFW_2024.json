@@ -1,0 +1,111 @@
+{
+  "key": "MDIFW_2024",
+  "reader": "wave-1 batch t1-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the human's own copy of the MDIFW depth chart (a one-page PDF, Lower-Hot-Brook-Lake-1072.pdf, fetched by hand on 2026-10-20 and kept in the human's Downloads folder, not in the repository), indexed with getsrc --file; maine.gov refuses scripted fetches (403)",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the chart itself (one page; read on the page image)",
+    "ok": false,
+    "corrections": "complete the entry from the chart: title 'Lower Hot Brook Lake'; place line 'Bancroft, Danforth, T8 R4 NBPP, Washington Co.'; one-page depth chart with 10-ft and 2.5-ft contours; 'Data source: Maine IFW - Historic'; basemap 'electronic USGS topographic data with minor revisions by MDIFW'. No publication date is printed: '2024' comes from the headings 'Principal Fish Species (2024)' and 'Other Fish Species (2024)', so write the year as [2024] or say so. The MIDAS number 1072 is not on the chart (it is in the file name only). Suggested: MDIFW [2024]. Lower Hot Brook Lake: Bancroft, Danforth, T8 R4 NBPP, Washington Co. [depth chart, 1 p.; data source 'Maine IFW - Historic']. Maine Department of Inland Fisheries and Wildlife.",
+    "note": "the PDF has no text layer (getsrc: scanned); every value below was read on the rendered page image (docs/research_notes/fetched/v2/MDIFW_2024.p1.png)."
+  },
+  "claims": [
+    {
+      "paper": "§2.2, Table 1 (Lower area)",
+      "claim": "684 ac (277 ha)",
+      "location": "p. 1 (one-page chart), text block upper left",
+      "quote": "Surface Area (acres): 684",
+      "quote_from": "image",
+      "conditions": "no method or date stated for the area; 684 ac and the 6.7-mile perimeter equal the Lakes of Maine (DEP) figures in Table 1, not the 1949 sheet's 713 ac",
+      "verdict": "confirmed",
+      "note": "684 × 0.404686 = 276.8 ha."
+    },
+    {
+      "paper": "§2.2, Table 1 (Lower mean depth)",
+      "claim": "mean depth 8 ft (2.44 m)",
+      "location": "p. 1 (one-page chart), text block upper left",
+      "quote": "Mean Depth (feet): 8",
+      "quote_from": "image",
+      "conditions": "no method stated; the soundings are 'Maine IFW - Historic'",
+      "verdict": "confirmed",
+      "note": "8 ft = 2.438 m."
+    },
+    {
+      "paper": "§2.2, Table 1 (Lower maximum depth); §2.2 ('the deepest, 4.0 m (13 ft)')",
+      "claim": "maximum depth 13 ft (3.96 m)",
+      "location": "p. 1 (one-page chart), text block upper left",
+      "quote": "Maximum Depth Recorded (feet): 13",
+      "quote_from": "image",
+      "conditions": "'recorded' - the deepest sounding of the historic survey",
+      "verdict": "confirmed",
+      "note": "13 ft = 3.962 m."
+    },
+    {
+      "paper": "§2.2",
+      "claim": "Lower's deepest water lies south of center and a long central trough sits inside the 10-ft contour",
+      "location": "p. 1 (one-page chart), the bathymetry and legend",
+      "quote": "Legend 10 Foot Contours 2.5 Foot Contours",
+      "quote_from": "image",
+      "conditions": "the 10-ft contour (black) encloses a long north-south trough from the north basin to the south end, reaching into the eastern bay; a small closed inner contour (light, 2.5-ft interval) lies inside it south of the lake's middle",
+      "verdict": "confirmed",
+      "note": "the chart prints no soundings, only contours; the inner closed contour is unlabelled but, inside the 10-ft line, can only be deeper water."
+    },
+    {
+      "paper": "§2.2",
+      "claim": "most soundings read 2.7-3.7 m (9-12 ft) and the large eastern bay is 1.2-3.4 m (4-11 ft) deep",
+      "verdict": "unsupported",
+      "note": "not on this chart, which has contours only (10 ft and 2.5 ft) and no soundings; these ranges are the 1949 sheet's (MDIFW 1949), which the sentence also cites. The chart is consistent with them (its 10-ft contour enters the eastern bay, so part of the bay is deeper than 10 ft). Cite MDIFW 1949 alone for the sounding ranges."
+    },
+    {
+      "paper": "§2.2",
+      "claim": "Lower is about 3.3 km north-south by 1.7 km across",
+      "location": "p. 1 (one-page chart), UTM grid (1-km lines 581000-583000 E, 5054000-5057000 N) and scale bar",
+      "quote": "581000 582000 583000 … 5057000 5056000 5055000 5054000",
+      "quote_from": "image",
+      "conditions": "project measurement on the chart's 1-km grid: the water spans about 3.2-3.25 km north-south (≈ 5,053,870 to 5,057,110 N) and about 1.65 km east-west at its widest (≈ 582,050 to 583,700 E, west bay to the eastern bay)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "read off the rendered page (786 px per km); 'about 3.3 by 1.7 km' is a fair rounding of 3.2-3.25 × 1.65 km."
+    },
+    {
+      "paper": "§2.5; Table 3 ('MDIFW chart 2024 (Lower)' column)",
+      "claim": "principal species chain pickerel, smallmouth bass, white perch",
+      "location": "p. 1 (one-page chart), text block upper left",
+      "quote": "Principal Fish Species (2024): Chain Pickerel, Smallmouth Bass, White Perch",
+      "quote_from": "image",
+      "conditions": "a list only: no gear, effort, abundance or survey dates",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5; Table 3; §2.6; §3.2.3; §3.3.9; §3.5.1; §4.5",
+      "claim": "other species banded killifish, blacknose dace, brown bullhead, fallfish, pumpkinseed, sea-run alewife, white sucker, yellow perch (the first record of alewife, and pumpkinseed for Lower)",
+      "location": "p. 1 (one-page chart), text block upper left",
+      "quote": "Other Fish Species (2024): Banded Killifish, Blacknose Dace, Brown Bullhead, Fallfish, Pumpkinseed Sunfish, Sea-run Alewife",
+      "quote_from": "image",
+      "conditions": "the list continues 'White Sucker, Yellow Perch'; no numbers, dates, life stage or spawning information for any species, alewife included",
+      "verdict": "confirmed",
+      "note": "Table 3's 2024 column matches the chart row by row (redbreast sunfish, American eel and golden shiner absent). 'First record of alewife' and 'fills pumpkinseed's gap' are the project's comparison with MDIFW 1949 and MDIFW 2007, not something the chart says; §3.3.9's 'sea-run alewife enter Lower' rests on the listing alone."
+    },
+    {
+      "paper": "§2.2, Table 1 (row label: 'MDIFW depth chart, Lower (2024; \"Maine IFW – Historic\")')",
+      "claim": "the chart's data source is 'Maine IFW - Historic' (the old survey's soundings, redrawn)",
+      "location": "p. 1 (one-page chart), notice box bottom right",
+      "quote": "Data source: Maine IFW - Historic",
+      "quote_from": "image",
+      "conditions": "'Basemap data is provided by electronic USGS topographic data with minor revisions by MDIFW. This is not a legal survey.'",
+      "verdict": "confirmed",
+      "note": "that the historic data are the 1949 soundings is a likely inference, not stated."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/lake-survey-maps/washington/lower_hot_brook_lake.pdf", "status": 403, "note": "maine.gov refuses scripted fetches (a guessed path for the chart)" },
+    { "url": "https://www.maine.gov/ifw/docs/lake-survey-maps/washington/hot_brook_lake_lower.pdf", "status": 403, "note": "maine.gov refuses scripted fetches (this path is the 1949 survey sheet, already in docs/research_notes/fetched/)" },
+    { "url": "https://www.maine.gov/ifw/fishing-boating/fishing/lake-survey-maps.html", "status": 403, "note": "maine.gov refuses scripted fetches; the chart's public URL is unknown - the human's copy was used" }
+  ],
+  "notes": "The chart is not in docs/research_notes/fetched/ (that folder's hot_brook_lake_lower.pdf is the 1949 survey sheet, MDIFW 1949). The human's copy was found in the human's Downloads folder as Lower-Hot-Brook-Lake-1072.pdf (named in hot_brook_lake_records.md as 'not in the repository') and copied into fetched/v2/ by getsrc --file; it is scanned (no text layer), so it was read on the page image. Every claim the paper takes from the chart checks; the entry needs only its bibliography completed (no date or MIDAS number printed on the chart; the '2024' is the species lists' heading). The §2.2 sounding ranges are the 1949 sheet's, not the chart's. Note for the rewrite: the chart's 684 ac and 6.7-mile perimeter are the DEP/Lakes of Maine values, so the chart does not independently confirm the area. show.mjs also lists §2.5 line 291, but that paragraph cites 'MDIFW fishing guides 2016-2024', a different source (the matcher caught the year): nothing there is from this chart."
+}

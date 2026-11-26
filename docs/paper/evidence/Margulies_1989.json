@@ -1,0 +1,153 @@
+{
+  "key": "Margulies_1989",
+  "reader": "wave-1 batch t1-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy (NOAA NMFS Scientific Publications Office, Fishery Bulletin back issues)",
+    "url": "https://spo.nmfs.noaa.gov/sites/default/files/pdf-content/1989/871/margulies.pdf",
+    "file": "docs/research_notes/fetched/v2/Margulies_1989.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 63: 'Fishery Bulletin, U.S. 87:63-72'; running head 'FISHERY BULLETIN: VOL. 87, NO. 1'); no DOI",
+    "ok": true,
+    "note": "Margulies, D. 1989. Effects of food concentration and temperature on development, growth, and survival of white perch, Morone americana, eggs and larvae. Fishery Bulletin 87(1): 63-72 - as in references.md. Manuscript accepted September 1988; part of the author's 1986 University of Maryland PhD thesis."
+  },
+  "claims": [
+    {
+      "paper": "§3.6, Table 3.6-1 (white perch row)",
+      "claim": "0.87-0.91-mm (adhesive) eggs",
+      "source_value": "mean egg diameters 0.91, 0.87 and 0.92 mm at 13, 17 and 21 °C (n = 10 each), i.e. 0.87-0.92 mm; individual preserved eggs 0.76-1.03 mm",
+      "location": "p. 65 (PDF p. 3), Table 1 and text",
+      "quote": "Eggs x̄ diameter (mm) … 0.91 … 0.87 … 0.92",
+      "quote_from": "table",
+      "conditions": "laboratory; eggs stripped from Potomac and Patuxent River (Chesapeake) fish, April-May 1982, incubated at 1 ‰ salinity; eggs preserved in 4 % formalin before measuring",
+      "verdict": "corrected",
+      "note": "read on the page image of Table 1. The upper bound is 0.92, not 0.91, and these are preserved eggs. 'Adhesive' and the spawning habitat in the same cell are not from Margulies (a laboratory study); they belong to the other sources in the row."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (white perch row)",
+      "claim": "incubation 3.5 d at 15 °C, 2.6 d at 17 °C",
+      "source_value": "DE = 686.990·e^(−0.1402T) hours to 50 % hatch (r² = 0.99): 83.9 h = 3.49 d at 15 °C, 63.4 h = 2.64 d at 17 °C",
+      "location": "p. 66 (PDF p. 4), Fig. 1 (upper panel)",
+      "quote": "DE = 686.990 e -0.1402T (r2 = 0.99)",
+      "conditions": "laboratory, fitted to means at 13, 17 and 21 °C ('Hrs to 50% Hatch'); 15 °C is interpolated",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "686.990·e^(−2.103) = 83.87 h = 3.49 d; 686.990·e^(−2.3834) = 63.37 h = 2.64 d. The equation's y axis reads 'Hrs to 50% Hatch' on the page image."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (white perch row)",
+      "claim": "hatch at 2.4-2.8 mm SL",
+      "location": "p. 65 (PDF p. 3), text and Table 1",
+      "quote": "Mean larval size at hatch ranged from 2.37 to 2.81 mm SL",
+      "conditions": "laboratory; averaged 2.50 mm; Table 1's means 2.52, 2.46, 2.53 mm SL at 13/17/21 °C; hatchlings ~35 µg dry",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (white perch row)",
+      "claim": "yolk-sac stage 4.4 d at 15 °C",
+      "source_value": "Dy = 1745.344·e^(−0.1863T) hours from hatch to 100 % eye pigmentation (r² = 0.98): 106.7 h = 4.45 d at 15 °C",
+      "location": "p. 66 (PDF p. 4), Fig. 1 (lower panel)",
+      "quote": "Dy = 1745.344e- 0.1863T (r2= 0.98)",
+      "conditions": "laboratory, fitted at 13, 17, 21 °C; the stage ends at full eye pigmentation (readiness to feed), when ≥ 98 % of the yolk is used",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1745.344·e^(−2.7945) = 106.72 h = 4.45 d (rounds to 4.4 or 4.5). The y axis reads 'Hrs from Hatch to 100% Eye Pigmentation' on the page image."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (white perch row); src/config.js:294 (19-µg first feeder)",
+      "claim": "first feeding at 3.45 mm SL (~19 µg dry)",
+      "location": "p. 65 (PDF p. 3), text and Table 1",
+      "quote": "At the first-feeding stage, larvae averaged 3.45 mm SL and weighed approximately 19",
+      "conditions": "laboratory; Table 1 means 3.48/3.43/3.49 mm SL and 18.8/18.4/19.4 µg dry at 13/17/21 °C",
+      "verdict": "confirmed",
+      "note": "the code's ×0.7 starvation multiplier for white perch is a project inference, not from Margulies."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "white perch hatched at about 80, 60 and 20 % at 13, 17 and 21 °C",
+      "location": "p. 65 (PDF p. 3), Results: Development",
+      "quote": "Percentage hatch was near 80% at 13°C, approximately 60% at 17°C, and near",
+      "conditions": "laboratory, 1 ‰ salinity; 'rough estimates based on removals of dead eggs' - hatching success 'was not measured precisely'",
+      "verdict": "confirmed",
+      "note": "the rewrite should say these are rough laboratory estimates."
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "at 17-21 °C, first feeders at 50 rotifers/L grew almost nothing and survived 80-90 % less over eight days than at 800/L",
+      "location": "p. 70 (PDF p. 8); growth p. 67-68 (PDF pp. 5-6), Tables 2-3",
+      "quote": "an 8 d delay resulted in 80–90% decreases in survival",
+      "quote_from": "image",
+      "conditions": "laboratory, 8 days from first feeding; food = Brachionus plicatilis rotifers; group 4 (50/L throughout) grew 0.014-0.020 mm SL/d and G = 0.0089-0.0147 /d (0.9-1.5 %/d dry weight) at 17-21 °C against group 1's 0.202-0.276 mm/d and 15.2-21.8 %/d; group 4 'lost weight from day 2 to day 4'",
+      "verdict": "confirmed",
+      "note": "read on the page image (the OCR renders % as 0/0). Survival is the expected survival after 8 days of feeding (Nt = N0·e^(−Mt)), 4-55 % across groups."
+    },
+    {
+      "paper": "§3.6.5; src/w3/fish3.js:682 ('a 4-day feeding delay killed most')",
+      "claim": "a four-day delay in first feeding cost 60-80 % of survival (at 17-21 °C)",
+      "location": "p. 70 (PDF p. 8), Discussion",
+      "quote": "8 d survival values for white perch decreased by 60–80% with a 4 d delay",
+      "quote_from": "image",
+      "conditions": "laboratory, 17 and 21 °C only (at 13 °C the differences were much smaller); a relative reduction from the well-fed group's 43-55 % 8-day survival",
+      "verdict": "confirmed",
+      "note": "the code comment's 'killed most' holds at 17-21 °C (a 60-80 % relative loss on top of the well-fed group's ~50 % mortality)."
+    },
+    {
+      "paper": "§3.6.5 (the 50-800 rotifers/L bracket left open for white perch)",
+      "claim": "the threshold for white perch first feeders lies between 50 and 800 rotifers/L",
+      "location": "p. 70 (PDF p. 8), Discussion",
+      "quote": "critical levels for survival fall in the range of 0.04-0.64",
+      "conditions": "cal/L; 800 and 50 rotifers/L correspond to 0.64 and 0.04 cal/L (Theilacker & McMaster 1971); Brachionus plicatilis",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.6, Table 3.6-6",
+      "claim": "white perch larvae, 'laboratory, food in excess': 0.054 / 0.202 / 0.276 mm/d at 13 / 17 / 21 °C",
+      "source_value": "0.054 / 0.202 / 0.276 mm SL per day are the slopes for food group 1, 'a well-fed group maintained at 800 rotifers/L' (a level the author calls typical of high microzooplankton in tidal fresh water), over the first 8 days of feeding - not food in excess",
+      "location": "p. 67 (PDF p. 5), Table 2; group definitions p. 64 (PDF p. 2)",
+      "quote": "Group 1 was a well-fed group maintained at 800 rotifers/L",
+      "conditions": "laboratory; standard length; n = 40, 39, 38; growth was 'becoming more curvilinear after day 4' at 17-21 °C",
+      "verdict": "corrected",
+      "note": "digits confirmed on the page image of Table 2 (L = 3.546 + 0.054t; 3.176 + 0.202t; 3.293 + 0.276t). Only the 'food in excess' setting needs changing: say 'laboratory, 800 rotifers/L (well fed), first 8 days of feeding'."
+    },
+    {
+      "paper": "§4.5; src/config.js:475, :494 (EGG3.whiteperch a 28.62, b 0.1402)",
+      "claim": "white perch eggs develop in 686.99·e^(−0.1402T) hours",
+      "location": "p. 66 (PDF p. 4), Fig. 1",
+      "quote": "DE = 686.990 e -0.1402T (r2 = 0.99)",
+      "conditions": "hours to 50 % hatch; laboratory, 13-21 °C, 1 ‰ salinity, Chesapeake stock",
+      "verdict": "confirmed",
+      "note": "the code's a = 28.62 d = 686.99/24 h (28.625) is right; outside 13-21 °C the fit is an extrapolation."
+    },
+    {
+      "paper": "src/config.js:494 (EGG3.whiteperch yolkA 72.72, yolkB 0.1863; 'hatch ~80 % at 13 °C')",
+      "claim": "yolk-sac stage 1745.3·e^(−0.1863T) h; hatch ~80 % at 13 °C",
+      "location": "p. 66 (PDF p. 4), Fig. 1; p. 65 (PDF p. 3)",
+      "quote": "Dy = 1745.344e- 0.1863T (r2= 0.98)",
+      "conditions": "hours from hatch to 100 % eye pigmentation; laboratory, 13-21 °C",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1745.344/24 = 72.72 d. The 80 % hatch at 13 °C is the rough laboratory estimate (see §3.6.1 claim); the code correctly does not use it as the lake-bed hatch (it uses 0.45)."
+    },
+    {
+      "paper": "src/config.js:1602-1603 (FRY half-saturation comment)",
+      "claim": "white perch ~0 growth at 50 rotifers/L, 0.14-0.20 /d at 800/L",
+      "location": "p. 68 (PDF p. 6), Table 3",
+      "quote": "17 1 39 W = 18.938 e^0.1413t … 21 1 38 W = 19.254 e^0.1973t",
+      "quote_from": "image",
+      "conditions": "instantaneous growth coefficient G of dry weight, per day, first 8 days of feeding; at 800/L G = 0.0481 at 13 °C, 0.1413 at 17 °C, 0.1973 at 21 °C; at 50/L throughout G = 0.0058, 0.0089, 0.0147",
+      "verdict": "confirmed",
+      "note": "0.14-0.20 /d holds only at 17-21 °C; at 13 °C the well-fed larvae grew at 0.048 /d. Read on the page image of Table 3."
+    },
+    {
+      "paper": "src/config.js:300 (FRY.DETECT_L: 'larvae this small are seen 0.2 → 1 … Margulies 1989')",
+      "claim": "Margulies 1989 supports small larvae (< 6-15 mm) being seen less by predators",
+      "verdict": "unsupported",
+      "note": "Margulies 1989 has no predation or detection experiment. Its only remark on predation is that 'predation by planktivorous fishes on yolk-sac larvae is probably substantial', citing laboratory experiments in Margulies 1986 (the thesis), p. 69 (PDF p. 7). The size-dependent predation the paper reports in §3.6.5 is Margulies 1990 (abstract) - and as §3.6.5 words it (bluegill killed nearly every larva under 6 mm), it points the other way from 'small larvae are seen less'. Drop the 1989 citation from DETECT_L or replace it with the right source."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Full text (10 pp.) read: methods, results, Tables 1-3 and Figs. 1-6 on the page images, discussion. Two small paper corrections (Table 3.6-1 egg diameter 0.87-0.92 mm, preserved eggs; Table 3.6-6 'food in excess' should be '800 rotifers/L, well fed, first 8 days') and one code citation to fix (config.js:300 DETECT_L cites Margulies 1989 for detection; the paper has nothing on it). Everything else - the egg and yolk-sac equations, hatch sizes, first-feeding size and mass, the hatch percentages, the feeding-delay and low-food survival losses, the 50-800/L bracket - checks. Conditions worth stating in the rewrite: Chesapeake (Potomac/Patuxent) stock, 1 ‰ salinity, the marine rotifer Brachionus plicatilis as food, constant 200-300 lux, 13:11 light:dark; hatch percentages are rough estimates from dead-egg removals. Other values available: hatchling dry mass ~35 µg; first feeders had used ≥ 98 % of yolk and 55-75 % of oil; optimum for development and growth 15-20 °C, hatch optimal at ≤ 17 °C; a 4 °C drop could prolong the yolk-sac stage by ≥ 3 days; white perch spawn at 10-20 °C in Chesapeake tributaries (Hardy 1978, as cited). The 'follow-on mention' in §3.6.5 line 633 is Margulies 1990 (a different work), not this paper."
+}

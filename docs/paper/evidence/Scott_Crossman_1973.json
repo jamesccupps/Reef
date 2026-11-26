@@ -1,0 +1,217 @@
+{
+  "key": "Scott_Crossman_1973",
+  "reader": "wave-1 batch t1-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item, openly downloadable (not access-restricted; no borrow or login): a full scan of the 1973 book with a text layer",
+    "url": "https://archive.org/download/cftri.0304freshwaterfishes0000wbsc_l0a9/cftri.0304freshwaterfishes0000wbsc_l0a9.pdf",
+    "file": "docs/research_notes/fetched/v2/Scott_Crossman_1973.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 11: 'FRESHWATER FISHES OF CANADA … W. B. Scott, E. J. Crossman … BULLETIN 184, Fisheries Research Board of Canada, Ottawa 1973')",
+    "ok": false,
+    "corrections": "authors, year, title and series are right. The page note '(chain pickerel pp. 370-373 …)' names only one account, but the paper and code use five: chain pickerel pp. 370-374, white sucker pp. 538-543, brown bullhead pp. 598-604, smallmouth bass pp. 728-734, yellow perch pp. 755-761. Either drop the page note or list all five.",
+    "note": "status read-full = the five species accounts the paper uses, each read in full (the book is ~1,000 pages; the rest was not read, as the brief allows)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3, Table 3.5-2 (yellow perch, maturity)",
+      "claim": "yellow perch mature at 3 (males) and 4 (females) years",
+      "location": "pp. 758-759 (PDF pp. 786-787), yellow perch account",
+      "quote": "by males at 3 years and females at 4 years of",
+      "conditions": "'Sexual maturity is usually achieved' - a general statement for Canadian populations; 'Yearling males in Lake Erie are often fertile'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-2 (yellow perch, fecundity)",
+      "claim": "Lake Ontario 3,035-61,465 eggs at 131-257 mm FL",
+      "location": "p. 758 (PDF p. 786), yellow perch account",
+      "quote": "3035-61,465 for females 5.1-10.1 inches (131-257 mm) fork length",
+      "conditions": "eggs per female, Lake Ontario, fork length; Maryland fish 36,600-109,000 at 147-254 mm TL",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-2 (yellow perch, fecundity)",
+      "claim": "egg masses average about 23,000 eggs",
+      "location": "p. 758 (PDF p. 786), yellow perch account",
+      "quote": "may contain 2000-90,000 eggs with an average of about 23,000 eggs",
+      "conditions": "per egg mass (the gelatinous string, up to 2.1 m long)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-2 (chain pickerel, spawning temperature)",
+      "claim": "chain pickerel spawn at 8.3-11.1 °C",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "when water temperatures reach 47°-52° F (8.3°-11.1° C) in April or May",
+      "conditions": "northern US populations ('wherever possible … the northern United States'); spawning 'very shortly after the ice melts' in water 3-10 ft (0.9-3 m) deep, lasting 7-10 days",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-3 (yellow perch, longevity)",
+      "claim": "oldest yellow perch 11+ years",
+      "location": "p. 759 (PDF p. 787), yellow perch account",
+      "quote": "0.78 pounds, was aged at 11+ years",
+      "conditions": "a 310-mm TL Lake Erie female; S&C also say 'Maximum age is usually 9 or 10 years'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-3 (smallmouth bass, diet ontogeny)",
+      "claim": "insects by 20 mm, fish and crayfish by 50 mm",
+      "location": "p. 732 (PDF p. 760), smallmouth bass account",
+      "quote": "By 20 mm length, insects replace the previous plankton dominance",
+      "conditions": "'by 50 mm fishes and crayfish are the important items'; drawn from Tester's (1932a) summary for several Ontario habitats",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3, Table 3.5-3 (smallmouth bass, adult diet)",
+      "claim": "Ontario adults 60-90 % crayfish by volume",
+      "location": "p. 732 (PDF p. 760), smallmouth bass account",
+      "quote": "For adults in most habitats, crayfish form approximately 60-90% of the food volume",
+      "conditions": "by volume; fishes 10-30 %, insects 0-10 %; S&C say 'in most habitats', following a sentence on Tester's Ontario summary",
+      "verdict": "confirmed",
+      "note": "'Ontario adults' is a fair reading of the context; S&C's own words are 'adults in most habitats'."
+    },
+    {
+      "paper": "§3.6 (spawning order); Table 3.6-1 (white sucker row)",
+      "claim": "white sucker spawn from about 10 °C",
+      "location": "p. 540 (PDF p. 566), white sucker account",
+      "quote": "streams when stream temperatures first reach 50° F (10° C)",
+      "conditions": "adults migrate from lakes into gravelly streams then, usually early May to early June; some spawn on lake margins",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (chain pickerel row: 'peak 8.3-11.1 °C'; '… to ~3 m')",
+      "claim": "spawning peak 8.3-11.1 °C, in water to about 3 m",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "Spawning takes place in water 3-10 feet deep when water temperatures reach",
+      "conditions": "S&C give 8.3-11.1 °C as the temperature at which spawning takes place, not as a peak inside a wider range, and 3-10 ft (0.9-3.0 m) as the depth",
+      "verdict": "confirmed",
+      "note": "the '~3 m' maximum matches S&C; 'mostly very shallow' is not S&C's (their minimum is 3 ft) and must come from the row's other sources. 'Peak' is the paper's framing against the Ontario database's 6-11 °C."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (chain pickerel row)",
+      "claim": "no parental care; hatch at 4.2-7.0 mm",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "The newly hatched young are 4.2-7.0 mm in length",
+      "conditions": "'No care is given the eggs, which hatch in 6-12 days depending on temperature'; eggs 'about 2 mm in diameter … slightly adhesive'",
+      "verdict": "confirmed",
+      "note": "S&C's incubation is 6-12 days; the row's 11 d at 10 °C / 5 d at 14.4 °C / 2.5 d at 17.2 °C come from its other sources, not S&C."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (chain pickerel row)",
+      "claim": "fry hang on plants by a snout gland for about a week",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "attach themselves to vegetation by an adhesive gland on the tip of the snout",
+      "conditions": "'They subsist on yolk for about a week'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (chain pickerel row)",
+      "claim": "first food at about 10 mm",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "By the time the yolk is absorbed, the young are about 10 mm long",
+      "conditions": "'the mouth is fully formed, and they begin active feeding'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (yellow perch row)",
+      "claim": "no care; incubation 8-10 d, up to 27 d at 8.3 °C",
+      "location": "p. 758 (PDF p. 786), yellow perch account",
+      "quote": "reported to take as long as 27 days at 47° F (8.3° C)",
+      "conditions": "'Hatching usually takes approximately 8-10 days'; 'No protection is given the egg masses or young by the parents'; S&C's spawning temperatures are 8.9-12.2 °C (the row's 7-13 °C is the USFWS model's)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (yellow perch row)",
+      "claim": "yolk-sac stage about 5 days",
+      "location": "p. 758 (PDF p. 786), yellow perch account",
+      "quote": "They are inactive for about 5 days during the absorption of the yolk",
+      "conditions": "hatchlings 'about 5 mm in length'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (white sucker row)",
+      "claim": "fry drift to the lake about a month after spawning",
+      "location": "p. 541 (PDF p. 567), white sucker account",
+      "quote": "fry start to migrate to the lake about a month after spawning begins",
+      "conditions": "after 1-2 weeks in the gravel; migrants 12-17 mm; eggs hatch in about 2 weeks (8-11 days at 10-15 °C in the laboratory)",
+      "verdict": "confirmed",
+      "note": "'at night' in the row is not S&C's."
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (smallmouth bass row)",
+      "claim": "hatch at 5.6-5.9 mm",
+      "location": "p. 731 (PDF p. 759), smallmouth bass account",
+      "quote": "The young at this time are 5.6-5.9 mm in length",
+      "conditions": "'Hatching usually takes place in 4-10 days over the temperatures common in Canadian situations'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6, Table 3.6-1 (smallmouth bass row)",
+      "claim": "swim-up at 8.7-9.9 mm about 12 days after hatching",
+      "location": "p. 731 (PDF p. 759), smallmouth bass account",
+      "quote": "12 days the young have absorbed the yolk and rise off the bottom",
+      "conditions": "'At this time they are 8.7-9.9 mm in length'; they leave the nest 5-7 days later, still guarded",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "white sucker egg-to-larva survival 'as little as 3 percent' (Scott & Crossman 1973, via Dahlberg 1979)",
+      "source_value": "S&C: 'as little as 3% survival from egg to migrant fry' - the fry leaving the spawning stream for the lake at 12-17 mm, about a month after spawning; not egg to larva",
+      "location": "p. 541 (PDF p. 567), white sucker account",
+      "quote": "There may be as little as 3% survival from egg to migrant fry",
+      "conditions": "no study site, method or sample given in S&C (the account draws mainly on Campbell 1935 and Geen et al. 1966)",
+      "verdict": "corrected",
+      "note": "now read first-hand: cite S&C directly (drop 'via Dahlberg 1979') and name the stage as egg to migrant fry, which takes in the yolk-sac larvae and the fry's first weeks in the gravel. The model's sucker hatch 0.05 (config.js EGG3) lumps these on the egg, which is consistent with this reading."
+    },
+    {
+      "paper": "§3.6.3, Table 3.6-2 (chain pickerel); §3.7.5",
+      "claim": "plankters for a week or more, then mostly immature insects; fish principal only after 102-152 mm",
+      "location": "p. 373 (PDF p. 397), chain pickerel account",
+      "quote": "The newly hatched feed exclusively on plankters for a week or more",
+      "conditions": "'then on a wide variety of invertebrates but mostly immature aquatic insects and some small fish. After they reach a length of 4-6 inches (102-152 mm) fish become the principal item'",
+      "verdict": "confirmed",
+      "note": "the Umbagog Lake detail in the same cell is Kendall 1917's, not S&C's. S&C include 'some small fish' already in the insect stage."
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "fish become chain pickerel's main food at 102-152 mm",
+      "location": "p. 373 (PDF p. 397), chain pickerel account",
+      "quote": "After they reach a length of 4-6 inches (102-152 mm) fish become the principal item",
+      "conditions": "larger invertebrates such as crayfish still eaten",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.7, Table 3.6-7 (chain pickerel, New York)",
+      "claim": "25-38 mm at the end of June; ~102 mm at the end of September",
+      "location": "p. 372 (PDF p. 396), chain pickerel account",
+      "quote": "end of June in New York, young-of-the-year were 1.0-1.5 inches (25-38 mm)",
+      "conditions": "young-of-the-year, New York; 'by the end of September averaged 4 inches (102 mm) with some reaching nearly 5 inches (127 mm)'; growth 'extremely variable'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:331 (catfish benthL 1.2 cm)",
+      "claim": "young bullheads, guarded in a ball over the bottom, feed there from swim-up on midge larvae and small crustaceans",
+      "source_value": "the young lie in the nest until about day 7, then 'begin to swim and feed actively'; they are shepherded 'in a loose sphere' by one or both parents until about 51 mm; the diet S&C give is for young of 30-60 mm: chironomid larvae, cladocerans, ostracods, amphipods, bugs and mayflies. S&C do not say the young feed on the bottom from swim-up",
+      "location": "pp. 601-602 (PDF pp. 627-628), brown bullhead account",
+      "quote": "The young (30-60 mm) feed primarily on chironomid larvae, cladocerans, ostracods",
+      "conditions": "no site given; cites Keast & Webb 1966 for the later shift to hemipterans, ostracods and newly hatched fish",
+      "verdict": "corrected",
+      "note": "the 'loose sphere' and the midge-and-crustacean diet are S&C's, but the diet belongs to 30-60-mm young and includes planktonic cladocerans; the 1.2-cm bottom-feeding onset is a project choice to label [inf]."
+    },
+    {
+      "paper": "src/species.js:570 (catfish diet)",
+      "claim": "brown bullheads are bottom omnivores: insect larvae, molluscs, crustaceans (cladocerans to crayfish), some fish, weed and detritus",
+      "location": "p. 602 (PDF p. 628), brown bullhead account",
+      "quote": "leeches, crustaceans (crayfish and plankton), worms, algae, plant material, fishes, and fish eggs",
+      "conditions": "adults; 'feeds on or near the bottom, mainly at night'; the full list also has offal, waste, molluscs, immature and terrestrial insects",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://archive.org/download/cftri.0304freshwaterfishes0000wbsc_l0a9/cftri.0304freshwaterfishes0000wbsc_l0a9.pdf", "status": "error", "note": "getsrc.mjs timed out at 2 min on the 106-MB PDF; the same URL then downloaded in full with curl (HTTP 200, 106,237,004 bytes, honest user agent) and was indexed with getsrc --file" }
+  ],
+  "notes": "Read in full: the chain pickerel, white sucker, brown bullhead, smallmouth bass and yellow perch accounts (Biology, Relation to man), on the text layer, with the two-column order checked in the raw text. Two corrections: §3.6.1's white sucker 3 % is egg to MIGRANT FRY (cite S&C directly now), and species.js:331's young-bullhead comment over-reads S&C (their diet is for 30-60-mm young). Bibliography page note covers only the pickerel. Useful values not now used: pickerel incubation 6-12 d, eggs ~2 mm, Rhode Island 6,102-8,140 eggs at 305-356 mm, most mature in the 3rd or 4th year in the north, life span 3-4 yr (max 8-9), summer surface water 21.1-30.0 °C, active under ice, fish principal after 102-152 mm, predators include basses, sunfishes, yellow perch, loons and mergansers, stranding of eggs and young by falling water; yellow perch spawn at 8.9-12.2 °C, egg masses 'easily cast ashore by wind, waves, and current', hatchlings ~5 mm, 'Stunting often occurs in crowded populations', final preferendum 21-24 °C, upper lethal 26.5 °C (BC) or 33 °C; white sucker fecundity usually 20,000-50,000 (Minnesota 36,000-139,000 at 178-510 mm TL), maturity 5-8 yr over the range (usually 3-4 in Ontario), max age ~17 yr, fry begin feeding at ~12 mm near the surface and shift to the bottom at 16-18 mm; brown bullhead spawn at ~21.1 °C, eggs ~3 mm, 6-9 d to hatch at 20.6-23.3 °C, hatch at ~6 mm, broods of 610 and 778 young (Lake Danford, Que.), mature at ~3 yr, max age 6-8 yr, 'In winter, they can live at 0.2 ppm oxygen' (supports species.js's o2Ice 0.2 alongside Cooper & Washburn 1946), Nova Scotia lakes 6.7-38.0 fish per acre; smallmouth nest building at 12.8-20.0 °C with eggs mostly at 16.1-18.3 °C, nests 0.6-6.1 m deep, 'Often 40% of the nests are failures and approximately 2000 fry result from most successful nests', males mature in the 3rd-5th year and females the 4th-6th, max age ~15 yr in Canada, begin feeding in spring at 8.5 °C (Keast 1968b). The book is a secondary compilation for most of these numbers: where the paper relies on one, the primary source S&C name may be preferable."
+}

@@ -1,0 +1,147 @@
+{
+  "key": "Belovsky_Jordan_1978",
+  "reader": "wave-1 batch t1-03",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "an author's repository copy (Belovsky lab, University of Notre Dame)",
+    "url": "https://belovskylab.nd.edu/assets/193221/belovsky_g.e._and_p.a._jordan._1978..pdf",
+    "file": "docs/research_notes/fetched/v2/Belovsky_Jordan_1978.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (doi:10.1016/0040-5809(78)90006-0) and the title page ('THEORETICAL POPULATION BIOLOGY 14, 76-104 (1978)')",
+    "ok": true,
+    "note": "Belovsky, G. E. & Jordan, P. A. 1978. The time-energy budget of a moose. Theoretical Population Biology 14(1): 76-104 - matches Crossref (vol. 14, issue 1, pp. 76-104, August 1978). show.mjs reported 'DOI NOT FOUND' only because it cut the DOI at the first parenthesis ('10.1016/0040-5809(78'); the full DOI resolves at Crossref."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.4; src/config.js:761 (AQ_P 0.87); src/w3/plants3.js:131",
+      "claim": "on Isle Royale moose fed in water on 108 of 124 summer days",
+      "location": "p. 93 (PDF p. 18), Table X; the 124-day summer p. 78 (PDF p. 3)",
+      "quote": "Food removed (kg/pond/summer) 562.7 … Moose density (no./pond) 6 … Days of feeding 108",
+      "quote_from": "table",
+      "conditions": "Yellow Birch study area pond, summer 1973; 108 is the 'days of feeding' divisor for aquatics in Table X, against 124 days (leaf emergence to leaf fall) for leaves and herbs",
+      "verdict": "confirmed",
+      "note": "read on the page image. The paper never explains the 108: it may be the length of the aquatic-feeding season at the pond rather than the share of days on which each moose fed. 'Fed in water on 108 of 124 summer days' is a fair reading; the model's per-day probability AQ_P = 108/124 = 0.87 is an interpretation of it."
+    },
+    {
+      "paper": "§3.8.4; src/config.js:761 (the late-afternoon aquatic bout)",
+      "claim": "mostly nocturnal in summer, with a separate late-afternoon peak of aquatic feeding",
+      "location": "p. 95 (PDF p. 20), Daily time budget; Fig. 3, p. 89 (PDF p. 14)",
+      "quote": "a slight peak of activity during the late afternoon which is restricted to aquatic feeding",
+      "conditions": "15 24-hour watches (360 h) from fixed points in forest and at ponds, 194 feeding moose; 'moose appear to be largely nocturnal during the summer'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "cows fed in water 1.65-1.93 times as often as bulls",
+      "location": "p. 97 (PDF p. 22), Table XIII footnote d",
+      "quote": "Cows were observed feeding on aquatics 1.65 times more frequently than bulls",
+      "conditions": "1.65 in the Yellow Birch Forest, 1.93 in the Coastal Forest; observed frequency of aquatic feeding",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4; src/w3/plants3.js:131 (MOOSE_KG 0.868)",
+      "claim": "an adult ate 868 g dry of aquatic plants a day",
+      "location": "p. 93 (PDF p. 18), Table X",
+      "quote": "Days of feeding 108 … Consumption (g/day/moose) 868",
+      "quote_from": "table",
+      "conditions": "average adult moose, Yellow Birch pond, 1973: 562.7 kg removed ÷ 6 moose ÷ 108 days; summer only. At the Coastal pond (Spirogyra 'slurped') the figure was 161 g/day",
+      "verdict": "confirmed",
+      "note": "read on the page image. The rewrite should name the site: 868 g/d is the Yellow Birch pond's moose; the Coastal moose ate 161 g/d."
+    },
+    {
+      "paper": "§3.8.4; src/config.js:761 (20.3 g a minute)",
+      "claim": "cropping 20.3 g dry a minute",
+      "location": "p. 88 (PDF p. 13), Table VII",
+      "quote": "Aquatic plants … Yellow Birch Forest 33 Simulations 20.3 ± 3.1",
+      "quote_from": "table",
+      "conditions": "estimated by hand-cropping simulations (the observer's hands sized to a moose's 13-cm cropping width), timed to the mean dive, in parts of the pond moose used; Coastal pond 4.7 ± 2.4 g/min (21 simulations)",
+      "verdict": "confirmed",
+      "note": "read on the page image. A simulated, not observed, intake rate."
+    },
+    {
+      "paper": "§3.8.4; src/config.js:761, src/w3/plants3.js:131 (16-s dives)",
+      "claim": "dives of about 16 s",
+      "location": "p. 87 (PDF p. 12), Fig. 2 caption",
+      "quote": "This compares favorably with the observed time, 16.2",
+      "conditions": "observed submergence 16.2 ± 8.1 s; predicted from mouth capacity 15.4 s",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4",
+      "claim": "aquatic plants were 17.7 % of dry intake",
+      "location": "p. 94 (PDF p. 19)",
+      "quote": "apportioned in the Yellow Birch forest 74.6–7.6–17.7% for deciduous leaves, herbaceous plants, and aquatics",
+      "quote_from": "image",
+      "conditions": "Yellow Birch area; total 4898 g dry/day",
+      "verdict": "confirmed",
+      "note": "read on the page image (the OCR garbles the percentages)."
+    },
+    {
+      "paper": "§3.8.4 (project arithmetic); src/w3/plants3.js:131 (17.4 kg wet)",
+      "claim": "about half of wet intake (aquatic 17.4 kg wet a day)",
+      "location": "p. 95 (PDF p. 20), Table XI",
+      "quote": "Aquatic 17,360 … Total 33,630",
+      "quote_from": "image",
+      "conditions": "grams wet per day, Yellow Birch Forest, from Table X's dry intakes and the plants' water content (aquatics 95 %)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "17,360 / 33,630 = 51.6 % - 'about half' holds; 17,360 g = 17.4 kg."
+    },
+    {
+      "paper": "§3.8.4; src/w3/plants3.js:131 and the MOOSE_PREF comment",
+      "claim": "the pond diet was 58 % stoneworts and 15.5 % Potamogeton (code: water horsetail 9.7, sedges 9.2, spikerush 5.8 %)",
+      "location": "p. 85 (PDF p. 10), Table VI",
+      "quote": "Nitella sp. and Chara sp. 11.4 58.4 … Potomegeton sp. 6.8 15.5",
+      "quote_from": "image",
+      "conditions": "Yellow Birch pond, summer 1973; % of diet by dry weight from the hand-cropping simulations (684.5 g sampled); Carex 9.2, Equisetum fluviatile 9.7, Eleocharis 5.8, other 1.4 %. Coastal pond: Spirogyra 99 %",
+      "verdict": "confirmed",
+      "note": "read on the page image. 'Stoneworts' = Nitella and Chara together, as the table lumps them. The composition is that of simulated bites in favoured spots, on the authors' assumption that moose are unselective once submerged."
+    },
+    {
+      "paper": "§3.8.4 (pond area and percentage by project arithmetic)",
+      "claim": "six moose removed about 17 % of a 2.5-ha beaver pond's aquatic production",
+      "source_value": "6 moose (Table X) removed 562.7 kg (Table X) or 580.1 kg (Table II) of a pond production of 3,217.1 kg/summer (Table I) = 17.5-18.0 % of the whole pond's production. But Table I's footnote says only 32 % of the pond is open water and the rest grassy hummock 'twice as productive'; with the open-water rate of 129.03 g/m² that makes the pond ≈ 1.5 ha (3,217.1 kg ÷ 129.03 g/m² ÷ 1.68), not 2.5 ha. Moose fed only in the open water, where they took ~82 % of the growth (Table II: 148.2 g left on 6.3 m² = 23.5 of 129.0 g/m²)",
+      "location": "p. 79 (PDF p. 4), Table I and footnote b; p. 80 (PDF p. 5), Table II; p. 93 (PDF p. 18), Table X",
+      "quote": "Our observations indicate that 32% of the pond is open water and the remainder is",
+      "conditions": "the only pond in the Yellow Birch study area, 1973; production from two 120-m² exclosures (49 quarter-m² clips); removal from 25 clips outside",
+      "verdict": "corrected",
+      "note": "2.5 ha comes from dividing the pond total by the open-water rate as if the whole pond yielded it (3,217.1 / 0.12903 kg/m² = 2.49 ha), which ignores the footnote attached to that very row. The source's two removal figures differ (580.1 in Table II, 562.7 in Table X). Suggested wording: 'six moose cropped about 80 % of the open water's plant growth, about 17-18 % of the whole pond's production (hummocks included), in a pond of roughly 1.5 ha'. The source calls it 'the only pond in the Yellow Birch study area', with beaver and muskrat present; 'beaver pond' is a fair inference (the lowlands are 'interspersed with beaver ponds') but not stated."
+    },
+    {
+      "paper": "§3.8.4; src/w3/plants3.js:131",
+      "claim": "none was seen to defecate in 65 h in ponds",
+      "location": "p. 81 (PDF p. 6), Moose density",
+      "quote": "in 65 hours of observing moose in ponds, defecation was never seen",
+      "conditions": "against frequent defecation in 48 h of watching moose on land; used to justify counting feces only on land",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.4; src/w3/plants3.js:131 (chem3's outP/outN)",
+      "claim": "so moose carry aquatic nitrogen and phosphorus to land",
+      "verdict": "unsupported",
+      "note": "the source says nothing about nitrogen, phosphorus or nutrient transport; it reports only the 65 h without defecation in ponds (and, p. 102, that aquatic plants are Isle Royale moose's only sodium source, citing Botkin et al. 1973 and Jordan et al. 1973). The N and P transfer is a reasonable inference and should be labelled 'project inference' rather than attributed to Belovsky & Jordan."
+    },
+    {
+      "paper": "src/config.js:761 (AQ_MIN: '~43 min of cropping at 20.3 g a minute')",
+      "claim": "about 43 min of aquatic cropping a day",
+      "location": "p. 96 (PDF p. 21), Table XII",
+      "quote": "Aquatics 868 42.8",
+      "quote_from": "table",
+      "conditions": "Yellow Birch average moose: 868 g/d ÷ 20.3 g/min = 42.8 min/d (Coastal 34.0 min/d)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:764 (DRIFT: 'once at a site it crops unselectively, Belovsky & Jordan')",
+      "claim": "once at a feeding site a moose crops unselectively",
+      "location": "p. 87 (PDF p. 12)",
+      "quote": "large amounts of the desired plants and are then unselective while submerged",
+      "conditions": "the authors' belief from what moose held in their mouths on surfacing, used to justify the simulation",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Full text (29 pp.) read; Tables I, II, VI, VII, X, XI, XIII and the p. 94 percentages read on the page images (the text layer scrambles them). One correction: the '2.5-ha' pond in §3.8.4 ignores Table I's footnote (32 % open water, hummocks twice as productive) - the pond is ~1.5 ha by that footnote, and moose took ~80 % of the open water's growth, 17-18 % of the whole pond's. One attribution to fix: the N and P transfer to land is the project's inference, not the paper's. Context the rewrite may want: all values are summer (late May-early September) at Isle Royale, Lake Superior, 1972-74; aquatic intake is from one pond in the Yellow Birch area in 1973 (n = 6 moose) and differs sharply at the Coastal pond (161 g/d, Spirogyra); dive time 16.2 ± 8.1 s; aquatics 95 % water (81-99 %), 4.1 kcal/g dry (Boyd 1970, as cited), in vivo digestibility estimated 94 %; total intake 4898 g dry and 33.6 kg wet a day; moose densities 3.1-10.2/km² from feces counts; daily cropping time falls with air temperature (9.43 - 0.29 T h/day, n = 7). The diet percentages come from hand-cropping simulations, not observed bites."
+}
