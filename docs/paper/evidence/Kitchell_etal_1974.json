@@ -1,0 +1,47 @@
+{
+  "key": "Kitchell_etal_1974",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text: closed at the publisher (Taylor & Francis; TAFS is now with OUP), no repository copy known to OpenAlex or Semantic Scholar, not in the Internet Archive (no TAFS 1974 volume) or OSTI. Only the abstract was seen, via the OpenAlex API",
+    "url": "https://doi.org/10.1577/1548-8659(1974)103<786:MOFBD>2.0.CO;2"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: James F. Kitchell, Joseph F. Koonce, John J. Magnuson, Robert V. O'Neill, Herman H. Shugart, Ray S. Booth (Oct 1974), TAFS 103(4): 786–798. show.mjs reports 'DOI NOT FOUND at Crossref' only because the ledger tool cuts the DOI at its first '('; the DOI in references.md is right"
+  },
+  "claims": [
+    {
+      "paper": "Table 4.3 (pumpkinseed, redbreast); src/species.js:271-275; src/w3/species3.js:33, 40-41",
+      "claim": "the FB4 bluegill adult set (CEQ 2, CA 0.182, CB −0.274, CQ 2.3, CTO 27, CTM 36; REQ 2, RA 0.0154, RB −0.2, RQ 2.1, RTO 36, RTM 40, ACT 1; SDA 0.172; EGEQ 2 FA 0.158, FB −0.222, FG 0.631; EXEQ 2 UA 0.0253, UB 0.58, UG −0.299; ED 4186) and juvenile set (CTO 31, CTM 37, RTO 37, RTM 41) are from Kitchell et al. 1974",
+      "verdict": "unchecked",
+      "note": "These are exactly FB4's 'Bluegill sunfish (adult)' and '(juvenile)' rows, which FB4 credits to Kitchell et al. 1974 (see Deslauriers_etal_2017.json). Kitchell et al. 1977 printed its perch rates in biomass equivalents, which FB4 converted (Kitchell_etal_1977.json), so RA, UA and ED may well be FB4's conversions too. Until the 1974 paper is read, cite 'Kitchell et al. 1974, as given in FB4'"
+    },
+    {
+      "paper": "Table 3.5-3 (pumpkinseed row)",
+      "claim": "the bluegill set (Kitchell et al. 1974), whose respiration exceeds measured pumpkinseed values by ≈ 20–70 % (one study; project arithmetic)",
+      "verdict": "unchecked",
+      "note": "The bluegill side of the arithmetic, from FB4's stored row (ACT 1), for a 30-g fish: 38.8, 58.8, 88.4, 130.7 and 188.6 mg O₂ kg⁻¹ h⁻¹ at 5, 10, 15, 20 and 25 °C (my computation; see Deslauriers_etal_2017.json). The pumpkinseed side is Roberts 1964's entry"
+    },
+    {
+      "paper": "Table 4.3",
+      "claim": "pumpkinseed: bluegill (Kitchell et al. 1974), adult respiration × 0.7 (Roberts 1964)",
+      "verdict": "unchecked",
+      "note": "the × 0.7 is the project's adjustment; only the base set is attributed to Kitchell et al."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1974)103%3C786:MOFBD%3E2.0.CO;2", "status": 403, "note": "publisher landing page (Taylor & Francis / OUP), refuses scripts; the page a library login would open" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1577/1548-8659(1974)103%3C786:MOFBD%3E2.0.CO;2", "status": 403, "note": "Taylor & Francis PDF, refuses scripts" },
+    { "url": "https://academic.oup.com/tafs/article-pdf/103/4/786/1", "status": 403, "note": "OUP (the current TAFS publisher), refuses scripts" },
+    { "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1974)103<786:MOFBD>2.0.CO;2", "status": 200, "note": "oa_status closed, no repository copy; abstract only" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1974)103%3C786:MOFBD%3E2.0.CO;2?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_american-fisheries-society-transactions_1974*", "status": 200, "note": "no vol. 103 (1974) item in the Internet Archive: the 'american-fisheries-society-transactions_*' items include vol. 102 (1973, issues 1–4) but not 1974 (also searched identifier:american-fisheries-society-transactions_*103*: 0 hits)" },
+    { "url": "https://www.osti.gov/api/v1/records?q=Kitchell%20Koonce%20Magnuson", "status": 200, "note": "no report version of the article (the US-IBP Eastern Deciduous Forest Biome reports listed are other works)" }
+  ],
+  "notes": "The abstract (OpenAlex) says the model's 'parameters were implemented for the bluegill' and compared with laboratory and field data, so the bluegill values should be in the paper. A good stand-in for the parameter values, already read: FB4's parameter file (Deslauriers_etal_2017.json), where every value the code uses matches. The Fish Bioenergetics 3.0 manual (Hanson et al. 1997) may also document the bluegill model's sources and conversions."
+}

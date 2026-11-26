@@ -1,0 +1,93 @@
+{
+  "key": "Canfield_etal_1985",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free back-issue PDF (Aquatic Plant Management Society). It is a scanned PDF with no text layer (getsrc reported scanned: true), so all four pages were read from page images rendered locally at 150–300 dpi (Canfield_etal_1985.p1–p4.png, p3_table1.png, p3_table2.png); every value below was read off a clear image",
+    "url": "https://apms.org/wp-content/uploads/japm-23-01-023.pdf",
+    "file": "docs/research_notes/fetched/v2/Canfield_etal_1985.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (\"J. Aquat. Plant Manage. 23: 25-28\")",
+    "ok": true,
+    "corrections": "",
+    "note": "authors as printed: Daniel E. Canfield, Jr., K. A. Langeland, S. B. Linda and W. T. Haller; no DOI. Free at the APMS URL above (the ledger's blocked list B40 can drop it)"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.3",
+      "claim": "across 27 Finnish, 26 Florida and 55 Wisconsin lakes, Canfield et al. fitted log Zc = 0.61 log SD + 0.26 (r² 0.56; 95 % limits 46–236 % of the prediction)",
+      "source_value": "The lake counts, the equation, r² 0.56 and the 46–236 % limits are all right. But the pooled equation was fitted to a randomly chosen half of the 108 lakes (the 'model development data set') and tested on the other half (measured vs predicted r = 0.66). r = 0.70 is the correlation across all the lakes",
+      "location": "p. 26 (PDF p. 2), Methods and Fig. 1; p. 27 (PDF p. 3), Results",
+      "quote": "The coefficient of determination for this model is 0.56",
+      "quote_from": "image",
+      "conditions": "common logarithms, metres; MDC by fathometer once at peak abundance (June–October 1981 or 1982) in Florida, from published surveys for Finland (Maristo 1941) and Wisconsin. The model underestimates MDC in very clear water and overestimates it at low Secchi (verification slope 0.81)",
+      "verdict": "corrected",
+      "note": "minor: say 'fitted to half of 108 lakes … and tested on the rest'"
+    },
+    {
+      "paper": "§3.4.3",
+      "claim": "the 27 Finnish lakes followed a lower line, log Zc = 0.51 log SD + 0.18 (r² 0.82)",
+      "location": "p. 27 (PDF p. 3), Table 1",
+      "quote": "Finland 27 log(MDC) = 0.51 log (SD) + 0.18 0.82",
+      "quote_from": "image",
+      "conditions": "regional regression on all 27 Finnish lakes",
+      "verdict": "confirmed",
+      "note": "lower than the pooled line at any Secchi depth above ~0.01 m (project arithmetic)"
+    },
+    {
+      "paper": "§3.4.3; Table 3.4-2 (row label)",
+      "claim": "the Finnish lakes were mostly humic",
+      "verdict": "unsupported",
+      "note": "The paper says nothing about water colour or humic matter. The Finnish data are Maristo's (1941). Canfield et al. put the regional differences down to sampling methods and, above all, to the types of plant colonizing (different light compensation points). 'Mostly humic' must come from elsewhere, or be dropped"
+    },
+    {
+      "paper": "Table 3.4-2 (Pooled, Wisconsin and Finland rows); §3.4.3 ('the humic Finnish line gives only 2.9–3.3 m')",
+      "claim": "predicted Zc at SD 3.5 / 3.9 / 4.5 m: pooled 3.91 / 4.18 / 4.56; Wisconsin 4.78 / 5.21 / 5.83; Finland 2.87 / 3.03 / 3.26",
+      "location": "p. 27 (PDF p. 3), Table 1 and text",
+      "quote": "Wisconsin 55 log(MDC) = 0.79 log (SD) + 0.25 0.57",
+      "quote_from": "image",
+      "conditions": "inputs: pooled 0.61/0.26, Wisconsin 0.79/0.25 (n 55, r² 0.57), Finland 0.51/0.18 (n 27, r² 0.82)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone (10^(a·log10 SD + b)): pooled 3.907 / 4.174 / 4.555; Wisconsin 4.784 / 5.211 / 5.835; Finland 2.867 / 3.030 / 3.259. The bed-share column is the project's bathymetry, not checked here"
+    },
+    {
+      "paper": "§3.4.3 ('At the analog Secchi depths of 3.5–4.5 m, the clear-water regressions put the angiosperm limit at 3.9–5.8 m')",
+      "claim": "the Canfield pooled and Wisconsin equations give an angiosperm depth limit",
+      "source_value": "Canfield's MDC is the maximum depth reached by aquatic macrophytes of any kind. The Florida taxa recorded at MDC include filamentous algae (Watertown, Apopka), Eleocharis, Nuphar and Utricularia, so it is not an angiosperm limit as such",
+      "location": "p. 27 (PDF p. 3), Table 2",
+      "quote": "Watertown filamentous algae 2.3 … Apopka filamentous algae 3.2",
+      "quote_from": "image",
+      "conditions": "Table 2 gives the taxon present at MDC in 26 Florida lakes",
+      "verdict": "corrected",
+      "note": "the 3.9–5.8 m arithmetic is right (pooled 3.91 at SD 3.5; Wisconsin 5.83 at SD 4.5); only the label 'angiosperm limit' needs care for Canfield's lines"
+    },
+    {
+      "paper": "src/config.js:387",
+      "claim": "deepest rooted plants in a Secchi ~3 m lake: log Zc = 0.61 log SD + 0.26 → 3.6 m",
+      "location": "p. 27 (PDF p. 3), text",
+      "quote": "log MDC = 0.61 log SD + 0.26",
+      "quote_from": "image",
+      "conditions": "pooled model, metres",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "10^(0.61·log10 3 + 0.26) = 3.56 m. Canfield's MDC counts any macrophyte, rooted or not"
+    },
+    {
+      "paper": "src/w3/plants3.js:64",
+      "claim": "bladderwort (Utricularia) at 4.1–8.3 % of surface light at its Florida limit",
+      "location": "p. 27 (PDF p. 3), Table 2",
+      "quote": "Dunford Utricularia vulgaris 4.1 … McKenzie U. vulgaris 8.3",
+      "quote_from": "image",
+      "conditions": "% transmittance of full sunlight at the lake's maximum depth of colonization, where U. vulgaris was the species present (Lakes Dunford and McKenzie, Florida). Light was measured with a quantum sensor in 10 lakes and predicted from Secchi (r = 0.96 regression) in the rest; the table does not say which lakes were which",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "http://www.apms.org/wp-content/uploads/2012/10/v23p25.pdf", "status": 404, "note": "an older APMS path; redirects to a 404" }
+  ],
+  "notes": "Other values the rewrite can use (all p. 27): hydrilla's light compensation point is 15 µE m⁻² s⁻¹, coontail's 35, Cabomba's 55 (Van et al. 1976), and hydrilla's is ~0.75 % of full sun if 2000 µE m⁻² s⁻¹ is full sunlight. The Florida equation is log MDC = 0.42 log SD + 0.41 (r² 0.71, n 26). The paper's own caveat: a 'wide range of maximum depths of colonization … for a given Secchi disc value' (Fig. 1). Table 2's last three rows (Newnan, Kerr, Mirrow, all 1.1) break the table's ascending order; read as printed."
+}

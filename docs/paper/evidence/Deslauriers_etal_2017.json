@@ -1,0 +1,144 @@
+{
+  "key": "Deslauriers_etal_2017",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the article: a Wayback Machine capture (15 June 2024, openly downloadable) of the University of Michigan Deep Blue repository copy (handle 2027.42/141352, file fsh0586.pdf, the published version, marked OPEN ACCESS). Deep Blue itself now sits behind a Cloudflare bot check, which was not passed. The parameter values were read in FB4's parameter file Parameters_official.csv (last changed 2018-07-28, commit d010de44b9; a text copy is Deslauriers_etal_2017.Parameters_official.txt) and the equations in the FB4 User's Guide (FB4 v1.0, 12.06.2017). Both come from the authors' GitHub repository jim-breck/FB4, the file the paper's reference entry names",
+    "url": "https://web.archive.org/web/20240615184232id_/https://deepblue.lib.umich.edu/bitstream/handle/2027.42/141352/fsh0586.pdf?sequence=1",
+    "file": "docs/research_notes/fetched/v2/Deslauriers_etal_2017.pdf",
+    "other_files": [
+      "docs/research_notes/fetched/v2/Deslauriers_etal_2017.Parameters_official.csv (https://raw.githubusercontent.com/jim-breck/FB4/master/Parameters_official.csv)",
+      "docs/research_notes/fetched/v2/Deslauriers_etal_2017.FB4guide.pdf (https://raw.githubusercontent.com/jim-breck/FB4/master/FB4_User_Guide.pdf)"
+    ]
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"586 Fisheries | Vol. 42 • No. 11 • November 2017\")",
+    "ok": true,
+    "corrections": "",
+    "note": "The article's Table 1 (pp. 589–590) lists no brown bullhead. The bullhead set is only in the later parameter file, so the reference entry should give the file's version or access date (last changed 2018-07-28). The User's Guide's suggested citation is the article itself"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "FB4 holds parameter sets for only three of the eleven Hot Brook species (yellow perch, smallmouth bass, brown bullhead) plus alewife. None for pumpkinseed, redbreast, chain pickerel, white perch, white sucker, fallfish, banded killifish or blacknose dace. The only Lepomis set is bluegill; the only Moronidae are striped and white bass",
+      "location": "Parameters_official.csv, all 105 rows (one 'page'); article Table 1, pp. 589–590 (PDF pp. 4–5)",
+      "quote": "Brown Bullhead … Ameiurus nebulosus … Ictaluridae … Hartman et al. 2017",
+      "quote_from": "table",
+      "conditions": "the parameter file as of 2018-07-28. The article's Table 1 has the same Lepomis (bluegill, Kitchell et al. 1974) and Moronidae (striped bass; white bass, larvae only), but no brown bullhead",
+      "verdict": "confirmed",
+      "note": "cite the bullhead set to the file (or to Hartman 2017 itself), not to the 2017 article. The nearest relatives in FB4 are fathead minnow, Phoxinus dace, the California and plains killifishes and northern pikeminnow"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "the Whitledge et al. (2003) smallmouth set's weight exponent is RB −0.756, about three times the usual slope",
+      "location": "Parameters_official.csv, rows 'Smallmouth Bass (T<=26 & sub-adult & adult)' and '(T>26 …)'",
+      "quote": "Whitledge et al. 2003 … 0.244 … -0.756",
+      "quote_from": "table",
+      "conditions": "REQ 2 (Kitchell form), RA 0.244 g O₂ g⁻¹ d⁻¹ at RTO 30 °C, ACT 1",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "the median RB over the file's 105 rows is −0.215, so −0.756 is 3.5×; it is the steepest RB in the file"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "the Whitledge set gives a negative energy budget at maximum ration for a 5-g fish at every temperature; break-even ~10 g at 20 °C and 20–25 g at 15 and 25 °C; usable only above ~30 g (project arithmetic)",
+      "location": "FB4 User's Guide pp. 8–15 (equations), p. 12 (oxycalorific coefficient); Parameters_official.csv, Whitledge rows",
+      "quote": "As a default value, FB4 uses 13,560 J/g O2",
+      "conditions": "p = 1. CEQ 2 consumption; REQ 2 respiration × 13,560 J/g O₂; F = 0.104 C; U = 0.0882 (C − F); SDA = 0.15848 (C − F)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone from the guide's equations. A 5-g fish is negative at every temperature from 2 to 30 °C for prey of 3,000–5,000 J/g. Break-even size at 20 / 15 / 25 °C: 10.5 / 21 / 23.5 g at 3,800 J/g prey; 8.5 / 17 / 19 g at 4,186 J/g; 14.5 / 29 / 32.5 g at 3,300 J/g. The paper's figures hold for prey of ~3,600–4,000 J/g; the rewrite should state the prey energy density used"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "the Shuter & Post (1990) row as stored in FB4 gives negative growth at full ration at every size and temperature tested (5 and 100 g at 10–30 °C); the stored RA is 0.03",
+      "location": "Parameters_official.csv, row 'Smallmouth bass (adult)'; FB4 User's Guide pp. 8–15",
+      "quote": "Shuter and Post 1990 … 0.25 … -0.31 … 3.8 … 0.03 … -0.21",
+      "quote_from": "table",
+      "conditions": "stored: CEQ 2, CA 0.25, CB −0.31, CQ 3.8, CTO 29, CTM 36; REQ 2, RA 0.03, RB −0.21, RQ 3.3, RTO 30, RTM 37, ACT 2; SDA 0.16; FA 0.104; UA 0.0882",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone: net energy at p = 1 is negative for 5 g and 100 g at every even temperature from 10 to 30 °C for prey of 3,000–5,000 J/g (e.g. −13 to −144 J g⁻¹ d⁻¹ for 100 g at 4,186 J/g). The stored ACT = 2 doubles the 0.03; the comparison with Mille Lacs' RA 0.009 belongs to the Ahrenstorff & Holbrook entry"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "computed from the stored curves, a 100-g perch or pike can still eat 1–2 % of its body weight a day at 4 °C, a bass only 0.3–0.5 % (project arithmetic)",
+      "location": "FB4 User's Guide pp. 8–11 (Cmax and F(T), models 2 and 4); Parameters_official.csv rows 'Yellow perch (adult)', 'Northern pike (adult)', 'Smallmouth Bass (T<=26 …)', 'Largemouth bass (adult)'",
+      "quote": "Maximum daily consumption (Cmax) is expressed as a specific rate",
+      "conditions": "Cmax × F(4 °C) for a 100-g fish (g prey g⁻¹ d⁻¹)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Redone: yellow perch 1.78 %, northern pike 1.16 %, smallmouth (Whitledge) 0.31 %, largemouth (Rice) 0.55 % (Shuter & Post 0.085 %). 'A bass 0.3–0.5 %' spans the Whitledge and Rice sets; 0.55 rounds to ~0.5–0.6"
+    },
+    {
+      "paper": "Table 4.3; §4.5",
+      "claim": "each species' FB4 parameter set exists in FB4 under the source named: yellow perch (Kitchell et al. 1977), bluegill (Kitchell et al. 1974), brown bullhead (Hartman et al. 2017), largemouth bass (Rice et al. 1983), smallmouth bass (Whitledge et al. 2003), northern pike (Bevelhimer et al. 1985), dace (He 1986; Trudel & Boisclair 1994), northern pikeminnow (Petersen & Ward 1999), fathead minnow (Duffy 1998), alewife (Stewart & Binkowski 1986)",
+      "location": "Parameters_official.csv (Source column); article Table 1, pp. 589–590 (PDF pp. 4–5)",
+      "quote": "Bluegill sunfish (adult) … Lepomis macrochirus … Kitchell et al. 1974",
+      "quote_from": "table",
+      "conditions": "the file spells 'Bevelheimer et al. 1985' (the article's Table 1 has Bevelhimer)",
+      "verdict": "confirmed",
+      "note": "FB4's Source column says 'Hartman et al. 2017' for the bullhead, but the article's reference list and Crossref give a single author: Hartman, K. J. 2017, TAFS 146(4): 634–644"
+    },
+    {
+      "paper": "src/species.js:222 (and every `bio`/`bioJuv` in BIO)",
+      "claim": "the `bio` sets are copied byte-exact from FB4's Parameters_official.csv",
+      "location": "Parameters_official.csv rows: Dace; Bluegill sunfish (adult/juvenile); Yellow perch (adult/juvenile); Brown Bullhead; Largemouth bass (adult); both Whitledge smallmouth rows; Northern pike (adult)",
+      "quote": "Brown Bullhead … 0.12 … -0.225 … 0.473 … 0.55 … 0.0007",
+      "quote_from": "table",
+      "conditions": "compared value by value for every parameter the code carries",
+      "verdict": "confirmed",
+      "note": "Every value matches. The only departures are labelled in the code: the white sucker's ED 5300 on the perch set, and the cold rules, which are the project's"
+    },
+    {
+      "paper": "src/w3/species3.js:17-23 (FB4 sets BLUEGILL, DACE, FATHEAD)",
+      "claim": "the 3-D species' FB4 sets as in Parameters_official.csv; FATHEAD ED 4186 J/g",
+      "source_value": "the file's fathead minnow row has ED = 4100 J/g; every other FATHEAD, BLUEGILL and DACE value matches",
+      "location": "Parameters_official.csv, row 'Fathead minnow' (Duffy 1998)",
+      "quote": "Fathead minnow … Duffy 1998 … 0.149 … -0.242 … 4100",
+      "quote_from": "table",
+      "conditions": "the fathead set is the banded killifish's stand-in",
+      "verdict": "corrected",
+      "note": "change FATHEAD's ED to 4100, or label 4186 as the project's"
+    },
+    {
+      "paper": "Table 4.3 (alewife); src/w3/species3.js:86-88",
+      "claim": "the alewife runs on FB4's Stewart & Binkowski 1986 set",
+      "location": "Parameters_official.csv, rows 'Alewife (adult)' and 'Alewife (YOY)'",
+      "quote": "Alewife (adult) … Stewart & Binkowski 1986 … 0.8464 … 0.00367",
+      "quote_from": "table",
+      "conditions": "file ED for adults is a range, '5000 to 9500'",
+      "verdict": "confirmed",
+      "note": "The code rounds CA 0.8464 to 0.846. It picks ED 5,400 from the file's range, and gives the young RTO 0 (the file's YOY row has 0.03) and ED 4,600 (the file has 4,185). Each departure is explained in the code comment"
+    },
+    {
+      "paper": "src/config.js:113; src/bioenergetics.js:1-3",
+      "claim": "every fish runs the Wisconsin bioenergetics model, implemented as Fish Bioenergetics 4.0",
+      "location": "article p. 587 (PDF p. 2); FB4 User's Guide pp. 8–16",
+      "quote": "Often referred to as the “Wisconsin model,”",
+      "conditions": "equations checked against the guide: Cmax = CA·W^CB; F(T) models 1–4 (the Kitchell X term, the Thornton–Lessem G1/G2 terms, the cubic); respiration models 1–2 with the swimming-speed term; waste models 1–3; 13,560 J/g O₂",
+      "verdict": "confirmed",
+      "note": "bioenergetics.js matches the guide. Its stated departures: REQ 2 is held just below RTM; T is clamped to ≥ 0.1 °C for waste, which the guide leaves optional ('the FB4 user may elect'); the cold rules are the project's"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://hdl.handle.net/2027.42/141352",
+      "status": 403,
+      "note": "Deep Blue (OpenAlex's green copy) now answers scripts with a Cloudflare challenge; not passed"
+    },
+    {
+      "url": "https://deepblue.lib.umich.edu/handle/2027.42/141352",
+      "status": 403,
+      "note": "Cloudflare 'Just a moment' bot check"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/03632415.2017.1377558\"",
+      "status": 200,
+      "note": "no hit"
+    }
+  ],
+  "notes": "The article describes the software; it holds no parameter values. FB4's own warning applies to every surrogate the project uses: \"the onus is on the user to understand how the model works and to examine the original model publication(s)\" (p. 594). Key finding for §3.5.4: the article's reference list cites \"Hartman, K. J. 2017. Bioenergetics of Brown Bullhead in a changing climate. Transactions of the American Fisheries Society 146:634–644\" (p. 595), which Crossref confirms (doi:10.1080/00028487.2017.1293563, vol. 146 issue 4). The paper's claim that the bullhead set is \"documented only in conference work (no peer-reviewed paper was found)\" is wrong, and the Hartman et al. 2017 entry should be re-pointed to that article. FB4 Notes column, useful for the rewrite: the largemouth row has 'SDA & UA reflect use of (C − F) instead of C; corrected RA & RQ'; the pike row 'adjusted RA for log transform of fit'; the Whitledge rows 'UA is adjusted from proportion of C = 0.068 to proportion of C-F = 0.08817'. For anyone checking Roberts 1964: FB4's bluegill adult row gives a 30-g fish 38.8, 58.8, 88.4, 130.7 and 188.6 mg O₂ kg⁻¹ h⁻¹ at 5, 10, 15, 20 and 25 °C (ACT 1; my arithmetic)."
+}

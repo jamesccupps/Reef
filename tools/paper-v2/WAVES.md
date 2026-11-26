@@ -12,7 +12,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | t1-05 | Merrell_etal_2009, Savino_Stein_1982, Turesson_Bronmark_2004, Chipps_etal_2000, Blumer_1985 | running |
 | t1-06 | Neuswanger_etal_2015, Post_Evans_1989, Post_1990, Shuter_etal_1980, Sobchak_etal_2026 | done |
 | t1-07 | Wahl_Stein_1988, Bevelhimer_etal_1985, Clady_1975, Clady_Hutchinson_1975, Kendall_1917, Barr_1996 | done |
-| t1-08 | Kitchell_etal_1974, Sergio_2026, Werner_etal_1983, Werner_Hall_1988, Canfield_etal_1985, Deslauriers_etal_2017 | running |
+| t1-08 | Kitchell_etal_1974, Sergio_2026, Werner_etal_1983, Werner_Hall_1988, Canfield_etal_1985, Deslauriers_etal_2017 | done |
 | t1-09 | Dunlop_etal_2005, Forbes_1981, Irwin_etal_2009, Johnson_Evans_1991, Keast_1980, Phillips_etal_2007, Boulianne_etal_2025 | running |
 | t1-10 | Ridgway_etal_2002, Roberts_1964, Steinhart_etal_2005, Trudel_Boisclair_1994, VanderZanden_Gratton_2011, VanderZanden_etal_2011, Breder_1935 | done |
 | w2-01 | Christensen_etal_1996, Duarte_1987, Johannsson_etal_2000, Mackereth_etal_1999, Suski_Ridgway_2009, Whitledge_etal_2003, Caceres_1998, Curry_etal_2005, Adams_1969 | running |
@@ -21,7 +21,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | running |
 | w2-05 | Edsall_1970, Fox_Keast_1991, Geen_etal_1966, Gilbert_1988, Graeb_etal_2004, Grosbois_etal_2017, Gumaa_1978, Harding_1997, Malm_etal_1997, Mills_Forney_1983 | running |
 | w2-06 | Hartman_Brandt_1995, Hartmanetal_2017, He_1986, Krieger_etal_1983, Lippert_etal_2007, Momot_Gowing_1977, Neves_1975, Persson_etal_2004, Randall_etal_2004, Bouffard_Wuest_2019 | running |
-| w2-07 | Robertson_etal_2019, Scheffer_etal_1995, Shuter_Ing_1997, Stewart_Binkowski_1986, Vachon_Prairie_2013, VanderZanden_Vadeboncoeur_2002, Wieser_etal_1992, Wu_Culver_1992, Boussion_2025, Brooks_Dodson_1965 | queued |
+| w2-07 | Robertson_etal_2019, Scheffer_etal_1995, Shuter_Ing_1997, Stewart_Binkowski_1986, Vachon_Prairie_2013, VanderZanden_Vadeboncoeur_2002, Wieser_etal_1992, Wu_Culver_1992, Boussion_2025, Brooks_Dodson_1965 | running |
 | w2-08 | Armstrong_Schindler_2011, Arndt_1993, Bauer_2006, Behr_1993, Berggren_etal_2014, Bernard_Fox_1997, Beyerle_Williams_1967, Bird_Kalff_1984, Breder_1939, Carter_etal_2010 | queued |
 | w2-09 | Chambers_1987, ChowFraser_1986, Cooke_etal_2002, Corbett_Powles_1986, DeMott_1983, Donini_etal_2026, Drenner_etal_1978, Duffy_1998, Fitzgerald_2000, Hall_1972 | queued |
 | w2-10 | Easton_1992, Engel_Pederson_1998, Eriksson_1978, Fraser_etal_1984, Hart_1996, Heyer_2000, Houde_1994, Houde_2008, Jones_etal_1978, Lampert_etal_1986 | queued |

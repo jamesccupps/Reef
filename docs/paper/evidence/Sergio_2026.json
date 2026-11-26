@@ -1,0 +1,137 @@
+{
+  "key": "Sergio_2026",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's M.Sc. thesis, open download from Dalhousie University's institutional repository (Scholaris); chapter 3 (Milipsigate Lake chain pickerel and smallmouth bass) read in full, chapter 2 (Atlantic whitefish) skimmed for relevance",
+    "url": "https://dal.scholaris.ca/bitstreams/0d151e69-14e6-46e0-ab65-3fac80168436/download",
+    "file": "docs/research_notes/fetched/v2/Sergio_2026.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Ava J.A. Sergio, M.Sc. thesis, Dalhousie University, Halifax, submitted March 2026; chapter 3 runs pp. 28–56 (PDF pp. 40–68). A thesis chapter, not peer-reviewed"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6 (line 313)",
+      "claim": "Milipsigate Lake, Nova Scotia: 336 ha, 17 m deep",
+      "location": "p. 32 (PDF p. 44), §3.3.1",
+      "quote": "maximum depth of 17 m at peak water levels in spring and fall",
+      "conditions": "335.8 ha, island-studded (both values from Ginn et al. 2008); oligotrophic, little vegetation, rocky shallows and silt at depth; the thesis says deeper layers stratify and go anoxic in summer (p. 52); 2018 water-column means 2.6 °C in Dec–Feb and 18 °C in Jun–Aug",
+      "verdict": "confirmed",
+      "note": "a cooler, deeper, stratifying lake than Hot Brook"
+    },
+    {
+      "paper": "§3.5.6 (line 313); §3.7.8",
+      "claim": "half of all depth-tag detections of tagged adult chain pickerel fell between 0.76 and 1.82 m",
+      "location": "p. 48 (PDF p. 60), §3.4.2",
+      "quote": "50% of detections occurred between 0.76 to 1.82 m depth",
+      "conditions": "adult pickerel tagged with pressure-sensing acoustic tags (V9TP), caught by angling Sept 1–Oct 19 2018, tracked to July 2019; of 18 tagged, 3 were never detected, 1 died and 6 left the array within two weeks, leaving 3,584 filtered positions; maxima > 10 m in October, November and July",
+      "verdict": "confirmed",
+      "note": "few fish behind it: the rewrite could say 'the 8 pickerel tracked beyond two weeks'"
+    },
+    {
+      "paper": "§3.5.6 (line 313)",
+      "claim": "with no significant seasonal change",
+      "source_value": "the abstract and discussion say pickerel depth use 'did not change significantly over time', but the results report a significant month effect for pickerel (F = 249.66, p < 0.001; bass F = 1420) and model-predicted depths of 0–2.5 m from October to April deepening to ~8 m in August",
+      "location": "p. 48 (PDF p. 60), §3.4.2; abstract p. 28 (PDF p. 40)",
+      "quote": "Predicted depths then decreased from 2.5 m in April to ~ 8 m in August",
+      "conditions": "GAM D1 with a cyclic month smooth by species, bathymetry, position and fish length; 'decreased' here means deeper",
+      "verdict": "corrected",
+      "note": "the thesis contradicts itself; safer: 'pickerel stayed shallow year-round, with a smaller seasonal change in depth than the bass'"
+    },
+    {
+      "paper": "§3.5.6 (line 313); §3.7.8",
+      "claim": "smallmouth in the same lake used water about three times deeper than pickerel",
+      "location": "p. 48 (PDF p. 60), §3.4.2; abstract p. 28 (PDF p. 40)",
+      "quote": "smallmouth bass were predicted to occupy depths that are on average ~ 3 times deeper",
+      "conditions": "a model prediction (GAM D1) 'while holding all other variables constant', over Sept 2018–July 2019; 12 bass tagged, 5 of them died after the winter",
+      "verdict": "confirmed",
+      "note": "a modelled ratio, not a ratio of observed depths"
+    },
+    {
+      "paper": "§3.5.6 (line 337)",
+      "claim": "in Milipsigate every tagged bass wintered at one of four sites shallower than 8 m",
+      "location": "p. 42 (PDF p. 54), §3.4; p. 51 (PDF p. 63), §3.5",
+      "quote": "overwintered in areas that were not distinctly deep, all being shallower than 8 m",
+      "conditions": "by December and January all bass were at distinct wintering sites; four sites, each with at least two fish, in the north, south, east and west of the lake",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6 (line 337)",
+      "claim": "the wintering sites were used at 2–6 m",
+      "location": "p. 48 (PDF p. 60), §3.4.2; abstract p. 28 (PDF p. 40)",
+      "quote": "winter dormant period from December to March, ranging from 2 to 6 m",
+      "conditions": "tag depths, December–March",
+      "verdict": "confirmed",
+      "note": "the same paragraph's model prediction reaches ~10 m in January, which does not sit well with sites all shallower than 8 m; the measured 2–6 m is the safer figure"
+    },
+    {
+      "paper": "§3.5.6 (line 337)",
+      "claim": "the bass stayed \"stationary throughout the winter until late March\"",
+      "location": "p. 42 (PDF p. 54), §3.4",
+      "quote": "remaining stationary throughout the winter until late March",
+      "conditions": "horizontal positions at the four wintering sites; the analysis treats December–March as the bass's dormancy period",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6 (line 348)",
+      "claim": "chain pickerel stay active near shore: 80 % of December positions were within 30 m of shore over rocky shallows",
+      "location": "p. 41 (PDF p. 53), §3.4; p. 51 (PDF p. 63), §3.5",
+      "quote": "80% of all positions for that month occurred within 30 m from the shore",
+      "conditions": "December 2018, all positions in the western part of the lake (bottom ≤ 4 m, p. 50); 'rocky' is the author's inference from bathymetry and personal observation (\"appear to be selecting for coarse rocky nearshore habitat in December\"), not from habitat data in the models; few fish (winter months averaged 94 pickerel positions)",
+      "verdict": "confirmed",
+      "note": "in January the pickerel moved over deeper water with bedrock (the south end has pockets of ~10–13 m), so 'near shore' holds for December more than for the whole winter"
+    },
+    {
+      "paper": "§3.5.6 (line 348)",
+      "claim": "January and February pickerel positions clustered around islands",
+      "location": "p. 41 (PDF p. 53), §3.4",
+      "quote": "aggregated around Hines Island",
+      "conditions": "January: 91 % of positions in the south-west of the array, around Hines Island; February: 97 % in the south-east, around Bird Island",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.4",
+      "claim": "tagged pickerel kept moving at a low level all winter, while the lake's smallmouth sat nearly still at four wintering sites",
+      "location": "p. 51 (PDF p. 63), §3.5",
+      "quote": "chain pickerel maintain low-level movement during the winter",
+      "conditions": "inferred from month-to-month shifts in where the clustered positions lay, not from measured swimming activity; the bass 'nearly sessile' at four sites",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8; src/w3/fish3.js:605",
+      "claim": "79 % of June smallmouth positions lay within 50 m of shore",
+      "location": "p. 42 (PDF p. 54), §3.4",
+      "quote": "79% of all positions in June were within 50 m",
+      "conditions": "within 50 m of the eastern or western shore; a share of positions (thinned to one per fish per hour), not of fish; at most 7 bass alive in June 2019 (5 of 12 died after the winter)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "a share inflated by nesting males",
+      "source_value": "the thesis puts summer nearshore use down, tentatively, to choice of spawning habitat; it has no data by sex or on nests and does not say the 79 % is inflated",
+      "location": "p. 52 (PDF p. 64), §3.5; male guarding from late May to early July on p. 51 (PDF p. 63), citing Bain 1993 and DFO 1994",
+      "quote": "specific habitat use during the summer is likely driven by the selection of spawning habitat",
+      "conditions": "the author's interpretation",
+      "verdict": "corrected",
+      "note": "say 'which the author attributes to spawning' rather than 'inflated by nesting males'"
+    },
+    {
+      "paper": "src/w3/fish3.js:425",
+      "claim": "smallmouth bass: within ~50 m of shore; a few deep wintering sites, nearly still Dec–Mar (Sergio 2026; Suski & Ridgway 2009)",
+      "source_value": "Milipsigate's four wintering sites were 'not distinctly deep', all shallower than 8 m and used at 2–6 m; 'nearly still Dec–Mar' and summer use within 50 m of shore are right",
+      "location": "p. 51 (PDF p. 63), §3.5; p. 42 (PDF p. 54), §3.4",
+      "quote": "smallmouth bass were nearly sessile and occupied four distinct overwintering sites within the lake",
+      "conditions": "'deep' wintering holds for Suski & Ridgway's Lake Opeongo, not for Sergio's lake (the thesis makes this same contrast)",
+      "verdict": "corrected",
+      "note": "the comment should credit 'deep' to Suski & Ridgway only. Its 'rock, drop-offs and wood' and 'shallower at night' are not from Sergio"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Small samples: 18 pickerel tagged, but 3 were never detected, 1 died and 6 left within two weeks, leaving 3,584 filtered positions; 12 bass tagged, 5 died after the winter. Tagging was by angling from 1 September to 19 October 2018, which the author says inflated the autumn positions. Milipsigate is deeper (17 m), cooler and stratified, so its depth figures carry over to 4–5.5-m polymictic Hot Brook only in the relative sense the paper uses. The GAM terms (Table 2, p. 40) include bathymetry, which explains much of the depth use (bass F = 447, pickerel F = 44.6). Other values the rewrite could use: pickerel predicted at 0–2.5 m from October to April, ~8 m by August; bass at 0–15 m from spring to autumn; pickerel spawning thought to be ~2 weeks after ice-out at ~8–11 °C (p. 51, citing others)."
+}

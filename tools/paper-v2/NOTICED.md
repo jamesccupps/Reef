@@ -38,3 +38,8 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-04 | `config.js` WINTER0.JE, `fish3.js` F3.WIN_JE | Johnson & Evans's constant-4.0 °C laboratory model applied to field "days below 4 °C"; under-ice water is often 1–3 °C and the paper's own 2.5 °C model is harsher — a model question for §4/§5.8 | open |
 | t1-04 | §3.6.6, `species.js` | Breck 1997's revised bluegill respiration is 1.7–2.9× FB4's bluegill set (the reader's arithmetic) — note when comparing sets | open |
 | t1-04 | Table 3.5-3 (white perch diet) | Stanley & Danie: white perch > 22 cm "eat fish almost exclusively" — could stand beside Warner's "fish regular only above ~200 mm" | note |
+| t1-08 | §3.5.4; Hartman et al. 2017 entry | "Documented only in conference work (no peer-reviewed paper was found)" for the bullhead set is wrong: Hartman, K. J. 2017, TAFS 146(4): 634–644, doi:10.1080/00028487.2017.1293563 (single author; cited in FB4's references). Lead passed to the w2-06 reader | open |
+| t1-08 | §4.5; `environment.js:360`, `fish3.js:2108, 2265` | "Moved between open water and sediments within days" belongs to Werner, Mittelbach, Hall & Gilliam 1983, *Ecology* 64(6): 1525–1539, doi:10.2307/1937507 — missing from the references | open |
+| t1-08 | Table 4.3 vs `species.js` juvW, §3.5.4 | Smallmouth's switch from Rice's to Whitledge's set: 250 g in Table 4.3 (the 3-D code), ~30 g in species.js and §3.5.4 — reconcile in the text | open |
+| t1-08 | `src/w3/species3.js` FATHEAD | Energy density 4186 J/g where FB4's Parameters_official.csv has 4100 | open |
+| t1-08 | §3.5.4 | The Whitledge break-even sizes hold only for prey of ~3,600–4,000 J/g: state the prey energy density used | open |

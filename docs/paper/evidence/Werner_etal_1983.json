@@ -1,0 +1,58 @@
+{
+  "key": "Werner_etal_1983",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text: closed at Wiley/ESA and JSTOR, no repository or author copy found (OpenAlex, Semantic Scholar, web search; the Internet Archive holds only Ecology 1983's index and contents). The abstract was read via the OpenAlex API and the FAO AGRIS record",
+    "url": "https://doi.org/10.2307/1937508"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Earl E. Werner, James F. Gilliam, Donald J. Hall, Gary G. Mittelbach (Dec 1983), Ecology 64(6): 1540–1548"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.8",
+      "claim": "small bluegill sheltering from bass in vegetation fed at about a third of the open-water rate and grew 27 % less",
+      "verdict": "unchecked",
+      "note": "Abstract only, so not confirmed. The abstract says the small class took a greater fraction of its diet in vegetation, 'where foraging return rates were only one-third of those in the more open habitats', and its growth increment was 27 % less. The one-third is the vegetation habitat's return rate relative to open habitat, not the fish's overall feeding rate, so 'fed at about a third of the open-water rate' overstates it; §3.7.1's wording is closer"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "at a cost of 27 % less growth in a divided-pond experiment (abstract)",
+      "verdict": "unchecked",
+      "note": "the abstract describes a 29-m divided pond, three bluegill size classes and eight largemouth bass on one side, and a 27 % smaller growth increment for the small class"
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "small bluegill confined to vegetation by bass got about a third of the open-water foraging return and grew 27 % less (abstract only)",
+      "verdict": "unchecked",
+      "note": "matches the abstract's wording; the paper already flags it as abstract only"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "adults split their foraging time among foods in proportion to f⁴ (after Werner et al. 1983 and Wu & Culver 1992)",
+      "verdict": "unchecked",
+      "note": "a design choice 'after' the paper. The habitat-profitability results (habitat use that maximizes return rate) are in the companion paper: this paper's abstract cites it as 'Werner et al. 1983' for that point. See notes"
+    },
+    {
+      "paper": "src/environment.js:360; src/w3/fish3.js:2108; src/w3/fish3.js:2265",
+      "claim": "fish sample the bed and settle where it pays, moving within days as returns shift; pond bluegill moved between the open water and the sediments within days as their profitability changed",
+      "verdict": "unchecked",
+      "note": "Probably mis-cited. The research note this came from (Real lake ecology for calibration/fish_zooplankton_coupling.md:525) credits it to Werner, Mittelbach, Hall & Gilliam 1983, a different paper; this paper's abstract does not mention it"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1937508", "status": 403, "note": "Wiley/ESA landing page, refuses scripts; the page a library login (or JSTOR) would open" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1937508", "status": 403, "note": "Wiley PDF, refuses scripts" },
+    { "url": "https://www.jstor.org/stable/pdf/1937508.pdf", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://api.openalex.org/works/doi:10.2307/1937508", "status": 200, "note": "closed, no repository copy; abstract only" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1937508?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_ecology_1983*", "status": 200, "note": "only sim_ecology_1983_64_index and _contents; no issues" }
+  ],
+  "notes": "A second Werner et al. 1983 needs to be in the references. Crossref confirms the companion paper: Werner, E. E., Mittelbach, G. G., Hall, D. J. & Gilliam, J. F. 1983. Experimental tests of optimal habitat use in fish: the role of relative habitat profitability. Ecology 64(6): 1525–1539. doi:10.2307/1937507. The code's 'moved between open water and sediments within days' and §4.5's profitability-weighted allocation most likely belong to it (1983a/1983b). Other abstract-level details of this paper: each bass ate on average about one small bluegill every 3.8 d; the larger bluegill grew faster with bass present, because the small fish left the open habitats' resources to them."
+}

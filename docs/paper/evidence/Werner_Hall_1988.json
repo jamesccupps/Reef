@@ -1,0 +1,53 @@
+{
+  "key": "Werner_Hall_1988",
+  "reader": "wave-1 batch t1-08",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "no full text: closed at Wiley/ESA and JSTOR, no repository or author copy found (OpenAlex, Semantic Scholar, web search; the Internet Archive holds only Ecology 1988's index and contents). The abstract was read via the OpenAlex API",
+    "url": "https://doi.org/10.2307/1941633"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Earl E. Werner, Donald J. Hall (Oct 1988), Ecology 69(5): 1352–1366"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6 (line 313)",
+      "claim": "small bluegill run 40–80 times the predation risk in open water",
+      "verdict": "unchecked",
+      "note": "the abstract agrees: in pond experiments the risk of predation by largemouth bass was 40–80 times as great for small bluegills in the open water as in the vegetation"
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "bluegill return to the littoral at about 12.5 mm SL and the small ones stay in vegetation, because open water is 40–80 times riskier for them although more profitable for every size class",
+      "verdict": "unchecked",
+      "note": "the abstract agrees: a return at ~12.5 mm SL in four lakes; the pelagic zone the more profitable habitat for all size classes (stomachs, caged growth, foraging predictions); the shift back to open-water feeding at 50–83 mm SL across five lakes, larger where bass were denser"
+    },
+    {
+      "paper": "src/species.js:283",
+      "claim": "Lepomis fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm (12.5 mm SL), where they eat the littoral's invertebrates (Werner 1967, 1969; Werner & Hall 1988; Beard 1982)",
+      "verdict": "unchecked",
+      "note": "the abstract gives the 12.5 mm SL return and several years in the littoral vegetation; the 30–40 days and the TL conversion are not in the abstract"
+    },
+    {
+      "paper": "src/w3/fish3.js:2900; src/world.js:1118",
+      "claim": "young bottom foragers (young sunfish back from their limnetic phase) live on the bed and in the weeds on the littoral invertebrates",
+      "verdict": "unchecked",
+      "note": "the abstract: 'several years are spent feeding in the littoral zone vegetation' after the fry return"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/1941633", "status": 403, "note": "Wiley/ESA landing page, refuses scripts; the page a library login (or JSTOR) would open" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.2307/1941633", "status": 403, "note": "Wiley PDF, refuses scripts" },
+    { "url": "https://www.jstor.org/stable/pdf/1941633.pdf", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://api.openalex.org/works/doi:10.2307/1941633", "status": 200, "note": "closed, no repository copy; abstract only" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/1941633?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://scilit.com/publications/409b1686f12e84433a063ec517175e6d", "status": 403, "note": "abstract aggregator, refuses scripts" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_ecology_1988*", "status": 200, "note": "only sim_ecology_1988_69_index and _contents; no issues" }
+  ],
+  "notes": "§3.6.7 already flags it as read from the abstract; §3.5.6 does not, and should. The abstract supports both sentences as worded. The full text would give the pond design behind the 40–80× and the lake-by-lake sizes at the shift (50–83 mm SL), which the model could use for the age at which young sunfish leave the weeds."
+}
