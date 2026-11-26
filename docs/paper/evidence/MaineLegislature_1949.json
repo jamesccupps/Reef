@@ -1,0 +1,50 @@
+{
+  "key": "MaineLegislature_1949",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Maine State Law and Legislative Reference Library's own digital copy (Law and Legislative Digital Library, scanned original with text recognition), fetched from the URL in the entry",
+    "url": "https://lldc.mainelegislature.org/Open/LDs/94/094-LD-1115.pdf",
+    "file": "docs/research_notes/fetched/v2/MaineLegislature_1949.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the document's own head (PDF p. 2), read on the page image",
+    "ok": true,
+    "note": "Ninety-Fourth Legislature, Legislative Document No. 1115, H. P. 1776, House of Representatives, March 1, 1949; presented by Mr. Brown of Baileyville; referred to the Committee on Inland Fisheries and Game. The title matches the entry. It is a Resolve, so 'legislative document' (§2.3) is the safer word than 'bill' (§2.5)."
+  },
+  "claims": [
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:182)",
+      "claim": "in 1949 a legislative document proposed $750 for 'a fish screen at outlet of Lower Hot Brook'",
+      "source_value": "$750 'appropriated from the funds of the department of inland fisheries and game for installing a fish screen at outlet of Lower Hot Brook in the town of Danforth'",
+      "location": "PDF p. 2 (the Resolve's text)",
+      "quote": "the sum of $750 be, and hereby is, appropriated from the funds of the department",
+      "conditions": "a Resolve as printed on March 1, 1949, before committee action",
+      "verdict": "confirmed",
+      "note": "The words 'a fish screen at outlet of Lower Hot Brook' are verbatim. The document does not say whether the Resolve passed."
+    },
+    {
+      "paper": "§2.3 (01_introduction_and_study_system.md:182)",
+      "claim": "the screen was to be maintained by the Danforth Rod and Gun Club",
+      "source_value": "the club 'shall assume all liability for keeping of said screen free from all sticks, leaves and debris'",
+      "location": "PDF p. 2 (the Resolve's text)",
+      "quote": "the Danforth Rod and Gun Club shall assume all liability for keeping of said screen",
+      "conditions": "a proviso of the appropriation",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5 (01_introduction_and_study_system.md:301)",
+      "claim": "the bill of March 1949 says the local club 'wish[ed] to introduce game fish into Upper Hot Brook and Lower Hot Brook lake'",
+      "source_value": "Statement of Facts: 'The Danforth Rod and Gun Club wish to introduce game fish into Upper Hot Brook and Lower Hot Brook lake.'; dated March 1, 1949",
+      "location": "PDF p. 3 (Statement of Facts); date on PDF p. 2",
+      "quote": "The Danforth Rod and Gun Club wish to introduce game fish into Upper Hot Brook",
+      "conditions": "the sponsor's statement of facts; it also says the part of Lower to be screened is in Aroostook County",
+      "verdict": "confirmed",
+      "note": "The document names no species: 'game fish' only."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Both uses check. The Resolve places Danforth 'in the counties of Aroostook and Washington' and says the screened part of Lower is in Aroostook County. Whether it passed could be checked in the 1949 Resolves (Acts and Resolves of the 94th Legislature), not read here."
+}

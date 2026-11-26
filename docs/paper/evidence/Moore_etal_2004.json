@@ -1,0 +1,50 @@
+{
+  "key": "Moore_etal_2004",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the USGS report PDF from pubs.usgs.gov (the URL in the entry)",
+    "url": "https://pubs.usgs.gov/sir/2004/5012/SIR2004-5012_report.pdf",
+    "file": "docs/research_notes/fetched/v2/Moore_etal_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover and title page; Crossref",
+    "ok": false,
+    "corrections": "The title is 'Estimation of Total Nitrogen and Phosphorus in New England Streams Using Spatially Referenced Regression Models'. '(New England SPARROW)' is not part of it, so put it outside the title or drop it. Published by the U.S. Geological Survey, Pembroke, New Hampshire, in cooperation with NEIWPCC and USEPA. Authors (Richard Bridge Moore, Craig M. Johnston, Keith W. Robinson, Jeffrey R. Deacon), year, series and number are right."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-1 (02_synthesis_physical_to_plants.md:421)",
+      "claim": "New England forest phosphorus yield (SPARROW) 0.134 ± 0.038 kg TP ha⁻¹ yr⁻¹",
+      "source_value": "forested-land source coefficient 13.4 kg/km²/yr, standard error 3.8 (bootstrap 12.7 ± 4.1) = 0.134 ± 0.038 kg/ha/yr",
+      "location": "p. 17 (PDF p. 25), Table 4; p. 16 (PDF p. 24), text",
+      "quote": "Forested land (kg/km2/yr) 13.4 3.8 12.7 4.1",
+      "quote_from": "table",
+      "conditions": "a regression (SPARROW) source coefficient: kg of P 'entering streams for each square kilometer of forested land upstream per year', fitted to 1974–1999 stream loads in New England; ± is the standard error of the coefficient",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "13.4 kg/km² = 0.134 kg/ha. A model coefficient, not a measured yield (the row's '(SPARROW)' signals this, but the table heading says 'measured yields')."
+    },
+    {
+      "paper": "Table 3.2-3 (02_synthesis_physical_to_plants.md:483)",
+      "claim": "New England SPARROW reservoir loss for lakes ≤ 10 km²: v = 109 m/yr (SE 64.5)",
+      "location": "p. 17 (PDF p. 25), Table 4 and footnote 5; p. 16 (PDF p. 24), text",
+      "quote": "Reservoir loss variable for small lakes and reservoirs2 (m/yr) 109 64.5 105 59.7",
+      "quote_from": "table",
+      "conditions": "calibration coefficient (bootstrap 105 ± 59.7); 'small lakes and reservoirs with surface area less than or equal to 10 km2'; only waterbodies ≥ 2 km² were treated as lake reaches (p. 9, PDF p. 17); p = 0.096 in the calibration model and 0.04 in the bootstrap",
+      "verdict": "confirmed",
+      "note": "The coefficient is uncertain (SE 64.5, so the 95 % interval spans roughly 0–235 m/yr). Both Hot Brook lakes fall in the 2–10 km² class."
+    },
+    {
+      "paper": "Table 3.2-3 (02_synthesis_physical_to_plants.md:483)",
+      "claim": "the retention form R = v/(v + qs) (with v = 109 m/yr), giving R = 0.91 for Upper and 0.87 for Lower",
+      "verdict": "unsupported",
+      "kind": "arithmetic",
+      "note": "The report does not print a retention formula. It defines the loss variable as the 'reciprocal areal hydraulic load' (lake area / outflow, yr/m), and says the coefficient is the length of water column cleared per year by settling and burial, citing Alexander et al. 2002 and Chapra 1975 (pp. 5, 9, 16; PDF pp. 13, 17, 24). Equation 1 (p. 3) shows only the general in-stream loss term. R = v/(v + qs) is Chapra's form, and the row should cite it to Chapra 1975 / Alexander et al. 2002. The arithmetic checks: 109/(109 + 11.0) = 0.908 and 109/(109 + 16.9) = 0.866."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Both values check; the retention formula is not in the report, and the title needs fixing. The phosphorus model's other coefficients (Table 4): agricultural land 108 ± 25.7, developed land 38.9 ± 13.7 kg/km²/yr, and stream loss 0.48 d⁻¹ in streams ≤ 2.83 m³/s, a half-life of about 1.5 days (p. 16). Percent wetland was the best land-delivery factor but not significant (p > 0.60). The study area is 75.7 % forested and includes the Penobscot basin."
+}

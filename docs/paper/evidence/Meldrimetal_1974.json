@@ -1,0 +1,30 @@
+{
+  "key": "Meldrimetal_1974",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "secondary only: the paper cites it via Fischer, Hall & Sullivan 1989b, whose text (govinfo CZIC copy, already fetched for Fischer_etal_1989b) gives the statement and the full reference",
+    "file": "docs/research_notes/fetched/v2/Fischer_etal_1989b.raw.txt"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "the reference list of Fischer, Hall & Sullivan 1989b (the only full citation seen)",
+    "ok": false,
+    "corrections": "Complete the entry: Meldrim, J. W., Gift, J. J. & Petrosky, B. R. 1974. The effects of temperature and chemical pollutants on the behavior of several estuarine organisms. Ichthyological Associates, Inc., Bulletin No. 11, Middletown, DE. 129 p. (as given by Fischer et al. 1989b; title page not seen). Keep 'via Fischer, Hall & Sullivan 1989b' in the text."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (03_synthesis_fish_to_forest.md:139); §3.5.6 (03_synthesis_fish_to_forest.md:365)",
+      "claim": "white perch avoid water below 35 % oxygen saturation (Meldrim et al. 1974, via Fischer, Hall & Sullivan 1989b)",
+      "verdict": "unchecked",
+      "note": "The original bulletin could not be obtained. The secondary source says it: Fischer et al. 1989b, dissolved-oxygen section, 'Adult white perch avoided waters with < 35% saturation of oxygen over a temperature range of 8 - 21 C (Meldrim et al., 1974)' (confirmed by the Fischer_etal_1989b reader). The paper's 'via' citation is therefore accurate. The rewrite could add 'adults, at 8–21 °C'."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28temperature+chemical+pollutants+behavior+estuarine+organisms%29&fl%5B%5D=identifier&fl%5B%5D=title&rows=10&output=json", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://libcat.library.tamu.edu/Record/in00000991521", "status": 403, "note": "Texas A&M library catalog record (found by web search); Cloudflare bot check, not bypassed" },
+    { "url": "web search: Meldrim Gift Petrosky 1974 Ichthyological Associates Bulletin 11", "status": "n/a", "note": "catalog records and citations only; no full text online" }
+  ],
+  "notes": "Grey literature (an Ichthyological Associates bulletin, about 129 pages). A library catalog record seen only through a search summary gives the title as 'The effect of …' and the place as Ithaca, N.Y. Unverified, so I did not use it; check the title page if the bulletin is ever obtained. Keep the citation as 'via Fischer, Hall & Sullivan 1989b'."
+}

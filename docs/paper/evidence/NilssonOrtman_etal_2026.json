@@ -1,0 +1,52 @@
+{
+  "key": "NilssonOrtman_etal_2026",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access article (CC BY 4.0, per Crossref and the PMC record): full text from Europe PMC's REST service (fullTextXML for PMC13145305), one web 'page'",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13145305/fullTextXML",
+    "file": "docs/research_notes/fetched/v2/NilssonOrtman_etal_2026.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC XML front matter",
+    "ok": true,
+    "note": "J. Anim. Ecol. 95: 824–836; epub 16 March 2026, print May 2026 (issue 5 per Crossref)."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:811)",
+      "claim": "young-of-year pike ate as many roach in water stained to a visual range under 5 cm as in clear water",
+      "source_value": "Experiment 2: water colour had no effect on prey consumption across five browning levels (Abs420/5 0.02–3.06); the brownest treatment is described as giving 'a visual range of less than 5 cm'",
+      "location": "web page (Europe PMC full text): Results, Experiment 2; Figure 4 caption; Methods 2.2",
+      "quote": "In Experiment 2, water colour had no effect on pike prey consumption",
+      "conditions": "laboratory, 0+ pike (in Experiment 1, 24 fish of 34.5–79.2 g, ≈165–220 mm FL) feeding on 0+ roach (~50 mm FL), 9 °C, 5 or 10 prey per 700-L arena, 8 replicates per treatment (80 trials), humic acid added",
+      "verdict": "confirmed",
+      "note": "χ² = 4.85, p = 0.30. Consumption rose with prey density and pike mass."
+    },
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:811)",
+      "claim": "perhaps because humic stain absorbs light rather than scattering it",
+      "location": "web page (Europe PMC full text): Discussion",
+      "quote": "Browning via dissolved organic matter, on the other hand, primarily reduces light intensity",
+      "conditions": "the authors' explanation, contrasting turbidity (light scattering, lower contrast) with browning",
+      "verdict": "confirmed",
+      "note": "The authors add that this 'may preserve short-range contrast' for sit-and-wait predators such as pike. Their wording is hedged, as the paper's 'perhaps' is."
+    },
+    {
+      "paper": "§3.7.5 (03_synthesis_fish_to_forest.md:934)",
+      "claim": "the functional response of young-of-year pike is usually type II, but pike gave a dome-shaped response at 5 °C in clear water",
+      "location": "web page (Europe PMC full text): Abstract; Results, Experiment 1",
+      "quote": "In one treatment, 5°C clear water, the functional response was best described",
+      "conditions": "Experiment 1: 5, 9 and 13 °C × clear or moderately brown water (Abs420/5 0.020 vs 0.097) × 2, 5, 10 or 20 roach per arena",
+      "verdict": "confirmed",
+      "note": "The abstract: 'asymptotic Type II functional response under most conditions' and a 'dome-shaped Type IV' in cold clear water. The Results mention one apparent outlier in that treatment, and attack-rate estimates are 'associated with considerable uncertainty'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13145305/pdf/", "status": 200, "note": "70 characters, not the text (not kept)" },
+    { "url": "https://europepmc.org/articles/PMC13145305?pdf=render", "status": 403, "note": "text/html" }
+  ],
+  "notes": "All three uses check. Useful for the model: the authors find 'strikingly weak effects of temperature and browning on pike feeding rates'. Their model gives pike a reaction distance of 1.5 m in clear water, 1 m in moderately brown and 0.5 m in heavily brown water, after Ranåker et al. 2012 for 0+ pike over Abs420/5 0.01–0.40. That is a better-sourced basis than the project's inferred reaction distances in §3.7.1."
+}

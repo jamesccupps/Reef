@@ -1,0 +1,52 @@
+{
+  "key": "MacRae_Jackson_2001",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "a research group's own open copy: the Harkness Laboratory of Fisheries Research (the University of Toronto and Ontario MNR station where the work was based) posts the article PDF in its 'Contributions 2000s' list on harkness.ca",
+    "url": "https://harkness.ca/PDFs/Contributions%202000s/MacRae%20and%20Jackson%202001.pdf",
+    "file": "docs/research_notes/fetched/v2/MacRae_Jackson_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page",
+    "ok": true,
+    "note": "Can. J. Fish. Aquat. Sci. 58: 342–351 (2001). The page footer gives the DOI as 10.1139/cjfas-58-2-342; Crossref's DOI 10.1139/f00-247 is the same article."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.3 (03_synthesis_fish_to_forest.md:183)",
+      "claim": "small Ontario lakes with smallmouth held 2.3 fewer small-bodied species",
+      "location": "p. 345 (PDF p. 4), Results; repeated p. 347 (PDF p. 6), Discussion",
+      "quote": "Lakes with smallmouth bass contained 2.3 fewer small-bodied species, on average,",
+      "conditions": "summer survey of 14 central-Ontario lakes of ≤ 50 ha (7 with smallmouth, 7 without), mid-July to mid-August 1998, minnow traps plus visual counts, each lake sampled once. Total species richness did not differ (Mann–Whitney U = 22, p = 0.75)",
+      "verdict": "confirmed",
+      "note": "An average; total richness was the same, because lakes with bass held more centrarchids."
+    },
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:842)",
+      "claim": "in 14 small central-Ontario lakes, fathead minnow, pearl dace, Phoxinus and brook stickleback were absent from every lake with smallmouth",
+      "location": "p. 345 (PDF p. 4), Results",
+      "quote": "were absent from all summer survey lakes containing smallmouth bass",
+      "conditions": "the same 14-lake summer survey; 'four of the six vulnerable species'",
+      "verdict": "confirmed",
+      "note": "The authors add that not every lake without bass held all four species."
+    },
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:842)",
+      "claim": "pumpkinseed and yellow perch remained in the lakes with smallmouth",
+      "source_value": "yellow perch and (in the Pumpkinseed row) pumpkinseed both recorded in all seven lakes with smallmouth (and in only 2 and 3 of the seven lakes without)",
+      "location": "p. 344 (PDF p. 3), Table 2",
+      "quote": "Yellow perch (YP) 1 1 1 1 1 1 1",
+      "quote_from": "image",
+      "conditions": "presence–absence from combined trap and visual sampling",
+      "verdict": "confirmed",
+      "note": "The closing sentence 'Lakes with bass keep the prey that are hard to catch' is the paper's reading. The article separates a small-bodied cyprinid assemblage from a large-bodied centrarchid one, and smallmouth and yellow perch group together in its correspondence analysis (p. 347)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f00-247?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf status CLOSED (the Harkness copy was found by web search)" }
+  ],
+  "notes": "All three uses check. Table 2 also shows golden shiner and brown bullhead in some bass lakes, and blacknose shiner, pearl dace, Phoxinus, brook stickleback and fathead minnow only in lakes without bass. Fathead minnow (p = 0.01), Phoxinus (p = 0.03), brook stickleback (p = 0.08) and blacknose shiner (p = 0.09) were absent or less abundant with bass (p. 345). Vulnerable species were more abundant in complex than simple habitat where bass were present."
+}

@@ -1,0 +1,59 @@
+{
+  "key": "Mensinger_etal_2025",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency repository copy: the accepted manuscript in the NOAA Institutional Repository (noaa/72318), the green open-access copy OpenAlex lists",
+    "url": "https://repository.library.noaa.gov/view/noaa/72318/noaa_72318_DS1.pdf",
+    "file": "docs/research_notes/fetched/v2/Mensinger_etal_2025.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the manuscript's title page",
+    "ok": true,
+    "note": "Authors and title match. The NOAA copy is the accepted manuscript (48 pages, line-numbered); the version of record is CJFAS 82: 1–15. Page numbers below are the manuscript's."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7 (03_synthesis_fish_to_forest.md:459); §3.7.1 (03_synthesis_fish_to_forest.md:811)",
+      "claim": "in the Weldon Dam reservoir on the Penobscot in spring 2022, 390 tethered Atlantic salmon smolts were deployed and chain pickerel (43 events) and smallmouth bass (42) were the only predators",
+      "source_value": "390 tethered smolts over 16 days, April 23–May 24 (2022); 85 (21.8 %) were eaten, 43 by chain pickerel (11.0 %) and 42 by smallmouth bass (10.8 %)",
+      "location": "p. 14 (PDF p. 14), Results, lines 312–315; abstract p. 2, lines 29–31",
+      "quote": "and predators consisted of chain pickerel (n=43, 11.0%",
+      "conditions": "smolts tethered to drifting camera rigs, deployments limited to about one hour; Weldon Dam reservoir, Penobscot River, Maine",
+      "verdict": "confirmed",
+      "note": "The counts are smolts eaten, i.e. predation events. The authors call both predators 'not native to the study area' (abstract)."
+    },
+    {
+      "paper": "§3.5.7 (03_synthesis_fish_to_forest.md:459)",
+      "claim": "23 % of tethered smolts were taken within an hour",
+      "source_value": "the best hazard model estimated 22.7 % (95 % CI 15.4–29.5 %) would be taken within a 60-min deployment; observed, 21.8 % (85 of 390) were taken during deployments that averaged about an hour",
+      "location": "p. 15 (PDF p. 15), Results, lines 322–323",
+      "quote": "The most supported hazard model estimated that on average, 22.7%",
+      "conditions": "Cox proportional-hazards model",
+      "verdict": "confirmed",
+      "note": "This is a model estimate; 'an estimated 23 %' would be exact."
+    },
+    {
+      "paper": "§3.5.7 (03_synthesis_fish_to_forest.md:459); §3.7.1 (03_synthesis_fish_to_forest.md:811)",
+      "claim": "the probability of predation within a one-hour deployment rose from about 10 % at 5 °C to 33 % at 15 °C",
+      "location": "p. 15 (PDF p. 15), Results, lines 326–328",
+      "quote": "and predation probability increased from 10% to 33% when temperature",
+      "conditions": "the model's prediction for a one-hour deployment; water temperature HR = 1.93 (95 % CI 1.43–2.60)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7 (03_synthesis_fish_to_forest.md:459); §3.7.1 (03_synthesis_fish_to_forest.md:811)",
+      "claim": "smolts within 40 m of shore were at above-average risk",
+      "source_value": "above-average risk within 40 m of shore; the model predicted > 24 % predated within 40 m. Risk fell with distance from shore (HR = 0.56)",
+      "location": "abstract p. 2 (PDF p. 2), lines 35–36; p. 21 (PDF p. 21), lines 467–469; p. 15, lines 328–329",
+      "quote": "Smolts also incurred above-average predation risk within 40 m",
+      "conditions": "distance to an NHD shoreline widened by 12 m",
+      "verdict": "confirmed",
+      "note": "The authors add that nearness to shore mattered less in warmer water (an interaction whose CI included 1)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "All claims check against the full manuscript, so the paper's 'abstract only' labels (§3.5.7, §3.7.1) can be dropped. Other useful values: average time to predation 24.9 min (range 0.4–59.9 min); larger smolts were at lower risk (fork length HR = 0.77); predation hotspots were in structured, shallow backwaters and constrictions (7 of 18 smolts eaten off one island's narrow channel); the reservoir is mostly shallow (< 2 m) sediment flats with sparse macrophytes and submerged stumps. For §2.5: the authors treat chain pickerel and smallmouth as non-native in the Penobscot study area."
+}

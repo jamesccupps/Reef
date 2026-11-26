@@ -1,0 +1,37 @@
+{
+  "key": "McCoy_etal_2001",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: OpenAlex lists the publisher's copy as free ('bronze'), but Taylor & Francis refused the script on every URL"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS Publications Warehouse record (indexId 1000834)",
+    "ok": true,
+    "note": "McCoy, C. M., Madenjian, C. P., Adams, J. V. & Harman, W. N. 2001. The fish community of a small impoundment in upstate New York. J. Freshwater Ecol. 16(3): 389–394, doi:10.1080/02705060.2001.9663827: matches Crossref."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-1 (03_synthesis_fish_to_forest.md:98)",
+      "claim": "Moe Pond, New York (15.6 ha; mean 1.8 m; unexploited): Schnabel estimate for age-1+ bullhead and seine replicates for shiner; 946 fish/ha and 18 kg/ha in all; brown bullhead 260/ha (13 kg/ha), golden shiner 686/ha (5 kg/ha)",
+      "verdict": "unchecked",
+      "note": "No full text."
+    },
+    {
+      "paper": "Table 3.5-3 (03_synthesis_fish_to_forest.md:145)",
+      "claim": "brown bullhead survival 48 %/yr at ages 2–5",
+      "verdict": "unchecked",
+      "note": "No full text."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/02705060.2001.9663827", "status": 403, "note": "publisher refused the script (text/html)" },
+    { "url": "https://www.tandfonline.com/doi/pdf/10.1080/02705060.2001.9663827?needAccess=true&role=button", "status": 403, "note": "the OpenAlex 'bronze' PDF link; refused" },
+    { "url": "https://www.tandfonline.com/doi/full/10.1080/02705060.2001.9663827", "status": 403, "note": "refused" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/?q=fish%20community%20small%20impoundment%20upstate%20New%20York", "status": 200, "note": "USGS Publications Warehouse record 1000834 links only to the publisher's page ('Open Access Publisher Index Page'); no USGS-hosted PDF" },
+    { "url": "https://archive.org/wayback/available?url=www.tandfonline.com/doi/pdf/10.1080/02705060.2001.9663827", "status": "refused by permission system", "note": "Wayback lookup refused by the session's permission system; not retried another way" }
+  ],
+  "notes": "The publisher appears to serve this article free (OpenAlex: bronze; USGS: open access at the publisher), so the human can probably open https://doi.org/10.1080/02705060.2001.9663827 in a browser and save the PDF to docs/research_notes/fetched/. Check then: Moe Pond's area and mean depth, the Schnabel and seine methods, the 946/ha and 18 kg/ha totals, the per-species densities and biomasses, and the 48 % survival with the ages it covers."
+}

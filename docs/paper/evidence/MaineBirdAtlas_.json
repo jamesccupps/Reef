@@ -1,0 +1,110 @@
+{
+  "key": "MaineBirdAtlas_",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the two routes the entry names, queried 2026-11-26. (1) MDIFW's ArcGIS Online services for the 2nd Maine Bird Atlas (services1.arcgis.com/RbMX0mRVOFNTdLzd): BirdAtlas_BAEA_BlockCodes, BirdAtlas_GBHE_BlockCodes, MEIFW_BirdAtlasBlockCompletion, WinterAtlasResults (layer 0 of each), every block within about 25 km of the lakes, with the layers' renderer labels. (2) The GBIF occurrence API for the regional box 45.50–45.80° N, 67.75–68.10° W (bald eagle, common loon, belted kingfisher, American bittern, osprey, hooded merganser, great blue heron). Raw JSON saved as MaineBirdAtlas_.<layer>.json and MaineBirdAtlas_.gbif_*.json; attribute rows and records dumped, without coordinates, to MaineBirdAtlas_.gis.txt. The README of DigitalMaine's 'Breeding Bird Evidence Summary, Maine Bird Atlas 2 (2018–2022)' package was also read",
+    "url": "https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/BirdAtlas_BAEA_BlockCodes/FeatureServer/0",
+    "file": "docs/research_notes/fetched/v2/MaineBirdAtlas_.gis.txt"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "the services' descriptions and copyright lines; DigitalMaine's record and README; GBIF's dataset record",
+    "ok": false,
+    "corrections": "Name the parts. (a) The atlas: Maine Bird Atlas 2 (2018–2022), Maine Department of Inland Fisheries and Wildlife. Its block results are served by MDIFW's ArcGIS Online services BirdAtlas_BAEA_BlockCodes ('Species block codes for Bald Eagle from the 2nd Maine Bird Atlas 2018-2022'), BirdAtlas_GBHE_BlockCodes, MEIFW_BirdAtlasBlockCompletion and WinterAtlasResults, all © MDIFW, at https://services1.arcgis.com/RbMX0mRVOFNTdLzd/ArcGIS/rest/services/. The full table is DigitalMaine's 'Breeding Bird Evidence Summary, Maine Bird Atlas 2 (2018–2022)' (2022), https://digitalmaine.com/maine_bird_atlas_visualization_shapefiles/1. Cite with the access date. (b) The GBIF records are not atlas records. All but two of those used are from 'EOD – eBird Observation Dataset' (Cornell Lab of Ornithology, doi:10.15468/aomfnb, accessed via GBIF 26 Nov 2026), so cite them as eBird via GBIF."
+  },
+  "claims": [
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:392–393); §3.8.1 (03_synthesis_fish_to_forest.md:1015–1016)",
+      "claim": "eagles were at the Upper nest in July 2018 (credited to MDIFW's records; lead: is it a Maine Bird Atlas record?)",
+      "source_value": "GBIF holds one eBird record (EOD dataset, Cornell Lab of Ornithology) of 1 bald eagle on 20 July 2018 at a point at the Upper nest site [location withheld]. The record has no breeding code, behaviour or nest remark, and it is not labelled an atlas record. The eBird checklist page is behind a bot check. The atlas layers give only each block's highest breeding code, not dated sightings",
+      "location": "web page (GBIF occurrence API), EOD – eBird Observation Dataset, record of 2018-07-20 [record and checklist IDs withheld; in the git-ignored MaineBirdAtlas_.gbif_baea.json]",
+      "quote": "Bald Eagle | eventDate: 2018-07-20 | individualCount: 1 | dataset: eBird",
+      "conditions": "one eBird checklist (two observers listed) in 2018, the atlas's first season; one bird",
+      "verdict": "corrected",
+      "note": "Rewrite as 'an eagle was recorded at the nest site on 20 July 2018 (eBird, via GBIF)'. Use 'an eagle' (individualCount 1), and do not say 'at the nest' in the sense of nesting, which the record does not show. MDIFW's nest layers stop at 2013 (see MDIFW_nd-2). It may be the checklist behind the block's 'confirmed' code, but GBIF cannot show that."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:393); §3.8.1 (03_synthesis_fish_to_forest.md:1016)",
+      "claim": "the Maine Bird Atlas (2018–22) confirmed eagle breeding in the atlas block covering (part of) Upper",
+      "source_value": "block Stetson Mtn NW (a priority block, one of the four over the lakes, covering part of Upper): Bald_Eagle = 4, 'Confirmed'. The other three lake blocks: 'NA' (no data)",
+      "location": "web page (ArcGIS REST query), BirdAtlas_BAEA_BlockCodes layer 0, attribute table; code labels from the layer's renderer",
+      "quote": "BlockCode_1: Stetson Mtn_NW | BlockType: Priority | Bald_Eagle: 4",
+      "conditions": "highest breeding evidence recorded in the block, 2018–2022",
+      "verdict": "confirmed",
+      "note": "Which blocks lie over the lakes was checked against the project's lake outlines (tools/hotbrook/data). Of Upper's outline points, most fall in Stetson Mtn NW and NE, a few in Jimmey Mtn SW and SE; Lower falls in Jimmey Mtn SW and SE."
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1016–1017)",
+      "claim": "at least four other eagle territories lie within about 20 km (MDIFW GIS map services; Maine Bird Atlas)",
+      "source_value": "the atlas gives 'Confirmed' eagle breeding in six other blocks whose centres lie about 8–18 km from Upper: Brookton NW, Potter Hill CW, Brookton SW, Farrow Mtn NW, Haynesville SW and Danforth NE (Forest SW at about 21 km), and 'Probable' in Potter Hill NW",
+      "location": "web page (ArcGIS REST query), BirdAtlas_BAEA_BlockCodes layer 0, attribute table, the 107 blocks within 45.42–45.82° N, 67.65–68.25° W",
+      "quote": "BlockCode_1: Brookton_NW | BlockType: Priority | Bald_Eagle: 4",
+      "conditions": "distances are project arithmetic, from block centroids, straight-line",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "A confirmed block is not necessarily a separate territory, but six confirmed blocks plus MDIFW's nest list (MDIFW_nd-2) support 'at least four'."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:394)",
+      "claim": "only one of the four atlas blocks covering the lakes had substantial summer effort",
+      "source_value": "final breeding-atlas status: Stetson Mtn NW 'Complete' (a priority block); Stetson Mtn NE, Jimmey Mtn SW and Jimmey Mtn SE 'Incomplete'",
+      "location": "web page (ArcGIS REST query), MEIFW_BirdAtlasBlockCompletion layer 0, attribute table",
+      "quote": "Atlas_Block_Name: Stetson Mtn NW | BlockType: Priority | Block_Completion: Complete",
+      "conditions": "2nd Maine Bird Atlas, final completion status (no hours are given)",
+      "verdict": "confirmed",
+      "note": "The services give completion status, not summer hours. 'Only one block was completed' is what they support."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:394); §3.8.1 (03_synthesis_fish_to_forest.md:1018)",
+      "claim": "winter atlas effort was near zero: 0–0.03 h in each of the four blocks over the lakes",
+      "source_value": "total winter effort Stetson Mtn NE 0.03 h; Stetson Mtn NW, Jimmey Mtn SW and SE 0 h. The nearest block with real winter effort is Stetson Mtn CW, 6.06 h",
+      "location": "web page (ArcGIS REST query), WinterAtlasResults layer 0, attribute table",
+      "quote": "Stetson Mtn_NE | Block_Status: Incomplete | Period_1_Effort: 0 | Period_2_Effort: 0.03 | TOTAL_EFFORT: 0.03",
+      "conditions": "the service's 'total hours of effort'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1019–1021)",
+      "claim": "regional GBIF, eBird and atlas records (45.50–45.80° N, 67.75–68.10° W) include 47 common loon, 33 belted kingfisher, 12 American bittern, 10 osprey, 9 hooded merganser and 8 great blue heron records",
+      "source_value": "on 26 Nov 2026 GBIF returns, for the same box: common loon 48, belted kingfisher 34, American bittern 11, osprey 8, hooded merganser 9, great blue heron 8 (bald eagle 52). All are eBird records except one iNaturalist and one other loon record",
+      "location": "web page (GBIF occurrence API counts, queried 2026-11-26), MaineBirdAtlas_.gbif_counts.txt",
+      "quote": "Pandion haliaetus | taxonKey 2480726 Pandion haliaetus (Linnaeus, 1758) EXACT | count 8",
+      "conditions": "a live database; counts change as eBird data are re-published (the project's counts are from an October 2026 query)",
+      "verdict": "corrected",
+      "note": "Small drift (loon +1, kingfisher +1, bittern −1, osprey −2). Give the counts 'as of' a date, and call them eBird records via GBIF: no atlas dataset is among them."
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1020)",
+      "claim": "the hooded merganser records include July broods",
+      "verdict": "unsupported",
+      "note": "The 9 GBIF records include three July 2021 eBird records of 3 birds each (two at one location on 20 and 27 July, one at another on 26 July). No record carries an age, sex or breeding code, so 'broods' is an inference from group size and date. The atlas's species-by-block table (which would hold FL/FY codes) is behind a bot check. Say 'groups of three in July' or drop 'with July broods'."
+    },
+    {
+      "paper": "§2.9 (01_introduction_and_study_system.md:396); §3.8.1 (03_synthesis_fish_to_forest.md:1020–1021)",
+      "claim": "two loons were recorded on 27 May 2022, very probably on Lower",
+      "source_value": "eBird record (via GBIF): 2 common loons, 27 May 2022, at a point on land about 0.6 km from Lower's shore and 1.7 km from Upper's",
+      "location": "web page (GBIF occurrence API), EOD – eBird Observation Dataset, common loon records of 2022 [record ID withheld]",
+      "quote": "Common Loon | eventDate: 2022-05-27 | individualCount: 2 | dataset: eBird",
+      "conditions": "distances are project arithmetic from the record's point to the lake outlines in tools/hotbrook/data",
+      "verdict": "confirmed",
+      "note": "'Very probably on Lower' is an inference from the point's position, nearer Lower than Upper. eBird points often mark a checklist's place loosely. It is an eBird record, not an atlas record."
+    },
+    {
+      "paper": "§3.8.1 (03_synthesis_fish_to_forest.md:1021–1022)",
+      "claim": "the great blue heron has no breeding code in the six surrounding atlas blocks",
+      "source_value": "Great_Blue is 'NA' (renderer label 'No Data') in the 21 blocks nearest the lakes, including all four lake blocks; the nearest code is '1' (Observed) in Potter Hill CW",
+      "location": "web page (ArcGIS REST query), BirdAtlas_GBHE_BlockCodes layer 0, attribute table",
+      "quote": "BlockCode: Stetson Mtn_NW | BlockType: Priority | Great_Blue: NA",
+      "conditions": "2nd Maine Bird Atlas 2018–2022",
+      "verdict": "confirmed",
+      "note": "'NA' means no data, not a recorded absence; the paper already says so."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://digitalmaine.com/cgi/viewcontent.cgi?filename=2&article=1000&context=maine_bird_atlas_visualization_shapefiles&type=additional", "status": 403, "note": "the atlas's species-by-block attribute table (MEBBA_breeding_evidence_summary_final.dbf, 27.8 MB): Cloudflare bot check ('Just a moment…'), not bypassed. The package's ZIP (https://digitalmaine.com/context/maine_bird_atlas_visualization_shapefiles/article/1000/type/native/viewcontent) downloaded but holds only the .shp geometry, the README and link files" },
+    { "url": "https://ebird.org/checklist/[ID withheld: the 2018-07-20 eagle checklist]", "status": 200, "note": "bot-check page ('Making sure you're not a bot', CAPTCHA), not bypassed" }
+  ],
+  "notes": "Answer to the lead: the July 2018 eagle is in eBird (via GBIF), not in any MDIFW layer and not visibly in the atlas data. It is one bird on 20 July 2018 at a point at the Upper nest site, with no nesting behaviour recorded. The atlas's block data confirm breeding in a block covering part of Upper and support the other atlas claims. The hooded-merganser 'broods' are not in the records. For the human: the DigitalMaine attribute table (Breeding Bird Evidence Summary, 27.8 MB DBF) opens in a browser and would give every species' code in the four lake blocks (loon, osprey, hooded and common merganser, kingfisher). The DigitalMaine README codes 0 = not observed, 1 = observed, 2 = possible, 3 = probable, 4 = confirmed; the MDIFW services code missing values 'NA' = 'No data'."
+}

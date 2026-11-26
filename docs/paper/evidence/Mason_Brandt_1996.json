@@ -1,0 +1,38 @@
+{
+  "key": "Mason_Brandt_1996",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: no open copy found; the publisher's pages refused scripts"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "Mason, D. M. & Brandt, S. B. 1996. CJFAS 53(7): 1609–1617, doi:10.1139/f96-076; Crossref matches the entry. Crossref holds no abstract."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-4 (03_synthesis_fish_to_forest.md:619)",
+      "claim": "yellow perch larvae in two Lake Ontario embayment ponds died at 0.22–0.28/d, and 1.58/d with adult alewives present",
+      "verdict": "unchecked",
+      "note": "No full text. The paper already marks this '(abstract)'."
+    },
+    {
+      "paper": "§3.6.5 (03_synthesis_fish_to_forest.md:633)",
+      "claim": "yellow perch larvae died at 1.58/d in a Lake Ontario embayment pond with abundant adult alewives against 0.22–0.28/d without them, and in 1984, when the alewives arrived three weeks after the hatching peak, they took none",
+      "verdict": "unchecked",
+      "note": "No full text; the paper marks it '(abstract)'. I could not reach even the abstract on an acceptable page, so the wording (e.g. 'took none', 'three weeks') rests on the project note alone."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f96-076", "status": 403, "note": "redirects to nrcresearchpress.com → cdnsciencepub.com; refused (bot check / subscription)" },
+    { "url": "https://cdnsciencepub.com/doi/10.1139/f96-076", "status": 403, "note": "publisher page refused the script; a library login would open it" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f96-076", "status": 403, "note": "publisher PDF refused" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1139/f96-076?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf status CLOSED" },
+    { "url": "https://api.crossref.org/works/10.1139/f96-076", "status": 200, "note": "no abstract in the record" },
+    { "url": "https://api.unpaywall.org/v2/10.1139/f96-076", "status": 422, "note": "asks for an email address: skipped (rule 3)" }
+  ],
+  "notes": "For the human to fetch: doi:10.1139/f96-076 (CJFAS 53(7): 1609–1617, Canadian Science Publishing). Web searches found no author or institutional copy. Web searches also turned up an earlier study by Brandt and colleagues on alewife predation on perch larvae in the same embayment. Not checked here."
+}

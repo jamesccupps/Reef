@@ -1,0 +1,40 @@
+{
+  "key": "MDIFW_2019",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the human had already fetched the slides from maine.gov (docs/research_notes/fetched/BassTechnicalWorkGroupNov2019.pdf), indexed with getsrc --file. For the meaning of slide 10's percentages I also fetched the survey report it summarises, Responsive Management's 'Maine Anglers' Participation in and Opinions on Freshwater Fishing' (2016), from MDIFW's site at https://www1.maine.gov/ifw/docs/anglerreport_2016.pdf (saved as MDIFW_2019.anglerreport2016.pdf, 337 pages)",
+    "url": "https://www.maine.gov/ifw/docs/BassTechnicalWorkGroupNov2019.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title slide",
+    "ok": true,
+    "note": "Title slide: 'Black Bass Technical Work Group', Black Bass Species Author Jason Seiders, Fisheries Resource Supervisor, Belgrade Lakes Region. The slides carry no date; November 2019 comes from the file name."
+  },
+  "claims": [
+    {
+      "paper": "§2.7 (01_introduction_and_study_system.md:346)",
+      "claim": "Upper exceeds the 500-acre minimum for weigh-in bass tournaments (MDIFW 2019)",
+      "location": "PDF p. 8 (slide 8, 'Bass Tournaments')",
+      "quote": "Weigh-in tournaments not permitted on waters less than 500 acres.",
+      "conditions": "MDIFW's tournament permitting as described in the 2019 slides: all tournaments need an IFW permit, most permits go to clubs by lottery, at most 7 weigh-in tournaments per water, none during the nesting period",
+      "verdict": "confirmed",
+      "note": "The lead was right that the rule is not in the law book: it is a permit condition, and the slides are its only source here. Whether it still applies in 2026 is not shown. Upper's 912 acres comes from another MDIFW source, not these slides. The same slide limits open tournaments to 1 boat per 35 acres (at most 100 boats) and club tournaments to 15 boats."
+    },
+    {
+      "paper": "§3.5.8 (03_synthesis_fish_to_forest.md:476)",
+      "claim": "bass are rarely kept: 2.6 % of the open-water and 10.3 % of the ice catch statewide in 2016",
+      "source_value": "The slide says only 'Bass Harvest is Low in Maine': 2.6 % open water, 10.3 % ice fishing, from the 2016 statewide angler survey. The survey report shows these are the mean percent of their catch that anglers kept, for black bass (smallmouth and largemouth together), in the 2015 open-water season (n = 423 anglers) and the 2015 ice-fishing season (n = 43). By anglers' region of residence, Northern anglers kept 13.6 % (open water) and Downeast 5.8 %; through the ice, 2.8 % and 15.2 %",
+      "location": "PDF p. 10 (slide 10, '2016 Angler Survey Summary'); Responsive Management 2016, p. 121 (PDF p. 149) and p. 181 (PDF p. 209), tables 'Mean Percent of Open Water/Ice Fishing Harvest Kept by Species and Region'",
+      "quote": "Bass Harvest is Low in Maine – Open water: 2.6% – Ice fishing: 10.3%",
+      "conditions": "telephone survey of licensed anglers in 2016 about the 2015 seasons; the mean of each angler's own percent kept, not the kept share of the total catch; black bass, not smallmouth alone",
+      "verdict": "corrected",
+      "note": "Rewrite as 'anglers kept on average 2.6 % of the black bass they caught in open water and 10.3 % through the ice in 2015 (Responsive Management 2016, via MDIFW 2019)', and cite the survey report itself. The ice figure rests on only 43 anglers. Slide 11 adds that northern Maine anglers are 'more likely to harvest bass', and Northern anglers' 13.6 % fits that."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Both claims are on the slides. The harvest figure needs its conditions: it is the 2015 seasons, black bass, a mean of per-angler percentages, and statewide (northern-resident anglers kept five times as much in open water). The slides also say smallmouth were introduced in the 1860s, largemouth deliberately in the 1890s, and that neither species is raised in IFW hatcheries (slide 2). The Northern Region has no size or bag limit on bass (slide 5). Catch-and-release rules are 'used where recruitment is severely limited' (slide 6). Size bands: quality ≥ 14 in, trophy ≥ 20 in (slide 10). The slides have no catch rates, densities or size structure."
+}

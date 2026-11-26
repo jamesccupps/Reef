@@ -1,0 +1,64 @@
+{
+  "key": "Michels_2020",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained by an accepted route: the repository web pages answered with a JavaScript bot check (403); a copy was fetched through the same repository's REST API, which the coordinator ruled a way around the bot check (READER rule 3) — so it is not used",
+    "url": "https://conservancy.umn.edu/server/api/core/bitstreams/f5983a6b-2e01-4204-a159-032e7f6595c7/content"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "the thesis title page; Crossref for the later article",
+    "ok": false,
+    "corrections": "Add the thesis title: Michels, N. O. 2020. Comparison of multi-piscivore foraging success on native and invasive prey fish under variable light intensities. M.S. thesis, University of Minnesota (May 2020; advisors A. F. Mensinger and T. R. Hrabik). The published version (Michels, Hrabik & Mensinger 2021, TAFS 150(3): 361–374) has the same title; it is paywalled and was not read."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1 (03_synthesis_fish_to_forest.md:807)",
+      "claim": "adult smallmouth reacted at 0.84–1.08 m at peak",
+      "verdict": "unchecked",
+      "note": "unchecked: the copy read came by a disallowed route (see obtained.how)"
+    },
+    {
+      "paper": "Table 3.7-1 (03_synthesis_fish_to_forest.md:829)",
+      "claim": "smallmouth of 352–379 mm",
+      "verdict": "unchecked",
+      "note": "unchecked: the copy read came by a disallowed route (see obtained.how)"
+    },
+    {
+      "paper": "Table 3.7-1 (03_synthesis_fish_to_forest.md:829)",
+      "claim": "smallmouth capture success on round goby and mottled sculpin of 0.26 per attack (0.11 per reaction), in the laboratory under dim to bright light",
+      "verdict": "unchecked",
+      "note": "unchecked: the copy read came by a disallowed route (see obtained.how)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    {
+      "url": "https://conservancy.umn.edu/bitstreams/f5983a6b-2e01-4204-a159-032e7f6595c7/download",
+      "status": 403,
+      "note": "JavaScript check page ('enable JavaScript')"
+    },
+    {
+      "url": "https://conservancy.umn.edu/items/f32b5a41-ee5f-4774-9fe0-77ead86687fa",
+      "status": 403,
+      "note": "JavaScript check page"
+    },
+    {
+      "url": "http://hdl.handle.net/11299/215014",
+      "status": 403,
+      "note": "redirects to conservancy.umn.edu/handle/11299/215014: JavaScript check page"
+    },
+    {
+      "url": "https://doi.org/10.1002/tafs.10293",
+      "status": "not fetched",
+      "note": "the 2021 article (Wiley/OUP) is paywalled; not tried beyond its Crossref record and abstract"
+    },
+    {
+      "url": "repository web pages",
+      "status": 403,
+      "note": "JavaScript bot check"
+    }
+  ],
+  "notes": "RULED BLOCKED by the coordinator (2026-11-26): the REST-API copy is not accepted after a bot check on the web pages. For the human's hand fetch: the reader reported that the copy gave 290–425 mm TL (n = 18, mean 352), not the paper's 352–379, and confirmed peak reaction 0.84–1.08 m and 0.26 per attack / 0.11 per reaction — verify when fetched. Previous reading notes: The reaction distances and capture success check. The size range does not. Other values: the Michaelis–Menten fit of smallmouth peak reaction distance to light gave Rmax = 101.5 cm (R² = 0.71); a parabolic fit on log10 light gave R² = 0.90 (a = −434.33, b = 78.13, c = −2.85). Burbot's maximum reaction distance was 98 cm, with 5.0 % success. Smallmouth had a dark (lateral-line) detection radius of 40 cm, 11.2 % of TL (p. 39). Smallmouth attacked mottled sculpin about twice as often as round goby. Claims as first recorded: adult smallmouth reacted at 0.84–1.08 m at peak [source as read: mean peak reaction distances (n = 12 per light level): civil twilight CT-4 100.0 cm, sunrise 108.2 cm, midmorning 84.1 cm; lower at CT-6 (67.5 cm) and in the dark (40.1 cm). The longest single reaction was 159 cm (sunrise)] | smallmouth of 352–379 mm [source as read: smallmouth bass 290–425 mm TL (n = 18); mean 352 mm TL] | smallmouth capture success on round goby and mottled sculpin of 0.26 per attack (0.11 per reaction), in the laboratory under dim to bright light [source as read: 630 attacks with 26 % retained (164 prey: 61 round goby, 103 mottled sculpin); 1,510 reactions, a 10.9 % success rate overall]"
+}

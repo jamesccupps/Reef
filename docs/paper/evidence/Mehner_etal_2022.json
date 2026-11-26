@@ -1,0 +1,63 @@
+{
+  "key": "Mehner_etal_2022",
+  "reader": "wave-3 batch w3-20",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's open-access PDF (CC BY 4.0, per Crossref and the article's '© 2022 The Author(s)') from link.springer.com. getsrc's wall heuristic rejected the response (a false positive on the PDF's text), so I downloaded the same URL with curl under the same honest user agent and indexed it with getsrc --file",
+    "url": "https://link.springer.com/content/pdf/10.1007/s10021-022-00776-3.pdf",
+    "file": "docs/research_notes/fetched/v2/Mehner_etal_2022.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page",
+    "ok": true,
+    "note": "Ecosystems (2022) 25: 1628–1652; '25th Anniversary Paper'. The seventh author is printed as Renee Mina van Dorst (R. M. van Dorst)."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8 (02_synthesis_physical_to_plants.md:720)",
+      "claim": "in two small shallow German lakes, bacterial production (294–386 g C/m²/yr) exceeded the net primary production of phytoplankton, macrophytes and epiphyton (122.9–208.7), with reeds adding a further 92–214",
+      "location": "p. 1646 (PDF p. 19), Table 2",
+      "quote": "Bacterial SP 340.5 386.4 293.9 310.0",
+      "quote_from": "table",
+      "conditions": "g C m⁻² yr⁻¹, estimated for 2011, in the treatment and reference halves of two experimentally divided shallow lakes in north-east Germany (Gollinsee, Schulzensee) during a whole-lake terrestrial-POM addition experiment. The numbers are reproduced from Mehner et al. 2016. NPP without reeds: 134.4, 122.9, 208.7, 159.9; reeds 214.0, 214.0, 92.0, 92.0; bacterial production 340.5, 386.4, 293.9, 310.0",
+      "verdict": "confirmed",
+      "note": "All ranges are right. The table does not call the lakes 'small'. 'Lake halves' (two treated, two reference) would be more exact than 'two lakes'. Counting reeds, bacterial production exceeded total NPP in the two reference halves only."
+    },
+    {
+      "paper": "§3.3.8 (02_synthesis_physical_to_plants.md:720)",
+      "claim": "crustacean zooplankton produced 3.47–12.77 and fish 0.023–0.047 g C/m²/yr",
+      "location": "p. 1646 (PDF p. 19), Table 2",
+      "quote": "Crustacean SP 3.47 4.37 8.98 12.77",
+      "quote_from": "table",
+      "conditions": "as above; fish production 0.047, 0.044, 0.023, 0.028; benthic macroinvertebrates 1.19–2.40",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.9 (03_synthesis_fish_to_forest.md:990)",
+      "claim": "across studies, transfer to fish from zooplankton and bottom invertebrates is about 5–10 %",
+      "source_value": "two entries in the review's table: zooplankton → planktivorous fish 5.5 % (Schulz et al. 2004); zooplankton/zoobenthos → fish 10 % (Jonasson 1992)",
+      "location": "p. 1641 (PDF p. 14), Table 1",
+      "quote": "Zooplankton/zoobenthos—fish 10% Jonasson 1992",
+      "quote_from": "table",
+      "conditions": "production-based efficiencies; one deep oligotrophic pelagic study and one benthic-and-pelagic study",
+      "verdict": "confirmed",
+      "note": "'Across studies' rests on two studies, and the rewrite could say so. The same table's Ecopath estimate, detritus to fish, is 14 % (Matthias et al. 2021)."
+    },
+    {
+      "paper": "§3.7.9 (03_synthesis_fish_to_forest.md:990)",
+      "claim": "along the whole chain from algae to fish, transfer ranges from below 0.01 % to about 1 %",
+      "source_value": "< 0.01 % from all primary plus bacterial production to omnivorous fish production in two productive shallow lakes (Lischke et al. 2017), and 1 % from phytoplankton to planktivorous fish in a deep oligotrophic lake (Schulz et al. 2004)",
+      "location": "p. 1640 (PDF p. 13)",
+      "quote": "We found only two studies, with these food-chain TTEs ranging between < 0.01%",
+      "conditions": "food-chain efficiencies; the authors call such lake estimates rare",
+      "verdict": "confirmed",
+      "note": "Again only two studies, with different bases (the 0.01 % includes bacterial production)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/s10021-022-00776-3.pdf", "status": 200, "note": "getsrc flagged it as a wall (heuristic false positive); the same PDF downloaded directly is the full open-access article" }
+  ],
+  "notes": "Every number checks. The two ranges in §3.7.9 each rest on two studies; the rewrite could say so. Table 2 also gives food-chain efficiencies: crustaceans 0.91–4.84 %, benthic macroinvertebrates 0.31–0.91 %, fish < 0.01 %. Food-web efficiency was 1.23–5.76 % without bacteria and 89.5–123.3 % with them (p. 1646). The primary source for the German lake numbers is Mehner et al. 2016."
+}
