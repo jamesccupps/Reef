@@ -1,0 +1,53 @@
+{
+  "key": "Ziegler_etal_2019",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' accepted manuscript (cjfas-2018-0050.R2, marked 'Draft') in the University of Toronto's institutional repository, TSpace (hdl 1807/93656); page numbers below are the manuscript's ('Page N of 31'), not the journal's 998–1005",
+    "url": "https://utoronto.scholaris.ca/bitstreams/2c136356-b8bb-431a-9b33-b5dfb11fefc1/download",
+    "file": "docs/research_notes/fetched/v2/Ziegler_etal_2019.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the manuscript's title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Ziegler, J. P., Dassow, C. J., Jones, S. E., Ross, A. J. & Solomon, C. T. 2019. Coarse woody habitat does not predict largemouth bass young of year mortality during the open-water season. Can. J. Fish. Aquat. Sci. 76(6): 998–1005 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.2.8, Table 3.2-5",
+      "claim": "13 lakes; 2.5–1,500 pieces of coarse wood per km of shoreline across the lakes",
+      "source_value": "2.5–1,500 pieces/km (Table I range); the text says 3–1,500 (abstract, discussion) and 3–1,520 (methods)",
+      "location": "manuscript p. 29 (PDF p. 30), Table I, 'CWH (no. km-1 of shoreline)' column and Range row",
+      "quote": "Range 2.5 - 1500",
+      "quote_from": "table",
+      "conditions": "13 small lakes in northern Wisconsin and Michigan's Upper Peninsula with largemouth bass as the dominant piscivore, chosen to span a development/coarse-wood gradient; densities are Marburg et al. (2006) values for 8 lakes and the authors' own estimates by Marburg's method for 5 (pp. 9–10)",
+      "verdict": "confirmed",
+      "note": "the table's column heading 'Undeveloped or reference' does not fit this row: the range spans all 13 lakes across the development gradient (two lakes at 2.5/km, one at 1,500/km). The 'Lakes and method' cell could say 'Marburg et al. 2006 method'"
+    },
+    {
+      "paper": "§3.2.8, Table 3.2-5",
+      "claim": "coarse wood 'often completely absent' above 7 houses/km (Ziegler et al. 2019)",
+      "source_value": "Ziegler et al. restate it from Marburg et al. (2006) and Liu et al. (2007); it is not a finding of this study",
+      "location": "manuscript p. 5 (PDF p. 6), Introduction, lines 77–79",
+      "quote": "completely absent when there are more than 7 houses per kilometer of shoreline",
+      "conditions": "background statement in the introduction, citing 'Marburg et al. 2006; Liu et al. 2007'",
+      "verdict": "corrected",
+      "note": "cite as 'Marburg et al. 2006; Liu et al. 2007, via Ziegler et al. 2019', or better, cite Marburg et al. 2006 directly (it is already in the table)"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "densities at which coarse wood is 'often completely absent', more than 7 houses per km (Ziegler et al. 2019)",
+      "source_value": "restated from Marburg et al. (2006) and Liu et al. (2007)",
+      "location": "manuscript p. 5 (PDF p. 6), Introduction, lines 77–79",
+      "quote": "completely absent when there are more than 7 houses per kilometer of shoreline",
+      "conditions": "northern Wisconsin lakes (the cited studies' region)",
+      "verdict": "corrected",
+      "note": "wording and threshold are right; the attribution should go to Marburg et al. 2006 (and Liu et al. 2007), via Ziegler et al. 2019"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Read from the accepted manuscript, not the version of record; the values checked (Table I range, the 7-houses sentence) should be the same in print but page numbers differ. The study's own result, not used by the paper: open-water instantaneous daily mortality of YOY largemouth bass was 0.04–0.19 d⁻¹ across the 13 lakes and was unrelated to coarse woody habitat density, branchiness or macrophyte cover (abstract; Table I; p. 14). That is relevant to §3.6 (YOY mortality) and to any model assumption that wood lowers YOY mortality."
+}

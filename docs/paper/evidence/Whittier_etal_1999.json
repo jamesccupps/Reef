@@ -1,0 +1,33 @@
+{
+  "key": "Whittier_etal_1999",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from the New York State Museum's bibliography record (Daniels was NYSM staff), saved as docs/research_notes/fetched/v2/Whittier_etal_1999.nysm.html",
+    "url": "https://nysm.nysed.gov/bibcite/reference/21118"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the NYSM record",
+    "ok": true,
+    "corrections": "",
+    "note": "Whittier, T. R., Halliwell, D. B. & Daniels, R. A. 1999. Distributions of lake fishes in the Northeast: I. Centrarchidae, Percidae, Esocidae, and Moronidae. Northeast. Nat. 6(4): 283–304, doi:10.2307/3858271 — as cited (Crossref gives only the first page; NYSM gives 283–304)"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "in a random sample of 203 northeastern lakes (EMAP, 1991–96): pumpkinseed 74 %, yellow perch 72 %, chain pickerel 45 %, smallmouth bass 31 %, white perch 19 %, redbreast sunfish 14 % of lakes (Whittier et al. 1999, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract gives exactly these: 'Pumpkinseed and yellow perch ... collected in 74% and 72% of lakes'; smallmouth 31 %; 'Chain pickerel, white perch, redbreast sunfish ... 45%, 19%, 14%'; 203 randomly selected lakes in eight states. It does not give the years (the 2000 paper's abstract says summers 1991–96). The paper already says 'abstracts only'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.jstor.org/stable/3858271", "status": 200, "note": "JSTOR login/paywall page; a library login would open it" },
+    { "url": "https://doi.org/10.2307/3858271", "status": 200, "note": "resolves to the same JSTOR page (paywalled)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/3858271\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Distributions%20of%20lake%20fishes%20in%20the%20Northeast&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no Internet Archive item" },
+    { "url": "https://www.conservationgateway.org/content/dam/tnc/conservation/cg-documents/e/d/ed_ne-fish-distribution-biogeography-halliwell-july-27-2019-distribute.pdf", "status": 200, "note": "Halliwell's 2019 draft treatise (TNC page), read as a possible stand-in: it cites Whittier et al. 1999/2001 for each species' RANK among the most widespread EMAP lake fishes but gives no percentages — secondary only" }
+  ],
+  "notes": "Needs the article (JSTOR 10.2307/3858271, via a library login). The follow-on mention that show.mjs lists (§3.5.1, 'MNAP; Whittier et al. 1997') belongs to Whittier_etal_1997, not to this paper. The abstract also gives largemouth bass 55 %, bluegill 32 %, black crappie 22 % and rock bass 15 % (with smallmouth, the five centrarchids it judged non-native in the majority of the lakes where taken) and tessellate darter 10 %. Secondary corroboration (not confirmation): Halliwell (2019 draft, saved as Whittier_etal_1999.Halliwell2019TNC.pdf) ranks pumpkinseed 1st and yellow perch 2nd most widespread, chain pickerel 7th, white perch 15th, redbreast 17th, citing this paper."
+}

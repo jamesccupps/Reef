@@ -1,0 +1,81 @@
+{
+  "key": "Ward_Barnes_2020",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (ARC Journals); the article is under a CC BY licence (stated on p. 4)",
+    "url": "https://www.arcjournals.org/pdfs/ijisabf/v6-i2/1.pdf",
+    "file": "docs/research_notes/fetched/v2/Ward_Barnes_2020.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Ward, M. J. & Barnes, M. E. 2020. Vegetation during incubation improves the hatching success of yellow perch eyed eggs. Int. J. Innov. Stud. Aquat. Biol. Fish. 6(2): 1–4, doi:10.20431/2454-7670.0602001 — as cited (Crossref lists no authors; the byline is Ward then Barnes, though the article's own 'Citation:' line on p. 4 reverses them)"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "a yellow perch lays its whole year's clutch as a single ribbon (Ward & Barnes 2020)",
+      "verdict": "unsupported",
+      "note": "the article does not say this. Its introduction (p. 1) says only that yellow perch 'have a stranding reproductive strategy with eggs encased in gelatinous ribbons deposited on vegetation' (citing Page 1985) and that 'the egg strand can measure over two meters' after water hardening (citing Hardy 1978). Nothing about one ribbon per female per year; cite a source that says it (e.g. the fecundity/spawning literature) or drop the attribution"
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "in a hatchery trial, eyed eggs held on artificial vegetation hatched 98.6 % (SE 0.6) against 46.2 % (SE 23.7) on a bare bottom",
+      "source_value": "98.6 % (SE 0.6) with vegetation vs 46.2 % (SE 23.7) without, cumulative survival to hatch on incubation day 6",
+      "location": "p. 2 (PDF p. 2), Table 1 (day 6); abstract p. 1",
+      "quote": "6 46.2 (23.7) z … 98.6 (0.6) y",
+      "quote_from": "table",
+      "conditions": "eyed eggs only (eyed stage to hatch), from wild West Oakwood Lake, South Dakota, broodstock stripped 15 April 2015; ~1.6 g wet weight of eggs per 1.89-L bucket holding 1.0 L of filtered well water, not exchanged; 16.2–16.6 °C after day 1; n = 4 buckets per treatment; 'bare bottom' = the bucket bottom; all hatched or dead by day 6",
+      "verdict": "confirmed",
+      "note": "Mann–Whitney P = 0.021–0.043 on days 4–6; the survival curves were the same through day 3. The authors note similar no-structure hatch elsewhere (37–55 % in aquaria, Jansen et al.; ≥ 35 % on floating screens, West & Leonard) but > 80 % in flowing-water trays (Hart et al.), so the bare-bottom loss is a standing-water result"
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "structure roughly doubles hatching",
+      "kind": "arithmetic",
+      "source_value": "98.6 / 46.2 = 2.13",
+      "location": "p. 2 (PDF p. 2), Table 1",
+      "quote": "At a mean of 98.6%, survival to hatch of eyed perch eggs incubated with vegetation",
+      "conditions": "as above: eyed eggs to hatch in standing water in buckets",
+      "verdict": "confirmed",
+      "note": "98.6/46.2 = 2.13, so 'roughly doubles' holds for the eyed-egg-to-hatch step in still water; it is not a measure from fertilization or in a lake"
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "the difference is attributed to folding, suffocation, siltation and bacterial degradation (Ward & Barnes 2020)",
+      "source_value": "the authors suggest (not test) that structure 'likely' helps by keeping strands from overlaying and suffocating (citing Hart et al. 2006), reducing siltation (citing Treasurer 1983) and reducing bacterial degradation of the egg membrane (citing Smith et al. 2001 and others)",
+      "location": "p. 3 (PDF p. 3), Discussion, para. 1",
+      "quote": "it prevents the egg strands from overlaying and potentially suffocating",
+      "conditions": "discussion; dissolved oxygen was not limiting (≥ 6 mg/L throughout; Table 2) and the incubation water was filtered well water, so siltation could not act in the trial itself",
+      "verdict": "confirmed",
+      "note": "fair as 'attributed', but these are the authors' suggested mechanisms drawn from other papers, not results of the trial"
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "eyed yellow perch eggs in a hatchery trial hatched at 98.6 % on artificial vegetation against 46.2 % on a bare bottom (Ward & Barnes 2020)",
+      "source_value": "98.6 % vs 46.2 % survival to hatch of eyed eggs",
+      "location": "p. 2 (PDF p. 2), Table 1; abstract p. 1",
+      "quote": "At a mean of 98.6%, survival to hatch of eyed perch eggs incubated with vegetation",
+      "conditions": "as for the §3.4.10 claim: eyed eggs, 1.89-L buckets of standing water, ~16 °C, n = 4 per treatment",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:492 (SPAWN3.perch.bare = 0.47)",
+      "claim": "yellow perch eggs hatched 46 % on bare bottom against 99 % on artificial vegetation (Ward & Barnes 2020: 0.47), used as the bare-bed hatch fraction relative to full structure",
+      "kind": "arithmetic",
+      "source_value": "46.2 / 98.6 = 0.469",
+      "location": "p. 2 (PDF p. 2), Table 1 (day 6)",
+      "quote": "6 46.2 (23.7) z … 98.6 (0.6) y",
+      "quote_from": "table",
+      "conditions": "eyed-egg-to-hatch survival in standing water in buckets; SE of the bare value 23.7 (n = 4)",
+      "verdict": "confirmed",
+      "note": "the ratio is right (0.47). Caveat for the model: the code applies it to the whole egg stage (hatch = sHatch × (bare + (1 − bare) × index)), whereas the trial covered only the last ~6 days from the eyed stage, in water that was never exchanged; in flowing trays the authors cite > 80 % hatch without structure. 0.47 is therefore a still-water, late-stage value with a wide spread (SE 23.7 points)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Hatchery experiment, not a field study. Useful extra: daily survival (Table 1) shows the bare-bottom losses begin on day 4 with hatching (80.4 %, 65.2 %, 46.2 % on days 4–6), and DO did not differ between treatments except on day 3. The one fix the paper needs: the 'whole year's clutch as a single ribbon' statement in §3.4.10 is not in this article."
+}

@@ -1,0 +1,40 @@
+{
+  "key": "Treasurer_1983",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained. Springer's article page and PDF go through a login/cookie step (paywalled, not followed) and Crossref holds no abstract, so not even the abstract was read here. Treasurer's own later review (Glasgow Naturalist 23: 41–48, 1997; CC BY-NC; Internet Archive item biostor-224890) was read as a possible stand-in",
+    "url": "https://doi.org/10.1007/BF00004941",
+    "file": "docs/research_notes/fetched/v2/Treasurer_1983.Treasurer1997review.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Treasurer, J. W. 1983. Estimates of egg and viable embryo production in a lacustrine perch, Perca fluviatilis. Environ. Biol. Fishes 8(1): 3–16, doi:10.1007/BF00004941 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "perch ribbons are more than 90 % viable in the field: 95.3 % at Lochs Kinord and Davan, Scotland (Treasurer 1983, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained and the abstract could not be read either (Springer's page is behind its cookie/login step; Crossref has no abstract). The 1997 review by the same author does not give an egg-viability figure"
+    },
+    {
+      "paper": "§3.6.3",
+      "claim": "only 11.5–73.2 % of hatched Eurasian perch reached the pelagic stock at Lochs Kinord and Davan (Treasurer 1983, abstract)",
+      "verdict": "unchecked",
+      "note": "not read; the 1997 review does not give this range"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00004941.pdf", "status": 200, "note": "Springer login/paywall page (getsrc did not keep it); subscription article — a library login would open it" },
+    { "url": "https://link.springer.com/article/10.1007/BF00004941", "status": 303, "note": "redirects to idp.springer.com cookie/authorize step; not followed because the article is paywalled" },
+    { "url": "https://api.crossref.org/works/10.1007/BF00004941", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00004941\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Treasurer%20perch&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no copy of the 1983 article; found Treasurer's 1997 Glasgow Naturalist review (biostor-224890), read as a possible stand-in" }
+  ],
+  "notes": "Needs the article (Springer, doi:10.1007/BF00004941, via a library login). Stand-in read: Treasurer, J. W. 1997, 'A review of recent research on the percids, perch Perca fluviatilis L. and ruffe Gymnocephalus cernuus (L.), in Scotland', Glasgow Naturalist 23: 41–48 (CC BY-NC; https://archive.org/download/biostor-224890/biostor-224890.pdf). It does NOT support either claim (no egg viability, no hatch-to-pelagic survival). What it does give, from Treasurer 1983 (p. 43): adult perch 4.8–9.7 per ha in Loch Kinord and 5.5 per ha in Loch Davan, production 0.32–0.39 and 0.20 kg/ha/yr; both lochs shallow (mean depth 1.5 m), perch and pike only. The research note (egg_survival_and_larval_production.md) says its Treasurer 1983 values came from a Springer abstract page saved by a helper; until the article is read the paper should keep '(abstract)', as it does."
+}

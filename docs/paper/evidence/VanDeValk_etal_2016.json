@@ -1,0 +1,46 @@
+{
+  "key": "VanDeValk_etal_2016",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from Crossref's record (saved as docs/research_notes/fetched/v2/VanDeValk_etal_2016.crossref.json)",
+    "url": "https://api.crossref.org/works/10.1080/00028487.2015.1131743"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "VanDeValk, A. J., Forney, J. L., Brooking, T. E., Jackson, J. R. & Rudstam, L. G. 2016. First-year density and growth as they relate to recruitment of white perch to the adult stock in Oneida Lake, New York, 1968–2011. Trans. Am. Fish. Soc. 145(2): 416–426, doi:10.1080/00028487.2015.1131743 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.4",
+      "claim": "for white perch in a lake only Oneida's long larval series exists, in a paywalled paper (VanDeValk et al. 2016)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract confirms a 44-year Oneida series of first-year white perch density from Miller high-speed sampler (larvae) and trawl surveys, with recruitment from gill nets; the article is paywalled (403 at OUP and Wiley, below). Whether it reports larval densities per m³ could not be seen"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "Oneida's dense larval year classes grew more slowly and died faster, but 'mortality did not compensate for the higher initial densities' (VanDeValk et al. 2016, abstract)",
+      "verdict": "unchecked",
+      "note": "not read in full. The abstract's words: 'Year-classes with higher first-year densities grew slower and experienced higher mortality, but mortality did not compensate for the higher initial densities'. It says FIRST-YEAR densities, not larval densities; the paper's 'dense larval year classes' should follow the abstract's wording"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "recruitment was best explained by larval density together with predator biomass (VanDeValk et al. 2016, abstract)",
+      "verdict": "unchecked",
+      "note": "not read in full. The abstract: 'The model that best explained White Perch recruitment to the adult stock was composed of larval density and predator biomass' (AICc model comparison)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://academic.oup.com/tafs/article-pdf/145/2/416", "status": 403, "note": "OUP (current TAFS host); subscription — a library login would open it" },
+    { "url": "https://doi.org/10.1080/00028487.2015.1131743", "status": 403, "note": "DOI resolver to the publisher; refused" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1080/00028487.2015.1131743", "status": 403, "note": "Wiley/AFS PDF link from Crossref; refused" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1080/00028487.2015.1131743\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://ecommons.cornell.edu/server/api/discover/search/objects?query=VanDeValk%20white%20perch", "status": 200, "note": "Cornell eCommons: no copy of the article (only theses on Oneida Lake)" },
+    { "url": "https://archive.org/advancedsearch.php?q=Oneida%20white%20perch%20recruitment&fl[]=identifier&rows=10&output=json", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "Needs the article (doi:10.1080/00028487.2015.1131743, via a library login); it is the source the research notes want for Oneida white perch larval and juvenile densities and first-year Z vs density. The abstract also says year classes dense as larvae tended to be dense as juveniles and to recruit more, and that year-class strength is 'at least partly determined at the larval stage or earlier'. Until read, keep '(abstract)' on every use."
+}

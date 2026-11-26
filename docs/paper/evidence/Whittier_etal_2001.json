@@ -1,0 +1,32 @@
+{
+  "key": "Whittier_etal_2001",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from the New York State Museum's bibliography record, saved as docs/research_notes/fetched/v2/Whittier_etal_2001.nysm.html",
+    "url": "https://nysm.nysed.gov/bibcite/reference/21057"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the NYSM record",
+    "ok": true,
+    "corrections": "",
+    "note": "Whittier, T. R., Halliwell, D. B. & Daniels, R. A. 2001. Distributions of lake fishes in the Northeast: IV. Benthic and small water-column species. Northeast. Nat. 8(4): 455–482, doi:10.2307/3858449 (BioOne doi:10.1656/1092-6194(2001)008[0455:DOLFIT]2.0.CO;2) — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "in a random sample of 203 northeastern lakes (EMAP, 1991–96): brown bullhead 69 %, white sucker 56 %, banded killifish 26 %, American eel 19 % of lakes (Whittier et al. 2001, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract: 'Brown bullhead and white sucker ... collected in 69% and 56% of the sampled lakes'; 'Banded killifish, American eel, and yellow bullhead ... 26%, 19% and 17%'; 203 randomly selected lakes in eight states. The paper already says 'abstracts only'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.jstor.org/stable/3858449", "status": 200, "note": "JSTOR login/paywall page; a library login would open it" },
+    { "url": "https://doi.org/10.1656/1092-6194(2001)008[0455:DOLFIT]2.0.CO;2", "status": 200, "note": "BioOne stub, 77 characters (subscription)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.2307/3858449\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Distributions%20of%20lake%20fishes%20in%20the%20Northeast&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "Needs the article (JSTOR 10.2307/3858449 or BioOne). The abstract also summarises all 88 species of the EMAP Northeast Lakes survey and gives yellow bullhead 17 %. The §3.5.1 follow-on mention ('Whittier et al. 1997') belongs to Whittier_etal_1997. Halliwell's 2019 draft (secondary) ranks brown bullhead 4th, white sucker 5th, banded killifish 10th and American eel 14th most widespread, citing this paper — consistent with the abstract's order."
+}

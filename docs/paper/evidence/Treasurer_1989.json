@@ -1,0 +1,38 @@
+{
+  "key": "Treasurer_1989",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from Crossref's record (saved as docs/research_notes/fetched/v2/Treasurer_1989.crossref.json). Treasurer's own 1997 review (Glasgow Naturalist 23: 41–48, CC BY-NC, Internet Archive biostor-224890) was read for context",
+    "url": "https://api.crossref.org/works/10.1111/j.1095-8649.1989.tb03374.x"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Treasurer, J. W. 1989. Mortality and production of 0+ perch, Perca fluviatilis L., in two Scottish lakes. J. Fish Biol. 34(6): 913–928, doi:10.1111/j.1095-8649.1989.tb03374.x — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6.4, Table 3.6-4",
+      "claim": "Eurasian perch, Lochs Kinord and Davan: daily mortality of larvae 0.063 (0.020–0.089); of 0+ juveniles 0.021 (Treasurer 1989, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The Crossref abstract gives exactly these: 'A mean mortality of 0.063 day⁻¹ (range = 0.020–0.089) ... for 0+ juveniles it was 0.021 day⁻¹', measured from the decline in catch in a high-speed plankton sampler and fitted with a negative exponential. The abstract does not say how the range splits between the two lochs or years"
+    },
+    {
+      "paper": "§3.6.5",
+      "claim": "Loch Davan's perch year classes were twice eliminated in their first summer (Treasurer 1989)",
+      "verdict": "unchecked",
+      "note": "not read in full. The abstract says year classes at L. Davan 'in two sampling years were eliminated in the first summer'; the paper's sentence does not carry '(abstract)' and should until the article is read. The abstract links low eleutheroembryo survival at Davan to turbulence on exposed shallow spawning areas but does not explicitly give that as the cause of the eliminations"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1095-8649.1989.tb03374.x", "status": 403, "note": "Wiley; subscription journal — a library login would open it" },
+    { "url": "https://doi.org/10.1111/j.1095-8649.1989.tb03374.x", "status": 403, "note": "Wiley landing page refuses scripts" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1111/j.1095-8649.1989.tb03374.x\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Treasurer%20perch&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no copy of the 1989 article; only the author's 1997 review (biostor-224890)" }
+  ],
+  "notes": "Needs the article (Wiley, doi:10.1111/j.1095-8649.1989.tb03374.x). The abstract also gives larval production 0.85–1.30 mg dry weight m⁻² d⁻¹ (Kinord) and 0.08–0.12 (Davan), juvenile production 1.97–7.55 and 1.01 kg wet ha⁻¹ yr⁻¹, 0+ perch 88–96 % of total perch production, food not limiting, larval mortality mostly cannibalism by adults, juvenile losses mostly pike and adult perch. Treasurer's own 1997 review (Glasgow Naturalist 23: 41–48, pp. 43–45) summarises this work: perch larvae made up 59–63 % of adult-perch diet through the larval period, no larvae in pike, ~50 % of mortality at the 16 July demersal transition from predation split between perch and pike, and at Davan cannibalism 'accounted for all mortality of perch juveniles'. That review also says year-class strength did not fluctuate greatly in these simple pike–perch lochs (p. 43 and conclusions), which sits uneasily with the abstract's two Davan eliminations; the article itself should settle it before §3.6.5 relies on it."
+}

@@ -1,0 +1,31 @@
+{
+  "key": "Whittier_etal_2000",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from the New York State Museum's bibliography record, saved as docs/research_notes/fetched/v2/Whittier_etal_2000.nysm.html",
+    "url": "https://nysm.nysed.gov/bibcite/reference/21097"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the NYSM record",
+    "ok": true,
+    "corrections": "",
+    "note": "Whittier, T. R., Halliwell, D. B. & Daniels, R. A. 2000. Distributions of lake fishes in the Northeast: II. The minnows (Cyprinidae). Northeast. Nat. 7(2): 131–156, doi:10.1656/1092-6194(2000)007[0131:DOLFIT]2.0.CO;2 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "golden shiner in 71 % of a random sample of 203 northeastern lakes (EMAP, 1991–96) (Whittier et al. 2000, abstract)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract: 24 minnow species at 203 randomly selected lakes (New England, New York, New Jersey), summers 1991–96; 'Only golden shiner was frequently collected, occurring in 71% of the sampled lakes'. The paper already says 'abstracts only'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://bioone.org/journals/northeastern-naturalist/volume-7/issue-2/1092-6194(2000)007[0131:DOLFIT]2.0.CO;2/DISTRIBUTIONS-OF-LAKE-FISHES-IN-THE-NORTHEAST--II-THE/10.1656/1092-6194(2000)007[0131:DOLFIT]2.0.CO;2.full", "status": 200, "note": "BioOne returned a 76-character stub (no text; subscription); a library login would open it (also on JSTOR, 10.2307/3858647)" },
+    { "url": "https://archive.org/advancedsearch.php?q=Distributions%20of%20lake%20fishes%20in%20the%20Northeast&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no Internet Archive item" },
+    { "url": "web search for the title with 'pdf'", "status": "none", "note": "no author, EPA or repository copy found; OpenAlex lists no open copy (show.mjs)" }
+  ],
+  "notes": "Needs the article (BioOne or JSTOR 10.2307/3858647). The abstract also names fallfish, creek chub and common shiner as 'also common' (no percentages) and says native minnow biodiversity has likely declined over 150 years. The §3.5.1 follow-on mention ('Whittier et al. 1997') belongs to Whittier_etal_1997. Halliwell's 2019 draft (secondary) ranks golden shiner the 3rd most widespread EMAP lake fish and fallfish 12th, citing this paper."
+}

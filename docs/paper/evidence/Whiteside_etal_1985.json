@@ -1,0 +1,40 @@
+{
+  "key": "Whiteside_etal_1985",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained (Springer, paywalled; abstract not readable either). Read as a stand-in: Swindoll's 1981 University of Tennessee MS thesis on the same Lake Itasca perch fry (major professor M. C. Whiteside), the university's own repository copy (TRACE)",
+    "url": "https://trace.tennessee.edu/utk_gradthes/15308",
+    "file": "docs/research_notes/fetched/v2/Whiteside_etal_1985.Swindoll1981.pdf"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Whiteside, M. C., Swindoll, C. M. & Doolittle, W. L. 1985. Factors affecting the early life history of yellow perch, Perca flavescens. Environ. Biol. Fishes 12(1): 47–56, doi:10.1007/BF00007709 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.6, Table 3.6-1 (yellow perch row)",
+      "claim": "yellow perch hatch at 5.6–6.2 mm in Lake Itasca (Whiteside, Swindoll & Doolittle 1985)",
+      "verdict": "unchecked",
+      "note": "article not read. Stand-in (Swindoll 1981 thesis, same lake and programme): perch 'hatched in the littoral zone at 5.5-6.0 mm total length' (thesis abstract); first littoral fry averaged 6 mm (range 5.8–6.2) on 26 May 1979 and 5.8 mm (5.7–5.9) on 6 May 1980 (Results, pp. 21–22). The 5.6–6.2 mm range itself was not seen in any text read"
+    },
+    {
+      "paper": "§3.6.4",
+      "claim": "yellow perch larvae move offshore soon after hatching, 'probably a mechanism to escape intense predation in the littoral zone' (Whiteside, Swindoll & Doolittle 1985, abstract)",
+      "verdict": "unchecked",
+      "note": "article and abstract not read. Stand-in (Swindoll 1981): within two weeks of hatching all fry moved into the limnetic zone and stayed there until ~25 mm, then returned inshore (abstract; Results pp. 21–22: fry left the littoral 12–13 days after hatching); the Discussion (pp. 43–44) concludes 'the most probable explanation for the initial, offshore migration of perch fry is that they do so to escape predation'"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00007709.pdf", "status": 200, "note": "Springer login/paywall page (getsrc did not keep it); subscription article — a library login would open it" },
+    { "url": "https://link.springer.com/article/10.1007/BF00007709", "status": 303, "note": "redirects to idp.springer.com cookie/authorize step; not followed because the article is paywalled" },
+    { "url": "https://api.crossref.org/works/10.1007/BF00007709", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/BF00007709\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Whiteside%20yellow%20perch%20early%20life&fl[]=identifier&rows=10&output=json", "status": 200, "note": "no Internet Archive item" }
+  ],
+  "notes": "Needs the article (Springer, doi:10.1007/BF00007709, via a library login). Stand-in read in full: Swindoll, C. M. 1981. The growth, diet and distribution of yellow perch fry, Perca flavescens, in Lake Itasca, Minnesota. MS thesis, University of Tennessee, Knoxville (TRACE: https://trace.tennessee.edu/bitstreams/181a1342-4d08-44c9-b0d5-1883fb5cfd21/download). It supports the offshore move and its predation interpretation (pp. 21–22, 43–44) and gives hatch length 5.5–6.0 mm TL; it could be cited for these instead of the abstract. Note it also says fry 'first fed at 9-10 mm' in Lake Itasca (abstract), which sits against Table 3.6-1's 'first feeding at 5.6 mm, 2.4 mg' (whatever that row's source is); and growth ~0.50 mm/d for the first 40 days, ~0.43 mm/d after; first food copepod nauplii, copepodids and rotifers, cladocerans from 20–24 mm. Spawning about a week after ice-off; hatch at 11–12 °C (1979) and 18.5–19.5 °C (1980)."
+}

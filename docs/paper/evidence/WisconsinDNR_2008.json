@@ -1,0 +1,42 @@
+{
+  "key": "WisconsinDNR_2008",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Wisconsin DNR's own species sheet PDF",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Species_bullheads.pdf",
+    "file": "docs/research_notes/fetched/v2/WisconsinDNR_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the sheet itself (p. 2 imprint; author line on pp. 3–5)",
+    "ok": false,
+    "corrections": "the sheet names its authors and number: Dehring, T. & Krueger, C. C. 2008. Bullheads. Wisconsin Department of Natural Resources, Bureau of Fisheries Management, PUBL-FM-706 08, July 2008 (covers black, brown and yellow bullhead)",
+    "note": "it uses the old names Ictalurus melas, I. nebulosus, I. natalis"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "brown bullheads bury themselves in leafy ooze and stop feeding (Wisconsin DNR 2008)",
+      "source_value": "said of bullheads in general (black, brown and yellow): as winter comes they 'stop feeding, become sluggish and often bury themselves in soft, leafy ooze along the shore'",
+      "location": "p. 3 (PDF p. 3), 'Habits and Habitat'",
+      "quote": "stop feeding, become sluggish and often bury themselves in soft, leafy ooze along the shore",
+      "conditions": "popular species sheet; no data, place or temperature given; 'often', not always; the sheet links it to surviving winterkill",
+      "verdict": "corrected",
+      "note": "write 'bullheads (the sheet covers all three species) often bury themselves…'; it is a general natural-history statement, not a brown-bullhead observation"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "brown bullheads loaf in weed beds by day and prowl after dark (Wisconsin DNR 2008)",
+      "source_value": "said of bullheads in general: 'Generally, bullheads remain inactive during the daylight hours, loafing in weed beds until night falls', then 'go out on the prowl' after dark",
+      "location": "p. 3 (PDF p. 3), 'Habits and Habitat'",
+      "quote": "bullheads remain inactive during the daylight hours, loafing in weed beds until night falls",
+      "conditions": "popular species sheet covering black, brown and yellow bullhead; no data",
+      "verdict": "corrected",
+      "note": "the content is there but for the genus, with 'Generally'; attribute it to bullheads, not brown bullhead specifically"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "A five-page popular sheet; useful as a general description only. Other statements in it (not used by the paper): spawning April–July at 70–77 °F (21–25 °C); brown bullheads nest on rocky and sandy bottoms; 1,600–14,000 eggs; hatch in 5–10 days; parents guard about two weeks; maturity in 3–4 years; a length-at-age table (1 yr 2.8 in, 2 yr 7.7 in, 5 yr 9.3 in, 10 yr 13.5 in) not attributed to a species."
+}

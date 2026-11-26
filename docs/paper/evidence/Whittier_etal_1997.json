@@ -1,0 +1,34 @@
+{
+  "key": "Whittier_etal_1997",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained; only the abstract, from Crossref's record (saved as docs/research_notes/fetched/v2/Whittier_etal_1997.crossref.json)",
+    "url": "https://api.crossref.org/works/10.1139/f97-066"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Whittier, T. R., Halliwell, D. B. & Paulsen, S. G. 1997. Cyprinid distributions in Northeast U.S.A. lakes: evidence of regional-scale minnow biodiversity losses. Can. J. Fish. Aquat. Sci. 54(7): 1593–1607, doi:10.1139/f97-066 — as cited"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "introduced littoral predators (both basses, chain pickerel, northern pike) are linked to losses of minnow diversity (MNAP; Whittier et al. 1997)",
+      "verdict": "unchecked",
+      "note": "full text not obtained. The abstract supports the link in general: 'The most consistent factor related to minnow species richness was the presence of littoral predators'; median minnow species 2 in lakes without predators, 0 with; non-native predators, 'especially Micropterus spp.', in 69 % of sampled lakes; without predators, minnow richness fell with human activity. It does not list which species count as littoral predators, so 'chain pickerel, northern pike' cannot be checked from it (the MNAP review, cited alongside, may be where the list comes from)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f97-066", "status": 403, "note": "Canadian Science Publishing; subscription journal — a library login would open it" },
+    { "url": "https://doi.org/10.1139/f97-066", "status": 403, "note": "DOI resolver to the publisher; refused" },
+    { "url": "http://www.nrcresearchpress.com/doi/pdf/10.1139/f97-066", "status": 403, "note": "old NRC Research Press PDF link given by Crossref; refused" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f97-066\"&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=Cyprinid%20distributions%20Northeast%20lakes&fl[]=identifier&fl[]=title&rows=10&output=json", "status": 200, "note": "no Internet Archive item" },
+    { "url": "web search for the title with 'pdf' and 'EPA'", "status": "none", "note": "no EPA, author or repository copy found; OpenAlex lists no open copy (show.mjs)" }
+  ],
+  "notes": "Needs the article (cdnsciencepub.com, doi:10.1139/f97-066). Note the sample differs from the 1999–2001 Northeastern Naturalist series: 195 randomly selected lakes sampled in summers 1991–1994 (abstract), against 203 lakes 1991–96 in the later papers. The abstract also says northern Maine lakes mostly held 3–7 minnow species (40–80 % of species per lake) and that 'Only in northern Maine did lake minnow assemblages seem relatively intact' — relevant to a Washington County lake pair."
+}

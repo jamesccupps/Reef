@@ -1,0 +1,62 @@
+{
+  "key": "Zweiacker_Summerfelt_1974",
+  "reader": "wave-3 batch w3-24",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy: SEAFWA's journal-article archive PDF",
+    "url": "https://seafwa.org/sites/default/files/journal-articles/ZWEIACKER-579.pdf",
+    "file": "docs/research_notes/fetched/v2/Zweiacker_Summerfelt_1974.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article pages (pp. 579–591 in the PDF; footnote on p. 579)",
+    "ok": true,
+    "corrections": "",
+    "note": "title, authors, the 27th Annual Conference (1973) and pages 579–591 all as cited; the publication year 1974 is not printed on these pages (not contradicted)"
+  },
+  "claims": [
+    {
+      "paper": "§3.7.3, Table 3.7-2",
+      "claim": "largemouth bass, Oklahoma (n = 1,875): 56.5 % empty stomachs",
+      "source_value": "56.5 % (1,060 of 1,875) is the pooled figure for five studies in reservoirs and ponds of Oklahoma, southern Illinois and Louisiana (Dubets 1954; Schneidermeyer & Lewis 1956; Moehn 1959; Lambou 1961; this study). In Lake Carl Blackwell, Oklahoma, this study found 446 of 810 empty (55.1 %)",
+      "location": "p. 582 (PDF p. 4), Table I; p. 581 (PDF p. 3), text",
+      "quote": "the observed frequency (fo) of 56.5% derived from the combined totals",
+      "conditions": "this study: bass > 176 mm TL (91–2,724 g, ages 0–7) electrofished along the shore in ~1 m of water, June 1968–November 1969 (none in December–February), stomachs read by gastroscope, fish sampled 06:00–23:00; turbid reservoir with almost no littoral vegetation",
+      "verdict": "corrected",
+      "note": "the row mixes the pooled n with 'Oklahoma'. Either 'Largemouth bass, Lake Carl Blackwell, Oklahoma (n = 810): 55 %' or 'Largemouth bass, five studies in OK, IL, LA (n = 1,875): 56.5 %'. Table I's own row reads 'Present study* 810 446 (55.1%)'; the abstract rounds to 55 %"
+    },
+    {
+      "paper": "§3.7.3, Table 3.7-2",
+      "claim": "contents of fed stomachs: usually 1 item",
+      "source_value": "typically a single item; few stomachs held more than one",
+      "location": "p. 581 (PDF p. 3); p. 587 (PDF p. 9)",
+      "quote": "typically bass examined by gastroscope contain only a single item",
+      "conditions": "gastroscope examination of live bass; contrasted with rotenone-poisoned bass that held more items",
+      "verdict": "confirmed",
+      "note": "p. 587 adds 'Few bass stomachs contained more than one food item'; two-item stomachs were often an old crayfish exoskeleton plus a fresh prey"
+    },
+    {
+      "paper": "§3.7.3, Table 3.7-2",
+      "claim": "timing: no feeding 00:00–06:00",
+      "source_value": "inferred, not observed: the high share of empty stomachs in the morning 'indicates a lack of feeding at night, especially between 12 midnight and 6 A.M.'",
+      "location": "p. 587 (PDF p. 9), 'Feeding Periodicity'; Table 3 (PDF p. 10)",
+      "quote": "indicates a lack of feeding at night, especially between 12 midnight and 6 A.M.",
+      "conditions": "no night sampling; morning (06:00–12:00) vs afternoon (12:01–23:00) catches: 75.0 vs 56.0 % empty in 1968 (P < 0.05), 73.7 vs 68.4 % in 1969 (not significant)",
+      "verdict": "confirmed",
+      "note": "better worded 'little or no feeding at night (inferred from morning stomachs)'. The authors note Dubets (1954), sampling round the clock, found no specific feeding period"
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "nesting largemouth males in Oklahoma stopped feeding for about 5–7 weeks (Zweiacker & Summerfelt 1974)",
+      "source_value": "not found: the authors ASSUMED (from Eddy & Surber, Lewis et al. 1961, Dendy 1946) that males might fast through nest building, ~2 weeks of guarding eggs and prelarvae and 3–4 weeks guarding the post-larval school; their stomach data (sexes not distinguished) gave only 'some indication' of fasting, 'not conclusive'. The abstract concludes bass, probably males, 'may reduce feeding during the two week interval' of guarding eggs and prelarvae",
+      "location": "p. 583 (PDF p. 5), last paragraph; p. 586 (PDF p. 8), first two paragraphs; abstract p. 580",
+      "quote": "some indication for fasting by spawning fish is evident but the observations are not conclusive",
+      "conditions": "Lake Carl Blackwell; spawning season inferred as 15 April–7 May; ages 5–6 had more empty stomachs 15 April–1 May, ages 3–4 fewer (Fig. 2)",
+      "verdict": "corrected",
+      "note": "the 5–7 weeks is the sum of the authors' a-priori intervals, not a finding. Suggested: 'In Oklahoma, stomach data hinted that spawning bass (probably guarding males) fed less during the ~2 weeks of egg and prelarva guarding, but were not conclusive (Zweiacker & Summerfelt 1974)'"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values here: 31.1 % of the 810 held fish (gizzard shad 16.7 %, digested fish 14.4 %) and 13.9 % crayfish; crayfish swallowed tail first 96.8 %, shad head first 66.4 %; 1968 vs 1969 empties 49.8 vs 58.4 % (Table 2); the authors propose 56 % empty as a benchmark of average forage conditions for age I+ largemouth. The abstract calls the reservoir 808 ha while the study-area text gives 1,355 ha at spillway level (60 % of that at the 1971 low)."
+}
