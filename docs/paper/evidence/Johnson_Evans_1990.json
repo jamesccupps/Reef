@@ -1,0 +1,63 @@
+{
+  "key": "Johnson_Evans_1990",
+  "reader": "batch t1-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: OpenAlex's record W2050467797 (abstract_inverted_index, the publisher's abstract); no open full text exists",
+    "url": "https://api.openalex.org/works/doi:10.1577/1548-8659(1990)119%3C0301:SWMOYW%3E2.3.CO;2"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (10.1577/1548-8659(1990)119<0301:SWMOYW>2.3.CO;2)",
+    "ok": true,
+    "corrections": "",
+    "note": "Johnson, Timothy B. & Evans, David O. 1990 (March). Size-dependent winter mortality of young-of-the-year white perch: climate warming and invasion of the Laurentian Great Lakes. Transactions of the American Fisheries Society 119(2): 301–313. show.mjs reported 'DOI NOT FOUND' only because it cut the DOI at its '(' — the full DOI resolves at Crossref. The ledger's parenthesis says 'fed and starved, at 2.5 and 4 °C'; the abstract mentions feeding only for the 4.0 °C trials."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-9 (white perch, 4.0 °C)",
+      "claim": "laboratory, 4.0 °C, starved 180 d: 40.6 % died (none when fed); mortality highest in the smallest",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.6-9 (white perch, 2.5 °C)",
+      "claim": "laboratory, 2.5 °C, 150 d: 68.4–71.2 % died; yellow perch 0.8 % (Johnson & Evans 1990, 1991, abstracts)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "the white perch's first winter runs on Johnson & Evans's (1990) measured model",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "field young perch live on their autumn lipid, so first-winter mortality is size-selective (Post & Evans 1989; Johnson & Evans 1990, 1991)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:869; src/w3/fish3.js:204; src/w3/fish3.js:789; src/w3/gpu/wgsl.js:75",
+      "claim": "YOY held at 4.0 °C, starved or fed: fed 0 % dead, starved 40.6 % at 180 d; p = min(1, A·e^(B·WD − C·FL)) with A 7.29543, B 0.02145, C 0.10804, WD the days at 4 °C, FL fork length (mm)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/config.js:857; src/config.js:869",
+      "claim": "at Hot Brook's ~161 days below 4 °C: all starved fish < 50 mm FL die, half at 57 mm, a tenth at 72 mm (project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "Arithmetic on the abstract's formula holds: ln 7.29543 + 0.02145·161 = 5.440, so p = 1 at FL 50.4, 0.5 at 56.8, 0.1 at 71.7 mm. But FL's unit (mm) and p as a proportion (not a percent) are the project's inference (first_winter_mortality.md §2), not read in the paper."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1990)119<0301:SWMOYW>2.3.CO;2", "status": "closed", "note": "OpenAlex and Semantic Scholar: no open copy (oa_status closed). This DOI is the one a library login would open." },
+    { "url": "https://academic.oup.com/tafs/article/119/2/301/7891805", "status": 403, "note": "publisher (OUP) refused the script" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1990)119%3C0301:SWMOYW%3E2.3.CO;2", "status": 403, "note": "Wiley refused the script" },
+    { "url": "https://afspubs.onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1990)119%3C0301:SWMOYW%3E2.3.CO;2", "status": 403, "note": "Wiley/AFS PDF refused the script" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1990)119%3C0301:SWMOYW%3E2.3.CO;2?fields=openAccessPdf,externalIds", "status": 200, "note": "openAccessPdf CLOSED" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1577/1548-8659(1990)119<0301:SWMOYW>2.3.CO;2\"&format=json&resultType=core", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/wayback/available?url=tandfonline.com/doi/pdf/10.1577/1548-8659(1990)119%3C0301:SWMOYW%3E2.3.CO;2", "status": 200, "note": "no Wayback capture (also none for the tandfonline abstract page or the old afs.allenpress.com PDF)" },
+    { "url": "https://archive.org/advancedsearch.php?q=%22white+perch%22+AND+%28winter+OR+overwinter%29+AND+%28Johnson+OR+Evans%29", "status": 200, "note": "no Internet Archive item" },
+    { "url": "web search: Johnson Evans 1990 \"size-dependent winter mortality\" white perch pdf", "status": "none", "note": "no open full text found" }
+  ],
+  "notes": "Blocked: the full text is paywalled (OUP/Wiley) and no open or archived copy was found; the paper itself already labels this row '(abstract)'. What the abstract (OpenAlex) says, for whoever opens the article: YOY tested at constant 2.5 and 4.0 °C; 'At 4.0°C, mortality was high for the smallest fish when food was withheld, but no mortality occurred under ad libitum feeding'; 40.6 % of starved fish died over 180 d at 4.0 °C; PMORT = 7.29543·e^(0.02145·WD − 0.10804·FL) at 4.0 °C, WD being 'the number of days' exposure to 4.0 or 2.5°C'; at 2.5 °C 68.4 % died after 150 d, PMORT = 0.28054·e^(0.01862·WD − 0.03097·FL). So the code's A, B and C match the abstract's 4.0 °C model, and Table 3.6-9's first row matches it. Not in the 1990 abstract: the 71.2 % and the yellow perch 0.8 % (presumably Johnson & Evans 1991, CJFAS 48:672–680, its own entry), whether the 2.5 °C fish were fed, the sizes tested, and FL's unit. Things to check in the full text: FL in mm vs cm and PMORT as proportion vs percent (the project's reading reproduces 40.6 % at a mean FL of ~62.5 mm); the size range tested (the code applies the model down to FL < 50 mm); and whether a constant-4.0 °C model fits 'days below 4 °C' in the field, where under-ice water is often 1–3 °C and the 2.5 °C model is far harsher (at WD 161 it kills 64 % at FL 70 mm and 25 % at 100 mm, per first_winter_mortality.md)."
+}

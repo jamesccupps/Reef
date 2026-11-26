@@ -1,0 +1,167 @@
+{
+  "key": "Stanley_Danie_1983",
+  "reader": "batch t1-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the U.S. Nuclear Regulatory Commission's public ADAMS document ML083380621, a scan of the USFWS library copy of the report (OCR text layer; values read on the page images)",
+    "url": "https://www.nrc.gov/docs/ML0833/ML083380621.pdf",
+    "file": "docs/research_notes/fetched/v2/Stanley_Danie_1983.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page, the citation page (PDF p. 5) and the Report Documentation Page (PDF p. 18)",
+    "ok": true,
+    "corrections": "",
+    "note": "The profile asks to be cited as: Stanley, J.G., and D.S. Danie. 1983. Species profiles: life histories and environmental requirements of coastal fishes and invertebrates (North Atlantic)--white perch. U.S. Fish and Wildlife Service, Division of Biological Services, FWS/OBS-82/11.7. U.S. Army Corps of Engineers, TR EL-82-4. 12 pp. The ledger's entry matches; adding the Corps number TR EL-82-4 would complete it. October 1983."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.2",
+      "claim": "Maine's statewide white perch stock, 60,175,000 fish and 10,590,800 lb (Jordan 1981, quoted in Stanley & Danie 1983)",
+      "source_value": "60,175,000 individuals (10,590,800 lb), an 'average standing crop', most of it in inland lakes and ponds",
+      "location": "p. 7 (PDF p. 12), Commercial/Sport Fishery",
+      "quote": "average standing crop of white perch in Maine at 60,175,000 individuals",
+      "quote_from": "image",
+      "conditions": "Jordan's (1981) MDIFW white perch management plan, reported (not quoted verbatim) by Stanley & Danie; 'most of which were in inland lakes and ponds'; annual catch about 3.5 million fish, 6 % of the standing crop",
+      "verdict": "confirmed",
+      "note": "'quoted in' would be better as 'reported in': the profile paraphrases Jordan."
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "the statewide stock spreads to about 261 fish/ha and 20.8 kg/ha over the state's white perch acreage (project arithmetic)",
+      "kind": "arithmetic",
+      "source_value": "inputs as above; the acreage is not in Stanley & Danie",
+      "location": "p. 7 (PDF p. 12), Commercial/Sport Fishery",
+      "quote": "(10,590,800 lb), most of which were in inland lakes and ponds",
+      "quote_from": "image",
+      "conditions": "the acreage (~570,000 acres ≈ 230,700 ha) is MDIFW 2002's (white_perch_regulation.md), not this source",
+      "verdict": "confirmed",
+      "note": "60,175,000 / 230,700 ha = 260.8 fish/ha; 10,590,800 lb × 0.45359 = 4.804 million kg / 230,700 ha = 20.8 kg/ha; mean 0.176 lb = 79.8 g a fish. The arithmetic holds, but it divides a 1981 stock by a 2002 acreage, and the acreage needs its own source check (Smith 2002)."
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, maturity)",
+      "claim": "males 72–80 mm, females 90–98 mm, ages 2–4 (Hardy 1978, Mansueti 1964, via Stanley & Danie 1983)",
+      "location": "p. 6 (PDF p. 11), Juveniles and Adults (end)",
+      "quote": "Length at first maturity of 72 mm for males and 98 mm for females",
+      "quote_from": "image",
+      "conditions": "Mansueti (1964): males mature at 80 mm, females at 90 mm; Hardy (1978): 72 and 98 mm, most of both sexes mature at 2 years, some females at 3, all by 4; Holsapple & Foster (1975, lower Hudson): at age II 20 % of males and no females mature, by age III all males and 75 % of females. Length type (TL/FL) not stated; estuarine and lake populations mixed",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch, mortality)",
+      "claim": "adult A 0.37–0.59 at ages IV+ in the Patuxent River, Maryland (Mansueti 1961, via Stanley & Danie 1983)",
+      "location": "p. 7 (PDF p. 12), Commercial/Sport Fishery",
+      "quote": "range from 0.37 to 0.59 for age groups IV and older",
+      "quote_from": "image",
+      "conditions": "annual mortality, Patuxent River (estuary); averages about 0.50 for males and 0.56 for females; Delaware River 0.49–0.59 males, 0.53–0.65 females (Wallace 1971); York River 0.59 males, 0.57 females (St. Pierre & Davis 1972)",
+      "verdict": "confirmed",
+      "note": "The profile adds that these mortalities 'are similar to those reported by Cooper (1941)' in Maine; the paper's contrast with Cooper rests on the project's own catch curve (the fetched-sources digest notes Cooper computes no rate)."
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "stunting has been tied to density (Mansueti 1961, via Stanley & Danie 1983)",
+      "location": "p. 6 (PDF p. 11), Growth Characteristics",
+      "quote": "Growth was affected by temperature, food supply, and population density.",
+      "quote_from": "image",
+      "conditions": "Mansueti compared a stunted upper-Patuxent estuary population with a fast-growing lower-Patuxent one; spring rainfall and population density 'both inversely correlate to growth'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.5",
+      "claim": "stunting has been tied to eutrophic waters (Hines 1981, via Stanley & Danie 1983)",
+      "location": "p. 6 (PDF p. 11), Growth Characteristics",
+      "quote": "stunted populations are often associated with eutrophic waters",
+      "quote_from": "image",
+      "conditions": "Hines (1981), an M.S. thesis on a stunted population in a eutrophic Maine pond (Literature Cited, p. 10)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.5; §3.7.6",
+      "claim": "stunting tied to 'scarcity of predators' (via Stanley & Danie 1983); a widely used species profile links stunted white perch populations to a scarcity of predators",
+      "location": "Report Documentation Page, block 16 (Abstract), PDF p. 18 (unnumbered)",
+      "quote": "High reproductive potential and scarcity of predators often lead to stunted populations.",
+      "quote_from": "image",
+      "conditions": "the profile's own abstract; no study is cited for it, and the body text never discusses predators as a cause of stunting (it names density, eutrophic waters, and slow growth in small oligotrophic coastal lakes)",
+      "verdict": "confirmed",
+      "note": "The words are there, but only in the abstract and uncited. §3.5.5's '(all via Stanley & Danie 1983)' reads as if a study lay behind it; better: 'and, in the profile's abstract (uncited), to a scarcity of predators'."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "white perch prefer level bottoms of silt, mud, sand or clay; in Sebasticook Lake, Maine they used soft muck, gravel and rock less (AuClair 1956, via Stanley & Danie 1983)",
+      "location": "p. 9 (PDF p. 14), Habitat; AuClair 1956 in Literature Cited, p. 10 (PDF p. 15)",
+      "quote": "Soft muck, decomposing organic substrate, or gravel and rocks were found by AuClair (1956)",
+      "quote_from": "image",
+      "conditions": "'fairly level bottoms composed of compact silt. Mud, sand, and clay are also preferred substrates'; AuClair (1956) is the M.S. thesis 'The white perch Morone americana (Gmelin), Sebasticook Lake, Maine' (University of Maine)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "white perch lie at 4.0–9.0 m by day and 0.9–1.2 m at night in summer (Stanley & Danie 1983, a compilation)",
+      "location": "p. 9 (PDF p. 14), Habitat",
+      "quote": "(4.0 to 9.0 m or 13 to 30 ft) during daylight in the summer",
+      "quote_from": "image",
+      "conditions": "'Daily vertical migrations from shallow water (0.9 to 1.2 m ...) at night, to deeper water (4.0 to 9.0 m ...) during daylight in the summer have been observed' — unattributed, in a paragraph covering 'both estuarine and freshwater habitats'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "the usual compiled diel pattern, 0.9–1.2 m at night and 4–9 m by day, comes from unnamed lakes (Stanley & Danie 1983)",
+      "source_value": "an unattributed observation ('have been observed') that follows 'Water depth may provide daytime shelter, in both estuarine and freshwater habitats'; the profile does not say the waters were lakes",
+      "location": "p. 9 (PDF p. 14), Habitat",
+      "quote": "Water depth may provide daytime shelter, in both estuarine and freshwater habitats.",
+      "quote_from": "image",
+      "conditions": "summer; no water body, method or season length given; the next sentence's citations (AuClair 1956; Sheri & Power 1969) may or may not cover it",
+      "verdict": "corrected",
+      "note": "Say 'from unnamed waters (estuarine or fresh)', not 'from unnamed lakes'."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "white perch winter at 12–18 m in deep lakes (AuClair 1956; Sheri & Power 1969; both via Stanley & Danie 1983)",
+      "location": "p. 9 (PDF p. 14), Habitat",
+      "quote": "overwinter at depths to 40 m (131 ft), but usually at 12.2 to 18.3 m",
+      "quote_from": "image",
+      "conditions": "'usually at 12.2 to 18.3 m or 40 to 60 ft', and as deep as 40 m; 'in deep lakes' is the paper's gloss (AuClair's thesis is on Sebasticook Lake, Maine; Sheri & Power 1969 is a Canadian Field-Naturalist note on vertical distribution)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (white perch, spawning)",
+      "claim": "an unpublished thesis via Stanley & Danie 1983 gives 18–21 °C 'for several days' before spawning in Maine",
+      "location": "p. 8 (PDF p. 13), Environmental Requirements: Temperature",
+      "quote": "must remain at 18° to 21°C (64° to 70°F) in Maine lakes for several days",
+      "quote_from": "image",
+      "conditions": "'... prior to spawning (AuClair 1956)'; AuClair 1956 is an M.S. thesis, University of Maine. The same page gives spawning onset at 12–14 °C in Chesapeake Bay, 10–19 °C in the Delaware estuary, peaks at 11–16 °C in the York River",
+      "verdict": "confirmed",
+      "note": "The same author's later report (AuClair 1958, cited in the same row for ~15 °C) and this thesis value disagree; the AuClair 1958 reader should check which the row should lead with."
+    },
+    {
+      "paper": "Table 3.6-1 (white perch, spawning)",
+      "claim": "eggs laid at 0–1.5 m (in lakes)",
+      "location": "p. 4 (PDF p. 9), Spawning",
+      "quote": "and 0 to 1.5 m (0 to 5 ft) in lakes (Hardy 1978)",
+      "quote_from": "image",
+      "conditions": "Hardy 1978 via the profile; spawning 'in water less than 7 m', 0.9–6.1 m in estuaries, 0–3.7 m in marshes (Scott & Crossman 1973); substrate 'clay, sand, pulverized shells, or gravel'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (white perch, spawning)",
+      "claim": "0.87–0.91-mm adhesive eggs over firm bottom; incubation 3.5 d at 15 °C, 2.6 d at 17 °C; hatch 2.4–2.8 mm SL; yolk-sac 4.4 d at 15 °C; first feeding at 3.45 mm SL (~19 µg dry) — row sources 'Margulies 1989; AuClair 1958; Stanley & Danie 1983'",
+      "verdict": "unsupported",
+      "note": "None of these values is in Stanley & Danie, so they must come from Margulies 1989 or AuClair 1958 (not an error if those give them). The profile's own values differ: unfertilized eggs 0.70–0.89 mm, fertilized 0.65–1.09 mm (0.86 mm in fresh water, Morgan & Rasin 1982); hatch in 30 h at 20 °C, 44–50 h at 18 °C, 60–72 h or 96–108 h at 15 °C; prolarvae 1.7–3.0 mm at hatch; mouth and pigmented eyes at about 3.8 mm TL; in shallow water no preference for bottom type (Scott & Crossman 1973)."
+    },
+    {
+      "paper": "src/w3/fish3.js:423",
+      "claim": "juveniles inshore, 'in lakes at 2.4-3.6 m'; females mature at 9–10 cm",
+      "location": "p. 5 (PDF p. 10), Larvae and Juveniles and Adults; p. 6 (PDF p. 11) for maturity",
+      "quote": "described juveniles in lakes in depths of 2.4 to 3.6 m (8 to 12 ft)",
+      "quote_from": "image",
+      "conditions": "Hardy (1978) via the profile; Mansueti (1964): fry prefer a demersal habitat but 'often are found at depths of 2.4 to 3.6 m'; inshore nurseries are named for estuaries and creeks (Wang & Kernehan 1979) and, in the abstract, 'inshore areas of lakes, estuaries, or creeks'. Females mature at 90 mm (Mansueti 1964) or 98 mm (Hardy 1978)",
+      "verdict": "confirmed",
+      "note": "The code's quoted words are a paraphrase, not the profile's text; the juveniles' length range (habJ L 8–12 cm) is not from this source."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.nwrc.usgs.gov/wdb/pub/species_profiles/82_11-007.pdf", "status": 200, "note": "redirected to the USGS Wetland and Aquatic Research Center home page (no document)" }
+  ],
+  "notes": "Every claim the paper takes from the profile is in it, with page; one wording needs changing (§3.7.8 'unnamed lakes': the diel-depth sentence names no habitat and sits in a paragraph on estuarine and freshwater waters), and the 'scarcity of predators' line is only in the profile's uncited abstract (Report Documentation Page). The Table 3.6-1 row cites the profile but only its 18–21 °C and 0–1.5 m values are in it. Other values in the profile that the rewrite might use: 'After white perch are 22 cm (9 inches), they eat fish almost exclusively' (p. 8); white perch fry may be preyed on by copepods (Smith & Kernehan 1981, p. 8); a 50-g white perch consumed 17.6 mg O2/h at 8.6 cm/s and 25.5 at 31.7 cm/s, a 150-g one 23.5 and 39.0 (Neumann et al. 1981, p. 9); eggs hatch in 30 h at 20 °C, 44–50 h at 18 °C, 96–108 h at 15 °C (p. 5); temperature drops of 4–5 °C lethal to eggs (AuClair 1960, p. 5); fecundity 20,000–300,000 (Scott & Crossman), a 3-yr-old 20,676 and a 9-yr-old 124,289 eggs (Holsapple & Foster 1975), 56,200 eggs/kg (AuClair 1956) (p. 4). Odd statement to avoid: 'They are found in Maine lakes where temperatures seldom rise above 15.5°C' (Hardy 1978, p. 8). Printed page = PDF page − 5 for the body (PDF pp. 6–17)."
+}

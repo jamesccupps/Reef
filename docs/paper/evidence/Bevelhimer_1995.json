@@ -1,0 +1,103 @@
+{
+  "key": "Bevelhimer_1995",
+  "reader": "batch t1-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access PDF from the publisher (SEAFWA's journal archive)",
+    "url": "https://seafwa.org/sites/default/files/journal-articles/BEVELHIMER-240-249.pdf",
+    "file": "docs/research_notes/fetched/v2/Bevelhimer_1995.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page and running heads",
+    "ok": true,
+    "corrections": "",
+    "note": "Bevelhimer, M. S. 1995. Smallmouth bass habitat use and movement patterns with respect to reservoir thermal structure. Proc. Annu. Conf. Southeast. Assoc. Fish and Wildl. Agencies 49: 240–249. Printed page = PDF page + 239."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1",
+      "claim": "adults tracked in a Tennessee reservoir (12 tagged, 4 followed for activity)",
+      "location": "p. 243 (PDF p. 4), Table 1; p. 246 (PDF p. 7)",
+      "quote": "Activity was analyzed for 4 fish with which I had direct tracking contact",
+      "conditions": "Melton Hill Reservoir, a 2,270-ha mesotrophic, thermally stratified Clinch River impoundment (71 km long, ≤ 0.6 km wide); 12 adults of 368–542 mm and 560–2,130 g, 6 tagged in 1986 and 6 in 1987; activity from the 4 most-tracked 1987 fish, 107 h of contact",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "moved for 6.7 h a day",
+      "location": "p. 247 (PDF p. 8)",
+      "quote": "Smallmouth bass were mobile about 6.7 hours/day",
+      "conditions": "28 % of 24 h, 42 % of the daylight and twilight hours (~0530–2130), 'assuming movement at dark was minimal'; only 1 fish on 1 occasion was tracked between 2300 and 0600 (p. 243)",
+      "verdict": "confirmed",
+      "note": "The night was assumed, not measured; the rewrite could say so."
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "at about 4.2 m/min",
+      "location": "p. 247 (PDF p. 8); Table 1, p. 243 (PDF p. 4)",
+      "quote": "The average rate of movement for all smallmouth bass was 4.2 m/minute.",
+      "conditions": "four 1987 fish; individual rates 3.4, 4.7, 6.5 and 7.5 m/min (Table 1)",
+      "verdict": "confirmed",
+      "note": "The source's own averages are not the means of its four fish (those are 5.5 m/min and 2,096 m/day against the printed 4.2 and 1,243); the paper quotes the printed 4.2 correctly."
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "covering 0.8–3.5 km (a day)",
+      "location": "p. 247 (PDF p. 8); Table 1, p. 243 (PDF p. 4)",
+      "quote": "Estimates of distance moved ranged from 825 to 3,477 m/day (Table 1).",
+      "conditions": "estimated as the proportion of the day spent moving × rate of movement × 1,440 (p. 243), per fish",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "most active in the afternoon",
+      "location": "p. 247 (PDF p. 8); Figs. 4–5, p. 246",
+      "quote": "the estimated distance traveled both peaked in the afternoon and were minimal at night",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8; src/w3/fish3.js:605",
+      "claim": "adults stayed within 5 m of shore most of the time",
+      "location": "p. 246 (PDF p. 7)",
+      "quote": "5 m of the shore most of the time regardless of the inshore temperature",
+      "conditions": "'regardless of the inshore temperature'; fish tracked May–November 1987, temperature and depth reliable only through July; 1986 fish 'usually found in the littoral zone, even when inshore water temperatures exceeded 28 C'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "usually in water under 2 m deep",
+      "location": "p. 247 (PDF p. 8), Discussion",
+      "quote": "they were usually near shore and in shallow (<2m depth) water",
+      "conditions": "from June to mid-July 1987 all fish were in the top 1.5 m of the water column (p. 244); whether '<2m depth' is bottom depth or fish depth is not said",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "they entered open water only to cross small embayments",
+      "location": "p. 246 (PDF p. 7)",
+      "quote": "Except for crossings of small embayments, smallmouth bass were not found in the open water",
+      "conditions": "'... of the main channel'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "did not move between inshore and offshore water by day and night",
+      "location": "p. 244 (PDF p. 5), Results; p. 247 (PDF p. 8), Discussion",
+      "quote": "did not exhibit diel offshore/inshore movements among different habitats in response to temperature",
+      "conditions": "22 fixes on 6 fish, June to mid-July 1987, with no significant change in temperature or depth within tracking sessions; nights barely sampled (one fish tracked 2300–0600 once)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "rested beside fallen trees, logs and boulders",
+      "location": "p. 246 (PDF p. 7)",
+      "quote": "including fallen trees, submerged logs, boulders, overhanging bushes, and man-made fish attractors",
+      "conditions": "'When smallmouth bass were not moving, they often were associated with structures visible from the surface'",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Every claim checks. Context the rewrite may want: Melton Hill is a long (71 km), narrow (≤ 0.6 km) river reservoir of 2,270 ha, not a small lake, and its narrow channel limits how far from shore a bass can be; §3.7.8's 'mostly from small lakes and reservoirs' fits it loosely. The bass stayed in warm (> 28 °C) shallow water although cooler, oxygenated water was available deeper, and 1987 was abnormally cool from mid-July (cold hypolimnetic releases), so only data before 17 July were used for temperature selection (p. 244). The 6.7 h/day assumes no movement at night. Other values: preferred temperature taken as 21–26 °C for adults (p. 241); estimated daily movement and observed shoreline range averaged 1,243 m and 1,258 m (Table 1); smallmouth less active at night except nest-guarding males (p. 247, citing Hinch & Collins 1991)."
+}

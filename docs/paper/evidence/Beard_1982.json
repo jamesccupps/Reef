@@ -1,0 +1,135 @@
+{
+  "key": "Beard_1982",
+  "reader": "batch t1-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "library copy: University of Wisconsin Digital Collections scan of the WDNR Technical Bulletin (OCR text layer; tables read on the page images)",
+    "url": "https://asset.library.wisc.edu/1711.dl/MKE6SE25RQNXU8T/E/file-57b89.pdf",
+    "file": "docs/research_notes/fetched/v2/Beard_1982.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 4) and the bulletin's printed pagination",
+    "ok": true,
+    "corrections": "",
+    "note": "Beard, Thomas D. 1982. Population dynamics of young-of-the-year bluegill. Wisconsin Department of Natural Resources Technical Bulletin No. 127, Madison. Printed pages run to 32 (Literature Cited ends on p. 32). Printed page = PDF page − 3."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2",
+      "claim": "bluegill egg viability on the nest fell from 86.5 % to 57.4 % by day 4",
+      "location": "p. 9 (PDF p. 12), Egg Hatching; repeated in the Summary, p. 29 (PDF p. 32)",
+      "quote": "had an average viability of only 57.4%.",
+      "conditions": "eggs on the nest, all 3 lakes, 1971–74, when only bluegill were present and males 'usually did not guard the nest after the eggs were laid'; 86.5 % on day 1 after deposition, declining each day; by spawning period viability averaged 51.9–98.4 % (Table 7), lowest in the first two periods (late May to mid-June), which Beard ascribes to undeveloped sperm or temperature; hatching in 2–3 days above 21 °C, 4–5 days below",
+      "verdict": "confirmed",
+      "note": "The decline was in mostly unguarded nests in predator-free lakes; Beard names no cause of egg death (he suggests slower development lengthens exposure to disease)."
+    },
+    {
+      "paper": "Table 3.6-2 (bluegill, first food)",
+      "claim": "nauplii, Daphnia and Bosmina at 5–10 mm",
+      "location": "p. 14 (PDF p. 17), Feeding Habits; Table 17",
+      "quote": "Cladocerans (primarily Daphnia, Bosmina, and unknowns) and copepod nauplii were the principal",
+      "conditions": "digestive tracts of 1,269 fry of 5–10 mm, 1971–74, limnetic zone; fry selected items under 0.5 mm; by electivity Daphnia was avoided all summer, nauplii preferred at first and avoided by 8–10 mm, Bosmina preferred in Camp Lake (Fig. 7)",
+      "verdict": "confirmed",
+      "note": "Daphnia was eaten but avoided relative to its abundance; the row lists it as a first food, which the gut contents support."
+    },
+    {
+      "paper": "Table 3.6-2 (bluegill, later shifts)",
+      "claim": "almost only cladocerans at 11–19 mm",
+      "source_value": "cladocerans (Daphnia, Bosmina, Chydorinae, Ceriodaphnia) were the dominant food, 'although copepods and insects were also consumed in good numbers'",
+      "location": "p. 16 (PDF p. 19), Feeding Habits; Tables 18–20",
+      "quote": "although copepods and insects were also consumed in good numbers",
+      "quote_from": "image",
+      "conditions": "294 fingerlings ≥ 11 mm examined, 1971–74, 99 % full",
+      "verdict": "corrected",
+      "note": "Say 'mostly cladocerans, with copepods and insects' rather than 'almost only'."
+    },
+    {
+      "paper": "Table 3.6-2 (bluegill, later shifts)",
+      "claim": "littoral chydorids, insects, ostracods and Gammarus from ~20 mm",
+      "location": "p. 16 (PDF p. 19), Feeding Habits",
+      "quote": "When fingerlings reached 20 mm their feeding habits became more diverse",
+      "quote_from": "image",
+      "conditions": "Chydorinae shared dominance with adult copepods and insects (mainly chironomids); fingerlings moved from the limnetic to the littoral zone at 15–20 mm; Chydorinae, aquatic insects, ostracods and Gammarus 'all primarily inhabit the littoral region'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-3 (bluegill fry density)",
+      "claim": "≤ 64.5/m² leaving nests",
+      "source_value": "up to 664,000/ha = 66.4/m² (Lamereau Lake 1971); Camp Lake 1971 was 645,000/ha = 64.5/m²; these are POTENTIAL numbers leaving the nests (nests with fry × mean fry per nest)",
+      "location": "p. 11 (PDF p. 14), Table 9",
+      "quote": "Lamereau … 1971 … 134 … 31.9 … 21.6 … 5.1 … 2,790 … 664",
+      "quote_from": "table",
+      "conditions": "3 predator-free lakes of 2.7–4.2 ha, 1971–74; 'Potential No. Fry (in 1000's) Leaving Nest, No./ha' ranged 1–664",
+      "verdict": "corrected",
+      "note": "The maximum is 66.4/m², not 64.5 (the paper took Camp 1971, not the larger Lamereau 1971)."
+    },
+    {
+      "paper": "Table 3.6-3 (bluegill fry density)",
+      "claim": "5.4–20.5/m² four days after dispersal",
+      "location": "p. 12 (PDF p. 15), Production of Fry and Fingerlings; Table 9 (p. 11, PDF p. 14)",
+      "quote": "from 54,000 to 205,000 fry/ha 4 days after dispersal (Table 9)",
+      "conditions": "'Estimated No. Fry Surviving 1-4 Days After Dispersal': only 5 lake-years were sampled (Camp 1972–74, Lamereau 1972–73)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-4 (bluegill, instantaneous daily mortality)",
+      "claim": "first 4 days after nest dispersal 0.109–0.385/d; then to autumn 0.001–0.008/d",
+      "location": "p. 12 (PDF p. 15), Table 11 and text",
+      "quote": "Daily mortality was considerably higher during the 4 days following dispersal",
+      "conditions": "z from ln(N2/N1) = −zt with t = 4 d (dispersal–day 4) and 100 d (day 4–fall); Camp 1972–74 and Lamereau 1972–73 only; one day-4-to-fall value (Camp 1973) was a theoretical 0 because the fall estimate exceeded the day-4 one; dispersal-to-fall rates 0.005–0.022/d",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-5 (bluegill, survival to the first autumn)",
+      "claim": "eggs to October 0.02–27 %, median ~9 % (another reading of the tables gives 4.9–22.6 %, probably with a different denominator)",
+      "kind": "arithmetic",
+      "source_value": "October fingerlings ÷ 'eggs potentially hatching' (Table 21) = 0.02–27.1 %, median 9.4 %; ÷ all eggs laid (Table 6) = 0.01–24.6 %, median 9.0 %",
+      "location": "p. 20 (PDF p. 23), Table 21; p. 9 (PDF p. 12), Table 6; p. 12 (PDF p. 15), Table 10",
+      "quote": "Eggs potentially hatching … 1,491 … 938 … 779 … 683 … 1,083 … 822",
+      "quote_from": "image",
+      "conditions": "12 lake-years, bluegill only, 1971–74; fingerlings by Petersen estimate at the late-September/early-October treatment (Table 21 'Fingerlings in October', its no./ha in thousands)",
+      "verdict": "corrected",
+      "note": "Recomputed: on eggs potentially hatching, Camp 25.2/15.8/9.6/21.2 %, Lamereau 27.1/6.8/7.9/0.02 %, Nancy 9.1/8.0/22.0/3.4 % (1971–74) — the paper's 0.02–27 % and median ~9 % are this, so the interval is 'viable (potentially hatching) eggs to October', not 'eggs'. On eggs laid (Table 6): Camp 22.7/12.9/9.5/20.4 %, Lamereau 24.6/4.9/6.9/0.01 %, Nancy 8.4/2.9/18.1/3.3 %. The '4.9–22.6 %' alternative is eggs-laid but drops Lamereau 1971 (24.6 %) and the three lowest lake-years; it matches no complete reading and should go."
+    },
+    {
+      "paper": "Table 3.6-6 (bluegill growth)",
+      "claim": "limnetic fry, first 14 d after dispersal, 0.4–0.7 mm/d",
+      "location": "p. 12 (PDF p. 15), Growth; Table 12",
+      "quote": "ranging from 0.4 to 0.7 mm/day (Table 12)",
+      "conditions": "1974–76, all 3 lakes (walleye and other species were stocked into two lakes in 1975–76); in Camp and Lamereau the first 15 days averaged 0.5 mm/d (p. 10)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-8 (bluegill autumn density)",
+      "claim": "predator-free NW Wisconsin lakes, October: from a trace to 376,000/ha",
+      "location": "p. 12 (PDF p. 15), Production of Fry and Fingerlings; Table 10; Table 21 (p. 20, PDF p. 23) labels them 'Fingerlings in October'",
+      "quote": "ranged from a high of 376,000/ha (Camp Lake in 1971) to only a trace",
+      "conditions": "Petersen estimates, 1971–74; the trace is Lamereau 1974 (< 1,000/ha; 0.1 kg/ha); biomass 0.1–124.1 kg/ha",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:281",
+      "claim": "F ≈ 0.271·TL(mm)^2.12 (fit to Beard 1982): 10 cm → ~4,700, 13 cm → ~8,300",
+      "kind": "arithmetic",
+      "location": "p. 6 (PDF p. 9), Table 4",
+      "quote": "102-124 … 6,500 … 127-150 … 8,900 … 152-175 … 15,100",
+      "quote_from": "image",
+      "conditions": "bluegill (not pumpkinseed) females stocked from Reynard Lake (1971; 152–226 mm) and Wolf and Loyhead lakes (1972–74; 102–201 mm); gravimetric counts of all developing eggs at stocking (late May–early June); length type not stated",
+      "verdict": "confirmed",
+      "note": "An unweighted least-squares fit of ln F on ln L through Table 4's seven class midpoints gives F = 0.2709·L^2.121 — the code's line. It gives 4,709 at 100 mm and 8,214 at 130 mm (the comment's '~8,300' is slightly high). 100 mm lies just below the smallest class (102–124 mm). Weighting by ovaries sampled gives 0.169·L^2.216 (4,556 and 8,149)."
+    },
+    {
+      "paper": "src/species.js:283",
+      "claim": "Lepomis fry feed in the open water for 30–40 days and return to the weeds at ~15–20 mm, where they eat the littoral's invertebrates (Beard 1982 among others)",
+      "location": "p. 10 (PDF p. 13), Movement; p. 16 (PDF p. 19), Feeding Habits",
+      "quote": "I calculated that the bluegill remained in the limnetic zone for 30-40",
+      "conditions": "bluegill were 15–20 mm on returning to the littoral and grew ~0.5 mm/d over the first 15 days; Werner (1969) found 22–25 mm and ~45 days in Crane Lake, Indiana; the littoral diet is Chydorinae, aquatic insects, ostracods and Gammarus",
+      "verdict": "confirmed",
+      "note": "The comment's '(12.5 mm SL)' is not from Beard."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Three corrections: the fry leaving the nests peak at 66.4/m² (Lamereau 1971), not 64.5; 11–19-mm fingerlings ate mostly cladocerans but also 'good numbers' of copepods and insects; and the egg-to-October survival is from viable ('potentially hatching') eggs — 0.02–27 % (median 9.4 %), or 0.01–24.6 % (median 9.0 %) from all eggs laid; the '4.9–22.6 %' alternative should be dropped. Other values useful to the rewrite: 90–100 % of hatched fry left the nest (p. 11); fry per nest ranged from under 100 to 67,600 (p. 11); fry stayed on the nest 4–10 days after hatching, faster when warmer (Fig. 3); mouth gape 0.20 mm at 6 days and 0.27 mm at 9 days (p. 16, after citing Toetz 1966); doubling parent bluegill (Nancy Lake, 1975–76) raised fry but not fall fingerlings (abstract; fry-to-end-of-summer survival 26.2 % and 18.8 %, p. 22), and with northern pike, largemouth bass, yellow perch and black crappie stocked into Lamereau Lake (1975–76) fry-to-October survival fell to 1.1 % and 2.6 % (p. 25, PDF p. 28); in Camp Lake, stocked walleye were judged the main cause of the fingerling decline (abstract); the date of first fry dispersal correlated negatively with fingerling standing crop (r = −0.67, Fig. 9). Lakes: Camp 4.0 ha (max 1.5 m), Lamereau 4.2 ha (1.2 m), Nancy 2.7 ha (1.2 m), soft-water winterkill seepage lakes, Bayfield County. Breck 1997 (RR 1995, p. 4) uses Beard's day-4-to-fall rates as its natural mortality check (0.0029/d 'in the center of the range'), consistent with Table 11."
+}

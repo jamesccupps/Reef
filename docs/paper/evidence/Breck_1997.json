@@ -1,0 +1,89 @@
+{
+  "key": "Breck_1997",
+  "reader": "batch t1-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division's own PDF of Fisheries Research Report 1995 (text layer; Table 1 read on the page image)",
+    "url": "https://www.dnr.state.mi.us/PUBLICATIONS/PDFS/DNRFishLibrary/ResearchReports/RR1901-RR2000/RR1995.pdf",
+    "file": "docs/research_notes/fetched/v2/Breck_1997.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover and title page (PDF pp. 1–3)",
+    "ok": true,
+    "corrections": "",
+    "note": "Breck, James E. 1997 (March 27). Hurry up and wait: growth of young bluegills in ponds and in simulations with an individual-based model. Michigan DNR Fisheries Division, Fisheries Research Report 1995. Same author and title as the ledger's Breck_1993 (TAFS 122:467–480). Printed page = PDF page − 2."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.6",
+      "claim": "larval energy density 2,300 J/g wet for age-0 bluegill (Breck 1997, citing Craig 1977)",
+      "location": "p. 4 (PDF p. 6), Morphological parameters; Table 1, p. 20 (PDF p. 22)",
+      "quote": "I estimated that age-0 bluegills had about 2,300 J/g wet weight",
+      "conditions": "estimated from Breck's own dry-weight fractions with Craig's (1977) dry-weight-to-energy relationship; used as the model's single energy density for age-0 bluegill (Table 1, E_BG); which dry fraction it corresponds to is not stated",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "age-0 bluegill dry matter is about 10 % of wet mass below 6 mm",
+      "location": "p. 4 (PDF p. 6), Morphological parameters",
+      "quote": "The dry weight of fry less than 6 mm was approximately 10% of wet weight",
+      "conditions": "Breck's own pond fry (Saline, Michigan, 1990); 'the median value for larger fry was 18%'; adults about 24 % (McComish 1971, p. 10)",
+      "verdict": "confirmed",
+      "note": "The 10 % is Breck's measurement, not Craig's; only the energy conversion is 'citing Craig 1977'. Quoting the 18 % for larger fry beside it would stop readers applying 10 % to all age-0 fish."
+    },
+    {
+      "paper": "§3.6.6; src/config.js:187",
+      "claim": "young bluegill 'would not grow fast enough' until the Cmax intercept was raised by 50 %",
+      "location": "p. 4 (PDF p. 6), Bioenergetics parameters; Table 1 footnote a, p. 20 (PDF p. 22)",
+      "quote": "young bluegills would not grow fast enough until the maximum daily ration was increased 50%",
+      "conditions": "in preliminary simulations; CA from 0.182 to 0.273 g·g⁻¹·d⁻¹ (CB −0.274 unchanged); paired with Breck's revised respiration (Evans 1984's parameters with RA doubled to fit starvation data)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.6; src/config.js:187",
+      "claim": "the Fish Bioenergetics consumption curve was fitted to adults (config: 'fitted to juveniles and adults')",
+      "verdict": "unsupported",
+      "note": "Breck says only that CA and CB were estimated by Breck & Kitchell (1979) 'from data of McComish (1971) for bluegills fed ad libitum rations at 20°C' (p. 4); the fish's sizes are not given here (he cites McComish elsewhere for adults' ~24 % dry weight). The adult fit may be true but needs Breck & Kitchell 1979, McComish 1971 or FB4's own documentation."
+    },
+    {
+      "paper": "Table 3.6-6 (bluegill growth, Michigan ponds)",
+      "claim": "~0.6 mm/d for 3–4 weeks, then ~0.2 mm/d below ~50 crustaceans/L",
+      "location": "p. 1 (PDF p. 3), Abstract; Results, pp. 7–8 (PDF pp. 9–10)",
+      "quote": "young bluegills grew at a rate of about 0.6 mm/d for 3-4 weeks",
+      "conditions": "six 0.25-ha, 1-m-deep experimental ponds, Saline, Michigan, 1990; adults stocked at 56 kg/ha, two ponds also with yearlings; the Results put the rapid phase at 'the first 30 or 40 d', about 10 d longer in the ponds with yearlings; growth near zero by September",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.6; src/config.js:1430; src/config.js:1604; src/w3/fish3.js:736",
+      "claim": "growth fell from about 0.6 to 0.2 mm/d once crustacean zooplankton (rotifers excluded) fell below about 50/L",
+      "location": "p. 8 (PDF p. 10), Pond experiments; Abstract (PDF p. 3)",
+      "quote": "after total zooplankton density (exclusive of rotifers) declined to about 50/L (Gray 1991)",
+      "conditions": "pond zooplankton data from Gray (1991); at that point the zooplankton was copepods and a few small cladocerans (Bosmina); slow-phase stomachs held midge larvae, copepods, small cladocerans and ostracods",
+      "verdict": "confirmed",
+      "note": "The 50/L is the density at which pond growth abruptly slowed; the code uses it as a half-saturation constant (K_FRY), a project interpretation. The '~20' lower bound in config.js:1430 is not Breck's."
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "in simulation a tenfold increase in fry density cut final length by 47 %",
+      "location": "p. 8 (PDF p. 10), Model Results; Table 3, p. 22 (PDF p. 24)",
+      "quote": "A 10-fold increase in fish density from 1.42 to 14.2 fish/m³ produced a 47% decrease",
+      "quote_from": "image",
+      "conditions": "individual-based model, 120 d from June 5/15; 1.42 → 14.2 fish/m³; Table 3 gives 63.0 → 33.7 mm (optimal foraging), 63.6 → 33.9 mm (suboptimal); below 0.8 fish/m³ final length was independent of density",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:736",
+      "claim": "the larvae's ×1.5 Cmax is Breck 1997's bluegill fit, 'paired there with a higher respiration'",
+      "kind": "arithmetic",
+      "location": "p. 3–4 (PDF pp. 5–6), Bioenergetics parameters; Table 1, p. 20 (PDF p. 22)",
+      "quote": "When the metabolism coefficient RA was doubled to the value shown in Table I",
+      "conditions": "Table 1: RA 0.00272 g O2·g⁻¹·d⁻¹, RB −0.269, RQ 0.0589 /°C, RTO 0.0562 s/cm, swimming 1 BL/s",
+      "verdict": "confirmed",
+      "note": "Breck took Evans's (1984) sunfish respiration (lower than the earlier bluegill values, which he says overestimate respiration) and doubled RA to match starvation trials. Against species.js's FB4 bluegill set (RA 0.0154, RB −0.2, RQ 2.1, RTO 36, RTM 40, ACT 1), Breck's Table 1 respiration at 1 BL/s is 1.7–2.9× higher for 1 mg–1 g fish at 10–25 °C (e.g. 1 g at 20 °C: 0.0112 vs 0.0062 g O2·g⁻¹·d⁻¹), so 'higher' holds against FB4."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "All numbers check. One attribution needs its own source: that the Fish Bioenergetics consumption curve was 'fitted to adults' is not in Breck (he gives McComish 1971's ad libitum bluegills at 20 °C, sizes unstated). Not this entry: §3.6.8 ('Predators raised the overwinter loss of 28-mm age-0 bluegill ... 10 % to 39 % ... 55 % with walleye alone') and §3.7.2 ('bluegill become relatively invulnerable to pike and largemouth beyond 100–125 mm') cite Schneider & Breck 1997 (ledger key Schneider_Breck_1997, MDNR RR 1992); show.mjs matched the substring 'Breck 1997'. Other values for the rewrite: simulated phase-1 growth 0.61 mm/d at near-maximum ration; the model did NOT reproduce the 0.2 mm/d phase (p. 10); a 10-fold density rise shortened rapid growth by ~2.8× (p. 8); starvation only at 8.2, 14.2 and 25.8 fish/m³ (extra deaths 16, 65 and 80 %); natural mortality 0.0029/d from 35 % annual survival of yearlings and older, 'in the center of the range' of Beard's (1982) day-4-to-fall rates (p. 4); a 5-mm bluegill weighs 0.00081 g and a 25-mm one 0.18 g (p. 10); wet weight log10 W = −5.430 + 3.345 log10 TL for 4.4–31.2 mm (Table 2); gape G = 0.217 + 0.093 SL (Werner 1974); first feeding at about 5 mm (Toetz 1966; Beard 1982). Breck notes two-phase growth 'may be more common in shallow ponds and unstratified lakes' (p. 10), relevant to Hot Brook."
+}

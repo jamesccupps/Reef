@@ -32,3 +32,9 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-10 | `src/config.js:350` | Guards "lose 3–8 % of their mass over ~4 weeks": Steinhart et al.'s Lake Erie males (round gobies present) lost 11.5 % in 17 d — the range holds only where nest predators are scarce | open |
 | t1-10 | Table 3.6-7, Opeongo | Ridgway's 48–53 mm is total length (1992 only); the same cell's 55–85 mm (Shuter & Ridgway 2002) is fork length — say so | open |
 | t1-10 | (Steinhart et al. 2005 itself) | Its p. 432 swaps the day counts (Erie 17, Opeongo 19 per its Table 1): anyone quoting the kJ figures should use the table | note |
+| t1-04 | §3.5.2 | 261 fish/ha and 20.8 kg/ha divide Jordan's 1981 statewide stock by MDIFW's 2002 acreage (~230,700 ha): arithmetic right, years mismatched; the acreage (Smith 2002) needs its own check | open |
+| t1-04 | Table 3.6-1 (white perch) | Leads with ~15 °C (AuClair 1958); Stanley & Danie report AuClair's 1956 thesis as 18–21 °C held "for several days" — reconcile when AuClair 1958 is read | open |
+| t1-04 | §3.7.8 | "Mostly from small lakes and reservoirs" fits Bevelhimer's Melton Hill poorly (a 2,270-ha, 71-km river reservoir ≤ 0.6 km wide, which itself limits distance from shore) | open |
+| t1-04 | `config.js` WINTER0.JE, `fish3.js` F3.WIN_JE | Johnson & Evans's constant-4.0 °C laboratory model applied to field "days below 4 °C"; under-ice water is often 1–3 °C and the paper's own 2.5 °C model is harsher — a model question for §4/§5.8 | open |
+| t1-04 | §3.6.6, `species.js` | Breck 1997's revised bluegill respiration is 1.7–2.9× FB4's bluegill set (the reader's arithmetic) — note when comparing sets | open |
+| t1-04 | Table 3.5-3 (white perch diet) | Stanley & Danie: white perch > 22 cm "eat fish almost exclusively" — could stand beside Warner's "fish regular only above ~200 mm" | note |
