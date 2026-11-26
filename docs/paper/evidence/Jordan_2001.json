@@ -1,0 +1,235 @@
+{
+  "key": "Jordan_2001",
+  "reader": "wave-3 batch 01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "MDIFW's own PDF of the plan, from the file the human fetched for the project (docs/research_notes/fetched/blackbass.pdf); the agency's www1.maine.gov server returns the identical file (801,470 bytes) to a script",
+    "url": "https://www1.maine.gov/ifw/docs/strategic-management-plans/blackbass.pdf",
+    "file": "docs/research_notes/fetched/v2/Jordan_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'Black Bass Management Plan', Department of Inland Fisheries and Wildlife, Division of Fisheries and Hatcheries, prepared by Richard M. Jordan, Assistant Regional Fisheries Biologist, Region C, 2001 (39 pp., incl. the Warmwater Working Group summary of 24 May 2001). 'Region C' in the citation is the author's post, not the publisher; the division could be added. The cited www.maine.gov URL refuses scripts (403); the www1.maine.gov URL serves the same file."
+  },
+  "claims": [
+    {
+      "paper": "§2.5",
+      "claim": "smallmouth bass are not native to Maine, where they were first introduced in 1868",
+      "location": "p. 5, Species Management History",
+      "quote": "Smallmouth bass are not native to Maine; they were first introduced in 1868.",
+      "conditions": "first waters: Cochnewagon Pond, Phillips Lake, Sebasticook Lake, Cobbosseecontee Lake; fish from New York waters",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.7; §3.5.8",
+      "claim": "in 1998–99 Region F (Penobscot region) bass waters received about 1.8 angler-days per acre per year (4.4/ha), against 4.6 statewide",
+      "location": "p. 21, Table 9 (and Table 8); Region F acreage p. 16, Table 2",
+      "quote": "F 1.4 0.4 1.8 0.12 0.01 0.13 … STATE 3.8 0.8 4.6",
+      "quote_from": "table",
+      "conditions": "angler-days spent fishing for black bass (smallmouth and largemouth) per acre of bass lake, from the 1999 open-water and 1998–99 ice-fishing angler questionnaires (recall surveys); Region F = 70 bass lakes, 120,003 acres (217,400 / 120,003 = 1.81)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Read in the raw text; the row also checks against Table 8 (Region F 173,100 summer + 44,300 winter = 217,400 angler-days). 1.8/acre = 4.45/ha. It is bass-directed effort only, not all angling on those waters (pickerel and white perch effort on the same lakes is counted separately in Brokaw 2001 and Smith 2002). That Region F holds Hot Brook is consistent with the plan's Figure 4 map (p. 15), where Region F reaches the eastern border between Regions G and C (project reading; towns are not labelled)."
+    },
+    {
+      "paper": "§2.7; §3.5.8",
+      "claim": "22 % of Region F's bass effort was through the ice",
+      "source_value": "about 20 %: 44,300 of 217,400 angler-days (Table 8); 22 % comes only from Table 9's rounded per-acre values (0.4 of 1.8)",
+      "location": "p. 21, Table 8 and Table 9",
+      "quote": "F 176,000 173,100 * 44,300 176,000 217,400",
+      "quote_from": "table",
+      "conditions": "1999 summer and 1998–99 winter angler questionnaires; statewide the winter share was 17 % (p. 21)",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "44,300 / 217,400 = 20.4 %; 0.4 / 1.8 = 22.2 % (both rounded inputs). The project arithmetic should use the counts: about 20 %."
+    },
+    {
+      "paper": "§2.7; §3.5.6; §3.7.4",
+      "claim": "in Washington and Hancock counties bass are almost never caught through the ice",
+      "location": "p. 25, Fishing Quality",
+      "quote": "especially in Washington and Hancock counties, bass are almost never caught by winter anglers",
+      "conditions": "the full sentence begins 'In many of Maine's bass waters, especially in Washington and Hancock counties' and adds 'despite the occurrence of very abundant populations'",
+      "verdict": "confirmed",
+      "note": "§3.5.6 quotes it exactly. §2.7 and §3.7.4 paraphrase it as true of the two counties as a whole; the source says 'many' bass waters, especially there — keep the qualifier."
+    },
+    {
+      "paper": "§3.5.6; §3.7.4",
+      "claim": "Maine ice anglers caught 0.46 bass (smallmouth and largemouth together) per angler-day against 1.7 in open water",
+      "location": "p. 23, Table 11; p. 25, text",
+      "quote": "STATE 1.66 0.46 3,267,000 99,300 189,135",
+      "quote_from": "table",
+      "conditions": "statewide, 1999 open-water and 1999 ice-fishing angler questionnaires; 'black bass' = both species; the text rounds the open-water 1.66 to 'a statewide average of 1.7 bass/angler-day'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "catch per angler-day in Region F was 1.35 bass in summer and 0.14 in winter",
+      "location": "p. 23, Table 11 (repeated p. 26, Table 13)",
+      "quote": "F 1.35 0.14 234,000 11,600 6,300 1,300 240,300 12,900 5.0 20.1",
+      "quote_from": "table",
+      "conditions": "1998–99 angler questionnaires; black bass (Region F's bass lakes are 68 of 70 smallmouth-only, Table 2)",
+      "verdict": "confirmed",
+      "note": "Read in the raw text; checks against Table 8 (234,000 / 173,100 = 1.35; 6,300 / 44,300 = 0.14). Region F anglers kept 5.0 % of the summer and 20.1 % of the winter catch."
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "tagged bass in eastern Maine have been caught by MDIFW staff 'multiple times over multiple years'",
+      "location": "p. 23",
+      "quote": "tagged bass have been caught by our staff multiple times over multiple years",
+      "conditions": "MDIFW studies in eastern Maine; bass with temporary marks 'may be caught multiple times in a season'; the plan takes it as indicating good survival",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "MDIFW's stock objective for smallmouth bass longer than 25 cm, 2.0 fish/acre and 2.3 lb/acre (4.9/ha, 2.6 kg/ha) over usable habitat, was met statewide",
+      "source_value": "the objective is for black bass (smallmouth and largemouth together) longer than 10 in, set in the 1996 plan update; usable habitat excludes water deeper than about 30 ft; the plan says it was met statewide but also that data are lacking to estimate bass numbers in Maine",
+      "location": "p. 12 (1996 objectives); p. 13; p. 20",
+      "quote": "bass > 10 inches to be maintained at 2.0 fish/acre and 2.3 pounds/acre",
+      "conditions": "a management objective, not a measured density; the plan states bass are 'not normally vulnerable to capture by trapnets' so population numbers cannot be estimated accurately (p. 20)",
+      "verdict": "corrected",
+      "note": "Conversions are right (2.0/acre = 4.9/ha; 2.3 lb/acre = 2.6 kg/ha). The plan defines 'bass' as both black basses (p. 2). Placed beside Rupp & DeRoche's rotenone counts it reads as a density; the rewrite should call it an objective the agency judged met, with no population estimate behind it."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "MDIFW's statewide stock objective, which counts all of Hot Brook's water as bass habitat, is 2 bass longer than 10 in (25 cm) per acre, about 5/ha",
+      "location": "p. 13",
+      "quote": "unusable habitat would include habitat deeper than 30 feet in most lakes",
+      "conditions": "the 1996 objective (bass > 10 in at 2.0 fish/acre over suitable habitat), reviewed in this 2001 plan; the plan's new objectives for 2015 are catch rates and sizes, not standing stock",
+      "verdict": "confirmed",
+      "note": "Hot Brook (5.5 and 4.0 m deep) has no water deeper than 30 ft, so all of it counts (project inference, sound). 'Is' should be 'was' (the 1996 objective), and 'bass' means both species."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row)",
+      "claim": "Maine young of the year are 56–74 mm at the end of the first season",
+      "location": "p. 3",
+      "quote": "lengths of 2.2 - 2.9 inches by the end of their first growing season",
+      "conditions": "'in most Maine waters where spawning occurs at the normal time'; 'some fast-growing individuals may reach lengths of 4 inches'",
+      "verdict": "confirmed",
+      "note": "2.2–2.9 in = 56–74 mm."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row)",
+      "claim": "smallmouth mature at ages 3–4 (males) and 4–5 (females)",
+      "location": "p. 2",
+      "quote": "Male smallmouth bass mature at 3 to 4 years of age",
+      "conditions": "Maine; 'while female bass mature by age 4 or 5'; males usually mature at a smaller length than females",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row)",
+      "claim": "smallmouth mature at 20–30 cm",
+      "location": "p. 2",
+      "quote": "Size at maturity ranges from 8 to 12 inches.",
+      "conditions": "Maine; total length presumably (not stated)",
+      "verdict": "confirmed",
+      "note": "8–12 in = 20.3–30.5 cm."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row)",
+      "claim": "effective fecundity 2,000–3,000 eggs/lb (≈ 4,400–6,600/kg)",
+      "location": "p. 2",
+      "quote": "has been estimated to be from 2,000 to 3,000 eggs per pound",
+      "conditions": "'effective fecundity' of female smallmouth (eggs actually released), per pound of body weight; no study cited",
+      "verdict": "confirmed",
+      "note": "2,000/0.4536 = 4,409; 3,000/0.4536 = 6,614 per kg."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row)",
+      "claim": "ovary fecundity 7,000–8,000 eggs/lb",
+      "location": "p. 2",
+      "quote": "total eggs in females may approximate 7000 – 8000 per pound of body weight",
+      "conditions": "total eggs in the ovaries; females do not release them all, 'as evidenced by angler observations of many eggs remaining after spawning'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row); §3.6; Table 3.6-1 (smallmouth row)",
+      "claim": "smallmouth nests from 12.8 °C, eggs laid at 15.6–18.9 °C",
+      "location": "p. 2",
+      "quote": "temperatures rise above 55° F, with egg deposition occurring at water temperatures between 60-66° F",
+      "conditions": "Maine; nest construction 'generally occurs' as water rises above 55 °F",
+      "verdict": "confirmed",
+      "note": "55 °F = 12.8 °C; 60–66 °F = 15.6–18.9 °C."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row); §3.6",
+      "claim": "smallmouth spawn mostly mid-May to mid-June in Maine",
+      "location": "p. 2",
+      "quote": "In Maine, most smallmouths spawn between mid-May through mid-June",
+      "conditions": "'depending on location and water temperatures'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-1 (smallmouth row: 'male, ~3–6 weeks')",
+      "claim": "male smallmouth guard for about 3–6 weeks",
+      "location": "p. 2",
+      "verdict": "unsupported",
+      "note": "Jordan says only that males 'remain to guard the eggs and fry for a few weeks'. The 3–6-week span is the project's synthesis from other sources (centrarchid_percid_esocid_parameters.md; Cooke et al. 2006 measured 28.4 d); attribute it to those, not to Jordan."
+    },
+    {
+      "paper": "Table 3.6-1 (smallmouth row: nest site)",
+      "claim": "gravel–cobble nests near wood or rock",
+      "location": "p. 2",
+      "quote": "Nests are usually constructed in shallow water near cover from rocks, logs, stumps",
+      "conditions": "also 'suitable shoreline spawning gravel, usually interspersed with cover' and stable water levels during spawning",
+      "verdict": "confirmed",
+      "note": "Jordan gives no depth; the row's 0.5–3 m comes from the other cited sources."
+    },
+    {
+      "paper": "Table 3.5-3 (smallmouth row); §3.7.4",
+      "claim": "smallmouth feeding and growth stop below 10 °C",
+      "location": "p. 2",
+      "quote": "water temperatures cooler than 50° F result in cessation of feeding and growth",
+      "conditions": "stated for first-year bass in their first winter; a general statement, no study cited",
+      "verdict": "confirmed",
+      "note": "50 °F = 10 °C."
+    },
+    {
+      "paper": "§3.6.8",
+      "claim": "the first winter is a period of 200-plus days below 50 °F (10 °C) without feeding",
+      "location": "p. 2",
+      "quote": "approximately 200+ day starvation period encountered during the first winter",
+      "conditions": "first-year smallmouth; sets the species' northern limit in Maine; 'direct relationship between size and overwinter survival' (p. 3)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "in many Maine waters populations consist 'primarily of fish from 8–13 inches' (20–33 cm) because spawning habitat is abundant and juvenile bass have few predators",
+      "location": "p. 20",
+      "quote": "comprised primarily of fish from 8-13 inches in length",
+      "conditions": "'the combination of highly abundant spawning habitat and lack of significant predators on juvenile bass'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "cool summers in 1986, 1992 and 1996 caused 'large-scale reductions of those cohorts', a first-winter bottleneck",
+      "location": "p. 24; p. 30 (Problem 6); p. 36",
+      "quote": "This environmentally caused phenomenon occurred in 1986, 1992, and 1996, resulting in large-scale reductions",
+      "conditions": "cohort reductions 'following a year of below-average summer temperatures'; p. 36 ties them to 'heavy over-winter mortalities of bass fry produced during cool summers'",
+      "verdict": "confirmed",
+      "note": "The plan also says warm summers in 5 of 6 years (1994–99) raised recruitment and lifted biologists' catch rates 2–3 times (pp. 20, 24–25)."
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "MDIFW cites a 'lack of significant predators on juvenile bass'",
+      "location": "p. 20",
+      "quote": "lack of significant predators on juvenile bass",
+      "conditions": "an assertion in the plan, no study cited",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "the MDIFW bass plan states that the link between forage species and bass growth in Maine is unknown",
+      "location": "p. 30 (Problem 7); p. 36",
+      "quote": "The relationship of forage species to growth of bass in Maine is unknown.",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/IFW/docs/strategic-management-plans/blackbass.pdf", "status": 403, "note": "maine.gov refuses scripts (919-byte HTML); the www1.maine.gov copy is identical to the human's file" }
+  ],
+  "notes": "Maine values the paper does not use but the rewrite may want: hatching 'within about 5-8 days at water temperatures common to most Maine waters' (p. 2) — Table 3.6-1's smallmouth incubation values come from other waters and omit this Maine figure; males abandon nests after small drawdowns or cooling, and late re-nesters' young may be too small to survive the first winter (pp. 2–3; relevant to §3.2.6 on water level); statewide harvest 0.25 bass/acre/yr (p. 13); experimental angling in eastern Maine 1–5 bass/angler-hour, 6–14 in 1999–2000 after warm summers (p. 25); 'many eastern Maine bass waters range from 20-60 bass/angler-day' (p. 13); southern US unmanaged waters average about 10 lb/acre of black bass (p. 20). Region F (Table 2): 70 bass lakes, 120,003 acres, 68 smallmouth-only. Statewide 1999: 2,378,600 bass angler-days, 3,456,135 bass caught, 123,800 kept (Tables 8, 11). Table 10's winter column is misprinted '1989-99'. The §3.5.2 'Jordan 1981' (white perch stock, via Stanley & Danie) and the 'Jordan et al. 2009' follow-ons (DFO pumpkinseed synopsis) are different works."
+}

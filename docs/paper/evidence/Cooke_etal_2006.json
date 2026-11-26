@@ -1,0 +1,53 @@
+{
+  "key": "Cooke_etal_2006",
+  "reader": "wave-3 batch 01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's PDF (Springer, Oecologia) posted on the first author's lab website (Fish Ecology and Conservation Physiology Lab, Carleton University, fecpl.ca, publication 85)",
+    "url": "https://www.fecpl.ca/wp-content/uploads/2006/07/Oecol-Cooke-et-al-2006.pdf",
+    "file": "docs/research_notes/fetched/v2/Cooke_etal_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 235) and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Cooke, Philipp, Wahl & Weatherhead, Oecologia 148: 235–249 (2006), doi:10.1007/s00442-006-0375-6, title as cited; the issue (2) is from Crossref (the PDF does not print it). The lab's publication list calls it 'Parental care energetics of six syntopic centrarchid fishes', but the article's own title page reads as cited."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed row); §3.5.4; Table 3.6-1 (pumpkinseed row)",
+      "claim": "pumpkinseed males guard about 6 days: 6.0 ± 0.4 d at 21.3 °C",
+      "location": "p. 239 (PDF p. 5), Table 1",
+      "quote": "Duration of care (days) 14.5 6.0 4.3 28.4 20.3 10.7 … 19.6 21.3 23.8",
+      "quote_from": "table",
+      "conditions": "Lake Opinicon, Ontario (44°33′N), May–July 2001; duration from fertilization until the male deserts the young, followed by radio telemetry plus snorkeling; n = 12 radio-tagged pumpkinseed males (mean TL 190.5 mm, 140.7 g; the authors had to pick larger-than-average nesting males to carry the transmitters); 21.3 °C is the mean lake temperature (1.2 m) over the species' care period; ± values are SE",
+      "verdict": "confirmed",
+      "note": "Read on the page image as well as the raw text. The ± is a standard error, not an SD; the rewrite should say so if it keeps the ±."
+    },
+    {
+      "paper": "Table 3.6-1 (pumpkinseed row: 'may re-nest')",
+      "claim": "pumpkinseed males may re-nest",
+      "location": "p. 245 (PDF p. 11), Discussion",
+      "quote": "Repeat spawning may be possible for all of the species we examined",
+      "conditions": "the authors add that this 'seems likely to occur only in instances where the brood was destroyed in early stages of development (Eipper 1975)'; they name bluegill, not pumpkinseed, as the multiple-bout spawner",
+      "verdict": "confirmed",
+      "note": "Cooke et al. support 're-nesting' only in this weak sense (possible after early brood loss). The research note's basis for the row (egg_survival_and_larval_production.md) is Danylchuk & Fox 1996: large males in good condition may nest twice — a source the row does not cite. Cooke et al. also say pumpkinseed nests often receive eggs from several females (p. 244)."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth row: 'male care ≈ 4 weeks'); §3.5.4 ('about 28 days in smallmouth'); §3.6.2 ('28.4 ± 2.2 days at Lake Opinicon')",
+      "claim": "smallmouth males guarded for 28.4 ± 2.2 days at Lake Opinicon, Ontario (about 4 weeks)",
+      "location": "p. 241 (PDF p. 7), Results; p. 239 (PDF p. 5), Table 1",
+      "quote": "to a high of 28.4 days (at 19.8°C) for smallmouth bass",
+      "conditions": "Lake Opinicon, Ontario, 2001; n = 13 radio-tagged smallmouth males (mean TL 364.5 mm, 691.5 g); mean water 19.8 °C during care; care ended on the last day it was seen, after two successive locations without offspring; includes care of the brood after it leaves the nest (only smallmouth and largemouth were found with young away from the nest); ± 2.2 is SE",
+      "verdict": "confirmed",
+      "note": "The ± is SE (Table 1 footnote: 'All mean values have SE bracketed below')."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://link.springer.com/article/10.1007/s00442-006-0375-6", "status": 303, "note": "Springer landing page (subscription journal); not followed — the author's lab copy was used instead" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/s00442-006-0375-6\"&format=json&resultType=core", "status": 200, "note": "MEDLINE record (PMID 16485098), no PMC full text" }
+  ],
+  "notes": "Other values in Table 1 (Lake Opinicon 2001, mean ± SE): care duration rock bass 14.5 d, bluegill 4.3, largemouth 20.3, black crappie 10.7; water during care: smallmouth 19.8 °C, pumpkinseed 21.3; egg diameter pumpkinseed 1.50 mm (0.63 mg), smallmouth 3.11 mm (7.17 mg), n = 15 nests each. Table 1's fecundity, age at maturity, longevity and larval size at hatch (pumpkinseed 2.6–3.1 mm, smallmouth 4.6 mm) are literature values (FishBase, Carlander 1977, Scott & Crossman 1973), not measurements. Duration of care rose with species size (rs = 0.966) and was not correlated with water temperature. Per kg, care was costliest for rock bass and smallmouth and cheapest for black crappie. The §3.6.2 follow-on 'Cooke et al. 2003' (nest success 50.6 ± 4.7 %) is a different paper (J. Therm. Biol. 28: 445–456), not this entry."
+}

@@ -1,0 +1,240 @@
+{
+  "key": "Brokaw_2001",
+  "reader": "wave-3 batch 01",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "MDIFW's own PDF of the assessment, from the agency's www1.maine.gov server (the cited URL)",
+    "url": "https://www1.maine.gov/ifw/docs/strategic-management-plans/pickerel.pdf",
+    "file": "docs/research_notes/fetched/v2/Brokaw_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'Chain Pickerel Assessment', Department of Inland Fisheries and Wildlife, Divisions of Fisheries and Planning; prepared by Ronald K. Brokaw, Regional Fishery Biologist, Region C, September 2001; update by Jim Lucas, Assistant Regional Fishery Biologist, January 2008. 17 pp., including the Warmwater Working Group summary of 24 January 2002. The update does not say which passages it changed; the survey data are from 1994–2000."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.6",
+      "claim": "chain pickerel spawn over flooded marsh vegetation after ice-out",
+      "location": "p. 2, Life History",
+      "quote": "Spawning occurs shortly after ice-out when adults move into swampy areas containing flooded vegetation.",
+      "conditions": "Maine; no study cited",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.4.10",
+      "claim": "pickerel spawn 'shortly after ice-out when adults move in to swampy areas containing flooded vegetation' and broadcast their eggs without a nest",
+      "source_value": "the source reads 'move into swampy areas' (one word), not 'move in to'; the rest is right",
+      "location": "p. 2, Life History",
+      "quote": "No nest is prepared as the eggs are randomly broadcast.",
+      "conditions": "Maine; several males usually attend each female; no parental care",
+      "verdict": "corrected",
+      "note": "Only the quotation needs fixing ('move into')."
+    },
+    {
+      "paper": "§3.4.8",
+      "claim": "in Maine young chain pickerel are 'largely confined to these patches of aquatic vegetation'",
+      "location": "p. 8",
+      "quote": "young of the year pickerel which are largely confined to these patches of aquatic vegetation",
+      "conditions": "young of the year; said in explaining why largemouth bass, 'which frequent weedy areas', are believed to prey on them",
+      "verdict": "confirmed",
+      "note": "The source says 'young of the year'; 'young' in the paper is fine but could be made exact."
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "chain pickerel 'was apparently native to only the southwestern portion of Maine' and was moved through southern, central and eastern Maine in the nineteenth century, from the Penobscot to the St. Croix in the early 1800s",
+      "location": "p. 2, Management History",
+      "quote": "The chain pickerel was apparently native to only the southwestern portion of Maine.",
+      "conditions": "'There are accounts of pickerel transplants being carried out in the early 1800's. One such transfer … was from the Penobscot to the St. Croix River'",
+      "verdict": "confirmed",
+      "note": "The routine transfers across southern, central and eastern Maine are the source's inference ('It is safe to assume that such introductions were routinely accomplished …'); its firm statement is that widespread transplants extended the range to much of the southern half of the state."
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "chain pickerel occur in 781 Maine waters",
+      "location": "p. 4; p. 5, Table 1",
+      "quote": "the species is now found in 781 waters totaling 514,205 acres",
+      "conditions": "MDIFW lake inventory, c. 2001; 586 of them (331,654 acres) are principal fisheries",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "MDIFW says only that pickerel maintain 'moderate to high density populations' wherever shallow weedy habitat exists",
+      "location": "p. 5",
+      "quote": "The species is generally able to maintain moderate to high density populations wherever it occurs.",
+      "conditions": "next sentence: 'As long as a lake contains relatively shallow, weedy habitat, the pickerel is likely to do well'; least abundant in oligotrophic waters lacking such habitat",
+      "verdict": "confirmed",
+      "note": "The paper joins the two sentences; the sense is kept. No density figure is given anywhere in the assessment."
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row); Table 3.6-7",
+      "claim": "Maine pickerel are 10–13 cm (102–127 mm, 4–5 in) after the first season, by September–October",
+      "location": "p. 2",
+      "quote": "first growing season in September-October, they typically range from 4 to 5 inches",
+      "conditions": "Maine, typical; no study cited",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "then 'likely' 6.4–8.9 cm a year",
+      "location": "p. 2",
+      "quote": "is likely in the range of 2.5 to 3.5 inches",
+      "conditions": "the annual growth increment, which 'varies widely depending upon habitat quality and abundance of prey'",
+      "verdict": "confirmed",
+      "note": "2.5–3.5 in = 6.4–8.9 cm."
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "ice-kept pickerel average 43 cm and 0.54 kg",
+      "location": "p. 11, Table 4",
+      "quote": "TOTALS 21 845 17.0 1.2",
+      "quote_from": "table",
+      "conditions": "pickerel kept by ice anglers in winter creel surveys of the previous 5 years: 21 waters, 845 fish; none from Regions C and F (which surveyed coldwater fisheries); 17.0 in and 1.2 lb",
+      "verdict": "confirmed",
+      "note": "Read in the raw text. 17.0 in = 43.2 cm; 1.2 lb = 0.54 kg. Region means range 14.9 in (Region D) to 18.8 in (Region G)."
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "pickerel mature at ages 3–4 at 33–41 cm",
+      "location": "p. 2",
+      "quote": "Pickerel attain sexual maturity at age 3-4, generally at lengths from 13 to 16 inches.",
+      "verdict": "confirmed",
+      "note": "13–16 in = 33.0–40.6 cm."
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "about 1.3 females per male",
+      "location": "p. 2",
+      "quote": "The sex ratio in pickerel populations usually favors females by about 1.3 to 1",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "10,000–12,000 eggs/lb (≈ 22,000–26,500/kg)",
+      "location": "p. 2",
+      "quote": "The typical female contains from 10,000-12,000 eggs per pound of body weight.",
+      "conditions": "eggs contained (ovarian), per pound of body weight",
+      "verdict": "confirmed",
+      "note": "10,000/0.4536 = 22,046; 12,000/0.4536 = 26,455 per kg."
+    },
+    {
+      "paper": "Table 3.5-2 (pickerel row)",
+      "claim": "eggs broadcast, no care, hatch in 1–2 weeks",
+      "location": "p. 2",
+      "quote": "the young hatch out after a 1 to 2 week incubation period",
+      "conditions": "'There is no parental care of eggs'; temperature not given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (pickerel row); §3.7.5",
+      "claim": "insects as juveniles, 'strongly piscivorous' after 18–23 cm (7–9 in)",
+      "location": "p. 2",
+      "quote": "length of 7 to 9 inches, the diet of juvenile pickerel changes to strongly piscivorous",
+      "conditions": "before that juveniles 'prey primarily on a variety of invertebrates, mostly immature aquatic insects' and occasionally a small fish",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "MDIFW lists yellow perch, white perch, sunfish, minnows and smelt as the pickerel's principal prey",
+      "location": "p. 2",
+      "quote": "Yellow perch, white perch, sunfish, minnows, and smelts comprise the principal prey species.",
+      "conditions": "also 'favored items include crayfish, frogs, and dragonfly nymphs'; no diet study cited",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "'many pickerel ponds support good numbers of 15–19 inch fish'",
+      "location": "p. 2",
+      "quote": "Many pickerel ponds support good numbers of 15-19 inch fish.",
+      "conditions": "'More productive waters commonly grow 20 to 23 inch fish'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "Maine anglers catch pickerel 2–2.5 times faster through the ice than in open water",
+      "location": "p. 10",
+      "quote": "ice fishing catch rates were 2- 2 ½ times higher than those for open water",
+      "conditions": "'In most regions', 1999 Angler Questionnaire, catch per angler-day (statewide 1.18 vs 0.49, Table 3)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8; §3.7.4",
+      "claim": "statewide catch was 0.49 pickerel per angler-day in summer against 1.18 through the ice",
+      "location": "p. 11, Table 3; p. 10, text",
+      "quote": "ALL Winter 406,400 86,000 1.18 0.25 21 Summer 783,800 47,300 0.49 0.03 6",
+      "quote_from": "table",
+      "conditions": "1999 Angler Questionnaire (recall survey), Maine lakes with pickerel fisheries; the text rounds summer to 0.50; on-site winter creel surveys gave only 0.24–0.28 per angler, mostly on salmonid-managed waters (p. 10)",
+      "verdict": "confirmed",
+      "note": "Read in the raw text."
+    },
+    {
+      "paper": "§3.5.8; §3.7.7",
+      "claim": "79 % of the winter catch and 94 % of the summer catch were released",
+      "location": "p. 10",
+      "quote": "ice anglers released 79% of the pickerel they caught while open water anglers released 94%",
+      "conditions": "statewide, 1999 Angler Questionnaire; winter creel surveys on 12 waters showed only 49 % released",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.8",
+      "claim": "345,000 winter angler-days were 18 % of statewide pickerel effort in 1999",
+      "location": "p. 8; p. 9, Table 2; p. 4",
+      "quote": "Open water fishing accounted for 82% of the annual use, while ice fishing comprised 18%.",
+      "conditions": "1999 Angler Questionnaire: 345,000 winter of 1,923,000 angler-days fishing for pickerel",
+      "verdict": "confirmed",
+      "note": "345,000 / 1,923,000 = 17.9 %. The summer total is 1,577,000 in Table 2 but 1,587,000 in the text (p. 4) and '1.6 million' on p. 5."
+    },
+    {
+      "paper": "§3.5.8; §3.7.7",
+      "claim": "statewide 0.133 million of the 1.19 million pickerel caught were kept, roughly 0.6–1 pickerel kept per hectare a year",
+      "location": "p. 11, Table 3; p. 5, Table 1",
+      "quote": "ALL Winter 406,400 86,000 1.18 0.25 21 Summer 783,800 47,300 0.49 0.03 6",
+      "quote_from": "table",
+      "conditions": "1999 Angler Questionnaire; statewide pickerel waters 514,205 acres (781 lakes), principal fisheries 331,654 acres (586 lakes)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Caught 406,400 + 783,800 = 1,190,200; kept 86,000 + 47,300 = 133,300. Per hectare: 133,300 / (514,205 × 0.4047 = 208,100 ha) = 0.64; over principal-fishery acreage (134,220 ha) = 0.99. The 0.6–1 range holds."
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "stocked brown trout were in 15 of 54 pickerel (28 %; mean length 43 cm, 16.9 in) at Brandy Pond, the smallest trout-eater 38 cm (15 in)",
+      "location": "p. 3",
+      "quote": "brown trout were observed in the stomachs of 15 (28%) of 54 pickerel",
+      "conditions": "1989 research project at Brandy Pond, Region F; newly stocked spring-yearling brown trout; 'The smallest pickerel, which had consumed a brown trout, measured 15.0 in'; mean of the 54 pickerel 16.9 in and 1.1 lb",
+      "verdict": "confirmed",
+      "note": "16.9 in = 42.9 cm; 15.0 in = 38.1 cm. One 18.0-in pickerel held 3 trout."
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "salmon smolts were in 21 % of pickerel over 25 cm (10 in) during a smolt run in Beddington Lake",
+      "location": "p. 3",
+      "quote": "stomachs of 21% of the pickerel examined that exceeded 10 inches",
+      "conditions": "Beddington Lake, Narraguagus River drainage, during the smolt migration; sample size not given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "MDIFW lists the low harvest, which leaves many pickerel to die of natural causes instead, among its management problems",
+      "location": "p. 13 (Problem 3); p. 16",
+      "quote": "well below the optimum, resulting in large losses of pickerel due to natural mortality",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "in Maine, largemouth bass are serious predators of young pickerel in weed patches, and pickerel have declined in small waters where largemouth became established",
+      "source_value": "Region A reports pickerel declines 'in a number of small waters where aquatic vegetation and/or spawning habitat is limited, and where largemouth bass have become established', and Region C has anecdotal angler reports; that largemouth are serious predators on young-of-year pickerel is stated as a belief ('It's believed …')",
+      "location": "p. 8",
+      "quote": "believed that largemouths, which frequent weedy areas, are serious predators on young",
+      "conditions": "regional reports (Region A, e.g. Barker Pond in Lyman) and anecdotal angler reports (Region C); no study cited",
+      "verdict": "corrected",
+      "note": "The paper drops the condition (small waters with limited vegetation or spawning habitat) and states the predation as fact. Hot Brook has no largemouth bass, so the point bears on the paper only as background."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/strategic-management-plans/pickerel.pdf", "status": 403, "note": "maine.gov refuses scripts; the www1.maine.gov URL served the PDF" }
+  ],
+  "notes": "Region F values the rewrite may want for §2.7's effort estimate: pickerel effort on Region F pickerel lakes in 1999 was 0.25 angler-days/acre in winter and 0.84 in summer (Table 2, p. 9; 41,000 and 136,000 days); Region F catch 1.73/angler-day through the ice and 0.88 in summer, 25 % and 10 % kept (Table 3). The text (p. 10) says Region F anglers kept 40 %, 'the highest of the seven regions', but Table 3 gives 40 % to Region E and 25 % to F — an internal inconsistency. Region F holds 107 pickerel lakes (137,037 acres), 83 of them principal fisheries (96,804 acres) (Table 1). Table 1's Region C principal-fishery acreage (5,440 for 95 lakes) looks misprinted. Type A (warmwater) lakes give 1.0–2.0 pickerel per angler in winter (p. 10). A late-1950s warden ice census gave 0.42 pickerel per hour (p. 9)."
+}
