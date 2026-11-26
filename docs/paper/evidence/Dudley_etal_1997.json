@@ -1,0 +1,79 @@
+{
+  "key": "Dudley_etal_1997",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the USGS publications warehouse's own PDF of the report (22 PDF pages, text layer); the conversion table read on the page image",
+    "url": "https://pubs.usgs.gov/wri/1997/4041/report.pdf",
+    "file": "docs/research_notes/fetched/v2/Dudley_etal_1997.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover (PDF p. 1) and contents",
+    "ok": true,
+    "note": "Dudley, Robert W., Olson, Scott A. & Handley, Michael. 1997. A preliminary study of runoff of selected contaminants from rural Maine highways. USGS Water-Resources Investigations Report 97-4041, Augusta, Maine; iv + 18 pp. Prepared with MDOT, MDEP and the University of Maine Water Research Institute."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.9",
+      "claim": "A Maine gravel road serving summer cottages exported 9.0 kg TP ha⁻¹ yr⁻¹",
+      "location": "p. 15 (PDF p. 19), Table 10; p. iv (PDF p. 4), conversion factors; p. 1 (PDF p. 5)",
+      "quote": "KPR … 0.04 … 8 … 21.6 … 1.7 … 2",
+      "quote_from": "table",
+      "conditions": "one site, Kimball Pond Road, New Sharon (Franklin County), an unpaved road with 'seasonal traffic serving several residences and a large number of summer cottages'; September 1992–August 1993; TP by persulfate digestion (all forms, which the authors call 'a maximum total phosphorus loading'); loads per area of the site's 13,200-ft² drainage (the west half of the road, its ditch and a 4–6-ft berm)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "8 lb/acre/yr × 1.12 (the report's factor) = 8.96 kg/ha/yr. The same table shows the two paved highways exported more TP per area (22 and 33 lb/acre/yr); the gravel road's distinction was the highest biologically available P (1.7–2 vs 0.9–1.3 lb/acre/yr). The paper's lead-in 'Gravel camp roads are among the most intense sources per hectare' should rest on that available P, not on TP"
+    },
+    {
+      "paper": "§3.2.9; §4.6",
+      "claim": "21.6 % of it algal-available",
+      "location": "p. 13 (PDF p. 17); p. 15 (PDF p. 19), Table 10",
+      "quote": "correction factor of 21.6 percent for the KPR site",
+      "conditions": "NaOH-extractable ('biologically-available') P as a share of persulfate TP in KPR road sediment samples (Table 9), applied to the TP load; the alternative regression estimate gave 2 lb/acre/yr available (25 % of TP)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "together with 41 t ha⁻¹ yr⁻¹ of sediment",
+      "location": "p. 15 (PDF p. 19), Table 10 and text",
+      "quote": "total sediment loads ranged from 36,500 to 148,000 lb/acre",
+      "conditions": "KPR is the 36,500 lb/acre/yr end (the paved sites 121,000 and 148,000); 'total sediment' includes particles up to 1–2 mm",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "36,500 lb/acre × 1.12 = 40,900 kg/ha = 40.9 t/ha/yr"
+    },
+    {
+      "paper": "§4.6; src/config.js:837 (ROAD_P 9.0, ROAD_AV 0.216, ROAD_W 4.5)",
+      "claim": "gravel roads yield 9.0 kg TP per hectare of road a year, 21.6 % available, applied to a 4.5-m road surface",
+      "source_value": "9.0 kg TP per hectare of the site's DRAINAGE AREA: the western half of the roadway plus the ditch along it and a 4–6-ft-high berm (13,200 ft², with 400 ft of the ditch lined), not per hectare of road surface",
+      "location": "p. 2 (PDF p. 6), site descriptions; p. 3 (PDF p. 7)",
+      "quote": "drainage area is 13,200 ft2 and consists of the western half of the roadway",
+      "conditions": "as above; the report gives no road length or width for the site",
+      "verdict": "corrected",
+      "note": "applying the yield to the road surface alone (ROAD_W 4.5 m) uses a smaller area than the one it was measured on. If the 400 ft of lined ditch spans the whole catchment (the report does not say), the drainage strip is ~10 m wide for half a road, and the per-metre-of-road load would be roughly four times the model's [inf]"
+    },
+    {
+      "paper": "src/config.js:837",
+      "claim": "Maine DEP's 2.0 kg/ha available P for roads",
+      "location": "p. 15 (PDF p. 19)",
+      "quote": "recommends an adjustment coefficient of 0.5 yielding 3.5 x 0.5 = 1.75 lb/acre/yr",
+      "conditions": "MDOT's TP export value of 3.5 lb/acre/yr for road-surface runoff (from Driscoll et al. 1990's mostly urban interstate data) times MDEP's availability coefficient 0.5 (Noel, Dennis, Dennis & Kuhns 1992)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "1.75 lb/acre/yr × 1.12 = 1.96 kg/ha/yr ≈ 2.0; strictly MDOT's export value with MDEP's coefficient"
+    },
+    {
+      "paper": "src/config.js:843",
+      "claim": "paved roads TP 22–33 lb/acre, 4 % available",
+      "location": "p. 15 (PDF p. 19), Table 10",
+      "quote": "RT2 … 0.19 … 22 … 4.07 … RT27 … 0.02 … 33 … 4.07",
+      "quote_from": "table",
+      "conditions": "Route 2 (ADT 6,540; repaved during the study) and Route 27 (ADT 1,690); winter sand plowed over the guard rails, so the paved sites' loads are 'likely to be low'",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Caveats the report itself lists (p. 16): one year of data; many runoff events unsampled or partly sampled; snow from outside the KPR catchment piled in its ditch; persulfate TP overstates algal-available P. Dissolved orthophosphate at KPR was only 0.04 lb/acre/yr."
+}

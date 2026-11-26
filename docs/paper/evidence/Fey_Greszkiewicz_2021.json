@@ -1,0 +1,51 @@
+{
+  "key": "Fey_Greszkiewicz_2021",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: the published article as reprinted (journal layout, pp. 1–10) in M. Greszkiewicz's doctoral dissertation, posted openly by the University of Gdańsk's Institute of Oceanography; only the article's pages (dissertation PDF pp. 46–55) were indexed. The whole dissertation is kept as Greszkiewicz_2021_dissertation.pdf",
+    "url": "https://old.oig.ug.edu.pl/sites/default/files/postepowania_naukowe/111968/praca/rozprawa_doktorska_m.greszkiewicz.pdf",
+    "file": "docs/research_notes/fetched/v2/Fey_Greszkiewicz_2021.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (as reprinted) and Crossref",
+    "ok": true,
+    "note": "Fey, Dariusz P. & Greszkiewicz, Martyna. 2021. Fisheries Research 236: 105843 (available online 26 December 2020); doi:10.1016/j.fishres.2020.105843."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-6 (northern pike, laboratory, dry feed)",
+      "claim": "larval pike grew 0.25 / 0.48 / 0.83 mm/d (SL) at 10 / 15 / 22 °C",
+      "location": "p. 1 (dissertation PDF p. 46), Abstract; p. 3 (PDF p. 48), Table 1; p. 4 (PDF p. 49)",
+      "quote": "highest rate observed at 22 °C (0.83 mm⋅d−1), a lower rate at 15 °C (0.48",
+      "conditions": "hatchery eggs reared in recirculating systems (3 tanks per temperature, 10 ± 0.6, 15 ± 0.4, 22 ± 0.5 °C; 15 and 22 °C reached within 24–48 h of hatching), fed dry fodder ad libitum every 1.5 h in the light after yolk-sac absorption; O₂ 7.8 mg/L; slopes of SL at age over days 0–28 from hatching (yolk-sac days included), SL corrected +0.7 mm for shrinkage; 9–27 mm SL; n = 720",
+      "verdict": "confirmed",
+      "note": "individual larvae grew up to 1.28 mm/d; growth rose 0.05 mm/d per °C; at 22 °C growth accelerated with age while at 10 and 15 °C it did not (p. 4)"
+    },
+    {
+      "paper": "§5.8 (lesson 'An adult set cannot grow a larva')",
+      "claim": "measured larval growth 0.25–1.21 mm/day from 10 to 24 °C (Górny 1992; Fey & Greszkiewicz 2021)",
+      "location": "p. 3 (PDF p. 48), Table 1",
+      "quote": "10 ◦C SL = 9.5191 + 0.2486 Age 240 0.853",
+      "quote_from": "table",
+      "conditions": "as above; Fey & Greszkiewicz supply the 0.25 mm/d at 10 °C (the low end); 1.21 at 24 °C is Górny's",
+      "verdict": "confirmed",
+      "note": "mean slope 0.2486 ≈ 0.25 mm/d SL; dry feed, not live zooplankton, so the model's full-ration-of-zooplankton comparison mixes diets"
+    },
+    {
+      "paper": "src/w3/fish3.js:795",
+      "claim": "pike larvae fed to excess grow 0.25 (10 °C) … 0.5–0.65 (15) … 0.7–1.0 (21) … mm/d (Górny 1992, Fey & Greszkiewicz 2021)",
+      "location": "p. 3 (PDF p. 48), Table 1; p. 2 (PDF p. 47), §2.2",
+      "quote": "feeding was conducted ad libitum every 1.5 h during periods with light",
+      "conditions": "as above",
+      "verdict": "confirmed",
+      "note": "Fey & Greszkiewicz's points: 0.25 at 10 °C, 0.48 at 15 °C, 0.83 at 22 °C. The 15 °C mean lies just below the comment's 0.5–0.65 band, and the 22 °C value sits in its '21' band; neither changes the comment's point"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/j.fishres.2020.105843?fields=openAccessPdf", "status": 200, "note": "no open-access PDF listed; the Elsevier article is paywalled (doi:10.1016/j.fishres.2020.105843)" }
+  ],
+  "notes": "The same dissertation reprints Greszkiewicz & Fey 2020 (Hydrobiologia 847: 3139–3152), on temperature and cannibalism in larval pike, at its PDF pp. 57 ff. Otolith growth also scaled with somatic growth (sagittae 5.5, 10.9, 20.6 µm/d at 10, 15, 22 °C)."
+}

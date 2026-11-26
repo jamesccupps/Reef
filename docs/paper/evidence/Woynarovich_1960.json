@@ -1,0 +1,55 @@
+{
+  "key": "Woynarovich_1960",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository: REAL, the Library of the Hungarian Academy of Sciences (MTAK), open PDF scan of the article (9 pages, with a text layer); table values read on the page images",
+    "url": "https://real.mtak.hu/198328/1/207_cut_MTA_TihanyiBiologiaiKutIntEvkonyve_27.pdf",
+    "file": "docs/research_notes/fetched/v2/Woynarovich_1960.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (running head) and the MTAK repository record",
+    "ok": true,
+    "note": "the page prints the journal only as 'Annal. Biol. Tihany 27 183–191, Hungária 1960'; MTAK records it as 'A Magyar Tudományos Akadémia Tihanyi Biológiai Kutatóintézetének Évkönyve' 27: 183–191 (ISSN 0365-3005). Author Elek Woynárovich; title as in the entry (the page writes '0,5 to 28° C'). Received 3 March 1960."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.9",
+      "claim": "Routine oxygen uptake of unfed pike larvae rose with a Q10 of about 2.4–2.6 between 5 and 25 °C (project calculation)",
+      "location": "p. 187 (PDF p. 5), Tables 2 and 3",
+      "quote": "Pike larva … Freshly-hatched I … 5,6 … II … 5,7 … III … 6,6",
+      "quote_from": "image",
+      "conditions": "O₂ uptake per g dry mass (mg/h) of yolk-sac to ready-to-feed (not yet fed) pike larvae, 3–30 larvae per vessel, 2-h closed-vessel incubations, Winkler O₂; larvae held at 10–20 °C, then 1–2 h at each test temperature (0.5, 5, 10, 15, 20, 25, 28 °C); 1958–59",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Table 3 gives the 25 °C ÷ 5 °C ratio (Woynárovich labels it Q20): 5.6, 5.7, 6.6 for stages I, II, III; it matches Table 2 (1.23/0.22, 4.13/0.72, 7.41/1.12). Q10 = ratio^(10/20) = 2.37, 2.39, 2.57 → 2.4–2.6. The rates are short-term responses (1–2 h at each temperature; the author found 10 min and 2 h gave the same result and judged that sufficient 'for their adaptation'), not rates after days of acclimation; saying so would help the reader"
+    },
+    {
+      "paper": "§5.8 (lesson 'An adult set cannot grow a larva')",
+      "claim": "the adult pike set's respiration Q10 (1.73) is shallower than a larva's (2.5; Woynárovich 1960)",
+      "location": "p. 187 (PDF p. 5), Table 3; p. 184 (PDF p. 2), methods",
+      "quote": "this period having proved to be sufficient for their adaptation",
+      "conditions": "as above: per g dry mass, pre-feeding larvae, 1–2 h at each test temperature",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "2.5 lies within the stages' 2.37–2.57 (2.57 for larvae ready to feed). The comparison sets a short-exposure larval Q10 against an adult set fitted on acclimated fish; the source does not test acclimation beyond 2 h, so the rewrite should state the exposure time"
+    },
+    {
+      "paper": "src/w3/fish3.js:550 (PIKE_JUV RQ = ln 2.5/10) and :798",
+      "claim": "respiration Q10 2.5 for first-feeding pike (Woynárovich 1960)",
+      "location": "p. 187 (PDF p. 5), Table 3",
+      "quote": "Pike larva … Before beginning to feed III … 6,6",
+      "quote_from": "image",
+      "conditions": "stage III: 'larvae respiring through the gills, the yolk substance already consumed but before they begin to food' (Summary, p. 190); 5 → 25 °C",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "6.6^0.5 = 2.57 for the ready-to-feed stage (2.4 at hatching); 2.5 is a fair round value. Not measured on feeding larvae, and only over 1–2-h exposures"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://real.mtak.hu/198328/", "status": 200, "note": "the repository landing page (indexed first, then replaced by the PDF it links)" }
+  ],
+  "notes": "Other values: per-100-larvae O₂ uptake (Table 1) and dry masses (100 larvae: 0.205 g at hatching, 0.169 g ready to feed; total length 8.55–12.7 mm). Uptake per g dry mass rose 4.5× from hatching to the ready-to-feed stage at a given temperature. Pike larvae tolerated 5 °C at first but died after 4–6 h at it later in development; the author judged 10–15 °C best for pike larvae and saw 'disadvantageous' changes above 21 °C (Fig. 1). Sheat-fish (wels) Table 3 stage III reads 7.7 though Table 2 gives 6.90/0.86 = 8.0 (not used by the paper)."
+}

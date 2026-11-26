@@ -18,7 +18,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-01 | Christensen_etal_1996, Duarte_1987, Johannsson_etal_2000, Mackereth_etal_1999, Suski_Ridgway_2009, Whitledge_etal_2003, Caceres_1998, Curry_etal_2005, Adams_1969 | done |
 | w2-02 | Dennis_1992, Feiner_etal_2017, Fernando_etal_2018, Gaeta_etal_2018, Garcia_Gordon_1992, Garrison_etal_2005, Gorny_1992, Gyllstrom_2005, Keast_Eadie_1984, Reeve_etal_2022 | done |
 | w2-03 | Hampton_2017, Linkenheld_2019, Lorenzen_1996, Power_1987, Reeve_etal_2025, Rice_etal_1983, Sass_etal_2006, Siefert_1972, Cech_etal_2012, Cole_Moring_1997 | done |
-| w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | running |
+| w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | done |
 | w2-05 | Edsall_1970, Fox_Keast_1991, Geen_etal_1966, Gilbert_1988, Graeb_etal_2004, Grosbois_etal_2017, Gumaa_1978, Harding_1997, Malm_etal_1997, Mills_Forney_1983 | done |
 | w2-06 | Hartman_Brandt_1995, Hartmanetal_2017, He_1986, Krieger_etal_1983, Lippert_etal_2007, Momot_Gowing_1977, Neves_1975, Persson_etal_2004, Randall_etal_2004, Bouffard_Wuest_2019 | done |
 | w2-07 | Robertson_etal_2019, Scheffer_etal_1995, Shuter_Ing_1997, Stewart_Binkowski_1986, Vachon_Prairie_2013, VanderZanden_Vadeboncoeur_2002, Wieser_etal_1992, Wu_Culver_1992, Boussion_2025, Brooks_Dodson_1965 | done |
@@ -33,7 +33,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | running |
 | add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | running |
-| w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | queued |
+| w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | running |
 | w3-03 | Smith_2002, Cowing_Scott_1980, MaineDEP_2003, Aalto_Newsome_1993 | queued |
 | w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | queued |
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | queued |

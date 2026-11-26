@@ -1,0 +1,138 @@
+{
+  "key": "Edwards_etal_2015",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "publisher's open data archive: ESA Ecological Archives E096-202 (the data paper's metadata page and its data files Table1.csv, Table2.csv, Table3.csv and NutrientTraits.zip; MD5 sums match those listed). The Ecology data paper itself is a one-page abstract; the metadata is its full text. Table1.csv and Table2.csv are saved as text beside it (Edwards_etal_2015.table1.txt, .table2.txt) and were summarised with a script",
+    "url": "https://esapubs.org/archive/ecol/E096/202/metadata.php",
+    "file": "docs/research_notes/fetched/v2/Edwards_etal_2015_data/metadata.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the archive's landing page",
+    "ok": true,
+    "note": "Edwards, Kyle F., Klausmeier, Christopher A. & Litchman, Elena. 2015. Nutrient utilization traits of phytoplankton. Ecology 96(8): 2311 (data paper; Ecological Archives E096-202-D1); data last updated December 2013."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.2; src/config.js:1553",
+      "claim": "across 61 freshwater measurements the median half-saturation for P-limited growth was 1.08 µg P/L (IQR 0.45–7.7)",
+      "location": "web page (metadata), Units and variable definitions; Table1.csv, column k_p_m",
+      "quote": "K m for phosphate-limited growth",
+      "conditions": "unialgal laboratory cultures, light not strongly limiting, phosphate the single limiting nutrient; Km in µmol/L (× 30.97 = µg P/L); temperatures 5–35 °C; the 61 records cover 28 species, several measured at more than one temperature; system coded 'freshwater'",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "recomputed from Table1.csv: n = 61, median 1.084, quartiles 0.450 and 7.74 µg P/L (R type-7 quantiles), range 0.003–88.6. The median of species means is 0.69 µg P/L; one record coded 'fresh' (Asterionella ralfsii) has no Km"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "diatoms 0.87 (Asterionella formosa 0.19–2.2)",
+      "location": "Table1.csv, k_p_m, freshwater diatoms",
+      "quote": "Asterionella formosa … 0.006 … 0.07 … 0.02 … 0.028",
+      "quote_from": "table",
+      "conditions": "25 freshwater diatom records; A. formosa's 7 records 0.006–0.07 µmol/L at 5–20 °C (Tilman 1981; Tilman & Kilham 1976; Van Donk & Kilham 1990; Holm & Armstrong 1981)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "diatom median 0.867 µg P/L (n = 25); A. formosa 0.186, 0.619, 0.619, 0.805, 0.867, 1.08, 2.17 µg P/L"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "small greens about 0.5",
+      "location": "Table1.csv, k_p_m, freshwater greens",
+      "quote": "Scenedesmus quadricauda … green … freshwater … 0.019032258",
+      "quote_from": "table",
+      "conditions": "a project subset: 14 records of unicellular and small colonial greens (Scenedesmus quadricauda, Chlorella, Chlamydomonas, Oocystis, Sphaerocystis, Selenastrum), excluding Volvox (10 records, 6–89 µg/L) and Scenedesmus obliquus (4 records, 7.7–41)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "the subset's median is 0.49 µg P/L (range 0.05–5.2). All 27 green records: median 5.2. Excluding S. obliquus is a choice (it is a small green too); with it the median is 0.64. Say 'about 0.5 (0.05–5)' and name the exclusions"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "Cryptomonas 0.43",
+      "location": "Table1.csv, k_p_m (citation 46, Grover 1989)",
+      "quote": "Cryptomonas sp. … cryptomonad … freshwater … 12 … 0.014",
+      "quote_from": "table",
+      "conditions": "one record, 12 °C, Grover 1989",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "0.014 µmol/L × 30.97 = 0.434 µg P/L"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "cyanobacteria 5.9",
+      "source_value": "median 3.5 µg P/L over the 8 freshwater cyanobacterial records (0.28, 0.52, 0.88, 1.10, 5.89, 10.3, 20.0, 40.1); 5.9 is the upper of the two middle values (Microcystis aeruginosa, Holm & Armstrong 1981)",
+      "location": "Table1.csv, k_p_m, freshwater cyano",
+      "quote": "Microcystis aeruginosa … cyano … freshwater … 23 … 0.6452",
+      "quote_from": "table",
+      "conditions": "Planktothrix agardhii 4 records (0.28–1.1, Ahlgren 1977, 1978), Microcystis 2 (5.9, 20), Anabaena 2 (10.3, 40.1); 15.5–26 °C",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "the research note's table (copepod_grazing_and_p_kinetics.md §2.1) has the same slip. The spread is bimodal: Planktothrix 0.3–1.1, bloom formers 6–40; 'cyanobacteria 0.3–40 (median 3.5)' or the genera separately would be clearer"
+    },
+    {
+      "paper": "§3.3.2; src/config.js:1553",
+      "claim": "Anabaena 10–40 (code: Microcystis, Anabaena 6–40 µg/L)",
+      "location": "Table1.csv, k_p_m (citations 29, 66, 7, 54)",
+      "quote": "Anabaena flos-aquae … cyano … freshwater … 24 … 0.3332",
+      "quote_from": "table",
+      "conditions": "A. flos-aquae 0.3332 µmol/L at 24 °C (Elder & Parker 1984); A. oscillarioides 1.2935 at 26 °C (Lam 1979); Microcystis 0.19 and 0.6452",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Anabaena 10.3 and 40.1 µg P/L; Microcystis 5.9 and 20.0"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "chrysophytes unmeasured",
+      "location": "Table1.csv",
+      "quote": "Dinobryon sociale var. americanum … chrysophyceae … freshwater … 20 … 0.39",
+      "quote_from": "table",
+      "conditions": "the only chrysophyte record (Dinobryon) has an uptake K (0.39 µmol/L) but no growth Km",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "half-saturation for uptake was about 20 times higher (24.8 µg P/L)",
+      "location": "web page (metadata), variable k_p; Table1.csv",
+      "quote": "K for phosphate uptake",
+      "conditions": "Michaelis–Menten uptake by strongly P-depleted or starved cells only; freshwater, n = 101",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "median 24.78 µg P/L (quartiles 10.5–47.7); 24.78 / 1.084 = 22.9"
+    },
+    {
+      "paper": "§3.3.2",
+      "claim": "maximum P-limited growth a median 0.63/d",
+      "location": "web page (metadata), variable mu_p; Table1.csv",
+      "quote": "max for phosphate-limited growth",
+      "conditions": "µmax from Monod fits or from growth at saturating supply; freshwater, n = 77; mixed temperatures (5–35 °C) and light",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "median 0.63 d⁻¹ (quartiles 0.48–0.88)"
+    },
+    {
+      "paper": "§4.4",
+      "claim": "a P half-saturation of 1 µg/L for all algae but the cyanobacteria (Edwards et al. 2015's compiled median is 1.08)",
+      "location": "Table1.csv, k_p_m",
+      "quote": "K m for phosphate-limited growth",
+      "conditions": "as for the 61-record median",
+      "verdict": "confirmed",
+      "kind": "arithmetic"
+    },
+    {
+      "paper": "src/config.js:1553",
+      "claim": "Tilman & Kilham 1976 0.62 (from the compilation)",
+      "location": "Table1.csv (citation 117) and Table2.csv",
+      "quote": "Asterionella formosa … diatom … freshwater … 20 … 0.02 … 117",
+      "quote_from": "table",
+      "conditions": "A. formosa at 20 °C, Tilman & Kilham 1976 (J. Phycol.)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "0.02 µmol/L × 30.97 = 0.62 µg P/L. The same paper's Cyclotella meneghiniana: 7.74"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1890/14-2252.1", "status": 403, "note": "Wiley refuses scripted access (the printed data paper is an abstract only)" }
+  ],
+  "notes": "Script used for the summaries: Python over Table1.csv (CR line endings), µmol/L × 30.973762 = µg P/L, R type-7 quantiles. Other freshwater values: Droop µ∞ median 1.01 d⁻¹ (n = 31); marine Km median 5.1 µg P/L (n = 18). The metadata warns that µ∞ is a curve-fitting parameter that exceeds the attainable µmax."
+}

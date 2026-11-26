@@ -1,0 +1,71 @@
+{
+  "key": "Copp_etal_2004",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free PDF (Institute of Vertebrate Biology, Brno, Folia Zoologica's former open archive), as captured by the Wayback Machine on 1 March 2005 (openly downloadable); Table 1 read on the page images",
+    "url": "http://web.archive.org/web/20050301012525id_/http://www.ivb.cz:80/folia/53/3/237-254.pdf",
+    "file": "docs/research_notes/fetched/v2/Copp_etal_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page",
+    "ok": true,
+    "note": "Copp, G. H., Fox, M. G., Przybylski, M., Godinho, F. N. & Vila-Gispert, A. 2004. Folia Zoologica 53(3): 237–254. Received 1 April 2004, accepted 20 July 2004."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed row)",
+      "claim": "Ontario–Quebec back-calculated SL 25–41, 46–60, 61–95 mm at ages 1–3 (Copp et al. 2004)",
+      "source_value": "Table 1's eight Ontario and Québec populations: SL 25–41 mm at age 1, 42–61 at age 2, 57–87 at age 3 (Ontario's seven alone: 25–41, 46–61, 61–87). No Ontario or Québec population reaches 95 mm by age 3",
+      "location": "pp. 240–241 (PDF pp. 4–5), Table 1",
+      "quote": "Lower Dowsley Pond … 31 61 87 … Lac Vert … 27 42 57",
+      "quote_from": "table",
+      "conditions": "mean back-calculated standard length at age from scales, compiled from published sources (Fox & Keast 1990; Sun & Harvey 1986; Deacon & Keast 1987; Beaulieu 1979); populations with fewer than 5 age classes excluded; TL and FL sources converted to SL by the original authors' factors or Carlander's SL = TL/1.25",
+      "verdict": "corrected",
+      "note": "the research note (recruitment_compensation_maturity.md) misread Table 1's rows: its 'Upper Poole Pond 30/60/95' is Houghton Lake, Michigan, and its other rows carry neighbouring populations' values (its 'Lake Opinicon 34/52/70' is Upper Poole; 'Lower Dowsley 41/55/70' is Opinicon; 'Upper Beverly 25/46/61' is Crosson; 'Lac Vert 35/52/68' is Lower Beverly). The rows: Lower Dowsley 31/61/87, Opinicon 41/55/70, Upper Poole 34/52/70, Plastic 25/48/66, Crosson 25/46/61, Upper Beverly 31/46/65, Lower Beverly 35/52/68, Lac Vert 27/42/57. In the printed table Plastic Lake's and Lac Vert's latitudes are set in the A1 column; Table 2's maximum ages (6) confirm the reading above"
+    },
+    {
+      "paper": "Table 3.5-2 (pumpkinseed row)",
+      "claim": "all mature by ages 2–5 (Fox 1994, via Copp et al. 2004)",
+      "location": "p. 239 (PDF p. 3), Material and Methods",
+      "quote": "the period in which 100% maturation would be achieved in most pumpkinseed populations",
+      "conditions": "a statement about the period between ages 2 and 5, citing Fox 1994 (Ontario); the same paragraph: the majority 'achieve maturity during their third year of life (age 2 to age 3 increment)' in native and introduced populations",
+      "verdict": "confirmed",
+      "note": "'in most populations' — Copp et al. stress that age at maturity varies (Fox 1994; Copp et al. 2002)"
+    },
+    {
+      "paper": "src/species.js:277",
+      "claim": "Ontario pumpkinseed 3.3–5.2, 5.8–7.5, 7.6–11.7 cm TL at ages 1–3 (Copp et al. 2004, SL → TL by Fernando et al. 2018)",
+      "source_value": "from Table 1's correct SL ranges and the same conversion (TL = 2.761 + 1.202·SL mm, as the project states it): 3.3–5.2, 5.3–7.6 and 7.1–10.7 cm TL at ages 1–3 for Ontario and Québec (Ontario alone: 3.3–5.2, 5.8–7.6, 7.6–10.7)",
+      "location": "pp. 240–241 (PDF pp. 4–5), Table 1",
+      "quote": "Lower Dowsley Pond … 31 61 87 … Lac Vert … 27 42 57",
+      "quote_from": "table",
+      "conditions": "as above",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "the code's 7.5 and 11.7 come from the misread 60 and 95 mm SL (the latter Houghton Lake, Michigan). The Fernando et al. 2018 conversion is not in Copp et al. and was not checked here; Copp et al. themselves used SL = TL/1.25 for TL-reported sources, so converting back with a different formula is not exact"
+    },
+    {
+      "paper": "src/species.js:278",
+      "claim": "northern pumpkinseed mature at age 2–3 (Copp et al. 2004)",
+      "location": "p. 239 (PDF p. 3)",
+      "quote": "achieve maturity during their third year of life (age 2 to age 3 increment)",
+      "conditions": "'the majority of pumpkinseeds in both native and introduced populations (Fox 1994, Fox & Crivelli 2001)'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:278 (Lmat 7.5, LmatM 6.5)",
+      "claim": "northern pumpkinseed mature at ~6–8 cm TL (Copp et al. 2004)",
+      "verdict": "unsupported",
+      "note": "Copp et al. give no length at maturity anywhere; the 6–8 cm is the project's inference from the size at ages 2–3, made with the misread ranges. From Table 1 correctly read, Ontario–Québec pumpkinseed are 42–61 mm SL at age 2 and 57–87 mm at age 3 (≈ 5.3–10.7 cm TL by the project's conversion). Fox & Keast 1991 (cited beside it) or Fox 1994 would be the sources for size at maturity"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "http://hdl.handle.net/10256/9378", "status": 500, "note": "the handle server redirects to DUGiDoc (Universitat de Girona)" },
+    { "url": "https://dugi-doc.udg.edu/handle/10256/9378", "status": 0, "note": "connection timed out twice" },
+    { "url": "https://www.ivb.cz/folia/53/3/237-254.pdf", "status": 404, "note": "the publisher's old free archive is gone (redirects to a login/404); its 2005 capture was used" }
+  ],
+  "notes": "A Wayback capture of the Girona repository copy also exists (http://web.archive.org/web/20240806142139/https://dugi-doc.udg.edu/bitstream/handle/10256/9378/Life-time-growth.pdf?sequence=1). Other values: North American mean SL at ages 1–5: 35, 60, 82, 100, 116 mm; 'realistic' von Bertalanffy L∞ means 147.1 mm SL (North America) vs 113.8 (Europe); Table 2 gives L∞, k, t0 per population (e.g. Upper Poole 145.5 mm, k 0.21; Lac Vert 153.0, k 0.16; Opinicon 184.5, k 0.14). Copp et al. warn that most North American L∞ estimates are unrealistic (only 20 % pass their 20 % criterion)."
+}

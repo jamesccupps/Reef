@@ -1,0 +1,84 @@
+{
+  "key": "Cooley_1973",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "university repository: Dalhousie University's DalSpace (Scholaris) open PDF of the thesis scan (148 pages, OCR text layer with heavy noise); Appendix 1 values read on the page image",
+    "url": "https://dal.scholaris.ca/bitstreams/d31c02fa-f1b3-48a8-9d4e-e535267c2dbe/download",
+    "file": "docs/research_notes/fetched/v2/Cooley_1973.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 3) and Dalhousie's release form (PDF p. 4)",
+    "ok": true,
+    "note": "John Morgan Cooley, Ph.D. thesis, Department of Biology, Dalhousie University, Fall 1973 (release form dated 4 September 1973). Title as in the entry ('Leptodiaptomus minutus Lillj. (Copepoda: Calanoida) in Bluff Lake, Nova Scotia')."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.5",
+      "claim": "L. minutus breeds 'intensely late in winter under ice or early in spring'",
+      "location": "p. 77 (PDF p. 102), General Discussion",
+      "quote": "breeding intensely late in winter under ice or early in spring",
+      "conditions": "Cooley's summary of the species' life cycle across its range (Newfoundland, Experimental Lakes Area, Clear Lake, Bluff Lake), describing 'an overwintering population, primarily adult'",
+      "verdict": "confirmed",
+      "note": "the same sentence goes on: breeding continues until late fall; summer egg production is 'quite low' but may rise again in the fall"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "in unstratified Bluff Lake, Nova Scotia",
+      "source_value": "mostly unstratified: about 75 % of the 4.8-ha lake lies above 4 m and stays unstratified all year; the deepest point (7 m) stratifies in summer (Fig. 2 isotherms; Table 6 refers to the lake 'when stratified')",
+      "location": "p. 11 (PDF p. 24), Fig. 2 caption; p. 76 (PDF p. 101)",
+      "quote": "Approximately 75% of Bluff L. is above 4m and remains unstratified",
+      "conditions": "small oligotrophic seepage lake near Halifax (no inlet, a trickling outlet), sampled October 1970 to May 1972",
+      "verdict": "corrected",
+      "note": "write 'mostly unstratified' or 'shallow (75 % above 4 m), largely unstratified'"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "adults overwintered, subitaneous eggs appeared from February and hatched in March, the first generation matured from mid-August",
+      "location": "p. vi (PDF p. 11), Abstract; p. 23 (PDF p. 37)",
+      "quote": "began producing subitaneous eggs in February which hatched in March",
+      "conditions": "Bluff Lake, 1970–72; the next words: 'to provide a first generation of animals that developed slowly; and began maturing in mid-August'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "from mid-October every egg was a diapausing egg",
+      "location": "p. 23 (PDF p. 37); p. 42 (PDF p. 60)",
+      "quote": "continuous from Feb. until mid-October when all eggs produced become",
+      "conditions": "recruitment from subitaneous eggs February to mid-October; p. 42: 'By Oct. 11 all eggs collected from live plankton samples were in diapause' (1971); egg production stopped in mid-November",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "in Bluff Lake the calanoid's diapausing eggs hatched in March after a 4 °C chill",
+      "source_value": "in the lake they hatched in March (late February in the Discussion, p. 80), with the subitaneous eggs; the chill is a laboratory result: eggs moved to 14 °C never hatched without prior time at 4 °C, but eggs kept at 8 °C (no 4 °C) began hatching after 6 months, and none hatched in under about 1 month whatever the treatment",
+      "location": "p. 51 (PDF p. 69); p. 50 (PDF p. 68), Table 13; p. vi (PDF p. 11), Abstract",
+      "quote": "incubated at 14 °C ever hatched unless they had a prior cold treatment",
+      "conditions": "laboratory, diapausing L. minutus eggs collected 28 Oct–4 Nov 1971, held dark or lit at 4, 8 or 14 °C; under-ice lake temperatures were not recorded (equipment failure, Fig. 2)",
+      "verdict": "corrected",
+      "note": "suggested: 'hatched in March; in the laboratory they needed a cold period (4 °C, or 6 months at 8 °C) before warmth'"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "in Bluff Lake the overwintering adults, not the eggs, carried the population",
+      "location": "p. 81 (PDF p. 106)",
+      "quote": "production of diapausing eggs does not appear to be absolutely necessary",
+      "conditions": "estimated diapausing eggs deposited in fall 1970 and 1971: at most 380 and 450 (×10²/m²), against 4,384 and 2,280 (×10²/m²) subitaneous eggs laid by the overwintering adults; sediment traps suggested about half the diapausing-egg estimate",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/config.js:1477 (ZOO3 comment)",
+      "claim": "adult Leptodiaptomus minutus lost ~0.0005/day Nov–May in Bluff Lake (and overwinter on lipid)",
+      "location": "p. 89 (PDF p. 115); Appendix 1 (PDF p. 138), 'Cor Ad' column",
+      "quote": "calculated by assuming that their maximum numbers were 580",
+      "conditions": "Appendix 1's corrected adult totals, a smooth curve drawn by eye through scattered counts: 580 ×10²/m² on 15 Nov 1970 (and through 20 Feb 1971), 560 in March, 540 from mid-April, 530 on 15 May; the overwintering adults had no recruitment until August",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "ln(580/530) / 181 d (15 Nov → 15 May) = 0.00050 d⁻¹. The raw adult counts scatter widely (e.g. 885, 981, 793, 545 in Feb–Mar), so the rate is that of the hand-smoothed curve. 'On lipid' is not from Cooley, who does not discuss lipid; Grosbois et al. 2017 (also cited) must carry it"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values: Bluff Lake 4.8 ha, max 7 m, Secchi 0.3–4.3 m, pH 5.3–6.8 (Tables 1–2). L. minutus 'multivoltine': three 1971 cohorts; mortality greatest May–October, partly from Epischura nordenskioldi and Mesocyclops edax. Development time and dry weights of each instar are in Tables 8–9 and 17–19. The thesis text is an OCR'd typescript: quote digits from the page images."
+}

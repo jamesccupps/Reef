@@ -1,0 +1,57 @@
+{
+  "key": "Weis_Sass_2011",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the published Taylor & Francis PDF (with T&F's download cover page, 'downloaded by Wisconsin Dept of Natural Resources') posted openly on the Wisconsin DNR website (Sass's agency); all 9 article pages read",
+    "url": "https://dnr.wisconsin.gov/sites/default/files/topic/Fishing/Outreach_BassNestsCWD.pdf",
+    "file": "docs/research_notes/fetched/v2/Weis_Sass_2011.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (PDF p. 2) and T&F cover page (PDF p. 1); Crossref",
+    "ok": true,
+    "note": "Weis, Jerome J. & Sass, Greg G. 2011. NAJFM 31(5): 943–951 (a Management Brief); doi:10.1080/02755947.2011.633688. Crossref now lists the publisher as Oxford University Press (the AFS journals moved); the printed copy is T&F's."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.8 (footnote to the wood-density table)",
+      "claim": "Weis & Sass (2011) cite 66.3 logs/km for undeveloped northern Wisconsin lakes (corroborating Marburg et al. 2006's ≥ 10-cm row)",
+      "location": "p. 944 (PDF p. 3), Study Sites",
+      "quote": "for undeveloped lakes in northern Wisconsin (median = 66.3 logs/km",
+      "conditions": "a median, cited from Marburg et al. 2006; CWH defined in this paper as logs > 10 cm diameter and > 150 cm long",
+      "verdict": "confirmed",
+      "note": "matches the ≥ 10-cm definition the footnote corroborates. Same page: Little Rock Lake's basins held 344 and 475 logs/km, Camp Lake 41; ~75 % removed from Little Rock–Reduction after the 2002 season left 128 logs/km; Camp's addition (1 tree per 10 m of shore) raised it to 141 logs/km"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Wood explained only 8–12 % of the variation in largemouth nest density along the shores of two undeveloped lakes",
+      "source_value": "8 % (all nests) and 12 % (first-sweep nests only) are the best case: one basin (Camp Lake's southern basin) in one season (2002), the only significant within-basin relationship of six basin-seasons; in the other five, adjusted r² was −0.04 to 0.06 and not significant (Tables 4–5). Among the three basins and three seasons, whole-basin CWH density alone explained r² = 0.04 of nest density and dropped out of the best model (survey duration r² 0.80)",
+      "location": "p. 947 (PDF p. 6), Within-Basin Analysis and Tables 4–5; p. 949 (PDF p. 8), Discussion",
+      "quote": "this saturating relationship was only statistically significant in one of six cases",
+      "conditions": "3 basins of 2 small (8–16 ha), undeveloped, oligotrophic northern Wisconsin seepage lakes, 2002–2004; 1,703 nests found by snorkel sweeps to 3 m; CWH and nests counted per 50-m shoreline transect (loge(x+1))",
+      "verdict": "corrected",
+      "note": "the conclusion the paper draws (wood does not always limit nesting) is the authors' own: 'CWH did not directly limit largemouth bass nest densities'. Suggested wording: 'local wood density explained at most 8–12 % of nest density (one basin, one season; elsewhere none), and whole-basin wood additions and removals had no clear effect'. Most nests (68 %) were on beds of short isoetid plants; 41 % were more than 1.25 m from any structure"
+    },
+    {
+      "paper": "src/config.js:817",
+      "claim": "2 % of 652 nests near structure were by human structure",
+      "location": "p. 947 (PDF p. 6), Table 3",
+      "quote": "Human structure 12 18 … Total nests 652",
+      "quote_from": "table",
+      "conditions": "nests within 0.5 m of their nearest prominent structure (652 of 1,703); within 1.25 m: 18 of 1,011. 'Human-created structures' are defined as 'cinderblocks and wooden planks' in these undeveloped lakes",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "12 / 652 = 1.8 % ≈ 2 % (18 / 1,011 = 1.8 % within 1.25 m)"
+    },
+    {
+      "paper": "src/config.js:817; src/w3/fish3.js:2577 (CAMP3.FISH)",
+      "claim": "no bass nests on a dock's footprint (Weis & Sass 2011, with Lawson 2011)",
+      "verdict": "unsupported",
+      "note": "Weis & Sass studied lakes with 'no lakeshore residential development' (p. 944): there were no docks, and nothing in the paper concerns nesting under or beside docks. Their 'human structures' (cinderblocks, planks) had 12 nests within 0.5 m — bass did nest beside them, in proportion to how rare such structures were (no availability data are given). The rule must rest on Lawson et al. 2011 alone (not read here); drop Weis & Sass from both comments"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other useful values: nest densities 52.4–129.0 nests/km (Table 1); adult density 27–120 fish/ha; egg-to-swim-up development 6–17 d (median 10 d); rocky reefs nearly devoid of wood held 7–15 % of nests; nest substrate isoetid beds 68 %, sand 18 %, rocks or pebbles 6 %. The authors warn that large-reservoir studies (> 40 ha) with wind exposure found stronger structure effects."
+}

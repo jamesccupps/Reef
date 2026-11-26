@@ -1,0 +1,56 @@
+{
+  "key": "Doudoroff_Shumway_1970",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "university repository: Oregon State University's ScholarsArchive (the authors' institution) open PDF scan of FAO Fisheries Technical Paper No. 86 itself (303 PDF pages, text layer); Table 1 read on the page image",
+    "url": "https://ir.library.oregonstate.edu/downloads/rv042t98q?locale=en",
+    "file": "docs/research_notes/fetched/v2/Doudoroff_Shumway_1970.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF pp. 1, 3) and the 'Preparation of this paper' page (PDF p. 4)",
+    "ok": true,
+    "note": "Doudoroff, Peter & Shumway, Dean L. Dissolved oxygen requirements of freshwater fishes. FAO Fisheries Technical Paper No. 86 (FIRI/T86), FAO, Rome, June 1970; 291 p.; 'Distribution restricted'. Also Oregon Agricultural Experiment Station Special Report No. 281. (AGRIS lists it as 1971.) The parts relevant here were read in context (pp. 44, 55–56, 62, 71); the whole 291-page review was not read."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (smallmouth bass row)",
+      "claim": "lethal at 0.5–1.6 mg/L in declining-oxygen tests (4-g fish; Burdick et al. 1954, via Doudoroff & Shumway 1970)",
+      "source_value": "loss of equilibrium, not death, is the endpoint: 4-g smallmouth in sealed vessels with declining O₂ at 11–27 °C lost equilibrium first at 0.9–1.6 mg/L, 50 % at 0.6–1.2 and 100 % at 0.5–1.0 mg/L; the median level rose by 40–62 % from the lowest to the highest temperature",
+      "location": "p. 44 (PDF p. 55), Table 1 (cont.); p. 71 (PDF p. 82)",
+      "quote": "Smallmouth bass 4 g 0.9-1.6 First* Declining O2 11-27 Burdick et al. (1954)",
+      "quote_from": "image",
+      "conditions": "Table 1, 'Summary of lethal levels of dissolved oxygen published after the year 1937'; the same table lists 255-g smallmouth at < 2.0 mg/L, 100 %, declining O₂, 15–25 °C (Black et al. 1954)",
+      "verdict": "corrected",
+      "note": "D&S treat loss of equilibrium in sealed vessels as the 'lethal level' (p. 71: 'concentrations at which loss of equilibrium occurred in sealed vessels'); the paper should name the endpoint and the temperature span, since the levels rise with temperature"
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "smallmouth in declining-oxygen tests died at 0.5–1.6 mg/L (Burdick et al. 1954, via Doudoroff & Shumway 1970)",
+      "source_value": "lost equilibrium (first fish to all fish) at 0.9–1.6 to 0.5–1.0 mg/L; 4-g fish, sealed vessels, 11–27 °C",
+      "location": "p. 71 (PDF p. 82); p. 44 (PDF p. 55), Table 1",
+      "quote": "concentrations at which loss of equilibrium occurred in sealed vessels",
+      "conditions": "as above",
+      "verdict": "corrected",
+      "note": "suggested: 'smallmouth (4 g) in sealed, declining-oxygen tests lost equilibrium at 0.5–1.6 mg/L between 11 and 27 °C'"
+    },
+    {
+      "paper": "src/species.js:250 (o2Ice comment)",
+      "claim": "the lethal O₂ found in natural winterkills under the ice (Cooper & Washburn 1946) was accepted by Doudoroff & Shumway 1970 over caged-fish values",
+      "location": "pp. 55–56 (PDF pp. 66–67); p. 62 (PDF p. 73)",
+      "quote": "we cannot accept as valid Moore's conclusions concerning O2 concentrations",
+      "conditions": "Moore (1942) held fish in cages in lakes (winter lethal levels 2.3 mg/L for largemouth and pike, 1.5 for perch); D&S set against them Cooper & Washburn's natural under-ice thresholds (about 0.6 mg/L for largemouth, 0.4–0.3 for pike and yellow perch) and cite them 'in support of our view'",
+      "verdict": "confirmed",
+      "note": "D&S cite Cooper & Washburn as 1949 (Trans. Am. Fish. Soc., the 1946 volume printed in 1949), not 1946. They suggest the caged fish's capture, handling and sudden exposure lowered their resistance"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.fao.org/inland-fisheries/tools/detail/en/c/1149239", "status": 200, "note": "FAO catalogue page with excerpts; no PDF link" },
+    { "url": "https://openknowledge.fao.org/server/api/discover/search/objects?query=%22Dissolved%20oxygen%20requirements%20of%20freshwater%20fishes%22", "status": 403, "note": "FAO repository refuses scripted access" },
+    { "url": "https://catalog.hathitrust.org/Search/Home?lookfor=%22dissolved+oxygen+requirements+of+freshwater+fishes%22&type=title", "status": 403, "note": "bot challenge; not pursued" },
+    { "url": "https://archive.org/advancedsearch.php?q=title%3A%28dissolved+oxygen+requirements+freshwater+fishes%29", "status": 200, "note": "no Internet Archive items" }
+  ],
+  "notes": "Also in Table 1 p. 44: largemouth 4–14 g, 25–35 °C, estimated 24-h tolerance limits 0.9–1.4 mg/L at constant O₂ and 0.8–1.2 under gradually declining O₂ (Moss & Scott 1961). p. 71: Burdick, Dean & Harris 1957 measured yellow perch at about 12–21 °C. The review's general point (p. 54, PDF p. 65): Moore's caged-fish values are 'misleading', and laboratory endurance limits can differ from tolerance thresholds under natural conditions."
+}

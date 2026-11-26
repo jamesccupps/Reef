@@ -1,0 +1,40 @@
+{
+  "key": "Couture_Watzin_2008",
+  "reader": "wave-2 batch w2-04",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained: BioOne and the DOI resolver stop at a bot check; no open copy or thesis found" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (queried with the DOI's brackets URL-encoded)",
+    "ok": true,
+    "note": "Couture, Sam C. & Watzin, Mary C. 2008. Diet of invasive adult white perch (Morone americana) and their effects on the zooplankton community in Missisquoi Bay, Lake Champlain. Journal of Great Lakes Research 34(3): 485–494 (Crossref: September 2008; publisher now Elsevier). show.mjs's 'DOI NOT FOUND' is a parsing artefact."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "adult white perch in Missisquoi Bay ate Daphnia heavily only when it exceeded 20/L and half the zooplankton",
+      "verdict": "unchecked",
+      "note": "the paper already flags it 'known second-hand, original not reached'. A search engine's summary of the abstract (not a source) gives the same figures (> 20 Daphnia/L and > 50 % of the zooplankton; benthic prey otherwise; 10 dates in spring–summer 2005)"
+    },
+    {
+      "paper": "Table 3.5-3 (white perch row)",
+      "claim": "Daphnia only when > 20/L (Lake Champlain; relayed by a search summary)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/species.js:349 (white perch comment)",
+      "claim": "large white perch eat small fish including their own young (Couture & Watzin 2008)",
+      "verdict": "unchecked",
+      "note": "doubtful attribution: the abstract as relayed mentions Daphnia and benthic prey, not fish or cannibalism. Check the full text, or cite a source that reports piscivory (e.g. Cooper 1941, whose white perch ≥ 15 cm had 26 % fish by volume, per Table 3.5-3)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://bioone.org/journals/journal-of-great-lakes-research/volume-34/issue-3/0380-1330(2008)34[485:DOIAWP]2.0.CO;2/Diet-of-Invasive-Adult-White-Perch-Morone-americana-and-their/10.3394/0380-1330(2008)34[485:DOIAWP]2.0.CO;2.full", "status": 200, "note": "Incapsula bot-check page (77 characters of text); not pursued" },
+    { "url": "https://doi.org/10.3394/0380-1330(2008)34%5B485:DOIAWP%5D2.0.CO;2", "status": 302, "note": "redirects to bioone.org/doi/abs/…, the same Incapsula bot check" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.3394/0380-1330(2008)34%5B485:DOIAWP%5D2.0.CO;2?fields=openAccessPdf", "status": 200, "note": "openAccessPdf status CLOSED; abstract elided by the publisher" },
+    { "url": "https://api.crossref.org/works/10.3394/0380-1330(2008)34%5B485:DOIAWP%5D2.0.CO;2", "status": 200, "note": "metadata only; no full-text link or abstract" },
+    { "url": "web search (UVM theses, Lake Champlain Basin Program reports)", "status": 0, "note": "no author, thesis or agency copy found; OpenAlex not queried (daily allowance used up)" }
+  ],
+  "notes": "For the human: the article is on ScienceDirect/BioOne behind a subscription (doi:10.3394/0380-1330(2008)34[485:DOIAWP]2.0.CO;2). A library login would open it. Read Results for the Daphnia threshold's exact wording (density and share), and whether fish or young white perch appear in the adult diets at all."
+}
