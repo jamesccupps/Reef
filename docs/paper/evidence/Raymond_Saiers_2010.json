@@ -1,0 +1,39 @@
+{
+  "key": "Raymond_Saiers_2010",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's abstract only (Springer Nature Link article page; the article itself is paywalled: the page's own metadata say 'Open Access: N', 'Access Type: no-access')",
+    "url": "https://link.springer.com/article/10.1007/s10533-010-9416-7"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Springer article page",
+    "ok": true,
+    "corrections": "",
+    "note": "Peter A. Raymond & James E. Saiers, 'Event controlled DOC export from forested watersheds', Biogeochemistry 100(1-3): 197-209 (2010)."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.7",
+      "claim": "up to 86 % of annual DOC export from forested catchments occurs in storms and snowmelt (Raymond & Saiers 2010, as cited by Klug et al. 2012)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The publisher's abstract (not a confirmation) states the 86 % as an estimate for 30 small eastern-US forested watersheds without wetlands (5,176 DOC and discharge measurements), calls it 'a conservative estimate', and adds that events above 1.38 cm/day, 4.8 % of the annual hydrograph, carry 57 % of annual DOC flux. The abstract's wording is an estimate of 86 %, not 'up to 86 %' ('up to' is Klug et al.'s phrasing). Klug et al. 2012's relay itself was checked by another reader (docs/paper/evidence/Klug_etal_2012.json: accurate relay)."
+    },
+    {
+      "paper": "§3.2.1",
+      "claim": "up to 86 % of annual DOC export likewise moves in storms and snowmelt (Raymond & Saiers 2010, as cited by Klug et al. 2012)",
+      "verdict": "unchecked",
+      "note": "Same figure as §3.1.7; see that claim."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1007/s10533-010-9416-7", "status": 200, "note": "Springer article page: abstract only, paywalled ('Buy article', 'Open Access: N')" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/s10533-010-9416-7.pdf", "status": 200, "note": "returns the HTML paywall page, not the PDF" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1007/s10533-010-9416-7\"", "status": 200, "note": "AGRICOLA record only, isOpenAccess N, no PMC copy" },
+    { "url": "OpenAlex (via show.mjs)", "status": 0, "note": "no free copy known" },
+    { "url": "web search: title + 'pdf'", "status": 0, "note": "no author or institutional copy found (only citing papers and a Yale bibliography entry)" }
+  ],
+  "notes": "Blocked by the publisher's paywall: a library login at https://doi.org/10.1007/s10533-010-9416-7 would open it. Until then, keep the citation 'as cited by Klug et al. 2012' and consider dropping 'up to' (the abstract gives 86 % as the study's overall, conservative estimate)."
+}

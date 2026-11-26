@@ -1,0 +1,41 @@
+{
+  "key": "Schneider_Crowe_1980",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division research-report library (PDF, 20 pages, text layer); Table 1 read on the page image",
+    "url": "https://www2.dnr.state.mi.us/Publications/PDFS/DNRFishLibrary/ResearchReports/RR1801-RR1900/RR1887.pdf",
+    "file": "docs/research_notes/fetched/v2/Schneider_Crowe_1980.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Schneider, James C. & Crowe, Walter R. 1980. Effect of sucker removal on fish and fishing at Big Bear Lake. Michigan DNR Fisheries Division, Fisheries Research Report No. 1887 (20 November 1980); Dingell-Johnson Project F-35-R. 'Ann Arbor' is not printed; harmless."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-1 (Big Bear Lake row)",
+      "claim": "Big Bear Lake, Michigan (142 ha; mean 4.9 m), trap-net Schnabel, 1940-42: white sucker adults 68-109/ha (≈ 27-33 kg/ha)",
+      "location": "p. 3 (PDF p. 4), Methods; p. 5 (PDF p. 6), Results; p. 11 (PDF p. 12), Table 1",
+      "quote": "Between 9,700 and 15,400 adult suckers were estimated to be present in 1940-42",
+      "conditions": "142 ha (350 acres), max 11 m, mean 4.9 m, alkalinity 45-98 ppm, no inlet or outlet; Schnabel estimates of 'adults' = fish retained by 64-mm stretch-mesh trap-net pots (summer 1940 9,699; summer 1941 15,423; fall 1942 10,480), which the authors say carry gear-selectivity bias and 'should be viewed as relative indices of adult fish density'. 9,699-15,423/142 ha = 68-109/ha. The kg/ha is project arithmetic: suckers were 78 % by weight of fish sampled with nets in 1940-41 (Crowe 1942), and all nettable fish (excluding yellow perch and subadults) were 35-42 kg/ha; 0.78 × 35-42 = 27-33 kg/ha.",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Say in the table that ≈ 27-33 kg/ha is the project's estimate (78 % of the nettable crop), and that the counts are relative indices by the authors' own caution."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker growth column)",
+      "claim": "age III 342 mm at high density, 418 mm after thinning (Big Bear Lake)",
+      "location": "p. 5 (PDF p. 6), Results (The sucker population)",
+      "quote": "The average length of age III suckers was 342 mm",
+      "conditions": "1940-43 (dense, slow-growing stock) 342 mm (13.4 in) vs 1944-52 (after the 1943 removal of > 90 % of adults) 418 mm (16.4 in); 'tentatively judged from scale samples'; length type not stated (total length is used for the other species); growth did not respond to the second thinning (380 mm in 1953-55, 385 mm in 1956-57)",
+      "verdict": "confirmed",
+      "note": "Worth adding that the second removal produced no growth response."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: about 90 % of adult suckers were removed in 1943 (5,778 fish) and again in 1955-57 (10,732 in 1955, 'about 36 kg per acre'; 3,115 in 1956; 404 in 1957); the stock recovered in 8 and 3 years. Yellow perch catch rose from ~500/yr to 12,700 in 1948 and rock bass ~4-fold; bass did not respond. Sport-fish condition did not change. Recovery was driven by recruitment, not adult abundance."
+}

@@ -1,0 +1,74 @@
+{
+  "key": "Schneider_1973b",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division research-report library (PDF, 35 pages, text layer); Tables 2, 4 and 6-9 read on the page images because the layout text scrambles their columns",
+    "url": "https://www2.dnr.state.mi.us/Publications/PDFS/DNRFishLibrary/ResearchReports/RR1701-RR1800/RR1794.pdf",
+    "file": "docs/research_notes/fetched/v2/Schneider_1973b.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page",
+    "ok": true,
+    "corrections": "",
+    "note": "Schneider, James C. 1973. The standing crop of fish in Michigan lakes. Michigan Department of Natural Resources, Fisheries Division, Fisheries Research Report No. 1794 (12 June 1973); Dingell-Johnson Project F-29-R-7. 'Ann Arbor' is not printed on the report (the Institute for Fisheries Research was there); harmless."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.2",
+      "claim": "Michigan's survey of 64 lakes and ponds bracketed whole-lake crops at 11-404 kg/ha",
+      "location": "p. 9 (PDF p. 9), Results; p. 1, abstract",
+      "quote": "The standing crop of fish varied from 10 to 360 pounds per acre",
+      "conditions": "10-360 lb/acre = 11.2-403.5 kg/ha; a compilation of earlier Michigan studies (rotenone counts, draining, mark-recapture), most adjusted by Schneider (rotenone counts in lakes deeper than 10 ft assumed to recover 60 % of the fish; mark-recapture estimates extended to unsampled species and sizes)",
+      "verdict": "confirmed",
+      "note": "'Survey' is loose: it is a summary of 1934-1971 studies, with the author's adjustments."
+    },
+    {
+      "paper": "§3.5.2; §3.7.9",
+      "claim": "'normal' lakes near 99 kg/ha (§3.5.2); richer Michigan lakes average roughly 100 kg/ha (§3.7.9, with Florida's 130)",
+      "location": "p. 1, abstract; p. 9, Results; p. 27 (PDF p. 27), Table 8",
+      "quote": "Lakes with fish populations of normal species diversity and growth averaged 88 pounds per acre.",
+      "conditions": "88 lb/acre = 98.6 kg/ha, the average of 11 'normal' lakes (Table 8, excluding Wintergreen and Craig); other classes: slow-growing-bluegill lakes 182 lb/acre (204 kg/ha), perch-only lakes 46 (52), 'poor or unusual' lakes 104 (117)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "soft-water lakes often only 11-70 kg/ha",
+      "source_value": "Of the nine lakes with alkalinity ≤ 20 ppm, six held 10-62 lb/acre (11-70 kg/ha): Katherine 3 ppm 10, Twin 5 ppm 17, Airport 5 ppm 25, Marsh 6 ppm 52, Swanzy 15 ppm 52, Cub 10 ppm 62 — all in the Upper Peninsula (DNR region 1). The other three held 137-284 lb/acre (154-318 kg/ha): Holland 18 ppm 137, Daggett 16 ppm 151 and 198, and Center 2 ppm 284 (the softest lake in the set).",
+      "location": "pp. 25-29 (PDF pp. 25-29), Tables 6-9 (alkalinity and pounds per acre)",
+      "quote": "Center trout 2 2 38.8 20.5 0.1 284",
+      "quote_from": "image",
+      "conditions": "project grouping by alkalinity; Schneider himself found alkalinity a weak predictor (with area, depth and their index, the variables explained 25 % of the variation in log standing crop over 61 lakes)",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "'Often' is literally true (6 of 9) but omits that the three soft-water lakes in the Lower Peninsula were rich. Write 'six of nine soft-water (≤ 20 ppm) lakes, all in the Upper Peninsula, held 11-70 kg/ha; three in the Lower Peninsula held 154-318 kg/ha'."
+    },
+    {
+      "paper": "§3.5.2",
+      "claim": "piscivores made up about 10-21 % of fish biomass in eight of the lakes, all with bass (project arithmetic on Schneider's tables)",
+      "location": "pp. 19-20 (PDF pp. 19-20), Table 2; pp. 22-23 (PDF pp. 22-23), Table 4 (adjusted estimates)",
+      "quote": "Mill 12 1 44 12 14 9 3 21 116",
+      "quote_from": "image",
+      "conditions": "bass plus pike/walleye over total, adjusted lb/acre: Mill (12+9)/116 = 18.1 %; Fife 1950 18/95 = 18.9 %; Sugarloaf (8+2)/95 = 10.5 %; Whitmore (9+3)/57 = 21.1 %; Third Sister 22/145 = 15.2 %; Walsh 25/153 = 16.3 %; Deep 12/63 = 19.0 %; Marsh 5/52 = 9.6 % (source authors' figure, not adjusted)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Holds for these eight (9.6-21.1 %). The research note's 'Walsh bass 25 + pike 1' is wrong: Walsh had no pike; the 1 is minnows (16 %, not 17 %). The eight are a selection: other 'normal' lakes give Howe 19/63 = 30 %, Cassidy (1964) 10/145 = 7 %, South Pond 3/58 = 5 %, Wintergreen 60/360 = 17 %; among all lakes with bass the share runs from 2 % (Center, 6/284) to 48 % (Cub, 30/62), and 100 % in the bass-only waters (Katherine, Dix, Rash)."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "Piscivores make up about 10-21 % of fish biomass in Michigan lakes (project calculation from Schneider 1973b)",
+      "source_value": "10-21 % only in eight selected lakes; across the ten 'normal' lakes with a weight breakdown it is 5-30 % (South Pond 5, Cassidy 1964 7, Sugarloaf 11, Third Sister 15, Walsh 16, Wintergreen 17, Fife 1950 19, Deep 19, Whitmore 21, Howe 30), and across all lakes with bass 2-48 % (100 % in bass-only ponds)",
+      "location": "pp. 19-20, Table 2; pp. 22-23, Table 4; p. 27, Table 8",
+      "quote": "Howe 12 2 1 tr 23 38 19 3 2 1 38 63",
+      "quote_from": "image",
+      "conditions": "reader's arithmetic on the adjusted estimates (Tables 2 and 4) for the lakes Schneider classed 'normal' (Table 8)",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "Write 'about 5-30 % (median ~16 %) in Michigan lakes with normal fish populations'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Useful: rotenone recovery checks in Michigan (e.g. Jewett Lake mostly < 40 %, bullheads 1 %; Center Lake 4-8 %), the reason Schneider raised poisoning estimates. Size-structure rules used for adjustment (p. 6-7): 30 % of perch biomass > 7.0 in under average growth, 4 % under poor growth; 78 % of bullhead crop > 6.0 in. Table 8 lists Fife (1950) at 80 lb/acre while Table 4 gives Fife (1950) 95 (Table 5's Fife 1958 is 80): a slip in the source. Table 4 prints Marsh Lake's 47 lb/acre in the yellow perch column although the text (p. 7) says Marsh held only smallmouth bass and white suckers."
+}

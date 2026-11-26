@@ -1,0 +1,36 @@
+{
+  "key": "Santucci_Wahl_2003",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Santucci, V. J., Jr. & Wahl, D. H. 2003. The effects of growth, predation, and first-winter mortality on recruitment of bluegill cohorts. Trans. Am. Fish. Soc. 132(2): 346-360 (Crossref: vol. 132, issue 2, pp. 346-360; no abstract deposited)."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5",
+      "claim": "Young largemouth ate 58-93 % of littoral bluegill fry at Ridge Lake, Illinois (Santucci & Wahl 2003, via Neuswanger et al. 2015)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The relay was checked by another reader: Neuswanger et al. 2015 (docs/paper/evidence/Neuswanger_etal_2015.json) do write '58-93% of littoral zone bluegill fry' for 14-acre Ridge Lake, with young largemouth (≤ age 3) averaging 179/acre in 1987-1989. The paper already labels it 'via'."
+    },
+    {
+      "paper": "§3.7.5",
+      "claim": "young largemouth at about 442/ha consumed 58-93 % of the littoral bluegill fry in an Illinois lake (Santucci & Wahl 2003, via a secondary review)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. 442/ha is 179/acre × 2.471 (correct conversion of Neuswanger et al.'s relayed figure, which is for largemouth ≤ age 3, 1987-1989). Name the secondary review (Neuswanger et al. 2015) here as in §3.6.5."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(2003)132<0346:TEOGPA>2.0.CO;2", "status": 403, "note": "afspubs.onlinelibrary.wiley.com / academic.oup.com: bot check ('Just a moment...'); subscription journal (TAFS, now OUP)" },
+    { "url": "https://academic.oup.com/tafs/article/132/2/346/7883466", "status": 403, "note": "bot check" },
+    { "url": "https://api.crossref.org/works/10.1577/1548-8659(2003)132%3C0346:TEOGPA%3E2.0.CO;2", "status": 200, "note": "metadata only, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1577/1548-8659(2003)132<0346:TEOGPA>2.0.CO;2\"", "status": 200, "note": "no record" },
+    { "url": "https://core.ac.uk/download/4826527.pdf", "status": 0, "note": "a possible Illinois Natural History Survey report (stand-in candidate) found by web search; the download was refused by the session's permission system (it was first aimed at a folder outside the repository) and was not retried" },
+    { "url": "web search: title + 'pdf'", "status": 0, "note": "no open copy of the article found" }
+  ],
+  "notes": "A library login at the DOI would open it. INHS Federal Aid reports by Santucci & Wahl on Ridge Lake (possibly on CORE/IDEALS) may hold the same data and could be read as a stand-in by the human or a later reader."
+}

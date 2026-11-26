@@ -1,0 +1,73 @@
+{
+  "key": "Russell_Weiskittel_2012",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: USDA Forest Service Treesearch PDF of the proceedings paper (8 pages, text layer); Tables 2 and 3 read in the content-order text",
+    "url": "https://research.fs.usda.gov/download/treesearch/40971.pdf",
+    "file": "docs/research_notes/fetched/v2/Russell_Weiskittel_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the paper's pages and the Treesearch record (https://research.fs.usda.gov/treesearch/40971)",
+    "ok": true,
+    "corrections": "",
+    "note": "Russell, M. B. & Weiskittel, A. R. 2012. Estimating tree crown widths for the primary Acadian species in Maine. In: McWilliams, W. & Roesch, F. A. (eds), Monitoring Across Borders: 2010 Joint Meeting of the FIA Symposium and the Southern Mensurationists. e-Gen. Tech. Rep. SRS-157, USDA Forest Service Southern Research Station, Asheville, NC: 45-52 (the volume's DOI is 10.2737/SRS-GTR-157). The DOI in the ledger (10.1093/njaf/28.2.84) is the 2011 journal version, which was not read; Crossref's title mismatch comes from that. All values checked here are the proceedings paper's."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.8",
+      "claim": "Forest-grown crown widths come from Maine-fitted equations (Russell & Weiskittel 2012)",
+      "location": "p. 45 (PDF p. 1), abstract and introduction; p. 46-47 (PDF pp. 2-3), model development",
+      "quote": "lcw equations differ from mcw equations in that they predict the crown widths of trees",
+      "conditions": "largest crown width lcw = mcw/(b1·dbh^b2), mcw = a1·dbh^a2 (99th-percentile quantile regression); crown width = quadratic mean of crown radii; data from USDA FS Forest Health Monitoring plots (1991-99), the Penobscot Experimental Forest and Cooperative Forestry Research Unit thinning plots across Maine; 7 conifers and 8 hardwoods",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.8",
+      "claim": "with mean absolute errors of 0.58-1.52 m by species",
+      "location": "p. 50 (PDF p. 6), Table 3 (MAE, 'This Study')",
+      "quote": "Balsam fir … 0.55 0.58 0.65 … American beech … 0.12 1.52 1.58",
+      "quote_from": "table",
+      "conditions": "lcw MAE for the 11 species the project uses (balsam fir 0.58 … American beech 1.52); over all 15 species in Table 3 the range is 0.46 (black spruce) to 1.52 m",
+      "verdict": "confirmed",
+      "note": "Holds for the project's 11 species. The source's text (p. 47) says hardwood MAE runs 'from 0.46 m for gray birch', but its Table 3 gives gray birch 0.62 (and the text's cedar FI 0.25 vs the table's 0.27): an internal inconsistency; the table values were used."
+    },
+    {
+      "paper": "§3.8.8",
+      "claim": "At canopy size forest-grown crown widths are about 0.27 of tree height for fir and spruce and 0.4-0.45 for hemlock, yellow birch and beech",
+      "location": "p. 49 (PDF p. 5), Table 2; p. 50 (PDF p. 6), Table 3 (coefficients); heights are FIA's, not this source's",
+      "quote": "Balsam fir 1.37 (0.039) 0.572 (0.021)",
+      "quote_from": "table",
+      "conditions": "reader's recomputation with the Table 2-3 coefficients and the FIA median heights of Table 3.8-8: fir 3.94/14.6 = 0.27 and 4.84/17.4 = 0.28; red spruce 0.28 and 0.29; hemlock 0.41 and 0.39; beech 0.44 and 0.40 (at 22.5 and 35 cm dbh)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "The widths are this source's; the heights are FIA's (project analysis). Yellow birch's ratio cannot be checked here because Table 3.8-8 gives no yellow birch height."
+    },
+    {
+      "paper": "§3.8.8",
+      "claim": "Open-grown (maximum) crowns from the same equations are 1.6-2 times the forest-grown widths in Table 3.8-8",
+      "source_value": "mcw/lcw from the source's coefficients, for the nine species of Table 3.8-8 at 22.5 and 35 cm dbh: 1.52 (quaking aspen, 35 cm) to 2.16 (balsam fir, 35 cm); fir 2.07-2.16, red spruce 1.69-1.90, hemlock 1.55-1.59, aspen 1.52-1.63, beech 1.83-1.99",
+      "location": "p. 49 (PDF p. 5), Table 2; p. 50 (PDF p. 6), Table 3",
+      "quote": "Model is: lcw = mcw / (b",
+      "conditions": "reader's recomputation; the ratio equals b1·dbh^b2 and so changes with diameter",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "Write 'about 1.5-2.2 times'. The two examples in the research note (35-cm white pine 9.9 vs 5.9 m; 22.5-cm red maple 10.0 vs 5.7 m) recompute correctly."
+    },
+    {
+      "paper": "Table 3.8-8",
+      "claim": "forest-grown crown widths at 22.5 and 35 cm dbh from the Russell & Weiskittel (2012) equations (fir 3.9/4.8, red spruce 4.0/5.5, white pine 4.8/5.9, cedar 3.7/4.7, hemlock 5.5/6.7, paper birch 5.5/7.3, quaking aspen 5.0/6.9, red maple 5.7/7.6, beech 6.2/6.9 m)",
+      "location": "p. 49 (PDF p. 5), Table 2; p. 50 (PDF p. 6), Table 3",
+      "quote": "American beech 2.93 (0.65) 0.434 (0.077)",
+      "quote_from": "table",
+      "conditions": "reader's recomputation with lcw = a1·D^a2/(b1·D^b2), b1 = 1 where the source prints '-' (non-significant for four species)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "All 18 widths reproduce to 0.1 m (e.g. fir 3.94 and 4.84; beech 6.19 and 6.88)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Caveats worth keeping: beech and sugar maple were fitted only on trees ≥ 11.9/12.7 cm dbh (Table 1), so small-stem widths for them are extrapolations; FI for lcw was low for the shade-tolerant hardwoods (beech 0.12, sugar maple 0.17). The source's mcw curves were on average 45 % higher than Ek's (1974) Lake States equations."
+}

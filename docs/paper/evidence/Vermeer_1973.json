@@ -1,0 +1,44 @@
+{
+  "key": "Vermeer_1973",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional open copy: SORA (Searchable Ornithological Research Archive) at Digital Commons @ University of South Florida, PDF fetched with curl and getsrc's honest user agent (getsrc itself got 403 from the same URL), indexed with getsrc --file; the text layer is partly garbled (doubled letters), so the results page and Table 2 were read on the page images",
+    "url": "https://digitalcommons.usf.edu/cgi/viewcontent.cgi?article=7993&context=wilson_bulletin",
+    "file": "docs/research_notes/fetched/v2/Vermeer_1973.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's pages and the USF Digital Commons record",
+    "ok": true,
+    "corrections": "",
+    "note": "Kees Vermeer, 'Some aspects of the nesting requirements of common loons in Alberta', Wilson Bulletin 85(4): 429-435 (December 1973). The DOI in the ledger (10.5281/zenodo.16171389) is Plazi's 2025 Zenodo re-deposit of the BHL scan; the stable open copy is https://digitalcommons.usf.edu/wilson_bulletin/vol85/iss4/3 (BHL part 209307 is behind a Cloudflare check for scripts)."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.2",
+      "claim": "Of 26 nests in one study none lay more than about 1.2 m from water (Vermeer 1973)",
+      "location": "p. 431 (PDF p. 4), Results (Nest Sites); p. 432 (PDF p. 5), Table 2",
+      "quote": "none was more than four feet away from a lake",
+      "conditions": "4 ft = 1.22 m, distance of nest rim to water; 26 nests found (of 33 breeding pairs) on 19 road-accessible, eutrophic, sport-fished Alberta lakes up to 3,000 acres, surveyed in 1972; Table 2: 15 nests at 0 ft, 6 at 0.1-1.0, 2 at 1.1-2.0, 1 at 2.1-3.0, 2 at 3.1-4.0 ft; 25 of the 26 nests were on islands",
+      "verdict": "confirmed",
+      "note": "Most nests (15 of 26) were right at the water's edge."
+    },
+    {
+      "paper": "§3.2.6",
+      "claim": "loons nest within about 1.2 m of the water (Vermeer 1973; Section 3.8)",
+      "location": "p. 431 (PDF p. 4), Results; p. 432 (PDF p. 5), Table 2",
+      "quote": "Most loon nests were situated directly on the waters' edge and none was",
+      "conditions": "one Alberta study, 26 nests in 1972 (as above); the general statement rests on this single sample",
+      "verdict": "confirmed",
+      "note": "Fair as a generalisation if the sentence keeps the citation; 'in one Alberta study of 26 nests' would make the basis plain."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://digitalcommons.usf.edu/cgi/viewcontent.cgi?article=7993&context=wilson_bulletin", "status": 403, "note": "refused to getsrc.mjs; the same URL served the PDF to curl with getsrc's user agent (open access), which was used" },
+    { "url": "https://sora.unm.edu/sites/default/files/journals/wilson/v085n04/p0429-p0435.pdf", "status": 200, "note": "redirects to the SORA home page at USF, not the article" },
+    { "url": "https://www.biodiversitylibrary.org/partpdf/209307", "status": 403, "note": "Cloudflare bot check; not attempted further" }
+  ],
+  "notes": "Other values: 20 nests were sheltered in a bay or by a nearby island, 6 faced open water; 19 of 25 island nests were on islands under 2 acres (preference not significant); in 25 cases the nest gave a good underwater exit. The author cites a Saskatchewan lake where 10 of 25 nests were washed out by high water and boat waves (personal communication) — relevant to the paper's water-level point."
+}

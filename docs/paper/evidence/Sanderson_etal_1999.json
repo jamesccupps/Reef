@@ -1,0 +1,40 @@
+{
+  "key": "Sanderson_etal_1999",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the University of Minnesota Experts (Pure) record; the article (Canadian Science Publishing) is behind a bot check and a subscription",
+    "url": "https://experts.umn.edu/en/publications/cyclic-dynamics-of-a-yellow-perch-perca-flavescens-population-in-/"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the UMN Experts record",
+    "ok": true,
+    "corrections": "",
+    "note": "Sanderson, B. L., Hrabik, T. R., Magnuson, J. J. & Post, D. M. 1999. Cyclic dynamics of a yellow perch (Perca flavescens) population in an oligotrophic lake: evidence for the role of intraspecific interactions. Can. J. Fish. Aquat. Sci. 56(9): 1534-1542."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.5",
+      "claim": "young perch were present in Crystal Lake, Wisconsin, only in 1981-82, 1986-87 and 1990-91",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The abstract (not a confirmation) says YOY 'were caught in 1981-1982, 1986-1987, and 1990-1991, whereas few to no YOY were caught during the midyears' — so 'only' overstates it slightly ('few to no')."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "yellow perch in oligotrophic Crystal Lake, Wisconsin, formed three roughly five-year episodes of two dominant age classes",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The abstract says 'three cases of cohort dominance in which two age-classes dominated the population for roughly 5 years', since 1981, and attributes the cycles to cannibalism of YOY by juveniles or adults, pulses of reproductive adults, and competition between YOY and juveniles."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1139/f99-077", "status": 403, "note": "cdnsciencepub.com: bot check ('Just a moment...'); subscription journal" },
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f99-077", "status": 403, "note": "bot check" },
+    { "url": "https://lternet.edu/biblio/cyclic-dynamics-of-a-yellow-perch-perca-flavescens-population-in-an-oligotrophic-lake-evidence-for-the-role-of-intraspecific-interactions", "status": 200, "note": "LTER Network bibliography entry: citation only, no file" },
+    { "url": "https://experts.umn.edu/en/publications/cyclic-dynamics-of-a-yellow-perch-perca-flavescens-population-in-/", "status": 200, "note": "abstract only" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1139/f99-077\"", "status": 200, "note": "no record" },
+    { "url": "web search: title + 'pdf' (incl. NTL-LTER)", "status": 0, "note": "no open copy found" }
+  ],
+  "notes": "A library login at https://doi.org/10.1139/f99-077 would open it. Crystal Lake is an NTL-LTER lake: the LTER fish data (lter.limnology.wisc.edu) could stand in for the YOY years if the article stays blocked. Until read, write 'few or no young perch were caught except in 1981-82, 1986-87 and 1990-91 (abstract)'."
+}

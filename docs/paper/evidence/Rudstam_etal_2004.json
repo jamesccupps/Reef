@@ -1,0 +1,39 @@
+{
+  "key": "Rudstam_etal_2004",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the USGS Publications Warehouse record (the article is in Ecological Applications, Wiley/ESA, not open access)",
+    "url": "https://pubs.usgs.gov/publication/70027165"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the USGS Publications Warehouse record",
+    "ok": true,
+    "corrections": "",
+    "note": "Rudstam, L. G., VanDeValk, A. J., Adams, C. M., Coleman, J. T. H., Forney, J. L. & Richmond, M. E. 2004. Cormorant predation and the population dynamics of walleye and yellow perch in Oneida Lake. Ecological Applications 14(1): 149-163."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.6",
+      "claim": "Cormorants alone took 7.7 % of Oneida Lake's adult perch a year (Rudstam et al. 2004; abstract only)",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The abstract (not a confirmation) gives 'Mean mortality rates of adult percids attributed to cormorant predation were 1.1% per year for walleye and 7.7% per year for yellow perch', with the cormorant diet studied 1995-2000 (walleye and perch 40-82 % of the diet by number) and nesting pairs rising from first nesting in 1984 to over 360 by 2000. The paper's '(abstract only)' label is accurate."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "At Oneida Lake cormorants removed 7.7 % of the adult yellow perch a year (Rudstam et al. 2004, abstract only)",
+      "verdict": "unchecked",
+      "note": "Same figure; see the §3.7.6 claim."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1890/03-5010", "status": 403, "note": "esajournals.onlinelibrary.wiley.com: bot check ('Just a moment...'); subscription journal" },
+    { "url": "https://esajournals.onlinelibrary.wiley.com/doi/pdf/10.1890/03-5010", "status": 403, "note": "bot check" },
+    { "url": "https://pubs.usgs.gov/publication/70027165", "status": 200, "note": "abstract and citation only; links to the publisher via the DOI" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:\"10.1890/03-5010\"", "status": 200, "note": "AGRICOLA record only, isOpenAccess N" },
+    { "url": "web search: title + 'pdf'", "status": 0, "note": "no author or institutional copy found" }
+  ],
+  "notes": "A library login at https://doi.org/10.1890/03-5010 would open it. The abstract also says the authors attribute the 1990s rise in subadult (age 1-2 perch, age 1-3 walleye) mortality to cormorants. A companion paper (angler vs cormorant harvest, Trans. Am. Fish. Soc. 2002) and the Oneida Lake book chapter (doi:10.47886/9781934874431.ch19) revisit the same data."
+}

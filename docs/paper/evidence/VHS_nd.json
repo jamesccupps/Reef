@@ -1,0 +1,141 @@
+{
+  "key": "VHS_nd",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Virginia Herpetological Society's own web pages (green frog page via getsrc; bullfrog page via curl with getsrc's user agent, saved as VHS_nd.bullfrog.html and its text VHS_nd.bullfrog.txt)",
+    "url": "https://www.virginiaherpetologicalsociety.com/amphibians/frogsandtoads/green-frog/index.php",
+    "file": "docs/research_notes/fetched/v2/VHS_nd.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the two pages",
+    "ok": true,
+    "corrections": "",
+    "note": "Pages titled 'North American Green Frog (Lithobates clamitans)' and 'North American Bullfrog (Lithobates catesbeianus)', Virginia Herpetological Society, no date or author shown; both URLs in the entry work. Their life-history sections compile the literature (each value carries its original citation), so 'X, via VHS n.d.' is the right form."
+  },
+  "claims": [
+    {
+      "paper": "§3.8.6",
+      "claim": "Green frogs rarely go more than 1 m from water except on rainy nights (Minton 1972, via VHS n.d.)",
+      "location": "web page (green frog), Adult Habitat",
+      "quote": "adults rarely go more than 1 m from water except on rainy nights",
+      "conditions": "Minton (1972), Indiana",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6; Table 3.8-3 (green frog, larval period)",
+      "claim": "Their tadpoles overwinter once; overwinters once (Martof 1952)",
+      "location": "web page (green frog), Torpor (Hibernation)",
+      "quote": "will typically, but not always, overwinter for 1 yr prior to metamorphosing",
+      "conditions": "cited to Martof 1952, Richmond 1964 and Vogt 1981 (range-wide); for Maine the page adds that tadpoles stay under silt and dead vegetation in winter (Hunter et al. 1999)",
+      "verdict": "confirmed",
+      "note": "In §3.8.6 the tadpole statement sits under '(Hunter et al. 1999, via VHS n.d.)', but the overwinter-once fact is Martof's (as Table 3.8-3 says); 'typically' is worth keeping."
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "Maine adults hibernate from October to March (Hunter et al. 1999, via VHS n.d.)",
+      "location": "web page (green frog), Torpor (Hibernation)",
+      "quote": "hibernate either underwater or underground from October–March (Hunter et al., 1999)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "radio-tagged Nova Scotia bullfrogs tolerated pond oxygen partial pressures below 20 Torr for more than 8 weeks (Friet & Pinder 1990, via VHS n.d.)",
+      "location": "web page (bullfrog), Torpor (Hibernation)",
+      "quote": "tolerated prolonged hypoxia (sustained PO2 below 20 Torr for > 8 wk",
+      "conditions": "radio-tagged bullfrogs hibernating in a pond in Nova Scotia (Friet & Pinder 1990)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "bullfrogs are not freeze-tolerant (via VHS n.d.)",
+      "location": "web page (bullfrog), Torpor (Hibernation)",
+      "quote": "Bullfrogs are not freeze tolerant.",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.6",
+      "claim": "Their tadpoles are relatively unpalatable to fish (Werner & McPeek 1994, via VHS n.d.)",
+      "location": "web page (bullfrog), Predators",
+      "quote": "relatively immune to fish predation because of unpalatability",
+      "conditions": "VHS cites Walters 1975, Kruse & Francis 1977, Nelson 1980, Kats et al. 1988 and Werner & McPeek 1994 together",
+      "verdict": "confirmed",
+      "note": "Werner & McPeek 1994 is one of five sources cited for it."
+    },
+    {
+      "paper": "Table 3.8-3 (green frog, breeding)",
+      "claim": "breeding (Maine) May-August",
+      "location": "web page (green frog), Breeding migrations",
+      "quote": "May–August in Kentucky (Barbour, 1971), Maine (Hunter et al., 1992",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (green frog, eggs per clutch)",
+      "claim": "1,000-7,000 eggs per clutch",
+      "location": "web page (green frog), Clutch size",
+      "quote": "from 1,000 to nearly 7,000 eggs",
+      "conditions": "range-wide compilation, clutch size rising with female size; second clutches near Ithaca 1,000-1,500",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (green frog, larval period)",
+      "claim": "60-80 mm at metamorphosis",
+      "location": "web page (green frog), Features of metamorphosis",
+      "quote": "Tadpoles are 60–80 mm TL at metamorphosis",
+      "conditions": "total length; Minton 1972, Johnson 1977, Dundee & Rossman 1989, Rogers 1999 (Indiana to Louisiana and West Virginia, not Maine)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (green frog, maturity)",
+      "claim": "maturity ~1 yr after metamorphosis (Hunter et al. 1999)",
+      "location": "web page (green frog), Age/Size at Reproductive Maturity",
+      "quote": "become sexually mature about 1 yr after metamorphosis",
+      "conditions": "Minton 1972 and Hunter et al. 1999; in Maine females mature at 65-75 mm and males at 60-65 mm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (green frog, spacing)",
+      "claim": "males 1.0-1.5 m apart in dense vegetation, 4-6 m on open shore (Wells 1977)",
+      "location": "web page (green frog), Territories",
+      "quote": "In dense vegetation, males may be only 1.0 to 1.5 m apart.",
+      "conditions": "Wells 1977b; breeding-season territories",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (bullfrog, eggs per clutch)",
+      "claim": "up to ~20,000, in films of 0.5-1 m²",
+      "location": "web page (bullfrog), Egg deposition sites and Clutch size",
+      "quote": "Eggs are laid in thin sheets on the water surface, covering 0.5–1 m2",
+      "conditions": "'up to 20,000 eggs/clutch' (Schwalbe & Rosen 1999); films from Bury & Whelan 1984",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (bullfrog, larval period)",
+      "claim": "up to 3 yr in Michigan and Nova Scotia",
+      "location": "web page (bullfrog), Length of larval stage",
+      "quote": "from a few months in the south to 3 yr in Michigan and Nova Scotia",
+      "conditions": "Collins 1979; Bury & Whelan 1984",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (bullfrog, maturity)",
+      "claim": "maturity 1-3 yr",
+      "location": "web page (bullfrog), Age/Size at Reproductive Maturity",
+      "quote": "usually occurs in 1–2 yr in males, and 2–3 yr in females",
+      "conditions": "Howard 1981; Harding 1997 gives 2-4 yr to breeding size",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.8-3 (bullfrog, spacing)",
+      "claim": "territories 2-5 m across (Harding 1997); 8.8-45.8 per ha in an Illinois lake",
+      "location": "web page (bullfrog), Territories and density paragraph",
+      "quote": "8.8–45.8 frogs/ha in a 7 ha Illinois lake",
+      "conditions": "males defend roughly circular territories 2-5 m in diameter (Harding 1997); density from Durham & Bennett 1963, a 7-ha Illinois lake",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Table 3.8-3's adult sizes are not VHS's: VHS gives green frog adults 54-90 mm (2-3.5 in) and bullfrog average 9-15.2 cm with a record 20.3 cm (8 in); the table's Maine sizes (5-10 cm; to ~20 cm) and the bullfrog's Maine breeding (air > 20 °C, mid-June-July) and 2-yr larval period come from the MDIFW pages, per the research note. Other VHS values: green frog home range ~20-200 m² (Martof 1953); bullfrog density 0.9-1.3/m² in an Ontario pond; bullfrog larval survival 11.8-17.6 % in Kentucky."
+}

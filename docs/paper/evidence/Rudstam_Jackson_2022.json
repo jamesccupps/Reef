@@ -1,0 +1,46 @@
+{
+  "key": "Rudstam_Jackson_2022",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the data repository's own open copy (KNB, DataONE API): the EML metadata of doi:10.5063/F1V1237P (uploaded 2022-12-05; its system metadata name no newer version, so it is the current one) and its data table 'Age 0 to 1 yellow perch.csv' (object cbfs.128.19, year classes 1961-2020); saved as Rudstam_Jackson_2022.eml.xml/.eml.txt and .age0.csv/.age0.txt; statistics computed by the reader from the CSV",
+    "url": "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/cbfs.128.19",
+    "file": "docs/research_notes/fetched/v2/Rudstam_Jackson_2022.age0.csv"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the EML metadata (title, creators, coverage) and the DataONE system metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "Rudstam, Lars G. & Jackson, James R. (Cornell Biological Field Station), 'Yellow perch abundance and length-at-age in Oneida Lake, New York, 1957 to present', KNB Data Repository, doi:10.5063/F1V1237P (version uploaded 5 Dec 2022; temporal coverage 1957-2020). A DataCite DOI, hence 'not found at Crossref'. Licence: Open Data Commons Attribution."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-7 (yellow perch row)",
+      "claim": "Oneida Lake, 54 years: 52.6 mm (37.3-64.6) on 1 August; 74.9 mm (57-93) on 15 October",
+      "source_value": "The cited (current) version holds 60 year classes, 1961-2020: mean of the yearly mean lengths 53.1 mm (range 37.3-65.0) on 1 August and 75.3 mm (57-93) on 15 October. The paper's 52.6 and 74.9 are the 1961-2014 subset (54 year classes: 52.56 and 74.90), but that subset's 1 August maximum is 65.0 mm (2012), not 64.6 (64.6 is 1999, the maximum only up to 2011).",
+      "location": "data table 'Age 0 to 1 yellow perch.csv', columns LengthAug1 and LengthOct15, rows 1961-2020 (reader's statistics)",
+      "quote": "2012 … 440.8 … 16.9 … 65.0 … 81.3",
+      "quote_from": "table",
+      "conditions": "average length (mm) of age-0 perch in the standard bottom trawls (10 sites, 5-12 m deep, from mid-July at weekly intervals) around 1 August and 15 October; the metadata do not say total or fork length (the methods use total length elsewhere); each year's value is a mean, and the paper's figure is a mean of yearly means",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "Either cite the current 60-year series (53.1 mm, 37.3-65.0; 75.3 mm, 57-93) or say '1961-2014' and change 64.6 to 65.0."
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "Over 54 years at Oneida, young yellow perch at 20,000-39,000/ha were 37-41 mm long on 1 August against 51-65 mm at densities below 1,000/ha",
+      "source_value": "The nine year classes at ≥ 20,000/ha on 1 August (20,039-38,666/ha; 1961-68, 1975, 1981) measured 37.3-53.0 mm (mean 45.6), not 37-41: only 1961 (37.3), 1965 (40.6) and 1981 (41.4) fall in 37-41. The nine below 1,000/ha (1986, 1987, 1989, 1991, 1997, 2011-2013, 2017) measured 51.4-65.0 mm (mean 57.4), which matches '51-65'. Across all 60 year classes, ln(density) and 1 August length correlate at r = -0.64 (reader's computation).",
+      "location": "data table 'Age 0 to 1 yellow perch.csv', columns AbundanceAug1 and LengthAug1 (reader's selection and statistics)",
+      "quote": "1961 … 32082.2 … 37.3 … 1962 … 20038.8 … 53.0",
+      "quote_from": "table",
+      "conditions": "density = number per hectare of age-0 perch on 1 August from the trawl series (metadata: 'Number per hectare of age-0 yellow perch on August 1'); length as above",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "Write 'at 20,000-39,000/ha they were 37-53 mm (mean 46) on 1 August, against 51-65 mm (mean 57) below 1,000/ha'. The density effect is real; the 37-41 range picked the three smallest of nine dense years."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "The same table gives each year class's 8-mm and 18-mm larval densities (Miller sampler, corrected for net avoidance), the instantaneous weekly mortality of age-0 perch in the trawls (WeeklyMortality, e.g. -0.27/week in 1961) and the 1 May age-1 density and length: useful for young-of-year survival targets. The metadata define LengthAug1 as 'Average length of age-0 yellow perch in trawl samples surronding August 1' [sic]."
+}

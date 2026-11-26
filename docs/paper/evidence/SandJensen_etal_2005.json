@@ -1,0 +1,53 @@
+{
+  "key": "SandJensen_etal_2005",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the open full text at PubMed Central (PMC4247029), HTML; Table 1 fetched from PMC's table page (saved as SandJensen_etal_2005.table1.html)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4247029/",
+    "file": "docs/research_notes/fetched/v2/SandJensen_etal_2005.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC article header",
+    "ok": true,
+    "corrections": "",
+    "note": "Sand-Jensen, K., Pedersen, O., Binzer, T. & Borum, J. 2005. Contrasting oxygen dynamics in the freshwater isoetid Lobelia dortmanna and the marine seagrass Zostera marina. Annals of Botany 96(4): 613-623 (published online 18 July 2005)."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.7",
+      "claim": "In a water lobelia lawn in a Swedish sandy lake, more than 97 % of photosynthetic O₂ left through the roots, and root respiration used only about a fourteenth of it",
+      "source_value": "Both figures are from earlier laboratory split-chamber experiments that the authors summarise in their Discussion (roots in O₂-depleted water, in the light), not from the Swedish lawn: root release was 'over 97 % of the total release' by photosynthesis in L. dortmanna (1 % in Zostera), and root respiration consumed '14 times less than root release'.",
+      "location": "web page (PMC), Discussion, paragraph beginning 'Previous experiments in split-chambers'",
+      "quote": "over 97 % of the total release in L. dortmanna",
+      "conditions": "split-chamber laboratory experiments ('Previous experiments in split-chambers have revealed…'; the paragraph cites Sand-Jensen & Prahl 1982 for root O₂ permeability); the 1/14 is root respiration relative to root release",
+      "verdict": "corrected",
+      "note": "The ratio is right ('14 times less than root release'), but both numbers are laboratory results, not measurements in the lawn. Rewrite: 'In split-chamber experiments, more than 97 % of the O₂ water lobelia released in the light left through its roots, and root respiration used about a fourteenth of that; in a Swedish lawn, porewater at 4 cm stayed oxic day and night.'"
+    },
+    {
+      "paper": "§3.4.7",
+      "claim": "porewater at 4 cm stayed oxic day and night (water lobelia lawn, Swedish sandy lake)",
+      "location": "web page (PMC), Results/Discussion on field O₂ dynamics; Fig. 2 caption",
+      "quote": "Oxygen was present throughout the day and night at 40 mm depth",
+      "conditions": "oligotrophic Lake Skånes Värsjö, Sweden; L. dortmanna on sandy sediment at 50 cm water depth; two microelectrodes at 40 mm in the sediment, recorded from afternoon through the night to late morning (one diel cycle); O₂ ranged 21-3 kPa (≈100-10 % of air saturation) near a root and 10-3 kPa (≈50-10 %) farther away",
+      "verdict": "confirmed",
+      "note": "Oxic, but falling to about 10 % of air saturation by late night."
+    },
+    {
+      "paper": "§3.4.2, Table 3.4-1 (isoetid rosette row) and its sources line",
+      "claim": "water lobelia lawn ~90 g DW m⁻² and ~28,000 roots m⁻² (Sweden)",
+      "source_value": "90 g DW m⁻² is the maximum summer biomass the authors assume for a dense L. dortmanna population ('Maximum biomass during summer can reach about 90 g'; no site given; also the basis of Table 1), and ~28,000 roots m⁻² is their calculation for such a population from the weight and root number of the plants studied (Lake Skånes Värsjö, Sweden), not a count",
+      "location": "web page (PMC), Discussion (field populations); Table 1",
+      "quote": "the dense L. dortmanna populations will contain about 28 000 roots per m",
+      "conditions": "calculated values for a dense population of 90 g DW m⁻² (mean root spacing ≈ 5 mm; root surface 3.6 m² and leaf surface 2.2 m² per m² of sediment, Table 1)",
+      "verdict": "corrected",
+      "note": "Write 'up to ~90 g DW m⁻² in dense summer populations, ≈ 28,000 roots m⁻² (calculated)'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://europepmc.org/articles/PMC4247029?pdf=render", "status": 403, "note": "refused to the script; the PMC HTML was used instead" }
+  ],
+  "notes": "Other values: L. dortmanna reaches about one-third of the Secchi depth, at ~40 % of surface irradiance; photosynthesis at saturating light 1-2 mg O₂ g⁻¹ DW h⁻¹; lacunal gas 10.5 cm³ g⁻¹ DW, holding ~3.0 mg O₂ g⁻¹ DW at air saturation (5-10 h of respiration); a 90 g m⁻² population holds ~945 cm³ gas and 265 mg O₂ per m² (Table 1); porosity of lobelia sands 40-45 %; enrichment with degradable organic matter lowers sediment O₂ and plant growth (Christensen & Sand-Jensen 1998, cited)."
+}

@@ -1,0 +1,41 @@
+{
+  "key": "Raney_Webster_1940",
+  "reader": "wave-3 batch w3-22",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item, openly downloadable (not access-restricted, no borrow, no login): the scan of Transactions of the American Fisheries Society vol. 69 (Sixty-ninth annual meeting, June 26-27, 1939) in the Serials in Microfilm collection; the article (printed pp. 205-209 = scan PDF pp. 207-211) indexed with getsrc --file --pages 207-211; Tables 1 and 2 read on the page images",
+    "url": "https://archive.org/details/sim_american-fisheries-society-transactions_june-26-27-1939_69_0",
+    "file": "docs/research_notes/fetched/v2/Raney_Webster_1940.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's title page in the volume scan and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Edward C. Raney & Dwight A. Webster (Cornell University), 'The food and growth of the young of the common bullhead, Ameiurus nebulosus nebulosus (LeSueur), in Cayuga Lake, New York', Trans. Am. Fish. Soc. 69: 205-209. The volume is the proceedings of the 1939 meeting; Crossref dates the article 1940 (the DOI carries 1939), so '1940' with vol. 69 is consistent with Crossref."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-2 (brown bullhead row)",
+      "claim": "first summer: crustaceans ~60 % (mostly ostracods and cladocerans), chironomid larvae ~25 %",
+      "location": "p. 205 (scan PDF p. 207), abstract; p. 206 (PDF p. 208), Results; Table 1, p. 207 (PDF p. 209)",
+      "quote": "The main staples were Crustacea (approximately 60 per cent) and Diptera",
+      "conditions": "170 young-of-year examined, 21 June-10 October 1938, quiet weedy coves of lower Fall Creek and Cayuga Lake at Ithaca, NY (12.9-56.3 mm mean SL); percentages are estimated original volume of the whole alimentary-tract contents. Table 1 totals: Cladocera 25.0, Ostracoda 20.5, Copepoda 4.3, Isopoda 6.7, Amphipoda 2.4 (crustaceans 58.9 %), Diptera 24.3 %. 'Almost all of the Diptera taken were chironomid larvae while 80 per cent of the Crustacea were ostracods and cladocerans.'",
+      "verdict": "confirmed",
+      "note": "The table's '(full text not obtained)' tag can go: the full text is now read."
+    },
+    {
+      "paper": "Table 3.6-7 (brown bullhead row)",
+      "claim": "Cayuga Lake, NY, 1938: 57.5 mm on 30 September; 68 mm (41-93) on 10 October",
+      "location": "p. 209 (scan PDF p. 211), Table 2",
+      "quote": "September 30 27 … 57.5 … October 10 53 41 to 93 68.0",
+      "quote_from": "table",
+      "conditions": "mean total length (mm) of preserved young-of-year (10 % formalin, then 70 % alcohol); n = 27 on 30 September (range 45-79 mm TL) and 53 on 10 October (range 41-93 mm TL); standard length means 47.7 and 56.3 mm",
+      "verdict": "confirmed",
+      "note": "Read on the page image. The table's '(relayed by a search summary of a species profile; unverified)' tag can be replaced by the direct citation. Note the lengths are of preserved fish."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other useful values: young bullheads fed mostly at dusk and night (day stomachs often empty); spawning mostly in the first three weeks of June at Ithaca; adults enter the coves at 50-55 °F (early April); mean TL 15.2 mm on 21 June, 42.0 mm on 5 August; 'the mean total length did not exceed 3 inches at the end of the first growing season, a few individuals reached a total length of 4 inches'. Fish (a cyprinid) and fish eggs were 1.3 % of the food. The 95-MB volume scan was deleted after indexing; the kept Raney_Webster_1940.pdf is the whole volume (getsrc kept only the article's text)."
+}
