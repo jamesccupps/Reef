@@ -1,0 +1,65 @@
+{
+  "key": "Blumer_1985",
+  "reader": "wave-1 batch t1-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Springer's article page; plus the Animal Diversity Web account the paper relays the numbers through (secondary, read in full)",
+    "url": "https://link.springer.com/article/10.1007/BF00005153",
+    "file": "docs/research_notes/fetched/v2/Blumer_1985_viaADW.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and Springer's article metadata (EBF 12(3): 231–236, March 1985, 'Brief communication'); Animal Diversity Web's reference list",
+    "ok": false,
+    "corrections": "probably the wrong 1985 Blumer paper for what the text cites: the Animal Diversity Web account attributes its 'Blumer (1985)' numbers (spawning dates, hatching and larval times, the 56.2/39.3/4.5 % care split with 1986a) to Blumer, L. S. 1985. Reproductive natural history of the brown bullhead Ictalurus nebulosus in Michigan. American Midland Naturalist 114(2): 318–330 (doi:10.2307/2425607, Crossref), not to this EBF note. Until either full text is read, add the Am. Midl. Nat. paper and cite it with ADW, or check which paper prints each number",
+    "note": "the EBF entry itself (authors, year, title, journal, 12(3): 231–236, doi:10.1007/BF00005153) matches Crossref. ADW's text says 'Blumer (1985 and 1986a)' without saying which 1986 paper is 'a'; its reference list gives, in order, Parental care sex differences … Behavioral Ecology and Sociobiology 19: 97–104, and The function of parental care … American Midland Naturalist 115: 234–238. The paper's 1986b is the Behav. Ecol. Sociobiol. paper"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (brown bullhead, Maturity)",
+      "claim": "maturity at 3 yr (Animal Diversity Web, citing Blumer)",
+      "verdict": "unchecked",
+      "note": "not readable from Blumer. ADW does not attribute the 3 years to Blumer: 'They reach sexual maturity at 3 years of age' follows a sentence on New Zealand spawning, and ADW's data box ('Average age at sexual or reproductive maturity … 3 years') carries no citation. Cite ADW alone, not 'citing Blumer'"
+    },
+    {
+      "paper": "Table 3.5-2 (brown bullhead, Spawning)",
+      "claim": "both parents in 56 % of broods, care up to 29 d (Blumer 1985, via ADW)",
+      "verdict": "unchecked",
+      "note": "ADW (secondary) says 56.2 % of broods cared for by both sexes and 'Maximum length of parental care is 29 days', citing 'Blumer (1985 and 1986a)', where its 1985 is the Am. Midl. Nat. paper (see bibliography). The EBF abstract says only that most broods are attended by both sexes"
+    },
+    {
+      "paper": "§3.5.4",
+      "claim": "care lasts up to 29 days in brown bullhead (Blumer 1985, via Animal Diversity Web)",
+      "verdict": "unchecked",
+      "note": "as above; ADW gives the 29-day maximum in the same paragraph as its Blumer (1985 and 1986a) citation"
+    },
+    {
+      "paper": "Table 3.6-1 (brown bullhead, Care)",
+      "claim": "both parents in 56 % of broods (Blumer 1985, 1986b; numbers via ADW)",
+      "verdict": "unchecked",
+      "note": "as above"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "brown bullhead broods were attended by both parents in 56.2 % of cases and by the male alone in 39.3 % (Blumer 1985, 1986b, via ADW)",
+      "verdict": "unchecked",
+      "note": "ADW gives 56.2 % both sexes, 39.3 % males only and 4.5 % females only, citing 'Blumer (1985 and 1986a)'; the paper writes 1986b. Which 1986 paper, and which 1985 paper, prints the split needs the full texts"
+    },
+    {
+      "paper": "src/w3/fish3.js:707",
+      "claim": "bullheads spawn late May–June, most eggs in a 10–15-day window, once a year (Blumer 1985)",
+      "verdict": "unchecked",
+      "note": "ADW (secondary): spawn once a season; in Blumer's four-year Michigan study they spawned most frequently within the first 16 days of June, larger males earlier. The '10–15-day window' is not in ADW; '16 days' is the nearest figure there"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://deepblue.lib.umich.edu/bitstreams/78872f7a-f7e2-4ec3-919a-019ec20bebe0/download", "status": 403, "note": "the University of Michigan Deep Blue copy OpenAlex lists (bronze OA): Cloudflare bot check ('Just a moment … Enable JavaScript and cookies'); not worked around. A human with a browser can open it" },
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF00005153.pdf", "status": 200, "note": "Springer paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00005153", "status": 200, "note": "paywall; the page carries the abstract (read, used only in notes)" },
+    { "url": "https://doi.org/10.1007/BF00005153", "status": "not fetched", "note": "the publisher's page a library login would open" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/BF00005153%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(biparental care brown bullhead)&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 items" }
+  ],
+  "notes": "The EBF abstract (not usable to confirm) says most broods are attended by both sexes, some by a male alone, rarely a female alone; two care-givers raised survival more than one; two adults attended simultaneously only 19 % of the time; males alone attended longer. It gives no percentages, durations or dates. All the paper's Blumer numbers come through ADW, which cites the 1985 Am. Midl. Nat. 'Reproductive natural history' paper (114(2): 318–330, doi:10.2307/2425607; JSTOR) for them: that paper, not this EBF note, is the one to fetch (JSTOR's early-journal content or a library). ADW also gives, from Blumer's 1985 study: hatching on average at day 5.6 (up to 13 d) and a larval stage of 4.4 d on average (4–9 d); and, without a citation, juveniles to the end of care ~5 d, eggs about 2.2–2.7 mm and larvae 4–8 mm at hatch — values that differ from Table 3.6-1's '6–10 d (mean 8) at 21.3 °C' incubation and '~3-mm eggs' and 'hatch 7–8 mm' (cited there to Breder, Armstrong and Eycleshymer), worth reconciling when the bullhead row is rewritten. The ADW page is saved as docs/research_notes/fetched/v2/Blumer_1985_viaADW.html (.txt)."
+}

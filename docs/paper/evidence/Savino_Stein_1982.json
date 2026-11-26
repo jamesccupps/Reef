@@ -1,0 +1,76 @@
+{
+  "key": "Savino_Stein_1982",
+  "reader": "wave-1 batch t1-05",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (the DOI resolves there when its < > are percent-encoded; show.mjs's 'DOI NOT FOUND' is an encoding artefact)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Savino, Jacqueline F.; Stein, Roy A. 1982 (May). Predator-Prey Interaction between Largemouth Bass and Bluegills as Influenced by Simulated, Submersed Vegetation. Transactions of the American Fisheries Society 111(3): 255-266. Matches the reference entry. Title page not seen"
+  },
+  "claims": [
+    {
+      "paper": "§3.4.8",
+      "claim": "largemouth bass caught bluegill as easily at 50 stems m⁻² as in open water but almost never at 250 or 1,000",
+      "verdict": "unchecked",
+      "note": "full text not obtained; a search-engine summary of the abstract says much the same, which confirms nothing"
+    },
+    {
+      "paper": "Table 3.7-1 (row Largemouth)",
+      "claim": "largemouth 33–37 cm on bluegill 35–44 mm: captures per strike ≈ 0.83 without stems, 0.58–0.67 among stems; pools, 16–24 °C",
+      "verdict": "unchecked",
+      "note": "the predator and prey sizes, the temperatures and the per-strike successes all need the paper's methods and its table or figure"
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "vegetation reduces encounters and the decision to attack, not success per attack: largemouth attacked bluegill about 31, 26, 3 and almost 0 times an hour at 0, 50, 250 and 1,000 rope stems/m², while success per attack stayed between 0.58 and 0.83",
+      "verdict": "unchecked",
+      "note": "check the attack rates (per hour? per bass or per pool?), the stem material ('rope') and whether success per attack really held at 250 and 1,000 stems when attacks were near zero (few attacks, so a success ratio there rests on very few events)"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:144 (F3.COVER_ONCE)",
+      "claim": "cover cuts attacks, counted once (after Savino & Stein 1982): 'vegetation cuts encounters and attacks, not success per attack'",
+      "verdict": "unchecked",
+      "note": "rests on the same finding as the §3.7.1 claim"
+    },
+    {
+      "paper": "src/w3/fish3.js:730, src/w3/fish3.js:2356 (F3.COVER_CS)",
+      "claim": "structure cuts the strike's capture success as well as the encounter (Savino & Stein 1982: at high stem densities largemouth caught few bluegill; capture success falls with complexity)",
+      "verdict": "unchecked",
+      "note": "this code comment cites the paper for the OPPOSITE of §3.7.1 and fish3.js:144 (which say success per attack is NOT reduced). COVER_CS is 0 in F3 and set to 0 again at fish3.js:808, so the comment describes a switched-off path; once the text is read, one of the two attributions has to go"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:988 (PPRM)",
+      "claim": "the size term is renormalized to 1 at the prey/predator length ratio the successes were measured at: 0.12 for a bass on spiny prey (code: 'largemouth 0.57–0.83 on bluegill at 0.12, Savino & Stein')",
+      "verdict": "unchecked",
+      "note": "if the Table 3.7-1 sizes hold, 35–44 mm bluegill on 330–370 mm bass gives a ratio of 0.095–0.133 (≈ 0.12 at the midpoints, project arithmetic) — unverified until the sizes are read. The code's 0.57 differs from the paper's 0.58 (Table 3.7-1, §3.7.1)"
+    },
+    {
+      "paper": "src/w3/fish3.js:2497",
+      "claim": "structure protects only the fish that use it (Savino & Stein 1982; weed_bed_structure.md §4)",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "src/w3/plants3.js:193",
+      "claim": "a searching predator's capture falls as 1/(1 + (S/S50)³) with S50 ~150 stems/m² (Crowder & Cooper 1982; Savino & Stein 1982)",
+      "verdict": "unchecked",
+      "note": "the curve is the project's fit; the paper can at most supply the points (0, 50, 250, 1,000 stems/m²)"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1982)111%3C255:PIBLBA%3E2.0.CO;2", "status": "not fetched", "note": "the DOI link (Crossref points it to Wiley's TAFS back file): the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(1982)111%3C255:PIBLBA%3E2.0.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577%2F1548-8659(1982)111%3C255%3APIBLBA%3E2.0.CO%3B2?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf GREEN: Ohio State University's Knowledge Bank copy (next lines)" },
+    { "url": "https://kb.osu.edu/dspace/bitstream/handle/1811/37078/20071201-AEL-SteinR-Predator.pdf?sequence=1", "status": 403, "note": "plain Apache 403 Forbidden (old DSpace path)" },
+    { "url": "https://kb.osu.edu/bitstream/handle/1811/37078/20071201-AEL-SteinR-Predator.pdf", "status": 403, "note": "plain Apache 403 Forbidden" },
+    { "url": "https://kb.osu.edu/handle/1811/37078", "status": 301, "note": "redirects to https://kb.osu.edu/items/09f101c2-6c9e-598d-aa9e-95c19284d00d; after that kb.osu.edu refused or timed out every connection for the rest of the session (the item page and the repository's REST API were never reached). A human can try the item page" },
+    { "url": "https://core.ac.uk/download/209942652.pdf", "status": 403, "note": "Cloudflare bot check ('Just a moment'); not attempted further. CORE's record names the OSU copy as its source" },
+    { "url": "http://web.archive.org/web/20220215124607id_/https://kb.osu.edu/bitstream/handle/1811/37078/20071201-AEL-SteinR-Predator.pdf", "status": "refused by the session's permission system", "note": "Wayback captures of OSU's own free copy exist (196,770 bytes; captured 2018-07-22, 2021-04-15, 2022-02-15). The fetch was refused by this session's permission classifier, so it was not retried; the human can open it by hand and index it with getsrc.mjs --file" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(1982)111%3C255:PIBLBA%3E2.0.CO;2%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(predator-prey interaction largemouth bass bluegills)&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 items" }
+  ],
+  "notes": "The best route is the Ohio State Knowledge Bank copy (handle 1811/37078), live or as the Wayback capture listed in tried. Once read, settle the contradiction between the paper (§3.7.1, §4.5) and the code comments fish3.js:730/2356 over whether the stems cut success per attack; check Table 3.7-1's sizes and temperatures, the per-hour attack rates (31, 26, 3, ~0) and whether success at the high densities rests on enough attacks to state; and whether the 0.57 (code) or 0.58 (paper) lower bound is the source's."
+}

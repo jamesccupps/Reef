@@ -17,7 +17,8 @@ walk('docs/research_notes'); if (fs.existsSync(path.join(ROOT, 'docs/reports')))
 for (const key of process.argv.slice(2)) {   // (top-level await: an ES module)
   const r = refs.get(key); if (!r) { console.log(`\n##### ${key}: NOT IN THE LEDGER`); continue; }
   const mc = path.join(ROOT, 'tools/paper-v2/out/meta', `${key}.json`);   // (the per-entry cache, while meta.mjs is still running)
-  const m = meta[key] || (fs.existsSync(mc) ? JSON.parse(fs.readFileSync(mc, 'utf8')) : {});
+  let m = meta[key] || (fs.existsSync(mc) ? JSON.parse(fs.readFileSync(mc, 'utf8')) : {});
+  if ((m.doi || '') !== (r.doi || '')) m = { oa: m.oa };   // (cached under an older, cut DOI: look it up again)
   if (!m.crossref && r.doi && m.crossref_status !== 404) {   // no cached record: ask Crossref now (the DOI only)
     try { const x = await fetch(`https://api.crossref.org/works/${encodeURIComponent(r.doi)}`, { headers: { 'User-Agent': 'synapse-reef-paper-check/1.0' }, signal: AbortSignal.timeout(15000) });
       if (x.ok) { const q = (await x.json()).message; m.crossref = { title: (q.title || [])[0] || '', authors: (q.author || []).map(a => [a.family, a.given].filter(Boolean).join(', ')), year: q.issued?.['date-parts']?.[0]?.[0] || '',

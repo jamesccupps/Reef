@@ -43,3 +43,10 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-08 | Table 4.3 vs `species.js` juvW, §3.5.4 | Smallmouth's switch from Rice's to Whitledge's set: 250 g in Table 4.3 (the 3-D code), ~30 g in species.js and §3.5.4 — reconcile in the text | open |
 | t1-08 | `src/w3/species3.js` FATHEAD | Energy density 4186 J/g where FB4's Parameters_official.csv has 4100 | open |
 | t1-08 | §3.5.4 | The Whitledge break-even sizes hold only for prey of ~3,600–4,000 J/g: state the prey energy density used | open |
+| t1-05 | `fish3.js:730, 2356` vs §3.7.1, `fish3.js:144` | Savino & Stein 1982 cited both for cover cutting capture success and for success per attack not changing; the COVER_CS path is off — settle when the paper is read | open |
+| t1-05 | §4.5 | "Cuts a perch-like predator's success to 0.15" reads as an absolute value; the code multiplies by 0.15 (`fish3.js:2356`) | open |
+| t1-05 | `fish3.js:988` vs §3.7.1 | Largemouth success 0.57–0.83 in the code, 0.58–0.83 in the paper; the esocid spiny-rayed value is anchored on pike attacking roach (soft-rayed) | open |
+| t1-05 | Table 3.6-1 (bullhead) | Incubation 6–10 d (mean 8), ~3-mm eggs, 7–8-mm hatchlings vs ADW (citing Blumer's 1985 study): hatching at day 5.6 on average; 2.2–2.7-mm eggs, 4–8-mm larvae (uncited) — reconcile | open |
+| t1-05 | Blumer 1985 entry | Probably the wrong 1985 Blumer paper: ADW credits its numbers to "Reproductive natural history of the brown bullhead", *Am. Midl. Nat.* 114(2): 318–330, doi:10.2307/2425607 | open |
+| t1-05 | §4.5, §5.8 | Chipps et al. 2000 measured over-predicted consumption in age-0 tiger muskellunge in the lab (113 % at 10 °C, 328 % at 7.5 °C); "winter costs 2–5×" and the ×0.5 pickerel respiration cut are project inference | open |
+| t1-05 | §3.8.7 | "No exuviae on seawalls, beaches or lawns" rests only on the Burnham, Howe & Merrell slides; Merrell et al. 2009 does not split developed sites by shore type | open |

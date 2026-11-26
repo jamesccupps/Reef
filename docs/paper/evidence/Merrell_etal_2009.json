@@ -1,0 +1,138 @@
+{
+  "key": "Merrell_etal_2009",
+  "reader": "wave-1 batch t1-05",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the Vermont Department of Environmental Conservation's own free PDF of the LakeLine article (agency copy, anrweb.vt.gov)",
+    "url": "https://anrweb.vt.gov/PubDocs/DEC/WSMD/lakes/Docs/lp_littorally.pdf",
+    "file": "docs/research_notes/fetched/v2/Merrell_etal_2009.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's pages (running foot \"Spring 2009 / LAKELINE\", printed pp. 10–15; byline Kellie Merrell, Eric A. Howe, and Susan Warren)",
+    "ok": true,
+    "corrections": "",
+    "note": "authors, title, Spring 2009 and pp. 10–15 match the pages. The volume and issue (29(1)) are not printed on the article's pages; a search summary gives Vol. 29 No. 1 but no page I could open shows it, so 29(1) is unverified, not wrong"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.2-5 (row Merrell, Howe & Warren 2009)",
+      "claim": "40 Vermont lakes; 234 reference vs 151 unbuffered developed sites; large wood > 10 cm: 8.1 per 10-m site (≈ 810/km) reference, 3.1 per 10-m site (≈ 310/km) developed",
+      "source_value": "Table 2: large woody count, unbuffered developed N 151 mean 3.1 (SE 0.44); reference N 231 mean 8.1 (SE 0.56); F 49.42, P < 0.0001. 40 lakes, 234 reference and 151 unbuffered developed sites in all",
+      "location": "p. 13 (PDF p. 4), Table 2; sites and lakes p. 10 (PDF p. 1); wood > 10 cm p. 11 (PDF p. 2)",
+      "quote": "Large woody count 151 3.1 0.44 231 8.1 0.56 49.42 <0.0001",
+      "quote_from": "table",
+      "conditions": "Vermont lakes, 2005–08; oligotrophic, mesotrophic and dystrophic, small (< 200 acres) and large; count of all pieces > 10 cm diameter from the water's edge out to the 2-m depth transect at each site (site laid out on a 10-m transect parallel to shore); reference = undeveloped high-quality sites, developed = visually selected UNBUFFERED developed sites (lawn/beach to the water)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "values read in the raw text (pdftotext -raw); the -layout text agrees. The /km figures are the project's: 8.1 / 10 m = 0.81 m⁻¹ = 810/km, 3.1 → 310/km — right if each site spans 10 m of shore, which the method implies (10-m transects) but does not state for the wood count. Reference N for this variable is 231, not 234"
+    },
+    {
+      "paper": "Table 3.2-5 caption",
+      "claim": "Merrell counted large wood from the water's edge to the 2-m contour",
+      "source_value": "",
+      "location": "p. 11 (PDF p. 2); Table 1, p. 13 (PDF p. 4)",
+      "quote": "Counted all pieces >10 cm diameter from shore to 2 m depth",
+      "conditions": "per site; large (> 10 cm diameter) woody structure only",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "Vermont's reference sites were picked as high-quality examples (one reason the densities in Table 3.2-5 differ)",
+      "source_value": "",
+      "location": "p. 10 (PDF p. 1)",
+      "quote": "These sites were considered high quality and are referred to as “reference sites.”",
+      "conditions": "reference sites = littoral biotopes with little or no anthropogenic shoreline alteration, chosen to match the developed sites' exposure, slope and sediments",
+      "verdict": "confirmed",
+      "note": "the source does not itself compare its wood densities with other studies; that inference is the paper's"
+    },
+    {
+      "paper": "§3.2.8",
+      "claim": "loss of large wood also removes turtle basking sites and the vertical surfaces on which fish and amphibians attach eggs",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4)",
+      "quote": "less vertical substrate available for amphibians and fish to attach their eggs",
+      "conditions": "the authors' interpretation of the 90 % (relative) reduction in large wood; basking sites 'safe from terrestrial predators'; not measured",
+      "verdict": "confirmed",
+      "note": "stated by the authors as a consequence, not a measured effect; the paper's wording is fair"
+    },
+    {
+      "paper": "Table 3.2-6 caption",
+      "claim": "unbuffered developed sites (n = 151) vs reference sites (n = 234) in 40 Vermont lakes, 2005–08; 10-m transects at 0.5 m depth",
+      "source_value": "",
+      "location": "p. 10 (PDF p. 1); Table 1 and Table 2, p. 13 (PDF p. 4)",
+      "quote": "At each site we placed a 10-m floating transect line at the 0.5-m depth",
+      "conditions": "not every measure comes from the 0.5-m transect: shoreline tree cover was estimated along 10 m of shore, shading 1 m from shore, large wood from shore to 2 m depth, exuviae along the shoreline and 2 m inland; N varies by variable (reference 229–234, developed tree cover 150)",
+      "verdict": "confirmed",
+      "note": "the caption could add 'several measures on the shore, see Table 1 of the source'"
+    },
+    {
+      "paper": "Table 3.2-6 (rows: large wood, fine wood, shoreline tree cover, shading)",
+      "claim": "large wood 3.1 vs 8.1 (count per 10-m site, to the 2-m contour); fine wood cover 3.5 vs 14.9 %; shoreline tree cover 2.7 vs 55.0 %; shading at 1 m (0–17 scale) 7.2 vs 15.1 (developed vs reference)",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4), Table 2",
+      "quote": "tree cover 2.7 … 55.0 Shading 7.2 … 15.1 Fine woody 3.5 … 14.9",
+      "quote_from": "table",
+      "conditions": "means per site; shading measured with a densiometer 1 m FROM SHORE (Table 1 and text; the Figure 5 caption says '1 m depth', the source is inconsistent); tree cover along 10 m of shore; fine wood < 4 cm diameter, % cover in the 0.5-m plots",
+      "verdict": "confirmed",
+      "note": "all read in the raw text. 'Shading at 1 m' is ambiguous: the methods say 1 m from shore. The source's medium wood (0.6 vs 5.0 %) is not in the paper's table"
+    },
+    {
+      "paper": "Table 3.2-6 (rows: leaf litter, sand, embeddedness)",
+      "claim": "leaf litter cover 2.3 vs 5.3 %; sand cover 59.4 vs 32.9 %; embeddedness 58.0 vs 38.4 % (developed vs reference)",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4), Table 2",
+      "quote": "% Leaf litter 151 2.3 0.78 234 5.3 0.88 6.75 0.0097",
+      "quote_from": "table",
+      "conditions": "% cover in the 0.5-m depth transect plots; leaf litter = deciduous leaf litter on the bed (P = 0.0097, the weakest of the significant differences); sand 59.4 (SE 3.05) vs 32.9 (2.40); embeddedness 58.0 (2.86) vs 38.4 (2.34)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.2-6 (rows: aufwuchs, odonate exuviae, aquatic plants)",
+      "claim": "aufwuchs cover 22.2 vs 31.2 %; odonate exuviae 1.6 vs 9.1 (count); aquatic plant cover 9.5 vs 14.1 %, difference not significant (P = 0.15)",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4), Table 2",
+      "quote": "Odonate exuviae count 151 1.6 0.66 234 9.1 1.68 17.10 <0.0001",
+      "quote_from": "table",
+      "conditions": "aufwuchs 22.2 (SE 2.32) vs 31.2 (2.02), P 0.0037; aquatic plants 9.5 (1.52) vs 14.1 (1.76), F 1.44, P 0.1474; plant response differed by lake class (Figure 7: more cover at developed sites in small oligo- and mesotrophic lakes, less in large and dystrophic lakes)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.8.7",
+      "claim": "on Vermont lakes, developed shore sites yielded 1.6 odonate exuviae against 9.1 at reference sites",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4), Table 2; method p. 12 (PDF p. 3)",
+      "quote": "We collected all exuviae from along the 10-m shoreline transect and 2-m inland",
+      "conditions": "mean count per site (10 m of shoreline and 2 m inland), unbuffered developed (N 151) vs reference (N 234); one collection per site, season not stated",
+      "verdict": "confirmed",
+      "note": "'developed' here means unbuffered developed (lawn or beach to the water)"
+    },
+    {
+      "paper": "§4.6; src/config.js:792",
+      "claim": "in front of camps fallen wood is cut to 0.15 of an undeveloped shore's, a project estimate between Christensen et al. 1996's 0.1 and Merrell, Howe & Warren 2009's 0.38 (code: 'Vermont's large wood 0.38 — Merrell 2009')",
+      "source_value": "",
+      "location": "p. 13 (PDF p. 4), Table 2",
+      "quote": "Large woody count 151 3.1 0.44 231 8.1 0.56",
+      "quote_from": "table",
+      "conditions": "large wood > 10 cm, water's edge to 2 m depth; unbuffered developed vs high-quality reference sites (not an average camp frontage)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "3.1 / 8.1 = 0.383 → 0.38. The source's own 'relative percent difference' for this variable is 'percent less' on another base (it reports 90 % less), so cite the ratio of the Table 2 means, not the text's percentage. The 0.15 itself is the project's"
+    },
+    {
+      "paper": "§4.6; src/config.js:796",
+      "claim": "in front of camps leaf fall is cut to 0.43 (Merrell, Howe & Warren 2009) (code: 'leaf litter cover 2.3 vs 5.3 % at unbuffered developed sites')",
+      "source_value": "0.43 is the ratio of deciduous LEAF-LITTER COVER on the lake bed in the 0.5-m depth plots (2.3 vs 5.3 %), not of leaf fall; the source measured no litter input",
+      "location": "p. 13 (PDF p. 4), Table 2; Table 1 (leaf litter: % cover, 0.5-m depth plots)",
+      "quote": "% Leaf litter 151 2.3 0.78 234 5.3 0.88 6.75 0.0097",
+      "quote_from": "table",
+      "conditions": "standing litter cover on the littoral bed, unbuffered developed vs reference sites; SEs large (0.78, 0.88), P = 0.0097",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "2.3 / 5.3 = 0.434 → 0.43 is right, and the code comment states the quantity correctly. The paper's '§4.6: leaf fall to 0.43' should say that the multiplier is the ratio of littoral leaf-litter cover, used as a proxy for leaf input (project assumption)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "A short magazine article (NALMS LakeLine), not a peer-reviewed paper: Table 2 gives means, SEs, N and F/P for all ten measures; the text's 'relative percent differences' (182 % less tree cover, 90 % less large wood, 139 % fewer exuviae …) use a base that can exceed 100 % and should not be quoted as fractions. Only the 0.5-m transect results are reported (1-m and 2-m transects were laid for plants but not presented). The authors attribute most other differences to the loss of shoreline tree cover. The only correction is the wording of §4.6's leaf-fall multiplier (litter cover, not leaf fall). The related 'Burnham, Howe & Merrell, slides' cited in §3.8.7 for no exuviae on seawalls, beaches or lawns is a different source and is not supported by this article (it does not break the developed sites down by shore type)."
+}

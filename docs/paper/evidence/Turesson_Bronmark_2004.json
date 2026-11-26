@@ -1,0 +1,67 @@
+{
+  "key": "Turesson_Bronmark_2004",
+  "reader": "wave-1 batch t1-05",
+  "date": "2026-11-26",
+  "obtained": { "how": "not obtained", "url": "", "file": "" },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref (via show.mjs)",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Turesson, H.; Brönmark, C. (2004). Foraging behaviour and capture success in perch, pikeperch and pike and the effects of prey density. Journal of Fish Biology 65(2): 363-375. Matches the reference entry. Title page not seen"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.7-1 (row Northern pike)",
+      "claim": "northern pike 182–221 mm on roach at 0.30 of pike length: captures per strike 0.15 overall, 0.36 from ambush, 0.12 in pursuit; 2.44-m pools, 19.7 °C, 166 attacks",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "Table 3.7-1 (row Eurasian perch)",
+      "claim": "Eurasian perch 190–235 mm on roach: captures per strike 0.20 on single prey, 0.03 into schools; pools",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.7.1",
+      "claim": "schooling does not protect against esocids: pike caught roach at the same rate whether single or schooled, while the success of Eurasian perch fell from 0.20 to 0.03",
+      "verdict": "unchecked",
+      "note": "check 'rate' (per attack? per unit time?) and the school sizes or prey densities compared"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:2350",
+      "claim": "an esocid meets a school as n^0.65 fish at undiminished success (code: 'it finds a school about as it finds one big fish and takes one fish an attack, its success unreduced inside it')",
+      "verdict": "unchecked",
+      "note": "only 'success unreduced in a school' can come from this source; the exponent 0.65 is presumably the project's (the paper's sentence puts the citation after both). Say so when rewritten"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:103, src/w3/fish3.js:209",
+      "claim": "a school cuts a perch-like predator's success to 0.15 (code: 'perch-like × 0.15 into a school')",
+      "verdict": "unchecked",
+      "note": "not cited to this source in §4.5, but it matches 0.03 / 0.20 = 0.15 from the perch row above (project arithmetic, if those values hold). In the code it is a MULTIPLIER (fish3.js:2356: 'cls === 2 ? 0.15'), whereas §4.5 says 'cuts … success to 0.15', which reads as an absolute success"
+    },
+    {
+      "paper": "src/w3/fish3.js:88",
+      "claim": "esocids catch as well in schools as singly (Turesson & Brönmark 2004); perch and bass are confused by schools",
+      "verdict": "unchecked",
+      "note": "only the pike and perch parts can come from this source (no bass were tested, by its title)"
+    },
+    {
+      "paper": "src/w3/fish3.js:988 (PPRM)",
+      "claim": "CS3's spiny-rayed value for an esocid was measured at a prey/predator length ratio of ~0.3 ('pike ambush 0.36 at ~0.30, Turesson & Brönmark 2004')",
+      "verdict": "unchecked",
+      "note": "roach are soft-rayed cyprinids, not spiny-rayed, so the ratio at which a pike's success on roach was measured is not obviously the right anchor for the spiny-rayed column; worth a look once the text is read"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1111/j.0022-1112.2004.00455.x", "status": "not fetched", "note": "the publisher's (Wiley) page: the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.0022-1112.2004.00455.x", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1111/j.0022-1112.2004.00455.x?fields=openAccessPdf,externalIds,title", "status": 200, "note": "openAccessPdf GREEN: Lund University's repository copy (next line)" },
+    { "url": "https://portal.research.lu.se/files/2802910/624603.pdf", "status": 403, "note": "Cloudflare bot check ('Just a moment … Enable JavaScript and cookies'); not worked around" },
+    { "url": "https://lup.lub.lu.se/search/ws/files/2802910/624603.pdf", "status": "refused by the session's permission system", "note": "Lund's own open copy under its older LUP address; the fetch was refused by this session's permission classifier (together with the Wayback line below), so it was not retried" },
+    { "url": "http://web.archive.org/web/20200731162341id_/https://lup.lub.lu.se/search/ws/files/2802910/624603.pdf", "status": "refused by the session's permission system", "note": "Wayback captures of Lund's free copy exist (~1.26 MB; 2017-08-16, 2017-09-22, 2018-07-19, 2020-07-31, 2024-09-16; also http://portal.research.lu.se/ws/files/2802910/624603.pdf captured 2018-07-19). Not fetched; the human can open one by hand and index it with getsrc.mjs --file" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1111/j.0022-1112.2004.00455.x%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(foraging behaviour capture success perch pikeperch pike)&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 items" }
+  ],
+  "notes": "An accepted-manuscript or publisher PDF is in Lund University's repository (file 2802910/624603.pdf) but sits behind a Cloudflare check; the Wayback captures are the easy hand-fetch. When read, check: the pike and perch sizes, pool size (2.44 m) and temperature (19.7 °C), the 166 attacks, the ambush vs pursuit split (0.36 / 0.12), the single vs school successes and what 'same rate' means for pike, the pikeperch results (the paper uses none), and the prey/predator length ratio. The 0.65 school-encounter exponent and the ×0.15 perch multiplier are project values built on it."
+}

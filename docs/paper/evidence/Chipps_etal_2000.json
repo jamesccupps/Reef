@@ -1,0 +1,73 @@
+{
+  "key": "Chipps_etal_2000",
+  "reader": "wave-1 batch t1-05",
+  "date": "2026-11-26",
+  "obtained": { "how": "abstract only, from the USGS Publications Warehouse record (no full text there)", "url": "https://pubs.usgs.gov/publication/70022528", "file": "" },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (the DOI resolves when its < > are percent-encoded; show.mjs's 'DOI NOT FOUND' is an encoding artefact) and the USGS Publications Warehouse record",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref: Chipps, Steven R.; Einfalt, Lisa M.; Wahl, David H. (2000). Growth and Food Consumption by Tiger Muskellunge: Effects of Temperature and Ration Level on Bioenergetic Model Predictions. Transactions of the American Fisheries Society 129(1): 186-193. USGS gives the same volume, issue and pages. Matches the reference entry"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.4",
+      "claim": "the esocid model used for pickerel overestimates consumption, especially in winter and at low ration (Chipps et al. 2000, abstract, on age-0 tiger muskellunge)",
+      "verdict": "unchecked",
+      "note": "the abstract (USGS record) says consumption is 'generally overestimated by the model, particularly in winter months and for fish exhibiting low feeding and growth rates'. It does not name the model; that it is the esocid set the project uses for pickerel needs the full text"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "the juvenile esocid models overestimated consumption by 113 % at 10 °C and 328 % at 7.5 °C in tiger muskellunge",
+      "verdict": "unchecked",
+      "note": "the abstract: 'overestimated winter consumption rates at 10 and 7.5°C by 113 to 328%, respectively', and 4–58 % at 20–25 °C. The pairing (113 % at 10 °C, 328 % at 7.5 °C) follows the abstract's 'respectively'; the definition of the percentage and which ration levels it averages need the full text"
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "the esocid bioenergetics model overestimated the consumption of young tiger muskellunge by 113–328 % at 7.5–10 °C (abstract only)",
+      "verdict": "unchecked",
+      "note": "as above"
+    },
+    {
+      "paper": "§4.5",
+      "claim": "because sets fitted in warm water overstate winter costs two- to five-fold, empirical cold rules take over in cold water for bass, young bullheads and pickerel (after Chipps et al. 2000)",
+      "verdict": "unchecked",
+      "note": "the abstract measures over-predicted CONSUMPTION (with growth observed), which the authors 'postulate' comes from seasonal changes in esocid metabolic rate; it gives no respiration or 'cost' measurement. If 113–328 % means (predicted − observed)/observed, the factor is 2.1–4.3× (project arithmetic). This source covers the esocid (pickerel) part only, not bass or bullheads"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "bioenergetics sets fitted at summer temperatures overstate winter needs 2–5×; the pike set 2–4× (Chipps et al. 2000)",
+      "verdict": "unchecked",
+      "note": "2–4× is consistent with the abstract's 113–328 % only as consumption over-prediction (×2.13 and ×4.28), on age-0 tiger muskellunge in the laboratory, not on pike; unconfirmed until the full text is read"
+    },
+    {
+      "paper": "src/bioenergetics.js:91",
+      "claim": "FB4's respiration sets burn 2–6× what fish do in the cold: … the pike set 2–4× in winter (Chipps et al. 2000)",
+      "verdict": "unchecked",
+      "note": "the comment frames it as respiration; the abstract measures consumption (see §4.5)"
+    },
+    {
+      "paper": "src/species.js:381 (pickerel cold rule)",
+      "claim": "cold: { mul: 0.5, T0: 8, T1: 15 } — the pike set's winter respiration ×½ at ≤ 8 °C (Chipps et al. 2000: winter consumption overestimated 2–4×)",
+      "verdict": "unchecked",
+      "note": "the ×0.5 respiration multiplier and the 8/15 °C thresholds are the project's; the source can supply at most the over-prediction at 7.5 and 10 °C"
+    },
+    {
+      "paper": "src/w3/fish3.js:798",
+      "claim": "the adult's ×0.5 winter cut stood in for Chipps et al. 2000's age-0 esocid errors in cold water",
+      "verdict": "unchecked"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(2000)129%3C0186:GAFCBT%3E2.0.CO;2", "status": "not fetched", "note": "the DOI link (Crossref points it to Wiley's TAFS back file): the page a library login would open" },
+    { "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1577/1548-8659(2000)129%3C0186:GAFCBT%3E2.0.CO;2", "status": 403, "note": "Wiley refuses scripts" },
+    { "url": "https://pubs.usgs.gov/pubs-services/publication/70022528", "status": 200, "note": "USGS Publications Warehouse: citation and abstract only, no PDF link" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577%2F1548-8659(2000)129%3C0186%3AGAFCBT%3E2.0.CO%3B2?fields=openAccessPdf,externalIds,title", "status": 429, "note": "rate-limited on four tries; worth one more try another day" },
+    { "url": "https://api.openalex.org/works?search=tiger%20muskellunge%20growth%20food%20consumption", "status": 429, "note": "OpenAlex's shared daily budget was used up; it asks for an API key tied to an email, so skipped" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(2000)129%3C0186:GAFCBT%3E2.0.CO;2%22&format=json&resultType=lite", "status": 200, "note": "0 hits" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(tiger muskellunge) AND creator:(Chipps)&fl[]=identifier&rows=10&output=json", "status": 200, "note": "0 items" }
+  ],
+  "notes": "No open copy was found (a web search turned up only the USGS abstract). The abstract (not usable for confirmation) describes age-0 tiger muskellunge grown in the laboratory at 25, 50, 75 and 100 % of Cmax and 7.5–25 °C; consumption over-predicted at 10 and 7.5 °C by 113 to 328 % respectively, 4–58 % at 20–25 °C; worse at low ration; the authors suggest modelling waste losses as a function of ration for esocids. The project uses it for a RESPIRATION cut (×0.5 at ≤ 8 °C) in the pickerel's pike set: that translation, and the 'two- to five-fold winter costs' framing in §4.5 and §5.8, should be stated as project inference unless the full text gives respiration. A search summary (not read) points to a later correction equation for this model in juvenile tiger muskellunge (Schoenebeck, Chipps & Brown 2008, doi:10.1577/T07-229.1, already the source of the project's juvenile esocid losses at fish3.js:800) that may be the better source for a juvenile esocid cold-water correction."
+}

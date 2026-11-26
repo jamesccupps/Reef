@@ -47,7 +47,9 @@ for (const r of refs) {
   if (!REFRESH && fs.existsSync(cf)) {
     const c = JSON.parse(fs.readFileSync(cf, 'utf8'));
     // --retry-oa: redo the entries whose OpenAlex lookup failed (its free daily budget, shared by the network, ran out on 2026-11-26)
-    if (!(RETRY_OA && c.openalex_status !== undefined && c.openalex_status !== 200 && c.openalex_status !== 404)) { results[r.key] = c; continue; }
+    // (and an entry whose DOI has changed since it was cached — the old parser cut SICI DOIs at their first bracket — is redone)
+    const stale = (c.doi || '') !== (r.doi || '');
+    if (!stale && !(RETRY_OA && c.openalex_status !== undefined && c.openalex_status !== 200 && c.openalex_status !== 404)) { results[r.key] = c; continue; }
   }
   const rec = { key: r.key, doi: r.doi || '', entry_title: titleOf(r.citation), entry_year: (/_(\d{4})/.exec(r.key) || [])[1] || '' };
   if (r.doi) {
