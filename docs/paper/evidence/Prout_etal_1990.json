@@ -1,0 +1,41 @@
+{
+  "key": "Prout_etal_1990",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "full text not obtained; secondary only: Harris (2006, Virginia Tech MS thesis, already fetched for the pass as Harris_2006) restates one of the article's findings",
+    "file": "docs/research_notes/fetched/v2/Harris_2006.txt"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.3.9",
+      "claim": "in Oneida, young white perch took 2–12 times more prey biomass per gram than young yellow perch in 1980, and their growth tracked late-summer D. pulex (abstract only)",
+      "verdict": "unchecked",
+      "note": "Neither the article nor its abstract could be read; Harris 2006 says only that trophic overlap between age-0 yellow perch and white perch in Oneida was significant (> 0.6) (Harris p. 3, PDF p. 15)."
+    },
+    {
+      "paper": "Table 3.6-2 (white perch first foods)",
+      "claim": "amphipods and chironomids from ~40 mm (Prout, Mills & Forney 1990, via Harris 2006)",
+      "verdict": "unchecked",
+      "note": "Harris 2006, p. 6 (PDF p. 18), says a diet shift 'at 40 mm TL (from copepods and daphnids to amphipods and chironomids)' was documented in age-0 white perch in Oneida Lake (Prout et al. 1990). The secondary citation is faithfully relayed (40 mm TOTAL length), but the article itself was not read."
+    },
+    {
+      "paper": "§3.6.6",
+      "claim": "in 1987, when D. pulex vanished, young white and yellow perch switched to bed invertebrates and grew more slowly (abstract)",
+      "verdict": "unchecked",
+      "note": "Not read; Harris 2006 does not mention 1987."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1990)119%3C0966:DGAPCI%3E2.3.CO;2", "status": 403, "note": "Wiley (old AFS host) refused" },
+    { "url": "https://academic.oup.com/tafs/article/119/6/966/7848950", "status": 403, "note": "OUP (current AFS publisher) refused; a library login would open https://doi.org/10.1577/1548-8659(1990)119<0966:DGAPCI>2.3.CO;2" },
+    { "url": "https://ecommons.cornell.edu/server/api/discover/search/objects?query=Prout%20white%20perch", "status": 200, "note": "Cornell eCommons search: no thesis or copy by Prout (only later Oneida theses)" }
+  ],
+  "notes": "Blocked (Transactions of the American Fisheries Society 119(6): 966–975). The paper already marks two of the three uses as 'abstract only'; even the abstract was not reachable here (Crossref carries none; the publisher pages refuse scripts). The 40-mm diet shift is relayed correctly from Harris 2006 (TL). A library copy is needed to check the 2–12× ration ratio and the 1987 D. pulex collapse."
+}

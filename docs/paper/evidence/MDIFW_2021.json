@@ -1,0 +1,52 @@
+{
+  "key": "MDIFW_2021",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency PDF from MDIFW's own server: the cited www.maine.gov path refuses scripts (403), but www1.maine.gov serves the same file with the folder written in lower case (ifw)",
+    "url": "https://www1.maine.gov/ifw/docs/21-MDIFW-8-Fisheries-Plan_V3.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2021.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the cover and table of contents (PDF pp. 1-2)",
+    "ok": false,
+    "corrections": "Title is 'Inland Fisheries and Hatcheries Strategic Management Plan 2021–2035, Volume III: Species Assessments' (not 'Statewide Fisheries and Hatcheries Management Plan'). The smallmouth material is in section II 'Black Bass' (smallmouth and largemouth), pp. 6–11 (brook trout begins p. 12); pp. 6–10 covers the smallmouth parts. Working URL: https://www1.maine.gov/ifw/docs/21-MDIFW-8-Fisheries-Plan_V3.pdf"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "smallmouth bass occur in 517 surveyed Maine lakes, 84 of them in the Penobscot region",
+      "source_value": "517 lakes and ponds statewide (2020); 84 in Fisheries Management Region F (76 % of Region F's surveyed lake/pond acreage)",
+      "location": "p. 10 (PDF p. 12), text and Table 2",
+      "quote": "now occur in 517 Maine lakes and ponds (Table 2)",
+      "conditions": "statewide distribution of lakes and ponds containing smallmouth bass, 2020",
+      "verdict": "confirmed",
+      "note": "Table 2 row read on the raw text: 'F 84 76%'; statewide total 517 (59 % of surveyed acreage). The plan labels the region only 'F'; that Region F is the Penobscot region comes from MDIFW's regional naming (paper §2.1), not from this document. 'Surveyed lakes' is the paper's wording; the plan says 'lakes and ponds'."
+    },
+    {
+      "paper": "§3.5.1 (Table 2 row)",
+      "claim": "84 of the 517 smallmouth lakes are in Region F (Penobscot)",
+      "location": "p. 10 (PDF p. 12), Table 2",
+      "quote": "F … 84 … 76% … STATEWIDE TOTAL 517 59%",
+      "quote_from": "table",
+      "conditions": "2020",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.8; Table 3.6-9",
+      "claim": "MDIFW states that young bass under about 56 mm (2.2 in) do not survive their first winter",
+      "location": "p. 6 (PDF p. 8), Black Bass: smallmouth bass",
+      "quote": "bass less than about 2.2 inches long do not survive their first winter",
+      "conditions": "MDIFW multi-year study of young-of-year bass on waters in southern, central and eastern Maine; the length type (total length presumably) is not stated; 2.2 in = 55.9 mm",
+      "verdict": "confirmed",
+      "note": "The same paragraph gives the 'approximately 200+ day starvation period' of the first winter 'when water temperatures fall below 50°F' (which §3.6.8 credits to Jordan 2001: this plan says it too), and adds that after a year of poor survival the next year classes grew and survived better. p. 7 (PDF p. 9): first-season lengths are typically 2.2–2.9 in, fast growers 4+ in."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/21-MDIFW-8-Fisheries-Plan_V3.pdf", "status": 403, "note": "www.maine.gov refuses scripts" },
+    { "url": "https://www1.maine.gov/ifw/docs/21-mdifw-8-fisheries-plan_v3.pdf", "status": 404, "note": "an all-lower-case file name does not exist; only the folder needs lower case" }
+  ],
+  "notes": "Values confirmed; only the title and page range in the bibliography need fixing. Useful extras in the same section: males mature at 3–4 yr, females 4–5 (p. 6); a trophy smallmouth (≥18 in) may be 15–20+ yr old (p. 6); first-summer length 2.2–2.9 in in most Maine waters (p. 7)."
+}

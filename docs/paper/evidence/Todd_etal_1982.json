@@ -1,0 +1,41 @@
+{
+  "key": "Todd_etal_1982",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the US EPA HERO reference record (which carries the published abstract); the article is on JSTOR behind a login",
+    "url": "https://hero.epa.gov/reference/3181496/",
+    "file": "docs/research_notes/fetched/v2/Todd_etal_1982.hero.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the EPA HERO record",
+    "ok": true,
+    "note": "Journal of Wildlife Management 46(3): 636–645 (Crossref gives only the first page, 636; HERO gives 636–645)."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.7",
+      "claim": "in interior Maine, bald eagles favor chain pickerel among their freshwater prey",
+      "verdict": "unchecked",
+      "note": "The abstract names three favored freshwater foods together: brown bullhead, white sucker and chain pickerel. Singling out pickerel goes beyond the abstract unless the full text ranks it first."
+    },
+    {
+      "paper": "§3.7.9",
+      "claim": "in interior Maine, fish made up 79 % of bald eagle prey items, with brown bullhead, white sucker and chain pickerel the favored freshwater foods",
+      "verdict": "unchecked",
+      "note": "The abstract says 'Fish comprised 79% of the food items collected in interior Maine' and names the three species as favored foods in freshwater habitats; food remains collected at 78 breeding and wintering areas, 1976–80, nearly 1,400 prey individuals. The abstract warns that fish are often under-rated in food-debris collections, so the 79 % is likely a minimum."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "interior Maine bald eagles took fish as 79 % of prey items, chiefly brown bullhead, white sucker and chain pickerel",
+      "verdict": "unchecked",
+      "note": "As above."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://www.jstor.org/stable/pdf/3808554.pdf", "status": 200, "note": "JSTOR login/paywall page (not kept); a library login would open https://doi.org/10.2307/3808554" }
+  ],
+  "notes": "Full text blocked. The abstract agrees with every number the paper uses (79 % fish in interior Maine; bullhead, sucker and pickerel favored), but the paper should say 'food items in remains collected at nests and roosts' and note the authors' caveat that remains under-represent fish. §3.7.7's 'favor chain pickerel' should list all three species unless the full text ranks pickerel first. MDIFW's bald eagle species assessment (Todd 2004, https://www1.maine.gov/ifw/docs/species_planning/birds/baldeagle/speciesassessment.pdf, fetched as Todd_etal_1982.mdifw-assessment.pdf) is not a stand-in: it gives only 'typical prey in interior Maine' (pickerel, bullhead, suckers, white and yellow perch) citing Todd et al. 1982 together with Welch 1994."
+}

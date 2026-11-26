@@ -1,0 +1,59 @@
+{
+  "key": "RangePonds_2024",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the report PDF as posted on the Range Ponds association's own web site (rangeponds.org, served from its Squarespace file store)",
+    "url": "https://www.rangeponds.org/s/Range-Ponds-2024-Water-Quality-Assessment-1.pdf",
+    "file": "docs/research_notes/fetched/v2/RangePonds_2024.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1) and the signature (p. 18)",
+    "ok": false,
+    "corrections": "Author: the report was 'Prepared by LWRMA Limnologist, Scott Williams' (Lake & Watershed Resource Management Associates, Turner, Maine; p. 18), for the 2024 season; cite it as Williams, S. (LWRMA). 2024 [season]. Range Ponds 2024 Water Quality Assessment (Upper, Middle and Lower Range Ponds, Poland, Maine), posted at rangeponds.org, rather than under 'Range Ponds' as author."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.5",
+      "claim": "Maine DEP reports that shallow lakes 'that have undergone little or no stratification in the past are now experiencing this phenomenon' (Range Ponds 2024, citing DEP)",
+      "source_value": "the words are the report author's own (LWRMA's limnologist), offered as a possible explanation ('This may be due, in part, to …') for why some lakes are not clearer in dry years; they are not attributed to DEP",
+      "location": "p. 5",
+      "quote": "some relatively shallow lakes that have undergone little or no stratification in the past",
+      "conditions": "a hedged statement about 'some relatively shallow lakes', no data or lake named",
+      "verdict": "corrected",
+      "note": "The nearest DEP attribution in the report is the analysis of Secchi against precipitation on p. 4 ('Linda Bacon/MEP; and Scott Williams/LSM') and the surface-warming remark on p. 2 '(Source: MDEP Data Summaries for ME Lakes)'. Write 'a Maine limnologist suggests that some relatively shallow lakes … may now stratify (Williams, Range Ponds 2024)'."
+    },
+    {
+      "paper": "§3.1.5",
+      "claim": "the Range Ponds reached 28.2–30.2 °C at the surface on 12 July 2024",
+      "location": "p. 2",
+      "quote": "temperatures for Upper, Middle and Lower Range were 28.2, 28.7 and 30.2 degrees Celsius",
+      "conditions": "surface water temperature measured at the deepest location of each lake on 12 July 2024, during a late-June–July heat wave; Upper 28.2, Middle 28.7, Lower 30.2 °C",
+      "verdict": "confirmed",
+      "note": "The Range Ponds are DEP 'Coastal Deep Lakes' that stratified strongly in July and August (p. 2), not shallow polymictic analogs; the paper uses them only for heat-wave surface temperatures, which is fair."
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "Maine lakes are clearer in droughts (Bacon & Williams, via Range Ponds 2024)",
+      "location": "p. 4 and Figure 2",
+      "quote": "a significant number of Maine lakes tend to be clearer during drier years",
+      "conditions": "observational analysis of Maine lakes' Secchi transparency 2001–2017 (Bacon, MDEP; Williams, LSM), shown as the share of lakes more clear / same / less clear each year against January–July rainfall",
+      "verdict": "confirmed",
+      "note": "The report says 'a significant number' and 'a majority', not all lakes; smaller groups are unchanged or less clear (p. 5)."
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "summer Secchi falling with color and with January–June precipitation (Bacon & Williams, via Range Ponds 2024)",
+      "source_value": "the precipitation window is January–July (Figure 2 title; the text says 'January through mid- summer'); the report gives no relation between Secchi and color in the Bacon & Williams analysis",
+      "location": "p. 4, text and Figure 2",
+      "quote": "more precipitation during the period from January through mid- summer",
+      "conditions": "Figure 2 is titled 'Maine Lake Clarity Compared to January - July Precipitation' (read on the page image)",
+      "verdict": "corrected",
+      "note": "Color appears only in the report's own discussion of the Range Ponds (high color after the wet 2023 reduced clarity, p. 1; color above ~25 units 'can significantly influence water clarity', p. 9), not as a finding of the statewide analysis. Drop 'with color' from the attribution or cite a source for it."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Report of one contractor's two visits (12 July and 22 August 2024) to three deep, stratifying lakes in Poland, Maine, with general remarks on Maine lakes and climate. Surface temperatures confirmed. Two attributions need fixing: the shallow-lake stratification remark is the author's hedged suggestion, not a DEP report, and the Bacon & Williams figure relates clarity to January–July (not January–June) precipitation and says nothing about color. The author, Scott Williams, is also the 'Williams, LSM' of the Bacon & Williams analysis."
+}

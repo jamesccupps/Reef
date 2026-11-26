@@ -1,0 +1,41 @@
+{
+  "key": "McCall_etal_1996",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from Penn State's Pure research-output page (the cited URL); no full text there",
+    "url": "https://pure.psu.edu/en/publications/beaver-populations-and-their-relation-to-wetland-habitat-and-bree/",
+    "file": "docs/research_notes/fetched/v2/McCall_etal_1996.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref and the Penn State Pure record",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.1.2",
+      "claim": "on an untrapped site in south-central Maine beaver colonies rose from 0.15 to 0.32 per km² in 1988–92 and open water by 36 %",
+      "verdict": "unchecked",
+      "note": "The abstract says the same (colonies 0.15 to 0.32/km², +113 %, on a 111-km² site closed to trapping; surface water 115 to 158 ha, +36 %), but the full text was not read."
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "breeding hooded mergansers rose to 23–29 per 100 km² on an untrapped south-central Maine site as beaver wetlands expanded",
+      "verdict": "unchecked",
+      "note": "The abstract lists hooded mergansers '(23-29/100 km2)' among species that increased, which reads as a rise FROM 23 TO 29 per 100 km², and the study measured densities of breeding PAIRS. If the full text agrees, write 'breeding pairs rose from 23 to 29 per 100 km²'. The abstract also says more than 3–4 years may be needed for waterfowl densities to respond."
+    },
+    {
+      "paper": "§3.8.3",
+      "claim": "colonies rose from 0.15 to 0.32 per km² in 1988–92, open water by 36 %; wetland area tracked colony density (r = 0.99); a trapped site held 0.19–0.20 colonies per km²",
+      "verdict": "unchecked",
+      "note": "The abstract contradicts the r = 0.99 attribution: r = 0.99 (n = 4 years, P = 0.009) is between the NUMBER OF BEAVER DAMS maintained and colony density; the NUMBER OF WETLANDS correlated at r = 0.92 (n = 4, P = 0.081, not significant at 0.05); no correlation for wetland AREA is given. The research note (shore_birds_and_mammals.md) says 'dams and wetlands tracked colony density (r = 0.99)'; the paper turned that into wetland area. Trapped site 0.19–0.20/km² agrees with the abstract."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1007/BF03160690.pdf", "status": 200, "note": "Springer paywall page (not kept); a library login would open https://doi.org/10.1007/BF03160690" },
+    { "url": "https://digitalcommons.library.umaine.edu/do/search/?q=McCall%20beaver", "status": 200, "note": "UMaine Digital Commons has been retired (June 2026); its successor (Specto) was not searchable by script, so a UMaine thesis on the same data was not looked for there" }
+  ],
+  "notes": "Full text blocked (Springer, Wetlands 16(2): 163–172). Even from the abstract, §3.8.3's 'wetland area tracked colony density (r = 0.99)' is wrong: the 0.99 is dams maintained vs colonies; number of wetlands r = 0.92, P = 0.081, n = 4. Fix or drop it in the rewrite, and recheck the merganser figure as 'pairs, from 23 to 29 per 100 km²'. The site is 111 km² of south-central Maine, 1988–92, with a similar trapped site as control."
+}

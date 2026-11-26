@@ -1,0 +1,54 @@
+{
+  "key": "Rowan_etal_1992",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the Crossref record (saved as Rowan_etal_1992.crossref.json / .crossref-abstract.txt); the article is behind the Canadian Science Publishing paywall. A stand-in was read in full: Rowan's PhD thesis (McGill, October 1991), whose chapter 1 'Estimating lake deposition boundary depth from wave theory' (thesis pp. 12–48) is the same study, openly posted by McGill's repository (eScholarship@McGill / Scholaris, handle 20.500.14905/84509), PDF with an OCR text layer, saved as Rowan_etal_1992.thesis.pdf/.txt",
+    "url": "https://mcgill.scholaris.ca/server/api/core/bitstreams/0c2da563-a7dc-440a-8616-537b85da6f7e/content",
+    "file": "docs/research_notes/fetched/v2/Rowan_etal_1992.thesis.pdf"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.2.7",
+      "claim": "the depth of the mud deposition boundary is set by 'the several biggest storms each year' (abstract as relayed by a search summary)",
+      "verdict": "unchecked",
+      "note": "The abstract (Crossref) has the words, but for the UPPER LIMIT to the distribution of mud: 'the several biggest storms each year, rather than extremely rare events, are responsible for the upper limit to the distribution of mud. However … many mud DBDs occur deeper than this upper limit, usually on slopes greater than 3%'. So storms set the shallowest depth mud can lie at, not the boundary itself. Stand-in: thesis p. 32 (PDF p. 50) and p. 41 (PDF p. 59)."
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "maximum fetch or an exposure index, each combined with littoral slope, explained 89–93 % of the boundary's variance (abstract as relayed by a search summary)",
+      "verdict": "unchecked",
+      "note": "Not in the abstract (Crossref), so 'abstract as relayed' is wrong. Stand-in: thesis pp. 38–40 (PDF pp. 56–58), Figs 6–7: log observed vs log predicted DBD with slope, R² = 89 % (maximum fetch) and 93 % (exposure), n = 254 DBDs."
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "a relation cited from Rowan, h ≈ 1.66·√F (h in m; F maximum fetch in km), reproduces the 1.68-m maximum wave base reported for ELA Lake 226 (Cooley 1997)",
+      "verdict": "unchecked",
+      "note": "Stand-in: thesis eq. 5, p. 21 (PDF p. 39): 'h (m) > 1.660 F^0.5', the depth beyond which Airy deep-water wave theory applies for the MAXIMUM wave (H = 0.332 F^0.5, L = 20 H, Wetzel 1983), i.e., a theoretical limit, not Rowan's observed mud boundary. Cooley's use of it as a 'maximum wave base' is Cooley's."
+    },
+    {
+      "paper": "§3.2.7 (follow-on paragraph)",
+      "claim": "critical (annual-storm) waves taken as 77 % of the maximum, after Rowan via Cooley",
+      "verdict": "unchecked",
+      "note": "Stand-in: thesis p. 32 (PDF p. 50): critical wave height is approximately 77 % of maximum wave height; eq. 18, p. 30 (PDF p. 48): H_crit (m) = 0.254 F^0.5; exceeded ~1–1.5 days a year in Lakes Superior and Huron."
+    },
+    {
+      "paper": "§3.4.4",
+      "claim": "fine mud settles only below a deposition boundary set by the year's largest storms, 2.291·F^0.549 m for maximum fetch F in km (Rowan et al. 1992, 54 lakes); 1.6–4.2 m for fetches of 0.5–3 km and ~3.4 m at 2 km (project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "Stand-in: thesis eq. 16, p. 25 (PDF p. 43, read on the page image): 'EB23 (m) = 2.291 F^0.549', the empirical 23-µm energy boundary fitted to 1,260 sites in 54 lakes (p. 16, PDF p. 34); F in km (p. 21). It is an upper limit, not a sharp line: 89 % (700/783) of fine-grained sites lie deeper, but only 55 % (261/477) of coarse sites lie shallower. The arithmetic is right: 2.291·0.5^0.549 = 1.57, 2.291·3^0.549 = 4.19, 2.291·2^0.549 = 3.35 m."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://cdnsciencepub.com/doi/pdf/10.1139/f92-275", "status": 403, "note": "Canadian Science Publishing paywall; a library login would open https://doi.org/10.1139/f92-275" },
+    { "url": "http://www.nrcresearchpress.com/doi/pdf/10.1139/f92-275", "status": 403, "note": "old NRC Research Press link (Crossref), refused" }
+  ],
+  "notes": "The article is blocked; its abstract was read. The thesis stand-in (Rowan, D. J. 1991. The distribution, texture and trace element concentrations of lake sediments. PhD thesis, McGill University, chapter 1; https://hdl.handle.net/20.500.14905/84509) supports every value the paper attributes to Rowan: the storms wording (p. 32), 77 % critical waves (p. 32), 1.660·√F (eq. 5, p. 21), 2.291·F^0.549 from 1,260 sites in 54 lakes (eq. 16, p. 25; p. 16) and the 89 %/93 % with slope (pp. 38–40). Recommend citing the thesis for these or reading the article. Three things for the rewrite: (1) §3.2.7's '89–93 %' is not in the abstract (the attribution 'abstract as relayed' is wrong); (2) the two relations the paper credits to Rowan are different quantities: 1.66·√F is the deep-water-theory limit for the maximum wave, 2.291·F^0.549 the empirical upper limit of fine sediment; at F = 1 km they give 1.66 and 2.29 m, at 2 km 2.35 and 3.35 m, which probably explains part of the gap between §3.4.4's two estimates (~3.4 m vs 1.5–2.3 m), the per-cell one resting on the wave-theory/critical-wave forms; (3) the boundary is an upper limit to mud: most observed DBDs lie deeper, on slopes above 3 %, and fine sediment is rare on slopes above 10 % (thesis pp. 41–42)."
+}

@@ -1,0 +1,46 @@
+{
+  "key": "Reed_1971",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "full text not obtained; secondary only: Trial et al. (1983a, USFWS habitat suitability index model for fallfish, already fetched for the pass as Trial_etal_1983a) restates Reed's findings",
+    "file": "docs/research_notes/fetched/v2/Trial_etal_1983a.txt"
+  },
+  "status": "secondary-only",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true,
+    "note": "Trial et al. 1983a's reference list misprints the volume as '199:717-725'; Crossref has 100(4): 717–725, as the ledger does."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (fallfish maturity)",
+      "claim": "Massachusetts males mature at III+, females at IV+ (Reed 1971, abstract)",
+      "verdict": "unchecked",
+      "note": "The abstract was not reachable. Trial et al. 1983a, p. 1 (PDF p. 8): 'some fallfish mature at age II or III, most do not reach maturity until age IV. Males are more likely to be precocious' (Reed 1971; Ross in press): consistent, but it is a secondary account."
+    },
+    {
+      "paper": "Table 3.5-2 (fallfish spawning)",
+      "claim": "spawning from ≈ 15 °C (Reed 1971, via Trial et al. 1983a); 14.4 °C and late April–June in Massachusetts (Reed 1971, abstract)",
+      "verdict": "unchecked",
+      "note": "Trial et al. 1983a, p. 1 (PDF p. 8): spawning 'typically occurs in the spring after water temperatures reach 15° C (Reed 1971)': the 'via Trial' half is relayed correctly. The 14.4 °C and late April–June are not in Trial and could not be checked."
+    },
+    {
+      "paper": "Table 3.5-3 (fallfish lifespan)",
+      "claim": "ages to XI (Reed 1971, via Trial et al. 1983a)",
+      "verdict": "unchecked",
+      "note": "Trial et al. 1983a, p. 1 (PDF p. 8): 'an age of XI reported by Reed (1971)': relayed correctly."
+    },
+    {
+      "paper": "Table 3.6-1 (fallfish eggs)",
+      "claim": "spawning ~14–15 °C; incubation 138–144 h (~6 d) at 17 °C (Reed 1971, via Trial et al. 1983a)",
+      "verdict": "unchecked",
+      "note": "Trial et al. 1983a, p. 2 (PDF p. 9): incubation 'usually occurs at temperatures between 16° and 18° C (Reed 1971)' and 'Eggs hatched in 138 to 144 hours at 17° C (Reed 1971)': relayed correctly. The hatch length (6.8–7.5 mm) and postlarva at 9.7 mm in the same row are credited to Buynak & Mohr 1979, not Reed. 'Male builds the mound' is not attributed to Reed 1971 in Trial (nesting is credited to Ross & Reed 1978 and Ross in press)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1971)100%3C717:BOTFSC%3E2.0.CO;2", "status": 403, "note": "Wiley (old AFS host) refused; a library login would open https://doi.org/10.1577/1548-8659(1971)100<717:BOTFSC>2.0.CO;2 (now at OUP)" }
+  ],
+  "notes": "Blocked (Transactions of the American Fisheries Society 100(4): 717–725). Everything the paper takes 'via Trial et al. 1983a' is relayed faithfully (15 °C spawning, age XI, 138–144 h at 17 °C, incubation at 16–18 °C). The two values marked 'Reed 1971, abstract' (males III+, females IV+; 14.4 °C and late April–June) could not be checked: no abstract was reachable (Crossref carries none, the publisher refuses scripts). Trial et al. also credit Reed with algae as an important part of the diet and with adhesive eggs."
+}

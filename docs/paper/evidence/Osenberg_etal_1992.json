@@ -1,0 +1,52 @@
+{
+  "key": "Osenberg_etal_1992",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "co-author's lab reprint page: the Wainwright fish lab at UC Davis (fishlab.ucdavis.edu, Peter C. Wainwright is the third author) posts the article openly; the file is the JSTOR scan as uploaded by Osenberg to ResearchGate (cover page), with no text layer (getsrc: scanned), so every value was read on the page images",
+    "url": "https://fishlab.ucdavis.edu/wp-content/uploads/sites/397/2020/06/Oenburg-et-al-1992.pdf",
+    "file": "docs/research_notes/fetched/v2/Osenberg_etal_1992.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the article's first page (p. 255, PDF p. 3)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (pumpkinseed, diet)",
+      "claim": "a shift to snails at about 50–80 mm SL in snail-rich lakes (Mittelbach 1984; Osenberg, Mittelbach & Wainwright 1992)",
+      "source_value": "fish smaller than ≈45 mm SL ate few snails; between 45 and 75 mm SL snails rose sharply; above 75 mm SL they fed predominantly on gastropods (the authors split juveniles/adults at 60 mm SL, the approximate midpoint of the shift)",
+      "location": "p. 261 (PDF p. 9), Results: pumpkinseed diets; also p. 256 (PDF p. 4) and p. 257 (PDF p. 5)",
+      "quote": "Between 45 and 75 mm SL there was a dramatic increase",
+      "quote_from": "image",
+      "conditions": "Three Lakes II and III, small hardwater lakes in south-western Michigan with bluegill and abundant snails; in snail-poor Wintergreen Lake no shift occurred (snails typically < 3 % of the diet even at large sizes)",
+      "verdict": "corrected",
+      "note": "Osenberg et al. give ≈45–75 mm SL (p. 256: small fish 'approximately <45 mm' on soft-bodied invertebrates, large 'approximately >75 mm' on snails, '≈45–75 mm SL' transitional). If 50–80 mm comes from Mittelbach 1984, cite the two separately."
+    },
+    {
+      "paper": "Table 3.6-8 (bluegill juveniles)",
+      "claim": "bluegill juveniles ≤ 60 mm SL, three south-western Michigan lakes (seined May–September): 0.13–0.52/m² of littoral",
+      "source_value": "0.52 ± 0.18 /m² (Three Lakes II, n = 10) and 0.13 ± 0.03 /m² (Three Lakes III, n = 22); the third lake (Wintergreen) has no bluegill (0, n = 43)",
+      "location": "p. 260 (PDF p. 8), Table 1",
+      "quote": "Three Lakes II … 0.52 ± 0.18; Three Lakes III … 0.13 ± 0.03",
+      "quote_from": "image",
+      "conditions": "seine catches per unit area of littoral zone; collections May–September, most June–August, mostly 1988–1990 (p. 257); means ± 1 SE; fish ≤ 60 mm SL designated juveniles",
+      "verdict": "corrected",
+      "note": "The values are right; the range comes from two lakes, not three. Write 'two south-western Michigan lakes with bluegill'."
+    },
+    {
+      "paper": "Table 3.6-8 (pumpkinseed)",
+      "claim": "pumpkinseed: 0.04–0.10/m² in the lakes with bluegill; 1.77/m² (all sizes; juveniles 0.32/m²) in a lake without bluegill",
+      "location": "p. 260 (PDF p. 8), Table 1",
+      "quote": "Wintergreen 1.77 ± 0.26 … Total; 0.32 ± 0.08 … Juveniles",
+      "quote_from": "image",
+      "conditions": "Three Lakes II 0.10 ± 0.03 (n = 16) and Three Lakes III 0.04 ± 0.01 (n = 32), all sizes; Wintergreen (bluegill eliminated by winterkills in 1977–78) total 1.77 ± 0.26 (n = 43), adults 1.10 ± 0.24 and juveniles 0.32 ± 0.08 (n = 21 each); per m² of littoral zone, seined",
+      "verdict": "confirmed",
+      "note": "Juveniles and adults were estimated on a subset of hauls, so they do not sum to the total. The cage experiment found 1.89 pumpkinseeds/m² in the cages against 1.77 by seining (p. 258)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Scanned copy without text; all three claims read on the page images (pp. 256–261). The density table is right except that the bluegill range spans two lakes. The snail shift is 45–75 mm SL in this paper. Other values: the lakes are 15–22 ha, hardwater, within 6 km of each other in Kalamazoo County (p. 257); snail densities in Wintergreen averaged 10 % of those in the bluegill lakes (p. 260); excluding pumpkinseeds raised snail density about fourfold in cages (abstract, p. 261); the frequency of snails in the diets of Three Lakes II pumpkinseeds was 64–95 % across four years (1981–88), against typically < 3 % in Wintergreen fish even at large sizes (p. 261)."
+}

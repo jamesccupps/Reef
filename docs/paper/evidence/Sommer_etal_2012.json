@@ -1,0 +1,65 @@
+{
+  "key": "Sommer_etal_2012",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: Archive ouverte UNIGE (University of Geneva), item unige:27386, file1.pdf labelled 'Article (Accepted version)', access level Public. It is the Annual Reviews 'Review in Advance' layout (journal page numbers 429–448, footer 'Changes may still occur before final publication')",
+    "url": "https://access.archive-ouverte.unige.ch/access/metadata/fd71a0a8-f0e7-4906-9480-fb08760a3f10/download",
+    "file": "docs/research_notes/fetched/v2/Sommer_etal_2012.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (PDF p. 2)",
+    "ok": true,
+    "note": "Annual Review of Ecology, Evolution, and Systematics 43: 429–448, authors as cited (De Senerpont Domis spelled as on the title page)."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.3",
+      "claim": "the clear cases of a grazing clear-water phase come from Daphnia-dominated lakes",
+      "location": "p. 434 (PDF p. 7)",
+      "quote": "Most of the clear-cut cases of grazing-induced clear water phases are reported from lakes",
+      "conditions": "review; contrasted with copepod-dominated marine mesozooplankton",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.3",
+      "claim": "copepods have 'a much slower numerical response'",
+      "location": "p. 434 (PDF p. 7)",
+      "quote": "Copepods exhibit a much slower numerical response to enhanced food availability than Daphnia.",
+      "conditions": "the next sentence gives the reason: even the fastest copepods have generation times over three weeks under spring conditions",
+      "verdict": "confirmed",
+      "note": "That no copepod-driven clear-water phase was found is the project's own literature statement, which the review's argument supports."
+    },
+    {
+      "paper": "§3.3.3",
+      "claim": "rising fish predation shifts lakes from two clearing phases to one and then none (Jeppesen et al. 1997, via Sommer et al. 2012)",
+      "location": "p. 439 (PDF p. 12)",
+      "quote": "over unimodal (early summer only) to no clear water phase at all",
+      "conditions": "the full sentence: from 'a bimodal clearing phase (strong in early summer, weak in autumn)', over unimodal, to none, citing Jeppesen et al. 1997 (multilake studies)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.5",
+      "claim": "the PEG sequence: a spring Daphnia peak, a midsummer decline under fish predation, an autumn recovery (Sommer et al. 1986, via a course summary; Sommer et al. 2012)",
+      "source_value": "in the review's account of PEG, a spring peak of grazing zooplankton causes the clear-water phase, then food limitation and fish predation control zooplankton, fish predation causing an EARLY-summer decline in the biomass and body size of herbivorous zooplankton (step 7); the review does not describe an autumn zooplankton recovery (its only autumn element is the weak autumn clearing phase under moderate fish predation, Jeppesen et al. 1997), and it speaks of herbivorous zooplankton, not Daphnia by name",
+      "location": "p. 431 (PDF p. 4), text under Fig. 1; p. 438 (PDF p. 11)",
+      "quote": "fish predation causing an early summer decline in the biomass and body size",
+      "conditions": "verbal model for stratifying, moderately eutrophic lakes; Fig. 1 (redrawn from the original PEG figs. 6 and 7) shows the eutrophic zooplankton curve with a spring peak, a crash, a broad summer plateau and an autumn decline",
+      "verdict": "corrected",
+      "note": "Change 'midsummer' to 'early summer'; credit the autumn recovery, if kept, to Sommer et al. 1986 itself (not read here) rather than to the 2012 review."
+    },
+    {
+      "paper": "§5.5",
+      "claim": "with per-capita growth, fish-free Daphnia showed the seasonal succession the PEG model describes (Sommer et al. 2012): a spring peak and a clear-water crash",
+      "location": "p. 431 (PDF p. 4), text under Fig. 1; Fig. 2 (p. 442, PDF p. 15)",
+      "quote": "The spring peak of grazing zooplankton leads to a decline in phytoplankton biomass",
+      "conditions": "PEG: zooplankton peaks follow the phytoplankton spring bloom after a delay and graze it down to a mid-season minimum (the clear-water phase)",
+      "verdict": "confirmed",
+      "note": "The ~340 µg/L mid-May peak is the model's. Nuance: in the review's Fig. 2 the fishless scenario (F−−) has metazoan zooplankton staying high through summer, with no zooplankton crash; the clear-water dip there is in the phytoplankton. 'Clear-water crash' read as the algae's crash fits; a Daphnia crash in a fish-free lake is food limitation, which PEG also describes."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Three of the five uses check exactly. The §3.3.5 summary of PEG puts the fish-driven decline in midsummer (the review says early summer) and adds an autumn recovery the review does not describe. Other useful statements: fish predation in cold temperate lakes is typically highest in early summer, when fish larvae enter the pelagic, and lowest in late winter (p. 439); fish predation can be high even in winter (p. 439); copepod overwintering on lipid reserves (p. 433); the review's five 'robust' PEG elements on p. 443 (e.g., 'Fish predation determines zooplankton size structure')."
+}

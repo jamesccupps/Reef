@@ -1,0 +1,39 @@
+{
+  "key": "Reinhardt_etal_2004",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: the Springer PDF link gives a paywall page and the article page redirects to Springer's sign-in service; Crossref carries no abstract"
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.2.1",
+      "claim": "at Bear Brook, Maine, dissolved P stayed at or below 3 µg/L even in storms, while total P rose with particulate Al and Fe (abstract)",
+      "verdict": "unchecked",
+      "note": "Neither the article nor its abstract was read. A search-engine summary of the abstract says total Al, Fe and P rose with discharge in the December 2001 and February 2002 high-flow events and dissolved Fe stayed ≤ 0.9 µmol/L; it gave no dissolved-P figure. If the abstract gives P in µmol/L, '≤ 3 µg/L' is a conversion (0.1 µmol/L = 3.1 µg/L) to be shown as such."
+    },
+    {
+      "paper": "Table 3.2-2 (Bear Brook row)",
+      "claim": "total P to ~53 µg/L (treated) vs ~10 (reference) in high flows; dissolved P ≤ 3 µg/L even in storms (abstract)",
+      "verdict": "unchecked",
+      "note": "Not read. The research note (catchment_P_loads.md lines 56–57) gives the abstract's values as dissolved P ≤ 0.1 µmol/L and total P 1.7 µmol/L on the rising limb in treated West Bear, 'about 5×' reference East Bear: so ~53 µg/L is a unit conversion (1.7 × 30.97) and ~10 µg/L reference is project arithmetic (53 ÷ 5), not printed values. The table should say so ('≈ 10, from the stated 5× ratio')."
+    },
+    {
+      "paper": "§3.2.4",
+      "claim": "particulate Al, Fe and P travel together in Maine storm flows (abstract)",
+      "verdict": "unchecked",
+      "note": "Not read; the search summary relays the authors' conclusion that particulate Al, Fe and P are chemically linked during transport at high discharge in the acidified (West Bear) and reference (East Bear) streams."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://link.springer.com/content/pdf/10.1023/B:WAFO.0000028362.48966.17.pdf", "status": 200, "note": "Springer paywall page (not kept); a library login would open https://doi.org/10.1023/B:WAFO.0000028362.48966.17" },
+    { "url": "https://link.springer.com/article/10.1023/B:WAFO.0000028362.48966.17", "status": 303, "note": "redirects to idp.springer.com sign-in; not followed" }
+  ],
+  "notes": "Blocked (Water, Air, and Soil Pollution: Focus 4(2–3): 311–323). The paper cites only the abstract, and even that was not reachable by an acceptable route here (no abstract in Crossref; Springer's article page goes through a sign-in redirect). Per the project note, Table 3.2-2's '~53 µg/L (treated)' converts 1.7 µmol/L and '~10 (reference)' is derived from a stated 5× ratio, and '≤ 3 µg/L' converts ≤ 0.1 µmol/L; once the abstract or article is read, mark the 10 as project arithmetic. A UMaine thesis by the first author may exist but UMaine's Digital Commons was retired in June 2026 and its successor could not be searched by script."
+}

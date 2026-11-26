@@ -1,0 +1,44 @@
+{
+  "key": "Radabaugh_2006",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only, from the thesis's Open PRAIRIE landing page (South Dakota State University); the thesis is a 'campus access' item: the PDF link answers with a bot check now, and Wayback's captures of it redirect to the repository's login page (situation=subscription)",
+    "url": "https://openprairie.sdstate.edu/etd/367/",
+    "file": "docs/research_notes/fetched/v2/Radabaugh_2006.landing.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "the Open PRAIRIE record",
+    "ok": true,
+    "note": "Title on the record: 'Seasonal Distributions, Movements, and Habitat use of Adult Yellow Perch in a Simple Basin' (MS thesis, South Dakota State University, 2006). The journal version is Radabaugh, N. B., Bauer, W. F. & Brown, M. L. 2010. A comparison of seasonal movement patterns of yellow perch in simple and complex lake basins. North American Journal of Fisheries Management 30(1): 179–190, doi:10.1577/M08-243.1 (Crossref)."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.6",
+      "claim": "in shallow Lake Madison, South Dakota, telemetered adult yellow perch used 1.2–4.3 m, deepest (mean 3.4 m) and farthest offshore (mean 344 m) in summer (thesis abstract); adult yellow perch school over open bottom",
+      "verdict": "unchecked",
+      "note": "The thesis abstract gives depths 1.2–4.3 m, summer mean 3.4 m (SE 0.02), distance from shore summer mean 343.9 m (SE 10.3), range 12.6–874.0 m, October 2004–September 2005, two size groups (219–235 and 250–270 mm TL). 'School over open bottom' is not in the abstract (it says substrate selection was minimal in a homogeneous lake and depth was the only predictor of occurrence)."
+    },
+    {
+      "paper": "§3.5.6",
+      "claim": "yellow perch are most mobile in autumn (97.6 against 45.6 m/h in summer in Lake Madison; Radabaugh 2006, thesis abstract)",
+      "verdict": "unchecked",
+      "note": "Matches the thesis abstract (fall mean 97.6 m/h, SE 8.9; summer 45.6 m/h, SE 4.0); not read in the full text."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "in Lake Madison adult yellow perch averaged 3.4 m deep and 344 m from shore in summer (abstract only)",
+      "verdict": "unchecked",
+      "note": "As above; the abstract agrees."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://openprairie.sdstate.edu/cgi/viewcontent.cgi?article=1367&context=etd", "status": 403, "note": "Cloudflare bot check ('Just a moment...'); the landing page says off-campus SDSU users must log in to download campus-access theses" },
+    { "url": "https://web.archive.org/web/20240120161041id_/https://openprairie.sdstate.edu/cgi/viewcontent.cgi?article=1367&context=etd", "status": 302, "note": "the capture is a redirect to the repository's login page (situation=subscription): restricted, not followed" },
+    { "url": "https://web.archive.org/web/20220114042247id_/https://openprairie.sdstate.edu/cgi/viewcontent.cgi?article=1367&context=etd", "status": 200, "note": "capture holds only a short redirect page (814 chars), no thesis" },
+    { "url": "https://academic.oup.com/najfm/article-pdf/30/1/179/61057539/nafm0179.pdf", "status": 403, "note": "journal version (Radabaugh, Bauer & Brown 2010, NAJFM 30: 179–190, doi:10.1577/M08-243.1) behind the OUP paywall; a library login would open https://doi.org/10.1577/M08-243.1" }
+  ],
+  "notes": "Lead checked: the journal version exists (Radabaugh, Bauer & Brown 2010, NAJFM 30(1): 179–190, doi:10.1577/M08-243.1), but it is paywalled, and its Crossref abstract names neither lake ('two temperate lakes differing in habitat diversity and basin morphology'), so whether its 'simple lake' is Lake Madison could not be confirmed. It very probably is: same authors, the thesis's simple basin is Lake Madison, and the companion paper (Bauer, Radabaugh & Brown 2009, NAJFM 29: 64–71, doi:10.1577/M07-087.1) compares the same simple and complex basins. The article abstract's length groups (210–235 and 250–280 mm TL) differ slightly from the thesis's (219–235 and 250–270 mm), so its numbers may not be the thesis's; its abstract does agree that depth and distance from shore were greatest in summer in the simple lake and that movement was highest in fall and lowest in summer. Prefer citing the 2010 article once read. The paper already labels these values as from the abstract; no number disagrees with it."
+}

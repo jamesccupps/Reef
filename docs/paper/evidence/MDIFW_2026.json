@@ -1,0 +1,64 @@
+{
+  "key": "MDIFW_2026",
+  "reader": "wave-3 batch 13",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency PDFs from MDIFW's own server (www1.maine.gov with the folder in lower case; www.maine.gov refuses scripts): the 2026 law book, and the 2023 and 2019 editions the citation also names (saved as MDIFW_2026.2023.pdf/.txt and MDIFW_2026.2019.pdf/.txt)",
+    "url": "https://www1.maine.gov/ifw/docs/25-MDIFW-23-FISHING-LAWBOOK-2026.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2026.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the covers of the 2026, 2023 and 2019 editions",
+    "ok": false,
+    "corrections": "The title is 'Maine Inland Fishing Laws 2026' (Maine Department of Inland Fisheries & Wildlife; 'not valid after December 31, 2026'), not 'Maine open-water and ice fishing law book'. The Hot Brook entry is on p. 23 (PDF p. 29). Working URLs: 2026 https://www1.maine.gov/ifw/docs/25-MDIFW-23-FISHING-LAWBOOK-2026.pdf ; 2023 https://www1.maine.gov/ifw/docs/22-MDIFW-6-FISHING-LAWBOOK-2023.pdf ; 2019 https://www1.maine.gov/ifw/docs/2019_MaineFishingLaws.pdf"
+  },
+  "claims": [
+    {
+      "paper": "§2.1",
+      "claim": "the fishing law lists the waters under Bancroft, Danforth, T8 R3 NBPP and T8 R4 NBPP; South fishing zone",
+      "location": "p. 23 (PDF p. 29), Special Fishing Laws, 'Hot Brook Lakes, Lower and Upper'",
+      "quote": "Bancroft, Danforth, T8 R3 NBPP, T8 R4 NBPP (South Zone)",
+      "conditions": "2026 edition; the 2023 edition reads the same; the 2019 edition reads '(South Region)'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5",
+      "claim": "the 2019, 2023 and 2026 law books read: 'General fishing laws apply, except: Daily bag limit on white perch: 25 fish. All bass must be released alive at once'",
+      "location": "p. 23 (PDF p. 29) of the 2026 edition; the same entry in the 2023 and 2019 editions (MDIFW_2026.2023.txt, MDIFW_2026.2019.txt)",
+      "quote": "Daily bag limit on white perch: 25 fish. All bass must be released",
+      "conditions": "the bass rule and the white perch limit apply all year (they are not inside the October–December clause)",
+      "verdict": "confirmed",
+      "note": "All three editions carry the identical text."
+    },
+    {
+      "paper": "§2.5",
+      "claim": "artificial lures only, and trout, salmon and togue released, from 1 October to 31 December",
+      "location": "p. 23 (PDF p. 29), Hot Brook entry; codes on PDF p. 3 (front flap: Special Law Codes)",
+      "quote": "From October 1 - December 31: ALO, S-7.",
+      "conditions": "ALO = 'Artificial lures only'; S-7 = 'All trout, landlocked salmon, and togue caught must be released alive at once'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5",
+      "claim": "on one reading of the 2026 law book the South Zone general law keeps the lakes open all year, so ice fishing is legal",
+      "location": "PDF p. 3 (General Fishing Laws, Seasons, Lakes & Ponds, South Zone) with the Hot Brook entry, p. 23 (PDF p. 29)",
+      "quote": "From Jan 1 to Dec 31: Open to ice and open water fishing.",
+      "conditions": "South Zone lakes and ponds; the Hot Brook entry carries no 'CI' (closed to ice fishing) or other season code, so the general law applies",
+      "verdict": "confirmed",
+      "note": "Read on the page image (PDF p. 3) to be sure of the column: the line is in the Lakes & Ponds column, South Zone row. It is the plain reading, not one of several; the hedge 'on one reading' can go."
+    },
+    {
+      "paper": "§2.7",
+      "claim": "Upper exceeds the 500-acre minimum for weigh-in bass tournaments (MDIFW 2019)",
+      "verdict": "unsupported",
+      "note": "Not a claim on this entry: 'MDIFW 2019' in §2.7 is the Black Bass Technical Work Group slides (ledger key MDIFW_2019); show.mjs matched it here because this entry names a 2019 edition. The law book has no tournament rule (searched 'tournament' and '500 acres' in the 2026 edition: no hits). Nothing else in §2.7 is taken from the law book."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/25-MDIFW-23-FISHING-LAWBOOK-2026.pdf", "status": 403, "note": "www.maine.gov refuses scripts" },
+    { "url": "https://www1.maine.gov/ifw/docs/25-mdifw-23-fishing-lawbook-2026.pdf", "status": 404, "note": "an all-lower-case file name does not exist; only the folder needs lower case" }
+  ],
+  "notes": "Every regulation the paper quotes is right in all three editions (2019, 2023, 2026). Only the title needs fixing, and §2.5's hedge on ice fishing can be dropped: South Zone lakes and ponds are open to ice and open-water fishing all year, and the Hot Brook entry has no code that closes ice fishing. The South Zone general bass limit (2 fish, only 1 over 14 in) is overridden here by the release-all-bass rule. §2.7's 'MDIFW 2019' belongs to MDIFW_2019, not to this entry."
+}
