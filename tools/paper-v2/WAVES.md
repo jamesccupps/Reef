@@ -30,7 +30,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w2-13 | Persson_etal_2006, Porter_etal_1982, Post_McQueen_1988, Post_Lee_1996, Priegel_Krohn_1975, Read_etal_2012, Rogers_etal_1981, Scharf_etal_2003, Titman_Kilham_1976, Tulonen_1993 | done |
 | w2-14 | Srnes_Aksnes_2004, Stemberger_Gilbert_1985, Tedford_etal_2014, Terpin_etal_1976, Vadeboncoeur_etal_2003, Wrvagen_Nilssen_2010, Watson_etal_1992, Webster_1948, Leopold_Maddock_1953, Petersen_Ward_1999 | running |
 | w2-15 | Werner_etal_1995, Hamon_1961, HBV_nd, Parry_Evans_2008, Sndergaard_etal_2003 | done |
-| add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | running |
+| add-01 | NEW_ additions (brief Phase 5, modelling): Grimm et al. 2005 (Science, pattern-oriented modelling); Grimm et al. 2006 and 2010 (Ecological Modelling, ODD); Grimm et al. 2020 (JASSS, ODD update); Grimm et al. 2014 (TRACE); Beven 2006 (J. Hydrology, equifinality); Rykiel 1996 (model evaluation) | done |
 | add-02 | NEW_ additions (brief Phase 5, ecology; Phase 2 item 9): Ney 1993 (bioenergetics error); Chipps & Wahl 2008 (TAFS, bioenergetics); Mathias & Barica 1980 (CJFAS, winter O2 depletion vs depth); Beyene & Jain 2015 (L&O, Maine ice-out); Scheffer et al. 1993 (TREE, alternative states); Vollenweider 1976 (P loading) | running |
 | w3-01 | Jordan_2001, Brokaw_2001, Cooke_etal_2006 | done |
 | w3-02 | VLMP_2025, MDIFW_1949, COSEWIC_2014 | running |
@@ -41,7 +41,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | running |
 | w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | running |
 | w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | running |
-| w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | queued |
+| w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | running |
 | w3-11 | Marburg_etal_2006, Mittelbach_1984, MNAP_nd, MNAP_nd-2, Richter_etal_2024, Snow_1978, Chippett_2004, Diana_1979b, Eckmann_2004, Engeletal_1999, Klug_etal_2012, Adamec_2006 | queued |
 | w3-12 | Fago_1977, Feener_MacLeod_2020, Gallagher_2016, Garvey_etal_2002, Hall_Werner_1977, Havey_1973, Henderson_1977, Hodgkins_2010, Huff_etal_2004, Koenings_Edmundson_1991, Sleith_etal_2018, TexasInstruments_1979 | queued |
 | w3-13 | McCall_etal_1996, MDIFW_2021, MDIFW_2026, Osenberg_etal_1992, Prout_etal_1990, Radabaugh_2006, RangePonds_2024, Reed_1971, Reinhardt_etal_2004, Rowan_etal_1992, Sommer_etal_2012, Todd_etal_1982 | queued |

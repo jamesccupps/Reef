@@ -1,0 +1,65 @@
+{
+  "key": "NEW_Beven_2006",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the author's manuscript (Manifesto12.pdf, 31 pages) in Lancaster University's institutional repository, Lancaster EPrints record 4419 (the author's institution; the record notes the definitive version is in J. Hydrol. 320(1-2)). Page numbers below are the manuscript's, not the journal's 18-36, and the published wording may differ slightly",
+    "url": "https://eprints.lancs.ac.uk/id/eprint/4419/1/Manifesto12.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Beven_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1016/j.jhydrol.2005.07.007), the Lancaster EPrints record, and the manuscript's title page",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Beven, K. 2006. A manifesto for the equifinality thesis. Journal of Hydrology 320(1-2): 18-36. https://doi.org/10.1016/j.jhydrol.2005.07.007",
+    "note": "ok is false only because this is a new entry. The brief's description matches this real work (single author, Keith Beven; issue dated March 2006)."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): equifinality",
+      "claim": "Many models or parameter sets fit the observed data acceptably",
+      "source_value": "as claimed: the concept grew from empirical studies finding many models giving good fits to data (e.g. MAGIC dotty plots, Fig. 1); the thesis is 'the potential for multiple acceptable models as representations of hydrological and other environmental systems' (abstract)",
+      "location": "author's manuscript p. 1, Abstract and Background (journal p. not mapped)",
+      "quote": "many models giving good fits to data",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): equifinality",
+      "claim": "Equifinality means many parameter sets fitting the data equally well",
+      "source_value": "Not 'equally': many acceptable ('behavioural') representations cannot easily be rejected given the errors in inputs, model structure and observations, although some fit better than others by a given performance measure; Monte Carlo runs show a continuous spectrum of performance with no clear-cut behavioural/non-behavioural boundary (pp. 10-11)",
+      "location": "author's manuscript p. 4, section 'Equifinality, ambiguity, non-uniqueness, ill-posedness and identifiability'",
+      "quote": "some of those acceptable or behavioural models will be better",
+      "verdict": "corrected",
+      "note": "Same page: 'there are many acceptable representations that cannot be easily rejected'. The phrase 'equally acceptable fits' appears (p. 4-5) only in describing how the term non-uniqueness has been used. Suggested wording: 'many parameter sets (and model structures) fit the data acceptably and cannot be told apart given the errors (equifinality; Beven 2006)'."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): equifinality",
+      "claim": "Equifinality applies to model structures, inputs and error models, not only to parameter sets",
+      "source_value": "as claimed: many different representations (model inputs, model structures, model parameter sets, model errors) may be consistent with the calibration measurements; 'Equifinality is endemic to this type of environmental modelling'",
+      "location": "author's manuscript p. 10, section 'Realistic cases: compensation of uncertainty'",
+      "quote": "many different representations (model inputs, model structures, model parameter sets, model errors)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): equifinality and model complexity",
+      "claim": "Even a structurally perfect model would show equifinality when parameters outnumber what the data can constrain",
+      "source_value": "as claimed: added complexity needs more calibrated parameters, usually without more data, so testing more hypotheses tends to more overparameterisation and equifinality, even for the mathematically 'perfect' model; environmental models are therefore ill-posed",
+      "location": "author's manuscript p. 4",
+      "quote": "the mathematically “perfect” model, it will still be subject to equifinality",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what equifinality implies for testing a model",
+      "claim": "Behavioural models are competing hypotheses; models that survive repeated tests gain confirmation, not proof",
+      "source_value": "as claimed: the thesis is the identification of multiple functional hypotheses about how the system works (p. 21); models surviving successive evaluations suitable for the application are associated with increasing confirmation 'even if not true validation', and we learn most when forced to reject all available models (p. 18)",
+      "location": "author's manuscript pp. 17-18 (section 'Equifinality and model validation') and p. 21 (Conclusions)",
+      "quote": "those models that survive successive evaluations suitable for the application are associated with increasing confirmation",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://doi.org/10.1016/j.jhydrol.2005.07.007", "status": "not tried", "note": "Elsevier, subscription; the journal pages (18-36) would need this copy to give journal page numbers" }
+  ],
+  "notes": "The one correction is wording ('equally well' should be 'acceptably'). Beven's argument is about hydrological and environmental models (GLUE), not ecology or agent-based models; the rewrite should say so if it applies the idea to the lake model. His research list (manuscript p. 21) includes defining limits of acceptability for predictions and separating input from structural error. Page numbers are the manuscript's; for a direct quote in the paper, check the journal wording or paraphrase."
+}

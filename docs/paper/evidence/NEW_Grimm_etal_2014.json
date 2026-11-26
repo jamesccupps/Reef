@@ -1,0 +1,40 @@
+{
+  "key": "NEW_Grimm_etal_2014",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the abstract only, from the RePEc/IDEAS record of the article (publisher-supplied abstract); no acceptable full text found. A stand-in was read in full: the example TRACE documents in Supplement S6 of Grimm et al. 2020 (JASSS, open access), recorded under NEW_Grimm_etal_2020",
+    "url": "https://ideas.repec.org/a/eee/ecomod/v280y2014icp129-139.html",
+    "file": "docs/research_notes/fetched/v2/NEW_Grimm_etal_2014.html"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1016/j.ecolmodel.2014.01.018), the RePEc/IDEAS record, and the UFZ publication index (pub_id 14594); the title page was not seen in an acceptable copy",
+    "ok": false,
+    "corrections": "New entry; the verified citation: Grimm, V., Augusiak, J., Focks, A., Frank, B. M., Gabsi, F., Johnston, A. S. A., Liu, C., Martin, B. T., Meli, M., Radchuk, V., Thorbek, P., and Railsback, S. F. 2014. Towards better modelling and decision support: documenting model development, testing, and analysis using TRACE. Ecological Modelling 280: 129-139. https://doi.org/10.1016/j.ecolmodel.2014.01.018",
+    "note": "ok is false only because this is a new entry. Crossref gives no issue number (IDEAS: 'vol. 280(C)'); 12 authors; issue dated May 2014. The brief's description matches this real work. Its companion in the same volume is Augusiak, J., Van den Brink, P. J., and Grimm, V. 2014. Merging validation and evaluation of ecological models to 'evaludation': a review of terminology and a practical approach. Ecological Modelling 280: 117-128 (citation as printed in Grimm et al. 2020 S6, p. 2; not checked at Crossref)."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): what TRACE documentation contains",
+      "claim": "TRACE documents record a model's problem formulation, description, data evaluation, conceptual evaluation, implementation verification, output verification, analysis and output corroboration",
+      "verdict": "unchecked",
+      "note": "Full text not obtained. The abstract (IDEAS) says TRACE is re-defined as a tool for planning, performing and documenting good modelling practice; that TRACE documents should give convincing evidence that a model was thoughtfully designed, correctly implemented, thoroughly tested, well understood and appropriately used for its intended purpose; and that the updated format follows the 'evaludation' framework. The abstract does not list the elements. The eight-element structure is confirmed only in the stand-in (NEW_Grimm_etal_2020, Supplement S6, which states it uses this paper's structure)."
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1016/j.ecolmodel.2014.01.018", "status": "not tried", "note": "Elsevier ScienceDirect, subscription (Crossref licence TDM only; OpenAlex: publisher copy closed). This is the link a library login would open" },
+    { "url": "https://zenodo.org/records/14570531", "status": 200, "note": "NOT USED: a third-party deposit (2024-12-29) in Zenodo's 'EU papers archival mirror' community of the publisher's typeset PDF, which carries '© 2014 Elsevier B.V. All rights reserved' and no open licence, while the publisher's own copy is closed: treated as a mirror of a paywalled paper (READER rules 3 and 9). The file was deleted unread beyond page 1. The human may judge otherwise; if accepted, it is the complete article" },
+    { "url": "https://research.dial.uclouvain.be/server/api/core/bitstreams/4956ed34-6f88-41e4-aeb5-44fafa1c2f07/content", "status": 401, "note": "UCLouvain DIAL repository file (handle 2078.1/156774): restricted" },
+    { "url": "https://research.wur.nl/en/publications/towards-better-modelling-and-decision-support-documenting-model-d", "status": 200, "note": "WUR record of the accepted version; no open file (OpenAlex: not open)" },
+    { "url": "https://forskning.ruc.dk/da/publications/towards-better-modelling-and-decision-support-documenting-model-d/", "status": 200, "note": "Roskilde University record; no file link" },
+    { "url": "https://centaur.reading.ac.uk/69465/", "status": 200, "note": "University of Reading CentAUR: 'Full text not archived in this repository'" },
+    { "url": "https://www.ufz.de/index.php?en=20939&pub_id=14594", "status": 200, "note": "UFZ publication index entry: citation only, no file" },
+    { "url": "https://publishup.uni-potsdam.de/frontdoor/index/index/docId/37838", "status": 200, "note": "Potsdam publishup record; no file link found" },
+    { "url": "https://publications.rwth-aachen.de/search?p=id:%22RWTH-CONV-088014%22", "status": 200, "note": "RWTH record; no file link found" },
+    { "url": "https://qubeshub.org/publications/829?version=1", "status": 403, "note": "QUBES Hub TRACE resource page refused the script" },
+    { "url": "https://core.ac.uk/search?q=doi%3A%2210.1016%2Fj.ecolmodel.2014.01.018%22", "status": 403, "note": "CORE refused the script" }
+  ],
+  "notes": "Recommendation for the rewrite: cite TRACE through what was read in full. Grimm et al. 2020 (JASSS, open access) describes TRACE as 'a standard format for documenting all elements of model development, including parameterization, model analysis, and model evaludation' (para. 2.4) and as a format for supplements (para. 5.8); its Supplement S6 compiles two TRACE documents built on this paper's structure, whose eight elements are 1 Problem formulation, 2 Model description, 3 Data evaluation, 4 Conceptual model evaluation, 5 Implementation verification, 6 Model output verification, 7 Model analysis, 8 Model output corroboration (S6 p. 3, definitions on pp. 4-47); Supplement S7 gives a main-text checklist taken from TRACE. Cite Grimm et al. 2014 only as the source of the format, without page-level claims, unless the full text is fetched by hand (the DOI above)."
+}

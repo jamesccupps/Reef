@@ -1,0 +1,68 @@
+{
+  "key": "NEW_Grimm_etal_2010",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' preprint (28 pages, the text, Table 1 and Supplement Table S1), posted by the lead author's institute, UFZ, on its ODD page (ufz.de/index.php?en=40429, link to the 2010 update). Page numbers are the preprint's, not the journal's 2760-2768. The same preprint, marked 'Preprint of: ... Ecological Modelling 221: 2760-2768', is the copy USGS's Publications Warehouse record 70003622 and Semantic Scholar point to (agsm.edu.au, now bobm.net.au); it was fetched first (35 pages; its first two pages match the UFZ copy) and then replaced by the UFZ copy, which was the one read",
+    "url": "https://www.ufz.de/export/data/2/100066_ODD_Update.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Grimm_etal_2010.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1016/j.ecolmodel.2010.08.019), the USGS Publications Warehouse record 70003622, and the preprint's title page",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Grimm, V., Berger, U., DeAngelis, D. L., Polhill, J. G., Giske, J., and Railsback, S. F. 2010. The ODD protocol: a review and first update. Ecological Modelling 221(23): 2760-2768. https://doi.org/10.1016/j.ecolmodel.2010.08.019",
+    "note": "ok is false only because this is a new entry. The brief's description matches this real work."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol requires",
+      "claim": "The 2010 update keeps seven elements but renames two and changes the design concepts",
+      "source_value": "1 Purpose; 2 Entities, state variables, and scales; 3 Process overview and scheduling; 4 Design concepts (eleven: Basic principles, Emergence, Adaptation, Objectives, Learning, Prediction, Sensing, Interaction, Stochasticity, Collectives, Observation); 5 Initialization; 6 Input data; 7 Submodels. Fitness was renamed Objectives; Basic principles and Learning were added",
+      "location": "preprint p. 18, Table 1 (journal page not mapped); p. 9, §3 element 4",
+      "quote": "two elements was modified (elements 2 and 6), one design concept was renamed",
+      "conditions": "superseded in element 1 by the 2020 update ('Purpose and patterns'; NEW_Grimm_etal_2020)",
+      "verdict": "confirmed",
+      "note": "Table 1 read in the raw text, which keeps the two columns in order; the layout text interleaves them."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): which ODD version to cite",
+      "claim": "The 2010 update replaces the 2006 description of the elements",
+      "source_value": "as claimed: the updated protocol 'fully replaces' the 2006 description, which is obsolete because of its ambiguities; the 2006 account of ODD's overall purpose and rationale stays valid",
+      "location": "preprint p. 6, §3",
+      "quote": "fully replaces the original description given by Grimm et al. (2006), which is obsolete",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol requires",
+      "claim": "Using ODD means using its element names in the prescribed order",
+      "source_value": "as claimed: exactly these identifiers in the specified order; numbering 1-7 optional; changing the order, lumping elements, renaming or omitting elements is not following ODD",
+      "location": "preprint p. 6, §3",
+      "quote": "Using ODD means using exactly these identifiers in the order specified by the protocol",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (suggested, not in the brief): state variables and exact restart",
+      "claim": "ODD's test for what counts as a state variable is what must be saved to restart the model in exactly the same state",
+      "source_value": "as claimed: one way to define entities and state variables is to ask what must be saved so the model can be stopped and restarted later in exactly the same state; state variables must be low level (not calculable from others)",
+      "location": "preprint p. 7, §3 element 2",
+      "quote": "stop the model and save it in its current state, so it can be re-started",
+      "verdict": "confirmed",
+      "note": "This matches the project's exact-resume invariant (World.toJSON / parseSave; the resume test) and could be cited where the paper describes it."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): ODD for non-agent models",
+      "claim": "ODD can be used to document any large, complex model, not only agent-based ones",
+      "source_value": "as claimed (stated as 'can help')",
+      "location": "preprint p. 1, Abstract",
+      "quote": "it can help with documenting any large, complex model",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://hdl.handle.net/11250/4501141", "status": 200, "note": "NVA (Norway) record; its API lists no file" },
+    { "url": "http://www.sciencedirect.com/science/article/pii/S030438001000414X", "status": "not tried", "note": "publisher page, subscription (OpenAlex: closed)" }
+  ],
+  "notes": "Verdict is claim-based; bibliography ok is false only because the entry is new. Other content the rewrite may use: the review of the 54 ODD uses to December 2009 (75 % complete or missing one element; 'Input' most often misread as parameters; preprint pp. 3-4); the design concepts are a checklist and unused ones may be left out (p. 10); Submodels should state how each submodel was designed, parameterized and tested (p. 11); pseudo-code recommended for the schedule (p. 8); limitations: ODD describes one model version, and a delta-ODD was suggested (p. 14). Quote the journal version's wording only after checking it, since this is the preprint."
+}

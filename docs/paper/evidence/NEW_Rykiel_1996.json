@@ -1,0 +1,74 @@
+{
+  "key": "NEW_Rykiel_1996",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset article (Ecological Modelling 90: 229-244, 16 pages, OCR-quality text layer) as once posted openly by Arizona State University's Center for Social Dynamics and Complexity (asu.edu/clas/csdc/events/pdf/validation_ecology.pdf, an events reading; ASU is not the author's institution; the copy CiteSeerX and OpenAlex list); read from the Wayback Machine's capture of 18 Dec 2011 (openly downloadable, no login). This follows the project's precedent of a university department's open posting read via Wayback; the human may prefer a library copy",
+    "url": "http://web.archive.org/web/20111218152902id_/http://www.asu.edu/clas/csdc/events/pdf/validation_ecology.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Rykiel_1996.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1016/0304-3800(95)00152-2) and the article's title page",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Rykiel, E. J., Jr. 1996. Testing ecological models: the meaning of validation. Ecological Modelling 90(3): 229-244. https://doi.org/10.1016/0304-3800(95)00152-2",
+    "note": "ok is false only because this is a new entry. The title page gives the author as 'Edward J. Rykiel, Jr.' (Center for Biosystems Modelling, Texas A&M University); Crossref omits the 'Jr.'. The issue number (3) is from Crossref; the title page shows only 'Ecological Modelling 90 (1996) 229-244'. Received 7 March 1995, accepted 25 August 1995. The brief's description matches this real work."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): what validation can mean for an ecological model",
+      "claim": "Validation means a model is acceptable for its intended use because it meets specified performance requirements, not that it is true",
+      "source_value": "as claimed: validation is 'a demonstration that a model within its domain of applicability possesses a satisfactory range of accuracy consistent with the intended application', indicating acceptability for use, 'not that it embodies any absolute truth, nor even that it is the best model available' (p. 233)",
+      "location": "p. 229 (PDF p. 1), Abstract; p. 233 (PDF p. 5), §3.3",
+      "quote": "a model is acceptable for its intended use because it meets specified performance requirements",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what validation cannot mean",
+      "claim": "Matching observations does not show that a model's mechanisms are correct; the theoretical component cannot be validated",
+      "source_value": "as claimed: the operational and data components can be validated, the theoretical cannot (abstract); good predictions do not require a mechanistically correct model (p. 234); predicting independent data does not make the model an accurate cause-and-effect representation (p. 239); testing cannot logically prove the mechanisms complete and correct (p. 242)",
+      "location": "p. 229 (PDF p. 1), Abstract; p. 234 (PDF p. 6), §4.1; p. 239 (PDF p. 11), §6; p. 242 (PDF p. 14), §7.4",
+      "quote": "The operational and data components can be validated; the theoretical component cannot.",
+      "verdict": "confirmed",
+      "note": "p. 234: 'in general, it is not true that good predictions can only be obtained from a model that is mechanistically correct'. p. 242: such testing 'cannot logically prove that the mechanisms contained in the model are scientifically complete and correct'."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what a validation claim must state",
+      "claim": "A claim of validation needs the model's purpose, the performance criteria and the context stated; without them a model cannot be validated",
+      "source_value": "as claimed: the modeller must specify (1) purpose, (2) criteria for acceptability, (3) the context of intended operation; the latter two are seldom specified, and without them a model cannot be validated; the most common problem is failure to state the criteria",
+      "location": "pp. 241-242 (PDF pp. 13-14), §7.3; p. 229 (PDF p. 1), Abstract",
+      "quote": "the modeller must specify three things: (1) the purpose of the model",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): validation is bound to its context",
+      "claim": "Validation holds only within the stated context and domain; a changed context needs re-validation",
+      "source_value": "as claimed: a model is validated within a specific context that is part of the certification; if the context changes the model must be re-validated, without invalidating it for the original context; qualification tests extend or restrict the domain (§3.5)",
+      "location": "p. 233 (PDF p. 5), §3.3 and §3.5",
+      "quote": "If the context changes, the model must be re-validated",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): validation is not always required",
+      "claim": "Validation is not required of every model; for exploratory or theory-building models it may be unnecessary",
+      "source_value": "as claimed: exploration of model behaviour without validation is legitimate and reportable; when the purpose is to describe or systematize knowledge or develop theory, 'validation is unnecessary and irrelevant'",
+      "location": "p. 241 (PDF p. 13), §7.2; p. 229 (PDF p. 1), Abstract",
+      "quote": "to develop theory, validation is unnecessary and irrelevant",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (suggested, not in the brief): a quantitative validation convention",
+      "claim": "Rykiel proposed an operational validation convention",
+      "source_value": "an initial proposal: for the most important variables of dynamic models, outputs within the 95 % confidence interval 75 % of the time; offered as an arbitrary convention, like P = 0.05",
+      "location": "p. 242 (PDF p. 14), §7.5",
+      "quote": "model outputs fall within the 95% confidence interval 75% of the time",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://doi.org/10.1016/0304-3800(95)00152-2", "status": "not tried", "note": "Elsevier, subscription (Semantic Scholar and OpenAlex: closed)" },
+    { "url": "https://users.cs.northwestern.edu/~paritosh/papers/sketch-to-models/rykiel-testing-ecological-models96.pdf", "status": "not tried", "note": "a personal page of a third party at Northwestern; not used because the ASU institutional posting was available" }
+  ],
+  "notes": "Verdict is claim-based; bibliography ok is false only because the entry is new. Other content the rewrite may use: definitions of verification (the program correctly implements the logic, p. 232), calibration (adjusting parameters to improve agreement with a data set, pp. 232-233), credibility and qualification (p. 233); Sargent's partition into operational, conceptual and data validity (Fig. 1, p. 234); a list of validation tests (face validity, Turing tests, visualization, comparison to other models, internal validity, event validity, historical data, extreme conditions, traces, sensitivity analysis, multistage, predictive and statistical validation; pp. 235-237); 'For complex simulation models, falsification has little or no traditional meaning' (p. 240). The text layer is OCR from a scan (a few garbled characters); quotes were checked against it."
+}

@@ -1,0 +1,73 @@
+{
+  "key": "NEW_Grimm_etal_2005",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset article (Science 310: 987-991, 5 pages) as once posted openly on co-author Thorsten Wiegand's own website (thorsten-wiegand.de/pdf/GrimmEtAl2005Science.pdf, the copy CiteSeerX and OpenAlex list); the live URL now returns 404, so it was read from the Wayback Machine's capture of 22 Sep 2017 (openly downloadable, no login). The Supporting Online Material (fig. S1, table S1) was not read",
+    "url": "http://web.archive.org/web/20170922235930id_/http://thorsten-wiegand.de/pdf/GrimmEtAl2005Science.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Grimm_etal_2005.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1126/science.1116681) and the article's title page and running footers",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Grimm, V., Revilla, E., Berger, U., Jeltsch, F., Mooij, W. M., Railsback, S. F., Thulke, H.-H., Weiner, J., Wiegand, T., and DeAngelis, D. L. 2005. Pattern-oriented modeling of agent-based complex systems: lessons from ecology. Science 310(5750): 987-991. https://doi.org/10.1126/science.1116681",
+    "note": "ok is false only because this is a new entry: corrections holds the citation to copy. The brief's description (Grimm et al. 2005, Science, pattern-oriented modelling of agent-based complex systems) matches this real work; its full title adds 'Lessons from Ecology'. It is a Review article, 10 authors, published 11 November 2005."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): proposed citation for pattern-oriented modelling",
+      "claim": "Pattern-oriented modelling (POM) uses several observed patterns at once, at different scales and levels, to design and constrain a model",
+      "source_value": "POM: multiple patterns observed at different hierarchical levels and scales are used systematically to optimize model complexity (structure) and reduce uncertainty, because a single pattern is not enough to reduce uncertainty in structure and parameters",
+      "location": "p. 987 (PDF p. 1), introduction",
+      "quote": "multiple patterns observed in real systems at different hierarchical levels and scales are used systematically",
+      "conditions": "review/methods paper; examples from beech-forest, rabies, trout, fish-school, bear and Anasazi models",
+      "verdict": "confirmed",
+      "note": "The same page explains why: 'a single pattern observed at a specific scale and hierarchical level is not sufficient to reduce uncertainty in model structure and parameters'. Note 11 (p. 991) defines a pattern as any observation with non-random structure and says weak patterns are powerful in combination."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): POM, testing against several patterns",
+      "claim": "POM tests a model (or alternative submodels of agent behaviour) by whether it reproduces several patterns; alternatives that fail are rejected",
+      "source_value": "'strong inference': alternative theories of agent decisions are implemented and tested by how well they reproduce characteristic patterns at the individual and higher levels; those that fail are rejected, and further patterns with more falsifying power separate the survivors",
+      "location": "p. 988 (PDF p. 2), section 'Patterns for Contrasting Alternative Theories'",
+      "quote": "Decision models that fail to reproduce the characteristic patterns are rejected",
+      "conditions": "methodological recommendation, illustrated by Huth's fish-school model (11 theories, p. 988-990) and Railsback and Harvey's stream-trout habitat-selection model (p. 989)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): POM, calibration against several patterns at once",
+      "claim": "POM calibrates a model by finding parameter values that reproduce several patterns simultaneously",
+      "source_value": "with structurally realistic models it is possible to fit all calibration parameters by finding values that reproduce multiple patterns simultaneously ('inverse modeling'); example: a brown-bear dispersal IBM, 557 random parameter sets filtered by five patterns, 10 reproduced all five, and global sensitivity fell by a factor of 4",
+      "location": "p. 989 (PDF p. 3), section 'Patterns for Parameters: Coping with Uncertainty'",
+      "quote": "fit all calibration parameters by finding values that reproduce multiple patterns simultaneously",
+      "conditions": "the bear example's numbers are on p. 990 (PDF p. 4): 'Only 10 of the 557 parameter sets reproduced all of them'; the factor-4 drop in sensitivity is shown in fig. S1 (not read)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): POM, structural realism and independent predictions",
+      "claim": "A model designed to reproduce multiple patterns is more likely to be structurally realistic and can be tested further by independent predictions not used in its development",
+      "source_value": "as claimed; the beech-forest model's independent predictions of canopy age structure and giant-tree distribution matched observations",
+      "location": "p. 988 (PDF p. 2), section 'Patterns for Model Structure: The Medawar Zone'",
+      "quote": "Structurally realistic models can make independent and testable secondary predictions",
+      "conditions": "examples: beech forest (refs 17-21) and fox rabies (refs 22-23)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (suggested, not in the brief): schooling in an agent-based fish model",
+      "claim": "Producing school-like aggregations does not by itself show that a model's rules explain real schooling; one pattern alone may not falsify a weak theory",
+      "source_value": "boids makes fish-school-like aggregations but that does not prove boids explains real schooling; in Huth's model nearest-neighbour distance alone did not separate theories, while polarization (real schools 10-20 degrees) rejected the two 'priority' theories",
+      "location": "pp. 988-989 (PDF pp. 2-3), and Fig. 3 (p. 990)",
+      "quote": "does not prove that boids explains schooling in real fish",
+      "conditions": "model study (Huth 1992 thesis; Huth and Wissel 1994)",
+      "verdict": "confirmed",
+      "note": "Directly relevant to the Hot Brook sim's neural-network fish and their schools: polarization and nearest-neighbour distance are the two school-level patterns this paper uses."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "http://thorsten-wiegand.de/pdf/GrimmEtAl2005Science.pdf", "status": 404, "note": "co-author's site copy is gone; read from the Wayback capture instead" },
+    { "url": "https://www.science.org/doi/pdf/10.1126/science.1116681", "status": "not tried", "note": "publisher PDF, subscription (Semantic Scholar and OpenAlex: closed)" },
+    { "url": "https://digital.csic.es/handle/10261/51885", "status": 200, "note": "DIGITAL.CSIC holds a submitted-version .doc (grimm_science_2005.doc); not fetched because the typeset article was available" }
+  ],
+  "notes": "Verdict is claim-based (every claim checks); bibliography ok is false only because the entry is new. For the rewrite: POM's three uses are (1) choosing model structure from patterns (Medawar zone, Fig. 1), (2) contrasting alternative theories of agent behaviour (strong inference), and (3) inverse parameterization by filtering parameter sets with several patterns at once. The 2020 ODD update (NEW_Grimm_etal_2020, para. 3.17) restates these three uses and now puts the patterns in ODD element 1 'Purpose and patterns'. Science pages carry no section numbers; cite pages."
+}

@@ -1,0 +1,88 @@
+{
+  "key": "NEW_Grimm_etal_2020",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own open-access article (JASSS, CC BY-SA): the PDF (20 pages; its text layer drops digits and some ligatures, so numbers were read in the HTML) and the HTML article page (saved as NEW_Grimm_etal_2020.html, text in NEW_Grimm_etal_2020.web.txt, which keeps the paragraph numbers as anchors); Figure 1 read on the PDF page image (p. 2). Supplements S1 (ODD guidance), S6 (example TRACE documents) and S7 (describing simulation experiments) fetched from the journal and saved beside it (.S1/.S6/.S7.pdf and .txt)",
+    "url": "https://www.jasss.org/23/2/7.html",
+    "file": "docs/research_notes/fetched/v2/NEW_Grimm_etal_2020.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.18564/jasss.4259) and the article page (received 08-Nov-2019, published 31-Mar-2020; footer 'JASSS, 23(2) 7, 2020')",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Grimm, V., Railsback, S. F., Vincenot, C. E., Berger, U., Gallagher, C., DeAngelis, D. L., Edmonds, B., Ge, J., Giske, J., Groeneveld, J., Johnston, A. S. A., Milles, A., Nabe-Nielsen, J., Polhill, J. G., Radchuk, V., Rohwäder, M.-S., Stillman, R. A., Thiele, J. C., and Ayllón, D. 2020. The ODD protocol for describing agent-based and other simulation models: a second update to improve clarity, replication, and structural realism. Journal of Artificial Societies and Social Simulation 23(2): 7. https://doi.org/10.18564/jasss.4259",
+    "note": "ok is false only because this is a new entry. JASSS has no page numbers: cite article 7 and paragraph numbers. Do not confuse it with a separate one-author item at Crossref: Grimm, V. 2020. The ODD protocol: an update with guidance to support wider and more consistent use. Ecological Modelling 428: 109105 (doi 10.1016/j.ecolmodel.2020.109105; closed access, not read, so its content is not characterized here). The brief's 'JASSS, the ODD protocol's second update' is the JASSS article above."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol requires (current version)",
+      "claim": "The current ODD has seven elements, in this order and numbering, with eleven design concepts",
+      "source_value": "1 Purpose and patterns; 2 Entities, state variables and scales; 3 Process overview and scheduling; 4 Design concepts (Basic principles, Emergence, Adaptation, Objectives, Learning, Prediction, Sensing, Interaction, Stochasticity, Collectives, Observation); 5 Initialization; 6 Input data; 7 Submodels. Used as given, including the numbering; the Overview/Design concepts/Details labels are comments, not headings; concepts that do not apply may be left out, and a new concept may be added at the end of element 4",
+      "location": "para. 1.3-1.4 and Figure 1 (PDF p. 2; the element and concept names read on the page image)",
+      "quote": "seven elements, which should be used as given, including the numbering",
+      "verdict": "confirmed",
+      "note": "This supersedes 2006 and 2010. The only change to the element list since 2010 is element 1, 'Purpose' to 'Purpose and patterns'. Two slips in the source's own text: para. 4.2 calls the design concepts element '5. Design concepts' and the Box 1 element '1. Pattern and purpose'; Figure 1 and para. 1.4 give '4. Design concepts' and '1. Purpose and patterns'."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): ODD element 1 and pattern-oriented modelling",
+      "claim": "ODD element 1 now states the patterns used as criteria for judging whether the model suits its purpose",
+      "source_value": "as claimed: element 1 gives the purpose and 'the patterns that serve as model evaluation criteria'; placed first because patterns guide the choice of entities, state variables and scales (para. 4.23)",
+      "location": "para. 1.4 (PDF p. 2); para. 4.23",
+      "quote": "the purpose of the model and the patterns that serve as model evaluation criteria",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): reporting patterns honestly",
+      "claim": "Patterns the model fails to reproduce should be reported too",
+      "source_value": "as claimed: reporting only the patterns the model captured would resemble HARKing; better practice is to report missing patterns, which show processes not yet identified or understood",
+      "location": "para. 4.24",
+      "quote": "report on missing patterns, which would indicate that important processes were not yet identified",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): pattern-oriented modelling, its three uses",
+      "claim": "POM uses observed patterns to choose model structure, to test alternative submodels of behaviour, and to identify parameter values",
+      "source_value": "as claimed: (a) select entities, state variables and scales so the patterns could be reproduced; (b) test 'theory' for agent behaviours by whether alternative submodels make the patterns emerge; (c) use quantitative patterns to identify useful parameter values (Wiegand et al. 2003)",
+      "location": "para. 3.17",
+      "quote": "using quantitative patterns to identify useful parameter values",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol recommends beyond the elements",
+      "claim": "The 2020 guidance adds an optional 'Rationale' to each element and recommends linking the description to the code",
+      "source_value": "as claimed: optional subsection 'Rationale' in each element (para. 4.3); link ODD to code by using the same names in both and by code comments or a table of code locations (paras 4.21-4.22); give software and library versions, architecture and OS (para. 4.20); summary ODDs (paras 4.5-4.9) and nested ODDs for submodels needing 10 or more pages (para. 4.10)",
+      "location": "para. 4.3 (Inclusion of rationale); para. 4.21",
+      "quote": "Each ODD element includes the optional subsection Rationale",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): TRACE, described in the ODD update",
+      "claim": "TRACE is a standard format for documenting model development, parameterization, analysis and evaluation",
+      "source_value": "as claimed: 'TRACE' (TRAnsparent and Comprehensive model Evaludation; Grimm et al. 2014) is a standard format for documenting all elements of model development, including parameterization, model analysis and model 'evaludation' (evaluation and validation); it is a format for supplements, not main texts (para. 5.8)",
+      "location": "para. 2.4; para. 5.8",
+      "quote": "a standard format for documenting all elements of model development, including parameterization, model analysis",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what a TRACE document contains",
+      "claim": "A TRACE document has eight elements, from problem formulation to model output corroboration",
+      "source_value": "the example TRACE documents in Supplement S6 (Nabe-Nielsen et al. 2018; Ayllón et al. 2016), which say they use Grimm et al. 2014's structure, have: 1 Problem formulation; 2 Model description (ODD recommended); 3 Data evaluation; 4 Conceptual model evaluation; 5 Implementation verification; 6 Model output verification; 7 Model analysis (sensitivity analysis, understanding emergence); 8 Model output corroboration (independent data and patterns not used in development)",
+      "location": "Supplement S6, p. 2 (statement) and p. 3 (contents); element definitions at S6 pp. 4, 5, 20, 34, 37, 39, 40, 47",
+      "quote": "uses the updated standard terminology and document structure in",
+      "verdict": "confirmed",
+      "note": "A stand-in for Grimm et al. 2014, whose full text was not obtained (NEW_Grimm_etal_2014, blocked). This confirms only that these TRACE documents, compiled by the 2020 authors, follow this eight-element structure; cite it as 'TRACE (Grimm et al. 2014), as used in the example documents of Grimm et al. 2020, Supplement S6'."
+    },
+    {
+      "paper": "rewrite (brief Phase 5): how to cite ODD",
+      "claim": "The ODD authors ask users to cite the 2006 paper and the update they follow",
+      "source_value": "as claimed: suggested wording 'The model description follows the ODD (Overview, Design concepts, Details) protocol for describing individual- and agent-based models (Grimm et al. 2006), as updated by Grimm et al. (2020).'",
+      "location": "Supplement S1, p. 2",
+      "quote": "as updated by Grimm et al. (2020)",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Verdict is claim-based; bibliography ok is false only because the entry is new. Other content the rewrite may use: ODD's motto 'Describe what the program does, not what you think the model does' (para. 3.5); calibration and analysis go in a separate 'Calibration, simulation experiments, and model analysis' section, for which Supplement S7 gives a checklist taken from TRACE (calibration and model output verification; model output corroboration; sensitivity analysis; simulation experiments), distinguishing verification against calibrated patterns from corroboration against independent ones (S7 pp. 1-4); robustness analysis, trying to 'break' the model (S7 p. 3); ODD can describe any simulation model, not only ABMs (paras 5.2-5.5)."
+}

@@ -1,0 +1,60 @@
+{
+  "key": "NEW_Grimm_etal_2006",
+  "reader": "add-01 (NEW_ additions, modelling)",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's typeset PDF (Ecological Modelling 198: 115-126, 12 pages) posted by the lead author's institute, the Helmholtz Centre for Environmental Research - UFZ, on its ODD page (ufz.de/index.php?en=40429, link 'PDF')",
+    "url": "https://www.ufz.de/export/data/2/100065_GrimmODD.pdf",
+    "file": "docs/research_notes/fetched/v2/NEW_Grimm_etal_2006.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (api.crossref.org/works/10.1016/j.ecolmodel.2006.04.023) and the article's title page",
+    "ok": false,
+    "corrections": "New entry; the full verified citation: Grimm, V., Berger, U., Bastiansen, F., Eliassen, S., Ginot, V., Giske, J., Goss-Custard, J., Grand, T., Heinz, S. K., Huse, G., Huth, A., Jepsen, J. U., Jørgensen, C., Mooij, W. M., Müller, B., Pe'er, G., Piou, C., Railsback, S. F., Robbins, A. M., Robbins, M. M., Rossmanith, E., Rüger, N., Strand, E., Souissi, S., Stillman, R. A., Vabø, R., Visser, U., and DeAngelis, D. L. 2006. A standard protocol for describing individual-based and agent-based models. Ecological Modelling 198(1-2): 115-126. https://doi.org/10.1016/j.ecolmodel.2006.04.023",
+    "note": "ok is false only because this is a new entry. The brief's description ('the ODD protocol for describing individual- and agent-based models') matches this real work, but the title does not contain 'ODD': use the title above. 28 authors. Received 8 Nov 2005, accepted 26 Apr 2006, online 14 Jun 2006, issue dated September 2006."
+  },
+  "claims": [
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol requires",
+      "claim": "The ODD protocol (2006) has seven elements in three blocks: Purpose; State variables and scales; Process overview and scheduling; Design concepts; Initialization; Input; Submodels",
+      "source_value": "as claimed (the original 2006 version). Its design-concepts checklist had nine items: Emergence, Adaptation, Fitness, Prediction, Sensing, Interaction, Stochasticity, Collectives, Observation (pp. 118-119)",
+      "location": "p. 115 (PDF p. 1), Abstract; Fig. 1 and §2 (p. 117); §2.4 (pp. 118-119)",
+      "quote": "subdivided into seven elements: Purpose, State variables and scales, Process overview and scheduling",
+      "conditions": "the original version; superseded (see the next claim)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): ODD's current element list",
+      "claim": "Grimm et al. 2006 gives the ODD element list the rewrite should present as current",
+      "source_value": "No: 2006 is the original version, which its authors expected to evolve. The 2010 update renamed elements 2 and 6 ('Entities, state variables, and scales'; 'Input data'), renamed Fitness to Objectives, added Basic principles and Learning, and declared the 2006 description obsolete (NEW_Grimm_etal_2010); the 2020 update renamed element 1 'Purpose and patterns' (NEW_Grimm_etal_2020). Cite 2006 for ODD's origin and purpose, 2020 for the current list",
+      "location": "p. 116 (PDF p. 2), end of the Abstract",
+      "quote": "the protocol will hopefully evolve as it becomes used",
+      "verdict": "corrected"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what the ODD protocol requires",
+      "claim": "ODD's elements must be given in the fixed order; the details must suffice to re-implement the model",
+      "source_value": "as claimed: the sequence is compulsory ('Yes, definitely'), though the design-concepts checklist may be reordered; the Details block must hold all information needed to re-implement the model and run the baseline simulations",
+      "location": "p. 123 (PDF p. 9), §4.2; p. 117 (PDF p. 3), §2",
+      "quote": "Yes, definitely. This is the main idea of the protocol",
+      "verdict": "confirmed",
+      "note": "p. 117: 'All information required to completely re-implement the model and run the baseline simulations should be provided here.'"
+    },
+    {
+      "paper": "rewrite (brief Phase 5): what ODD does not cover",
+      "claim": "Simulation experiments, scenarios and sensitivity analysis are not part of ODD but belong in a following 'simulation experiments' section",
+      "source_value": "as claimed: ODD describes the basic model (the 'Materials'); scenarios, sensitivity and uncertainty analyses go in a separate 'simulation experiments' section (the 'Methods')",
+      "location": "p. 123 (PDF p. 9), §4.1",
+      "quote": "The protocol is designed to describe the basic model",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://hal.inrae.fr/hal-02669043", "status": 200, "note": "HAL record links only to an ISTEX full text (api.istex.fr), which needs a French institutional login: not used" },
+    { "url": "https://hdl.handle.net/11250/4520224", "status": 200, "note": "NVA (Norway) record; its API lists no file" },
+    { "url": "http://edoc.mpg.de/301913", "status": 403, "note": "redirects to pure.mpg.de, which refused the script" }
+  ],
+  "notes": "The one 'corrected' claim is about which version to cite, not an error in the source. For the rewrite: the 2006 paper states ODD's purpose (make IBM/ABM descriptions complete, readable and reproducible; p. 116) and recommends providing source code and an executable (§4.4, p. 123). The 2010 update says the 2006 description of the elements is obsolete, but the 2006 account of ODD's 'overall purpose and rationale' is still valid (NEW_Grimm_etal_2010, preprint p. 6). The 2020 guidance (Supplement S1, p. 2) asks users to cite both: 'The model description follows the ODD ... protocol ... (Grimm et al. 2006), as updated by Grimm et al. (2020).' The Online Appendix (19 example ODDs, template) was not read."
+}
