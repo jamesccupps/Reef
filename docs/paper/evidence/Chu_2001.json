@@ -1,0 +1,58 @@
+{
+  "key": "Chu_2001",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the university repository's own copy: University of Toronto TSpace (utoronto.scholaris.ca), item reached from the handle http://hdl.handle.net/1807/15223 (National Library of Canada microfiche-scan PDF with text layer)",
+    "url": "https://utoronto.scholaris.ca/server/api/core/bitstreams/4beb3aaa-bf92-48ed-ab14-11f2ba6ac752/content",
+    "file": "docs/research_notes/fetched/v2/Chu_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 1) and the repository record",
+    "ok": true,
+    "corrections": "",
+    "note": "Cindy Chu, 'Population dynamics of smallmouth bass (Micropterus dolomieu) in response to habitat supply', M.Sc. thesis, Graduate Department of Zoology, University of Toronto, 2001. Appendix B is titled 'Substrate suitability for smallmouth bass nesting' (printed p. 129). Printed page = PDF page − 11."
+  },
+  "claims": [
+    {
+      "paper": "§3.4.10",
+      "claim": "smallmouth bass nests in central Ontario were fewer on weedy shores (0.24 per 100 m) than on sand with rock (1.18)",
+      "location": "p. 130 (PDF p. 141), Appendix B, Table A.B.1; definitions p. 129 (PDF p. 140)",
+      "quote": "Mean 0.88 1.18 0.76 0.88 0.24 0.30",
+      "quote_from": "image",
+      "conditions": "mean nest densities (nests/100 m of shore) by shoreline substrate in seven central Ontario lakes (Billings, Davis, Four Mile, Long, Mountain, Opeongo, Tock), nest counts 1978–80 (Opeongo 1977–79, 1983–85, 1989–94); data of Harker 1982 and Ridgway (unpublished), compiled by Chu; 'weed' = ≥ 40 % of the substrate covered by aquatic plants; 'sand and rock' = ≥ 20 % particles > 140 mm with ≥ 50 % < 60 mm (as printed)",
+      "verdict": "confirmed",
+      "note": "Columns: sand 0.88, sand/rock 1.18, gravel 0.76, rock 0.88, weed 0.24, litter 0.30. The sand/rock mean rests on only three lakes (Four Mile 2.87, Mountain 0.37, Opeongo 0.30) and the weed mean on six (one of them 0). Better cited as 'Harker 1982 and Ridgway unpublished, via Chu 2001'."
+    },
+    {
+      "paper": "Table 3.5-2 (smallmouth bass, maturity column); §3.6.2",
+      "claim": "only 12–47 % of mature Lake Opeongo males spawned in a given year (Post 1982, via Chu 2001)",
+      "location": "p. 5 (PDF p. 16), Chapter 1 introduction",
+      "quote": "Lake Opeongo, Ontario in any given year was estimated to be between 12 and 47%",
+      "conditions": "'The percentage of the mature male population spawning' (Post 1982 in Chu's references: 'Some factors influencing the reproductive effort of smallmouth bass in two Ontario lakes', M.Sc. thesis, University of Toronto)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "for smallmouth, the percentage of young surviving fell as egg or fry abundance rose at Nebish Lake (Serns 1984), in Opeongo's Jones Bay (Friesen 1998) and at South Branch Lake, Maine (Neves 1975), all via Chu 2001",
+      "location": "p. 75 (PDF p. 86), Discussion, 'TF value'; p. 76 (PDF p. 87), Figure 2.34",
+      "quote": "In all studies egg or YOY abundance were negatively related to percent survival",
+      "conditions": "Chu's text names Neves 1975, Serns 1984 and Friesen 1998; Figure 2.34 plots only two: (a) Nebish Lake 1979–81, eggs deposited vs percent surviving to fall (three points, r² 0.90); (b) Jones Bay, YOY at swim-up vs number after metamorphosis (five points, r² 0.03 — the survivor numbers are flat, so the percentage falls only arithmetically); no Neves panel is shown",
+      "verdict": "confirmed",
+      "note": "Chu says it, but the evidence shown is thin (three and five points; nothing plotted for Neves). Chu adds that 'these studies were not a direct measure of density effects on YOY to age 1'."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "in an Ontario habitat model, more nests gave fewer age-1 recruits per nest (via Chu 2001)",
+      "location": "p. 75 (PDF p. 86), Discussion; results p. 57 (PDF p. 68), 'TF value'; Figure 2.19",
+      "quote": "will result in fewer YOY recruited to age 1",
+      "conditions": "Chu's own simulation model of a 253-ha control lake; nest density was varied through the HSI transformation factor TF (0.09–0.25, 0.37–0.41 and 0.42–0.43 nests/100 m² at TF 10, 1 and 0.1)",
+      "verdict": "confirmed",
+      "note": "Chu's statement is stronger than the paper's: more nests gave fewer YOY recruited to age 1 in total ('higher survival of the YOY at lower nest densities'), which implies fewer per nest. She also reports that the change in nest density 'had a small effect' on adult numerical and biomass densities (p. 57)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other values: nest densities in Ontario 0.01–0.43 nests/100 m² (Witzel unpublished 1988/89; Harker 1982) and modelled 0.37–0.41; egg-to-black-fry mortality 4–90 % (Carlander 1977; Friesen 1998) and 7.9 %/day (Friesen 1998); nests 4–8 cm deep, 30–100 cm across (Doan 1940); most nests at 0.5–2.5 m (Neves 1975; Coble 1975; Goff 1984); abandoned nests can be destroyed within 24 h by predation (Neves 1975). Substrate suitability equation SN = 0.75 sand + 1 sand/rock + 0.64 gravel + 0.75 rock + 0.20 weed + 0.26 litter."
+}

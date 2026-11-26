@@ -1,0 +1,48 @@
+{
+  "key": "Fischer_etal_1989b",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: U.S. Government Publishing Office govinfo, Coastal Zone Information Center collection (CZIC), full text as HTML (OCR of the typescript; one web 'page')",
+    "url": "https://www.govinfo.gov/content/pkg/CZIC-sh171-s94-1989/html/CZIC-sh171-s94-1989.htm",
+    "file": "docs/research_notes/fetched/v2/Fischer_etal_1989b.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page as reproduced in the CZIC text",
+    "ok": true,
+    "corrections": "",
+    "note": "Steven A. Fischer, Lenwood W. Hall, Jr. and John A. Sullivan, 'A synthesis of water quality and contaminants data for white perch, Morone americana', Final draft, September 1989, The Johns Hopkins University Applied Physics Laboratory, Aquatic Ecology Section, Shady Side, Maryland; funded by the Coastal Resources Division, Tidewater Administration, Maryland DNR, through a CZM Program Implementation Grant from NOAA OCRM. No page numbers survive in the HTML; locations are given by section and Table 1."
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "sudden drops of 2–3 °C kill white perch eggs and drops of 4–5 °C are lethal (AuClair 1960 and Hardy 1978, via Fischer, Hall & Sullivan 1989b)",
+      "location": "web page: 'Toxic water quality conditions', Temperature section (eggs), and Table 1 (Temperature, Eggs row)",
+      "quote": "temperature drops of 4 - 5 C were lethal to developing eggs",
+      "conditions": "review statement: 'AuClair (1960) and Hardy (1978) reported that temperature drops of 4 - 5 C were lethal to developing eggs, while sudden drops of 2 - 3 C were sufficient to cause egg mortality'; Table 1 adds a minimum summer temperature of 7 °C lethal and extensive mortality at 10 °C. AuClair 1960 = 'White perch in Maine', Maine Dept. Inland Fish. Game, 16 p.; Hardy 1978 = Development of fishes of the Mid-Atlantic Bight, Vol. III",
+      "verdict": "confirmed",
+      "note": "'sufficient to cause egg mortality' (some eggs) is milder than the paper's 'kill white perch eggs'; 'cause egg mortality' would match."
+    },
+    {
+      "paper": "Table 3.5-3 (white perch, temperature column)",
+      "claim": "Hudson River adult white perch avoid < 9.5 and > 34.5 °C (via Fischer, Hall & Sullivan 1989b)",
+      "location": "web page: Temperature section (adults)",
+      "quote": "from the Hudson River avoided temperatures < 9.5C and > 34.5 C",
+      "conditions": "primary source named by Fischer et al.: Texas Instruments 1976; New Jersey adults had an upper avoidance temperature of 32 °C (Gift & Westman 1971)",
+      "verdict": "confirmed",
+      "note": "Better cited 'Texas Instruments 1976, via Fischer, Hall & Sullivan 1989b'."
+    },
+    {
+      "paper": "Table 3.5-3 (white perch, oxygen column); §3.5.6",
+      "claim": "white perch avoid water below 35 % oxygen saturation (Meldrim et al. 1974, via Fischer, Hall & Sullivan 1989b)",
+      "location": "web page: Dissolved oxygen section",
+      "quote": "Adult white perch avoided waters with < 35% saturation of oxygen over a temperature range",
+      "conditions": "adults, over 8–21 °C (Meldrim et al. 1974); the same section reports 60 % survival of young-of-year at 0.5–1.0 mg/L for 19 h over 6.7–28.3 °C",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other white perch values in the synthesis: optimum egg hatching 14.1 °C at 0 ppt (Morgan & Rasin 1982); hatching in 24 h at 16–20 °C and 144 h at 11–16 °C, and significant mortality below 10 °C (Hardy 1978); larval 24-h TL50 30.2–31.8 °C (acclimated 24 °C); adult preferred temperature 27.8 °C in the Hudson (Ecological Analysts 1978) and summer maximum preferred 32.2 °C in the Delaware (Meldrim & Gift 1971); white perch spawn in fresh to oligohaline water (0–4 ppt). The paper's yellow-perch line 'young stop feeding at 2 mg/L (via Fischer et al. 1989a)' cites a different report (1989a) and is not checked here."
+}

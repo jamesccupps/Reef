@@ -1,0 +1,85 @@
+{
+  "key": "Begley_etal_2018",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own open-access full text (Taylor & Francis, Journal of Freshwater Ecology, gold OA), saved as HTML by the human (docs/research_notes/fetched/, 'Full article_ Modeling White Sucker …html') and indexed with getsrc --file; Table 1 read from the table data embedded in the same page",
+    "url": "https://doi.org/10.1080/02705060.2018.1496951",
+    "file": "docs/research_notes/fetched/v2/Begley_etal_2018.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article page header and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Megan Begley, Stephen M. Coghlan Jr. & Joseph Zydlewski (University of Maine; USGS Maine Cooperative Fish and Wildlife Research Unit), 'Modeling White Sucker (Catostomus commersonii) populations to assess commercial harvest influence on age structure', J. Freshw. Ecol. 33(1): 413–428, published online 29 Nov 2018. Several of the values the paper cites are inputs this modelling paper takes from Begley, Coghlan & Zydlewski 2017 (N. Am. J. Fish. Manag. 37: 510–523), the field study of six Maine lakes."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-1 (Little Moxie Pond row)",
+      "claim": "Little Moxie Pond, Maine (30 ha; max 2.7 m), removal by depletion 1994–96: white sucker spawners ≈ 640/ha",
+      "location": "web page, Methods (recruitment, β-parameter)",
+      "quote": "computed as 19,141 spawning individuals for the Little Moxie Pond population",
+      "conditions": "MDIFW ten-year white sucker removal project (Tim Obrey, MDIFW, unpublished data, cited by the authors); pond area 0.30 km², maximum depth 2.7 m; trap-net catches 11,003, 7,100 and 188 in the first three years (from 1994); maximum-likelihood multiple-pass depletion estimate (Lockwood & Schneider 2000)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "19,141 / 30 ha = 638/ha. The underlying data are unpublished MDIFW data reported by Begley et al.; the paper's 'one pond; a high end, project judgment' framing is fair."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, growth column)",
+      "claim": "mean FL at age 201–474 mm in three unfished Maine lakes",
+      "location": "web page, Methods (size at age and fecundity); Table 1 ('Length at age (age-3 to 21): 201–473 mm')",
+      "quote": "Average size at age (201-mm to 474-mm) was assigned based on the estimates provided by",
+      "conditions": "spawning adults (ages 3–21) from three Maine lakes closed to commercial harvest, n = 444, aged from transverse sections of lapillus otoliths; measurements from Begley et al. 2017; the text treats them as fork lengths ('Average fork length at age was used…')",
+      "verdict": "confirmed",
+      "note": "Table 1 prints 201–473 mm against the text's 201–474. The data are Begley et al. 2017's: cite 'Begley et al. 2017, via Begley, Coghlan & Zydlewski 2018', as the paper already does for the 26-yr age."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, maturity column)",
+      "claim": "Maine males mature from age 2, females from age 3",
+      "location": "web page, Methods (maturity)",
+      "quote": "mature females were first captured at age-3",
+      "conditions": "observations of Begley et al. 2017: reproductively mature migrating males as young as age 2 (< 2 % of the spawning run), mature females first at age 3 (3 % of the run)",
+      "verdict": "confirmed",
+      "note": "The model itself uses age 3 as first maturity for both sexes."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, maturity column)",
+      "claim": "proportion mature 0.20, 0.30, 0.60 at ages 3–5, all from age 6 (presented with the Maine maturity data)",
+      "source_value": "model assumptions, not Maine measurements: P(age 4) = 0.30, P(age 5) = 0.60 and 1.00 from age 6 are taken from Wakefield & Beckman 2005; P(age 3) = 0.20 was set 'arbitrarily'; in the model each is further multiplied by a sequential-spawning probability of 0.65 (Geen et al. 1966) from age 4",
+      "location": "web page, Methods (maturity); Table 1 (Probability of spawning P, sources '–' and 4 = Wakefield and Beckman 2005)",
+      "quote": "we arbitrarily set P Age 3 at 0.20",
+      "verdict": "corrected",
+      "note": "Write 'model values 0.20 (assumed), 0.30, 0.60 at ages 3–5, 1.0 from 6 (Wakefield & Beckman 2005, as used by Begley, Coghlan & Zydlewski 2018)'."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, fecundity column)",
+      "claim": "fecundity 3,910–26,060 eggs (Maine fit)",
+      "location": "web page, Methods (fecundity); Table 1 (a = 0.5214, b = 1.7541, source Begley et al. 2017)",
+      "quote": "the number of eggs produced per individual ranged from 3,910 to 26,060 eggs",
+      "conditions": "exponential fork length–fecundity relationship for Maine females (n = 437, Begley et al. 2017; R² = 0.57), applied to the model's mean length at each age 3–21; the authors call it possibly conservative against 5,000–59,000 reported elsewhere",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white sucker, longevity column)",
+      "claim": "Maine fish to 26 yr (Begley 2017, via Begley, Coghlan & Zydlewski 2018)",
+      "location": "web page, Methods (maximum age)",
+      "quote": "observed fish as old as twenty-six",
+      "conditions": "'In Maine, Begley et al. (2017) observed fish as old as twenty-six'; the model caps age at 21 (other maximum ages reported: 21 and 23)",
+      "verdict": "confirmed",
+      "note": "'Begley 2017' should be 'Begley et al. 2017' (Begley, Coghlan & Zydlewski 2017)."
+    },
+    {
+      "paper": "Table 3.5-3 (white sucker, longevity/mortality column)",
+      "claim": "natural mortality M 0.97 at age 1, 0.25 thereafter",
+      "location": "web page, Methods (natural mortality); Table 1 (Natural mortality: YOY 0.97, Age-1 0.97, Age-2 to 21 0.25)",
+      "quote": "For the model we used age-1 fish M = 0.97",
+      "conditions": "instantaneous rates (converted to interval mortality in the model); literature-based inputs — 0.97 from McPhee 2007, 0.25 for ages 2–21 citing McPhee 2007, Miller et al. 2013 and Begley et al. 2017; the authors note that published M 'varies greatly among studies'",
+      "verdict": "confirmed",
+      "note": "Table 1 also applies 0.97 to young-of-year. These are model inputs, not a Maine estimate."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values: average harvest mortality in Maine's fished lakes F = 0.466 (Begley et al. 2017); recruitment α = 0.0035 from Johnson 1975 (a 2.45-km² Minnesota lake); modelled unfished age structure dominated by ages 4–8 (~50 %), < 10 % aged 18+; under harvest ages 3–6 > 70 % of the run. Maine's white sucker bait fishery dates from 1991. For field values (size, age, fecundity, mortality) the primary is Begley, Coghlan & Zydlewski 2017, which is not in this batch."
+}

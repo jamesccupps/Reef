@@ -1,0 +1,110 @@
+{
+  "key": "Carbine_1948",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: Michigan DNR Fisheries Division library, Institute for Fisheries Research Report 1166 (typescript, 215 PDF pages, OCR text layer)",
+    "url": "https://www2.dnr.state.mi.us/publications/pdfs/DNRFishLibrary/ResearchReports/RR1101-RR1200/RR1166.pdf",
+    "file": "docs/research_notes/fetched/v2/Carbine_1948.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (PDF p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "W. F. Carbine, 'The spawning habits, production and survival of centrarchid fishes in Deep Lake, Oakland County, Michigan', Institute for Fisheries Research (Michigan Department of Conservation, cooperating with the University of Michigan) Report No. 1166, March 1948 (day illegible). Study years 1938–1941; bluegill, pumpkinseed, rock bass, largemouth bass."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, spawning column)",
+      "claim": "Michigan pumpkinseed first nests at 13.3–17.2 °C",
+      "location": "p. 136 (PDF p. 136), 1940 correlation of nests with temperature; also p. 135",
+      "quote": "when the water temperatures ranged from 56° to 63° F",
+      "conditions": "1940; one pumpkinseed spawned first on June 1; 56–63 °F is that day's minimum–maximum on a recording thermograph at 18 in (0.46 m) depth, after 10 days that did not fall below 55 °F. In 1941 the first pumpkinseed spawned on May 15, at the same temperatures as the first rock bass (57–60 °F that day, p. 138–139)",
+      "verdict": "confirmed",
+      "note": "56 °F = 13.3 °C, 63 °F = 17.2 °C. It is the daily range on the day of one first nest in one year, not a threshold."
+    },
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, spawning column)",
+      "claim": "mean nest depth 0.65 m",
+      "location": "p. 2 (PDF p. 2), abstract",
+      "quote": "25.8 inches for the pumpkinseed; and 24.7 inches for the bluegill",
+      "conditions": "average water depth of all nests over the 4 years 1938–41",
+      "verdict": "confirmed",
+      "note": "25.8 in = 0.655 m."
+    },
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, spawning column)",
+      "claim": "spawning season ≈ 54 d",
+      "location": "p. 2 (PDF p. 2), abstract",
+      "quote": "54 days (range 49 to 63) for the pumpkinseed",
+      "conditions": "4-year average, 1938–41",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, spawning column)",
+      "claim": "up to 16 spawning bouts in a season",
+      "location": "p. 137 (PDF p. 137), 1940 correlation (Figure 12)",
+      "quote": "a total of 16 separate periods of spawning are found (Figure 12)",
+      "conditions": "1940, June 4 to July 22; in 1941 the report counts 7 main spawning peaks (p. 139–140)",
+      "verdict": "confirmed",
+      "note": "Only 1940 and 1941 were analysed this way; 16 is the 1940 count."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "Deep Lake, Michigan, is 6 ha",
+      "location": "p. 194 (PDF p. 195), footnote to Table 20",
+      "quote": "Deep Lake has an area of 14.84 acres.",
+      "verdict": "confirmed",
+      "note": "14.84 acres = 6.0 ha."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "pumpkinseed built 97–188 nests a year",
+      "location": "p. 2 (PDF p. 2), abstract; p. 194 (PDF p. 195), Table 20 (188, 121, 141, 97 in 1938–41)",
+      "quote": "97 to 188 for the pumpkinseed sunfish",
+      "conditions": "every nest actually used for spawning was counted, 1938–41",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "pumpkinseed averaged 6,012 fry per nest",
+      "location": "p. 175 (PDF p. 176); p. 3 (PDF p. 3), abstract",
+      "quote": "for an average of 6,012 for each of the 14 nests counted",
+      "conditions": "fry counts from 14 nests (range 1,509–14,639); the author warns that the pumpkinseed (14 nests) and largemouth (11) samples 'probably do not constitute adequate samples'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "dead or fungused eggs and fry were found in 'almost every nest'",
+      "location": "p. 179 (PDF p. 180); also p. 174 (PDF p. 175)",
+      "quote": "were found in almost every nest examined at Deep Lake",
+      "conditions": "the statement covers the nests of all four species, at all times of the season; some such nests were still guarded",
+      "verdict": "confirmed",
+      "note": "The paper puts it in a pumpkinseed sentence; Carbine says it of all species' nests."
+    },
+    {
+      "paper": "Table 3.6-5 (bluegill row)",
+      "claim": "bluegill nest fry to 12 September 1941 (1941 year class): 0.097 % (a rotenone minimum)",
+      "location": "p. 194 (PDF p. 195), Table 20",
+      "quote": "Bluegill 1941 627 10,182,000 686,000 9,872 0.6-2.6 1.8 0.0970 970",
+      "quote_from": "image",
+      "conditions": "fry produced = nests used × mean fry per nest (16,240); survivors = fish of the year class recovered when the lake was poisoned on September 12, 1941 with powdered derris root (a rotenone source); the author says recovery 'may have been considerably short of the actual population, particularly of the smaller fish'",
+      "verdict": "confirmed",
+      "note": "Bluegill survival across 1938–41 year classes was 0.0007–0.0970 % (abstract p. 4); 1941 is the highest because those fish had had the least time to die."
+    },
+    {
+      "paper": "Table 3.6-5 (pumpkinseed row)",
+      "claim": "pumpkinseed nest fry to 12 September 1941 (1941 year class): 0.24 % (a rotenone minimum)",
+      "location": "p. 194 (PDF p. 195), Table 20",
+      "quote": "Pumpkinseed 1941 97 583,000 39,300 1,402 0.8-1.8 1.6 0.2405 2,405",
+      "quote_from": "image",
+      "conditions": "as for bluegill; fry estimated from 97 nests × 6,012 fry per nest",
+      "verdict": "confirmed",
+      "note": "Other pumpkinseed year classes: 1938 0.0126 %, 1939 0.0164 %, 1940 0.4875 % (to the same September 1941 poisoning, i.e. over 1–3 years)."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Useful beyond the paper's uses: average nest diameters (pumpkinseed 18.0 in, bluegill 20.6 in); bluegill, pumpkinseed and rock bass eggs hatch in 2–3 (seldom 4) days at Deep Lake temperatures, largemouth in 5–6; mean fry per nest bluegill 16,240 (53 nests), rock bass 1,466 (33), largemouth 5,654 (11); bluegill ovaries held 1,124–59,552 eggs (mean 17,261, 42 fish). The 'rotenone' in the paper's Table 3.6-5 was powdered derris root (its active compound is rotenone); 'a derris-root (rotenone) minimum' would be exact. OCR is rough in places (e.g. 'pum.pkinseed'); every value above was read in context, and Table 20 on the page image."
+}

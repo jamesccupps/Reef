@@ -1,0 +1,54 @@
+{
+  "key": "Hardy_1978",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item developmentoffis0002unse (Volume II of the atlas, NOAA Northwest Fisheries Center library copy; openly downloadable, not a lending item). Volume III (the white perch account) and Volume I (chain pickerel, Jones, Martin & Hardy) exist on Internet Archive only as lending-restricted items, not opened",
+    "url": "https://archive.org/download/developmentoffis0002unse/developmentoffis0002unse.pdf",
+    "file": "docs/research_notes/fetched/v2/Hardy_1978.pdf"
+  },
+  "status": "read-part",
+  "bibliography": {
+    "checked_against": "Volume II's title page (PDF p. 7) and general introduction (printed p. 1); Volume III from the reference list of Fischer, Hall & Sullivan 1989b",
+    "ok": false,
+    "corrections": "The ledger's 'Hardy. 1978' is incomplete and covers two different volumes. (1) Banded killifish (Table 3.6-1): Hardy, J. D., Jr. 1978. Development of fishes of the Mid-Atlantic Bight: an atlas of egg, larval and juvenile stages. Volume II, Anguillidae through Syngnathidae. U.S. Fish and Wildlife Service, Biological Services Program, FWS/OBS-78/12 (January 1978), Chesapeake Biological Laboratory, University of Maryland. (2) White perch (Table 3.5-2, §3.6.1): the same series, Volume III, Aphredoderidae through Rachycentridae, FWS/OBS-78/12, 1978 (as cited by Fischer, Hall & Sullivan 1989b; title page not seen). Split into Hardy 1978a and 1978b. (3) The chain pickerel row's 'Jones, Martin & Hardy 1978' is yet another work, Volume I (Acipenseridae through Ictaluridae), and needs its own ledger entry.",
+    "note": "The series is in six volumes (Vol. II, printed p. 1): I Acipenseridae–Ictaluridae, II Anguillidae–Syngnathidae, III Aphredoderidae–Rachycentridae, IV Carangidae–Ephippidae, V Chaetodontidae–Ophidiidae, VI Stromateidae–Ogcocephalidae."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.6-1 (banded killifish, larvae column)",
+      "claim": "banded killifish hatch at 5.3–6.4 mm TL (Hardy 1978, via Shute et al. 1983)",
+      "location": "Vol. II p. 159 (PDF p. 171), Fundulus diaphanus account, Yolk-sac larvae",
+      "quote": "Hatching length 5.3-6.4. Maximum length, 7.1 mm.",
+      "quote_from": "image",
+      "conditions": "literature compilation (two cited sources); the length type is not stated for the hatching length, but the account's figures and proportions are in TL (yolk-sac larvae 5.6 and 5.8 mm TL; 'proportions expressed as times in TL at 7.1 mm')",
+      "verdict": "confirmed",
+      "note": "Hardy's 7.1 mm is the MAXIMUM yolk-sac-larva length, on a TL basis. The same table's '7.1 mm SL' (credited to 'repo') may be a misreading of this; check its source. The same account gives incubation of 11–12 days at 22.0–26.5 °C and 16–18 days at 12–14 °C, and spawning at 22–32.2 °C."
+    },
+    {
+      "paper": "Table 3.5-2 (white perch, maturity column)",
+      "claim": "white perch mature at 72–80 mm (males) and 90–98 mm (females), ages 2–4 (Hardy 1978, Mansueti 1964, via Stanley & Danie 1983)",
+      "verdict": "unchecked",
+      "note": "In Volume III, which is not openly available (Internet Archive lending item developmentoffis0003jerr; HathiTrust refused with a bot check)."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "sudden drops of 2–3 °C kill white perch eggs and drops of 4–5 °C are lethal (AuClair 1960 and Hardy 1978, via Fischer, Hall & Sullivan 1989b)",
+      "verdict": "unchecked",
+      "note": "Volume III not obtained. The intermediary is checked in Fischer_etal_1989b.json: Fischer et al. do say it, crediting AuClair 1960 and Hardy 1978 jointly."
+    },
+    {
+      "paper": "Table 3.6-1 (chain pickerel, incubation column)",
+      "claim": "chain pickerel incubation 11 d at 10.0 °C, 5 d at 14.4 °C, 2.5 d at 17.2 °C (Jones, Martin & Hardy 1978, via FishBase)",
+      "verdict": "unchecked",
+      "note": "A different work (Volume I, Jones, Martin & Hardy), matched to this key only by the words 'Hardy 1978'. Not openly available (Internet Archive lending item developmentoffis0001unse)."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://archive.org/details/developmentoffis0003jerr", "status": 0, "note": "Volume III (Hardy 1978, white perch): access-restricted lending item ('inlibrary'); not opened. Library route: U.S. Fish Wildl. Serv. FWS/OBS-78/12, Vol. III" },
+    { "url": "https://archive.org/details/developmentoffis0001unse", "status": 0, "note": "Volume I (Jones, Martin & Hardy 1978, chain pickerel): access-restricted lending item; not opened" },
+    { "url": "https://catalog.hathitrust.org/Search/Home?lookfor=Development%20of%20fishes%20of%20the%20Mid-Atlantic%20Bight", "status": 403, "note": "Cloudflare bot check; not worked around (HathiTrust may hold full-view copies of these federal documents for the human to open)" }
+  ],
+  "notes": "The paper cites Hardy only through intermediaries (Stanley & Danie 1983; Fischer, Hall & Sullivan 1989b; Shute, Lindquist & Shute 1983; FishBase). Only the killifish value could be read in the original. Volume II also has the other Fundulus species (its killifish key starts on printed p. 139), if needed."
+}

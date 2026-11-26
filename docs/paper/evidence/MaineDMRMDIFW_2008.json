@@ -1,0 +1,86 @@
+{
+  "key": "MaineDMRMDIFW_2008",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "an openly posted copy of the state agencies' public plan on the Friends of Merrymeeting Bay 'Cybrary' (a conservation group's document library), 108 pages with text layer",
+    "url": "https://cybrary.fomb.org/pages/20080300_PenobscotPlan.pdf",
+    "file": "docs/research_notes/fetched/v2/MaineDMRMDIFW_2008.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the plan's title page (PDF p. 1) and contents",
+    "ok": true,
+    "corrections": "",
+    "note": "'Strategic Plan for the Restoration of Diadromous Fishes to the Penobscot River', prepared by the Department of Marine Resources and the Department of Inland Fisheries and Wildlife for presentation to the Atlantic Salmon Commission, March 2008. PDF pages equal printed pages."
+  },
+  "claims": [
+    {
+      "paper": "§2.5",
+      "claim": "the Penobscot diadromous-fish plan classes smallmouth bass as introduced",
+      "location": "p. 49, Table 4 (Fishes of the Penobscot River basin); p. 51, Table 4 footnotes; p. 14, text",
+      "quote": "smallmouth bass Micropterus dolomieui F introduced-interstate origin",
+      "quote_from": "table",
+      "conditions": "Table 4 status column (after AFS 2004); p. 51: 'Introduced into Maine from southern U.S. waters'; p. 27: introduced into the watershed in the late 1860s",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.5",
+      "claim": "the plan classes white perch as 'introduced throughout the drainage'",
+      "source_value": "the plan classes white perch as NATIVE: Table 4 lists it 'native' (p. 49), and the text says white perch are 'native to the Penobscot basin, but their range has been artificially expanded' (p. 14). The quoted words are from Table 4's footnote (p. 51), whose full statement is that white perch 'were present in all coastal river drainages up to the first barrier that prevented passage of this species. This species has been introduced throughout the drainage.'",
+      "location": "p. 49, Table 4; p. 14; p. 51, Table 4 footnote",
+      "quote": "This species has been introduced throughout the drainage.",
+      "conditions": "footnote to Table 4 on resident species; 'Actively managed'",
+      "verdict": "corrected",
+      "note": "Write: 'treats white perch as native but introduced throughout the drainage above the first barriers'."
+    },
+    {
+      "paper": "§2.5; §3.5.1",
+      "claim": "the plan contradicts itself on chain pickerel: 'native' in its Table 4, introduced (to the Penobscot drainage) in its text",
+      "location": "p. 49, Table 4; p. 51, Table 4 footnote; p. 14, text",
+      "quote": "Indigenous to Maine but not to the Penobscot drainage. Was introduced into the drainage",
+      "conditions": "Table 4 status 'native' (chain pickerel Esox niger F native); p. 14 says chain pickerel and smallmouth 'were introduced into Maine waters in the 1800s and have been spread legally and illegally throughout the basin'",
+      "verdict": "confirmed",
+      "note": "The text is also inconsistent with itself: p. 14 says pickerel were introduced into Maine, p. 51 that they are indigenous to Maine but not to the Penobscot."
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "the plan calls white perch 'introduced throughout the drainage'",
+      "source_value": "accurate words, but the same footnote begins 'White perch were present in all coastal river drainages up to the first barrier', and Table 4 and p. 14 class the species native to the Penobscot basin with an artificially expanded range",
+      "location": "p. 51, Table 4 footnote; p. 49, Table 4; p. 14",
+      "quote": "This species has been introduced throughout the drainage.",
+      "verdict": "corrected",
+      "note": "In §3.5.1 the quotation sits in a passage on native status; give the native classification too, so it is not read as 'white perch are not native to the Penobscot'."
+    },
+    {
+      "paper": "§2.6; §3.5.3",
+      "claim": "at 235 adults per acre the plan projected 214,320 adult alewives for Upper Hot Brook Lake (912 ac) and 167,555 for Lower (713 ac)",
+      "location": "p. 55, Table 6 (Production estimates for alewife), Baskahegan sub-drainage; p. 18, text",
+      "quote": "Upper Hot Brook Lake 912 214,320 … Lower Hot Brook Lake 713 167,555",
+      "quote_from": "image",
+      "conditions": "columns: surface acres, adult production, % of basin total, stocking; the Flagg (1984) column is blank for both lakes (read on the page image), so they are not among Flagg's original estimates; unit productivity 235 adults per surface acre in all habitat",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "912 × 235 = 214,320; 713 × 235 = 167,555."
+    },
+    {
+      "paper": "§2.6",
+      "claim": "restoration stocking at 6 adults per acre",
+      "location": "p. 20, Alewife; p. 55, Table 6 stocking column (5,472 and 4,278)",
+      "quote": "by stocking adult alewives at a rate of six fish per acre",
+      "conditions": "for a minimum of four years (e.g. MDMR 2006); Table 6's stocking numbers are 6 × surface acres",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "235 adults per acre is a planning figure derived from commercial yields in six Maine watersheds (1971–83), and the plan warns that oligotrophic Penobscot lakes 'may not produce' it",
+      "location": "p. 93, Appendix D (Methodology for total production estimates of American shad and alewife)",
+      "quote": "relatively nutrient poor (oligotrophic) and may not produce 235 alewife/acre",
+      "conditions": "derivation: commercial harvest in six coastal Maine watersheds, 1971–1983, taken as 100 lb per surface acre; 0.5 lb per adult gives 200 adults/acre; assumed 85 % exploitation, adjusted for 15 % escapement gives 235/acre; the source lakes are mesotrophic or eutrophic; MDMR 'will use 235 fish/acre for planning purposes'",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Table 6 header misprints Flagg's year as '(1884)'; the text has Flagg (1984). The plan's minimum escapement for planning is 45 % of total production (a three-day weekly closure). Also: since 1983 black crappie, green sunfish, largemouth bass and northern pike have been illegally introduced to the basin (p. 14)."
+}

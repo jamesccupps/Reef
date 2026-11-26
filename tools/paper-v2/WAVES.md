@@ -41,7 +41,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | done |
 | w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | done |
 | w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | done |
-| w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | running |
+| w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | done |
 | w3-11 | Marburg_etal_2006, Mittelbach_1984, MNAP_nd, MNAP_nd-2, Richter_etal_2024, Snow_1978, Chippett_2004, Diana_1979b, Eckmann_2004, Engeletal_1999, Klug_etal_2012, Adamec_2006 | done |
 | w3-12 | Fago_1977, Feener_MacLeod_2020, Gallagher_2016, Garvey_etal_2002, Hall_Werner_1977, Havey_1973, Henderson_1977, Hodgkins_2010, Huff_etal_2004, Koenings_Edmundson_1991, Sleith_etal_2018, TexasInstruments_1979 | done |
 | w3-13 | McCall_etal_1996, MDIFW_2021, MDIFW_2026, Osenberg_etal_1992, Prout_etal_1990, Radabaugh_2006, RangePonds_2024, Reed_1971, Reinhardt_etal_2004, Rowan_etal_1992, Sommer_etal_2012, Todd_etal_1982 | done |
@@ -54,7 +54,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-20 | MacRae_Jackson_2001, MaineBirdAtlas_, MaineLegislature_1949, Mason_Brandt_1996, McCoy_etal_2001, MDIFW_2019, Mehner_etal_2022, Meldrimetal_1974, Mensinger_etal_2025, Michels_2020, Moore_etal_2004, NilssonOrtman_etal_2026 | running |
 | w3-21 | NWSCaribou_2026, OGorman_Burnett_2001, Paquette_etal_2021, Penney_etal_2019, Pessl_1969, Post_1982, Post_etal_1995, Post_etal_1998, Raffetto_etal_1990, Rand_Lauder_1981, Rose_etal_1999, Rose_etal_2001 | running |
 | w3-22 | Raney_Webster_1940, Raymond_Saiers_2010, Rudstam_etal_2004, Rudstam_Jackson_2022, Russell_Weiskittel_2012, SandJensen_etal_2005, Sanderson_etal_1999, Santucci_Wahl_2003, Schneider_1973b, Schneider_Crowe_1980, Vermeer_1973, VHS_nd | running |
-| w3-23 | Schneider_Breck_1997, Shaw_etal_2026, Shrestha_etal_2017, Shroyer_2007, Simonin_2010, Smith_1939, Smith_etal_2001, Steinhart_2004, Steinhartetal_2008, Stewart_1926, Vilas_etal_2017, Warner_1973 | queued |
+| w3-23 | Schneider_Breck_1997, Shaw_etal_2026, Shrestha_etal_2017, Shroyer_2007, Simonin_2010, Smith_1939, Smith_etal_2001, Steinhart_2004, Steinhartetal_2008, Stewart_1926, Vilas_etal_2017, Warner_1973 | running |
 | w3-24 | Treasurer_1983, Treasurer_1989, VanDeValk_etal_2016, Ward_Barnes_2020, Whiteside_etal_1985, Whittier_etal_1997, Whittier_etal_1999, Whittier_etal_2000, Whittier_etal_2001, WisconsinDNR_2008, Ziegler_etal_2019, Zweiacker_Summerfelt_1974 | queued |
 | w3-25 | Wright_Shoesmith_1988, Wu_Culver_1991, Wu_Culver_1994, Yoder_2012, Adamec_2015, AGCMaine_2024, Alexander_etal_2015, Ali_etal_2014, AliranguesNunez_etal_2023, Allen_1984, Andersen_etal_2017, Anderson_2025 | queued |
 | w3-26 | Allen_etal_2011, Altman_Dittmer_1971, AOU_1983, Andersen_Olsen_1994, ADW_nd, Arp_etal_2020, Arrington_etal_2002, Ashforth_Yan_2008, ASMFC_2009, ASMFC_2024, Belovsky_1981, Bendell_McNicol_1995 | queued |

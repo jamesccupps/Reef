@@ -1,0 +1,100 @@
+{
+  "key": "Short_2001",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the university repository's own file (MINDS@UW, item 1793/80807, bitstream 'Short.pdf'), as captured openly by the Wayback Machine on 2026-10-12; minds.wisc.edu itself did not answer from here (connection timed out)",
+    "url": "https://web.archive.org/web/20261012232814id_/https://minds.wisc.edu/server/api/core/bitstreams/229c29ce-8414-41e2-b014-a11d8adda9ad/content",
+    "file": "docs/research_notes/fetched/v2/Short_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the thesis title page (PDF p. 1) and approval page",
+    "ok": true,
+    "corrections": "",
+    "note": "Patrick Short, 'A quantitative assessment of spawning habitat for smallmouth bass (Micropterus dolomieu dolomieu) in northern Wisconsin lakes', M.S. thesis, College of Natural Resources, University of Wisconsin–Stevens Point, August 2001 (Wisconsin Cooperative Fishery Research Unit). The handle https://minds.wisc.edu/handle/1793/80807 now redirects to https://minds.wisc.edu/items/cd6f5778-92b2-4170-815b-9691569b5b19."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.7; §3.6.2",
+      "claim": "Sanford Lake, Wisconsin, is a 36-ha lake",
+      "location": "p. 10 (PDF p. 20), Study site; p. 11 (PDF p. 21), Figure 1",
+      "quote": "has an area of 35.6 ha, a length of l.13 km",
+      "conditions": "Sanford Lake, Vilas County, near Boulder Junction; drainage lake, maximum depth 15.5 m, shoreline 3.9 km",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "Sanford Lake is colored (30 Pt-Co)",
+      "verdict": "unsupported",
+      "note": "Short gives no colour value: he says only that the lake is 'stained with tannic acid' (p. 13, PDF p. 23). The research note's 'colour 30 Pt-Co, pH 5.9, alkalinity 6 mg/L' does not come from Short (whose alkalinity is 9.0 ppm MOA); it may come from Saunders 2006 or a WDNR record, not checked here. Cite that source for the 30 Pt-Co, or write 'tannin-stained'."
+    },
+    {
+      "paper": "§3.2.7 ('soft-water'); §3.6.2 ('tannin-stained, soft-water (9 ppm alkalinity), wood-rich')",
+      "claim": "Sanford Lake is tannin-stained, soft-water with 9 ppm alkalinity, and rich in wood",
+      "location": "p. 13 (PDF p. 23), Study site",
+      "quote": "slightly alkaline (9.0 ppm, MOA), and stained with tannic acid",
+      "conditions": "methyl orange alkalinity; the lake is described as 'unproductive'; Big Crooked Lake, by contrast, is 15.0 ppm and 'very clear'",
+      "verdict": "confirmed",
+      "note": "Wood: 'Trees that fall into the lake provide abundant large woody structure throughout the littoral zone' (same page)."
+    },
+    {
+      "paper": "§3.2.7",
+      "claim": "Sanford Lake's bed from 0 to 3 m was 70.0 % silt and about 6 % gravel or coarser",
+      "location": "p. 19 (PDF p. 29), Results, Available habitat; transects p. 15 (PDF p. 25); Appendix A (PDF p. 88)",
+      "quote": "70.0% of the littoral zone in Sanford Lake was covered by silt",
+      "conditions": "100 random transects from the water's edge to 3.0 m depth, a 1-m² quadrat every 2 m, particle sizes estimated visually (silt < 0.2 mm, sand 0.2–6.3, gravel 6.4–76, cobble 76.1–149.9, rubble 150–303.9 mm, boulders larger); the rest: sand 12.7, coarse organic debris 4.4, gravel 1.9, cobble 1.4, rubble 1.2, small boulders 1.1, large boulders 0.3 %",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "Gravel + cobble + rubble + boulders = 1.9 + 1.4 + 1.2 + 1.1 + 0.3 = 5.9 % ≈ 6 %. Short also notes coarser substrates sit at the margins and silt increases with depth."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "smallmouth nests reach 13 per km of shore (1.43/ha) at Sanford Lake",
+      "location": "p. 61 (PDF p. 71), Chapter II Table 1 (n = 51 nests, 1998); shoreline and area p. 10 (PDF p. 20)",
+      "quote": "Sanford 51 101,935 31,470 (69.1) 650 (99.4) 22.7 ± 0.04",
+      "quote_from": "image",
+      "conditions": "1998; the whole littoral zone was searched by snorkel or SCUBA every other day through the spawning season (p. 55, PDF p. 65), so the 51 nests are the lake's census",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "51 nests / 3.9 km of shoreline = 13.1 per km; 51 / 35.6 ha = 1.43 per ha. Neither figure is printed by Short: the paper should mark both 'project arithmetic'."
+    },
+    {
+      "paper": "§3.6.2",
+      "claim": "on-nest survival at Sanford Lake averaged 22.7 %",
+      "location": "p. 61 (PDF p. 71), Chapter II Table 1; p. 66 (PDF p. 76), Discussion",
+      "quote": "Sanford 51 101,935 31,470 (69.1) 650 (99.4) 22.7 ± 0.04",
+      "quote_from": "image",
+      "conditions": "1998, 51 nests; 'Mean survival represents the number of pre-swimup black fry on each nest as a percentage of eggs fertilized just after spawning' (mean ± 1 SE); eggs and black fry estimated visually with a grid, validated against counts (within ± 7 %)",
+      "verdict": "confirmed",
+      "note": "This is the mean of per-nest percentages; the pooled lake total is 31,470 / 101,935 = 30.9 % (the text's '69%' mortality). Big Crooked Lake: 72.7 %. Three high-quality nests produced 33 % of Sanford's swim-up fry."
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass, Sanford and Big Crooked row)",
+      "claim": "eggs to autumn age 0: 0.64 % (Sanford, tannin-stained) and 4.8 % (Big Crooked, clear)",
+      "location": "p. 61 (PDF p. 71), Chapter II Table 1; p. 60 (PDF p. 70), Results",
+      "quote": "Sanford 51 101,935 31,470 (69.1) 650 (99.4) 22.7 ± 0.04",
+      "quote_from": "image",
+      "conditions": "1998; age 0+ abundance by Chapman–Petersen mark–recapture in the fall (seine marking at nine stations, night electrofishing recapture within 3 weeks); Big Crooked row: 202,100 eggs, 146,475 black fry, 9,798 age 0+ (95.2 % mortality)",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "650 / 101,935 = 0.64 %; 9,798 / 202,100 = 4.85 %. Short's own conclusion: despite this, 'survival from eggs through age 0+ was not significantly different' between the lakes (ANCOVA, Table 2, p. 63) — worth a word in the table note."
+    },
+    {
+      "paper": "Table 3.6-8 (smallmouth bass, Sanford Lake row)",
+      "claim": "autumn young-of-year density 18/ha (project arithmetic)",
+      "location": "p. 61 (PDF p. 71), Chapter II Table 1; area p. 10 (PDF p. 20)",
+      "quote": "Sanford 51 101,935 31,470 (69.1) 650 (99.4) 22.7 ± 0.04",
+      "quote_from": "image",
+      "conditions": "1998 fall mark–recapture estimate of 650 age 0+ for the whole 35.6-ha lake",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "650 / 35.6 ha = 18.3 per ha."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://minds.wisc.edu/handle/1793/80807", "status": 0, "note": "connection to minds.wisc.edu timed out (no response); the Wayback capture of the repository's own PDF was used instead" }
+  ],
+  "notes": "Other values: nests at 0.5–3.0 m with > 40 % gravel, not heavily embedded; no nests below 3.0 m in either lake; nest substrate in Sanford sand 20.6–28.1 %, gravel 57.7–63.2 %, cobble 5.7–23.8 % (1997, 1998); Big Crooked survival fell when nests were < 10 m apart; Sanford's best survival model (R² 0.47) = % cobble, water depth, distance to wood cover, male length. The research note's colour/pH/alkalinity line for Sanford (30 Pt-Co, pH 5.9, 6 mg/L) conflicts with Short's 9.0 ppm MOA and should be traced to its real source."
+}

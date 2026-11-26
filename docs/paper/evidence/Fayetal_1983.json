@@ -1,0 +1,78 @@
+{
+  "key": "Fayetal_1983",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: the USGS National Wetlands Research Center's species-profile PDF (82_11-009.pdf), as captured openly by the Wayback Machine on 2016-12-21 (the live nwrc.usgs.gov URL now redirects to a USGS centre home page)",
+    "url": "https://web.archive.org/web/20161221231247id_/http://www.nwrc.usgs.gov/wdb/pub/species_profiles/82_11-009.pdf",
+    "file": "docs/research_notes/fetched/v2/Fayetal_1983.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's cover, title page and preface ('This profile should be cited as follows')",
+    "ok": false,
+    "corrections": "Full citation (from the preface): Fay, C. W., R. J. Neves & G. B. Pardue. 1983. Species profiles: life histories and environmental requirements of coastal fishes and invertebrates (Mid-Atlantic) — alewife/blueback herring. U.S. Fish and Wildlife Service, Division of Biological Services, FWS/OBS-82/11.9; U.S. Army Corps of Engineers, TR EL-82-4. 25 pp. October 1983. Authors at the Department of Fisheries and Wildlife Sciences, Virginia Polytechnic Institute and State University. It is an alewife AND blueback herring profile (Mid-Atlantic series), not an 'alewife species profile'.",
+    "note": "Printed page = PDF page − 6 in the body (PDF p. 20 = printed p. 14)."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (alewife row, longevity column)",
+      "claim": "alewife ages to 9",
+      "verdict": "unsupported",
+      "note": "Fay et al. give spawning-run ages of 3 to 8 (Chesapeake Bay, Joseph & Davis 1965; Connecticut River, Marcy 1969, Loesch & Lund 1977) and 4–10 for Nova Scotian alewives and blueback herring together (O'Neill 1980), p. 5 (PDF p. 11); an 8-year-old female of 455 g (Walton 1979), p. 10. Nothing gives 'to 9'. The research note takes ages 3–9 from Libby 1982 (Damariscotta, 1980 run): cite that for 'to 9', or write '3–8 (to 10 in Nova Scotia), via Fay et al. 1983'."
+    },
+    {
+      "paper": "Table 3.5-3 (alewife row)",
+      "claim": "in-lake adult mortality 41 % at Long Pond, Maine (Havey 1961, via Fay et al. 1983)",
+      "location": "p. 14 (PDF p. 20), Population dynamics, life stage abundance and mortality",
+      "quote": "for all age groups averaged 41% and ranged from 32%",
+      "conditions": "anadromous alewives, Long Pond, Maine; freshwater post-spawning mortality of all age groups, mean over a 6-year study, range 32–67 %; total annual mortality there was 78.6 % (age 5–6) and 74.4 % (age 6–7)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (alewife row)",
+      "claim": "in-lake adult mortality 90.7 % at Love Lake, Washington County, Maine (Havey 1973, via Fay et al. 1983)",
+      "location": "p. 14 (PDF p. 20); county from the reference list, p. 21 (PDF p. 27)",
+      "quote": "Total adult freshwater mortality averaged 90.7%",
+      "conditions": "mean over the 11-year study, range 66–100 %; Fay's reference list: Havey 1973, 'Production of juvenile alewives at Love Lake, Washington County, Maine', Trans. Am. Fish. Soc. 102: 434–437",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-5 (sea-run alewife row)",
+      "claim": "Bride Lake, Connecticut, 1966: survival egg to emigrant 0.0013 % (Kissil 1974, via Fay et al. 1983)",
+      "location": "p. 14 (PDF p. 20)",
+      "quote": "emigration of 99.9987%, and indicated that 2.88 juveniles left the lake",
+      "conditions": "an estimated 184,151 adults spawned 2.05 × 10¹⁰ eggs in 1966 (exponent read on the page image) and 257,000 juveniles were counted emigrating in summer and fall; 'total freshwater mortality rate from egg stage to emigration'",
+      "verdict": "confirmed",
+      "kind": "arithmetic",
+      "note": "100 − 99.9987 = 0.0013 %; 257,000 / 2.05 × 10¹⁰ = 0.00125 %."
+    },
+    {
+      "paper": "Table 3.6-8 (sea-run alewife, Love Lake row)",
+      "claim": "220–439,062 emigrants a year at Love Lake (Havey 1973, via Fay et al. 1983)",
+      "location": "p. 14 (PDF p. 20)",
+      "quote": "The number of emigrants ranged from 220 to 439,062 fish over an 11-year study period",
+      "conditions": "juvenile emigrants per year over 11 years; also 12–3,209 emigrants per female per year and 0.09–21.50 kg of emigrant biomass per female per year",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.6-8 (sea-run alewife, Love Lake row)",
+      "claim": "Love Lake is 272 ha, so up to ~1,600 emigrants/ha (project arithmetic)",
+      "verdict": "unsupported",
+      "note": "Fay et al. do not give Love Lake's area. The arithmetic holds if the area is right (439,062 / 272 ha = 1,614/ha), but the 272 ha (≈ 672 acres in the research note) needs its own source (e.g. Havey 1973 itself, or a Maine lake record)."
+    },
+    {
+      "paper": "§3.6.10",
+      "claim": "Love Lake's emigrants correlated with escapement over 11 years (Havey 1973, via Fay et al. 1983)",
+      "location": "p. 14 (PDF p. 20)",
+      "quote": "between the log of female escapement and the log of juvenile emigrant abundance",
+      "conditions": "'Significant linear relationships' between juvenile emigrant abundance and the spawning run 4 years later, and between log female escapement and log emigrant abundance, over the 11-year study",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.nwrc.usgs.gov/wdb/pub/species_profiles/82_11-009.pdf", "status": 200, "note": "redirects to https://www.usgs.gov/centers/wetland-and-aquatic-research-center (a home page, not the report); the 2016 Wayback capture of the PDF was used" }
+  ],
+  "notes": "Everything the paper takes from Fay et al. is second-hand (Havey 1961, 1973; Kissil 1974); Fay et al. report it faithfully. Other values in the profile: spawning-run sex ratio about 1:1 (Bride Lake 55.6 % male); Bride Lake adult freshwater mortality 57.4 % (1966) and 48.6 % (1967); first spawning at age 3–5; repeat spawners 60 % (Nova Scotia) to 61 % (York River); Walton 1979 weights 153–164 g at age 3 to 325–356 g at age 7. Internet Archive also holds DTIC copies (DTIC_ADA180383, 'Mid-Atlantic' series) and a federal report item doi-report_i-498982-119 that could serve as alternates."
+}

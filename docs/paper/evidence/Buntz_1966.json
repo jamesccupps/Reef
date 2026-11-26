@@ -1,0 +1,76 @@
+{
+  "key": "Buntz_1966",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free copy: SEAFWA's journal archive (Journal of the Southeastern Association of Fish and Wildlife Agencies / conference proceedings), article PDF; landing page https://seafwa.org/journal/1966/stomach-analysis-chain-pickerel-esox-niger-south-central-florida (saved as Buntz_1966.landing.html)",
+    "url": "https://seafwa.org/sites/default/files/journal-articles/BUNTZ-315.pdf",
+    "file": "docs/research_notes/fetched/v2/Buntz_1966.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article's first page (printed p. 315) and SEAFWA's article record (publication date March 1, 1966; starting page 315, ending page 318)",
+    "ok": true,
+    "corrections": "",
+    "note": "Author Jon Buntz, Florida Game and Fresh Water Fish Commission, Lakeland. Title as printed: 'Stomach analysis of chain pickerel (Esox niger) of South Central Florida', pp. 315–318. The PDF itself does not print the proceedings' name or conference number; the next article in the same PDF (Shannon, p. 319) is dated 1966. SEAFWA dates it 1966; the '20th' conference/volume 20 in the ledger is consistent with that but is not printed in the copy read."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.2",
+      "claim": "Florida adult chain pickerel averaging 50 cm ate prey averaging 15 cm",
+      "location": "p. 316 (PDF p. 2), Results and Discussion",
+      "quote": "The mean length of prey consumed was 5.9 inches",
+      "conditions": "115 adult pickerel from seven south-central Florida lakes; predator mean length 19.5 in (49.5 cm; mode 18 in) is for all 115 fish collected; prey mean 5.9 in (15.0 cm; modes 4 and 7 in) is for the measured prey items; length type not stated",
+      "verdict": "confirmed",
+      "note": "Predator: 'The mean lengths for the chain pickerel collected was 19.5 inches' (same page). 19.5 in = 49.5 cm; 5.9 in = 15.0 cm. Table 1 (p. 317) also shows pickerel of 15–23 in eating prey of 2–5 in."
+    },
+    {
+      "paper": "Table 3.7-2 (chain pickerel, Florida row: water and n)",
+      "claim": "7 Florida lakes; n = 115; mean 50 cm",
+      "location": "p. 315 (PDF p. 1), abstract; p. 316, Results; p. 317 (PDF p. 3), Table 1",
+      "quote": "One hundred fifteen adult pickerel collected from seven lakes",
+      "conditions": "collected by trammel net (well over 50 %), electrofishing (mostly at night) and from anglers (~10 %); rotenone deliberately not used",
+      "verdict": "confirmed",
+      "note": "The abstract names seven lakes (Pierce, Francis, June in Winter, Henry, Kissimmee, Hatchineha, Walk 'n Water); the methods paragraph on p. 316 lists only six (no Hatchineha). Table 1: 44 fish with contents + 71 empty = 115."
+    },
+    {
+      "paper": "Table 3.7-2 (empty stomachs)",
+      "claim": "61.7 % of the pickerel had empty stomachs",
+      "location": "p. 316 (PDF p. 2), Results; p. 317 (PDF p. 3), Table 1 ('Empty stomachs (61.73%)')",
+      "quote": "The largest percentage (61.7%) of the specimens had empty stomachs",
+      "conditions": "all seasons pooled; n = 115",
+      "verdict": "confirmed",
+      "note": "Table 1 gives 'Chain pickerel with stomach contents (38.26%)', which is the 38.3 % Crossman & Lewis 1973 summarise."
+    },
+    {
+      "paper": "Table 3.7-2 (contents of fed stomachs)",
+      "claim": "47 prey in 44 fish",
+      "location": "p. 316 (PDF p. 2), Results",
+      "quote": "A total of 47 organisms were consumed by 44 pickerel",
+      "conditions": "only two stomachs held more than one item (one held two fish, the other three)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-2 (ration or timing); §3.7.3",
+      "claim": "Florida pickerel fed less in summer: more than 75 % held food in January against 3–5 % in July",
+      "location": "p. 316 (PDF p. 2), Results and Discussion",
+      "quote": "Collections made in January show more than 75% of those fish recovered contained food.",
+      "conditions": "per-month sample sizes not given; the next sentence reads 'July collections revealed stomach contents in as few as three per cent to five per cent of the fish examined'",
+      "verdict": "confirmed",
+      "note": "Lead checked: the January/July contrast is in Buntz himself (the Crossman & Lewis summary omits it). Buntz adds that during a three-day temperature drop in August more than 40 % of the pickerel collected had food, and compares it with northern pike (Seaburg & Moyle 1964). The table's wording 'had fed' should read 'held food' (stomach contents present)."
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "Buntz's Florida stomach study recorded no cannibalism",
+      "location": "p. 317 (PDF p. 3), Table 1; p. 318 (PDF p. 4), Table 2",
+      "quote": "Largemouth bass … Bluegill … Black crappie … Warmouth … Golden shiner … Greater siren",
+      "quote_from": "table",
+      "conditions": "prey categories in Table 2 (percentage of total food items): the eight named taxa plus unidentifiable centrarchids (4.26 %) and unidentifiable fish remains (40.42 %)",
+      "verdict": "confirmed",
+      "note": "No pickerel (Esox) appears among the identified prey, but 40 % of the items were unidentifiable fish remains, so 'recorded no cannibalism' is right while 'no cannibalism occurred' would go beyond the data."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Other useful values: night electrofishing far outperformed day sampling; bluegill were the commonest prey (21.3 % of items), largemouth bass second (10.6 %, 80 % of them eaten in August); 49.9 % of recognizable fish prey were centrarchids even though soft-rayed forage (lake chubsucker, golden shiner) was abundant; prey mean 5.9 in with modes at 4 and 7 in. Page 317 (Table 1, rotated) has no text layer worth using; read on the page image."
+}

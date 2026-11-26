@@ -1,0 +1,113 @@
+{
+  "key": "Diana_1979a",
+  "reader": "wave-3 batch 10",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the university repository's own copy: University of Alberta ERA (ualberta.scholaris.ca), reached from doi:10.7939/r3-9pt7-5j74; a National Library of Canada microfiche scan (172 pages) with NO text layer (getsrc reported scanned: true). Read on the page images (findin --image / PyMuPDF renders): abstract, contents, chapter 3 methods, results and discussion, chapter 4 methods and results, chapter 5 methods, Appendix Table 6",
+    "url": "https://ualberta.scholaris.ca/server/api/core/bitstreams/4478d973-a54e-448c-953c-c609c3f529fc/content",
+    "file": "docs/research_notes/fetched/v2/Diana_1979a.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the National Library microfiche form and the thesis approval page (PDF pp. 1, 4)",
+    "ok": true,
+    "corrections": "",
+    "note": "James Stephen Diana, 'An energy budget for northern pike (Esox lucius) in Lac Ste. Anne, Alberta', Ph.D. thesis, University of Alberta, 1979 (supervisor W. C. Mackay; approved May 30, 1979). The DOI is a repository (DataCite) DOI, hence 'not found at Crossref'. Printed page = PDF page − 12 in the body."
+  },
+  "claims": [
+    {
+      "paper": "§3.7.1",
+      "claim": "in Lac Ste. Anne pike moved more than 5 m in only 16 % of 5-minute intervals in summer overall: 22 % around sunrise, 17 % by day, 21 % around sunset and 2 % at night",
+      "location": "p. 85 (PDF p. 97), Table 14; methods p. 81–83 (PDF pp. 93–95)",
+      "quote": "Sunrise 19 (22%) Day 71 (17%) Sunset 16 (21%) Night 1 (2%) Total 107 (16%)",
+      "quote_from": "image",
+      "conditions": "ultrasonic telemetry of six pike (46–59 cm SL, 0.94–2.2 kg; Table 13) from March to July 1978; positions triangulated every 5 min for ≥ 1 h; 'inactive' = movement < 5 m, the minimum that could be detected accurately (about 2 m in winter to 5 m in summer); sunrise = ½ h before to 1 h after sunrise, sunset = 1 h before to ½ h after sunset; summer n = 651 intervals",
+      "verdict": "confirmed",
+      "note": "Winter was similar: 23, 19, 35 and 2 %, overall 21 %; no significant summer–winter difference (chi-square 2.71, P = 0.10)."
+    },
+    {
+      "paper": "§3.7.3; Table 3.7-2 (n)",
+      "claim": "Diana studied 1,290 pike in Lac Ste. Anne",
+      "location": "p. 63 (PDF p. 75), Table 10",
+      "quote": "Total 1290",
+      "quote_from": "image",
+      "conditions": "gill-netted on 26 occasions, March 1976 – September 1978; diet table pooled by month over the years",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.7-2 (empty stomachs)",
+      "claim": "47 % empty stomachs (29–62 % by month)",
+      "location": "p. 62 (PDF p. 74), Results; p. 63 (PDF p. 75), Table 10 ('Empty 611 (47)')",
+      "quote": "occurring in 29 to 62% of the fish sampled each month",
+      "quote_from": "image",
+      "conditions": "months sampled: May, June, July, August, September, October, January, March (29 % in October, 62 % in January)",
+      "verdict": "confirmed",
+      "note": "Diana notes that small-mesh gill nets caught a higher share of empty pike, and excluded them from the ration analysis (p. 65)."
+    },
+    {
+      "paper": "Table 3.7-2 (contents of fed stomachs)",
+      "claim": "fed pike held mostly 1–2 prey",
+      "location": "p. 65 (PDF p. 77); p. 67 (PDF p. 79), Figure 6",
+      "quote": "The most common meal consisted of 1 item",
+      "quote_from": "image",
+      "conditions": "Figure 6, n = 665 stomachs with food: 61 % held one item, 20 % two, 8 % three, ≤ 2 % each of more; mean fish per stomach about 2 every month except October (5.24, young-of-year perch)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.3; Table 3.7-2 (ration or timing); §5.2",
+      "claim": "meals came 2.7–2.8 days apart in summer and about 25 days apart in winter",
+      "location": "p. 68 (PDF p. 80), Table 12 ('Summer' and 'Winter' rows)",
+      "quote": "Winter Male 10.6 25 … Summer Male 30.8 2.8 … Female 47.0 2.7",
+      "quote_from": "image",
+      "conditions": "time between meals (days) estimated from the share of empty stomachs and the time until ingested weight can no longer be estimated (B′: 30 h in summer, 8 d in winter); winter 25 d for both sexes; data pooled 1976–78; pike from small-mesh nets excluded",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "gastric evacuation slowed from 48 h in summer to 12 days in winter",
+      "location": "p. 62 (PDF p. 74), Results; abstract p. v (PDF p. 6); methods p. 61 (PDF p. 73)",
+      "quote": "the gastric evacuation time (B) was 48 hours in summer, 12 days in winter.",
+      "quote_from": "image",
+      "conditions": "laboratory: adult pike starved, then force-fed 2-year-old yellow perch, six fish per temperature, sacrificed at intervals; experiments at 2 and 16 °C (methods) — the abstract says 2 and 14 °C",
+      "verdict": "confirmed",
+      "note": "Lac Ste. Anne runs near 16 °C (14–20) from May to October and near 1–2 °C from November to April."
+    },
+    {
+      "paper": "§3.7.3; Table 3.7-2 (ration)",
+      "claim": "in summer, 3-year-old pike of 0.9–1.2 kg ate about 1.0–1.6 % of their body weight a day",
+      "source_value": "Diana gives rations in energy, not %BW: summer daily ration 11.4 kcal/kg/day (males) and 17.4 kcal/kg/day (females), for all pike pooled by sex (Table 12). 3-year-olds weighed 0.83–1.19 kg from May to October (Appendix Table 6). Converting with his own perch values (Table 9: 0.237 dry matter × 4.5 kcal/g dry ≈ 1.07 kcal/g wet) gives ≈ 1.1 and 1.6 %BW/d — a project conversion",
+      "location": "p. 68 (PDF p. 80), Table 12; p. 60 (PDF p. 72), Table 9; p. 156 (PDF p. 168), Appendix Table 6",
+      "quote": "Summer Male 30.8 2.8 11.4 … Female 47.0 2.7 17.4",
+      "quote_from": "image",
+      "conditions": "Table 12 units: meal size kcal/kg, ration kcal/kg/day; Appendix Table 6 gives 3-year-old body weights (g) by month: May M 893, F 831; July M 987, F 1012; Sept M 1034, F 1151; Oct M 1069, F 1191",
+      "verdict": "corrected",
+      "kind": "arithmetic",
+      "note": "The arithmetic holds (11.4 / 1.07 = 10.7 g/kg/d = 1.07 %; 17.4 / 1.07 = 16.3 g/kg/d = 1.63 %), but the ration results (Tables 12 and 16, Appendix Table 6) are all in kcal and print no %BW/d figure: write 'about 11–17 kcal/kg/d (≈ 1.0–1.6 %BW/d, project conversion with Diana's perch energy density)'. The rations in Table 12 are for all pike, not only 3-year-olds (chapter 5 applies them to 3-year-olds, p. 92). Monthly rations range widely, e.g. June females 30.9 kcal/kg/d (≈ 2.9 %BW/d)."
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "in summer, females ate 1.5–2.3 times as much as males",
+      "source_value": "1.5 times in summer, 2.3 times in winter",
+      "location": "p. 69 (PDF p. 81)",
+      "quote": "the mean female ration was 1.5 (summer) to 2.3 (winter) times the male ration",
+      "quote_from": "image",
+      "conditions": "ratio of mean daily rations (kcal/kg/day); higher female rations came from larger meals, feeding frequency being similar",
+      "verdict": "corrected",
+      "note": "The sentence places the whole range in summer; 2.3 is the winter ratio."
+    },
+    {
+      "paper": "§3.7.3",
+      "claim": "about 65 % of the year's energy gain came between May and July",
+      "source_value": "about 65 % of the year's ration (food energy eaten) was ingested from May 1 to August 1, by 3-year-old pike; the discussion calls it 'annual energy accumulation' but Figure 7 plots kcal eaten",
+      "location": "p. 69 (PDF p. 81), Results; p. 75 (PDF p. 87), Discussion; p. 71 (PDF p. 83), Figure 7",
+      "quote": "About 65% of the total annual ration was ingested from May 1 to August 1.",
+      "quote_from": "image",
+      "conditions": "monthly ration = daily ration × mean weight of 3-year-olds × days in month, for one year beginning in May",
+      "verdict": "corrected",
+      "note": "Table 16 (p. 98, PDF p. 110) agrees: May 1–July 31 ingestion 1,130 kcal (male) and 1,813 kcal (female) of annual totals 1,742 and 2,774 kcal (summer + winter rows) = 65 %. 'Energy gain' reads as growth; it is intake. Write 'about 65 % of the year's food was eaten between May and July'."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Scanned thesis without a text layer: every quote is off a page image (quote_from 'image'). The paper's '(thesis read by a sub-researcher)' tag can now go. Other values: diet by number mostly yellow perch, then spottail shiner, burbot, white sucker, whitefish, walleye; one pike in a pike stomach (August); perch were about half the energy intake, suckers and burbot more by energy than by number; rations ~20 times higher in summer than winter; spawning fast from mid-April to May; three replicate June 1978 samples gave male 9.6 and 8.4 and female 11.1, 12.0 and 12.7 kcal/kg/day; maximum swimming speeds 17–42 cm/s; 3-year-old females allotted 47 % of assimilated energy to maintenance, 25 % to growth, 28 % to reproduction (abstract). The paper's separate Diana (1983) caveat (field rations probably inaccurate) is not in this thesis."
+}
