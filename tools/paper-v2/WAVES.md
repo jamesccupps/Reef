@@ -11,14 +11,14 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | t1-04 | Stanley_Danie_1983, Beard_1982, Breck_1997, Johnson_Evans_1990, Bevelhimer_1995 | running |
 | t1-05 | Merrell_etal_2009, Savino_Stein_1982, Turesson_Bronmark_2004, Chipps_etal_2000, Blumer_1985 | running |
 | t1-06 | Neuswanger_etal_2015, Post_Evans_1989, Post_1990, Shuter_etal_1980, Sobchak_etal_2026 | done |
-| t1-07 | Wahl_Stein_1988, Bevelhimer_etal_1985, Clady_1975, Clady_Hutchinson_1975, Kendall_1917, Barr_1996 | running |
+| t1-07 | Wahl_Stein_1988, Bevelhimer_etal_1985, Clady_1975, Clady_Hutchinson_1975, Kendall_1917, Barr_1996 | done |
 | t1-08 | Kitchell_etal_1974, Sergio_2026, Werner_etal_1983, Werner_Hall_1988, Canfield_etal_1985, Deslauriers_etal_2017 | running |
 | t1-09 | Dunlop_etal_2005, Forbes_1981, Irwin_etal_2009, Johnson_Evans_1991, Keast_1980, Phillips_etal_2007, Boulianne_etal_2025 | running |
 | t1-10 | Ridgway_etal_2002, Roberts_1964, Steinhart_etal_2005, Trudel_Boisclair_1994, VanderZanden_Gratton_2011, VanderZanden_etal_2011, Breder_1935 | running |
 | w2-01 | Christensen_etal_1996, Duarte_1987, Johannsson_etal_2000, Mackereth_etal_1999, Suski_Ridgway_2009, Whitledge_etal_2003, Caceres_1998, Curry_etal_2005, Adams_1969 | running |
 | w2-02 | Dennis_1992, Feiner_etal_2017, Fernando_etal_2018, Gaeta_etal_2018, Garcia_Gordon_1992, Garrison_etal_2005, Gorny_1992, Gyllstrom_2005, Keast_Eadie_1984, Reeve_etal_2022 | running |
 | w2-03 | Hampton_2017, Linkenheld_2019, Lorenzen_1996, Power_1987, Reeve_etal_2025, Rice_etal_1983, Sass_etal_2006, Siefert_1972, Cech_etal_2012, Cole_Moring_1997 | running |
-| w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | queued |
+| w2-04 | Weis_Sass_2011, Woynarovich_1960, Boersma_Kreutzer_2002, Cooley_1973, Copp_etal_2004, Couture_Watzin_2008, Doudoroff_Shumway_1970, Dudley_etal_1997, Edwards_etal_2015, Fey_Greszkiewicz_2021 | running |
 | w2-05 | Edsall_1970, Fox_Keast_1991, Geen_etal_1966, Gilbert_1988, Graeb_etal_2004, Grosbois_etal_2017, Gumaa_1978, Harding_1997, Malm_etal_1997, Mills_Forney_1983 | queued |
 | w2-06 | Hartman_Brandt_1995, Hartmanetal_2017, He_1986, Krieger_etal_1983, Lippert_etal_2007, Momot_Gowing_1977, Neves_1975, Persson_etal_2004, Randall_etal_2004, Bouffard_Wuest_2019 | queued |
 | w2-07 | Robertson_etal_2019, Scheffer_etal_1995, Shuter_Ing_1997, Stewart_Binkowski_1986, Vachon_Prairie_2013, VanderZanden_Vadeboncoeur_2002, Wieser_etal_1992, Wu_Culver_1992, Boussion_2025, Brooks_Dodson_1965 | queued |

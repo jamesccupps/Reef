@@ -1,0 +1,39 @@
+{
+  "key": "Clady_Hutchinson_1975",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: OpenAlex's record of the DOI (closed access; the publisher refused the script; no repository or Internet Archive copy found)",
+    "url": "https://api.openalex.org/works/doi:10.1577%2F1548-8659(1975)104%3C524%3AEOHWOE%3E2.0.CO%3B2"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (found with the DOI fully URL-encoded; show.mjs cut the DOI at \"(\"): Clady, Michael; Hutchinson, Brendan; Transactions of the American Fisheries Society 104(3): 524–525, July 1975",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.6.1",
+      "claim": "one windy day piled almost 1 % of Oneida Lake's estimated perch egg potential into a single windrow (Clady & Hutchinson 1975, abstract)",
+      "verdict": "unchecked",
+      "note": "the abstract says a single large windrow, just downwind of a major spawning area, \"contained almost one percent of the estimated egg potential\"; eggs were washed ashore at a number of windward locations, and damage was worst over rubble. The paper's sentence matches the abstract and already says so"
+    },
+    {
+      "paper": "src/config.js:483–485 (EGG3 storms: STORM_Z, STORM_D)",
+      "claim": "one storm day stranded ~1 % of the lake's perch eggs (assigned to the shallow third of them [inf])",
+      "verdict": "unchecked",
+      "note": "per the abstract the ~1 % is ONE windrow's share of the egg POTENTIAL (a fecundity-based estimate, not eggs actually laid), while eggs washed ashore at several locations; so the day's total stranding was larger than 1 % and its base differs. Needs the full text before the storm loss rate is tied to it"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1577/1548-8659(1975)104%3C524:EOHWOE%3E2.0.CO;2", "status": 403, "note": "the publisher page a library login would open (now Oxford Academic, TAFS 104(3): 524–525)" },
+    { "url": "https://onlinelibrary.wiley.com/doi/full/10.1577/1548-8659(1975)104%3C524:EOHWOE%3E2.0.CO;2", "status": 403, "note": "refused the script" },
+    { "url": "https://api.openalex.org/works/doi:10.1577%2F1548-8659(1975)104%3C524%3AEOHWOE%3E2.0.CO%3B2", "status": 200, "note": "closed access, no repository copy; abstract only" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1577/1548-8659(1975)104%3C524:EOHWOE%3E2.0.CO;2%22&format=json&resultType=core", "status": 200, "note": "no record" },
+    { "url": "https://archive.org/advancedsearch.php?q=title:(%22Transactions of the American Fisheries Society%22 1975)", "status": 200, "note": "only the volume 104 contents, no issue scan" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1577/1548-8659(1975)104%3C524:EOHWOE%3E2.0.CO;2?fields=openAccessPdf,externalIds", "status": 429, "note": "rate-limited" }
+  ],
+  "notes": "A two-page note; the abstract carries the paper's use of it, but under rule 1 the claims stay unchecked. The show.mjs listing also attached §3.6.2, Table 3.6-5 and config.js:495 to this key because they cite 'Clady 1975'; those belong to Clady_1975 (smallmouth bass, Katherine Lake). For the storm term, Clady 1976 (JFRBC 33: 1887–1893, 'Influence of temperature and wind on the survival of early stages of yellow perch', the same lake; already in the references) is the multi-year source to read (not read here)."
+}

@@ -24,3 +24,6 @@ Phase 1) or in the rewrite, and marked done here with what was decided.
 | t1-06 | Table 3.6-1 | Pumpkinseed row: Sobchak et al. 2026 give male care 11–21 d (mean 15; Danylchuk & Fox 1996), hatching 5–8 d (Cargnelli & Neff 2006), nests on soft substrates — the table has 6.0 ± 0.4 d, 3–5 d, sand or gravel | open |
 | t1-06 | §3.6.2 | "Fishes (mostly bullheads)" (Gross & MacMillan via Neuswanger) is the paper's gloss; the review says "*Ictalurus* spp." | open |
 | t1-06 | §3.6.6 | Post 1990: young perch active metabolism "4.4 times adult standard respiration" (abstract); the paper drops "adult" | open |
+| t1-07 | §3.6.1 (`03_…md:538`) | "Clady, via Dahlberg 1979" twice with no year; the research note says it is almost certainly Clady 1976 (JFRBC 33: 1887–1893), not the 1975 bass paper | open |
+| t1-07 | Table 3.5-3, `03_…md:234` vs `src/species.js:376` | The 39–52 % overestimate of juvenile esocid consumption: Wahl & Stein 1991 (TAFS 120(2)) in the paper, "TAFS 137(6), 2008" in the code — one is wrong | open |
+| t1-07 | Barr 1996 | The notes say Wisconsin; a (unverified) search summary gives the author at Guelph, Ontario — check the study site when it is read | open |

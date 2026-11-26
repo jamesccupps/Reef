@@ -1,0 +1,59 @@
+{
+  "key": "Barr_1996",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "not obtained: Springer refused (login/paywall page); the ISTEX abstract record the ledger cites timed out; OpenAlex has no abstract",
+    "url": ""
+  },
+  "status": "unobtainable",
+  "bibliography": {
+    "checked_against": "Crossref: Barr, J. F.; \"Aspects of Common Loon (Gavia immer) feeding biology on its breeding ground\"; Hydrobiologia 321(2): 119–144; March 1996",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.7.9; §3.8.2",
+      "claim": "a pair of loons rearing two chicks removes about 423 kg of food over 5.5 months",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "territories average about 72 ha in Wisconsin, where food may limit them",
+      "verdict": "unchecked",
+      "note": "check the study's location when the text is read: the research note tags it Wisconsin, but the author's affiliation was Guelph, Ontario (per a search summary of the ISTEX record — not verified here)"
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "loons mostly take whatever fish is easiest to catch, \"often yellow perch\"; loons do not appear to harm sport fisheries",
+      "verdict": "unchecked"
+    },
+    {
+      "paper": "§3.8.2; src/w3/fish3.js:889 (WILD3 loon need 1100 g/day)",
+      "claim": "Barr's total implies about 1.1 kg a day per adult, 20–25 % of body mass (project arithmetic)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "the input (423 kg) is unchecked. The arithmetic holds: 423 kg / ~167 d = 2.53 kg/d per family; less two chicks at 0.16–0.38 kg/d for ~84 d (27–64 kg) leaves 1.07–1.18 kg/d per adult, 22–27 % of a 4–5-kg bird"
+    },
+    {
+      "paper": "§3.8.2",
+      "claim": "one pair with two chicks would remove about 1.2 kg/ha/yr on Upper (about 365 ha), roughly 1–2 % of a 60–150 kg/ha stock (project estimates)",
+      "kind": "arithmetic",
+      "verdict": "unchecked",
+      "note": "input unchecked; 423 / 365 = 1.16 kg/ha/yr, 0.8–1.9 % of 60–150 kg/ha"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.1007/BF00023169", "status": "not tried directly", "note": "the Springer page a library login would open (Hydrobiologia 321(2): 119–144)" },
+    { "url": "http://link.springer.com/content/pdf/10.1007/BF00023169.pdf", "status": 200, "note": "login/paywall page (not kept)" },
+    { "url": "https://link.springer.com/article/10.1007/BF00023169", "status": 303, "note": "redirects to Springer's sign-in (idp.springer.com/authorize); not followed" },
+    { "url": "https://wicri-demo.istex.fr/Wicri/Eau/explor/LotaV3/Site/fr/Main/Exploration/bibRecord.php?hk=001142", "status": "error", "note": "connection reset / timed out (the abstract record the ledger cites)" },
+    { "url": "https://api.openalex.org/works/doi:10.1007/BF00023169", "status": 200, "note": "closed access, no repository copy, no abstract" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1007/BF00023169%22&format=json&resultType=core", "status": 200, "note": "no record" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_hydrobiologia_1996*", "status": 200, "note": "only volume contents/index items (incl. vol. 321 contents), no article scan" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1007/BF00023169?fields=openAccessPdf,externalIds", "status": 429, "note": "rate-limited" }
+  ],
+  "notes": "Nothing could be read, not even the abstract this time (the paper's text already marks every use 'abstract only'). The model's loon need (1,100 g/day, fish3.js:889) rests on this unchecked total plus Fournier et al. 2002's chick intakes. Ask the human for the article (library access) to check the 423 kg, the territory size, the study location and the prey list (species shares and prey sizes, which the research note says the full text has)."
+}

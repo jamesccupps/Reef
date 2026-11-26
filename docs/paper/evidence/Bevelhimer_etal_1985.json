@@ -1,0 +1,152 @@
+{
+  "key": "Bevelhimer_etal_1985",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: The Ohio State University Knowledge Bank (hdl 1811/37022), the NRC-supplied article PDF with an NRC cover page; Table 1 (printed rotated, garbled in the text layer) read from the rendered page image",
+    "url": "https://kb.osu.edu/server/api/core/bitstreams/4fcb3c3e-eb04-53e5-a23c-f657649ff9fb/content",
+    "file": "docs/research_notes/fetched/v2/Bevelhimer_etal_1985.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (\"Can. J. Fish. Aquat. Sci. 42: 57-69\"; NRC cover page \"42(1), pp. 57-69 (1985)\")",
+    "ok": true,
+    "corrections": "",
+    "note": "Crossref's title has a typo (\"Bioenergefics\"); the ledger's spelling is the article's"
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-3 (chain pickerel, bioenergetics column); Table 4.3 (chain pickerel)",
+      "claim": "no chain pickerel set exists; the model uses the northern pike set of Bevelhimer et al. 1985",
+      "location": "p. 57 (PDF p. 2), abstract; p. 61 (PDF p. 6), Table 1",
+      "quote": "measured individual food consumption, conversion efficiency, growth, and metabolic rate for Ohio stocks",
+      "conditions": "laboratory, Ohio hatchery stocks (the pike stock of Lake Erie origin, held in Ohio ponds > 25 yr); fed live fathead minnows at 5–30 °C; separate consumption curves per taxon, one respiration curve for all three taxa",
+      "verdict": "confirmed",
+      "note": "the authors caution that their Ohio pike still grew at 30 °C and peaked at 25 °C, 6 °C above Casselman's Canadian stock, and suggest local adaptation (p. 67)"
+    },
+    {
+      "paper": "§5.8 (\"An adult set cannot grow a larva\"); src/w3/fish3.js:550, 793 (\"the adult FB4 pike set\")",
+      "claim": "the Bevelhimer et al. 1985 northern pike set is an ADULT set",
+      "source_value": "the fish were hatchery young-of-year (125–227 mm TL, 7.2–53.2 g); the model simulates \"juvenile esocids\" and its rations were \"estimated for immature fish\"",
+      "location": "p. 58 (PDF p. 3), Fish stocks; p. 59 (PDF p. 4); p. 60 (PDF p. 5); p. 61 (PDF p. 6)",
+      "quote": "Young-of-year northern pike, muskellunge, and tiger muskellunge were obtained from Ohio Division of Wildlife",
+      "conditions": "respirometry fish 128–227 mm, 9.5–53.2 g; consumption fish 125–210 mm, initial 7.2–43.5 g",
+      "verdict": "corrected",
+      "note": "the \"adult\" label is FB4's (per the code comment, species.js:374), not the source's. §5.8's lesson stands but should read \"a set fitted on 7–53-g young-of-year pike cannot grow a larva\""
+    },
+    {
+      "paper": "§5.8; src/species.js:378 (CB −0.18)",
+      "claim": "consumption mass exponent −0.18",
+      "location": "p. 61 (PDF p. 6), Table 1; p. 60 (PDF p. 5), text after eq. 4",
+      "quote": "Weight-dependent exponent −0.18",
+      "quote_from": "table",
+      "conditions": "ASSUMED, not fitted: b1 set equal to b2 = −0.18, which is Diana's (1982) respiration exponent for 5–1,200-g pike at 14 °C; the authors could not fit either exponent on their 9–53-g fish",
+      "verdict": "confirmed",
+      "note": "relevant to §5.8: the set's mass scaling was never fitted on the 9–53-g fish at all — it was borrowed from Diana's larger pike and assumed equal for consumption \"convenient for this study\"; only the intercepts and temperature terms were fitted"
+    },
+    {
+      "paper": "§5.8; src/w3/fish3.js:793 (\"fitted on 9–53-g pike eating minnows\")",
+      "claim": "the set was fitted on 9–53-g pike eating minnows",
+      "location": "p. 59 (PDF p. 4)",
+      "quote": "Because we used a narrow range of sizes (9-53 g), values for b2",
+      "conditions": "9.5–53.2 g is the respirometry sample (all three taxa pooled for one respiration curve); the consumption fish were 7.2–43.5 g initial (mean 19.3 g), fed live fathead minnows 25–40 % of their length",
+      "verdict": "confirmed",
+      "note": "the respiration curve was fitted to pike, muskellunge and tiger muskellunge together, not to pike alone"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "the set's respiration temperature slope is Q10 1.73",
+      "location": "p. 62 (PDF p. 7)",
+      "quote": "The m value of 0.055 corresponds to a Q10 of 1.73",
+      "conditions": "one exponential curve fitted to all three taxa at 5, 15, 20, 25 and 30 °C, closed static respirometer, inactive fish (\"low routine\" metabolism)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/w3/fish3.js:550, 793 (\"Below 10 g (the fitted range's floor)\")",
+      "claim": "10 g is the floor of the fitted size range",
+      "location": "p. 59 (PDF p. 4)",
+      "quote": "Initial predator lengths were 125-210 mm; initial weights were 7.2-43.5 g",
+      "quote_from": "image",
+      "conditions": "consumption experiments 7.2–43.5 g initial; respirometry 9.5–53.2 g",
+      "verdict": "confirmed",
+      "note": "the floor is 7–10 g depending on the experiment; 10 g is a fair round number"
+    },
+    {
+      "paper": "src/bioenergetics.js:22 (CEQ 4)",
+      "claim": "Bevelhimer et al.'s consumption–temperature function is a cubic polynomial in the exponent with no hard upper cutoff",
+      "location": "pp. 59–60 (PDF pp. 4–5), eqs. 3–4",
+      "quote": "we decided that a third-order polynomial equation best",
+      "conditions": "ln Cmax = ln a1 + b1·ln B + xT + yT² + zT³; the authors warn against use outside 5–30 °C (p. 62)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:374–380 (pike bio: CEQ 4, CA 0.0244, CB −0.18, CQ −0.024, CK1 0.0125, CK4 −0.000326)",
+      "claim": "consumption parameters of the FB4 northern pike set (Bevelhimer et al. 1985)",
+      "location": "p. 61 (PDF p. 6), Table 1",
+      "quote": "Intercept coefficient 2.44 × 10−2 … −0.024 … 1.25 × 10−2 … −3.26 × 10−4",
+      "quote_from": "image",
+      "conditions": "northern pike (NP) row; Cmax in g g⁻¹ d⁻¹ wet mass",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:378 (RA 0.0026445, RB −0.18, RQ 0.055)",
+      "claim": "respiration parameters of the FB4 northern pike set",
+      "source_value": "a2 = 0.1025 mg O₂ g⁻¹ h⁻¹ (= 0.00246 g O₂ g⁻¹ d⁻¹); b2 −0.18; m 0.055",
+      "location": "p. 61 (PDF p. 6), Table 1; p. 62 (PDF p. 7)",
+      "quote": "correction factor of 1.075. Although we did not include this correction factor",
+      "kind": "arithmetic",
+      "conditions": "one curve for all three taxa; the authors' model ran WITHOUT the ×1.075 log-retransformation bias correction",
+      "verdict": "confirmed",
+      "note": "0.1025 × 24 / 1000 = 0.00246 g O₂ g⁻¹ d⁻¹; × 1.075 = 0.0026445, the code's RA. So FB4's RA includes the bias correction the authors describe but did not apply: 7.5 % above the published model. The value is defensible; cite it \"as converted in FB4\""
+    },
+    {
+      "paper": "src/species.js:378 (RTO 0.1222 with RK1 1, RK4 0: activity multiplier)",
+      "claim": "the set's activity multiplier e^0.1222",
+      "location": "p. 60 (PDF p. 5), Metabolism",
+      "quote": "the inclusion of the activity factor increases the metabolic rate by 13%",
+      "kind": "arithmetic",
+      "conditions": "activity durations and swimming speeds held constant across size, temperature and taxon",
+      "verdict": "confirmed",
+      "note": "ln(1.13) = 0.1222"
+    },
+    {
+      "paper": "src/species.js:379 (SDA 0.175, FA 0.2, UA 0.0875)",
+      "claim": "the set's waste and SDA terms",
+      "location": "p. 61 (PDF p. 6), Table 1; p. 60 (PDF p. 5)",
+      "quote": "Specific dynamic action factor 0.14 … Egestion factor 0.20 … Excretion factor 0.07",
+      "quote_from": "table",
+      "kind": "arithmetic",
+      "conditions": "Brett & Groves (1979) averages for all fishes, no esocid data; S, f and u all as fractions of consumption C",
+      "verdict": "confirmed",
+      "note": "FB4 applies SDA and U to C − F: 0.14/0.8 = 0.175 and 0.07/0.8 = 0.0875 — the same budget. These losses are Brett & Groves's general values, not measured on esocids"
+    },
+    {
+      "paper": "src/species.js:379 (ED 3598)",
+      "claim": "predator energy density 3,598 J/g",
+      "location": "p. 59 (PDF p. 4)",
+      "quote": "fish caloric value of 860",
+      "kind": "arithmetic",
+      "conditions": "860 cal/g wet, esocids and fathead minnows alike (R. Stein, unpublished data); no seasonal variation",
+      "verdict": "confirmed",
+      "note": "860 × 4.184 = 3,598 J/g"
+    },
+    {
+      "paper": "src/species.js:375",
+      "claim": "the curve peaks at 24.6 °C because it was fit to small pike",
+      "location": "p. 62 (PDF p. 7)",
+      "quote": "These temperatures were 24.6, 26.7, and 23.5°C for northern pike, muskellunge, and tiger muskellunge",
+      "conditions": "optimum of the fitted Cmax polynomial; growth optimum in simulations 24 °C (p. 62), maximum observed growth at 25 °C (p. 67)",
+      "verdict": "confirmed",
+      "note": "the source attributes the warm optimum to a possibly warm-adapted Ohio stock, not to fish size"
+    },
+    {
+      "paper": "§5.8",
+      "claim": "the set's consumption ceiling is 1.2–2.6× short below ~0.1–0.3 g",
+      "verdict": "unchecked",
+      "note": "a project comparison against larval data (Wieser et al. 1992 etc.), not a value of this source; the source only supplies the −0.18 exponent being extrapolated"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Every model value of the FB4 pike set matches Table 1 after FB4's conversions (RA includes the ×1.075 bias factor the authors mention but did not use; SDA and UA are re-based on C − F; RTO = ln 1.13; ED = 860 cal/g). Two framing points for the rewrite: (1) the set is not an adult set — it was built on hatchery young-of-year pike (and, for respiration, muskellunge and tiger muskellunge pooled) of 7–53 g; (2) neither mass exponent was fitted on these fish: b2 = −0.18 is Diana's (1982) value for 5–1,200-g pike and b1 was set equal to it. Bevelhimer's own losses (S 0.14, f 0.20, u 0.07) are Brett & Groves's all-fish averages. Model validation in the source: predicted growth fell within 1 SD of observed in 2-week trials except pike and muskellunge at 5 °C (p. 62)."
+}

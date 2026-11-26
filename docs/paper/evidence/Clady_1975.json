@@ -1,0 +1,46 @@
+{
+  "key": "Clady_1975",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "abstract only: OpenAlex's record of doi:10.2307/3800487 (no open copy known to OpenAlex, Europe PMC or the Internet Archive; JSTOR refused)",
+    "url": "https://api.openalex.org/works/doi:10.2307/3800487"
+  },
+  "status": "abstract-only",
+  "bibliography": {
+    "checked_against": "Crossref (author, title, journal, volume 39, issue 1, first page 194, 1975); the abstract record's running line \"J. WILDL. MANAGE. 39(1):194-200\"",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "§3.6.2 (\"Not every adult breeds\")",
+      "claim": "females deposited only 15–34 % of their potential eggs at Katherine Lake, Michigan",
+      "verdict": "unchecked",
+      "note": "the abstract gives \"percentages of egg potentials that were deposited on nests were low (15-34 percent)\" — a population-level ratio (nests' eggs against a fecundity-based potential), which the paper reads as females not breeding; that inference needs the full text"
+    },
+    {
+      "paper": "§3.6.2; src/config.js:495 (EGG3 bass yolkHatch comment)",
+      "claim": "deposited egg to postlarva survival 26–33 % at Katherine Lake",
+      "verdict": "unchecked",
+      "note": "the abstract gives 26–33 % \"between egg deposition and the postlarval stage\", consistent in all three years (1967–69)"
+    },
+    {
+      "paper": "Table 3.6-5 (smallmouth bass row)",
+      "claim": "Katherine Lake, Michigan (19.4 ha, brown-stained): deposited egg to autumn fingerling 1–4 % (Clady 1975 via Forbes 1981)",
+      "verdict": "unchecked",
+      "note": "not in the abstract; the paper already marks it as via Forbes 1981"
+    }
+  ],
+  "verdict": "blocked",
+  "tried": [
+    { "url": "https://doi.org/10.2307/3800487", "status": "not tried directly", "note": "the JSTOR record a library login would open (J. Wildl. Manage. 39(1): 194–200)" },
+    { "url": "https://www.jstor.org/stable/pdf/3800487.pdf", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://www.jstor.org/stable/3800487", "status": 200, "note": "JSTOR login/paywall page (not kept)" },
+    { "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.2307/3800487%22&format=json&resultType=core", "status": 200, "note": "no record" },
+    { "url": "https://api.openalex.org/works/doi:10.2307/3800487", "status": 200, "note": "closed access, no repository copy; abstract only" },
+    { "url": "https://archive.org/advancedsearch.php?q=identifier:sim_journal-of-wildlife-management_1975*", "status": 200, "note": "only the volume 39 index, no issue scan" },
+    { "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.2307/3800487?fields=openAccessPdf,externalIds", "status": 429, "note": "rate-limited" }
+  ],
+  "notes": "Abstract-only: the 15–34 % and 26–33 % values agree with the abstract but stay unchecked under the brief's rule 1; 1–4 % and the lake description need the full text. The article says it is based on Clady's University of Michigan PhD dissertation (Clady 1970, the Sylvania lakes), which would be a stand-in if a free copy exists (none found). OpenAlex's 'abstract' field for this DOI also holds text scraped from a JSTOR download (pp. 194–196, cut off mid-Table 1); that is not an acceptable copy and was not used to check anything. The 'Clady, via Dahlberg 1979' perch-viability mentions in §3.6.1 are not this paper (it is about smallmouth bass): the research note egg_survival_and_larval_production.md says Dahlberg's citation is almost certainly Clady 1976 (JFRBC 33: 1887–1893) — the paper should give that year."
+}

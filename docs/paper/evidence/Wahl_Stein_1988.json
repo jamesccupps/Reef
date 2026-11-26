@@ -1,0 +1,119 @@
+{
+  "key": "Wahl_Stein_1988",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "institutional repository copy: The Ohio State University Knowledge Bank (hdl 1811/37077), the publisher's (Allen Press) article PDF with an AFS cover page; Figure 1 read from the rendered page image",
+    "url": "https://kb.osu.edu/server/api/core/bitstreams/c6475317-58f9-5b99-886d-a6ac29cacf8a/content",
+    "file": "docs/research_notes/fetched/v2/Wahl_Stein_1988.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref (found with the DOI fully URL-encoded; show.mjs cut the DOI at \"(\") and the title page (\"Transactions of the American Fisheries Society 117:142-151. 1988\"; cover: Volume 117, Issue 2, March 1988)",
+    "ok": true,
+    "corrections": ""
+  },
+  "claims": [
+    {
+      "paper": "Table 3.7-1 (row 1)",
+      "claim": "pike, muskellunge, tiger muskellunge 150–225 mm on fathead minnow / gizzard shad / bluegill at optimal size (25–43 % of predator length): 0.67 / 0.78 / 0.14 captures per strike; 700-L tank, 15 prey, 18–23 °C, 1-h trials",
+      "location": "p. 142 (PDF p. 2), abstract; p. 143 (PDF p. 3), Methods; p. 144–145 (PDF pp. 4–5), Results and Fig. 1",
+      "quote": "mean captures per strike were higher for fathead minnow (0.67) and gizzard shad (0.78)",
+      "conditions": "225 one-hour trials in a 700-L (260 × 53 × 60 cm) tank without cover, 18–23 °C; hatchery esocids 150–225 mm TL, conditioned to the prey ≥ 2 weeks and starved 24 h; naive single-species prey groups of 15; prey 25–30 % (bluegill), 37–43 % (fathead), 30–36 % (shad) of predator length; means of 5 individuals per taxon, 3–7 replicates each; the three esocids did not differ",
+      "verdict": "confirmed",
+      "note": "the 25–43 % \"optimal\" sizes are not W&S's own: they come from Gillen et al. 1981 (lab; minimal handling time per unit dry weight) and Carline et al. 1986 (field, shad)"
+    },
+    {
+      "paper": "§3.7 (text before Table 3.7-1)",
+      "claim": "esocids catch deep-bodied, spiny sunfish on about one strike in seven",
+      "location": "p. 145 (PDF p. 5)",
+      "quote": "than for bluegill (0.14)",
+      "kind": "arithmetic",
+      "conditions": "bluegill at 25–30 % of predator length, laboratory tank without cover",
+      "verdict": "confirmed",
+      "note": "1/7 = 0.143"
+    },
+    {
+      "paper": "§4.5 (capture success); src/w3/fish3.js:983–984 (CS3: soft-rayed 0.7 to an esocid)",
+      "claim": "an esocid lands 0.7 of strikes on soft-rayed prey (after Wahl & Stein 1988)",
+      "location": "p. 145 (PDF p. 5), Fig. 1",
+      "quote": "mean captures per strike were higher for fathead minnow (0.67) and gizzard shad (0.78)",
+      "kind": "arithmetic",
+      "conditions": "two soft-rayed prey only (fathead minnow, gizzard shad), predators 150–225 mm",
+      "verdict": "confirmed",
+      "note": "(0.67 + 0.78)/2 = 0.725. The model extends it to killifish, dace, alewife, fallfish and sucker, which were not tested"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:984 (CS3 sunfish/redbreast 0.12 to an esocid)",
+      "claim": "an esocid lands 0.12 of strikes on sunfish (after Wahl & Stein 1988)",
+      "source_value": "0.14 for bluegill (all esocids pooled); by taxon about 0.10 (northern pike), 0.14 (muskellunge), 0.17 (tiger muskellunge), read off Fig. 1",
+      "location": "p. 145 (PDF p. 5), text and Fig. 1",
+      "quote": "than for bluegill (0.14)",
+      "conditions": "bluegill, not pumpkinseed or redbreast; 25–30 % of predator length",
+      "verdict": "corrected",
+      "note": "0.12 is not printed; it lies between the pike's ~0.10 and the pooled 0.14. Say \"0.14 on bluegill (pike alone ~0.10)\" or state that 0.12 is a project choice"
+    },
+    {
+      "paper": "§4.5; src/w3/fish3.js:984 (CS3 catfish 0.1 to an esocid)",
+      "claim": "an esocid lands 0.1 of strikes on bullheads (after Wahl & Stein 1988)",
+      "verdict": "unsupported",
+      "note": "bullheads were not tested; the study used only fathead minnow, gizzard shad and bluegill. The code's comment attributes the bullhead value to Mauck & Coble's vulnerability order and a prior — the paper's \"(after Wahl & Stein 1988)\" should not cover it"
+    },
+    {
+      "paper": "§4.5 (\"renormalized to 1 at the ratio the successes were measured at (0.3–0.4 of the predator's length …)\"); src/w3/fish3.js:147 (SIZE_RENORM)",
+      "claim": "the esocid capture successes were measured at prey 0.3–0.4 (25–43 %) of the predator's length",
+      "location": "p. 142 (PDF p. 2), abstract; p. 143 (PDF p. 3)",
+      "quote": "25-30% of predator length for bluegills, 37-43% for fathead minnows, and 30-36% for gizzard shad",
+      "verdict": "confirmed",
+      "note": "spiny bluegill were at 0.25–0.30, soft-rayed prey at 0.30–0.43 (mean ~0.37); the model's PPRM uses 0.4 soft and 0.3 spiny for esocids"
+    },
+    {
+      "paper": "src/w3/fish3.js:987–988 (PPRM comment)",
+      "claim": "soft-rayed ~0.4: fathead and shad at 0.37–0.43 of an esocid's length",
+      "source_value": "fathead minnows 37–43 %, gizzard shad 30–36 % of predator length",
+      "location": "p. 143 (PDF p. 3), Methods",
+      "quote": "fathead minnows (37-43%), and from field data (Carline et aL 1986) for gizzard",
+      "conditions": "the sizes were chosen as optimal from Gillen et al. 1981 (fathead, bluegill) and Carline et al. 1986 (shad)",
+      "verdict": "corrected",
+      "note": "only the fathead minnows were at 0.37–0.43; the soft-rayed mean is ~0.37, not 0.4"
+    },
+    {
+      "paper": "src/w3/fish3.js:980 (CS3 comment)",
+      "claim": "Wahl & Stein 1988 esocids on bluegill 0.10–0.14, fathead 0.67, shad 0.78",
+      "location": "p. 145 (PDF p. 5), text and Fig. 1",
+      "quote": "Captures per strike (%) … M NP TM … Bluegill",
+      "quote_from": "image",
+      "verdict": "confirmed",
+      "note": "pooled 0.67 / 0.78 / 0.14; on bluegill Fig. 1 shows about 0.14 (muskellunge), 0.10 (pike), 0.17 (tiger muskellunge), so the per-taxon range is ~0.10–0.17"
+    },
+    {
+      "paper": "src/w3/fish3.js:138 (PREY_OPT / PREY_PREF: preference for prey of an optimal length)",
+      "claim": "optimal prey 25–43 % of a predator's length (Wahl & Stein 1988)",
+      "source_value": "25–43 % are the prey sizes W&S chose as optimal from Gillen et al. 1981 and Carline et al. 1986; \"optimal\" means minimal handling time per unit prey dry weight, not an observed preference",
+      "location": "p. 142 (PDF p. 2); p. 143 (PDF p. 3)",
+      "quote": "Optimal sizes of prey were based on laboratory experiments (Gillen et al. 1981)",
+      "verdict": "corrected",
+      "note": "cite Gillen et al. 1981 (via Wahl & Stein 1988), and note the definition: W&S give \"minimal ratio of esocid handling time per unit of dry weight of prey\" (p. 142). The model uses it as a choice preference, which the source did not measure"
+    },
+    {
+      "paper": "src/w3/fish3.js:102 (STRIKE2: capture success by predator kind)",
+      "claim": "capture success depends on the prey species and the predator's kind (CS3, after Wahl & Stein 1988 for esocids)",
+      "location": "p. 145 (PDF p. 5); p. 146 (PDF p. 6), Discussion",
+      "quote": "to make five times as many strikes to capture them",
+      "conditions": "esocids on bluegill vs fathead/shad; the three esocid taxa did not differ in capture ability",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "src/species.js:246 (vuln comment)",
+      "claim": "esocids caught and preferred fathead minnows over bluegill",
+      "source_value": "caught: yes (0.67 vs 0.14 per strike). Preferred: not tested for fathead vs bluegill (single-species trials; esocids attacked MORE bluegills, 5.8 vs 3.2 per trial). The field preference measured was gizzard shad over bluegill (Chesson's α 0.91–1.00, Kokosing Reservoir)",
+      "location": "p. 144 (PDF p. 4); p. 146 (PDF p. 6); p. 149 (PDF p. 9), Table 5",
+      "quote": "esocids strongly preferred gizzard shad and not bluegills (Table 5)",
+      "verdict": "corrected",
+      "note": "say \"caught fathead minnows far more readily than bluegill and preferred gizzard shad over bluegill in the field\"; the minnow preference is others' work cited in W&S's discussion (Beyerle & Williams 1968; Mauck & Coble 1971; Coble 1973; Weithman & Anderson 1977)"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Laboratory values hold. Corrections are in the model's use: the sunfish value 0.12 is not printed (0.14 pooled, ~0.10 for pike alone); the bullhead 0.1 is not from this study; the shad were at 30–36 % of predator length, not 37–43 %; the 25–43 % 'optimal' sizes come from Gillen et al. 1981 and Carline et al. 1986 and are handling-cost optima, not a measured preference. Other useful values: handling times longest for bluegill; esocids attacked 5.8 bluegills, 3.2 fatheads and 1.4 shad per hour but consumed 0.5, 1.9 and 1.0; esocids captured bluegill midbody on only 40 % of captures (vs 67 % fathead, 72 % shad; Table 2, page image); in September–October empty stomachs were 72–95 % in the bluegill-only pond vs 22–72 % with shad (Table 4, page image); survival collapsed in the bluegill-only pond. No cover in the tanks (the authors argue the results extend to cover, citing Savino & Stein and Mauck & Coble)."
+}

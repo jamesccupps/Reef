@@ -1,0 +1,86 @@
+{
+  "key": "Kendall_1917",
+  "reader": "wave-1 batch t1-07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive, public download without login: the Library of Congress copy of the separate (Bureau of Fisheries Document 853, 45 p.), text PDF; fractions (2½, 15½, 9½) checked on the page images",
+    "url": "https://archive.org/details/pikestheirgeogra00kend",
+    "file": "docs/research_notes/fetched/v2/Kendall_1917.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 3) and the Internet Archive record",
+    "ok": true,
+    "corrections": "",
+    "note": "Kendall, William Converse, Scientific Assistant, U.S. Bureau of Fisheries; Appendix V to the Report of the U.S. Commissioner of Fisheries for 1917; Bureau of Fisheries Document No. 853; GPO, Washington, 1917; 45 p. The chain pickerel is treated as the \"Eastern pickerel (Esox reticulatus)\", pp. 24–34"
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "Kendall (1917) found very young Maine pickerel \"find their way into the shallowest waters and mouths of brooks entering the lake\" (anecdotal)",
+      "source_value": "a general statement about the species, with no place named and no observation behind it: \"The very young, just as in the case of many other fishes, find their way into…\"",
+      "location": "p. 27 (PDF p. 27), Habitat and habits",
+      "quote": "find their way into the shallowest waters and mouths of brooks entering the lake",
+      "conditions": "follows a remark that pickerel found far upstream \"probably reached those places for self-protection while young fish\"; ends \"probably from neighboring localities where they were born\"",
+      "verdict": "corrected",
+      "note": "drop \"Maine\" and \"found\": write \"Kendall (1917) wrote that very young pickerel find their way…\""
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "young pickerel find \"the shallowest waters and mouths of brooks entering the lake\" (Kendall 1917, Maine)",
+      "source_value": "the same general statement; no place is named",
+      "location": "p. 27 (PDF p. 27)",
+      "quote": "The very young, just as in the case of many other fishes",
+      "verdict": "corrected",
+      "note": "the quoted words are right; \"Maine\" is not in the source's sentence"
+    },
+    {
+      "paper": "Table 3.6-2 (chain pickerel, Kendall part)",
+      "claim": "young of 51–102 mm at Umbagog Lake held only Entomostraca and insect larvae",
+      "location": "p. 28 (PDF p. 28)",
+      "quote": "ranging from 2 to 4 inches long were found to be feeding exclusively upon Entomostraca",
+      "conditions": "Umbagog Lake (Maine and New Hampshire); \"many young pickerel\", number not given; 2–4 in = 51–102 mm (length type not stated)",
+      "verdict": "confirmed",
+      "note": "the row's other parts (plankters for a week, fish principal only after 102–152 mm) are Scott & Crossman's; Kendall's own examples are consistent: a < 2.5-in fish with a young sucker, a 3.2-in fish with a sunfish, and six of eight 4.25–6.37-in fish with fish"
+    },
+    {
+      "paper": "§3.6.9",
+      "claim": "of eight pickerel of 108–162 mm caught together (place not stated), six held fish, and four of the prey were young pickerel",
+      "location": "p. 28 (PDF p. 28)",
+      "quote": "Of eight examples, from 4.25 to 6.37 inches in length, caught at the same time",
+      "conditions": "\"in the same place\", not named; 4.25–6.37 in = 108–162 mm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.7.7",
+      "claim": "among Kendall's Maine and New Hampshire stomach records, six of eight young pickerel of 108–162 mm, caught together at an unstated place, held fish, four of those prey smaller pickerel; pickerel prey reached 0.71 of the cannibal's length (project calculation)",
+      "location": "p. 28 (PDF p. 28)",
+      "quote": "a 4.25-inch fish had also a young pickerel 3 inches long",
+      "kind": "arithmetic",
+      "conditions": "the 4.25-in cannibal is \"of another lot\", not one of the eight; other cannibals: 5.37 in with a 3-in pickerel (0.56), 5.87 in with 2.06 in (0.35), 6.37 in with 3 in (0.47), 9½ in with 2.3 in (0.24)",
+      "verdict": "confirmed",
+      "note": "3 / 4.25 = 0.706. The cannibalism records carry no place; only the surrounding diet records are from Maine and Umbagog (Maine–New Hampshire), so \"Maine and New Hampshire stomach records\" is loose but the sentence itself says the place is unstated"
+    },
+    {
+      "paper": "src/config.js:480; src/config.js:498 (EGG3 pike pred 0.1: \"~10 % eaten, Kendall\")",
+      "claim": "about 10 % of pickerel eggs are eaten by predators over the egg stage",
+      "location": "p. 33 (PDF p. 33)",
+      "quote": "fully 10 per cent of eggs deposited are devoured by other fishes",
+      "conditions": "a Pennsylvania hatchery superintendent's estimate, relayed by Kendall; \"fully\" = at least 10 %; the same writer saw storms wash \"hundreds of millions\" of eggs ashore",
+      "verdict": "confirmed",
+      "note": "cite as an estimate relayed by Kendall (a lower bound), not a measurement"
+    },
+    {
+      "paper": "src/species.js:386 (yLpisc comment)",
+      "claim": "a Sebago pickerel < 64 mm held a 13-mm sucker",
+      "location": "p. 27 (PDF p. 27)",
+      "quote": "One less than 2.5 inches long contained a young sucker",
+      "conditions": "\"about one-half an inch in length\", partly digested; < 2.5 in = < 64 mm, ½ in = 13 mm",
+      "verdict": "confirmed",
+      "note": "the sentence follows the Sebago Lake examples but does not repeat the place, and the next example is from \"the brook in which the fish were found\"; Sebago is a likely reading, not an explicit one"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Only the place attached to the shallow-water/brook-mouth remark needs changing (no place in the source). Other values in the account the rewrite might use: Maine stomach records of adult pickerel with hornpouts (Sebois River, Wissatoquoik Deadwater) and Umbagog pickerel 'usually' with small suckers (p. 27); pickerel breed in 3–10 ft of water in shallow coves, inlet mouths and overflowed areas (p. 28); chubs (Semotilus bullaris) seen gorged with pickerel 2–3 in long (pp. 33–34); a 1:14 male:female ratio from the Massachusetts commissioners (p. 29)."
+}
