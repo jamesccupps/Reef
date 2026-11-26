@@ -1,0 +1,95 @@
+{
+  "key": "MDIFW_2017",
+  "reader": "wave-3 batch 07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "MDIFW's own PDF of the poster, from the agency's www1.maine.gov server (same path as the cited URL; www.maine.gov refuses scripts with 403); 2 pages with a text layer (front: pictures; back: one text block per species)",
+    "url": "https://www1.maine.gov/ifw/docs/warmwaterfishposter.pdf",
+    "file": "docs/research_notes/fetched/v2/MDIFW_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the poster itself and its PDF metadata",
+    "ok": true,
+    "corrections": "",
+    "note": "The poster prints no date or author: 'Maine's Warmwater Fish', Maine Department of Inland Fisheries and Wildlife, mefishwildlife.com; artwork by Joseph R. Tomelleri and the Wyoming Department of Fish and Game. The year 2017 is from the PDF's metadata (created 2017-05-31; InDesign file 'Warmwater Game Fish Poster 2017.indd'). Citing it as MDIFW 2017 is reasonable; '(undated; PDF of 2017)' would be exact."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "MDIFW classes yellow perch, white perch, chain pickerel, pumpkinseed, redbreast sunfish and brown bullhead as native to Maine",
+      "location": "p. 2 (PDF p. 2), each species' 'ORIGIN' line",
+      "quote": "SCIENTIFIC NAME: Esox niger ORIGIN: Native",
+      "conditions": "'ORIGIN: Native' for yellow perch, white perch, chain pickerel, pumpkinseed sunfish, redbreast sunfish and brown bullhead; statewide labels, no drainage detail",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "MDIFW classes smallmouth bass, largemouth bass, black crappie, northern pike and muskellunge as introduced",
+      "location": "p. 2 (PDF p. 2), each species' 'ORIGIN' line",
+      "quote": "SCIENTIFIC NAME: Micropterus dolomieu ORIGIN: Introduced",
+      "conditions": "'ORIGIN: Introduced' for smallmouth bass, largemouth bass, black crappie, northern pike and muskellunge",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "pumpkinseed and redbreast are the state's only native centrarchids",
+      "verdict": "unsupported",
+      "note": "The poster does not say this. It is an inference from its list: of the five centrarchids it shows (smallmouth bass, largemouth bass, black crappie, pumpkinseed, redbreast), only pumpkinseed and redbreast are marked native. Reword as 'the only native centrarchids on MDIFW's warmwater poster', or cite a source that states it."
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, growth)",
+      "claim": "Maine yellow perch adults 15–30 cm",
+      "location": "p. 2 (PDF p. 2), yellow perch, 'ADULT SIZE'",
+      "quote": "Yellow perch normally range from 6 to 12 inches in length",
+      "conditions": "'… and weigh from 1/4 to 1 pound'; 'up to 15 inches and 1.6 pounds, are occasionally caught in Maine'; 6–12 in = 15.2–30.5 cm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (pumpkinseed, growth)",
+      "claim": "Maine pumpkinseed 'typically 6–10 in' (15–25 cm)",
+      "location": "p. 2 (PDF p. 2), pumpkinseed sunfish, 'ADULT SIZE'",
+      "quote": "Size is typically between 6 and 10 inches in Maine",
+      "conditions": "adult size; 6–10 in = 15.2–25.4 cm",
+      "verdict": "confirmed",
+      "note": "The paper's quoted words contract the source's ('typically between 6 and 10 inches'); the values are right."
+    },
+    {
+      "paper": "Table 3.5-2 (redbreast sunfish, growth)",
+      "claim": "Maine redbreast adults 13–18 cm",
+      "location": "p. 2 (PDF p. 2), redbreast sunfish, 'ADULT SIZE'",
+      "quote": "Size is typically between 5 and 7 inches in Maine",
+      "conditions": "adult size; 5–7 in = 12.7–17.8 cm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (chain pickerel, growth); §3.5.3",
+      "claim": "Maine chain pickerel are caught (angled) mostly at ages 3–5 and 36–48 cm",
+      "location": "p. 2 (PDF p. 2), chain pickerel, 'ADULT SIZE'",
+      "quote": "caught in Maine are age 3-5, at which time they range in length from 14-19",
+      "conditions": "'Most of the pickerel caught in Maine …' (catch, method unstated); 14–19 in = 35.6–48.3 cm; 'Productive waters grow good numbers of 2-3 pound fish'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (brown bullhead, growth)",
+      "claim": "Maine brown bullhead adults ≈ 25 cm and < 0.45 kg, 36 cm occasionally",
+      "location": "p. 2 (PDF p. 2), brown bullhead, 'ADULT SIZE'",
+      "quote": "adult bullheads are usually about 10 inches long and weigh less than one pound",
+      "conditions": "'Fish up to 14 inches are occasionally caught, but fish 18 inches and larger are rare in Maine'; 10 in = 25.4 cm, 1 lb = 0.45 kg, 14 in = 35.6 cm",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (smallmouth bass, longevity)",
+      "claim": "smallmouth bass commonly live 5–7 yr, a few 10–20",
+      "location": "p. 2 (PDF p. 2), smallmouth bass, 'ADULT SIZE'",
+      "quote": "Smallmouth bass commonly live 5-7 years, with a few individuals reaching ages",
+      "conditions": "'… from 10-20 years'; general statement, not specific to Maine waters",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www.maine.gov/ifw/docs/warmwaterfishposter.pdf", "status": 403, "note": "maine.gov refuses scripts; the www1.maine.gov URL served the PDF" }
+  ],
+  "notes": "Every number checks; the one change is §3.5.1's 'pumpkinseed and redbreast are the state's only native centrarchids', which the poster implies by its list but does not state. show.mjs also lists §2.2 (Figure 1's caption), but that is a false match: the caption's 'MDIFW soundings fitted to the 2017 USGS 3DEP lidar' cites the 1949 survey and the 2017 lidar, not this poster, so no claim was recorded for it. Other values on the poster: white perch 'A 6-year old perch can be anywhere from 6 to 12 inches long', 'The average 8 to 10 inch perch weighs about 0.45 pounds and is about 4 years old'; chain pickerel state record 6 lb 13 oz (1992); smallmouth 'In Maine, only a few exceed 4 pounds'; largemouth typically 12–16 in and 1–3 lb in Maine; northern pike mature at 3–5 yr at 24–30 in."
+}

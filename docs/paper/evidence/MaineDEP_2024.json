@@ -1,0 +1,136 @@
+{
+  "key": "MaineDEP_2024",
+  "reader": "wave-3 batch 07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "DEP's own PDF of the draft report (210 pages, text layer) from the agency's www1.maine.gov server (same path as the cited URL; www.maine.gov refuses scripts with 403). The GIS records were queried from DEP's ArcGIS REST services on gis.maine.gov and saved as JSON with a text copy: Integrated Report layer 10 (MaineDEP_2024.irgis10.json/.txt) and the Lake Vulnerability Analysis layer 3 (MaineDEP_2024.lva3.json, summary MaineDEP_2024.lva3.txt). The algal-bloom risk list is DEP's web page, from www1.maine.gov (MaineDEP_2024.bloomrisk.html/.txt).",
+    "url": "https://www1.maine.gov/dep/water/monitoring/305b/2024/2024_ME_IntegratedRpt-REPORT-DRAFT.pdf",
+    "file": "docs/research_notes/fetched/v2/MaineDEP_2024.pdf",
+    "also": [
+      "https://gis.maine.gov/mapservices/rest/services/dep/Maine_DEP_Integrated_Report_Data/MapServer/10/query (where MIDAS_TXT IN ('1076','1072'))",
+      "https://gis.maine.gov/mapservices/rest/services/dep/Lake_Vulnerability_Analysis_AGOL/MapServer/3/query (where MIDAS IN (1076,1072,1078)) and the service description (MapServer?f=json)",
+      "https://www1.maine.gov/dep/water/lakes/bloomrisk.html"
+    ]
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the report's title page (p. 1) and the GIS services' own metadata",
+    "ok": false,
+    "corrections": "The invasion-risk scores (26 and 24 on an 11–87 scale) and 'not infested' come from a different DEP product that the citation does not name: the Lake Vulnerability Analysis GIS service, layer 3 'Maine lakes: Risk score for invasive aquatic species' (https://gis.maine.gov/mapservices/rest/services/dep/Lake_Vulnerability_Analysis_AGOL/MapServer/3; analysis run 2004 and 2017, field Weighted_Score_2024). Add it to the entry (or give it its own). The report is the 'Draft – June 18, 2024'; the algal-bloom risk list is an undated web page ('Maine Lakes at Risk of Having an Algal Bloom').",
+    "note": "Title page: State of Maine, Department of Environmental Protection, '2024 Integrated Water Quality Monitoring and Assessment Report', Draft – June 18, 2024; running head 'DRAFT Maine DEP 2024 305(b) Report and 303(d) List'."
+  },
+  "claims": [
+    {
+      "paper": "§2.1; §3.3.7",
+      "claim": "Maine DEP reports depleted calcium in 'Down East' watersheds",
+      "location": "p. 88 (PDF p. 88), Lakes/Ponds, acid effects (CWA § 314)",
+      "quote": "particularly in the 'Down East' region of Maine manifested as depleted calcium in the",
+      "conditions": "'… watersheds and thus in the receiving waters, particularly in streams'; a legacy effect of acid deposition, 'exacerbated by the removal of calcium-rich vegetation during forestry operations'; no values given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§2.4",
+      "claim": "both lakes are in EPA Category 2 in DEP's 2024 Integrated Report, assessment units 0102000304_1076L (Upper) and 0102000304_1072L (Lower)",
+      "location": "web page: DEP Integrated Report GIS, layer 10 'IR_Lakes_AU', records OBJECTID 2383 and 2526",
+      "quote": "ADB_ID 0102000304_1076L CYCLE 2024 HUC10 0102000304 EPA_CATEGORY 2",
+      "conditions": "Upper Hot Brook Lake MIDAS 1076 and Lower Hot Brook Lake MIDAS 1072 (ADB_ID 0102000304_1072L), CYCLE 2024, EPA_CATEGORY '2'; last edited 2024-06-18. The report itself does not list Category 2 lakes individually ('Lakes currently listed in Category 2 do not appear individually in Appendix III', p. 179)",
+      "verdict": "confirmed",
+      "note": "The layer's own description says it holds lakes 'categorized as 4A, 4C, or 5', yet it carries Category 1 and 2 records too; its renderer labels category 2 'Attaining Some Designated Uses - Insufficient Information for Others'."
+    },
+    {
+      "paper": "§2.4; §3.2",
+      "claim": "Category 2 means attainment presumed without data (§2.4: 'which the notes read as attainment presumed without data'; §3.2: 'which presumes, without data, that their designated uses are attained')",
+      "location": "p. 35 (PDF p. 35), Listing Categories (1–5); assessment bases continue on p. 36",
+      "quote": "insufficient data or no data and information is available to determine if the",
+      "conditions": "full definition: 'Attains some of the designated uses; no use is threatened; and insufficient data or no data and information is available to determine if the remaining uses are attained or threatened (with presumption that all uses are attained)'. The listed bases include old data, models, 'Probabilistic-based monitoring for lakes indicates a high expectation of use attainment for certain classes of waters', and qualitative information of low impairment risk",
+      "verdict": "confirmed",
+      "note": "Fair for Hot Brook, which has no DEP data; the exact definition (some uses attained, the rest presumed attained for lack of data, possibly on the strength of probability surveys of similar lakes) is better than 'without data'. All Maine fresh waters are also in Category 4-A for atmospheric mercury (statewide fish-consumption advisory; p. 36), which the lake's Category 2 does not show."
+    },
+    {
+      "paper": "§2.4",
+      "claim": "neither lake is on DEP's algal-bloom risk list",
+      "location": "web page: 'Maine Lakes at Risk of Having an Algal Bloom' (bloomrisk.html), the whole table",
+      "quote": "Maine Lakes at Risk of Having an Algal Bloom",
+      "conditions": "the table lists lake, town, lake ID (MIDAS), bloom frequency and risk; neither Hot Brook lake (MIDAS 1076, 1072), no Danforth or Bancroft lake and no Baskahegan-drainage lake appears; the nearest listed lakes are Aroostook's Cochrane L (New Limerick, Rarely/Low), Conroy L (Monticello, Rarely/Moderate) and Whitehead L (Bridgewater, Rarely/Low). The page is undated",
+      "verdict": "confirmed",
+      "note": "Absence from a list of lakes with recorded blooms; Hot Brook has never been sampled, so it means no bloom on record, not a low measured risk."
+    },
+    {
+      "paper": "§2.4",
+      "claim": "both lakes are recorded as not infested by invasive plants, with invasion-risk scores of 26 (Upper) and 24 (Lower) on an 11–87 scale",
+      "location": "web page: DEP Lake Vulnerability Analysis GIS service description and layer 3 records (MIDAS 1076, 1072)",
+      "quote": "Risk scores run from 11 to 87",
+      "conditions": "layer 3 'Maine lakes: Risk score for invasive aquatic species': Infested 'N' for both; Weighted_Score_2024 26 (Upper) and 24 (Lower); the same in 2017 (Wght_Score), 24 and 22 in 2004. 'The risk score is based on 9 different geospatial parameters, grouped into three categories'. Across all 2,660 lakes the 2024 scores run 12–87 (mean 29.6) and the 2004 scores 11–87",
+      "verdict": "confirmed",
+      "note": "Source is the Lake Vulnerability Analysis service, not the Integrated Report or its layer 10: see bibliography. Hot Brook's scores are below the statewide mean (29.6); Baskahegan Lake scores 28."
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "for lakes above 30 SPU DEP assesses trophic state from chlorophyll, oxygen and judgment",
+      "location": "p. 45 (PDF p. 45), Table 4-4, footnote 3 (and footnote 4)",
+      "quote": "If color is >30 Standard Platinum Units or not known, chlorophyll-a concentration, dissolved",
+      "conditions": "'… oxygen, and best professional judgment are used to assign trophic category'; footnote 4: Secchi and TP TSIs are 'calculated only when color is at or below 30 SPU'; chlorophyll TSIs 'regardless of color'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "DEP reports lake trends that 'appear to remain stable'",
+      "location": "p. 90 (PDF p. 90), Other Considerations: Economics and Trends",
+      "quote": "Overall, water quality trends in Maine Lakes appear to remain stable",
+      "conditions": "'… with a small number improving and a few deteriorating. However, this could be taken as a false sense of security'; general water-quality trends (trophic state), not clarity or color specifically; no data shown",
+      "verdict": "confirmed",
+      "note": "The paper uses it in a paragraph on clarity; say 'water-quality trends' and keep DEP's caveat."
+    },
+    {
+      "paper": "§3.1.7",
+      "claim": "where water has darkened, the browning is linked to recovery from acid deposition",
+      "location": "p. 88 (PDF p. 88)",
+      "quote": "increased concentrations of dissolved organic carbon (DOC) in recovering surface waters",
+      "conditions": "'An important change in aquatic chemistry coincident with decreased acidic deposition is …' '… across the northern hemisphere'; DOC, not color or clarity, is named; no Maine data",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.2.4; §3.3.1",
+      "claim": "DEP classes lakes with long-term mean Secchi 4–8 m, chlorophyll a 1.5–7 µg/L and TP 4.5–20 µg/L as mesotrophic; above 30 SPU it judges by chlorophyll and oxygen rather than Secchi and TP",
+      "location": "p. 45 (PDF p. 45), Table 4-4 'Lake Trophic State Parameters and Guidelines' (read on the page image) and its footnotes 1–4",
+      "quote": "4-8 meters … 1.5 – 7 ppb … 4.5 – 20 ppb",
+      "quote_from": "table",
+      "conditions": "footnote 1 'Based on long-term means'; footnote 2 for mesotrophic 'No chronic nuisance algal blooms'; TSI 25–60; oligotrophic Secchi > 8 m, chl < 1.5 ppb, TP < 4.5 ppb; eutrophic Secchi < 4 m, chl > 7 ppb, TP > 20 ppb; color rule as in the §3.1.7 claim",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "in a DEP probability survey of lakes over 150 acres, which excluded most of the Hot Brook region, about 11 % had detectable microcystin and 6.8 % exceeded an EPA advisory",
+      "source_value": "126 lakes visited 2014–2019, chosen from lakes > 150 acres 'located in the more populated areas (approximately 3/5ths of the state)'; ~11 % had detectable microcystin in open water when visited; 6.8 % exceeded one or more EPA advisory values (5 % at 0.3–1.6 ppb, 1.3 % at 1.6–8.0 ppb, 0.5 % > 8.0 ppb). The report does not say which regions were left out; 'excluded most of the Hot Brook region' is the project's inference",
+      "location": "p. 89 (PDF p. 89), State Cyanotoxin Survey",
+      "quote": "approximately 11% of Maine lakes having surface areas greater than 150 acres",
+      "conditions": "'… and located in populated regions of the state, had detectable MC in open water when visited; 6.8% exceeded one or more of the EPA advisory values'; the advisories are EPA's 10-day drinking-water values (0.3 ppb infants, 1.6 ppb adults) and the 8.0 ppb recreational value",
+      "verdict": "corrected",
+      "note": "Numbers right. Reword the sampled population as 'lakes over 150 acres in the more populated three-fifths of the state' and mark 'which probably excluded the Hot Brook region' as an inference; say most exceedances were of the infant drinking-water value."
+    },
+    {
+      "paper": "§3.3.1",
+      "claim": "(in that probability survey) open-water microcystin peaked in late August and early September",
+      "source_value": "the peak timing comes from the separate time series (487 samples, 145 visits, 12 lakes, chosen for their bloom histories), not from the probability survey: open-water MC 'tended to peak at the end of August and in early September'; scum samples peaked in mid to late September",
+      "location": "p. 89 (PDF p. 89)",
+      "quote": "MC concentrations in open water tended to peak at the end of August",
+      "conditions": "targeted 'worst-case-scenario' lakes: chronic severe bloomers, long-time milder bloomers and recent bloomers",
+      "verdict": "corrected",
+      "note": "Attribute the seasonal peak to DEP's time series of 12 blooming lakes."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://www.maine.gov/dep/water/monitoring/305b/2024/2024_ME_IntegratedRpt-REPORT-DRAFT.pdf",
+      "status": 403,
+      "note": "maine.gov refuses scripts; the www1.maine.gov URL served the same PDF"
+    },
+    {
+      "url": "https://www.maine.gov/dep/water/lakes/bloomrisk.html",
+      "status": 403,
+      "note": "maine.gov refuses scripts; the www1.maine.gov URL served the page"
+    }
+  ],
+  "notes": "All values check. Changes: (1) the invasion-risk scores and 'not infested' are from DEP's Lake Vulnerability Analysis GIS service, which the entry does not name (bibliography); (2) §3.3.1's microcystin sentence merges two DEP studies: the 11 %/6.8 % come from the probability survey of lakes > 150 acres in the populated three-fifths of the state, the late-August/early-September peak from a time series of 12 lakes with bloom histories; and 'excluded most of the Hot Brook region' is the project's inference. Other useful material in the report: p. 89, algal scums were present in 6 of the 126 probability lakes (4.8 %); p. 90, warmer water and shorter ice promote cyanobacteria, and anatoxin and BMAA are now detected besides microcystin; p. 88, recovery from acid deposition is apparent in Maine lakes, with acid-sensitive algae returning to Jordan and Seal Cove Ponds (Acadia); p. 87, Table 4-31 gives statewide trophic counts (all lakes: 1,127 mesotrophic, 129 oligotrophic, 670 eutrophic); p. 44 notes an erroneous formula in Chapter 581 for the Secchi TSI of lakes < 30 SPU (corrected form: Secchi TSI = 70 log(105/mean Secchi²) + 0.7)."
+}

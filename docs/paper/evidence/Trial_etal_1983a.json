@@ -1,0 +1,90 @@
+{
+  "key": "Trial_etal_1983a",
+  "reader": "wave-3 batch 07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "library copy: the Alaska Resources Library & Information Services (ARLIS) scan of the USFWS report (25 PDF pages, OCR text layer), the URL in the ledger entry",
+    "url": "https://www.arlis.org/docs/vol1/AK_Heritage/FWS/OBS/82/FWS-OBS-82-10-48.pdf",
+    "file": "docs/research_notes/fetched/v2/Trial_etal_1983a.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (PDF p. 3), the report's own 'should be cited as' (PDF p. 4) and the report documentation page (PDF p. 23)",
+    "ok": false,
+    "corrections": "Title is 'Habitat suitability information: fallfish' (cover and documentation page: 'Habitat Suitability Information: Fallfish'; the suggested citation spells it 'Fall fish'), not 'Habitat suitability index models: fallfish'. Otherwise right: Trial, J. G., C. S. Wade, J. G. Stanley and P. C. Nelson, September 1983, U.S. Fish and Wildlife Service FWS/OBS-82/10.48, 15 pp."
+  },
+  "claims": [
+    {
+      "paper": "Table 3.5-2 (fallfish, growth)",
+      "claim": "fallfish adults usually 155–255 mm (Richardson 1935, via Trial et al. 1983a)",
+      "location": "p. 1 (PDF p. 8), Age, Growth, and Food",
+      "quote": "Adult size usually varies from 155 to 255 mm (Richardson 1935)",
+      "conditions": "length type not stated; Richardson 1935 is a Ph.D. thesis on the fishes of south-eastern Quebec; maximum reported length 508 mm (Shoemaker 1945, cited by Reed 1971)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (fallfish, spawning)",
+      "claim": "fallfish spawn from ≈ 15 °C (Reed 1971, via Trial et al. 1983a)",
+      "location": "p. 1 (PDF p. 8), Reproduction; also p. 8 (PDF p. 15), Table 1",
+      "quote": "Spawning typically occurs in the spring after water temperatures reach 15° C (Reed 1971)",
+      "conditions": "spawning 'may cease if water temperature drops below 15° C' (Ross and Reed 1978); Table 1 takes 15 °C as the minimum and 17 °C as the optimum for spawning",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (fallfish, longevity)",
+      "claim": "fallfish live to age XI (Reed 1971, via Trial et al. 1983a)",
+      "location": "p. 1 (PDF p. 8), Age, Growth, and Food",
+      "quote": "with an age of XI reported by Reed (1971)",
+      "conditions": "maximum age reported (Massachusetts, Reed 1971); 'The fallfish is a long-lived fish'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (fallfish, diet)",
+      "claim": "fallfish are opportunistic on insects, crustaceans, fish and algae",
+      "location": "p. 1 (PDF p. 8), Age, Growth, and Food",
+      "quote": "Fallfish are opportunistic feeders; their diet includes aquatic insect larvae, terrestrial insects, crustaceans",
+      "conditions": "'… and fish (Kingsbury 1977). Algae is also an important constituent of the diet (Reed 1971)'; no sizes or proportions",
+      "verdict": "confirmed",
+      "note": "Second-hand in Trial et al. (Kingsbury 1977; Reed 1971)."
+    },
+    {
+      "paper": "Table 3.5-3 (fallfish, temperature)",
+      "claim": "fallfish are seldom in water > 28 °C",
+      "location": "p. 2 (PDF p. 9), Specific Habitat Requirements: Adult; also p. 8 (PDF p. 15), Table 1",
+      "quote": "They seldom occur in water over 28° C (Trembley 1960, cited by Scott and Crossman",
+      "conditions": "third-hand: a Lehigh University progress report on condenser discharge (Trembley 1960) via Scott & Crossman 1973; Table 1 assumes fallfish 'are limited by temperatures greater than 28° C or less than 4° C'",
+      "verdict": "confirmed",
+      "note": "Cite as Trembley 1960, via Scott & Crossman 1973 and Trial et al. 1983a."
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "in the Maine Cooperative Fishery Research Unit's observations 'fallfish move from larger waters into streams to spawn'",
+      "location": "p. 1 (PDF p. 8), Reproduction",
+      "quote": "Our observations in Maine indicate that fallfish move from larger waters into streams to spawn",
+      "conditions": "the authors' unquantified observations (three of the four authors were at the Maine Cooperative Fishery Research Unit, University of Maine); the same paragraph cites lake-margin spawning too (Adams & Hankinson 1928)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "fallfish move from lakes into streams to spawn",
+      "source_value": "'from larger waters into streams' — the source does not say lakes; it also cites Adams & Hankinson (1928): fallfish 'spawn in the quiet waters of streams and in the shallow margins of lakes'",
+      "location": "p. 1 (PDF p. 8), Reproduction",
+      "quote": "Our observations in Maine indicate that fallfish move from larger waters into streams to spawn",
+      "conditions": "unquantified observations in Maine",
+      "verdict": "corrected",
+      "note": "Say 'from larger waters (lakes or rivers) into streams', as §3.5.3 does, and note lake-margin spawning (Adams & Hankinson 1928, via Trial et al.)."
+    },
+    {
+      "paper": "Table 3.6-1 (fallfish)",
+      "claim": "fallfish spawn at ~14–15 °C on gravel mounds in streams; the male builds the mound; eggs hatch in 138–144 h (~6 d) at 17 °C (Reed 1971, via Trial et al. 1983a)",
+      "location": "p. 2 (PDF p. 9), Specific Habitat Requirements: Embryo; p. 1–2 (PDF pp. 8–9), Reproduction",
+      "quote": "Eggs hatched in 138 to 144 hours at 17° C",
+      "conditions": "'(Reed 1971)'; 'Embryo incubation usually occurs at temperatures between 16° and 18° C'; nests in the Mill River near Amherst, Massachusetts at depths of 0.5 m or less; 'Each nest is constructed by a single male' who moves gravel and sand into a mound; 3–5 females and nearby males spawn on it communally",
+      "verdict": "confirmed",
+      "note": "Trial et al. give 15 °C, not 14 °C (the 14.4 °C is the paper's reading of Reed 1971's abstract); the hatch length 6.8–7.5 mm and postlarva 9.7 mm are not in Trial et al. (they are attributed to Buynak & Mohr 1979 in the same row). 138–144 h = 5.75–6.0 d."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Values all check; the changes are the title (Habitat suitability information, not index models) and §3.5.7's 'from lakes' (the source says 'from larger waters'). The 'also named without the year' rows that show.mjs lists (blacknose dace in Tables 3.5-2, 3.5-3, 3.6-1) cite Trial et al. 1983b, a separate ledger key, and were not checked here. Other material: maturity 'some fallfish mature at age II or III, most do not reach maturity until age IV', males more often precocious (Reed 1971; Ross in press), which supports Table 3.5-2's 'Massachusetts males III+, females IV+'; the sexes grow alike to age IV, then males faster; young fish use rapid water and smaller streams than adults (the authors' Maine observations); the fecundity regression is printed as 'Fecundity = 14,913 + 76.7 TL' (Richardson 1935, labelled Massachusetts) — the sign of the intercept looks wrong (it would give ≥ 15,000 eggs at any length), so do not use it; Trial et al. print Reed 1971 as 'Trans. Am. Fish. Soc. 199:717-725' (so on the page image too), an evident volume misprint: take Reed 1971's volume from Crossref, not from here; the HSI model itself is unverified ('The model has not been verified')."
+}

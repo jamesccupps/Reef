@@ -38,7 +38,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-04 | MDIFW_nd, MDIFW_nd-2, MDIFW_nd-3, MDIFW_nd-4 | running |
 | w3-05 | MDIFW_nd-5, MDIFW_nd-6, MDIFW_nd-7, MDIFW_nd-8 | done |
 | w3-06 | MDIFW_nd-9, MDIFW_nd-10, MDIFW_nd-11, Rupp_DeRoche_1965 | done |
-| w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | running |
+| w3-07 | Kramer_2002, MaineDEP_2024, MDIFW_2017, Trial_etal_1983a, AuClair_1958 | done |
 | w3-08 | Bacon_Vaux_2019, COSEWIC_2008, Kleinert_Mraz_1966, Trial_etal_1983b, Hasnain_etal_2013, MDIFW_2007 | running |
 | w3-09 | Dahlberg_1979, Gautreau_Curry_2006, Gautreau_Curry_2012, Harris_2006, Johnston_1995, LEA_2026, Mitchell_, Schneider_1973a | running |
 | w3-10 | Short_2001, Buntz_1966, Carbine_1948, Chu_2001, Diana_1979a, Fayetal_1983, Fischer_etal_1989b, Hardy_1978, MaineDMRMDIFW_2008, Begley_etal_2018 | running |
@@ -46,7 +46,7 @@ Every batch handed to a reader, its keys and its state. A key is in one batch on
 | w3-12 | Fago_1977, Feener_MacLeod_2020, Gallagher_2016, Garvey_etal_2002, Hall_Werner_1977, Havey_1973, Henderson_1977, Hodgkins_2010, Huff_etal_2004, Koenings_Edmundson_1991, Sleith_etal_2018, TexasInstruments_1979 | running |
 | w3-13 | McCall_etal_1996, MDIFW_2021, MDIFW_2026, Osenberg_etal_1992, Prout_etal_1990, Radabaugh_2006, RangePonds_2024, Reed_1971, Reinhardt_etal_2004, Rowan_etal_1992, Sommer_etal_2012, Todd_etal_1982 | running |
 | w3-14 | Rubec_1975, Saila_1956, Serns_1984, Shuter_Post_1990, Underhill_1949, Wahl_Stein_1991, Willis_2006, AWI_2013, Aho_etal_1986, Ahrenstorff_Holbrook_2016, Arnott_etal_2017, ASF_2021 | running |
-| w3-15 | Allen_1982, Armstrong_1962, ASF_2024, Ator_2019, AuClair_1956, Begley_2017, Blumer_1986b, Bremigan_etal_2008, Brown_Bozek_2010, Brownscombe_etal_2024, Bry_etal_1992, Carmignani_etal_2021 | queued |
+| w3-15 | Allen_1982, Armstrong_1962, ASF_2024, Ator_2019, AuClair_1956, Begley_2017, Blumer_1986b, Bremigan_etal_2008, Brown_Bozek_2010, Brownscombe_etal_2024, Bry_etal_1992, Carmignani_etal_2021 | running |
 | w3-16 | Burdicketal_1954, Cameron_2000, Carignan_Kalff_1980, Carlander_1969, Carroll_Ultsch_2007, Cech_etal_2009, Chappuis_etal_2016, ChowFraser_Sprules_1992, Cooke_etal_2003, Cooley_1997, Deeds_etal_2023, Diana_1983 | queued |
 | w3-17 | COSEWIC_2018, Dreyer_etal_2015, Duarte_Kalff_1986, Duarte_etal_1986, Duarte_Kalff_1990, Dudley_2004a, FalckRasmussen_2005, Fitzgerald_etal_2006, Forney_1968, Friesen_Ridgway_2000, Kaemingk_etal_2014, Kappel_etal_2001 | queued |
 | w3-18 | Gatto_1982, Gatto_etal_2001, Gerking_1953, Gosz_etal_1972, Greene_etal_2009, Hafs_2007, Hansen_Santer_1995, Hartig_Jude_1984, Hodgkins_2013, Holtan_1998, Klok_vanderVelde_2017, Kortelainen_etal_2006 | queued |

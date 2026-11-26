@@ -1,0 +1,67 @@
+{
+  "key": "AuClair_1958",
+  "reader": "wave-3 batch 07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "Internet Archive item fishesofmaine02ever (Biodiversity Heritage Library / MBLWHOI Library scan of Everhart's Fishes of Maine, 2d ed. 1958; openly downloadable, 'No known copyright restrictions'); the PDF (98 pages, OCR text layer) rather than the djvu.txt in the entry; the account read on the page image (PDF p. 75)",
+    "url": "https://archive.org/download/fishesofmaine02ever/fishesofmaine02ever.pdf",
+    "file": "docs/research_notes/fetched/v2/AuClair_1958.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the book's title page (PDF p. 3) and the account's heading (printed p. 73, PDF p. 75)",
+    "ok": true,
+    "corrections": "",
+    "note": "Account heading: 'White Perch, Roccus americanus (Gmelin), Roger P. AuClair, Regional Fishery Biologist', printed pp. 73–74 (PDF pp. 75–76), in the Sea Bass Family (Serranidae) section. Book: Fishes of Maine, W. Harry Everhart, published by the Maine Department of Inland Fisheries and Game, Augusta, 2d Edition 1958. The entry is right."
+  },
+  "claims": [
+    {
+      "paper": "§3.6; Table 3.6-1 (white perch, spawning)",
+      "claim": "white perch spawn at about 15 °C in Maine (AuClair 1958; Smith 2002)",
+      "location": "p. 73 (PDF p. 75), second paragraph (page image checked)",
+      "quote": "spawn when the temperature of the water is up to 60° F",
+      "conditions": "'Large schools of mature white perch seek a tributary stream, a shallow cove, or the upper portion of a river estuary to spawn when the temperature of the water is up to 60° F. This is usually during the month of June in Maine'; 60 °F = 15.6 °C; no data or source given (a popular account)",
+      "verdict": "confirmed",
+      "note": "Exact value is 60 °F (15.6 °C), in June; 'about 15–16 °C' or '≈ 15.6 °C (60 °F)' would be closer than 'about 15 °C'. Smith 2002 gives 59–60 °F, so the two agree. RECONCILIATION with the thesis value: AuClair 1958 says nothing about 18–21 °C or about a temperature held 'for several days'; the 18–21 °C 'for several days … prior to spawning' is Stanley & Danie's (1983) report of AuClair's 1956 M.S. thesis on Sebasticook Lake (ledger key AuClair_1956, not read here). The same author's two statements disagree by 3–5 °C and the 1958 book cannot settle which is right; only the thesis can. Recommended: lead the row with 60 °F (15.6 °C), June, in Maine (AuClair 1958; Smith 2002: 59–60 °F), and give the 18–21 °C as 'AuClair 1956 (M.S. thesis, via Stanley & Danie 1983)', not as 'an unpublished thesis'."
+    },
+    {
+      "paper": "Table 3.6-1 (white perch, eggs and care)",
+      "claim": "adhesive eggs, laid over the bottom in shallow water or in streams; no parental care (row sources: Margulies 1989; AuClair 1958; Stanley & Danie 1983)",
+      "location": "p. 73 (PDF p. 75), second and third paragraphs",
+      "quote": "The eggs have an adhesive disk so that when they sink to the bottom",
+      "conditions": "'… they become permanently fastened to rocks, grass, or debris that they chance to rest upon'; spawning in 'a tributary stream, a shallow cove, or the upper portion of a river estuary'; 'There is no parental care'; fry 'less than one-eighth of an inch long' (< 3.2 mm) emerge 'within a week, depending upon temperature'",
+      "verdict": "confirmed",
+      "note": "Only these parts can come from AuClair 1958. The egg diameter (0.87–0.91 mm), 'firm bottom', depth 0–1.5 m, incubation (3.5 d at 15 °C, 2.6 d at 17 °C), hatch size (2.4–2.8 mm SL), yolk-sac duration and first-feeding size are not in AuClair 1958 (AuClair says eggs fasten to 'rocks, grass, or debris', not firm bottom); they must come from Margulies 1989 or elsewhere."
+    },
+    {
+      "paper": "§3.6.1",
+      "claim": "for Maine, AuClair (1958) wrote that a sudden fall of about 2–3 °C (4–5 °F) can kill all the eggs deposited",
+      "location": "p. 73 (PDF p. 75), third paragraph",
+      "quote": "A sudden drop of 4 or 5 degrees in water temperature can wipe out",
+      "conditions": "'… all the eggs deposited, but spawning is spread over a period of ten days to two weeks and it is very unlikely that reproduction would be a complete failure in any year'. No unit is printed with '4 or 5 degrees'; °F follows from the same account's '60° F' (4–5 °F = 2.2–2.8 °C). No data or source",
+      "verdict": "confirmed",
+      "note": "Write '4 or 5 degrees (°F by the context; 2–3 °C)' and add AuClair's own caveat that complete failure in a year is very unlikely. Possible origin of a conversion error elsewhere: Fischer, Hall & Sullivan (1989b) are quoted in the same paragraph as 'drops of 4–5 °C are lethal' citing AuClair 1960 and Hardy 1978; if AuClair 1960 repeats this '4 or 5 degrees' (°F), 4–5 °C would be a misreading — for the AuClair_1960 and Fischer readers to check."
+    },
+    {
+      "paper": "§3.6.7",
+      "claim": "in Maine, young white perch of 25–76 mm were seined 'by the thousand' along sandy beaches in the evening",
+      "source_value": "'Thousands of small perch one to three inches long can be seined in the evening along sandy beaches where they come in to feed' — 1–3 in = 25–76 mm is right, but 'by the thousand' is not the source's wording, and it is a general statement ('can be seined'), not a reported catch",
+      "location": "p. 73 (PDF p. 75), fourth paragraph",
+      "quote": "Thousands of small perch one to three inches long can be seined in the evening",
+      "conditions": "in the paragraph on the first two years of life; no place, year or catch data",
+      "verdict": "corrected",
+      "note": "Drop the quotation marks or quote the source: 'Thousands of small perch one to three inches long can be seined in the evening along sandy beaches' (AuClair 1958)."
+    },
+    {
+      "paper": "§3.7.8",
+      "claim": "in Maine, young white perch of 2.5–7.6 cm come onto sandy beaches in the evening",
+      "location": "p. 73 (PDF p. 75), fourth paragraph",
+      "quote": "along sandy beaches where they come in to feed",
+      "conditions": "'Thousands of small perch one to three inches long can be seined in the evening along sandy beaches where they come in to feed'; 1–3 in = 2.5–7.6 cm; general statement, no data",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "One correction (the §3.6.7 misquotation 'by the thousand'); the 15 °C should read 60 °F (15.6 °C). The lead about ~15 °C vs 18–21 °C: the 1958 account gives only 'up to 60° F', usually June; the 18–21 °C 'for several days' is AuClair's 1956 thesis as reported by Stanley & Danie 1983 — the two cannot be reconciled from the 1958 text, so the rewrite should lead with 60 °F (AuClair 1958, agreeing with Smith 2002's 59–60 °F) and cite the thesis by name (AuClair 1956, via Stanley & Danie 1983) until AuClair_1956 is read. Other values in the account (pp. 73–74): 'A one-pound female will release approximately 150,000 eggs at spawning time'; spawning spread over ten days to two weeks; young feed on small crustaceans and insect larvae for their first two years; larger perch shift from insects and crustaceans in spring to almost entirely fish by the end of summer (yellow perch, smelts, white perch); a six-year-old may be 12 in and over a pound in one pond and under 7 in in another, with the fastest growth in waters with 'large areas of shallow, fairly warm water'; 'fluctuations in white perch populations are caused by unfavorable temperature and water conditions soon after spawning'. The same volume holds the banded killifish account §3.6.7 cites to Everhart 1958 (unsigned, printed p. 70, PDF p. 72): 'they rarely stray into water much over a foot in depth' is verbatim there, and it adds that the 'Peak of their spawning season comes towards the end of July' in Maine, with no nest or care (useful beside Kramer 2002's 'throughout the summer' in Table 3.5-2)."
+}

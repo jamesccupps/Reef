@@ -1,0 +1,163 @@
+{
+  "key": "Kramer_2002",
+  "reader": "wave-3 batch 07",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "MDIFW's own PDF of the plan, from the agency's www1.maine.gov server (same path as the cited URL; www.maine.gov refuses scripts with 403); 33 pages with a text layer; Tables 1 and 2 read on the page images (the layout text scrambles both)",
+    "url": "https://www1.maine.gov/ifw/docs/strategic-management-plans/nonsportcommercial.pdf",
+    "file": "docs/research_notes/fetched/v2/Kramer_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (p. 1)",
+    "ok": true,
+    "corrections": "",
+    "note": "Title page: 'NON-SPORT AND COMMERICIAL MANAGEMENT PLAN' (sic), Department of Inland Fisheries and Wildlife, Division of Fisheries and Hatcheries, prepared by Nels Kramer, Assistant Regional Fisheries Biologist, Region F, January 2002. The ledger entry is right; the author's first name (Nels) and 'Region F' may be added."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.1",
+      "claim": "MDIFW's non-sport plan lists sea-run alewife in 102 Maine lakes, blacknose dace in 436, American eel in 683, fallfish in 461 and banded killifish in 363",
+      "location": "p. 3 (PDF p. 3), Table 1 'List of all Non-Sport Fish in Maine' (read on the page image)",
+      "quote": "sea-run 102 … blacknose 436 … American 683 … Fallfish 461 … banded 363",
+      "quote_from": "table",
+      "conditions": "number of Maine lakes and ponds in which the species has been recorded (with total acreage); the text warns that past surveys were imprecise and often recorded only 'minnows', so a more intensive survey 'would no doubt increase these numbers'",
+      "verdict": "confirmed",
+      "note": "The layout text shifts Table 1's numbers against the species (it puts 462 beside golden shiner and 851 beside white sucker); on the page image golden shiner is 851 lakes and common shiner 462."
+    },
+    {
+      "paper": "§3.5.1",
+      "claim": "the plan lists white sucker in 1,206 Maine lakes and yellow perch in 818",
+      "location": "p. 3 (PDF p. 3), Table 1; yellow perch also p. 5 text; white sucker also p. 11, Table 4 (state total)",
+      "quote": "Perch, yellow 818 … Sucker, white 1206",
+      "quote_from": "table",
+      "conditions": "lakes and ponds; white sucker 1,206 lakes and 893,572 acres (Tables 1 and 4); p. 5: yellow perch 'is found in 818 lakes and ponds in Maine'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, growth)",
+      "claim": "Maine yellow perch 'seldom exceed 12 inches … probably average closer to 8 inches'",
+      "location": "p. 5 (PDF p. 5)",
+      "quote": "In Maine yellow perch seldom exceed 12 inches in length, and adults probably average",
+      "conditions": "'… closer to 8 inches in most waters'; adults; length type not stated",
+      "verdict": "confirmed",
+      "note": "p. 12 adds the agency's explanation: low fertility, short growing seasons and interspecific competition, so 'yellow perch in Maine are commonly small in size'."
+    },
+    {
+      "paper": "Table 3.5-2 (yellow perch, spawning)",
+      "claim": "Maine yellow perch spawn 'in early spring when water temperatures are in the mid 40s' °F (≈ 7 °C)",
+      "location": "p. 5 (PDF p. 5)",
+      "quote": "Yellow perch spawn in early spring when water temperatures are in the mid 40's",
+      "conditions": "no unit is printed; °F follows from the context (mid-40s °F = about 6.7–7.8 °C); eggs in a gelatinous ribbon over vegetation or submerged branches of fallen trees",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, growth)",
+      "claim": "Maine white suckers 'often 4–5 lb in lakes' (1.8–2.3 kg)",
+      "source_value": "'White suckers up to 4 or 5 pounds are common in some lake environments' — a common upper size in some lakes, not a typical weight in lakes; the quoted words 'often 4–5 lb in lakes' are not the source's",
+      "location": "p. 4 (PDF p. 4)",
+      "quote": "White suckers up to 4 or 5 pounds are common in some lake environments",
+      "conditions": "statewide generalization, no data; Table 2 gives size at maturity 8 to 14 inches",
+      "verdict": "corrected",
+      "note": "Rewrite as: suckers 'up to 4 or 5 pounds are common in some lake environments' (1.8–2.3 kg) (Kramer 2002)."
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, maturity)",
+      "claim": "white sucker matures at 5–8 yr in Maine",
+      "location": "p. 7 (PDF p. 7), Table 2 (continued), 'Age at maturity' column (read on the page image)",
+      "quote": "Sucker, white … 5 to 8 years … 15+years … 8 to 14 inches",
+      "quote_from": "table",
+      "conditions": "Table 2 row: age at maturity 5 to 8 years; maximum age 15+ years; size at maturity 8 to 14 inches; no data or sources given",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (white sucker, spawning)",
+      "claim": "white suckers spawn at night, on gravel in shallow, swift streams, also on lake shores",
+      "location": "p. 4 (PDF p. 4) text; p. 7 (PDF p. 7), Table 2 'Spawning habitat' ('Gravel bottomed, fast flowing streams, may spawn on lake shores')",
+      "quote": "spawn in the gravelly areas of shallow, swift-flowing streams. Generally, spawning takes place at night",
+      "conditions": "the text describes all three Maine suckers (white, longnose, creek chubsucker) in early spring; no nest or parental care",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (fallfish, growth)",
+      "claim": "Maine fallfish 'usually 5–8 in' (13–20 cm), to 41 cm",
+      "source_value": "'Usually 5 to 8 inches, but up to 16 inches' is printed in Table 2's SIZE AT MATURITY column, not as adult size; the 16-in maximum is also in the text (anglers 'commonly take fallfish at lengths up to 16 inches', p. 4)",
+      "location": "p. 6 (PDF p. 6), Table 2, 'Size at maturity' column (page image); p. 4 text",
+      "quote": "Usually 5 to 8 inches, but up to 16 inches",
+      "quote_from": "table",
+      "conditions": "16 in = 40.6 cm; no data or source given",
+      "verdict": "corrected",
+      "note": "Either label it as Kramer's size at maturity (move it to the maturity column beside 3–4 yr) or keep only the 16-in angling maximum in the growth column."
+    },
+    {
+      "paper": "Table 3.5-2 (fallfish, maturity)",
+      "claim": "Maine fallfish mature at 3–4 yr",
+      "location": "p. 6 (PDF p. 6), Table 2, 'Age at maturity' column (page image)",
+      "quote": "Fallfish … 3 to 4 years … 5 to 6 years",
+      "quote_from": "table",
+      "conditions": "age at maturity 3 to 4 years; maximum age 5 to 6 years (Table 3.5-3 gives 6–10 yr from the Ontario LHD and Trial et al. 1983a report age XI)",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-2 (banded killifish, maturity)",
+      "claim": "Maine banded killifish 'mature at 2–3 in'",
+      "source_value": "Table 2 gives size at maturity '2 to 3 inches'; the text (p. 5) says 'Size at maturity is 2 to 4 inches for each species' (banded killifish and mummichog); 'mature at 2–3 in' is not the source's wording",
+      "location": "p. 6 (PDF p. 6), Table 2 'Size at maturity'; p. 5 text",
+      "quote": "Size at maturity is 2 to 4 inches for each species",
+      "conditions": "no data or sources given; the plan contradicts itself (2–3 in in the table, 2–4 in in the text)",
+      "verdict": "corrected",
+      "note": "Drop the quotation marks; give 2–3 in (Table 2) or 2–4 in (text), or both."
+    },
+    {
+      "paper": "Table 3.5-2 (banded killifish, spawning)",
+      "claim": "Maine banded killifish spawn 'throughout the summer' over weeds",
+      "location": "p. 5 (PDF p. 5); also p. 6, Table 2 ('Throughout the summer'; 'Spawn over bottom around aquatic vegetation')",
+      "quote": "banded killifish spawns throughout the summer by scattering its eggs over the bottom",
+      "conditions": "'… among the weeds'; no parental care",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "Table 3.5-3 (white sucker, longevity)",
+      "claim": "white sucker lives 15+ yr",
+      "location": "p. 7 (PDF p. 7), Table 2 (continued), 'Maximum age' column (page image)",
+      "quote": "Sucker, white … 5 to 8 years … 15+years",
+      "quote_from": "table",
+      "conditions": "maximum age '15+years'; no data or source",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "Maine's fishery agency 'has spent more time and effort at eliminating yellow perch populations than … managing them'",
+      "location": "p. 12 (PDF p. 12), 'Yellow Perch'",
+      "quote": "Maine has spent more time and effort at eliminating yellow perch populations than we",
+      "conditions": "'… have at managing them'; the subject is 'Maine' (the agency writes 'we'); the reason given is that yellow perch 'is not considered desirable by most Maine people'",
+      "verdict": "confirmed"
+    },
+    {
+      "paper": "§3.5.3",
+      "claim": "white suckers were 96 % of the trap-net catch during the spring run in a Unity College study",
+      "location": "p. 11 (PDF p. 11)",
+      "quote": "96% of all fish captured in trap nets during the spring spawning run",
+      "conditions": "'a recent, unpublished study by Unity College'; '… were white suckers'; waters, years and sample size not given",
+      "verdict": "confirmed",
+      "note": "Worth saying 'unpublished' in the paper."
+    },
+    {
+      "paper": "§3.5.7",
+      "claim": "white suckers run up shallow, swift, gravelly streams in early spring and spawn mostly at night",
+      "location": "p. 4 (PDF p. 4)",
+      "quote": "All three run in streams during the early spring to spawn in the gravelly areas",
+      "conditions": "'… of shallow, swift-flowing streams. Generally, spawning takes place at night'; said of all three Maine suckers",
+      "verdict": "confirmed"
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    {
+      "url": "https://www.maine.gov/ifw/docs/strategic-management-plans/nonsportcommercial.pdf",
+      "status": 403,
+      "note": "maine.gov refuses scripts; the www1.maine.gov URL served the PDF"
+    }
+  ],
+  "notes": "Corrections are wording and conditions, not numbers: the white sucker weight is 'up to 4 or 5 pounds … common in some lake environments', the fallfish '5 to 8 inches' is Kramer's size at maturity, and the banded killifish size at maturity is 2–3 in in Table 2 but 2–4 in in the text. Other useful material: (1) Table 2 marks banded killifish 'Indigenous: No' (and golden shiner 'No'), one of the sources behind §2.5's 'sources disagree on whether banded killifish is native'. (2) p. 4: the fallfish 'builds the most commonly observed nest of the minnows found in Maine. The males construct a communal nest of stones up to 2 inches in diameter, as large as 6 feet across and 2 feet high' — a citable source for Table 3.5-2's 'communal mounds up to ≈ 1.8 m across (secondary accounts)'; but Trial et al. 1983a say 'Each nest is constructed by a single male' (communal spawning on it). (3) Table 1: golden shiner in 851 Maine lakes (the layout text misplaces it as 462). (4) p. 12: Maine yellow perch 'are commonly small in size' because of 'the relatively low fertility of Maine waters, short growing seasons, and inter-specific competition'; Maine sets no size or bag limit for yellow perch. (5) Table 2's blacknose dace row: age at maturity 2 years, maximum age 3 to 4 years, size at maturity 2 to 2½ inches."
+}
